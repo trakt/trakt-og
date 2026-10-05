@@ -7,7 +7,7 @@
 <script lang="ts">
 import type { Snippet } from 'svelte';
 import NoData from '$lib/components/empty/NoData.svelte';
-import GenreBars from '$lib/components/users/GenreBars.svelte';
+import GenreBand from '$lib/components/users/GenreBand.svelte';
 import type { LastThirtyDays, WatchedCount } from '$lib/dashboard/LastThirtyDays';
 import chartSimple from '$lib/icons/thin/chart-simple.svg?raw';
 import DashboardPanel from './DashboardPanel.svelte';
@@ -43,7 +43,7 @@ const { stats }: { stats: Promise<LastThirtyDays> } = $props();
           <div class="block"><MinutesChart days={last.days} /></div>
         {/if}
         {#if last.genres.length > 0}
-          <div class="block genres"><GenreBars genres={last.genres} /></div>
+          <div class="block"><GenreBand genres={last.genres} /></div>
         {/if}
       </div>
     {/snippet}
@@ -101,11 +101,6 @@ b {
 /* OG's `#charts-wrapper .row > div`. */
 .block {
   padding-block-end: var(--gutter);
-}
-
-/* OG's dashboard bars kept the full 70px over them, not the profile's `less-top`. */
-.genres {
-  --genre-bars-padding: var(--genre-bars-padding-dashboard);
 }
 
 .notice {

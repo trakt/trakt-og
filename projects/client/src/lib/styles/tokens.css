@@ -486,7 +486,6 @@
   --minutes-bar-spacing: 1px; /* barValueSpacing */
   --minutes-bar-hit-height: 5px;
   --minutes-tooltip-offset: 10px; /* above the bar's top */
-  --genre-bars-padding-dashboard: 70px 0 50px;
 
   /* The dashboard's Social Feed */
   --color-social-feed-bg: light-dark(var(--gray-lighter), var(--dk-bg2));
@@ -867,37 +866,19 @@
   --media-ratings-heart-gap: 3px;
   --media-ratings-dash-gap: 6px;
 
-  /* Profile charts: the genre bars, the ratings chart and its tooltip, and the most watched columns
+  /* Profile charts: the genre band, the ratings chart and its tooltip, and the most watched columns
       */
   --color-charts-bg: light-dark(#fafafa, var(--dk-bg2));
   --color-genre-1: #cc333f;
   --color-genre-2: #00a0b0;
   --color-genre-3: #eb6841;
-  --color-genre-4: #6a4a3c;
-  --color-genre-5: #edc951;
   --color-genre-6: #ab3e5b;
-  --color-genre-7: #b3cc57;
-  --color-genre-8: #ef746f;
-  --color-genre-9: #3e4147;
-  --color-genre-10: #ffbe40;
-  --color-genre-11: #7b3b3b;
   --color-genre-label: light-dark(#333, #ddd);
-  --color-genre-label-hover: light-dark(#333, #fff);
   --color-genre-count: light-dark(#777, #999);
-  --color-genre-count-hover: light-dark(#777, #aaa); /* while its bar is hovered */
   --color-genre-count-link-hover: light-dark(var(--brand-primary), #aaa);
-  --color-genre-percentage: light-dark(#fff, #000);
-  --genre-bars-padding: 50px 0; /* #charts-wrapper .genre-bars.less-top */
-  --genre-bar-height: 30px;
-  --genre-bar-min-width: 45px;
   --genre-bar-gap: 2px;
-  --genre-row-gap: 35px; /* above each bar in the phone rows, room for its label */
-  --genre-label-padding: 2px 0 2px 4px;
-  --genre-label-padding-below: 4px 0 0 4px; /* every other label, under its bar */
-  --genre-percentage-top: 7px;
   --font-size-genre-label: 12px;
   --font-size-genre-count: 11px;
-  --opacity-genre-dimmed: 0.5; /* every other bar while one is hovered */
   /* The profile's genre band: the top six genres in OG's first colors plus three re-stepped for contrast,
      and the striped "Other" piece the rest fold into. */
   --color-genre-slot-1: light-dark(var(--color-genre-1), #d63c48);

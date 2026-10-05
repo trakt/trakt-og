@@ -112,14 +112,7 @@ li {
   inset-inline-end: 0;
   padding-block: 5px 6px;
 
-  /* OG's sidebar gave its arrows the section links' gray, not the link red. */
-  & :global(a) {
-    color: var(--color-summary-label);
-  }
-
-  & :global(a:is(:hover, :focus-visible)) {
-    color: var(--color-summary-hover);
-    text-decoration: none;
-  }
+  /* The arrows rest in the section links' gray, then turn red like every see-more link. */
+  --color-see-more: var(--color-summary-label);
 }
 </style>

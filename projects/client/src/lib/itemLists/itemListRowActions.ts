@@ -1,4 +1,5 @@
 import type { ListRowActions } from '../components/media/ListRowActions.ts';
+import { traktUrls } from '../traktUrls.ts';
 import type { SummaryList } from '../summary/toSummaryList.ts';
 
 type Params = {
@@ -17,7 +18,7 @@ type Params = {
  */
 export function itemListRowActions({ list, viewer, origin }: Params): ListRowActions {
   const owner = viewer !== null && viewer.slug === list.owner.slug;
-  const progressHref = viewer?.isVip ? `/users/${viewer.slug}/progress?list=${list.id}` : '/vip/list-progress';
+  const progressHref = viewer?.isVip ? `/users/${viewer.slug}/progress?list=${list.id}` : traktUrls.vip;
 
   return {
     ...(viewer && { report: {} }),

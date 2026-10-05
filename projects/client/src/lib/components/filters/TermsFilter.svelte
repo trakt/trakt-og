@@ -9,6 +9,7 @@ import Dialog from '$lib/components/dialog/Dialog.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import search from '$lib/icons/thin/magnifying-glass.svg?raw';
+import { traktUrls } from '$lib/traktUrls';
 
 interface Props {
   terms: string;
@@ -53,7 +54,7 @@ function onkeydown(event: KeyboardEvent) {
         <Icon svg={search} /><span class="caret"></span>
       </button>
     {:else}
-      <a class="launcher" href="/vip/filtering" aria-label="Filter by title" {...tooltip}>
+      <a class="launcher" href={traktUrls.vip} target="_blank" rel="noopener" aria-label="Filter by title" {...tooltip}>
         <Icon svg={search} /><span class="caret"></span>
       </a>
     {/if}

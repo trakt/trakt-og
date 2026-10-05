@@ -7,14 +7,11 @@
 <script lang="ts">
 import type { Snippet } from 'svelte';
 import NoData from '$lib/components/empty/NoData.svelte';
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import WatchNowDialog from '$lib/components/watchnow/WatchNowDialog.svelte';
 import type { DashboardSettings } from '$lib/dashboard/DashboardSettings';
 import type { ScheduleDay } from '$lib/dashboard/ScheduleDay';
 import type { ScheduleItem } from '$lib/dashboard/ScheduleItem';
 import { toScheduleLayout } from '$lib/dashboard/toScheduleLayout';
-import Icon from '$lib/icons/Icon.svelte';
-import calendarClock from '$lib/icons/thin/calendar-clock.svg?raw';
 import calendarLines from '$lib/icons/thin/calendar-lines.svg?raw';
 import DashboardPanel from './DashboardPanel.svelte';
 import ScheduleCard from './ScheduleCard.svelte';
@@ -58,22 +55,10 @@ function watchNow(item: NonNullable<ScheduleItem['watchNow']>) {
   icon={calendarLines}
   {loading}
   seeMore={{ href: `/calendars/my/${filter}`, text: 'Calendar' }}
-  customizeHref="/settings#dashboard"
-  {feeds}
 >
     {#snippet help()}All of your {FILTER_NAMES[filter]} + movies on your watchlist.{/snippet}
     {@render content()}
   </DashboardPanel>
-{/snippet}
-
-{#snippet feeds()}
-  <Tooltip text="Notifications">
-    {#snippet trigger(tooltip)}
-      <a class="feed-icon" href="/settings/notifications" aria-label="Notifications" {...tooltip}>
-        <Icon svg={calendarClock} />
-      </a>
-    {/snippet}
-  </Tooltip>
 {/snippet}
 
 {#await schedule}
@@ -139,17 +124,6 @@ function watchNow(item: NonNullable<ScheduleItem['watchNow']>) {
 .notice {
   padding-block-start: var(--gutter);
   --color-no-data-bg: var(--color-schedule-no-data-bg);
-}
-
-.feed-icon {
-  color: var(--color-feed-icon);
-  font-size: var(--font-size-h2);
-  line-height: 1;
-  transition: color var(--transition-card);
-
-  &:is(:hover, :focus-visible) {
-    color: var(--color-feed-icon-hover);
-  }
 }
 
 .nothing {

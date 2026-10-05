@@ -1,6 +1,6 @@
 import type { DarkKnight } from './DarkKnight.ts';
 import type { SaveSettingsResult } from './saveSettings.ts';
-import type { SettingsBody } from './toSettingsPatch.ts';
+import type { SettingsBody } from './SettingsBody.ts';
 import { toTheme } from './toTheme.ts';
 
 type SetDarkKnightParams = {

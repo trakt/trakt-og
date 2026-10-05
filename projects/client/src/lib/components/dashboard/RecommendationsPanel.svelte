@@ -25,6 +25,7 @@ import { overlay } from '$lib/overlay/overlay';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
 import PanelHeading from '$lib/components/dashboard/PanelHeading.svelte';
 import PanelHelp from '$lib/components/dashboard/PanelHelp.svelte';
+import { traktUrls } from '$lib/traktUrls';
 
 interface Props {
   recommendations: Promise<DashboardRecommendations>;
@@ -112,7 +113,6 @@ const longest = (recs: DashboardRecommendations) => Math.max(recs.shows?.length 
       {icon}
       {loading}
       seeMore={{ href: `/${type}/recommendations`, text: 'More' }}
-      customizeHref="/settings#dashboard"
     />
     {#if recs && recs.following !== null}
       <PanelHelp>
@@ -160,7 +160,7 @@ const longest = (recs: DashboardRecommendations) => Math.max(recs.shows?.length 
         rows={rows.rows}
         maxRows={rows.maxRows}
         onchange={changeRows}
-        upsellHref={isVip ? undefined : '/vip/customization'}
+        upsellHref={isVip ? undefined : traktUrls.vip}
         dark
       />
     {/if}

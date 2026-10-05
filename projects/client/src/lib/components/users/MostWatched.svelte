@@ -23,14 +23,12 @@ interface Props {
   slug: string;
   /** The Last 30 Days tab's first day, as the see-more link's `start_at`. */
   windowStart: string;
-  /** Your own profile gets the Customize gear. */
-  isSelf: boolean;
   /** The empty tab's line, from the words after the name: "hasn't watched any shows during this time period." */
   hasnt: (rest: string) => string;
   datePreferences: DatePreferences;
 }
 
-const { shows, movies, slug, windowStart, isSelf, hasnt, datePreferences }: Props = $props();
+const { shows, movies, slug, windowStart, hasnt, datePreferences }: Props = $props();
 
 const TABS = [{ id: 'lastMonth', label: 'Last 30 Days' }, { id: 'allTime', label: 'All Time' }] as const;
 
@@ -64,7 +62,6 @@ const seeMore = (type: MostWatchedType, sortBy: string, tab: MostWatchedTab) =>
             title={column.title}
             icon={column.icon}
             seeMore={{ href: seeMore(column.type, data[column.type].sortBy, selected(column.type)), text: 'See more' }}
-            customizeHref={isSelf ? '/settings#profile' : undefined}
           />
           <div class="tabs">
             <PillTabs

@@ -23,13 +23,13 @@ function hideAnniversary() {
   <section class="anniversary" aria-label="Your Traktiversary">
   <Container>
     <div class="banner">
-        <p>
+      <p>
           <strong>Today is your {notices.anniversary} Traktiversary! 🎉</strong>
           {#if notices.additionalLists !== null}<br />You've earned <strong>{notices.additionalLists.toLocaleString('en-US')}</strong> additional {notices.additionalLists === 1 ? 'list' : 'lists'}!{/if}
         </p>
-        {#if notices.additionalLists !== null}<a class="details" href="/settings/advanced">View Details ➟</a>{/if}
-        <button class="hide" type="button" aria-label="Hide Traktiversary notice" onclick={hideAnniversary}><Icon svg={deleteIcon} /></button>
-      </div>
+      <button class="hide" type="button" aria-label="Hide Traktiversary notice"
+        onclick={hideAnniversary}><Icon svg={deleteIcon} /></button>
+    </div>
   </Container>
 </section>
 {/if}
@@ -49,16 +49,6 @@ function hideAnniversary() {
 p {
   flex: 1;
   margin: 0;
-}
-.details {
-  padding: var(--space-base-block) var(--space-base-inline);
-  border-radius: var(--radius-code);
-  background: var(--brand-primary);
-  color: var(--color-text-inverse);
-  font-family: var(--font-headings);
-  font-weight: var(--font-weight-headings-heavy);
-  text-transform: uppercase;
-  white-space: nowrap;
 }
 .hide {
   padding: var(--space-sm-block);

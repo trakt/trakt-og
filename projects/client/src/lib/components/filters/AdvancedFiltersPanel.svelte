@@ -34,6 +34,7 @@ import { episodeTypeOptions } from '$lib/components/filters/episodeTypeOptions';
 import { type FilterOption, optionMappers, optionPaths, statusOptions } from '$lib/components/filters/filterOptions';
 import { filterValueLabel } from '$lib/components/filters/filterTags';
 import { type FilterSource, toFilterSources, watchNowOptions } from '$lib/components/filters/watchNowFilter';
+import { traktUrls } from '$lib/traktUrls';
 
 interface Props {
   id: string;
@@ -259,7 +260,7 @@ const setRange = (
 
     <div class={['buttons', { vip }]}>
       {#if !vip}
-        <a class="button primary unlock" href="/vip/filtering">Unlock Filters with VIP</a>
+        <a class="button primary unlock" href={traktUrls.vip} target="_blank" rel="noopener">Unlock Filters with VIP</a>
       {:else if filtersOn || dirty}
         <a class="button close" href={clearHref}>Clear</a>
         <button type="button" class="button primary" onclick={apply}>

@@ -20,6 +20,7 @@ import { toDashboardSettings } from '$lib/dashboard/toDashboardSettings';
 import forward from '$lib/icons/thin/forward.svg?raw';
 import { overlay } from '$lib/overlay/overlay';
 import DashboardPanel from '$lib/components/dashboard/DashboardPanel.svelte';
+import { traktUrls } from '$lib/traktUrls';
 
 interface Props {
   upNext: Promise<readonly OnDeckItem[]>;
@@ -59,7 +60,6 @@ const STREAMING = ' + streaming on your ';
   icon={forward}
   {loading}
   seeMore={{ href: progressHref, text: 'Progress' }}
-  customizeHref="/settings#dashboard"
   {footer}
 >
     {#snippet help()}
@@ -96,7 +96,7 @@ const STREAMING = ' + streaming on your ';
   rows={rows.rows}
   maxRows={rows.maxRows}
   onchange={changeRows}
-  upsellHref={isVip ? undefined : '/vip/customization'}
+  upsellHref={isVip ? undefined : traktUrls.vip}
 />
   {/snippet}
   {@render panel(false, cards, navigator)}

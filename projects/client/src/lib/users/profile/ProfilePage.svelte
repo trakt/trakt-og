@@ -86,7 +86,6 @@ const hasnt = (rest: string) =>
   title="Favorites"
   icon={star}
   seeMore={{ href: `${user}/favorites`, text: 'All Favorites' }}
-  customizeHref={data.isSelf ? '/settings#profile' : undefined}
 >
   {#if data.favorites.length > 0}
     <div class="favorites">
@@ -120,7 +119,6 @@ const hasnt = (rest: string) =>
   <MostWatched
   {...data.mostWatched}
   slug={data.profile.slug}
-  isSelf={data.isSelf}
   {hasnt}
   datePreferences={data.datePreferences}
 />

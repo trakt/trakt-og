@@ -9,7 +9,7 @@ describe('listTitleActions', () => {
   it('should give a signed-out viewer share, copy and the VIP progress page', () => {
     const actions = listTitleActions({ list, viewer: null, isCollaborator: false, origin });
     expect(keys(actions)).toEqual(['copy', 'progressHref', 'shareUrl']);
-    expect(actions.progressHref).toBe('/vip/list-progress');
+    expect(actions.progressHref).toBe('https://app.trakt.tv/vip');
     expect(actions.shareUrl).toBe('https://og.trakt.tv/users/sean/lists/heist');
   });
 
@@ -49,7 +49,7 @@ describe('listTitleActions', () => {
         origin,
       }).progressHref,
     )
-      .toBe('/vip/list-progress');
+      .toBe('https://app.trakt.tv/vip');
   });
 
   it('should give a watchlist owner edit and manage, but no delete', () => {

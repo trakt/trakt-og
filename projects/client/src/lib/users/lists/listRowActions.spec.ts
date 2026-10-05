@@ -24,7 +24,7 @@ const icons = (actions: object) => Object.keys(actions).toSorted();
 describe('listRowActions', () => {
   it('should give a signed-out viewer progress, which goes to the VIP page, and share', () => {
     expect(listRowActions({ row: row(), viewer: null, isCollaborator: false, origin })).toEqual({
-      progressHref: '/vip/list-progress',
+      progressHref: 'https://app.trakt.tv/vip',
       shareUrl: 'https://og.trakt.tv/users/owner/lists/heist',
     });
   });
@@ -62,12 +62,12 @@ describe('listRowActions', () => {
   it('should send a non-VIP or signed-out viewer of a built-in row to list-progress VIP', () => {
     const builtIn = row({ id: null, kind: 'favorites' });
     expect(listRowActions({ row: builtIn, viewer: null, isCollaborator: false, origin }).progressHref)
-      .toBe('/vip/list-progress');
+      .toBe('https://app.trakt.tv/vip');
     expect(
       listRowActions({ row: builtIn, viewer: { slug: 'friend', isVip: false }, isCollaborator: false, origin })
         .progressHref,
     )
-      .toBe('/vip/list-progress');
+      .toBe('https://app.trakt.tv/vip');
   });
 
   it('should leave progress off official lists', () => {

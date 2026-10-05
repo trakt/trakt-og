@@ -1,4 +1,5 @@
 import type { ListView } from './toListView.ts';
+import { traktUrls } from '../traktUrls.ts';
 
 /** An icon in the title row. Left without `onclick`, it renders as OG's but is marked unavailable until wired. */
 type TitleAction = { readonly onclick?: () => void };
@@ -35,9 +36,7 @@ type ListTitleActionsParams = {
 export function listTitleActions({ list, viewer, isCollaborator, origin }: ListTitleActionsParams): ListTitleActions {
   const owner = list.kind !== 'official' && viewer?.slug === list.ownerSlug;
   const collaborator = list.kind !== 'official' && !owner && isCollaborator;
-  const progressHref = viewer?.isVip && list.id > 0
-    ? `/users/${viewer.slug}/progress?list=${list.id}`
-    : '/vip/list-progress';
+  const progressHref = viewer?.isVip && list.id > 0 ? `/users/${viewer.slug}/progress?list=${list.id}` : traktUrls.vip;
 
   return {
     ...(viewer && { report: {} }),

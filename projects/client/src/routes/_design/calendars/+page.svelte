@@ -13,4 +13,4 @@ const { data } = $props();
 <main id="content">
   <CalendarPage {data} />
 </main>
-<Footer username={data.user.slug} />
+<Footer />

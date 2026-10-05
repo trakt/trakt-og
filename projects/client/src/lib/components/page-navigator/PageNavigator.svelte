@@ -29,7 +29,8 @@ const { rows, maxRows, onchange, upsellHref, label, dark = false }: Props = $pro
 
 {#snippet control(kind: 'less' | 'more', svg: string, next: number)}
   {#if upsellHref}
-    <a class="control" href={upsellHref} aria-label="Show {kind} {label} with VIP"><Icon {svg} />{kind}</a>
+    <a class="control" href={upsellHref} target="_blank" rel="noopener"
+  aria-label="Show {kind} {label} with VIP"><Icon {svg} />{kind}</a>
   {:else}
     <button type="button" class="control" aria-label="Show {kind} {label}" onclick={() => onchange(next)}>
       <Icon {svg} />{kind}

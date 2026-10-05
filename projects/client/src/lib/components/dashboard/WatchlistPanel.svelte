@@ -19,6 +19,7 @@ import arrow from '$lib/icons/trakt/arrow-right.svg?raw';
 import ListItemPoster from '$lib/lists/ListItemPoster.svelte';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
 import DashboardPanel from './DashboardPanel.svelte';
+import { traktUrls } from '$lib/traktUrls';
 
 interface Props {
   watchlist: Promise<DashboardWatchlist>;
@@ -52,7 +53,6 @@ const allText = (total: number) => `All ${total.toLocaleString('en-US')} ${total
   icon={listCheck}
   {loading}
   seeMore={list ? { href: `/users/${username}/watchlist`, text: allText(list.total) } : undefined}
-  customizeHref={list ? '/settings#dashboard' : undefined}
   help={list ? sorted : undefined}
   {footer}
 >
@@ -88,7 +88,7 @@ const allText = (total: number) => `All ${total.toLocaleString('en-US')} ${total
   rows={rows.rows}
   maxRows={rows.maxRows}
   onchange={changeRows}
-  upsellHref={isVip ? undefined : '/vip/customization'}
+  upsellHref={isVip ? undefined : traktUrls.vip}
 />
   {/snippet}
   {@render panel(false, cards, list, list.cards.length > 0 ? navigator : undefined)}

@@ -17,6 +17,7 @@ import { watchDateInstant } from '$lib/components/history/watchDateInstant';
 import { formatDate } from '$lib/utils/formatDate';
 import { changeVisibility } from '$lib/components/visibility/changeVisibility';
 import type { VisibilityTarget } from '$lib/components/visibility/VisibilityTarget';
+import { traktUrls } from '$lib/traktUrls';
 
 interface Props {
   target: VisibilityTarget;
@@ -81,7 +82,7 @@ async function open() {
   if (busy) return;
   if (!(await userManager().getUser())?.access_token) return login();
   if (action === 'rewatch' && !page.data.user?.isVip) {
-    location.assign('https://trakt.tv/vip/rewatching');
+    globalThis.open(traktUrls.vip, '_blank', 'noopener');
     return;
   }
   returnTo = button?.closest('article')?.querySelector<HTMLElement>('.titles-link') ??

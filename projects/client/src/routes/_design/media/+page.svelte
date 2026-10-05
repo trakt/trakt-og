@@ -241,7 +241,7 @@ $effect(() => {
         collaborators={['Kendal Hagenes', 'Sean']}
         description={weekendNotes}
         rank={2}
-        actions={{ report: {}, edit: {}, delete: {}, progressHref: '/vip/list-progress', shareUrl: 'https://og.trakt.tv/users/og_tester/lists/watch-next-weekend' }}
+        actions={{ report: {}, edit: {}, delete: {}, progressHref: 'https://app.trakt.tv/vip', shareUrl: 'https://og.trakt.tv/users/og_tester/lists/watch-next-weekend' }}
       />
       <p>A collaborator's row: "Stop collaborating" instead of edit and delete.</p>
       <ListRow
@@ -253,7 +253,7 @@ $effect(() => {
         likeCount={0}
         pills={['Following']}
         collaborators={['OG Tester']}
-        actions={{ report: {}, leave: {}, progressHref: '/vip/list-progress', shareUrl: 'https://og.trakt.tv/users/kendal_hagenes_1/lists/heist-night' }}
+        actions={{ report: {}, leave: {}, progressHref: 'https://app.trakt.tv/vip', shareUrl: 'https://og.trakt.tv/users/kendal_hagenes_1/lists/heist-night' }}
       />
     </div>
   </section>

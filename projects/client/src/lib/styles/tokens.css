@@ -440,13 +440,14 @@
      3 from 768px, then 2. */
   --dashboard-band-lead: 230px;
   --dashboard-band-lead-narrow: 200px;
-  --dashboard-band-gap: 32px;
+  --dashboard-band-cell-gap: 18px; /* the cells' inline padding, so All time's divider matches theirs */
   --dashboard-band-row-gap: 14px;
   --dashboard-band-padding-block: 18px 20px;
   --dashboard-band-cell-padding: 2px 18px;
   --dashboard-band-cell-padding-narrow: 2px 14px;
   --dashboard-band-cell-padding-phone: 0 12px;
   --dashboard-band-kicker-gap: 6px;
+  --dashboard-band-kicker-height: 14px; /* one fixed label line, with or without an icon, so all labels line up */
   --dashboard-band-hero-gap: 8px;
   --dashboard-band-hero-top: 6px;
   --dashboard-band-chips-top: 10px;
@@ -461,7 +462,6 @@
   --radius-dashboard-band-tick: 1px;
   --dashboard-band-underline-offset: 3px;
   --font-size-dashboard-band-kicker: 11px;
-  --font-size-dashboard-band-cell-kicker: 10px;
   --font-size-dashboard-band-figure: 26px;
   --font-size-dashboard-band-hero-phone: 34px;
   --font-size-dashboard-band-caption: 11px;

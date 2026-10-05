@@ -1,6 +1,6 @@
 # Clone the UI, not the code
 
-- Match the classic Trakt UI at desktop width, 1440px. Smaller screens must be usable.
+- Match the classic Trakt UI at desktop width, 1440px. Smaller screens down to tablets must be usable; phones get the mobile splash (`MobileSplash`).
 - Use visual references to learn what a page shows and how it behaves. Compare screenshots at the same viewport.
 - Carry values over exactly: colors, sizes, spacing, breakpoints and copy. Rebuild the structure with og's components and CSS.
 - Never paste another application's implementation. Never use Bootstrap class names.

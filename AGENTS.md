@@ -21,7 +21,7 @@ Run these from the repository root:
 
 - Never push to main. PRs land only via `deno task client:land <pr>`, never directly with `gh pr merge`.
 - Use the latest stable dependencies, pinned to exact versions. Review and validate upgrades.
-- Desktop first. Match the classic layout at 1440px; smaller screens must be usable.
+- Desktop first. Match the classic layout at 1440px; smaller screens down to tablets must be usable. Phones get the mobile splash instead.
 - Clone the UI, not the code. Rebuild with this app's components and CSS.
 - Follow `.agents/rules/design-system.md` and the matching rules in `.agents/rules/` before changing code.
 - Follow the accessibility and testing rules in `.agents/rules/a11y.md` and `.agents/rules/testing.md`.

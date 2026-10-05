@@ -1713,4 +1713,54 @@
   --poster-label-start: 10px;
   --poster-label-padding: 3px 5px;
   --font-size-poster-label: 11px;
+
+  /* Mobile splash: shown in place of OG on touch screens too small for it. Dark in both themes, over fanart. */
+  --color-splash-bg: #000;
+  --color-splash-text: #fff;
+  --color-splash-lede: #ddd; /* the line under the title, on the fanart */
+  --color-splash-muted: #999;
+  --color-splash-trakt-bg: #1d1d1d; /* Trakt's own app and Mobile Web */
+  --color-splash-apps-bg: #111; /* a step darker: the other apps that sync with Trakt */
+  --color-splash-outline: #555; /* the Mobile Web button */
+  --color-splash-tag-border: #444;
+  --color-splash-chevron: #666;
+  --splash-border-width: 1px; /* the buttons and the platform tags */
+  --gradient-splash-scrim: linear-gradient(
+    to bottom,
+    rgb(0 0 0 / 0.5) 0%,
+    rgb(0 0 0 / 0) 28%,
+    rgb(0 0 0 / 0.55) 70%,
+    #000 100%
+  );
+  --splash-fanart-position: 60% top; /* keeps the faces in frame from phone to tablet */
+  --splash-gutter: 16px;
+  --splash-content-width: 560px; /* the column on a tablet held upright */
+  --splash-hero-min: 260px;
+  --splash-hero-padding-block: 12px 22px;
+  --splash-logo-height: 28px;
+  --splash-message-gap: 10px;
+  --font-size-splash-title: 32px;
+  --font-size-splash-lede: 16px;
+  --splash-title-tracking: -0.5px;
+  --splash-title-measure: 10em; /* title and lede balance to about the same line length */
+  --splash-lede-measure: 20em;
+  --radius-splash-sheet: 16px;
+  --splash-panel-padding-block: 18px;
+  --splash-panel-gap: 14px;
+  --splash-mark-size: 40px;
+  --splash-brand-gap: 12px;
+  --font-size-splash-brand: 16px;
+  --splash-button-height: 46px;
+  --splash-button-gap: 10px;
+  --font-size-splash-button: 14px;
+  --font-size-splash-label: 11px;
+  --splash-label-tracking: 1px;
+  --splash-label-gap: 4px;
+  --splash-app-icon: 34px;
+  --radius-splash-app-icon: 8px;
+  --splash-row-height: 48px;
+  --splash-row-gap: 12px;
+  --font-size-splash-app: 14px;
+  --font-size-splash-tag: 11px;
+  --splash-tag-padding: 0 6px;
 }

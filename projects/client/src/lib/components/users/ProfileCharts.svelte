@@ -4,9 +4,6 @@
 -->
 <script lang="ts">
 import Container from '$lib/components/container/Container.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import heart from '$lib/icons/thin/heart.svg?raw';
-import masksTheater from '$lib/icons/thin/masks-theater.svg?raw';
 import type { GenreBar } from '$lib/users/profile/toGenreBar';
 import type { RatingsChart as Ratings } from '$lib/users/profile/toRatingsChart';
 import GenreBand from './GenreBand.svelte';
@@ -19,10 +16,10 @@ const id = $props.id();
 <section class="charts" aria-labelledby="{id}-genres">
   <Container>
     <h2 id="{id}-genres" class="first">
-      <span class="heading-icon"><Icon svg={masksTheater} fixedWidth /></span>Most Watched Genres
+      Most Watched Genres
     </h2>
     <div class="block"><GenreBand {genres} /></div>
-    <h2><span class="heading-icon"><Icon svg={heart} fixedWidth /></span>Ratings</h2>
+    <h2>Ratings</h2>
     <p class="help"><b>{ratings.count}</b> ratings with an average of <b>{ratings.average}</b> hearts.</p>
     {#if ratings.bars.length > 0}
       <div class="block"><RatingsChart bars={ratings.bars} {slug} /></div>
@@ -48,16 +45,8 @@ const id = $props.id();
   padding-block-end: var(--gutter);
 }
 
-.heading-icon {
-  margin-inline-end: var(--space-heading-icon);
-
-  & :global(.icon) {
-    vertical-align: top;
-  }
-}
-
 .help {
-  margin: 1px 0 var(--gutter) var(--space-help-text-inline);
+  margin: 1px 0 var(--gutter);
   color: var(--color-help-text);
   font-family: var(--font-headings);
   font-weight: var(--font-weight-headings-light);

@@ -1,5 +1,5 @@
 <!--
-  One dashboard panel: an h2 with its icon and a
+  One dashboard panel: an h2 with a
   spinner while loading, the see-more link and the Customize gear on the right, a gray help line, then the content.
   Set `--panel-bg` for the panel's background, and `--panel-padding-end` or `--panel-min-height` where OG's section
   had its own. The footer snippet goes after the content, outside the page column,
@@ -13,8 +13,6 @@ import PanelHelp from './PanelHelp.svelte';
 
 interface Props {
   title: string;
-  /** The heading's icon, as raw SVG. */
-  icon: string;
   loading?: boolean;
   seeMore?: { href: string; text: string };
   help?: Snippet;
@@ -24,13 +22,13 @@ interface Props {
   footer?: Snippet;
 }
 
-const { title, icon, loading = false, seeMore, help, section, children, footer }: Props = $props();
+const { title, loading = false, seeMore, help, section, children, footer }: Props = $props();
 const id = $props.id();
 </script>
 
 <section class="dashboard-panel" aria-labelledby={id} aria-busy={loading}>
   <Container>
-    <PanelHeading {id} {title} {icon} {loading} {seeMore} {section} />
+    <PanelHeading {id} {title} {loading} {seeMore} {section} />
     {#if help}
       <PanelHelp>{@render help()}</PanelHelp>
     {/if}

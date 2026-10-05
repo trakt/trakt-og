@@ -17,7 +17,6 @@ import { rowCount } from '$lib/dashboard/rowCount';
 import { savedRows } from '$lib/dashboard/savedRows';
 import type { DashboardSettings } from '$lib/dashboard/DashboardSettings';
 import { toDashboardSettings } from '$lib/dashboard/toDashboardSettings';
-import forward from '$lib/icons/thin/forward.svg?raw';
 import { overlay } from '$lib/overlay/overlay';
 import DashboardPanel from '$lib/components/dashboard/DashboardPanel.svelte';
 import { traktUrls } from '$lib/traktUrls';
@@ -57,7 +56,6 @@ const STREAMING = ' + streaming on your ';
   --panel-bg="var(--color-panel-gray)"
   --color-badge-border="var(--color-panel-gray)"
   title="Up Next"
-  icon={forward}
   {loading}
   seeMore={{ href: progressHref, text: 'Progress' }}
   {footer}

@@ -13,9 +13,6 @@ import FavoriteCard from '$lib/components/users/FavoriteCard.svelte';
 import MostWatched from '$lib/components/users/MostWatched.svelte';
 import ProfileCharts from '$lib/components/users/ProfileCharts.svelte';
 import WelcomeHero from '$lib/components/users/WelcomeHero.svelte';
-import clock from '$lib/icons/thin/clock.svg?raw';
-import comments from '$lib/icons/thin/comments.svg?raw';
-import star from '$lib/icons/thin/star.svg?raw';
 import { overlay } from '$lib/overlay/overlay';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
 import UserCommentWithPoster from '$lib/users/comments/UserCommentWithPoster.svelte';
@@ -84,7 +81,6 @@ const hasnt = (rest: string) =>
   --panel-bg="var(--color-favorites-bg)"
   --color-no-data-bg="var(--color-favorites-no-data-bg)"
   title="Favorites"
-  icon={star}
   seeMore={{ href: `${user}/favorites`, text: 'All Favorites' }}
 >
   {#if data.favorites.length > 0}
@@ -100,7 +96,7 @@ const hasnt = (rest: string) =>
   { type: 'episodes', title: 'Recently Watched Episodes', cards: data.episodes, columns: 4 },
   { type: 'movies', title: 'Recently Watched Movies', cards: data.movies, columns: 6 },
 ] as row (row.type)}
-  <DashboardPanel title={row.title} icon={clock} seeMore={{ href: `${user}/history/${row.type}`, text: 'See More' }}>
+  <DashboardPanel title={row.title} seeMore={{ href: `${user}/history/${row.type}`, text: 'See More' }}>
     {#if row.cards.length > 0}
       <PosterGrid columns={row.columns}>
         {#each row.cards as card (card.key)}{@render watched(card)}{/each}
@@ -126,7 +122,6 @@ const hasnt = (rest: string) =>
 
 <DashboardPanel
   title="Comments"
-  icon={comments}
   seeMore={{ href: `${user}/comments/all/all/added`, text: 'All Comments' }}
 >
   {#if data.comments.length > 0}

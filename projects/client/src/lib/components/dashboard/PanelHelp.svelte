@@ -1,5 +1,5 @@
 <!--
-  A panel's gray help line under its heading (`h3.help-text`), lined up with the heading's text after its icon:
+  A panel's gray help line under its heading (`h3.help-text`), flush with the heading:
   "Sorted by Rank", "From the 2 members you follow + the Trakt community.".
 -->
 <script lang="ts">
@@ -12,7 +12,7 @@ const { children }: { children: Snippet } = $props();
 
 <style>
 .help {
-  margin: 1px 0 0 var(--space-help-text-inline);
+  margin: 1px 0 0;
   color: var(--color-help-text);
   font-family: var(--font-headings);
   font-weight: var(--font-weight-headings-light);

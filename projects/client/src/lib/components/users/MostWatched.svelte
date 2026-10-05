@@ -11,8 +11,6 @@ import NoData from '$lib/components/empty/NoData.svelte';
 import PosterCard from '$lib/components/media/PosterCard.svelte';
 import { quickIconFill } from '$lib/components/media/quickIconFill';
 import PillTabs from '$lib/components/tabs/PillTabs.svelte';
-import cameraMovie from '$lib/icons/thin/camera-movie.svg?raw';
-import tvRetro from '$lib/icons/thin/tv-retro.svg?raw';
 import { overlay } from '$lib/overlay/overlay';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
 import type { MostWatched, MostWatchedTab, MostWatchedType } from '$lib/users/profile/toMostWatched';
@@ -33,8 +31,8 @@ const { shows, movies, slug, windowStart, hasnt, datePreferences }: Props = $pro
 const TABS = [{ id: 'lastMonth', label: 'Last 30 Days' }, { id: 'allTime', label: 'All Time' }] as const;
 
 const columns = [
-  { type: 'shows', title: 'Most Watched Shows', icon: tvRetro },
-  { type: 'movies', title: 'Most Watched Movies', icon: cameraMovie },
+  { type: 'shows', title: 'Most Watched Shows' },
+  { type: 'movies', title: 'Most Watched Movies' },
 ] as const;
 
 const data = $derived({ shows, movies });
@@ -60,7 +58,6 @@ const seeMore = (type: MostWatchedType, sortBy: string, tab: MostWatchedTab) =>
           <PanelHeading
             id={headingId}
             title={column.title}
-            icon={column.icon}
             seeMore={{ href: seeMore(column.type, data[column.type].sortBy, selected(column.type)), text: 'See more' }}
           />
           <div class="tabs">
@@ -122,16 +119,6 @@ const seeMore = (type: MostWatchedType, sortBy: string, tab: MostWatchedTab) =>
   @media (max-width: 767px) {
     grid-template-columns: minmax(0, 1fr);
     gap: 0;
-  }
-}
-
-/* OG's `.pill-tab-links.with-icon`: the pills line up with the heading's text. */
-.tabs {
-  margin-inline-start: var(--space-help-text-inline);
-
-  /* The panel under them runs the column's full width. */
-  & :global([role='tabpanel']) {
-    margin-inline-start: calc(-1 * var(--space-help-text-inline));
   }
 }
 

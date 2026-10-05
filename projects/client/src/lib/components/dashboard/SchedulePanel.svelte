@@ -12,7 +12,6 @@ import type { DashboardSettings } from '$lib/dashboard/DashboardSettings';
 import type { ScheduleDay } from '$lib/dashboard/ScheduleDay';
 import type { ScheduleItem } from '$lib/dashboard/ScheduleItem';
 import { toScheduleLayout } from '$lib/dashboard/toScheduleLayout';
-import calendarLines from '$lib/icons/thin/calendar-lines.svg?raw';
 import DashboardPanel from './DashboardPanel.svelte';
 import ScheduleCard from './ScheduleCard.svelte';
 import ScheduleRows from './ScheduleRows.svelte';
@@ -52,7 +51,6 @@ function watchNow(item: NonNullable<ScheduleItem['watchNow']>) {
   --panel-padding-end="calc(var(--gutter) + var(--space-lg-block))"
   --panel-min-height={empty ? 'auto' : 'var(--schedule-min-height)'}
   title="Upcoming Schedule"
-  icon={calendarLines}
   {loading}
   seeMore={{ href: `/calendars/my/${filter}`, text: 'Calendar' }}
 >

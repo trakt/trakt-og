@@ -19,8 +19,6 @@ import { savedRows } from '$lib/dashboard/savedRows';
 import VisibilityControl from '$lib/components/visibility/VisibilityControl.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import ban from '$lib/icons/light/ban.svg?raw';
-import cameraMovie from '$lib/icons/thin/camera-movie.svg?raw';
-import tvRetro from '$lib/icons/thin/tv-retro.svg?raw';
 import { overlay } from '$lib/overlay/overlay';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
 import PanelHeading from '$lib/components/dashboard/PanelHeading.svelte';
@@ -40,8 +38,8 @@ const { recommendations, username, isVip, datePreferences }: Props = $props();
 
 const PER_ROW = 3;
 const COLUMNS = [
-  { type: 'shows', title: 'Show Recommendations', icon: tvRetro },
-  { type: 'movies', title: 'Movie Recommendations', icon: cameraMovie },
+  { type: 'shows', title: 'Show Recommendations' },
+  { type: 'movies', title: 'Movie Recommendations' },
 ] as const;
 
 const storageKey = $derived(`recommendations:${username}`);
@@ -99,7 +97,7 @@ const longest = (recs: DashboardRecommendations) => Math.max(recs.shows?.length 
 {/snippet}
 
 {#snippet column(
-  { type, title, icon }: (typeof COLUMNS)[number],
+  { type, title }: (typeof COLUMNS)[number],
   loading: boolean,
   recs: DashboardRecommendations | null,
   rows: number,
@@ -110,7 +108,6 @@ const longest = (recs: DashboardRecommendations) => Math.max(recs.shows?.length 
     <PanelHeading
       id={headingId}
       {title}
-      {icon}
       {loading}
       seeMore={{ href: `/${type}/recommendations`, text: 'More' }}
     />

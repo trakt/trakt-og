@@ -10,7 +10,6 @@ import NoData from '$lib/components/empty/NoData.svelte';
 import PosterGrid from '$lib/components/media/PosterGrid.svelte';
 import PillTabs from '$lib/components/tabs/PillTabs.svelte';
 import type { SocialPlay } from '$lib/dashboard/toSocialPlay';
-import userGroup from '$lib/icons/thin/user-group.svg?raw';
 import DashboardPanel from './DashboardPanel.svelte';
 import SocialPlayCard from './SocialPlayCard.svelte';
 
@@ -24,7 +23,6 @@ const TABS = [{ id: 'following', label: 'Following' }] as const;
   --panel-bg="var(--color-social-feed-bg)"
   --panel-padding-end="var(--gutter)"
   title="Social Feed"
-  icon={userGroup}
   {loading}
 >
   <div class="tabs">
@@ -69,15 +67,6 @@ const TABS = [{ id: 'following', label: 'Following' }] as const;
 {/snippet}
 
 <style>
-/* OG's `.pill-tab-links.with-icon`: the pill lines up with the heading's text, the posters run the full width. */
-.tabs {
-  margin-inline-start: var(--space-help-text-inline);
-
-  & :global([role='tabpanel']) {
-    margin-inline-start: calc(-1 * var(--space-help-text-inline));
-  }
-}
-
 .body {
   --color-no-data-bg: var(--color-social-feed-no-data-bg);
 }

@@ -866,11 +866,30 @@
   --profile-tab-padding: 19px;
   --profile-watching-height: 70px;
   --font-size-profile-meta: 16px; /* counts and location under the name */
-  --font-size-watching-title: 18px;
-  --font-size-watching-numbers: 50px;
-  --font-size-watching-cancel: 40px; /* #cancel-checkin */
-  --watching-cancel-line: 68px;
-  --watching-runtime-cancel-end: 60px; /* .runtime.with-cancel */
+  /* Watching-now bar: a now-playing bar over the cover. It always sits on a photo, so it doesn't follow the theme. */
+  --watching-padding-inline: 24px;
+  --watching-padding-inline-phone: 12px;
+  --watching-gap: 16px;
+  --watching-gap-phone: 12px;
+  --watching-text-share: 34%; /* of the bar's width; the scrubber takes the rest */
+  --watching-badge-size: 40px;
+  --watching-badge-size-phone: 34px;
+  --watching-badge-icon: 16px;
+  --watching-eq-height: 16px;
+  --watching-eq-bar: 3.5px;
+  --watching-eq-gap: 3px;
+  --watching-cancel-size: 32px;
+  --watching-cancel-icon: 12px;
+  --watching-time-width: 52px;
+  --watching-rail-height: 4px;
+  --watching-rail-hairline: 3px; /* phones: along the bottom edge */
+  --watching-knob-size: 12px;
+  --watching-kicker-tracking: 0.08em;
+  --watching-fade: 0.5s;
+  --font-size-watching-kicker: 12px;
+  --font-size-watching-title: 16px;
+  --font-size-watching-title-phone: 14px;
+  --font-size-watching-time: 13px;
   --font-size-btn-circle: 18px;
   --font-size-request-icons: 22px;
   --font-size-request-block: 19px;
@@ -891,11 +910,17 @@
   --color-relationship-card-remove-bg: #4d4d4d;
   --color-relationship-card-remove-border: #474747;
   --transition-relationship-request: 0.5s;
-  --color-watching-bg: rgb(237 28 36 / 0.8);
-  --color-watching-progress: rgb(149 23 22);
-  --color-watching-numbers: rgb(255 255 255 / 0.15);
-  --color-watching-cancel-hover: rgb(255 255 255 / 0.8);
-  --gradient-watching-percentage: linear-gradient(to right, rgb(149 23 22 / 0) 0%, rgb(149 23 22) 40%);
+  --color-watching-bg: rgb(0 0 0 / 0.42);
+  --color-watching-bg-solid: rgb(20 20 20 / 0.85); /* where backdrop-filter isn't supported */
+  --filter-watching-backdrop: blur(26px) saturate(1.7) brightness(0.8);
+  --color-watching-border: rgb(255 255 255 / 0.12);
+  --color-watching-muted: rgb(255 255 255 / 0.74);
+  --color-watching-faint: rgb(255 255 255 / 0.22);
+  --color-watching-badge: #fff;
+  --color-watching-badge-ink: #111;
+  --color-watching-check: #7ddc8a;
+  --color-watching-cancel-bg: rgb(0 0 0 / 0.25);
+  --shadow-watching-knob: 0 1px 4px rgb(0 0 0 / 0.5);
   --gradient-profile-shade: radial-gradient(circle farthest-corner, rgb(0 0 0 / 0.8), rgb(0 0 0 / 0));
   --gradient-profile-shadow: linear-gradient(to right, rgb(0 0 0 / 0.8), rgb(0 0 0 / 0));
 

@@ -51,14 +51,24 @@ const free: ProfileUser = {
   coverUrl: null,
 };
 
+const endsIn = (minutes: number) => new Date(Date.now() + minutes * 60_000).toISOString();
 const watching: WatchingNow = {
   action: 'checkin',
   title: 'The Boys',
   episode: { number: '1x05', title: 'Good for the Soul' },
   href: '/shows/the-boys-2019/seasons/1/episodes/5',
   fanartUrl: null,
-  endsAt: new Date(Date.now() + 25 * 60_000).toISOString(),
+  endsAt: endsIn(25),
   runtime: 60,
+};
+const scrobbling: WatchingNow = {
+  action: 'scrobble',
+  title: "Futurama: Bender's Big Score",
+  episode: null,
+  href: '/movies/futurama-bender-s-big-score-2007',
+  fanartUrl: vip.coverUrl,
+  endsAt: endsIn(73),
+  runtime: 89,
 };
 
 const relation = (value: Partial<ViewerRelation>) =>
@@ -73,15 +83,32 @@ const states = [
     props: { user: vip, large: true, relation: relation({ follow: 'following', followsYou: true, requestId: 1 }) },
   },
   {
-    title: 'Tall cover, watching now',
-    props: { user: vip, large: true, watching, relation: relation({ follow: 'pending' }) },
+    title: 'Tall cover, someone else scrobbling a movie',
+    props: { user: vip, large: true, watching: scrobbling, relation: relation({ follow: 'pending' }) },
+  },
+  {
+    title: 'Slim, your own check-in, under a minute left',
+    props: {
+      user: vip,
+      tab: 'history',
+      watching: { ...watching, fanartUrl: vip.coverUrl, endsAt: endsIn(0.7) },
+      isSelf: true,
+    },
+  },
+  {
+    title: 'Slim, over time: finished, then gone five minutes past the end',
+    props: { user: vip, tab: 'history', watching: { ...scrobbling, endsAt: endsIn(-2) } },
+  },
+  {
+    title: 'Slim, no fanart, someone else scrobbling an episode',
+    props: { user: free, tab: 'history', watching: { ...watching, action: 'scrobble' as const, endsAt: endsIn(20) } },
   },
   {
     title: 'Slim cover (subpage), pending',
     props: { user: vip, tab: 'history', relation: relation({ follow: 'pending' }) },
   },
   { title: 'Default cover, blocked', props: { user: free, large: true, relation: relation({ blocked: true }) } },
-  { title: 'Slim, watching, your own profile', props: { user: free, tab: 'network', watching, isSelf: true } },
+  { title: 'Slim, your own check-in, no fanart', props: { user: free, tab: 'network', watching, isSelf: true } },
   { title: 'Signed out', props: { user: free, large: true, signedIn: false } },
   { title: 'Follow permission disabled', props: { user: free, large: true, canFollow: false, relation: relation({}) } },
   {

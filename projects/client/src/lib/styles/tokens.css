@@ -825,6 +825,8 @@
   --font-size-label-years: 10px;
   --font-size-label-star: 23px;
   --radius-label-vip: 20px 0 0 20px;
+  /* The round logo glyph (trakt-v2) sits 32/512 above its box, so this moves it back to center. */
+  --label-vip-mark-shift: 0.0625em;
   --color-label-ep: #b50d13;
   --color-label-years: #000; /* the year count on the white star */
   --color-label-private: var(--gray-light);

@@ -35,7 +35,7 @@ describe('toProfileUser', () => {
       location: 'California',
       gender: { icon: 'mars', title: 'Male' },
       age: 44,
-      coverUrl: sean.vip_cover_image,
+      coverUrl: `${sean.vip_cover_image}.webp`,
       about: 'Huge tv nerd',
       joinedAt: '2010-09-25T17:49:25.000Z',
     });

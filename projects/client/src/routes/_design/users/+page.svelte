@@ -93,18 +93,40 @@ const states = [
 const totals = { episodes: { minutes: 2_820, unique: 46 }, movies: { minutes: 1_070, unique: 7 } };
 const about = 'Huge **TV** nerd.\n\nSecond paragraph.';
 const none = { episodes: { minutes: 0, unique: 0 }, movies: { minutes: 0, unique: 0 } };
-const genreNames = ['Drama', 'Action', 'Comedy', 'Thriller', 'Science fiction', 'Crime', 'Adventure', 'Fantasy'];
-const genres = genreNames.map((name, i) =>
-  toGenreBar({
-    play_count: 100 - i * 10,
-    genre: { slug: name.toLowerCase().replace(' ', '-'), name },
-    percentage: 20 - i * 2,
-    percentage_row: 100 - i * 10,
-    episodes: { play_count: 0, ids: [] },
-    shows: { play_count: 40 - i * 4, ids: Array.from({ length: 40 - i * 4 }, (_, n) => n) },
-    movies: { play_count: 60 - i * 5, ids: Array.from({ length: 50 - i * 5 }, (_, n) => n) },
-  }, { slug: 'leela' })
-);
+// [name, shows, movies]: titles a genre, all time, most first, like the profile's call returns them.
+const genreRows: readonly (readonly [string, number, number])[] = [
+  ['Drama', 240, 380],
+  ['Comedy', 190, 170],
+  ['Science fiction', 70, 150],
+  ['Crime', 80, 100],
+  ['Action', 20, 120],
+  ['Thriller', 25, 95],
+  ['Animation', 45, 35],
+  ['Documentary', 22, 38],
+  ['Fantasy', 18, 30],
+  ['Mystery', 26, 18],
+  ['Adventure', 6, 30],
+  ['Romance', 8, 20],
+  ['Horror', 4, 20],
+  ['Reality', 12, 0],
+];
+const ids = (length: number) => Array.from({ length }, (_, n) => n);
+const genreBars = (rows: typeof genreRows) => {
+  const total = rows.reduce((sum, [, shows, movies]) => sum + shows + movies, 0);
+  const top = Math.max(...rows.map(([, shows, movies]) => shows + movies));
+  return rows.map(([name, shows, movies]) =>
+    toGenreBar({
+      play_count: shows + movies,
+      genre: { slug: name.toLowerCase().replace(' ', '-'), name },
+      percentage: ((shows + movies) / total) * 100,
+      percentage_row: ((shows + movies) / top) * 100,
+      episodes: { play_count: 0, ids: [] },
+      shows: { play_count: shows, ids: ids(shows) },
+      movies: { play_count: movies, ids: ids(movies) },
+    }, { slug: 'leela' })
+  );
+};
+const genres = genreBars(genreRows);
 const ratings = toRatingsChart({
   '1': 8,
   '2': 2,
@@ -224,7 +246,7 @@ const cards = [
 <ProfileCharts {genres} {ratings} slug="leela" />
 
 <h2 class="state">Charts, no ratings</h2>
-<ProfileCharts genres={genres.slice(0, 3)} ratings={toRatingsChart({})} slug="leela" />
+<ProfileCharts genres={genreBars(genreRows.slice(0, 4))} ratings={toRatingsChart({})} slug="leela" />
 
 <h2 class="state">Most watched, your own profile</h2>
 <MostWatched

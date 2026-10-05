@@ -898,6 +898,45 @@
   --font-size-genre-label: 12px;
   --font-size-genre-count: 11px;
   --opacity-genre-dimmed: 0.5; /* every other bar while one is hovered */
+  /* The profile's genre band: the top six genres in OG's first colors plus three re-stepped for contrast,
+     and the striped "Other" piece the rest fold into. */
+  --color-genre-slot-1: light-dark(var(--color-genre-1), #d63c48);
+  --color-genre-slot-2: var(--color-genre-2);
+  --color-genre-slot-3: light-dark(var(--color-genre-3), #d65a30);
+  --color-genre-slot-4: light-dark(#3e6fa8, #4a80c0);
+  --color-genre-slot-5: light-dark(#c9a227, #ad8b1a);
+  --color-genre-slot-6: light-dark(var(--color-genre-6), #b8456a);
+  --color-genre-other: light-dark(#b5b5b5, #555);
+  --color-genre-other-stripe: light-dark(#d6d6d6, #444);
+  --genre-other-fill: repeating-linear-gradient(
+    135deg,
+    var(--color-genre-other) 0 5px,
+    var(--color-genre-other-stripe) 5px 9px
+  );
+  --color-genre-shows: var(--color-genre-2); /* the tooltip's count dashes */
+  --color-genre-movies: var(--color-genre-1);
+  --color-genre-divider: light-dark(#e5e5e5, #333);
+  --color-genre-mini-track: light-dark(#efefef, #262626);
+  --genre-band-height: 34px;
+  --radius-genre-band: 4px;
+  --genre-key-rule: 3px; /* the colored line over each key */
+  --space-genre-keys-row: 14px;
+  --space-genre-keys-column: 18px;
+  --space-genre-key-top: 6px;
+  --space-genre-tail: 18px; /* above the opened tail list, and its padding */
+  --space-genre-tail-row: 5px;
+  --space-genre-separator: 0.3em; /* around the dot between the counts */
+  --genre-tail-column: 170px;
+  --genre-mini-height: 4px;
+  --genre-tip-width: 220px;
+  --genre-tip-dash: 12px;
+  --genre-tip-dash-height: 2px;
+  --font-size-genre-share: 22px;
+  --line-height-genre-share: 1.15;
+  --font-size-genre-tail-share: 13px;
+  --font-size-genre-key-count: 12px;
+  --opacity-genre-piece-dimmed: 0.35;
+  --opacity-genre-key-dimmed: 0.45;
   --transition-chart: 0.5s;
   --color-ratings-bar: #999;
   --color-ratings-bar-hover: #ab2425;

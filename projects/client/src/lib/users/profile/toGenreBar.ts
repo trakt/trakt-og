@@ -11,6 +11,9 @@ export type GenreBar = {
   readonly percentageRow: number;
   /** "14%", over the bar. */
   readonly percentageText: string;
+  /** Unique shows and movies: the titles carrying the genre. */
+  readonly shows: number;
+  readonly movies: number;
   /** "12 episodes (15)", "3 shows", "4 movies", each linking to that history filtered by the genre. */
   readonly counts: readonly { readonly text: string; readonly href: string }[];
 };
@@ -50,6 +53,8 @@ export function toGenreBar(row: WatchedGenreRow, { slug, startAt }: ToGenreBarOp
     percentage: row.percentage,
     percentageRow: row.percentage_row,
     percentageText: `${row.percentage.toFixed(0)}%`,
+    shows: row.shows.ids.length,
+    movies: row.movies.ids.length,
     counts,
   };
 }

@@ -10,18 +10,15 @@ import { formatRuntime } from '$lib/utils/formatRuntime';
 const { stats, slug, collected, covered = false }: {
   stats: Pick<UserStatsResponse, 'episodes' | 'shows' | 'movies'>;
   slug: string;
+  // Library counts come from the overlay only. The stats endpoint reports `collected: 0` for everyone.
   collected: { episodes: number | undefined; shows: number | undefined; movies: number | undefined };
   covered?: boolean;
 } = $props();
-const library = $derived({
-  ...collected,
-  shows: collected.shows ?? stats.shows.collected,
-  movies: collected.movies ?? stats.movies.collected,
-});
 const visible = $derived(
-  [stats.episodes.minutes, stats.movies.minutes, library.episodes ?? 0, library.movies].some((n) => n > 0),
+  [stats.episodes.minutes, stats.movies.minutes, collected.episodes ?? 0, collected.movies ?? 0].some((n) => n > 0),
 );
 const count = (n: number) => n.toLocaleString('en-US');
+const countOrPending = (n: number | undefined) => n === undefined ? '…' : count(n);
 const plural = (n: number | undefined, word: string) => n === 1 ? word : `${word}s`;
 </script>
 
@@ -49,9 +46,9 @@ const plural = (n: number | undefined, word: string) => n === 1 ? word : `${word
         <a class="stat-icon collection" href="/users/{slug}/library"
           aria-label="Your library"><Icon svg={collection} fixedWidth /></a>
         <div>
-            <a href="/users/{slug}/library/episodes"><strong aria-label={library.episodes === undefined ? 'Loading collected episodes' : undefined}>{library.episodes === undefined ? '…' : count(library.episodes)}</strong> {plural(library.episodes, 'episode')}</a>
-            <a class="show-count" href="/users/{slug}/library/shows"> (<strong>{count(library.shows)}</strong> {plural(library.shows, 'show')})</a> in library<br />
-            <a href="/users/{slug}/library/movies"><strong>{count(library.movies)}</strong> {plural(library.movies, 'movie')} in library</a>
+            <a href="/users/{slug}/library/episodes"><strong aria-label={collected.episodes === undefined ? 'Loading collected episodes' : undefined}>{countOrPending(collected.episodes)}</strong> {plural(collected.episodes, 'episode')}</a>
+            <a class="show-count" href="/users/{slug}/library/shows"> (<strong aria-label={collected.shows === undefined ? 'Loading collected shows' : undefined}>{countOrPending(collected.shows)}</strong> {plural(collected.shows, 'show')})</a> in library<br />
+            <a href="/users/{slug}/library/movies"><strong aria-label={collected.movies === undefined ? 'Loading collected movies' : undefined}>{countOrPending(collected.movies)}</strong> {plural(collected.movies, 'movie')} in library</a>
           </div>
       </div>
     </div>

@@ -64,11 +64,15 @@ describe('sliceSources', () => {
     });
   });
 
-  it('should map collected movies and shows', async () => {
+  it('should map collected movies and shows, reading a numeric 3D flag as a boolean', async () => {
     server.use(
       http.get(
         `${API}/sync/collection/movies`,
-        () => HttpResponse.json([{ movie: ids(7), collected_at: '2026-02-01', metadata: { media_type: 'bluray' } }]),
+        () =>
+          HttpResponse.json([
+            { movie: ids(7), collected_at: '2026-02-01', metadata: { media_type: 'bluray' } },
+            { movie: ids(8), collected_at: '2026-02-02', metadata: { '3d': 1 } },
+          ]),
       ),
       http.get(
         `${API}/sync/collection/shows`,
@@ -83,6 +87,10 @@ describe('sliceSources', () => {
     expect((await sliceSources.collectedMovies.load(get)).get(7)).toEqual({
       at: '2026-02-01',
       metadata: { media_type: 'bluray' },
+    });
+    expect((await sliceSources.collectedMovies.load(get)).get(8)).toEqual({
+      at: '2026-02-02',
+      metadata: { '3d': true },
     });
     expect((await sliceSources.collectedShows.load(get)).get(3)?.get(1)?.get(2)).toEqual({ at: '2026-03-01' });
   });

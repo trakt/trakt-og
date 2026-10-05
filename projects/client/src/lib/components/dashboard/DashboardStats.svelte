@@ -1,5 +1,5 @@
 <!--
-  The greeting's all-time band: time watched as the headline, then shows finished, ratings, library, comments and
+  The all-time band under the dashboard's cover: time watched as the headline, then shows finished, ratings, library, comments and
   followers. Counts from 10,000 up are rounded; the exact value shows on hover and keyboard focus, and screen readers
   only hear the exact one. The library cell waits on the overlay and fills without moving anything.
 -->
@@ -9,7 +9,7 @@ import Icon from '$lib/icons/Icon.svelte';
 import clock from '$lib/icons/thin/clock.svg?raw';
 import type { StatFigure, StatsBand } from '$lib/dashboard/toStatsBand';
 
-const { band, slug, covered = false }: { band: StatsBand; slug: string; covered?: boolean } = $props();
+const { band, slug }: { band: StatsBand; slug: string } = $props();
 const plural = (figure: StatFigure, word: string) => (figure.text === '1' ? word : `${word}s`);
 const spoken = (figure: StatFigure) => figure.exact ?? figure.text;
 </script>
@@ -26,7 +26,7 @@ const spoken = (figure: StatFigure) => figure.exact ?? figure.text;
 {/snippet}
 
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-<div class={['band', { covered }]} role="group" aria-label="Your Trakt in numbers">
+<div class="band" role="group" aria-label="Your Trakt in numbers">
   <Container>
     <div class="grid">
       <div>
@@ -107,11 +107,9 @@ const spoken = (figure: StatFigure) => figure.exact ?? figure.text;
 <style>
 .band {
   container-type: inline-size;
+  border-block-end: var(--dashboard-border-width) solid var(--color-dashboard-stats-border);
   background: var(--color-dashboard-stats-bg);
   color: var(--color-text-inverse);
-  &.covered {
-    background: var(--color-profile-tabs-bg);
-  }
 }
 .grid {
   display: grid;

@@ -3,13 +3,15 @@
   The cover blurs behind it. A badge on the left says which (an equaliser for playback, a check for a check-in), and a
   scrubber shows the time watched and the time left, ticking every second (once a minute under reduced motion). Over
   time it says "Finished" or "Wrapping up" for a few minutes, then fades out. Below 600px of its own width the scrubber
-  becomes a hairline along the bottom. Put it inside a positioned cover.
+  becomes a hairline along the bottom. The bar spans the cover; its content lines up with the page column. Put it
+  inside a positioned cover.
 -->
 <script lang="ts">
 import { rawApiFetch } from '$lib/api/rawApiFetch';
 import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
 import { userManager } from '$lib/auth/userManager';
 import { toast } from '$lib/components/toast/toast.svelte';
+import Container from '$lib/components/container/Container.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import check from '$lib/icons/solid/check.svg?raw';
@@ -64,56 +66,60 @@ async function cancel() {
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 <div class={['watching-now', { cancelled, gone: progress.gone }]} inert={cancelled || progress.gone}>
   <div class={['bar', { done: progress.finished }]} style:--progress="{progress.percent}%">
-    <span class={['badge', watching.action]} aria-hidden="true">
-      {#if watching.action === 'checkin'}
-        <Icon svg={check} />
-      {:else}
-        <span class="equaliser"><i></i><i></i><i></i></span>
-      {/if}
-    </span>
-    <div class="info">
-      <p class="who">
-        {#if owner === 'self'}
-          You are watching
-        {:else}
-          <a href={owner.href}>{owner.firstName}</a> is watching
-        {/if}
-      </p>
-      <p class="what">
-        <a href={watching.href}>
-          <strong>{watching.title}</strong>
-          {#if watching.episode}
-            <span class="sxe">{watching.episode.number}</span>
-            {#if watching.episode.title}<span class="episode-title">"{watching.episode.title}"</span>{/if}
+    <Container>
+      <div class="row">
+        <span class={['badge', watching.action]} aria-hidden="true">
+          {#if watching.action === 'checkin'}
+            <Icon svg={check} />
+          {:else}
+            <span class="equaliser"><i></i><i></i><i></i></span>
           {/if}
-        </a>
-      </p>
-    </div>
-    <div class="scrubber">
-      <span class="elapsed" aria-hidden="true">{progress.elapsed}</span>
-      <div
-        class="rail"
-        role="progressbar"
-        aria-label="Watched so far"
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-valuenow={Math.floor(progress.percent)}
-        aria-valuetext={progress.finished ?? `${progress.elapsed} watched, ${progress.remaining} left`}
-      >
-        <span class="fill"></span>
-        <span class="knob"></span>
+        </span>
+        <div class="info">
+          <p class="who">
+            {#if owner === 'self'}
+              You are watching
+            {:else}
+              <a href={owner.href}>{owner.firstName}</a> is watching
+            {/if}
+          </p>
+          <p class="what">
+            <a href={watching.href}>
+              <strong>{watching.title}</strong>
+              {#if watching.episode}
+                <span class="sxe">{watching.episode.number}</span>
+                {#if watching.episode.title}<span class="episode-title">"{watching.episode.title}"</span>{/if}
+              {/if}
+            </a>
+          </p>
+        </div>
+        <div class="scrubber">
+          <span class="elapsed" aria-hidden="true">{progress.elapsed}</span>
+          <div
+            class="rail"
+            role="progressbar"
+            aria-label="Watched so far"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={Math.floor(progress.percent)}
+            aria-valuetext={progress.finished ?? `${progress.elapsed} watched, ${progress.remaining} left`}
+          >
+            <span class="fill"></span>
+            <span class="knob"></span>
+          </div>
+          <span class="remaining" aria-hidden="true">{progress.finished ?? `−${progress.remaining}`}</span>
+        </div>
+        {#if cancellable}
+          <Tooltip text="Cancel" placement="bottom">
+            {#snippet trigger(tip)}
+              <button type="button" class="cancel" aria-label="Cancel check in" onclick={cancel} {...tip}>
+                <Icon svg={xmark} />
+              </button>
+            {/snippet}
+          </Tooltip>
+        {/if}
       </div>
-      <span class="remaining" aria-hidden="true">{progress.finished ?? `−${progress.remaining}`}</span>
-    </div>
-    {#if cancellable}
-      <Tooltip text="Cancel" placement="bottom">
-        {#snippet trigger(tip)}
-          <button type="button" class="cancel" aria-label="Cancel check in" onclick={cancel} {...tip}>
-            <Icon svg={xmark} />
-          </button>
-        {/snippet}
-      </Tooltip>
-    {/if}
+    </Container>
   </div>
 </div>
 
@@ -140,10 +146,8 @@ async function cancel() {
 .bar {
   position: absolute;
   inset: 0;
-  display: flex;
+  display: grid;
   align-items: center;
-  gap: var(--watching-gap);
-  padding-inline: var(--watching-padding-inline);
   border-block-start: 1px solid var(--color-watching-border);
   background-color: var(--color-watching-bg-solid);
   color: var(--color-text-inverse);
@@ -157,6 +161,12 @@ async function cancel() {
   & a {
     color: inherit;
   }
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--watching-gap);
 }
 
 .badge {
@@ -323,9 +333,8 @@ async function cancel() {
 
 /* Phones: the rail becomes a hairline along the bottom edge, with the time left on the right. */
 @container (width < 600px) {
-  .bar {
+  .row {
     gap: var(--watching-gap-phone);
-    padding-inline: var(--watching-padding-inline-phone);
   }
 
   .badge {

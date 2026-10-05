@@ -38,15 +38,13 @@ $effect(() => {
 <main>
   {#each bands as { id, band } (id)}
     <div id="band-{id}">
-      <DashboardGreeting user={sample.user} memberSince="Aug 20, 2020 12:23 PM" watching={null}>
-        {#snippet stats()}<DashboardStats {band} slug="og_tester" />{/snippet}
-      </DashboardGreeting>
+      <DashboardGreeting user={sample.user} memberSince="Aug 20, 2020 12:23 PM" watching={null} />
+      <DashboardStats {band} slug="og_tester" />
     </div>
   {/each}
   <div id="watching">
-    <DashboardGreeting user={sample.user} memberSince="Aug 20, 2020 12:23 PM" {watching}>
-      {#snippet stats()}<DashboardStats band={toStatsBand(sample.stats, sample.collected)} slug="og_tester" />{/snippet}
-    </DashboardGreeting>
+    <DashboardGreeting user={sample.user} memberSince="Aug 20, 2020 12:23 PM" {watching} />
+    <DashboardStats band={toStatsBand(sample.stats, sample.collected)} slug="og_tester" />
   </div>
   <DashboardNotices notices={{ welcome: true, anniversary: '6th', additionalLists: 6 }}
     day={dayIn(new Date().toISOString(), 'UTC')} />

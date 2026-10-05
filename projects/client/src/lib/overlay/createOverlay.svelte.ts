@@ -70,7 +70,8 @@ const progress = (watchedEpisodes: number | undefined, collectedEpisodes: number
 });
 
 function stateOf(slices: Partial<OverlaySlices>, type: MediaType, id: number, season?: SeasonOf): OverlayState {
-  if (type === 'person') return { listed: slices.listed?.person.has(id) };
+  // People have no user state; spoiler checks still ask.
+  if (type === 'person') return {};
   const watchlisted = slices.watchlist?.[type]?.has(id);
   const rating = slices.ratings && (slices.ratings[type].get(id) ?? null);
   const listed = slices.listed?.[type].has(id);

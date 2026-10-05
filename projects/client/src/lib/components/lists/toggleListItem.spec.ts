@@ -37,13 +37,13 @@ describe('toggleListItem', () => {
   it('should write collaborative list items through their owner and preserve membership in another list', async () => {
     const params = setup();
     server.use(http.post('https://apiz.trakt.tv/users/friend/lists/12/items/remove', () => {
-      expect(params.overlay.state('person', 1).listed).toBe(true);
-      return HttpResponse.json({ deleted: { people: 1 } });
+      expect(params.overlay.state('season', 1).listed).toBe(true);
+      return HttpResponse.json({ deleted: { seasons: 1 } });
     }));
     expect(
       await toggleListItem({
         ...params,
-        target: { ...params.target, type: 'person' },
+        target: { ...params.target, type: 'season' },
         list: { id: 12, owner: 'friend' },
         remove: true,
         stillListed: true,

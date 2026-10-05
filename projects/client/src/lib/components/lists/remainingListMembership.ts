@@ -36,6 +36,5 @@ export async function remainingListMembership(
     show: ids('show'),
     season: ids('season'),
     episode: ids('episode'),
-    person: ids('person'),
   };
 }

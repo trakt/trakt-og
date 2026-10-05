@@ -27,7 +27,7 @@ async function membership(fetch: typeof globalThis.fetch, target: ListTarget) {
   do {
     const response = await rawApiFetch({
       fetch,
-      path: `/${target.type === 'person' ? 'people' : `${target.type}s`}/${target.id}/listed?limit=100&page=${page}`,
+      path: `/${target.type}s/${target.id}/listed?limit=100&page=${page}`,
     });
     if (!response.ok) throw new Error('List membership unavailable');
     membershipSchema.parse(await response.json()).forEach((row) => {

@@ -160,13 +160,17 @@ describe('sliceSources', () => {
         `${API}/lists/10/items`,
         () => HttpResponse.json([{ type: 'movie', movie: ids(1), id: 10, listed_at: '2026-09-29T12:00:00Z' }]),
       ),
-      http.get(`${API}/lists/11/items`, () => HttpResponse.json([{ type: 'person', person: ids(2) }])),
+      http.get(
+        `${API}/lists/11/items`,
+        () => HttpResponse.json([{ type: 'person', person: ids(2) }, { type: 'show', show: ids(3) }]),
+      ),
     );
 
     const data = await sliceSources.listed.load(get);
 
     expect(data.movie).toEqual(new Set([1]));
-    expect(data.person).toEqual(new Set([2]));
+    expect(data.show).toEqual(new Set([3]));
+    expect(data).not.toHaveProperty('person');
   });
 
   it('should throw when a slice request fails', async () => {

@@ -131,7 +131,7 @@ async function addItems({ target, items, overlay, request }: {
         season: update(data.season, 'season'),
         episode: update(data.episode, 'episode'),
       }),
-      { movie: new Set(), show: new Set(), season: new Set(), episode: new Set(), person: new Set() },
+      { movie: new Set(), show: new Set(), season: new Set(), episode: new Set() },
     );
   try {
     const body: Record<string, { ids: { trakt: number } }[]> = {};

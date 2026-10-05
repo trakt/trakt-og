@@ -18,14 +18,18 @@ describe('remainingListMembership', () => {
         return Promise.resolve(Response.json(
           page === '1'
             ? [{ type: 'movie', movie: { ids: { trakt: 9 } } }]
-            : [{ type: 'movie', movie: { ids: { trakt: 9 } } }, { type: 'person', person: { ids: { trakt: 8 } } }],
+            : [{ type: 'movie', movie: { ids: { trakt: 9 } } }, { type: 'episode', episode: { ids: { trakt: 8 } } }, {
+              type: 'person',
+              person: { ids: { trakt: 7 } },
+            }],
           { headers: { 'x-pagination-page-count': '2' } },
         ));
       },
     });
     expect(paths).toEqual(['/v3/users/me/lists', '/lists/2/items?limit=250&page=1', '/lists/2/items?limit=250&page=2']);
     expect([...result.movie]).toEqual([9]);
-    expect([...result.person]).toEqual([8]);
+    expect([...result.episode]).toEqual([8]);
+    expect(result).not.toHaveProperty('person');
   });
   it('should reject malformed raw membership instead of inventing poster state', async () => {
     await expect(remainingListMembership({ exclude: 1, get: () => Promise.resolve(Response.json({ lists: [] })) }))

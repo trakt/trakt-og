@@ -34,5 +34,5 @@ export type OverlaySlices = {
   /** Optimistic hides on the current page, section to type:id keys. Never persisted as server truth. */
   hidden: ReadonlyMap<string, ReadonlySet<string>>;
   /** Ids in any of the user's own or collaborative lists. */
-  listed: Readonly<Record<'movie' | 'show' | 'season' | 'episode' | 'person', Ids>>;
+  listed: Readonly<Record<'movie' | 'show' | 'season' | 'episode', Ids>>;
 };

@@ -169,13 +169,7 @@ function save(next: FadeHide) {
             watchNow: card.released ? 'play' : undefined,
             listLabel: card.type === 'episode' ? 'Add to list' : undefined,
           }
-          : {
-            // The overlay has no people yet, so their list icon starts empty.
-            fill: quickIconFill({ state: {} }),
-            listOnly: true,
-            listTarget: { type: 'person', id: card.id, title: card.title },
-            listLabel: 'Add to list',
-          }}
+          : undefined}
         />
         {/if}
       {/each}

@@ -37,9 +37,14 @@ h5,
 h6 {
   margin: var(--line-height-computed) 0 0;
   font-family: var(--font-headings);
-  font-weight: var(--font-weight-headings-light);
+  font-weight: var(--font-weight-headings);
   line-height: var(--line-height-headings);
   color: inherit;
+
+  /* A heading with a bold part sets the rest regular, so the bold part still stands out. */
+  &:has(b, strong) {
+    font-weight: var(--font-weight-headings-light);
+  }
 
   & :is(b, strong) {
     font-weight: var(--font-weight-headings);
@@ -48,7 +53,6 @@ h6 {
 
 h1 {
   margin-block-end: calc(var(--line-height-computed) / 2);
-  font-weight: var(--font-weight-headings);
   font-size: var(--font-size-h1);
 }
 

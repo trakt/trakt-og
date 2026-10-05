@@ -124,7 +124,7 @@ afterNavigate(() => menu?.hidePopover());
 .center {
   & .menu {
     position-area: bottom center;
-    /* OG's 320px, grown to fit: Montserrat runs wider than OG's Proxima Nova. */
+    /* OG's 320px, as a floor that grows if a row runs wider in Figtree than in OG's Proxima Nova. */
     min-inline-size: 320px;
     inline-size: max-content;
     border-radius: var(--radius-lg);

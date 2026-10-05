@@ -1,22 +1,16 @@
 <!--
-  OG's fixed top bar: logo, search field, main nav,
-  the Apps menu, and Get VIP plus either the profile menu or the join and sign-in buttons.
+  OG's fixed top bar: logo, search field, main nav, and Get VIP plus either the profile menu or the join and sign-in
+  buttons.
 -->
 <script lang="ts">
 import { invalidateAll } from '$app/navigation';
 import { page } from '$app/state';
-import appleTv from '$lib/assets/apple-tv-icon.svg?raw';
 import logo from '$lib/assets/trakt-logo-red.png';
 import Icon from '$lib/icons/Icon.svelte';
-import android from '$lib/icons/brands/android.svg?raw';
-import apple from '$lib/icons/brands/apple.svg?raw';
-import googlePlay from '$lib/icons/brands/google-play.svg?raw';
-import tvCircleCheck from '$lib/icons/kit/solid-tv-circle-check.svg?raw';
 import angleDown from '$lib/icons/solid/angle-down.svg?raw';
 import bars from '$lib/icons/solid/bars.svg?raw';
 import circleUser from '$lib/icons/solid/circle-user.svg?raw';
 import moon from '$lib/icons/solid/moon.svg?raw';
-import rocketLaunch from '$lib/icons/solid/rocket-launch.svg?raw';
 import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
 import { userManager } from '$lib/auth/userManager';
 import { toast } from '$lib/components/toast/toast.svelte';
@@ -57,30 +51,6 @@ const sections = $derived([
   { title: 'Calendar', href: '/calendars' },
   { title: 'Discover', href: '/discover' },
 ]);
-
-const apps = [
-  { title: 'Trakt for iOS', description: 'Works on iPhone & iPad.', href: traktUrls.appStore, icon: apple, big: true },
-  { title: 'Trakt for Android', description: 'Works on Android phones.', href: traktUrls.googlePlay, icon: googlePlay },
-  { title: 'Trakt for tvOS', description: 'Works on Apple TV.', href: traktUrls.appStore, icon: appleTv, tv: true },
-  {
-    title: 'Trakt for Android TV',
-    description: 'Works on Google & Android TV.',
-    href: traktUrls.googlePlay,
-    icon: android,
-  },
-  {
-    title: 'Automatically Track',
-    description: 'Streaming services & media centers.',
-    href: '/apps',
-    icon: tvCircleCheck,
-  },
-  {
-    title: 'Community Apps',
-    description: 'From our awesome dev community.',
-    href: '/apps#community-apps',
-    icon: rocketLaunch,
-  },
-];
 
 const profileTabs = ['History', 'Progress', 'Library', 'Ratings', 'Lists', 'Comments', 'Notes', 'Network'];
 const profileLinks = $derived(
@@ -128,24 +98,6 @@ async function toggleDarkKnight() {
     {#each sections as link (link.href)}
       <a href={link.href} aria-current={current(link.href)}>{link.title}</a>
     {/each}
-    <span class="spacer"></span>
-    <HeaderMenu align="center">
-      {#snippet trigger()}Apps{/snippet}
-      <ul class="apps">
-        {#each apps as app (app.title)}
-          <li>
-            <a href={app.href} target={app.href.startsWith('/') ? undefined : '_blank'}>
-              <span class={['app-icon', { big: 'big' in app, tv: 'tv' in app }]}>
-                <Icon svg={app.icon} />
-              </span>
-              <span class="app-title">{app.title}</span>
-              <span class="app-description">{app.description}</span>
-            </a>
-          </li>
-        {/each}
-      </ul>
-    </HeaderMenu>
-    <a href={traktUrls.forums} target="_blank" rel="noopener">Forums</a>
   </nav>
 
   <div class="user">
@@ -158,8 +110,6 @@ async function toggleDarkKnight() {
           {#each sections as link (link.href)}
             <li><a href={link.href} aria-current={current(link.href)}>{link.title}</a></li>
           {/each}
-          <li><a href="/apps">Apps</a></li>
-          <li><a href={traktUrls.forums} target="_blank" rel="noopener">Forums</a></li>
         </ul>
       </HeaderMenu>
     </div>
@@ -244,8 +194,7 @@ async function toggleDarkKnight() {
   margin-inline-end: -12px;
   font-size: var(--font-size-nav);
 
-  & > a,
-  & :global(.trigger) {
+  & > a {
     display: block;
     margin: 0 -4px;
     padding: var(--space-lg-block) var(--space-lg-inline);
@@ -258,60 +207,6 @@ async function toggleDarkKnight() {
       color: var(--brand-primary);
     }
   }
-}
-
-.spacer {
-  inline-size: 24px;
-}
-
-/* Apps menu rows: a big icon, then a title over a one-line description. */
-.apps {
-  font-weight: var(--font-weight-headings-light);
-
-  & li + li a {
-    border-block-start: 1px solid var(--color-menu-separator);
-  }
-
-  & li a {
-    display: grid;
-    grid-template-columns: 24px auto;
-    column-gap: 24px;
-    align-items: center;
-    padding: var(--space-lg-block) var(--gutter);
-    transition: background-color 0.5s, color 0.5s;
-
-    &:is(:hover, :focus-visible) {
-      & .app-description {
-        color: var(--gray-lighter);
-      }
-    }
-  }
-}
-
-.app-icon {
-  grid-row: span 2;
-  inline-size: 38px;
-  font-size: 28px;
-  text-align: center;
-}
-
-.big {
-  font-size: 36px;
-}
-
-/* OG's devices/apple-tv-icon.svg, drawn 30px wide. */
-.tv {
-  font-size: 30px;
-}
-
-.app-title {
-  font-size: var(--font-size-nav);
-  font-weight: var(--font-weight-headings);
-  line-height: 1;
-}
-
-.app-description {
-  color: var(--color-menu-description);
 }
 
 /* Right-hand buttons */
@@ -426,14 +321,9 @@ async function toggleDarkKnight() {
   .links {
     margin-inline-end: 0;
 
-    & > a,
-    & :global(.trigger) {
+    & > a {
       padding-inline: var(--space-base-inline);
     }
-  }
-
-  .spacer {
-    inline-size: var(--space-base-inline);
   }
 }
 

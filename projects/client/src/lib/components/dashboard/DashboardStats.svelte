@@ -29,7 +29,7 @@ const spoken = (figure: StatFigure) => figure.exact ?? figure.text;
 <div class="band" role="group" aria-label="Your Trakt in numbers">
   <Container>
     <div class="grid">
-      <div>
+      <div class="lead">
         <p class="kicker"><Icon svg={clock} /><a href="/users/{slug}/history">All time</a></p>
         <p class="hero">
           <b>{@render exact(band.time.value, band.time.exact)}</b>
@@ -114,9 +114,16 @@ const spoken = (figure: StatFigure) => figure.exact ?? figure.text;
 .grid {
   display: grid;
   grid-template-columns: var(--dashboard-band-lead) minmax(0, 1fr);
-  gap: var(--dashboard-band-gap);
-  align-items: center;
+  gap: var(--dashboard-band-cell-gap);
+  align-items: start;
   padding-block: var(--dashboard-band-padding-block);
+}
+/* All time, then a divider like the ones between the cells. */
+.lead {
+  align-self: stretch;
+  padding: var(--dashboard-band-cell-padding);
+  padding-inline-start: 0;
+  border-inline-end: var(--dashboard-border-width) solid var(--color-profile-track);
 }
 p {
   margin: 0;
@@ -136,6 +143,7 @@ a {
   font-size: var(--font-size-dashboard-band-kicker);
   font-weight: var(--font-weight-headings-heavy);
   letter-spacing: var(--letter-spacing-dashboard-band-kicker);
+  block-size: var(--dashboard-band-kicker-height);
   line-height: 1;
   text-transform: uppercase;
 }
@@ -194,9 +202,6 @@ a {
       padding-inline-start: 0;
       border-inline-start: 0;
     }
-  }
-  .kicker {
-    font-size: var(--font-size-dashboard-band-cell-kicker);
   }
 }
 .figure {
@@ -335,6 +340,10 @@ a {
   .grid {
     grid-template-columns: minmax(0, 1fr);
     gap: var(--dashboard-band-row-gap);
+  }
+  .lead {
+    padding: 0;
+    border-inline-end: 0;
   }
   .hero b {
     font-size: var(--font-size-dashboard-band-hero-phone);

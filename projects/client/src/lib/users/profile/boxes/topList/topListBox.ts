@@ -23,7 +23,7 @@ export const topListBox = defineProfileBox({
   key: 'top-list',
   group: 'image',
   component: TopListBox,
-  extra: { load: fetchUserLists, when: ({ stats }) => stats.lists >= 1 },
+  extra: { load: fetchUserLists, when: ({ stats }) => (stats.lists ?? 0) >= 1 },
   score: ({ today }, lists) => {
     const found = curated(lists);
     if (!found) return null;

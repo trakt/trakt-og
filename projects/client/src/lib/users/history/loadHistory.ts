@@ -1,4 +1,4 @@
-import type { UserStatsResponse } from '@trakt/api';
+import type { UserStats } from '../../stats/userStatsSchema.ts';
 import { error, redirect } from '@sveltejs/kit';
 import { extractPageMeta } from '../../api/extractPageMeta.ts';
 import type { PageMeta } from '../../api/PageMeta.ts';
@@ -27,7 +27,7 @@ type Params = {
   cookies: { get: (name: string) => string | undefined };
   parent: () => Promise<{
     profile: ProfileUser;
-    stats: UserStatsResponse | null;
+    stats: UserStats | null;
     user: { readonly slug: string } | null;
     datePreferences: DatePreferences;
   }>;

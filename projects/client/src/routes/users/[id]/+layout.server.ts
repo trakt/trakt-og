@@ -1,6 +1,7 @@
 import { error, redirect } from '@sveltejs/kit';
 import { api } from '../../../lib/api/api.ts';
 import { loadViewerLists } from '../../../lib/users/loadViewerLists.ts';
+import { userStatsSchema } from '../../../lib/stats/userStatsSchema.ts';
 import { profileResponseSchema } from '../../../lib/users/profileResponseSchema.ts';
 import { toViewerRelation } from '../../../lib/users/toViewerRelation.ts';
 import { toProfileUser } from '../../../lib/users/toProfileUser.ts';
@@ -49,14 +50,14 @@ export async function load({ fetch, locals, params, parent, url }) {
   const isSelf = viewer?.slug === user.slug;
 
   if (viewer && !isSelf) locals.viewerLists ??= loadViewerLists({ client });
+  const parsedStats = stats?.status === 200 ? userStatsSchema.safeParse(stats.body) : null;
+  const userStats = parsedStats?.success ? parsedStats.data : null;
 
   return {
     profile: user,
-    counts: stats?.status === 200
-      ? { followers: stats.body.network.followers, following: stats.body.network.following }
-      : null,
+    counts: userStats ? { followers: userStats.network.followers, following: userStats.network.following } : null,
     /** The profile page's stat boxes and charts read it too. */
-    stats: stats?.status === 200 ? stats.body : null,
+    stats: userStats,
     watching: watching?.status === 200 ? toWatchingNow(watching.body) : null,
     isSelf,
     signedIn: viewer !== null,

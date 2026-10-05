@@ -1,30 +1,58 @@
+import type { WatchingNow } from './WatchingNow.ts';
+
 export interface WatchingProgress {
   /** 0 to 100. */
   readonly percent: number;
-  /** `h:mm` watched so far. */
+  /** Watched so far: `m:ss` or `h:mm:ss`, or `h:mm` under reduced motion. */
   readonly elapsed: string;
-  /** `h:mm` in total. */
-  readonly runtime: string;
-  readonly done: boolean;
+  /** Time left in the same format, without a sign. `0:00` once it's over. */
+  readonly remaining: string;
+  /** Over time: "Finished" for a scrobble, "Wrapping up" for a check-in, which is only a runtime estimate. */
+  readonly finished: 'Finished' | 'Wrapping up' | null;
+  /** Long enough past the end that the bar goes away. */
+  readonly gone: boolean;
 }
 
-/** OG's watching-now ticker (`users.js`): how far into `runtime` minutes ending at `endsAt` the time `now` is. */
+/** How long the finished state stays up before the bar goes away. */
+const LINGER = 5 * 60_000;
+
+/**
+ * Where `now` falls in `runtime` minutes ending at `endsAt`, like OG's ticker: it started `runtime` before the end.
+ * `reducedMotion` drops the seconds, since the bar then only ticks once a minute.
+ */
 export function watchingProgress(
-  { endsAt, runtime, now }: { endsAt: string; runtime: number; now: number },
+  { endsAt, runtime, action, now, reducedMotion }: Pick<WatchingNow, 'endsAt' | 'runtime' | 'action'> & {
+    now: number;
+    reducedMotion: boolean;
+  },
 ): WatchingProgress {
   const end = Date.parse(endsAt);
-  const start = end - runtime * 60_000;
-  const raw = ((now - start) / (end - start)) * 100;
-  const percent = Math.min(100, Math.max(0, raw));
+  const length = runtime * 60_000;
+  const watched = Math.min(length, Math.max(0, now - (end - length)));
+  const done = now >= end;
 
   return {
-    percent,
-    elapsed: hoursMinutes(Math.floor((runtime * percent) / 100)),
-    runtime: hoursMinutes(runtime),
-    done: raw >= 100,
+    percent: (watched / length) * 100,
+    elapsed: clock(watched, { reducedMotion, round: Math.floor }),
+    remaining: clock(length - watched, { reducedMotion, round: Math.ceil }),
+    finished: done ? (action === 'checkin' ? 'Wrapping up' : 'Finished') : null,
+    gone: now >= end + LINGER,
   };
 }
 
-function hoursMinutes(minutes: number): string {
-  return `${Math.floor(minutes / 60)}:${String(minutes % 60).padStart(2, '0')}`;
+/** Elapsed time rounds down and time left rounds up, so the last minute still reads `0:01`, not `0:00`. */
+function clock(ms: number, { reducedMotion, round }: { reducedMotion: boolean; round: (n: number) => number }) {
+  if (reducedMotion) {
+    const minutes = round(ms / 60_000);
+    return `${Math.floor(minutes / 60)}:${pad(minutes % 60)}`;
+  }
+
+  const seconds = round(ms / 1000);
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor(seconds / 60) % 60;
+  return hours ? `${hours}:${pad(minutes)}:${pad(seconds % 60)}` : `${minutes}:${pad(seconds % 60)}`;
+}
+
+function pad(n: number): string {
+  return String(n).padStart(2, '0');
 }

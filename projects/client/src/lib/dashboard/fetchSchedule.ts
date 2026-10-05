@@ -31,9 +31,8 @@ type FetchScheduleParams = {
   now?: Date;
 };
 
-const DAYS = 5;
-/** Only the spotlight, the first day, shows posters. */
-const POSTER_DAYS = 1;
+/** The spotlight day and the next two with anything on. */
+const DAYS = 3;
 /** OG's "All my TV shows" filter only looked 40 days ahead. */
 const SHOWS_LOOKAHEAD = 40;
 
@@ -74,11 +73,11 @@ function seasonPosters(fetch: typeof globalThis.fetch, items: readonly CalendarI
 }
 
 /**
- * The viewer's Upcoming Schedule: the first five days from the start day setting with anything on
+ * The viewer's Upcoming Schedule: the first three days from the start day setting with anything on
  * the calendars its filter picks, less what they hid from the calendar and, with that setting (or the premieres filter,
  * as in OG), specials. The worker serves 34 days a request, so one request covers most viewers; only when it holds
- * fewer than five days does the rest of OG's window load, all at once. Then each shown item's Watch Now offers in the
- * viewer's country, and the season posters with that setting.
+ * fewer than three days does the rest of OG's window load, all at once. Then the spotlight day's Watch Now offers in the
+ * viewer's country, since only its cards show the button, and its season posters with that setting.
  */
 export async function fetchSchedule(
   {
@@ -112,11 +111,10 @@ export async function fetchSchedule(
   const soon = pick(nearest);
   const days = soon.length < DAYS ? pick([...nearest, ...(await Promise.all(rest.map(load))).flat()]) : soon;
   const country = settings?.browsing?.watchnow?.country?.toLowerCase() || 'us';
+  const spotlight = days.at(0)?.items ?? [];
   const [offers, seasonPoster] = await Promise.all([
-    offersByPath(fetch, days.flatMap(({ items }) => items), country),
-    schedule.poster === 'season'
-      ? seasonPosters(fetch, days.slice(0, POSTER_DAYS).flatMap(({ items }) => items))
-      : undefined,
+    offersByPath(fetch, spotlight, country),
+    schedule.poster === 'season' ? seasonPosters(fetch, spotlight) : undefined,
   ]);
 
   return toScheduleDays({ days, today, datePreferences, isVip, offers, country, seasonPoster });

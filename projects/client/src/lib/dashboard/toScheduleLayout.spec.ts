@@ -56,13 +56,13 @@ describe('toScheduleLayout', () => {
       expect(toScheduleLayout([day(-1, shows(1))])?.spotlight).toMatchObject({ heading: 'Yesterday' });
     });
 
-    it('should show three cards and the rest of the day as rows', () => {
-      const spotlight = toScheduleLayout([day(1, shows(9))])?.spotlight;
+    it('should show at least three cards and the rest of the day as rows', () => {
+      const spotlight = toScheduleLayout([day(1, shows(10))])?.spotlight;
 
       expect(spotlight?.cards.map(({ title }) => title)).toEqual(['show0', 'show1', 'show2']);
-      expect(spotlight?.also).toMatchObject({ heading: 'Also Tomorrow', count: 6 });
+      expect(spotlight?.also).toMatchObject({ heading: 'Also Tomorrow', count: 7 });
       expect(spotlight?.also?.shown).toHaveLength(5);
-      expect(spotlight?.also?.more.map(({ title }) => title)).toEqual(['show8']);
+      expect(spotlight?.also?.more.map(({ title }) => title)).toEqual(['show8', 'show9']);
     });
 
     it('should leave out the rows when three cards cover the day', () => {
@@ -70,12 +70,57 @@ describe('toScheduleLayout', () => {
     });
   });
 
-  describe('the week', () => {
-    it('should show five rows a day, then the rest behind more', () => {
-      const [wednesday] = toScheduleLayout([day(0, shows(1)), day(2, shows(7))])?.week ?? [];
+  describe('the card count', () => {
+    const cards = (days: readonly ScheduleDay[]) => toScheduleLayout(days)?.spotlight.cards.length;
 
-      expect(wednesday?.shown).toHaveLength(5);
-      expect(wednesday?.more).toHaveLength(2);
+    it('should make every show tonight a card when they fit beside the week', () => {
+      expect(cards([day(0, shows(4)), day(1, shows(6)), day(2, shows(5))])).toBe(4);
+    });
+
+    it('should keep a season drop to one card and move what runs past the week to rows', () => {
+      const drop = Array.from({ length: 10 }, (_, i) => episode('drop', `4x${i + 1}`, '3:00 am'));
+      const layout = toScheduleLayout([day(0, [...drop, ...shows(4)]), day(1, shows(9)), day(2, shows(5))]);
+
+      expect(layout?.spotlight.cards.map(({ title }) => title)).toEqual(['drop', 'show0', 'show1', 'show2']);
+      expect(layout?.spotlight.also?.shown.map(({ title }) => title)).toEqual(['show3']);
+    });
+
+    it('should keep three cards when nothing is on today and the days after are busy', () => {
+      const spotlight = toScheduleLayout([day(1, shows(8)), day(2, shows(7)), day(3, shows(6))])?.spotlight;
+
+      expect(spotlight?.nothing).toBe('Nothing on today.');
+      expect(spotlight?.cards).toHaveLength(3);
+      expect(spotlight?.also?.shown).toHaveLength(5);
+    });
+
+    it('should count a two-episode card as taller', () => {
+      const pair = [episode('pair', '1x01', '9:00 pm'), episode('pair', '1x02', '9:30 pm')];
+
+      expect(cards([day(0, shows(4)), day(1, shows(6)), day(2, shows(3))])).toBe(4);
+      expect(cards([day(0, [...pair, ...shows(3)]), day(1, shows(6)), day(2, shows(3))])).toBe(3);
+    });
+  });
+
+  describe('the week', () => {
+    it('should show the next two days with anything on', () => {
+      const layout = toScheduleLayout([
+        day(0, shows(1)),
+        day(1, []),
+        day(2, shows(1)),
+        day(3, shows(1)),
+        day(4, shows(1)),
+      ]);
+
+      expect(layout?.week.map(({ relative }) => relative)).toEqual(['Wednesday', 'Thursday']);
+    });
+
+    it('should show six rows a day, and past that five with the rest behind more', () => {
+      const [six, seven] = toScheduleLayout([day(0, shows(1)), day(1, shows(6)), day(2, shows(7))])?.week ?? [];
+
+      expect(six?.shown).toHaveLength(6);
+      expect(six?.more).toHaveLength(0);
+      expect(seven?.shown).toHaveLength(5);
+      expect(seven?.more).toHaveLength(2);
     });
 
     it('should keep the air order', () => {

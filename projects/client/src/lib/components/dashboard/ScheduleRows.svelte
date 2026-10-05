@@ -1,8 +1,9 @@
 <!--
-  A day's Upcoming Schedule rows, one per show: the air time, the show with its episodes and network, and the
-  premiere or finale tag, which drops under the text in a narrow panel. Past five, "Show N more" opens the rest.
+  A day's Upcoming Schedule rows, one per show: the air time, a small poster, the show with its episodes and network,
+  and the premiere or finale tag, which drops under the text in a narrow panel. "Show N more" opens the rest.
 -->
 <script lang="ts">
+import posterPlaceholder from '$lib/assets/placeholders/poster.png';
 import type { ScheduleLayout } from '$lib/dashboard/toScheduleLayout';
 import ScheduleEpisodes from './ScheduleEpisodes.svelte';
 import ScheduleTag from './ScheduleTag.svelte';
@@ -20,6 +21,7 @@ const shown = $derived(expanded ? [...rows.shown, ...rows.more] : rows.shown);
   {#each shown as row (row.key)}
     <li class="row">
       <span class="time">{row.time ?? ''}</span>
+      <img class="poster" src={row.poster ?? posterPlaceholder} alt="" loading="lazy" decoding="async" />
       <span class="what">
         <a class="show" href={row.href}>{row.title}</a>
         <ScheduleEpisodes {row} inline>
@@ -49,9 +51,9 @@ ul {
 
 .row {
   display: grid;
-  grid-template-columns: var(--schedule-row-time) minmax(0, 1fr) auto;
+  grid-template-columns: var(--schedule-row-time) var(--schedule-row-poster) minmax(0, 1fr) auto;
   gap: var(--space-schedule-row-gap);
-  align-items: baseline;
+  align-items: center;
   padding: var(--space-schedule-row);
   border-block-start: 1px solid var(--color-schedule-separator);
   font-size: var(--font-size-schedule-row);
@@ -61,10 +63,10 @@ ul {
   }
 
   @container (width < 500px) {
-    grid-template-columns: var(--schedule-row-time-narrow) minmax(0, 1fr);
+    grid-template-columns: var(--schedule-row-time-narrow) var(--schedule-row-poster) minmax(0, 1fr);
 
     & .tag {
-      grid-column: 2;
+      grid-column: 3;
     }
   }
 }
@@ -77,6 +79,12 @@ ul {
 
 .time {
   white-space: nowrap;
+}
+
+.poster {
+  inline-size: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
 }
 
 .what {
@@ -112,7 +120,7 @@ ul {
 .more {
   display: block;
   inline-size: 100%;
-  padding: var(--space-schedule-row);
+  padding: var(--space-schedule-more);
   border: 0;
   border-block-start: 1px solid var(--color-schedule-separator);
   background: none;

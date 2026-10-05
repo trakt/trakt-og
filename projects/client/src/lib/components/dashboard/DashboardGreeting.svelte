@@ -41,10 +41,10 @@ const cover = $derived(watching?.fanartUrl ?? (user.vip ? user.coverUrl : null))
   color: var(--color-text-inverse);
   background-color: var(--color-profile-placeholder-bg);
   overflow: hidden;
-  /* Nothing playing: the same space under the greeting as above it. */
+  /* The same space under the greeting as above it, then the now-playing bar when something is playing. */
   padding-block-end: var(--dashboard-greeting-top);
   &.watching {
-    padding-block-end: var(--profile-watching-height);
+    padding-block-end: calc(var(--dashboard-greeting-top) + var(--profile-watching-height));
   }
 }
 .background,
@@ -73,9 +73,6 @@ const cover = $derived(watching?.fanartUrl ?? (user.vip ? user.coverUrl : null))
   justify-content: space-between;
   align-items: start;
   gap: var(--gutter);
-  .watching & {
-    min-block-size: var(--dashboard-greeting-height-watching);
-  }
 }
 .identity {
   display: flex;
@@ -115,9 +112,6 @@ h1 {
   }
   .greeting {
     flex-wrap: wrap;
-  }
-  .watching .greeting {
-    min-block-size: var(--dashboard-greeting-height);
   }
   h1 {
     font-size: var(--font-size-h2);

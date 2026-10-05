@@ -31,10 +31,9 @@ type FetchScheduleParams = {
   now?: Date;
 };
 
-/** OG's two wide days and three narrow ones. */
 const DAYS = 5;
-/** Only the wide days show posters. */
-const POSTER_DAYS = 2;
+/** Only the spotlight, the first day, shows posters. */
+const POSTER_DAYS = 1;
 /** OG's "All my TV shows" filter only looked 40 days ahead. */
 const SHOWS_LOOKAHEAD = 40;
 
@@ -66,7 +65,7 @@ async function offersByPath(fetch: typeof globalThis.fetch, items: readonly Cale
   }));
 }
 
-// With the season poster setting, the wide days' episodes get their season's poster.
+// With the season poster setting, the spotlight day's episodes get their season's poster.
 function seasonPosters(fetch: typeof globalThis.fetch, items: readonly CalendarItem[]) {
   const episodes = items.flatMap((item) =>
     item.type === 'episode' ? [{ showId: item.show.ids.trakt, season: item.episode.season }] : []

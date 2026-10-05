@@ -456,20 +456,33 @@
   --color-schedule-bg: light-dark(#eee, var(--dk-bg2));
   --color-schedule-no-data-bg: light-dark(#fafafa, var(--color-no-data-bg));
   --color-schedule-separator: light-dark(#d9d9d9, #444);
+  --color-schedule-muted: light-dark(#777, #999); /* air times, networks, the dates beside day names */
+  --color-schedule-row-hover: light-dark(#e6e6e6, #1f1f1f);
   --color-feed-icon: #999; /* h2 .feed-icons */
   --color-feed-icon-hover: var(--brand-primary);
   --schedule-min-height: 380px;
+  --schedule-split: 5fr 7fr; /* the spotlight, then the week */
+  --space-schedule-split: 30px;
   --font-size-schedule-day: 14px;
-  --space-schedule-day: 15px; /* under a day's h3 */
-  --space-schedule-entry: 15px; /* above and below the line between two entries */
-  --space-schedule-same-show: 10px;
-  --space-schedule-line: 5px; /* under the show title, above the air time and Watch Now */
+  --space-schedule-heading: 12px; /* under a day's h3 */
+  --space-schedule-day: 18px; /* between two days */
+  --space-schedule-line: 5px; /* between a card's lines */
+  --space-schedule-code: 4px; /* after an episode number, before a day's date */
+  --space-schedule-episodes: 2px; /* between a binge's episodes */
+  --space-schedule-card: 12px; /* inside a card, and between two */
+  --space-schedule-card-gap: 14px; /* poster to text */
+  --schedule-card-poster: 64px;
+  --border-schedule-card: 3px;
+  --schedule-row-time: 62px;
+  --schedule-row-time-narrow: 52px;
+  --space-schedule-row: 6px 4px;
+  --space-schedule-row-gap: 10px;
+  --font-size-schedule-row: 13px;
+  --schedule-nothing-padding: 10px 12px;
   --space-feed-icons: 20px; /* the icon's and .feed-icons' 10px right margins */
-  --font-size-schedule-tag: 11px; /* the episode-type label and Watch Now */
+  --font-size-schedule-tag: 11px; /* the episode-type tag and Watch Now */
   --font-size-schedule-watch-now-icon: 15px;
   --space-schedule-watch-now-icon: 2px;
-  --space-schedule-tickets-icon: 3px;
-  --space-schedule-tag-nudge: 3px; /* Watch Now sat 3px left, so its play icon lines up */
   --schedule-tag-padding: 3px 5px;
 
   /* The dashboard's Last 30 Days */

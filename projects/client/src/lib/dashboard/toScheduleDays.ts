@@ -30,9 +30,11 @@ type Context = Omit<ToScheduleDaysParams, 'days' | 'today'>;
 const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const noon = (date: string) => new Date(`${date}T12:00:00Z`);
 
+const daysFrom = (today: string, date: string) =>
+  Math.round((noon(date).getTime() - noon(today).getTime()) / 86_400_000);
+
 // OG's `relative_day`.
-function relativeDay(date: string, today: string) {
-  const days = Math.round((noon(date).getTime() - noon(today).getTime()) / 86_400_000);
+function relativeDay(date: string, days: number) {
   if (days === 0) return 'Today';
   if (days === 1) return 'Tomorrow';
   if (days === -1) return 'Yesterday';
@@ -66,7 +68,7 @@ function watchNow(item: CalendarItem, { offers, country }: Context) {
   };
 }
 
-function toItem(item: CalendarItem, context: Context): Omit<ScheduleItem, 'sameShow'> {
+function toItem(item: CalendarItem, context: Context): ScheduleItem {
   if (item.type === 'movie') {
     const { movie } = item;
     return {
@@ -107,18 +109,19 @@ function toItem(item: CalendarItem, context: Context): Omit<ScheduleItem, 'sameS
 }
 
 /**
- * The picked days as OG's schedule columns.
+ * The picked days, each with its items in air order.
  */
 export function toScheduleDays({ days, today, ...context }: ToScheduleDaysParams): ScheduleDay[] {
   const { order } = context.datePreferences;
 
   return days.map(({ date, items }) => {
-    const mapped = items.map((item) => toItem(item, context));
+    const offset = daysFrom(today, date);
     return {
       date,
-      relative: relativeDay(date, today),
+      offset,
+      relative: relativeDay(date, offset),
       short: formatDate(noon(date), { format: 'l', order }),
-      items: mapped.map((item, i) => ({ ...item, sameShow: i > 0 && mapped.at(i - 1)?.group === item.group })),
+      items: items.map((item) => toItem(item, context)),
     };
   });
 }

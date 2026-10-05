@@ -62,6 +62,24 @@ const shows = {
   },
 } satisfies Record<string, Show>;
 
+// More real shows without their artwork, to fill a busy week's rows.
+const plain = (title: string, trakt: number, slug: string, network: string): Show => ({
+  title,
+  year: 2020,
+  ids: { trakt, slug },
+  network,
+  country: 'us',
+  genres: ['drama'],
+});
+const busy = {
+  carrie: plain('Carrie', 236311, 'carrie-2026', 'Prime Video'),
+  abbott: plain('Abbott Elementary', 159234, 'abbott-elementary', 'ABC'),
+  tracker: plain('Tracker', 196946, 'tracker', 'CBS'),
+  ghosts: plain('Ghosts', 180012, 'ghosts-2021', 'CBS'),
+  shrinking: plain('Shrinking', 185040, 'shrinking', 'Apple TV'),
+  survivor: plain('Survivor', 1407, 'survivor', 'CBS'),
+};
+
 const dune: Movie = {
   title: 'Dune: Part Two',
   year: 2024,
@@ -102,6 +120,36 @@ const airings: readonly Airing[] = [
   { show: shows.lastOfUs, season: 3, number: 2, title: 'Infected', day: 8, hour: 13 },
 ];
 
+const CARRIE = [
+  'First Period',
+  'Foreign Language',
+  'Social Studies',
+  'Dramatic Arts',
+  'Physical Education',
+  'Home Economics',
+  'Romantic Literature',
+  'AP Physics',
+];
+
+// A busy week on top: a series dropping all at once tomorrow, and enough shows that today and tomorrow run long.
+const busyAirings: readonly Airing[] = [
+  { show: busy.ghosts, season: 5, number: 3, title: 'The Polterguest', day: 0, hour: 13 },
+  { show: busy.survivor, season: 49, number: 4, title: 'Hidden in Plain Sight', day: 0, hour: 14 },
+  ...CARRIE.map((title, i): Airing => ({
+    show: busy.carrie,
+    season: 1,
+    number: i + 1,
+    title,
+    type: i === 0 ? 'season_premiere' : undefined,
+    day: 1,
+    hour: 10,
+  })),
+  { show: busy.abbott, season: 5, number: 2, title: 'Field Day', day: 1, hour: 12 },
+  { show: busy.tracker, season: 3, number: 2, title: 'Red Flag', day: 1, hour: 13 },
+  { show: busy.shrinking, season: 3, number: 4, title: 'Going Viral', day: 1, hour: 14 },
+  { show: busy.survivor, season: 49, number: 5, title: 'Blindside', day: 1, hour: 14 },
+];
+
 const addDays = (today: string, days: number) => {
   const date = new Date(`${today}T00:00:00Z`);
   date.setUTCDate(date.getUTCDate() + days);
@@ -120,24 +168,26 @@ const offers = (source: string, type: 'subscription' | 'cinema'): Offers => ({
 /**
  * A made-up `/calendars/my/media` window around `today` (`YYYY-MM-DD`, midday UTC so every zone keeps its day): seven
  * days with something on, so only the first five show. Some items have Watch Now offers in the US: The Boys on Prime
- * Video, and Dune only in cinemas.
+ * Video, and Dune only in cinemas. `busy` adds a long day, more shows and an eight-episode drop tomorrow.
  */
 export const scheduleFixture = {
-  rows(today: string): HotReleaseResponse[] {
-    const episodes = airings.map(({ show, season, number, title, type, day, hour }): HotReleaseResponse => {
-      const at = `${addDays(today, day)}T${String(hour).padStart(2, '0')}:00:00.000Z`;
-      return {
-        first_aired: at,
-        show,
-        episode: {
-          season,
-          number,
-          title,
-          episode_type: type ?? 'standard',
-          ids: { trakt: show.ids.trakt * 1000 + season * 100 + number },
-        },
-      };
-    });
+  rows(today: string, { busy = false } = {}): HotReleaseResponse[] {
+    const episodes = (busy ? [...airings, ...busyAirings] : airings).map(
+      ({ show, season, number, title, type, day, hour }): HotReleaseResponse => {
+        const at = `${addDays(today, day)}T${String(hour).padStart(2, '0')}:00:00.000Z`;
+        return {
+          first_aired: at,
+          show,
+          episode: {
+            season,
+            number,
+            title,
+            episode_type: type ?? 'standard',
+            ids: { trakt: show.ids.trakt * 1000 + season * 100 + number },
+          },
+        };
+      },
+    );
 
     return [...episodes, { released: addDays(today, 1), movie: dune }];
   },

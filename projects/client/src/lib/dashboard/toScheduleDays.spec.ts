@@ -28,6 +28,10 @@ describe('toScheduleDays', () => {
     expect(schedule.map(({ relative }) => relative)).toEqual(['Today', 'Tomorrow', 'Saturday', 'Sunday', 'Tuesday']);
   });
 
+  it('should count each day from today', () => {
+    expect(schedule.map(({ offset }) => offset)).toEqual([0, 1, 3, 4, 6]);
+  });
+
   it('should call a day before today yesterday', () => {
     const [day] = toScheduleDays({ ...base, today: '2026-10-01' });
 
@@ -74,10 +78,6 @@ describe('toScheduleDays', () => {
       const [today] = toScheduleDays({ ...base, isVip: true });
 
       expect(today?.items.at(0)?.network?.href).toBe('/shows/popular?networks=Prime%20Video');
-    });
-
-    it('should mark a later episode of the show just above it', () => {
-      expect(schedule.at(0)?.items.map(({ sameShow }) => sameShow)).toEqual([false, true, false]);
     });
   });
 

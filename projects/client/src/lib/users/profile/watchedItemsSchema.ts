@@ -7,7 +7,7 @@ const media = z.object({
   runtime: z.number().nullish(),
   rating: z.number().nullish(),
   aired_episodes: z.number().nullish(),
-  images: z.object({ poster: z.array(z.string()).nullish() }).nullish(),
+  images: z.object({ poster: z.array(z.string()).nullish(), fanart: z.array(z.string()).nullish() }).nullish(),
 });
 
 const row = { plays: z.number(), last_watched_at: z.string() };

@@ -1,6 +1,12 @@
 import { aboutMeBox } from './aboutMe/aboutMeBox.ts';
+import { biggestBingeBox } from './biggestBinge/biggestBingeBox.ts';
 import { featuredListBox } from './featuredList/featuredListBox.ts';
+import { finishedBox } from './finished/finishedBox.ts';
+import { genrePulseBox } from './genrePulse/genrePulseBox.ts';
 import { lastWatchedBox } from './lastWatched/lastWatchedBox.ts';
+import { onRepeatBox } from './onRepeat/onRepeatBox.ts';
+import { ratingsBox } from './ratings/ratingsBox.ts';
+import { topListBox } from './topList/topListBox.ts';
 import { watchTimeBox } from './watchTime/watchTimeBox.ts';
 
 /**
@@ -16,4 +22,15 @@ import { watchTimeBox } from './watchTime/watchTimeBox.ts';
  *
  * The picker, the loader and the strip need no changes.
  */
-export const profileBoxes = [aboutMeBox, lastWatchedBox, watchTimeBox, featuredListBox] as const;
+export const profileBoxes = [
+  aboutMeBox,
+  lastWatchedBox,
+  onRepeatBox,
+  biggestBingeBox,
+  watchTimeBox,
+  genrePulseBox,
+  ratingsBox,
+  finishedBox,
+  topListBox,
+  featuredListBox,
+] as const;

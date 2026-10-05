@@ -852,11 +852,27 @@
   --gradient-profile-box-shade: linear-gradient(to bottom, rgb(0 0 0 / 0), rgb(0 0 0 / 0.9));
   --gradient-profile-about: linear-gradient(to bottom, var(--brand-primary), var(--brand-primary-darken));
   --gradient-profile-stats: linear-gradient(to bottom, #0199d8, #0175a5); /* darken */
+  --gradient-profile-binge: linear-gradient(to bottom, #d9541a, #a8380b);
+  --gradient-profile-ratings: linear-gradient(to bottom, #8e44ad, #6a2c86);
+  --gradient-profile-finished: linear-gradient(to bottom, #1f9d55, #13703a);
+  --gradient-profile-genre: linear-gradient(to bottom, #138a7a, #0b6156);
   /* The boxes' contents: white marks on the box colour, one series each, dark in both themes like the strip. */
   --profile-box-padding-block: 18px;
   --profile-box-foot-inset: 14px;
   --profile-box-foot-gap: 7px;
   --profile-box-quote-size: 70px;
+  --profile-box-check-size: 44px;
+  --profile-box-pip-width: 14px;
+  --profile-box-pip-height: 8px;
+  --profile-box-hist-height: 46px;
+  --profile-box-genre-tick: 2px;
+  --font-size-profile-multiplier: 74px;
+  --font-size-profile-multiplier-sign: 40px;
+  --letter-spacing-profile-multiplier: -3px;
+  --color-profile-multiplier: rgb(255 255 255 / 0.92);
+  --text-shadow-profile-multiplier: 0 0 30px rgb(0 0 0 / 0.6);
+  --color-profile-genre-tick: #000;
+  --shadow-profile-genre-tick: 0 0 0 1px rgb(255 255 255 / 0.85);
   --profile-box-bars-height: 38px;
   --profile-box-bars-gap: 2px;
   --profile-box-meter-height: 4px;
@@ -882,6 +898,7 @@
   --color-profile-cta-border: rgb(255 255 255 / 0.5);
   --color-profile-box-poster-border: rgb(255 255 255 / 0.25);
   --shadow-profile-box-poster: 0 2px 8px rgb(0 0 0 / 0.6);
+  --filter-profile-box-collage: brightness(0.55);
   --favorite-poster-width: 30%;
   --favorite-padding: 20px;
   --radius-favorite: 15px;

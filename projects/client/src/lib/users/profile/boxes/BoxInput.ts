@@ -1,4 +1,5 @@
 import type { WatchedGenreRow } from '../watchedGenresSchema.ts';
+import type { WatchedItemRow } from '../watchedItemsSchema.ts';
 import type { BoxFrame } from './BoxFrame.ts';
 
 type Ids = { readonly trakt: number; readonly slug: string };
@@ -43,6 +44,8 @@ export type BoxInput = BoxFrame & {
     readonly count: number;
     readonly rows: readonly { readonly movie?: Media | null; readonly show?: Media | null }[];
   };
+  /** Every watched show and movie with its play count, up to the 2,000 most recently watched of each. */
+  readonly watched: { readonly shows: readonly WatchedItemRow[]; readonly movies: readonly WatchedItemRow[] };
   /** All-time watched genres, most played first. */
   readonly genres: readonly WatchedGenreRow[];
 };

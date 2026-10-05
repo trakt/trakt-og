@@ -542,7 +542,6 @@
   --color-menu-text: light-dark(#000, #ccc);
   --color-header-active-text: light-dark(#000, #fff); /* on --color-box: hovered search field, open profile tab */
   --color-header-btn-hover-bg: #fff; /* Get VIP and Join Trakt invert on hover */
-  --color-menu-description: light-dark(#444, rgb(255 255 255 / 0.3));
   --color-menu-divider: light-dark(#e5e5e5, #444);
   --color-menu-separator: light-dark(#e1e1e1, #444); /* between the Apps menu rows */
   --color-footer-muted: #777;

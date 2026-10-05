@@ -3,6 +3,9 @@ import Container from '$lib/components/container/Container.svelte';
 import WatchPopover from '$lib/components/history/WatchPopover.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import check from '$lib/icons/trakt/check-thick.svg?raw';
+import VisibilityControl from '$lib/components/visibility/VisibilityControl.svelte';
+import backward from '$lib/icons/light/backward.svg?raw';
+import circleMinus from '$lib/icons/light/circle-minus.svg?raw';
 import { toast } from '$lib/components/toast/toast.svelte';
 
 const dates = { order: 'mdy', hour24: false, timeZone: 'America/Los_Angeles', weekStartDay: 0 } as const;
@@ -31,6 +34,19 @@ const examples = [
         </WatchPopover>
       </div>
     {/each}
+    <h2>Partial, with rewatch and drop</h2>
+    <div class="example">
+      <WatchPopover label="50% watched" variant="summary" fill={0.5} plural datePreferences={dates}
+        onopen={(force) => Promise.resolve(force ? 'date' : 'partial')} onwatch={() => {}}
+        onremaining={() => Promise.resolve(false)} oninvalid={() => {}}>
+        {#snippet trigger()}<Icon svg={check} /> 50% watched{/snippet}
+        {#snippet extraActions()}
+          <VisibilityControl target={{ type: 'show', id: 1, title: 'Breaking Bad' }} action="rewatch"><Icon svg={backward} /></VisibilityControl>
+          <VisibilityControl target={{ type: 'show', id: 1, title: 'Breaking Bad' }} action="drop"><Icon svg={circleMinus} /></VisibilityControl>
+        {/snippet}
+        {#snippet details()}<span>View History</span>{/snippet}
+      </WatchPopover>
+    </div>
     <h2>Poster icon</h2>
     <WatchPopover label="Add to watched history" datePreferences={dates} onopen={() => Promise.resolve('date')}
       onwatch={(at) => toast.success(`Added play: ${at}`)} onremaining={() => Promise.resolve(false)}

@@ -51,7 +51,7 @@
   --visibility-side-size: 15px;
   --visibility-side-opacity: 0.75;
   --visibility-side-top: 4px;
-  --visibility-side-bottom: 2px;
+  --visibility-side-gap: 3px;
   --visibility-pill-bg: rgb(0 0 0 / 0.6);
   --visibility-pill-hover: rgb(0 0 0 / 0.8);
 
@@ -80,8 +80,9 @@
   --watch-close-top: 9px;
   --watch-close-right: 7px;
   --watch-date-width: 288px;
-  --watch-side-start: 8px;
-  --watch-side-end: 6px;
+  --watch-side-start: 9px;
+  --watch-side-end: 7px;
+  --watch-side-size: 16px;
   --watch-icon-padding: 5px;
   --watch-info-block: 10px;
   --watch-summary-line: 34px;
@@ -91,7 +92,6 @@
   --watch-detail-size: 11px;
   --watch-history-size: 11px;
   --watch-detail-line: 15px;
-  --watch-progress-gap: 1px;
   --watch-progress-height: 5px;
   --color-watch-prompt: light-dark(#f7f7f7, #111);
   --color-watch-cancel: #aaa;
@@ -1132,6 +1132,7 @@
   --action-icon-width: 50px;
   --font-size-action-star: 28px;
   --color-action-side-bg-hover: rgb(0 0 0 / 0.2);
+  --color-action-side-bg-active: rgb(0 0 0 / 0.3); /* the side column itself under the pointer */
   --summary-poster-overlap: 190px; /* how far the sidebar poster rises into the fanart */
   --summary-sticky-gap: 25px;
   --overview-collapsed: 300px;

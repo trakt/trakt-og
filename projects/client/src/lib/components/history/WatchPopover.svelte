@@ -249,7 +249,7 @@ function click() {
     grid-template-columns: minmax(0, 1fr) auto;
     border: var(--watch-border) solid var(--watch-color, var(--brand-tertiary));
     background: var(--color-action-bg);
-    &.selected {
+    &:is(.selected, :hover) {
       background: var(--watch-color, var(--brand-tertiary));
       color: var(--color-text-inverse);
     }
@@ -303,17 +303,12 @@ function click() {
   }
 }
 .side {
+  justify-content: center;
   padding-inline: var(--watch-side-start) var(--watch-side-end);
-  background: var(--color-action-side-bg);
-  color: var(--color-action-side);
-  font-size: var(--font-size-large);
-  .selected & {
-    background: var(--color-action-side-bg-hover);
-    color: var(--color-text-inverse);
-  }
+  font-size: var(--watch-side-size);
+  opacity: var(--visibility-side-opacity);
   &:is(:hover, :focus-visible) {
-    background: var(--watch-color, var(--brand-tertiary));
-    color: var(--color-text-inverse);
+    opacity: 1;
   }
 }
 .side-actions {
@@ -324,16 +319,22 @@ function click() {
   justify-content: center;
   background: var(--color-action-side-bg);
   color: var(--color-action-side);
-  .selected & {
+  .selected &,
+  .watch-control:hover & {
     background: var(--color-action-side-bg-hover);
     color: var(--color-text-inverse);
   }
+  &:is(:hover, :focus-within) {
+    background: var(--color-action-side-bg-active);
+    color: var(--color-text-inverse);
+  }
   &.multiple {
-    padding-block: var(--visibility-side-top) var(--visibility-side-bottom);
+    justify-content: start;
+    gap: var(--visibility-side-gap);
+    padding-block-start: var(--visibility-side-top);
   }
   &.multiple .side {
     block-size: var(--visibility-side-height);
-    font-size: var(--visibility-side-size);
   }
 }
 .details {

@@ -1,5 +1,5 @@
 <!--
-  OG's VIP label: the Trakt mark and "VIP" on a red pill, an OG or EP tag, and a star
+  OG's VIP label: the round Trakt logo and "VIP" on a red pill, an OG or EP tag, and a star
   with the year count past one year. Staff get "Director" instead. It sits after a name, usually in a heading.
   The tag and the years show OG's tooltips on top . They stay out of the tab order, since a
   label repeats on every comment and list row: the years are in the text, and the tag's full name is its description.
@@ -9,7 +9,7 @@
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import star from '$lib/icons/solid/star.svg?raw';
-import trakt from '$lib/icons/trakt/trakt.svg?raw';
+import trakt from '$lib/icons/trakt/trakt-v2.svg?raw';
 import type { VipBadge } from '$lib/users/VipBadge';
 
 const { badge, pill = false, small = false }: { badge: VipBadge; pill?: boolean; small?: boolean } = $props();
@@ -60,15 +60,18 @@ const years = $derived(badge.kind === 'vip' ? badge.years : null);
   }
 }
 
+/* Centered top to bottom, so the round logo keeps an even ring of red at any label size. */
 .mark {
   position: absolute;
-  inset-block-start: 3px;
+  inset-block: 0;
   inset-inline-start: 3px;
+  display: flex;
+  align-items: center;
   font-size: 125%;
   line-height: 1;
 
   & :global(.icon) {
-    vertical-align: top;
+    translate: 0 var(--label-vip-mark-shift);
   }
 }
 

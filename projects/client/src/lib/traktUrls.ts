@@ -4,6 +4,9 @@ const v3 = 'https://app.trakt.tv';
 export const traktUrls = {
   vip: `${v3}/vip`,
   settings: `${v3}/settings`,
+  yearInReview: (slug: string, year: number) => `${v3}/users/${encodeURIComponent(slug)}/year/${year}`,
+  monthInReview: (slug: string, year: number, month: number) =>
+    `${v3}/users/${encodeURIComponent(slug)}/mir/${year}/${month}`,
   about: `${v3}/about`,
   terms: `${v3}/terms`,
   privacy: `${v3}/privacy`,

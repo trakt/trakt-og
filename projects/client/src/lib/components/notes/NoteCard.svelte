@@ -80,6 +80,7 @@ header {
 h3 {
   margin: var(--note-author-offset) 0 0;
   font-size: var(--font-size-note-author);
+  font-weight: var(--font-weight-headings-light);
   line-height: var(--line-height-headings);
   a {
     color: var(--color-text);

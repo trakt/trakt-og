@@ -31,7 +31,7 @@ main {
   justify-items: center;
   gap: clamp(1.5rem, 4vw, 3rem);
   padding: 2rem;
-  font-family: 'proxima-nova', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-family: var(--font-headings);
   text-align: center;
   isolation: isolate;
 }

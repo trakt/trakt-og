@@ -208,15 +208,16 @@
 
   /*
    * Type. OG's headings were Proxima Nova, loaded as three families ("Proxima Nova", "Proxima Nova
-   * Semibold", "Proxima Nova Bold"), each at font-weight normal. og can't use Proxima Nova, so headings
-   * use Montserrat (OFL, Google Fonts), the closest open geometric sans, as one family with three weights.
+   * Semibold", "Proxima Nova Bold"), each at font-weight normal. og can't use Proxima Nova, so it uses
+   * Figtree (OFL, Google Fonts) everywhere, as one family with three weights. Figtree is the closest open
+   * match to Proxima Nova and runs narrower than Montserrat, which og used before.
    */
-  --font-body: 'Varela Round', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  --font-headings: Montserrat, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-body: Figtree, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-headings: Figtree, 'Helvetica Neue', Helvetica, Arial, sans-serif;
   --font-serif: Georgia, 'Times New Roman', Times, serif;
   --font-mono: Menlo, Monaco, Consolas, 'Courier New', monospace;
-  --font-weight-headings-light: 400; /* h2 to h6 (OG: "Proxima Nova") */
-  --font-weight-headings: 600; /* h1, bold inside headings (OG: "Proxima Nova Semibold") */
+  --font-weight-headings-light: 400; /* the regular part of a heading with a bold part (OG: "Proxima Nova") */
+  --font-weight-headings: 600; /* headings, bold inside headings (OG: "Proxima Nova Semibold") */
   --font-weight-headings-heavy: 700; /* b, strong (OG: "Proxima Nova Bold") */
 
   --font-size-base: 14px;

@@ -275,11 +275,10 @@ async function toggleDarkKnight() {
   padding: var(--space-lg-block) 8px;
 }
 
-/* OG's 130px, grown so the menu under it (as wide as this tab) fits "Dark Knight" and its moon on one line:
-   Montserrat runs wider than OG's Proxima Nova. */
+/* OG's 130px, so the menu under it (as wide as this tab) fits "Dark Knight" and its moon on one line. */
 .profile :global(.trigger) {
   justify-content: end;
-  min-inline-size: 150px;
+  min-inline-size: 130px;
 }
 
 .avatar {
@@ -327,8 +326,8 @@ async function toggleDarkKnight() {
   }
 }
 
-/* OG swaps the nav for a menu button on smaller screens. Montserrat runs wider than OG's font, so it happens at 992px,
-   not 768px. */
+/* OG swaps the nav for a menu button on smaller screens. It does so at 768px; og keeps 992px because even Figtree
+   leaves no room at 768px for a long first name beside Get VIP, so the bar overflows. */
 @media (width < 992px) {
   .top-nav {
     grid-template-columns: 32px 1fr auto;

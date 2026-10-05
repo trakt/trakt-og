@@ -395,8 +395,8 @@ form {
   position: relative;
   max-inline-size: var(--search-max-width);
 
-  /* OG widened to 500px and let the rest of the bar squeeze. Montserrat leaves no room to squeeze, so stop at the
-     column's edge instead of pushing Sign In off the screen. */
+  /* OG widened to 500px and let the rest of the bar squeeze. Even with Figtree there's no room to squeeze just above
+     1200px, so stop at the column's edge instead of pushing Sign In off the screen. */
   .focused & {
     min-inline-size: min(var(--search-focused-min-width), 100%);
   }
@@ -441,9 +441,8 @@ form {
 }
 
 input {
-  /* 250px like OG, grown to fit the placeholder: Montserrat runs wider than OG's Proxima Nova. */
-  min-inline-size: 250px;
-  field-sizing: content;
+  /* OG's 250px. */
+  inline-size: 250px;
   min-block-size: 0;
   padding: 0 var(--space-lg-inline) 0 40px;
   border: 0;
@@ -484,7 +483,6 @@ input {
 
   .focused & {
     inline-size: 100%;
-    field-sizing: fixed;
   }
 
   /* Squared off onto the dropdown, with OG's red rule between them. */
@@ -510,7 +508,7 @@ input {
 
 .type-toggle {
   position: relative;
-  /* OG's 140px, grown to fit the label and caret: Montserrat runs wider than OG's Proxima Nova. */
+  /* OG's 140px, grown to fit the label and caret: "Shows & Movies" in Figtree needs a few pixels more. */
   min-inline-size: var(--search-type-width);
   min-block-size: 0;
   padding: 0 26px 0 var(--space-lg-inline);
@@ -837,9 +835,7 @@ input {
 
   input {
     inline-size: var(--search-collapsed-width);
-    min-inline-size: 0;
     padding-inline-end: 0;
-    field-sizing: fixed;
   }
 
   .focused form {

@@ -83,14 +83,14 @@ $effect(() => {
       </label>
 
       <div>
-        <h2>Type: heading 2, 24px Montserrat 400 with <b>bold</b></h2>
-        <p>The page title above is the h1: 34px Montserrat 600 (OG used Proxima Nova).</p>
+        <h2>Type: heading 2, 24px Figtree 400 with <b>bold</b> at 600</h2>
+        <p>The page title above is the h1: 34px Figtree 600 (OG used Proxima Nova). Headings are 600 unless they have a bold part.</p>
         <h3>Heading 3, 24px</h3>
         <h4>Heading 4, 18px</h4>
         <h5>Heading 5, 14px</h5>
         <h6>Heading 6, 12px</h6>
         <p>
-          Body copy is 14px Varela Round on a 20px line. Breaking Bad follows Walter White, a chemistry teacher who
+          Body copy is 14px Figtree 400 on a 20px line. Breaking Bad follows Walter White, a chemistry teacher who
           turns to making meth after a cancer diagnosis. <a href={resolve('/_design')}>A link</a>, <strong>strong text</strong>
           and <small>small text</small>.
         </p>

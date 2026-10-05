@@ -26,7 +26,7 @@ describe('toSearchUserCard', () => {
       href: '/users/sean',
       title: 'Sean',
       avatar: AVATAR,
-      cover: COVER,
+      cover: `${COVER}.webp`,
       tags: [{ text: 'VIP' }],
     });
   });

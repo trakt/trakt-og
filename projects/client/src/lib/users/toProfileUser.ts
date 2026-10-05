@@ -1,4 +1,5 @@
 import type { GenderIcon, ProfileUser } from './ProfileUser.ts';
+import { webpImageUrl } from '../utils/imageUrl.ts';
 import { toVipBadge } from './toVipBadge.ts';
 
 /** The fields of `GET /users/:id?extended=full,vip` the frame reads. */
@@ -48,7 +49,7 @@ export function toProfileUser(profile: ProfileResponse): ProfileUser {
     age: profile.age ?? null,
     about: profile.about?.trim() || null,
     joinedAt: profile.joined_at ?? null,
-    coverUrl: profile.vip_cover_image || null,
+    coverUrl: profile.vip_cover_image ? webpImageUrl(profile.vip_cover_image) : null,
   };
 }
 

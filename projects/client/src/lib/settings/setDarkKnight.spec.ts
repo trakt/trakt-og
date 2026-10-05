@@ -7,7 +7,7 @@ import { fakeUserManager } from '../auth/fakeUserManager.ts';
 import { saveSettings } from './saveSettings.ts';
 import { setDarkKnight } from './setDarkKnight.ts';
 import { settingsRequest } from './settingsRequest.ts';
-import type { SettingsBody } from './toSettingsPatch.ts';
+import type { SettingsBody } from './SettingsBody.ts';
 
 const API = 'https://apiz.trakt.tv';
 const seen: Array<{ method: string; body: unknown; bearer: string | null }> = [];
@@ -31,7 +31,7 @@ const passthrough: typeof fetch = (...args) => globalThis.fetch(...args);
 function viewerSave(body: SettingsBody) {
   const { manager } = fakeUserManager({ current: fakeUser('viewer-token', 3600) });
   const request = settingsRequest(authenticatedFetch({ manager, baseFetch: passthrough }));
-  return saveSettings({ request, body, email: null, avatar: null });
+  return saveSettings({ request, body });
 }
 
 function setup(theme?: string) {

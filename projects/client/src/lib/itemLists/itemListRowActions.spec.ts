@@ -18,7 +18,7 @@ const origin = 'https://og.trakt.tv';
 describe('itemListRowActions', () => {
   it('should give a signed-out viewer progress behind the VIP page and share', () => {
     expect(itemListRowActions({ list: list(), viewer: null, origin })).toEqual({
-      progressHref: '/vip/list-progress',
+      progressHref: 'https://app.trakt.tv/vip',
       shareUrl: 'https://og.trakt.tv/users/sean/lists/heist-night',
     });
   });

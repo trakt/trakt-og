@@ -31,7 +31,6 @@ import { quickIconFill } from '$lib/components/media/quickIconFill';
 import PageNav from '$lib/components/pagination/PageNav.svelte';
 import { overlay } from '$lib/overlay/overlay';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
-import calendarClock from '$lib/icons/thin/calendar-clock.svg?raw';
 import { formatDate } from '$lib/utils/formatDate';
 import type { loadCalendar } from '$lib/calendars/loadCalendar';
 import { MY_CALENDARS } from '$lib/calendars/myCalendars';
@@ -175,11 +174,7 @@ function cardIcons(
       <AppliedFilters {tags} {tiles} {vip} clearHref={page.url.pathname} onedit={() => (panelOpen = true)} />
     {/if}
     {#if data.user}
-      <FrameNav
-        heading="My"
-        links={myLinks}
-        action={{ href: '/settings/notifications', label: 'Notifications', svg: calendarClock }}
-      >
+      <FrameNav heading="My" links={myLinks}>
         {#snippet accessory(index)}
           <FeedPopover
             isVip={data.user?.isVip ?? false}

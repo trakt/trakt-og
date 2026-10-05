@@ -3,6 +3,7 @@ import Dialog from '$lib/components/dialog/Dialog.svelte';
 import MultiSelect from '$lib/components/filters/MultiSelect.svelte';
 import type { ListDraft } from '$lib/components/lists/ListDraft';
 import { listItemSorts } from '$lib/lists/listItemSorts';
+import { traktUrls } from '$lib/traktUrls';
 interface Props {
   open: boolean;
   busy?: boolean;
@@ -69,9 +70,9 @@ const options = $derived([{
   <form onsubmit={(event) => { event.preventDefault(); if (!busy && max === undefined) onsave(draft); }} aria-busy={busy}>
     {#if max !== undefined}
       <p role="alert">You've already created <strong>{max}</strong> lists.
-        {#if !vip}<a href="https://trakt.tv/vip/lists">Upgrade to VIP</a> to create unlimited lists.{/if}
+        {#if !vip}<a href={traktUrls.vip} target="_blank" rel="noopener">Upgrade to VIP</a> to create unlimited lists.{/if}
       </p>
-      {#if !vip}<a class="upgrade" href="https://trakt.tv/vip/lists">Upgrade Now ➟</a>{/if}
+      {#if !vip}<a class="upgrade" href={traktUrls.vip} target="_blank" rel="noopener">Upgrade Now ➟</a>{/if}
     {/if}
     {#if error}<p class="error" role="alert">{error}</p>{/if}
     {#if kind === 'list'}

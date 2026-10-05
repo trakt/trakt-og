@@ -13,6 +13,7 @@ import flag from '$lib/icons/solid/flag.svg?raw';
 import play from '$lib/icons/solid/play.svg?raw';
 import refresh from '$lib/icons/solid/arrows-rotate.svg?raw';
 import { formatDate } from '$lib/utils/formatDate';
+import { traktUrls } from '$lib/traktUrls';
 
 interface Props {
   target: ReportTarget;
@@ -58,7 +59,7 @@ async function run(kind: 'refresh' | 'justwatch') {
           </span>
         </button>
       {:else}
-        <a href="https://trakt.tv/vip/refresh"><Icon svg={refresh} fixedWidth /><span>Refresh Data
+        <a href={traktUrls.vip} target="_blank" rel="noopener"><Icon svg={refresh} fixedWidth /><span>Refresh Data
           {#if updatedAt && page.data.user}<small>updated {formatDate(updatedAt, { ...page.data.datePreferences, format: 'll' })}</small>{/if}
           {#if datasource}<small>Datasource: {datasource}</small>{/if}
         </span></a>

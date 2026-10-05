@@ -25,7 +25,7 @@ import { saveSettings, type SaveSettingsResult } from '$lib/settings/saveSetting
 import { setDarkKnight } from '$lib/settings/setDarkKnight';
 import { settingsRequest } from '$lib/settings/settingsRequest';
 import { showsDark } from '$lib/settings/showsDark';
-import type { SettingsBody } from '$lib/settings/toSettingsPatch';
+import type { SettingsBody } from '$lib/settings/SettingsBody';
 import { traktUrls } from '$lib/traktUrls';
 import { MediaQuery } from 'svelte/reactivity';
 import HeaderMenu from './HeaderMenu.svelte';
@@ -46,8 +46,6 @@ const browserSave = (body: SettingsBody) =>
   saveSettings({
     request: settingsRequest(authenticatedFetch({ manager: userManager() })),
     body,
-    email: null,
-    avatar: null,
   });
 
 const { user, searchType, darkKnight: saved = 'false', save = browserSave }: Props = $props();
@@ -147,11 +145,11 @@ async function toggleDarkKnight() {
         {/each}
       </ul>
     </HeaderMenu>
-    <a href={traktUrls.forums} target="_blank">Forums</a>
+    <a href={traktUrls.forums} target="_blank" rel="noopener">Forums</a>
   </nav>
 
   <div class="user">
-    {#if !user?.isVip}<a class="btn btn-vip" href="/vip">Get VIP</a>{/if}
+    {#if !user?.isVip}<a class="btn btn-vip" href={traktUrls.vip} target="_blank" rel="noopener">Get VIP</a>{/if}
 
     <div class="mobile-links">
       <HeaderMenu align="end" label="Menu">
@@ -161,7 +159,7 @@ async function toggleDarkKnight() {
             <li><a href={link.href} aria-current={current(link.href)}>{link.title}</a></li>
           {/each}
           <li><a href="/apps">Apps</a></li>
-          <li><a href={traktUrls.forums} target="_blank">Forums</a></li>
+          <li><a href={traktUrls.forums} target="_blank" rel="noopener">Forums</a></li>
         </ul>
       </HeaderMenu>
     </div>
@@ -189,8 +187,8 @@ async function toggleDarkKnight() {
           </ul>
           <hr />
           <ul>
-            {#if user.isVip}<li><a href="/vip">Manage VIP</a></li>{/if}
-            <li><a href="/settings">Settings</a></li>
+            {#if user.isVip}<li><a href={traktUrls.vip} target="_blank" rel="noopener">Manage VIP</a></li>{/if}
+            <li><a href={traktUrls.settings} target="_blank" rel="noopener">Settings</a></li>
             <li><a href="/logout">Sign Out</a></li>
           </ul>
         </HeaderMenu>

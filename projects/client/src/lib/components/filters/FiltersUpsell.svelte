@@ -11,6 +11,7 @@ import filtersIcon from '$lib/icons/solid/filters.svg?raw';
 import xmark from '$lib/icons/solid/xmark.svg?raw';
 import services from '$lib/assets/filters-upsell-services.png';
 import { FILTERS_UPSELL_COOKIE } from './filtersUpsellCookie.ts';
+import { traktUrls } from '$lib/traktUrls';
 
 interface Props {
   vip: boolean;
@@ -41,7 +42,7 @@ function hide() {
       {#if vip}
         <button type="button" class="notice-button" onclick={hide}>Close<Icon svg={timesRegular} /></button>
       {:else}
-        <a class="notice-button get-vip" href="/vip/filtering">Get VIP</a>
+        <a class="notice-button get-vip" href={traktUrls.vip} target="_blank" rel="noopener">Get VIP</a>
       {/if}
     </span>
     {#if signedIn && !vip}

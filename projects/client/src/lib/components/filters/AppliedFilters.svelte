@@ -19,6 +19,7 @@ import traktLogo from '$lib/assets/sites/trakt.png';
 import ServiceTile from '../watchnow/ServiceTile.svelte';
 import type { FilterTag, TagSite } from './filterTags.ts';
 import type { WatchNowBundle, WatchNowTile } from './watchNowFilter.ts';
+import { traktUrls } from '$lib/traktUrls';
 
 interface Props {
   tags: readonly FilterTag[];
@@ -48,7 +49,7 @@ const bundles: Record<WatchNowBundle, { logo: string; color: string }> = {
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
 {#if !vip}
-  <a class="vip-required" href="/vip/filtering">
+  <a class="vip-required" href={traktUrls.vip} target="_blank" rel="noopener">
     Sign up for <Icon svg={traktMark} /> <b>VIP</b> to unlock watch now and advanced filtering! <Icon svg={arrow} />
   </a>
 {:else}

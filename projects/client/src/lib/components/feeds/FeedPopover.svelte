@@ -4,6 +4,7 @@ import VipLabel from '$lib/components/labels/VipLabel.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import calendarArrowDown from '$lib/icons/thin/calendar-arrow-down.svg?raw';
+import { traktUrls } from '$lib/traktUrls';
 
 interface Props {
   isVip: boolean;
@@ -34,7 +35,7 @@ function toggle(event: ToggleEvent) {
           aria-haspopup="dialog" aria-expanded={expanded} aria-controls="feed-{id}"
           popovertarget="feed-{id}" {...tip}><Icon svg={calendarArrowDown} /></button>
       {:else}
-        <a class="trigger" href="/vip/feeds" aria-label={label} {...tip}><Icon svg={calendarArrowDown} /></a>
+        <a class="trigger" href={traktUrls.vip} target="_blank" rel="noopener" aria-label={label} {...tip}><Icon svg={calendarArrowDown} /></a>
       {/if}
     {/snippet}
   </Tooltip>

@@ -25,6 +25,7 @@ import dot from '$lib/icons/trakt/dot.svg?raw';
 import friends from '$lib/icons/trakt/friends.svg?raw';
 import arrow from '$lib/icons/solid/angle-right.svg?raw';
 import spinner from '$lib/icons/solid/arrows-rotate.svg?raw';
+import { traktUrls } from '$lib/traktUrls';
 
 interface Props {
   source: ListView;
@@ -94,7 +95,7 @@ async function open() {
     return;
   }
   if (!page.data.user.isVip) {
-    globalThis.location.assign('/vip/list-management');
+    globalThis.open(traktUrls.vip, '_blank', 'noopener');
     return;
   }
   busy = true;

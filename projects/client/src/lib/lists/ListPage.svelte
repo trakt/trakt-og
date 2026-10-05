@@ -81,6 +81,8 @@ import type { loadOfficialList } from '$lib/lists/loadOfficialList';
 import type { loadList } from '$lib/lists/loadList';
 import type { ListItemCard } from '$lib/lists/toListItemCard';
 import { visibleListSorts } from '$lib/lists/visibleListSorts';
+import { externalLink } from '$lib/externalLink';
+import { traktUrls } from '$lib/traktUrls';
 
 type Props = {
   data:
@@ -595,7 +597,7 @@ async function saveNotes(text: string) {
                 <li><a href={listHref(page.url, { sort: { by: sort.by, how: data.sort.how } })}
                   aria-current={sort.by === data.sort.by ? 'page' : undefined}>{sort.label}</a></li>
                 {#if sort.by === 'percentage' && !vip}
-                  <li><a href="/vip" class="vip-only"><b class="vip-mark"><Icon svg={trakt} /> VIP</b> unlocks
+                  <li><a href={traktUrls.vip} target="_blank" rel="noopener" class="vip-only"><b class="vip-mark"><Icon svg={trakt} /> VIP</b> unlocks
                     IMDB,<br />TMDB, Rotten Tomatoes,<br />and Metacritic sorting</a></li>
                 {/if}
               {/each}
@@ -670,7 +672,7 @@ async function saveNotes(text: string) {
             {#if actions.progressHref}
               <Tooltip text="View watched progress">
                 {#snippet trigger(tooltip)}
-                  <a class="action progress" href={actions.progressHref} {...tooltip}><Icon svg={barsProgress} /><span
+                  <a class="action progress" href={actions.progressHref} {...externalLink(actions.progressHref)} {...tooltip}><Icon svg={barsProgress} /><span
                       class="action-text"
                     >Progress</span></a>
                 {/snippet}
@@ -753,7 +755,7 @@ async function saveNotes(text: string) {
   item={noteCard.noteTitle} onsave={saveNotes}>
       {#if noteLimit !== null}
         <p class="notes-limit" role="alert">You've already added <strong>{noteLimit}</strong> notes.
-          {#if !vip}Upgrade to <a href="/vip/notes">VIP</a> to add unlimited notes.{/if}</p>
+          {#if !vip}Upgrade to <a href={traktUrls.vip} target="_blank" rel="noopener">VIP</a> to add unlimited notes.{/if}</p>
       {/if}
     </NotesDialog>
   {/if}

@@ -26,8 +26,6 @@ export async function changeProgressView(
   const result = await saveSettings({
     request,
     body: { browsing: { progress: { [settings]: { [view]: on } } } },
-    email: null,
-    avatar: null,
   });
   if (result.saved) return true;
 

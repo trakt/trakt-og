@@ -4,7 +4,7 @@ import Footer from '$lib/components/footer/Footer.svelte';
 import Header from '$lib/components/header/Header.svelte';
 import type { HeaderUser } from '$lib/components/header/HeaderUser';
 import type { DarkKnight } from '$lib/settings/DarkKnight';
-import type { SettingsBody } from '$lib/settings/toSettingsPatch';
+import type { SettingsBody } from '$lib/settings/SettingsBody';
 import { toTheme } from '$lib/settings/toTheme';
 
 const demoUser = { slug: 'og_red', firstName: 'OG', avatarUrl: avatar };
@@ -69,7 +69,7 @@ function save(body: SettingsBody) {
   </section>
 </main>
 
-<Footer username={user?.slug ?? null} />
+<Footer />
 
 <style>
 main {

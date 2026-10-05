@@ -253,7 +253,6 @@ const cards = [
   {...mostWatched}
   slug="leela"
   windowStart="2026-08-30T00:00:00.000Z"
-  isSelf
   hasnt={(rest) => `You haven't ${rest}`}
   datePreferences={{ order: 'mdy', hour24: false, timeZone: 'UTC', weekStartDay: 0 }}
 />
@@ -263,7 +262,6 @@ const cards = [
   {...savedMostWatched}
   slug="leela"
   windowStart="2026-08-30T00:00:00.000Z"
-  isSelf
   hasnt={(rest) => `You haven't ${rest}`}
   datePreferences={{ order: 'mdy', hour24: false, timeZone: 'UTC', weekStartDay: 0 }}
 />

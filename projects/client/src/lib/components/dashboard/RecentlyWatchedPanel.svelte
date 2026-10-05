@@ -19,6 +19,7 @@ import clockPlay from '$lib/icons/kit/thin-clock-circle-play.svg?raw';
 import { overlay } from '$lib/overlay/overlay';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
 import DashboardPanel from './DashboardPanel.svelte';
+import { traktUrls } from '$lib/traktUrls';
 
 interface Props {
   plays: Promise<readonly RecentPlay[]>;
@@ -105,7 +106,7 @@ function changeRows(rows: number) {
   rows={rows.rows}
   maxRows={rows.maxRows}
   onchange={changeRows}
-  upsellHref={isVip ? undefined : '/vip/customization'}
+  upsellHref={isVip ? undefined : traktUrls.vip}
 />
   {/snippet}
   {@render panel(false, cards, items.length > 0 ? navigator : undefined)}

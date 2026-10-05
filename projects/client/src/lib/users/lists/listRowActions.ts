@@ -1,4 +1,5 @@
 import type { ListRowActions } from '../../components/media/ListRowActions.ts';
+import { traktUrls } from '../../traktUrls.ts';
 import type { UserListRow } from './UserListRow.ts';
 
 type ListRowActionsParams = {
@@ -19,7 +20,7 @@ type ListRowActionsParams = {
  */
 export function listRowActions({ row, viewer, isCollaborator, origin }: ListRowActionsParams): ListRowActions {
   const owner = viewer?.slug === row.owner.slug;
-  const progressHref = viewer?.isVip ? `/users/${viewer.slug}/progress?list=${row.id}` : '/vip/list-progress';
+  const progressHref = viewer?.isVip ? `/users/${viewer.slug}/progress?list=${row.id}` : traktUrls.vip;
 
   return {
     ...(viewer && { report: {} }),

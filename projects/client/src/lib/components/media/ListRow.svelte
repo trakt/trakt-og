@@ -27,6 +27,7 @@ import voteYes from '$lib/icons/trakt/vote-yes.svg?raw';
 import type { VipBadge } from '$lib/users/VipBadge';
 import type { ListRowActions } from './ListRowActions.ts';
 import RankPill from './RankPill.svelte';
+import { externalLink } from '$lib/externalLink';
 
 type Owner = { name: string; href: string; avatar?: string; vip?: VipBadge | null };
 
@@ -179,7 +180,7 @@ const plural = (count: number, word: string) => `${word}${count === 1 ? '' : 's'
           {#if actions.progressHref}
             <Tooltip text="View watched progress">
               {#snippet trigger(tooltip)}
-                <a class="action progress" href={actions.progressHref} aria-label="View watched progress" {...tooltip}>
+                <a class="action progress" href={actions.progressHref} {...externalLink(actions.progressHref)} aria-label="View watched progress" {...tooltip}>
                   <Icon svg={barsProgress} />
                 </a>
               {/snippet}

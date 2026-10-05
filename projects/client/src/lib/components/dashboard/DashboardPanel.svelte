@@ -17,10 +17,6 @@ interface Props {
   icon: string;
   loading?: boolean;
   seeMore?: { href: string; text: string };
-  /** The gear, "Customize" in OG, pointing at the dashboard settings. */
-  customizeHref?: string;
-  /** Icon links left of the gear (PanelHeading). */
-  feeds?: Snippet;
   help?: Snippet;
   /** OG's `h2.section` heading (PanelHeading). */
   section?: boolean;
@@ -28,14 +24,13 @@ interface Props {
   footer?: Snippet;
 }
 
-const { title, icon, loading = false, seeMore, customizeHref, feeds, help, section, children, footer }: Props =
-  $props();
+const { title, icon, loading = false, seeMore, help, section, children, footer }: Props = $props();
 const id = $props.id();
 </script>
 
 <section class="dashboard-panel" aria-labelledby={id} aria-busy={loading}>
   <Container>
-    <PanelHeading {id} {title} {icon} {loading} {seeMore} {customizeHref} {feeds} {section} />
+    <PanelHeading {id} {title} {icon} {loading} {seeMore} {section} />
     {#if help}
       <PanelHelp>{@render help()}</PanelHelp>
     {/if}

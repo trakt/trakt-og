@@ -46,7 +46,7 @@ const { onhide }: { onhide: () => void } = $props();
         <li>
           <span class="marker"><Icon svg={unlock} /></span>
           <h3><span class="vip"><VipLabel badge={{ kind: 'vip', tag: null, years: null }} small /></span> unlocks the full potential of Trakt!</h3>
-          <a class="button" href="https://trakt.tv/vip" target="_blank" rel="noopener">Learn more ➟</a>
+          <a class="button" href={traktUrls.vip} target="_blank" rel="noopener">Learn more ➟</a>
         </li>
         <li>
           <span class="marker"><Icon svg={question} /></span>

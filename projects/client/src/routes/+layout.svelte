@@ -50,7 +50,7 @@ onMount(() => {
   <main id="content" tabindex="-1">
     {@render children()}
   </main>
-  <Footer username={data.user?.slug ?? null} />
+  <Footer />
 {/if}
 <Toaster />
 <CheckinDialog />

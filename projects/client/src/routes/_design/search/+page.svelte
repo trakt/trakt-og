@@ -13,4 +13,4 @@ const { data } = $props();
 <main id="content">
   <SearchPage {data} />
 </main>
-<Footer username={null} />
+<Footer />

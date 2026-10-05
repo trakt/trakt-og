@@ -77,7 +77,9 @@ export async function loadDashboard({ fetch, panelFetch = fetch, locals, cookies
     memberSince: formatDate(parsedProfile.data.joined_at, { ...layout.datePreferences, time: true }),
     stats: stats.body,
     watching: watching.status === 200 ? toWatchingNow(watching.body) : null,
-    requests: parsedRequests.data.map((row) => toFollowRequest(row, layout.datePreferences)),
+    requests: parsedRequests.data
+      .toSorted((a, b) => Date.parse(b.requested_at) - Date.parse(a.requested_at))
+      .map((row) => toFollowRequest(row, { datePreferences: layout.datePreferences, now })),
     notices: {
       ...notices,
       welcome: notices.welcome && cookies.get('og-dashboard-welcome-hidden') !== '1',

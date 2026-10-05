@@ -95,9 +95,27 @@ describe('loadProfile', () => {
     expect(seen.every((request) => !request.headers.has('authorization'))).toBe(true);
     const windowed = seen.filter((request) => new URL(request.url).searchParams.has('start_at'));
     expect(new URL(windowed[0]?.url ?? '').searchParams.get('start_at')).toBe('2026-08-30T00:00:00.000Z');
-    expect(data.boxes?.recent.movies).toEqual({ minutes: 300, unique: 3 });
-    expect(data.boxes?.featured).toMatchObject({ name: 'Watchlist', href: '/users/tester/watchlist', empty: true });
+    expect(data.boxes?.map(({ key }) => key)).toEqual(['about', 'last-watched', 'watch-time', 'featured-list']);
+    expect(data.boxes?.find((box) => box.key === 'watch-time')?.view).toMatchObject({ hours: '5.0h' });
+    expect(data.boxes?.find((box) => box.key === 'featured-list')?.view).toMatchObject({
+      name: 'Watchlist',
+      href: '/users/tester/watchlist',
+      count: null,
+    });
     expect(data.welcome).toBe(false);
+  });
+
+  it("should read the progress for the boxes once, and only for someone who's watched an episode", async () => {
+    const progress = () => seen.filter((request) => new URL(request.url).pathname.includes('/progress/watched'));
+    await load();
+    expect(progress()).toHaveLength(1);
+
+    seen.length = 0;
+    const moviesOnly = await load({
+      stats: { ...stats(0), episodes: { ...full(0), plays: 0 }, movies: full(100) } as UserStatsResponse,
+    });
+    expect(moviesOnly.boxes).toHaveLength(4);
+    expect(progress()).toHaveLength(0);
   });
 
   it('should show the welcome hero instead of the boxes on your own empty profile', async () => {

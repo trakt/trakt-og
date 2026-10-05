@@ -17,6 +17,7 @@ export type ProfileResponse = {
   readonly gender?: string | null;
   readonly age?: number | null;
   readonly about?: string | null;
+  readonly joined_at?: string | null;
   readonly images?: { readonly avatar: { readonly full: string } } | null;
 };
 
@@ -46,6 +47,7 @@ export function toProfileUser(profile: ProfileResponse): ProfileUser {
     },
     age: profile.age ?? null,
     about: profile.about?.trim() || null,
+    joinedAt: profile.joined_at ?? null,
     coverUrl: profile.vip_cover_image || null,
   };
 }

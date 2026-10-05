@@ -12,7 +12,6 @@ import { quickIconFill } from '$lib/components/media/quickIconFill';
 import FavoriteCard from '$lib/components/users/FavoriteCard.svelte';
 import MostWatched from '$lib/components/users/MostWatched.svelte';
 import ProfileCharts from '$lib/components/users/ProfileCharts.svelte';
-import ProfileStatBoxes from '$lib/components/users/ProfileStatBoxes.svelte';
 import WelcomeHero from '$lib/components/users/WelcomeHero.svelte';
 import clock from '$lib/icons/thin/clock.svg?raw';
 import comments from '$lib/icons/thin/comments.svg?raw';
@@ -20,6 +19,7 @@ import star from '$lib/icons/thin/star.svg?raw';
 import { overlay } from '$lib/overlay/overlay';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
 import UserCommentWithPoster from '$lib/users/comments/UserCommentWithPoster.svelte';
+import ProfileBoxStrip from '$lib/users/profile/boxes/ProfileBoxStrip.svelte';
 import type { ProfileUser } from '$lib/users/ProfileUser';
 import type { loadProfile } from './loadProfile.ts';
 import type { WatchedCard } from './toProfileSummary.ts';
@@ -75,7 +75,7 @@ const hasnt = (rest: string) =>
 
 
 {#if data.boxes}
-  <ProfileStatBoxes about={data.profile.about} {...data.boxes} />
+  <ProfileBoxStrip boxes={data.boxes} />
 {:else if data.welcome}
   <WelcomeHero />
 {/if}

@@ -3,21 +3,19 @@ import { api } from '../../api/api.ts';
 import type { DatePreferences } from '../../settings/DatePreferences.ts';
 import { toPanelSettings } from '../../settings/toPanelSettings.ts';
 import type { ViewerSettings } from '../../settings/ViewerSettings.ts';
-import { imageUrl } from '../../utils/imageUrl.ts';
 import { toUserComment } from '../comments/toUserComment.ts';
 import type { UserCommentRow } from '../comments/UserCommentRow.ts';
 import { fetchRecentHistory } from '../fetchRecentHistory.ts';
 import type { ProfileUser } from '../ProfileUser.ts';
+import { boxExtraLoader } from './boxes/boxExtraLoader.ts';
+import type { BoxFrame } from './boxes/BoxFrame.ts';
+import { boxMath } from './boxes/boxMath.ts';
+import { profileBoxes } from './boxes/profileBoxes.ts';
+import { toProfileBoxes } from './boxes/toProfileBoxes.ts';
 import { fetchProfileCharts } from './fetchProfileCharts.ts';
 import { toGenreBar } from './toGenreBar.ts';
 import { toMostWatched } from './toMostWatched.ts';
-import {
-  toFavoriteCard,
-  toLastWatched,
-  toWatchedEpisode,
-  toWatchedMovie,
-  toWatchedTotals,
-} from './toProfileSummary.ts';
+import { toFavoriteCard, toWatchedEpisode, toWatchedMovie } from './toProfileSummary.ts';
 import { toRatingsChart } from './toRatingsChart.ts';
 
 type Params = {
@@ -36,6 +34,7 @@ type Params = {
 };
 
 type Client = ReturnType<typeof api>;
+type Frame = Awaited<ReturnType<Params['parent']>>;
 type FavoritesSort = { readonly sort_by: string; readonly sort_how: 'asc' | 'desc' };
 
 // OG's default, and the only order another viewer can know: the owner's saved sort is
@@ -62,7 +61,7 @@ async function fetchSections(
     client.users.history.episodes({ ...history, query: { ...history.query, limit: 4 } }),
     client.users.history.movies({ ...history, query: { ...history.query, limit: 6 } }),
     fetchFavorites(client, id, favoritesSort),
-    client.users.watchlist.all({ params: { id, sort: 'rank' }, query: { extended: 'full,images', limit: 1 } }),
+    client.users.watchlist.all({ params: { id, sort: 'rank' }, query: { extended: 'full,images', limit: 3 } }),
     // Newest first, the one order the worker has: OG's Recent tab.
     client.users.comments({
       params: { id, comment_type: 'all', type: 'all' },
@@ -91,13 +90,13 @@ async function fetchSections(
  * saved order are read again with your token, since the sort may be about you (Watched or Collected Date).
  */
 export async function loadProfile({ fetch, locals, params, parent, now = new Date() }: Params) {
-  const [anonymous, { profile, stats, isSelf, datePreferences, settings }] = await Promise.all([
+  // The boxes' extra requests start as soon as the frame says which ones could pay off, alongside the sections.
+  const frame = parent();
+  const [anonymous, { profile, stats, isSelf, datePreferences, settings }, boxes] = await Promise.all([
     fetchSections({ fetch }, params.id, now),
-    parent(),
+    frame,
+    frame.then((data) => startBoxes(data, { fetch, token: locals.token, id: params.id })),
   ]);
-  // Whether the viewer has any activity.
-  const activity = stats !== null &&
-    [stats.episodes.minutes, stats.movies.minutes, stats.episodes.collected, stats.movies.collected].some((n) => n > 0);
 
   if (profile.isLocked) {
     return {
@@ -127,35 +126,22 @@ export async function loadProfile({ fetch, locals, params, parent, now = new Dat
   const favorites = favoritesRead.status === 200 ? favoritesRead.body : [];
   const comments: readonly UserCommentRow[] = sections.comments.status === 200 ? sections.comments.body : [];
   const watchlist = sections.watchlist.status === 200 ? sections.watchlist : null;
-  const firstListed = watchlist?.body.at(0);
-  const listedMedia = firstListed && 'movie' in firstListed
-    ? firstListed.movie
-    : firstListed && 'show' in firstListed
-    ? firstListed.show
-    : undefined;
 
   return {
-    boxes: activity && stats
-      ? {
-        lastWatched: toLastWatched(episodes.at(0), movies.at(0)),
-        recent: {
-          episodes: toWatchedTotals(sections.recent.episodes),
-          movies: toWatchedTotals(sections.recent.movies),
+    boxes: boxes
+      ? await toProfileBoxes({
+        ...boxes.frame,
+        today: boxMath.utcDay(now),
+        latest: { episode: episodes.at(0), movie: movies.at(0) },
+        recent: sections.recent,
+        watchlist: {
+          count: Number(watchlist?.headers.get('x-pagination-item-count')) || 0,
+          rows: watchlist?.body ?? [],
         },
-        allTime: {
-          episodes: { minutes: stats.episodes.minutes, unique: stats.episodes.watched },
-          movies: { minutes: stats.movies.minutes, unique: stats.movies.watched },
-        },
-        // The owner's chosen featured list isn't in the API, so it's always the watchlist.
-        featured: {
-          name: 'Watchlist',
-          href: `/users/${profile.slug}/watchlist`,
-          empty: !(Number(watchlist?.headers.get('x-pagination-item-count')) > 0),
-          image: imageUrl(listedMedia?.images?.fanart?.at(0), 'thumb'),
-        },
-      }
+        genres: sections.charts.genres,
+      }, boxes.extras)
       : null,
-    welcome: isSelf && stats !== null && !activity,
+    welcome: isSelf && stats !== null && !hasActivity(stats),
     favorites: favorites.map(toFavoriteCard),
     episodes: episodes.map((row) => toWatchedEpisode(row, datePreferences)),
     movies: movies.map((row) => toWatchedMovie(row, datePreferences)),
@@ -182,4 +168,25 @@ export async function loadProfile({ fetch, locals, params, parent, now = new Dat
     },
     comments: comments.flatMap((row) => toUserComment(row) ?? []),
   };
+}
+
+/** Whether the user has any activity. Without any, the strip hides: your own profile shows the welcome hero. */
+const hasActivity = (stats: UserStatsResponse) =>
+  [stats.episodes.minutes, stats.movies.minutes, stats.episodes.collected, stats.movies.collected].some((n) => n > 0);
+
+type Boxes = { readonly frame: BoxFrame; readonly extras: ReturnType<typeof boxExtraLoader> };
+
+/**
+ * When the profile shows the strip (visible, with stats and some activity), starts every extra request a box could
+ * use. A private profile's go with the viewer's token.
+ */
+function startBoxes(
+  { profile, stats, isSelf }: Frame,
+  { token, ...context }: { fetch: typeof fetch; token: string | null; id: string },
+): Boxes | null {
+  if (profile.isLocked || !stats || !hasActivity(stats)) return null;
+  const frame = { profile, stats, isSelf };
+  const extras = boxExtraLoader({ ...context, token: profile.isPrivate ? token : null });
+  for (const box of profileBoxes) box.prefetch(frame, extras);
+  return { frame, extras };
 }

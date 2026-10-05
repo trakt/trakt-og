@@ -153,7 +153,6 @@ async function open(force: boolean): Promise<'date' | 'remove' | 'partial' | nul
 }
 .collection-progress {
   display: flex;
-  gap: var(--watch-progress-gap);
   block-size: var(--watch-progress-height);
   background: var(--progress-under-bg);
   & span {

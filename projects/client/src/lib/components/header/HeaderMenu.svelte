@@ -2,8 +2,8 @@
   A header dropdown: a trigger button and a popover menu under it. Like OG it opens on mouse hover.
   Click, tap, Enter and Space open it too (show, not toggle, so the click after a hover doesn't shut it),
   and Esc, a click outside or the mouse leaving closes it (Popover API).
-  `center` hangs a 320px menu centered under the trigger with an arrow (Apps). `end` lines the menu up
-  with the trigger's right edge and turns the trigger into a solid tab while open (profile, mobile links).
+  `center` hangs a 320px menu centered under the trigger with an arrow (Apps). `end` makes the menu
+  exactly as wide as the trigger and turns the trigger into a solid tab while open (profile, mobile links).
 -->
 <script lang="ts">
 import { afterNavigate } from '$app/navigation';
@@ -148,11 +148,12 @@ afterNavigate(() => menu?.hidePopover());
   }
 }
 
-/* Profile and mobile links: the trigger becomes a solid tab and the menu hangs off its right edge. */
+/* Profile and mobile links: the trigger becomes a solid tab and the menu hangs under it, exactly as wide (OG's
+   `width: 100%` with a 130px floor), so the two line up on both sides. */
 .end {
   & .menu {
     position-area: bottom span-left;
-    min-inline-size: max(130px, anchor-size(inline));
+    inline-size: max(130px, anchor-size(inline));
     border-block-start: 1px solid var(--brand-primary);
     border-radius: 0 0 var(--radius-lg) var(--radius-lg);
   }

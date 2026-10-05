@@ -382,9 +382,11 @@ async function toggleDarkKnight() {
   padding: var(--space-lg-block) 8px;
 }
 
+/* OG's 130px, grown so the menu under it (as wide as this tab) fits "Dark Knight" and its moon on one line:
+   Montserrat runs wider than OG's Proxima Nova. */
 .profile :global(.trigger) {
   justify-content: end;
-  min-inline-size: 130px;
+  min-inline-size: 150px;
 }
 
 .avatar {

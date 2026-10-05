@@ -9,6 +9,7 @@ import CheckinDialog from '$lib/components/checkin/CheckinDialog.svelte';
 import { startCommentReactions } from '$lib/components/comments/startCommentReactions';
 import Footer from '$lib/components/footer/Footer.svelte';
 import Header from '$lib/components/header/Header.svelte';
+import MobileSplash from '$lib/components/mobile-splash/MobileSplash.svelte';
 import Toaster from '$lib/components/toast/Toaster.svelte';
 import { startOverlay } from '$lib/overlay/startOverlay';
 import { toDarkKnight } from '$lib/settings/toDarkKnight';
@@ -45,12 +46,14 @@ onMount(() => {
 {#if bare}
   {@render children()}
 {:else}
+  <MobileSplash platform={data.platform} phone={data.phone}>
   <a class="skip" href="#content">Skip to content</a>
   <Header user={data.user} searchType={data.searchType} {darkKnight} />
   <main id="content" tabindex="-1">
-    {@render children()}
-  </main>
+      {@render children()}
+    </main>
   <Footer />
+</MobileSplash>
 {/if}
 <Toaster />
 <CheckinDialog />

@@ -33,12 +33,16 @@ afterEach(() => {
 });
 afterAll(() => server.close());
 
-const layout = (token: string | null = 'fake-token', searchType?: string) =>
+const request = (userAgent?: string) =>
+  new Request('https://og.test/', { headers: userAgent ? { 'user-agent': userAgent } : {} });
+
+const layout = (token: string | null = 'fake-token', searchType?: string, userAgent?: string) =>
   load(
     {
       fetch: globalThis.fetch,
       locals: { token },
       cookies: { get: (name: string) => (name === 'search_type' ? searchType : undefined) },
+      request: request(userAgent),
     } as Parameters<typeof load>[0],
   );
 
@@ -77,6 +81,8 @@ describe('root layout settings', () => {
       settings: null,
       datePreferences: { order: 'mdy', hour24: false, timeZone: 'UTC', weekStartDay: 0 },
       searchType: '',
+      platform: 'ios',
+      phone: false,
     });
     expect(seen).toHaveLength(0);
   });
@@ -104,6 +110,19 @@ describe('root layout settings', () => {
     expect(await layout()).toEqual({ ...(await layout(null)), hasSession: true });
   });
 
+  it('should pick the mobile splash store from the user agent', async () => {
+    const android = 'Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36 Chrome/140.0 Mobile Safari/537.36';
+    expect((await layout(null, undefined, android)).platform).toBe('android');
+    expect((await layout('fake-token', undefined, android)).platform).toBe('android');
+    expect((await layout()).platform).toBe('ios');
+  });
+
+  it('should flag a phone user agent for the mobile splash wording', async () => {
+    const iphone = 'Mozilla/5.0 (iPhone; CPU iPhone OS 26_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148';
+    expect((await layout(null, undefined, iphone)).phone).toBe(true);
+    expect((await layout()).phone).toBe(false);
+  });
+
   it('should keep settings isolated between requests and clear them after logout', async () => {
     server.use(http.get('https://apiz.trakt.tv/users/settings', ({ request }) => {
       const slug = request.headers.get('authorization') === 'Bearer first' ? 'first' : 'second';
@@ -121,7 +140,7 @@ describe('root layout theme', () => {
   const theme = async (token: string | null = 'fake-token') => {
     const locals: App.Locals = { token };
     const cookies = { get: (_name: string): string | undefined => undefined };
-    await load({ fetch: globalThis.fetch, locals, cookies } as Parameters<typeof load>[0]);
+    await load({ fetch: globalThis.fetch, locals, cookies, request: request() } as Parameters<typeof load>[0]);
     return locals.theme;
   };
   const darkKnight = (value: unknown) =>

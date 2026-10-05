@@ -8,7 +8,12 @@ export const traktUrls = {
   terms: `${v3}/terms`,
   privacy: `${v3}/privacy`,
   branding: `${v3}/branding`,
+  web: v3,
   developer: 'https://developer.trakt.tv',
+  traktTime: 'https://tvtime.trakt.tv',
+  showlyAppStore: 'https://apps.apple.com/us/app/track-shows-movies-showly/id6739016219',
+  showlyGooglePlay: 'https://play.google.com/store/apps/details?id=com.michaldrabik.showly2',
+  ripppleAppStore: 'https://apps.apple.com/app/id6758765611',
   appStore: 'https://apps.apple.com/us/app/trakt/id1514873602', /* OG's /a/trakt-ios and /a/trakt-tvos */
   googlePlay: 'https://play.google.com/store/apps/details?id=tv.trakt.trakt', /* /a/trakt-android(-tv) */
   forums: 'https://forums.trakt.tv/c/trakt',

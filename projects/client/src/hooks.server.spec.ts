@@ -21,6 +21,7 @@ async function render(cookie: string | undefined) {
     locals: {},
     platform: { env: { OG_ADMIN_GATE: 'off' } },
     url: new URL('https://og.trakt.tv/shows/trending'),
+    request: new Request('https://og.trakt.tv/shows/trending'),
   } as unknown as Handle['event'];
 
   const resolve: Handle['resolve'] = async (resolved, options) => {

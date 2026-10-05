@@ -25,6 +25,7 @@ import { MediaQuery } from 'svelte/reactivity';
 import HeaderMenu from './HeaderMenu.svelte';
 import HeaderSearch from './HeaderSearch.svelte';
 import type { HeaderUser } from './HeaderUser.ts';
+import { reviewLinks } from './reviewLinks.ts';
 
 interface Props {
   user: HeaderUser | null;
@@ -61,6 +62,7 @@ const profileLinks = $derived(
     ]
     : [],
 );
+const reviews = $derived(user ? reviewLinks({ slug: user.slug, now: new Date() }) : []);
 
 // OG marks a nav link selected when the first path segment matches (`/shows/popular` selects Shows).
 const section = $derived(page.url.pathname.split('/')[1]);
@@ -129,6 +131,9 @@ async function toggleDarkKnight() {
           </ul>
           <hr />
           <ul>
+            {#each reviews as link (link.href)}
+              <li><a href={link.href} target="_blank" rel="noopener">{link.title}</a></li>
+            {/each}
             <li>
               <button type="button" class="dark-knight" aria-pressed={dark} onclick={toggleDarkKnight}>
                 Dark Knight <span class="dark-knight-icon"><Icon svg={moon} /></span>

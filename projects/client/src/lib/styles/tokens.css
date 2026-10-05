@@ -389,7 +389,6 @@
   --color-panel-quick-icons: light-dark(#1d1d1d, var(--dk-bg2));
   --color-help-text: light-dark(#777, #999);
   --font-size-help-text: 13px;
-  --space-help-text-inline: 40px; /* lines the help text up with the h2 after its icon */
   --space-heading-icon: 10px;
   --space-heading-section: 28px; /* h2.section */
   --space-fanarts-row-end: 30px; /* #activity-wrapper .row.fanarts margin-bottom */

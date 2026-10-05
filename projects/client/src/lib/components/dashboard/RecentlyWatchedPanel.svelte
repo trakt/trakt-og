@@ -15,7 +15,6 @@ import PageNavigator from '$lib/components/page-navigator/PageNavigator.svelte';
 import { rowCount } from '$lib/dashboard/rowCount';
 import { savedRows } from '$lib/dashboard/savedRows';
 import type { RecentPlay } from '$lib/dashboard/toRecentPlay';
-import clockPlay from '$lib/icons/kit/thin-clock-circle-play.svg?raw';
 import { overlay } from '$lib/overlay/overlay';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
 import DashboardPanel from './DashboardPanel.svelte';
@@ -47,7 +46,6 @@ function changeRows(rows: number) {
   <DashboardPanel
   --color-card-bg="var(--color-panel-quick-icons)"
   title="Recently Watched"
-  icon={clockPlay}
   section
   {loading}
   seeMore={{ href: `/users/${username}/history`, text: 'History' }}

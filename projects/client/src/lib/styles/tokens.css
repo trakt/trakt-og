@@ -430,10 +430,40 @@
   --dashboard-title-top: 7px;
   --dashboard-avatar-gap: 15px;
   --dashboard-avatar-border: 3px;
-  --dashboard-stat-icon-top: 4px;
-  --font-size-dashboard-stat-icon: 29px;
-  --font-size-dashboard-library-icon: 30px;
   --color-dashboard-stats-bg: rgb(0 0 0 / 0.5);
+  /* The greeting's all-time band: a headline, then five cells in the profile boxes' marks. 5 across from 1200px,
+     3 from 768px, then 2. */
+  --dashboard-band-lead: 230px;
+  --dashboard-band-lead-narrow: 200px;
+  --dashboard-band-gap: 32px;
+  --dashboard-band-row-gap: 14px;
+  --dashboard-band-padding-block: 18px 20px;
+  --dashboard-band-cell-padding: 2px 18px;
+  --dashboard-band-cell-padding-narrow: 2px 14px;
+  --dashboard-band-cell-padding-phone: 0 12px;
+  --dashboard-band-kicker-gap: 6px;
+  --dashboard-band-hero-gap: 8px;
+  --dashboard-band-hero-top: 6px;
+  --dashboard-band-chips-top: 10px;
+  --dashboard-band-chip-gap: 5px;
+  --dashboard-band-figure-top: 8px;
+  --dashboard-band-unit-gap: 4px;
+  --dashboard-band-caption-top: 8px;
+  --dashboard-band-mark-top: 10px;
+  --dashboard-band-meter-height: 6px;
+  --dashboard-band-histogram-height: 22px;
+  --dashboard-band-tick: 3px;
+  --radius-dashboard-band-tick: 1px;
+  --dashboard-band-underline-offset: 3px;
+  --font-size-dashboard-band-kicker: 11px;
+  --font-size-dashboard-band-cell-kicker: 10px;
+  --font-size-dashboard-band-figure: 26px;
+  --font-size-dashboard-band-hero-phone: 34px;
+  --font-size-dashboard-band-caption: 11px;
+  --line-height-dashboard-band-caption: 1.35;
+  --letter-spacing-dashboard-band-kicker: 0.06em;
+  --letter-spacing-dashboard-band-figure: -0.5px;
+  --color-dashboard-band-chip: rgb(255 255 255 / 0.12);
   /* Follow requests: boxes three across, or a summary line with an avatar stack from four requests up. */
   --dashboard-inbox-bottom: 30px;
   --dashboard-inbox-heading-gap: 14px;

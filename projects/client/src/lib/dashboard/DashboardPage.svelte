@@ -11,11 +11,12 @@ import LastThirtyDaysPanel from '$lib/components/dashboard/LastThirtyDaysPanel.s
 import RecommendationsPanel from '$lib/components/dashboard/RecommendationsPanel.svelte';
 import SocialFeedPanel from '$lib/components/dashboard/SocialFeedPanel.svelte';
 import { overlay } from '$lib/overlay/overlay';
+import { toStatsBand } from '$lib/dashboard/toStatsBand';
 import type { loadDashboard } from '$lib/dashboard/loadDashboard';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
 
 const { data }: { data: Awaited<ReturnType<typeof loadDashboard>> & { datePreferences: DatePreferences } } = $props();
-const collection = $derived(overlay.collectionCounts());
+const band = $derived(toStatsBand(data.stats, overlay.collectionCounts()));
 const username = $derived(data.profile.slug);
 const isVip = $derived(!!data.profile.vip);
 </script>
@@ -28,7 +29,7 @@ const isVip = $derived(!!data.profile.vip);
 
 <DashboardGreeting user={data.profile} memberSince={data.memberSince} watching={data.watching}>
   {#snippet stats()}
-    <DashboardStats stats={data.stats} slug={username} collected={collection} covered={!!data.profile.coverUrl || !!data.watching} />
+    <DashboardStats {band} slug={username} covered={!!data.profile.coverUrl || !!data.watching} />
   {/snippet}
 </DashboardGreeting>
 <DashboardNotices notices={data.notices} day={data.noticeDay} />

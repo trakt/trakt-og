@@ -1,8 +1,9 @@
 <!--
-  A panel's heading row: the h2 with a spinner while loading, and on the right the see-more link.
+  A panel's heading row: the h2 with its icon as a faint watermark and a spinner while loading, and on the right the see-more link.
   DashboardPanel puts one on top; the profile's Most Watched columns each have their own.
 -->
 <script lang="ts">
+import HeadingMark from '$lib/components/heading/HeadingMark.svelte';
 import Spinner from '$lib/components/loading/Spinner.svelte';
 import SeeMore from '$lib/components/see-more/SeeMore.svelte';
 
@@ -10,18 +11,20 @@ interface Props {
   /** The h2's id, for the section's `aria-labelledby`. */
   id: string;
   title: string;
+  /** The heading's icon, as raw SVG, drawn as a watermark behind the title. */
+  icon: string;
   loading?: boolean;
   seeMore?: { href: string; text: string };
   /** OG's `h2.section`, with 28px above it instead of 20px (Recently Watched). */
   section?: boolean;
 }
 
-const { id, title, loading = false, seeMore, section = false }: Props = $props();
+const { id, title, icon, loading = false, seeMore, section = false }: Props = $props();
 </script>
 
 <div class={['heading', { section }]}>
   <h2 {id}>
-    {title}
+    <HeadingMark svg={icon} />{title}
     {#if loading}<span class="spinner"><Spinner /></span>{/if}
   </h2>
   <div class="links">
@@ -40,6 +43,8 @@ const { id, title, loading = false, seeMore, section = false }: Props = $props()
 }
 
 h2 {
+  position: relative;
+  isolation: isolate;
   margin-block-end: 0;
 }
 

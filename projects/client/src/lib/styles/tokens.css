@@ -390,6 +390,12 @@
   --color-help-text: light-dark(#777, #999);
   --font-size-help-text: 13px;
   --space-heading-icon: 10px;
+  /* A section heading's icon as a faint watermark, mostly in the margin left of the title (HeadingMark). */
+  --font-size-heading-mark: 80px;
+  --space-heading-mark-inline: -56px;
+  --space-heading-mark-block: -12px;
+  --color-heading-mark: color-mix(in srgb, currentColor 6%, transparent);
+  --mask-heading-mark: linear-gradient(to bottom, #000 35%, transparent 92%); /* gone before the content */
   --space-heading-section: 28px; /* h2.section */
   --space-fanarts-row-end: 30px; /* #activity-wrapper .row.fanarts margin-bottom */
   /*

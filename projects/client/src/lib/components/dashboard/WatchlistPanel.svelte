@@ -14,6 +14,7 @@ import type { DashboardWatchlist } from '$lib/dashboard/fetchWatchlist';
 import { rowCount } from '$lib/dashboard/rowCount';
 import { savedRows } from '$lib/dashboard/savedRows';
 import Icon from '$lib/icons/Icon.svelte';
+import listCheck from '$lib/icons/regular/list-check.svg?raw';
 import arrow from '$lib/icons/trakt/arrow-right.svg?raw';
 import ListItemPoster from '$lib/lists/ListItemPoster.svelte';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
@@ -49,6 +50,7 @@ const allText = (total: number) => `All ${total.toLocaleString('en-US')} ${total
   --color-card-bg="var(--color-panel-quick-icons)"
   --panel-bg="var(--color-watchlist-bg)"
   title="Watchlist"
+  icon={listCheck}
   {loading}
   seeMore={list ? { href: `/users/${username}/watchlist`, text: allText(list.total) } : undefined}
   help={list ? sorted : undefined}

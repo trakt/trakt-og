@@ -711,7 +711,8 @@
   --dropdown-min-width: 160px;
   --font-size-sort-direction: 21px; /* h2 .sort-wrapper .icon */
   --space-dropdown-item-block: 2px;
-  --color-dropdown-border: light-dark(rgb(0 0 0 / 0.15), #666);
+  /* Dark mode drops the border: the popover arrows have none, so a gray outline looked detached from them. */
+  --color-dropdown-border: light-dark(rgb(0 0 0 / 0.15), transparent);
   --color-dropdown-text: light-dark(#333, #ccc);
   --color-dropdown-hover-text: light-dark(#262626, #ccc);
   --color-dropdown-hover-bg: light-dark(#f5f5f5, #222);

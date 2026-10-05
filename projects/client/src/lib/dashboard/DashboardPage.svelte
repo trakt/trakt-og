@@ -27,11 +27,8 @@ const isVip = $derived(!!data.profile.vip);
     content="Your Trakt dashboard: watching statistics, follow requests and what to watch next." />
 </svelte:head>
 
-<DashboardGreeting user={data.profile} memberSince={data.memberSince} watching={data.watching}>
-  {#snippet stats()}
-    <DashboardStats {band} slug={username} covered={!!data.profile.coverUrl || !!data.watching} />
-  {/snippet}
-</DashboardGreeting>
+<DashboardGreeting user={data.profile} memberSince={data.memberSince} watching={data.watching} />
+<DashboardStats {band} slug={username} />
 <DashboardNotices notices={data.notices} day={data.noticeDay} />
 <DashboardInbox requests={data.requests} />
 <!-- A panel the viewer hid comes back null. -->

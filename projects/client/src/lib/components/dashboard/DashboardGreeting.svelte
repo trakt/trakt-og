@@ -5,13 +5,11 @@ import WatchingNowBar from '$lib/components/users/WatchingNowBar.svelte';
 import posterBackground from '$lib/assets/poster-bg.jpg';
 import type { ProfileUser } from '$lib/users/ProfileUser';
 import type { WatchingNow } from '$lib/users/WatchingNow';
-import type { Snippet } from 'svelte';
 
-const { user, memberSince, watching, stats }: {
+const { user, memberSince, watching }: {
   user: ProfileUser;
   memberSince: string;
   watching: WatchingNow | null;
-  stats?: Snippet;
 } = $props();
 const cover = $derived(watching?.fanartUrl ?? (user.vip ? user.coverUrl : null));
 </script>
@@ -33,7 +31,6 @@ const cover = $derived(watching?.fanartUrl ?? (user.vip ? user.coverUrl : null))
       </div>
     </div>
   </Container>
-  {#if stats}<div class="stats">{@render stats()}</div>{/if}
   {#if watching}<WatchingNowBar {watching} owner="self" />{/if}
 </section>
 
@@ -75,6 +72,9 @@ const cover = $derived(watching?.fanartUrl ?? (user.vip ? user.coverUrl : null))
   align-items: start;
   min-block-size: var(--dashboard-greeting-height);
   gap: var(--gutter);
+  .watching & {
+    min-block-size: var(--dashboard-greeting-height-watching);
+  }
 }
 .identity {
   display: flex;
@@ -108,16 +108,14 @@ h1 {
     font-weight: var(--font-weight-headings-light);
   }
 }
-.stats {
-  position: relative;
-}
 @media (width < 768px) {
   .avatar-link {
     display: none;
   }
-  .greeting {
+  .greeting,
+  .watching .greeting {
     flex-wrap: wrap;
-    padding-block-end: var(--gutter);
+    min-block-size: var(--dashboard-greeting-height);
   }
   h1 {
     font-size: var(--font-size-h2);

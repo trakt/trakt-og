@@ -648,23 +648,33 @@
   /* Header search and its autocomplete */
   --search-max-width: 900px;
   --search-control-height: 42px;
+  --search-rest-width: 280px; /* OG's 250px, widened so the placeholder fits beside the "/" hint */
   --search-focused-min-width: 500px;
   --search-collapsed-width: 40px; /* the icon-only field at 1200px and below */
   --search-icon-size-mobile: 18px;
   --space-search-mobile-inset: 9px; /* the focused field's gap to the screen edges on phones */
-  --search-type-width: 140px; /* the type picker */
-  --search-poster-width: 50px;
+  --search-poster-width: 40px;
+  --search-id-menu-width: 140px; /* the ID lookup menu */
+  --search-kbd-size: 22px; /* a key cap: the field's "/" hint and the panel's key hints */
+  --search-close-size: 30px;
+  --search-shortcut-room: 30px; /* the field's end padding for the "/" hint or the clear button */
 
-  /* Recent and trending query sections (OG header dropdown). */
+  /* The focused field and its floating panel. */
+  --space-search-panel-gap: 10px; /* between the field and the panel */
   --space-search-section: 8px;
-  --radius-search-tag: 3px;
-  --blur-search: blur(2px); /* the box while the type menu is open */
-  --brand-primary-darken-20: #970c11; /* darken(#ed1c24, 20%): the type tag on a highlighted row */
-  --color-search-info: light-dark(rgb(0 0 0 / 0.5), rgb(255 255 255 / 0.8));
-  --color-search-tag: #666;
+  --radius-search-field: 10px;
+  --radius-search-panel: 12px;
+  --radius-search-row: 8px;
+  --radius-search-chip: 999px;
+  --radius-search-kbd: 4px;
+  --shadow-search-panel: 0 16px 40px rgb(0 0 0 / 0.35), 0 2px 8px rgb(0 0 0 / 0.15);
+  --color-search-ring: rgb(237 28 36 / 0.25); /* the halo outside the focused field's red ring */
+  --color-search-row-hover: light-dark(rgb(0 0 0 / 0.05), rgb(255 255 255 / 0.08));
+  --color-search-kbd-bg: light-dark(rgb(0 0 0 / 0.07), rgb(255 255 255 / 0.1));
+  --color-search-shortcut-bg: rgb(255 255 255 / 0.15); /* the "/" hint on the resting field, over the header */
+  --color-search-type: light-dark(var(--brand-primary), #ff5a5f); /* a result's type; lighter on dark for contrast */
   --color-search-term: light-dark(rgb(0 0 0 / 0.75), rgb(255 255 255 / 0.85));
-  --color-search-in-type: light-dark(rgb(0 0 0 / 0.3), rgb(255 255 255 / 0.3));
-  --color-search-in-type-selected: rgb(255 255 255 / 0.6);
+  --color-search-in-type: light-dark(rgb(0 0 0 / 0.4), rgb(255 255 255 / 0.4));
 
   /* Dialogs */
   --color-dialog-bg: light-dark(#f5f5f7, #1d1d1d);

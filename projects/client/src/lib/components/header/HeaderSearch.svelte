@@ -1,9 +1,10 @@
 <!--
-  The header search: the field, the type
-  picker and the autocomplete dropdown. Focus widens the box and turns it white. Typing waits 300ms, then shows up
-  to 3 results and a "View all" row. Arrows move the highlight (a combobox with `aria-activedescendant`), Enter opens
-  it or submits the form, Esc closes the dropdown, and a click outside closes it (and clears an empty field).
-  The type picks the form's `/search/<type>` action and is kept in the `search_type` cookie so SSR renders its label.
+  The header search: the field and a panel that floats under it once it has focus. The panel holds the type chips
+  (the ID lookups sit in their own menu at the end of the row), the autocomplete rows and a strip of keyboard hints.
+  Typing waits 300ms, then shows up to 3 results and a "View all" row. Arrows move the highlight (a combobox with
+  `aria-activedescendant`), Enter opens it or submits the form, Esc closes the panel, and a click outside closes it
+  (and clears an empty field). A bare `/` anywhere else on the page focuses the field.
+  The type picks the form's `/search/<type>` action and is kept in the `search_type` cookie so SSR renders it.
   Recent and trending query rows go under the results.
 -->
 <script lang="ts">
@@ -22,6 +23,8 @@ import termXmark from '$lib/icons/light/xmark.svg?raw';
 import arrowTurnDownLeft from '$lib/icons/light/arrow-turn-down-left.svg?raw';
 import magnifyingGlass from '$lib/icons/regular/magnifying-glass.svg?raw';
 import xmark from '$lib/icons/regular/xmark.svg?raw';
+import angleDown from '$lib/icons/solid/angle-down.svg?raw';
+import { isSearchShortcut } from './isSearchShortcut.ts';
 import { searchAutocomplete, type SearchAutocompleteResult } from './searchAutocomplete.ts';
 import { searchTypes } from './searchTypes.ts';
 
@@ -53,8 +56,12 @@ const id = $props.id();
 const DEBOUNCE_MS = 300;
 const ONE_YEAR_S = 60 * 60 * 24 * 365;
 const empty: SearchAutocompleteResult = { rows: [], count: null };
+// Where a typed `/` belongs to the page, not the shortcut.
+const EDITABLE = 'input, textarea, select, [contenteditable], dialog';
 
 const findType = (slug: string | undefined) => searchTypes.find((type) => type.slug === slug);
+const textTypes = searchTypes.filter((type) => !('idType' in type));
+const idTypes = searchTypes.filter((type) => 'idType' in type);
 
 // On a results page (`/search/<type>?query=`) the page's type and query win over the cookie.
 const fromUrl = (url: URL) => {
@@ -72,9 +79,15 @@ let open = $state(false);
 let result = $state(empty);
 let highlight = $state(-1);
 let input = $state<HTMLInputElement>();
-let typeMenu = $state<HTMLElement>();
+let idMenu = $state<HTMLElement>();
+// The new-tab hint names the platform's modifier. Set after hydration, so SSR and the first render agree.
+let modifier = $state('Ctrl');
+$effect(() => {
+  if (navigator.userAgent.includes('Mac')) modifier = '⌘';
+});
 
 const type = $derived(findType(typeSlug) ?? searchTypes[0]);
+const idType = $derived(idTypes.find((option) => option.slug === type.slug));
 const action = $derived(type.slug ? `/search/${type.slug}` : '/search');
 const allHref = $derived(`${action}?${new URLSearchParams({ query })}`);
 const terms = $derived([
@@ -87,7 +100,10 @@ const options = $derived([
   ...(result.count ? [{ id: `${id}-option-all`, href: allHref }] : []),
   ...terms.map((_, index) => ({ id: `${id}-term-${index}`, href: '' })),
 ]);
-const expanded = $derived(focused && open && (options.length > 0 || Boolean(viewer && recent?.loaded)));
+const noRecent = $derived(Boolean(viewer && recent?.loaded && !recent.user.length));
+// The panel opens with the field, so the type chips are there before anything is typed.
+const panelOpen = $derived(focused && open);
+const expanded = $derived(panelOpen && (options.length > 0 || noRecent));
 const activeId = $derived(expanded && highlight >= 0 ? options.at(highlight)?.id : undefined);
 
 let timer: ReturnType<typeof setTimeout> | undefined;
@@ -141,7 +157,7 @@ const clearSearch = (event: MouseEvent) => {
 const pickType = (slug: string) => {
   typeSlug = slug;
   document.cookie = `search_type=${slug}; max-age=${ONE_YEAR_S}; path=/; samesite=lax`;
-  typeMenu?.hidePopover();
+  if (idMenu?.matches(':popover-open')) idMenu.hidePopover();
   open = true;
   input?.focus();
   runSearch();
@@ -229,7 +245,7 @@ const record = (row: SearchAutocompleteResult['rows'][number]) => {
   void recent?.record(row.recent);
 };
 
-// A click or focus outside closes the dropdown. With nothing typed, it closes the whole search like OG.
+// A click or focus outside closes the panel. With nothing typed, it closes the whole search like OG.
 const dismissOutside = (root: HTMLElement) => {
   const dismiss = (event: Event) => {
     if (!focused || (event.target instanceof Node && root.contains(event.target))) return;
@@ -242,6 +258,19 @@ const dismissOutside = (root: HTMLElement) => {
     document.removeEventListener('pointerdown', dismiss);
     document.removeEventListener('focusin', dismiss);
   };
+};
+
+// `/` from anywhere on the page focuses the field, like most sites with a search box.
+const slashShortcut = () => {
+  const keydown = (event: KeyboardEvent) => {
+    const editing = event.target instanceof Element && Boolean(event.target.closest(EDITABLE));
+    const { key, ctrlKey, metaKey, altKey, defaultPrevented } = event;
+    if (!isSearchShortcut({ key, ctrlKey, metaKey, altKey, defaultPrevented, editing })) return;
+    event.preventDefault();
+    input?.focus();
+  };
+  window.addEventListener('keydown', keydown);
+  return () => window.removeEventListener('keydown', keydown);
 };
 
 // The header stays across client-side navigation, so reset it the way a fresh OG page load would.
@@ -259,12 +288,9 @@ afterNavigate(({ to }) => {
 <!-- Rows link to OG routes og hasn't built yet, and resolve() only takes routes that exist. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
-<search class={['header-search', { focused, expanded }]} {@attach dismissOutside}>
+<search class={['header-search', { focused }]} {@attach dismissOutside} {@attach slashShortcut}>
   <form {action} method="get">
     <label for="{id}-query" class="search-icon"><Icon svg={magnifyingGlass} /></label>
-    <button type="button" class="close" aria-label="Clear search" onclick={clearSearch}>
-      <Icon svg={xmark} />
-    </button>
     <input
       bind:this={input}
       bind:value={query}
@@ -273,6 +299,7 @@ afterNavigate(({ to }) => {
       name="query"
       placeholder="Is it me you're looking for?"
       aria-label="Search {type.label}"
+      aria-keyshortcuts="/"
       autocomplete="off"
       role="combobox"
       aria-autocomplete="list"
@@ -283,34 +310,49 @@ afterNavigate(({ to }) => {
       {oninput}
       {onkeydown}
     />
+    <kbd class="shortcut" aria-hidden="true">/</kbd>
+    <button type="button" class="close" aria-label="Clear search" onclick={clearSearch}>
+      <Icon svg={xmark} />
+    </button>
 
-    <div class="type" style:anchor-name="--search-type-{id}">
-      <button type="button" class="type-toggle" popovertarget="{id}-types" aria-label="Search in: {type.label}">
-        {type.label}
-      </button>
-      <div
-        bind:this={typeMenu}
-        id="{id}-types"
-        class="type-menu"
-        popover="auto"
-        style:position-anchor="--search-type-{id}"
-        ontoggle={(event) => event.newState === 'open' && typeMenu?.querySelector('button')?.focus()}
-      >
-        <ul>
-          {#each searchTypes as option (option.slug)}
-            {#if 'divider' in option}<li role="separator"></li>{/if}
-            <li>
-              <button type="button" aria-current={option.slug === type.slug} onclick={() => pickType(option.slug)}>
-                {option.label}
-              </button>
-            </li>
-          {/each}
-        </ul>
+    <div class="panel" hidden={!panelOpen}>
+      <div class="types" role="group" aria-label="Search in">
+        {#each textTypes as option (option.slug)}
+          <button type="button" class="chip" aria-pressed={option.slug === type.slug} onclick={() => pickType(option.slug)}>
+            {option.label}
+          </button>
+        {/each}
+        <div class="ids" style:anchor-name="--search-ids-{id}">
+          <button type="button" class={['id-toggle', { active: idType }]} popovertarget="{id}-ids">
+            {idType?.label ?? 'By ID'}
+            <Icon svg={angleDown} />
+          </button>
+          <div
+            bind:this={idMenu}
+            id="{id}-ids"
+            class="id-menu"
+            popover="auto"
+            style:position-anchor="--search-ids-{id}"
+            ontoggle={(event) => event.newState === 'open' && idMenu?.querySelector('button')?.focus()}
+          >
+            <ul>
+              {#each idTypes as option (option.slug)}
+                <li>
+                  <button type="button" aria-current={option.slug === type.slug} onclick={() => pickType(option.slug)}>
+                    {option.label}
+                  </button>
+                </li>
+              {/each}
+            </ul>
+          </div>
+        </div>
       </div>
-    </div>
 
-    <div class="autocomplete" hidden={!expanded}>
-      <ul id="{id}-results" role="listbox" aria-label="Search results" onpointerleave={() => (highlight = -1)}>
+      <ul id="{id}-results" role="listbox" aria-label="Search results" hidden={!expanded}
+        onpointerleave={() => (highlight = -1)}>
+        {#if result.rows.length}
+          <li role="presentation" class="section">Results</li>
+        {/if}
         {#each result.rows as row, index (row.key)}
           <li
             id="{id}-option-{index}"
@@ -322,17 +364,17 @@ afterNavigate(({ to }) => {
             <a href={row.href} tabindex="-1" onclick={() => record(row)}>
               <span class={['poster', { avatar: row.avatar }]}>
                 {#if row.poster}
-                  <img src={row.poster} alt="" width="50" height={row.avatar ? 50 : 75} loading="lazy" />
+                  <img src={row.poster} alt="" width="40" height={row.avatar ? 40 : 60} loading="lazy" />
                 {/if}
               </span>
               <span class="info">
                 {#if row.topTitle}<span class="top-title">{row.topTitle}</span>{/if}
                 <span class="title">{row.title}</span>
-                <span class="tags">
-                  <span class="tag type-tag">{row.type}</span>
-                  {#if row.tag}<span class="tag">{row.tag}</span>{/if}
+                <span class="meta">
+                  <span class="type-name">{row.type}</span>
+                  {#if row.tag}<span>{row.tag}</span>{/if}
+                  {#if row.genres}<span class="genres">{row.genres}</span>{/if}
                 </span>
-                {#if row.genres}<span class="genres">{row.genres}</span>{/if}
               </span>
             </a>
           </li>
@@ -347,30 +389,33 @@ afterNavigate(({ to }) => {
             onpointerenter={() => (highlight = index)}
           >
             <a href={allHref} tabindex="-1">
-              <span class="term-icon"><Icon svg={arrowTurnDownLeft} /></span>View all <strong>{result.count}</strong>
-              results <span class="in-type">in {type.label}</span>
+              <span class="term-icon"><Icon svg={arrowTurnDownLeft} /></span>
+              <span>View all <strong>{result.count}</strong> results <span class="in-type">in {type.label}</span></span>
             </a>
           </li>
         {/if}
-        {#if viewer && recent?.loaded && !recent.user.length}
+        {#if recent?.user.length}
+          <li role="presentation" class="section">Recent</li>
+        {/if}
+        {#if noRecent}
           <li role="presentation" class="no-recent">You have no recent searches.</li>
         {/if}
         {#each terms as item, termIndex (`${item.recent}:${item.term.query}:${item.term.type}`)}
           {@const index = resultOptionCount + termIndex}
           {#if !item.recent && termIndex === (recent?.user.length ?? 0)}
-            <li role="presentation" class="trending-heading">Trending Searches</li>
+            <li role="presentation" class="section">Trending Searches</li>
           {/if}
           <li
             id="{id}-term-{termIndex}"
             role="option"
             aria-selected={highlight === index}
-            class={['search-term', { selected: highlight === index, 'first-term': item.recent && termIndex === 0 }]}
+            class={['search-term', { selected: highlight === index }]}
             onpointerenter={() => (highlight = index)}
           >
             <button type="button" class="reuse-term" tabindex="-1" onclick={() => pickTerm(item.term)}>
               <span class="term-icon"><Icon svg={item.recent ? clockRotateLeft : termMagnifier} /></span>
               {item.term.query}
-              {#if item.term.type}<span class="in-type"> in {termLabel(item.term.type)}</span>{/if}
+              {#if item.term.type}<span class="in-type">in {termLabel(item.term.type)}</span>{/if}
             </button>
             {#if item.recent}
               <button
@@ -384,67 +429,51 @@ afterNavigate(({ to }) => {
           </li>
         {/each}
       </ul>
-      {#if result.count}<div class="all-results-spacer"></div>{/if}
+
+      <p class="keys">
+        <span><kbd>↑</kbd><kbd>↓</kbd> Move</span>
+        <span><kbd>↵</kbd> Open</span>
+        <span><kbd>{modifier}</kbd><kbd>↵</kbd> New tab</span>
+        {#if recent?.user.length}<span><kbd>Del</kbd> Remove recent</span>{/if}
+        <span class="esc"><kbd>Esc</kbd> Close</span>
+      </p>
     </div>
   </form>
 </search>
 
 <style>
-/* The field: translucent at rest, white on hover and focus (OG's .hovered and .focused). */
 form {
   position: relative;
+  /* Hug the resting field, so the "/" hint sits inside its end. */
+  inline-size: fit-content;
   max-inline-size: var(--search-max-width);
 
   /* OG widened to 500px and let the rest of the bar squeeze. Even with Figtree there's no room to squeeze just above
      1200px, so stop at the column's edge instead of pushing Sign In off the screen. */
   .focused & {
+    inline-size: auto;
     min-inline-size: min(var(--search-focused-min-width), 100%);
   }
 }
 
-.search-icon,
-.close {
+.search-icon {
   position: absolute;
+  inset-block-start: 13px;
   inset-inline-start: 14px;
   z-index: 1;
   color: var(--color-header-text);
   cursor: pointer;
-}
 
-.search-icon {
-  inset-block-start: 13px;
-
-  .header-search:hover & {
-    color: var(--color-header-active-text);
-  }
-
+  .header-search:hover &,
   .focused & {
-    display: none;
-  }
-}
-
-/* fa-regular fa-close fa-lg, in the magnifier's place. */
-.close {
-  display: none;
-  inset-block: 0;
-  align-items: center;
-  min-block-size: 0;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--color-header-active-text);
-  font-size: 1.3333em;
-
-  .focused & {
-    display: flex;
+    color: var(--color-search-term);
   }
 }
 
 input {
-  /* OG's 250px. */
-  inline-size: 250px;
+  inline-size: var(--search-rest-width);
   min-block-size: 0;
-  padding: 0 var(--space-lg-inline) 0 40px;
+  padding: 0 calc(var(--search-shortcut-room) + var(--space-sm-inline)) 0 40px;
   border: 0;
   border-radius: var(--radius-lg);
   background: var(--color-header-search-bg);
@@ -455,7 +484,7 @@ input {
   line-height: var(--search-control-height);
   cursor: pointer;
   appearance: none;
-  transition: background-color 0.25s, color 0.25s;
+  transition: background-color 0.25s, color 0.25s, box-shadow 0.25s;
 
   &::placeholder {
     color: var(--gray-lightish);
@@ -472,7 +501,6 @@ input {
   &:is(:hover, :focus),
   .focused & {
     background-color: var(--color-box);
-    box-shadow: none;
     color: var(--color-header-active-text);
     cursor: text;
 
@@ -481,82 +509,176 @@ input {
     }
   }
 
+  /* A red ring with a soft halo instead of OG's squared-off box and red rule. */
   .focused & {
     inline-size: 100%;
-  }
-
-  /* Squared off onto the dropdown, with OG's red rule between them. */
-  .expanded & {
-    border-end-start-radius: 0;
-    border-end-end-radius: 0;
-    border-block-end: 1px solid var(--brand-primary);
+    border-radius: var(--radius-search-field);
+    box-shadow: 0 0 0 2px var(--brand-primary), 0 0 0 5px var(--color-search-ring);
   }
 }
 
-/* The type picker sits inside the right end of the focused box. */
-.type {
+/* The resting field says `/` focuses it. Focus swaps it for the clear button. */
+.shortcut,
+.close {
   position: absolute;
-  inset-block-start: 0;
-  inset-inline-end: 0;
-  z-index: 2;
+  inset-block: 0;
+  inset-inline-end: var(--space-sm-inline);
+  z-index: 1;
+  margin-block: auto;
+}
+
+kbd {
+  display: inline-grid;
+  place-items: center;
+  min-inline-size: var(--search-kbd-size);
+  block-size: var(--search-kbd-size);
+  padding-inline: var(--space-xs-inline);
+  border-radius: var(--radius-search-kbd);
+  background: var(--color-search-kbd-bg);
+  font-family: inherit;
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-headings);
+  line-height: 1;
+}
+
+.shortcut {
+  background: var(--color-search-shortcut-bg);
+  color: var(--color-header-text);
+  pointer-events: none;
+
+  .header-search:hover &,
+  .focused & {
+    display: none;
+  }
+}
+
+.close {
   display: none;
+  place-items: center;
+  inline-size: var(--search-close-size);
+  block-size: var(--search-close-size);
+  min-block-size: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--color-search-term);
+  font-size: 1.1em;
+
+  &:hover {
+    background: var(--color-search-row-hover);
+  }
 
   .focused & {
-    display: block;
+    display: grid;
   }
 }
 
-.type-toggle {
-  position: relative;
-  /* OG's 140px, grown to fit the label and caret: "Shows & Movies" in Figtree needs a few pixels more. */
-  min-inline-size: var(--search-type-width);
-  min-block-size: 0;
-  padding: 0 26px 0 var(--space-lg-inline);
-  white-space: nowrap;
-  border: 0;
-  border-start-end-radius: var(--radius-lg);
-  border-end-end-radius: var(--radius-lg);
+.panel {
+  position: absolute;
+  inset-block-start: calc(100% + var(--space-search-panel-gap));
+  inline-size: 100%;
+  max-block-size: calc(100vh - var(--header-height) - var(--space-search-panel-gap));
+  overflow-y: auto;
+  padding: var(--space-search-section);
+  border-radius: var(--radius-search-panel);
   background-color: var(--color-box);
-  color: var(--color-dropdown-text);
+  color: var(--color-header-active-text);
+  box-shadow: var(--shadow-search-panel);
   font-family: var(--font-headings);
   font-weight: var(--font-weight-headings-light);
-  line-height: var(--search-control-height);
-  text-align: start;
 
-  .expanded & {
-    border-end-end-radius: 0;
+  &[hidden] {
+    display: none;
   }
 
-  /* Bootstrap's caret. */
-  &::after {
-    content: '';
-    position: absolute;
-    inset-block-start: 20px;
-    inset-inline-end: 10px;
-    border-block-start: 4px solid;
-    border-inline: 4px solid transparent;
+  & ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    &[hidden] {
+      display: none;
+    }
+  }
+
+  & a {
+    color: inherit;
+    text-decoration: none;
+  }
+}
+
+/* The type picker: one chip per text search, then the ID lookups in a menu at the end. */
+.types {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs-inline);
+  padding: 0 0 var(--space-search-section);
+  border-block-end: 1px solid var(--color-menu-separator);
+
+  /* Nothing listed yet: the key hints' rule is enough. */
+  .panel:has(> [role='listbox'][hidden]) & {
+    padding-block-end: 0;
+    border: 0;
+  }
+}
+
+.chip,
+.id-toggle {
+  min-block-size: 0;
+  padding: var(--space-sm-block) var(--space-base-inline);
+  border: 0;
+  border-radius: var(--radius-search-chip);
+  background: none;
+  color: var(--color-search-term);
+  font: inherit;
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+  transition: background-color 0.25s, color 0.25s;
+
+  &:hover {
+    background: var(--color-search-row-hover);
+    color: var(--color-header-active-text);
   }
 
   &:focus-visible {
-    outline-offset: -2px;
+    outline-offset: 0;
   }
 }
 
-.type-menu {
+.chip[aria-pressed='true'],
+.id-toggle.active {
+  background: var(--brand-primary);
+  color: var(--color-text-inverse);
+}
+
+.ids {
+  margin-inline-start: auto;
+}
+
+.id-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs-inline);
+  border-radius: var(--radius-search-row);
+  box-shadow: inset 0 0 0 1px var(--color-menu-separator);
+}
+
+.id-menu {
   position: fixed;
   position-area: bottom span-left;
   inset: auto;
-  min-inline-size: var(--search-type-width);
-  margin: 1px 0 0;
-  padding: var(--space-lg-block) 0;
+  min-inline-size: var(--search-id-menu-width);
+  margin: var(--space-xs-inline) 0 0;
+  padding: var(--space-xs-inline);
   border: 0;
-  border-end-start-radius: var(--radius-lg);
-  border-end-end-radius: var(--radius-lg);
+  border-radius: var(--radius-search-row);
   background-color: var(--color-box);
   color: var(--color-dropdown-text);
   font-family: var(--font-headings);
   font-weight: var(--font-weight-headings-light);
-  box-shadow: var(--shadow-dropdown);
+  box-shadow: var(--shadow-search-panel);
 
   & ul {
     margin: 0;
@@ -568,72 +690,65 @@ input {
     display: block;
     inline-size: 100%;
     min-block-size: 0;
-    padding: var(--space-base-block) var(--space-lg-inline);
+    padding: var(--space-base-block) var(--space-base-inline);
     border: 0;
-    border-radius: 0;
+    border-radius: var(--radius-search-row);
     background: none;
     color: inherit;
     line-height: var(--line-height-base);
     text-align: start;
     white-space: nowrap;
-    transition: background-color 0.25s, color 0.25s;
 
     &:is(:hover, :focus-visible) {
       outline: none;
-      background-color: var(--brand-primary);
-      color: var(--color-text-inverse);
+      background-color: var(--color-search-row-hover);
+    }
+
+    &[aria-current='true'] {
+      color: var(--color-search-type);
+      font-weight: var(--font-weight-headings);
     }
   }
-
-  & [role='separator'] {
-    margin: 9px 0;
-    border-block-start: 1px solid var(--color-menu-divider);
-  }
 }
 
-/* While the type menu is open, the rest of the box blurs (OG's .blurred). */
-.header-search:has(.type-menu:popover-open) :is(input, .autocomplete, .close) {
-  background-color: var(--gray-lightish);
-  filter: var(--blur-search);
+.section,
+.no-recent {
+  padding: var(--space-search-section) var(--space-base-inline) var(--space-xs-inline);
+  color: var(--color-search-in-type);
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-headings-heavy);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-block-start: var(--space-search-section);
 }
 
-.autocomplete {
-  position: absolute;
-  inset-block-start: 100%;
-  inline-size: 100%;
-  max-block-size: calc(100vh - var(--header-height));
-  overflow-y: auto;
-  border-end-start-radius: var(--radius-lg);
-  border-end-end-radius: var(--radius-lg);
-  background-color: var(--color-box);
-  color: var(--color-header-active-text);
-  box-shadow: var(--shadow-dropdown);
+.no-recent {
+  color: var(--color-search-term);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-headings-light);
+  letter-spacing: normal;
+  text-transform: none;
+}
 
-  &[hidden] {
-    display: none;
-  }
+/* Every row: rounded, with a soft gray highlight from the arrows or the mouse. */
+.result a,
+.all-results a,
+.search-term {
+  border-radius: var(--radius-search-row);
+  transition: background-color 0.15s;
+}
 
-  & ul {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  & a {
-    color: inherit;
-    text-decoration: none;
-  }
+.selected a,
+.search-term.selected {
+  background-color: var(--color-search-row-hover);
 }
 
 .result a {
   display: grid;
-  /* OG held a third, 200px column for the watch-now icons. They're cut, so the title gets the room. */
   grid-template-columns: var(--search-poster-width) 1fr;
-  column-gap: var(--space-lg-inline);
+  column-gap: var(--space-base-inline);
   align-items: center;
-  padding: 12px var(--space-lg-inline);
-  border-block-end: 1px solid var(--color-menu-separator);
-  transition: background-color 0.25s;
+  padding: var(--space-base-block) var(--space-base-inline);
 }
 
 .poster {
@@ -661,169 +776,147 @@ input {
 .info {
   display: flex;
   flex-direction: column;
-  color: var(--color-search-info);
-  font-family: var(--font-headings);
-  font-weight: var(--font-weight-headings-light);
-  transition: color 0.5s;
+  min-inline-size: 0;
 }
 
 .top-title {
+  color: var(--color-search-term);
   font-size: var(--font-size-small);
   line-height: 1;
   text-transform: uppercase;
 }
 
 .title {
-  color: var(--color-header-active-text);
   font-weight: var(--font-weight-headings);
-  transition: color 0.5s;
 }
 
-.tags {
+/* Type, year and genres on one line, joined by middle dots. */
+.meta {
   display: flex;
-  gap: var(--space-xs-inline);
-  margin: 1px 0 3px;
+  flex-wrap: wrap;
+  color: var(--color-search-term);
+  font-size: var(--font-size-base);
+
+  & > span + span::before {
+    content: '·';
+    margin-inline: var(--space-xs-inline);
+  }
 }
 
-.tag {
-  padding: 2px 5px;
-  border-radius: var(--radius-search-tag);
-  background-color: var(--color-search-tag);
-  color: var(--color-text-inverse);
-  font-size: var(--font-size-card-tag);
+.type-name {
+  color: var(--color-search-type);
   font-weight: var(--font-weight-headings);
-  transition: background-color 0.5s;
-}
-
-.type-tag {
-  background-color: var(--brand-primary);
 }
 
 .genres {
-  font-size: var(--font-size-base);
-  font-style: italic;
   text-transform: capitalize;
 }
 
-.all-results a {
-  display: block;
-  margin-block-start: 8px;
-  padding: var(--space-lg-block) var(--space-lg-inline);
+.all-results a,
+.reuse-term {
+  display: flex;
+  align-items: center;
+  padding: var(--space-lg-block) var(--space-base-inline);
   color: var(--color-search-term);
-  font-family: var(--font-headings);
   font-size: var(--font-size-base);
-  font-weight: var(--font-weight-headings-light);
   line-height: 1;
-  transition: background-color 0.25s;
 
   & strong {
+    color: var(--color-header-active-text);
     font-weight: var(--font-weight-headings-heavy);
   }
 }
 
 .term-icon {
-  margin-inline-end: 12px;
-}
-
-.in-type {
+  display: inline-flex;
+  margin-inline-end: var(--space-base-inline);
   color: var(--color-search-in-type);
 }
 
-.all-results-spacer {
-  margin-block-start: 8px;
-  border-block-start: 1px solid var(--color-menu-separator);
-}
-
-/* The highlighted row, from the arrows or the mouse. */
-.selected a {
-  background-color: var(--brand-primary);
-  color: var(--color-text-inverse);
-
-  & .info {
-    color: var(--gray-lightish);
-  }
-
-  & .title {
-    color: var(--color-text-inverse);
-  }
-
-  & .type-tag {
-    background-color: var(--brand-primary-darken-20);
-  }
-
-  & .in-type {
-    color: var(--color-search-in-type-selected);
-  }
+.in-type {
+  margin-inline-start: var(--space-xs-inline);
+  color: var(--color-search-in-type);
 }
 
 .search-term {
   display: flex;
   align-items: center;
-  color: var(--color-search-term);
-  font-family: var(--font-headings);
   font-size: var(--font-size-base);
-  font-weight: var(--font-weight-headings-light);
-  line-height: 1;
 
   & button {
     min-block-size: 0;
     border: 0;
     border-radius: 0;
     background: none;
-    color: inherit;
     font: inherit;
-    line-height: inherit;
-  }
-
-  &.selected {
-    background: var(--brand-primary);
-    color: var(--color-text-inverse);
-
-    & .in-type {
-      color: var(--color-search-in-type-selected);
-    }
   }
 }
 
 .reuse-term {
   flex: 1;
-  padding: var(--space-lg-block) var(--space-lg-inline);
   text-align: start;
 }
 
+/* The remove button stays out of the way until its row is pointed at or highlighted. */
 .remove-term {
-  padding: var(--space-lg-block);
-  margin-inline-end: var(--space-base-block);
-}
-
-.first-term,
-.no-recent {
-  margin-block-start: var(--space-search-section);
-}
-
-.autocomplete ul:has(.search-term, .no-recent) {
-  padding-block-end: var(--space-search-section);
-}
-
-.no-recent,
-.trending-heading {
-  padding: var(--space-lg-block) var(--space-lg-inline);
-  font-family: var(--font-headings);
-  font-size: var(--font-size-base);
-  line-height: 1;
-}
-
-.no-recent {
+  display: grid;
+  place-items: center;
+  padding: var(--space-sm-block) var(--space-base-inline);
   color: var(--color-search-term);
-  font-weight: var(--font-weight-headings-light);
+  opacity: 0;
+  transition: opacity 0.15s;
+
+  .search-term:is(:hover, .selected) &,
+  &:focus-visible {
+    opacity: 1;
+  }
 }
 
-.trending-heading {
-  line-height: var(--line-height-headings);
-  padding-block-start: calc(var(--space-search-section) + var(--space-lg-block));
-  font-weight: var(--font-weight-headings-heavy);
+/* The keyboard hints along the bottom of the panel. */
+.keys {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs-block) var(--space-lg-inline);
+  margin: var(--space-search-section) calc(-1 * var(--space-search-section)) calc(-1 * var(--space-search-section));
+  padding: var(--space-base-block) var(--space-base-inline);
   border-block-start: 1px solid var(--color-menu-separator);
-  margin-block-start: var(--space-search-section);
+  color: var(--color-search-in-type);
+  font-size: var(--font-size-small);
+
+  & span {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs-block);
+  }
+
+  & kbd {
+    margin-inline-end: 2px;
+    color: var(--color-search-term);
+  }
+}
+
+.esc {
+  margin-inline-start: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  input,
+  .chip,
+  .id-toggle,
+  .result a,
+  .all-results a,
+  .search-term,
+  .remove-term {
+    transition: none;
+  }
+}
+
+/* No hover on the hints: a touch screen has no `/` key. */
+@media (hover: none) {
+  .shortcut,
+  .keys {
+    display: none;
+  }
 }
 
 /* At 1200px and below OG shrank the field to its magnifier. Focus opens it at full width over the nav. */
@@ -836,6 +929,10 @@ input {
   input {
     inline-size: var(--search-collapsed-width);
     padding-inline-end: 0;
+  }
+
+  .header-search:not(.focused) .shortcut {
+    display: none;
   }
 
   .focused form {

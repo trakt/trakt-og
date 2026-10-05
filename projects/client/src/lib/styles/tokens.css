@@ -430,9 +430,8 @@
   --color-page-navigator-dark-text: #fff;
 
   /* Dashboard frame: greeting, stats, inbox and account welcome. */
-  --dashboard-greeting-top: 30px;
-  /* The cover under the header: the 72px avatar, its 5px inline baseline gap, then cover photo down to the stats band
-     or, while watching, to the now-playing bar. */
+  --dashboard-greeting-top: 30px; /* above the greeting, and below it when nothing is playing */
+  /* While watching, the greeting's height above the now-playing bar: desktop, and phones (no avatar). */
   --dashboard-greeting-height: 150px;
   --dashboard-greeting-height-watching: 210px;
   --dashboard-title-top: 7px;

@@ -41,6 +41,8 @@ const cover = $derived(watching?.fanartUrl ?? (user.vip ? user.coverUrl : null))
   color: var(--color-text-inverse);
   background-color: var(--color-profile-placeholder-bg);
   overflow: hidden;
+  /* Nothing playing: the same space under the greeting as above it. */
+  padding-block-end: var(--dashboard-greeting-top);
   &.watching {
     padding-block-end: var(--profile-watching-height);
   }
@@ -70,7 +72,6 @@ const cover = $derived(watching?.fanartUrl ?? (user.vip ? user.coverUrl : null))
   display: flex;
   justify-content: space-between;
   align-items: start;
-  min-block-size: var(--dashboard-greeting-height);
   gap: var(--gutter);
   .watching & {
     min-block-size: var(--dashboard-greeting-height-watching);
@@ -112,9 +113,10 @@ h1 {
   .avatar-link {
     display: none;
   }
-  .greeting,
-  .watching .greeting {
+  .greeting {
     flex-wrap: wrap;
+  }
+  .watching .greeting {
     min-block-size: var(--dashboard-greeting-height);
   }
   h1 {

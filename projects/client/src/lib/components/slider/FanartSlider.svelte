@@ -163,15 +163,10 @@ h2 {
   float: inline-end;
   line-height: 1;
   text-shadow: var(--text-shadow-headings);
+  --color-see-more: var(--color-slider-link);
 
   & :global(a) {
-    color: var(--color-slider-link);
     line-height: 1;
-  }
-
-  & :global(a:is(:hover, :focus-visible)) {
-    color: var(--color-slider-text);
-    text-decoration: none;
   }
 }
 
@@ -280,8 +275,7 @@ h2 {
   .nav,
   .rank,
   .slide,
-  .background,
-  .action :global(a) {
+  .background {
     transition: all var(--transition-slider);
   }
 }

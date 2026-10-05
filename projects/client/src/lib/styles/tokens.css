@@ -393,9 +393,19 @@
   --space-heading-icon: 10px;
   --space-heading-section: 28px; /* h2.section */
   --space-fanarts-row-end: 30px; /* #activity-wrapper .row.fanarts margin-bottom */
-  --font-size-see-more: 13px;
+  /*
+   * The see-more link: small tracked uppercase text and a long arrow, gray until hover, then red. og's own look,
+   * not OG's red uppercase with a circled arrow. #666 keeps 4.5:1 contrast on the #e5e5e5 dashboard panels.
+   */
+  --color-see-more: light-dark(#666, var(--gray-light));
+  --color-see-more-hover: var(--color-link);
+  --font-size-see-more: 11px;
+  --letter-spacing-see-more: 0.12em;
   --font-size-see-more-icon: 18px;
-  --space-see-more-icon: 7px;
+  --font-size-see-more-icon-only: 15px; /* the summary sidebar's arrows */
+  --space-see-more-icon: 10px;
+  --space-see-more-nudge: 4px; /* how far the arrow slides on hover */
+  --transition-see-more: 0.15s;
   --color-card-action: var(--gray-light); /* the rewatch and drop icons under an on-deck card */
   --color-card-action-hover: light-dark(#000, #fff);
   --color-on-deck-quick-icons: light-dark(#1d1d1d, var(--dk-bg2));

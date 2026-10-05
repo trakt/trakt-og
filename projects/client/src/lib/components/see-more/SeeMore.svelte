@@ -1,14 +1,14 @@
 <!--
-  OG's "see more" link: uppercase text and a circled arrow, floated to the right of a
-  section heading. "See more" unless you pass `text`. Like OG's bare `a.see-more-link` it takes the link color of
-  wherever it sits: red, or the caller's own link color (a slider's gray, the summary sidebar's). With `iconOnly` the
-  text is only for screen readers and shows as a tooltip, like the arrows in the summary sidebar. With `controls`
-  instead of `href` it's a disclosure button for that element, like OG's "Expand" on a collapsed panel.
+  The "see more" link to the right of a section heading: small tracked uppercase text and a long arrow, gray until
+  hover, then red with the arrow nudging right. "See more" unless you pass `text`. A caller on a different background
+  sets `--color-see-more` for its gray (a slider's light gray, the summary sidebar's). With `iconOnly` the text is only
+  for screen readers and shows as a tooltip, like the arrows in the summary sidebar. With `controls` instead of `href`
+  it's a disclosure button for that element, like OG's "Expand" on a collapsed panel.
 -->
 <script lang="ts">
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import Icon from '$lib/icons/Icon.svelte';
-import circleRight from '$lib/icons/trakt/circle-right.svg?raw';
+import arrowRightLong from '$lib/icons/regular/arrow-right-long.svg?raw';
 
 type Props =
   & { text?: string; iconOnly?: boolean }
@@ -35,7 +35,7 @@ const iconOnly = $derived(props.iconOnly ?? false);
     {#if props.controls}
       <button type="button" class={['see-more', { 'icon-only': iconOnly }]} aria-controls={props.controls}
         aria-expanded={props.expanded} onclick={props.ontoggle} {...tooltip}>
-        <span class="text">{text}</span><span class="arrow"><Icon svg={circleRight} /></span>
+        <span class="text">{text}</span><span class="arrow"><Icon svg={arrowRightLong} /></span>
       </button>
     {:else}
       <a
@@ -45,7 +45,7 @@ const iconOnly = $derived(props.iconOnly ?? false);
         rel={props.external ? 'noopener' : undefined}
         {...tooltip}
       >
-        <span class="text">{text}</span><span class="arrow"><Icon svg={circleRight} /></span>
+        <span class="text">{text}</span><span class="arrow"><Icon svg={arrowRightLong} /></span>
       </a>
     {/if}
   {/snippet}
@@ -53,20 +53,27 @@ const iconOnly = $derived(props.iconOnly ?? false);
 
 <style>
 .see-more {
+  color: var(--color-see-more);
   font-family: var(--font-headings);
-  font-weight: var(--font-weight-headings-light);
+  font-weight: var(--font-weight-headings);
   font-size: var(--font-size-see-more);
+  letter-spacing: var(--letter-spacing-see-more);
   line-height: 2;
   text-transform: uppercase;
+  transition: color var(--transition-see-more);
+
+  &:is(:hover, :focus-visible) {
+    color: var(--color-see-more-hover);
+    text-decoration: none;
+  }
 }
 
-/* The disclosure button looks like the link, in the color of wherever it sits. */
+/* The disclosure button looks like the link. */
 button.see-more {
   min-block-size: 0;
   padding: 0;
   border: 0;
   background: none;
-  color: inherit;
 }
 
 .arrow {
@@ -75,7 +82,19 @@ button.see-more {
   font-size: var(--font-size-see-more-icon);
   line-height: 1;
   vertical-align: middle;
-  transition: color var(--transition-card);
+
+  @media (prefers-reduced-motion: no-preference) {
+    transition: transform var(--transition-see-more);
+
+    .see-more:is(:hover, :focus-visible) & {
+      transform: translateX(var(--space-see-more-nudge));
+    }
+  }
+}
+
+.icon-only .arrow {
+  margin-inline-start: 0;
+  font-size: var(--font-size-see-more-icon-only);
 }
 
 .icon-only .text {

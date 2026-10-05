@@ -4,6 +4,7 @@
   and a decided box stays in place, marked Approved, Denied or Blocked, until the next load.
 -->
 <script lang="ts">
+import { tick } from 'svelte';
 import { page } from '$app/state';
 import { rawApiFetch } from '$lib/api/rawApiFetch';
 import { createRequestQueue } from '$lib/api/createRequestQueue';
@@ -33,6 +34,7 @@ const relationships = createRelationshipOverlay();
 const stackSize = 5;
 // The API takes one write a second, so approvals go out one at a time at that pace, and a 429 waits its Retry-After.
 const writes = createRequestQueue({ concurrency: 1, limit: 1, windowMs: 1000 });
+let heading = $state<HTMLElement>();
 let reviewing = $state(false);
 let approving = $state<{ done: number; total: number } | null>(null);
 const relation = (id: number) => ({ follow: 'none' as const, followsYou: false, blocked: false, requestId: id });
@@ -79,6 +81,9 @@ async function approveAll() {
     approving = { done: approving.done + 1, total: approving.total };
   }
   approving = null;
+  // The summary line, and the button that had focus, goes once nothing is pending.
+  await tick();
+  if (pending.length === 0) heading?.focus();
 }
 async function decide(request: Request, action: 'approve' | 'deny' | 'blockRequest') {
   if (!(await userManager().getUser())?.access_token) return login();
@@ -90,7 +95,7 @@ async function decide(request: Request, action: 'approve' | 'deny' | 'blockReque
 {#if requests.length > 0}
   <section class="inbox" aria-labelledby="{uid}-heading">
   <Container>
-      <h2 id="{uid}-heading">
+      <h2 id="{uid}-heading" tabindex="-1" bind:this={heading}>
         Follow Requests
         {#if pending.length > 0}<span class="count">{pending.length}<span class="hidden"> pending</span></span>{/if}
       </h2>
@@ -162,6 +167,7 @@ async function decide(request: Request, action: 'approve' | 'deny' | 'blockReque
 }
 h2 {
   display: flex;
+  outline: none;
   align-items: center;
   gap: var(--space-sm-inline);
   margin-block: var(--space-heading-section) var(--dashboard-inbox-heading-gap);

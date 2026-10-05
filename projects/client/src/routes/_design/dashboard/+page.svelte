@@ -52,16 +52,17 @@ const failed = browser ? Promise.reject(new Error('demo')) : loading;
 
 const DAY = 86_400_000;
 
-function scheduleDays(isVip: boolean, { shift = 0, busy = false, only }: {
+function scheduleDays(isVip: boolean, { shift = 0, busy = false, drop = false, only }: {
   /** Days to move the fixture later by. */
   shift?: number;
   busy?: boolean;
+  drop?: boolean;
   /** Just these shows. */
   only?: readonly string[];
 } = {}): ScheduleDay[] {
   const { timeZone } = data.datePreferences;
   const today = dayIn(new Date().toISOString(), timeZone);
-  const rows = scheduleFixture.rows(dayIn(new Date(Date.now() + shift * DAY).toISOString(), timeZone), { busy })
+  const rows = scheduleFixture.rows(dayIn(new Date(Date.now() + shift * DAY).toISOString(), timeZone), { busy, drop })
     .filter(({ show }) => !only || only.includes(show?.title ?? ''));
   return toScheduleDays({
     days: upcomingDays({ items: toCalendarItems(rows), start: today, timeZone, count: 5 }),
@@ -72,9 +73,10 @@ function scheduleDays(isVip: boolean, { shift = 0, busy = false, only }: {
     country: 'us',
   });
 }
-// A busy week with network links as a VIP sees them; then nothing on until the day after tomorrow, a quiet week, and
-// two days as everyone else sees them.
+// A busy week with network links as a VIP sees them; a season dropping today on top; then nothing on until the day
+// after tomorrow, a quiet week, and two days as everyone else sees them.
 const schedule = $derived(Promise.resolve(scheduleDays(true, { busy: true })));
+const scheduleDrop = $derived(Promise.resolve(scheduleDays(true, { busy: true, drop: true })));
 const scheduleLater = $derived(Promise.resolve(scheduleDays(true, { busy: true, shift: 2 })));
 const scheduleQuiet = $derived(Promise.resolve(scheduleDays(true, { only: ['Slow Horses', 'Scrubs'] })));
 const scheduleTwoDays = $derived(Promise.resolve(scheduleDays(false).slice(0, 2)));
@@ -242,6 +244,8 @@ $effect(() => {
       <div class="gap"></div>
     {/if}
     <div id="schedule-sample"><SchedulePanel {schedule} /></div>
+    <div class="gap"></div>
+    <div id="schedule-drop"><SchedulePanel schedule={scheduleDrop} /></div>
     <div class="gap"></div>
     <div id="schedule-later"><SchedulePanel schedule={scheduleLater} /></div>
     <div class="gap"></div>

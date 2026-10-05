@@ -26,6 +26,7 @@ const calendar = (rows: (url: URL) => HotReleaseResponse[]) =>
 const hidden = (rows: unknown[] = []) => http.get(`${API}/users/hidden/calendar`, () => HttpResponse.json(rows));
 const watchNow = http.get(`${API}/:type/:id/*`, ({ request }) => {
   const url = new URL(request.url);
+  seen.push(url);
   const path = url.pathname.replace(/\/watchnow\/us$/, '');
   const offers = scheduleFixture.offers.get(path);
   return HttpResponse.json(offers ? { us: offers } : {});
@@ -42,12 +43,12 @@ const params = {
 const calendarRequests = () => seen.filter(({ pathname }) => pathname.startsWith('/calendars/'));
 
 describe('fetchSchedule', () => {
-  it('should read one window when it has five days', async () => {
+  it('should read one window when it has three days', async () => {
     server.use(calendar(() => scheduleFixture.rows('2026-09-30')), hidden(), watchNow);
 
     const days = await fetchSchedule(params);
 
-    expect(days).toHaveLength(5);
+    expect(days).toHaveLength(3);
     expect(calendarRequests().map(({ pathname, searchParams }) => [pathname, searchParams.get('extended')])).toEqual([
       ['/calendars/my/media/2026-09-29/33', 'full,images'],
     ]);
@@ -85,17 +86,14 @@ describe('fetchSchedule', () => {
     expect(items.some(({ episode }) => episode?.number.startsWith('Special'))).toBe(false);
   });
 
-  it('should look up Watch Now in the viewer country for each shown item', async () => {
+  it("should look up Watch Now in the viewer country for the spotlight day's items only", async () => {
     server.use(calendar(() => scheduleFixture.rows('2026-09-30')), hidden(), watchNow);
 
     const days = await fetchSchedule(params);
     const items = days.flatMap(({ items }) => items);
 
-    expect(items.filter(({ watchNow }) => watchNow).map(({ title }) => title)).toEqual([
-      'The Boys',
-      'The Boys',
-      'Dune: Part Two',
-    ]);
+    expect(items.filter(({ watchNow }) => watchNow).map(({ title }) => title)).toEqual(['The Boys', 'The Boys']);
+    expect(seen.some(({ pathname }) => pathname.startsWith('/movies/'))).toBe(false);
   });
 
   it('should drop an item Watch Now fails for, and keep the rest', async () => {
@@ -108,7 +106,7 @@ describe('fetchSchedule', () => {
     const days = await fetchSchedule(params);
 
     expect(days.flatMap(({ items }) => items).some(({ watchNow }) => watchNow)).toBe(false);
-    expect(days).toHaveLength(5);
+    expect(days).toHaveLength(3);
   });
 
   it('should fail when the calendar does', async () => {

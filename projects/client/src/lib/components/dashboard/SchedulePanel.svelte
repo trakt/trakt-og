@@ -1,7 +1,7 @@
 <!--
-  The dashboard's Upcoming Schedule panel, over the first five days from the start day with anything on the viewer's
-  calendars. On the left, the first of them: up to three cards, then the rest of that day as rows. On the right, the
-  days after it as rows. The sides stack in a narrow panel. Pass the unawaited `fetchSchedule` promise from the loader,
+  The dashboard's Upcoming Schedule panel, over the first three days from the start day with anything on the viewer's
+  calendars. On the left, the first of them: as many cards as the right side leaves room for (at least three), then
+  the rest of that day as rows. On the right, the days after it as rows. The sides stack in a narrow panel. Pass the unawaited `fetchSchedule` promise from the loader,
   so the page streams in and this panel spins until it lands, and fails on its own if it doesn't.
 -->
 <script lang="ts">

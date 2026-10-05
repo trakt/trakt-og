@@ -78,6 +78,7 @@ const busy = {
   ghosts: plain('Ghosts', 180012, 'ghosts-2021', 'CBS'),
   shrinking: plain('Shrinking', 185040, 'shrinking', 'Apple TV'),
   survivor: plain('Survivor', 1407, 'survivor', 'CBS'),
+  bridgerton: plain('Bridgerton', 157479, 'bridgerton', 'Netflix'),
 };
 
 const dune: Movie = {
@@ -131,7 +132,7 @@ const CARRIE = [
   'AP Physics',
 ];
 
-// A busy week on top: a series dropping all at once tomorrow, and enough shows that today and tomorrow run long.
+// A busy week on top: a series dropping all at once tomorrow, and enough shows that the first three days run long.
 const busyAirings: readonly Airing[] = [
   { show: busy.ghosts, season: 5, number: 3, title: 'The Polterguest', day: 0, hour: 13 },
   { show: busy.survivor, season: 49, number: 4, title: 'Hidden in Plain Sight', day: 0, hour: 14 },
@@ -148,7 +149,22 @@ const busyAirings: readonly Airing[] = [
   { show: busy.tracker, season: 3, number: 2, title: 'Red Flag', day: 1, hour: 13 },
   { show: busy.shrinking, season: 3, number: 4, title: 'Going Viral', day: 1, hour: 14 },
   { show: busy.survivor, season: 49, number: 5, title: 'Blindside', day: 1, hour: 14 },
+  { show: busy.ghosts, season: 5, number: 4, title: 'Halloween', day: 2, hour: 12 },
+  { show: busy.abbott, season: 5, number: 3, title: 'Picture Day', day: 2, hour: 12 },
+  { show: busy.tracker, season: 3, number: 3, title: 'Off the Grid', day: 2, hour: 13 },
+  { show: busy.shrinking, season: 3, number: 5, title: 'Group Therapy', day: 2, hour: 14 },
 ];
+
+// A whole season dropping today.
+const dropAirings = Array.from({ length: 10 }, (_, i): Airing => ({
+  show: busy.bridgerton,
+  season: 4,
+  number: i + 1,
+  title: `Chapter ${i + 1}`,
+  type: i === 0 ? 'season_premiere' : undefined,
+  day: 0,
+  hour: 7,
+}));
 
 const addDays = (today: string, days: number) => {
   const date = new Date(`${today}T00:00:00Z`);
@@ -167,12 +183,13 @@ const offers = (source: string, type: 'subscription' | 'cinema'): Offers => ({
 
 /**
  * A made-up `/calendars/my/media` window around `today` (`YYYY-MM-DD`, midday UTC so every zone keeps its day): seven
- * days with something on, so only the first five show. Some items have Watch Now offers in the US: The Boys on Prime
- * Video, and Dune only in cinemas. `busy` adds a long day, more shows and an eight-episode drop tomorrow.
+ * days with something on, so only the first three show. Some items have Watch Now offers in the US: The Boys on Prime
+ * Video, and Dune only in cinemas. `busy` adds a long day, more shows and an eight-episode drop tomorrow; `drop` adds
+ * a ten-episode season today.
  */
 export const scheduleFixture = {
-  rows(today: string, { busy = false } = {}): HotReleaseResponse[] {
-    const episodes = (busy ? [...airings, ...busyAirings] : airings).map(
+  rows(today: string, { busy = false, drop = false } = {}): HotReleaseResponse[] {
+    const episodes = [...airings, ...(busy ? busyAirings : []), ...(drop ? dropAirings : [])].map(
       ({ show, season, number, title, type, day, hour }): HotReleaseResponse => {
         const at = `${addDays(today, day)}T${String(hour).padStart(2, '0')}:00:00.000Z`;
         return {

@@ -448,7 +448,8 @@
   --label-vip-small-indent: 23px;
   --label-vip-small-padding: 5px 4px 4px 0;
 
-  /* The dashboard's Upcoming Schedule */
+  /* The dashboard's Upcoming Schedule. toScheduleLayout's HEIGHT adds up the sizes these draw to pick the card
+     count, so change it with them. */
   --color-schedule-bg: light-dark(#eee, var(--dk-bg2));
   --color-schedule-no-data-bg: light-dark(#fafafa, var(--color-no-data-bg));
   --color-schedule-separator: light-dark(#d9d9d9, #444);
@@ -469,7 +470,9 @@
   --border-schedule-card: 3px;
   --schedule-row-time: 62px;
   --schedule-row-time-narrow: 52px;
-  --space-schedule-row: 6px 4px;
+  --space-schedule-row: 4px; /* around a row's poster */
+  --space-schedule-more: 6px 4px; /* inside "Show N more" */
+  --schedule-row-poster: 28px;
   --space-schedule-row-gap: 10px;
   --font-size-schedule-row: 13px;
   --schedule-nothing-padding: 10px 12px;

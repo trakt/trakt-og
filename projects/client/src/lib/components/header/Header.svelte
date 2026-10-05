@@ -162,12 +162,12 @@ async function toggleDarkKnight() {
   inset-block-start: 0;
   z-index: var(--z-header);
   display: grid;
-  grid-template-columns: 32px 1fr auto auto;
+  grid-template-columns: auto 1fr auto auto;
   column-gap: calc(var(--space-lg-inline) * 2);
   align-items: center;
   inline-size: 100%;
   block-size: var(--header-height);
-  padding: 0 var(--space-lg-inline) 0 calc(var(--space-lg-inline) * 2);
+  padding-inline: var(--space-lg-inline);
   background: var(--color-header-bg);
   backdrop-filter: var(--blur-header);
   color: var(--color-header-text);
@@ -187,8 +187,10 @@ async function toggleDarkKnight() {
   }
 }
 
+/* Half the bar's gap after the logo: its auto column takes the negative margin, so the search moves in too. */
 .logo {
   display: flex;
+  margin-inline-end: calc(-1 * var(--space-lg-inline));
 }
 
 /* Main nav */
@@ -322,6 +324,11 @@ async function toggleDarkKnight() {
     padding-inline: var(--space-lg-inline) var(--space-header-tablet);
   }
 
+  /* The tablet gap is already tighter than the margin. */
+  .logo {
+    margin-inline-end: 0;
+  }
+
   .links {
     margin-inline-end: 0;
 
@@ -335,7 +342,7 @@ async function toggleDarkKnight() {
    leaves no room at 768px for a long first name beside Get VIP, so the bar overflows. */
 @media (width < 992px) {
   .top-nav {
-    grid-template-columns: 32px 1fr auto;
+    grid-template-columns: auto 1fr auto;
   }
 
   .links {

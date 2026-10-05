@@ -24,10 +24,11 @@ $effect(() => {
   </DashboardGreeting>
   <DashboardNotices notices={{ welcome: true, anniversary: '6th', additionalLists: 6 }}
     day={dayIn(new Date().toISOString(), 'UTC')} />
+  <DashboardInbox requests={sample.requests.slice(0, 2)} />
   <DashboardInbox requests={sample.requests} />
   <Container>
     <h2>Dashboard frame components</h2>
-    <p>Fake data for the greeting, stats strip, Traktiversary banner, dismissible account welcome and inbox.</p>
+    <p>Fake data for the greeting, stats strip, Traktiversary banner, dismissible account welcome and follow requests: two as boxes, then six folded into the summary line.</p>
     <label>Theme <select bind:value={theme}><option value="light">Light</option><option value="dark">Dark</option></select></label>
   </Container>
 </main>

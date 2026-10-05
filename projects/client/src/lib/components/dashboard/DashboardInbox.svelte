@@ -1,3 +1,7 @@
+<!--
+  The dashboard's follow requests. Up to three show as boxes; from four up they fold into a summary line with an avatar
+  stack, and Review opens the boxes. The layout is picked from the count on load, so it doesn't switch while deciding.
+-->
 <script lang="ts">
 import { tick } from 'svelte';
 import { page } from '$app/state';
@@ -10,30 +14,37 @@ import { createRelationshipOverlay } from '$lib/users/createRelationshipOverlay.
 import { toast } from '$lib/components/toast/toast.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import Container from '$lib/components/container/Container.svelte';
-import PanelHeading from '$lib/components/dashboard/PanelHeading.svelte';
 import Icon from '$lib/icons/Icon.svelte';
-import inbox from '$lib/icons/thin/inbox.svg?raw';
 import check from '$lib/icons/trakt/check.svg?raw';
 import deleteIcon from '$lib/icons/trakt/delete.svg?raw';
 import block from '$lib/icons/trakt/block.svg?raw';
 import blockThick from '$lib/icons/trakt/block-thick.svg?raw';
+import { followRequestSummary } from '$lib/dashboard/followRequestSummary';
 import type { toFollowRequest } from '$lib/dashboard/toFollowRequest';
 
-const { requests }: { requests: readonly ReturnType<typeof toFollowRequest>[] } = $props();
+type Request = ReturnType<typeof toFollowRequest>;
+
+const { requests }: { requests: readonly Request[] } = $props();
+const uid = $props.id();
 const relationships = createRelationshipOverlay();
+const stackSize = 5;
 let section = $state<HTMLElement>();
-const visible = $derived(
-  requests.filter((request) =>
-    !['approve', 'deny'].includes(relationships.state(request.slug, relation(request.id)).decision ?? '')
-  ),
-);
+let reviewing = $state(false);
 const relation = (id: number) => ({ follow: 'none' as const, followsYou: false, blocked: false, requestId: id });
+const decisionOf = (request: Request) => relationships.state(request.slug, relation(request.id)).decision;
+const visible = $derived(requests.filter((request) => !['approve', 'deny'].includes(decisionOf(request) ?? '')));
+const pending = $derived(visible.filter((request) => decisionOf(request) === null));
+const condensed = $derived(requests.length > 3);
+const showBoxes = $derived(!condensed || reviewing || pending.length === 0);
+const stack = $derived(pending.slice(0, stackSize));
+const summary = $derived(followRequestSummary(pending.map((request) => request.name)));
 $effect(() => {
   void requests;
   void page.data.user?.slug;
   relationships.clear();
+  reviewing = false;
 });
-async function decide(request: ReturnType<typeof toFollowRequest>, action: 'approve' | 'deny' | 'blockRequest') {
+async function decide(request: Request, action: 'approve' | 'deny' | 'blockRequest') {
   if (!(await userManager().getUser())?.access_token) return login();
   const next = section?.querySelector<HTMLButtonElement>(`li[data-request="${request.id}"] + li button`);
   const fallback = section?.closest('main')?.querySelector<HTMLAnchorElement>('a[href*="/progress/"]');
@@ -59,17 +70,42 @@ async function decide(request: ReturnType<typeof toFollowRequest>, action: 'appr
 
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 {#if visible.length > 0}
-  <section bind:this={section} tabindex="-1" class="inbox" aria-labelledby="inbox-heading">
+  <section bind:this={section} tabindex="-1" class="inbox" aria-labelledby="{uid}-heading">
   <Container>
-    <PanelHeading id="inbox-heading" title="Inbox" icon={inbox} section />
-    <div class="requests">
-      <h3>Follow Requests</h3>
-      <ul>
+      <h2 id="{uid}-heading">
+        Follow Requests
+        {#if pending.length > 0}<span class="count">{pending.length}<span class="hidden"> pending</span></span>{/if}
+      </h2>
+      {#if condensed && pending.length > 0}
+        <div class="summary">
+          <div class="stack" aria-hidden="true">
+            {#each stack as request (request.id)}
+              <img src={request.avatarUrl} alt="" width="44" height="44" />
+            {/each}
+            {#if pending.length > stack.length}<span class="extra">+{pending.length - stack.length}</span>{/if}
+          </div>
+          <div class="summary-text">
+            <p>{#each summary as part, i (i)}{#if part.strong}<strong>{part.text}</strong>{:else}{part.text}{/if}{/each}</p>
+            <span class="meta">Newest {pending.at(0)?.requestedAgo} · oldest {pending.at(-1)?.requestedAgo}</span>
+          </div>
+          <button class="review" type="button" aria-expanded={reviewing} aria-controls="{uid}-requests"
+            onclick={() => (reviewing = !reviewing)}>{reviewing ? 'Hide' : 'Review'}</button>
+        </div>
+      {/if}
+      {#if showBoxes}
+        <ul id="{uid}-requests">
           {#each visible as request (request.id)}
-            {@const decision = relationships.state(request.slug, relation(request.id)).decision}
-            <li data-request={request.id}>
-              <a class="avatar" href="/users/{request.slug}" tabindex="-1" aria-hidden="true"><img src={request.avatarUrl} alt="" width="45" height="45" /></a>
-              <p>{request.requestedAt}<br /><a href="/users/{request.slug}">{request.name}</a> wants to follow you.</p>
+            {@const decision = decisionOf(request)}
+            <li data-request={request.id} class:done={decision === 'block'}>
+              <a class="avatar" href="/users/{request.slug}" tabindex="-1" aria-hidden="true"><img src={request.avatarUrl} alt="" width="42" height="42" /></a>
+              <div class="who">
+                <a class="name" href="/users/{request.slug}">{request.name}</a>
+                {#if decision === 'block'}
+                  <span class="time">Blocked</span>
+                {:else}
+                  <time class="time" datetime={request.requestedIso} title={request.requestedAt}>{request.requestedAgo}</time>
+                {/if}
+              </div>
               <div class="actions">
                 {#each [{ action: 'approve', label: 'Approve', svg: check }, { action: 'deny', label: 'Deny', svg: deleteIcon }, { action: 'blockRequest', label: 'Block', svg: block }] as const as choice (choice.action)}
                   <Tooltip text={choice.label}>
@@ -84,8 +120,8 @@ async function decide(request: ReturnType<typeof toFollowRequest>, action: 'appr
             </li>
           {/each}
         </ul>
-    </div>
-  </Container>
+      {/if}
+    </Container>
 </section>
 {/if}
 
@@ -95,91 +131,205 @@ async function decide(request: ReturnType<typeof toFollowRequest>, action: 'appr
   padding-block-end: var(--dashboard-inbox-bottom);
   background: var(--color-dashboard-inbox-bg);
   color: var(--color-text-inverse);
+  container-type: inline-size;
 }
-.requests {
-  inline-size: calc(50% - var(--gutter) / 2);
-}
-h3 {
-  margin: var(--dashboard-inbox-title-margin);
+h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm-inline);
+  margin-block: var(--space-heading-section) var(--dashboard-inbox-heading-gap);
   color: inherit;
-  font-size: var(--font-size-h5);
+}
+.count {
+  min-inline-size: var(--dashboard-inbox-count-width);
+  padding: var(--dashboard-inbox-count-padding);
+  border-radius: var(--radius-dashboard-inbox-count);
+  background: var(--color-dashboard-inbox-count-bg);
+  color: var(--color-text-inverse);
+  font-size: var(--font-size-dashboard-inbox-count);
+  font-weight: var(--font-weight-headings-heavy);
+  line-height: var(--line-height-headings);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.hidden {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.summary,
+li {
+  border: var(--dashboard-border-width) solid var(--color-dashboard-inbox-box-border);
+  border-radius: var(--radius-dashboard-inbox);
+  background: var(--color-dashboard-inbox-box);
+}
+.summary {
+  display: flex;
+  align-items: center;
+  gap: var(--dashboard-inbox-summary-gap);
+  padding: var(--dashboard-inbox-summary-padding);
+}
+.stack {
+  display: flex;
+  flex-shrink: 0;
+  & > * {
+    inline-size: var(--dashboard-inbox-stack-avatar);
+    block-size: var(--dashboard-inbox-stack-avatar);
+    border-radius: 50%;
+    box-shadow: 0 0 0 var(--dashboard-inbox-stack-ring) var(--color-dashboard-inbox-box);
+  }
+  & > * + * {
+    margin-inline-start: var(--dashboard-inbox-stack-overlap);
+  }
+  img {
+    object-fit: cover;
+  }
+}
+.extra {
+  display: grid;
+  place-items: center;
+  background: var(--color-dashboard-inbox-stack-extra);
+  font-family: var(--font-headings);
+  font-size: var(--font-size-dashboard-inbox-stack-extra);
+  font-weight: var(--font-weight-headings-heavy);
+}
+.summary-text {
+  display: grid;
+  flex: 1;
+  min-inline-size: 0;
+  p {
+    margin: 0;
+    font-size: var(--font-size-dashboard-inbox-summary);
+  }
+  strong {
+    font-family: var(--font-headings);
+    font-weight: var(--font-weight-headings-heavy);
+  }
+}
+.meta,
+.time {
+  color: var(--color-dashboard-inbox-muted);
+  font-size: var(--font-size-dashboard-inbox-time);
+}
+.review {
+  flex-shrink: 0;
+  min-block-size: 0;
+  padding: var(--space-sm-block) var(--space-sm-inline);
+  border: var(--dashboard-border-width) solid var(--color-dashboard-inbox-button-border);
+  border-radius: var(--radius-dashboard-inbox);
+  background: none;
+  color: inherit;
+  font-family: var(--font-headings);
+  font-size: var(--font-size-dashboard-inbox-review);
   font-weight: var(--font-weight-headings-heavy);
   text-transform: uppercase;
+  cursor: pointer;
+  &:hover {
+    border-color: var(--color-dashboard-inbox-muted);
+  }
 }
 ul {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--dashboard-inbox-gap);
   margin: 0;
   padding: 0;
   list-style: none;
 }
+.summary + ul {
+  margin-block-start: var(--dashboard-inbox-gap);
+}
 li {
-  display: flex;
-  gap: var(--space-sm-inline);
-  font-size: var(--font-size-dashboard-inbox-message);
-  &:not(:first-child) {
-    padding-block-start: var(--space-lg-block);
-    margin-block-start: var(--space-lg-block);
-    border-block-start: var(--dashboard-border-width) solid var(--color-dashboard-inbox-border);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--dashboard-inbox-gap);
+  min-block-size: var(--dashboard-inbox-box-height);
+  padding: var(--dashboard-inbox-box-padding);
+  &.done {
+    border-style: dashed;
+    background: none;
+  }
+  &.done .avatar {
+    opacity: var(--dashboard-inbox-done-opacity);
   }
 }
-.avatar {
-  flex-shrink: 0;
-  img {
-    display: block;
-    inline-size: var(--dashboard-inbox-avatar);
-    block-size: var(--dashboard-inbox-avatar);
-    border-radius: 50%;
-    object-fit: cover;
+.avatar img {
+  display: block;
+  inline-size: var(--dashboard-inbox-avatar);
+  block-size: var(--dashboard-inbox-avatar);
+  border-radius: 50%;
+  object-fit: cover;
+}
+.who {
+  display: grid;
+  min-inline-size: 0;
+  & > * {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
-p {
-  flex: 1;
-  margin: 0;
-  padding-block-start: var(--space-sm-block);
-}
-a {
+.name {
   color: inherit;
   font-family: var(--font-headings);
+  font-size: var(--font-size-dashboard-inbox-name);
   font-weight: var(--font-weight-headings-heavy);
 }
 .actions {
   display: flex;
-  align-items: start;
-  gap: var(--space-sm-inline);
-  padding-inline: var(--space-sm-inline);
 }
-button {
+.actions button {
+  display: inline-grid;
+  place-items: center;
+  inline-size: var(--dashboard-inbox-action-size);
+  block-size: var(--dashboard-inbox-action-size);
   min-block-size: 0;
   padding: 0;
   border: 0;
+  border-radius: 50%;
   background: none;
   font-size: var(--font-size-dashboard-inbox-action);
-  line-height: var(--dashboard-inbox-action-line);
-  opacity: 1;
+  line-height: 1;
   cursor: pointer;
+  &:hover:not([aria-disabled='true']) {
+    background: var(--color-dashboard-inbox-hover);
+  }
   &.off {
     visibility: hidden;
   }
   &[aria-disabled='true'] {
     cursor: default;
   }
-  &:focus-visible {
-    outline: var(--watch-focus) solid currentColor;
-    outline-offset: var(--space-xs-inline);
+  &.approve {
+    color: var(--brand-success);
+  }
+  &.deny {
+    color: var(--brand-primary);
+  }
+  &.block {
+    color: var(--color-dashboard-inbox-muted);
+    font-size: var(--font-size-dashboard-inbox-block);
   }
 }
-.approve {
-  color: var(--brand-success);
+button:focus-visible {
+  outline: var(--watch-focus) solid currentColor;
+  outline-offset: var(--space-xs-inline);
 }
-.deny {
-  color: var(--brand-primary);
+@container (width < 900px) {
+  ul {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
-.block {
-  color: var(--gray-light);
-  font-size: var(--font-size-dashboard-inbox-block);
-}
-@media (width < 992px) {
-  .requests {
-    inline-size: 100%;
+@container (width < 600px) {
+  ul {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .summary {
+    flex-wrap: wrap;
   }
 }
 </style>

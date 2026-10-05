@@ -1,5 +1,6 @@
 <script lang="ts">
 import Container from '$lib/components/container/Container.svelte';
+import DayGroup from '$lib/components/history/DayGroup.svelte';
 import WatchPopover from '$lib/components/history/WatchPopover.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import check from '$lib/icons/trakt/check-thick.svg?raw';
@@ -53,6 +54,11 @@ const examples = [
       oninvalid={() => toast.error('Invalid date format, please use the date picker.')}>
       {#snippet trigger()}<Icon svg={check} />{/snippet}
     </WatchPopover>
+    <h2>Day dividers</h2>
+    <p>History, library and ratings group cards under these. Click one to collapse its day.</p>
+    <DayGroup weekday="Monday" date="October 5, 2026" runtime="24m"><p class="day-body">Two plays</p></DayGroup>
+    <DayGroup weekday="Tuesday" date="September 29, 2026" runtime="1h 52m"><p class="day-body">Four plays</p></DayGroup>
+    <DayGroup date="September 2026"><p class="day-body">A month divider, without a weekday</p></DayGroup>
   </section>
 </Container>
 <style>
@@ -61,5 +67,8 @@ section {
 }
 .example {
   max-inline-size: var(--watch-date-width);
+}
+.day-body {
+  padding-block: var(--gutter);
 }
 </style>

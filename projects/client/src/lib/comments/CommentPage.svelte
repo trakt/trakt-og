@@ -19,8 +19,8 @@ import SubpageTitle from '$lib/components/summary/SubpageTitle.svelte';
 import SummaryFrame from '$lib/components/summary/SummaryFrame.svelte';
 import SummaryPoster from '$lib/components/summary/SummaryPoster.svelte';
 import WatchNow from '$lib/components/watchnow/WatchNow.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import commentIcon from '$lib/icons/trakt/comment.svg?raw';
+import HeadingMark from '$lib/components/heading/HeadingMark.svelte';
+import commentIcon from '$lib/icons/regular/comment.svg?raw';
 import type { loadComment } from './loadComment.ts';
 
 const { data }: { data: Awaited<ReturnType<typeof loadComment>> } = $props();
@@ -105,7 +105,7 @@ const title = $derived(`${media.item.title} ${type.toLowerCase()} by ${author.na
       </div>
       {#if replies.length > 0}
         <h2 id="replies" class="replies-heading">
-          <span class="heading-icon"><Icon svg={commentIcon} /></span><strong>{replyCount}</strong>
+          <HeadingMark svg={commentIcon} /><strong>{replyCount}</strong>
           {repliesWord(replies.length).toLowerCase()}
         </h2>
         <div class="replies">
@@ -157,15 +157,9 @@ const title = $derived(`${media.item.title} ${type.toLowerCase()} by ${author.na
 }
 
 .replies-heading {
+  position: relative;
+  isolation: isolate;
   margin-block: var(--space-heading-section);
-}
-
-.heading-icon {
-  margin-inline-end: var(--space-heading-icon);
-
-  & :global(.icon) {
-    vertical-align: bottom;
-  }
 }
 
 .reply {

@@ -523,7 +523,6 @@
   --container-sm: 740px; /* >= 768px */
   --container-md: 960px; /* >= 992px */
   --container-lg: 1160px; /* >= 1200px */
-  --container-xlg: 1560px; /* >= 1600px */
 
   /* Header and footer */
   --font-size-nav: 16px; /* header links, buttons, search field */

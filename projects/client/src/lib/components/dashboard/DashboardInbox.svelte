@@ -1,9 +1,9 @@
 <!--
   The dashboard's follow requests. Up to three show as boxes; from four up they fold into a summary line with an avatar
-  stack, and Review opens the boxes. The layout is picked from the count on load, so it doesn't switch while deciding.
+  stack, and Review opens the boxes. The layout is picked from the count on load, so it doesn't switch while deciding,
+  and a decided box stays in place, marked Approved, Denied or Blocked, until the next load.
 -->
 <script lang="ts">
-import { tick } from 'svelte';
 import { page } from '$app/state';
 import { rawApiFetch } from '$lib/api/rawApiFetch';
 import { createRequestQueue } from '$lib/api/createRequestQueue';
@@ -17,7 +17,9 @@ import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import Container from '$lib/components/container/Container.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import check from '$lib/icons/trakt/check.svg?raw';
+import checkThick from '$lib/icons/trakt/check-thick.svg?raw';
 import deleteIcon from '$lib/icons/trakt/delete.svg?raw';
+import deleteThick from '$lib/icons/trakt/delete-thick.svg?raw';
 import block from '$lib/icons/trakt/block.svg?raw';
 import blockThick from '$lib/icons/trakt/block-thick.svg?raw';
 import { followRequestSummary } from '$lib/dashboard/followRequestSummary';
@@ -31,13 +33,16 @@ const relationships = createRelationshipOverlay();
 const stackSize = 5;
 // The API takes one write a second, so approvals go out one at a time at that pace, and a 429 waits its Retry-After.
 const writes = createRequestQueue({ concurrency: 1, limit: 1, windowMs: 1000 });
-let section = $state<HTMLElement>();
 let reviewing = $state(false);
 let approving = $state<{ done: number; total: number } | null>(null);
 const relation = (id: number) => ({ follow: 'none' as const, followsYou: false, blocked: false, requestId: id });
 const decisionOf = (request: Request) => relationships.state(request.slug, relation(request.id)).decision;
-const visible = $derived(requests.filter((request) => !['approve', 'deny'].includes(decisionOf(request) ?? '')));
-const pending = $derived(visible.filter((request) => decisionOf(request) === null));
+const pending = $derived(requests.filter((request) => decisionOf(request) === null));
+const choices = [
+  { action: 'approve', decision: 'approve', label: 'Approve', done: 'Approved', svg: check, thick: checkThick },
+  { action: 'deny', decision: 'deny', label: 'Deny', done: 'Denied', svg: deleteIcon, thick: deleteThick },
+  { action: 'blockRequest', decision: 'block', label: 'Block', done: 'Blocked', svg: block, thick: blockThick },
+] as const;
 const condensed = $derived(requests.length > 3);
 const showBoxes = $derived(!condensed || reviewing || pending.length === 0);
 const stack = $derived(pending.slice(0, stackSize));
@@ -59,7 +64,6 @@ const send = (request: Request, action: 'approve' | 'deny' | 'blockRequest') =>
       writes.run(() => rawApiFetch({ path, fetch: authenticatedFetch({ manager: userManager() }), init: { method } })),
     notify: toast,
   });
-const progressFallback = () => section?.closest('main')?.querySelector<HTMLAnchorElement>('a[href*="/progress/"]');
 async function approveAll() {
   if (approving) return;
   if (!(await userManager().getUser())?.access_token) return login();
@@ -75,27 +79,16 @@ async function approveAll() {
     approving = { done: approving.done + 1, total: approving.total };
   }
   approving = null;
-  await tick();
-  if (visible.length === 0) progressFallback()?.focus({ preventScroll: true });
 }
 async function decide(request: Request, action: 'approve' | 'deny' | 'blockRequest') {
   if (!(await userManager().getUser())?.access_token) return login();
-  const next = section?.querySelector<HTMLButtonElement>(`li[data-request="${request.id}"] + li button`);
-  const fallback = progressFallback();
-  const saving = send(request, action);
-  if (action === 'blockRequest') {
-    await saving;
-    return;
-  }
-  await tick();
-  (next?.isConnected ? next : visible.length > 0 ? section : fallback)?.focus({ preventScroll: true });
-  await saving;
+  await send(request, action);
 }
 </script>
 
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-{#if visible.length > 0}
-  <section bind:this={section} tabindex="-1" class="inbox" aria-labelledby="{uid}-heading">
+{#if requests.length > 0}
+  <section class="inbox" aria-labelledby="{uid}-heading">
   <Container>
       <h2 id="{uid}-heading">
         Follow Requests
@@ -127,25 +120,26 @@ async function decide(request: Request, action: 'approve' | 'deny' | 'blockReque
       {/if}
       {#if showBoxes}
         <ul id="{uid}-requests">
-          {#each visible as request (request.id)}
+          {#each requests as request (request.id)}
             {@const decision = decisionOf(request)}
-            <li data-request={request.id} class:done={decision === 'block'}>
+            {@const chosen = choices.find((choice) => choice.decision === decision)}
+            <li class={chosen && `done ${chosen.decision}`}>
               <a class="avatar" href="/users/{request.slug}" tabindex="-1" aria-hidden="true"><img src={request.avatarUrl} alt="" width="42" height="42" /></a>
               <div class="who">
                 <a class="name" href="/users/{request.slug}">{request.name}</a>
-                {#if decision === 'block'}
-                  <span class="time">Blocked</span>
+                {#if chosen}
+                  <span class="state">{chosen.done}</span>
                 {:else}
                   <time class="time" datetime={request.requestedIso} title={request.requestedAt}>{request.requestedAgo}</time>
                 {/if}
               </div>
               <div class="actions">
-                {#each [{ action: 'approve', label: 'Approve', svg: check }, { action: 'deny', label: 'Deny', svg: deleteIcon }, { action: 'blockRequest', label: 'Block', svg: block }] as const as choice (choice.action)}
+                {#each choices as choice (choice.action)}
                   <Tooltip text={choice.label}>
                     {#snippet trigger(tip)}
-                      <button class={choice.label.toLowerCase()} class:off={decision === 'block' && choice.action !== 'blockRequest'} type="button" aria-label="{choice.label} {request.name}'s request"
-                        aria-pressed={choice.action === 'blockRequest' ? decision === 'block' : undefined}
-                        aria-disabled={relationships.busy(request.slug) || decision !== null} onclick={() => decide(request, choice.action)} {...tip}><Icon svg={decision === 'block' && choice.action === 'blockRequest' ? blockThick : choice.svg} /></button>
+                      <button class={choice.label.toLowerCase()} class:off={chosen && chosen !== choice} type="button" aria-label="{choice.label} {request.name}'s request"
+                        aria-pressed={chosen ? chosen === choice : undefined}
+                        aria-disabled={relationships.busy(request.slug) || decision !== null} onclick={() => decide(request, choice.action)} {...tip}><Icon svg={chosen === choice ? choice.thick : choice.svg} /></button>
                     {/snippet}
                   </Tooltip>
                 {/each}
@@ -243,7 +237,8 @@ li {
   }
 }
 .meta,
-.time {
+.time,
+.state {
   color: var(--color-dashboard-inbox-muted);
   font-size: var(--font-size-dashboard-inbox-time);
 }
@@ -305,6 +300,17 @@ li {
   }
   &.done .avatar {
     opacity: var(--dashboard-inbox-done-opacity);
+  }
+}
+.state {
+  font-family: var(--font-headings);
+  font-weight: var(--font-weight-headings-heavy);
+  text-transform: uppercase;
+  .approve & {
+    color: var(--brand-success);
+  }
+  .deny & {
+    color: var(--brand-primary);
   }
 }
 .avatar img {

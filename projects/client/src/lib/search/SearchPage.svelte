@@ -110,13 +110,6 @@ function save(next: FadeHide) {
   {/snippet}
 
   {#snippet sidebar()}
-    {#if data.query}
-      <p class="v3-note">
-        Want better search results?
-        <a href="https://app.trakt.tv/search?q={encodeURIComponent(data.query)}" target="_blank" rel="noopener">
-          View this search on the new Trakt →</a>
-      </p>
-    {/if}
     <form class="terms" action={page.url.pathname} method="get">
       <label for="search-terms">{data.idMode ? 'Search ID' : 'Search Terms'}</label>
       <input id="search-terms" type="search" name="query" placeholder="What are you looking for?" bind:value={terms} />
@@ -188,10 +181,6 @@ function save(next: FadeHide) {
 </Frame>
 
 <style>
-.v3-note {
-  margin: 0;
-}
-
 /* OG only showed its own search field below 1200px (`visible-xs visible-sm visible-md`). */
 .terms {
   margin-block-start: var(--sidenav-nav-gap);

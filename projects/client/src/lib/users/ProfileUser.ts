@@ -22,6 +22,8 @@ export interface ProfileUser {
   readonly age: number | null;
   /** The About Me text, as the owner typed it. */
   readonly about: string | null;
+  /** When the account was made, as API's ISO timestamp. Missing on a locked profile. */
+  readonly joinedAt: string | null;
   /** The owner's VIP cover image, when they set one. */
   readonly coverUrl: string | null;
 }

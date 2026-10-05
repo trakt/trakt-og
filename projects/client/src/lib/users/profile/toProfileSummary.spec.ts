@@ -1,12 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { DatePreferences } from '../../settings/DatePreferences.ts';
-import {
-  toFavoriteCard,
-  toLastWatched,
-  toWatchedEpisode,
-  toWatchedMovie,
-  toWatchedTotals,
-} from './toProfileSummary.ts';
+import { toFavoriteCard, toWatchedEpisode, toWatchedMovie } from './toProfileSummary.ts';
 
 const prefs: DatePreferences = { order: 'mdy', hour24: false, timeZone: 'America/Los_Angeles', weekStartDay: 0 };
 
@@ -78,25 +72,6 @@ describe('toWatchedMovie', () => {
   });
 });
 
-describe('toLastWatched', () => {
-  it('should take the newer watch, with the show fanart and both titles for an episode', () => {
-    expect(toLastWatched(episodeRow, movieRow)).toEqual({
-      image: 'https://media.trakt.tv/images/shows/000/000/001/fanarts/thumb/a.jpg.webp',
-      title: { text: 'Andor', href: '/shows/andor' },
-      episode: { text: '2x01 One Year Later', href: '/shows/andor/seasons/2/episodes/1' },
-    });
-  });
-
-  it('should take a movie watched after the last episode', () => {
-    const later = { ...movieRow, watched_at: '2026-09-30T00:00:00.000Z' };
-    expect(toLastWatched(episodeRow, later)?.title).toEqual({ text: 'Heat', href: '/movies/heat-1995' });
-  });
-
-  it('should be null with nothing watched', () => {
-    expect(toLastWatched(undefined, undefined)).toBeNull();
-  });
-});
-
 describe('toFavoriteCard', () => {
   it('should build the gradient from the poster colors, else OG gray', () => {
     const row = {
@@ -117,16 +92,5 @@ describe('toFavoriteCard', () => {
       gradient: ['#555', '#222'],
       notes: null,
     });
-  });
-});
-
-describe('toWatchedTotals', () => {
-  it('should sum every play and count distinct items, using the show runtime when the episode has none', () => {
-    expect(toWatchedTotals([
-      { episode: { ids: { trakt: 1 }, runtime: 30 }, show: { runtime: 45 } },
-      { episode: { ids: { trakt: 1 }, runtime: 30 }, show: { runtime: 45 } },
-      { episode: { ids: { trakt: 2 }, runtime: null }, show: { runtime: 45 } },
-    ])).toEqual({ minutes: 105, unique: 2 });
-    expect(toWatchedTotals([])).toEqual({ minutes: 0, unique: 0 });
   });
 });

@@ -1,8 +1,8 @@
 <!--
   The profile frame in every state, on sample data: covers, labels, follow states, the request banner and the
-  watching-now bar. Real profiles only show the states the signed-in viewer is actually in. Under it, the profile
-  page's stat boxes (filled and empty), a favorite card, the welcome hero, the charts, the most watched columns (OG's
-  defaults, then a saved sort and tab), and the network page's user cards in each follow state.
+  watching-now bar. Real profiles only show the states the signed-in viewer is actually in. Under it, a favorite
+  card, the welcome hero, the charts, the most watched columns (OG's defaults, then a saved sort and tab), and the
+  network page's user cards in each follow state. The stat boxes have their own page, `/_design/profile-boxes`.
 -->
 <script lang="ts">
 import Container from '$lib/components/container/Container.svelte';
@@ -10,7 +10,6 @@ import FavoriteCard from '$lib/components/users/FavoriteCard.svelte';
 import MostWatched from '$lib/components/users/MostWatched.svelte';
 import ProfileCharts from '$lib/components/users/ProfileCharts.svelte';
 import ProfileFrame from '$lib/components/users/ProfileFrame.svelte';
-import ProfileStatBoxes from '$lib/components/users/ProfileStatBoxes.svelte';
 import UserCard from '$lib/components/users/UserCard.svelte';
 import WelcomeHero from '$lib/components/users/WelcomeHero.svelte';
 import { profileTabs } from '$lib/users/profileTabs';
@@ -34,6 +33,7 @@ const vip: ProfileUser = {
   age: 28,
   coverUrl: 'https://media.trakt.tv/images/shows/000/099/080/fanarts/full/a049f455c1.jpg',
   about: null,
+  joinedAt: '2010-09-25T17:49:25.000Z',
 };
 
 const free: ProfileUser = {
@@ -90,9 +90,6 @@ const states = [
   },
 ];
 
-const totals = { episodes: { minutes: 2_820, unique: 46 }, movies: { minutes: 1_070, unique: 7 } };
-const about = 'Huge **TV** nerd.\n\nSecond paragraph.';
-const none = { episodes: { minutes: 0, unique: 0 }, movies: { minutes: 0, unique: 0 } };
 // [name, shows, movies]: titles a genre, all time, most first, like the profile's call returns them.
 const genreRows: readonly (readonly [string, number, number])[] = [
   ['Drama', 240, 380],
@@ -155,7 +152,6 @@ const savedMostWatched = {
   shows: { ...mostWatched.shows, sortBy: 'time', tab: 'allTime' },
   movies: { ...mostWatched.movies, sortBy: 'plays' },
 } as const;
-const fanart = 'https://media.trakt.tv/images/movies/000/475/091/fanarts/thumb/f9564152dc.jpg.webp';
 const cardRelation = (value: Partial<ViewerRelation>): ViewerRelation => ({
   follow: 'none',
   followsYou: false,
@@ -198,28 +194,6 @@ const cards = [
   relation={props.relation ?? null}
 />
 {/each}
-
-<h2 class="state">Stat boxes</h2>
-<ProfileStatBoxes
-  {about}
-  lastWatched={{
-    image: fanart,
-    title: { text: 'The Boys', href: '/shows/the-boys-2019' },
-    episode: { text: '2x01 The Big Ride', href: '/shows/the-boys-2019/seasons/2/episodes/1' },
-  }}
-  recent={totals}
-  allTime={totals}
-  featured={{ name: 'Watchlist', href: '/users/leela/watchlist', empty: false, image: fanart }}
-/>
-
-<h2 class="state">Stat boxes, nothing watched yet</h2>
-<ProfileStatBoxes
-  about={null}
-  lastWatched={null}
-  recent={none}
-  allTime={none}
-  featured={{ name: 'Watchlist', href: '/users/leela/watchlist', empty: true }}
-/>
 
 <h2 class="state">Favorite card</h2>
 <Container>

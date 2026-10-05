@@ -835,7 +835,7 @@
   /* Profile summary: the stat boxes, favorites and welcome hero on /users/:id */
   --profile-box-height: 200px;
   --profile-box-padding: 20px;
-  --profile-about-max-height: 132px;
+  --profile-about-max-height: 100px;
   --profile-chip-padding: 3px 5px;
   --profile-placeholder-size: 240px 240px;
   --profile-placeholder-blur: 4px;
@@ -852,6 +852,36 @@
   --gradient-profile-box-shade: linear-gradient(to bottom, rgb(0 0 0 / 0), rgb(0 0 0 / 0.9));
   --gradient-profile-about: linear-gradient(to bottom, var(--brand-primary), var(--brand-primary-darken));
   --gradient-profile-stats: linear-gradient(to bottom, #0199d8, #0175a5); /* darken */
+  /* The boxes' contents: white marks on the box colour, one series each, dark in both themes like the strip. */
+  --profile-box-padding-block: 18px;
+  --profile-box-foot-inset: 14px;
+  --profile-box-foot-gap: 7px;
+  --profile-box-quote-size: 70px;
+  --profile-box-bars-height: 38px;
+  --profile-box-bars-gap: 2px;
+  --profile-box-meter-height: 4px;
+  --profile-box-poster-width: 40px;
+  --profile-box-poster-height: 60px;
+  --profile-box-poster-overlap: -14px;
+  --profile-box-poster-tilt: 6deg;
+  --radius-profile-box-mark: 2px;
+  --font-size-profile-figure: 44px;
+  --font-weight-profile-figure: 800;
+  --letter-spacing-profile-figure: -1px;
+  --font-size-profile-figure-label: 13px;
+  --font-size-profile-lead: 15px;
+  --font-size-profile-axis: 10px;
+  --color-profile-ink-soft: rgb(255 255 255 / 0.78);
+  --color-profile-ink-faint: rgb(255 255 255 / 0.55);
+  --color-profile-mark: rgb(255 255 255 / 0.9);
+  --color-profile-mark-dim: rgb(255 255 255 / 0.32);
+  --color-profile-track: rgb(255 255 255 / 0.18);
+  --color-profile-chip-image: rgb(0 0 0 / 0.6);
+  --color-profile-quote: rgb(255 255 255 / 0.12);
+  --color-profile-cta-bg: rgb(0 0 0 / 0.25);
+  --color-profile-cta-border: rgb(255 255 255 / 0.5);
+  --color-profile-box-poster-border: rgb(255 255 255 / 0.25);
+  --shadow-profile-box-poster: 0 2px 8px rgb(0 0 0 / 0.6);
   --favorite-poster-width: 30%;
   --favorite-padding: 20px;
   --radius-favorite: 15px;

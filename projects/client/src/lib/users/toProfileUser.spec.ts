@@ -18,6 +18,7 @@ const sean = {
   vip_years: 17,
   vip_cover_image: 'https://media.trakt.tv/images/shows/000/001/693/fanarts/full/0c025fb6d2.jpg',
   about: '  Huge tv nerd\n',
+  joined_at: '2010-09-25T17:49:25.000Z',
 };
 
 describe('toProfileUser', () => {
@@ -36,6 +37,7 @@ describe('toProfileUser', () => {
       age: 44,
       coverUrl: sean.vip_cover_image,
       about: 'Huge tv nerd',
+      joinedAt: '2010-09-25T17:49:25.000Z',
     });
   });
 

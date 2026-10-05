@@ -32,14 +32,6 @@ export type WatchedCard = {
   readonly watchedDate: string;
 };
 
-/** The Last Watched box. */
-export type LastWatched = {
-  readonly image?: string;
-  readonly title: { readonly text: string; readonly href: string };
-  /** An episode's own title under the show's. */
-  readonly episode?: { readonly text: string; readonly href: string };
-};
-
 export type FavoriteCard = {
   readonly type: 'show' | 'movie';
   readonly id: number;
@@ -54,8 +46,6 @@ export type FavoriteCard = {
   readonly gradient: readonly [string, string];
   readonly notes: string | null;
 };
-
-export type WatchedTotals = { readonly minutes: number; readonly unique: number };
 
 type BadgeKind = NonNullable<WatchedCard['episodeBadge']>['kind'];
 
@@ -80,10 +70,6 @@ export function episodeBadge(episode: Parameters<typeof episodeType>[0]): Watche
 const showHref = (show: EpisodeRow['show']) => `/shows/${show.ids.slug}`;
 const episodeHref = ({ show, episode }: Pick<EpisodeRow, 'show' | 'episode'>) =>
   `${showHref(show)}/seasons/${episode.season}/episodes/${episode.number}`;
-
-// OG's `item_title` for an episode: "2x04 Number the Stars", "Special 2 Title", or the number alone when untitled.
-const episodeTitle = ({ show, episode }: Pick<EpisodeRow, 'show' | 'episode'>) =>
-  [episodeNumber(episode, show.genres), episode.title].filter(Boolean).join(' ');
 
 const watchedDate = (at: string, datePreferences: DatePreferences) =>
   formatDate(at, { ...datePreferences, time: true });
@@ -117,22 +103,6 @@ export function toWatchedMovie(row: MovieRow, datePreferences: DatePreferences):
   };
 }
 
-/** The newer of the latest episode and movie watch. For an episode OG shows the show's fanart and both titles. */
-export function toLastWatched(episode: EpisodeRow | undefined, movie: MovieRow | undefined): LastWatched | null {
-  if (episode && (!movie || episode.watched_at >= movie.watched_at)) {
-    return {
-      image: imageUrl(episode.show.images?.fanart?.at(0), 'thumb'),
-      title: { text: episode.show.title, href: showHref(episode.show) },
-      episode: { text: episodeTitle(episode), href: episodeHref(episode) },
-    };
-  }
-  if (!movie) return null;
-  return {
-    image: imageUrl(movie.movie.images?.fanart?.at(0), 'thumb'),
-    title: { text: movie.movie.title, href: `/movies/${movie.movie.ids.slug}` },
-  };
-}
-
 export function toFavoriteCard(row: FavoriteRow): FavoriteCard {
   const [type, media] = row.type === 'show' ? ['show' as const, row.show] : ['movie' as const, row.movie];
   const [start = '#555', end = '#222'] = media.colors?.poster ?? [];
@@ -150,24 +120,4 @@ export function toFavoriteCard(row: FavoriteRow): FavoriteCard {
     gradient: [start, end],
     notes: row.notes?.trim() || null,
   };
-}
-
-/**
- * OG's `watched_minutes(days: 30)` and `watched_plays(days: 30)[:unique]` over a window of history rows: every
- * play's runtime (an episode without one uses its show's), and how many distinct items were played.
- */
-export function toWatchedTotals(
-  rows:
-    readonly ({ episode: { ids: { trakt: number }; runtime?: number | null }; show: { runtime?: number | null } } | {
-      movie: { ids: { trakt: number }; runtime?: number | null };
-    })[],
-): WatchedTotals {
-  const ids = new Set<number>();
-  let minutes = 0;
-  for (const row of rows) {
-    const media = 'movie' in row ? row.movie : row.episode;
-    ids.add(media.ids.trakt);
-    minutes += media.runtime ?? ('show' in row ? row.show.runtime ?? 0 : 0);
-  }
-  return { minutes, unique: ids.size };
 }

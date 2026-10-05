@@ -7,7 +7,7 @@ const { stats: heavy, newStats, collected } = dashboardFrameFixture;
 const loading = { episodes: undefined, shows: undefined, movies: undefined };
 
 describe('mapper: toStatsBand', () => {
-  describe('the headline', () => {
+  describe('all time', () => {
     it('should show years from a year of minutes up, with the exact time', () => {
       expect(toStatsBand(heavy, collected).time).toEqual({ value: '4.6', unit: 'years', exact: '1668d 4h 52m' });
     });

@@ -1,7 +1,8 @@
 <!--
-  The all-time band under the dashboard's cover: time watched as the headline, then shows finished, ratings, library, comments and
-  followers. Counts from 10,000 up are rounded; the exact value shows on hover and keyboard focus, and screen readers
-  only hear the exact one. The library cell waits on the overlay and fills without moving anything.
+  The all-time band under the dashboard's cover: time watched, shows finished, ratings, library, comments and followers in
+  equal columns, each a label, a figure, a rule and one caption line, with the rules lined up into one across the band.
+  Counts from 10,000 up are rounded; the exact value shows on hover and keyboard focus, and screen readers only hear the
+  exact one. The library cell waits on the overlay and fills without moving anything.
 -->
 <script lang="ts">
 import Container from '$lib/components/container/Container.svelte';
@@ -28,79 +29,99 @@ const spoken = (figure: StatFigure) => figure.exact ?? figure.text;
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 <div class="band" role="group" aria-label="Your Trakt in numbers">
   <Container>
-    <div class="grid">
-      <div class="lead">
+    <ul class="columns">
+      <li>
         <p class="kicker"><Icon svg={clock} /><a href="/users/{slug}/history">All time</a></p>
-        <p class="hero">
-          <b>{@render exact(band.time.value, band.time.exact)}</b>
-          <span><span aria-hidden="true">{band.time.unit}</span> watched</span>
+        <div class="line">
+          <p class="figure">{@render exact(band.time.value, band.time.exact)}<small aria-hidden="true">{band.time.unit}</small></p>
+        </div>
+        <div class="rule"></div>
+        <p class="caption">
+          <b>{@render count(band.plays)}</b> {plural(band.plays, 'play')} ·
+          <b>{@render count(band.days)}</b> {plural(band.days, 'day')}
         </p>
-        <ul class="chips">
-          <li><b>{@render count(band.plays)}</b> {plural(band.plays, 'play')}</li>
-          <li><b>{@render count(band.days)}</b> {plural(band.days, 'day')}</li>
-        </ul>
-      </div>
-      <ul class="cells">
-        {#if band.shows}
+      </li>
+      {#if band.shows}
         {@const shows = band.shows}
         <li>
           <p class="kicker"><a href="/users/{slug}/progress">Shows finished</a></p>
-          <p class="figure">{@render count(shows.finished)}<small>of {@render count(shows.watched)}</small></p>
+          <div class="line">
+            <p class="figure">{@render count(shows.finished)}<small>of {@render count(shows.watched)}</small></p>
+          </div>
           {#if shows.meter}
-            <div class="meter" role="img"
+            <!-- The rule itself: finished, in progress, dropped. -->
+            <div class="rule meter" role="img"
               aria-label="{spoken(shows.finished)} finished, {spoken(shows.started)} in progress, {spoken(shows.dropped)} dropped">
               <i style:--share="{shows.meter.finished}%"></i>
               <i style:--share="{shows.meter.started}%"></i>
               <i style:--share="{shows.meter.dropped}%"></i>
             </div>
-            <p class="caption">
-              <b>{@render count(shows.started)}</b> in progress · <b>{@render count(shows.dropped)}</b> dropped
-            </p>
+          {:else}
+            <div class="rule"></div>
           {/if}
+          <p class="caption">
+            <b>{@render count(shows.started)}</b> in progress · <b>{@render count(shows.dropped)}</b> dropped
+          </p>
         </li>
-        {/if}
-        <li>
-          <p class="kicker"><a href="/users/{slug}/ratings">Ratings</a></p>
+      {/if}
+      <li>
+        <p class="kicker"><a href="/users/{slug}/ratings">Ratings</a></p>
+        <div class="line">
           <p class="figure">{@render count(band.ratings.total)}</p>
           {#if band.ratings.average}
             <div class="histogram" role="img" aria-label="Ratings from 1 to 10, averaging {band.ratings.average}.">
               {#each band.ratings.bars as bar (bar.rating)}<i class={{ top: bar.top }} style:--height="{bar.height}%"></i>{/each}
               <u style:--at="{band.ratings.tick}%"></u>
             </div>
-            <p class="caption">Average <b>{band.ratings.average}</b></p>
-          {:else}
-            <p class="caption">No ratings yet</p>
           {/if}
-        </li>
-        <li>
-          <p class="kicker"><a href="/users/{slug}/library">Library</a></p>
-          {#if band.library}
+        </div>
+        <div class="rule"></div>
+        {#if band.ratings.average}
+          <p class="caption">Average <b>{band.ratings.average}</b></p>
+        {:else}
+          <p class="caption">No ratings yet</p>
+        {/if}
+      </li>
+      <li>
+        <p class="kicker"><a href="/users/{slug}/library">Library</a></p>
+        {#if band.library}
+          <div class="line">
             <p class="figure">{@render count(band.library.movies)}<small>{plural(band.library.movies, 'movie')}</small></p>
-            <p class="caption">
-              <b>{@render count(band.library.episodes)}</b> {plural(band.library.episodes, 'episode')} ·
-              <b>{@render count(band.library.shows)}</b> {plural(band.library.shows, 'show')}
-            </p>
-          {:else}
-            <p class="figure" aria-hidden="true"><span class="pending">…</span><small>movies</small></p>
-            <p class="caption" role="status">Counting…</p>
-          {/if}
-        </li>
-        <li>
-          <p class="kicker"><a href="/users/{slug}/comments">Comments</a></p>
-          <p class="figure">{@render count(band.comments.total)}</p>
+          </div>
+          <div class="rule"></div>
           <p class="caption">
-            <b>{@render count(band.comments.movies)}</b> {plural(band.comments.movies, 'movie')} ·
-            <b>{@render count(band.comments.shows)}</b> {plural(band.comments.shows, 'show')}
-            {#if band.comments.lists}<br /><b>{@render count(band.comments.lists)}</b> {plural(band.comments.lists, 'list')}{/if}
+            <b>{@render count(band.library.episodes)}</b> {plural(band.library.episodes, 'episode')} ·
+            <b>{@render count(band.library.shows)}</b> {plural(band.library.shows, 'show')}
           </p>
-        </li>
-        <li>
-          <p class="kicker"><a href="/users/{slug}/network/followers">Followers</a></p>
-          <p class="figure">{@render count(band.followers)}</p>
-          <p class="caption"><b>{@render count(band.friends)}</b> {plural(band.friends, 'friend')}</p>
-        </li>
-      </ul>
-    </div>
+        {:else}
+          <div class="line">
+            <p class="figure" aria-hidden="true"><span class="pending">…</span><small>movies</small></p>
+          </div>
+          <div class="rule"></div>
+          <p class="caption" role="status">Counting…</p>
+        {/if}
+      </li>
+      <li>
+        <p class="kicker"><a href="/users/{slug}/comments">{band.comments.lists ? 'Comments & lists' : 'Comments'}</a></p>
+        <div class="line">
+          <p class="figure">
+            {@render count(band.comments.total)}{#if band.comments.lists}<small>· {@render count(band.comments.lists)}
+                {plural(band.comments.lists, 'list')}</small>{/if}
+          </p>
+        </div>
+        <div class="rule"></div>
+        <p class="caption">
+          <b>{@render count(band.comments.movies)}</b> {plural(band.comments.movies, 'movie')} ·
+          <b>{@render count(band.comments.shows)}</b> {plural(band.comments.shows, 'show')}
+        </p>
+      </li>
+      <li>
+        <p class="kicker"><a href="/users/{slug}/network/followers">Followers</a></p>
+        <div class="line"><p class="figure">{@render count(band.followers)}</p></div>
+        <div class="rule"></div>
+        <p class="caption"><b>{@render count(band.friends)}</b> {plural(band.friends, 'friend')}</p>
+      </li>
+    </ul>
   </Container>
 </div>
 
@@ -111,19 +132,16 @@ const spoken = (figure: StatFigure) => figure.exact ?? figure.text;
   background: var(--color-dashboard-stats-bg);
   color: var(--color-text-inverse);
 }
-.grid {
+/* Equal columns, as many as there are (six, or five without shows finished), on one ruled axis. */
+.columns {
   display: grid;
-  grid-template-columns: var(--dashboard-band-lead) minmax(0, 1fr);
-  gap: var(--dashboard-band-cell-gap);
-  align-items: start;
-  padding-block: var(--dashboard-band-padding-block);
-}
-/* All time, then a divider like the ones between the cells. */
-.lead {
-  align-self: stretch;
-  padding: var(--dashboard-band-cell-padding);
-  padding-inline-start: 0;
-  border-inline-end: var(--dashboard-border-width) solid var(--color-profile-track);
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  column-gap: var(--dashboard-band-column-gap);
+  row-gap: var(--dashboard-band-row-gap);
+  margin: 0;
+  padding: var(--dashboard-band-padding-block) 0;
+  list-style: none;
 }
 p {
   margin: 0;
@@ -146,72 +164,25 @@ a {
   block-size: var(--dashboard-band-kicker-height);
   line-height: 1;
   text-transform: uppercase;
+  white-space: nowrap;
 }
-.hero {
+/* The figure line: one fixed height, so every rule under it sits at the same top. */
+.line {
   display: flex;
-  align-items: baseline;
-  gap: var(--dashboard-band-hero-gap);
-  margin-block-start: var(--dashboard-band-hero-top);
-  b {
-    font-family: var(--font-headings);
-    font-size: var(--font-size-profile-figure);
-    font-weight: var(--font-weight-profile-figure);
-    font-variant-numeric: tabular-nums;
-    letter-spacing: var(--letter-spacing-profile-figure);
-    line-height: 1;
-  }
-  > span {
-    color: var(--color-profile-ink-soft);
-    font-family: var(--font-headings);
-    font-size: var(--font-size-profile-figure-label);
-    font-weight: var(--font-weight-headings);
-  }
-}
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--dashboard-band-chip-gap);
-  margin: var(--dashboard-band-chips-top) 0 0;
-  padding: 0;
-  list-style: none;
-  li {
-    padding: var(--profile-chip-padding);
-    border-radius: var(--radius-profile-chip);
-    background: var(--color-dashboard-band-chip);
-    font-family: var(--font-headings);
-    font-size: var(--font-size-profile-chip);
-    font-weight: var(--font-weight-headings);
-    line-height: 1;
-    white-space: nowrap;
-  }
-  b {
-    font-weight: var(--font-weight-profile-figure);
-  }
-}
-.cells {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  > li {
-    min-inline-size: 0;
-    padding: var(--dashboard-band-cell-padding);
-    border-inline-start: var(--dashboard-border-width) solid var(--color-profile-track);
-    &:first-child {
-      padding-inline-start: 0;
-      border-inline-start: 0;
-    }
-  }
+  align-items: end;
+  justify-content: space-between;
+  gap: var(--dashboard-band-line-gap);
+  block-size: var(--dashboard-band-line-height);
+  margin-block-start: var(--dashboard-band-line-top);
 }
 .figure {
-  margin-block-start: var(--dashboard-band-figure-top);
   font-family: var(--font-headings);
   font-size: var(--font-size-dashboard-band-figure);
   font-weight: var(--font-weight-profile-figure);
   font-variant-numeric: tabular-nums;
   letter-spacing: var(--letter-spacing-dashboard-band-figure);
   line-height: 1;
+  white-space: nowrap;
   small {
     margin-inline-start: var(--dashboard-band-unit-gap);
     color: var(--color-profile-ink-soft);
@@ -220,27 +191,24 @@ a {
     letter-spacing: 0;
   }
 }
-.caption {
-  margin-block-start: var(--dashboard-band-caption-top);
-  color: var(--color-profile-ink-soft);
-  font-size: var(--font-size-dashboard-band-caption);
-  line-height: var(--line-height-dashboard-band-caption);
-  b {
-    color: var(--color-text-inverse);
-    font-weight: var(--font-weight-headings-heavy);
-  }
-}
 .pending {
   color: var(--color-profile-ink-faint);
 }
+/* A hairline on top of the meter's height, so a plain rule and the meter push the caption down alike. */
+.rule {
+  box-sizing: border-box;
+  block-size: var(--dashboard-band-rule);
+  margin-block-start: var(--dashboard-band-rule-top);
+  border-block-start: var(--dashboard-border-width) solid var(--color-profile-track);
+}
 .meter {
   display: flex;
-  gap: var(--profile-box-bars-gap);
-  block-size: var(--dashboard-band-meter-height);
-  margin-block-start: var(--dashboard-band-mark-top);
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--radius-profile-box-mark);
+  background: var(--color-profile-track);
   i {
     inline-size: var(--share);
-    border-radius: var(--radius-profile-box-mark);
     background: var(--color-profile-mark);
     & + i {
       background: var(--color-profile-mark-dim);
@@ -250,13 +218,16 @@ a {
     }
   }
 }
+/* Stands on the rule, to the right of the ratings figure. */
 .histogram {
   position: relative;
   display: flex;
+  flex: 0 1 var(--dashboard-band-histogram-width);
   align-items: end;
   gap: var(--profile-box-bars-gap);
+  min-inline-size: var(--dashboard-band-histogram-min-width);
   block-size: var(--dashboard-band-histogram-height);
-  margin-block-start: var(--dashboard-band-mark-top);
+  margin-block-end: calc(var(--dashboard-band-rule-top) * -1);
   i {
     flex: 1;
     block-size: var(--height);
@@ -278,15 +249,26 @@ a {
     box-shadow: var(--shadow-profile-genre-tick);
   }
 }
+/* One line, never wrapping. Clipped only across, so an exact value's tooltip still shows above. */
+.caption {
+  margin-block-start: var(--dashboard-band-caption-top);
+  overflow-x: clip;
+  color: var(--color-profile-ink-soft);
+  font-size: var(--font-size-dashboard-band-caption);
+  line-height: var(--line-height-dashboard-band-caption);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  b {
+    color: var(--color-text-inverse);
+    font-weight: var(--font-weight-headings-heavy);
+  }
+}
 .exact {
   position: relative;
   cursor: help;
   text-decoration: underline dotted var(--color-profile-ink-faint);
   text-decoration-thickness: var(--dashboard-border-width);
   text-underline-offset: var(--dashboard-band-underline-offset);
-  .hero & {
-    text-decoration: none;
-  }
   &::after {
     content: attr(data-exact);
     position: absolute;
@@ -308,6 +290,11 @@ a {
     translate: -50% 0;
     transition: opacity var(--transition-tooltip);
   }
+  /* A caption clips across, so its tooltips grow rightwards from the number instead of centering on it. */
+  .caption &::after {
+    inset-inline-start: 0;
+    translate: none;
+  }
   &:is(:hover, :focus-visible)::after {
     opacity: 1;
   }
@@ -321,46 +308,15 @@ a {
   white-space: nowrap;
 }
 @container (width < 1200px) {
-  .grid {
-    grid-template-columns: var(--dashboard-band-lead-narrow) minmax(0, 1fr);
-  }
-  .cells {
+  .columns {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    row-gap: var(--dashboard-band-row-gap);
-    > li {
-      padding: var(--dashboard-band-cell-padding-narrow);
-      &:nth-child(3n + 1) {
-        padding-inline-start: 0;
-        border-inline-start: 0;
-      }
-    }
+    grid-auto-flow: row;
   }
 }
 @container (width < 768px) {
-  .grid {
-    grid-template-columns: minmax(0, 1fr);
-    gap: var(--dashboard-band-row-gap);
-  }
-  .lead {
-    padding: 0;
-    border-inline-end: 0;
-  }
-  .hero b {
-    font-size: var(--font-size-dashboard-band-hero-phone);
-  }
-  .cells {
+  .columns {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    > li {
-      padding: var(--dashboard-band-cell-padding-phone);
-      border-inline-start: var(--dashboard-border-width) solid var(--color-profile-track);
-      &:nth-child(odd) {
-        padding-inline-start: 0;
-        border-inline-start: 0;
-      }
-      &:last-child {
-        grid-column: 1 / -1;
-      }
-    }
+    column-gap: var(--dashboard-band-column-gap-phone);
   }
 }
 @media (prefers-reduced-motion: reduce) {

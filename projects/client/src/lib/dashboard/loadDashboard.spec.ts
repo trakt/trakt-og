@@ -2,6 +2,7 @@ import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { workerUnauthorized } from '../api/workerUnauthorized.ts';
+import { dashboardFrameFixture } from './dashboardFrameFixture.ts';
 import { loadDashboard } from './loadDashboard.ts';
 
 const API = 'https://apiz.trakt.tv';
@@ -22,12 +23,7 @@ const server = setupServer(
   }),
   http.get(
     `${API}/users/me/stats`,
-    () =>
-      HttpResponse.json({
-        shows: { watched: 5, collected: 2 },
-        movies: { watched: 7, collected: 6, plays: 13, minutes: 1971 },
-        episodes: { watched: 50, plays: 50, collected: 0, minutes: 3000 },
-      }),
+    () => HttpResponse.json(dashboardFrameFixture.newStats),
   ),
   http.get(`${API}/users/me/watching`, () => new HttpResponse(null, { status: 204 })),
   http.get(`${API}/users/requests`, ({ request }) => {

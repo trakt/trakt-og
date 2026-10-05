@@ -3,11 +3,12 @@ import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { workerUnauthorized } from '../../../lib/api/workerUnauthorized.ts';
+import { dashboardFrameFixture } from '../../../lib/dashboard/dashboardFrameFixture.ts';
 import { load } from './+layout.server.ts';
 
 const API = 'https://apiz.trakt.tv';
 const PROFILE = { username: 'justin', private: false, name: 'Justin', ids: { slug: 'justin' } };
-const STATS = { network: { followers: 3, following: 4 } };
+const STATS = { ...dashboardFrameFixture.newStats, network: { friends: 0, followers: 3, following: 4 } };
 
 // Every native route answers a stale token with the worker's plain-text 401, public ones included.
 const refusingStale = (answer: () => Response) => ({ request }: { request: Request }) =>

@@ -1,4 +1,4 @@
-import type { UserStatsResponse } from '@trakt/api';
+import type { UserStats } from '../stats/userStatsSchema.ts';
 import { type RatingBar, toRatingsChart } from '../users/profile/toRatingsChart.ts';
 import { formatRuntime } from '../utils/formatRuntime.ts';
 import { readableStat } from '../utils/readableStat.ts';
@@ -11,6 +11,7 @@ export type StatsBand = {
   readonly time: { readonly value: string; readonly unit: string; readonly exact: string };
   readonly plays: StatFigure;
   readonly days: StatFigure;
+  /** Null when the stats came without `progress`. */
   readonly shows: {
     readonly finished: StatFigure;
     readonly watched: StatFigure;
@@ -18,7 +19,7 @@ export type StatsBand = {
     readonly dropped: StatFigure;
     /** Finished, in progress and dropped as shares of the three, 0 to 100. Null when there are none. */
     readonly meter: { readonly finished: number; readonly started: number; readonly dropped: number } | null;
-  };
+  } | null;
   readonly ratings: {
     readonly total: StatFigure;
     /** "8.2", null with no ratings. */
@@ -34,7 +35,8 @@ export type StatsBand = {
     readonly total: StatFigure;
     readonly movies: StatFigure;
     readonly shows: StatFigure;
-    readonly lists: StatFigure;
+    /** Null when the stats came without `lists`. */
+    readonly lists: StatFigure | null;
   };
   readonly followers: StatFigure;
   readonly friends: StatFigure;
@@ -63,13 +65,15 @@ function readableTime(minutes: number) {
 
 const share = (part: number, whole: number) => (part / whole) * 100;
 
-function meter({ finished, started, dropped }: UserStatsResponse['progress']) {
+type Progress = NonNullable<UserStats['progress']>;
+
+function meter({ finished, started, dropped }: Progress) {
   const total = finished + started + dropped;
   if (total === 0) return null;
   return { finished: share(finished, total), started: share(started, total), dropped: share(dropped, total) };
 }
 
-function ratings(distribution: UserStatsResponse['ratings']['distribution'], total: number) {
+function ratings(distribution: UserStats['ratings']['distribution'], total: number) {
   const chart = toRatingsChart(distribution);
   const average = chart.bars.length > 0 ? Number(chart.average) : null;
   return {
@@ -87,26 +91,28 @@ function library({ episodes, shows, movies }: Library) {
 }
 
 /** The dashboard greeting's all-time band: `/users/me/stats`, plus the overlay's library counts once they load. */
-export function toStatsBand(stats: UserStatsResponse, collected: Library): StatsBand {
-  const { progress, movies, shows, seasons, episodes } = stats;
+const shows = (progress: Progress, watched: number) => ({
+  finished: figure(progress.finished),
+  watched: figure(watched),
+  started: figure(progress.started),
+  dropped: figure(progress.dropped),
+  meter: meter(progress),
+});
+
+export function toStatsBand(stats: UserStats, collected: Library): StatsBand {
+  const { progress, movies, seasons, episodes } = stats;
   return {
     time: readableTime(stats.total_minutes),
     plays: figure(stats.total_plays),
     days: figure(Math.floor(stats.total_minutes / MINUTES_PER_DAY)),
-    shows: {
-      finished: figure(progress.finished),
-      watched: figure(shows.watched),
-      started: figure(progress.started),
-      dropped: figure(progress.dropped),
-      meter: meter(progress),
-    },
+    shows: progress ? shows(progress, stats.shows.watched) : null,
     ratings: ratings(stats.ratings.distribution, stats.ratings.total),
     library: library(collected),
     comments: {
-      total: figure(movies.comments + shows.comments + seasons.comments + episodes.comments),
+      total: figure(movies.comments + stats.shows.comments + seasons.comments + episodes.comments),
       movies: figure(movies.comments),
-      shows: figure(shows.comments),
-      lists: figure(stats.lists),
+      shows: figure(stats.shows.comments),
+      lists: stats.lists === null ? null : figure(stats.lists),
     },
     followers: figure(stats.network.followers),
     friends: figure(stats.network.friends),

@@ -8,6 +8,7 @@ import { toWatchingNow } from '../users/toWatchingNow.ts';
 import { formatDate } from '../utils/formatDate.ts';
 import { dashboardNotices } from './dashboardNotices.ts';
 import { dashboardPrefs } from './dashboardPrefs.ts';
+import { userStatsSchema } from '../stats/userStatsSchema.ts';
 import { dashboardProfileSchema } from './dashboardProfileSchema.ts';
 import { fetchLastThirtyDays } from './fetchLastThirtyDays.ts';
 import { fetchRecentlyWatched } from './fetchRecentlyWatched.ts';
@@ -56,7 +57,10 @@ export async function loadDashboard({ fetch, panelFetch = fetch, locals, cookies
   ) error(502, 'Trakt is having trouble loading your dashboard.');
   const parsedProfile = dashboardProfileSchema.safeParse(profile.body);
   const parsedRequests = followRequestsSchema.safeParse(requests.body);
-  if (!parsedProfile.success || !parsedRequests.success) error(502, 'Trakt returned an invalid dashboard response.');
+  const parsedStats = userStatsSchema.safeParse(stats.body);
+  if (!parsedProfile.success || !parsedRequests.success || !parsedStats.success) {
+    error(502, 'Trakt returned an invalid dashboard response.');
+  }
   const user = toProfileUser(parsedProfile.data);
   const dashboard = toDashboardSettings({
     settings: layout.settings,
@@ -65,7 +69,7 @@ export async function loadDashboard({ fetch, panelFetch = fetch, locals, cookies
   const { hidden } = dashboard;
   const panelClient = api({ fetch: panelFetch, token });
   // The Social Feed skips its request at zero, and the recommendations name the count: the stats strip's read has it.
-  const following = Promise.resolve(stats.body.network?.following ?? null);
+  const following = Promise.resolve(parsedStats.data.network.following);
   const notices = dashboardNotices({
     joinedAt: parsedProfile.data.joined_at,
     now,
@@ -75,7 +79,7 @@ export async function loadDashboard({ fetch, panelFetch = fetch, locals, cookies
   return {
     profile: user,
     memberSince: formatDate(parsedProfile.data.joined_at, { ...layout.datePreferences, time: true }),
-    stats: stats.body,
+    stats: parsedStats.data,
     watching: watching.status === 200 ? toWatchingNow(watching.body) : null,
     requests: parsedRequests.data
       .toSorted((a, b) => Date.parse(b.requested_at) - Date.parse(a.requested_at))

@@ -41,21 +41,24 @@ const spoken = (figure: StatFigure) => figure.exact ?? figure.text;
         </ul>
       </div>
       <ul class="cells">
+        {#if band.shows}
+        {@const shows = band.shows}
         <li>
           <p class="kicker"><a href="/users/{slug}/progress">Shows finished</a></p>
-          <p class="figure">{@render count(band.shows.finished)}<small>of {@render count(band.shows.watched)}</small></p>
-          {#if band.shows.meter}
+          <p class="figure">{@render count(shows.finished)}<small>of {@render count(shows.watched)}</small></p>
+          {#if shows.meter}
             <div class="meter" role="img"
-              aria-label="{spoken(band.shows.finished)} finished, {spoken(band.shows.started)} in progress, {spoken(band.shows.dropped)} dropped">
-              <i style:--share="{band.shows.meter.finished}%"></i>
-              <i style:--share="{band.shows.meter.started}%"></i>
-              <i style:--share="{band.shows.meter.dropped}%"></i>
+              aria-label="{spoken(shows.finished)} finished, {spoken(shows.started)} in progress, {spoken(shows.dropped)} dropped">
+              <i style:--share="{shows.meter.finished}%"></i>
+              <i style:--share="{shows.meter.started}%"></i>
+              <i style:--share="{shows.meter.dropped}%"></i>
             </div>
             <p class="caption">
-              <b>{@render count(band.shows.started)}</b> in progress · <b>{@render count(band.shows.dropped)}</b> dropped
+              <b>{@render count(shows.started)}</b> in progress · <b>{@render count(shows.dropped)}</b> dropped
             </p>
           {/if}
         </li>
+        {/if}
         <li>
           <p class="kicker"><a href="/users/{slug}/ratings">Ratings</a></p>
           <p class="figure">{@render count(band.ratings.total)}</p>
@@ -87,8 +90,8 @@ const spoken = (figure: StatFigure) => figure.exact ?? figure.text;
           <p class="figure">{@render count(band.comments.total)}</p>
           <p class="caption">
             <b>{@render count(band.comments.movies)}</b> {plural(band.comments.movies, 'movie')} ·
-            <b>{@render count(band.comments.shows)}</b> {plural(band.comments.shows, 'show')}<br />
-            <b>{@render count(band.comments.lists)}</b> {plural(band.comments.lists, 'list')}
+            <b>{@render count(band.comments.shows)}</b> {plural(band.comments.shows, 'show')}
+            {#if band.comments.lists}<br /><b>{@render count(band.comments.lists)}</b> {plural(band.comments.lists, 'list')}{/if}
           </p>
         </li>
         <li>

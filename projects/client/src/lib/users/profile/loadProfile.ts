@@ -1,4 +1,4 @@
-import type { UserStatsResponse } from '@trakt/api';
+import type { UserStats } from '../../stats/userStatsSchema.ts';
 import { api } from '../../api/api.ts';
 import type { DatePreferences } from '../../settings/DatePreferences.ts';
 import { toPanelSettings } from '../../settings/toPanelSettings.ts';
@@ -24,7 +24,7 @@ type Params = {
   params: { id: string };
   parent: () => Promise<{
     profile: ProfileUser;
-    stats: UserStatsResponse | null;
+    stats: UserStats | null;
     isSelf: boolean;
     datePreferences: DatePreferences;
     /** The viewer's own settings, from the root layout. */
@@ -172,7 +172,7 @@ export async function loadProfile({ fetch, locals, params, parent, now = new Dat
 }
 
 /** Whether the user has any activity. Without any, the strip hides: your own profile shows the welcome hero. */
-const hasActivity = (stats: UserStatsResponse) =>
+const hasActivity = (stats: UserStats) =>
   [stats.episodes.minutes, stats.movies.minutes, stats.episodes.collected, stats.movies.collected].some((n) => n > 0);
 
 type Boxes = { readonly frame: BoxFrame; readonly extras: ReturnType<typeof boxExtraLoader> };

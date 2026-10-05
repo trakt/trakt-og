@@ -1,4 +1,4 @@
-import type { UserStatsResponse } from '@trakt/api';
+import type { UserStats } from '../../../stats/userStatsSchema.ts';
 import type { ProfileUser } from '../../ProfileUser.ts';
 
 /**
@@ -7,6 +7,6 @@ import type { ProfileUser } from '../../ProfileUser.ts';
  */
 export type BoxFrame = {
   readonly profile: ProfileUser;
-  readonly stats: UserStatsResponse;
+  readonly stats: UserStats;
   readonly isSelf: boolean;
 };

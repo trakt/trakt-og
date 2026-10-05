@@ -115,7 +115,6 @@ describe('transferListItems', () => {
     server.use(http.post(add, () => {
       expect(actual.state('movie', 100).listed).toBe(true);
       expect(actual.state('show', 200).listed).toBe(true);
-      expect(actual.state('person', 300).listed).toBe(false);
       return new HttpResponse(null, { status: 500 });
     }));
     expect((await transfer({ overlay: actual })).ok).toBe(false);

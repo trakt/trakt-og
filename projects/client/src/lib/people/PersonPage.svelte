@@ -173,7 +173,7 @@ function yearLine(credit: PersonCredit) {
   {/snippet}
 
   {#snippet actions()}
-    <ActionButtons progress={data.user ? progress : undefined} history={false} library={false} comment={false} listLabel="Add to list" listTarget={{ type: 'person', id: person.id, title: person.name }} />
+    <ActionButtons progress={data.user ? progress : undefined} history={false} library={false} comment={false} list={false} />
   {/snippet}
 
   <section class="credits" id="credits" aria-labelledby="credits-heading">

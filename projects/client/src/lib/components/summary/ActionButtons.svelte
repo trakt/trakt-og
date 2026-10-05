@@ -40,8 +40,8 @@ interface Props {
   library?: boolean;
   /** Read-only progress on person credits, counting complete visible items. */
   progress?: { watched: number; collected: number; visible: number; total: number };
-  /** "Add to list" on person pages. */
-  listLabel?: string;
+  /** Off on person pages: people can't be added to lists. */
+  list?: boolean;
   listTarget?: ListTarget;
 }
 
@@ -54,7 +54,7 @@ const {
   historyTarget,
   library = true,
   progress,
-  listLabel = 'Add to watchlist',
+  list: listable = true,
   listTarget,
 }: Props = $props();
 
@@ -73,7 +73,7 @@ const buttons = $derived(
     checkin !== undefined && { kind: 'checkin', icon: trakt, label: 'Check In' },
     history && { kind: 'watch', icon: check, label: 'Add to history', side: 'Add additional play' },
     library && { kind: 'collect', icon: collection, label: 'Add to library', side: 'Add to library' },
-    { kind: 'list', icon: list, label: listLabel, side: 'Add to list' },
+    listable && { kind: 'list', icon: list, label: 'Add to watchlist', side: 'Add to list' },
     favorites && { kind: 'favorites', icon: star, label: 'Add to favorites' },
     commentable && { kind: 'comment', icon: comment, label: 'Add comment' },
   ].filter((button) => button !== false),

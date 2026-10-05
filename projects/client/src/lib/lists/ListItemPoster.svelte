@@ -43,13 +43,7 @@ const fill = $derived(quickIconFill({ state: state ?? {}, airedEpisodes: item.ai
   {rank}
   {removing}
   icons={item.type === 'person'
-    ? {
-      // The overlay has no people yet, so their list icon starts empty.
-      fill: quickIconFill({ state: {} }),
-      listOnly: true,
-      listTarget: { type: 'person', id: item.id, title: item.title },
-      listLabel: 'Add to list',
-    }
+    ? undefined
     : {
       fill,
       rating: item.rating,

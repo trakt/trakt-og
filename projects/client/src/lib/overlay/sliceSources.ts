@@ -253,7 +253,6 @@ export const sliceSources: { [K in keyof OverlaySlices]: SliceSource<K> } = {
         show: idsOfType(items, 'show'),
         season: idsOfType(items, 'season'),
         episode: idsOfType(items, 'episode'),
-        person: idsOfType(items, 'person'),
       };
     },
   },

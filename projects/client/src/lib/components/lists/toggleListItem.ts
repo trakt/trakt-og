@@ -16,8 +16,6 @@ const resultSchema = z.object({ not_found: z.record(z.string(), z.array(z.unknow
 
 /** Update every occurrence of this item, and restore its previous overlay when the write fails. */
 export async function toggleListItem({ target, list, remove, stillListed = false, overlay, request, notify }: Params) {
-  const watchType = target.type === 'person' ? null : target.type;
-  if (!list && !watchType) return false;
   const update = (ids: ReadonlySet<number>, selected: boolean) => {
     const next = new Set(ids);
     if (selected) next.add(target.id);
@@ -28,17 +26,17 @@ export async function toggleListItem({ target, list, remove, stillListed = false
     ? overlay.patch(
       'listed',
       (data) => ({ ...data, [target.type]: update(data[target.type], !remove || stillListed) }),
-      { movie: new Set(), show: new Set(), season: new Set(), episode: new Set(), person: new Set() },
+      { movie: new Set(), show: new Set(), season: new Set(), episode: new Set() },
     )
     : overlay.patch(
       'watchlist',
-      (data) => ({ ...data, [watchType ?? 'movie']: update(data[watchType ?? 'movie'] ?? new Set(), !remove) }),
+      (data) => ({ ...data, [target.type]: update(data[target.type] ?? new Set(), !remove) }),
       { movie: new Set(), show: new Set() },
     );
   const path = list ? `/users/${encodeURIComponent(list.owner)}/lists/${list.id}/items` : '/sync/watchlist';
   try {
     const response = await request(`${path}${remove ? '/remove' : ''}`, {
-      [target.type === 'person' ? 'people' : `${target.type}s`]: [{ ids: { trakt: target.id } }],
+      [`${target.type}s`]: [{ ids: { trakt: target.id } }],
     });
     if (!response.ok) throw new Error(String(response.status));
     const result = resultSchema.parse(await response.json());

@@ -58,12 +58,10 @@ const viewerState = $derived(overlay.state(target.type, target.id));
 const selected = $derived(Boolean(viewerState.watchlisted || viewerState.listed));
 const rows = $derived(sortPickerLists(lists, searching ? terms : ''));
 const count = $derived(lists.filter((list) => list.selected).length);
-const hasWatchlist = $derived(target.type !== 'person');
 const watchlistCount = $derived(overlay.watchlistCount());
 const watchlistMode = $derived(
-  hasWatchlist &&
-    ((loaded ? lists.length : listCatalog.count(page.data.user?.slug ?? '') ?? 0) === 0 ||
-      page.data.settings?.browsing?.list_popup_action === 'watchlist'),
+  (loaded ? lists.length : listCatalog.count(page.data.user?.slug ?? '') ?? 0) === 0 ||
+    page.data.settings?.browsing?.list_popup_action === 'watchlist',
 );
 const label = $derived(selected ? 'Listed On' : watchlistMode ? 'Add to watchlist' : 'Add to list');
 const subtitle = $derived(
@@ -117,7 +115,7 @@ async function open(force = false) {
       await toggleWatchlist();
       return;
     }
-    if (!force && lists.length === 0 && hasWatchlist) {
+    if (!force && lists.length === 0) {
       await toggleWatchlist();
       return;
     }
@@ -257,18 +255,17 @@ async function save(draft: Parameters<typeof createList>[0]['draft'] & { collabo
 </div>
 <div bind:this={popover} id="list-{id}" class={['picker', variant]} popover="auto" role="dialog"
   aria-label="Lists for {target.title}" style:position-anchor="--list-{id}" ontoggle={toggle}>
-  <header><span>Listed on <b>{count + Number(hasWatchlist && watchlisted)}</b> of {lists.length + Number(hasWatchlist)} lists</span>
+  <header><span>Listed on <b>{count + Number(watchlisted)}</b> of {lists.length + 1} lists</span>
     <div class="tools"><button aria-label="Filter by title" aria-pressed={searching} onclick={searchToggle}><Icon svg={search} /></button><button aria-label="Add to new list" onclick={openNew}><Icon svg={add} /></button><button aria-label="Close list picker" onclick={() => popover?.hidePopover()}><Icon svg={close} /></button></div>
   </header>
   {#if searching}<div class="search"><input bind:this={searchInput} aria-label="Search lists" placeholder="Search term..." bind:value={terms} /></div>{/if}
-  {#if hasWatchlist || rows.length > 0}<ul>
-    {#if hasWatchlist && (!searching || 'watchlist'.includes(terms.toLowerCase()))}
+  <ul>
+    {#if !searching || 'watchlist'.includes(terms.toLowerCase())}
       {@render row(null, 'Watchlist', watchlisted, watchlistCount, '', `/users/${page.data.user?.slug ?? 'me'}/watchlist`, page.data.settings?.limits?.watchlist?.item_count)}
     {/if}
     {#each rows as list (list.id)}{@render row(list, list.name, list.selected, list.count, list.privacy, `/lists/${list.id}`, listLimit?.item_count)}{/each}
-  </ul>{/if}
-  {#if !hasWatchlist && lists.length === 0}<p class="empty">Click <Icon svg={add} /> to add to a new list</p>{/if}
-  {#if searching && rows.length === 0 && (!hasWatchlist || !'watchlist'.includes(terms.toLowerCase()))}<p class="empty">No matching lists.</p>{/if}
+  </ul>
+  {#if searching && rows.length === 0 && !'watchlist'.includes(terms.toLowerCase())}<p class="empty">No matching lists.</p>{/if}
 </div>
 {#snippet row(list: PickerList | null, name: string, active: boolean, total: number, privacy: string, href: string, limit?: number)}
   {@const maxed = limit !== undefined && total >= limit && !active}

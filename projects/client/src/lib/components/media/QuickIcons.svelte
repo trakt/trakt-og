@@ -61,10 +61,8 @@ interface Props {
   hide?: string;
   hideTarget?: VisibilityTarget;
   hideSection?: 'calendar' | 'recommendations' | 'progress_watched' | 'progress_collected' | 'dropped';
-  /** "Add to watchlist" on movies and shows; "Add to list" on seasons, episodes and people. */
+  /** "Add to watchlist" on movies and shows; "Add to list" on seasons and episodes. */
   listLabel?: string;
-  /** People: only the list icon, since they can't be watched or collected. */
-  listOnly?: boolean;
 }
 
 const {
@@ -89,7 +87,6 @@ const {
   hideTarget,
   hideSection = 'recommendations',
   listLabel = 'Add to watchlist',
-  listOnly = false,
 }: Props = $props();
 
 const target = $derived(
@@ -132,7 +129,6 @@ const ratingLevel = $derived(rating === undefined ? 1 : Math.min(Math.max(Math.t
 
 <div class={['quick-icons', { small, compact }]}>
   <div class="actions">
-    {#if !listOnly}
     {#if historyTarget}
       <MediaWatch target={historyTarget} play={historyPlay} onremove={onWatchRemove} onsave={onWatchSave} {small} />
     {:else}
@@ -145,7 +141,6 @@ const ratingLevel = $derived(rating === undefined ? 1 : Math.min(Math.max(Math.t
     )}
     {/if}
     {#if libraryTarget}<MediaCollection target={libraryTarget} onremove={onCollectionRemove} onsave={onCollectionSave} {small} />{:else}{@render action('collect', collection, 'Add to library', fill.collected, fill.titles.collected)}{/if}
-    {/if}
     {#if targetList}
       <MediaList target={targetList} {small} />
     {:else}

@@ -19,9 +19,7 @@ export function syncPickerOverlay({ overlay, target, listed, watchlisted }: {
     show: new Set(),
     season: new Set(),
     episode: new Set(),
-    person: new Set(),
   });
-  if (target.type === 'person') return;
   const type = target.type;
   overlay.patch('watchlist', (data) => ({ ...data, [type]: update(data[type], watchlisted) }), {
     movie: new Set(),

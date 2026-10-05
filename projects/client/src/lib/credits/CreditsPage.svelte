@@ -5,7 +5,6 @@
 <script lang="ts">
 import PosterCard from '$lib/components/media/PosterCard.svelte';
 import PosterGrid from '$lib/components/media/PosterGrid.svelte';
-import { quickIconFill } from '$lib/components/media/quickIconFill';
 import SubpageFrame from '$lib/components/summary/SubpageFrame.svelte';
 import PillTabs from '$lib/components/tabs/PillTabs.svelte';
 import friends from '$lib/icons/trakt/friends-thick.svg?raw';
@@ -20,8 +19,6 @@ const groups = $derived(
   ].filter(({ tabs }) => tabs.length > 0),
 );
 const sections = $derived(groups.map(({ key, label }) => ({ label, href: `#${key}` })));
-// The overlay has no people yet, so their list icon starts empty.
-const fill = quickIconFill({ state: {} });
 </script>
 
 <svelte:head>
@@ -47,12 +44,6 @@ const fill = quickIconFill({ state: {} });
                   title={person.name}
                   image={person.image}
                   subtitles={[person.role || '\u00a0', ...(person.episodes ? [person.episodes] : [])]}
-                  icons={{
-                    fill,
-                    listOnly: true,
-                    listTarget: { type: 'person', id: person.id, title: person.name },
-                    listLabel: 'Add to list',
-                  }}
                 />
               {/each}
             </PosterGrid>

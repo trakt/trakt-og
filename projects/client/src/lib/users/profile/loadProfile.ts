@@ -138,6 +138,7 @@ export async function loadProfile({ fetch, locals, params, parent, now = new Dat
           count: Number(watchlist?.headers.get('x-pagination-item-count')) || 0,
           rows: watchlist?.body ?? [],
         },
+        watched: { shows: sections.charts.shows, movies: sections.charts.movies },
         genres: sections.charts.genres,
       }, boxes.extras)
       : null,

@@ -21,7 +21,15 @@ const full = (minutes: number, collected = 0) => ({
   comments: 0,
 });
 const stats = (minutes: number) =>
-  ({ episodes: full(minutes), movies: full(0), ratings: { distribution: { '8': 3 } } }) as unknown as UserStatsResponse;
+  ({
+    episodes: full(minutes),
+    movies: full(0),
+    shows: full(0),
+    seasons: full(0),
+    ratings: { total: 3, distribution: { '8': 3 } },
+    progress: { started: 0, finished: 0, dropped: 0 },
+    lists: 0,
+  }) as unknown as UserStatsResponse;
 
 const movie = (id: number, runtime: number) => ({
   id,
@@ -109,6 +117,8 @@ describe('loadProfile', () => {
     const progress = () => seen.filter((request) => new URL(request.url).pathname.includes('/progress/watched'));
     await load();
     expect(progress()).toHaveLength(1);
+    // No lists and three ratings: the Top List and Ratings boxes can't qualify, so their requests never run.
+    expect(seen.filter((request) => /\/(lists|ratings)\b/.test(new URL(request.url).pathname))).toHaveLength(0);
 
     seen.length = 0;
     const moviesOnly = await load({

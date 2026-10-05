@@ -8,7 +8,7 @@ import posterBg from '$lib/assets/poster-bg.jpg';
 import type { Snippet } from 'svelte';
 
 interface Props {
-  tone?: 'about' | 'stats';
+  tone?: 'about' | 'stats' | 'binge' | 'ratings' | 'finished' | 'genre';
   /** Fanart behind the box. An empty string or `null` keeps the plain card colour. */
   image?: string | null;
   /** The empty box's blurred posters. */
@@ -64,6 +64,22 @@ const { tone, image, placeholder = false, children, bottom, foot }: Props = $pro
 
   &.stats::before {
     background-image: var(--gradient-profile-stats);
+  }
+
+  &.binge::before {
+    background-image: var(--gradient-profile-binge);
+  }
+
+  &.ratings::before {
+    background-image: var(--gradient-profile-ratings);
+  }
+
+  &.finished::before {
+    background-image: var(--gradient-profile-finished);
+  }
+
+  &.genre::before {
+    background-image: var(--gradient-profile-genre);
   }
 
   :global(a) {

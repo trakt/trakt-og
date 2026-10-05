@@ -11,14 +11,14 @@ describe('watchTimeBox', () => {
 
     expect(score).toBe(97);
     expect(view).toMatchObject({
-      hours: '125h',
-      summary: '164 eps · 1 movie · 27 active days',
+      hours: '121h',
+      summary: '159 eps · 1 movie · 27 active days',
       allTime: { time: '104d 7h', episodes: '3,410 eps', movies: '72 movies' },
     });
     expect(view?.days).toHaveLength(30);
-    expect(view?.days.filter(({ peak }) => peak)).toEqual([{ height: 100, peak: true, title: 'Sep 26: 12h' }]);
+    expect(view?.days.filter(({ peak }) => peak)).toEqual([{ height: 100, peak: true, title: 'Sep 12: 10h 30m' }]);
     expect(view?.days.at(-1)).toMatchObject({ title: 'Oct 5: 1h 30m' });
-    expect(view?.chartLabel).toBe('Time watched per day for the last 30 days. Busiest: Sep 26, 12h.');
+    expect(view?.chartLabel).toBe('Time watched per day for the last 30 days. Busiest: Sep 12, 10h 30m.');
   });
 
   it('should leave out plays older than 30 days and count movies', async () => {

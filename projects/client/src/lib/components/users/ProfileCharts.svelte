@@ -9,7 +9,7 @@ import heart from '$lib/icons/thin/heart.svg?raw';
 import masksTheater from '$lib/icons/thin/masks-theater.svg?raw';
 import type { GenreBar } from '$lib/users/profile/toGenreBar';
 import type { RatingsChart as Ratings } from '$lib/users/profile/toRatingsChart';
-import GenreBars from './GenreBars.svelte';
+import GenreBand from './GenreBand.svelte';
 import RatingsChart from './RatingsChart.svelte';
 
 const { genres, ratings, slug }: { genres: readonly GenreBar[]; ratings: Ratings; slug: string } = $props();
@@ -21,7 +21,7 @@ const id = $props.id();
     <h2 id="{id}-genres" class="first">
       <span class="heading-icon"><Icon svg={masksTheater} fixedWidth /></span>Most Watched Genres
     </h2>
-    <div class="block"><GenreBars {genres} /></div>
+    <div class="block"><GenreBand {genres} /></div>
     <h2><span class="heading-icon"><Icon svg={heart} fixedWidth /></span>Ratings</h2>
     <p class="help"><b>{ratings.count}</b> ratings with an average of <b>{ratings.average}</b> hearts.</p>
     {#if ratings.bars.length > 0}

@@ -50,11 +50,21 @@ const loading = new Promise<readonly OnDeckItem[]>(() => {});
 // Built in the browser only, so the server never sees an unhandled rejection.
 const failed = browser ? Promise.reject(new Error('demo')) : loading;
 
-function scheduleDays(isVip: boolean): ScheduleDay[] {
+const DAY = 86_400_000;
+
+function scheduleDays(isVip: boolean, { shift = 0, busy = false, only }: {
+  /** Days to move the fixture later by. */
+  shift?: number;
+  busy?: boolean;
+  /** Just these shows. */
+  only?: readonly string[];
+} = {}): ScheduleDay[] {
   const { timeZone } = data.datePreferences;
   const today = dayIn(new Date().toISOString(), timeZone);
+  const rows = scheduleFixture.rows(dayIn(new Date(Date.now() + shift * DAY).toISOString(), timeZone), { busy })
+    .filter(({ show }) => !only || only.includes(show?.title ?? ''));
   return toScheduleDays({
-    days: upcomingDays({ items: toCalendarItems(scheduleFixture.rows(today)), start: today, timeZone, count: 5 }),
+    days: upcomingDays({ items: toCalendarItems(rows), start: today, timeZone, count: 5 }),
     today,
     datePreferences: data.datePreferences,
     isVip,
@@ -62,8 +72,11 @@ function scheduleDays(isVip: boolean): ScheduleDay[] {
     country: 'us',
   });
 }
-// Five days, with network links as a VIP sees them; then two days as everyone else does.
-const schedule = $derived(Promise.resolve(scheduleDays(true)));
+// A busy week with network links as a VIP sees them; then nothing on until the day after tomorrow, a quiet week, and
+// two days as everyone else sees them.
+const schedule = $derived(Promise.resolve(scheduleDays(true, { busy: true })));
+const scheduleLater = $derived(Promise.resolve(scheduleDays(true, { busy: true, shift: 2 })));
+const scheduleQuiet = $derived(Promise.resolve(scheduleDays(true, { only: ['Slow Horses', 'Scrubs'] })));
 const scheduleTwoDays = $derived(Promise.resolve(scheduleDays(false).slice(0, 2)));
 const scheduleLoading = new Promise<readonly ScheduleDay[]>(() => {});
 const scheduleFailed = browser ? Promise.reject(new Error('demo')) : scheduleLoading;
@@ -229,6 +242,10 @@ $effect(() => {
       <div class="gap"></div>
     {/if}
     <div id="schedule-sample"><SchedulePanel {schedule} /></div>
+    <div class="gap"></div>
+    <div id="schedule-later"><SchedulePanel schedule={scheduleLater} /></div>
+    <div class="gap"></div>
+    <div id="schedule-quiet"><SchedulePanel schedule={scheduleQuiet} /></div>
     <div class="gap"></div>
     <SchedulePanel schedule={scheduleTwoDays} />
     <div class="gap"></div>

@@ -2,7 +2,7 @@ import type { ComponentProps } from 'svelte';
 import type EpisodeTypeBadge from '../components/media/EpisodeTypeBadge.svelte';
 import type { WatchNowButton } from '../components/watchnow/watchNow.ts';
 
-/** One entry in an Upcoming Schedule day: an episode airing or a movie out. */
+/** One calendar entry in an Upcoming Schedule day: an episode airing or a movie out. */
 export type ScheduleItem = {
   readonly key: string;
   /** `show-1388` or `movie-537449`: which poster the item shows, and whether it follows its own show. */
@@ -21,8 +21,6 @@ export type ScheduleItem = {
   readonly network?: { readonly name: string; readonly href?: string };
   /** A movie's line under its title. */
   readonly tagline?: string;
-  /** A later episode of the show just above it: OG hid its show title and air time. */
-  readonly sameShow: boolean;
   /** Only when there's somewhere to watch it in the viewer's country. */
   readonly watchNow?: {
     readonly button: WatchNowButton;

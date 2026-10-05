@@ -1,8 +1,8 @@
 <!--
-  The dashboard's Upcoming Schedule panel: the first five days
-  from the start day with anything on the viewer's calendars, the first two wide with their posters and the next three
-  narrow (hidden below desktop width). Pass the unawaited `fetchSchedule` promise from the loader, so the page streams
-  in and this panel spins until it lands, and fails on its own if it doesn't.
+  The dashboard's Upcoming Schedule panel, over the first five days from the start day with anything on the viewer's
+  calendars. On the left, the first of them: up to three cards, then the rest of that day as rows. On the right, the
+  days after it as rows. The sides stack in a narrow panel. Pass the unawaited `fetchSchedule` promise from the loader,
+  so the page streams in and this panel spins until it lands, and fails on its own if it doesn't.
 -->
 <script lang="ts">
 import type { Snippet } from 'svelte';
@@ -12,11 +12,13 @@ import WatchNowDialog from '$lib/components/watchnow/WatchNowDialog.svelte';
 import type { DashboardSettings } from '$lib/dashboard/DashboardSettings';
 import type { ScheduleDay } from '$lib/dashboard/ScheduleDay';
 import type { ScheduleItem } from '$lib/dashboard/ScheduleItem';
+import { toScheduleLayout } from '$lib/dashboard/toScheduleLayout';
 import Icon from '$lib/icons/Icon.svelte';
 import calendarClock from '$lib/icons/thin/calendar-clock.svg?raw';
 import calendarLines from '$lib/icons/thin/calendar-lines.svg?raw';
 import DashboardPanel from './DashboardPanel.svelte';
-import ScheduleDayColumn from './ScheduleDayColumn.svelte';
+import ScheduleCard from './ScheduleCard.svelte';
+import ScheduleRows from './ScheduleRows.svelte';
 
 interface Props {
   schedule: Promise<readonly ScheduleDay[]>;
@@ -77,31 +79,42 @@ function watchNow(item: NonNullable<ScheduleItem['watchNow']>) {
 {#await schedule}
   {@render panel(true, pending)}
 {:then days}
-  {#snippet columns()}
-    {#if days.length === 0}
-      <div class="notice">
-  <NoData>
-          Add some TV shows and movies to your watched history, collection, or watchlist and they'll show up here.
-        </NoData>
-</div>
+  {@const layout = toScheduleLayout(days)}
+  {#snippet content()}
+    {#if !layout}
+      <p class="nothing">Nothing coming up on your calendar. <a href="/calendars/my/{filter}">Open the calendar</a>.</p>
     {:else}
+      {@const { spotlight } = layout}
       <div class="schedule">
-  <div class="wide">
-          {#each days.slice(0, 2) as day (day.date)}
-            <ScheduleDayColumn {day} wide onwatchnow={watchNow} />
-          {/each}
-        </div>
-  {#if days.length > 2}
-          <div class="narrow">
-            {#each days.slice(2, 5) as day (day.date)}
-              <ScheduleDayColumn {day} onwatchnow={watchNow} />
-            {/each}
+  <div class="split">
+          <div class="spotlight">
+            {#if spotlight.nothing}<p class="nothing">{spotlight.nothing}</p>{/if}
+            <h3>{spotlight.heading} <span>{spotlight.short}</span></h3>
+            <div class="cards">
+              {#each spotlight.cards as row (row.key)}
+                <ScheduleCard {row} onwatchnow={watchNow} />
+              {/each}
+            </div>
+            {#if spotlight.also}
+              <h3 class="also">{spotlight.also.heading} <span>{spotlight.also.count} more</span></h3>
+              <ScheduleRows rows={spotlight.also} />
+            {/if}
           </div>
-        {/if}
+          {#if layout.week.length > 0}
+            <div class="week">
+              {#each layout.week as day (day.date)}
+                <div class="day">
+                  <h3>{day.relative} <span>{day.short}</span></h3>
+                  <ScheduleRows rows={day} />
+                </div>
+              {/each}
+            </div>
+          {/if}
+        </div>
 </div>
     {/if}
   {/snippet}
-  {@render panel(false, columns, days.length === 0)}
+  {@render panel(false, content, !layout)}
 {:catch}
   {@render panel(false, failed)}
 {/await}
@@ -139,46 +152,63 @@ function watchNow(item: NonNullable<ScheduleItem['watchNow']>) {
   }
 }
 
-/* OG's twelve-column row: the two wide days take seven, the three narrow ones five. */
+.nothing {
+  margin: var(--gutter) 0 var(--space-schedule-heading);
+  padding: var(--schedule-nothing-padding);
+  border: 1px dashed var(--color-schedule-separator);
+  color: var(--color-schedule-muted);
+  font-size: var(--font-size-schedule-row);
+
+  .spotlight & {
+    margin-block-start: 0;
+  }
+}
+
 .schedule {
-  display: grid;
-  grid-template-columns: repeat(12, 1fr);
-  gap: var(--gutter);
+  container-type: inline-size;
   padding-block-start: var(--gutter);
   animation: fade-in var(--transition-card) ease-out;
 }
 
-.wide,
-.narrow {
+.split {
   display: grid;
-  gap: var(--gutter);
+  grid-template-columns: var(--schedule-split);
+  gap: var(--space-schedule-split);
   align-items: start;
-}
 
-.wide {
-  grid-column: span 7;
-  grid-template-columns: 1fr 1fr;
-}
-
-.narrow {
-  grid-column: span 5;
-  grid-template-columns: repeat(3, 1fr);
-}
-
-@media (width < 992px) {
-  .wide {
-    grid-column: 1 / -1;
-  }
-
-  .narrow {
-    display: none;
-  }
-}
-
-@media (width < 768px) {
-  .wide {
+  @container (width < 900px) {
     grid-template-columns: 1fr;
   }
+}
+
+h3 {
+  margin: 0 0 var(--space-schedule-heading);
+  font-size: var(--font-size-schedule-day);
+  font-weight: var(--font-weight-headings-heavy);
+  text-transform: uppercase;
+
+  & span {
+    margin-inline-start: var(--space-schedule-code);
+    color: var(--color-schedule-muted);
+    font-weight: var(--font-weight-headings-light);
+  }
+
+  .spotlight & {
+    color: var(--brand-primary);
+  }
+
+  &.also {
+    margin-block-start: var(--space-schedule-day);
+  }
+}
+
+.cards {
+  display: grid;
+  gap: var(--space-schedule-card);
+}
+
+.day + .day {
+  margin-block-start: var(--space-schedule-day);
 }
 
 @keyframes fade-in {

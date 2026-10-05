@@ -178,7 +178,7 @@ describe('fetchSchedule', () => {
       expect(days.at(0)).toMatchObject({ date: '2026-09-29', relative: 'Yesterday' });
     });
 
-    it("should show the wide days' season posters with that setting", async () => {
+    it("should show the spotlight day's season posters with that setting", async () => {
       const posters: string[] = [];
       server.use(
         calendar(() => rows),
@@ -200,8 +200,8 @@ describe('fetchSchedule', () => {
       const boys = days.flatMap(({ items }) => items).find(({ title }) => title === 'The Boys');
 
       expect(boys?.poster).toBe('https://media.trakt.tv/images/seasons/139960/posters/thumb/5.jpg');
-      const wide = days.slice(0, 2).flatMap(({ items }) => items.filter(({ episode }) => episode));
-      expect(posters.length).toBeLessThanOrEqual(new Set(wide.map(({ group }) => group)).size);
+      const spotlight = days.slice(0, 1).flatMap(({ items }) => items.filter(({ episode }) => episode));
+      expect(posters.length).toBeLessThanOrEqual(new Set(spotlight.map(({ group }) => group)).size);
     });
   });
 });

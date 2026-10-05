@@ -3,8 +3,6 @@ import Container from '$lib/components/container/Container.svelte';
 import VipLabel from '$lib/components/labels/VipLabel.svelte';
 import WatchingNowBar from '$lib/components/users/WatchingNowBar.svelte';
 import posterBackground from '$lib/assets/poster-bg.jpg';
-import Icon from '$lib/icons/Icon.svelte';
-import angleRight from '$lib/icons/light/angle-right.svg?raw';
 import type { ProfileUser } from '$lib/users/ProfileUser';
 import type { WatchingNow } from '$lib/users/WatchingNow';
 import type { Snippet } from 'svelte';
@@ -33,7 +31,6 @@ const cover = $derived(watching?.fanartUrl ?? (user.vip ? user.coverUrl : null))
           <p class="joined">Member since <span>{memberSince}</span></p>
         </div>
       </div>
-      <a class="profile-link" href="/users/{user.slug}">Your Profile <Icon svg={angleRight} /></a>
     </div>
   </Container>
   {#if stats}<div class="stats">{@render stats()}</div>{/if}
@@ -111,21 +108,6 @@ h1 {
     font-weight: var(--font-weight-headings-light);
   }
 }
-.profile-link {
-  margin-block-start: var(--dashboard-profile-top);
-  padding: var(--space-sm-block) var(--space-base-block);
-  background: transparent;
-  border-radius: var(--radius-code);
-  color: inherit;
-  font-family: var(--font-headings);
-  font-weight: var(--font-weight-headings);
-  text-transform: uppercase;
-  white-space: nowrap;
-  &:is(:hover, :focus-visible) {
-    background: var(--brand-primary);
-    text-decoration: none;
-  }
-}
 .stats {
   position: relative;
 }
@@ -139,9 +121,6 @@ h1 {
   }
   h1 {
     font-size: var(--font-size-h2);
-  }
-  .profile-link {
-    margin-block-start: 0;
   }
 }
 </style>

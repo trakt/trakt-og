@@ -426,7 +426,7 @@
 
   /* Dashboard frame: greeting, stats, inbox and account welcome. */
   --dashboard-greeting-top: 30px;
-  --dashboard-greeting-height: 97px; /* 72px avatar, its 5px inline baseline gap and 20px bottom margin */
+  --dashboard-greeting-height: 127px; /* 72px avatar, its 5px inline baseline gap and 50px down to the stats band */
   --dashboard-title-top: 7px;
   --dashboard-avatar-gap: 15px;
   --dashboard-avatar-border: 3px;

@@ -442,6 +442,7 @@
   --dashboard-inbox-box-height: 66px;
   --dashboard-inbox-summary-padding: 16px 20px;
   --dashboard-inbox-summary-gap: 22px;
+  --dashboard-inbox-button-gap: 8px;
   --dashboard-inbox-avatar: 42px;
   --dashboard-inbox-stack-avatar: 44px;
   --dashboard-inbox-stack-overlap: -8px;
@@ -469,6 +470,7 @@
   --color-dashboard-inbox-stack-extra: #3a3a3a;
   --color-dashboard-inbox-button-border: #444;
   --color-dashboard-inbox-count-bg: var(--brand-primary);
+  --color-dashboard-inbox-approve-hover: rgb(92 184 92 / 0.12); /* --brand-success, faint */
   --dashboard-welcome-padding: 70px 50px;
   --dashboard-welcome-steps-top: 25px;
   --dashboard-welcome-intro-line: 1.2;

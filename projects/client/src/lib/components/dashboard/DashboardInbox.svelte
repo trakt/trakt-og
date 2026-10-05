@@ -6,6 +6,7 @@
 import { tick } from 'svelte';
 import { page } from '$app/state';
 import { rawApiFetch } from '$lib/api/rawApiFetch';
+import { createRequestQueue } from '$lib/api/createRequestQueue';
 import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
 import { userManager } from '$lib/auth/userManager';
 import { login } from '$lib/auth/login';
@@ -28,8 +29,11 @@ const { requests }: { requests: readonly Request[] } = $props();
 const uid = $props.id();
 const relationships = createRelationshipOverlay();
 const stackSize = 5;
+// The API takes one write a second, so approvals go out one at a time at that pace, and a 429 waits its Retry-After.
+const writes = createRequestQueue({ concurrency: 1, limit: 1, windowMs: 1000 });
 let section = $state<HTMLElement>();
 let reviewing = $state(false);
+let approving = $state<{ done: number; total: number } | null>(null);
 const relation = (id: number) => ({ follow: 'none' as const, followsYou: false, blocked: false, requestId: id });
 const decisionOf = (request: Request) => relationships.state(request.slug, relation(request.id)).decision;
 const visible = $derived(requests.filter((request) => !['approve', 'deny'].includes(decisionOf(request) ?? '')));
@@ -44,20 +48,41 @@ $effect(() => {
   relationships.clear();
   reviewing = false;
 });
-async function decide(request: Request, action: 'approve' | 'deny' | 'blockRequest') {
-  if (!(await userManager().getUser())?.access_token) return login();
-  const next = section?.querySelector<HTMLButtonElement>(`li[data-request="${request.id}"] + li button`);
-  const fallback = section?.closest('main')?.querySelector<HTMLAnchorElement>('a[href*="/progress/"]');
-  const saving = changeRelationship({
+const send = (request: Request, action: 'approve' | 'deny' | 'blockRequest') =>
+  changeRelationship({
     slug: request.slug,
     isPrivate: false,
     relation: relation(request.id),
     action,
     overlay: relationships,
     request: (path, method) =>
-      rawApiFetch({ path, fetch: authenticatedFetch({ manager: userManager() }), init: { method } }),
+      writes.run(() => rawApiFetch({ path, fetch: authenticatedFetch({ manager: userManager() }), init: { method } })),
     notify: toast,
   });
+const progressFallback = () => section?.closest('main')?.querySelector<HTMLAnchorElement>('a[href*="/progress/"]');
+async function approveAll() {
+  if (approving) return;
+  if (!(await userManager().getUser())?.access_token) return login();
+  const queue = pending;
+  approving = { done: 0, total: queue.length };
+  for (const request of queue) {
+    // Decided by hand while the others were saving.
+    if (decisionOf(request) !== null) {
+      approving = { done: approving.done + 1, total: approving.total };
+      continue;
+    }
+    if (!(await send(request, 'approve'))) break;
+    approving = { done: approving.done + 1, total: approving.total };
+  }
+  approving = null;
+  await tick();
+  if (visible.length === 0) progressFallback()?.focus({ preventScroll: true });
+}
+async function decide(request: Request, action: 'approve' | 'deny' | 'blockRequest') {
+  if (!(await userManager().getUser())?.access_token) return login();
+  const next = section?.querySelector<HTMLButtonElement>(`li[data-request="${request.id}"] + li button`);
+  const fallback = progressFallback();
+  const saving = send(request, action);
   if (action === 'blockRequest') {
     await saving;
     return;
@@ -76,6 +101,7 @@ async function decide(request: Request, action: 'approve' | 'deny' | 'blockReque
         Follow Requests
         {#if pending.length > 0}<span class="count">{pending.length}<span class="hidden"> pending</span></span>{/if}
       </h2>
+      <span class="hidden" role="status">{approving ? `Approving ${approving.total} requests` : ''}</span>
       {#if condensed && pending.length > 0}
         <div class="summary">
           <div class="stack" aria-hidden="true">
@@ -88,8 +114,15 @@ async function decide(request: Request, action: 'approve' | 'deny' | 'blockReque
             <p>{#each summary as part, i (i)}{#if part.strong}<strong>{part.text}</strong>{:else}{part.text}{/if}{/each}</p>
             <span class="meta">Newest {pending.at(0)?.requestedAgo} · oldest {pending.at(-1)?.requestedAgo}</span>
           </div>
-          <button class="review" type="button" aria-expanded={reviewing} aria-controls="{uid}-requests"
-            onclick={() => (reviewing = !reviewing)}>{reviewing ? 'Hide' : 'Review'}</button>
+          <div class="buttons">
+            {#if approving || pending.length > 1}
+              <button class="approve-all" type="button" aria-disabled={approving !== null} onclick={approveAll}>
+                {approving ? `Approving ${Math.min(approving.done + 1, approving.total)} of ${approving.total}…` : `Approve all ${pending.length}`}
+              </button>
+            {/if}
+            <button class="review" type="button" aria-expanded={reviewing} aria-controls="{uid}-requests"
+              onclick={() => (reviewing = !reviewing)}>{reviewing ? 'Hide' : 'Review'}</button>
+          </div>
         </div>
       {/if}
       {#if showBoxes}
@@ -214,8 +247,13 @@ li {
   color: var(--color-dashboard-inbox-muted);
   font-size: var(--font-size-dashboard-inbox-time);
 }
-.review {
+.buttons {
+  display: flex;
   flex-shrink: 0;
+  gap: var(--dashboard-inbox-button-gap);
+}
+.approve-all,
+.review {
   min-block-size: 0;
   padding: var(--space-sm-block) var(--space-sm-inline);
   border: var(--dashboard-border-width) solid var(--color-dashboard-inbox-button-border);
@@ -229,6 +267,18 @@ li {
   cursor: pointer;
   &:hover {
     border-color: var(--color-dashboard-inbox-muted);
+  }
+}
+.approve-all {
+  border-color: var(--brand-success);
+  color: var(--brand-success);
+  font-variant-numeric: tabular-nums;
+  &:hover:not([aria-disabled='true']) {
+    border-color: var(--brand-success);
+    background: var(--color-dashboard-inbox-approve-hover);
+  }
+  &[aria-disabled='true'] {
+    cursor: progress;
   }
 }
 ul {

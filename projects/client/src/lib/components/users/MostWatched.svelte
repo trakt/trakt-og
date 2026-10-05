@@ -11,6 +11,8 @@ import NoData from '$lib/components/empty/NoData.svelte';
 import PosterCard from '$lib/components/media/PosterCard.svelte';
 import { quickIconFill } from '$lib/components/media/quickIconFill';
 import PillTabs from '$lib/components/tabs/PillTabs.svelte';
+import cameraMovie from '$lib/icons/regular/camera-movie.svg?raw';
+import tvRetro from '$lib/icons/regular/tv-retro.svg?raw';
 import { overlay } from '$lib/overlay/overlay';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
 import type { MostWatched, MostWatchedTab, MostWatchedType } from '$lib/users/profile/toMostWatched';
@@ -31,8 +33,8 @@ const { shows, movies, slug, windowStart, hasnt, datePreferences }: Props = $pro
 const TABS = [{ id: 'lastMonth', label: 'Last 30 Days' }, { id: 'allTime', label: 'All Time' }] as const;
 
 const columns = [
-  { type: 'shows', title: 'Most Watched Shows' },
-  { type: 'movies', title: 'Most Watched Movies' },
+  { type: 'shows', title: 'Most Watched Shows', icon: tvRetro },
+  { type: 'movies', title: 'Most Watched Movies', icon: cameraMovie },
 ] as const;
 
 const data = $derived({ shows, movies });
@@ -58,6 +60,7 @@ const seeMore = (type: MostWatchedType, sortBy: string, tab: MostWatchedTab) =>
           <PanelHeading
             id={headingId}
             title={column.title}
+            icon={column.icon}
             seeMore={{ href: seeMore(column.type, data[column.type].sortBy, selected(column.type)), text: 'See more' }}
           />
           <div class="tabs">

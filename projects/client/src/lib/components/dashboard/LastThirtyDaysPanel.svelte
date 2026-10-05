@@ -9,6 +9,7 @@ import type { Snippet } from 'svelte';
 import NoData from '$lib/components/empty/NoData.svelte';
 import GenreBand from '$lib/components/users/GenreBand.svelte';
 import type { LastThirtyDays } from '$lib/dashboard/LastThirtyDays';
+import chartSimple from '$lib/icons/regular/chart-simple.svg?raw';
 import DashboardPanel from './DashboardPanel.svelte';
 import MinutesChart from './MinutesChart.svelte';
 import WatchedKeys from './WatchedKeys.svelte';
@@ -17,7 +18,7 @@ const { stats }: { stats: Promise<LastThirtyDays> } = $props();
 </script>
 
 {#snippet panel(loading: boolean, content: Snippet)}
-  <DashboardPanel --panel-padding-end="0" title="Last 30 Days" {loading}>
+  <DashboardPanel --panel-padding-end="0" title="Last 30 Days" icon={chartSimple} {loading}>
     {@render content()}
   </DashboardPanel>
 {/snippet}

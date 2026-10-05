@@ -273,11 +273,12 @@ const slashShortcut = () => {
   return () => window.removeEventListener('keydown', keydown);
 };
 
-// The header stays across client-side navigation, so reset it the way a fresh OG page load would.
+// The header stays across client-side navigation, so reset it the way a fresh OG page load would. Only a results
+// page keeps a query in the field: its own.
 afterNavigate(({ to }) => {
-  close(false);
-  input?.blur();
   const next = to ? fromUrl(to.url) : null;
+  close(!next);
+  input?.blur();
   if (!next) return;
   typeSlug = next.slug;
   query = next.query;

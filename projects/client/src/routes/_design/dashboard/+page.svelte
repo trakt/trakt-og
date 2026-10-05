@@ -106,15 +106,15 @@ const recentLoading = new Promise<readonly RecentPlay[]>(() => {});
 const recentFailed = browser ? Promise.reject(new Error('demo')) : recentLoading;
 
 function lastThirtyDays(): LastThirtyDays {
-  const { timeZone } = data.datePreferences;
+  const { timeZone, weekStartDay } = data.datePreferences;
   const now = new Date();
   const rows = lastThirtyDaysFixture.rows(dayIn(now.toISOString(), timeZone));
   const start = new Date(now.getTime() - 30 * 86_400_000).toISOString();
-  return toLastThirtyDays({ ...rows, start, slug: 'me', now, timeZone });
+  return toLastThirtyDays({ ...rows, start, slug: 'me', now, timeZone, weekStartDay });
 }
 // Thirty days of plays and their genres; then the genres alone, which OG showed without the chart.
 const lastMonth = $derived(Promise.resolve(lastThirtyDays()));
-const genresOnly = $derived(lastMonth.then((stats) => ({ ...stats, days: [] })));
+const genresOnly = $derived(lastMonth.then((stats) => ({ ...stats, chart: null, keys: [] })));
 const lastMonthLoading = new Promise<LastThirtyDays>(() => {});
 const lastMonthFailed = browser ? Promise.reject(new Error('demo')) : lastMonthLoading;
 

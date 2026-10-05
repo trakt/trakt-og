@@ -1,4 +1,5 @@
 import { api } from '../api/api.ts';
+import type { DatePreferences } from '../settings/DatePreferences.ts';
 import { fetchRecentHistory } from '../users/fetchRecentHistory.ts';
 import { fetchWatchedGenres } from '../users/profile/fetchWatchedGenres.ts';
 import type { LastThirtyDays } from './LastThirtyDays.ts';
@@ -10,6 +11,7 @@ type FetchLastThirtyDaysParams = {
   /** The viewer's slug, for the history links. */
   slug: string;
   timeZone: string;
+  weekStartDay: DatePreferences['weekStartDay'];
   now?: Date;
 };
 
@@ -19,7 +21,7 @@ type FetchLastThirtyDaysParams = {
  * that fails fails the panel, since the totals would be short; the genres alone just go missing.
  */
 export async function fetchLastThirtyDays(
-  { fetch, token, slug, timeZone, now = new Date() }: FetchLastThirtyDaysParams,
+  { fetch, token, slug, timeZone, weekStartDay, now = new Date() }: FetchLastThirtyDaysParams,
 ): Promise<LastThirtyDays> {
   const [recent, genres] = await Promise.all([
     fetchRecentHistory({ client: api({ fetch, token }), id: 'me', now }),
@@ -27,5 +29,5 @@ export async function fetchLastThirtyDays(
   ]);
   if (!recent.complete) throw new Error('The last 30 days of history did not load');
 
-  return toLastThirtyDays({ ...recent, genres, slug, now, timeZone });
+  return toLastThirtyDays({ ...recent, genres, slug, now, timeZone, weekStartDay });
 }

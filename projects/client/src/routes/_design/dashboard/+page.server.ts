@@ -68,6 +68,7 @@ export async function load({ fetch, locals, parent, cookies }) {
         token: token,
         slug: user.slug,
         timeZone: datePreferences.timeZone,
+        weekStartDay: datePreferences.weekStartDay,
       })),
     recentlyWatched: unless(
       hidden.recentlyWatched,

@@ -58,7 +58,8 @@ function rows(today: string) {
       watched_at: dateOf(day),
       // The replay day plays its first two episodes twice.
       episode: media(day * 10 + (day === REPLAY_DAY && n >= count - 2 ? n - (count - 2) : n), RUNTIMES[day % 5] ?? 42),
-      show: { runtime: 42 },
+      // Four shows, taking turns by day.
+      show: { ids: { trakt: 500 + (day % 4) }, runtime: 42 },
     }))
   );
   const movies = Object.entries(MOVIES).map(([day, runtime]) => ({

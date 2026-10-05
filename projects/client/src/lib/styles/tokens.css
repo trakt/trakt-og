@@ -480,18 +480,36 @@
   --space-schedule-watch-now-icon: 2px;
   --schedule-tag-padding: 3px 5px;
 
-  /* The dashboard's Last 30 Days */
-  --color-help-dash: #999;
-  --color-help-plays: #bbb;
-  --space-help-dash: 6px;
-  --color-minutes-bar: var(--color-ratings-bar);
-  --color-minutes-bar-hover: var(--color-ratings-bar-hover);
-  --color-chart-grid: rgb(0 0 0 / 0.02); /* scaleGridLineColor */
-  --minutes-chart-height: 142px; /* the canvas and the line gap under it */
-  --minutes-plot-height: 106px;
-  --minutes-plot-top: 10px; /* Chart.js v1's padding over the plot */
-  --minutes-plot-inline: 2px 8px; /* the y axis sat 2px in from the text, the plot's end 8px short of it */
-  --minutes-bar-spacing: 1px; /* barValueSpacing */
+  /* The dashboard's Last 30 Days: stacked bars in the genre tooltip's show and movie colors, week brackets over them,
+     and genre-style keys over them. */
+  --color-minutes-episode: var(--color-genre-shows);
+  --color-minutes-movie: var(--color-genre-movies);
+  --color-minutes-grid: light-dark(#eee, #2a2a2a);
+  --color-minutes-stub: light-dark(#e5e5e5, #333); /* the dot on a day with nothing watched */
+  --color-minutes-today: light-dark(#ccc, #444);
+  --color-minutes-average: var(--color-text-muted);
+  --color-minutes-week: var(--color-chart-axis-label);
+  --color-minutes-week-best: var(--color-genre-label);
+  --color-minutes-bracket: var(--color-chart-axis);
+  --color-minutes-bracket-best: var(--color-text-muted);
+  --color-minutes-weekend: light-dark(#888, #9a9a9a);
+  --color-minutes-mark: var(--color-genre-label); /* month names and Today on the axis */
+  --minutes-plot-height: 140px;
+  --minutes-gutter: 28px; /* the hour labels, left of the plot */
+  --minutes-bar-gap: 3px; /* either side of a bar */
+  --radius-minutes-bar: 3px;
+  --minutes-stub: 4px;
+  --minutes-bracket: 5px; /* a week bracket's end ticks */
+  --minutes-bracket-inset: 3px; /* keeps neighbouring brackets apart */
+  --space-minutes-week-label: 12px; /* between a week's total and its bracket */
+  --space-minutes-weeks: 12px; /* between the brackets and the plot */
+  --space-minutes-axis: 6px; /* between the plot and the day labels */
+  --space-minutes-average-label: 0 4px; /* clears the line under the label */
+  --minutes-average-lift: 3px; /* the average's label, over its line */
+  --space-minutes-keys: 32px; /* under the stat keys, so they don't run into the week totals */
+  --space-minutes-genres: 48px; /* under the chart, before the genre band */
+  --font-size-minutes-week: 11px;
+  --font-size-minutes-label: 10px; /* hour lines, the average and the day labels */
   --minutes-bar-hit-height: 5px;
   --minutes-tooltip-offset: 10px; /* above the bar's top */
 

@@ -111,6 +111,7 @@ export async function loadDashboard({ fetch, panelFetch = fetch, locals, cookies
         token,
         slug: user.slug,
         timeZone: layout.datePreferences.timeZone,
+        weekStartDay: layout.datePreferences.weekStartDay,
         now,
       })),
     recentlyWatched: unless(

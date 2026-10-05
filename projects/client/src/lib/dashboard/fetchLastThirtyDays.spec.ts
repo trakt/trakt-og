@@ -49,6 +49,7 @@ const load = () =>
     token: 'abc',
     slug: 'sean',
     timeZone: 'UTC',
+    weekStartDay: 0,
     now,
   });
 
@@ -62,8 +63,8 @@ describe('fetchLastThirtyDays', () => {
     expect(historyUrl.searchParams.get('start_at')).toBe('2026-08-31T00:00:00.000Z');
     expect(historyUrl.searchParams.get('extended')).toBe('full');
     expect(seen.every((request) => request.headers.get('authorization') === 'Bearer abc')).toBe(true);
-    expect(last.time).toBe('1h 40m');
-    expect(last.days.at(-1)?.counts).toEqual(['1 movie']);
+    expect(last.keys.at(0)?.share).toBe('1h 40m');
+    expect(last.chart?.days.at(-1)?.lines).toEqual([{ type: 'movie', text: '1 movie · 1h 40m' }]);
     expect(last.genres.map(({ name }) => name)).toEqual(['Drama']);
   });
 
@@ -79,6 +80,6 @@ describe('fetchLastThirtyDays', () => {
     const last = await load();
 
     expect(last.genres).toEqual([]);
-    expect(last.days).toHaveLength(30);
+    expect(last.chart?.days).toHaveLength(30);
   });
 });

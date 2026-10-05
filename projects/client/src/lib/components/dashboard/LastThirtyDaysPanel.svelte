@@ -1,66 +1,48 @@
 <!--
-  The dashboard's Last 30 Days panel: the time, episodes and movies
-  watched in the help line, the minutes-per-day chart and the genre bars. With nothing watched OG hid the chart, and
-  the whole panel when the genres were empty too. Pass the unawaited `fetchLastThirtyDays` promise from the loader, so
-  the page streams in and this panel spins until it lands, and fails on its own if it doesn't.
+  The dashboard's Last 30 Days panel: the keys with the time, episodes, movies and best week, the minutes-per-day
+  chart under them, and the genre band. With nothing watched OG hid the chart, and the whole panel when the genres were
+  empty too. Pass the unawaited `fetchLastThirtyDays` promise from the loader, so the page streams in and this panel
+  spins until it lands, and fails on its own if it doesn't.
 -->
 <script lang="ts">
 import type { Snippet } from 'svelte';
 import NoData from '$lib/components/empty/NoData.svelte';
 import GenreBand from '$lib/components/users/GenreBand.svelte';
-import type { LastThirtyDays, WatchedCount } from '$lib/dashboard/LastThirtyDays';
+import type { LastThirtyDays } from '$lib/dashboard/LastThirtyDays';
 import chartSimple from '$lib/icons/thin/chart-simple.svg?raw';
 import DashboardPanel from './DashboardPanel.svelte';
 import MinutesChart from './MinutesChart.svelte';
+import WatchedKeys from './WatchedKeys.svelte';
 
 const { stats }: { stats: Promise<LastThirtyDays> } = $props();
 </script>
 
-{#snippet panel(loading: boolean, content: Snippet, help?: Snippet)}
-  <DashboardPanel --panel-padding-end="0" title="Last 30 Days" icon={chartSimple} {loading} {help}>
+{#snippet panel(loading: boolean, content: Snippet)}
+  <DashboardPanel --panel-padding-end="0" title="Last 30 Days" icon={chartSimple} {loading}>
     {@render content()}
   </DashboardPanel>
 {/snippet}
 
-{#snippet count({ count, word, plays }: WatchedCount)}
-  <span class="part"><b>{count}</b>&nbsp;{word}{#if plays}&nbsp;<span class="plays">{plays}</span>{/if}</span>
-{/snippet}
-
 {#await stats}
-  {@render panel(true, pending, zero)}
+  {@render panel(true, pending)}
 {:then last}
-  {#if last.days.length > 0 || last.genres.length > 0}
-    {#snippet totals()}
-      <span class="totals">
-        <span class="part"><b>{last.time}</b>&nbsp;watched</span>
-        {@render count(last.episodes)}
-        {@render count(last.movies)}
-      </span>
-    {/snippet}
+  {#if last.chart || last.genres.length > 0}
     {#snippet charts()}
       <div class="charts">
-        {#if last.days.length > 0}
-          <div class="block"><MinutesChart days={last.days} /></div>
+        {#if last.chart}
+          <div class="block keys"><WatchedKeys keys={last.keys} /></div>
+          <div class="block chart"><MinutesChart chart={last.chart} /></div>
         {/if}
         {#if last.genres.length > 0}
           <div class="block"><GenreBand genres={last.genres} /></div>
         {/if}
       </div>
     {/snippet}
-    {@render panel(false, charts, totals)}
+    {@render panel(false, charts)}
   {/if}
 {:catch}
   {@render panel(false, failed)}
 {/await}
-
-<!-- OG's placeholder help line until the chart's numbers came in. -->
-{#snippet zero()}
-  <span class="totals">
-  <span class="part"><b>0 min</b>&nbsp;watched</span>
-  <span class="part">0 episodes</span>
-  <span class="part">0 movies</span>
-</span>
-{/snippet}
 
 {#snippet pending()}{/snippet}
 
@@ -71,27 +53,6 @@ const { stats }: { stats: Promise<LastThirtyDays> } = $props();
 {/snippet}
 
 <style>
-b {
-  font-weight: var(--font-weight-headings);
-}
-
-/* Flex drops the spaces between the parts, as OG's markup had none. */
-.totals {
-  display: inline-flex;
-  flex-wrap: wrap;
-}
-
-/* OG's dashes between the parts, hidden from screen readers. */
-.part + .part::before {
-  content: '—' / '';
-  margin-inline: var(--space-help-dash);
-  color: var(--color-help-dash);
-}
-
-.plays {
-  color: var(--color-help-plays);
-}
-
 /* the panel fades in when its data lands, as OG's lazy panels did. */
 .charts {
   padding-block-start: var(--gutter);
@@ -103,19 +64,18 @@ b {
   padding-block-end: var(--gutter);
 }
 
-.notice {
-  padding-block: var(--gutter);
+/* The stat keys sit apart from the week totals under them. */
+.keys {
+  padding-block-end: var(--space-minutes-keys);
 }
 
-/* On phones each part takes its own line, as OG's `br.visible-xs` did, and loses its dash. */
-@media (width < 768px) {
-  .totals {
-    flex-direction: column;
-  }
+/* The chart sits apart from the genre band under it. */
+.chart {
+  padding-block-end: var(--space-minutes-genres);
+}
 
-  .part + .part::before {
-    content: none;
-  }
+.notice {
+  padding-block: var(--gutter);
 }
 
 @keyframes fade-in {

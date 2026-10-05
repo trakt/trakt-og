@@ -1,12 +1,12 @@
 <!--
-  One day of plays under OG's divider (`users.js:680-730`): a clock, the weekday in bold and the date, with the
+  One day of plays under OG's divider (`users.js:680-730`): a faint clock watermark, the weekday in bold and the date, with the
   day's runtime on the right. The heading is a button that collapses or expands the day's cards. With `divider` off
   (the Toggle Dividers icon), only the cards show.
     <DayGroup weekday="Tuesday" date="September 29, 2026" runtime="2h 19m">...cards...</DayGroup>
 -->
 <script lang="ts">
-import Icon from '$lib/icons/Icon.svelte';
-import clock from '$lib/icons/thin/clock.svg?raw';
+import HeadingMark from '$lib/components/heading/HeadingMark.svelte';
+import clock from '$lib/icons/regular/clock.svg?raw';
 import type { Snippet } from 'svelte';
 
 interface Props {
@@ -24,8 +24,9 @@ let open = $state(true);
 <div class="day">
   {#if divider}
     <h2 class="divider">
+      <HeadingMark svg={clock} />
       <button type="button" aria-expanded={open} onclick={() => (open = !open)}>
-        <span class="icon"><Icon svg={clock} /></span>{#if weekday}<b>{weekday}</b>{/if} {date}
+        {#if weekday}<b>{weekday}</b>{/if} {date}
       </button>
       {#if runtime}<span class="runtime">{runtime}</span>{/if}
     </h2>
@@ -35,6 +36,8 @@ let open = $state(true);
 
 <style>
 .divider {
+  position: relative;
+  isolation: isolate;
   display: flex;
   align-items: baseline;
   justify-content: space-between;
@@ -50,14 +53,6 @@ let open = $state(true);
     font: inherit;
     text-align: start;
     cursor: pointer;
-  }
-}
-
-.icon {
-  margin-inline-end: 10px;
-
-  & :global(.icon) {
-    vertical-align: top;
   }
 }
 

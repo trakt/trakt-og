@@ -190,6 +190,7 @@ const country = $derived(data.settings?.browsing?.watchnow?.country?.toLowerCase
 .icons {
   display: flex;
   align-items: center;
+  --filter-eye-lead: 0;
   gap: var(--history-icon-gap);
 }
 

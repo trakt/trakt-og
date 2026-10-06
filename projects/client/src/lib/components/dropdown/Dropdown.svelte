@@ -70,7 +70,7 @@ const closeOnPick = (event: MouseEvent & { currentTarget: HTMLElement }) => {
   &::after {
     content: '';
     display: inline-block;
-    margin-inline-start: 2px;
+    margin-inline-start: var(--space-dropdown-caret);
     vertical-align: middle;
     border-block-start: 4px solid;
     border-inline: 4px solid transparent;

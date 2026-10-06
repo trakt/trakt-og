@@ -784,6 +784,9 @@
   /* Sort and filter controls */
   --font-size-filter-terms: 18px;
   --font-size-filter-icon: 21px;
+  --space-filter-icons: 15px; /* between a toolbar's filter icons */
+  --space-filter-caret: 5px; /* from a filter icon to its caret */
+  --space-dropdown-caret: 2px; /* a dropdown trigger's caret after its text */
   --color-filter-icon: light-dark(var(--gray-dark), #fff);
   --color-filter-icon-frame: #fff; /* frame-wrapper h1.filter-dropdown.icon, */
   --font-size-filter-icon-frame: 19px;
@@ -1567,7 +1570,7 @@
   --font-size-toolbar-count: 13px; /* the blue ".interactions" counter */
   /* History and library subnav. */
   --history-count-gap: 15px;
-  --history-icon-gap: 8px;
+  --history-icon-gap: var(--space-filter-icons);
   --history-pagination-end: 6px;
   --font-size-history-count-icon: 18px; /* .interactions .trakt-icon-document, .trakt-icon-check */
   --dropdown-limit-10-height: 250px; /* .dropdown-menu.limit-10: ten rows */
@@ -1826,7 +1829,7 @@
 
 /* Sortable list filters and streaming chips. */
 :root {
-  --list-filter-icon-gap: 5px;
+  --list-filter-icon-gap: var(--space-filter-icons);
   --color-watchnow-chips-bg: light-dark(#eee, #252525);
   --watchnow-chips-country-top: -6px;
   --watchnow-chips-country-padding: 4px 3px;

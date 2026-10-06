@@ -281,6 +281,7 @@ function changeHide(hide: ProgressHide[]) {
 }
 
 .icons {
+  --filter-eye-lead: 0;
   gap: var(--history-icon-gap);
 }
 

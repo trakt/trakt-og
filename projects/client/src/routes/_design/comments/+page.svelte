@@ -1,6 +1,9 @@
 <script lang="ts">
 import { page } from '$app/state';
+import { PLACEHOLDER_AVATAR } from '$lib/components/comments/authorOf';
 import CommentCard from '$lib/components/comments/CommentCard.svelte';
+import CommentComposer from '$lib/components/comments/CommentComposer.svelte';
+import { toast } from '$lib/components/toast/toast.svelte';
 import ReactionControl from '$lib/components/comments/ReactionControl.svelte';
 import { reactionOptions } from '$lib/components/comments/reactionOptions';
 import type { CommentViewer } from '$lib/components/comments/CommentViewer';
@@ -32,6 +35,10 @@ const viewerFor = (comment: CommentResponse): CommentViewer => {
 
 let reaction = $state<typeof reactionOptions[number]['type']>();
 
+// The new comment form's composer, posting nowhere: the reply API's answer stands in, so short text is turned down.
+const post = (text: string) => client.reply(0, text);
+const posted = () => toast.success('Posted, on this page only.');
+
 let theme = $state(page.url.searchParams.get('theme') ?? 'light');
 $effect(() => {
   document.documentElement.dataset.theme = theme;
@@ -48,9 +55,9 @@ $effect(() => {
     <Container>
       <h1>Comment card</h1>
       <p>
-        OG's comment card on made-up comments, one of them showing every formatting rule. "N replies" opens the
-        replies inline. Replying, editing, deleting and blocking work on the page and never reach the API. The reaction
-        picker works for the signed-in viewer, and the report dialog sends for real.
+        The comment card on made-up comments, one of them showing every formatting rule. "View N replies" opens the
+        replies inline on a rail under the avatar. Replying, editing, deleting and blocking work on the page and never
+        reach the API. The reaction picker works for the signed-in viewer, and the report dialog sends for real.
       </p>
       <div class="controls">
         <label>
@@ -75,6 +82,14 @@ $effect(() => {
       <div class="reaction-demo">
         <ReactionControl value={reaction} onopen={() => Promise.resolve(true)}
           onselect={(type) => (reaction = reaction === type ? undefined : type)} />
+      </div>
+
+      <h2>The new comment form's composer</h2>
+      <p>It rests on one line and opens on focus. Select text and use the toolbar; the meter turns green at 5 words.</p>
+      <div class="composer-demo">
+        <CommentComposer label="Your comment" placeholder="Add a comment as OG Viewer..." submit="Post"
+          posting="Posting your comment" avatar={PLACEHOLDER_AVATAR} rules="5+ words, be respectful, mark spoilers."
+          spoiler={false} resting save={post} onsaved={posted} />
       </div>
 
       <h2>A review in a comment list: featured and wide</h2>
@@ -138,10 +153,14 @@ section {
 
 .reaction-demo {
   margin-block-end: var(--gutter);
+  color: var(--color-comment-muted);
   font-family: var(--font-headings);
-  font-weight: var(--font-weight-headings-light);
+  font-weight: var(--font-weight-headings);
   font-size: var(--font-size-comment-meta);
-  text-transform: uppercase;
+}
+
+.composer-demo {
+  margin-block-end: var(--gutter);
 }
 
 /* Discover's comment column: the veil over a stand-in fanart, positioned for the author row. */

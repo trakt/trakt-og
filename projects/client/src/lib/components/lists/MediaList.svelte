@@ -324,6 +324,9 @@ async function save(draft: Parameters<typeof createList>[0]['draft'] & { collabo
 .card.small .trigger {
   font-size: var(--font-size-quick-icon-small);
 }
+.card .trigger > :global(.icon) {
+  --icon-shift: var(--quick-icon-trakt-shift);
+}
 .card.selected,
 .card:has(.trigger:is(:hover, :focus-visible)) {
   background: var(--brand-fifth);

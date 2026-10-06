@@ -39,6 +39,8 @@ const icon = $derived(parseIconSvg(svg));
   inline-size: auto;
   vertical-align: -0.125em;
   overflow: visible;
+  /* An optical nudge a caller sets, like the quick-icon bar's for Trakt-font glyphs. */
+  translate: 0 var(--icon-shift, 0);
 }
 
 /* At least 1.25em, with the glyph centered. Like fa-fw, it never shrinks a wider glyph. */

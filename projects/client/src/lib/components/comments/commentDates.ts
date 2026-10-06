@@ -5,7 +5,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 type DateOptions = Pick<FormatDateOptions, 'order' | 'hour24' | 'timeZone'>;
 
 /**
- * The date after the labels ("Sep 28, 2026 12:23 PM"), and "updated Sep 30" when the text changed more than a day
+ * The date under the name ("Sep 28, 2026 12:23 PM"), and "edited Sep 30" when the text changed more than a day
  * after posting, with the year only when it differs.
  */
 export function commentDates(

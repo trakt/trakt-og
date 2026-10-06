@@ -1467,8 +1467,6 @@
   --color-comment-edit: var(--brand-success);
   --color-comment-delete: var(--brand-primary);
   --color-comment-pill-op: var(--brand-secondary);
-  --color-comment-pill-parent: light-dark(var(--brand-secondary), var(--gray)); /* dark knight greyed every pill but OP */
-  --color-comment-pill-blocked: light-dark(red, var(--gray)); /* OG's literal `red` */
   --font-size-comment-meta: 13px; /* the author row and the under-comment links */
   --font-size-comment-icon: 20px;
   --font-size-pill: 11px;
@@ -1494,8 +1492,22 @@
   --color-comment-name: light-dark(#111, #fff);
   --color-comment-muted: light-dark(#767676, #9a9a9a); /* dates and actions; #999 is too faint on white */
   --color-comment-chip: light-dark(#ececec, #333); /* a hovered tool or toolbar button */
-  --comment-head-gap: 4px 8px;
-  --comment-head-padding: 2px; /* lines the name up with the avatar's top */
+  --comment-head-gap: 4px 8px; /* between the name, badges and tags, and their wrapped lines */
+  --comment-head-gap-inline: 8px; /* between the name's line and the manage icons */
+  --comment-head-line-gap: 2px; /* between the name's line and the date's */
+  --comment-tools-overhang: -6px; /* the 28px icons hang over the name's line */
+  --comment-op-padding: 2px 4px; /* the VIP pill's */
+  --radius-comment-op: 2px;
+  --comment-tag-height: 20px; /* Review, Spoilers, Parent and Blocked */
+  --comment-tag-padding: 0 7px;
+  --comment-tag-gap: 4px;
+  --radius-comment-tag: 10px;
+  --font-size-comment-tag: 12px;
+  --font-size-comment-tag-icon: 11px;
+  --color-comment-tag-border: var(--color-comment-field-border);
+  --color-comment-tag-spoiler: light-dark(#b7791f, #f0ad4e);
+  --color-comment-faint: light-dark(#a8a8a8, #6f6f6f); /* the middle dot between dates */
+  --comment-meta-separator-gap: 7px;
   --comment-tool-size: 28px;
   --font-size-comment-tool: 15px;
   --radius-comment-tool: 6px;

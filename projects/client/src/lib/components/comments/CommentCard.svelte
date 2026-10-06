@@ -19,7 +19,9 @@ import { commentReactions } from '$lib/components/comments/commentReactions';
 import Icon from '$lib/icons/Icon.svelte';
 import arrowsRotate from '$lib/icons/solid/arrows-rotate.svg?raw';
 import chevronDown from '$lib/icons/solid/chevron-down.svg?raw';
+import eyeSlash from '$lib/icons/solid/eye-slash.svg?raw';
 import replyIcon from '$lib/icons/solid/reply.svg?raw';
+import star from '$lib/icons/solid/star.svg?raw';
 import checkThick from '$lib/icons/trakt/check-thick.svg?raw';
 import flag from '$lib/icons/trakt/flag-2.svg?raw';
 import deleteIcon from '$lib/icons/trakt/delete.svg?raw';
@@ -405,14 +407,16 @@ const vanish = (node: Element) =>
         {:else}
           <strong class="username">{author.name}</strong>
         {/if}
-        {#if isOp}<span class="pill op">OP</span>{/if}
-        {#if type === 'Review'}<span class="pill review">Review</span>{/if}
-        {#if blocked}<span class="pill blocked">Blocked</span>{/if}
-        {#if asParent}<span class="pill parent">Parent</span>{/if}
-        {#if comment.spoiler}<span class="pill spoiler">Spoilers</span>{/if}
+        {#if isOp}<span class="op">OP</span>{/if}
+        {#if type === 'Review'}<span class="tag"><Icon svg={star} />Review</span>{/if}
+        {#if comment.spoiler}<span class="tag spoiler-tag"><Icon svg={eyeSlash} />Spoilers</span>{/if}
+        {#if asParent}<span class="tag">Parent</span>{/if}
+        {#if blocked}<span class="tag">Blocked</span>{/if}
+      </p>
+      <p class="when">
         <a class="date" href={permalink}><time datetime={comment.created_at}>{dates.posted}</time></a>
         {#if dates.updated}
-          <span class="updated-at">updated <time datetime={comment.updated_at}>{dates.updated}</time></span>
+          <span class="updated-at">edited <time datetime={comment.updated_at}>{dates.updated}</time></span>
         {/if}
       </p>
 
@@ -632,22 +636,36 @@ const vanish = (node: Element) =>
   padding-block-end: var(--comment-main-padding-end);
 }
 
+/*
+  Two lines centred against the avatar: the name, the member badge, OP and the quiet status tags, then the date. The
+  manage icons sit at the end of the name's line.
+*/
 .above-comment {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-content: center;
+  gap: var(--comment-head-line-gap) var(--comment-head-gap-inline);
+  min-block-size: var(--avatar);
+}
+
+.byline,
+.when {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--comment-head-gap);
-  padding-block-start: var(--comment-head-padding);
-}
-
-.byline {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--comment-head-gap);
   min-inline-size: 0;
   margin: 0;
   line-height: var(--line-height-headings);
+}
+
+.byline {
+  gap: var(--comment-head-gap);
+
+  /* The pill's own offsets are for running text; the row spaces and centres it here. */
+  & > :global(.label-vip) {
+    margin-block: 0;
+    margin-inline-start: 0;
+  }
 }
 
 .username {
@@ -661,32 +679,60 @@ const vanish = (node: Element) =>
   }
 }
 
-.pill {
-  padding: 1px 4px;
-  border-radius: 2px;
-  background-color: var(--color-pill);
+/* The VIP pill's size and shape, filled blue. */
+.op {
+  padding: var(--comment-op-padding);
+  border-radius: var(--radius-comment-op);
+  background-color: var(--color-comment-pill-op);
   color: var(--color-text-inverse);
   font-family: var(--font-headings);
-  font-weight: var(--font-weight-headings);
   font-size: var(--font-size-pill);
-  text-transform: uppercase;
+  font-weight: var(--font-weight-headings);
+  line-height: 1;
 }
 
-.op {
-  background-color: var(--color-comment-pill-op);
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--comment-tag-gap);
+  block-size: var(--comment-tag-height);
+  padding: var(--comment-tag-padding);
+  border: 1px solid var(--color-comment-tag-border);
+  border-radius: var(--radius-comment-tag);
+  color: var(--color-comment-muted);
+  font-family: var(--font-headings);
+  font-size: var(--font-size-comment-tag);
+  font-weight: var(--font-weight-headings);
+  line-height: 1;
+  white-space: nowrap;
+
+  & :global(.icon) {
+    flex: none;
+    font-size: var(--font-size-comment-tag-icon);
+  }
 }
 
-.pill.parent {
-  background-color: var(--color-comment-pill-parent);
+.spoiler-tag {
+  border-color: var(--color-comment-tag-spoiler);
+  color: var(--color-comment-tag-spoiler);
 }
 
-.pill.blocked {
-  background-color: var(--color-comment-pill-blocked);
+/* The date, then "edited", after a middle dot screen readers skip. */
+.when {
+  grid-column: 1 / -1;
+  color: var(--color-comment-muted);
+  font-size: var(--font-size-comment-meta);
+
+  & > * + *::before {
+    content: '·' / '';
+    margin-inline: var(--comment-meta-separator-gap);
+    color: var(--color-comment-faint);
+    font-style: normal;
+  }
 }
 
 .date {
-  color: var(--color-comment-muted);
-  font-size: var(--font-size-comment-meta);
+  color: inherit;
   text-decoration: none;
 
   &:hover {
@@ -696,8 +742,6 @@ const vanish = (node: Element) =>
 }
 
 .updated-at {
-  color: var(--color-comment-muted);
-  font-size: var(--font-size-small);
   font-style: italic;
   white-space: nowrap;
 }
@@ -705,9 +749,12 @@ const vanish = (node: Element) =>
 /* The manage icons: small and faint until the card is hovered or has the focus. Touch screens always show them. */
 .tools {
   display: flex;
+  grid-area: 1 / 2;
+  align-self: center;
   align-items: center;
   gap: var(--comment-tools-gap);
-  margin-inline-start: auto;
+  /* Taller than the name's line, so they hang over it rather than push the date down. */
+  margin-block: var(--comment-tools-overhang);
   opacity: var(--opacity-comment-tools-idle);
   transition: opacity var(--transition-comment-quiet);
 

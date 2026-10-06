@@ -1248,6 +1248,7 @@
   --radius-filter-control: 3px;
   --filter-control-height: 28px;
   --font-size-filter-control: 13px;
+  --space-filter-chip-block: 4px; /* above and below a picked chip, so wrapped rows space evenly */
   --font-size-filter-conjunction: 11px;
   --filter-row-gap: 20px;
   --filter-label-gap: 8px;

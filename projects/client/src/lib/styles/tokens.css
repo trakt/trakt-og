@@ -1418,6 +1418,24 @@
   --activity-users-padding: 15px 15px 5px;
   --activity-avatar-gap: 10px;
   --activity-avatar-border: 3px;
+  /* The rating line under People Watched and Rated by: a stop per rating or plays range, faces over a rule */
+  --color-activity-line-empty: light-dark(#e8e8e8, #444); /* a stop nobody landed on */
+  --color-activity-watched-low: light-dark(#dccbe6, #4b3757); /* the least watched stop, ramping up to... */
+  --color-activity-watched-high: var(--brand-tertiary); /* ...the most watched, the watched action's purple */
+  --opacity-activity-line-empty: 0.35;
+  --activity-line-gap: 12px; /* between stops */
+  --activity-line-face-size: 34px;
+  --activity-line-face-overlap: 14px;
+  --activity-line-face-ring: 2px;
+  --activity-line-rule: 3px;
+  --space-activity-line-rule: 6px; /* above and below the rule */
+  --activity-line-stop-min: 64px; /* the narrowest a stop gets, however few people it has */
+  --space-activity-line-rows: 18px; /* between the line's two rows on tablets */
+  --activity-watched-ramp-floor: 35%; /* the least watched stop's share of the purple */
+  --color-activity-opened-bg: light-dark(#eee, #2a2a2a); /* the opened stop's panel and its arrow */
+  --radius-activity-opened: 6px;
+  --activity-opened-arrow: 18px;
+  --space-activity-opened: 15px; /* above and inside the opened stop's panel */
   --color-related-bg: var(--gray-darker); /* #recommendations-wrapper, dark in both themes */
   --color-related-text: #fff;
   --related-min-height: 432px; /* .fixed-height, so the page doesn't jump when it loads */

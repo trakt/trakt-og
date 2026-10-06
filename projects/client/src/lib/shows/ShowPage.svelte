@@ -41,6 +41,7 @@ const media = $derived({
   slug: show.slug,
   title: show.title,
   airedEpisodes: show.airedEpisodes,
+  totalRuntime: show.totalRuntime,
 });
 const lazy = () => browserSectionsClient(data.user !== null);
 

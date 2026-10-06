@@ -41,7 +41,13 @@ const list = (id: number, type: string, likes = 0) => ({
 });
 
 const seen: Request[] = [];
+// Kept apart from `seen`: every activity load asks for it, and the path checks are about the item's own routes.
+const followingRequests: Request[] = [];
 const server = setupServer(
+  http.get(`${API}/users/me/following`, ({ request }) => {
+    followingRequests.push(request);
+    return HttpResponse.json([{ user: user('watcher') }]);
+  }),
   http.get(`${API}/movies/:id/watching`, ({ request }) => {
     seen.push(request);
     return HttpResponse.json([user('watcher')]);
@@ -75,6 +81,7 @@ beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 afterEach(() => {
   server.resetHandlers();
   seen.length = 0;
+  followingRequests.length = 0;
 });
 afterAll(() => server.close());
 
@@ -94,6 +101,7 @@ describe('sectionsClient', () => {
       expect(tabs?.map(({ id }) => id)).toEqual(['watching']);
       expect(paths()).toEqual(['/movies/deadpool-2016/watching']);
       expect(seen.at(0)?.headers.get('authorization')).toBeNull();
+      expect(followingRequests).toEqual([]);
     });
 
     it('should drop a comment tab whose request failed and skip Me', async () => {
@@ -110,6 +118,19 @@ describe('sectionsClient', () => {
       const social = seen.find((request) => request.url.includes('/social'));
       expect(social?.headers.get('authorization')).toBe('Bearer viewer');
       expect(new URL(social?.url ?? '').searchParams.get('limit')).toBe('250');
+    });
+
+    it('should pick out the followed members watching now from the whole following list', async () => {
+      const [watching] = await client(true).activity(movie) ?? [];
+      expect(watching).toMatchObject({ id: 'watching', text: ['Watching Now', '1 You Follow'] });
+      expect(followingRequests.at(0)?.headers.get('authorization')).toBe('Bearer viewer');
+      expect(new URL(followingRequests.at(0)?.url ?? '').searchParams.get('limit')).toBe('all');
+    });
+
+    it('should pick nobody out when the following list fails', async () => {
+      server.use(http.get(`${API}/users/me/following`, () => HttpResponse.json({}, { status: 500 })));
+      const [watching] = await client(true).activity(movie) ?? [];
+      expect(watching).toMatchObject({ id: 'watching', text: ['Watching', 'Now'] });
     });
 
     it("should read the viewer's own comments into Me", async () => {

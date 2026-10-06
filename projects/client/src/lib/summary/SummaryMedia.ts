@@ -6,8 +6,10 @@ export type SummaryMedia =
     readonly slug: string;
     /** The comment cards' share title: "Fight Club (1999)", "Breaking Bad". */
     readonly title: string;
-    /** Shows only: the author's and the viewer's progress on the comment cards. */
+    /** Shows only: the author's and the viewer's progress on the comment cards, and People Watched's scale. */
     readonly airedEpisodes?: number;
+    /** Shows only: every aired episode's runtime in minutes, for People Watched's scale. */
+    readonly totalRuntime?: number;
   }
   & ({ readonly type: 'movie' | 'show'; readonly season?: never } | {
     readonly type: 'season';

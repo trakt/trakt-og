@@ -1513,7 +1513,11 @@
   --font-size-comment-action-icon: 12px; /* every icon in the action row, one box */
   /* The row's 13px Figtree centers its line box 1.25px above the x-height's middle, so icons and emoji drop to it. */
   --comment-action-icon-shift: 1.25px;
+  --comment-reactions-gap: 10px; /* between reactions in the summary */
+  --comment-reaction-count-gap: 4px; /* between an emoji and its count */
   --font-size-comment-reaction-emoji: 13px;
+  --comment-reaction-own-padding-inline: 4px; /* the viewer's own reaction's chip */
+  --radius-comment-reaction-own: 10px;
   --comment-thread-gap: 14px;
   --comment-main-padding-end: 6px;
   --opacity-comment-blocked: 0.3; /* a blocked member's collapsed card */

@@ -512,7 +512,7 @@ const vanish = (node: Element) =>
             })}
           />
         {/if}
-        {#if summary}<ReactionSummary {summary} />{/if}
+        {#if summary}<ReactionSummary {summary} mine={reactions.reaction} />{/if}
         {#if canReply}
           <button
             bind:this={replyButton}

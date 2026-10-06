@@ -1,7 +1,8 @@
 <!--
   One of the Social Feed's top tiles, a still with the text over its bottom. A live tile has the pulsing "Watching now"
   pill, what's on as the headline, a progress bar and the minutes left. A sitting tile has "Finished 24m ago" (within
-  the hour) or "11h ago", what was watched, and chips for the count and its rating. Screen readers get one sentence.
+  the hour) or "11h ago", what was watched led by the title watched last, whose newest episode gives the still, and
+  chips for the count and that title's rating. Screen readers get one sentence.
 -->
 <script lang="ts">
 import fanartPlaceholder from '$lib/assets/placeholders/fanart.png';
@@ -19,17 +20,16 @@ const view = $derived.by(() => {
     return {
       member: watch.member,
       still: { href: watch.href, path: watch.still },
-      head: { text: watch.label, href: watch.href, more: 0 },
+      head: { text: watch.label, href: watch.href, more: null },
       sentence: `${watch.member.name} is ${doing} ${watch.label}, ${minutesLeft} minutes left.`,
     };
   }
 
-  const { member, summary, items } = tile.sitting;
-  const lead = items.find(({ kind }) => kind === 'watch' || kind === 'checkin') ?? items[0];
+  const { member, summary } = tile.sitting;
   return {
     member,
-    still: { href: lead?.href ?? '', path: lead?.still },
-    head: { ...(summary.tileHead.link ?? { text: '', href: '' }), more: summary.tileHead.more },
+    still: summary.tile.still,
+    head: { ...(summary.tile.link ?? { text: '', href: '' }), more: summary.tile.more },
     sentence: summary.sentence,
   };
 });
@@ -57,7 +57,7 @@ const view = $derived.by(() => {
       {#if view.member.href}<a href={view.member.href}>{view.member.name}</a>{:else}<b>{view.member.name}</b>{/if}
     </p>
     <p class="head"><a href={view.head.href}>{view.head.text}</a>{#if view.head.more}<span aria-hidden="true">{
-            ` +${view.head.more}`
+            ` ${view.head.more}`
           }</span>{/if}</p>
     {#if tile.kind === 'live'}
       <div class="bar" aria-hidden="true"><i style:inline-size="{tile.progress}%"></i></div>
@@ -65,10 +65,10 @@ const view = $derived.by(() => {
         <span>{tile.earlier ? `+${tile.earlier} earlier` : ''}</span>
         <span>{tile.minutesLeft} min left</span>
       </p>
-    {:else if tile.sitting.summary.count || tile.sitting.summary.hearts.length}
+    {:else if tile.sitting.summary.count || tile.sitting.summary.tile.heart}
       <p class="chips" aria-hidden="true">
         {#if tile.sitting.summary.count}<span class="chip">{tile.sitting.summary.count}</span>{/if}
-        {#if tile.sitting.summary.hearts[0]}<SocialHeart rating={tile.sitting.summary.hearts[0]} />{/if}
+        {#if tile.sitting.summary.tile.heart}<SocialHeart rating={tile.sitting.summary.tile.heart} />{/if}
       </p>
     {/if}
   </div>

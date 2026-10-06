@@ -25,7 +25,7 @@ const watch = (id: number, iso: string, slug = 'sample-rook') => {
 describe('groupSittings', () => {
   it('should keep a member in one sitting while other members watch in between', () => {
     expect(signature(socialFeedFixture.rows(now))).toBe(
-      'Kristin:3 Sefer:2 Damien:3 MajorMercyFlush:4 Technicolour:3 Kristin:2 Sefer:1 Rook:1',
+      'Kristin:3 Sefer:2 Damien:4 MajorMercyFlush:4 Technicolour:3 Kristin:33 Sefer:1 Justin:2 Rook:1',
     );
   });
 

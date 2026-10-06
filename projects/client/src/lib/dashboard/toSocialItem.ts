@@ -22,8 +22,8 @@ export type SocialItem = {
   readonly time: string;
   readonly member: SocialMember;
   readonly kind: 'watch' | 'checkin' | 'rating' | 'comment' | 'review';
-  /** The movie or the show. `key` groups a sitting's rows by title. */
-  readonly title: { readonly key: string; readonly name: string; readonly href: string };
+  /** The movie or the show, with its poster path. `key` groups a sitting's rows by title. */
+  readonly title: { readonly key: string; readonly name: string; readonly href: string; readonly poster?: string };
   /** Set for episodes, so a sitting can say "1x06–1x08". */
   readonly episode?: { readonly season: number; readonly number: number };
   /** "1x08", "Special 2", "Season 2". Left out for a movie or a whole show. */

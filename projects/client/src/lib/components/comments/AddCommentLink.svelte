@@ -1,6 +1,6 @@
 <!--
-  OG's green "Add comment" link (`a.new-comment-focus.main`): it opens the page's new comment form. The comments
-  subnav puts the icon first, the summary's comments heading puts a thin circled plus after the text and matches the see-more link beside it. Renders nothing
+  OG's green "Add comment" (`a.new-comment-focus.main`), as an outlined button: it opens the page's new comment form.
+  The comments subnav puts the icon first, the summary's comments heading puts a thin circled plus after the text. Renders nothing
   when the page has no form: logged out, or banned from commenting.
 -->
 <script lang="ts">
@@ -24,43 +24,36 @@ const { heading = false }: { heading?: boolean } = $props();
 {/if}
 
 <style>
+/* The outlined button of the dashboard's Approve All, so actions read as buttons beside the see-more text links. */
 .add-comment {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-xs-inline);
+  gap: var(--space-action-button-icon);
   min-block-size: 0;
-  padding: 0;
-  border: 0;
+  padding: var(--action-button-padding);
+  border: var(--action-button-border-width) solid var(--color-comment-add);
+  border-radius: var(--radius-action-button);
   background: none;
   color: var(--color-comment-add);
   font-family: var(--font-headings);
-  font-size: var(--font-size-comment-icon);
-  font-weight: var(--font-weight-headings-light);
+  font-size: var(--font-size-action-button);
+  font-weight: var(--font-weight-headings-heavy);
   line-height: 1;
-  transition: color 0.5s;
-
-  &:is(:hover, :focus-visible) {
-    color: var(--color-comment-add-hover);
-  }
-}
-
-.text {
-  font-size: var(--font-size-comment-meta);
   text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color var(--transition-see-more);
+
+  &:hover {
+    background-color: var(--color-comment-add-hover);
+  }
+
+  & :global(.icon) {
+    font-size: var(--font-size-action-button-icon);
+  }
 }
 
-/* Beside the heading's see-more link, it takes that link's type and icon size, in its own green. */
 .heading {
-  gap: var(--space-see-more-icon);
   margin-inline-end: var(--space-see-more-icon);
-  font-size: var(--font-size-see-more-icon);
-  font-weight: var(--font-weight-headings);
-  transition-duration: var(--transition-see-more);
-
-  & .text {
-    font-size: var(--font-size-see-more);
-    letter-spacing: var(--letter-spacing-see-more);
-    line-height: 2;
-  }
 }
 </style>

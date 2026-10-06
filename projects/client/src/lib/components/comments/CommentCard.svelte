@@ -721,6 +721,7 @@ const vanish = (node: Element) =>
 }
 
 .op {
+  block-size: var(--comment-badge-height);
   border-color: var(--color-comment-pill-op);
   background-color: var(--color-comment-pill-op);
   color: var(--color-text-inverse);

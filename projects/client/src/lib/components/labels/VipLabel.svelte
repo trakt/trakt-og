@@ -163,7 +163,7 @@ const years = $derived(badge.kind === 'vip' ? badge.years : null);
 .label-vip.quiet {
   display: inline-flex;
   align-items: stretch;
-  block-size: var(--comment-tag-height);
+  block-size: var(--comment-badge-height);
   margin: 0;
   padding: 0;
   overflow: hidden;

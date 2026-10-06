@@ -1493,6 +1493,8 @@
   --comment-head-line-gap: 2px; /* between the name's line and the date's */
   --comment-tools-overhang: -6px; /* the 28px icons hang over the name's line */
   --comment-tag-height: 20px; /* the VIP pill, OP, Review, Spoilers, Parent and Blocked */
+  /* The filled VIP and OP badges have no visible border, so they read taller than the outline tags at the same size. */
+  --comment-badge-height: calc(var(--comment-tag-height) - 2px);
   --comment-tag-padding: 0 7px;
   --comment-tag-gap: 4px;
   --radius-comment-tag: 10px;

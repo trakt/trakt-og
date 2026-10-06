@@ -136,7 +136,9 @@ const social = $derived(fetchSocialFeed({
   now: socialNow,
   datePreferences: data.datePreferences,
 }));
-const socialEmpty = Promise.resolve<SocialFeed>({ sittings: [], comments: [] });
+// Nobody, one, three and seven members watching now; seven puts four behind the "+4 watching" tile.
+const watchingNow = (count: number) => () => Promise.resolve(socialFeedFixture.live(new Date()).slice(0, count));
+const socialEmpty = Promise.resolve<SocialFeed>({ sittings: [], comments: [], recent: [] });
 const socialLoading = new Promise<SocialFeed>(() => {});
 const socialFailed = browser ? Promise.reject(new Error('demo')) : socialLoading;
 
@@ -340,8 +342,10 @@ $effect(() => {
       <SocialFeedPanel feed={data.socialFeed} />
       <div class="gap"></div>
     {/if}
-    <div id="social-feed-sample"><SocialFeedPanel feed={social} /></div>
-    <div class="gap"></div>
+    {#each [0, 1, 3, 7] as count (count)}
+      <div id="social-feed-live-{count}"><SocialFeedPanel feed={social} watching={watchingNow(count)} /></div>
+      <div class="gap"></div>
+    {/each}
     <div id="social-feed-empty"><SocialFeedPanel feed={socialEmpty} /></div>
     <div class="gap"></div>
     <SocialFeedPanel feed={socialLoading} />
@@ -394,7 +398,7 @@ $effect(() => {
     <WatchlistPanel {watchlist} username="me" isVip datePreferences={data.datePreferences} />
   {/if}
   {#if !custom.hidden.socialFeed}
-    <SocialFeedPanel feed={social} />
+    <SocialFeedPanel feed={social} watching={watchingNow(0)} />
   {/if}
   <div class="gap"></div>
   <RecentlyWatchedPanel plays={recentPlays} username="me" isVip datePreferences={data.datePreferences} />

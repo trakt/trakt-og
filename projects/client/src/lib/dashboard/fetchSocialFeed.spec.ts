@@ -64,12 +64,19 @@ describe('fetchSocialFeed', () => {
     );
   });
 
-  it('should list the comments newest first', async () => {
+  it('should list the comments newest first, and who was active in the last day', async () => {
     server.use(byWindow());
 
     const social = await feed();
 
     expect(social.comments.map(({ key }) => key)).toEqual(['comment:12', 'comment:7', 'comment:18']);
+    expect(social.recent.map(({ name }) => name)).toEqual([
+      'Kristin',
+      'Sefer',
+      'Damien',
+      'MajorMercyFlush',
+      'Technicolour',
+    ]);
   });
 
   it('should stop once 12 sittings are in, and drop a row repeated on a window boundary', async () => {
@@ -96,7 +103,7 @@ describe('fetchSocialFeed', () => {
   it('should not ask when the viewer follows nobody, since the worker would send the team instead', async () => {
     server.use(byWindow());
 
-    expect(await feed(0)).toEqual({ sittings: [], comments: [] });
+    expect(await feed(0)).toEqual({ sittings: [], comments: [], recent: [] });
     expect(seen).toHaveLength(0);
   });
 

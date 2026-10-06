@@ -5,7 +5,7 @@ import { describeSitting, type SittingSummary } from './describeSitting.ts';
 import { groupSittings, type Sitting } from './groupSittings.ts';
 import { shortAgo } from './shortAgo.ts';
 import { socialActivitySchema } from './socialActivitySchema.ts';
-import { type SocialItem, toSocialItem } from './toSocialItem.ts';
+import { type SocialItem, type SocialMember, toSocialItem } from './toSocialItem.ts';
 
 type FetchSocialFeedParams = {
   fetch: typeof globalThis.fetch;
@@ -23,12 +23,15 @@ export type SocialFeed = {
   readonly sittings: readonly SocialSitting[];
   /** The comments and reviews in those sittings, newest first, with how long ago: "11h". */
   readonly comments: readonly (SocialItem & { readonly ago: string })[];
+  /** Up to 10 members active in the last 24 hours, most recent first: the ones worth asking what they're watching. */
+  readonly recent: readonly SocialMember[];
 };
 
 const SITTINGS = 12;
 const DAYS = 7;
 /** The most rows a day's window asks for. A day with more keeps its newest. */
 const PER_DAY = 100;
+const RECENT_MEMBERS = 10;
 const DAY_MS = 86_400_000;
 const MINUTE_MS = 60_000;
 
@@ -83,18 +86,24 @@ async function collect(params: WindowParams, found: readonly SocialItem[]): Prom
 export async function fetchSocialFeed(
   { fetch, token, following, now, datePreferences }: FetchSocialFeedParams,
 ): Promise<SocialFeed> {
-  if ((await following) === 0) return { sittings: [], comments: [] };
+  if ((await following) === 0) return { sittings: [], comments: [], recent: [] };
 
   const all = groupSittings(await collect({ fetch, token, now, datePreferences, day: 0 }, []));
   const sittings = all.slice(0, SITTINGS).map((sitting) => ({
     ...sitting,
     summary: describeSitting({ sitting, now, datePreferences }),
   }));
+  const recent = all
+    .filter(({ member, newest }) => member.slug && now.getTime() - Date.parse(newest) < DAY_MS)
+    .map(({ member }) => member)
+    .filter((member, i, members) => members.findIndex(({ key }) => key === member.key) === i)
+    .slice(0, RECENT_MEMBERS);
 
   return {
     sittings,
     comments: sittings.flatMap(({ items }) => items.filter(({ comment }) => comment))
       .toSorted((a, b) => Date.parse(b.at) - Date.parse(a.at))
       .map((item) => ({ ...item, ago: shortAgo(item.at, now) })),
+    recent,
   };
 }

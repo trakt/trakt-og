@@ -1,10 +1,10 @@
 <!--
   The comment card every comment list renders, as a thread: the author's avatar (with their rating) in a column, then
   the name, labels and date, the text in a soft bubble with read more and spoiler blur, and a quiet row of actions
-  under it: the watched state, reactions, Reply and "View N replies". The manage icons at the end of the name row stay
+  under it: the watched state, React, Reply, "N replies" and, at its end, the reaction summary. The manage icons at the end of the name row stay
   faint until the card is hovered or focused.
 
-  "View N replies" opens the replies inline, hanging off a rail under the avatar. Reply opens a reply box at the end of
+  "N replies" opens the replies inline, hanging off a rail under the avatar. Reply opens a reply box at the end of
   the thread, and a posted reply goes to the top of it. The pencil swaps the text for an edit form, and the × asks
   before deleting. The flag opens the report dialog, and the block icon asks before blocking the member's comments. A
   blocked member's card collapses to its faded name row until clicked, and their replies are dropped from the inline
@@ -19,6 +19,7 @@ import { fade } from 'svelte/transition';
 import { type Snippet, untrack } from 'svelte';
 import ReactionControl from '$lib/components/comments/ReactionControl.svelte';
 import { commentReactions } from '$lib/components/comments/commentReactions';
+import type { reactionOptions } from '$lib/components/comments/reactionOptions';
 import Icon from '$lib/icons/Icon.svelte';
 import arrowsRotate from '$lib/icons/solid/arrows-rotate.svg?raw';
 import chevronDown from '$lib/icons/solid/chevron-down.svg?raw';
@@ -215,6 +216,15 @@ const revealOnKey = (event: KeyboardEvent) => {
   event.preventDefault();
   clicked = true;
 };
+
+// From the picker or the summary's breakdown: the same reaction again takes it back.
+const react = (type: typeof reactionOptions[number]['type']) =>
+  commentReactions.change({
+    id: comment.id,
+    type,
+    likes: comment.likes,
+    read: (id, fresh) => api().reactionSummary(id, fresh),
+  });
 
 // A reaction also counts as a like, so a comment without likes has no reactions and needs no request.
 const loadSummary = (element: HTMLElement) => {
@@ -515,12 +525,9 @@ const vanish = (node: Element) =>
             value={reactions.reaction}
             busy={reactions.busy}
             onopen={() => commentReactions.ready()}
-            onselect={(type) => commentReactions.change({
-              id: comment.id, type, likes: comment.likes, read: (id, fresh) => api().reactionSummary(id, fresh),
-            })}
+            onselect={react}
           />
         {/if}
-        {#if summary}<ReactionSummary {summary} mine={reactions.reaction} />{/if}
         {#if canReply}
           <button
             bind:this={replyButton}
@@ -543,6 +550,15 @@ const vanish = (node: Element) =>
           >
             {repliesLabel}<Icon svg={chevronDown} />
           </a>
+        {/if}
+        {#if summary}
+          <ReactionSummary
+            {summary}
+            mine={reactions.reaction}
+            busy={reactions.busy}
+            onready={viewer ? () => commentReactions.ready() : undefined}
+            onselect={viewer ? react : undefined}
+          />
         {/if}
       </footer>
     {/if}

@@ -1522,11 +1522,32 @@
   /* face-smile-plus's circle is centred at y 288 of 512, 32/512 below the glyph box's middle, so it lifts by that. */
   --comment-react-icon-circle-offset: -0.0625em;
   --comment-reaction-emoji-shift: 1.25px; /* the summary's emoji, on the x-height's middle */
-  --comment-reactions-gap: 10px; /* between reactions in the summary */
+  --comment-reactions-gap: 4px; /* between the summary's chips and "+N" */
   --comment-reaction-count-gap: 4px; /* between an emoji and its count */
   --font-size-comment-reaction-emoji: 13px;
-  --comment-reaction-own-padding-inline: 4px; /* the viewer's own reaction's chip */
-  --radius-comment-reaction-own: 10px;
+  --comment-reaction-chip-height: 26px;
+  --comment-reaction-chip-padding: 0 8px;
+  --radius-comment-reaction-chip: 13px; /* fully round */
+  --font-size-comment-reaction-chip: 12.5px;
+  --comment-reaction-more-padding: 0 9px;
+  /* The breakdown "+N" opens: every reaction with its count. */
+  --reaction-breakdown-gap: 8px; /* from the "+N" */
+  --reaction-breakdown-padding: 8px;
+  --reaction-breakdown-item-gap: 4px;
+  --reaction-breakdown-item-width: 46px;
+  --reaction-breakdown-item-padding: 6px 4px;
+  --reaction-breakdown-emoji-gap: 2px;
+  --reaction-breakdown-caption-margin: 0 4px 2px;
+  --reaction-breakdown-hover-scale: 1.15;
+  --radius-reaction-breakdown: 12px;
+  --radius-reaction-breakdown-item: 8px;
+  --font-size-reaction-breakdown-caption: 11px;
+  --font-size-reaction-breakdown-count: 12px;
+  --font-size-reaction-breakdown-emoji: 22px;
+  --opacity-reaction-breakdown-zero: 0.55;
+  --color-reaction-breakdown-bg: light-dark(#fff, #2b2b2b);
+  --color-reaction-breakdown-border: var(--color-comment-rail);
+  --shadow-reaction-breakdown: 0 10px 28px rgb(0 0 0 / 0.28);
   --comment-thread-gap: 14px;
   --comment-main-padding-end: 6px;
   --opacity-comment-blocked: 0.3; /* a blocked member's collapsed card */

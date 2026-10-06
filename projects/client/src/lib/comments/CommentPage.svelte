@@ -1,8 +1,8 @@
 <!--
-  A comment's own page: the item's slim fanart header with
-  "Shout by NAME", the summary sidebar with its section links, then the comment on the page's band and every reply
-  under it, oldest first. There's no pagination and no comment form. A reply posted here goes on top of the replies,
-  and deleting the comment itself goes on to the item's comments .
+  A comment's own page: the item's slim fanart header with "Shout by NAME", the summary sidebar with its section links,
+  then the comment as the root of its thread, scaled up, and every reply on one rail under it, oldest first, after a
+  small "N replies" divider. The thread ends with the reply box. There's no pagination and no comment form. A reply
+  posted here goes on top of the replies, and deleting the comment itself goes on to the item's comments.
 -->
 <script lang="ts">
 import { goto } from '$app/navigation';
@@ -10,6 +10,7 @@ import { page } from '$app/state';
 import type { CommentResponse } from '@trakt/api';
 import CommentCard from '$lib/components/comments/CommentCard.svelte';
 import { authorOf } from '$lib/components/comments/authorOf';
+import RepliesDivider from '$lib/components/comments/RepliesDivider.svelte';
 import { commentSettings } from '$lib/components/comments/commentSettings';
 import { withoutBlocked } from '$lib/components/comments/withoutBlocked';
 import FanartHeader from '$lib/components/media/FanartHeader.svelte';
@@ -19,15 +20,13 @@ import SubpageTitle from '$lib/components/summary/SubpageTitle.svelte';
 import SummaryFrame from '$lib/components/summary/SummaryFrame.svelte';
 import SummaryPoster from '$lib/components/summary/SummaryPoster.svelte';
 import WatchNow from '$lib/components/watchnow/WatchNow.svelte';
-import HeadingMark from '$lib/components/heading/HeadingMark.svelte';
-import commentIcon from '$lib/icons/regular/comment.svg?raw';
 import type { loadComment } from './loadComment.ts';
 
 const { data }: { data: Awaited<ReturnType<typeof loadComment>> } = $props();
 const media = $derived(data.media);
 let posted = $state<readonly CommentResponse[]>([]);
 // Blocked members' replies are dropped.
-const replies = $derived([
+const thread = $derived([
   ...posted,
   ...withoutBlocked(data.replies, commentSettings(page.data.settings).blocked).filter(({ id }) =>
     !posted.some((reply) => reply.id === id)
@@ -48,7 +47,6 @@ const sections = $derived([
   { label: `${comment.replies} ${repliesWord(comment.replies)}`, href: '#replies' },
   { label: 'All Comments', href: commentsHref },
 ]);
-const replyCount = $derived(replies.length.toLocaleString('en-US'));
 const title = $derived(`${media.item.title} ${type.toLowerCase()} by ${author.name}`);
 </script>
 
@@ -75,98 +73,58 @@ const title = $derived(`${media.item.title} ${type.toLowerCase()} by ${author.na
   />
 </FanartHeader>
 
-<div class="comment-page">
-  <span class="band"></span>
-  <SummaryFrame label={media.title} fullWidth>
-    {#snippet sidebar()}
-      <a href={commentsHref}>
-        <SummaryPoster image={media.poster} alt={media.item.title} ratingTarget={media.ratingTarget} />
-      </a>
-      {#if data.watchNow && media.watchNow}
-        <WatchNow button={data.watchNow} title={media.watchNow.title} year={media.watchNow.year} fanart={media.fanart} />
-      {/if}
-      <SectionNav {sections} label="Comment sections" />
-      <ExternalLinks links={media.links} />
-    {/snippet}
+<SummaryFrame label={media.title} fullWidth>
+  {#snippet sidebar()}
+    <a href={commentsHref}>
+      <SummaryPoster image={media.poster} alt={media.item.title} ratingTarget={media.ratingTarget} />
+    </a>
+    {#if data.watchNow && media.watchNow}
+      <WatchNow button={data.watchNow} title={media.watchNow.title} year={media.watchNow.year} fanart={media.fanart} />
+    {/if}
+    <SectionNav {sections} label="Comment sections" />
+    <ExternalLinks links={media.links} />
+  {/snippet}
 
-    {#snippet details()}
-      <div id="read" class="read">
-        <CommentCard
-          {comment}
-          item={media.item}
-          {viewer}
-          dateOptions={data.datePreferences}
-          repliesAnchor="#replies"
-          wide
-          read
-          onreply={addReply}
-          ondelete={() => goto(commentsHref)}
-        />
-      </div>
-      {#if replies.length > 0}
-        <h2 id="replies" class="replies-heading">
-          <HeadingMark svg={commentIcon} /><strong>{replyCount}</strong>
-          {repliesWord(replies.length).toLowerCase()}
-        </h2>
-        <div class="replies">
-          {#each replies as reply (reply.id)}
-            <div class="reply">
-              <CommentCard
-                comment={reply}
-                item={media.item}
-                {viewer}
-                dateOptions={data.datePreferences}
-                opSlug={author.slug}
-                inheritSpoiler={comment.spoiler}
-                onreply={addReply}
-              />
+  {#snippet details()}
+    <div id="read" class="read">
+      <CommentCard
+        {comment}
+        item={media.item}
+        {viewer}
+        dateOptions={data.datePreferences}
+        wide
+        read
+        onreply={addReply}
+        ondelete={() => goto(commentsHref)}
+      >
+        {#snippet replies()}
+          {#if thread.length > 0}
+            <div id="replies" class="replies">
+              <RepliesDivider count={thread.length} />
+              {#each thread as reply (reply.id)}
+                <CommentCard
+                  comment={reply}
+                  item={media.item}
+                  {viewer}
+                  dateOptions={data.datePreferences}
+                  opSlug={author.slug}
+                  inheritSpoiler={comment.spoiler}
+                  nested
+                  onreply={addReply}
+                />
+              {/each}
             </div>
-          {/each}
-        </div>
-      {/if}
-    {/snippet}
-  </SummaryFrame>
-</div>
+          {/if}
+        {/snippet}
+      </CommentCard>
+    </div>
+  {/snippet}
+</SummaryFrame>
 
 <style>
-/* OG's `#info-wrapper` with `.above-comment-bg`: a band across the page behind the comment's author row. */
-.comment-page {
-  position: relative;
-}
-
-.band {
-  position: absolute;
-  inset-inline: 0;
-  inset-block-start: 0;
-  block-size: var(--comment-page-band);
-  background-color: var(--color-comment-page-band);
-}
-
-/* OG's info column has no top margin here: the author row starts at the band's top edge. */
-.read {
-  margin-block-start: calc(-1 * var(--gutter));
-
-  &:last-child {
-    margin-block-end: calc(-1 * var(--gutter));
-  }
-}
-
-.replies-heading {
-  position: relative;
-  isolation: isolate;
-  margin-block: var(--space-heading-section);
-}
-
-.reply {
-  margin-block-end: var(--gutter);
-
-  /* A deleted reply leaves its wrapper empty. */
-  &:not(:has(.comment-wrapper)) {
-    display: none;
-  }
-
-  &:last-child {
-    margin-block-end: 0;
-  }
+.replies {
+  display: grid;
+  gap: var(--comment-thread-gap);
+  scroll-margin-block-start: calc(var(--header-height) + var(--gutter));
 }
 </style>

@@ -7,6 +7,7 @@ import CommentComposer from '$lib/components/comments/CommentComposer.svelte';
 import { newComment } from '$lib/components/comments/newComment.svelte';
 import { toast } from '$lib/components/toast/toast.svelte';
 import ReactionControl from '$lib/components/comments/ReactionControl.svelte';
+import RepliesDivider from '$lib/components/comments/RepliesDivider.svelte';
 import { reactionOptions } from '$lib/components/comments/reactionOptions';
 import type { CommentViewer } from '$lib/components/comments/CommentViewer';
 import CommentWithPoster from '$lib/components/comments/CommentWithPoster.svelte';
@@ -21,6 +22,7 @@ import {
   movie,
   reply,
   review,
+  reviewReplies,
   show,
   spoiler,
   staff,
@@ -134,11 +136,23 @@ $effect(() => {
       <CommentCard comment={reply} item={movie} parent={review} viewer={viewerFor(reply)} {client}
         dateOptions={page.data.datePreferences} wide />
 
-      <h2>On its own page: the author row on the page's band</h2>
-      <div class="read">
-        <CommentCard comment={formatting} item={show} viewer={viewerFor(formatting)} {client}
-          dateOptions={page.data.datePreferences} repliesAnchor="#replies" wide read />
-      </div>
+      <h2>On its own page: the root of its thread</h2>
+      <p>
+        Scaled up, with the page's replies on one rail under it and a one-line reply box at the end that opens in place,
+        as Reply does.
+      </p>
+      <CommentCard comment={review} item={movie} viewer={viewerFor(review)} {client}
+        dateOptions={page.data.datePreferences} wide read>
+        {#snippet replies()}
+          <div class="page-replies">
+            <RepliesDivider count={reviewReplies.length} />
+            {#each reviewReplies as answer (answer.id)}
+              <CommentCard comment={answer} item={movie} viewer={viewerFor(answer)} {client}
+                dateOptions={page.data.datePreferences} opSlug={review.user.ids.slug ?? undefined} nested />
+            {/each}
+          </div>
+        {/snippet}
+      </CommentCard>
 
       <h2>Discover's Recent Comments: veiled, the author row pinned to the column's bottom</h2>
       <div class="veiled">
@@ -164,9 +178,9 @@ section {
   }
 }
 
-/* The comment page draws the band across the page; this stands in for it. */
-.read {
-  background: linear-gradient(var(--color-comment-page-band) var(--comment-page-band), transparent 0);
+.page-replies {
+  display: grid;
+  gap: var(--comment-thread-gap);
 }
 
 .reaction-demo {

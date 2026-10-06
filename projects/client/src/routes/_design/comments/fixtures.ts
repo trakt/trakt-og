@@ -145,6 +145,8 @@ const replies: readonly CommentResponse[] = [
   }),
 ];
 export const reply = replies[0] as CommentResponse;
+/** The review's replies, for its own page. */
+export const reviewReplies = replies.filter(({ parent_id }) => parent_id === review.id);
 
 const summaries: Record<number, ReactionsSummaryResponse> = {
   101: {

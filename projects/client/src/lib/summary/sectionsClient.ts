@@ -19,6 +19,9 @@ const RELATED_LIMIT = 6;
 // The worker's page cap, so one call covers every followed member OG listed.
 const SOCIAL_LIMIT = 250;
 
+// `/users/me/following` rows, checked at the boundary: only the slug picks out followed members watching now.
+const followingSchema = z.array(z.object({ user: z.object({ ids: z.object({ slug: z.string().nullish() }) }) }));
+
 export type CommentTab = {
   readonly id: 'likes' | 'recent' | 'me';
   readonly label: string;
@@ -141,16 +144,31 @@ export function sectionsClient({
     return type === 'movie' ? ok(anonymous.movies.lists(request)) : ok(anonymous.shows.lists(request));
   };
 
+  // The slugs the viewer follows, or `null` logged out or when the list doesn't load: nobody is picked out then.
+  const following = async (): Promise<ReadonlySet<string> | null> => {
+    if (!signedIn) return null;
+    // The contract omits limit, but the worker supports limit=all.
+    const request = { params: { id: 'me' }, query: { extended: undefined, limit: 'all' } };
+    const body = await ok(viewer.users.following(request));
+    const rows = followingSchema.safeParse(body).data;
+    return rows ? new Set(rows.flatMap(({ user }) => user.ids.slug ?? [])) : null;
+  };
+
   return {
     activity: async (media) => {
-      const [everyone, social] = await Promise.all([
+      const [everyone, social, followed] = await Promise.all([
         watching(media),
         media.type === 'season' ? null : raw<readonly SocialRow[]>(
           `${mediaPath(media)}/social?limit=${SOCIAL_LIMIT}&extended=images`,
           parsed(socialRowsSchema),
         ),
+        following(),
       ]);
-      return nonEmpty(toActivity({ watching: everyone ?? [], social }));
+      // A show's People Watched measures how much of it each member has seen, so it needs its size.
+      const show = media.type === 'show' && media.airedEpisodes
+        ? { airedEpisodes: media.airedEpisodes, totalRuntime: media.totalRuntime }
+        : undefined;
+      return nonEmpty(toActivity({ watching: everyone ?? [], social, following: followed, show }));
     },
 
     comments: async (media) => {

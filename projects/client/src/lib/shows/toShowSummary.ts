@@ -292,6 +292,8 @@ export function toShowSummary(params: ShowSummaryParams) {
     ],
     airedEpisodes: show.aired_episodes ?? 0,
     runtime: show.runtime ?? undefined,
+    /** Minutes, every aired episode. */
+    totalRuntime: show.total_runtime ?? undefined,
     episodeIds: seasons.filter(({ number }) => number > 0).flatMap(({ episodes }) => episodes ?? [])
       .filter(({ first_aired }) => first_aired && new Date(first_aired) <= params.now)
       .sort((a, b) => a.season - b.season || a.number - b.number).map(({ ids }) => ids.trakt),

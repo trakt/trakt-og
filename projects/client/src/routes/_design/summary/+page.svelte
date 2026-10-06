@@ -22,7 +22,7 @@ import collection from '$lib/icons/trakt/collection.svg?raw';
 import listIcon from '$lib/icons/trakt/list.svg?raw';
 import star from '$lib/icons/thin/star.svg?raw';
 import type { CommentTab, ListTab } from '$lib/summary/sectionsClient';
-import type { ActivityTab, ActivityUser } from '$lib/summary/toActivity';
+import { type ActivityTab, toActivity } from '$lib/summary/toActivity';
 import type { RelatedCard } from '$lib/summary/toRelatedCard';
 import { formatting, movie, review, spoiler } from '../comments/fixtures.ts';
 
@@ -38,38 +38,25 @@ const reportTarget = {
 };
 
 const AVATAR = 'https://media.trakt.tv/hotlink-ok/placeholders/medium/zoidberg.png';
-const member = (i: number, extra: Partial<ActivityUser> = {}): ActivityUser => ({
-  key: `member-${i}`,
-  name: `member_${i}`,
-  href: '/users/og_tester',
-  avatar: AVATAR,
-  ...extra,
+const watcher = (i: number) => ({
+  username: `member_${i}`,
+  private: i === 7,
+  deleted: false,
+  ids: { trakt: i, slug: `member_${i}` },
+  images: { avatar: { full: AVATAR } },
 });
-
-const activity: readonly ActivityTab[] = [
-  {
-    id: 'watching',
-    number: '2',
-    text: ['Watching', 'Now'],
-    users: [member(1), { key: 'private-1', name: 'hidden', avatar: AVATAR }],
-  },
-  {
-    id: 'watched',
-    number: '16',
-    text: ['People', 'Watched'],
-    users: Array.from(
-      { length: 16 },
-      (_, i) => member(i, { plays: 16 - i, rating: i % 3 === 0 ? 10 - i / 3 : undefined }),
-    ),
-  },
-  {
-    id: 'rated',
-    number: '83',
-    text: ['Rated by', '6 People'],
-    heart: 8,
-    users: Array.from({ length: 6 }, (_, i) => member(i * 3, { rating: 10 - i })),
-  },
-];
+// Thirty watching now, three of them followed; sixteen followed members with plays, a few with ratings.
+const activity: readonly ActivityTab[] = toActivity({
+  watching: Array.from({ length: 30 }, (_, i) => watcher(i)),
+  following: new Set(['member_2', 'member_5', 'member_11']),
+  social: Array.from({ length: 16 }, (_, i) => ({
+    user: watcher(i + 40),
+    watched: {
+      plays: Math.max(1, Math.round(60 / (1 + i * 0.6))),
+      rating: i % 2 === 0 ? { rating: [10, 10, 9, 9, 10, 8, 7, 9][i / 2] ?? 9 } : null,
+    },
+  })),
+});
 
 const comments: readonly CommentTab[] = [
   { id: 'likes', label: 'Likes', count: 'All Time', comments: [review, formatting] },

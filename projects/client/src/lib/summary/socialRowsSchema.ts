@@ -18,6 +18,7 @@ export const socialRowsSchema = z.array(z.object({
   user,
   watched: z.object({
     plays: z.number(),
+    minutes_watched: z.number().nullish(),
     rating: z.object({ rating: z.number() }).nullish(),
   }).nullish(),
 }));

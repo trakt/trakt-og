@@ -1,7 +1,8 @@
 <!--
   OG's numbered pagination (Kaminari's `ul.pagination`): a previous arrow, the page window from `pageWindow`, and a
   next arrow. Pass a paginated `PageMeta` from `extractPageMeta`. It renders nothing for a single page, like Kaminari.
-  Links keep the current query string and swap `page`; pass `href` to build them another way.
+  Links keep the current query string and swap `page`; pass `href` to build them another way. The dots between
+  page numbers open a jump-to-page select (PageJump).
   OG kept the arrows as links on the first and last page; og renders them as disabled text instead.
 -->
 <script lang="ts">
@@ -9,7 +10,7 @@ import { page } from '$app/state';
 import Icon from '$lib/icons/Icon.svelte';
 import arrowLeft from '$lib/icons/trakt/arrow-left.svg?raw';
 import arrowRight from '$lib/icons/trakt/arrow-right.svg?raw';
-import ellipse from '$lib/icons/trakt/ellipse.svg?raw';
+import PageJump from './PageJump.svelte';
 import { pageHref, pageWindow } from './pageWindow.ts';
 
 interface Props {
@@ -41,7 +42,7 @@ const slots = $derived(pageWindow(meta.current, meta.total));
       {#each slots as slot, i (slot === 'gap' ? `gap-${i}` : slot)}
         <li>
           {#if slot === 'gap'}
-            <span class="gap"><Icon svg={ellipse} label="More pages" /></span>
+            <PageJump total={meta.total} current={meta.current} {href} />
           {:else}
             <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- href already resolves the current path -->
             <a href={href(slot)} aria-current={slot === meta.current ? 'page' : undefined}>{slot}</a>
@@ -60,14 +61,21 @@ nav {
 
 ul {
   display: inline-flex;
+  align-items: stretch;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
+li {
+  display: flex;
+}
+
+/* Flex boxes stretched to the numbers' line, so the arrows and the dots center on it. */
 a,
 span {
-  display: block;
+  display: flex;
+  align-items: center;
   margin-inline-start: -1px;
   padding: var(--space-base-block) var(--space-base-inline);
   color: var(--color-pagination-text);
@@ -97,13 +105,8 @@ a[aria-current='page'] {
   cursor: not-allowed;
 }
 
-.gap {
-  cursor: default;
-}
-
 a :global(.icon),
 span :global(.icon) {
   font-size: var(--font-size-icon-lg);
-  margin-block-start: -3px; /* OG nudged the arrows up so they don't grow the row */
 }
 </style>

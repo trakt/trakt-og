@@ -853,6 +853,9 @@
   --no-results-image: 150px;
   --color-pagination-text: light-dark(#000, #fff);
   --color-pagination-disabled: light-dark(#ccc, #666);
+  --space-page-jump: 9px 14px; /* the quick jump popover, like Bootstrap's .popover-title */
+  --space-page-jump-offset: 4px;
+  --page-jump-select-width: 70px;
   --color-tab-bg: light-dark(rgb(0 0 0 / 0.3), rgb(255 255 255 / 0.15));
   --color-tab-bg-hover: light-dark(rgb(0 0 0 / 0.5), rgb(255 255 255 / 0.35));
   --color-tab-text: light-dark(#fff, #ccc);

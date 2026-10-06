@@ -37,8 +37,8 @@ const { summary }: Props = $props();
 
 .count-number {
   margin-inline-start: 3px;
-  color: var(--color-comment-reaction);
-  font-weight: bold;
+  color: var(--color-text);
+  font-weight: var(--font-weight-headings);
 }
 
 .visually-hidden {

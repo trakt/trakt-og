@@ -1,6 +1,6 @@
 <!--
   A comment author's round avatar. When they rated the item, the ring takes the rating's colour and the top-right
-  corner squares off under OG's rating triangle.
+  corner squares off under OG's rating triangle. `small` is a reply's, in a thread.
 -->
 <script lang="ts">
 import CornerRating from '../media/CornerRating.svelte';
@@ -9,12 +9,13 @@ interface Props {
   src: string;
   /** The author's rating of the item, 1 to 10. */
   rating?: number | null;
+  small?: boolean;
 }
 
-const { src, rating }: Props = $props();
+const { src, rating, small = false }: Props = $props();
 </script>
 
-<span class="user-avatar" style:--ring={rating ? `var(--rating-${rating})` : undefined}>
+<span class={['user-avatar', { small }]} style:--ring={rating ? `var(--rating-${rating})` : undefined}>
   {#if rating}
     <span class="block"></span>
     <CornerRating {rating} small label="Rated {rating}" />
@@ -28,6 +29,10 @@ const { src, rating }: Props = $props();
   position: relative;
   display: block;
   inline-size: var(--comment-avatar);
+}
+
+.small {
+  inline-size: var(--comment-avatar-nested);
 }
 
 /* OG's `.corner-rating.block`: the corner square the round avatar sits on. */

@@ -1,5 +1,6 @@
 <!--
-  OG's green "Add comment" (`a.new-comment-focus.main`), as an outlined button: it opens the page's new comment form.
+  OG's green "Add comment" (`a.new-comment-focus.main`), as an outlined button: it scrolls to the page's new comment
+  form and focuses it.
   The comments subnav puts the icon first, the summary's comments heading puts a thin circled plus after the text. Renders nothing
   when the page has no form: logged out, or banned from commenting.
 -->

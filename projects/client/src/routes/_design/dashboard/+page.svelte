@@ -19,10 +19,10 @@ import { recentlyWatchedFixture } from '$lib/dashboard/recentlyWatchedFixture';
 import { recommendationsFixture } from '$lib/dashboard/recommendationsFixture';
 import type { ScheduleDay } from '$lib/dashboard/ScheduleDay';
 import { scheduleFixture } from '$lib/dashboard/scheduleFixture';
+import { fetchSocialFeed, type SocialFeed } from '$lib/dashboard/fetchSocialFeed';
 import { socialFeedFixture } from '$lib/dashboard/socialFeedFixture';
 import { toLastThirtyDays } from '$lib/dashboard/toLastThirtyDays';
 import { type RecentPlay, toRecentPlay } from '$lib/dashboard/toRecentPlay';
-import { type SocialPlay, toSocialPlay } from '$lib/dashboard/toSocialPlay';
 import { toScheduleDays } from '$lib/dashboard/toScheduleDays';
 import { upcomingDays } from '$lib/dashboard/upcomingDays';
 import { watchlistFixture } from '$lib/dashboard/watchlistFixture';
@@ -118,10 +118,26 @@ const genresOnly = $derived(lastMonth.then((stats) => ({ ...stats, chart: null, 
 const lastMonthLoading = new Promise<LastThirtyDays>(() => {});
 const lastMonthFailed = browser ? Promise.reject(new Error('demo')) : lastMonthLoading;
 
-const socialPlays = $derived(
-  Promise.resolve(socialFeedFixture.rows(new Date()).map((row) => toSocialPlay(row, data.datePreferences))),
-);
-const socialLoading = new Promise<readonly SocialPlay[]>(() => {});
+// The fixture's week, through the real fetcher: the worker answers each day's window with its rows.
+const socialNow = new Date();
+const social = $derived(fetchSocialFeed({
+  fetch: (input) => {
+    const url = new URL(input instanceof Request ? input.url : input);
+    const start = Date.parse(url.searchParams.get('start_at') ?? '');
+    const end = Date.parse(url.searchParams.get('end_at') ?? '');
+    const rows = socialFeedFixture.rows(socialNow).filter(({ activity_at }) => {
+      const at = Date.parse(activity_at);
+      return at >= start && at <= end;
+    });
+    return Promise.resolve(Response.json(rows));
+  },
+  token: 'demo',
+  following: Promise.resolve(8),
+  now: socialNow,
+  datePreferences: data.datePreferences,
+}));
+const socialEmpty = Promise.resolve<SocialFeed>({ sittings: [], comments: [] });
+const socialLoading = new Promise<SocialFeed>(() => {});
 const socialFailed = browser ? Promise.reject(new Error('demo')) : socialLoading;
 
 // Ten shows and five movies from the two members you follow; then following nobody, with no movies at all; then one
@@ -321,16 +337,16 @@ $effect(() => {
 
   <div id="social-feed">
     {#if data.socialFeed}
-      <SocialFeedPanel plays={data.socialFeed} />
+      <SocialFeedPanel feed={data.socialFeed} />
       <div class="gap"></div>
     {/if}
-    <div id="social-feed-sample"><SocialFeedPanel plays={socialPlays} /></div>
+    <div id="social-feed-sample"><SocialFeedPanel feed={social} /></div>
     <div class="gap"></div>
-    <div id="social-feed-empty"><SocialFeedPanel plays={Promise.resolve([])} /></div>
+    <div id="social-feed-empty"><SocialFeedPanel feed={socialEmpty} /></div>
     <div class="gap"></div>
-    <SocialFeedPanel plays={socialLoading} />
+    <SocialFeedPanel feed={socialLoading} />
     <div class="gap"></div>
-    <SocialFeedPanel plays={socialFailed} />
+    <SocialFeedPanel feed={socialFailed} />
   </div>
   <div class="gap"></div>
 
@@ -378,7 +394,7 @@ $effect(() => {
     <WatchlistPanel {watchlist} username="me" isVip datePreferences={data.datePreferences} />
   {/if}
   {#if !custom.hidden.socialFeed}
-    <SocialFeedPanel plays={socialPlays} />
+    <SocialFeedPanel feed={social} />
   {/if}
   <div class="gap"></div>
   <RecentlyWatchedPanel plays={recentPlays} username="me" isVip datePreferences={data.datePreferences} />

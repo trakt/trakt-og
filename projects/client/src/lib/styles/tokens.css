@@ -580,24 +580,40 @@
   --minutes-bar-hit-height: 5px;
   --minutes-tooltip-offset: 10px; /* above the bar's top */
 
-  /* The dashboard's Social Feed */
+  /* The dashboard's Social Feed: the Earlier timeline and the Comments column */
   --color-social-feed-bg: light-dark(var(--gray-lighter), var(--dk-bg2));
   --color-social-feed-no-data-bg: light-dark(#fafafa, var(--color-no-data-bg));
-  --color-social-under-bg: light-dark(#fff, var(--gray-darker)); /* .poster-under */
-  --color-social-ring: light-dark(#fff, #000); /* the check's and the avatar's borders */
-  --color-social-link: light-dark(var(--color-link), var(--gray-lightish)); /* the title; the name stays red */
-  --color-social-date-bg: light-dark(#ddd, var(--gray-dark));
-  --color-social-date-text: light-dark(var(--gray), var(--gray-lighter));
-  --social-badge-size: 40px; /* the check and the avatar, half over the poster's bottom edge */
-  --social-badge-border: 2px;
-  --social-check-inset: -5px; /* the check sits 5px right of center, the avatar 35px left of it */
-  --social-avatar-inset: -35px;
-  --font-size-social-check: 24px;
-  --font-size-social-text: 12px;
-  --social-text-height: 54px; /* three lines */
-  --social-under-padding: 30px 10px 10px;
-  --font-size-social-date: 10px;
-  --space-social-date: 6px;
+  --color-social-line: light-dark(#ddd, var(--gray-dark)); /* rules under day headings and rows */
+  --color-social-chip-bg: light-dark(#f7f7f7, #262626);
+  --color-social-muted: light-dark(#777, #aaa); /* column headings, review label */
+  --color-social-faint: light-dark(var(--gray-light), #888); /* times, day headings, comment footers */
+  --color-social-name: light-dark(var(--brand-primary), #ff5a60);
+  --color-social-still: light-dark(#ccc, #333); /* behind a still that has no image */
+  --color-social-on-image: #fff;
+  --social-still-ratio: 16 / 9;
+  --social-comment-lines: 6; /* the rest is a click away, on the comment's page */
+  --social-heading-tracking: 0.1em; /* the uppercase Earlier and Comments headings */
+  --transition-social-toggle: 0.15s;
+  --social-columns: minmax(0, 1.8fr) minmax(0, 1fr); /* Earlier, then Comments */
+  --social-columns-gap: 28px;
+  --space-social-row: 12px;
+  --space-social-chip-gap: 4px 8px;
+  --space-social-chip: 0 8px;
+  --space-social-pill: 2px 9px 2px 8px;
+  --space-social-heart: 0 7px 0 5px;
+  --space-social-comment: 12px;
+  --social-avatar-row: 36px;
+  --social-avatar-small: 22px; /* on comment cards */
+  --social-thumb: 72px;
+  --social-thumb-overlap: -46px; /* each still under the one before it */
+  --social-item-still: 56px; /* in an expanded sitting */
+  --social-pill-radius: 999px;
+  --social-still-radius: 3px;
+  --social-chip-line: 20px;
+  --social-heart-line: 18px;
+  --font-size-social-head: 16px; /* a row's headline */
+  --font-size-social-meta: 13px; /* names, comment text, expanded rows */
+  --font-size-social-chip: 12px;
 
   /* The dashboard's Show and Movie Recommendations: a dark band in both themes */
   --color-recommendations-bg: var(--gray-darker);

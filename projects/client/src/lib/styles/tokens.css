@@ -1536,7 +1536,7 @@
   --comment-parent-border: 4px;
   --radius-comment-parent: 0 10px 10px 0;
   --comment-replies-chevron-turn: 180deg;
-  --color-comment-replies-open: var(--brand-secondary); /* "Hide replies", and Reply while its box is open */
+  --color-comment-replies-open: var(--brand-secondary); /* "N replies" while the thread is open, and Reply while its box is open */
 
   /* A comment's own page: the thread card scaled up as the root, one rail through the replies, the reply box last. */
   --comment-avatar-root: 56px;

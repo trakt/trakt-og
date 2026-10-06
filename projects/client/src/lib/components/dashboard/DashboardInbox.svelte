@@ -16,7 +16,9 @@ import { createRelationshipOverlay } from '$lib/users/createRelationshipOverlay.
 import { toast } from '$lib/components/toast/toast.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import Container from '$lib/components/container/Container.svelte';
+import HeadingMark from '$lib/components/heading/HeadingMark.svelte';
 import Icon from '$lib/icons/Icon.svelte';
+import userPlus from '$lib/icons/regular/user-plus.svg?raw';
 import check from '$lib/icons/trakt/check.svg?raw';
 import checkThick from '$lib/icons/trakt/check-thick.svg?raw';
 import deleteIcon from '$lib/icons/trakt/delete.svg?raw';
@@ -96,7 +98,7 @@ async function decide(request: Request, action: 'approve' | 'deny' | 'blockReque
   <section class="inbox" aria-labelledby="{uid}-heading">
   <Container>
       <h2 id="{uid}-heading" tabindex="-1" bind:this={heading}>
-        Follow Requests
+        <HeadingMark svg={userPlus} />Follow Requests
         {#if pending.length > 0}<span class="count">{pending.length}<span class="hidden"> pending</span></span>{/if}
       </h2>
       <span class="hidden" role="status">{approving ? `Approving ${approving.total} requests` : ''}</span>
@@ -166,6 +168,8 @@ async function decide(request: Request, action: 'approve' | 'deny' | 'blockReque
   container-type: inline-size;
 }
 h2 {
+  position: relative;
+  isolation: isolate;
   display: flex;
   outline: none;
   align-items: center;

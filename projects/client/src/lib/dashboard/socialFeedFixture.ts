@@ -1,81 +1,165 @@
 import type { SocialActivity } from './socialActivitySchema.ts';
 
-const member = (slug: string, name: string | null) => ({ username: slug, name, ids: { slug }, images: null });
+const user = (slug: string, name: string) => ({ username: slug, name, ids: { slug }, images: null });
 
-const show = (id: number, slug: string, title: string, year: number, genres = ['drama']) => ({
-  ids: { trakt: id, slug },
-  title,
-  year,
-  genres,
+const USERS = {
+  kristin: user('sample-kristin', 'Kristin'),
+  sefer: user('sample-sefer', 'Sefer'),
+  damien: user('sample-damien', 'Damien'),
+  mmf: user('sample-mmf', 'MajorMercyFlush'),
+  techni: user('sample-technicolour', 'Technicolour'),
+  rook: user('sample-rook', 'Rook'),
+};
+
+const fanart = (kind: 'shows' | 'movies', id: string, file: string) => ({
+  fanart: [`media.trakt.tv/images/${kind}/000/${id}/fanarts/medium/${file}.jpg.webp`],
 });
 
-const episode = (id: number, season: number, number: number, title: string | null, abs?: number) => ({
-  ids: { trakt: id },
-  season,
-  number,
-  number_abs: abs,
-  title,
-});
+// Public titles with their real artwork.
+const SHOWS = {
+  seventies: {
+    ids: { trakt: 52, slug: 'that-70s-show' },
+    title: "That '70s Show",
+    images: fanart('shows', '000/052', '0ece27e5ec'),
+  },
+  homeImprovement: {
+    ids: { trakt: 1547, slug: 'home-improvement' },
+    title: 'Home Improvement',
+    images: fanart('shows', '001/547', 'b25fefd43d'),
+  },
+  lizzie: {
+    ids: { trakt: 4551, slug: 'lizzie-mcguire' },
+    title: 'Lizzie McGuire',
+    images: fanart('shows', '004/551', '343a0e6566'),
+  },
+  bell: {
+    ids: { trakt: 4321, slug: 'saved-by-the-bell' },
+    title: 'Saved by the Bell',
+    images: fanart('shows', '004/321', '4da82c8f63'),
+  },
+  hope: {
+    ids: { trakt: 32674, slug: 'raising-hope' },
+    title: 'Raising Hope',
+    images: fanart('shows', '032/674', '8add849da6'),
+  },
+  persona: {
+    ids: { trakt: 274608, slug: 'persona-2025' },
+    title: 'Persona',
+    images: fanart('shows', '274/608', '73b96ee95c'),
+  },
+  lioness: {
+    ids: { trakt: 167187, slug: 'lioness' },
+    title: 'Lioness',
+    images: fanart('shows', '167/187', '88ea4a00c4'),
+  },
+  lanterns: {
+    ids: { trakt: 157599, slug: 'lanterns' },
+    title: 'Lanterns',
+    images: fanart('shows', '157/599', '4feb71753a'),
+  },
+  paper: {
+    ids: { trakt: 239158, slug: 'the-paper-2025' },
+    title: 'The Paper',
+    images: fanart('shows', '239/158', '52d6a6f864'),
+  },
+  severance: {
+    ids: { trakt: 154997, slug: 'severance' },
+    title: 'Severance',
+    images: fanart('shows', '154/997', '9400ecb8e2'),
+  },
+};
+const WEAPONS = {
+  ids: { trakt: 867094, slug: 'weapons-2025' },
+  title: 'Weapons',
+  year: 2025,
+  images: fanart('movies', '867/094', '61b76e51d4'),
+};
 
-const at = (hoursAgo: number, now: Date) => new Date(now.getTime() - hoursAgo * 3_600_000).toISOString();
+type Show = keyof typeof SHOWS;
+
+const episode = (show: Show, season: number, number: number) => ({
+  type: 'episode' as const,
+  show: SHOWS[show],
+  episode: { ids: { trakt: SHOWS[show].ids.trakt * 1000 + season * 100 + number }, season, number },
+});
+const whole = (show: Show) => ({ type: 'show' as const, show: SHOWS[show] });
+const movie = { type: 'movie' as const, movie: WEAPONS };
+
+const ago = (now: Date, minutes: number) => new Date(now.getTime() - minutes * 60_000).toISOString();
 
 /**
- * Public titles watched by made-up members, for the design demo and the specs. No artwork or avatars, like local OG.
- * The member names are long enough to show the three-line clamp.
+ * A week of the people you follow, newest first, with made-up members and public titles: Kristin's two sittings with
+ * other members' rows between them, Sefer's check-in and rating, Damien's comment, MajorMercyFlush binging Lanterns
+ * 1x06 to 1x08 over two calendar days, Technicolour's review, a movie, and Rook's spoiler comment from two days ago.
  */
 function rows(now: Date): readonly SocialActivity[] {
-  const watch = (id: number, hoursAgo: number, user: ReturnType<typeof member>) => ({
+  const watch = (id: number, minutes: number, by: keyof typeof USERS, method = 'scrobble') => ({
     id,
-    activity_at: at(hoursAgo, now),
+    activity_at: ago(now, minutes),
+    user: USERS[by],
     action: 'watch' as const,
-    user,
+    method,
   });
-  const ada = member('sample-ada', 'Ada Sample');
-  const bo = member('sample-bo', null);
-  const cy = member('sample-cyrus-with-a-long-name', 'Cyrus Longname-Samplesworth');
+  const rating = (id: number, minutes: number, by: keyof typeof USERS, stars: number) => ({
+    id,
+    activity_at: ago(now, minutes),
+    user: USERS[by],
+    action: 'rating' as const,
+    rating: stars,
+  });
+  const comment = (id: number, minutes: number, by: keyof typeof USERS, body: string, extra: object = {}) => ({
+    id,
+    activity_at: ago(now, minutes),
+    user: USERS[by],
+    action: 'comment' as const,
+    comment: { id, comment: body, spoiler: false, review: false, likes: 4, replies: 1, ...extra },
+  });
 
   return [
+    { ...watch(17, 24, 'kristin'), ...episode('seventies', 3, 4) },
+    { ...watch(16, 46, 'kristin'), ...episode('homeImprovement', 3, 6) },
+    { ...watch(15, 77, 'kristin'), ...episode('lizzie', 1, 24) },
+    { ...rating(14, 119, 'sefer', 9), ...episode('persona', 1, 3) },
+    { ...watch(13, 132, 'sefer', 'checkin'), ...episode('persona', 1, 3) },
     {
-      ...watch(7001, 1, ada),
-      type: 'episode',
-      episode: episode(5001, 5, 14, 'Ozymandias'),
-      show: show(1388, 'breaking-bad', 'Breaking Bad', 2008),
+      ...comment(
+        12,
+        710,
+        'damien',
+        'Best episode of the season so far. The last ten minutes had me holding my breath.',
+      ),
+      ...episode('lioness', 3, 2),
     },
+    { ...watch(11, 726, 'damien'), ...episode('lioness', 3, 2) },
+    { ...watch(10, 754, 'damien'), ...episode('lanterns', 1, 8) },
+    { ...rating(9, 850, 'mmf', 10), ...whole('lanterns') },
+    { ...watch(8, 855, 'mmf'), ...episode('lanterns', 1, 8) },
     {
-      ...watch(7002, 3, bo),
-      type: 'movie',
-      movie: { ids: { trakt: 120, slug: 'the-dark-knight-2008' }, title: 'The Dark Knight', year: 2008 },
+      ...comment(
+        7,
+        920,
+        'techni',
+        'The pilot takes a while to find its feet, but the cast clicks by the end. Sticking with it for now.',
+        { review: true, likes: 11, replies: 3 },
+      ),
+      ...whole('paper'),
     },
+    { ...rating(6, 928, 'techni', 8), ...episode('lanterns', 1, 8) },
+    { ...watch(5, 938, 'techni', 'watch'), ...episode('paper', 1, 1) },
+    { ...watch(4, 1002, 'mmf'), ...episode('lanterns', 1, 7) },
+    { ...watch(3, 1033, 'kristin'), ...episode('bell', 1, 6) },
+    { ...watch(2, 1055, 'kristin'), ...episode('hope', 1, 7) },
+    { ...watch(1, 1068, 'mmf'), ...episode('lanterns', 1, 6) },
+    { ...watch(0, 1225, 'sefer', 'watch'), ...movie },
     {
-      ...watch(7003, 5, cy),
-      type: 'episode',
-      episode: episode(5002, 1, 10, 'Braindead'),
-      show: show(60300, 'the-bear', 'The Bear', 2022),
-    },
-    {
-      ...watch(7004, 20, ada),
-      type: 'episode',
-      episode: episode(5003, 21, 5, 'The Mysterious Wizard of Wano', 897),
-      show: show(37696, 'one-piece', 'One Piece', 1999, ['anime', 'action']),
-    },
-    {
-      ...watch(7005, 30, bo),
-      type: 'movie',
-      movie: { ids: { trakt: 1, slug: 'inception-2010' }, title: 'Inception', year: 2010 },
-    },
-    {
-      ...watch(7006, 50, cy),
-      type: 'episode',
-      episode: episode(5004, 1, 1, null),
-      show: show(1390, 'game-of-thrones', 'Game of Thrones', 2011),
-    },
-    {
-      ...watch(7007, 70, ada),
-      type: 'movie',
-      movie: { ids: { trakt: 16, slug: 'heat-1995' }, title: 'Heat', year: 1995 },
+      ...comment(18, 2900, 'rook', 'I did not see that ending coming. Mark is the one who sends the message.', {
+        spoiler: true,
+        likes: 2,
+        replies: 0,
+      }),
+      ...episode('severance', 2, 10),
     },
   ];
 }
 
-/** Seven sample plays: one full row of six and one more. */
 export const socialFeedFixture = { rows };

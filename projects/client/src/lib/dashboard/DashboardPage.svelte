@@ -48,7 +48,7 @@ const isVip = $derived(!!data.profile.vip);
   <RecentlyWatchedPanel plays={data.recentlyWatched} {username} {isVip} datePreferences={data.datePreferences} />
 {/if}
 {#if data.socialFeed}
-  <SocialFeedPanel plays={data.socialFeed} />
+  <SocialFeedPanel feed={data.socialFeed} />
 {/if}
 {#if data.recommendations}
   <RecommendationsPanel recommendations={data.recommendations} {username} {isVip}

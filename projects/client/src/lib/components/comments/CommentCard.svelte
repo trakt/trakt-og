@@ -200,10 +200,9 @@ let replying = $state(false);
 let editing = $state(false);
 // The rail runs down the thread while the replies or the reply box are open, and always on the comment's own page.
 const threadOpen = $derived(repliesOpen || replying || read);
+// The same open or shut: the chevron flips, and aria-expanded says which.
 const repliesLabel = $derived(
-  repliesOpen
-    ? 'Hide replies'
-    : `View ${comment.replies.toLocaleString('en-US')} ${comment.replies === 1 ? 'reply' : 'replies'}`,
+  `${comment.replies.toLocaleString('en-US')} ${comment.replies === 1 ? 'reply' : 'replies'}`,
 );
 let replyButton = $state<HTMLButtonElement>();
 let deleted = $state(false);

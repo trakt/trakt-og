@@ -69,7 +69,7 @@ $effect(() => {
     <Container>
       <h1>Comment card</h1>
       <p>
-        The comment card on made-up comments, one of them showing every formatting rule. "View N replies" opens the
+        The comment card on made-up comments, one of them showing every formatting rule. "N replies" opens the
         replies inline on a rail under the avatar. Replying, editing, deleting and blocking work on the page and never
         reach the API. The reaction picker works for the signed-in viewer, and the report dialog sends for real.
       </p>

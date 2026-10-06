@@ -154,14 +154,9 @@ describe('loadCalendar', () => {
     expect(data.filters.episode_types.values).toEqual([]);
   });
 
-  it('should apply episode types on SSR and read the shared upsell dismissal', async () => {
-    const data = await load({
-      slug: 'shows',
-      search: '?episode_types=-standard',
-      cookies: { hide_advanced_filters_upsell: '1' },
-    });
+  it('should apply episode types on SSR', async () => {
+    const data = await load({ slug: 'shows', search: '?episode_types=-standard' });
     expect(shownKeys(data)).toEqual([]);
-    expect(data.upsellHidden).toBe(true);
     expect(new URL(requestTo('/calendars/my/shows/')?.url ?? '').searchParams.has('episode_types')).toBe(false);
   });
 

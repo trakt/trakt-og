@@ -8,7 +8,6 @@ import { goto } from '$app/navigation';
 import AdvancedFiltersPanel from '$lib/components/filters/AdvancedFiltersPanel.svelte';
 import AdvancedFiltersToggle from '$lib/components/filters/AdvancedFiltersToggle.svelte';
 import AppliedFilters from '$lib/components/filters/AppliedFilters.svelte';
-import FiltersUpsell from '$lib/components/filters/FiltersUpsell.svelte';
 import { type AdvancedFilters, advancedFiltersSearch } from '$lib/components/filters/advancedFilters';
 import { filterTags } from '$lib/components/filters/filterTags';
 import { watchNowTiles } from '$lib/components/filters/watchNowFilter';
@@ -187,9 +186,6 @@ function cardIcons(
     <FrameNav heading="All" links={allLinks} />
   {/snippet}
 
-  {#if days.some((day) => day.cards.length > 0) && !data.upsellHidden}
-    <FiltersUpsell {vip} signedIn={data.user !== null} />
-  {/if}
   <div class={['calendar-days', data.preferences.layout, data.preferences.imageType]}>
   {#each days as day (day.date)}
     <section class="day">

@@ -127,7 +127,7 @@ describe('loadChart advanced filters', () => {
     loadChart({
       fetch: globalThis.fetch,
       token,
-      cookies: { get: (name) => (name === 'hide_advanced_filters_upsell' ? '1' : undefined) },
+      cookies: { get: () => undefined },
       parent: () =>
         Promise.resolve({ datePreferences: { order: 'mdy' }, settings: settings as unknown as ViewerSettings }),
       url: new URL(`https://og.test/shows/watched/monthly?${query}`),
@@ -153,7 +153,6 @@ describe('loadChart advanced filters', () => {
     expect(query.get('page')).toBe('2');
     expect(data.filters.genres).toEqual({ values: ['drama', 'comedy'], mode: 'all' });
     expect(data.filterSources).toBeUndefined();
-    expect(data.upsellHidden).toBe(true);
   });
 
   it("should filter watch now with the token and load the picked services for the viewer's country", async () => {

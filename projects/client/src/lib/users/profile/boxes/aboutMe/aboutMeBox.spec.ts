@@ -5,7 +5,7 @@ import { aboutMeBox } from './aboutMeBox.ts';
 const { dex, maya } = boxPersonas;
 
 describe('aboutMeBox', () => {
-  it('should pin a written About Me with the VIP years, join month and location', async () => {
+  it('should pin a written About Me with the VIP years and join month, leaving the location to the header', async () => {
     expect(await aboutMeBox.evaluate(dex.input, dex.extras())).toMatchObject({
       score: 100,
       entry: {
@@ -15,7 +15,6 @@ describe('aboutMeBox', () => {
           about: expect.stringContaining('Letterboxd refugee'),
           vip: 'VIP · 9 yrs',
           joined: 'March 2014',
-          location: 'Austin, TX',
         },
       },
     });

@@ -1,5 +1,5 @@
 <!--
-  About Me: the owner's words under a faint quote mark, with their VIP years, join date and location. Empty, your own
+  About Me: the owner's words under a faint quote mark, with their VIP years and join date. Empty, your own
   profile prompts you to write one, and anyone else's lists a few facts.
 -->
 <script lang="ts">
@@ -20,12 +20,10 @@ const chips = $derived([
 </script>
 
 {#snippet foot()}
-  {#if view.kind === 'filled'}
-    {#if view.joined}On Trakt since <b>{view.joined}</b> ·{/if} {view.location}
-  {/if}
+  {#if view.kind === 'filled'}On Trakt since <b>{view.joined}</b>{/if}
 {/snippet}
 
-<ProfileBox tone="about" foot={view.kind === 'filled' ? foot : undefined}>
+<ProfileBox tone="about" foot={view.kind === 'filled' && view.joined ? foot : undefined}>
   {#if view.kind === 'filled'}<span class="quote"><Icon svg={quote} /></span>{/if}
   <BoxChips {chips} />
   {#if view.kind === 'filled'}

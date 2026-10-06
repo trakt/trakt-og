@@ -1532,12 +1532,10 @@
   /* The comment composer: the new comment form, the reply box and the edit form. */
   --color-comment-add: var(--color-action-add); /* "Add comment" (.new-comment-focus.main) */
   --color-comment-add-hover: var(--color-action-add-hover);
-  --color-comment-field-border: var(--color-comment-rail);
-  --color-comment-field-border-open: light-dark(#cfcfcf, #474747);
-  --radius-comment-field: 22px; /* a pill while it rests on one line */
-  --radius-comment-field-open: 14px;
+  --color-comment-field-border: light-dark(#cfcfcf, #474747);
+  --radius-comment-field: 14px;
   --comment-field-padding: 10px 18px;
-  --comment-field-open-height: 96px;
+  --comment-field-height: 96px;
   --comment-composer-heading-gap: 16px;
   --comment-composer-footer-gap: 8px 12px;
   --comment-composer-footer-padding: 4px 10px 10px 12px;

@@ -2,7 +2,9 @@
 import { page } from '$app/state';
 import { PLACEHOLDER_AVATAR } from '$lib/components/comments/authorOf';
 import CommentCard from '$lib/components/comments/CommentCard.svelte';
+import AddCommentLink from '$lib/components/comments/AddCommentLink.svelte';
 import CommentComposer from '$lib/components/comments/CommentComposer.svelte';
+import { newComment } from '$lib/components/comments/newComment.svelte';
 import { toast } from '$lib/components/toast/toast.svelte';
 import ReactionControl from '$lib/components/comments/ReactionControl.svelte';
 import { reactionOptions } from '$lib/components/comments/reactionOptions';
@@ -36,8 +38,18 @@ const viewerFor = (comment: CommentResponse): CommentViewer => {
 let reaction = $state<typeof reactionOptions[number]['type']>();
 
 // The new comment form's composer, posting nowhere: the reply API's answer stands in, so short text is turned down.
+// Add comment opens it, as on a summary page; Cancel and posting hide it again.
+$effect(() => newComment.mount());
 const post = (text: string) => client.reply(0, text);
-const posted = () => toast.success('Posted, on this page only.');
+const posted = () => {
+  newComment.close();
+  toast.success('Posted, on this page only.');
+};
+const cancel = () => {
+  const opener = newComment.opener;
+  newComment.close();
+  opener?.focus();
+};
 
 let theme = $state(page.url.searchParams.get('theme') ?? 'light');
 $effect(() => {
@@ -85,11 +97,17 @@ $effect(() => {
       </div>
 
       <h2>The new comment form's composer</h2>
-      <p>It rests on one line and opens on focus. Select text and use the toolbar; the meter turns green at 5 words.</p>
+      <p>
+        Hidden until Add comment opens it, focused. Select text and use the toolbar; the meter turns green at 5 words.
+        Cancel hides it again, asking first when there's text.
+      </p>
       <div class="composer-demo">
-        <CommentComposer label="Your comment" placeholder="Add a comment as OG Viewer..." submit="Post"
-          posting="Posting your comment" avatar={PLACEHOLDER_AVATAR} rules="5+ words, be respectful, mark spoilers."
-          spoiler={false} resting save={post} onsaved={posted} />
+        <p><AddCommentLink /></p>
+        {#if newComment.visible}
+          <CommentComposer label="Your comment" placeholder="Add a comment as OG Viewer..." submit="Post"
+            posting="Posting your comment" avatar={PLACEHOLDER_AVATAR} rules="5+ words, be respectful, mark spoilers."
+            spoiler={false} confirmLeave oncancel={cancel} save={post} onsaved={posted} />
+        {/if}
       </div>
 
       <h2>A review in a comment list: featured and wide</h2>

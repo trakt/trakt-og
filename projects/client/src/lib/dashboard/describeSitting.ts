@@ -12,6 +12,8 @@ type Link = { readonly text: string; readonly href: string };
 export type SittingSummary = {
   /** A row's headline: up to two titles ("Saved by the Bell, Raising Hope"), or one with its episodes. */
   readonly head: { readonly links: readonly Link[]; readonly more: number };
+  /** A tile's headline: one title ("Lanterns 1x06–1x08", "Lioness +1"). */
+  readonly tileHead: { readonly link: Link | null; readonly more: number };
   /** "3 episodes", "2 episodes, 1 movie": set when there was more than one watch. */
   readonly count: string | null;
   /** Ratings of titles they watched in the sitting. */
@@ -28,6 +30,8 @@ export type SittingSummary = {
   readonly day: string;
   /** Since the newest row: "24m", "15h", "2d". */
   readonly ago: string;
+  /** The newest row is under an hour old. */
+  readonly fresh: boolean;
 };
 
 type Bucket = {
@@ -160,6 +164,12 @@ export function describeSitting({ sitting, now, datePreferences }: DescribeSitti
 
   return {
     head: { links, more: Math.max(watched.length - 2, 0) },
+    tileHead: {
+      link: first
+        ? { text: watched.length === 1 ? watchedLabel(first) : first.title.name, href: first.title.href }
+        : links.at(0) ?? null,
+      more: Math.max(watched.length - 1, 0),
+    },
     count: watches.length > 1 ? watchCount(watches) : null,
     // A sitting of ratings alone has them in its headline already, so its hearts need no names.
     hearts: (first ? watched.map(({ ratings }) => ratings.slice(0, 1)) : unwatched.map(({ ratings }) => ratings))
@@ -177,5 +187,6 @@ export function describeSitting({ sitting, now, datePreferences }: DescribeSitti
     sentence: sentence(sitting, all),
     day: dayLabel(sitting.newest, now, datePreferences),
     ago: shortAgo(sitting.newest, now),
+    fresh: now.getTime() - Date.parse(sitting.newest) < 3_600_000,
   };
 }

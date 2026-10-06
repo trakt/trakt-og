@@ -34,6 +34,7 @@ describe('describeSitting', () => {
       const mmf = of('MajorMercyFlush');
 
       expect(texts(mmf.head.links)).toEqual(['Lanterns 1x06–1x08']);
+      expect(mmf.tileHead.link?.text).toBe('Lanterns 1x06–1x08');
       expect(mmf.count).toBe('3 episodes');
       expect(mmf.hearts).toEqual([10]);
     });
@@ -57,10 +58,11 @@ describe('describeSitting', () => {
   });
 
   describe('for more than one title', () => {
-    it('should show two titles in a row', () => {
+    it('should show two titles in a row, one with the rest counted on a tile', () => {
       const damien = of('Damien');
 
       expect(texts(damien.head.links)).toEqual(['Lioness', 'Lanterns']);
+      expect(damien.tileHead).toEqual({ link: { text: 'Lioness', href: '/shows/lioness' }, more: 1 });
       expect(damien.count).toBe('2 episodes');
       expect(damien.comments).toEqual([{ id: 12, review: false, on: 'Lioness 3x02' }]);
       expect(damien.sentence).toBe('Damien watched 2 episodes across 2 shows and commented on Lioness 3x02.');
@@ -71,6 +73,7 @@ describe('describeSitting', () => {
 
       expect(texts(kristin.head.links)).toEqual(["That '70s Show", 'Home Improvement']);
       expect(kristin.head.more).toBe(1);
+      expect(kristin.tileHead.more).toBe(2);
     });
 
     it('should name a rating of a title they did not watch, and review the one they did', () => {
@@ -119,9 +122,9 @@ describe('describeSitting', () => {
   });
 
   describe('for times', () => {
-    it('should say how long ago', () => {
-      expect(of('Kristin')).toMatchObject({ ago: '24m', day: 'Today' });
-      expect(of('MajorMercyFlush')).toMatchObject({ ago: '14h', day: 'Today' });
+    it('should say how long ago, and whether it was within the hour', () => {
+      expect(of('Kristin')).toMatchObject({ ago: '24m', fresh: true, day: 'Today' });
+      expect(of('MajorMercyFlush')).toMatchObject({ ago: '14h', fresh: false, day: 'Today' });
     });
 
     it("should head older days by name in the viewer's zone", () => {

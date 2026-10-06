@@ -16,14 +16,17 @@ import pin from '$lib/icons/solid/location-pin.svg?raw';
 import play from '$lib/icons/solid/play.svg?raw';
 import { imageUrl } from '$lib/utils/imageUrl';
 import SocialHeart from './SocialHeart.svelte';
+import SocialPill from './SocialPill.svelte';
 
 interface Props {
   sitting: SocialSitting;
+  /** The member is watching something now, behind the "+N watching" tile. */
+  watching?: boolean;
   /** The comment card a comment chip jumps to. */
   commentId: (id: number) => string;
 }
 
-const { sitting, commentId }: Props = $props();
+const { sitting, watching = false, commentId }: Props = $props();
 const { member, summary } = $derived(sitting);
 const id = $props.id();
 let open = $state(false);
@@ -52,6 +55,7 @@ const KINDS = {
     <p class="meta">
       {#if member.href}<a class="name" href={member.href}>{member.name}</a>{:else}<b class="name">{member.name}</b>{/if}
       <span aria-hidden="true">· {summary.ago}</span>
+      {#if watching}<SocialPill dot="live">Watching now</SocialPill>{/if}
     </p>
     <p class="head">
       {#each summary.head.links as link, i (i)}{#if i > 0}<span aria-hidden="true">,&#32;</span>{/if}<a

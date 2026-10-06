@@ -1,4 +1,8 @@
+import type { LiveWatch } from './fetchWatching.ts';
 import type { SocialActivity } from './socialActivitySchema.ts';
+import type { SocialMedia } from './socialMediaSchema.ts';
+import { toSocialItem } from './toSocialItem.ts';
+import { toSocialMedia } from './toSocialMedia.ts';
 
 const user = (slug: string, name: string) => ({ username: slug, name, ids: { slug }, images: null });
 
@@ -8,7 +12,9 @@ const USERS = {
   damien: user('sample-damien', 'Damien'),
   mmf: user('sample-mmf', 'MajorMercyFlush'),
   techni: user('sample-technicolour', 'Technicolour'),
+  ana: user('sample-ana', 'Ana'),
   rook: user('sample-rook', 'Rook'),
+  noor: user('sample-noor', 'Noor'),
 };
 
 const fanart = (kind: 'shows' | 'movies', id: string, file: string) => ({
@@ -66,6 +72,16 @@ const SHOWS = {
     ids: { trakt: 154997, slug: 'severance' },
     title: 'Severance',
     images: fanart('shows', '154/997', '9400ecb8e2'),
+  },
+  slowHorses: {
+    ids: { trakt: 155534, slug: 'slow-horses' },
+    title: 'Slow Horses',
+    images: fanart('shows', '155/534', '631e5c2683'),
+  },
+  bear: {
+    ids: { trakt: 189717, slug: 'the-bear' },
+    title: 'The Bear',
+    images: fanart('shows', '189/717', '59290b738d'),
   },
 };
 const WEAPONS = {
@@ -162,4 +178,34 @@ function rows(now: Date): readonly SocialActivity[] {
   ];
 }
 
-export const socialFeedFixture = { rows };
+const DATE_PREFERENCES = { order: 'mdy', hour24: false, timeZone: 'UTC', weekStartDay: 0 } as const;
+
+/** Seven members watching now, in the order they started: the "+N watching" tile needs five or more. */
+function live(now: Date): readonly LiveWatch[] {
+  const watching = (by: keyof typeof USERS, media: SocialMedia, started: number, left: number, checkin = false) => {
+    const item = toSocialItem(
+      { id: 0, activity_at: ago(now, started), user: USERS[by], action: 'watch', method: null, ...media },
+      DATE_PREFERENCES,
+    );
+    return {
+      ...toSocialMedia(media),
+      member: item.member,
+      kind: checkin ? 'checkin' as const : 'watch' as const,
+      label: item.label,
+      startedAt: ago(now, started),
+      expiresAt: ago(now, -left),
+    };
+  };
+
+  return [
+    watching('kristin', episode('seventies', 3, 5), 22, 4),
+    watching('sefer', episode('persona', 1, 4), 28, 22, true),
+    watching('damien', episode('lioness', 3, 3), 9, 36),
+    watching('ana', episode('severance', 2, 1), 32, 24),
+    watching('rook', episode('slowHorses', 5, 2), 27, 20),
+    watching('mmf', episode('lanterns', 1, 9), 18, 34),
+    watching('noor', episode('bear', 4, 1), 5, 28, true),
+  ];
+}
+
+export const socialFeedFixture = { rows, live };

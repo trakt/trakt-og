@@ -780,7 +780,10 @@ const vanish = (node: Element) =>
   pointer-events: none;
 }
 
-/* Quiet text actions in sentence case. The watched state keeps its purple, and an open reply box or thread turns blue. */
+/*
+  Quiet text actions in sentence case, starting under the bubble's text. Every item is a flex item centred on the row.
+  The watched state keeps its purple, and an open reply box or thread turns blue.
+*/
 .under-comment {
   display: flex;
   flex-wrap: wrap;
@@ -816,6 +819,13 @@ const vanish = (node: Element) =>
 
   &:hover {
     color: var(--color-text);
+  }
+
+  /* One size for every icon in the row (React's too), dropped from the middle of the line to the x-height's. */
+  & :global(.icon) {
+    --icon-shift: var(--comment-action-icon-shift);
+    flex: none;
+    font-size: var(--font-size-comment-action-icon);
   }
 }
 

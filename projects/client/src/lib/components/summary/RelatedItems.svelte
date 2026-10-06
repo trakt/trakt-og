@@ -85,12 +85,13 @@ const icons = (card: RelatedCard) => {
   --color-text: var(--color-related-text);
   --color-card-border: transparent;
   min-block-size: var(--related-min-height);
-  padding-block-end: var(--gutter);
+  /* Padding, not the h2's margin, which collapsed through the band and showed the page behind it. */
+  padding-block: var(--gutter);
   background-color: var(--color-related-bg);
   color: var(--color-related-text);
 
   & h2 {
-    margin-block: var(--gutter) 0;
+    margin-block: 0;
     color: var(--color-related-text);
   }
 

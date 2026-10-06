@@ -765,6 +765,7 @@ async function saveNotes(text: string) {
 .filter-icons {
   display: flex;
   align-items: center;
+  --filter-eye-lead: 0;
   gap: var(--list-filter-icon-gap);
 }
 

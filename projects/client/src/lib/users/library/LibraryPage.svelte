@@ -184,6 +184,7 @@ const flipped = $derived(data.sort.how === 'desc');
 }
 
 .icons {
+  --filter-eye-lead: 0;
   gap: var(--history-icon-gap);
 }
 

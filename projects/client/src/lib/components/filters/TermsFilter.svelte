@@ -79,7 +79,6 @@ function onkeydown(event: KeyboardEvent) {
   display: inline-flex;
   align-items: center;
   min-block-size: 0;
-  margin-inline: 0 5px;
   padding: 0;
   border: 0;
   background: none;
@@ -100,7 +99,7 @@ function onkeydown(event: KeyboardEvent) {
 }
 
 .caret {
-  margin: 1px 0 0 2px;
+  margin: 1px 0 0 var(--space-filter-caret);
   border-block-start: 4px solid;
   border-inline: 4px solid transparent;
 }

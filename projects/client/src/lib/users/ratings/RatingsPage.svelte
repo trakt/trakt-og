@@ -171,6 +171,7 @@ const count = $derived(data.total - (data.cards.length - cards.length));
   align-items: center;
 }
 .icons {
+  --filter-eye-lead: 0;
   gap: var(--history-icon-gap);
 }
 .ratings {

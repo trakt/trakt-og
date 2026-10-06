@@ -72,7 +72,8 @@ const { active, count = 0, variant = 'default', children }: Props = $props();
 .eye {
   position: relative;
   display: inline-block;
-  margin-inline: 5px 3px;
+  /* A toolbar that spaces its icons itself sets `--filter-eye-lead: 0`. */
+  margin-inline: var(--filter-eye-lead, 5px) calc(var(--space-filter-caret) - var(--space-dropdown-caret));
   font-size: var(--font-size-filter-icon);
   line-height: 1;
 

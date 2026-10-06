@@ -134,6 +134,38 @@ describe('describeSitting', () => {
       expect(rook.sentence).toBe('Rook commented on Severance 2x10.');
     });
 
+    it('should name every rating when more than one title was rated, never two bare hearts', () => {
+      const [damien] = sittings.filter(({ member }) => member.name === 'Damien');
+      const lioness = damien?.items.find(({ kind, title }) => kind === 'watch' && title.name === 'Lioness');
+      const rating = damien?.items.find(({ kind }) => kind === 'rating');
+      if (!damien || !lioness || !rating) throw new Error('no fixture rows');
+      const both = summary({
+        ...damien,
+        items: [...damien.items, { ...rating, key: 'rating:900', title: lioness.title, label: lioness.label }],
+      });
+
+      expect(both.hearts).toEqual([]);
+      expect(both.rated).toEqual([{ rating: 8, name: 'Lioness' }, { rating: 8, name: 'Lanterns' }]);
+      expect(of('Damien').hearts).toEqual([]);
+      expect(of('Damien').rated).toEqual([{ rating: 8, name: 'Lanterns' }]);
+    });
+
+    it('should show a title rated twice once, with its newest rating', () => {
+      const mmf = sittings.find(({ member }) => member.name === 'MajorMercyFlush');
+      const rating = mmf?.items.find(({ kind }) => kind === 'rating');
+      if (!mmf || !rating) throw new Error('no fixture rows');
+      const older = {
+        ...rating,
+        key: 'rating:901',
+        rating: 6,
+        at: new Date(Date.parse(rating.at) - 60_000).toISOString(),
+      };
+      const twice = summary({ ...mmf, items: [...mmf.items, older] });
+
+      expect(twice.hearts).toEqual([10]);
+      expect(twice.rated).toEqual([]);
+    });
+
     it("should keep a ratings-only sitting's hearts without repeating the titles", () => {
       const [rating] = socialFeedFixture.rows(now).filter(({ id }) => id === 14);
       if (!rating) throw new Error('no fixture rating');

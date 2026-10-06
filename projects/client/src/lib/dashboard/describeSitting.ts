@@ -239,6 +239,23 @@ function listOf(items: readonly SocialItem[]): SittingSummary['list'] {
   return { lines, rest, more: `Show ${rest.length} more${shows ? ' shows' : ''}` };
 }
 
+/** Each rated title's newest rating, once: a show rated twice (an episode, then the show) is one heart. */
+type Rated = { readonly bucket: Bucket; readonly rating: number };
+
+/**
+ * A heart goes bare only when it can't be misread: one rated title, and it's the lead the row is named after.
+ * Any other rating is named ("♥8 Lanterns"), so two titles rated 8 never read as two bare 8s.
+ */
+function heartsOf(rows: readonly Bucket[], lead: Bucket | undefined) {
+  const rated = rows.flatMap((bucket): Rated[] => {
+    const rating = bucket.ratings[0]?.rating;
+    return rating ? [{ bucket, rating }] : [];
+  });
+  const [only] = rated;
+  if (only && rated.length === 1 && only.bucket === lead) return { hearts: [only.rating], rated: [] };
+  return { hearts: [], rated: rated.map(({ bucket, rating }) => ({ rating, name: bucket.title.name })) };
+}
+
 type DescribeSittingParams = { sitting: Sitting; now: Date; datePreferences: DatePreferences };
 
 /** Sums a sitting up the title-first way: what was watched as the headline, and counts, hearts and comments. */
@@ -281,18 +298,7 @@ export function describeSitting({ sitting, now, datePreferences }: DescribeSitti
       heart: lead?.ratings[0]?.rating ?? null,
     },
     count,
-    // A sitting of ratings alone has them in its headline already, so its hearts need no names.
-    hearts: folded
-      ? []
-      : (watched.length > 0
-        ? watched.map(({ ratings }) => ratings.slice(0, 1))
-        : unwatched.map(({ ratings }) => ratings))
-        .flat().flatMap(({ rating }) => (rating ? [rating] : [])),
-    rated: watched.length > 0
-      ? unwatched.flatMap(({ title, ratings }) =>
-        ratings.flatMap(({ rating }) => (rating ? [{ rating, name: title.name }] : []))
-      )
-      : [],
+    ...heartsOf(folded ? [] : [...watched, ...unwatched], lead),
     comments: items.flatMap(({ comment, kind, label }) =>
       comment ? [{ id: comment.id, review: kind === 'review', on: label }] : []
     ),

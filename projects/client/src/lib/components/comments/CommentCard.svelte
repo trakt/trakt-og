@@ -408,7 +408,7 @@ const vanish = (node: Element) =>
       <p class="byline">
         {#if author.href}
           <a class="username" href={author.href}>{author.name}</a>
-          {#if author.badge}<VipLabel badge={author.badge} pill />{/if}
+          {#if author.badge}<VipLabel badge={author.badge} quiet />{/if}
         {:else}
           <strong class="username">{author.name}</strong>
         {/if}
@@ -674,12 +674,6 @@ const vanish = (node: Element) =>
 
 .byline {
   gap: var(--comment-head-gap);
-
-  /* The pill's own offsets are for running text; the row spaces and centres it here. */
-  & > :global(.label-vip) {
-    margin-block: 0;
-    margin-inline-start: 0;
-  }
 }
 
 .username {
@@ -693,18 +687,8 @@ const vanish = (node: Element) =>
   }
 }
 
-/* The VIP pill's size and shape, filled blue. */
-.op {
-  padding: var(--comment-op-padding);
-  border-radius: var(--radius-comment-op);
-  background-color: var(--color-comment-pill-op);
-  color: var(--color-text-inverse);
-  font-family: var(--font-headings);
-  font-size: var(--font-size-pill);
-  font-weight: var(--font-weight-headings);
-  line-height: 1;
-}
-
+/* The tags' and the VIP pill's shape, filled blue. */
+.op,
 .tag {
   display: inline-flex;
   align-items: center;
@@ -719,11 +703,17 @@ const vanish = (node: Element) =>
   font-weight: var(--font-weight-headings);
   line-height: 1;
   white-space: nowrap;
+}
 
-  & :global(.icon) {
-    flex: none;
-    font-size: var(--font-size-comment-tag-icon);
-  }
+.op {
+  border-color: var(--color-comment-pill-op);
+  background-color: var(--color-comment-pill-op);
+  color: var(--color-text-inverse);
+}
+
+.tag :global(.icon) {
+  flex: none;
+  font-size: var(--font-size-comment-tag-icon);
 }
 
 .spoiler-tag {

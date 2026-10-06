@@ -108,7 +108,7 @@ async function open(force: boolean): Promise<'date' | 'remove' | 'partial' | nul
           {#if metadataText}<span class="under-info">{metadataText}</span>{/if}
         {/if}
       </span>
-    {:else}<Icon svg={collectionThick} />{/if}
+    {:else}<span class="trakt-glyph"><Icon svg={collectionThick} /></span>{/if}
   {/snippet}
   {#snippet metadata(done, saving)}
     <CollectionMetadataFields value={draft ?? {}} {saving} onsave={(value) => { draft = value; done(); if (saving) void collect(undefined); }} />
@@ -125,6 +125,11 @@ async function open(force: boolean): Promise<'date' | 'remove' | 'partial' | nul
 {/if}
 
 <style>
+/* Centers the Trakt-font glyph in the quick-icon bar without adding a box around it. */
+.trakt-glyph {
+  display: contents;
+  --icon-shift: var(--quick-icon-trakt-shift);
+}
 .collection-icon {
   inline-size: var(--action-icon-width);
   flex-shrink: 0;

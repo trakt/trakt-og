@@ -177,11 +177,11 @@ const ratingLevel = $derived(rating === undefined ? 1 : Math.min(Math.max(Math.t
     {#if ratingTarget}
       <MediaRating target={ratingTarget}>
         {#snippet trigger()}
-          <span class="percentage"><span class="heart" style:color="var(--rating-{ratingLevel})"><Icon svg={heart} /></span>{Math.trunc(rating * 10)}%</span>
+          <span class="percentage"><span class="heart" style:color="var(--rating-{ratingLevel})"><Icon svg={heart} /></span><span class="value">{Math.trunc(rating * 10)}%</span></span>
         {/snippet}
       </MediaRating>
     {:else}
-      <p class="percentage"><span class="heart" style:color="var(--rating-{ratingLevel})"><Icon svg={heart} /></span>{Math.trunc(rating * 10)}%</p>
+      <p class="percentage"><span class="heart" style:color="var(--rating-{ratingLevel})"><Icon svg={heart} /></span><span class="value">{Math.trunc(rating * 10)}%</span></p>
     {/if}
     </MediaSpoiler>
   {/if}
@@ -254,6 +254,10 @@ const ratingLevel = $derived(rating === undefined ? 1 : Math.min(Math.max(Math.t
     position: relative;
   }
 
+  &:is(.watch:not(.rewatching), .collect, .list) :global(.icon) {
+    --icon-shift: var(--quick-icon-trakt-shift);
+  }
+
   &:is(:hover, :focus-visible, .selected) {
     color: var(--color-card-text);
   }
@@ -290,6 +294,10 @@ const ratingLevel = $derived(rating === undefined ? 1 : Math.min(Math.max(Math.t
 
 .favorite {
   --color: var(--brand-seventh);
+
+  & :global(.icon) {
+    font-size: var(--font-size-quick-icon-favorite);
+  }
 }
 
 .ban {
@@ -303,25 +311,32 @@ const ratingLevel = $derived(rating === undefined ? 1 : Math.min(Math.max(Math.t
 .watch-now {
   --color: var(--gray);
   color: var(--color-watch-now);
-  font-size: calc(var(--font-size-quick-icon) * 15 / 17); /* 1.5em */
 }
 
 .percentage {
+  display: flex;
+  align-items: center;
+  block-size: var(--bar);
   margin: 0;
   padding-inline-end: 10px;
   font-family: var(--font-headings);
   font-weight: var(--font-weight-headings);
   font-size: var(--font-size-rating);
-  line-height: var(--bar);
+  line-height: 1;
 
   .small & {
+    block-size: calc(var(--bar) - 1px);
     padding-inline-end: 5px;
     font-size: var(--font-size-rating-small);
-    line-height: calc(var(--bar) - 1px);
   }
+}
+/* Trimmed to the digits' cap height, so centering lines them up with the icons, not the font's line box. */
+.value {
+  text-box: trim-both cap alphabetic;
 }
 
 .heart {
+  display: flex;
   margin-inline-end: 5px;
   font-size: var(--font-size-rating-heart);
 

@@ -166,7 +166,7 @@ async function open(force: boolean): Promise<'date' | 'remove' | 'partial' | nul
           </span>
         {/if}
       </span>
-    {:else}<Icon svg={viewerState.rewatching ? backward : checkThick} />{/if}
+    {:else if viewerState.rewatching}<Icon svg={backward} />{:else}<span class="trakt-glyph"><Icon svg={checkThick} /></span>{/if}
   {/snippet}
   {#snippet details()}
     {#if viewerState.dropped && target.type === 'show'}<VisibilityControl target={{ ...target, type: 'show' }} action="restore" variant="pill" tooltip={viewerState.droppedAt ? `Dropped on\n${formatDate(viewerState.droppedAt, dates)}` : 'Dropped'}>Dropped</VisibilityControl>{/if}
@@ -184,6 +184,11 @@ async function open(force: boolean): Promise<'date' | 'remove' | 'partial' | nul
 {/if}
 
 <style>
+/* Centers the Trakt-font glyph in the quick-icon bar without adding a box around it. */
+.trakt-glyph {
+  display: contents;
+  --icon-shift: var(--quick-icon-trakt-shift);
+}
 .watch-icon {
   inline-size: var(--action-icon-width);
   flex-shrink: 0;

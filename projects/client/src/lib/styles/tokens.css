@@ -298,6 +298,8 @@
   --font-size-fanart-title: 18px;
   --font-size-quick-icon: 1.7em;
   --font-size-quick-icon-small: 1.3em;
+  --quick-icon-trakt-shift: 0.085em; /* Trakt-font glyphs (check, library, list) sit this far above center */
+  --font-size-quick-icon-favorite: 0.85em; /* the solid star, down to the other glyphs' height */
   --font-size-rating: 20px;
   --font-size-rating-small: 14px;
   --font-size-rating-heart: 16px;

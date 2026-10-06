@@ -15,80 +15,95 @@ const USERS = {
   ana: user('sample-ana', 'Ana'),
   rook: user('sample-rook', 'Rook'),
   noor: user('sample-noor', 'Noor'),
+  justin: user('sample-justin', 'Justin'),
 };
 
-const fanart = (kind: 'shows' | 'movies', id: string, file: string) => ({
-  fanart: [`media.trakt.tv/images/${kind}/000/${id}/fanarts/medium/${file}.jpg.webp`],
+/** A title's poster and fanart, as `extended=images` paths. */
+const art = (kind: 'shows' | 'movies', id: string, poster: string, fanart: string) => ({
+  poster: [`media.trakt.tv/images/${kind}/000/${id}/posters/medium/${poster}.jpg.webp`],
+  fanart: [`media.trakt.tv/images/${kind}/000/${id}/fanarts/medium/${fanart}.jpg.webp`],
+});
+const show = (trakt: number, slug: string, title: string, images: ReturnType<typeof art>) => ({
+  ids: { trakt, slug },
+  title,
+  images,
 });
 
 // Public titles with their real artwork.
 const SHOWS = {
-  seventies: {
-    ids: { trakt: 52, slug: 'that-70s-show' },
-    title: "That '70s Show",
-    images: fanart('shows', '000/052', '0ece27e5ec'),
-  },
-  homeImprovement: {
-    ids: { trakt: 1547, slug: 'home-improvement' },
-    title: 'Home Improvement',
-    images: fanart('shows', '001/547', 'b25fefd43d'),
-  },
-  lizzie: {
-    ids: { trakt: 4551, slug: 'lizzie-mcguire' },
-    title: 'Lizzie McGuire',
-    images: fanart('shows', '004/551', '343a0e6566'),
-  },
-  bell: {
-    ids: { trakt: 4321, slug: 'saved-by-the-bell' },
-    title: 'Saved by the Bell',
-    images: fanart('shows', '004/321', '4da82c8f63'),
-  },
-  hope: {
-    ids: { trakt: 32674, slug: 'raising-hope' },
-    title: 'Raising Hope',
-    images: fanart('shows', '032/674', '8add849da6'),
-  },
-  persona: {
-    ids: { trakt: 274608, slug: 'persona-2025' },
-    title: 'Persona',
-    images: fanart('shows', '274/608', '73b96ee95c'),
-  },
-  lioness: {
-    ids: { trakt: 167187, slug: 'lioness' },
-    title: 'Lioness',
-    images: fanart('shows', '167/187', '88ea4a00c4'),
-  },
-  lanterns: {
-    ids: { trakt: 157599, slug: 'lanterns' },
-    title: 'Lanterns',
-    images: fanart('shows', '157/599', '4feb71753a'),
-  },
-  paper: {
-    ids: { trakt: 239158, slug: 'the-paper-2025' },
-    title: 'The Paper',
-    images: fanart('shows', '239/158', '52d6a6f864'),
-  },
-  severance: {
-    ids: { trakt: 154997, slug: 'severance' },
-    title: 'Severance',
-    images: fanart('shows', '154/997', '9400ecb8e2'),
-  },
-  slowHorses: {
-    ids: { trakt: 155534, slug: 'slow-horses' },
-    title: 'Slow Horses',
-    images: fanart('shows', '155/534', '631e5c2683'),
-  },
-  bear: {
-    ids: { trakt: 189717, slug: 'the-bear' },
-    title: 'The Bear',
-    images: fanart('shows', '189/717', '59290b738d'),
-  },
+  seventies: show(52, 'that-70s-show', "That '70s Show", art('shows', '000/052', '93b5799066', '0ece27e5ec')),
+  homeImprovement: show(
+    1547,
+    'home-improvement',
+    'Home Improvement',
+    art('shows', '001/547', '1a98f7cdf5', 'b25fefd43d'),
+  ),
+  lizzie: show(4551, 'lizzie-mcguire', 'Lizzie McGuire', art('shows', '004/551', '02c62ff1ed', '343a0e6566')),
+  bell: show(4321, 'saved-by-the-bell', 'Saved by the Bell', art('shows', '004/321', '4e6045953a', '4da82c8f63')),
+  hope: show(32674, 'raising-hope', 'Raising Hope', art('shows', '032/674', 'd348e63ef3', '8add849da6')),
+  persona: show(274608, 'persona-2025', 'Persona', art('shows', '274/608', '7d019dacd1', '73b96ee95c')),
+  lioness: show(167187, 'lioness', 'Lioness', art('shows', '167/187', 'beaf515513', '88ea4a00c4')),
+  lanterns: show(157599, 'lanterns', 'Lanterns', art('shows', '157/599', '1fdc413e93', '4feb71753a')),
+  paper: show(239158, 'the-paper-2025', 'The Paper', art('shows', '239/158', '924da7c942', '52d6a6f864')),
+  severance: show(154997, 'severance', 'Severance', art('shows', '154/997', 'f60ddb06de', '9400ecb8e2')),
+  slowHorses: show(155534, 'slow-horses', 'Slow Horses', art('shows', '155/534', '6b6d40b6de', '631e5c2683')),
+  bear: show(189717, 'the-bear', 'The Bear', art('shows', '189/717', 'ef28e34e51', '59290b738d')),
+  paw: show(57161, 'paw-patrol', 'PAW Patrol', art('shows', '057/161', '3d1bf17471', '42eedc3892')),
+  addams: show(
+    13948,
+    'the-addams-family-1964',
+    'The Addams Family',
+    art('shows', '013/948', '447681ecc6', 'a872da22e3'),
+  ),
+  community: show(18265, 'community', 'Community', art('shows', '018/265', '45b7f2b304', '9c0a79d9e6')),
+  spinCity: show(2345, 'spin-city', 'Spin City', art('shows', '002/345', 'ca76eb8de6', '05be47249b')),
+  drewCarey: show(
+    96,
+    'the-drew-carey-show',
+    'The Drew Carey Show',
+    art('shows', '000/096', '7e43f341c2', '107fb7f4c5'),
+  ),
+  simpsons: show(455, 'the-simpsons', 'The Simpsons', art('shows', '000/455', '8b737766ea', 'e69f8ca9ad')),
+  middle: show(1413, 'the-middle', 'The Middle', art('shows', '001/413', '700f8ef40b', '529e1b2f4c')),
+  roseanne: show(2688, 'roseanne', 'Roseanne', art('shows', '002/688', '3a6e1325e0', '699ffb33d6')),
+  familyMatters: show(2667, 'family-matters', 'Family Matters', art('shows', '002/667', '31a896c988', '3b9b898633')),
+  bewitched: show(4458, 'bewitched', 'Bewitched', art('shows', '004/458', '166078642b', '08d5bccb13')),
+  partyDown: show(17209, 'party-down', 'Party Down', art('shows', '017/209', '8a0c6d3ff2', '4ea865c35f')),
+  mork: show(2537, 'mork-mindy', 'Mork & Mindy', art('shows', '002/537', '03d423b87c', 'd9982e5050')),
+  soap: show(3274, 'soap', 'Soap', art('shows', '003/274', 'f40c976994', '8545f41253')),
+  threes: show(2668, 'three-s-company', "Three's Company", art('shows', '002/668', '30efffdb2d', '90266a2fa3')),
+  maude: show(2171, 'maude', 'Maude', art('shows', '002/171', '54ba0f008d', 'da2c261424')),
+  mtm: show(
+    2942,
+    'the-mary-tyler-moore-show',
+    'The Mary Tyler Moore Show',
+    art('shows', '002/942', 'cc06a943fa', '2107d45a81'),
+  ),
+  brady: show(2113, 'the-brady-bunch', 'The Brady Bunch', art('shows', '002/113', 'd07437f99e', '54661a4920')),
+  munsters: show(1700, 'the-munsters', 'The Munsters', art('shows', '001/700', 'bc93c955d9', 'aaa145ac85')),
+  dickVanDyke: show(
+    2119,
+    'the-dick-van-dyke-show',
+    'The Dick Van Dyke Show',
+    art('shows', '002/119', '597bef4665', 'cf75bde1cc'),
+  ),
+  happyDays: show(3822, 'happy-days', 'Happy Days', art('shows', '003/822', 'dcc8fada43', 'e129802b80')),
+  taxi: show(2237, 'taxi', 'Taxi', art('shows', '002/237', '40ca371e07', 'dc3672de74')),
+  cheers: show(140, 'cheers', 'Cheers', art('shows', '000/140', '8119f421cb', '0e1dec7964')),
+  jeffersons: show(1951, 'the-jeffersons', 'The Jeffersons', art('shows', '001/951', 'e77c2b1926', 'bf096409d6')),
+  allInTheFamily: show(
+    1909,
+    'all-in-the-family',
+    'All in the Family',
+    art('shows', '001/909', 'f4eac22f19', '469107d795'),
+  ),
+  gilligan: show(1908, 'gilligan-s-island', "Gilligan's Island", art('shows', '001/908', '66fb4e643f', 'f7db9315b3')),
 };
 const WEAPONS = {
   ids: { trakt: 867094, slug: 'weapons-2025' },
   title: 'Weapons',
   year: 2025,
-  images: fanart('movies', '867/094', '61b76e51d4'),
+  images: art('movies', '867/094', '70d5a3734e', '61b76e51d4'),
 };
 
 type Show = keyof typeof SHOWS;
@@ -101,12 +116,50 @@ const episode = (show: Show, season: number, number: number) => ({
 const whole = (show: Show) => ({ type: 'show' as const, show: SHOWS[show] });
 const movie = { type: 'movie' as const, movie: WEAPONS };
 
+// Kristin's day yesterday: 33 episodes of 27 shows from 8:20 AM to 11:17 PM, about 25 minutes apart, newest first.
+const KRISTINS_DAY: readonly (readonly [Show, number, number, number])[] = [
+  ['bell', 1, 6, 1033],
+  ['hope', 1, 7, 1055],
+  ['addams', 1, 2, 1077],
+  ['community', 1, 1, 1103],
+  ['spinCity', 1, 7, 1128],
+  ['drewCarey', 3, 23, 1151],
+  ['simpsons', 2, 3, 1182],
+  ['middle', 2, 6, 1205],
+  ['roseanne', 2, 7, 1227],
+  ['homeImprovement', 2, 6, 1257],
+  ['familyMatters', 2, 7, 1281],
+  ['bewitched', 1, 8, 1310],
+  ['partyDown', 1, 1, 1336],
+  ['roseanne', 1, 10, 1364],
+  ['mork', 1, 1, 1388],
+  ['soap', 1, 2, 1414],
+  ['threes', 1, 2, 1449],
+  ['maude', 1, 2, 1474],
+  ['mtm', 1, 2, 1511],
+  ['brady', 1, 2, 1587],
+  ['munsters', 1, 2, 1613],
+  ['mtm', 1, 1, 1649],
+  ['dickVanDyke', 1, 2, 1674],
+  ['happyDays', 1, 2, 1700],
+  ['taxi', 1, 2, 1726],
+  ['cheers', 1, 2, 1752],
+  ['bewitched', 1, 7, 1778],
+  ['jeffersons', 1, 2, 1804],
+  ['threes', 1, 1, 1829],
+  ['allInTheFamily', 1, 2, 1855],
+  ['soap', 1, 1, 1880],
+  ['gilligan', 1, 2, 1906],
+  ['munsters', 1, 1, 1930],
+];
+
 const ago = (now: Date, minutes: number) => new Date(now.getTime() - minutes * 60_000).toISOString();
 
 /**
  * A week of the people you follow, newest first, with made-up members and public titles: Kristin's two sittings with
- * other members' rows between them, Sefer's check-in and rating, Damien's comment, MajorMercyFlush binging Lanterns
- * 1x06 to 1x08 over two calendar days, Technicolour's review, a movie, and Rook's spoiler comment from two days ago.
+ * other members' rows between them (the second a 33-episode day), Sefer's check-in and rating, Damien's two shows,
+ * comment and rating, MajorMercyFlush binging Lanterns 1x06 to 1x08 over two calendar days, Technicolour's review, a
+ * movie, Justin's two PAW Patrol episodes and Rook's spoiler comment from two days ago.
  */
 function rows(now: Date): readonly SocialActivity[] {
   const watch = (id: number, minutes: number, by: keyof typeof USERS, method = 'scrobble') => ({
@@ -137,6 +190,7 @@ function rows(now: Date): readonly SocialActivity[] {
     { ...watch(15, 77, 'kristin'), ...episode('lizzie', 1, 24) },
     { ...rating(14, 119, 'sefer', 9), ...episode('persona', 1, 3) },
     { ...watch(13, 132, 'sefer', 'checkin'), ...episode('persona', 1, 3) },
+    { ...rating(19, 705, 'damien', 8), ...whole('lanterns') },
     {
       ...comment(
         12,
@@ -163,10 +217,14 @@ function rows(now: Date): readonly SocialActivity[] {
     { ...rating(6, 928, 'techni', 8), ...episode('lanterns', 1, 8) },
     { ...watch(5, 938, 'techni', 'watch'), ...episode('paper', 1, 1) },
     { ...watch(4, 1002, 'mmf'), ...episode('lanterns', 1, 7) },
-    { ...watch(3, 1033, 'kristin'), ...episode('bell', 1, 6) },
-    { ...watch(2, 1055, 'kristin'), ...episode('hope', 1, 7) },
     { ...watch(1, 1068, 'mmf'), ...episode('lanterns', 1, 6) },
     { ...watch(0, 1225, 'sefer', 'watch'), ...movie },
+    { ...watch(20, 1380, 'justin'), ...episode('paw', 7, 21) },
+    { ...watch(21, 1408, 'justin'), ...episode('paw', 7, 1) },
+    ...KRISTINS_DAY.map(([show, season, number, minutes], i) => ({
+      ...watch(100 + i, minutes, 'kristin'),
+      ...episode(show, season, number),
+    })),
     {
       ...comment(18, 2900, 'rook', 'I did not see that ending coming. Mark is the one who sends the message.', {
         spoiler: true,
@@ -175,7 +233,7 @@ function rows(now: Date): readonly SocialActivity[] {
       }),
       ...episode('severance', 2, 10),
     },
-  ];
+  ].toSorted((a, b) => Date.parse(b.activity_at) - Date.parse(a.activity_at));
 }
 
 const DATE_PREFERENCES = { order: 'mdy', hour24: false, timeZone: 'UTC', weekStartDay: 0 } as const;

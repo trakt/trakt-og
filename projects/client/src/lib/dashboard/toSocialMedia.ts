@@ -7,13 +7,13 @@ const episodeCode = (season: number, number: number) =>
 /** The part of a Social Feed item that says what it was about. */
 export type SocialItemMedia = Pick<SocialItem, 'title' | 'episode' | 'code' | 'href' | 'still'>;
 
-/** The movie, show, season or episode a feed row or a member's watching is about, with its page and still. */
+/** The movie, show, season or episode a feed row or a member's watching is about, with its page, poster and still. */
 export function toSocialMedia(activity: SocialMedia): SocialItemMedia {
   if (activity.type === 'movie') {
     const { movie } = activity;
     const href = `/movies/${movie.ids.slug}`;
     return {
-      title: { key: `movie:${movie.ids.slug}`, name: movie.title, href },
+      title: { key: `movie:${movie.ids.slug}`, name: movie.title, href, poster: movie.images?.poster?.at(0) },
       href,
       still: movie.images?.fanart?.at(0),
     };
@@ -22,7 +22,7 @@ export function toSocialMedia(activity: SocialMedia): SocialItemMedia {
   const { show } = activity;
   const showHref = `/shows/${show.ids.slug}`;
   const common = {
-    title: { key: `show:${show.ids.slug}`, name: show.title, href: showHref },
+    title: { key: `show:${show.ids.slug}`, name: show.title, href: showHref, poster: show.images?.poster?.at(0) },
     still: show.images?.fanart?.at(0),
   };
   if (activity.type === 'show') return { ...common, href: showHref };

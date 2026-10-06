@@ -57,6 +57,7 @@ describe('fetchSocialFeed', () => {
       'Technicolour',
       'Kristin',
       'Sefer',
+      'Justin',
       'Rook',
     ]);
     expect(social.sittings.at(3)?.summary.sentence).toBe(
@@ -76,6 +77,7 @@ describe('fetchSocialFeed', () => {
       'Damien',
       'MajorMercyFlush',
       'Technicolour',
+      'Justin',
     ]);
   });
 
@@ -110,7 +112,7 @@ describe('fetchSocialFeed', () => {
   it("should still ask when the following count didn't load", async () => {
     server.use(byWindow());
 
-    expect((await feed(null)).sittings).toHaveLength(8);
+    expect((await feed(null)).sittings).toHaveLength(9);
   });
 
   it('should skip a row it cannot show', async () => {

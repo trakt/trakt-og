@@ -3,6 +3,7 @@ import { describeSitting } from './describeSitting.ts';
 import { groupSittings, type Sitting } from './groupSittings.ts';
 import { socialFeedFixture } from './socialFeedFixture.ts';
 import type { SocialActivity } from './socialActivitySchema.ts';
+import type { SocialMedia } from './socialMediaSchema.ts';
 import { toSocialItem } from './toSocialItem.ts';
 
 const now = new Date('2026-10-05T16:30:00Z');
@@ -34,7 +35,9 @@ describe('describeSitting', () => {
       const mmf = of('MajorMercyFlush');
 
       expect(texts(mmf.head.links)).toEqual(['Lanterns 1x06–1x08']);
-      expect(mmf.tileHead.link?.text).toBe('Lanterns 1x06–1x08');
+      expect(mmf.tile.link?.text).toBe('Lanterns 1x06–1x08');
+      expect(mmf.tile.still.href).toBe('/shows/lanterns/seasons/1/episodes/8');
+      expect(mmf.tile.heart).toBe(10);
       expect(mmf.count).toBe('3 episodes');
       expect(mmf.hearts).toEqual([10]);
     });
@@ -58,22 +61,44 @@ describe('describeSitting', () => {
   });
 
   describe('for more than one title', () => {
-    it('should show two titles in a row, one with the rest counted on a tile', () => {
+    it('should lead with the newest watch, even when a rating of another title is newer', () => {
       const damien = of('Damien');
 
       expect(texts(damien.head.links)).toEqual(['Lioness', 'Lanterns']);
-      expect(damien.tileHead).toEqual({ link: { text: 'Lioness', href: '/shows/lioness' }, more: 1 });
+      expect(damien.head.more).toBeNull();
+      expect(damien.posters.titles.map(({ name }) => name)).toEqual(['Lioness', 'Lanterns']);
+      expect(damien.tile).toEqual({
+        link: { text: 'Lioness 3x02', href: '/shows/lioness/seasons/3/episodes/2' },
+        more: '+1 show',
+        still: { href: '/shows/lioness/seasons/3/episodes/2', path: expect.stringContaining('/167/187/fanarts/') },
+        heart: null,
+      });
       expect(damien.count).toBe('2 episodes');
       expect(damien.comments).toEqual([{ id: 12, review: false, on: 'Lioness 3x02' }]);
-      expect(damien.sentence).toBe('Damien watched 2 episodes across 2 shows and commented on Lioness 3x02.');
+      expect(damien.sentence).toBe(
+        'Damien watched 2 episodes across 2 shows, commented on Lioness 3x02 and rated Lanterns 8 out of 10.',
+      );
     });
 
-    it('should count past two titles', () => {
+    it('should read the same whatever order the rows come in', () => {
+      const [damien] = sittings.filter(({ member }) => member.name === 'Damien');
+      if (!damien) throw new Error('no sitting');
+      const shuffled = summary({ ...damien, items: damien.items.toReversed() });
+
+      expect(shuffled.head).toEqual(of('Damien').head);
+      expect(shuffled.tile).toEqual(of('Damien').tile);
+      expect(shuffled.list).toEqual(of('Damien').list);
+    });
+
+    it('should count past two titles by their unit', () => {
       const kristin = of('Kristin');
 
       expect(texts(kristin.head.links)).toEqual(["That '70s Show", 'Home Improvement']);
-      expect(kristin.head.more).toBe(1);
-      expect(kristin.tileHead.more).toBe(2);
+      expect(kristin.head.more).toBe('+1 show');
+      expect(kristin.tile.more).toBe('+2 shows');
+      expect(kristin.count).toBe('3 episodes');
+      expect(kristin.posters.titles).toHaveLength(3);
+      expect(kristin.posters.more).toBe(0);
     });
 
     it('should name a rating of a title they did not watch, and review the one they did', () => {
@@ -138,12 +163,111 @@ describe('describeSitting', () => {
     });
   });
 
-  it('should show up to three different stills', () => {
-    expect(of('Kristin').thumbs.map(({ label }) => label)).toEqual([
-      "That '70s Show 3x04",
-      'Home Improvement 3x06',
-      'Lizzie McGuire 1x24',
-    ]);
-    expect(of('Sefer').thumbs).toHaveLength(1);
+  describe("for Kristin's 33 episodes of 27 shows", () => {
+    const day = of('Kristin', 1);
+
+    it('should name two shows and count the rest as shows', () => {
+      expect(texts(day.head.links)).toEqual(['Saved by the Bell', 'Raising Hope']);
+      expect(day.head.more).toBe('+25 shows');
+      expect(day.count).toBe('33 episodes · 27 shows');
+      expect(day.span).toBe('8:20 AM – 11:17 PM');
+      expect(day.sentence).toBe('Kristin watched 33 episodes across 27 shows.');
+    });
+
+    it('should show two posters and a box with the same count as the headline', () => {
+      expect(day.posters.titles.map(({ name }) => name)).toEqual(['Saved by the Bell', 'Raising Hope']);
+      expect(day.posters.titles.at(0)?.poster).toContain('/posters/');
+      expect(day.posters.more).toBe(25);
+    });
+
+    it('should lead a tile with her newest episode', () => {
+      expect(day.tile.link?.text).toBe('Saved by the Bell 1x06');
+      expect(day.tile.more).toBe('+26 shows');
+      expect(day.tile.still.href).toBe('/shows/saved-by-the-bell/seasons/1/episodes/6');
+    });
+
+    it('should list a line per show, newest first, then fold the rest behind a button', () => {
+      const line = ({ name, codes }: { name: string; codes: string }) => `${name} ${codes}`;
+
+      expect(day.list.lines.map(line)).toEqual([
+        'Saved by the Bell 1x06',
+        'Raising Hope 1x07',
+        'The Addams Family 1x02',
+        'Community 1x01',
+        'Spin City 1x07',
+        'The Drew Carey Show 3x23',
+        'The Simpsons 2x03',
+      ]);
+      expect(day.list.rest).toHaveLength(20);
+      expect(day.list.rest.map(line)).toContain('Roseanne 2x07, 1x10');
+      expect(day.list.more).toBe('Show 20 more shows');
+      expect(day.list.lines.at(0)?.time).toBe('11:17 PM');
+    });
+  });
+
+  describe('for the count button', () => {
+    const at = (minutes: number) => new Date(now.getTime() - minutes * 60_000).toISOString();
+    // The fixture rows with these ids, as one member's sitting a minute apart.
+    const sittingOf = (rows: readonly SocialActivity[]) =>
+      summary(
+        groupSittings(toItems(rows.map((row, i) => ({
+          ...row,
+          user: { ...row.user, username: 'sample-rook', name: 'Rook', ids: { slug: 'sample-rook' } },
+          activity_at: at(i + 1),
+        })))).at(0),
+      );
+    const byId = (...ids: number[]) => ids.flatMap((id) => socialFeedFixture.rows(now).filter((row) => row.id === id));
+
+    it('should have none for one watch, one watch with a rating or review, or a lone comment', () => {
+      expect(of('Sefer', 1).count).toBeNull();
+      expect(of('Sefer').count).toBeNull();
+      expect(of('Technicolour').count).toBeNull();
+      expect(of('Rook').count).toBeNull();
+    });
+
+    it('should count episodes, and name the shows only when they differ from the episodes', () => {
+      expect(of('Justin').count).toBe('2 episodes');
+      expect(texts(of('Justin').head.links)).toEqual(['PAW Patrol 7x01, 7x21']);
+      expect(of('Damien').count).toBe('2 episodes');
+      expect(of('Kristin', 1).count).toBe('33 episodes · 27 shows');
+    });
+
+    it('should count episodes and movies, and call the rest "more"', () => {
+      const mixed = sittingOf(byId(13, 0, 15));
+
+      expect(mixed.count).toBe('2 episodes, 1 movie');
+      expect(mixed.head.more).toBe('+1 show');
+      expect(mixed.tile.more).toBe('+2 more');
+    });
+
+    it('should fold three or more ratings into one button, and their hearts into its list', () => {
+      const [template] = byId(14);
+      if (!template) throw new Error('no fixture rating');
+      const title = (trakt: number, name: string) => ({ ids: { trakt, slug: `title-${trakt}` }, title: name });
+      const rate = (rating: number, media: SocialMedia): SocialActivity => ({
+        id: rating,
+        activity_at: '',
+        user: template.user,
+        action: 'rating',
+        rating,
+        ...media,
+      });
+      const ratings = sittingOf([
+        rate(9, { type: 'show', show: title(1, 'Slow Horses') }),
+        rate(8, { type: 'show', show: title(2, 'Severance') }),
+        rate(10, { type: 'movie', movie: title(3, 'Dune: Part Two') }),
+        rate(7, { type: 'show', show: title(4, 'The Bear') }),
+      ]);
+
+      expect(ratings.count).toBe('4 ratings');
+      expect(ratings.hearts).toEqual([]);
+      expect(texts(ratings.head.links)).toEqual(['Slow Horses', 'Severance']);
+      expect(ratings.head.more).toBe('+2 more');
+      expect(ratings.list.lines.map(({ rating }) => rating)).toEqual([9, 8, 10, 7]);
+    });
+  });
+
+  it('should leave out the span of a sitting under two hours', () => {
+    expect(of('Damien').span).toBeNull();
   });
 });

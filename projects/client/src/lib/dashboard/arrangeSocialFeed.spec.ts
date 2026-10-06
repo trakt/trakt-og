@@ -21,7 +21,7 @@ describe('arrangeSocialFeed', () => {
     const layout = arrange(0);
 
     expect(tileNames(layout)).toEqual(['Kristin', 'Sefer', 'Damien', 'MajorMercyFlush']);
-    expect(timelineNames(layout)).toEqual(['Technicolour', 'Kristin', 'Sefer', 'Rook']);
+    expect(timelineNames(layout)).toEqual(['Technicolour', 'Kristin', 'Sefer', 'Justin', 'Rook']);
     expect(layout.overflow).toEqual([]);
   });
 
@@ -30,7 +30,7 @@ describe('arrangeSocialFeed', () => {
     const [first] = layout.tiles;
 
     expect(tileNames(layout)).toEqual(['live:Kristin', 'Sefer', 'Damien', 'MajorMercyFlush']);
-    expect(timelineNames(layout)).toEqual(['Technicolour', 'Kristin', 'Sefer', 'Rook']);
+    expect(timelineNames(layout)).toEqual(['Technicolour', 'Kristin', 'Sefer', 'Justin', 'Rook']);
     expect(first).toMatchObject({ kind: 'live', progress: 85, minutesLeft: 4, earlier: 3 });
   });
 
@@ -52,6 +52,7 @@ describe('arrangeSocialFeed', () => {
       'Technicolour',
       'Kristin',
       'Sefer',
+      'Justin',
       'Rook',
     ]);
   });

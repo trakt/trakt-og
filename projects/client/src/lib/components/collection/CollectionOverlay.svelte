@@ -7,34 +7,15 @@
 <script lang="ts">
 import Icon from '$lib/icons/Icon.svelte';
 import type { CollectionBadges, CollectionLogo } from './collectionBadges.ts';
-
-const logos: Record<string, string> = import.meta.glob('../../icons/logos/*.svg', {
-  query: '?raw',
-  import: 'default',
-  eager: true,
-});
+import { collectionLogo } from './collectionLogo.ts';
 
 const { badges }: { badges: CollectionBadges } = $props();
-// OG's per-logo sizes (`.logos-icon-bluray`, `.logos-icon-dolby_digital` and friends).
-const WIDE = new Set(['bluray', 'vcd']);
-const SMALL = new Set([
-  'digital',
-  'dolby_digital',
-  'dolby_digital_plus',
-  'dolby_prologic',
-  'dolby_atmos',
-  'dolby_truehd',
-  'dts',
-  'dts_ma',
-  'dts_x',
-]);
-const svg = (name: string) => logos[`../../icons/logos/${name}.svg`];
 </script>
 
 {#snippet logo({ name }: CollectionLogo)}
-  {@const glyph = svg(name)}
+  {@const glyph = collectionLogo(name)}
   {#if glyph}
-    <span class={['item', 'logo', { wide: WIDE.has(name), small: SMALL.has(name) }]}><Icon svg={glyph} /></span><br />
+    <span class={['item', 'logo', glyph.size]}><Icon svg={glyph.svg} /></span><br />
   {/if}
 {/snippet}
 

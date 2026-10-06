@@ -23,7 +23,7 @@ interface Props {
   target: VisibilityTarget;
   action: 'rewatch' | 'drop' | 'restore' | 'hide';
   section?: 'calendar' | 'recommendations' | 'progress_watched' | 'progress_collected';
-  variant?: 'side' | 'pill' | 'badge' | 'card';
+  variant?: 'side' | 'pill' | 'badge' | 'card' | 'menu';
   small?: boolean;
   tooltip?: string;
   placement?: ComponentProps<typeof Tooltip>['placement'];
@@ -153,7 +153,7 @@ function submit(event: SubmitEvent) {
 </script>
 
 <span class={['visibility-control', variant]} style:anchor-name="--visibility-{id}">
-  <Tooltip text={tooltip ?? label} {placement}>
+  <Tooltip text={variant === 'menu' ? undefined : tooltip ?? label} {placement}>
   {#snippet trigger(tip)}
     <button bind:this={button} type="button" class={['visibility-trigger', variant, { small }]}
       aria-label={label} aria-haspopup="dialog" aria-controls="visibility-{id}" aria-expanded={expanded}
@@ -190,6 +190,9 @@ function submit(event: SubmitEvent) {
 <style>
 .visibility-control {
   display: inline-flex;
+  &.menu {
+    display: flex;
+  }
   &.side {
     inline-size: 100%;
   }
@@ -236,6 +239,23 @@ function submit(event: SubmitEvent) {
   &.badge {
     font-size: inherit;
     line-height: 1;
+  }
+  &.menu {
+    justify-content: start;
+    gap: var(--summary-action-menu-row-gap);
+    inline-size: 100%;
+    padding: var(--space-sm-block) var(--gutter);
+    color: var(--color-dropdown-text);
+    font: var(--font-size-base) / var(--line-height-base) var(--font-body);
+    text-align: start;
+    &:is(:hover, :focus-visible) {
+      background: var(--color-dropdown-hover-bg);
+      color: var(--color-dropdown-hover-text);
+    }
+    & > :global(.icon) {
+      color: var(--color-text-muted);
+      font-size: var(--font-size-summary-action-menu-icon);
+    }
   }
   &.card {
     inline-size: var(--watch-card-width);

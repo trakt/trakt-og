@@ -9,6 +9,8 @@ import { toast } from '$lib/components/toast/toast.svelte';
 import WatchPopover from '$lib/components/history/WatchPopover.svelte';
 import { loadWatchEpisodes } from '$lib/components/history/loadWatchEpisodes';
 import type { WatchTarget } from '$lib/components/history/WatchTarget';
+import CollectionLogos from '$lib/components/collection/CollectionLogos.svelte';
+import { collectionBadges } from '$lib/components/collection/collectionBadges';
 import CollectionMetadataFields from '$lib/components/collection/CollectionMetadataFields.svelte';
 import type { CollectionMetadata } from '$lib/components/collection/CollectionMetadata';
 import { collectMedia } from '$lib/components/collection/collectMedia';
@@ -45,7 +47,15 @@ const plural = $derived(target.type === 'show' || target.type === 'season');
 const label = $derived(
   fill.collected > 0 ? plural ? `${Math.floor(fill.collected * 100)}% in library` : 'In Library' : 'Add to library',
 );
+const percent = $derived(plural && fill.collected > 0 ? `${Math.floor(fill.collected * 100)}%` : undefined);
 const metadataText = $derived(collectionMetadataLabel(viewerState.collectionMetadata));
+const collectedDate = $derived(
+  viewerState.collectedAt?.startsWith('1970-01-01')
+    ? 'Unknown date'
+    : viewerState.collectedAt && formatDate(viewerState.collectedAt, { ...dates, time: true }),
+);
+const detail = $derived(plural ? `${viewerState.collectedEpisodes}/${target.airedEpisodes} episodes` : collectedDate);
+const badges = $derived(collectionBadges(viewerState.collectionMetadata));
 const request = (path: string, body?: unknown) =>
   rawApiFetch({
     fetch: path.startsWith('/search/') ? globalThis.fetch : authenticatedFetch({ manager: userManager() }),
@@ -97,23 +107,14 @@ async function open(force: boolean): Promise<'date' | 'remove' | 'partial' | nul
   label={onremove ? 'Remove from library' : label} fill={onremove ? 1 : fill.collected} datePreferences={dates}
   tooltip={onremove ? 'Remove from library' : variant === 'card' ? fill.titles.collected ?? 'Add to library' : undefined}
   onopen={open} onwatch={collect} onremaining={() => Promise.resolve(false)}
-  oninvalid={() => toast.error('Invalid date format, please use the date picker.')}>
-  {#snippet trigger()}
-    {#if variant === 'summary'}
-      <span class="collection-icon"><Icon svg={collection} fixedWidth /></span>
-      <span class="info">
-        <span class="main-info">{label}</span>
-        {#if fill.collected > 0}
-          <span class="under-info">{#if plural}{viewerState.collectedEpisodes}/{target.airedEpisodes} episodes{:else if viewerState.collectedAt}{viewerState.collectedAt.startsWith('1970-01-01') ? 'Unknown date' : formatDate(viewerState.collectedAt, dates)}{/if}</span>
-          {#if metadataText}<span class="under-info">{metadataText}</span>{/if}
-        {/if}
-      </span>
-    {:else}<span class="trakt-glyph"><Icon svg={collectionThick} /></span>{/if}
-  {/snippet}
+  oninvalid={() => toast.error('Invalid date format, please use the date picker.')}
+  summary={{ icon: collection, text: percent ? 'in library' : label, percent, detail: fill.collected > 0 ? detail : undefined, aside: badges && fill.collected > 0 ? logos : undefined, tooltip: fill.collected > 0 ? metadataText || undefined : undefined }}>
+  {#snippet trigger()}<span class="trakt-glyph"><Icon svg={collectionThick} /></span>{/snippet}
   {#snippet metadata(done, saving)}
     <CollectionMetadataFields value={draft ?? {}} {saving} onsave={(value) => { draft = value; done(); if (saving) void collect(undefined); }} />
   {/snippet}
 </WatchPopover>
+{#snippet logos()}{#if badges}<CollectionLogos {badges} />{/if}{/snippet}
 {#if variant === 'summary' && plural && fill.collected > 0 && target.airedEpisodes}
   <Tooltip text={fill.titles.collected} placement="bottom">
     {#snippet trigger(tip)}
@@ -130,36 +131,13 @@ async function open(force: boolean): Promise<'date' | 'remove' | 'partial' | nul
   display: contents;
   --icon-shift: var(--quick-icon-trakt-shift);
 }
-.collection-icon {
-  inline-size: var(--action-icon-width);
-  flex-shrink: 0;
-  padding-inline: var(--watch-icon-padding);
-  font-size: var(--font-size-action-icon);
-  line-height: 1;
-}
-.info {
-  padding-block: var(--watch-info-block);
-  font-family: var(--font-headings);
-}
-.main-info {
-  display: block;
-  font-size: var(--font-size-action);
-  font-weight: var(--font-weight-headings);
-  line-height: var(--watch-summary-line);
-  text-transform: uppercase;
-  .info:has(.under-info) & {
-    line-height: var(--watch-summary-selected-line);
-  }
-}
-.under-info {
-  display: block;
-  font-size: var(--watch-detail-size);
-  line-height: var(--watch-detail-line);
-}
 .collection-progress {
   display: flex;
   block-size: var(--watch-progress-height);
-  background: var(--progress-under-bg);
+  margin-block-start: var(--watch-progress-gap);
+  overflow: hidden;
+  border-radius: var(--radius-watch-progress);
+  background: var(--color-watch-progress-track);
   & span {
     flex: 1;
   }

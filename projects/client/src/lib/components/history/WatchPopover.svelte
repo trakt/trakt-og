@@ -6,6 +6,8 @@ import check from '$lib/icons/trakt/check-thick.svg?raw';
 import disc from '$lib/icons/light/compact-disc.svg?raw';
 import close from '$lib/icons/trakt/delete-thick.svg?raw';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
+import SummaryAction from '$lib/components/summary/SummaryAction.svelte';
+import SummaryActionTile from '$lib/components/summary/SummaryActionTile.svelte';
 import Spinner from '$lib/components/loading/Spinner.svelte';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
 import { watchDateInput } from '$lib/components/history/watchDateInput';
@@ -13,6 +15,15 @@ import { watchDateInstant } from '$lib/components/history/watchDateInstant';
 import { formatDate } from '$lib/utils/formatDate';
 
 type Mode = 'date' | 'remove' | 'partial';
+/** What a summary button shows (`SummaryAction`'s icon, text, percent and detail). */
+interface SummaryContent {
+  icon: string;
+  text: string;
+  percent?: string;
+  detail?: Snippet | string;
+  aside?: Snippet;
+  tooltip?: string;
+}
 interface Props {
   label: string;
   variant?: 'summary' | 'card';
@@ -22,9 +33,11 @@ interface Props {
   plural?: boolean;
   small?: boolean;
   datePreferences: DatePreferences;
-  trigger: Snippet;
-  details?: Snippet;
-  extraActions?: Snippet;
+  /** The poster icon's content. */
+  trigger?: Snippet;
+  summary?: SummaryContent;
+  /** Summary only: a `SummaryActionMenu` under the +. */
+  more?: Snippet;
   onopen: (force: boolean) => Promise<Mode | null>;
   onwatch: (at: string | null, force: boolean) => void;
   onremaining: () => Promise<boolean>;
@@ -47,8 +60,8 @@ const {
   small = false,
   datePreferences,
   trigger: content,
-  details,
-  extraActions,
+  summary,
+  more,
   onopen,
   onwatch,
   onremaining,
@@ -61,7 +74,7 @@ const {
   metadata,
 }: Props = $props();
 const id = $props.id();
-let button = $state<HTMLButtonElement>();
+let button = $state<HTMLElement>();
 let side = $state<HTMLButtonElement>();
 let popover = $state<HTMLDivElement>();
 let field = $state<HTMLInputElement>();
@@ -73,7 +86,7 @@ let force = $state(false);
 let other = $state(false);
 let value = $state('');
 let maximum = $state('');
-let returnTo = $state<HTMLButtonElement>();
+let returnTo = $state<HTMLElement>();
 let press: ReturnType<typeof setTimeout> | undefined;
 let pressed = false;
 const title = $derived(
@@ -84,6 +97,14 @@ const title = $derived(
     : mode === 'remove'
     ? collection ? 'Remove from library?' : 'Remove from history?'
     : 'What would you like to do?',
+);
+// Not added yet, the + always asks for a date, where the button itself may add right away with the default.
+const addLabel = $derived(
+  collection
+    ? selected ? 'Add to library' : 'Pick a library date'
+    : selected
+    ? plural ? 'Add more plays' : 'Add another play'
+    : 'Pick a watched date',
 );
 const instant = $derived(value ? watchDateInstant(value, datePreferences.timeZone) : null);
 
@@ -169,6 +190,24 @@ function click() {
 }
 </script>
 
+{#if variant === 'summary' && summary}
+  <div class="watch-control summary" style:anchor-name="--watch-{id}" aria-busy={busy}>
+  <SummaryAction bind:element={button} color={collection ? 'var(--brand-quaternary)' : 'var(--brand-tertiary)'}
+    icon={summary.icon} text={summary.text} percent={summary.percent} detail={summary.detail} aside={summary.aside}
+    tooltip={summary.tooltip}
+    {selected}
+    busy={busy ? collection ? 'Saving collection' : 'Saving watched history' : undefined}
+    aria-label={label} aria-controls="watch-{id}" aria-haspopup="dialog" aria-expanded={expanded} aria-disabled={busy}
+    onclick={click} onpointerdown={pointerdown} onpointerup={release} onpointercancel={release}
+    onpointerleave={release}>
+      {#snippet tiles()}
+        <SummaryActionTile bind:element={side} icon={plus} label={addLabel} aria-controls="watch-{id}"
+          aria-haspopup="dialog" aria-expanded={expanded} aria-disabled={busy} onclick={() => open(true)} />
+        {@render more?.()}
+      {/snippet}
+    </SummaryAction>
+</div>
+{:else}
 <div class={['watch-control', variant, { small, collection, selected }]} style:--watch-fill={fill}
   style:--watch-color={collection ? 'var(--brand-quaternary)' : 'var(--brand-tertiary)'}
   style:anchor-name="--watch-{id}" aria-busy={busy}>
@@ -177,24 +216,13 @@ function click() {
       <button bind:this={button} type="button" class="watch-trigger" aria-label={label}
         aria-controls="watch-{id}" aria-haspopup="dialog" aria-expanded={expanded} aria-disabled={busy}
         onclick={click} onpointerdown={pointerdown} onpointerup={release} onpointercancel={release} onpointerleave={release} {...tip}>
-        <span class="base"></span>{@render content()}
+        <span class="base"></span>{@render content?.()}
       </button>
     {/snippet}
   </Tooltip>
-  {#if variant === 'summary'}
-    <div class={['side-actions', { multiple: extraActions }]}>
-    <Tooltip text={collection ? 'Add to library' : `Add additional ${plural ? 'plays' : 'play'}`} placement="right">
-      {#snippet trigger(tip)}
-        <button bind:this={side} type="button" class="side" aria-label="{collection ? 'Add to library' : `Add additional ${plural ? 'plays' : 'play'}`}"
-          aria-controls="watch-{id}" aria-haspopup="dialog" aria-expanded={expanded} aria-disabled={busy} onclick={() => open(true)} {...tip}><Icon svg={plus} /></button>
-      {/snippet}
-    </Tooltip>
-    {@render extraActions?.()}
-    </div>
-    {#if details}<div class="details">{@render details()}</div>{/if}
-  {/if}
   {#if busy}<span class="busy"><Spinner label={collection ? "Saving collection" : "Saving watched history"} /></span>{/if}
 </div>
+{/if}
 <div bind:this={popover} id="watch-{id}" class={['watch-popover', { other, collection, editingMetadata }]}
   popover="auto" role="dialog" aria-label={title} style:position-anchor="--watch-{id}" ontoggle={toggle}>
   <h3>{title}</h3>
@@ -244,16 +272,6 @@ function click() {
 .watch-control {
   position: relative;
   color: var(--watch-color, var(--brand-tertiary));
-  &.summary {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    border: var(--watch-border) solid var(--watch-color, var(--brand-tertiary));
-    background: var(--color-action-bg);
-    &:is(.selected, :hover) {
-      background: var(--watch-color, var(--brand-tertiary));
-      color: var(--color-text-inverse);
-    }
-  }
   &.card {
     inline-size: var(--watch-card-width);
     block-size: var(--watch-card-height);
@@ -276,8 +294,7 @@ function click() {
   color: var(--watch-color, var(--brand-tertiary));
   font-size: var(--font-size-action-icon);
 }
-.watch-trigger,
-.side {
+.watch-trigger {
   position: relative;
   display: flex;
   align-items: center;
@@ -293,57 +310,6 @@ function click() {
   &:focus-visible {
     outline: var(--watch-focus) solid var(--color-input-border-focus);
     outline-offset: calc(-1 * var(--watch-focus));
-  }
-}
-.summary .watch-trigger {
-  min-block-size: var(--action-height);
-  &:is(:hover, :focus-visible) {
-    background: var(--watch-color, var(--brand-tertiary));
-    color: var(--color-text-inverse);
-  }
-}
-.side {
-  justify-content: center;
-  padding-inline: var(--watch-side-start) var(--watch-side-end);
-  font-size: var(--watch-side-size);
-  opacity: var(--visibility-side-opacity);
-  &:is(:hover, :focus-visible) {
-    opacity: 1;
-  }
-}
-.side-actions {
-  grid-column: 2;
-  grid-row: 1 / span 2;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  background: var(--color-action-side-bg);
-  color: var(--color-action-side);
-  .selected &,
-  .watch-control:hover & {
-    background: var(--color-action-side-bg-hover);
-    color: var(--color-text-inverse);
-  }
-  &:is(:hover, :focus-within) {
-    background: var(--color-action-side-bg-active);
-    color: var(--color-text-inverse);
-  }
-  &.multiple {
-    justify-content: start;
-    gap: var(--visibility-side-gap);
-    padding-block-start: var(--visibility-side-top);
-  }
-  &.multiple .side {
-    block-size: var(--visibility-side-height);
-  }
-}
-.details {
-  grid-column: 1;
-  padding: 0 var(--watch-detail-inline) var(--watch-detail-bottom) var(--action-icon-width);
-  font-size: var(--watch-history-size);
-  line-height: var(--watch-detail-line);
-  &:empty {
-    display: none;
   }
 }
 .base {

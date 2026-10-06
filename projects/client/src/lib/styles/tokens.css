@@ -1517,10 +1517,11 @@
   --comment-actions-padding: 8px 0 2px var(--comment-bubble-padding-inline); /* starts under the bubble's text */
   --comment-action-icon-gap: 5px;
   --font-size-comment-action-icon: 12px; /* every icon in the action row, one box */
-  /* The row's 13px Figtree centers its line box 1.25px above the x-height's middle, so icons and emoji drop to it. */
-  --comment-action-icon-shift: 1.25px;
+  /* The row's 13px Figtree centres its line box 1.25px above the x-height's middle; icons drop 1px less than that. */
+  --comment-action-icon-shift: 0.25px;
   /* face-smile-plus's circle is centred at y 288 of 512, 32/512 below the glyph box's middle, so it lifts by that. */
   --comment-react-icon-circle-offset: -0.0625em;
+  --comment-reaction-emoji-shift: 1.25px; /* the summary's emoji, on the x-height's middle */
   --comment-reactions-gap: 10px; /* between reactions in the summary */
   --comment-reaction-count-gap: 4px; /* between an emoji and its count */
   --font-size-comment-reaction-emoji: 13px;

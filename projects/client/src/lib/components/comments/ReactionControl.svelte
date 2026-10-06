@@ -128,7 +128,7 @@ function choose(type: typeof reactionOptions[number]['type']) {
 .emoji-icon {
   font-size: var(--font-size-comment-reaction-emoji);
   line-height: 1;
-  translate: 0 var(--comment-action-icon-shift);
+  translate: 0 var(--comment-reaction-emoji-shift);
 }
 .reaction-popover {
   &:popover-open {

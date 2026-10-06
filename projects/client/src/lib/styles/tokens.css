@@ -1471,7 +1471,6 @@
   --color-comment-pill-blocked: light-dark(red, var(--gray)); /* OG's literal `red` */
   --font-size-comment-meta: 13px; /* the author row and the under-comment links */
   --font-size-comment-icon: 20px;
-  --font-size-comment-reaction-icon: 15px;
   --font-size-pill: 11px;
   --comment-avatar: 44px;
   --comment-rating-corner: 24px;
@@ -1505,11 +1504,16 @@
   --transition-comment-quiet: 0.15s;
   --transition-comment-fade: 0.5s; /* a blocked or parent card opening */
   --comment-bubble-gap: 6px; /* above the bubble */
-  --comment-bubble-padding: 12px 16px;
+  --comment-bubble-padding-inline: 16px;
+  --comment-bubble-padding: 12px var(--comment-bubble-padding-inline);
   --radius-comment-bubble: 4px 14px 14px 14px; /* the corner by the avatar stays tight */
   --comment-actions-gap: 4px 16px;
-  --comment-actions-padding: 8px 4px 2px;
+  --comment-actions-padding: 8px 0 2px var(--comment-bubble-padding-inline); /* starts under the bubble's text */
   --comment-action-icon-gap: 5px;
+  --font-size-comment-action-icon: 12px; /* every icon in the action row, one box */
+  /* The row's 13px Figtree centers its line box 1.25px above the x-height's middle, so icons and emoji drop to it. */
+  --comment-action-icon-shift: 1.25px;
+  --font-size-comment-reaction-emoji: 13px;
   --comment-thread-gap: 14px;
   --comment-main-padding-end: 6px;
   --opacity-comment-blocked: 0.3; /* a blocked member's collapsed card */

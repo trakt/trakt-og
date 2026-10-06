@@ -111,9 +111,12 @@ function choose(type: typeof reactionOptions[number]['type']) {
   text-transform: inherit;
   cursor: pointer;
 
+  gap: var(--comment-action-icon-gap);
+
   & :global(.icon) {
-    margin-inline-end: var(--comment-action-icon-gap);
-    font-size: var(--font-size-comment-reaction-icon);
+    --icon-shift: var(--comment-action-icon-shift);
+    flex: none;
+    font-size: var(--font-size-comment-action-icon);
   }
   &:hover {
     color: var(--color-text);
@@ -123,10 +126,9 @@ function choose(type: typeof reactionOptions[number]['type']) {
   }
 }
 .emoji-icon {
-  display: inline-block;
-  margin-inline-end: var(--comment-action-icon-gap);
-  font-size: var(--font-size-comment-meta);
-  vertical-align: middle;
+  font-size: var(--font-size-comment-reaction-emoji);
+  line-height: 1;
+  translate: 0 var(--comment-action-icon-shift);
 }
 .reaction-popover {
   &:popover-open {

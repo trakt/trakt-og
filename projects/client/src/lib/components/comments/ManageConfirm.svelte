@@ -7,7 +7,7 @@
     </ManageConfirm>
 -->
 <script lang="ts">
-import type { Snippet } from 'svelte';
+import type { ComponentProps, Snippet } from 'svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import Tooltip from '../tooltip/Tooltip.svelte';
 
@@ -27,9 +27,12 @@ interface Props {
   /** The question. */
   children: Snippet;
   disabled?: boolean;
+  /** Where the tooltip shows. */
+  placement?: ComponentProps<typeof Tooltip>['placement'];
 }
 
-const { name, svg, label, yes, onconfirm, text, warning, busy = false, disabled = false, children }: Props = $props();
+const { name, svg, label, yes, onconfirm, text, warning, busy = false, disabled = false, placement, children }: Props =
+  $props();
 
 const id = $props.id();
 let popover = $state<HTMLDivElement>();
@@ -49,7 +52,7 @@ function confirm() {
 </script>
 
 <span class="confirm {name}" style:anchor-name="--confirm-{id}">
-  <Tooltip text={label}>
+  <Tooltip text={label} {placement}>
     {#snippet trigger(tooltip)}
       <button bind:this={button} type="button" aria-label={text ? undefined : label} aria-haspopup="dialog"
         aria-controls="confirm-{id}" aria-expanded={expanded} aria-disabled={busy || undefined} {disabled}

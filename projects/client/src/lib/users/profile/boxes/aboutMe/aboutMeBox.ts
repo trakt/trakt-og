@@ -45,7 +45,6 @@ export const aboutMeBox = defineProfileBox({
         about: profile.about,
         vip: vipLabel(profile),
         joined: profile.joinedAt ? monthYear(profile.joinedAt) : null,
-        location: profile.location,
       };
     }
     if (isSelf) return { kind: 'self', settingsHref: traktUrls.settings };

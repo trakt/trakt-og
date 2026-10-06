@@ -8,7 +8,6 @@ export type AboutMeView =
     readonly vip: string | null;
     /** "September 2010". */
     readonly joined: string | null;
-    readonly location: string;
   }
   /** Your own, empty: a prompt to write one, in the settings on v3 web. */
   | { readonly kind: 'self'; readonly settingsHref: string }

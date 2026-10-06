@@ -3,6 +3,7 @@
   copies the link and says so in a toast ("Copy Link").
 -->
 <script lang="ts">
+import type { ComponentProps } from 'svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import arrowUpFromBracket from '$lib/icons/light/arrow-up-from-bracket.svg?raw';
 import { toast } from '../toast/toast.svelte.ts';
@@ -13,9 +14,11 @@ interface Props {
   title?: string;
   /** List title rows use the unscaled icon; rows and summaries keep OG's fa-lg size. */
   large?: boolean;
+  /** Where the tooltip shows. */
+  placement?: ComponentProps<typeof Tooltip>['placement'];
 }
 
-const { url, title, large = true }: Props = $props();
+const { url, title, large = true, placement }: Props = $props();
 
 // The server can't know, so it renders the copy tooltip and the browser corrects it.
 let canShare = $state(false);
@@ -44,7 +47,7 @@ const share = async () => {
 const label = $derived(canShare ? 'Share Link' : 'Copy Link');
 </script>
 
-<Tooltip text={label}>
+<Tooltip text={label} {placement}>
   {#snippet trigger(tooltip)}
     <button type="button" class={['share', { normal: !large }]} aria-label={label} onclick={share} {@attach detectShare} {...tooltip}>
       <Icon svg={arrowUpFromBracket} />

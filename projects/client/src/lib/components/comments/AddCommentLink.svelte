@@ -1,6 +1,6 @@
 <!--
   OG's green "Add comment" link (`a.new-comment-focus.main`): it opens the page's new comment form. The comments
-  subnav puts the icon first, the summary's comments heading puts a thin circled plus after the text. Renders nothing
+  subnav puts the icon first, the summary's comments heading puts a thin circled plus after the text and matches the see-more link beside it. Renders nothing
   when the page has no form: logged out, or banned from commenting.
 -->
 <script lang="ts">
@@ -49,8 +49,18 @@ const { heading = false }: { heading?: boolean } = $props();
   text-transform: uppercase;
 }
 
+/* Beside the heading's see-more link, it takes that link's type and icon size, in its own green. */
 .heading {
-  margin-inline-end: var(--space-sm-inline);
-  font-size: var(--font-size-comment-add-icon);
+  gap: var(--space-see-more-icon);
+  margin-inline-end: var(--space-see-more-icon);
+  font-size: var(--font-size-see-more-icon);
+  font-weight: var(--font-weight-headings);
+  transition-duration: var(--transition-see-more);
+
+  & .text {
+    font-size: var(--font-size-see-more);
+    letter-spacing: var(--letter-spacing-see-more);
+    line-height: 2;
+  }
 }
 </style>

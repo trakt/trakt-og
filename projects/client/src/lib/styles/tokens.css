@@ -1489,7 +1489,6 @@
   --color-comment-add: var(--color-list-add); /* "Add comment" (.new-comment-focus.main) */
   --color-comment-add-hover: #2b7a2b; /* darken */
   --font-size-comment-form-help: 11px;
-  --font-size-comment-add-icon: 17px; /* the thin plus after the summary heading's "Add comment" */
   --comment-form-input-padding: 20px;
   --comment-form-toggle-padding: 7px 12px 6px;
   --comment-form-help-padding: 7px 0 8px 15px;

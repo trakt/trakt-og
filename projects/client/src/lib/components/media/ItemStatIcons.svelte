@@ -12,21 +12,20 @@ interface Props {
   href: string;
   stats?: { watchers: number; plays: number; collectors: number; lists: number } | null;
   comments?: number;
-  compact?: boolean;
 }
-const { href, stats, comments = 0, compact = false }: Props = $props();
+const { href, stats, comments = 0 }: Props = $props();
 const entries = $derived([
   { label: 'Watchers', icon: user, count: stats?.watchers ?? 0 },
   { label: 'Plays', icon: check, count: stats?.plays ?? 0, check: true },
   { label: 'Collected', icon: collection, count: stats?.collectors ?? 0 },
   { label: 'Lists', icon: list, count: stats?.lists ?? 0, href: `${href}/lists` },
-  ...(!compact ? [{ label: 'Comments', icon: comment, count: comments, href: `${href}/comments` }] : []),
+  { label: 'Comments', icon: comment, count: comments, href: `${href}/comments` },
 ]);
 </script>
 <!-- Item URLs come from the media mappers. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
-<div class={['item-stats', { compact }]} aria-label="Community stats">
+<div class="item-stats" aria-label="Community stats">
   {#each entries as entry (entry.label)}
     <span class="slot">
       {#if entry.count > 0}
@@ -73,16 +72,5 @@ a {
 }
 .check :global(svg) {
   font-size: var(--item-stats-check-size);
-}
-.compact {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  grid-template-rows: repeat(2, var(--item-stats-row-height));
-  gap: 0 var(--item-stats-compact-gap);
-  font-size: var(--font-size-card-subtitle);
-  margin-block-start: var(--space-sm-block);
-  & .slot:empty {
-    display: block;
-  }
 }
 </style>

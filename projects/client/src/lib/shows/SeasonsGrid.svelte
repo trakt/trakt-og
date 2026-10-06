@@ -5,7 +5,6 @@
 <script lang="ts">
 import FadeHideMenu from '$lib/components/filters/FadeHideMenu.svelte';
 import { type FadeHide, fadeHideOptions, matchesFadeHide } from '$lib/components/filters/fadeHide';
-import ItemStatIcons from '$lib/components/media/ItemStatIcons.svelte';
 import { lazyItemStats } from '$lib/shows/lazyItemStats.svelte';
 import PosterCard from '$lib/components/media/PosterCard.svelte';
 import PosterGrid from '$lib/components/media/PosterGrid.svelte';
@@ -62,7 +61,6 @@ const sorted = $derived(
       {#each sorted as { id, number, rating, released, votes: _, airedEpisodes, episodes, ...card } (id)}
         {@const view = cards.find(({ card }) => card.id === id)}
         {@const state = view?.state ?? {}}
-        <div {@attach stats.observe({ id, show: showId, season: number })}>
         <PosterCard
           {...card}
           faded={view?.faded}
@@ -76,10 +74,7 @@ const sorted = $derived(
             released,
             listLabel: 'Add to list',
           }}
-        >
-          <ItemStatIcons href={card.href} stats={stats.counts.get(id)} compact />
-        </PosterCard>
-        </div>
+        />
       {/each}
     </PosterGrid>
 </section>

@@ -479,37 +479,50 @@ hr {
 .tool {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: var(--space-action-button-icon);
   min-block-size: 0;
-  padding: 0;
-  border: 0;
+  padding: var(--action-button-padding);
+  border: var(--action-button-border-width) solid var(--color-action-border);
+  border-radius: var(--radius-action-button);
   background: none;
+  color: var(--color-list-reorder);
   font-family: var(--font-headings);
-  font-size: var(--font-size-list-row-meta);
+  font-size: var(--font-size-action-button);
+  font-weight: var(--font-weight-headings-heavy);
+  line-height: 1;
   text-transform: uppercase;
-  cursor: default;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color var(--transition-see-more), background-color var(--transition-see-more);
 
   & :global(.icon) {
-    font-size: var(--font-size-list-row-action);
+    font-size: var(--font-size-action-button-icon);
+  }
+
+  &:hover:not(:disabled) {
+    border-color: var(--color-action-border-hover);
+  }
+
+  &:disabled {
+    opacity: var(--opacity-action-disabled);
+    cursor: default;
   }
 }
 
+/* The dashboard inbox's buttons: green outline to add, gray for the rest. */
 .add {
-  color: var(--color-list-add);
+  border-color: var(--color-action-add);
+  color: var(--color-action-add);
+
+  &:hover:not(:disabled) {
+    border-color: var(--color-action-add);
+    background-color: var(--color-action-add-hover);
+  }
 }
 
-.reorder {
-  color: var(--color-list-reorder);
-}
-
-.reorder {
-  cursor: pointer;
-}
 .reorder.active {
+  border-color: var(--brand-primary);
   color: var(--brand-primary);
-}
-.reorder:disabled {
-  cursor: default;
 }
 .reorder:focus-visible {
   outline: var(--list-reorder-rank-border) solid var(--color-input-border-focus);

@@ -3,7 +3,6 @@ import { rawApiFetch } from '../api/rawApiFetch.ts';
 import { parseAdvancedFilters } from '../components/filters/advancedFilters.ts';
 import { advancedFiltersQuery } from '../components/filters/advancedFiltersQuery.ts';
 import { fromFilterDraft, toFilterDraft } from '../components/filters/filterDraft.ts';
-import { FILTERS_UPSELL_COOKIE } from '../components/filters/filtersUpsellCookie.ts';
 import { type FilterSource, toFilterSources } from '../components/filters/watchNowFilter.ts';
 import { calendarFilters } from './calendarFilters.ts';
 import { calendarWatchNow } from './calendarWatchNow.ts';
@@ -106,7 +105,6 @@ export async function loadCalendar(
     filterSources: await sources,
     watchNowCountry: watchnow.country,
     watchNowFavorites: watchnow.favorites,
-    upsellHidden: cookies.get(FILTERS_UPSELL_COOKIE) !== undefined,
     target,
     today,
     window,

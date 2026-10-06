@@ -9,7 +9,6 @@ import AdvancedFiltersPanel from '$lib/components/filters/AdvancedFiltersPanel.s
 import AdvancedFiltersToggle from '$lib/components/filters/AdvancedFiltersToggle.svelte';
 import AppliedFilters from '$lib/components/filters/AppliedFilters.svelte';
 import FadeHideMenu from '$lib/components/filters/FadeHideMenu.svelte';
-import FiltersUpsell from '$lib/components/filters/FiltersUpsell.svelte';
 import { type AdvancedFilters, advancedFiltersSearch } from '$lib/components/filters/advancedFilters';
 import { fromFilterDraft, toFilterDraft } from '$lib/components/filters/filterDraft';
 import { filterTags } from '$lib/components/filters/filterTags';
@@ -227,9 +226,6 @@ const links = $derived(
 
 
   {#if data.cards.length > 0}
-    {#if 'upsellHidden' in data && !data.upsellHidden}
-      <FiltersUpsell {vip} signedIn={data.user !== null} />
-    {/if}
     <FrameGrid>
       {#each data.cards as card (card.id)}
         {@const state = overlay.state(card.type, card.id)}

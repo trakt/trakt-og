@@ -5,7 +5,6 @@ import { rawApiFetch } from '../api/rawApiFetch.ts';
 import type { DateOrder } from '../utils/formatDate.ts';
 import { parseAdvancedFilters } from '../components/filters/advancedFilters.ts';
 import { advancedFiltersQuery } from '../components/filters/advancedFiltersQuery.ts';
-import { FILTERS_UPSELL_COOKIE } from '../components/filters/filtersUpsellCookie.ts';
 import { type FilterSource, toFilterSources } from '../components/filters/watchNowFilter.ts';
 import { type FadeHide, parseFadeHide } from '../components/filters/fadeHide.ts';
 import { favoriteSlugs } from '../components/watchnow/watchNow.ts';
@@ -187,7 +186,6 @@ export async function loadChart(
     filterSources: filterSources && new Map([...filterSources].filter(([slug]) => picked.has(slug))),
     watchNowCountry: country,
     watchNowFavorites: favorites,
-    upsellHidden: cookies.get(FILTERS_UPSELL_COOKIE) !== undefined,
     cards: response.rows.map((row) => toChartCard(row, { chart, now: new Date(), order: datePreferences.order })),
     page: extractPageMeta(headers, page),
     /** The chart's size, for the trending under-title. */

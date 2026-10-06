@@ -1235,8 +1235,7 @@
   --color-frame-toggle: #666; /* the VIP sidebar toggle */
   --transition-frame: 0.5s;
 
-  /* Advanced filters: the funnel, the slide-out panel, its Chosen fields and noUiSliders, the applied tags and the
-     upsell */
+  /* Advanced filters: the funnel, the slide-out panel, its Chosen fields and noUiSliders and the applied tags */
   --font-size-filter-toggle: 20px;
   --font-size-filter-toggle-caret: 14px;
   --filter-toggle-gap: 10px;
@@ -1309,15 +1308,6 @@
   --color-bundle-any: #5b982a; /* .btn-any */
   --color-bundle-free: #1952a7; /* .btn-free */
   --color-bundle-subscriptions: #333; /* OG had no subscriptions bundle at 2e0405a5f */
-  --upsell-icon-width: 90px;
-  --upsell-image-width: 340px;
-  --upsell-image-width-md: 250px;
-  --upsell-action-width: 120px;
-  --radius-upsell: 8px;
-  --font-size-upsell-icon: 30px;
-  --color-upsell-button: rgb(255 255 255 / 0.1);
-  --color-upsell-button-hover: rgb(255 255 255 / 0.2);
-  --color-upsell-x: #999;
 
   /* Summary pages: the movie, show, season, episode and person frame */
   --color-ratings-muted: #aaa; /* vote counts and labels in the ratings bar */

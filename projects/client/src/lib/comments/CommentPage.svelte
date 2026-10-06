@@ -134,11 +134,6 @@ const title = $derived(`${media.item.title} ${type.toLowerCase()} by ${author.na
   position: relative;
 }
 
-/* A blocked member's card gets no glow here (`body.comments #info-wrapper .comment-wrapper.blocked`). */
-.comment-page :global(.comment-wrapper.blocked) {
-  box-shadow: none;
-}
-
 .band {
   position: absolute;
   inset-inline: 0;

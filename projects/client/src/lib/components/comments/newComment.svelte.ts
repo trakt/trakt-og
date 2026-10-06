@@ -1,10 +1,9 @@
-// The page's new-comment form. The "Add comment" links open it wherever they sit, and the comment
+// The page's new comment form. The "Add comment" links scroll to it and focus it wherever they sit, and the comment
 // lists read what it posted. Browser only: the form mounts it in an effect, and this module is shared by every request
 // on the server.
 import type { CommentResponse } from '@trakt/api';
 
 let mounted = $state(false);
-let visible = $state(false);
 let opened = $state(0);
 let posted = $state<readonly CommentResponse[]>([]);
 
@@ -13,10 +12,7 @@ export const newComment = {
   get available() {
     return mounted;
   },
-  get visible() {
-    return visible;
-  },
-  /** Counts the "Add comment" clicks, so the form scrolls and focuses on each one. */
+  /** Counts the "Add comment" clicks, so the form scrolls into view and takes the focus on each one. */
   get opened() {
     return opened;
   },
@@ -25,21 +21,17 @@ export const newComment = {
     return posted;
   },
   open() {
-    visible = true;
     opened++;
   },
   add(comment: CommentResponse) {
     posted = [comment, ...posted];
-  },
-  close() {
-    visible = false;
   },
   /** Call from the form's effect; the cleanup forgets the page's state. */
   mount() {
     mounted = true;
     return () => {
       mounted = false;
-      visible = false;
+      opened = 0;
       posted = [];
     };
   },

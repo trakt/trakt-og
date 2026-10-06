@@ -1,12 +1,14 @@
 <!--
-  OG's comment card, which every comment list renders: the author row with the rating badge, labels and dates,
-  the manage icons, the text with read more and spoiler blur, and the under-comment row with the watched state,
-  reactions and replies. "N replies" opens the replies inline under the card.
+  The comment card every comment list renders, as a thread: the author's avatar (with their rating) in a column, then
+  the name, labels and date, the text in a soft bubble with read more and spoiler blur, and a quiet row of actions
+  under it: the watched state, reactions, Reply and "View N replies". The manage icons at the end of the name row stay
+  faint until the card is hovered or focused.
 
-  Add Reply opens a reply box under the row, and a posted reply goes to the top of the thread. The pencil swaps
-  the text for an edit form, and the × asks before deleting. The flag opens the report dialog, and the block icon asks before blocking the member's comments. A blocked member's card collapses to
-  its faded header until clicked, and their replies are dropped from the inline thread. Reactions share the viewer's
-  choices and totals.
+  "View N replies" opens the replies inline, hanging off a rail under the avatar. Reply opens a reply box at the end of
+  the thread, and a posted reply goes to the top of it. The pencil swaps the text for an edit form, and the × asks
+  before deleting. The flag opens the report dialog, and the block icon asks before blocking the member's comments. A
+  blocked member's card collapses to its faded name row until clicked, and their replies are dropped from the inline
+  thread. Reactions share the viewer's choices and totals.
 -->
 <script lang="ts">
 import { page } from '$app/state';
@@ -16,8 +18,8 @@ import ReactionControl from '$lib/components/comments/ReactionControl.svelte';
 import { commentReactions } from '$lib/components/comments/commentReactions';
 import Icon from '$lib/icons/Icon.svelte';
 import arrowsRotate from '$lib/icons/solid/arrows-rotate.svg?raw';
-import commentIcon from '$lib/icons/solid/comment.svg?raw';
-import commentPlus from '$lib/icons/solid/comment-plus.svg?raw';
+import chevronDown from '$lib/icons/solid/chevron-down.svg?raw';
+import replyIcon from '$lib/icons/solid/reply.svg?raw';
 import checkThick from '$lib/icons/trakt/check-thick.svg?raw';
 import flag from '$lib/icons/trakt/flag-2.svg?raw';
 import deleteIcon from '$lib/icons/trakt/delete.svg?raw';
@@ -38,7 +40,7 @@ import { blockedMembers } from './blockedMembers.svelte.ts';
 import { browserCommentsClient } from './browserCommentsClient.ts';
 import CommentAvatar from './CommentAvatar.svelte';
 import CommentCard from './CommentCard.svelte';
-import CommentEditor from './CommentEditor.svelte';
+import CommentComposer from './CommentComposer.svelte';
 import { commentDates } from './commentDates.ts';
 import { commentSettings } from './commentSettings.ts';
 import type { CommentItem } from './CommentItem.ts';
@@ -64,7 +66,7 @@ interface Props {
   viewer?: CommentViewer;
   /** The comment a reply answers, shown collapsed above the text where replies appear outside their thread. */
   parent?: CommentResponse;
-  /** OG's `.wider`: the reply count spells out "replies" on desktop. */
+  /** OG's `.wider`, for a card across the page's full width. */
   wide?: boolean;
   /** OG's featured style for reviews in comment lists. */
   featured?: boolean;
@@ -72,7 +74,7 @@ interface Props {
   titles?: { readonly item: string; readonly episode?: string };
   /** The under-comment row is left out, like replies next to a poster. */
   hideInteractions?: boolean;
-  /** Where "N replies" points on the comment's own page. Left out, it opens the replies inline. */
+  /** Where "View N replies" points on the comment's own page. Left out, it opens the replies inline. */
   repliesAnchor?: string;
   /** The member's date order, clock and time zone. The time zone keeps the server and browser dates the same. */
   dateOptions?: Pick<FormatDateOptions, 'order' | 'hour24' | 'timeZone'>;
@@ -85,11 +87,11 @@ interface Props {
   inheritSpoiler?: boolean;
   /** Collapsed inside a reply as its parent, until clicked. */
   asParent?: boolean;
-  /** The comment on its own page (OG's `#read`): no box, the author row on the page's band, the text flush. */
+  /** The comment on its own page (OG's `#read`): the name row on the page's band, the text under it. */
   read?: boolean;
   /**
-   * Discover's Recent Comments (OG's `#recent-comments .comment-outer-wrapper`): no box over the column's veil, the
-   * text in full, and the author row pinned to the bottom of the nearest positioned ancestor.
+   * Discover's Recent Comments (OG's `#recent-comments .comment-outer-wrapper`): no bubble over the column's veil, the
+   * text in full, and the avatar and name row pinned to the bottom of the nearest positioned ancestor.
    */
   veiled?: boolean;
   /** Takes a posted reply where the page lists the thread itself. Left out, it goes into the card's inline thread. */
@@ -191,6 +193,14 @@ const repliesId = $props.id();
 
 let replying = $state(false);
 let editing = $state(false);
+// The rail runs down the thread while the replies or the reply box are open.
+const threadOpen = $derived(repliesOpen || replying);
+const repliesLabel = $derived(
+  repliesOpen && !repliesAnchor
+    ? 'Hide replies'
+    : `View ${comment.replies.toLocaleString('en-US')} ${comment.replies === 1 ? 'reply' : 'replies'}`,
+);
+let replyButton = $state<HTMLButtonElement>();
 let deleted = $state(false);
 let reporting = $state(false);
 
@@ -248,6 +258,17 @@ const addReply = (reply: CommentResponse) => {
 const withAvatar = (reply: CommentResponse): CommentResponse =>
   reply.user.images || !settings ? reply : { ...reply, user: { ...reply.user, images: settings.user.images } };
 
+// Cancel takes the focus back to the button that opened the box.
+const closeReply = () => {
+  replying = false;
+  replyButton?.focus();
+};
+
+const closeEdit = () => {
+  editing = false;
+  card?.querySelector<HTMLElement>(':scope > .main > .above-comment .edit')?.focus();
+};
+
 const replied = (reply: CommentResponse | null) => {
   replying = false;
   if (!reply) return;
@@ -298,7 +319,7 @@ const vanish = (node: Element) =>
 </script>
 
 {#snippet manageIcon(name: string, svg: string, label: string, onclick: () => void, expanded?: boolean)}
-  <Tooltip text={label}>
+  <Tooltip text={label} placement="bottom">
     {#snippet trigger(tooltip)}
       <button type="button" class="manage-icon {name}" aria-label={label} aria-expanded={expanded} {onclick}
         {...tooltip}>
@@ -306,6 +327,10 @@ const vanish = (node: Element) =>
       </button>
     {/snippet}
   </Tooltip>
+{/snippet}
+
+{#snippet avatar()}
+  <CommentAvatar src={author.avatar} {rating} small={nested || asParent} />
 {/snippet}
 
 <!-- Profile, history and comment hrefs point at og routes that resolve() only takes once they exist. -->
@@ -325,7 +350,7 @@ const vanish = (node: Element) =>
       read,
       veiled,
       reply: isReply,
-      'with-replies': repliesOpen,
+      'has-thread': threadOpen,
       'as-parent': asParent,
       collapsed: asParent && !parentOpen,
       blocked,
@@ -335,135 +360,144 @@ const vanish = (node: Element) =>
   aria-label="{type} by {author.name}"
   {@attach loadSummary}
 >
-  <header class="above-comment">
-    {#if blocked && !blockedShown}
-      <Tooltip text="Display blocked comment">
-        {#snippet trigger(tooltip)}
-          <button
-            type="button"
-            class="display-overlay"
-            aria-label="Display blocked comment"
-            aria-expanded="false"
-            onclick={showBlocked}
-            {...tooltip}
-          ></button>
-        {/snippet}
-      </Tooltip>
-    {:else if asParent && !parentOpen}
-      <Tooltip text="Display parent comment">
-        {#snippet trigger(tooltip)}
-          <button
-            type="button"
-            class="display-overlay"
-            aria-label="Display parent comment"
-            aria-expanded="false"
-            onclick={() => (parentOpen = true)}
-            {...tooltip}
-          ></button>
-        {/snippet}
-      </Tooltip>
-    {/if}
-    {#if author.href}
-      <a class="avatar" href={author.href} tabindex="-1" aria-hidden="true">
-        <CommentAvatar src={author.avatar} {rating} />
-      </a>
-    {:else}
-      <span class="avatar"><CommentAvatar src={author.avatar} {rating} /></span>
-    {/if}
+  {#if blocked && !blockedShown}
+    <Tooltip text="Display blocked comment">
+      {#snippet trigger(tooltip)}
+        <button
+          type="button"
+          class="display-overlay"
+          aria-label="Display blocked comment"
+          aria-expanded="false"
+          onclick={showBlocked}
+          {...tooltip}
+        ></button>
+      {/snippet}
+    </Tooltip>
+  {:else if asParent && !parentOpen}
+    <Tooltip text="Display parent comment">
+      {#snippet trigger(tooltip)}
+        <button
+          type="button"
+          class="display-overlay"
+          aria-label="Display parent comment"
+          aria-expanded="false"
+          onclick={() => (parentOpen = true)}
+          {...tooltip}
+        ></button>
+      {/snippet}
+    </Tooltip>
+  {/if}
 
-    <div class="user-name">
+  <div class="rail">
+    {#if author.href}
+      <a class="avatar" href={author.href} tabindex="-1" aria-hidden="true">{@render avatar()}</a>
+    {:else}
+      <span class="avatar">{@render avatar()}</span>
+    {/if}
+  </div>
+
+  <div class="main">
+    <header class="above-comment">
       <p class="byline">
-        {#if isOp}<span class="pill op">OP</span>{/if}
-        <span class="type">{type}</span> by
         {#if author.href}
           <a class="username" href={author.href}>{author.name}</a>
           {#if author.badge}<VipLabel badge={author.badge} pill />{/if}
         {:else}
-          <strong>{author.name}</strong>
+          <strong class="username">{author.name}</strong>
         {/if}
-      </p>
-      <p class="labels">
+        {#if isOp}<span class="pill op">OP</span>{/if}
+        {#if type === 'Review'}<span class="pill review">Review</span>{/if}
         {#if blocked}<span class="pill blocked">Blocked</span>{/if}
         {#if asParent}<span class="pill parent">Parent</span>{/if}
         {#if comment.spoiler}<span class="pill spoiler">Spoilers</span>{/if}
         <a class="date" href={permalink}><time datetime={comment.created_at}>{dates.posted}</time></a>
         {#if dates.updated}
-          <span class="updated-at">&mdash; updated <time datetime={comment.updated_at}>{dates.updated}</time></span>
+          <span class="updated-at">updated <time datetime={comment.updated_at}>{dates.updated}</time></span>
         {/if}
       </p>
+
+      <div class="tools">
+        <ShareButton url={new URL(permalink, page.url.origin).href} title={item?.title} large={false}
+          placement="bottom" />
+        {#if manage.edit && !asParent}
+          {@render manageIcon('edit', pencil, 'Edit', () => (editing ? closeEdit() : (editing = true)), editing)}
+        {/if}
+        {#if manage.delete && !asParent}
+          <ManageConfirm name="delete" svg={deleteIcon} label="Delete" yes="Yes, delete it!" placement="bottom"
+            onconfirm={remove}>
+            Delete your comment?
+          </ManageConfirm>
+        {/if}
+        {#if manage.report}
+          {@render manageIcon('report', flag, 'Report Comment', () => (reporting = true), reporting)}
+        {/if}
+        {#if manage.block && author.slug && !blocked}
+          <ManageConfirm name="block" svg={userBlock} label="Block Member" yes="Yes, block them!" placement="bottom"
+            onconfirm={block}>
+            Block all comments from <b>{author.name}</b>?
+          </ManageConfirm>
+        {/if}
+      </div>
+    </header>
+
+    <div class="comment">
+      {#if parent}
+        <blockquote class="parent-inline">
+          <CommentCard comment={parent} {item} {viewer} {dateOptions} {client} wide asParent />
+        </blockquote>
+      {/if}
+      {#if editing}
+        <CommentComposer
+          text={comment.comment}
+          label="Edit your {isReply ? 'reply' : 'comment'}"
+          placeholder={isReply ? 'Write a reply...' : 'What do you think?'}
+          submit="Save"
+          posting="Saving your {isReply ? 'reply' : 'comment'}"
+          spoiler={isReply ? undefined : comment.spoiler}
+          minWords={comment.review ? 0 : undefined}
+          oncancel={closeEdit}
+          save={(text, spoiler) => api().edit(comment.id, { comment: text, spoiler })}
+          onsaved={edited}
+        />
+      {:else}
+        <div class="bubble">
+          {#if titles}
+            <p class="item-title">{titles.item}</p>
+            {#if titles.episode}<p class="episode-title">{titles.episode}</p>{/if}
+          {/if}
+          {#if blurred}
+            <Tooltip text="Click to reveal spoilers">
+              {#snippet trigger(tooltip)}
+                <div
+                  class="spoiler"
+                  role="button"
+                  tabindex="0"
+                  aria-label="Spoilers, click to reveal"
+                  onclick={() => (clicked = true)}
+                  onkeydown={revealOnKey}
+                  {...tooltip}
+                >
+                  <div class="blur" aria-hidden="true" inert>
+                    <ReadMore><CommentText {blocks} /></ReadMore>
+                  </div>
+                </div>
+              {/snippet}
+            </Tooltip>
+          {:else}
+            <ReadMore><CommentText {blocks} onvideo={(id) => (video = id)} /></ReadMore>
+          {/if}
+        </div>
+      {/if}
     </div>
 
-    <div class="interactions manage">
-      {#if manage.block && author.slug && !blocked}
-        <ManageConfirm name="block" svg={userBlock} label="Block Member" yes="Yes, block them!" onconfirm={block}>
-          Block all comments from <b>{author.name}</b>?
-        </ManageConfirm>
-      {/if}
-      {#if manage.report}
-        {@render manageIcon('report', flag, 'Report Comment', () => (reporting = true), reporting)}
-      {/if}
-      {#if manage.edit && !asParent}{@render manageIcon('edit', pencil, 'Edit', () => (editing = !editing), editing)}{/if}
-      {#if manage.delete && !asParent}
-        <ManageConfirm name="delete" svg={deleteIcon} label="Delete" yes="Yes, delete it!" onconfirm={remove}>
-          Delete your comment?
-        </ManageConfirm>
-      {/if}
-      <ShareButton url={new URL(permalink, page.url.origin).href} title={item?.title} />
-    </div>
-  </header>
-
-  <div class="comment">
-    {#if parent}
-      <blockquote class="parent-inline">
-        <CommentCard comment={parent} {item} {viewer} {dateOptions} {client} wide asParent />
-      </blockquote>
-    {/if}
-    {#if titles}
-      <p class="item-title">{titles.item}</p>
-      {#if titles.episode}<p class="episode-title">{titles.episode}</p>{/if}
-    {/if}
-    {#if editing}
-      <CommentEditor
-        text={comment.comment}
-        label="Edit your {isReply ? 'reply' : 'comment'}"
-        placeholder={isReply ? 'Write a reply...' : 'What do you think?'}
-        spoiler={isReply ? undefined : comment.spoiler}
-        save={(text, spoiler) => api().edit(comment.id, { comment: text, spoiler })}
-        onsaved={edited}
-      />
-    {:else if blurred}
-      <Tooltip text="Click to reveal spoilers">
-        {#snippet trigger(tooltip)}
-          <div
-            class="spoiler"
-            role="button"
-            tabindex="0"
-            aria-label="Spoilers, click to reveal"
-            onclick={() => (clicked = true)}
-            onkeydown={revealOnKey}
-            {...tooltip}
-          >
-            <div class="blur" aria-hidden="true" inert>
-              <ReadMore><CommentText {blocks} /></ReadMore>
-            </div>
-          </div>
-        {/snippet}
-      </Tooltip>
-    {:else}
-      <ReadMore><CommentText {blocks} onvideo={(id) => (video = id)} /></ReadMore>
-    {/if}
-  </div>
-
-  {#if !hideInteractions}
-    <footer class="under-comment">
-      <div class="interactions">
+    {#if !hideInteractions}
+      <footer class="under-comment">
         {#if watched}
           <Tooltip text={watched.title}>
             {#snippet trigger(tooltip)}
               <a class="watched-at" href={watched.href} target="_blank" {...tooltip}>
                 <Icon svg={checkThick} />
-                <span class="count-number">{watched.count}</span>
-                {watched.label}
+                <span><span class="count-number">{watched.count}</span> {watched.label}</span>
               </a>
             {/snippet}
           </Tooltip>
@@ -479,64 +513,68 @@ const vanish = (node: Element) =>
           />
         {/if}
         {#if summary}<ReactionSummary {summary} />{/if}
-        {#if !isReply}
-          <Tooltip text={comment.replies > 0 ? 'View Replies' : undefined} placement="bottom">
-            {#snippet trigger(tooltip)}
-              <a
-                class="alt comment-count"
-                href={repliesAnchor ?? permalink}
-                aria-expanded={repliesAnchor || comment.replies === 0 ? undefined : repliesOpen}
-                aria-controls={repliesAnchor ? undefined : repliesId}
-                onclick={toggleReplies}
-                {...tooltip}
-              >
-                <Icon svg={commentIcon} />
-                <span class="count-number">{comment.replies.toLocaleString('en-US')}</span>
-                <span class="count-text">{comment.replies === 1 ? 'reply' : 'replies'}</span>
-              </a>
-            {/snippet}
-          </Tooltip>
-        {/if}
         {#if canReply}
-          <button type="button" class="alt add-reply" aria-expanded={replying} onclick={() => (replying = !replying)}>
-            <Icon svg={commentPlus} />
-            <span class="add-text">Add Reply</span>
+          <button
+            bind:this={replyButton}
+            type="button"
+            class="action add-reply"
+            aria-expanded={replying}
+            onclick={() => (replying ? closeReply() : (replying = true))}
+          >
+            <Icon svg={replyIcon} />Reply
           </button>
         {/if}
-      </div>
-      {#if replying}
-        <CommentEditor
-          text="@{author.slug}  "
-          label="Your reply"
-          placeholder="Write a reply..."
-          avatar={settings?.user.images.avatar.full ?? PLACEHOLDER_AVATAR}
-          save={(text) => api().reply(threadId, text)}
-          onsaved={replied}
-        />
-      {/if}
-    </footer>
-  {/if}
+        {#if !isReply && comment.replies > 0}
+          <a
+            class="action comment-count"
+            href={repliesAnchor ?? permalink}
+            aria-expanded={repliesAnchor ? undefined : repliesOpen}
+            aria-controls={repliesAnchor ? undefined : repliesId}
+            onclick={toggleReplies}
+          >
+            {repliesLabel}<Icon svg={chevronDown} />
+          </a>
+        {/if}
+      </footer>
+    {/if}
 
-  {#if repliesOpen}
-    <div class="replies-wrapper" id={repliesId}>
-      {#each thread as reply (reply.id)}
-          <CommentCard
-            comment={reply}
-            {item}
-            {viewer}
-            {dateOptions}
-            {client}
-            nested
-            opSlug={author.slug}
-            inheritSpoiler={comment.spoiler || inheritSpoiler}
-            onreply={addReply}
+    {#if threadOpen}
+      <div class="thread" id={repliesId}>
+        {#if repliesOpen}
+          {#each thread as reply (reply.id)}
+            <CommentCard
+              comment={reply}
+              {item}
+              {viewer}
+              {dateOptions}
+              {client}
+              nested
+              opSlug={author.slug}
+              inheritSpoiler={comment.spoiler || inheritSpoiler}
+              onreply={addReply}
+            />
+          {/each}
+          {#if !replies}
+            <p class="loading" role="status"><Icon svg={arrowsRotate} /> <span class="text">Loading replies</span></p>
+          {/if}
+        {/if}
+        {#if replying}
+          <CommentComposer
+            text="@{author.slug}  "
+            label="Your reply"
+            placeholder="Reply to {author.name}..."
+            submit="Reply"
+            posting="Posting your reply"
+            avatar={settings?.user.images.avatar.full ?? PLACEHOLDER_AVATAR}
+            small
+            oncancel={closeReply}
+            save={(text) => api().reply(threadId, text)}
+            onsaved={replied}
           />
-      {/each}
-      {#if !replies}
-        <p class="loading" role="status"><Icon svg={arrowsRotate} /> <span class="text">loading replies</span></p>
-      {/if}
-    </div>
-  {/if}
+        {/if}
+      </div>
+    {/if}
+  </div>
 </article>
 {/if}
 
@@ -549,69 +587,86 @@ const vanish = (node: Element) =>
 {/if}
 
 <style>
+/*
+  Two columns: the avatar, and everything else. `--avatar`, `--gap` and `--bubble` are the card's own, so a reply in
+  the thread (smaller) or a featured review (darker bubble) only swaps them.
+*/
 .comment-wrapper {
-  --read-more-shade: var(--color-comment-bg);
+  --avatar: var(--comment-avatar);
+  --gap: var(--comment-column-gap);
+  --bubble: var(--color-comment-bg);
   position: relative;
-  border-radius: 2px;
-  background-color: var(--color-comment-bg);
+  display: grid;
+  grid-template-columns: var(--avatar) minmax(0, 1fr);
+  column-gap: var(--gap);
   scroll-margin-block-start: calc(var(--header-height) + var(--gutter));
-  transition: all 0.5s;
-  outline: 1px solid transparent;
+  transition: opacity var(--transition-comment-fade);
+}
+
+.nested,
+.as-parent {
+  --avatar: var(--comment-avatar-nested);
+  --gap: var(--comment-column-gap-nested);
 }
 
 .featured {
-  --read-more-shade: var(--color-comment-featured-bg);
-  --comment-reply-border: var(--color-comment-reply-border-featured);
-  background-color: var(--color-comment-featured-bg);
-
-  & > .above-comment {
-    background-color: var(--color-comment-featured-header-bg);
-  }
+  --bubble: var(--color-comment-featured-bg);
 }
 
-.above-comment {
-  position: relative;
-  display: flex;
-  align-items: flex-start;
-  flex-wrap: wrap;
-  padding: var(--comment-padding) var(--comment-padding) var(--space-lg-block);
-  background-color: var(--color-comment-header-bg);
+/* The rail the thread hangs off, from under the avatar to the card's end. */
+.has-thread::before {
+  content: '';
+  position: absolute;
+  inset-block: calc(var(--rail-offset, 0px) + var(--avatar) + var(--comment-rail-gap)) 0;
+  inset-inline-start: calc(var(--rail-inset, 0px) + (var(--avatar) - var(--comment-rail-width)) / 2);
+  inline-size: var(--comment-rail-width);
+  background-color: var(--color-comment-rail);
 }
 
 .avatar {
-  flex: none;
-  margin: -8px 0 5px -8px;
+  display: block;
 }
 
-.user-name {
-  flex: 1;
+.main {
   min-inline-size: 0;
-  padding-inline-start: var(--space-base-inline);
-  margin-block-start: -4px;
-  font-family: var(--font-headings);
-  font-weight: var(--font-weight-headings-light);
-  font-size: var(--font-size-comment-meta);
-  line-height: var(--line-height-headings);
+  padding-block-end: var(--comment-main-padding-end);
+}
 
-  & p {
-    margin: 0;
-  }
+.above-comment {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--comment-head-gap);
+  padding-block-start: var(--comment-head-padding);
+}
+
+.byline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--comment-head-gap);
+  min-inline-size: 0;
+  margin: 0;
+  line-height: var(--line-height-headings);
 }
 
 .username {
-  font-weight: var(--font-weight-headings);
-}
+  color: var(--color-comment-name);
+  font-family: var(--font-headings);
+  font-weight: var(--font-weight-headings-heavy);
+  text-decoration: none;
 
-.labels {
-  padding-block-start: 4px;
+  &:is(a):hover {
+    color: var(--color-link);
+  }
 }
 
 .pill {
-  margin-inline-end: 5px;
   padding: 1px 4px;
   border-radius: 2px;
   background-color: var(--color-pill);
   color: var(--color-text-inverse);
+  font-family: var(--font-headings);
   font-weight: var(--font-weight-headings);
   font-size: var(--font-size-pill);
   text-transform: uppercase;
@@ -625,99 +680,81 @@ const vanish = (node: Element) =>
   background-color: var(--color-comment-pill-parent);
 }
 
+.pill.blocked {
+  background-color: var(--color-comment-pill-blocked);
+}
+
 .date {
-  color: var(--color-comment-date);
-  font-weight: var(--font-weight-headings);
+  color: var(--color-comment-muted);
+  font-size: var(--font-size-comment-meta);
+  text-decoration: none;
+
+  &:hover {
+    color: var(--color-text);
+    text-decoration: underline;
+  }
 }
 
 .updated-at {
-  color: var(--color-text-muted);
-  font-family: var(--font-body);
+  color: var(--color-comment-muted);
   font-size: var(--font-size-small);
   font-style: italic;
   white-space: nowrap;
 }
 
-/* The icons on the right of the author row, and the links under the text. Flex, because OG's Slim put no whitespace
-   between them. */
-.interactions {
+/* The manage icons: small and faint until the card is hovered or has the focus. Touch screens always show them. */
+.tools {
   display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  margin-block-start: 3px;
-  font-family: var(--font-headings);
-  font-weight: var(--font-weight-headings-light);
-  font-size: var(--font-size-comment-meta);
-  line-height: var(--line-height-base);
-  text-transform: uppercase;
-
-  & :is(a, button) {
-    min-block-size: 0;
-    padding: 0;
-    border: 0;
-    background: none;
-    color: var(--color-comment-action);
-    font: inherit;
-    text-transform: inherit;
-    text-decoration: none;
-
-    &:not(:first-child) {
-      margin-inline-start: 15px;
-    }
-  }
-
-  & :global(.icon) {
-    margin-inline-end: 5px;
-  }
-}
-
-.manage {
+  align-items: center;
+  gap: var(--comment-tools-gap);
   margin-inline-start: auto;
-  padding-inline-start: var(--space-sm-inline);
-
-  & .manage-icon {
-    font-size: var(--font-size-comment-icon);
-    line-height: 1;
-
-    & :global(.icon) {
-      margin-inline-end: 0;
-    }
-  }
-
-  & .edit {
-    color: var(--color-comment-edit);
-  }
-
-  & > :global(:is(.block, .share)) {
-    color: var(--color-comment-action);
-  }
-
-  & > :global(.delete) {
-    color: var(--color-comment-delete);
-  }
-
-  & > :global(:is(.block, .delete, .share):not(:first-child)) {
-    margin-inline-start: 15px;
-  }
-}
-
-/* Block and report only show on the hovered card, or when the keyboard gets there. Touch screens always show them. */
-.manage > :is(:global(.block), .report) {
-  opacity: 0;
-  transition: opacity 0.5s;
+  opacity: var(--opacity-comment-tools-idle);
+  transition: opacity var(--transition-comment-quiet);
 
   @media (hover: none) {
     opacity: 1;
   }
 }
 
-.comment-wrapper:is(:hover, :focus-within) > .above-comment > .manage > :is(:global(.block), .report) {
+.comment-wrapper:is(:hover, :focus-within) > .main > .above-comment > .tools {
   opacity: 1;
 }
 
-.comment {
-  padding: var(--comment-padding);
+.above-comment .tools > .manage-icon,
+.above-comment .tools :global(.share),
+.above-comment .tools :global(.confirm > button) {
+  display: inline-grid;
+  place-items: center;
+  inline-size: var(--comment-tool-size);
+  block-size: var(--comment-tool-size);
+  min-block-size: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-comment-tool);
+  background: none;
+  color: var(--color-comment-muted);
+  font-size: var(--font-size-comment-tool);
+  line-height: 1;
+  vertical-align: middle;
+  transition: background-color var(--transition-comment-quiet), color var(--transition-comment-quiet);
+
+  &:hover {
+    background-color: var(--color-comment-chip);
+    color: var(--color-text);
+  }
+}
+
+.bubble {
+  --read-more-shade: var(--bubble);
+  margin-block-start: var(--comment-bubble-gap);
+  padding: var(--comment-bubble-padding);
+  border-radius: var(--radius-comment-bubble);
+  background-color: var(--bubble);
   overflow-wrap: break-word;
+}
+
+.comment > :global(.composer) {
+  margin-block-start: var(--comment-bubble-gap);
 }
 
 .item-title,
@@ -743,105 +780,159 @@ const vanish = (node: Element) =>
   pointer-events: none;
 }
 
+/* Quiet text actions in sentence case. The watched state keeps its purple, and an open reply box or thread turns blue. */
 .under-comment {
-  padding: 0 var(--comment-padding) var(--comment-padding);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--comment-actions-gap);
+  padding: var(--comment-actions-padding);
+  color: var(--color-comment-muted);
+  font-family: var(--font-headings);
+  font-size: var(--font-size-comment-meta);
+  font-weight: var(--font-weight-headings);
+  line-height: var(--line-height-base);
+
+  /* Signed out, a comment without replies has no actions. */
+  &:not(:has(*)) {
+    display: none;
+  }
 }
 
-.interactions .watched-at {
-  color: var(--color-comment-watched);
-
-  & :global(.icon) {
-    font-size: var(--font-size-comment-meta);
-  }
+.action,
+.watched-at {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--comment-action-icon-gap);
+  min-block-size: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color var(--transition-comment-quiet);
 
   &:hover {
+    color: var(--color-text);
+  }
+}
+
+.watched-at {
+  color: var(--color-comment-watched);
+
+  &:hover {
+    color: var(--color-comment-watched);
     text-decoration: underline;
   }
 }
 
-.interactions > :global(.reaction-trigger:not(:first-child)) {
-  margin-inline-start: var(--reaction-link-gap);
+.action[aria-expanded='true'] {
+  color: var(--color-comment-replies-open);
 }
 
-/* OG: `.reaction + .reaction-types-wrapper` and `.watched-at ~ .reaction-types-wrapper`. */
-.interactions > :global(.reaction-types) {
-  margin-inline-start: var(--space-sm-inline);
-}
+.comment-count {
+  & :global(.icon) {
+    transition: rotate var(--transition-comment-quiet);
+  }
 
-.add-reply:hover {
-  text-decoration: underline;
-}
-
-/* "3" on narrow cards, "3 replies" on wide ones at desktop width. Screen readers always get the word. */
-.count-text {
-  position: absolute;
-  inline-size: 1px;
-  block-size: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-
-@media (min-width: 992px) {
-  .wide > .under-comment .count-text {
-    position: static;
-    inline-size: auto;
-    block-size: auto;
-    clip-path: none;
+  &[aria-expanded='true'] {
+    & :global(.icon) {
+      rotate: var(--comment-replies-chevron-turn);
+    }
   }
 }
 
-@media (max-width: 767px) {
-  .add-text {
-    position: absolute;
-    inline-size: 1px;
-    block-size: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
+.thread {
+  display: grid;
+  gap: var(--comment-thread-gap);
+  padding-block-start: var(--comment-thread-gap);
+}
+
+.loading {
+  margin: 0;
+  color: var(--color-comment-muted);
+  font-size: var(--font-size-comment-meta);
+  font-weight: var(--font-weight-headings);
+
+  & :global(.icon) {
+    margin-inline-end: var(--comment-action-icon-gap);
   }
 }
 
-/* The comment on its own page:
-   the author row sits on the page's band, and the text starts at the band's offset. */
+@media (prefers-reduced-motion: no-preference) {
+  .loading :global(.icon) {
+    animation: spin 2s linear infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .comment-wrapper,
+  .tools,
+  .comment-count :global(.icon) {
+    transition: none;
+  }
+}
+
+@keyframes spin {
+  to {
+    rotate: 360deg;
+  }
+}
+
+/* The comment on its own page: the avatar and the name row centred on the page's band, the bubble under it. */
 .read {
-  --read-more-shade: var(--color-surface);
+  --rail-offset: calc((var(--comment-page-band) - var(--avatar)) / 2);
+  --rail-inset: var(--comment-page-inset);
   --comment-quote-bg: var(--color-comment-page-band);
   --comment-pre-bg: var(--color-comment-page-band);
-  background-color: transparent;
+  padding-inline-start: var(--comment-page-inset);
 
-  & > .above-comment {
+  & > .rail {
+    padding-block-start: var(--rail-offset);
+  }
+
+  & > .main > .above-comment {
     min-block-size: var(--comment-page-band);
-    padding-inline: var(--comment-page-inset) 0;
-    background-color: var(--color-comment-page-band);
-  }
-
-  & > .comment {
-    padding: calc(var(--comment-page-offset) - var(--comment-page-band)) 0 var(--comment-padding);
-  }
-
-  & > .under-comment {
-    padding-inline: 0;
+    align-content: center;
+    padding-block-start: 0;
   }
 }
 
-/* Discover's Recent Comments.
-   OG swapped the comment in after read more had run, so its text never collapsed. */
+/*
+  Discover's Recent Comments: the text in full over the column's veil, and the avatar and the name row pinned to the
+  bottom of the column. OG swapped the comment in after read more had run, so its text never collapsed.
+*/
 .veiled {
   --comment-collapsed-height: none;
   --comment-quote-bg: var(--color-recent-comments-quote-bg);
   --comment-pre-bg: var(--color-recent-comments-quote-bg);
+  --bubble: transparent;
   position: static;
-  background-color: transparent;
+  display: block;
 
-  & > .above-comment {
+  & > .rail {
+    position: absolute;
+    inset-block-end: var(--comment-padding);
+    inset-inline-start: var(--comment-padding);
+    z-index: 1;
+  }
+
+  & > .main > .above-comment {
     position: absolute;
     inset-block-end: 0;
     inset-inline: 0;
+    min-block-size: calc(var(--avatar) + 2 * var(--comment-padding));
+    padding: var(--comment-padding);
+    padding-inline-start: calc(var(--comment-padding) + var(--avatar) + var(--gap));
     background-color: var(--color-recent-comments-author-bg);
   }
 
-  & > .comment {
+  & .bubble {
+    margin: 0;
     padding: var(--recent-comments-comment-padding);
+    border-radius: 0;
 
     @media (width < 768px) {
       padding: var(--recent-comments-comment-padding-phone);
@@ -849,34 +940,28 @@ const vanish = (node: Element) =>
   }
 }
 
-/* The parent comment of a reply shown out of its thread: faded to its header until clicked. */
+/* The parent comment of a reply shown out of its thread: faded to its name row until clicked. */
 .parent-inline {
-  margin: 0 0 var(--gutter);
-  padding: 0;
-  border-inline-start: 5px solid var(--color-comment-quote-border);
+  margin: var(--comment-bubble-gap) 0 0;
+  padding: var(--comment-parent-padding);
+  border-inline-start: var(--comment-parent-border) solid var(--color-comment-quote-border);
+  border-radius: var(--radius-comment-parent);
   background-color: var(--color-comment-parent-bg);
 }
 
 .as-parent {
   --comment-quote-bg: var(--color-comment-parent-quote-bg);
-  --read-more-shade: var(--color-comment-parent-bg);
-  background-color: transparent;
-
-  & > .above-comment {
-    background-color: var(--color-comment-parent-header-bg);
-  }
 }
 
 .as-parent.collapsed {
-  opacity: 0.4;
+  opacity: var(--opacity-comment-parent);
 
-  & > .comment,
-  & > .under-comment {
+  & > .main > :is(.comment, .under-comment) {
     display: none;
   }
 
-  & .manage {
-    opacity: 0;
+  & > .main > .above-comment > .tools {
+    visibility: hidden;
   }
 }
 
@@ -891,109 +976,20 @@ const vanish = (node: Element) =>
   cursor: row-resize;
 }
 
-/* A blocked member's card: its header faded, until clicked. */
-.pill.blocked {
-  background-color: var(--color-comment-pill-blocked);
-}
+/* A blocked member's card: its name row faded, until clicked. */
+.comment-wrapper.blocked:not(.enabled) {
+  opacity: var(--opacity-comment-blocked);
 
-.comment-wrapper.blocked {
-  transition: all 0.5s, opacity 0.75s;
-
-  &:not(.enabled) {
-    opacity: 0.3;
-
-    & > :is(.comment, .under-comment, .replies-wrapper) {
-      display: none;
-    }
-
-    & > .above-comment > .manage {
-      opacity: 0;
-    }
-
-    &:hover {
-      box-shadow: var(--shadow-comment-blocked);
-    }
+  & > .main > :is(.comment, .under-comment, .thread) {
+    display: none;
   }
 
-  &.enabled {
-    box-shadow: var(--shadow-comment-blocked-shown);
-  }
-}
-
-/* A card with its replies open. */
-.with-replies {
-  outline-color: var(--color-comment-open-outline);
-  box-shadow: var(--shadow-comment-open);
-}
-
-.replies-wrapper {
-  & .loading {
-    margin: 0;
-    padding: var(--comment-padding);
-    font-family: var(--font-headings);
-    font-weight: var(--font-weight-headings);
-
-    & .text {
-      font-size: var(--font-size-small);
-    }
-
-    & :global(.icon) {
-      margin-inline-end: 5px;
-    }
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .loading :global(.icon) {
-    animation: spin 2s linear infinite;
-  }
-}
-
-@keyframes spin {
-  to {
-    rotate: 360deg;
-  }
-}
-
-.nested {
-  margin-block-start: 0;
-  background-color: transparent;
-
-  & > .above-comment {
-    margin-block-end: var(--space-lg-block);
-    padding-block-end: 5px;
-    /* A featured card's replies set a darker one. */
-    border-block-end: 1px solid var(--comment-reply-border, var(--color-comment-reply-border));
-    background-color: transparent;
+  & > .main > .above-comment > .tools {
+    visibility: hidden;
   }
 
-  & > .comment,
-  & > .under-comment {
-    padding: 0 var(--comment-padding) var(--comment-padding) var(--comment-reply-indent);
-  }
-
-  & > .above-comment > .interactions {
-    margin-block-start: 8px;
-  }
-
-  & > .under-comment > .interactions {
-    margin-block-start: 0;
-  }
-}
-
-@media (max-width: 767px) {
-  .manage {
-    flex-basis: 100%;
-    margin: var(--space-lg-block) 0 0 35px;
-    padding: 0;
-  }
-
-  .comment {
-    padding: var(--space-lg-block) var(--space-lg-block) var(--space-lg-block) var(--comment-padding);
-  }
-
-  .under-comment {
-    padding: 0 var(--comment-padding) var(--space-lg-block);
+  &:hover {
+    opacity: var(--opacity-comment-blocked-hover);
   }
 }
 </style>

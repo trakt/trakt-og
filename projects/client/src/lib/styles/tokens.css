@@ -1435,7 +1435,6 @@
 
   /* Comment reaction picker. */
   --reaction-icon-offset: -1px;
-  --reaction-link-gap: 15px;
   --reaction-popover-gap: 10px;
   --reaction-popover-block: 9px;
   --reaction-popover-inline: 5px;
@@ -1453,83 +1452,113 @@
 
   /* Comment cards and reaction summary. */
   --color-comment-bg: light-dark(#fafafa, var(--dk-box-accent));
-  --color-comment-header-bg: light-dark(#f3f3f3, #333);
   --color-comment-featured-bg: light-dark(#f1f1f1, var(--dk-box-accent)); /* dark knight's rule outranked .featured */
-  --color-comment-featured-header-bg: light-dark(#e5e5e5, #333);
-  --color-comment-date: light-dark(#333, #eee);
   --color-comment-quote-bg: light-dark(#fff, #1d1d1d);
   --color-comment-quote-border: #999;
   --color-comment-parent-bg: light-dark(#eee, #1d1d1d);
-  --color-comment-parent-header-bg: light-dark(#ddd, #333);
   --color-comment-parent-quote-bg: light-dark(#ddd, var(--dk-bg2));
   --color-comment-pre-text: light-dark(#333, #fff);
   --color-comment-rule: #ddd; /* the text's hr and heading underlines */
   --color-comment-author: var(--gray-lightish); /* ~1 to ~6 author paragraphs without their own color */
   --color-comment-mark-bg: light-dark(#fcf8e3, #e2e2af);
   --color-comment-mark-text: #333; /* inherited in light, set in dark */
-  --color-comment-reply-border: light-dark(#eee, #444);
   --color-comment-inline-title: light-dark(#e1e1e1, var(--dk-bg2)); /* user pages on phones, */
-  --color-comment-reply-border-featured: light-dark(#ddd, #444);
-  --color-comment-open-outline: light-dark(#c2dff7, #444); /* a card with its replies open */
-  --shadow-comment-open: 0 0 8px light-dark(rgb(102 175 233 / 0.6), rgb(128 128 128 / 0.6));
-  --color-comment-action: var(--brand-secondary); /* the under-comment links */
-  --color-comment-reaction: #ff9458;
   --color-comment-watched: var(--brand-tertiary);
   --color-comment-edit: var(--brand-success);
   --color-comment-delete: var(--brand-primary);
   --color-comment-pill-op: var(--brand-secondary);
   --color-comment-pill-parent: light-dark(var(--brand-secondary), var(--gray)); /* dark knight greyed every pill but OP */
   --color-comment-pill-blocked: light-dark(red, var(--gray)); /* OG's literal `red` */
-  --shadow-comment-blocked: 0 0 8px rgb(237 28 36 / 0.8); /* a blocked member's card, hovered */
-  --shadow-comment-blocked-shown: 0 0 8px rgb(237 28 36 / 0.3); /* and once clicked open */
   --font-size-comment-meta: 13px; /* the author row and the under-comment links */
   --font-size-comment-icon: 20px;
   --font-size-comment-reaction-icon: 15px;
   --font-size-pill: 11px;
-  --comment-avatar: 40px;
+  --comment-avatar: 44px;
   --comment-rating-corner: 24px;
   --comment-padding: 20px;
-  --comment-reply-indent: 62px; /* inline replies line up with the author name */
   /* A comment's own page. */
   --color-comment-page-band: light-dark(#f3f3f3, #333); /* .above-comment-bg, dark knight's $dk-box-bg-color */
   --comment-page-band: 67px; /* the band behind the comment's author row */
-  --comment-page-offset: 90px; /* from the band's top to the comment text */
   --comment-page-inset: 8px; /* the author row's start padding on the band */
   --comment-collapsed-height: 300px; /* read more */
   --comment-shade-height: 100px;
   --user-comments-padding: 20px; /* #user-comments, */
   --blur-spoiler: blur(8px);
 
-  /* The new comment form. */
-  --color-comment-form-input-bg: light-dark(#fafafa, var(--dk-box-accent));
-  --color-comment-form-help-bg: light-dark(#f6f6f6, #333);
-  --color-comment-form-help-text: #aaa;
-  --color-comment-form-toggle-bg: light-dark(#fafafa, #333);
-  --color-comment-form-toggle-border: light-dark(#e5e5e5, #333);
-  --color-comment-form-toggle-text: #999;
-  --color-comment-form-toggle-hover: light-dark(#000, #fff);
-  --color-comment-form-toggle-on: light-dark(#666, #777);
-  --color-comment-form-short: var(--color-link); /* the word count under 5 */
+  /* Comment threads: the avatar column, the text bubble, the quiet actions and the rail replies hang off. */
+  --comment-avatar-nested: 32px; /* replies, and the reply box on the rail */
+  --comment-column-gap: 14px; /* between the avatar column and the text */
+  --comment-column-gap-nested: 10px;
+  --comment-rail-width: 2px;
+  --comment-rail-gap: 6px; /* from the avatar's bottom to the rail's top */
+  --color-comment-rail: light-dark(#e2e2e2, #3a3a3a);
+  --color-comment-name: light-dark(#111, #fff);
+  --color-comment-muted: light-dark(#767676, #9a9a9a); /* dates and actions; #999 is too faint on white */
+  --color-comment-chip: light-dark(#ececec, #333); /* a hovered tool or toolbar button */
+  --comment-head-gap: 4px 8px;
+  --comment-head-padding: 2px; /* lines the name up with the avatar's top */
+  --comment-tool-size: 28px;
+  --font-size-comment-tool: 15px;
+  --radius-comment-tool: 6px;
+  --comment-tools-gap: 2px;
+  --opacity-comment-tools-idle: 0.35; /* the manage icons, until the card is hovered or focused */
+  --transition-comment-quiet: 0.15s;
+  --transition-comment-fade: 0.5s; /* a blocked or parent card opening */
+  --comment-bubble-gap: 6px; /* above the bubble */
+  --comment-bubble-padding: 12px 16px;
+  --radius-comment-bubble: 4px 14px 14px 14px; /* the corner by the avatar stays tight */
+  --comment-actions-gap: 4px 16px;
+  --comment-actions-padding: 8px 4px 2px;
+  --comment-action-icon-gap: 5px;
+  --comment-thread-gap: 14px;
+  --comment-main-padding-end: 6px;
+  --opacity-comment-blocked: 0.3; /* a blocked member's collapsed card */
+  --opacity-comment-blocked-hover: 0.6;
+  --opacity-comment-parent: 0.4; /* a reply's collapsed parent */
+  --comment-parent-padding: 10px;
+  --comment-parent-border: 4px;
+  --radius-comment-parent: 0 10px 10px 0;
+  --comment-replies-chevron-turn: 180deg;
+  --color-comment-replies-open: var(--brand-secondary); /* "Hide replies", and Reply while its box is open */
+
+  /* The comment composer: the new comment form, the reply box and the edit form. */
   --color-comment-add: var(--color-action-add); /* "Add comment" (.new-comment-focus.main) */
   --color-comment-add-hover: var(--color-action-add-hover);
-  --font-size-comment-form-help: 11px;
-  --comment-form-input-padding: 20px;
-  --comment-form-toggle-padding: 7px 12px 6px;
-  --comment-form-help-padding: 7px 0 8px 15px;
-  --radius-comment-form-help: 0 0 6px 6px;
-  --radius-comment-form-button: 3px;
-
-  /* The card's reply box and edit form. */
-  --color-comment-edit-input-bg: light-dark(#fff, var(--dk-box-accent));
-  --color-comment-reply-input-bg: light-dark(#fff, #333); /* dark knight's $dk-box-bg-color */
-  --color-comment-inline-input-border: light-dark(#fbfbfb, #666);
-  --color-comment-inline-input-focus: light-dark(#ddd, #666);
-  --color-comment-edit-toggle-bg: light-dark(#fff, #333);
-  --comment-inline-input-padding: 10px;
-  --radius-comment-inline-input: 5px;
-  --comment-reply-field-gap: 10px; /* the avatar's 40px column in a 50px margin */
-  --comment-reply-help-inset: 11px;
-  --comment-edit-submit-padding: 5px 12px;
+  --color-comment-field-border: var(--color-comment-rail);
+  --color-comment-field-border-open: light-dark(#cfcfcf, #474747);
+  --radius-comment-field: 22px; /* a pill while it rests on one line */
+  --radius-comment-field-open: 14px;
+  --comment-field-padding: 10px 18px;
+  --comment-field-open-height: 96px;
+  --comment-composer-heading-gap: 16px;
+  --comment-composer-footer-gap: 8px 12px;
+  --comment-composer-footer-padding: 4px 10px 10px 12px;
+  --comment-composer-rules-inset: 6px;
+  --comment-toolbar-gap: 2px;
+  --comment-toolbar-button: 30px;
+  --comment-toolbar-button-padding: 0 6px;
+  --radius-comment-toolbar-button: 5px;
+  --font-size-comment-toolbar: 14px;
+  --comment-toolbar-separator-margin: 6px 4px;
+  --comment-meter-gap: 6px;
+  --comment-meter-ring: 22px;
+  --comment-meter-ring-thickness: 3px;
+  --color-comment-meter-short: var(--brand-primary);
+  --color-comment-meter-met: light-dark(#38a038, #5cb85c);
+  --comment-switch-gap: 8px;
+  --comment-switch-width: 30px;
+  --comment-switch-height: 18px;
+  --comment-switch-knob: 14px;
+  --comment-switch-inset: 2px;
+  --comment-switch-travel: 12px;
+  --color-comment-switch-track: light-dark(#e2e2e2, #3d3d3d);
+  --color-comment-switch-on: var(--brand-primary);
+  --color-comment-switch-knob: #fff;
+  --shadow-comment-switch-knob: 0 1px 2px rgb(0 0 0 / 0.3);
+  --comment-submit-height: 32px;
+  --comment-submit-padding: 0 16px;
+  --radius-comment-submit: 16px;
+  --comment-cancel-padding: 0 10px;
 
   /* Stacking (Bootstrap 3; OG's header sits at 1500) */
   --z-dropdown: 1000;
@@ -1843,8 +1872,8 @@
   --font-size-recent-comments-title-year: 18px;
   --font-size-recent-comments-title-year-phone: 16px;
   --font-size-recent-comments-subtitle: 16px;
-  --recent-comments-comment-padding: 20px 30px 80px; /* the bottom clears the author row */
-  --recent-comments-comment-padding-phone: 20px 15px 80px;
+  --recent-comments-comment-padding: 20px 30px 100px; /* the bottom clears the avatar and name row */
+  --recent-comments-comment-padding-phone: 20px 15px 100px;
   --transition-recent-comments: 0.5s;
 }
 

@@ -1,4 +1,7 @@
-<!-- OG's Add Reaction / Edit link and seven-emoji popover. Native popovers provide Escape and light dismiss. -->
+<!--
+  A comment's React / Edit action and OG's seven-emoji popover. It takes its color and type from the row it sits in.
+  Native popovers provide Escape and light dismiss.
+-->
 <script lang="ts">
 import Icon from '$lib/icons/Icon.svelte';
 import smile from '$lib/icons/solid/face-smile-plus.svg?raw';
@@ -50,7 +53,7 @@ function choose(type: typeof reactionOptions[number]['type']) {
   type="button"
   class="reaction-trigger"
   style:anchor-name="--reaction-{id}"
-  aria-label={selected ? `Edit your ${selected.label.toLowerCase()} reaction` : 'Add Reaction'}
+  aria-label={selected ? `Edit your ${selected.label.toLowerCase()} reaction` : 'React'}
   aria-controls="reaction-{id}"
   aria-haspopup="dialog"
   aria-expanded={expanded}
@@ -58,7 +61,7 @@ function choose(type: typeof reactionOptions[number]['type']) {
   aria-disabled={busy || opening}
   onclick={open}
 >
-  {#if selected}<span class="emoji-icon" aria-hidden="true">{selected.emoji}</span>{:else}<Icon svg={smile} />{/if}<span class="add-text">{selected ? 'Edit' : 'Add Reaction'}</span>
+  {#if selected}<span class="emoji-icon" aria-hidden="true">{selected.emoji}</span>{:else}<Icon svg={smile} />{/if}<span class="add-text">{selected ? 'Edit' : 'React'}</span>
 </button>
 <div
   bind:this={popover}
@@ -98,24 +101,22 @@ function choose(type: typeof reactionOptions[number]['type']) {
 <style>
 .reaction-trigger {
   display: inline-flex;
-  align-items: baseline;
+  align-items: center;
   min-block-size: 0;
   padding: 0;
   border: 0;
   background: none;
-  color: var(--color-comment-reaction);
+  color: inherit;
   font: inherit;
   text-transform: inherit;
   cursor: pointer;
 
   & :global(.icon) {
-    margin-inline-end: var(--space-sm-inline);
-    margin-block-start: var(--reaction-icon-offset);
+    margin-inline-end: var(--comment-action-icon-gap);
     font-size: var(--font-size-comment-reaction-icon);
-    vertical-align: top;
   }
   &:hover {
-    text-decoration: underline;
+    color: var(--color-text);
   }
   &[aria-disabled='true'] {
     cursor: wait;
@@ -123,7 +124,7 @@ function choose(type: typeof reactionOptions[number]['type']) {
 }
 .emoji-icon {
   display: inline-block;
-  margin-inline-end: var(--space-sm-inline);
+  margin-inline-end: var(--comment-action-icon-gap);
   font-size: var(--font-size-comment-meta);
   vertical-align: middle;
 }

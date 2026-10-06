@@ -68,7 +68,7 @@ export const formatting = comment({
   updated_at: '2026-09-28T09:30:00.000Z',
   user_rating: 9,
   user_stats: { rating: 9, play_count: 70, completed_count: 62 },
-  user: member('og_tester', 'OG Tester', { vip: true, vip_ep: true }),
+  user: member('og_tester', 'OG Tester', { vip: true, vip_ep: true, vip_years: 6 }),
   comment: [
     'Paragraphs and hard line breaks,\nlike this one.',
     '**Bold**, _italics_, ~~strike~~, ==highlight== and `code`. ***Both*** at once, and snake_case_stays_plain.',

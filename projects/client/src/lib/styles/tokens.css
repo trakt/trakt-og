@@ -1492,9 +1492,7 @@
   --comment-head-gap-inline: 8px; /* between the name's line and the manage icons */
   --comment-head-line-gap: 2px; /* between the name's line and the date's */
   --comment-tools-overhang: -6px; /* the 28px icons hang over the name's line */
-  --comment-op-padding: 2px 4px; /* the VIP pill's */
-  --radius-comment-op: 2px;
-  --comment-tag-height: 20px; /* Review, Spoilers, Parent and Blocked */
+  --comment-tag-height: 20px; /* the VIP pill, OP, Review, Spoilers, Parent and Blocked */
   --comment-tag-padding: 0 7px;
   --comment-tag-gap: 4px;
   --radius-comment-tag: 10px;

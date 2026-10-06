@@ -1,18 +1,25 @@
 <!--
   The Last 30 Days keys over the minutes chart: time watched, episodes, movies and the best week, in the genre
   keys' style. The episode and movie keys take their bars' colors for the rule over them, so they double as the
-  chart's legend.
+  chart's legend. The profile's ratings keys use it too, a key about one rating ruled in that rating's color.
 -->
 <script lang="ts">
 import type { LastThirtyDays } from '$lib/dashboard/LastThirtyDays';
+import type { ProfileRatings } from '$lib/users/profile/toProfileRatings';
 
-const { keys }: { keys: LastThirtyDays['keys'] } = $props();
+const { keys }: { keys: LastThirtyDays['keys'] | ProfileRatings['keys'] } = $props();
+
+const color = (key: (typeof keys)[number]) => {
+  if ('type' in key && key.type) return `var(--color-minutes-${key.type})`;
+  if ('rating' in key && key.rating) return `var(--rating-${key.rating})`;
+  return undefined;
+};
 </script>
 
 <div class="watched-keys">
   <ul class="keys">
   {#each keys as key (key.name)}
-    <li class="key" style:--color={key.type ? `var(--color-minutes-${key.type})` : undefined}>
+    <li class="key" style:--color={color(key)}>
       <span class="name">{key.name}</span>
       <span class="share">{key.share}</span>
       <span class="counts">

@@ -2,10 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { toRatingsChart } from './toRatingsChart.ts';
 
 describe('mapper: toRatingsChart', () => {
-  it('should total the ratings and average them to two places', () => {
+  it('should average the ratings to two places', () => {
     const chart = toRatingsChart({ '1': 1, '8': 2, '10': 1_000 });
 
-    expect(chart.count).toBe('1,003');
     expect(chart.average).toBe('9.99');
   });
 
@@ -27,7 +26,7 @@ describe('mapper: toRatingsChart', () => {
   });
 
   it('should leave the chart out when there are no ratings', () => {
-    expect(toRatingsChart(undefined)).toEqual({ count: '0', average: '0', bars: [] });
+    expect(toRatingsChart(undefined)).toEqual({ average: '0', bars: [] });
     expect(toRatingsChart({ '3': 0 }).bars).toEqual([]);
   });
 });

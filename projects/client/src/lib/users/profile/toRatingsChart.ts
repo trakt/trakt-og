@@ -1,12 +1,10 @@
 import { RATING_LABELS } from '../../components/rating/ratingPrompt.ts';
 
-/** The profile's Ratings chart (`users.js:416-490`): ten bars and the help line's totals. */
+/** OG's Chart.js ratings bars: a summary's votes chart and the dashboard band's mini chart. */
 export type RatingsChart = {
-  /** "184", bold in "184 ratings with an average of 7.70 hearts." */
-  readonly count: string;
   /** "7.70". */
   readonly average: string;
-  /** Ratings 1 to 10, empty when there are none: OG hid the chart and kept the heading and help line. */
+  /** Ratings 1 to 10, empty when there are none, unless `showEmpty` keeps an empty axis. */
   readonly bars: readonly RatingBar[];
 };
 
@@ -38,7 +36,6 @@ export function toRatingsChart(
   const scale = Math.ceil(max / 10) * 11;
 
   return {
-    count: count.toLocaleString('en-US'),
     average: count > 0 ? (total / count).toFixed(2) : '0',
     bars: count > 0 || showEmpty
       ? RATINGS.map((rating, i) => {

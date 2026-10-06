@@ -1140,10 +1140,7 @@
   --color-ratings-bar-top: light-dark(#666, #fff); /* the most rated bar */
   --color-chart-axis: light-dark(#ddd, #444);
   --color-chart-axis-label: light-dark(#aaa, #777);
-  --ratings-chart-height: 156px; /* the 150px canvas and the line gap under it, which was inline */
-  --ratings-plot-height: 120px;
-  --ratings-plot-inset: 9px 2px 0 10px; /* Chart.js v1's padding around the plot */
-  --ratings-bar-spacing: 1px; /* barValueSpacing */
+  --ratings-bar-spacing: 1px; /* the media votes chart's barValueSpacing */
   --chart-tick: 5px;
   --chart-axis-label-gap: 3px; /* between a tick's end and its label */
   --font-size-chart-axis: 10px;
@@ -1157,6 +1154,24 @@
   --chart-tooltip-offset: 20px; /* above the bar's top */
   --font-size-chart-tooltip: 14px;
   --font-size-chart-tooltip-small: 11px;
+  /* The profile's ratings chart: bars in their rating colors over dashed count lines and a dashed average line, in
+     the Last 30 Days chart's style, with genre-style keys under it. */
+  --color-ratings-count: var(--color-genre-label); /* over each bar */
+  --color-ratings-zero: light-dark(#bbb, #555); /* the 0 over an empty rating */
+  --color-ratings-number: var(--color-genre-count); /* the ratings on the axis */
+  --color-ratings-name: var(--color-chart-axis-label); /* their names under them */
+  --color-ratings-top: var(--color-genre-label); /* the most given rating's number and name */
+  --ratings-plot-height: 150px;
+  --ratings-gutter: 32px; /* the count line labels, left of the plot */
+  --ratings-bar-gap: 10px; /* either side of a bar */
+  --ratings-average-rise: 8px; /* the average line, over the plot's top */
+  --space-ratings-chart: 34px; /* above the plot, clearing the average's label */
+  --space-ratings-count: 5px; /* between a count and its bar */
+  --space-ratings-axis: 8px; /* between the plot and the ratings under it */
+  --space-ratings-keys: 30px; /* between the axis and the keys */
+  --space-ratings-average-label: 6px; /* between the average line and its label */
+  --space-ratings-tip-unit: 4px; /* between the tooltip's count and "ratings" */
+  --line-height-ratings-axis: 1.25;
 
   /* Calendars. Dark in both themes, like the frame. */
   --color-frame-muted: #999; /* "Nothing on this day." */

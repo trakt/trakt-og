@@ -14,7 +14,7 @@ const { percent, level, votes, bars }: { percent: number; level: number; votes: 
     id="trakt-ratings-heading"><span style:color={level > 0 ? `var(--rating-${level})` : undefined}><Icon svg={heart} /></span> Trakt Ratings</h2>
   <p
     class="totals"><strong>{percent}%</strong><span class="dash">—</span><strong>{votes.toLocaleString('en-US')}</strong> {votes === 1 ? 'vote' : 'votes'}</p>
-  <RatingsChart {bars} media />
+  <RatingsChart {bars} />
 </section>
 
 <style>

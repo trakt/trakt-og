@@ -14,7 +14,7 @@ import UserCard from '$lib/components/users/UserCard.svelte';
 import WelcomeHero from '$lib/components/users/WelcomeHero.svelte';
 import { profileTabs } from '$lib/users/profileTabs';
 import { toGenreBar } from '$lib/users/profile/toGenreBar';
-import { toRatingsChart } from '$lib/users/profile/toRatingsChart';
+import { toProfileRatings } from '$lib/users/profile/toProfileRatings';
 import type { ProfileUser } from '$lib/users/ProfileUser';
 import type { ViewerRelation } from '$lib/users/ViewerRelation';
 import type { WatchingNow } from '$lib/users/WatchingNow';
@@ -151,18 +151,27 @@ const genreBars = (rows: typeof genreRows) => {
   );
 };
 const genres = genreBars(genreRows);
-const ratings = toRatingsChart({
-  '1': 8,
-  '2': 2,
-  '3': 4,
-  '4': 6,
-  '5': 14,
-  '6': 14,
-  '7': 17,
-  '8': 43,
-  '9': 48,
-  '10': 105,
+const ratings = toProfileRatings({
+  distribution: {
+    '1': 8,
+    '2': 2,
+    '3': 4,
+    '4': 6,
+    '5': 14,
+    '6': 14,
+    '7': 17,
+    '8': 43,
+    '9': 48,
+    '10': 105,
+  },
+  types: { movies: 142, shows: 37, seasons: 4, episodes: 78 },
 });
+// A generous rater: an average past 9 puts the line's label before it, and the empty ratings get a 0.
+const generous = toProfileRatings({
+  distribution: { '1': 1, '7': 3, '8': 9, '9': 22, '10': 61 },
+  types: { movies: 60, shows: 12, seasons: 0, episodes: 24 },
+});
+const unrated = toProfileRatings({ distribution: {} });
 const card = (id: number, title: string, time: string, plays: string) =>
   ({ type: 'show', id, href: '/shows/the-boys-2019', title, time, plays }) as const;
 const mostWatched = {
@@ -246,8 +255,11 @@ const cards = [
 <h2 class="state">Charts</h2>
 <ProfileCharts {genres} {ratings} slug="leela" />
 
+<h2 class="state">Charts, a generous rater</h2>
+<ProfileCharts genres={genreBars(genreRows.slice(0, 4))} ratings={generous} slug="leela" />
+
 <h2 class="state">Charts, no ratings</h2>
-<ProfileCharts genres={genreBars(genreRows.slice(0, 4))} ratings={toRatingsChart({})} slug="leela" />
+<ProfileCharts genres={genreBars(genreRows.slice(0, 4))} ratings={unrated} slug="leela" />
 
 <h2 class="state">Most watched, your own profile</h2>
 <MostWatched

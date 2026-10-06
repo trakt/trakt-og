@@ -18,7 +18,7 @@ import { toGenreBar } from './toGenreBar.ts';
 import { toMostWatched } from './toMostWatched.ts';
 import type { WatchedItemRow } from './watchedItemsSchema.ts';
 import { toFavoriteCard, toWatchedEpisode, toWatchedMovie } from './toProfileSummary.ts';
-import { toRatingsChart } from './toRatingsChart.ts';
+import { toProfileRatings } from './toProfileRatings.ts';
 
 type Params = {
   fetch: typeof fetch;
@@ -152,7 +152,17 @@ export async function loadProfile({ fetch, locals, params, parent, now = new Dat
     charts: sections.charts.genres.length > 0
       ? {
         genres: sections.charts.genres.map((row) => toGenreBar(row, { slug: profile.slug })),
-        ratings: toRatingsChart(stats?.ratings.distribution),
+        ratings: toProfileRatings({
+          distribution: stats?.ratings.distribution,
+          types: stats
+            ? {
+              movies: stats.movies.ratings,
+              shows: stats.shows.ratings,
+              seasons: stats.seasons.ratings,
+              episodes: stats.episodes.ratings,
+            }
+            : undefined,
+        }),
       }
       : null,
     mostWatched: {

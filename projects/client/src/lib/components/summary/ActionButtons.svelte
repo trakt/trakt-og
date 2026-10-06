@@ -124,7 +124,8 @@ const percentOf = (count: number) => `${progress?.visible ? Math.trunc(count / p
       {#if !page.data.settings}
         <SummaryAction {color} {icon} text={label} href={signIn} />
       {:else if page.data.settings.permissions?.commenting}
-        <SummaryAction {color} {icon} text={label} aria-controls="new-comment" onclick={() => newComment.open()} />
+        <SummaryAction {color} {icon} text={label} aria-controls="new-comment" aria-expanded={newComment.visible}
+          onclick={(event) => newComment.open(event.currentTarget)} />
       {/if}
     {:else}
       <SummaryAction {color} {icon} text={label} aria-disabled="true">

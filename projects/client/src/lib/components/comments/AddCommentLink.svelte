@@ -1,6 +1,6 @@
 <!--
-  OG's green "Add comment" (`a.new-comment-focus.main`), as an outlined button: it scrolls to the page's new comment
-  form and focuses it.
+  OG's green "Add comment" (`a.new-comment-focus.main`), as an outlined button: it shows the page's new comment form,
+  scrolls to it and focuses it.
   The comments subnav puts the icon first, the summary's comments heading puts a thin circled plus after the text. Renders nothing
   when the page has no form: logged out, or banned from commenting.
 -->
@@ -15,7 +15,7 @@ const { heading = false }: { heading?: boolean } = $props();
 
 {#if newComment.available}
   <button type="button" class={['add-comment', { heading }]} aria-controls="new-comment"
-  onclick={() => newComment.open()}>
+  aria-expanded={newComment.visible} onclick={(event) => newComment.open(event.currentTarget)}>
     {#if heading}
       <span class="text">Add comment</span><Icon svg={thinPlus} />
     {:else}

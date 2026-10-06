@@ -1,8 +1,9 @@
 <!--
   The new comment form, under a summary's overview and above an item's or a list's comments, for members who may
-  comment. It rests on one line ("Add a comment as NAME...") beside the viewer's avatar and opens when it's focused;
-  an "Add comment" link scrolls to it and focuses it. It posts in the browser: the new comment goes to the top of the
-  page's list, and failures toast and refocus the field. Leaving with unposted text asks first.
+  comment. Hidden until an "Add comment" button opens it; then it scrolls into view with the composer open beside the
+  viewer's avatar and the field focused. Cancel hides it again (asking first when there's text), and so does posting.
+  It posts in the browser: the new comment goes to the top of the page's list, and failures toast and refocus the
+  field. Leaving with unposted text asks first.
   `cut:` the X, Mastodon, Tumblr and Medium toggles (the integrations are gone, as on check-in) and the emoji picker.
   The rules links pointed at `/about/comments`, which no longer exists, so the rules are plain text, and "English only"
   is gone from them: the API doesn't check it.
@@ -49,7 +50,15 @@ const withAvatar = (comment: CommentResponse): CommentResponse =>
 const save = (text: string, spoiler: boolean) =>
   postComment({ fetch: authenticatedFetch({ manager: userManager() }), item, comment: text, spoiler });
 
+// The focus goes back to the "Add comment" button that opened the form.
+function cancel() {
+  const opener = newComment.opener;
+  newComment.close();
+  opener?.focus();
+}
+
 async function posted(comment: CommentResponse | null) {
+  newComment.close();
   if (!comment) return;
   newComment.add(withAvatar(comment));
   await focusComment(comment.id);
@@ -57,29 +66,42 @@ async function posted(comment: CommentResponse | null) {
 </script>
 
 {#if user}
-  <section id="new-comment" class="new-comment" bind:this={section} aria-labelledby="{id}-title">
-  <h2 id="{id}-title"><strong>Add</strong> your comment</h2>
-  <CommentComposer
-    bind:this={composer}
-    label="Your comment"
-    placeholder="Add a comment as {name}..."
-    submit="Post"
-    posting="Posting your comment"
-    avatar={user.images.avatar.full}
-    rules="5+ words, be respectful, mark spoilers."
-    spoiler={false}
-    resting
-    confirmLeave
-    {save}
-    onsaved={posted}
-  />
-</section>
+  <section id="new-comment" class="new-comment" bind:this={section} hidden={!newComment.visible}
+  aria-labelledby="{id}-title">
+    <h2 id="{id}-title"><strong>Add</strong> your comment</h2>
+    {#if newComment.visible}
+      <CommentComposer
+        bind:this={composer}
+        label="Your comment"
+        placeholder="Add a comment as {name}..."
+        submit="Post"
+        posting="Posting your comment"
+        avatar={user.images.avatar.full}
+        rules="5+ words, be respectful, mark spoilers."
+        spoiler={false}
+        confirmLeave
+        oncancel={cancel}
+        {save}
+        onsaved={posted}
+      />
+    {/if}
+  </section>
 {/if}
 
 <style>
 .new-comment {
   padding-block-end: var(--gutter);
   scroll-margin-block-start: var(--header-height);
+
+  @media (prefers-reduced-motion: no-preference) {
+    animation: fade-in var(--transition-comment-fade);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
 }
 
 h2 {

@@ -1,9 +1,8 @@
 <!--
   The comment composer, shared by the new comment form, the reply box and the edit form: a rounded field with the
   formatting toolbar, the word meter, the "Spoilers" switch, Cancel and the submit button under it.
-  The new comment form rests on one line (`resting`) and opens when it's focused or has text. The reply box and the
-  edit form open focused with the cursor at the end. Cmd/Ctrl+Enter submits, and a failure toasts the API's message and
-  refocuses the field. `confirmLeave` asks before leaving the page with text that hasn't been posted.
+  It opens focused with the cursor at the end. Cmd/Ctrl+Enter submits, and a failure toasts the API's message and
+  refocuses the field. `confirmLeave` asks before leaving the page or cancelling with text that hasn't been posted.
     <CommentComposer label="Your reply" placeholder="Reply to Sean..." submit="Reply" posting="Posting your reply"
       avatar={avatar} small oncancel={close} save={(text) => client.reply(id, text)} onsaved={replied} />
 -->
@@ -25,6 +24,7 @@ import { wordCount } from './wordCount.ts';
 // The API turns down a comment or a reply under 5 words, unless it's a review.
 const MIN_WORDS = 5;
 const UNSAVED = "Your comment hasn't been posted yet! If you leave this page, you'll lose what you wrote.";
+const DISCARD = "Your comment hasn't been posted yet! Discard what you wrote?";
 
 interface Props {
   /** What the field starts with: "@author " for a reply, the raw text for an edit. */
@@ -45,8 +45,7 @@ interface Props {
   spoiler?: boolean;
   /** The word minimum; 0 leaves the meter out, as for editing a review. */
   minWords?: number;
-  /** One line until it's focused or has text. Otherwise it opens focused. */
-  resting?: boolean;
+  /** Asks before leaving the page, or cancelling, with text that hasn't been posted. */
   confirmLeave?: boolean;
   /** A Cancel button. */
   oncancel?: () => void;
@@ -66,7 +65,6 @@ const {
   rules,
   spoiler: initialSpoiler,
   minWords = MIN_WORDS,
-  resting = false,
   confirmLeave = false,
   oncancel,
   save,
@@ -82,9 +80,6 @@ let spoiler = $state(initialSpoiler ?? false);
 let posting = $state(false);
 let textarea = $state<HTMLTextAreaElement>();
 const words = $derived(wordCount(text));
-// The styles also open it while it has the focus, and while a press inside it lands (Safari doesn't focus a
-// clicked button).
-const open = $derived(!resting || posting || spoiler || text.trim() !== '');
 const describedBy = $derived(
   [rules ? `${id}-rules` : '', minWords > 0 ? `${id}-meter` : ''].filter(Boolean).join(' ') || undefined,
 );
@@ -95,7 +90,6 @@ export function focus() {
 }
 
 const focusAtEnd = (element: HTMLTextAreaElement) => {
-  if (resting) return;
   element.focus();
   element.setSelectionRange(element.value.length, element.value.length);
 };
@@ -109,6 +103,15 @@ beforeNavigate((navigation) => {
   navigation.cancel();
   textarea?.focus();
 });
+
+// Text that hasn't been posted is only thrown away once the member says so.
+function cancel() {
+  if (confirmLeave && text.trim() && !confirm(DISCARD)) {
+    textarea?.focus();
+    return;
+  }
+  oncancel?.();
+}
 
 async function format(kind: CommentFormat) {
   if (!textarea) return;
@@ -132,16 +135,11 @@ async function send(event: SubmitEvent) {
     textarea?.focus();
     return;
   }
-  // The new comment form stays on the page, empty again.
-  if (resting) {
-    text = '';
-    spoiler = false;
-  }
   onsaved(result.comment, sent, flagged);
 }
 </script>
 
-<form class={['composer', { open, small, 'with-avatar': avatar !== undefined }]} onsubmit={send}>
+<form class={['composer', { small, 'with-avatar': avatar !== undefined }]} onsubmit={send}>
   {#if avatar !== undefined}<span class="avatar"><CommentAvatar src={avatar} {small} /></span>{/if}
   <div class="field">
     <textarea
@@ -159,7 +157,7 @@ async function send(event: SubmitEvent) {
       <CommentToolbar onformat={format} />
       {#if minWords > 0}<WordMeter id="{id}-meter" {words} min={minWords} />{/if}
       {#if initialSpoiler !== undefined}<SpoilerSwitch bind:spoiler />{/if}
-      {#if oncancel}<button type="button" class="cancel" onclick={oncancel}>Cancel</button>{/if}
+      {#if oncancel}<button type="button" class="cancel" onclick={cancel}>Cancel</button>{/if}
       <CommentSubmit {posting} text={submitText} label={postingLabel} />
     </div>
   </div>
@@ -186,13 +184,17 @@ async function send(event: SubmitEvent) {
   border: 1px solid var(--color-comment-field-border);
   border-radius: var(--radius-comment-field);
   background-color: var(--color-comment-bg);
-  transition: border-radius var(--transition-comment-quiet), border-color var(--transition-comment-quiet);
+  transition: border-color var(--transition-comment-quiet);
+
+  &:focus-within {
+    border-color: var(--color-input-border-focus);
+  }
 }
 
 textarea {
   display: block;
   inline-size: 100%;
-  min-block-size: 0;
+  min-block-size: var(--comment-field-height);
   padding: var(--comment-field-padding);
   border: 0;
   border-radius: inherit;
@@ -215,7 +217,7 @@ textarea {
 }
 
 .footer {
-  display: none;
+  display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--comment-composer-footer-gap);
@@ -242,25 +244,6 @@ textarea {
   &:hover {
     color: var(--color-text);
   }
-}
-
-.composer:is(.open, :focus-within, :active) {
-  & .field {
-    border-color: var(--color-comment-field-border-open);
-    border-radius: var(--radius-comment-field-open);
-  }
-
-  & textarea {
-    min-block-size: var(--comment-field-open-height);
-  }
-
-  & .footer {
-    display: flex;
-  }
-}
-
-.composer .field:focus-within {
-  border-color: var(--color-input-border-focus);
 }
 
 @media (prefers-reduced-motion: reduce) {

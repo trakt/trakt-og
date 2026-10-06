@@ -487,6 +487,12 @@
   --font-size-action-button: 12px;
   --font-size-action-button-icon: 15px;
   --space-action-button-icon: 6px;
+  /* Green for actions that add something, gray for the rest; the inbox keeps its own, as it's always dark. */
+  --color-action-add: light-dark(var(--color-list-add), var(--brand-success));
+  --color-action-add-hover: light-dark(rgb(56 160 56 / 0.1), var(--color-dashboard-inbox-approve-hover)); /* faint fill */
+  --color-action-border: light-dark(#ccc, #444);
+  --color-action-border-hover: var(--gray-light);
+  --opacity-action-disabled: 0.5;
   --radius-dashboard-inbox: var(--radius-action-button);
   --radius-dashboard-inbox-count: 10px;
   --dashboard-inbox-count-padding: 2px 7px;
@@ -1500,8 +1506,8 @@
   --color-comment-form-toggle-hover: light-dark(#000, #fff);
   --color-comment-form-toggle-on: light-dark(#666, #777);
   --color-comment-form-short: var(--color-link); /* the word count under 5 */
-  --color-comment-add: light-dark(var(--color-list-add), var(--brand-success)); /* "Add comment" (.new-comment-focus.main) */
-  --color-comment-add-hover: light-dark(rgb(56 160 56 / 0.1), var(--color-dashboard-inbox-approve-hover)); /* faint fill */
+  --color-comment-add: var(--color-action-add); /* "Add comment" (.new-comment-focus.main) */
+  --color-comment-add-hover: var(--color-action-add-hover);
   --font-size-comment-form-help: 11px;
   --comment-form-input-padding: 20px;
   --comment-form-toggle-padding: 7px 12px 6px;

@@ -154,18 +154,27 @@ const poweredBy = $derived.by(() => {
 }
 
 .section-title {
-  margin: 0 0 10px;
-  padding-inline-start: 30px;
-  border-block-end: 1px solid var(--color-dialog-title-border);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm-inline);
+  margin: 0 var(--space-dialog-wide-inline) var(--space-watch-now-section);
   color: var(--color-watch-now-section);
   font-family: var(--font-headings);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-headings-light);
+  font-size: var(--font-size-watch-now-section);
+  font-weight: var(--font-weight-headings-heavy);
+  letter-spacing: var(--letter-spacing-see-more);
   line-height: var(--line-height-base);
   text-transform: uppercase;
 
+  /* A small tracked label, lined up with the tiles, with the rule running on after it. */
+  &::after {
+    flex: 1;
+    border-block-start: 1px solid var(--color-dialog-title-border);
+    content: '';
+  }
+
   @media (width < 768px) {
-    padding-inline-start: 15px;
+    margin-inline: 15px;
   }
 }
 

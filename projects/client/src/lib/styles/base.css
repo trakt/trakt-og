@@ -198,7 +198,7 @@ button {
 
 /* Visible focus for keyboard users everywhere (OG had none). */
 :focus-visible {
-  outline: 2px solid var(--color-input-border-focus);
+  outline: var(--focus-ring-width) solid var(--color-input-border-focus);
   outline-offset: 2px;
 }
 

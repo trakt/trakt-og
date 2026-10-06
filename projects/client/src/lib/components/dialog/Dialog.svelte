@@ -49,10 +49,15 @@ let {
   variant,
 }: Props = $props();
 const id = $props.id();
+let close = $state<HTMLButtonElement>();
 
 // Reads `open`, so it re-runs whenever the prop changes.
+// A dialog with no controls yet (Watch Now while it loads) would land on Close, so it takes focus itself instead.
 const syncOpen = (dialog: HTMLDialogElement) => {
-  if (open && !dialog.open) dialog.showModal();
+  if (open && !dialog.open) {
+    dialog.showModal();
+    if (document.activeElement === close) dialog.focus();
+  }
   if (!open && dialog.open) dialog.close();
 };
 </script>
@@ -60,6 +65,7 @@ const syncOpen = (dialog: HTMLDialogElement) => {
 <dialog
   class={['dialog', size, variant, { 'image-backdrop': backdrop }]}
   aria-labelledby="{id}-title"
+  tabindex="-1"
   closedby={lightDismiss ? 'any' : 'closerequest'}
   onclose={() => { open = false; onclose?.(); }}
   {@attach syncOpen}
@@ -73,7 +79,7 @@ const syncOpen = (dialog: HTMLDialogElement) => {
     {/if}
     <div class={{ body: !header }}>{@render children()}</div>
     <!-- Last, so opening focuses the first control in the body like OG did. -->
-    <button type="button" class="close" onclick={() => { open = false; onclose?.(); }}>
+    <button bind:this={close} type="button" class="close" onclick={() => { open = false; onclose?.(); }}>
       <Icon svg={deleteThick} label="Close" />
     </button>
   </div>
@@ -96,6 +102,11 @@ const syncOpen = (dialog: HTMLDialogElement) => {
   &[open] {
     display: flex;
     flex-direction: column;
+  }
+
+  /* Focused only while it has no controls to hand focus to. */
+  &:focus-visible {
+    outline: none;
   }
 
   &::backdrop {
@@ -195,5 +206,10 @@ const syncOpen = (dialog: HTMLDialogElement) => {
   border: 0;
   background: none;
   color: var(--color-dialog-close);
+
+  /* Inside the button, so the panel's rounded corner doesn't clip it. */
+  &:focus-visible {
+    outline-offset: calc(-1 * var(--focus-ring-width));
+  }
 }
 </style>

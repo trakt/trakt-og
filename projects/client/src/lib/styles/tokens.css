@@ -188,6 +188,7 @@
   --color-input-text: light-dark(#555, #ccc);
   --color-input-border: light-dark(#ccc, #666);
   --color-input-border-focus: #66afe9;
+  --focus-ring-width: 2px; /* the keyboard focus outline (base.css) */
   --color-input-placeholder: #999;
 
   /* Buttons */
@@ -1596,7 +1597,9 @@
   --color-watch-now-under: #ccc;
   --color-watch-now-tiles-bg: light-dark(#222, #333);
   --shadow-watch-now: 0 5px 20px light-dark(#666, #000);
-  --color-watch-now-section: light-dark(#666, #fff);
+  --color-watch-now-section: light-dark(#666, var(--gray-light));
+  --font-size-watch-now-section: 12px;
+  --space-watch-now-section: 15px; /* under a section label, above its tiles */
   --color-service-badge: #333; /* the "4K" circle */
   --color-service-badge-bg: #fff;
   --service-country-padding: 4px 3px; /* another country's code */

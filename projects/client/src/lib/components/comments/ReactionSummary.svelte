@@ -1,44 +1,63 @@
-<!-- The reaction summary under a comment: an emoji per reaction type that has any, then the total. -->
+<!--
+  The reaction summary under a comment: each reaction type that has any as its emoji and its own count, in OG's
+  order ("👍 4  😂 2  😱 1"). The viewer's own reaction sits on a soft chip. Screen readers hear the total, then
+  "4 Like reactions" for each.
+-->
 <script lang="ts">
-import Tooltip from '../tooltip/Tooltip.svelte';
+import type { reactionOptions } from './reactionOptions.ts';
 import type { ReactionSummary } from './reactionSummary.ts';
 
 interface Props {
   summary: ReactionSummary;
+  /** The viewer's own reaction. */
+  mine?: typeof reactionOptions[number]['type'];
 }
 
-const { summary }: Props = $props();
+const { summary, mine }: Props = $props();
 </script>
 
-<span class="reaction-types">
+<ul class="reaction-summary" aria-label={summary.total}>
   {#each summary.reactions as reaction (reaction.type)}
-    <Tooltip text={reaction.title}>
-      {#snippet trigger(tooltip)}
-        <span class="reaction-type" role="img" aria-label="{reaction.title} {reaction.type}" {...tooltip}>
-          {reaction.emoji}
-        </span>
-      {/snippet}
-    </Tooltip>
+    {@const own = reaction.type === mine}
+    <li class={['reaction', { own }]}>
+      <span class="emoji" aria-hidden="true">{reaction.emoji}</span>
+      <span class="count" aria-hidden="true">{reaction.count}</span>
+      <span class="visually-hidden">{reaction.label}{own ? ', including yours' : ''}</span>
+    </li>
   {/each}
-  <span class="count-number"><span class="visually-hidden">Reactions: </span>{summary.total}</span>
-</span>
+</ul>
 
 <style>
-.reaction-types {
+.reaction-summary {
   display: inline-flex;
   flex-wrap: wrap;
   align-items: center;
+  gap: var(--comment-reactions-gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.reaction-type {
-  margin-inline-end: 2px;
+.reaction {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--comment-reaction-count-gap);
   cursor: default;
 }
 
-.count-number {
-  margin-inline-start: 3px;
+/* The chip's padding hangs outside the item, so the viewer's reaction doesn't push the row. */
+.own {
+  margin-inline: calc(-1 * var(--comment-reaction-own-padding-inline));
+  padding-inline: var(--comment-reaction-own-padding-inline);
+  border-radius: var(--radius-comment-reaction-own);
+  background-color: var(--color-comment-chip);
   color: var(--color-text);
-  font-weight: var(--font-weight-headings);
+}
+
+.emoji {
+  font-size: var(--font-size-comment-reaction-emoji);
+  line-height: 1;
+  translate: 0 var(--comment-action-icon-shift);
 }
 
 .visually-hidden {

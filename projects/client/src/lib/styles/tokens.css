@@ -1069,7 +1069,6 @@
   --item-stats-gap: 15px;
   --item-stats-icon-gap: 5px;
   --item-stats-check-size: 20px;
-  --item-stats-compact-gap: 10px;
 
   /* Media stats: 's 300px canvas, scaled by yirChart . */
   --media-stats-compact-strip-height: 55px;

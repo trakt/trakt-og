@@ -50,8 +50,6 @@
   --visibility-side-height: 20px;
   --visibility-side-size: 15px;
   --visibility-side-opacity: 0.75;
-  --visibility-side-top: 4px;
-  --visibility-side-gap: 3px;
   --visibility-pill-bg: rgb(0 0 0 / 0.6);
   --visibility-pill-hover: rgb(0 0 0 / 0.8);
 
@@ -80,23 +78,13 @@
   --watch-close-top: 9px;
   --watch-close-right: 7px;
   --watch-date-width: 288px;
-  --watch-side-start: 9px;
-  --watch-side-end: 7px;
-  --watch-side-size: 16px;
-  --watch-icon-padding: 5px;
-  --watch-info-block: 10px;
-  --watch-summary-line: 34px;
-  --watch-summary-selected-line: 18px;
-  --watch-detail-inline: 10px;
-  --watch-detail-bottom: 5px;
-  --watch-detail-size: 11px;
   --watch-history-size: 11px;
-  --watch-detail-line: 15px;
-  --watch-progress-height: 5px;
+  --watch-progress-height: 4px;
+  --watch-progress-gap: 4px; /* between a summary button and its progress bar */
+  --radius-watch-progress: 2px;
+  --color-watch-progress-track: light-dark(#e2e2e2, #333);
   --color-watch-prompt: light-dark(#f7f7f7, #111);
   --color-watch-cancel: #aaa;
-  --color-watch-history: rgb(0 0 0 / 0.25);
-  --color-watch-history-hover: rgb(0 0 0 / 0.4);
   --watch-history-block: 3px;
   --watch-history-inline: 5px;
 
@@ -1331,8 +1319,6 @@
   --color-actor-count: #aaa; /* a show's "24 episodes" line */
   --color-actor-dimmed: light-dark(#aaa, #555); /* every other actor while one is hovered */
   --color-action-bg: light-dark(#fff, #222); /* idle action buttons */
-  --color-action-side-bg: light-dark(rgb(0 0 0 / 0.05), #111);
-  --color-action-side: #999;
   --color-overview-shade: light-dark(#fff, #1d1d1d);
   --font-size-summary-label: 13px; /* external link and video tiles */
   --font-size-summary-h2: 18px; /* the collection or show above the title */
@@ -1353,9 +1339,34 @@
   --notes-summary-bottom: 20px;
   --action-height: 54px;
   --action-icon-width: 50px;
-  --font-size-action-star: 28px;
   --color-action-side-bg-hover: rgb(0 0 0 / 0.2);
-  --color-action-side-bg-active: rgb(0 0 0 / 0.3); /* the side column itself under the pointer */
+  /* Summary action stack: one outlined button until added, then filled with its side tiles split off. */
+  --summary-action-height: 60px;
+  --summary-action-stack-gap: 10px;
+  --summary-action-gap: 3px; /* between an added button and its tiles, and between tiles */
+  --summary-action-tile-width: 44px;
+  --summary-action-tile-inset: 10px 8px 10px 0; /* a tile inside a not-added button's outline */
+  --summary-action-outline: 1.5px;
+  --summary-action-outline-mix: 70%; /* how much of the button's color the outline keeps */
+  --summary-action-tint: 7%; /* the not-added fill */
+  --summary-action-tile-hover-tint: 20%;
+  --summary-action-tile-shade: 78%; /* an added button's tiles: its color, darkened */
+  --color-summary-action-tile-shade: #000;
+  --summary-action-hover: brightness(1.12); /* an added button, or its tiles, under the pointer */
+  --summary-action-aside-gap: 10px;
+  --summary-action-icon-size: 26px;
+  --summary-action-tile-icon-size: 18px;
+  --summary-action-menu-icon-size: 16px; /* the ••• tile */
+  --summary-action-tracking: 0.04em;
+  --summary-action-title-line: 20px;
+  --summary-action-detail-line: 16px;
+  --font-size-summary-action-percent: 21px;
+  --radius-summary-action: 6px;
+  --transition-summary-action: 0.2s;
+  --summary-action-menu-gap: 6px;
+  --summary-action-menu-width: 190px;
+  --summary-action-menu-row-gap: 10px;
+  --font-size-summary-action-menu-icon: 15px;
   --summary-poster-overlap: 190px; /* how far the sidebar poster rises into the fanart */
   --summary-sticky-gap: 25px;
   --overview-collapsed: 300px;
@@ -1654,10 +1665,6 @@
   --list-card-width: 35px;
   --list-card-small-height: 34px;
   --list-card-small-width: 28px;
-  --list-action-line: 34px;
-  --list-selected-line: 20px;
-  --list-subtitle-line: 14px;
-  --list-side-inline: 7px;
   --list-modal-heading-top: 80px;
   --list-name-height: 44px;
   --list-description-height: 113px;
@@ -1726,6 +1733,11 @@
   --font-size-collection-logo-wide: 30px; /* Blu-ray, Video CD */
   --font-size-collection-logo-small: 20px; /* digital, Dolby and DTS */
   --font-size-collection-tag: 14px;
+  /* The same logos, small, at the summary library button's right edge. */
+  --collection-logos-gap: 6px;
+  --font-size-collection-logos: 16px;
+  --font-size-collection-logos-wide: 20px;
+  --font-size-collection-logos-small: 13px;
 }
 
 /* Discover: the "Top... Last Week" sliders.

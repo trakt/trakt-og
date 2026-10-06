@@ -8,8 +8,10 @@ import { overlay } from '$lib/overlay/overlay';
 import { checkin } from '$lib/components/checkin/checkin.svelte';
 import { toast } from '$lib/components/toast/toast.svelte';
 import VisibilityControl from '$lib/components/visibility/VisibilityControl.svelte';
+import SummaryActionMenu from '$lib/components/summary/SummaryActionMenu.svelte';
 import lightBackward from '$lib/icons/light/backward.svg?raw';
 import circleMinus from '$lib/icons/light/circle-minus.svg?raw';
+import historyIcon from '$lib/icons/light/clock-rotate-left.svg?raw';
 import WatchPopover from '$lib/components/history/WatchPopover.svelte';
 import { loadWatchEpisodes } from '$lib/components/history/loadWatchEpisodes';
 import { watchMedia } from '$lib/components/history/watchMedia';
@@ -86,6 +88,13 @@ const label = $derived(
       : countLabel(viewerState.plays ?? 1, 'play')
     : 'Add to history',
 );
+const started = $derived(fill.watched > 0 || Boolean(rewatching));
+const percent = $derived(plural && started ? `${Math.floor(fill.watched * 100)}%` : undefined);
+const hasHistory = $derived((viewerState.watchedEpisodes ?? 0) > 0 || fill.watched > 0);
+const showActions = $derived(
+  target.type === 'show' && (viewerState.watchedEpisodes ?? 0) > 0 && Boolean(page.data.user),
+);
+const dropped = $derived(target.type === 'show' && Boolean(viewerState.dropped));
 const request = (path: string, body?: unknown) =>
   rawApiFetch({
     fetch: path.startsWith('/search/') ? globalThis.fetch : authenticatedFetch({ manager: userManager() }),
@@ -134,46 +143,47 @@ async function open(force: boolean): Promise<'date' | 'remove' | 'partial' | nul
 
 <!-- Filtered history routes are built from media ids. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-  {#snippet visibilityActions()}
-    {#if variant === 'summary' && target.type === 'show' && (viewerState.watchedEpisodes ?? 0) > 0 && page.data.user}
-      <VisibilityControl target={{ ...target, type: 'show' }} action="rewatch">
-  <Icon svg={lightBackward} />
-</VisibilityControl>
-      {#if !viewerState.dropped}<VisibilityControl target={{ ...target, type: 'show' }} action="drop">
-  <Icon svg={circleMinus} />
-</VisibilityControl>{/if}
-    {/if}
-  {/snippet}
-
 <WatchPopover label={onremove ? 'Remove from history' : variant === 'summary' ? label : 'Add to watched history'}
   {variant} {small} {busy} {plural}
-  fill={onremove ? 1 : fill.watched} selected={Boolean(onremove) || fill.watched > 0 || Boolean(rewatching)}
+  fill={onremove ? 1 : fill.watched} selected={Boolean(onremove) || started}
   datePreferences={dates}
   tooltip={onremove ? 'Remove from history' : variant === 'card' ? fill.titles.watched ?? 'Add to watched history' : undefined}
-  extraActions={variant === 'summary' && target.type === 'show' && (viewerState.watchedEpisodes ?? 0) > 0 && page.data.user ? visibilityActions : undefined}
+  summary={{ icon: check, text: percent ? rewatching ? 'rewatched' : 'watched' : label, percent, detail: started ? detail : undefined }}
+  more={hasHistory || dropped ? more : undefined}
   onremovePlay={play && onremove ? () => void watch(null, false, play) : undefined}
   onopen={open} onwatch={watch} onremaining={remaining} {oncheckin}
   oninvalid={() => toast.error('Invalid date format, please use the date picker.')}>
   {#snippet trigger()}
-    {#if variant === 'summary'}
-      <span class="watch-icon"><Icon svg={check} fixedWidth /></span>
-      <span class="info">
-        <span class="main-info">{label}</span>
-        {#if fill.watched > 0 || rewatching}
-          <span class="under-info">
-            {#if plural}{completed}/{target.airedEpisodes} eps &mdash; {countLabel(plays ?? 0, 'play')}{#if target.runtime} <em>({formatRuntime((plays ?? 0) * target.runtime)})</em>{/if}
-            {:else if viewerState.lastWatchedAt}{viewerState.lastWatchedAt.startsWith('1970-01-01') ? 'Unknown date' : formatDate(viewerState.lastWatchedAt, dates)}{/if}
-          </span>
-        {/if}
-      </span>
-    {:else if viewerState.rewatching}<Icon svg={backward} />{:else}<span class="trakt-glyph"><Icon svg={checkThick} /></span>{/if}
-  {/snippet}
-  {#snippet details()}
-    {#if viewerState.dropped && target.type === 'show'}<VisibilityControl target={{ ...target, type: 'show' }} action="restore" variant="pill" tooltip={viewerState.droppedAt ? `Dropped on\n${formatDate(viewerState.droppedAt, dates)}` : 'Dropped'}>Dropped</VisibilityControl>{/if}
-    {#if (viewerState.watchedEpisodes ?? 0) > 0 || fill.watched > 0}<a class="history-link" href={historyHref}>View History</a>{/if}
+    {#if viewerState.rewatching}<Icon svg={backward} />{:else}<span class="trakt-glyph"><Icon svg={checkThick} /></span>{/if}
   {/snippet}
 </WatchPopover>
-{#if variant === 'summary' && plural && (fill.watched > 0 || rewatching) && target.airedEpisodes}
+{#snippet detail()}
+  {#if plural}{completed}/{target.airedEpisodes} eps &mdash; {countLabel(plays ?? 0, 'play')}{#if target.runtime} <em>({formatRuntime((plays ?? 0) * target.runtime)})</em>{/if}
+  {:else if viewerState.lastWatchedAt}{viewerState.lastWatchedAt.startsWith('1970-01-01') ? 'Unknown date' : formatDate(viewerState.lastWatchedAt, { ...dates, time: true })}{/if}
+{/snippet}
+{#snippet more()}
+  <SummaryActionMenu>
+    {#snippet children(close)}
+      {#if hasHistory}<a href={historyHref}><Icon svg={historyIcon} fixedWidth />View history</a>{/if}
+      {#if (showActions || dropped) && hasHistory}<hr />{/if}
+      {#if showActions}
+        <VisibilityControl target={{ ...target, type: 'show' }} action="rewatch" variant="menu" onsaving={close}>
+          <Icon svg={lightBackward} fixedWidth />Rewatch this show
+        </VisibilityControl>
+      {/if}
+      {#if dropped}
+        <VisibilityControl target={{ ...target, type: 'show' }} action="restore" variant="menu" onsaving={close}>
+          <Icon svg={circleMinus} fixedWidth />Restore this show{#if viewerState.droppedAt}<em>, dropped {formatDate(viewerState.droppedAt, dates)}</em>{/if}
+        </VisibilityControl>
+      {:else if showActions}
+        <VisibilityControl target={{ ...target, type: 'show' }} action="drop" variant="menu" onsaving={close}>
+          <Icon svg={circleMinus} fixedWidth />Drop this show
+        </VisibilityControl>
+      {/if}
+    {/snippet}
+  </SummaryActionMenu>
+{/snippet}
+{#if variant === 'summary' && plural && started && target.airedEpisodes}
   <Tooltip text={fill.titles.watched} placement="bottom">
     {#snippet trigger(tip)}
       <a class="watch-progress" href={historyHref} aria-label={fill.titles.watched} {...tip}>
@@ -189,51 +199,13 @@ async function open(force: boolean): Promise<'date' | 'remove' | 'partial' | nul
   display: contents;
   --icon-shift: var(--quick-icon-trakt-shift);
 }
-.watch-icon {
-  inline-size: var(--action-icon-width);
-  flex-shrink: 0;
-  padding-inline: var(--watch-icon-padding);
-  font-size: var(--font-size-action-icon);
-  line-height: 1;
-}
-.info {
-  padding-block: var(--watch-info-block);
-  font-family: var(--font-headings);
-}
-.main-info {
-  display: block;
-  font-size: var(--font-size-action);
-  font-weight: var(--font-weight-headings);
-  line-height: var(--watch-summary-line);
-  text-transform: uppercase;
-  .info:has(.under-info) & {
-    line-height: var(--watch-summary-selected-line);
-  }
-}
-.under-info {
-  display: block;
-  font-size: var(--watch-detail-size);
-  line-height: var(--watch-detail-line);
-}
-.history-link {
-  color: var(--color-text-inverse);
-  font-family: var(--font-headings);
-  font-size: var(--watch-history-size);
-  line-height: var(--watch-detail-line);
-  text-decoration: none;
-  padding: var(--watch-history-block) var(--watch-history-inline);
-  background: var(--color-watch-history);
-  border-radius: var(--watch-choice-radius);
-  font-weight: var(--font-weight-headings-heavy);
-  &:is(:hover, :focus-visible) {
-    background: var(--color-watch-history-hover);
-    text-decoration: underline;
-  }
-}
 .watch-progress {
   display: flex;
   block-size: var(--watch-progress-height);
-  background: var(--progress-under-bg);
+  margin-block-start: var(--watch-progress-gap);
+  overflow: hidden;
+  border-radius: var(--radius-watch-progress);
+  background: var(--color-watch-progress-track);
   & span {
     flex: 1;
   }

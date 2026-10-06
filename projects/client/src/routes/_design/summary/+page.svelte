@@ -11,6 +11,16 @@ import AddCommentLink from '$lib/components/comments/AddCommentLink.svelte';
 import { newComment } from '$lib/components/comments/newComment.svelte';
 import ListsPreview from '$lib/components/summary/ListsPreview.svelte';
 import RelatedItems from '$lib/components/summary/RelatedItems.svelte';
+import SummaryAction from '$lib/components/summary/SummaryAction.svelte';
+import SummaryActionTile from '$lib/components/summary/SummaryActionTile.svelte';
+import SummaryActionMenu from '$lib/components/summary/SummaryActionMenu.svelte';
+import Icon from '$lib/icons/Icon.svelte';
+import plus from '$lib/icons/light/circle-plus.svg?raw';
+import historyIcon from '$lib/icons/light/clock-rotate-left.svg?raw';
+import check from '$lib/icons/trakt/check.svg?raw';
+import collection from '$lib/icons/trakt/collection.svg?raw';
+import listIcon from '$lib/icons/trakt/list.svg?raw';
+import star from '$lib/icons/thin/star.svg?raw';
 import type { CommentTab, ListTab } from '$lib/summary/sectionsClient';
 import type { ActivityTab, ActivityUser } from '$lib/summary/toActivity';
 import type { RelatedCard } from '$lib/summary/toRelatedCard';
@@ -118,6 +128,33 @@ const related: readonly RelatedCard[] = Array.from({ length: 6 }, (_, i) => ({
     </div>
     <button type="button" onclick={() => { reporting = true; }}>Report Movie</button>
     <ReportDialog bind:open={reporting} target={reportTarget} />
+    <h2>Action stack</h2>
+    <p>
+      Not added, each action is one outlined button with its + inside. Added, it fills and the + splits off, with
+      quieter actions under •••. Every button is the same height.
+    </p>
+    <div class="actions-demo">
+      <SummaryAction color="var(--brand-tertiary)" icon={check} text="Add to history">
+        {#snippet tiles()}<SummaryActionTile icon={plus} label="Pick a watched date" />{/snippet}
+      </SummaryAction>
+      <SummaryAction color="var(--brand-tertiary)" icon={check} percent="6%" text="watched" selected>
+        {#snippet detail()}13/186 eps &mdash; 25 plays <em>(8h 20m)</em>{/snippet}
+        {#snippet tiles()}
+          <SummaryActionTile icon={plus} label="Add more plays" />
+          <SummaryActionMenu>
+            <a href="#history"><Icon svg={historyIcon} fixedWidth />View history</a>
+          </SummaryActionMenu>
+        {/snippet}
+      </SummaryAction>
+      <SummaryAction color="var(--brand-quaternary)" icon={collection} percent="95%" text="in library" selected
+        detail="177/186 episodes">
+        {#snippet tiles()}<SummaryActionTile icon={plus} label="Add to library" />{/snippet}
+      </SummaryAction>
+      <SummaryAction color="var(--brand-secondary)" icon={listIcon} text="Listed on" detail="Personal lists" selected>
+        {#snippet tiles()}<SummaryActionTile icon={plus} label="Manage lists" />{/snippet}
+      </SummaryAction>
+      <SummaryAction color="var(--brand-seventh)" icon={star} text="Add to favorites" />
+    </div>
     <h1>Summary sections</h1>
     <p>
     What loads under a movie or show summary as it scrolls into view. Local OG: the bottom of
@@ -139,6 +176,14 @@ const related: readonly RelatedCard[] = Array.from({ length: 6 }, (_, i) => ({
 <RelatedItems title="Heat" load={() => Promise.resolve(related)} datePreferences={page.data.datePreferences} />
 
 <style>
+.actions-demo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--summary-action-stack-gap);
+  max-inline-size: var(--watch-date-width); /* about the stack's width on a summary page */
+  margin-block: var(--gutter);
+}
+
 .tools-demo {
   inline-size: calc(var(--summary-offset) - var(--gutter));
   margin-block: var(--gutter);

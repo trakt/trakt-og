@@ -16,6 +16,8 @@ import { createList } from '$lib/components/lists/createList';
 import { loadFollowerCandidates } from '$lib/components/lists/loadFollowerCandidates';
 import NewListDialog from '$lib/components/lists/NewListDialog.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
+import SummaryAction from '$lib/components/summary/SummaryAction.svelte';
+import SummaryActionTile from '$lib/components/summary/SummaryActionTile.svelte';
 import type { ListTarget } from '$lib/components/lists/ListTarget';
 import type { PickerList } from '$lib/components/lists/PickerList';
 import Icon from '$lib/icons/Icon.svelte';
@@ -38,7 +40,7 @@ interface Props {
 }
 const { target, variant = 'card', small = false }: Props = $props();
 const id = $props.id();
-let triggerButton = $state<HTMLButtonElement>();
+let triggerButton = $state<HTMLElement>();
 let popover = $state<HTMLDivElement>();
 let searchInput = $state<HTMLInputElement>();
 let expanded = $state(false);
@@ -82,6 +84,18 @@ const max = $derived(
 );
 let pressedAt = 0;
 let longPressed = false;
+const pressStart = () => {
+  pressedAt = Date.now();
+  longPressed = false;
+};
+const pressEnd = () => {
+  longPressed = Date.now() - pressedAt >= 500;
+};
+const pickerKey = (event: KeyboardEvent) => {
+  if (event.key !== 'ArrowDown') return;
+  event.preventDefault();
+  void open(true);
+};
 const authFetch = () => authenticatedFetch({ manager: userManager() });
 const request = (path: string, body: unknown) =>
   rawApiFetch({
@@ -231,24 +245,26 @@ async function save(draft: Parameters<typeof createList>[0]['draft'] & { collabo
 <!-- Picker links use list ids and the viewer's canonical slug. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 <div class={['list-control', variant, { small, selected, expanded }]} style:anchor-name="--list-{id}">
-  <Tooltip text={variant === 'card' ? selected ? 'Manage lists' : label : undefined}>
-    {#snippet trigger(tooltip)}
-  <button bind:this={triggerButton} type="button" class="trigger" aria-label={variant === 'card' && selected ? 'Manage lists' : label} aria-haspopup="dialog" aria-expanded={expanded} aria-controls="list-{id}" aria-busy={busy} disabled={busy} {...tooltip}
-    onpointerdown={() => { pressedAt = Date.now(); longPressed = false; }}
-    onpointerup={() => { longPressed = Date.now() - pressedAt >= 500; }}
-    aria-keyshortcuts="ArrowDown"
-    onkeydown={(event) => { if (event.key === 'ArrowDown') { event.preventDefault(); void open(true); } }}
-    onclick={() => open(longPressed)}>
-    <Icon svg={variant === 'card' ? listThick : listIcon} fixedWidth />
-    {#if variant === 'summary'}<span class="text"><span class="label">{label}</span>{#if subtitle}<span class="subtitle">{subtitle}</span>{/if}</span>{/if}
-    {#if busy}<span class="spinner"><Icon svg={spinner} /></span>{/if}
-  </button>
-    {/snippet}
-  </Tooltip>
   {#if variant === 'summary'}
-    <Tooltip text="Add to list" placement="right">
+    <SummaryAction bind:element={triggerButton} color="var(--brand-secondary)" icon={listIcon} text={label}
+      detail={subtitle || undefined} {selected} busy={busy ? 'Saving lists' : undefined} aria-haspopup="dialog"
+      aria-expanded={expanded} aria-controls="list-{id}" aria-keyshortcuts="ArrowDown" disabled={busy}
+      onpointerdown={pressStart} onpointerup={pressEnd} onkeydown={pickerKey} onclick={() => open(longPressed)}>
+      {#snippet tiles()}
+        <SummaryActionTile icon={plus} label={selected ? 'Manage lists' : 'Pick a list'} aria-haspopup="dialog"
+          aria-controls="list-{id}" disabled={busy} onclick={() => open(true)} />
+      {/snippet}
+    </SummaryAction>
+  {:else}
+    <Tooltip text={selected ? 'Manage lists' : label}>
       {#snippet trigger(tooltip)}
-        <button type="button" class="side" aria-label="Add to list" aria-haspopup="dialog" aria-controls="list-{id}" disabled={busy} onclick={() => open(true)} {...tooltip}><Icon svg={plus} /></button>
+        <button bind:this={triggerButton} type="button" class="trigger" aria-label={selected ? 'Manage lists' : label}
+          aria-haspopup="dialog" aria-expanded={expanded} aria-controls="list-{id}" aria-busy={busy} disabled={busy}
+          aria-keyshortcuts="ArrowDown" onpointerdown={pressStart} onpointerup={pressEnd} onkeydown={pickerKey}
+          onclick={() => open(longPressed)} {...tooltip}>
+          <Icon svg={listThick} fixedWidth />
+          {#if busy}<span class="spinner"><Icon svg={spinner} /></span>{/if}
+        </button>
       {/snippet}
     </Tooltip>
   {/if}
@@ -330,56 +346,6 @@ async function save(draft: Parameters<typeof createList>[0]['draft'] & { collabo
 .card.selected,
 .card:has(.trigger:is(:hover, :focus-visible)) {
   background: var(--brand-fifth);
-  color: var(--color-text-inverse);
-}
-/* The picker carries the variant class too, so the trigger's own rules name .list-control. */
-.list-control.summary {
-  border: var(--list-border) solid var(--brand-secondary);
-  background: var(--color-action-bg);
-  color: var(--brand-secondary);
-  min-block-size: calc(var(--action-height) + 2 * var(--list-border));
-}
-.summary .trigger {
-  flex: 1;
-  text-align: start;
-}
-.summary .trigger > :global(.icon) {
-  inline-size: var(--action-icon-width);
-  padding-inline: var(--space-xs-inline);
-  font-size: var(--font-size-action-icon);
-}
-.text {
-  flex: 1;
-  padding-block: var(--space-lg-block);
-}
-.label {
-  display: block;
-  font: var(--font-size-action) / var(--list-action-line) var(--font-headings);
-  text-transform: uppercase;
-}
-.subtitle {
-  display: block;
-  font: var(--font-size-small) / var(--list-subtitle-line) var(--font-headings);
-}
-.text:has(.subtitle) .label {
-  line-height: var(--list-selected-line);
-}
-.side {
-  align-self: stretch;
-  padding: 0 var(--list-side-inline);
-  border: 0;
-  background: var(--color-action-side-bg);
-  color: var(--color-action-side);
-  font-size: var(--font-size-large);
-}
-.list-control.summary.selected,
-.list-control.summary.expanded,
-.list-control.summary:has(button:is(:hover, :focus-visible)) {
-  background: var(--brand-secondary);
-  color: var(--color-text-inverse);
-}
-.selected .side,
-.expanded .side {
   color: var(--color-text-inverse);
 }
 button:focus-visible,

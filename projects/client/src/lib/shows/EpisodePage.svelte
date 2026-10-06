@@ -100,7 +100,7 @@ const sections = $derived([
     {#key episode.id}<MediaSpoiler target={ratingTarget} kind="overview"><Overview overview={episode.overview} /></MediaSpoiler>{/key}
     <Videos title={episode.fullTitle} {...episode.videos} />
   {/snippet}
-  {#snippet actions()}<ActionButtons checkin={ratingTarget} listTarget={ratingTarget} historyTarget={{...ratingTarget,runtime:episode.runtime}} />{/snippet}
+  {#snippet actions()}<ActionButtons checkin={ratingTarget} listTarget={ratingTarget} historyTarget={{...ratingTarget,runtime:episode.runtime,season:{show:episode.showId,number:episode.season,episode:episode.episodeNumber}}} />{/snippet}
   {#key episode.href}
     <NewCommentForm item={{ ...ratingTarget, show: episode.showId, season: episode.season }} />
     <LazySection id="activity" load={()=>lazy().activity(media)}>{#snippet children(tabs)}<ActivityTabs {tabs} />{/snippet}</LazySection>

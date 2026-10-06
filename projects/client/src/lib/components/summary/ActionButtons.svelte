@@ -1,11 +1,10 @@
 <!--
-  The button stack to the right of a summary's overview , in its idle
-  state: check in, history, library, watchlist, favorites, comment. History and favorites use shared optimistic
-  controls. The phone Watch Now button sits above them (`WatchNow` with `phone`).
+  The button stack to the right of a summary's overview: check in, history, library, watchlist, favorites, comment,
+  each a `SummaryAction`. History, library, lists and favorites use shared optimistic controls; the rest stay idle.
+  The phone Watch Now button sits above them (`WatchNow` with `phone`).
 -->
 <script lang="ts">
 import { page } from '$app/state';
-import Spinner from '$lib/components/loading/Spinner.svelte';
 import { checkin as checkinModal } from '$lib/components/checkin/checkin.svelte';
 import type { CheckinTarget } from '$lib/components/checkin/CheckinTarget';
 import { newComment } from '$lib/components/comments/newComment.svelte';
@@ -16,8 +15,8 @@ import MediaWatch from '$lib/components/history/MediaWatch.svelte';
 import type { WatchTarget } from '$lib/components/history/WatchTarget';
 import MediaList from '$lib/components/lists/MediaList.svelte';
 import type { ListTarget } from '$lib/components/lists/ListTarget';
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import Icon from '$lib/icons/Icon.svelte';
+import SummaryAction from '$lib/components/summary/SummaryAction.svelte';
+import SummaryActionTile from '$lib/components/summary/SummaryActionTile.svelte';
 import circlePlus from '$lib/icons/light/circle-plus.svg?raw';
 import star from '$lib/icons/thin/star.svg?raw';
 import filledStar from '$lib/icons/solid/star.svg?raw';
@@ -25,7 +24,7 @@ import check from '$lib/icons/trakt/check.svg?raw';
 import collection from '$lib/icons/trakt/collection.svg?raw';
 import comment from '$lib/icons/trakt/comment.svg?raw';
 import list from '$lib/icons/trakt/list.svg?raw';
-import trakt from '$lib/icons/trakt/trakt.svg?raw';
+import trakt from '$lib/icons/trakt/trakt-v2.svg?raw';
 
 interface Props {
   /** Movies and episodes. */
@@ -70,72 +69,67 @@ const signIn = $derived(`/auth/signin?${new URLSearchParams({ redirect_to: page.
 
 const buttons = $derived(
   [
-    checkin !== undefined && { kind: 'checkin', icon: trakt, label: 'Check In' },
-    history && { kind: 'watch', icon: check, label: 'Add to history', side: 'Add additional play' },
-    library && { kind: 'collect', icon: collection, label: 'Add to library', side: 'Add to library' },
-    listable && { kind: 'list', icon: list, label: 'Add to watchlist', side: 'Add to list' },
-    favorites && { kind: 'favorites', icon: star, label: 'Add to favorites' },
-    commentable && { kind: 'comment', icon: comment, label: 'Add comment' },
+    checkin !== undefined && { kind: 'checkin', icon: trakt, label: 'Check In', color: 'var(--brand-primary)' },
+    history &&
+    {
+      kind: 'watch',
+      icon: check,
+      label: 'Add to history',
+      color: 'var(--brand-tertiary)',
+      side: 'Pick a watched date',
+    },
+    library &&
+    {
+      kind: 'collect',
+      icon: collection,
+      label: 'Add to library',
+      color: 'var(--brand-quaternary)',
+      side: 'Pick a library date',
+    },
+    listable &&
+    { kind: 'list', icon: list, label: 'Add to watchlist', color: 'var(--brand-secondary)', side: 'Pick a list' },
+    favorites && { kind: 'favorites', icon: star, label: 'Add to favorites', color: 'var(--brand-seventh)' },
+    commentable && { kind: 'comment', icon: comment, label: 'Add comment', color: 'var(--brand-sixth)' },
   ].filter((button) => button !== false),
 );
+const percentOf = (count: number) => `${progress?.visible ? Math.trunc(count / progress.visible * 100) : 0}%`;
 </script>
 
 <div class="action-buttons">
   {#if progress}
-    {#each [['watch', check, progress.watched, 'watched'], ['collect', collection, progress.collected, 'in library']] as const as [kind, icon, count, label] (kind)}
-      <div class={['action', kind, 'progress', { selected: count > 0 }]}>
-        <span class="icon"><Icon svg={icon} fixedWidth /></span>
-        <span class="text"><span class="main-info">{progress.visible ? Math.trunc(count / progress.visible * 100) : 0}% {label}</span><span class="under-info">{count}/{progress.total} {progress.total === 1 ? 'item' : 'items'}</span></span>
-      </div>
+    {#each [['watch', check, progress.watched, 'watched', 'var(--brand-tertiary)'], ['collect', collection, progress.collected, 'in library', 'var(--brand-quaternary)']] as const as [kind, icon, count, label, color] (kind)}
+      <SummaryAction readonly {color} {icon} percent={percentOf(count)} text={label} selected={count > 0}
+        detail="{count}/{progress.total} {progress.total === 1 ? 'item' : 'items'}" />
     {/each}
   {/if}
-  {#each buttons as { kind, icon, label, side } (kind)}
+  {#each buttons as { kind, icon, label, color, side } (kind)}
     {#if kind === 'watch' && historyTarget}
-      <div class="history-action"><MediaWatch target={historyTarget} variant="summary" /></div>
+      <div class="stacked"><MediaWatch target={historyTarget} variant="summary" /></div>
     {:else if kind === 'collect' && historyTarget}
-      <MediaCollection target={historyTarget} variant="summary" />
+      <div class="stacked"><MediaCollection target={historyTarget} variant="summary" /></div>
     {:else if kind === 'list' && listTarget}
       <MediaList target={listTarget} variant="summary" />
     {:else if kind === 'favorites' && favoriteTarget}
       <MediaFavorite target={favoriteTarget}>
         {#snippet trigger({ selected, date, busy, toggle })}
-          <button type="button" class={['action', kind, { selected }]} aria-pressed={selected} aria-label={selected ? 'Remove from favorites' : label} aria-busy={busy} aria-disabled={busy} onclick={toggle}>
-            <span class="icon"><Icon svg={selected ? filledStar : icon} fixedWidth /></span>
-            <span class="text"><span class="main-info">{selected ? date ? 'Favorited on' : 'Favorited' : label}</span>{#if selected && date}<span class="under-info">{date}</span>{/if}</span>
-            {#if busy}<span class="loading"><Spinner label="Saving favorite" /></span>{/if}
-          </button>
+          <SummaryAction {color} icon={selected ? filledStar : icon} text={selected ? date ? 'Favorited on' : 'Favorited' : label}
+            detail={selected ? date : undefined} {selected} busy={busy ? 'Saving favorite' : undefined} aria-pressed={selected}
+            aria-label={selected ? 'Remove from favorites' : label} aria-busy={busy} aria-disabled={busy} onclick={toggle} />
         {/snippet}
       </MediaFavorite>
     {:else if kind === 'checkin' && checkin}
-      <button type="button" class={['action', kind]} aria-haspopup="dialog" aria-busy={opening} onclick={() => openCheckin(checkin)}>
-        <span class="icon"><Icon svg={icon} fixedWidth /></span>
-        <span class="main-info">{label}</span>
-        {#if opening}<span class="loading"><Spinner label="Opening check in" /></span>{/if}
-      </button>
+      <SummaryAction {color} {icon} text={label} selected busy={opening ? 'Opening check in' : undefined} aria-haspopup="dialog"
+        aria-busy={opening} onclick={() => openCheckin(checkin)} />
     {:else if kind === 'comment'}
       {#if !page.data.settings}
-        <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- sign-in with a return-to query -->
-        <a class={['action', kind]} href={signIn}>
-          <span class="icon"><Icon svg={icon} fixedWidth /></span>
-          <span class="main-info">{label}</span>
-        </a>
+        <SummaryAction {color} {icon} text={label} href={signIn} />
       {:else if page.data.settings.permissions?.commenting}
-        <button type="button" class={['action', kind]} aria-controls="new-comment" onclick={() => newComment.open()}>
-          <span class="icon"><Icon svg={icon} fixedWidth /></span>
-          <span class="main-info">{label}</span>
-        </button>
+        <SummaryAction {color} {icon} text={label} aria-controls="new-comment" onclick={() => newComment.open()} />
       {/if}
     {:else}
-      <button type="button" class={['action', kind]} aria-disabled="true">
-
-      <span class="icon"><Icon svg={icon} fixedWidth /></span>
-      <span class="main-info">{label}</span>
-      {#if side}
-        <Tooltip text={side} placement="right">
-          {#snippet trigger(tooltip)}<span class="side" {...tooltip}><Icon svg={circlePlus} /></span>{/snippet}
-        </Tooltip>
-      {/if}
-    </button>
+      <SummaryAction {color} {icon} text={label} aria-disabled="true">
+        {#snippet tiles()}{#if side}<SummaryActionTile icon={circlePlus} label={side} aria-disabled="true" />{/if}{/snippet}
+      </SummaryAction>
     {/if}
   {/each}
 </div>
@@ -144,130 +138,6 @@ const buttons = $derived(
 .action-buttons {
   display: flex;
   flex-direction: column;
-  gap: var(--space-xs-inline);
-}
-.action {
-  --action-color: var(--brand-tertiary);
-  position: relative;
-  display: flex;
-  align-items: center;
-  inline-size: 100%;
-  min-block-size: calc(var(--action-height) + 2px);
-  margin-block-start: 0;
-  padding: 0;
-  border: 1px solid var(--action-color);
-  background-color: var(--color-action-bg);
-  color: var(--action-color);
-  font: inherit;
-  text-align: start;
-  text-decoration: none;
-  cursor: pointer;
-  transition: all var(--transition-card);
-
-  &:first-child {
-    margin-block-start: 0;
-  }
-
-  &:is(:hover, :focus-visible, .selected) {
-    background-color: var(--action-color);
-    color: var(--color-text-inverse);
-
-    & .side {
-      background-color: var(--color-action-side-bg-hover);
-      color: var(--color-text-inverse);
-    }
-  }
-}
-
-.progress {
-  cursor: default;
-}
-
-.loading {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  background-color: var(--color-action-bg);
-  color: var(--brand-seventh);
-  font-size: var(--font-size-action-icon);
-}
-.checkin {
-  --action-color: var(--brand-primary);
-  background-color: var(--brand-primary);
-  color: var(--color-text-inverse);
-
-  &:is(:hover, :focus-visible) {
-    background-color: var(--brand-primary-darken);
-  }
-}
-
-.collect {
-  --action-color: var(--brand-quaternary);
-}
-
-.list {
-  --action-color: var(--brand-secondary);
-}
-
-.favorites {
-  --action-color: var(--brand-seventh);
-}
-
-.comment {
-  --action-color: var(--brand-sixth);
-}
-
-.icon {
-  inline-size: var(--action-icon-width);
-  padding-inline: 5px;
-  font-size: var(--font-size-action-icon);
-  line-height: 1;
-
-  .favorites & {
-    font-size: var(--font-size-action-star);
-  }
-}
-
-.main-info {
-  flex: 1;
-  padding-block: 10px;
-  font-family: var(--font-headings);
-  font-size: var(--font-size-action);
-  font-weight: var(--font-weight-headings);
-  line-height: 34px;
-  text-transform: uppercase;
-}
-
-.text {
-  flex: 1;
-  padding-block: 10px;
-  & .main-info {
-    display: block;
-    padding: 0;
-    line-height: var(--line-height-headings);
-  }
-}
-.under-info {
-  display: block;
-  font-family: var(--font-headings);
-  font-size: var(--font-size-small);
-  line-height: var(--line-height-headings);
-}
-.side {
-  align-self: stretch;
-  display: flex;
-  align-items: center;
-  padding: 0 6px 0 8px;
-  background-color: var(--color-action-side-bg);
-  color: var(--color-action-side);
-  font-size: var(--font-size-large);
-  transition: all var(--transition-card);
-}
-@media (prefers-reduced-motion: reduce) {
-  .action,
-  .side {
-    transition: none;
-  }
+  gap: var(--summary-action-stack-gap);
 }
 </style>

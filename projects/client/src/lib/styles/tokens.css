@@ -480,7 +480,14 @@
   --dashboard-inbox-action-size: 32px;
   --dashboard-inbox-done-opacity: 0.4;
   --dashboard-border-width: 1px;
-  --radius-dashboard-inbox: 4px;
+  /* Outlined action buttons: the inbox's Approve All and Review, and "Add comment". */
+  --action-button-padding: var(--space-sm-block) var(--space-sm-inline);
+  --action-button-border-width: 1px;
+  --radius-action-button: 4px;
+  --font-size-action-button: 12px;
+  --font-size-action-button-icon: 15px;
+  --space-action-button-icon: 6px;
+  --radius-dashboard-inbox: var(--radius-action-button);
   --radius-dashboard-inbox-count: 10px;
   --dashboard-inbox-count-padding: 2px 7px;
   --dashboard-inbox-count-width: 22px;
@@ -489,7 +496,7 @@
   --font-size-dashboard-inbox-summary: 15px;
   --font-size-dashboard-inbox-count: 11px;
   --font-size-dashboard-inbox-stack-extra: 13px;
-  --font-size-dashboard-inbox-review: 12px;
+  --font-size-dashboard-inbox-review: var(--font-size-action-button);
   --font-size-dashboard-inbox-action: 21px;
   --font-size-dashboard-inbox-block: 18px;
   --color-dashboard-inbox-bg: #1d1d1d;
@@ -1493,8 +1500,8 @@
   --color-comment-form-toggle-hover: light-dark(#000, #fff);
   --color-comment-form-toggle-on: light-dark(#666, #777);
   --color-comment-form-short: var(--color-link); /* the word count under 5 */
-  --color-comment-add: var(--color-list-add); /* "Add comment" (.new-comment-focus.main) */
-  --color-comment-add-hover: #2b7a2b; /* darken */
+  --color-comment-add: light-dark(var(--color-list-add), var(--brand-success)); /* "Add comment" (.new-comment-focus.main) */
+  --color-comment-add-hover: light-dark(rgb(56 160 56 / 0.1), var(--color-dashboard-inbox-approve-hover)); /* faint fill */
   --font-size-comment-form-help: 11px;
   --comment-form-input-padding: 20px;
   --comment-form-toggle-padding: 7px 12px 6px;

@@ -7,6 +7,8 @@ import SummaryPoster from '$lib/components/summary/SummaryPoster.svelte';
 import Container from '$lib/components/container/Container.svelte';
 import ActivityTabs from '$lib/components/summary/ActivityTabs.svelte';
 import CommentsPreview from '$lib/components/summary/CommentsPreview.svelte';
+import AddCommentLink from '$lib/components/comments/AddCommentLink.svelte';
+import { newComment } from '$lib/components/comments/newComment.svelte';
 import ListsPreview from '$lib/components/summary/ListsPreview.svelte';
 import RelatedItems from '$lib/components/summary/RelatedItems.svelte';
 import type { CommentTab, ListTab } from '$lib/summary/sectionsClient';
@@ -14,6 +16,8 @@ import type { ActivityTab, ActivityUser } from '$lib/summary/toActivity';
 import type { RelatedCard } from '$lib/summary/toRelatedCard';
 import { formatting, movie, review, spoiler } from '../comments/fixtures.ts';
 
+// Shows the Add comment buttons, as for a signed-in viewer; the page has no form for them to open.
+$effect(() => newComment.mount());
 let reporting = $state(false);
 const reportTarget = {
   type: 'movie' as const,
@@ -128,6 +132,7 @@ const related: readonly RelatedCard[] = Array.from({ length: 6 }, (_, i) => ({
       href="/movies/heat-1995"
       dateOptions={page.data.datePreferences}
     />
+    <p>The comments subnav's Add comment: <AddCommentLink /></p>
     <ListsPreview tabs={lists} count={342} href="/movies/heat-1995" />
   </Container>
 </section>

@@ -9,11 +9,14 @@
   before deleting. The flag opens the report dialog, and the block icon asks before blocking the member's comments. A
   blocked member's card collapses to its faded name row until clicked, and their replies are dropped from the inline
   thread. Reactions share the viewer's choices and totals.
+
+  On the comment's own page (`read`) the card is the thread's root, scaled up: the page lists the replies on its rail
+  (`replies`), and the thread ends with a one-line "Reply to NAME..." that opens the reply box, as Reply does.
 -->
 <script lang="ts">
 import { page } from '$app/state';
 import { fade } from 'svelte/transition';
-import { untrack } from 'svelte';
+import { type Snippet, untrack } from 'svelte';
 import ReactionControl from '$lib/components/comments/ReactionControl.svelte';
 import { commentReactions } from '$lib/components/comments/commentReactions';
 import Icon from '$lib/icons/Icon.svelte';
@@ -76,8 +79,6 @@ interface Props {
   titles?: { readonly item: string; readonly episode?: string };
   /** The under-comment row is left out, like replies next to a poster. */
   hideInteractions?: boolean;
-  /** Where "View N replies" points on the comment's own page. Left out, it opens the replies inline. */
-  repliesAnchor?: string;
   /** The member's date order, clock and time zone. The time zone keeps the server and browser dates the same. */
   dateOptions?: Pick<FormatDateOptions, 'order' | 'hour24' | 'timeZone'>;
   client?: CommentsClient;
@@ -89,8 +90,10 @@ interface Props {
   inheritSpoiler?: boolean;
   /** Collapsed inside a reply as its parent, until clicked. */
   asParent?: boolean;
-  /** The comment on its own page (OG's `#read`): the name row on the page's band, the text under it. */
+  /** The comment on its own page (OG's `#read`): the thread's root, scaled up, with the reply box at the thread's end. */
   read?: boolean;
+  /** On the comment's own page, the replies the page lists, on the card's rail above the reply box. */
+  replies?: Snippet;
   /**
    * Discover's Recent Comments (OG's `#recent-comments .comment-outer-wrapper`): no bubble over the column's veil, the
    * text in full, and the avatar and name row pinned to the bottom of the nearest positioned ancestor.
@@ -111,7 +114,6 @@ const {
   featured = false,
   titles,
   hideInteractions = false,
-  repliesAnchor,
   dateOptions = { timeZone: 'UTC' },
   client,
   nested = false,
@@ -119,6 +121,7 @@ const {
   inheritSpoiler = false,
   asParent = false,
   read = false,
+  replies: pageReplies,
   veiled = false,
   onreply,
   ondelete,
@@ -195,10 +198,10 @@ const repliesId = $props.id();
 
 let replying = $state(false);
 let editing = $state(false);
-// The rail runs down the thread while the replies or the reply box are open.
-const threadOpen = $derived(repliesOpen || replying);
+// The rail runs down the thread while the replies or the reply box are open, and always on the comment's own page.
+const threadOpen = $derived(repliesOpen || replying || read);
 const repliesLabel = $derived(
-  repliesOpen && !repliesAnchor
+  repliesOpen
     ? 'Hide replies'
     : `View ${comment.replies.toLocaleString('en-US')} ${comment.replies === 1 ? 'reply' : 'replies'}`,
 );
@@ -236,7 +239,6 @@ const loadReplies = async () => {
 };
 
 const toggleReplies = (event: MouseEvent) => {
-  if (repliesAnchor) return;
   event.preventDefault();
   if (comment.replies <= 0) return;
 
@@ -259,6 +261,9 @@ const addReply = (reply: CommentResponse) => {
 // The create response leaves out images unless asked, and the member is the viewer.
 const withAvatar = (reply: CommentResponse): CommentResponse =>
   reply.user.images || !settings ? reply : { ...reply, user: { ...reply.user, images: settings.user.images } };
+
+// The one-line prompt at the end of the comment page's thread opens the box when it's clicked or focused.
+const openReply = () => (replying = true);
 
 // Cancel takes the focus back to the button that opened the box.
 const closeReply = () => {
@@ -332,7 +337,7 @@ const vanish = (node: Element) =>
 {/snippet}
 
 {#snippet avatar()}
-  <CommentAvatar src={author.avatar} {rating} small={nested || asParent} />
+  <CommentAvatar src={author.avatar} {rating} small={nested || asParent} large={read} />
 {/snippet}
 
 <!-- Profile, history and comment hrefs point at og routes that resolve() only takes once they exist. -->
@@ -528,12 +533,13 @@ const vanish = (node: Element) =>
             <Icon svg={replyIcon} />Reply
           </button>
         {/if}
-        {#if !isReply && comment.replies > 0}
+        <!-- The comment's own page lists its replies already. -->
+        {#if !isReply && !read && comment.replies > 0}
           <a
             class="action comment-count"
-            href={repliesAnchor ?? permalink}
-            aria-expanded={repliesAnchor ? undefined : repliesOpen}
-            aria-controls={repliesAnchor ? undefined : repliesId}
+            href={permalink}
+            aria-expanded={repliesOpen}
+            aria-controls={repliesId}
             onclick={toggleReplies}
           >
             {repliesLabel}<Icon svg={chevronDown} />
@@ -562,6 +568,7 @@ const vanish = (node: Element) =>
             <p class="loading" role="status"><Icon svg={arrowsRotate} /> <span class="text">Loading replies</span></p>
           {/if}
         {/if}
+        {@render pageReplies?.()}
         {#if replying}
           <CommentComposer
             text="@{author.slug}  "
@@ -575,6 +582,13 @@ const vanish = (node: Element) =>
             save={(text) => api().reply(threadId, text)}
             onsaved={replied}
           />
+        {:else if read && canReply}
+          <div class="reply-prompt">
+            <CommentAvatar src={settings?.user.images.avatar.full ?? PLACEHOLDER_AVATAR} small />
+            <button type="button" class="reply-field" onclick={openReply} onfocus={openReply}>
+              Reply to {author.name}...
+            </button>
+          </div>
         {/if}
       </div>
     {/if}
@@ -621,8 +635,8 @@ const vanish = (node: Element) =>
 .has-thread::before {
   content: '';
   position: absolute;
-  inset-block: calc(var(--rail-offset, 0px) + var(--avatar) + var(--comment-rail-gap)) 0;
-  inset-inline-start: calc(var(--rail-inset, 0px) + (var(--avatar) - var(--comment-rail-width)) / 2);
+  inset-block: calc(var(--avatar) + var(--comment-rail-gap)) 0;
+  inset-inline-start: calc((var(--avatar) - var(--comment-rail-width)) / 2);
   inline-size: var(--comment-rail-width);
   background-color: var(--color-comment-rail);
 }
@@ -927,6 +941,7 @@ const vanish = (node: Element) =>
 @media (prefers-reduced-motion: reduce) {
   .comment-wrapper,
   .tools,
+  .reply-field,
   .comment-count :global(.icon) {
     transition: none;
   }
@@ -938,22 +953,49 @@ const vanish = (node: Element) =>
   }
 }
 
-/* The comment on its own page: the avatar and the name row centred on the page's band, the bubble under it. */
+/* The comment on its own page: the thread card scaled up, as the root of the thread under it. */
 .read {
-  --rail-offset: calc((var(--comment-page-band) - var(--avatar)) / 2);
-  --rail-inset: var(--comment-page-inset);
-  --comment-quote-bg: var(--color-comment-page-band);
-  --comment-pre-bg: var(--color-comment-page-band);
-  padding-inline-start: var(--comment-page-inset);
+  --avatar: var(--comment-avatar-root);
+  --gap: var(--comment-column-gap-root);
 
-  & > .rail {
-    padding-block-start: var(--rail-offset);
+  & > .main > .above-comment .username {
+    font-size: var(--font-size-comment-root-name);
   }
 
-  & > .main > .above-comment {
-    min-block-size: var(--comment-page-band);
-    align-content: center;
-    padding-block-start: 0;
+  & > .main > .comment > .bubble {
+    padding: var(--comment-root-bubble-padding-block) var(--comment-root-bubble-padding-inline);
+    font-size: var(--font-size-comment-root-text);
+  }
+
+  & > .main > .under-comment {
+    padding-inline-start: var(--comment-root-bubble-padding-inline);
+  }
+}
+
+/* The end of the comment page's thread: the viewer's avatar and a one-line field that opens the reply box. */
+.reply-prompt {
+  display: grid;
+  grid-template-columns: var(--comment-avatar-nested) minmax(0, 1fr);
+  align-items: center;
+  column-gap: var(--comment-column-gap-nested);
+}
+
+.reply-field {
+  min-block-size: 0;
+  padding: var(--comment-reply-prompt-padding);
+  border: 1px solid var(--color-comment-field-border);
+  border-radius: var(--radius-comment-reply-prompt);
+  background-color: var(--color-comment-bg);
+  color: var(--color-comment-muted);
+  font-family: var(--font-body);
+  font-size: inherit;
+  font-weight: inherit;
+  text-align: start;
+  cursor: text;
+  transition: border-color var(--transition-comment-quiet);
+
+  &:hover {
+    border-color: var(--color-input-border-focus);
   }
 }
 

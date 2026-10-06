@@ -7,6 +7,7 @@ import { toUserComment } from '../comments/toUserComment.ts';
 import type { UserCommentRow } from '../comments/UserCommentRow.ts';
 import { fetchRecentHistory } from '../fetchRecentHistory.ts';
 import type { ProfileUser } from '../ProfileUser.ts';
+import { withShowPosters } from '../withShowPosters.ts';
 import { boxExtraLoader } from './boxes/boxExtraLoader.ts';
 import type { BoxFrame } from './boxes/BoxFrame.ts';
 import { boxMath } from './boxes/boxMath.ts';
@@ -15,6 +16,7 @@ import { toProfileBoxes } from './boxes/toProfileBoxes.ts';
 import { fetchProfileCharts } from './fetchProfileCharts.ts';
 import { toGenreBar } from './toGenreBar.ts';
 import { toMostWatched } from './toMostWatched.ts';
+import type { WatchedItemRow } from './watchedItemsSchema.ts';
 import { toFavoriteCard, toWatchedEpisode, toWatchedMovie } from './toProfileSummary.ts';
 import { toRatingsChart } from './toRatingsChart.ts';
 
@@ -156,7 +158,7 @@ export async function loadProfile({ fetch, locals, params, parent, now = new Dat
     mostWatched: {
       shows: toMostWatched('shows', {
         history: sections.recent.episodes,
-        watched: sections.charts.shows,
+        watched: await withTopShowPosters(fetch, sections.charts.shows, prefs?.most_watched_shows),
         prefs: prefs?.most_watched_shows,
       }),
       movies: toMostWatched('movies', {
@@ -169,6 +171,21 @@ export async function loadProfile({ fetch, locals, params, parent, now = new Dat
     },
     comments: comments.flatMap((row) => toUserComment(row) ?? []),
   };
+}
+
+/**
+ * The watched shows list sends no images, so only the shows All Time ranks into the top three read their posters,
+ * rather than one summary for every show the user has watched.
+ */
+async function withTopShowPosters(
+  fetch: typeof globalThis.fetch,
+  watched: readonly WatchedItemRow[],
+  prefs: Parameters<typeof toMostWatched>[1]['prefs'],
+): Promise<readonly WatchedItemRow[]> {
+  const top = new Set(toMostWatched('shows', { history: [], watched, prefs }).allTime.map(({ id }) => id));
+  const rows = watched.flatMap((row) => 'show' in row && top.has(row.show.ids.trakt) ? [row] : []);
+  const posters = new Map((await withShowPosters(fetch, rows)).map((row) => [row.show.ids.trakt, row]));
+  return watched.map((row) => ('show' in row ? posters.get(row.show.ids.trakt) : undefined) ?? row);
 }
 
 /** Whether the user has any activity. Without any, the strip hides: your own profile shows the welcome hero. */

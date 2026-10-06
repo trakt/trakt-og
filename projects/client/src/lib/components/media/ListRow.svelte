@@ -255,6 +255,11 @@ const plural = (count: number, word: string) => `${word}${count === 1 ? '' : 's'
   .poster-items &:hover {
     inline-size: 120px;
   }
+
+  /* Its shadow only reaches left, where the stack's edge clips it into a stripe. */
+  &:first-child {
+    box-shadow: none;
+  }
 }
 
 .poster {

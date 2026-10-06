@@ -288,7 +288,7 @@
   --color-stats-bar: rgb(0 0 0 / 0.8);
   --gradient-shadow-base: linear-gradient(rgb(0 0 0 / 0), rgb(0 0 0 / 0.4));
   --gradient-shadow-header: linear-gradient(rgb(0 0 0 / 0), rgb(0 0 0 / 0.6));
-  --shadow-list-poster: 0 0 15px rgb(255 255 255 / 0.5);
+  --shadow-list-poster: 0 0 15px light-dark(rgb(255 255 255 / 0.5), #333); /* dark-knight's $dk-shadow-color */
   --font-size-card-title: 16px; /* poster card title */
   --font-size-card-subtitle: 12px;
   --line-height-card-subtitle: 13px;

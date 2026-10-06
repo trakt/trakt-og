@@ -102,6 +102,7 @@ function choose(type: typeof reactionOptions[number]['type']) {
 .reaction-trigger {
   display: inline-flex;
   align-items: center;
+  gap: var(--comment-action-icon-gap);
   min-block-size: 0;
   padding: 0;
   border: 0;
@@ -111,10 +112,9 @@ function choose(type: typeof reactionOptions[number]['type']) {
   text-transform: inherit;
   cursor: pointer;
 
-  gap: var(--comment-action-icon-gap);
-
+  /* Centred by the face's circle, not the glyph box the plus sticks out of. */
   & :global(.icon) {
-    --icon-shift: var(--comment-action-icon-shift);
+    --icon-shift: calc(var(--comment-action-icon-shift) + var(--comment-react-icon-circle-offset));
     flex: none;
     font-size: var(--font-size-comment-action-icon);
   }

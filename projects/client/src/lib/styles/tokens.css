@@ -1519,6 +1519,8 @@
   --font-size-comment-action-icon: 12px; /* every icon in the action row, one box */
   /* The row's 13px Figtree centers its line box 1.25px above the x-height's middle, so icons and emoji drop to it. */
   --comment-action-icon-shift: 1.25px;
+  /* face-smile-plus's circle is centred at y 288 of 512, 32/512 below the glyph box's middle, so it lifts by that. */
+  --comment-react-icon-circle-offset: -0.0625em;
   --comment-reactions-gap: 10px; /* between reactions in the summary */
   --comment-reaction-count-gap: 4px; /* between an emoji and its count */
   --font-size-comment-reaction-emoji: 13px;

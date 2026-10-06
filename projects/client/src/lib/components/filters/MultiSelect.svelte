@@ -2,7 +2,8 @@
   OG's Chosen multi-select, as the advanced filters used it: picked values as chips inside a dark field, and a
   searchable list that drops under it, grouped, with small tags on the right ("US", "Free"). A combobox with
   `aria-activedescendant`: typing filters (anywhere in the name), arrows move, Enter picks or unpicks, Esc closes,
-  and Backspace in an empty field drops the last chip. Picked options stay in the list, greyed, like Chosen's.
+  and Backspace in an empty field drops the last chip. Picked options stay in the list, greyed, like Chosen's. The
+  placeholder only shows while nothing is picked, also like Chosen's.
     <MultiSelect bind:value={genres} options={[{ options: genreOptions }]} label="Genres"
       placeholder="Choose genres..." />
 -->
@@ -135,7 +136,7 @@ const rows = $derived(groups.map((group, g) => {
       aria-activedescendant={activeId}
       autocomplete="off"
       spellcheck="false"
-      placeholder={placeholder}
+      placeholder={value.length === 0 ? placeholder : undefined}
       {disabled}
       onclick={() => { if (!disabled) open = true; }}
       {oninput}
@@ -232,14 +233,14 @@ const rows = $derived(groups.map((group, g) => {
   cursor: text;
 
   &:has(input:focus-visible) {
-    outline: 2px solid var(--color-input-border-focus);
+    outline: var(--focus-ring-width) solid var(--color-input-border-focus);
     outline-offset: 0;
   }
 }
 
 .chip {
   position: relative;
-  margin: 5px 5px 3px 0;
+  margin: var(--space-filter-chip-block) var(--space-xs-inline) var(--space-filter-chip-block) 0;
   padding: 3px 20px 2px 5px;
   border-radius: var(--radius-filter-control);
   background-color: var(--color-filter-chip-bg);
@@ -291,10 +292,6 @@ const rows = $derived(groups.map((group, g) => {
   &::placeholder {
     color: var(--color-filter-control-text);
   }
-
-  .chip ~ &::placeholder {
-    color: var(--color-input-placeholder);
-  }
 }
 
 .drop {
@@ -302,8 +299,11 @@ const rows = $derived(groups.map((group, g) => {
   inset-block-start: 100%;
   inset-inline: 0;
   z-index: 2;
+  /* Clear of the field's focus ring, which draws outside it. */
+  margin-block-start: var(--focus-ring-width);
   max-block-size: 240px;
-  margin: 0;
+  margin-inline: 0;
+  margin-block-end: 0;
   padding: 0;
   overflow-y: auto;
   background-color: var(--color-filter-control-bg);

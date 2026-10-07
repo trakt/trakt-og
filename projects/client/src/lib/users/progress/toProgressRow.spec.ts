@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import { progressFixture } from './progressFixture.ts';
 import { progressItemFixture } from './progressItemFixture.ts';
 import type { ProgressItem } from './ProgressItem.ts';
-import type { ProgressType } from './progressTypes.ts';
 import { toProgressRow } from './toProgressRow.ts';
 
 const datePreferences = { order: 'mdy', hour24: false, timeZone: 'America/Los_Angeles', weekStartDay: 0 } as const;
@@ -12,8 +11,8 @@ const byTitle = (items: readonly ProgressItem[], title: string) => {
   if (!item) throw new Error(`no fixture for ${title}`);
   return item;
 };
-const row = (items: readonly ProgressItem[], title: string, type: ProgressType = 'watched') =>
-  toProgressRow({ item: byTitle(items, title), type, datePreferences, now });
+const row = (items: readonly ProgressItem[], title: string) =>
+  toProgressRow({ item: byTitle(items, title), datePreferences, now });
 const expanded = (title: string) => row(progressFixture.watched(true), title);
 const collapsed = (title: string) => row(progressFixture.watched(false), title);
 
@@ -129,27 +128,13 @@ describe('toProgressRow', () => {
 
   it('should say when you dropped the show, only on the Dropped tab', () => {
     // In the viewer's time zone, like OG's `allow_conversion`.
-    expect(row(progressFixture.dropped(false), 'Severance', 'dropped').droppedOn).toBe('April 17, 2025');
+    expect(row(progressFixture.dropped(false), 'Severance').droppedOn).toBe('April 17, 2025');
     expect(collapsed('Severance').droppedOn).toBeUndefined();
-  });
-
-  describe('for library progress', () => {
-    const library = row(progressFixture.library(true), 'Breaking Bad', 'library');
-
-    it('should use the collected dates and skip the plays', () => {
-      expect(library).toMatchObject({ completed: 15, plays: 0, rewatchingSince: undefined });
-      expect(library.last?.date).toBe('Sep 3, 2026 1:08 PM');
-      expect(library.seasons?.at(1)?.count).toBe('8/13');
-      expect(library.seasons?.at(1)?.squares.at(0)?.label).toBe(
-        '2x01 "Episode 1", in your library, added Sep 3, 2026',
-      );
-      expect(library.upNext).toBeUndefined();
-    });
   });
 
   it('should read an unknown date as such', () => {
     const item = progressItemFixture(1, { lastAt: '1970-01-01T00:00:00.000Z' });
-    expect(toProgressRow({ item, type: 'watched', datePreferences, now }).last).toEqual({
+    expect(toProgressRow({ item, datePreferences, now }).last).toEqual({
       relative: undefined,
       date: 'Unknown date',
     });

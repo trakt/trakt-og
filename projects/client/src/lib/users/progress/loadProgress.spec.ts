@@ -56,19 +56,19 @@ describe('loadProgress', () => {
 
   it('should read the tab, sort, page, title search, list and hide toggles from the URL', async () => {
     const result = await load({
-      type: 'library',
+      type: 'rewatching',
       sort: 'completed/desc',
       query: '?page=3&terms=%20bad%20&list=42&hide_completed=true',
       cookie: 'ended,rewatching',
     });
 
     expect(result).toMatchObject({
-      type: 'library',
+      type: 'rewatching',
       sort: { by: 'completed', how: 'desc', supported: true },
       page: 3,
       terms: 'bad',
       list: 42,
-      // Rewatching is Watched only.
+      // Hiding Rewatching would empty the Rewatching tab.
       hide: ['ended', 'completed'],
     });
   });
@@ -95,17 +95,8 @@ describe('loadProgress', () => {
       sort: { by: 'title', how: 'desc' },
       grid: true,
       simple: true,
-      options: { includeSpecials: true, includeWatchlisted: true, includeOther: true, useLastActivity: true },
+      options: { includeSpecials: true, useLastActivity: true },
     });
-  });
-
-  it("should read Library's Include Watched from the collected settings", async () => {
-    const result = await load({
-      type: 'library',
-      viewerSettings: settings({ watched: { include_collected: false }, collected: { include_watched: true } }),
-    });
-
-    expect(result.options.includeOther).toBe(true);
   });
 
   it('should default to Watched, Activity Date and page 1', async () => {

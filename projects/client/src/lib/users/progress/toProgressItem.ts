@@ -8,12 +8,10 @@ import type { ProgressEpisodeData, ProgressItem, ProgressSeasonData } from './Pr
 type Seasons<T> = ReadonlyMap<number, ReadonlyMap<number, T>>;
 
 type ToProgressItemParams = {
-  /** Which state counts as done: watches (Watched, Dropped) or the library. */
-  kind: 'watched' | 'library';
   show: CachedShow;
   /** The show's watches from the overlay, by episode id. */
   watched?: Seasons<readonly string[]>;
-  /** The show's library from the overlay, by episode number. */
+  /** The show's library from the overlay, by episode number: an unwatched episode in it shows in the library's color. */
   collected?: Seasons<CollectedItem>;
   /** A rewatch: only watches since then count toward done. */
   resetAt?: string;
@@ -33,7 +31,7 @@ const sum = (values: readonly number[]) => values.reduce((total, value) => total
 
 /** Without a catalog: the summary's aired count against the overlay's episodes, specials left out like the count. */
 function fromSummary(params: ToProgressItemParams): ProgressItem {
-  const { kind, show, watched, collected, resetAt, droppedAt } = params;
+  const { show, watched, resetAt, droppedAt } = params;
   const aired = show.airedEpisodes ?? 0;
   const runtime = show.runtime ?? 0;
   const regular = <T>(seasons: Seasons<T> | undefined) =>
@@ -41,19 +39,11 @@ function fromSummary(params: ToProgressItemParams): ProgressItem {
       .filter(([number]) => number > 0)
       .flatMap(([, episodes]) => [...episodes.values()]);
 
-  const watches = kind === 'watched' ? regular(watched) : [];
+  const watches = regular(watched);
   const plays = sum(watches.map((dates) => dates.length));
-  const done = kind === 'watched'
-    ? watches.filter((dates) => dates.some((date) => !resetAt || date >= resetAt)).length
-    : regular(collected).length;
+  const done = watches.filter((dates) => dates.some((date) => !resetAt || date >= resetAt)).length;
   const completed = Math.min(done, aired);
-  const lastAt = kind === 'watched'
-    ? latest([...(watched?.values() ?? [])].flatMap((episodes) => [...episodes.values()].flat()))
-    : latest(
-      [...(collected?.values() ?? [])].flatMap((episodes) =>
-        [...episodes.values()].flatMap((item) => collectedAt(item) ?? [])
-      ),
-    );
+  const lastAt = latest([...(watched?.values() ?? [])].flatMap((episodes) => [...episodes.values()].flat()));
 
   return {
     show,
@@ -73,8 +63,7 @@ type Episode = ProgressEpisodeData & { readonly episode: CatalogEpisode };
 
 /** With a catalog: every aired, unhidden episode, so the counts, times, seasons and next episode are exact. */
 function fromCatalog(params: ToProgressItemParams, catalog: ShowCatalog): ProgressItem {
-  const { kind, show, watched, collected, resetAt, droppedAt, hiddenSeasons, includeSpecials, useLastActivity, now } =
-    params;
+  const { show, watched, collected, resetAt, droppedAt, hiddenSeasons, includeSpecials, useLastActivity, now } = params;
   const aired = (episode: CatalogEpisode) => episode.firstAired !== undefined && Date.parse(episode.firstAired) <= now;
 
   const seasons = catalog.seasons
@@ -83,7 +72,7 @@ function fromCatalog(params: ToProgressItemParams, catalog: ShowCatalog): Progre
       season,
       upcoming: season.episodes.filter((episode) => !aired(episode)),
       episodes: season.episodes.filter(aired).map((episode): Episode => {
-        const dates = kind === 'watched' ? watched?.get(season.number)?.get(episode.id) ?? [] : [];
+        const dates = watched?.get(season.number)?.get(episode.id) ?? [];
         const added = collectedAt(collected?.get(season.number)?.get(episode.number));
         const runtime = episode.runtime ?? show.runtime ?? 0;
         return {
@@ -91,11 +80,11 @@ function fromCatalog(params: ToProgressItemParams, catalog: ShowCatalog): Progre
           runtime,
           number: episode.number,
           title: episode.title,
-          done: kind === 'watched' ? dates.some((date) => !resetAt || date >= resetAt) : added !== undefined,
+          done: dates.some((date) => !resetAt || date >= resetAt),
           collected: added !== undefined,
           plays: dates.length,
           minutesWatched: dates.length * runtime,
-          at: kind === 'watched' ? latest(dates) : added,
+          at: latest(dates),
           firstAired: episode.firstAired,
           rating: episode.rating,
           screenshot: episode.screenshot,

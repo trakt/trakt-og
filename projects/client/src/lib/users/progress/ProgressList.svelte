@@ -1,9 +1,9 @@
 <!--
   The progress page's view: the subnav with the type dropdown, the summary strip, sort, view toggles and filters,
   then one row a show, or a poster grid when grid view is on. It sorts, filters, pages and totals `items` itself, so
-  the same view renders live data (`ProgressPage.svelte`) and the design page's samples. `items` is null while the
-  library is still loading. The grid view and simple bar toggles save to the viewer's settings for the tab (Watched
-  and Dropped share `watched`), and grid view reloads the page, as OG did.
+  the same view renders live data (`ProgressPage.svelte`) and the design page's samples. `items` is null while your
+  progress is still loading. The grid view and simple bar toggles save to the viewer's watched progress settings,
+  which every tab reads, and grid view reloads the page, as OG did.
 -->
 <script lang="ts">
 import { SvelteURLSearchParams } from 'svelte/reactivity';
@@ -49,20 +49,18 @@ import { toProgressRow } from './toProgressRow.ts';
 
 type Props = {
   data: Awaited<ReturnType<typeof loadProgress>> & { profile: ProfileUser; user: HeaderUser | null };
-  /** Every show on the tab, unsorted. Null while the library loads. */
+  /** Every show on the tab, unsorted. Null while your progress loads. */
   items: readonly ProgressItem[] | null;
   /** `?list=`'s shows. Null while they load. */
   listed?: ReadonlySet<number> | null;
   /** Shows whose catalog is being read. */
   loading?: ReadonlySet<number>;
-  /** A row needs its show's catalog: `quiet` while it's only near the screen. */
-  onneed?: (id: number, quiet: boolean) => void;
-  /** The current page's shows, so their posters can load first. */
-  onvisible?: (ids: readonly number[]) => void;
+  /** A row opened its seasons: read its show's catalog. */
+  onneed?: (id: number) => void;
   now?: Date;
 };
 
-const { data, items, listed, loading = new Set(), onneed, onvisible, now = new Date() }: Props = $props();
+const { data, items, listed, loading = new Set(), onneed, now = new Date() }: Props = $props();
 
 // OG's `per(50)`, 48 in grid view (eight rows of six).
 const PER_PAGE = 50;
@@ -71,10 +69,7 @@ const GRID_PER_PAGE = 48;
 const base = $derived(`/users/${data.profile.slug}/progress`);
 const title = $derived(`${data.profile.displayName}'s show ${data.type} progress`);
 const types = Object.keys(progressTypes).filter(isProgressType);
-// Dropped computes and renders as Watched.
-const kind = $derived(progressTypes[data.type].kind);
 const listFilter = $derived(data.list !== undefined);
-const settingsGroup = $derived(progressTypes[data.type].settings);
 const seed = Math.floor(Math.random() * 2 ** 31);
 
 const shown = $derived(
@@ -91,14 +86,10 @@ const pageCount = $derived(Math.max(Math.ceil((shown?.length ?? 0) / limit), 1))
 const current = $derived(Math.min(data.page, pageCount));
 const onPage = $derived(shown?.slice((current - 1) * limit, current * limit) ?? []);
 const rows = $derived(
-  onPage.map((item) => toProgressRow({ item, type: data.type, datePreferences: data.datePreferences, now })),
+  onPage.map((item) => toProgressRow({ item, datePreferences: data.datePreferences, now })),
 );
 const totals = $derived(shown ? sumProgressTotals(shown) : null);
 const meta = $derived({ type: 'paginated' as const, current, total: pageCount });
-
-$effect(() => {
-  onvisible?.(onPage.map(({ show }) => show.id));
-});
 
 // The toggles show the new state as they save; grid view then reloads the page for its layout and page size.
 let simple = $derived(data.simple);
@@ -112,7 +103,7 @@ async function toggleView(view: 'simple_progress' | 'grid_view') {
     const on = view === 'grid_view' ? !gridOn : !simple;
     const saved = await changeProgressView({
       view,
-      settings: settingsGroup,
+      settings: 'watched',
       on,
       apply: (value) => {
         if (view === 'grid_view') gridOn = value;
@@ -186,19 +177,16 @@ function changeHide(hide: ProgressHide[]) {
     </Dropdown>
   {/snippet}
   {#snippet stats()}
-    <span class="strip"><ProgressSummary type={kind} shows={shown?.length ?? 0} {totals} /></span>
+    <span class="strip"><ProgressSummary shows={shown?.length ?? 0} {totals} /></span>
   {/snippet}
   {#snippet summary()}
     <span class="sort">
       <Dropdown joined>
-        {#snippet trigger()}{#if data.sort.supported}{progressSortLabel(data.sort.by, data.type)}{:else}{progressSortLabel(
-              data.sort.by,
-              data.type,
-            )} <em>(unsupported)</em>{/if}{/snippet}
+        {#snippet trigger()}{#if data.sort.supported}{progressSortLabel(data.sort.by)}{:else}{progressSortLabel(data.sort.by)} <em>(unsupported)</em>{/if}{/snippet}
         <ul>
           {#each Object.keys(progressSorts) as by (by)}
             <li><a href={href(data.type, { by, how: data.sort.how })}
-              aria-current={data.sort.by === by ? 'page' : undefined}>{progressSortLabel(by, data.type)}</a></li>
+              aria-current={data.sort.by === by ? 'page' : undefined}>{progressSortLabel(by)}</a></li>
           {/each}
         </ul>
       </Dropdown>
@@ -213,7 +201,7 @@ function changeHide(hide: ProgressHide[]) {
         {@render viewToggle('Simple Progress Bars', barsProgress, 'simple_progress', simple)}
       {/if}
       <TermsFilter vip={data.user?.isVip ?? false} bind:terms={() => data.terms, (terms) => goto(withTerms(terms))} />
-      <FadeHideMenu value={{ fade: [], hide: data.hide }} options={[]} hideOptions={hideOptionsFor(kind)}
+      <FadeHideMenu value={{ fade: [], hide: data.hide }} options={[]} hideOptions={hideOptionsFor(data.type)}
         cookie="progress" variant="default" onchange={(next) => changeHide(next.hide)} />
     </span>
   {/snippet}
@@ -221,7 +209,7 @@ function changeHide(hide: ProgressHide[]) {
 
 <section class="phone-strip" aria-label="Progress totals">
   <Container>
-    <ProgressSummary type={kind} shows={shown?.length ?? 0} {totals} />
+    <ProgressSummary shows={shown?.length ?? 0} {totals} />
   </Container>
 </section>
 
@@ -239,7 +227,7 @@ function changeHide(hide: ProgressHide[]) {
           <PosterGrid columns={6}>
             {#each rows as row (row.id)}
               {@const state = overlay.state('show', row.id)}
-              {@const done = `${row.percent}% ${kind === 'watched' ? 'watched' : 'collected'}`}
+              {@const done = `${row.percent}% watched`}
               <PosterCard href={row.href} title={row.title} image={row.poster} rewatching={Boolean(row.rewatchingSince)}
                 userRating={state.rating}
                 subtitles={[row.percent === 100 ? `${done}!` : done]}
@@ -259,7 +247,7 @@ function changeHide(hide: ProgressHide[]) {
       {:else}
         {#each rows as row (row.id)}
           <ProgressRow {row} type={data.type} {simple} datePreferences={data.datePreferences}
-            loading={loading.has(row.id)} onneed={(quiet) => onneed?.(row.id, quiet)} />
+            loading={loading.has(row.id)} onneed={() => onneed?.(row.id)} />
         {/each}
       {/if}
       {#if pageCount > 1}<Pagination {meta} label="Progress pages" />{/if}

@@ -1,11 +1,11 @@
 <!--
   The progress page as its owner sees it, on sample shows: the view toggles, each row's status menu (rewatch and drop,
-  hide on Library, restore on Dropped) and the Dropped entry. `?view=grid` shows the poster grid, `?view=simple` the
-  simple bars, `?type=library` the Library tab and `?type=dropped` the Dropped tab (two of the sample shows, dropped).
-  The rows carry their catalogs, so each shows its up-next card at once, and opening one shows its season lines
-  (Breaking Bad has unwatched episodes in the library, Severance a season announced); `?estimates` leaves them out,
-  for the collapsed counts and the cards still waiting on the next episode. The page data's viewer makes the controls
-  live; with a browser session they write to that account, so screenshots stub the API.
+  restore on Dropped) and its View seasons toggle. `?view=grid` shows the poster grid, `?view=simple` the simple bars,
+  `?type=rewatching` the Rewatching tab (Game of Thrones) and `?type=dropped` the Dropped tab (two of the sample
+  shows). The rows carry their catalogs, so each shows its up-next card at once, and opening one shows its season
+  lines (Breaking Bad has unwatched episodes in the library, Severance a season announced); `?estimates` leaves them
+  out, for the collapsed counts. The page data's viewer makes the controls live; with a browser session they write to
+  that account, so screenshots stub the API.
 -->
 <script lang="ts">
 import { page } from '$app/state';
@@ -34,7 +34,7 @@ const data = $derived({
   terms: '',
   list: undefined,
   page: 1,
-  options: { includeSpecials: false, includeWatchlisted: false, includeOther: false, useLastActivity: false },
+  options: { includeSpecials: false, useLastActivity: false },
   datePreferences,
   profile,
   user: page.data.user,

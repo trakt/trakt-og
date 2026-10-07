@@ -34,7 +34,7 @@ export type ProgressSeasonData = {
   readonly upcoming: readonly { readonly number: number; readonly title?: string; readonly firstAired?: string }[];
 };
 
-/** What only the show's catalog knows: read when the row is expanded. */
+/** What only the show's catalog knows: read when the row's seasons open. */
 export type ProgressDetail = {
   readonly seasons: readonly ProgressSeasonData[];
   readonly next?: CatalogEpisode;
@@ -42,8 +42,10 @@ export type ProgressDetail = {
 };
 
 /**
- * One show's progress, computed in the browser from the overlay and the show caches. Without a catalog the counts
- * come from the show summary and the times are estimates (`exact` off); with one, they're per episode.
+ * One show's progress. Watched and Rewatching rows come from `/sync/progress/up_next_nitro` (`toNitroItem`), which
+ * counts them on the server and names the next and last episodes. A dropped show the endpoint leaves out is counted in
+ * the browser from the overlay and its summary (`toProgressItem`), with estimated times (`exact` off). Either way,
+ * opening the seasons reads the show's catalog for `detail`.
  */
 export type ProgressItem = {
   readonly show: CachedShow;
@@ -54,8 +56,12 @@ export type ProgressItem = {
   readonly minutesWatched: number;
   readonly minutesLeft: number;
   readonly exact: boolean;
-  /** The last watch, or the last addition to the library. */
+  /** The last watch. */
   readonly lastAt?: string;
+  /** Up next, as the API named it. */
+  readonly next?: CatalogEpisode;
+  /** The episode watched last, as the API named it. */
+  readonly last?: CatalogEpisode;
   readonly resetAt?: string;
   readonly droppedAt?: string;
   readonly detail?: ProgressDetail;

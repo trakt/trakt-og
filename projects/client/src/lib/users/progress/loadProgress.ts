@@ -6,7 +6,7 @@ import type { ProfileUser } from '../ProfileUser.ts';
 import type { ProgressOptions } from './ProgressOptions.ts';
 import { readProgressHide } from './progressHide.ts';
 import { progressSort } from './progressSort.ts';
-import { isProgressType, type ProgressType, progressTypes } from './progressTypes.ts';
+import { isProgressType, type ProgressType } from './progressTypes.ts';
 
 type Params = {
   locals: { token: string | null };
@@ -31,9 +31,9 @@ const signIn = (url: URL) => redirect(302, `/auth/signin?redirect_to=${encodeURI
 
 /**
  * `/users/:id/progress(/:type)(/:sort_by/:sort_how)`: your own progress only. Someone else's goes to their profile,
- * and a signed-out viewer (or a token that stopped working) signs in and comes back. The rows are computed in the
- * browser from the overlay and the show caches (`ProgressPage.svelte`), so this only reads the URL, the hide cookie
- * and your settings for the tab: sort, view, the sources it includes and how it picks the next episode.
+ * and a signed-out viewer (or a token that stopped working) signs in and comes back. The rows load in the browser
+ * from `/sync/progress/up_next_nitro` (`ProgressPage.svelte`), so this only reads the URL, the hide cookie and your
+ * watched progress settings: sort, view, and the specials and next-episode choices the season lists use.
  */
 export async function loadProgress({ locals, params, url, cookies, parent }: Params) {
   if (!locals.token) signIn(url);
@@ -43,15 +43,9 @@ export async function loadProgress({ locals, params, url, cookies, parent }: Par
   if (!user) signIn(url);
   if (!isSelf) redirect(302, `/users/${profile.slug}`);
 
-  const { kind } = progressTypes[type];
-  const progress = settings?.browsing?.progress;
-  const saved = type === 'library' ? progress?.collected : progress?.watched;
+  const saved = settings?.browsing?.progress?.watched;
   const options: ProgressOptions = {
     includeSpecials: Boolean(saved?.include_specials),
-    includeWatchlisted: Boolean(saved?.include_watchlisted),
-    includeOther: Boolean(
-      type === 'library' ? progress?.collected?.include_watched : progress?.watched?.include_collected,
-    ),
     useLastActivity: Boolean(saved?.use_last_activity),
   };
   const list = Number.parseInt(url.searchParams.get('list') ?? '', 10);
@@ -59,7 +53,7 @@ export async function loadProgress({ locals, params, url, cookies, parent }: Par
   return {
     type,
     sort: progressSort({ segments: params.sort, saved }),
-    hide: readProgressHide({ cookie: cookies.get('filter-hide-progress'), search: url.searchParams, type: kind }),
+    hide: readProgressHide({ cookie: cookies.get('filter-hide-progress'), search: url.searchParams, type }),
     grid: Boolean(saved?.grid_view),
     simple: Boolean(saved?.simple_progress),
     terms: url.searchParams.get('terms')?.trim() ?? '',

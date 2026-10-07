@@ -1,33 +1,40 @@
 <!--
-  `/users/:id/progress(/:type)(/:sort_by/:sort_how)`, your own progress, computed in the browser. The overlay has
-  every watched and collected episode, the reset and drop dates, the watchlist and the hidden shows; the show cache
-  adds each show's aired episodes, status, runtime and poster. A summary is read only when it's missing or older than
-  12 hours, in bulk where many are (`loadProgressShows`), and the page's posters first. Each row reads its show's
-  catalog once as it nears the screen (cached for 12 hours, through the request queue), which makes its counts exact
-  and adds the next episode. Watches, drops, hides and rewatches patch the overlay, so the rows recompute as they save.
+  `/users/:id/progress(/:type)(/:sort_by/:sort_how)`, your own progress. Every show you've started comes from the
+  endpoint v3's progress page reads, `/sync/progress/up_next_nitro` (`loadNitroProgress`, 100 a page, about five
+  requests for 440 shows), with its counts, times, poster and next and last episodes. The whole list loads so the
+  sorts, hide toggles, title search, list filter and totals all work in the browser. It's kept for 30 minutes, like
+  v3, across tabs and pages, and read again once a watch, rewatch or drop changes the overlay. The overlay narrows it
+  to a tab (dropped, rewatching and hidden shows); the Dropped tab reads `/users/hidden/dropped` only for dropped
+  shows the endpoint leaves out. Opening a row's seasons reads that show's catalog once (cached for 12 hours).
 -->
+<script lang="ts" module>
+import type { ProgressItem } from './ProgressItem.ts';
+
+/** v3's `staleTime` for progress. */
+const FRESH_FOR = 30 * 60_000;
+let cached: { slug: string; items: readonly ProgressItem[]; at: number } | null = null;
+</script>
+
 <script lang="ts">
 import { untrack } from 'svelte';
 import { SvelteMap, SvelteSet } from 'svelte/reactivity';
+import { api } from '$lib/api/api';
 import { apiQueue } from '$lib/api/apiQueue';
-import { rawApiFetch } from '$lib/api/rawApiFetch';
 import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
 import { userManager } from '$lib/auth/userManager';
 import type { HeaderUser } from '$lib/components/header/HeaderUser';
 import { toast } from '$lib/components/toast/toast.svelte';
 import { fetchListItemRefs } from '$lib/lists/fetchListItemRefs';
 import { overlay } from '$lib/overlay/overlay';
-import type { ApiGet } from '$lib/overlay/sliceSources';
 import type { CachedShow } from '$lib/shows/cache/CachedShow';
-import { loadCachedShows } from '$lib/shows/cache/loadCachedShows';
 import { loadShowCatalog } from '$lib/shows/cache/loadShowCatalog';
 import { showCache } from '$lib/shows/cache/showCache';
 import type { ShowCatalog } from '$lib/shows/cache/ShowCatalog';
 import type { ProfileUser } from '$lib/users/ProfileUser';
+import { loadDroppedShows } from './loadDroppedShows.ts';
+import { loadNitroProgress } from './loadNitroProgress.ts';
 import type { loadProgress } from './loadProgress.ts';
-import { loadProgressShows } from './loadProgressShows.ts';
 import ProgressList from './ProgressList.svelte';
-import { progressShowIds } from './progressShowIds.ts';
 import { toProgressItems } from './toProgressItems.ts';
 
 type Props = {
@@ -38,44 +45,77 @@ const { data }: Props = $props();
 
 const now = Date.now();
 const fetch = () => authenticatedFetch({ manager: userManager() });
-// Your own reads, with the token, through the shared queue.
-const get: ApiGet = (path) => apiQueue.run(() => rawApiFetch({ fetch: fetch(), path }));
+/** The typed client, its requests through the shared queue. */
+const client = () => {
+  const signedIn = fetch();
+  return api({ fetch: (input, init) => apiQueue.run(() => signedIn(input, init)) });
+};
 
 const slices = $derived(overlay.slices());
-const showIds = $derived(progressShowIds({ type: data.type, slices, options: data.options }));
-let shows = $state.raw<ReadonlyMap<number, CachedShow>>(new Map());
-let loaded = $state(false);
+const fresh = untrack(() => cached?.slug === data.profile.slug && Date.now() - cached.at < FRESH_FOR);
+let nitro = $state.raw<readonly ProgressItem[] | null>(fresh ? cached?.items ?? null : null);
+let droppedShows = $state.raw<ReadonlyMap<number, CachedShow> | undefined>();
 const catalogs = new SvelteMap<number, ShowCatalog>();
 const loading = new SvelteSet<number>();
 
-const merge = (next: ReadonlyMap<number, CachedShow>) => {
-  shows = new Map([...shows, ...next]);
-};
+/** Every page. A failure keeps what's on screen. */
+async function readProgress() {
+  const slug = data.profile.slug;
+  try {
+    const items = await loadNitroProgress({
+      request: (page, limit) =>
+        client().sync.progress.upNext.nitro({ query: { page, limit, intent: 'all' } }).then((response) =>
+          response.status === 200
+            ? { ok: true as const, body: response.body, headers: response.headers }
+            : { ok: false as const, status: response.status }
+        ),
+    });
+    cached = { slug, items, at: Date.now() };
+    nitro = items;
+  } catch {
+    toast.error('Doh! There was an error loading your progress.');
+    nitro ??= [];
+  }
+}
 
-// The summaries, read again only when the tab's set of shows changes (a watch of a new show, say).
-const key = $derived(showIds.ready ? showIds.ids.join(',') : null);
+if (!fresh) void readProgress();
+
+// A watch, rewatch or drop saved anywhere patches these slices: read the progress again, once it's first in.
+let seen: readonly unknown[] | null = null;
 $effect(() => {
-  if (key === null) return;
+  const marks = [slices.watchedShows, slices.rewatching, slices.dropped];
   untrack(() => {
-    if (!showIds.ready) return;
-    void loadProgressShows({
-      slug: data.profile.slug,
-      ids: showIds.ids,
-      watched: new Set(slices.watchedShows?.keys() ?? []),
-      watchlistOnly: showIds.watchlistOnly,
-      store: showCache.summaries,
-      get,
-      publicGet: showCache.get,
+    if (nitro === null || marks.some((mark) => mark === undefined)) return;
+    const changed = seen !== null && marks.some((mark, index) => mark !== seen?.[index]);
+    seen = marks;
+    if (changed) void readProgress();
+  });
+});
+
+// The Dropped tab: summaries for any dropped show the endpoint left out, read once.
+$effect(() => {
+  const dropped = slices.dropped;
+  if (data.type !== 'dropped' || !nitro || !dropped || droppedShows) return;
+  const listed = new Set(nitro.map(({ show }) => show.id));
+  if (![...dropped.keys()].some((id) => !listed.has(id))) return;
+  untrack(() => {
+    droppedShows = new Map();
+    void loadDroppedShows({
+      request: (page, limit) =>
+        client().users.hidden.dropped({ query: { page, limit, extended: 'full,images' } }).then((response) =>
+          response.status === 200
+            ? { ok: true as const, body: response.body, headers: response.headers }
+            : { ok: false as const, status: response.status }
+        ),
     })
-      .then(merge)
-      .catch(() => toast.error('Doh! There was an error loading your shows.'))
-      .finally(() => (loaded = true));
+      .then((shows) => (droppedShows = shows))
+      .catch(() => toast.error("Doh! We couldn't load your dropped shows."));
   });
 });
 
 const items = $derived(
-  showIds.ready && loaded
-    ? toProgressItems({ type: data.type, showIds, slices, shows, catalogs, options: data.options, now }).items
+  nitro
+    ? toProgressItems({ type: data.type, nitro, droppedShows, slices, catalogs, options: data.options, now })
     : null,
 );
 
@@ -98,36 +138,18 @@ $effect(() => {
     });
 });
 
-// Posters already asked for this visit, so a show without one isn't read again on every recompute. Nothing renders
-// from it, so it isn't reactive.
-// eslint-disable-next-line svelte/prefer-svelte-reactivity
-const askedPosters = new Set<number>();
-
-/** The page's posters: shows whose summary came from a bulk read without images. */
-function visible(ids: readonly number[]) {
-  const missing = ids.filter((id) => shows.get(id)?.complete === false && !askedPosters.has(id));
-  missing.forEach((id) => askedPosters.add(id));
-  if (missing.length === 0) return;
-  void loadCachedShows({ ids: missing, store: showCache.summaries, get: showCache.get }).then(merge);
-}
-
-// Shows whose catalog failed while their row was only near the screen: opening the row tries once more.
-// eslint-disable-next-line svelte/prefer-svelte-reactivity
-const failed = new Set<number>();
-
-/** Reads a row's catalog once. A background read (`quiet`) fails silently; opening the row says so. */
-async function need(id: number, quiet: boolean) {
-  if (catalogs.has(id) || loading.has(id) || (quiet && failed.has(id))) return;
+/** Reads a row's catalog once, as its seasons open. */
+async function need(id: number) {
+  if (catalogs.has(id) || loading.has(id)) return;
   loading.add(id);
   try {
     catalogs.set(id, await loadShowCatalog({ id, store: showCache.catalogs, get: showCache.get }));
   } catch {
-    failed.add(id);
-    if (!quiet) toast.error("Doh! We couldn't load this show's seasons.");
+    toast.error("Doh! We couldn't load this show's seasons.");
   } finally {
     loading.delete(id);
   }
 }
 </script>
 
-<ProgressList {data} {items} {listed} {loading} onneed={need} onvisible={visible} />
+<ProgressList {data} {items} {listed} {loading} onneed={need} />

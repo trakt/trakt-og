@@ -1,14 +1,15 @@
 <!--
-  OG's title filter : a search icon that opens a dialog
-  asking for a search term, red while one is applied. `t` opens it too. It was a VIP feature, so everyone else
-  gets a link to the VIP filtering page instead.
+  OG's title filter: a search icon, red while a term is applied, that opens a small panel to find items by title.
+  Apply (or Enter) filters to the term, and the × drops it. `t` opens it too. It was a VIP feature, so everyone
+  else gets a link to the VIP filtering page instead.
     <TermsFilter bind:terms vip={user?.isVip ?? false} />
 -->
 <script lang="ts">
-import Dialog from '$lib/components/dialog/Dialog.svelte';
+import Caret from '$lib/components/dropdown/Caret.svelte';
+import FilterPopover from '$lib/components/filters/FilterPopover.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import Icon from '$lib/icons/Icon.svelte';
-import search from '$lib/icons/thin/magnifying-glass.svg?raw';
+import search from '$lib/icons/regular/magnifying-glass.svg?raw';
 import { traktUrls } from '$lib/traktUrls';
 
 interface Props {
@@ -17,27 +18,25 @@ interface Props {
 }
 
 let { terms = $bindable(), vip }: Props = $props();
-let open = $state(false);
 let draft = $state('');
+let popover = $state<ReturnType<typeof FilterPopover>>();
 
-function show() {
-  draft = terms;
-  open = true;
+function apply() {
+  terms = draft.trim();
 }
 
-function apply(event: SubmitEvent) {
-  event.preventDefault();
-  terms = draft.trim();
-  open = false;
+function clear() {
+  terms = '';
+  draft = '';
 }
 
 function onkeydown(event: KeyboardEvent) {
-  if (event.key !== 't' || event.metaKey || event.ctrlKey || event.altKey || !vip || open) return;
+  if (event.key !== 't' || event.metaKey || event.ctrlKey || event.altKey || !vip) return;
   if (event.target instanceof HTMLElement && event.target.closest('input, textarea, select, [contenteditable]')) {
     return;
   }
   event.preventDefault();
-  show();
+  popover?.show();
 }
 </script>
 
@@ -46,97 +45,48 @@ function onkeydown(event: KeyboardEvent) {
 <!-- The VIP page is an OG route og hasn't built yet, and resolve() only takes routes that exist. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
-<Tooltip text="Filter by Title">
-  {#snippet trigger(tooltip)}
-    {#if vip}
-      <button type="button" class={['launcher', { active: terms }]} aria-label="Filter by title" onclick={show}
-        {...tooltip}>
-        <Icon svg={search} /><span class="caret"></span>
-      </button>
-    {:else}
-      <a class="launcher" href={traktUrls.vip} target="_blank" rel="noopener" aria-label="Filter by title" {...tooltip}>
-        <Icon svg={search} /><span class="caret"></span>
-      </a>
-    {/if}
-  {/snippet}
-</Tooltip>
-
 {#if vip}
-  <Dialog bind:open title="Filter by title">
-  <form class="terms-form" onsubmit={apply}>
-    <p class="lead">Only display items with a <strong>title</strong><br />matching your search term.</p>
-    <label>
-      <span class="label">Search Term</span>
-      <input type="search" placeholder="Type a search term..." bind:value={draft} />
-    </label>
-    <button type="submit" class="submit">Apply Filter</button>
-  </form>
-</Dialog>
+  <FilterPopover bind:this={popover} svg={search} label="Filter by title" tooltip="Filter by Title" title="Search terms"
+  help="Only display items with a title matching your search term." active={Boolean(terms)}
+  clearable={Boolean(terms)} onopen={() => (draft = terms)} onapply={apply} onclear={clear}>
+  <label class="panel-field">
+    <Icon svg={search} />
+    <input type="search" aria-label="Search term" placeholder="Type a search term…" autocomplete="off"
+      bind:value={draft} />
+    <kbd title="Press T to open this from anywhere on the page">T</kbd>
+  </label>
+</FilterPopover>
+{:else}
+  <Tooltip text="Filter by Title">
+    {#snippet trigger(tooltip)}
+      <a class="launcher" href={traktUrls.vip} target="_blank" rel="noopener" aria-label="Filter by title" {...tooltip}>
+        <Icon svg={search} /><Caret />
+      </a>
+    {/snippet}
+  </Tooltip>
 {/if}
 
 <style>
 .launcher {
   display: inline-flex;
   align-items: center;
-  min-block-size: 0;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: inherit;
-  font-size: var(--font-size-filter-terms);
+  justify-content: center;
+  gap: var(--space-tool-caret);
+  min-inline-size: var(--tool-size);
+  min-block-size: var(--tool-size);
+  padding: 0 var(--space-tool-inline);
+  border-radius: var(--radius-control);
+  color: var(--color-tool);
+  font-size: var(--font-size-tool);
   line-height: 1;
-  vertical-align: middle;
   text-decoration: none;
-  transition: color 0.5s;
-
-  &.active {
-    color: var(--brand-primary);
-  }
+  vertical-align: middle;
+  transition: color 0.5s, background-color 0.2s;
 
   &:is(:hover, :focus-visible) {
-    color: inherit;
-  }
-}
-
-.caret {
-  margin: 1px 0 0 var(--space-filter-caret);
-  border-block-start: 4px solid;
-  border-inline: 4px solid transparent;
-}
-
-.terms-form {
-  display: grid;
-  gap: 10px;
-  font-family: var(--font-body);
-  font-size: var(--font-size-base);
-  font-weight: normal;
-  text-align: center;
-}
-
-.lead {
-  margin: 0 0 10px;
-  font-family: var(--font-headings);
-  font-size: var(--font-size-large);
-}
-
-label {
-  display: grid;
-  gap: 5px;
-}
-
-.label {
-  font-family: var(--font-headings);
-  font-size: var(--font-size-small);
-  text-transform: uppercase;
-}
-
-.submit {
-  border-color: var(--color-btn-primary-border);
-  background-color: var(--brand-primary);
-  color: var(--color-text-inverse);
-
-  &:is(:hover, :focus-visible) {
-    background-color: var(--brand-primary-darken);
+    background-color: var(--color-tool-hover-bg);
+    color: var(--color-tool-hover);
+    --caret-color: currentcolor;
   }
 }
 </style>

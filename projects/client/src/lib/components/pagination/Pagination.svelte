@@ -4,12 +4,13 @@
   Links keep the current query string and swap `page`; pass `href` to build them another way. The dots between
   page numbers open a jump-to-page select (PageJump).
   OG kept the arrows as links on the first and last page; og renders them as disabled text instead.
+  Each page is a rounded square that fills on hover, the current one red; the arrows are chevrons.
 -->
 <script lang="ts">
 import { page } from '$app/state';
 import Icon from '$lib/icons/Icon.svelte';
-import arrowLeft from '$lib/icons/trakt/arrow-left.svg?raw';
-import arrowRight from '$lib/icons/trakt/arrow-right.svg?raw';
+import arrowLeft from '$lib/icons/regular/chevron-left.svg?raw';
+import arrowRight from '$lib/icons/regular/chevron-right.svg?raw';
 import PageJump from './PageJump.svelte';
 import { pageHref, pageWindow } from './pageWindow.ts';
 
@@ -25,7 +26,7 @@ const slots = $derived(pageWindow(meta.current, meta.total));
 </script>
 
 {#snippet arrow(target: number, rel: 'prev' | 'next', name: string, svg: string)}
-  <li>
+  <li class={rel}>
     {#if target < 1 || target > meta.total}
       <span class="disabled" aria-disabled="true"><Icon {svg} label={name} /></span>
     {:else}
@@ -61,7 +62,8 @@ nav {
 
 ul {
   display: inline-flex;
-  align-items: stretch;
+  align-items: center;
+  gap: var(--space-pagination);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -71,27 +73,35 @@ li {
   display: flex;
 }
 
-/* Flex boxes stretched to the numbers' line, so the arrows and the dots center on it. */
+.prev {
+  margin-inline-end: var(--space-pagination-arrow);
+}
+
+.next {
+  margin-inline-start: var(--space-pagination-arrow);
+}
+
 a,
 span {
-  display: flex;
-  align-items: center;
-  margin-inline-start: -1px;
-  padding: var(--space-base-block) var(--space-base-inline);
+  display: inline-grid;
+  place-items: center;
+  min-inline-size: var(--pagination-size);
+  block-size: var(--pagination-size);
+  padding: 0 var(--space-pagination-inline);
+  border-radius: var(--radius-control);
   color: var(--color-pagination-text);
   font-family: var(--font-headings);
   font-size: var(--font-size-pagination);
-  font-weight: var(--font-weight-headings-light);
-  line-height: var(--line-height-base);
+  font-weight: var(--font-weight-control);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
   text-decoration: none;
+  transition: background-color 0.2s;
 }
 
-li:first-child > * {
-  margin-inline-start: 0;
-}
-
-a:hover {
-  color: var(--brand-primary);
+a:is(:hover, :focus-visible) {
+  background-color: var(--color-tool-hover-bg);
+  color: var(--color-pagination-text);
 }
 
 a[aria-current='page'] {
@@ -107,6 +117,6 @@ a[aria-current='page'] {
 
 a :global(.icon),
 span :global(.icon) {
-  font-size: var(--font-size-icon-lg);
+  font-size: var(--font-size-pagination-arrow);
 }
 </style>

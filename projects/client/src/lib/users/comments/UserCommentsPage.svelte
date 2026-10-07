@@ -13,7 +13,7 @@ import NoData from '$lib/components/empty/NoData.svelte';
 import Pagination from '$lib/components/pagination/Pagination.svelte';
 import SectionToolbar from '$lib/components/toolbar/SectionToolbar.svelte';
 import SubnavCount from '$lib/components/toolbar/SubnavCount.svelte';
-import commentIcon from '$lib/icons/trakt/comment.svg?raw';
+import commentIcon from '$lib/icons/regular/comment.svg?raw';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
 import type { ProfileUser } from '$lib/users/ProfileUser';
 import type { loadUserComments } from './loadUserComments.ts';
@@ -63,11 +63,8 @@ const current = (picked: boolean) => (picked ? 'page' : undefined);
 
 <SectionToolbar>
   {#snippet filters()}
-    <Dropdown label="Comment type">
-      {#snippet trigger()}
-        {#if data.liked}<span class="alt">Reactions:</span>{/if}
-        {userCommentTypes[data.commentType]}
-      {/snippet}
+    <Dropdown label="Comment type" section={data.liked ? 'Reactions' : undefined}>
+      {#snippet trigger()}{userCommentTypes[data.commentType]}{/snippet}
       <ul>
         <li class="header" role="presentation">{data.profile.firstName}'s comments</li>
         {#each Object.entries(userCommentTypes) as [commentType, label] (commentType)}
@@ -101,8 +98,10 @@ const current = (picked: boolean) => (picked ? 'page' : undefined);
       </ul>
     </Dropdown>
   {/snippet}
-  {#snippet summary()}
+  {#snippet stats()}
     <SubnavCount svg={commentIcon} count={data.itemCount} noun="comment" tooltip="Comments" />
+  {/snippet}
+  {#snippet summary()}
     <Dropdown label="Sort comments">
       {#snippet trigger()}Added Date{/snippet}
       <ul><li><a href={page.url.pathname + page.url.search} aria-current="page">Added Date</a></li></ul>
@@ -131,9 +130,6 @@ const current = (picked: boolean) => (picked ? 'page' : undefined);
 </section>
 
 <style>
-.alt {
-  color: var(--gray-light);
-}
 .comments {
   padding-block: var(--user-comments-padding);
 }

@@ -18,7 +18,7 @@ import RatingLine from '$lib/components/rating/RatingLine.svelte';
 import { RATING_LABELS } from '$lib/components/rating/ratingPrompt';
 import SectionToolbar from '$lib/components/toolbar/SectionToolbar.svelte';
 import SubnavCount from '$lib/components/toolbar/SubnavCount.svelte';
-import documentIcon from '$lib/icons/trakt/document.svg?raw';
+import file from '$lib/icons/regular/file.svg?raw';
 import { overlay } from '$lib/overlay/overlay';
 import type { ProfileUser } from '$lib/users/ProfileUser';
 import { toHistoryDays } from '$lib/users/history/toHistoryCard';
@@ -122,8 +122,10 @@ const count = $derived(data.total - (data.cards.length - cards.length));
       {/each}</ul>
     </Dropdown>
   {/snippet}
+  {#snippet stats()}
+    <SubnavCount svg={file} {count} {noun} tooltip={`${noun.charAt(0).toUpperCase()}${noun.slice(1)}s`} />
+  {/snippet}
   {#snippet summary()}
-    <SubnavCount svg={documentIcon} {count} {noun} tooltip={`${noun.charAt(0).toUpperCase()}${noun.slice(1)}s`} />
     <Dropdown>
       {#snippet trigger()}{data.query.rating === 'all' ? 'All Ratings' : `${data.query.rating} - ${RATING_LABELS[Number(data.query.rating)]}`}{/snippet}
       <ul>
@@ -134,13 +136,13 @@ const count = $derived(data.total - (data.cards.length - cards.length));
       </ul>
     </Dropdown>
     <span class="sort">
-      <Dropdown>
+      <Dropdown joined>
         {#snippet trigger()}{sortLabel}{/snippet}
         <ul>{#each Object.entries(sorts) as [by, label] (by)}
           <li><a href={href({ by: ratingQuery(`${data.query.type}/all/${by}`).by })} aria-current={data.query.by === by ? 'page' : undefined}>{label}</a></li>
         {/each}</ul>
       </Dropdown>
-      <SortDirection bind:flipped={() => flipped, (next) => goto(href({ how: next ? 'desc' : 'asc' }))} />
+      <SortDirection joined bind:flipped={() => flipped, (next) => goto(href({ how: next ? 'desc' : 'asc' }))} />
     </span>
     <span class="icons">
       {#if data.query.by === 'added'}<DividersToggle bind:shown={dividers} />{/if}
@@ -171,7 +173,6 @@ const count = $derived(data.total - (data.cards.length - cards.length));
   align-items: center;
 }
 .icons {
-  --filter-eye-lead: 0;
   gap: var(--history-icon-gap);
 }
 .ratings {

@@ -3,8 +3,8 @@ import OfficialListHeader from '$lib/components/lists/OfficialListHeader.svelte'
 import WatchNowChips from '$lib/components/watchnow/WatchNowChips.svelte';
 import Container from '$lib/components/container/Container.svelte';
 import ListTransfer from '$lib/components/lists/ListTransfer.svelte';
-import clone from '$lib/icons/thin/clone.svg?raw';
-import fileExport from '$lib/icons/thin/file-export.svg?raw';
+import clone from '$lib/icons/regular/clone.svg?raw';
+import fileExport from '$lib/icons/regular/file-export.svg?raw';
 import { toBuiltInListView } from '$lib/lists/toBuiltInListView';
 import MediaList from '$lib/components/lists/MediaList.svelte';
 import BuiltInListDialog from '$lib/components/lists/BuiltInListDialog.svelte';
@@ -113,25 +113,25 @@ const following = [{ slug: 'teodoro_2', name: 'Elsy Murphy (@teodoro_2)' }];
   <Container><h2>List stats bar</h2></Container>
   {#snippet none()}{/snippet}
   <SectionToolbar filters={none}>
-    {#snippet summary()}
+    {#snippet stats()}
       <ListStats itemCount={10} stats={{ count: 10, runtime: 3844, items }} progress stateOf={library} likeCount={0}
         comments={{ count: 0, href: '/users/og_tester/lists/heist-night/comments' }} />
     {/snippet}
   </SectionToolbar>
   <SectionToolbar filters={none}>
-    {#snippet summary()}
+    {#snippet stats()}
       <ListStats itemCount={3} stats={{ count: 3, runtime: 481, items: items.slice(0, 3) }} progress
         stateOf={everything} likeCount={1_204} comments={{ count: 12, href: '/users/og_tester/lists/heist-night/comments' }} />
     {/snippet}
   </SectionToolbar>
   <Container><p>Streaming (pending), and signed out:</p></Container>
   <SectionToolbar filters={none}>
-    {#snippet summary()}
+    {#snippet stats()}
       <ListStats itemCount={1_523} stats={never} progress stateOf={library} likeCount={3} />
     {/snippet}
   </SectionToolbar>
   <SectionToolbar filters={none}>
-    {#snippet summary()}
+    {#snippet stats()}
       <ListStats itemCount={57} stats={{ count: 57, runtime: 6012 }} likeCount={3} />
     {/snippet}
   </SectionToolbar>

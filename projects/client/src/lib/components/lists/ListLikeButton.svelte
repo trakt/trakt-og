@@ -6,8 +6,8 @@ import { changeListLike } from '$lib/components/lists/changeListLike';
 import { toast } from '$lib/components/toast/toast.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import Icon from '$lib/icons/Icon.svelte';
-import voteYes from '$lib/icons/trakt/vote-yes.svg?raw';
-import voteYesThick from '$lib/icons/trakt/vote-yes-thick.svg?raw';
+import voteYes from '$lib/icons/regular/thumbs-up.svg?raw';
+import voteYesThick from '$lib/icons/solid/thumbs-up.svg?raw';
 
 interface Props {
   id: number;
@@ -63,7 +63,7 @@ async function toggle() {
   {#snippet trigger(tooltip)}
     <button type="button" class="like" aria-label={`${liked ? 'Unlike' : 'Like'} this list: ${total.toLocaleString('en-US')} ${total === 1 ? 'like' : 'likes'}`}
       aria-pressed={liked === undefined ? undefined : liked} aria-busy={busy} aria-disabled={busy} onclick={toggle} {...tooltip}>
-      <span class="icon"><Icon svg={liked ? voteYesThick : voteYes} /></span>{total.toLocaleString('en-US')}
+      <span class="icon"><Icon svg={liked ? voteYesThick : voteYes} /></span><strong>{total.toLocaleString('en-US')}</strong>
       {#if words}<span class="words"> {total === 1 ? 'like' : 'likes'}</span>{/if}
     </button>
   {/snippet}
@@ -71,15 +71,25 @@ async function toggle() {
 
 <style>
 .like {
-  display: inline;
+  display: inline-flex;
+  align-items: center;
   min-block-size: 0;
   padding: 0;
   border: 0;
   background: none;
-  color: inherit;
+  color: var(--color-stat-noun);
   font: inherit;
   text-transform: inherit;
   white-space: nowrap;
+
+  &:is(:hover, :focus-visible) strong {
+    color: var(--color-stat-count);
+  }
+}
+strong {
+  color: var(--color-stat-number);
+  font-size: var(--font-size-stat-number);
+  font-weight: var(--font-weight-headings-heavy);
 }
 .words {
   position: absolute;
@@ -90,11 +100,10 @@ async function toggle() {
   white-space: nowrap;
 }
 .icon {
-  display: inline-block;
-  margin-inline-end: var(--list-like-icon-gap);
-  font-size: var(--font-size-list-row-action);
+  display: inline-flex;
+  margin-inline-end: var(--space-stat);
+  color: var(--color-stat-count);
+  font-size: var(--font-size-stat-icon);
   line-height: 1;
-  vertical-align: top;
-  margin-block-start: var(--list-stat-like-nudge);
 }
 </style>

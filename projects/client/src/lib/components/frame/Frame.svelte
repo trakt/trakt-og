@@ -188,8 +188,11 @@ h1.single-line {
 .icons {
   position: relative;
   z-index: 1;
+  display: flex;
   float: inline-end;
-  margin-block-start: 7px;
+  align-items: center;
+  gap: var(--space-tools);
+  margin-block-start: var(--frame-icons-offset);
 }
 
 .prev,

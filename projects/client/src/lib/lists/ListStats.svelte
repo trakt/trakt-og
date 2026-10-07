@@ -1,5 +1,6 @@
 <!--
-  The stats bar on the right of a list page's subnav, each count with a tooltip:
+  The stats bar on the right of a list page's subnav, each count with a tooltip. The icons carry their meaning color
+  (purple watched, teal collected, blue for the rest) and the numbers stand alone, the words left to the tooltip:
   Watched and Collected percentages with "2/10 items" under them on hover (signed in, not on official lists), the
   time to watch, the items, the likes and the comments. The whole-list numbers come in `stats`, a promise when the
   loader streams them; until then the bar shows the page's item count and 0%, as OG did before its script ran.
@@ -9,14 +10,12 @@
 import ListLikeButton from '$lib/components/lists/ListLikeButton.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import Icon from '$lib/icons/Icon.svelte';
+import clock from '$lib/icons/regular/clock.svg?raw';
+import comment from '$lib/icons/regular/comment.svg?raw';
+import file from '$lib/icons/regular/file.svg?raw';
+import thumbsUp from '$lib/icons/regular/thumbs-up.svg?raw';
 import checkThick from '$lib/icons/trakt/check-thick.svg?raw';
-import check from '$lib/icons/trakt/check.svg?raw';
 import collectionThick from '$lib/icons/trakt/collection-thick.svg?raw';
-import collection from '$lib/icons/trakt/collection.svg?raw';
-import comment from '$lib/icons/trakt/comment.svg?raw';
-import documentIcon from '$lib/icons/trakt/document.svg?raw';
-import timePlay from '$lib/icons/trakt/time-play.svg?raw';
-import voteYes from '$lib/icons/trakt/vote-yes.svg?raw';
 import { overlay } from '$lib/overlay/overlay';
 import { formatRuntime } from '$lib/utils/formatRuntime';
 import { listProgress, type ListProgressStat } from './listProgress.ts';
@@ -52,7 +51,7 @@ const number = (count: number) => count.toLocaleString('en-US');
       <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
       <span class={['stat', kind]} tabindex="0" {...tooltip}>
         <span class="icon-slot"><Icon {svg} /></span><span class="text-wrapper"><span class="hidden">{label} </span
-          >{value.percent}%<span class="under-count">{value.count}<span class="slash">/</span>{number(total)}
+          ><strong>{value.percent}%</strong><span class="under-count">{value.count}<span class="slash">/</span>{number(total)}
             {plural(total, 'item')}</span></span>
       </span>
     {/snippet}
@@ -64,7 +63,7 @@ const number = (count: number) => count.toLocaleString('en-US');
     {#snippet trigger(tooltip)}
       <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
       <span class={['stat', kind]} tabindex="0" {...tooltip}>
-        <span class="icon-slot"><Icon {svg} /></span>{number(value)}<span class="hidden">
+        <span class="icon-slot"><Icon {svg} /></span><strong>{number(value)}</strong><span class="hidden">
           {plural(value, word)}</span>
       </span>
     {/snippet}
@@ -77,31 +76,31 @@ const number = (count: number) => count.toLocaleString('en-US');
   <!-- Pending, the percentages read 0% like OG's before its script ran; a failed count drops them. -->
   {#if progress && resolved !== null && (resolved === undefined || items)}
     {@const { watched, collected } = listProgress(items ?? [], stateOf)}
-    {@render percentage('Watched', watched.complete ? checkThick : check, watched, total, 'watched')}
-    {@render percentage('Collected', collected.complete ? collectionThick : collection, collected, total, 'collected')}
+    {@render percentage('Watched', checkThick, watched, total, 'watched')}
+    {@render percentage('Collected', collectionThick, collected, total, 'collected')}
   {/if}
   {#if resolved && resolved.runtime > 0}
     <Tooltip text="Time to watch">
       {#snippet trigger(tooltip)}
         <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
         <span class="stat" tabindex="0" {...tooltip}>
-          <span class="icon-slot"><Icon svg={timePlay} /></span><span class="hidden">Time to watch </span
-          ><span class="runtime">{formatRuntime(resolved.runtime)}</span>
+          <span class="icon-slot"><Icon svg={clock} /></span><span class="hidden">Time to watch </span
+          ><strong>{formatRuntime(resolved.runtime)}</strong>
         </span>
       {/snippet}
     </Tooltip>
   {/if}
-  {@render count('Items', documentIcon, resolved?.count ?? itemCount, 'item', 'items')}
+  {@render count('Items', file, resolved?.count ?? itemCount, 'item', 'items')}
   {#if likeCount !== undefined}
     {#if likeTarget}<ListLikeButton {...likeTarget} count={likeCount} />
-    {:else}{@render count('Likes', voteYes, likeCount, 'like', 'likes')}{/if}
+    {:else}{@render count('Likes', thumbsUp, likeCount, 'like', 'likes')}{/if}
   {/if}
   {#if comments}
     <Tooltip text="Comments">
       {#snippet trigger(tooltip)}
         <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
         <a class="stat" href={comments.href} {...tooltip}>
-          <span class="icon-slot"><Icon svg={comment} /></span>{number(comments.count)}<span class="hidden">
+          <span class="icon-slot"><Icon svg={comment} /></span><strong>{number(comments.count)}</strong><span class="hidden">
             {plural(comments.count, 'comment')}</span>
         </a>
       {/snippet}
@@ -126,17 +125,18 @@ const number = (count: number) => count.toLocaleString('en-US');
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-end;
-  gap: var(--list-row-action-gap);
+  gap: var(--space-stats);
   /* On a phone the counts wrap instead of pushing the sort off the screen. */
   min-inline-size: 0;
-  color: var(--brand-secondary);
+  color: var(--color-stat-noun);
   font-family: var(--font-headings);
-  font-size: var(--font-size-list-row-meta);
-  text-transform: uppercase;
+  font-size: var(--font-size-stat-noun);
   white-space: nowrap;
 }
 
 .stat {
+  display: inline-flex;
+  align-items: center;
   color: inherit;
   text-decoration: none;
 
@@ -145,26 +145,30 @@ const number = (count: number) => count.toLocaleString('en-US');
   }
 }
 
+strong {
+  color: var(--color-stat-number);
+  font-size: var(--font-size-stat-number);
+  font-weight: var(--font-weight-headings-heavy);
+}
+
+a.stat:is(:hover, :focus-visible) strong {
+  color: var(--color-stat-count);
+}
+
 .icon-slot {
-  display: inline-block;
-  margin-inline-end: 5px;
-  font-size: var(--font-size-list-row-action);
+  display: inline-flex;
+  margin-inline-end: var(--space-stat);
+  color: var(--color-stat-count);
+  font-size: var(--font-size-stat-icon);
   line-height: 1;
-  vertical-align: top;
-}
 
-/* OG's document and collection glyphs were a size down. */
-.items .icon-slot,
-.collected .icon-slot {
-  font-size: var(--font-size-history-count-icon);
-}
+  .watched & {
+    color: var(--color-stat-watched);
+  }
 
-.likes .icon-slot {
-  margin-block-start: var(--list-stat-like-nudge);
-}
-
-.runtime {
-  text-transform: none;
+  .collected & {
+    color: var(--color-stat-collected);
+  }
 }
 
 .text-wrapper {

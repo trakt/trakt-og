@@ -15,15 +15,15 @@ import ReadMore from '$lib/components/readmore/ReadMore.svelte';
 import ShareButton from '$lib/components/share/ShareButton.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import Icon from '$lib/icons/Icon.svelte';
-import userXmark from '$lib/icons/light/user-xmark.svg?raw';
-import barsProgress from '$lib/icons/thin/bars-progress.svg?raw';
-import comment from '$lib/icons/trakt/comment.svg?raw';
+import userXmark from '$lib/icons/regular/user-xmark.svg?raw';
+import barsProgress from '$lib/icons/regular/bars-progress.svg?raw';
+import comment from '$lib/icons/regular/comment.svg?raw';
 import ManageConfirm from '$lib/components/comments/ManageConfirm.svelte';
-import deleteIcon from '$lib/icons/trakt/delete.svg?raw';
-import document from '$lib/icons/trakt/document.svg?raw';
-import flag from '$lib/icons/trakt/flag-2.svg?raw';
-import pencil from '$lib/icons/trakt/pencil.svg?raw';
-import voteYes from '$lib/icons/trakt/vote-yes.svg?raw';
+import deleteIcon from '$lib/icons/regular/trash-can.svg?raw';
+import document from '$lib/icons/regular/file.svg?raw';
+import flag from '$lib/icons/regular/flag.svg?raw';
+import pencil from '$lib/icons/regular/pen.svg?raw';
+import voteYes from '$lib/icons/regular/thumbs-up.svg?raw';
 import type { VipBadge } from '$lib/users/VipBadge';
 import type { ListRowActions } from './ListRowActions.ts';
 import RankPill from './RankPill.svelte';
@@ -113,7 +113,7 @@ const plural = (count: number, word: string) => `${word}${count === 1 ? '' : 's'
     {#snippet trigger(tooltip)}
       <span class="count-icon" {...tooltip}><Icon {svg} /></span>
     {/snippet}
-  </Tooltip>{value.toLocaleString('en-US')}
+  </Tooltip><strong>{value.toLocaleString('en-US')}</strong>
   <span class="count-text">{plural(value, word)}</span>
 {/snippet}
 
@@ -426,19 +426,38 @@ h3 {
   }
 }
 
-.share,
-.count {
-  color: var(--brand-secondary);
+.share {
+  color: var(--color-action-share);
 }
 
-.count-icon :global(.icon) {
-  margin-inline-end: 5px;
-  font-size: var(--font-size-rating);
-  vertical-align: top;
+/* A stat: the icon in blue, the number in white, the word for screen readers. */
+.count {
+  display: inline-flex;
+  align-items: center;
+  color: var(--color-stat-noun);
+  font-size: var(--font-size-stat-noun);
+
+  & strong {
+    color: var(--color-stat-number);
+    font-size: var(--font-size-stat-number);
+    font-weight: var(--font-weight-headings-heavy);
+  }
+}
+
+.count-icon {
+  display: inline-flex;
+  margin-inline-end: var(--space-stat);
+  color: var(--color-stat-count);
+  font-size: var(--font-size-stat-icon);
+  line-height: 1;
 }
 
 a.count:is(:hover, :focus-visible) {
-  color: var(--brand-secondary);
+  color: var(--color-stat-noun);
+
+  & strong {
+    color: var(--color-stat-count);
+  }
 }
 
 /* OG showed only the numbers on desktop; the words stay for screen readers. */

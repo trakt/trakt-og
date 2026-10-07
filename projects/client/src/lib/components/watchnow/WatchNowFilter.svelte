@@ -1,18 +1,21 @@
 <!--
-  OG's Watch Now picker: a
-  play icon, red while services are applied, that opens "Only display items available to watch on these streaming
-  services." with the services to pick Applying reloads with `watchnow=` (the slugs, comma separated), which
-  the worker's `sources` reads. `placeholder` is OG's All Types state: the icon only asks for a type first.
+  OG's Watch Now picker: a play icon, red while services are applied, that opens a small panel with a service
+  search and your favorites and every service as checkable rows, each with its logo tile. Apply reloads with
+  `watchnow=` (the slugs, comma separated), which the worker's `sources` reads, and the × drops them.
+  `placeholder` is OG's All Types state: the icon only asks for a type first.
   The services load on first open, from `/watchnow/sources/:country`.
     <WatchNowFilter value={filters.watchnow} {country} favorites={settings?.browsing?.watchnow?.favorites ?? []} />
 -->
 <script lang="ts">
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
-import Dialog from '$lib/components/dialog/Dialog.svelte';
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
+import FilterPopover from '$lib/components/filters/FilterPopover.svelte';
+import { serviceLabel } from '$lib/components/filters/serviceLabel';
 import Icon from '$lib/icons/Icon.svelte';
-import play from '$lib/icons/thin/play.svg?raw';
+import play from '$lib/icons/regular/play.svg?raw';
+import heart from '$lib/icons/regular/heart.svg?raw';
+import search from '$lib/icons/regular/magnifying-glass.svg?raw';
+import check from '$lib/icons/trakt/check-thick.svg?raw';
 import { api } from '../../api/api.ts';
 import { favoriteSlugs, type Source, toSourceMap } from './watchNow.ts';
 
@@ -27,184 +30,187 @@ interface Props {
 }
 
 const { value = '', country, favorites = [], placeholder = false }: Props = $props();
-let open = $state(false);
 let sources = $state<Map<string, Source> | null>(null);
 let picked = $state<string[]>([]);
-let search = $state('');
+let query = $state('');
 
 const applied = $derived(value.split(',').map((slug) => slug.trim()).filter(Boolean));
 const favoriteSet = $derived(new Set(favoriteSlugs(favorites, country, country)));
-const matches = (name: string) => name.toLowerCase().includes(search.trim().toLowerCase());
+const matches = (name: string) => name.toLowerCase().includes(query.trim().toLowerCase());
 const groups = $derived.by(() => {
-  const all = [...(sources ?? [])].map(([slug, source]) => ({ slug, name: source.name }));
+  const all = [...(sources ?? [])].map(([slug, source]) => ({ slug, ...source, ...serviceLabel(source.name) }));
   const mine = all.filter(({ slug }) => favoriteSet.has(slug));
   return [
     ...(favoriteSet.size > 0
-      ? [{ title: 'Your Favorites', options: [{ slug: 'favorites', name: 'All Favorites' }, ...mine] }]
+      ? [{
+        title: 'Your Favorites',
+        options: [{ slug: 'favorites', name: 'All Favorites', label: 'All Favorites', color: '' }, ...mine],
+      }]
       : []),
     { title: 'Services', options: all.filter(({ slug }) => !favoriteSet.has(slug)) },
   ].map((group) => ({ ...group, options: group.options.filter(({ name }) => matches(name)) }));
 });
 
-async function show() {
-  if (placeholder) return;
+async function prepare() {
   picked = [...applied];
-  search = '';
-  open = true;
+  query = '';
   if (sources) return;
   const response = await api().watchnow.sources.country({ params: { countryCode: country } }).catch(() => null);
   sources = toSourceMap(response?.status === 200 ? response.body : null, country);
 }
 
-function apply(event: SubmitEvent) {
-  event.preventDefault();
+function reload(slugs: readonly string[]) {
   const url = new URL(page.url);
   url.searchParams.delete('page');
-  if (picked.length > 0) url.searchParams.set('watchnow', picked.join(','));
+  if (slugs.length > 0) url.searchParams.set('watchnow', slugs.join(','));
   else url.searchParams.delete('watchnow');
-  open = false;
   // eslint-disable-next-line svelte/no-navigation-without-resolve -- the current page with a new query string
   void goto(url);
 }
 </script>
 
-<Tooltip text={placeholder ? 'Choose a type to filter by streaming services' : 'Filter by Streaming Services'}>
-  {#snippet trigger(tooltip)}
-    <button type="button" class={['launcher', { selected: applied.length > 0, placeholder }]}
-      aria-label="Filter by streaming services" aria-haspopup="dialog" aria-disabled={placeholder} onclick={show}
-      {...tooltip}>
-      <Icon svg={play} /><span class="caret"></span>
-    </button>
-  {/snippet}
-</Tooltip>
-
-<Dialog bind:open title="Filter by streaming services">
-  {#snippet header(id)}
-    <h2 {id} class="lead">Only display items available to<br />watch on these streaming services.</h2>
-  {/snippet}
-  <form class="watchnow-form" onsubmit={apply}>
-    <p class="label" id="watchnow-services">Available to watch on</p>
-    <div class="picker">
-      <input type="search" placeholder="Choose services..." aria-label="Search services" bind:value={search} />
-      <div class="options" role="group" aria-labelledby="watchnow-services" aria-busy={sources === null}>
-        {#each groups as group (group.title)}
-          {#if group.options.length > 0}
-            <p class="group">{group.title}</p>
-            {#each group.options as option (option.slug)}
-              <label class="option">
-                <input type="checkbox" value={option.slug} bind:group={picked} />{option.name}
-              </label>
-            {/each}
-          {/if}
+<FilterPopover svg={play} label="Filter by streaming services" active={applied.length > 0} {placeholder}
+  tooltip={placeholder ? 'Choose a type to filter by streaming services' : 'Filter by Streaming Services'}
+  title="Available to watch on" help="Only display items available to watch on these streaming services."
+  note={picked.length > 0 ? `${picked.length} picked` : undefined} clearable={applied.length > 0 || picked.length > 0}
+  onopen={() => void prepare()} onapply={() => reload(picked)} onclear={() => reload([])}>
+  <label class="panel-field">
+    <Icon svg={search} />
+    <input type="search" placeholder="Netflix, Max…" aria-label="Search services" bind:value={query} />
+  </label>
+  <div class="options" role="group" aria-label="Streaming services" aria-busy={sources === null}>
+    {#if sources === null}<p class="loading">Loading services…</p>{/if}
+    {#each groups as group (group.title)}
+      {#if group.options.length > 0}
+        <p class="header">{group.title}</p>
+        {#each group.options as option (option.slug)}
+          <label class="option">
+            <input type="checkbox" value={option.slug} bind:group={picked} />
+            <span class={['logo', { favorites: option.slug === 'favorites' }]} style:--service-color={option.color}>
+              {#if option.slug === 'favorites'}<Icon svg={heart} />{:else if option.logo}<img src={option.logo} alt=""
+                />{:else}{option.name.charAt(0)}{/if}
+            </span>
+            <span class="name">{option.label}</span>
+            {#if option.tag}<span class="tag" style:--service-color={option.color}>{#if 'channel' in option && option.channel}<img
+                  src={option.channel} alt={option.tag} />{:else}{option.tag}{/if}</span>{/if}
+            <span class="check"><Icon svg={check} /></span>
+          </label>
         {/each}
-      </div>
-    </div>
-    <button type="submit" class="submit">Apply Filter</button>
-  </form>
-</Dialog>
+      {/if}
+    {/each}
+  </div>
+</FilterPopover>
 
 <style>
-.launcher {
-  display: inline-flex;
-  align-items: center;
-  min-block-size: 0;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: inherit;
-  font-size: var(--font-size-filter-watchnow);
-  line-height: 1;
-  vertical-align: middle;
-  transition: color 0.5s;
-
-  &.selected {
-    color: var(--brand-primary);
-  }
-
-  &.placeholder {
-    cursor: not-allowed;
-  }
-}
-
-.caret {
-  margin: 1px 0 0 var(--space-filter-caret);
-  border-block-start: 4px solid;
-  border-inline: 4px solid transparent;
-}
-
-.watchnow-form {
-  display: grid;
-  padding: 0 var(--space-dialog-inline) var(--space-dialog-inline);
-  gap: 10px;
-  font-family: var(--font-body);
-  font-size: var(--font-size-base);
-  font-weight: normal;
-  text-align: center;
-}
-
-/* checkin-modal h2. */
-.lead {
-  margin: 0;
-  padding: var(--space-dialog-inline) var(--space-dialog-inline) var(--line-height-computed);
-  font-family: var(--font-body);
-  font-size: var(--font-size-modal-lead);
-  text-align: center;
-}
-
-.label {
-  margin: 0;
-  font-family: var(--font-headings);
-  font-size: var(--font-size-small);
-  text-align: start;
-  text-transform: uppercase;
-}
-
-.picker {
-  border: 1px solid var(--color-input-border);
-  text-align: start;
-
-  & input[type='search'] {
-    inline-size: 100%;
-    border: 0;
-  }
-}
-
 .options {
   max-block-size: var(--watchnow-filter-list-height);
+  margin: var(--space-menu) calc(var(--space-filter-popover) * -1 + var(--space-menu)) 0;
+  scrollbar-width: thin;
   overflow-y: auto;
 }
 
-.group {
+.header {
   margin: 0;
-  padding: 5px 8px;
-  font-family: var(--font-headings);
-  font-size: var(--font-size-small);
+  padding: var(--space-menu-header);
+  color: var(--color-menu-header);
+  font-size: var(--font-size-menu-header);
+  font-weight: var(--font-weight-menu-header);
+  letter-spacing: var(--letter-spacing-menu-header);
   text-transform: uppercase;
 }
 
+.loading {
+  margin: 0;
+  padding: var(--space-menu-row);
+  color: var(--color-control-muted);
+}
+
+/* A menu row with a hidden checkbox and the service's logo tile: bold red with the check on the right once picked. */
 .option {
   display: flex;
-  gap: 8px;
   align-items: center;
-  padding: 5px 15px;
+  gap: var(--space-service-row);
+  padding: var(--space-service-row-padding);
+  border-radius: var(--radius-menu-row);
   cursor: pointer;
 
   &:is(:hover, :focus-within) {
-    background-color: var(--color-dropdown-hover-bg);
+    background-color: var(--color-menu-row-hover);
+    color: var(--color-menu-row-hover-text);
+  }
+
+  &:has(input:checked) {
+    color: var(--brand-primary);
+    font-weight: var(--font-weight-headings-heavy);
   }
 
   & input {
-    margin: 0;
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
   }
 }
 
-.submit {
-  border-color: var(--color-btn-primary-border);
-  background-color: var(--brand-primary);
+/* OG's service tile in miniature: the white logo on the brand color. */
+.logo {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  inline-size: var(--service-mini-width);
+  block-size: var(--service-mini-height);
+  padding: var(--service-mini-padding);
+  border: 1px solid var(--color-menu-border);
+  border-radius: var(--radius-service-mini);
+  background-color: var(--service-color);
   color: var(--color-text-inverse);
+  font-family: var(--font-headings);
+  font-weight: var(--font-weight-headings-heavy);
 
-  &:is(:hover, :focus-visible) {
-    background-color: var(--brand-primary-darken);
+  & img {
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: contain;
+  }
+
+  &.favorites {
+    background-color: var(--color-control-bg);
+    color: var(--brand-primary);
+  }
+}
+
+/* The store a channel is sold through, at the row's end: its white logo on the service's color, or its name. */
+.tag {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  block-size: var(--service-tag-height);
+  padding: var(--space-service-tag);
+  border-radius: var(--radius-search-kbd);
+  background-color: var(--service-color);
+  color: var(--color-text-inverse);
+  font-size: var(--font-size-service-tag);
+  font-weight: var(--font-weight-headings-heavy);
+  line-height: 1;
+
+  & img {
+    block-size: 100%;
+  }
+}
+
+.name {
+  flex: 1;
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.check {
+  display: none;
+  font-size: var(--font-size-menu-check);
+
+  .option:has(input:checked) & {
+    display: inline-flex;
   }
 }
 </style>

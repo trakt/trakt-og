@@ -10,26 +10,32 @@
       </ul>
       <hr />
     </Dropdown>
-  Rows are ul > li > a (or button). `aria-current` marks the picked one with OG's red check, as does
-  `aria-pressed="true"` on a toggle row. <hr> divides, and an li.header labels a group ("TYPES"). An <em> in
-  the trigger or a row is OG's gray note ("(Pending)").
+  Rows are ul > li > a (or button). `aria-current` marks the picked one in bold red with a check on the right, as
+  does `aria-pressed="true"` on a toggle row. <hr> divides, and an li.header labels a group ("TYPES"). When the
+  picked row sits under a header, pass that header as `section` and the trigger names it first ("Reactions: All
+  Comments"). An <em> in the trigger or a row is OG's gray note ("(Pending)").
   `variant="circle"` is the round translucent icon button with no caret that OG put after a profile name.
-  `variant="icon"` is a bare icon with a caret, like OG's filter eye. `variant="transparent"` is OG's
+  `variant="icon"` is a toolbar icon tool with a caret, like the filter eye: a square that fills on hover. `variant="transparent"` is OG's
   `.btn-transparent`: the default button's size and caret with no fill, for dark bands (discover's Recent Comments).
 -->
 <script lang="ts">
 import checkThick from '$lib/icons/trakt/check-thick.svg?url';
 import type { Snippet } from 'svelte';
+import Caret from './Caret.svelte';
 
 interface Props {
   trigger: Snippet;
   children: Snippet;
   /** Names the trigger when its content doesn't (an icon-only button). */
   label?: string;
+  /** The header the picked row sits under, named before the trigger's text. */
+  section?: string;
+  /** A joined SortDirection follows: square off the end corners. */
+  joined?: boolean;
   variant?: 'default' | 'circle' | 'icon' | 'transparent';
 }
 
-const { trigger, children, label, variant = 'default' }: Props = $props();
+const { trigger, children, label, section, joined = false, variant = 'default' }: Props = $props();
 const id = $props.id();
 
 const focusFirstItem = (event: ToggleEvent & { currentTarget: HTMLElement }) => {
@@ -44,8 +50,10 @@ const closeOnPick = (event: MouseEvent & { currentTarget: HTMLElement }) => {
 </script>
 
 <div class="dropdown" style:anchor-name="--dropdown-{id}">
-  <button type="button" class={['trigger', variant]} popovertarget="dropdown-{id}" aria-label={label}>
+  <button type="button" class={['trigger', variant, { joined }]} popovertarget="dropdown-{id}" aria-label={label}>
+    {#if section}<span class="section">{section}:</span>{/if}
     {@render trigger()}
+    {#if variant !== 'circle'}<Caret />{/if}
   </button>
   <div
     id="dropdown-{id}"
@@ -67,19 +75,14 @@ const closeOnPick = (event: MouseEvent & { currentTarget: HTMLElement }) => {
 }
 
 .trigger {
-  &::after {
-    content: '';
-    display: inline-block;
-    margin-inline-start: var(--space-dropdown-caret);
-    vertical-align: middle;
-    border-block-start: 4px solid;
-    border-inline: 4px solid transparent;
-  }
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-control-caret);
+  white-space: nowrap;
 
-  .dropdown:has(.menu:popover-open) &.default {
-    border-color: var(--color-dropdown-trigger-open-border);
-    background-color: var(--color-dropdown-trigger-open-bg);
-    box-shadow: var(--shadow-btn-active);
+  &:hover,
+  .dropdown:has(.menu:popover-open) & {
+    --caret-color: currentcolor;
   }
 
   & :global(em) {
@@ -87,16 +90,42 @@ const closeOnPick = (event: MouseEvent & { currentTarget: HTMLElement }) => {
   }
 }
 
+.section {
+  margin-inline-end: calc(var(--space-control-section) - var(--space-control-caret));
+  color: var(--color-control-muted);
+  font-weight: normal;
+}
+
 .default {
-  border-color: var(--color-dropdown-trigger-border);
-  background-color: var(--color-dropdown-trigger-bg);
-  color: var(--color-dropdown-trigger-text);
+  min-block-size: var(--control-height);
+  padding: 0 calc(var(--space-control-inline) - 2px) 0 var(--space-control-inline);
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius-control);
+  background-color: var(--color-control-bg);
+  color: var(--color-control-text);
+  font-size: var(--font-size-control);
+  font-weight: var(--font-weight-control);
+  line-height: 1;
+
+  transition: background-color 0.2s, border-color 0.2s;
+
+  &:hover,
+  .dropdown:has(.menu:popover-open) & {
+    border-color: var(--color-control-border-hover);
+    background-color: var(--color-control-hover-bg);
+  }
+}
+
+.joined {
+  border-start-end-radius: 0;
+  border-end-end-radius: 0;
 }
 
 .circle {
   inline-size: 28px;
   min-block-size: 0;
   block-size: 28px;
+  justify-content: center;
   padding: 0;
   border: 0;
   border-radius: 50%;
@@ -107,10 +136,6 @@ const closeOnPick = (event: MouseEvent & { currentTarget: HTMLElement }) => {
   vertical-align: middle;
   transition: all 0.5s;
 
-  &::after {
-    content: none;
-  }
-
   &:hover,
   .dropdown:has(.menu:popover-open) & {
     background-color: var(--color-btn-circle-bg-hover);
@@ -118,11 +143,19 @@ const closeOnPick = (event: MouseEvent & { currentTarget: HTMLElement }) => {
 }
 
 .icon {
-  min-block-size: 0;
-  padding: 0;
+  gap: var(--space-tool-caret);
+  min-block-size: var(--tool-size);
+  padding: 0 var(--space-tool-inline);
   border: 0;
+  border-radius: var(--radius-control);
   background: none;
   color: inherit;
+  line-height: 1;
+
+  &:hover,
+  .dropdown:has(.menu:popover-open) & {
+    background-color: var(--color-tool-hover-bg);
+  }
 }
 
 .transparent {
@@ -139,25 +172,26 @@ const closeOnPick = (event: MouseEvent & { currentTarget: HTMLElement }) => {
 .menu {
   position: fixed;
   position-area: bottom span-right;
+  position-try-fallbacks: flip-inline;
   inset: auto;
-  min-inline-size: var(--dropdown-min-width);
+  min-inline-size: var(--menu-min-width);
   max-block-size: calc(100dvh - var(--gutter));
   overflow-y: auto;
-  margin: 2px 0 0;
-  padding: var(--space-sm-block) 0;
-  border: 1px solid var(--color-dropdown-border);
-  border-radius: var(--radius-base);
-  background-color: var(--color-box);
-  color: var(--color-dropdown-text);
+  margin: var(--space-menu-offset) 0 0;
+  padding: var(--space-menu);
+  border: 1px solid var(--color-menu-border);
+  border-radius: var(--radius-menu);
+  background-color: var(--color-menu-bg);
+  color: var(--color-dropdown-menu-text);
   /* It inherits from where it's placed, which can be a heading. */
   font-family: var(--font-body);
-  font-size: var(--font-size-base);
+  font-size: var(--font-size-menu);
   font-weight: normal;
   letter-spacing: normal;
   text-align: start;
   text-shadow: none;
   text-transform: none;
-  box-shadow: var(--shadow-dropdown);
+  box-shadow: var(--shadow-menu);
 }
 
 .menu :global {
@@ -168,13 +202,15 @@ const closeOnPick = (event: MouseEvent & { currentTarget: HTMLElement }) => {
   }
 
   & :is(a, button) {
-    position: relative;
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-menu-check);
     inline-size: 100%;
     min-block-size: 0;
-    padding: var(--space-dropdown-item-block) var(--gutter);
+    padding: var(--space-menu-row);
     border: 0;
-    border-radius: 0;
+    border-radius: var(--radius-menu-row);
     background: none;
     color: inherit;
     font: inherit;
@@ -184,23 +220,28 @@ const closeOnPick = (event: MouseEvent & { currentTarget: HTMLElement }) => {
     white-space: nowrap;
 
     &:is(:hover, :focus-visible) {
-      background-color: var(--color-dropdown-hover-bg);
-      color: var(--color-dropdown-hover-text);
+      background-color: var(--color-menu-row-hover);
+      color: var(--color-menu-row-hover-text);
+      outline: none;
+    }
+
+    /* The thick Trakt check, on the right of the picked row. */
+    &::after {
+      content: '';
+      flex: none;
+      inline-size: var(--font-size-menu-check);
+      block-size: var(--font-size-menu-check);
+      background-color: currentcolor;
+      mask: var(--check) center / contain no-repeat;
+      visibility: hidden;
     }
 
     &:is([aria-current]:not([aria-current='false']), [aria-pressed='true']) {
       color: var(--brand-primary);
+      font-weight: var(--font-weight-headings-heavy);
 
-      /* OG's trakt-font check, 13px, 4px in from the top-left corner. */
-      &::before {
-        content: '';
-        position: absolute;
-        inset-block-start: 4px;
-        inset-inline-start: 4px;
-        inline-size: 13px;
-        block-size: 13px;
-        background-color: currentcolor;
-        mask: var(--check) center / contain no-repeat;
+      &::after {
+        visibility: visible;
       }
     }
   }
@@ -210,16 +251,22 @@ const closeOnPick = (event: MouseEvent & { currentTarget: HTMLElement }) => {
   }
 
   & .header {
-    padding: 3px var(--gutter);
-    color: var(--color-dropdown-header);
-    font-size: var(--font-size-small);
+    padding: var(--space-menu-header);
+    color: var(--color-menu-header);
+    font-size: var(--font-size-menu-header);
+    font-weight: var(--font-weight-menu-header);
+    letter-spacing: var(--letter-spacing-menu-header);
     text-transform: uppercase;
+
+    &:first-child {
+      padding-block-start: var(--space-menu-offset);
+    }
   }
 
   & hr {
-    margin: 9px 0;
+    margin: var(--space-menu) calc(var(--space-menu) * -1);
     border: 0;
-    border-block-start: 1px solid var(--color-menu-divider);
+    border-block-start: 1px solid var(--color-menu-border);
   }
 }
 </style>

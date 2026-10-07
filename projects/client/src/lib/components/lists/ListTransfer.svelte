@@ -264,23 +264,30 @@ function toggle(event: ToggleEvent) {
 .control {
   display: inline-flex;
 }
+/* An outline button that matches the toolbar's controls, in the title row and the manage band alike. */
 .trigger {
   display: inline-flex;
   align-items: center;
-  gap: var(--list-manage-icon-gap);
-  min-block-size: 0;
-  padding: 0;
-  border: 0;
+  gap: var(--space-control-caret);
+  min-block-size: var(--control-height);
+  padding: 0 var(--space-control-inline);
+  border: 1px solid var(--transfer-border, var(--color-control-border));
+  border-radius: var(--radius-control);
   background: none;
-  color: inherit;
-  font-size: var(--font-size-list-row-action);
+  color: var(--transfer-text, var(--color-control-text));
+  font-size: var(--font-size-tool-icon-small);
   line-height: 1;
+  transition: background-color 0.2s, border-color 0.2s;
+
+  &:is(:hover, :focus-visible):not(:disabled) {
+    border-color: var(--transfer-hover-border, var(--color-control-border-hover));
+    background-color: var(--transfer-hover-bg, var(--color-control-hover-bg));
+  }
 }
 .text {
   font-family: var(--font-headings);
-  font-size: var(--font-size-list-row-meta);
-  font-weight: var(--font-weight-headings-light);
-  text-transform: uppercase;
+  font-size: var(--font-size-control);
+  font-weight: var(--font-weight-control);
 }
 button:focus-visible,
 a:focus-visible {

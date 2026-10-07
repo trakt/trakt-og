@@ -46,28 +46,34 @@ function onkeydown(event: KeyboardEvent) {
       onclick={() => (open = !open)}
       {...tooltip}
     >
-      {#if count > 0}<span class="counter" aria-hidden="true">{count.toLocaleString('en-US')}</span>{/if}
-      <Icon svg={filtersIcon} /><span class="caret"><Icon svg={caretRight} /></span>
+      <span class="funnel"><Icon svg={filtersIcon} />{#if count > 0}<span class="badge" aria-hidden="true"
+          >{count.toLocaleString('en-US')}</span>{/if}</span><span class="caret"><Icon svg={caretRight} /></span>
     </button>
   {/snippet}
 </Tooltip>
 
 <style>
+/* A toolbar tool like the filter eye beside it: a rounded square that fills on hover, with the caret pointing at
+   the panel it opens. */
 .toggle {
-  position: relative;
-  display: inline-block;
-  min-block-size: 0;
-  margin-inline: var(--filter-toggle-gap) calc(-1 * var(--filter-toggle-overhang));
-  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-tool-caret);
+  min-inline-size: var(--tool-size);
+  min-block-size: var(--tool-size);
+  margin-inline-end: calc(-1 * var(--filter-toggle-overhang));
+  padding: 0 var(--space-tool-inline);
   border: 0;
+  border-radius: var(--radius-control);
   background: none;
   color: var(--color-filter-icon-frame);
-  font-size: var(--font-size-filter-toggle);
+  font-size: var(--font-size-filter-icon-frame);
   line-height: 1;
-  vertical-align: middle;
 
-  & > :global(.icon) {
-    margin-inline-end: 3px;
+  &:is(:hover, :focus-visible),
+  &.open {
+    background-color: var(--color-tool-hover-bg);
   }
 
   &.active {
@@ -75,36 +81,45 @@ function onkeydown(event: KeyboardEvent) {
   }
 
   @media (prefers-reduced-motion: no-preference) {
-    transition: color var(--transition-frame);
+    transition: color var(--transition-frame), background-color 0.2s;
   }
 }
 
+.funnel {
+  position: relative;
+  display: inline-flex;
+}
+
 .caret {
-  display: inline-block;
-  margin-inline-start: 4px;
-  font-size: var(--font-size-filter-toggle-caret);
-  vertical-align: top;
+  display: inline-flex;
+  color: var(--color-control-muted);
+  font-size: var(--font-size-caret);
+  transition: color 0.2s;
+
+  .toggle:is(:hover, :focus-visible, .open, .active) & {
+    color: currentcolor;
+  }
 
   .open & {
     scale: -1 1;
   }
 }
 
-/* OG's .filter-counter: a pill over the funnel's top-right. */
-.counter {
+/* The count of filters that are on, over the funnel's top-right, like the eye's. */
+.badge {
   position: absolute;
-  inset-block-start: -8px;
-  inset-inline-end: 8px;
-  z-index: 1;
-  min-inline-size: 14px;
-  padding: 2px 3px;
-  border-radius: 8px;
-  background-color: var(--color-filter-counter-bg);
-  color: var(--color-filter-counter-text);
+  inset-block-start: calc(var(--tool-badge-size) / -2);
+  inset-inline-end: calc(var(--tool-badge-size) / -2);
+  min-inline-size: var(--tool-badge-size);
+  block-size: var(--tool-badge-size);
+  padding-inline: var(--space-tool-badge);
+  border-radius: var(--tool-badge-size);
+  background-color: var(--brand-primary);
+  color: var(--color-text-inverse);
   font-family: var(--font-headings);
-  font-size: var(--font-size-filter-counter);
+  font-size: var(--font-size-tool-badge);
   font-weight: var(--font-weight-headings-heavy);
-  line-height: 1;
+  line-height: var(--tool-badge-size);
   text-align: center;
   pointer-events: none;
 }

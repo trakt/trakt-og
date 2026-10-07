@@ -61,7 +61,7 @@ const href = (by: ItemCommentSortBy, how = data.sort.how) => itemCommentsHref(da
     {/snippet}
     {#snippet summary()}
       <span class="sort">
-        <Dropdown>
+        <Dropdown joined>
           {#snippet trigger()}{@render sortLabel(data.sort.by)}&nbsp;{/snippet}
           <ul>
             {#each Object.keys(itemCommentSorts) as ItemCommentSortBy[] as by (by)}
@@ -70,7 +70,7 @@ const href = (by: ItemCommentSortBy, how = data.sort.how) => itemCommentsHref(da
           </ul>
         </Dropdown>
         {#if data.sort.reversible}
-          <SortDirection bind:flipped={
+          <SortDirection joined bind:flipped={
             () => data.sort.how === 'desc',
             (next) => goto(href(data.sort.by, next ? 'desc' : 'asc'))
           } />

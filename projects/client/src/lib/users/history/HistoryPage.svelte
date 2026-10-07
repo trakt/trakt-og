@@ -22,8 +22,8 @@ import Pagination from '$lib/components/pagination/Pagination.svelte';
 import SectionToolbar from '$lib/components/toolbar/SectionToolbar.svelte';
 import SubnavCount from '$lib/components/toolbar/SubnavCount.svelte';
 import WatchNowFilter from '$lib/components/watchnow/WatchNowFilter.svelte';
-import check from '$lib/icons/trakt/check.svg?raw';
-import documentIcon from '$lib/icons/trakt/document.svg?raw';
+import file from '$lib/icons/regular/file.svg?raw';
+import check from '$lib/icons/trakt/check-thick.svg?raw';
 import { overlay } from '$lib/overlay/overlay';
 import type { ViewerSettings } from '$lib/settings/ViewerSettings';
 import type { ProfileUser } from '$lib/users/ProfileUser';
@@ -138,16 +138,19 @@ const country = $derived(data.settings?.browsing?.watchnow?.country?.toLowerCase
     <DateRangeFilter start={data.filters.startAt} end={data.filters.endAt} label="Watched At"
       datePreferences={data.datePreferences} />
   {/snippet}
-  {#snippet summary()}
+  {#snippet stats()}
     <span class="counts">
       {#if data.counts.unique}
         {@const { count, noun } = data.counts.unique}
-        <SubnavCount svg={documentIcon} {count} {noun} tooltip={titleCase(`${noun}s`)} />
+        <SubnavCount svg={file} {count} {noun} tooltip={titleCase(`${noun}s`)} />
       {/if}
       {#if data.counts.plays !== undefined}
-        <SubnavCount svg={check} count={data.counts.plays} noun="play" tooltip={plural(data.counts.plays, 'Play')} />
+        <SubnavCount svg={check} count={data.counts.plays} noun="play" tooltip={plural(data.counts.plays, 'Play')}
+          tone="watched" />
       {/if}
     </span>
+  {/snippet}
+  {#snippet summary()}
     <Dropdown>
       {#snippet trigger()}Watched Date{/snippet}
       <ul><li><a href={page.url.pathname + page.url.search} aria-current="page">Watched Date</a></li></ul>
@@ -190,7 +193,6 @@ const country = $derived(data.settings?.browsing?.watchnow?.country?.toLowerCase
 .icons {
   display: flex;
   align-items: center;
-  --filter-eye-lead: 0;
   gap: var(--history-icon-gap);
 }
 

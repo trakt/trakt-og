@@ -32,11 +32,11 @@ import { deleteList } from '$lib/components/lists/deleteList';
 import { overlay } from '$lib/overlay/overlay';
 import ListRow from '$lib/components/media/ListRow.svelte';
 import SectionToolbar from '$lib/components/toolbar/SectionToolbar.svelte';
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
+import SubnavCount from '$lib/components/toolbar/SubnavCount.svelte';
 import Icon from '$lib/icons/Icon.svelte';
-import addCircle from '$lib/icons/trakt/add-circle.svg?raw';
-import listIcon from '$lib/icons/trakt/list.svg?raw';
-import move from '$lib/icons/trakt/move.svg?raw';
+import addCircle from '$lib/icons/regular/circle-plus.svg?raw';
+import listIcon from '$lib/icons/regular/list.svg?raw';
+import move from '$lib/icons/regular/up-down-left-right.svg?raw';
 import type { ProfileUser } from '$lib/users/ProfileUser';
 import { nearViewport } from '$lib/utils/nearViewport';
 import type { Collaborator } from './Collaborator.ts';
@@ -397,18 +397,12 @@ const actions = (row: UserListRow) => {
       </span>
     {/if}
   {/snippet}
+  {#snippet stats()}
+    <SubnavCount svg={listIcon} count={lists.length} noun="list" tooltip="Lists" />
+  {/snippet}
   {#snippet summary()}
-    <Tooltip text="Lists">
-      {#snippet trigger(tooltip)}
-        <span class="count" {...tooltip}>
-          <Icon svg={listIcon} />
-          {lists.length.toLocaleString('en-US')}
-          <span class="count-text">{lists.length === 1 ? 'list' : 'lists'}</span>
-        </span>
-      {/snippet}
-    </Tooltip>
     <span class="sort" inert={reordering}>
-      <Dropdown>
+      <Dropdown joined>
         {#snippet trigger()}{reordering ? 'Rank' : sortName}{/snippet}
         <ul>
           {#each sorts as sort (sort.id)}
@@ -418,7 +412,9 @@ const actions = (row: UserListRow) => {
           {/each}
         </ul>
       </Dropdown>
-      {#if reordering}<SortDirection flipped={false} />{:else}<SortDirection bind:flipped={query.reversed} />{/if}
+      {#if reordering}<SortDirection joined flipped={false} />{:else}<SortDirection joined bind:flipped={query.reversed} />{/if}
+    </span>
+    <span class="tools" inert={reordering}>
       <TermsFilter bind:terms={query.terms} vip={(data.user?.isVip ?? false) && !reordering} />
     </span>
   {/snippet}
@@ -480,10 +476,10 @@ hr {
   display: inline-flex;
   align-items: center;
   gap: var(--space-action-button-icon);
-  min-block-size: 0;
-  padding: var(--action-button-padding);
-  border: var(--action-button-border-width) solid var(--color-action-border);
-  border-radius: var(--radius-action-button);
+  min-block-size: var(--control-height);
+  padding: 0 var(--space-control-inline);
+  border: var(--action-button-border-width) solid var(--color-control-border);
+  border-radius: var(--radius-control);
   background: none;
   color: var(--color-list-reorder);
   font-family: var(--font-headings);
@@ -500,7 +496,8 @@ hr {
   }
 
   &:hover:not(:disabled) {
-    border-color: var(--color-action-border-hover);
+    border-color: var(--color-control-border-hover);
+    background-color: var(--color-control-hover-bg);
   }
 
   &:disabled {
@@ -509,14 +506,15 @@ hr {
   }
 }
 
-/* The dashboard inbox's buttons: green outline to add, gray for the rest. */
+/* Add list is the toolbar's one filled button; Reorder keeps the gray outline. */
 .add {
-  border-color: var(--color-action-add);
-  color: var(--color-action-add);
+  border-color: var(--color-action-add-fill);
+  background-color: var(--color-action-add-fill);
+  color: var(--color-text-inverse);
 
   &:hover:not(:disabled) {
-    border-color: var(--color-action-add);
-    background-color: var(--color-action-add-hover);
+    border-color: var(--color-action-add-fill-hover);
+    background-color: var(--color-action-add-fill-hover);
   }
 }
 
@@ -537,28 +535,9 @@ hr {
   outline: var(--list-reorder-rank-border) solid var(--brand-primary);
 }
 
-.count {
-  display: inline-flex;
-  gap: 4px;
-  align-items: center;
-  color: var(--brand-secondary);
-  font-family: var(--font-headings);
-  font-size: var(--font-size-list-row-meta);
-  text-transform: uppercase;
-
-  & :global(.icon) {
-    font-size: var(--font-size-list-row-action);
-  }
-}
-
-.sort {
+.sort,
+.tools {
   display: inline-flex;
   align-items: center;
-}
-
-@media (width < 992px) {
-  .count-text {
-    display: none;
-  }
 }
 </style>

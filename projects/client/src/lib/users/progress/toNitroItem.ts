@@ -23,10 +23,9 @@ function toEpisode(episode: Episode | null): CatalogEpisode | undefined {
 }
 
 /**
- * One show from `/sync/progress/up_next_nitro`, as a progress row's data: the API counts the aired and completed
- * episodes (since a rewatch's reset), the plays and the minutes, and names the next and the last watched episodes, so
- * nothing here needs the show's catalog. Without stats, the plays fall back to the completed count and the minutes to
- * the show's runtime.
+ * One show from `/sync/progress/up_next_nitro`, as a progress row's data: the show, the aired count and the next and
+ * last watched episodes. Its watched counts are only a stand-in: `toProgressItems` recounts the watches, plays and
+ * times from the overlay, since the endpoint's `completed` can count episodes that were never watched.
  */
 export function toNitroItem(item: UpNextResponse, fetchedAt: number): ProgressItem {
   const show = toProgressShow(item.show, fetchedAt);

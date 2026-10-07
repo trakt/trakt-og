@@ -1,7 +1,8 @@
 <!--
   `/users/:id/progress(/:type)(/:sort_by/:sort_how)`, your own progress. Every show you've started comes from the
   endpoint v3's progress page reads, `/sync/progress/up_next_nitro` (`loadNitroProgress`, 100 a page, about five
-  requests for 440 shows), with its counts, times, poster and next and last episodes. The whole list loads so the
+  requests for 440 shows), with its poster, aired count and next and last episodes; the watched counts, plays and
+  times come from the overlay's watches, which the whole app already loads. The whole list loads so the
   sorts, hide toggles, title search, list filter and totals all work in the browser. It's kept for 30 minutes, like
   v3, across tabs and pages, and read again once a watch, rewatch or drop changes the overlay. The overlay narrows it
   to a tab (dropped, rewatching and hidden shows); the Dropped tab reads `/users/hidden/dropped` only for dropped

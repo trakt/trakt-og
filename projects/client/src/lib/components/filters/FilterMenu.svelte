@@ -1,13 +1,13 @@
 <!--
-  OG's filter eye (`#filter-fade-hide`): a dropdown behind an eye icon that turns red and gets struck through
-  while any filter is on. Fill it like a Dropdown: "Show All", then li.header groups of aria-pressed toggles.
-  `count` puts OG's `.filter-counter` badge on it. `variant="frame"` is the solid white eye in a Frame's title.
+  OG's filter eye (`#filter-fade-hide`): a dropdown behind an eye icon that turns red while any filter is on, with
+  a red count badge. Fill it like a Dropdown: "Show All", then li.header groups of aria-pressed toggles.
+  `variant="frame"` is the solid white eye in a Frame's title.
 -->
 <script lang="ts">
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import Icon from '$lib/icons/Icon.svelte';
+import regularEye from '$lib/icons/regular/eye.svg?raw';
 import solidEye from '$lib/icons/solid/eye.svg?raw';
-import thinEye from '$lib/icons/thin/eye.svg?raw';
 import type { Snippet } from 'svelte';
 
 interface Props {
@@ -23,11 +23,11 @@ const { active, count = 0, variant = 'default', children }: Props = $props();
 </script>
 
 <span class={['filter-menu', variant, { active }]}>
-  {#if count > 0}<span class="counter" aria-hidden="true">{count.toLocaleString('en-US')}</span>{/if}
   <Dropdown variant="icon" label={count > 0 ? `Filters (${count} on)` : 'Filters'}>
-    {#snippet trigger()}<span class="eye"
-      ><Icon svg={variant === 'frame' ? solidEye : thinEye} /><span class="line"></span></span
-    >{/snippet}
+    {#snippet trigger()}<span class="eye"><Icon svg={variant === 'frame' ? solidEye : regularEye} />{#if count > 0}<span
+          class="badge"
+          aria-hidden="true"
+        >{count.toLocaleString('en-US')}</span>{/if}</span>{/snippet}
     {@render children()}
   </Dropdown>
 </span>
@@ -35,10 +35,15 @@ const { active, count = 0, variant = 'default', children }: Props = $props();
 <style>
 .filter-menu {
   position: relative;
-  color: var(--color-filter-icon);
+  display: inline-flex;
+  color: var(--color-tool);
   font-family: var(--font-body);
   font-size: var(--font-size-base);
   font-weight: normal;
+
+  &:hover {
+    color: var(--color-tool-hover);
+  }
 
   &.frame {
     color: var(--color-filter-icon-frame);
@@ -47,57 +52,38 @@ const { active, count = 0, variant = 'default', children }: Props = $props();
 
   &.active {
     color: var(--brand-primary);
+    --caret-color: var(--brand-primary);
   }
-}
-
-/* OG's .filter-counter: a pill over the eye's top-right. */
-.counter {
-  position: absolute;
-  inset-block-start: -8px;
-  inset-inline-end: 8px;
-  z-index: 1;
-  min-inline-size: 14px;
-  padding: 2px 3px;
-  border-radius: 8px;
-  background-color: var(--color-filter-counter-bg);
-  color: var(--color-filter-counter-text);
-  font-family: var(--font-headings);
-  font-size: var(--font-size-filter-counter);
-  font-weight: var(--font-weight-headings-heavy);
-  line-height: 1;
-  text-align: center;
-  pointer-events: none;
 }
 
 .eye {
   position: relative;
-  display: inline-block;
-  /* A toolbar that spaces its icons itself sets `--filter-eye-lead: 0`. */
-  margin-inline: var(--filter-eye-lead, 5px) calc(var(--space-filter-caret) - var(--space-dropdown-caret));
-  font-size: var(--font-size-filter-icon);
+  display: inline-flex;
+  font-size: var(--font-size-tool);
   line-height: 1;
+  transition: color 0.5s;
 
   .frame & {
     font-size: inherit;
   }
-  vertical-align: middle;
-  transition: color 0.5s;
 }
 
-/* The strike through the eye while filtering. */
-.line {
+/* The count of filters that are on, over the eye's top-right. */
+.badge {
   position: absolute;
-  inset-block-start: 45%;
-  inset-inline-start: 0;
-  inline-size: 100%;
-  block-size: 1px;
+  inset-block-start: calc(var(--tool-badge-size) / -2);
+  inset-inline-end: calc(var(--tool-badge-size) / -2);
+  min-inline-size: var(--tool-badge-size);
+  block-size: var(--tool-badge-size);
+  padding-inline: var(--space-tool-badge);
+  border-radius: var(--tool-badge-size);
   background-color: var(--brand-primary);
-  rotate: -45deg;
-  opacity: 0;
-  transition: opacity 0.5s;
-
-  .active & {
-    opacity: 1;
-  }
+  color: var(--color-text-inverse);
+  font-family: var(--font-headings);
+  font-size: var(--font-size-tool-badge);
+  font-weight: var(--font-weight-headings-heavy);
+  line-height: var(--tool-badge-size);
+  text-align: center;
+  pointer-events: none;
 }
 </style>

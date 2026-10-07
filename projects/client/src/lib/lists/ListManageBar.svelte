@@ -1,5 +1,6 @@
 <!--
-  The band Manage opens under a list's title row: "N items selected" (the filtered count) and the whole-selection actions.
+  The band Manage opens under a list's title row, in OG's blue: "N items selected" (the filtered count) and the
+  whole-selection actions as light outline buttons.
   Reset Ranks and Delete ask first; Copy and Move are 's.
 -->
 <script lang="ts">
@@ -8,8 +9,8 @@ import { slide } from 'svelte/transition';
 import ManageConfirm from '$lib/components/comments/ManageConfirm.svelte';
 import Container from '$lib/components/container/Container.svelte';
 import type { Snippet } from 'svelte';
-import resetIcon from '$lib/icons/thin/arrow-down-arrow-up.svg?raw';
-import trashXmark from '$lib/icons/thin/trash-xmark.svg?raw';
+import resetIcon from '$lib/icons/regular/arrow-down-arrow-up.svg?raw';
+import trashXmark from '$lib/icons/regular/trash-xmark.svg?raw';
 
 interface Props {
   count: number;
@@ -29,7 +30,7 @@ const items = $derived(`item${count === 1 ? '' : 's'}`);
     <div class="bar">
       <p class="count"><b>{count.toLocaleString('en-US')}</b> {items} selected</p>
       <div class="actions">
-        <ManageConfirm name="reset" svg={resetIcon} label="Set current order as your ranks" text="Reset Ranks" yes="Yes"
+        <ManageConfirm name="reset" svg={resetIcon} label="Set current order as your ranks" text="Reset ranks" yes="Yes"
           {busy} onconfirm={onreset}>
           Reset ranks on <b>{count.toLocaleString('en-US')}</b> {items}?
         </ManageConfirm>
@@ -53,7 +54,7 @@ const items = $derived(`item${count === 1 ? '' : 's'}`);
 .bar {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: var(--gutter);
   padding: var(--list-manage-padding);
@@ -61,10 +62,8 @@ const items = $derived(`item${count === 1 ? '' : 's'}`);
 
 .count {
   margin: 0;
-  padding-block-start: var(--list-manage-count-offset);
   font-family: var(--font-headings);
   font-size: var(--font-size-list-manage);
-  font-weight: var(--font-weight-headings-light);
   line-height: var(--line-height-headings);
 
   & b {
@@ -74,35 +73,50 @@ const items = $derived(`item${count === 1 ? '' : 's'}`);
 
 .actions {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: var(--list-row-action-gap);
-  min-block-size: var(--list-manage-row-height);
+  gap: var(--space-list-manage-actions);
 }
 
+/* Every action is an outline button in white on the blue; Copy and Move take the same look through the band's variables. */
 .actions :global(.confirm > button) {
   display: inline-flex;
   align-items: center;
-  gap: var(--list-manage-icon-gap);
-  min-block-size: 0;
-  padding: 0;
-  border: 0;
+  gap: var(--space-control-caret);
+  min-block-size: var(--control-height);
+  padding: 0 var(--space-control-inline);
+  border: 1px solid var(--color-list-manage-button-border);
+  border-radius: var(--radius-control);
   background: none;
   color: inherit;
-  font-size: var(--font-size-list-row-action);
+  font-size: var(--font-size-tool-icon-small);
   line-height: 1;
   cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
 
-  &:focus-visible {
-    outline: var(--list-reorder-rank-border) solid var(--color-text-inverse);
-    outline-offset: var(--list-reorder-rank-border);
+  &:is(:hover, :focus-visible) {
+    border-color: var(--color-text-inverse);
+    background-color: var(--color-list-manage-button-hover);
   }
+}
+
+.actions :global(.delete > button:is(:hover, :focus-visible)) {
+  border-color: var(--brand-primary);
+  background-color: var(--brand-primary);
+}
+
+/* Copy and Move are ListTransfer buttons: hand them the band's colors. */
+.actions {
+  --transfer-border: var(--color-list-manage-button-border);
+  --transfer-text: var(--color-text-inverse);
+  --transfer-hover-border: var(--color-text-inverse);
+  --transfer-hover-bg: var(--color-list-manage-button-hover);
 }
 
 .actions :global(.confirm .text) {
   font-family: var(--font-headings);
-  font-size: var(--font-size-list-row-meta);
-  font-weight: var(--font-weight-headings-light);
-  text-transform: uppercase;
+  font-size: var(--font-size-control);
+  font-weight: var(--font-weight-control);
 }
 
 /* OG kept only the icons on phones. */

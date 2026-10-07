@@ -9,10 +9,9 @@ import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import NoData from '$lib/components/empty/NoData.svelte';
 import Pagination from '$lib/components/pagination/Pagination.svelte';
 import SectionToolbar from '$lib/components/toolbar/SectionToolbar.svelte';
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
+import SubnavCount from '$lib/components/toolbar/SubnavCount.svelte';
 import UserCard from '$lib/components/users/UserCard.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import userIcon from '$lib/icons/trakt/user.svg?raw';
+import userIcon from '$lib/icons/regular/user.svg?raw';
 import type { ProfileUser } from '$lib/users/ProfileUser';
 import type { ViewerRelation } from '$lib/users/ViewerRelation';
 import type { loadNetwork } from './loadNetwork.ts';
@@ -66,13 +65,10 @@ const relationOf = (relations: Readonly<Record<string, ViewerRelation>> | null, 
       </ul>
     </Dropdown>
   {/snippet}
+  {#snippet stats()}
+    <SubnavCount svg={userIcon} count={data.itemCount} noun="person" plural="people" tooltip="People" />
+  {/snippet}
   {#snippet summary()}
-    <Tooltip text="People">
-      {#snippet trigger(tooltip)}
-        <span class="count" {...tooltip}><Icon svg={userIcon} /> {data.itemCount.toLocaleString('en-US')}
-          {data.itemCount === 1 ? 'person' : 'people'}</span>
-      {/snippet}
-    </Tooltip>
     <Dropdown label="Sort people">
       {#snippet trigger()}Added Date{/snippet}
       <ul><li><a href={page.url.pathname + page.url.search} aria-current="page">Added Date</a></li></ul>
@@ -103,20 +99,6 @@ const relationOf = (relations: Readonly<Record<string, ViewerRelation>> | null, 
 </section>
 
 <style>
-.count {
-  display: inline-flex;
-  gap: var(--user-card-icon-gap);
-  align-items: center;
-  color: var(--brand-secondary);
-  font-family: var(--font-headings);
-  font-size: var(--font-size-toolbar-count);
-  text-transform: uppercase;
-
-  & :global(.icon) {
-    font-size: var(--font-size-icon-lg);
-  }
-}
-
 .network {
   display: flow-root;
   padding-block-end: var(--gutter);

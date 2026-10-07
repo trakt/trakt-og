@@ -16,8 +16,8 @@ import { createNoteOverlay } from '$lib/users/notes/createNoteOverlay.svelte';
 import NoteRow from '$lib/components/notes/NoteRow.svelte';
 import Pagination from '$lib/components/pagination/Pagination.svelte';
 import SectionToolbar from '$lib/components/toolbar/SectionToolbar.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import memo from '$lib/icons/thin/memo.svg?raw';
+import SubnavCount from '$lib/components/toolbar/SubnavCount.svelte';
+import memo from '$lib/icons/regular/memo.svg?raw';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
 import type { ProfileUser } from '$lib/users/ProfileUser';
 import type { loadNotes } from '$lib/users/notes/loadNotes';
@@ -81,6 +81,13 @@ const metaType = $derived(
     : `${data.type === 'collection' ? 'library' : data.type === 'people' ? 'person' : data.type.replace(/s$/, '')} `,
 );
 const title = $derived(`${data.profile.displayName}'s ${metaType}notes`);
+type NoteType = keyof typeof noteTypes;
+// The type menu's sections: All Types alone, the media items, then the profile's own activities.
+const noteGroups = $derived<readonly { header?: string; types: readonly NoteType[] }[]>([
+  { types: ['all'] },
+  { header: 'Media Items', types: ['movies', 'shows', 'seasons', 'episodes', 'people'] },
+  { header: `${data.profile.firstName}'s activities`, types: ['history', 'collection', 'ratings'] },
+]);
 const filterHref = (type: string) => {
   const query = new SvelteURLSearchParams(page.url.searchParams);
   query.delete('page');
@@ -100,17 +107,21 @@ const filterHref = (type: string) => {
   {#snippet filters()}
     <Dropdown label="Note type">
       {#snippet trigger()}{noteTypes[data.type]}{/snippet}
-      <ul>
-        {#each Object.entries(noteTypes) as [type, label] (type)}
-          {#if type === 'movies'}<li class="group">Media Items</li>{/if}
-          {#if type === 'history'}<li class="group">{data.profile.firstName}'s activities</li>{/if}
-          <li><a href={filterHref(type)} aria-current={data.type === type ? 'page' : undefined}>{label}</a></li>
-        {/each}
-      </ul>
+      {#each noteGroups as { header, types }, i (header ?? 'all')}
+        {#if i > 0}<hr />{/if}
+        <ul>
+          {#if header}<li class="header" role="presentation">{header}</li>{/if}
+          {#each types as type (type)}
+            <li><a href={filterHref(type)} aria-current={data.type === type ? 'page' : undefined}>{noteTypes[type]}</a></li>
+          {/each}
+        </ul>
+      {/each}
     </Dropdown>
   {/snippet}
+  {#snippet stats()}
+    <SubnavCount svg={memo} count={Math.max(0, data.itemCount - removed)} noun="note" tooltip="Notes" />
+  {/snippet}
   {#snippet summary()}
-    <span class="count"><Icon svg={memo} /> {Math.max(0, data.itemCount - removed).toLocaleString('en-US')} {data.itemCount - removed === 1 ? 'note' : 'notes'}</span>
     <Dropdown label="Sort notes">
       {#snippet trigger()}Added Date{/snippet}
       <ul><li><a href={page.url.pathname + page.url.search} aria-current="page">Added Date</a></li></ul>
@@ -142,24 +153,11 @@ const filterHref = (type: string) => {
 .notes {
   padding-block: var(--note-padding);
 }
-.count {
-  color: var(--brand-secondary);
-  font-family: var(--font-headings);
-  font-size: var(--font-size-note-author);
-  text-transform: uppercase;
-  :global(.icon) {
-    font-size: var(--font-size-icon-lg);
-  }
-}
-.group {
-  margin-block-start: var(--toolbar-group-margin);
-  padding: var(--toolbar-group-padding);
-  border-block-start: 1px solid var(--color-menu-divider);
-  color: var(--color-text-muted);
-  font-size: var(--font-size-small);
-  text-transform: uppercase;
-}
 .notes :global(nav) {
   margin-block: var(--space-panel);
+}
+/* The top pagination sits right under the section's own padding, like History's. */
+.notes :global(nav:first-child) {
+  margin-block-start: 0;
 }
 </style>

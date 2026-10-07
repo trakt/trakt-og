@@ -5,7 +5,7 @@
 <script lang="ts">
 import type { ComponentProps } from 'svelte';
 import Icon from '$lib/icons/Icon.svelte';
-import arrowUpFromBracket from '$lib/icons/light/arrow-up-from-bracket.svg?raw';
+import arrowUpFromBracket from '$lib/icons/regular/arrow-up-from-bracket.svg?raw';
 import { toast } from '../toast/toast.svelte.ts';
 import Tooltip from '../tooltip/Tooltip.svelte';
 

@@ -23,7 +23,7 @@ import { quickIconFill } from '$lib/components/media/quickIconFill';
 import Pagination from '$lib/components/pagination/Pagination.svelte';
 import SectionToolbar from '$lib/components/toolbar/SectionToolbar.svelte';
 import SubnavCount from '$lib/components/toolbar/SubnavCount.svelte';
-import collection from '$lib/icons/trakt/collection.svg?raw';
+import collection from '$lib/icons/trakt/collection-thick.svg?raw';
 import { overlay } from '$lib/overlay/overlay';
 import type { ProfileUser } from '$lib/users/ProfileUser';
 import { formatRuntime } from '$lib/utils/formatRuntime';
@@ -124,10 +124,12 @@ const flipped = $derived(data.sort.how === 'desc');
     <DateRangeFilter start={data.range.startAt} end={data.range.endAt} label="Collected At"
       datePreferences={data.datePreferences} />
   {/snippet}
+  {#snippet stats()}
+    <SubnavCount svg={collection} count={data.total} {noun} tone="collected" tooltip={`${noun.charAt(0).toUpperCase()}${noun.slice(1)}s`} />
+  {/snippet}
   {#snippet summary()}
-    <SubnavCount svg={collection} count={data.total} {noun} tooltip={`${noun.charAt(0).toUpperCase()}${noun.slice(1)}s`} />
     <span class="sort">
-      <Dropdown>
+      <Dropdown joined>
         {#snippet trigger()}{sortLabels[data.sort.by]}{/snippet}
         <ul>
           {#each librarySorts[data.type] as by (by)}
@@ -136,7 +138,7 @@ const flipped = $derived(data.sort.how === 'desc');
           {/each}
         </ul>
       </Dropdown>
-      <SortDirection bind:flipped={
+      <SortDirection joined bind:flipped={
         () => flipped,
         (next) => goto(href(data.type, { by: data.sort.by, how: next ? 'desc' : 'asc' }))
       } />
@@ -184,7 +186,6 @@ const flipped = $derived(data.sort.how === 'desc');
 }
 
 .icons {
-  --filter-eye-lead: 0;
   gap: var(--history-icon-gap);
 }
 

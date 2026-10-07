@@ -2,8 +2,8 @@
 import ManageConfirm from '$lib/components/comments/ManageConfirm.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import Icon from '$lib/icons/Icon.svelte';
-import pencil from '$lib/icons/trakt/pencil.svg?raw';
-import deleteIcon from '$lib/icons/trakt/delete.svg?raw';
+import pencil from '$lib/icons/regular/pen.svg?raw';
+import deleteIcon from '$lib/icons/regular/trash-can.svg?raw';
 
 const { onedit, ondelete, busy = false }: {
   onedit: () => void;

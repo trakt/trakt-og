@@ -45,8 +45,8 @@ import { listFilterOptions } from '$lib/lists/listFilterOptions';
 import NoData from '$lib/components/empty/NoData.svelte';
 import type { HeaderUser } from '$lib/components/header/HeaderUser';
 import ListTransfer from '$lib/components/lists/ListTransfer.svelte';
-import clone from '$lib/icons/thin/clone.svg?raw';
-import fileExport from '$lib/icons/thin/file-export.svg?raw';
+import clone from '$lib/icons/regular/clone.svg?raw';
+import fileExport from '$lib/icons/regular/file-export.svg?raw';
 import ListItemEdit from '$lib/components/lists/ListItemEdit.svelte';
 import OfficialListHeader from '$lib/components/lists/OfficialListHeader.svelte';
 import RankInput from '$lib/components/lists/RankInput.svelte';
@@ -58,13 +58,13 @@ import ShareButton from '$lib/components/share/ShareButton.svelte';
 import SectionToolbar from '$lib/components/toolbar/SectionToolbar.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import Icon from '$lib/icons/Icon.svelte';
-import userXmark from '$lib/icons/light/user-xmark.svg?raw';
-import barsProgress from '$lib/icons/thin/bars-progress.svg?raw';
-import deleteIcon from '$lib/icons/trakt/delete.svg?raw';
-import documentAdd from '$lib/icons/trakt/document-add.svg?raw';
-import flag from '$lib/icons/trakt/flag-2.svg?raw';
-import move from '$lib/icons/trakt/move.svg?raw';
-import pencil from '$lib/icons/trakt/pencil.svg?raw';
+import userXmark from '$lib/icons/regular/user-xmark.svg?raw';
+import barsProgress from '$lib/icons/regular/bars-progress.svg?raw';
+import deleteIcon from '$lib/icons/regular/trash-can.svg?raw';
+import documentAdd from '$lib/icons/regular/file-plus.svg?raw';
+import flag from '$lib/icons/regular/flag.svg?raw';
+import move from '$lib/icons/regular/up-down-left-right.svg?raw';
+import pencil from '$lib/icons/regular/pen.svg?raw';
 import trakt from '$lib/icons/trakt/trakt.svg?raw';
 import type { ProfileUser } from '$lib/users/ProfileUser';
 import { createListManager } from '$lib/lists/createListManager.svelte';
@@ -577,7 +577,7 @@ async function saveNotes(text: string) {
         </ul>
       </Dropdown>
     {/snippet}
-    {#snippet summary()}
+    {#snippet stats()}
       <ListStats
         itemCount={owner ? Math.max(0, data.total - removedKeys.length) : data.total}
         stats={data.stats}
@@ -586,8 +586,10 @@ async function saveNotes(text: string) {
         likeCount={list.kind === 'watchlist' || list.kind === 'favorites' ? undefined : list.likeCount}
         comments={list.allowComments ? { count: list.commentCount, href: `${list.href}/comments` } : undefined}
       />
+    {/snippet}
+    {#snippet summary()}
       <span class="sort">
-        <Dropdown>
+        <Dropdown joined>
           {#snippet trigger()}{sorts.find(({ by }) => by === data.sort.by)?.label ?? 'Rank'}{/snippet}
           {#each groups as { group, sorts: items }, i (group)}
             {#if i > 0}<hr />{/if}
@@ -604,7 +606,7 @@ async function saveNotes(text: string) {
             </ul>
           {/each}
         </Dropdown>
-        <SortDirection bind:flipped={
+        <SortDirection joined bind:flipped={
           () => data.sort.how === 'desc',
           (next) => goto(listHref(page.url, { sort: { by: data.sort.by, how: next ? 'desc' : 'asc' } }))
         } />
@@ -653,7 +655,7 @@ async function saveNotes(text: string) {
           <div class="actions">
             {#if actions.report}{@render action('Report List', flag, 'report', undefined, () => { reportOpen = true; })}{/if}
             {#if actions.edit && data.kind !== 'personal'}{@render action('Edit', pencil, 'edit', undefined, owner ? editList : undefined)}{:else if actions.edit}<Tooltip text="Edit">{#snippet trigger(tooltip)}<button type="button" class="action edit" aria-label="Edit" {...tooltip} onclick={() => { editing = true; }}><Icon svg={pencil} /></button>{/snippet}</Tooltip>{/if}
-            {#if actions.delete}<span class="delete" style:--confirm-icon-size="var(--font-size-list-row-action)"><ManageConfirm name="delete" svg={deleteIcon} label="Delete" yes="Yes, delete it!" warning={deleteWarning} disabled={deleting} onconfirm={removeList}>Delete this list?</ManageConfirm></span>{/if}
+            {#if actions.delete}<span class="delete" style:--confirm-icon-size="var(--font-size-tool)"><ManageConfirm name="delete" svg={deleteIcon} label="Delete" yes="Yes, delete it!" warning={deleteWarning} disabled={deleting} onconfirm={removeList}>Delete this list?</ManageConfirm></span>{/if}
             {#if actions.leave}{@render action('Stop collaborating on this list', userXmark, 'leave', undefined, leave)}{/if}
             <span class="share"><ShareButton url={actions.shareUrl} title={list.name} large={false} /></span>
             {#if actions.manage && canManage}
@@ -765,7 +767,6 @@ async function saveNotes(text: string) {
 .filter-icons {
   display: flex;
   align-items: center;
-  --filter-eye-lead: 0;
   gap: var(--list-filter-icon-gap);
 }
 
@@ -865,33 +866,50 @@ h2 {
 .actions {
   display: flex;
   align-items: center;
-  gap: var(--list-row-action-gap);
+  gap: var(--space-list-title-actions);
   color: var(--color-list-title-action);
 }
 
 .action {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: var(--space-control-caret);
   min-block-size: 0;
   padding: 0;
   border: 0;
   background: none;
   color: inherit;
-  font-size: var(--font-size-list-row-action);
+  font-size: var(--font-size-tool);
   line-height: 1;
   text-decoration: none;
 
   &[aria-disabled='true'] {
     cursor: default;
   }
+
+  /* Manage and Progress: outline buttons that match the toolbar's controls. */
+  &:has(.action-text) {
+    min-block-size: var(--control-height);
+    padding: 0 var(--space-control-inline);
+    border: 1px solid var(--color-control-border);
+    border-radius: var(--radius-control);
+    color: var(--color-control-text);
+    font-size: var(--font-size-tool-icon-small);
+
+    transition: background-color 0.2s, border-color 0.2s;
+
+    &:is(:hover, :focus-visible) {
+      border-color: var(--color-control-border-hover);
+      background-color: var(--color-control-hover-bg);
+      color: var(--color-control-text);
+    }
+  }
 }
 
 .action-text {
   font-family: var(--font-headings);
-  font-size: var(--font-size-list-row-meta);
-  font-weight: var(--font-weight-headings-light);
-  text-transform: uppercase;
+  font-size: var(--font-size-control);
+  font-weight: var(--font-weight-control);
 }
 
 /* OG faded the flag in while the pointer was over the title row. */
@@ -916,14 +934,6 @@ h2 {
 
 .leave {
   font-size: var(--font-size-list-row-leave);
-}
-
-.progress {
-  font-size: var(--font-size-list-title-progress);
-
-  &:is(:hover, :focus-visible) {
-    color: inherit;
-  }
 }
 
 .share {
@@ -958,20 +968,17 @@ h2 {
 .manage {
   cursor: pointer;
 
-  & :global(svg) {
-    transition: rotate 0.5s;
-  }
-
+  /* On: a filled red button, so the mode reads at a glance. */
   &.active {
-    color: var(--brand-primary);
+    border-color: var(--brand-primary);
+    background-color: var(--brand-primary);
+    color: var(--color-text-inverse);
 
-    & :global(svg) {
-      rotate: 180deg;
+    &:is(:hover, :focus-visible) {
+      border-color: var(--brand-primary-darken);
+      background-color: var(--brand-primary-darken);
+      color: var(--color-text-inverse);
     }
-  }
-
-  &:focus-visible {
-    outline: var(--list-reorder-rank-border) solid var(--color-input-border-focus);
   }
 }
 

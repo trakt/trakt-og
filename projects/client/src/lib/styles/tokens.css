@@ -15,7 +15,6 @@
   --on-deck-completion-padding: 3px 5px;
   --on-deck-completion-bottom: 8px;
   /* List like toggle (OG interaction icon gap). */
-  --list-like-icon-gap: 5px;
 
   color-scheme: light;
 
@@ -302,8 +301,8 @@
   --color-list-pill-link: var(--brand-secondary);
   --color-list-pill-collaborators: var(--brand-seventh);
   --color-list-pill-collaborators-count: #b64903; /* darken(#e85d04, 10%) */
-  --color-list-edit: var(--brand-success);
-  --color-list-delete: var(--brand-primary);
+  --color-list-edit: var(--color-action-edit);
+  --color-list-delete: var(--color-action-delete);
   --color-list-progress: light-dark(#555, #eee);
   --font-size-list-row-action: 20px;
   --font-size-list-row-leave: 15px;
@@ -325,11 +324,11 @@
   --list-reorder-drag-opacity: 0.5;
 
   /* List page manage mode */
-  --list-manage-padding: 13px 0 15px; /* .list-manage-wrapper.expanded */
-  --list-manage-count-offset: 4px; /* h2 .left */
-  --list-manage-row-height: 23px; /* h2 .right: the 20px icons' 22px line */
+  --list-manage-padding: 12px 0;
+  --space-list-manage-actions: 8px;
+  --color-list-manage-button-border: rgb(255 255 255 / 0.45); /* outline buttons on the blue band */
+  --color-list-manage-button-hover: rgb(255 255 255 / 0.15);
   --font-size-list-manage: 16px;
-  --list-manage-icon-gap: 5px;
   --gradient-list-edit: linear-gradient(rgb(0 0 0 / 0) 25%, rgb(0 0 0 / 0.9) 100%);
   --list-edit-icons-bottom: 15px;
   --font-size-list-edit-notes: 16px;
@@ -344,12 +343,11 @@
   --list-title-pill-gap: 5px;
   --color-list-title-action: light-dark(#333, #fff); /* .btn-list-*, dark-knight's white subnav icons */
   --font-size-list-title-share: 17px; /* a.share .trakt-icon */
-  --font-size-list-title-progress: 18px; /* .btn-list-progress .icon */
+  --space-list-title-actions: 12px; /* between a list title's edit, delete, share and buttons */
   /* The stats bar */
   --font-size-list-stat-under: 11px;
   --color-list-stat-under: #666;
   --list-stat-under-offset: -15px;
-  --list-stat-like-nudge: -2px; /* .like .trakt-icon { margin-top: -2px } */
   --color-read-notes-shade: rgb(0 0 0 / 0.7); /* .list-read-notes gradient's end */
   --font-size-read-notes: 13px;
   --font-size-vip-sort: 12px; /* .dropdown-menu a.vip-only */
@@ -762,40 +760,109 @@
   /* Dropdowns */
   --dropdown-min-width: 160px;
   --font-size-sort-direction: 21px; /* h2 .sort-wrapper .icon */
-  --space-dropdown-item-block: 2px;
   /* Dark mode drops the border: the popover arrows have none, so a gray outline looked detached from them. */
   --color-dropdown-border: light-dark(rgb(0 0 0 / 0.15), transparent);
   --color-dropdown-text: light-dark(#333, #ccc);
   --color-dropdown-hover-text: light-dark(#262626, #ccc);
   --color-dropdown-hover-bg: light-dark(#f5f5f5, #222);
-  /* $dropdown-header-color: $gray-light. Bootstrap colors .dropdown-header itself, so dark-knight's #ccc menu doesn't reach it. */
-  --color-dropdown-header: var(--gray-light);
   --color-dropdown-note: light-dark(#999, #888); /* an <em> in a trigger or a row */
-  /* The default trigger: OG's .btn-default, which dark-knight's `// dropdown` block turns $dk-box-bg-color. */
-  --color-dropdown-trigger-text: light-dark(var(--color-btn-default-text), #ccc);
-  --color-dropdown-trigger-bg: light-dark(var(--color-btn-default-bg), #333);
-  --color-dropdown-trigger-border: light-dark(var(--color-btn-default-border), #666);
-  /* Open: darken(#fff, 10%) in light; dark-knight keeps the closed colors. */
-  --color-dropdown-trigger-open-bg: light-dark(#e6e6e6, #333);
-  --color-dropdown-trigger-open-border: light-dark(#adadad, #666);
   /* variant="transparent" (`.btn.btn-transparent` in a discover `.subnav-wrapper`) */
   --color-dropdown-transparent-text: #eee;
   --color-dropdown-transparent-hover: #fff;
   --color-dropdown-transparent-border: transparent; /* `.btn` without `.btn-default` */
   --shadow-btn-active: inset 0 3px 5px rgb(0 0 0 / 0.125);
 
+  /* Refreshed controls: one height, rounded, a solid caret; menus with inset rows and the check on the right. */
+  --radius-control: 7px;
+  --font-size-control: 14px;
+  --font-weight-control: 500;
+  --space-control-inline: 12px;
+  --space-control-caret: 7px; /* from a control's label or icon to its caret */
+  --space-control-section: 4px; /* from a section named in a trigger to the picked row */
+  --font-size-caret: 10px;
+  --color-control-text: light-dark(#111, #fff);
+  --color-control-muted: light-dark(#777, #8c8c8c); /* carets, a section named in a trigger */
+  --color-control-bg: light-dark(#fff, #232323);
+  --color-control-border: light-dark(#d6d6d6, #3b3b3b);
+  --color-control-border-hover: light-dark(#9a9a9a, #5c5c5c);
+  --color-control-hover-bg: light-dark(#f2f2f2, #2e2e2e); /* an outline button or trigger under the pointer */
+  --color-control-raised-bg: light-dark(#fff, #333); /* a button inside a menu panel, a step up from it */
+  --color-control-raised-hover-bg: light-dark(#f2f2f2, #3d3d3d);
+  --color-control-set-bg: rgb(237 28 36 / 0.14); /* a filter that's on */
+  --color-control-set-border: rgb(237 28 36 / 0.6);
+  --tool-size: 36px; /* a toolbar icon button's square */
+  --font-size-tool: 18px;
+  --font-size-tool-icon-small: 15px; /* inside a 34px control: the sort direction, view switches */
+  --space-tool-inline: 8px; /* inside a tool that has a caret */
+  --space-tool-caret: 5px; /* from a tool's icon to its caret */
+  --space-tools: 4px; /* between toolbar icon buttons */
+  --color-tool: light-dark(#333, #ccc);
+  --color-tool-hover: light-dark(#111, #fff);
+  --color-tool-hover-bg: light-dark(#efefef, #303030);
+  --menu-min-width: 210px;
+  --radius-menu: 10px;
+  --radius-menu-row: 6px;
+  --space-menu: 6px;
+  --space-menu-row: 7px 10px;
+  --space-menu-check: 18px; /* between a row's label and its check */
+  --font-size-menu: 14px;
+  --font-size-menu-check: 13px;
+  --font-size-menu-header: 11px;
+  --letter-spacing-menu-header: 0.09em;
+  --font-weight-menu-header: 600;
+  --space-menu-offset: 4px; /* below the trigger; above a first header */
+  --space-menu-header: 10px 10px 4px;
+  --color-menu-bg: light-dark(#fff, #262626);
+  --color-menu-border: light-dark(#e3e3e3, #3a3a3a);
+  --color-dropdown-menu-text: light-dark(#333, #ccc);
+  --color-menu-row-hover: light-dark(#f2f2f2, #333);
+  --color-menu-row-hover-text: light-dark(#111, #fff);
+  --color-menu-header: light-dark(#777, #8c8c8c);
+  --shadow-menu: 0 12px 32px light-dark(rgb(0 0 0 / 0.14), rgb(0 0 0 / 0.55));
+  --tool-badge-size: 15px; /* the red count on a tool with filters on */
+  --font-size-tool-badge: 10px;
+  --space-tool-badge: 4px;
+  --filter-popover-width: 300px; /* the title search and streaming filter panels */
+  --space-filter-popover: 12px;
+  --space-filter-popover-apply: 16px;
+  --space-filter-popover-field-icon: 34px; /* a search field's start, past its icon */
+  --font-size-filter-popover-title: 11px;
+  --space-filter-popover-title: 4px;
+  --font-size-filter-popover-help: 14px;
+  --line-height-filter-popover-help: 1.4;
+  --service-mini-width: 44px; /* a service's logo tile in the streaming filter */
+  --service-mini-height: 28px;
+  --service-mini-padding: 4px 6px;
+  --radius-service-mini: 6px;
+  --space-service-row: 12px;
+  --space-service-row-padding: 6px 10px 6px 6px;
+  --space-service-tag: 3px 6px; /* a store badge (Amazon, Free) at a service row's end */
+  --service-tag-height: 20px;
+  --font-size-service-tag: 11px;
+  /* A toolbar's stats: the icon in its meaning color, the number white, the word gray. */
+  --space-stats: 18px;
+  --space-stat: 6px;
+  --space-stat-noun: 4px; /* a stat's number to its word, where they aren't flex siblings */
+  --font-size-stat-icon: 16px;
+  --font-size-stat-number: 15px;
+  --font-size-stat-noun: 13px;
+  --color-stat-number: light-dark(#111, #fff);
+  --color-stat-noun: light-dark(#777, #8c8c8c);
+  --color-stat-watched: light-dark(var(--brand-tertiary), #9b59b6);
+  --color-stat-collected: var(--brand-quaternary);
+  --color-stat-count: var(--brand-secondary); /* counts, time, likes, comments */
+  /* Edit, delete and share, wherever an item offers them. */
+  --color-action-edit: var(--brand-success);
+  --color-action-delete: var(--brand-primary);
+  --color-action-share: var(--brand-secondary);
+  --color-action-add-fill: #38a038; /* a filled green add button */
+  --color-action-add-fill-hover: #2f8a2f;
+
   /* Sort and filter controls */
-  --font-size-filter-terms: 18px;
-  --font-size-filter-icon: 21px;
-  --space-filter-icons: 15px; /* between a toolbar's filter icons */
-  --space-filter-caret: 5px; /* from a filter icon to its caret */
-  --space-dropdown-caret: 2px; /* a dropdown trigger's caret after its text */
   --color-filter-icon: light-dark(var(--gray-dark), #fff);
   --color-filter-icon-frame: #fff; /* frame-wrapper h1.filter-dropdown.icon, */
   --font-size-filter-icon-frame: 19px;
-  --font-size-filter-counter: 10px;
-  --color-filter-counter-bg: #fff;
-  --color-filter-counter-text: var(--brand-primary);
+  --frame-icons-offset: 2px; /* centers the title's 36px filter tools on its first line */
   --opacity-faded: 0.15; /* .grid-item.fade-*-on */
 
   /* Toasts */
@@ -844,7 +911,13 @@
   --shadow-rating-popover: 0 5px 10px rgb(0 0 0 / 20%);
 
   /* Core controls: pagination, pill tabs, rating hearts, empty and loading states */
-  --font-size-pagination: 16px;
+  --font-size-pagination: 15px;
+  --font-size-pagination-arrow: 15px;
+  --font-size-pagination-gap: 16px; /* the dots that open Jump to page */
+  --pagination-size: 36px; /* each page's square */
+  --space-pagination: 4px;
+  --space-pagination-inline: 8px; /* inside a square, for 3-digit pages */
+  --space-pagination-arrow: 8px; /* the extra room outside each arrow */
   --font-size-icon-lg: 20px; /* pagination arrows, rating hearts */
   --font-size-tab: 13px;
   --font-size-count: 10px; /* the count badge on a tab */
@@ -856,9 +929,7 @@
   --no-results-image: 150px;
   --color-pagination-text: light-dark(#000, #fff);
   --color-pagination-disabled: light-dark(#ccc, #666);
-  --space-page-jump: 9px 14px; /* the quick jump popover, like Bootstrap's .popover-title */
-  --space-page-jump-offset: 4px;
-  --page-jump-select-width: 70px;
+  --space-page-jump-title: 8px; /* from the Jump to page label down to the picker */
   --color-tab-bg: light-dark(rgb(0 0 0 / 0.3), rgb(255 255 255 / 0.15));
   --color-tab-bg-hover: light-dark(rgb(0 0 0 / 0.5), rgb(255 255 255 / 0.35));
   --color-tab-text: light-dark(#fff, #ccc);
@@ -1224,9 +1295,6 @@
   --transition-frame: 0.5s;
 
   /* Advanced filters: the funnel, the slide-out panel, its Chosen fields and noUiSliders and the applied tags */
-  --font-size-filter-toggle: 20px;
-  --font-size-filter-toggle-caret: 14px;
-  --filter-toggle-gap: 10px;
   --filter-toggle-overhang: 12px; /* into the sidebar's right padding */
   --color-filter-panel-bg: #222;
   --color-filter-control-bg: #333;
@@ -1482,8 +1550,8 @@
   --color-comment-mark-text: #333; /* inherited in light, set in dark */
   --color-comment-inline-title: light-dark(#e1e1e1, var(--dk-bg2)); /* user pages on phones, */
   --color-comment-watched: var(--brand-tertiary);
-  --color-comment-edit: var(--brand-success);
-  --color-comment-delete: var(--brand-primary);
+  --color-comment-edit: var(--color-action-edit);
+  --color-comment-delete: var(--color-action-delete);
   --color-comment-pill-op: var(--brand-secondary);
   --font-size-comment-meta: 13px; /* the author row and the under-comment links */
   --font-size-comment-icon: 20px;
@@ -1684,23 +1752,15 @@
   --color-toolbar-bg: light-dark(#fafafa, #161616);
   --toolbar-padding: 15px;
   --toolbar-gap: 15px;
-  --toolbar-group-margin: 9px;
-  --toolbar-group-padding: 6px 20px;
-  --font-size-toolbar-count: 13px; /* the blue ".interactions" counter */
   /* History and library subnav. */
   --history-count-gap: 15px;
-  --history-icon-gap: var(--space-filter-icons);
+  --history-icon-gap: var(--space-tools);
   --history-pagination-end: 6px;
-  --font-size-history-count-icon: 18px; /* .interactions .trakt-icon-document, .trakt-icon-check */
   --dropdown-limit-10-height: 250px; /* .dropdown-menu.limit-10: ten rows */
-  --font-size-date-range-icon: 22px; /* .btn-date-range, 1.6em of the subnav's 14px */
   --font-size-date-range-title: 11px;
   --color-date-range-title: light-dark(#666, #aaa);
   --font-size-date-range-button: 20px;
   --font-size-date-range-chip: 12px;
-  --date-range-gap: 10px;
-  --date-range-padding: 6px 11px 10px;
-  --font-size-filter-watchnow: 20px; /* #filter-watchnow-launcher */
   --watchnow-filter-list-height: 240px;
   --font-size-modal-lead: 16px; /* .checkin-modal h2 */
   --font-size-day-divider-runtime: 14px; /* h2 .time-spent */
@@ -1949,7 +2009,7 @@
 
 /* Sortable list filters and streaming chips. */
 :root {
-  --list-filter-icon-gap: var(--space-filter-icons);
+  --list-filter-icon-gap: var(--space-tools);
   --color-watchnow-chips-bg: light-dark(#eee, #252525);
   --watchnow-chips-country-top: -6px;
   --watchnow-chips-country-padding: 4px 3px;

@@ -1,6 +1,7 @@
 import { https } from '../watchnow/watchNow.ts';
 import { watchNowSourcesSchema } from '../watchnow/watchNowSchema.ts';
 import type { FilterOptionGroup } from './filterOptions.ts';
+import { serviceLabel } from './serviceLabel.ts';
 
 /** A service in the viewer's country, from `/watchnow/sources/:country`. */
 export type FilterSource = {
@@ -33,19 +34,8 @@ export const watchNowBundles = [
 
 export type WatchNowBundle = (typeof watchNowBundles)[number]['id'];
 
-// OG's option-tag replacements (advanced_filters.js:34-47): "Netflix (on Amazon)" lists as Netflix, tagged Amazon.
-const storeTags = [
-  [' (free)', 'Free'],
-  [' (on Amazon)', 'Amazon'],
-  [' (on Apple TV)', 'Apple TV'],
-  [' (on Roku)', 'Roku'],
-] as const;
-
 function serviceOption(value: string, name: string) {
-  const store = storeTags.find(([suffix]) => name.toLowerCase().includes(suffix.toLowerCase()));
-  if (!store) return { value, label: name };
-  const at = name.toLowerCase().indexOf(store[0].toLowerCase());
-  return { value, label: (name.slice(0, at) + name.slice(at + store[0].length)).trim(), tag: store[1] };
+  return { value, ...serviceLabel(name) };
 }
 
 type WatchNowOptionsParams = {

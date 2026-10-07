@@ -5,7 +5,7 @@
   faint until the card is hovered or focused.
 
   "N replies" opens the replies inline, hanging off a rail under the avatar. Reply opens a reply box at the end of
-  the thread, and a posted reply goes to the top of it. The pencil swaps the text for an edit form, and the × asks
+  the thread, and a posted reply goes to the top of it. The pen swaps the text for an edit form, and the trash can asks
   before deleting. The flag opens the report dialog, and the block icon asks before blocking the member's comments. A
   blocked member's card collapses to its faded name row until clicked, and their replies are dropped from the inline
   thread. Reactions share the viewer's choices and totals.
@@ -27,10 +27,10 @@ import eyeSlash from '$lib/icons/solid/eye-slash.svg?raw';
 import replyIcon from '$lib/icons/solid/reply.svg?raw';
 import star from '$lib/icons/solid/star.svg?raw';
 import checkThick from '$lib/icons/trakt/check-thick.svg?raw';
-import flag from '$lib/icons/trakt/flag-2.svg?raw';
-import deleteIcon from '$lib/icons/trakt/delete.svg?raw';
-import pencil from '$lib/icons/trakt/pencil.svg?raw';
-import userBlock from '$lib/icons/trakt/user-block.svg?raw';
+import flag from '$lib/icons/regular/flag.svg?raw';
+import deleteIcon from '$lib/icons/regular/trash-can.svg?raw';
+import pencil from '$lib/icons/regular/pen.svg?raw';
+import userBlock from '$lib/icons/regular/user-xmark.svg?raw';
 import type { CommentResponse } from '@trakt/api';
 import { overlay } from '../../overlay/overlay.ts';
 import type { FormatDateOptions } from '../../utils/formatDate.ts';
@@ -809,6 +809,19 @@ const vanish = (node: Element) =>
     background-color: var(--color-comment-chip);
     color: var(--color-text);
   }
+}
+
+/* Share, edit and delete carry their colors, like everywhere else they appear; report and block stay gray. */
+.above-comment .tools :global(.share) {
+  color: var(--color-action-share);
+}
+
+.above-comment .tools > .manage-icon.edit {
+  color: var(--color-comment-edit);
+}
+
+.above-comment .tools :global(.confirm.delete > button) {
+  color: var(--color-comment-delete);
 }
 
 .bubble {

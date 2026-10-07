@@ -29,8 +29,8 @@ import { toast } from '$lib/components/toast/toast.svelte';
 import SectionToolbar from '$lib/components/toolbar/SectionToolbar.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import Icon from '$lib/icons/Icon.svelte';
-import barsProgress from '$lib/icons/thin/bars-progress.svg?raw';
-import grid2 from '$lib/icons/thin/grid-2.svg?raw';
+import barsProgress from '$lib/icons/regular/bars-progress.svg?raw';
+import grid2 from '$lib/icons/regular/grid-2.svg?raw';
 import { overlay } from '$lib/overlay/overlay';
 import { settingsRequest } from '$lib/settings/settingsRequest';
 import type { ProfileUser } from '$lib/users/ProfileUser';
@@ -185,10 +185,12 @@ function changeHide(hide: ProgressHide[]) {
       </ul>
     </Dropdown>
   {/snippet}
-  {#snippet summary()}
+  {#snippet stats()}
     <span class="strip"><ProgressSummary type={kind} shows={shown?.length ?? 0} {totals} /></span>
+  {/snippet}
+  {#snippet summary()}
     <span class="sort">
-      <Dropdown>
+      <Dropdown joined>
         {#snippet trigger()}{#if data.sort.supported}{progressSortLabel(data.sort.by, data.type)}{:else}{progressSortLabel(
               data.sort.by,
               data.type,
@@ -200,7 +202,7 @@ function changeHide(hide: ProgressHide[]) {
           {/each}
         </ul>
       </Dropdown>
-      <SortDirection bind:flipped={
+      <SortDirection joined bind:flipped={
         () => data.sort.how === 'desc',
         (next) => goto(href(data.type, { by: data.sort.by, how: next ? 'desc' : 'asc' }))
       } />
@@ -281,21 +283,30 @@ function changeHide(hide: ProgressHide[]) {
 }
 
 .icons {
-  --filter-eye-lead: 0;
   gap: var(--history-icon-gap);
 }
 
 .view-toggle {
-  min-block-size: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: var(--tool-size);
+  min-block-size: var(--tool-size);
   padding: 0;
   border: 0;
+  border-radius: var(--radius-control);
   background: none;
-  color: var(--color-filter-icon);
-  font-size: var(--font-size-filter-icon);
+  color: var(--color-tool);
+  font-size: var(--font-size-tool);
   line-height: 1;
   vertical-align: middle;
   cursor: pointer;
-  transition: color 0.5s;
+  transition: color 0.5s, background-color 0.2s;
+
+  &:is(:hover, :focus-visible) {
+    background-color: var(--color-tool-hover-bg);
+    color: var(--color-tool-hover);
+  }
 
   &.selected {
     color: var(--brand-primary);

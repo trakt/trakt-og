@@ -1,27 +1,32 @@
 <!--
   OG's `#sort-direction` next to a sort dropdown: an arrow that points down for the sort's own direction and turns
   red and points up once flipped. A toggle button, so `aria-pressed` says which.
+  `joined` makes it the end of a split control after a `<Dropdown joined>`: a bordered square with the wide-short
+  sort icons, inside a wrapper that lays the two flush.
     <SortDirection bind:flipped />
+    <span class="sort"><Dropdown joined>…</Dropdown><SortDirection joined bind:flipped /></span>
 -->
 <script lang="ts">
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import Icon from '$lib/icons/Icon.svelte';
+import sortDown from '$lib/icons/regular/arrow-down-wide-short.svg?raw';
+import sortUp from '$lib/icons/regular/arrow-up-wide-short.svg?raw';
 import arrow from '$lib/icons/trakt/arrow-right.svg?raw';
 
-let { flipped = $bindable(false) }: { flipped?: boolean } = $props();
+let { flipped = $bindable(false), joined = false }: { flipped?: boolean; joined?: boolean } = $props();
 </script>
 
 <Tooltip text="Direction">
   {#snippet trigger(tooltip)}
     <button
       type="button"
-      class={['direction', { flipped }]}
+      class={['direction', { flipped, joined }]}
       aria-label="Reverse the sort"
       aria-pressed={flipped}
       onclick={() => (flipped = !flipped)}
       {...tooltip}
     >
-      <Icon svg={arrow} />
+      {#if joined}<Icon svg={flipped ? sortUp : sortDown} />{:else}<Icon svg={arrow} />{/if}
     </button>
   {/snippet}
 </Tooltip>
@@ -50,6 +55,40 @@ let { flipped = $bindable(false) }: { flipped?: boolean } = $props();
     & :global(.icon) {
       rotate: 270deg;
     }
+  }
+
+  &.joined {
+    display: inline-grid;
+    place-items: center;
+    inline-size: var(--control-height);
+    block-size: var(--control-height);
+    margin: 0 0 0 -1px;
+    border: 1px solid var(--color-control-border);
+    border-start-end-radius: var(--radius-control);
+    border-end-end-radius: var(--radius-control);
+    background-color: var(--color-control-bg);
+    color: var(--color-control-text);
+    font-size: var(--font-size-tool-icon-small);
+
+    &:is(:hover, :focus-visible) {
+      position: relative;
+      border-color: var(--color-control-border-hover);
+      background-color: var(--color-control-hover-bg);
+    }
+
+    &.flipped {
+      color: var(--brand-primary);
+    }
+
+    & :global(.icon) {
+      rotate: none;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .direction :global(.icon) {
+    transition: none;
   }
 }
 </style>

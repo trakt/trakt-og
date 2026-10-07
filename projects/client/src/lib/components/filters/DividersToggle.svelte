@@ -6,7 +6,7 @@
 <script lang="ts">
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import Icon from '$lib/icons/Icon.svelte';
-import dividers from '$lib/icons/thin/arrows-to-dotted-line.svg?raw';
+import dividers from '$lib/icons/regular/arrows-to-dotted-line.svg?raw';
 
 let { shown = $bindable() }: { shown: boolean } = $props();
 
@@ -27,15 +27,28 @@ function toggle() {
 
 <style>
 .toggle {
-  min-block-size: 0;
-  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-tool-caret);
+  min-inline-size: var(--tool-size);
+  min-block-size: var(--tool-size);
+  padding: 0 0;
   border: 0;
+  border-radius: var(--radius-control);
   background: none;
-  color: var(--color-filter-icon);
-  font-size: var(--font-size-filter-icon);
+  color: var(--color-tool);
+  font-size: var(--font-size-tool);
   line-height: 1;
+  text-decoration: none;
   vertical-align: middle;
-  transition: color 0.5s;
+  transition: color 0.5s, background-color 0.2s;
+
+  &:is(:hover, :focus-visible) {
+    background-color: var(--color-tool-hover-bg);
+    color: var(--color-tool-hover);
+    --caret-color: currentcolor;
+  }
 
   &.selected {
     color: var(--brand-primary);

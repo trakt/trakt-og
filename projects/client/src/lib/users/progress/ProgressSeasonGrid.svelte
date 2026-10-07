@@ -1,10 +1,11 @@
 <!--
-  An open progress row's seasons, as OG's season band: the season's name (linking to its page) with what's watched and
-  left at the line's end (the row's own `Stat`s, a size down), then a numbered pill an episode with the percent
-  beside them. A pill is purple once watched, the library's teal while it's in your library but not watched, outlined and pulsing for up next, and
-  dashed until it airs. Each links to its episode, with a chart tooltip: the screenshot, the code and title, when it
-  aired with its runtime and rating, then its status lines. Spoiler settings hide an unwatched episode's screenshot
-  and title there, as on the episode cards.
+  An open progress row's seasons, a header line each like a table of contents: the season's name (linking to its
+  page), what's watched and left (the row's own `Stat`s, a size down), a small bar filling the rest of the line, and
+  the percent at its end; then a numbered pill an episode, across the full width. A pill is purple once watched, the
+  library's teal while it's in your library but not watched, outlined and pulsing for up next, and dashed until it
+  airs. Each links to its episode, with a chart tooltip: the screenshot, the code and title, when it aired with its
+  runtime and rating, then its status lines. Spoiler settings hide an unwatched episode's screenshot and title there,
+  as on the episode cards.
     <ProgressSeasonGrid seasons={row.seasons} />
 -->
 <script lang="ts">
@@ -63,6 +64,10 @@ const spoilers = (square: EpisodeSquare) =>
           <Stat svg={calendar} value={String(season.announced)} noun="announced" />
         {/if}
       </p>
+      {#if season.announced === undefined}
+        <span class="bar" style:--done="{season.percent}%" aria-hidden="true"></span>
+        <span class={['percent', { complete: season.complete }]}>{season.percent}%</span>
+      {/if}
       <ul class="squares" aria-label="{season.name} episodes">
         {#each season.squares as square (square.code)}
           <li>
@@ -76,7 +81,6 @@ const spoilers = (square: EpisodeSquare) =>
           </li>
         {/each}
       </ul>
-      <span class={['percent', { complete: season.complete }]}>{season.announced === undefined ? `${season.percent}%` : ''}</span>
     </li>
   {/each}
 </ul>
@@ -96,11 +100,12 @@ ul {
   font-size: var(--font-size-progress-row);
 }
 
-/* OG's season band: the name and the stats on a line, then the pills under them with the percent beside. */
+/* A header line (name, stats, bar, percent), then the pills across the full width. The percent's column is fixed,
+   so every season's bar ends at the same point and the percents line up. */
 .season {
   display: grid;
-  grid-template-areas: 'name stats .' 'squares squares percent';
-  grid-template-columns: minmax(0, 1fr) auto var(--progress-season-percent);
+  grid-template-areas: 'name stats bar percent' 'squares squares squares squares';
+  grid-template-columns: auto auto minmax(var(--progress-season-bar-min), 1fr) var(--progress-season-percent);
   align-items: center;
   gap: var(--progress-season-head-gap) var(--progress-season-columns);
   padding-block: var(--progress-season-padding);
@@ -139,7 +144,7 @@ ul {
   }
 }
 
-/* What's watched and left, as the row's own stats a size down, over the pills' end. */
+/* What's watched and left, as the row's own stats a size down. */
 .stats {
   --font-size-stat-icon: var(--font-size-progress-season-stat-icon);
   --font-size-stat-number: var(--font-size-progress-season-stat-number);
@@ -148,19 +153,29 @@ ul {
   grid-area: stats;
   display: flex;
   flex-wrap: wrap;
-  justify-content: end;
   gap: var(--progress-season-stats-gap) var(--progress-season-stat-gap);
   margin: 0;
   font-variant-numeric: tabular-nums;
 }
 
+/* The season's own small progress bar, filling the line out to the percent. */
+.bar {
+  grid-area: bar;
+  block-size: var(--progress-season-bar-height);
+  border-radius: var(--radius-progress-season-bar);
+  background: linear-gradient(
+    to right,
+    var(--color-progress-watched) var(--done),
+    var(--color-progress-square) var(--done)
+  );
+}
+
 .percent {
   grid-area: percent;
-  align-self: start;
   font: var(--font-weight-headings) var(--font-size-progress-season-percent) / var(--line-height-progress-season-name)
     var(--font-headings);
+  font-weight: var(--font-weight-headings-heavy);
   font-variant-numeric: tabular-nums;
-  text-align: end;
 
   &.complete {
     color: var(--color-progress-watched-text);
@@ -169,7 +184,6 @@ ul {
 
 .squares {
   grid-area: squares;
-  align-self: start;
   display: flex;
   flex-wrap: wrap;
   gap: var(--progress-square-gap);
@@ -284,15 +298,11 @@ ul {
   }
 }
 
-/* A narrow row: the stats wrap under the name. */
+/* A narrow row: the stats take their own line under the name and the bar. */
 @media (width < 768px) {
   .season {
-    grid-template-areas: 'name name' 'stats stats' 'squares percent';
-    grid-template-columns: minmax(0, 1fr) var(--progress-season-percent);
-  }
-
-  .stats {
-    justify-content: start;
+    grid-template-areas: 'name bar percent' 'stats stats stats' 'squares squares squares';
+    grid-template-columns: auto minmax(var(--progress-season-bar-min), 1fr) var(--progress-season-percent);
   }
 }
 

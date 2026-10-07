@@ -1,8 +1,9 @@
 <!--
-  OG's list row: a fanned stack of the list's first five posters, then a header bar with
-  the owner's avatar, the list name, the privacy and collaborator pills, the owner with their VIP label, the viewer's
-  icons and the counts, then the description, rendered like a comment and clamped with a read-more shade. Hovering the
-  stack opens up the poster under the pointer.
+  A list row as one card: a stack of the list's first five posters on the left, then the owner's avatar beside the
+  list name, the privacy and collaborator pills and the owner with their VIP label. The description sits under that,
+  rendered like a comment and clamped with a read-more shade, or the first titles when there's none and they're known.
+  A footer holds the counts on the left and the viewer's icons on the right. Hovering the stack opens up the poster
+  under the pointer; short lists stretch their posters to fill it.
 -->
 <script lang="ts">
 import ReportDialog from '$lib/components/summary/ReportDialog.svelte';
@@ -86,6 +87,8 @@ $effect(() => {
 const shown = $derived(posters.slice(0, 5));
 const blocks = $derived(parseComment(description?.trim() ?? ''));
 const plural = (count: number, word: string) => `${word}${count === 1 ? '' : 's'}`;
+const titles = $derived(shown.flatMap(({ title }) => (title ? [title] : [])).slice(0, 3));
+const more = $derived(itemCount - titles.length);
 </script>
 
 <!-- Hrefs come in as props pointing at OG routes og hasn't built yet, and resolve() only takes routes that exist. -->
@@ -170,24 +173,17 @@ const plural = (count: number, word: string) => `${word}${count === 1 ? '' : 's'
           by <a class="username" href={owner.href}>{owner.name}</a>{#if owner.vip}<VipLabel badge={owner.vip} pill />{/if}
         </p>
       </div>
-      <div class="interactions">
-        {#if actions}
-          {#if actions.report}{@render action('Report List', flag, 'report', actions.report.onclick ? actions.report : { onclick: likeTarget?.viewer ? () => { reportOpen = true; } : undefined })}{/if}
-          {#if actions.edit}{@render action('Edit', pencil, 'edit', actions.edit)}{/if}
-          {#if actions.delete?.onclick}<span class="delete" style:--confirm-icon-size="var(--font-size-list-row-action)"><ManageConfirm name="delete" svg={deleteIcon} label="Delete" yes="Yes, delete it!" warning={actions.delete.warning} disabled={actions.delete.busy} onconfirm={actions.delete.onclick}>Delete this list?</ManageConfirm></span>{:else if actions.delete}{@render action('Delete', deleteIcon, 'delete', actions.delete)}{/if}
-          {#if actions.leave}{@render action('Stop collaborating on this list', userXmark, 'leave', actions.leave)}{/if}
-          {#if actions.progress}{@render action('View watched progress', barsProgress, 'progress', actions.progress)}{/if}
-          {#if actions.progressHref}
-            <Tooltip text="View watched progress">
-              {#snippet trigger(tooltip)}
-                <a class="action progress" href={actions.progressHref} {...externalLink(actions.progressHref)} aria-label="View watched progress" {...tooltip}>
-                  <Icon svg={barsProgress} />
-                </a>
-              {/snippet}
-            </Tooltip>
-          {/if}
-          {#if actions.shareUrl}<span class="share"><ShareButton url={actions.shareUrl} title={name} /></span>{/if}
-        {/if}
+    </header>
+    {#if blocks.length > 0}
+      <div class="overview"><ReadMore><CommentText {blocks} /></ReadMore></div>
+    {:else if titles.length > 0}
+      <p class="preview">
+        Starts with {#each titles as title, i (i)}{#if i > 0}, {/if}<span class="title">{title}</span>{/each}{#if more > 0}
+          and {more.toLocaleString('en-US')} more{/if}.
+      </p>
+    {/if}
+    <footer class="below">
+      <div class="counts">
         <span class="count">{@render count('Items', document, itemCount, 'item')}</span>
         {#if likeCount !== undefined}
           <span class="count">
@@ -199,25 +195,46 @@ const plural = (count: number, word: string) => `${word}${count === 1 ? '' : 's'
           <a class="count" href="{href}/comments">{@render count('Comments', comment, commentCount, 'comment')}</a>
         {/if}
       </div>
-    </header>
-    {#if blocks.length > 0}
-      <div class="overview"><ReadMore><CommentText {blocks} /></ReadMore></div>
-    {/if}
+      {#if actions}
+        <div class="actions">
+          {#if actions.report}{@render action('Report List', flag, 'report', actions.report.onclick ? actions.report : { onclick: likeTarget?.viewer ? () => { reportOpen = true; } : undefined })}{/if}
+          {#if actions.progress}{@render action('View watched progress', barsProgress, 'progress', actions.progress)}{/if}
+          {#if actions.progressHref}
+            <Tooltip text="View watched progress">
+              {#snippet trigger(tooltip)}
+                <a class="action progress" href={actions.progressHref} {...externalLink(actions.progressHref)} aria-label="View watched progress" {...tooltip}>
+                  <Icon svg={barsProgress} />
+                </a>
+              {/snippet}
+            </Tooltip>
+          {/if}
+          {#if actions.shareUrl}<span class="share"><ShareButton url={actions.shareUrl} title={name} /></span>{/if}
+          {#if actions.edit}{@render action('Edit', pencil, 'edit', actions.edit)}{/if}
+          {#if actions.leave}{@render action('Stop collaborating on this list', userXmark, 'leave', actions.leave)}{/if}
+          {#if actions.delete?.onclick}<span class="delete" style:--confirm-icon-size="var(--font-size-list-row-action)"><ManageConfirm name="delete" svg={deleteIcon} label="Delete" yes="Yes, delete it!" warning={actions.delete.warning} disabled={actions.delete.busy} onconfirm={actions.delete.onclick}>Delete this list?</ManageConfirm></span>{:else if actions.delete}{@render action('Delete', deleteIcon, 'delete', actions.delete)}{/if}
+        </div>
+      {/if}
+    </footer>
   </div>
 </article>
 
 <style>
+/* One card: the stack on the left, the info beside it. Narrower than the stack plus 300px, the info drops under it. */
 .list-row {
   display: flex;
   flex-wrap: wrap;
-  row-gap: var(--gutter);
-  padding-block-start: var(--gutter);
+  margin-block-start: var(--gutter);
+  background-color: var(--color-list-row-header);
+  /* Its own text color, so the card reads on a dark frame too (the search Lists tab). */
+  color: var(--color-text);
 }
 
 .posters {
   position: relative;
+  display: flex;
   flex: none;
-  inline-size: 250px;
+  align-self: flex-start;
+  inline-size: var(--list-row-stack-width);
 
   &:hover .rank {
     opacity: 1;
@@ -230,30 +247,30 @@ const plural = (count: number, word: string) => `${word}${count === 1 ? '' : 's'
   transition: opacity var(--transition-card);
 }
 
-/* Right-aligned stack: the first poster is 120px wide, the rest show a 32px sliver of their right edge. */
+/* Left-aligned stack: the first poster is open, the rest share the width that's left. Hovering one opens it instead. */
 .poster-items {
   display: flex;
-  justify-content: flex-end;
-  min-block-size: 60px;
+  flex: 1;
+  block-size: var(--list-row-poster-height);
   overflow: hidden;
+  background-color: var(--color-card-bg);
 
   &:hover .poster-item {
-    inline-size: 32px;
+    flex: 1 1 0;
   }
 }
 
 .poster-item {
   position: relative;
-  flex: none;
-  inline-size: 32px;
-  block-size: 180px;
+  flex: 1 1 0;
+  min-inline-size: 0;
   overflow: hidden;
   box-shadow: var(--shadow-list-poster);
-  transition: inline-size var(--transition-card);
+  transition: flex var(--transition-card);
 
   &:first-child,
   .poster-items &:hover {
-    inline-size: 120px;
+    flex: 0 0 var(--list-row-poster-width);
   }
 
   /* Its shadow only reaches left, where the stack's edge clips it into a stripe. */
@@ -262,13 +279,15 @@ const plural = (count: number, word: string) => `${word}${count === 1 ? '' : 's'
   }
 }
 
+/* Anchored right, so a closed poster shows its right edge; at least the open width, so a wide one leaves no gap. */
 .poster {
   position: absolute;
-  inset-block-start: 0;
+  inset-block: 0;
   inset-inline-end: 0;
   display: block;
-  inline-size: 120px;
-  aspect-ratio: var(--ratio-poster);
+  inline-size: max(var(--list-row-poster-width), 100%);
+  max-inline-size: none;
+  block-size: 100%;
   background-color: var(--color-card-bg);
   object-fit: cover;
 }
@@ -278,21 +297,17 @@ span.poster {
   background-size: cover;
 }
 
-/* Narrower than the posters plus 300px, the info drops under the posters. */
 .info {
+  display: flex;
   flex: 1 1 300px;
+  flex-direction: column;
+  gap: var(--list-row-footer-gap);
   min-inline-size: 0;
-  margin-inline-start: var(--gutter);
+  padding: var(--list-row-padding);
 }
 
 .above {
   display: flex;
-  flex-wrap: wrap;
-  margin-inline-start: calc(var(--gutter) * -1);
-  padding: 10px var(--gutter);
-  background-color: var(--color-list-row-header);
-  /* Its own text color, so the bar reads on a dark frame too (the search Lists tab). */
-  color: var(--color-text);
 }
 
 .avatar {
@@ -369,15 +384,45 @@ h3 {
   background-color: var(--color-list-pill-collaborators-count);
 }
 
-.interactions {
+.overview {
+  --read-more-shade: var(--color-list-row-header);
+}
+
+/* With no description, the first titles fill the space. */
+.preview {
+  margin: 0;
+  color: var(--color-text-muted);
+
+  & .title {
+    color: var(--color-text);
+  }
+}
+
+/* Pinned to the card's foot, so every row's counts and icons line up whatever sits above. */
+.below {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
   align-items: center;
-  gap: var(--list-row-action-gap);
-  margin-block-start: 12px;
-  align-self: flex-start;
+  gap: var(--list-row-footer-gap);
+  margin-block-start: auto;
+  padding-block-start: var(--list-row-footer-gap);
+  border-block-start: 1px solid var(--color-list-row-divider);
   font-family: var(--font-headings);
   font-size: var(--font-size-list-row-meta);
   white-space: nowrap;
+}
+
+.counts {
+  display: flex;
+  align-items: center;
+  gap: var(--list-row-count-gap);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--list-row-action-gap);
 }
 
 .action {
@@ -399,7 +444,7 @@ h3 {
 .report {
   opacity: 0;
 
-  .info:hover &,
+  .list-row:hover &,
   &:focus-visible {
     opacity: 1;
   }
@@ -468,11 +513,6 @@ a.count:is(:hover, :focus-visible) {
   overflow: hidden;
   clip-path: inset(50%);
   white-space: nowrap;
-}
-
-.overview {
-  --read-more-shade: var(--color-surface);
-  margin-block: var(--gutter);
 }
 
 @media (prefers-reduced-motion: reduce) {

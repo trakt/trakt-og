@@ -1,17 +1,23 @@
 <!--
-  "Séance of the Watch": a Ouija board between two candles. The planchette follows the pointer; resting it on a letter
-  spells it, and spelling a word the spirits know (see spellOuija) gets an answer. The text field asks the same
-  spirits without a pointer.
+  "Séance of the Watch": a Ouija board between two candles. The planchette follows the pointer, and resting it on a
+  letter spells it. Spell a word the spirits know (see spellOuija) and they take over: the room goes dark, the candles
+  gutter, the board shudders and the planchette tears loose to spell their answer on its own (toPossession). Then a
+  ghost rises out of the board, their reply appears and the candles flare back.
 -->
 <script lang="ts">
 import { fitToParent } from './fitToParent.ts';
-import { spellOuija } from './spellOuija.ts';
+import { spellOuija, type SpiritReply } from './spellOuija.ts';
 import { toArcLetters } from './toArcLetters.ts';
+import { toPossession } from './toPossession.ts';
 import TraktMark from './TraktMark.svelte';
 
 const DWELL_MS = 450;
-const GLOW_MS = 2400;
-const HINT = 'Rest the planchette on a letter to spell. The spirits are listening.';
+const DARK_MS = 900;
+const STEP_MS = 850;
+const REVEAL_MS = 4800;
+const HINT = 'Rest the planchette on a letter to spell. Rest it on Goodbye to start over.';
+const REST = { x: 500, y: 150 };
+const YES = { x: 255, y: 94 };
 
 const letters = [
   ...toArcLetters({
@@ -28,46 +34,75 @@ const letters = [
   }),
 ];
 
-let planchette = $state<{ x: number; y: number } | null>(null);
+let phase = $state<'idle' | 'possessed' | 'revealed'>('idle');
+let pointer = $state<{ x: number; y: number } | null>(null);
+let guided = $state<{ x: number; y: number } | null>(null);
 let hovered = $state<string | null>(null);
 let spelled = $state('');
-let reply = $state<string | null>(null);
-let glowing = $state(false);
+let spirit = $state('');
+let current = $state<string | null>(null);
+let message = $state<string | null>(null);
 let dwell: ReturnType<typeof setTimeout> | undefined;
-let glow: ReturnType<typeof setTimeout> | undefined;
+let timers: ReadonlyArray<ReturnType<typeof setTimeout>> = [];
+
+const later = (ms: number, run: () => void) => {
+  timers = [...timers, setTimeout(run, ms)];
+};
 
 $effect(() => () => {
   clearTimeout(dwell);
-  clearTimeout(glow);
+  timers.forEach(clearTimeout);
 });
 
-const answer = (text: string) => {
-  reply = text;
-  glowing = true;
-  clearTimeout(glow);
-  glow = setTimeout(() => (glowing = false), GLOW_MS);
+const possess = (reply: SpiritReply) => {
+  const steps = toPossession({ answer: reply.answer, letters, yes: YES });
+  const revealAt = DARK_MS + steps.length * STEP_MS;
+
+  phase = 'possessed';
+  guided = pointer ?? REST;
+  hovered = null;
+  spelled = '';
+  spirit = '';
+  steps.forEach((step, index) =>
+    later(DARK_MS + index * STEP_MS, () => {
+      guided = { x: step.x, y: step.y };
+      current = step.letter;
+      if (step.letter) spirit = `${spirit}${step.letter}`;
+    })
+  );
+  later(revealAt, () => {
+    phase = 'revealed';
+    current = null;
+    message = reply.text;
+  });
+  later(revealAt + REVEAL_MS, () => {
+    phase = 'idle';
+    guided = null;
+    spirit = '';
+  });
 };
 
 const commit = (letter: string) => {
   const result = spellOuija({ spelled, letter });
   spelled = result.spelled;
-  if (result.reply) answer(result.reply);
+  if (result.reply) possess(result.reply);
 };
 
 const follow = (event: PointerEvent & { currentTarget: SVGSVGElement }) => {
   const matrix = event.currentTarget.getScreenCTM()?.inverse();
   if (!matrix) return;
   const point = new DOMPoint(event.clientX, event.clientY).matrixTransform(matrix);
-  planchette = { x: point.x, y: point.y };
+  pointer = { x: point.x, y: point.y };
 };
 
 const release = () => {
-  planchette = null;
+  pointer = null;
   hovered = null;
   clearTimeout(dwell);
 };
 
 const enter = (letter: string) => {
+  if (phase !== 'idle') return;
   hovered = letter;
   clearTimeout(dwell);
   dwell = setTimeout(() => commit(letter), DWELL_MS);
@@ -78,17 +113,31 @@ const leave = () => {
   clearTimeout(dwell);
 };
 
-const ask = (event: Event & { currentTarget: HTMLInputElement }) => {
-  const typed = [...event.currentTarget.value.replace(/[^a-z]/gi, '')];
-  const result = typed.reduce(
-    (state, letter) => (state.reply ? state : spellOuija({ spelled: state.spelled, letter })),
-    { spelled: '', reply: null as string | null },
-  );
-  if (result.reply) answer(result.reply);
+/** Ends the session, like resting on GOODBYE: stops the spirits mid-sentence and clears the board. */
+const reset = () => {
+  timers.forEach(clearTimeout);
+  timers = [];
+  clearTimeout(dwell);
+  phase = 'idle';
+  guided = null;
+  hovered = null;
+  current = null;
+  spelled = '';
+  spirit = '';
+  message = null;
 };
 
-// The planchette's window sits 28 units above its center, so the window lands on the pointer.
-const planchetteAt = $derived(planchette ? `translate(${planchette.x} ${planchette.y + 28})` : 'translate(500 178)');
+const farewell = () => {
+  hovered = 'GOODBYE';
+  clearTimeout(dwell);
+  dwell = setTimeout(reset, DWELL_MS);
+};
+
+// The spirits steer while they're here; otherwise the pointer does. The window sits 28 units above the planchette's
+// center, so the window is what lands on a letter.
+const spot = $derived(phase === 'idle' ? (pointer ?? REST) : (guided ?? REST));
+const resting = $derived(phase === 'idle' && !pointer);
+const status = $derived(phase === 'possessed' ? 'The planchette moves on its own…' : (message ?? HINT));
 </script>
 
 <svelte:head>
@@ -98,7 +147,9 @@ const planchetteAt = $derived(planchette ? `translate(${planchette.x} ${planchet
   />
 </svelte:head>
 
-<main class:glowing>
+<main class={phase}>
+  <div class="dark" aria-hidden="true"></div>
+
   <div class="column" {@attach fitToParent}>
     <p class="eyebrow">Trakt · a séance in progress</p>
     <h1>The spirits have spoken: <span class="og">O·G</span></h1>
@@ -134,7 +185,9 @@ const planchetteAt = $derived(planchette ? `translate(${planchette.x} ${planchet
           stroke-width="4"
           stroke-linecap="round"
         />
-        <text x="210" y="110" class="sc" font-size="48" fill="#c61017">Yes</text>
+        <text x="210" y="110" class="sc yes" class:lit={phase !== 'idle' && spirit === '' && guided !== null} font-size="48"
+          >Yes</text
+        >
         <path d="M904 70 a32 32 0 1 0 4 56 a26 26 0 1 1 -4 -56Z" fill="#3d2512" />
         <text x="790" y="110" text-anchor="end" class="sc" font-size="48" fill="#c61017">No</text>
 
@@ -143,6 +196,8 @@ const planchetteAt = $derived(planchette ? `translate(${planchette.x} ${planchet
           <text
             class="letter sc"
             class:hovered={hovered === letter}
+            class:lit={current === letter}
+            class:spoken={phase !== 'idle' && spirit.includes(letter)}
             {x}
             {y}
             transform="rotate({angle} {x} {y})"
@@ -156,10 +211,20 @@ const planchetteAt = $derived(planchette ? `translate(${planchette.x} ${planchet
         <text x="500" y="462" text-anchor="middle" textLength="560" lengthAdjust="spacing" font-size="46" fill="#2a170a"
           >1234567890</text
         >
-        <text x="500" y="520" text-anchor="middle" class="sc" font-size="40" fill="#3d2512">Goodbye? Never.</text>
+        <!-- svelte-ignore a11y_no_static_element_interactions -->
+        <text
+          x="500"
+          y="520"
+          text-anchor="middle"
+          class="sc goodbye"
+          class:hovered={hovered === 'GOODBYE'}
+          font-size="40"
+          onpointerenter={farewell}
+          onpointerleave={leave}>Goodbye? Never.</text
+        >
 
-        <g transform={planchetteAt} class="planchette-spot">
-          <g class="planchette" class:idle={!planchette}>
+        <g class="planchette-spot" style:transform="translate({spot.x}px, {spot.y + 28}px)">
+          <g class="planchette" class:resting>
             <path
               fill-rule="evenodd"
               fill="#3d2512"
@@ -182,15 +247,21 @@ const planchetteAt = $derived(planchette ? `translate(${planchette.x} ${planchet
         <div class="wick"></div>
         <div class="wax"></div>
       </div>
+
+      {#if phase === 'revealed'}
+        <svg class="ghost" aria-hidden="true" viewBox="0 0 200 240">
+          <path
+            d="M20 230 L20 100 C20 40 60 8 100 8 C140 8 180 40 180 100 L180 230 L160 210 L140 232 L120 210 L100 232 L80 210 L60 232 L40 210Z"
+            style:fill="var(--seance-ghost)"
+          />
+          <g transform="translate(60 62) scale(0.82)"><TraktMark ink="var(--seance-ghost-face)" /></g>
+        </svg>
+      {/if}
     </div>
 
-    <p class="spelled" aria-hidden="true">{[...spelled].join(' ')}&#8203;</p>
-    <p class="reply" aria-live="polite">{reply ?? HINT}</p>
-
-    <label class="ask">
-      Too shy to touch the board? Ask the spirits:
-      <input type="text" autocomplete="off" spellcheck="false" oninput={ask} />
-    </label>
+    <p class="spelled" aria-hidden="true">{[...(phase === 'idle' ? spelled : spirit)].join(' ')}&#8203;</p>
+    <p class="reply" aria-live="polite">{status}</p>
+    <button type="button" class="reset" onclick={reset}>Close the séance</button>
 
     <div class="credits">
       <p class="title">OG Reanimated <span class="dot">·</span> <em>Séance of the Watch</em></p>
@@ -225,7 +296,22 @@ main {
   }
 }
 
+/* The room goes dark around the board while the spirits are in it. */
+.dark {
+  position: absolute;
+  inset: 0;
+  background: var(--seance-dark);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.8s;
+
+  :is(.possessed, .revealed) & {
+    opacity: 1;
+  }
+}
+
 .column {
+  position: relative;
   transform-origin: top center;
   max-inline-size: var(--seance-max);
   margin-inline: auto;
@@ -257,11 +343,16 @@ h1 {
 }
 
 .table {
+  position: relative;
   inline-size: 100%;
   display: flex;
   align-items: flex-end;
   justify-content: center;
   gap: var(--seance-candle-gap);
+
+  .possessed & {
+    animation: shudder 0.18s linear infinite;
+  }
 }
 
 .board {
@@ -271,31 +362,78 @@ h1 {
   font-family: var(--font-seance);
   cursor: none;
   touch-action: none;
-  transition: filter 0.4s;
-}
+  transition: filter 0.8s;
 
-.glowing .board {
-  filter: var(--seance-glow);
+  :is(.possessed, .revealed) & {
+    filter: var(--seance-glow);
+  }
 }
 
 .sc {
   font-family: var(--font-seance-caps);
 }
 
+.yes {
+  fill: var(--brand-primary-darken);
+}
+
 .letter {
   fill: var(--seance-letter);
-  transition: fill 0.2s;
+  transition: fill 0.3s;
+
+  &.hovered {
+    fill: var(--brand-primary-darken);
+  }
+
+  &.spoken {
+    fill: var(--brand-primary-darken);
+  }
+}
+
+.goodbye {
+  fill: var(--seance-wood-ink);
+  transition: fill 0.3s;
 
   &.hovered {
     fill: var(--brand-primary-darken);
   }
 }
 
-.planchette-spot {
-  pointer-events: none;
+.reset {
+  padding: var(--seance-button-padding);
+  border: 1px solid var(--seance-accent);
+  border-radius: var(--seance-button-radius);
+  background: transparent;
+  color: var(--seance-accent);
+  font-family: var(--font-seance-caps);
+  font-size: var(--font-size-seance-button);
+  letter-spacing: 0.08em;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--seance-button-hover);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--seance-accent);
+    outline-offset: 2px;
+  }
 }
 
-.planchette.idle {
+.lit {
+  fill: var(--brand-primary);
+  filter: var(--seance-letter-glow);
+}
+
+.planchette-spot {
+  pointer-events: none;
+
+  :is(.possessed, .revealed) & {
+    transition: transform 0.7s cubic-bezier(0.6, 0, 0.3, 1);
+  }
+}
+
+.planchette.resting {
   animation: drift 9s ease-in-out infinite;
   transform-box: fill-box;
   transform-origin: center;
@@ -320,15 +458,25 @@ h1 {
   box-shadow: var(--seance-flame-glow);
   transform-origin: 50% 90%;
   animation: flicker 1.4s ease-in-out infinite;
-  transition: transform 0.4s;
+  transition:
+    scale 0.6s,
+    opacity 0.6s,
+    filter 0.6s;
 
   &.late {
     animation-delay: -0.6s;
   }
-}
 
-.glowing .flame {
-  scale: 1.6;
+  /* The spirits snuff the candles to a blue gutter, then they flare back when the ghost appears. */
+  .possessed & {
+    scale: 0.35;
+    opacity: 0.6;
+    filter: var(--seance-flame-gutter);
+  }
+
+  .revealed & {
+    scale: 1.8;
+  }
 }
 
 .wick {
@@ -344,42 +492,39 @@ h1 {
   background: var(--seance-wax);
 }
 
+/* A ghost wearing the Trakt mark rises out of the board. */
+.ghost {
+  position: absolute;
+  inset-inline-start: 50%;
+  inset-block-end: 10%;
+  inline-size: var(--seance-ghost-size);
+  translate: -50% 0;
+  filter: var(--seance-ghost-glow);
+  pointer-events: none;
+  animation: rise 4.8s ease-out forwards;
+}
+
 .spelled {
   min-block-size: 1lh;
   font-family: var(--font-seance-caps);
   font-size: var(--font-size-seance-spelled);
   letter-spacing: 0.2em;
   color: var(--seance-accent);
+
+  :is(.possessed, .revealed) & {
+    font-size: var(--font-size-seance-spirit);
+    color: var(--brand-primary);
+    text-shadow: var(--seance-spirit-glow);
+  }
 }
 
 .reply {
   font-family: var(--font-seance);
   font-style: italic;
   font-size: var(--font-size-seance-reply);
-}
 
-.ask {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: var(--seance-ask-gap);
-  font-size: var(--font-size-seance-ask);
-  color: var(--seance-muted);
-
-  & input {
-    padding: var(--seance-input-padding);
-    border: 1px solid var(--seance-accent);
-    border-radius: var(--seance-input-radius);
-    background: var(--seance-input);
-    color: var(--seance-text);
-    font: inherit;
-    text-transform: uppercase;
-
-    &:focus-visible {
-      outline: 2px solid var(--seance-accent);
-      outline-offset: 2px;
-    }
+  .revealed & {
+    color: var(--seance-accent);
   }
 }
 
@@ -432,16 +577,67 @@ h1 {
   }
 }
 
+@keyframes shudder {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(-2px, 1px);
+  }
+  50% {
+    transform: translate(2px, -1px);
+  }
+  75% {
+    transform: translate(-1px, -1px);
+  }
+}
+
+@keyframes rise {
+  0% {
+    opacity: 0;
+    transform: translateY(30%) scale(0.5);
+  }
+  25% {
+    opacity: 0.95;
+  }
+  80% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-120%) scale(1.15) rotate(-6deg);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .flame,
-  .planchette.idle {
+  .planchette.resting,
+  .table {
     animation: none;
+  }
+
+  .ghost {
+    animation: fade 4.8s ease-out forwards;
   }
 
   .board,
   .flame,
-  .letter {
+  .letter,
+  .dark,
+  .planchette-spot {
     transition: none;
+  }
+}
+
+@keyframes fade {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  20%,
+  80% {
+    opacity: 0.9;
   }
 }
 </style>

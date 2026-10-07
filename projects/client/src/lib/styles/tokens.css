@@ -2421,7 +2421,18 @@
   --seance-flame: radial-gradient(ellipse at 50% 70%, #fff 0%, var(--brand-warning) 35%, var(--brand-seventh) 75%);
   --seance-flame-glow: 0 0 40px 12px rgb(240 173 78 / 0.45);
   --seance-wax: linear-gradient(90deg, #ccc, #eee 40%, #aaa);
-  --seance-input: rgb(0 0 0 / 0.35);
+  --seance-wood-ink: #3d2512;
+  --seance-dark: radial-gradient(ellipse at 50% 55%, rgb(20 0 0 / 0.55), rgb(0 0 0 / 0.9) 70%);
+  --seance-letter-glow: drop-shadow(0 0 8px rgb(237 28 36 / 0.9));
+  --seance-spirit-glow: 0 0 12px rgb(237 28 36 / 0.9), 0 0 32px rgb(237 28 36 / 0.6);
+  --seance-flame-gutter: hue-rotate(190deg) saturate(1.6);
+  --seance-ghost: rgb(236 240 255 / 0.88);
+  --seance-ghost-face: #2a2a3a;
+  --seance-ghost-glow: drop-shadow(0 0 24px rgb(200 220 255 / 0.85));
+  --seance-ghost-size: 220px;
+  --seance-button-hover: rgb(240 173 78 / 0.12);
+  --seance-button-padding: 6px 16px;
+  --seance-button-radius: 4px;
   --seance-padding: 32px 24px 40px;
   --seance-max: 1240px;
   --seance-gap: 18px;
@@ -2433,9 +2444,6 @@
   --seance-flame-width: 22px;
   --seance-flame-height: 40px;
   --seance-wick: 8px;
-  --seance-ask-gap: 10px;
-  --seance-input-padding: 6px 10px;
-  --seance-input-radius: 4px;
   --seance-credits-gap: 8px;
   --font-seance: 'IM Fell English', Georgia, serif;
   --font-seance-caps: 'IM Fell English SC', Georgia, serif;
@@ -2443,7 +2451,8 @@
   --font-size-seance-title: clamp(44px, 5.4vw, 76px);
   --font-size-seance-spelled: 22px;
   --font-size-seance-reply: 24px;
-  --font-size-seance-ask: 15px;
+  --font-size-seance-spirit: 40px;
+  --font-size-seance-button: 16px;
   --font-size-seance-credits: clamp(30px, 3vw, 42px);
   --font-size-seance-body: 18px;
 

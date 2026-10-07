@@ -92,6 +92,7 @@ function fromCatalog(params: ToProgressItemParams, catalog: ShowCatalog): Progre
           number: episode.number,
           title: episode.title,
           done: kind === 'watched' ? dates.some((date) => !resetAt || date >= resetAt) : added !== undefined,
+          collected: added !== undefined,
           plays: dates.length,
           minutesWatched: dates.length * runtime,
           at: kind === 'watched' ? latest(dates) : added,

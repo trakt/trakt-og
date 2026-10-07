@@ -163,7 +163,7 @@ const restoreTarget = $derived(target?.type === 'show' ? { ...target, type: 'sho
         <a class="titles-link small-title" href={smallTitle.href}>{smallTitle.text}</a>
       {/if}
       <div class={['title-wrapper', { 'hidden-title': hideTitle }]}>
-        <h3>{#if number}<a class="titles-link" {href}><span class="number">{number}</span></a> {/if}<MediaSpoiler target={spoilerTarget} kind="title" inline><a class="titles-link" {href}>{title}</a></MediaSpoiler>{#if year}<span class="year">{year}</span>{/if}</h3>
+        <h3>{#if number}<a class="titles-link" {href}><span class="number">{number}</span></a>{/if} <MediaSpoiler target={spoilerTarget} kind="title" inline><a class="titles-link" {href}>{title}</a></MediaSpoiler>{#if year}<span class="year">{year}</span>{/if}</h3>
       </div>
     </div>
     {/if}

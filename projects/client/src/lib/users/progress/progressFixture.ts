@@ -22,6 +22,8 @@ type Sample = {
   types?: Readonly<Record<string, string>>;
   /** Announced episodes after each season's aired ones, which may start new seasons. */
   announced?: readonly number[];
+  /** Unwatched episodes in the library too, by season and number. */
+  collectedOnly?: Readonly<Record<number, readonly number[]>>;
 };
 
 // Public shows with made-up progress, for the specs and the design demo. No artwork, like local OG.
@@ -50,6 +52,7 @@ const samples: readonly Sample[] = [
       false,
     ]],
     rewatches: 2,
+    collectedOnly: { 2: [5, 6, 7, 8] },
   },
   {
     id: 1390,
@@ -150,10 +153,15 @@ function toWatched(sample: Sample) {
   ]));
 }
 
+/** The library: every watched episode, and the sample's unwatched extras. */
 function toCollected(sample: Sample): ReadonlyMap<number, ReadonlyMap<number, CollectedItem>> {
   return new Map(sample.seasons.map((season, s) => [
     s + 1,
-    new Map(season.flatMap((done, e) => done ? [[e + 1, { at: at(s + 1, e + 1) }] as const] : [])),
+    new Map(
+      season.flatMap((done, e) =>
+        done || sample.collectedOnly?.[s + 1]?.includes(e + 1) ? [[e + 1, { at: at(s + 1, e + 1) }] as const] : []
+      ),
+    ),
   ]));
 }
 

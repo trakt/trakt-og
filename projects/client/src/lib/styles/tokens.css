@@ -2190,16 +2190,47 @@
   --progress-row-margin: 20px 10px; /* .row.posters > div's 20px on top, .row.posters' 10px below */
   --font-size-progress-row: 13px;
   --line-height-progress-row: 1.2;
-  --font-size-progress-title: 22px;
-  --progress-title-actions-width: 60px; /* the title's `max-width: calc(100% - 60px)`, room for its icons */
-  --color-progress-action: #ccc;
-  --progress-action-gap: 7px;
-  --progress-action-nudge: 2px;
-  --progress-rewatching-badge-start: -10px;
-  --color-progress-rewatching: #aaa;
-  --progress-status-icon-nudge: 2px; /* `.rewatching .icon`'s margin-bottom */
-  --progress-dropped-icon-gap: 2px; /* `.dropped.icon`, from the revision that added the tab */
-  --opacity-progress-loading: 0.15; /* `#progress-wrapper .row.loading`, while a row reloads */
+
+  /* The ledger row: poster, main column, up-next card */
+  --progress-poster-width: 139px; /* a 2:3 poster as tall as the card: its 16:9 fanart and 40px quick-icon bar */
+  --progress-poster-width-tablet: 110px;
+  --progress-card-width: 300px;
+  --progress-card-width-tablet: 240px;
+  --progress-card-bar: 40px; /* the fanart card's quick-icon bar, under the waiting card's fanart */
+  --opacity-progress-loading-card: 0.25;
+  --progress-row-gap: 24px;
+  --progress-row-padding: 18px 0;
+  --progress-main-gap: 10px;
+  --progress-title-gap: 10px;
+  --font-size-progress-title: 24px;
+  --font-size-progress-year: 16px;
+  --progress-inline-gap: 4px; /* an icon or a bold code before its text */
+  --progress-chip-gap: 6px;
+  --progress-chip-padding: 3px 8px;
+  --radius-progress-chip: 3px;
+  --color-progress-chip: light-dark(#f0f0f0, #2a2a2a);
+  --color-progress-chip-text: light-dark(#555, #ccc);
+  --color-progress-watched: var(--brand-tertiary); /* the watch quick icon's purple */
+  --color-progress-watched-text: light-dark(var(--brand-tertiary), #b583cf); /* lifted for dark */
+  --color-progress-watched-tint: light-dark(rgb(142 68 173 / 0.12), rgb(142 68 173 / 0.22));
+  --color-progress-collected: var(--brand-quaternary); /* the library quick icon's teal */
+  --color-progress-episode-done: #1db75e;
+  --color-progress-complete-tint: rgb(29 183 94 / 0.15);
+
+  /* The status pill after the title, and its menu */
+  --progress-status-gap: 7px;
+  --progress-status-padding: 4px 10px 4px 9px;
+  --radius-progress-status: 13px;
+  --font-size-progress-status: 12px;
+  --progress-status-dot: 8px;
+  --progress-status-menu-width: 290px;
+  --progress-status-icon-nudge: 3px; /* a menu row's icon, down to its name's first line */
+  --color-progress-status-border: light-dark(#ccc, #3a3a3a);
+  --color-progress-status-bg: light-dark(#fff, #2a2a2a);
+  --color-progress-status-text: light-dark(#555, #ccc);
+  --color-progress-rewatching-accent: var(--brand-tertiary);
+  --color-progress-rewatching-tint: rgb(142 68 173 / 0.18);
+  --color-progress-rewatching-text: var(--color-progress-watched-text);
 
   /* The tick bar and its percent */
   --tick-bar-height: 15px;
@@ -2212,72 +2243,25 @@
   --tick-bar-percent-season-nudge: -6px;
   --transition-tick-bar: 0.5s;
 
-  /* The seasons band */
-  --color-progress-seasons-bg: light-dark(#fafafa, #333);
-  --progress-seasons-padding: 10px 20px;
-  --progress-seasons-margin: 10px -20px 0;
-  --progress-seasons-padding-phone: 15px 10px;
-  --progress-seasons-margin-phone: 10px -10px 0;
+  /* The open row's seasons: a line a season, a numbered square an episode */
   --color-progress-toggle-link: light-dark(var(--brand-primary), #fff);
   --font-size-progress-toggle-icon: 10px;
-  --color-progress-episode-done: #1db75e;
-
-  /* The open row: the up-next banner */
-  --progress-panel-gap: 12px;
-  --progress-banner-still: 150px;
-  --progress-banner-still-phone: 96px;
-  --progress-banner-gap: 14px;
-  --progress-banner-padding: 8px 12px 8px 8px;
-  --progress-banner-edge: 3px;
-  --progress-banner-play: 28px;
-  --progress-banner-play-icon: 11px;
-  --color-progress-banner-play-bg: rgb(0 0 0 / 45%);
-  --color-progress-banner-play: #fff;
-  --font-size-progress-banner-title: 15px;
-  --font-size-progress-banner-overview: 12px;
-  --line-height-progress-banner-title: 1.25;
-  --progress-banner-text-gap: 3px;
-  --progress-banner-meta-gap: 4px 10px;
-  --progress-banner-kicker-spacing: 0.06em;
-  --progress-banner-tag-gap: 4px;
-  --progress-banner-tag-padding: 2px 5px;
-  --progress-banner-action-gap: 6px;
-  --progress-banner-play-ring: 1.5px;
-  --progress-banner-play-nudge: 2px; /* the triangle's weight sits left of its box */
-  --progress-inline-gap: 4px; /* an icon or a bold code before its text */
-  --progress-cell-ring: 2px;
+  --progress-season-gap: 8px;
+  --progress-season-columns: 14px;
+  --progress-season-name: 84px;
+  --progress-season-percent: 48px;
+  --progress-season-summary: 150px;
+  --font-size-progress-season-percent: 15px;
+  --progress-square: 22px;
+  --progress-square-gap: 3px;
+  --progress-square-ring: 2px;
+  --radius-progress-square: 2px;
+  --font-size-progress-square: 10px;
+  --color-progress-square: light-dark(#e5e5e5, #3a3a3a);
+  --color-progress-square-announced: light-dark(#ccc, #555);
   --progress-cell-pulse: 6px;
   --progress-cell-pulse-duration: 2.4s;
-  --color-progress-cell: light-dark(#ece5e5, #3b3333); /* the picker bar's track */
   --color-progress-cell-pulse: color-mix(in srgb, var(--brand-primary) 55%, transparent);
-  --color-progress-cell-still: color-mix(in srgb, var(--brand-primary) 35%, transparent);
-  --progress-readout-height: 18px;
-
-  /* The season picker and its episode tiles */
-  --progress-pane-gap: 18px;
-  --progress-pane-gap-tablet: 12px;
-  --progress-picker-width: 190px;
-  --progress-picker-width-tablet: 150px;
-  --progress-picker-min-phone: 96px;
-  --progress-picker-gap: 2px;
-  --progress-picker-padding: 7px 10px;
-  --progress-picker-text-gap: 4px 8px;
-  --progress-picker-edge: 3px; /* the chosen season's edge, and a watched tile's */
-  --progress-picker-bar: 4px;
-  --color-progress-picker-hover: light-dark(#f4efef, #343131);
-  --progress-season-gap: 8px;
-  --progress-season-heading-gap: 6px 14px;
-  --font-size-progress-season-heading: 14px;
-  --progress-tile-min: 148px;
-  --progress-tile-min-tablet: 128px;
-  --progress-tile-gap: 6px;
-  --progress-tile-padding: 6px 8px;
-  --progress-tile-text-gap: 0 8px;
-  --progress-tile-number-min: 18px;
-  --font-size-progress-tile-number: 15px;
-  --font-size-progress-tile-title: 12px;
-  --font-size-progress-tile-note: 11px;
-  --progress-cell-hairline: 1px; /* a tile's border and the focus ring's offset */
 
   /* A label over a poster's bottom-left corner (`.posters h4.bottom`) */
   --poster-label-bottom: 8px;

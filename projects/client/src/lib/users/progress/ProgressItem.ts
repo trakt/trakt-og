@@ -1,11 +1,13 @@
 import type { CachedShow } from '../../shows/cache/CachedShow.ts';
 import type { CatalogEpisode } from '../../shows/cache/ShowCatalog.ts';
 
-/** One episode chip under an open season. */
+/** One episode square under an open season. */
 export type ProgressEpisodeData = {
   readonly number: number;
   readonly title?: string;
   readonly done: boolean;
+  /** In your library, whichever tab this is. */
+  readonly collected: boolean;
   readonly plays: number;
   readonly minutesWatched: number;
   /** The last watch, or when it was added to the library. */

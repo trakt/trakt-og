@@ -54,15 +54,15 @@ type Props = {
   /** `?list=`'s shows. Null while they load. */
   listed?: ReadonlySet<number> | null;
   /** Shows whose catalog is being read. */
-  expanding?: ReadonlySet<number>;
-  /** A row opened its seasons. */
-  onexpand?: (id: number) => void;
+  loading?: ReadonlySet<number>;
+  /** A row needs its show's catalog: `quiet` while it's only near the screen. */
+  onneed?: (id: number, quiet: boolean) => void;
   /** The current page's shows, so their posters can load first. */
   onvisible?: (ids: readonly number[]) => void;
   now?: Date;
 };
 
-const { data, items, listed, expanding = new Set(), onexpand, onvisible, now = new Date() }: Props = $props();
+const { data, items, listed, loading = new Set(), onneed, onvisible, now = new Date() }: Props = $props();
 
 // OG's `per(50)`, 48 in grid view (eight rows of six).
 const PER_PAGE = 50;
@@ -258,8 +258,8 @@ function changeHide(hide: ProgressHide[]) {
         </div>
       {:else}
         {#each rows as row (row.id)}
-          <ProgressRow {row} type={data.type} {simple}
-            expanding={expanding.has(row.id)} onexpand={() => onexpand?.(row.id)} />
+          <ProgressRow {row} type={data.type} {simple} datePreferences={data.datePreferences}
+            loading={loading.has(row.id)} onneed={(quiet) => onneed?.(row.id, quiet)} />
         {/each}
       {/if}
       {#if pageCount > 1}<Pagination {meta} label="Progress pages" />{/if}

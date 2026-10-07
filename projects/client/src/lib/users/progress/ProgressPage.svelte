@@ -2,9 +2,9 @@
   `/users/:id/progress(/:type)(/:sort_by/:sort_how)`, your own progress, computed in the browser. The overlay has
   every watched and collected episode, the reset and drop dates, the watchlist and the hidden shows; the show cache
   adds each show's aired episodes, status, runtime and poster. A summary is read only when it's missing or older than
-  12 hours, in bulk where many are (`loadProgressShows`), and the page's posters first. Opening a row's seasons reads
-  that show's catalog once, which makes its counts exact and adds the next episode. Watches, drops, hides and
-  rewatches patch the overlay, so the rows recompute as they save.
+  12 hours, in bulk where many are (`loadProgressShows`), and the page's posters first. Each row reads its show's
+  catalog once as it nears the screen (cached for 12 hours, through the request queue), which makes its counts exact
+  and adds the next episode. Watches, drops, hides and rewatches patch the overlay, so the rows recompute as they save.
 -->
 <script lang="ts">
 import { untrack } from 'svelte';
@@ -46,7 +46,7 @@ const showIds = $derived(progressShowIds({ type: data.type, slices, options: dat
 let shows = $state.raw<ReadonlyMap<number, CachedShow>>(new Map());
 let loaded = $state(false);
 const catalogs = new SvelteMap<number, ShowCatalog>();
-const expanding = new SvelteSet<number>();
+const loading = new SvelteSet<number>();
 
 const merge = (next: ReadonlyMap<number, CachedShow>) => {
   shows = new Map([...shows, ...next]);
@@ -111,17 +111,23 @@ function visible(ids: readonly number[]) {
   void loadCachedShows({ ids: missing, store: showCache.summaries, get: showCache.get }).then(merge);
 }
 
-async function expand(id: number) {
-  if (catalogs.has(id) || expanding.has(id)) return;
-  expanding.add(id);
+// Shows whose catalog failed while their row was only near the screen: opening the row tries once more.
+// eslint-disable-next-line svelte/prefer-svelte-reactivity
+const failed = new Set<number>();
+
+/** Reads a row's catalog once. A background read (`quiet`) fails silently; opening the row says so. */
+async function need(id: number, quiet: boolean) {
+  if (catalogs.has(id) || loading.has(id) || (quiet && failed.has(id))) return;
+  loading.add(id);
   try {
     catalogs.set(id, await loadShowCatalog({ id, store: showCache.catalogs, get: showCache.get }));
   } catch {
-    toast.error("Doh! We couldn't load this show's seasons.");
+    failed.add(id);
+    if (!quiet) toast.error("Doh! We couldn't load this show's seasons.");
   } finally {
-    expanding.delete(id);
+    loading.delete(id);
   }
 }
 </script>
 
-<ProgressList {data} {items} {listed} {expanding} onexpand={expand} onvisible={visible} />
+<ProgressList {data} {items} {listed} {loading} onneed={need} onvisible={visible} />

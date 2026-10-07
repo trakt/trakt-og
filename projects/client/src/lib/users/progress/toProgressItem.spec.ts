@@ -103,12 +103,26 @@ describe('toProgressItem', () => {
       expect(item.detail?.seasons.at(0)?.episodes.at(0)).toEqual({
         number: 1,
         done: true,
+        collected: false,
         plays: 2,
         minutesWatched: 40,
         at: '2026-02-02T00:00:00Z',
         firstAired: '2026-01-01T00:00:00.000Z',
         runtime: 20,
       });
+    });
+
+    it('should flag episodes in the library on the watched tab, watched or not', () => {
+      const collected = new Map([[
+        1,
+        new Map<number, CollectedItem>([[1, '2026-03-01T00:00:00Z'], [2, '2026-03-01T00:00:00Z']]),
+      ]]);
+      const episodes = toProgressItem({ ...base, watched, collected, catalog }).detail?.seasons.at(0)?.episodes ?? [];
+
+      expect(episodes.map(({ done, collected }) => [done, collected])).toEqual([[true, true], [false, true], [
+        true,
+        false,
+      ]]);
     });
 
     it('should fall back to the show runtime for an episode without one', () => {

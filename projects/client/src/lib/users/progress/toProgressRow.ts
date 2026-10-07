@@ -12,33 +12,45 @@ import { imageUrl } from '../../utils/imageUrl.ts';
 import { relativeDate } from '../../utils/relativeDate.ts';
 import type { ProgressItem } from './ProgressItem.ts';
 import type { ProgressType } from './progressTypes.ts';
-import { type SeasonPicker, toSeasonPicker } from './toSeasonPicker.ts';
+import { type ProgressSeason, toProgressSeasons } from './toProgressSeasons.ts';
 
 type Tag = NonNullable<ComponentProps<typeof FanartCard>['tags']>[number];
 
-/** The up-next banner on an open row: the next episode, with what to do about it. */
+/** The row's up-next card: the next episode as a fanart card, with its quick icons. */
 export type ProgressUpNext = {
   /** "3x01", or "3x01 (669)" for anime. */
   readonly number: string;
   readonly title: string;
   readonly href: string;
-  readonly overview?: string;
   readonly image?: string;
+  /** The show's fanart, in place of an unwatched episode's screenshot when spoilers are hidden. */
+  readonly spoilerImage?: string;
+  /** "Up next", then its episode type. */
   readonly tags: readonly Tag[];
-  /** "52m". */
-  readonly runtime?: string;
   /** The Trakt rating, 0 to 10. */
   readonly rating?: number;
-  readonly target: { readonly type: 'episode'; readonly id: number; readonly title: string };
-  readonly season: { readonly show: number; readonly number: number; readonly episode: number };
+  readonly released: boolean;
+  readonly target: {
+    readonly type: 'episode';
+    readonly id: number;
+    readonly title: string;
+    readonly season: { readonly show: number; readonly number: number; readonly episode: number };
+  };
 };
 
 /** One show on the progress page. */
 export type ProgressRow = {
   readonly id: number;
   readonly title: string;
+  readonly year?: number;
   readonly href: string;
   readonly poster?: string;
+  /** The card's artwork once every episode is done, or while the next one loads. */
+  readonly fanart?: string;
+  /** "Returning series", "Ended": the card's title once every episode is done. */
+  readonly status?: string;
+  /** The show's Trakt rating, 0 to 10. */
+  readonly rating?: number;
   readonly percent: number;
   readonly ticks: readonly TickRun[];
   readonly aired: number;
@@ -60,8 +72,8 @@ export type ProgressRow = {
   readonly droppedOn?: string;
   /** "July 2, 2024" while the show is being rewatched. */
   readonly rewatchingSince?: string;
-  /** Once the catalog is in: the season picker, and the next episode unless everything's done (Watched only). */
-  readonly picker?: SeasonPicker;
+  /** Once the catalog is in: the season lines, and the next episode unless everything's done (Watched only). */
+  readonly seasons?: readonly ProgressSeason[];
   readonly upNext?: ProgressUpNext;
 };
 
@@ -91,30 +103,28 @@ const tagged = (episode: CatalogEpisode) => ({
   number_abs: episode.numberAbs,
 });
 
-function toUpNext({ item, datePreferences }: ToProgressRowParams): ProgressUpNext | undefined {
+function toUpNext({ item, now }: ToProgressRowParams): ProgressUpNext | undefined {
   const { show, detail } = item;
   const episode = detail?.next;
   if (!episode) return undefined;
 
   const label = episodeType(tagged(episode));
   const number = episodeNumber(tagged(episode), show.genres);
-  const runtime = episode.runtime ?? show.runtime;
   return {
     number,
     title: episode.title ?? '',
     href: `/shows/${show.slug}/seasons/${episode.season}/episodes/${episode.number}`,
-    overview: episode.overview,
     image: imageUrl(episode.screenshot ?? show.fanart, 'medium'),
-    tags: [
-      ...(label ? [label] : []),
-      ...(episode.firstAired
-        ? [{ text: formatDate(episode.firstAired, datePreferences), kind: 'primary' as const }]
-        : []),
-    ],
-    runtime: runtime ? formatRuntime(runtime) : undefined,
+    spoilerImage: imageUrl(show.fanart, 'medium'),
+    tags: [{ text: 'Up next', kind: 'primary' }, ...(label ? [label] : [])],
     rating: episode.rating,
-    target: { type: 'episode', id: episode.id, title: `${show.title} ${number}` },
-    season: { show: show.id, number: episode.season, episode: episode.number },
+    released: episode.firstAired !== undefined && Date.parse(episode.firstAired) <= now.getTime(),
+    target: {
+      type: 'episode',
+      id: episode.id,
+      title: `${show.title} ${number}`,
+      season: { show: show.id, number: episode.season, episode: episode.number },
+    },
   };
 }
 
@@ -146,8 +156,12 @@ export function toProgressRow(params: ToProgressRowParams): ProgressRow {
   return {
     id: show.id,
     title: show.title,
+    year: show.year,
     href,
     poster: imageUrl(show.poster, 'thumb'),
+    fanart: imageUrl(show.fanart, 'medium'),
+    status: show.status && show.status.charAt(0).toUpperCase() + show.status.slice(1),
+    rating: show.rating,
     percent: progressPercent(item),
     ticks: episodeStates.length > 0 ? tickRuns(episodeStates) : countRuns(item.completed, item.aired),
     aired: item.aired,
@@ -161,8 +175,8 @@ export function toProgressRow(params: ToProgressRowParams): ProgressRow {
     rewatchingSince: type !== 'library' && item.resetAt
       ? formatDate(item.resetAt, { ...datePreferences, format: 'LL' })
       : undefined,
-    picker: detail &&
-      toSeasonPicker({
+    seasons: detail &&
+      toProgressSeasons({
         seasons,
         next: detail.next && { season: detail.next.season, number: detail.next.number },
         showHref: href,

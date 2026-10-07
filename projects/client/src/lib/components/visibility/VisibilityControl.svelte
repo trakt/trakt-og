@@ -268,6 +268,12 @@ function submit(event: SubmitEvent) {
       block-size: var(--watch-card-small-height);
       font-size: var(--font-size-quick-icon-small);
     }
+    & :global(.spinner) {
+      font-size: var(--font-size-quick-icon-busy);
+    }
+    &.small :global(.spinner) {
+      font-size: var(--font-size-quick-icon-busy-small);
+    }
     &:is(:hover, :focus-visible) {
       background: var(--gray);
       color: var(--color-card-text);

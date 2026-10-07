@@ -254,6 +254,16 @@ const ratingLevel = $derived(rating === undefined ? 1 : Math.min(Math.max(Math.t
     position: relative;
   }
 
+  /* The saving spinner, a size under the glyph it stands in for. */
+  & :global(.spinner) {
+    position: relative;
+    font-size: var(--font-size-quick-icon-busy);
+
+    .small & {
+      font-size: var(--font-size-quick-icon-busy-small);
+    }
+  }
+
   &:is(.watch:not(.rewatching), .collect, .list) :global(.icon) {
     --icon-shift: var(--quick-icon-trakt-shift);
   }

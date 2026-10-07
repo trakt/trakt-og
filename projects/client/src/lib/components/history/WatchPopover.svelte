@@ -303,6 +303,12 @@ function click() {
   color: var(--watch-color, var(--brand-tertiary));
   font-size: var(--font-size-action-icon);
 }
+.card .busy {
+  font-size: var(--font-size-quick-icon-busy);
+}
+.card.small .busy {
+  font-size: var(--font-size-quick-icon-busy-small);
+}
 .watch-trigger {
   position: relative;
   display: flex;

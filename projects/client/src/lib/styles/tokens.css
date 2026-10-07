@@ -2334,4 +2334,175 @@
   --font-size-splash-app: 14px;
   --font-size-splash-tag: 11px;
   --splash-tag-padding: 0 6px;
+
+  /* Coming-soon placeholder at `/`: "OG Reanimated", a B-movie lobby card. The monster's colors live in its SVG. */
+  --reanimated-ink: #111;
+  --reanimated-text: #fff;
+  --reanimated-card: var(--brand-primary-darken);
+  --reanimated-accent: var(--brand-warning);
+  --reanimated-rule: rgb(255 255 255 / 0.5);
+  --reanimated-halftone: radial-gradient(rgb(0 0 0 / 0.22) 1.6px, transparent 1.8px);
+  --reanimated-halftone-size: 9px;
+  --reanimated-noise: var(--tabloid-noise);
+  --reanimated-noise-size: 240px;
+  --reanimated-wear: radial-gradient(ellipse at 50% 50%, transparent 50%, rgb(60 0 0 / 0.45) 100%);
+  --reanimated-light: linear-gradient(120deg, rgb(255 255 255 / 0.35), transparent 45%, rgb(0 0 0 / 0.3));
+  --reanimated-page-padding: clamp(24px, 4vw, 72px);
+  --reanimated-card-max: 1760px;
+  --reanimated-gap: clamp(32px, 4vw, 72px);
+  --reanimated-stack-gap: 20px;
+  --reanimated-art-basis: 440px;
+  --reanimated-art-max: 900px;
+  --reanimated-art-height: 82dvh;
+  --reanimated-copy-basis: 560px;
+  --reanimated-billing-padding: 18px;
+  --reanimated-rating-padding: 10px 16px;
+  --reanimated-rating-gap: 14px;
+  --reanimated-rating-note-max: 220px;
+  --reanimated-footer-gap: 28px;
+  --reanimated-shadow-title: 6px 6px 0 var(--reanimated-ink);
+  --reanimated-shadow-kicker: 3px 3px 0 var(--reanimated-ink);
+  --reanimated-blood: #ff3b42;
+  --reanimated-fang: 4px;
+  --reanimated-fang-length: 10px;
+  --reanimated-drip: 16px;
+  --font-reanimated-display: Creepster, cursive;
+  --font-reanimated-condensed: Oswald, sans-serif;
+  --font-size-reanimated-presents: 20px;
+  --reanimated-presents-tracking: 0.4em;
+  /* Container units: the copy column is the container, so these lines fill its width on one line. */
+  --font-size-reanimated-kicker: 7.2cqi;
+  --font-size-reanimated-title: clamp(72px, 8.4vw, 168px);
+  --font-size-reanimated-tagline: 3.5cqi;
+  --font-size-reanimated-billing: 19px;
+  --font-size-reanimated-billing-name: 24px;
+  --font-size-reanimated-rating: 52px;
+  --font-size-reanimated-rating-note: 14px;
+  --font-size-reanimated-release: 26px;
+
+  /* Coming-soon VHS: "Please adjust your Trakting". */
+  --vhs-ink: #111;
+  --vhs-text: #fff;
+  --vhs-screen: radial-gradient(ellipse at 50% 45%, #3a85b5 0%, var(--brand-fifth) 45%, #163a52 100%);
+  --vhs-band: linear-gradient(transparent, rgb(255 255 255 / 0.14) 40%, rgb(255 255 255 / 0.05) 60%, transparent);
+  --vhs-band-height: 90px;
+  --vhs-scanlines: repeating-linear-gradient(to bottom, rgb(0 0 0 / 0.18) 0 2px, transparent 2px 4px);
+  --vhs-shadow-osd: 2px 0 0 rgb(237 28 36 / 0.6), -2px 0 0 rgb(0 158 223 / 0.6);
+  --vhs-shadow-title: 5px 0 0 var(--brand-primary), -5px 0 0 var(--brand-secondary);
+  --vhs-max: 1320px;
+  --vhs-padding: 36px 40px 48px;
+  --vhs-gap: 24px;
+  --vhs-osd-gap: 14px;
+  --vhs-center-gap: 12px;
+  --vhs-play-icon: 28px;
+  --vhs-logo: 220px;
+  --vhs-ghost-offset: 8px;
+  --vhs-tracking-gap: 5px;
+  --vhs-tracking-bar-width: 18px;
+  --vhs-tracking-bar-height: 26px;
+  --vhs-tape-width: 520px;
+  --font-vhs: VT323, 'Courier New', monospace;
+  --font-vhs-marker: 'Permanent Marker', cursive;
+  --font-size-vhs-osd: 44px;
+  --font-size-vhs-title: clamp(88px, 11vw, 168px);
+  --font-size-vhs-subtitle: clamp(32px, 3.4vw, 48px);
+  --font-size-vhs-tracking: 30px;
+
+  /* Coming-soon séance: "Séance of the Watch", a Ouija board you can spell on. */
+  --seance-ink: #111;
+  --seance-text: #fff;
+  --seance-muted: #ccc;
+  --seance-accent: var(--brand-warning);
+  --seance-table: #1d1d1d;
+  --seance-candlelight: radial-gradient(ellipse at 50% 55%, rgb(232 93 4 / 0.22), transparent 60%);
+  --seance-grain: repeating-linear-gradient(92deg, rgb(0 0 0 / 0.25) 0 2px, transparent 2px 38px);
+  --seance-letter: #2a170a;
+  --seance-glow: drop-shadow(0 0 24px rgb(237 28 36 / 0.85)) drop-shadow(0 0 60px rgb(240 173 78 / 0.5));
+  --seance-flame: radial-gradient(ellipse at 50% 70%, #fff 0%, var(--brand-warning) 35%, var(--brand-seventh) 75%);
+  --seance-flame-glow: 0 0 40px 12px rgb(240 173 78 / 0.45);
+  --seance-wax: linear-gradient(90deg, #ccc, #eee 40%, #aaa);
+  --seance-input: rgb(0 0 0 / 0.35);
+  --seance-padding: 32px 24px 40px;
+  --seance-max: 1240px;
+  --seance-gap: 18px;
+  --seance-board: 820px;
+  --seance-candle-gap: 32px;
+  --seance-candle-width: 48px;
+  --seance-candle-tall: 220px;
+  --seance-candle-short: 160px;
+  --seance-flame-width: 22px;
+  --seance-flame-height: 40px;
+  --seance-wick: 8px;
+  --seance-ask-gap: 10px;
+  --seance-input-padding: 6px 10px;
+  --seance-input-radius: 4px;
+  --seance-credits-gap: 8px;
+  --font-seance: 'IM Fell English', Georgia, serif;
+  --font-seance-caps: 'IM Fell English SC', Georgia, serif;
+  --font-size-seance-eyebrow: 14px;
+  --font-size-seance-title: clamp(44px, 5.4vw, 76px);
+  --font-size-seance-spelled: 22px;
+  --font-size-seance-reply: 24px;
+  --font-size-seance-ask: 15px;
+  --font-size-seance-credits: clamp(30px, 3vw, 42px);
+  --font-size-seance-body: 18px;
+
+  /* Coming-soon tabloid: "The Nightly Binge", a newsprint front page lying on a desk. */
+  --tabloid-ink: #1c1b19;
+  --tabloid-rule: rgb(28 27 25 / 0.45);
+  --tabloid-paper: #ebe6da;
+  --tabloid-paper-ink: #f4f1ea;
+  --tabloid-desk-base: #1a1a1a;
+  --tabloid-desk: radial-gradient(ellipse at 50% 35%, #4a4a4a 0%, #2a2a2a 55%, var(--tabloid-desk-base) 100%);
+  --tabloid-noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.42 0 0 0 0 0.37 0 0 0 0 0.28 0.55 0 0 0 -0.12'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --tabloid-noise-size: 240px;
+  --tabloid-fold: linear-gradient(
+    180deg,
+    transparent 44%,
+    rgb(60 45 20 / 0.06) 49.6%,
+    rgb(40 30 15 / 0.2) 50%,
+    rgb(60 45 20 / 0.04) 50.4%,
+    transparent 56%
+  );
+  --tabloid-age: radial-gradient(ellipse at 50% 45%, transparent 55%, rgb(150 115 55 / 0.22) 100%);
+  --tabloid-light: linear-gradient(115deg, rgb(255 255 255 / 0.55), transparent 45%, rgb(0 0 0 / 0.25));
+  --tabloid-shadow:
+    0 1px 2px rgb(0 0 0 / 0.4), 0 12px 24px rgb(0 0 0 / 0.35), 0 36px 80px rgb(0 0 0 / 0.45);
+  --tabloid-tilt: 0.4deg;
+  --tabloid-padding: 20px 28px;
+  --tabloid-max: 1760px;
+  --tabloid-paper-padding: 20px 36px 26px;
+  --tabloid-gap: 14px;
+  --tabloid-header-gap: 10px;
+  --tabloid-column-gap: 32px;
+  --tabloid-story-gap: 24px;
+  --tabloid-caption-gap: 6px;
+  --tabloid-section-padding: 12px;
+  --tabloid-dateline-padding: 6px;
+  --tabloid-flag-padding: 4px 10px;
+  --tabloid-ear-padding: 8px 10px;
+  --tabloid-banner-padding: 10px 16px;
+  --tabloid-ear: 190px;
+  --tabloid-barcode-height: 26px;
+  --tabloid-lead-basis: 640px;
+  --tabloid-photo-basis: 340px;
+  --tabloid-body-basis: 420px;
+  --tabloid-aside-basis: 280px;
+  --font-tabloid-masthead: UnifrakturCook, serif;
+  --font-tabloid-headline: Anton, sans-serif;
+  --font-tabloid-body: 'Libre Baskerville', Georgia, serif;
+  --font-size-tabloid-ear: 12px;
+  --font-size-tabloid-ear-title: 15px;
+  --font-size-tabloid-dateline: 15px;
+  --font-size-tabloid-masthead: clamp(56px, 7.4vw, 120px);
+  --font-size-tabloid-headline: clamp(64px, 7.8vw, 136px);
+  --font-size-tabloid-deck: clamp(24px, 2vw, 34px);
+  --font-size-tabloid-byline: 14px;
+  --font-size-tabloid-caption: 12px;
+  --font-size-tabloid-credit: 11px;
+  --font-size-tabloid-body: 15px;
+  --font-size-tabloid-story: clamp(24px, 1.9vw, 32px);
+  --font-size-tabloid-deck-small: 14px;
+  --font-size-tabloid-inside: 18px;
+  --font-size-tabloid-banner: 24px;
 }

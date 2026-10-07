@@ -1882,7 +1882,6 @@
 /* Discover: the "Top... Last Week" sliders.
    Dark in both themes, like the frame. */
 :root {
-  --slider-height-trends: 600px; /* Trends only (`#trends .popular-items-wrapper`), from a 800px-tall viewport up */
   --slider-height-short: calc(100vh - 50px); /* every other fanart slider, and Trends below 800px: OG's 50px header */
   --slider-min-height-phone: 500px;
   --color-slider-bg: #111;
@@ -1917,74 +1916,245 @@
   --color-slider-rank-hover: #111;
 }
 
-/* Discover: the Featured Lists tiles and the Summer TV Shows showcase. Dark in both themes, like the sliders. */
+/* Discover: Seasons & Moods. The page follows the theme; the season hero, the year ribbon and the comments band stay
+   dark in both, like the sliders (they set `color-scheme: dark`). Each season brings its own accent, picked by the
+   page from `--color-season-<theme id>`. */
 :root {
-  --featured-list-height: 240px;
-  --featured-list-height-tablet: 200px; /* and phones: two columns */
-  --featured-list-logo-width: 70%;
-  --featured-list-logo-height: 70px;
-  --featured-list-logo-height-tablet: 50px;
-  --featured-list-zoom: 1.1; /* the background, on hover */
-  --featured-list-title-gap: 20px;
-  --font-size-featured-list-title: 16px;
-  --line-height-featured-list-title: 1.2;
+  --color-discover-bg: light-dark(#fff, #1d1d1d);
+  --color-discover-border: light-dark(#e2e2e2, #333);
+  --color-discover-text: light-dark(#222, #fff);
+  --color-discover-label: light-dark(#333, #ddd);
+  --color-discover-muted: light-dark(#666, #aaa);
+  --color-discover-on-image: #fff; /* text over fanart and posters, in both themes */
+  --discover-controls-gap: 24px; /* extra room between a section's toggles and its cards */
+  --color-discover-band-bg: light-dark(#ececec, #111); /* upcoming premieres */
+  --discover-padding-block: 22px 60px;
+  --discover-section-gap: 40px;
+  --discover-heading-margin: 14px;
+  --season-hero-gap: 24px;
+  --season-hero-copy-width: 560px;
+  --season-hero-copy-gap: 12px;
+  /* Left to right over the fanart, then faded into the header above and the page below. The page adds the season's glow. */
+  --season-hero-shade:
+    linear-gradient(to top, var(--color-discover-bg), rgb(0 0 0 / 0.5) 24%, transparent 50%),
+    linear-gradient(to bottom, rgb(0 0 0 / 0.45), transparent 20%),
+    linear-gradient(90deg, rgb(0 0 0 / 0.88) 12%, rgb(0 0 0 / 0.35) 48%, transparent 70%);
+  --season-hero-glow-strength: 35%;
+  --season-hero-image-position: center 30%;
+  --color-season-hero-blurb: #ececec;
+  --season-hero-top: 28px; /* below the fixed header */
+  --season-hero-bottom: 40px;
+  --season-hero-info-height: 348px; /* every pick's details, so the posters and buttons stay put */
+  --season-hero-name-height: 110px; /* the logo, or the title in up to two lines */
+  --season-hero-logo-width: 440px;
+  --shadow-season-hero-logo: 0 2px 10px rgb(0 0 0 / 0.7);
+  --season-hero-action: 42px; /* the More info and Trailer buttons */
+  --season-hero-button-inline: 18px;
+  --color-season-hero-chrome: rgb(0 0 0 / 0.55); /* the badge, the switch and the arrows over the fanart */
+  --color-season-hero-chrome-line: rgb(255 255 255 / 0.18);
+  --radius-season-pill: 999px;
+  --season-hero-badge-gap: 8px;
+  --season-hero-badge-padding: 7px 14px 7px 7px;
+  --season-hero-dot: 22px;
+  --season-hero-modes-padding: 3px;
+  --season-hero-mode-padding: 6px 14px;
+  --season-hero-poster-width: 96px;
+  --season-hero-poster-gap: 10px;
+  --season-hero-rail-padding: 4px 3px; /* room for the current poster's ring */
+  --season-hero-rail-fade: linear-gradient(to right, #000 calc(100% - 80px), transparent);
+  --season-hero-actions-gap: 18px; /* above More info and Trailer */
+  --opacity-season-hero-poster: 0.45;
+  --season-hero-poster-grayscale: 0.4;
+  --season-hero-timer: 3px;
+  --season-hero-rotate: 6s; /* matches the hero's timer */
+  --transition-season-hero: 0.6s;
+  --season-hero-arrow: 56px;
+  --season-hero-arrow-inset: 40px;
+  --font-size-season-hero-arrow: 28px;
+  --season-source-padding: 3px 6px 2px;
+  --radius-season-source: 3px;
+  --font-size-season-source: 10px;
+  --letter-spacing-season-source: 0.1em;
+  --color-season-source-trending: var(--brand-primary); /* "Trending now" */
+  --color-season-source-favorite: var(--gray); /* "All-time favorite" */
+  --font-size-season-hero-blurb: 16px;
+  --shadow-season-hero-text: 0 1px 2px rgb(0 0 0 / 0.9), 0 0 18px rgb(0 0 0 / 0.6);
+  --letter-spacing-season-eyebrow: 0.12em;
+  --font-size-season-title: 52px;
+  --line-height-season-title: 0.95;
+  --letter-spacing-season-title: -0.02em;
+  --shadow-season-wall: 0 8px 22px rgb(0 0 0 / 0.7);
+  --radius-season-poster: 3px;
+  --radius-season-button: 4px;
+  --font-size-season-button: 12px;
+  --color-season-button-bg: #fff;
+  --color-season-button-text: #111;
+  --color-season-ribbon-bg: #141414;
+  --color-season-ribbon-line: #262626;
+  --season-ribbon-cell-padding: 14px 14px 16px;
+  --season-ribbon-label-gap: 4px;
+  --season-ribbon-bar: 4px;
+  --season-ribbon-bar-current: 6px;
+  --season-ribbon-track: 30%; /* how much of the month's accent tints its unfilled bar */
+  --season-ribbon-tint: 22%; /* how much of the month's accent tints the current month */
+  --opacity-season-ribbon-past: 0.45;
+  --font-size-season-ribbon-month: 11px;
+  --font-size-season-ribbon-title: 13px;
+  --letter-spacing-season-ribbon: 0.08em;
+  --season-ribbon-glow: 0 0 14px; /* the current month's bar, in its accent */
+  --transition-season-ribbon: 0.2s;
+  --color-list-tile-bg: #111; /* under the blurred poster while it loads */
+  --color-list-tile-rank-bg: rgb(0 0 0 / 0.8);
+  --radius-list-tile: 8px;
+  --list-tile-media-padding: 12px 14px 16px;
+  --list-tile-media-gap: 12px;
+  --list-tile-backdrop-bleed: 30px; /* the blur's soft edge, cropped */
+  --filter-list-tile-backdrop: blur(22px) brightness(0.6) saturate(1.3);
+  --list-tile-shade: linear-gradient(to bottom, transparent 35%, rgb(0 0 0 / 0.55));
+  --radius-list-tile-fan: 4px;
+  --shadow-list-tile-fan-frame: 0 8px 20px rgb(0 0 0 / 0.45);
+  --list-tile-gap: 24px 20px;
+  --list-tile-fan-height: 140px;
+  --list-tile-fan-first: 94px; /* the first poster, and any hovered one */
+  --shadow-list-tile-fan: -4px 0 10px rgb(0 0 0 / 0.55);
+  --transition-list-tile-fan: 0.3s ease;
+  --list-tile-pill-padding: 1px 6px;
+  --font-size-list-tile-pill: 11px;
+  --letter-spacing-list-tile-pill: 0.04em;
+  --list-tile-body-padding: 12px 14px;
+  --list-tile-body-gap: 6px;
+  --font-size-list-tile-name: 17px;
+  --font-size-list-tile-meta: 13px;
+  --list-tile-by-gap: 6px;
+  --list-tile-avatar: 40px;
+  --list-tile-head-gap: 2px 12px;
+  --list-tile-counts-gap: 16px;
+  --list-tile-counts-inset: 4px;
+  --list-tile-stat-gap: 5px;
+  --font-size-list-tile-stat: 15px;
+  --font-size-list-tile-stat-icon: 15px;
+  /* The essential lists' accordion: OG's Featured Lists art in tall slices, one open, and the green label. */
+  --essential-height: 500px;
+  --essential-gap: 4px;
+  --essential-open-grow: 6.5; /* the open slice, against 1 for each closed one */
+  --essential-bar: 3px;
+  --filter-essential-closed: brightness(0.4) saturate(0.6);
+  --filter-essential-hover: brightness(0.6) saturate(0.9);
+  --filter-essential-open: brightness(0.9) saturate(1.05);
+  --essential-closed-zoom: 1.1;
+  --essential-shade:
+    linear-gradient(to top, rgb(0 0 0 / 0.95), rgb(0 0 0 / 0.75) 30%, rgb(0 0 0 / 0.1) 62%, transparent),
+    linear-gradient(90deg, rgb(0 0 0 / 0.55), transparent 70%);
+  --essential-edge: 22px;
+  --font-size-essential-small: 11px;
+  --letter-spacing-essential: 0.16em;
+  --color-essential-spine-text: #ccc;
+  --essential-side-length: 270px; /* the logo on its side, along the slice */
+  --essential-side-height: 62px;
+  --essential-upright-size: 72px;
+  --shadow-essential-logo: 0 2px 10px rgb(0 0 0 / 0.8);
+  --essential-inset: 44px;
+  --essential-body-bottom: 38px;
+  --essential-body-gap: 12px;
+  --essential-body-width: 560px;
+  --essential-copy-width: 500px;
+  --essential-rise: 16px; /* how far the details and posters rise in */
+  --essential-logo-width: 230px;
+  --essential-logo-height: 62px;
+  --font-size-essential-name: 32px;
+  --essential-row-gap: 4px;
+  --essential-poster: 62px;
+  --essential-poster-gap: 8px;
+  --radius-essential-poster: 3px;
+  --shadow-essential-poster: 0 8px 18px rgb(0 0 0 / 0.6);
+  --essential-button-gap: 14px;
+  --essential-button-padding: 10px 18px;
+  --transition-essential-open: 0.6s cubic-bezier(0.22, 0.8, 0.2, 1);
+  --transition-essential-fade: 0.45s ease;
+  --transition-essential-zoom: 1.4s cubic-bezier(0.22, 0.8, 0.2, 1);
+  --transition-essential-quick: 0.15s ease;
+  --essential-body-delay: 0.25s; /* the details wait for the slice to open */
+  --essential-poster-delay: 0.35s;
+  --essential-poster-stagger: 0.05s;
   --color-featured-list-label: var(--brand-success); /* "Updated Daily" (`.label-success`) */
-  --featured-list-label-gap: 10px;
   --featured-list-label-padding: 4px 6px 3px;
   --radius-featured-list-label: 3px;
   --font-size-featured-list-label: 10px;
   --letter-spacing-featured-list-label: 0.1em;
-  --showcase-info-width: 60%; /* the text column, flush right */
-  --showcase-info-end: 20%;
-  --showcase-info-lift: -150px; /* its top, from the slide's middle */
-  --showcase-poster-width: 200px;
-  --showcase-poster-offset: -230px; /* the poster, left of the text */
-  --color-showcase-link: #eee;
-  --font-size-showcase-title: 30px;
-  --showcase-title-gap: 15px;
-  --showcase-meta-gap: 2px;
-  --showcase-overview-gap: 20px;
-  --font-size-showcase-overview: 16px;
-  --showcase-overview-height: 242px;
-  --showcase-overview-lines: 11;
-}
-
-/* Discover: the Recent Comments block. The titles column is black in both themes; the comment column is a light
-   or dark veil over the same fanart. */
-:root {
-  --recent-comments-min-height: calc(100vh - 50px); /* OG's 50px header */
-  --recent-comments-titles-width: 50%;
-  --recent-comments-titles-width-tablet: 40%; /* below 1200px */
-  --recent-comments-fanart-opacity: 0.4;
-  --recent-comments-fanart-position: 0 10%;
-  --color-recent-comments-titles-bg: #000;
-  --color-recent-comments-link: #ccc;
-  --color-recent-comments-link-active: #fff; /* hovered and selected */
-  --color-recent-comments-veil: light-dark(rgb(255 255 255 / 0.8), rgb(0 0 0 / 0.6));
-  --color-recent-comments-heading: light-dark(#111, #fff);
-  --color-recent-comments-subheading: light-dark(#111, #eee);
-  --color-recent-comments-year: var(--gray-light);
-  --color-recent-comments-author-bg: light-dark(rgb(220 220 220 / 0.5), var(--dk-bg2));
-  --color-recent-comments-quote-bg: light-dark(rgb(255 255 255 / 0.5), var(--color-comment-quote-bg));
-  --recent-comments-subnav-padding: 20px 20px 0 30px;
-  --recent-comments-subnav-padding-phone: 10px 5px 0 15px;
-  --font-size-recent-comments-heading: 14px; /* "Recent Comments" */
-  --recent-comments-links-padding: 30px 0;
-  --recent-comments-links-padding-phone: 30px 0 5px;
-  --recent-comments-inset: 30px; /* the titles and the selected title, from the column's start */
-  --recent-comments-inset-phone: 15px;
-  --recent-comments-link-gap: 15px;
-  --font-size-recent-comments-year: 14px;
-  --recent-comments-title-top: 24px;
-  --recent-comments-title-top-phone: 15px;
-  --font-size-recent-comments-title: 26px;
-  --font-size-recent-comments-title-phone: 20px;
-  --font-size-recent-comments-title-year: 18px;
-  --font-size-recent-comments-title-year-phone: 16px;
-  --font-size-recent-comments-subtitle: 16px;
-  --recent-comments-comment-padding: 20px 30px 100px; /* the bottom clears the avatar and name row */
-  --recent-comments-comment-padding-phone: 20px 15px 100px;
-  --transition-recent-comments: 0.5s;
+  /* Trending comments: one comment at a time over its title's fanart. */
+  --color-trending-comments-bg: #000; /* the band the fanart fades into, in both themes */
+  --trending-comments-shade:
+    linear-gradient(to bottom, var(--color-trending-comments-bg), transparent 18%, transparent 82%, var(--color-trending-comments-bg)),
+    linear-gradient(90deg, rgb(0 0 0 / 0.75), rgb(0 0 0 / 0.88) 35%, rgb(0 0 0 / 0.75));
+  --opacity-trending-comments-backdrop: 0.4;
+  --trending-comments-height: 360px;
+  --trending-comments-top: 30px; /* room above the heading, under the band's top edge */
+  --trending-comments-bottom: 40px;
+  --trending-comments-toolbar-gap: 14px; /* the filters under the heading */
+  --trending-comments-poster: 170px;
+  --trending-comments-title-gap: 30px;
+  --trending-comments-gap: 56px;
+  --trending-comments-quote-gap: 16px;
+  --trending-comments-byline-gap: 12px;
+  --font-size-trending-comments-quote: 22px;
+  --font-size-trending-comments-mark: 30px;
+  --trending-comments-person: 40px;
+  --trending-comments-pager-gap: 24px;
+  --trending-comments-pager-padding: 6px 14px 6px 16px;
+  --trending-comments-pager-inner-gap: 14px;
+  --trending-comments-pager-count: 36px; /* "8 / 8" without the pill changing width */
+  --blur-trending-comments-pager: blur(6px);
+  --trending-comments-person-hover: 1.12;
+  --line-height-trending-comments-byline: 1.35; /* the name's line and the date's */
+  --trending-comments-people-gap: 6px;
+  /* The toggle buttons: moods, the Movies/Shows switch and the premiere filters. */
+  --toggle-chip-gap: 8px;
+  --toggle-chip-count-gap: 8px;
+  --toggle-chip-count-padding: 3px 6px;
+  --radius-toggle-chip-count: 3px;
+  --font-size-toggle-chip-count: 11px;
+  --color-toggle-chip-count-bg: color-mix(in srgb, currentColor 16%, transparent);
+  --color-toggle-chip-count-picked-bg: rgb(0 0 0 / 0.25); /* on the accent */
+  /* Upcoming premieres: separate rounded fanart cards, the fanart dimmed further behind the logo. */
+  --premiere-grid-gap: 16px;
+  --radius-premiere-card: 6px;
+  --shadow-premiere-card: 0 6px 18px rgb(0 0 0 / 0.25);
+  --premiere-logo-top: 20%; /* clear of the date chip */
+  --premiere-logo-height: 42%;
+  --premiere-foot-inset: 12px;
+  --premiere-foot-gap: 8px;
+  --premiere-pill-gap: 6px;
+  --premiere-pill-padding: 3px 9px;
+  --font-size-premiere-pill: 12px;
+  --premiere-pill-dot: 7px;
+  --premiere-countdown-height: 4px;
+  --opacity-premiere-fanart: 0.28;
+  --premiere-date-inset: 10px;
+  --premiere-date-width: 44px;
+  --premiere-date-padding: 5px 6px 6px;
+  --radius-premiere-date: 6px;
+  --font-size-premiere-date-day: 20px;
+  --font-size-premiere-date-month: 10px;
+  --premiere-name-inset: 20px;
+  --font-size-premiere-name: 26px;
+  /* The month map's accents. */
+  --color-season-snowed-in: #6fb6e0;
+  --color-season-love-month: #e8517a;
+  --color-season-game-on: #3fae5a;
+  --color-season-mind-benders: #9b59b6;
+  --color-season-space-month: #4f7dde;
+  --color-season-pride: #d6409f;
+  --color-season-summer-trip: #f2b233;
+  --color-season-back-to-school: #e8863a;
+  --color-season-case-files: #c9a227;
+  --color-season-halloween: #e0662a;
+  --color-season-comfort-food: #c97b3f;
+  --color-season-holidays: #d43c3c;
+  --color-season-new-year: #d4af37;
+  --color-season-valentines: #e0405e;
+  --color-season-oscars: #c9a24a;
+  --color-season-may-fourth: #f2c94c;
+  --color-season-thanksgiving: #c06a2b;
 }
 
 /* Sortable list filters and streaming chips. */

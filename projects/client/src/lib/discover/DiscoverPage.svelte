@@ -1,86 +1,76 @@
 <!--
-  `/discover`: the Frame sidebar with a nav to the page's sections, then
-  the sections themselves. The nav links scroll to their section (smoothly, unless reduced motion is on) and a
-  scrollspy marks the one in view. Trends is the two "Top... Last Week" sliders side by side, then come Featured
-  Lists, the Summer TV Shows showcase and Recent Comments. Each section is a `<section>` with its `discoverSections`
-  id. Recent Comments loads in the browser, so the page doesn't wait on it or fail with it.
+  `/discover`, Seasons & Moods: a page that changes with the calendar. The season hero comes from the month map, with
+  the year's themes edge to edge under it, then the mood shelves, upcoming premieres on their own band, the essential
+  lists as a full-width accordion, the month's lists, and trending comments over full-width fanart at the foot. The
+  whole page takes the season's accent.
 -->
 <script lang="ts">
-import Frame from '$lib/components/frame/Frame.svelte';
-import FrameNav from '$lib/components/frame/FrameNav.svelte';
-import { scrollSpy } from '$lib/components/frame/scrollSpy';
-import type { HeaderUser } from '$lib/components/header/HeaderUser';
+import Container from '$lib/components/container/Container.svelte';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
+import DiscoverLists from './DiscoverLists.svelte';
+import EssentialLists from './EssentialLists.svelte';
 import type { loadDiscover } from './loadDiscover.ts';
-import { discoverSections } from './discoverSections.ts';
-import FeaturedLists from './FeaturedLists.svelte';
-import RecentComments from './RecentComments.svelte';
-import SummerShows from './SummerShows.svelte';
-import TopSlider from './TopSlider.svelte';
+import MoodShelves from './MoodShelves.svelte';
+import SeasonHero from './SeasonHero.svelte';
+import SeasonRibbon from './SeasonRibbon.svelte';
+import TrendingComments from './TrendingComments.svelte';
+import UpcomingPremieres from './UpcomingPremieres.svelte';
 
-type Props = {
-  data: Awaited<ReturnType<typeof loadDiscover>> & {
-    user: HeaderUser | null;
-    datePreferences: DatePreferences;
-  };
-};
+type Props = { data: Awaited<ReturnType<typeof loadDiscover>> & { datePreferences: DatePreferences } };
 
 const { data }: Props = $props();
-
-let active = $state<string>();
-const links = $derived(
-  discoverSections.map(({ id, label, hideOnPhone }) => ({
-    label,
-    href: `#${id}`,
-    current: id === active ? ('location' as const) : undefined,
-    hideOnPhone,
-  })),
-);
-const spy = scrollSpy(discoverSections.map(({ id }) => id), (id) => (active = id));
 </script>
 
 <svelte:head>
   <title>Discover new TV shows & movies - Trakt</title>
   <meta
     name="description"
-    content="Check out the top TV shows & movies from last week. Explore featured lists. Check out the new Midseason 2022 TV shows. Read recent reviews & shouts."
+    content="This month's picks on Trakt, shelves for every mood, upcoming premieres, trending comments and the lists the Trakt community is liking."
   />
 </svelte:head>
 
-<Frame title="Discover" collapsible={data.user?.isVip ?? false} sidenavHidden={data.sidenavHidden}>
-  {#snippet subtitle()}
-    Find new TV shows and movies based on trends and curated content from the Trakt community.
-  {/snippet}
-
-  {#snippet sidebar()}
-    <FrameNav heading="Trakt" {links} />
-  {/snippet}
-
-  <div class="discover" {@attach spy}>
-    <section id="trends" class="trends" aria-label="Trends">
-      <TopSlider
-        title="Top TV Shows Last Week"
-        seeMoreHref="/shows/watched"
-        slides={data.topShows}
-        datePreferences={data.datePreferences}
-      />
-      <TopSlider
-        title="Top Movies Last Week"
-        seeMoreHref="/movies/watched"
-        slides={data.topMovies}
-        datePreferences={data.datePreferences}
-      />
-    </section>
-    <FeaturedLists />
-    <SummerShows slides={data.summerShows} datePreferences={data.datePreferences} />
-    <RecentComments viewer={data.user ? { slug: data.user.slug } : null} dateOptions={data.datePreferences} />
-  </div>
-</Frame>
+<div class={['discover', { 'no-hero': data.picks.length === 0 }]}
+  style:--season-accent="var(--color-season-{data.theme.id})">
+  <h1 class="visually-hidden">Discover</h1>
+  {#if data.picks.length > 0}
+    <SeasonHero
+      title={data.theme.title}
+      eyebrow={data.eyebrow}
+      picks={data.picks}
+    />
+  {/if}
+  <SeasonRibbon months={data.ribbon} />
+  <Container>
+    <div class="body">
+      <MoodShelves moods={data.moods} datePreferences={data.datePreferences} />
+    </div>
+  </Container>
+  {#if data.premieres.length > 0}
+    <div class="band">
+      <Container>
+        <div class="body">
+          <UpcomingPremieres premieres={data.premieres} today={data.today} datePreferences={data.datePreferences} />
+        </div>
+      </Container>
+    </div>
+  {/if}
+  <EssentialLists lists={data.essentials} />
+  <Container>
+    <div class="body">
+      <DiscoverLists lists={data.lists} season={data.theme.title} />
+    </div>
+  </Container>
+  <TrendingComments items={data.comments} datePreferences={data.datePreferences} />
+</div>
 
 <style>
-/* The nav's links land each section right under the fixed header. */
-.discover > :global(section[id]) {
-  scroll-margin-block-start: var(--header-height);
+.discover {
+  background-color: var(--color-discover-bg);
+  color: var(--color-discover-text);
+
+  & :global(section[id]) {
+    scroll-margin-block-start: var(--header-height);
+  }
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -89,18 +79,28 @@ const spy = scrollSpy(discoverSections.map(({ id }) => id), (id) => (active = id
   }
 }
 
-/* OG's `.popular-items-outer-wrapper.split`: 50/50 on desktops, stacked below 992px. */
-.trends {
+.body {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  background-color: var(--color-slider-bg);
+  gap: var(--discover-section-gap);
+  padding-block: var(--discover-padding-block);
+}
 
-  @media (min-width: 992px) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+/* Upcoming premieres sit on their own band, a step off the page in either theme. */
+.band {
+  background-color: var(--color-discover-band-bg);
+}
 
-  @media (min-height: 800px) {
-    --fanart-slider-height: var(--slider-height-trends);
-  }
+/* With no hero, the page still starts below the fixed header. */
+.no-hero {
+  padding-block-start: var(--header-height);
+}
+
+.visually-hidden {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 </style>

@@ -13,9 +13,10 @@ describe('readProgressHide', () => {
     expect(readProgressHide({ cookie: 'completed', search, type: 'watched' })).toEqual(['completed']);
   });
 
-  it('should skip Rewatching on the Library tab', () => {
+  it('should skip Rewatching on the Rewatching tab', () => {
     const search = new URLSearchParams();
-    expect(readProgressHide({ cookie: 'rewatching,ended', search, type: 'library' })).toEqual(['ended']);
-    expect(hideOptionsFor('library').map(({ id }) => id)).not.toContain('rewatching');
+    expect(readProgressHide({ cookie: 'rewatching,ended', search, type: 'rewatching' })).toEqual(['ended']);
+    expect(hideOptionsFor('rewatching').map(({ id }) => id)).not.toContain('rewatching');
+    expect(hideOptionsFor('dropped').map(({ id }) => id)).toContain('rewatching');
   });
 });

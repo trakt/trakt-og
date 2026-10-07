@@ -1,9 +1,8 @@
 <!--
   The status control after a progress row's title, drawn like the app's dropdowns: a dot in the status color and
-  where you are with the show (Watching, Rewatching since…, Caught up, Dropped…, or the library's Collecting and
-  Collected). Its menu lists the status, picked, then the row's show actions: Rewatch and Drop on Watched, Hide on
-  Library, Restore on Dropped. Those rows are the shared visibility controls, so each still asks for its date, and the
-  menu stays open until it saves. `onremove` gets a drop, hide or restore as it starts saving, since those take the
+  where you are with the show (Watching, Rewatching since…, Caught up, Dropped…). Its menu lists the status, picked,
+  then the row's show actions: Rewatch and Drop, or Restore on Dropped. Those rows are the shared visibility controls, so each still asks for its date, and the
+  menu stays open until it saves. `onremove` gets a drop or restore as it starts saving, since those take the
   row off the tab.
     <ProgressStatus {row} type="watched" onremove={remove} />
 -->
@@ -17,7 +16,7 @@ import type { ProgressRow } from './toProgressRow.ts';
 interface Props {
   row: ProgressRow;
   type: ProgressType;
-  /** A drop, hide or restore started saving, with whether it went through. */
+  /** A drop or restore started saving, with whether it went through. */
   onremove?: (saved: Promise<boolean>) => void;
 }
 
@@ -29,9 +28,6 @@ let expanded = $state(false);
 const target = $derived({ type: 'show' as const, id: row.id, title: row.title });
 const status = $derived.by(() => {
   if (type === 'dropped') return { tone: 'dropped', text: row.droppedOn ? `Dropped ${row.droppedOn}` : 'Dropped' };
-  if (type === 'library') {
-    return row.left === 0 ? { tone: 'done', text: 'Collected' } : { tone: 'library', text: 'Collecting' };
-  }
   if (row.rewatchingSince) return { tone: 'rewatching', text: `Rewatching since ${row.rewatchingSince}` };
   return row.left === 0 ? { tone: 'done', text: 'Caught up' } : { tone: 'watching', text: 'Watching' };
 });
@@ -61,12 +57,6 @@ function toggle(event: ToggleEvent & { currentTarget: HTMLElement }) {
       {#if type === 'dropped'}
         <li>
           <VisibilityControl {target} action="restore" variant="menu" onsaving={removing}>Restore</VisibilityControl>
-        </li>
-      {:else if type === 'library'}
-        <li>
-          <VisibilityControl {target} action="hide" section="progress_collected" variant="menu" onsaving={removing}>
-            Hide from Library progress
-          </VisibilityControl>
         </li>
       {:else}
         <li>
@@ -123,10 +113,6 @@ function toggle(event: ToggleEvent & { currentTarget: HTMLElement }) {
 
   &.rewatching {
     --dot: var(--color-progress-watched);
-  }
-
-  &.library {
-    --dot: var(--color-progress-collected);
   }
 
   &.done {

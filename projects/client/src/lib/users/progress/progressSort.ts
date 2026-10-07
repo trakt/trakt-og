@@ -1,5 +1,3 @@
-import type { ProgressType } from './progressTypes.ts';
-
 /** OG's progress sort options, in its order. */
 export const progressSorts = {
   added: 'Activity Date',
@@ -91,8 +89,8 @@ export function literalProgressSort(
 const titleCase = (value: string) =>
   value.split('-').map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 
-/** A sort's dropdown label. Activity Date reads "Watched Date" or "Library Date", after the tab. */
-export function progressSortLabel(by: string, type: ProgressType): string {
-  if (by === 'added') return type === 'library' ? 'Library Date' : 'Watched Date';
+/** A sort's dropdown label. Activity Date reads "Watched Date", as OG's Watched tab did. */
+export function progressSortLabel(by: string): string {
+  if (by === 'added') return 'Watched Date';
   return isSortBy(by) ? progressSorts[by] : titleCase(by);
 }

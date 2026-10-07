@@ -1,11 +1,12 @@
 /**
- * OG's progress tabs, in the dropdown's order. `library` reads the `collected` settings. Dropped is Watched narrowed to
- * the shows you dropped, so it computes and renders as its `kind`, `watched`.
+ * The progress tabs, in the dropdown's order. Watched is every show you've started, minus the ones you dropped;
+ * Rewatching narrows it to the shows you're rewatching; Dropped is the shows you dropped. All three read the `watched`
+ * progress settings.
  */
 export const progressTypes = {
-  watched: { label: 'Watched', settings: 'watched', kind: 'watched' },
-  dropped: { label: 'Dropped', settings: 'watched', kind: 'watched' },
-  library: { label: 'Library', settings: 'collected', kind: 'library' },
+  watched: { label: 'Watched' },
+  rewatching: { label: 'Rewatching' },
+  dropped: { label: 'Dropped' },
 } as const;
 
 export type ProgressType = keyof typeof progressTypes;

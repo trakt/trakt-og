@@ -3,7 +3,6 @@ import { formatDate } from '../../utils/formatDate.ts';
 import { formatRuntime } from '../../utils/formatRuntime.ts';
 import { imageUrl } from '../../utils/imageUrl.ts';
 import type { ProgressSeasonData } from './ProgressItem.ts';
-import type { ProgressType } from './progressTypes.ts';
 
 export type EpisodeSquareState = 'watched' | 'not-watched' | 'up-next' | 'not-aired';
 
@@ -21,7 +20,7 @@ export type EpisodeSquare = {
   readonly title?: string;
   readonly href: string;
   readonly state: EpisodeSquareState;
-  /** Not watched but in your library: the library's color. Watched wins, and the Library tab never sets it. */
+  /** Not watched but in your library: the library's color. Watched wins. */
   readonly collected: boolean;
   /** `3x01 "Title", watched Sep 29, 2026`: the square's accessible name. */
   readonly label: string;
@@ -47,7 +46,7 @@ export type ProgressSeason = {
   readonly count: string;
   readonly done: number;
   readonly aired: number;
-  /** "5h 8m" left to watch, on Watched while anything is. */
+  /** "5h 8m" left to watch, while anything is. */
   readonly timeLeft?: string;
   /** Announced episodes, while nothing has aired. */
   readonly announced?: number;
@@ -59,7 +58,6 @@ type ToProgressSeasonsParams = {
   /** The up-next episode, by season and number. */
   next?: { readonly season: number; readonly number: number };
   showHref: string;
-  type: ProgressType;
   datePreferences: DatePreferences;
 };
 
@@ -82,7 +80,7 @@ type Episode = {
 };
 
 function toSquare(
-  { season, episode, next, showHref, type, datePreferences }:
+  { season, episode, next, showHref, datePreferences }:
     & Omit<ToProgressSeasonsParams, 'seasons'>
     & { season: number; episode: Episode },
 ): EpisodeSquare {
@@ -94,26 +92,21 @@ function toSquare(
     : next?.season === season && next.number === number
     ? 'up-next'
     : 'not-watched';
-  const library = type === 'library';
-  const collected = !library && !done && episode.collected;
+  const collected = !done && episode.collected;
   const day = (date: string | undefined) =>
     date && Date.parse(date) !== UNKNOWN_DATE ? formatDate(date, { ...datePreferences, format: 'll' }) : undefined;
   const airs = day(firstAired) ?? 'TBA';
   const doneAt = day(at);
-  const doneWord = library ? 'in your library' : 'watched';
   const status = {
-    watched: [doneWord, doneAt].filter(Boolean).join(library ? ', added ' : ' '),
-    'not-watched': library ? 'not in your library' : 'not watched',
+    watched: ['watched', doneAt].filter(Boolean).join(' '),
+    'not-watched': 'not watched',
     'up-next': 'up next',
     'not-aired': `airs ${airs}`,
   }[state];
-  const playsText = !library && plays > 1 ? ` · ${plays} plays` : '';
+  const playsText = plays > 1 ? ` · ${plays} plays` : '';
   const statusLine: EpisodeTipLine = {
-    watched: {
-      text: library ? `In your library${doneAt ? `, added ${doneAt}` : ''}` : `Watched${doneAt ? ` ${doneAt}` : ''}`,
-      tone: library ? 'collected' : 'watched',
-    } as const,
-    'not-watched': { text: library ? 'Not in your library' : 'Not watched', tone: 'muted' } as const,
+    watched: { text: `Watched${doneAt ? ` ${doneAt}` : ''}`, tone: 'watched' } as const,
+    'not-watched': { text: 'Not watched', tone: 'muted' } as const,
     'up-next': { text: 'Up next', tone: 'next' } as const,
     'not-aired': { text: `Airs ${airs}`, tone: 'muted' } as const,
   }[state];
@@ -165,7 +158,7 @@ export function toProgressSeasons(params: ToProgressSeasonsParams): readonly Pro
       count: `${season.completed}/${season.aired}`,
       done: season.completed,
       aired: season.aired,
-      timeLeft: params.type !== 'library' && left > 0 ? formatRuntime(season.minutesLeft) : undefined,
+      timeLeft: left > 0 ? formatRuntime(season.minutesLeft) : undefined,
       announced: season.aired === 0 ? season.upcoming.length : undefined,
       squares: episodes.map((episode) => toSquare({ ...params, season: season.number, episode })),
     };

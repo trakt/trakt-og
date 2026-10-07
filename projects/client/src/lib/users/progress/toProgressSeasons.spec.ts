@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import type { ProgressSeasonData } from './ProgressItem.ts';
-import type { ProgressType } from './progressTypes.ts';
 import { toProgressSeasons } from './toProgressSeasons.ts';
 
 const datePreferences = { order: 'mdy', hour24: false, timeZone: 'UTC', weekStartDay: 0 } as const;
@@ -43,8 +42,7 @@ const season = (
 const seasons = (
   data: readonly ProgressSeasonData[],
   next?: { season: number; number: number },
-  type: ProgressType = 'watched',
-) => toProgressSeasons({ seasons: data, next, showHref: '/shows/x', type, datePreferences });
+) => toProgressSeasons({ seasons: data, next, showHref: '/shows/x', datePreferences });
 
 describe('toProgressSeasons', () => {
   describe('the seasons', () => {
@@ -105,10 +103,6 @@ describe('toProgressSeasons', () => {
     it('should name specials apart', () => {
       expect(seasons([season(0, [false])]).at(0)?.name).toBe('Specials');
     });
-
-    it('should leave the time left out on the library tab', () => {
-      expect(seasons([season(1, [true, false])], undefined, 'library').at(0)?.timeLeft).toBeUndefined();
-    });
   });
 
   describe('the squares', () => {
@@ -160,16 +154,6 @@ describe('toProgressSeasons', () => {
         { text: 'Not watched', tone: 'muted' },
         { text: 'In your library', tone: 'collected' },
       ]);
-    });
-
-    it('should say in your library on the library tab, without the library mark or plays', () => {
-      const [square] = seasons([season(1, [true, false], { collected: [1] })], undefined, 'library').at(0)?.squares ??
-        [];
-      expect(square).toMatchObject({
-        label: '1x01 "E1", in your library, added Sep 29, 2026',
-        collected: false,
-        lines: [{ text: 'In your library, added Sep 29, 2026', tone: 'collected' }],
-      });
     });
   });
 });

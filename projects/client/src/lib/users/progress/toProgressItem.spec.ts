@@ -44,7 +44,7 @@ const watched = new Map([
   [1, new Map([[11, ['2026-02-02T00:00:00Z', '2026-01-02T00:00:00Z']], [13, ['2026-02-03T00:00:00Z']]])],
 ]);
 
-const base = { kind: 'watched' as const, show, includeSpecials: false, useLastActivity: false, now: NOW };
+const base = { show, includeSpecials: false, useLastActivity: false, now: NOW };
 
 describe('toProgressItem', () => {
   describe('from the show summary', () => {
@@ -71,16 +71,6 @@ describe('toProgressItem', () => {
 
     it('should never count more done than aired', () => {
       expect(toProgressItem({ ...base, show: { ...show, airedEpisodes: 1 }, watched }).completed).toBe(1);
-    });
-
-    it('should count the library by collected episodes', () => {
-      const collected = new Map([[
-        1,
-        new Map<number, CollectedItem>([[1, { at: '2026-03-01T00:00:00Z' }], [2, '2026-03-02T00:00:00Z']]),
-      ]]);
-      const item = toProgressItem({ ...base, kind: 'library', collected });
-
-      expect(item).toMatchObject({ completed: 2, plays: 0, lastAt: '2026-03-02T00:00:00Z' });
     });
   });
 

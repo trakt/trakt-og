@@ -1,34 +1,27 @@
 <!--
   An open progress row's seasons, a line a season across the whole row: the season's name (linking to its page) with
-  what's done and left under it, a numbered pill an episode, then its percent. A pill is purple once
+  what's watched and the time left under it, as the row's own stats (`Stat`, smaller), a numbered pill an episode, then its percent. A pill is purple once
   watched, the library's teal while it's in your library but not watched, outlined and pulsing for up next, and
   dashed until it airs. Each links to its episode, with a chart tooltip: the screenshot, the code and title, when it
   aired with its runtime and rating, then its status lines. Spoiler settings hide an unwatched episode's screenshot
   and title there, as on the episode cards.
-    <ProgressSeasonGrid seasons={row.seasons} type="watched" />
+    <ProgressSeasonGrid seasons={row.seasons} />
 -->
 <script lang="ts">
 import { page } from '$app/state';
+import Stat from '$lib/components/stats/Stat.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
+import calendar from '$lib/icons/regular/calendar-lines.svg?raw';
+import clock from '$lib/icons/regular/clock.svg?raw';
+import check from '$lib/icons/trakt/check-thick.svg?raw';
 import { mediaSpoilers } from '$lib/settings/mediaSpoilers';
-import type { ProgressType } from './progressTypes.ts';
 import type { EpisodeSquare, ProgressSeason } from './toProgressSeasons.ts';
 
 interface Props {
   seasons: readonly ProgressSeason[];
-  type: ProgressType;
 }
 
-const { seasons, type }: Props = $props();
-const library = $derived(type === 'library');
-
-/** Under the season's name: "11/18 · 2h 32m left", "All 18 watched" or "8 announced". */
-function summary(season: ProgressSeason): string {
-  if (season.announced !== undefined) return `${season.announced} announced`;
-  const done = library ? 'in your library' : 'watched';
-  if (season.complete) return `All ${season.aired} ${done}`;
-  return season.timeLeft ? `${season.count} · ${season.timeLeft} left` : `${season.count} ${done}`;
-}
+const { seasons }: Props = $props();
 
 const spoilers = (square: EpisodeSquare) =>
   page.data.user
@@ -58,11 +51,18 @@ const spoilers = (square: EpisodeSquare) =>
 <ul class="seasons">
   {#each seasons as season (season.number)}
     <li class="season">
-      <p class="name">
+      <div class="name">
         <a href={season.href}>{season.name}</a>
-        {#if season.title}<span>{season.title}</span>{/if}
-        <span>{summary(season)}</span>
-      </p>
+        {#if season.title}<span class="season-title">{season.title}</span>{/if}
+        <span class="stats">
+          {#if season.announced !== undefined}
+            <Stat svg={calendar} value={String(season.announced)} noun="announced" />
+          {:else}
+            <Stat svg={check} tone="watched" value={season.count} noun="watched" />
+            {#if season.timeLeft}<Stat svg={clock} value={season.timeLeft} noun="left" />{/if}
+          {/if}
+        </span>
+      </div>
       <ul class="squares" aria-label="{season.name} episodes">
         {#each season.squares as square (square.code)}
           <li>
@@ -91,8 +91,7 @@ ul {
 .seasons {
   display: grid;
   padding: var(--progress-band-padding);
-  border-radius: 0 0 var(--radius-progress-band) var(--radius-progress-band);
-  border-block-start: 1px solid var(--color-progress-season-rule);
+  border-radius: var(--radius-progress-band);
   background: var(--color-progress-band);
   font-size: var(--font-size-progress-row);
 }
@@ -111,7 +110,7 @@ ul {
 
 .name {
   display: grid;
-  margin: 0;
+  min-inline-size: 0;
   line-height: var(--line-height-progress-season-name);
 
   & a {
@@ -127,11 +126,23 @@ ul {
     }
   }
 
-  & span {
+  & .season-title {
     color: var(--color-text-muted);
     font-size: var(--font-size-small);
-    font-variant-numeric: tabular-nums;
   }
+}
+
+/* What's watched and left, as the row's stats, a size down. */
+.stats {
+  --font-size-stat-icon: var(--font-size-progress-season-stat-icon);
+  --font-size-stat-number: var(--font-size-progress-season-stat-number);
+  --font-size-stat-noun: var(--font-size-progress-season-stat-noun);
+
+  display: grid;
+  justify-items: start;
+  gap: var(--progress-season-stats-gap);
+  margin-block-start: var(--progress-season-stats-gap);
+  font-variant-numeric: tabular-nums;
 }
 
 .percent {

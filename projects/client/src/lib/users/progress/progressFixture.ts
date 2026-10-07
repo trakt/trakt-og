@@ -167,15 +167,14 @@ function toCollected(sample: Sample): ReadonlyMap<number, ReadonlyMap<number, Co
 
 const dropped = new Map([[1390, '2025-12-01T21:40:00.000Z'], [60300, '2025-04-17T17:53:00.000Z']]);
 
-type Options = { kind: 'watched' | 'library'; expanded: boolean; dropped?: boolean };
+type Options = { expanded: boolean; dropped?: boolean };
 
-function toItem(sample: Sample, { kind, expanded, dropped: onDropped }: Options): ProgressItem {
+function toItem(sample: Sample, { expanded, dropped: onDropped }: Options): ProgressItem {
   return toProgressItem({
-    kind,
     show: toShow(sample),
     watched: toWatched(sample),
     collected: toCollected(sample),
-    resetAt: kind === 'watched' ? sample.resetAt : undefined,
+    resetAt: sample.resetAt,
     droppedAt: onDropped ? dropped.get(sample.id) : undefined,
     catalog: expanded ? toCatalog(sample) : undefined,
     includeSpecials: false,
@@ -186,14 +185,13 @@ function toItem(sample: Sample, { kind, expanded, dropped: onDropped }: Options)
 
 /**
  * Sample progress for the specs and the design page: each tab's items, collapsed (summary counts) or expanded (with
- * the show's catalog). Two shows are dropped.
+ * the show's catalog). Game of Thrones is being rewatched; two shows are dropped.
  */
 export const progressFixture = {
   now: NOW,
-  watched: (expanded: boolean) => samples.map((sample) => toItem(sample, { kind: 'watched', expanded })),
-  library: (expanded: boolean) => samples.map((sample) => toItem(sample, { kind: 'library', expanded })),
+  watched: (expanded: boolean) => samples.map((sample) => toItem(sample, { expanded })),
+  rewatching: (expanded: boolean) =>
+    samples.filter(({ resetAt }) => resetAt).map((sample) => toItem(sample, { expanded })),
   dropped: (expanded: boolean) =>
-    samples.filter(({ id }) => dropped.has(id)).map((sample) =>
-      toItem(sample, { kind: 'watched', expanded, dropped: true })
-    ),
+    samples.filter(({ id }) => dropped.has(id)).map((sample) => toItem(sample, { expanded, dropped: true })),
 };

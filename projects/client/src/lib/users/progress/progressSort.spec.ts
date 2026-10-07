@@ -31,14 +31,13 @@ describe('progressSort', () => {
 });
 
 describe('progressSortLabel', () => {
-  it('should name Activity Date after the tab', () => {
-    expect(progressSortLabel('added', 'watched')).toBe('Watched Date');
-    expect(progressSortLabel('added', 'library')).toBe('Library Date');
+  it('should name Activity Date Watched Date', () => {
+    expect(progressSortLabel('added')).toBe('Watched Date');
   });
 
   it('should title case an old sort name', () => {
-    expect(progressSortLabel('completed', 'watched')).toBe('Completion %');
-    expect(progressSortLabel('most-plays', 'watched')).toBe('Most Plays');
+    expect(progressSortLabel('completed')).toBe('Completion %');
+    expect(progressSortLabel('most-plays')).toBe('Most Plays');
   });
 });
 

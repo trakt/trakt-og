@@ -11,7 +11,6 @@ import { formatRuntime } from '../../utils/formatRuntime.ts';
 import { imageUrl } from '../../utils/imageUrl.ts';
 import { relativeDate } from '../../utils/relativeDate.ts';
 import type { ProgressItem } from './ProgressItem.ts';
-import type { ProgressType } from './progressTypes.ts';
 import { type ProgressSeason, toProgressSeasons } from './toProgressSeasons.ts';
 
 type Tag = NonNullable<ComponentProps<typeof FanartCard>['tags']>[number];
@@ -79,7 +78,6 @@ export type ProgressRow = {
 
 type ToProgressRowParams = {
   item: ProgressItem;
-  type: ProgressType;
   datePreferences: DatePreferences;
   now: Date;
 };
@@ -105,7 +103,7 @@ const tagged = (episode: CatalogEpisode) => ({
 
 function toUpNext({ item, now }: ToProgressRowParams): ProgressUpNext | undefined {
   const { show, detail } = item;
-  const episode = detail?.next;
+  const episode = item.next ?? detail?.next;
   if (!episode) return undefined;
 
   const label = episodeType(tagged(episode));
@@ -132,7 +130,7 @@ function toLast({ item, datePreferences, now }: ToProgressRowParams, showHref: s
   const at = item.lastAt;
   if (!at) return undefined;
 
-  const episode = item.detail?.last;
+  const episode = item.last ?? item.detail?.last;
   const unknown = isUnknown(at);
   return {
     ...(episode && {
@@ -147,10 +145,11 @@ function toLast({ item, datePreferences, now }: ToProgressRowParams, showHref: s
 
 /** Maps a show's progress onto OG's row: poster, tick bar, counts, and, once expanded, seasons and the next episode. */
 export function toProgressRow(params: ToProgressRowParams): ProgressRow {
-  const { item, type, datePreferences } = params;
+  const { item, datePreferences } = params;
   const { show, detail } = item;
   const href = `/shows/${show.slug}`;
   const seasons = detail?.seasons ?? [];
+  const next = item.next ?? detail?.next;
   const episodeStates = seasons.flatMap(({ episodes }) => episodes.map(({ done }) => done));
 
   return {
@@ -172,17 +171,14 @@ export function toProgressRow(params: ToProgressRowParams): ProgressRow {
     leftTime: runtime(item.minutesLeft, item.exact),
     last: toLast(params, href),
     droppedOn: item.droppedAt ? formatDate(item.droppedAt, { ...datePreferences, format: 'LL' }) : undefined,
-    rewatchingSince: type !== 'library' && item.resetAt
-      ? formatDate(item.resetAt, { ...datePreferences, format: 'LL' })
-      : undefined,
+    rewatchingSince: item.resetAt ? formatDate(item.resetAt, { ...datePreferences, format: 'LL' }) : undefined,
     seasons: detail &&
       toProgressSeasons({
         seasons,
-        next: detail.next && { season: detail.next.season, number: detail.next.number },
+        next: next && { season: next.season, number: next.number },
         showHref: href,
-        type,
         datePreferences,
       }),
-    upNext: type === 'library' ? undefined : toUpNext(params),
+    upNext: toUpNext(params),
   };
 }

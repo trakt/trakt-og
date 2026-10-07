@@ -1,18 +1,16 @@
 <!--
-  The status pill after a progress row's title: where you are with the show (Watching, Rewatching since…, Caught up,
-  Dropped on…, or the library's Collecting and Collected), opening a menu of the row's show actions. Watched rows
-  rewatch and drop, Library rows hide, Dropped rows restore. The rows are the shared visibility controls, so each
-  still asks for its date. `onremove` gets a drop, hide or restore as it starts saving, since those take the row off
-  the tab.
+  The status control after a progress row's title, drawn like the app's dropdowns: a dot in the status color and
+  where you are with the show (Watching, Rewatching since…, Caught up, Dropped…, or the library's Collecting and
+  Collected). Its menu lists the status, picked, then the row's show actions: Rewatch and Drop on Watched, Hide on
+  Library, Restore on Dropped. Those rows are the shared visibility controls, so each still asks for its date, and the
+  menu stays open until it saves. `onremove` gets a drop, hide or restore as it starts saving, since those take the
+  row off the tab.
     <ProgressStatus {row} type="watched" onremove={remove} />
 -->
 <script lang="ts">
 import Caret from '$lib/components/dropdown/Caret.svelte';
 import VisibilityControl from '$lib/components/visibility/VisibilityControl.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import backward from '$lib/icons/light/backward.svg?raw';
-import ban from '$lib/icons/light/ban.svg?raw';
-import circleMinus from '$lib/icons/light/circle-minus.svg?raw';
+import checkThick from '$lib/icons/trakt/check-thick.svg?url';
 import type { ProgressType } from './progressTypes.ts';
 import type { ProgressRow } from './toProgressRow.ts';
 
@@ -50,39 +48,35 @@ function toggle(event: ToggleEvent & { currentTarget: HTMLElement }) {
 }
 </script>
 
-{#snippet item(svg: string, name: string, detail: string)}
-  <Icon {svg} fixedWidth /><span
-  class="text"><span class="name">{name}</span><span class="detail">{detail}</span></span>
-{/snippet}
-
 <span class="status-control" style:anchor-name="--progress-status-{id}">
-  <button type="button" class={['status', status.tone]} popovertarget="progress-status-{id}" aria-haspopup="menu"
+  <button type="button" class={['trigger', status.tone]} popovertarget="progress-status-{id}" aria-haspopup="menu"
     aria-expanded={expanded} aria-label="{status.text}: show actions for {row.title}">
     <span class="dot" aria-hidden="true"></span>{status.text}<Caret />
   </button>
   <div bind:this={menu} id="progress-status-{id}" class="menu" popover="auto"
-    style:position-anchor="--progress-status-{id}" ontoggle={toggle}>
-    {#if type === 'dropped'}
-      <VisibilityControl {target} action="restore" variant="menu" onsaving={removing}>
-        {@render item(circleMinus, 'Restore', 'Back on Watched progress.')}
-      </VisibilityControl>
-    {:else if type === 'library'}
-      <VisibilityControl {target} action="hide" section="progress_collected" variant="menu" onsaving={removing}>
-        {@render item(ban, 'Hide', 'Leaves Library progress.')}
-      </VisibilityControl>
-    {:else}
-      <VisibilityControl {target} action="rewatch" variant="menu" onsaving={close}>
-        {@render item(
-          backward,
-          row.rewatchingSince ? 'Start over again' : 'Rewatch',
-          `Progress starts over from the first episode. Your ${row.plays.toLocaleString('en-US')} plays stay.`,
-        )}
-      </VisibilityControl>
-      <hr />
-      <VisibilityControl {target} action="drop" variant="menu" onsaving={removing}>
-        {@render item(circleMinus, 'Drop', 'Leaves Watched progress. Find it under Dropped.')}
-      </VisibilityControl>
-    {/if}
+    style:position-anchor="--progress-status-{id}" style:--check={`url("${checkThick}")`} ontoggle={toggle}>
+    <ul>
+      <li class="header" role="presentation">Status</li>
+      <li><span class="row current" aria-current="true">{status.text}</span></li>
+      {#if type === 'dropped'}
+        <li>
+          <VisibilityControl {target} action="restore" variant="menu" onsaving={removing}>Restore</VisibilityControl>
+        </li>
+      {:else if type === 'library'}
+        <li>
+          <VisibilityControl {target} action="hide" section="progress_collected" variant="menu" onsaving={removing}>
+            Hide from Library progress
+          </VisibilityControl>
+        </li>
+      {:else}
+        <li>
+          <VisibilityControl {target} action="rewatch" variant="menu" onsaving={close}>
+            {row.rewatchingSince ? 'Start over again' : 'Rewatch'}
+          </VisibilityControl>
+        </li>
+        <li><VisibilityControl {target} action="drop" variant="menu" onsaving={removing}>Drop</VisibilityControl></li>
+      {/if}
+    </ul>
   </div>
 </span>
 
@@ -92,26 +86,30 @@ function toggle(event: ToggleEvent & { currentTarget: HTMLElement }) {
   flex: none;
 }
 
-.status {
-  --caret-color: currentColor;
+/* The dropdown's default trigger. */
+.trigger {
   display: inline-flex;
   align-items: center;
-  gap: var(--progress-status-gap);
-  min-block-size: 0;
-  padding: var(--progress-status-padding);
-  border: 1px solid var(--color-progress-status-border);
-  border-radius: var(--radius-progress-status);
-  background: var(--color-progress-status-bg);
-  color: var(--color-progress-status-text);
-  font: var(--font-weight-headings) var(--font-size-progress-status) / 1 var(--font-headings);
+  gap: var(--space-control-caret);
+  min-block-size: var(--control-height);
+  padding: 0 calc(var(--space-control-inline) - 2px) 0 var(--space-control-inline);
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius-control);
+  background-color: var(--color-control-bg);
+  color: var(--color-control-text);
+  font-family: var(--font-body);
+  font-size: var(--font-size-control);
+  font-weight: var(--font-weight-control);
+  line-height: 1;
   white-space: nowrap;
   cursor: pointer;
-  transition: border-color 0.2s, color 0.2s;
+  transition: background-color 0.2s, border-color 0.2s;
 
-  &:is(:hover, :focus-visible),
+  &:hover,
   .status-control:has(.menu:popover-open) & {
-    border-color: var(--color-text-muted);
-    color: var(--color-text);
+    --caret-color: currentcolor;
+    border-color: var(--color-control-border-hover);
+    background-color: var(--color-control-hover-bg);
   }
 
   &:focus-visible {
@@ -124,14 +122,11 @@ function toggle(event: ToggleEvent & { currentTarget: HTMLElement }) {
   }
 
   &.rewatching {
-    --dot: var(--color-progress-rewatching-accent);
-    border-color: var(--color-progress-rewatching-accent);
-    background: var(--color-progress-rewatching-tint);
-    color: var(--color-progress-rewatching-text);
+    --dot: var(--color-progress-watched);
   }
 
   &.library {
-    --dot: var(--brand-quaternary);
+    --dot: var(--color-progress-collected);
   }
 
   &.done {
@@ -146,59 +141,84 @@ function toggle(event: ToggleEvent & { currentTarget: HTMLElement }) {
 .dot {
   inline-size: var(--progress-status-dot);
   block-size: var(--progress-status-dot);
+  margin-inline-end: var(--progress-status-dot-gap);
   border-radius: 50%;
   background: var(--dot);
 }
 
+/* The dropdown's menu. */
 .menu {
   position: fixed;
   position-area: bottom span-right;
-  position-try-fallbacks: flip-block, flip-inline;
+  position-try-fallbacks: flip-inline, flip-block;
   inset: auto;
-  inline-size: var(--progress-status-menu-width);
-  margin: var(--summary-action-menu-gap) 0;
-  padding: var(--space-sm-block) 0;
-  border: 1px solid var(--color-dropdown-border);
-  border-radius: var(--radius-summary-action);
-  background: var(--color-box);
-  color: var(--color-dropdown-text);
-  box-shadow: var(--shadow-dropdown);
-  font: var(--font-size-base) / var(--line-height-base) var(--font-body);
+  min-inline-size: var(--menu-min-width);
+  margin: var(--space-menu-offset) 0 0;
+  padding: var(--space-menu);
+  border: 1px solid var(--color-menu-border);
+  border-radius: var(--radius-menu);
+  background-color: var(--color-menu-bg);
+  color: var(--color-dropdown-menu-text);
+  font-family: var(--font-body);
+  font-size: var(--font-size-menu);
   text-align: start;
-
-  & :global(.visibility-trigger.menu) {
-    align-items: start;
-  }
-
-  & :global(.visibility-trigger.menu > .icon) {
-    margin-block-start: var(--progress-status-icon-nudge);
-  }
-
-  & hr {
-    margin: var(--space-sm-block) 0;
-    border: 0;
-    border-block-start: 1px solid var(--color-menu-divider);
-  }
+  box-shadow: var(--shadow-menu);
 }
 
-.text {
-  display: grid;
+ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.name {
-  font-family: var(--font-headings);
-  font-weight: var(--font-weight-headings);
+.header {
+  padding: var(--space-menu-header);
+  color: var(--color-menu-header);
+  font-size: var(--font-size-menu-header);
+  font-weight: var(--font-weight-menu-header);
+  letter-spacing: var(--letter-spacing-menu-header);
+  text-transform: uppercase;
 }
 
-.detail {
-  color: var(--color-text-muted);
-  font-size: var(--font-size-small);
-  line-height: var(--line-height-progress-row);
-  white-space: normal;
+/* The picked row and the visibility controls, as the dropdown's rows. */
+.row,
+.menu :global(.visibility-trigger.menu) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-menu-check);
+  inline-size: 100%;
+  padding: var(--space-menu-row);
+  border-radius: var(--radius-menu-row);
+  color: inherit;
+  font: inherit;
+  line-height: var(--line-height-base);
+  white-space: nowrap;
+}
+
+.menu :global(.visibility-trigger.menu:is(:hover, :focus-visible)) {
+  background-color: var(--color-menu-row-hover);
+  color: var(--color-menu-row-hover-text);
+  outline: none;
+}
+
+/* The thick Trakt check, on the right of the picked row. */
+.current {
+  color: var(--brand-primary);
+  font-weight: var(--font-weight-headings-heavy);
+
+  &::after {
+    content: '';
+    flex: none;
+    inline-size: var(--font-size-menu-check);
+    block-size: var(--font-size-menu-check);
+    background-color: currentcolor;
+    mask: var(--check) center / contain no-repeat;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .status {
+  .trigger {
     transition: none;
   }
 }

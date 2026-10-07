@@ -64,11 +64,12 @@ describe('toProgressRow', () => {
     it('should line up each season, announced episodes included', () => {
       const { seasons } = expanded('Severance');
 
-      expect(seasons?.map(({ name, href, percent, summary }) => [name, href, percent, summary])).toEqual([
-        ['Season 1', '/shows/severance/seasons/1', 100, '9/9'],
-        ['Season 2', '/shows/severance/seasons/2', 100, '10/10'],
-        ['Season 3', '/shows/severance/seasons/3', 0, '3 announced'],
-      ]);
+      expect(seasons?.map(({ name, href, percent, count, announced }) => [name, href, percent, count, announced]))
+        .toEqual([
+          ['Season 1', '/shows/severance/seasons/1', 100, '9/9', undefined],
+          ['Season 2', '/shows/severance/seasons/2', 100, '10/10', undefined],
+          ['Season 3', '/shows/severance/seasons/3', 0, '0/0', 3],
+        ]);
       expect(seasons?.at(2)?.squares.at(0)).toMatchObject({
         code: '3x01',
         href: '/shows/severance/seasons/3/episodes/1',
@@ -138,7 +139,7 @@ describe('toProgressRow', () => {
     it('should use the collected dates and skip the plays', () => {
       expect(library).toMatchObject({ completed: 15, plays: 0, rewatchingSince: undefined });
       expect(library.last?.date).toBe('Sep 3, 2026 1:08 PM');
-      expect(library.seasons?.at(1)?.summary).toBe('8/13');
+      expect(library.seasons?.at(1)?.count).toBe('8/13');
       expect(library.seasons?.at(1)?.squares.at(0)?.label).toBe(
         '2x01 "Episode 1", in your library, added Sep 3, 2026',
       );

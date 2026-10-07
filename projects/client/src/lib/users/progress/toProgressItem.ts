@@ -98,6 +98,7 @@ function fromCatalog(params: ToProgressItemParams, catalog: ShowCatalog): Progre
           at: kind === 'watched' ? latest(dates) : added,
           firstAired: episode.firstAired,
           rating: episode.rating,
+          screenshot: episode.screenshot,
         };
       }),
     }))

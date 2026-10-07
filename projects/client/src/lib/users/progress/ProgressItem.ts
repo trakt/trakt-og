@@ -17,6 +17,8 @@ export type ProgressEpisodeData = {
   readonly runtime: number;
   /** The Trakt rating, 0 to 10. */
   readonly rating?: number;
+  /** The `extended=images` screenshot path. */
+  readonly screenshot?: string;
 };
 
 export type ProgressSeasonData = {

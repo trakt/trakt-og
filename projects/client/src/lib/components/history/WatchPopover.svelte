@@ -19,7 +19,6 @@ import Spinner from '$lib/components/loading/Spinner.svelte';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
 import { watchDateInput } from '$lib/components/history/watchDateInput';
 import { watchDateInstant } from '$lib/components/history/watchDateInstant';
-import { formatDate } from '$lib/utils/formatDate';
 
 type Mode = 'date' | 'remove' | 'partial';
 /** What a summary button shows (`SummaryAction`'s icon, text, percent and detail). */
@@ -241,7 +240,6 @@ function click() {
     {#if other}
       <PromptDateForm id="watch-date-{id}" label="{collection ? 'Collected' : 'Watched'} date and time" bind:value
         bind:field max={maximum}
-        preview={instant ? formatDate(instant, { ...datePreferences, format: 'LL', time: true }) : 'Choose a valid date and time.'}
         saveLabel={collection ? 'Save collected date' : 'Save watched date'} onsubmit={submit}
         oncancel={async () => { other = false; await tick(); firstChoice()?.focus(); }} />
     {:else}

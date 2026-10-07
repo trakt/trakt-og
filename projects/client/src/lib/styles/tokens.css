@@ -2100,9 +2100,7 @@
   --font-size-trending-comments-mark: 30px;
   --trending-comments-person: 40px;
   --trending-comments-pager-gap: 24px;
-  --trending-comments-pager-padding: 6px 14px 6px 16px;
-  --trending-comments-pager-inner-gap: 14px;
-  --trending-comments-pager-count: 36px; /* "8 / 8" without the pill changing width */
+  --trending-comments-pager-padding: 12px 18px;
   --blur-trending-comments-pager: blur(6px);
   --trending-comments-person-hover: 1.12;
   --line-height-trending-comments-byline: 1.35; /* the name's line and the date's */

@@ -2192,19 +2192,22 @@
   --line-height-progress-row: 1.2;
 
   /* The ledger row: poster, main column, up-next card */
-  --progress-poster-width: 139px; /* a 2:3 poster as tall as the card: its 16:9 fanart and 40px quick-icon bar */
-  --progress-poster-width-tablet: 110px;
-  --progress-card-width: 300px;
-  --progress-card-width-tablet: 240px;
+  --progress-poster-width: 116px; /* a 2:3 poster as tall as the card: its 135px fanart and 40px quick-icon bar */
+  --progress-poster-width-tablet: 96px;
+  --progress-card-width: 240px;
+  --progress-card-width-tablet: 200px;
   --progress-card-bar: 40px; /* the fanart card's quick-icon bar, under the waiting card's fanart */
   --opacity-progress-loading-card: 0.25;
   --progress-row-gap: 24px;
-  --progress-row-padding: 18px 0;
-  --progress-main-gap: 10px;
+  --progress-row-padding: 24px 0;
+  --progress-main-gap: 14px;
   --progress-title-gap: 10px;
-  --font-size-progress-title: 24px;
-  --font-size-progress-year: 16px;
+  --font-size-progress-title: 26px;
+  --font-size-progress-year: 18px;
   --progress-inline-gap: 4px; /* an icon or a bold code before its text */
+  --progress-last-gap: 8px; /* the stats to the last watched chip */
+  --progress-last-padding: 4px 10px 4px 8px;
+  --font-size-progress-last-icon: 13px;
   --color-progress-watched: var(--brand-tertiary); /* the watch quick icon's purple */
   --color-progress-watched-text: light-dark(var(--brand-tertiary), #b583cf); /* lifted for dark */
   --color-progress-collected: var(--brand-quaternary); /* the library quick icon's teal */
@@ -2228,16 +2231,33 @@
   /* The open row's seasons: a heading line, then a numbered square an episode */
   --color-progress-toggle-link: light-dark(var(--brand-primary), #fff);
   --font-size-progress-toggle-icon: 10px;
-  --progress-season-gap: 14px;
-  --progress-season-heading-gap: 8px;
+  --progress-strip-gap: 20px; /* the row's top to its seasons strip */
+  --progress-strip-padding: 9px 14px;
+  --progress-strip-chip-gap: 8px;
+  --progress-strip-toggle-gap: 6px; /* on top of the chip gap, after Show seasons */
+  --radius-progress-band: 8px;
+  --color-progress-band: light-dark(#f5f5f5, #262626); /* the strip and the season list under it */
+  --progress-chip-padding: 3px 8px;
+  --radius-progress-chip: 6px;
+  --color-progress-chip: light-dark(#e9e9e9, #303030);
+  --color-progress-chip-now: color-mix(in srgb, var(--brand-primary) 60%, transparent); /* up next's season */
+  --progress-chip-bar: 34px;
+  --progress-chip-bar-height: 4px;
+  --progress-band-padding: 4px 14px 8px;
+  --progress-season-name: 150px;
+  --progress-season-percent: 64px;
+  --progress-season-columns: 18px;
+  --progress-season-padding: 10px;
+  --line-height-progress-season-name: 1.3;
   --color-progress-season-rule: light-dark(#eee, #2a2a2a);
   --font-size-progress-season-name: 15px;
-  --font-size-progress-season-percent: 15px;
-  --progress-square: 22px;
-  --progress-square-gap: 3px;
+  --font-size-progress-season-percent: 18px;
+  --progress-square: 30px;
+  --progress-square-height: 24px;
+  --progress-square-gap: 4px;
   --progress-square-ring: 2px;
   --radius-progress-square: 2px;
-  --font-size-progress-square: 10px;
+  --font-size-progress-square: 11px;
   --color-progress-square: light-dark(#e5e5e5, #3a3a3a);
   --color-progress-square-announced: light-dark(#ccc, #555);
   --progress-cell-pulse: 6px;

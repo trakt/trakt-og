@@ -45,6 +45,8 @@ export type ProgressSeason = {
   readonly complete: boolean;
   /** "11/25" done of aired. */
   readonly count: string;
+  readonly done: number;
+  readonly aired: number;
   /** "5h 8m" left to watch, on Watched while anything is. */
   readonly timeLeft?: string;
   /** Announced episodes, while nothing has aired. */
@@ -161,6 +163,8 @@ export function toProgressSeasons(params: ToProgressSeasonsParams): readonly Pro
       percent: season.aired === 0 ? 0 : Math.floor(season.completed / season.aired * 100),
       complete: season.aired > 0 && left <= 0,
       count: `${season.completed}/${season.aired}`,
+      done: season.completed,
+      aired: season.aired,
       timeLeft: params.type !== 'library' && left > 0 ? formatRuntime(season.minutesLeft) : undefined,
       announced: season.aired === 0 ? season.upcoming.length : undefined,
       squares: episodes.map((episode) => toSquare({ ...params, season: season.number, episode })),

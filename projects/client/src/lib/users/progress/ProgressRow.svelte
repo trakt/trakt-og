@@ -1,10 +1,12 @@
 <!--
   One show on the progress page, as a ledger row: the poster; the title, its status menu (`ProgressStatus`), the tick
-  bar, the counts as stats and when you last watched (or collected); then the up-next card, og's fanart card for the
-  next episode with its quick icons. The row reads the show's catalog (`onneed`) as it nears the screen, since the
-  card and exact counts need it; until then the card waits on the show's fanart. Once every episode is done, the card
-  is the show's. "Show seasons" opens the season lines under the row (`ProgressSeasonGrid`), in their own grid row,
-  so opening them moves nothing above. A drop, hide or restore fades the row out and moves the focus on.
+  bar, the counts as stats and a chip linking the episode you last watched (or collected); then the up-next card,
+  og's fanart card for the next episode with its quick icons. The poster and the card are the same height, and the
+  text about matches them. The row reads the show's catalog (`onneed`) as it nears the screen, since the card, the
+  exact counts and the seasons need it; until then the card waits on the show's fanart. Once every episode is done,
+  the card is the show's. Under it all, across the whole row, the seasons strip: "Show seasons" and a chip a season
+  (done, how far, or soon; up next's season outlined), which opens the season list under it (`ProgressSeasonGrid`).
+  A drop, hide or restore fades the row out and moves the focus on.
 -->
 <script lang="ts">
 import type { Attachment } from 'svelte/attachments';
@@ -13,6 +15,7 @@ import { quickIconFill } from '$lib/components/media/quickIconFill';
 import { removeCard } from '$lib/components/media/removeCard';
 import TickBar from '$lib/components/media/TickBar.svelte';
 import Stat from '$lib/components/stats/Stat.svelte';
+import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import clock from '$lib/icons/regular/clock.svg?raw';
 import history from '$lib/icons/regular/clock-rotate-left.svg?raw';
@@ -48,6 +51,8 @@ let removedByAction = false;
 
 const plural = (n: number, word: string) => `${word}${n === 1 ? '' : 's'}`;
 const count = (n: number) => n.toLocaleString('en-US');
+// Up next's season, outlined in the strip.
+const nextSeason = $derived(row.upNext?.target.season.number);
 const showTarget = $derived({ type: 'show' as const, id: row.id, title: row.title, airedEpisodes: row.aired });
 const caughtUp = $derived(
   type === 'dropped'
@@ -135,19 +140,15 @@ function toggle() {
     </p>
 
     {#if row.last}
-      <p class="last">
-        {kind === 'watched' ? 'Last watched' : 'Last added'}
-        {#if row.last.number}<a href={row.last.href}><b>{row.last.number}</b>{row.last.title ? ` ${row.last.title}` : ''}</a>{/if}
-        {row.last.relative ? `${row.last.relative} ` : ''}on {row.last.date}
-      </p>
+      {@const verb = kind === 'watched' ? 'Last watched' : 'Last added'}
+      <Tooltip text={`${verb} ${row.last.number ?? ''}${row.last.title ? ` ${row.last.title}` : ''}\n${row.last.date}`}>
+        {#snippet trigger(tooltip)}
+          <a class="last" href={row.last?.href ?? row.href} {...tooltip}><Icon svg={history} />{verb}
+            {#if row.last?.number}<b>{row.last.number}</b>{row.last.title ? ` ${row.last.title}` : ''}{/if}
+            · {row.last?.relative ?? row.last?.date}</a>
+        {/snippet}
+      </Tooltip>
     {/if}
-
-    <p class="toggle-line">
-      <button type="button" class="toggle" aria-expanded={open} aria-controls="progress-seasons-{row.id}"
-        onclick={toggle}><Icon svg={caretDown} />{open ? 'Hide' : 'Show'}
-        {row.seasons ? `${row.seasons.length} ${plural(row.seasons.length, 'season')}` : 'seasons'}</button>
-      {#if open && loading}<span class="loading" role="status">Loading seasons…</span>{/if}
-    </p>
   </div>
 
   <div class="card">
@@ -181,8 +182,28 @@ function toggle() {
     {/if}
   </div>
 
-  <div class="seasons" id="progress-seasons-{row.id}" hidden={!open}>
-    {#if open && row.seasons}<ProgressSeasonGrid seasons={row.seasons} {type} />{/if}
+  <div class="seasons-area">
+    <div class={['strip', { open: open && row.seasons }]}>
+      <button type="button" class="toggle" aria-expanded={open} aria-controls="progress-seasons-{row.id}"
+        onclick={toggle}><Icon svg={caretDown} />{open ? 'Hide' : 'Show'}
+        {row.seasons ? `${row.seasons.length} ${plural(row.seasons.length, 'season')}` : 'seasons'}</button>
+      {#if row.seasons}
+        <ul class="chips" aria-label="{row.title} seasons">
+          {#each row.seasons as season (season.number)}
+            <li class={['chip', { done: season.complete, now: season.number === nextSeason }]}>
+              {season.number === 0 ? 'Specials' : `S${season.number}`}
+              {#if season.announced !== undefined}soon{:else if season.complete}<Icon svg={check} />{:else}<span
+                  class="mini"
+                  ><span style:inline-size="{season.percent}%"></span></span>{season.percent}%{/if}
+            </li>
+          {/each}
+        </ul>
+      {/if}
+      {#if open && loading}<span class="loading" role="status">Loading seasons…</span>{/if}
+    </div>
+    <div class="seasons" id="progress-seasons-{row.id}" hidden={!open}>
+      {#if open && row.seasons}<ProgressSeasonGrid seasons={row.seasons} {type} />{/if}
+    </div>
   </div>
 </article>
 
@@ -190,8 +211,8 @@ function toggle() {
 .progress-row {
   display: grid;
   grid-template-columns: var(--progress-poster-width) minmax(0, 1fr) var(--progress-card-width);
+  align-items: start;
   column-gap: var(--progress-row-gap);
-  row-gap: var(--progress-season-gap);
   padding: var(--progress-row-padding);
   border-block-start: 1px solid var(--color-separator);
 
@@ -219,7 +240,6 @@ function toggle() {
 
 .main-info {
   display: grid;
-  grid-template-rows: auto auto auto auto 1fr;
   align-content: start;
   gap: var(--progress-main-gap);
   min-inline-size: 0;
@@ -260,9 +280,16 @@ function toggle() {
   font-size: var(--font-size-progress-year);
 }
 
-/* The percent takes its own width: a twelfth of this narrower column is too tight for "100%". */
-.main-info :global(.tick-bar) {
-  grid-template-columns: minmax(0, 1fr) auto;
+/* The percent takes its own width (a twelfth of this narrower column is too tight for "100%"), and the column's
+   gap spaces the bar, so it drops its own margin and centers the percent on itself. */
+.main-info {
+  --tick-bar-margin: 0;
+  --line-height-tick-bar-percent: 1;
+
+  & :global(.tick-bar) {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+  }
 }
 
 .stats {
@@ -272,32 +299,64 @@ function toggle() {
   margin: 0;
 }
 
+/* The last episode as a chip: set apart from the stats, and clearly a link. */
 .last {
-  margin: 0;
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--progress-inline-gap);
+  max-inline-size: 100%;
+  margin-block-start: calc(var(--progress-last-gap) - var(--progress-main-gap));
+  padding: var(--progress-last-padding);
+  overflow: hidden;
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius-control);
+  background: var(--color-control-bg);
   color: var(--color-text-muted);
-  line-height: var(--line-height-progress-row);
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 
-  & a {
-    color: inherit;
-    text-decoration: none;
-
-    &:is(:hover, :focus-visible) {
-      color: var(--color-text);
-      text-decoration: underline;
-    }
+  & :global(.icon) {
+    flex: none;
+    font-size: var(--font-size-progress-last-icon);
   }
 
   & b {
+    color: var(--color-text);
     font-family: var(--font-headings);
     font-weight: var(--font-weight-headings-heavy);
   }
+
+  &:is(:hover, :focus-visible) {
+    border-color: var(--color-control-border-hover);
+
+    & b {
+      text-decoration: underline;
+    }
+  }
 }
 
-.toggle-line {
+/* The seasons strip and the list it opens, across the whole row. */
+.seasons-area {
+  grid-column: 1 / -1;
+  min-inline-size: 0;
+  margin-block-start: var(--progress-strip-gap);
+}
+
+.strip {
   display: flex;
-  align-items: end;
-  gap: var(--progress-title-gap);
-  margin: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--progress-strip-chip-gap);
+  padding: var(--progress-strip-padding);
+  border-radius: var(--radius-progress-band);
+  background: var(--color-progress-band);
+
+  &.open {
+    border-end-start-radius: 0;
+    border-end-end-radius: 0;
+  }
 }
 
 .toggle {
@@ -305,6 +364,7 @@ function toggle() {
   align-items: center;
   gap: var(--progress-inline-gap);
   min-block-size: 0;
+  margin-inline-end: var(--progress-strip-toggle-gap);
   padding: 0;
   border: 0;
   background: none;
@@ -326,6 +386,51 @@ function toggle() {
   &:focus-visible {
     outline: 2px solid var(--color-link);
     outline-offset: 1px;
+  }
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--progress-strip-chip-gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--progress-inline-gap);
+  padding: var(--progress-chip-padding);
+  border-radius: var(--radius-progress-chip);
+  background: var(--color-progress-chip);
+  color: var(--color-dropdown-menu-text);
+  font: var(--font-weight-headings) var(--font-size-small) / 1.2 var(--font-headings);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+
+  &.done {
+    color: var(--color-progress-watched-text);
+  }
+
+  &.now {
+    box-shadow: inset 0 0 0 1px var(--color-progress-chip-now);
+  }
+}
+
+.mini {
+  display: inline-block;
+  inline-size: var(--progress-chip-bar);
+  block-size: var(--progress-chip-bar-height);
+  overflow: hidden;
+  border-radius: var(--progress-chip-bar-height);
+  background: var(--color-progress-square);
+
+  & span {
+    display: block;
+    block-size: 100%;
+    background: var(--color-progress-watched);
   }
 }
 
@@ -360,12 +465,6 @@ function toggle() {
   }
 }
 
-/* Its own row under the text and the card, so opening it moves nothing above. */
-.seasons {
-  grid-column: 2 / -1;
-  min-inline-size: 0;
-}
-
 @media (width < 1200px) {
   .progress-row {
     grid-template-columns: var(--progress-poster-width-tablet) minmax(0, 1fr) var(--progress-card-width-tablet);
@@ -380,10 +479,6 @@ function toggle() {
 
   .poster {
     display: none;
-  }
-
-  .seasons {
-    grid-column: 1 / -1;
   }
 }
 

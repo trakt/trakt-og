@@ -2132,9 +2132,11 @@
   --premiere-pill-padding: 3px 9px;
   --font-size-premiere-pill: 12px;
   --premiere-pill-dot: 7px;
-  --premiere-countdown-padding: 6px 10px;
-  --premiere-countdown-gap: 5px;
-  --font-size-premiere-countdown: 18px;
+  --premiere-chip-gap: 6px; /* between the countdown and the date */
+  --color-premiere-cool: rgb(44 44 48 / 0.9); /* the countdown a month or more out */
+  --color-premiere-warm: #c4690f; /* two weeks out */
+  --color-premiere-hot: #e63b17; /* on the day */
+  --premiere-fire-gap: 2px;
   --premiere-today-glow: 0 0 18px; /* in the season's accent, on the day */
   --premiere-today-glow-strength: 60%;
   --premiere-flicker: 0.9s;

@@ -4,8 +4,9 @@
   The title's poster card is on the left (an episode's card shows the episode with its show under it, as history
   does); on the right, the commenter's header as on a comment card (avatar with their rating's corner, name, VIP pill,
   Review and Spoilers tags, date), the comment under a quote mark, and its likes and replies. A spoiler comment stays
-  blurred until clicked. Under it all, a pill of the commenters' avatars jumps between comments (hovering one shows
-  its commenter with the title's poster, episode and name), and arrows on the section's edges step through.
+  blurred until clicked. Under it all, a pill of the commenters' avatars jumps between comments (hovering one shows a
+  card with the title's fanart, episode and name, the commenter, their rating and the comment's likes and replies),
+  and arrows on the section's edges step through.
 -->
 <script lang="ts">
 import CommentAvatar from '$lib/components/comments/CommentAvatar.svelte';
@@ -27,6 +28,7 @@ import comments from '$lib/icons/regular/comments.svg?raw';
 import thumbsUp from '$lib/icons/regular/thumbs-up.svg?raw';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import eyeSlash from '$lib/icons/solid/eye-slash.svg?raw';
+import heart from '$lib/icons/solid/heart.svg?raw';
 import quoteLeft from '$lib/icons/solid/quote-left.svg?raw';
 import star from '$lib/icons/solid/star.svg?raw';
 import { overlay } from '$lib/overlay/overlay';
@@ -238,14 +240,34 @@ const revealOnKey = (event: KeyboardEvent, id: number) => {
               {@const person = authorOf(item.comment.user)}
               <li>
                 <Tooltip>
+                  {@const rating = item.comment.user_stats.rating}
                   <span class="peek">
-                    {#if item.item.poster}<img src={item.item.poster} alt="" loading="lazy" />{/if}
-                    <span class="peek-text">
-                      <b>{person.name}</b>
-                      {#if item.item.episode}
-                        <span><b>{item.item.episode.number}</b> {item.item.episode.title}</span>
+                    <span class="banner">
+                      {#if item.item.fanart}<img src={item.item.fanart} alt="" loading="lazy" />{/if}
+                      <span class="caption">
+                        {#if item.item.episode}
+                          <span><b>{item.item.episode.number}</b> {item.item.episode.title}</span>
+                        {/if}
+                        <b class="peek-title">{item.item.title}</b>
+                      </span>
+                    </span>
+                    <span class="peek-who">
+                      <img src={person.avatar} alt="" loading="lazy" />
+                      <span class="peek-lines">
+                        <span class="peek-name"><b>{person.name}</b>{#if person.badge}<VipLabel
+                              badge={person.badge}
+                              quiet
+                            />{/if}</span>
+                        <span class="peek-counts">
+                          <span><Icon svg={thumbsUp} />{count(item.comment.likes)}</span>
+                          <span><Icon svg={comment} />{count(item.comment.replies)}</span>
+                        </span>
+                      </span>
+                      {#if rating}
+                        <span class="peek-rating" style:--rating-color="var(--rating-{rating})"><Icon
+                            svg={heart}
+                          />{rating}</span>
                       {/if}
-                      <span class="peek-title">{item.item.title}</span>
                     </span>
                   </span>
                   {#snippet trigger(tooltip)}
@@ -479,6 +501,8 @@ const revealOnKey = (event: KeyboardEvent, id: number) => {
 }
 
 .people {
+  /* The hover cards are solid, not og's see-through tooltip. */
+  --opacity-tooltip: 1;
   display: flex;
   gap: var(--trending-comments-people-gap);
   margin: 0;
@@ -516,32 +540,45 @@ const revealOnKey = (event: KeyboardEvent, id: number) => {
   }
 }
 
-/* An avatar's hover card: the title's poster beside the commenter, the episode and the title. */
+/* An avatar's hover card: the title's fanart with the episode and title over it, then the commenter (VIP, likes and
+   replies) and their rating as a heart and number on its colour. It covers the tooltip's own padding, so it reads
+   apart from the black band behind it. */
 .peek {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: center;
-  gap: var(--trending-comments-peek-gap);
-  /* Over the tooltip's own padding, so the card reads apart from the black band behind it. */
+  inline-size: var(--trending-comments-peek-width);
   margin: var(--trending-comments-peek-bleed);
-  padding: var(--trending-comments-peek-padding);
-  border-radius: var(--radius-season-poster);
+  overflow: hidden;
+  border-radius: var(--radius-trending-comments-peek);
   background-color: var(--color-trending-comments-peek-bg);
   box-shadow: inset 0 0 0 1px var(--color-season-hero-chrome-line);
   text-align: start;
+}
+
+.banner {
+  position: relative;
+  display: block;
+  block-size: var(--trending-comments-peek-banner);
+  background-color: var(--color-slider-bg);
 
   & img {
-    inline-size: var(--trending-comments-peek-poster);
-    aspect-ratio: var(--ratio-poster);
-    border-radius: var(--radius-season-poster);
+    inline-size: 100%;
+    block-size: 100%;
     object-fit: cover;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--trending-comments-peek-shade);
   }
 }
 
-.peek-text {
+.caption {
+  position: absolute;
+  inset: auto var(--trending-comments-peek-inset) var(--trending-comments-peek-caption-bottom);
+  z-index: 1;
   display: grid;
-  gap: var(--comment-head-line-gap);
-  max-inline-size: var(--trending-comments-peek-width);
   line-height: var(--line-height-headings);
 
   & > * {
@@ -552,7 +589,74 @@ const revealOnKey = (event: KeyboardEvent, id: number) => {
 }
 
 .peek-title {
+  font-size: var(--font-size-trending-comments-peek-title);
+}
+
+.peek-who {
+  display: grid;
+  grid-template-columns: var(--trending-comments-peek-avatar) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--trending-comments-peek-gap);
+  padding: var(--trending-comments-peek-inset);
+
+  & img {
+    inline-size: var(--trending-comments-peek-avatar);
+    block-size: var(--trending-comments-peek-avatar);
+    border-radius: 50%;
+    object-fit: cover;
+  }
+}
+
+.peek-lines {
+  display: grid;
+  gap: var(--comment-head-line-gap);
+  min-inline-size: 0;
+  line-height: var(--line-height-headings);
+}
+
+.peek-name {
+  display: flex;
+  align-items: center;
+  gap: var(--comment-head-gap);
+  min-inline-size: 0;
+
+  & b {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.peek-counts {
+  display: flex;
+  gap: var(--trending-comments-peek-gap);
   color: var(--color-tooltip-muted);
+
+  & span {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs-inline);
+  }
+
+  & :global(svg) {
+    color: var(--brand-secondary);
+  }
+}
+
+.peek-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--comment-tag-gap);
+  block-size: var(--comment-tag-height);
+  padding: var(--comment-tag-padding);
+  border-radius: var(--radius-comment-tag);
+  background-color: var(--rating-color);
+  font-size: var(--font-size-comment-tag);
+  font-weight: var(--font-weight-headings-heavy);
+
+  & :global(svg) {
+    font-size: var(--font-size-comment-tag-icon);
+  }
 }
 
 .arrow {

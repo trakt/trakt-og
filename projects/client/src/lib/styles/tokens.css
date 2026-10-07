@@ -2105,11 +2105,16 @@
   --blur-trending-comments-pager: blur(6px);
   --trending-comments-person-hover: 1.12;
   --trending-comments-peek-gap: 10px; /* an avatar's hover card */
-  --trending-comments-peek-padding: 8px 12px 8px 8px;
   --trending-comments-peek-bleed: -3px -8px; /* the tooltip's padding */
-  --color-trending-comments-peek-bg: #2a2a2a;
-  --trending-comments-peek-poster: 40px;
-  --trending-comments-peek-width: 200px;
+  --color-trending-comments-peek-bg: #181818;
+  --radius-trending-comments-peek: 6px;
+  --trending-comments-peek-width: 300px;
+  --trending-comments-peek-banner: 112px;
+  --trending-comments-peek-shade: linear-gradient(transparent 20%, rgb(0 0 0 / 0.85));
+  --trending-comments-peek-inset: 12px;
+  --trending-comments-peek-caption-bottom: 9px;
+  --font-size-trending-comments-peek-title: 16px;
+  --trending-comments-peek-avatar: 34px;
   --line-height-trending-comments-byline: 1.35; /* the name's line and the date's */
   --trending-comments-people-gap: 6px;
   /* The toggle buttons: moods, the Movies/Shows switch and the premiere filters. */

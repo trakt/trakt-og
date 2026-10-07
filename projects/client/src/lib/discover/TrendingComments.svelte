@@ -496,7 +496,9 @@ const revealOnKey = (event: KeyboardEvent, id: number) => {
   padding: var(--trending-comments-pager-padding);
   border-radius: var(--radius-season-pill);
   background-color: var(--color-season-hero-chrome);
-  box-shadow: inset 0 0 0 1px var(--color-season-hero-chrome-line);
+  /* The dropdown menu's border and shadow. */
+  border: 1px solid var(--color-menu-border);
+  box-shadow: var(--shadow-menu);
   backdrop-filter: var(--blur-trending-comments-pager);
 }
 
@@ -549,10 +551,11 @@ const revealOnKey = (event: KeyboardEvent, id: number) => {
   display: grid;
   inline-size: var(--trending-comments-peek-width);
   margin: var(--trending-comments-peek-bleed);
-  border: 1px solid var(--color-season-hero-chrome-line);
+  /* The dropdown menu's border, fill and shadow. */
+  border: 1px solid var(--color-menu-border);
   border-radius: var(--radius-trending-comments-peek);
-  background-color: var(--color-trending-comments-peek-bg);
-  box-shadow: var(--shadow-trending-comments-peek);
+  background-color: var(--color-menu-bg);
+  box-shadow: var(--shadow-menu);
   text-align: start;
 
   /* The arrow down to the avatar: a square turned on its point, bordered on its two lower sides. */
@@ -563,9 +566,9 @@ const revealOnKey = (event: KeyboardEvent, id: number) => {
     inset-inline-start: calc(50% - var(--trending-comments-peek-arrow) / 2);
     inline-size: var(--trending-comments-peek-arrow);
     block-size: var(--trending-comments-peek-arrow);
-    border: solid var(--color-season-hero-chrome-line);
+    border: solid var(--color-menu-border);
     border-width: 0 1px 1px 0;
-    background-color: var(--color-trending-comments-peek-bg);
+    background-color: var(--color-menu-bg);
     rotate: 45deg;
   }
 }

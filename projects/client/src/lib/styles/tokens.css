@@ -2104,6 +2104,12 @@
   --trending-comments-pager-padding: 12px 18px;
   --blur-trending-comments-pager: blur(6px);
   --trending-comments-person-hover: 1.12;
+  --trending-comments-peek-gap: 10px; /* an avatar's hover card */
+  --trending-comments-peek-padding: 8px 12px 8px 8px;
+  --trending-comments-peek-bleed: -3px -8px; /* the tooltip's padding */
+  --color-trending-comments-peek-bg: #2a2a2a;
+  --trending-comments-peek-poster: 40px;
+  --trending-comments-peek-width: 200px;
   --line-height-trending-comments-byline: 1.35; /* the name's line and the date's */
   --trending-comments-people-gap: 6px;
   /* The toggle buttons: moods, the Movies/Shows switch and the premiere filters. */

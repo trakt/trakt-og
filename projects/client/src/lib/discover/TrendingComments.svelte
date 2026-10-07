@@ -4,8 +4,8 @@
   The title's poster card is on the left (an episode's card shows the episode with its show under it, as history
   does); on the right, the commenter's header as on a comment card (avatar with their rating's corner, name, VIP pill,
   Review and Spoilers tags, date), the comment under a quote mark, and its likes and replies. A spoiler comment stays
-  blurred until clicked. Under it all, a pill of the commenters' avatars jumps between comments,
-  and arrows on the section's edges step through.
+  blurred until clicked. Under it all, a pill of the commenters' avatars jumps between comments (hovering one shows
+  its commenter with the title's poster, episode and name), and arrows on the section's edges step through.
 -->
 <script lang="ts">
 import CommentAvatar from '$lib/components/comments/CommentAvatar.svelte';
@@ -237,7 +237,17 @@ const revealOnKey = (event: KeyboardEvent, id: number) => {
             {#each list as item, slot (item.comment.id)}
               {@const person = authorOf(item.comment.user)}
               <li>
-                <Tooltip text="{person.name} on {item.item.title}">
+                <Tooltip>
+                  <span class="peek">
+                    {#if item.item.poster}<img src={item.item.poster} alt="" loading="lazy" />{/if}
+                    <span class="peek-text">
+                      <b>{person.name}</b>
+                      {#if item.item.episode}
+                        <span><b>{item.item.episode.number}</b> {item.item.episode.title}</span>
+                      {/if}
+                      <span class="peek-title">{item.item.title}</span>
+                    </span>
+                  </span>
                   {#snippet trigger(tooltip)}
                     <button
                       type="button"
@@ -455,8 +465,7 @@ const revealOnKey = (event: KeyboardEvent, id: number) => {
   }
 }
 
-/* The pager under the comment, centred in a glass pill so it reads as controls: one avatar per comment, each naming
-   its commenter and title on hover. */
+/* The pager under the comment, centred in a glass pill so it reads as controls: one avatar per comment. */
 .pager {
   display: flex;
   align-items: center;
@@ -505,6 +514,45 @@ const revealOnKey = (event: KeyboardEvent, id: number) => {
     block-size: 100%;
     object-fit: cover;
   }
+}
+
+/* An avatar's hover card: the title's poster beside the commenter, the episode and the title. */
+.peek {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--trending-comments-peek-gap);
+  /* Over the tooltip's own padding, so the card reads apart from the black band behind it. */
+  margin: var(--trending-comments-peek-bleed);
+  padding: var(--trending-comments-peek-padding);
+  border-radius: var(--radius-season-poster);
+  background-color: var(--color-trending-comments-peek-bg);
+  box-shadow: inset 0 0 0 1px var(--color-season-hero-chrome-line);
+  text-align: start;
+
+  & img {
+    inline-size: var(--trending-comments-peek-poster);
+    aspect-ratio: var(--ratio-poster);
+    border-radius: var(--radius-season-poster);
+    object-fit: cover;
+  }
+}
+
+.peek-text {
+  display: grid;
+  gap: var(--comment-head-line-gap);
+  max-inline-size: var(--trending-comments-peek-width);
+  line-height: var(--line-height-headings);
+
+  & > * {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.peek-title {
+  color: var(--color-tooltip-muted);
 }
 
 .arrow {

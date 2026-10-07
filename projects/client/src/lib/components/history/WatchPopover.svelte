@@ -1,10 +1,17 @@
 <script lang="ts">
 import { type Snippet, tick } from 'svelte';
-import Icon from '$lib/icons/Icon.svelte';
 import plus from '$lib/icons/light/circle-plus.svg?raw';
-import check from '$lib/icons/trakt/check-thick.svg?raw';
 import disc from '$lib/icons/light/compact-disc.svg?raw';
-import close from '$lib/icons/trakt/delete-thick.svg?raw';
+import calendar from '$lib/icons/regular/calendar-lines.svg?raw';
+import clock from '$lib/icons/regular/clock.svg?raw';
+import play from '$lib/icons/regular/play.svg?raw';
+import trash from '$lib/icons/regular/trash-can.svg?raw';
+import xmark from '$lib/icons/regular/xmark.svg?raw';
+import question from '$lib/icons/solid/question.svg?raw';
+import check from '$lib/icons/trakt/check-thick.svg?raw';
+import PromptDateForm from '$lib/components/prompt/PromptDateForm.svelte';
+import PromptPopover from '$lib/components/prompt/PromptPopover.svelte';
+import PromptRow from '$lib/components/prompt/PromptRow.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import SummaryAction from '$lib/components/summary/SummaryAction.svelte';
 import SummaryActionTile from '$lib/components/summary/SummaryActionTile.svelte';
@@ -122,9 +129,11 @@ async function open(add: boolean) {
 }
 function toggle(event: ToggleEvent) {
   expanded = event.newState === 'open';
-  if (expanded) popover?.querySelector<HTMLElement>('button, select')?.focus();
+  if (expanded) firstChoice()?.focus();
   else returnTo?.focus({ preventScroll: true });
 }
+/** The prompt's first choice, past its close button. */
+const firstChoice = () => popover?.querySelector<HTMLElement>('.body :is(button, select)');
 function choose(at: string | null) {
   if (busy) return;
   popover?.hidePopover();
@@ -155,7 +164,8 @@ async function remaining() {
   }
   mode = 'date';
   force = false;
-  popover?.querySelector<HTMLButtonElement>('.choices button')?.focus();
+  await tick();
+  firstChoice()?.focus();
 }
 function editMetadata(save: boolean) {
   savingMetadata = save;
@@ -166,7 +176,7 @@ async function finishMetadata() {
   if (savingMetadata) popover?.hidePopover();
   else {
     await tick();
-    popover?.querySelector<HTMLButtonElement>('.choices button')?.focus();
+    firstChoice()?.focus();
   }
 }
 function release() {
@@ -223,50 +233,51 @@ function click() {
   {#if busy}<span class="busy"><Spinner label={collection ? "Saving collection" : "Saving watched history"} /></span>{/if}
 </div>
 {/if}
-<div bind:this={popover} id="watch-{id}" class={['watch-popover', { other, collection, editingMetadata }]}
-  popover="auto" role="dialog" aria-label={title} style:position-anchor="--watch-{id}" ontoggle={toggle}>
-  <h3>{title}</h3>
-  {#if mode === 'date' || editingMetadata}
-    <button type="button" class="close" aria-label={collection ? "Close library popover" : "Close watch popover"} onclick={() => popover?.hidePopover()}><Icon svg={close} /></button>
-  {/if}
+<PromptPopover id="watch-{id}" anchor="--watch-{id}" {title} tone={collection ? 'collected' : 'watched'}
+  size={editingMetadata ? 'wide' : 'default'} bind:element={popover} ontoggle={toggle}>
   {#if editingMetadata && metadata}
     {@render metadata(finishMetadata, savingMetadata)}
-  {:else}
-  <div class={['choices', { dates: mode === 'date' }]}>
-    {#if mode === 'date'}
-      {#if other}
-        <form onsubmit={submit} novalidate>
-          <label for="watch-date-{id}">{collection ? 'Collected' : 'Watched'} date and time</label>
-          <input bind:this={field} bind:value id="watch-date-{id}" type="datetime-local" required max={maximum} step="900" />
-          <p>{instant ? formatDate(instant, { ...datePreferences, format: 'LL', time: true }) : 'Choose a valid date and time.'}</p>
-          <button type="submit" aria-label={collection ? "Save collected date" : "Save watched date"}><Icon svg={check} /></button>
-          <button type="button" class="cancel" aria-label="Cancel other date" onclick={() => { other = false; popover?.querySelector<HTMLButtonElement>('.close')?.focus(); }}><Icon svg={close} /></button>
-        </form>
-      {:else}
-        {#if oncheckin && !collection}
-          <button type="button" class="checkin" aria-haspopup="dialog" onclick={() => { popover?.hidePopover(); oncheckin(); }}>Watching now</button>
-        {/if}
-        <button type="button" onclick={() => choose('now')}>{collection ? 'Right now' : 'Just finished'}</button>
-        <button type="button" onclick={() => choose('released')}>Release date</button>
-        <button type="button" onclick={() => choose('unknown')}>Unknown date</button>
-        <button type="button" onclick={otherDate}>Other date</button>
-      {/if}
-    {:else if mode === 'remove'}
-      {#if onremovePlay}<button type="button" onclick={() => { popover?.hidePopover(); onremovePlay(); }}>Only this play</button>{/if}
-      <button type="button" onclick={() => choose(null)}>{collection ? plural ? 'All episodes' : 'Yes' : plural ? 'All episode plays' : 'All plays'}</button>
-      <button type="button" class="cancel" onclick={() => popover?.hidePopover()}>No</button>
-      {#if collection}
-      <button type="button" class="add" aria-label="Change metadata" onclick={() => editMetadata(true)}><Icon svg={disc} /><span class="metadata-caret" aria-hidden="true"></span></button>
-      {:else}<button type="button" class="add" aria-label="{collection ? 'Add to library' : `Add additional ${plural ? 'plays' : 'play'}`}" onclick={() => { mode = 'date'; force = true; }}><Icon svg={plus} /></button>{/if}
+  {:else if mode === 'date'}
+    {#if other}
+      <PromptDateForm id="watch-date-{id}" label="{collection ? 'Collected' : 'Watched'} date and time" bind:value
+        bind:field max={maximum}
+        preview={instant ? formatDate(instant, { ...datePreferences, format: 'LL', time: true }) : 'Choose a valid date and time.'}
+        saveLabel={collection ? 'Save collected date' : 'Save watched date'} onsubmit={submit}
+        oncancel={async () => { other = false; await tick(); firstChoice()?.focus(); }} />
     {:else}
-      <button type="button" onclick={remaining}>{collection ? 'Add remaining' : 'Watch remaining'}</button>
-      <button type="button" onclick={() => choose(null)}>Remove all</button>
-      <button type="button" class="cancel" onclick={() => popover?.hidePopover()}>Nothing</button>
+      {#if oncheckin && !collection}
+        <PromptRow svg={play} detail="Check in" aria-haspopup="dialog" onclick={() => { popover?.hidePopover(); oncheckin(); }}>Watching now</PromptRow>
+      {/if}
+      <PromptRow svg={check} onclick={() => choose('now')}>{collection ? 'Right now' : 'Just finished'}</PromptRow>
+      <PromptRow svg={calendar} onclick={() => choose('released')}>Release date</PromptRow>
+      <PromptRow svg={question} onclick={() => choose('unknown')}>Unknown date</PromptRow>
+      <hr />
+      <PromptRow svg={clock} onclick={otherDate}>Other date…</PromptRow>
+      {#if collection && metadata}
+        <PromptRow svg={disc} detail={hasMetadata ? 'Added' : undefined} onclick={() => editMetadata(false)}>Add metadata</PromptRow>
+      {/if}
     {/if}
-    {#if collection && metadata && mode === 'date' && !other}<button type="button" class="add metadata-toggle" class:selected={hasMetadata} aria-label="Add metadata" onclick={() => editMetadata(false)}><Icon svg={disc} /></button>{/if}
-  </div>
+  {:else if mode === 'remove'}
+    {#if onremovePlay}
+      <PromptRow svg={trash} danger onclick={() => { popover?.hidePopover(); onremovePlay(); }}>Only this play</PromptRow>
+    {/if}
+    <PromptRow svg={trash} danger onclick={() => choose(null)}>{collection
+        ? plural ? 'Remove all episodes' : 'Remove from library'
+        : plural ? 'Remove all episode plays' : 'Remove all plays'}</PromptRow>
+    <PromptRow svg={xmark} onclick={() => popover?.hidePopover()}>Keep {plural ? 'them' : 'it'}</PromptRow>
+    <hr />
+    {#if collection}
+      <PromptRow svg={disc} onclick={() => editMetadata(true)}>Edit metadata</PromptRow>
+    {:else}
+      <PromptRow svg={plus} onclick={() => { mode = 'date'; force = true; }}>{plural ? 'Add more plays' : 'Add another play'}</PromptRow>
+    {/if}
+  {:else}
+    <PromptRow svg={check} onclick={remaining}>{collection ? 'Add remaining' : 'Watch remaining'}</PromptRow>
+    <PromptRow svg={trash} danger onclick={() => choose(null)}>Remove all</PromptRow>
+    <hr />
+    <PromptRow svg={xmark} onclick={() => popover?.hidePopover()}>Nothing</PromptRow>
   {/if}
-</div>
+</PromptPopover>
 
 <style>
 .watch-control {
@@ -341,133 +352,6 @@ function click() {
   &:is(:hover, :focus-visible) .base {
     opacity: 1;
   }
-}
-.watch-popover {
-  position: fixed;
-  position-area: bottom;
-  position-try-fallbacks: flip-block, flip-inline;
-  inset: auto;
-  inline-size: max-content;
-  max-inline-size: calc(100vw - var(--gutter));
-  margin: var(--watch-popover-gap) 0;
-  padding: 0;
-  overflow: visible;
-  border: var(--watch-border) solid var(--color-dropdown-border);
-  border-radius: var(--radius-rating-popover);
-  background: var(--color-box);
-  color: var(--color-text);
-  box-shadow: var(--shadow-dropdown);
-  font: var(--font-size-base) / var(--line-height-base) var(--font-body);
-  text-align: center;
-  &::before {
-    content: '';
-    position: absolute;
-    inset-block-end: 100%;
-    inset-inline-start: calc(50% - var(--watch-arrow));
-    border: var(--watch-arrow) solid transparent;
-    border-block-end-color: var(--color-watch-prompt);
-  }
-}
-.collection:has(.dates),
-.editingMetadata {
-  inline-size: var(--collection-metadata-width);
-}
-.metadata-toggle {
-  grid-column: 1 / -1;
-  justify-self: center;
-  &.selected {
-    color: var(--brand-primary);
-  }
-}
-h3 {
-  margin: 0;
-  padding: var(--watch-prompt-block) var(--watch-prompt-inline);
-  border-block-end: var(--watch-border) solid var(--color-menu-divider);
-  background: var(--color-watch-prompt);
-  font-family: var(--font-headings);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-headings-light);
-  line-height: var(--watch-prompt-line);
-  .watch-popover:has(.close) & {
-    padding-inline-end: var(--watch-prompt-close-space);
-  }
-}
-.choices {
-  display: flex;
-  align-items: center;
-  gap: var(--watch-choice-gap);
-  padding: var(--watch-body-block) var(--watch-body-inline);
-  &.dates {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  & button {
-    min-block-size: 0;
-    padding: var(--watch-choice-block) var(--watch-choice-inline);
-    border: var(--watch-border) solid transparent;
-    border-radius: var(--watch-choice-radius);
-    background: var(--brand-primary);
-    color: var(--color-text-inverse);
-    font: var(--font-weight-headings) var(--font-size-small) / var(--line-height-base) var(--font-headings);
-    cursor: pointer;
-    &:is(:hover, :focus-visible) {
-      background: var(--brand-primary-darken);
-    }
-    &.cancel {
-      background: var(--color-watch-cancel);
-      &:is(:hover, :focus-visible) {
-        background: var(--gray-light);
-      }
-    }
-    &.checkin {
-      grid-column: 1 / -1;
-    }
-    &.add {
-      padding: 0;
-      border: 0;
-      line-height: var(--watch-add-line);
-      background: none;
-      color: var(--gray-light);
-      font-size: var(--font-size-large);
-    }
-  }
-}
-.metadata-caret {
-  display: inline-block;
-  vertical-align: middle;
-  margin-inline-start: var(--watch-metadata-caret-gap);
-  border-block-start: var(--watch-metadata-caret-size) solid currentColor;
-  border-inline: var(--watch-metadata-caret-size) solid transparent;
-}
-.close {
-  position: absolute;
-  inset-block-start: var(--watch-close-top);
-  inset-inline-end: var(--watch-close-right);
-  padding: 0;
-  min-block-size: 0;
-  border: 0;
-  background: none;
-  color: var(--gray-light);
-  cursor: pointer;
-  font-size: var(--font-size-base);
-  line-height: 1;
-}
-form {
-  grid-column: 1 / -1;
-  inline-size: var(--watch-date-width);
-  max-inline-size: 100%;
-}
-label {
-  display: block;
-  font-size: var(--font-size-small);
-}
-input {
-  inline-size: 100%;
-  margin-block: var(--watch-choice-gap);
-}
-form p {
-  font-size: var(--font-size-small);
-  white-space: normal;
 }
 @media (prefers-reduced-motion: reduce) {
   .base {

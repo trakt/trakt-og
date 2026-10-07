@@ -45,45 +45,25 @@
 
   /* History controls: OG watch popovers and summary buttons. */
   /* Rewatch, drop, restore and hide controls. */
-  --visibility-date-popover-width: 308px;
   --visibility-side-height: 20px;
   --visibility-side-size: 15px;
   --visibility-side-opacity: 0.75;
   --visibility-pill-bg: rgb(0 0 0 / 0.6);
   --visibility-pill-hover: rgb(0 0 0 / 0.8);
 
-  --watch-border: 1px;
   --watch-focus: 2px;
   --watch-busy-opacity: 0.6;
   --watch-card-width: 35px;
   --watch-card-height: 40px;
   --watch-card-small-width: 28px;
   --watch-card-small-height: 34px;
-  --watch-popover-gap: 10px;
-  --watch-arrow: 10px;
-  --watch-prompt-block: 6px;
-  --watch-prompt-inline: 8px;
-  --watch-prompt-line: 18px;
-  --watch-prompt-close-space: 28px;
-  --watch-body-block: 9px;
-  --watch-body-inline: 10px;
-  --watch-choice-gap: 10px;
-  --watch-choice-block: 4px;
-  --watch-choice-inline: 9px;
   --watch-choice-radius: 3px;
-  --watch-add-line: 25px;
-  --watch-metadata-caret-size: 4px;
-  --watch-metadata-caret-gap: 3px;
-  --watch-close-top: 9px;
-  --watch-close-right: 7px;
   --watch-date-width: 288px;
   --watch-history-size: 11px;
   --watch-progress-height: 4px;
   --watch-progress-gap: 4px; /* between a summary button and its progress bar */
   --radius-watch-progress: 2px;
   --color-watch-progress-track: light-dark(#e2e2e2, #333);
-  --color-watch-prompt: light-dark(#f7f7f7, #111);
-  --color-watch-cancel: #aaa;
   --watch-history-block: 3px;
   --watch-history-inline: 5px;
 
@@ -333,7 +313,6 @@
   --list-edit-icons-bottom: 15px;
   --font-size-list-edit-notes: 16px;
   --opacity-list-manage-quick-icons: 0.5; /* #sortable-grid.sortable .quick-icons > div */
-  --confirm-warning-padding: 8px; /* .popover .warning-text */
 
   --list-tools-gap: 10px;
 
@@ -819,6 +798,27 @@
   --color-menu-row-hover-text: light-dark(#111, #fff);
   --color-menu-header: light-dark(#777, #8c8c8c);
   --shadow-menu: 0 12px 32px light-dark(rgb(0 0 0 / 0.14), rgb(0 0 0 / 0.55));
+
+  /* The shared prompt (`PromptPopover`): the menu's surface under a title bar tinted in the action's color */
+  --prompt-width: 340px; /* one line for "When did you start rewatching?" */
+  --prompt-width-wide: 340px; /* the library metadata form */
+  --space-prompt-head: 12px 8px 12px 16px;
+  --space-prompt-head-gap: 8px; /* the title to its close button */
+  --prompt-tint: 16%; /* the action's color in the title bar */
+  --prompt-tint-border: 35%; /* ...and in its bottom border */
+  --color-prompt-neutral: light-dark(#888, #777); /* the tint when the action has no color: hide, restore */
+  --color-prompt-title: light-dark(#111, #fff);
+  --font-size-prompt-title: 16px;
+  --line-height-prompt-title: 1.25;
+  --prompt-close-size: 26px;
+  --prompt-close-end: 0px;
+  --font-size-prompt-close: 13px;
+  --space-prompt-row-icon: 10px; /* a row's icon to its label */
+  --font-size-prompt-row-icon: 14px;
+  --space-prompt-form: 8px; /* between Other date's label, field, preview and buttons */
+  --space-collection-field: 3px 4px 3px 10px; /* a library metadata row, its select flush right */
+  --collection-select-max: 170px;
+  --collection-select-height: 30px;
   --tool-badge-size: 15px; /* the red count on a tool with filters on */
   --font-size-tool-badge: 10px;
   --space-tool-badge: 4px;
@@ -1851,11 +1851,6 @@
 /* Optional library metadata (red-era OG). */
 :root {
   --collection-metadata-width: 300px;
-  --collection-metadata-padding: 10px 15px 15px;
-  --collection-metadata-row-gap: 10px;
-  --collection-metadata-column-gap: 14px;
-  --collection-label-gap: 3px;
-  --collection-metadata-save-gap: 20px;
 }
 
 /* Library poster overlay. */

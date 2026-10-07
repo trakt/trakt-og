@@ -27,7 +27,7 @@ function submit(event: SubmitEvent) {
 <form bind:this={form} onsubmit={submit}>
   <div class="fields">
     {#each collectionFields as field (field.key)}
-      <div>
+      <div class="field">
         <label for="collection-{id}-{field.key}">{field.label}</label>
         <select id="collection-{id}-{field.key}" name={field.key} value={String(value[field.key] ?? '')}>
           <option value="">{field.key === '3d' ? 'No' : 'None'}</option>
@@ -36,41 +36,66 @@ function submit(event: SubmitEvent) {
       </div>
     {/each}
   </div>
-  <button type="submit">{saving ? 'Save metadata' : 'Add Metadata'}</button>
+  <button type="submit">{saving ? 'Save metadata' : 'Add metadata'}</button>
 </form>
 
 <style>
+/* A `PromptPopover` body: a row a field, the label on the left and its pick on the right, then Save. */
 form {
-  inline-size: var(--collection-metadata-width);
-  max-inline-size: 100%;
-  padding: var(--collection-metadata-padding);
+  display: grid;
+  gap: var(--space-menu);
 }
+
 .fields {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--collection-metadata-row-gap) var(--collection-metadata-column-gap);
-  text-align: start;
 }
+
+.field {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-menu-check);
+  padding: var(--space-collection-field);
+  border-radius: var(--radius-menu-row);
+
+  &:hover,
+  &:focus-within {
+    background-color: var(--color-menu-row-hover);
+  }
+}
+
 label {
-  display: block;
-  padding-block-end: var(--collection-label-gap);
-  font: var(--font-weight-headings) var(--font-size-small) / var(--line-height-headings) var(--font-headings);
-  text-transform: uppercase;
+  color: var(--color-dropdown-menu-text);
 }
+
 select {
-  inline-size: 100%;
-  min-inline-size: 0;
-}
-button {
-  inline-size: 100%;
-  margin-block-start: var(--collection-metadata-save-gap);
+  max-inline-size: var(--collection-select-max);
+  min-block-size: var(--collection-select-height);
+  padding: 0 var(--space-xs-inline);
   border: 0;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-menu-row);
+  background: none;
+  color: var(--color-control-text);
+  font: var(--font-weight-headings) var(--font-size-menu) / 1 var(--font-headings);
+  text-align: end;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid var(--color-control-border-hover);
+  }
+}
+
+button {
+  min-block-size: var(--control-height);
+  margin-block-start: var(--space-menu);
+  border: 0;
+  border-radius: var(--radius-control);
   background: var(--brand-primary);
   color: var(--color-text-inverse);
   font-family: var(--font-headings);
   font-weight: var(--font-weight-headings-heavy);
   cursor: pointer;
+
   &:is(:hover, :focus-visible) {
     background: var(--brand-primary-darken);
   }

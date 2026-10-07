@@ -9,9 +9,14 @@ import { overlay } from '$lib/overlay/overlay';
 import { toast } from '$lib/components/toast/toast.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import Spinner from '$lib/components/loading/Spinner.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import close from '$lib/icons/trakt/delete-thick.svg?raw';
-import check from '$lib/icons/trakt/check-thick.svg?raw';
+import PromptDateForm from '$lib/components/prompt/PromptDateForm.svelte';
+import PromptPopover from '$lib/components/prompt/PromptPopover.svelte';
+import PromptRow from '$lib/components/prompt/PromptRow.svelte';
+import backward from '$lib/icons/light/backward.svg?raw';
+import ban from '$lib/icons/regular/ban.svg?raw';
+import circleMinus from '$lib/icons/regular/circle-minus.svg?raw';
+import clock from '$lib/icons/regular/clock.svg?raw';
+import xmark from '$lib/icons/regular/xmark.svg?raw';
 import { watchDateInput } from '$lib/components/history/watchDateInput';
 import { watchDateInstant } from '$lib/components/history/watchDateInstant';
 import { formatDate } from '$lib/utils/formatDate';
@@ -92,9 +97,14 @@ async function open() {
 }
 function toggle(event: ToggleEvent) {
   expanded = event.newState === 'open';
-  if (expanded) popover?.querySelector<HTMLButtonElement>('.choices button')?.focus();
+  if (expanded) firstChoice()?.focus();
   else (button?.isConnected ? button : returnTo)?.focus({ preventScroll: true });
 }
+/** The prompt's first choice, past its close button. */
+const firstChoice = () => popover?.querySelector<HTMLElement>('.body button');
+// The rewatch's purple, red to drop, gray to hide or restore.
+const tone = $derived(action === 'rewatch' ? 'watched' : action === 'drop' ? 'danger' : 'neutral');
+const actionIcon = $derived(action === 'rewatch' ? backward : action === 'hide' ? ban : circleMinus);
 function otherDate() {
   const now = new Date();
   maximum = watchDateInput(now, dates.timeZone);
@@ -163,29 +173,22 @@ function submit(event: SubmitEvent) {
   {/snippet}
   </Tooltip>
 </span>
-<div bind:this={popover} id="visibility-{id}" class="visibility-popover" class:date-action={dateAction} popover="auto"
-  role="dialog" aria-label={title}
-  style:position-anchor="--visibility-{id}" ontoggle={toggle}>
-  <h3>{title}</h3>
-  {#if dateAction}<button type="button" class="close" aria-label="Close popover" onclick={() => popover?.hidePopover()}><Icon svg={close} /></button>{/if}
-  <div class="choices">
-    {#if other}
-      <form onsubmit={submit} novalidate>
-        <label for="visibility-date-{id}">{action === 'rewatch' ? 'Rewatch' : 'Dropped'} date and time</label>
-        <input bind:this={field} bind:value id="visibility-date-{id}" type="datetime-local" required max={maximum} step="900" />
-        <p>{instant ? formatDate(instant, { ...dates, format: 'LL', time: true }) : 'Choose a valid date and time.'}</p>
-        <button type="submit" aria-label="Save date"><Icon svg={check} /></button>
-        <button type="button" class="cancel" aria-label="Cancel other date" onclick={() => { other = false; popover?.querySelector<HTMLButtonElement>('.choices button')?.focus(); }}><Icon svg={close} /></button>
-      </form>
-    {:else if dateAction}
-      <button type="button" onclick={() => save()}>Right now</button>
-      <button type="button" onclick={otherDate}>Other date</button>
-    {:else}
-      <button type="button" onclick={() => save()}>{action === 'restore' ? 'Yes, restore it!' : 'Yes, hide it!'}</button>
-      <button type="button" class="cancel" onclick={() => popover?.hidePopover()}>No</button>
-    {/if}
-  </div>
-</div>
+<PromptPopover id="visibility-{id}" anchor="--visibility-{id}" {title} {tone} bind:element={popover}
+  ontoggle={toggle}>
+  {#if other}
+    <PromptDateForm id="visibility-date-{id}" label="{action === 'rewatch' ? 'Rewatch' : 'Dropped'} date and time"
+      bind:value bind:field max={maximum}
+      preview={instant ? formatDate(instant, { ...dates, format: 'LL', time: true }) : 'Choose a valid date and time.'}
+      saveLabel="Save date" onsubmit={submit}
+      oncancel={async () => { other = false; await tick(); firstChoice()?.focus(); }} />
+  {:else if dateAction}
+    <PromptRow svg={actionIcon} danger={action === 'drop'} onclick={() => save()}>Right now</PromptRow>
+    <PromptRow svg={clock} onclick={otherDate}>Other date…</PromptRow>
+  {:else}
+    <PromptRow svg={actionIcon} onclick={() => save()}>{action === 'restore' ? 'Yes, restore it!' : 'Yes, hide it!'}</PromptRow>
+    <PromptRow svg={xmark} onclick={() => popover?.hidePopover()}>No</PromptRow>
+  {/if}
+</PromptPopover>
 
 <style>
 .visibility-control {
@@ -272,104 +275,5 @@ function submit(event: SubmitEvent) {
       color: var(--color-card-text);
     }
   }
-}
-.visibility-popover {
-  position: fixed;
-  position-area: bottom;
-  position-try-fallbacks: --visibility-end, flip-block, flip-inline;
-  inset: auto;
-  inline-size: max-content;
-  &.date-action {
-    inline-size: var(--visibility-date-popover-width);
-  }
-  max-inline-size: calc(100vw - var(--gutter));
-  margin: var(--watch-popover-gap) 0;
-  padding: 0;
-  overflow: visible;
-  border: var(--watch-border) solid var(--color-dropdown-border);
-  border-radius: var(--radius-rating-popover);
-  background: var(--color-box);
-  color: var(--color-text);
-  box-shadow: var(--shadow-dropdown);
-  font: var(--font-size-base) / var(--line-height-base) var(--font-body);
-  text-align: center;
-  &::before {
-    content: '';
-    position: absolute;
-    inset-block-end: 100%;
-    inset-inline-start: calc(50% - var(--watch-arrow));
-    border: var(--watch-arrow) solid transparent;
-    border-block-end-color: var(--color-watch-prompt);
-  }
-}
-h3 {
-  margin: 0;
-  padding: var(--watch-prompt-block) var(--watch-prompt-inline);
-  border-block-end: var(--watch-border) solid var(--color-menu-divider);
-  background: var(--color-watch-prompt);
-  font-family: var(--font-headings);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-headings-light);
-  line-height: var(--watch-prompt-line);
-  .visibility-popover:has(.close) & {
-    padding-inline-end: var(--watch-prompt-close-space);
-  }
-}
-.choices {
-  display: flex;
-  justify-content: center;
-  gap: var(--watch-choice-gap);
-  padding: var(--watch-body-block) var(--watch-body-inline);
-}
-.choices button {
-  min-block-size: 0;
-  padding: var(--watch-choice-block) var(--watch-choice-inline);
-  border: var(--watch-border) solid transparent;
-  border-radius: var(--watch-choice-radius);
-  background: var(--brand-primary);
-  color: var(--color-text-inverse);
-  font: var(--font-weight-headings) var(--font-size-small) / var(--line-height-base) var(--font-headings);
-  cursor: pointer;
-  &:is(:hover, :focus-visible) {
-    background: var(--brand-primary-darken);
-  }
-  &.cancel {
-    background: var(--color-watch-cancel);
-    &:is(:hover, :focus-visible) {
-      background: var(--gray-light);
-    }
-  }
-}
-.close {
-  position: absolute;
-  inset-block-start: var(--watch-close-top);
-  inset-inline-end: var(--watch-close-right);
-  padding: 0;
-  min-block-size: 0;
-  border: 0;
-  background: none;
-  color: var(--gray-light);
-  cursor: pointer;
-  font-size: var(--font-size-base);
-  line-height: 1;
-}
-form {
-  inline-size: var(--watch-date-width);
-  max-inline-size: 100%;
-}
-label {
-  display: block;
-  font-size: var(--font-size-small);
-}
-input {
-  inline-size: 100%;
-  margin-block: var(--watch-choice-gap);
-}
-form p {
-  font-size: var(--font-size-small);
-  white-space: normal;
-}
-@position-try --visibility-end {
-  position-area: bottom span-left;
 }
 </style>

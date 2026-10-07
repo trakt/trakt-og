@@ -2,7 +2,7 @@
   The popup every "are you sure / when?" prompt opens in: the watch and library dates, rewatch, drop, hide, restore,
   library metadata and the delete and block confirms. It's the dropdown menu's surface with a title bar tinted in
   the action's color (`tone`: purple to watch, teal for the library, red to remove, gray otherwise): the question in
-  bold with the close button centered beside it. The choices are
+  bold with the close button centered on its first line. The choices are
   `PromptRow`s, `<hr>`s between groups, or a form (`PromptDateForm`, the library metadata). A longer warning goes in
   `note`, between the header and the choices; a short one belongs on its row as the detail. The caller owns opening it
   (`popovertarget`, or `showPopover()` on the bound `element`) and the focus, as before.
@@ -104,7 +104,7 @@ let {
 
 .head {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--space-prompt-head-gap);
   padding: var(--space-prompt-head);
   border-block-end: 1px solid color-mix(in srgb, var(--tone) var(--prompt-tint-border), var(--color-menu-border));
@@ -123,9 +123,10 @@ h3 {
   text-wrap: balance;
 }
 
-/* Centered on the title by the flex row, however many lines it takes. */
+/* Centered on the title's first line, so a question that wraps keeps it at the top. */
 .close {
   flex: none;
+  margin-block: calc((var(--font-size-prompt-title) * var(--line-height-prompt-title) - var(--prompt-close-size)) / 2);
   display: grid;
   place-items: center;
   inline-size: var(--prompt-close-size);

@@ -22,16 +22,20 @@ type Dates = ReadonlySet<number> | ReadonlyMap<number, string> | undefined;
 const dateOf = (values: Dates, id: number) => values instanceof Map ? values.get(id) || undefined : undefined;
 
 /**
- * A tab's shows, unsorted and unfiltered, or null until the overlay knows your dropped, rewatching and hidden shows.
+ * A tab's shows, unsorted and unfiltered.
  * Watched is the endpoint's shows minus the dropped and hidden ones; Rewatching keeps the ones you're rewatching;
- * Dropped keeps the dropped ones, counting any the endpoint left out from the overlay and their summary. A show whose
- * catalog is loaded (its seasons are open) gets its season lines; the API's counts stay.
+ * Dropped keeps the dropped ones, counting any the endpoint left out from the overlay and their summary.
+ *
+ * The counts, plays and times come from the overlay's watches (`/sync/watched/shows`, already loaded app-wide), never
+ * the endpoint's `completed`, which can count more episodes than were ever watched. Before a show's seasons open, the
+ * endpoint's aired count is the total; once its catalog is in, every count is exact and matches the season lines.
+ * Null until the overlay knows your watches too, so the numbers don't jump.
  */
 export function toProgressItems(
   { type, nitro, droppedShows, slices, catalogs, options, now }: ToProgressItemsParams,
 ): readonly ProgressItem[] | null {
-  const { dropped, rewatching, progressHidden, hidden } = slices;
-  if (!dropped || !rewatching || !progressHidden) return null;
+  const { dropped, rewatching, progressHidden, hidden, watchedShows } = slices;
+  if (!dropped || !rewatching || !progressHidden || !watchedShows) return null;
 
   const optimistic = hidden?.get('progress_watched');
   const isHidden = (id: number) => progressHidden.watched.shows.has(id) || Boolean(optimistic?.has(`show:${id}`));
@@ -48,21 +52,21 @@ export function toProgressItems(
   const counted = (show: CachedShow, base?: ProgressItem): ProgressItem => {
     const resetAt = dateOf(rewatching, show.id);
     const droppedAt = type === 'dropped' ? dateOf(dropped, show.id) : undefined;
-    const catalog = catalogs.get(show.id);
-    if (base && !catalog) return { ...base, resetAt, droppedAt };
     const item = toProgressItem({
-      show,
-      watched: slices.watchedShows?.get(show.id),
+      // The endpoint's aired count stands in until the catalog lists every episode.
+      show: base ? { ...show, airedEpisodes: base.aired } : show,
+      watched: watchedShows.get(show.id),
       collected: slices.collectedShows?.get(show.id),
       resetAt,
       droppedAt,
       hiddenSeasons: progressHidden.watched.seasons.get(show.id),
-      catalog,
+      catalog: catalogs.get(show.id),
       includeSpecials: options.includeSpecials,
       useLastActivity: options.useLastActivity,
       now,
     });
-    return base ? { ...base, resetAt, droppedAt, detail: item.detail } : item;
+    // The endpoint's next and last episodes stay; its watched counts don't (see the doc above).
+    return base ? { ...item, show: base.show, next: base.next, last: base.last } : item;
   };
 
   return [

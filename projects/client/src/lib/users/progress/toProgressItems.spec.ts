@@ -15,6 +15,17 @@ const slices: Partial<OverlaySlices> = {
   dropped: new Map([[3, '2026-02-01T00:00:00.000Z'], [6, '2026-03-01T00:00:00.000Z']]),
   progressHidden: { watched: { shows: new Set([4]), seasons: new Map() }, collected: none },
   hidden: new Map([['progress_watched', new Set(['show:5'])]]),
+  // Show 1: two episodes watched, one of them twice. The endpoint claims 5.
+  watchedShows: new Map([[
+    1,
+    new Map([[
+      1,
+      new Map([[11, ['2026-01-02T00:00:00Z', '2026-01-01T00:00:00Z']], [
+        12,
+        ['2026-01-03T00:00:00Z'],
+      ]]),
+    ]]),
+  ]]),
 };
 const base = { nitro, slices, catalogs: new Map<number, ShowCatalog>(), options, now: 0 };
 const ids = (items: ReturnType<typeof toProgressItems>) => items?.map(({ show }) => show.id);
@@ -31,12 +42,23 @@ const droppedShow: CachedShow = {
 };
 
 describe('toProgressItems', () => {
-  it('should wait for the overlay to know your dropped, rewatching and hidden shows', () => {
+  it('should wait for the overlay to know your dropped, rewatching, hidden and watched shows', () => {
     expect(toProgressItems({ ...base, type: 'watched', slices: { rewatching: new Map() } })).toBeNull();
   });
 
   it('should list the endpoint’s shows on Watched, minus the dropped and hidden ones', () => {
     expect(ids(toProgressItems({ ...base, type: 'watched' }))).toEqual([1, 2]);
+  });
+
+  it('should count watches and plays from the overlay, not the endpoint’s completed count', () => {
+    expect(toProgressItems({ ...base, type: 'watched' })?.at(0)).toMatchObject({
+      aired: 10,
+      completed: 2,
+      plays: 3,
+      minutesWatched: 90,
+      minutesLeft: 240,
+      lastAt: '2026-01-03T00:00:00Z',
+    });
   });
 
   it('should keep only the shows you’re rewatching on Rewatching, with the reset date', () => {
@@ -58,7 +80,7 @@ describe('toProgressItems', () => {
     expect(items?.at(1)).toMatchObject({ aired: 4, completed: 1, droppedAt: '2026-03-01T00:00:00.000Z' });
   });
 
-  it('should add the season lines once a show’s catalog is in, and keep the endpoint’s counts', () => {
+  it('should count from the catalog once it’s in, so the totals match the season lines', () => {
     const catalog: ShowCatalog = {
       id: 1,
       fetchedAt: 0,
@@ -69,7 +91,7 @@ describe('toProgressItems', () => {
     };
     const items = toProgressItems({ ...base, type: 'watched', catalogs: new Map([[1, catalog]]), now: Date.now() });
 
-    expect(items?.at(0)).toMatchObject({ aired: 10, completed: 5 });
+    expect(items?.at(0)).toMatchObject({ aired: 1, completed: 1, plays: 2, exact: true });
     expect(items?.at(0)?.detail?.seasons.map(({ number }) => number)).toEqual([1]);
   });
 });

@@ -1,7 +1,7 @@
 <!--
   An open progress row's seasons, a line a season across the whole row: the season's name (linking to its page) with
-  what's watched and the time left under it, as the row's own stats (`Stat`, smaller), a numbered pill an episode, then its percent. A pill is purple once
-  watched, the library's teal while it's in your library but not watched, outlined and pulsing for up next, and
+  the time left under it, a numbered pill an episode, then what's watched and the percent (the row's own `Stat`s, a
+  size down). A pill is purple once watched, the library's teal while it's in your library but not watched, outlined and pulsing for up next, and
   dashed until it airs. Each links to its episode, with a chart tooltip: the screenshot, the code and title, when it
   aired with its runtime and rating, then its status lines. Spoiler settings hide an unwatched episode's screenshot
   and title there, as on the episode cards.
@@ -54,14 +54,7 @@ const spoilers = (square: EpisodeSquare) =>
       <div class="name">
         <a href={season.href}>{season.name}</a>
         {#if season.title}<span class="season-title">{season.title}</span>{/if}
-        <span class="stats">
-          {#if season.announced !== undefined}
-            <Stat svg={calendar} value={String(season.announced)} noun="announced" />
-          {:else}
-            <Stat svg={check} tone="watched" value={season.count} noun="watched" />
-            {#if season.timeLeft}<Stat svg={clock} value={season.timeLeft} noun="left" />{/if}
-          {/if}
-        </span>
+        {#if season.timeLeft}<span class="left"><Stat svg={clock} value={season.timeLeft} noun="left" /></span>{/if}
       </div>
       <ul class="squares" aria-label="{season.name} episodes">
         {#each season.squares as square (square.code)}
@@ -76,6 +69,13 @@ const spoilers = (square: EpisodeSquare) =>
           </li>
         {/each}
       </ul>
+      <span class="done">
+        {#if season.announced === undefined}
+          <Stat svg={check} tone="watched" value={season.count} noun="" />
+        {:else}
+          <Stat svg={calendar} value={String(season.announced)} noun="announced" />
+        {/if}
+      </span>
       <span class={['percent', { complete: season.complete }]}>{season.announced === undefined ? `${season.percent}%` : ''}</span>
     </li>
   {/each}
@@ -98,7 +98,10 @@ ul {
 
 .season {
   display: grid;
-  grid-template-columns: var(--progress-season-name) minmax(0, 1fr) var(--progress-season-percent);
+  grid-template-areas: 'name squares done percent';
+  grid-template-columns:
+    var(--progress-season-name) minmax(0, 1fr) var(--progress-season-done)
+    var(--progress-season-percent);
   align-items: start;
   gap: var(--progress-season-columns);
   padding-block: var(--progress-season-padding);
@@ -109,8 +112,11 @@ ul {
 }
 
 .name {
+  grid-area: name;
   display: grid;
+  align-content: center;
   min-inline-size: 0;
+  min-block-size: var(--progress-square-height);
   line-height: var(--line-height-progress-season-name);
 
   & a {
@@ -132,20 +138,30 @@ ul {
   }
 }
 
-/* What's watched and left, as the row's stats, a size down. */
-.stats {
+/* The season's stats as the row's own, a size down: what's left under the name, what's watched by the percent. */
+.left,
+.done {
   --font-size-stat-icon: var(--font-size-progress-season-stat-icon);
   --font-size-stat-number: var(--font-size-progress-season-stat-number);
   --font-size-stat-noun: var(--font-size-progress-season-stat-noun);
 
-  display: grid;
-  justify-items: start;
-  gap: var(--progress-season-stats-gap);
-  margin-block-start: var(--progress-season-stats-gap);
   font-variant-numeric: tabular-nums;
 }
 
+.left {
+  margin-block-start: var(--progress-season-stats-gap);
+}
+
+.done {
+  grid-area: done;
+  display: flex;
+  align-items: center;
+  justify-content: end;
+  min-block-size: var(--progress-square-height);
+}
+
 .percent {
+  grid-area: percent;
   font: var(--font-weight-headings) var(--font-size-progress-season-percent) / var(--line-height-progress-season-name)
     var(--font-headings);
   font-variant-numeric: tabular-nums;
@@ -157,6 +173,7 @@ ul {
 }
 
 .squares {
+  grid-area: squares;
   display: flex;
   flex-wrap: wrap;
   gap: var(--progress-square-gap);
@@ -271,15 +288,11 @@ ul {
   }
 }
 
-/* A narrow row: the pills take their own line under the name and percent. */
+/* A narrow row: the pills take their own line under the name, the count and the percent. */
 @media (width < 768px) {
   .season {
-    grid-template-columns: minmax(0, 1fr) auto;
-  }
-
-  .squares {
-    grid-column: 1 / -1;
-    grid-row: 2;
+    grid-template-areas: 'name done percent' 'squares squares squares';
+    grid-template-columns: minmax(0, 1fr) auto auto;
   }
 }
 

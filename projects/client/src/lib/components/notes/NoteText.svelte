@@ -65,12 +65,12 @@ p {
     inset-inline: 0;
     inset-block-end: 0;
     block-size: var(--note-text-shade-height);
-    background: linear-gradient(transparent, var(--color-note-bg));
+    background: linear-gradient(transparent, var(--color-comment-bg));
     pointer-events: none;
   }
 }
 .hidden .text {
-  filter: blur(var(--note-spoiler-blur));
+  filter: var(--blur-spoiler);
   user-select: none;
 }
 .reveal {

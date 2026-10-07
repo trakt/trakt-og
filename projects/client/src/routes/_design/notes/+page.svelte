@@ -44,6 +44,30 @@ const rows = noteRowsSchema.parse([
       user: { username: 'og_tester', ids: { slug: 'og_tester' } },
     },
   },
+  {
+    type: 'movie',
+    movie: { title: 'Fight Club', ids: { trakt: 1 } },
+    attached_to: { type: 'history', watched_at: '2026-09-27T20:15:00Z' },
+    note: {
+      id: 3,
+      notes: 'Watched on the plane with friends.',
+      privacy: 'friends',
+      updated_at: '2026-09-27T20:20:00Z',
+      user: { username: 'og_tester', name: 'OG Tester', ids: { slug: 'og_tester' }, vip: true, vip_years: 7 },
+    },
+  },
+  {
+    type: 'show',
+    show: { title: 'Andor', ids: { trakt: 2 } },
+    attached_to: { type: 'collection', collected_at: '2026-09-26T08:20:00Z' },
+    note: {
+      id: 4,
+      notes: 'Picked up the 4K steelbook.',
+      privacy: 'public',
+      updated_at: '2026-09-26T08:24:00Z',
+      user: { username: 'og_tester', name: 'OG Tester', ids: { slug: 'og_tester' } },
+    },
+  },
 ]);
 </script>
 
@@ -56,7 +80,7 @@ const rows = noteRowsSchema.parse([
   </Container>
   <SectionToolbar>
     {#snippet filters()}Note type filter{/snippet}
-    {#snippet summary()}2 notes · Added Date{/snippet}
+    {#snippet summary()}4 notes · Added Date{/snippet}
   </SectionToolbar>
   <Container>
     <h2>Sample note cards</h2>

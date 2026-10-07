@@ -4,7 +4,7 @@
   The title's poster card is on the left (an episode's card shows the episode with its show under it, as history
   does); on the right, the commenter's header as on a comment card (avatar with their rating's corner, name, VIP pill,
   Review and Spoilers tags, date), the comment under a quote mark, and its likes and replies. A spoiler comment stays
-  blurred until clicked. Under it all, a pill with a hint, the commenters' avatars and a count jumps between comments,
+  blurred until clicked. Under it all, a pill of the commenters' avatars jumps between comments,
   and arrows on the section's edges step through.
 -->
 <script lang="ts">
@@ -233,7 +233,6 @@ const revealOnKey = (event: KeyboardEvent, id: number) => {
       {/if}
       {#if list.length > 1}
         <div class="pager">
-          <span class="hint" aria-hidden="true">More comments</span>
           <ul class="people" aria-label="Commenters">
             {#each list as item, slot (item.comment.id)}
               {@const person = authorOf(item.comment.user)}
@@ -254,7 +253,6 @@ const revealOnKey = (event: KeyboardEvent, id: number) => {
               </li>
             {/each}
           </ul>
-          <span class="count" aria-hidden="true">{index + 1} / {list.length}</span>
         </div>
       {/if}
     </div>
@@ -457,12 +455,11 @@ const revealOnKey = (event: KeyboardEvent, id: number) => {
   }
 }
 
-/* The pager under the comment, centred in a glass pill so it reads as controls: a hint, one avatar per comment
-   (each names its commenter and title on hover) and where you are. */
+/* The pager under the comment, centred in a glass pill so it reads as controls: one avatar per comment, each naming
+   its commenter and title on hover. */
 .pager {
   display: flex;
   align-items: center;
-  gap: var(--trending-comments-pager-inner-gap);
   inline-size: fit-content;
   margin: var(--trending-comments-pager-gap) auto 0;
   padding: var(--trending-comments-pager-padding);
@@ -470,26 +467,6 @@ const revealOnKey = (event: KeyboardEvent, id: number) => {
   background-color: var(--color-season-hero-chrome);
   box-shadow: inset 0 0 0 1px var(--color-season-hero-chrome-line);
   backdrop-filter: var(--blur-trending-comments-pager);
-}
-
-.hint,
-.count {
-  color: var(--color-discover-muted);
-  font-size: var(--font-size-small);
-  font-weight: var(--font-weight-headings-heavy);
-  white-space: nowrap;
-}
-
-.hint {
-  font-size: var(--font-size-essential-small);
-  letter-spacing: var(--letter-spacing-essential);
-  text-transform: uppercase;
-}
-
-.count {
-  min-inline-size: var(--trending-comments-pager-count);
-  font-variant-numeric: tabular-nums;
-  text-align: end;
 }
 
 .people {

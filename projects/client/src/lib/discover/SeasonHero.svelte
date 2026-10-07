@@ -2,10 +2,11 @@
   The season hero: this month's theme from the month map as an auto-rotating carousel of up to twenty picks. Each pick
   fills the hero with its fanart, and its logo (or title), details, overview, "More info" and "Trailer" sit on the
   left in a block of fixed height, so nothing jumps between picks. The theme's badge is top-left and the All /
-  Trending / Favorites switch top-right. A rail of same-size posters picks a slide and scrolls to keep the current
-  one in view: it's full colour with an accent ring and a timer bar, the rest dim. "Trailer" plays the pick's trailer
-  in og's video popup. It moves on every six seconds, pausing while the pointer or focus is inside and not at all
-  under reduced motion; the arrows, and ← → with focus inside, step through.
+  Trending / Favorites switch top-right, its accent sliding to the picked button. A rail of same-size posters picks a
+  slide and scrolls to keep the current one in view: it's full colour with an accent ring and a timer bar, the rest
+  dim. "Trailer" plays the pick's trailer in og's video popup. It moves on every six seconds, pausing while the
+  pointer or focus is inside and not at all under reduced motion; the arrows, and ← → with focus inside, step
+  through.
 -->
 <script lang="ts">
 import VideoPopup from '$lib/components/dialog/VideoPopup.svelte';
@@ -39,6 +40,8 @@ let index = $state(0);
 let paused = $state(false);
 let video = $state<string>();
 let rail = $state<HTMLElement>();
+// Set once the switch's accent can slide.
+let sliding = $state(false);
 // A slide's fanart loads the first time it's shown.
 const shown = new SvelteSet([0]);
 
@@ -82,6 +85,27 @@ $effect(() => {
     behavior: reduced ? 'instant' : 'smooth',
   });
 });
+
+// The switch's accent slides to the picked button: placed from its box, and again whenever a button is picked or the
+// switch changes size (the font loading). Until this runs, the picked button fills itself.
+const slide: Attachment<HTMLElement> = (node) => {
+  const place = () => {
+    const picked = node.querySelector<HTMLElement>('[aria-pressed="true"]');
+    if (!picked) return;
+    node.style.setProperty('--thumb-left', `${picked.offsetLeft}px`);
+    node.style.setProperty('--thumb-width', `${picked.offsetWidth}px`);
+  };
+  const resized = new ResizeObserver(place);
+  const pressed = new MutationObserver(place);
+  resized.observe(node);
+  pressed.observe(node, { subtree: true, attributeFilter: ['aria-pressed'] });
+  place();
+  sliding = true;
+  return () => {
+    resized.disconnect();
+    pressed.disconnect();
+  };
+};
 
 // Pauses while the pointer or focus is inside, and ← → step through while focus is inside.
 const controls: Attachment<HTMLElement> = (node) => {
@@ -134,7 +158,7 @@ const details = (item: SeasonPick) =>
     <div class="inner">
       <div class="top">
         <p class="badge"><span class="dot"></span><b id="season-title">{title}</b><span>{eyebrow}</span></p>
-        <div class="modes" role="group" aria-label="Picks">
+        <div class={['modes', { sliding }]} role="group" aria-label="Picks" {@attach slide}>
           {#each MODES as { id, label } (id)}
             <button type="button" aria-pressed={mode === id} disabled={counts[id] === 0} onclick={() => pick(id)}>
               {label}<small>{counts[id]}</small>
@@ -296,11 +320,28 @@ const details = (item: SeasonPick) =>
 }
 
 .modes {
+  position: relative;
   display: inline-flex;
   padding: var(--season-hero-modes-padding);
   box-shadow: inset 0 0 0 1px var(--color-season-hero-chrome-line);
 
+  /* The sliding accent behind the picked button. */
+  &.sliding::before {
+    content: '';
+    position: absolute;
+    inset-block: var(--season-hero-modes-padding);
+    inset-inline-start: var(--thumb-left, 0);
+    inline-size: var(--thumb-width, 0);
+    border-radius: var(--radius-season-pill);
+    background-color: var(--season-accent);
+  }
+
+  &.sliding button[aria-pressed='true'] {
+    background-color: transparent;
+  }
+
   & button {
+    position: relative;
     display: inline-flex;
     align-items: center;
     gap: var(--season-hero-badge-gap);
@@ -569,6 +610,14 @@ const details = (item: SeasonPick) =>
 }
 
 @media (prefers-reduced-motion: no-preference) {
+  .modes::before {
+    transition: inset-inline-start var(--transition-season-switch), inline-size var(--transition-season-switch);
+  }
+
+  .modes button {
+    transition: color var(--transition-season-switch);
+  }
+
   .backdrop {
     transition: opacity var(--transition-season-hero);
   }

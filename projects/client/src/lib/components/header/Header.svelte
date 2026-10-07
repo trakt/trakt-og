@@ -47,10 +47,10 @@ const { user, searchType, darkKnight: saved = 'false', save = browserSave }: Pro
 
 const sections = $derived([
   ...(user ? [{ title: 'Dashboard', href: '/dashboard' }] : []),
+  { title: 'Discover', href: '/discover' },
   { title: 'Shows', href: '/shows/trending' },
   { title: 'Movies', href: '/movies/trending' },
   { title: 'Calendar', href: '/calendars' },
-  { title: 'Discover', href: '/discover' },
 ]);
 
 const profileTabs = ['History', 'Progress', 'Library', 'Ratings', 'Lists', 'Comments', 'Notes', 'Network'];

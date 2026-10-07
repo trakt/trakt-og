@@ -2105,7 +2105,9 @@
   --blur-trending-comments-pager: blur(6px);
   --trending-comments-person-hover: 1.12;
   --trending-comments-peek-gap: 10px; /* an avatar's hover card */
-  --trending-comments-peek-bleed: -3px -8px; /* the tooltip's padding */
+  --trending-comments-peek-bleed: -3px -8px 10px; /* over the tooltip's padding, with room below for the arrow */
+  --trending-comments-peek-arrow: 12px;
+  --shadow-trending-comments-peek: 0 14px 30px rgb(0 0 0 / 0.6);
   --color-trending-comments-peek-bg: #181818;
   --radius-trending-comments-peek: 6px;
   --trending-comments-peek-width: 300px;

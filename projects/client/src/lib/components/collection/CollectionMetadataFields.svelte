@@ -62,6 +62,10 @@ form {
   &:focus-within {
     background-color: var(--color-menu-row-hover);
   }
+
+  &:has(select:focus-visible) label {
+    color: var(--color-menu-row-hover-text);
+  }
 }
 
 label {
@@ -80,14 +84,20 @@ select {
   text-align: end;
   cursor: pointer;
 
+  /* No field chrome: the base form style's inset shadow and focus glow. The row's highlight shows the focus. */
+  box-shadow: none;
+
+  &:focus,
   &:focus-visible {
-    outline: 2px solid var(--color-control-border-hover);
+    outline: none;
+    box-shadow: none;
   }
 }
 
+/* Inset like Other date's buttons: the prompt body's padding plus the form's own. */
 button {
   min-block-size: var(--control-height);
-  margin-block-start: var(--space-menu);
+  margin: var(--space-prompt-form);
   border: 0;
   border-radius: var(--radius-control);
   background: var(--brand-primary);

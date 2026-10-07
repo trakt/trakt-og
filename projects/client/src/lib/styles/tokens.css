@@ -815,7 +815,7 @@
   --font-size-prompt-close: 13px;
   --space-prompt-row-icon: 10px; /* a row's icon to its label */
   --font-size-prompt-row-icon: 14px;
-  --space-prompt-form: 10px; /* Other date's padding; with the body's, the space around its field */
+  --space-prompt-form: 10px; /* a prompt form's inset; with the body's padding, the space around its field and buttons */
   --space-collection-field: 3px 4px 3px 10px; /* a library metadata row, its select flush right */
   --collection-select-max: 170px;
   --collection-select-height: 30px;

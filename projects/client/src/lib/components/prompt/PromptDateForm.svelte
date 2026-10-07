@@ -48,9 +48,14 @@ input {
   color: var(--color-control-text);
   font: inherit;
 
+  /* The base form style's inset shadow and blue focus glow give way to the control's border. */
+  box-shadow: none;
+
+  &:focus,
   &:focus-visible {
     border-color: var(--color-control-border-hover);
     outline: none;
+    box-shadow: none;
   }
 }
 

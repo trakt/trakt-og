@@ -1,8 +1,9 @@
 <!--
-  "Other date" inside a `PromptPopover`: a labeled date and time field in the control style, the picked moment
-  written out under it, then Back and Save. The caller checks the value on submit, since only it knows the limits.
+  "Other date" inside a `PromptPopover`: a date and time field in the control style, then Back and Save. The field
+  says the date itself, so `label` names it for screen readers only. The caller checks the value on submit, since
+  only it knows the limits, and says what's wrong.
     <PromptDateForm id="watch-date-{id}" label="Watched date and time" bind:value bind:field max={maximum}
-      preview={readable} saveLabel="Save watched date" onsubmit={submit} oncancel={() => (other = false)} />
+      saveLabel="Save watched date" onsubmit={submit} oncancel={() => (other = false)} />
 -->
 <script lang="ts">
 interface Props {
@@ -11,22 +12,17 @@ interface Props {
   value: string;
   field?: HTMLInputElement;
   max: string;
-  /** The picked moment written out, or what's wrong with it. */
-  preview: string;
   /** Names the Save button for screen readers. */
   saveLabel: string;
   onsubmit: (event: SubmitEvent) => void;
   oncancel: () => void;
 }
 
-let { id, label, value = $bindable(), field = $bindable(), max, preview, saveLabel, onsubmit, oncancel }: Props =
-  $props();
+let { id, label, value = $bindable(), field = $bindable(), max, saveLabel, onsubmit, oncancel }: Props = $props();
 </script>
 
 <form class="date-form" {onsubmit} novalidate>
-  <label for={id}>{label}</label>
-  <input bind:this={field} bind:value {id} type="datetime-local" required {max} step="900" />
-  <p class="preview">{preview}</p>
+  <input bind:this={field} bind:value {id} type="datetime-local" aria-label={label} required {max} step="900" />
   <div class="actions">
     <button type="button" class="back" onclick={oncancel}>Back</button>
     <button type="submit" class="save" aria-label={saveLabel}>Save</button>
@@ -36,14 +32,10 @@ let { id, label, value = $bindable(), field = $bindable(), max, preview, saveLab
 <style>
 .date-form {
   display: grid;
-  gap: var(--space-prompt-form);
+  /* The same space under the field as above it: the prompt body's padding plus the form's own. */
+  gap: calc(var(--space-menu) + var(--space-prompt-form));
   padding: var(--space-menu-row);
-}
-
-label {
-  color: var(--color-menu-header);
-  font-size: var(--font-size-small);
-  font-weight: var(--font-weight-headings);
+  padding-block: var(--space-prompt-form);
 }
 
 input {
@@ -62,17 +54,10 @@ input {
   }
 }
 
-.preview {
-  margin: 0;
-  color: var(--color-menu-header);
-  font-size: var(--font-size-small);
-}
-
 .actions {
   display: flex;
   justify-content: flex-end;
   gap: var(--space-prompt-form);
-  margin-block-start: var(--space-prompt-form);
 }
 
 button {

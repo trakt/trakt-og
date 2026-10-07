@@ -19,7 +19,6 @@ import clock from '$lib/icons/regular/clock.svg?raw';
 import xmark from '$lib/icons/regular/xmark.svg?raw';
 import { watchDateInput } from '$lib/components/history/watchDateInput';
 import { watchDateInstant } from '$lib/components/history/watchDateInstant';
-import { formatDate } from '$lib/utils/formatDate';
 import { changeVisibility } from '$lib/components/visibility/changeVisibility';
 import type { VisibilityTarget } from '$lib/components/visibility/VisibilityTarget';
 import { traktUrls } from '$lib/traktUrls';
@@ -178,7 +177,6 @@ function submit(event: SubmitEvent) {
   {#if other}
     <PromptDateForm id="visibility-date-{id}" label="{action === 'rewatch' ? 'Rewatch' : 'Dropped'} date and time"
       bind:value bind:field max={maximum}
-      preview={instant ? formatDate(instant, { ...dates, format: 'LL', time: true }) : 'Choose a valid date and time.'}
       saveLabel="Save date" onsubmit={submit}
       oncancel={async () => { other = false; await tick(); firstChoice()?.focus(); }} />
   {:else if dateAction}

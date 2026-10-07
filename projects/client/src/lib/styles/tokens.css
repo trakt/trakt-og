@@ -2205,32 +2205,14 @@
   --font-size-progress-title: 24px;
   --font-size-progress-year: 16px;
   --progress-inline-gap: 4px; /* an icon or a bold code before its text */
-  --progress-chip-gap: 6px;
-  --progress-chip-padding: 3px 8px;
-  --radius-progress-chip: 3px;
-  --color-progress-chip: light-dark(#f0f0f0, #2a2a2a);
-  --color-progress-chip-text: light-dark(#555, #ccc);
   --color-progress-watched: var(--brand-tertiary); /* the watch quick icon's purple */
   --color-progress-watched-text: light-dark(var(--brand-tertiary), #b583cf); /* lifted for dark */
-  --color-progress-watched-tint: light-dark(rgb(142 68 173 / 0.12), rgb(142 68 173 / 0.22));
   --color-progress-collected: var(--brand-quaternary); /* the library quick icon's teal */
   --color-progress-episode-done: #1db75e;
-  --color-progress-complete-tint: rgb(29 183 94 / 0.15);
 
-  /* The status pill after the title, and its menu */
-  --progress-status-gap: 7px;
-  --progress-status-padding: 4px 10px 4px 9px;
-  --radius-progress-status: 13px;
-  --font-size-progress-status: 12px;
+  /* The status control after the title: a dropdown with a status dot */
   --progress-status-dot: 8px;
-  --progress-status-menu-width: 290px;
-  --progress-status-icon-nudge: 3px; /* a menu row's icon, down to its name's first line */
-  --color-progress-status-border: light-dark(#ccc, #3a3a3a);
-  --color-progress-status-bg: light-dark(#fff, #2a2a2a);
-  --color-progress-status-text: light-dark(#555, #ccc);
-  --color-progress-rewatching-accent: var(--brand-tertiary);
-  --color-progress-rewatching-tint: rgb(142 68 173 / 0.18);
-  --color-progress-rewatching-text: var(--color-progress-watched-text);
+  --progress-status-dot-gap: 2px; /* on top of the trigger's own gap */
 
   /* The tick bar and its percent */
   --tick-bar-height: 15px;
@@ -2243,14 +2225,13 @@
   --tick-bar-percent-season-nudge: -6px;
   --transition-tick-bar: 0.5s;
 
-  /* The open row's seasons: a line a season, a numbered square an episode */
+  /* The open row's seasons: a heading line, then a numbered square an episode */
   --color-progress-toggle-link: light-dark(var(--brand-primary), #fff);
   --font-size-progress-toggle-icon: 10px;
-  --progress-season-gap: 8px;
-  --progress-season-columns: 14px;
-  --progress-season-name: 84px;
-  --progress-season-percent: 48px;
-  --progress-season-summary: 150px;
+  --progress-season-gap: 14px;
+  --progress-season-heading-gap: 8px;
+  --color-progress-season-rule: light-dark(#eee, #2a2a2a);
+  --font-size-progress-season-name: 15px;
   --font-size-progress-season-percent: 15px;
   --progress-square: 22px;
   --progress-square-gap: 3px;
@@ -2262,6 +2243,15 @@
   --progress-cell-pulse: 6px;
   --progress-cell-pulse-duration: 2.4s;
   --color-progress-cell-pulse: color-mix(in srgb, var(--brand-primary) 55%, transparent);
+
+  /* A square's chart tooltip: its screenshot, then status lines after a dash in their color */
+  --progress-tip-width: 200px;
+  --progress-tip-image-gap: 6px;
+  --radius-progress-tip-image: 3px;
+  --color-progress-tip-watched: #b583cf; /* the watched purple, lifted for the black tooltip */
+  --color-progress-tip-collected: var(--brand-quaternary);
+  --color-progress-tip-next: var(--brand-primary);
+  --color-progress-tip-muted: #666;
 
   /* A label over a poster's bottom-left corner (`.posters h4.bottom`) */
   --poster-label-bottom: 8px;

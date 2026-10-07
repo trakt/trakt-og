@@ -1,41 +1,89 @@
 <!--
-  An open progress row's seasons: one line a season, with its name linking to the season page, a numbered square an
-  episode, then its percent and what's left. A square is purple once watched, the library's teal while it's in your
-  library but not watched, outlined and pulsing for up next, and dashed until it airs. Each links to its episode
-  and says what it is in a tooltip.
-    <ProgressSeasonGrid seasons={row.seasons} />
+  An open progress row's seasons, each a block: a heading line with the season's name (linking to its page), its own
+  title when it has one, its stats and its percent; then a numbered square an episode. A square is purple once
+  watched, the library's teal while it's in your library but not watched, outlined and pulsing for up next, and
+  dashed until it airs. Each links to its episode, with a chart tooltip: the screenshot, the code and title, when it
+  aired with its runtime and rating, then its status lines. Spoiler settings hide an unwatched episode's screenshot
+  and title there, as on the episode cards.
+    <ProgressSeasonGrid seasons={row.seasons} type="watched" />
 -->
 <script lang="ts">
+import { page } from '$app/state';
+import Stat from '$lib/components/stats/Stat.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import type { ProgressSeason } from './toProgressSeasons.ts';
+import calendar from '$lib/icons/regular/calendar-lines.svg?raw';
+import clock from '$lib/icons/regular/clock.svg?raw';
+import check from '$lib/icons/trakt/check-thick.svg?raw';
+import collection from '$lib/icons/trakt/collection-thick.svg?raw';
+import { mediaSpoilers } from '$lib/settings/mediaSpoilers';
+import type { ProgressType } from './progressTypes.ts';
+import type { EpisodeSquare, ProgressSeason } from './toProgressSeasons.ts';
 
 interface Props {
   seasons: readonly ProgressSeason[];
+  type: ProgressType;
 }
 
-const { seasons }: Props = $props();
+const { seasons, type }: Props = $props();
+const library = $derived(type === 'library');
+
+const spoilers = (square: EpisodeSquare) =>
+  page.data.user
+    ? mediaSpoilers({
+      spoilers: page.data.settings?.browsing?.spoilers,
+      type: 'episode',
+      watched: square.state === 'watched',
+    })
+    : { screenshot: false, title: false };
 </script>
+
+{#snippet tip(square: EpisodeSquare)}
+  {@const hidden = spoilers(square)}
+  <span class="tip">
+    {#if square.image && !hidden.screenshot}<img class="tip-image" src={square.image} alt="" loading="lazy" />{/if}
+    <span class="tip-code">{square.code}</span>
+    {#if square.title && !hidden.title}<span class="tip-title">{square.title}</span>{/if}
+    {#if square.meta}<span class="tip-meta">{square.meta}</span>{/if}
+    {#each square.lines as line (line.text)}
+      <span class="tip-line" style:--dash="var(--color-progress-tip-{line.tone})">{line.text}</span>
+    {/each}
+  </span>
+{/snippet}
 
 <!-- Season and episode pages are OG routes og hasn't all built yet, and resolve() only takes routes that exist. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 <ul class="seasons">
   {#each seasons as season (season.number)}
-    <li class={['season', { announced: season.announced }]}>
-      <a class="name" href={season.href}>{season.name}</a>
+    <li class="season">
+      <div class="heading">
+        <a class="name" href={season.href}>{season.name}</a>
+        {#if season.title}<span class="title">{season.title}</span>{/if}
+        <span class="stats">
+          {#if season.announced !== undefined}
+            <Stat svg={calendar} value={String(season.announced)} noun="announced" />
+          {:else}
+            <Stat svg={library ? collection : check} tone={library ? 'collected' : 'watched'} value={season.count}
+              noun={library ? 'in library' : 'watched'} />
+            {#if season.timeLeft}<Stat svg={clock} value={season.timeLeft} noun="left" />{/if}
+          {/if}
+        </span>
+        {#if season.announced === undefined}
+          <span class={['percent', { complete: season.complete }]}>{season.percent}%</span>
+        {/if}
+      </div>
       <ul class="squares" aria-label="{season.name} episodes">
         {#each season.squares as square (square.code)}
           <li>
-            <Tooltip text={`${square.code}${square.title ? ` ${square.title}` : ''}\n${square.readout}`}>
+            <Tooltip variant="chart">
               {#snippet trigger(tooltip)}
                 <a class={['square', square.state, { collected: square.collected }]} href={square.href}
                   aria-label={square.label} {...tooltip}>{square.number}</a>
               {/snippet}
+              {@render tip(square)}
             </Tooltip>
           </li>
         {/each}
       </ul>
-      <span class={['percent', { complete: season.complete }]}>{season.announced ? '' : `${season.percent}%`}</span>
-      <span class="summary">{season.summary}</span>
     </li>
   {/each}
 </ul>
@@ -48,7 +96,6 @@ ul {
 }
 
 .seasons {
-  container: progress-seasons / inline-size;
   display: grid;
   gap: var(--progress-season-gap);
   padding-block-start: var(--progress-season-gap);
@@ -58,16 +105,25 @@ ul {
 
 .season {
   display: grid;
-  grid-template-columns: var(--progress-season-name) minmax(0, 1fr) var(--progress-season-percent) var(
-    --progress-season-summary
-  );
-  gap: var(--progress-season-columns);
-  align-items: center;
+  gap: var(--progress-season-heading-gap);
+
+  & + & {
+    padding-block-start: var(--progress-season-gap);
+    border-block-start: 1px solid var(--color-progress-season-rule);
+  }
+}
+
+.heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-stat) var(--space-stats);
 }
 
 .name {
   color: var(--color-text);
   font-family: var(--font-headings);
+  font-size: var(--font-size-progress-season-name);
   font-weight: var(--font-weight-headings-heavy);
   text-decoration: none;
   white-space: nowrap;
@@ -76,9 +132,27 @@ ul {
     color: var(--color-progress-watched-text);
     text-decoration: underline;
   }
+}
 
-  .announced & {
-    color: var(--color-text-muted);
+.title {
+  margin-inline-start: calc(var(--space-stat) - var(--space-stats));
+  color: var(--color-text-muted);
+  font-family: var(--font-headings);
+}
+
+.stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-stat) var(--space-stats);
+}
+
+.percent {
+  margin-inline-start: auto;
+  font: var(--font-weight-headings-heavy) var(--font-size-progress-season-percent) / 1 var(--font-headings);
+  font-variant-numeric: tabular-nums;
+
+  &.complete {
+    color: var(--color-progress-watched-text);
   }
 }
 
@@ -148,32 +222,52 @@ ul {
   }
 }
 
-.percent {
-  font: var(--font-weight-headings-heavy) var(--font-size-progress-season-percent) / 1 var(--font-headings);
-  font-variant-numeric: tabular-nums;
-  text-align: end;
-
-  &.complete {
-    color: var(--color-progress-watched-text);
-  }
+/* The chart tooltip's body, like the dashboard's minutes chart. */
+.tip {
+  display: grid;
+  inline-size: var(--progress-tip-width);
+  text-align: start;
 }
 
-.summary {
-  color: var(--color-text-muted);
-  font-variant-numeric: tabular-nums;
-  text-align: end;
-  white-space: nowrap;
+.tip-image {
+  inline-size: 100%;
+  aspect-ratio: var(--ratio-fanart);
+  margin-block-end: var(--progress-tip-image-gap);
+  border-radius: var(--radius-progress-tip-image);
+  object-fit: cover;
 }
 
-/* A narrow row: the squares take their own line under the name. */
-@container progress-seasons (width < 560px) {
-  .season {
-    grid-template-columns: 1fr auto auto;
-  }
+.tip-code {
+  color: var(--color-chart-tooltip-muted);
+  font-size: var(--font-size-genre-count);
+}
 
-  .squares {
-    grid-column: 1 / -1;
-    grid-row: 2;
+.tip-title {
+  font-weight: var(--font-weight-headings-heavy);
+  line-height: var(--line-height-headings);
+}
+
+.tip-meta {
+  color: var(--color-chart-tooltip-muted);
+  font-family: var(--font-body);
+  font-size: var(--font-size-genre-key-count);
+  font-weight: normal;
+}
+
+.tip-line {
+  display: flex;
+  align-items: center;
+  gap: var(--space-genre-key-top);
+  font-family: var(--font-body);
+  font-size: var(--font-size-genre-key-count);
+  font-weight: normal;
+
+  &::before {
+    content: '';
+    flex: none;
+    inline-size: var(--genre-tip-dash);
+    block-size: var(--genre-tip-dash-height);
+    background: var(--dash);
   }
 }
 

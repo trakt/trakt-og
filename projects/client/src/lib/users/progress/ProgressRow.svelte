@@ -1,6 +1,6 @@
 <!--
   One show on the progress page, as a ledger row: the poster; the title, its status menu (`ProgressStatus`), the tick
-  bar, the counts as chips and when you last watched (or collected); then the up-next card, og's fanart card for the
+  bar, the counts as stats and when you last watched (or collected); then the up-next card, og's fanart card for the
   next episode with its quick icons. The row reads the show's catalog (`onneed`) as it nears the screen, since the
   card and exact counts need it; until then the card waits on the show's fanart. Once every episode is done, the card
   is the show's. "Show seasons" opens the season lines under the row (`ProgressSeasonGrid`), in their own grid row,
@@ -12,9 +12,14 @@ import FanartCard from '$lib/components/media/FanartCard.svelte';
 import { quickIconFill } from '$lib/components/media/quickIconFill';
 import { removeCard } from '$lib/components/media/removeCard';
 import TickBar from '$lib/components/media/TickBar.svelte';
+import Stat from '$lib/components/stats/Stat.svelte';
 import Icon from '$lib/icons/Icon.svelte';
+import clock from '$lib/icons/regular/clock.svg?raw';
+import history from '$lib/icons/regular/clock-rotate-left.svg?raw';
+import play from '$lib/icons/regular/play.svg?raw';
 import caretDown from '$lib/icons/solid/caret-down.svg?raw';
 import check from '$lib/icons/trakt/check-thick.svg?raw';
+import collection from '$lib/icons/trakt/collection-thick.svg?raw';
 import { overlay } from '$lib/overlay/overlay';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
 import ProgressSeasonGrid from './ProgressSeasonGrid.svelte';
@@ -110,24 +115,24 @@ function toggle() {
     <TickBar runs={row.ticks} percent={row.percent} {simple}
       label={`${row.title}: ${row.percent}% ${kind === 'watched' ? 'watched' : 'in your library'}`} />
 
-    <ul class="stats" aria-label="{row.title} counts">
+    <p class="stats">
       {#if kind === 'watched'}
-        <li class="chip done">{count(row.completed)}/{count(row.aired)} watched</li>
-        <li class="chip">{count(row.plays)} {plural(row.plays, 'play')} · {row.watchedTime}</li>
+        <Stat svg={check} tone="watched" value="{count(row.completed)}/{count(row.aired)}" noun="watched"
+          label="Episodes watched" />
+        <Stat svg={play} value={count(row.plays)} noun={plural(row.plays, 'play')} label="Plays, rewatches included" />
+        <Stat svg={history} value={row.watchedTime} noun="watched" label="Time watched" />
         {#if row.left > 0}
-          <li class="chip">{count(row.left)} left · {row.leftTime}</li>
-        {:else}
-          <li class="chip complete"><Icon svg={check} />All watched</li>
+          <Stat svg={clock} value={row.leftTime} noun="left"
+            label="{count(row.left)} {plural(row.left, 'episode')} left to watch" />
         {/if}
       {:else}
-        <li class="chip done">{count(row.completed)}/{count(row.aired)} in your library</li>
+        <Stat svg={collection} tone="collected" value="{count(row.completed)}/{count(row.aired)}" noun="in library"
+          label="Episodes in your library" />
         {#if row.left > 0}
-          <li class="chip">{count(row.left)} to collect</li>
-        {:else}
-          <li class="chip complete"><Icon svg={check} />All in your library</li>
+          <Stat svg={clock} value={count(row.left)} noun="to collect" label="Episodes not in your library yet" />
         {/if}
       {/if}
-    </ul>
+    </p>
 
     {#if row.last}
       <p class="last">
@@ -177,7 +182,7 @@ function toggle() {
   </div>
 
   <div class="seasons" id="progress-seasons-{row.id}" hidden={!open}>
-    {#if open && row.seasons}<ProgressSeasonGrid seasons={row.seasons} />{/if}
+    {#if open && row.seasons}<ProgressSeasonGrid seasons={row.seasons} {type} />{/if}
   </div>
 </article>
 
@@ -263,35 +268,8 @@ function toggle() {
 .stats {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--progress-chip-gap);
+  gap: var(--space-stat) var(--space-stats);
   margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.chip {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--progress-inline-gap);
-  padding: var(--progress-chip-padding);
-  border-radius: var(--radius-progress-chip);
-  background: var(--color-progress-chip);
-  color: var(--color-progress-chip-text);
-  font-family: var(--font-headings);
-  font-size: var(--font-size-small);
-  font-weight: var(--font-weight-headings);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-
-  &.done {
-    background: var(--color-progress-watched-tint);
-    color: var(--color-progress-watched-text);
-  }
-
-  &.complete {
-    background: var(--color-progress-complete-tint);
-    color: var(--color-progress-episode-done);
-  }
 }
 
 .last {

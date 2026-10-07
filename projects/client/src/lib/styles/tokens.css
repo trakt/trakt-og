@@ -265,6 +265,8 @@
   --font-size-fanart-title: 18px;
   --font-size-quick-icon: 1.7em;
   --font-size-quick-icon-small: 1.3em;
+  --font-size-quick-icon-busy: 16px; /* the saving spinner, a size under the glyph it stands in for */
+  --font-size-quick-icon-busy-small: 13px;
   --quick-icon-trakt-shift: 0.085em; /* Trakt-font glyphs (check, library, list) sit this far above center */
   --font-size-quick-icon-favorite: 0.85em; /* the solid star, down to the other glyphs' height */
   --font-size-rating: 20px;

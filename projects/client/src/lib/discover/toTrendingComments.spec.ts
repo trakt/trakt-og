@@ -54,6 +54,12 @@ describe('toTrendingComments', () => {
     });
   });
 
+  it('should keep ten, one for each avatar in the pager', () => {
+    const rows = Array.from({ length: 14 }, (_, index) => episodeRow(index + 1, index + 100));
+
+    expect(toTrendingComments(rows, now)).toHaveLength(10);
+  });
+
   it('should show one comment per title first, then the rest', () => {
     const comments = toTrendingComments([episodeRow(1, 10), episodeRow(2, 10), episodeRow(3, 20)], now);
 

@@ -1,6 +1,6 @@
 <!--
   One show on the progress page, as a ledger row: the poster; the title, its status menu (`ProgressStatus`), the tick
-  bar, the counts as stats, then a chip linking the episode you last watched beside View seasons; then the up-next card,
+  bar, the counts as stats, then View seasons beside a chip linking the episode you last watched; then the up-next card,
   og's fanart card for the next episode with its quick icons, or the show's once every episode is done. The poster and
   the card are the same height, and the text about matches them. View seasons reads the show's catalog (`onneed`) and
   opens the season list across the whole row, under the poster and the card (`ProgressSeasonGrid`). A drop or restore
@@ -108,6 +108,8 @@ function toggle() {
     </p>
 
     <div class="actions">
+      <button type="button" class="toggle" aria-expanded={open} aria-controls="progress-seasons-{row.id}"
+        onclick={toggle}>{open ? 'Hide seasons' : 'View seasons'}<Icon svg={caretDown} /></button>
       {#if row.last}
         {@const verb = 'Last watched'}
         <Tooltip text={`${verb} ${row.last.number ?? ''}${row.last.title ? ` ${row.last.title}` : ''}\n${row.last.date}`}>
@@ -118,8 +120,6 @@ function toggle() {
           {/snippet}
         </Tooltip>
       {/if}
-      <button type="button" class="toggle" aria-expanded={open} aria-controls="progress-seasons-{row.id}"
-        onclick={toggle}>{open ? 'Hide seasons' : 'View seasons'}<Icon svg={caretDown} /></button>
       {#if open && loading}<span class="loading" role="status">Loading seasons…</span>{/if}
     </div>
   </div>
@@ -262,24 +262,41 @@ function toggle() {
   margin-block-start: calc(var(--progress-last-gap) - var(--progress-main-gap));
 }
 
-/* The last episode as a chip, clearly a link. */
+/* View seasons and the last watched chip: one height, one type size. */
+.toggle,
 .last {
+  box-sizing: border-box;
   display: inline-flex;
   align-items: center;
   gap: var(--progress-inline-gap);
-  max-inline-size: 100%;
-  padding: var(--progress-last-padding);
-  overflow: hidden;
+  block-size: var(--progress-action-height);
+  padding: var(--progress-action-padding);
   border: 1px solid var(--color-control-border);
   border-radius: var(--radius-control);
   background: var(--color-control-bg);
+  font: var(--font-size-progress-row) / var(--line-height-progress-row) var(--font-body);
+
+  & :global(.icon) {
+    flex: none;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-link);
+    outline-offset: 1px;
+  }
+}
+
+/* The last episode, clearly a link. */
+.last {
+  min-inline-size: 0;
+  max-inline-size: 100%;
+  overflow: hidden;
   color: var(--color-text-muted);
   text-decoration: none;
   text-overflow: ellipsis;
   white-space: nowrap;
 
   & :global(.icon) {
-    flex: none;
     font-size: var(--font-size-progress-last-icon);
   }
 
@@ -298,21 +315,10 @@ function toggle() {
   }
 }
 
-/* View seasons: a small outline button after the last watched chip. */
+/* View seasons: first on the line, its caret flipping once open. */
 .toggle {
   flex: none;
-  display: inline-flex;
-  align-items: center;
-  gap: var(--progress-inline-gap);
-  min-block-size: 0;
-  padding: var(--progress-toggle-padding);
-  border: 1px solid var(--color-control-border);
-  border-radius: var(--radius-control);
-  background: var(--color-control-bg);
   color: var(--color-control-text);
-  font: var(--font-weight-headings) var(--font-size-progress-row) / var(--line-height-progress-row) var(
-    --font-headings
-  );
   cursor: pointer;
 
   &:is(:hover, :focus-visible),
@@ -328,11 +334,6 @@ function toggle() {
 
   &[aria-expanded='true'] :global(.icon) {
     rotate: 180deg;
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--color-link);
-    outline-offset: 1px;
   }
 }
 

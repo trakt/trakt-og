@@ -3,13 +3,15 @@
   hot premieres feed and the anticipated chart, with toggles for all, new series and returning seasons. Each is its
   own rounded fanart card, two wide then three a row: the show's logo centred over its dimmed fanart (its name when
   there's no logo yet), a calendar chip with the day, pills for the kind of premiere, the network and the lists it's
-  on, a countdown bar that fills as the premiere nears, and og's quick-action bar.
+  on, how many days are left (on the day itself, "Today" on fire, and the card glows), and og's quick-action bar.
 -->
 <script lang="ts">
 import PanelHeading from '$lib/components/dashboard/PanelHeading.svelte';
 import FanartCard from '$lib/components/media/FanartCard.svelte';
 import { quickIconFill } from '$lib/components/media/quickIconFill';
+import Icon from '$lib/icons/Icon.svelte';
 import tvRetro from '$lib/icons/regular/tv-retro.svg?raw';
+import fire from '$lib/icons/solid/fire.svg?raw';
 import { overlay } from '$lib/overlay/overlay';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
 import { countLabel } from '$lib/utils/countLabel';
@@ -24,8 +26,6 @@ interface Props {
 
 const { premieres, today, datePreferences }: Props = $props();
 const SHOWN = 8;
-// The countdown bar starts filling this many days out.
-const COUNTDOWN_DAYS = 90;
 const groups = $derived(
   [
     { id: 'all', label: 'All Premieres', items: premieres },
@@ -68,7 +68,7 @@ function soon(days: number) {
       {#each shown as premiere (premiere.key)}
         {@const viewer = overlay.state('show', premiere.id)}
         {@const days = daysAway(premiere.day)}
-        <li class="card">
+        <li class={['card', { today: days === 0 }]}>
           <FanartCard
             href={premiere.href}
             title={premiere.title}
@@ -99,11 +99,14 @@ function soon(days: number) {
                   {#if premiere.lists}<span class="pill">{countLabel(premiere.lists, 'list')}</span>{/if}
                 </span>
                 <span class="countdown">
-                  <span class="when">{soon(days)}</span>
-                  <span class="track"><span
-                      class="fill"
-                      style:--left={Math.min(days, COUNTDOWN_DAYS) / COUNTDOWN_DAYS}
-                    ></span></span>
+                  <span class="visually-hidden">{soon(days)}</span>
+                  {#if days === 0}
+                    <span class="fire" aria-hidden="true"><Icon svg={fire} /></span>
+                    <b aria-hidden="true">Today</b>
+                  {:else}
+                    <b aria-hidden="true">{days}</b>
+                    <small aria-hidden="true">{days === 1 ? 'day' : 'days'}</small>
+                  {/if}
                 </span>
               </span>
             {/snippet}
@@ -208,6 +211,8 @@ function soon(days: number) {
   position: absolute;
   inset: auto var(--premiere-foot-inset) var(--premiere-foot-inset);
   display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
   gap: var(--premiere-foot-gap);
   pointer-events: none;
 }
@@ -244,31 +249,78 @@ function soon(days: number) {
   }
 }
 
+/* Days to go, as a quiet chip at the foot's end; on the day, the accent and a flickering flame. */
 .countdown {
-  display: grid;
-  gap: var(--premiere-pill-gap);
-}
-
-.when {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--premiere-countdown-gap);
+  padding: var(--premiere-countdown-padding);
+  border-radius: var(--radius-premiere-date);
+  background-color: var(--color-season-hero-chrome);
+  box-shadow: inset 0 0 0 1px var(--color-season-hero-chrome-line);
   color: var(--color-discover-on-image);
-  font-size: var(--font-size-premiere-pill);
-  font-weight: var(--font-weight-headings-heavy);
-  text-shadow: var(--shadow-season-hero-text);
+  white-space: nowrap;
+
+  & b {
+    font-size: var(--font-size-premiere-countdown);
+    font-weight: var(--font-weight-headings-heavy);
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+
+  & small {
+    color: var(--color-season-hero-blurb);
+    font-size: var(--font-size-premiere-date-month);
+    font-weight: var(--font-weight-headings-heavy);
+    letter-spacing: var(--letter-spacing-season-ribbon);
+    text-transform: uppercase;
+  }
+
+  .today & {
+    align-items: center;
+    background-color: var(--season-accent);
+    box-shadow: var(--premiere-today-glow) color-mix(in srgb, var(--season-accent) var(--premiere-today-glow-strength),
+      transparent);
+  }
 }
 
-.track {
-  display: block;
-  block-size: var(--premiere-countdown-height);
+.fire {
+  display: inline-flex;
+  font-size: var(--font-size-premiere-countdown);
+}
+
+.today {
+  box-shadow:
+    var(--shadow-premiere-card),
+    0 0 0 2px var(--season-accent),
+    var(--premiere-today-glow) color-mix(in srgb, var(--season-accent) var(--premiere-today-glow-strength),
+    transparent);
+}
+
+.visually-hidden {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
   overflow: hidden;
-  border-radius: var(--premiere-countdown-height);
-  background-color: var(--color-season-hero-chrome-line);
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
-/* Full on the day; empty three months out. */
-.fill {
-  display: block;
-  inline-size: calc((1 - var(--left)) * 100%);
-  block-size: 100%;
-  background-color: var(--season-accent);
+@media (prefers-reduced-motion: no-preference) {
+  .fire {
+    transform-origin: bottom center;
+    animation: flicker var(--premiere-flicker) ease-in-out infinite alternate;
+  }
+}
+
+@keyframes flicker {
+  50% {
+    transform: scale(1.12) rotate(-4deg);
+    opacity: 0.85;
+  }
+
+  to {
+    transform: scale(0.96) rotate(3deg);
+  }
 }
 </style>

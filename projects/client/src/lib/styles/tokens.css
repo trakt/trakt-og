@@ -1956,6 +1956,7 @@
   --season-hero-badge-gap: 8px;
   --season-hero-badge-padding: 7px 14px 7px 7px;
   --season-hero-dot: 22px;
+  --transition-season-switch: 0.3s cubic-bezier(0.22, 0.8, 0.2, 1); /* the hero switch's sliding accent */
   --season-hero-modes-padding: 3px;
   --season-hero-mode-padding: 6px 14px;
   --season-hero-poster-width: 96px;
@@ -2125,7 +2126,12 @@
   --premiere-pill-padding: 3px 9px;
   --font-size-premiere-pill: 12px;
   --premiere-pill-dot: 7px;
-  --premiere-countdown-height: 4px;
+  --premiere-countdown-padding: 6px 10px;
+  --premiere-countdown-gap: 5px;
+  --font-size-premiere-countdown: 18px;
+  --premiere-today-glow: 0 0 18px; /* in the season's accent, on the day */
+  --premiere-today-glow-strength: 60%;
+  --premiere-flicker: 0.9s;
   --opacity-premiere-fanart: 0.28;
   --premiere-date-inset: 10px;
   --premiere-date-width: 44px;

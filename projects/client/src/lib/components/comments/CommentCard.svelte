@@ -51,6 +51,7 @@ import { commentDates } from './commentDates.ts';
 import { commentSettings } from './commentSettings.ts';
 import type { CommentItem } from './CommentItem.ts';
 import type { CommentsClient } from './commentsClient.ts';
+import CommentTag from './CommentTag.svelte';
 import CommentText from './CommentText.svelte';
 import { focusComment } from './focusComment.ts';
 import { commentType } from './commentType.ts';
@@ -422,10 +423,10 @@ const vanish = (node: Element) =>
           <strong class="username">{author.name}</strong>
         {/if}
         {#if isOp}<span class="op">OP</span>{/if}
-        {#if type === 'Review'}<span class="tag"><Icon svg={star} />Review</span>{/if}
-        {#if comment.spoiler}<span class="tag spoiler-tag"><Icon svg={eyeSlash} />Spoilers</span>{/if}
-        {#if asParent}<span class="tag">Parent</span>{/if}
-        {#if blocked}<span class="tag">Blocked</span>{/if}
+        {#if type === 'Review'}<CommentTag svg={star}>Review</CommentTag>{/if}
+        {#if comment.spoiler}<CommentTag svg={eyeSlash} tone="spoiler">Spoilers</CommentTag>{/if}
+        {#if asParent}<CommentTag>Parent</CommentTag>{/if}
+        {#if blocked}<CommentTag>Blocked</CommentTag>{/if}
       </p>
       <p class="when">
         <a class="date" href={permalink}><time datetime={comment.created_at}>{dates.posted}</time></a>
@@ -702,39 +703,21 @@ const vanish = (node: Element) =>
   }
 }
 
-/* The tags' and the VIP pill's shape, filled blue. */
-.op,
-.tag {
+/* OP: a filled blue pill in the tags' shape (CommentTag). */
+.op {
   display: inline-flex;
   align-items: center;
-  gap: var(--comment-tag-gap);
-  block-size: var(--comment-tag-height);
+  block-size: var(--comment-badge-height);
   padding: var(--comment-tag-padding);
-  border: 1px solid var(--color-comment-tag-border);
+  border: 1px solid var(--color-comment-pill-op);
   border-radius: var(--radius-comment-tag);
-  color: var(--color-comment-muted);
+  background-color: var(--color-comment-pill-op);
+  color: var(--color-text-inverse);
   font-family: var(--font-headings);
   font-size: var(--font-size-comment-tag);
   font-weight: var(--font-weight-headings);
   line-height: 1;
   white-space: nowrap;
-}
-
-.op {
-  block-size: var(--comment-badge-height);
-  border-color: var(--color-comment-pill-op);
-  background-color: var(--color-comment-pill-op);
-  color: var(--color-text-inverse);
-}
-
-.tag :global(.icon) {
-  flex: none;
-  font-size: var(--font-size-comment-tag-icon);
-}
-
-.spoiler-tag {
-  border-color: var(--color-comment-tag-spoiler);
-  color: var(--color-comment-tag-spoiler);
 }
 
 /* The date, then "edited", after a middle dot screen readers skip. */

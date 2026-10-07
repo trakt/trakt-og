@@ -1709,42 +1709,22 @@
   --z-toast: 30; /* under the header, which it hangs below */
   --z-loading-bar: 9999;
   --z-loading: 99999;
-  /* Notes and comment-style cards. */
-  --color-note-bg: light-dark(#fafafa, #292929);
-  --color-note-header: light-dark(#f3f3f3, #333);
-  --color-note-avatar-border: light-dark(#555, #ccc);
-  --color-note-pill: light-dark(#999, #555);
-  --color-note-media: light-dark(#2b678f, #555);
-  --color-note-history: light-dark(#8e44ad, #555);
-  --color-note-collection: light-dark(#16a085, #555);
-  --color-note-rating: light-dark(#b70a0a, #555);
+  /* Notes: comment thread cards with coloured tags for what the note is attached to and the item type. */
+  --color-note-tag-history: light-dark(#8e44ad, #b583cf); /* brand-tertiary, lifted for dark */
+  --color-note-tag-collection: light-dark(#0f7d67, #3cc4a4); /* brand-quaternary, deepened for small text on white */
+  --color-note-tag-rating: light-dark(#b70a0a, #f0605d); /* rating-10 */
+  --color-note-tag-media: light-dark(#2b678f, #6fa8d6); /* brand-fifth */
+  --color-note-media: light-dark(#2b678f, #555); /* the notes dialog's type pill */
   --color-note-inline-title: light-dark(#e1e1e1, #333);
-  --color-note-vip-star: light-dark(#aaa, #888);
   --note-padding: 20px;
-  /* Notes-page owner controls (OG comment manage links). */
-  --note-manage-gap: 15px;
-  --note-manage-top: 3px;
   --radius-note: 2px;
-  --note-header-padding: 20px 20px 10px;
-  --note-header-min-height: 67px;
-  --note-avatar-size: 40px;
-  --note-avatar-border: 2px;
-  --note-avatar-offset: -8px;
-  --note-author-offset: -4px;
-  --note-author-gap: 12px;
-  --note-labels-top: 4px;
   --font-size-note-author: 13px;
   --font-size-note-pill: 11px;
   --line-height-note-pill: 1.1;
   --note-pill-padding: 1px 4px;
   --note-pill-gap: 5px;
-  --note-vip-margin: 4px;
-  --note-vip-star-size: 24px;
-  --note-vip-star-top: -6px;
-  --note-vip-star-offset: -26px;
   --note-text-max-height: 300px;
   --note-text-shade-height: 100px;
-  --note-spoiler-blur: 8px;
   --note-row-bottom: 25px;
   --note-inline-title-padding: 5px 7px;
 

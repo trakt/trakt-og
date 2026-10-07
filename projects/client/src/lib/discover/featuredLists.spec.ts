@@ -2,24 +2,16 @@ import { describe, expect, it } from 'vitest';
 import { featuredLists } from './featuredLists.ts';
 
 describe('featuredLists', () => {
-  it("should keep OG's sixteen tiles in order", () => {
+  it('should keep the eight essentials in order', () => {
     expect(featuredLists.map(({ id }) => id)).toEqual([
-      30_484_958,
-      30_156_306,
-      27_074_303,
-      2_748_259,
       2_142_753,
-      6_544_049,
       2_143_363,
-      832_943,
-      2_233_867,
-      967_660,
       1_248_149,
+      2_233_867,
+      832_943,
+      5_790_552,
       1_257_909,
-      1_463_475,
-      1_553_339,
       1_402_475,
-      1_406_012,
     ]);
   });
 
@@ -35,5 +27,9 @@ describe('featuredLists', () => {
       ['Top 250 Movies', 'Updated Daily'],
       ['Top 250 TV Shows', 'Updated Daily'],
     ]);
+  });
+
+  it('should keep only the square logos upright', () => {
+    expect(featuredLists.filter((list) => list.upright).map(({ title }) => title[0])).toEqual(['Academy Awards', 'DC']);
   });
 });

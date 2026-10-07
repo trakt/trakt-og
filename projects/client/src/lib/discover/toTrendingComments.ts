@@ -58,7 +58,7 @@ function toItem(row: TrendingCommentRow, now: Date): TrendingComment['item'] | u
  * The trending comments to show, most liked first as the API sends them, but one per title before any second one,
  * so a big episode night doesn't fill the section with one show. Only movies, shows and episodes, with a poster.
  */
-export function toTrendingComments(rows: readonly TrendingCommentRow[], now: Date, limit = 8): TrendingComment[] {
+export function toTrendingComments(rows: readonly TrendingCommentRow[], now: Date, limit = 10): TrendingComment[] {
   const comments = rows.flatMap((row): TrendingComment[] => {
     const item = toItem(row, now);
     return item?.poster ? [{ comment: row.comment, href: `/comments/${row.comment.id}`, item }] : [];

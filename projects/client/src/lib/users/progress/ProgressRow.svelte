@@ -1,39 +1,39 @@
 <!--
-  One show on the progress page: the poster, then the title, the tick bar and what's been watched (or collected),
-  then the seasons to open under it. Opening the seasons reads the show's catalog once (`onexpand`) and opens the
-  panel under the row: the up-next banner, the season picker and its episode tiles (`ProgressPanel`). The panel sits in its own grid row,
-  so opening it moves nothing above it. On your own profile the title
-  has rewatch and drop (or hide, on Library) icons; the row recomputes from the overlay as they save, so a drop or a
-  hide takes it off the page and a rewatch resets it. A dropped show (the Dropped tab) says when you dropped it and
-  has no drop icon.
+  One show on the progress page, as a ledger row: the poster; the title, its status menu (`ProgressStatus`), the tick
+  bar, the counts as chips and when you last watched (or collected); then the up-next card, og's fanart card for the
+  next episode with its quick icons. The row reads the show's catalog (`onneed`) as it nears the screen, since the
+  card and exact counts need it; until then the card waits on the show's fanart. Once every episode is done, the card
+  is the show's. "Show seasons" opens the season lines under the row (`ProgressSeasonGrid`), in their own grid row,
+  so opening them moves nothing above. A drop, hide or restore fades the row out and moves the focus on.
 -->
 <script lang="ts">
+import type { Attachment } from 'svelte/attachments';
+import FanartCard from '$lib/components/media/FanartCard.svelte';
+import { quickIconFill } from '$lib/components/media/quickIconFill';
 import { removeCard } from '$lib/components/media/removeCard';
-import RewatchingBadge from '$lib/components/media/RewatchingBadge.svelte';
 import TickBar from '$lib/components/media/TickBar.svelte';
 import Icon from '$lib/icons/Icon.svelte';
-import backward from '$lib/icons/light/backward.svg?raw';
-import lightBan from '$lib/icons/light/ban.svg?raw';
-import circleMinus from '$lib/icons/light/circle-minus.svg?raw';
-import regularCircleMinus from '$lib/icons/regular/circle-minus.svg?raw';
-import solidBackward from '$lib/icons/solid/backward.svg?raw';
-import VisibilityControl from '$lib/components/visibility/VisibilityControl.svelte';
+import caretDown from '$lib/icons/solid/caret-down.svg?raw';
+import check from '$lib/icons/trakt/check-thick.svg?raw';
+import { overlay } from '$lib/overlay/overlay';
+import type { DatePreferences } from '$lib/settings/DatePreferences';
+import ProgressSeasonGrid from './ProgressSeasonGrid.svelte';
+import ProgressStatus from './ProgressStatus.svelte';
 import type { ProgressType } from './progressTypes.ts';
-import ProgressPanel from './ProgressPanel.svelte';
-import ProgressSeasons from './ProgressSeasons.svelte';
 import type { ProgressRow } from './toProgressRow.ts';
 
 interface Props {
   row: ProgressRow;
   type: ProgressType;
   simple: boolean;
-  /** The row opened: read the show's catalog. */
-  onexpand?: () => void;
+  datePreferences: DatePreferences;
+  /** The row needs the show's catalog: `quiet` while it's only near the screen, so a failure says nothing. */
+  onneed?: (quiet: boolean) => void;
   /** The catalog read is in flight. */
-  expanding?: boolean;
+  loading?: boolean;
 }
 
-const { row, type, simple, onexpand, expanding = false }: Props = $props();
+const { row, type, simple, datePreferences, onneed, loading = false }: Props = $props();
 const kind = $derived(type === 'library' ? 'library' : 'watched');
 
 let open = $state(false);
@@ -41,11 +41,29 @@ let article = $state<HTMLElement>();
 // Read only when the row leaves: paging and filtering aren't removals.
 let removedByAction = false;
 
-const showTarget = $derived({ type: 'show' as const, id: row.id, title: row.title });
 const plural = (n: number, word: string) => `${word}${n === 1 ? '' : 's'}`;
 const count = (n: number) => n.toLocaleString('en-US');
+const showTarget = $derived({ type: 'show' as const, id: row.id, title: row.title, airedEpisodes: row.aired });
+const caughtUp = $derived(
+  type === 'dropped'
+    ? 'Dropped'
+    : kind === 'library'
+    ? row.left === 0 ? 'All collected' : `${count(row.left)} to collect`
+    : 'Caught up',
+);
 
-/** Drop and hide: the focus moves to the next row's title before this one fades out. */
+/** Reads the catalog once the row is within a screen of the viewport. */
+const near: Attachment<HTMLElement> = (node) => {
+  const observer = new IntersectionObserver((entries) => {
+    if (!entries.some(({ isIntersecting }) => isIntersecting)) return;
+    observer.disconnect();
+    onneed?.(true);
+  }, { rootMargin: '100% 0px' });
+  observer.observe(node);
+  return () => observer.disconnect();
+};
+
+/** Drop, hide and restore: the focus moves to the next row's title before this one fades out. */
 function remove(saved: Promise<boolean>) {
   const rows = [...(article?.parentElement?.querySelectorAll<HTMLElement>(':scope > .progress-row') ?? [])];
   const index = rows.findIndex((candidate) => candidate === article);
@@ -63,107 +81,122 @@ function remove(saved: Promise<boolean>) {
   });
 }
 
-function toggle(opened: boolean) {
-  open = opened;
-  if (opened) onexpand?.();
+function toggle() {
+  open = !open;
+  if (open) onneed?.(false);
 }
 </script>
 
 <!-- Show, season and episode pages are OG routes og hasn't all built yet, and resolve() only takes routes that exist. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
-{#snippet last(episode: NonNullable<ProgressRow['last']>)}
-  {episode.relative ? `${episode.relative} ` : ''}on {episode.date}.
-{/snippet}
-
-{#snippet action(visibility: 'rewatch' | 'drop' | 'hide', svg: string)}
-  <!-- The control's popover can't sit inside the h3 (its own heading would end the title's), so these follow it. -->
-  <span class={['action', visibility]}>
-  <VisibilityControl target={showTarget} action={visibility}
-    section={visibility === 'hide' ? 'progress_collected' : undefined}
-    variant="badge" placement="top" onsaving={visibility === 'rewatch' ? undefined : remove}>
-    <Icon {svg} />
-  </VisibilityControl>
-</span>
-{/snippet}
-
-
 <article bind:this={article} class="progress-row" aria-labelledby="progress-{row.id}"
-  out:removeCard|global={() => removedByAction}>
+  {@attach row.seasons ? undefined : near} out:removeCard|global={() => removedByAction}>
   <a class="poster" href={row.href} tabindex="-1" aria-hidden="true">
     {#if row.poster}
       <img src={row.poster} alt="" loading="lazy" decoding="async" />
     {:else}
       <span class="placeholder"></span>
     {/if}
-    {#if row.rewatchingSince}<RewatchingBadge date={row.rewatchingSince} />{/if}
   </a>
 
   <div class="main-info">
     <div class="show-title">
       <h3 class="title" id="progress-{row.id}"><a class="titles-link" href={row.href}>{row.title}</a></h3>
-      {#if kind === 'watched'}{@render action('rewatch', backward)}{/if}
-      <!-- Nothing to drop on the Dropped tab. -->
-      {#if type === 'watched'}
-        {@render action('drop', circleMinus)}
-      {:else if type === 'library'}
-        {@render action('hide', lightBan)}
-      {/if}
+      {#if row.year}<span class="year">{row.year}</span>{/if}
+      <ProgressStatus {row} {type} onremove={remove} />
     </div>
 
     <TickBar runs={row.ticks} percent={row.percent} {simple}
       label={`${row.title}: ${row.percent}% ${kind === 'watched' ? 'watched' : 'in your library'}`} />
 
-    {#if row.droppedOn}
-      <p class="dropped"><Icon svg={regularCircleMinus} />Dropped on {row.droppedOn}</p>
-    {/if}
-    {#if row.rewatchingSince}
-      <p class="rewatching"><Icon svg={solidBackward} /> Rewatching since {row.rewatchingSince}</p>
-    {/if}
-
-    <p class="summary">
+    <ul class="stats" aria-label="{row.title} counts">
       {#if kind === 'watched'}
-        Watched <strong>{count(row.completed)}</strong> of <strong>{count(row.aired)}</strong>
-        {plural(row.aired, 'episode')} for <strong>{count(row.plays)}</strong> {plural(row.plays, 'play')}
-        (<strong>{row.watchedTime}</strong>){row.left === 0 ? '. Great job, every episode is watched!' : ' which leaves '}{#if
-          row.left > 0
-        }<strong>{count(row.left)}</strong> {plural(row.left, 'episode')} (<strong>{row.leftTime}</strong>) left to
-          watch.{/if}
-        {#if row.last}<br class="wide-only" />Last watched {@render last(row.last)}{/if}
+        <li class="chip done">{count(row.completed)}/{count(row.aired)} watched</li>
+        <li class="chip">{count(row.plays)} {plural(row.plays, 'play')} · {row.watchedTime}</li>
+        {#if row.left > 0}
+          <li class="chip">{count(row.left)} left · {row.leftTime}</li>
+        {:else}
+          <li class="chip complete"><Icon svg={check} />All watched</li>
+        {/if}
       {:else}
-        <strong>{count(row.completed)}</strong> of <strong>{count(row.aired)}</strong> episodes are in your
-        library{row.left === 0 ? '. Great job, every episode is in your library!' : ' which leaves '}{#if
-          row.left > 0
-        }<strong>{count(row.left)}</strong> {plural(row.left, 'episode')} left to collect.{/if}
-        {#if row.last}Last added to library {@render last(row.last)}{/if}
+        <li class="chip done">{count(row.completed)}/{count(row.aired)} in your library</li>
+        {#if row.left > 0}
+          <li class="chip">{count(row.left)} to collect</li>
+        {:else}
+          <li class="chip complete"><Icon svg={check} />All in your library</li>
+        {/if}
       {/if}
-    </p>
+    </ul>
 
-    <ProgressSeasons controls="progress-panel-{row.id}" bind:open loading={expanding} ontoggle={toggle} />
+    {#if row.last}
+      <p class="last">
+        {kind === 'watched' ? 'Last watched' : 'Last added'}
+        {#if row.last.number}<a href={row.last.href}><b>{row.last.number}</b>{row.last.title ? ` ${row.last.title}` : ''}</a>{/if}
+        {row.last.relative ? `${row.last.relative} ` : ''}on {row.last.date}
+      </p>
+    {/if}
+
+    <p class="toggle-line">
+      <button type="button" class="toggle" aria-expanded={open} aria-controls="progress-seasons-{row.id}"
+        onclick={toggle}><Icon svg={caretDown} />{open ? 'Hide' : 'Show'}
+        {row.seasons ? `${row.seasons.length} ${plural(row.seasons.length, 'season')}` : 'seasons'}</button>
+      {#if open && loading}<span class="loading" role="status">Loading seasons…</span>{/if}
+    </p>
   </div>
 
-  <div class="panel" id="progress-panel-{row.id}" hidden={!open}>
-    {#if open && row.picker}
-      <ProgressPanel picker={row.picker} upNext={row.upNext} last={row.last} watchedTime={row.watchedTime}
-        leftTime={row.leftTime} {type} />
+  <div class="card">
+    {#if row.upNext}
+      {@const next = row.upNext}
+      <FanartCard href={next.href} title={next.title} number={next.number} image={next.image}
+        spoilerImage={next.spoilerImage} tags={next.tags}
+        icons={{
+          fill: quickIconFill({ state: overlay.state('episode', next.target.id, next.target.season), datePreferences }),
+          ratingTarget: { type: 'episode', id: next.target.id, title: next.target.title },
+          watchTarget: next.target,
+          collectionTarget: next.target,
+          rating: next.rating,
+          released: next.released,
+          listLabel: 'Add to list',
+        }} />
+    {:else if row.seasons || row.left === 0 || kind === 'library'}
+      <FanartCard href={row.href} title={row.status ?? row.title} image={row.fanart}
+        tags={[{ text: caughtUp, kind: kind === 'library' ? 'collect' : 'generic' }]}
+        icons={{
+          fill: quickIconFill({ state: overlay.state('show', row.id), airedEpisodes: row.aired, datePreferences }),
+          ratingTarget: { type: 'show', id: row.id, title: row.title },
+          watchTarget: showTarget,
+          rating: row.rating,
+        }} />
+    {:else}
+      <div class="card-waiting" aria-busy="true" aria-label="Loading the next episode">
+        {#if row.fanart}<img src={row.fanart} alt="" loading="lazy" decoding="async" />{/if}
+        <span class="bar"></span>
+      </div>
     {/if}
+  </div>
+
+  <div class="seasons" id="progress-seasons-{row.id}" hidden={!open}>
+    {#if open && row.seasons}<ProgressSeasonGrid seasons={row.seasons} />{/if}
   </div>
 </article>
 
 <style>
-/* The poster in 3 of 24 columns, the text in the rest. OG's fanart card column is gone: the panel's banner took its job. */
 .progress-row {
   display: grid;
-  grid-template-columns: calc((100% + var(--gutter)) / 8 - var(--gutter)) 1fr;
-  align-items: start;
-  column-gap: var(--gutter);
-  margin-block: var(--progress-row-margin);
+  grid-template-columns: var(--progress-poster-width) minmax(0, 1fr) var(--progress-card-width);
+  column-gap: var(--progress-row-gap);
+  row-gap: var(--progress-season-gap);
+  padding: var(--progress-row-padding);
+  border-block-start: 1px solid var(--color-separator);
+
+  &:first-of-type {
+    border-block-start: 0;
+  }
 }
 
 .poster {
-  position: relative;
   display: block;
-  grid-row: span 2;
 
   & :is(img, .placeholder) {
     display: block;
@@ -177,144 +210,213 @@ function toggle(opened: boolean) {
     background-image: var(--image-placeholder-poster);
     background-size: cover;
   }
-
-  /* OG pulled the badge 10px past the poster's corner here. */
-  & :global(.rewatching-badge) {
-    inset-inline-start: var(--progress-rewatching-badge-start);
-  }
 }
 
 .main-info {
+  display: grid;
+  grid-template-rows: auto auto auto auto 1fr;
+  align-content: start;
+  gap: var(--progress-main-gap);
   min-inline-size: 0;
   font-size: var(--font-size-progress-row);
 }
 
 .show-title {
-  margin: 0;
-  font-family: var(--font-headings);
-  font-size: var(--font-size-progress-title);
-  font-weight: var(--font-weight-headings);
-  line-height: var(--line-height-headings);
+  display: flex;
+  align-items: center;
+  gap: var(--progress-title-gap);
+  min-inline-size: 0;
 }
 
 .title {
-  display: inline-block;
-  max-inline-size: calc(100% - var(--progress-title-actions-width));
+  min-inline-size: 0;
   margin: 0;
-  font: inherit;
+  font-family: var(--font-headings);
+  font-size: var(--font-size-progress-title);
+  font-weight: var(--font-weight-headings-heavy);
+  line-height: var(--line-height-headings);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  vertical-align: top;
-}
 
-.action {
-  display: inline-block;
-  margin: 0 0 var(--progress-action-nudge) var(--progress-action-gap);
-  color: var(--color-progress-action);
-  font-size: 0.8em;
-  line-height: 1;
-  vertical-align: middle;
-  transition: color var(--transition-card);
+  & a {
+    color: var(--color-text);
+    text-decoration: none;
 
-  &:hover,
-  &:has(:global(:focus-visible)) {
-    color: var(--brand-primary);
-  }
-
-  /* The icon sits as it did in a plain inline button. */
-  & :global(.visibility-control) {
-    display: inline;
-  }
-
-  & :global(.visibility-trigger) {
-    display: inline-block;
-    vertical-align: top;
-  }
-
-  & :global(.visibility-trigger:focus-visible) {
-    outline: 2px solid var(--color-link);
-    outline-offset: 1px;
+    &:is(:hover, :focus-visible) {
+      text-decoration: underline;
+    }
   }
 }
 
-/* fa-sm */
-.drop {
-  font-size: 0.7em;
+.year {
+  flex: none;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-progress-year);
 }
 
-/* fa-sm fa-rotate-90 */
-.hide {
-  font-size: 0.7em;
-
-  & :global(.icon) {
-    rotate: 90deg;
-  }
+/* The percent takes its own width: a twelfth of this narrower column is too tight for "100%". */
+.main-info :global(.tick-bar) {
+  grid-template-columns: minmax(0, 1fr) auto;
 }
 
-.summary {
+.stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--progress-chip-gap);
   margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--progress-inline-gap);
+  padding: var(--progress-chip-padding);
+  border-radius: var(--radius-progress-chip);
+  background: var(--color-progress-chip);
+  color: var(--color-progress-chip-text);
+  font-family: var(--font-headings);
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-headings);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+
+  &.done {
+    background: var(--color-progress-watched-tint);
+    color: var(--color-progress-watched-text);
+  }
+
+  &.complete {
+    background: var(--color-progress-complete-tint);
+    color: var(--color-progress-episode-done);
+  }
+}
+
+.last {
+  margin: 0;
+  color: var(--color-text-muted);
   line-height: var(--line-height-progress-row);
 
-  & strong {
+  & a {
+    color: inherit;
+    text-decoration: none;
+
+    &:is(:hover, :focus-visible) {
+      color: var(--color-text);
+      text-decoration: underline;
+    }
+  }
+
+  & b {
     font-family: var(--font-headings);
     font-weight: var(--font-weight-headings-heavy);
   }
 }
 
-/* OG's `div.dropped` and `div.rewatching` keep the body's line height. */
-.dropped,
-.rewatching {
-  margin: 0 0 var(--space-lg-block);
-  color: var(--color-progress-rewatching);
-  font-style: italic;
-  line-height: var(--line-height-base);
+.toggle-line {
+  display: flex;
+  align-items: end;
+  gap: var(--progress-title-gap);
+  margin: 0;
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--progress-inline-gap);
+  min-block-size: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-progress-toggle-link);
+  font: var(--font-weight-headings) var(--font-size-progress-row) / var(--line-height-progress-row) var(
+    --font-headings
+  );
+  cursor: pointer;
 
   & :global(.icon) {
-    margin-block-end: var(--progress-status-icon-nudge);
-    vertical-align: middle;
+    font-size: var(--font-size-progress-toggle-icon);
+    transition: rotate 0.2s;
+  }
+
+  &[aria-expanded='true'] :global(.icon) {
+    rotate: 180deg;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-link);
+    outline-offset: 1px;
   }
 }
 
-.dropped :global(.icon) {
-  margin-inline-end: var(--progress-dropped-icon-gap);
+.loading {
+  color: var(--color-text-muted);
+  font-style: italic;
 }
 
-/* Its own row under the text, so opening it moves nothing above. */
-.panel {
+.card {
+  min-inline-size: 0;
+}
+
+.card-waiting {
+  display: grid;
+  background: var(--color-card-bg);
+
+  & img {
+    inline-size: 100%;
+    aspect-ratio: var(--ratio-fanart);
+    object-fit: cover;
+    opacity: var(--opacity-progress-loading-card);
+  }
+
+  &:not(:has(img))::before {
+    content: '';
+    aspect-ratio: var(--ratio-fanart);
+    background: var(--image-placeholder-fanart) center / cover;
+  }
+
+  & .bar {
+    block-size: var(--progress-card-bar);
+  }
+}
+
+/* Its own row under the text and the card, so opening it moves nothing above. */
+.seasons {
   grid-column: 2 / -1;
   min-inline-size: 0;
 }
 
 @media (width < 1200px) {
-  .wide-only {
-    display: none;
+  .progress-row {
+    grid-template-columns: var(--progress-poster-width-tablet) minmax(0, 1fr) var(--progress-card-width-tablet);
   }
 }
 
 /* OG hid the poster below desktop. */
 @media (width < 992px) {
   .progress-row {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr) var(--progress-card-width-tablet);
   }
 
   .poster {
     display: none;
   }
 
-  .panel {
+  .seasons {
     grid-column: 1 / -1;
   }
 }
 
 @media (width < 768px) {
   .progress-row {
-    row-gap: var(--space-lg-block);
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .action {
+  .toggle :global(.icon) {
     transition: none;
   }
 }

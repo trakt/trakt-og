@@ -501,8 +501,9 @@ const revealOnKey = (event: KeyboardEvent, id: number) => {
 }
 
 .people {
-  /* The hover cards are solid, not og's see-through tooltip. */
+  /* The hover cards draw their own solid box and arrow over og's see-through tooltip. */
   --opacity-tooltip: 1;
+  --color-tooltip-bg: transparent;
   display: flex;
   gap: var(--trending-comments-people-gap);
   margin: 0;
@@ -541,23 +542,40 @@ const revealOnKey = (event: KeyboardEvent, id: number) => {
 }
 
 /* An avatar's hover card: the title's fanart with the episode and title over it, then the commenter (VIP, likes and
-   replies) and their rating as a heart and number on its colour. It covers the tooltip's own padding, so it reads
-   apart from the black band behind it. */
+   replies) and their rating as a heart and number on its colour, with an arrow down to the avatar. It replaces the
+   tooltip's own box, so it reads apart from the black band behind it. */
 .peek {
+  position: relative;
   display: grid;
   inline-size: var(--trending-comments-peek-width);
   margin: var(--trending-comments-peek-bleed);
-  overflow: hidden;
+  border: 1px solid var(--color-season-hero-chrome-line);
   border-radius: var(--radius-trending-comments-peek);
   background-color: var(--color-trending-comments-peek-bg);
-  box-shadow: inset 0 0 0 1px var(--color-season-hero-chrome-line);
+  box-shadow: var(--shadow-trending-comments-peek);
   text-align: start;
+
+  /* The arrow down to the avatar: a square turned on its point, bordered on its two lower sides. */
+  &::after {
+    content: '';
+    position: absolute;
+    inset-block-end: calc(var(--trending-comments-peek-arrow) / -2 - 1px);
+    inset-inline-start: calc(50% - var(--trending-comments-peek-arrow) / 2);
+    inline-size: var(--trending-comments-peek-arrow);
+    block-size: var(--trending-comments-peek-arrow);
+    border: solid var(--color-season-hero-chrome-line);
+    border-width: 0 1px 1px 0;
+    background-color: var(--color-trending-comments-peek-bg);
+    rotate: 45deg;
+  }
 }
 
 .banner {
   position: relative;
   display: block;
   block-size: var(--trending-comments-peek-banner);
+  overflow: hidden;
+  border-radius: calc(var(--radius-trending-comments-peek) - 1px) calc(var(--radius-trending-comments-peek) - 1px) 0 0;
   background-color: var(--color-slider-bg);
 
   & img {

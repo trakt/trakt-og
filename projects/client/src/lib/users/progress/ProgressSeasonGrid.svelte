@@ -1,6 +1,6 @@
 <!--
-  An open progress row's seasons, each a block: a heading line with the season's name (linking to its page), its own
-  title when it has one, its stats and its percent; then a numbered square an episode. A square is purple once
+  An open progress row's seasons, a line a season across the whole row: the season's name (linking to its page) with
+  what's done and left under it, a numbered pill an episode, then its percent. A pill is purple once
   watched, the library's teal while it's in your library but not watched, outlined and pulsing for up next, and
   dashed until it airs. Each links to its episode, with a chart tooltip: the screenshot, the code and title, when it
   aired with its runtime and rating, then its status lines. Spoiler settings hide an unwatched episode's screenshot
@@ -9,12 +9,7 @@
 -->
 <script lang="ts">
 import { page } from '$app/state';
-import Stat from '$lib/components/stats/Stat.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import calendar from '$lib/icons/regular/calendar-lines.svg?raw';
-import clock from '$lib/icons/regular/clock.svg?raw';
-import check from '$lib/icons/trakt/check-thick.svg?raw';
-import collection from '$lib/icons/trakt/collection-thick.svg?raw';
 import { mediaSpoilers } from '$lib/settings/mediaSpoilers';
 import type { ProgressType } from './progressTypes.ts';
 import type { EpisodeSquare, ProgressSeason } from './toProgressSeasons.ts';
@@ -26,6 +21,14 @@ interface Props {
 
 const { seasons, type }: Props = $props();
 const library = $derived(type === 'library');
+
+/** Under the season's name: "11/18 · 2h 32m left", "All 18 watched" or "8 announced". */
+function summary(season: ProgressSeason): string {
+  if (season.announced !== undefined) return `${season.announced} announced`;
+  const done = library ? 'in your library' : 'watched';
+  if (season.complete) return `All ${season.aired} ${done}`;
+  return season.timeLeft ? `${season.count} · ${season.timeLeft} left` : `${season.count} ${done}`;
+}
 
 const spoilers = (square: EpisodeSquare) =>
   page.data.user
@@ -55,22 +58,11 @@ const spoilers = (square: EpisodeSquare) =>
 <ul class="seasons">
   {#each seasons as season (season.number)}
     <li class="season">
-      <div class="heading">
-        <a class="name" href={season.href}>{season.name}</a>
-        {#if season.title}<span class="title">{season.title}</span>{/if}
-        <span class="stats">
-          {#if season.announced !== undefined}
-            <Stat svg={calendar} value={String(season.announced)} noun="announced" />
-          {:else}
-            <Stat svg={library ? collection : check} tone={library ? 'collected' : 'watched'} value={season.count}
-              noun={library ? 'in library' : 'watched'} />
-            {#if season.timeLeft}<Stat svg={clock} value={season.timeLeft} noun="left" />{/if}
-          {/if}
-        </span>
-        {#if season.announced === undefined}
-          <span class={['percent', { complete: season.complete }]}>{season.percent}%</span>
-        {/if}
-      </div>
+      <p class="name">
+        <a href={season.href}>{season.name}</a>
+        {#if season.title}<span>{season.title}</span>{/if}
+        <span>{summary(season)}</span>
+      </p>
       <ul class="squares" aria-label="{season.name} episodes">
         {#each season.squares as square (square.code)}
           <li>
@@ -84,6 +76,7 @@ const spoilers = (square: EpisodeSquare) =>
           </li>
         {/each}
       </ul>
+      <span class={['percent', { complete: season.complete }]}>{season.announced === undefined ? `${season.percent}%` : ''}</span>
     </li>
   {/each}
 </ul>
@@ -97,59 +90,55 @@ ul {
 
 .seasons {
   display: grid;
-  gap: var(--progress-season-gap);
-  padding-block-start: var(--progress-season-gap);
-  border-block-start: 1px dashed var(--color-separator);
+  padding: var(--progress-band-padding);
+  border-radius: 0 0 var(--radius-progress-band) var(--radius-progress-band);
+  border-block-start: 1px solid var(--color-progress-season-rule);
+  background: var(--color-progress-band);
   font-size: var(--font-size-progress-row);
 }
 
 .season {
   display: grid;
-  gap: var(--progress-season-heading-gap);
+  grid-template-columns: var(--progress-season-name) minmax(0, 1fr) var(--progress-season-percent);
+  align-items: start;
+  gap: var(--progress-season-columns);
+  padding-block: var(--progress-season-padding);
 
   & + & {
-    padding-block-start: var(--progress-season-gap);
     border-block-start: 1px solid var(--color-progress-season-rule);
   }
 }
 
-.heading {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--space-stat) var(--space-stats);
-}
-
 .name {
-  color: var(--color-text);
-  font-family: var(--font-headings);
-  font-size: var(--font-size-progress-season-name);
-  font-weight: var(--font-weight-headings-heavy);
-  text-decoration: none;
-  white-space: nowrap;
+  display: grid;
+  margin: 0;
+  line-height: var(--line-height-progress-season-name);
 
-  &:is(:hover, :focus-visible) {
-    color: var(--color-progress-watched-text);
-    text-decoration: underline;
+  & a {
+    color: var(--color-text);
+    font-family: var(--font-headings);
+    font-size: var(--font-size-progress-season-name);
+    font-weight: var(--font-weight-headings-heavy);
+    text-decoration: none;
+
+    &:is(:hover, :focus-visible) {
+      color: var(--color-progress-watched-text);
+      text-decoration: underline;
+    }
+  }
+
+  & span {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-small);
+    font-variant-numeric: tabular-nums;
   }
 }
 
-.title {
-  margin-inline-start: calc(var(--space-stat) - var(--space-stats));
-  color: var(--color-text-muted);
-  font-family: var(--font-headings);
-}
-
-.stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-stat) var(--space-stats);
-}
-
 .percent {
-  margin-inline-start: auto;
-  font: var(--font-weight-headings-heavy) var(--font-size-progress-season-percent) / 1 var(--font-headings);
+  font: var(--font-weight-headings) var(--font-size-progress-season-percent) / var(--line-height-progress-season-name)
+    var(--font-headings);
   font-variant-numeric: tabular-nums;
+  text-align: end;
 
   &.complete {
     color: var(--color-progress-watched-text);
@@ -166,7 +155,7 @@ ul {
   display: grid;
   place-items: center;
   inline-size: var(--progress-square);
-  block-size: var(--progress-square);
+  block-size: var(--progress-square-height);
   border-radius: var(--radius-progress-square);
   background: var(--color-progress-square);
   color: var(--color-text-muted);
@@ -268,6 +257,18 @@ ul {
     inline-size: var(--genre-tip-dash);
     block-size: var(--genre-tip-dash-height);
     background: var(--dash);
+  }
+}
+
+/* A narrow row: the pills take their own line under the name and percent. */
+@media (width < 768px) {
+  .season {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .squares {
+    grid-column: 1 / -1;
+    grid-row: 2;
   }
 }
 

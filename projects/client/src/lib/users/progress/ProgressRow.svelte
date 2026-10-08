@@ -3,10 +3,12 @@
   bar, the counts as stats, then View seasons beside a chip linking the episode you last watched; then the up-next card,
   og's fanart card for the next episode with its quick icons, or the show's once every episode is done. The poster and
   the card are the same height, and the text about matches them. View seasons reads the show's catalog (`onneed`) and
-  opens the season list across the whole row, under the poster and the card (`ProgressSeasonGrid`). A drop or restore
+  opens the season list across the whole row, under the poster and the card (`ProgressSeasonGrid`); once read, the
+  show's bar splits into its seasons on hover, each with a chart tip. A drop or restore
   fades the row out and moves the focus on.
 -->
 <script lang="ts">
+import { SvelteSet } from 'svelte/reactivity';
 import FanartCard from '$lib/components/media/FanartCard.svelte';
 import { quickIconFill } from '$lib/components/media/quickIconFill';
 import { removeCard } from '$lib/components/media/removeCard';
@@ -40,6 +42,11 @@ interface Props {
 const { row, type, simple, datePreferences, onneed, loading = false }: Props = $props();
 
 let open = $state(false);
+// Which seasons show their episodes: View all sets `all`, and each season's own toggle flips it for that season.
+let all = $state(false);
+const flipped = new SvelteSet<number>();
+const expanded = (season: number) => all !== flipped.has(season);
+const allExpanded = $derived(open && all && flipped.size === 0);
 let article = $state<HTMLElement>();
 // Read only when the row leaves: paging and filtering aren't removals.
 let removedByAction = false;
@@ -71,10 +78,52 @@ function toggle() {
   open = !open;
   if (open) onneed?.();
 }
+
+/** View all: the seasons open with every season's episodes; again, the episodes fold away. */
+function toggleAll() {
+  const show = !allExpanded;
+  all = show;
+  flipped.clear();
+  if (show && !open) toggle();
+}
+
+function toggleSeason(season: number) {
+  if (flipped.has(season)) flipped.delete(season);
+  else flipped.add(season);
+}
 </script>
 
 <!-- Show, season and episode pages are OG routes og hasn't all built yet, and resolve() only takes routes that exist. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
+
+<!-- Once the seasons are read, the show's bar splits into them on hover, each with its breakdown. The season list
+     carries the same numbers for the keyboard and screen readers. -->
+{#snippet sections()}
+  {#each row.seasons?.filter(({ aired }) => aired > 0) ?? [] as season (season.number)}
+    <Tooltip variant="chart">
+      {#snippet trigger(tooltip)}
+        <span class="section" style:flex-grow={season.aired} aria-hidden="true" {...tooltip}></span>
+      {/snippet}
+      <span class="tip">
+        <span class="tip-label">{season.name}</span>
+        <span class="tip-big">{season.percent}%</span>
+        <span class="tip-line" style:--dash="var(--color-progress-tip-watched)">{season.count} watched</span>
+        {#if season.timeLeft}
+          <span class="tip-line" style:--dash="var(--color-progress-tip-time)">{season.timeLeft} left</span>
+        {/if}
+        {#if season.collected > 0}
+          <span class="tip-line" style:--dash="var(--color-progress-tip-collected)">{season.collected} in your library</span>
+        {/if}
+        {#if season.upNext}
+          <span class="tip-line" style:--dash="var(--color-progress-tip-next)">Up next {season.upNext}</span>
+        {/if}
+        {#if season.lastWatched}
+          <span class="tip-line" style:--dash="var(--color-progress-tip-muted)">Last watched {season.lastWatched}</span>
+        {/if}
+      </span>
+    </Tooltip>
+  {/each}
+{/snippet}
 
 <article bind:this={article} class="progress-row" aria-labelledby="progress-{row.id}"
   out:removeCard|global={() => removedByAction}>
@@ -94,7 +143,7 @@ function toggle() {
     </div>
 
     <TickBar runs={row.ticks} percent={row.percent} {simple}
-      label={`${row.title}: ${row.percent}% watched`} />
+      label={`${row.title}: ${row.percent}% watched`} overlay={row.seasons ? sections : undefined} />
 
     <p class="stats">
       <Stat svg={check} tone="watched" value="{count(row.completed)}/{count(row.aired)}" noun="watched"
@@ -110,15 +159,12 @@ function toggle() {
     <div class="actions">
       <button type="button" class="toggle" aria-expanded={open} aria-controls="progress-seasons-{row.id}"
         onclick={toggle}>{open ? 'Hide seasons' : 'View seasons'}<Icon svg={caretDown} /></button>
+      <button type="button" class="toggle" aria-pressed={allExpanded} onclick={toggleAll}>
+        {allExpanded ? 'Hide all' : 'View all'}<Icon svg={caretDown} /></button>
       {#if row.last}
-        {@const verb = 'Last watched'}
-        <Tooltip text={`${verb} ${row.last.number ?? ''}${row.last.title ? ` ${row.last.title}` : ''}\n${row.last.date}`}>
-          {#snippet trigger(tooltip)}
-            <a class="last" href={row.last?.href ?? row.href} {...tooltip}><Icon svg={history} />{verb}
-              {#if row.last?.number}<b>{row.last.number}</b>{row.last.title ? ` ${row.last.title}` : ''}{/if}
-              · {row.last?.relative ?? row.last?.date}</a>
-          {/snippet}
-        </Tooltip>
+        <a class="last" href={row.last.href ?? row.href}><Icon svg={history} />Last watched
+          {#if row.last.number}<b>{row.last.number}</b>{row.last.title ? ` ${row.last.title}` : ''}{/if}
+          · {row.last.relative ?? row.last.date}</a>
       {/if}
       {#if open && loading}<span class="loading" role="status">Loading seasons…</span>{/if}
     </div>
@@ -151,7 +197,7 @@ function toggle() {
   </div>
 
   <div class="seasons" id="progress-seasons-{row.id}" hidden={!open}>
-    {#if open && row.seasons}<ProgressSeasonGrid seasons={row.seasons} />{/if}
+    {#if open && row.seasons}<ProgressSeasonGrid seasons={row.seasons} id={row.id} {expanded} ontoggle={toggleSeason} {simple} />{/if}
   </div>
 </article>
 
@@ -322,7 +368,7 @@ function toggle() {
   cursor: pointer;
 
   &:is(:hover, :focus-visible),
-  &[aria-expanded='true'] {
+  &:is([aria-expanded='true'], [aria-pressed='true']) {
     border-color: var(--color-control-border-hover);
     background: var(--color-control-hover-bg);
   }
@@ -332,7 +378,7 @@ function toggle() {
     transition: rotate 0.2s;
   }
 
-  &[aria-expanded='true'] :global(.icon) {
+  &:is([aria-expanded='true'], [aria-pressed='true']) :global(.icon) {
     rotate: 180deg;
   }
 }
@@ -343,7 +389,69 @@ function toggle() {
 }
 
 .card {
+  /* The card's icon bar matched the dark row, so it's lifted off it here. */
+  --color-card-bg: var(--color-progress-card-bg);
+
   min-inline-size: 0;
+}
+
+/* A season's stretch of the show's bar: on hover, notches split the seasons and the others dim. */
+.section {
+  position: relative;
+  flex: 1 1 0;
+  min-inline-size: 0;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transition: background-color 0.15s;
+  }
+}
+
+:global(.overlay:has(.section:hover)) .section {
+  & + .section {
+    box-shadow: inset var(--progress-section-notch) 0 0 var(--color-surface);
+  }
+
+  &:not(:hover)::after {
+    background: var(--color-progress-section-dim);
+  }
+}
+
+/* The chart tooltip's body, like the dashboard's genre and minutes tips. */
+.tip {
+  display: grid;
+  text-align: start;
+}
+
+.tip-label {
+  color: var(--color-chart-tooltip-muted);
+  font-size: var(--font-size-genre-count);
+  text-transform: uppercase;
+}
+
+.tip-big {
+  font-size: var(--font-size-genre-share);
+  font-weight: var(--font-weight-headings-heavy);
+  line-height: var(--line-height-genre-share);
+}
+
+.tip-line {
+  display: flex;
+  align-items: center;
+  gap: var(--space-genre-key-top);
+  font-family: var(--font-body);
+  font-size: var(--font-size-genre-key-count);
+  font-weight: normal;
+
+  &::before {
+    content: '';
+    flex: none;
+    inline-size: var(--genre-tip-dash);
+    block-size: var(--genre-tip-dash-height);
+    background: var(--dash);
+  }
 }
 
 /* The season list, across the whole row under the poster and the card. */
@@ -377,7 +485,8 @@ function toggle() {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .toggle :global(.icon) {
+  .toggle :global(.icon),
+  .section::after {
     transition: none;
   }
 }

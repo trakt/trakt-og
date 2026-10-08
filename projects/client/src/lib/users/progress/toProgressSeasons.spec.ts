@@ -129,9 +129,12 @@ describe('toProgressSeasons', () => {
       ]);
     });
 
-    it('should give each tooltip its air date, runtime and rating, then its status lines', () => {
+    it('should give each tooltip its air date, runtime and rating, then its plays and last watch', () => {
       expect(squares.map(({ meta, lines }) => ({ meta, lines }))).toEqual([
-        { meta: 'Sep 1, 2026 · 22m · 81%', lines: [{ text: 'Watched Sep 29, 2026 · 3 plays', tone: 'watched' }] },
+        {
+          meta: 'Sep 1, 2026 · 22m · 81%',
+          lines: [{ text: 'Watched 3 times', tone: 'watched' }, { text: 'Last watched Sep 29, 2026', tone: 'time' }],
+        },
         { meta: 'Sep 2, 2026 · 22m · 81%', lines: [{ text: 'Up next', tone: 'next' }] },
         { meta: 'Sep 3, 2026 · 22m · 81%', lines: [{ text: 'Not watched', tone: 'muted' }] },
         { meta: undefined, lines: [{ text: 'Airs Jan 14, 2027', tone: 'muted' }] },

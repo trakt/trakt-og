@@ -2196,6 +2196,7 @@
   --progress-poster-width-tablet: 96px;
   --progress-card-width: 240px;
   --progress-card-width-tablet: 200px;
+  --color-progress-card-bg: light-dark(#1d1d1d, #2c2c2c); /* the up-next card's icon bar, off the dark row */
   --progress-row-gap: 24px;
   --progress-row-padding: 24px 0;
   --progress-main-gap: 14px;
@@ -2237,17 +2238,22 @@
   --progress-band-padding: 4px 14px 8px;
   --progress-season-percent: 44px; /* fits 100%, so every season's bar ends at the same point */
   --progress-season-columns: 18px;
-  --progress-season-padding: 10px;
+  --progress-season-padding: 6px;
   --line-height-progress-season-name: 1.3;
   --color-progress-season-rule: light-dark(#eee, #2a2a2a);
   --font-size-progress-season-name: 15px;
-  --progress-season-head-gap: 6px; /* the name and stats line to the pills */
+  --progress-season-head-gap: 2px; /* the name and stats line to the bar */
   --progress-season-title-gap: 8px; /* the name to a named season's title */
   --progress-season-stats-gap: 2px;
   --progress-season-stat-gap: 14px;
-  --progress-season-bar-height: 6px; /* the season's small bar, out to its percent */
-  --progress-season-bar-min: 40px;
+  --progress-season-bar-height: 8px; /* the season's small bar, out to its percent */
+  --progress-season-fold: 22px; /* a season's episodes toggle */
+  --progress-season-stats-offset: 6px; /* the stats from the name */
+  --progress-season-episodes-gap: 10px; /* the bar to the episode pills */
   --radius-progress-season-bar: 3px;
+  --progress-section-notch: 3px; /* between seasons on the show's bar, on hover */
+  --color-progress-section-dim: light-dark(rgb(255 255 255 / 0.55), rgb(29 29 29 / 0.6)); /* the other seasons */
+  --color-progress-percent-done: light-dark(var(--brand-primary), #ff4f56); /* a finished season, the bars' red */
   --font-size-progress-season-stat-icon: 13px;
   --font-size-progress-season-stat-number: 13px;
   --font-size-progress-season-stat-noun: 12px;
@@ -2271,6 +2277,7 @@
   --color-progress-tip-watched: #b583cf; /* the watched purple, lifted for the black tooltip */
   --color-progress-tip-collected: var(--brand-quaternary);
   --color-progress-tip-next: var(--brand-primary);
+  --color-progress-tip-time: var(--brand-secondary); /* last watched, the stats' blue */
   --color-progress-tip-muted: #666;
 
   /* A label over a poster's bottom-left corner (`.posters h4.bottom`) */

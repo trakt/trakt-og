@@ -1,3 +1,5 @@
+import type { TickRun } from '../../components/media/TickRun.ts';
+import { tickRuns } from '../../components/media/tickRuns.ts';
 import type { DatePreferences } from '../../settings/DatePreferences.ts';
 import { formatDate } from '../../utils/formatDate.ts';
 import { formatRuntime } from '../../utils/formatRuntime.ts';
@@ -9,7 +11,7 @@ export type EpisodeSquareState = 'watched' | 'not-watched' | 'up-next' | 'not-ai
 /** A status line in a square's tooltip, after a dash in its meaning color. */
 export type EpisodeTipLine = {
   readonly text: string;
-  readonly tone: 'watched' | 'collected' | 'next' | 'muted';
+  readonly tone: 'watched' | 'collected' | 'next' | 'time' | 'muted';
 };
 
 /** One numbered square in an open season's grid. */
@@ -50,6 +52,14 @@ export type ProgressSeason = {
   readonly timeLeft?: string;
   /** Announced episodes, while nothing has aired. */
   readonly announced?: number;
+  /** The season's tick bar: its aired episodes in order, done or not. */
+  readonly ticks: readonly TickRun[];
+  /** Aired episodes in your library but not watched. */
+  readonly collected: number;
+  /** The up-next episode's code, when it's in this season. */
+  readonly upNext?: string;
+  /** The latest watch in the season, as a date. */
+  readonly lastWatched?: string;
   readonly squares: readonly EpisodeSquare[];
 };
 
@@ -103,9 +113,8 @@ function toSquare(
     'up-next': 'up next',
     'not-aired': `airs ${airs}`,
   }[state];
-  const playsText = plays > 1 ? ` · ${plays} plays` : '';
   const statusLine: EpisodeTipLine = {
-    watched: { text: `Watched${doneAt ? ` ${doneAt}` : ''}`, tone: 'watched' } as const,
+    watched: { text: plays > 1 ? `Watched ${plays} times` : 'Watched', tone: 'watched' } as const,
     'not-watched': { text: 'Not watched', tone: 'muted' } as const,
     'up-next': { text: 'Up next', tone: 'next' } as const,
     'not-aired': { text: `Airs ${airs}`, tone: 'muted' } as const,
@@ -131,10 +140,23 @@ function toSquare(
         .filter(Boolean).join(' · ')
       : undefined,
     lines: [
-      { ...statusLine, text: statusLine.text + (state === 'watched' ? playsText : '') },
+      statusLine,
+      // A rewatch's episode not yet seen again still shows when you last did, and how often before.
+      ...(doneAt
+        ? [{
+          text: `Last watched ${doneAt}${!done && plays > 0 ? ` · ${plays} ${plays === 1 ? 'play' : 'plays'}` : ''}`,
+          tone: 'time' as const,
+        }]
+        : []),
       ...(collected ? [{ text: 'In your library', tone: 'collected' as const }] : []),
     ],
   };
+}
+
+/** The season's latest watch, as a date. */
+function lastDay(episodes: readonly Episode[], datePreferences: DatePreferences): string | undefined {
+  const at = episodes.reduce<string | undefined>((max, { at }) => (at && (!max || at > max) ? at : max), undefined);
+  return at && Date.parse(at) !== UNKNOWN_DATE ? formatDate(at, { ...datePreferences, format: 'll' }) : undefined;
 }
 
 /** Maps an open row's seasons onto their headings and squares, a square an episode, aired or announced. */
@@ -160,6 +182,10 @@ export function toProgressSeasons(params: ToProgressSeasonsParams): readonly Pro
       aired: season.aired,
       timeLeft: left > 0 ? formatRuntime(season.minutesLeft) : undefined,
       announced: season.aired === 0 ? season.upcoming.length : undefined,
+      ticks: tickRuns(episodes.filter(({ aired }) => aired).map(({ done }) => done)),
+      collected: episodes.filter(({ aired, done, collected }) => aired && !done && collected).length,
+      upNext: params.next?.season === season.number ? code(season.number, params.next.number) : undefined,
+      lastWatched: lastDay(episodes, params.datePreferences),
       squares: episodes.map((episode) => toSquare({ ...params, season: season.number, episode })),
     };
   });

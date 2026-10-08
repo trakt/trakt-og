@@ -2,10 +2,12 @@
   OG's progress bar with ticks: one tick per
   aired episode, lit once it's done, and the percent in the last grid column. `simple` is the "Simple Progress
   Bars" setting, which drew the done share as one fill from the left. `size="season"` is the thin bar under a
-  season on the progress page.
+  season on the progress page. `overlay` lays hover targets over the track (the progress page's season sections and
+  episode scrub); it's positioned over the track and nothing else.
     <TickBar runs={[{ done: true, count: 8 }, { done: false, count: 2 }]} percent={80} label="Breaking Bad" />
 -->
 <script lang="ts">
+import type { Snippet } from 'svelte';
 import type { TickRun } from './TickRun.ts';
 
 interface Props {
@@ -16,15 +18,17 @@ interface Props {
   label: string;
   simple?: boolean;
   size?: 'show' | 'season';
+  overlay?: Snippet;
 }
 
-const { runs, percent, label, simple = false, size = 'show' }: Props = $props();
+const { runs, percent, label, simple = false, size = 'show', overlay }: Props = $props();
 
 const total = $derived(runs.reduce((sum, run) => sum + run.count, 0));
 const done = $derived(runs.reduce((sum, run) => sum + (run.done ? run.count : 0), 0));
 </script>
 
 <div class={['tick-bar', size]}>
+  <div class="lane">
   <div
     class={['track', { full: percent >= 100, simple }]}
     role="progressbar"
@@ -41,6 +45,8 @@ const done = $derived(runs.reduce((sum, run) => sum + (run.done ? run.count : 0)
       {/each}
     {/if}
   </div>
+  {#if overlay}<div class="overlay">{@render overlay()}</div>{/if}
+  </div>
   <span class="percent" aria-hidden="true">{percent}%</span>
 </div>
 
@@ -51,6 +57,18 @@ const done = $derived(runs.reduce((sum, run) => sum + (run.done ? run.count : 0)
   grid-template-columns: calc((100% + var(--gutter)) * 11 / 12 - var(--gutter)) 1fr;
   align-items: start;
   column-gap: var(--tick-bar-percent-gap);
+}
+
+.lane {
+  position: relative;
+  min-inline-size: 0;
+}
+
+/* Over the track only: the lane's margins are the track's. */
+.overlay {
+  position: absolute;
+  inset: var(--tick-bar-margin) 0;
+  display: flex;
 }
 
 .track {

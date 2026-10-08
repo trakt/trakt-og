@@ -111,7 +111,16 @@ const bars = barcode.reduce<ReadonlyArray<{ x: number; width: number }>>(
               <rect width="400" height="250" filter="url(#tabloid-grain)" opacity="0.35" />
               <g transform="rotate(-10 80 50)">
                 <rect x="20" y="30" width="130" height="38" fill="none" stroke="#ed1c24" stroke-width="4" />
-                <text x="85" y="57" text-anchor="middle" class="stamp" font-size="20" fill="#ed1c24">ACTUAL PHOTO</text>
+                <text
+                  x="85"
+                  y="57"
+                  text-anchor="middle"
+                  textLength="112"
+                  lengthAdjust="spacingAndGlyphs"
+                  class="stamp"
+                  font-size="20"
+                  fill="#ed1c24"
+                >ACTUAL PHOTO</text>
               </g>
             </svg>
             <figcaption>
@@ -362,6 +371,7 @@ figure {
   }
 }
 
+/* textLength holds the stamp to its box even while Anton loads or if it never does. */
 .stamp {
   font-family: var(--font-tabloid-headline);
 }

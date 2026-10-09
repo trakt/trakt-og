@@ -41,7 +41,8 @@ const longDate = (date: string) =>
 
 <div class={['calendar-month', artwork]}>
   <div class="weekdays" aria-hidden="true">
-    {#each { length: 7 } as _, i (i)}<span class={{ today: i === todayColumn }}>{weekday(i, 'short')}</span>{/each}
+    {#each { length: 7 } as _, i (i)}<span class={{ today: i === todayColumn }}><span class="long">{weekday(i, 'long')}</span
+      ><span class="short">{weekday(i, 'short')}</span></span>{/each}
   </div>
   <div class="grid">
     {#each weeks as week (week.at(0)?.date)}
@@ -70,16 +71,32 @@ const longDate = (date: string) =>
 
 <style>
 .weekdays {
+  container-type: inline-size;
   position: sticky;
   inset-block-start: var(--header-height);
   z-index: 4;
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
   block-size: var(--calendar-weekdays-height);
-  background-color: var(--color-date-separator);
+  background-color: var(--color-calendar-weekdays);
   border-block-end: 1px solid var(--color-frame-border);
 
-  & span {
+  /* Full names when every column has room for "Wednesday". */
+  & .long {
+    display: none;
+  }
+
+  @container (width >= 760px) {
+    & .long {
+      display: inline;
+    }
+
+    & .short {
+      display: none;
+    }
+  }
+
+  & > span {
     align-self: center;
     padding-inline: var(--space-sm-inline);
     color: var(--color-sidebar-label);
@@ -147,7 +164,7 @@ const longDate = (date: string) =>
   min-block-size: var(--calendar-month-day-height);
   margin: 0;
   padding: 0 var(--space-sm-inline);
-  background-color: inherit;
+  background-color: var(--color-date-separator);
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-headings-heavy);
   line-height: 1;

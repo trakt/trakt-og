@@ -69,7 +69,6 @@ describe('describeSitting', () => {
       expect(damien.posters.titles.map(({ name }) => name)).toEqual(['Lioness', 'Lanterns']);
       expect(damien.tile).toEqual({
         link: { text: 'Lioness 3x02', href: '/shows/lioness/seasons/3/episodes/2' },
-        more: '+1 show',
         still: { href: '/shows/lioness/seasons/3/episodes/2', path: expect.stringContaining('/167/187/fanarts/') },
         heart: null,
       });
@@ -95,7 +94,6 @@ describe('describeSitting', () => {
 
       expect(texts(kristin.head.links)).toEqual(["That '70s Show", 'Home Improvement']);
       expect(kristin.head.more).toBe('+1 show');
-      expect(kristin.tile.more).toBe('+2 shows');
       expect(kristin.count).toBe('3 episodes');
       expect(kristin.posters.titles).toHaveLength(3);
       expect(kristin.posters.more).toBe(0);
@@ -214,7 +212,6 @@ describe('describeSitting', () => {
 
     it('should lead a tile with her newest episode', () => {
       expect(day.tile.link?.text).toBe('Saved by the Bell 1x06');
-      expect(day.tile.more).toBe('+26 shows');
       expect(day.tile.still.href).toBe('/shows/saved-by-the-bell/seasons/1/episodes/6');
     });
 
@@ -264,12 +261,11 @@ describe('describeSitting', () => {
       expect(of('Kristin', 1).count).toBe('33 episodes · 27 shows');
     });
 
-    it('should count episodes and movies, and call the rest "more"', () => {
+    it('should count episodes and movies', () => {
       const mixed = sittingOf(byId(13, 0, 15));
 
       expect(mixed.count).toBe('2 episodes, 1 movie');
       expect(mixed.head.more).toBe('+1 show');
-      expect(mixed.tile.more).toBe('+2 more');
     });
 
     it('should fold three or more ratings into one button, and their hearts into its list', () => {

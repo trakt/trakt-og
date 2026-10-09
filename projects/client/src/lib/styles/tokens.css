@@ -576,8 +576,6 @@
   --color-social-done: light-dark(var(--brand-success), #6cc96c);
   --color-social-on-image: #fff;
   --color-social-pill-on-image: rgb(0 0 0 / 0.6);
-  --color-social-chip-on-image: rgb(0 0 0 / 0.45);
-  --color-social-chip-border-on-image: rgb(255 255 255 / 0.25);
   --color-social-bar-track: rgb(255 255 255 / 0.25);
   --color-social-still: light-dark(#ccc, #333); /* behind a still that has no image */
   --social-tile-shade: linear-gradient(to top, rgb(0 0 0 / 0.9), rgb(0 0 0 / 0.1) 75%);

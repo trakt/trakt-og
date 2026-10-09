@@ -1,6 +1,7 @@
 <!--
-  The dashboard's Social Feed, under a single Following pill tab: four tiles (who's watching now, then everyone else's
-  latest sitting), the Earlier timeline of sittings by day, and a Comments column when there are any. Pass the
+  The dashboard's Social Feed, under a single Following pill tab: four tiles (who's watching now, then the title
+  everyone else watched last), the Earlier timeline of sittings by day, which keeps the rest of each tile's sitting, and
+  a Comments column when there are any. Pass the
   unawaited `fetchSocialFeed` promise from the loader, so the page streams in and this panel spins until it lands.
   After it renders, the browser asks what the most recently active members are watching, every 2 minutes while the tab
   is visible. Narrow screens get the tiles as a sideways swipe row.

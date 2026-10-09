@@ -19,7 +19,13 @@ import type { ListSelection } from './listSelection.ts';
 import SearchField from './SearchField.svelte';
 
 /** A service's logo tile before its name; `heart` is All Favorites. */
-type OptionTile = { readonly logo?: string; readonly color?: string; readonly heart?: boolean };
+type OptionTile = {
+  readonly logo?: string;
+  readonly color?: string;
+  readonly heart?: boolean;
+  /** The store a channel is sold through ("on Apple TV"), as its badge image at the row's end. */
+  readonly channel?: string;
+};
 
 interface Props {
   /** "Genres": in the button before the picks, and the menu's name. */
@@ -114,8 +120,9 @@ function toggle(value: string, as: 'include' | 'exclude') {
             <button type="button" class="name" {disabled} onclick={() => toggle(option.value, 'include')}
             >{#if tile}<span class={['tile', { heart: tile.heart }]} style:--service-color={tile.color}
                 >{#if tile.heart}<Icon svg={heart} />{:else if tile.logo}<img src={tile.logo} alt="" />{:else}{option
-                    .label.charAt(0)}{/if}</span>{/if}<span class="label">{option.label}</span>{#if option.tag}<span
-                  class="tag">{option.tag}</span>{/if}</button>
+                    .label.charAt(0)}{/if}</span>{/if}<span class="label">{option.label}</span>{#if tile?.channel}<span class="tag channel"
+                  style:--service-color={tile.color}><img src={tile.channel} alt={option.tag ?? ''} /></span>{:else if
+                  option.tag}<span class="tag">{option.tag}</span>{/if}</button>
             {#if excludable}
               <button type="button" class="toggle leave" aria-pressed={leftOut} aria-label="Leave out {option.label}"
                 {disabled} onclick={() => toggle(option.value, 'exclude')}><Icon svg={leftOut ? minusSolid : minusIcon} /></button>
@@ -234,7 +241,6 @@ function toggle(value: string, as: 'include' | 'exclude') {
   place-items: center;
   inline-size: var(--service-mini-width);
   block-size: var(--service-mini-height);
-  margin-inline-end: var(--space-sm-inline);
   padding: var(--service-mini-padding);
   border: 1px solid var(--color-menu-border);
   border-radius: var(--radius-service-mini);
@@ -309,8 +315,9 @@ li {
   }
 }
 
-.picker .name {
+.picker .rows li .name {
   justify-content: flex-start;
+  gap: var(--space-sm-inline);
   padding-inline: var(--space-xs-inline);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -341,11 +348,26 @@ li {
 }
 
 .tag {
+  flex: none;
   margin-inline-start: auto;
   padding: 1px 4px;
   border-radius: var(--radius-sm);
   background-color: var(--color-filter-option-tag-bg);
   color: var(--color-filter-option-tag);
   font-size: var(--font-size-small);
+
+  /* The watch-now filter's store badge: the store's logo on the service's color. */
+  &.channel {
+    display: inline-flex;
+    align-items: center;
+    block-size: var(--service-tag-height);
+    padding: var(--space-service-tag);
+    border-radius: var(--radius-search-kbd);
+    background-color: var(--service-color);
+
+    & img {
+      block-size: 100%;
+    }
+  }
 }
 </style>

@@ -155,8 +155,6 @@ const longDate = (date: string) =>
     border-inline-end: 0;
   }
 
-
-
   /* Narrow cards: smaller captions, and the network left to the card's link. */
   & :global(.fanart .titles h3) {
     font-size: var(--font-size-base);

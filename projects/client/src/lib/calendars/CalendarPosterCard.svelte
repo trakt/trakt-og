@@ -45,7 +45,7 @@ const spoiler = $derived(icons.collectionTarget ?? icons.watchTarget ?? icons.ra
     <!-- Kept for movies too, blank, so every card's title starts on the same line. -->
     <p class="when">{[time, network].filter(Boolean).join(' · ') || '\u00a0'}</p>
     <h3>
-      {#if entry.number}<a class="number" href={entry.href}>{entry.number}</a>{' '}{/if}<MediaSpoiler
+      {#if entry.number}<a class="number" href={entry.href}>{entry.number}&nbsp;</a>{/if}<MediaSpoiler
         target={spoiler} kind="title" inline><a href={entry.href}>{entry.title}</a></MediaSpoiler>{#if entry.year}<span
           class="year"> {entry.year}</span>{/if}
     </h3>

@@ -392,7 +392,7 @@ afterNavigate(({ to }) => {
                   <span class="title">{row.title}</span>
                   <span class="pills">
                     <span class="pill type-name">{row.type}</span>
-                    {#if row.tag}<span class="pill">{row.tag}</span>{/if}
+                    {#if row.tag}<span class="pill year">{row.tag}</span>{/if}
                     {#each row.genres ?? [] as genre (genre)}<span class="pill genre">{genre}</span>{/each}
                   </span>
                 </span>
@@ -859,7 +859,7 @@ input {
   font-weight: var(--font-weight-headings);
 }
 
-/* Type, year and up to three genres as glass pills. The type is the one tinted red. */
+/* Type, year and up to three genres as pills: the type solid red, the year light gray, the genres glass. */
 .pills {
   display: flex;
   flex-wrap: wrap;
@@ -879,9 +879,15 @@ input {
 }
 
 .type-name {
-  background-color: var(--color-search-type-bg);
-  box-shadow: inset 0 0 0 1px var(--color-search-type-line);
-  color: var(--color-search-type);
+  background-color: var(--brand-primary);
+  box-shadow: none;
+  color: var(--color-text-inverse);
+}
+
+.year {
+  background-color: var(--color-search-year-bg);
+  box-shadow: none;
+  color: var(--color-search-year-text);
 }
 
 .genre {

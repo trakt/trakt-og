@@ -62,7 +62,8 @@ const heat = (date: string) => `calc(var(--mini-month-heat-max) * ${(counts.get(
 
 <style>
 .mini-month {
-  inline-size: 100%;
+  /* The cell spacing hangs off both ends, so the outer cells line up with the controls above. */
+  inline-size: calc(100% + 2 * var(--mini-month-gap));
   border-collapse: separate;
   border-spacing: var(--mini-month-gap);
   margin: calc(-1 * var(--mini-month-gap));

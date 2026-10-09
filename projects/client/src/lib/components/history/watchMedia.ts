@@ -69,13 +69,16 @@ function withoutPlay(dates: readonly string[], at: string): string[] {
 export async function watchMedia(params: Params): Promise<boolean> {
   const { target, watchedAt, force = false, play, overlay, request, notify, now = () => new Date() } = params;
   const remove = watchedAt === null;
+  const only = target.type === 'season' ? target.onlyEpisodeIds : undefined;
   let rollback = () => {};
   try {
     const episodes = target.type === 'episode'
       ? await episodeContext(params)
-      : target.type === 'movie' || remove
+      : target.type === 'movie' || (remove && !only)
       ? []
-      : (await params.episodes()).filter((episode) => force || !episode.completed);
+      : (await params.episodes()).filter((episode) =>
+        only ? only.includes(episode.id) && (remove || force || !episode.completed) : force || !episode.completed
+      );
     if (!remove && target.type !== 'movie' && episodes.length === 0) {
       notify.error('Doh! No aired episodes were found to watch.');
       return false;
@@ -111,7 +114,7 @@ export async function watchMedia(params: Params): Promise<boolean> {
           after.delete(target.id);
           return after;
         }
-        if (remove && target.type === 'season') {
+        if (remove && target.type === 'season' && !only) {
           if (!target.season) throw new Error('Season context unavailable');
           const seasons = new Map(after.get(target.season.show));
           seasons.delete(target.season.number);
@@ -134,9 +137,9 @@ export async function watchMedia(params: Params): Promise<boolean> {
       }, play ? undefined : new Map());
     const items = remove && play
       ? { ids: [play.id] }
-      : target.type === 'movie' || remove
+      : target.type === 'movie' || (remove && !only)
       ? { [`${target.type}s`]: [{ ids: { trakt: target.id }, ...(remove ? {} : { watched_at: watchedAt }) }] }
-      : { episodes: episodes.map(({ id }) => ({ ids: { trakt: id }, watched_at: watchedAt })) };
+      : { episodes: episodes.map(({ id }) => ({ ids: { trakt: id }, ...(remove ? {} : { watched_at: watchedAt }) })) };
     const response = await request(`/sync/history${remove ? '/remove' : ''}`, items);
     if (!response.ok) throw new Error(String(response.status));
     const result = resultSchema.parse(await response.json());

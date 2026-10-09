@@ -12,6 +12,7 @@ describe('toCalendarPreferences', () => {
       imageType: 'logo',
       autoscroll: false,
       hideSpecials: false,
+      imagesAllowed: false,
     };
     expect(toCalendarPreferences(null)).toEqual(defaults);
     expect(toCalendarPreferences({})).toEqual(defaults);
@@ -34,6 +35,7 @@ describe('toCalendarPreferences', () => {
       imageType: 'none',
       autoscroll: true,
       hideSpecials: true,
+      imagesAllowed: true,
     });
   });
   it('should preserve image choices only for VIPs or grandfathered accounts', () => {

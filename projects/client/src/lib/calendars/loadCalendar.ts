@@ -1,9 +1,10 @@
 import { type Cookies, error, redirect } from '@sveltejs/kit';
 import { rawApiFetch } from '../api/rawApiFetch.ts';
-import { parseAdvancedFilters } from '../components/filters/advancedFilters.ts';
+import { hasAdvancedFilters, parseAdvancedFilters } from '../components/filters/advancedFilters.ts';
 import { advancedFiltersQuery } from '../components/filters/advancedFiltersQuery.ts';
 import { fromFilterDraft, toFilterDraft } from '../components/filters/filterDraft.ts';
 import { type FilterSource, toFilterSources } from '../components/filters/watchNowFilter.ts';
+import { calendarDisplay } from './calendarDisplay.ts';
 import { calendarFilters } from './calendarFilters.ts';
 import { calendarWatchNow } from './calendarWatchNow.ts';
 import { matchesCalendarFilters } from './matchesCalendarFilters.ts';
@@ -44,7 +45,8 @@ function signIn(url: URL): never {
 }
 
 /**
- * Loads one calendar period for SSR. The public calendars go without the user's token: a stale cookie token would get a
+ * Loads one calendar month for SSR, with the viewer's display choices (list or month view, artwork, grouped episodes)
+ * from their cookies. The public calendars go without the user's token: a stale cookie token would get a
  * 401 from the worker for data that doesn't depend on it. The My calendars need one, and send a signed-out viewer (or
  * one whose token stopped working) to sign in. Signed in, both leave out what the viewer hid from the calendar, and
  * specials with the "hide specials" setting on, as OG did on every calendar.
@@ -64,7 +66,13 @@ export async function loadCalendar(
   const preferences = toCalendarPreferences(token ? settings : null);
   const { timeZone } = datePreferences;
   const today = dayIn(now.toISOString(), timeZone);
-  const window = calendarWindow({ start, today, ...preferences });
+  // Both views page by month; the month grid pads its own weeks.
+  const window = calendarWindow({ start, today, period: 'month', layout: 'list', startDay: preferences.startDay });
+  const display = calendarDisplay({
+    cookies,
+    accountArtwork: preferences.imageType,
+    imagesAllowed: preferences.imagesAllowed,
+  });
   const ranges = calendarRanges(window.request.start_date, window.request.days);
   const filterConfig = calendarFilters({ slug, now });
   const filters = fromFilterDraft(toFilterDraft(parseAdvancedFilters(url.searchParams), filterConfig), filterConfig);
@@ -81,22 +89,28 @@ export async function loadCalendar(
   const calendarToken = target === 'my' || filters.watchnow.length > 0 ? token : null;
   // A token that stopped working loads no settings, so the page renders logged-out (All Shows' short feed included).
   const signedIn = token !== null && settings !== null;
-  const responses = await Promise.all(ranges.map(async (range) => {
-    const request = { target, slug: calendar.slug, range, signedIn, filters: query };
-    const response = await fetchCalendar({
-      client: api({ fetch, token: calendarToken }).calendars,
-      ...request,
-    });
-    return response === 'signed-out' && target === 'all'
-      ? fetchCalendar({ ...request, client: api({ fetch }).calendars })
-      : response;
-  }));
-  if (responses.some((items) => items === 'signed-out')) signIn(url);
-  const items = responses.flatMap((items) => items === 'signed-out' ? [] : items);
-  const shown = withoutHidden(items.filter((item) => matchesCalendarFilters(item, filters)), {
-    hidden,
-    hideSpecials: preferences.hideSpecials,
-  });
+  const fetchItems = (filterQuery: Readonly<Record<string, string>>, token: string | null) =>
+    Promise.all(ranges.map(async (range) => {
+      const request = { target, slug: calendar.slug, range, signedIn, filters: filterQuery };
+      const response = await fetchCalendar({ client: api({ fetch, token }).calendars, ...request });
+      return response === 'signed-out' && target === 'all'
+        ? fetchCalendar({ ...request, client: api({ fetch }).calendars })
+        : response;
+    }));
+  // Filtered, the sidebar counts "12 of 40": the same month without filters, fetched alongside.
+  const filtered = hasAdvancedFilters(filters);
+  const [responses, unfilteredResponses] = await Promise.all([
+    fetchItems(query, calendarToken),
+    filtered ? fetchItems({}, target === 'my' ? token : null) : Promise.resolve(undefined),
+  ]);
+  if ([...responses, ...(unfilteredResponses ?? [])].some((items) => items === 'signed-out')) signIn(url);
+  const flatten = (lists: typeof responses) => lists.flatMap((items) => items === 'signed-out' ? [] : items);
+  const visible = (items: ReturnType<typeof flatten>) =>
+    withoutHidden(items, { hidden, hideSpecials: preferences.hideSpecials });
+  const shown = visible(flatten(responses).filter((item) => matchesCalendarFilters(item, filters)));
+  const toDays = (items: ReturnType<typeof visible>) =>
+    calendarDays({ dates: window.dates, items: items.map((item) => viewerAirTime(item, timeZone)), timeZone });
+  const unfiltered = unfilteredResponses ? toDays(visible(flatten(unfilteredResponses))) : undefined;
 
   return {
     calendar,
@@ -109,12 +123,13 @@ export async function loadCalendar(
     today,
     window,
     preferences,
-    days: calendarDays({ dates: window.dates, items: shown.map((item) => viewerAirTime(item, timeZone)), timeZone })
-      .map((day) => ({
-        ...day,
-        filler: day.date < window.start || day.date > window.last,
-        items: day.date < window.start || day.date > window.last ? [] : day.items,
-      })),
+    display,
+    days: toDays(shown),
+    /** Without filters: what the sidebar's counts are out of. Left out when nothing is filtered. */
+    totals: unfiltered && {
+      episodes: unfiltered.flatMap((day) => day.items).filter((item) => item.type === 'episode').length,
+      movies: unfiltered.flatMap((day) => day.items).filter((item) => item.type === 'movie').length,
+    },
     // OG's eye menu, one choice for every calendar (`filter-fade-calendars-*`). The page fades and hides by the overlay.
     fadeHide: {
       fade: parseFadeHide(cookies.get('filter-fade-calendars')),

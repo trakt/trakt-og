@@ -127,6 +127,32 @@ describe('watchMedia', () => {
     expect(params.overlay.state('episode', 10).watched).toBe(false);
     expect(params.overlay.state('episode', 20).watched).toBe(true);
   });
+  it("should watch and remove only a calendar group's episodes", async () => {
+    const params = await setup();
+    const target = {
+      type: 'season',
+      id: 99,
+      title: 'Season 1',
+      season: { show: 5, number: 1 },
+      onlyEpisodeIds: [10, 11],
+    } satisfies WatchTarget;
+    server.use(http.post(`${API}/sync/history`, async ({ request }) => {
+      expect(await request.json()).toEqual({ episodes: [{ ids: { trakt: 11 }, watched_at: 'now' }] });
+      return HttpResponse.json({ added: { episodes: 1 } });
+    }));
+    expect(await watchMedia({ ...params, target })).toBe(true);
+    expect(params.overlay.state('episode', 11).watched).toBe(true);
+
+    server.use(http.post(`${API}/sync/history/remove`, async ({ request }) => {
+      expect(await request.json()).toEqual({ episodes: [{ ids: { trakt: 10 } }, { ids: { trakt: 11 } }] });
+      return HttpResponse.json({ deleted: { episodes: 2 } });
+    }));
+    expect(await watchMedia({ ...params, target: { ...target, onlyEpisodeIds: [10, 11] }, watchedAt: null })).toBe(
+      true,
+    );
+    expect(params.overlay.state('episode', 10).watched).toBe(false);
+    expect(params.overlay.state('episode', 20).watched).toBe(true);
+  });
   it('should remove an entire show and roll it back if the response is malformed', async () => {
     const params = await setup();
     server.use(http.post(`${API}/sync/history/remove`, () => HttpResponse.json({ deleted: 'invalid' })));

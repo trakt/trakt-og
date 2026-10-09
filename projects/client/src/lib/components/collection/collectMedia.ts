@@ -32,6 +32,7 @@ export async function collectMedia(params: Params): Promise<boolean> {
   const { target, collectedAt, metadata, force = false, overlay, request, notify, now = () => new Date() } = params;
   const remove = collectedAt === null;
   const metadataOnly = collectedAt === undefined;
+  const only = target.type === 'season' ? target.onlyEpisodeIds : undefined;
   let rollback = () => {};
   try {
     const context = target.type === 'episode' && target.season?.episode === undefined
@@ -56,9 +57,12 @@ export async function collectMedia(params: Params): Promise<boolean> {
         number: row.episode.number,
         completed: false,
       }]
-      : target.type === 'movie' || remove
+      : target.type === 'movie' || (remove && !only)
       ? []
-      : (await params.episodes()).filter((episode) => metadataOnly ? episode.completed : force || !episode.completed);
+      : (await params.episodes()).filter((episode) =>
+        (!only || only.includes(episode.id)) &&
+        (remove || (metadataOnly ? episode.completed : force || !episode.completed))
+      );
     if (!remove && target.type !== 'movie' && episodes.length === 0) {
       notify.error(
         metadataOnly ? 'No collected episodes were found to update.' : 'Doh! No aired episodes were found to collect.',
@@ -88,7 +92,7 @@ export async function collectMedia(params: Params): Promise<boolean> {
           after.delete(target.id);
           return after;
         }
-        if (remove && target.type === 'season') {
+        if (remove && target.type === 'season' && !only) {
           if (!target.season) throw new Error('Season context unavailable');
           const seasons = new Map(after.get(target.season.show));
           seasons.delete(target.season.number);
@@ -106,7 +110,7 @@ export async function collectMedia(params: Params): Promise<boolean> {
         return after;
       }, new Map());
     const fields = remove ? {} : { ...(metadataOnly ? {} : { collected_at: collectedAt }), ...metadata };
-    const items = target.type === 'movie' || remove || target.type === 'episode'
+    const items = target.type === 'movie' || (remove && !only) || target.type === 'episode'
       ? { [`${target.type}s`]: [{ ids: { trakt: target.id }, ...fields }] }
       : { episodes: episodes.map(({ id }) => ({ ids: { trakt: id }, ...fields })) };
     const response = await request(`/sync/collection${remove ? '/remove' : ''}`, items);

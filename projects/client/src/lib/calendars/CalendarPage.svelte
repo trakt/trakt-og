@@ -577,13 +577,13 @@ const title = $derived(`${data.target === 'my' ? 'My ' : ''}${data.calendar.labe
 .rail-month {
   display: flex;
   align-items: center;
-  gap: var(--space-xs-inline);
+  gap: 2px;
   font-size: var(--font-size-small);
   font-weight: var(--font-weight-headings-heavy);
   text-transform: uppercase;
 
   & a {
-    padding: var(--space-xs-inline) var(--space-base-block);
+    padding: var(--space-xs-inline) 3px;
     border-radius: var(--radius-control);
     color: var(--color-sidebar-label);
 

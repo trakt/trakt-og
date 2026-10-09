@@ -37,18 +37,22 @@ interface Props {
   joined?: boolean;
   /** Fill the container's width, the caret at the far end (a sidebar's full-width fields). */
   block?: boolean;
+  /** A checklist: picking a row keeps the menu open, and opening it focuses its search field first. */
+  multiple?: boolean;
   variant?: 'default' | 'circle' | 'icon' | 'transparent' | 'title';
 }
 
-const { trigger, children, label, section, joined = false, block = false, variant = 'default' }: Props = $props();
+const { trigger, children, label, section, joined = false, block = false, multiple = false, variant = 'default' }:
+  Props = $props();
 const id = $props.id();
 
 const focusFirstItem = (event: ToggleEvent & { currentTarget: HTMLElement }) => {
   if (event.newState !== 'open') return;
-  event.currentTarget.querySelector<HTMLElement>('a, button')?.focus();
+  event.currentTarget.querySelector<HTMLElement>(multiple ? 'input, a, button' : 'a, button')?.focus();
 };
 
 const closeOnPick = (event: MouseEvent & { currentTarget: HTMLElement }) => {
+  if (multiple) return;
   if (!(event.target instanceof Element) || !event.target.closest('a, button')) return;
   event.currentTarget.hidePopover();
 };

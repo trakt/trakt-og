@@ -1,6 +1,5 @@
 <script lang="ts">
 import Container from '$lib/components/container/Container.svelte';
-import BulkWatchConfirm from '$lib/components/history/BulkWatchConfirm.svelte';
 import DayGroup from '$lib/components/history/DayGroup.svelte';
 import WatchPopover from '$lib/components/history/WatchPopover.svelte';
 import SummaryActionMenu from '$lib/components/summary/SummaryActionMenu.svelte';
@@ -19,10 +18,11 @@ const examples = [
   { label: '3 plays', mode: 'remove', fill: 1, text: '3 plays', detail: 'Oct 2, 2026' },
   { label: '50% watched', mode: 'partial', fill: 0.5, text: 'watched', percent: '50%', detail: '31/62 eps · 31 plays' },
 ] as const;
-let bulk = $state<BulkWatchConfirm>();
-async function askBulk() {
-  const yes = await bulk?.ask({ count: 14, title: 'MobLand' });
-  toast.success(yes ? 'Marked watched' : 'Cancelled');
+let poster = $state<WatchPopover>();
+// Like a season card: the date first, then the bulk-watch question in the same prompt.
+async function watchSeason(at: string | null) {
+  const yes = await poster?.confirm({ count: 14, title: 'MobLand' });
+  toast.success(yes ? `Added 14 plays: ${at}` : 'Cancelled');
 }
 </script>
 
@@ -62,15 +62,13 @@ async function askBulk() {
       </WatchPopover>
     </div>
     <h2>Poster icon</h2>
-    <WatchPopover label="Add to watched history" datePreferences={dates} onopen={() => Promise.resolve('date')}
-      onwatch={(at) => toast.success(`Added play: ${at}`)} onremaining={() => Promise.resolve(false)}
+    <p>A season's icon: pick a date, then it asks before marking its 14 episodes watched. Past 300 episodes a whole show
+      is refused.</p>
+    <WatchPopover bind:this={poster} label="Add to watched history" datePreferences={dates}
+      onopen={() => Promise.resolve('date')} onwatch={watchSeason} onremaining={() => Promise.resolve(false)}
       oninvalid={() => toast.error('Invalid date format, please use the date picker.')}>
       {#snippet trigger()}<Icon svg={check} />{/snippet}
     </WatchPopover>
-    <h2>Bulk watch confirm</h2>
-    <p>A show or season asks before marking more than one episode watched. Past 300 episodes a whole show is refused.</p>
-    <button type="button" onclick={askBulk}>Mark 14 episodes of MobLand watched</button>
-    <BulkWatchConfirm bind:this={bulk} />
     <h2>Day dividers</h2>
     <p>History, library and ratings group cards under these. Click one to collapse its day.</p>
     <DayGroup weekday="Monday" date="October 5, 2026" runtime="24m"><p class="day-body">Two plays</p></DayGroup>

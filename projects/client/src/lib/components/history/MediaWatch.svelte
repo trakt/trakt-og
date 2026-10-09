@@ -12,7 +12,6 @@ import SummaryActionMenu from '$lib/components/summary/SummaryActionMenu.svelte'
 import lightBackward from '$lib/icons/light/backward.svg?raw';
 import circleMinus from '$lib/icons/light/circle-minus.svg?raw';
 import historyIcon from '$lib/icons/light/clock-rotate-left.svg?raw';
-import BulkWatchConfirm from '$lib/components/history/BulkWatchConfirm.svelte';
 import WatchPopover from '$lib/components/history/WatchPopover.svelte';
 import { loadWatchEpisodes } from '$lib/components/history/loadWatchEpisodes';
 import { watchMedia } from '$lib/components/history/watchMedia';
@@ -39,7 +38,7 @@ interface Props {
 }
 const { target, variant = 'card', small = false, play, onremove, onsave }: Props = $props();
 let busy = $state(false);
-let bulkConfirm = $state<BulkWatchConfirm>();
+let prompt = $state<WatchPopover>();
 const viewerState = $derived(overlay.state(target.type, target.id, target.season));
 const dates = $derived(page.data.datePreferences);
 const rewatching = $derived(
@@ -121,7 +120,7 @@ async function watch(watchedAt: string | null, force: boolean, onlyPlay?: Histor
       request,
       notify: toast,
       episodes: () => loadWatchEpisodes({ target, fetch: authenticatedFetch({ manager: userManager() }) }),
-      confirm: (count) => bulkConfirm?.ask({ count, title: target.title }) ?? Promise.resolve(false),
+      confirm: (count) => prompt?.confirm({ count, title: target.title }) ?? Promise.resolve(false),
     });
     if (saved && watchedAt === null) onremove?.(onlyPlay);
     if (saved) onsave?.(watchedAt);
@@ -149,7 +148,8 @@ async function open(force: boolean): Promise<'date' | 'remove' | 'partial' | nul
 
 <!-- Filtered history routes are built from media ids. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-<WatchPopover label={onremove ? 'Remove from history' : variant === 'summary' ? label : 'Add to watched history'}
+<WatchPopover bind:this={prompt}
+  label={onremove ? 'Remove from history' : variant === 'summary' ? label : 'Add to watched history'}
   {variant} {small} {busy} {plural} {locked}
   fill={onremove ? 1 : fill.watched} selected={Boolean(onremove) || started}
   datePreferences={dates}
@@ -163,7 +163,6 @@ async function open(force: boolean): Promise<'date' | 'remove' | 'partial' | nul
     {#if viewerState.rewatching}<Icon svg={backward} />{:else}<span class="trakt-glyph"><Icon svg={checkThick} /></span>{/if}
   {/snippet}
 </WatchPopover>
-{#if plural}<BulkWatchConfirm bind:this={bulkConfirm} />{/if}
 {#snippet detail()}
   {#if plural}{completed}/{target.airedEpisodes} eps &mdash; {countLabel(plays ?? 0, 'play')}{#if target.runtime} <em>({formatRuntime((plays ?? 0) * target.runtime)})</em>{/if}
   {:else if viewerState.lastWatchedAt}{viewerState.lastWatchedAt.startsWith('1970-01-01') ? 'Unknown date' : formatDate(viewerState.lastWatchedAt, { ...dates, time: true })}{/if}

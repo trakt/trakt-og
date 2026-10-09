@@ -69,8 +69,8 @@ function save(body: SettingsBody) {
     <h1>Header and footer</h1>
     <p>
       The fixed top bar and OG's footer. The bar is dark glass, tinted by the page's backdrop. Click the magnifier or
-      press <kbd>/</kbd> to open search, and hover the profile button for its menu. Below 992px the links move into the
-      menu button.
+      press <kbd>/</kbd> to open search, and hover the profile button for its menu. The links stay in the bar down to
+      768px, where phones get the splash instead.
     </p>
     <fieldset>
       <legend>User</legend>

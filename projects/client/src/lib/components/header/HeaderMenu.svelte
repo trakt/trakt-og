@@ -3,7 +3,7 @@
   bordered, rows that soften on hover). Like OG it opens on mouse hover. Click, tap, Enter and Space open it too
   (show, not toggle, so the click after a hover doesn't shut it), and Esc, a click outside or the mouse leaving
   closes it (Popover API). The menu hangs from the trigger's end edge, or its start edge when there's no room
-  (profile, mobile links), and the header styles each trigger's open look.
+  (the profile menu), and the header styles the trigger's open look.
   Rows are ul > li > a (or button), with <hr> as the divider. `aria-current` marks the page you're on in bold
   white on red.
 -->

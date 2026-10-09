@@ -68,7 +68,8 @@ const ticks = $derived(
 const defaultAt = $derived(page.data.settings?.browsing?.watch_popup_action);
 const { type, id } = $derived(target);
 const oncheckin = $derived(
-  variant === 'card' && (type === 'movie' || type === 'episode') && !page.data.settings?.browsing?.hide_watching_now
+  variant === 'card' && (type === 'movie' || type === 'episode') && target.released !== false &&
+    !page.data.settings?.browsing?.hide_watching_now
     ? () => void checkin.open({ type, id })
     : undefined,
 );
@@ -97,6 +98,8 @@ const showActions = $derived(
   target.type === 'show' && (viewerState.watchedEpisodes ?? 0) > 0 && Boolean(page.data.user),
 );
 const dropped = $derived(target.type === 'show' && Boolean(viewerState.dropped));
+// Nothing unreleased can be watched. Plays already there stay removable.
+const locked = $derived(target.released === false && !hasHistory ? 'Not released yet' : undefined);
 const request = (path: string, body?: unknown) =>
   rawApiFetch({
     fetch: path.startsWith('/search/') ? globalThis.fetch : authenticatedFetch({ manager: userManager() }),
@@ -147,7 +150,7 @@ async function open(force: boolean): Promise<'date' | 'remove' | 'partial' | nul
 <!-- Filtered history routes are built from media ids. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 <WatchPopover label={onremove ? 'Remove from history' : variant === 'summary' ? label : 'Add to watched history'}
-  {variant} {small} {busy} {plural}
+  {variant} {small} {busy} {plural} {locked}
   fill={onremove ? 1 : fill.watched} selected={Boolean(onremove) || started}
   datePreferences={dates}
   tooltip={onremove ? 'Remove from history' : variant === 'card' ? fill.titles.watched ?? 'Add to watched history' : undefined}

@@ -106,6 +106,8 @@ export function toMovieSummary(params: MovieSummaryParams) {
       href: `/lists/official/${collection.list.ids.slug}`,
       ...neighbours(params),
     },
+    /** Out somewhere by now: it can be watched, checked into and rated. */
+    released: out,
     rating: out ? { value: movie.rating ?? 0, votes: movie.votes ?? 0, href: `${href}/stats` } : undefined,
     external: params.otherSiteRatings && out
       ? toExternalRatings({

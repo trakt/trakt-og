@@ -103,7 +103,11 @@ const hiddenTarget = $derived(
 const targetList = $derived(listTarget ?? ratingTarget);
 
 // API: integer rating, so 7.9 is still rating-7. OG had no rating-0 color and fell back to rating-1's gray.
-const historyTarget = $derived(watchTarget ?? ratingTarget);
+// An unreleased item's watch icon is locked, and its card loses "Watching now".
+const historyTarget = $derived.by(() => {
+  const target = watchTarget ?? ratingTarget;
+  return target && released === false ? { ...target, released } : target;
+});
 const libraryTarget = $derived(collectionTarget ?? historyTarget);
 const ratingLevel = $derived(rating === undefined ? 1 : Math.min(Math.max(Math.trunc(rating), 1), 10));
 </script>

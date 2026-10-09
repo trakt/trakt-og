@@ -79,9 +79,10 @@ export function toMovieSummary(params: MovieSummaryParams) {
     .map(({ release_date }) => release_date)
     .toSorted()
     .at(0);
-  const earliest = releases.map(({ release_date }) => release_date).toSorted().at(0) ?? released;
-  // Unreleased titles show no ratings and only their list count, whatever the viewer's early-ratings setting.
-  const out = !!earliest && new Date(earliest) <= now;
+  // v3's rule: out once its release date passes, or once the API calls it released. A festival or foreign premiere
+  // alone doesn't count. Until then it shows no ratings and only its list count, can't be watched or checked into,
+  // whatever the viewer's early-ratings setting.
+  const out = movie.status === 'released' || (!!released && new Date(released) <= now);
   const releasedStatus = [undefined, null, 'released', 'in production', 'post production'].includes(movie.status);
 
   const count = (value: number | undefined, one: string, many: string, link?: string) => ({

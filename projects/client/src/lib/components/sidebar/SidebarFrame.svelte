@@ -7,14 +7,14 @@
       {#snippet panel()}<FiltersPanel … />{/snippet}
       …content…
     </SidebarFrame>
-  Collapsed, the sidebar becomes a slim rail: a button to bring it back, then the page's `rail` snippet. A tab on the
-  sidebar's right edge (shown on hover and focus) and the `[` key toggle it, and the choice is kept for a year in the
+  Collapsed, the sidebar becomes a slim rail: the page's `rail` snippet, with a button to bring it back pinned to the
+  bottom where Collapse was. A Collapse
+  button pinned to the sidebar's bottom (like Trakt admin's) and the `[` key toggle it, and the choice is kept for a year in the
   `sidebar_collapsed` cookie, so the loader can render it the same way. The panel opens between the sidebar and the
   content and pushes the content over, like OG's advanced filters. Under 768px everything stacks and doesn't collapse.
 -->
 <script lang="ts">
 import Icon from '$lib/icons/Icon.svelte';
-import chevronLeft from '$lib/icons/regular/chevron-left.svg?raw';
 import sidebarIcon from '$lib/icons/regular/sidebar.svg?raw';
 import type { Snippet } from 'svelte';
 
@@ -55,16 +55,16 @@ function onkeydown(event: KeyboardEvent) {
     <div class="inner">
       {#if hidden}
         <div class="rail">
+          {@render rail?.()}
           <button type="button" class="show" title="Show sidebar ( [ )" onclick={toggle}>
             <Icon svg={sidebarIcon} label="Show sidebar" />
           </button>
-          {@render rail?.()}
         </div>
       {:else}
-        <button type="button" class="edge-tab" title="Hide sidebar ( [ )" onclick={toggle}>
-          <Icon svg={chevronLeft} label="Hide sidebar" />
-        </button>
         <div class="scroll">{@render sidebar()}</div>
+        <button type="button" class="collapse" title="Collapse the sidebar ( [ )" onclick={toggle}>
+          <Icon svg={sidebarIcon} />Collapse
+        </button>
       {/if}
     </div>
   </aside>
@@ -118,11 +118,15 @@ function onkeydown(event: KeyboardEvent) {
 
 .inner {
   position: relative;
+  display: flex;
+  flex-direction: column;
   padding-block-start: var(--header-height);
 
+  /* The full height of the window, so Collapse sits at the bottom however short the sidebar is. */
   @media (min-width: 768px) {
     position: sticky;
     inset-block-start: 0;
+    block-size: 100vh;
   }
 }
 
@@ -134,21 +138,52 @@ function onkeydown(event: KeyboardEvent) {
   padding: var(--sidebar-padding);
 
   @media (min-width: 768px) {
-    max-block-size: calc(100vh - var(--header-height));
+    flex: 1;
+    min-block-size: 0;
     overflow-y: auto;
     scrollbar-width: thin;
   }
 }
 
-.rail {
+.collapse {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  padding-block: var(--space-base-inline) var(--sidebar-padding);
+  justify-content: flex-start;
+  gap: var(--space-sm-inline);
+  margin-inline: var(--sidebar-padding);
+  padding: var(--space-base-inline) var(--space-xs-inline);
+  border: 0;
+  border-block-start: 1px solid var(--color-sidebar-rule);
+  background: none;
+  color: var(--color-tool);
+  font: inherit;
+  font-size: var(--font-size-control);
+  cursor: pointer;
+
+  &:is(:hover, :focus-visible) {
+    color: var(--color-tool-hover);
+  }
+
+  & :global(.icon) {
+    font-size: var(--font-size-tool);
+  }
+
+  @media (max-width: 767px) {
+    display: none;
+  }
 }
 
-.show,
-.edge-tab {
+.rail {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  min-block-size: 0;
+  padding-block-start: var(--space-base-inline);
+}
+
+.show {
+  margin-block: auto var(--space-base-inline);
   display: grid;
   place-items: center;
   min-block-size: 0;
@@ -174,39 +209,14 @@ function onkeydown(event: KeyboardEvent) {
   }
 }
 
-/* On the sidebar's right edge, near the top. It shows while the pointer or focus is in the sidebar. */
-.edge-tab {
-  position: absolute;
-  inset-block-start: calc(var(--header-height) + var(--sidebar-edge-tab-top));
-  inset-inline-end: calc(var(--sidebar-edge-tab) / -2);
-  z-index: 1;
-  inline-size: var(--sidebar-edge-tab);
-  block-size: var(--sidebar-edge-tab);
-  border: 1px solid var(--color-control-border);
-  border-radius: 50%;
-  background-color: var(--color-frame);
-  font-size: var(--font-size-small);
-  box-shadow: var(--shadow-sidebar-edge-tab);
-  opacity: 0;
-
-  .sidebar:is(:hover, :focus-within) & {
-    opacity: 1;
-  }
-
-  &:is(:hover, :focus-visible) {
-    border-color: var(--color-control-border-hover);
-  }
-
-  @media (max-width: 767px) {
-    display: none;
-  }
-}
-
 .panel {
+  display: grid;
   min-inline-size: 0;
 }
 
 .content {
+  /* Its pinned day bars stack among themselves, under the sidebar. */
+  isolation: isolate;
   min-inline-size: 0;
 
   @media (min-width: 768px) {
@@ -227,10 +237,6 @@ function onkeydown(event: KeyboardEvent) {
 
   .content {
     transition: margin-inline-end var(--transition-frame);
-  }
-
-  .edge-tab {
-    transition: opacity var(--transition-card), border-color var(--transition-card);
   }
 }
 </style>

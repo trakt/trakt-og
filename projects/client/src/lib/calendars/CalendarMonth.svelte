@@ -29,6 +29,32 @@ const byDate = $derived(new Map(days.map((day) => [day.date, day.entries])));
 const todayColumn = $derived(
   today.slice(0, 7) === month.slice(0, 7) ? (new Date(`${today}T00:00:00Z`).getUTCDay() - weekStart + 7) % 7 : -1,
 );
+// Today's weekday is red only while today's week is the one pinned at the top: its day header has reached the
+// weekday banner and the cell still runs on below it.
+let todayInView = $state(false);
+function watchToday(node: HTMLElement) {
+  let frame = 0;
+  const update = () => {
+    frame = 0;
+    const style = getComputedStyle(node);
+    const line = (parseFloat(style.getPropertyValue('--header-height')) || 0) +
+      (parseFloat(style.getPropertyValue('--calendar-weekdays-height')) || 0);
+    const { top, bottom } = node.getBoundingClientRect();
+    todayInView = top <= line + 1 && bottom > line;
+  };
+  const schedule = () => {
+    if (!frame) frame = requestAnimationFrame(update);
+  };
+  update();
+  addEventListener('scroll', schedule, { passive: true });
+  addEventListener('resize', schedule, { passive: true });
+  return () => {
+    cancelAnimationFrame(frame);
+    removeEventListener('scroll', schedule);
+    removeEventListener('resize', schedule);
+    todayInView = false;
+  };
+}
 const weekday = (index: number, style: 'short' | 'long') =>
   new Intl.DateTimeFormat('en-US', { weekday: style, timeZone: 'UTC' }).format(
     new Date(Date.UTC(2026, 9, 4 + ((weekStart + index) % 7))),
@@ -41,7 +67,7 @@ const longDate = (date: string) =>
 
 <div class={['calendar-month', artwork]}>
   <div class="weekdays" aria-hidden="true">
-    {#each { length: 7 } as _, i (i)}<span class={{ today: i === todayColumn }}><span class="long">{weekday(i, 'long')}</span
+    {#each { length: 7 } as _, i (i)}<span class={{ today: todayInView && i === todayColumn }}><span class="long">{weekday(i, 'long')}</span
       ><span class="short">{weekday(i, 'short')}</span></span>{/each}
   </div>
   <div class="grid">
@@ -50,7 +76,8 @@ const longDate = (date: string) =>
         {#if cell.inMonth}
           {@const entries = byDate.get(cell.date) ?? []}
           <section id="day-{cell.date}" data-day={cell.date} aria-label={longDate(cell.date)}
-            class={['cell', { today: cell.date === today, past: cell.date < today }]}>
+            class={['cell', { today: cell.date === today, past: cell.date < today }]}
+            {@attach (node) => (cell.date === today ? watchToday(node) : undefined)}>
             <h2 class="number">
               <span class="date">{Number(cell.date.slice(8))}</span>
               {#if cell.date === today}<span class="tag">Today</span>{/if}

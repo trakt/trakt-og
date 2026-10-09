@@ -18,6 +18,14 @@ describe('util: filterValueLabel', () => {
 });
 
 describe('util: filterTags', () => {
+  it('should mark the left-out values of a mixed list', () => {
+    const tags = filterTags({ ...emptyFilters, genres: { values: ['drama'], mode: 'any', excluded: ['crime'] } });
+    expect(tags).toEqual([
+      { id: 'genres-drama', text: 'Drama', without: false },
+      { id: 'genres--crime', text: 'Crime', without: true },
+    ]);
+  });
+
   it("should list the tags in OG's order, excluded ones marked", () => {
     const tags = filterTags({
       ...emptyFilters,

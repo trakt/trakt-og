@@ -1,7 +1,8 @@
 /**
  * OG's advanced filters as they live in the URL: `advanced_filters.js` wrote them and
  * read them back. List filters keep OG's prefixes: `+` on every value means "all"
- * (genres only), `-` means "none". Ranges are `min-max`.
+ * (genres only), `-` means "none". Ranges are `min-max`. og also mixes the two in one list, as the API allows:
+ * `genres=drama,-crime` keeps drama and leaves out crime, so the `-` values go to `excluded`.
  *
  * og names two params differently: `networks` carries names instead of OG's `network_ids`, because the API filters
  * networks by name, and `status` stays OG's name for the API's `statuses`.
@@ -9,7 +10,12 @@
 
 export type ListMode = 'any' | 'all' | 'none';
 
-export type ListFilter = { readonly values: readonly string[]; readonly mode: ListMode };
+export type ListFilter = {
+  readonly values: readonly string[];
+  readonly mode: ListMode;
+  /** Values left out alongside included ones (`drama,-crime`). A list that only leaves out uses `mode: 'none'`. */
+  readonly excluded?: readonly string[];
+};
 
 export type Range = readonly [number, number];
 
@@ -48,10 +54,21 @@ const split = (param: string | null) =>
 // checked for it the same way (`searcher_conjunction_select`).
 const hasAllPrefix = (value: string) => value.startsWith('+') || value.startsWith(' ');
 
+const clean = (values: readonly string[]) => [
+  ...new Set(values.map((value) => value.replace(/^[-+ ]+/, '').trim()).filter(Boolean)),
+];
+
 function parseList(param: string | null): ListFilter {
   const raw = split(param);
-  const mode: ListMode = raw.some((value) => value.startsWith('-')) ? 'none' : raw.some(hasAllPrefix) ? 'all' : 'any';
-  const values = [...new Set(raw.map((value) => value.replace(/^[-+ ]+/, '').trim()).filter(Boolean))];
+  const left = raw.filter((value) => value.startsWith('-'));
+  const kept = raw.filter((value) => !value.startsWith('-'));
+  if (left.length > 0 && kept.length > 0) {
+    const values = clean(kept);
+    const excluded = clean(left).filter((value) => !values.includes(value));
+    return { values, mode: kept.some(hasAllPrefix) ? 'all' : 'any', ...(excluded.length > 0 && { excluded }) };
+  }
+  const mode: ListMode = left.length > 0 ? 'none' : raw.some(hasAllPrefix) ? 'all' : 'any';
+  const values = clean(raw);
   return values.length > 0 ? { values, mode } : noList;
 }
 
@@ -91,8 +108,9 @@ const formatNumber = (value: number, key: RangeFilterKey) => key === 'imdb_ratin
 /** The query string for these filters (no `?`), in OG's param order. Empty when nothing is filtered. */
 export function advancedFiltersSearch(filters: AdvancedFilters): string {
   const lists = listFilterKeys.flatMap((key) => {
-    const { values, mode } = filters[key];
-    return values.length > 0 ? [[key, encodeList(values, mode)]] : [];
+    const { values, mode, excluded = [] } = filters[key];
+    const encoded = [encodeList(values, mode), encodeList(excluded, 'none')].filter(Boolean).join(',');
+    return encoded ? [[key, encoded]] : [];
   });
   const ranges = rangeFilterKeys.flatMap((key) => {
     const range = filters[key];

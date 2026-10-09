@@ -56,13 +56,18 @@ const ranges: readonly { key: RangeFilterKey; site?: TagSite; suffix: string; de
 
 /** The sidebar's applied-filter tags in OG's order. Watch now shows as service tiles instead. */
 export function filterTags(filters: AdvancedFilters): FilterTag[] {
-  const lists = listFilterKeys.flatMap((key) =>
-    filters[key].values.map((value) => ({
+  const lists = listFilterKeys.flatMap((key) => [
+    ...filters[key].values.map((value) => ({
       id: `${key}-${value}`,
       text: filterValueLabel(key, value),
       without: filters[key].mode === 'none',
-    }))
-  );
+    })),
+    ...(filters[key].excluded ?? []).map((value) => ({
+      id: `${key}--${value}`,
+      text: filterValueLabel(key, value),
+      without: true,
+    })),
+  ]);
   const bounds = ranges.flatMap(({ key, site, suffix, decimals }) => {
     const range = filters[key];
     if (!range) return [];

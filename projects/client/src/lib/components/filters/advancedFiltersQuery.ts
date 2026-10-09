@@ -30,11 +30,13 @@ export function advancedFiltersQuery(filters: AdvancedFilters, only?: Picked): R
   const keep = (key: string) => !only || only[key] === true;
 
   const lists = (Object.keys(listParams) as (keyof typeof listParams)[]).filter(keep).flatMap((key) => {
-    const { values, mode } = filters[key];
+    const { values, mode, excluded = [] } = filters[key];
     if (values.length === 0) return [];
     const list: [string, string] = [
       listParams[key],
-      values.map((value) => mode === 'none' ? `-${value}` : value).join(','),
+      [...values.map((value) => mode === 'none' ? `-${value}` : value), ...excluded.map((value) => `-${value}`)].join(
+        ',',
+      ),
     ];
     return key === 'genres' && mode === 'all' ? [list, ['genres_operator', 'and'] as [string, string]] : [list];
   });

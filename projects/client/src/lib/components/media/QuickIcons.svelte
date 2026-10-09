@@ -148,10 +148,10 @@ const ratingLevel = $derived(rating === undefined ? 1 : Math.min(Math.max(Math.t
     {#if favorite}
       {#if target}
         <MediaFavorite {target}>
-          {#snippet trigger({ selected, date, busy, toggle })}
-            <Tooltip text={selected ? date ? `Favorited on\n${date}` : 'Favorited' : 'Add to favorites'} placement="bottom">
+          {#snippet trigger({ selected, date, busy, locked, toggle })}
+            <Tooltip text={locked ?? (selected ? date ? `Favorited on\n${date}` : 'Favorited' : 'Add to favorites')} placement="bottom">
               {#snippet trigger(tooltip)}
-                <button type="button" class={['action', 'favorite', { selected }]} style:--fill={selected ? 1 : 0} aria-label={selected ? 'Remove from favorites' : 'Add to favorites'} aria-pressed={selected} aria-busy={busy} aria-disabled={busy} onclick={toggle} {...tooltip}>
+                <button type="button" class={['action', 'favorite', { selected, locked }]} style:--fill={selected ? 1 : 0} aria-label={selected ? 'Remove from favorites' : 'Add to favorites'} aria-pressed={selected} aria-busy={busy} aria-disabled={busy || Boolean(locked)} onclick={toggle} {...tooltip}>
                   <span class="base"></span>{#if busy}<Spinner label="Saving favorite" />{:else}<Icon svg={star} />{/if}
                 </button>
               {/snippet}
@@ -306,6 +306,12 @@ const ratingLevel = $derived(rating === undefined ? 1 : Math.min(Math.max(Math.t
 
   & :global(.icon) {
     font-size: var(--font-size-quick-icon-favorite);
+  }
+
+  /* Locked until watched: faded, and the tooltip says why. */
+  &.locked {
+    cursor: not-allowed;
+    opacity: var(--opacity-action-disabled);
   }
 }
 

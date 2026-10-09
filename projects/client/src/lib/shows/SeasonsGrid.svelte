@@ -68,7 +68,7 @@ const sorted = $derived(
           userRating={state.rating}
           icons={{
             fill: quickIconFill({ state, airedEpisodes, season: true, datePreferences }),
-            ratingTarget: { type: 'season', id, title: card.title },
+            ratingTarget: { type: 'season', id, title: card.title, season: { show: showId, number } },
             watchTarget: { type: 'season', id, title: card.fullTitle, season: { show: showId, number }, airedEpisodes },
             rating,
             released,

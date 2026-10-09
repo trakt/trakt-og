@@ -273,6 +273,13 @@
   --font-size-rating-small: 14px;
   --font-size-rating-heart: 16px;
   --font-size-list-row-meta: 13px;
+  --list-row-stack-width: 250px; /* the list row's poster stack */
+  --list-row-poster-width: 120px; /* the open poster; the rest share what's left */
+  --list-row-poster-height: 180px;
+  --list-row-padding: 15px var(--gutter) 12px;
+  --list-row-footer-gap: 10px;
+  --list-row-count-gap: 18px;
+  --color-list-row-divider: light-dark(#eee, #383838); /* above the counts and icons */
   --font-size-header-year: 25px;
   --transition-card: 0.5s;
 

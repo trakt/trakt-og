@@ -33,9 +33,10 @@ const heading = $derived(entry.smallTitle ?? { text: entry.title, href: entry.hr
 
 <article class={['text-card', { faded: entry.faded }]}>
   <div class="meta">
-    {#each kinds as kind (kind.text)}<span class="kind" style:--kind="var(--episode-{kind.kind})">{kind.text}</span>{/each}
-    <span class="when">{[time, network].filter(Boolean).join(' · ') || (entry.year ? 'Movie' : '')}</span>
     {@render overlay?.()}
+    {#each kinds as kind (kind.text)}<span class="kind" style:--kind="var(--episode-{kind.kind})">{kind.text}</span>{/each}
+    <span class="when">{#if time}<span class="nowrap">{time}</span>{/if}{#if time && network}{' · '}{/if}{#if
+        network}{network}{/if}{#if !time && !network && entry.year}Movie{/if}</span>
   </div>
   <h3><a href={heading.href}>{heading.text}</a>{#if !entry.smallTitle && entry.year}<span class="year">
         {entry.year}</span>{/if}</h3>
@@ -73,22 +74,23 @@ const heading = $derived(entry.smallTitle ?? { text: entry.title, href: entry.hr
   }
 }
 
+/* Wraps on a narrow card: the tag, then the time, never cut off. The badge floats to the top-right corner. */
 .meta {
-  display: flex;
-  align-items: center;
-  gap: var(--space-base-block);
+  display: flow-root;
   min-block-size: 24px;
   font-size: var(--font-size-small);
+  line-height: 1.5;
 
-  /* The badge sits at the row's end instead of over artwork. */
   & :global(.badge) {
     position: static;
-    margin-inline-start: auto;
+    float: inline-end;
+    margin-inline-start: var(--space-base-block);
   }
 }
 
 .kind {
-  flex: none;
+  display: inline-block;
+  margin-inline-end: var(--space-base-block);
   padding: var(--calendar-worded-padding);
   border-radius: var(--radius-sm);
   background-color: var(--kind);
@@ -98,9 +100,10 @@ const heading = $derived(entry.smallTitle ?? { text: entry.title, href: entry.hr
 }
 
 .when {
-  overflow: hidden;
   color: var(--color-frame-muted);
-  text-overflow: ellipsis;
+}
+
+.nowrap {
   white-space: nowrap;
 }
 
@@ -110,7 +113,7 @@ h3 {
   font-size: var(--calendar-text-title-size);
   font-weight: var(--font-weight-headings-heavy);
   line-height: 1.2;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 
   /* A month's day is narrow: a smaller title keeps long names to a couple of lines. */
   @container (width < 240px) {
@@ -129,6 +132,7 @@ a {
 
 .year {
   margin-inline-start: 0.25em;
+  white-space: nowrap;
   color: var(--color-frame-muted);
   font-weight: normal;
 }

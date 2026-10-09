@@ -2681,6 +2681,7 @@
 :root {
   --calendar-weekdays-height: 31px; /* the month grid's pinned weekday row */
   --calendar-month-cell-min: 120px;
+  --color-calendar-weekdays: #151515; /* the month grid's weekday banner, set off from the days' bars */
   --calendar-month-day-height: 40px; /* a month day's pinned number row, room for today's circle and tag */
   --color-calendar-out: #191919; /* a neighbouring month's day in the grid */
 }

@@ -374,9 +374,6 @@ const title = $derived(`${data.target === 'my' ? 'My ' : ''}${data.calendar.labe
         nextHref={href(data.target, data.calendar.slug, data.window.next)}
         todayHref={href(data.target, data.calendar.slug)} {todayLabel} {years} />
       <MiniMonth {month} counts={heat} today={data.today} marked={firstVisible} {weekStart} onpick={jump} />
-      {#if month !== data.today.slice(0, 7)}
-        <a class="back" href={href(data.target, data.calendar.slug)}><Icon svg={angleLeft} /> Back to today</a>
-      {/if}
     </div>
 
     {#if filterCount > 0}
@@ -491,7 +488,6 @@ const title = $derived(`${data.target === 'my' ? 'My ' : ''}${data.calendar.labe
   gap: var(--space-lg-block);
 }
 
-.back,
 .clear {
   justify-self: start;
   color: var(--color-sidebar-pill-text);
@@ -504,11 +500,6 @@ const title = $derived(`${data.target === 'my' ? 'My ' : ''}${data.calendar.labe
   }
 }
 
-.back {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-xs-inline);
-}
 
 .clear {
   padding: 3px var(--space-base-block);

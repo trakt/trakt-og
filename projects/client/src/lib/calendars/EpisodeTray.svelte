@@ -1,11 +1,14 @@
 <!--
-  The episodes of a grouped calendar card, opened from its count: each with its number, title (kept hidden like any
-  unwatched title when spoilers are off) and rating, and its own watch button.
-    <EpisodeTray show={1} title="The Diplomat" episodes={card.group.episodes} />
+  The episodes of a grouped calendar card, opened from its badge: each row has its number, its title (kept hidden like
+  any unwatched title when spoilers are off) and the episode's own watch, library and list icons.
+    <EpisodeTray id="tray" show={1} title="The Diplomat" episodes={card.group.episodes} released />
 -->
 <script lang="ts">
-import MediaWatch from '$lib/components/history/MediaWatch.svelte';
+import QuickIcons from '$lib/components/media/QuickIcons.svelte';
+import { quickIconFill } from '$lib/components/media/quickIconFill';
 import MediaSpoiler from '$lib/components/summary/MediaSpoiler.svelte';
+import { page } from '$app/state';
+import { overlay } from '$lib/overlay/overlay';
 import type { CalendarGroupEpisode } from './toCalendarGroupCard.ts';
 
 interface Props {
@@ -13,9 +16,24 @@ interface Props {
   show: number;
   title: string;
   episodes: readonly CalendarGroupEpisode[];
+  /** The day has come: before it, nothing can be watched. */
+  released?: boolean;
 }
 
-const { id, show, title, episodes }: Props = $props();
+const { id, show, title, episodes, released }: Props = $props();
+
+const target = (episode: CalendarGroupEpisode) => ({
+  type: 'episode' as const,
+  id: episode.id,
+  title: `${title} ${episode.label}`,
+  season: { show, number: episode.season, episode: episode.number },
+  released,
+});
+const fill = (episode: CalendarGroupEpisode) =>
+  quickIconFill({
+    state: overlay.state('episode', episode.id, { show, number: episode.season, episode: episode.number }),
+    datePreferences: page.data.datePreferences,
+  });
 </script>
 
 <!-- Hrefs point at OG routes og hasn't built yet, and resolve() only takes routes that exist. -->
@@ -23,39 +41,35 @@ const { id, show, title, episodes }: Props = $props();
 
 <ol {id} class="episode-tray" aria-label="{title} episodes">
   {#each episodes as episode (episode.id)}
-    {@const target = {
-      type: 'episode' as const,
-      id: episode.id,
-      title: `${title} ${episode.label}`,
-      season: { show, number: episode.season, episode: episode.number },
-    }}
+    {@const item = target(episode)}
     <li>
       <a class="number" href={episode.href}>{episode.label}</a>
-      <a class="title" href={episode.href}><MediaSpoiler {target} kind="title" inline>{episode.title || 'TBA'}</MediaSpoiler></a>
-      {#if episode.rating}<span class="rating">{Math.trunc(episode.rating * 10)}%</span>{/if}
-      <span class="watch"><MediaWatch {target} small /></span>
+      <a class="title" href={episode.href}><MediaSpoiler target={item} kind="title" inline>{episode.title || 'TBA'}</MediaSpoiler></a>
+      <QuickIcons small fill={fill(episode)} watchTarget={item} collectionTarget={item} listTarget={item}
+        listLabel="Add to list" {released} />
     </li>
   {/each}
 </ol>
 
 <style>
 .episode-tray {
-  display: grid;
-  gap: var(--space-xs-block);
   margin: 0;
-  padding: var(--space-sm-block);
-  background-color: var(--color-date-separator);
-  box-shadow: inset 0 3px 0 var(--brand-tertiary);
+  padding: 0;
+  background-color: var(--color-card-bg);
   list-style: none;
 }
 
 li {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: var(--space-sm-inline);
-  padding-inline-start: var(--space-sm-inline);
-  background-color: var(--color-card-bg);
+  padding-inline: var(--space-base-inline) var(--space-xs-inline);
+  border-block-start: 1px solid var(--color-frame-border);
+
+  & :global(.quick-icons) {
+    background: none;
+  }
 }
 
 a {
@@ -77,15 +91,5 @@ a {
   color: var(--color-sidebar-pill-text);
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.rating {
-  color: var(--color-frame-muted);
-  font-size: var(--font-size-small);
-  font-variant-numeric: tabular-nums;
-}
-
-.watch {
-  display: flex;
 }
 </style>

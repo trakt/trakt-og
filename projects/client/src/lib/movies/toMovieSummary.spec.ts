@@ -68,6 +68,18 @@ describe('toMovieSummary', () => {
     expect(toMovieSummary(base).rating).toEqual({ value: 8.73, votes: 56_049, href: '/movies/fight-club-1999/stats' });
   });
 
+  it('should count a movie out by its release date or a released status, not an earlier premiere elsewhere', () => {
+    const festival = {
+      ...base,
+      movie: movie('x', 1, { released: '2026-11-03', status: 'post production' }),
+      releases: [{ country: 'it', release_date: '2026-09-01', release_type: 'premiere' }],
+    };
+
+    expect(toMovieSummary(festival).released).toBe(false);
+    expect(toMovieSummary({ ...festival, movie: { ...festival.movie, status: 'released' } }).released).toBe(true);
+    expect(toMovieSummary(base).released).toBe(true);
+  });
+
   it('should keep directors only and note non-writer jobs', () => {
     const person = (name: string) => ({ name, ids: { slug: name.toLowerCase(), trakt: 1 } });
     const { facts } = toMovieSummary({

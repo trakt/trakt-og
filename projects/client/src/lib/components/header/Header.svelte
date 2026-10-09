@@ -8,7 +8,6 @@ import { page } from '$app/state';
 import logo from '$lib/assets/trakt-logo-red.png';
 import Icon from '$lib/icons/Icon.svelte';
 import bars from '$lib/icons/solid/bars.svg?raw';
-import moon from '$lib/icons/solid/moon.svg?raw';
 import rocket from '$lib/icons/solid/rocket.svg?raw';
 import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
 import { userManager } from '$lib/auth/userManager';
@@ -67,6 +66,12 @@ const reviews = $derived(user ? reviewLinks({ slug: user.slug, now: new Date() }
 // OG marks a nav link selected when the first path segment matches (`/shows/popular` selects Shows).
 const section = $derived(page.url.pathname.split('/')[1]);
 const current = (href: string) => (href.split('/')[1] === section ? 'true' : undefined);
+// A profile menu row is the page you're on when the path is its own or under it (`/watchlist/movies`). The profile
+// row matches only itself, or it would claim every tab.
+const here = (href: string, exact: boolean) => {
+  const path = page.url.pathname;
+  return path === href || (!exact && path.startsWith(`${href}/`)) ? 'page' : undefined;
+};
 
 // What the page shows now: the saved setting until a toggle answers, and Auto follows the system.
 let darkKnight = $derived(saved);
@@ -123,8 +128,8 @@ async function toggleDarkKnight() {
         <HeaderMenu label="{user.firstName}'s menu">
           {#snippet trigger()}<img class="avatar" src={user.avatarUrl} alt="" width="36" height="36" />{/snippet}
           <ul>
-            {#each profileLinks as link (link.href)}
-              <li><a href={link.href}>{link.title}</a></li>
+            {#each profileLinks as link, index (link.href)}
+              <li><a href={link.href} aria-current={here(link.href, index === 0)}>{link.title}</a></li>
             {/each}
           </ul>
           <hr />
@@ -133,8 +138,8 @@ async function toggleDarkKnight() {
               <li><a href={link.href} target="_blank" rel="noopener">{link.title}</a></li>
             {/each}
             <li>
-              <button type="button" class="dark-knight" aria-pressed={dark} onclick={toggleDarkKnight}>
-                Dark Knight <span class="dark-knight-icon"><Icon svg={moon} /></span>
+              <button type="button" class="dark-knight" role="switch" aria-checked={dark} onclick={toggleDarkKnight}>
+                Dark Knight
               </button>
             </li>
           </ul>
@@ -291,19 +296,11 @@ async function toggleDarkKnight() {
   }
 }
 
-.dark-knight-icon {
-  margin-inline-start: 5px;
-  opacity: 0;
-  transition: opacity 0.5s;
-}
-
-/* Dark knight colors the toggle blue and shows the moon. */
-.dark-knight[aria-pressed='true'] {
-  color: var(--brand-secondary);
-
-  & .dark-knight-icon {
-    opacity: 1;
-  }
+/* Dark Knight on: blue on a blue tint, hovered or not. */
+.profile .dark-knight[aria-checked='true'] {
+  background-color: var(--color-dark-knight-on-bg);
+  color: var(--color-dark-knight-on);
+  font-weight: var(--font-weight-headings-heavy);
 }
 
 .mobile-links {

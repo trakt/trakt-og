@@ -16,8 +16,6 @@ interface PersonSummaryParams {
   shows: PeopleShowCreditsResponse | null;
   /** `X-Pagination-Item-Count` of the person's lists. */
   listCount: number;
-  /** The viewer's "display early ratings" setting. */
-  earlyRatings: boolean;
   /** 0 to 1, picks the fanart. OG picked one at random on every page view. */
   random: number;
   now: Date;
@@ -62,7 +60,7 @@ function rawCredits({ movies, shows }: Pick<PersonSummaryParams, 'movies' | 'sho
 
 const sortTitle = (title: string) => title.toLowerCase().replace(/^(the |an |a )/, '');
 
-function toCredit(credit: RawCredit, { earlyRatings, now }: Pick<PersonSummaryParams, 'earlyRatings' | 'now'>) {
+function toCredit(credit: RawCredit, { now }: Pick<PersonSummaryParams, 'now'>) {
   const date = credit.type === 'movie' ? credit.item.released : credit.item.first_aired;
   const released = !!date && new Date(date) <= now;
   const { item } = credit;
@@ -77,7 +75,8 @@ function toCredit(credit: RawCredit, { earlyRatings, now }: Pick<PersonSummaryPa
     title: item.title,
     year: item.year ?? undefined,
     image: imageUrl(item.images?.poster?.at(0), 'thumb'),
-    rating: released || earlyRatings ? (item.rating ?? undefined) : undefined,
+    // Unreleased credits show no rating, whatever the viewer's early-ratings setting.
+    rating: released ? (item.rating ?? undefined) : undefined,
     released,
     status,
     episodeCount: credit.episodeCount,
@@ -100,7 +99,7 @@ function toCredit(credit: RawCredit, { earlyRatings, now }: Pick<PersonSummaryPa
  * OG's department tabs: one per department, most credits first, each newest first.
  * The API lists a person once per item and department, so there's nothing to merge within a tab.
  */
-function departments(credits: readonly RawCredit[], params: Pick<PersonSummaryParams, 'earlyRatings' | 'now'>) {
+function departments(credits: readonly RawCredit[], params: Pick<PersonSummaryParams, 'now'>) {
   const roles = [...new Set(credits.map(({ role }) => role))];
   return roles
     .map((role) => ({

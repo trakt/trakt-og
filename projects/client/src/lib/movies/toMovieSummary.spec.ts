@@ -16,7 +16,6 @@ const base = {
   rank: null,
   country: 'us',
   otherSiteRatings: true,
-  earlyRatings: false,
   isVip: false,
   now: new Date('2026-09-29T00:00:00Z'),
 };
@@ -60,11 +59,12 @@ describe('toMovieSummary', () => {
     expect(facts.released).toEqual({ date: '1999-10-15', upcoming: false, more: 2 });
   });
 
-  it('should hide the Trakt rating before the first release unless early ratings are on', () => {
+  it('should hide the ratings and every count but lists before the first release', () => {
     const upcoming = { ...base, movie: movie('x', 1, { released: '2027-01-01', rating: 7, votes: 3 }) };
 
     expect(toMovieSummary(upcoming).rating).toBeUndefined();
-    expect(toMovieSummary({ ...upcoming, earlyRatings: true }).rating?.value).toBe(7);
+    expect(toMovieSummary(upcoming).external).toEqual([]);
+    expect(toMovieSummary(upcoming).counts.map(({ label }) => label)).toEqual(['lists']);
     expect(toMovieSummary(base).rating).toEqual({ value: 8.73, votes: 56_049, href: '/movies/fight-club-1999/stats' });
   });
 

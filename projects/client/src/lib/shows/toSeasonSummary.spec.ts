@@ -47,7 +47,6 @@ const base: Parameters<typeof toSeasonSummary>[0] = {
   isVip: false,
   actorSpoilers: true,
   episodeTypeTags: true,
-  earlyRatings: false,
   datePreferences: { order: 'dmy', hour24: true, timeZone: 'America/Los_Angeles', weekStartDay: 1 },
   now: new Date('2026-01-01T00:00:00Z'),
 };
@@ -137,6 +136,6 @@ describe('toSeasonSummary', () => {
     expect(view.facts.premiere?.label).toBe('Premieres');
     expect(view.episodeIds).toEqual([]);
     expect(view.facts.totalRuntime).toBeUndefined();
-    expect(toSeasonSummary({ ...future, earlyRatings: true }).rating?.value).toBe(8.2);
+    expect(view.counts.map(({ label }) => label)).toEqual(['lists']);
   });
 });

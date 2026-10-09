@@ -9,6 +9,7 @@ import type {
 import type { z } from 'zod/v4';
 import { iconLinks } from '../components/summary/iconLinks.ts';
 import { countryName, languageName, titleize } from '../components/summary/names.ts';
+import { releasedCounts } from '../components/summary/releasedCounts.ts';
 import { toCastMembers } from '../components/summary/toCastMembers.ts';
 import type { DatePreferences } from '../settings/DatePreferences.ts';
 import { countLabel } from '../utils/countLabel.ts';
@@ -31,7 +32,6 @@ interface Params {
   isVip: boolean;
   actorSpoilers: boolean;
   episodeTypeTags: boolean;
-  earlyRatings: boolean;
   datePreferences: DatePreferences;
   now: Date;
 }
@@ -53,6 +53,8 @@ export function toSeasonSummary(params: Params) {
     now,
   });
   const first = episodes.toSorted((a, b) => a.number - b.number).at(0)?.first_aired ?? season.first_aired;
+  // An unaired season shows no rating and only its list count, whatever the viewer's early-ratings setting.
+  const premiered = !!first && new Date(first) <= now;
   const network = season.network ?? show.network;
   const popular = (key: string, value: string) =>
     params.isVip ? `/shows/popular?${key}=${encodeURIComponent(value)}` : undefined;
@@ -81,20 +83,20 @@ export function toSeasonSummary(params: Params) {
     poster: imageUrl(season.images?.poster?.at(0) ?? show.images?.poster?.at(0), 'medium'),
     overview: season.overview || show.overview,
     trailer: params.videos?.find(({ type }) => type === 'trailer')?.url,
-    rating: params.earlyRatings || (!!first && new Date(first) <= now)
+    rating: premiered
       ? {
         value: ratings.rating ?? season.rating ?? 0,
         votes: ratings.votes ?? season.votes ?? 0,
         href: `${href}/stats`,
       }
       : undefined,
-    counts: [
+    counts: releasedCounts([
       count(stats.watchers, 'watcher', 'watchers'),
       count(stats.plays, 'play', 'plays'),
       count(stats.collectors, 'library', 'libraries'),
       count(stats.comments, 'comment', 'comments', `${href}/comments`),
       count(stats.lists, 'list', 'lists', `${href}/lists`),
-    ],
+    ], premiered),
     commentCount: stats.comments,
     listCount: stats.lists,
     airedEpisodes: season.aired_episodes ?? aired.length,

@@ -129,6 +129,7 @@ function cardIcons(
     listTarget: { ...card.overlay, title: card.title },
     fill: card.fill,
     rating: card.rating,
+    released: card.released,
     ratingTarget: { ...card.overlay, title: card.title },
     listLabel: card.episode ? 'Add to list' : undefined,
     watchNow: card.episode || data.preferences.imageType === 'none' ? 'play' : undefined,

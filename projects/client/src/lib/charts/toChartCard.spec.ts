@@ -3,7 +3,9 @@ import { describe, expect, it } from 'vitest';
 import { toChartCard } from './toChartCard.ts';
 
 const options = { chart: 'popular', now: new Date('2026-09-29T12:00:00Z'), order: 'mdy' } as const;
-const trending = { ...options, chart: 'trending' } as const;
+// The fixtures release in December 2026; the count charts tag them only once they're out.
+const out = { ...options, now: new Date('2027-06-01T00:00:00Z') };
+const trending = { ...out, chart: 'trending' } as const;
 const anticipated = { ...options, chart: 'anticipated' } as const;
 
 const show = {
@@ -48,7 +50,7 @@ describe('toChartCard', () => {
   });
 
   it('should tag box office rows with the weekend gross', () => {
-    const boxoffice = { ...options, chart: 'boxoffice' } as const;
+    const boxoffice = { ...out, chart: 'boxoffice' } as const;
 
     expect(toChartCard({ movie, revenue: 48000000 }, boxoffice).tags).toEqual([{ text: '$48,000,000' }]);
     expect(toChartCard({ movie }, boxoffice).tags).toEqual([{ text: '$0' }]);
@@ -87,33 +89,41 @@ describe('toChartCard', () => {
     const stats = { watcher_count: 14035, play_count: 1, collected_count: 138, collector_count: 6861 };
 
     it('should tag favorited rows with the people who favorited, singular for one', () => {
-      expect(toChartCard({ show, user_count: 267 }, { ...options, chart: 'favorited' }).tags).toEqual([
+      expect(toChartCard({ show, user_count: 267 }, { ...out, chart: 'favorited' }).tags).toEqual([
         { text: '267 people favorited', kind: 'favorite' },
       ]);
-      expect(toChartCard({ movie, user_count: 1 }, { ...options, chart: 'favorited' }).tags.at(0)?.text).toBe(
+      expect(toChartCard({ movie, user_count: 1 }, { ...out, chart: 'favorited' }).tags.at(0)?.text).toBe(
         '1 person favorited',
       );
     });
 
     it('should lead watched rows with watchers and played rows with plays', () => {
-      expect(toChartCard({ movie, ...stats }, { ...options, chart: 'watched' }).tags).toEqual([
+      expect(toChartCard({ movie, ...stats }, { ...out, chart: 'watched' }).tags).toEqual([
         { text: '14,035 watchers' },
         { text: '1 play', kind: 'generic' },
       ]);
-      expect(toChartCard({ movie, ...stats }, { ...options, chart: 'played' }).tags).toEqual([
+      expect(toChartCard({ movie, ...stats }, { ...out, chart: 'played' }).tags).toEqual([
         { text: '1 play' },
         { text: '14,035 watchers', kind: 'generic' },
       ]);
     });
 
     it('should tag library shows with episodes and owners, and movies with owners', () => {
-      expect(toChartCard({ show, ...stats }, { ...options, chart: 'library' }).tags).toEqual([
+      expect(toChartCard({ show, ...stats }, { ...out, chart: 'library' }).tags).toEqual([
         { text: '138 episodes', kind: 'collect' },
         { text: '6,861 owners', kind: 'generic' },
       ]);
-      expect(toChartCard({ movie, ...stats }, { ...options, chart: 'library' }).tags).toEqual([
+      expect(toChartCard({ movie, ...stats }, { ...out, chart: 'library' }).tags).toEqual([
         { text: '138 owners', kind: 'collect' },
       ]);
+    });
+  });
+
+  it('should leave the counts off anything unreleased, but keep the anticipated list count', () => {
+    expect(toChartCard({ movie, watchers: 13196 }, { ...options, chart: 'trending' }).tags).toEqual([]);
+    expect(toChartCard({ movie, list_count: 3 }, { ...options, chart: 'anticipated' }).tags.at(0)).toEqual({
+      text: '3 lists',
+      kind: 'list',
     });
   });
 

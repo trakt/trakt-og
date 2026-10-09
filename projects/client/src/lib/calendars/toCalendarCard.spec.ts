@@ -79,7 +79,7 @@ describe('toCalendarCard', () => {
         movie: { title: 'Naza', year: 2026, ids: { trakt: 5, slug: 'naza-2026' }, images: { fanart: [], logo: [] } },
       } as unknown as CalendarItem;
 
-      expect(toCalendarCard(movie, UTC)).toEqual({
+      expect(toCalendarCard(movie, UTC, new Date('2026-10-01'))).toEqual({
         key: 'movie-5',
         overlay: { type: 'movie', id: 5 },
         episode: false,
@@ -95,7 +95,13 @@ describe('toCalendarCard', () => {
         hideSmallTitle: false,
         tagline: undefined,
         rating: undefined,
+        released: true,
       });
     });
+  });
+
+  it('should mark anything still to come as unreleased, so it shows no rating', () => {
+    expect(toCalendarCard(episode(), UTC, new Date('2026-09-29T20:59:00.000Z')).released).toBe(false);
+    expect(toCalendarCard(episode(), UTC, new Date('2026-09-29T21:00:00.000Z')).released).toBe(true);
   });
 });

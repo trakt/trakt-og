@@ -11,6 +11,7 @@ import type { z } from 'zod/v4';
 import { episodeNumber, episodeType } from '../components/media/episodeTags.ts';
 import { iconLinks } from '../components/summary/iconLinks.ts';
 import { countryName, languageName, titleize } from '../components/summary/names.ts';
+import { releasedCounts } from '../components/summary/releasedCounts.ts';
 import { toCastMembers } from '../components/summary/toCastMembers.ts';
 import { toCrewNames } from '../components/summary/toCrewNames.ts';
 import { toExternalRatings } from '../components/summary/toExternalRatings.ts';
@@ -37,13 +38,14 @@ interface Params {
   now: Date;
   isVip: boolean;
   episodeTypeTags: boolean;
-  earlyRatings: boolean;
   otherSiteRatings: boolean;
 }
 
 /** Episode facts, the season number strip and neighbours across seasons in broadcast order. */
 export function toEpisodeSummary(params: Params) {
   const { show, episode, season, ratings, stats, now } = params;
+  // An unaired episode shows no ratings and only its list count, whatever the viewer's early-ratings setting.
+  const aired = !!episode.first_aired && new Date(episode.first_aired) <= now;
   const showHref = `/shows/${show.ids.slug}`;
   const seasonHref = `${showHref}/seasons/${episode.season}`;
   const href = `${seasonHref}/episodes/${episode.number}`;
@@ -79,21 +81,21 @@ export function toEpisodeSummary(params: Params) {
     poster: imageUrl(season.images?.poster?.at(0) ?? show.images?.poster?.at(0), 'medium'),
     overview: episode.overview,
     runtime: episode.runtime ?? show.runtime ?? undefined,
-    rating: params.earlyRatings || (!!episode.first_aired && new Date(episode.first_aired) <= now)
+    rating: aired
       ? {
         value: ratings.rating ?? episode.rating ?? 0,
         votes: ratings.votes ?? episode.votes ?? 0,
         href: `${href}/stats`,
       }
       : undefined,
-    external: params.otherSiteRatings ? toExternalRatings({ ratings, rank: null, countryName: '' }) : [],
-    counts: [
+    external: params.otherSiteRatings && aired ? toExternalRatings({ ratings, rank: null, countryName: '' }) : [],
+    counts: releasedCounts([
       count(stats.watchers, 'watcher', 'watchers'),
       count(stats.plays, 'play', 'plays'),
       count(stats.collectors, 'library', 'libraries'),
       count(stats.comments, 'comment', 'comments', `${href}/comments`),
       count(stats.lists, 'list', 'lists', `${href}/lists`),
-    ],
+    ], aired),
     commentCount: stats.comments,
     listCount: stats.lists,
     facts: {

@@ -116,7 +116,6 @@ export async function loadShowData({ fetch, token, parent, id: requested, path =
     rank: watchnow.rank,
     country,
     otherSiteRatings: settings?.browsing?.other_site_ratings ?? true,
-    earlyRatings: settings?.browsing?.display_early_ratings ?? false,
     actorSpoilers: settings?.browsing?.spoilers?.actors !== 'hide',
     episodeTypeTags,
     isVip: user?.isVip ?? false,

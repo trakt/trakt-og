@@ -12,14 +12,17 @@ interface Props {
   href: string;
   stats?: { watchers: number; plays: number; collectors: number; lists: number } | null;
   comments?: number;
+  /** False before it airs: only the list count shows, since the rest would come from people gaming the stats. */
+  released?: boolean;
 }
-const { href, stats, comments = 0 }: Props = $props();
+const { href, stats, comments = 0, released = true }: Props = $props();
+const shown = (count: number | undefined) => (released ? count ?? 0 : 0);
 const entries = $derived([
-  { label: 'Watchers', icon: user, count: stats?.watchers ?? 0 },
-  { label: 'Plays', icon: check, count: stats?.plays ?? 0, check: true },
-  { label: 'Collected', icon: collection, count: stats?.collectors ?? 0 },
+  { label: 'Watchers', icon: user, count: shown(stats?.watchers) },
+  { label: 'Plays', icon: check, count: shown(stats?.plays), check: true },
+  { label: 'Collected', icon: collection, count: shown(stats?.collectors) },
   { label: 'Lists', icon: list, count: stats?.lists ?? 0, href: `${href}/lists` },
-  { label: 'Comments', icon: comment, count: comments, href: `${href}/comments` },
+  { label: 'Comments', icon: comment, count: shown(comments), href: `${href}/comments` },
 ]);
 </script>
 <!-- Item URLs come from the media mappers. -->

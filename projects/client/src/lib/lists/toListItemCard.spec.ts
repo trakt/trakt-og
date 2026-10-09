@@ -65,6 +65,17 @@ describe('toListItemCard', () => {
     expect(card(movieRow, 'percentage').lines.at(0)).toEqual({ rating: 8.19, votes: 1, href: '/movies/heat-1995' });
   });
 
+  it('should leave out the rating of anything unreleased, on the card and in the votes line', () => {
+    const [upcoming] = listItemRowsSchema.parse([
+      { type: 'movie', movie: { ...movie, released: '2027-05-01' }, ...listed },
+    ]) as ListItemRow[];
+    const view = card(upcoming, 'percentage');
+
+    expect(view.rating).toBeUndefined();
+    expect(view.lines.at(0)).not.toHaveProperty('rating');
+    expect(card(movieRow, 'percentage').rating).toBe(8.19);
+  });
+
   it('should put the show first on a season, then the sorted line', () => {
     expect(card(seasonRow, 'runtime')).toMatchObject({
       title: 'Season 2',

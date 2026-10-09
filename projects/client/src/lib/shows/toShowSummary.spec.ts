@@ -31,7 +31,6 @@ const base = {
   rank: null,
   country: 'us',
   otherSiteRatings: true,
-  earlyRatings: false,
   actorSpoilers: true,
   episodeTypeTags: true,
   isVip: false,

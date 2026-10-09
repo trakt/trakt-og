@@ -111,7 +111,6 @@ export async function loadEpisode(
     now: new Date(),
     isVip: layout.user?.isVip ?? false,
     episodeTypeTags: !layout.settings?.browsing?.hide_episode_type_tags,
-    earlyRatings: layout.settings?.browsing?.display_early_ratings ?? false,
     otherSiteRatings: layout.settings?.browsing?.other_site_ratings ?? true,
   });
   return {

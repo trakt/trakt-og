@@ -9,6 +9,7 @@ import type { ExternalLink } from '../components/summary/ExternalLink.ts';
 import { iconLinks } from '../components/summary/iconLinks.ts';
 import type { NamedLink } from '../components/summary/NamedLink.ts';
 import { countryName, languageName, titleize } from '../components/summary/names.ts';
+import { releasedCounts } from '../components/summary/releasedCounts.ts';
 import { type StreamingRank, toExternalRatings } from '../components/summary/toExternalRatings.ts';
 import type { DatePreferences } from '../settings/DatePreferences.ts';
 import { countLabel } from '../utils/countLabel.ts';
@@ -33,7 +34,6 @@ interface ShowSummaryParams {
   /** The viewer's watch-now country, lowercase. */
   country: string;
   otherSiteRatings: boolean;
-  earlyRatings: boolean;
   /** Off when the viewer hides actor spoilers: no episode counts. */
   actorSpoilers: boolean;
   /** Off when the viewer hides episode type tags ("Season Premiere"). */
@@ -230,7 +230,8 @@ export function toShowSummary(params: ShowSummaryParams) {
     label: value === 1 ? one : many,
     href: link,
   });
-  const showRating = params.earlyRatings || (!!show.first_aired && new Date(show.first_aired) <= now);
+  // Unaired shows show no ratings and only their list count, whatever the viewer's early-ratings setting.
+  const aired = !!show.first_aired && new Date(show.first_aired) <= now;
 
   const episodeCard = (episode: EpisodeResponse): EpisodeCard => {
     const label = params.episodeTypeTags ? episodeType(episode) : undefined;
@@ -278,18 +279,18 @@ export function toShowSummary(params: ShowSummaryParams) {
     certification: show.certification ?? null,
     fanart: imageUrl(show.images?.fanart?.at(0), 'full'),
     poster: imageUrl(show.images?.poster?.at(0), 'medium'),
-    rating: showRating ? { value: show.rating ?? 0, votes: show.votes ?? 0, href: `${href}/stats` } : undefined,
-    external: params.otherSiteRatings
+    rating: aired ? { value: show.rating ?? 0, votes: show.votes ?? 0, href: `${href}/stats` } : undefined,
+    external: params.otherSiteRatings && aired
       ? toExternalRatings({ ratings: params.ratings, rank: params.rank, countryName: countryName(params.country) })
       : [],
-    counts: [
+    counts: releasedCounts([
       count(stats?.watchers, 'watcher', 'watchers'),
       count(stats?.plays, 'play', 'plays'),
       count(stats?.collectors, 'library', 'libraries'),
       count(stats?.comments, 'comment', 'comments', `${href}/comments`),
       count(stats?.lists, 'list', 'lists', `${href}/lists`),
       count(stats?.favorited, 'favorited', 'favorited'),
-    ],
+    ], aired),
     airedEpisodes: show.aired_episodes ?? 0,
     runtime: show.runtime ?? undefined,
     /** Minutes, every aired episode. */

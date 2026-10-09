@@ -61,7 +61,6 @@ const base = {
   movies,
   shows,
   listCount: 3,
-  earlyRatings: false,
   random: 0,
   now: new Date('2026-09-29T00:00:00Z'),
 };

@@ -680,7 +680,11 @@
   --font-size-header-link: 14px;
 
   /* Header search: an icon in the bar, and a glass panel with the field and the autocomplete under it */
-  --search-panel-width: 680px; /* room for every type chip and By ID on one row */
+  --search-panel-width: 820px;
+  --search-panel-inset: 14px; /* inside the panel, around the field, chips and rows */
+  --search-panel-shadow-room: -40px; /* the open panel's clip reaches past its box so its shadow shows */
+  --search-panel-inset-top: 8px; /* less above the field, so the panel stays on screen over the bar */
+  --search-chip-gap: 8px;
   --search-poster-width: 40px;
   --search-id-menu-width: 140px; /* the ID lookup menu */
   --search-kbd-size: 22px; /* a key cap: the field's "/" hint and the panel's key hints */
@@ -691,6 +695,10 @@
   --radius-search-row: 8px;
   --radius-search-kbd: 4px;
   --shadow-search-panel: 0 16px 40px rgb(0 0 0 / 0.35), 0 2px 8px rgb(0 0 0 / 0.15);
+  --color-search-backdrop: rgb(0 0 0 / 0.5); /* the page behind an open search */
+  --blur-search-backdrop: blur(6px);
+  --transition-search-panel: 0.42s cubic-bezier(0.45, 0, 0.15, 1); /* grows out of the magnifier and settles */
+  --transition-search-fade: 0.25s ease-out;
   --color-search-ring: rgb(237 28 36 / 0.25); /* the halo outside the focused field's red ring */
   --color-search-row-hover: light-dark(rgb(0 0 0 / 0.05), rgb(255 255 255 / 0.08));
   --color-search-kbd-bg: light-dark(rgb(0 0 0 / 0.07), rgb(255 255 255 / 0.1));

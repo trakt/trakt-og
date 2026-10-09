@@ -1,10 +1,12 @@
 <!--
-  The header search: a magnifier in the bar that opens a glass panel under it (a manual popover, so it draws in the top
-  layer and its glass blurs the page). The panel holds the field, the type chips (the ID lookups sit in their own menu
-  at the end of the row), the autocomplete rows and a strip of keyboard hints.
+  The header search: a magnifier in the bar that grows into a glass panel over it, its field landing where the icon
+  was and the panel covering the links (a manual popover, so it draws in the top layer, and its ::backdrop dims and
+  blurs the page). The panel holds the field, the type chips (the ID lookups sit in their own menu at the end of the
+  row), the autocomplete rows and a strip of keyboard hints.
   Typing waits 300ms, then shows up to 3 results and a "View all" row. Arrows move the highlight (a combobox with
   `aria-activedescendant`), Enter opens it or submits the form, Esc or the close button shuts the panel and hands focus back
-  to the magnifier, and a click outside closes it (keeping what was typed). A bare `/` anywhere else opens it.
+  to the magnifier, and a click outside (on the dimmed page) closes it, keeping what was typed. A bare `/` anywhere else
+  opens it.
   The type picks the form's `/search/<type>` action and is kept in the `search_type` cookie so SSR renders it.
   Recent and trending query rows go under the results.
 -->
@@ -240,10 +242,19 @@ const record = (row: SearchAutocompleteResult['rows'][number]) => {
   void recent?.record(row.recent);
 };
 
+// A click on the panel's ::backdrop lands on the panel itself, so tell it apart by where the pointer is.
+const onBackdrop = (event: Event) => {
+  if (event.target !== panel || !(event instanceof PointerEvent) || !panel) return false;
+  const box = panel.getBoundingClientRect();
+  const { clientX: x, clientY: y } = event;
+  return x < box.left || x > box.right || y < box.top || y > box.bottom;
+};
+
 // A click or focus outside closes the panel. What was typed stays for next time; an empty search resets like OG.
 const dismissOutside = (root: HTMLElement) => {
   const outside = (event: Event) => {
-    if (!active || (event.target instanceof Node && root.contains(event.target))) return;
+    if (!active) return;
+    if (!onBackdrop(event) && event.target instanceof Node && root.contains(event.target)) return;
     close(!query);
   };
   document.addEventListener('pointerdown', outside);
@@ -521,17 +532,27 @@ kbd {
   line-height: 1;
 }
 
-/* Hangs from the magnifier, clear of the bar, on the same tinted glass. */
+/* Grows out of the magnifier over the bar, so its field sits where the icon was and it covers the links. Open, it's
+   clipped a little outside its box so the shadow shows; closed, it's clipped down to the icon's pill. */
 .panel {
+  --field-nudge: calc((var(--header-control-height) - var(--header-pill-height)) / 2);
+  --closed-clip: inset(
+    calc(var(--search-panel-inset-top) + var(--field-nudge))
+      calc(100% - var(--search-panel-inset) - var(--header-pill-height))
+      calc(100% - var(--search-panel-inset-top) - var(--field-nudge) - var(--header-pill-height))
+      var(--search-panel-inset) round var(--radius-header-pill)
+  );
+
   position: fixed;
-  position-area: bottom span-right;
   inset: auto;
+  inset-block-start: calc(anchor(top) - var(--search-panel-inset-top) - var(--field-nudge));
+  inset-inline-start: max(var(--space-lg-inline), calc(anchor(left) - var(--search-panel-inset)));
   isolation: isolate;
   inline-size: min(var(--search-panel-width), calc(100vw - 2 * var(--space-lg-inline)));
-  max-block-size: calc(100vh - var(--header-height) - 2 * var(--space-search-panel-gap));
-  margin: calc((var(--header-height) - var(--header-pill-height)) / 2 + var(--space-search-panel-gap)) 0 0;
+  max-block-size: calc(100dvh - 2 * var(--space-lg-block));
+  margin: 0;
   overflow-y: auto;
-  padding: var(--space-search-section);
+  padding: var(--search-panel-inset-top) var(--search-panel-inset) var(--search-panel-inset);
   border: 0;
   border-radius: var(--radius-search-panel);
   background-color: var(--color-header-panel);
@@ -540,6 +561,37 @@ kbd {
   color: var(--color-header-text);
   font-family: var(--font-headings);
   font-weight: var(--font-weight-headings-light);
+  clip-path: inset(var(--search-panel-shadow-room) round var(--radius-search-panel));
+  transition: clip-path var(--transition-search-panel), opacity var(--transition-search-fade),
+    display var(--transition-search-panel) allow-discrete, overlay var(--transition-search-panel) allow-discrete;
+
+  @starting-style {
+    clip-path: var(--closed-clip);
+    opacity: 0;
+  }
+
+  &:not(:popover-open) {
+    clip-path: var(--closed-clip);
+    opacity: 0;
+  }
+
+  /* The page behind dims and blurs, to put the eye on the field. */
+  &::backdrop {
+    background-color: var(--color-search-backdrop);
+    backdrop-filter: var(--blur-search-backdrop);
+    transition: opacity var(--transition-search-panel), display var(--transition-search-panel) allow-discrete,
+      overlay var(--transition-search-panel) allow-discrete;
+  }
+
+  &:not(:popover-open)::backdrop {
+    opacity: 0;
+  }
+
+  @starting-style {
+    &:popover-open::backdrop {
+      opacity: 0;
+    }
+  }
 
   & ul {
     margin: 0;
@@ -563,7 +615,7 @@ kbd {
   align-items: center;
   gap: var(--space-sm-inline);
   block-size: var(--header-control-height);
-  margin-block-end: var(--space-search-section);
+  margin-block-end: var(--search-panel-inset);
   padding-inline: var(--space-base-inline) var(--space-xs-inline);
   border-radius: var(--radius-header-control);
   background: var(--color-header-pill);
@@ -628,8 +680,8 @@ input {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-xs-inline);
-  padding: 0 0 var(--space-search-section);
+  gap: var(--search-chip-gap);
+  padding: 0 0 var(--search-panel-inset);
   border-block-end: 1px solid var(--color-menu-separator);
 
   /* Nothing listed yet: the key hints' rule is enough. */
@@ -893,8 +945,8 @@ input {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-xs-block) var(--space-lg-inline);
-  margin: var(--space-search-section) calc(-1 * var(--space-search-section)) calc(-1 * var(--space-search-section));
-  padding: var(--space-base-block) var(--space-base-inline);
+  margin: var(--search-panel-inset) calc(-1 * var(--search-panel-inset)) calc(-1 * var(--search-panel-inset));
+  padding: var(--space-lg-block) var(--search-panel-inset);
   border-block-start: 1px solid var(--color-menu-separator);
   color: var(--color-search-in-type);
   font-size: var(--font-size-small);
@@ -915,7 +967,17 @@ input {
   margin-inline-start: auto;
 }
 
+/* Tablets: the panel runs the width of the screen. */
+@media (width <= 1024px) {
+  .panel {
+    inset-inline-start: var(--space-lg-inline);
+    inline-size: calc(100vw - 2 * var(--space-lg-inline));
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .panel,
+  .panel::backdrop,
   .toggle,
   .tip,
   .chip,

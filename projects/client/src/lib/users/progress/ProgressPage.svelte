@@ -17,6 +17,7 @@ let cached: { slug: string; items: readonly ProgressItem[]; at: number } | null 
 </script>
 
 <script lang="ts">
+import { browser } from '$app/environment';
 import { untrack } from 'svelte';
 import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 import { api } from '$lib/api/api';
@@ -79,7 +80,9 @@ async function readProgress() {
   }
 }
 
-if (!fresh) void readProgress();
+// Only in the browser: the signed-in client needs it, and on the server a failure would toast into the list every
+// request shares.
+if (browser && !fresh) void readProgress();
 
 // A watch, rewatch or drop saved anywhere patches these slices: read the progress again, once it's first in.
 let seen: readonly unknown[] | null = null;

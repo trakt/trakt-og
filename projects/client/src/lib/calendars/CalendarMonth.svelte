@@ -168,8 +168,7 @@ const longDate = (date: string) =>
   .today & {
     background: var(--color-calendar-today-bar);
     backdrop-filter: var(--calendar-today-blur);
-    box-shadow: inset 0 3px 0 var(--brand-primary);
-    padding-block-start: 3px; /* centered under the red edge */
+    box-shadow: inset 4px 0 0 var(--brand-primary);
   }
 
   .today & .date {

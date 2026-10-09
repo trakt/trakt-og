@@ -658,6 +658,7 @@
   --color-header-vip-bg: rgb(142 68 173 / 0.22); /* --brand-tertiary, faint */
   --color-header-vip-text: #cf9be8; /* --brand-tertiary, lifted for contrast on the dark glass */
   --color-header-vip-ring: #ff8a3d; /* the far end of a VIP avatar's ring, which starts and ends red */
+  --color-header-avatar-open-ring: rgb(255 255 255 / 0.3);
   --blur-header-glass: blur(18px) saturate(1.4);
   --blur-header-art: blur(40px) saturate(1.6) brightness(0.45); /* the backdrop smeared into the glass */
   --opacity-header-art: 0.7;
@@ -667,6 +668,7 @@
   --space-header-pill-inline: 14px;
   --space-header-control-inline: 18px; /* Sign In, so the one call to action reads a little bigger */
   --header-avatar-ring: 2px; /* a VIP avatar's ring */
+  --header-avatar-open-ring: 3px; /* around the avatar while its menu is open */
   --shadow-header-logo: drop-shadow(0 1px 4px rgb(0 0 0 / 0.35));
   --radius-header-pill: 9px; /* links, the search icon, the menu button */
   --radius-header-control: 11px; /* Get VIP, Sign In, the search field */
@@ -685,6 +687,7 @@
   --space-search-section: 8px;
   --radius-search-panel: 16px;
   --radius-search-row: 8px;
+  --radius-search-chip: 999px;
   --radius-search-kbd: 4px;
   --shadow-search-panel: 0 16px 40px rgb(0 0 0 / 0.35), 0 2px 8px rgb(0 0 0 / 0.15);
   --color-search-ring: rgb(237 28 36 / 0.25); /* the halo outside the focused field's red ring */

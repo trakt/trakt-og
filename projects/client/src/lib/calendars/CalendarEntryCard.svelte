@@ -155,7 +155,15 @@ const shownTitle = $derived(compact && entry.episode ? '' : entry.title);
 @container (width < 300px) {
   .calendar-entry.calendar-entry :global(.quick-icons) {
     --bar: 34px;
+    --watch-card-height: 34px;
+    --watch-card-small-height: 34px;
+    --list-card-height: 34px;
+    --list-card-small-height: 34px;
     --action-width: 26px;
+    --watch-card-width: 26px;
+    --watch-card-small-width: 26px;
+    --list-card-width: 26px;
+    --list-card-small-width: 26px;
     --font-size-quick-icon: 16px;
     --font-size-quick-icon-small: 15px;
     --font-size-rating: 14px;
@@ -167,6 +175,10 @@ const shownTitle = $derived(compact && entry.episode ? '' : entry.title);
 @container (width < 190px) {
   .calendar-entry.calendar-entry :global(.quick-icons) {
     --action-width: 21px;
+    --watch-card-width: 21px;
+    --watch-card-small-width: 21px;
+    --list-card-width: 21px;
+    --list-card-small-width: 21px;
     --font-size-quick-icon: 13px;
     --font-size-quick-icon-small: 13px;
     --font-size-rating: 12px;
@@ -178,6 +190,10 @@ const shownTitle = $derived(compact && entry.episode ? '' : entry.title);
 @container (width < 172px) {
   .calendar-entry.calendar-entry :global(.quick-icons) {
     --action-width: 19px;
+    --watch-card-width: 19px;
+    --watch-card-small-width: 19px;
+    --list-card-width: 19px;
+    --list-card-small-width: 19px;
     --font-size-quick-icon: 12px;
     --font-size-quick-icon-small: 12px;
     --font-size-rating: 11px;

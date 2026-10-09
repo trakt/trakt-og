@@ -1,8 +1,8 @@
 <svelte:options namespace="svg" />
 
 <!--
-  The classic Trakt mark (the paths of trakt-wide-red-white.svg), drawn into a parent <svg> in a 98.1-unit box so each
-  coming-soon design can recolor it. `face` fills the disc behind the mark; leave it out for the mark alone.
+  The classic Trakt mark (the paths of trakt-wide-red-white.svg), drawn into a parent <svg> in a 98.1-unit box so any
+  page can recolor it: the home page's red O, and each coming-soon design. `face` fills the disc behind the mark; leave it out for the mark alone.
 -->
 <script lang="ts">
 interface Props {

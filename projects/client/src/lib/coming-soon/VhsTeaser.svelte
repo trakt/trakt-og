@@ -1,7 +1,7 @@
 <!-- "Please adjust your Trakting": a haunted VHS screen with a glitching Trakt mark and a do-not-tape-over cassette. -->
 <script lang="ts">
 import { fitToParent } from './fitToParent.ts';
-import TraktMark from './TraktMark.svelte';
+import TraktMark from '$lib/components/brand/TraktMark.svelte';
 
 const trackingBars = [true, true, true, true, true, true, false, false];
 </script>

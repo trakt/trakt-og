@@ -30,7 +30,10 @@ describe('arrangeSocialFeed', () => {
     const damien = layout.tiles.find((tile) => tile.kind === 'sitting' && tile.sitting.member.name === 'Damien');
     const rest = layout.timeline.find(({ member }) => member.name === 'Damien');
 
-    expect(damien?.kind === 'sitting' && damien.sitting.summary.tile.link?.text).toBe('Lioness 3x02');
+    expect(damien?.kind === 'sitting' && damien.sitting.summary.tile.link).toEqual({
+      text: 'Lioness 3x02',
+      href: '/shows/lioness/seasons/3/episodes/2',
+    });
     expect(rest?.summary.head.links.map(({ text }) => text)).toEqual(['Lanterns 1x08']);
     expect(layout.timeline.map(({ newest }) => newest)).toEqual(
       layout.timeline.map(({ newest }) => newest).toSorted().toReversed(),

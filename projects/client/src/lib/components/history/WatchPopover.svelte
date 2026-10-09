@@ -52,6 +52,8 @@ interface Props {
   oncheckin?: () => void;
   onremovePlay?: () => void;
   tooltip?: string;
+  /** Why adding is off ("Not released yet"): the control stays, disabled, with this as its tooltip. */
+  locked?: string;
   collection?: boolean;
   hasMetadata?: boolean;
   metadata?: Snippet<[() => void, boolean]>;
@@ -75,6 +77,7 @@ const {
   oncheckin,
   onremovePlay,
   tooltip,
+  locked,
   collection = false,
   hasMetadata = false,
   metadata,
@@ -115,7 +118,7 @@ const addLabel = $derived(
 const instant = $derived(value ? watchDateInstant(value, datePreferences.timeZone) : null);
 
 async function open(add: boolean) {
-  if (busy) return;
+  if (busy || locked) return;
   const next = await onopen(add);
   if (!next) return;
   mode = next;
@@ -203,27 +206,28 @@ function click() {
   <div class="watch-control summary" style:anchor-name="--watch-{id}" aria-busy={busy}>
   <SummaryAction bind:element={button} color={collection ? 'var(--brand-quaternary)' : 'var(--brand-tertiary)'}
     icon={summary.icon} text={summary.text} percent={summary.percent} detail={summary.detail} aside={summary.aside}
-    tooltip={summary.tooltip}
+    tooltip={locked ?? summary.tooltip} locked={Boolean(locked)}
     {selected}
     busy={busy ? collection ? 'Saving collection' : 'Saving watched history' : undefined}
-    aria-label={label} aria-controls="watch-{id}" aria-haspopup="dialog" aria-expanded={expanded} aria-disabled={busy}
-    onclick={click} onpointerdown={pointerdown} onpointerup={release} onpointercancel={release}
+    aria-label={label} aria-controls="watch-{id}" aria-haspopup="dialog" aria-expanded={expanded}
+    aria-disabled={busy || Boolean(locked)} onclick={click} onpointerdown={pointerdown} onpointerup={release}
+    onpointercancel={release}
     onpointerleave={release}>
       {#snippet tiles()}
         <SummaryActionTile bind:element={side} icon={plus} label={addLabel} aria-controls="watch-{id}"
-          aria-haspopup="dialog" aria-expanded={expanded} aria-disabled={busy} onclick={() => open(true)} />
+          aria-haspopup="dialog" aria-expanded={expanded} aria-disabled={busy || Boolean(locked)} onclick={() => open(true)} />
         {@render more?.()}
       {/snippet}
     </SummaryAction>
 </div>
 {:else}
-<div class={['watch-control', variant, { small, collection, selected }]} style:--watch-fill={fill}
+<div class={['watch-control', variant, { small, collection, selected, locked }]} style:--watch-fill={fill}
   style:--watch-color={collection ? 'var(--brand-quaternary)' : 'var(--brand-tertiary)'}
   style:anchor-name="--watch-{id}" aria-busy={busy}>
-  <Tooltip text={tooltip} placement="bottom">
+  <Tooltip text={locked ?? tooltip} placement="bottom">
     {#snippet trigger(tip)}
       <button bind:this={button} type="button" class="watch-trigger" aria-label={label}
-        aria-controls="watch-{id}" aria-haspopup="dialog" aria-expanded={expanded} aria-disabled={busy}
+        aria-controls="watch-{id}" aria-haspopup="dialog" aria-expanded={expanded} aria-disabled={busy || Boolean(locked)}
         onclick={click} onpointerdown={pointerdown} onpointerup={release} onpointercancel={release} onpointerleave={release} {...tip}>
         <span class="base"></span>{@render content?.()}
       </button>
@@ -292,6 +296,13 @@ function click() {
   &[aria-busy='true'] {
     opacity: var(--watch-busy-opacity);
     cursor: wait;
+  }
+  /* Not out yet: faded, and the tooltip says why. */
+  &.locked {
+    opacity: var(--opacity-action-disabled);
+    & .watch-trigger {
+      cursor: not-allowed;
+    }
   }
 }
 .busy {

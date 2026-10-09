@@ -81,6 +81,8 @@ export function toEpisodeSummary(params: Params) {
     poster: imageUrl(season.images?.poster?.at(0) ?? show.images?.poster?.at(0), 'medium'),
     overview: episode.overview,
     runtime: episode.runtime ?? show.runtime ?? undefined,
+    /** Aired by now: it can be watched, checked into and rated. */
+    aired,
     rating: aired
       ? {
         value: ratings.rating ?? episode.rating ?? 0,

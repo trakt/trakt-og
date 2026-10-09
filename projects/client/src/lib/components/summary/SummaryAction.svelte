@@ -32,6 +32,8 @@ interface Props extends Omit<HTMLAttributes<HTMLElement>, 'title'> {
   href?: string;
   readonly?: boolean;
   disabled?: boolean;
+  /** Not allowed yet (unwatched, unreleased): faded, no hover fill. Pair it with `tooltip` saying why. */
+  locked?: boolean;
   element?: HTMLElement;
   tiles?: Snippet;
   aside?: Snippet;
@@ -49,6 +51,7 @@ let {
   href,
   readonly = false,
   disabled,
+  locked = false,
   element = $bindable(),
   tiles,
   aside,
@@ -59,7 +62,7 @@ let {
 const tag = $derived(href ? 'a' : readonly ? 'div' : 'button');
 </script>
 
-<div class={['summary-action', { selected }]} style:--action-color={color}>
+<div class={['summary-action', { selected, locked }]} style:--action-color={color}>
   <Tooltip text={tooltip} placement="bottom">
     {#snippet trigger(tip)}
       <svelte:element this={tag} bind:this={element} class="main" {href} type={tag === 'button' ? 'button' : undefined}
@@ -97,11 +100,19 @@ const tag = $derived(href ? 'a' : readonly ? 'div' : 'button');
   transition: gap var(--transition-summary-action), background-color var(--transition-summary-action),
     color var(--transition-summary-action);
 
-  &:not(.selected):has(> .main:is(:hover, :focus-visible):not(div)) {
+  &:not(.selected, .locked):has(> .main:is(:hover, :focus-visible):not(div)) {
     background: var(--action-color);
     box-shadow: none;
     color: var(--color-text-inverse);
     --tile-hover-bg: var(--color-action-side-bg-hover);
+  }
+
+  &.locked {
+    opacity: var(--opacity-action-disabled);
+
+    & .main {
+      cursor: not-allowed;
+    }
   }
 
   &.selected {

@@ -161,7 +161,7 @@ const textLinks = $derived(movie.links.filter(({ icon }) => !icon));
 
   {#snippet actions()}
     <WatchNow button={data.watchNow} title={movie.title} year={movie.year} fanart={movie.fanart} phone />
-    <ActionButtons listTarget={ratingTarget} checkin={{ type: 'movie', id: movie.id }} favorites favoriteTarget={{ ...ratingTarget, title: movie.title, year: movie.year, fanart: movie.fanart }} historyTarget={{ ...ratingTarget, runtime: movie.facts.runtime }} />
+    <ActionButtons listTarget={ratingTarget} checkin={movie.released ? { type: 'movie', id: movie.id } : undefined} favorites favoriteTarget={{ ...ratingTarget, title: movie.title, year: movie.year, fanart: movie.fanart }} historyTarget={{ ...ratingTarget, runtime: movie.facts.runtime, released: movie.released }} />
   {/snippet}
 
   <!-- Keyed on the item: moving to another movie or show keeps this page, so the lazy sections start over. -->

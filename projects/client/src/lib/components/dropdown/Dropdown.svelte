@@ -170,6 +170,7 @@ const closeOnPick = (event: MouseEvent & { currentTarget: HTMLElement }) => {
 
   & :global(.eyebrow) {
     grid-column: 1 / -1;
+    line-height: 1.2;
     color: var(--color-sidebar-label);
     font-size: var(--font-size-sidebar-eyebrow);
     font-weight: var(--font-weight-menu-header);
@@ -180,7 +181,8 @@ const closeOnPick = (event: MouseEvent & { currentTarget: HTMLElement }) => {
   & :global(.name) {
     overflow: hidden;
     font-size: var(--font-size-sidebar-title);
-    font-weight: var(--font-weight-headings-heavy);
+    font-weight: var(--font-weight-sidebar-title);
+    letter-spacing: -0.01em;
     text-overflow: ellipsis;
     white-space: nowrap;
   }

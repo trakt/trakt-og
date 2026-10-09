@@ -154,8 +154,8 @@ function reset() {
   <div class="inner">
     <div class="header">
       <h2 id="{id}-title">Filters</h2>
-      <button type="button" class="text-button" onclick={reset} disabled={!vip}><Icon svg={resetIcon} />Reset</button>
-      <button type="button" class="text-button" onclick={onclose}><Icon svg={xmark} />Close</button>
+      <button type="button" class="panel-button" onclick={reset} disabled={!vip}><Icon svg={resetIcon} />Reset</button>
+      <button type="button" class="panel-button" onclick={onclose}><Icon svg={xmark} />Close</button>
     </div>
 
     {#if !vip}
@@ -264,7 +264,7 @@ function reset() {
 .header {
   display: flex;
   align-items: center;
-  gap: var(--space-xs-inline);
+  gap: var(--space-base-block);
 
   & h2 {
     flex: 1;
@@ -274,24 +274,30 @@ function reset() {
   }
 }
 
-.text-button {
+/* The prompt popups' Back button: an outline on the raised control fill. */
+.panel-button {
   display: inline-flex;
   align-items: center;
   gap: var(--space-base-block);
   min-block-size: var(--control-height-small);
   padding: 0 var(--space-sm-inline);
-  border: 0;
+  border: 1px solid var(--color-control-border);
   border-radius: var(--radius-control);
-  background: none;
-  color: var(--color-sidebar-pill-text);
-  font: inherit;
-  font-size: var(--font-size-small);
-  font-weight: var(--font-weight-menu-header);
+  background-color: var(--color-control-raised-bg);
+  color: var(--color-control-text);
+  font-family: var(--font-headings);
+  font-size: var(--font-size-control);
+  font-weight: var(--font-weight-control);
   cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+
+  & :global(.icon) {
+    color: var(--color-control-muted);
+  }
 
   &:is(:hover, :focus-visible):not(:disabled) {
-    background-color: var(--color-tool-hover-bg);
-    color: var(--color-frame-text);
+    border-color: var(--color-control-border-hover);
+    background-color: var(--color-control-raised-hover-bg);
   }
 
   &:disabled {

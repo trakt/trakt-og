@@ -10,6 +10,7 @@ import imdbLogo from '$lib/assets/sites/imdb-clean.png';
 import rtAudience from '$lib/assets/sites/rt/audience-upright.svg';
 import rtFresh from '$lib/assets/sites/rt/tomatometer-fresh.svg';
 import traktLogo from '$lib/assets/sites/trakt.png';
+import { filterTagLabel } from './filterTagLabel.ts';
 import type { FilterTag, TagSite } from './filterTags.ts';
 
 interface Props {
@@ -32,8 +33,9 @@ const sites: Record<TagSite, { logo: string; name: string }> = {
 <ul class="filter-chips">
   {#each chips as chip (chip.id)}
     <li class={{ without: chip.without }}>
-      {#if chip.site}<img src={sites[chip.site].logo} alt="{sites[chip.site].name} " />{/if}
-      {#if chip.without}<span class="visually-hidden">Without </span>{/if}<span class="text">{chip.text}</span>
+      {#if chip.site}<img src={sites[chip.site].logo} alt="" />{/if}
+      <span class="label">{filterTagLabel(chip.id)}</span>
+      {#if chip.without}<span class="visually-hidden">without</span>{/if}<span class="text">{chip.text}</span>
       <button type="button" aria-label="Remove {chip.without ? 'without ' : ''}{chip.text}" {disabled}
         onclick={() => onremove(chip.id)}><Icon svg={xmark} /></button>
     </li>
@@ -61,7 +63,7 @@ li {
   border-radius: var(--radius-control);
   background-color: var(--color-sidebar-pill-set-bg);
   color: var(--color-frame-text);
-  font-size: var(--font-size-small);
+  font-size: var(--font-size-filter-chip);
 
   &.without {
     border-color: var(--color-sidebar-pill-border);
@@ -78,6 +80,15 @@ img {
   inline-size: var(--filter-chip-site);
   block-size: var(--filter-chip-site);
   object-fit: contain;
+}
+
+.label {
+  flex: none;
+  color: var(--color-sidebar-pill-set-text);
+
+  .without & {
+    color: var(--color-sidebar-pill-text);
+  }
 }
 
 .text {

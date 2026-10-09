@@ -42,7 +42,7 @@ function onkeydown(event: KeyboardEvent) {
     <button
       bind:this={button}
       type="button"
-      class={['toggle', { active, open }]}
+      class={['toggle', { active, open, regular }]}
       aria-label={count > 0 ? `Advanced Filters (${count} on)` : 'Advanced Filters'}
       aria-expanded={open}
       aria-controls={controls}
@@ -79,7 +79,19 @@ function onkeydown(event: KeyboardEvent) {
     background-color: var(--color-tool-hover-bg);
   }
 
-  &.active {
+  /* Beside a section toolbar's regular eye: its color, size and hover, and no overhang. */
+  &.regular {
+    margin-inline-end: 0;
+    color: var(--color-tool);
+    font-size: var(--font-size-tool);
+
+    &:is(:hover, :focus-visible) {
+      color: var(--color-tool-hover);
+    }
+  }
+
+  &.active,
+  &.regular.active {
     color: var(--brand-primary);
   }
 

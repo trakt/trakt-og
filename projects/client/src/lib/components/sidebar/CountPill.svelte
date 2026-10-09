@@ -33,7 +33,7 @@ const format = (value: number) => value.toLocaleString('en-US');
   border-radius: var(--radius-sidebar-pill);
   background-color: var(--color-sidebar-pill-bg);
   color: var(--color-sidebar-pill-text);
-  font-size: var(--font-size-small);
+  font-size: var(--font-size-sidebar-pill);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 

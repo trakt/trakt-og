@@ -433,7 +433,7 @@ const title = $derived(`${data.target === 'my' ? 'My ' : ''}${data.calendar.labe
             label="Next month" /></a>
       </div>
     </div>
-    <div class="rail-group">{@render tools()}</div>
+    <div class="rail-group rail-tools">{@render tools()}</div>
     <div class="rail-group">
       {#each views as view (view.value)}
         <button type="button" class="rail-view" aria-pressed={display.view === view.value} title="{view.label} view"
@@ -524,12 +524,17 @@ const title = $derived(`${data.target === 'my' ? 'My ' : ''}${data.calendar.labe
 /* The collapsed rail: today, the month, the tools, the views and the weeks, in spaced groups. */
 .rail-group {
   display: flex;
+  flex: none;
   flex-direction: column;
   align-items: center;
   gap: var(--space-base-block);
   inline-size: 100%;
   padding-block: var(--space-base-inline);
   border-block-start: 1px solid var(--color-sidebar-rule);
+
+  &:first-child {
+    border-block-start: 0;
+  }
 }
 
 .today {
@@ -560,15 +565,26 @@ const title = $derived(`${data.target === 'my' ? 'My ' : ''}${data.calendar.labe
   }
 }
 
+.rail-tools {
+  gap: var(--space-xs-inline);
+
+  & :global(:is(.trigger, .toggle)) {
+    inline-size: var(--rail-tool-width);
+    justify-content: center;
+  }
+}
+
 .rail-month {
   display: flex;
   align-items: center;
+  gap: var(--space-xs-inline);
   font-size: var(--font-size-small);
   font-weight: var(--font-weight-headings-heavy);
   text-transform: uppercase;
 
   & a {
-    padding: 4px 3px;
+    padding: var(--space-xs-inline) var(--space-base-block);
+    border-radius: var(--radius-control);
     color: var(--color-sidebar-label);
 
     &:is(:hover, :focus-visible) {

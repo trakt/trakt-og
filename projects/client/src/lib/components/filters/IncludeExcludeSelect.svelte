@@ -69,10 +69,11 @@ function toggle(value: string, as: 'include' | 'exclude') {
 }
 </script>
 
-<Dropdown block multiple section={label}>
+<div class={['field', { filled: picked > 0 }]}>
+  <Dropdown block multiple section={label}>
   {#snippet trigger()}{#if picked === 0}<span class="placeholder">Any</span>{:else}{#each selection.include as
         value, i (value)}{i > 0 ? ', ' : ''}<span class="kept">{name(value)}</span>{/each}{#each selection.exclude as
-        value, i (value)}{selection.include.length + i > 0 ? ', ' : ''}<span class="left-out">−{name(value)}</span
+        value, i (value)}{selection.include.length + i > 0 ? ', ' : ''}<span class="left-out">{name(value)}</span
         >{/each}{/if}{/snippet}
   <div class="picker" aria-label={label}>
     <button type="button" class="reset" disabled={disabled || picked === 0}
@@ -107,20 +108,32 @@ function toggle(value: string, as: 'include' | 'exclude') {
     {/each}
     {#if excludable}<p class="hint">⊕ shows only these, ⊖ hides them</p>{/if}
   </div>
-</Dropdown>
+  </Dropdown>
+</div>
 
 <style>
+/* "Any" reads as the value it is. A field with picks takes the red "filter on" look of the chips and the funnel:
+   kept values in white, left-out ones struck through. */
 .placeholder {
-  color: var(--color-control-muted);
-  font-weight: normal;
+  color: var(--color-control-text);
+}
+
+.field.filled :global(.trigger) {
+  border-color: var(--color-sidebar-pill-set-border);
+  background-color: var(--color-sidebar-pill-set-bg);
+
+  & :global(.section) {
+    color: var(--color-sidebar-pill-set-text);
+  }
 }
 
 .kept {
-  color: var(--color-filter-include-text);
+  color: var(--color-control-text);
 }
 
 .left-out {
-  color: var(--color-filter-exclude-text);
+  color: var(--color-sidebar-pill-set-text);
+  text-decoration: line-through;
 }
 
 .picker {

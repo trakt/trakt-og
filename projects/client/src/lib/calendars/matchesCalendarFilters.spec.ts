@@ -40,4 +40,11 @@ describe('matchesCalendarFilters', () => {
       items.slice(0, 1),
     );
   });
+  it('should leave out the excluded types of a mixed list', () => {
+    const mixed = {
+      ...emptyFilters,
+      episode_types: { values: ['standard'], mode: 'any' as const, excluded: ['series_premiere'] },
+    };
+    expect(items.filter((item) => matchesCalendarFilters(item, mixed))).toEqual(items.slice(1));
+  });
 });

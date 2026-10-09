@@ -33,6 +33,11 @@ describe('util: advancedFiltersQuery', () => {
     });
   });
 
+  it('should leave out the excluded values of a mixed list with a dash', () => {
+    const mixed = { ...emptyFilters, genres: { values: ['drama'], mode: 'any' as const, excluded: ['crime'] } };
+    expect(advancedFiltersQuery(mixed)).toEqual({ genres: 'drama,-crime' });
+  });
+
   it('should send nothing for no filters', () => {
     expect(advancedFiltersQuery(emptyFilters)).toEqual({});
   });

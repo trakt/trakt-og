@@ -16,6 +16,15 @@ describe('util: parseAdvancedFilters', () => {
     expect(parse('status=-ended,-canceled').status).toEqual({ values: ['ended', 'canceled'], mode: 'none' });
   });
 
+  it('should split a list that keeps some values and leaves others out', () => {
+    expect(parse('genres=drama,-crime,comedy').genres).toEqual({
+      values: ['drama', 'comedy'],
+      mode: 'any',
+      excluded: ['crime'],
+    });
+    expect(parse('genres=+drama,-crime').genres).toEqual({ values: ['drama'], mode: 'all', excluded: ['crime'] });
+  });
+
   it('should keep names with spaces, ampersands and pluses', () => {
     expect(parse('status=returning%20series').status.values).toEqual(['returning series']);
     expect(parse('networks=A%26E,Disney%2B').networks.values).toEqual(['A&E', 'Disney+']);
@@ -58,6 +67,11 @@ describe('util: advancedFiltersSearch', () => {
 
   it('should round-trip through the URL', () => {
     const query = 'genres=+drama,+comedy&status=-returning%20series&years=1990-2000&rt_meters=80-100';
+    expect(advancedFiltersSearch(parse(query))).toBe(query);
+  });
+
+  it('should write kept values before the ones left out', () => {
+    const query = 'genres=drama,comedy,-crime&networks=Netflix,-Disney%2B';
     expect(advancedFiltersSearch(parse(query))).toBe(query);
   });
 

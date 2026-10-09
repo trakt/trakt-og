@@ -13,7 +13,10 @@ export function matchesCalendarFilters(item: CalendarItem, filters: AdvancedFilt
   const terms = filters.query.toLocaleLowerCase('en').split(/\s+/).filter(Boolean);
   if (!terms.every((term) => text.includes(term))) return false;
   // Episode type filters leave movies alone on the mixed calendar, as OG's episode-only condition did.
-  if (item.type !== 'episode' || filters.episode_types.values.length === 0) return true;
-  const matches = filters.episode_types.values.includes(item.episode.episode_type ?? 'standard');
-  return filters.episode_types.mode === 'none' ? !matches : matches;
+  if (item.type !== 'episode') return true;
+  const { values, mode, excluded = [] } = filters.episode_types;
+  const type = item.episode.episode_type ?? 'standard';
+  if (excluded.includes(type)) return false;
+  if (values.length === 0) return true;
+  return mode === 'none' ? !values.includes(type) : values.includes(type);
 }

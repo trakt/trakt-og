@@ -659,6 +659,8 @@
   --color-header-vip-text: #cf9be8; /* --brand-tertiary, lifted for contrast on the dark glass */
   --color-header-vip-ring: #ff8a3d; /* the far end of a VIP avatar's ring, which starts and ends red */
   --color-header-avatar-open-ring: rgb(255 255 255 / 0.3);
+  --color-dark-knight-on: var(--brand-secondary); /* the profile menu's Dark Knight row, on */
+  --color-dark-knight-on-bg: light-dark(rgb(0 158 223 / 0.1), rgb(0 158 223 / 0.18));
   --blur-header-glass: blur(18px) saturate(1.4);
   --blur-header-art: blur(40px) saturate(1.6) brightness(0.45); /* the backdrop smeared into the glass */
   --opacity-header-art: 0.7;
@@ -687,7 +689,6 @@
   --space-search-section: 8px;
   --radius-search-panel: 16px;
   --radius-search-row: 8px;
-  --radius-search-chip: 999px;
   --radius-search-kbd: 4px;
   --shadow-search-panel: 0 16px 40px rgb(0 0 0 / 0.35), 0 2px 8px rgb(0 0 0 / 0.15);
   --color-search-ring: rgb(237 28 36 / 0.25); /* the halo outside the focused field's red ring */

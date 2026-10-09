@@ -20,7 +20,7 @@ const airing = (trakt: number, season: number, first_aired = '2026-09-30T01:00:0
   episode: { season, number: 1, title: 'Pilot', ids: { trakt: trakt * 100 + season } },
 });
 const release = (trakt: number) => ({
-  released: '2026-10-01',
+  released: '2026-09-30',
   movie: { title: `Movie ${trakt}`, year: 2026, ids: { trakt, slug: `movie-${trakt}` } },
 });
 
@@ -121,15 +121,15 @@ const requestTo = (path: string) => seen.find((request) => new URL(request.url).
 
 describe('loadCalendar', () => {
   it.each(['2026-13-45', '2026-13-01', '0000-00-00'])(
-    'should load this week for the impossible date %s on public and My calendars',
+    'should load this month for the impossible date %s on public and My calendars',
     async (start) => {
       for (const target of ['all', 'my'] as const) {
         const data = await load({ target, slug: 'movies', token: target === 'my' ? 'fake-token' : null, start });
-        expect(data.window.start).toBe(data.today);
-        expect(data.window.dates).toHaveLength(7);
+        expect(data.window.start).toBe('2026-09-01');
+        expect(data.window.dates).toHaveLength(30);
         expect(shownKeys(data)).toEqual(target === 'my' ? ['m7'] : ['m7', 'm8']);
         expect(new URL(requestTo(`/calendars/${target}/movies/`)?.url ?? '').pathname)
-          .toBe(`/calendars/${target}/movies/2026-09-27/10`);
+          .toBe(`/calendars/${target}/movies/2026-08-30/33`);
       }
     },
   );
@@ -150,8 +150,22 @@ describe('loadCalendar', () => {
     for (const key of ['query', 'episode_types', 'statuses', 'years']) expect(search.has(key)).toBe(false);
     expect(request?.headers.get('authorization')).toBeNull();
     expect(shownKeys(data)).toEqual(['m8']);
-    expect(data.days).toHaveLength(7);
+    expect(data.days).toHaveLength(30);
     expect(data.filters.episode_types.values).toEqual([]);
+  });
+
+  it('should count the month without filters alongside a filtered one, for the sidebar', async () => {
+    const data = await load({ target: 'all', slug: 'movies', token: null, search: '?genres=drama' });
+    const requests = seen.filter((request) => new URL(request.url).pathname.startsWith('/calendars/all/movies/'));
+    expect(requests.map((request) => new URL(request.url).searchParams.get('genres'))).toEqual(['drama', null]);
+    expect(data.totals).toEqual({ episodes: 0, movies: 2 });
+    expect((await load({ target: 'all', slug: 'movies', token: null })).totals).toBeUndefined();
+  });
+
+  it("should read the viewer's display choices from their cookies", async () => {
+    expect((await load({})).display).toEqual({ view: 'list', artwork: 'logo', episodes: 'grouped' });
+    const cookies = { calendar_view: 'month', calendar_artwork: 'poster', calendar_episodes: 'each' };
+    expect((await load({ cookies })).display).toEqual({ view: 'month', artwork: 'poster', episodes: 'each' });
   });
 
   it('should apply episode types on SSR', async () => {
@@ -172,8 +186,8 @@ describe('loadCalendar', () => {
     );
     const data = await load({ target: 'all', slug: 'movies', search: '?watchnow=netflix' });
     const requests = seen.filter((request) => new URL(request.url).pathname.startsWith('/calendars/all/movies/'));
-    expect(requests.map((request) => request.headers.get('authorization'))).toEqual(['Bearer fake-token', null]);
-    expect(requests.every((request) => new URL(request.url).searchParams.get('watchnow') === 'netflix')).toBe(true);
+    const filtered = requests.filter((request) => new URL(request.url).searchParams.get('watchnow') === 'netflix');
+    expect(filtered.map((request) => request.headers.get('authorization'))).toEqual(['Bearer fake-token', null]);
     expect(data.filters.watchnow).toEqual(['netflix']);
     expect(shownKeys(data)).toEqual(['m7']);
   });
@@ -186,10 +200,10 @@ describe('loadCalendar', () => {
     expect(data.fadeHide).toEqual({ fade: ['watched'], hide: ['rated'] });
   });
 
-  it('should honor shared monthly settings, cap requests and keep filler days empty', async () => {
+  it("should page a whole month whatever the account's period, capping requests", async () => {
     const data = await load({
       start: '2026-08-12',
-      calendar: { period: 'month', layout: 'grid', start_day: 'monday', image_type: 'poster' },
+      calendar: { period: 'week', layout: 'grid', start_day: 'monday', image_type: 'poster' },
     });
     const requests = seen.filter((request) => new URL(request.url).pathname.startsWith('/calendars/my/media'));
     expect(requests.map((request) => new URL(request.url).pathname)).toEqual([
@@ -197,10 +211,9 @@ describe('loadCalendar', () => {
       '/calendars/my/media/2026-08-17/16',
     ]);
     expect(requests.every((request) => new URL(request.url).searchParams.get('extended') === 'full,images')).toBe(true);
-    expect(data.days).toHaveLength(42);
-    expect(data.days.filter((day) => day.filler)).toHaveLength(11);
-    expect(data.days.filter((day) => day.filler).every((day) => day.items.length === 0)).toBe(true);
-    expect(data.preferences.imageType).toBe('poster');
+    expect(data.days).toHaveLength(31);
+    expect(data.days.at(0)?.date).toBe('2026-08-01');
+    expect(data.display.artwork).toBe('poster');
   });
 
   it("should fetch each day of a month once, since the worker's days=N covers N + 1 days", async () => {
@@ -222,10 +235,10 @@ describe('loadCalendar', () => {
     expect([covered.at(0), covered.at(-1)]).toEqual(['2026-07-30', '2026-09-02']);
   });
 
-  it('should use the viewer date before applying the start-day setting', async () => {
-    const data = await load({ timeZone: 'Pacific/Kiritimati', calendar: { start_day: 'yesterday' } });
+  it("should take today and the month from the viewer's zone", async () => {
+    const data = await load({ timeZone: 'Pacific/Kiritimati', start: '2026-10-31' });
     expect(data.today).toBe('2026-09-30');
-    expect(data.window.start).toBe('2026-09-29');
+    expect(data.window.start).toBe('2026-10-01');
   });
 
   describe('for My calendars', () => {
@@ -242,12 +255,12 @@ describe('loadCalendar', () => {
       const data = await load({});
 
       const calendar = requestTo('/calendars/my/media/');
-      expect(new URL(calendar?.url ?? '').pathname).toBe('/calendars/my/media/2026-09-27/10');
+      expect(new URL(calendar?.url ?? '').pathname).toBe('/calendars/my/media/2026-08-30/33');
       expect(calendar?.headers.get('authorization')).toBe('Bearer fake-token');
       expect(requestTo('/users/hidden/calendar')?.headers.get('authorization')).toBe('Bearer fake-token');
       expect(data.calendar.label).toBe('Shows & Movies');
       expect(data.target).toBe('my');
-      expect(shownKeys(data)).toEqual(['1s1', 'm7']);
+      expect(shownKeys(data)).toEqual(['m7', '1s1']);
     });
 
     it('should drop specials only with the setting on', async () => {
@@ -304,8 +317,8 @@ describe('loadCalendar', () => {
       token: null,
       calendar: { period: 'month', image_type: 'none' },
     });
-    expect(data.window.dates).toHaveLength(7);
-    expect(data.preferences.imageType).toBe('logo');
+    expect(data.window.dates).toHaveLength(30);
+    expect(data.display.artwork).toBe('logo');
   });
 
   describe('for All calendars', () => {

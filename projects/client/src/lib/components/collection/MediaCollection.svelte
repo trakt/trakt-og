@@ -1,4 +1,5 @@
 <script lang="ts">
+import { episodeBatchState } from '$lib/components/history/episodeBatchState';
 import { page } from '$app/state';
 import { rawApiFetch } from '$lib/api/rawApiFetch';
 import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
@@ -33,7 +34,12 @@ interface Props {
 const { target, variant = 'card', small = false, onremove, onsave }: Props = $props();
 let busy = $state(false);
 let draft = $state<CollectionMetadata | undefined>();
-const viewerState = $derived(overlay.state(target.type, target.id, target.season));
+// A grouped calendar card counts just its own episodes.
+const viewerState = $derived(
+  target.onlyEpisodeIds && target.season
+    ? episodeBatchState(target.onlyEpisodeIds.map((id) => overlay.state('episode', id, target.season)))
+    : overlay.state(target.type, target.id, target.season),
+);
 const dates = $derived(page.data.datePreferences);
 const fill = $derived(
   quickIconFill({

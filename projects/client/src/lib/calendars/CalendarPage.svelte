@@ -190,9 +190,8 @@ function cardIcons(
   <div class={['calendar-days', data.preferences.layout, data.preferences.imageType]}>
   {#each days as day (day.date)}
     <section class="day">
-      <CalendarDayHeader date={day.date} today={day.date === data.today} filler={day.filler}
+      <CalendarDayHeader date={day.date} today={day.date === data.today}
         compact={data.preferences.layout === 'grid'} autoscroll={data.preferences.autoscroll} />
-      {#if !day.filler}
       {#if day.cards.length === 0}
         {#if data.preferences.layout === 'grid'}<div class="empty-day" role="img" aria-label="Nothing on this day."></div>
         {:else}<NoData inFrame>Nothing on this day.</NoData>{/if}
@@ -214,7 +213,6 @@ function cardIcons(
             </div>
           {/each}
         </div>
-      {/if}
       {/if}
     </section>
   {/each}

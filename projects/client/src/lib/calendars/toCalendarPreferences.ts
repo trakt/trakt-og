@@ -40,5 +40,6 @@ export function toCalendarPreferences(settings: unknown) {
     imageType: imagesAllowed ? calendar?.image_type ?? 'logo' : 'logo',
     autoscroll: calendar?.autoscroll === true,
     hideSpecials: calendar?.hide_specials === true,
+    imagesAllowed,
   };
 }

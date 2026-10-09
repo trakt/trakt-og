@@ -144,9 +144,15 @@ function toggle(value: string, as: 'include' | 'exclude') {
   overflow-y: auto;
 }
 
-/* The menu's rows style every button; these pickers keep their own shape and never show the menu's check. */
-.picker button::after {
+/* The menu styles every button as a row, and a pressed one as its red picked row with a check. These keep their own
+   shape: the selectors outrank the menu's, check included. */
+.picker .rows li button::after,
+.picker > button::after {
   display: none;
+}
+
+.picker .rows li button {
+  font-weight: normal;
 }
 
 .reset {
@@ -217,8 +223,9 @@ li {
   }
 }
 
-.picker .toggle {
+.picker .rows li .toggle {
   display: grid;
+  place-content: center;
   place-items: center;
   inline-size: var(--filter-toggle-size);
   block-size: var(--filter-toggle-size);
@@ -248,7 +255,7 @@ li {
   color: var(--color-text-inverse);
 }
 
-.kept .name {
+.picker .rows .kept .name {
   color: var(--color-filter-include-text);
   font-weight: var(--font-weight-headings-heavy);
 }
@@ -258,7 +265,7 @@ li {
   color: var(--color-text-inverse);
 }
 
-.left-out .name {
+.picker .rows .left-out .name {
   color: var(--color-filter-exclude-text);
   text-decoration: line-through;
 }

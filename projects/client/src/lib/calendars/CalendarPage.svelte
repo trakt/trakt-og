@@ -533,6 +533,7 @@ const title = $derived(`${data.target === 'my' ? 'My ' : ''}${data.calendar.labe
   border-block-start: 1px solid var(--color-sidebar-rule);
 
   &:first-child {
+    padding-block-start: 0;
     border-block-start: 0;
   }
 }
@@ -577,13 +578,13 @@ const title = $derived(`${data.target === 'my' ? 'My ' : ''}${data.calendar.labe
 .rail-month {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 0;
   font-size: var(--font-size-small);
   font-weight: var(--font-weight-headings-heavy);
   text-transform: uppercase;
 
   & a {
-    padding: var(--space-xs-inline) 3px;
+    padding: var(--space-xs-inline) 1px;
     border-radius: var(--radius-control);
     color: var(--color-sidebar-label);
 

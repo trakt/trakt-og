@@ -2622,7 +2622,7 @@
 /* Sidebar frame: the calendar's sidebar, built to carry over to other pages. Dark in both themes, like the frame. */
 :root {
   --sidebar-width: 350px;
-  --sidebar-rail-width: 68px;
+  --sidebar-rail-width: 62px;
   --sidebar-padding: 20px;
   --sidebar-padding-top: 12px; /* above the page title */
   --sidebar-gap: 14px; /* between the sidebar's blocks */
@@ -2667,7 +2667,9 @@
   --rail-today-width: 44px;
   --rail-week-width: 36px;
   --color-calendar-today-tint: color-mix(in srgb, var(--brand-primary) 10%, var(--color-frame)); /* solid, under pinned dates */
-  --color-calendar-today-bar: linear-gradient(90deg, rgb(237 28 36 / 0.28), rgb(237 28 36 / 0.08) 60%, #2a2a2a);
+  --color-calendar-today-bar: linear-gradient(90deg, rgb(237 28 36 / 0.32), rgb(237 28 36 / 0.1) 60%, transparent),
+    rgb(42 42 42 / 0.82); /* over a blur, so cards scrolling under it don't show through */
+  --calendar-today-blur: blur(12px);
   --color-calendar-past: #8a8a8a;
   --font-size-calendar-today-tag: 11px;
 }

@@ -2673,3 +2673,15 @@
   --calendar-month-cell-min: 120px;
   --color-calendar-out: #191919; /* a neighbouring month's day in the grid */
 }
+
+/* Include and exclude pickers (v3's filters, og's colors): green keeps a value, red leaves it out. */
+:root {
+  --color-filter-include: var(--brand-success);
+  --color-filter-include-text: #7fd17f;
+  --color-filter-exclude: var(--brand-primary);
+  --color-filter-exclude-text: #ff6b70;
+  --color-filter-toggle-idle: #666;
+  --filter-toggle-size: 28px;
+  --filter-picker-width: 280px;
+  --filter-picker-height: 360px;
+}

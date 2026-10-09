@@ -13,7 +13,7 @@ import MiniMonth from '$lib/components/calendar/MiniMonth.svelte';
 import MonthPager from '$lib/components/calendar/MonthPager.svelte';
 import WeekBars from '$lib/components/calendar/WeekBars.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
-import AdvancedFiltersPanel from '$lib/components/filters/AdvancedFiltersPanel.svelte';
+import FiltersPanel from '$lib/components/filters/FiltersPanel.svelte';
 import AdvancedFiltersToggle from '$lib/components/filters/AdvancedFiltersToggle.svelte';
 import { type AdvancedFilters, advancedFiltersSearch } from '$lib/components/filters/advancedFilters';
 import FadeHideMenu from '$lib/components/filters/FadeHideMenu.svelte';
@@ -54,6 +54,7 @@ import { type CalendarGroup, groupCalendarItems } from './groupCalendarItems.ts'
 import { groupLabel } from './groupLabel.ts';
 import type { loadCalendar } from './loadCalendar.ts';
 import { MY_CALENDARS } from './myCalendars.ts';
+import { nearbyMonths } from './nearbyMonths.ts';
 import { PUBLIC_CALENDARS } from './publicCalendars.ts';
 import { toCalendarCard } from './toCalendarCard.ts';
 import { toCalendarGroupCard } from './toCalendarGroupCard.ts';
@@ -121,11 +122,14 @@ function search(filters: AdvancedFilters) {
   const query = advancedFiltersSearch(filters);
   return `${page.url.pathname}${query ? `?${query}` : ''}`;
 }
+// The panel filters as you go, so the history keeps one entry per visit, not one per click.
 function applyFilters(filters: AdvancedFilters) {
+  // eslint-disable-next-line svelte/no-navigation-without-resolve -- the same calendar and month, new filters
+  goto(search(filters), { noScroll: true, keepFocus: true, replaceState: true });
+}
+function closePanel() {
   panelOpen = false;
   funnel?.focus();
-  // eslint-disable-next-line svelte/no-navigation-without-resolve -- the same calendar and month, new filters
-  goto(search(filters), { noScroll: true });
 }
 function removeChip(id: string) {
   // eslint-disable-next-line svelte/no-navigation-without-resolve -- the same calendar and month, new filters
@@ -237,13 +241,7 @@ const href = (target: 'all' | 'my', slug: string, start?: string) =>
 const monthName = (iso: string, style: 'long' | 'short' = 'long') =>
   new Intl.DateTimeFormat('en-US', { month: style, timeZone: 'UTC' }).format(new Date(`${iso}T00:00:00Z`));
 const monthLabel = $derived(`${monthName(data.window.start)} ${data.window.start.slice(0, 4)}`);
-const nearby = $derived(
-  Array.from({ length: 13 }, (_, i) => {
-    const date = new Date(`${data.window.start}T00:00:00Z`);
-    date.setUTCMonth(date.getUTCMonth() + i - 6);
-    return date.toISOString().slice(0, 10);
-  }),
-);
+const nearby = $derived(nearbyMonths({ month: data.window.start, before: 6, after: 6 }));
 const years = $derived(
   [...new Set(nearby.map((start) => start.slice(0, 4)))].map((year) => ({
     year,
@@ -446,12 +444,9 @@ const title = $derived(`${data.target === 'my' ? 'My ' : ''}${data.calendar.labe
   {/snippet}
 
   {#snippet panel()}
-    <AdvancedFiltersPanel id="{panelId}-filters" open={panelOpen} config={data.filterConfig} filters={data.filters}
-      {vip} country={data.watchNowCountry} favorites={data.watchNowFavorites} sources={data.filterSources}
-      clearHref={page.url.pathname} onapply={applyFilters} onclose={() => {
-        panelOpen = false;
-        funnel?.focus();
-      }} />
+    <FiltersPanel id="{panelId}-filters" open={panelOpen} config={data.filterConfig} filters={data.filters} {vip}
+      country={data.watchNowCountry} favorites={data.watchNowFavorites} sources={data.filterSources}
+      onchange={applyFilters} onclose={closePanel} />
   {/snippet}
 
   <div class="calendar" {@attach followScroll}>

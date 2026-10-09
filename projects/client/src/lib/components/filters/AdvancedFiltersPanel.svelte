@@ -29,9 +29,9 @@ import {
 } from '$lib/components/filters/advancedFilters';
 import { fetchFilterBody } from '$lib/components/filters/fetchFilterBody';
 import { type FilterDraft, fromFilterDraft, toFilterDraft } from '$lib/components/filters/filterDraft';
-import { mergeFilterOptions } from '$lib/components/filters/mergeFilterOptions';
 import { episodeTypeOptions } from '$lib/components/filters/episodeTypeOptions';
-import { type FilterOption, optionMappers, optionPaths, statusOptions } from '$lib/components/filters/filterOptions';
+import { fetchListOptions } from '$lib/components/filters/fetchListOptions';
+import { type FilterOption, statusOptions } from '$lib/components/filters/filterOptions';
 import { filterValueLabel } from '$lib/components/filters/filterTags';
 import { type FilterSource, toFilterSources, watchNowOptions } from '$lib/components/filters/watchNowFilter';
 import { traktUrls } from '$lib/traktUrls';
@@ -107,14 +107,10 @@ $effect(() => {
   loadedSources = undefined;
   for (const key of config.lists) {
     if (key === 'status' || key === 'episode_types') continue;
-    Promise.all(
-      (config.optionTypes ?? [config.type]).map((type) =>
-        fetchFilterBody(optionPaths[key](type)).then(optionMappers[key])
-      ),
-    )
-      .then((rows) => {
+    fetchListOptions(key, config)
+      .then((list) => {
         if (requestedKey !== requestKey) return;
-        options = { ...options, [key]: mergeFilterOptions(rows) };
+        options = { ...options, [key]: list };
       })
       .catch(() => {
         if (requestedKey === requestKey) options = { ...options, [key]: [] };

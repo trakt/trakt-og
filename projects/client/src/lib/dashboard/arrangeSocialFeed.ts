@@ -1,6 +1,5 @@
-import type { SocialSitting } from './fetchSocialFeed.ts';
+import type { DescribedSitting, SocialSitting } from './fetchSocialFeed.ts';
 import type { LiveWatch } from './fetchWatching.ts';
-import type { Sitting } from './groupSittings.ts';
 
 export type LiveTile = {
   readonly kind: 'live';
@@ -8,37 +7,33 @@ export type LiveTile = {
   /** How far in, 0 to 100. */
   readonly progress: number;
   readonly minutesLeft: number;
-  /** Watches in the member's sitting from the last 6 hours, which the tile stands in for. */
-  readonly earlier: number;
 };
 
-export type SittingTile = { readonly kind: 'sitting'; readonly sitting: SocialSitting };
+/** A sitting's lead title, the one watched last. */
+export type SittingTile = { readonly kind: 'sitting'; readonly sitting: DescribedSitting };
 
 export type SocialFeedLayout = {
-  /** Four at most: who's watching now, newest start first, then everyone else's latest sitting. */
+  /** Four at most: who's watching now, newest start first, then the lead title of everyone else's latest sitting. */
   readonly tiles: readonly (LiveTile | SittingTile)[];
   /** With five or more watching, the ones past the first three, behind the "+N watching" tile. */
   readonly overflow: readonly LiveTile[];
-  /** The sittings no tile shows. */
-  readonly timeline: readonly SocialSitting[];
+  /** Newest first: the sittings no tile shows, and the rest of each one a tile shows. */
+  readonly timeline: readonly DescribedSitting[];
   /** Members in `overflow`, whose rows say they're watching now. */
   readonly watchingNow: ReadonlySet<string>;
 };
 
 const TILES = 4;
-const RECENT_MS = 6 * 3_600_000;
 
 type ArrangeSocialFeedParams = { sittings: readonly SocialSitting[]; live: readonly LiveWatch[]; now: Date };
 
 /**
- * Lays the feed out: live tiles first, each member's latest sitting in the slots left, and the rest in the timeline.
- * A live member's sittings from the last 6 hours leave the timeline, since their tile covers them. A watch past its
+ * Lays the feed out: live tiles first, then each member's latest sitting in the slots left. A sitting's tile shows only
+ * its lead title, so the rest of it stays in the timeline, re-sorted since it ends earlier. A watch past its
  * `expires_at` is dropped.
  */
 export function arrangeSocialFeed({ sittings, live, now }: ArrangeSocialFeedParams): SocialFeedLayout {
   const at = now.getTime();
-  const recent = (sitting: Sitting) => at - Date.parse(sitting.newest) < RECENT_MS;
-  const mine = (watch: LiveWatch) => (sitting: Sitting) => sitting.member.key === watch.member.key && recent(sitting);
 
   const active = live
     .filter(({ expiresAt }) => Date.parse(expiresAt) > at)
@@ -52,8 +47,6 @@ export function arrangeSocialFeed({ sittings, live, now }: ArrangeSocialFeedPara
         watch,
         progress: Math.round(Math.min(Math.max(share, 0), 1) * 100),
         minutesLeft: Math.max(1, Math.round((expires - at) / 60_000)),
-        earlier: sittings.filter(mine(watch)).flatMap(({ items }) => items)
-          .filter(({ kind }) => kind === 'watch' || kind === 'checkin').length,
       };
     });
 
@@ -66,15 +59,14 @@ export function arrangeSocialFeed({ sittings, live, now }: ArrangeSocialFeedPara
   const fill = overflow.length > 0
     ? []
     : latest.filter(({ member }) => !tileMembers.has(member.key)).slice(0, TILES - shown.length);
-  const covered = new Set([
-    ...fill.map(({ key }) => key),
-    ...shown.flatMap(({ watch }) => sittings.filter(mine(watch)).map(({ key }) => key)),
-  ]);
+  const filled = new Set(fill.map(({ key }) => key));
+  const left = (sitting: SocialSitting) => (filled.has(sitting.key) ? sitting.split.rest : sitting);
 
   return {
-    tiles: [...shown, ...fill.map((sitting): SittingTile => ({ kind: 'sitting', sitting }))],
+    tiles: [...shown, ...fill.map(({ split }): SittingTile => ({ kind: 'sitting', sitting: split.lead }))],
     overflow,
-    timeline: sittings.filter(({ key }) => !covered.has(key)),
+    timeline: sittings.flatMap((sitting) => left(sitting) ?? [])
+      .toSorted((a, b) => Date.parse(b.newest) - Date.parse(a.newest)),
     watchingNow: new Set(overflow.map(({ watch }) => watch.member.key)),
   };
 }

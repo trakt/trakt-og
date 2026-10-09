@@ -27,12 +27,11 @@ export type SittingSummary = {
   /** A row's headline: up to two titles ("Saved by the Bell, Raising Hope +25 shows"), or one with its episodes. */
   readonly head: { readonly links: readonly Link[]; readonly more: string | null };
   /**
-   * A tile: the lead title (the one watched most recently) gives the headline ("Lioness 3x02 +1 show"), the still
-   * (its newest episode's) and the heart, which shows only when it rates the lead.
+   * A tile: the lead title (the one watched most recently) gives the headline ("Lioness 3x02"), the still (its newest
+   * episode's) and the heart, which shows only when it rates the lead.
    */
   readonly tile: {
     readonly link: Link | null;
-    readonly more: string | null;
     readonly still: { readonly href: string; readonly path?: string };
     readonly heart: number | null;
   };
@@ -293,7 +292,6 @@ export function describeSitting({ sitting, now, datePreferences }: DescribeSitti
       link: lead && leadRow
         ? { text: one ? watchedLabel(lead) : leadRow.label, href: one ? lead.title.href : leadRow.href }
         : null,
-      more: moreLabel(named.slice(1)),
       still: { href: leadRow?.href ?? '', path: leadRow?.still },
       heart: lead?.ratings[0]?.rating ?? null,
     },

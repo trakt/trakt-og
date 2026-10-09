@@ -1,11 +1,12 @@
 import { z } from 'zod/v4';
 import { rawApiFetch } from '../api/rawApiFetch.ts';
 import type { DatePreferences } from '../settings/DatePreferences.ts';
-import { describeSitting, type SittingSummary } from './describeSitting.ts';
+import type { SittingSummary } from './describeSitting.ts';
 import { groupSittings, type Sitting } from './groupSittings.ts';
 import { shortAgo } from './shortAgo.ts';
 import { socialActivitySchema } from './socialActivitySchema.ts';
 import { type SocialItem, type SocialMember, toSocialItem } from './toSocialItem.ts';
+import { toSocialSitting } from './toSocialSitting.ts';
 
 type FetchSocialFeedParams = {
   fetch: typeof globalThis.fetch;
@@ -16,7 +17,12 @@ type FetchSocialFeedParams = {
   datePreferences: DatePreferences;
 };
 
-export type SocialSitting = Sitting & { readonly summary: SittingSummary };
+export type DescribedSitting = Sitting & { readonly summary: SittingSummary };
+
+export type SocialSitting = DescribedSitting & {
+  /** For when it gets a tile: its lead title alone, and the rest of it, which stays in the timeline. */
+  readonly split: { readonly lead: DescribedSitting; readonly rest: DescribedSitting | null };
+};
 
 export type SocialFeed = {
   /** Newest first, 12 at most. */
@@ -89,10 +95,7 @@ export async function fetchSocialFeed(
   if ((await following) === 0) return { sittings: [], comments: [], recent: [] };
 
   const all = groupSittings(await collect({ fetch, token, now, datePreferences, day: 0 }, []));
-  const sittings = all.slice(0, SITTINGS).map((sitting) => ({
-    ...sitting,
-    summary: describeSitting({ sitting, now, datePreferences }),
-  }));
+  const sittings = all.slice(0, SITTINGS).map((sitting) => toSocialSitting({ sitting, now, datePreferences }));
   const recent = all
     .filter(({ member, newest }) => member.slug && now.getTime() - Date.parse(newest) < DAY_MS)
     .map(({ member }) => member)

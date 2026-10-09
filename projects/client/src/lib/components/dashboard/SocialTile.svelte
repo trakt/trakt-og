@@ -1,8 +1,9 @@
 <!--
-  One of the Social Feed's top tiles, a still with the text over its bottom. A live tile has the pulsing "Watching now"
-  pill, what's on as the headline, a progress bar and the minutes left. A sitting tile has "Finished 24m ago" (within
-  the hour) or "11h ago", what was watched led by the title watched last, whose newest episode gives the still, and
-  chips for the count and that title's rating. Screen readers get one sentence.
+  One of the Social Feed's top tiles, a still with who and what over its bottom and nothing else there, so the avatar
+  and title line up across the row. A live tile has the pulsing "Watching now" pill with the minutes left beside it,
+  what's on as the headline and its progress along the bottom edge. A sitting tile has "Finished 24m ago" (within the
+  hour) or "11h ago" and only the title watched last, whose newest episode gives the still, with their heart when they
+  rated it; the rest of the sitting stays in the timeline. Screen readers get one sentence.
 -->
 <script lang="ts">
 import fanartPlaceholder from '$lib/assets/placeholders/fanart.png';
@@ -20,7 +21,8 @@ const view = $derived.by(() => {
     return {
       member: watch.member,
       still: { href: watch.href, path: watch.still },
-      head: { text: watch.label, href: watch.href, more: null },
+      head: { text: watch.label, href: watch.href },
+      heart: null,
       sentence: `${watch.member.name} is ${doing} ${watch.label}, ${minutesLeft} minutes left.`,
     };
   }
@@ -29,7 +31,8 @@ const view = $derived.by(() => {
   return {
     member,
     still: summary.tile.still,
-    head: { ...(summary.tile.link ?? { text: '', href: '' }), more: summary.tile.more },
+    head: summary.tile.link ?? { text: '', href: '' },
+    heart: summary.tile.heart,
     sentence: summary.sentence,
   };
 });
@@ -44,6 +47,7 @@ const view = $derived.by(() => {
   <span class="status" aria-hidden="true">
     {#if tile.kind === 'live'}
       <SocialPill dot="live" onImage>Watching now</SocialPill>
+      <SocialPill onImage>{tile.minutesLeft}m left</SocialPill>
     {:else if tile.sitting.summary.fresh}
       <SocialPill dot="done" onImage>Finished {tile.sitting.summary.ago} ago</SocialPill>
     {:else}
@@ -56,22 +60,14 @@ const view = $derived.by(() => {
       <img class="avatar" src={view.member.avatar} alt="" loading="lazy" decoding="async" />
       {#if view.member.href}<a href={view.member.href}>{view.member.name}</a>{:else}<b>{view.member.name}</b>{/if}
     </p>
-    <p class="head"><a href={view.head.href}>{view.head.text}</a>{#if view.head.more}<span aria-hidden="true">{
-            ` ${view.head.more}`
-          }</span>{/if}</p>
-    {#if tile.kind === 'live'}
-      <div class="bar" aria-hidden="true"><i style:inline-size="{tile.progress}%"></i></div>
-      <p class="left" aria-hidden="true">
-        <span>{tile.earlier ? `+${tile.earlier} earlier` : ''}</span>
-        <span>{tile.minutesLeft} min left</span>
-      </p>
-    {:else if tile.sitting.summary.count || tile.sitting.summary.tile.heart}
-      <p class="chips" aria-hidden="true">
-        {#if tile.sitting.summary.count}<span class="chip">{tile.sitting.summary.count}</span>{/if}
-        {#if tile.sitting.summary.tile.heart}<SocialHeart rating={tile.sitting.summary.tile.heart} />{/if}
-      </p>
-    {/if}
+    <p class="head">
+      <a href={view.head.href}>{view.head.text}</a>
+      {#if view.heart}<span aria-hidden="true"><SocialHeart rating={view.heart} /></span>{/if}
+    </p>
   </div>
+  {#if tile.kind === 'live'}
+    <div class="bar" aria-hidden="true"><i style:inline-size="{tile.progress}%"></i></div>
+  {/if}
 </article>
 
 <style>
@@ -104,9 +100,12 @@ const view = $derived.by(() => {
 }
 
 .status {
+  display: flex;
   position: absolute;
   inset-block-start: var(--social-tile-pill-inset);
-  inset-inline-start: var(--social-tile-pill-inset);
+  inset-inline: var(--social-tile-pill-inset);
+  justify-content: space-between;
+  gap: var(--space-sm-block);
 }
 
 .over {
@@ -146,17 +145,31 @@ const view = $derived.by(() => {
 }
 
 .head {
-  overflow: hidden;
+  display: flex;
+  gap: var(--space-base-block);
+  align-items: center;
   font-size: var(--font-size-social-tile);
   font-weight: bold;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+
+  & a {
+    min-inline-size: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  & span {
+    display: flex;
+    flex: none;
+  }
 }
 
+/* Along the bottom edge, so it never pushes the text up. */
 .bar {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
   block-size: var(--social-bar);
-  overflow: hidden;
-  border-radius: var(--social-bar);
   background-color: var(--color-social-bar-track);
 
   & i {
@@ -164,31 +177,6 @@ const view = $derived.by(() => {
     block-size: 100%;
     background-color: var(--color-social-live);
   }
-}
-
-.left {
-  display: flex;
-  justify-content: space-between;
-  font-size: var(--font-size-social-pill);
-  font-variant-numeric: tabular-nums;
-}
-
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-social-chip-gap);
-  align-items: center;
-}
-
-.chip {
-  padding: var(--space-social-chip);
-  border: 1px solid var(--color-social-chip-border-on-image);
-  border-radius: var(--social-pill-radius);
-  background-color: var(--color-social-chip-on-image);
-  font-size: var(--font-size-social-chip);
-  font-weight: bold;
-  line-height: var(--social-chip-line);
-  white-space: nowrap;
 }
 
 .sr {

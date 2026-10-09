@@ -8,7 +8,7 @@
 <script lang="ts">
 import posterPlaceholder from '$lib/assets/placeholders/poster.png';
 import type { SittingLine } from '$lib/dashboard/describeSitting';
-import type { SocialSitting } from '$lib/dashboard/fetchSocialFeed';
+import type { DescribedSitting } from '$lib/dashboard/fetchSocialFeed';
 import type { SocialItem } from '$lib/dashboard/toSocialItem';
 import Icon from '$lib/icons/Icon.svelte';
 import angleDown from '$lib/icons/solid/angle-down.svg?raw';
@@ -22,7 +22,7 @@ import SocialHeart from './SocialHeart.svelte';
 import SocialPill from './SocialPill.svelte';
 
 interface Props {
-  sitting: SocialSitting;
+  sitting: DescribedSitting;
   /** The member is watching something now, behind the "+N watching" tile. */
   watching?: boolean;
   /** The comment card a comment chip jumps to. */

@@ -58,40 +58,16 @@ const { days, today, artwork, autoscroll = false, cardIcons }: Props = $props();
   grid-template-columns: repeat(var(--columns, 1), minmax(0, 1fr));
 }
 
-/* OG's calendar columns by width; posters are narrower, so more fit. */
+/* OG's calendar columns by width. */
 @container (width >= 468px) {
   .cards {
     --columns: 2;
-
-    .poster & {
-      --columns: 4;
-    }
   }
 }
 
 @container (width >= 692px) {
   .cards {
     --columns: 3;
-
-    .poster & {
-      --columns: 5;
-    }
-  }
-}
-
-@container (width >= 892px) {
-  .cards {
-    .poster & {
-      --columns: 6;
-    }
-  }
-}
-
-@container (width >= 1200px) {
-  .cards {
-    .poster & {
-      --columns: 8;
-    }
   }
 }
 
@@ -99,6 +75,11 @@ const { days, today, artwork, autoscroll = false, cardIcons }: Props = $props();
   .cards {
     --columns: 4;
   }
+}
+
+/* Posters are a fixed width, as many to a row as fit. */
+.poster .cards {
+  grid-template-columns: repeat(auto-fill, var(--calendar-poster-width));
 }
 
 .card {

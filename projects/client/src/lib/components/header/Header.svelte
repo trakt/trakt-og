@@ -7,7 +7,6 @@ import { invalidateAll } from '$app/navigation';
 import { page } from '$app/state';
 import logo from '$lib/assets/trakt-logo-red.png';
 import Icon from '$lib/icons/Icon.svelte';
-import bars from '$lib/icons/solid/bars.svg?raw';
 import rocket from '$lib/icons/solid/rocket.svg?raw';
 import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
 import { userManager } from '$lib/auth/userManager';
@@ -107,17 +106,6 @@ async function toggleDarkKnight() {
       <a href={link.href} aria-current={current(link.href)}>{link.title}</a>
     {/each}
   </nav>
-
-  <div class="mobile-links">
-    <HeaderMenu label="Menu">
-      {#snippet trigger()}<Icon svg={bars} />{/snippet}
-      <ul>
-        {#each sections as link (link.href)}
-          <li><a href={link.href} aria-current={current(link.href)}>{link.title}</a></li>
-        {/each}
-      </ul>
-    </HeaderMenu>
-  </div>
 
   <div class="user">
     {#if user}
@@ -268,20 +256,6 @@ async function toggleDarkKnight() {
   box-shadow: 0 0 0 var(--header-avatar-open-ring) var(--color-header-avatar-open-ring);
 }
 
-.mobile-links :global(.trigger) {
-  block-size: var(--header-pill-height);
-  padding-inline: var(--space-sm-inline);
-  border-radius: var(--radius-header-pill);
-  color: var(--color-header-muted);
-  font-size: var(--font-size-nav);
-  text-shadow: none;
-}
-
-.mobile-links :global(:is(.trigger:hover, .header-menu:has(.menu:popover-open) .trigger)) {
-  background-color: var(--color-header-pill);
-  color: var(--color-header-text);
-}
-
 .avatar {
   display: block;
   inline-size: var(--header-avatar-size);
@@ -303,10 +277,6 @@ async function toggleDarkKnight() {
   font-weight: var(--font-weight-headings-heavy);
 }
 
-.mobile-links {
-  display: none;
-}
-
 @media (prefers-reduced-motion: reduce) {
   .links > a,
   .get-vip,
@@ -315,22 +285,10 @@ async function toggleDarkKnight() {
   }
 }
 
-/* Tablets: tighter link pills. */
+/* Tablets: tighter link pills, so every link still fits down to 768px, where phones get the splash instead. */
 @media (width <= 1200px) {
   .links > a {
     padding-inline: var(--space-sm-inline);
-  }
-}
-
-/* The links move into a menu button on smaller screens. OG did so at 768px; og keeps 992px so the bar never
-   overflows beside Get VIP. */
-@media (width < 992px) {
-  .links {
-    display: none;
-  }
-
-  .mobile-links {
-    display: block;
   }
 }
 </style>

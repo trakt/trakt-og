@@ -6,6 +6,7 @@ import { page } from '$app/state';
 import { syncSession } from '$lib/auth/syncSession';
 import { userManager } from '$lib/auth/userManager';
 import CheckinDialog from '$lib/components/checkin/CheckinDialog.svelte';
+import DropNoteDialog from '$lib/components/visibility/DropNoteDialog.svelte';
 import { startCommentReactions } from '$lib/components/comments/startCommentReactions';
 import Footer from '$lib/components/footer/Footer.svelte';
 import Header from '$lib/components/header/Header.svelte';
@@ -57,6 +58,7 @@ onMount(() => {
 {/if}
 <Toaster />
 <CheckinDialog />
+<DropNoteDialog />
 
 <style>
 /* Off-screen until focused, then over the fixed header's logo. */

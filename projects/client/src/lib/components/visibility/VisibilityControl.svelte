@@ -20,6 +20,7 @@ import xmark from '$lib/icons/regular/xmark.svg?raw';
 import { watchDateInput } from '$lib/components/history/watchDateInput';
 import { watchDateInstant } from '$lib/components/history/watchDateInstant';
 import { changeVisibility } from '$lib/components/visibility/changeVisibility';
+import { dropNote } from '$lib/components/visibility/dropNote.svelte';
 import type { VisibilityTarget } from '$lib/components/visibility/VisibilityTarget';
 import { traktUrls } from '$lib/traktUrls';
 
@@ -146,7 +147,10 @@ async function save(at?: string) {
         preventScroll: true,
       });
     }
-    if (await saving) onsave?.();
+    if (!(await saving)) return;
+    onsave?.();
+    // Like v3, a drop asks why. A season dropped through its show doesn't.
+    if (action === 'drop' && target.type === 'show' && !target.season) void dropNote.open(target);
   } finally {
     busy = false;
   }

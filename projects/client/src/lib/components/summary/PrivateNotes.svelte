@@ -1,23 +1,21 @@
 <!--
-  The "Private Notes" box under a summary's overview : the viewer's note with when it
-  was updated, which opens the notes modal to edit it, or an "Add Private Notes" tile. Logged out, the tile signs in
-  and comes back. Saving is optimistic: the box shows the new text at once and puts the old one back if the API fails.
+  The "Private Notes" box under a summary's overview: the viewer's note with when it was updated, which opens the notes
+  modal to edit it. Only an existing note shows. Like v3, og no longer starts general notes: new notes come with a
+  favorite or a drop, or go on list items. Saving is optimistic: the box shows the new text at once and puts the old
+  one back if the API fails. Clearing the text deletes the note and the box goes.
 -->
 <script lang="ts">
-import { page } from '$app/state';
 import { tick } from 'svelte';
 import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
 import { userManager } from '$lib/auth/userManager';
 import NotesDialog from '$lib/components/notes/NotesDialog.svelte';
 import { toast } from '$lib/components/toast/toast.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import memoPlus from '$lib/icons/kit/solid-memo-circle-plus.svg?raw';
 import type { NotableItem } from '$lib/notes/NotableItem';
 import type { PrivateNote } from '$lib/notes/PrivateNote';
 import { saveNote } from '$lib/notes/saveNote';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
 import { formatDate } from '$lib/utils/formatDate';
-import SummaryTile from './SummaryTile.svelte';
 
 interface Props {
   item: NotableItem;
@@ -35,8 +33,6 @@ let open = $state(false);
 let draft = $state('');
 let saving = $state(false);
 let section = $state<HTMLElement>();
-
-const signIn = $derived(`/auth/signin?${new URLSearchParams({ redirect_to: page.url.pathname })}`);
 
 function edit() {
   if (saving) return;
@@ -79,6 +75,7 @@ async function save(text: string) {
 }
 </script>
 
+{#if note}
 <section class="private-notes" bind:this={section} aria-labelledby="{id}-title">
   <h2 id="{id}-title" class="title">
     Private Notes
@@ -86,18 +83,13 @@ async function save(text: string) {
       <span class="updated-at">&mdash; updated {formatDate(note.updatedAt, { ...datePreferences, format: 'll' })}</span>
     {/if}
   </h2>
-  {#if note}
-    <Tooltip text="Click to edit notes" placement="right">
-      {#snippet trigger(tooltip)}
-        <button type="button" class="notes" aria-busy={saving} onclick={edit} {...tooltip}>{note?.text}</button>
-      {/snippet}
-    </Tooltip>
-  {:else if signedIn}
-    <SummaryTile icon={memoPlus} price="Add" site="Private Notes" aria-busy={saving} onclick={edit} />
-  {:else}
-    <SummaryTile icon={memoPlus} price="Add" site="Private Notes" href={signIn} />
-  {/if}
+  <Tooltip text="Click to edit notes" placement="right">
+    {#snippet trigger(tooltip)}
+      <button type="button" class="notes" aria-busy={saving} onclick={edit} {...tooltip}>{note?.text}</button>
+    {/snippet}
+  </Tooltip>
 </section>
+{/if}
 
 {#if signedIn}
   <NotesDialog bind:open bind:draft {item} onsave={save} />
@@ -106,8 +98,6 @@ async function save(text: string) {
 <style>
 .private-notes {
   margin-block-end: 10px;
-  --summary-tile-icon-size: var(--font-size-notes-icon);
-  --summary-tile-icon-top: 3px;
 }
 
 .title {

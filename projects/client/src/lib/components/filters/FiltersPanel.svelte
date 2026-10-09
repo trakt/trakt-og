@@ -324,7 +324,6 @@ function reset() {
   }
 }
 
-
 .label {
   margin: var(--space-base-block) 0 0;
   color: var(--color-sidebar-label);

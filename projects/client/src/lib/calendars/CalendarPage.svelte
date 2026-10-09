@@ -500,7 +500,6 @@ const title = $derived(`${data.target === 'my' ? 'My ' : ''}${data.calendar.labe
   }
 }
 
-
 .clear {
   padding: 3px var(--space-base-block);
   border: 1px solid var(--color-control-border);

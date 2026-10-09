@@ -35,14 +35,14 @@ const heading = $derived(entry.smallTitle ?? { text: entry.title, href: entry.hr
   <div class="meta">
     {@render overlay?.()}
     {#each kinds as kind (kind.text)}<span class="kind" style:--kind="var(--episode-{kind.kind})">{kind.text}</span>{/each}
-    <span class="when">{#if time}<span class="nowrap">{time}</span>{/if}{#if time && network}{' · '}{/if}{#if
+    <span class="when">{#if time}<span class="nowrap">{time}</span>{/if}{#if time && network}&nbsp;·&#32;{/if}{#if
         network}{network}{/if}{#if !time && !network && entry.year}Movie{/if}</span>
   </div>
   <h3><a href={heading.href}>{heading.text}</a>{#if !entry.smallTitle && entry.year}<span class="year">
         {entry.year}</span>{/if}</h3>
   {#if entry.smallTitle}
     <p class="episode">
-      {#if entry.number}<a class="number" href={entry.href}>{entry.number}</a>{' '}{/if}<MediaSpoiler target={spoiler}
+      {#if entry.number}<a class="number" href={entry.href}>{entry.number}&nbsp;</a>{/if}<MediaSpoiler target={spoiler}
         kind="title" inline><a href={entry.href}>{entry.title}</a></MediaSpoiler>
     </p>
   {/if}

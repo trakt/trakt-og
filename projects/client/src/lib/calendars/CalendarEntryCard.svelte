@@ -45,8 +45,8 @@ const shownTitle = $derived(compact && entry.episode ? '' : entry.title);
 {#snippet badge(inline: boolean)}
   {#if group}
     <button type="button" class={['badge', { inline, open }]} aria-expanded={open} aria-controls="{uid}-episodes"
-      popovertarget="{uid}-episodes" style:anchor-name="--episodes-{uid}"
-      title="{group.label}: {watchedCount} of {group.episodes.length} watched">
+  popovertarget="{uid}-episodes" style:anchor-name="--episodes-{uid}"
+  title="{group.label}: {watchedCount} of {group.episodes.length} watched">
       <Icon svg={clone} /><span>{watchedCount > 0 ? `${watchedCount}/${group.episodes.length} watched` : `${group
           .episodes.length} episodes`}</span><Icon svg={chevron} />
     </button>

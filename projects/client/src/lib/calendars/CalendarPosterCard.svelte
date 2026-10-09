@@ -1,7 +1,8 @@
 <!--
-  A calendar entry with poster artwork: the poster alone, nothing laid over it but a grouped card's badge, then a
-  caption under it (the air time and network, a premiere or finale in its color, then the episode number and title or
-  the movie's title and year) and the quick-icon bar.
+  A calendar entry with poster artwork: the poster with only a grouped card's badge and its episode-type tags on it,
+  then a caption under it (the air time and network, then the episode number and title or
+  the movie's title and year) and the quick-icon bar. A premiere or finale is tagged on the poster's bottom-left.
+  Every poster is the same 2:3 box and the title keeps two lines, so cards in a row line up.
     <CalendarPosterCard {entry} {icons}>{#snippet badge()}…{/snippet}</CalendarPosterCard>
 -->
 <script lang="ts">
@@ -34,14 +35,15 @@ const spoiler = $derived(icons.collectionTarget ?? icons.watchTarget ?? icons.ra
     <a href={entry.href} tabindex="-1" aria-hidden="true">
       {#if entry.image}<img src={entry.image} alt="" loading="lazy" decoding="async" />{/if}
     </a>
-    {@render overlay?.()}
-  </div>
-  <div class="caption">
     {#if kinds.length > 0}
       <p class="kinds">{#each kinds as kind (kind.text)}<span style:--kind="var(--episode-{kind.kind})">{kind.text}</span
         >{/each}</p>
     {/if}
-    {#if time || network}<p class="when">{[time, network].filter(Boolean).join(' · ')}</p>{/if}
+    {@render overlay?.()}
+  </div>
+  <div class="caption">
+    <!-- Kept for movies too, blank, so every card's title starts on the same line. -->
+    <p class="when">{[time, network].filter(Boolean).join(' · ') || '\u00a0'}</p>
     <h3>
       {#if entry.number}<a class="number" href={entry.href}>{entry.number}</a>{' '}{/if}<MediaSpoiler
         target={spoiler} kind="title" inline><a href={entry.href}>{entry.title}</a></MediaSpoiler>{#if entry.year}<span
@@ -70,12 +72,16 @@ const spoiler = $derived(icons.collectionTarget ?? icons.watchTarget ?? icons.ra
 
 .poster {
   position: relative;
+  flex: none;
   aspect-ratio: var(--ratio-poster);
   overflow: hidden;
   background: var(--image-placeholder-poster) center / cover;
 
+  /* Laid inside the box, so a poster that isn't quite 2:3 can't stretch it. */
   & a,
   & img {
+    position: absolute;
+    inset: 0;
     display: block;
     inline-size: 100%;
     block-size: 100%;
@@ -93,16 +99,24 @@ const spoiler = $derived(icons.collectionTarget ?? icons.watchTarget ?? icons.ra
   min-inline-size: 0;
 }
 
+/* og's episode-type tags, stacked in the poster's bottom-left corner. */
 .kinds {
+  position: absolute;
+  inset-inline-start: var(--space-base-block);
+  inset-block-end: var(--space-base-block);
   display: flex;
-  flex-wrap: wrap;
-  gap: 0 var(--space-base-block);
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
   margin: 0;
-  font-size: var(--font-size-small);
-  font-weight: var(--font-weight-headings-heavy);
+  pointer-events: none;
 
   & span {
-    color: color-mix(in srgb, var(--kind) 70%, white);
+    padding: var(--calendar-worded-padding);
+    background-color: var(--kind);
+    color: var(--color-text-inverse);
+    font-size: var(--font-size-small);
+    line-height: 1.2;
   }
 }
 
@@ -117,6 +131,7 @@ const spoiler = $derived(icons.collectionTarget ?? icons.watchTarget ?? icons.ra
 
 h3 {
   display: -webkit-box;
+  min-block-size: calc(2 * 1.3em);
   margin: 0;
   overflow: hidden;
   color: var(--color-frame-text);

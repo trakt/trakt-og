@@ -2665,6 +2665,7 @@
   --color-mini-month-marked: #66afe9; /* the first day in view */
   --rail-week-height: 10px;
   --rail-today-width: 44px;
+  --episode-tray-height: 360px; /* a grouped card's episodes popup scrolls past this */
   --calendar-logo-max-width: 80%; /* wide logos keep a margin on both sides */
   --rail-week-width: 36px;
   --color-calendar-today-tint: color-mix(in srgb, var(--brand-primary) 10%, var(--color-frame)); /* solid, under pinned dates */

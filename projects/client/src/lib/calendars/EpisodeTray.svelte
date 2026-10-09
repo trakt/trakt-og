@@ -1,5 +1,5 @@
 <!--
-  The episodes of a grouped calendar card, opened from its badge: each row has its number, its title (kept hidden like
+  The episodes of a grouped calendar card, in the popup its badge opens: each row has its number, its title (kept hidden like
   any unwatched title when spoilers are off) and the episode's own watch, library and list icons.
     <EpisodeTray id="tray" show={1} title="The Diplomat" episodes={card.group.episodes} released />
 -->
@@ -53,9 +53,11 @@ const fill = (episode: CalendarGroupEpisode) =>
 
 <style>
 .episode-tray {
+  max-block-size: var(--episode-tray-height);
   margin: 0;
   padding: 0;
-  background-color: var(--color-card-bg);
+  overflow-y: auto;
+  scrollbar-width: thin;
   list-style: none;
 }
 
@@ -64,8 +66,12 @@ li {
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: var(--space-sm-inline);
-  padding-inline: var(--space-base-inline) var(--space-xs-inline);
-  border-block-start: 1px solid var(--color-frame-border);
+  padding-inline: var(--space-sm-inline) 0;
+  border-radius: var(--radius-menu-row);
+
+  &:hover {
+    background-color: var(--color-menu-row-hover);
+  }
 
   & :global(.quick-icons) {
     background: none;

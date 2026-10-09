@@ -16,6 +16,7 @@ import type { ComponentProps } from 'svelte';
 import type { CalendarArtwork } from './calendarDisplay.ts';
 import type { CalendarEntry } from './CalendarEntry.ts';
 import CalendarPosterCard from './CalendarPosterCard.svelte';
+import PromptPopover from '$lib/components/prompt/PromptPopover.svelte';
 import EpisodeTray from './EpisodeTray.svelte';
 
 interface Props {
@@ -43,8 +44,9 @@ const shownTitle = $derived(compact && entry.episode ? '' : entry.title);
 <!-- Opens the episodes: how many there are, or how many of them are watched once any are. -->
 {#snippet badge(inline: boolean)}
   {#if group}
-    <button type="button" class={['badge', { inline, open }]} aria-expanded={open} aria-controls="{uid}-tray"
-      title="{group.label}: {watchedCount} of {group.episodes.length} watched" onclick={() => (open = !open)}>
+    <button type="button" class={['badge', { inline, open }]} aria-expanded={open} aria-controls="{uid}-episodes"
+      popovertarget="{uid}-episodes" style:anchor-name="--episodes-{uid}"
+      title="{group.label}: {watchedCount} of {group.episodes.length} watched">
       <Icon svg={clone} /><span>{watchedCount > 0 ? `${watchedCount}/${group.episodes.length} watched` : `${group
           .episodes.length} episodes`}</span><Icon svg={chevron} />
     </button>
@@ -76,9 +78,16 @@ const shownTitle = $derived(compact && entry.episode ? '' : entry.title);
   {#if group && artwork === 'none'}
     {@render badge(true)}
   {/if}
-  {#if group && open}
-    <EpisodeTray id="{uid}-tray" show={group.show.id} title={group.show.title} episodes={group.episodes}
-      released={entry.released} />
+  {#if group}
+    <PromptPopover id="{uid}-episodes" anchor="--episodes-{uid}" tone="watched"
+      ontoggle={(event) => (open = event.newState === 'open')}>
+      {#snippet title()}<span class="popup-show">{group.show.title}</span><span class="popup-detail">Season {group
+            .season} · {group.label}</span>{/snippet}
+      {#if open}
+        <EpisodeTray id="{uid}-tray" show={group.show.id} title={group.show.title} episodes={group.episodes}
+          released={entry.released} />
+      {/if}
+    </PromptPopover>
   {/if}
 </div>
 
@@ -100,6 +109,20 @@ const shownTitle = $derived(compact && entry.episode ? '' : entry.title);
 
 .calendar-entry :global(.fanart h3 .spoiler-content.inline) {
   display: inline;
+}
+
+/* The episodes popup's title bar: the show, then the season and what kind of drop it is. */
+.popup-show {
+  display: block;
+}
+
+.popup-detail {
+  display: block;
+  margin-block-start: 2px;
+  font-size: var(--font-size-small);
+  font-weight: normal;
+  line-height: 1.2;
+  opacity: 0.8;
 }
 
 /* A frosted pill in the art's top-right corner that opens the episodes; white while they're open. */

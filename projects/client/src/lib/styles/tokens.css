@@ -2618,3 +2618,49 @@
   --font-size-home-pillar-text: 19px;
   --home-pillar-text-width: 340px;
 }
+
+/* Sidebar frame: the calendar's sidebar, built to carry over to other pages. Dark in both themes, like the frame. */
+:root {
+  --sidebar-width: 350px;
+  --sidebar-rail-width: 64px;
+  --sidebar-padding: 20px;
+  --sidebar-gap: 14px; /* between the sidebar's blocks */
+  --sidebar-section-gap: 8px; /* inside a folding section */
+  --sidebar-edge-tab: 26px;
+  --sidebar-edge-tab-top: 22px;
+  --sidebar-panel-width: 340px; /* the slide-in filter panel */
+  --font-size-sidebar-eyebrow: 11px;
+  --font-size-sidebar-title: 24px;
+  --font-size-sidebar-section: 11px;
+  --letter-spacing-sidebar-label: 0.09em;
+  --color-sidebar-label: #8c8c8c;
+  --color-sidebar-rule: var(--color-frame-border);
+  --color-sidebar-pill-bg: #232323;
+  --color-sidebar-pill-border: #3b3b3b;
+  --color-sidebar-pill-text: #b5b5b5;
+  --color-sidebar-pill-set-bg: rgb(237 28 36 / 0.14); /* --brand-primary, faint */
+  --color-sidebar-pill-set-border: rgb(237 28 36 / 0.6);
+  --color-sidebar-pill-set-text: #f3c9cb;
+  --sidebar-pill-height: 30px;
+  --radius-sidebar-pill: 15px;
+  --shadow-sidebar-edge-tab: 0 2px 8px rgb(0 0 0 / 0.4);
+}
+
+/* Calendar sidebar and views: the heat-map mini month, the rail's week bars, today and pinned dates. */
+:root {
+  --color-mini-month-cell: #262626;
+  --color-mini-month-out: #444;
+  --color-mini-month-heat: var(--brand-primary);
+  --mini-month-heat-max: 80%; /* the busiest day's share of red */
+  --mini-month-gap: 3px;
+  --radius-mini-month-cell: 6px;
+  --font-size-mini-month: 13px;
+  --font-size-mini-month-weekday: 10px;
+  --color-mini-month-marked: #66afe9; /* the first day in view */
+  --rail-week-height: 10px;
+  --rail-week-width: 36px;
+  --color-calendar-today-tint: rgb(237 28 36 / 0.12);
+  --color-calendar-today-bar: linear-gradient(90deg, rgb(237 28 36 / 0.28), rgb(237 28 36 / 0.08) 60%, #2a2a2a);
+  --color-calendar-past: #8a8a8a;
+  --font-size-calendar-today-tag: 11px;
+}

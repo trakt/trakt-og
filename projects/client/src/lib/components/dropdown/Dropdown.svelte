@@ -17,6 +17,9 @@
   `variant="circle"` is the round translucent icon button with no caret that OG put after a profile name.
   `variant="icon"` is a toolbar icon tool with a caret, like the filter eye: a square that fills on hover. `variant="transparent"` is OG's
   `.btn-transparent`: the default button's size and caret with no fill, for dark bands (discover's Recent Comments).
+  `variant="title"` is a page title that picks the page, like the calendar's: pass an `.eyebrow` ("My") and a `.name`
+  ("Shows & Movies") as the trigger, and the caret sits right after the name. `block` stretches the trigger to its
+  container, with the caret at the far end.
 -->
 <script lang="ts">
 import checkThick from '$lib/icons/trakt/check-thick.svg?url';
@@ -32,10 +35,12 @@ interface Props {
   section?: string;
   /** A joined SortDirection follows: square off the end corners. */
   joined?: boolean;
-  variant?: 'default' | 'circle' | 'icon' | 'transparent';
+  /** Fill the container's width, the caret at the far end (a sidebar's full-width fields). */
+  block?: boolean;
+  variant?: 'default' | 'circle' | 'icon' | 'transparent' | 'title';
 }
 
-const { trigger, children, label, section, joined = false, variant = 'default' }: Props = $props();
+const { trigger, children, label, section, joined = false, block = false, variant = 'default' }: Props = $props();
 const id = $props.id();
 
 const focusFirstItem = (event: ToggleEvent & { currentTarget: HTMLElement }) => {
@@ -49,10 +54,15 @@ const closeOnPick = (event: MouseEvent & { currentTarget: HTMLElement }) => {
 };
 </script>
 
-<div class="dropdown" style:anchor-name="--dropdown-{id}">
-  <button type="button" class={['trigger', variant, { joined }]} popovertarget="dropdown-{id}" aria-label={label}>
-    {#if section}<span class="section">{section}:</span>{/if}
-    {@render trigger()}
+<div class={['dropdown', { block }]} style:anchor-name="--dropdown-{id}">
+  <button type="button" class={['trigger', variant, { joined, block }]} popovertarget="dropdown-{id}"
+    aria-label={label}>
+    {#if block}
+      <span class="value">{#if section}<span class="section">{section}:</span>{/if}{@render trigger()}</span>
+    {:else}
+      {#if section}<span class="section">{section}:</span>{/if}
+      {@render trigger()}
+    {/if}
     {#if variant !== 'circle'}<Caret />{/if}
   </button>
   <div
@@ -72,6 +82,30 @@ const closeOnPick = (event: MouseEvent & { currentTarget: HTMLElement }) => {
 <style>
 .dropdown {
   display: inline-block;
+
+  &.block {
+    display: block;
+    min-inline-size: 0;
+  }
+}
+
+.trigger.block {
+  inline-size: 100%;
+  justify-content: space-between;
+
+  /* The label and value share the space left of the caret, cut short when they run long. */
+  & > .value {
+    flex: 1;
+    min-inline-size: 0;
+    overflow: hidden;
+    text-align: start;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  & .section {
+    margin-inline-end: var(--space-control-section);
+  }
 }
 
 .trigger {
@@ -113,6 +147,48 @@ const closeOnPick = (event: MouseEvent & { currentTarget: HTMLElement }) => {
   .dropdown:has(.menu:popover-open) & {
     border-color: var(--color-control-border-hover);
     background-color: var(--color-control-hover-bg);
+  }
+}
+
+.title {
+  display: grid;
+  grid-template-columns: minmax(0, auto) auto;
+  justify-content: start;
+  align-items: center;
+  column-gap: var(--space-base-block);
+  min-block-size: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-frame-text);
+  line-height: 1.15;
+  text-align: start;
+
+  & :global(.eyebrow) {
+    grid-column: 1 / -1;
+    color: var(--color-sidebar-label);
+    font-size: var(--font-size-sidebar-eyebrow);
+    font-weight: var(--font-weight-menu-header);
+    letter-spacing: var(--letter-spacing-sidebar-label);
+    text-transform: uppercase;
+  }
+
+  & :global(.name) {
+    overflow: hidden;
+    font-size: var(--font-size-sidebar-title);
+    font-weight: var(--font-weight-headings-heavy);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* On the name's line, centered on its lowercase letters. */
+  & :global(.caret) {
+    translate: 0 2px;
+  }
+
+  &:hover,
+  .dropdown:has(.menu:popover-open) & {
+    --caret-color: var(--color-frame-text);
   }
 }
 

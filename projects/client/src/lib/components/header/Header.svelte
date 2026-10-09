@@ -53,7 +53,7 @@ const sections = $derived([
   { title: 'Calendar', href: '/calendars' },
 ]);
 
-const profileTabs = ['History', 'Progress', 'Library', 'Ratings', 'Lists', 'Comments', 'Notes', 'Network'];
+const profileTabs = ['History', 'Progress', 'Watchlist', 'Library', 'Ratings', 'Lists', 'Comments', 'Notes', 'Network'];
 const profileLinks = $derived(
   user
     ? [

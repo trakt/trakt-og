@@ -1,5 +1,10 @@
 <script lang="ts">
 import avatar from '$lib/assets/trakt-logo-red.png';
+import mandalorian from '$lib/assets/welcome-mandalorian.jpg';
+import breakingBad from '$lib/assets/mobile-splash-fanart.jpg';
+import brooklyn from '$lib/assets/dashboard-welcome.jpg';
+import profileCover from '$lib/assets/profile-cover-default.jpg';
+import { headerArt } from '$lib/components/header/headerArt';
 import Footer from '$lib/components/footer/Footer.svelte';
 import Header from '$lib/components/header/Header.svelte';
 import type { HeaderUser } from '$lib/components/header/HeaderUser';
@@ -20,7 +25,18 @@ const SETTINGS: ReadonlyArray<readonly [DarkKnight, string]> = [
   ['auto', 'Auto (uses your system appearance setting)'],
 ];
 
+// The art a page hands the header, which tints the bar's glass with it.
+const BACKDROPS: Record<string, string | undefined> = {
+  None: undefined,
+  'Dark art': mandalorian,
+  'Bright art': brooklyn,
+  'Gray and yellow art': breakingBad,
+  'Red profile cover': profileCover,
+};
+
 let who = $state('Signed out');
+let backdrop = $state('Dark art');
+const art = $derived(BACKDROPS[backdrop]);
 let darkKnight = $state<DarkKnight>('false');
 const user = $derived(users[who] ?? null);
 
@@ -48,16 +64,24 @@ function save(body: SettingsBody) {
 <Header {user} {darkKnight} {save} />
 
 <main>
+  {#if art}<div class="backdrop" style:background-image="url('{art}')" {@attach headerArt(art)}></div>{/if}
   <section>
     <h1>Header and footer</h1>
     <p>
-      OG's fixed top bar and footer. Hover or focus Apps and the profile button to open their menus. Below 992px the nav
-      moves into the menu button.
+      The fixed top bar and OG's footer. The bar is dark glass, tinted by the page's backdrop. Click the magnifier or
+      press <kbd>/</kbd> to open search, and hover the profile button for its menu. Below 992px the links move into the
+      menu button.
     </p>
     <fieldset>
       <legend>User</legend>
       {#each Object.keys(users) as option (option)}
         <label><input type="radio" bind:group={who} value={option} /> {option}</label>
+      {/each}
+    </fieldset>
+    <fieldset>
+      <legend>Backdrop</legend>
+      {#each Object.keys(BACKDROPS) as option (option)}
+        <label><input type="radio" bind:group={backdrop} value={option} /> {option}</label>
       {/each}
     </fieldset>
     <label>
@@ -74,6 +98,16 @@ function save(body: SettingsBody) {
 <style>
 main {
   padding-block-start: var(--header-height);
+
+  &:has(.backdrop) {
+    padding-block-start: 0;
+  }
+}
+
+/* Stands in for a page's fanart header, running under the bar. */
+.backdrop {
+  block-size: var(--fanart-header-height);
+  background: center 25% / cover no-repeat;
 }
 
 section {

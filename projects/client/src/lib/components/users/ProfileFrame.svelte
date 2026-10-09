@@ -10,6 +10,7 @@ import { createRelationshipOverlay } from '$lib/users/createRelationshipOverlay.
 import defaultCover from '$lib/assets/profile-cover-default.jpg';
 import privateCover from '$lib/assets/profile-cover-private.jpg';
 import Container from '$lib/components/container/Container.svelte';
+import { headerArt } from '$lib/components/header/headerArt';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import ReportDialog from '$lib/components/summary/ReportDialog.svelte';
 import PrivateLabel from '$lib/components/labels/PrivateLabel.svelte';
@@ -79,6 +80,7 @@ const showOthersControls = $derived(signedIn && !isSelf);
 <section
   class={['profile-cover', { slim, locked: user.isLocked, watching }]}
   style:--cover="url('{cover ?? defaultCover}')"
+  {@attach headerArt(cover ?? defaultCover)}
 >
   {#if overlay}<div class={overlay}></div>{/if}
   {#if user.isLocked}<div class="locked-overlay"></div>{/if}

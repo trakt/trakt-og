@@ -7,6 +7,7 @@
 <script lang="ts">
 import type { Snippet } from 'svelte';
 import type { Attachment } from 'svelte/attachments';
+import { headerArt } from '$lib/components/header/headerArt';
 
 interface Caption {
   /** Who they played, or their jobs. */
@@ -61,6 +62,7 @@ const backdrop = $derived(loadedScreenshot ?? image);
   style:--stats-height={statsHeight}
   style:background-image={backdrop ? `url("${backdrop}")` : undefined}
   {@attach loadScreenshot}
+  {@attach headerArt(backdrop)}
 >
   {#if dropped}<span class="dropped-layer"></span>{/if}
   <div class="shadow-base">

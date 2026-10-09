@@ -10,6 +10,7 @@ import { toast } from '$lib/components/toast/toast.svelte';
 import RatingPopover from '$lib/components/rating/RatingPopover.svelte';
 import { rateMedia } from '$lib/components/rating/rateMedia';
 import type { RatingTarget } from '$lib/components/rating/RatingTarget';
+import { watchedFirst } from '$lib/components/rating/watchedFirst';
 
 interface Props {
   target: RatingTarget;
@@ -18,7 +19,9 @@ interface Props {
 }
 const { target, trigger, variant }: Props = $props();
 let busy = $state(false);
-const value = $derived(overlay.state(target.type, target.id).rating ?? null);
+const userState = $derived(overlay.state(target.type, target.id, target.season));
+const value = $derived(userState.rating ?? null);
+const locked = $derived(watchedFirst(userState, 'rate'));
 
 async function open() {
   if ((await userManager().getUser())?.access_token) return true;
@@ -53,4 +56,4 @@ async function rate(rating: number | null) {
 }
 </script>
 
-<RatingPopover label="Rate {target.title}" {value} {busy} {variant} {trigger} onopen={open} onrate={rate} />
+<RatingPopover label="Rate {target.title}" {value} {busy} {locked} {variant} {trigger} onopen={open} onrate={rate} />

@@ -1,6 +1,7 @@
 <script lang="ts">
 import type { Snippet } from 'svelte';
 import RatingHearts from '$lib/components/rating/RatingHearts.svelte';
+import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import { ratingPrompt } from '$lib/components/rating/ratingPrompt';
 
 interface Props {
@@ -10,10 +11,13 @@ interface Props {
   /** Return false when opening starts sign-in instead. */
   onopen?: () => Promise<boolean>;
   busy?: boolean;
+  /** Why rating is off ("Watch it first to rate it"): the trigger stays, disabled, with this as its tooltip. */
+  locked?: string;
   trigger: Snippet<[{ value: number | null; preview: number | null; busy: boolean }]>;
   variant?: 'summary' | 'card';
 }
-const { label, value, onrate, onopen, busy = false, trigger, variant = 'card' }: Props = $props();
+const { label, value, onrate, onopen, busy = false, locked, trigger: triggerContent, variant = 'card' }: Props =
+  $props();
 const id = $props.id();
 let button = $state<HTMLButtonElement>();
 let popover = $state<HTMLDivElement>();
@@ -22,7 +26,7 @@ let expanded = $state(false);
 const prompt = $derived(ratingPrompt(value, preview));
 
 async function open() {
-  if (busy || (onopen && !(await onopen()))) return;
+  if (busy || locked || (onopen && !(await onopen()))) return;
   popover?.togglePopover();
 }
 
@@ -44,21 +48,26 @@ function toggle(event: ToggleEvent) {
 }
 </script>
 
-<button
-  bind:this={button}
-  type="button"
-  class={['rating-trigger', variant]}
-  style:anchor-name="--rating-{id}"
-  aria-label={label}
-  aria-controls="rating-{id}"
-  aria-haspopup="dialog"
-  aria-expanded={expanded}
-  aria-busy={busy}
-  aria-disabled={busy}
-  onclick={open}
->
-  {@render trigger({ value, preview, busy })}
-</button>
+<Tooltip text={locked} placement="bottom">
+  {#snippet trigger(tooltip)}
+    <button
+      bind:this={button}
+      type="button"
+      class={['rating-trigger', variant, { locked }]}
+      style:anchor-name="--rating-{id}"
+      aria-label={label}
+      aria-controls="rating-{id}"
+      aria-haspopup="dialog"
+      aria-expanded={expanded}
+      aria-busy={busy}
+      aria-disabled={busy || Boolean(locked)}
+      onclick={open}
+      {...tooltip}
+    >
+      {@render triggerContent({ value, preview, busy })}
+    </button>
+  {/snippet}
+</Tooltip>
 <div
   bind:this={popover}
   id="rating-{id}"
@@ -95,6 +104,14 @@ function toggle(event: ToggleEvent) {
   &[aria-disabled='true'] {
     cursor: wait;
     opacity: var(--rating-busy-opacity);
+  }
+  /* Locked until watched: the hearts won't open. A card's community percentage still reads at full strength; the
+     summary's "Rate this" button fades like a disabled action. */
+  &.locked {
+    cursor: not-allowed;
+  }
+  &.locked.summary {
+    opacity: var(--opacity-action-disabled);
   }
   &.summary:has(+ :popover-open) {
     min-inline-size: var(--rating-summary-open-width);

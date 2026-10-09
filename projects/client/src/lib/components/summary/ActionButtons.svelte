@@ -111,10 +111,11 @@ const percentOf = (count: number) => `${progress?.visible ? Math.trunc(count / p
       <MediaList target={listTarget} variant="summary" />
     {:else if kind === 'favorites' && favoriteTarget}
       <MediaFavorite target={favoriteTarget}>
-        {#snippet trigger({ selected, date, busy, toggle })}
+        {#snippet trigger({ selected, date, busy, locked, toggle })}
           <SummaryAction {color} icon={selected ? filledStar : icon} text={selected ? date ? 'Favorited on' : 'Favorited' : label}
             detail={selected ? date : undefined} {selected} busy={busy ? 'Saving favorite' : undefined} aria-pressed={selected}
-            aria-label={selected ? 'Remove from favorites' : label} aria-busy={busy} aria-disabled={busy} onclick={toggle} />
+            aria-label={selected ? 'Remove from favorites' : label} aria-busy={busy} aria-disabled={busy || Boolean(locked)}
+            tooltip={locked} onclick={toggle} />
         {/snippet}
       </MediaFavorite>
     {:else if kind === 'checkin' && checkin}

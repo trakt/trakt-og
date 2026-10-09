@@ -6,6 +6,7 @@ import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
 import { login } from '$lib/auth/login';
 import { userManager } from '$lib/auth/userManager';
 import NotesDialog from '$lib/components/notes/NotesDialog.svelte';
+import { watchedFirst } from '$lib/components/rating/watchedFirst';
 import { toast } from '$lib/components/toast/toast.svelte';
 import type { FavoriteTarget } from '$lib/favorites/FavoriteTarget';
 import { loadFavoriteTarget } from '$lib/favorites/loadFavoriteTarget';
@@ -16,7 +17,8 @@ import { formatDate } from '$lib/utils/formatDate';
 
 interface Props {
   target: FavoriteTarget;
-  trigger: Snippet<[{ selected: boolean; date?: string; busy: boolean; toggle: () => void }]>;
+  /** `locked` is why favoriting is off ("Watch it first to favorite it"): render the trigger disabled with it as a tip. */
+  trigger: Snippet<[{ selected: boolean; date?: string; busy: boolean; locked?: string; toggle: () => void }]>;
 }
 const { target, trigger }: Props = $props();
 let busy = $state(false);
@@ -26,6 +28,7 @@ let draft = $state('');
 let noteId = $state<number | null>(null);
 let promptTarget = $state<FavoriteTarget | null>(null);
 const membership = $derived(overlay.state(target.type, target.id));
+const locked = $derived(watchedFirst(membership, 'favorite'));
 const date = $derived(
   membership.favoritedAt ? formatDate(membership.favoritedAt, { ...page.data.datePreferences, time: true }) : undefined,
 );
@@ -42,7 +45,7 @@ const request = (method: 'POST' | 'PUT') => (path: string, body?: unknown) =>
   });
 
 async function toggle() {
-  if (busy || saving) return;
+  if (busy || saving || locked) return;
   if (!await userManager().getUser()) {
     await login();
     return;
@@ -78,7 +81,7 @@ async function save(notes: string) {
 }
 </script>
 
-{@render trigger({ selected: Boolean(membership.favorited), date, busy, toggle })}
+{@render trigger({ selected: Boolean(membership.favorited), date, busy, locked, toggle })}
 {#if promptTarget}
   <NotesDialog bind:open bind:draft item={promptTarget} favorite busy={saving}
   onsave={save} />

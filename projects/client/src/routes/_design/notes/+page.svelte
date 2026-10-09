@@ -92,9 +92,11 @@ const rows = noteRowsSchema.parse([
       </NoteCard>{/if}
     {/each}
     <h2>Private notes box</h2>
-    <p>Under a summary's overview. Clicking the note opens the notes modal, which saves to the API when signed in.</p>
+    <p>
+      Under a summary's overview, only when the title already has a note. Clicking it opens the notes modal, which saves
+      to the API when signed in. New notes start from a favorite, a drop or a list item instead.
+    </p>
     <PrivateNotes {item} {note} signedIn datePreferences={preferences} />
-    <PrivateNotes {item} note={null} signedIn={false} datePreferences={preferences} />
   </Container>
 </section>
 <NotesDialog bind:open bind:draft {item} onsave={() => open = false} />

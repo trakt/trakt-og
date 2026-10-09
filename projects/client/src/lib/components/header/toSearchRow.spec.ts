@@ -23,9 +23,15 @@ describe('toSearchRow', () => {
         title: 'Breaking Bad',
         type: 'Show',
         tag: '2008',
-        genres: 'drama, science fiction',
+        genres: ['drama', 'science fiction'],
         poster: 'https://media.trakt.tv/images/shows/000/001/388/posters/thumb/fa39b59954.jpg.webp',
       });
+    });
+
+    it('should keep only the first three genres', () => {
+      const show = { ...breakingBad, genres: ['drama', 'crime', 'thriller', 'western'] };
+
+      expect(toSearchRow(hit({ type: 'show', show }))?.genres).toEqual(['drama', 'crime', 'thriller']);
     });
 
     it('should leave out a missing year, genres and poster', () => {
@@ -55,7 +61,7 @@ describe('toSearchRow', () => {
         title: '1x01 Pilot',
         type: 'Episode',
         tag: 'Jan 21, 2008',
-        genres: 'drama, science fiction',
+        genres: ['drama', 'science fiction'],
       });
     });
 

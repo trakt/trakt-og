@@ -685,6 +685,12 @@
   --search-panel-shadow-room: -40px; /* the open panel's clip reaches past its box so its shadow shows */
   --search-panel-inset-top: 8px; /* less above the field, so the panel stays on screen over the bar */
   --search-chip-gap: 8px;
+  --search-pill-gap: 6px; /* between a result's type, year and genre pills */
+  --search-pill-padding: 3px 8px;
+  --space-search-pill-row: 5px; /* between a result's title and its pills */
+  --radius-search-pill: 999px;
+  --font-size-search-pill: 12px;
+  --line-height-search-pill: 1.2;
   --search-poster-width: 40px;
   --search-id-menu-width: 140px; /* the ID lookup menu */
   --search-kbd-size: 22px; /* a key cap: the field's "/" hint and the panel's key hints */
@@ -704,6 +710,9 @@
   --color-search-kbd-bg: light-dark(rgb(0 0 0 / 0.07), rgb(255 255 255 / 0.1));
   --color-search-tip-bg: rgb(0 0 0 / 0.8); /* the search icon's "Search /" tooltip */
   --color-search-type: light-dark(var(--brand-primary), #ff5a5f); /* a result's type; lighter on dark for contrast */
+  --color-search-type-bg: rgb(237 28 36 / 0.18); /* the type pill: --brand-primary, faint */
+  --color-search-type-line: rgb(237 28 36 / 0.45);
+  --color-search-pill-line: rgb(255 255 255 / 0.12);
   --color-search-term: light-dark(rgb(0 0 0 / 0.75), rgb(255 255 255 / 0.85));
   --color-search-in-type: light-dark(rgb(0 0 0 / 0.4), rgb(255 255 255 / 0.4));
 

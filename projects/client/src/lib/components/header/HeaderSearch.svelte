@@ -390,10 +390,10 @@ afterNavigate(({ to }) => {
                 <span class="info">
                   {#if row.topTitle}<span class="top-title">{row.topTitle}</span>{/if}
                   <span class="title">{row.title}</span>
-                  <span class="meta">
-                    <span class="type-name">{row.type}</span>
-                    {#if row.tag}<span>{row.tag}</span>{/if}
-                    {#if row.genres}<span class="genres">{row.genres}</span>{/if}
+                  <span class="pills">
+                    <span class="pill type-name">{row.type}</span>
+                    {#if row.tag}<span class="pill">{row.tag}</span>{/if}
+                    {#each row.genres ?? [] as genre (genre)}<span class="pill genre">{genre}</span>{/each}
                   </span>
                 </span>
               </a>
@@ -844,6 +844,7 @@ input {
 .info {
   display: flex;
   flex-direction: column;
+  gap: var(--space-search-pill-row);
   min-inline-size: 0;
 }
 
@@ -858,25 +859,32 @@ input {
   font-weight: var(--font-weight-headings);
 }
 
-/* Type, year and genres on one line, joined by middle dots. */
-.meta {
+/* Type, year and up to three genres as glass pills. The type is the one tinted red. */
+.pills {
   display: flex;
   flex-wrap: wrap;
-  color: var(--color-search-term);
-  font-size: var(--font-size-base);
+  gap: var(--search-pill-gap);
+}
 
-  & > span + span::before {
-    content: '·';
-    margin-inline: var(--space-xs-inline);
-  }
+.pill {
+  padding: var(--search-pill-padding);
+  border-radius: var(--radius-search-pill);
+  background-color: var(--color-header-pill);
+  box-shadow: inset 0 0 0 1px var(--color-search-pill-line);
+  color: var(--color-search-term);
+  font-size: var(--font-size-search-pill);
+  font-weight: var(--font-weight-headings);
+  line-height: var(--line-height-search-pill);
+  white-space: nowrap;
 }
 
 .type-name {
+  background-color: var(--color-search-type-bg);
+  box-shadow: inset 0 0 0 1px var(--color-search-type-line);
   color: var(--color-search-type);
-  font-weight: var(--font-weight-headings);
 }
 
-.genres {
+.genre {
   text-transform: capitalize;
 }
 

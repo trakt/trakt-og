@@ -7,7 +7,6 @@
 <script lang="ts">
 import FanartCard from '$lib/components/media/FanartCard.svelte';
 import type QuickIcons from '$lib/components/media/QuickIcons.svelte';
-import TextMediaCard from '$lib/components/media/TextMediaCard.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import clone from '$lib/icons/regular/clone.svg?raw';
 import chevron from '$lib/icons/solid/chevron-down.svg?raw';
@@ -16,6 +15,7 @@ import type { ComponentProps } from 'svelte';
 import type { CalendarArtwork } from './calendarDisplay.ts';
 import type { CalendarEntry } from './CalendarEntry.ts';
 import CalendarPosterCard from './CalendarPosterCard.svelte';
+import CalendarTextCard from './CalendarTextCard.svelte';
 import PromptPopover from '$lib/components/prompt/PromptPopover.svelte';
 import EpisodeTray from './EpisodeTray.svelte';
 
@@ -55,7 +55,7 @@ const shownTitle = $derived(compact && entry.episode ? '' : entry.title);
 
 <div class={['calendar-entry', { grouped: group }]}>
   {#if artwork === 'none'}
-    <TextMediaCard {...entry} title={shownTitle} compact={compact} {icons} />
+    <CalendarTextCard {entry} {icons}>{#snippet overlay()}{@render badge(false)}{/snippet}</CalendarTextCard>
   {:else if artwork === 'poster'}
     <CalendarPosterCard {entry} {icons}>
       {#snippet overlay()}
@@ -74,9 +74,6 @@ const shownTitle = $derived(compact && entry.episode ? '' : entry.title);
         {/if}
       {/snippet}
     </FanartCard>
-  {/if}
-  {#if group && artwork === 'none'}
-    {@render badge(true)}
   {/if}
   {#if group}
     <PromptPopover id="{uid}-episodes" anchor="--episodes-{uid}" tone="watched"

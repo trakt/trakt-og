@@ -2665,6 +2665,7 @@
   --color-mini-month-marked: #66afe9; /* the first day in view */
   --rail-week-height: 10px;
   --rail-today-width: 44px;
+  --color-calendar-text-hover: #232323; /* a text card under the pointer */
   --calendar-poster-width: 200px; /* a poster card in the list view */
   --episode-tray-height: 360px; /* a grouped card's episodes popup scrolls past this */
   --calendar-logo-max-width: 80%; /* wide logos keep a margin on both sides */

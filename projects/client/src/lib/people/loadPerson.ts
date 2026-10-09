@@ -11,7 +11,7 @@ type LoadPersonParams = {
   fetch: typeof fetch;
   /** Only for the viewer's private note. */
   token: string | null;
-  /** The layout's data, for the viewer's early-ratings and actor-spoiler settings and note dates. */
+  /** The layout's data, for the viewer's actor-spoiler settings and note dates. */
   parent: () => Promise<{ settings: ViewerSettings | null; user: HeaderUser | null; datePreferences: DatePreferences }>;
   id: string;
   /** The page URL's query: OG's `?sort=`, `?display=` and `?terms=`, so a shared view renders filtered. */
@@ -55,7 +55,6 @@ export async function loadPerson({ fetch, token, parent, id: requested, search }
     movies,
     shows,
     listCount: lists?.status === 200 ? Number(lists.headers.get('x-pagination-item-count')) || 0 : 0,
-    earlyRatings: settings?.browsing?.display_early_ratings ?? false,
     random: Math.random(),
     now: new Date(),
   });

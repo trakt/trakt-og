@@ -135,7 +135,7 @@ function saveFilters(next: FadeHide) {
               {#if row.runtime}<span class="unknown">&mdash; {row.runtime}</span>{/if}
             </p>
             <div class="stats">
-              <ItemStatIcons href={row.href} stats={stats.counts.get(row.id)} comments={row.comments} />
+              <ItemStatIcons href={row.href} stats={stats.counts.get(row.id)} comments={row.comments} released={row.released} />
             </div>
           </div>
           {#if row.overview}<div class="overview"><MediaSpoiler target={{type:"episode",id:row.id}} kind="overview"><Overview overview={row.overview} compact /></MediaSpoiler></div>{/if}

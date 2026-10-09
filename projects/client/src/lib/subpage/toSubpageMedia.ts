@@ -25,7 +25,7 @@ export type SubpageMedia = {
   readonly title: string;
   readonly year?: number;
   readonly href: string;
-  /** For the header's early-ratings setting. */
+  /** Hides the ratings and most counts before release. */
   readonly released?: string | null;
   readonly episodeType?: ReturnType<typeof episodeType>;
   /** The h2 above the title, for seasons and episodes: the show, then the season. */

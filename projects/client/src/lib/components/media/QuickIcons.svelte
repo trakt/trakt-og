@@ -4,7 +4,6 @@
 -->
 <script lang="ts">
 import MediaSpoiler from '$lib/components/summary/MediaSpoiler.svelte';
-import { page } from '$app/state';
 import Spinner from '$lib/components/loading/Spinner.svelte';
 import MediaFavorite from '$lib/components/favorites/MediaFavorite.svelte';
 import type { FavoriteTarget } from '$lib/favorites/FavoriteTarget';
@@ -36,7 +35,7 @@ interface Props {
   fill: QuickIconFill;
   /** The Trakt rating, 0 to 10. Left out, no percentage shows. */
   rating?: number;
-  /** False for future or undated items; early-ratings preferences can override it. */
+  /** False for future or undated items, which show no rating. */
   released?: boolean;
   ratingTarget?: RatingTarget;
   watchTarget?: WatchTarget;
@@ -172,7 +171,7 @@ const ratingLevel = $derived(rating === undefined ? 1 : Math.min(Math.max(Math.t
       {:else}{@render action('ignore', ban, `Hide this ${hide}`, 0)}{/if}
     {/if}
   </div>
-  {#if rating !== undefined && (released !== false || page.data.settings?.browsing?.display_early_ratings)}
+  {#if rating !== undefined && released !== false}
     <MediaSpoiler target={watchTarget ?? collectionTarget ?? ratingTarget} kind="rating">
     {#if ratingTarget}
       <MediaRating target={ratingTarget}>

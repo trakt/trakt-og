@@ -6,7 +6,7 @@ export type PersonCredit = {
   readonly title: string;
   readonly year?: number;
   readonly image?: string;
-  /** The Trakt rating, 0 to 10, left out for anything unreleased (unless the viewer shows early ratings). */
+  /** The Trakt rating, 0 to 10, left out for anything unreleased. */
   readonly rating?: number;
   /** Out by `now`, so the quick icons offer watch now. */
   readonly released: boolean;

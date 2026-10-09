@@ -16,6 +16,8 @@ export type CalendarCard = Omit<ComponentProps<typeof FanartCard>, 'icons'> & {
   episodeBadge?: ComponentProps<typeof PosterCard>['episodeBadge'];
   tagline?: string;
   rating?: number;
+  /** Aired or released by now. Before that the card shows no rating. */
+  released: boolean;
   schedule?: string;
   hideTarget?: { type: 'show'; id: number; title: string };
   overlay: { type: 'episode' | 'movie'; id: number };
@@ -32,7 +34,9 @@ type ClockPreferences = Pick<DatePreferences, 'timeZone' | 'hour24'>;
 export function toCalendarCard(
   item: CalendarItem,
   clock: ClockPreferences & { imageType?: ReturnType<typeof toCalendarPreferences>['imageType'] },
+  now = new Date(),
 ): CalendarCard {
+  const released = new Date(item.at) <= now;
   if (item.type === 'movie') {
     const { movie } = item;
     return {
@@ -43,6 +47,7 @@ export function toCalendarCard(
       title: movie.title,
       year: movie.year ?? undefined,
       rating: movie.rating ?? undefined,
+      released,
       tagline: movie.tagline ?? undefined,
       ...toCalendarImage(item, clock.imageType ?? 'logo'),
     };
@@ -68,6 +73,7 @@ export function toCalendarCard(
     title: episode.title ?? '',
     smallTitle: { text: show.title, href: `/shows/${show.ids.slug}` },
     rating: episode.rating ?? undefined,
+    released,
     schedule: `${airTime(item.at, clock)}${show.network ? ` on ${show.network}` : ''}`,
     ...toCalendarImage(item, clock.imageType ?? 'logo'),
     tags,

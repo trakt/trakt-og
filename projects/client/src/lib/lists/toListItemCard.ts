@@ -43,7 +43,7 @@ export interface ListItemCard {
   };
 }
 
-type Options = { sortBy: string; datePreferences: DatePreferences };
+type Options = { sortBy: string; datePreferences: DatePreferences; now?: Date };
 
 // OG's `under_title = '&nbsp;'`: an empty line keeps every card the same height.
 const BLANK = ' ';
@@ -97,7 +97,11 @@ function lines(
 }
 
 /** A list item as a poster card. */
-export function toListItemCard(row: ListItemRow, { sortBy, datePreferences }: Options): ListItemCard {
+export function toListItemCard(row: ListItemRow, { sortBy, datePreferences, now = new Date() }: Options): ListItemCard {
+  // Nothing unreleased shows a rating, on the card or in the votes line.
+  const out = (date: string | null | undefined) => !!date && new Date(date) <= now;
+  const rated = (rating: number | null | undefined, date: string | null | undefined) =>
+    out(date) ? (rating ?? undefined) : undefined;
   const base = { key: row.id, rank: row.rank, ...(row.notes?.trim() && { notes: row.notes.trim() }) };
   const sorted = (facts: Omit<Facts, 'listedAt'>, href: string) =>
     sortLine(sortBy, { ...facts, listedAt: row.listed_at }, href, datePreferences);
@@ -113,10 +117,13 @@ export function toListItemCard(row: ListItemRow, { sortBy, datePreferences }: Op
         href,
         title: movie.title,
         image: imageUrl(movie.images?.poster?.at(0), 'thumb'),
-        rating: movie.rating ?? undefined,
+        rating: rated(movie.rating, movie.released),
         noteTitle: { title: movie.title, year: movie.year ?? undefined, fanart: fanart(movie.images) },
         lines: lines({
-          sorted: sorted({ ...movie, rating: movie.rating ?? 0, releasedDate: movie.released }, href),
+          sorted: sorted(
+            { ...movie, rating: rated(movie.rating ?? 0, movie.released), releasedDate: movie.released },
+            href,
+          ),
           href,
         }),
       };
@@ -131,13 +138,13 @@ export function toListItemCard(row: ListItemRow, { sortBy, datePreferences }: Op
         href,
         title: show.title,
         image: imageUrl(show.images?.poster?.at(0), 'thumb'),
-        rating: show.rating ?? undefined,
+        rating: rated(show.rating, show.first_aired),
         airedEpisodes: show.aired_episodes ?? undefined,
         noteTitle: { title: show.title, year: show.year ?? undefined, fanart: fanart(show.images) },
         lines: lines({
           sorted: sorted({
             ...show,
-            rating: show.rating ?? 0,
+            rating: rated(show.rating ?? 0, show.first_aired),
             firstAired: show.first_aired,
             runtime: show.total_runtime,
           }, href),
@@ -158,7 +165,7 @@ export function toListItemCard(row: ListItemRow, { sortBy, datePreferences }: Op
         href,
         title,
         image: imageUrl((season.images?.poster ?? show.images?.poster)?.at(0), 'thumb'),
-        rating: season.rating ?? undefined,
+        rating: rated(season.rating, season.first_aired),
         airedEpisodes: season.aired_episodes ?? undefined,
         seasonOf: { show: show.ids.trakt, number: season.number },
         noteTitle: { title: `${show.title}: ${name}`, fanart: fanart(show.images) },
@@ -166,7 +173,7 @@ export function toListItemCard(row: ListItemRow, { sortBy, datePreferences }: Op
           top: { text: show.title, href: showHref(show.ids.slug) },
           sorted: sorted({
             ...season,
-            rating: season.rating ?? 0,
+            rating: rated(season.rating ?? 0, season.first_aired),
             firstAired: season.first_aired,
             runtime: season.total_runtime,
           }, href),
@@ -185,7 +192,7 @@ export function toListItemCard(row: ListItemRow, { sortBy, datePreferences }: Op
         title: episode.title ?? '',
         number: episodeNumber(episode, show.genres),
         image: imageUrl(show.images?.poster?.at(0), 'thumb'),
-        rating: episode.rating ?? undefined,
+        rating: rated(episode.rating, episode.first_aired),
         seasonOf: { show: show.ids.trakt, number: episode.season, episode: episode.number },
         noteTitle: {
           title: `${episodeNumber(episode, show.genres)} ${episode.title ?? ''}`.trim(),
@@ -195,7 +202,11 @@ export function toListItemCard(row: ListItemRow, { sortBy, datePreferences }: Op
         episodeBadge: episodeBadge(episode),
         lines: lines({
           top: { text: show.title, href: showHref(show.ids.slug) },
-          sorted: sorted({ ...episode, rating: episode.rating ?? 0, firstAired: episode.first_aired }, href),
+          sorted: sorted({
+            ...episode,
+            rating: rated(episode.rating ?? 0, episode.first_aired),
+            firstAired: episode.first_aired,
+          }, href),
           href,
         }),
       };

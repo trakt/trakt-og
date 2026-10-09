@@ -9,6 +9,7 @@ import type {
 } from '@trakt/api';
 import type { CastMember } from '../components/summary/CastMember.ts';
 import { countryName, languageName, titleize } from '../components/summary/names.ts';
+import { releasedCounts } from '../components/summary/releasedCounts.ts';
 import { toCrewNames } from '../components/summary/toCrewNames.ts';
 import { type StreamingRank, toExternalRatings } from '../components/summary/toExternalRatings.ts';
 import { imageUrl } from '../utils/imageUrl.ts';
@@ -34,8 +35,6 @@ interface MovieSummaryParams {
   country: string;
   /** The viewer's "other site ratings" setting; on when logged out. */
   otherSiteRatings: boolean;
-  /** The viewer's "display early ratings" setting. */
-  earlyRatings: boolean;
   /** VIPs get the country, language, genre and studio facts as filter links. */
   isVip: boolean;
   now: Date;
@@ -81,7 +80,8 @@ export function toMovieSummary(params: MovieSummaryParams) {
     .toSorted()
     .at(0);
   const earliest = releases.map(({ release_date }) => release_date).toSorted().at(0) ?? released;
-  const showRating = params.earlyRatings || (!!earliest && new Date(earliest) <= now);
+  // Unreleased titles show no ratings and only their list count, whatever the viewer's early-ratings setting.
+  const out = !!earliest && new Date(earliest) <= now;
   const releasedStatus = [undefined, null, 'released', 'in production', 'post production'].includes(movie.status);
 
   const count = (value: number | undefined, one: string, many: string, link?: string) => ({
@@ -106,22 +106,22 @@ export function toMovieSummary(params: MovieSummaryParams) {
       href: `/lists/official/${collection.list.ids.slug}`,
       ...neighbours(params),
     },
-    rating: showRating ? { value: movie.rating ?? 0, votes: movie.votes ?? 0, href: `${href}/stats` } : undefined,
-    external: params.otherSiteRatings
+    rating: out ? { value: movie.rating ?? 0, votes: movie.votes ?? 0, href: `${href}/stats` } : undefined,
+    external: params.otherSiteRatings && out
       ? toExternalRatings({
         ratings: params.ratings,
         rank: params.rank,
         countryName: countryName(params.country),
       })
       : [],
-    counts: [
+    counts: releasedCounts([
       count(stats?.watchers, 'watcher', 'watchers'),
       count(stats?.plays, 'play', 'plays'),
       count(stats?.collectors, 'library', 'libraries'),
       count(stats?.comments, 'comment', 'comments', `${href}/comments`),
       count(stats?.lists, 'list', 'lists', `${href}/lists`),
       count(stats?.favorited, 'favorited', 'favorited'),
-    ],
+    ], out),
     commentCount: stats?.comments ?? movie.comment_count ?? 0,
     listCount: stats?.lists ?? 0,
     facts: {

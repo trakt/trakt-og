@@ -105,6 +105,7 @@ export function toChartCard(
 ): ChartCard {
   const [type, media] = 'show' in row ? ['show' as const, row.show] : ['movie' as const, row.movie];
   const releaseDate = 'show' in row ? row.show.first_aired : row.movie.released;
+  const released = releaseDate ? new Date(releaseDate) <= now : false;
 
   return {
     type,
@@ -113,10 +114,11 @@ export function toChartCard(
     title: media.title,
     year: media.year ?? undefined,
     image: imageUrl(media.images?.fanart?.at(0), 'thumb'),
-    released: releaseDate ? new Date(releaseDate) <= now : false,
+    released,
     rating: media.rating ?? undefined,
     runtime: media.runtime ?? undefined,
     airedEpisodes: 'show' in row ? (row.show.aired_episodes ?? undefined) : undefined,
-    tags: tags(row, chart, order),
+    // Before release a card shows no counts: only the anticipated chart's list count, which is real anticipation.
+    tags: released || chart === 'anticipated' ? tags(row, chart, order) : [],
   };
 }

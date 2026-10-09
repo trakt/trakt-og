@@ -83,7 +83,6 @@ export async function loadSeason({ fetch, parent, id, season: requestedSeason, u
     isVip: layout.user?.isVip ?? false,
     actorSpoilers: layout.settings?.browsing?.spoilers?.actors !== 'hide',
     episodeTypeTags: !layout.settings?.browsing?.hide_episode_type_tags,
-    earlyRatings: layout.settings?.browsing?.display_early_ratings ?? false,
     datePreferences: layout.datePreferences,
     now: new Date(),
   });

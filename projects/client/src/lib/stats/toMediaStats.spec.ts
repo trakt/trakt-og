@@ -24,7 +24,6 @@ const params = {
   rank: { rank: 10, delta: 1, link: 'https://www.justwatch.com/us/movie/fight-club' },
   country: 'us',
   otherSiteRatings: true,
-  earlyRatings: false,
   now: new Date('2026-09-30T00:00:00Z'),
 };
 
@@ -65,13 +64,14 @@ describe('toMediaStats', () => {
     expect(view.strip.counts.at(3)?.href).toBe(`${season.href}/comments`);
   });
 
-  it('should honor early and other-site ratings settings without hiding the distribution', () => {
+  it('should show empty bars, no ratings and only the list count before release', () => {
     const future = { ...media, released: '2027-01-01' };
     const view = toMediaStats({ ...params, media: future, otherSiteRatings: false });
     expect(view.strip.rating).toBeUndefined();
     expect(view.strip.external).toEqual([]);
     expect(view.bars).toHaveLength(10);
-    expect(toMediaStats({ ...params, media: future, earlyRatings: true }).strip.rating).toBeDefined();
+    expect(view.votes).toBe(0);
+    expect(view.strip.counts.map(({ label }) => label)).toEqual([expect.stringMatching(/^lists?$/)]);
     expect(toMediaStats({ ...params, media: { ...media, released: undefined } }).strip.rating).toBeUndefined();
   });
 });

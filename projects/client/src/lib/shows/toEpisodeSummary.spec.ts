@@ -39,7 +39,6 @@ const base: Parameters<typeof toEpisodeSummary>[0] = {
   now: new Date('2026-01-01T00:00:00Z'),
   isVip: false,
   episodeTypeTags: true,
-  earlyRatings: false,
   otherSiteRatings: true,
 };
 describe('toEpisodeSummary', () => {
@@ -80,8 +79,7 @@ describe('toEpisodeSummary', () => {
     expect(view.rating).toBeUndefined();
     expect(view.type).toBeUndefined();
     expect(view.facts.aired?.label).toBe('Airs');
-    expect(toEpisodeSummary({ ...base, episode: { ...episode, first_aired: null }, earlyRatings: true }).rating?.value)
-      .toBe(8.2);
+    expect(view.counts.map(({ label }) => label)).toEqual(['lists']);
   });
   it('should omit actor episode counts and duplicate original titles', () => {
     const cast = {

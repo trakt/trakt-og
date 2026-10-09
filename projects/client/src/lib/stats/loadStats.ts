@@ -71,7 +71,6 @@ export async function loadStats({ fetch, parent, item }: Params) {
       rank: subpage.streamingRank,
       country: subpage.settings?.browsing?.watchnow?.country?.toLowerCase() || 'us',
       otherSiteRatings: subpage.settings?.browsing?.other_site_ratings ?? true,
-      earlyRatings: subpage.settings?.browsing?.display_early_ratings ?? false,
       now: new Date(),
     }),
   };

@@ -35,7 +35,7 @@ describe('describeSitting', () => {
       const mmf = of('MajorMercyFlush');
 
       expect(texts(mmf.head.links)).toEqual(['Lanterns 1x06–1x08']);
-      expect(mmf.tile.link?.text).toBe('Lanterns 1x06–1x08');
+      expect(mmf.tile.link).toEqual({ text: 'Lanterns 1x06–1x08', href: '/shows/lanterns' });
       expect(mmf.tile.still.href).toBe('/shows/lanterns/seasons/1/episodes/8');
       expect(mmf.tile.heart).toBe(10);
       expect(mmf.count).toBe('3 episodes');

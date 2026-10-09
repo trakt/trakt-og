@@ -179,7 +179,7 @@ function onkeydown(event: KeyboardEvent) {
   flex-direction: column;
   align-items: center;
   min-block-size: 0;
-  padding-block-start: var(--space-base-inline);
+  padding-block-start: var(--space-xs-inline);
 }
 
 .show {

@@ -2644,6 +2644,8 @@
   --sidebar-pill-height: 30px;
   --radius-sidebar-pill: 15px;
   --shadow-sidebar-edge-tab: 0 2px 8px rgb(0 0 0 / 0.4);
+  --filter-chip-site: 16px; /* a rating chip's site logo */
+  --filter-chip-remove: 20px;
 }
 
 /* Calendar sidebar and views: the heat-map mini month, the rail's week bars, today and pinned dates. */
@@ -2658,9 +2660,16 @@
   --font-size-mini-month-weekday: 10px;
   --color-mini-month-marked: #66afe9; /* the first day in view */
   --rail-week-height: 10px;
+  --rail-today-width: 44px;
   --rail-week-width: 36px;
-  --color-calendar-today-tint: rgb(237 28 36 / 0.12);
+  --color-calendar-today-tint: color-mix(in srgb, var(--brand-primary) 10%, var(--color-frame)); /* solid, under pinned dates */
   --color-calendar-today-bar: linear-gradient(90deg, rgb(237 28 36 / 0.28), rgb(237 28 36 / 0.08) 60%, #2a2a2a);
   --color-calendar-past: #8a8a8a;
   --font-size-calendar-today-tag: 11px;
+}
+
+:root {
+  --calendar-weekdays-height: 31px; /* the month grid's pinned weekday row */
+  --calendar-month-cell-min: 120px;
+  --color-calendar-out: #191919; /* a neighbouring month's day in the grid */
 }

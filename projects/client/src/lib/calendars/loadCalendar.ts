@@ -137,6 +137,13 @@ export async function loadCalendar(
     },
     // OG's VIP sidebar toggle; the page ignores it for everyone else.
     sidenavHidden,
+    // The sidebar's own state, so SSR renders it as the viewer left it.
+    sidebar: {
+      collapsed: cookies.get('sidebar_collapsed') !== undefined,
+      filters: cookies.get('sidebar_filters') !== 'closed',
+      display: cookies.get('sidebar_display') !== 'closed',
+      feed: cookies.get('sidebar_feed') === 'open',
+    },
     feedUrls: calendarFeedUrls(settings),
   };
 }

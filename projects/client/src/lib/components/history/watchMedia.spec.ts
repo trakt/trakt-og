@@ -3,7 +3,7 @@ import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { rawApiFetch } from '../../api/rawApiFetch.ts';
 import { createOverlay } from '../../overlay/createOverlay.svelte.ts';
-import { watchMedia } from './watchMedia.ts';
+import { BULK_WATCH_LIMIT, watchMedia } from './watchMedia.ts';
 import type { WatchTarget } from './WatchTarget.ts';
 
 const API = 'https://apiz.trakt.tv';
@@ -160,6 +160,46 @@ describe('watchMedia', () => {
     expect(params.notify.error).toHaveBeenCalledWith('Doh! No aired episodes were found to watch.');
     expect(params.overlay.state('show', 5).watchedEpisodes).toBe(2);
   });
+  it('should ask before marking several episodes watched, and write nothing when declined', async () => {
+    const params = await setup();
+    const confirm = vi.fn(() => Promise.resolve(false));
+    const many = [...episodes, { id: 12, show: 5, season: 1, number: 3, completed: false }];
+
+    expect(
+      await watchMedia({
+        ...params,
+        target: { type: 'show', id: 5, title: 'Breaking Bad' },
+        force: true,
+        episodes: () => Promise.resolve(many),
+        confirm,
+      }),
+    ).toBe(false);
+    expect(confirm).toHaveBeenCalledWith(3);
+    expect(params.overlay.state('show', 5).watchedEpisodes).toBe(2);
+  });
+
+  it('should refuse a whole show past the bulk limit and point to seasons', async () => {
+    const params = await setup();
+    const confirm = vi.fn(() => Promise.resolve(true));
+    const jeopardy = Array.from(
+      { length: BULK_WATCH_LIMIT + 1 },
+      (_, index) => ({ id: 1000 + index, show: 5, season: 1, number: index + 1, completed: false }),
+    );
+
+    expect(
+      await watchMedia({
+        ...params,
+        target: { type: 'show', id: 5, title: 'Jeopardy!' },
+        episodes: () => Promise.resolve(jeopardy),
+        confirm,
+      }),
+    ).toBe(false);
+    expect(confirm).not.toHaveBeenCalled();
+    expect(params.notify.error).toHaveBeenCalledWith(
+      "That's 301 episodes. Mark them watched one season at a time.",
+    );
+  });
+
   it('should remove one history id and retain another play at the same instant', async () => {
     const params = await setup();
     params.overlay.patch(

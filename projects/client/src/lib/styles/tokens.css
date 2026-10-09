@@ -2527,3 +2527,77 @@
   --font-size-tabloid-inside: 18px;
   --font-size-tabloid-banner: 24px;
 }
+
+:root {
+  /* Home: the OG Redux landing at /home. Dark in both themes, like OG's home page over fanart. */
+  --color-home-bg: #111;
+  --color-home-text: #fff;
+  --color-home-soft: rgb(255 255 255 / 0.82);
+  --color-home-muted: #999;
+  --color-home-line: rgb(255 255 255 / 0.1);
+  --color-home-dash: rgb(255 255 255 / 0.28);
+  --home-content-width: 1170px; /* OG's container, so the copy starts 135px in at 1440 */
+  --home-gutter: 24px;
+  --home-hero-min-height: 640px;
+  --home-hero-top: 95px; /* below the fixed header */
+  --home-hero-bottom: 110px;
+  /* Dark on the copy's side, then faded into the header above and the sections below. */
+  --home-hero-shade:
+    linear-gradient(90deg, rgb(0 0 0 / 0.92) 0%, rgb(0 0 0 / 0.7) 38%, rgb(0 0 0 / 0.25) 70%, rgb(0 0 0 / 0.15)),
+    linear-gradient(to top, var(--color-home-bg), transparent 30%),
+    linear-gradient(to bottom, rgb(0 0 0 / 0.5), transparent 22%);
+  --home-hero-image-position: center 30%;
+  --home-hero-gap: 30px;
+  --home-lede-gap: 26px;
+  --font-weight-home-display: 900;
+  --font-size-home-trakt: 30px;
+  --letter-spacing-home-trakt: 0.32em;
+  /* Container units: the hero is the container, so the lockup scales from tablets up to 250px at 1440. */
+  --font-size-home-wordmark: clamp(120px, 17.4cqi, 250px);
+  --letter-spacing-home-wordmark: -0.06em;
+  --line-height-home-wordmark: 0.8;
+  --home-mark-size: 0.78em; /* the mark standing in for the O */
+  --home-mark-gap: 0.02em;
+  --home-redux-gap: 0.18em;
+  --shadow-home-wordmark: 0 8px 50px rgb(0 0 0 / 0.6);
+  --shadow-home-mark: drop-shadow(0 8px 30px rgb(0 0 0 / 0.5));
+  --font-size-home-lede: 21px;
+  --home-lede-width: 470px;
+  --home-sign-in-height: 50px;
+  --home-sign-in-inline: 24px;
+  --font-size-home-sign-in: 17px;
+  --radius-home-pill: 999px;
+  /* Motion: the mark rolls in, then G, Redux and the copy rise into place. Off under reduced motion. */
+  --home-roll-duration: 1.5s;
+  --home-roll-from: -1200px;
+  --home-roll-turns: -900deg;
+  --home-rise-duration: 0.7s;
+  --home-rise-from: 40px;
+  --home-rise-delay-g: 1.15s;
+  --home-rise-delay-redux: 1.35s;
+  --home-rise-delay-copy: 1.6s;
+  --ease-home: cubic-bezier(0.25, 0.8, 0.25, 1);
+  --home-fanart-fade: 1.6s;
+  --home-fanart-drift: 9s; /* each fanart settles from a slight zoom while it shows */
+  --home-fanart-zoom: 1.06;
+  --home-credit-inline: 40px;
+  --home-credit-block: 70px;
+  --home-credit-gap: 2px;
+  --font-size-home-credit-label: 12px;
+  --font-size-home-credit: 20px;
+  --letter-spacing-home-label: 0.14em;
+  --home-dash-width: 22px;
+  --home-dash-height: 3px;
+  --home-dash-gap: 6px;
+  --home-dashes-gap: 10px;
+  /* The three sections under the hero. */
+  --home-pillar-padding-block: 50px 56px;
+  --home-pillar-padding-inline: clamp(24px, 3.5cqi, 50px);
+  --home-pillar-gap: 10px;
+  --font-size-home-pillar: clamp(44px, 5.3cqi, 76px);
+  --letter-spacing-home-pillar: -0.05em;
+  --font-size-home-pillar-label: 12px;
+  --letter-spacing-home-pillar-label: 0.12em;
+  --font-size-home-pillar-text: 19px;
+  --home-pillar-text-width: 340px;
+}

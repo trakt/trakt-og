@@ -78,6 +78,10 @@ const shownTitle = $derived(compact && entry.episode ? '' : entry.title);
   }
 }
 
+.calendar-entry :global(.fanart .logo) {
+  max-inline-size: var(--calendar-logo-max-width);
+}
+
 .count {
   position: absolute;
   inset-block-start: var(--space-sm-block);

@@ -578,7 +578,7 @@ const title = $derived(`${data.target === 'my' ? 'My ' : ''}${data.calendar.labe
 .rail-month {
   display: flex;
   align-items: center;
-  gap: 0;
+  gap: var(--space-xs-inline);
   font-size: var(--font-size-small);
   font-weight: var(--font-weight-headings-heavy);
   text-transform: uppercase;

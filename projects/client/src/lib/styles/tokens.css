@@ -2665,6 +2665,7 @@
   --color-mini-month-marked: #66afe9; /* the first day in view */
   --rail-week-height: 10px;
   --rail-today-width: 44px;
+  --calendar-logo-max-width: 80%; /* wide logos keep a margin on both sides */
   --rail-week-width: 36px;
   --color-calendar-today-tint: color-mix(in srgb, var(--brand-primary) 10%, var(--color-frame)); /* solid, under pinned dates */
   --color-calendar-today-bar: linear-gradient(90deg, rgb(237 28 36 / 0.32), rgb(237 28 36 / 0.1) 60%, transparent),

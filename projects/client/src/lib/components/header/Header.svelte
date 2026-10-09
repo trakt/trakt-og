@@ -1,16 +1,15 @@
 <!--
-  OG's fixed top bar: logo, search field, main nav, and Get VIP plus either the profile menu or the join and sign-in
-  buttons.
+  The fixed top bar, on dark glass tinted by the page's backdrop (HeaderTint): the Trakt mark, the search icon and the
+  main links on the left, and the account on the right: Get VIP and the profile menu, or one Sign In button.
 -->
 <script lang="ts">
 import { invalidateAll } from '$app/navigation';
 import { page } from '$app/state';
 import logo from '$lib/assets/trakt-logo-red.png';
 import Icon from '$lib/icons/Icon.svelte';
-import angleDown from '$lib/icons/solid/angle-down.svg?raw';
 import bars from '$lib/icons/solid/bars.svg?raw';
-import circleUser from '$lib/icons/solid/circle-user.svg?raw';
 import moon from '$lib/icons/solid/moon.svg?raw';
+import rocket from '$lib/icons/solid/rocket.svg?raw';
 import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
 import { userManager } from '$lib/auth/userManager';
 import { toast } from '$lib/components/toast/toast.svelte';
@@ -24,6 +23,7 @@ import { traktUrls } from '$lib/traktUrls';
 import { MediaQuery } from 'svelte/reactivity';
 import HeaderMenu from './HeaderMenu.svelte';
 import HeaderSearch from './HeaderSearch.svelte';
+import HeaderTint from './HeaderTint.svelte';
 import type { HeaderUser } from './HeaderUser.ts';
 import { reviewLinks } from './reviewLinks.ts';
 
@@ -92,7 +92,8 @@ async function toggleDarkKnight() {
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
 <header class="top-nav">
-  <a class="logo" href="/"><img src={logo} alt="Trakt" width="32" height="32" /></a>
+  <HeaderTint />
+  <a class="logo" href="/"><img src={logo} alt="Trakt" width="34" height="34" /></a>
 
   <HeaderSearch savedType={searchType} viewer={user?.slug ?? null} />
 
@@ -102,28 +103,25 @@ async function toggleDarkKnight() {
     {/each}
   </nav>
 
+  <div class="mobile-links">
+    <HeaderMenu align="end" label="Menu">
+      {#snippet trigger()}<Icon svg={bars} />{/snippet}
+      <ul>
+        {#each sections as link (link.href)}
+          <li><a href={link.href} aria-current={current(link.href)}>{link.title}</a></li>
+        {/each}
+      </ul>
+    </HeaderMenu>
+  </div>
+
   <div class="user">
-    {#if !user?.isVip}<a class="btn btn-vip" href={traktUrls.vip} target="_blank" rel="noopener">Get VIP</a>{/if}
-
-    <div class="mobile-links">
-      <HeaderMenu align="end" label="Menu">
-        {#snippet trigger()}<Icon svg={bars} />{/snippet}
-        <ul>
-          {#each sections as link (link.href)}
-            <li><a href={link.href} aria-current={current(link.href)}>{link.title}</a></li>
-          {/each}
-        </ul>
-      </HeaderMenu>
-    </div>
-
     {#if user}
+      {#if !user.isVip}
+        <a class="get-vip" href={traktUrls.vip} target="_blank" rel="noopener"><Icon svg={rocket} /> Get VIP</a>
+      {/if}
       <div class={['profile', { vip: user.isVip }]}>
-        <HeaderMenu align="end">
-          {#snippet trigger()}
-            <span class="name">{user.firstName}</span>
-            <img class="avatar" src={user.avatarUrl} alt="" width="30" height="30" />
-            <Icon svg={angleDown} />
-          {/snippet}
+        <HeaderMenu align="end" label="{user.firstName}'s menu">
+          {#snippet trigger()}<img class="avatar" src={user.avatarUrl} alt="" width="36" height="36" />{/snippet}
           <ul>
             {#each profileLinks as link (link.href)}
               <li><a href={link.href}>{link.title}</a></li>
@@ -149,152 +147,154 @@ async function toggleDarkKnight() {
         </HeaderMenu>
       </div>
     {:else}
-      <a class="btn btn-signup" href="/auth/signin">JOIN TRAKT</a>
-      <a class="btn btn-signin" href="/auth/signin">SIGN IN</a>
-      <a class="btn-auth" href="/auth/signin" aria-label="Sign in"><Icon svg={circleUser} /></a>
+      <!-- One page signs in and signs up, so one button. -->
+      <a class="sign-in" href="/auth/signin">Sign In</a>
     {/if}
   </div>
 </header>
 
 <style>
+/* Always dark, whatever the page's theme. The tint layer sits under the content (z-index -1 inside this stacking
+   context) and over the glass color. */
 .top-nav {
   position: fixed;
   inset-block-start: 0;
   z-index: var(--z-header);
-  display: grid;
-  grid-template-columns: auto 1fr auto auto;
-  column-gap: calc(var(--space-lg-inline) * 2);
+  display: flex;
   align-items: center;
+  gap: var(--gap-header);
   inline-size: 100%;
   block-size: var(--header-height);
   padding-inline: var(--space-lg-inline);
-  background: var(--color-header-bg);
-  backdrop-filter: var(--blur-header);
+  background: var(--color-header-glass);
+  backdrop-filter: var(--blur-header-glass);
+  box-shadow: inset 0 -1px 0 var(--color-header-edge);
   color: var(--color-header-text);
   font-family: var(--font-headings);
   font-weight: var(--font-weight-headings);
-  transition: background 0.5s;
-
-  @media (hover: hover) {
-    &:hover {
-      background: var(--color-header-bg-hover);
-    }
-  }
-
-  /* OG's body.search-opened */
-  &:has(:global(.header-search.focused)) {
-    background: var(--color-header-bg-hover);
-  }
 }
 
-/* Half the bar's gap after the logo: its auto column takes the negative margin, so the search moves in too. */
 .logo {
   display: flex;
-  margin-inline-end: calc(-1 * var(--space-lg-inline));
+  margin-inline-end: var(--space-xs-inline);
+  filter: var(--shadow-header-logo);
 }
 
-/* Main nav */
+/* Main nav: loose pills. Hover gives a soft glass pill, and the current section is solid red. */
 .links {
-  display: grid;
-  grid-auto-flow: column;
-  align-items: center;
-  margin-inline-end: -12px;
-  font-size: var(--font-size-nav);
+  display: flex;
+  gap: var(--gap-header-links);
+  font-size: var(--font-size-header-link);
 
   & > a {
-    display: block;
-    margin: 0 -4px;
-    padding: var(--space-lg-block) var(--space-lg-inline);
-    color: var(--color-header-text);
+    display: flex;
+    align-items: center;
+    block-size: var(--header-pill-height);
+    padding-inline: var(--space-header-pill-inline);
+    border-radius: var(--radius-header-pill);
+    color: var(--color-header-muted);
     text-decoration: none;
-    text-shadow: var(--text-shadow-headings);
-    transition: color 0.5s;
+    white-space: nowrap;
+    transition: background-color 0.2s, color 0.2s;
 
-    &:is(:hover, [aria-current]) {
-      color: var(--brand-primary);
+    &:hover {
+      background-color: var(--color-header-pill);
+      color: var(--color-header-text);
+    }
+
+    &[aria-current] {
+      background-color: var(--brand-primary);
+      color: var(--color-text-inverse);
+      box-shadow: var(--shadow-header-current);
     }
   }
 }
 
-/* Right-hand buttons */
+/* The account, pushed to the far end. */
 .user {
   display: flex;
   align-items: center;
-  gap: var(--space-lg-inline);
+  gap: var(--space-sm-inline);
+  margin-inline-start: auto;
   white-space: nowrap;
+  font-size: var(--font-size-header-link);
 }
 
-.btn {
-  padding: var(--space-base-block) var(--space-base-inline);
-  border-radius: var(--radius-sm);
-  color: var(--color-header-text);
-  font-size: var(--font-size-nav);
-  font-weight: var(--font-weight-headings-heavy);
-  line-height: var(--line-height-base);
+.get-vip,
+.sign-in {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs-inline);
+  block-size: var(--header-control-height);
+  padding-inline: var(--space-header-pill-inline);
+  border-radius: var(--radius-header-control);
   text-decoration: none;
-  transition: background-color 0.5s, color 0.5s;
+  transition: background-color 0.2s, color 0.2s;
 }
 
-.btn-vip {
-  background-color: var(--brand-tertiary);
+.get-vip {
+  background-color: var(--color-header-vip-bg);
+  color: var(--color-header-vip-text);
 
   &:is(:hover, :focus-visible) {
-    background-color: var(--color-header-btn-hover-bg);
-    color: var(--brand-tertiary);
+    background-color: var(--brand-tertiary);
+    color: var(--color-header-text);
   }
 }
 
-.btn-signup {
+.sign-in {
+  padding-inline: var(--space-header-control-inline);
   background-color: var(--brand-primary);
+  color: var(--color-text-inverse);
 
   &:is(:hover, :focus-visible) {
-    background-color: var(--color-header-btn-hover-bg);
-    color: var(--brand-primary);
+    background-color: var(--brand-primary-darken);
   }
 }
 
-.btn-signin {
-  margin-inline-start: calc(4px - var(--space-lg-inline));
-
-  &:is(:hover, :focus-visible) {
-    color: var(--brand-primary);
-  }
-}
-
-.btn-auth {
-  display: none;
-  color: var(--color-header-text);
-  font-size: 21px;
-
-  &:hover {
-    color: var(--brand-primary);
-  }
-}
-
-.profile :global(.trigger),
-.mobile-links :global(.trigger) {
-  padding: var(--space-base-block) var(--space-lg-inline);
-  font-size: var(--font-size-nav);
-  line-height: 1;
-}
-
-.mobile-links :global(.trigger) {
-  padding: var(--space-lg-block) 8px;
-}
-
-/* OG's 130px, so the menu under it (as wide as this tab) fits "Dark Knight" and its moon on one line. */
 .profile :global(.trigger) {
-  justify-content: end;
-  min-inline-size: 130px;
+  padding: 0;
+  border-radius: 50%;
+  text-shadow: none;
+}
+
+/* The round avatar stays round while its menu is open, so the menu rounds all its corners instead of joining it as a
+   tab. It still touches the avatar, so the mouse can move into it without the hover closing it. */
+.profile :global(.header-menu:has(.menu:popover-open) .trigger) {
+  border-radius: 50%;
+  background: none;
+}
+
+.profile :global(.header-menu.end .menu) {
+  border-block-start: 0;
+  border-radius: var(--radius-lg);
+}
+
+.mobile-links :global(.trigger) {
+  block-size: var(--header-pill-height);
+  padding-inline: var(--space-sm-inline);
+  border-radius: var(--radius-header-pill);
+  color: var(--color-header-muted);
+  font-size: var(--font-size-nav);
+  text-shadow: none;
+}
+
+.mobile-links :global(.trigger:hover) {
+  background-color: var(--color-header-pill);
+  color: var(--color-header-text);
 }
 
 .avatar {
-  margin: 0 8px;
-  border: 2px solid var(--gray-lighter);
+  display: block;
+  inline-size: var(--header-avatar-size);
+  block-size: var(--header-avatar-size);
   border-radius: 50%;
+  object-fit: cover;
 
-  .vip & {
-    border-color: var(--brand-primary);
+  /* VIP: a red-to-orange ring around the avatar. */
+  .profile.vip & {
+    padding: var(--header-avatar-ring);
+    background: conic-gradient(from 200deg, var(--brand-primary), var(--color-header-vip-ring), var(--brand-primary));
   }
 }
 
@@ -317,57 +317,30 @@ async function toggleDarkKnight() {
   display: none;
 }
 
-/* OG's tablet layout: tighter gutters and nav links, and the search shrinks to its icon. */
-@media (width <= 1200px) {
-  .top-nav {
-    column-gap: var(--space-header-tablet);
-    padding-inline: var(--space-lg-inline) var(--space-header-tablet);
-  }
-
-  /* The tablet gap is already tighter than the margin. */
-  .logo {
-    margin-inline-end: 0;
-  }
-
-  .links {
-    margin-inline-end: 0;
-
-    & > a {
-      padding-inline: var(--space-base-inline);
-    }
+@media (prefers-reduced-motion: reduce) {
+  .links > a,
+  .get-vip,
+  .sign-in {
+    transition: none;
   }
 }
 
-/* OG swaps the nav for a menu button on smaller screens. It does so at 768px; og keeps 992px because even Figtree
-   leaves no room at 768px for a long first name beside Get VIP, so the bar overflows. */
-@media (width < 992px) {
-  .top-nav {
-    grid-template-columns: auto 1fr auto;
+/* Tablets: tighter link pills. */
+@media (width <= 1200px) {
+  .links > a {
+    padding-inline: var(--space-sm-inline);
   }
+}
 
+/* The links move into a menu button on smaller screens. OG did so at 768px; og keeps 992px so the bar never
+   overflows beside Get VIP. */
+@media (width < 992px) {
   .links {
     display: none;
   }
 
   .mobile-links {
     display: block;
-  }
-}
-
-/* Phones keep Get VIP and swap Join and Sign In for the account icon. */
-@media (width < 768px) {
-  .btn-signup,
-  .btn-signin,
-  .name {
-    display: none;
-  }
-
-  .btn-auth {
-    display: block;
-  }
-
-  .profile :global(.trigger) {
-    min-inline-size: 0;
   }
 }
 </style>

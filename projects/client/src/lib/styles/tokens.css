@@ -643,38 +643,49 @@
   --font-size-footer-small: 11px; /* copyright */
   --radius-sm: 4px; /* header buttons */
   --radius-lg: 8px; /* search field, header menus */
-  --color-header-bg: rgb(0 0 0 / 0.5);
-  --color-header-bg-hover: rgb(0 0 0 / 0.8);
-  --color-header-search-bg: rgb(255 255 255 / 0.2);
+  --color-header-bg: rgb(0 0 0 / 0.5); /* OG's bar, still used by the official list header */
   --color-header-text: #fff;
   --color-menu-text: light-dark(#000, #ccc);
   --color-header-active-text: light-dark(#000, #fff); /* on --color-box: hovered search field, open profile tab */
-  --color-header-btn-hover-bg: #fff; /* Get VIP and Join Trakt invert on hover */
   --color-menu-divider: light-dark(#e5e5e5, #444);
   --color-menu-separator: light-dark(#e1e1e1, #444); /* between the Apps menu rows */
   --color-footer-muted: #777;
-  --blur-header: blur(4px);
-  --space-header-tablet: 8px; /* column gap and end padding at 1200px and below */
 
-  /* Header search and its autocomplete */
-  --search-max-width: 900px;
-  --search-control-height: 42px;
-  --search-rest-width: 280px; /* OG's 250px, widened so the placeholder fits beside the "/" hint */
-  --search-focused-min-width: 500px;
-  --search-collapsed-width: 40px; /* the icon-only field at 1200px and below */
-  --search-icon-size-mobile: 18px;
-  --space-search-mobile-inset: 9px; /* the focused field's gap to the screen edges on phones */
+  /* The glass bar: dark on every theme, tinted by the page's backdrop when it has one (headerArt). */
+  --color-header-glass: rgb(18 18 18 / 0.55);
+  --color-header-panel: rgb(18 18 18 / 0.82); /* the search panel holds text, so it's less see-through */
+  --color-header-edge: rgb(255 255 255 / 0.1); /* the hairline under the bar */
+  --color-header-muted: rgb(255 255 255 / 0.74); /* links and the search icon at rest */
+  --color-header-pill: rgb(255 255 255 / 0.1); /* hover, the open search icon, the search field */
+  --color-header-vip-bg: rgb(142 68 173 / 0.22); /* --brand-tertiary, faint */
+  --color-header-vip-text: #cf9be8; /* --brand-tertiary, lifted for contrast on the dark glass */
+  --color-header-vip-ring: #ff8a3d; /* the far end of a VIP avatar's ring, which starts and ends red */
+  --blur-header-glass: blur(18px) saturate(1.4);
+  --blur-header-art: blur(40px) saturate(1.6) brightness(0.45); /* the backdrop smeared into the glass */
+  --opacity-header-art: 0.7;
+  --shadow-header-current: 0 4px 12px rgb(237 28 36 / 0.35); /* the red pill's glow */
+  --gap-header: 12px;
+  --gap-header-links: 2px;
+  --space-header-pill-inline: 14px;
+  --space-header-control-inline: 18px; /* Sign In, so the one call to action reads a little bigger */
+  --header-avatar-ring: 2px; /* a VIP avatar's ring */
+  --shadow-header-logo: drop-shadow(0 1px 4px rgb(0 0 0 / 0.35));
+  --radius-header-pill: 9px; /* links, the search icon, the menu button */
+  --radius-header-control: 11px; /* Get VIP, Sign In, the search field */
+  --header-pill-height: 34px;
+  --header-control-height: 40px;
+  --header-avatar-size: 36px;
+  --font-size-header-link: 14px;
+
+  /* Header search: an icon in the bar, and a glass panel with the field and the autocomplete under it */
+  --search-panel-width: 680px; /* room for every type chip and By ID on one row */
   --search-poster-width: 40px;
   --search-id-menu-width: 140px; /* the ID lookup menu */
   --search-kbd-size: 22px; /* a key cap: the field's "/" hint and the panel's key hints */
   --search-close-size: 30px;
-  --search-shortcut-room: 30px; /* the field's end padding for the "/" hint or the clear button */
-
-  /* The focused field and its floating panel. */
-  --space-search-panel-gap: 10px; /* between the field and the panel */
+  --space-search-panel-gap: 8px; /* between the bar and the panel */
   --space-search-section: 8px;
-  --radius-search-field: 10px;
-  --radius-search-panel: 12px;
+  --radius-search-panel: 16px;
   --radius-search-row: 8px;
   --radius-search-chip: 999px;
   --radius-search-kbd: 4px;
@@ -682,7 +693,7 @@
   --color-search-ring: rgb(237 28 36 / 0.25); /* the halo outside the focused field's red ring */
   --color-search-row-hover: light-dark(rgb(0 0 0 / 0.05), rgb(255 255 255 / 0.08));
   --color-search-kbd-bg: light-dark(rgb(0 0 0 / 0.07), rgb(255 255 255 / 0.1));
-  --color-search-shortcut-bg: rgb(255 255 255 / 0.15); /* the "/" hint on the resting field, over the header */
+  --color-search-tip-bg: rgb(0 0 0 / 0.8); /* the search icon's "Search /" tooltip */
   --color-search-type: light-dark(var(--brand-primary), #ff5a5f); /* a result's type; lighter on dark for contrast */
   --color-search-term: light-dark(rgb(0 0 0 / 0.75), rgb(255 255 255 / 0.85));
   --color-search-in-type: light-dark(rgb(0 0 0 / 0.4), rgb(255 255 255 / 0.4));

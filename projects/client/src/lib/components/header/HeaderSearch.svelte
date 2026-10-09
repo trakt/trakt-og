@@ -1,9 +1,10 @@
 <!--
-  The header search: the field and a panel that floats under it once it has focus. The panel holds the type chips
-  (the ID lookups sit in their own menu at the end of the row), the autocomplete rows and a strip of keyboard hints.
+  The header search: a magnifier in the bar that opens a glass panel under it (a manual popover, so it draws in the top
+  layer and its glass blurs the page). The panel holds the field, the type chips (the ID lookups sit in their own menu
+  at the end of the row), the autocomplete rows and a strip of keyboard hints.
   Typing waits 300ms, then shows up to 3 results and a "View all" row. Arrows move the highlight (a combobox with
-  `aria-activedescendant`), Enter opens it or submits the form, Esc closes the panel, and a click outside closes it
-  (and clears an empty field). A bare `/` anywhere else on the page focuses the field.
+  `aria-activedescendant`), Enter opens it or submits the form, Esc or the close button shuts the panel and hands focus back
+  to the magnifier, and a click outside closes it (keeping what was typed). A bare `/` anywhere else opens it.
   The type picks the form's `/search/<type>` action and is kept in the `search_type` cookie so SSR renders it.
   Recent and trending query rows go under the results.
 -->
@@ -17,6 +18,7 @@ import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
 import { userManager } from '$lib/auth/userManager';
 import { toast } from '$lib/components/toast/toast.svelte';
 import { createRecentSearches } from '$lib/components/header/createRecentSearches.svelte';
+import HeaderTint from '$lib/components/header/HeaderTint.svelte';
 import clockRotateLeft from '$lib/icons/light/clock-rotate-left.svg?raw';
 import termMagnifier from '$lib/icons/light/magnifying-glass.svg?raw';
 import termXmark from '$lib/icons/light/xmark.svg?raw';
@@ -74,11 +76,12 @@ const initial = fromUrl(page.url);
 // The cookie only seeds the picker; after that the user's pick lives here.
 let typeSlug = $state<string>(initial?.slug ?? findType(untrack(() => savedType))?.slug ?? '');
 let query = $state(initial?.query ?? '');
-let focused = $state(false);
-let open = $state(false);
+let active = $state(false);
 let result = $state(empty);
 let highlight = $state(-1);
 let input = $state<HTMLInputElement>();
+let toggle = $state<HTMLButtonElement>();
+let panel = $state<HTMLElement>();
 let idMenu = $state<HTMLElement>();
 // The new-tab hint names the platform's modifier. Set after hydration, so SSR and the first render agree.
 let modifier = $state('Ctrl');
@@ -101,9 +104,7 @@ const options = $derived([
   ...terms.map((_, index) => ({ id: `${id}-term-${index}`, href: '' })),
 ]);
 const noRecent = $derived(Boolean(viewer && recent?.loaded && !recent.user.length));
-// The panel opens with the field, so the type chips are there before anything is typed.
-const panelOpen = $derived(focused && open);
-const expanded = $derived(panelOpen && (options.length > 0 || noRecent));
+const expanded = $derived(active && (options.length > 0 || noRecent));
 const activeId = $derived(expanded && highlight >= 0 ? options.at(highlight)?.id : undefined);
 
 let timer: ReturnType<typeof setTimeout> | undefined;
@@ -138,9 +139,9 @@ const runSearch = () => {
 };
 
 const close = (clear: boolean) => {
-  focused = false;
-  open = false;
+  active = false;
   highlight = -1;
+  if (panel?.matches(':popover-open')) panel.hidePopover();
   if (!clear) return;
   clearTimeout(timer);
   inflight?.abort();
@@ -148,40 +149,35 @@ const close = (clear: boolean) => {
   result = empty;
 };
 
-// The close button hides itself, so a keyboard press (no pointer, detail 0) hands focus back to the field.
-const clearSearch = (event: MouseEvent) => {
-  close(true);
-  if (event.detail === 0) input?.focus();
+// The field only exists inside the panel, so the type chips and recent searches are there before anything is typed.
+const openSearch = () => {
+  active = true;
+  highlight = -1;
+  if (!panel?.matches(':popover-open')) panel?.showPopover();
+  input?.focus();
+  void recent?.load();
+};
+
+// Closing from inside the panel hands focus back to the magnifier that opened it.
+const dismiss = (clear: boolean) => {
+  close(clear);
+  toggle?.focus();
 };
 
 const pickType = (slug: string) => {
   typeSlug = slug;
   document.cookie = `search_type=${slug}; max-age=${ONE_YEAR_S}; path=/; samesite=lax`;
   if (idMenu?.matches(':popover-open')) idMenu.hidePopover();
-  open = true;
   input?.focus();
   runSearch();
 };
 
-const onfocus = () => {
-  focused = true;
-  open = true;
-  highlight = -1;
-  void recent?.load();
-};
-
-const oninput = () => {
-  open = true;
-  runSearch();
-};
+const oninput = () => runSearch();
 
 const moveHighlight = (step: 1 | -1) => {
   const count = options.length;
   if (!count) return;
-  if (!expanded) {
-    open = true;
-    return;
-  }
+  if (!expanded) return;
   // Down wraps to the top; up from the top (or from nothing) wraps to the bottom, like OG.
   highlight = highlight < 0 && step < 0 ? count - 1 : (highlight + step + count) % count;
 };
@@ -209,10 +205,9 @@ const onkeydown = (event: KeyboardEvent) => {
   }
 
   if (event.key === 'Escape') {
-    // A search field clears itself on Esc. OG only closed the dropdown.
+    // A search field clears itself on Esc. OG only closed the dropdown, and so does this: the query stays for next time.
     event.preventDefault();
-    open = false;
-    input?.blur();
+    dismiss(false);
     return;
   }
 
@@ -245,40 +240,38 @@ const record = (row: SearchAutocompleteResult['rows'][number]) => {
   void recent?.record(row.recent);
 };
 
-// A click or focus outside closes the panel. With nothing typed, it closes the whole search like OG.
+// A click or focus outside closes the panel. What was typed stays for next time; an empty search resets like OG.
 const dismissOutside = (root: HTMLElement) => {
-  const dismiss = (event: Event) => {
-    if (!focused || (event.target instanceof Node && root.contains(event.target))) return;
-    if (query) open = false;
-    else close(true);
+  const outside = (event: Event) => {
+    if (!active || (event.target instanceof Node && root.contains(event.target))) return;
+    close(!query);
   };
-  document.addEventListener('pointerdown', dismiss);
-  document.addEventListener('focusin', dismiss);
+  document.addEventListener('pointerdown', outside);
+  document.addEventListener('focusin', outside);
   return () => {
-    document.removeEventListener('pointerdown', dismiss);
-    document.removeEventListener('focusin', dismiss);
+    document.removeEventListener('pointerdown', outside);
+    document.removeEventListener('focusin', outside);
   };
 };
 
-// `/` from anywhere on the page focuses the field, like most sites with a search box.
+// `/` from anywhere on the page opens the search, like most sites with a search box.
 const slashShortcut = () => {
   const keydown = (event: KeyboardEvent) => {
     const editing = event.target instanceof Element && Boolean(event.target.closest(EDITABLE));
     const { key, ctrlKey, metaKey, altKey, defaultPrevented } = event;
     if (!isSearchShortcut({ key, ctrlKey, metaKey, altKey, defaultPrevented, editing })) return;
     event.preventDefault();
-    input?.focus();
+    openSearch();
   };
   window.addEventListener('keydown', keydown);
   return () => window.removeEventListener('keydown', keydown);
 };
 
 // The header stays across client-side navigation, so reset it the way a fresh OG page load would. Only a results
-// page keeps a query in the field: its own.
+// page keeps a query for the field: its own.
 afterNavigate(({ to }) => {
   const next = to ? fromUrl(to.url) : null;
   close(!next);
-  input?.blur();
   if (!next) return;
   typeSlug = next.slug;
   query = next.query;
@@ -289,243 +282,229 @@ afterNavigate(({ to }) => {
 <!-- Rows link to OG routes og hasn't built yet, and resolve() only takes routes that exist. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
-<search class={['header-search', { focused }]} {@attach dismissOutside} {@attach slashShortcut}>
-  <form {action} method="get">
-    <label for="{id}-query" class="search-icon"><Icon svg={magnifyingGlass} /></label>
-    <input
-      bind:this={input}
-      bind:value={query}
-      id="{id}-query"
-      type="search"
-      name="query"
-      placeholder="Is it me you're looking for?"
-      aria-label="Search {type.label}"
-      aria-keyshortcuts="/"
-      autocomplete="off"
-      role="combobox"
-      aria-autocomplete="list"
-      aria-controls="{id}-results"
-      aria-expanded={expanded}
-      aria-activedescendant={activeId}
-      {onfocus}
-      {oninput}
-      {onkeydown}
-    />
-    <kbd class="shortcut" aria-hidden="true">/</kbd>
-    <button type="button" class="close" aria-label="Clear search" onclick={clearSearch}>
-      <Icon svg={xmark} />
-    </button>
+<search class={['header-search', { active }]} {@attach dismissOutside} {@attach slashShortcut}>
+  <button
+    bind:this={toggle}
+    type="button"
+    class="toggle"
+    aria-label="Search"
+    aria-keyshortcuts="/"
+    aria-expanded={active}
+    aria-controls="{id}-panel"
+    style:anchor-name="--search-{id}"
+    onclick={() => (active ? close(!query) : openSearch())}
+  >
+    <Icon svg={magnifyingGlass} />
+    <span class="tip" aria-hidden="true">Search <kbd>/</kbd></span>
+  </button>
 
-    <div class="panel" hidden={!panelOpen}>
+  <form {action} method="get">
+    <div bind:this={panel} id="{id}-panel" class="panel" popover="manual" style:position-anchor="--search-{id}">
+      <HeaderTint />
+      <div class="field">
+        <label for="{id}-query" class="search-icon"><Icon svg={magnifyingGlass} /></label>
+        <input
+          bind:this={input}
+          bind:value={query}
+          id="{id}-query"
+          type="search"
+          name="query"
+          placeholder="Is it me you're looking for?"
+          aria-label="Search {type.label}"
+          autocomplete="off"
+          role="combobox"
+          aria-autocomplete="list"
+          aria-controls="{id}-results"
+          aria-expanded={expanded}
+          aria-activedescendant={activeId}
+          {oninput}
+          {onkeydown}
+        />
+        <button type="button" class="close" aria-label="Close search" onclick={() => dismiss(true)}>
+          <Icon svg={xmark} />
+        </button>
+      </div>
+
       <div class="types" role="group" aria-label="Search in">
-        {#each textTypes as option (option.slug)}
-          <button type="button" class="chip" aria-pressed={option.slug === type.slug} onclick={() => pickType(option.slug)}>
-            {option.label}
-          </button>
-        {/each}
-        <div class="ids" style:anchor-name="--search-ids-{id}">
-          <button type="button" class={['id-toggle', { active: idType }]} popovertarget="{id}-ids">
-            {idType?.label ?? 'By ID'}
-            <Icon svg={angleDown} />
-          </button>
-          <div
-            bind:this={idMenu}
-            id="{id}-ids"
-            class="id-menu"
-            popover="auto"
-            style:position-anchor="--search-ids-{id}"
-            ontoggle={(event) => event.newState === 'open' && idMenu?.querySelector('button')?.focus()}
-          >
-            <ul>
-              {#each idTypes as option (option.slug)}
-                <li>
-                  <button type="button" aria-current={option.slug === type.slug} onclick={() => pickType(option.slug)}>
-                    {option.label}
-                  </button>
-                </li>
-              {/each}
-            </ul>
+          {#each textTypes as option (option.slug)}
+            <button type="button" class="chip" aria-pressed={option.slug === type.slug} onclick={() => pickType(option.slug)}>
+              {option.label}
+            </button>
+          {/each}
+          <div class="ids" style:anchor-name="--search-ids-{id}">
+            <button type="button" class={['id-toggle', { active: idType }]} popovertarget="{id}-ids">
+              {idType?.label ?? 'By ID'}
+              <Icon svg={angleDown} />
+            </button>
+            <div
+              bind:this={idMenu}
+              id="{id}-ids"
+              class="id-menu"
+              popover="auto"
+              style:position-anchor="--search-ids-{id}"
+              ontoggle={(event) => event.newState === 'open' && idMenu?.querySelector('button')?.focus()}
+            >
+              <ul>
+                {#each idTypes as option (option.slug)}
+                  <li>
+                    <button type="button" aria-current={option.slug === type.slug} onclick={() => pickType(option.slug)}>
+                      {option.label}
+                    </button>
+                  </li>
+                {/each}
+              </ul>
+            </div>
           </div>
         </div>
-      </div>
 
       <ul id="{id}-results" role="listbox" aria-label="Search results" hidden={!expanded}
         onpointerleave={() => (highlight = -1)}>
-        {#if result.rows.length}
-          <li role="presentation" class="section">Results</li>
-        {/if}
-        {#each result.rows as row, index (row.key)}
-          <li
-            id="{id}-option-{index}"
-            role="option"
-            aria-selected={highlight === index}
-            class={['result', { selected: highlight === index }]}
-            onpointerenter={() => (highlight = index)}
-          >
-            <a href={row.href} tabindex="-1" onclick={() => record(row)}>
-              <span class={['poster', { avatar: row.avatar }]}>
-                {#if row.poster}
-                  <img src={row.poster} alt="" width="40" height={row.avatar ? 40 : 60} loading="lazy" />
-                {/if}
-              </span>
-              <span class="info">
-                {#if row.topTitle}<span class="top-title">{row.topTitle}</span>{/if}
-                <span class="title">{row.title}</span>
-                <span class="meta">
-                  <span class="type-name">{row.type}</span>
-                  {#if row.tag}<span>{row.tag}</span>{/if}
-                  {#if row.genres}<span class="genres">{row.genres}</span>{/if}
-                </span>
-              </span>
-            </a>
-          </li>
-        {/each}
-        {#if result.count}
-          {@const index = result.rows.length}
-          <li
-            id="{id}-option-all"
-            role="option"
-            aria-selected={highlight === index}
-            class={['all-results', { selected: highlight === index }]}
-            onpointerenter={() => (highlight = index)}
-          >
-            <a href={allHref} tabindex="-1">
-              <span class="term-icon"><Icon svg={arrowTurnDownLeft} /></span>
-              <span>View all <strong>{result.count}</strong> results <span class="in-type">in {type.label}</span></span>
-            </a>
-          </li>
-        {/if}
-        {#if recent?.user.length}
-          <li role="presentation" class="section">Recent</li>
-        {/if}
-        {#if noRecent}
-          <li role="presentation" class="no-recent">You have no recent searches.</li>
-        {/if}
-        {#each terms as item, termIndex (`${item.recent}:${item.term.query}:${item.term.type}`)}
-          {@const index = resultOptionCount + termIndex}
-          {#if !item.recent && termIndex === (recent?.user.length ?? 0)}
-            <li role="presentation" class="section">Trending Searches</li>
+          {#if result.rows.length}
+            <li role="presentation" class="section">Results</li>
           {/if}
-          <li
-            id="{id}-term-{termIndex}"
-            role="option"
-            aria-selected={highlight === index}
-            class={['search-term', { selected: highlight === index }]}
-            onpointerenter={() => (highlight = index)}
-          >
-            <button type="button" class="reuse-term" tabindex="-1" onclick={() => pickTerm(item.term)}>
-              <span class="term-icon"><Icon svg={item.recent ? clockRotateLeft : termMagnifier} /></span>
-              {item.term.query}
-              {#if item.term.type}<span class="in-type">in {termLabel(item.term.type)}</span>{/if}
-            </button>
-            {#if item.recent}
-              <button
-                type="button"
-                class="remove-term"
-                aria-label="Remove recent search: {item.term.query}"
-                disabled={recent?.busy}
-                onclick={() => { void recent?.remove(item.term); highlight = -1; input?.focus(); }}
-              ><Icon svg={termXmark} /></button>
+          {#each result.rows as row, index (row.key)}
+            <li
+              id="{id}-option-{index}"
+              role="option"
+              aria-selected={highlight === index}
+              class={['result', { selected: highlight === index }]}
+              onpointerenter={() => (highlight = index)}
+            >
+              <a href={row.href} tabindex="-1" onclick={() => record(row)}>
+                <span class={['poster', { avatar: row.avatar }]}>
+                  {#if row.poster}
+                    <img src={row.poster} alt="" width="40" height={row.avatar ? 40 : 60} loading="lazy" />
+                  {/if}
+                </span>
+                <span class="info">
+                  {#if row.topTitle}<span class="top-title">{row.topTitle}</span>{/if}
+                  <span class="title">{row.title}</span>
+                  <span class="meta">
+                    <span class="type-name">{row.type}</span>
+                    {#if row.tag}<span>{row.tag}</span>{/if}
+                    {#if row.genres}<span class="genres">{row.genres}</span>{/if}
+                  </span>
+                </span>
+              </a>
+            </li>
+          {/each}
+          {#if result.count}
+            {@const index = result.rows.length}
+            <li
+              id="{id}-option-all"
+              role="option"
+              aria-selected={highlight === index}
+              class={['all-results', { selected: highlight === index }]}
+              onpointerenter={() => (highlight = index)}
+            >
+              <a href={allHref} tabindex="-1">
+                <span class="term-icon"><Icon svg={arrowTurnDownLeft} /></span>
+                <span>View all <strong>{result.count}</strong> results <span class="in-type">in {type.label}</span></span>
+              </a>
+            </li>
+          {/if}
+          {#if recent?.user.length}
+            <li role="presentation" class="section">Recent</li>
+          {/if}
+          {#if noRecent}
+            <li role="presentation" class="no-recent">You have no recent searches.</li>
+          {/if}
+          {#each terms as item, termIndex (`${item.recent}:${item.term.query}:${item.term.type}`)}
+            {@const index = resultOptionCount + termIndex}
+            {#if !item.recent && termIndex === (recent?.user.length ?? 0)}
+              <li role="presentation" class="section">Trending Searches</li>
             {/if}
-          </li>
-        {/each}
-      </ul>
+            <li
+              id="{id}-term-{termIndex}"
+              role="option"
+              aria-selected={highlight === index}
+              class={['search-term', { selected: highlight === index }]}
+              onpointerenter={() => (highlight = index)}
+            >
+              <button type="button" class="reuse-term" tabindex="-1" onclick={() => pickTerm(item.term)}>
+                <span class="term-icon"><Icon svg={item.recent ? clockRotateLeft : termMagnifier} /></span>
+                {item.term.query}
+                {#if item.term.type}<span class="in-type">in {termLabel(item.term.type)}</span>{/if}
+              </button>
+              {#if item.recent}
+                <button
+                  type="button"
+                  class="remove-term"
+                  aria-label="Remove recent search: {item.term.query}"
+                  disabled={recent?.busy}
+                  onclick={() => { void recent?.remove(item.term); highlight = -1; input?.focus(); }}
+                ><Icon svg={termXmark} /></button>
+              {/if}
+            </li>
+          {/each}
+        </ul>
 
       <p class="keys">
-        <span><kbd>↑</kbd><kbd>↓</kbd> Move</span>
-        <span><kbd>↵</kbd> Open</span>
-        <span><kbd>{modifier}</kbd><kbd>↵</kbd> New tab</span>
-        {#if recent?.user.length}<span><kbd>Del</kbd> Remove recent</span>{/if}
-        <span class="esc"><kbd>Esc</kbd> Close</span>
-      </p>
+          <span><kbd>↑</kbd><kbd>↓</kbd> Move</span>
+          <span><kbd>↵</kbd> Open</span>
+          <span><kbd>{modifier}</kbd><kbd>↵</kbd> New tab</span>
+          {#if recent?.user.length}<span><kbd>Del</kbd> Remove recent</span>{/if}
+          <span class="esc"><kbd>Esc</kbd> Close</span>
+        </p>
     </div>
   </form>
 </search>
 
 <style>
-form {
+/* The search is part of the bar, which is dark on every theme, so its light-dark() colors take their dark side. */
+.header-search {
+  color-scheme: dark;
+}
+
+/* The magnifier: a loose pill like the links, which stays lit while its panel is open. */
+.toggle {
   position: relative;
-  /* Hug the resting field, so the "/" hint sits inside its end. */
-  inline-size: fit-content;
-  max-inline-size: var(--search-max-width);
-
-  /* OG widened to 500px and let the rest of the bar squeeze. Even with Figtree there's no room to squeeze just above
-     1200px, so stop at the column's edge instead of pushing Sign In off the screen. */
-  .focused & {
-    inline-size: auto;
-    min-inline-size: min(var(--search-focused-min-width), 100%);
-  }
-}
-
-.search-icon {
-  position: absolute;
-  inset-block-start: 13px;
-  inset-inline-start: 14px;
-  z-index: 1;
-  color: var(--color-header-text);
-  cursor: pointer;
-
-  .header-search:hover &,
-  .focused & {
-    color: var(--color-search-term);
-  }
-}
-
-input {
-  inline-size: var(--search-rest-width);
+  display: grid;
+  place-items: center;
+  inline-size: var(--header-pill-height);
+  block-size: var(--header-pill-height);
   min-block-size: 0;
-  padding: 0 calc(var(--search-shortcut-room) + var(--space-sm-inline)) 0 40px;
+  padding: 0;
   border: 0;
-  border-radius: var(--radius-lg);
-  background: var(--color-header-search-bg);
-  backdrop-filter: var(--blur-header);
-  box-shadow: none;
-  color: var(--color-header-text);
-  font-size: var(--font-size-nav);
-  line-height: var(--search-control-height);
-  cursor: pointer;
-  appearance: none;
-  transition: background-color 0.25s, color 0.25s, box-shadow 0.25s;
+  border-radius: var(--radius-header-pill);
+  background: none;
+  color: var(--color-header-muted);
+  font-size: var(--font-size-header-link);
+  transition: background-color 0.2s, color 0.2s;
 
-  &::placeholder {
-    color: var(--gray-lightish);
+  &:is(:hover, [aria-expanded='true']) {
+    background-color: var(--color-header-pill);
+    color: var(--color-header-text);
+  }
+}
+
+/* "Search /" under the magnifier on hover, since the shortcut has no field to sit in any more. */
+.tip {
+  position: absolute;
+  inset-block-start: calc(100% + var(--space-search-panel-gap));
+  inset-inline-start: 50%;
+  translate: -50% 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs-inline);
+  padding: var(--space-xs-inline) var(--space-sm-inline);
+  border-radius: var(--radius-search-kbd);
+  background: var(--color-search-tip-bg);
+  color: var(--color-header-text);
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-headings-light);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s;
+
+  .toggle:is(:hover, :focus-visible) & {
+    opacity: 1;
   }
 
-  &::-webkit-search-cancel-button {
+  [aria-expanded='true'] & {
     display: none;
   }
-
-  &:focus-visible {
-    outline: none;
-  }
-
-  &:is(:hover, :focus),
-  .focused & {
-    background-color: var(--color-box);
-    color: var(--color-header-active-text);
-    cursor: text;
-
-    &::placeholder {
-      color: var(--gray-light);
-    }
-  }
-
-  /* A red ring with a soft halo instead of OG's squared-off box and red rule. */
-  .focused & {
-    inline-size: 100%;
-    border-radius: var(--radius-search-field);
-    box-shadow: 0 0 0 2px var(--brand-primary), 0 0 0 5px var(--color-search-ring);
-  }
-}
-
-/* The resting field says `/` focuses it. Focus swaps it for the clear button. */
-.shortcut,
-.close {
-  position: absolute;
-  inset-block: 0;
-  inset-inline-end: var(--space-sm-inline);
-  z-index: 1;
-  margin-block: auto;
 }
 
 kbd {
@@ -542,56 +521,25 @@ kbd {
   line-height: 1;
 }
 
-.shortcut {
-  background: var(--color-search-shortcut-bg);
-  color: var(--color-header-text);
-  pointer-events: none;
-
-  .header-search:hover &,
-  .focused & {
-    display: none;
-  }
-}
-
-.close {
-  display: none;
-  place-items: center;
-  inline-size: var(--search-close-size);
-  block-size: var(--search-close-size);
-  min-block-size: 0;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: none;
-  color: var(--color-search-term);
-  font-size: 1.1em;
-
-  &:hover {
-    background: var(--color-search-row-hover);
-  }
-
-  .focused & {
-    display: grid;
-  }
-}
-
+/* Hangs from the magnifier, clear of the bar, on the same tinted glass. */
 .panel {
-  position: absolute;
-  inset-block-start: calc(100% + var(--space-search-panel-gap));
-  inline-size: 100%;
-  max-block-size: calc(100vh - var(--header-height) - var(--space-search-panel-gap));
+  position: fixed;
+  position-area: bottom span-right;
+  inset: auto;
+  isolation: isolate;
+  inline-size: min(var(--search-panel-width), calc(100vw - 2 * var(--space-lg-inline)));
+  max-block-size: calc(100vh - var(--header-height) - 2 * var(--space-search-panel-gap));
+  margin: calc((var(--header-height) - var(--header-pill-height)) / 2 + var(--space-search-panel-gap)) 0 0;
   overflow-y: auto;
   padding: var(--space-search-section);
+  border: 0;
   border-radius: var(--radius-search-panel);
-  background-color: var(--color-box);
-  color: var(--color-header-active-text);
+  background-color: var(--color-header-panel);
+  backdrop-filter: var(--blur-header-glass);
   box-shadow: var(--shadow-search-panel);
+  color: var(--color-header-text);
   font-family: var(--font-headings);
   font-weight: var(--font-weight-headings-light);
-
-  &[hidden] {
-    display: none;
-  }
 
   & ul {
     margin: 0;
@@ -606,6 +554,71 @@ kbd {
   & a {
     color: inherit;
     text-decoration: none;
+  }
+}
+
+/* The field: a glass pill with a red ring, since it always has focus while it's showing. */
+.field {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm-inline);
+  block-size: var(--header-control-height);
+  margin-block-end: var(--space-search-section);
+  padding-inline: var(--space-base-inline) var(--space-xs-inline);
+  border-radius: var(--radius-header-control);
+  background: var(--color-header-pill);
+  box-shadow: 0 0 0 2px var(--brand-primary), 0 0 0 5px var(--color-search-ring);
+}
+
+.search-icon {
+  display: flex;
+  color: var(--color-header-muted);
+}
+
+/* Off with base.css's boxed control: the field around it is the box. */
+input {
+  flex: 1;
+  min-inline-size: 0;
+  min-block-size: 0;
+  block-size: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  color: var(--color-header-text);
+  font-size: var(--font-size-nav);
+  appearance: none;
+
+  &::placeholder {
+    color: var(--color-header-muted);
+  }
+
+  &::-webkit-search-cancel-button {
+    display: none;
+  }
+
+  &:is(:focus, :focus-visible) {
+    outline: none;
+    box-shadow: none;
+  }
+}
+
+.close {
+  display: grid;
+  place-items: center;
+  inline-size: var(--search-close-size);
+  block-size: var(--search-close-size);
+  min-block-size: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-search-row);
+  background: none;
+  color: var(--color-header-muted);
+
+  &:hover {
+    background: var(--color-header-pill);
+    color: var(--color-header-text);
   }
 }
 
@@ -901,7 +914,8 @@ kbd {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  input,
+  .toggle,
+  .tip,
   .chip,
   .id-toggle,
   .result a,
@@ -914,62 +928,9 @@ kbd {
 
 /* No hover on the hints: a touch screen has no `/` key. */
 @media (hover: none) {
-  .shortcut,
+  .tip,
   .keys {
     display: none;
-  }
-}
-
-/* At 1200px and below OG shrank the field to its magnifier. Focus opens it at full width over the nav. */
-@media (width <= 1200px) {
-  .header-search {
-    position: relative;
-    block-size: var(--search-control-height);
-  }
-
-  input {
-    inline-size: var(--search-collapsed-width);
-    padding-inline-end: 0;
-  }
-
-  .header-search:not(.focused) .shortcut {
-    display: none;
-  }
-
-  .focused form {
-    position: absolute;
-    inset-block-start: 0;
-    inline-size: var(--search-focused-min-width);
-  }
-}
-
-/* Phones: a bare magnifier, and focus spreads the field across the bar. */
-@media (width < 768px) {
-  .header-search:not(.focused) {
-    margin-inline-start: calc(-1 * var(--space-sm-inline));
-  }
-
-  input {
-    background-color: transparent;
-  }
-
-  .search-icon {
-    inset-inline-start: var(--space-base-inline);
-    inset-block-start: calc((var(--search-control-height) - var(--search-icon-size-mobile)) / 2);
-    font-size: var(--search-icon-size-mobile);
-    line-height: 1;
-  }
-
-  .header-search.focused {
-    position: fixed;
-    inset-block-start: calc((var(--header-height) - var(--search-control-height)) / 2);
-    inset-inline: var(--space-search-mobile-inset);
-    z-index: var(--z-header);
-  }
-
-  .focused form {
-    position: relative;
-    inline-size: auto;
   }
 }
 </style>

@@ -685,7 +685,6 @@
   --space-search-section: 8px;
   --radius-search-panel: 16px;
   --radius-search-row: 8px;
-  --radius-search-chip: 999px;
   --radius-search-kbd: 4px;
   --shadow-search-panel: 0 16px 40px rgb(0 0 0 / 0.35), 0 2px 8px rgb(0 0 0 / 0.15);
   --color-search-ring: rgb(237 28 36 / 0.25); /* the halo outside the focused field's red ring */

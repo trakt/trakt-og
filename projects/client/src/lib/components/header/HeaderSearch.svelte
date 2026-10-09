@@ -622,7 +622,8 @@ input {
   }
 }
 
-/* The type picker: one chip per text search, then the ID lookups in a menu at the end. */
+/* The type picker: one chip per text search, then the ID lookups in a menu at the end. The chips take the control
+   look discover's toggle chips use, the picked one filled red. */
 .types {
   display: flex;
   flex-wrap: wrap;
@@ -640,20 +641,22 @@ input {
 
 .chip,
 .id-toggle {
-  min-block-size: 0;
-  padding: var(--space-sm-block) var(--space-base-inline);
-  border: 0;
-  border-radius: var(--radius-search-chip);
-  background: none;
-  color: var(--color-search-term);
+  min-block-size: var(--control-height);
+  padding: 0 var(--space-control-inline);
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius-control);
+  background-color: var(--color-control-bg);
+  color: var(--color-control-text);
   font: inherit;
-  font-size: var(--font-size-base);
-  line-height: var(--line-height-base);
-  transition: background-color 0.25s, color 0.25s;
+  font-size: var(--font-size-control);
+  font-weight: var(--font-weight-control);
+  line-height: 1;
+  white-space: nowrap;
+  transition: background-color 0.25s, border-color 0.25s, color 0.25s;
 
   &:hover {
-    background: var(--color-search-row-hover);
-    color: var(--color-header-active-text);
+    border-color: var(--color-control-border-hover);
+    background-color: var(--color-control-hover-bg);
   }
 
   &:focus-visible {
@@ -663,7 +666,8 @@ input {
 
 .chip[aria-pressed='true'],
 .id-toggle.active {
-  background: var(--brand-primary);
+  border-color: var(--brand-primary);
+  background-color: var(--brand-primary);
   color: var(--color-text-inverse);
 }
 
@@ -675,8 +679,6 @@ input {
   display: inline-flex;
   align-items: center;
   gap: var(--space-xs-inline);
-  border-radius: var(--radius-search-row);
-  box-shadow: inset 0 0 0 1px var(--color-menu-separator);
 }
 
 .id-menu {

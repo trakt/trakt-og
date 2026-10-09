@@ -1,7 +1,7 @@
 <!--
   The calendar's month view: whole weeks under a pinned weekday row, each day a cell with its number pinned while its
   week scrolls, then its cards stacked one wide, each with the full quick-icon bar. Today's cell has a red top edge, a
-  red date and a TODAY tag, and today's weekday column is tinted; past dates are grey. Days from the neighbouring months
+  red date, a TODAY tag and a tint over the day and its cards; past dates are grey. Days from the neighbouring months
   only pad the weeks.
     <CalendarMonth month="2026-10" {days} today={data.today} artwork="poster" {cardIcons} />
 -->
@@ -45,11 +45,11 @@ const longDate = (date: string) =>
   </div>
   <div class="grid">
     {#each weeks as week (week.at(0)?.date)}
-      {#each week as cell, column (cell.date)}
+      {#each week as cell (cell.date)}
         {#if cell.inMonth}
           {@const entries = byDate.get(cell.date) ?? []}
           <section id="day-{cell.date}" data-day={cell.date} aria-label={longDate(cell.date)}
-            class={['cell', { today: cell.date === today, past: cell.date < today, column: column === todayColumn }]}>
+            class={['cell', { today: cell.date === today, past: cell.date < today }]}>
             <h2 class="number">
               <span class="date">{Number(cell.date.slice(8))}</span>
               {#if cell.date === today}<span class="tag">Today</span>{/if}
@@ -59,7 +59,7 @@ const longDate = (date: string) =>
             </div>
           </section>
         {:else}
-          <div class={['cell', 'out', { column: column === todayColumn }]} aria-hidden="true">
+          <div class={['cell', 'out']} aria-hidden="true">
             <span class="number"><span class="date">{Number(cell.date.slice(8))}</span></span>
           </div>
         {/if}
@@ -111,9 +111,7 @@ const longDate = (date: string) =>
     border-inline-end: 0;
   }
 
-  &.column {
-    background-color: var(--color-calendar-today-tint);
-  }
+
 
   /* Narrow cards: smaller captions, and the network left to the card's link. */
   & :global(.fanart .titles h3) {
@@ -129,7 +127,12 @@ const longDate = (date: string) =>
   }
 
   &.today {
+    background-color: var(--color-calendar-today-tint);
     box-shadow: inset 0 3px 0 var(--brand-primary);
+    /* The tint runs behind the day's cards too. */
+    & :global(:is(.text-card, .poster-card, .fanart-card, .quick-icons)) {
+      background-color: transparent;
+    }
   }
 }
 

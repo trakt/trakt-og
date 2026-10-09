@@ -194,5 +194,10 @@ const longDate = (date: string) =>
 
 .cards {
   display: grid;
+
+  /* A line between a day's cards. */
+  & > :global(.calendar-entry + .calendar-entry) {
+    border-block-start: 1px solid var(--color-frame-border);
+  }
 }
 </style>

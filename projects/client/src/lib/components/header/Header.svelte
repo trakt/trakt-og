@@ -104,7 +104,7 @@ async function toggleDarkKnight() {
   </nav>
 
   <div class="mobile-links">
-    <HeaderMenu align="end" label="Menu">
+    <HeaderMenu label="Menu">
       {#snippet trigger()}<Icon svg={bars} />{/snippet}
       <ul>
         {#each sections as link (link.href)}
@@ -120,7 +120,7 @@ async function toggleDarkKnight() {
         <a class="get-vip" href={traktUrls.vip} target="_blank" rel="noopener"><Icon svg={rocket} /> Get VIP</a>
       {/if}
       <div class={['profile', { vip: user.isVip }]}>
-        <HeaderMenu align="end" label="{user.firstName}'s menu">
+        <HeaderMenu label="{user.firstName}'s menu">
           {#snippet trigger()}<img class="avatar" src={user.avatarUrl} alt="" width="36" height="36" />{/snippet}
           <ul>
             {#each profileLinks as link (link.href)}
@@ -258,16 +258,9 @@ async function toggleDarkKnight() {
   text-shadow: none;
 }
 
-/* The round avatar stays round while its menu is open, so the menu rounds all its corners instead of joining it as a
-   tab. It still touches the avatar, so the mouse can move into it without the hover closing it. */
+/* Open, the avatar gets a soft glass ring. */
 .profile :global(.header-menu:has(.menu:popover-open) .trigger) {
-  border-radius: 50%;
-  background: none;
-}
-
-.profile :global(.header-menu.end .menu) {
-  border-block-start: 0;
-  border-radius: var(--radius-lg);
+  box-shadow: 0 0 0 var(--header-avatar-open-ring) var(--color-header-avatar-open-ring);
 }
 
 .mobile-links :global(.trigger) {
@@ -279,7 +272,7 @@ async function toggleDarkKnight() {
   text-shadow: none;
 }
 
-.mobile-links :global(.trigger:hover) {
+.mobile-links :global(:is(.trigger:hover, .header-menu:has(.menu:popover-open) .trigger)) {
   background-color: var(--color-header-pill);
   color: var(--color-header-text);
 }

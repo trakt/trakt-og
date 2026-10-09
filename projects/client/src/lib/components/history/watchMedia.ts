@@ -15,8 +15,16 @@ type Params = {
   request: (path: string, body?: unknown) => Promise<Response>;
   episodes: () => Promise<readonly WatchEpisode[]>;
   notify: { success: (message: string) => void; error: (message: string) => void };
+  /** Asks before marking more than one episode of a show or season watched. Resolves whether to go ahead. */
+  confirm?: (count: number) => Promise<boolean>;
   now?: () => Date;
 };
+
+/**
+ * The most episodes one click marks watched on a whole show. Past this ("watch Jeopardy!") it goes season by season,
+ * so a stray click can't fill a history with thousands of plays.
+ */
+export const BULK_WATCH_LIMIT = 300;
 const resultSchema = z.object({
   message: z.string().optional(),
   added: z.object({ movies: z.number().optional(), episodes: z.number().optional() }).optional(),
@@ -71,6 +79,15 @@ export async function watchMedia(params: Params): Promise<boolean> {
     if (!remove && target.type !== 'movie' && episodes.length === 0) {
       notify.error('Doh! No aired episodes were found to watch.');
       return false;
+    }
+    if (!remove && (target.type === 'show' || target.type === 'season') && episodes.length > 1) {
+      if (target.type === 'show' && episodes.length > BULK_WATCH_LIMIT) {
+        notify.error(
+          `That's ${episodes.length.toLocaleString('en-US')} episodes. Mark them watched one season at a time.`,
+        );
+        return false;
+      }
+      if (params.confirm && !(await params.confirm(episodes.length))) return false;
     }
     const at = watchedAt === 'unknown'
       ? '1970-01-01T00:00:00.000Z'

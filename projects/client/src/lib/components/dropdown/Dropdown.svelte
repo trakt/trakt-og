@@ -165,12 +165,12 @@ const closeOnPick = (event: MouseEvent & { currentTarget: HTMLElement }) => {
   border: 0;
   background: none;
   color: var(--color-frame-text);
-  line-height: 1.15;
+  line-height: 1.1;
   text-align: start;
 
   & :global(.eyebrow) {
     grid-column: 1 / -1;
-    line-height: 1.2;
+    line-height: 1;
     color: var(--color-sidebar-label);
     font-size: var(--font-size-sidebar-eyebrow);
     font-weight: var(--font-weight-menu-header);

@@ -135,7 +135,7 @@ function onkeydown(event: KeyboardEvent) {
   grid-template-columns: minmax(0, 1fr);
   align-content: start;
   gap: var(--sidebar-gap);
-  padding: var(--sidebar-padding);
+  padding: var(--sidebar-padding-top) var(--sidebar-padding) var(--sidebar-padding);
 
   @media (min-width: 768px) {
     flex: 1;

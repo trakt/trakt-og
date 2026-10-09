@@ -2622,8 +2622,9 @@
 /* Sidebar frame: the calendar's sidebar, built to carry over to other pages. Dark in both themes, like the frame. */
 :root {
   --sidebar-width: 350px;
-  --sidebar-rail-width: 76px;
+  --sidebar-rail-width: 68px;
   --sidebar-padding: 20px;
+  --sidebar-padding-top: 12px; /* above the page title */
   --sidebar-gap: 14px; /* between the sidebar's blocks */
   --sidebar-section-gap: 8px; /* inside a folding section */
   --sidebar-panel-width: 340px; /* the slide-in filter panel */
@@ -2641,8 +2642,8 @@
   --color-sidebar-pill-set-border: rgb(237 28 36 / 0.6);
   --color-sidebar-pill-set-text: #f3c9cb;
   --sidebar-pill-height: 30px;
-  --font-size-sidebar-pill: 14px;
-  --font-size-filter-chip: 13px;
+  --font-size-sidebar-pill: var(--font-size-control); /* the same size as the sidebar's dropdowns */
+  --font-size-filter-chip: var(--font-size-control);
   --font-size-menu-pill: 11px;
   --radius-menu-pill: 10px;
   --rail-tool-width: 48px;

@@ -145,6 +145,7 @@ a {
   line-height: 1.35;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
 
   & :global(.spoiler-content.inline) {
     display: inline;

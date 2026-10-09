@@ -15,7 +15,6 @@ import rtFresh from '$lib/assets/sites/rt/tomatometer-fresh.svg';
 import traktLogo from '$lib/assets/sites/trakt.png';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import Icon from '$lib/icons/Icon.svelte';
-import searchIcon from '$lib/icons/light/magnifying-glass.svg?raw';
 import resetIcon from '$lib/icons/regular/arrow-rotate-left.svg?raw';
 import xmark from '$lib/icons/regular/xmark.svg?raw';
 import { traktUrls } from '$lib/traktUrls';
@@ -26,7 +25,11 @@ import { fetchListOptions } from './fetchListOptions.ts';
 import { type FilterDraft, fromFilterDraft, toFilterDraft } from './filterDraft.ts';
 import type { FilterOption } from './filterOptions.ts';
 import { filterValueLabel } from './filterTags.ts';
+import anyBundle from '$lib/assets/channels/any.png';
+import freeBundle from '$lib/assets/channels/free.png';
+import subscriptionsBundle from '$lib/assets/channels/subscriptions.png';
 import IncludeExcludeSelect from './IncludeExcludeSelect.svelte';
+import SearchField from './SearchField.svelte';
 import { type ListSelection, listSelection, toListFilter } from './listSelection.ts';
 import RangeSlider from './RangeSlider.svelte';
 import { type FilterSource, toFilterSources, watchNowOptions } from './watchNowFilter.ts';
@@ -125,6 +128,17 @@ $effect(() => {
 const watchnowGroups = $derived(
   watchNowOptions({ sources: loadedSources ?? new Map(), country, favorites: vip ? favorites : [] }),
 );
+// The watch-now filter's tiles: each service's logo on its color, the bundles' own art, and a heart for favorites.
+const bundleTiles: Readonly<Record<string, { logo: string; color: string }>> = {
+  any: { logo: anyBundle, color: 'var(--color-bundle-any)' },
+  free: { logo: freeBundle, color: 'var(--color-bundle-free)' },
+  subscriptions: { logo: subscriptionsBundle, color: 'var(--color-bundle-subscriptions)' },
+};
+function serviceTile(slug: string) {
+  if (slug === 'favorites') return { heart: true };
+  const source = (loadedSources ?? sources)?.get(slug);
+  return bundleTiles[slug] ?? (source && { logo: source.logo, color: source.color });
+}
 const sourceName = (slug: string) =>
   slug === 'favorites' ? 'All Favorites' : (loadedSources ?? sources)?.get(slug)?.name ?? slug;
 
@@ -165,16 +179,14 @@ function reset() {
 
     {#if config.watchnow}
       <IncludeExcludeSelect label="Streaming" groups={watchnowGroups} excludable={false} disabled={!vip}
-        loading={!loadedSources} labelFor={sourceName} selection={{ include: draft.watchnow, exclude: [] }}
+        loading={!loadedSources} labelFor={sourceName} tileFor={serviceTile} searchPlaceholder="Netflix, Max…"
+        selection={{ include: draft.watchnow, exclude: [] }}
         onchange={({ include }) => apply({ ...draft, watchnow: include })} />
     {/if}
 
     {#if config.query}
-      <label class="terms">
-        <Icon svg={searchIcon} />
-        <input type="search" aria-label="Filter by titles and descriptions" placeholder="Filter by titles and descriptions..."
-          disabled={!vip} value={draft.query} oninput={(event) => apply({ ...draft, query: event.currentTarget.value }, 400)} />
-      </label>
+      <SearchField label="Filter by titles and descriptions" placeholder="Filter by titles and descriptions…"
+        disabled={!vip} bind:value={() => draft.query, (query) => apply({ ...draft, query }, 400)} />
     {/if}
 
     {#each config.lists as key (key)}
@@ -320,36 +332,6 @@ function reset() {
   }
 }
 
-.terms {
-  display: flex;
-  align-items: center;
-  gap: var(--space-base-block);
-  padding: 0 var(--space-sm-inline);
-  border: 1px solid var(--color-control-border);
-  border-radius: var(--radius-control);
-  background-color: var(--color-control-bg);
-  color: var(--color-control-muted);
-
-  &:focus-within {
-    border-color: var(--color-input-border-focus);
-  }
-
-  & input {
-    flex: 1;
-    min-inline-size: 0;
-    block-size: calc(var(--control-height) - 2px);
-    border: 0;
-    background: none;
-    box-shadow: none;
-    color: var(--color-control-text);
-    font: inherit;
-    font-size: var(--font-size-control);
-
-    &:focus-visible {
-      outline: 0;
-    }
-  }
-}
 
 .label {
   margin: var(--space-base-block) 0 0;

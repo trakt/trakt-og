@@ -8,13 +8,18 @@
 <script lang="ts">
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import Icon from '$lib/icons/Icon.svelte';
-import searchIcon from '$lib/icons/light/magnifying-glass.svg?raw';
+import heart from '$lib/icons/regular/heart.svg?raw';
+import xmark from '$lib/icons/regular/xmark.svg?raw';
 import plusIcon from '$lib/icons/regular/circle-plus.svg?raw';
 import minusIcon from '$lib/icons/regular/circle-minus.svg?raw';
 import plusSolid from '$lib/icons/solid/circle-plus.svg?raw';
 import minusSolid from '$lib/icons/solid/circle-minus.svg?raw';
 import type { FilterOptionGroup } from './filterOptions.ts';
 import type { ListSelection } from './listSelection.ts';
+import SearchField from './SearchField.svelte';
+
+/** A service's logo tile before its name; `heart` is All Favorites. */
+type OptionTile = { readonly logo?: string; readonly color?: string; readonly heart?: boolean };
 
 interface Props {
   /** "Genres": in the button before the picks, and the menu's name. */
@@ -27,6 +32,9 @@ interface Props {
   disabled?: boolean;
   /** Names a pick the options don't have yet: they load when the panel first opens. */
   labelFor?: (value: string) => string;
+  /** The streaming field's logo tiles. */
+  tileFor?: (value: string) => OptionTile | undefined;
+  searchPlaceholder?: string;
   onchange: (selection: ListSelection) => void;
 }
 
@@ -38,6 +46,8 @@ const {
   loading = false,
   disabled = false,
   labelFor = (value: string) => value,
+  tileFor,
+  searchPlaceholder,
   onchange,
 }: Props = $props();
 
@@ -76,12 +86,16 @@ function toggle(value: string, as: 'include' | 'exclude') {
         value, i (value)}{selection.include.length + i > 0 ? ', ' : ''}<span class="left-out">{name(value)}</span
         >{/each}{/if}{/snippet}
   <div class="picker" aria-label={label}>
-    <button type="button" class="reset" disabled={disabled || picked === 0}
-      onclick={() => onchange({ include: [], exclude: [] })}>Reset</button>
+    <div class="head">
+      <p class="title">{label}</p>
+      <button type="button" class="clear" disabled={disabled || picked === 0}
+        onclick={() => onchange({ include: [], exclude: [] })}><Icon svg={xmark} />Clear</button>
+    </div>
     {#if count > 8}
-      <label class="search"><Icon svg={searchIcon} /><input type="search" bind:value={query}
-          placeholder="Search {label.toLocaleLowerCase('en')}" aria-label="Search {label.toLocaleLowerCase('en')}" /></label>
+      <SearchField bind:value={query} label="Search {label.toLocaleLowerCase('en')}"
+        placeholder={searchPlaceholder ?? `Search ${label.toLocaleLowerCase('en')}…`} />
     {/if}
+    <div class="scroller">
     {#if loading && count === 0}
       <p class="note">Loading...</p>
     {:else if shown.length === 0}
@@ -93,11 +107,15 @@ function toggle(value: string, as: 'include' | 'exclude') {
         {#each group.options as option (option.value)}
           {@const kept = selection.include.includes(option.value)}
           {@const leftOut = selection.exclude.includes(option.value)}
+          {@const tile = tileFor?.(option.value)}
           <li class={{ kept, 'left-out': leftOut }}>
             <button type="button" class="toggle keep" aria-pressed={kept} aria-label="Keep {option.label}" {disabled}
               onclick={() => toggle(option.value, 'include')}><Icon svg={kept ? plusSolid : plusIcon} /></button>
             <button type="button" class="name" {disabled} onclick={() => toggle(option.value, 'include')}
-            >{option.label}{#if option.tag}<span class="tag">{option.tag}</span>{/if}</button>
+            >{#if tile}<span class={['tile', { heart: tile.heart }]} style:--service-color={tile.color}
+                >{#if tile.heart}<Icon svg={heart} />{:else if tile.logo}<img src={tile.logo} alt="" />{:else}{option
+                    .label.charAt(0)}{/if}</span>{/if}<span class="label">{option.label}</span>{#if option.tag}<span
+                  class="tag">{option.tag}</span>{/if}</button>
             {#if excludable}
               <button type="button" class="toggle leave" aria-pressed={leftOut} aria-label="Leave out {option.label}"
                 {disabled} onclick={() => toggle(option.value, 'exclude')}><Icon svg={leftOut ? minusSolid : minusIcon} /></button>
@@ -106,6 +124,7 @@ function toggle(value: string, as: 'include' | 'exclude') {
         {/each}
       </ul>
     {/each}
+    </div>
     {#if excludable}<p class="hint">⊕ shows only these, ⊖ hides them</p>{/if}
   </div>
   </Dropdown>
@@ -138,16 +157,69 @@ function toggle(value: string, as: 'include' | 'exclude') {
 
 .picker {
   display: grid;
-  gap: var(--space-xs-block);
+  gap: var(--space-base-block);
   inline-size: var(--filter-picker-width);
-  max-block-size: var(--filter-picker-height);
-  overflow-y: auto;
 }
 
-/* The menu styles every button as a row, and a pressed one as its red picked row with a check. These keep their own
-   shape: the selectors outrank the menu's, check included. */
-.picker .rows li button::after,
-.picker > button::after {
+/* The field's name with Clear across from it, like the filter popovers' heading and footer. */
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-inline-start: var(--space-xs-inline);
+}
+
+.title {
+  margin: 0;
+  color: var(--color-menu-header);
+  font-size: var(--font-size-menu-header);
+  font-weight: var(--font-weight-menu-header);
+  letter-spacing: var(--letter-spacing-menu-header);
+  text-transform: uppercase;
+}
+
+.picker .head .clear {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-control-caret);
+  inline-size: auto;
+  min-block-size: var(--control-height-small);
+  padding: 0 var(--space-sm-inline);
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius-control);
+  background-color: var(--color-control-raised-bg);
+  color: var(--color-control-text);
+  font-size: var(--font-size-small);
+
+  &::after {
+    display: none;
+  }
+
+  & :global(.icon) {
+    font-size: var(--font-size-tool-icon-small);
+  }
+
+  &:is(:hover, :focus-visible):not(:disabled) {
+    border-color: var(--brand-primary);
+    background-color: var(--color-control-raised-hover-bg);
+    color: var(--brand-primary);
+  }
+
+  &:disabled {
+    cursor: default;
+    opacity: var(--opacity-action-disabled);
+  }
+}
+
+/* Only the list scrolls, with room kept for its scrollbar so it never covers the ⊖ column. */
+.scroller {
+  max-block-size: var(--filter-picker-height);
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+}
+
+.picker .rows li button::after {
   display: none;
 }
 
@@ -155,38 +227,36 @@ function toggle(value: string, as: 'include' | 'exclude') {
   font-weight: normal;
 }
 
-.reset {
-  justify-content: flex-start;
+/* The watch-now filter's logo tile. */
+.tile {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  inline-size: var(--service-mini-width);
+  block-size: var(--service-mini-height);
+  margin-inline-end: var(--space-sm-inline);
+  padding: var(--service-mini-padding);
+  border: 1px solid var(--color-menu-border);
+  border-radius: var(--radius-service-mini);
+  background-color: var(--service-color, var(--color-control-bg));
+  color: var(--color-text-inverse);
+  font-weight: var(--font-weight-headings-heavy);
+
+  & img {
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: contain;
+  }
+
+  &.heart {
+    background-color: var(--color-control-bg);
+    color: var(--brand-primary);
+  }
 }
 
-.search {
-  display: flex;
-  align-items: center;
-  gap: var(--space-base-block);
-  margin-block-end: var(--space-xs-block);
-  padding: 0 var(--space-sm-inline);
-  border: 1px solid var(--color-menu-border);
-  border-radius: var(--radius-menu-row);
-  color: var(--color-control-muted);
-
-  & input {
-    flex: 1;
-    min-inline-size: 0;
-    block-size: var(--control-height-small);
-    border: 0;
-    background: none;
-    box-shadow: none;
-    color: var(--color-control-text);
-    font: inherit;
-
-    &:focus-visible {
-      outline: 0;
-    }
-  }
-
-  &:focus-within {
-    border-color: var(--color-input-border-focus);
-  }
+.label {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .note,

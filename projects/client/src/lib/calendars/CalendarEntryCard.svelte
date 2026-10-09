@@ -15,6 +15,7 @@ import { overlay } from '$lib/overlay/overlay';
 import type { ComponentProps } from 'svelte';
 import type { CalendarArtwork } from './calendarDisplay.ts';
 import type { CalendarEntry } from './CalendarEntry.ts';
+import CalendarPosterCard from './CalendarPosterCard.svelte';
 import EpisodeTray from './EpisodeTray.svelte';
 
 interface Props {
@@ -53,6 +54,15 @@ const shownTitle = $derived(compact && entry.episode ? '' : entry.title);
 <div class={['calendar-entry', { grouped: group }]}>
   {#if artwork === 'none'}
     <TextMediaCard {...entry} title={shownTitle} compact={compact} {icons} />
+  {:else if artwork === 'poster'}
+    <CalendarPosterCard {entry} {icons}>
+      {#snippet overlay()}
+        {#if group}
+          {@render badge(false)}
+          <span class="ticks" aria-hidden="true">{#each watched as done, i (i)}<i class:done></i>{/each}</span>
+        {/if}
+      {/snippet}
+    </CalendarPosterCard>
   {:else}
     <FanartCard {...entry} title={shownTitle} episodeBadge={undefined} userRating={entry.state.rating} {icons}>
       {#snippet fanartOverlay()}

@@ -9,7 +9,7 @@ import { fitToParent } from './fitToParent.ts';
 import { spellOuija, type SpiritReply } from './spellOuija.ts';
 import { toArcLetters } from './toArcLetters.ts';
 import { toPossession } from './toPossession.ts';
-import TraktMark from './TraktMark.svelte';
+import TraktMark from '$lib/components/brand/TraktMark.svelte';
 
 const DWELL_MS = 450;
 const DARK_MS = 900;

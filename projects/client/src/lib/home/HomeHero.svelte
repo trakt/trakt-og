@@ -6,7 +6,7 @@
 -->
 <script lang="ts">
 import { resolve } from '$app/paths';
-import TraktMark from '$lib/coming-soon/TraktMark.svelte';
+import TraktMark from '$lib/components/brand/TraktMark.svelte';
 import { headerArt } from '$lib/components/header/headerArt';
 import { SvelteSet } from 'svelte/reactivity';
 import type { HomeFanart } from './toHomeFanarts.ts';

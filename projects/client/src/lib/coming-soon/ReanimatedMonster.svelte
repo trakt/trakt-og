@@ -3,7 +3,7 @@
   Trakt mark as its face. Pure artwork, so its colors stay in the SVG.
 -->
 <script lang="ts">
-import TraktMark from './TraktMark.svelte';
+import TraktMark from '$lib/components/brand/TraktMark.svelte';
 </script>
 
 <svg

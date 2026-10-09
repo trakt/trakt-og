@@ -4,7 +4,7 @@
 -->
 <script lang="ts">
 import { fitToParent } from './fitToParent.ts';
-import TraktMark from './TraktMark.svelte';
+import TraktMark from '$lib/components/brand/TraktMark.svelte';
 
 const stories = [
   { headline: 'Local ghost refuses to skip intro', deck: "“It's part of the experience,” it moaned." },

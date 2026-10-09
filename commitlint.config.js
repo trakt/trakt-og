@@ -37,6 +37,7 @@ export default {
       'comments',
       'dashboard',
       'discover',
+      'home',
       'lists',
       'media',
       'movies',

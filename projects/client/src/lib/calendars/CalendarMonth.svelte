@@ -128,7 +128,6 @@ const longDate = (date: string) =>
 
   &.today {
     background-color: var(--color-calendar-today-tint);
-    box-shadow: inset 0 3px 0 var(--brand-primary);
     /* The tint runs behind the day's cards too. */
     & :global(:is(.text-card, .poster-card, .fanart-card, .quick-icons)) {
       background-color: transparent;
@@ -144,8 +143,10 @@ const longDate = (date: string) =>
   display: flex;
   align-items: center;
   gap: var(--space-sm-inline);
+  box-sizing: border-box;
+  min-block-size: var(--calendar-month-day-height);
   margin: 0;
-  padding: var(--space-base-block) var(--space-sm-inline);
+  padding: 0 var(--space-sm-inline);
   background-color: inherit;
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-headings-heavy);
@@ -163,8 +164,12 @@ const longDate = (date: string) =>
     color: var(--color-mini-month-out);
   }
 
+  /* The list's today bar: the red tint and edge over a blur. */
   .today & {
-    background-color: var(--color-date-separator);
+    background: var(--color-calendar-today-bar);
+    backdrop-filter: var(--calendar-today-blur);
+    box-shadow: inset 0 3px 0 var(--brand-primary);
+    padding-block-start: 3px; /* centered under the red edge */
   }
 
   .today & .date {

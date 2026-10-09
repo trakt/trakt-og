@@ -61,7 +61,6 @@ import Icon from '$lib/icons/Icon.svelte';
 import userXmark from '$lib/icons/regular/user-xmark.svg?raw';
 import barsProgress from '$lib/icons/regular/bars-progress.svg?raw';
 import deleteIcon from '$lib/icons/regular/trash-can.svg?raw';
-import documentAdd from '$lib/icons/regular/file-plus.svg?raw';
 import flag from '$lib/icons/regular/flag.svg?raw';
 import move from '$lib/icons/regular/up-down-left-right.svg?raw';
 import pencil from '$lib/icons/regular/pen.svg?raw';
@@ -670,7 +669,6 @@ async function saveNotes(text: string) {
             {:else if actions.manage}
               {@render action('Reorder, copy, move and delete', move, 'manage', 'Manage', owner ? toggleManage : undefined)}
             {/if}
-            {#if actions.copy}<ListTransfer source={list} query={data.query} sort={data.sort} count={data.total} svg={documentAdd} />{/if}
             {#if actions.progressHref}
               <Tooltip text="View watched progress">
                 {#snippet trigger(tooltip)}

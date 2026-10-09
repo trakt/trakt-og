@@ -6,9 +6,9 @@ const origin = 'https://og.trakt.tv';
 const keys = (actions: object) => Object.keys(actions).sort();
 
 describe('listTitleActions', () => {
-  it('should give a signed-out viewer share, copy and the VIP progress page', () => {
+  it('should give a signed-out viewer share and the VIP progress page, but no copy', () => {
     const actions = listTitleActions({ list, viewer: null, isCollaborator: false, origin });
-    expect(keys(actions)).toEqual(['copy', 'progressHref', 'shareUrl']);
+    expect(keys(actions)).toEqual(['progressHref', 'shareUrl']);
     expect(actions.progressHref).toBe('https://app.trakt.tv/vip');
     expect(actions.shareUrl).toBe('https://og.trakt.tv/users/sean/lists/heist');
   });
@@ -24,7 +24,7 @@ describe('listTitleActions', () => {
     expect(keys(actions)).toEqual(['leave', 'manage', 'progressHref', 'report', 'shareUrl']);
   });
 
-  it('should give official lists copy instead of management even for the owner', () => {
+  it('should give official lists no management or copy, even for the owner', () => {
     const official = { ...list, kind: 'official' as const };
     const actions = listTitleActions({
       list: official,
@@ -33,11 +33,11 @@ describe('listTitleActions', () => {
       origin,
     });
     expect(actions.progressHref).toBeUndefined();
-    expect(keys(actions)).toEqual(['copy', 'report', 'shareUrl']);
+    expect(keys(actions)).toEqual(['report', 'shareUrl']);
     expect(
       keys(listTitleActions({ list: official, viewer: { slug: 'kim', isVip: true }, isCollaborator: true, origin })),
     )
-      .toEqual(['copy', 'report', 'shareUrl']);
+      .toEqual(['report', 'shareUrl']);
   });
 
   it('should avoid a progress query with a missing built-in id', () => {

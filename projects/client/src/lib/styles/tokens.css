@@ -80,6 +80,7 @@
   --brand-primary-darken: #c61017; /* darken(#ed1c24, 10%): hover and pressed, from (theme-red) */
   --brand-secondary: #009edf;
   --brand-tertiary: #8e44ad;
+  --brand-tertiary-darken: #703688; /* darken(#8e44ad, 10%): hover on a watched-purple button */
   --brand-quaternary: #16a085;
   --brand-fifth: #2b678f;
   --brand-sixth: #6e7a83;

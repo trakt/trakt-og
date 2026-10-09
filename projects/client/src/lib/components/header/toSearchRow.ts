@@ -15,14 +15,17 @@ export interface SearchRow {
   readonly type: string;
   /** The year, or an episode's first-aired date. */
   readonly tag?: string;
-  readonly genres?: string;
+  /** Up to the first three genres, dashes spaced out ("science fiction"). */
+  readonly genres?: readonly string[];
   readonly poster?: string;
   /** A user's avatar, which OG drew square and round (`.poster.square`, `[data-type="users"]`), not a poster. */
   readonly avatar?: boolean;
 }
 
+const GENRE_LIMIT = 3;
+
 const genres = (slugs: ReadonlyArray<string> | null | undefined) =>
-  slugs?.length ? slugs.join(', ').replaceAll('-', ' ') : undefined;
+  slugs?.length ? slugs.slice(0, GENRE_LIMIT).map((slug) => slug.replaceAll('-', ' ')) : undefined;
 
 const year = (value: number | null | undefined) => (value ? String(value) : undefined);
 

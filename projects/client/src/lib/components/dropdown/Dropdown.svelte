@@ -162,6 +162,7 @@ const closeOnPick = (event: MouseEvent & { currentTarget: HTMLElement }) => {
   justify-content: start;
   align-items: center;
   column-gap: var(--space-base-block);
+  row-gap: 0;
   min-block-size: 0;
   padding: 0;
   border: 0;

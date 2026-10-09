@@ -25,9 +25,6 @@ import { fetchListOptions } from './fetchListOptions.ts';
 import { type FilterDraft, fromFilterDraft, toFilterDraft } from './filterDraft.ts';
 import type { FilterOption } from './filterOptions.ts';
 import { filterValueLabel } from './filterTags.ts';
-import anyBundle from '$lib/assets/channels/any.png';
-import freeBundle from '$lib/assets/channels/free.png';
-import subscriptionsBundle from '$lib/assets/channels/subscriptions.png';
 import IncludeExcludeSelect from './IncludeExcludeSelect.svelte';
 import SearchField from './SearchField.svelte';
 import { type ListSelection, listSelection, toListFilter } from './listSelection.ts';
@@ -128,16 +125,11 @@ $effect(() => {
 const watchnowGroups = $derived(
   watchNowOptions({ sources: loadedSources ?? new Map(), country, favorites: vip ? favorites : [] }),
 );
-// The watch-now filter's tiles: each service's logo on its color, the bundles' own art, and a heart for favorites.
-const bundleTiles: Readonly<Record<string, { logo: string; color: string }>> = {
-  any: { logo: anyBundle, color: 'var(--color-bundle-any)' },
-  free: { logo: freeBundle, color: 'var(--color-bundle-free)' },
-  subscriptions: { logo: subscriptionsBundle, color: 'var(--color-bundle-subscriptions)' },
-};
+// The watch-now filter's tiles: each service's logo on its color and a heart for favorites. Bundles go without.
 function serviceTile(slug: string) {
   if (slug === 'favorites') return { heart: true };
   const source = (loadedSources ?? sources)?.get(slug);
-  return bundleTiles[slug] ?? (source && { logo: source.logo, color: source.color });
+  return source && { logo: source.logo, color: source.color, channel: source.channel };
 }
 const sourceName = (slug: string) =>
   slug === 'favorites' ? 'All Favorites' : (loadedSources ?? sources)?.get(slug)?.name ?? slug;

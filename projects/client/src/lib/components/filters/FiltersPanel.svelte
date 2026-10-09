@@ -362,6 +362,7 @@ function reset() {
   display: grid;
   grid-template-columns: var(--filter-site-width) minmax(0, 1fr);
   align-items: center;
+  margin-inline-end: var(--filter-rating-inset-end);
   column-gap: var(--filter-rating-site-gap);
 
   & img {

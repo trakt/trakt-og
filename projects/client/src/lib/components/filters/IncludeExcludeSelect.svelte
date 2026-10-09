@@ -230,7 +230,7 @@ li {
   }
 }
 
-.kept .keep {
+.picker .rows .kept .keep {
   background-color: var(--color-filter-include);
   color: var(--color-text-inverse);
 }
@@ -240,7 +240,7 @@ li {
   font-weight: var(--font-weight-headings-heavy);
 }
 
-.left-out .leave {
+.picker .rows .left-out .leave {
   background-color: var(--color-filter-exclude);
   color: var(--color-text-inverse);
 }

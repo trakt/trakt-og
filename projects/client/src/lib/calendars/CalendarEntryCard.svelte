@@ -39,6 +39,17 @@ const watchedCount = $derived(watched.filter(Boolean).length);
 const shownTitle = $derived(compact && entry.episode ? '' : entry.title);
 </script>
 
+<!-- Opens the episodes: how many there are, or how many of them are watched once any are. -->
+{#snippet badge(inline: boolean)}
+  {#if group}
+    <button type="button" class={['badge', { inline, open }]} aria-expanded={open} aria-controls="{uid}-tray"
+      title="{group.label}: {watchedCount} of {group.episodes.length} watched" onclick={() => (open = !open)}>
+      <Icon svg={clone} /><span>{watchedCount > 0 ? `${watchedCount}/${group.episodes.length} watched` : `${group
+          .episodes.length} episodes`}</span><Icon svg={chevron} />
+    </button>
+  {/if}
+{/snippet}
+
 <div class={['calendar-entry', { grouped: group }]}>
   {#if artwork === 'none'}
     <TextMediaCard {...entry} title={shownTitle} compact={compact} {icons} />
@@ -46,24 +57,18 @@ const shownTitle = $derived(compact && entry.episode ? '' : entry.title);
     <FanartCard {...entry} title={shownTitle} episodeBadge={undefined} userRating={entry.state.rating} {icons}>
       {#snippet fanartOverlay()}
         {#if group}
-          <button type="button" class="count" aria-expanded={open} aria-controls="{uid}-tray"
-            title="{group.label}: {watchedCount} of {group.episodes.length} watched" onclick={() => (open = !open)}>
-            <Icon svg={clone} /><b>{group.episodes.length}</b><span class="watched">· {watchedCount}/{group.episodes
-                .length} watched</span><Icon svg={chevron} />
-          </button>
+          {@render badge(false)}
           <span class="ticks" aria-hidden="true">{#each watched as done, i (i)}<i class:done></i>{/each}</span>
         {/if}
       {/snippet}
     </FanartCard>
   {/if}
   {#if group && artwork === 'none'}
-    <button type="button" class="count text" aria-expanded={open} aria-controls="{uid}-tray" onclick={() => (open = !open)}>
-      <Icon svg={clone} /><b>{group.episodes.length}</b><span class="watched">· {watchedCount}/{group.episodes.length}
-        watched</span><Icon svg={chevron} />
-    </button>
+    {@render badge(true)}
   {/if}
   {#if group && open}
-    <EpisodeTray id="{uid}-tray" show={group.show.id} title={group.show.title} episodes={group.episodes} />
+    <EpisodeTray id="{uid}-tray" show={group.show.id} title={group.show.title} episodes={group.episodes}
+      released={entry.released} />
   {/if}
 </div>
 
@@ -72,17 +77,23 @@ const shownTitle = $derived(compact && entry.episode ? '' : entry.title);
   position: relative;
   container-type: inline-size;
   min-inline-size: 0;
-
-  &.grouped :global(.fanart) {
-    box-shadow: inset 0 3px 0 var(--brand-tertiary);
-  }
 }
 
 .calendar-entry :global(.fanart .logo) {
   max-inline-size: var(--calendar-logo-max-width);
 }
 
-.count {
+/* "1x07 Title" reads as one line that wraps: the number bold, the title regular, a blurred spoiler title kept inline. */
+.calendar-entry :global(.fanart h3) {
+  font-weight: normal;
+}
+
+.calendar-entry :global(.fanart h3 .spoiler-content.inline) {
+  display: inline;
+}
+
+/* A frosted pill in the art's top-right corner that opens the episodes; white while they're open. */
+.badge {
   position: absolute;
   inset-block-start: var(--space-sm-block);
   inset-inline-end: var(--space-sm-block);
@@ -91,48 +102,49 @@ const shownTitle = $derived(compact && entry.episode ? '' : entry.title);
   align-items: center;
   gap: var(--space-xs-inline);
   min-block-size: 0;
-  padding: 3px 7px;
-  border: 0;
-  border-radius: var(--radius-sm);
-  background-color: rgb(0 0 0 / 0.72);
+  padding: 4px 8px 4px 9px;
+  border: 1px solid rgb(255 255 255 / 0.18);
+  border-radius: var(--radius-sidebar-pill);
+  background-color: rgb(0 0 0 / 0.55);
+  backdrop-filter: blur(6px);
   color: var(--color-frame-text);
   font-size: var(--font-size-small);
+  font-weight: var(--font-weight-menu-header);
+  line-height: 1;
   cursor: pointer;
 
   & :global(.icon:last-child) {
-    font-size: 0.7em;
+    font-size: 0.75em;
 
     @media (prefers-reduced-motion: no-preference) {
       transition: rotate var(--transition-card);
     }
   }
 
-  &[aria-expanded='true'] {
-    background-color: var(--brand-tertiary);
+  &:is(:hover, :focus-visible) {
+    background-color: rgb(0 0 0 / 0.8);
+  }
+
+  &.open {
+    border-color: var(--color-frame-text);
+    background-color: var(--color-frame-text);
+    color: var(--color-card-bg);
 
     & :global(.icon:last-child) {
       rotate: 180deg;
     }
   }
 
-  &:is(:hover, :focus-visible) {
-    background-color: rgb(0 0 0 / 0.9);
-  }
-
-  &.text {
+  &.inline {
     position: static;
     margin: 0 var(--space-sm-inline) var(--space-sm-block);
   }
 
-  @container (width < 260px) {
-    & .watched {
+  @container (width < 200px) {
+    & span {
       display: none;
     }
   }
-}
-
-.watched {
-  color: var(--color-sidebar-pill-text);
 }
 
 /* One tick per episode along the art's bottom edge, purple once watched. */

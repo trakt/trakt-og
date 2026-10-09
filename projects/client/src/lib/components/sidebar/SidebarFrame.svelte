@@ -179,7 +179,8 @@ function onkeydown(event: KeyboardEvent) {
   flex-direction: column;
   align-items: center;
   min-block-size: 0;
-  padding-block-start: var(--space-xs-inline);
+  /* As far from the top as today's date is from the rail's sides. */
+  padding-block-start: calc((var(--sidebar-rail-width) - var(--rail-today-width)) / 2);
 }
 
 .show {

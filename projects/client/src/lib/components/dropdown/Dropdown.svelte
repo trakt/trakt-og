@@ -48,7 +48,9 @@ const id = $props.id();
 
 const focusFirstItem = (event: ToggleEvent & { currentTarget: HTMLElement }) => {
   if (event.newState !== 'open') return;
-  event.currentTarget.querySelector<HTMLElement>(multiple ? 'input, a, button' : 'a, button')?.focus();
+  const menu = event.currentTarget;
+  const field = multiple ? menu.querySelector<HTMLElement>('input') : null;
+  (field ?? menu.querySelector<HTMLElement>('a, button'))?.focus();
 };
 
 const closeOnPick = (event: MouseEvent & { currentTarget: HTMLElement }) => {

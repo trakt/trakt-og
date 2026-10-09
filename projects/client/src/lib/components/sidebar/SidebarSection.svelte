@@ -48,6 +48,7 @@ function toggle() {
 <style>
 .sidebar-section {
   display: grid;
+  background: none;
   gap: var(--sidebar-section-gap);
   padding-block-start: var(--space-base-inline);
   border-block-start: 1px solid var(--color-sidebar-rule);

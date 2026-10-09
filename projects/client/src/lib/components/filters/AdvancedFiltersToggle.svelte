@@ -9,6 +9,7 @@ import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import caretRight from '$lib/icons/solid/caret-right.svg?raw';
 import filtersIcon from '$lib/icons/solid/filters.svg?raw';
+import regularFilters from '$lib/icons/regular/filters.svg?raw';
 
 interface Props {
   open: boolean;
@@ -20,9 +21,11 @@ interface Props {
   count: number;
   /** Lets the page hand focus back here when the panel closes. */
   button?: HTMLButtonElement;
+  /** The regular-weight funnel of a sidebar's tool row, beside the regular eye. */
+  regular?: boolean;
 }
 
-let { open = $bindable(), controls, active, count, button = $bindable() }: Props = $props();
+let { open = $bindable(), controls, active, count, button = $bindable(), regular = false }: Props = $props();
 
 function onkeydown(event: KeyboardEvent) {
   if (event.key !== 'a' || event.altKey || event.ctrlKey || event.metaKey || event.defaultPrevented) return;
@@ -46,7 +49,7 @@ function onkeydown(event: KeyboardEvent) {
       onclick={() => (open = !open)}
       {...tooltip}
     >
-      <span class="funnel"><Icon svg={filtersIcon} />{#if count > 0}<span class="badge" aria-hidden="true"
+      <span class="funnel"><Icon svg={regular ? regularFilters : filtersIcon} />{#if count > 0}<span class="badge" aria-hidden="true"
           >{count.toLocaleString('en-US')}</span>{/if}</span><span class="caret"><Icon svg={caretRight} /></span>
     </button>
   {/snippet}

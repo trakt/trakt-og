@@ -75,7 +75,9 @@ function onkeydown(event: KeyboardEvent) {
 </div>
 
 <style>
+/* Dark in both themes, like the chart frame, so its controls take their dark values. */
 .sidebar-frame {
+  color-scheme: dark;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   background-color: var(--color-frame);

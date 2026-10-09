@@ -12,8 +12,6 @@ export interface ListTitleActions {
   readonly leave?: TitleAction;
   /** Owner or collaborator: "Manage". */
   readonly manage?: TitleAction;
-  /** Everyone else: "Copy". */
-  readonly copy?: TitleAction;
   /** Left out on official lists. */
   readonly progressHref?: string;
   readonly shareUrl: string;
@@ -29,9 +27,9 @@ type ListTitleActionsParams = {
 
 /**
  * Which title row icons the viewer gets: the report flag when signed in, the owner's edit and (personal lists only)
- * delete, a collaborator's "Stop collaborating", share, Manage for whoever can manage and Copy for everyone else, and
- * Progress off official lists. Report and leave are wired; edit/delete/manage/copy remain unimplemented. Subscribe is
- * cut.
+ * delete, a collaborator's "Stop collaborating", share, Manage for whoever can manage, and Progress off official
+ * lists. OG's Copy for everyone else is cut: og doesn't clone other people's lists. Report and leave are wired;
+ * edit/delete/manage remain unimplemented. Subscribe is cut.
  */
 export function listTitleActions({ list, viewer, isCollaborator, origin }: ListTitleActionsParams): ListTitleActions {
   const owner = list.kind !== 'official' && viewer?.slug === list.ownerSlug;
@@ -43,7 +41,7 @@ export function listTitleActions({ list, viewer, isCollaborator, origin }: ListT
     ...(owner && { edit: {} }),
     ...(owner && list.kind === 'personal' && { delete: {} }),
     ...(collaborator && { leave: {} }),
-    ...(owner || collaborator ? { manage: {} } : { copy: {} }),
+    ...((owner || collaborator) && { manage: {} }),
     ...(list.kind !== 'official' && { progressHref }),
     shareUrl: `${origin}${list.href}`,
   };

@@ -19,6 +19,7 @@ import Spinner from '$lib/components/loading/Spinner.svelte';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
 import { watchDateInput } from '$lib/components/history/watchDateInput';
 import { watchDateInstant } from '$lib/components/history/watchDateInstant';
+import { countLabel } from '$lib/utils/countLabel';
 
 type Mode = 'date' | 'remove' | 'partial';
 /** What a summary button shows (`SummaryAction`'s icon, text, percent and detail). */
@@ -98,8 +99,13 @@ let maximum = $state('');
 let returnTo = $state<HTMLElement>();
 let press: ReturnType<typeof setTimeout> | undefined;
 let pressed = false;
+// A bulk watch asks here before writing (`confirm`), in the same prompt as the dates.
+let confirmation = $state<{ question: string; note: string } | null>(null);
+let answer: ((yes: boolean) => void) | undefined;
 const title = $derived(
-  editingMetadata
+  confirmation
+    ? confirmation.question
+    : editingMetadata
     ? 'Any optional metadata?'
     : mode === 'date'
     ? collection ? 'When did you add this to library?' : 'When did you watch this?'
@@ -132,7 +138,36 @@ async function open(add: boolean) {
 function toggle(event: ToggleEvent) {
   expanded = event.newState === 'open';
   if (expanded) firstChoice()?.focus();
-  else returnTo?.focus({ preventScroll: true });
+  else {
+    // Closed without an answer (Esc, a click outside, the close button) counts as no.
+    reply(false);
+    confirmation = null;
+    returnTo?.focus({ preventScroll: true });
+  }
+}
+
+/**
+ * Asks before a show or season marks more than one episode watched, in this control's own prompt. Resolves whether to
+ * go ahead.
+ */
+export function confirm({ count, title: name }: { count: number; title: string }): Promise<boolean> {
+  reply(false);
+  const episodes = countLabel(count, 'episode');
+  confirmation = { question: `Mark ${episodes} watched?`, note: `This adds ${episodes} of ${name} to your history.` };
+  editingMetadata = false;
+  other = false;
+  returnTo = button;
+  const asked = new Promise<boolean>((resolve) => (answer = resolve));
+  if (!popover?.matches(':popover-open')) popover?.showPopover();
+  else void tick().then(() => firstChoice()?.focus());
+  return asked;
+}
+
+function reply(yes: boolean) {
+  const done = answer;
+  answer = undefined;
+  if (yes) popover?.hidePopover();
+  done?.(yes);
 }
 /** The prompt's first choice, past its close button. */
 const firstChoice = () => popover?.querySelector<HTMLElement>('.body :is(button, select)');
@@ -237,8 +272,11 @@ function click() {
 </div>
 {/if}
 <PromptPopover id="watch-{id}" anchor="--watch-{id}" {title} tone={collection ? 'collected' : 'watched'}
-  size={editingMetadata ? 'wide' : 'default'} bind:element={popover} ontoggle={toggle}>
-  {#if editingMetadata && metadata}
+  note={confirmation?.note} size={editingMetadata ? 'wide' : 'default'} bind:element={popover} ontoggle={toggle}>
+  {#if confirmation}
+    <PromptRow svg={check} onclick={() => reply(true)}>Yes, mark them watched</PromptRow>
+    <PromptRow svg={xmark} onclick={() => popover?.hidePopover()}>Cancel</PromptRow>
+  {:else if editingMetadata && metadata}
     {@render metadata(finishMetadata, savingMetadata)}
   {:else if mode === 'date'}
     {#if other}

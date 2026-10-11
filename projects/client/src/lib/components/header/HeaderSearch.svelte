@@ -8,7 +8,8 @@
   to the magnifier, and a click outside (on the dimmed page) closes it, keeping what was typed. A bare `/` anywhere else
   opens it.
   The type picks the form's `/search/<type>` action and is kept in the `search_type` cookie so SSR renders it.
-  Before anything is typed, the rows are the most searched shows and movies for the type (none for the other types).
+  Before anything is typed, the rows are the type's starting list: the most searched shows and movies, the trending
+  lists, or this month's birthdays for People (none for the other types).
   Recent and trending query rows go under the results.
 -->
 <script lang="ts">
@@ -31,7 +32,7 @@ import xmark from '$lib/icons/regular/xmark.svg?raw';
 import angleDown from '$lib/icons/solid/angle-down.svg?raw';
 import { isSearchShortcut } from './isSearchShortcut.ts';
 import { searchAutocomplete, type SearchAutocompleteResult } from './searchAutocomplete.ts';
-import { searchTrending } from './searchTrending.ts';
+import { type SearchTrending, searchTrending } from './searchTrending.ts';
 import { searchTypes } from './searchTypes.ts';
 import type { SearchRow } from './toSearchRow.ts';
 
@@ -104,10 +105,10 @@ const terms = $derived([
   ...(recent?.user ?? []).map((term) => ({ term, recent: true })),
   ...(recent?.global ?? []).map((term) => ({ term, recent: false })),
 ]);
-// Typed, the results; empty, the type's most searched titles, fetched once a type per visit.
-let trending = $state<Readonly<Record<string, readonly SearchRow[]>>>({});
+// Typed, the results; empty, the type's starting list, fetched once a type per visit.
+let trending = $state<Readonly<Record<string, SearchTrending>>>({});
 const typed = $derived(query.trim() !== '');
-const rows = $derived(typed ? result.rows : (trending[type.slug] ?? []));
+const rows = $derived<readonly SearchRow[]>(typed ? result.rows : (trending[type.slug]?.rows ?? []));
 const resultOptionCount = $derived(rows.length + (result.count ? 1 : 0));
 const options = $derived([
   ...rows.map((row, index) => ({ id: `${id}-option-${index}`, href: row.href })),
@@ -151,8 +152,10 @@ const runSearch = () => {
 
 const loadTrending = (picked: (typeof searchTypes)[number]) => {
   if (picked.slug in trending) return;
-  trending = { ...trending, [picked.slug]: [] };
-  void searchTrending({ type: picked })
+  trending = { ...trending, [picked.slug]: { label: '', rows: [] } };
+  // The viewer's date, for People's birthdays.
+  const today = new Date().toLocaleDateString('en-CA', { timeZone: page.data.datePreferences?.timeZone });
+  void searchTrending({ type: picked, today })
     .then((found) => (trending = { ...trending, [picked.slug]: found }))
     // Rate limited or offline: forget it, so the next open asks again.
     .catch(() => (trending = Object.fromEntries(Object.entries(trending).filter(([slug]) => slug !== picked.slug))));
@@ -391,7 +394,7 @@ afterNavigate(({ to }) => {
       <ul id="{id}-results" role="listbox" aria-label="Search results" hidden={!expanded}
         onpointerleave={() => (highlight = -1)}>
           {#if rows.length}
-            <li role="presentation" class="section">{typed ? 'Results' : 'Most Searched'}</li>
+            <li role="presentation" class="section">{typed ? 'Results' : trending[type.slug]?.label}</li>
           {/if}
           {#each rows as row, index (row.key)}
             <li

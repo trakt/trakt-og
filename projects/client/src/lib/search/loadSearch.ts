@@ -131,6 +131,9 @@ export async function loadSearch({ fetch, token, cookies, parent, url, type: slu
       .map(({ user }) => toSearchUserCard(user)),
     page: pagination,
     /** The sidebar's own state, so SSR renders it as the viewer left it, like the calendar's. */
-    sidebar: { collapsed: cookies.get('sidebar_collapsed') !== undefined },
+    sidebar: {
+      collapsed: cookies.get('sidebar_collapsed') !== undefined,
+      recent: cookies.get('sidebar_recent') !== 'closed',
+    },
   };
 }

@@ -12,14 +12,12 @@ const types: Readonly<Record<ListItemType, string>> = {
 };
 
 /**
- * The type dropdown after All Types: favorites hold movies and shows, the watchlist no
- * people, and every other list all five.
+ * The type dropdown after All Types: favorites hold movies and shows, and every other list movies, shows, seasons and
+ * episodes. No list takes people, so People is never offered.
  */
 export function listTypeOptions(kind: ListKind): readonly { readonly type: ListItemType; readonly label: string }[] {
   const allowed: readonly ListItemType[] = kind === 'favorites'
     ? ['movie', 'show']
-    : kind === 'watchlist'
-    ? ['movie', 'show', 'season', 'episode']
-    : ['movie', 'show', 'season', 'episode', 'person'];
+    : ['movie', 'show', 'season', 'episode'];
   return allowed.map((type) => ({ type, label: types[type] }));
 }

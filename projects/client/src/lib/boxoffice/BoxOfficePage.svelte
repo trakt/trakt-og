@@ -8,6 +8,8 @@
 import ChartPicker from '$lib/charts/ChartPicker.svelte';
 import TagPills from '$lib/components/labels/TagPills.svelte';
 import QuickIcons from '$lib/components/media/QuickIcons.svelte';
+import Icon from '$lib/icons/Icon.svelte';
+import heart from '$lib/icons/solid/heart.svg?raw';
 import { quickIconFill } from '$lib/components/media/quickIconFill';
 import SidebarFrame from '$lib/components/sidebar/SidebarFrame.svelte';
 import SidebarSection from '$lib/components/sidebar/SidebarSection.svelte';
@@ -30,6 +32,8 @@ const percent = (fraction: number) => `${(fraction * 100).toFixed(1)}%`;
 const dollars = (amount: number) => `$${amount.toLocaleString('en-US')}`;
 const millions = (amount: number) => `$${(amount / 1_000_000).toFixed(1)}M`;
 const openers = $derived(data.rows.filter((row) => row.run?.kind === 'opening').length);
+// The heart's colour, as on the quick-icon bar: rating-1 to rating-10 by the whole number.
+const ratingLevel = (rating: number) => Math.min(Math.max(Math.trunc(rating), 1), 10);
 const runPill = (run: WeekInRelease) => ({
   text: run.label,
   kind: run.kind === 'opening' ? ('primary' as const) : run.kind === 'week' ? ('light' as const) : undefined,
@@ -92,22 +96,20 @@ const runPill = (run: WeekInRelease) => ({
 
   <div class="box-office">
     <header class="mast">
-      <div>
-        <p class="eyebrow">Weekend box office · U.S.</p>
-        <h2>{data.weekend.label}</h2>
-      </div>
-      <p class="note">Weekend estimates, updated Monday mornings.<br />Weeks in release count from the U.S. release
-        date.</p>
+      <p class="eyebrow">Weekend box office</p>
+      <h2>{data.weekend.label}</h2>
     </header>
 
     <table>
       <thead>
         <tr>
           <th scope="col" class="rank">#</th>
-          <th scope="col" colspan="2">Film</th>
+          <td></td>
+          <th scope="col">Film</th>
           <th scope="col">Run</th>
           <th scope="col" class="number">Weekend gross</th>
           <th scope="col" class="number">Share</th>
+          <th scope="col" class="number">Rating</th>
           <th scope="col"><span class="visually-hidden">Actions</span></th>
         </tr>
       </thead>
@@ -131,9 +133,15 @@ const runPill = (run: WeekInRelease) => ({
               <span class="bar" style:--share="{top ? (row.revenue / top) * 100 : 0}%"></span>
             </td>
             <td class="number share-cell">{percent(share(row.revenue))}</td>
+            <td class="number rating">
+              {#if row.rating !== undefined}
+                <span class="heart" style:color="var(--rating-{ratingLevel(row.rating)})"><Icon svg={heart} /></span
+                >{Math.trunc(row.rating * 10)}%
+              {/if}
+            </td>
             <td class="actions">
               <QuickIcons small fill={quickIconFill({ state, datePreferences: data.datePreferences })}
-                rating={row.rating} released favorite={false}
+                released favorite={false}
                 ratingTarget={{ type: 'movie', id: row.id, title: row.title }}
                 watchTarget={{ type: 'movie', id: row.id, title: row.title, runtime: row.runtime }} />
             </td>
@@ -297,15 +305,8 @@ const runPill = (run: WeekInRelease) => ({
 }
 
 .mast {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: var(--space-lg-inline);
-
-  & > div {
-    display: grid;
-    gap: var(--space-xs-block);
-  }
+  display: grid;
+  gap: var(--box-office-mast-gap);
 
   & .eyebrow {
     margin: 0;
@@ -325,10 +326,6 @@ const runPill = (run: WeekInRelease) => ({
     line-height: 0.95;
     text-transform: uppercase;
   }
-
-  & .note {
-    text-align: end;
-  }
 }
 
 table {
@@ -337,7 +334,7 @@ table {
   font-variant-numeric: tabular-nums;
 }
 
-th {
+thead :is(th, td) {
   padding: var(--box-office-cell-padding);
   border-block-end: 1px solid var(--color-control-border);
   color: var(--color-sidebar-label);
@@ -394,6 +391,8 @@ th.rank {
 /* The image takes its own size: a percentage height inside a table cell resolves against the row in some browsers,
    which zoomed and cropped the poster. */
 td.poster {
+  /* As narrow as its poster, so the title sits close beside it. */
+  inline-size: 1%;
   padding-inline-end: 0;
 
   & a {
@@ -449,6 +448,18 @@ td.film {
   }
 }
 
+.rating {
+  font-size: var(--font-size-rating-small);
+  font-weight: var(--font-weight-headings);
+  white-space: nowrap;
+
+  & .heart {
+    display: inline-flex;
+    margin-inline-end: var(--space-xs-inline);
+    vertical-align: -1px;
+  }
+}
+
 .share-cell {
   color: var(--color-sidebar-pill-text);
   font-size: var(--font-size-box-office-share);
@@ -462,12 +473,6 @@ td.actions {
   & :global(.quick-icons) {
     background: none;
   }
-}
-
-.note {
-  margin: 0;
-  color: var(--color-sidebar-label);
-  font-size: var(--font-size-small);
 }
 
 .visually-hidden {

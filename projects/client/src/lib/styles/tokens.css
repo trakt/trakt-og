@@ -2585,6 +2585,7 @@
 :root {
   --box-office-padding: 24px 28px 32px;
   --box-office-gap: 18px;
+  --box-office-mast-gap: 10px; /* from the red eyebrow to the weekend's dates */
   --font-size-box-office-eyebrow: 12px;
   --font-size-box-office-heading: 52px;
   --font-size-box-office-rank: 46px;

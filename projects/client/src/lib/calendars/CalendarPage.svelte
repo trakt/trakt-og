@@ -18,9 +18,8 @@ import AdvancedFiltersToggle from '$lib/components/filters/AdvancedFiltersToggle
 import { type AdvancedFilters, advancedFiltersSearch } from '$lib/components/filters/advancedFilters';
 import FadeHideMenu from '$lib/components/filters/FadeHideMenu.svelte';
 import { type FadeHide, fadeHideOptions, matchesFadeHide } from '$lib/components/filters/fadeHide';
-import FilterChips from '$lib/components/filters/FilterChips.svelte';
-import { type FilterTag, filterTags } from '$lib/components/filters/filterTags';
-import { watchNowTiles } from '$lib/components/filters/watchNowFilter';
+import AppliedFiltersSection from '$lib/components/filters/AppliedFiltersSection.svelte';
+import { filterChips } from '$lib/components/filters/filterChips';
 import { withoutFilterTag } from '$lib/components/filters/withoutFilterTag';
 import type { HeaderUser } from '$lib/components/header/HeaderUser';
 import { episodeBatchState } from '$lib/components/history/episodeBatchState';
@@ -29,12 +28,11 @@ import { quickIconFill } from '$lib/components/media/quickIconFill';
 import CountPill from '$lib/components/sidebar/CountPill.svelte';
 import IconSwitch from '$lib/components/sidebar/IconSwitch.svelte';
 import RailGroup from '$lib/components/sidebar/RailGroup.svelte';
+import RailPager from '$lib/components/sidebar/RailPager.svelte';
 import SidebarFrame from '$lib/components/sidebar/SidebarFrame.svelte';
 import SidebarSection from '$lib/components/sidebar/SidebarSection.svelte';
 import SidebarTitle from '$lib/components/sidebar/SidebarTitle.svelte';
 import Icon from '$lib/icons/Icon.svelte';
-import angleLeft from '$lib/icons/light/angle-left.svg?raw';
-import angleRight from '$lib/icons/light/angle-right.svg?raw';
 import calendarDays from '$lib/icons/regular/calendar-days.svg?raw';
 import grid from '$lib/icons/regular/grid-2.svg?raw';
 import { overlay } from '$lib/overlay/overlay';
@@ -100,21 +98,12 @@ const artworkChoices = $derived<readonly CalendarArtwork[]>(
 
 /* ---------- filters ---------- */
 
-const tags = $derived(filterTags(data.filters));
-const tiles = $derived(watchNowTiles({
-  watchnow: data.filters.watchnow,
+const chips = $derived(filterChips({
+  filters: data.filters,
   sources: data.filterSources ?? new Map(),
   country: data.watchNowCountry,
   favorites: data.watchNowFavorites,
 }));
-const chips = $derived<FilterTag[]>([
-  ...tiles.map((tile) => ({
-    id: `watchnow-${tile.id}`,
-    text: tile.kind === 'bundle' ? tile.name : tile.source.name,
-    without: false,
-  })),
-  ...tags,
-]);
 const filterCount = $derived(chips.length);
 let panelOpen = $state(false);
 let funnel = $state<HTMLButtonElement>();
@@ -378,10 +367,8 @@ const title = $derived(`${data.target === 'my' ? 'My ' : ''}${data.calendar.labe
     </div>
 
     {#if filterCount > 0}
-      <SidebarSection id="filters" title="Applied Filters" open={data.sidebar.filters} remember>
-        {#snippet action()}<a class="clear" href={page.url.pathname}>Clear all</a>{/snippet}
-        <FilterChips {chips} onremove={removeChip} disabled={!vip} />
-      </SidebarSection>
+      <AppliedFiltersSection {chips} open={data.sidebar.filters} {vip} clearHref={page.url.pathname}
+        onremove={removeChip} />
     {/if}
 
     <SidebarSection id="display" title="Display" open={data.sidebar.display} remember>
@@ -423,13 +410,9 @@ const title = $derived(`${data.target === 'my' ? 'My ' : ''}${data.calendar.labe
       <a class="today" href={href(data.target, data.calendar.slug)} title="Today, {todayLabel}">
         <small>{monthName(data.today, 'short')}</small><b>{Number(data.today.slice(8))}</b>
       </a>
-      <div class="rail-month">
-        <a href={href(data.target, data.calendar.slug, data.window.previous)} rel="prev"><Icon svg={angleLeft}
-            label="Previous month" /></a>
-        <span>{monthName(data.window.start, 'short')}</span>
-        <a href={href(data.target, data.calendar.slug, data.window.next)} rel="next"><Icon svg={angleRight}
-            label="Next month" /></a>
-      </div>
+      <RailPager unit="month" label={monthName(data.window.start, 'short')}
+        prevHref={href(data.target, data.calendar.slug, data.window.previous)}
+        nextHref={href(data.target, data.calendar.slug, data.window.next)} />
     </RailGroup>
     <RailGroup tools>{@render tools()}</RailGroup>
     <RailGroup>
@@ -469,29 +452,6 @@ const title = $derived(`${data.target === 'my' ? 'My ' : ''}${data.calendar.labe
   gap: var(--space-lg-block);
 }
 
-.clear {
-  justify-self: start;
-  color: var(--color-sidebar-pill-text);
-  font-size: var(--font-size-small);
-  font-weight: var(--font-weight-menu-header);
-  text-decoration: none;
-
-  &:is(:hover, :focus-visible) {
-    color: var(--color-frame-text);
-  }
-}
-
-.clear {
-  padding: 3px var(--space-base-block);
-  border: 1px solid var(--color-control-border);
-  border-radius: var(--radius-control);
-  background-color: var(--color-control-bg);
-
-  &:is(:hover, :focus-visible) {
-    border-color: var(--color-control-border-hover);
-  }
-}
-
 .today {
   display: grid;
   justify-items: center;
@@ -517,25 +477,6 @@ const title = $derived(`${data.target === 'my' ? 'My ' : ''}${data.calendar.labe
 
   &:is(:hover, :focus-visible) {
     background-color: var(--color-control-hover-bg);
-  }
-}
-
-.rail-month {
-  display: flex;
-  align-items: center;
-  gap: var(--space-xs-inline);
-  font-size: var(--font-size-small);
-  font-weight: var(--font-weight-headings-heavy);
-  text-transform: uppercase;
-
-  & a {
-    padding: var(--space-xs-inline) 1px;
-    border-radius: var(--radius-control);
-    color: var(--color-sidebar-label);
-
-    &:is(:hover, :focus-visible) {
-      color: var(--color-frame-text);
-    }
   }
 }
 

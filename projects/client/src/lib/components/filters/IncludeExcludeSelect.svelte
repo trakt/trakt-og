@@ -132,7 +132,6 @@ function toggle(value: string, as: 'include' | 'exclude') {
       </ul>
     {/each}
     </div>
-    {#if excludable}<p class="hint">⊕ shows only these, ⊖ hides them</p>{/if}
   </div>
   </Dropdown>
 </div>
@@ -267,13 +266,6 @@ function toggle(value: string, as: 'include' | 'exclude') {
 
 .note,
 .group,
-.hint {
-  margin: 0;
-  padding: var(--space-base-block) var(--space-sm-inline);
-  color: var(--color-menu-header);
-  font-size: var(--font-size-small);
-}
-
 .group {
   font-size: var(--font-size-menu-header);
   font-weight: var(--font-weight-menu-header);

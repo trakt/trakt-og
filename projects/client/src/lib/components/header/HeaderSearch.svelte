@@ -20,7 +20,6 @@ import { untrack } from 'svelte';
 import HeaderTint from '$lib/components/header/HeaderTint.svelte';
 import clockRotateLeft from '$lib/icons/light/clock-rotate-left.svg?raw';
 import termMagnifier from '$lib/icons/light/magnifying-glass.svg?raw';
-import termXmark from '$lib/icons/light/xmark.svg?raw';
 import arrowTurnDownLeft from '$lib/icons/light/arrow-turn-down-left.svg?raw';
 import magnifyingGlass from '$lib/icons/regular/magnifying-glass.svg?raw';
 import xmark from '$lib/icons/regular/xmark.svg?raw';
@@ -29,6 +28,7 @@ import { isSearchShortcut } from './isSearchShortcut.ts';
 import { recentSearchType } from './recentSearchType.ts';
 import { searchAutocomplete, type SearchAutocompleteResult } from './searchAutocomplete.ts';
 import { type SearchTrending, searchTrending } from './searchTrending.ts';
+import SearchTermRow from './SearchTermRow.svelte';
 import { searchTypes } from './searchTypes.ts';
 import { viewerRecentSearches } from './viewerRecentSearches.ts';
 import type { SearchRow } from './toSearchRow.ts';
@@ -430,28 +430,20 @@ afterNavigate(({ to }) => {
             {#if !item.recent && termIndex === (recent?.user.length ?? 0)}
               <li role="presentation" class="section">Trending Searches</li>
             {/if}
-            <li
+            <SearchTermRow
               id="{id}-term-{termIndex}"
               role="option"
               aria-selected={highlight === index}
-              class={['search-term', { selected: highlight === index }]}
+              selected={highlight === index}
               onpointerenter={() => (highlight = index)}
-            >
-              <button type="button" class="reuse-term" tabindex="-1" onclick={() => pickTerm(item.term)}>
-                <span class="term-icon"><Icon svg={item.recent ? clockRotateLeft : termMagnifier} /></span>
-                {item.term.query}
-                {#if item.term.type}<span class="in-type">in {termLabel(item.term.type)}</span>{/if}
-              </button>
-              {#if item.recent}
-                <button
-                  type="button"
-                  class="remove-term"
-                  aria-label="Remove recent search: {item.term.query}"
-                  disabled={recent?.busy}
-                  onclick={() => { void recent?.remove(item.term); highlight = -1; input?.focus(); }}
-                ><Icon svg={termXmark} /></button>
-              {/if}
-            </li>
+              icon={item.recent ? clockRotateLeft : termMagnifier}
+              query={item.term.query}
+              type={item.term.type ? termLabel(item.term.type) : undefined}
+              tabbable={false}
+              onpick={() => pickTerm(item.term)}
+              busy={recent?.busy}
+              onremove={item.recent ? () => { void recent?.remove(item.term); highlight = -1; input?.focus(); } : undefined}
+            />
           {/each}
         </ul>
 
@@ -809,16 +801,14 @@ input {
   text-transform: none;
 }
 
-/* Every row: rounded, with a soft gray highlight from the arrows or the mouse. */
+/* Every row: rounded, with a soft gray highlight from the arrows or the mouse. The query rows are SearchTermRow. */
 .result a,
-.all-results a,
-.search-term {
+.all-results a {
   border-radius: var(--radius-search-row);
   transition: background-color 0.15s;
 }
 
-.selected a,
-.search-term.selected {
+.selected a {
   background-color: var(--color-search-row-hover);
 }
 
@@ -901,8 +891,7 @@ input {
   color: var(--color-search-year-text);
 }
 
-.all-results a,
-.reuse-term {
+.all-results a {
   display: flex;
   align-items: center;
   padding: var(--space-lg-block) var(--space-base-inline);
@@ -925,40 +914,6 @@ input {
 .in-type {
   margin-inline-start: var(--space-xs-inline);
   color: var(--color-search-in-type);
-}
-
-.search-term {
-  display: flex;
-  align-items: center;
-  font-size: var(--font-size-base);
-
-  & button {
-    min-block-size: 0;
-    border: 0;
-    border-radius: 0;
-    background: none;
-    font: inherit;
-  }
-}
-
-.reuse-term {
-  flex: 1;
-  text-align: start;
-}
-
-/* The remove button stays out of the way until its row is pointed at or highlighted. */
-.remove-term {
-  display: grid;
-  place-items: center;
-  padding: var(--space-sm-block) var(--space-base-inline);
-  color: var(--color-search-term);
-  opacity: 0;
-  transition: opacity 0.15s;
-
-  .search-term:is(:hover, .selected) &,
-  &:focus-visible {
-    opacity: 1;
-  }
 }
 
 /* The keyboard hints along the bottom of the panel. */
@@ -1004,9 +959,7 @@ input {
   .chip,
   .id-toggle,
   .result a,
-  .all-results a,
-  .search-term,
-  .remove-term {
+  .all-results a {
     transition: none;
   }
 }

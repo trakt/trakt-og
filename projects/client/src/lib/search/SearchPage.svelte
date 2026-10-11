@@ -27,10 +27,9 @@ import SidebarFrame from '$lib/components/sidebar/SidebarFrame.svelte';
 import SidebarSection from '$lib/components/sidebar/SidebarSection.svelte';
 import SidebarTitle from '$lib/components/sidebar/SidebarTitle.svelte';
 import { recentSearchType } from '$lib/components/header/recentSearchType';
+import SearchTermRow from '$lib/components/header/SearchTermRow.svelte';
 import { viewerRecentSearches } from '$lib/components/header/viewerRecentSearches';
-import Icon from '$lib/icons/Icon.svelte';
 import clockRotateLeft from '$lib/icons/light/clock-rotate-left.svg?raw';
-import xmark from '$lib/icons/light/xmark.svg?raw';
 import { overlay } from '$lib/overlay/overlay';
 import { findSearchType } from '$lib/search/findSearchType';
 import { searchLinks } from '$lib/search/searchLinks';
@@ -153,19 +152,14 @@ function save(next: FadeHide) {
     {/if}
 
     {#if viewer && recent}
-      <SidebarSection id="recent" title="Recent Searches" open={data.sidebar.recent} remember>
+      <SidebarSection id="recent" title="Recent" open={data.sidebar.recent} remember>
         {#if recent.user.length}
           <ul class="recent">
             {#each recent.user as term (`${term.query}:${term.type}`)}
               {@const kind = recentSearchType(term.type)}
-              <li>
-                <a href={recentHref(term)}
-                  aria-current={term.query === data.query && kind.slug === data.slug ? 'page' : undefined}>
-                  <Icon svg={clockRotateLeft} /><span class="query">{term.query}</span><span class="in">{kind.label}</span>
-                </a>
-                <button type="button" class="remove" aria-label="Remove recent search: {term.query}"
-                  disabled={recent.busy} onclick={() => recent?.remove(term)}><Icon svg={xmark} /></button>
-              </li>
+              <SearchTermRow icon={clockRotateLeft} query={term.query} type={kind.label} href={recentHref(term)}
+                selected={term.query === data.query && kind.slug === data.slug} busy={recent.busy}
+                onremove={() => recent?.remove(term)} />
             {/each}
           </ul>
         {:else if recent.loaded}
@@ -244,74 +238,8 @@ function save(next: FadeHide) {
 <style>
 .recent {
   display: grid;
-  margin: 0;
+  margin: 0 calc(-1 * var(--space-base-inline));
   padding: 0;
-  list-style: none;
-
-  & li {
-    display: flex;
-    align-items: center;
-    gap: var(--space-xs-inline);
-  }
-
-  & a {
-    display: flex;
-    flex: 1;
-    align-items: center;
-    gap: var(--space-sm-inline);
-    min-inline-size: 0;
-    padding-block: var(--space-sm-block);
-    color: var(--color-frame-text);
-    font-size: var(--font-size-control);
-    text-decoration: none;
-
-    & :global(.icon) {
-      flex: none;
-      color: var(--color-sidebar-label);
-    }
-
-    &:is(:hover, :focus-visible) .query {
-      color: var(--brand-primary);
-    }
-
-    &[aria-current='page'] .query {
-      color: var(--brand-primary);
-      font-weight: var(--font-weight-headings-heavy);
-    }
-  }
-
-  & .query {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  & .in {
-    flex: none;
-    margin-inline-start: auto;
-    color: var(--color-sidebar-label);
-    font-size: var(--font-size-small);
-  }
-}
-
-/* Out of the way until the row is hovered or focused, like the header's. */
-.remove {
-  display: grid;
-  place-items: center;
-  padding: var(--space-xs-block) var(--space-xs-inline);
-  border: 0;
-  background: none;
-  color: var(--color-sidebar-label);
-  cursor: pointer;
-  opacity: 0;
-
-  li:is(:hover, :focus-within) & {
-    opacity: 1;
-  }
-
-  &:is(:hover, :focus-visible) {
-    color: var(--color-frame-text);
-  }
 }
 
 .none {

@@ -29,6 +29,9 @@ export async function searchTrending({ type, fetch, signal }: SearchTrendingPara
     })
   ));
 
+  // A failed list throws, so the dropdown tries again next time instead of keeping an empty one.
+  if (responses.some((response) => response.status !== 200)) throw new Error('Trending searches did not load.');
+
   return responses
     .flatMap((response) => (response.status === 200 ? response.body : []))
     .toSorted((a, b) => b.count - a.count)

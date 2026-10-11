@@ -303,6 +303,8 @@ const weeks = $derived(
 );
 const markedWeek = $derived(firstVisible ? weekStarts.findLast((start) => start <= (firstVisible ?? '')) : undefined);
 
+const feedUrl = $derived(data.target === 'my' ? data.feedUrls[data.calendar.slug] ?? null : null);
+
 const title = $derived(`${data.target === 'my' ? 'My ' : ''}${data.calendar.label} Calendar · ${monthLabel}`);
 </script>
 
@@ -399,10 +401,12 @@ const title = $derived(`${data.target === 'my' ? 'My ' : ''}${data.calendar.labe
       </Dropdown>
     </SidebarSection>
 
-    <SidebarSection id="feed" title="iCal Feed" open={data.sidebar.feed} remember>
-      <CalendarFeed url={data.target === 'my' ? data.feedUrls[data.calendar.slug] ?? null : null} {vip}
-        mine={data.target === 'my'} />
-    </SidebarSection>
+    <!-- Only a VIP's own (My) calendars have a feed; the rest of the time the section isn't there. -->
+    {#if feedUrl}
+      <SidebarSection id="feed" title="iCal Feed" open={data.sidebar.feed} remember>
+        <CalendarFeed url={feedUrl} />
+      </SidebarSection>
+    {/if}
   {/snippet}
 
   {#snippet rail()}

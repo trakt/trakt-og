@@ -294,7 +294,7 @@ const period = $derived(advanced.config.period);
   font-size: var(--font-size-control);
 
   & :is(b, strong) {
-    color: var(--color-frame-text);
+    color: var(--color-frame-ink);
   }
 }
 

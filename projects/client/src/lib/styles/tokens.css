@@ -711,7 +711,7 @@
   --color-search-year-bg: #e6e6e6; /* the year pill: light gray with dark text, on the dark panel */
   --color-search-year-text: #111;
   --color-search-pill-line: rgb(255 255 255 / 0.12);
-  --color-tag-badge-line: rgb(255 255 255 / 0.45); /* a certificate's outline, brighter than a pill's */
+  --color-tag-badge-line: light-dark(rgb(0 0 0 / 0.45), rgb(255 255 255 / 0.45)); /* a certificate's outline, brighter than a pill's */
   --letter-spacing-tag-badge: 0.03em;
   --color-search-term: light-dark(rgb(0 0 0 / 0.75), rgb(255 255 255 / 0.85));
   --color-search-in-type: light-dark(rgb(0 0 0 / 0.4), rgb(255 255 255 / 0.4));
@@ -1285,7 +1285,7 @@
 
   /* Calendars. Dark in both themes, like the frame. */
   --color-frame-muted: #999; /* "Nothing on this day." */
-  --color-date-separator: #2a2a2a;
+  --color-date-separator: light-dark(#e6e6e6, #2a2a2a);
   --font-size-date: 36px;
   --opacity-fanart-behind-logo: 0.35;
 
@@ -1317,12 +1317,12 @@
   --color-frame-text: #fff;
   --color-frame-border: #2d2d2d;
   --color-frame-heading: #757575;
-  --color-frame-disabled: #444;
+  --color-frame-disabled: light-dark(#c4c4c4, #444);
   --transition-frame: 0.5s;
 
   /* Advanced filters: the funnel, the slide-out panel, its Chosen fields and noUiSliders and the applied tags */
   --filter-toggle-overhang: 12px; /* into the sidebar's right padding */
-  --color-filter-panel-bg: #222;
+  --color-filter-panel-bg: light-dark(#f7f7f7, #222);
   --color-filter-control-bg: #333;
   --color-filter-control-text: #eee;
   --color-filter-label: #666;
@@ -1340,10 +1340,10 @@
   --slider-height: 15px;
   --radius-slider: 4px;
   --radius-slider-connect: 2px;
-  --color-slider-track: #2d2d2d;
-  --color-slider-connect: #444;
+  --color-slider-track: light-dark(#e2e2e2, #2d2d2d);
+  --color-slider-connect: light-dark(#cfcfcf, #444);
   --shadow-slider-connect: inset 0 0 3px rgb(51 51 51 / 0.45);
-  --color-slider-handle: #666;
+  --color-slider-handle: light-dark(#888, #666);
   --radius-slider-handle: 3px;
   --slider-handle-width: 14px;
   --slider-handle-height: 22px;
@@ -2590,7 +2590,8 @@
   --box-office-poster-gap: 10px; /* after a film's poster */
   --box-office-line: 35px;
   --rail-total-padding: 4px 0 5px;
-  --font-size-box-office-rail-total: 16px; /* the collapsed rail's "$92.5M" */ /* a row's first line: the small quick-icon bar's height */
+  --font-size-box-office-rail-total: 16px; /* the collapsed rail's "$92.5M" */
+  /* a row's first line: the small quick-icon bar's height */
   --box-office-mast-gap: 10px; /* from the red eyebrow to the weekend's dates */
   --font-size-box-office-eyebrow: 12px;
   --font-size-box-office-heading: 52px;
@@ -2612,14 +2613,25 @@
   --box-office-opening-gap: 4px; /* between the films */
   --box-office-opening-title-gap: 6px; /* from a film's title to its pills */
   --color-box-office-row-target: rgb(237 28 36 / 0.14); /* the film picked in the share strip, --brand-primary faint */
-  --color-box-office-rank-muted: #7d7d7d; /* ranks past the top 3 */
-  --color-box-office-bar-track: #2b2b2b;
-  --color-box-office-row-hover: #222;
+  --color-box-office-rank-muted: light-dark(#aaa, #7d7d7d); /* ranks past the top 3 */
+  --color-box-office-bar-track: light-dark(#e6e6e6, #2b2b2b);
+  --color-box-office-row-hover: light-dark(#f7f7f7, #222);
   --color-box-office-share-wash: rgb(237 28 36 / 0.55); /* --brand-primary over a share block's poster */
 }
 
-/* Sidebar frame: the calendar's sidebar, built to carry over to other pages. Dark in both themes, like the frame. */
+/* Sidebar frame: the calendar's sidebar, built to carry over to other pages, in the viewer's theme. */
 :root {
+  --color-frame-page: light-dark(#fff, #1d1d1d); /* a SidebarFrame page's ground */
+  --color-frame-ink: light-dark(#222, #fff); /* its text */
+  --color-frame-ink-muted: light-dark(#777, #999);
+  --color-frame-line: light-dark(#e6e6e6, #2d2d2d); /* its rules and grid lines */
+  --color-site-logo-backing: #000; /* behind a white site logo (IMDb), both themes */
+  --radius-site-logo-backing: 3px;
+  --color-tag-pill-bg: light-dark(rgb(0 0 0 / 0.04), rgb(255 255 255 / 0.1));
+  --color-tag-pill-line: light-dark(rgb(0 0 0 / 0.14), rgb(255 255 255 / 0.12));
+  --color-tag-pill-text: light-dark(#444, rgb(255 255 255 / 0.85));
+  --color-tag-pill-light-bg: light-dark(#3a3a3a, #e6e6e6); /* a year or a week: the pale pill, dark in light mode */
+  --color-tag-pill-light-text: light-dark(#fff, #111);
   --sidebar-width: 350px;
   --sidebar-rail-width: 62px;
   --sidebar-padding: 20px;
@@ -2632,15 +2644,15 @@
   --font-weight-sidebar-title: var(--font-weight-headings-heavy);
   --font-size-sidebar-section: 11px;
   --letter-spacing-sidebar-label: 0.09em;
-  --color-sidebar-label: #8c8c8c;
-  --color-sidebar-note: #b5b5b5; /* a sidebar's under-title */
-  --color-sidebar-rule: var(--color-frame-border);
-  --color-sidebar-pill-bg: #232323;
-  --color-sidebar-pill-border: #3b3b3b;
-  --color-sidebar-pill-text: #b5b5b5;
+  --color-sidebar-label: light-dark(#767676, #8c8c8c);
+  --color-sidebar-note: light-dark(#555, #b5b5b5); /* a sidebar's under-title */
+  --color-sidebar-rule: var(--color-frame-line);
+  --color-sidebar-pill-bg: light-dark(#f2f2f2, #232323);
+  --color-sidebar-pill-border: light-dark(#d6d6d6, #3b3b3b);
+  --color-sidebar-pill-text: light-dark(#555, #b5b5b5);
   --color-sidebar-pill-set-bg: rgb(237 28 36 / 0.14); /* --brand-primary, faint */
   --color-sidebar-pill-set-border: rgb(237 28 36 / 0.6);
-  --color-sidebar-pill-set-text: #f3c9cb;
+  --color-sidebar-pill-set-text: light-dark(#b3131a, #f3c9cb);
   --sidebar-pill-height: 30px;
   --font-size-sidebar-pill: var(--font-size-control); /* the same size as the sidebar's dropdowns */
   --font-size-filter-chip: var(--font-size-control);
@@ -2654,8 +2666,8 @@
 
 /* Calendar sidebar and views: the heat-map mini month, the rail's week bars, today and pinned dates. */
 :root {
-  --color-mini-month-cell: #262626;
-  --color-mini-month-out: #444;
+  --color-mini-month-cell: light-dark(#efefef, #262626);
+  --color-mini-month-out: light-dark(#bbb, #444);
   --color-mini-month-heat: var(--brand-primary);
   --mini-month-heat-max: 80%; /* the busiest day's share of red */
   --mini-month-gap: 3px;
@@ -2665,34 +2677,34 @@
   --color-mini-month-marked: #66afe9; /* the first day in view */
   --rail-week-height: 10px;
   --rail-today-width: 44px;
-  --color-calendar-text-hover: #232323; /* a text card under the pointer */
+  --color-calendar-text-hover: light-dark(#f5f5f5, #232323); /* a text card under the pointer */
   --calendar-poster-width: 200px; /* a poster card in the list view */
   --episode-tray-height: 360px; /* a grouped card's episodes popup scrolls past this */
   --calendar-logo-max-width: 80%; /* wide logos keep a margin on both sides */
   --rail-week-width: 36px;
-  --color-calendar-today-tint: color-mix(in srgb, var(--brand-primary) 10%, var(--color-frame)); /* solid, under pinned dates */
+  --color-calendar-today-tint: color-mix(in srgb, var(--brand-primary) 10%, var(--color-frame-page)); /* solid, under pinned dates */
   --color-calendar-today-bar: linear-gradient(90deg, rgb(237 28 36 / 0.32), rgb(237 28 36 / 0.1) 60%, transparent),
-    rgb(42 42 42 / 0.82); /* over a blur, so cards scrolling under it don't show through */
+    light-dark(rgb(255 255 255 / 0.85), rgb(42 42 42 / 0.82)); /* over a blur, so cards scrolling under it don't show through */
   --calendar-today-blur: blur(12px);
-  --color-calendar-past: #8a8a8a;
+  --color-calendar-past: light-dark(#999, #8a8a8a);
   --font-size-calendar-today-tag: 11px;
 }
 
 :root {
   --calendar-weekdays-height: 31px; /* the month grid's pinned weekday row */
   --calendar-month-cell-min: 120px;
-  --color-calendar-weekdays: #151515; /* the month grid's weekday banner, set off from the days' bars */
+  --color-calendar-weekdays: light-dark(#f2f2f2, #151515); /* the month grid's weekday banner, set off from the days' bars */
   --calendar-month-day-height: 40px; /* a month day's pinned number row, room for today's circle and tag */
-  --color-calendar-out: #191919; /* a neighbouring month's day in the grid */
+  --color-calendar-out: light-dark(#f7f7f7, #191919); /* a neighbouring month's day in the grid */
 }
 
 /* Include and exclude pickers (v3's filters, og's colors): green keeps a value, red leaves it out. */
 :root {
   --color-filter-include: var(--brand-success);
-  --color-filter-include-text: #7fd17f;
+  --color-filter-include-text: light-dark(#2f8a2f, #7fd17f);
   --color-filter-exclude: var(--brand-primary);
-  --color-filter-exclude-text: #ff6b70;
-  --color-filter-toggle-idle: #666;
+  --color-filter-exclude-text: light-dark(#c9252b, #ff6b70);
+  --color-filter-toggle-idle: light-dark(#aaa, #666);
   --filter-toggle-size: 28px;
   --filter-picker-width: 280px;
   --filter-picker-height: 360px;

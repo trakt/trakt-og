@@ -56,7 +56,7 @@ const heading = $derived(entry.smallTitle ?? { text: entry.title, href: entry.hr
   gap: var(--space-xs-inline);
   block-size: 100%;
   padding: var(--space-base-inline) var(--space-base-inline) 0;
-  background-color: var(--color-card-bg);
+  background-color: var(--color-frame-page);
   transition: opacity 0.5s, background-color 0.2s;
 
   &:hover {
@@ -100,7 +100,7 @@ const heading = $derived(entry.smallTitle ?? { text: entry.title, href: entry.hr
 }
 
 .when {
-  color: var(--color-frame-muted);
+  color: var(--color-frame-ink-muted);
 }
 
 .nowrap {
@@ -109,7 +109,7 @@ const heading = $derived(entry.smallTitle ?? { text: entry.title, href: entry.hr
 
 h3 {
   margin: var(--space-xs-block) 0 0;
-  color: var(--color-frame-text);
+  color: var(--color-frame-ink);
   font-size: var(--calendar-text-title-size);
   font-weight: var(--font-weight-headings-heavy);
   line-height: 1.2;
@@ -133,7 +133,7 @@ a {
 .year {
   margin-inline-start: 0.25em;
   white-space: nowrap;
-  color: var(--color-frame-muted);
+  color: var(--color-frame-ink-muted);
   font-weight: normal;
 }
 
@@ -153,7 +153,7 @@ a {
 }
 
 .number {
-  color: var(--color-frame-text);
+  color: var(--color-frame-ink);
   font-weight: var(--font-weight-headings-heavy);
 }
 </style>

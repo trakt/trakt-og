@@ -79,7 +79,7 @@ li {
 }
 
 a {
-  color: var(--color-frame-text);
+  color: var(--color-frame-ink);
   text-decoration: none;
 
   &:is(:hover, :focus-visible) {

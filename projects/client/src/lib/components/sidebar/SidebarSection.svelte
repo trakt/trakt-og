@@ -86,7 +86,7 @@ function toggle() {
   }
 
   &:is(:hover, :focus-visible) {
-    color: var(--color-frame-text);
+    color: var(--color-frame-ink);
   }
 }
 

@@ -49,7 +49,7 @@ button {
   cursor: pointer;
 
   &:is(:hover, :focus-visible) {
-    outline: 2px solid var(--color-frame-text);
+    outline: 2px solid var(--color-frame-ink);
     outline-offset: 1px;
   }
 

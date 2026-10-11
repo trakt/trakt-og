@@ -58,7 +58,7 @@ const spoiler = $derived(icons.collectionTarget ?? icons.watchTarget ?? icons.ra
   display: flex;
   flex-direction: column;
   block-size: 100%;
-  background-color: var(--color-card-bg);
+  background-color: var(--color-frame-page);
   transition: opacity 0.5s;
 
   &.faded:not(:hover, :focus-within) {
@@ -123,7 +123,7 @@ const spoiler = $derived(icons.collectionTarget ?? icons.watchTarget ?? icons.ra
 .when {
   margin: 0;
   overflow: hidden;
-  color: var(--color-frame-muted);
+  color: var(--color-frame-ink-muted);
   font-size: var(--font-size-small);
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -134,7 +134,7 @@ h3 {
   min-block-size: calc(2 * 1.3em);
   margin: 0;
   overflow: hidden;
-  color: var(--color-frame-text);
+  color: var(--color-frame-ink);
   font-size: var(--font-size-base);
   font-weight: normal;
   line-height: 1.3;
@@ -162,6 +162,6 @@ h3 {
 
 .year {
   margin-inline-start: 0.25em;
-  color: var(--color-frame-muted);
+  color: var(--color-frame-ink-muted);
 }
 </style>

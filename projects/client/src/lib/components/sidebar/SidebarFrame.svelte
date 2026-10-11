@@ -93,13 +93,12 @@ function onkeydown(event: KeyboardEvent) {
 </div>
 
 <style>
-/* Dark in both themes, like the chart frame, so its controls take their dark values. */
+/* In the viewer's theme: its tokens are light-dark pairs. */
 .sidebar-frame {
-  color-scheme: dark;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  background-color: var(--color-frame);
-  color: var(--color-frame-text);
+  background-color: var(--color-frame-page);
+  color: var(--color-frame-ink);
 
   @media (min-width: 768px) {
     grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
@@ -131,7 +130,7 @@ function onkeydown(event: KeyboardEvent) {
   position: relative;
   z-index: 2;
   min-inline-size: 0;
-  border-inline-end: 1px solid var(--color-frame-border);
+  border-inline-end: 1px solid var(--color-frame-line);
 }
 
 .inner {

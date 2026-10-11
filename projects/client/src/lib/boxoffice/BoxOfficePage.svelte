@@ -173,7 +173,7 @@ const runPill = (run: WeekInRelease) => ({
   padding: var(--rail-total-padding);
   border-radius: var(--radius-control);
   background-color: var(--color-mini-month-cell);
-  color: var(--color-frame-text);
+  color: var(--color-frame-ink);
   line-height: 1.05;
   text-decoration: none;
 
@@ -298,7 +298,7 @@ const runPill = (run: WeekInRelease) => ({
     align-items: center;
     padding: var(--space-sm-block) var(--space-sm-inline);
     border-radius: var(--radius-control);
-    color: var(--color-frame-text);
+    color: var(--color-frame-ink);
     text-decoration: none;
 
     &:is(:hover, :focus-visible) {
@@ -343,7 +343,7 @@ const runPill = (run: WeekInRelease) => ({
   display: grid;
   gap: var(--box-office-gap);
   padding: var(--box-office-padding);
-  color: var(--color-frame-text);
+  color: var(--color-frame-ink);
 }
 
 .mast {
@@ -391,7 +391,7 @@ thead :is(th, td) {
    the pills, the figures and the icons share one centre line; the rank and poster stay centred. */
 td {
   padding: var(--box-office-row-padding) var(--box-office-cell-padding);
-  border-block-end: 1px solid var(--color-frame-border);
+  border-block-end: 1px solid var(--color-frame-line);
   vertical-align: top;
 
   &:is(.rank, .poster) {
@@ -438,7 +438,7 @@ td.rank {
   text-align: center;
 
   .top & {
-    color: var(--color-frame-text);
+    color: var(--color-frame-ink);
   }
 }
 
@@ -474,7 +474,7 @@ td.film {
     display: flex;
     align-items: center;
     block-size: var(--box-office-line);
-    color: var(--color-frame-text);
+    color: var(--color-frame-ink);
     font-size: var(--font-size-large);
     font-weight: var(--font-weight-headings);
     text-decoration: none;

@@ -167,7 +167,7 @@ const closeOnPick = (event: MouseEvent & { currentTarget: HTMLElement }) => {
   padding: 0;
   border: 0;
   background: none;
-  color: var(--color-frame-text);
+  color: var(--color-frame-ink);
   line-height: 1.1;
   text-align: start;
 
@@ -201,7 +201,7 @@ const closeOnPick = (event: MouseEvent & { currentTarget: HTMLElement }) => {
 
   &:hover,
   .dropdown:has(.menu:popover-open) & {
-    --caret-color: var(--color-frame-text);
+    --caret-color: var(--color-frame-ink);
   }
 }
 

@@ -34,8 +34,8 @@ const { children, variant = 'fanart' }: { children: Snippet; variant?: 'fanart' 
 
   & > :global(*) {
     grid-column: span var(--span);
-    border-block-end: 1px solid var(--color-frame-border);
-    border-inline-end: 1px solid var(--color-frame-border);
+    border-block-end: 1px solid var(--color-frame-line);
+    border-inline-end: 1px solid var(--color-frame-line);
   }
 
   & > :global(:nth-child(-n + 2)) {

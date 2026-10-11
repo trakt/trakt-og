@@ -106,7 +106,7 @@ const longDate = (date: string) =>
   grid-template-columns: repeat(7, minmax(0, 1fr));
   block-size: var(--calendar-weekdays-height);
   background-color: var(--color-calendar-weekdays);
-  border-block-end: 1px solid var(--color-frame-border);
+  border-block-end: 1px solid var(--color-frame-line);
 
   /* Full names when every column has room for "Wednesday". */
   & .long {
@@ -146,9 +146,9 @@ const longDate = (date: string) =>
 .cell {
   min-inline-size: 0;
   min-block-size: var(--calendar-month-cell-min);
-  background-color: var(--color-frame);
-  border-inline-end: 1px solid var(--color-frame-border);
-  border-block-end: 1px solid var(--color-frame-border);
+  background-color: var(--color-frame-page);
+  border-inline-end: 1px solid var(--color-frame-line);
+  border-block-end: 1px solid var(--color-frame-line);
   scroll-margin-block-start: calc(var(--header-height) + var(--calendar-weekdays-height));
 
   &:nth-child(7n) {
@@ -195,7 +195,7 @@ const longDate = (date: string) =>
   line-height: 1;
 
   .cell:not(.out) & {
-    border-block-end: 1px solid var(--color-frame-border);
+    border-block-end: 1px solid var(--color-frame-line);
   }
 
   .past & .date {
@@ -246,7 +246,7 @@ const longDate = (date: string) =>
 
   /* A line between a day's cards. */
   & > :global(.calendar-entry + .calendar-entry) {
-    border-block-start: 1px solid var(--color-frame-border);
+    border-block-start: 1px solid var(--color-frame-line);
   }
 }
 </style>

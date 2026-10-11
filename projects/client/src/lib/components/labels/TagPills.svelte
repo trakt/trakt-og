@@ -23,9 +23,9 @@ const { tags }: { tags: readonly TagPill[] } = $props();
 .pill {
   padding: var(--search-pill-padding);
   border-radius: var(--radius-search-pill);
-  background-color: var(--color-header-pill);
-  box-shadow: inset 0 0 0 1px var(--color-search-pill-line);
-  color: var(--color-search-term);
+  background-color: var(--color-tag-pill-bg);
+  box-shadow: inset 0 0 0 1px var(--color-tag-pill-line);
+  color: var(--color-tag-pill-text);
   font-size: var(--font-size-search-pill);
   font-weight: var(--font-weight-headings);
   line-height: var(--line-height-search-pill);
@@ -41,14 +41,14 @@ const { tags }: { tags: readonly TagPill[] } = $props();
 .badge {
   background-color: transparent;
   box-shadow: inset 0 0 0 1px var(--color-tag-badge-line);
-  color: var(--color-frame-text);
+  color: var(--color-frame-ink);
   font-weight: var(--font-weight-headings-heavy);
   letter-spacing: var(--letter-spacing-tag-badge);
 }
 
 .light {
-  background-color: var(--color-search-year-bg);
+  background-color: var(--color-tag-pill-light-bg);
   box-shadow: none;
-  color: var(--color-search-year-text);
+  color: var(--color-tag-pill-light-text);
 }
 </style>

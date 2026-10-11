@@ -57,6 +57,14 @@ describe('searchTrending', () => {
     expect(rows.map((row) => row.type)).toEqual(['Movie', 'Movie', 'Movie']);
   });
 
+  it('should throw when a list fails, so the dropdown can ask again', async () => {
+    server.use(
+      http.get('https://apiz.trakt.tv/search/recent_by_id/global/:type', () => new HttpResponse(null, { status: 429 })),
+    );
+
+    await expect(searchTrending({ type: type('shows') })).rejects.toThrow();
+  });
+
   it('should have none for the types the API keeps no trending searches for', async () => {
     for (const slug of ['episodes', 'people', 'lists', 'users', 'trakt', 'imdb']) {
       expect(await searchTrending({ type: type(slug) })).toEqual([]);

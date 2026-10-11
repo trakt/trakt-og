@@ -154,7 +154,8 @@ const loadTrending = (picked: (typeof searchTypes)[number]) => {
   trending = { ...trending, [picked.slug]: [] };
   void searchTrending({ type: picked })
     .then((found) => (trending = { ...trending, [picked.slug]: found }))
-    .catch(() => undefined);
+    // Rate limited or offline: forget it, so the next open asks again.
+    .catch(() => (trending = Object.fromEntries(Object.entries(trending).filter(([slug]) => slug !== picked.slug))));
 };
 
 const close = (clear: boolean) => {

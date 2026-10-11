@@ -15,7 +15,7 @@ export interface SearchRow {
   readonly type: string;
   /** The year, an episode's first-aired date, a list's owner or a person's birthday. */
   readonly tag?: string;
-  /** Up to the first three genres, dashes spaced out ("science fiction"). */
+  /** More tags after the year: up to three genres ("Science Fiction"), a list's size, a person's age. */
   readonly genres?: readonly string[];
   readonly poster?: string;
   /** A user's avatar, which OG drew square and round (`.poster.square`, `[data-type="users"]`), not a poster. */
@@ -24,8 +24,13 @@ export interface SearchRow {
 
 const GENRE_LIMIT = 3;
 
+// Titled here, not by the pill's CSS, so tags like "250 items" keep their case.
 const genres = (slugs: ReadonlyArray<string> | null | undefined) =>
-  slugs?.length ? slugs.slice(0, GENRE_LIMIT).map((slug) => slug.replaceAll('-', ' ')) : undefined;
+  slugs?.length
+    ? slugs.slice(0, GENRE_LIMIT).map((slug) =>
+      slug.replaceAll('-', ' ').replace(/\b\w/g, (letter) => letter.toUpperCase())
+    )
+    : undefined;
 
 const year = (value: number | null | undefined) => (value ? String(value) : undefined);
 
@@ -100,8 +105,11 @@ export function toSearchRow(
       href: `/lists/${list.ids.trakt}`,
       title: list.name,
       type: list.type === 'official' ? 'Official List' : 'List',
-      // Whose list it is, beside the type. Official lists have no owner.
+      // Whose list it is, beside the type, then how big it is. Official lists have no owner.
       tag: list.user?.username ?? undefined,
+      genres: typeof list.item_count === 'number'
+        ? [`${list.item_count.toLocaleString('en-US')} ${list.item_count === 1 ? 'item' : 'items'}`]
+        : undefined,
       poster: poster(list.images?.posters),
     };
   }

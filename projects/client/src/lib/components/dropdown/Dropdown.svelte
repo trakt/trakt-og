@@ -157,10 +157,9 @@ const closeOnPick = (event: MouseEvent & { currentTarget: HTMLElement }) => {
 }
 
 .title {
-  display: grid;
-  /* A 1fr name, not minmax(0, auto): Chrome padded the caret's column with that and cut the name short. */
-  grid-template-columns: minmax(0, 1fr) auto;
-  justify-content: start;
+  /* The eyebrow takes its own line, then the caret sits right after the name, however long the eyebrow is. */
+  display: inline-flex;
+  flex-wrap: wrap;
   align-items: center;
   column-gap: var(--space-base-block);
   row-gap: 0;
@@ -173,7 +172,7 @@ const closeOnPick = (event: MouseEvent & { currentTarget: HTMLElement }) => {
   text-align: start;
 
   & :global(.eyebrow) {
-    grid-column: 1 / -1;
+    flex: 0 0 100%;
     line-height: 1;
     color: var(--color-sidebar-label);
     font-size: var(--font-size-sidebar-eyebrow);
@@ -182,7 +181,11 @@ const closeOnPick = (event: MouseEvent & { currentTarget: HTMLElement }) => {
     text-transform: uppercase;
   }
 
+  /* Cut short with an ellipsis before it pushes the caret onto a line of its own. */
   & :global(.name) {
+    flex: 0 1 auto;
+    min-inline-size: 0;
+    max-inline-size: calc(100% - var(--space-base-block) - var(--font-size-caret));
     overflow: hidden;
     font-size: var(--font-size-sidebar-title);
     font-weight: var(--font-weight-sidebar-title);

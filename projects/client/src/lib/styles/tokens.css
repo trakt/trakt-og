@@ -2581,6 +2581,28 @@
   --home-pillar-text-width: 340px;
 }
 
+/* Box Office: the weekend's chart as a table in the dark frame, and its sidebar summary. */
+:root {
+  --box-office-padding: 24px 28px 32px;
+  --box-office-gap: 18px;
+  --font-size-box-office-eyebrow: 12px;
+  --font-size-box-office-heading: 34px;
+  --font-size-box-office-rank: 32px;
+  --font-size-box-office-gross: 22px;
+  --font-size-box-office-share: 18px;
+  --font-size-box-office-kpi: 22px;
+  --box-office-rank-width: 48px;
+  --box-office-poster-width: 46px;
+  --box-office-cell-padding: 8px;
+  --box-office-bar-height: 4px;
+  --box-office-share-height: 28px;
+  --box-office-opening-poster-width: 30px;
+  --color-box-office-rank-muted: #7d7d7d; /* ranks past the top 3 */
+  --color-box-office-bar-track: #2b2b2b;
+  --color-box-office-row-hover: #222;
+  --color-box-office-share-wash: rgb(237 28 36 / 0.55); /* --brand-primary over a share block's poster */
+}
+
 /* Sidebar frame: the calendar's sidebar, built to carry over to other pages. Dark in both themes, like the frame. */
 :root {
   --sidebar-width: 350px;

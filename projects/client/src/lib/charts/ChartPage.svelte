@@ -1,8 +1,8 @@
 <!--
   One chart page in a SidebarFrame, like the calendar's. The sidebar holds every control: the chart picker (Shows or
   Movies over the chart's name) with the fade/hide and filter tools, the counts, the under-title, the page pager, the
-  period and the applied filters. The content is only the flush fanart grid. `/shows/[chart]`, `/movies/[chart]` and
-  `/movies/boxoffice` render it.
+  period and the applied filters. The content is only the flush fanart grid. `/shows/[chart]` and `/movies/[chart]`
+  render it; Box Office has its own page.
 -->
 <script lang="ts">
 import { goto, invalidateAll } from '$app/navigation';
@@ -36,16 +36,14 @@ import SidebarFrame from '$lib/components/sidebar/SidebarFrame.svelte';
 import SidebarTitle from '$lib/components/sidebar/SidebarTitle.svelte';
 import { overlay } from '$lib/overlay/overlay';
 import { chartFilters } from '$lib/charts/chartFilters';
-import { chartLinks } from '$lib/charts/chartLinks';
-import type { ChartName } from '$lib/charts/chartNames';
+import ChartPicker from '$lib/charts/ChartPicker.svelte';
 import { chartPeriodText } from '$lib/charts/chartPeriod';
 import type { HeaderUser } from '$lib/components/header/HeaderUser';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
-import type { loadBoxOffice } from '$lib/charts/loadBoxOffice';
 import type { loadChart } from '$lib/charts/loadChart';
 
 type Props = {
-  data: Awaited<ReturnType<typeof loadChart> | ReturnType<typeof loadBoxOffice>> & {
+  data: Awaited<ReturnType<typeof loadChart>> & {
     user: HeaderUser | null;
     datePreferences: DatePreferences;
   };
@@ -59,7 +57,7 @@ const periodText = $derived(chartPeriodText(data.period));
 
 // The `meta(...)` call in each action.
 const meta = $derived(
-  data.chart === 'boxoffice' ? { title: 'Weekend Box Office', description: data.description } : {
+  {
     trending: {
       title: `Trending ${data.type}`,
       description: `All ${data.type} the Trakt community has watched recently!`,
@@ -99,10 +97,10 @@ const nextHref = $derived(
     : undefined,
 );
 
-// Box office and recommendations have no eye menu.
-const menu = $derived('fadeHide' in data && data.chart !== 'recommendations');
+// Recommendations have no eye menu.
+const menu = $derived(data.chart !== 'recommendations');
 const options = $derived(fadeHideOptions.filter((option) => data.type === 'shows' || !('showsOnly' in option)));
-let fadeHide = $derived<FadeHide>('fadeHide' in data ? data.fadeHide : { fade: [], hide: [] });
+let fadeHide = $derived<FadeHide>(data.fadeHide);
 
 function save(next: FadeHide) {
   const reload = apiHideOptions.some((id) => fadeHide.hide.includes(id) !== next.hide.includes(id));
@@ -111,10 +109,9 @@ function save(next: FadeHide) {
   if (reload) invalidateAll();
 }
 
-// The advanced filters. Box office has none.
+// The advanced filters.
 const vip = $derived(data.user?.isVip ?? false);
 const advanced = $derived.by(() => {
-  if (!('filters' in data)) return null;
   const config = chartFilters({ type: data.type, chart: data.chart, period: data.period, now: new Date() });
   // Only what this chart's panel offers counts, and a range at its ends is no filter.
   const filters = fromFilterDraft(toFilterDraft(data.filters, config), config);
@@ -145,7 +142,6 @@ function applyFilters(filters: AdvancedFilters) {
   goto(search(filters), { noScroll: true, keepFocus: true, replaceState: true });
 }
 function removeChip(id: string) {
-  if (!('filters' in data)) return;
   // eslint-disable-next-line svelte/no-navigation-without-resolve -- the same chart and period, new filters
   goto(search(withoutFilterTag(data.filters, id)), { noScroll: true, keepFocus: true });
 }
@@ -153,29 +149,7 @@ function removeChip(id: string) {
 // The period charts' Time Period, which OG kept in the filter panel: the same chart and filters on the first page.
 const periodHref = (period: string) =>
   `/${data.type}/${data.chart}/${period}${pageHref(page.url, 1).slice(page.url.pathname.length)}`;
-const period = $derived(advanced?.config.period);
-
-const pickerLinks = $derived(
-  chartLinks({
-    type: data.type,
-    current: data.chart,
-    period: data.period,
-    search: page.url.searchParams,
-    signedIn: data.user !== null,
-  }),
-);
-// Played has no link in the picker, like OG's nav, so its name comes from here.
-const CHART_NAMES: Readonly<Record<ChartName | 'boxoffice', string>> = {
-  trending: 'Trending',
-  recommendations: 'Recommendations',
-  anticipated: 'Anticipated',
-  popular: 'Popular',
-  favorited: 'Favorited',
-  watched: 'Watched',
-  played: 'Played',
-  library: 'Libraries',
-  boxoffice: 'Box Office',
-};
+const period = $derived(advanced.config.period);
 </script>
 
 <svelte:head>
@@ -184,11 +158,9 @@ const CHART_NAMES: Readonly<Record<ChartName | 'boxoffice', string>> = {
 </svelte:head>
 
 {#snippet filtersPanel()}
-  {#if advanced && 'filters' in data}
-    <FiltersPanel id="{panelId}-filters" open={panelOpen} config={advanced.config} filters={data.filters} {vip}
+  <FiltersPanel id="{panelId}-filters" open={panelOpen} config={advanced.config} filters={data.filters} {vip}
   country={data.watchNowCountry} favorites={data.watchNowFavorites} sources={data.filterSources}
   onchange={applyFilters} onclose={closePanel} />
-  {/if}
 {/snippet}
 
 <!-- The picker's hrefs come built by chartLinks, query included, so resolve() has nothing to add. -->
@@ -198,31 +170,21 @@ const CHART_NAMES: Readonly<Record<ChartName | 'boxoffice', string>> = {
   {#if menu}
     <FadeHideMenu value={fadeHide} {options} cookie={data.type} variant="default" onchange={save} />
   {/if}
-  {#if advanced}
-    <AdvancedFiltersToggle bind:open={panelOpen} bind:button={funnel} controls="{panelId}-filters" regular
+  <AdvancedFiltersToggle bind:open={panelOpen} bind:button={funnel} controls="{panelId}-filters" regular
   active={advanced.count > 0} count={vip ? advanced.count : 0} />
-  {/if}
 {/snippet}
 
 <SidebarFrame label="{title} charts" collapsed={data.sidebar.collapsed} {prevHref} {nextHref}
-  panel={advanced ? filtersPanel : undefined} {panelOpen}>
+  panel={filtersPanel} {panelOpen}>
   {#snippet sidebar()}
-    <SidebarTitle tools={menu || advanced ? tools : undefined}>
+    <SidebarTitle {tools}>
       {#snippet heading()}
-        <Dropdown variant="title" label="Pick a chart">
-          {#snippet trigger()}<span class="eyebrow">{title}</span><span class="name">{CHART_NAMES[data.chart]}</span
-            >{/snippet}
-          <ul>
-            {#each pickerLinks as link (link.href)}
-              <li><a href={link.href} aria-current={link.current ? 'page' : undefined}>{link.label}</a></li>
-            {/each}
-          </ul>
-        </Dropdown>
+        <ChartPicker type={data.type} chart={data.chart} period={data.period} signedIn={data.user !== null} />
       {/snippet}
     </SidebarTitle>
 
     <div class="counts">
-      {#if data.chart === 'boxoffice' || data.chart === 'recommendations'}
+      {#if data.chart === 'recommendations'}
         <CountPill count={data.cards.length} label={data.type} one={noun} />
       {:else}
         {#if data.chart === 'trending'}
@@ -235,9 +197,7 @@ const CHART_NAMES: Readonly<Record<ChartName | 'boxoffice', string>> = {
     <!-- Trending's under-title was its counts, which the pills now carry. -->
     {#if data.chart !== 'trending'}
       <p class="subtitle">
-        {#if data.chart === 'boxoffice'}
-          {data.description}
-        {:else if data.chart === 'popular'}
+        {#if data.chart === 'popular'}
           The most popular {data.type} for <strong>all time</strong>.
         {:else if data.chart === 'recommendations'}
           Your personalized {noun} recommendations.
@@ -271,7 +231,7 @@ const CHART_NAMES: Readonly<Record<ChartName | 'boxoffice', string>> = {
       </Dropdown>
     {/if}
 
-    {#if advanced && advanced.count > 0 && 'filters' in data.sidebar}
+    {#if advanced.count > 0}
       <AppliedFiltersSection chips={advanced.chips} open={data.sidebar.filters} {vip} clearHref={page.url.pathname}
         onremove={removeChip} />
     {/if}
@@ -281,7 +241,7 @@ const CHART_NAMES: Readonly<Record<ChartName | 'boxoffice', string>> = {
     {#if data.page.type === 'paginated' && data.page.total > 1}
       <RailGroup><RailPager unit="page" label="P{data.page.current}" {prevHref} {nextHref} /></RailGroup>
     {/if}
-    {#if menu || advanced}<RailGroup tools>{@render tools()}</RailGroup>{/if}
+    <RailGroup tools>{@render tools()}</RailGroup>
   {/snippet}
 
   {#if data.cards.length > 0}
@@ -305,8 +265,7 @@ const CHART_NAMES: Readonly<Record<ChartName | 'boxoffice', string>> = {
             ratingTarget: { type: card.type, id: card.id, title: card.title },
             watchTarget: { type: card.type, id: card.id, title: card.title, airedEpisodes: card.airedEpisodes, runtime: card.runtime },
             rating: card.released ? card.rating : undefined,
-            // movies/_boxoffice.html.slim is the one chart grid without the favorite action.
-            favorite: data.chart !== 'boxoffice',
+            favorite: true,
             // ponytail: OG showed watch now only with sources in the user's country. Until #60 brings sources, an
             // item that isn't out yet is taken to have none.
             watchNow: card.released ? 'play' : undefined,

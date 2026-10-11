@@ -28,6 +28,7 @@ import { isSearchShortcut } from './isSearchShortcut.ts';
 import { recentSearchType } from './recentSearchType.ts';
 import { searchAutocomplete, type SearchAutocompleteResult } from './searchAutocomplete.ts';
 import { type SearchTrending, searchTrending } from './searchTrending.ts';
+import TagPills from '$lib/components/labels/TagPills.svelte';
 import SearchTermRow from './SearchTermRow.svelte';
 import { searchTypes } from './searchTypes.ts';
 import { viewerRecentSearches } from './viewerRecentSearches.ts';
@@ -395,11 +396,11 @@ afterNavigate(({ to }) => {
                 <span class="info">
                   {#if row.topTitle}<span class="top-title">{row.topTitle}</span>{/if}
                   <span class="title">{row.title}</span>
-                  <span class="pills">
-                    <span class="pill type-name">{row.type}</span>
-                    {#if row.tag}<span class="pill year">{row.tag}</span>{/if}
-                    {#each row.genres ?? [] as genre (genre)}<span class="pill genre">{genre}</span>{/each}
-                  </span>
+                  <TagPills tags={[
+                    { text: row.type, kind: 'primary' },
+                    ...(row.tag ? [{ text: row.tag, kind: 'light' as const }] : []),
+                    ...(row.genres ?? []).map((text) => ({ text })),
+                  ]} />
                 </span>
               </a>
             </li>
@@ -858,37 +859,6 @@ input {
 
 .title {
   font-weight: var(--font-weight-headings);
-}
-
-/* Type, year and up to three genres as pills: the type solid red, the year light gray, the genres glass. */
-.pills {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--search-pill-gap);
-}
-
-.pill {
-  padding: var(--search-pill-padding);
-  border-radius: var(--radius-search-pill);
-  background-color: var(--color-header-pill);
-  box-shadow: inset 0 0 0 1px var(--color-search-pill-line);
-  color: var(--color-search-term);
-  font-size: var(--font-size-search-pill);
-  font-weight: var(--font-weight-headings);
-  line-height: var(--line-height-search-pill);
-  white-space: nowrap;
-}
-
-.type-name {
-  background-color: var(--brand-primary);
-  box-shadow: none;
-  color: var(--color-text-inverse);
-}
-
-.year {
-  background-color: var(--color-search-year-bg);
-  box-shadow: none;
-  color: var(--color-search-year-text);
 }
 
 .all-results a {

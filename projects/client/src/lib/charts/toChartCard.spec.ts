@@ -49,13 +49,6 @@ describe('toChartCard', () => {
     expect(toChartCard({ movie, watchers: 13196 }, trending).tags).toEqual([{ text: '13,196 watchers' }]);
   });
 
-  it('should tag box office rows with the weekend gross', () => {
-    const boxoffice = { ...out, chart: 'boxoffice' } as const;
-
-    expect(toChartCard({ movie, revenue: 48000000 }, boxoffice).tags).toEqual([{ text: '$48,000,000' }]);
-    expect(toChartCard({ movie }, boxoffice).tags).toEqual([{ text: '$0' }]);
-  });
-
   describe('for anticipated rows', () => {
     it('should tag shows with lists, the premiere in the show zone and the network', () => {
       expect(toChartCard({ show, list_count: 53746 }, anticipated).tags).toEqual([

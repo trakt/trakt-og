@@ -1,7 +1,7 @@
 <script lang="ts">
-import ChartPage from '$lib/charts/ChartPage.svelte';
+import BoxOfficePage from '$lib/boxoffice/BoxOfficePage.svelte';
 
 const { data } = $props();
 </script>
 
-<ChartPage {data} />
+<BoxOfficePage {data} />

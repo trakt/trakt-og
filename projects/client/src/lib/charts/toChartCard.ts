@@ -5,7 +5,7 @@ import { imageUrl } from '../utils/imageUrl.ts';
 import type { ChartName } from './chartNames.ts';
 
 // Trending sends `watchers`, anticipated `list_count`, favorited `user_count`, and watched, played and collected
-// all four of the last. Box office sends `revenue`. Shows' `collector_count` is owners, and their `collected_count` is episodes.
+// all four of the last. Shows' `collector_count` is owners, and their `collected_count` is episodes.
 type Stats = {
   watchers?: number;
   list_count?: number;
@@ -14,7 +14,6 @@ type Stats = {
   play_count?: number;
   collected_count?: number;
   collector_count?: number;
-  revenue?: number;
 };
 
 /** One chart row. Most charts send rows like this; popular rows are wrapped to match. */
@@ -57,7 +56,7 @@ function movieTags(movie: MovieResponse, order: DateOrder): Tag[] {
 const generic = (text: string): Tag => ({ text, kind: 'generic' });
 
 // The `above_title` per action.
-function tags(row: ChartRow, chart: ChartName | 'boxoffice', order: DateOrder): Tag[] {
+function tags(row: ChartRow, chart: ChartName, order: DateOrder): Tag[] {
   const watchers = countLabel(row.watcher_count ?? 0, 'watcher');
   const plays = countLabel(row.play_count ?? 0, 'play');
 
@@ -89,9 +88,6 @@ function tags(row: ChartRow, chart: ChartName | 'boxoffice', order: DateOrder): 
           generic(countLabel(row.collector_count ?? 0, 'owner')),
         ]
         : [{ text: countLabel(row.collected_count ?? 0, 'owner'), kind: 'collect' }];
-    // the weekend gross in whole dollars, `$0` when there's none.
-    case 'boxoffice':
-      return [{ text: `$${(row.revenue ?? 0).toLocaleString('en-US')}` }];
   }
 }
 
@@ -101,7 +97,7 @@ function tags(row: ChartRow, chart: ChartName | 'boxoffice', order: DateOrder): 
  */
 export function toChartCard(
   row: ChartRow,
-  { chart, now, order }: { chart: ChartName | 'boxoffice'; now: Date; order: DateOrder },
+  { chart, now, order }: { chart: ChartName; now: Date; order: DateOrder },
 ): ChartCard {
   const [type, media] = 'show' in row ? ['show' as const, row.show] : ['movie' as const, row.movie];
   const releaseDate = 'show' in row ? row.show.first_aired : row.movie.released;

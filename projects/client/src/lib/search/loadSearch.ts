@@ -116,7 +116,6 @@ export async function loadSearch({ fetch, token, cookies, parent, url, type: slu
   if (isIdType(type) && hits.length === 1 && only) redirect(301, only.href);
 
   const headers = result?.headers;
-  const count = headers ? positiveInt(headers.get('x-pagination-item-count'), hits.length) : hits.length;
   const pagination = headers ? extractPageMeta(headers, page) : { type: 'paginated' as const, current: 1, total: 1 };
   return {
     filters,
@@ -130,9 +129,8 @@ export async function loadSearch({ fetch, token, cookies, parent, url, type: slu
     users: (result?.users ?? [])
       .filter(({ user }) => !user.private && !user.deleted)
       .map(({ user }) => toSearchUserCard(user)),
-    count,
-    // Signed out, the worker's count stops at the page size, so there may be more.
-    countCapped: Boolean(headers) && count >= limit && (pagination.type !== 'paginated' || pagination.total === 1),
     page: pagination,
+    /** The sidebar's own state, so SSR renders it as the viewer left it, like the calendar's. */
+    sidebar: { collapsed: cookies.get('sidebar_collapsed') !== undefined },
   };
 }

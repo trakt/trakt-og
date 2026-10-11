@@ -99,13 +99,16 @@ async function toggleDarkKnight() {
   <HeaderTint />
   <a class="logo" href="/"><img src={logo} alt="Trakt" width="34" height="34" /></a>
 
-  <HeaderSearch savedType={searchType} viewer={user?.slug ?? null} />
+  <!-- The magnifier sits with the links, as far from Dashboard as the links are from each other. -->
+  <div class="sections">
+    <HeaderSearch savedType={searchType} viewer={user?.slug ?? null} />
 
-  <nav class="links" aria-label="Main">
-    {#each sections as link (link.href)}
-      <a href={link.href} aria-current={current(link.href)}>{link.title}</a>
-    {/each}
-  </nav>
+    <nav class="links" aria-label="Main">
+      {#each sections as link (link.href)}
+        <a href={link.href} aria-current={current(link.href)}>{link.title}</a>
+      {/each}
+    </nav>
+  </div>
 
   <div class="user">
     {#if user}
@@ -171,6 +174,12 @@ async function toggleDarkKnight() {
   display: flex;
   margin-inline-end: var(--space-xs-inline);
   filter: var(--shadow-header-logo);
+}
+
+.sections {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-header-links);
 }
 
 /* Main nav: loose pills. Hover gives a soft glass pill, and the current section is solid red. */

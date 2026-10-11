@@ -158,7 +158,8 @@ const closeOnPick = (event: MouseEvent & { currentTarget: HTMLElement }) => {
 
 .title {
   display: grid;
-  grid-template-columns: minmax(0, auto) auto;
+  /* A 1fr name, not minmax(0, auto): Chrome padded the caret's column with that and cut the name short. */
+  grid-template-columns: minmax(0, 1fr) auto;
   justify-content: start;
   align-items: center;
   column-gap: var(--space-base-block);

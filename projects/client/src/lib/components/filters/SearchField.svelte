@@ -2,6 +2,7 @@
   A search box with its magnifier inside, like the filter popovers' fields: the icon tucked in at the start, the
   control's fill and border, and an optional shortcut key cap at the end.
     <SearchField label="Search genres" placeholder="Search genres" bind:value={query} />
+  With a `name` it posts with its form, like the search page's sidebar field.
 -->
 <script lang="ts">
 import Icon from '$lib/icons/Icon.svelte';
@@ -11,18 +12,20 @@ interface Props {
   value: string;
   label: string;
   placeholder: string;
+  /** The form field name, when a form submits it. */
+  name?: string;
   disabled?: boolean;
   /** A key that focuses it, shown at the end. */
   kbd?: string;
   oninput?: (value: string) => void;
 }
 
-let { value = $bindable(), label, placeholder, disabled = false, kbd, oninput }: Props = $props();
+let { value = $bindable(), label, placeholder, name, disabled = false, kbd, oninput }: Props = $props();
 </script>
 
 <label class="search-field">
   <Icon svg={search} />
-  <input type="search" aria-label={label} {placeholder} {disabled} autocomplete="off" bind:value
+  <input type="search" aria-label={label} {name} {placeholder} {disabled} autocomplete="off" bind:value
     oninput={() => oninput?.(value)} />
   {#if kbd}<kbd>{kbd}</kbd>{/if}
 </label>

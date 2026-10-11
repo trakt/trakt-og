@@ -79,6 +79,8 @@ const initial = fromUrl(page.url);
 let typeSlug = $state<string>(initial?.slug ?? findType(untrack(() => savedType))?.slug ?? '');
 let query = $state(initial?.query ?? '');
 let active = $state(false);
+// On a results page the magnifier is the current section, solid red like the current nav link.
+const current = $derived(page.url.pathname === '/search' || page.url.pathname.startsWith('/search/'));
 let result = $state(empty);
 let highlight = $state(-1);
 let input = $state<HTMLInputElement>();
@@ -297,7 +299,7 @@ afterNavigate(({ to }) => {
   <button
     bind:this={toggle}
     type="button"
-    class="toggle"
+    class={['toggle', { current }]}
     aria-label="Search"
     aria-keyshortcuts="/"
     aria-expanded={active}
@@ -486,6 +488,12 @@ afterNavigate(({ to }) => {
   &:is(:hover, [aria-expanded='true']) {
     background-color: var(--color-header-pill);
     color: var(--color-header-text);
+  }
+
+  &.current {
+    background-color: var(--brand-primary);
+    color: var(--color-text-inverse);
+    box-shadow: var(--shadow-header-current);
   }
 }
 

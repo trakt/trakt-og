@@ -11,6 +11,7 @@ import QuickIcons from '$lib/components/media/QuickIcons.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import heart from '$lib/icons/solid/heart.svg?raw';
 import { quickIconFill } from '$lib/components/media/quickIconFill';
+import RailGroup from '$lib/components/sidebar/RailGroup.svelte';
 import SidebarFrame from '$lib/components/sidebar/SidebarFrame.svelte';
 import SidebarSection from '$lib/components/sidebar/SidebarSection.svelte';
 import SidebarTitle from '$lib/components/sidebar/SidebarTitle.svelte';
@@ -94,6 +95,14 @@ const runPill = (run: WeekInRelease) => ({
     {/if}
   {/snippet}
 
+  {#snippet rail()}
+    <RailGroup>
+      <a class="rail-total" href="#box-office-1" title="The top 10's weekend gross">
+        <small>Top 10</small><b>{millions(data.total).replace('.0M', 'M')}</b>
+      </a>
+    </RailGroup>
+  {/snippet}
+
   <div class="box-office">
     <header class="mast">
       <p class="eyebrow">Weekend box office</p>
@@ -127,17 +136,19 @@ const runPill = (run: WeekInRelease) => ({
               <a href={row.href} class="title">{row.title}{#if row.year}<span class="year">{row.year}</span>{/if}</a>
               <TagPills tags={row.tags} />
             </td>
-            <td class="run">{#if row.run}<TagPills tags={[runPill(row.run)]} />{/if}</td>
+            <td class="run"><span class="line">{#if row.run}<TagPills tags={[runPill(row.run)]} />{/if}</span></td>
             <td class="number gross">
-              <b>{dollars(row.revenue)}</b>
+              <b class="line">{dollars(row.revenue)}</b>
               <span class="bar" style:--share="{top ? (row.revenue / top) * 100 : 0}%"></span>
             </td>
-            <td class="number share-cell">{percent(share(row.revenue))}</td>
+            <td class="number share-cell"><span class="line">{percent(share(row.revenue))}</span></td>
             <td class="number rating">
-              {#if row.rating !== undefined}
-                <span class="heart" style:color="var(--rating-{ratingLevel(row.rating)})"><Icon svg={heart} /></span
-                >{Math.trunc(row.rating * 10)}%
-              {/if}
+              <span class="line">
+                {#if row.rating !== undefined}
+                  <span class="heart" style:color="var(--rating-{ratingLevel(row.rating)})"><Icon svg={heart} /></span
+                  >{Math.trunc(row.rating * 10)}%
+                {/if}
+              </span>
             </td>
             <td class="actions">
               <QuickIcons small fill={quickIconFill({ state, datePreferences: data.datePreferences })}
@@ -154,6 +165,37 @@ const runPill = (run: WeekInRelease) => ({
 </SidebarFrame>
 
 <style>
+/* The collapsed rail's figure: the top 10's weekend gross, like the calendar's today. */
+.rail-total {
+  display: grid;
+  justify-items: center;
+  inline-size: var(--rail-today-width);
+  padding: var(--rail-total-padding);
+  border-radius: var(--radius-control);
+  background-color: var(--color-mini-month-cell);
+  color: var(--color-frame-text);
+  line-height: 1.05;
+  text-decoration: none;
+
+  & small {
+    color: var(--brand-primary);
+    font-size: var(--font-size-mini-month-weekday);
+    font-weight: var(--font-weight-headings-heavy);
+    letter-spacing: var(--letter-spacing-sidebar-label);
+    text-transform: uppercase;
+  }
+
+  & b {
+    font-family: var(--font-box-office-figures);
+    font-stretch: condensed;
+    font-size: var(--font-size-box-office-rail-total);
+  }
+
+  &:is(:hover, :focus-visible) {
+    background-color: var(--color-control-hover-bg);
+  }
+}
+
 .subtitle {
   margin: 0;
   color: var(--color-sidebar-note);
@@ -345,7 +387,8 @@ thead :is(th, td) {
   text-transform: uppercase;
 }
 
-/* The film's details and figures line up along the top, by the title; the rank and poster stay centred. */
+/* The film's details and figures line up along the top, each first line as tall as the quick-icon bar so the title,
+   the pills, the figures and the icons share one centre line; the rank and poster stay centred. */
 td {
   padding: var(--box-office-row-padding) var(--box-office-cell-padding);
   border-block-end: 1px solid var(--color-frame-border);
@@ -353,6 +396,16 @@ td {
 
   &:is(.rank, .poster) {
     vertical-align: middle;
+  }
+}
+
+.line {
+  display: flex;
+  align-items: center;
+  block-size: var(--box-office-line);
+
+  .number & {
+    justify-content: flex-end;
   }
 }
 
@@ -418,8 +471,9 @@ td.poster {
 
 td.film {
   & .title {
-    display: block;
-    margin-block-end: var(--space-xs-inline);
+    display: flex;
+    align-items: center;
+    block-size: var(--box-office-line);
     color: var(--color-frame-text);
     font-size: var(--font-size-large);
     font-weight: var(--font-weight-headings);
@@ -439,7 +493,6 @@ td.film {
 
 .gross {
   & b {
-    display: block;
     font-size: var(--font-size-box-office-gross);
     font-weight: var(--font-weight-headings-heavy);
   }
@@ -454,14 +507,14 @@ td.film {
 }
 
 .rating {
-  font-size: var(--font-size-rating-small);
+  font-size: var(--font-size-box-office-share);
   font-weight: var(--font-weight-headings);
   white-space: nowrap;
 
   & .heart {
     display: inline-flex;
     margin-inline-end: var(--space-xs-inline);
-    vertical-align: -1px;
+    font-size: 0.85em;
   }
 }
 

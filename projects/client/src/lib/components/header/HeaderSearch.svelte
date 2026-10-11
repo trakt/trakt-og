@@ -17,11 +17,6 @@ import { afterNavigate } from '$app/navigation';
 import { page } from '$app/state';
 import Icon from '$lib/icons/Icon.svelte';
 import { untrack } from 'svelte';
-import { requestRecentSearch } from '$lib/components/header/requestRecentSearch';
-import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
-import { userManager } from '$lib/auth/userManager';
-import { toast } from '$lib/components/toast/toast.svelte';
-import { createRecentSearches } from '$lib/components/header/createRecentSearches.svelte';
 import HeaderTint from '$lib/components/header/HeaderTint.svelte';
 import clockRotateLeft from '$lib/icons/light/clock-rotate-left.svg?raw';
 import termMagnifier from '$lib/icons/light/magnifying-glass.svg?raw';
@@ -31,31 +26,18 @@ import magnifyingGlass from '$lib/icons/regular/magnifying-glass.svg?raw';
 import xmark from '$lib/icons/regular/xmark.svg?raw';
 import angleDown from '$lib/icons/solid/angle-down.svg?raw';
 import { isSearchShortcut } from './isSearchShortcut.ts';
+import { recentSearchType } from './recentSearchType.ts';
 import { searchAutocomplete, type SearchAutocompleteResult } from './searchAutocomplete.ts';
 import { type SearchTrending, searchTrending } from './searchTrending.ts';
 import { searchTypes } from './searchTypes.ts';
+import { viewerRecentSearches } from './viewerRecentSearches.ts';
 import type { SearchRow } from './toSearchRow.ts';
 
 const { savedType = '', viewer = null }: { savedType?: string; viewer?: string | null } = $props();
 
-let recent = $state<ReturnType<typeof createRecentSearches>>();
+let recent = $state<ReturnType<typeof viewerRecentSearches>>();
 $effect(() => {
-  const identity = viewer;
-  let storage: Storage | undefined;
-  try {
-    storage = localStorage;
-  } catch { /* Memory-only history is still usable. */ }
-  const controller = createRecentSearches({
-    viewer: identity,
-    storage,
-    notify: toast.error,
-    request: (path, body) =>
-      requestRecentSearch({
-        fetch: identity ? authenticatedFetch({ manager: userManager() }) : undefined,
-        path,
-        body,
-      }),
-  });
+  const controller = viewerRecentSearches(viewer);
   recent = controller;
   return () => controller.dispose();
 });
@@ -256,12 +238,10 @@ const onkeydown = (event: KeyboardEvent) => {
   openOption(option, event.metaKey || event.ctrlKey);
 };
 
-const termType = (slug: string | null | undefined) =>
-  findType(slug === 'all' ? '' : slug === 'official_lists' ? 'lists' : slug ?? '') ?? searchTypes[0];
-const termLabel = (slug: string) => slug === 'official_lists' ? 'Official Lists' : termType(slug).label;
+const termLabel = (slug: string) => slug === 'official_lists' ? 'Official Lists' : recentSearchType(slug).label;
 const pickTerm = (term: { query: string; type?: string | null }) => {
   query = term.query;
-  pickType(termType(term.type).slug);
+  pickType(recentSearchType(term.type).slug);
 };
 const record = (row: SearchAutocompleteResult['rows'][number]) => {
   void recent?.record(row.recent);

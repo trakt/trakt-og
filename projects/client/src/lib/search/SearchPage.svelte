@@ -24,7 +24,13 @@ import PagePager from '$lib/components/sidebar/PagePager.svelte';
 import RailGroup from '$lib/components/sidebar/RailGroup.svelte';
 import RailPager from '$lib/components/sidebar/RailPager.svelte';
 import SidebarFrame from '$lib/components/sidebar/SidebarFrame.svelte';
+import SidebarSection from '$lib/components/sidebar/SidebarSection.svelte';
 import SidebarTitle from '$lib/components/sidebar/SidebarTitle.svelte';
+import { recentSearchType } from '$lib/components/header/recentSearchType';
+import { viewerRecentSearches } from '$lib/components/header/viewerRecentSearches';
+import Icon from '$lib/icons/Icon.svelte';
+import clockRotateLeft from '$lib/icons/light/clock-rotate-left.svg?raw';
+import xmark from '$lib/icons/light/xmark.svg?raw';
 import { overlay } from '$lib/overlay/overlay';
 import { findSearchType } from '$lib/search/findSearchType';
 import { searchLinks } from '$lib/search/searchLinks';
@@ -36,6 +42,20 @@ type Props = {
 };
 
 const { data }: Props = $props();
+
+// The viewer's recent searches, the same history the header search keeps. Signed out, there's none.
+const viewer = $derived<string | null>(page.data.user?.slug ?? null);
+let recent = $state<ReturnType<typeof viewerRecentSearches>>();
+$effect(() => {
+  const controller = viewerRecentSearches(viewer);
+  recent = controller;
+  void controller.load();
+  return () => controller.dispose();
+});
+const recentHref = (term: { query: string; type?: string | null }) => {
+  const kind = recentSearchType(term.type);
+  return `/search${kind.slug ? `/${kind.slug}` : ''}?query=${encodeURIComponent(term.query)}`;
+};
 
 // The sidebar's search field. The picker's links carry whatever is typed there, like OG's search.js.
 let terms = $derived(data.query);
@@ -131,6 +151,28 @@ function save(next: FadeHide) {
     {#if data.page.type === 'paginated' && paged}
       <PagePager current={data.page.current} total={data.page.total} href={(n) => pageHref(page.url, n)} />
     {/if}
+
+    {#if viewer && recent}
+      <SidebarSection id="recent" title="Recent Searches" open={data.sidebar.recent} remember>
+        {#if recent.user.length}
+          <ul class="recent">
+            {#each recent.user as term (`${term.query}:${term.type}`)}
+              {@const kind = recentSearchType(term.type)}
+              <li>
+                <a href={recentHref(term)}
+                  aria-current={term.query === data.query && kind.slug === data.slug ? 'page' : undefined}>
+                  <Icon svg={clockRotateLeft} /><span class="query">{term.query}</span><span class="in">{kind.label}</span>
+                </a>
+                <button type="button" class="remove" aria-label="Remove recent search: {term.query}"
+                  disabled={recent.busy} onclick={() => recent?.remove(term)}><Icon svg={xmark} /></button>
+              </li>
+            {/each}
+          </ul>
+        {:else if recent.loaded}
+          <p class="none">You have no recent searches.</p>
+        {/if}
+      </SidebarSection>
+    {/if}
   {/snippet}
 
   {#snippet rail()}
@@ -200,6 +242,84 @@ function save(next: FadeHide) {
 </SidebarFrame>
 
 <style>
+.recent {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  & li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs-inline);
+  }
+
+  & a {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: var(--space-sm-inline);
+    min-inline-size: 0;
+    padding-block: var(--space-sm-block);
+    color: var(--color-frame-text);
+    font-size: var(--font-size-control);
+    text-decoration: none;
+
+    & :global(.icon) {
+      flex: none;
+      color: var(--color-sidebar-label);
+    }
+
+    &:is(:hover, :focus-visible) .query {
+      color: var(--brand-primary);
+    }
+
+    &[aria-current='page'] .query {
+      color: var(--brand-primary);
+      font-weight: var(--font-weight-headings-heavy);
+    }
+  }
+
+  & .query {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  & .in {
+    flex: none;
+    margin-inline-start: auto;
+    color: var(--color-sidebar-label);
+    font-size: var(--font-size-small);
+  }
+}
+
+/* Out of the way until the row is hovered or focused, like the header's. */
+.remove {
+  display: grid;
+  place-items: center;
+  padding: var(--space-xs-block) var(--space-xs-inline);
+  border: 0;
+  background: none;
+  color: var(--color-sidebar-label);
+  cursor: pointer;
+  opacity: 0;
+
+  li:is(:hover, :focus-within) & {
+    opacity: 1;
+  }
+
+  &:is(:hover, :focus-visible) {
+    color: var(--color-frame-text);
+  }
+}
+
+.none {
+  margin: 0;
+  color: var(--color-sidebar-note);
+  font-size: var(--font-size-control);
+}
+
 .no-results {
   display: grid;
   place-items: center;

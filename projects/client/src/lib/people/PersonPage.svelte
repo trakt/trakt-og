@@ -180,18 +180,20 @@ function yearLine(credit: PersonCredit) {
     <div class="heading">
       <h2 id="credits-heading"><strong>Credits</strong></h2>
       <div class="controls">
-        <Dropdown>
-          {#snippet trigger()}{sortName}{/snippet}
-          <ul>
-            {#each creditSorts as sort (sort.id)}
-              <li>
-                <button type="button" aria-current={sort.id === query.sort}
-                  onclick={() => (query = { ...query, sort: sort.id })}>{sort.label}</button>
-              </li>
-            {/each}
-          </ul>
-        </Dropdown>
-        <SortDirection bind:flipped={query.reversed} />
+        <span class="sort">
+          <Dropdown joined>
+            {#snippet trigger()}{sortName}{/snippet}
+            <ul>
+              {#each creditSorts as sort (sort.id)}
+                <li>
+                  <button type="button" aria-current={sort.id === query.sort}
+                    onclick={() => (query = { ...query, sort: sort.id })}>{sort.label}</button>
+                </li>
+              {/each}
+            </ul>
+          </Dropdown>
+          <SortDirection joined bind:flipped={query.reversed} />
+        </span>
         <TermsFilter bind:terms={query.terms} vip={data.user?.isVip ?? false} />
         <FilterMenu active={filtered} count={query.fade.length + query.hide.length + Number(!query.movies) + Number(!query.shows)}>
           <FadeHideItems value={query} fadeOptions={data.user ? fadeHideOptions : []} hideOptions={data.user ? creditHideOptions : creditHideOptions.filter(({ id }) => ['released', 'unreleased', 'noreleasedate', 'self'].includes(id))}
@@ -253,6 +255,11 @@ function yearLine(credit: PersonCredit) {
 <style>
 .credits {
   margin-block-start: var(--gutter);
+}
+
+.sort {
+  display: flex;
+  align-items: center;
 }
 
 /* OG's h2 with the sort wrapper floated right, 7px above the heading's baseline. */

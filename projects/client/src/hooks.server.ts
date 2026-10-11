@@ -7,7 +7,7 @@ import { type Handle, redirect } from '@sveltejs/kit';
  * Until launch, og.trakt.tv is admin-only: everyone else is sent to the placeholder at `/`.
  * Local dev and preview turn the gate off with `OG_ADMIN_GATE=off` in `.dev.vars`. A deploy never reads that file.
  * The page's `<html data-theme>` is the viewer's Dark Knight setting, which the root layout's load puts in
- * `locals.theme` before the page renders, so the first paint needs no script. Anyone else gets OG's light theme.
+ * `locals.theme` before the page renders, so the first paint needs no script. Anyone else gets Dark Knight, og's default.
  */
 export const handle: Handle = async ({ event, resolve }) => {
   event.locals.token = event.cookies.get(AUTH_COOKIE) ?? null;
@@ -18,6 +18,6 @@ export const handle: Handle = async ({ event, resolve }) => {
   }
 
   return resolve(event, {
-    transformPageChunk: ({ html }) => html.replace('%og.theme%', event.locals.theme ?? 'light'),
+    transformPageChunk: ({ html }) => html.replace('%og.theme%', event.locals.theme ?? 'dark'),
   });
 };

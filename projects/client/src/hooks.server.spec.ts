@@ -59,9 +59,9 @@ describe('hooks: theme', () => {
     expect(await render('viewer-token')).toBe('<html lang="en" data-theme="light">');
   });
 
-  it('should serve the light theme when logged out or the token is refused', async () => {
-    expect(await render(undefined)).toBe('<html lang="en" data-theme="light">');
+  it('should serve Dark Knight, the default, when logged out or the token is refused', async () => {
+    expect(await render(undefined)).toBe('<html lang="en" data-theme="dark">');
     server.use(http.get('https://apiz.trakt.tv/users/settings', () => new HttpResponse(null, { status: 401 })));
-    expect(await render('stale-token')).toBe('<html lang="en" data-theme="light">');
+    expect(await render('stale-token')).toBe('<html lang="en" data-theme="dark">');
   });
 });

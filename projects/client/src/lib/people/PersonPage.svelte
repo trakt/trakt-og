@@ -194,22 +194,24 @@ function yearLine(credit: PersonCredit) {
           </Dropdown>
           <SortDirection joined bind:flipped={query.reversed} />
         </span>
-        <TermsFilter bind:terms={query.terms} vip={data.user?.isVip ?? false} />
-        <FilterMenu active={filtered} count={query.fade.length + query.hide.length + Number(!query.movies) + Number(!query.shows)}>
-          <FadeHideItems value={query} fadeOptions={data.user ? fadeHideOptions : []} hideOptions={data.user ? creditHideOptions : creditHideOptions.filter(({ id }) => ['released', 'unreleased', 'noreleasedate', 'self'].includes(id))}
-            onchange={(next) => (query = { ...query, fade: next.fade.filter((id): id is (typeof fadeHideOptions)[number]['id'] => fadeHideOptions.some((option) => option.id === id)), hide: next.hide })}
-            onreset={() => (query = { ...query, terms: '', movies: true, shows: true })} />
-          <hr />
-          <ul>
-            <li class="header" role="presentation">Types</li>
-            <li><button type="button" aria-pressed={query.movies} onclick={() => (query = { ...query, movies: !query.movies })}>
-                Movies
-              </button></li>
-            <li><button type="button" aria-pressed={query.shows} onclick={() => (query = { ...query, shows: !query.shows })}>
-                Shows
-              </button></li>
-          </ul>
-        </FilterMenu>
+        <span class="filter-icons">
+          <TermsFilter bind:terms={query.terms} vip={data.user?.isVip ?? false} />
+          <FilterMenu active={filtered} count={query.fade.length + query.hide.length + Number(!query.movies) + Number(!query.shows)}>
+            <FadeHideItems value={query} fadeOptions={data.user ? fadeHideOptions : []} hideOptions={data.user ? creditHideOptions : creditHideOptions.filter(({ id }) => ['released', 'unreleased', 'noreleasedate', 'self'].includes(id))}
+              onchange={(next) => (query = { ...query, fade: next.fade.filter((id): id is (typeof fadeHideOptions)[number]['id'] => fadeHideOptions.some((option) => option.id === id)), hide: next.hide })}
+              onreset={() => (query = { ...query, terms: '', movies: true, shows: true })} />
+            <hr />
+            <ul>
+              <li class="header" role="presentation">Types</li>
+              <li><button type="button" aria-pressed={query.movies} onclick={() => (query = { ...query, movies: !query.movies })}>
+                  Movies
+                </button></li>
+              <li><button type="button" aria-pressed={query.shows} onclick={() => (query = { ...query, shows: !query.shows })}>
+                  Shows
+                </button></li>
+            </ul>
+          </FilterMenu>
+        </span>
       </div>
     </div>
 
@@ -257,9 +259,15 @@ function yearLine(credit: PersonCredit) {
   margin-block-start: var(--gutter);
 }
 
-.sort {
+.sort,
+.filter-icons {
   display: flex;
   align-items: center;
+}
+
+/* Like the list toolbar: the search and the eye sit close, the sort a toolbar gap away. */
+.filter-icons {
+  gap: var(--list-filter-icon-gap);
 }
 
 /* OG's h2 with the sort wrapper floated right, 7px above the heading's baseline. */
@@ -278,6 +286,8 @@ function yearLine(credit: PersonCredit) {
 .controls {
   display: flex;
   align-items: center;
+  /* The list toolbar's spacing between the sort and the filter tools. */
+  gap: var(--toolbar-gap);
   margin-block-start: -7px;
 }
 </style>

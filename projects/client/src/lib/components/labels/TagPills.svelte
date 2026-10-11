@@ -1,6 +1,6 @@
 <!--
   A row of small tag pills, like the header search's results: `primary` is the brand red (a result's type), `light` the
-  pale one (its year, a rating certificate), and the rest the dark outlined default (genres, a runtime).
+  pale one (its year), `badge` a bold clear pill with a brighter outline (a rating certificate), and the rest the dark outlined default (genres, a runtime).
     <TagPills tags={[{ text: 'Movie', kind: 'primary' }, { text: '2026', kind: 'light' }, { text: 'Drama' }]} />
 -->
 <script lang="ts">
@@ -36,6 +36,14 @@ const { tags }: { tags: readonly TagPill[] } = $props();
   background-color: var(--brand-primary);
   box-shadow: none;
   color: var(--color-text-inverse);
+}
+
+.badge {
+  background-color: transparent;
+  box-shadow: inset 0 0 0 1px var(--color-tag-badge-line);
+  color: var(--color-frame-text);
+  font-weight: var(--font-weight-headings-heavy);
+  letter-spacing: var(--letter-spacing-tag-badge);
 }
 
 .light {

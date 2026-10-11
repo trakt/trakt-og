@@ -345,10 +345,15 @@ thead :is(th, td) {
   text-transform: uppercase;
 }
 
+/* The film's details and figures line up along the top, by the title; the rank and poster stay centred. */
 td {
   padding: var(--box-office-row-padding) var(--box-office-cell-padding);
   border-block-end: 1px solid var(--color-frame-border);
-  vertical-align: middle;
+  vertical-align: top;
+
+  &:is(.rank, .poster) {
+    vertical-align: middle;
+  }
 }
 
 tbody tr {
@@ -393,7 +398,7 @@ th.rank {
 td.poster {
   /* As narrow as its poster, so the title sits close beside it. */
   inline-size: 1%;
-  padding-inline-end: 0;
+  padding-inline-end: var(--box-office-poster-gap);
 
   & a {
     display: block;

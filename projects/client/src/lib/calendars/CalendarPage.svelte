@@ -463,7 +463,7 @@ const title = $derived(`${data.target === 'my' ? 'My ' : ''}${data.calendar.labe
   padding: 4px 0 5px;
   border-radius: var(--radius-control);
   background-color: var(--color-mini-month-cell);
-  color: var(--color-frame-text);
+  color: var(--color-frame-ink);
   line-height: 1.05;
   text-decoration: none;
 
@@ -499,12 +499,12 @@ const title = $derived(`${data.target === 'my' ? 'My ' : ''}${data.calendar.labe
 
   &:is(:hover, :focus-visible) {
     background-color: var(--color-control-hover-bg);
-    color: var(--color-frame-text);
+    color: var(--color-frame-ink);
   }
 
   &[aria-pressed='true'] {
     background-color: var(--color-control-raised-bg);
-    color: var(--color-frame-text);
+    color: var(--color-frame-ink);
   }
 }
 </style>

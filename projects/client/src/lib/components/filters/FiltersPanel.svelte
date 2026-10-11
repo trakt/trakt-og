@@ -208,7 +208,8 @@ function reset() {
         {@const metric = 'metric' in row ? row.metric : undefined}
         <div class="rating">
           <Tooltip placement="left">
-            {#snippet trigger(tooltip)}<span class="site" {...tooltip}><img src={row.logo} alt="" /></span>{/snippet}
+            {#snippet trigger(tooltip)}<span class={['site', { dark: row.logo === imdbLogo }]} {...tooltip}><img src={row.logo} alt=""
+              /></span>{/snippet}
             {row.site}{#if metric}<br /><em class="metric">{metric}</em>{/if}
           </Tooltip>
           <RangeSlider labeled scale={config.scales[key]} label="{row.site}{metric ? ` ${metric}` : ''} rating"
@@ -255,7 +256,7 @@ function reset() {
   padding: calc(var(--header-height) + var(--space-lg-inline)) var(--sidebar-padding) var(--sidebar-padding);
   overflow-y: auto;
   scrollbar-width: thin;
-  color: var(--color-frame-text);
+  color: var(--color-frame-ink);
 
   @media (max-width: 767px) {
     position: static;
@@ -320,7 +321,7 @@ function reset() {
   text-decoration: none;
 
   &:is(:hover, :focus-visible) {
-    color: var(--color-frame-text);
+    color: var(--color-frame-ink);
   }
 }
 
@@ -333,7 +334,7 @@ function reset() {
   text-transform: uppercase;
 
   & b {
-    color: var(--color-frame-text);
+    color: var(--color-frame-ink);
   }
 }
 
@@ -352,5 +353,11 @@ function reset() {
 
 .metric {
   color: var(--color-tooltip-muted);
+}
+
+/* IMDb's logo is white artwork, so it keeps a dark backing on a light panel, like IMDb's own badge. */
+.site.dark img {
+  border-radius: var(--radius-site-logo-backing);
+  background-color: var(--color-site-logo-backing);
 }
 </style>

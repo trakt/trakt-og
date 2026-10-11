@@ -84,7 +84,7 @@ const { days, today, artwork, autoscroll = false, cardIcons }: Props = $props();
 
 .card {
   min-inline-size: 0;
-  border-inline-end: 1px solid var(--color-frame-border);
-  border-block-end: 1px solid var(--color-frame-border);
+  border-inline-end: 1px solid var(--color-frame-line);
+  border-block-end: 1px solid var(--color-frame-line);
 }
 </style>

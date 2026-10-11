@@ -43,7 +43,7 @@ const { unit, label, prevHref, nextHref }: Props = $props();
     color: var(--color-sidebar-label);
 
     &:is(:hover, :focus-visible) {
-      color: var(--color-frame-text);
+      color: var(--color-frame-ink);
     }
   }
 }

@@ -38,7 +38,7 @@ const format = (value: number) => value.toLocaleString('en-US');
   white-space: nowrap;
 
   & b {
-    color: var(--color-frame-text);
+    color: var(--color-frame-ink);
     font-weight: var(--font-weight-headings-heavy);
   }
 

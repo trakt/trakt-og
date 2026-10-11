@@ -60,7 +60,7 @@ function scrollToday(node: HTMLElement) {
     background: var(--color-calendar-today-bar);
     backdrop-filter: var(--calendar-today-blur);
     box-shadow: inset 4px 0 0 var(--brand-primary);
-    color: var(--color-frame-text);
+    color: var(--color-frame-ink);
 
     & .date {
       color: var(--brand-primary);

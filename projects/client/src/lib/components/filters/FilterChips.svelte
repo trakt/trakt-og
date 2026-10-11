@@ -33,7 +33,7 @@ const sites: Record<TagSite, { logo: string; name: string }> = {
 <ul class="filter-chips">
   {#each chips as chip (chip.id)}
     <li class={{ without: chip.without }}>
-      {#if chip.site}<img src={sites[chip.site].logo} alt="" />{/if}
+      {#if chip.site}<img class={{ dark: chip.site === 'imdb' }} src={sites[chip.site].logo} alt="" />{/if}
       <span class="label">{filterTagLabel(chip.id)}</span>
       {#if chip.without}<span class="visually-hidden">without</span>{/if}<span class="text">{chip.text}</span>
       <button type="button" aria-label="Remove {chip.without ? 'without ' : ''}{chip.text}" {disabled}
@@ -62,7 +62,7 @@ li {
   border: 1px solid var(--color-sidebar-pill-set-border);
   border-radius: var(--radius-control);
   background-color: var(--color-sidebar-pill-set-bg);
-  color: var(--color-frame-text);
+  color: var(--color-frame-ink);
   font-size: var(--font-size-filter-chip);
 
   &.without {
@@ -122,12 +122,18 @@ button {
 
   &:is(:hover, :focus-visible):not(:disabled) {
     background-color: var(--color-sidebar-pill-set-border);
-    color: var(--color-frame-text);
+    color: var(--color-frame-ink);
   }
 
   &:disabled {
     cursor: default;
     opacity: 0.5;
   }
+}
+
+/* IMDb's logo is white artwork, so it keeps a dark backing on a light chip, like IMDb's own badge. */
+img.dark {
+  border-radius: var(--radius-site-logo-backing);
+  background-color: var(--color-site-logo-backing);
 }
 </style>

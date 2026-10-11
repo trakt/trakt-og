@@ -42,7 +42,7 @@ const { chips, open, vip, clearHref, onremove }: Props = $props();
 
   &:is(:hover, :focus-visible) {
     border-color: var(--color-control-border-hover);
-    color: var(--color-frame-text);
+    color: var(--color-frame-ink);
   }
 }
 </style>

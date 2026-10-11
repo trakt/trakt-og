@@ -99,16 +99,16 @@ button {
   padding: 0;
   border: 0;
   background-color: color-mix(in srgb, var(--color-mini-month-heat) var(--heat), var(--color-mini-month-cell));
-  color: var(--color-frame-text);
+  color: var(--color-frame-ink);
   cursor: pointer;
 
   &:is(:hover, :focus-visible) {
-    outline: 2px solid var(--color-frame-text);
+    outline: 2px solid var(--color-frame-ink);
     outline-offset: -2px;
   }
 
   &.today {
-    box-shadow: inset 0 0 0 2px var(--color-frame-text);
+    box-shadow: inset 0 0 0 2px var(--color-frame-ink);
   }
 
   &.marked {
@@ -117,7 +117,7 @@ button {
   }
 
   &.today.marked {
-    box-shadow: inset 0 0 0 2px var(--color-frame-text), 0 0 0 2px var(--color-mini-month-marked);
+    box-shadow: inset 0 0 0 2px var(--color-frame-ink), 0 0 0 2px var(--color-mini-month-marked);
     outline: 0;
   }
 }

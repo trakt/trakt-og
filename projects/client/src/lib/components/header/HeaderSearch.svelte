@@ -142,6 +142,7 @@ const runSearch = () => {
       type: searched,
       query: text,
       dates: page.data.datePreferences,
+      today: viewerToday(),
       signal: controller.signal,
     }).catch(() => null);
     if (!next || controller.signal.aborted) return;
@@ -150,12 +151,13 @@ const runSearch = () => {
   }, DEBOUNCE_MS);
 };
 
+// The viewer's date, for People's birthdays and ages.
+const viewerToday = () => new Date().toLocaleDateString('en-CA', { timeZone: page.data.datePreferences?.timeZone });
+
 const loadTrending = (picked: (typeof searchTypes)[number]) => {
   if (picked.slug in trending) return;
   trending = { ...trending, [picked.slug]: { label: '', rows: [] } };
-  // The viewer's date, for People's birthdays.
-  const today = new Date().toLocaleDateString('en-CA', { timeZone: page.data.datePreferences?.timeZone });
-  void searchTrending({ type: picked, today })
+  void searchTrending({ type: picked, today: viewerToday(), order: page.data.datePreferences?.order })
     .then((found) => (trending = { ...trending, [picked.slug]: found }))
     // Rate limited or offline: forget it, so the next open asks again.
     .catch(() => (trending = Object.fromEntries(Object.entries(trending).filter(([slug]) => slug !== picked.slug))));

@@ -116,6 +116,24 @@ describe('toSearchCard', () => {
     });
   });
 
+  it('should tag a person with their age or when they died, and what they are known for', () => {
+    const person = (birthday: string, death: string | null) =>
+      hit({
+        type: 'person',
+        person: { name: 'P', ids: { trakt: 3, slug: 'p' }, birthday, death, known_for_department: 'acting' },
+      });
+
+    expect(toSearchCard(person('1979-08-27', null), all)?.tags).toEqual([
+      { text: 'Person' },
+      { text: 'Age 47', kind: 'generic' },
+      { text: 'Acting', kind: 'generic' },
+    ]);
+    expect(toSearchCard(person('1884-08-10', '1952-03-12'), episodesTab)?.tags).toEqual([
+      { text: 'Died Mar 12, 1952', kind: 'generic' },
+      { text: 'Acting', kind: 'generic' },
+    ]);
+  });
+
   describe('for each image type', () => {
     const art = (kind: string) => [`media.trakt.tv/images/shows/000/001/388/${kind}/medium/a.jpg.webp`];
     const sized = (kind: string, size: string) =>

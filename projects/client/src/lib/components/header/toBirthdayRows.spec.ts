@@ -43,12 +43,12 @@ describe('util: toBirthdayRows', () => {
       title: 'Person 2',
       type: 'Person',
       tag: 'Oct 12',
-      genres: ['45 years old'],
+      genres: ['Age 45'],
       poster: undefined,
     }]);
   });
 
-  it("should tag the age they are today and what they're known for, with no age for someone who has died", () => {
+  it("should tag the age they are today, or when they died, and what they're known for", () => {
     const rows = toBirthdayRows([
       person(1, '1968-10-12', { known_for_department: 'acting' }),
       person(2, '1968-10-10', { known_for_department: 'directing' }),
@@ -56,9 +56,9 @@ describe('util: toBirthdayRows', () => {
     ], '2026-10-10');
 
     expect(rows.map((row) => [row.title, row.genres])).toEqual([
-      ['Person 2', ['58 years old', 'Directing']],
-      ['Person 3', ['Writing']],
-      ['Person 1', ['57 years old', 'Acting']],
+      ['Person 2', ['Age 58', 'Directing']],
+      ['Person 3', ['Died Jan 1, 2020', 'Writing']],
+      ['Person 1', ['Age 57', 'Acting']],
     ]);
   });
 });

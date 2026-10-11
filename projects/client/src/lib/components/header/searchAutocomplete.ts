@@ -11,6 +11,8 @@ type SearchAutocompleteParams = {
   type: (typeof searchTypes)[number];
   query: string;
   dates?: Pick<DatePreferences, 'order' | 'timeZone'>;
+  /** The viewer's date, `YYYY-MM-DD`, for people's ages. */
+  today?: string;
   fetch?: typeof fetch;
   signal?: AbortSignal;
 };
@@ -34,8 +36,10 @@ const USERS_MIN_LENGTH = 2;
 // Ask for a few more than we show: the API also returns deleted and private accounts, which OG never listed.
 const USERS_LIMIT = 10;
 
-const toRows = (hits: ReadonlyArray<SearchResultResponse>, dates: SearchAutocompleteParams['dates']) =>
-  hits.map((hit) => toSearchRow(hit, dates)).filter((row) => row !== null).slice(0, SHOWN);
+const toRows = (
+  hits: ReadonlyArray<SearchResultResponse>,
+  { dates, today }: Pick<SearchAutocompleteParams, 'dates' | 'today'>,
+) => hits.map((hit) => toSearchRow(hit, dates, today)).filter((row) => row !== null).slice(0, SHOWN);
 
 const toCount = (count: number) => count >= COUNT_LIMIT ? `${COUNT_LIMIT}+` : count.toLocaleString('en-US');
 
@@ -61,7 +65,7 @@ async function searchUsers({ query, fetch, signal }: Pick<SearchAutocompletePara
 
 /** The header dropdown's results for one type and query. */
 export async function searchAutocomplete(
-  { type, query, dates, fetch, signal }: SearchAutocompleteParams,
+  { type, query, dates, today, fetch, signal }: SearchAutocompleteParams,
 ): Promise<SearchAutocompleteResult> {
   const client = api({ fetch });
   const fetchOptions = { signal };
@@ -72,7 +76,7 @@ export async function searchAutocomplete(
       query: { extended: EXTENDED },
       fetchOptions,
     });
-    return response.status === 200 ? { rows: toRows(response.body, dates), count: null } : none;
+    return response.status === 200 ? { rows: toRows(response.body, { dates, today }), count: null } : none;
   }
 
   if (type.slug === 'users') return searchUsers({ query, fetch, signal });
@@ -87,5 +91,5 @@ export async function searchAutocomplete(
   if (response.status !== 200) return none;
 
   const count = Number(response.headers.get('x-pagination-item-count') ?? response.body.length);
-  return { rows: toRows(response.body, dates), count: count > 0 ? toCount(count) : null };
+  return { rows: toRows(response.body, { dates, today }), count: count > 0 ? toCount(count) : null };
 }

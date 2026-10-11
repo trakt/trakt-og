@@ -1,4 +1,5 @@
 import { api } from '../../api/api.ts';
+import type { DateOrder } from '../../utils/formatDate.ts';
 import { rawApiFetch } from '../../api/rawApiFetch.ts';
 import { peopleThisMonthSchema } from './peopleThisMonthSchema.ts';
 import type { searchTypes } from './searchTypes.ts';
@@ -7,8 +8,9 @@ import { type SearchRow, toSearchRow } from './toSearchRow.ts';
 
 type SearchTrendingParams = {
   type: (typeof searchTypes)[number];
-  /** The viewer's date, `YYYY-MM-DD`, for People's birthdays. */
+  /** The viewer's date, `YYYY-MM-DD`, and date order, for People's birthdays and ages. */
   today: string;
+  order?: DateOrder;
   fetch?: typeof fetch;
   signal?: AbortSignal;
 };
@@ -68,22 +70,26 @@ async function trendingLists(client: ReturnType<typeof api>, signal?: AbortSigna
 }
 
 // The API keeps no trending people, so People shows this month's birthdays, like v3's search.
-async function birthdays({ fetch, signal, today }: Pick<SearchTrendingParams, 'fetch' | 'signal' | 'today'>) {
+async function birthdays({ fetch, signal, today, order }: Omit<SearchTrendingParams, 'type'>) {
   const response = await rawApiFetch({ fetch, path: '/people/this_month?extended=full,images', init: { signal } });
   if (response.status !== 200) return failed();
   const people = peopleThisMonthSchema.safeParse(await response.json().catch(() => null));
-  return people.success ? toBirthdayRows(people.data, today) : failed();
+  return people.success ? toBirthdayRows(people.data, today, order) : failed();
 }
 
 /**
  * What the header dropdown lists for a type before anything is typed: the most searched shows and movies, the trending
  * lists, or this month's birthdays for People. The other types have nothing.
  */
-export async function searchTrending({ type, today, fetch, signal }: SearchTrendingParams): Promise<SearchTrending> {
+export async function searchTrending(
+  { type, today, order, fetch, signal }: SearchTrendingParams,
+): Promise<SearchTrending> {
   const client = api({ fetch });
   const kinds = KINDS[type.slug];
   if (kinds) return { label: 'Most Searched', rows: await mostSearched(client, kinds, signal) };
   if (type.slug === 'lists') return { label: 'Trending Lists', rows: await trendingLists(client, signal) };
-  if (type.slug === 'people') return { label: 'Birthdays This Month', rows: await birthdays({ fetch, signal, today }) };
+  if (type.slug === 'people') {
+    return { label: 'Birthdays This Month', rows: await birthdays({ fetch, signal, today, order }) };
+  }
   return { label: '', rows: [] };
 }

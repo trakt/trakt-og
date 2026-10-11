@@ -1,6 +1,7 @@
 import type { SearchResultResponse } from '@trakt/api';
 import type { DatePreferences } from '../../settings/DatePreferences.ts';
 import { formatDate } from '../../utils/formatDate.ts';
+import { personTags } from '../../people/personTags.ts';
 import { imageUrl } from '../../utils/imageUrl.ts';
 
 /** One autocomplete row. */
@@ -40,10 +41,14 @@ const poster = (paths: ReadonlyArray<string> | null | undefined) => imageUrl(pat
 const seasonEpisode = (season: number, number: number) =>
   season === 0 ? `Special ${number}` : `${season}x${String(number).padStart(2, '0')}`;
 
-/** Maps a `/search` hit to the row OG drew for it, dating episodes in the viewer's order and zone. Returns null for a hit missing the object its `type` names. */
+/**
+ * Maps a `/search` hit to the row OG drew for it, dating episodes in the viewer's order and zone. `today` (the viewer's
+ * date, `YYYY-MM-DD`) gives people their age. Returns null for a hit missing the object its `type` names.
+ */
 export function toSearchRow(
   hit: SearchResultResponse,
   dates: Pick<DatePreferences, 'order' | 'timeZone'> = { order: 'mdy', timeZone: 'UTC' },
+  today?: string,
 ): SearchRow | null {
   const { movie, show, episode, person, list } = hit;
 
@@ -94,6 +99,7 @@ export function toSearchRow(
       href: `/people/${person.ids.slug}`,
       title: person.name,
       type: 'Person',
+      genres: personTags(person, { today, order: dates.order }),
       poster: poster(person.images?.headshot),
     };
   }

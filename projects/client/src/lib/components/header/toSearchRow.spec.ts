@@ -109,6 +109,17 @@ describe('toSearchRow', () => {
     });
   });
 
+  it("should tag a personal list with its owner's username", () => {
+    const list = {
+      name: 'Popular Horror',
+      type: 'personal',
+      ids: { trakt: 1, slug: 'popular-horror' },
+      user: { username: 'lish408' },
+    };
+
+    expect(toSearchRow(hit({ type: 'list', list }))).toMatchObject({ type: 'List', tag: 'lish408' });
+  });
+
   it('should return null when the named object is missing', () => {
     expect(toSearchRow(hit({ type: 'show', show: null }))).toBeNull();
   });

@@ -13,7 +13,7 @@ export interface SearchRow {
   readonly title: string;
   /** OG's type tag: the model name, titleized. */
   readonly type: string;
-  /** The year, or an episode's first-aired date. */
+  /** The year, an episode's first-aired date, a list's owner or a person's birthday. */
   readonly tag?: string;
   /** Up to the first three genres, dashes spaced out ("science fiction"). */
   readonly genres?: readonly string[];
@@ -100,6 +100,8 @@ export function toSearchRow(
       href: `/lists/${list.ids.trakt}`,
       title: list.name,
       type: list.type === 'official' ? 'Official List' : 'List',
+      // Whose list it is, beside the type. Official lists have no owner.
+      tag: list.user?.username ?? undefined,
       poster: poster(list.images?.posters),
     };
   }

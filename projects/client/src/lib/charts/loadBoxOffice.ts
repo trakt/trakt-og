@@ -38,7 +38,7 @@ export async function loadBoxOffice({ fetch, cookies, parent }: LoadBoxOfficePar
     page: { type: 'paginated' as const, current: 1, total: 1 },
     /** The under-title and meta description. OG read it off the list, so a list we can't load leaves it blank. */
     description: list.status === 200 ? (list.body.description ?? '') : '',
-    /** The sidebar starts collapsed: SidebarFrame's cookie, so SSR renders it as the viewer left it. */
-    sidebarCollapsed: cookies.get('sidebar_collapsed') !== undefined,
+    /** The sidebar's own state, so SSR renders it as the viewer left it, like the calendar's. */
+    sidebar: { collapsed: cookies.get('sidebar_collapsed') !== undefined },
   };
 }

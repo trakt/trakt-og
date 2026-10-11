@@ -1,19 +1,20 @@
 <!--
-  One chart page in a SidebarFrame, like the calendar's: the chart picker (Shows or Movies over the chart's name) with
-  the fade/hide and filter tools, the counts, the under-title and the applied filters in the sidebar, then the flush
-  fanart grid and the bottom pagination. `/shows/[chart]`, `/movies/[chart]` and `/movies/boxoffice` render it.
+  One chart page in a SidebarFrame, like the calendar's. The sidebar holds every control: the chart picker (Shows or
+  Movies over the chart's name) with the fade/hide and filter tools, the counts, the under-title, the page pager, the
+  period and the applied filters. The content is only the flush fanart grid. `/shows/[chart]`, `/movies/[chart]` and
+  `/movies/boxoffice` render it.
 -->
 <script lang="ts">
 import { goto, invalidateAll } from '$app/navigation';
 import { page } from '$app/state';
-import AdvancedFiltersPanel from '$lib/components/filters/AdvancedFiltersPanel.svelte';
 import AdvancedFiltersToggle from '$lib/components/filters/AdvancedFiltersToggle.svelte';
-import AppliedFilters from '$lib/components/filters/AppliedFilters.svelte';
+import AppliedFiltersSection from '$lib/components/filters/AppliedFiltersSection.svelte';
 import FadeHideMenu from '$lib/components/filters/FadeHideMenu.svelte';
+import FiltersPanel from '$lib/components/filters/FiltersPanel.svelte';
 import { type AdvancedFilters, advancedFiltersSearch } from '$lib/components/filters/advancedFilters';
+import { filterChips } from '$lib/components/filters/filterChips';
 import { fromFilterDraft, toFilterDraft } from '$lib/components/filters/filterDraft';
-import { filterTags } from '$lib/components/filters/filterTags';
-import { watchNowTiles } from '$lib/components/filters/watchNowFilter';
+import { withoutFilterTag } from '$lib/components/filters/withoutFilterTag';
 import {
   apiHideOptions,
   type FadeHide,
@@ -26,21 +27,22 @@ import FrameGrid from '$lib/components/frame/FrameGrid.svelte';
 import FanartCard from '$lib/components/media/FanartCard.svelte';
 import { quickIconFill } from '$lib/components/media/quickIconFill';
 import NoResults from '$lib/components/empty/NoResults.svelte';
-import PageNav from '$lib/components/pagination/PageNav.svelte';
 import { pageHref } from '$lib/components/pagination/pageWindow';
 import CountPill from '$lib/components/sidebar/CountPill.svelte';
+import PagePager from '$lib/components/sidebar/PagePager.svelte';
 import RailGroup from '$lib/components/sidebar/RailGroup.svelte';
+import RailPager from '$lib/components/sidebar/RailPager.svelte';
 import SidebarFrame from '$lib/components/sidebar/SidebarFrame.svelte';
 import SidebarTitle from '$lib/components/sidebar/SidebarTitle.svelte';
 import { overlay } from '$lib/overlay/overlay';
 import { chartFilters } from '$lib/charts/chartFilters';
 import { chartLinks } from '$lib/charts/chartLinks';
-import { type ChartName, isPeriodChart } from '$lib/charts/chartNames';
+import type { ChartName } from '$lib/charts/chartNames';
 import { chartPeriodText } from '$lib/charts/chartPeriod';
 import type { HeaderUser } from '$lib/components/header/HeaderUser';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
 import type { loadBoxOffice } from '$lib/charts/loadBoxOffice';
-import type { loadChart, MediaType } from '$lib/charts/loadChart';
+import type { loadChart } from '$lib/charts/loadChart';
 
 type Props = {
   data: Awaited<ReturnType<typeof loadChart> | ReturnType<typeof loadBoxOffice>> & {
@@ -116,14 +118,13 @@ const advanced = $derived.by(() => {
   const config = chartFilters({ type: data.type, chart: data.chart, period: data.period, now: new Date() });
   // Only what this chart's panel offers counts, and a range at its ends is no filter.
   const filters = fromFilterDraft(toFilterDraft(data.filters, config), config);
-  const tags = filterTags(filters);
-  const tiles = watchNowTiles({
-    watchnow: filters.watchnow,
+  const chips = filterChips({
+    filters,
     sources: data.filterSources ?? new Map(),
     country: data.watchNowCountry,
     favorites: data.watchNowFavorites,
   });
-  return { config, filters, tags, tiles, count: tags.length + tiles.length };
+  return { config, chips, count: chips.length };
 });
 let panelOpen = $state(false);
 let funnel = $state<HTMLButtonElement>();
@@ -134,26 +135,35 @@ function closePanel() {
   funnel?.focus();
 }
 
-function applyFilters(filters: AdvancedFilters, period: string | undefined) {
+// The panel filters as you go, back on the first page, so the history keeps one entry per visit, not one per click.
+function search(filters: AdvancedFilters) {
+  const query = advancedFiltersSearch(filters);
+  return `${page.url.pathname}${query ? `?${query}` : ''}`;
+}
+function applyFilters(filters: AdvancedFilters) {
+  // eslint-disable-next-line svelte/no-navigation-without-resolve -- the same chart and period, new filters
+  goto(search(filters), { noScroll: true, keepFocus: true, replaceState: true });
+}
+function removeChip(id: string) {
   if (!('filters' in data)) return;
-  const search = advancedFiltersSearch(filters);
-  const path = period && isPeriodChart(data.chart)
-    ? `/${data.type}/${data.chart}/${period}`
-    : `/${data.type}/${data.chart}`;
-  panelOpen = false;
-  // eslint-disable-next-line svelte/no-navigation-without-resolve -- a chart path built from the page's own params
-  goto(search ? `${path}?${search}` : path);
+  // eslint-disable-next-line svelte/no-navigation-without-resolve -- the same chart and period, new filters
+  goto(search(withoutFilterTag(data.filters, id)), { noScroll: true, keepFocus: true });
 }
 
-// The picker lists both types' charts, Shows then Movies, so the title switches either way.
-const pickerLinks = (type: MediaType) =>
+// The period charts' Time Period, which OG kept in the filter panel: the same chart and filters on the first page.
+const periodHref = (period: string) =>
+  `/${data.type}/${data.chart}/${period}${pageHref(page.url, 1).slice(page.url.pathname.length)}`;
+const period = $derived(advanced?.config.period);
+
+const pickerLinks = $derived(
   chartLinks({
-    type,
-    current: type === data.type ? data.chart : '',
+    type: data.type,
+    current: data.chart,
     period: data.period,
     search: page.url.searchParams,
     signedIn: data.user !== null,
-  });
+  }),
+);
 // Played has no link in the picker, like OG's nav, so its name comes from here.
 const CHART_NAMES: Readonly<Record<ChartName | 'boxoffice', string>> = {
   trending: 'Trending',
@@ -175,19 +185,9 @@ const CHART_NAMES: Readonly<Record<ChartName | 'boxoffice', string>> = {
 
 {#snippet filtersPanel()}
   {#if advanced && 'filters' in data}
-    <AdvancedFiltersPanel
-  id="{panelId}-filters"
-  open={panelOpen}
-  config={advanced.config}
-  filters={data.filters}
-  {vip}
-  country={data.watchNowCountry}
-  favorites={data.watchNowFavorites}
-  sources={data.filterSources}
-  clearHref={page.url.pathname}
-  onapply={applyFilters}
-  onclose={closePanel}
-/>
+    <FiltersPanel id="{panelId}-filters" open={panelOpen} config={advanced.config} filters={data.filters} {vip}
+  country={data.watchNowCountry} favorites={data.watchNowFavorites} sources={data.filterSources}
+  onchange={applyFilters} onclose={closePanel} />
   {/if}
 {/snippet}
 
@@ -204,7 +204,7 @@ const CHART_NAMES: Readonly<Record<ChartName | 'boxoffice', string>> = {
   {/if}
 {/snippet}
 
-<SidebarFrame label="{title} charts" collapsed={data.sidebarCollapsed} {prevHref} {nextHref}
+<SidebarFrame label="{title} charts" collapsed={data.sidebar.collapsed} {prevHref} {nextHref}
   panel={advanced ? filtersPanel : undefined} {panelOpen}>
   {#snippet sidebar()}
     <SidebarTitle tools={menu || advanced ? tools : undefined}>
@@ -212,15 +212,11 @@ const CHART_NAMES: Readonly<Record<ChartName | 'boxoffice', string>> = {
         <Dropdown variant="title" label="Pick a chart">
           {#snippet trigger()}<span class="eyebrow">{title}</span><span class="name">{CHART_NAMES[data.chart]}</span
             >{/snippet}
-          {#each ['shows', 'movies'] as const as type, i (type)}
-            {#if i > 0}<hr />{/if}
-            <ul>
-              <li class="header">{type === 'shows' ? 'Shows' : 'Movies'}</li>
-              {#each pickerLinks(type) as link (link.href)}
-                <li><a href={link.href} aria-current={link.current ? 'page' : undefined}>{link.label}</a></li>
-              {/each}
-            </ul>
-          {/each}
+          <ul>
+            {#each pickerLinks as link (link.href)}
+              <li><a href={link.href} aria-current={link.current ? 'page' : undefined}>{link.label}</a></li>
+            {/each}
+          </ul>
         </Dropdown>
       {/snippet}
     </SidebarTitle>
@@ -229,10 +225,10 @@ const CHART_NAMES: Readonly<Record<ChartName | 'boxoffice', string>> = {
       {#if data.chart === 'boxoffice' || data.chart === 'recommendations'}
         <CountPill count={data.cards.length} label={data.type} one={noun} />
       {:else}
-        <CountPill count={data.itemCount} total={data.totalCount} label={data.type} one={noun} />
         {#if data.chart === 'trending'}
           <CountPill count={data.watcherCount} label="watchers" one="watcher" />
         {/if}
+        <CountPill count={data.itemCount} total={data.totalCount} label={data.type} one={noun} />
       {/if}
     </div>
 
@@ -259,13 +255,32 @@ const CHART_NAMES: Readonly<Record<ChartName | 'boxoffice', string>> = {
       </p>
     {/if}
 
-    {#if advanced && advanced.count > 0}
-      <AppliedFilters tags={advanced.tags} tiles={advanced.tiles} {vip} clearHref={page.url.pathname}
-        onedit={() => (panelOpen = true)} />
+    {#if data.page.type === 'paginated' && data.page.total > 1}
+      <PagePager current={data.page.current} total={data.page.total} href={(n) => pageHref(page.url, n)} />
+    {/if}
+
+    {#if period}
+      <Dropdown block section="Period">
+        {#snippet trigger()}{period.options.find((option) => option.value === period.value)?.label}{/snippet}
+        <ul>
+          {#each period.options as option (option.value)}
+            <li><a href={periodHref(option.value)} aria-current={option.value === period.value ? 'page' : undefined}
+              >{option.label}</a></li>
+          {/each}
+        </ul>
+      </Dropdown>
+    {/if}
+
+    {#if advanced && advanced.count > 0 && 'filters' in data.sidebar}
+      <AppliedFiltersSection chips={advanced.chips} open={data.sidebar.filters} {vip} clearHref={page.url.pathname}
+        onremove={removeChip} />
     {/if}
   {/snippet}
 
   {#snippet rail()}
+    {#if data.page.type === 'paginated' && data.page.total > 1}
+      <RailGroup><RailPager unit="page" label="P{data.page.current}" {prevHref} {nextHref} /></RailGroup>
+    {/if}
     {#if menu || advanced}<RailGroup tools>{@render tools()}</RailGroup>{/if}
   {/snippet}
 
@@ -300,9 +315,6 @@ const CHART_NAMES: Readonly<Record<ChartName | 'boxoffice', string>> = {
         {/if}
       {/each}
     </FrameGrid>
-    <div class="page-nav">
-      <PageNav {prevHref} {nextHref} />
-    </div>
   {:else}
     <div class="no-results">
       <NoResults />
@@ -325,10 +337,6 @@ const CHART_NAMES: Readonly<Record<ChartName | 'boxoffice', string>> = {
   & :is(b, strong) {
     color: var(--color-frame-text);
   }
-}
-
-.page-nav:has(:global(nav)) {
-  border-block-end: 1px solid var(--color-frame-border);
 }
 
 /* OG centred the droids in the frame from 1025px up. */

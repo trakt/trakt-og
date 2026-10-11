@@ -257,6 +257,7 @@ const runPill = (run: WeekInRelease) => ({
   }
 
   & .poster {
+    display: block;
     aspect-ratio: 2 / 3;
     border-radius: var(--radius-control);
     overflow: hidden;
@@ -265,7 +266,8 @@ const runPill = (run: WeekInRelease) => ({
     & img {
       display: block;
       inline-size: 100%;
-      block-size: 100%;
+      block-size: auto;
+      aspect-ratio: 2 / 3;
       object-fit: cover;
     }
   }
@@ -389,22 +391,23 @@ th.rank {
   text-align: center;
 }
 
+/* The image takes its own size: a percentage height inside a table cell resolves against the row in some browsers,
+   which zoomed and cropped the poster. */
 td.poster {
   padding-inline-end: 0;
 
   & a {
     display: block;
     inline-size: var(--box-office-poster-width);
-    aspect-ratio: 2 / 3;
-    border-radius: var(--radius-control);
-    overflow: hidden;
-    background-color: var(--color-control-bg);
   }
 
   & img {
     display: block;
     inline-size: 100%;
-    block-size: 100%;
+    block-size: auto;
+    aspect-ratio: 2 / 3;
+    border-radius: var(--radius-control);
+    background-color: var(--color-control-bg);
     object-fit: cover;
   }
 }

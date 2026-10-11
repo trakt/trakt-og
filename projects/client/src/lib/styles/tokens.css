@@ -708,9 +708,6 @@
   --color-search-kbd-bg: light-dark(rgb(0 0 0 / 0.07), rgb(255 255 255 / 0.1));
   --color-search-tip-bg: rgb(0 0 0 / 0.8); /* the search icon's "Search /" tooltip */
   --color-search-type: light-dark(var(--brand-primary), #ff5a5f); /* a result's type; lighter on dark for contrast */
-  --color-search-year-bg: #e6e6e6; /* the year pill: light gray with dark text, on the dark panel */
-  --color-search-year-text: #111;
-  --color-search-pill-line: rgb(255 255 255 / 0.12);
   --color-tag-badge-line: light-dark(rgb(0 0 0 / 0.45), rgb(255 255 255 / 0.45)); /* a certificate's outline, brighter than a pill's */
   --letter-spacing-tag-badge: 0.03em;
   --color-search-term: light-dark(rgb(0 0 0 / 0.75), rgb(255 255 255 / 0.85));

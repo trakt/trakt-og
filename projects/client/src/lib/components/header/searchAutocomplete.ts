@@ -21,8 +21,8 @@ export type SearchAutocompleteResult = {
   readonly count: string | null;
 };
 
-// OG showed 3 rows (`SEARCH_AUTOCOMPLETE_RESULT_COUNT`).
-const SHOWN = 3;
+// OG showed 3 rows (`SEARCH_AUTOCOMPLETE_RESULT_COUNT`); og shows 5, like the most searched list.
+const SHOWN = 5;
 // ponytail: the worker's item count is min(total, limit), so a limit=3 call always says 3. Ask for the logged-out
 // cap instead, show the first 3 and count up to it ("50+"). Switch to limit=3 once the worker returns the real total.
 const COUNT_LIMIT = 50;

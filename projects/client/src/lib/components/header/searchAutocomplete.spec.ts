@@ -34,12 +34,13 @@ const server = setupServer(
       user(4),
       user(5),
       user(6),
+      user(7),
     ]);
   }),
   http.get('https://apiz.trakt.tv/search/:type', ({ request }) => {
     const url = new URL(request.url);
     seen.push(url);
-    const results = url.searchParams.get('query') === 'many' ? hits(50) : hits(4);
+    const results = url.searchParams.get('query') === 'many' ? hits(50) : hits(6);
     return HttpResponse.json(results, { headers: { 'X-Pagination-Item-Count': String(results.length) } });
   }),
   http.get('https://apiz.trakt.tv/search/:idType/:id', ({ request }) => {
@@ -62,13 +63,13 @@ const byLabel = (label: string) => {
 };
 
 describe('searchAutocomplete', () => {
-  it('should show 3 rows and count every result for a text type', async () => {
+  it('should show 5 rows and count every result for a text type', async () => {
     const result = await searchAutocomplete({ type: byLabel('Shows & Movies'), query: 'bre' });
 
     expect(seen.at(0)?.pathname).toBe('/search/movie,show');
     expect(seen.at(0)?.searchParams.get('query')).toBe('bre');
-    expect(result.rows.map((row) => row.title)).toEqual(['Show 1', 'Show 2', 'Show 3']);
-    expect(result.count).toBe('4');
+    expect(result.rows.map((row) => row.title)).toEqual(['Show 1', 'Show 2', 'Show 3', 'Show 4', 'Show 5']);
+    expect(result.count).toBe('6');
   });
 
   it('should say 50+ when the count reaches the limit', async () => {
@@ -86,13 +87,13 @@ describe('searchAutocomplete', () => {
     expect(result.count).toBeNull();
   });
 
-  it('should show 3 public, active users with no View all count', async () => {
+  it('should show 5 public, active users with no View all count', async () => {
     const result = await searchAutocomplete({ type: byLabel('Users'), query: 'se' });
 
     expect(seen.at(0)?.pathname).toBe('/search/user');
     expect(seen.at(0)?.searchParams.get('query')).toBe('se');
     expect(seen.at(0)?.searchParams.get('extended')).toBe('full');
-    expect(result.rows.map((row) => row.title)).toEqual(['Sean 1', 'Sean 4', 'Sean 5']);
+    expect(result.rows.map((row) => row.title)).toEqual(['Sean 1', 'Sean 4', 'Sean 5', 'Sean 6', 'Sean 7']);
     expect(result.count).toBeNull();
   });
 

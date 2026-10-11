@@ -45,7 +45,7 @@ export function toBirthdayRows(people: readonly Person[], today: string): Search
       type: 'Person',
       tag: rank(birthday, today) === 0 ? 'Today' : label(birthday),
       genres: [
-        ...[age(person, birthday, today)].flatMap((years) => (years === undefined ? [] : [`Age ${years}`])),
+        ...[age(person, birthday, today)].flatMap((years) => (years === undefined ? [] : [`${years} years old`])),
         ...(person.known_for_department ? [titleize(person.known_for_department)] : []),
       ],
       poster: imageUrl(person.images?.headshot?.at(0), 'thumb'),

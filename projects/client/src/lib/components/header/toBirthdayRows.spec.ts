@@ -43,7 +43,7 @@ describe('util: toBirthdayRows', () => {
       title: 'Person 2',
       type: 'Person',
       tag: 'Oct 12',
-      genres: ['Age 45'],
+      genres: ['45 years old'],
       poster: undefined,
     }]);
   });
@@ -56,9 +56,9 @@ describe('util: toBirthdayRows', () => {
     ], '2026-10-10');
 
     expect(rows.map((row) => [row.title, row.genres])).toEqual([
-      ['Person 2', ['Age 58', 'Directing']],
+      ['Person 2', ['58 years old', 'Directing']],
       ['Person 3', ['Writing']],
-      ['Person 1', ['Age 57', 'Acting']],
+      ['Person 1', ['57 years old', 'Acting']],
     ]);
   });
 });

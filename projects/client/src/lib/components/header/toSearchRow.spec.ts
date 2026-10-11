@@ -15,7 +15,7 @@ const breakingBad = {
 
 describe('toSearchRow', () => {
   describe('for shows and movies', () => {
-    it('should show the type, the year and the genres with dashes spaced out', () => {
+    it('should show the type, the year and the genres, titled with dashes spaced out', () => {
       expect(toSearchRow(hit({ type: 'show', show: breakingBad }))).toEqual({
         key: 'show-1388',
         recent: { query: 'Breaking Bad', type: 'shows', id: 1388 },
@@ -23,7 +23,7 @@ describe('toSearchRow', () => {
         title: 'Breaking Bad',
         type: 'Show',
         tag: '2008',
-        genres: ['drama', 'science fiction'],
+        genres: ['Drama', 'Science Fiction'],
         poster: 'https://media.trakt.tv/images/shows/000/001/388/posters/thumb/fa39b59954.jpg.webp',
       });
     });
@@ -31,7 +31,7 @@ describe('toSearchRow', () => {
     it('should keep only the first three genres', () => {
       const show = { ...breakingBad, genres: ['drama', 'crime', 'thriller', 'western'] };
 
-      expect(toSearchRow(hit({ type: 'show', show }))?.genres).toEqual(['drama', 'crime', 'thriller']);
+      expect(toSearchRow(hit({ type: 'show', show }))?.genres).toEqual(['Drama', 'Crime', 'Thriller']);
     });
 
     it('should leave out a missing year, genres and poster', () => {
@@ -61,7 +61,7 @@ describe('toSearchRow', () => {
         title: '1x01 Pilot',
         type: 'Episode',
         tag: 'Jan 21, 2008',
-        genres: ['drama', 'science fiction'],
+        genres: ['Drama', 'Science Fiction'],
       });
     });
 
@@ -115,9 +115,14 @@ describe('toSearchRow', () => {
       type: 'personal',
       ids: { trakt: 1, slug: 'popular-horror' },
       user: { username: 'lish408' },
+      item_count: 1250,
     };
 
-    expect(toSearchRow(hit({ type: 'list', list }))).toMatchObject({ type: 'List', tag: 'lish408' });
+    expect(toSearchRow(hit({ type: 'list', list }))).toMatchObject({
+      type: 'List',
+      tag: 'lish408',
+      genres: ['1,250 items'],
+    });
   });
 
   it('should return null when the named object is missing', () => {

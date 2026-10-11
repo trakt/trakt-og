@@ -919,10 +919,6 @@ input {
   color: var(--color-search-year-text);
 }
 
-.genre {
-  text-transform: capitalize;
-}
-
 .all-results a,
 .reuse-term {
   display: flex;

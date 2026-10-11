@@ -1,6 +1,6 @@
-import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
-import { userManager } from '$lib/auth/userManager';
-import { toast } from '$lib/components/toast/toast.svelte';
+import { authenticatedFetch } from '../../auth/authenticatedFetch.ts';
+import { userManager } from '../../auth/userManager.ts';
+import { toast } from '../toast/toast.svelte.ts';
 import { createRecentSearches } from './createRecentSearches.svelte.ts';
 import { requestRecentSearch } from './requestRecentSearch.ts';
 

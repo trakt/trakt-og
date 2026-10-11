@@ -11,7 +11,7 @@ import type { ViewerSettings } from '../lib/settings/ViewerSettings.ts';
  * Pages inherit settings and datePreferences from this layout; server loaders can read them through parent().
  * The header uses the same response. Any failure renders logged-out; only the client renews the token.
  * It also sets `locals.theme`, the viewer's Dark Knight setting, which hooks.server.ts writes onto `<html>` so the
- * first paint is already in the right theme. Logged out stays light, as OG did.
+ * first paint is already in the right theme. Logged out is Dark Knight, og's default.
  * `platform` picks the store the mobile splash links, and `phone` keeps its phone wording in a browser's device mode.
  */
 export async function load({ fetch, locals, cookies, request }) {

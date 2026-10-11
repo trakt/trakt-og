@@ -149,7 +149,7 @@ describe('root layout theme', () => {
         HttpResponse.json({ ...SETTINGS, browsing: { ...SETTINGS.browsing, dark_knight: value } })),
     );
 
-  it.each([['true', 'dark'], ['false', 'light'], ['auto', 'system'], ['', 'light']])(
+  it.each([['true', 'dark'], ['false', 'light'], ['auto', 'system'], ['', 'dark']])(
     'should render dark_knight "%s" as the %s theme',
     async (value, expected) => {
       darkKnight(value);
@@ -157,7 +157,7 @@ describe('root layout theme', () => {
     },
   );
 
-  it('should leave the theme to the light default when logged out or the settings fail', async () => {
+  it('should leave the theme to the Dark Knight default when logged out or the settings fail', async () => {
     expect(await theme(null)).toBeUndefined();
     server.use(http.get('https://apiz.trakt.tv/users/settings', () => new HttpResponse(null, { status: 401 })));
     expect(await theme()).toBeUndefined();

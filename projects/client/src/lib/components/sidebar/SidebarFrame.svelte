@@ -12,8 +12,10 @@
   button pinned to the sidebar's bottom (like Trakt admin's) and the `[` key toggle it, and the choice is kept for a year in the
   `sidebar_collapsed` cookie, so the loader can render it the same way. The panel opens between the sidebar and the
   content and pushes the content over, like OG's advanced filters. Under 768px everything stacks and doesn't collapse.
+  With `prevHref` or `nextHref`, `p` or left and `n` or right follow them, like OG's chart pages.
 -->
 <script lang="ts">
+import { goto } from '$app/navigation';
 import Icon from '$lib/icons/Icon.svelte';
 import sidebarIcon from '$lib/icons/regular/sidebar.svg?raw';
 import type { Snippet } from 'svelte';
@@ -28,10 +30,14 @@ interface Props {
   rail?: Snippet;
   panel?: Snippet;
   panelOpen?: boolean;
+  /** The previous and next page, for the `p` and `n` keys. */
+  prevHref?: string;
+  nextHref?: string;
   children: Snippet;
 }
 
-const { label, collapsed = false, sidebar, rail, panel, panelOpen = false, children }: Props = $props();
+const { label, collapsed = false, sidebar, rail, panel, panelOpen = false, prevHref, nextHref, children }: Props =
+  $props();
 
 let hidden = $derived(collapsed);
 
@@ -40,11 +46,23 @@ function toggle() {
   document.cookie = `sidebar_collapsed=1; path=/; samesite=lax; max-age=${hidden ? 31_536_000 : 0}`;
 }
 
+const pageKeys: Readonly<Record<string, 'prev' | 'next'>> = {
+  p: 'prev',
+  ArrowLeft: 'prev',
+  n: 'next',
+  ArrowRight: 'next',
+};
+
 function onkeydown(event: KeyboardEvent) {
-  if (event.key !== '[' || event.altKey || event.ctrlKey || event.metaKey || event.defaultPrevented) return;
+  if (event.altKey || event.ctrlKey || event.metaKey || event.defaultPrevented) return;
   if (event.target instanceof HTMLElement && event.target.closest('input, textarea, select, [contenteditable]')) return;
+  const direction = pageKeys[event.key];
+  const href = direction && { prev: prevHref, next: nextHref }[direction];
+  if (event.key !== '[' && !href) return;
   event.preventDefault();
-  toggle();
+  // eslint-disable-next-line svelte/no-navigation-without-resolve -- the hrefs come in built
+  if (href) goto(href);
+  else toggle();
 }
 </script>
 

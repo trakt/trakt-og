@@ -28,8 +28,10 @@ import type QuickIcons from '$lib/components/media/QuickIcons.svelte';
 import { quickIconFill } from '$lib/components/media/quickIconFill';
 import CountPill from '$lib/components/sidebar/CountPill.svelte';
 import IconSwitch from '$lib/components/sidebar/IconSwitch.svelte';
+import RailGroup from '$lib/components/sidebar/RailGroup.svelte';
 import SidebarFrame from '$lib/components/sidebar/SidebarFrame.svelte';
 import SidebarSection from '$lib/components/sidebar/SidebarSection.svelte';
+import SidebarTitle from '$lib/components/sidebar/SidebarTitle.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import angleLeft from '$lib/icons/light/angle-left.svg?raw';
 import angleRight from '$lib/icons/light/angle-right.svg?raw';
@@ -335,8 +337,8 @@ const title = $derived(`${data.target === 'my' ? 'My ' : ''}${data.calendar.labe
 
 <SidebarFrame label="Calendar" collapsed={data.sidebar.collapsed} {panelOpen}>
   {#snippet sidebar()}
-    <div class="title-row">
-      <h1>
+    <SidebarTitle {tools}>
+      {#snippet heading()}
         <Dropdown variant="title" label="Pick a calendar">
           {#snippet trigger()}<span class="eyebrow">{data.target === 'my' ? 'My' : 'All'}</span><span class="name"
             >{data.calendar.label}</span>{/snippet}
@@ -356,9 +358,8 @@ const title = $derived(`${data.target === 'my' ? 'My ' : ''}${data.calendar.labe
             {/each}
           </ul>
         </Dropdown>
-      </h1>
-      <div class="tools">{@render tools()}</div>
-    </div>
+      {/snippet}
+    </SidebarTitle>
 
     <div class="counts">
       {#if kind !== 'movies'}
@@ -418,7 +419,7 @@ const title = $derived(`${data.target === 'my' ? 'My ' : ''}${data.calendar.labe
   {/snippet}
 
   {#snippet rail()}
-    <div class="rail-group">
+    <RailGroup>
       <a class="today" href={href(data.target, data.calendar.slug)} title="Today, {todayLabel}">
         <small>{monthName(data.today, 'short')}</small><b>{Number(data.today.slice(8))}</b>
       </a>
@@ -429,15 +430,15 @@ const title = $derived(`${data.target === 'my' ? 'My ' : ''}${data.calendar.labe
         <a href={href(data.target, data.calendar.slug, data.window.next)} rel="next"><Icon svg={angleRight}
             label="Next month" /></a>
       </div>
-    </div>
-    <div class="rail-group rail-tools">{@render tools()}</div>
-    <div class="rail-group">
+    </RailGroup>
+    <RailGroup tools>{@render tools()}</RailGroup>
+    <RailGroup>
       {#each views as view (view.value)}
         <button type="button" class="rail-view" aria-pressed={display.view === view.value} title="{view.label} view"
           onclick={() => setDisplay({ view: view.value })}><Icon svg={view.icon} label="{view.label} view" /></button>
       {/each}
-    </div>
-    <div class="rail-group"><WeekBars {weeks} marked={markedWeek} onpick={jump} /></div>
+    </RailGroup>
+    <RailGroup><WeekBars {weeks} marked={markedWeek} onpick={jump} /></RailGroup>
   {/snippet}
 
   {#snippet panel()}
@@ -457,26 +458,6 @@ const title = $derived(`${data.target === 'my' ? 'My ' : ''}${data.calendar.labe
 </SidebarFrame>
 
 <style>
-.title-row {
-  display: flex;
-  align-items: flex-end;
-  gap: var(--space-base-block);
-
-  & h1 {
-    flex: 1;
-    min-inline-size: 0;
-    margin: 0;
-    font-size: inherit;
-  }
-}
-
-.tools {
-  display: flex;
-  flex: none;
-  gap: var(--space-tools);
-  margin-block-end: -4px;
-}
-
 .counts {
   display: flex;
   flex-wrap: wrap;
@@ -511,23 +492,6 @@ const title = $derived(`${data.target === 'my' ? 'My ' : ''}${data.calendar.labe
   }
 }
 
-/* The collapsed rail: today, the month, the tools, the views and the weeks, in spaced groups. */
-.rail-group {
-  display: flex;
-  flex: none;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-base-block);
-  inline-size: 100%;
-  padding-block: var(--space-base-inline);
-  border-block-start: 1px solid var(--color-sidebar-rule);
-
-  &:first-child {
-    padding-block-start: 0;
-    border-block-start: 0;
-  }
-}
-
 .today {
   display: grid;
   justify-items: center;
@@ -553,15 +517,6 @@ const title = $derived(`${data.target === 'my' ? 'My ' : ''}${data.calendar.labe
 
   &:is(:hover, :focus-visible) {
     background-color: var(--color-control-hover-bg);
-  }
-}
-
-.rail-tools {
-  gap: var(--space-xs-inline);
-
-  & :global(:is(.trigger, .toggle)) {
-    inline-size: var(--rail-tool-width);
-    justify-content: center;
   }
 }
 

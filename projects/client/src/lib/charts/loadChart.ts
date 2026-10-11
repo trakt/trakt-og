@@ -155,8 +155,10 @@ export async function loadChart(
 
   // Watch now filters by the viewer's country and favorites, which the API reads from their token.
   const viewer = Object.keys(ignore).length > 0 || filters.watchnow.length > 0;
+  // Filtered, the sidebar counts "120 of 735 shows", so the chart's unfiltered size comes along: one row, public.
+  const filtered = Object.keys(filterQuery).length > 0;
   const layout = parent();
-  const [response, { datePreferences, settings }, filterSources] = await Promise.all([
+  const [response, { datePreferences, settings }, filterSources, unfiltered] = await Promise.all([
     chart === 'recommendations'
       ? (token ? fetchRecommendations(fetch, token, type, filterQuery) : signIn(url))
       : token && viewer
@@ -166,6 +168,9 @@ export async function loadChart(
     // The sidebar shows watch-now filters as service tiles, so it needs the country's services.
     filters.watchnow.length > 0
       ? layout.then(({ settings }) => fetchSources(fetch, watchNowCountry(settings)))
+      : undefined,
+    chart !== 'recommendations' && filtered
+      ? fetchRows(api({ fetch }), type, chart, period, { extended: 'full,images', page: 1, limit: 1 })
       : undefined,
   ]);
   if (response === 'signed-out') signIn(url);
@@ -188,9 +193,13 @@ export async function loadChart(
     watchNowFavorites: favorites,
     cards: response.rows.map((row) => toChartCard(row, { chart, now: new Date(), order: datePreferences.order })),
     page: extractPageMeta(headers, page),
-    /** The chart's size, for the trending under-title. */
+    /** The chart's size, for the sidebar's count. Recommendations send no paging, so theirs is 0. */
     itemCount: positiveInt(headers.get('x-pagination-item-count'), 0),
+    /** Without filters: what the count is out of. Left out when nothing is filtered or that request failed. */
+    totalCount: unfiltered ? positiveInt(unfiltered.headers.get('x-pagination-item-count'), 0) : undefined,
     /** Everyone watching something on the chart right now. Only trending sends it. */
     watcherCount: positiveInt(headers.get('x-trending-user-count'), 0),
+    /** The sidebar starts collapsed: SidebarFrame's cookie, so SSR renders it as the viewer left it. */
+    sidebarCollapsed: cookies.get('sidebar_collapsed') !== undefined,
   };
 }

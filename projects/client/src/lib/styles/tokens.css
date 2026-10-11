@@ -2634,6 +2634,7 @@
   --font-size-sidebar-section: 11px;
   --letter-spacing-sidebar-label: 0.09em;
   --color-sidebar-label: #8c8c8c;
+  --color-sidebar-note: #b5b5b5; /* a sidebar's under-title */
   --color-sidebar-rule: var(--color-frame-border);
   --color-sidebar-pill-bg: #232323;
   --color-sidebar-pill-border: #3b3b3b;

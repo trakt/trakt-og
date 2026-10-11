@@ -1,6 +1,7 @@
 <!--
-  One chart page: the Frame sidebar with the chart nav, then the
-  flush fanart grid and the bottom pagination. `/shows/[chart]`, `/movies/[chart]` and `/movies/boxoffice` render it.
+  One chart page in a SidebarFrame, like the calendar's: the chart picker (Shows or Movies over the chart's name) with
+  the fade/hide and filter tools, the counts, the under-title and the applied filters in the sidebar, then the flush
+  fanart grid and the bottom pagination. `/shows/[chart]`, `/movies/[chart]` and `/movies/boxoffice` render it.
 -->
 <script lang="ts">
 import { goto, invalidateAll } from '$app/navigation';
@@ -20,23 +21,26 @@ import {
   fadeHideOptions,
   matchesFadeHide,
 } from '$lib/components/filters/fadeHide';
-import Frame from '$lib/components/frame/Frame.svelte';
+import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import FrameGrid from '$lib/components/frame/FrameGrid.svelte';
-import FrameNav from '$lib/components/frame/FrameNav.svelte';
 import FanartCard from '$lib/components/media/FanartCard.svelte';
 import { quickIconFill } from '$lib/components/media/quickIconFill';
 import NoResults from '$lib/components/empty/NoResults.svelte';
 import PageNav from '$lib/components/pagination/PageNav.svelte';
 import { pageHref } from '$lib/components/pagination/pageWindow';
+import CountPill from '$lib/components/sidebar/CountPill.svelte';
+import RailGroup from '$lib/components/sidebar/RailGroup.svelte';
+import SidebarFrame from '$lib/components/sidebar/SidebarFrame.svelte';
+import SidebarTitle from '$lib/components/sidebar/SidebarTitle.svelte';
 import { overlay } from '$lib/overlay/overlay';
 import { chartFilters } from '$lib/charts/chartFilters';
 import { chartLinks } from '$lib/charts/chartLinks';
-import { isPeriodChart } from '$lib/charts/chartNames';
+import { type ChartName, isPeriodChart } from '$lib/charts/chartNames';
 import { chartPeriodText } from '$lib/charts/chartPeriod';
 import type { HeaderUser } from '$lib/components/header/HeaderUser';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
 import type { loadBoxOffice } from '$lib/charts/loadBoxOffice';
-import type { loadChart } from '$lib/charts/loadChart';
+import type { loadChart, MediaType } from '$lib/charts/loadChart';
 
 type Props = {
   data: Awaited<ReturnType<typeof loadChart> | ReturnType<typeof loadBoxOffice>> & {
@@ -141,15 +145,27 @@ function applyFilters(filters: AdvancedFilters, period: string | undefined) {
   goto(search ? `${path}?${search}` : path);
 }
 
-const links = $derived(
+// The picker lists both types' charts, Shows then Movies, so the title switches either way.
+const pickerLinks = (type: MediaType) =>
   chartLinks({
-    type: data.type,
-    current: data.chart,
+    type,
+    current: type === data.type ? data.chart : '',
     period: data.period,
     search: page.url.searchParams,
     signedIn: data.user !== null,
-  }),
-);
+  });
+// Played has no link in the picker, like OG's nav, so its name comes from here.
+const CHART_NAMES: Readonly<Record<ChartName | 'boxoffice', string>> = {
+  trending: 'Trending',
+  recommendations: 'Recommendations',
+  anticipated: 'Anticipated',
+  popular: 'Popular',
+  favorited: 'Favorited',
+  watched: 'Watched',
+  played: 'Played',
+  library: 'Libraries',
+  boxoffice: 'Box Office',
+};
 </script>
 
 <svelte:head>
@@ -175,55 +191,83 @@ const links = $derived(
   {/if}
 {/snippet}
 
-<Frame {title} {prevHref} {nextHref} panel={advanced ? filtersPanel : undefined} {panelOpen}>
-  {#snippet subtitle()}
-    {#if data.chart === 'boxoffice'}
-      {data.description}
-    {:else if data.chart === 'trending'}
-      <b>{data.watcherCount.toLocaleString('en-US')}</b> {data.watcherCount === 1 ? 'watcher' : 'watchers'} of
-      <b>{data.itemCount.toLocaleString('en-US')}</b> {data.itemCount === 1 ? noun : data.type}!
-    {:else if data.chart === 'popular'}
-      The most popular {data.type} for <strong>all time</strong>.
-    {:else if data.chart === 'recommendations'}
-      Your personalized {noun} recommendations.
-    {:else if data.chart === 'anticipated'}
-      The most anticipated {data.type} based on the number of lists a {noun} appears on.
-    {:else if data.chart === 'favorited'}
-      The most favorited {data.type} for <b>{periodText}</b>.
-    {:else if data.chart === 'watched'}
-      The most watched {data.type} for <b>{periodText}</b>. Sorted by number of unique watchers.
-    {:else if data.chart === 'played'}
-      The most played {data.type} for <b>{periodText}</b>. Sorted by number of plays.
-    {:else}
-      {title} added to libraries for <b>{periodText}</b>. Sorted by number of owners.
-    {/if}
-  {/snippet}
+<!-- The picker's hrefs come built by chartLinks, query included, so resolve() has nothing to add. -->
+<!-- eslint-disable svelte/no-navigation-without-resolve -->
 
-  {#snippet icons()}
-    {#if menu}
-      <FadeHideMenu value={fadeHide} {options} cookie={data.type} onchange={save} />
-    {/if}
-    {#if advanced}
-      <AdvancedFiltersToggle bind:open={panelOpen} bind:button={funnel} controls="{panelId}-filters"
-        active={advanced.count > 0} count={vip ? advanced.count : 0} />
-    {/if}
-  {/snippet}
+{#snippet tools()}
+  {#if menu}
+    <FadeHideMenu value={fadeHide} {options} cookie={data.type} variant="default" onchange={save} />
+  {/if}
+  {#if advanced}
+    <AdvancedFiltersToggle bind:open={panelOpen} bind:button={funnel} controls="{panelId}-filters" regular
+  active={advanced.count > 0} count={vip ? advanced.count : 0} />
+  {/if}
+{/snippet}
 
+<SidebarFrame label="{title} charts" collapsed={data.sidebarCollapsed} {prevHref} {nextHref}
+  panel={advanced ? filtersPanel : undefined} {panelOpen}>
   {#snippet sidebar()}
-    {#if advanced && advanced.count > 0 && !vip}
+    <SidebarTitle tools={menu || advanced ? tools : undefined}>
+      {#snippet heading()}
+        <Dropdown variant="title" label="Pick a chart">
+          {#snippet trigger()}<span class="eyebrow">{title}</span><span class="name">{CHART_NAMES[data.chart]}</span
+            >{/snippet}
+          {#each ['shows', 'movies'] as const as type, i (type)}
+            {#if i > 0}<hr />{/if}
+            <ul>
+              <li class="header">{type === 'shows' ? 'Shows' : 'Movies'}</li>
+              {#each pickerLinks(type) as link (link.href)}
+                <li><a href={link.href} aria-current={link.current ? 'page' : undefined}>{link.label}</a></li>
+              {/each}
+            </ul>
+          {/each}
+        </Dropdown>
+      {/snippet}
+    </SidebarTitle>
+
+    <div class="counts">
+      {#if data.chart === 'boxoffice' || data.chart === 'recommendations'}
+        <CountPill count={data.cards.length} label={data.type} one={noun} />
+      {:else}
+        <CountPill count={data.itemCount} total={data.totalCount} label={data.type} one={noun} />
+        {#if data.chart === 'trending'}
+          <CountPill count={data.watcherCount} label="watchers" one="watcher" />
+        {/if}
+      {/if}
+    </div>
+
+    <!-- Trending's under-title was its counts, which the pills now carry. -->
+    {#if data.chart !== 'trending'}
+      <p class="subtitle">
+        {#if data.chart === 'boxoffice'}
+          {data.description}
+        {:else if data.chart === 'popular'}
+          The most popular {data.type} for <strong>all time</strong>.
+        {:else if data.chart === 'recommendations'}
+          Your personalized {noun} recommendations.
+        {:else if data.chart === 'anticipated'}
+          The most anticipated {data.type} based on the number of lists a {noun} appears on.
+        {:else if data.chart === 'favorited'}
+          The most favorited {data.type} for <b>{periodText}</b>.
+        {:else if data.chart === 'watched'}
+          The most watched {data.type} for <b>{periodText}</b>. Sorted by number of unique watchers.
+        {:else if data.chart === 'played'}
+          The most played {data.type} for <b>{periodText}</b>. Sorted by number of plays.
+        {:else}
+          {title} added to libraries for <b>{periodText}</b>. Sorted by number of owners.
+        {/if}
+      </p>
+    {/if}
+
+    {#if advanced && advanced.count > 0}
       <AppliedFilters tags={advanced.tags} tiles={advanced.tiles} {vip} clearHref={page.url.pathname}
         onedit={() => (panelOpen = true)} />
     {/if}
-    <FrameNav heading="Trakt" {links}>
-      {#snippet current()}
-        {#if advanced && advanced.count > 0 && vip}
-          <AppliedFilters tags={advanced.tags} tiles={advanced.tiles} {vip} clearHref={page.url.pathname}
-            onedit={() => (panelOpen = true)} />
-        {/if}
-      {/snippet}
-    </FrameNav>
   {/snippet}
 
+  {#snippet rail()}
+    {#if menu || advanced}<RailGroup tools>{@render tools()}</RailGroup>{/if}
+  {/snippet}
 
   {#if data.cards.length > 0}
     <FrameGrid>
@@ -264,9 +308,25 @@ const links = $derived(
       <NoResults />
     </div>
   {/if}
-</Frame>
+</SidebarFrame>
 
 <style>
+.counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-base-block);
+}
+
+.subtitle {
+  margin: 0;
+  color: var(--color-sidebar-note);
+  font-size: var(--font-size-control);
+
+  & :is(b, strong) {
+    color: var(--color-frame-text);
+  }
+}
+
 .page-nav:has(:global(nav)) {
   border-block-end: 1px solid var(--color-frame-border);
 }

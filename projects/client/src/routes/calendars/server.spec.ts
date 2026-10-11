@@ -17,7 +17,7 @@ describe('route: /calendars', () => {
     expect(locationFor('fake-token')).toBe('/calendars/my/shows-movies');
   });
 
-  it('should open All Shows signed out', () => {
-    expect(locationFor(null)).toBe('/calendars/shows');
+  it('should open All Premieres signed out', () => {
+    expect(locationFor(null)).toBe('/calendars/premieres');
   });
 });

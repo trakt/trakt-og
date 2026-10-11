@@ -53,11 +53,11 @@ describe('loadSearch', () => {
     expect(url.pathname).toBe('/search/show');
     expect(Object.fromEntries(url.searchParams)).toMatchObject({ query: 'breaking', page: '2', limit: '36' });
     expect(seen.at(0)?.headers.get('authorization')).toBeNull();
-    expect(data).toMatchObject({ query: 'breaking', count: 80, countCapped: false });
+    expect(data.query).toBe('breaking');
     expect(data.page).toEqual({ type: 'paginated', current: 2, total: 3 });
   });
 
-  it('should cap public search limits and mark a count that may be capped', async () => {
+  it('should cap public search limits at 50', async () => {
     server.use(http.get('https://apiz.trakt.tv/search/:type', ({ request }) => {
       seen.push(request);
       return HttpResponse.json([{ type: 'show', show: SHOW }], {
@@ -72,7 +72,7 @@ describe('loadSearch', () => {
     expect(new URL(seen.at(0)?.url ?? '').searchParams.get('limit')).toBe('50');
 
     expect(seen.map((request) => request.headers.get('authorization'))).toEqual([null]);
-    expect(data.countCapped).toBe(true);
+    expect(data.page).toEqual({ type: 'paginated', current: 1, total: 1 });
   });
 
   const viewerSearch = (token: string, path = '/search/shows?query=breaking&hide=watched,watchlist,rated') =>
@@ -129,7 +129,7 @@ describe('loadSearch', () => {
   });
 
   it('should show the empty state for a blank query without calling the API', async () => {
-    expect((await search('/search?query=%20')).count).toBe(0);
+    expect((await search('/search?query=%20')).cards).toEqual([]);
     expect((await search('/search/users?query=%20', { type: 'users' })).users).toEqual([]);
     expect(seen).toEqual([]);
   });
@@ -167,7 +167,7 @@ describe('loadSearch', () => {
       });
       expect(data.users.map((card) => card.title)).toEqual(['Sean']);
       expect(data.users.at(0)?.tags).toEqual([{ text: 'VIP' }]);
-      expect(data).toMatchObject({ cards: [], lists: [], count: 140, countCapped: false });
+      expect(data).toMatchObject({ cards: [], lists: [] });
       expect(data.page).toEqual({ type: 'paginated', current: 2, total: 4 });
     });
 

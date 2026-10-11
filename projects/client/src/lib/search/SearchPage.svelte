@@ -1,8 +1,8 @@
 <!--
-  The search results page: the Frame sidebar with the result count, the v3 note and the type
-  nav, then the card grid in the viewer's search image type, list rows on the Lists tab or avatar cards on the Users
-  tab, and the bottom pagination.
-  The frame is dark in every theme, which covers OG's forced dark knight.
+  The search results page in a SidebarFrame, like the charts': the type picker ("Search Results" over the type, its
+  menu grouped like the header search) with the fade/hide tool, the count, the under-title, the small-screen search
+  field and the page pager in the sidebar, then the card grid in the viewer's search image type, list rows on the Lists
+  tab or avatar cards on the Users tab. The frame is dark in every theme, which covers OG's forced dark knight.
 -->
 <script lang="ts">
 import { page } from '$app/state';
@@ -10,17 +10,21 @@ import { goto } from '$app/navigation';
 import { resolve } from '$app/paths';
 import defaultCover from '$lib/assets/profile-cover-default.jpg';
 import FadeHideMenu from '$lib/components/filters/FadeHideMenu.svelte';
+import SearchField from '$lib/components/filters/SearchField.svelte';
 import { type FadeHide, matchesFadeHide } from '$lib/components/filters/fadeHide';
 import { searchHideHref } from '$lib/search/searchHideHref';
-import Frame from '$lib/components/frame/Frame.svelte';
+import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import FrameGrid from '$lib/components/frame/FrameGrid.svelte';
-import FrameNav from '$lib/components/frame/FrameNav.svelte';
 import FanartCard from '$lib/components/media/FanartCard.svelte';
 import ListRow from '$lib/components/media/ListRow.svelte';
 import { quickIconFill } from '$lib/components/media/quickIconFill';
 import NoResults from '$lib/components/empty/NoResults.svelte';
-import PageNav from '$lib/components/pagination/PageNav.svelte';
 import { pageHref } from '$lib/components/pagination/pageWindow';
+import PagePager from '$lib/components/sidebar/PagePager.svelte';
+import RailGroup from '$lib/components/sidebar/RailGroup.svelte';
+import RailPager from '$lib/components/sidebar/RailPager.svelte';
+import SidebarFrame from '$lib/components/sidebar/SidebarFrame.svelte';
+import SidebarTitle from '$lib/components/sidebar/SidebarTitle.svelte';
 import { overlay } from '$lib/overlay/overlay';
 import { findSearchType } from '$lib/search/findSearchType';
 import { searchLinks } from '$lib/search/searchLinks';
@@ -33,11 +37,12 @@ type Props = {
 
 const { data }: Props = $props();
 
-// The small-screen "Search Terms" field. The type links carry whatever is typed there (search.js:1-14).
+// The sidebar's search field. The picker's links carry whatever is typed there, like OG's search.js.
 let terms = $derived(data.query);
 
 const type = $derived(findSearchType(data.slug));
-const links = $derived(type ? searchLinks(type, terms.trim(), page.url.searchParams) : []);
+const groups = $derived(type ? searchLinks(type, terms.trim(), page.url.searchParams) : []);
+const paged = $derived(data.page.type === 'paginated' && data.page.total > 1);
 
 // OG named the tab by its model: Show, Movie, Person...
 const META_TYPES: Readonly<Record<string, string>> = {
@@ -92,29 +97,47 @@ function save(next: FadeHide) {
 <!-- The v3 link is another site, which resolve() doesn't cover. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
-<Frame title="Search" {prevHref} {nextHref}>
-  {#snippet icons()}
-    {#if data.filters.visible}
-      <FadeHideMenu value={fadeHide} options={data.filters.options} hideOptions={data.filters.hideOptions}
-        cookie="search" onchange={save} />
-    {/if}
-  {/snippet}
-  {#snippet subtitle()}
-    We found <strong>{data.count.toLocaleString('en-US')}{data.countCapped ? '+' : ''}</strong> results{data.query ? ' for ' : ''}{#if data.query}{data.idMode ? 'ID ' : ''}<strong
-      >{data.query}</strong
-      >{/if}.
-    {#if data.page.type === 'paginated' && data.page.total > 1}
-      You're viewing page <strong>{data.page.current.toLocaleString('en-US')}</strong> of
-      <strong>{data.page.total.toLocaleString('en-US')}</strong>.
+{#snippet tools()}
+  <FadeHideMenu value={fadeHide} options={data.filters.options} hideOptions={data.filters.hideOptions}
+  cookie="search" variant="default" onchange={save} />
+{/snippet}
+
+<SidebarFrame label="Search" collapsed={data.sidebar.collapsed} {prevHref} {nextHref}>
+  {#snippet sidebar()}
+    <SidebarTitle tools={data.filters.visible ? tools : undefined}>
+      {#snippet heading()}
+        <Dropdown variant="title" label="Pick a search type">
+          {#snippet trigger()}<span class="eyebrow">Search Results</span><span class="name">{type?.label}</span
+            >{/snippet}
+          {#each groups as group, i (group.label)}
+            {#if i > 0}<hr />{/if}
+            <ul>
+              <li class="header">{group.label}</li>
+              {#each group.links as link (link.href)}
+                <li><a href={link.href} aria-current={link.current ? 'page' : undefined}>{link.label}</a></li>
+              {/each}
+            </ul>
+          {/each}
+        </Dropdown>
+      {/snippet}
+    </SidebarTitle>
+
+    <!-- The current query, ready to change: Enter searches again, and the picker's links carry what's typed. -->
+    <form action={page.url.pathname} method="get" role="search">
+      <SearchField name="query" label={data.idMode ? 'Search ID' : 'Search terms'}
+        placeholder="What are you looking for?" bind:value={terms} />
+    </form>
+
+    {#if data.page.type === 'paginated' && paged}
+      <PagePager current={data.page.current} total={data.page.total} href={(n) => pageHref(page.url, n)} />
     {/if}
   {/snippet}
 
-  {#snippet sidebar()}
-    <form class="terms" action={page.url.pathname} method="get">
-      <label for="search-terms">{data.idMode ? 'Search ID' : 'Search Terms'}</label>
-      <input id="search-terms" type="search" name="query" placeholder="What are you looking for?" bind:value={terms} />
-    </form>
-    <FrameNav heading="Trakt" {links} />
+  {#snippet rail()}
+    {#if paged}
+      <RailGroup><RailPager unit="page" label="P{data.page.current}" {prevHref} {nextHref} /></RailGroup>
+    {/if}
+    {#if data.filters.visible}<RailGroup tools>{@render tools()}</RailGroup>{/if}
   {/snippet}
 
   {#if data.users.length > 0}
@@ -169,42 +192,14 @@ function save(next: FadeHide) {
     </FrameGrid>
   {/if}
 
-  {#if hasResults}
-    <div class="page-nav">
-      <PageNav {prevHref} {nextHref} />
-    </div>
-  {:else}
+  {#if !hasResults}
     <div class="no-results">
       <NoResults />
     </div>
   {/if}
-</Frame>
+</SidebarFrame>
 
 <style>
-/* OG only showed its own search field below 1200px (`visible-xs visible-sm visible-md`). */
-.terms {
-  margin-block-start: var(--sidenav-nav-gap);
-
-  @media (min-width: 1200px) {
-    display: none;
-  }
-
-  & label {
-    display: block;
-    margin-block-end: var(--space-sm-block);
-    font-family: var(--font-headings);
-    font-size: var(--font-size-h4);
-  }
-
-  & input {
-    inline-size: 100%;
-  }
-}
-
-.page-nav:has(:global(nav)) {
-  border-block-end: 1px solid var(--color-frame-border);
-}
-
 .no-results {
   display: grid;
   place-items: center;

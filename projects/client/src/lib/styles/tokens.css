@@ -21,8 +21,6 @@
   /* Feed icons and URL popovers: */
   --feed-popover-width: 400px;
   --feed-icon-size: 21px;
-  --feed-nav-space: 30px;
-  --feed-nav-top: -2px;
   --feed-title-block: 8px;
   --feed-title-line: 18px;
   --feed-title-icon-size: 20px;
@@ -893,7 +891,6 @@
   --color-filter-icon: light-dark(var(--gray-dark), #fff);
   --color-filter-icon-frame: #fff; /* frame-wrapper h1.filter-dropdown.icon, */
   --font-size-filter-icon-frame: 19px;
-  --frame-icons-offset: 2px; /* centers the title's 36px filter tools on its first line */
   --opacity-faded: 0.15; /* .grid-item.fade-*-on */
 
   /* Toasts */
@@ -1314,15 +1311,11 @@
   /* Chart frame: the sticky sidebar and flush fanart grid of the chart and search pages, dark in both themes
       */
   --sidenav-width: 300px;
-  --sidenav-offset: 15px; /* under the fixed header */
-  --sidenav-nav-gap: 25px; /* above the chart nav */
   --font-size-sidenav-subtitle: 16px;
-  --font-size-sidenav-link: 22px;
   --color-frame-text: #fff;
   --color-frame-border: #2d2d2d;
   --color-frame-heading: #757575;
   --color-frame-disabled: #444;
-  --color-frame-toggle: #666; /* the VIP sidebar toggle */
   --transition-frame: 0.5s;
 
   /* Advanced filters: the funnel, the slide-out panel, its Chosen fields and noUiSliders and the applied tags */

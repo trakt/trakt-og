@@ -99,6 +99,17 @@ describe('toSearchRow', () => {
     expect(row?.tag).toBeUndefined();
   });
 
+  it("should tag people with their age, given today, and what they're known for", () => {
+    const person = {
+      name: 'Hugh Laurie',
+      ids: { trakt: 1, slug: 'hugh-laurie' },
+      birthday: '1959-06-11',
+      known_for_department: 'acting',
+    };
+
+    expect(toSearchRow(hit({ type: 'person', person }), undefined, '2026-10-10')?.genres).toEqual(['Age 67', 'Acting']);
+  });
+
   it('should link lists by id and name official ones', () => {
     const list = { name: 'Best Mindfucks', type: 'official', ids: { trakt: 800238, slug: 'best-mindfucks' } };
 

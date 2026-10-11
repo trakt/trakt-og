@@ -36,6 +36,9 @@ export const searchRowsSchema = z.array(z.object({
   person: z.object({
     ids,
     name: z.string(),
+    birthday: z.string().nullish(),
+    death: z.string().nullish(),
+    known_for_department: z.string().nullish(),
     images: z.object({ headshot: z.array(z.string()).nullish() }).nullish(),
   }).nullish(),
   list: z.object({

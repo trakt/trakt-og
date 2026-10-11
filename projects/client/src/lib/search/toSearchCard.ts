@@ -5,6 +5,7 @@ import type { SearchHit } from './SearchHit.ts';
 import type { SearchImageType } from './SearchImageType.ts';
 import type { SeasonOf } from '../overlay/createOverlay.svelte.ts';
 import { type DateOrder, formatDate } from '../utils/formatDate.ts';
+import { personTags } from '../people/personTags.ts';
 import { imageUrl } from '../utils/imageUrl.ts';
 
 type Tag = NonNullable<ComponentProps<typeof FanartCard>['tags']>[number];
@@ -146,7 +147,14 @@ export function toSearchCard(hit: SearchHit, options: SearchCardOptions): Search
       // OG drew the headshot over every image type.
       image: imageUrl(person.images?.headshot?.at(0), 'thumb'),
       logoMode: false,
-      tags: typeTags('Person'),
+      // Their age, or when they died, and what they're known for, like the header search.
+      tags: [
+        ...typeTags('Person'),
+        ...personTags(person, { today: now.toISOString().slice(0, 10), order }).map((text) => ({
+          text,
+          kind: 'generic' as const,
+        })),
+      ],
       hideTitle: false,
       released: false,
     };

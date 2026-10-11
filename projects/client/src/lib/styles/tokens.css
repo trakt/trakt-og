@@ -2588,6 +2588,9 @@
   --box-office-padding: 24px 28px 32px;
   --box-office-gap: 18px;
   --box-office-poster-gap: 10px; /* after a film's poster */
+  --box-office-line: 35px;
+  --rail-total-padding: 4px 0 5px;
+  --font-size-box-office-rail-total: 16px; /* the collapsed rail's "$92.5M" */ /* a row's first line: the small quick-icon bar's height */
   --box-office-mast-gap: 10px; /* from the red eyebrow to the weekend's dates */
   --font-size-box-office-eyebrow: 12px;
   --font-size-box-office-heading: 52px;

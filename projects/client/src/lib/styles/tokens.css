@@ -711,6 +711,8 @@
   --color-search-year-bg: #e6e6e6; /* the year pill: light gray with dark text, on the dark panel */
   --color-search-year-text: #111;
   --color-search-pill-line: rgb(255 255 255 / 0.12);
+  --color-tag-badge-line: rgb(255 255 255 / 0.45); /* a certificate's outline, brighter than a pill's */
+  --letter-spacing-tag-badge: 0.03em;
   --color-search-term: light-dark(rgb(0 0 0 / 0.75), rgb(255 255 255 / 0.85));
   --color-search-in-type: light-dark(rgb(0 0 0 / 0.4), rgb(255 255 255 / 0.4));
 
@@ -2585,6 +2587,7 @@
 :root {
   --box-office-padding: 24px 28px 32px;
   --box-office-gap: 18px;
+  --box-office-poster-gap: 10px; /* after a film's poster */
   --box-office-mast-gap: 10px; /* from the red eyebrow to the weekend's dates */
   --font-size-box-office-eyebrow: 12px;
   --font-size-box-office-heading: 52px;
@@ -2602,7 +2605,7 @@
   --box-office-row-padding: 14px; /* above and below a film */
   --box-office-bar-height: 4px;
   --box-office-share-height: 28px;
-  --box-office-opening-poster-width: 40px;
+  --box-office-opening-poster-width: 32px;
   --box-office-opening-gap: 4px; /* between the films */
   --box-office-opening-title-gap: 6px; /* from a film's title to its pills */
   --color-box-office-row-target: rgb(237 28 36 / 0.14); /* the film picked in the share strip, --brand-primary faint */

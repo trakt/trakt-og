@@ -15,12 +15,13 @@ const movie = {
 } as unknown as MovieResponse;
 
 describe('mapper: toOpeningRow', () => {
-  it('should say which day it opens, or Today', () => {
-    expect(toOpeningRow({ released: '2026-10-16', movie }, '2026-10-10')).toMatchObject({
+  it('should link the film with its poster and short pills', () => {
+    expect(toOpeningRow({ movie })).toEqual({
+      id: 1043653,
       href: '/movies/verity-2026',
-      day: 'Fri, Oct 16',
-      tags: [{ text: 'R', kind: 'light' }, { text: 'Thriller' }],
+      title: 'Verity',
+      poster: 'https://media.trakt.tv/images/movies/001/043/653/posters/thumb/a.jpg.webp',
+      tags: [{ text: 'R' }, { text: 'Thriller' }],
     });
-    expect(toOpeningRow({ released: '2026-10-10', movie }, '2026-10-10').day).toBe('Today');
   });
 });

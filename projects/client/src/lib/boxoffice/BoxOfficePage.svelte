@@ -1,7 +1,7 @@
 <!--
   The weekend box office (`/movies/boxoffice`) in a SidebarFrame, like the charts: the chart picker and the list's
   description, This Weekend (the top 10's total, #1's share, the openers and a strip of each film's share) and the
-  films Opening This Week in the sidebar. The content is the chart as a table: rank, poster, title with its pills,
+  films opening on Friday in the sidebar. The content is the chart as a table: rank, poster, title with its pills,
   its run, the weekend gross against #1's, its share, and the quick icons (no favorite, as in OG).
 -->
 <script lang="ts">
@@ -71,16 +71,16 @@ const runPill = (run: WeekInRelease) => ({
       </ul>
     </SidebarSection>
 
-    {#if data.opening.length > 0}
-      <SidebarSection id="opening" title="Opening This Week" open={data.sidebar.opening} remember>
+    {#if data.opening.films.length > 0}
+      <SidebarSection id="opening" title="Opening Friday {data.opening.friday}" open={data.sidebar.opening} remember>
         <ul class="opening">
-          {#each data.opening as film (film.id)}
+          {#each data.opening.films as film (film.id)}
             <li>
               <a href={film.href}>
                 <span class="poster">{#if film.poster}<img src={film.poster} alt="" loading="lazy" />{/if}</span>
                 <span class="film">
                   <span class="title">{film.title}</span>
-                  <TagPills tags={[{ text: film.day, kind: 'primary' }, ...film.tags]} />
+                  <TagPills tags={film.tags} />
                 </span>
               </a>
             </li>
@@ -92,8 +92,12 @@ const runPill = (run: WeekInRelease) => ({
 
   <div class="box-office">
     <header class="mast">
-      <p class="eyebrow">Weekend box office · U.S.</p>
-      <h2>{data.weekend.label}</h2>
+      <div>
+        <p class="eyebrow">Weekend box office · U.S.</p>
+        <h2>{data.weekend.label}</h2>
+      </div>
+      <p class="note">Weekend estimates, updated Monday mornings.<br />Weeks in release count from the U.S. release
+        date.</p>
     </header>
 
     <table>
@@ -129,7 +133,7 @@ const runPill = (run: WeekInRelease) => ({
             <td class="number share-cell">{percent(share(row.revenue))}</td>
             <td class="actions">
               <QuickIcons small fill={quickIconFill({ state, datePreferences: data.datePreferences })}
-                rating={row.rating} released favorite={false} watchNow="play"
+                rating={row.rating} released favorite={false}
                 ratingTarget={{ type: 'movie', id: row.id, title: row.title }}
                 watchTarget={{ type: 'movie', id: row.id, title: row.title, runtime: row.runtime }} />
             </td>
@@ -138,7 +142,6 @@ const runPill = (run: WeekInRelease) => ({
       </tbody>
     </table>
 
-    <p class="note">Weekend estimates, updated Monday mornings. Weeks in release count from the U.S. release date.</p>
   </div>
 </SidebarFrame>
 
@@ -176,7 +179,10 @@ const runPill = (run: WeekInRelease) => ({
 
   & dd {
     margin: 0;
+    font-family: var(--font-box-office-figures);
+    font-stretch: condensed;
     font-size: var(--font-size-box-office-kpi);
+    line-height: 1;
     font-weight: var(--font-weight-headings-heavy);
     font-variant-numeric: tabular-nums;
   }
@@ -227,24 +233,26 @@ const runPill = (run: WeekInRelease) => ({
   }
 }
 
-/* Opening This Week: a small poster beside the title, the day and the film's pills. */
+/* Opening Friday: a poster beside the title and the film's pills. */
 .opening {
   display: grid;
-  gap: var(--space-sm-block);
-  margin: 0;
+  gap: var(--box-office-opening-gap);
+  margin: 0 calc(-1 * var(--space-sm-inline));
   padding: 0;
   list-style: none;
 
   & a {
     display: grid;
     grid-template-columns: var(--box-office-opening-poster-width) minmax(0, 1fr);
-    gap: var(--space-sm-inline);
+    gap: var(--space-base-inline);
     align-items: center;
+    padding: var(--space-sm-block) var(--space-sm-inline);
+    border-radius: var(--radius-control);
     color: var(--color-frame-text);
     text-decoration: none;
 
-    &:is(:hover, :focus-visible) .title {
-      color: var(--brand-primary);
+    &:is(:hover, :focus-visible) {
+      background-color: var(--color-control-hover-bg);
     }
   }
 
@@ -264,14 +272,15 @@ const runPill = (run: WeekInRelease) => ({
 
   & .film {
     display: grid;
-    gap: var(--space-xs-block);
+    gap: var(--box-office-opening-title-gap);
     min-inline-size: 0;
   }
 
   & .title {
     overflow: hidden;
-    font-size: var(--font-size-control);
+    font-size: var(--font-size-base);
     font-weight: var(--font-weight-headings);
+    line-height: 1.2;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
@@ -286,8 +295,15 @@ const runPill = (run: WeekInRelease) => ({
 }
 
 .mast {
-  display: grid;
-  gap: var(--space-xs-block);
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-lg-inline);
+
+  & > div {
+    display: grid;
+    gap: var(--space-xs-block);
+  }
 
   & .eyebrow {
     margin: 0;
@@ -300,9 +316,16 @@ const runPill = (run: WeekInRelease) => ({
 
   & h2 {
     margin: 0;
+    font-family: var(--font-box-office-figures);
+    font-stretch: condensed;
     font-size: var(--font-size-box-office-heading);
     font-weight: var(--font-weight-headings-heavy);
-    line-height: 1;
+    line-height: 0.95;
+    text-transform: uppercase;
+  }
+
+  & .note {
+    text-align: end;
   }
 }
 
@@ -324,13 +347,23 @@ th {
 }
 
 td {
-  padding: var(--box-office-cell-padding);
+  padding: var(--box-office-row-padding) var(--box-office-cell-padding);
   border-block-end: 1px solid var(--color-frame-border);
   vertical-align: middle;
 }
 
-tbody tr:hover {
-  background-color: var(--color-box-office-row-hover);
+tbody tr {
+  /* Clear of the fixed header when the share strip jumps to it. */
+  scroll-margin-block-start: calc(var(--header-height) + var(--box-office-gap));
+
+  &:hover {
+    background-color: var(--color-box-office-row-hover);
+  }
+
+  /* The film picked in the sidebar's share strip. */
+  &:target {
+    background-color: var(--color-box-office-row-target);
+  }
 }
 
 .number {
@@ -340,7 +373,10 @@ tbody tr:hover {
 td.rank {
   inline-size: var(--box-office-rank-width);
   color: var(--color-box-office-rank-muted);
+  font-family: var(--font-box-office-figures);
+  font-stretch: condensed;
   font-size: var(--font-size-box-office-rank);
+  line-height: 1;
   font-weight: var(--font-weight-headings-heavy);
   text-align: center;
 
@@ -354,11 +390,11 @@ th.rank {
 }
 
 td.poster {
-  inline-size: var(--box-office-poster-width);
   padding-inline-end: 0;
 
   & a {
     display: block;
+    inline-size: var(--box-office-poster-width);
     aspect-ratio: 2 / 3;
     border-radius: var(--radius-control);
     overflow: hidden;
@@ -418,6 +454,11 @@ td.film {
 td.actions {
   inline-size: 1%;
   white-space: nowrap;
+
+  /* On the row, not on a card: no bar behind the icons, so hover and the picked film tint through. */
+  & :global(.quick-icons) {
+    background: none;
+  }
 }
 
 .note {

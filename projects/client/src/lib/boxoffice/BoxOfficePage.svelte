@@ -484,9 +484,11 @@ td.film {
     }
   }
 
+  /* Like the cards' year: smaller and lighter after the title. */
   & .year {
-    margin-inline-start: var(--space-xs-inline);
+    margin-inline-start: 0.25em;
     color: var(--color-sidebar-label);
+    font-size: var(--font-size-base);
     font-weight: var(--font-weight-headings-light);
   }
 }

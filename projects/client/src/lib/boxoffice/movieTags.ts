@@ -8,7 +8,7 @@ const runtime = (minutes: number) =>
 const titleize = (slug: string) => slug.replaceAll('-', ' ').replace(/\b\w/g, (letter) => letter.toUpperCase());
 
 /**
- * A box office film's pills: its certificate (pale), its runtime ("1h 54m") and its first two genres. `short` keeps
+ * A box office film's pills: its certificate, its runtime ("1h 54m") and its first two genres. `short` keeps
  * the certificate and one genre, for the narrow sidebar.
  */
 export function movieTags(
@@ -16,7 +16,7 @@ export function movieTags(
   { short = false }: { short?: boolean } = {},
 ): TagPill[] {
   return [
-    ...(movie.certification ? [{ text: movie.certification, kind: 'light' as const }] : []),
+    ...(movie.certification ? [{ text: movie.certification }] : []),
     ...(movie.runtime && !short ? [{ text: runtime(movie.runtime) }] : []),
     ...(movie.genres ?? []).slice(0, short ? 1 : GENRES).map((genre) => ({ text: titleize(genre) })),
   ];

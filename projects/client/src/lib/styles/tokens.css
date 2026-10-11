@@ -2586,17 +2586,25 @@
   --box-office-padding: 24px 28px 32px;
   --box-office-gap: 18px;
   --font-size-box-office-eyebrow: 12px;
-  --font-size-box-office-heading: 34px;
-  --font-size-box-office-rank: 32px;
+  --font-size-box-office-heading: 52px;
+  --font-size-box-office-rank: 46px;
   --font-size-box-office-gross: 22px;
   --font-size-box-office-share: 18px;
-  --font-size-box-office-kpi: 22px;
+  --font-size-box-office-kpi: 30px;
+  /* The trade-paper numbers: a condensed face the system already has (macOS's DIN Condensed, Windows' Bahnschrift),
+     so nothing extra loads; elsewhere Figtree. */
+  --font-box-office-figures: 'DIN Condensed', 'Bahnschrift Condensed', Bahnschrift, 'Roboto Condensed', 'Arial Narrow',
+    var(--font-headings);
   --box-office-rank-width: 48px;
-  --box-office-poster-width: 46px;
+  --box-office-poster-width: 54px;
   --box-office-cell-padding: 8px;
+  --box-office-row-padding: 14px; /* above and below a film */
   --box-office-bar-height: 4px;
   --box-office-share-height: 28px;
-  --box-office-opening-poster-width: 30px;
+  --box-office-opening-poster-width: 40px;
+  --box-office-opening-gap: 4px; /* between the films */
+  --box-office-opening-title-gap: 6px; /* from a film's title to its pills */
+  --color-box-office-row-target: rgb(237 28 36 / 0.14); /* the film picked in the share strip, --brand-primary faint */
   --color-box-office-rank-muted: #7d7d7d; /* ranks past the top 3 */
   --color-box-office-bar-track: #2b2b2b;
   --color-box-office-row-hover: #222;

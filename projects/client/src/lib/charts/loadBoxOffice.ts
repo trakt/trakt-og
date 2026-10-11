@@ -9,6 +9,8 @@ const BOX_OFFICE_LIST_ID = '1267169';
 
 type LoadBoxOfficeParams = {
   fetch: typeof fetch;
+  /** The request's cookies, for the sidebar's collapsed state. */
+  cookies: { get: (name: string) => string | undefined };
   /** The layout's data, for the viewer's date format. */
   parent: () => Promise<{ datePreferences: { order: DateOrder } }>;
 };
@@ -17,7 +19,7 @@ type LoadBoxOfficeParams = {
  * Loads the weekend box office: the top 10 with their gross, and the list's
  * description for the under-title. Both are public, so they go without the token. There's no paging.
  */
-export async function loadBoxOffice({ fetch, parent }: LoadBoxOfficeParams) {
+export async function loadBoxOffice({ fetch, cookies, parent }: LoadBoxOfficeParams) {
   const client = api({ fetch });
   const [response, list, { datePreferences }] = await Promise.all([
     client.movies.boxoffice({ query: { extended: 'full,images' } }),
@@ -36,5 +38,7 @@ export async function loadBoxOffice({ fetch, parent }: LoadBoxOfficeParams) {
     page: { type: 'paginated' as const, current: 1, total: 1 },
     /** The under-title and meta description. OG read it off the list, so a list we can't load leaves it blank. */
     description: list.status === 200 ? (list.body.description ?? '') : '',
+    /** The sidebar starts collapsed: SidebarFrame's cookie, so SSR renders it as the viewer left it. */
+    sidebarCollapsed: cookies.get('sidebar_collapsed') !== undefined,
   };
 }

@@ -105,6 +105,21 @@ describe('loadChart hide menu', () => {
     expect(data.fadeHide).toEqual({ fade: [], hide: ['watched', 'watchlisted', 'rated'] });
   });
 
+  it("should start the sidebar collapsed when SidebarFrame's cookie says so", async () => {
+    server.use(http.get('https://apiz.trakt.tv/shows/trending', ({ request }) => respond(request)));
+    const data = await loadChart({
+      fetch: globalThis.fetch,
+      token: null,
+      cookies: { get: (name) => (name === 'sidebar_collapsed' ? '1' : undefined) },
+      parent: () => Promise.resolve({ datePreferences: { order: 'mdy' }, settings: null }),
+      url: new URL('https://og.test/shows/trending'),
+      type: 'shows',
+      chart: 'trending',
+    });
+
+    expect(data.sidebarCollapsed).toBe(true);
+  });
+
   it('should keep the public request when the API has nothing to drop', async () => {
     server.use(http.get('https://apiz.trakt.tv/shows/trending', ({ request }) => respond(request)));
     await trending('fake-token', 'rated');
@@ -135,6 +150,8 @@ describe('loadChart advanced filters', () => {
       chart: 'watched',
       period: 'monthly',
     });
+  // Filtered, the unfiltered size loads alongside (one row), so the chart's own request is the other one.
+  const chartRequest = () => seen.find((request) => new URL(request.url).searchParams.get('limit') !== '1');
   const chart = () =>
     http.get('https://apiz.trakt.tv/shows/watched/monthly', ({ request }) => {
       seen.push(request);
@@ -145,7 +162,7 @@ describe('loadChart advanced filters', () => {
     server.use(chart());
     const data = await watched(null, 'genres=+drama,+comedy&status=-ended&years=2000-2010&page=2');
 
-    const query = new URL(seen.at(0)?.url ?? '').searchParams;
+    const query = new URL(chartRequest()?.url ?? '').searchParams;
     expect(query.get('genres')).toBe('drama,comedy');
     expect(query.get('genres_operator')).toBe('and');
     expect(query.get('statuses')).toBe('-ended');
@@ -153,6 +170,32 @@ describe('loadChart advanced filters', () => {
     expect(query.get('page')).toBe('2');
     expect(data.filters.genres).toEqual({ values: ['drama', 'comedy'], mode: 'all' });
     expect(data.filterSources).toBeUndefined();
+  });
+
+  it('should load the unfiltered size alongside, so the sidebar counts "12 of 735"', async () => {
+    server.use(
+      http.get('https://apiz.trakt.tv/shows/watched/monthly', ({ request }) => {
+        seen.push(request);
+        const filtered = new URL(request.url).searchParams.has('genres');
+        return HttpResponse.json([{ watcher_count: 3, play_count: 4, show: SHOW }], {
+          headers: { 'X-Pagination-Item-Count': filtered ? '12' : '735' },
+        });
+      }),
+    );
+    const data = await watched(null, 'genres=+drama');
+
+    const unfiltered = seen.map((request) => new URL(request.url).searchParams).find((query) => !query.has('genres'));
+    expect(unfiltered?.get('limit')).toBe('1');
+    expect(data.itemCount).toBe(12);
+    expect(data.totalCount).toBe(735);
+  });
+
+  it('should load only the chart when nothing is filtered', async () => {
+    server.use(chart());
+    const data = await watched(null, '');
+
+    expect(seen).toHaveLength(1);
+    expect(data.totalCount).toBeUndefined();
   });
 
   it("should filter watch now with the token and load the picked services for the viewer's country", async () => {
@@ -168,8 +211,8 @@ describe('loadChart advanced filters', () => {
     );
     const data = await watched('fake-token', 'watchnow=favorites');
 
-    expect(seen.at(0)?.headers.get('authorization')).toBe('Bearer fake-token');
-    expect(new URL(seen.at(0)?.url ?? '').searchParams.get('watchnow')).toBe('favorites');
+    expect(chartRequest()?.headers.get('authorization')).toBe('Bearer fake-token');
+    expect(new URL(chartRequest()?.url ?? '').searchParams.get('watchnow')).toBe('favorites');
     expect(data.watchNowCountry).toBe('gb');
     expect(data.watchNowFavorites).toEqual(['netflix']);
     expect([...(data.filterSources?.keys() ?? [])]).toEqual(['netflix']);

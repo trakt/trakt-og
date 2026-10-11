@@ -3,7 +3,7 @@
   was and the panel covering the links (a manual popover, so it draws in the top layer, and its ::backdrop dims and
   blurs the page). The panel holds the field, the type chips (the ID lookups sit in their own menu at the end of the
   row), the autocomplete rows and a strip of keyboard hints.
-  Typing waits 300ms, then shows up to 3 results and a "View all" row. Arrows move the highlight (a combobox with
+  Typing waits 300ms, then shows up to 5 results and a "View all" row. Arrows move the highlight (a combobox with
   `aria-activedescendant`), Enter opens it or submits the form, Esc or the close button shuts the panel and hands focus back
   to the magnifier, and a click outside (on the dimmed page) closes it, keeping what was typed. A bare `/` anywhere else
   opens it.

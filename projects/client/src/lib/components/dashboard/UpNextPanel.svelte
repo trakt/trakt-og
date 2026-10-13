@@ -12,6 +12,7 @@ import NoData from '$lib/components/empty/NoData.svelte';
 import DashboardOnDeckCard from '$lib/components/dashboard/DashboardOnDeckCard.svelte';
 import type { OnDeckItem } from '$lib/components/media/OnDeckItem';
 import PosterGrid from '$lib/components/media/PosterGrid.svelte';
+import { visibleColumns } from '$lib/components/media/visibleColumns';
 import PageNavigator from '$lib/components/page-navigator/PageNavigator.svelte';
 import { rowCount } from '$lib/dashboard/rowCount';
 import { savedRows } from '$lib/dashboard/savedRows';
@@ -35,6 +36,9 @@ interface Props {
 const { upNext, username, isVip, settings = toDashboardSettings({ settings: null }).upNext }: Props = $props();
 
 const PER_ROW = 6;
+// The grid's width, so a smaller tablet's four columns get whole rows.
+let width = $state(0);
+const perRow = $derived(visibleColumns(width, PER_ROW));
 const storageKey = $derived(`on_deck:${username}`);
 // The cards only render in the browser, once the streamed promise lands, so SSR never needs the saved count.
 let saved = $derived(browser ? savedRows.read(storageKey) : null);
@@ -74,16 +78,16 @@ const STREAMING = ' + streaming on your ';
   {@render panel(true, pending)}
 {:then items}
   {@const visible = items.filter((item) => !overlay.state('show', item.showId).dropped)}
-  {@const rows = rowCount({ rows: saved, items: visible.length, perRow: PER_ROW })}
+  {@const rows = rowCount({ rows: saved, items: visible.length, perRow })}
   {#snippet cards()}
     {#if visible.length === 0}
       <div class="notice">
   <NoData>Start watching some TV shows and they'll show up here.</NoData>
 </div>
     {:else}
-      <div class="cards">
+      <div class="cards" bind:clientWidth={width}>
   <PosterGrid columns={PER_ROW}>
-          {#each visible.slice(0, rows.rows * PER_ROW) as item (item.showId)}
+          {#each visible.slice(0, rows.rows * perRow) as item (item.showId)}
             <DashboardOnDeckCard initial={item} {username} {settings} />
           {/each}
         </PosterGrid>

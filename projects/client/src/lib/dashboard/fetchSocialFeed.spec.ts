@@ -1,7 +1,7 @@
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
-import { fetchSocialFeed, fetchSocialItems } from './fetchSocialFeed.ts';
+import { fetchRecentMembers, fetchSocialFeed, fetchSocialItems } from './fetchSocialFeed.ts';
 import { socialFeedFixture } from './socialFeedFixture.ts';
 import { socialWindows } from './socialWindows.ts';
 
@@ -110,6 +110,31 @@ describe('fetchSocialFeed', () => {
 
     server.use(http.get(FEED, () => HttpResponse.json({ nope: true })));
     await expect(feed()).rejects.toThrow('invalid');
+  });
+});
+
+describe('fetchRecentMembers', () => {
+  it("should read who was active from the last 24 hours' newest page only", async () => {
+    const [first] = socialFeedFixture.rows(now);
+    server.use(http.get(FEED, ({ request }) => {
+      const url = new URL(request.url);
+      seen.push(url);
+      return HttpResponse.json([first], { headers: { 'x-pagination-page-count': '3' } });
+    }));
+
+    const members = await fetchRecentMembers({ get, now, datePreferences });
+
+    expect(seen.map((url) => url.searchParams.get('page'))).toEqual(['1']);
+    expect(seen.at(0)?.searchParams.get('start_at')).toBe('2026-09-29T12:00:00.000Z');
+    expect(members.map(({ name }) => name)).toEqual(['Kristin']);
+  });
+
+  it('should list each member once, most recently active first, like the Social Feed', async () => {
+    server.use(byWindow());
+
+    expect((await fetchRecentMembers({ get, now, datePreferences })).map(({ name }) => name)).toEqual(
+      (await feed()).recent.map(({ name }) => name),
+    );
   });
 });
 

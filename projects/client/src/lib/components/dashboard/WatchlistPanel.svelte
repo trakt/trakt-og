@@ -9,6 +9,7 @@ import type { Snippet } from 'svelte';
 import { browser } from '$app/environment';
 import NoData from '$lib/components/empty/NoData.svelte';
 import PosterGrid from '$lib/components/media/PosterGrid.svelte';
+import { visibleColumns } from '$lib/components/media/visibleColumns';
 import PageNavigator from '$lib/components/page-navigator/PageNavigator.svelte';
 import type { DashboardWatchlist } from '$lib/dashboard/fetchWatchlist';
 import { rowCount } from '$lib/dashboard/rowCount';
@@ -33,6 +34,9 @@ interface Props {
 const { watchlist, username, isVip, datePreferences }: Props = $props();
 
 const PER_ROW = 6;
+// The grid's width, so a smaller tablet's four columns get whole rows.
+let width = $state(0);
+const perRow = $derived(visibleColumns(width, PER_ROW));
 const storageKey = $derived(`list:${username}`);
 // The cards only render in the browser, once the streamed promise lands, so SSR never needs the saved count.
 let saved = $derived(browser ? savedRows.read(storageKey) : null);
@@ -66,16 +70,16 @@ const allText = (total: number) => `All ${total.toLocaleString('en-US')} ${total
 {#await watchlist}
   {@render panel(true, pending)}
 {:then list}
-  {@const rows = rowCount({ rows: saved, items: list.cards.length, perRow: PER_ROW })}
+  {@const rows = rowCount({ rows: saved, items: list.cards.length, perRow })}
   {#snippet cards()}
     {#if list.cards.length === 0}
       <div class="notice">
   <NoData>Add some TV shows and movies to this list and they'll show up here.</NoData>
 </div>
     {:else}
-      <div class="cards">
+      <div class="cards" bind:clientWidth={width}>
   <PosterGrid columns={PER_ROW}>
-          {#each list.cards.slice(0, rows.rows * PER_ROW) as item (item.key)}
+          {#each list.cards.slice(0, rows.rows * perRow) as item (item.key)}
             <ListItemPoster {item} {datePreferences} />
           {/each}
         </PosterGrid>

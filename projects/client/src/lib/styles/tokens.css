@@ -1038,14 +1038,29 @@
   --color-profile-pill-border: rgb(255 255 255 / 0.14);
   --color-profile-pill-text: rgb(255 255 255 / 0.78);
   --color-profile-pill-icon: rgb(255 255 255 / 0.55);
-  /* An incoming follow request: a question bar across the top of the cover, under the site header, in a blue glass
-     so it reads apart from the header and the art. */
-  --profile-request-bar-height: 56px;
+  /* An incoming follow request: a second glass deck under the site header, the header's glass and art tint with a
+     blue wash, so it reads as part of the header but apart from it. */
+  --profile-request-bar-height: 52px;
   --font-size-profile-request: 15px;
-  --color-profile-request-bar-bg: color-mix(in srgb, var(--brand-secondary) 24%, rgb(12 12 14 / 0.82));
-  --color-profile-request-bar-edge: rgb(255 255 255 / 0.12);
-  --color-profile-deny-hover: var(--brand-primary-darken);
-  --shadow-profile-deny-hover: 0 4px 14px rgb(237 28 36 / 0.4);
+  --font-size-profile-request-tag: 11px;
+  --profile-request-tag-tracking: 0.1em;
+  --profile-request-avatar: 28px;
+  --profile-request-button-height: 32px;
+  --color-profile-request-wash: rgb(0 158 223 / 0.24); /* --brand-secondary, over the glass and its art tint */
+  --color-profile-request-tag: #8be08b; /* --brand-success, lifted for text on dark */
+  --color-profile-request-divider: rgb(255 255 255 / 0.15);
+  /* Outlined buttons on a darker tint of their own color: green approves, red denies, neutral blocks (red on hover). */
+  --color-profile-approve-border: rgb(92 184 92 / 0.85);
+  --color-profile-approve-bg: color-mix(in srgb, var(--brand-success) 18%, rgb(10 10 10 / 0.85));
+  --color-profile-approve-hover-bg: color-mix(in srgb, var(--brand-success) 32%, rgb(10 10 10 / 0.9));
+  --color-profile-deny-border: rgb(237 28 36 / 0.85);
+  --color-profile-deny-text: #ff6b70;
+  --color-profile-deny-bg: color-mix(in srgb, var(--brand-primary) 18%, rgb(10 10 10 / 0.85));
+  --color-profile-deny-hover-bg: color-mix(in srgb, var(--brand-primary) 32%, rgb(10 10 10 / 0.9));
+  --color-profile-block-text: #e6e6e6;
+  --color-profile-block-bg: rgb(10 10 10 / 0.6);
+  --shadow-profile-approve-hover: 0 4px 14px rgb(92 184 92 / 0.3);
+  --shadow-profile-deny-hover: 0 4px 14px rgb(237 28 36 / 0.3);
   /* The private pill: a status, so amber rather than the facts' white. */
   --color-profile-pill-private-border: rgb(255 193 77 / 0.55);
   --color-profile-pill-private-bg: color-mix(in srgb, #ffc14d 16%, rgb(18 18 18 / 0.6));

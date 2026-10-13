@@ -1,13 +1,12 @@
 <!--
-  A day's Upcoming Schedule rows, one per show: the air time, a small poster, the show with its episodes and network,
-  and the premiere or finale tag, which drops under the text in a narrow panel. In a day column the poster sits beside
-  the time, show and tag stacked. "Show N more" opens the rest.
+  A day's Upcoming Schedule rows, one per show, in the same order as the cards: a small poster, then the show, its
+  episodes, and the calendar's tags (the premiere or finale, the air time, the network). "Show N more" opens the rest.
 -->
 <script lang="ts">
 import posterPlaceholder from '$lib/assets/placeholders/poster.png';
 import type { ScheduleLayout } from '$lib/dashboard/toScheduleLayout';
 import ScheduleEpisodes from './ScheduleEpisodes.svelte';
-import ScheduleTag from './ScheduleTag.svelte';
+import ScheduleTags from './ScheduleTags.svelte';
 
 const { rows }: { rows: Pick<ScheduleLayout['week'][number], 'shown' | 'more'> } = $props();
 
@@ -15,25 +14,18 @@ let expanded = $state(false);
 const shown = $derived(expanded ? [...rows.shown, ...rows.more] : rows.shown);
 </script>
 
-<!-- The popular shows page takes a network filter og hasn't built yet; resolve() only takes routes that exist. -->
+<!-- Show pages are linked by slug paths built in the mapper. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
 <ul>
   {#each shown as row (row.key)}
     <li class="row">
-      <span class="time">{row.time ?? ''}</span>
       <img class="poster" src={row.poster ?? posterPlaceholder} alt="" loading="lazy" decoding="async" />
-      <span class="what">
+      <span class="text">
         <a class="show" href={row.href}>{row.title}</a>
-        <ScheduleEpisodes {row} inline>
-          {#snippet after()}
-            {#if row.network}
-              <span class="network">· {#if row.network.href}<a href={row.network.href}>{row.network.name}</a>{:else}{row.network.name}{/if}</span>
-            {/if}
-          {/snippet}
-        </ScheduleEpisodes>
+        <ScheduleEpisodes {row} />
+        <ScheduleTags {row} />
       </span>
-      {#if row.label}<span class="tag"><ScheduleTag label={row.label} /></span>{/if}
     </li>
   {/each}
 </ul>
@@ -52,61 +44,16 @@ ul {
 
 .row {
   display: grid;
-  grid-template-columns: var(--schedule-row-time) var(--schedule-row-poster) minmax(0, 1fr) auto;
+  grid-template-columns: var(--schedule-day-poster) minmax(0, 1fr);
   gap: var(--space-schedule-row-gap);
-  align-items: center;
-  padding: var(--space-schedule-row);
+  align-items: start;
+  padding: var(--space-schedule-day-row) var(--space-schedule-row);
   border-block-start: 1px solid var(--color-schedule-separator);
   font-size: var(--font-size-schedule-row);
 
   &:hover {
     background-color: var(--color-schedule-row-hover);
   }
-
-  @container (width < 500px) {
-    grid-template-columns: var(--schedule-row-time-narrow) var(--schedule-row-poster) minmax(0, 1fr);
-
-    & .tag {
-      grid-column: 3;
-    }
-  }
-
-  @container (width < 360px) {
-    grid-template-columns: var(--schedule-day-poster) minmax(0, 1fr);
-    grid-template-areas: 'poster time' 'poster what' 'poster tag';
-    row-gap: var(--space-schedule-episodes);
-    align-content: start;
-    align-items: start;
-    padding-block: var(--space-schedule-day-row);
-
-    & .time {
-      grid-area: time;
-    }
-
-    & .poster {
-      grid-area: poster;
-    }
-
-    & .what {
-      display: grid;
-      grid-area: what;
-    }
-
-    & .tag {
-      grid-area: tag;
-      justify-self: start;
-    }
-  }
-}
-
-.time,
-.network {
-  color: var(--color-schedule-muted);
-  font-size: var(--font-size-small);
-}
-
-.time {
-  white-space: nowrap;
 }
 
 .poster {
@@ -115,33 +62,25 @@ ul {
   object-fit: cover;
 }
 
-.what {
-  display: flex;
-  flex-wrap: wrap;
-  column-gap: var(--space-schedule-row-gap);
-  align-items: baseline;
+.text {
+  display: grid;
+  justify-items: start;
   min-inline-size: 0;
-}
 
-.show {
-  font-family: var(--font-headings);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-headings);
-}
-
-.network {
-  margin-inline-start: var(--space-schedule-code);
-
-  & a {
-    color: inherit;
+  & > :global(*) {
+    max-inline-size: 100%;
   }
 }
 
-.tag {
-  justify-self: end;
+.show {
+  color: var(--color-text);
+  font-family: var(--font-headings);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-headings);
+  line-height: var(--line-height-headings);
 
-  @container (width < 500px) {
-    justify-self: start;
+  &:hover {
+    color: var(--color-link);
   }
 }
 

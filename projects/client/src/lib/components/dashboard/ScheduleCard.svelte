@@ -1,6 +1,7 @@
 <!--
-  One of the Upcoming Schedule spotlight's cards: the poster, the show or movie, its episodes, the premiere or finale
-  tag with "9:00 pm on CBS", and Watch Now (or Buy Tickets) when there's somewhere to watch it.
+  One of the Upcoming Schedule spotlight's cards: the poster, then the show, its episodes, the calendar's tags (the
+  premiere or finale, the air time, the network), and a Watch Now (or Buy Tickets) button when there's somewhere to
+  watch it.
 -->
 <script lang="ts">
 import type { ScheduleItem } from '$lib/dashboard/ScheduleItem';
@@ -10,7 +11,7 @@ import Icon from '$lib/icons/Icon.svelte';
 import play from '$lib/icons/trakt/play2-thick.svg?raw';
 import tickets from '$lib/icons/trakt/tickets.svg?raw';
 import ScheduleEpisodes from './ScheduleEpisodes.svelte';
-import ScheduleTag from './ScheduleTag.svelte';
+import ScheduleTags from './ScheduleTags.svelte';
 
 interface Props {
   row: ScheduleRow;
@@ -20,7 +21,7 @@ interface Props {
 const { row, onwatchnow }: Props = $props();
 </script>
 
-<!-- The popular shows page takes a network filter og hasn't built yet; resolve() only takes routes that exist. -->
+<!-- Show pages are linked by slug paths built in the mapper. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
 <article class="card">
@@ -28,18 +29,11 @@ const { row, onwatchnow }: Props = $props();
   <div class="text">
     <h4><a href={row.href}>{row.title}</a></h4>
     <div class="episodes"><ScheduleEpisodes {row} /></div>
-    {#if row.label || row.time}
-      <div class="meta">
-        {#if row.label}<ScheduleTag label={row.label} />{/if}
-        {#if row.time}
-          <span>{row.time}{row.network ? ' on ' : ''}{#if row.network?.href}<a href={row.network.href}>{row.network.name}</a>{:else}{row.network?.name}{/if}</span>
-        {/if}
-      </div>
-    {/if}
+    <ScheduleTags {row} />
     {#if row.watchNow}
       {@const watchNow = row.watchNow}
       <button type="button" class="watch-now" aria-haspopup="dialog" onclick={() => onwatchnow(watchNow)}>
-        <span class="icon"><Icon svg={watchNow.button.cinemaOnly ? tickets : play} /></span>
+        <Icon svg={watchNow.button.cinemaOnly ? tickets : play} />
         {watchNow.button.cinemaOnly ? 'Buy Tickets' : 'Watch Now'}
       </button>
     {/if}
@@ -50,7 +44,7 @@ const { row, onwatchnow }: Props = $props();
 .card {
   display: flex;
   gap: var(--space-schedule-card-gap);
-  padding: var(--space-schedule-card);
+  padding: var(--space-schedule-card-padding);
   border-inline-start: var(--border-schedule-card) solid var(--brand-primary);
   background-color: var(--color-surface);
 }
@@ -65,55 +59,51 @@ const { row, onwatchnow }: Props = $props();
 
 .text {
   display: grid;
-  gap: var(--space-schedule-line);
   align-content: start;
+  justify-items: start;
   min-inline-size: 0;
 }
 
 h4 {
   margin: 0;
   font-size: var(--font-size-h4);
+  font-weight: var(--font-weight-headings);
+
+  & a {
+    color: var(--color-text);
+
+    &:hover {
+      color: var(--color-link);
+    }
+  }
 }
 
 .episodes {
+  inline-size: 100%;
   min-inline-size: 0;
-}
-
-.meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-schedule-line);
-  align-items: center;
-  color: var(--color-schedule-muted);
-  font-size: var(--font-size-small);
-
-  & a {
-    color: inherit;
-  }
+  line-height: var(--line-height-large);
 }
 
 .watch-now {
-  justify-self: start;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: inherit;
-  font-family: var(--font-headings);
-  font-size: var(--font-size-schedule-tag);
-  line-height: var(--line-height-base);
-  text-transform: uppercase;
+  display: inline-flex;
+  gap: var(--space-schedule-watch-now-icon);
+  align-items: center;
+  min-block-size: var(--control-height-small);
+  margin-block-start: var(--space-schedule-watch-now);
+  padding: 0 var(--space-control-inline);
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius-control);
+  background-color: var(--color-control-bg);
+  color: var(--color-control-text);
+  font: inherit;
+  font-size: var(--font-size-tab);
+  font-weight: var(--font-weight-control);
+  line-height: 1;
   cursor: pointer;
 
   &:hover {
-    color: var(--color-link);
+    border-color: var(--color-control-border-hover);
+    background-color: var(--color-control-hover-bg);
   }
-}
-
-.icon {
-  display: inline-block;
-  margin-inline-end: var(--space-schedule-watch-now-icon);
-  font-size: var(--font-size-schedule-watch-now-icon);
-  line-height: 1;
-  vertical-align: top;
 }
 </style>

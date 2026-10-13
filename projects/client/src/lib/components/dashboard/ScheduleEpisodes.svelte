@@ -1,19 +1,11 @@
 <!--
-  What a schedule row airs: one or two episodes by number and title ("13x07 Title + 13x08 Title" when `inline`, one a
-  line otherwise), three or more as "1x01–1x08 · 8 episodes" that opens to the list, or a movie's tagline. `after`
-  follows on the same line, inside the summary for a binge so it stays put when the list opens.
+  What a schedule row airs: one or two episodes by number and title, one a line, three or more as
+  "1x01–1x08 8 episodes" that opens to the list, or a movie's tagline.
 -->
 <script lang="ts">
-import type { Snippet } from 'svelte';
 import type { ScheduleRow } from '$lib/dashboard/toScheduleLayout';
 
-interface Props {
-  row: ScheduleRow;
-  inline?: boolean;
-  after?: Snippet;
-}
-
-const { row, inline = false, after }: Props = $props();
+const { row }: { row: ScheduleRow } = $props();
 const { episodes } = $derived(row);
 </script>
 
@@ -26,17 +18,13 @@ const { episodes } = $derived(row);
 
 {#if episodes.length > 2}
   <details>
-  <summary><b>{episodes.at(0)?.number}–{episodes.at(-1)?.number}</b> {episodes.length} episodes{@render after?.()}</summary>
+  <summary><b>{episodes.at(0)?.number}–{episodes.at(-1)?.number}</b> {episodes.length} episodes</summary>
   <ol>
       {#each episodes as item (item.href)}
         <li>{@render episode(item)}</li>
       {/each}
     </ol>
 </details>
-{:else if inline}
-  <span class="line">
-    {#each episodes as item, i (item.href)}{i > 0 ? ' + ' : ''}{@render episode(item)}{/each}{#if episodes.length === 0 && row.tagline}<span class="tagline">{row.tagline}</span>{/if}{@render after?.()}
-  </span>
 {:else}
   {#each episodes as item (item.href)}
     <div class="line">{@render episode(item)}</div>

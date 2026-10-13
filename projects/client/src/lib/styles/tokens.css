@@ -494,7 +494,7 @@
   --color-schedule-bg: light-dark(#eee, var(--dk-bg2));
   --color-schedule-no-data-bg: light-dark(#fafafa, var(--color-no-data-bg));
   --color-schedule-separator: light-dark(#d9d9d9, #444);
-  --color-schedule-muted: light-dark(#777, #999); /* air times, networks, the dates beside day names */
+  --color-schedule-muted: light-dark(#777, #999); /* the dates beside day names */
   --color-schedule-row-hover: light-dark(#e6e6e6, #1f1f1f);
   --schedule-min-height: 380px;
   --space-schedule-split: 30px; /* between the day columns */
@@ -504,27 +504,24 @@
   --font-size-schedule-day: 14px;
   --space-schedule-heading: 12px; /* under a day's h3 */
   --space-schedule-day: 18px; /* between two days */
-  --space-schedule-line: 5px; /* between a card's lines */
+  --space-schedule-line: 4px; /* above the tags, and above a binge's episode list */
+  --space-schedule-tags: 4px; /* between two tags */
   --space-schedule-code: 4px; /* after an episode number, before a day's date */
   --space-schedule-episodes: 2px; /* between a binge's episodes */
-  --space-schedule-card: 12px; /* inside a card, and between two */
+  --space-schedule-card: 12px; /* between two cards */
+  --space-schedule-card-padding: 10px 12px;
   --space-schedule-card-gap: 14px; /* poster to text */
-  --schedule-card-poster: 64px;
+  --schedule-card-poster: 80px;
   --border-schedule-card: 3px;
-  --schedule-row-time: 62px;
-  --schedule-row-time-narrow: 52px;
-  --space-schedule-row: 4px; /* around a row's poster */
+  --space-schedule-row: 4px; /* beside a row's poster and text */
   --space-schedule-more: 6px 4px; /* inside "Show N more" */
-  --schedule-row-poster: 28px;
-  --schedule-day-poster: 40px; /* a row's poster in a day column */
+  --schedule-day-poster: 46px; /* a row's poster in a day column */
   --space-schedule-day-row: 8px; /* above and below a day column's row */
   --space-schedule-row-gap: 10px;
   --font-size-schedule-row: 13px;
   --schedule-nothing-padding: 10px 12px;
-  --font-size-schedule-tag: 11px; /* the episode-type tag and Watch Now */
-  --font-size-schedule-watch-now-icon: 15px;
-  --space-schedule-watch-now-icon: 2px;
-  --schedule-tag-padding: 3px 5px;
+  --space-schedule-watch-now-icon: 6px;
+  --space-schedule-watch-now: 10px; /* above Watch Now */
 
   /* The dashboard's Last 30 Days: stacked bars in the genre tooltip's show and movie colors, week brackets over them,
      and genre-style keys over them. */

@@ -3,7 +3,7 @@
   calendars. On top, the first of them as cards with medium posters (six, then "Show N more"); under it, the next four
   as columns of rows with small posters. Pass the unawaited `fetchSchedule` promise from the loader, so the page
   streams in and this panel spins until it lands, and fails on its own if it doesn't. With `onfilter`, pill buttons
-  under the Calendar link switch the calendar type in place: the old days stay dimmed until the new ones land.
+  under the title switch the calendar type in place: the old days stay dimmed until the new ones land.
 -->
 <script lang="ts">
 import NoData from '$lib/components/empty/NoData.svelte';
@@ -23,22 +23,13 @@ type Days = readonly ScheduleDay[];
 
 interface Props {
   schedule: Promise<Days>;
-  /** The filter, for the help line and the Calendar link. Left out, OG's Shows & Movies. */
+  /** The filter, for the picked pill and the Calendar link. Left out, OG's Shows & Movies. */
   filter?: Filter;
   /** Loads (and saves) another calendar type. Left out, the type buttons don't show. */
   onfilter?: (filter: Filter) => Promise<Days>;
 }
 
 const { schedule, filter = 'shows-movies', onfilter }: Props = $props();
-
-// OG printed the raw filter value; og says what it means.
-const FILTER_NAMES: Readonly<Record<Filter, string>> = {
-  'shows-movies': 'shows',
-  shows: 'shows',
-  premieres: 'premieres',
-  'new-shows': 'new shows',
-  finales: 'finales',
-};
 
 // OG's settings form offered these four. "All shows" is the Shows & Movies calendar the dashboard opens on.
 const TYPES = [
@@ -96,10 +87,8 @@ function watchNow(item: NonNullable<ScheduleItem['watchNow']>) {
   {loading}
   seeMore={{ href: `/calendars/my/${active.filter}`, text: 'Calendar' }}
 >
-  {#snippet help()}All of your {FILTER_NAMES[active.filter]} + movies on your watchlist.{/snippet}
   {#if onfilter}
-    <PillTabs --pill-tabs-justify="flex-end" label="Calendar type" tabs={TYPES}
-      bind:selected={() => selectedType, choose}>
+    <PillTabs label="Calendar type" tabs={TYPES} bind:selected={() => selectedType, choose}>
       {#snippet panel()}{@render body()}{/snippet}
     </PillTabs>
   {:else}

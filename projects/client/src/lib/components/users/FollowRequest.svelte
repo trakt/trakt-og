@@ -1,7 +1,6 @@
 <!--
   An incoming follow request: a second glass deck under the site header, in the header's glass and art tint with a
-  Trakt-blue wash that fades out to the right. A "Follow request" tag (whose request is clear from the profile itself),
-  then Approve, Deny and Block as outlined buttons on a darker tint of their own color. Once answered, the deck says
+  Trakt-blue wash that fades out to the right. An icon and "Neil wants to follow you", then Approve, Deny and Block as outlined buttons on a darker tint of their own color. Once answered, the deck says
   what happened.
 -->
 <script lang="ts">
@@ -38,7 +37,7 @@ const change = (action: 'approve' | 'deny' | 'blockRequest') =>
   <Container>
     <div class="row" aria-live="polite">
       {#if decision === null}
-        <p class="tag"><Icon svg={userPlus} />Follow request<span class="visually-hidden"> from {firstName}</span></p>
+        <p class="question"><Icon svg={userPlus} /><span><b>{firstName}</b> wants to follow you</span></p>
         <div class="actions">
           <button type="button" class="approve" aria-busy={busy} aria-disabled={busy} onclick={() => change('approve')}>
             <Icon svg={checkThick} />Approve
@@ -96,22 +95,14 @@ const change = (action: 'approve' | 'deny' | 'blockRequest') =>
   block-size: var(--profile-request-bar-height);
 }
 
-.tag {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-sm-block);
-  margin: 0;
-  color: var(--color-profile-request-tag);
-  font-size: var(--font-size-profile-request-tag);
-  font-weight: var(--font-weight-headings-heavy);
-  letter-spacing: var(--profile-request-tag-tracking);
-  text-transform: uppercase;
-}
-
+.question,
 .answer {
   margin: 0;
   font-size: var(--font-size-profile-request);
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm-inline);
 
   & b {
     font-weight: var(--font-weight-headings-heavy);
@@ -119,10 +110,6 @@ const change = (action: 'approve' | 'deny' | 'blockRequest') =>
 }
 
 .answer {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm-inline);
-
   & :global(.icon) {
     color: var(--color-profile-approve-text);
   }
@@ -192,15 +179,6 @@ button {
   &[aria-disabled='true'] {
     cursor: wait;
   }
-}
-
-.visually-hidden {
-  position: absolute;
-  inline-size: 1px;
-  block-size: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
 }
 
 @media (prefers-reduced-motion: reduce) {

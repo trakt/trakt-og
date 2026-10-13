@@ -66,6 +66,28 @@ async function fetchWindow(get: SocialGet, window: SocialWindow, datePreferences
   return [first, ...rest].flatMap(({ items }) => items);
 }
 
+/** Each member once, most recent first, up to `RECENT_MEMBERS`. Deleted members have no slug to ask about. */
+function recentMembers(items: readonly SocialItem[]): readonly SocialMember[] {
+  const members = items.map(({ member }) => member).filter(({ slug }) => slug);
+  return members.filter((member, i) => members.findIndex(({ key }) => key === member.key) === i)
+    .slice(0, RECENT_MEMBERS);
+}
+
+type FetchRecentMembersParams = { get: SocialGet; now: Date; datePreferences: DatePreferences };
+
+/**
+ * Up to 10 members the viewer follows who were active in the last 24 hours, most recent first: the ones worth asking
+ * what they're watching. Only the feed's newest page, since the first 10 members are on it.
+ */
+export async function fetchRecentMembers(
+  { get, now, datePreferences }: FetchRecentMembersParams,
+): Promise<readonly SocialMember[]> {
+  const [today] = socialWindows('today', now, datePreferences.timeZone);
+  if (!today) return [];
+  const { items } = await fetchPage(get, today, 1, datePreferences);
+  return recentMembers(items);
+}
+
 type FetchSocialItemsParams = { get: SocialGet; windows: readonly SocialWindow[]; datePreferences: DatePreferences };
 
 /**
@@ -104,12 +126,5 @@ export async function fetchSocialFeed(
     windows: socialWindows('today', now, datePreferences.timeZone),
     datePreferences,
   });
-  const members = items.map(({ member }) => member).filter(({ slug }) => slug);
-
-  return {
-    follows: true,
-    items,
-    recent: members.filter((member, i) => members.findIndex(({ key }) => key === member.key) === i)
-      .slice(0, RECENT_MEMBERS),
-  };
+  return { follows: true, items, recent: recentMembers(items) };
 }

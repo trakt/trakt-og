@@ -2696,6 +2696,16 @@
   --radius-sidebar-pill: 15px;
   --filter-chip-site: 16px; /* a rating chip's site logo */
   --filter-chip-remove: 20px;
+  --font-size-live-now: 30px; /* trending's Live now count */
+  --live-now-split-height: 8px; /* its shows against movies bar */
+  --live-now-split-gap: 2px;
+  --live-now-meter-gap: 2px; /* from the count down to its bar */
+  --live-now-meter-top: 6px; /* extra room under the section's title */
+  --color-live-now-other: light-dark(#d6d6d6, #555); /* the other type's share */
+  --opacity-live-now-key-hover: 0.8;
+  --following-watching-avatar: 32px;
+  --following-watching-gap: 12px; /* between the members */
+  --following-watching-bar-gap: 5px; /* above and below a member's progress bar */
 }
 
 /* Calendar sidebar and views: the heat-map mini month, the rail's week bars, today and pinned dates. */

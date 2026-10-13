@@ -1,7 +1,7 @@
 import { isRedirect } from '@sveltejs/kit';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ViewerSettings } from '../settings/ViewerSettings.ts';
 import { loadChart } from './loadChart.ts';
 
@@ -14,6 +14,8 @@ const server = setupServer(
       headers: { 'X-Pagination-Page': '1', 'X-Pagination-Page-Count': '3' },
     });
   }),
+  // Trending's Live now asks the movies chart too.
+  http.get('https://apiz.trakt.tv/movies/trending', () => HttpResponse.json([])),
 );
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
@@ -87,8 +89,9 @@ describe('loadChart hide menu', () => {
       type: 'shows',
       chart: 'trending',
     });
+  // Live now reads the same chart 250 rows at a time, so only the page's own request is kept.
   const respond = (request: Request) => {
-    seen.push(request);
+    if (new URL(request.url).searchParams.get('limit') !== '250') seen.push(request);
     return request.headers.get('authorization') === 'Bearer stale'
       ? new HttpResponse(null, { status: 401 })
       : HttpResponse.json([{ watchers: 3, show: SHOW }]);
@@ -117,7 +120,7 @@ describe('loadChart hide menu', () => {
       chart: 'trending',
     });
 
-    expect(data.sidebar).toEqual({ collapsed: true, filters: true });
+    expect(data.sidebar).toEqual({ collapsed: true, filters: true, live: true, following: true });
   });
 
   it('should keep the public request when the API has nothing to drop', async () => {
@@ -133,6 +136,45 @@ describe('loadChart hide menu', () => {
 
     expect(seen.map((request) => request.headers.get('authorization'))).toEqual(['Bearer stale', null]);
     expect(data.cards).toHaveLength(1);
+  });
+});
+
+describe('loadChart live now', () => {
+  // Live now is kept for 5 minutes, so this test starts past what the others left.
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(Date.now() + 10 * 60_000);
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("should load trending's Live now from both charts", async () => {
+    server.use(
+      http.get(
+        'https://apiz.trakt.tv/shows/trending',
+        () => HttpResponse.json([{ watchers: 3, show: SHOW }], { headers: { 'X-Trending-User-Count': '6473' } }),
+      ),
+      http.get(
+        'https://apiz.trakt.tv/movies/trending',
+        () => HttpResponse.json([], { headers: { 'X-Trending-User-Count': '2494' } }),
+      ),
+    );
+    const data = await loadChart({
+      fetch: globalThis.fetch,
+      token: null,
+      cookies: { get: () => undefined },
+      parent: () => Promise.resolve({ datePreferences: { order: 'mdy' }, settings: null }),
+      url: new URL('https://og.test/shows/trending'),
+      type: 'shows',
+      chart: 'trending',
+    });
+
+    expect(data.live).toEqual({ shows: 6473, movies: 2494 });
+  });
+
+  it('should leave Live now off the other charts', async () => {
+    expect((await recommendations('fake-token')).live).toBeNull();
   });
 });
 

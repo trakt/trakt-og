@@ -37,6 +37,8 @@ import SidebarTitle from '$lib/components/sidebar/SidebarTitle.svelte';
 import { overlay } from '$lib/overlay/overlay';
 import { chartFilters } from '$lib/charts/chartFilters';
 import ChartPicker from '$lib/charts/ChartPicker.svelte';
+import FollowingWatchingSection from '$lib/charts/FollowingWatchingSection.svelte';
+import LiveNowSection from '$lib/charts/LiveNowSection.svelte';
 import { chartPeriodText } from '$lib/charts/chartPeriod';
 import type { HeaderUser } from '$lib/components/header/HeaderUser';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
@@ -188,7 +190,8 @@ const period = $derived(advanced.config.period);
         <CountPill count={data.cards.length} label={data.type} one={noun} />
       {:else}
         {#if data.chart === 'trending'}
-          <CountPill count={data.watcherCount} label="watchers" one="watcher" />
+          <!-- The API's own count only sums the page's rows; Live now reads the whole chart. -->
+          <CountPill count={data.live?.[data.type] ?? data.watcherCount} label="watchers" one="watcher" />
         {/if}
         <CountPill count={data.itemCount} total={data.totalCount} label={data.type} one={noun} />
       {/if}
@@ -234,6 +237,13 @@ const period = $derived(advanced.config.period);
     {#if advanced.count > 0}
       <AppliedFiltersSection chips={advanced.chips} open={data.sidebar.filters} {vip} clearHref={page.url.pathname}
         onremove={removeChip} />
+    {/if}
+
+    {#if data.live}
+      <LiveNowSection live={data.live} type={data.type} open={data.sidebar.live} />
+    {/if}
+    {#if data.chart === 'trending' && data.user}
+      <FollowingWatchingSection type={data.type} open={data.sidebar.following} datePreferences={data.datePreferences} />
     {/if}
   {/snippet}
 

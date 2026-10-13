@@ -12,6 +12,7 @@ import type { ViewerSettings } from '../settings/ViewerSettings.ts';
 import { recommendationFilters } from './chartFilters.ts';
 import { type ChartAlias, chartAliases, type ChartName, isChartAlias, isPeriodChart } from './chartNames.ts';
 import { type ChartPeriod, chartPeriod } from './chartPeriod.ts';
+import { fetchLiveNow } from './fetchLiveNow.ts';
 import { type ChartRow, toChartCard } from './toChartCard.ts';
 
 export type MediaType = 'shows' | 'movies';
@@ -158,7 +159,7 @@ export async function loadChart(
   // Filtered, the sidebar counts "120 of 735 shows", so the chart's unfiltered size comes along: one row, public.
   const filtered = Object.keys(filterQuery).length > 0;
   const layout = parent();
-  const [response, { datePreferences, settings }, filterSources, unfiltered] = await Promise.all([
+  const [response, { datePreferences, settings }, filterSources, unfiltered, live] = await Promise.all([
     chart === 'recommendations'
       ? (token ? fetchRecommendations(fetch, token, type, filterQuery) : signIn(url))
       : token && viewer
@@ -172,6 +173,7 @@ export async function loadChart(
     chart !== 'recommendations' && filtered
       ? fetchRows(api({ fetch }), type, chart, period, { extended: 'full,images', page: 1, limit: 1 })
       : undefined,
+    chart === 'trending' ? fetchLiveNow(fetch) : null,
   ]);
   if (response === 'signed-out') signIn(url);
   if (!response) error(502, 'The Trakt API could not load this chart.');
@@ -199,10 +201,14 @@ export async function loadChart(
     totalCount: unfiltered ? positiveInt(unfiltered.headers.get('x-pagination-item-count'), 0) : undefined,
     /** Everyone watching something on the chart right now. Only trending sends it. */
     watcherCount: positiveInt(headers.get('x-trending-user-count'), 0),
+    /** Trending's Live now: shows against movies. Null on the other charts or when either didn't load. */
+    live,
     /** The sidebar's own state, so SSR renders it as the viewer left it, like the calendar's. */
     sidebar: {
       collapsed: cookies.get('sidebar_collapsed') !== undefined,
       filters: cookies.get('sidebar_filters') !== 'closed',
+      live: cookies.get('sidebar_live') !== 'closed',
+      following: cookies.get('sidebar_following') !== 'closed',
     },
   };
 }

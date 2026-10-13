@@ -20,6 +20,7 @@ export type DashboardSettings = {
   };
   readonly schedule: {
     readonly filter: DashboardPrefs['upcoming_filter'];
+    readonly movies: DashboardPrefs['upcoming_movies'];
     readonly startDay: DashboardPrefs['upcoming_start_day'];
     readonly poster: DashboardPrefs['upcoming_poster'];
   };

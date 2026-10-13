@@ -16,7 +16,7 @@ describe('toDashboardSettings', () => {
         refresh: false,
         poster: 'show',
       },
-      schedule: { filter: 'shows-movies', startDay: 'today', poster: 'show' },
+      schedule: { filter: 'shows-movies', movies: 'all', startDay: 'today', poster: 'show' },
       recommendations: { ignoreCollected: false, ignoreWatchlisted: false },
       hidden: {
         upNext: false,
@@ -74,12 +74,13 @@ describe('toDashboardSettings', () => {
       upcoming_filter: 'finales',
       upcoming_start_day: 'monday',
       upcoming_poster: 'season',
+      upcoming_movies: 'none',
     } as const;
 
     const settings = toDashboardSettings({ settings: null, prefs });
 
     expect(settings.upNext.poster).toBe('season');
-    expect(settings.schedule).toEqual({ filter: 'finales', startDay: 'monday', poster: 'season' });
+    expect(settings.schedule).toEqual({ filter: 'finales', movies: 'none', startDay: 'monday', poster: 'season' });
   });
 
   it('should hide every section for VIPs', () => {

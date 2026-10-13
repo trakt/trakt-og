@@ -47,12 +47,12 @@ describe('toScheduleLayout', () => {
     it('should say which days before it have nothing on', () => {
       const next = (offset: number) => toScheduleLayout([day(offset, shows(1))])?.spotlight;
 
-      expect(next(1)).toMatchObject({ heading: 'Next up · Tomorrow', nothing: 'Nothing on today.' });
+      expect(next(1)).toMatchObject({ heading: 'Tomorrow', nothing: 'Nothing on today.' });
       expect(next(2)?.nothing).toBe('Nothing on today or tomorrow.');
       expect(next(3)?.nothing).toBe('Nothing on for the next 3 days.');
     });
 
-    it('should name a day before today without "Next up"', () => {
+    it('should name a day before today', () => {
       expect(toScheduleLayout([day(-1, shows(1))])?.spotlight).toMatchObject({ heading: 'Yesterday' });
     });
 

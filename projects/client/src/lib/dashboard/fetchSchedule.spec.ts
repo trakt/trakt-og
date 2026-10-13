@@ -121,7 +121,7 @@ describe('fetchSchedule', () => {
   describe('with the dashboard settings', () => {
     const settingsFor = (schedule: Partial<Parameters<typeof fetchSchedule>[0]['schedule']>) => ({
       ...params,
-      schedule: { filter: 'shows-movies', startDay: 'today', poster: 'show', ...schedule } as const,
+      schedule: { filter: 'shows-movies', movies: 'all', startDay: 'today', poster: 'show', ...schedule } as const,
     });
     const rows = scheduleFixture.rows('2026-09-30');
     const episodeCalendar = (name: string) =>
@@ -156,6 +156,28 @@ describe('fetchSchedule', () => {
       const paths = calendarRequests().map(({ pathname }) => pathname);
       expect(paths.some((path) => path.startsWith('/calendars/my/shows/new/'))).toBe(true);
       expect(paths.some((path) => path.startsWith('/calendars/my/shows/finales/'))).toBe(true);
+    });
+
+    it('should read the movies alone with Shows: None, and the shows alone with Movies: None', async () => {
+      server.use(episodeCalendar('premieres'), movieCalendar, hidden(), watchNow);
+
+      await fetchSchedule(settingsFor({ filter: 'none' }));
+      const movies = calendarRequests().map(({ pathname }) => pathname);
+      seen.length = 0;
+      await fetchSchedule(settingsFor({ filter: 'premieres', movies: 'none' }));
+      const shows = calendarRequests().map(({ pathname }) => pathname);
+
+      expect(movies.every((path) => path.startsWith('/calendars/my/movies/'))).toBe(true);
+      expect(shows.every((path) => path.startsWith('/calendars/my/shows/premieres/'))).toBe(true);
+    });
+
+    it('should read nothing with Shows: None and Movies: None', async () => {
+      server.use(calendar(() => rows), hidden(), watchNow);
+
+      const days = await fetchSchedule(settingsFor({ filter: 'none', movies: 'none' }));
+
+      expect(days).toEqual([]);
+      expect(seen).toHaveLength(0);
     });
 
     it('should only look 40 days ahead for all my TV shows, as OG did', async () => {

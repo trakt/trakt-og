@@ -12,6 +12,7 @@ import type { ViewerSettings } from '../settings/ViewerSettings.ts';
 import type { DashboardSettings } from './DashboardSettings.ts';
 import { fetchSeasonPosters } from './fetchSeasonPosters.ts';
 import type { ScheduleDay } from './ScheduleDay.ts';
+import { scheduleCalendars } from './scheduleCalendars.ts';
 import { scheduleRanges } from './scheduleRanges.ts';
 import { scheduleStart } from './scheduleStart.ts';
 import { scheduleWatchNowPath } from './scheduleWatchNowPath.ts';
@@ -36,15 +37,6 @@ type FetchScheduleParams = {
 const DAYS = 5;
 /** OG's "All my TV shows" filter only looked 40 days ahead. */
 const SHOWS_LOOKAHEAD = 40;
-
-type Filter = DashboardSettings['schedule']['filter'];
-
-// The episode calendars for each filter, with the movies on the watchlist always alongside (
-// `calendar_episodes` and `calendar_movies`). My Shows & Movies already carries both.
-function calendarsFor(filter: Filter) {
-  if (filter === 'shows-movies' || filter === 'shows') return ['shows-movies'] as const;
-  return [filter, 'movies'] as const;
-}
 
 // Watch-now routes are Official-gated and public, so no token goes with them. A failure only costs the item its link.
 async function offersFor(fetch: typeof globalThis.fetch, path: string, country: string) {
@@ -75,8 +67,8 @@ function seasonPosters(fetch: typeof globalThis.fetch, items: readonly CalendarI
 
 /**
  * The viewer's Upcoming Schedule: the first five days from the start day setting with anything on
- * the calendars its filter picks, less what they hid from the calendar and, with that setting (or the premieres filter,
- * as in OG), specials. The worker serves 34 days a request, so one request covers most viewers; only when it holds
+ * the calendars its Shows and Movies picks read (none with neither), less what they hid from the calendar and, with
+ * that setting (or the premieres filter, as in OG), specials. The worker serves 34 days a request, so one request covers most viewers; only when it holds
  * fewer than five days does the rest of OG's window load, all at once. Then the spotlight day's Watch Now offers in the
  * viewer's country, since only its cards show the button, and its season posters with that setting.
  */
@@ -94,10 +86,13 @@ export async function fetchSchedule(
   const { timeZone } = datePreferences;
   const today = dayIn(now.toISOString(), timeZone);
   const start = scheduleStart(today, schedule.startDay);
+  const slugs = scheduleCalendars(schedule);
+  if (slugs.length === 0) return [];
+
   const client = api({ fetch, token }).calendars;
   const load = async (range: { start_date: string; days: number }) => {
     const calendars = await Promise.all(
-      calendarsFor(schedule.filter).map((slug) => fetchCalendar({ client, target: 'my', slug, range, signedIn: true })),
+      slugs.map((slug) => fetchCalendar({ client, target: 'my', slug, range, signedIn: true })),
     );
     if (calendars.includes('signed-out')) throw new Error('The schedule needs a fresh sign-in');
     return calendars.flatMap((items) => (items === 'signed-out' ? [] : items));

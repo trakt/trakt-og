@@ -10,10 +10,10 @@ type Rows = { readonly shown: readonly ScheduleRow[]; readonly more: readonly Sc
 export type ScheduleLayout = {
   /** The first day with anything on, as cards. */
   readonly spotlight: Rows & {
-    /** "Tonight", "Next up · Thursday", or the day's name for one before today. */
+    /** "Tonight", or the day's name ("Tomorrow", "Thursday", "Yesterday"). */
     readonly heading: string;
     readonly short: string;
-    /** "Nothing on today." when the spotlight is a later day. */
+    /** "Nothing on today." when the spotlight is a later day, after its date. */
     readonly nothing?: string;
   };
   /** The next days with anything on, as rows under it. */
@@ -52,10 +52,7 @@ function nothingBefore(offset: number) {
   return `Nothing on for the next ${offset} days.`;
 }
 
-function heading({ offset, relative }: ScheduleDay) {
-  if (offset === 0) return 'Tonight';
-  return offset > 0 ? `Next up · ${relative}` : relative;
-}
+const heading = ({ offset, relative }: ScheduleDay) => (offset === 0 ? 'Tonight' : relative);
 
 /**
  * The schedule's two bands: the first day with anything on as cards with medium posters, then the next four days with

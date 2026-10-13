@@ -64,7 +64,12 @@ export function toDashboardSettings(
       refresh: onDeck?.refresh === true,
       poster: prefs.on_deck_poster,
     },
-    schedule: { filter: prefs.upcoming_filter, startDay: prefs.upcoming_start_day, poster: prefs.upcoming_poster },
+    schedule: {
+      filter: prefs.upcoming_filter,
+      movies: prefs.upcoming_movies,
+      startDay: prefs.upcoming_start_day,
+      poster: prefs.upcoming_poster,
+    },
     recommendations: {
       ignoreCollected: browsing?.recommendations?.ignore_collected === true,
       ignoreWatchlisted: browsing?.recommendations?.ignore_watchlisted === true,

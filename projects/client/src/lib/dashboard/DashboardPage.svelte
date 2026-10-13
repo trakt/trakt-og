@@ -31,16 +31,16 @@ const band = $derived(toStatsBand(data.stats, overlay.collectionCounts()));
 const username = $derived(data.profile.slug);
 const isVip = $derived(!!data.profile.vip);
 
-// The type buttons save to the same per-browser setting the loader reads, then load the schedule from here.
-function loadSchedule(filter: DashboardSettings['schedule']['filter']) {
-  dashboardPrefs.save(username, { ...dashboardPrefs.load(username), upcoming_filter: filter });
+// The schedule's dropdowns save to the same per-browser settings the loader reads, then load the schedule from here.
+function loadSchedule({ filter, movies }: Pick<DashboardSettings['schedule'], 'filter' | 'movies'>) {
+  dashboardPrefs.save(username, { ...dashboardPrefs.load(username), upcoming_filter: filter, upcoming_movies: movies });
   return fetchSchedule({
     fetch: authenticatedFetch({ manager: userManager() }),
     token: null,
     settings: data.settings,
     datePreferences: data.datePreferences,
     isVip,
-    schedule: { ...data.dashboard.schedule, filter },
+    schedule: { ...data.dashboard.schedule, filter, movies },
   });
 }
 </script>
@@ -60,7 +60,9 @@ function loadSchedule(filter: DashboardSettings['schedule']['filter']) {
   <UpNextPanel upNext={data.upNext} {username} {isVip} settings={data.dashboard.upNext} />
 {/if}
 {#if data.schedule}
-  <SchedulePanel schedule={data.schedule} filter={data.dashboard.schedule.filter} onfilter={loadSchedule} />
+  <SchedulePanel schedule={data.schedule} filter={data.dashboard.schedule.filter}
+  movies={data.dashboard.schedule.movies}
+  onpick={loadSchedule} />
 {/if}
 {#if data.watchlist}
   <WatchlistPanel watchlist={data.watchlist} {username} {isVip} datePreferences={data.datePreferences} />

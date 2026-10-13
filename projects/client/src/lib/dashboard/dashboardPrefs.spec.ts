@@ -8,6 +8,7 @@ describe('dashboardPrefs', () => {
     expect(dashboardPrefs.read(undefined, 'sean')).toEqual({
       on_deck_poster: 'show',
       upcoming_filter: 'shows-movies',
+      upcoming_movies: 'all',
       upcoming_start_day: 'today',
       upcoming_poster: 'show',
       hide_on_deck: false,

@@ -6,6 +6,8 @@
   is OG's user card on the Users search tab: the round avatar centered over the dimmed cover.
 -->
 <script lang="ts">
+import Icon from '$lib/icons/Icon.svelte';
+import StatusDot from '$lib/components/status/StatusDot.svelte';
 import MediaSpoiler from '$lib/components/summary/MediaSpoiler.svelte';
 import type { SpoilerTarget } from '$lib/settings/SpoilerTarget';
 import { mediaSpoilers } from '$lib/settings/mediaSpoilers';
@@ -20,6 +22,12 @@ import QuickIcons from './QuickIcons.svelte';
 
 type Tag = {
   text: string;
+  /** Raw SVG before the text: a rating's heart. */
+  icon?: string;
+  /** Its own color instead of a kind's: a rating's. */
+  color?: string;
+  /** The pulsing dot before the text, for something playing now. */
+  live?: boolean;
   /** OG's h4 classes over a fanart. `primary` is the brand red; the `series-premiere` to `series-finale` kinds are
    * OG's `episode-type-*` colors. */
   kind?:
@@ -157,7 +165,11 @@ const restoreTarget = $derived(target?.type === 'show' ? { ...target, type: 'sho
     {#if titles}
     <div class="titles">
       {#each tags as tag, i (i)}
-        <p class={['tag', tag.kind ?? 'primary']}>{tag.text}</p>
+        <p class={['tag', tag.kind ?? 'primary', { live: tag.live }]} style:--tag-color={tag.color}>{#if tag.live}<StatusDot
+              kind="live"
+            />{/if}{#if tag.icon}<Icon
+              svg={tag.icon}
+            />{/if}{tag.text}</p>
       {/each}
       {#if smallTitle && !logo && !hideSmallTitle}
         <a class="titles-link small-title" href={smallTitle.href}>{smallTitle.text}</a>
@@ -290,10 +302,19 @@ const restoreTarget = $derived(target?.type === 'show' ? { ...target, type: 'sho
 }
 
 .tag {
-  display: inline-block;
+  display: inline-flex;
+  gap: var(--space-card-tag-icon);
+  align-items: center;
   margin: 0 5px 5px 0;
   padding: 3px 5px;
+  border-radius: var(--radius-card-tag);
   background-color: var(--tag-color);
+
+  /* A white dot, so it shows on the red. */
+  &.live {
+    --color-social-live: var(--color-card-text);
+    --color-social-live-glow: var(--color-social-tag-live-glow);
+  }
   color: var(--color-card-text);
   font-family: var(--font-headings);
   font-weight: var(--font-weight-headings);
@@ -376,7 +397,7 @@ const restoreTarget = $derived(target?.type === 'show' ? { ...target, type: 'sho
 
 .small-title {
   display: block;
-  margin-block-end: 5px;
+  margin-block-end: var(--space-card-small-title);
   color: var(--gray-lighter);
   font-family: var(--font-headings);
   font-weight: var(--font-weight-headings);

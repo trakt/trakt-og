@@ -20,17 +20,19 @@ interface Props {
   help?: Snippet;
   /** OG's `h2.section` heading (PanelHeading). */
   section?: boolean;
+  /** On the heading's right: the panel's counts. */
+  aside?: Snippet;
   children: Snippet;
   footer?: Snippet;
 }
 
-const { title, icon, loading = false, seeMore, help, section, children, footer }: Props = $props();
+const { title, icon, loading = false, seeMore, help, section, aside, children, footer }: Props = $props();
 const id = $props.id();
 </script>
 
 <section class="dashboard-panel" aria-labelledby={id} aria-busy={loading}>
   <Container>
-    <PanelHeading {id} {title} {icon} {loading} {seeMore} {section} />
+    <PanelHeading {id} {title} {icon} {loading} {seeMore} {section} {aside} />
     {#if help}
       <PanelHelp>{@render help()}</PanelHelp>
     {/if}

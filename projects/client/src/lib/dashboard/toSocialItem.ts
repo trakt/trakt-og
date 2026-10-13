@@ -13,6 +13,19 @@ export type SocialMember = {
   readonly avatar: string;
 };
 
+/** A movie, show or episode the viewer's quick icons can act on: watch, list, rate. */
+export type SocialTarget = {
+  readonly type: 'movie' | 'show' | 'episode';
+  readonly id: number;
+  readonly title: string;
+  /** Trakt's rating, 0 to 10. */
+  readonly rating?: number;
+  readonly runtime?: number;
+  readonly airedEpisodes?: number;
+  /** An episode's show and numbers, which its watched state needs. */
+  readonly season?: { readonly show: number; readonly number: number; readonly episode: number };
+};
+
 /** One watch, rating or comment in the Social Feed. */
 export type SocialItem = {
   /** Unique across kinds, which come from different tables: `watch:12`, `rating:12`. */
@@ -23,15 +36,24 @@ export type SocialItem = {
   readonly member: SocialMember;
   readonly kind: 'watch' | 'checkin' | 'rating' | 'comment' | 'review';
   /** The movie or the show, with its poster path. `key` groups a sitting's rows by title. */
-  readonly title: { readonly key: string; readonly name: string; readonly href: string; readonly poster?: string };
+  readonly title: {
+    readonly key: string;
+    readonly name: string;
+    readonly href: string;
+    readonly poster?: string;
+    /** The movie or show itself, for quick icons on a card about the title. */
+    readonly target: SocialTarget;
+  };
   /** Set for episodes, so a sitting can say "1x06–1x08". */
-  readonly episode?: { readonly season: number; readonly number: number };
+  readonly episode?: { readonly season: number; readonly number: number; readonly title?: string };
   /** "1x08", "Special 2", "Season 2". Left out for a movie or a whole show. */
   readonly code?: string;
   /** The title and code: "Lanterns 1x08". */
   readonly label: string;
   /** The movie, show, season or episode page. */
   readonly href: string;
+  /** The movie or episode this row is about; the show for a show or season. */
+  readonly target: SocialTarget;
   /** An image path from the API: the episode's screenshot, else the show's or movie's fanart. */
   readonly still?: string;
   /** 1 to 10, on a rating. */

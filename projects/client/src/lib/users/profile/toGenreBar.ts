@@ -16,6 +16,9 @@ export type GenreBar = {
   readonly movies: number;
   /** "12 episodes (15)", "3 shows", "4 movies", each linking to that history filtered by the genre. */
   readonly counts: readonly { readonly text: string; readonly href: string }[];
+  /** A picture by the name in the key, and where the name goes: a person's band rather than a genre's. */
+  readonly avatar?: string;
+  readonly href?: string;
 };
 
 const TYPES = [

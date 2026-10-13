@@ -19,7 +19,8 @@ import { recentlyWatchedFixture } from '$lib/dashboard/recentlyWatchedFixture';
 import { recommendationsFixture } from '$lib/dashboard/recommendationsFixture';
 import type { ScheduleDay } from '$lib/dashboard/ScheduleDay';
 import { scheduleFixture } from '$lib/dashboard/scheduleFixture';
-import { fetchSocialFeed, type SocialFeed } from '$lib/dashboard/fetchSocialFeed';
+import { fetchSocialFeed, fetchSocialItems, type SocialFeed } from '$lib/dashboard/fetchSocialFeed';
+import { type SocialPeriod, socialWindows } from '$lib/dashboard/socialWindows';
 import { socialFeedFixture } from '$lib/dashboard/socialFeedFixture';
 import { toLastThirtyDays } from '$lib/dashboard/toLastThirtyDays';
 import { type RecentPlay, toRecentPlay } from '$lib/dashboard/toRecentPlay';
@@ -118,19 +119,26 @@ const genresOnly = $derived(lastMonth.then((stats) => ({ ...stats, chart: null, 
 const lastMonthLoading = new Promise<LastThirtyDays>(() => {});
 const lastMonthFailed = browser ? Promise.reject(new Error('demo')) : lastMonthLoading;
 
-// The fixture's week, through the real fetcher: the worker answers each day's window with its rows.
+// The fixture's week, through the real fetchers: the worker answers each window with its rows.
 const socialNow = new Date();
+const socialWorker = (input: Request | URL | string) => {
+  const url = new URL(input instanceof Request ? input.url : input, 'https://apiz.trakt.tv');
+  const start = Date.parse(url.searchParams.get('start_at') ?? '');
+  const end = Date.parse(url.searchParams.get('end_at') ?? '');
+  const rows = socialFeedFixture.rows(socialNow).filter(({ activity_at }) => {
+    const at = Date.parse(activity_at);
+    return at >= start && at <= end;
+  });
+  return Promise.resolve(Response.json(rows));
+};
+const socialRowsFor = (period: Exclude<SocialPeriod, 'today'>) =>
+  fetchSocialItems({
+    get: socialWorker,
+    windows: socialWindows(period, socialNow, data.datePreferences.timeZone),
+    datePreferences: data.datePreferences,
+  });
 const social = $derived(fetchSocialFeed({
-  fetch: (input) => {
-    const url = new URL(input instanceof Request ? input.url : input);
-    const start = Date.parse(url.searchParams.get('start_at') ?? '');
-    const end = Date.parse(url.searchParams.get('end_at') ?? '');
-    const rows = socialFeedFixture.rows(socialNow).filter(({ activity_at }) => {
-      const at = Date.parse(activity_at);
-      return at >= start && at <= end;
-    });
-    return Promise.resolve(Response.json(rows));
-  },
+  fetch: socialWorker,
   token: 'demo',
   following: Promise.resolve(8),
   now: socialNow,
@@ -138,7 +146,8 @@ const social = $derived(fetchSocialFeed({
 }));
 // Nobody, one, three and seven members watching now; seven puts four behind the "+4 watching" tile.
 const watchingNow = (count: number) => () => Promise.resolve(socialFeedFixture.live(new Date()).slice(0, count));
-const socialEmpty = Promise.resolve<SocialFeed>({ sittings: [], comments: [], recent: [] });
+const socialEmpty = Promise.resolve<SocialFeed>({ follows: true, items: [], recent: [] });
+const socialNobody = Promise.resolve<SocialFeed>({ follows: false, items: [], recent: [] });
 const socialLoading = new Promise<SocialFeed>(() => {});
 const socialFailed = browser ? Promise.reject(new Error('demo')) : socialLoading;
 
@@ -339,18 +348,21 @@ $effect(() => {
 
   <div id="social-feed">
     {#if data.socialFeed}
-      <SocialFeedPanel feed={data.socialFeed} />
+      <SocialFeedPanel feed={data.socialFeed} username={data.viewer?.username ?? 'me'} datePreferences={data.datePreferences} />
       <div class="gap"></div>
     {/if}
     {#each [0, 1, 3, 7] as count (count)}
-      <div id="social-feed-live-{count}"><SocialFeedPanel feed={social} watching={watchingNow(count)} /></div>
+      <div id="social-feed-live-{count}"><SocialFeedPanel feed={social} watching={watchingNow(count)} rowsFor={socialRowsFor}
+        username="me" datePreferences={data.datePreferences} /></div>
       <div class="gap"></div>
     {/each}
-    <div id="social-feed-empty"><SocialFeedPanel feed={socialEmpty} /></div>
+    <div id="social-feed-empty"><SocialFeedPanel feed={socialEmpty} rowsFor={socialRowsFor} username="me" datePreferences={data.datePreferences} /></div>
     <div class="gap"></div>
-    <SocialFeedPanel feed={socialLoading} />
+    <div id="social-feed-nobody"><SocialFeedPanel feed={socialNobody} username="me" datePreferences={data.datePreferences} /></div>
     <div class="gap"></div>
-    <SocialFeedPanel feed={socialFailed} />
+    <SocialFeedPanel feed={socialLoading} username="me" datePreferences={data.datePreferences} />
+    <div class="gap"></div>
+    <SocialFeedPanel feed={socialFailed} username="me" datePreferences={data.datePreferences} />
   </div>
   <div class="gap"></div>
 
@@ -398,7 +410,7 @@ $effect(() => {
     <WatchlistPanel {watchlist} username="me" isVip datePreferences={data.datePreferences} />
   {/if}
   {#if !custom.hidden.socialFeed}
-    <SocialFeedPanel feed={social} watching={watchingNow(0)} />
+    <SocialFeedPanel feed={social} watching={watchingNow(0)} rowsFor={socialRowsFor} username="me" datePreferences={data.datePreferences} />
   {/if}
   <div class="gap"></div>
   <RecentlyWatchedPanel plays={recentPlays} username="me" isVip datePreferences={data.datePreferences} />

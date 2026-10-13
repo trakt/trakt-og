@@ -48,6 +48,11 @@ const answers: Record<string, () => Response> = {
   },
 };
 
+// What the quick icons act on: the show, the episode or the movie.
+const unrated = { rating: undefined, runtime: undefined, airedEpisodes: undefined };
+const show = { type: 'show', id: 191758, title: 'Tulsa King', ...unrated };
+const weapons = { type: 'movie', id: 867094, title: 'Weapons', ...unrated };
+
 describe('fetchWatching', () => {
   it('should map each member who is watching, and skip the rest', async () => {
     const asked: string[] = [];
@@ -65,8 +70,22 @@ describe('fetchWatching', () => {
         member: member('ada'),
         kind: 'watch',
         label: 'Tulsa King 2x05',
-        title: { key: 'show:tulsa-king', name: 'Tulsa King', href: '/shows/tulsa-king' },
-        episode: { season: 2, number: 5 },
+        title: {
+          key: 'show:tulsa-king',
+          name: 'Tulsa King',
+          href: '/shows/tulsa-king',
+          poster: undefined,
+          target: show,
+        },
+        target: {
+          type: 'episode',
+          id: 12235135,
+          title: 'Tulsa King',
+          rating: undefined,
+          runtime: undefined,
+          season: { show: 191758, number: 2, episode: 5 },
+        },
+        episode: { season: 2, number: 5, title: 'Tilting at Windmills' },
         code: '2x05',
         href: '/shows/tulsa-king/seasons/2/episodes/5',
         still: 'shot.jpg',
@@ -77,7 +96,14 @@ describe('fetchWatching', () => {
         member: member('bo'),
         kind: 'checkin',
         label: 'Weapons',
-        title: { key: 'movie:weapons-2025', name: 'Weapons', href: '/movies/weapons-2025' },
+        title: {
+          key: 'movie:weapons-2025',
+          name: 'Weapons',
+          href: '/movies/weapons-2025',
+          poster: undefined,
+          target: weapons,
+        },
+        target: weapons,
         href: '/movies/weapons-2025',
         still: undefined,
         startedAt: '2026-10-05T23:00:00.000Z',

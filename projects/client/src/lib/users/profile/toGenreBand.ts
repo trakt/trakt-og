@@ -22,7 +22,7 @@ type Piece = {
   readonly tip: GenreTip;
 };
 
-type GenreSlice = Piece & Pick<GenreBar, 'slug' | 'name' | 'counts'> & {
+type GenreSlice = Piece & Pick<GenreBar, 'slug' | 'name' | 'counts' | 'avatar' | 'href'> & {
   /** Its color, 1 to 6. */
   readonly slot: number;
 };
@@ -53,11 +53,21 @@ const tipLines = ({ shows, movies }: { shows: number; movies: number }) => [
 
 const sum = (values: readonly number[]) => values.reduce((total, value) => total + value, 0);
 
+/** What the band's pieces are, for its labels. */
+export type BandWords = {
+  /** The Other piece's count: "12 genres". */
+  readonly rest: (count: number) => string;
+  /** The first piece, in the hover footers: "your top genre". */
+  readonly top: string;
+};
+
+const GENRE_WORDS: BandWords = { rest: (count) => countLabel(count, 'genre'), top: 'your top genre' };
+
 /**
  * The genres, most watched first, as one band: the top six get a color each and the rest fold into one "Other"
  * piece. Seven or fewer all get their own piece, since folding one genre into "Other" hides it for nothing.
  */
-export function toGenreBand(genres: readonly GenreBar[]): GenreBand {
+export function toGenreBand(genres: readonly GenreBar[], words: BandWords = GENRE_WORDS): GenreBand {
   const named = genres.length <= SLOTS + 1 ? genres : genres.slice(0, SLOTS);
   const tail = genres.slice(named.length);
   const total = sum(genres.map(({ percentage }) => percentage)) || 1;
@@ -70,6 +80,8 @@ export function toGenreBand(genres: readonly GenreBar[]): GenreBand {
       slug: genre.slug,
       name: genre.name,
       counts: genre.counts,
+      avatar: genre.avatar,
+      href: genre.href,
       slot: (i % SLOTS) + 1,
       share: formatShare(genre.percentage),
       grow: genre.percentage,
@@ -79,8 +91,8 @@ export function toGenreBand(genres: readonly GenreBar[]): GenreBand {
         share: formatShare(genre.percentage),
         lines: tipLines(genre),
         footer: i === 0
-          ? `${titles} · your top genre`
-          : `${titles} · ${formatShare(genre.percentageRow)} of your top genre`,
+          ? `${titles} · ${words.top}`
+          : `${titles} · ${formatShare(genre.percentageRow)} of ${words.top}`,
       },
     };
   });
@@ -89,7 +101,7 @@ export function toGenreBand(genres: readonly GenreBar[]): GenreBand {
 
   const share = sum(tail.map(({ percentage }) => percentage));
   const biggest = Math.max(...tail.map(({ percentage }) => percentage)) || 1;
-  const label = `Other · ${tail.length} genres`;
+  const label = `Other · ${words.rest(tail.length)}`;
   const names = tail.slice(0, 3).map(({ name }) => name).join(', ');
 
   return {

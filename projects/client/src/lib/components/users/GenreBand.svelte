@@ -6,12 +6,13 @@
 -->
 <script lang="ts">
 import type { GenreBar } from '$lib/users/profile/toGenreBar';
-import { toGenreBand } from '$lib/users/profile/toGenreBand';
+import { type BandWords, toGenreBand } from '$lib/users/profile/toGenreBand';
 
-const { genres }: { genres: readonly GenreBar[] } = $props();
+/** `words` names the pieces when they aren't genres. */
+const { genres, words }: { genres: readonly GenreBar[]; words?: BandWords } = $props();
 const id = $props.id();
 
-const band = $derived(toGenreBand(genres));
+const band = $derived(toGenreBand(genres, words));
 /** The picked piece: a slice's index, or the slice count for Other. */
 let hot = $state<number | null>(null);
 let open = $state(false);
@@ -77,7 +78,12 @@ const toggle = () => (open = !open);
         onfocusin={pick(i)}
         onfocusout={unpick}
       >
-        <span class="name">{slice.name}</span>
+        {#if slice.avatar}
+          <span class="name with-avatar"><img src={slice.avatar} alt="" loading="lazy" decoding="async" />{#if slice.href}<a
+                href={slice.href}>{slice.name}</a>{:else}<span>{slice.name}</span>{/if}</span>
+        {:else}
+          <span class="name">{slice.name}</span>
+        {/if}
         <span class="share">{slice.share}</span>
         <span class="counts">{@render counts(slice.counts)}</span>
       </li>
@@ -259,6 +265,34 @@ const toggle = () => (open = !open);
   text-overflow: ellipsis;
   text-transform: uppercase;
   white-space: nowrap;
+}
+
+/* A person's key: their avatar by the name, which links to their profile. */
+.with-avatar {
+  display: flex;
+  gap: var(--space-genre-avatar);
+  align-items: center;
+  margin-block-end: var(--space-genre-avatar-under);
+
+  & img {
+    flex: none;
+    inline-size: var(--genre-avatar);
+    block-size: var(--genre-avatar);
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  & > :last-child {
+    min-inline-size: 0;
+    overflow: hidden;
+    color: inherit;
+    text-decoration: none;
+    text-overflow: ellipsis;
+  }
+
+  & a:is(:hover, :focus-visible) {
+    text-decoration: underline;
+  }
 }
 
 .share {

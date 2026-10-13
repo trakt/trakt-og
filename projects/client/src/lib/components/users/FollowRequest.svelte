@@ -1,6 +1,6 @@
 <!--
   An incoming follow request: a second glass deck under the site header, in the header's glass and art tint with a
-  Trakt-blue wash across it. An icon and "Neil wants to follow you", then Approve, Deny and Block as outlined buttons on a darker tint of their own color. Once answered, the deck says
+  green wash across it (the Approve color). An icon and "Neil wants to follow you", then Approve, Deny and Block as outlined buttons on a darker tint of their own color. Once answered, the deck says
   what happened.
 -->
 <script lang="ts">
@@ -77,7 +77,7 @@ const change = (action: 'approve' | 'deny' | 'blockRequest') =>
   color: var(--color-header-text);
   font-family: var(--font-headings);
 
-  /* The blue wash goes over the art tint, so the deck stays blue whatever the cover. */
+  /* The green wash goes over the art tint, so the deck stays green whatever the cover. */
   &::after {
     position: absolute;
     inset: 0;

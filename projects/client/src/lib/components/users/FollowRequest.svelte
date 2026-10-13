@@ -1,7 +1,8 @@
 <!--
   An incoming follow request: a second glass deck under the site header, in the header's glass and art tint with a
-  blue wash. A green "Follow request" tag, the requester's avatar and "Neil wants to follow you", then Approve, Deny
-  and Block as outlined buttons on a darker tint of their own color. Once answered, the deck says what happened.
+  Trakt-blue wash that fades out to the right. A "Follow request" tag (whose request is clear from the profile itself),
+  then Approve, Deny and Block as outlined buttons on a darker tint of their own color. Once answered, the deck says
+  what happened.
 -->
 <script lang="ts">
 import { getContext } from 'svelte';
@@ -18,10 +19,9 @@ import userPlus from '$lib/icons/regular/user-plus.svg?raw';
 import checkThick from '$lib/icons/trakt/check-thick.svg?raw';
 import deleteThick from '$lib/icons/trakt/delete-thick.svg?raw';
 
-const { firstName, slug, avatarUrl, isPrivate, relation }: {
+const { firstName, slug, isPrivate, relation }: {
   firstName: string;
   slug: string;
-  avatarUrl: string;
   isPrivate: boolean;
   relation: ViewerRelation;
 } = $props();
@@ -38,10 +38,7 @@ const change = (action: 'approve' | 'deny' | 'blockRequest') =>
   <Container>
     <div class="row" aria-live="polite">
       {#if decision === null}
-        <span class="tag"><Icon svg={userPlus} />Follow request</span>
-        <span class="divider" aria-hidden="true"></span>
-        <img class="avatar" src={avatarUrl} alt="" width="28" height="28" />
-        <p class="question"><b>{firstName}</b> wants to follow you</p>
+        <p class="tag"><Icon svg={userPlus} />Follow request<span class="visually-hidden"> from {firstName}</span></p>
         <div class="actions">
           <button type="button" class="approve" aria-busy={busy} aria-disabled={busy} onclick={() => change('approve')}>
             <Icon svg={checkThick} />Approve
@@ -86,7 +83,7 @@ const change = (action: 'approve' | 'deny' | 'blockRequest') =>
     position: absolute;
     inset: 0;
     z-index: -1;
-    background-color: var(--color-profile-request-wash);
+    background: var(--gradient-profile-request-wash);
     pointer-events: none;
     content: '';
   }
@@ -103,6 +100,7 @@ const change = (action: 'approve' | 'deny' | 'blockRequest') =>
   display: inline-flex;
   align-items: center;
   gap: var(--space-sm-block);
+  margin: 0;
   color: var(--color-profile-request-tag);
   font-size: var(--font-size-profile-request-tag);
   font-weight: var(--font-weight-headings-heavy);
@@ -110,23 +108,6 @@ const change = (action: 'approve' | 'deny' | 'blockRequest') =>
   text-transform: uppercase;
 }
 
-.divider {
-  inline-size: 1px;
-  block-size: 20px;
-  margin-inline: var(--space-xs-inline);
-  background-color: var(--color-profile-request-divider);
-}
-
-.avatar {
-  flex: none;
-  inline-size: var(--profile-request-avatar);
-  block-size: var(--profile-request-avatar);
-  border: 2px solid var(--color-text-inverse);
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.question,
 .answer {
   margin: 0;
   font-size: var(--font-size-profile-request);
@@ -143,7 +124,7 @@ const change = (action: 'approve' | 'deny' | 'blockRequest') =>
   gap: var(--space-sm-inline);
 
   & :global(.icon) {
-    color: var(--color-profile-request-tag);
+    color: var(--color-profile-approve-text);
   }
 
   &:is(.deny, .block) :global(.icon) {
@@ -179,7 +160,7 @@ button {
   &.approve {
     border-color: var(--color-profile-approve-border);
     background-color: var(--color-profile-approve-bg);
-    color: var(--color-profile-request-tag);
+    color: var(--color-profile-approve-text);
 
     &:is(:hover, :focus-visible) {
       border-color: var(--color-profile-follow-hover-border);
@@ -211,6 +192,15 @@ button {
   &[aria-disabled='true'] {
     cursor: wait;
   }
+}
+
+.visually-hidden {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 @media (prefers-reduced-motion: reduce) {

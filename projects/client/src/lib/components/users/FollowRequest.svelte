@@ -1,7 +1,7 @@
 <!--
-  An incoming follow request, as its own question bar under the profile cover: "Neil wants to follow you", then
-  Approve (solid green), Deny and Block (outlined, red on hover), in the cover's button style. Once answered, the
-  bar says what happened instead of the buttons.
+  An incoming follow request, as a question bar across the top of the profile cover in a blue glass: "Neil wants to
+  follow you", then Approve (solid green), Deny (solid red) and Block (outlined, red on hover), in the cover's button
+  style. Once answered, the bar says what happened instead of the buttons.
 -->
 <script lang="ts">
 import { getContext } from 'svelte';
@@ -53,7 +53,7 @@ const change = (action: 'approve' | 'deny' | 'blockRequest') =>
           <button type="button" class="approve" aria-busy={busy} aria-disabled={busy} onclick={() => change('approve')}>
             <Icon svg={checkThick} />Approve
           </button>
-          <button type="button" aria-busy={busy} aria-disabled={busy} onclick={() => change('deny')}>
+          <button type="button" class="deny" aria-busy={busy} aria-disabled={busy} onclick={() => change('deny')}>
             <Icon svg={deleteThick} />Deny
           </button>
           <button type="button" aria-busy={busy} aria-disabled={busy} onclick={() => change('blockRequest')}>
@@ -67,9 +67,10 @@ const change = (action: 'approve' | 'deny' | 'blockRequest') =>
 
 <style>
 .request-bar {
-  border-block-end: 1px solid var(--color-profile-request-bar-border);
   background-color: var(--color-profile-request-bar-bg);
-  color: var(--color-text);
+  backdrop-filter: var(--blur-header-glass);
+  box-shadow: inset 0 -1px 0 var(--color-profile-request-bar-edge);
+  color: var(--color-text-inverse);
   font-family: var(--font-headings);
 }
 
@@ -79,8 +80,7 @@ const change = (action: 'approve' | 'deny' | 'blockRequest') =>
   align-items: center;
   justify-content: space-between;
   gap: var(--space-sm-block) var(--profile-slim-gap);
-  min-block-size: var(--profile-request-bar-height);
-  padding-block: var(--space-sm-block);
+  block-size: var(--profile-request-bar-height);
 }
 
 .question {
@@ -104,7 +104,7 @@ const change = (action: 'approve' | 'deny' | 'blockRequest') =>
   gap: var(--profile-button-gap);
 }
 
-/* The cover's button style: outlined, green to approve, red on hover for the rest. */
+/* The cover's button style: solid green to approve, solid red to deny, outlined and red on hover to block. */
 button {
   display: inline-flex;
   align-items: center;
@@ -112,9 +112,9 @@ button {
   block-size: var(--profile-button-height);
   min-block-size: 0;
   padding: 0 var(--profile-button-padding);
-  border: var(--action-button-border-width) solid var(--color-action-border);
+  border: var(--action-button-border-width) solid var(--color-profile-button-border);
   border-radius: var(--radius-profile-button);
-  background: none;
+  background-color: var(--color-profile-pill-bg);
   color: inherit;
   font-size: var(--font-size-action-button);
   font-weight: var(--font-weight-headings-heavy);
@@ -125,8 +125,21 @@ button {
 
   &:is(:hover, :focus-visible) {
     border-color: var(--color-profile-remove);
-    background-color: var(--color-profile-request-remove-hover);
+    background-color: var(--color-profile-remove-hover);
     color: var(--color-profile-remove);
+  }
+
+  &.deny {
+    border-color: var(--brand-primary);
+    background-color: var(--brand-primary);
+    color: var(--color-text-inverse);
+
+    &:is(:hover, :focus-visible) {
+      border-color: var(--color-profile-remove);
+      background-color: var(--color-profile-deny-hover);
+      color: var(--color-text-inverse);
+      box-shadow: var(--shadow-profile-deny-hover);
+    }
   }
 
   &.approve {

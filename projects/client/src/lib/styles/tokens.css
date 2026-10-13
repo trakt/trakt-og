@@ -1038,12 +1038,14 @@
   --color-profile-pill-border: rgb(255 255 255 / 0.14);
   --color-profile-pill-text: rgb(255 255 255 / 0.78);
   --color-profile-pill-icon: rgb(255 255 255 / 0.55);
-  /* An incoming follow request: a question bar under the cover, on the page's own colors. */
+  /* An incoming follow request: a question bar across the top of the cover, under the site header, in a blue glass
+     so it reads apart from the header and the art. */
   --profile-request-bar-height: 56px;
   --font-size-profile-request: 15px;
-  --color-profile-request-bar-bg: light-dark(#f7f7f7, #161616);
-  --color-profile-request-bar-border: light-dark(#e3e3e3, #2a2a2a);
-  --color-profile-request-remove-hover: light-dark(rgb(237 28 36 / 0.08), rgb(237 28 36 / 0.15));
+  --color-profile-request-bar-bg: color-mix(in srgb, var(--brand-secondary) 24%, rgb(12 12 14 / 0.82));
+  --color-profile-request-bar-edge: rgb(255 255 255 / 0.12);
+  --color-profile-deny-hover: var(--brand-primary-darken);
+  --shadow-profile-deny-hover: 0 4px 14px rgb(237 28 36 / 0.4);
   /* The private pill: a status, so amber rather than the facts' white. */
   --color-profile-pill-private-border: rgb(255 193 77 / 0.55);
   --color-profile-pill-private-bg: color-mix(in srgb, #ffc14d 16%, rgb(18 18 18 / 0.6));

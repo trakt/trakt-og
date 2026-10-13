@@ -249,6 +249,7 @@ li {
   min-inline-size: 0;
   p {
     margin: 0;
+    padding-inline-start: var(--dashboard-inbox-title-nudge);
     font-size: var(--font-size-dashboard-inbox-summary);
   }
   strong {
@@ -328,6 +329,7 @@ li {
   }
 }
 .name {
+  padding-inline-start: var(--dashboard-inbox-title-nudge);
   color: inherit;
   font-family: var(--font-headings);
   font-size: var(--font-size-dashboard-inbox-name);

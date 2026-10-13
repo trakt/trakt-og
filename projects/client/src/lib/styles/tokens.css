@@ -443,6 +443,7 @@
   --dashboard-inbox-stack-overlap: -8px;
   --dashboard-inbox-stack-ring: 3px;
   --dashboard-inbox-done-opacity: 0.4;
+  --dashboard-inbox-pills-top: 3px; /* text to the pills under it */
   --dashboard-border-width: 1px;
   /* Outlined action buttons: "Add comment" and the lists page's owner tools. */
   --action-button-padding: var(--space-sm-block) var(--space-sm-inline);
@@ -469,6 +470,9 @@
   --color-dashboard-inbox-bg: #1d1d1d;
   --color-dashboard-inbox-box: #262626;
   --color-dashboard-inbox-box-border: #333;
+  /* The summary line takes the profile request deck's green. */
+  --color-dashboard-inbox-summary-bg: color-mix(in srgb, var(--brand-success) 10%, var(--color-dashboard-inbox-box));
+  --color-dashboard-inbox-summary-border: color-mix(in srgb, var(--brand-success) 35%, var(--color-dashboard-inbox-box-border));
   --color-dashboard-inbox-muted: var(--gray-light);
   --color-dashboard-inbox-stack-extra: #3a3a3a;
   --color-dashboard-inbox-count-bg: var(--brand-primary);

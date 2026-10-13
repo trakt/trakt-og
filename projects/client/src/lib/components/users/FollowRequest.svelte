@@ -16,8 +16,8 @@ import type { ViewerRelation } from '$lib/users/ViewerRelation';
 import Icon from '$lib/icons/Icon.svelte';
 import ban from '$lib/icons/regular/ban.svg?raw';
 import userPlus from '$lib/icons/regular/user-plus.svg?raw';
-import checkThick from '$lib/icons/trakt/check-thick.svg?raw';
-import deleteThick from '$lib/icons/trakt/delete-thick.svg?raw';
+import check from '$lib/icons/solid/check.svg?raw';
+import xmark from '$lib/icons/solid/xmark.svg?raw';
 import RequestButton from './RequestButton.svelte';
 
 const { firstName, slug, isPrivate, relation }: {
@@ -41,10 +41,10 @@ const change = (action: 'approve' | 'deny' | 'blockRequest') =>
       {#if decision === null}
         <p class="question"><Icon svg={userPlus} /><span><b>{firstName}</b> wants to follow you</span></p>
         <div class="actions">
-          <RequestButton tone="approve" icon={checkThick} aria-busy={busy} aria-disabled={busy} onclick={() => change('approve')}>
+          <RequestButton tone="approve" icon={check} aria-busy={busy} aria-disabled={busy} onclick={() => change('approve')}>
             Approve
           </RequestButton>
-          <RequestButton tone="deny" icon={deleteThick} aria-busy={busy} aria-disabled={busy} onclick={() => change('deny')}>
+          <RequestButton tone="deny" icon={xmark} aria-busy={busy} aria-disabled={busy} onclick={() => change('deny')}>
             Deny
           </RequestButton>
           <RequestButton tone="block" icon={ban} aria-busy={busy} aria-disabled={busy} onclick={() => change('blockRequest')}>
@@ -53,7 +53,7 @@ const change = (action: 'approve' | 'deny' | 'blockRequest') =>
         </div>
       {:else}
         <p class={['answer', decision]}>
-          <Icon svg={decision === 'approve' ? checkThick : decision === 'deny' ? deleteThick : ban} />
+          <Icon svg={decision === 'approve' ? check : decision === 'deny' ? xmark : ban} />
           <span>
             {#if decision === 'approve'}
               Approved. <b>{firstName}</b> now follows you.

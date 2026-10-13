@@ -3,7 +3,7 @@
   like the profile's request deck; from four up they fold into a summary line with an avatar stack, the newest and
   oldest dates as pills, Approve All and Review, and Review opens the boxes. The layout is picked from the count on
   load, so it doesn't switch while deciding, and a decided box stays in place, marked Approved, Denied or Blocked,
-  until the next load.
+  until the next load. The summary box takes the request deck's green tint.
 -->
 <script lang="ts">
 import { tick } from 'svelte';
@@ -25,8 +25,8 @@ import ban from '$lib/icons/regular/ban.svg?raw';
 import clock from '$lib/icons/regular/clock.svg?raw';
 import clockRotateLeft from '$lib/icons/regular/clock-rotate-left.svg?raw';
 import userPlus from '$lib/icons/regular/user-plus.svg?raw';
-import checkThick from '$lib/icons/trakt/check-thick.svg?raw';
-import deleteThick from '$lib/icons/trakt/delete-thick.svg?raw';
+import check from '$lib/icons/solid/check.svg?raw';
+import xmark from '$lib/icons/solid/xmark.svg?raw';
 import { followRequestSummary } from '$lib/dashboard/followRequestSummary';
 import type { toFollowRequest } from '$lib/dashboard/toFollowRequest';
 
@@ -45,8 +45,8 @@ const relation = (id: number) => ({ follow: 'none' as const, followsYou: false, 
 const decisionOf = (request: Request) => relationships.state(request.slug, relation(request.id)).decision;
 const pending = $derived(requests.filter((request) => decisionOf(request) === null));
 const choices = [
-  { action: 'approve', decision: 'approve', tone: 'approve', label: 'Approve', done: 'Approved', icon: checkThick },
-  { action: 'deny', decision: 'deny', tone: 'deny', label: 'Deny', done: 'Denied', icon: deleteThick },
+  { action: 'approve', decision: 'approve', tone: 'approve', label: 'Approve', done: 'Approved', icon: check },
+  { action: 'deny', decision: 'deny', tone: 'deny', label: 'Deny', done: 'Denied', icon: xmark },
   { action: 'blockRequest', decision: 'block', tone: 'block', label: 'Block', done: 'Blocked', icon: ban },
 ] as const;
 const condensed = $derived(requests.length > 3);
@@ -121,7 +121,7 @@ async function decide(request: Request, action: 'approve' | 'deny' | 'blockReque
           </div>
           <div class="buttons">
             {#if approving || pending.length > 1}
-              <RequestButton tone="approve" icon={checkThick} aria-disabled={approving !== null} onclick={approveAll}>
+              <RequestButton tone="approve" icon={check} aria-disabled={approving !== null} onclick={approveAll}>
                 {approving ? `Approving ${Math.min(approving.done + 1, approving.total)} of ${approving.total}…` : `Approve all ${pending.length}`}
               </RequestButton>
             {/if}
@@ -142,7 +142,11 @@ async function decide(request: Request, action: 'approve' | 'deny' | 'blockReque
                 {#if chosen}
                   <span class="state">{chosen.done}</span>
                 {:else}
-                  <time class="time" datetime={request.requestedIso} title={request.requestedAt}>{request.requestedAgo}</time>
+                  <span class="when">
+                    <CoverPill title={request.requestedAt}>
+                      <Icon svg={clock} /><time datetime={request.requestedIso}>{request.requestedAgo}</time>
+                    </CoverPill>
+                  </span>
                 {/if}
               </div>
               {#if !chosen}
@@ -208,6 +212,8 @@ li {
   background: var(--color-dashboard-inbox-box);
 }
 .summary {
+  border-color: var(--color-dashboard-inbox-summary-border);
+  background: var(--color-dashboard-inbox-summary-bg);
   display: flex;
   align-items: center;
   gap: var(--dashboard-inbox-summary-gap);
@@ -220,7 +226,7 @@ li {
     inline-size: var(--dashboard-inbox-stack-avatar);
     block-size: var(--dashboard-inbox-stack-avatar);
     border-radius: 50%;
-    box-shadow: 0 0 0 var(--dashboard-inbox-stack-ring) var(--color-dashboard-inbox-box);
+    box-shadow: 0 0 0 var(--dashboard-inbox-stack-ring) var(--color-dashboard-inbox-summary-bg);
   }
   & > * + * {
     margin-inline-start: var(--dashboard-inbox-stack-overlap);
@@ -253,10 +259,10 @@ li {
 .dates {
   display: flex;
   flex-wrap: wrap;
+  justify-content: start;
   gap: var(--profile-pill-gap);
-  margin-block-start: var(--space-sm-block);
+  margin-block-start: var(--dashboard-inbox-pills-top);
 }
-.time,
 .state {
   color: var(--color-dashboard-inbox-muted);
   font-size: var(--font-size-dashboard-inbox-time);
@@ -312,6 +318,8 @@ li {
 }
 .who {
   display: grid;
+  justify-items: start;
+  gap: var(--dashboard-inbox-pills-top);
   min-inline-size: 0;
   & > * {
     overflow: hidden;

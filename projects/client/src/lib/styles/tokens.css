@@ -1042,6 +1042,8 @@
      green wash, so it reads as part of the header but apart from it. */
   --profile-request-bar-height: 52px;
   --font-size-profile-request: 15px;
+  --font-size-profile-request-question: 12px;
+  --profile-request-question-tracking: 0.08em;
   --profile-request-button-height: 32px;
   --color-profile-request-wash: rgb(92 184 92 / 0.24); /* --brand-success, the Approve color, across the glass and its art tint */
   --color-profile-approve-text: #8be08b; /* --brand-success, lifted for text on dark */

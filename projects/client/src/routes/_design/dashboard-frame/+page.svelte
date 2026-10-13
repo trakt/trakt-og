@@ -23,6 +23,7 @@ const watching: WatchingNow = {
   episode: { number: '1x05', title: 'Good for the Soul' },
   href: '/shows/the-boys-2019/seasons/1/episodes/5',
   fanartUrl: 'https://media.trakt.tv/images/shows/000/099/080/fanarts/full/a049f455c1.jpg',
+  stillUrl: 'https://media.trakt.tv/images/shows/000/099/080/fanarts/medium/a049f455c1.jpg',
   endsAt: new Date(Date.now() + 31 * 60_000).toISOString(),
   runtime: 60,
 };

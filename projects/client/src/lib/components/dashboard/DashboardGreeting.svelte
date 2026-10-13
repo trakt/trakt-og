@@ -1,7 +1,11 @@
 <script lang="ts">
 import Container from '$lib/components/container/Container.svelte';
+import { headerArt } from '$lib/components/header/headerArt';
 import VipLabel from '$lib/components/labels/VipLabel.svelte';
+import CoverPill from '$lib/components/users/CoverPill.svelte';
 import WatchingNowBar from '$lib/components/users/WatchingNowBar.svelte';
+import Icon from '$lib/icons/Icon.svelte';
+import calendar from '$lib/icons/regular/calendar-lines.svg?raw';
 import posterBackground from '$lib/assets/poster-bg.jpg';
 import type { ProfileUser } from '$lib/users/ProfileUser';
 import type { WatchingNow } from '$lib/users/WatchingNow';
@@ -15,7 +19,12 @@ const cover = $derived(watching?.fanartUrl ?? (user.vip ? user.coverUrl : null))
 </script>
 
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-<section class={['greeting-cover', { watching, covered: cover }]} aria-labelledby="dashboard-heading">
+<!-- The profile header's look: avatar, name with the VIP label, and one glass pill with the full join date. -->
+<section
+  class={['greeting-cover', { watching, covered: cover }]}
+  aria-labelledby="dashboard-heading"
+  {@attach headerArt(cover ?? undefined)}
+>
   <div class="background" style:background-image="url('{cover ?? posterBackground}')"></div>
   {#if cover}<div class="shadow"></div>{/if}
   <Container>
@@ -24,9 +33,9 @@ const cover = $derived(watching?.fanartUrl ?? (user.vip ? user.coverUrl : null))
         <a class="avatar-link" href="/users/{user.slug}" tabindex="-1" aria-hidden="true">
           <img src={user.avatarUrl} alt="" width="72" height="72" />
         </a>
-        <div>
+        <div class="name-block">
           <h1 id="dashboard-heading">Hello, {user.firstName}{#if user.vip}<VipLabel badge={user.vip} />{/if}</h1>
-          <p class="joined">Member since <span>{memberSince}</span></p>
+          <CoverPill><Icon svg={calendar} />Joined <b>{memberSince}</b></CoverPill>
         </div>
       </div>
     </div>
@@ -76,7 +85,13 @@ const cover = $derived(watching?.fanartUrl ?? (user.vip ? user.coverUrl : null))
 }
 .identity {
   display: flex;
-  gap: var(--dashboard-avatar-gap);
+  align-items: end;
+  gap: var(--profile-slim-gap);
+}
+.name-block {
+  display: grid;
+  justify-items: start;
+  gap: var(--profile-slim-name-gap);
 }
 .avatar-link {
   flex-shrink: 0;
@@ -84,27 +99,22 @@ const cover = $derived(watching?.fanartUrl ?? (user.vip ? user.coverUrl : null))
     display: block;
     inline-size: var(--profile-avatar-size-slim);
     block-size: var(--profile-avatar-size-slim);
-    border: var(--dashboard-avatar-border) solid var(--color-text-inverse);
+    border: var(--profile-avatar-border) solid var(--color-profile-avatar-border);
     border-radius: 50%;
+    box-shadow: var(--shadow-profile-avatar);
     object-fit: cover;
   }
 }
 h1 {
-  margin: var(--dashboard-title-top) 0 0;
-  color: inherit;
-  text-shadow: var(--text-shadow-headings);
-}
-.joined {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   margin: 0;
-  font-family: var(--font-headings);
-  font-size: var(--font-size-h5);
-  font-weight: var(--font-weight-headings-heavy);
+  color: inherit;
+  font-size: var(--font-size-profile-name);
+  font-weight: var(--font-weight-headings);
   line-height: var(--line-height-headings);
-  text-transform: uppercase;
-  text-shadow: var(--text-shadow-headings);
-  span {
-    font-weight: var(--font-weight-headings-light);
-  }
+  text-shadow: var(--text-shadow-profile-name);
 }
 @media (width < 768px) {
   .avatar-link {

@@ -63,16 +63,19 @@ const change = (action: 'approve' | 'deny' | 'blockRequest') =>
 
 <style>
 .pending-follow {
-  display: inline-block;
-  margin-inline-end: 10px;
-  padding: 1px 10px 2px 12px;
-  background-color: var(--color-profile-request-bg);
-  vertical-align: top;
+  display: inline-flex;
+  align-items: center;
+  block-size: var(--profile-button-height);
+  padding-inline: var(--profile-button-padding);
+  border: var(--action-button-border-width) solid var(--color-profile-button-border);
+  border-radius: var(--radius-profile-button);
+  background-color: var(--color-profile-pill-bg);
+  backdrop-filter: var(--blur-profile-pill);
 }
 
 .text {
   display: inline-block;
-  padding-block-start: 3px;
+  font-size: var(--font-size-action-button);
   font-family: var(--font-headings);
   font-weight: var(--font-weight-headings-heavy);
   text-transform: uppercase;

@@ -46,8 +46,11 @@ export async function changeRelationship({ slug, isPrivate, relation, action, ov
     },
     followerDelta: previous.followerDelta + Number(follow === 'following') - Number(current.follow === 'following'),
     decision,
-    // OG resolves the banner in place; new Follows You/Blocked header buttons appear on the next load.
-    hideBlock: blocking || action === 'unblock' || (action === 'approve' && !current.followsYou) || previous.hideBlock,
+    // A block shows its Blocked button at once, so it can be undone. OG left a just-approved follower's Follows You
+    // button for the next load.
+    hideBlock: blocking || action === 'unblock'
+      ? false
+      : (action === 'approve' && !current.followsYou) || previous.hideBlock,
   };
   const path = requestAction && action !== 'blockRequest'
     ? `/users/requests/${current.requestId}`

@@ -8,6 +8,8 @@ export interface WatchingNow {
   readonly href: string;
   /** The show's or movie's fanart, which replaces the cover while it plays. */
   readonly fanartUrl: string | null;
+  /** The player's thumbnail: the episode's screenshot, else the show's or movie's fanart. */
+  readonly stillUrl: string | null;
   /** OG's bar runs from `endsAt - runtime` to `endsAt`. */
   readonly endsAt: string;
   /** Minutes. */

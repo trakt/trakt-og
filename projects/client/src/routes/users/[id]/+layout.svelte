@@ -39,7 +39,6 @@ const tabs = $derived(profileTabs({ slug: data.profile.slug, pathname: page.url.
 {#if !listComments || data.profile.isLocked}
 <ProfileFrame
   user={data.profile}
-  counts={data.counts}
   watching={data.watching}
   {tabs}
   large={page.route.id === '/users/[id]'}

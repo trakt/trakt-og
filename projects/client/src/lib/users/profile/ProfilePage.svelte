@@ -1,6 +1,6 @@
 <!--
   The profile page under the frame: the stat boxes, or the welcome hero on your own empty
-  profile, then favorites, the recently watched episodes and movies, the genre and ratings charts, the most watched
+  profile, then favorites (only when there are some), the recently watched episodes and movies, the genre and ratings charts, the most watched
   shows and movies, and the newest comments.
 -->
 <script lang="ts">
@@ -80,21 +80,19 @@ const hasnt = (rest: string) =>
   <WelcomeHero />
 {/if}
 
-<DashboardPanel
+<!-- No favorites, no panel. -->
+{#if data.favorites.length > 0}
+  <DashboardPanel
   --panel-bg="var(--color-favorites-bg)"
-  --color-no-data-bg="var(--color-favorites-no-data-bg)"
   title="Favorites"
   icon={star}
   seeMore={{ href: `${user}/favorites`, text: 'All Favorites' }}
 >
-  {#if data.favorites.length > 0}
-    <div class="favorites">
+  <div class="favorites">
       {#each data.favorites as favorite (`${favorite.type}-${favorite.id}`)}<FavoriteCard {favorite} />{/each}
     </div>
-  {:else}
-    <div class="empty"><NoData>{hasnt('added any favorite shows and movies yet.')}</NoData></div>
-  {/if}
 </DashboardPanel>
+{/if}
 
 {#each [
   { type: 'episodes', title: 'Recently Watched Episodes', cards: data.episodes, columns: 4 },

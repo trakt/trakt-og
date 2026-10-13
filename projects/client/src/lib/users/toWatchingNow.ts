@@ -1,7 +1,10 @@
 import { imageUrl } from '../utils/imageUrl.ts';
 import type { WatchingNow } from './WatchingNow.ts';
 
-type Images = { readonly fanart?: readonly string[] | null } | null;
+type Images = {
+  readonly fanart?: readonly string[] | null;
+  readonly screenshot?: readonly string[] | null;
+} | null;
 type Media = {
   readonly title?: string | null;
   readonly runtime?: number | null;
@@ -22,6 +25,7 @@ export type WatchingResponse =
         readonly number: number;
         readonly title?: string | null;
         readonly runtime?: number | null;
+        readonly images?: Images;
       } | null;
     }
   );
@@ -43,6 +47,7 @@ export function toWatchingNow(watching: WatchingResponse): WatchingNow | null {
       episode: null,
       href: `/movies/${movie.ids.slug ?? movie.ids.trakt}`,
       fanartUrl: fanart(movie.images),
+      stillUrl: still(movie.images),
       runtime: movie.runtime || DEFAULT_RUNTIME.movie,
     };
   }
@@ -57,6 +62,7 @@ export function toWatchingNow(watching: WatchingResponse): WatchingNow | null {
     episode: { number: seasonByEpisode(episode), title: episode.title ?? '' },
     href: `${showPath}/seasons/${episode.season}/episodes/${episode.number}`,
     fanartUrl: fanart(show.images),
+    stillUrl: imageUrl(episode.images?.screenshot?.at(0), 'medium') ?? still(show.images),
     runtime: episode.runtime || show.runtime || DEFAULT_RUNTIME.episode,
   };
 }
@@ -69,4 +75,8 @@ function seasonByEpisode({ season, number }: { season: number; number: number })
 
 function fanart(images: Images | undefined): string | null {
   return imageUrl(images?.fanart?.at(0), 'full') ?? null;
+}
+
+function still(images: Images | undefined): string | null {
+  return imageUrl(images?.fanart?.at(0), 'medium') ?? null;
 }

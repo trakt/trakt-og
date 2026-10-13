@@ -7,7 +7,7 @@ import { toViewerRelation } from '../../../lib/users/toViewerRelation.ts';
 import { toProfileUser } from '../../../lib/users/toProfileUser.ts';
 import { toWatchingNow } from '../../../lib/users/toWatchingNow.ts';
 
-/** The profile and the frame's counts and watching-now bar. Neither of the last two is worth failing the page over. */
+/** The profile, its stats and the frame's watching-now bar. Neither of the last two is worth failing the page over. */
 async function readFrame(client: ReturnType<typeof api>, id: string) {
   const [profile, stats, watching] = await Promise.all([
     client.users.profile({ params: { id }, query: { extended: 'full,vip' } }),
@@ -55,7 +55,6 @@ export async function load({ fetch, locals, params, parent, url }) {
 
   return {
     profile: user,
-    counts: userStats ? { followers: userStats.network.followers, following: userStats.network.following } : null,
     /** The profile page's stat boxes and charts read it too. */
     stats: userStats,
     watching: watching?.status === 200 ? toWatchingNow(watching.body) : null,

@@ -1038,6 +1038,10 @@
   --color-profile-pill-border: rgb(255 255 255 / 0.14);
   --color-profile-pill-text: rgb(255 255 255 / 0.78);
   --color-profile-pill-icon: rgb(255 255 255 / 0.55);
+  /* The private pill: a status, so amber rather than the facts' white. */
+  --color-profile-pill-private-border: rgb(255 193 77 / 0.55);
+  --color-profile-pill-private-bg: color-mix(in srgb, #ffc14d 16%, rgb(18 18 18 / 0.6));
+  --color-profile-pill-private-text: #ffd27a;
   --color-profile-avatar-border: rgb(255 255 255 / 0.95);
   --shadow-profile-avatar: 0 8px 30px rgb(0 0 0 / 0.5);
   --text-shadow-profile-name: 0 0 20px rgb(0 0 0 / 0.75);

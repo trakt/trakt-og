@@ -1,15 +1,16 @@
 <!--
-  A glass pill on a cover photo: the profile's location, gender and age, and join date, and the dashboard greeting's
-  join date. A leading icon is muted and a <b> inside stands out in white.
+  A glass pill on a cover photo: the profile's private status, location, gender and age, and join date, and the
+  dashboard greeting's join date. A leading icon is muted and a <b> inside stands out in white. `tone="private"` tints
+  it amber, icon and all, so a status reads apart from the facts next to it.
     <CoverPill title="Joined September 25, 2010"><Icon svg={calendar} />Joined <b>2010</b></CoverPill>
 -->
 <script lang="ts">
 import type { Snippet } from 'svelte';
 
-const { title, children }: { title?: string; children: Snippet } = $props();
+const { title, tone, children }: { title?: string; tone?: 'private'; children: Snippet } = $props();
 </script>
 
-<span class="pill" {title}>{@render children()}</span>
+<span class={['pill', tone]} {title}>{@render children()}</span>
 
 <style>
 .pill {
@@ -36,6 +37,17 @@ const { title, children }: { title?: string; children: Snippet } = $props();
 
   & :global(.icon) {
     color: var(--color-profile-pill-icon);
+  }
+
+  &.private {
+    border-color: var(--color-profile-pill-private-border);
+    background-color: var(--color-profile-pill-private-bg);
+    color: var(--color-profile-pill-private-text);
+    font-weight: var(--font-weight-headings-heavy);
+
+    & :global(.icon) {
+      color: inherit;
+    }
   }
 }
 </style>

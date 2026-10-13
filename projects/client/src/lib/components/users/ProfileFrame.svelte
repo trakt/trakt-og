@@ -1,6 +1,6 @@
 <!--
   The profile header, shared by every /users/:id page: the cover, avatar, name with the VIP and Private labels, the
-  options menu, follow buttons (an incoming follow request gets its own bar under the cover), a line of glass pills for private status, location, gender and age, and the year they joined, the
+  options menu, follow buttons (an incoming follow request gets its own bar across the top of the cover), a line of glass pills for private status, location, gender and age, and the year they joined, the
   watching-now player and the section tabs. The name block is one left-aligned row: centered on the slim cover, and
   low on the tall one so the art shows. The profile page gets the tall cover when there's art to show (the owner's
   cover or what they're watching); every subpage, and a profile without art, gets the slim one on OG's damask. A
@@ -92,6 +92,17 @@ const change = (viewer: ViewerRelation, action: 'unfollow' | 'block' | 'unblock'
 >
   {#if overlay}<div class={overlay}></div>{/if}
   {#if user.isLocked}<div class="locked-overlay"></div>{/if}
+
+  <!-- An incoming follow request: a question bar under the site header. The cover grows to make room for it. -->
+  {#if showOthersControls && relation}
+    {#await relation then viewer}
+      {#if viewer && viewer.requestId !== null}
+        <div class="request">
+          <FollowRequest firstName={user.firstName} slug={user.slug} isPrivate={user.isPrivate} relation={viewer} />
+        </div>
+      {/if}
+    {/await}
+  {/if}
 
   <div class="stage">
     <Container>
@@ -188,22 +199,15 @@ const change = (viewer: ViewerRelation, action: 'unfollow' | 'block' | 'unblock'
   {/if}
 </section>
 
-{#if showOthersControls && relation}
-  {#await relation then viewer}
-    {#if viewer && viewer.requestId !== null}
-      <FollowRequest firstName={user.firstName} slug={user.slug} isPrivate={user.isPrivate} relation={viewer} />
-    {/if}
-  {/await}
-{/if}
-
 <ReportDialog bind:open={reporting} target={{ type: 'user', id: user.slug, title: user.displayName, href }} />
 
 <style>
 .profile-cover {
   --deck: var(--profile-tabs-height);
+  --top: var(--header-height);
   position: relative;
   z-index: 1;
-  block-size: calc(var(--header-height) + var(--profile-cover-height));
+  block-size: calc(var(--top) + var(--profile-cover-height));
   overflow: hidden;
   background: var(--cover) 50% 20% / cover no-repeat var(--color-page);
   color: var(--color-text-inverse);
@@ -211,15 +215,19 @@ const change = (viewer: ViewerRelation, action: 'unfollow' | 'block' | 'unblock'
 
   &.watching {
     --deck: calc(var(--profile-tabs-height) + var(--profile-watching-height));
-    block-size: calc(var(--header-height) + var(--profile-cover-height) + var(--profile-watching-height));
+    block-size: calc(var(--top) + var(--profile-cover-height) + var(--profile-watching-height));
   }
 
   &.slim {
-    block-size: calc(var(--header-height) + var(--profile-cover-height-slim));
+    block-size: calc(var(--top) + var(--profile-cover-height-slim));
 
     &.watching {
-      block-size: calc(var(--header-height) + var(--profile-cover-height-slim) + var(--profile-watching-height));
+      block-size: calc(var(--top) + var(--profile-cover-height-slim) + var(--profile-watching-height));
     }
+  }
+
+  &:has(.request) {
+    --top: calc(var(--header-height) + var(--profile-request-bar-height));
   }
 
   &.locked {
@@ -247,10 +255,17 @@ const change = (viewer: ViewerRelation, action: 'unfollow' | 'block' | 'unblock'
   background-color: var(--color-profile-private-overlay);
 }
 
+.request {
+  position: absolute;
+  inset-block-start: var(--header-height);
+  inset-inline: 0;
+  z-index: 3;
+}
+
 /* The room between the header and the deck: the name block sits low on the tall cover, in the middle otherwise. */
 .stage {
   position: absolute;
-  inset-block: var(--header-height) var(--deck);
+  inset-block: var(--top) var(--deck);
   inset-inline: 0;
   z-index: 1;
   display: grid;
@@ -425,7 +440,7 @@ h1 {
   }
 
   .slim .stage {
-    padding-block: calc(var(--header-height) + 15px) 15px;
+    padding-block: calc(var(--top) + 15px) 15px;
   }
 
   h1 {

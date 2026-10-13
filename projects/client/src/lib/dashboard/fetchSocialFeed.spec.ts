@@ -1,8 +1,9 @@
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
-import { fetchSocialFeed } from './fetchSocialFeed.ts';
+import { fetchSocialFeed, fetchSocialItems } from './fetchSocialFeed.ts';
 import { socialFeedFixture } from './socialFeedFixture.ts';
+import { socialWindows } from './socialWindows.ts';
 
 const FEED = 'https://apiz.trakt.tv/v3/users/me/following/activities';
 const now = new Date('2026-09-30T12:00:30.500Z');
@@ -12,6 +13,7 @@ const datePreferences = { order: 'mdy', hour24: false, timeZone: 'UTC', weekStar
 const fetch = (...args: Parameters<typeof globalThis.fetch>) => globalThis.fetch(...args);
 const feed = (following: number | null = 3) =>
   fetchSocialFeed({ fetch, token: 'abc', following: Promise.resolve(following), now, datePreferences });
+const get = (path: string) => fetch(`https://apiz.trakt.tv${path}`);
 
 // Answers each window with the fixture rows that fall inside it, like the worker.
 const byWindow = (rows = socialFeedFixture.rows(now)) =>
@@ -33,44 +35,30 @@ afterEach(() => {
 });
 afterAll(() => server.close());
 
-const keys = (feed: Awaited<ReturnType<typeof fetchSocialFeed>>) => feed.sittings.map(({ key }) => key);
-
 describe('fetchSocialFeed', () => {
-  it('should ask for every kind of row a day at a time, back through the week', async () => {
+  it('should ask for every kind of row in the last 24 hours, a full page at a time', async () => {
     server.use(byWindow());
 
     const social = await feed();
-    const first = seen.at(0);
+    const [first] = seen;
 
+    expect(seen).toHaveLength(1);
     expect(first?.searchParams.has('action')).toBe(false);
-    expect(first?.searchParams.get('limit')).toBe('100');
+    expect(first?.searchParams.get('limit')).toBe('250');
+    expect(first?.searchParams.get('page')).toBe('1');
     expect(first?.searchParams.get('extended')).toBe('full,images');
     expect(first?.searchParams.get('end_at')).toBe('2026-09-30T12:00:00.000Z');
     expect(first?.searchParams.get('start_at')).toBe('2026-09-29T12:00:00.000Z');
-    expect(seen.at(6)?.searchParams.get('start_at')).toBe('2026-09-23T12:00:00.000Z');
-    expect(seen).toHaveLength(7);
-    expect(social.sittings.map(({ member }) => member.name)).toEqual([
-      'Kristin',
-      'Sefer',
-      'Damien',
-      'MajorMercyFlush',
-      'Technicolour',
-      'Kristin',
-      'Sefer',
-      'Justin',
-      'Rook',
-    ]);
-    expect(social.sittings.at(3)?.summary.sentence).toBe(
-      'MajorMercyFlush binged Lanterns 1x06–1x08 and rated it 10 out of 10.',
-    );
+    expect(social.follows).toBe(true);
+    expect(social.items.at(0)?.key).toBe('watch:17');
+    expect(social.items.some(({ key }) => key === 'comment:18')).toBe(false);
   });
 
-  it('should list the comments newest first, and who was active in the last day', async () => {
+  it('should list who to ask about watching now, most recently active first', async () => {
     server.use(byWindow());
 
     const social = await feed();
 
-    expect(social.comments.map(({ key }) => key)).toEqual(['comment:12', 'comment:7', 'comment:18']);
     expect(social.recent.map(({ name }) => name)).toEqual([
       'Kristin',
       'Sefer',
@@ -81,63 +69,80 @@ describe('fetchSocialFeed', () => {
     ]);
   });
 
-  it('should stop once 12 sittings are in, and drop a row repeated on a window boundary', async () => {
+  it('should page on when the window has more rows than a page holds', async () => {
     const [first] = socialFeedFixture.rows(now);
-    if (!first) throw new Error('no fixture row');
-    // Thirteen members, one watch each.
-    const many = Array.from({ length: 13 }, (_, i) => ({
-      ...first,
-      id: i + 1,
-      user: { ...first.user, username: `member-${i}`, ids: { slug: `member-${i}` } },
-    }));
     server.use(http.get(FEED, ({ request }) => {
-      seen.push(new URL(request.url));
-      return HttpResponse.json(seen.length === 1 ? many.slice(0, 8) : many.slice(7));
+      const url = new URL(request.url);
+      seen.push(url);
+      const page = Number(url.searchParams.get('page'));
+      return HttpResponse.json([{ ...first, id: page }], { headers: { 'x-pagination-page-count': '3' } });
     }));
 
     const social = await feed();
 
-    expect(seen).toHaveLength(2);
-    expect(social.sittings).toHaveLength(12);
-    expect(keys(social).at(-1)).toBe('member-11:watch:12');
+    expect(seen.map((url) => url.searchParams.get('page'))).toEqual(['1', '2', '3']);
+    expect(social.items).toHaveLength(3);
   });
 
   it('should not ask when the viewer follows nobody, since the worker would send the team instead', async () => {
     server.use(byWindow());
 
-    expect(await feed(0)).toEqual({ sittings: [], comments: [], recent: [] });
+    expect(await feed(0)).toEqual({ follows: false, items: [], recent: [] });
     expect(seen).toHaveLength(0);
   });
 
   it("should still ask when the following count didn't load", async () => {
     server.use(byWindow());
 
-    expect((await feed(null)).sittings).toHaveLength(9);
+    expect((await feed(null)).recent).toHaveLength(6);
   });
 
   it('should skip a row it cannot show', async () => {
     const [first] = socialFeedFixture.rows(now);
     server.use(http.get(FEED, () => HttpResponse.json([first, { id: 2, action: 'watch', type: 'movie' }])));
 
-    expect(keys(await feed())).toEqual(['sample-kristin:watch:17']);
+    expect((await feed()).items.map(({ key }) => key)).toEqual(['watch:17']);
   });
 
-  it('should reject a failed or malformed first day, so the panel shows its own error', async () => {
+  it('should reject a failed or malformed feed, so the panel shows its own error', async () => {
     server.use(http.get(FEED, () => new HttpResponse(null, { status: 403 })));
     await expect(feed()).rejects.toThrow('403');
 
     server.use(http.get(FEED, () => HttpResponse.json({ nope: true })));
     await expect(feed()).rejects.toThrow('invalid');
   });
+});
 
-  it('should keep the rows it has when a later day fails', async () => {
+describe('fetchSocialItems', () => {
+  it("should ask for each of the week's days and drop a row repeated on a window boundary", async () => {
+    const [first] = socialFeedFixture.rows(now);
+    server.use(http.get(FEED, ({ request }) => {
+      seen.push(new URL(request.url));
+      return HttpResponse.json([first]);
+    }));
+
+    const items = await fetchSocialItems({ get, windows: socialWindows('week', now, 'UTC'), datePreferences });
+
+    expect(seen).toHaveLength(7);
+    expect(items.map(({ key }) => key)).toEqual(['watch:17']);
+  });
+
+  it('should keep the days that answered when another one fails', async () => {
     const [first] = socialFeedFixture.rows(now);
     server.use(http.get(FEED, ({ request }) => {
       seen.push(new URL(request.url));
       return seen.length === 1 ? HttpResponse.json([first]) : new HttpResponse(null, { status: 502 });
     }));
 
-    expect(keys(await feed())).toEqual(['sample-kristin:watch:17']);
-    expect(seen).toHaveLength(2);
+    const items = await fetchSocialItems({ get, windows: socialWindows('week', now, 'UTC'), datePreferences });
+
+    expect(items.map(({ key }) => key)).toEqual(['watch:17']);
+  });
+
+  it('should reject when every day fails', async () => {
+    server.use(http.get(FEED, () => new HttpResponse(null, { status: 502 })));
+
+    await expect(fetchSocialItems({ get, windows: socialWindows('week', now, 'UTC'), datePreferences }))
+      .rejects.toThrow('502');
   });
 });

@@ -5,6 +5,7 @@
 <script lang="ts">
 import HeadingMark from '$lib/components/heading/HeadingMark.svelte';
 import Spinner from '$lib/components/loading/Spinner.svelte';
+import type { Snippet } from 'svelte';
 import SeeMore from '$lib/components/see-more/SeeMore.svelte';
 
 interface Props {
@@ -17,9 +18,11 @@ interface Props {
   seeMore?: { href: string; text: string };
   /** OG's `h2.section`, with 28px above it instead of 20px (Recently Watched). */
   section?: boolean;
+  /** On the right before the see-more link: a section's counts. */
+  aside?: Snippet;
 }
 
-const { id, title, icon, loading = false, seeMore, section = false }: Props = $props();
+const { id, title, icon, loading = false, seeMore, section = false, aside }: Props = $props();
 </script>
 
 <div class={['heading', { section }]}>
@@ -28,6 +31,7 @@ const { id, title, icon, loading = false, seeMore, section = false }: Props = $p
     {#if loading}<span class="spinner"><Spinner /></span>{/if}
   </h2>
   <div class="links">
+    {@render aside?.()}
     {#if seeMore}
       <SeeMore {...seeMore} />
     {/if}

@@ -260,6 +260,9 @@
   --line-height-card-subtitle: 13px;
   --space-card-subtitle: 5px; /* above each line under the title */
   --font-size-card-tag: 11px; /* tags above a title, rank pill */
+  --radius-card-tag: var(--radius-sm); /* the calendar's Today tag */
+  --space-card-tag-icon: 4px; /* a tag's heart to its number */
+  --space-card-small-title: 1px; /* a fanart card's show to the episode under it */
   --font-size-fanart-title: 18px;
   --font-size-quick-icon: 1.7em;
   --font-size-quick-icon-small: 1.3em;
@@ -556,56 +559,26 @@
   /* The dashboard's Social Feed: watching-now tiles, the Earlier timeline and the Comments column */
   --color-social-feed-bg: light-dark(var(--gray-lighter), var(--dk-bg2));
   --color-social-feed-no-data-bg: light-dark(#fafafa, var(--color-no-data-bg));
-  --color-social-line: light-dark(#ddd, var(--gray-dark)); /* rules under day headings and rows */
-  --color-social-chip-bg: light-dark(#f7f7f7, #262626);
-  --color-social-muted: light-dark(#777, #aaa); /* column headings, review label */
-  --color-social-faint: light-dark(var(--gray-light), #888); /* times, day headings, comment footers */
-  --color-social-name: light-dark(var(--brand-primary), #ff5a60);
   --color-social-live: light-dark(var(--brand-primary), #ff3b42);
   --color-social-live-glow: light-dark(rgb(237 28 36 / 0.45), rgb(255 59 66 / 0.5));
   --color-social-done: light-dark(var(--brand-success), #6cc96c);
   --color-social-on-image: #fff;
-  --color-social-pill-on-image: rgb(0 0 0 / 0.6);
-  --color-social-bar-track: rgb(255 255 255 / 0.25);
-  --color-social-still: light-dark(#ccc, #333); /* behind a still that has no image */
-  --social-tile-shade: linear-gradient(to top, rgb(0 0 0 / 0.9), rgb(0 0 0 / 0.1) 75%);
-  --social-text-shadow: 0 1px 2px rgb(0 0 0 / 0.6);
-  --social-tile-ratio: 4 / 3;
-  --social-comment-lines: 6; /* the rest is a click away, on the comment's page */
-  --line-height-social-tile: 1.3;
-  --social-heading-tracking: 0.1em; /* the uppercase Earlier and Comments headings */
-  --transition-social-toggle: 0.15s;
-  --social-tile-gap: 14px;
-  --social-tile-swipe: 78%; /* a phone's tile, so the next one peeks in */
-  --social-tile-inset: 12px; /* text over a tile, from its edges */
-  --social-tile-pill-inset: 10px;
-  --social-columns: minmax(0, 1.8fr) minmax(0, 1fr); /* Earlier, then Comments */
-  --social-columns-gap: 28px;
-  --space-social-columns: 22px; /* under the tiles */
-  --space-social-row: 12px;
-  --space-social-chip-gap: 4px 8px;
-  --space-social-chip: 0 8px;
-  --space-social-pill: 2px 9px 2px 8px;
-  --space-social-heart: 0 7px 0 5px;
-  --space-social-comment: 12px;
-  --social-avatar-row: 36px;
-  --social-avatar-small: 22px; /* on tiles and comment cards */
-  --social-avatar-chip: 26px;
-  --social-avatar-stack: 38px; /* the "+N watching" tile */
-  --social-avatar-stack-overlap: -12px;
-  --social-poster: 40px; /* a row's poster per title */
-  --space-social-poster-gap: 4px;
+  --space-social-band: 30px; /* above and below the Most Active band */
+  --space-social-live-top: 12px; /* the dropdowns to the watching now cards (or the posters), over the grid's own gutter */
+  --space-social-live-end: 12px; /* the watching now cards' last line to the posters' faces */
+  --space-social-grid-end: 14px; /* the last posters' lines to the less and more pill */
+  --social-face: 28px; /* who's on a grid poster */
+  --social-face-lift: 8px; /* how far the faces sit out past the poster's corner */
+  --social-face-overlap: 9px; /* each face over the one before */
+  --color-social-face-more: #3a3a3a;
+  --space-social-separator: 4px; /* around the dots in the line under a poster */
+  --space-social-feed-top: 8px; /* under the panel's heading, before the dropdowns: a summary title's gap to its tabs */
+  --space-social-who-avatar: 8px; /* the avatar to the name */
+  --line-height-social-who: 18px;
+  --color-social-tag-live-glow: rgb(255 255 255 / 0.55);
+  --social-avatar-small: 18px; /* under a watching now card: the name's line height */
   --social-dot: 8px;
-  --social-bar: 3px;
   --social-pulse: 1.6s;
-  --social-pill-radius: 999px;
-  --social-still-radius: 3px;
-  --social-chip-line: 20px;
-  --social-heart-line: 18px;
-  --font-size-social-head: 16px; /* a row's headline */
-  --font-size-social-tile: 17px; /* a tile's headline */
-  --font-size-social-meta: 13px; /* names, comment text, expanded rows */
-  --font-size-social-chip: 12px;
   --font-size-social-pill: 11px;
 
   /* The dashboard's Show and Movie Recommendations: a dark band in both themes */
@@ -1281,6 +1254,9 @@
   --color-genre-divider: light-dark(#e5e5e5, #333);
   --color-genre-mini-track: light-dark(#efefef, #262626);
   --genre-band-height: 34px;
+  --genre-avatar: 18px; /* a person's key, when the band is people */
+  --space-genre-avatar: 6px;
+  --space-genre-avatar-under: 4px; /* the name and avatar to the share under them */
   --radius-genre-band: 4px;
   --genre-key-rule: 3px; /* the colored line over each key */
   --space-genre-keys-row: 14px;

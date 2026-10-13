@@ -490,16 +490,17 @@
   --color-dashboard-mastodon: #6364ff;
   --color-dashboard-twitter: #000;
 
-  /* The dashboard's Upcoming Schedule. toScheduleLayout's HEIGHT adds up the sizes these draw to pick the card
-     count, so change it with them. */
+  /* The dashboard's Upcoming Schedule: the first day as cards, then four day columns of rows. */
   --color-schedule-bg: light-dark(#eee, var(--dk-bg2));
   --color-schedule-no-data-bg: light-dark(#fafafa, var(--color-no-data-bg));
   --color-schedule-separator: light-dark(#d9d9d9, #444);
   --color-schedule-muted: light-dark(#777, #999); /* air times, networks, the dates beside day names */
   --color-schedule-row-hover: light-dark(#e6e6e6, #1f1f1f);
   --schedule-min-height: 380px;
-  --schedule-split: 5fr 7fr; /* the spotlight, then the week */
-  --space-schedule-split: 30px;
+  --space-schedule-split: 30px; /* between the day columns */
+  --space-schedule-band: 30px; /* the cards to the day columns */
+  --schedule-card-min: 340px; /* three cards a row at 1440px */
+  --schedule-stale-opacity: 0.5; /* the old days while another calendar type loads */
   --font-size-schedule-day: 14px;
   --space-schedule-heading: 12px; /* under a day's h3 */
   --space-schedule-day: 18px; /* between two days */
@@ -515,6 +516,8 @@
   --space-schedule-row: 4px; /* around a row's poster */
   --space-schedule-more: 6px 4px; /* inside "Show N more" */
   --schedule-row-poster: 28px;
+  --schedule-day-poster: 40px; /* a row's poster in a day column */
+  --space-schedule-day-row: 8px; /* above and below a day column's row */
   --space-schedule-row-gap: 10px;
   --font-size-schedule-row: 13px;
   --schedule-nothing-padding: 10px 12px;

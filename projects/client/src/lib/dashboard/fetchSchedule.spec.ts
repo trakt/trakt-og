@@ -43,12 +43,12 @@ const params = {
 const calendarRequests = () => seen.filter(({ pathname }) => pathname.startsWith('/calendars/'));
 
 describe('fetchSchedule', () => {
-  it('should read one window when it has three days', async () => {
+  it('should read one window when it has five days', async () => {
     server.use(calendar(() => scheduleFixture.rows('2026-09-30')), hidden(), watchNow);
 
     const days = await fetchSchedule(params);
 
-    expect(days).toHaveLength(3);
+    expect(days).toHaveLength(5);
     expect(calendarRequests().map(({ pathname, searchParams }) => [pathname, searchParams.get('extended')])).toEqual([
       ['/calendars/my/media/2026-09-29/33', 'full,images'],
     ]);
@@ -106,7 +106,7 @@ describe('fetchSchedule', () => {
     const days = await fetchSchedule(params);
 
     expect(days.flatMap(({ items }) => items).some(({ watchNow }) => watchNow)).toBe(false);
-    expect(days).toHaveLength(3);
+    expect(days).toHaveLength(5);
   });
 
   it('should fail when the calendar does', async () => {

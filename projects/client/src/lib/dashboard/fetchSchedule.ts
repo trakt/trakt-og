@@ -21,7 +21,8 @@ import { upcomingDays } from './upcomingDays.ts';
 
 type FetchScheduleParams = {
   fetch: typeof globalThis.fetch;
-  token: string;
+  /** Null in the browser, where `authenticatedFetch` sends it. */
+  token: string | null;
   /** The layout's `/users/settings`, for "hide specials" and the watch-now country. */
   settings: ViewerSettings | null;
   datePreferences: Pick<DatePreferences, 'timeZone' | 'hour24' | 'order'>;
@@ -31,8 +32,8 @@ type FetchScheduleParams = {
   now?: Date;
 };
 
-/** The spotlight day and the next two with anything on. */
-const DAYS = 3;
+/** The spotlight day and the next four with anything on. */
+const DAYS = 5;
 /** OG's "All my TV shows" filter only looked 40 days ahead. */
 const SHOWS_LOOKAHEAD = 40;
 
@@ -73,10 +74,10 @@ function seasonPosters(fetch: typeof globalThis.fetch, items: readonly CalendarI
 }
 
 /**
- * The viewer's Upcoming Schedule: the first three days from the start day setting with anything on
+ * The viewer's Upcoming Schedule: the first five days from the start day setting with anything on
  * the calendars its filter picks, less what they hid from the calendar and, with that setting (or the premieres filter,
  * as in OG), specials. The worker serves 34 days a request, so one request covers most viewers; only when it holds
- * fewer than three days does the rest of OG's window load, all at once. Then the spotlight day's Watch Now offers in the
+ * fewer than five days does the rest of OG's window load, all at once. Then the spotlight day's Watch Now offers in the
  * viewer's country, since only its cards show the button, and its season posters with that setting.
  */
 export async function fetchSchedule(

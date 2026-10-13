@@ -10,15 +10,39 @@ import RecentlyWatchedPanel from '$lib/components/dashboard/RecentlyWatchedPanel
 import LastThirtyDaysPanel from '$lib/components/dashboard/LastThirtyDaysPanel.svelte';
 import RecommendationsPanel from '$lib/components/dashboard/RecommendationsPanel.svelte';
 import SocialFeedPanel from '$lib/components/dashboard/SocialFeedPanel.svelte';
+import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
+import { userManager } from '$lib/auth/userManager';
+import type { DashboardSettings } from '$lib/dashboard/DashboardSettings';
+import { dashboardPrefs } from '$lib/dashboard/dashboardPrefs';
+import { fetchSchedule } from '$lib/dashboard/fetchSchedule';
 import { overlay } from '$lib/overlay/overlay';
 import { toStatsBand } from '$lib/dashboard/toStatsBand';
 import type { loadDashboard } from '$lib/dashboard/loadDashboard';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
+import type { ViewerSettings } from '$lib/settings/ViewerSettings';
 
-const { data }: { data: Awaited<ReturnType<typeof loadDashboard>> & { datePreferences: DatePreferences } } = $props();
+type Data = Awaited<ReturnType<typeof loadDashboard>> & {
+  datePreferences: DatePreferences;
+  settings: ViewerSettings | null;
+};
+
+const { data }: { data: Data } = $props();
 const band = $derived(toStatsBand(data.stats, overlay.collectionCounts()));
 const username = $derived(data.profile.slug);
 const isVip = $derived(!!data.profile.vip);
+
+// The type buttons save to the same per-browser setting the loader reads, then load the schedule from here.
+function loadSchedule(filter: DashboardSettings['schedule']['filter']) {
+  dashboardPrefs.save(username, { ...dashboardPrefs.load(username), upcoming_filter: filter });
+  return fetchSchedule({
+    fetch: authenticatedFetch({ manager: userManager() }),
+    token: null,
+    settings: data.settings,
+    datePreferences: data.datePreferences,
+    isVip,
+    schedule: { ...data.dashboard.schedule, filter },
+  });
+}
 </script>
 
 <svelte:head>
@@ -36,7 +60,7 @@ const isVip = $derived(!!data.profile.vip);
   <UpNextPanel upNext={data.upNext} {username} {isVip} settings={data.dashboard.upNext} />
 {/if}
 {#if data.schedule}
-  <SchedulePanel schedule={data.schedule} filter={data.dashboard.schedule.filter} />
+  <SchedulePanel schedule={data.schedule} filter={data.dashboard.schedule.filter} onfilter={loadSchedule} />
 {/if}
 {#if data.watchlist}
   <WatchlistPanel watchlist={data.watchlist} {username} {isVip} datePreferences={data.datePreferences} />

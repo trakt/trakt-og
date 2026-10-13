@@ -14,7 +14,7 @@ const PATH = '/users/hidden/calendar?limit=10000';
  * calendars don't read them, so og drops the items itself. A failed or malformed response hides nothing: the calendar
  * still renders, with the hidden items in it.
  */
-export async function fetchHiddenCalendar({ fetch, token }: { fetch: typeof globalThis.fetch; token: string }) {
+export async function fetchHiddenCalendar({ fetch, token }: { fetch: typeof globalThis.fetch; token: string | null }) {
   const response = await rawApiFetch({ fetch, token, path: PATH }).catch(() => null);
   if (response?.status !== 200) return NOTHING_HIDDEN;
 

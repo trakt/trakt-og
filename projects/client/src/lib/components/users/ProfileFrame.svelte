@@ -98,7 +98,7 @@ const change = (viewer: ViewerRelation, action: 'unfollow' | 'block' | 'unblock'
     {#await relation then viewer}
       {#if viewer && viewer.requestId !== null}
         <div class="request">
-          <FollowRequest firstName={user.firstName} slug={user.slug} avatarUrl={user.avatarUrl} isPrivate={user.isPrivate} relation={viewer} />
+          <FollowRequest firstName={user.firstName} slug={user.slug} isPrivate={user.isPrivate} relation={viewer} />
         </div>
       {/if}
     {/await}

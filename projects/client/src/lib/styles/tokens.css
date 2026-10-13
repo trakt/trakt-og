@@ -1044,11 +1044,11 @@
   --font-size-profile-request: 15px;
   --font-size-profile-request-tag: 11px;
   --profile-request-tag-tracking: 0.1em;
-  --profile-request-avatar: 28px;
   --profile-request-button-height: 32px;
-  --color-profile-request-wash: rgb(0 158 223 / 0.24); /* --brand-secondary, over the glass and its art tint */
-  --color-profile-request-tag: #8be08b; /* --brand-success, lifted for text on dark */
-  --color-profile-request-divider: rgb(255 255 255 / 0.15);
+  /* --brand-secondary over the glass and its art tint: strongest behind the tag, fading out toward the buttons. */
+  --gradient-profile-request-wash: linear-gradient(90deg, rgb(0 158 223 / 0.55), rgb(0 158 223 / 0.25) 45%, rgb(0 158 223 / 0.12));
+  --color-profile-request-tag: #fff;
+  --color-profile-approve-text: #8be08b; /* --brand-success, lifted for text on dark */
   /* Outlined buttons on a darker tint of their own color: green approves, red denies, neutral blocks (red on hover). */
   --color-profile-approve-border: rgb(92 184 92 / 0.85);
   --color-profile-approve-bg: color-mix(in srgb, var(--brand-success) 18%, rgb(10 10 10 / 0.85));

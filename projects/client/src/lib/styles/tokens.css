@@ -495,6 +495,8 @@
   --color-schedule-no-data-bg: light-dark(#fafafa, var(--color-no-data-bg));
   --color-schedule-separator: light-dark(#d9d9d9, #444);
   --color-schedule-muted: light-dark(#777, #999); /* the dates beside day names */
+  --color-schedule-note: light-dark(var(--state-info-text), var(--brand-info)); /* "Nothing on today." */
+  --space-schedule-note-dash: 6px; /* each side of the dash before it */
   --color-schedule-row-hover: light-dark(#e6e6e6, #1f1f1f);
   --schedule-min-height: 380px;
   --space-schedule-split: 30px; /* between the day columns */
@@ -506,7 +508,7 @@
   --space-schedule-day: 18px; /* between two days */
   --space-schedule-line: 4px; /* above the tags, and above a binge's episode list */
   --space-schedule-tags: 4px; /* between two tags */
-  --space-schedule-code: 4px; /* after an episode number, before a day's date */
+  --space-schedule-code: 4px; /* before a binge's caret */
   --space-schedule-episodes: 2px; /* between a binge's episodes */
   --space-schedule-card: 12px; /* between two cards */
   --space-schedule-card-padding: 10px 12px;
@@ -521,7 +523,7 @@
   --font-size-schedule-row: 13px;
   --schedule-nothing-padding: 10px 12px;
   --space-schedule-watch-now-icon: 6px;
-  --space-schedule-watch-now: 10px; /* above Watch Now */
+  --space-schedule-watch-now: 14px; /* above Watch Now */
 
   /* The dashboard's Last 30 Days: stacked bars in the genre tooltip's show and movie colors, week brackets over them,
      and genre-style keys over them. */

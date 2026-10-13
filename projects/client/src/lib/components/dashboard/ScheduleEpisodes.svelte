@@ -38,7 +38,6 @@ a {
 }
 
 b {
-  margin-inline-end: var(--space-schedule-code);
   font-family: var(--font-headings);
   font-weight: var(--font-weight-headings-heavy);
 }

@@ -270,8 +270,8 @@ $effect(() => {
       <SchedulePanel schedule={data.schedule} filter={data.dashboard?.schedule.filter} />
       <div class="gap"></div>
     {/if}
-    <!-- The type buttons reload the same sample, so the demo saves nothing. -->
-    <div id="schedule-sample"><SchedulePanel {schedule} onfilter={() => schedule} /></div>
+    <!-- The dropdowns reload the same sample, so the demo saves nothing. -->
+    <div id="schedule-sample"><SchedulePanel {schedule} onpick={() => schedule} /></div>
     <div class="gap"></div>
     <div id="schedule-drop"><SchedulePanel schedule={scheduleDrop} /></div>
     <div class="gap"></div>

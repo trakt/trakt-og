@@ -18,8 +18,11 @@ const START_DAYS = [
 // Each field is OG's `dashboard_*` user column without the prefix, with OG's default when it's missing or unreadable.
 const prefsSchema = z.object({
   on_deck_poster: z.enum(['show', 'season']).catch('show'),
-  /** `shows-movies` is what OG used before the form was ever saved; the form offers the other four. */
-  upcoming_filter: z.enum(['shows-movies', 'shows', 'premieres', 'new-shows', 'finales']).catch('shows-movies'),
+  /** `shows-movies` is what OG used before the form was ever saved; the form offers the other four. og adds `none`,
+   * for a schedule of movies alone. */
+  upcoming_filter: z.enum(['shows-movies', 'shows', 'premieres', 'new-shows', 'finales', 'none']).catch('shows-movies'),
+  /** og's own: whether the watchlist's movies come alongside the shows, as they always did in OG. */
+  upcoming_movies: z.enum(['all', 'none']).catch('all'),
   upcoming_start_day: z.enum(START_DAYS).catch('today'),
   upcoming_poster: z.enum(['show', 'season']).catch('show'),
   hide_on_deck: z.boolean().catch(false),

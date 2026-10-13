@@ -1,6 +1,6 @@
 <!--
   The profile header, shared by every /users/:id page: the cover, avatar, name with the VIP and Private labels, the
-  options menu, follow buttons, a line of glass pills for location, gender and age, and the year they joined, the
+  options menu, follow buttons, a line of glass pills for private status, location, gender and age, and the year they joined, the
   watching-now player and the section tabs. The name block is one left-aligned row: centered on the slim cover, and
   low on the tall one so the art shows. The profile page gets the tall cover when there's art to show (the owner's
   cover or what they're watching); every subpage, and a profile without art, gets the slim one on OG's damask. A
@@ -18,11 +18,11 @@ import { headerArt } from '$lib/components/header/headerArt';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import ReportDialog from '$lib/components/summary/ReportDialog.svelte';
 import { toast } from '$lib/components/toast/toast.svelte';
-import PrivateLabel from '$lib/components/labels/PrivateLabel.svelte';
 import VipLabel from '$lib/components/labels/VipLabel.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import ban from '$lib/icons/regular/ban.svg?raw';
 import calendar from '$lib/icons/regular/calendar-lines.svg?raw';
+import lock from '$lib/icons/regular/lock.svg?raw';
 import circleCheck from '$lib/icons/regular/circle-check.svg?raw';
 import ellipsis from '$lib/icons/regular/ellipsis.svg?raw';
 import flag from '$lib/icons/regular/flag.svg?raw';
@@ -103,7 +103,6 @@ const change = (viewer: ViewerRelation, action: 'unfollow' | 'block' | 'unblock'
           <h1>
             <a {href}>{user.displayName}</a>
             {#if user.vip}<VipLabel badge={user.vip} />{/if}
-            {#if user.isPrivate && !user.isLocked}<PrivateLabel />{/if}
             {#if showOthersControls}
               <span class="options">
                 <Dropdown variant="circle" label="User options">
@@ -141,6 +140,7 @@ const change = (viewer: ViewerRelation, action: 'unfollow' | 'block' | 'unblock'
 
           {#if !user.isLocked}
             <div class="pills">
+              {#if user.isPrivate}<CoverPill tone="private"><Icon svg={lock} />Private</CoverPill>{/if}
               <CoverPill><Icon svg={locationPin} />{user.location}</CoverPill>
               <CoverPill title={user.gender.title}>
                 <Icon svg={genderIcons[user.gender.icon]} label={user.gender.title} />

@@ -1,18 +1,21 @@
+<!--
+  An incoming follow request, as its own question bar under the profile cover: "Neil wants to follow you", then
+  Approve (solid green), Deny and Block (outlined, red on hover), in the cover's button style. Once answered, the
+  bar says what happened instead of the buttons.
+-->
 <script lang="ts">
 import { getContext } from 'svelte';
+import Container from '$lib/components/container/Container.svelte';
 import { toast } from '$lib/components/toast/toast.svelte';
 import { changeRelationship } from '$lib/users/changeRelationship';
 import { createRelationshipOverlay } from '$lib/users/createRelationshipOverlay.svelte';
 import { relationshipRequest } from '$lib/users/relationshipRequest';
 import type { ViewerRelation } from '$lib/users/ViewerRelation';
+import Icon from '$lib/icons/Icon.svelte';
+import userPlus from '$lib/icons/regular/user-plus.svg?raw';
+import blockThick from '$lib/icons/trakt/block-thick.svg?raw';
 import checkThick from '$lib/icons/trakt/check-thick.svg?raw';
 import deleteThick from '$lib/icons/trakt/delete-thick.svg?raw';
-import blockThick from '$lib/icons/trakt/block-thick.svg?raw';
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import block from '$lib/icons/trakt/block.svg?raw';
-import check from '$lib/icons/trakt/check.svg?raw';
-import deleteIcon from '$lib/icons/trakt/delete.svg?raw';
 
 const { firstName, slug, isPrivate, relation }: {
   firstName: string;
@@ -28,101 +31,122 @@ const change = (action: 'approve' | 'deny' | 'blockRequest') =>
   changeRelationship({ slug, isPrivate, relation, action, overlay, request: relationshipRequest, notify: toast });
 </script>
 
-<div class="pending-follow">
-  <span class="text">{firstName} wants to follow you</span>
-  <span class="actions">
-    <Tooltip text="Approve">
-      {#snippet trigger(tooltip)}
-        <button type="button" class:off={decision !== null && decision !== 'approve'} class="approve"
-          aria-label="Approve {firstName}'s follow request" aria-pressed={decision === 'approve'}
-          aria-disabled={busy || decision !== null} aria-busy={busy} onclick={() => change('approve')} {...tooltip}>
-          <Icon svg={decision === 'approve' ? checkThick : check} />
-        </button>
-      {/snippet}
-    </Tooltip>
-    <Tooltip text="Deny">
-      {#snippet trigger(tooltip)}
-        <button type="button" class:off={decision !== null && decision !== 'deny'} class="deny"
-          aria-label="Deny {firstName}'s follow request" aria-pressed={decision === 'deny'}
-          aria-disabled={busy || decision !== null} aria-busy={busy} onclick={() => change('deny')} {...tooltip}>
-          <Icon svg={decision === 'deny' ? deleteThick : deleteIcon} />
-        </button>
-      {/snippet}
-    </Tooltip>
-    <Tooltip text="Block">
-      {#snippet trigger(tooltip)}
-        <button type="button" class:off={decision !== null && decision !== 'block'} class="block"
-          aria-label="Block {firstName}" aria-pressed={decision === 'block'}
-          aria-disabled={busy || decision !== null} aria-busy={busy} onclick={() => change('blockRequest')} {...tooltip}>
-          <Icon svg={decision === 'block' ? blockThick : block} />
-        </button>
-      {/snippet}
-    </Tooltip>
-  </span>
-</div>
+<section class="request-bar" aria-label="Follow request">
+  <Container>
+    <div class="row">
+      <p class="question" aria-live="polite">
+        <Icon svg={userPlus} />
+        <span>
+          {#if decision === 'approve'}
+            You approved <b>{firstName}</b>'s follow request.
+          {:else if decision === 'deny'}
+            You denied <b>{firstName}</b>'s follow request.
+          {:else if decision === 'block'}
+            You blocked <b>{firstName}</b>.
+          {:else}
+            <b>{firstName}</b> wants to follow you
+          {/if}
+        </span>
+      </p>
+      {#if decision === null}
+        <div class="actions">
+          <button type="button" class="approve" aria-busy={busy} aria-disabled={busy} onclick={() => change('approve')}>
+            <Icon svg={checkThick} />Approve
+          </button>
+          <button type="button" aria-busy={busy} aria-disabled={busy} onclick={() => change('deny')}>
+            <Icon svg={deleteThick} />Deny
+          </button>
+          <button type="button" aria-busy={busy} aria-disabled={busy} onclick={() => change('blockRequest')}>
+            <Icon svg={blockThick} />Block
+          </button>
+        </div>
+      {/if}
+    </div>
+  </Container>
+</section>
 
 <style>
-.pending-follow {
-  display: inline-flex;
-  align-items: center;
-  block-size: var(--profile-button-height);
-  padding-inline: var(--profile-button-padding);
-  border: var(--action-button-border-width) solid var(--color-profile-button-border);
-  border-radius: var(--radius-profile-button);
-  background-color: var(--color-profile-pill-bg);
-  backdrop-filter: var(--blur-profile-pill);
+.request-bar {
+  border-block-end: 1px solid var(--color-profile-request-bar-border);
+  background-color: var(--color-profile-request-bar-bg);
+  color: var(--color-text);
+  font-family: var(--font-headings);
 }
 
-.text {
-  display: inline-block;
-  font-size: var(--font-size-action-button);
-  font-family: var(--font-headings);
-  font-weight: var(--font-weight-headings-heavy);
-  text-transform: uppercase;
-  vertical-align: middle;
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm-block) var(--profile-slim-gap);
+  min-block-size: var(--profile-request-bar-height);
+  padding-block: var(--space-sm-block);
+}
+
+.question {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm-inline);
+  margin: 0;
+  font-size: var(--font-size-profile-request);
+
+  & :global(.icon) {
+    color: var(--color-profile-follow);
+  }
+
+  & b {
+    font-weight: var(--font-weight-headings-heavy);
+  }
 }
 
 .actions {
-  display: inline-block;
-  padding-inline-start: 15px;
-  font-size: var(--font-size-request-icons);
-  vertical-align: middle;
+  display: flex;
+  gap: var(--profile-button-gap);
 }
 
+/* The cover's button style: outlined, green to approve, red on hover for the rest. */
 button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-action-button-icon);
+  block-size: var(--profile-button-height);
   min-block-size: 0;
-  padding: 0;
-  border: 0;
+  padding: 0 var(--profile-button-padding);
+  border: var(--action-button-border-width) solid var(--color-action-border);
+  border-radius: var(--radius-profile-button);
   background: none;
-  font-size: inherit;
-  line-height: var(--line-height-base);
+  color: inherit;
+  font-size: var(--font-size-action-button);
+  font-weight: var(--font-weight-headings-heavy);
+  line-height: 1;
+  text-transform: uppercase;
   cursor: pointer;
-  transition: opacity var(--transition-relationship-request);
-  &.off {
-    opacity: 0;
-    visibility: hidden;
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s;
+
+  &:is(:hover, :focus-visible) {
+    border-color: var(--color-profile-remove);
+    background-color: var(--color-profile-request-remove-hover);
+    color: var(--color-profile-remove);
   }
-  &[aria-disabled="true"] {
-    cursor: default;
+
+  &.approve {
+    border-color: var(--color-profile-follow);
+    background-color: var(--color-profile-follow-solid);
+    color: var(--color-text-inverse);
+
+    &:is(:hover, :focus-visible) {
+      border-color: var(--color-profile-follow-hover-border);
+      background-color: var(--color-profile-follow-hover);
+      color: var(--color-text-inverse);
+      box-shadow: var(--shadow-profile-follow-hover);
+    }
+  }
+
+  &[aria-disabled='true'] {
+    cursor: wait;
   }
 }
 
-.approve {
-  margin-inline-end: 10px;
-  color: var(--brand-success);
-}
-
-.deny {
-  color: var(--brand-primary);
-}
-
-.block {
-  margin-inline-start: 10px;
-  color: var(--gray-light);
-  font-size: var(--font-size-request-block);
-  line-height: 28px;
-  vertical-align: text-bottom;
-}
 @media (prefers-reduced-motion: reduce) {
   button {
     transition: none;

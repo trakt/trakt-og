@@ -1,9 +1,10 @@
 <!--
-  OG's VIP label: the round Trakt logo and "VIP" on a red pill, an OG or EP tag, and a star
-  with the year count past one year. Staff get "Director" instead. It sits after a name, usually in a heading.
-  The tag and the years show OG's tooltips on top . They stay out of the tab order, since a
-  label repeats on every comment and list row: the years are in the text, and the tag's full name is its description.
-  `quiet` is a comment header's: a round red pill the size of its outline tags, with the tag and the years inside it.
+  The VIP label: one round red pill with the Trakt logo and "VIP" (or "Director" for staff), the OG or EP tag as a
+  darker red segment, and past one year a light gray segment with a black star and the year count. It sits after a name.
+  The default size goes in headings; `pill`, `small` and `quiet` are the small size for comment headers, cards, list
+  rows and promotional lines, and only change the spacing around it. The tag and the years show tooltips on top. They
+  stay out of the tab order, since a label repeats on every comment and list row: the years are in the text, and the
+  tag's full name is its description.
     <VipLabel badge={toVipBadge(user)} />
 -->
 <script lang="ts">
@@ -15,8 +16,11 @@ import type { VipBadge } from '$lib/users/VipBadge';
 
 interface Props {
   badge: VipBadge;
+  /** After a name in a card or a list row. */
   pill?: boolean;
+  /** In a promotional line, like the account welcome. */
   small?: boolean;
+  /** In a comment header, next to its outline tags. */
   quiet?: boolean;
 }
 
@@ -24,9 +28,8 @@ const { badge, pill = false, small = false, quiet = false }: Props = $props();
 const years = $derived(badge.kind === 'vip' ? badge.years : null);
 </script>
 
-<span class={['label-vip', { 'with-years': years, pill, small, quiet }]}>
-  {#if !pill && !quiet}<span class="mark"><Icon svg={trakt} /></span>{/if}
-  <span class="text">{badge.kind === 'director' ? 'Director' : 'VIP'}</span>
+<span class={['label-vip', { compact: pill || small || quiet, pill, quiet }]}>
+  <span class="name"><span class="mark"><Icon svg={trakt} /></span>{badge.kind === 'director' ? 'Director' : 'VIP'}</span>
   {#if badge.kind === 'vip' && badge.tag}
     {@const tag = badge.tag}
     <Tooltip text={tag.title}>
@@ -37,8 +40,7 @@ const years = $derived(badge.kind === 'vip' ? badge.years : null);
     <Tooltip text="{years} years">
       {#snippet trigger(tooltip)}
         <span class="years" {...tooltip}>
-          <Icon svg={star} />
-          <span class="years-text">{years}<span class="visually-hidden">&nbsp;years</span></span>
+          <Icon svg={star} />{years}<span class="visually-hidden">&nbsp;years</span>
         </span>
       {/snippet}
     </Tooltip>
@@ -47,162 +49,101 @@ const years = $derived(badge.kind === 'vip' ? badge.years : null);
 
 <style>
 .label-vip {
-  position: relative;
-  display: inline-block;
-  margin: 0 0 5px 10px;
-  padding-inline-start: 28px;
-  border-radius: var(--radius-label-vip);
+  display: inline-flex;
+  align-items: stretch;
+  block-size: var(--label-vip-height);
+  margin-inline-start: 10px;
+  overflow: hidden;
+  border-radius: calc(var(--label-vip-height) / 2);
   background-color: var(--brand-primary);
   color: var(--color-text-inverse);
   font-family: var(--font-headings);
-  font-size: var(--font-size-label);
-  font-weight: var(--font-weight-headings);
+  font-size: var(--font-size-label-vip);
+  font-weight: var(--font-weight-headings-heavy);
   line-height: 1;
-  letter-spacing: 1px;
+  letter-spacing: var(--label-vip-tracking);
   text-transform: uppercase;
   text-shadow: none;
   vertical-align: middle;
+  white-space: nowrap;
 
-  &.with-years {
-    margin-inline-end: 25px;
+  &.compact {
+    block-size: var(--label-vip-height-small);
+    border-radius: calc(var(--label-vip-height-small) / 2);
+    font-size: var(--font-size-label-vip-small);
+  }
+
+  &.pill {
+    margin-inline-start: 5px;
+  }
+
+  &.quiet {
+    margin-inline-start: 0;
   }
 }
 
-/* Centered top to bottom, so the round logo keeps an even ring of red at any label size. */
-.mark {
-  position: absolute;
-  inset-block: 0;
-  inset-inline-start: 3px;
-  display: flex;
+.name,
+.tag,
+.years {
+  display: inline-flex;
   align-items: center;
-  font-size: 125%;
-  line-height: 1;
+}
+
+.name {
+  gap: var(--label-vip-gap);
+  padding: var(--label-vip-name-padding);
+
+  .compact & {
+    gap: var(--label-vip-gap-small);
+    padding: var(--label-vip-name-padding-small);
+  }
+}
+
+/* Centered top to bottom, so the round logo keeps an even ring of red at any size. */
+.mark {
+  display: flex;
+  font-size: var(--label-vip-mark);
 
   & :global(.icon) {
     translate: 0 var(--label-vip-mark-shift);
   }
+
+  .compact & {
+    font-size: var(--label-vip-mark-small);
+  }
 }
 
-.text {
-  display: inline-block;
-  padding: 5px 6px 5px 0;
+.tag,
+.years {
+  padding: var(--label-vip-segment-padding);
+
+  .compact & {
+    padding: var(--label-vip-segment-padding-small);
+  }
 }
 
 .tag {
-  display: inline-block;
-  margin-block: -5px;
-  padding: 5px;
   background-color: var(--color-label-ep);
   text-decoration: none;
 }
 
 .years {
-  position: absolute;
-  inset-inline-end: -28px;
-  z-index: 0;
-  display: inline-block;
-  font-size: var(--font-size-label-star);
-  letter-spacing: 0;
-}
-
-.years-text {
-  position: absolute;
-  inset-block-start: 0;
-  inset-inline: 0;
-  color: var(--color-label-years);
-  font-size: var(--font-size-label-years);
-  font-weight: var(--font-weight-headings-heavy);
-  line-height: 25px;
-  text-align: center;
-}
-
-/* `.label-vip.piller.light-bg` */
-.small {
-  margin-block: 0;
-  padding-inline-start: var(--label-vip-small-indent);
-  font-size: var(--font-size-label-vip-small);
-
-  & .text {
-    padding: var(--label-vip-small-padding);
-  }
-}
-
-.pill {
-  margin: -3px 0 0 5px;
-  padding-inline-start: 0;
-  border-radius: 2px;
-  font-size: var(--font-size-pill);
+  gap: var(--label-vip-years-gap);
+  background-color: var(--color-label-years-bg);
+  color: var(--color-label-years-text);
+  font-size: var(--font-size-label-vip-years);
   letter-spacing: 0;
 
-  & .text,
-  & .tag {
-    margin-block: 0;
-    padding: 2px 4px;
+  & :global(.icon) {
+    font-size: var(--label-vip-star);
   }
 
-  & .tag {
-    border-radius: 0 2px 2px 0;
-  }
+  .compact & {
+    font-size: var(--font-size-label-vip-years-small);
 
-  & .years {
-    inset-block-start: -6px;
-    color: var(--color-label-years-light-bg);
-  }
-
-  & .years-text {
-    color: var(--color-text-inverse);
-    font-size: var(--font-size-label-years-pill);
-    font-weight: var(--font-weight-headings);
-  }
-}
-
-/*
-  A comment header's: the outline tags' height, padding, size and weight, filled red, in sentence case ("Director"),
-  with the OG or EP tag as a darker segment and the years star inside. The pill's round ends clip the segments.
-*/
-.label-vip.quiet {
-  display: inline-flex;
-  align-items: stretch;
-  block-size: var(--comment-badge-height);
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  border-radius: var(--radius-comment-tag);
-  font-size: var(--font-size-comment-tag);
-  letter-spacing: 0;
-  text-transform: none;
-  vertical-align: middle;
-
-  & .text,
-  & .tag,
-  & .years {
-    display: inline-flex;
-    align-items: center;
-    margin: 0;
-    padding: var(--comment-tag-padding);
-  }
-
-  & .tag {
-    font-size: inherit;
-  }
-
-  & .years {
-    position: static;
-    gap: var(--comment-tag-gap);
-    font-size: var(--font-size-comment-tag-icon);
-  }
-
-  & .years-text {
-    position: static;
-    color: inherit;
-    font-size: var(--font-size-comment-tag);
-    font-weight: inherit;
-    line-height: 1;
-  }
-
-  /* The years follow the name: no gap before them, unless the darker tag sits between. */
-  & .text + .years {
-    padding-inline-start: 0;
+    & :global(.icon) {
+      font-size: var(--label-vip-star-small);
+    }
   }
 }
 

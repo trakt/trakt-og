@@ -52,7 +52,7 @@ describe('users/[id] layout', () => {
       const data = await layout('justin', 'stale');
 
       expect(data.profile.slug).toBe('justin');
-      expect(data.counts).toEqual({ followers: 3, following: 4 });
+      expect(data.stats?.network).toMatchObject({ followers: 3, following: 4 });
       expect(data.signedIn).toBe(false);
       expect(seen.map((request) => request.headers.get('authorization'))).toEqual(['Bearer stale', null]);
     });

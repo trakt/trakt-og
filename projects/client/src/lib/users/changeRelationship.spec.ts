@@ -114,7 +114,7 @@ describe('changeRelationship', () => {
       expect(state.overlay.state('leela', empty)).toMatchObject({
         relation: { requestId: 42, followsYou: action === 'approve', blocked: action === 'blockRequest' },
         decision: action === 'blockRequest' ? 'block' : action,
-        hideBlock: action !== 'deny',
+        hideBlock: action === 'approve',
       });
       expect(await state.change('deny')).toBe(false);
     },
@@ -137,12 +137,12 @@ describe('changeRelationship', () => {
     await state.change('block');
     expect(state.overlay.state('leela', empty)).toMatchObject({
       relation: { follow: 'following', followsYou: false, blocked: true },
-      hideBlock: true,
+      hideBlock: false,
     });
     await state.change('unblock');
     expect(state.overlay.state('leela', empty)).toMatchObject({
       relation: { blocked: false },
-      hideBlock: true,
+      hideBlock: false,
       followerDelta: 0,
     });
   });

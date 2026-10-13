@@ -1,33 +1,42 @@
 <!--
-  OG's profile header, shared by every /users/:id page: the cover, avatar, name with the VIP
-  and Private labels, the options menu, follow buttons, follower counts, location, the watching-now bar and the
-  section tabs. The profile page gets the tall cover when the owner has a cover image; every subpage gets the slim
-  one. A private profile the viewer can't see gets the full-height lock screen instead of the tabs.
+  The profile header, shared by every /users/:id page: the cover, avatar, name with the VIP and Private labels, the
+  options menu, follow buttons, a line of glass pills for location, gender and age, and the year they joined, the
+  watching-now player and the section tabs. The name block is one left-aligned row: centered on the slim cover, and
+  low on the tall one so the art shows. The profile page gets the tall cover when there's art to show (the owner's
+  cover or what they're watching); every subpage, and a profile without art, gets the slim one on OG's damask. A
+  private profile the viewer can't see gets the full-height lock screen instead of the tabs.
 -->
 <script lang="ts">
 import { getContext, setContext } from 'svelte';
+import { changeRelationship } from '$lib/users/changeRelationship';
 import { createRelationshipOverlay } from '$lib/users/createRelationshipOverlay.svelte';
+import { relationshipRequest } from '$lib/users/relationshipRequest';
 import defaultCover from '$lib/assets/profile-cover-default.jpg';
 import privateCover from '$lib/assets/profile-cover-private.jpg';
 import Container from '$lib/components/container/Container.svelte';
 import { headerArt } from '$lib/components/header/headerArt';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import ReportDialog from '$lib/components/summary/ReportDialog.svelte';
+import { toast } from '$lib/components/toast/toast.svelte';
 import PrivateLabel from '$lib/components/labels/PrivateLabel.svelte';
 import VipLabel from '$lib/components/labels/VipLabel.svelte';
 import Icon from '$lib/icons/Icon.svelte';
+import ban from '$lib/icons/regular/ban.svg?raw';
+import calendar from '$lib/icons/regular/calendar-lines.svg?raw';
+import circleCheck from '$lib/icons/regular/circle-check.svg?raw';
 import ellipsis from '$lib/icons/regular/ellipsis.svg?raw';
 import flag from '$lib/icons/regular/flag.svg?raw';
 import genderless from '$lib/icons/solid/genderless.svg?raw';
 import locationPin from '$lib/icons/solid/location-pin.svg?raw';
 import mars from '$lib/icons/solid/mars.svg?raw';
 import skull from '$lib/icons/solid/skull.svg?raw';
+import userXmark from '$lib/icons/regular/user-xmark.svg?raw';
 import venus from '$lib/icons/solid/venus.svg?raw';
 import type { ProfileTab } from '$lib/users/profileTabs';
 import type { ProfileUser } from '$lib/users/ProfileUser';
 import type { ViewerRelation } from '$lib/users/ViewerRelation';
 import type { WatchingNow } from '$lib/users/WatchingNow';
-import { readableStat } from '$lib/utils/readableStat';
+import CoverPill from './CoverPill.svelte';
 import FollowButtons from './FollowButtons.svelte';
 import FollowRequest from './FollowRequest.svelte';
 import ProfileTabs from './ProfileTabs.svelte';
@@ -35,8 +44,6 @@ import WatchingNowBar from './WatchingNowBar.svelte';
 
 interface Props {
   user: ProfileUser;
-  /** From `/users/:id/stats`, which a private profile keeps to itself. */
-  counts: { readonly followers: number; readonly following: number } | null;
   watching: WatchingNow | null;
   tabs: readonly ProfileTab[];
   /** The profile page itself, which gets the tall cover when there's an image for it. */
@@ -50,29 +57,30 @@ interface Props {
   coverUrl?: string;
 }
 
-const { user, counts, watching, tabs, large = false, isSelf, signedIn, relation, canFollow = true, coverUrl }: Props =
-  $props();
+const { user, watching, tabs, large = false, isSelf, signedIn, relation, canFollow = true, coverUrl }: Props = $props();
 
 const relationships = getContext<ReturnType<typeof createRelationshipOverlay>>('user-relationships') ??
   createRelationshipOverlay();
 setContext('user-relationships', relationships);
-const followerCount = $derived(
-  Math.max(
-    0,
-    (counts?.followers ?? 0) +
-      (relationships?.state(user.slug, { follow: 'none', followsYou: false, blocked: false, requestId: null })
-        .followerDelta ?? 0),
-  ),
-);
-
 let reporting = $state(false);
 const genderIcons = { mars, venus, genderless };
 const href = $derived(`/users/${user.slug}`);
 const cover = $derived(user.isLocked ? privateCover : (watching?.fanartUrl ?? coverUrl ?? user.coverUrl));
 const slim = $derived(!user.isLocked && (!large || !cover));
-// OG shaded the tall cover from the middle and the slim and private ones from the left. The default cover has neither.
-const overlay = $derived(cover ? (slim || user.isLocked ? 'shadow' : 'shade') : null);
+// The tall cover is shaded at the top for the header, and from the bottom left for the name. The slim and private ones
+// are shaded from the left, except the slim damask, which needs none.
+const overlay = $derived(slim || user.isLocked ? (cover ? 'shadow' : null) : 'shade');
 const showOthersControls = $derived(signedIn && !isSelf);
+const change = (viewer: ViewerRelation, action: 'unfollow' | 'block' | 'unblock') =>
+  changeRelationship({
+    slug: user.slug,
+    isPrivate: user.isPrivate,
+    relation: viewer,
+    action,
+    overlay: relationships,
+    request: relationshipRequest,
+    notify: toast,
+  });
 </script>
 
 <!-- Counts and the owner's name link to profile pages other issues build; resolve() only takes routes that exist. -->
@@ -85,69 +93,81 @@ const showOthersControls = $derived(signedIn && !isSelf);
   {#if overlay}<div class={overlay}></div>{/if}
   {#if user.isLocked}<div class="locked-overlay"></div>{/if}
 
-  <Container>
-    <div class="about">
-      <a class="avatar-link" {href} tabindex="-1" aria-hidden="true">
-        <img class="avatar" src={user.avatarUrl} alt="" width="100" height="100" />
-      </a>
-      <h1>
-        <a {href}>{user.displayName}</a>
-        {#if user.vip}<VipLabel badge={user.vip} />{/if}
-        {#if user.isPrivate && !user.isLocked}<PrivateLabel />{/if}
-        {#if showOthersControls}
-          <span class="options">
-            <Dropdown variant="circle" label="User options">
-              {#snippet trigger()}<Icon svg={ellipsis} />{/snippet}
-              <ul>
-                <li>
-                  <button type="button" onclick={() => { reporting = true; }}><Icon svg={flag} />Report {user.firstName}</button>
-                </li>
-              </ul>
-            </Dropdown>
-          </span>
-        {/if}
-      </h1>
+  <div class="stage">
+    <Container>
+      <div class="about">
+        <a class="avatar-link" {href} tabindex="-1" aria-hidden="true">
+          <img class="avatar" src={user.avatarUrl} alt="" width="72" height="72" />
+        </a>
+        <div class="identity">
+          <h1>
+            <a {href}>{user.displayName}</a>
+            {#if user.vip}<VipLabel badge={user.vip} />{/if}
+            {#if user.isPrivate && !user.isLocked}<PrivateLabel />{/if}
+            {#if showOthersControls}
+              <span class="options">
+                <Dropdown variant="circle" label="User options">
+                  {#snippet trigger()}<Icon svg={ellipsis} />{/snippet}
+                  <ul>
+                    {#await relation then viewer}
+                      {#if viewer}
+                        {@const current = relationships.state(user.slug, viewer).relation}
+                        {#if current.follow === 'following'}
+                          <li>
+                            <button type="button" onclick={() => change(viewer, 'unfollow')}>
+                              <span class="menu-row"><Icon svg={userXmark} fixedWidth />Unfollow</span>
+                            </button>
+                          </li>
+                        {/if}
+                        <li>
+                          <button type="button" onclick={() => change(viewer, current.blocked ? 'unblock' : 'block')}>
+                            <span class="menu-row">
+                              <Icon svg={current.blocked ? circleCheck : ban} fixedWidth />{current.blocked ? 'Unblock' : 'Block'}
+                            </span>
+                          </button>
+                        </li>
+                      {/if}
+                    {/await}
+                    <li>
+                      <button type="button" onclick={() => { reporting = true; }}>
+                        <span class="menu-row"><Icon svg={flag} fixedWidth />Report</span>
+                      </button>
+                    </li>
+                  </ul>
+                </Dropdown>
+              </span>
+            {/if}
+          </h1>
 
-      {#if showOthersControls && relation}
-        {#await relation then viewer}
-          {#if viewer}
-            <div class="buttons">
-              {#if viewer.requestId !== null}<FollowRequest firstName={user.firstName} slug={user.slug} isPrivate={user.isPrivate} relation={viewer} />{/if}
-              <FollowButtons slug={user.slug} isPrivate={user.isPrivate} relation={viewer} {canFollow} />
+          {#if !user.isLocked}
+            <div class="pills">
+              <CoverPill><Icon svg={locationPin} />{user.location}</CoverPill>
+              <CoverPill title={user.gender.title}>
+                <Icon svg={genderIcons[user.gender.icon]} label={user.gender.title} />
+                {#if user.age !== null}<b title="Age">{user.age}</b>{/if}
+              </CoverPill>
+              {#if user.joinedAt}
+                <CoverPill>
+                  <Icon svg={calendar} />Joined <b>{new Date(user.joinedAt).getUTCFullYear()}</b>
+                </CoverPill>
+              {/if}
             </div>
           {/if}
-        {/await}
-      {/if}
+        </div>
 
-      <div class="under-name">
-        {#if counts}
-          <p>
-            <a href="{href}/network/followers">
-              <span class="count">{readableStat(followerCount)}</span>
-              {followerCount === 1 ? 'Follower' : 'Followers'}
-            </a>
-            <a href="{href}/network/following">
-              <span class="count following">{readableStat(counts.following)}</span>
-              Following
-            </a>
-          </p>
-        {/if}
-        {#if !user.isLocked}
-          <p>
-            <Icon svg={locationPin} />{user.location}
-            <span title={user.gender.title}><Icon svg={genderIcons[user.gender.icon]} label={user.gender.title} /></span>
-            {#if user.age !== null}<span class="age" title="Age">{user.age}</span>{/if}
-          </p>
+        {#if showOthersControls && relation}
+          {#await relation then viewer}
+            {#if viewer}
+              <div class="buttons">
+                {#if viewer.requestId !== null}<FollowRequest firstName={user.firstName} slug={user.slug} isPrivate={user.isPrivate} relation={viewer} />{/if}
+                <FollowButtons slug={user.slug} isPrivate={user.isPrivate} relation={viewer} {canFollow} />
+              </div>
+            {/if}
+          {/await}
         {/if}
       </div>
-    </div>
-  </Container>
-
-  {#if watching}
-    <div class="watching-now">
-      <WatchingNowBar {watching} owner={isSelf ? 'self' : { firstName: user.firstName, href }} />
-    </div>
-  {/if}
+    </Container>
+  </div>
 
   {#if user.isLocked}
     <div class="locked-message">
@@ -157,7 +177,15 @@ const showOthersControls = $derived(signedIn && !isSelf);
       <p>Follow {user.firstName} and you'll be able to see their profile if they accept your request.</p>
     </div>
   {:else}
-    <ProfileTabs {tabs} />
+    <!-- The player and the tabs stack at the foot of the cover, as one glass deck. -->
+    <div class="deck">
+      {#if watching}
+        <div class="watching-now">
+          <WatchingNowBar {watching} owner={isSelf ? 'self' : { firstName: user.firstName, href }} />
+        </div>
+      {/if}
+      <ProfileTabs {tabs} />
+    </div>
   {/if}
 </section>
 
@@ -165,27 +193,30 @@ const showOthersControls = $derived(signedIn && !isSelf);
 
 <style>
 .profile-cover {
+  --deck: var(--profile-tabs-height);
   position: relative;
   z-index: 1;
-  block-size: calc(var(--profile-cover-height) + var(--header-height));
+  block-size: calc(var(--header-height) + var(--profile-cover-height));
   overflow: hidden;
   background: var(--cover) 50% 20% / cover no-repeat var(--color-page);
   color: var(--color-text-inverse);
-  transition: all 0.5s;
+  transition: block-size 0.5s;
 
   &.watching {
-    block-size: var(--profile-cover-height-watching);
+    --deck: calc(var(--profile-tabs-height) + var(--profile-watching-height));
+    block-size: calc(var(--header-height) + var(--profile-cover-height) + var(--profile-watching-height));
   }
 
   &.slim {
-    block-size: calc(var(--profile-cover-height-slim) + var(--header-height));
+    block-size: calc(var(--header-height) + var(--profile-cover-height-slim));
 
     &.watching {
-      block-size: calc(var(--profile-cover-height-slim-watching) + var(--header-height));
+      block-size: calc(var(--header-height) + var(--profile-cover-height-slim) + var(--profile-watching-height));
     }
   }
 
   &.locked {
+    --deck: 0px;
     block-size: 100vh;
   }
 }
@@ -209,127 +240,142 @@ const showOthersControls = $derived(signedIn && !isSelf);
   background-color: var(--color-profile-private-overlay);
 }
 
-/* OG's #avatar-wrapper: centered under the header on the tall cover, on the left of the slim one. */
-.about {
+/* The room between the header and the deck: the name block sits low on the tall cover, in the middle otherwise. */
+.stage {
   position: absolute;
-  inset-block-start: calc(var(--profile-avatar-top) + var(--header-height));
-  inset-inline-start: 0;
+  inset-block: var(--header-height) var(--deck);
+  inset-inline: 0;
   z-index: 1;
-  inline-size: 100%;
-  text-align: center;
-  transition: inset-block-start 0.5s;
+  display: grid;
+  align-content: end;
+  padding-block-end: var(--profile-tall-bottom);
 
-  .slim & {
-    position: relative;
-    inset-block-start: 0;
-    margin-block-start: calc(var(--profile-avatar-top-slim) + var(--header-height));
-    text-align: start;
+  :is(.slim, .locked) & {
+    align-content: center;
+    padding-block-end: 0;
   }
 
   .locked & {
-    inset-block-start: 50%;
     padding-block-end: 50px;
-    translate: 0 -50%;
   }
 }
 
+/* Bottom-aligned, so the buttons sit on the pills' line. When the name and the buttons don't fit side by side, the
+   buttons drop to their own line, still on the right. */
+.about {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--profile-slim-gap);
+
+  .locked & {
+    flex-direction: column;
+    align-items: center;
+    gap: var(--profile-about-gap);
+    text-align: center;
+  }
+}
+
+.avatar-link {
+  display: block;
+  flex: none;
+}
+
 .avatar {
-  inline-size: var(--profile-avatar-size);
-  block-size: var(--profile-avatar-size);
-  border: 5px solid var(--color-text-inverse);
+  display: block;
+  inline-size: var(--profile-avatar-size-slim);
+  block-size: var(--profile-avatar-size-slim);
+  border: var(--profile-avatar-border) solid var(--color-profile-avatar-border);
   border-radius: 50%;
   background-color: var(--color-text-inverse);
+  box-shadow: var(--shadow-profile-avatar);
   object-fit: cover;
+}
 
-  .slim & {
-    float: inline-start;
-    inline-size: var(--profile-avatar-size-slim);
-    block-size: var(--profile-avatar-size-slim);
-    margin-inline-end: 15px;
-    border-width: 3px;
+.identity {
+  display: grid;
+  justify-items: start;
+  gap: var(--profile-slim-name-gap);
+  min-inline-size: 0;
+
+  .locked & {
+    justify-items: center;
   }
 }
 
 h1 {
-  margin: 15px 0;
-  text-shadow: var(--text-shadow-headings);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  margin: 0;
+  font-size: var(--font-size-profile-name);
+  font-weight: var(--font-weight-headings);
+  line-height: var(--line-height-headings);
+  text-shadow: var(--text-shadow-profile-name);
 
   & > a {
     color: var(--color-text-inverse);
   }
 
-  .slim & {
-    margin: 0;
-    padding-block-start: 6px;
+  .locked & {
+    justify-content: center;
   }
 }
 
 .options {
-  display: inline-block;
-  margin: -5px 0 0 10px;
-  vertical-align: middle;
+  display: inline-flex;
+  margin-inline-start: var(--profile-about-gap);
+  font-size: var(--font-size-base);
   text-shadow: none;
 
-  & :global(.menu) {
-    margin-inline-start: 12px;
+  /* The ellipsis matches the cover's glass buttons; the menu is the shared dropdown card. */
+  & :global(.trigger.circle) {
+    inline-size: var(--profile-button-height);
+    block-size: var(--profile-button-height);
+    border: var(--action-button-border-width) solid var(--color-profile-button-border);
+    background-color: var(--color-profile-pill-bg);
+    backdrop-filter: var(--blur-profile-pill);
   }
 
-  & :global(.menu .icon) {
-    margin-inline-end: 10px;
-    font-size: var(--font-size-small);
+  & :global(.trigger.circle:is(:hover, :focus-visible)) {
+    border-color: var(--color-profile-button-border-hover);
+    background-color: var(--color-profile-button-hover-bg);
   }
+}
 
-  & :global(.menu button) {
-    padding-inline-start: 12px;
-  }
+.menu-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm-inline);
+}
+
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--profile-pill-gap);
 }
 
 .buttons {
-  margin: 0 0 20px;
+  display: flex;
+  justify-content: end;
+  gap: var(--profile-button-gap);
+  margin-inline-start: auto;
 
-  .slim & {
-    position: absolute;
-    inset-block-start: 20px;
-    inset-inline-end: 0;
-    margin: 0;
+  .locked & {
+    justify-content: center;
+    margin-inline-start: 0;
   }
 }
 
-.under-name p {
-  margin: 5px 0 0;
-  font-family: var(--font-headings);
-  font-size: var(--font-size-profile-meta);
-  line-height: var(--line-height-headings);
-  text-shadow: var(--text-shadow-headings);
-
-  .slim & {
-    display: inline-block;
-    margin: 0;
-  }
-
-  & a {
-    color: var(--color-text-inverse);
-  }
-
-  & :global(.icon) {
-    margin: 0 5px 0 10px;
-  }
-}
-
-.count,
-.age {
-  font-weight: var(--font-weight-headings);
-}
-
-.following {
-  margin-inline-start: 10px;
-}
-
-/* In OG the bar sits on the tabs. */
-.watching-now {
+.deck {
   position: absolute;
-  inset-block-end: var(--profile-tabs-height);
-  inline-size: 100%;
+  inset-block-end: 0;
+  inset-inline: 0;
+  z-index: 2;
+}
+
+.watching-now {
+  position: relative;
   block-size: var(--profile-watching-height);
 }
 
@@ -354,24 +400,29 @@ h1 {
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .profile-cover {
+    transition: none;
+  }
+}
+
 /* Phones only have to be usable: the slim cover grows to fit its wrapped lines, and the buttons drop under them. */
 @media (width < 768px) {
   .profile-cover.slim {
     block-size: auto;
-    padding-block-end: calc(var(--profile-tabs-height) + 15px);
+  }
 
-    &.watching {
-      padding-block-end: calc(var(--profile-tabs-height) + var(--profile-watching-height) + 15px);
-    }
+  .slim :is(.stage, .deck) {
+    position: relative;
+    inset: auto;
+  }
+
+  .slim .stage {
+    padding-block: calc(var(--header-height) + 15px) 15px;
   }
 
   h1 {
     font-size: var(--font-size-h2);
-  }
-
-  .slim .buttons {
-    position: static;
-    margin-block-start: 10px;
   }
 
   .locked-message h2 {

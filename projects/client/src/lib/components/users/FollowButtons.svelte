@@ -6,6 +6,7 @@ import timer from '$lib/icons/solid/timer.svg?raw';
 import blockThick from '$lib/icons/trakt/block-thick.svg?raw';
 import checkThick from '$lib/icons/trakt/check-thick.svg?raw';
 import deleteThick from '$lib/icons/trakt/delete-thick.svg?raw';
+import userPlus from '$lib/icons/regular/user-plus.svg?raw';
 import { changeRelationship } from '$lib/users/changeRelationship';
 import { createRelationshipOverlay } from '$lib/users/createRelationshipOverlay.svelte';
 import { relationshipRequest } from '$lib/users/relationshipRequest';
@@ -46,7 +47,8 @@ async function change(action: 'follow' | 'unfollow' | 'block' | 'unblock') {
   <button bind:this={followButton} type="button" class={['btn', variant, current.follow, { removing }]}
   aria-label="{removing ? hover : label} {slug}" aria-busy={busy} aria-disabled={busy}
   onclick={() => change(removing ? 'unfollow' : 'follow')}>
-    {#if removing && (variant === 'card' || current.follow === 'following')}
+    {#if !removing && variant === 'profile'}<Icon svg={userPlus} />{/if}
+    {#if removing}
       <span class="status-icon"><Icon svg={current.follow === 'pending' ? timer : checkThick} /></span>
       <span class="remove-icon"><Icon svg={deleteThick} /></span>
     {/if}
@@ -56,7 +58,8 @@ async function change(action: 'follow' | 'unfollow' | 'block' | 'unblock') {
 {#if variant === 'card'}
   {#if current.followsYou}<span class="btn card follows-you"><Icon svg={checkThick} />Follows You</span>{/if}
 {:else if !entry.hideBlock && (current.followsYou || current.blocked)}
-  <button type="button" class="btn profile secondary removing" aria-busy={busy} aria-disabled={busy}
+  <button type="button" class={['btn', 'profile', 'secondary', 'removing', { blocked: current.blocked }]}
+  aria-busy={busy} aria-disabled={busy}
   aria-label="{current.blocked ? 'Unblock' : 'Block'} {slug}"
   onclick={() => change(current.blocked ? 'unblock' : 'block')}>
   <span class="status-icon"><Icon svg={current.blocked ? blockThick : checkThick} /></span>
@@ -79,12 +82,49 @@ button {
 button[aria-disabled="true"] {
   cursor: wait;
 }
+/* On the cover: outlined glass, green to follow and while following, red on hover for anything that removes. */
 .profile {
-  margin: var(--relationship-profile-margin);
-  border-color: transparent;
-  background-color: transparent;
-  & :global(.icon) {
-    margin: var(--relationship-profile-icon-margin);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-action-button-icon);
+  block-size: var(--profile-button-height);
+  min-block-size: 0;
+  padding: 0 var(--profile-button-padding);
+  border: var(--action-button-border-width) solid var(--color-profile-button-border);
+  border-radius: var(--radius-profile-button);
+  background-color: var(--color-profile-pill-bg);
+  backdrop-filter: var(--blur-profile-pill);
+  font-size: var(--font-size-action-button);
+  line-height: 1;
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s;
+  &.none {
+    border-color: var(--color-profile-follow);
+    background-color: var(--color-profile-follow-solid);
+    &:is(:hover, :focus-visible) {
+      border-color: var(--color-profile-follow-hover-border);
+      background-color: var(--color-profile-follow-hover);
+      color: var(--color-text-inverse);
+      box-shadow: var(--shadow-profile-follow-hover);
+    }
+  }
+  &.following {
+    border-color: var(--color-profile-follow);
+    background-color: var(--color-profile-follow-solid);
+  }
+  &.blocked {
+    border-color: var(--color-profile-remove);
+    color: var(--color-profile-remove);
+  }
+  &.removing:is(:hover, :focus-visible) {
+    border-color: var(--color-profile-remove);
+    background-color: var(--color-profile-remove-hover);
+    color: var(--color-profile-remove);
+  }
+  /* Unblocking puts things back, so it goes neutral. */
+  &.blocked:is(:hover, :focus-visible) {
+    border-color: var(--color-profile-button-border-hover);
+    background-color: var(--color-profile-button-hover-bg);
+    color: var(--color-text-inverse);
   }
 }
 .card {
@@ -97,35 +137,32 @@ button[aria-disabled="true"] {
   font-size: var(--font-size-small);
   line-height: var(--line-height-base);
   vertical-align: middle;
+  background-color: var(--btn-bg);
   & :global(.icon) {
     margin-inline-end: var(--user-card-btn-icon-gap);
   }
-}
-.none {
-  --btn-bg: var(--brand-primary);
-}
-.following {
-  --btn-bg: var(--brand-quaternary);
-}
-.pending {
-  --btn-bg: var(--color-btn-pending);
-}
-.follows-you {
-  --btn-bg: var(--color-btn-follows-you);
-}
-.none,
-.following,
-.pending,
-.follows-you {
-  background-color: var(--btn-bg);
+  &.none {
+    --btn-bg: var(--brand-primary);
+  }
+  &.following {
+    --btn-bg: var(--brand-quaternary);
+  }
+  &.pending {
+    --btn-bg: var(--color-btn-pending);
+  }
+  &.follows-you {
+    --btn-bg: var(--color-btn-follows-you);
+  }
+  &.removing:is(:hover, :focus-visible) {
+    background-color: var(--color-relationship-card-remove-bg);
+    border-color: var(--color-relationship-card-remove-border);
+  }
 }
 .hover-text,
 .remove-icon {
   display: none;
 }
 .removing:is(:hover, :focus-visible) {
-  background-color: var(--color-relationship-remove-bg);
-  border-color: var(--color-relationship-remove-border);
   & .normal-text,
   & .status-icon {
     display: none;
@@ -135,8 +172,13 @@ button[aria-disabled="true"] {
     display: inline;
   }
 }
-.card.removing:is(:hover, :focus-visible) {
-  background-color: var(--color-relationship-card-remove-bg);
-  border-color: var(--color-relationship-card-remove-border);
+.profile .remove-icon,
+.profile .status-icon {
+  line-height: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .profile {
+    transition: none;
+  }
 }
 </style>

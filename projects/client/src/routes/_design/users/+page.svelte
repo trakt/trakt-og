@@ -58,6 +58,7 @@ const watching: WatchingNow = {
   episode: { number: '1x05', title: 'Good for the Soul' },
   href: '/shows/the-boys-2019/seasons/1/episodes/5',
   fanartUrl: null,
+  stillUrl: null,
   endsAt: endsIn(25),
   runtime: 60,
 };
@@ -67,6 +68,7 @@ const scrobbling: WatchingNow = {
   episode: null,
   href: '/movies/futurama-bender-s-big-score-2007',
   fanartUrl: vip.coverUrl,
+  stillUrl: 'https://media.trakt.tv/images/shows/000/099/080/fanarts/medium/a049f455c1.jpg',
   endsAt: endsIn(73),
   runtime: 89,
 };
@@ -74,7 +76,6 @@ const scrobbling: WatchingNow = {
 const relation = (value: Partial<ViewerRelation>) =>
   Promise.resolve({ follow: 'none', followsYou: false, blocked: false, requestId: null, ...value } as const);
 
-const counts = { followers: 12_468, following: 1 };
 const tabs = (slug: string, section = '') => profileTabs({ slug, pathname: `/users/${slug}/${section}`, isSelf: true });
 
 const states = [
@@ -220,7 +221,6 @@ const cards = [
   <h2 class="state">{title}</h2>
   <ProfileFrame
   user={props.user}
-  counts={counts}
   watching={props.watching ?? null}
   tabs={tabs(props.user.slug, props.tab)}
   large={props.large}

@@ -1,10 +1,12 @@
 <!--
-  The watching-now bar: a now-playing bar along the bottom of the cover while someone is checked in or scrobbling.
-  The cover blurs behind it. A badge on the left says which (an equaliser for playback, a check for a check-in), and a
-  scrubber shows the time watched and the time left, ticking every second (once a minute under reduced motion). Over
-  time it says "Finished" or "Wrapping up" for a few minutes, then fades out. Below 600px of its own width the scrubber
-  becomes a hairline along the bottom. The bar spans the cover; its content lines up with the page column. Put it
-  inside a positioned cover.
+  The watching-now player: a now-playing bar along the bottom of a cover while someone is checked in or scrobbling,
+  on the profile (over the tabs) and the dashboard greeting. Red-tinted glass blurs the cover behind it. A thumbnail
+  with a red progress line leads (the episode's screenshot or the fanart; without either, a badge says which: an
+  equaliser for playback, a check for a check-in), then a live dot with who is watching what, and a scrubber with the
+  time watched and the time left, ticking every second (once a minute under reduced motion). Over time it says
+  "Finished" or "Wrapping up" with a still green dot for a few minutes, then fades out. Below 600px of its own width
+  the scrubber becomes a hairline along the bottom. The bar spans the cover; its content lines up with the page
+  column. Put it inside a positioned cover.
 -->
 <script lang="ts">
 import { rawApiFetch } from '$lib/api/rawApiFetch';
@@ -12,6 +14,7 @@ import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
 import { userManager } from '$lib/auth/userManager';
 import { toast } from '$lib/components/toast/toast.svelte';
 import Container from '$lib/components/container/Container.svelte';
+import StatusDot from '$lib/components/status/StatusDot.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import check from '$lib/icons/solid/check.svg?raw';
@@ -68,20 +71,30 @@ async function cancel() {
   <div class={['bar', { done: progress.finished }]} style:--progress="{progress.percent}%">
     <Container>
       <div class="row">
-        <span class={['badge', watching.action]} aria-hidden="true">
-          {#if watching.action === 'checkin'}
-            <Icon svg={check} />
+        <a class="thumb" href={watching.href} tabindex="-1" aria-hidden="true">
+          {#if watching.stillUrl}
+            <img src={watching.stillUrl} alt="" width="96" height="54" />
           {:else}
-            <span class="equaliser"><i></i><i></i><i></i></span>
+            <span class={['badge', watching.action]}>
+              {#if watching.action === 'checkin'}
+                <Icon svg={check} />
+              {:else}
+                <span class="equaliser"><i></i><i></i><i></i></span>
+              {/if}
+            </span>
           {/if}
-        </span>
+          <span class="thumb-progress"></span>
+        </a>
         <div class="info">
           <p class="who">
-            {#if owner === 'self'}
-              You are watching
-            {:else}
-              <a href={owner.href}>{owner.firstName}</a> is watching
-            {/if}
+            <StatusDot kind={progress.finished ? 'done' : 'live'} />
+            <span class="who-text">
+              {#if owner === 'self'}
+                You are watching
+              {:else}
+                <a href={owner.href}>{owner.firstName}</a> is watching
+              {/if}
+            </span>
           </p>
           <p class="what">
             <a href={watching.href}>
@@ -148,7 +161,6 @@ async function cancel() {
   inset: 0;
   display: grid;
   align-items: center;
-  border-block-start: 1px solid var(--color-watching-border);
   background-color: var(--color-watching-bg-solid);
   color: var(--color-text-inverse);
   font-family: var(--font-headings);
@@ -169,8 +181,45 @@ async function cancel() {
   gap: var(--watching-gap);
 }
 
-.badge {
+.thumb {
+  position: relative;
   flex: none;
+  display: grid;
+  place-items: center;
+  inline-size: var(--watching-thumb-width);
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: var(--radius-watching-thumb);
+  background-color: var(--color-watching-thumb-bg);
+  box-shadow: 0 0 0 1px var(--color-watching-thumb-ring);
+
+  & img {
+    position: absolute;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+  }
+}
+
+.thumb-progress {
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline: 0;
+  block-size: var(--watching-thumb-progress);
+  background-color: var(--color-watching-faint);
+
+  &::after {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    inline-size: var(--progress);
+    background-color: var(--color-social-live);
+    content: '';
+  }
+}
+
+.badge {
   display: grid;
   place-items: center;
   inline-size: var(--watching-badge-size);
@@ -239,7 +288,15 @@ async function cancel() {
   }
 }
 
+.who-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .who {
+  display: flex;
+  align-items: center;
+  gap: var(--watching-kicker-gap);
   color: var(--color-watching-muted);
   font-size: var(--font-size-watching-kicker);
   font-weight: var(--font-weight-headings-heavy);
@@ -337,9 +394,8 @@ async function cancel() {
     gap: var(--watching-gap-phone);
   }
 
-  .badge {
-    inline-size: var(--watching-badge-size-phone);
-    block-size: var(--watching-badge-size-phone);
+  .thumb {
+    inline-size: var(--watching-thumb-width-phone);
   }
 
   .info {

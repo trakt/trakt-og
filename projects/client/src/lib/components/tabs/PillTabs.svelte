@@ -3,7 +3,6 @@
   washed red with a red border. An optional count sits in a badge inside the pill, solid red on the active one. The
   summary pages use them for comments, lists and cast.
   An ARIA tablist: arrow keys, Home and End move between tabs and select them, Tab goes on into the panel.
-  Set `--pill-tabs-justify` to move the pills along their row.
     <PillTabs label="Comments" tabs={[{ id: 'recent', label: 'Recent' }]} bind:selected>
       {#snippet panel(id)}...{/snippet}
     </PillTabs>
@@ -66,7 +65,6 @@ function onkeydown(event: KeyboardEvent) {
 .tabs {
   display: flex;
   flex-wrap: wrap;
-  justify-content: var(--pill-tabs-justify, flex-start);
   gap: var(--toggle-chip-gap);
   margin-block-start: var(--space-sm-block);
 }

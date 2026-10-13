@@ -263,10 +263,6 @@ li {
   gap: var(--profile-pill-gap);
   margin-block-start: var(--dashboard-inbox-pills-top);
 }
-/* The pills hang out by their padding and border, so their icons line up with the text above. */
-.dates {
-  margin-inline-start: var(--dashboard-inbox-pill-outdent);
-}
 .state {
   color: var(--color-dashboard-inbox-muted);
   font-size: var(--font-size-dashboard-inbox-time);

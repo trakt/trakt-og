@@ -1,7 +1,9 @@
 <!--
-  The dashboard's follow requests. Up to three show as boxes; from four up they fold into a summary line with an avatar
-  stack, and Review opens the boxes. The layout is picked from the count on load, so it doesn't switch while deciding,
-  and a decided box stays in place, marked Approved, Denied or Blocked, until the next load.
+  The dashboard's follow requests. Up to three show as boxes, two to a row, each with Approve, Deny and Block buttons
+  like the profile's request deck; from four up they fold into a summary line with an avatar stack, the newest and
+  oldest dates as pills, Approve All and Review, and Review opens the boxes. The layout is picked from the count on
+  load, so it doesn't switch while deciding, and a decided box stays in place, marked Approved, Denied or Blocked,
+  until the next load.
 -->
 <script lang="ts">
 import { tick } from 'svelte';
@@ -14,17 +16,17 @@ import { login } from '$lib/auth/login';
 import { changeRelationship } from '$lib/users/changeRelationship';
 import { createRelationshipOverlay } from '$lib/users/createRelationshipOverlay.svelte';
 import { toast } from '$lib/components/toast/toast.svelte';
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import Container from '$lib/components/container/Container.svelte';
 import HeadingMark from '$lib/components/heading/HeadingMark.svelte';
+import CoverPill from '$lib/components/users/CoverPill.svelte';
+import RequestButton from '$lib/components/users/RequestButton.svelte';
 import Icon from '$lib/icons/Icon.svelte';
+import ban from '$lib/icons/regular/ban.svg?raw';
+import clock from '$lib/icons/regular/clock.svg?raw';
+import clockRotateLeft from '$lib/icons/regular/clock-rotate-left.svg?raw';
 import userPlus from '$lib/icons/regular/user-plus.svg?raw';
-import check from '$lib/icons/trakt/check.svg?raw';
 import checkThick from '$lib/icons/trakt/check-thick.svg?raw';
-import deleteIcon from '$lib/icons/trakt/delete.svg?raw';
 import deleteThick from '$lib/icons/trakt/delete-thick.svg?raw';
-import block from '$lib/icons/trakt/block.svg?raw';
-import blockThick from '$lib/icons/trakt/block-thick.svg?raw';
 import { followRequestSummary } from '$lib/dashboard/followRequestSummary';
 import type { toFollowRequest } from '$lib/dashboard/toFollowRequest';
 
@@ -43,9 +45,9 @@ const relation = (id: number) => ({ follow: 'none' as const, followsYou: false, 
 const decisionOf = (request: Request) => relationships.state(request.slug, relation(request.id)).decision;
 const pending = $derived(requests.filter((request) => decisionOf(request) === null));
 const choices = [
-  { action: 'approve', decision: 'approve', label: 'Approve', done: 'Approved', svg: check, thick: checkThick },
-  { action: 'deny', decision: 'deny', label: 'Deny', done: 'Denied', svg: deleteIcon, thick: deleteThick },
-  { action: 'blockRequest', decision: 'block', label: 'Block', done: 'Blocked', svg: block, thick: blockThick },
+  { action: 'approve', decision: 'approve', tone: 'approve', label: 'Approve', done: 'Approved', icon: checkThick },
+  { action: 'deny', decision: 'deny', tone: 'deny', label: 'Deny', done: 'Denied', icon: deleteThick },
+  { action: 'blockRequest', decision: 'block', tone: 'block', label: 'Block', done: 'Blocked', icon: ban },
 ] as const;
 const condensed = $derived(requests.length > 3);
 const showBoxes = $derived(!condensed || reviewing || pending.length === 0);
@@ -112,16 +114,19 @@ async function decide(request: Request, action: 'approve' | 'deny' | 'blockReque
           </div>
           <div class="summary-text">
             <p>{#each summary as part, i (i)}{#if part.strong}<strong>{part.text}</strong>{:else}{part.text}{/if}{/each}</p>
-            <span class="meta">Newest {pending.at(0)?.requestedAgo} · oldest {pending.at(-1)?.requestedAgo}</span>
+            <div class="dates">
+              <CoverPill><Icon svg={clock} />Newest <b>{pending.at(0)?.requestedAgo}</b></CoverPill>
+              <CoverPill><Icon svg={clockRotateLeft} />Oldest <b>{pending.at(-1)?.requestedAgo}</b></CoverPill>
+            </div>
           </div>
           <div class="buttons">
             {#if approving || pending.length > 1}
-              <button class="approve-all" type="button" aria-disabled={approving !== null} onclick={approveAll}>
+              <RequestButton tone="approve" icon={checkThick} aria-disabled={approving !== null} onclick={approveAll}>
                 {approving ? `Approving ${Math.min(approving.done + 1, approving.total)} of ${approving.total}…` : `Approve all ${pending.length}`}
-              </button>
+              </RequestButton>
             {/if}
-            <button class="review" type="button" aria-expanded={reviewing} aria-controls="{uid}-requests"
-              onclick={() => (reviewing = !reviewing)}>{reviewing ? 'Hide' : 'Review'}</button>
+            <RequestButton tone="neutral" aria-expanded={reviewing} aria-controls="{uid}-requests"
+              onclick={() => (reviewing = !reviewing)}>{reviewing ? 'Hide' : 'Review'}</RequestButton>
           </div>
         </div>
       {/if}
@@ -140,17 +145,16 @@ async function decide(request: Request, action: 'approve' | 'deny' | 'blockReque
                   <time class="time" datetime={request.requestedIso} title={request.requestedAt}>{request.requestedAgo}</time>
                 {/if}
               </div>
-              <div class="actions">
-                {#each choices as choice (choice.action)}
-                  <Tooltip text={choice.label}>
-                    {#snippet trigger(tip)}
-                      <button class={choice.label.toLowerCase()} class:off={chosen && chosen !== choice} type="button" aria-label="{choice.label} {request.name}'s request"
-                        aria-pressed={chosen ? chosen === choice : undefined}
-                        aria-disabled={relationships.busy(request.slug) || decision !== null} onclick={() => decide(request, choice.action)} {...tip}><Icon svg={chosen === choice ? choice.thick : choice.svg} /></button>
-                    {/snippet}
-                  </Tooltip>
-                {/each}
-              </div>
+              {#if !chosen}
+                <div class="actions">
+                  {#each choices as choice (choice.action)}
+                    <RequestButton tone={choice.tone} icon={choice.icon} aria-label="{choice.label} {request.name}'s request"
+                      aria-disabled={relationships.busy(request.slug)} onclick={() => decide(request, choice.action)}>
+                      {choice.label}
+                    </RequestButton>
+                  {/each}
+                </div>
+              {/if}
             </li>
           {/each}
         </ul>
@@ -246,7 +250,12 @@ li {
     font-weight: var(--font-weight-headings-heavy);
   }
 }
-.meta,
+.dates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--profile-pill-gap);
+  margin-block-start: var(--space-sm-block);
+}
 .time,
 .state {
   color: var(--color-dashboard-inbox-muted);
@@ -257,38 +266,9 @@ li {
   flex-shrink: 0;
   gap: var(--dashboard-inbox-button-gap);
 }
-.approve-all,
-.review {
-  min-block-size: 0;
-  padding: var(--space-sm-block) var(--space-sm-inline);
-  border: var(--dashboard-border-width) solid var(--color-dashboard-inbox-button-border);
-  border-radius: var(--radius-dashboard-inbox);
-  background: none;
-  color: inherit;
-  font-family: var(--font-headings);
-  font-size: var(--font-size-dashboard-inbox-review);
-  font-weight: var(--font-weight-headings-heavy);
-  text-transform: uppercase;
-  cursor: pointer;
-  &:hover {
-    border-color: var(--color-dashboard-inbox-muted);
-  }
-}
-.approve-all {
-  border-color: var(--brand-success);
-  color: var(--brand-success);
-  font-variant-numeric: tabular-nums;
-  &:hover:not([aria-disabled='true']) {
-    border-color: var(--brand-success);
-    background: var(--color-dashboard-inbox-approve-hover);
-  }
-  &[aria-disabled='true'] {
-    cursor: progress;
-  }
-}
 ul {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--dashboard-inbox-gap);
   margin: 0;
   padding: 0;
@@ -347,53 +327,14 @@ li {
 }
 .actions {
   display: flex;
-}
-.actions button {
-  display: inline-grid;
-  place-items: center;
-  inline-size: var(--dashboard-inbox-action-size);
-  block-size: var(--dashboard-inbox-action-size);
-  min-block-size: 0;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: none;
-  font-size: var(--font-size-dashboard-inbox-action);
-  line-height: 1;
-  cursor: pointer;
-  &:hover:not([aria-disabled='true']) {
-    background: var(--color-dashboard-inbox-hover);
-  }
-  &.off {
-    visibility: hidden;
-  }
-  &[aria-disabled='true'] {
-    cursor: default;
-  }
-  &.approve {
-    color: var(--brand-success);
-  }
-  &.deny {
-    color: var(--brand-primary);
-  }
-  &.block {
-    color: var(--color-dashboard-inbox-muted);
-    font-size: var(--font-size-dashboard-inbox-block);
-  }
-}
-button:focus-visible {
-  outline: var(--watch-focus) solid currentColor;
-  outline-offset: var(--space-xs-inline);
+  gap: var(--space-sm-block);
 }
 @container (width < 900px) {
   ul {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 @container (width < 600px) {
-  ul {
-    grid-template-columns: minmax(0, 1fr);
-  }
   .summary {
     flex-wrap: wrap;
   }

@@ -946,22 +946,20 @@
   --space-pagination-inline: 8px; /* inside a square, for 3-digit pages */
   --space-pagination-arrow: 8px; /* the extra room outside each arrow */
   --font-size-icon-lg: 20px; /* pagination arrows, rating hearts */
-  --font-size-tab: 13px;
-  --font-size-count: 10px; /* the count badge on a tab */
   --font-size-no-results: 26px;
-  --radius-tab: 3px;
-  --tab-padding: 3px 6px 2px;
-  --tab-gap: 7px;
+  --tab-height: var(--control-height-small); /* a pill tab, a step smaller than a control */
+  --tab-padding-inline: 7px;
+  --font-size-tab: 13px;
   --no-results-padding: 100px;
   --no-results-image: 150px;
   --color-pagination-text: light-dark(#000, #fff);
   --color-pagination-disabled: light-dark(#ccc, #666);
   --space-page-jump-title: 8px; /* from the Jump to page label down to the picker */
-  --color-tab-bg: light-dark(rgb(0 0 0 / 0.3), rgb(255 255 255 / 0.15));
-  --color-tab-bg-hover: light-dark(rgb(0 0 0 / 0.5), rgb(255 255 255 / 0.35));
-  --color-tab-text: light-dark(#fff, #ccc);
-  --color-count-bg: #888;
-  --color-count-bg-hover: #000;
+  /* A picked pill tab: a red wash and border, like a filter that's on, with a solid red count. */
+  --color-tab-picked-bg: light-dark(rgb(237 28 36 / 0.1), rgb(237 28 36 / 0.16));
+  --color-tab-picked-bg-hover: light-dark(rgb(237 28 36 / 0.16), rgb(237 28 36 / 0.24));
+  --color-tab-picked-border: rgb(237 28 36 / 0.6);
+  --color-tab-picked-text: light-dark(#b3161c, #fff);
   --color-rating-empty: light-dark(#ddd, #444);
   --color-no-data-bg: light-dark(#f0f0f0, #333);
   --color-no-data-text: light-dark(#555, #ccc);

@@ -1,6 +1,7 @@
 <!--
-  OG's pill tabs (`.pill-tab-links .tab-links`): small rounded pills over a panel, the active one red. An optional
-  count sits in a badge inside the pill. The summary pages use them for comments, lists and cast.
+  Pill tabs over a panel, in Discover's toggle chip look (og's control border, background and radius), the active one
+  washed red with a red border. An optional count sits in a badge inside the pill, solid red on the active one. The
+  summary pages use them for comments, lists and cast.
   An ARIA tablist: arrow keys, Home and End move between tabs and select them, Tab goes on into the panel.
     <PillTabs label="Comments" tabs={[{ id: 'recent', label: 'Recent' }]} bind:selected>
       {#snippet panel(id)}...{/snippet}
@@ -62,61 +63,62 @@ function onkeydown(event: KeyboardEvent) {
 
 <style>
 .tabs {
-  margin-block-start: -2px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--toggle-chip-gap);
+  margin-block-start: var(--space-sm-block);
 }
 
 button {
-  display: inline-block;
-  min-block-size: 0;
-  margin: var(--space-sm-block) var(--tab-gap) 0 0;
-  padding: var(--tab-padding);
-  border: 0;
-  border-radius: var(--radius-tab);
-  background-color: var(--color-tab-bg);
-  color: var(--color-tab-text);
-  font-family: var(--font-headings);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--toggle-chip-count-gap);
+  min-block-size: var(--tab-height);
+  padding: 0 var(--tab-padding-inline);
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius-control);
+  background-color: var(--color-control-bg);
+  color: var(--color-control-text);
+  font: inherit;
   font-size: var(--font-size-tab);
-  font-weight: var(--font-weight-headings-light);
+  font-weight: var(--font-weight-control);
   line-height: 1;
-  transition: all 0.5s;
+  white-space: nowrap;
+  cursor: pointer;
 
   &:hover {
-    background-color: var(--color-tab-bg-hover);
+    border-color: var(--color-control-border-hover);
+    background-color: var(--color-control-hover-bg);
   }
 
   &[aria-selected='true'] {
-    background-color: var(--brand-primary);
-    color: var(--color-text-inverse);
+    border-color: var(--color-tab-picked-border);
+    background-color: var(--color-tab-picked-bg);
+    color: var(--color-tab-picked-text);
 
     &:hover {
-      background-color: var(--brand-primary-darken);
+      background-color: var(--color-tab-picked-bg-hover);
     }
   }
 }
 
 .count {
-  display: inline-block;
-  margin: -1px -4px -1px 3px;
-  padding: 1px 4px;
-  border: 1px solid var(--color-count-bg);
-  border-radius: var(--radius-tab);
-  background-color: var(--color-count-bg);
-  color: var(--color-text-inverse);
-  font-size: var(--font-size-count);
+  padding: var(--toggle-chip-count-padding);
+  border-radius: var(--radius-toggle-chip-count);
+  background-color: var(--color-toggle-chip-count-bg);
+  font-size: var(--font-size-toggle-chip-count);
   font-weight: var(--font-weight-headings-heavy);
-  vertical-align: top;
-  transition: all 0.5s;
+  font-variant-numeric: tabular-nums;
 
-  button:hover & {
-    border-color: var(--color-count-bg-hover);
-    background-color: var(--color-count-bg-hover);
+  [aria-selected='true'] & {
+    background-color: var(--brand-primary);
+    color: var(--color-text-inverse);
   }
+}
 
-  [aria-selected='true'] &,
-  [aria-selected='true']:hover & {
-    border-color: var(--color-text-inverse);
-    background-color: var(--color-text-inverse);
-    color: var(--brand-primary);
+@media (prefers-reduced-motion: no-preference) {
+  button {
+    transition: background-color var(--transition-season-ribbon), border-color var(--transition-season-ribbon);
   }
 }
 </style>

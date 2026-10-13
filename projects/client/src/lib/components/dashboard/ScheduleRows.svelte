@@ -1,6 +1,7 @@
 <!--
   A day's Upcoming Schedule rows, one per show: the air time, a small poster, the show with its episodes and network,
-  and the premiere or finale tag, which drops under the text in a narrow panel. "Show N more" opens the rest.
+  and the premiere or finale tag, which drops under the text in a narrow panel. In a day column the poster sits beside
+  the time, show and tag stacked. "Show N more" opens the rest.
 -->
 <script lang="ts">
 import posterPlaceholder from '$lib/assets/placeholders/poster.png';
@@ -67,6 +68,33 @@ ul {
 
     & .tag {
       grid-column: 3;
+    }
+  }
+
+  @container (width < 360px) {
+    grid-template-columns: var(--schedule-day-poster) minmax(0, 1fr);
+    grid-template-areas: 'poster time' 'poster what' 'poster tag';
+    row-gap: var(--space-schedule-episodes);
+    align-content: start;
+    align-items: start;
+    padding-block: var(--space-schedule-day-row);
+
+    & .time {
+      grid-area: time;
+    }
+
+    & .poster {
+      grid-area: poster;
+    }
+
+    & .what {
+      display: grid;
+      grid-area: what;
+    }
+
+    & .tag {
+      grid-area: tag;
+      justify-self: start;
     }
   }
 }

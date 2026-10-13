@@ -56,62 +56,38 @@ describe('toScheduleLayout', () => {
       expect(toScheduleLayout([day(-1, shows(1))])?.spotlight).toMatchObject({ heading: 'Yesterday' });
     });
 
-    it('should show at least three cards and the rest of the day as rows', () => {
-      const spotlight = toScheduleLayout([day(1, shows(10))])?.spotlight;
+    it('should show six cards, and past that five with the rest behind more', () => {
+      const six = toScheduleLayout([day(0, shows(6))])?.spotlight;
+      const ten = toScheduleLayout([day(1, shows(10))])?.spotlight;
 
-      expect(spotlight?.cards.map(({ title }) => title)).toEqual(['show0', 'show1', 'show2']);
-      expect(spotlight?.also).toMatchObject({ heading: 'Also Tomorrow', count: 7 });
-      expect(spotlight?.also?.shown).toHaveLength(5);
-      expect(spotlight?.also?.more.map(({ title }) => title)).toEqual(['show8', 'show9']);
+      expect(six?.shown).toHaveLength(6);
+      expect(six?.more).toHaveLength(0);
+      expect(ten?.shown.map(({ title }) => title)).toEqual(['show0', 'show1', 'show2', 'show3', 'show4']);
+      expect(ten?.more.map(({ title }) => title)).toEqual(['show5', 'show6', 'show7', 'show8', 'show9']);
     });
 
-    it('should leave out the rows when three cards cover the day', () => {
-      expect(toScheduleLayout([day(0, shows(3))])?.spotlight.also).toBeUndefined();
-    });
-  });
-
-  describe('the card count', () => {
-    const cards = (days: readonly ScheduleDay[]) => toScheduleLayout(days)?.spotlight.cards.length;
-
-    it('should make every show tonight a card when they fit beside the week', () => {
-      expect(cards([day(0, shows(4)), day(1, shows(6)), day(2, shows(5))])).toBe(4);
-    });
-
-    it('should keep a season drop to one card and move what runs past the week to rows', () => {
+    it('should keep a season drop to one card', () => {
       const drop = Array.from({ length: 10 }, (_, i) => episode('drop', `4x${i + 1}`, '3:00 am'));
-      const layout = toScheduleLayout([day(0, [...drop, ...shows(4)]), day(1, shows(9)), day(2, shows(5))]);
+      const spotlight = toScheduleLayout([day(0, [...drop, ...shows(2)])])?.spotlight;
 
-      expect(layout?.spotlight.cards.map(({ title }) => title)).toEqual(['drop', 'show0', 'show1', 'show2']);
-      expect(layout?.spotlight.also?.shown.map(({ title }) => title)).toEqual(['show3']);
-    });
-
-    it('should keep three cards when nothing is on today and the days after are busy', () => {
-      const spotlight = toScheduleLayout([day(1, shows(8)), day(2, shows(7)), day(3, shows(6))])?.spotlight;
-
-      expect(spotlight?.nothing).toBe('Nothing on today.');
-      expect(spotlight?.cards).toHaveLength(3);
-      expect(spotlight?.also?.shown).toHaveLength(5);
-    });
-
-    it('should count a two-episode card as taller', () => {
-      const pair = [episode('pair', '1x01', '9:00 pm'), episode('pair', '1x02', '9:30 pm')];
-
-      expect(cards([day(0, shows(4)), day(1, shows(6)), day(2, shows(3))])).toBe(4);
-      expect(cards([day(0, [...pair, ...shows(3)]), day(1, shows(6)), day(2, shows(3))])).toBe(3);
+      expect(spotlight?.shown.map(({ title }) => title)).toEqual(['drop', 'show0', 'show1']);
+      expect(spotlight?.shown.at(0)?.episodes).toHaveLength(10);
     });
   });
 
   describe('the week', () => {
-    it('should show the next two days with anything on', () => {
+    it('should show the next four days with anything on', () => {
       const layout = toScheduleLayout([
         day(0, shows(1)),
         day(1, []),
         day(2, shows(1)),
         day(3, shows(1)),
         day(4, shows(1)),
+        day(5, shows(1)),
+        day(6, shows(1)),
       ]);
 
-      expect(layout?.week.map(({ relative }) => relative)).toEqual(['Wednesday', 'Thursday']);
+      expect(layout?.week.map(({ short }) => short)).toEqual(['Oct 7', 'Oct 8', 'Oct 9', 'Oct 10']);
     });
 
     it('should show six rows a day, and past that five with the rest behind more', () => {
@@ -139,10 +115,10 @@ describe('toScheduleLayout', () => {
       episode('carrie', '1x02', '5:00 am'),
       episode('carrie', '1x03', '6:00 am'),
     ])]);
-    const [carrie, cia] = layout?.spotlight.cards ?? [];
+    const [carrie, cia] = layout?.spotlight.shown ?? [];
 
     it('should merge them into one row at the first time, with its tag', () => {
-      expect(layout?.spotlight.cards).toHaveLength(2);
+      expect(layout?.spotlight.shown).toHaveLength(2);
       expect(carrie).toMatchObject({ title: 'carrie', time: '3:00 am', label: premiere });
       expect(carrie?.episodes.map(({ number }) => number)).toEqual(['1x01', '1x02', '1x03']);
     });
@@ -155,11 +131,11 @@ describe('toScheduleLayout', () => {
       const watchNow = { title: 'b' } as NonNullable<ScheduleItem['watchNow']>;
       const pair = [episode('b', '1x01', '9:00 pm'), { ...episode('b', '1x02', '9:30 pm'), watchNow }];
 
-      expect(toScheduleLayout([day(0, pair)])?.spotlight.cards.at(0)?.watchNow).toBe(watchNow);
+      expect(toScheduleLayout([day(0, pair)])?.spotlight.shown.at(0)?.watchNow).toBe(watchNow);
     });
   });
 
   it('should give a movie no episodes', () => {
-    expect(toScheduleLayout([day(0, [movie('dune')])])?.spotlight.cards.at(0)?.episodes).toEqual([]);
+    expect(toScheduleLayout([day(0, [movie('dune')])])?.spotlight.shown.at(0)?.episodes).toEqual([]);
   });
 });

@@ -1,6 +1,6 @@
 <!--
   An incoming follow request: a second glass deck under the site header, in the header's glass and art tint with a
-  Trakt-blue wash that fades out to the right. An icon and "Neil wants to follow you", then Approve, Deny and Block as outlined buttons on a darker tint of their own color. Once answered, the deck says
+  Trakt-blue wash across it. An icon and "Neil wants to follow you", then Approve, Deny and Block as outlined buttons on a darker tint of their own color. Once answered, the deck says
   what happened.
 -->
 <script lang="ts">
@@ -82,7 +82,7 @@ const change = (action: 'approve' | 'deny' | 'blockRequest') =>
     position: absolute;
     inset: 0;
     z-index: -1;
-    background: var(--gradient-profile-request-wash);
+    background-color: var(--color-profile-request-wash);
     pointer-events: none;
     content: '';
   }

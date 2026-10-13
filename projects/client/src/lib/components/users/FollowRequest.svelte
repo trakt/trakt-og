@@ -1,6 +1,7 @@
 <!--
   An incoming follow request: a second glass deck under the site header, in the header's glass and art tint with a
-  green wash across it (the Approve color). An icon and "Neil wants to follow you", then Approve, Deny and Block as outlined buttons on a darker tint of their own color. Once answered, the deck says
+  green wash across it (the Approve color). An icon and "Neil wants to follow you" in green small capitals, then
+  Approve, Deny and Block as outlined buttons on a darker tint of their own color. Once answered, the deck says
   what happened.
 -->
 <script lang="ts">
@@ -107,6 +108,14 @@ const change = (action: 'approve' | 'deny' | 'blockRequest') =>
   & b {
     font-weight: var(--font-weight-headings-heavy);
   }
+}
+
+.question {
+  color: var(--color-profile-approve-text);
+  font-size: var(--font-size-profile-request-question);
+  font-weight: var(--font-weight-headings-heavy);
+  letter-spacing: var(--profile-request-question-tracking);
+  text-transform: uppercase;
 }
 
 .answer {

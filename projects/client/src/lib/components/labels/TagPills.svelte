@@ -2,6 +2,7 @@
   A row of small tag pills, like the header search's results: `primary` is the brand red (a result's type), `light` the
   pale one (its year), `badge` a bold clear pill with a brighter outline (a rating certificate), and the rest the dark outlined default (genres, a runtime).
     <TagPills tags={[{ text: 'Movie', kind: 'primary' }, { text: '2026', kind: 'light' }, { text: 'Drama' }]} />
+  A `lead` is bold before the text: `{ lead: '202.7K', text: 'shows' }`.
 -->
 <script lang="ts">
 import type { TagPill } from './TagPill.ts';
@@ -10,7 +11,8 @@ const { tags }: { tags: readonly TagPill[] } = $props();
 </script>
 
 <span class="tag-pills">
-  {#each tags as tag, i (`${i}:${tag.text}`)}<span class={['pill', tag.kind]}>{tag.text}</span>{/each}
+  {#each tags as tag, i (`${i}:${tag.text}`)}<span class={['pill', tag.kind, { lead: tag.lead }]}
+    >{#if tag.lead}<b>{tag.lead}</b> {tag.text}{:else}{tag.text}{/if}</span>{/each}
 </span>
 
 <style>
@@ -30,6 +32,15 @@ const { tags }: { tags: readonly TagPill[] } = $props();
   font-weight: var(--font-weight-headings);
   line-height: var(--line-height-search-pill);
   white-space: nowrap;
+
+  /* A count pill's weights: the number bold, its word regular. */
+  &.lead {
+    font-weight: var(--font-weight-headings-light);
+  }
+
+  & b {
+    font-weight: var(--font-weight-headings-heavy);
+  }
 }
 
 .primary {

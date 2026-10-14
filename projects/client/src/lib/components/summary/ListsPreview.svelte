@@ -1,11 +1,11 @@
 <!--
-  OG's lists preview on a summary: "Lists" with "All N Lists", then pill
-  tabs of list rows. Tabs without lists are left out by the caller. `cut:` "Following" (no API filter).
+  OG's lists preview on a summary: "Lists" with "All N Lists", then a dropdown picking Popular or Me and its list rows.
+  Picks without lists are left out by the caller. `cut:` "Following" (no API filter).
 -->
 <script lang="ts">
 import { page } from '$app/state';
+import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import ListRow from '$lib/components/media/ListRow.svelte';
-import PillTabs from '$lib/components/tabs/PillTabs.svelte';
 import type { ListTab } from '$lib/summary/sectionsClient';
 import { countLabel } from '$lib/utils/countLabel';
 import SectionHeading from './SectionHeading.svelte';
@@ -19,21 +19,37 @@ interface Props {
 }
 
 const { tabs, count, href }: Props = $props();
+let picked = $state<string>();
+const current = $derived(tabs.find(({ id }) => id === picked) ?? tabs[0]);
 </script>
 
 <div class="summary-lists">
   <SectionHeading title="Lists" more={{ href: `${href}/lists`, text: `All ${countLabel(count, 'List')}` }} />
-  <PillTabs label="Lists" tabs={tabs.map(({ id, label }) => ({ id, label }))}>
-    {#snippet panel(selected)}
-      {#each tabs.find(({ id }) => id === selected)?.lists ?? [] as list (list.id)}
-        <ListRow {...list} likeTarget={{ id: list.id, ownerSlug: list.kind === 'personal' ? list.owner.slug : undefined, viewer: page.data.user?.slug ?? null }} />
-      {/each}
-    {/snippet}
-  </PillTabs>
+  {#if current}
+    <div class="controls">
+      <Dropdown section="Filter">
+        {#snippet trigger()}{current.label}{/snippet}
+        <ul>
+          {#each tabs as tab (tab.id)}
+            <li>
+              <button type="button" aria-current={tab.id === current.id} onclick={() => (picked = tab.id)}>{tab.label}</button>
+            </li>
+          {/each}
+        </ul>
+      </Dropdown>
+    </div>
+  {/if}
+  {#each current?.lists ?? [] as list (list.id)}
+    <ListRow {...list} likeTarget={{ id: list.id, ownerSlug: list.kind === 'personal' ? list.owner.slug : undefined, viewer: page.data.user?.slug ?? null }} />
+  {/each}
 </div>
 
 <style>
 .summary-lists {
   margin-block-end: var(--gutter);
+}
+
+.controls {
+  padding-block-start: var(--space-heading-dropdowns);
 }
 </style>

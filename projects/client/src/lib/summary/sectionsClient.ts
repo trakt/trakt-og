@@ -25,8 +25,6 @@ const followingSchema = z.array(z.object({ user: z.object({ ids: z.object({ slug
 export type CommentTab = {
   readonly id: 'likes' | 'recent' | 'me';
   readonly label: string;
-  /** The badge inside the pill: "Likes" with "All Time". */
-  readonly count?: string;
   readonly comments: readonly CommentResponse[];
 };
 
@@ -181,7 +179,7 @@ export function sectionsClient({
         ),
       ]);
       const tabs: readonly CommentTab[] = [
-        { id: 'likes', label: 'Likes', count: 'All Time', comments: likes ?? [] },
+        { id: 'likes', label: 'Reactions', comments: likes ?? [] },
         { id: 'recent', label: 'Recent', comments: recent ?? [] },
         { id: 'me', label: 'Me', comments: mine ?? [] },
       ];

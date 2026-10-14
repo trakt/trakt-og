@@ -1488,8 +1488,6 @@
   --overview-collapsed: 300px;
 
   /* Episode summary title (OG at 2e0405a5f). */
-  --episode-title-tag-padding: 3px 5px;
-  --font-size-episode-title-tag: 11px;
   --episode-title-gap: 5px;
   --episode-title-certification-gap: 10px;
   --episode-title-certification-padding: 2px 4px 1px;
@@ -1710,8 +1708,6 @@
   --radius-comment-reply-prompt: 20px;
 
   /* The comment composer: the new comment form, the reply box and the edit form. */
-  --color-comment-add: var(--color-action-add); /* "Add comment" (.new-comment-focus.main) */
-  --color-comment-add-hover: var(--color-action-add-hover);
   --color-comment-field-border: light-dark(#cfcfcf, #474747);
   --radius-comment-field: 14px;
   --comment-field-padding: 10px 18px;

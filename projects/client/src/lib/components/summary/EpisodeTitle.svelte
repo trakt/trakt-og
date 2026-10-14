@@ -1,4 +1,5 @@
 <script lang="ts">
+import CardTag from '$lib/components/media/CardTag.svelte';
 import MediaSpoiler from '$lib/components/summary/MediaSpoiler.svelte';
 import type { SpoilerTarget } from '$lib/settings/SpoilerTarget';
 import type { episodeType } from '$lib/components/media/episodeTags';
@@ -18,7 +19,7 @@ const { show, season, number, title, year, certification, type, target }: Props 
 </script>
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 <div class="episode-title">
-  {#if type}<span class="type" style:background-color={`var(--episode-${type.kind})`}>{type.text}</span>{/if}
+  {#if type}<div class="type"><CardTag text={type.text} kind={type.kind} /></div>{/if}
   <p class="parent"><a href={show.href}>{show.title}</a>: <a href={season.href} rel="up">{season.title}</a></p>
   <h1><strong>{number}</strong> <MediaSpoiler {target} kind="title" inline>{title}</MediaSpoiler> {#if year}<span class="year">{year}</span>{/if}{#if certification}<Tooltip text={certificationTip(certification)}>{#snippet trigger(tooltip)}<span class="certification" {...tooltip}>{certification}</span>{/snippet}</Tooltip>{/if}</h1>
 </div>
@@ -33,14 +34,7 @@ const { show, season, number, title, year, certification, type, target }: Props 
   }
 }
 .type {
-  display: inline-block;
-  padding: var(--episode-title-tag-padding);
   margin-block-end: var(--episode-title-gap);
-  font-family: var(--font-headings);
-  font-size: var(--font-size-episode-title-tag);
-  font-weight: var(--font-weight-headings);
-  line-height: var(--line-height-headings);
-  color: var(--color-card-text);
 }
 .parent {
   margin: 0 0 var(--episode-title-gap);

@@ -106,7 +106,7 @@ describe('sectionsClient', () => {
 
     it('should drop a comment tab whose request failed and skip Me', async () => {
       const tabs = await client(false).comments(movie);
-      expect(tabs?.map(({ id, count }) => ({ id, count }))).toEqual([{ id: 'likes', count: 'All Time' }]);
+      expect(tabs?.map(({ id }) => id)).toEqual(['likes']);
       expect(paths()).not.toContain('/movies/deadpool-2016/comments/mine');
     });
   });

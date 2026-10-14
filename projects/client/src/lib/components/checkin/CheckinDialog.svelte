@@ -11,6 +11,7 @@ import { rawApiFetch } from '$lib/api/rawApiFetch';
 import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
 import { userManager } from '$lib/auth/userManager';
 import Dialog from '$lib/components/dialog/Dialog.svelte';
+import CardTag from '$lib/components/media/CardTag.svelte';
 import Spinner from '$lib/components/loading/Spinner.svelte';
 import { toast } from '$lib/components/toast/toast.svelte';
 import { checkin } from '$lib/components/checkin/checkin.svelte';
@@ -66,7 +67,7 @@ async function submit(event: SubmitEvent) {
           {#if target.episode}
             <div class="titles">
               {#if target.episode.firstAired}
-                <p class="tag">{formatDate(target.episode.firstAired, { ...page.data.datePreferences, format: 'll', time: true })}</p>
+                <p class="tag"><CardTag text={formatDate(target.episode.firstAired, { ...page.data.datePreferences, format: 'll', time: true })} /></p>
               {/if}
               <p class="title"><span class="number">{target.episode.number}</span> {target.episode.title}</p>
             </div>
@@ -144,12 +145,7 @@ form {
 }
 
 .tag {
-  display: inline-block;
   margin: 0 0 5px;
-  padding: 3px 5px;
-  background-color: var(--brand-primary);
-  font-size: var(--font-size-card-tag);
-  font-weight: var(--font-weight-headings);
 }
 
 .title {

@@ -191,9 +191,9 @@ function watchNow(item: NonNullable<ScheduleItem['watchNow']>) {
 .picks {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-base-block);
+  gap: var(--space-dropdown-row);
   align-items: center;
-  padding-block-start: var(--space-social-feed-top);
+  padding-block-start: var(--space-heading-dropdowns);
 }
 
 /* OG's alert sat in a row, which kept 20px above it. */

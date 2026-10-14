@@ -115,19 +115,14 @@ const count = $derived(data.total - (data.cards.length - cards.length));
 
 <SectionToolbar>
   {#snippet filters()}
-    <Dropdown>
+    <Dropdown section="Media">
       {#snippet trigger()}{ratingTypes[data.query.type]}{/snippet}
       <ul>{#each Object.entries(ratingTypes) as [type, label] (type)}
         <li><a href={href({ type: ratingQuery(type).type })} aria-current={data.query.type === type ? 'page' : undefined}>{label}</a></li>
       {/each}</ul>
     </Dropdown>
-  {/snippet}
-  {#snippet stats()}
-    <SubnavCount svg={file} {count} {noun} tooltip={`${noun.charAt(0).toUpperCase()}${noun.slice(1)}s`} />
-  {/snippet}
-  {#snippet summary()}
-    <Dropdown>
-      {#snippet trigger()}{data.query.rating === 'all' ? 'All Ratings' : `${data.query.rating} - ${RATING_LABELS[Number(data.query.rating)]}`}{/snippet}
+    <Dropdown section="Rating">
+      {#snippet trigger()}{data.query.rating === 'all' ? 'All' : `${data.query.rating} - ${RATING_LABELS[Number(data.query.rating)]}`}{/snippet}
       <ul>
         <li><a href={href({ rating: 'all' })} aria-current={data.query.rating === 'all' ? 'page' : undefined}>All Ratings</a></li>
         {#each Array.from({ length: 10 }, (_, i) => 10 - i) as rating (rating)}
@@ -135,8 +130,13 @@ const count = $derived(data.total - (data.cards.length - cards.length));
         {/each}
       </ul>
     </Dropdown>
+  {/snippet}
+  {#snippet stats()}
+    <SubnavCount svg={file} {count} {noun} tooltip={`${noun.charAt(0).toUpperCase()}${noun.slice(1)}s`} />
+  {/snippet}
+  {#snippet summary()}
     <span class="sort">
-      <Dropdown joined>
+      <Dropdown joined section="Sort">
         {#snippet trigger()}{sortLabel}{/snippet}
         <ul>{#each Object.entries(sorts) as [by, label] (by)}
           <li><a href={href({ by: ratingQuery(`${data.query.type}/all/${by}`).by })} aria-current={data.query.by === by ? 'page' : undefined}>{label}</a></li>

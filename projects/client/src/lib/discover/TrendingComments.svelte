@@ -120,7 +120,7 @@ const revealOnKey = (event: KeyboardEvent, id: number) => {
     <div class="inner">
       <PanelHeading id="comments-heading" title="Trending Comments" icon={comments} />
       <div class="filters">
-          <Dropdown>
+          <Dropdown section="Comments">
             {#snippet trigger()}{kindLabel}{/snippet}
             <ul>
               {#each trendingCommentFilters.kinds as option (option.id)}
@@ -132,7 +132,7 @@ const revealOnKey = (event: KeyboardEvent, id: number) => {
               {/each}
             </ul>
           </Dropdown>
-          <Dropdown>
+          <Dropdown section="Media">
             {#snippet trigger()}{mediaLabel}{/snippet}
             <ul>
               {#each trendingCommentFilters.media as option (option.id)}
@@ -352,8 +352,8 @@ const revealOnKey = (event: KeyboardEvent, id: number) => {
 .filters {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--toggle-chip-gap);
-  margin-block: var(--trending-comments-toolbar-gap) var(--trending-comments-title-gap);
+  gap: var(--space-dropdown-row);
+  margin-block: var(--space-heading-dropdowns) var(--trending-comments-title-gap);
 }
 
 .quote {

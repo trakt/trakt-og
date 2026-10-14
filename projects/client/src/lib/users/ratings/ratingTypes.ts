@@ -1,6 +1,6 @@
 /** OG's ratings type menu, including the fallback for unknown types. */
 export const ratingTypes = {
-  all: 'All Types',
+  all: 'All',
   movies: 'Movies',
   shows: 'Shows',
   seasons: 'Seasons',

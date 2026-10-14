@@ -2,7 +2,8 @@
   OG's `#sort-direction` next to a sort dropdown: an arrow that points down for the sort's own direction and turns
   red and points up once flipped. A toggle button, so `aria-pressed` says which.
   `joined` makes it the end of a split control after a `<Dropdown joined>`: a bordered square with the wide-short
-  sort icons, inside a wrapper that lays the two flush.
+  sort icons, inside a wrapper that lays the two flush. Every sort dropdown gets one: `disabled` greys it out where the
+  page or the picked sort can't reverse.
     <SortDirection bind:flipped />
     <span class="sort"><Dropdown joined>…</Dropdown><SortDirection joined bind:flipped /></span>
 -->
@@ -13,17 +14,24 @@ import sortDown from '$lib/icons/regular/arrow-down-wide-short.svg?raw';
 import sortUp from '$lib/icons/regular/arrow-up-wide-short.svg?raw';
 import arrow from '$lib/icons/trakt/arrow-right.svg?raw';
 
-let { flipped = $bindable(false), joined = false }: { flipped?: boolean; joined?: boolean } = $props();
+let { flipped = $bindable(false), joined = false, disabled = false }: {
+  flipped?: boolean;
+  joined?: boolean;
+  disabled?: boolean;
+} = $props();
 </script>
 
-<Tooltip text="Direction">
+<Tooltip text={disabled ? "This sort can't be reversed" : 'Direction'}>
   {#snippet trigger(tooltip)}
     <button
       type="button"
-      class={['direction', { flipped, joined }]}
+      class={['direction', { flipped: flipped && !disabled, joined }]}
       aria-label="Reverse the sort"
-      aria-pressed={flipped}
-      onclick={() => (flipped = !flipped)}
+      aria-pressed={flipped && !disabled}
+      aria-disabled={disabled}
+      onclick={() => {
+        if (!disabled) flipped = !flipped;
+      }}
       {...tooltip}
     >
       {#if joined}<Icon svg={flipped ? sortUp : sortDown} />{:else}<Icon svg={arrow} />{/if}
@@ -70,7 +78,7 @@ let { flipped = $bindable(false), joined = false }: { flipped?: boolean; joined?
     color: var(--color-control-text);
     font-size: var(--font-size-tool-icon-small);
 
-    &:is(:hover, :focus-visible) {
+    &:is(:hover, :focus-visible):not([aria-disabled='true']) {
       position: relative;
       border-color: var(--color-control-border-hover);
       background-color: var(--color-control-hover-bg);
@@ -84,6 +92,11 @@ let { flipped = $bindable(false), joined = false }: { flipped?: boolean; joined?
       rotate: none;
     }
   }
+}
+
+.direction[aria-disabled='true'] {
+  opacity: var(--opacity-action-disabled);
+  cursor: default;
 }
 
 @media (prefers-reduced-motion: reduce) {

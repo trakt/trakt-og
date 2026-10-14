@@ -212,6 +212,8 @@
   --space-sm-block: 5px;
   --space-sm-inline: 10px;
   --space-base-block: 6px;
+  --space-heading-dropdowns: 8px; /* a panel or section heading to the row of dropdowns under it */
+  --space-dropdown-row: var(--space-base-block); /* between the dropdowns in that row; an action button keeps --toolbar-gap */
   --space-base-inline: 12px;
   --space-lg-block: 10px;
   --space-lg-inline: 16px;
@@ -592,7 +594,6 @@
   --social-face-overlap: 9px; /* each face over the one before */
   --color-social-face-more: #3a3a3a;
   --space-social-separator: 4px; /* around the dots in the line under a poster */
-  --space-social-feed-top: 8px; /* under the panel's heading, before the dropdowns: a summary title's gap to its tabs */
   --space-social-who-avatar: 8px; /* the avatar to the name */
   --line-height-social-who: 18px;
   --color-social-tag-live-glow: rgb(255 255 255 / 0.55);
@@ -810,6 +811,8 @@
   --color-menu-row-hover: light-dark(#f2f2f2, #333);
   --color-menu-row-hover-text: light-dark(#111, #fff);
   --color-menu-header: light-dark(#777, #8c8c8c);
+  --color-menu-tag-bg: light-dark(#e5e5e5, #444); /* a row's gray count or code, like the advanced filters' country */
+  --color-menu-tag: light-dark(#666, #aaa);
   --shadow-menu: 0 12px 32px light-dark(rgb(0 0 0 / 0.14), rgb(0 0 0 / 0.55));
 
   /* The shared prompt (`PromptPopover`): the menu's surface under a title bar tinted in the action's color */
@@ -2131,7 +2134,6 @@
   --trending-comments-height: 360px;
   --trending-comments-top: 30px; /* room above the heading, under the band's top edge */
   --trending-comments-bottom: 40px;
-  --trending-comments-toolbar-gap: 14px; /* the filters under the heading */
   --trending-comments-poster: 170px;
   --trending-comments-title-gap: 30px;
   --trending-comments-gap: 56px;

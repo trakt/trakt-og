@@ -8,6 +8,7 @@ import { SvelteURLSearchParams } from 'svelte/reactivity';
 import { page } from '$app/state';
 import Container from '$lib/components/container/Container.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
+import SortDirection from '$lib/components/dropdown/SortDirection.svelte';
 import type { HeaderUser } from '$lib/components/header/HeaderUser';
 import NoData from '$lib/components/empty/NoData.svelte';
 import Pagination from '$lib/components/pagination/Pagination.svelte';
@@ -63,10 +64,10 @@ const current = (picked: boolean) => (picked ? 'page' : undefined);
 
 <SectionToolbar>
   {#snippet filters()}
-    <Dropdown label="Comment type" section={data.liked ? 'Reactions' : undefined}>
+    <Dropdown section={data.liked ? 'Reactions' : 'Comments'}>
       {#snippet trigger()}{userCommentTypes[data.commentType]}{/snippet}
       <ul>
-        <li class="header" role="presentation">{data.profile.firstName}'s comments</li>
+        <li class="header" role="presentation">Comments</li>
         {#each Object.entries(userCommentTypes) as [commentType, label] (commentType)}
           <li>
             <a
@@ -82,7 +83,7 @@ const current = (picked: boolean) => (picked ? 'page' : undefined);
         <li><a href={href({ liked: true })} aria-current={current(data.liked)}>{userCommentTypes.all}</a></li>
       </ul>
     </Dropdown>
-    <Dropdown label="Media type">
+    <Dropdown section="Media">
       {#snippet trigger()}{userCommentMediaTypes[data.type]}{/snippet}
       <ul>
         {#each Object.entries(userCommentMediaTypes) as [type, label] (type)}
@@ -102,10 +103,13 @@ const current = (picked: boolean) => (picked ? 'page' : undefined);
     <SubnavCount svg={commentIcon} count={data.itemCount} noun="comment" tooltip="Comments" />
   {/snippet}
   {#snippet summary()}
-    <Dropdown label="Sort comments">
-      {#snippet trigger()}Added Date{/snippet}
-      <ul><li><a href={page.url.pathname + page.url.search} aria-current="page">Added Date</a></li></ul>
-    </Dropdown>
+    <span class="sort">
+      <Dropdown joined section="Sort">
+        {#snippet trigger()}Added Date{/snippet}
+        <ul><li><a href={page.url.pathname + page.url.search} aria-current="page">Added Date</a></li></ul>
+      </Dropdown>
+      <SortDirection joined disabled />
+    </span>
   {/snippet}
 </SectionToolbar>
 
@@ -130,6 +134,11 @@ const current = (picked: boolean) => (picked ? 'page' : undefined);
 </section>
 
 <style>
+.sort {
+  display: flex;
+  align-items: center;
+}
+
 .comments {
   padding-block: var(--user-comments-padding);
 }

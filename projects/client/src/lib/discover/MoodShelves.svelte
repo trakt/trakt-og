@@ -38,7 +38,7 @@ const mood = $derived(shelves.find(({ id }) => id === picked) ?? shelves.at(0));
       seeMore={mood ? { href: mood.more, text: 'View more' } : undefined}
     />
     <div class="controls">
-      <Dropdown>
+      <Dropdown section="Media">
         {#snippet trigger()}{type === 'movie' ? 'Movies' : 'Shows'}{/snippet}
         <ul>
           {#each TYPES as option (option.id)}
@@ -93,6 +93,6 @@ const mood = $derived(shelves.find(({ id }) => id === picked) ?? shelves.at(0));
   flex-wrap: wrap;
   align-items: center;
   gap: var(--toggle-chip-gap);
-  margin-block: var(--discover-heading-margin);
+  margin-block: var(--space-heading-dropdowns) var(--discover-heading-margin);
 }
 </style>

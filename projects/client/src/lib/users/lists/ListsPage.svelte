@@ -381,10 +381,9 @@ const actions = (row: UserListRow) => {
 
 <SectionToolbar>
   {#snippet filters()}
-    <Dropdown>
-      {#snippet trigger()}{personal ? 'Personal Lists' : 'Collaborations'}{/snippet}
+    <Dropdown section="Lists">
+      {#snippet trigger()}{personal ? 'Personal' : 'Collaborations'}{/snippet}
       <ul>
-        <li class="header" role="presentation">{data.profile.firstName}'s lists</li>
         <li><a href={base} aria-current={personal ? 'page' : undefined}>Personal Lists</a></li>
         <li><a href="{base}/collaborations" aria-current={personal ? undefined : 'page'}>Collaborations</a></li>
       </ul>
@@ -402,7 +401,7 @@ const actions = (row: UserListRow) => {
   {/snippet}
   {#snippet summary()}
     <span class="sort" inert={reordering}>
-      <Dropdown joined>
+      <Dropdown joined section="Sort">
         {#snippet trigger()}{reordering ? 'Rank' : sortName}{/snippet}
         <ul>
           {#each sorts as sort (sort.id)}
@@ -412,7 +411,7 @@ const actions = (row: UserListRow) => {
           {/each}
         </ul>
       </Dropdown>
-      {#if reordering}<SortDirection joined flipped={false} />{:else}<SortDirection joined bind:flipped={query.reversed} />{/if}
+      {#if reordering}<SortDirection joined disabled />{:else}<SortDirection joined bind:flipped={query.reversed} />{/if}
     </span>
     <span class="tools" inert={reordering}>
       <TermsFilter bind:terms={query.terms} vip={(data.user?.isVip ?? false) && !reordering} />

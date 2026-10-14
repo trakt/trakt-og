@@ -6,6 +6,7 @@
 import { page } from '$app/state';
 import Container from '$lib/components/container/Container.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
+import SortDirection from '$lib/components/dropdown/SortDirection.svelte';
 import NoData from '$lib/components/empty/NoData.svelte';
 import Pagination from '$lib/components/pagination/Pagination.svelte';
 import SectionToolbar from '$lib/components/toolbar/SectionToolbar.svelte';
@@ -42,10 +43,6 @@ const relationOf = (relations: Readonly<Record<string, ViewerRelation>> | null, 
   <meta name="description" content="Check out {data.profile.firstName}'s network of friends and followers." />
 </svelte:head>
 
-{#snippet typeLabel(type: NetworkType)}
-  {#if type === 'following_pending'}Following <em>(Pending)</em>{:else}{networkTypes[type]}{/if}
-{/snippet}
-
 {#snippet grid(relations: Readonly<Record<string, ViewerRelation>> | null)}
   <ul class="cards">
     {#each data.users as user (user.slug)}
@@ -56,11 +53,11 @@ const relationOf = (relations: Readonly<Record<string, ViewerRelation>> | null, 
 
 <SectionToolbar>
   {#snippet filters()}
-    <Dropdown label="Network list">
-      {#snippet trigger()}{@render typeLabel(data.type)}{/snippet}
+    <Dropdown section="Network">
+      {#snippet trigger()}{networkTypes[data.type]}{/snippet}
       <ul>
         {#each types as type (type)}
-          <li><a href={typeHref(type)} aria-current={data.type === type ? 'page' : undefined}>{@render typeLabel(type)}</a></li>
+          <li><a href={typeHref(type)} aria-current={data.type === type ? 'page' : undefined}>{networkTypes[type]}</a></li>
         {/each}
       </ul>
     </Dropdown>
@@ -69,10 +66,13 @@ const relationOf = (relations: Readonly<Record<string, ViewerRelation>> | null, 
     <SubnavCount svg={userIcon} count={data.itemCount} noun="person" plural="people" tooltip="People" />
   {/snippet}
   {#snippet summary()}
-    <Dropdown label="Sort people">
-      {#snippet trigger()}Added Date{/snippet}
-      <ul><li><a href={page.url.pathname + page.url.search} aria-current="page">Added Date</a></li></ul>
-    </Dropdown>
+    <span class="sort">
+      <Dropdown joined section="Sort">
+        {#snippet trigger()}Added Date{/snippet}
+        <ul><li><a href={page.url.pathname + page.url.search} aria-current="page">Added Date</a></li></ul>
+      </Dropdown>
+      <SortDirection joined disabled />
+    </span>
   {/snippet}
 </SectionToolbar>
 
@@ -99,6 +99,11 @@ const relationOf = (relations: Readonly<Record<string, ViewerRelation>> | null, 
 </section>
 
 <style>
+.sort {
+  display: flex;
+  align-items: center;
+}
+
 .network {
   display: flow-root;
   padding-block-end: var(--gutter);

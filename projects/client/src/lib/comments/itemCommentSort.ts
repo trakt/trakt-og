@@ -1,10 +1,10 @@
 /**
  * OG's sorts for an item's comments, less the ones the API can't serve:
- * the 30-day sorts and Watched. `note` is OG's italic "(All Time)".
+ * the 30-day sorts and Watched.
  */
 export const itemCommentSorts = {
-  likes: { label: 'Reactions', note: 'All Time' },
-  replies: { label: 'Replies', note: 'All Time' },
+  likes: { label: 'Reactions' },
+  replies: { label: 'Replies' },
   plays: { label: 'Plays' },
   rating: { label: 'Rating' },
   added: { label: 'Added Date' },

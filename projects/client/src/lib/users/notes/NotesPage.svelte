@@ -3,6 +3,7 @@ import { SvelteURLSearchParams } from 'svelte/reactivity';
 import { page } from '$app/state';
 import Container from '$lib/components/container/Container.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
+import SortDirection from '$lib/components/dropdown/SortDirection.svelte';
 import NoData from '$lib/components/empty/NoData.svelte';
 import { tick } from 'svelte';
 import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
@@ -82,11 +83,11 @@ const metaType = $derived(
 );
 const title = $derived(`${data.profile.displayName}'s ${metaType}notes`);
 type NoteType = keyof typeof noteTypes;
-// The type menu's sections: All Types alone, the media items, then the profile's own activities.
+// The type menu's sections: All alone, the media items, then the profile's own activities.
 const noteGroups = $derived<readonly { header?: string; types: readonly NoteType[] }[]>([
   { types: ['all'] },
-  { header: 'Media Items', types: ['movies', 'shows', 'seasons', 'episodes', 'people'] },
-  { header: `${data.profile.firstName}'s activities`, types: ['history', 'collection', 'ratings'] },
+  { header: 'Media', types: ['movies', 'shows', 'seasons', 'episodes', 'people'] },
+  { header: 'Activities', types: ['history', 'collection', 'ratings'] },
 ]);
 const filterHref = (type: string) => {
   const query = new SvelteURLSearchParams(page.url.searchParams);
@@ -105,7 +106,7 @@ const filterHref = (type: string) => {
 
 <SectionToolbar>
   {#snippet filters()}
-    <Dropdown label="Note type">
+    <Dropdown section="Notes">
       {#snippet trigger()}{noteTypes[data.type]}{/snippet}
       {#each noteGroups as { header, types }, i (header ?? 'all')}
         {#if i > 0}<hr />{/if}
@@ -122,10 +123,13 @@ const filterHref = (type: string) => {
     <SubnavCount svg={memo} count={Math.max(0, data.itemCount - removed)} noun="note" tooltip="Notes" />
   {/snippet}
   {#snippet summary()}
-    <Dropdown label="Sort notes">
-      {#snippet trigger()}Added Date{/snippet}
-      <ul><li><a href={page.url.pathname + page.url.search} aria-current="page">Added Date</a></li></ul>
-    </Dropdown>
+    <span class="sort">
+      <Dropdown joined section="Sort">
+        {#snippet trigger()}Added Date{/snippet}
+        <ul><li><a href={page.url.pathname + page.url.search} aria-current="page">Added Date</a></li></ul>
+      </Dropdown>
+      <SortDirection joined disabled />
+    </span>
   {/snippet}
 </SectionToolbar>
 <section class="notes" aria-label={title} bind:this={section} tabindex="-1">
@@ -150,6 +154,11 @@ const filterHref = (type: string) => {
 {/if}
 
 <style>
+.sort {
+  display: flex;
+  align-items: center;
+}
+
 .notes {
   padding-block: var(--note-padding);
 }

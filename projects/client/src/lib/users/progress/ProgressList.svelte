@@ -165,10 +165,9 @@ function changeHide(hide: ProgressHide[]) {
 
 <SectionToolbar>
   {#snippet filters()}
-    <Dropdown>
+    <Dropdown section="Shows">
       {#snippet trigger()}{progressTypes[data.type].label}{/snippet}
       <ul>
-        <li class="header" role="presentation">Shows</li>
         {#each types as type (type)}
           <li><a href={href(type)} aria-current={data.type === type ? 'page' : undefined}>{progressTypes[type].label}</a
             ></li>
@@ -181,7 +180,7 @@ function changeHide(hide: ProgressHide[]) {
   {/snippet}
   {#snippet summary()}
     <span class="sort">
-      <Dropdown joined>
+      <Dropdown joined section="Sort">
         {#snippet trigger()}{#if data.sort.supported}{progressSortLabel(data.sort.by)}{:else}{progressSortLabel(data.sort.by)} <em>(unsupported)</em>{/if}{/snippet}
         <ul>
           {#each Object.keys(progressSorts) as by (by)}

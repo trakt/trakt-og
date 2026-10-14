@@ -113,7 +113,7 @@ const flipped = $derived(data.sort.how === 'desc');
 
 <SectionToolbar>
   {#snippet filters()}
-    <Dropdown>
+    <Dropdown section="Media">
       {#snippet trigger()}{historyTypes[data.type]}{/snippet}
       <ul>
         {#each Object.entries(historyTypes) as [type, label] (type)}
@@ -129,7 +129,7 @@ const flipped = $derived(data.sort.how === 'desc');
   {/snippet}
   {#snippet summary()}
     <span class="sort">
-      <Dropdown joined>
+      <Dropdown joined section="Sort">
         {#snippet trigger()}{sortLabels[data.sort.by]}{/snippet}
         <ul>
           {#each librarySorts[data.type] as by (by)}

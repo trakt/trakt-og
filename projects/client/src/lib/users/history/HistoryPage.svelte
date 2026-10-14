@@ -9,6 +9,7 @@ import { SvelteURLSearchParams } from 'svelte/reactivity';
 import { page } from '$app/state';
 import Container from '$lib/components/container/Container.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
+import SortDirection from '$lib/components/dropdown/SortDirection.svelte';
 import NoData from '$lib/components/empty/NoData.svelte';
 import DateRangeFilter from '$lib/components/filters/DateRangeFilter.svelte';
 import DividersToggle from '$lib/components/filters/DividersToggle.svelte';
@@ -112,7 +113,7 @@ const country = $derived(data.settings?.browsing?.watchnow?.country?.toLowerCase
 
 <SectionToolbar>
   {#snippet filters()}
-    <Dropdown>
+    <Dropdown section={data.itemTitle ? 'Title' : 'Media'}>
       {#snippet trigger()}{data.itemTitle ?? historyTypes[data.type]}{/snippet}
       <ul>
         {#each Object.entries(historyTypes) as [type, label] (type)}
@@ -122,8 +123,8 @@ const country = $derived(data.settings?.browsing?.watchnow?.country?.toLowerCase
     </Dropdown>
     {#if genres && !data.filters.item}
       <span class="genres">
-        <Dropdown>
-          {#snippet trigger()}{data.filters.genre ? genres[data.filters.genre] : 'All Genres'}{/snippet}
+        <Dropdown section="Genre">
+          {#snippet trigger()}{data.filters.genre ? genres[data.filters.genre] : 'All'}{/snippet}
           <ul class="limit-10">
             <li><a href={href(data.type, { genres: null })} aria-current={data.filters.genre ? undefined : 'page'}
               >All Genres</a></li>
@@ -151,10 +152,13 @@ const country = $derived(data.settings?.browsing?.watchnow?.country?.toLowerCase
     </span>
   {/snippet}
   {#snippet summary()}
-    <Dropdown>
-      {#snippet trigger()}Watched Date{/snippet}
-      <ul><li><a href={page.url.pathname + page.url.search} aria-current="page">Watched Date</a></li></ul>
-    </Dropdown>
+    <span class="sort">
+      <Dropdown joined section="Sort">
+        {#snippet trigger()}Watched Date{/snippet}
+        <ul><li><a href={page.url.pathname + page.url.search} aria-current="page">Watched Date</a></li></ul>
+      </Dropdown>
+      <SortDirection joined disabled />
+    </span>
     <span class="icons">
       <DividersToggle bind:shown={dividers} />
       <WatchNowFilter value={data.filters.watchnow} {country}
@@ -185,6 +189,11 @@ const country = $derived(data.settings?.browsing?.watchnow?.country?.toLowerCase
 </section>
 
 <style>
+.sort {
+  display: flex;
+  align-items: center;
+}
+
 .counts {
   display: flex;
   gap: var(--history-count-gap);

@@ -11,9 +11,11 @@
       <hr />
     </Dropdown>
   Rows are ul > li > a (or button). `aria-current` marks the picked one in bold red with a check on the right, as
-  does `aria-pressed="true"` on a toggle row. <hr> divides, and an li.header labels a group ("TYPES"). When the
-  picked row sits under a header, pass that header as `section` and the trigger names it first ("Reactions: All
-  Comments"). An <em> in the trigger or a row is OG's gray note ("(Pending)").
+  does `aria-pressed="true"` on a toggle row. <hr> divides, and an li.header labels a group ("TYPES"). Every filter
+  or sort dropdown names what it picks with `section`, shown muted before the value ("Media: All", "Sort: Watched
+  Date"); when the picked row sits under a header, pass that header instead ("Reactions: All"). An <em> in the
+  trigger or a row is OG's gray note ("(Pending)"), and a span.tag is the advanced filters' gray tag at the row's end
+  ("216"), and after the value on the trigger when the picked row has one.
   `variant="circle"` is the round translucent icon button with no caret that OG put after a profile name.
   `variant="icon"` is a toolbar icon tool with a caret, like the filter eye: a square that fills on hover. `variant="transparent"` is OG's
   `.btn-transparent`: the default button's size and caret with no fill, for dark bands (discover's Recent Comments).
@@ -281,6 +283,19 @@ const closeOnPick = (event: MouseEvent & { currentTarget: HTMLElement }) => {
   text-shadow: none;
   text-transform: none;
   box-shadow: var(--shadow-menu);
+}
+
+/* Pushed to a row's end in the menu, and right after the value on the trigger. */
+:is(.menu, .trigger) :global(.tag) {
+  flex: none;
+  margin-inline-start: auto;
+  padding: 1px 4px;
+  border-radius: var(--radius-sm);
+  background-color: var(--color-menu-tag-bg);
+  color: var(--color-menu-tag);
+  font-size: var(--font-size-small);
+  font-weight: normal;
+  line-height: var(--line-height-base);
 }
 
 .menu :global {

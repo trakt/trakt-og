@@ -26,7 +26,6 @@ import SectionNav from '$lib/components/summary/SectionNav.svelte';
 import SummaryFrame from '$lib/components/summary/SummaryFrame.svelte';
 import SummaryPoster from '$lib/components/summary/SummaryPoster.svelte';
 import SummaryTitle from '$lib/components/summary/SummaryTitle.svelte';
-import PillTabs from '$lib/components/tabs/PillTabs.svelte';
 import { overlay } from '$lib/overlay/overlay';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
 import { countLabel } from '$lib/utils/countLabel';
@@ -68,6 +67,7 @@ const tabs = $derived(
     return { id: department.id, label: department.label, count: credits.length.toLocaleString('en-US'), credits };
   }),
 );
+const current = $derived(tabs.find(({ id }) => id === tab) ?? tabs[0]);
 const sortName = $derived(creditSorts.find(({ id }) => id === query.sort)?.label);
 const textLinks = $derived(person.links.filter(({ icon }) => !icon));
 const filtered = $derived(
@@ -177,11 +177,24 @@ function yearLine(credit: PersonCredit) {
   {/snippet}
 
   <section class="credits" id="credits" aria-labelledby="credits-heading">
-    <div class="heading">
-      <h2 id="credits-heading"><strong>Credits</strong></h2>
+    <h2 id="credits-heading"><strong>Credits</strong></h2>
+    <div class="toolbar">
+      {#if current}
+        <Dropdown section="Department">
+          {#snippet trigger()}{current.label}<span class="tag">{current.count}</span>{/snippet}
+          <ul>
+            {#each tabs as department (department.id)}
+              <li>
+                <button type="button" aria-current={department.id === current.id} onclick={() => (tab = department.id)}
+                  ><span>{department.label}</span><span class="tag">{department.count}</span></button>
+              </li>
+            {/each}
+          </ul>
+        </Dropdown>
+      {/if}
       <div class="controls">
         <span class="sort">
-          <Dropdown joined>
+          <Dropdown joined section="Sort">
             {#snippet trigger()}{sortName}{/snippet}
             <ul>
               {#each creditSorts as sort (sort.id)}
@@ -215,41 +228,36 @@ function yearLine(credit: PersonCredit) {
       </div>
     </div>
 
-    {#if tabs.length > 0}
-      <PillTabs {tabs} label="Credits" bind:selected={tab}>
-        {#snippet panel(id)}
-          {@const credits = tabs.find((department) => department.id === id)?.credits ?? []}
-          <PosterGrid columns={5}>
-            {#each credits as credit (`${credit.type}-${credit.id}`)}
-              {@const state = overlay.state(credit.type, credit.id)}
-              <PosterCard
-                faded={!!data.user && query.fade.some((option) => matchesCreditFilter({ option, credit, state }))}
-                href={credit.href}
-                title={credit.title}
-                fullTitle={credit.year ? `${credit.title} (${credit.year})` : credit.title}
-                image={credit.image}
-                subtitles={[yearLine(credit), credit.characters || ' ']}
-                userRating={state.rating}
-                dropped={state.dropped}
-                icons={{
-                  fill: quickIconFill({
-                    state,
-                    airedEpisodes: credit.airedEpisodes,
-                    runtime: credit.runtime,
-                    datePreferences: data.datePreferences,
-                  }),
-                  ratingTarget: { type: credit.type, id: credit.id, title: credit.title },
-                  watchTarget: { type: credit.type, id: credit.id, title: credit.title, airedEpisodes: credit.airedEpisodes, runtime: credit.runtime },
-                  rating: credit.rating,
-                  // ponytail: OG showed watch now only with sources in the viewer's country. Until #60 brings
-                  // sources, anything not out yet is taken to have none, like the chart pages.
-                  watchNow: credit.released ? 'play' : undefined,
-                }}
-              />
-            {/each}
-          </PosterGrid>
-        {/snippet}
-      </PillTabs>
+    {#if current}
+      <PosterGrid columns={5}>
+        {#each current.credits as credit (`${credit.type}-${credit.id}`)}
+          {@const state = overlay.state(credit.type, credit.id)}
+          <PosterCard
+            faded={!!data.user && query.fade.some((option) => matchesCreditFilter({ option, credit, state }))}
+            href={credit.href}
+            title={credit.title}
+            fullTitle={credit.year ? `${credit.title} (${credit.year})` : credit.title}
+            image={credit.image}
+            subtitles={[yearLine(credit), credit.characters || ' ']}
+            userRating={state.rating}
+            dropped={state.dropped}
+            icons={{
+              fill: quickIconFill({
+                state,
+                airedEpisodes: credit.airedEpisodes,
+                runtime: credit.runtime,
+                datePreferences: data.datePreferences,
+              }),
+              ratingTarget: { type: credit.type, id: credit.id, title: credit.title },
+              watchTarget: { type: credit.type, id: credit.id, title: credit.title, airedEpisodes: credit.airedEpisodes, runtime: credit.runtime },
+              rating: credit.rating,
+              // ponytail: OG showed watch now only with sources in the viewer's country. Until #60 brings
+              // sources, anything not out yet is taken to have none, like the chart pages.
+              watchNow: credit.released ? 'play' : undefined,
+            }}
+          />
+        {/each}
+      </PosterGrid>
     {/if}
   </section>
 </SummaryFrame>
@@ -270,17 +278,18 @@ function yearLine(credit: PersonCredit) {
   gap: var(--list-filter-icon-gap);
 }
 
-/* OG's h2 with the sort wrapper floated right, 7px above the heading's baseline. */
-.heading {
+h2 {
+  margin: 0;
+}
+
+/* The department dropdown under the heading, with the sort and the filter tools on its line, pushed right. */
+.toolbar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-
-  & h2 {
-    margin: 0;
-  }
+  gap: var(--toolbar-gap);
+  padding-block-start: var(--space-heading-dropdowns);
 }
 
 .controls {
@@ -288,6 +297,6 @@ function yearLine(credit: PersonCredit) {
   align-items: center;
   /* The list toolbar's spacing between the sort and the filter tools. */
   gap: var(--toolbar-gap);
-  margin-block-start: -7px;
+  margin-inline-start: auto;
 }
 </style>

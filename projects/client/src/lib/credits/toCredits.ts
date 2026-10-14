@@ -19,7 +19,7 @@ export type CreditPerson = {
   readonly episodes?: string;
 };
 
-/** A pill tab: "Season Regulars 8", "Directing 3". */
+/** A credits dropdown group: "Season Regulars 8", "Directing 3". */
 export type CreditGroup = {
   readonly id: string;
   readonly label: string;
@@ -66,7 +66,7 @@ function group(
   };
 }
 
-/** The credits page's actor and crew tabs. Empty tabs are left out. */
+/** The credits page's actor and crew groups. Empty groups are left out. */
 export function toCredits({ actors, crew, episodeCounts }: Params): {
   actors: CreditGroup[];
   crew: CreditGroup[];

@@ -1,16 +1,17 @@
 <!--
-  The profile's Most Watched Shows and Most Watched Movies: two columns, each with Last 30 Days and All Time pill tabs over three
-  posters with the time watched and plays under each title. The see-more link follows the active tab to the history
-  page. Each column opens on its own default tab and names its own order (the owner's saved ones on their profile).
+  The profile's Most Watched Shows and Most Watched Movies: two columns, each with a Period dropdown (Last 30 Days or
+  All Time) over three posters with the time watched and plays under each title. The see-more link follows the picked
+  period to the history page. Each column opens on its own default period and names its own order (the owner's saved
+  ones on their profile).
   Below tablet width the third poster hides, and on phones the columns stack.
 -->
 <script lang="ts">
 import Container from '$lib/components/container/Container.svelte';
 import PanelHeading from '$lib/components/dashboard/PanelHeading.svelte';
+import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import NoData from '$lib/components/empty/NoData.svelte';
 import PosterCard from '$lib/components/media/PosterCard.svelte';
 import { quickIconFill } from '$lib/components/media/quickIconFill';
-import PillTabs from '$lib/components/tabs/PillTabs.svelte';
 import cameraMovie from '$lib/icons/regular/camera-movie.svg?raw';
 import tvRetro from '$lib/icons/regular/tv-retro.svg?raw';
 import { overlay } from '$lib/overlay/overlay';
@@ -38,10 +39,9 @@ const columns = [
 ] as const;
 
 const data = $derived({ shows, movies });
-// Each column opens on its default tab until the viewer picks one.
+// Each column opens on its default period until the viewer picks one.
 const picked = $state<Partial<Record<MostWatchedType, MostWatchedTab>>>({});
 const selected = (type: MostWatchedType) => picked[type] ?? data[type].tab;
-const isTab = (id: string): id is MostWatchedTab => TABS.some((tab) => tab.id === id);
 
 // OG's see-more link: the column's order, and `start_at` in UTC to the second with
 // the colons left unescaped.
@@ -56,51 +56,52 @@ const seeMore = (type: MostWatchedType, sortBy: string, tab: MostWatchedTab) =>
     <div class="columns">
       {#each columns as column (column.type)}
         {@const headingId = `most-watched-${column.type}`}
+        {@const period = selected(column.type)}
+        {@const cards = data[column.type][period]}
         <section class="column" aria-labelledby={headingId}>
           <PanelHeading
             id={headingId}
             title={column.title}
             icon={column.icon}
-            seeMore={{ href: seeMore(column.type, data[column.type].sortBy, selected(column.type)), text: 'See more' }}
+            seeMore={{ href: seeMore(column.type, data[column.type].sortBy, period), text: 'See more' }}
           />
-          <div class="tabs">
-            <PillTabs
-              label={column.title}
-              tabs={TABS}
-              bind:selected={
-                () => selected(column.type),
-                (id) => {
-                  if (id && isTab(id)) picked[column.type] = id;
-                }
-              }
-            >
-              {#snippet panel(id)}
-                {@const cards = isTab(id) ? data[column.type][id] : []}
-                {#if cards.length > 0}
-                  <div class="posters">
-                    {#each cards as card (card.id)}
-                      {@const state = overlay.state(card.type, card.id)}
-                      <PosterCard
-                        href={card.href}
-                        title={card.title}
-                        image={card.image}
-                        subtitles={[card.time, card.plays]}
-                        userRating={state.rating}
-                        icons={{
-                          fill: quickIconFill({ state, airedEpisodes: card.airedEpisodes, datePreferences }),
-                          rating: card.rating,
-                          watchNow: 'play',
-                          listLabel: 'Add to watchlist',
-                        }}
-                      />
-                    {/each}
-                  </div>
-                {:else}
-                  <div class="empty"><NoData>{hasnt(`watched any ${column.type} during this time period.`)}</NoData></div>
-                {/if}
-              {/snippet}
-            </PillTabs>
+          <div class="controls">
+            <Dropdown section="Period">
+              {#snippet trigger()}{TABS.find(({ id }) => id === period)?.label}{/snippet}
+              <ul>
+                {#each TABS as tab (tab.id)}
+                  <li>
+                    <button type="button" aria-current={tab.id === period} onclick={() => (picked[column.type] = tab.id)}
+                      >{tab.label}</button>
+                  </li>
+                {/each}
+              </ul>
+            </Dropdown>
           </div>
+          {#if cards.length > 0}
+            <div class="posters">
+              {#each cards as card (card.id)}
+                {@const state = overlay.state(card.type, card.id)}
+                <PosterCard
+                  href={card.href}
+                  title={card.title}
+                  image={card.image}
+                  subtitles={[card.time, card.plays]}
+                  userRating={state.rating}
+                  icons={{
+                    fill: quickIconFill({ state, airedEpisodes: card.airedEpisodes, datePreferences }),
+                    ratingTarget: { type: card.type, id: card.id, title: card.title },
+                    watchTarget: { type: card.type, id: card.id, title: card.title, airedEpisodes: card.airedEpisodes },
+                    rating: card.rating,
+                    watchNow: 'play',
+                    listLabel: 'Add to watchlist',
+                  }}
+                />
+              {/each}
+            </div>
+          {:else}
+            <div class="empty"><NoData>{hasnt(`watched any ${column.type} during this time period.`)}</NoData></div>
+          {/if}
         </section>
       {/each}
     </div>
@@ -123,6 +124,10 @@ const seeMore = (type: MostWatchedType, sortBy: string, tab: MostWatchedTab) =>
     grid-template-columns: minmax(0, 1fr);
     gap: 0;
   }
+}
+
+.controls {
+  padding-block-start: var(--space-heading-dropdowns);
 }
 
 .posters {

@@ -6,6 +6,7 @@
 -->
 <script lang="ts">
 import { page } from '$app/state';
+import { untrack } from 'svelte';
 import { goto } from '$app/navigation';
 import { resolve } from '$app/paths';
 import defaultCover from '$lib/assets/profile-cover-default.jpg';
@@ -24,14 +25,11 @@ import PagePager from '$lib/components/sidebar/PagePager.svelte';
 import RailGroup from '$lib/components/sidebar/RailGroup.svelte';
 import RailPager from '$lib/components/sidebar/RailPager.svelte';
 import SidebarFrame from '$lib/components/sidebar/SidebarFrame.svelte';
-import SidebarSection from '$lib/components/sidebar/SidebarSection.svelte';
 import SidebarTitle from '$lib/components/sidebar/SidebarTitle.svelte';
-import { recentSearchType } from '$lib/components/header/recentSearchType';
-import SearchTermRow from '$lib/components/header/SearchTermRow.svelte';
 import { viewerRecentSearches } from '$lib/components/header/viewerRecentSearches';
-import clockRotateLeft from '$lib/icons/light/clock-rotate-left.svg?raw';
 import { overlay } from '$lib/overlay/overlay';
 import { findSearchType } from '$lib/search/findSearchType';
+import RecentSearchesSection from '$lib/search/RecentSearchesSection.svelte';
 import { searchLinks } from '$lib/search/searchLinks';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
 import type { loadSearch } from '$lib/search/loadSearch';
@@ -42,18 +40,23 @@ type Props = {
 
 const { data }: Props = $props();
 
-// The viewer's recent searches, the same history the header search keeps. Signed out, there's none.
+// The viewer's recent searches, the same list the header search keeps. Each search made here goes to its top. Signed
+// out, there's none.
 const viewer = $derived<string | null>(page.data.user?.slug ?? null);
-let recent = $state<ReturnType<typeof viewerRecentSearches>>();
+let recent = $state.raw<ReturnType<typeof viewerRecentSearches>>();
 $effect(() => {
-  const controller = viewerRecentSearches(viewer);
-  recent = controller;
-  void controller.load();
-  return () => controller.dispose();
+  recent = viewer ? viewerRecentSearches(viewer) : undefined;
 });
-const recentHref = (term: { query: string; type?: string | null }) => {
-  const kind = recentSearchType(term.type);
-  return `/search${kind.slug ? `/${kind.slug}` : ''}?query=${encodeURIComponent(term.query)}`;
+$effect(() => {
+  const store = recent;
+  const search = { query: data.query, type: data.slug };
+  untrack(() => store?.record(search));
+});
+let field = $state<HTMLFormElement>();
+// Clear all takes the section with it, so focus goes to the search field instead of the page.
+const clearRecent = () => {
+  recent?.clear();
+  field?.querySelector('input')?.focus();
 };
 
 // The sidebar's search field. The picker's links carry whatever is typed there, like OG's search.js.
@@ -142,7 +145,7 @@ function save(next: FadeHide) {
     </SidebarTitle>
 
     <!-- The current query, ready to change: Enter searches again, and the picker's links carry what's typed. -->
-    <form action={page.url.pathname} method="get" role="search">
+    <form bind:this={field} action={page.url.pathname} method="get" role="search">
       <SearchField name="query" label={data.idMode ? 'Search ID' : 'Search terms'}
         placeholder="What are you looking for?" bind:value={terms} />
     </form>
@@ -151,21 +154,9 @@ function save(next: FadeHide) {
       <PagePager current={data.page.current} total={data.page.total} href={(n) => pageHref(page.url, n)} />
     {/if}
 
-    {#if viewer && recent}
-      <SidebarSection id="recent" title="Recent" open={data.sidebar.recent} remember>
-        {#if recent.user.length}
-          <ul class="recent">
-            {#each recent.user as term (`${term.query}:${term.type}`)}
-              {@const kind = recentSearchType(term.type)}
-              <SearchTermRow icon={clockRotateLeft} query={term.query} type={kind.label} href={recentHref(term)}
-                selected={term.query === data.query && kind.slug === data.slug} busy={recent.busy}
-                onremove={() => recent?.remove(term)} />
-            {/each}
-          </ul>
-        {:else if recent.loaded}
-          <p class="none">You have no recent searches.</p>
-        {/if}
-      </SidebarSection>
+    {#if recent}
+      <RecentSearchesSection terms={recent.terms} open={data.sidebar.recent} query={data.query} slug={data.slug}
+        onremove={(term) => recent?.remove(term)} onclear={clearRecent} />
     {/if}
   {/snippet}
 
@@ -236,18 +227,6 @@ function save(next: FadeHide) {
 </SidebarFrame>
 
 <style>
-.recent {
-  display: grid;
-  margin: 0 calc(-1 * var(--space-base-inline));
-  padding: 0;
-}
-
-.none {
-  margin: 0;
-  color: var(--color-sidebar-note);
-  font-size: var(--font-size-control);
-}
-
 .no-results {
   display: grid;
   place-items: center;

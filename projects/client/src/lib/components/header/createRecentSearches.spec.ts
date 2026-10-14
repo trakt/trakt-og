@@ -1,243 +1,152 @@
-import { describe, expect, it, vi } from 'vitest';
-import { clearRecentSearches, createRecentSearches } from './createRecentSearches.svelte.ts';
+import { describe, expect, it } from 'vitest';
+import { createRecentSearches } from './createRecentSearches.svelte.ts';
 
-const history = {
-  user: [{ query: 'Breaking', type: 'shows' }, { query: 'Fight Club', type: 'movies' }],
-  global: [{ query: 'The Office', type: 'shows' }],
-} as const;
-const storage = () => {
-  const values = new Map<string, string>();
+const key = 'og-recent-searches:one';
+const storage = (saved?: unknown) => {
+  const values = new Map<string, string>(saved === undefined ? [] : [[key, JSON.stringify(saved)]]);
   return {
-    getItem: (key: string) => values.get(key) ?? null,
-    setItem: (key: string, value: string) => values.set(key, value),
+    getItem: (name: string) => values.get(name) ?? null,
+    setItem: (name: string, value: string) => void values.set(name, value),
+    removeItem: (name: string) => void values.delete(name),
+    saved: () => JSON.parse(values.get(key) ?? 'null'),
   };
+};
+const broken = {
+  getItem: () => {
+    throw new Error('SecurityError');
+  },
+  setItem: () => {
+    throw new Error('QuotaExceededError');
+  },
+  removeItem: () => {
+    throw new Error('SecurityError');
+  },
 };
 
 describe('createRecentSearches', () => {
-  it('should load API queries once and hide user history for logged-out viewers', async () => {
-    const request = vi.fn(() => Promise.resolve(Response.json(history)));
-    const recent = createRecentSearches({ viewer: null, request, notify: vi.fn() });
-    await Promise.all([recent.load(), recent.load()]);
-    await recent.load();
-    expect(request).toHaveBeenCalledTimes(1);
-    expect(recent.user).toEqual([]);
-    expect(recent.global).toEqual(history.global);
-    await recent.record({ query: 'ignored', type: 'shows', id: 1 });
-    await recent.remove(history.user[0]);
-    expect(request).toHaveBeenCalledTimes(1);
+  it('should start empty with nothing saved', () => {
+    expect(createRecentSearches({ key, storage: storage() }).terms).toEqual([]);
   });
 
-  it('should reject malformed history and retry without breaking autocomplete', async () => {
-    const request = vi.fn().mockResolvedValueOnce(Response.json({ user: [{ query: 42 }], global: [] }))
-      .mockResolvedValueOnce(Response.json(history));
-    const recent = createRecentSearches({ viewer: 'one', request, notify: vi.fn() });
-    await recent.load();
-    expect(recent.loaded).toBe(false);
-    expect(recent.user).toEqual([]);
-    await recent.load();
-    expect(recent.user).toEqual(history.user);
-  });
-
-  it('should keep picked queries across browser loads, deduplicate and scope them to an account', async () => {
+  it('should keep the newest search first and save it', () => {
     const saved = storage();
-    const request = vi.fn((path: string) =>
-      Promise.resolve(path === '/search/recent' ? Response.json(history) : new Response(null, { status: 204 }))
-    );
-    const recent = createRecentSearches({ viewer: 'one', request, storage: saved, notify: vi.fn() });
-    await recent.load();
-    // POST /search/recent shares the read path, so provide the worker's empty 201 response.
-    request.mockImplementation(() => Promise.resolve(new Response(null, { status: 201 })));
-    await recent.record({ query: ' breaking ', type: 'shows', id: 1388 });
-    expect(request).toHaveBeenLastCalledWith('/search/recent', { query: 'breaking', type: 'shows', id: 1388 });
-    expect(recent.user.map((term) => term.query)).toEqual(['breaking', 'Fight Club']);
-    const reloaded = createRecentSearches({
-      viewer: 'one',
-      request: () => Promise.resolve(Response.json(history)),
-      storage: saved,
-      notify: vi.fn(),
-    });
-    await reloaded.load();
-    expect(reloaded.user.map((term) => term.query)).toEqual(['breaking', 'Fight Club']);
-    expect(createRecentSearches({ viewer: 'two', request, storage: saved, notify: vi.fn() }).user).toEqual([]);
-    for (let id = 1; id <= 6; id++) await recent.record({ query: `query ${id}`, type: '', id });
-    expect(recent.user.map((term) => term.query)).toEqual(['query 6', 'query 5', 'query 4', 'query 3', 'query 2']);
+    const recent = createRecentSearches({ key, storage: saved });
+    recent.record({ query: 'Breaking Bad', type: 'shows' });
+    recent.record({ query: ' Tron ', type: '' });
+
+    expect(recent.terms).toEqual([{ query: 'Tron', type: '' }, { query: 'Breaking Bad', type: 'shows' }]);
+    expect(saved.saved()).toEqual(recent.terms);
+    expect(createRecentSearches({ key, storage: saved }).terms).toEqual(recent.terms);
   });
 
-  it('should remove optimistically and restore the original order with a toast when the write fails', async () => {
-    let finish: (response: Response) => void = () => {};
-    const notify = vi.fn();
+  it('should keep only the last five searches', () => {
+    const recent = createRecentSearches({ key, storage: storage() });
+    ['one', 'two', 'three', 'four', 'five', 'six'].forEach((query) => recent.record({ query, type: '' }));
+
+    expect(recent.terms.map((term) => term.query)).toEqual(['six', 'five', 'four', 'three', 'two']);
+  });
+
+  it('should move a repeated search to the top instead of adding it twice', () => {
+    const recent = createRecentSearches({ key, storage: storage() });
+    recent.record({ query: 'tron', type: '' });
+    recent.record({ query: 'Dune', type: 'movies' });
+    recent.record({ query: 'TRON', type: '' });
+
+    expect(recent.terms).toEqual([{ query: 'TRON', type: '' }, { query: 'Dune', type: 'movies' }]);
+  });
+
+  it('should keep the same query in different search types apart', () => {
+    const recent = createRecentSearches({ key, storage: storage() });
+    recent.record({ query: 'Dune', type: 'movies' });
+    recent.record({ query: 'Dune', type: 'shows' });
+
+    expect(recent.terms).toHaveLength(2);
+  });
+
+  it('should ignore a blank search', () => {
+    const recent = createRecentSearches({ key, storage: storage() });
+    recent.record({ query: '   ', type: '' });
+
+    expect(recent.terms).toEqual([]);
+  });
+
+  it('should remove one search', () => {
+    const saved = storage([{ query: 'Dune', type: 'movies' }, { query: 'Tron', type: '' }]);
+    const recent = createRecentSearches({ key, storage: saved });
+    recent.remove({ query: 'dune', type: 'movies' });
+
+    expect(recent.terms).toEqual([{ query: 'Tron', type: '' }]);
+    expect(saved.saved()).toEqual([{ query: 'Tron', type: '' }]);
+  });
+
+  it('should clear every search and its saved copy', () => {
+    const saved = storage([{ query: 'Dune', type: 'movies' }]);
+    const recent = createRecentSearches({ key, storage: saved });
+    recent.clear();
+
+    expect(recent.terms).toEqual([]);
+    expect(saved.saved()).toBeNull();
+  });
+
+  it('should start empty from a corrupt saved copy and overwrite it', () => {
+    const saved = storage();
+    saved.setItem(key, '{not json');
+    const recent = createRecentSearches({ key, storage: saved });
+    expect(recent.terms).toEqual([]);
+
+    recent.record({ query: 'Dune', type: 'movies' });
+    expect(saved.saved()).toEqual([{ query: 'Dune', type: 'movies' }]);
+  });
+
+  it('should drop saved entries that are not searches and tidy the rest', () => {
     const recent = createRecentSearches({
-      viewer: 'one',
-      notify,
-      request: (path) =>
-        path === '/search/recent' ? Promise.resolve(Response.json(history)) : new Promise((resolve) => {
-          finish = resolve;
-        }),
+      key,
+      storage: storage([
+        { query: 'Dune', type: null, created_at: 100 },
+        { query: '' },
+        'tron',
+        { type: 'shows' },
+        { query: 'dune' },
+        { query: 'Alien', type: 'movies' },
+      ]),
     });
-    await recent.load();
-    const removing = recent.remove(history.user[0]);
-    await Promise.resolve();
-    expect(recent.user).toEqual([history.user[1]]);
-    expect(recent.busy).toBe(true);
-    finish(new Response(null, { status: 500 }));
-    await removing;
-    expect(recent.user).toEqual(history.user);
-    expect(recent.busy).toBe(false);
-    expect(notify).toHaveBeenCalledOnce();
+
+    expect(recent.terms).toEqual([{ query: 'Dune', type: '' }, { query: 'Alien', type: 'movies' }]);
   });
 
-  it('should remove a saved local query permanently and keep memory working when storage throws', async () => {
-    const saved = storage();
-    const request = vi.fn(() => Promise.resolve(new Response(null, { status: 204 })));
-    const recent = createRecentSearches({ viewer: 'one', request, storage: saved, notify: vi.fn() });
-    await recent.record({ query: 'Breaking', type: '', id: 1388 });
-    await recent.remove({ query: 'Breaking', type: '' });
-    expect(request).toHaveBeenLastCalledWith('/search/recent/remove', { query: 'Breaking', type: '' });
-    expect(createRecentSearches({ viewer: 'one', request, storage: saved, notify: vi.fn() }).user).toEqual([]);
-    const unavailable = {
-      getItem: () => {
-        throw new Error('Private');
-      },
-      setItem: () => {
-        throw new Error('Quota');
-      },
-    };
-    const memory = createRecentSearches({ viewer: 'one', request, storage: unavailable, notify: vi.fn() });
-    await memory.record({ query: 'Breaking', type: '', id: 1388 });
-    expect(memory.user[0]?.query).toBe('Breaking');
+  it('should start empty when the saved copy is not a list', () => {
+    expect(createRecentSearches({ key, storage: storage({ query: 'Dune' }) }).terms).toEqual([]);
   });
 
-  it('should serialize picks so a slow older write cannot discard a newer query', async () => {
-    let finish: (response: Response) => void = () => {};
-    const request = vi.fn().mockImplementationOnce(() =>
-      new Promise<Response>((resolve) => {
-        finish = resolve;
-      })
-    )
-      .mockResolvedValue(new Response(null, { status: 201 }));
-    const recent = createRecentSearches({ viewer: 'one', request, notify: vi.fn() });
-    const first = recent.record({ query: 'First', type: 'movies', id: 1 });
-    const second = recent.record({ query: 'Second', type: 'shows', id: 2 });
-    await Promise.resolve();
-    expect(request).toHaveBeenCalledTimes(1);
-    finish(new Response(null, { status: 500 }));
-    await Promise.all([first, second]);
-    expect(recent.user.map((term) => term.query)).toEqual(['Second']);
-    expect(request).toHaveBeenCalledTimes(2);
-  });
+  it('should keep working in memory when storage fails or is missing', () => {
+    [broken, undefined].forEach((unavailable) => {
+      const recent = createRecentSearches({ key, storage: unavailable });
+      recent.record({ query: 'Dune', type: 'movies' });
+      recent.record({ query: 'Tron', type: '' });
+      recent.remove({ query: 'Dune', type: 'movies' });
 
-  it('should put newer server queries ahead of older browser picks', async () => {
-    const saved = storage();
-    saved.setItem('og-recent-searches:one', JSON.stringify([{ query: 'Old', type: '', created_at: 100 }]));
-    const recent = createRecentSearches({
-      viewer: 'one',
-      storage: saved,
-      notify: vi.fn(),
-      request: () =>
-        Promise.resolve(Response.json({ user: [{ query: 'New', type: '', created_at: 200 }], global: [] })),
+      expect(recent.terms).toEqual([{ query: 'Tron', type: '' }]);
+      recent.clear();
+      expect(recent.terms).toEqual([]);
     });
-    await recent.load();
-    expect(recent.user.map((term) => term.query)).toEqual(['New', 'Old']);
   });
 
-  it('should discard late reads and queued picks after the viewer changes', async () => {
-    let finish: (response: Response) => void = () => {};
-    const request = vi.fn(() =>
-      new Promise<Response>((resolve) => {
-        finish = resolve;
-      })
-    );
-    const recent = createRecentSearches({ viewer: 'old', request, notify: vi.fn() });
-    const reading = recent.load();
-    recent.dispose();
-    finish(Response.json(history));
-    await reading;
-    await recent.record({ query: 'Old account', type: 'shows', id: 1 });
-    expect(recent.user).toEqual([]);
-    expect(recent.global).toEqual([]);
-    expect(request).toHaveBeenCalledTimes(1);
-  });
-
-  it('should not resurrect a removed query when the initial read arrives late', async () => {
+  it('should build on what another tab saved', () => {
     const saved = storage();
-    saved.setItem('og-recent-searches:one', JSON.stringify(history.user));
-    let finish: (response: Response) => void = () => {};
-    const recent = createRecentSearches({
-      viewer: 'one',
-      storage: saved,
-      notify: vi.fn(),
-      request: (path) =>
-        path.endsWith('/remove')
-          ? Promise.resolve(new Response(null, { status: 204 }))
-          : new Promise<Response>((resolve) => {
-            finish = resolve;
-          }),
-    });
-    const reading = recent.load();
-    await recent.remove(history.user[0]);
-    finish(Response.json(history));
-    await reading;
-    expect(recent.user).toEqual([history.user[1]]);
+    const here = createRecentSearches({ key, storage: saved });
+    const there = createRecentSearches({ key, storage: saved });
+    there.record({ query: 'Dune', type: 'movies' });
+    here.record({ query: 'Tron', type: '' });
+
+    expect(here.terms).toEqual([{ query: 'Tron', type: '' }, { query: 'Dune', type: 'movies' }]);
   });
 
-  it('should roll back a failed record without saving it locally', async () => {
+  it('should pick up a change from another tab on reload', () => {
     const saved = storage();
-    const notify = vi.fn();
-    const request = vi.fn(() => Promise.resolve(new Response(null, { status: 403 })));
-    const recent = createRecentSearches({ viewer: 'one', request, storage: saved, notify });
-    await recent.record({ query: 'Breaking', type: '', id: 1388 });
-    expect(recent.user).toEqual([]);
-    expect(notify).toHaveBeenCalledOnce();
-    expect(saved.getItem('og-recent-searches:one')).toBeNull();
-  });
+    const here = createRecentSearches({ key, storage: saved });
+    createRecentSearches({ key, storage: saved }).record({ query: 'Dune', type: 'movies' });
+    here.reload();
 
-  it('should empty every open list and its browser copy when the history is cleared', async () => {
-    const saved = storage();
-    saved.setItem('og-recent-searches:one', JSON.stringify([{ query: 'Local', type: '' }]));
-    const request = vi.fn(() => Promise.resolve(Response.json(history)));
-    const open = createRecentSearches({ viewer: 'one', request, storage: saved, notify: vi.fn() });
-    await open.load();
-    const gone = createRecentSearches({ viewer: 'one', request, storage: saved, notify: vi.fn() });
-    gone.dispose();
-    clearRecentSearches();
-    expect(open.user).toEqual([]);
-    expect(open.global).toEqual(history.global);
-    expect(createRecentSearches({ viewer: 'one', request, storage: saved, notify: vi.fn() }).user).toEqual([]);
-    request.mockImplementation(() => Promise.resolve(new Response(null, { status: 201 })));
-    await open.record({ query: 'Fresh', type: '', id: 1 });
-    expect(open.user.map((term) => term.query)).toEqual(['Fresh']);
-    open.dispose();
-  });
-
-  it('should not bring cleared queries back from a read or a failed remove still in flight', async () => {
-    let finishRead: (response: Response) => void = () => {};
-    let finishRemove: (response: Response) => void = () => {};
-    const notify = vi.fn();
-    const recent = createRecentSearches({
-      viewer: 'one',
-      notify,
-      request: (path) =>
-        new Promise<Response>((resolve) => {
-          if (path.endsWith('/remove')) finishRemove = resolve;
-          else finishRead = resolve;
-        }),
-    });
-    const reading = recent.load();
-    clearRecentSearches();
-    finishRead(Response.json(history));
-    await reading;
-    expect(recent.user).toEqual([]);
-    expect(recent.loaded).toBe(false);
-    const loading = recent.load();
-    finishRead(Response.json(history));
-    await loading;
-    const removing = recent.remove(history.user[0]);
-    await Promise.resolve();
-    clearRecentSearches();
-    finishRemove(new Response(null, { status: 500 }));
-    await removing;
-    expect(recent.user).toEqual([]);
-    expect(notify).toHaveBeenCalledOnce();
-    recent.dispose();
+    expect(here.terms).toEqual([{ query: 'Dune', type: 'movies' }]);
   });
 });

@@ -85,8 +85,9 @@ export async function loadBuiltInList({ fetch, locals, params, url, parent, cook
   const shell = { kind, query, fadeHide, datePreferences };
   if (profile.isLocked) return { ...shell, list: null };
 
-  // A private profile's lists answer the token only: its owner reads them again, default sort and all.
-  const needsToken = profile.isPrivate && Boolean(token);
+  // A private profile's lists answer the token only, and the owner's own reads skip the worker's cache, so a note,
+  // reorder or removal shows on the next load: both read again with the token, default sort and all.
+  const needsToken = (profile.isPrivate || user?.slug === profile.slug) && Boolean(token);
   const [viewerItems, comments] = needsToken
     ? await Promise.all([
       fetchListItems({ fetch, token, base, query, sort: urlSort }),

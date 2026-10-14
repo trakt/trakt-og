@@ -129,6 +129,13 @@ describe('loadBuiltInList', () => {
     expect(ranked?.url.searchParams.get('genres')).toBe('drama');
   });
 
+  it("should read the owner's own public favorites with the token, past the worker's cache", async () => {
+    const result = await load({ kind: 'favorites', token: 'abc', viewer: { slug: 'sean', isVip: true } });
+    if (!result.list) throw new Error('no list');
+    expect(result.cards.find(({ title }) => title === 'Heat')?.notes).toBe('A favorite.');
+    expect(seen.some(({ url, auth }) => !url.pathname.includes('/comments') && auth !== null)).toBe(true);
+  });
+
   it("should read a private profile's watchlist with the token", async () => {
     isPrivate = true;
     const result = await load({

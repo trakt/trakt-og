@@ -24,7 +24,10 @@ export type DashboardSettings = {
     readonly startDay: DashboardPrefs['upcoming_start_day'];
     readonly poster: DashboardPrefs['upcoming_poster'];
   };
-  readonly recommendations: { readonly ignoreCollected: boolean; readonly ignoreWatchlisted: boolean };
+  readonly recommendations: {
+    readonly type: DashboardPrefs['recommendations_type'];
+    readonly ignoreCollected: boolean;
+  };
   /** The panels the viewer hid. Suggested People is cut, so it has no switch here. */
   readonly hidden: {
     readonly upNext: boolean;

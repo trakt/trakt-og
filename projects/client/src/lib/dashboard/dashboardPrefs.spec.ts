@@ -11,6 +11,7 @@ describe('dashboardPrefs', () => {
       upcoming_movies: 'all',
       upcoming_start_day: 'today',
       upcoming_poster: 'show',
+      recommendations_type: 'media',
       hide_on_deck: false,
       hide_upcoming: false,
       hide_list: false,

@@ -68,7 +68,7 @@ export async function loadDashboard({ fetch, panelFetch = fetch, locals, cookies
   });
   const { hidden } = dashboard;
   const panelClient = api({ fetch: panelFetch, token });
-  // The Social Feed skips its request at zero, and the recommendations name the count: the stats strip's read has it.
+  // The Social Feed skips its request at zero: the stats strip's read has the count.
   const following = Promise.resolve(parsedStats.data.network.following);
   return {
     profile: user,
@@ -119,13 +119,9 @@ export async function loadDashboard({ fetch, panelFetch = fetch, locals, cookies
         now,
         datePreferences: layout.datePreferences,
       })),
-    recommendations: unless(hidden.recommendations, () =>
-      fetchRecommendations({
-        api: panelClient,
-        following,
-        now,
-        order: layout.datePreferences.order,
-        ignore: dashboard.recommendations,
-      })),
+    recommendations: unless(
+      hidden.recommendations,
+      () => fetchRecommendations({ fetch: panelFetch, token, settings: dashboard.recommendations, now }),
+    ),
   };
 }

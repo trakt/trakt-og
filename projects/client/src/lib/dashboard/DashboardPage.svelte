@@ -14,6 +14,7 @@ import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
 import { userManager } from '$lib/auth/userManager';
 import type { DashboardSettings } from '$lib/dashboard/DashboardSettings';
 import { dashboardPrefs } from '$lib/dashboard/dashboardPrefs';
+import { fetchRecommendations } from '$lib/dashboard/fetchRecommendations';
 import { fetchSchedule } from '$lib/dashboard/fetchSchedule';
 import { toStatsPanel } from '$lib/dashboard/toStatsPanel';
 import type { loadDashboard } from '$lib/dashboard/loadDashboard';
@@ -40,6 +41,16 @@ function loadSchedule({ filter, movies }: Pick<DashboardSettings['schedule'], 'f
     datePreferences: data.datePreferences,
     isVip,
     schedule: { ...data.dashboard.schedule, filter, movies },
+  });
+}
+
+// The recommendations' Type dropdown works the same way.
+function loadRecommendations(type: DashboardSettings['recommendations']['type']) {
+  dashboardPrefs.save(username, { ...dashboardPrefs.load(username), recommendations_type: type });
+  return fetchRecommendations({
+    fetch: authenticatedFetch({ manager: userManager() }),
+    token: null,
+    settings: { ...data.dashboard.recommendations, type },
   });
 }
 </script>
@@ -77,6 +88,6 @@ function loadSchedule({ filter, movies }: Pick<DashboardSettings['schedule'], 'f
   <SocialFeedPanel feed={data.socialFeed} {username} datePreferences={data.datePreferences} />
 {/if}
 {#if data.recommendations}
-  <RecommendationsPanel recommendations={data.recommendations} {username} {isVip}
-  datePreferences={data.datePreferences} />
+  <RecommendationsPanel recommendations={data.recommendations} type={data.dashboard.recommendations.type} {isVip}
+  onpick={loadRecommendations} />
 {/if}

@@ -34,6 +34,7 @@ import { upNextFixture } from '$lib/progress/upNextFixture';
 import { dashboardPrefs } from '$lib/dashboard/dashboardPrefs';
 import { scheduleStart } from '$lib/dashboard/scheduleStart';
 import { sortUpNext } from '$lib/dashboard/sortUpNext';
+import type { DashboardSettings } from '$lib/dashboard/DashboardSettings';
 import { toDashboardSettings } from '$lib/dashboard/toDashboardSettings';
 
 const { data } = $props();
@@ -151,19 +152,15 @@ const socialNobody = Promise.resolve<SocialFeed>({ follows: false, items: [], re
 const socialLoading = new Promise<SocialFeed>(() => {});
 const socialFailed = browser ? Promise.reject(new Error('demo')) : socialLoading;
 
-// Ten shows and five movies from the two members you follow; then following nobody, with no movies at all; then one
-// column failing.
-const recs = Promise.resolve<DashboardRecommendations>({ ...recommendationsFixture, following: 2 });
-const recsNoFollows = Promise.resolve<DashboardRecommendations>({
-  shows: recommendationsFixture.shows.slice(0, 3),
-  movies: [],
-  following: 0,
-});
-const recsColumnFailed = Promise.resolve<DashboardRecommendations>({
-  shows: null,
-  movies: recommendationsFixture.movies,
-  following: 1,
-});
+// Shows and movies together, picked from the dropdown; then one title; then nothing to recommend.
+const recsFor = (type: DashboardSettings['recommendations']['type']) =>
+  Promise.resolve<DashboardRecommendations>({
+    type,
+    items: type === 'media' ? recommendationsFixture : recommendationsFixture.filter((item) => item.type === type),
+  });
+const recs = recsFor('media');
+const recsOne = Promise.resolve<DashboardRecommendations>({ type: 'show', items: recommendationsFixture.slice(0, 1) });
+const recsEmpty = Promise.resolve<DashboardRecommendations>({ type: 'movie', items: [] });
 const recsLoading = new Promise<DashboardRecommendations>(() => {});
 const recsFailed = browser ? Promise.reject(new Error('demo')) : recsLoading;
 
@@ -368,26 +365,24 @@ $effect(() => {
   <div class="gap"></div>
 
   <div id="recommendations">
-    {#if data.viewer && data.recommendations}
-      <RecommendationsPanel recommendations={data.recommendations} username={data.viewer.username}
-        isVip={data.viewer.isVip} datePreferences={data.datePreferences} />
+    {#if data.viewer && data.recommendations && data.dashboard}
+      <RecommendationsPanel recommendations={data.recommendations} type={data.dashboard.recommendations.type}
+        isVip={data.viewer.isVip} />
       <div class="gap"></div>
     {/if}
     <div id="recommendations-sample">
-      <RecommendationsPanel recommendations={recs} username="me" isVip datePreferences={data.datePreferences} />
+      <RecommendationsPanel recommendations={recs} type="media" isVip onpick={recsFor} />
     </div>
+    <div class="gap"></div>
+    <RecommendationsPanel recommendations={recsOne} type="show" isVip />
     <div class="gap"></div>
     <div id="recommendations-empty">
-      <RecommendationsPanel recommendations={recsNoFollows} username="demo-non-vip" isVip={false}
-        datePreferences={data.datePreferences} />
+      <RecommendationsPanel recommendations={recsEmpty} type="movie" isVip={false} />
     </div>
     <div class="gap"></div>
-    <RecommendationsPanel recommendations={recsColumnFailed} username="me" isVip
-      datePreferences={data.datePreferences} />
+    <RecommendationsPanel recommendations={recsLoading} type="media" isVip />
     <div class="gap"></div>
-    <RecommendationsPanel recommendations={recsLoading} username="me" isVip datePreferences={data.datePreferences} />
-    <div class="gap"></div>
-    <RecommendationsPanel recommendations={recsFailed} username="me" isVip datePreferences={data.datePreferences} />
+    <RecommendationsPanel recommendations={recsFailed} type="media" isVip />
   </div>
   <div class="gap"></div>
   <section class="intro" id="settings">

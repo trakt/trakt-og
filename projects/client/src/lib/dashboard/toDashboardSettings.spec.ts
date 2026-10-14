@@ -17,7 +17,7 @@ describe('toDashboardSettings', () => {
         poster: 'show',
       },
       schedule: { filter: 'shows-movies', movies: 'all', startDay: 'today', poster: 'show' },
-      recommendations: { ignoreCollected: false, ignoreWatchlisted: false },
+      recommendations: { type: 'media', ignoreCollected: false },
       hidden: {
         upNext: false,
         schedule: false,
@@ -37,7 +37,7 @@ describe('toDashboardSettings', () => {
           on_deck: { sort: 'completed', sort_how: 'desc', refresh: true, simple_progress: true, only_favorites: true },
         },
         watchnow: { favorites: ['us-netflix', 'us-hulu', 'us-max'] },
-        recommendations: { ignore_collected: true, ignore_watchlisted: true },
+        recommendations: { ignore_collected: true },
       },
     };
 
@@ -50,7 +50,7 @@ describe('toDashboardSettings', () => {
       refresh: true,
       poster: 'show',
     });
-    expect(recommendations).toEqual({ ignoreCollected: true, ignoreWatchlisted: true });
+    expect(recommendations).toEqual({ type: 'media', ignoreCollected: true });
   });
 
   it("should read the form's activity default and an unknown sort as Activity Date", () => {
@@ -81,6 +81,12 @@ describe('toDashboardSettings', () => {
 
     expect(settings.upNext.poster).toBe('season');
     expect(settings.schedule).toEqual({ filter: 'finales', movies: 'none', startDay: 'monday', poster: 'season' });
+  });
+
+  it("should take the recommendations' type from the prefs", () => {
+    const prefs = { ...dashboardPrefs.defaults, recommendations_type: 'movie' } as const;
+
+    expect(toDashboardSettings({ settings: null, prefs }).recommendations.type).toBe('movie');
   });
 
   it('should hide every section for VIPs', () => {

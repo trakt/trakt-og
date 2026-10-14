@@ -43,7 +43,7 @@ describe('util: toBirthdayRows', () => {
       title: 'Person 2',
       type: 'Person',
       tag: 'Oct 12',
-      genres: ['Age 45'],
+      tags: ['Age 45'],
       poster: undefined,
     }]);
   });
@@ -55,7 +55,7 @@ describe('util: toBirthdayRows', () => {
       person(3, '1930-10-11', { death: '2020-01-01', known_for_department: 'writing' }),
     ], '2026-10-10');
 
-    expect(rows.map((row) => [row.title, row.genres])).toEqual([
+    expect(rows.map((row) => [row.title, row.tags])).toEqual([
       ['Person 2', ['Age 58', 'Directing']],
       ['Person 3', ['Died Jan 1, 2020', 'Writing']],
       ['Person 1', ['Age 57', 'Acting']],

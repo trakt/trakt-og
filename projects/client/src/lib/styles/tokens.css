@@ -813,6 +813,7 @@
   --search-pill-gap: 6px; /* between a result's type, year and genre pills */
   --search-pill-padding: 3px 8px;
   --space-search-pill-row: 5px; /* between a result's title and its pills */
+  --space-search-year: 6px; /* between a result's title and its year */
   --radius-search-pill: var(--radius-menu-row); /* squared like the dropdown menus' rows */
   --font-size-search-pill: 12px;
   --line-height-search-pill: 1.2;
@@ -839,6 +840,7 @@
   --letter-spacing-tag-badge: 0.03em;
   --color-search-term: light-dark(rgb(0 0 0 / 0.75), rgb(255 255 255 / 0.85));
   --color-search-in-type: light-dark(rgb(0 0 0 / 0.4), rgb(255 255 255 / 0.4));
+  --color-search-year: light-dark(rgb(0 0 0 / 0.6), rgb(255 255 255 / 0.6)); /* a result's year, dimmer than its title */
 
   /* Dialogs */
   --color-dialog-bg: light-dark(#f5f5f7, #1d1d1d);

@@ -12,12 +12,16 @@ export interface SearchRow {
   /** The show's title above an episode. */
   readonly topTitle?: string;
   readonly title: string;
+  /** A movie's or show's year, beside the title. */
+  readonly year?: string;
   /** OG's type tag: the model name, titleized. */
   readonly type: string;
-  /** The year, an episode's first-aired date, a list's owner or a person's birthday. */
+  /** An episode's first-aired date, a list's owner or a person's birthday. */
   readonly tag?: string;
-  /** More tags after the year: up to three genres ("Science Fiction"), a list's size, a person's age. */
+  /** Up to three genres ("Science Fiction"), joined in one pill. */
   readonly genres?: readonly string[];
+  /** Separate pills after the genres: a list's size, a person's age and what they're known for. */
+  readonly tags?: readonly string[];
   readonly poster?: string;
   /** A user's avatar, which OG drew square and round (`.poster.square`, `[data-type="users"]`), not a poster. */
   readonly avatar?: boolean;
@@ -25,7 +29,7 @@ export interface SearchRow {
 
 const GENRE_LIMIT = 3;
 
-// Titled here, not by the pill's CSS, so tags like "250 items" keep their case.
+// Titled here, not by the pill's CSS, so other tags like "250 items" keep their case.
 const genres = (slugs: ReadonlyArray<string> | null | undefined) =>
   slugs?.length
     ? slugs.slice(0, GENRE_LIMIT).map((slug) =>
@@ -58,8 +62,8 @@ export function toSearchRow(
       recent: { query: movie.title, type: 'movies', id: movie.ids.trakt },
       href: `/movies/${movie.ids.slug}`,
       title: movie.title,
+      year: year(movie.year),
       type: 'Movie',
-      tag: year(movie.year),
       genres: genres(movie.genres),
       poster: poster(movie.images?.poster),
     };
@@ -71,8 +75,8 @@ export function toSearchRow(
       recent: { query: show.title, type: 'shows', id: show.ids.trakt },
       href: `/shows/${show.ids.slug}`,
       title: show.title,
+      year: year(show.year),
       type: 'Show',
-      tag: year(show.year),
       genres: genres(show.genres),
       poster: poster(show.images?.poster),
     };
@@ -99,7 +103,7 @@ export function toSearchRow(
       href: `/people/${person.ids.slug}`,
       title: person.name,
       type: 'Person',
-      genres: personTags(person, { today, order: dates.order }),
+      tags: personTags(person, { today, order: dates.order }),
       poster: poster(person.images?.headshot),
     };
   }
@@ -113,7 +117,7 @@ export function toSearchRow(
       type: list.type === 'official' ? 'Official List' : 'List',
       // Whose list it is, beside the type, then how big it is. Official lists have no owner.
       tag: list.user?.username ?? undefined,
-      genres: typeof list.item_count === 'number'
+      tags: typeof list.item_count === 'number'
         ? [`${list.item_count.toLocaleString('en-US')} ${list.item_count === 1 ? 'item' : 'items'}`]
         : undefined,
       poster: poster(list.images?.posters),

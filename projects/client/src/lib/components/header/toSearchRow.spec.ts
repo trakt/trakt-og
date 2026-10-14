@@ -15,14 +15,14 @@ const breakingBad = {
 
 describe('toSearchRow', () => {
   describe('for shows and movies', () => {
-    it('should show the type, the year and the genres, titled with dashes spaced out', () => {
+    it('should put the year beside the title, then the type and the genres, titled with dashes spaced out', () => {
       expect(toSearchRow(hit({ type: 'show', show: breakingBad }))).toEqual({
         key: 'show-1388',
         recent: { query: 'Breaking Bad', type: 'shows', id: 1388 },
         href: '/shows/breaking-bad',
         title: 'Breaking Bad',
+        year: '2008',
         type: 'Show',
-        tag: '2008',
         genres: ['Drama', 'Science Fiction'],
         poster: 'https://media.trakt.tv/images/shows/000/001/388/posters/thumb/fa39b59954.jpg.webp',
       });
@@ -40,7 +40,7 @@ describe('toSearchRow', () => {
       const row = toSearchRow(hit({ type: 'movie', movie }));
 
       expect(row).toMatchObject({ href: '/movies/hayde-bre', type: 'Movie' });
-      expect([row?.tag, row?.genres, row?.poster]).toEqual([undefined, undefined, undefined]);
+      expect([row?.year, row?.genres, row?.poster]).toEqual([undefined, undefined, undefined]);
     });
   });
 
@@ -107,7 +107,7 @@ describe('toSearchRow', () => {
       known_for_department: 'acting',
     };
 
-    expect(toSearchRow(hit({ type: 'person', person }), undefined, '2026-10-10')?.genres).toEqual(['Age 67', 'Acting']);
+    expect(toSearchRow(hit({ type: 'person', person }), undefined, '2026-10-10')?.tags).toEqual(['Age 67', 'Acting']);
   });
 
   it('should link lists by id and name official ones', () => {
@@ -132,7 +132,7 @@ describe('toSearchRow', () => {
     expect(toSearchRow(hit({ type: 'list', list }))).toMatchObject({
       type: 'List',
       tag: 'lish408',
-      genres: ['1,250 items'],
+      tags: ['1,250 items'],
     });
   });
 

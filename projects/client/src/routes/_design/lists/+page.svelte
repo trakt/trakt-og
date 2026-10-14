@@ -13,7 +13,9 @@ import ListItemEdit from '$lib/components/lists/ListItemEdit.svelte';
 import ListReorderControls from '$lib/components/lists/ListReorderControls.svelte';
 import RankInput from '$lib/components/lists/RankInput.svelte';
 import ListRow from '$lib/components/media/ListRow.svelte';
+import NotesPill from '$lib/components/lists/NotesPill.svelte';
 import ReadNotes from '$lib/components/lists/ReadNotes.svelte';
+import plus from '$lib/icons/solid/plus.svg?raw';
 import PosterCard from '$lib/components/media/PosterCard.svelte';
 import PosterGrid from '$lib/components/media/PosterGrid.svelte';
 import SectionToolbar from '$lib/components/toolbar/SectionToolbar.svelte';
@@ -34,6 +36,11 @@ const transferSource = toBuiltInListView({
   sort: { by: 'rank', how: 'asc' },
 });
 const clamp = (next: number) => Math.max(1, Math.min(12, next));
+// Near the 500-character limit, taller than the poster, so it scrolls.
+const longNotes = [
+  "Still the best haunted-house movie set in space. Watched it again on the 4K disc and it looks like it was shot last year.",
+  "The pacing is the point: almost an hour before the chestburster, and every minute of the slow build pays off. Ripley isn't the lead until the last act, which still surprises people. Skip the director's cut, the theatrical version is tighter. Pair it with Aliens for a double feature, then stop there.",
+].join('\n\n');
 
 // A signed-in viewer's stats bar, against a made-up library: 2 of 10 watched, 5 collected, then all of a 3-item list.
 const items: ListStatsItem[] = Array.from({ length: 10 }, (_, i) => ({ type: 'movie', id: i + 1 }));
@@ -44,7 +51,7 @@ let mode = $state<'add' | 'edit' | 'watchlist' | 'favorites'>('add');
 const initial = {
   name: 'Sci-Fi Club',
   description: 'Picks for the monthly club.',
-  privacy: 'friends',
+  privacy: 'link',
   allow_comments: true,
   display_numbers: true,
   sort_by: 'rank',
@@ -62,11 +69,17 @@ const following = [{ slug: 'teodoro_2', name: 'Elsy Murphy (@teodoro_2)' }];
 </section>
 <section class="demo">
   <Container>
-    <h2>List poster: Read Notes and the rating line</h2>
+    <h2>List poster: notes (short and at the 500-character limit) and the rating line</h2>
     <PosterGrid>
       <PosterCard href="/movies/heat-1995" title="Heat" rank={3}
         subtitles={[{ rating: 8.19, votes: 12_400, href: '/movies/heat-1995' }, '\u00a0']}>
         {#snippet posterOverlay()}<ReadNotes notes="Watch the **director's cut** :fire:" />{/snippet}
+      </PosterCard>
+      <PosterCard href="/movies/alien-1979" title="Alien" rank={4} subtitles={['\u00a0']}>
+        {#snippet posterOverlay()}<ReadNotes notes={longNotes} onedit={() => {}} />{/snippet}
+      </PosterCard>
+      <PosterCard href="/movies/aliens-1986" title="Aliens" rank={5} subtitles={['Shown on hover']}>
+        {#snippet posterOverlay()}<NotesPill add svg={plus} label="Add Note" onclick={() => {}} />{/snippet}
       </PosterCard>
     </PosterGrid>
   </Container>
@@ -148,9 +161,10 @@ const following = [{ slug: 'teodoro_2', name: 'Elsy Murphy (@teodoro_2)' }];
 <section class="demo">
   <Container><h2>Built-in list edit</h2><button onclick={() => builtInOpen = true}>Preview watchlist edit</button></Container>
 </section>
-<BuiltInListDialog bind:open={builtInOpen} kind="watchlist" vip busy={false} description={undefined} sortBy="rank"
+<BuiltInListDialog bind:open={builtInOpen} kind="watchlist" count={12} vip busy={false} description={undefined} sortBy="rank"
   sortHow="asc" onsave={() => builtInOpen = false} />
 {#if open}<NewListDialog bind:open {following} initial={mode === 'add' ? undefined : initial} editing={mode !== 'add'}
+  shareLink={mode === 'edit' ? 'https://trakt.tv/lists/share/sci-fi-club' : undefined}
   kind={mode === 'watchlist' || mode === 'favorites' ? mode : 'list'} onsave={() => open = false} />{/if}
 
 <style>

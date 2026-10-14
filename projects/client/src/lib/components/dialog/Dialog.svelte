@@ -23,8 +23,12 @@ interface Props {
    */
   size?: 'sm' | 'notes' | 'md' | 'lg' | 'xl';
   lightDismiss?: boolean;
-  /** OG's report panels have tighter top corners than item modals. */
-  variant?: 'report';
+  /**
+   * OG's report panels have tighter top corners than item modals. `art` is the notes and list dialogs' look: a thin
+   * border, a glass close over a DialogArtHeader, and the toolbar's outlined fields inside; with `size` notes or md
+   * it takes their widths.
+   */
+  variant?: 'report' | 'art';
   /** Avatar over the top edge, like OG’s new-list modal. */
   avatar?: string;
   backdrop?: string;
@@ -137,6 +141,14 @@ const syncOpen = (dialog: HTMLDialogElement) => {
   &.xl {
     inline-size: var(--dialog-width-xl);
   }
+
+  &.art.notes {
+    inline-size: var(--dialog-width-art-notes);
+  }
+
+  &.art.md {
+    inline-size: var(--dialog-width-art-list);
+  }
 }
 
 .backdrop-image {
@@ -211,5 +223,70 @@ const syncOpen = (dialog: HTMLDialogElement) => {
   &:focus-visible {
     outline-offset: calc(-1 * var(--focus-ring-width));
   }
+
+  /* A glass circle over the art header's corner. */
+  .art & {
+    inset-block-start: var(--dialog-art-close-offset);
+    inset-inline-end: var(--dialog-art-close-offset);
+    z-index: 3;
+    display: grid;
+    place-items: center;
+    inline-size: var(--dialog-art-close-size);
+    block-size: var(--dialog-art-close-size);
+    padding: 0;
+    border: 1px solid var(--color-read-notes-border);
+    border-radius: 50%;
+    background-color: var(--color-read-notes-pill-bg);
+    backdrop-filter: var(--blur-read-notes-pill);
+    color: var(--color-card-text);
+    font-size: var(--font-size-dialog-art-close);
+
+    &:hover {
+      background-color: var(--color-read-notes-pill-hover);
+    }
+
+    &:focus-visible {
+      outline-offset: 2px;
+    }
+  }
+}
+
+.art .panel {
+  border: 1px solid var(--color-dialog-art-border);
+}
+
+/* The toolbar's outlined fields. A collaborator picker styles its own search box. */
+.art .panel :global(:is(input:not([type='radio'], [type='checkbox']), textarea):not(.multi-select *)) {
+  display: block;
+  inline-size: 100%;
+  padding: var(--dialog-art-field-padding);
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius-control);
+  background-color: var(--color-control-bg);
+  color: var(--color-control-text);
+  font-size: var(--font-size-dialog-art-field);
+
+  &:hover {
+    border-color: var(--color-control-border-hover);
+  }
+
+  &:focus {
+    border-color: var(--color-input-border-focus);
+    outline: none;
+    box-shadow: var(--shadow-dialog-art-field-focus);
+  }
+
+  &::placeholder {
+    color: var(--color-dialog-art-placeholder);
+  }
+}
+
+.art .panel :global(:is(input, textarea)[aria-invalid='true']) {
+  border-color: var(--brand-danger);
+}
+
+.art .panel :global(textarea:not(.multi-select *)) {
+  resize: vertical;
+  line-height: var(--line-height-base);
 }
 </style>

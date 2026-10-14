@@ -50,6 +50,17 @@ describe('loadListEditor', () => {
     fixture();
     expect((await loadListEditor({ fetch, id: null })).initial).toBeUndefined();
   });
+  it('should keep the share link of a list saved as Link', async () => {
+    fixture();
+    const shared = { ...list, privacy: 'link', share_link: 'https://trakt.tv/lists/abc123' };
+    server.use(http.get(`${base}/users/me/lists/12`, () => HttpResponse.json(shared)));
+    expect((await loadListEditor({ fetch, id: 12 })).shareLink).toBe('https://trakt.tv/lists/abc123');
+  });
+  it('should ignore the share link of a list not saved as Link', async () => {
+    fixture();
+    server.use(http.get(`${base}/users/me/lists/12`, () => HttpResponse.json({ ...list, share_link: 'https://trakt.tv/lists/12' })));
+    expect((await loadListEditor({ fetch, id: 12 })).shareLink).toBeUndefined();
+  });
   it('should reject a failed collaborator read rather than silently clearing collaborators', async () => {
     fixture();
     server.use(http.get(`${base}/lists/12/collaborators`, () => new HttpResponse(null, { status: 503 })));

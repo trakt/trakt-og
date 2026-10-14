@@ -1,8 +1,8 @@
 <!--
   The comment card every comment list renders, as a thread: the author's avatar (with their rating) in a column, then
   the name, labels and date, the text in a soft bubble with read more and spoiler blur, and a quiet row of actions
-  under it: the watched state, React, Reply, "N replies" and, at its end, the reaction summary. The manage icons at the end of the name row stay
-  faint until the card is hovered or focused.
+  under it: the watched state, React, Reply, "N replies" and, at its end, the reaction summary. The manage icons sit at the end of the name row,
+  report and block hidden until the card is hovered or focused, with their tooltips above.
 
   "N replies" opens the replies inline, hanging off a rail under the avatar. Reply opens a reply box at the end of
   the thread, and a posted reply goes to the top of it. The pen swaps the text for an edit form, and the trash can asks
@@ -28,7 +28,7 @@ import replyIcon from '$lib/icons/solid/reply.svg?raw';
 import star from '$lib/icons/solid/star.svg?raw';
 import checkThick from '$lib/icons/trakt/check-thick.svg?raw';
 import flag from '$lib/icons/regular/flag.svg?raw';
-import deleteIcon from '$lib/icons/regular/trash-can.svg?raw';
+import deleteIcon from '$lib/icons/regular/trash-xmark.svg?raw';
 import pencil from '$lib/icons/regular/pen.svg?raw';
 import userBlock from '$lib/icons/regular/user-xmark.svg?raw';
 import type { CommentResponse } from '@trakt/api';
@@ -336,7 +336,7 @@ const vanish = (node: Element) =>
 </script>
 
 {#snippet manageIcon(name: string, svg: string, label: string, onclick: () => void, expanded?: boolean)}
-  <Tooltip text={label} placement="bottom">
+  <Tooltip text={label}>
     {#snippet trigger(tooltip)}
       <button type="button" class="manage-icon {name}" aria-label={label} aria-expanded={expanded} {onclick}
         {...tooltip}>
@@ -436,26 +436,25 @@ const vanish = (node: Element) =>
       </p>
 
       <div class="tools">
-        <ShareButton url={new URL(permalink, page.url.origin).href} title={item?.title} large={false}
-          placement="bottom" />
-        {#if manage.edit && !asParent}
-          {@render manageIcon('edit', pencil, 'Edit', () => (editing ? closeEdit() : (editing = true)), editing)}
-        {/if}
-        {#if manage.delete && !asParent}
-          <ManageConfirm name="delete" svg={deleteIcon} label="Delete" yes="Yes, delete it!" placement="bottom"
-            onconfirm={remove}>
-            Delete your comment?
+        {#if manage.block && author.slug && !blocked}
+          <ManageConfirm name="block" svg={userBlock} label="Block Member" yes="Yes, block them!"
+            onconfirm={block}>
+            Block all comments from <b>{author.name}</b>?
           </ManageConfirm>
         {/if}
         {#if manage.report}
           {@render manageIcon('report', flag, 'Report Comment', () => (reporting = true), reporting)}
         {/if}
-        {#if manage.block && author.slug && !blocked}
-          <ManageConfirm name="block" svg={userBlock} label="Block Member" yes="Yes, block them!" placement="bottom"
-            onconfirm={block}>
-            Block all comments from <b>{author.name}</b>?
+        {#if manage.edit && !asParent}
+          {@render manageIcon('edit', pencil, 'Edit', () => (editing ? closeEdit() : (editing = true)), editing)}
+        {/if}
+        {#if manage.delete && !asParent}
+          <ManageConfirm name="delete" svg={deleteIcon} label="Delete" yes="Yes, delete it!"
+            onconfirm={remove}>
+            Delete your comment?
           </ManageConfirm>
         {/if}
+        <ShareButton url={new URL(permalink, page.url.origin).href} title={item?.title} large={false} />
       </div>
     </header>
 
@@ -749,7 +748,7 @@ const vanish = (node: Element) =>
   white-space: nowrap;
 }
 
-/* The manage icons: small and faint until the card is hovered or has the focus. Touch screens always show them. */
+/* The manage icons, small, at the end of the name's line. */
 .tools {
   display: flex;
   grid-area: 1 / 2;
@@ -758,7 +757,12 @@ const vanish = (node: Element) =>
   gap: var(--comment-tools-gap);
   /* Taller than the name's line, so they hang over it rather than push the date down. */
   margin-block: var(--comment-tools-overhang);
-  opacity: var(--opacity-comment-tools-idle);
+}
+
+/* Report and block stay out of the way until the card is hovered or has the focus. Touch screens always show them. */
+.above-comment .tools > .manage-icon.report,
+.above-comment .tools > :global(.confirm.block) {
+  opacity: 0;
   transition: opacity var(--transition-comment-quiet);
 
   @media (hover: none) {
@@ -766,7 +770,8 @@ const vanish = (node: Element) =>
   }
 }
 
-.comment-wrapper:is(:hover, :focus-within) > .main > .above-comment > .tools {
+.comment-wrapper:is(:hover, :focus-within) > .main > .above-comment > .tools > .manage-icon.report,
+.comment-wrapper:is(:hover, :focus-within) > .main > .above-comment > .tools > :global(.confirm.block) {
   opacity: 1;
 }
 

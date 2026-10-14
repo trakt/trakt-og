@@ -1,4 +1,9 @@
+<!--
+  The lists page's reorder controls on a list tile: the editable rank pill, and drag, move first, up, down and last in
+  the glass edit strip across the tile's bottom.
+-->
 <script lang="ts">
+import EditStrip from '$lib/components/lists/EditStrip.svelte';
 import RankInput from '$lib/components/lists/RankInput.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import Icon from '$lib/icons/Icon.svelte';
@@ -19,7 +24,7 @@ const { name, rank, total, busy = false, onmove, ondrag }: Props = $props();
 </script>
 <RankInput {name} {rank} {busy} {onmove} />
 <div class="controls">
-  <div class="icons">
+  <EditStrip centered>
     <Tooltip text="Drag to reorder">
       {#snippet trigger(tooltip)}
         <button type="button" class="drag" aria-label="Drag to reorder {name}" aria-keyshortcuts="ArrowUp ArrowDown" aria-disabled={busy}
@@ -33,46 +38,20 @@ const { name, rank, total, busy = false, onmove, ondrag }: Props = $props();
     {@render action('Move up', up, rank - 1, rank === 1)}
     {@render action('Move down', down, rank + 1, rank === total)}
     {@render action('Move last', last, total, rank === total)}
-  </div>
+  </EditStrip>
 </div>
 {#snippet action(label: string, svg: string, to: number, edge: boolean)}
   <Tooltip text={label}>
     {#snippet trigger(tooltip)}
-      <button type="button" aria-label="{label}: {name}" aria-disabled={edge || busy} {...tooltip}
+      <button type="button" class={{ edge }} aria-label="{label}: {name}" aria-disabled={edge || busy} {...tooltip}
         onclick={() => { if (!edge && !busy) onmove(to); }}><Icon {svg} /></button>
     {/snippet}
   </Tooltip>
 {/snippet}
 <style>
+/* Covers the tile, so a click while reordering doesn't open the list. */
 .controls {
   position: absolute;
   inset: 0;
-  display: grid;
-  place-items: center;
-  background: var(--color-list-reorder-overlay);
-  color: var(--color-card-text);
-}
-.icons {
-  display: flex;
-  align-items: center;
-  gap: var(--list-reorder-gap);
-}
-button {
-  min-block-size: 0;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: inherit;
-  font-size: var(--font-size-list-reorder);
-  line-height: 1;
-}
-.drag {
-  cursor: grab;
-  touch-action: none;
-  font-size: var(--font-size-list-reorder-drag);
-}
-button:focus-visible {
-  outline: var(--list-reorder-rank-border) solid var(--color-input-border-focus);
-  outline-offset: var(--list-reorder-rank-border);
 }
 </style>

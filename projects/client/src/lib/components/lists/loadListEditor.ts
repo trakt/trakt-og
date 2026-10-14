@@ -16,7 +16,7 @@ export async function loadListEditor({ fetch, id }: { fetch: typeof globalThis.f
   ]);
   if (personal.status !== 200) throw new Error('Could not load your lists');
   const count = Number(personal.headers.get('x-pagination-item-count')) || personal.body.length;
-  if (id === null) return { candidates, count, initial: undefined };
+  if (id === null) return { candidates, count, initial: undefined, shareLink: undefined };
   if (summary?.status !== 200 || current?.status !== 200) throw new Error('Could not load this list');
   const list = editableListSchema.parse(summary.body);
   const collaborators = collaboratorsSchema.parse(await current.json());
@@ -35,6 +35,8 @@ export async function loadListEditor({ fetch, id }: { fetch: typeof globalThis.f
   return {
     count,
     initial,
+    // Only a list saved as Link has a share URL worth copying.
+    shareLink: list.privacy === 'link' ? (list.share_link ?? undefined) : undefined,
     candidates: [
       ...candidates,
       ...collaborators.filter((user) => !known.has(user.ids.slug ?? user.username)).map((user) => ({

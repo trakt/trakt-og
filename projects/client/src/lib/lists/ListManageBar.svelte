@@ -1,6 +1,7 @@
 <!--
   The band Manage opens under a list's title row, in OG's blue: "N items selected" (the filtered count) and the
-  whole-selection actions as light outline buttons.
+  whole-selection actions in three groups split by thin rules: Reset ranks, then Copy and Move as light outline
+  buttons, then Delete in solid red.
   Reset Ranks and Delete ask first; Copy and Move are 's.
 -->
 <script lang="ts">
@@ -30,15 +31,19 @@ const items = $derived(`item${count === 1 ? '' : 's'}`);
     <div class="bar">
       <p class="count"><b>{count.toLocaleString('en-US')}</b> {items} selected</p>
       <div class="actions">
+        <div class="group">
         <ManageConfirm name="reset" svg={resetIcon} label="Set current order as your ranks" text="Reset ranks" yes="Yes"
           {busy} onconfirm={onreset}>
           Reset ranks on <b>{count.toLocaleString('en-US')}</b> {items}?
         </ManageConfirm>
-        {@render transfers?.()}
+        </div>
+        {#if transfers}<div class="group">{@render transfers()}</div>{/if}
+        <div class="group">
         <ManageConfirm name="delete" svg={trashXmark} label="Delete items" text="Delete" yes="Yes, delete them!"
           warning="This can't be undone!" {busy} onconfirm={ondelete}>
           Delete <b>{count.toLocaleString('en-US')}</b> {items} from this list?
         </ManageConfirm>
+        </div>
       </div>
     </div>
   </Container>
@@ -71,11 +76,19 @@ const items = $derived(`item${count === 1 ? '' : 's'}`);
   }
 }
 
-.actions {
+.actions,
+.group {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-list-manage-actions);
+}
+
+/* A thin rule before every group but the first. */
+.group + .group::before {
+  content: '';
+  block-size: var(--list-manage-divider-height);
+  border-inline-start: 1px solid var(--color-list-manage-divider);
 }
 
 /* Every action is an outline button in white on the blue; Copy and Move take the same look through the band's variables. */
@@ -100,9 +113,15 @@ const items = $derived(`item${count === 1 ? '' : 's'}`);
   }
 }
 
-.actions :global(.delete > button:is(:hover, :focus-visible)) {
-  border-color: var(--brand-primary);
-  background-color: var(--brand-primary);
+/* The one that can't be undone stands apart in solid red. */
+.actions :global(.delete > button) {
+  border-color: var(--color-list-manage-delete);
+  background-color: var(--color-list-manage-delete);
+
+  &:is(:hover, :focus-visible) {
+    border-color: var(--color-list-manage-delete-hover);
+    background-color: var(--color-list-manage-delete-hover);
+  }
 }
 
 /* Copy and Move are ListTransfer buttons: hand them the band's colors. */

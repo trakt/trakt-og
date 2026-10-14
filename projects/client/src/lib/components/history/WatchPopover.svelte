@@ -5,7 +5,7 @@ import disc from '$lib/icons/light/compact-disc.svg?raw';
 import calendar from '$lib/icons/regular/calendar-lines.svg?raw';
 import clock from '$lib/icons/regular/clock.svg?raw';
 import play from '$lib/icons/regular/play.svg?raw';
-import trash from '$lib/icons/regular/trash-can.svg?raw';
+import trash from '$lib/icons/regular/trash-xmark.svg?raw';
 import xmark from '$lib/icons/regular/xmark.svg?raw';
 import question from '$lib/icons/solid/question.svg?raw';
 import check from '$lib/icons/trakt/check-thick.svg?raw';

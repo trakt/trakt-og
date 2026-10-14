@@ -7,7 +7,7 @@
 import { rawApiFetch } from '$lib/api/rawApiFetch';
 import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
 import { userManager } from '$lib/auth/userManager';
-import BuiltInListDialog from '$lib/components/lists/BuiltInListDialog.svelte';
+import BuiltInListEditor from '$lib/components/lists/BuiltInListEditor.svelte';
 import { overlay } from '$lib/overlay/overlay';
 import { toast } from '$lib/components/toast/toast.svelte';
 import { loadOwnerItems } from '$lib/lists/loadOwnerItems';
@@ -15,7 +15,6 @@ import { moveListItem } from '$lib/lists/moveListItem';
 import { rerankListCards } from '$lib/lists/rerankListCards';
 import { removeOwnerItems } from '$lib/lists/removeOwnerItems';
 import { writeOwnerList } from '$lib/lists/writeOwnerList';
-import { listItemRowsSchema } from '$lib/lists/listItemRowsSchema';
 import { toListItemCard } from '$lib/lists/toListItemCard';
 import { afterNavigate, goto, replaceState } from '$app/navigation';
 import ReportDialog from '$lib/components/summary/ReportDialog.svelte';
@@ -60,7 +59,7 @@ import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import userXmark from '$lib/icons/regular/user-xmark.svg?raw';
 import barsProgress from '$lib/icons/regular/bars-progress.svg?raw';
-import deleteIcon from '$lib/icons/regular/trash-can.svg?raw';
+import deleteIcon from '$lib/icons/regular/trash-xmark.svg?raw';
 import flag from '$lib/icons/regular/flag.svg?raw';
 import move from '$lib/icons/regular/up-down-left-right.svg?raw';
 import pencil from '$lib/icons/regular/pen.svg?raw';
@@ -70,6 +69,7 @@ import { createListManager } from '$lib/lists/createListManager.svelte';
 import { listGenreOptions } from '$lib/lists/listGenreOptions';
 import { listHref } from '$lib/lists/listHref';
 import ListItemPoster from '$lib/lists/ListItemPoster.svelte';
+import { listPrivacy } from '$lib/lists/listPrivacy';
 import ListManageBar from '$lib/lists/ListManageBar.svelte';
 import type { ListSortGroup } from '$lib/lists/listItemSorts';
 import { listTitleActions } from '$lib/lists/listTitleActions';
@@ -252,18 +252,21 @@ let selectedKeys = $state<readonly number[] | null>(null);
 let removedKeys = $state<readonly number[]>([]);
 let savedDescription = $state<string | undefined>();
 const description = $derived(parseComment(savedDescription ?? data.list?.description ?? ''));
-let defaultBy = $state('rank');
-let defaultHow = $state('asc');
 let notesItem = $state<ListItemCard | null>(null);
 let notesOpen = $state(false);
 let notesDraft = $state('');
+// Notes saved since the page loaded, by item key, so a note added outside manage mode shows without a reload.
+let savedNotes = $state<Readonly<Record<number, string>>>({});
+// The edit dialogs' header: the list's first five posters.
+const listPosters = $derived((data.list ? data.cards : []).slice(0, 5).flatMap((card) => (card.image ? [card.image] : [])));
 const ownerCards = $derived((ownerManaging && allItems && selectedKeys
   ? selectedKeys.flatMap((key) => {
     const item = allItems?.find((row) => row.key === key);
     return item ? [item] : [];
   })
   : (data.list ? data.cards : []).map((item) => allItems?.find((row) => row.key === item.key) ?? item))
-  .filter((item) => !removedKeys.includes(item.key)));
+  .filter((item) => !removedKeys.includes(item.key))
+  .map((item) => item.key in savedNotes ? { ...item, notes: savedNotes[item.key] || undefined } : item));
 const request = (path: string, init?: Parameters<typeof rawApiFetch>[0]['init']) =>
   rawApiFetch({ fetch: authenticatedFetch({ manager: userManager() }), path, init });
 $effect(() => {
@@ -272,45 +275,15 @@ $effect(() => {
   allItems = null;
   selectedKeys = null;
   removedKeys = [];
+  savedNotes = {};
   ownerManaging = false;
   editing = false;
   notesOpen = false;
   savedDescription = undefined;
 });
-async function editList() {
+function editBuiltIn() {
   if (!owner || !ownerKind || ownerBusy || transferBusy) return;
-  ownerBusy = true;
-  const source = data;
-  try {
-    const response = await request(`/users/me/${ownerKind}?limit=1`);
-    if (source !== data) return;
-    if (!response.ok) throw new Error('Unavailable defaults');
-    listItemRowsSchema.parse(await response.json());
-    defaultBy = response.headers.get('x-sort-by') ?? 'rank';
-    defaultHow = response.headers.get('x-sort-how') === 'desc' ? 'desc' : 'asc';
-    editing = true;
-  } catch {
-    toast.error("Doh! We couldn't load your list's default sorting.");
-  } finally {
-    if (source === data) ownerBusy = false;
-  }
-}
-async function saveMetadata(body: { description?: string; sort_by: string; sort_how: string }) {
-  if (!owner || !ownerKind || ownerBusy || transferBusy) return;
-  const source = data;
-  const before = savedDescription;
-  if (body.description !== undefined) savedDescription = body.description;
-  ownerBusy = true;
-  const ok = await writeOwnerList({ kind: ownerKind, change: { type: 'metadata', body }, request, notify: toast });
-  if (source !== data) return;
-  if (!ok) savedDescription = before;
-  else {
-    defaultBy = body.sort_by;
-    defaultHow = body.sort_how;
-    editing = false;
-    toast.success('List saved!');
-  }
-  ownerBusy = false;
+  editing = true;
 }
 async function toggleManage() {
   if (!owner || !ownerKind || !data.list || ownerBusy || transferBusy) return;
@@ -399,11 +372,11 @@ function editNotes(item: ListItemCard) {
   notesOpen = true;
 }
 async function saveOwnerNotes(notes: string) {
-  if (!owner || !ownerKind || !notesItem || !allItems || ownerBusy || transferBusy) return;
+  if (!owner || !ownerKind || !notesItem || ownerBusy || transferBusy) return;
   const item = notesItem;
   const source = data;
-  const before = allItems;
-  allItems = allItems.map((row) => row.key === item.key ? { ...row, notes: notes.trim() } : row);
+  const before = savedNotes;
+  savedNotes = { ...savedNotes, [item.key]: notes.trim() };
   ownerBusy = true;
   const ok = await writeOwnerList({
     kind: ownerKind,
@@ -412,7 +385,7 @@ async function saveOwnerNotes(notes: string) {
     notify: toast,
   });
   if (source !== data) return;
-  if (!ok) allItems = before;
+  if (!ok) savedNotes = before;
   else {
     notesOpen = false;
     toast.success('Notes saved!');
@@ -527,7 +500,8 @@ async function saveNotes(text: string) {
   {/if}
 </svelte:head>
 
-{#if editing && data.kind === 'personal' && data.list}<ListEditor id={data.list.id}
+{#if editing && data.kind === 'personal' && data.list}<ListEditor id={data.list.id} posters={listPosters}
+  count={data.list.itemCount}
   onsaved={(slug) => goto(resolve('/users/[id]/lists/[list]', { id: data.list?.ownerSlug ?? data.profile.slug, list: slug }))}
   onclose={() => { editing = false; }} />{/if}
 
@@ -653,7 +627,7 @@ async function saveNotes(text: string) {
           <!-- The writes are phase 2: report and share, edit and delete, manage, copy. -->
           <div class="actions">
             {#if actions.report}{@render action('Report List', flag, 'report', undefined, () => { reportOpen = true; })}{/if}
-            {#if actions.edit && data.kind !== 'personal'}{@render action('Edit', pencil, 'edit', undefined, owner ? editList : undefined)}{:else if actions.edit}<Tooltip text="Edit">{#snippet trigger(tooltip)}<button type="button" class="action edit" aria-label="Edit" {...tooltip} onclick={() => { editing = true; }}><Icon svg={pencil} /></button>{/snippet}</Tooltip>{/if}
+            {#if actions.edit && data.kind !== 'personal'}{@render action('Edit', pencil, 'edit', undefined, owner ? editBuiltIn : undefined)}{:else if actions.edit}<Tooltip text="Edit">{#snippet trigger(tooltip)}<button type="button" class="action edit" aria-label="Edit" {...tooltip} onclick={() => { editing = true; }}><Icon svg={pencil} /></button>{/snippet}</Tooltip>{/if}
             {#if actions.delete}<span class="delete" style:--confirm-icon-size="var(--font-size-tool)"><ManageConfirm name="delete" svg={deleteIcon} label="Delete" yes="Yes, delete it!" warning={deleteWarning} disabled={deleting} onconfirm={removeList}>Delete this list?</ManageConfirm></span>{/if}
             {#if actions.leave}{@render action('Stop collaborating on this list', userXmark, 'leave', undefined, leave)}{/if}
             <span class="share"><ShareButton url={actions.shareUrl} title={list.name} large={false} /></span>
@@ -719,7 +693,8 @@ async function saveNotes(text: string) {
                 'drop-target': manager.dragging && manager.dropRank === item.rank }} animate:flip={{ duration }}>
                 <ListItemPoster {item} rank={list.displayNumbers && !managing ? item.rank : undefined}
                   removing={() => removingFromOwner ? removedKeys.includes(item.key) : manager.isRemoved(item.key)} datePreferences={data.datePreferences}
-                  edit={managing ? edit : undefined} fade={fadeHide.fade} />
+                  edit={managing ? edit : undefined} fade={fadeHide.fade}
+                  oneditnotes={owner || canManage ? (card) => owner ? editNotes(card) : openNotes(card) : undefined} />
               </div>
             {/each}
           </PosterGrid>
@@ -740,19 +715,21 @@ async function saveNotes(text: string) {
 </section>
 
   {#if ownerKind && owner}
-    <BuiltInListDialog bind:open={editing} kind={ownerKind} avatar={data.user?.avatarUrl} {vip} busy={ownerBusy}
-  description={savedDescription}
-  sortBy={defaultBy} sortHow={defaultHow} onsave={saveMetadata} />
+    {#if editing}<BuiltInListEditor kind={ownerKind} posters={listPosters} count={data.list?.itemCount} {vip}
+      privacy={data.list ? listPrivacy(data.list) : undefined} allowComments={data.list?.allowComments}
+      displayNumbers={data.list?.displayNumbers}
+      description={savedDescription} onclose={() => (editing = false)}
+      onsaved={(saved) => { if (saved.description !== undefined) savedDescription = saved.description; }} />{/if}
     {#if notesItem}
       <NotesDialog bind:open={notesOpen} bind:draft={notesDraft} favorite={ownerKind === 'favorites'} busy={ownerBusy}
-  eyebrow={ownerKind === 'watchlist' && notesItem.noteTitle.show ? `Add notes to ${notesItem.noteTitle.show}` : undefined}
-  item={notesItem.noteTitle} onsave={saveOwnerNotes} />
+  tags={ownerKind === 'watchlist' && notesItem.noteTitle.show ? [{ text: notesItem.noteTitle.show, kind: 'generic' }] : []}
+  privacy={data.list ? listPrivacy(data.list) : undefined} item={notesItem.noteTitle} onsave={saveOwnerNotes} />
     {/if}
   {/if}
   {#if !owner && noteCard}
     <NotesDialog bind:open={noteOpen} bind:draft={noteDraft} busy={noteSaving} disabled={noteLimit !== null}
-  eyebrow={noteCard.noteTitle.show ? `Add notes to ${noteCard.noteTitle.show}` : undefined}
-  item={noteCard.noteTitle} onsave={saveNotes}>
+  tags={noteCard.noteTitle.show ? [{ text: noteCard.noteTitle.show, kind: 'generic' }] : []}
+  privacy={data.list ? listPrivacy(data.list) : undefined} item={noteCard.noteTitle} onsave={saveNotes}>
       {#if noteLimit !== null}
         <p class="notes-limit" role="alert">You've already added <strong>{noteLimit}</strong> notes.
           {#if !vip}Upgrade to <a href={traktUrls.vip} target="_blank" rel="noopener">VIP</a> to add unlimited notes.{/if}</p>
@@ -849,14 +826,19 @@ h2 {
 }
 
 .collaborators {
+  display: inline-flex;
+  align-items: center;
   background-color: var(--color-list-pill-collaborators);
   cursor: default;
 }
 
 .pill-title {
-  display: inline-block;
-  margin: 0 4px 0 -4px;
-  padding: 2px 4px 1px;
+  display: inline-flex;
+  align-items: center;
+  align-self: stretch;
+  /* Flush with the pill's edges: through its 1px block padding and its 4px start padding. */
+  margin: -1px var(--list-pill-count-gap) -1px -4px;
+  padding: var(--list-pill-count-padding);
   border-radius: 2px 0 0 2px;
   background-color: var(--color-list-pill-collaborators-count);
 }
@@ -966,16 +948,16 @@ h2 {
 .manage {
   cursor: pointer;
 
-  /* On: a filled red button, so the mode reads at a glance. */
+  /* On: the pill tabs' picked red wash, like Reorder on the lists page. */
   &.active {
-    border-color: var(--brand-primary);
-    background-color: var(--brand-primary);
-    color: var(--color-text-inverse);
+    border-color: var(--color-mode-on-border);
+    background-color: var(--color-mode-on-bg);
+    color: var(--color-mode-on-text);
 
     &:is(:hover, :focus-visible) {
-      border-color: var(--brand-primary-darken);
-      background-color: var(--brand-primary-darken);
-      color: var(--color-text-inverse);
+      border-color: var(--color-mode-on-border);
+      background-color: var(--color-mode-on-bg-hover);
+      color: var(--color-mode-on-text);
     }
   }
 }

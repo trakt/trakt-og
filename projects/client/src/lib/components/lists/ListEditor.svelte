@@ -5,7 +5,7 @@ import { invalidateAll } from '$app/navigation';
 import { rawApiFetch } from '$lib/api/rawApiFetch';
 import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
 import { userManager } from '$lib/auth/userManager';
-import Dialog from '$lib/components/dialog/Dialog.svelte';
+import LoadingOverlay from '$lib/components/loading/LoadingOverlay.svelte';
 import NewListDialog from '$lib/components/lists/NewListDialog.svelte';
 import { loadListEditor } from '$lib/components/lists/loadListEditor';
 import { saveList } from '$lib/components/lists/saveList';
@@ -18,9 +18,12 @@ interface Props {
   id: number | null;
   onclose: () => void;
   onsaved?: (slug: string) => Promise<void>;
+  /** The list's first posters and item count, for the dialog's header. */
+  posters?: readonly string[];
+  count?: number;
 }
-const { id, onclose, onsaved }: Props = $props();
-// The loading dialog is replaced after its reads; keep the original trigger for focus restoration.
+const { id, onclose, onsaved, posters = [], count }: Props = $props();
+// The Trakt loader shows while the editor reads, then the dialog opens; keep the original trigger for focus restoration.
 const trigger = typeof document === 'undefined' ? undefined : document.activeElement;
 function close() {
   open = false;
@@ -105,10 +108,8 @@ async function save(draft: ListDraft) {
 </script>
 {#if loaded}
   <NewListDialog bind:open initial={loaded.initial} editing={savedId !== undefined} following={loaded.candidates}
-  avatar={page.data.user?.avatarUrl} vip={page.data.user?.isVip} {max} {busy} {error} fieldErrors={fields} onsave={save}
+  {posters} {count} shareLink={loaded.shareLink} vip={page.data.user?.isVip} {max} {busy} {error} fieldErrors={fields} onsave={save}
   onclose={close} />
 {:else}
-  <Dialog bind:open title={id === null ? 'Add a list' : 'Update your list'} onclose={close}>
-  <p role="status">Loading…</p>
-</Dialog>
+  <LoadingOverlay visible />
 {/if}

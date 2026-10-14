@@ -14,6 +14,7 @@ import { sortPickerLists } from '$lib/components/lists/sortPickerLists';
 import { toggleListItem } from '$lib/components/lists/toggleListItem';
 import { createList } from '$lib/components/lists/createList';
 import { loadFollowerCandidates } from '$lib/components/lists/loadFollowerCandidates';
+import LoadingOverlay from '$lib/components/loading/LoadingOverlay.svelte';
 import NewListDialog from '$lib/components/lists/NewListDialog.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import SummaryAction from '$lib/components/summary/SummaryAction.svelte';
@@ -201,16 +202,21 @@ async function searchToggle() {
   await tick();
   if (searching) searchInput?.focus();
 }
+let loadingNew = $state(false);
 async function openNew() {
   createError = '';
   serverLimit = undefined;
   followingError = false;
-  newList = true;
   popover?.hidePopover();
+  // The Trakt loader covers the page while the collaborators load, then the dialog opens with them in.
+  loadingNew = true;
   try {
     following = await loadFollowerCandidates(authFetch());
   } catch {
     followingError = true;
+  } finally {
+    loadingNew = false;
+    newList = true;
   }
 }
 async function save(draft: Parameters<typeof createList>[0]['draft'] & { collaborators: string[] }) {
@@ -318,8 +324,8 @@ async function save(draft: Parameters<typeof createList>[0]['draft'] & { collabo
     </Tooltip>
 </li>
 {/snippet}
+<LoadingOverlay visible={loadingNew} />
 {#if newList}<NewListDialog title="Add to new list" bind:open={newList} {busy} error={createError} {max}
-  avatar={page.data.user?.avatarUrl}
   vip={page.data.user?.isVip} {following} {followingError}
   onclose={async () => { await tick(); triggerButton?.focus({ preventScroll: true }); }}
   onsave={save} />{/if}

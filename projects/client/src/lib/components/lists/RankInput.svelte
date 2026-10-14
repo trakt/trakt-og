@@ -65,16 +65,23 @@ const begin = (event: FocusEvent) => {
   color: var(--color-card-text);
   font: bold var(--font-size-card-tag) / 1.6 var(--font-body);
   text-align: center;
-  transition: transform var(--transition-card);
+  transition: min-inline-size var(--transition-rank-edit), block-size var(--transition-rank-edit),
+    inset-block-start var(--transition-rank-edit), border-color var(--transition-rank-edit),
+    box-shadow var(--transition-rank-edit);
 }
+/* Editing: a roomier dark field with one red ring, so a two- or three-digit rank has space and the caret shows. */
 .rank:focus {
-  transform: scale(var(--list-reorder-rank-scale));
-  background: var(--brand-primary);
-  border-color: var(--color-input-border-focus);
-}
-.rank:focus-visible {
-  outline: var(--list-reorder-rank-border) solid var(--color-input-border-focus);
-  outline-offset: var(--list-reorder-rank-border);
+  inset-block-start: var(--list-reorder-rank-edit-offset);
+  min-inline-size: var(--list-reorder-rank-edit-width);
+  block-size: var(--list-reorder-rank-edit-size);
+  border-color: var(--brand-primary);
+  border-radius: var(--list-reorder-rank-edit-radius);
+  background: var(--color-list-reorder-rank-edit-bg);
+  box-shadow: var(--shadow-list-reorder-rank-edit);
+  font-size: var(--font-size-list-reorder-rank-edit);
+  line-height: 1;
+  outline: none;
+  caret-color: var(--brand-primary);
 }
 @media (prefers-reduced-motion: reduce) {
   .rank {

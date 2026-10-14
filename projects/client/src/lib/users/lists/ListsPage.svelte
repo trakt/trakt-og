@@ -24,6 +24,7 @@ import SortDirection from '$lib/components/dropdown/SortDirection.svelte';
 import NoData from '$lib/components/empty/NoData.svelte';
 import TermsFilter from '$lib/components/filters/TermsFilter.svelte';
 import type { HeaderUser } from '$lib/components/header/HeaderUser';
+import BuiltInListEditor from '$lib/components/lists/BuiltInListEditor.svelte';
 import ListReorderControls from '$lib/components/lists/ListReorderControls.svelte';
 import { toast } from '$lib/components/toast/toast.svelte';
 import { rawApiFetch } from '$lib/api/rawApiFetch';
@@ -178,7 +179,9 @@ const dragEvents = (element: HTMLDivElement) => {
     element.removeEventListener('pointercancel', end);
   };
 };
-let editor = $state<{ id: number | null }>();
+let editor = $state<{ id: number | null; posters?: readonly string[]; count?: number }>();
+// The watchlist or favorites row's editor, which edits only the description and default sort.
+let builtInEditor = $state<{ kind: 'watchlist' | 'favorites'; posters: readonly string[]; count: number }>();
 let removed = $state<readonly number[]>([]);
 let deleting = $state<number | null>(null);
 const limit = $derived(page.data.settings?.limits?.list?.count);
@@ -305,10 +308,15 @@ const actions = (row: UserListRow) => {
   });
   return {
     ...result,
-    ...(result.edit && row.id !== null && {
+    ...(result.edit && {
       edit: {
         onclick: () => {
-          editor = { id: row.id };
+          const posters = row.posters.slice(0, 5).flatMap(({ image }) => (image ? [image] : []));
+          if (row.kind === 'watchlist' || row.kind === 'favorites') {
+            builtInEditor = { kind: row.kind, posters, count: row.itemCount };
+            return;
+          }
+          editor = { id: row.id, posters, count: row.itemCount };
         },
       },
     }),
@@ -419,7 +427,10 @@ const actions = (row: UserListRow) => {
   {/snippet}
 </SectionToolbar>
 
-{#if editor}<ListEditor id={editor.id} onclose={() => { editor = undefined; }} />{/if}
+{#if editor}<ListEditor id={editor.id} posters={editor.posters} count={editor.count} onclose={() => { editor = undefined; }} />{/if}
+{#if builtInEditor}<BuiltInListEditor kind={builtInEditor.kind} posters={builtInEditor.posters} count={builtInEditor.count}
+  vip={data.user?.isVip ?? false} privacy={data.profile.isPrivate ? 'private' : 'public'}
+  onclose={() => (builtInEditor = undefined)} />{/if}
 
 <section class="lists" aria-labelledby="lists-heading" {@attach shortcut}>
   <Container>
@@ -517,9 +528,16 @@ hr {
   }
 }
 
+/* On: the pill tabs' picked red wash, like Manage on a list. */
 .reorder.active {
-  border-color: var(--brand-primary);
-  color: var(--brand-primary);
+  border-color: var(--color-mode-on-border);
+  background-color: var(--color-mode-on-bg);
+  color: var(--color-mode-on-text);
+
+  &:hover:not(:disabled) {
+    border-color: var(--color-mode-on-border);
+    background-color: var(--color-mode-on-bg-hover);
+  }
 }
 .reorder:focus-visible {
   outline: var(--list-reorder-rank-border) solid var(--color-input-border-focus);

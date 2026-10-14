@@ -1,11 +1,12 @@
 <!--
-  OG's manage-mode edit icons on a list poster: a shade over the poster with drag, change position, move first, move last,
-  delete and notes along its bottom. Place it over the poster (PosterCard's `posterOverlay`) with a RankInput.
+  OG's manage-mode edit icons on a list poster: drag, change position, move first, move last, delete and notes, evenly
+  spaced in a glass strip across the poster's bottom. Place it over the poster (PosterCard's `posterOverlay`) with a RankInput.
   The drag handle takes the arrow keys too, so reordering doesn't need a pointer.
     <ListItemEdit name="Heat" rank={3} total={12} notes draggable changeRank={false} onmove={(to) => move(item, to)}
       ondrag={startDrag} onchangerank={focusRank} onremove={remove} onnotes={openNotes} />
 -->
 <script lang="ts">
+import EditStrip from '$lib/components/lists/EditStrip.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import drag from '$lib/icons/solid/arrows-up-down-left-right.svg?raw';
@@ -13,7 +14,7 @@ import first from '$lib/icons/solid/angles-up.svg?raw';
 import last from '$lib/icons/solid/angles-down.svg?raw';
 import listOl from '$lib/icons/solid/list-ol.svg?raw';
 import memo from '$lib/icons/solid/memo.svg?raw';
-import xmark from '$lib/icons/solid/xmark-large.svg?raw';
+import trashXmark from '$lib/icons/regular/trash-xmark.svg?raw';
 
 interface Props {
   name: string;
@@ -53,7 +54,7 @@ const STEPS: Readonly<Record<string, number>> = { ArrowUp: -1, ArrowLeft: -1, Ar
 </script>
 
 <div class="list-edit">
-  <div class="icons">
+  <EditStrip>
     {#if draggable}
       <Tooltip text="Drag to reorder">
         {#snippet trigger(tooltip)}
@@ -71,15 +72,15 @@ const STEPS: Readonly<Record<string, number>> = { ArrowUp: -1, ArrowLeft: -1, Ar
     {#if changeRank}{@render action('Change position', listOl, onchangerank)}{/if}
     {@render action('Move first', first, () => onmove(1), rank === 1)}
     {@render action('Move last', last, () => onmove(total), rank === total)}
-    {@render action('Delete', xmark, onremove)}
+    {@render action('Delete', trashXmark, onremove, false, 'delete')}
     {@render action(notes ? 'Edit notes' : 'Add notes', memo, onnotes, false, 'notes')}
-  </div>
+  </EditStrip>
 </div>
 
 {#snippet action(label: string, svg: string, onclick: () => void, edge = false, kind = '')}
   <Tooltip text={label}>
     {#snippet trigger(tooltip)}
-      <button type="button" class={[kind, { enabled: kind === 'notes' && notes }]} aria-label="{label}: {name}"
+      <button type="button" class={[kind, { enabled: kind === 'notes' && notes, edge }]} aria-label="{label}: {name}"
         aria-disabled={edge || busy} {...tooltip} onclick={() => { if (!edge && !busy) onclick(); }}><Icon
           {svg}
         /></button>
@@ -88,55 +89,19 @@ const STEPS: Readonly<Record<string, number>> = { ArrowUp: -1, ArrowLeft: -1, Ar
 {/snippet}
 
 <style>
+/* Covers the poster, so a click in manage mode doesn't open the title. */
 .list-edit {
   position: absolute;
   inset: 0;
   z-index: 1;
-  background: var(--gradient-list-edit);
-  color: var(--color-card-text);
 }
 
-.icons {
-  position: absolute;
-  inset-inline: 0;
-  inset-block-end: var(--list-edit-icons-bottom);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--list-reorder-gap);
+/* Scoped under .list-edit to outrank the strip's shared button color. */
+.list-edit .delete:hover {
+  color: var(--color-list-edit-delete-hover);
 }
 
-button {
-  min-block-size: 0;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: inherit;
-  font-size: var(--font-size-list-reorder);
-  line-height: 1;
-  cursor: pointer;
-
-  &[aria-disabled='true'] {
-    cursor: default;
-  }
-
-  &:focus-visible {
-    outline: var(--list-reorder-rank-border) solid var(--color-input-border-focus);
-    outline-offset: var(--list-reorder-rank-border);
-  }
-}
-
-.drag {
-  cursor: grab;
-  touch-action: none;
-  font-size: var(--font-size-list-reorder-drag);
-}
-
-.notes {
-  font-size: var(--font-size-list-edit-notes);
-}
-
-.enabled {
-  color: var(--brand-primary);
+.list-edit .enabled {
+  color: var(--color-list-edit-notes);
 }
 </style>

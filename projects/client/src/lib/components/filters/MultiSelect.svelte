@@ -44,7 +44,7 @@ let input = $state<HTMLInputElement>();
 let list = $state<HTMLElement>();
 
 const byValue = $derived(new Map(options.flatMap((group) => group.options).map((option) => [option.value, option])));
-const chips = $derived(value.map((v) => ({ value: v, label: byValue.get(v)?.label ?? labelFor(v) })));
+const chips = $derived(value.map((v) => ({ value: v, label: byValue.get(v)?.label ?? labelFor(v), avatar: byValue.get(v)?.avatar })));
 
 const matches = (option: FilterOption, term: string) =>
   option.label.toLowerCase().includes(term) || (option.tag?.toLowerCase().includes(term) ?? false);
@@ -118,7 +118,7 @@ const rows = $derived(groups.map((group, g) => {
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div class="field" onclick={() => input?.focus()}>
     {#each chips as chip (chip.value)}
-      <span class="chip">{chip.label}<button type="button" class="remove" aria-label="Remove {chip.label}"
+      <span class="chip">{#if chip.avatar}<img class="chip-avatar" src={chip.avatar} alt="" />{/if}{chip.label}<button type="button" class="remove" aria-label="Remove {chip.label}"
           onclick={(event) => {
             event.stopPropagation();
             remove(chip.value);
@@ -183,29 +183,110 @@ const rows = $derived(groups.map((group, g) => {
 </div>
 
 <style>
+/* The list editor's collaborators: the art dialogs' field, round chips, and suggestions in the dropdown menu's card. */
 .list {
-  --color-filter-control-bg: var(--color-input-bg);
-  --color-filter-control-text: var(--color-text);
+  --color-filter-control-bg: var(--color-control-bg);
+  --color-filter-control-text: var(--color-control-text);
   --filter-control-height: var(--list-collaborators-height);
-  --radius-filter-control: 0;
+  --radius-filter-control: var(--radius-control);
   --color-filter-chip-bg: var(--color-list-candidate-chip);
   --color-filter-chip-remove: var(--color-text-muted);
-}
-.list .chip {
-  margin-block: var(--space-xs-inline);
-  font-size: var(--font-size-base);
-  line-height: var(--line-height-base);
-}
-.list .field input {
-  font-family: var(--font-body);
-  font-size: var(--font-size-base);
-}
-.list .chip ~ input {
-  flex-basis: 100%;
-  min-block-size: var(--list-select-height);
+  font-size: var(--font-size-control);
 }
 .list .field {
-  border: var(--list-border) solid var(--color-input-border);
+  gap: var(--dialog-art-chip-gap);
+  padding: var(--list-collaborators-padding);
+  border: 1px solid var(--color-control-border);
+
+  &:hover {
+    border-color: var(--color-control-border-hover);
+  }
+
+  &:focus-within {
+    border-color: var(--color-input-border-focus);
+    box-shadow: var(--shadow-dialog-art-field-focus);
+  }
+
+  &:has(input:focus-visible) {
+    outline: none;
+  }
+}
+.list .chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--list-collaborator-chip-gap);
+  block-size: var(--list-collaborator-chip-height);
+  margin: 0;
+  padding: var(--list-collaborator-chip-padding);
+  border-radius: var(--list-collaborator-chip-height);
+  font-family: var(--font-headings);
+  font-size: var(--font-size-control);
+  font-weight: var(--font-weight-headings);
+  line-height: 1;
+}
+.list .chip:has(.chip-avatar) {
+  padding-inline-start: var(--list-collaborator-chip-avatar-inset);
+}
+.chip-avatar {
+  inline-size: var(--list-collaborator-chip-avatar);
+  block-size: var(--list-collaborator-chip-avatar);
+  border-radius: 50%;
+  object-fit: cover;
+}
+.list .remove {
+  position: static;
+  display: grid;
+  place-items: center;
+  inline-size: var(--list-collaborator-remove-size);
+  block-size: var(--list-collaborator-remove-size);
+  border-radius: 50%;
+  translate: none;
+
+  &:hover {
+    background-color: var(--color-control-hover-bg);
+  }
+}
+.list .field input {
+  min-inline-size: var(--list-collaborators-input-min);
+  min-block-size: var(--list-collaborator-chip-height);
+  padding: 0 var(--space-xs-inline);
+  font-family: var(--font-body);
+  font-size: var(--font-size-control);
+
+  &::placeholder {
+    color: var(--color-dialog-art-placeholder);
+  }
+}
+.list .drop {
+  margin-block-start: var(--space-menu-offset);
+  padding: var(--space-menu);
+  border: 1px solid var(--color-menu-border);
+  border-radius: var(--radius-menu);
+  background-color: var(--color-menu-bg);
+  box-shadow: var(--shadow-menu);
+  color: var(--color-dropdown-menu-text);
+  font-size: var(--font-size-menu);
+}
+.list li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs-inline);
+  padding: var(--space-menu-row);
+  border-radius: var(--radius-menu-row);
+  line-height: var(--line-height-base);
+
+  &[aria-selected='true'] {
+    color: var(--brand-primary);
+    font-weight: var(--font-weight-headings-heavy);
+  }
+
+  &.highlighted {
+    background-color: var(--color-menu-row-hover);
+    color: var(--color-menu-row-hover-text);
+  }
+}
+.list .option-avatar {
+  margin: 0;
 }
 .option-avatar {
   inline-size: var(--list-candidate-avatar);

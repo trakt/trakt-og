@@ -106,6 +106,8 @@ const closeOnPick = (event: MouseEvent & { currentTarget: HTMLElement }) => {
     flex: 1;
     min-inline-size: 0;
     overflow: hidden;
+    /* Room for descenders: the trigger's tight line would clip a "y" or "g" at the hidden overflow. */
+    line-height: var(--line-height-dropdown-value);
     text-align: start;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -263,7 +265,8 @@ const closeOnPick = (event: MouseEvent & { currentTarget: HTMLElement }) => {
 .menu {
   position: fixed;
   position-area: bottom span-right;
-  position-try-fallbacks: flip-inline;
+  /* Opens upward when there's no room below, like a menu near the bottom of a dialog. */
+  position-try-fallbacks: flip-inline, flip-block, flip-block flip-inline;
   inset: auto;
   min-inline-size: var(--menu-min-width);
   max-block-size: calc(100dvh - var(--gutter));

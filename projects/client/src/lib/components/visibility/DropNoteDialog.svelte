@@ -53,5 +53,5 @@ async function save(text: string) {
 
 {#if dropNote.target}
   {@const { title, year, fanart } = dropNote.target}
-  <NotesDialog bind:open bind:draft item={{ title, year, fanart }} eyebrow="You dropped..." {busy} onsave={save} />
+  <NotesDialog bind:open bind:draft item={{ title, year, fanart }} tags={[{ text: 'Dropped', kind: 'generic' }]} {busy} onsave={save} />
 {/if}

@@ -1,5 +1,4 @@
-import { rawApiFetch } from '../../api/rawApiFetch.ts';
-import { pickerCatalogSchema } from './pickerCatalogSchema.ts';
+import { loadListCatalog } from './loadListCatalog.ts';
 
 let counts = $state.raw<Readonly<Record<string, number>>>({});
 let pending: Readonly<Record<string, Promise<void> | undefined>> = {};
@@ -12,10 +11,8 @@ export const listCatalog = {
     const active = pending[user];
     if (active) return active;
     const before = counts[user];
-    const done = rawApiFetch({ fetch, path: '/v3/users/me/lists' }).then(async (response) => {
-      if (!response.ok) throw new Error('Lists unavailable');
-      const count = pickerCatalogSchema.parse(await response.json()).length;
-      if (counts[user] === before) counts = { [user]: count };
+    const done = loadListCatalog(fetch).then((lists) => {
+      if (counts[user] === before) counts = { [user]: lists.length };
     }).finally(() => {
       pending = { ...pending, [user]: undefined };
     });

@@ -3,12 +3,12 @@ import { api } from '../api/api.ts';
 import type { ApiGet } from './sliceSources.ts';
 
 const rowsSchema = z.array(z.object({
-  season: z.object({ ids: z.object({ trakt: z.number() }) }).optional(),
-  episode: z.object({ ids: z.object({ trakt: z.number() }) }).optional(),
+  season: z.object({ ids: z.object({ trakt: z.number() }) }).nullish(),
+  episode: z.object({ ids: z.object({ trakt: z.number() }) }).nullish(),
 }));
 
 /** Fresh membership for a season or episode, including entries beyond the first page. */
-export async function loadWatchlistIds(client: ReturnType<typeof api>, type: 'season' | 'episode') {
+async function loadWatchlistIds(client: ReturnType<typeof api>, type: 'season' | 'episode') {
   const ids = new Set<number>();
   let page = 1;
   let pages: number;
@@ -20,7 +20,7 @@ export async function loadWatchlistIds(client: ReturnType<typeof api>, type: 'se
     if (response.status !== 200) throw new Error('Watchlist unavailable');
     rowsSchema.parse(response.body).forEach((row) => {
       const id = row[type]?.ids.trakt;
-      if (id !== undefined) ids.add(id);
+      if (id) ids.add(id);
     });
     pages = Number(response.headers.get('X-Pagination-Page-Count') ?? 1);
     page += 1;

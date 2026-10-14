@@ -833,6 +833,14 @@
   --transition-search-fade: 0.25s ease-out;
   --color-search-ring: rgb(237 28 36 / 0.25); /* the halo outside the focused field's red ring */
   --color-search-row-hover: light-dark(rgb(0 0 0 / 0.05), rgb(255 255 255 / 0.08));
+  /* A type chip: a see-through fill on the glass, and the picked one a muted red. */
+  --color-search-chip-bg: light-dark(rgb(0 0 0 / 0.04), rgb(0 0 0 / 0.15));
+  --color-search-chip-border: light-dark(rgb(0 0 0 / 0.12), rgb(255 255 255 / 0.12));
+  --color-search-chip-hover-bg: light-dark(rgb(0 0 0 / 0.08), rgb(255 255 255 / 0.12));
+  --color-search-chip-hover-border: light-dark(rgb(0 0 0 / 0.25), rgb(255 255 255 / 0.25));
+  --color-search-chip-on-bg: rgb(237 28 36 / 0.2);
+  --color-search-chip-on-border: rgb(237 28 36 / 0.55);
+  --color-search-chip-on-text: var(--color-text-inverse);
   --color-search-kbd-bg: light-dark(rgb(0 0 0 / 0.07), rgb(255 255 255 / 0.1));
   --color-search-tip-bg: rgb(0 0 0 / 0.8); /* the search icon's "Search /" tooltip */
   --color-search-type: light-dark(var(--brand-primary), #ff5a5f); /* a result's type; lighter on dark for contrast */

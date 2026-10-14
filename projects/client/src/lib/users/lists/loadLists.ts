@@ -2,6 +2,7 @@ import { error } from '@sveltejs/kit';
 import { api } from '../../api/api.ts';
 import { rawApiFetch } from '../../api/rawApiFetch.ts';
 import type { ProfileUser } from '../ProfileUser.ts';
+import { likedListsSchema } from './likedListsSchema.ts';
 import { listItemsSchema } from './listItemsSchema.ts';
 import { listRowsSchema } from './listRowsSchema.ts';
 import type { ListsMode } from './ListsMode.ts';
@@ -42,7 +43,7 @@ async function fetchPersonal(fetch: typeof globalThis.fetch, id: string, token: 
         query: { extended: 'images', page: n, limit: LIMIT },
       }));
   const first = await page(1);
-  if (first.status !== 200) return { status: first.status, lists: [] };
+  if (first.status !== 200) return { status: first.status, lists: [], likedAt: [] };
 
   const pageCount = Number(first.headers.get('x-pagination-page-count')) || 1;
   const pages = Math.min(pageCount, MAX_PAGES);
@@ -51,6 +52,7 @@ async function fetchPersonal(fetch: typeof globalThis.fetch, id: string, token: 
     status: 200,
     complete: pageCount <= MAX_PAGES && rest.every((response) => response.status === 200),
     lists: [first, ...rest].flatMap((response) => response.status === 200 ? response.body : []),
+    likedAt: [],
   };
 }
 
@@ -59,10 +61,38 @@ async function fetchCollaborations(fetch: typeof globalThis.fetch, id: string, t
     token,
     (viewer) => rawApiFetch({ fetch, token: viewer, path: `/users/${id}/lists/collaborations?extended=images` }),
   );
-  if (response.status !== 200) return { status: response.status, lists: [] };
+  if (response.status !== 200) return { status: response.status, lists: [], likedAt: [] };
   const rows = listRowsSchema.safeParse(await response.json().catch(() => null));
   if (!rows.success) error(502, 'Trakt returned an invalid lists response.');
-  return { status: 200, lists: rows.data };
+  return { status: 200, lists: rows.data, likedAt: [] };
+}
+
+/**
+ * The lists the user liked, newest first, every page in parallel like their own. The API mixes personal and official
+ * lists, so `official` keeps one kind or the other.
+ */
+async function fetchLiked(fetch: typeof globalThis.fetch, id: string, token: string | null, official: boolean) {
+  const page = (n: number) =>
+    withViewer(
+      token,
+      (viewer) =>
+        rawApiFetch({
+          fetch,
+          token: viewer,
+          path: `/users/${id}/likes/lists?extended=images&page=${n}&limit=${LIMIT}`,
+        }),
+    );
+  const first = await page(1);
+  if (first.status !== 200) return { status: first.status, lists: [], likedAt: [] };
+  const pageCount = Number(first.headers.get('x-pagination-page-count')) || 1;
+  const rest = await Promise.all(Array.from({ length: Math.min(pageCount, MAX_PAGES) - 1 }, (_, i) => page(i + 2)));
+  const bodies = await Promise.all(
+    [first, ...rest].map(async (response) => response.status === 200 ? await response.json().catch(() => null) : []),
+  );
+  const likes = likedListsSchema.safeParse(bodies.flat());
+  if (!likes.success) error(502, 'Trakt returned an invalid lists response.');
+  const kept = likes.data.filter(({ list }) => (list.type === 'official') === official);
+  return { status: 200, lists: kept.map(({ list }) => list), likedAt: kept.map(({ liked_at }) => liked_at) };
 }
 
 /** The first five items and the total, for a watchlist or favorites row. Either failing leaves the row empty. */
@@ -81,15 +111,19 @@ async function fetchBuiltIn(fetch: typeof globalThis.fetch, path: string, token:
 }
 
 /**
- * `/users/:id/lists` and `/users/:id/lists/collaborations`. Personal lists come in the
- * owner's rank order after the watchlist and favorites rows; collaborations are other people's lists, with no built-in
- * rows. Sorting and searching happen in the browser over every row, like OG.
+ * `/users/:id/lists`, `/users/:id/lists/collaborations`, `/users/:id/lists/liked` and `/users/:id/lists/liked/official`.
+ * Personal lists come in the owner's rank order after the watchlist and favorites rows; collaborations and liked lists
+ * are other people's lists, with no built-in rows. Sorting and searching happen in the browser over every row, like OG.
  */
 export async function loadLists({ fetch, locals, params, url, parent, mode }: Params) {
   const id = encodeURIComponent(params.id);
   const token = locals.token;
   const [result, watchlist, favorites, { profile }] = await Promise.all([
-    mode === 'personal' ? fetchPersonal(fetch, id, token) : fetchCollaborations(fetch, id, token),
+    mode === 'personal'
+      ? fetchPersonal(fetch, id, token)
+      : mode === 'collaborations'
+      ? fetchCollaborations(fetch, id, token)
+      : fetchLiked(fetch, id, token, mode === 'liked-official'),
     mode === 'personal' ? fetchBuiltIn(fetch, `/users/${id}/watchlist/movie,show,season,episode`, token) : null,
     mode === 'personal' ? fetchBuiltIn(fetch, `/users/${id}/favorites/movie,show`, token) : null,
     parent(),
@@ -108,6 +142,7 @@ export async function loadLists({ fetch, locals, params, url, parent, mode }: Pa
     query,
     builtIns,
     listsComplete: 'complete' in result && result.complete === true,
-    lists: result.lists.map((list, i) => toUserListRow(list, i + 1)),
+    // Liked lists carry when they were liked, in the same order; the rest have none.
+    lists: result.lists.map((list, i) => ({ ...toUserListRow(list, i + 1), likedAt: result.likedAt.at(i) })),
   };
 }

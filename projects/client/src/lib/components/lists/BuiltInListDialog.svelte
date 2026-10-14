@@ -65,7 +65,9 @@ $effect(() => {
 const heading = $derived(kind === 'favorites' ? 'Update Favorites' : 'Update Watchlist');
 const tags = $derived<readonly CardTag[]>([
   kind === 'favorites' ? { text: 'Favorites', kind: 'favorite' } : { text: 'Watchlist', kind: 'list' },
-  ...(count !== undefined ? [{ text: `${count.toLocaleString('en-US')} ${count === 1 ? 'item' : 'items'}`, kind: 'generic' } as const] : []),
+  ...(count !== undefined
+    ? [{ text: `${count.toLocaleString('en-US')} ${count === 1 ? 'item' : 'items'}`, kind: 'generic' } as const]
+    : []),
 ]);
 </script>
 

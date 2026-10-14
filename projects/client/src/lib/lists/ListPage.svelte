@@ -258,15 +258,19 @@ let notesDraft = $state('');
 // Notes saved since the page loaded, by item key, so a note added outside manage mode shows without a reload.
 let savedNotes = $state<Readonly<Record<number, string>>>({});
 // The edit dialogs' header: the list's first five posters.
-const listPosters = $derived((data.list ? data.cards : []).slice(0, 5).flatMap((card) => (card.image ? [card.image] : [])));
-const ownerCards = $derived((ownerManaging && allItems && selectedKeys
-  ? selectedKeys.flatMap((key) => {
-    const item = allItems?.find((row) => row.key === key);
-    return item ? [item] : [];
-  })
-  : (data.list ? data.cards : []).map((item) => allItems?.find((row) => row.key === item.key) ?? item))
-  .filter((item) => !removedKeys.includes(item.key))
-  .map((item) => item.key in savedNotes ? { ...item, notes: savedNotes[item.key] || undefined } : item));
+const listPosters = $derived(
+  (data.list ? data.cards : []).slice(0, 5).flatMap((card) => (card.image ? [card.image] : [])),
+);
+const ownerCards = $derived(
+  (ownerManaging && allItems && selectedKeys
+    ? selectedKeys.flatMap((key) => {
+      const item = allItems?.find((row) => row.key === key);
+      return item ? [item] : [];
+    })
+    : (data.list ? data.cards : []).map((item) => allItems?.find((row) => row.key === item.key) ?? item))
+    .filter((item) => !removedKeys.includes(item.key))
+    .map((item) => item.key in savedNotes ? { ...item, notes: savedNotes[item.key] || undefined } : item),
+);
 const request = (path: string, init?: Parameters<typeof rawApiFetch>[0]['init']) =>
   rawApiFetch({ fetch: authenticatedFetch({ manager: userManager() }), path, init });
 $effect(() => {
@@ -716,10 +720,10 @@ async function saveNotes(text: string) {
 
   {#if ownerKind && owner}
     {#if editing}<BuiltInListEditor kind={ownerKind} posters={listPosters} count={data.list?.itemCount} {vip}
-      privacy={data.list ? listPrivacy(data.list) : undefined} allowComments={data.list?.allowComments}
-      displayNumbers={data.list?.displayNumbers}
-      description={savedDescription} onclose={() => (editing = false)}
-      onsaved={(saved) => { if (saved.description !== undefined) savedDescription = saved.description; }} />{/if}
+  privacy={data.list ? listPrivacy(data.list) : undefined} allowComments={data.list?.allowComments}
+  displayNumbers={data.list?.displayNumbers}
+  description={savedDescription} onclose={() => (editing = false)}
+  onsaved={(saved) => { if (saved.description !== undefined) savedDescription = saved.description; }} />{/if}
     {#if notesItem}
       <NotesDialog bind:open={notesOpen} bind:draft={notesDraft} favorite={ownerKind === 'favorites'} busy={ownerBusy}
   tags={ownerKind === 'watchlist' && notesItem.noteTitle.show ? [{ text: notesItem.noteTitle.show, kind: 'generic' }] : []}

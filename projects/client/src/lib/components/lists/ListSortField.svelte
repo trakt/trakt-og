@@ -48,7 +48,8 @@ const headers: Readonly<Record<string, string>> = { site: 'Site Ratings', votes:
       {/each}
       </div>
     </Dropdown>
-    <SortDirection joined {disabled} bind:flipped={() => how === 'desc', (flipped) => (how = flipped ? 'desc' : 'asc')} />
+    <SortDirection joined {disabled}
+      bind:flipped={() => how === 'desc', (flipped) => (how = flipped ? 'desc' : 'asc')} />
   </span>
 </div>
 

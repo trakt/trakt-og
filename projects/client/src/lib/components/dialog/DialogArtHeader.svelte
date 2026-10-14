@@ -31,7 +31,7 @@ const { id, title, year, tags = [], fanart, posters = [] }: Props = $props();
   {/if}
   <div class="titles">
     {#if tags.length > 0}<p class="tags">{#each tags as tag, i (i)}<CardTag {...tag} />{/each}</p>{/if}
-    <h2 {id}>{title}{#if year}{' '}<span class="year">{year}</span>{/if}</h2>
+    <h2 {id}>{title}{#if year}<span class="year">{year}</span>{/if}</h2>
   </div>
 </header>
 
@@ -104,6 +104,7 @@ h2 {
 }
 
 .year {
+  margin-inline-start: var(--dialog-art-year-gap);
   color: var(--color-dialog-art-year);
   font-weight: var(--font-weight-headings-light);
 }

@@ -58,7 +58,12 @@ describe('loadListEditor', () => {
   });
   it('should ignore the share link of a list not saved as Link', async () => {
     fixture();
-    server.use(http.get(`${base}/users/me/lists/12`, () => HttpResponse.json({ ...list, share_link: 'https://trakt.tv/lists/12' })));
+    server.use(
+      http.get(
+        `${base}/users/me/lists/12`,
+        () => HttpResponse.json({ ...list, share_link: 'https://trakt.tv/lists/12' }),
+      ),
+    );
     expect((await loadListEditor({ fetch, id: 12 })).shareLink).toBeUndefined();
   });
   it('should reject a failed collaborator read rather than silently clearing collaborators', async () => {

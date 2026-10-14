@@ -782,6 +782,7 @@
   --gradient-dialog-art-empty: repeating-linear-gradient(135deg, #1f1f1f 0 14px, #1a1a1a 14px 28px); /* a new list */
   --dialog-art-tags-gap: 5px;
   --font-size-dialog-art-title: 24px;
+  --dialog-art-year-gap: 0.3em; /* the year after the title */
   --line-height-dialog-art-title: 1.15;
   --color-dialog-art-year: rgb(255 255 255 / 0.55);
   --dialog-art-close-size: 34px;

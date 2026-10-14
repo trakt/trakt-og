@@ -44,7 +44,9 @@ let input = $state<HTMLInputElement>();
 let list = $state<HTMLElement>();
 
 const byValue = $derived(new Map(options.flatMap((group) => group.options).map((option) => [option.value, option])));
-const chips = $derived(value.map((v) => ({ value: v, label: byValue.get(v)?.label ?? labelFor(v), avatar: byValue.get(v)?.avatar })));
+const chips = $derived(
+  value.map((v) => ({ value: v, label: byValue.get(v)?.label ?? labelFor(v), avatar: byValue.get(v)?.avatar })),
+);
 
 const matches = (option: FilterOption, term: string) =>
   option.label.toLowerCase().includes(term) || (option.tag?.toLowerCase().includes(term) ?? false);

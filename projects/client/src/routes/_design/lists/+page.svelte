@@ -38,7 +38,7 @@ const transferSource = toBuiltInListView({
 const clamp = (next: number) => Math.max(1, Math.min(12, next));
 // Near the 500-character limit, taller than the poster, so it scrolls.
 const longNotes = [
-  "Still the best haunted-house movie set in space. Watched it again on the 4K disc and it looks like it was shot last year.",
+  'Still the best haunted-house movie set in space. Watched it again on the 4K disc and it looks like it was shot last year.',
   "The pacing is the point: almost an hour before the chestburster, and every minute of the slow build pays off. Ripley isn't the lead until the last act, which still surprises people. Skip the director's cut, the theatrical version is tighter. Pair it with Aliens for a double feature, then stop there.",
 ].join('\n\n');
 
@@ -161,7 +161,8 @@ const following = [{ slug: 'teodoro_2', name: 'Elsy Murphy (@teodoro_2)' }];
 <section class="demo">
   <Container><h2>Built-in list edit</h2><button onclick={() => builtInOpen = true}>Preview watchlist edit</button></Container>
 </section>
-<BuiltInListDialog bind:open={builtInOpen} kind="watchlist" count={12} vip busy={false} description={undefined} sortBy="rank"
+<BuiltInListDialog bind:open={builtInOpen} kind="watchlist" count={12} vip busy={false} description={undefined}
+  sortBy="rank"
   sortHow="asc" onsave={() => builtInOpen = false} />
 {#if open}<NewListDialog bind:open {following} initial={mode === 'add' ? undefined : initial} editing={mode !== 'add'}
   shareLink={mode === 'edit' ? 'https://trakt.tv/lists/share/sci-fi-club' : undefined}

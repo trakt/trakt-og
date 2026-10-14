@@ -12,7 +12,8 @@ const level = $derived(characterMeterLevel(left));
 </script>
 
 <div class={['meter', level]}>
-  <span class="bar" aria-hidden="true"><span class="fill" style:inline-size="{Math.min(100, (length / max) * 100)}%"></span></span>
+  <span class="bar"
+    aria-hidden="true"><span class="fill" style:inline-size="{Math.min(100, (length / max) * 100)}%"></span></span>
   <span class="left" aria-live="polite">{left} left</span>
 </div>
 

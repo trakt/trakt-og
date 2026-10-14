@@ -150,7 +150,8 @@ const filterHref = (type: string) => {
   </Container>
 </section>
 {#if editing && data.isSelf}
-  <NotesDialog bind:open bind:draft item={editing.item} privacy={editing.privacy} onsave={(text) => { if (editing) void save(editing, text); }} />
+  <NotesDialog bind:open bind:draft item={editing.item} privacy={editing.privacy}
+  onsave={(text) => { if (editing) void save(editing, text); }} />
 {/if}
 
 <style>

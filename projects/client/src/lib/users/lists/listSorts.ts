@@ -1,6 +1,6 @@
 /**
  * The lists index sort menu, each with its natural direction. Rank is only on
- * personal lists, where it's the default; collaborations default to Updated Date.
+ * personal lists, where it's the default; collaborations default to Updated Date, and liked lists to Liked Date.
  */
 export const listSorts = [
   { id: 'rank', label: 'Rank', descending: false },
@@ -10,6 +10,7 @@ export const listSorts = [
   { id: 'comments', label: 'Comments', descending: true },
   { id: 'items', label: 'Items', descending: true },
   { id: 'random', label: 'Random', descending: false },
+  { id: 'liked', label: 'Liked Date', descending: true },
 ] as const;
 
 export type ListSortId = (typeof listSorts)[number]['id'];

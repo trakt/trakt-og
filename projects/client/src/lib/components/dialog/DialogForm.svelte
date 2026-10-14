@@ -20,11 +20,10 @@ interface Props {
 }
 
 const { save, busy = false, disabled = false, onsubmit, oncancel, children }: Props = $props();
-// The server can't tell the platform, so the hint starts as Ctrl and settles once in the browser.
-let key = $state<'⌘' | 'Ctrl'>('Ctrl');
-$effect(() => {
-  key = modifierKey(navigator.platform);
-});
+// The server can't tell the platform, so the hint starts as Ctrl and the browser corrects it.
+const showModifier = (kbd: HTMLElement) => {
+  kbd.textContent = modifierKey(navigator.platform);
+};
 </script>
 
 <form
@@ -38,7 +37,7 @@ $effect(() => {
 >
   <div class="fields">{@render children()}</div>
   <footer>
-    <span class="shortcut"><kbd>{key}</kbd><kbd>↵</kbd> to save</span>
+    <span class="shortcut"><kbd {@attach showModifier}>Ctrl</kbd><kbd>↵</kbd> to save</span>
     <button type="button" class="cancel" onclick={oncancel}>Cancel</button>
     <button type="submit" class="save" disabled={busy || disabled} aria-busy={busy}>{save}</button>
   </footer>

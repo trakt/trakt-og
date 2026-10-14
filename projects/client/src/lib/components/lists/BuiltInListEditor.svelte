@@ -71,8 +71,8 @@ async function save(body: Saved) {
 
 {#if defaults}
   <BuiltInListDialog bind:open {kind} {vip} {busy} {description} {posters} {count} {privacy} {allowComments}
-    {displayNumbers} sortBy={defaults.by}
-    sortHow={defaults.how} onsave={save} onclose={onclose} />
+  {displayNumbers} sortBy={defaults.by}
+  sortHow={defaults.how} onsave={save} onclose={onclose} />
 {:else}
   <LoadingOverlay visible />
 {/if}

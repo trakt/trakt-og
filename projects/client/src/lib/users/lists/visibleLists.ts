@@ -13,6 +13,7 @@ const keys = {
   likes: (row: UserListRow) => row.likeCount ?? 0,
   comments: (row: UserListRow) => row.commentCount ?? 0,
   items: (row: UserListRow) => row.itemCount,
+  liked: (row: UserListRow) => row.likedAt ?? '',
 } as const;
 
 const compare = (x: string | number, y: string | number) =>

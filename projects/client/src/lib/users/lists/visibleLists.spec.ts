@@ -35,6 +35,17 @@ describe('visibleLists', () => {
     expect(names({ reversed: true })).toEqual(['Middle', 'An Apple A Day', 'The Zebra List']);
   });
 
+  it('should sort liked lists newest liked first, oldest with the arrow', () => {
+    const likedRows = [
+      row('Older Like', 1, { likedAt: '2026-01-01T00:00:00.000Z' }),
+      row('Newer Like', 2, { likedAt: '2026-06-01T00:00:00.000Z' }),
+    ];
+    const order = (reversed: boolean) =>
+      visibleLists(likedRows, { sort: 'liked', reversed, terms: '' }).map(({ name }) => name);
+    expect(order(false)).toEqual(['Newer Like', 'Older Like']);
+    expect(order(true)).toEqual(['Older Like', 'Newer Like']);
+  });
+
   it('should sort titles without a leading article', () => {
     expect(names({ sort: 'title' })).toEqual(['An Apple A Day', 'Middle', 'The Zebra List']);
   });

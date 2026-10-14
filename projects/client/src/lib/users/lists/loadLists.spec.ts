@@ -3,6 +3,7 @@ import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { toProfileUser } from '../toProfileUser.ts';
 import { loadLists } from './loadLists.ts';
+import type { ListsMode } from './ListsMode.ts';
 
 const profile = toProfileUser({ username: 'tester', name: 'Tester', private: false, ids: { slug: 'tester' } });
 const API = 'https://apiz.trakt.tv/users/tester';
@@ -57,7 +58,7 @@ afterEach(() => {
 afterAll(() => server.close());
 
 const load = (
-  options: { mode?: 'personal' | 'collaborations'; token?: string | null; locked?: boolean; query?: string } = {},
+  options: { mode?: ListsMode; token?: string | null; locked?: boolean; query?: string } = {},
 ) =>
   loadLists({
     fetch,
@@ -112,6 +113,29 @@ describe('loadLists', () => {
     expect(result.builtIns).toEqual([]);
     expect(result.lists.map(({ name }) => name)).toEqual(['Shared', 'Older']);
     expect(result.query.sort).toBe('updated');
+  });
+
+  it('should split liked lists into personal and official, newest liked first, with when each was liked', async () => {
+    const official = { ...list(3, 'Bond'), type: 'official', user: { username: 'Trakt', ids: { slug: null } } };
+    server.use(http.get(`${API}/likes/lists`, ({ request }) => {
+      seen.push(request);
+      return HttpResponse.json([
+        { liked_at: '2026-10-02T00:00:00.000Z', type: 'list', list: list(1, 'Picks') },
+        { liked_at: '2026-10-01T00:00:00.000Z', type: 'list', list: official },
+        { liked_at: '2026-09-01T00:00:00.000Z', type: 'list', list: list(2, 'Horror') },
+      ], { headers: pageHeaders(1, 1) });
+    }));
+    const personal = await load({ mode: 'liked' });
+    expect(personal.builtIns).toEqual([]);
+    expect(personal.lists.map(({ name, likedAt }) => [name, likedAt])).toEqual([
+      ['Picks', '2026-10-02T00:00:00.000Z'],
+      ['Horror', '2026-09-01T00:00:00.000Z'],
+    ]);
+    expect(personal.query.sort).toBe('liked');
+    expect(new URL(seen[0]?.url ?? '').searchParams.get('extended')).toBe('images');
+
+    const officials = await load({ mode: 'liked-official' });
+    expect(officials.lists.map(({ name, kind }) => [name, kind])).toEqual([['Bond', 'official']]);
   });
 
   it('should render a locked profile without an error', async () => {

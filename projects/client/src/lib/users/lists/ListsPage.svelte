@@ -1,6 +1,6 @@
 <!--
-  `/users/:id/lists` and `/users/:id/lists/collaborations` under the profile frame: the subnav
-  with the type menu, the owner's add and reorder buttons, the count, sort, direction and search, then the watchlist and
+  `/users/:id/lists`, `/users/:id/lists/collaborations` and the liked lists (`/liked`, `/liked/official`) under the
+  profile frame: the subnav with OG's lists menu (the user's lists, then Reactions), the owner's add and reorder buttons, the count, sort, direction and search, then the watchlist and
   favorites rows over a rule and every list as a list row. Sorting and searching run in the browser, like OG's isotope
   grid, and the choice goes into the query string.
 -->
@@ -42,6 +42,7 @@ import type { ProfileUser } from '$lib/users/ProfileUser';
 import { nearViewport } from '$lib/utils/nearViewport';
 import type { Collaborator } from './Collaborator.ts';
 import { fetchCollaborators } from './fetchCollaborators.ts';
+import { fetchListPosters } from './fetchListPosters.ts';
 import { listRowActions } from './listRowActions.ts';
 import type { ListsQuery } from './ListsQuery.ts';
 import type { loadLists } from './loadLists.ts';
@@ -59,7 +60,14 @@ type Props = {
 
 const { data }: Props = $props();
 const personal = $derived(data.mode === 'personal');
-const title = $derived(`${data.profile.displayName}'s ${personal ? 'personal lists' : 'collaborations'}`);
+const liked = $derived(data.mode === 'liked' || data.mode === 'liked-official');
+const MODE_NAMES = {
+  personal: 'personal lists',
+  collaborations: 'collaborations',
+  liked: 'liked lists',
+  'liked-official': 'liked official lists',
+} as const;
+const title = $derived(`${data.profile.displayName}'s ${MODE_NAMES[data.mode]}`);
 const base = $derived(`/users/${data.profile.slug}/lists`);
 const sorts = $derived(sortsFor(data.mode));
 
@@ -246,6 +254,23 @@ const loadCollaborators = (row: UserListRow) => () => {
   fetchCollaborators({ fetch, listId: id }).then((found) => collaborators.set(id, found));
 };
 
+// Liked lists come without posters (see fetchListPosters): each row reads its own as it nears the viewport.
+const likedPosters = new SvelteMap<number, UserListRow['posters']>();
+const loadPosters = (row: UserListRow) => {
+  if (!liked || row.id === null || row.posters.length > 0 || likedPosters.has(row.id)) return;
+  const id = row.id;
+  likedPosters.set(id, []);
+  void fetchListPosters({ fetch: globalThis.fetch, listId: id }).then((posters) => likedPosters.set(id, posters));
+};
+const withPosters = (row: UserListRow): UserListRow =>
+  row.id !== null && (likedPosters.get(row.id)?.length ?? 0) > 0
+    ? { ...row, posters: likedPosters.get(row.id) ?? [] }
+    : row;
+const nearRow = (row: UserListRow) => () => {
+  loadCollaborators(row)();
+  loadPosters(row);
+};
+
 const viewer = $derived(data.user ? { slug: data.user.slug, isVip: data.user.isVip } : null);
 async function progress(row: UserListRow) {
   if (!data.user?.isVip) return;
@@ -299,7 +324,8 @@ async function leave(row: UserListRow) {
 const actions = (row: UserListRow) => {
   const names = row.id === null ? [] : collaborators.get(row.id) ?? [];
   // On your own collaborations tab every list is one you collaborate on.
-  const isCollaborator = (!personal && data.isSelf) || names.some(({ slug }) => slug === viewer?.slug);
+  const isCollaborator = (data.mode === 'collaborations' && data.isSelf) ||
+    names.some(({ slug }) => slug === viewer?.slug);
   const result = listRowActions({
     row,
     viewer,
@@ -389,11 +415,19 @@ const actions = (row: UserListRow) => {
 
 <SectionToolbar>
   {#snippet filters()}
-    <Dropdown section="Lists">
-      {#snippet trigger()}{personal ? 'Personal' : 'Collaborations'}{/snippet}
+    <!-- OG's lists menu: the user's own lists, then Reactions, the lists they've liked. -->
+    <Dropdown section={liked ? 'Reactions' : 'Lists'}>
+      {#snippet trigger()}{{ personal: 'Personal', collaborations: 'Collaborations', liked: 'Personal', 'liked-official': 'Official' }[data.mode]}{/snippet}
       <ul>
-        <li><a href={base} aria-current={personal ? 'page' : undefined}>Personal Lists</a></li>
-        <li><a href="{base}/collaborations" aria-current={personal ? undefined : 'page'}>Collaborations</a></li>
+        <li class="header" role="presentation">Lists</li>
+        <li><a href={base} aria-current={personal ? 'page' : undefined}>Personal</a></li>
+        <li><a href="{base}/collaborations" aria-current={data.mode === 'collaborations' ? 'page' : undefined}>Collaborations</a></li>
+      </ul>
+      <hr />
+      <ul>
+        <li class="header" role="presentation">Reactions</li>
+        <li><a href="{base}/liked" aria-label="Liked personal lists" aria-current={data.mode === 'liked' ? 'page' : undefined}>Personal</a></li>
+        <li><a href="{base}/liked/official" aria-label="Liked official lists" aria-current={data.mode === 'liked-official' ? 'page' : undefined}>Official</a></li>
       </ul>
     </Dropdown>
     {#if data.isSelf && personal}
@@ -427,8 +461,10 @@ const actions = (row: UserListRow) => {
   {/snippet}
 </SectionToolbar>
 
-{#if editor}<ListEditor id={editor.id} posters={editor.posters} count={editor.count} onclose={() => { editor = undefined; }} />{/if}
-{#if builtInEditor}<BuiltInListEditor kind={builtInEditor.kind} posters={builtInEditor.posters} count={builtInEditor.count}
+{#if editor}<ListEditor id={editor.id} posters={editor.posters} count={editor.count}
+  onclose={() => { editor = undefined; }} />{/if}
+{#if builtInEditor}<BuiltInListEditor kind={builtInEditor.kind} posters={builtInEditor.posters}
+  count={builtInEditor.count}
   vip={data.user?.isVip ?? false} privacy={data.profile.isPrivate ? 'private' : 'public'}
   onclose={() => (builtInEditor = undefined)} />{/if}
 
@@ -443,8 +479,8 @@ const actions = (row: UserListRow) => {
     {/if}
     <div class="rows" bind:this={rowsElement} {@attach dragEvents} aria-busy={busy}>
       {#each lists as list (list.key)}
-        <div data-list-key={list.key} class:dragging={dragging === list.key} class:drop-target={dragging !== null && dragRank === list.rank} out:slide={{ duration }} animate:flip={{ duration }} {@attach nearViewport(loadCollaborators(list))}>
-          {@render row(list, personal ? list.rank : undefined)}
+        <div data-list-key={list.key} class:dragging={dragging === list.key} class:drop-target={dragging !== null && dragRank === list.rank} out:slide={{ duration }} animate:flip={{ duration }} {@attach nearViewport(nearRow(list))}>
+          {@render row(withPosters(list), personal ? list.rank : undefined)}
         </div>
       {/each}
     </div>

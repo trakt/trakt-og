@@ -77,7 +77,9 @@ const headerTags = $derived<readonly CardTag[]>([
   ...(kind === 'favorites' ? [{ text: 'Favorites', kind: 'favorite' } as const] : []),
   ...(kind === 'watchlist' ? [{ text: 'Watchlist', kind: 'list' } as const] : []),
   ...(kind === 'list' && !editing ? [{ text: 'New list', kind: 'generic' } as const] : []),
-  ...(count !== undefined ? [{ text: `${count.toLocaleString('en-US')} ${count === 1 ? 'item' : 'items'}`, kind: 'generic' } as const] : []),
+  ...(count !== undefined
+    ? [{ text: `${count.toLocaleString('en-US')} ${count === 1 ? 'item' : 'items'}`, kind: 'generic' } as const]
+    : []),
 ]);
 const options = $derived([{
   options: following.map((user) => ({ value: user.slug, label: user.name, avatar: user.avatar })),

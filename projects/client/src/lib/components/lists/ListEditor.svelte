@@ -108,7 +108,8 @@ async function save(draft: ListDraft) {
 </script>
 {#if loaded}
   <NewListDialog bind:open initial={loaded.initial} editing={savedId !== undefined} following={loaded.candidates}
-  {posters} {count} shareLink={loaded.shareLink} vip={page.data.user?.isVip} {max} {busy} {error} fieldErrors={fields} onsave={save}
+  {posters} {count} shareLink={loaded.shareLink} vip={page.data.user?.isVip} {max} {busy} {error} fieldErrors={fields}
+  onsave={save}
   onclose={close} />
 {:else}
   <LoadingOverlay visible />

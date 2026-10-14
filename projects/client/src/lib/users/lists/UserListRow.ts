@@ -30,6 +30,8 @@ export interface UserListRow {
   readonly description?: string;
   /** ISO, for the Updated Date sort. */
   readonly updatedAt: string;
+  /** ISO, when the user liked it: the liked lists' Liked Date sort. */
+  readonly likedAt?: string;
   /** The owner's order, 1-based: the Rank sort and the pill over the posters. */
   readonly rank: number;
 }

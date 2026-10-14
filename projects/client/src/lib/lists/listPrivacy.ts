@@ -1,4 +1,4 @@
-import type { Privacy } from '$lib/notes/Privacy';
+import type { Privacy } from '../notes/Privacy.ts';
 import type { ListView } from './toListView.ts';
 
 /** Who can see a list, and so its items' notes, from the list page's view of it. */

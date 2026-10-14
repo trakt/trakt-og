@@ -1,6 +1,6 @@
 /** OG's comment type dropdown. */
 export const userCommentTypes = {
-  all: 'All Comments',
+  all: 'All',
   reviews: 'Reviews',
   shouts: 'Shouts',
   replies: 'Replies',

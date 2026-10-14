@@ -6,6 +6,7 @@
 <script lang="ts">
 import { page } from '$app/state';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
+import SortDirection from '$lib/components/dropdown/SortDirection.svelte';
 import NoData from '$lib/components/empty/NoData.svelte';
 import ListRow from '$lib/components/media/ListRow.svelte';
 import Pagination from '$lib/components/pagination/Pagination.svelte';
@@ -58,8 +59,8 @@ const viewer = $derived(data.user ? { slug: data.user.slug, isVip: data.user.isV
 {#snippet subnav()}
   <SectionToolbar inSummary>
     {#snippet filters()}
-      <Dropdown>
-        {#snippet trigger()}{typeLabel}&nbsp;{/snippet}
+      <Dropdown section="List">
+        {#snippet trigger()}{data.query.type === 'all' ? 'All' : typeLabel}&nbsp;{/snippet}
         <ul>
           {#each types as type (type)}
             <li>
@@ -72,18 +73,21 @@ const viewer = $derived(data.user ? { slug: data.user.slug, isVip: data.user.isV
       </Dropdown>
     {/snippet}
     {#snippet summary()}
-      <Dropdown>
-        {#snippet trigger()}{@render sortLabel(data.query.sortBy)}&nbsp;{/snippet}
-        <ul>
-          {#each sorts as sortBy (sortBy)}
-            <li>
-              <a href={href({ sortBy })} aria-current={data.query.sortBy === sortBy ? 'page' : undefined}>
-                {@render sortLabel(sortBy)}
-              </a>
-            </li>
-          {/each}
-        </ul>
-      </Dropdown>
+      <span class="sort">
+        <Dropdown joined section="Sort">
+          {#snippet trigger()}{@render sortLabel(data.query.sortBy)}&nbsp;{/snippet}
+          <ul>
+            {#each sorts as sortBy (sortBy)}
+              <li>
+                <a href={href({ sortBy })} aria-current={data.query.sortBy === sortBy ? 'page' : undefined}>
+                  {@render sortLabel(sortBy)}
+                </a>
+              </li>
+            {/each}
+          </ul>
+        </Dropdown>
+        <SortDirection joined disabled />
+      </span>
     {/snippet}
   </SectionToolbar>
 {/snippet}
@@ -110,6 +114,11 @@ const viewer = $derived(data.user ? { slug: data.user.slug, isVip: data.user.isV
 </SubpageFrame>
 
 <style>
+.sort {
+  display: flex;
+  align-items: center;
+}
+
 .lists {
   display: grid;
   grid-template-columns: minmax(0, 1fr);

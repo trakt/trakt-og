@@ -356,7 +356,7 @@ const lead = $derived(period === 'today' ? 'today' : period === 'yesterday' ? 'y
 
 /* the panel fades in when its data lands, as OG's lazy panels did. */
 .feed {
-  padding-block-start: var(--space-social-feed-top);
+  padding-block-start: var(--space-heading-dropdowns);
   container-type: inline-size;
   animation: fade-in var(--transition-card) ease-out;
 }
@@ -364,7 +364,7 @@ const lead = $derived(period === 'today' ? 'today' : period === 'yesterday' ? 'y
 .controls {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-base-block);
+  gap: var(--space-dropdown-row);
   align-items: center;
 }
 

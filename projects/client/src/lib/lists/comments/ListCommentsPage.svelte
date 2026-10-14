@@ -3,6 +3,7 @@
   comments a page. "Add comment" opens the new comment form on a list that takes comments.
 -->
 <script lang="ts">
+import { goto } from '$app/navigation';
 import { page } from '$app/state';
 import { SvelteURLSearchParams } from 'svelte/reactivity';
 import AddCommentLink from '$lib/components/comments/AddCommentLink.svelte';
@@ -12,6 +13,7 @@ import { newComment } from '$lib/components/comments/newComment.svelte';
 import NewCommentForm from '$lib/components/comments/NewCommentForm.svelte';
 import { withoutBlocked } from '$lib/components/comments/withoutBlocked';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
+import SortDirection from '$lib/components/dropdown/SortDirection.svelte';
 import NoData from '$lib/components/empty/NoData.svelte';
 import FanartHeader from '$lib/components/media/FanartHeader.svelte';
 import Pagination from '$lib/components/pagination/Pagination.svelte';
@@ -26,7 +28,7 @@ import type { HeaderUser } from '$lib/components/header/HeaderUser';
 import type { PageMeta } from '$lib/api/PageMeta';
 import type { CommentResponse } from '@trakt/api';
 import type { ListCommentsTarget } from './ListCommentsTarget';
-import { listCommentSorts } from './listCommentSorts';
+import { listCommentMenu, listCommentSorts } from './listCommentSorts';
 
 const { data }: {
   data: {
@@ -48,6 +50,7 @@ const comments = $derived([
   ...(canComment ? newComment.posted : []),
   ...withoutBlocked(data.comments, commentSettings(page.data.settings).blocked),
 ]);
+const addedDate = $derived(data.sort === 'newest' || data.sort === 'oldest');
 const sortHref = (sort: string) => {
   const query = new SvelteURLSearchParams(page.url.searchParams);
   query.delete('page');
@@ -56,11 +59,6 @@ const sortHref = (sort: string) => {
   return `${data.list.href}/comments?${query}`;
 };
 </script>
-
-{#snippet sortLabel(label: string)}
-  {@const [name, period] = label.split(' (')}
-  {name + (period ? ' ' : '')}{#if period}<em>({period}</em>{/if}
-{/snippet}
 
 <!-- List URLs are the canonical API slugs. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
@@ -76,21 +74,28 @@ const sortHref = (sort: string) => {
   {#snippet subnav()}
     <SectionToolbar inSummary>
       {#snippet filters()}
-        <Dropdown label="Comment type">
-          {#snippet trigger()}All Comments{/snippet}
-          <ul><li><a href={page.url.pathname + page.url.search} aria-current="page">All Comments</a></li></ul>
+        <Dropdown section="Comments">
+          {#snippet trigger()}All{/snippet}
+          <ul><li><a href={page.url.pathname + page.url.search} aria-current="page">All</a></li></ul>
         </Dropdown>
         {#if canComment}<AddCommentLink />{/if}
       {/snippet}
       {#snippet summary()}
-        <Dropdown label="Sort comments">
-          {#snippet trigger()}{@render sortLabel(listCommentSorts[data.sort])}{/snippet}
-          <ul>
-            {#each Object.entries(listCommentSorts) as [sort, label] (sort)}
-              <li><a href={sortHref(sort)} aria-current={sort === data.sort ? 'page' : undefined}>{@render sortLabel(label)}</a></li>
-            {/each}
-          </ul>
-        </Dropdown>
+        <span class="sort">
+          <Dropdown joined section="Sort">
+            {#snippet trigger()}{listCommentSorts[data.sort]}{/snippet}
+            <ul>
+              {#each listCommentMenu as sort (sort)}
+                <li><a href={sortHref(sort)} aria-current={sort === data.sort || (sort === 'newest' && addedDate) ? 'page' : undefined}
+                  >{listCommentSorts[sort]}</a></li>
+              {/each}
+            </ul>
+          </Dropdown>
+          <SortDirection joined disabled={!addedDate} bind:flipped={
+            () => data.sort === 'oldest',
+            (next) => goto(sortHref(next ? 'oldest' : 'newest'))
+          } />
+        </span>
       {/snippet}
     </SectionToolbar>
   {/snippet}
@@ -113,6 +118,11 @@ const sortHref = (sort: string) => {
 </SummaryFrame>
 
 <style>
+.sort {
+  display: flex;
+  align-items: center;
+}
+
 .comment {
   margin-block-end: var(--gutter);
 

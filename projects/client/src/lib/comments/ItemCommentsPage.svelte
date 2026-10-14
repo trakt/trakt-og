@@ -45,23 +45,20 @@ const href = (by: ItemCommentSortBy, how = data.sort.how) => itemCommentsHref(da
   {#if data.media.poster}<meta property="og:image" content={data.media.poster} />{/if}
 </svelte:head>
 
-{#snippet sortLabel(by: ItemCommentSortBy)}
-  {@const sort = itemCommentSorts[by]}
-  {sort.label}{#if 'note' in sort}&nbsp;<em>({sort.note})</em>{/if}
-{/snippet}
+{#snippet sortLabel(by: ItemCommentSortBy)}{itemCommentSorts[by].label}{/snippet}
 
 {#snippet subnav()}
   <SectionToolbar inSummary>
     {#snippet filters()}
-      <Dropdown>
-        {#snippet trigger()}All Comments&nbsp;{/snippet}
-        <ul><li><a href={href(data.sort.by)} aria-current="page">All Comments</a></li></ul>
+      <Dropdown section="Comments">
+        {#snippet trigger()}All&nbsp;{/snippet}
+        <ul><li><a href={href(data.sort.by)} aria-current="page">All</a></li></ul>
       </Dropdown>
       <AddCommentLink />
     {/snippet}
     {#snippet summary()}
       <span class="sort">
-        <Dropdown joined>
+        <Dropdown joined section="Sort">
           {#snippet trigger()}{@render sortLabel(data.sort.by)}&nbsp;{/snippet}
           <ul>
             {#each Object.keys(itemCommentSorts) as ItemCommentSortBy[] as by (by)}
@@ -69,12 +66,10 @@ const href = (by: ItemCommentSortBy, how = data.sort.how) => itemCommentsHref(da
             {/each}
           </ul>
         </Dropdown>
-        {#if data.sort.reversible}
-          <SortDirection joined bind:flipped={
-            () => data.sort.how === 'desc',
-            (next) => goto(href(data.sort.by, next ? 'desc' : 'asc'))
-          } />
-        {/if}
+        <SortDirection joined disabled={!data.sort.reversible} bind:flipped={
+          () => data.sort.how === 'desc',
+          (next) => goto(href(data.sort.by, next ? 'desc' : 'asc'))
+        } />
       </span>
     {/snippet}
   </SectionToolbar>

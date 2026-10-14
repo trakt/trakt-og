@@ -1,6 +1,6 @@
 /** OG's notes filter, including activity types translated by the API. */
 export const noteTypes = {
-  all: 'All Types',
+  all: 'All',
   movies: 'Movies',
   shows: 'Shows',
   seasons: 'Seasons',

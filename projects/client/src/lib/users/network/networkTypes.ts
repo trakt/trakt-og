@@ -1,7 +1,7 @@
 /** OG's network list picker. Following (Pending) is only on your own profile. */
 export const networkTypes = {
   following: 'Following',
-  following_pending: 'Following (Pending)',
+  following_pending: 'Pending',
   followers: 'Followers',
 } as const;
 

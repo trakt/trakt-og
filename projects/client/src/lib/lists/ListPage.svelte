@@ -168,13 +168,13 @@ const typeOptions = $derived(listTypeOptions(data.kind));
 const typeLabel = $derived(
   data.query.types.length > 0
     ? data.query.types.map((type) => typeOptions.find((option) => option.type === type)?.label ?? type).join(', ')
-    : 'All Types',
+    : 'All',
 );
 const genreLabel = $derived(
   data.query.genres.length > 0
     ? data.query.genres.map((slug) => listGenreOptions.find((option) => option.slug === slug)?.label ?? slug)
       .join(', ')
-    : 'All Genres',
+    : 'All',
 );
 const sorts = $derived(visibleListSorts({ types: data.query.types, vip, signedIn: data.user !== null }));
 const groups = $derived(
@@ -553,18 +553,18 @@ async function saveNotes(text: string) {
 
   <SectionToolbar>
     {#snippet filters()}
-      <Dropdown>
+      <Dropdown section="Media">
         {#snippet trigger()}{typeLabel}{/snippet}
         <ul>
           <li><a href={listHref(page.url, { types: [] })}
-            aria-current={data.query.types.length === 0 ? 'page' : undefined}>All Types</a></li>
+            aria-current={data.query.types.length === 0 ? 'page' : undefined}>All</a></li>
           {#each typeOptions as option (option.type)}
             <li><a href={listHref(page.url, { types: [option.type] })}
               aria-current={data.query.types.includes(option.type) ? 'page' : undefined}>{option.label}</a></li>
           {/each}
         </ul>
       </Dropdown>
-      <Dropdown>
+      <Dropdown section="Genre">
         {#snippet trigger()}{genreLabel}{/snippet}
         <ul class="limit-10">
           <li><a href={listHref(page.url, { genres: [] })}
@@ -588,7 +588,7 @@ async function saveNotes(text: string) {
     {/snippet}
     {#snippet summary()}
       <span class="sort">
-        <Dropdown joined>
+        <Dropdown joined section="Sort">
           {#snippet trigger()}{sorts.find(({ by }) => by === data.sort.by)?.label ?? 'Rank'}{/snippet}
           {#each groups as { group, sorts: items }, i (group)}
             {#if i > 0}<hr />{/if}

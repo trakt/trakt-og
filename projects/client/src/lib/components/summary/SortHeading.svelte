@@ -26,18 +26,20 @@ const sortName = $derived(sorts.find((sort) => sort.by === by)?.name);
 <div class="heading" aria-busy={loading}>
   <h2 {id}><strong>{count.toLocaleString('en-US')}</strong> {count === 1 ? noun : `${noun}s`}</h2>
   <div class="sort">
-    <Dropdown>
-      {#snippet trigger()}{sortName}{/snippet}
-      <ul>
-        {#each sorts as sort (sort.by)}
-          <li>
-            <button type="button" aria-current={sort.by === by} onclick={() => (by = sort.by)}>{sort.name}</button>
-          </li>
-        {/each}
-      </ul>
-    </Dropdown>
     <span class="loading" role="status">{loading ? 'Loading stats…' : ''}</span>
-    <SortDirection bind:flipped />
+    <span class="pair">
+      <Dropdown joined section="Sort">
+        {#snippet trigger()}{sortName}{/snippet}
+        <ul>
+          {#each sorts as sort (sort.by)}
+            <li>
+              <button type="button" aria-current={sort.by === by} onclick={() => (by = sort.by)}>{sort.name}</button>
+            </li>
+          {/each}
+        </ul>
+      </Dropdown>
+      <SortDirection joined bind:flipped />
+    </span>
     {@render controls?.()}
   </div>
 </div>
@@ -49,7 +51,7 @@ const sortName = $derived(sorts.find((sort) => sort.by === by)?.name);
 }
 .heading {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   margin-block-start: var(--gutter);
 
@@ -65,6 +67,11 @@ const sortName = $derived(sorts.find((sort) => sort.by === by)?.name);
 .sort {
   display: flex;
   align-items: center;
-  margin-block-start: -7px;
+  gap: var(--space-dropdown-row);
+}
+
+.pair {
+  display: flex;
+  align-items: center;
 }
 </style>

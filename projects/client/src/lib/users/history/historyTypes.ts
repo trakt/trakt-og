@@ -1,6 +1,6 @@
 /** OG's history type dropdown. */
 export const historyTypes = {
-  all: 'All Types',
+  all: 'All',
   movies: 'Movies',
   shows: 'Shows',
   episodes: 'Episodes',

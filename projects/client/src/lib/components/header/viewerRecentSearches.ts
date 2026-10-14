@@ -1,28 +1,29 @@
-import { authenticatedFetch } from '../../auth/authenticatedFetch.ts';
-import { userManager } from '../../auth/userManager.ts';
-import { toast } from '../toast/toast.svelte.ts';
+import { browser } from '$app/environment';
 import { createRecentSearches } from './createRecentSearches.svelte.ts';
-import { requestRecentSearch } from './requestRecentSearch.ts';
+
+const stores = new Map<string, ReturnType<typeof createRecentSearches>>();
+
+// Reached on each call, since blocked site data makes reading localStorage itself throw.
+const browserStorage: Pick<Storage, 'getItem' | 'setItem' | 'removeItem'> = {
+  getItem: (key) => localStorage.getItem(key),
+  setItem: (key, value) => localStorage.setItem(key, value),
+  removeItem: (key) => localStorage.removeItem(key),
+};
 
 /**
- * The viewer's recent searches, wired the way every list of them is: the browser copy in localStorage (when it's
- * available), API for the signed-in history, and a toast when a change fails. The header search and the search page's
- * sidebar each make one, and dispose of it when they go.
+ * The viewer's recent searches in this browser. The header search and the search page's sidebar share one list, so a
+ * change in either shows in both, and a change in another tab shows here too. On the server it's always empty.
  */
-export function viewerRecentSearches(viewer: string | null) {
-  let storage: Storage | undefined;
-  try {
-    storage = localStorage;
-  } catch { /* Memory-only history is still usable. */ }
-  return createRecentSearches({
-    viewer,
-    storage,
-    notify: toast.error,
-    request: (path, body) =>
-      requestRecentSearch({
-        fetch: viewer ? authenticatedFetch({ manager: userManager() }) : undefined,
-        path,
-        body,
-      }),
+export function viewerRecentSearches(viewer: string) {
+  if (!browser) return createRecentSearches({ key: '' });
+  const existing = stores.get(viewer);
+  if (existing) return existing;
+
+  const key = `og-recent-searches:${viewer}`;
+  const store = createRecentSearches({ key, storage: browserStorage });
+  stores.set(viewer, store);
+  addEventListener('storage', (event) => {
+    if (event.key === key || event.key === null) store.reload();
   });
+  return store;
 }

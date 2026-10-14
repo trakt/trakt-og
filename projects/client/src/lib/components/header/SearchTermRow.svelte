@@ -1,8 +1,8 @@
 <!--
   A saved search query as a row: its icon, the query, "in People", and an × to remove it that stays hidden until the
-  row is pointed at, highlighted or focused. The header search's Recent and Trending rows and the search page's
-  Recent Searches use it. With `href` the query is a link; otherwise `onpick` runs (the header puts it back in its
-  field). Any other attributes land on the `li` (the header's option role, id and highlight).
+  row is pointed at, highlighted or focused. The header search's Recent rows and the search page's Recent use it.
+  With `href` the query is a link; otherwise `onpick` runs (the header puts it back in its field). Any other attributes
+  land on the `li` (the header's option role, id and highlight).
     <SearchTermRow icon={clock} query="tron" type="Shows & Movies" href="/search?query=tron" onremove={remove} />
 -->
 <script lang="ts">
@@ -19,9 +19,8 @@ interface Props extends HTMLLiAttributes {
   onpick?: () => void;
   /** Highlighted, from the keyboard or as the current search. */
   selected?: boolean;
-  /** Left out, there's no × (trending queries can't be removed). */
+  /** Left out, there's no ×. */
   onremove?: () => void;
-  busy?: boolean;
   /** The query's tab stop: the header's combobox keeps focus in its field, so its rows take none. */
   tabbable?: boolean;
 }
@@ -34,7 +33,6 @@ const {
   onpick,
   selected = false,
   onremove,
-  busy = false,
   tabbable = true,
   ...rest
 }: Props = $props();
@@ -57,7 +55,7 @@ const {
     <button type="button" class="reuse" tabindex={tabbable ? undefined : -1} onclick={onpick}>{@render label()}</button>
   {/if}
   {#if onremove}
-    <button type="button" class="remove" aria-label="Remove recent search: {query}" disabled={busy} onclick={onremove}
+    <button type="button" class="remove" aria-label="Remove recent search: {query}" onclick={onremove}
       ><Icon svg={xmark} /></button>
   {/if}
 </li>

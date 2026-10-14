@@ -2,9 +2,13 @@ import { z } from 'zod/v4';
 
 const term = z.object({
   query: z.string().trim().min(1),
-  type: z.string().nullish(),
-  created_at: z.number().optional(),
+  type: z.string().nullish().transform((type) => type ?? ''),
 });
 
-/** API's query history, not the worker's unrelated by-id trending response. */
-export const recentSearchesSchema = z.object({ user: z.array(term), global: z.array(term) });
+/** The saved history in this browser. An entry that doesn't parse is dropped, not the whole history. */
+export const recentSearchesSchema = z.array(z.unknown()).transform((items) =>
+  items.flatMap((item) => {
+    const parsed = term.safeParse(item);
+    return parsed.success ? [parsed.data] : [];
+  })
+);

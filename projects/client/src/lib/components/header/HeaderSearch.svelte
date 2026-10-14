@@ -10,7 +10,7 @@
   The type picks the form's `/search/<type>` action and is kept in the `search_type` cookie so SSR renders it.
   Before anything is typed, the rows are the type's starting list: the most searched shows and movies, the trending
   lists, or this month's birthdays for People (none for the other types).
-  Recent and trending query rows go under the results.
+  The viewer's recent searches go under the results, with Clear all on their heading.
 -->
 <script lang="ts">
 import { afterNavigate } from '$app/navigation';
@@ -19,7 +19,6 @@ import Icon from '$lib/icons/Icon.svelte';
 import { untrack } from 'svelte';
 import HeaderTint from '$lib/components/header/HeaderTint.svelte';
 import clockRotateLeft from '$lib/icons/light/clock-rotate-left.svg?raw';
-import termMagnifier from '$lib/icons/light/magnifying-glass.svg?raw';
 import arrowTurnDownLeft from '$lib/icons/light/arrow-turn-down-left.svg?raw';
 import magnifyingGlass from '$lib/icons/regular/magnifying-glass.svg?raw';
 import xmark from '$lib/icons/regular/xmark.svg?raw';
@@ -30,17 +29,17 @@ import { searchAutocomplete, type SearchAutocompleteResult } from './searchAutoc
 import { type SearchTrending, searchTrending } from './searchTrending.ts';
 import TagPills from '$lib/components/labels/TagPills.svelte';
 import SearchTermRow from './SearchTermRow.svelte';
+import RecentClearAll from './RecentClearAll.svelte';
 import { searchTypes } from './searchTypes.ts';
 import { viewerRecentSearches } from './viewerRecentSearches.ts';
+import type { RecentSearch } from './createRecentSearches.svelte.ts';
 import type { SearchRow } from './toSearchRow.ts';
 
 const { savedType = '', viewer = null }: { savedType?: string; viewer?: string | null } = $props();
 
-let recent = $state<ReturnType<typeof viewerRecentSearches>>();
+let recent = $state.raw<ReturnType<typeof viewerRecentSearches>>();
 $effect(() => {
-  const controller = viewerRecentSearches(viewer);
-  recent = controller;
-  return () => controller.dispose();
+  recent = viewer ? viewerRecentSearches(viewer) : undefined;
 });
 
 const id = $props.id();
@@ -84,10 +83,7 @@ const type = $derived(findType(typeSlug) ?? searchTypes[0]);
 const idType = $derived(idTypes.find((option) => option.slug === type.slug));
 const action = $derived(type.slug ? `/search/${type.slug}` : '/search');
 const allHref = $derived(`${action}?${new URLSearchParams({ query })}`);
-const terms = $derived([
-  ...(recent?.user ?? []).map((term) => ({ term, recent: true })),
-  ...(recent?.global ?? []).map((term) => ({ term, recent: false })),
-]);
+const terms = $derived(recent?.terms ?? []);
 // Typed, the results; empty, the type's starting list, fetched once a type per visit.
 let trending = $state<Readonly<Record<string, SearchTrending>>>({});
 const typed = $derived(query.trim() !== '');
@@ -98,8 +94,7 @@ const options = $derived([
   ...(result.count ? [{ id: `${id}-option-all`, href: allHref }] : []),
   ...terms.map((_, index) => ({ id: `${id}-term-${index}`, href: '' })),
 ]);
-const noRecent = $derived(Boolean(viewer && recent?.loaded && !recent.user.length));
-const expanded = $derived(active && (options.length > 0 || noRecent));
+const expanded = $derived(active && options.length > 0);
 const activeId = $derived(expanded && highlight >= 0 ? options.at(highlight)?.id : undefined);
 
 let timer: ReturnType<typeof setTimeout> | undefined;
@@ -163,7 +158,6 @@ const openSearch = () => {
   highlight = -1;
   if (!panel?.matches(':popover-open')) panel?.showPopover();
   input?.focus();
-  void recent?.load();
   loadTrending(type);
 };
 
@@ -222,12 +216,10 @@ const onkeydown = (event: KeyboardEvent) => {
   }
 
   if (event.key === 'Delete' && highlight >= resultOptionCount) {
-    const item = terms.at(highlight - resultOptionCount);
-    if (item?.recent) {
-      event.preventDefault();
-      void recent?.remove(item.term);
-      highlight = -1;
-    }
+    const term = terms.at(highlight - resultOptionCount);
+    if (!term) return;
+    event.preventDefault();
+    removeTerm(term);
     return;
   }
 
@@ -240,12 +232,22 @@ const onkeydown = (event: KeyboardEvent) => {
 };
 
 const termLabel = (slug: string) => slug === 'official_lists' ? 'Official Lists' : recentSearchType(slug).label;
-const pickTerm = (term: { query: string; type?: string | null }) => {
+const pickTerm = (term: RecentSearch) => {
   query = term.query;
   pickType(recentSearchType(term.type).slug);
 };
+const removeTerm = (term: RecentSearch) => {
+  recent?.remove(term);
+  highlight = -1;
+  input?.focus();
+};
+const clearTerms = () => {
+  recent?.clear();
+  highlight = -1;
+  input?.focus();
+};
 const record = (row: SearchAutocompleteResult['rows'][number]) => {
-  void recent?.record(row.recent);
+  recent?.record(row.recent);
 };
 
 // A click on the panel's ::backdrop lands on the panel itself, so tell it apart by where the pointer is.
@@ -420,30 +422,26 @@ afterNavigate(({ to }) => {
               </a>
             </li>
           {/if}
-          {#if recent?.user.length}
-            <li role="presentation" class="section">Recent</li>
+          {#if terms.length}
+            <li role="presentation" class="section recent">
+              Recent
+              <RecentClearAll onclick={clearTerms} />
+            </li>
           {/if}
-          {#if noRecent}
-            <li role="presentation" class="no-recent">You have no recent searches.</li>
-          {/if}
-          {#each terms as item, termIndex (`${item.recent}:${item.term.query}:${item.term.type}`)}
+          {#each terms as term, termIndex (`${term.query}:${term.type}`)}
             {@const index = resultOptionCount + termIndex}
-            {#if !item.recent && termIndex === (recent?.user.length ?? 0)}
-              <li role="presentation" class="section">Trending Searches</li>
-            {/if}
             <SearchTermRow
               id="{id}-term-{termIndex}"
               role="option"
               aria-selected={highlight === index}
               selected={highlight === index}
               onpointerenter={() => (highlight = index)}
-              icon={item.recent ? clockRotateLeft : termMagnifier}
-              query={item.term.query}
-              type={item.term.type ? termLabel(item.term.type) : undefined}
+              icon={clockRotateLeft}
+              query={term.query}
+              type={term.type ? termLabel(term.type) : undefined}
               tabbable={false}
-              onpick={() => pickTerm(item.term)}
-              busy={recent?.busy}
-              onremove={item.recent ? () => { void recent?.remove(item.term); highlight = -1; input?.focus(); } : undefined}
+              onpick={() => pickTerm(term)}
+              onremove={() => removeTerm(term)}
             />
           {/each}
         </ul>
@@ -452,7 +450,7 @@ afterNavigate(({ to }) => {
           <span><kbd>↑</kbd><kbd>↓</kbd> Move</span>
           <span><kbd>↵</kbd> Open</span>
           <span><kbd>{modifier}</kbd><kbd>↵</kbd> New tab</span>
-          {#if recent?.user.length}<span><kbd>Del</kbd> Remove recent</span>{/if}
+          {#if terms.length}<span><kbd>Del</kbd> Remove recent</span>{/if}
           <span class="esc"><kbd>Esc</kbd> Close</span>
         </p>
     </div>
@@ -783,8 +781,7 @@ input {
   }
 }
 
-.section,
-.no-recent {
+.section {
   padding: var(--space-search-section) var(--space-base-inline) var(--space-xs-inline);
   color: var(--color-search-in-type);
   font-size: var(--font-size-small);
@@ -794,12 +791,11 @@ input {
   margin-block-start: var(--space-search-section);
 }
 
-.no-recent {
-  color: var(--color-search-term);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-headings-light);
-  letter-spacing: normal;
-  text-transform: none;
+/* Recent's heading carries Clear All at its far end. */
+.recent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 /* Every row: rounded, with a soft gray highlight from the arrows or the mouse. The query rows are SearchTermRow. */

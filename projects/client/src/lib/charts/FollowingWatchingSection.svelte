@@ -1,7 +1,7 @@
 <!--
   Trending's People you follow: who the viewer follows is watching this chart's type now. Each row is the member's
   avatar beside a condensed fanart title (the show small over the episode's number and title), the dashboard's red
-  progress bar, then who with how long's left as a tag. Like the Social Feed, the browser asks the members active in the last
+  progress bar, then who on the left and the time left ticking down on the right. Like the Social Feed, the browser asks the members active in the last
   24 hours, now and every 2 minutes while the tab is visible.
 -->
 <script lang="ts">
@@ -11,7 +11,7 @@ import { rawApiFetch } from '$lib/api/rawApiFetch';
 import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
 import { userManager } from '$lib/auth/userManager';
 import UnderProgress from '$lib/components/media/UnderProgress.svelte';
-import TagPills from '$lib/components/labels/TagPills.svelte';
+import Countdown from '$lib/components/status/Countdown.svelte';
 import SidebarSection from '$lib/components/sidebar/SidebarSection.svelte';
 import { fetchRecentMembers, type SocialGet } from '$lib/dashboard/fetchSocialFeed';
 import { fetchWatching, type LiveWatch } from '$lib/dashboard/fetchWatching';
@@ -90,11 +90,11 @@ const noun = $derived(type === 'shows' ? 'show' : 'movie');
             {:else}
               <a class="title" href={watch.href}>{watch.title.name}</a>
             {/if}
-            <UnderProgress href={watch.href} percent={progress}
+            <UnderProgress live href={watch.href} percent={progress}
               lines={[[{ text: `${progress}% watched` }, { text: `${minutesLeft}m left` }]]} />
             <p class="who">
               {#if watch.member.href}<a href={watch.member.href}>{watch.member.name}</a>{:else}{watch.member.name}{/if}
-              <TagPills tags={[{ text: `${minutesLeft}m left` }]} />
+              <span class="left"><Countdown startedAt={watch.startedAt} endsAt={watch.expiresAt} /></span>
             </p>
           </div>
         </li>
@@ -184,6 +184,7 @@ const noun = $derived(type === 'shows' ? 'show' : 'movie');
   display: flex;
   gap: var(--space-sm-inline);
   align-items: center;
+  justify-content: space-between;
   min-inline-size: 0;
   margin: 0;
   color: var(--color-sidebar-note);
@@ -201,5 +202,11 @@ const noun = $derived(type === 'shows' ? 'show' : 'movie');
       text-decoration: underline;
     }
   }
+}
+/* The dashboard tile's countdown: the card subtitle's gray, bold. */
+.left {
+  flex: none;
+  color: var(--color-card-subtitle);
+  font-weight: var(--font-weight-headings-heavy);
 }
 </style>

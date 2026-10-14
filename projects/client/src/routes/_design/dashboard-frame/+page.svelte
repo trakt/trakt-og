@@ -1,22 +1,35 @@
 <script lang="ts">
 import DashboardGreeting from '$lib/components/dashboard/DashboardGreeting.svelte';
-import DashboardStats from '$lib/components/dashboard/DashboardStats.svelte';
+import RecapRibbon from '$lib/components/dashboard/RecapRibbon.svelte';
+import StatsPanel from '$lib/components/dashboard/StatsPanel.svelte';
+import { toRecapRibbon } from '$lib/dashboard/toRecapRibbon';
 import DashboardInbox from '$lib/components/dashboard/DashboardInbox.svelte';
-import DashboardNotices from '$lib/components/dashboard/DashboardNotices.svelte';
 import Container from '$lib/components/container/Container.svelte';
 import { dashboardFrameFixture as sample } from '$lib/dashboard/dashboardFrameFixture';
-import { toStatsBand } from '$lib/dashboard/toStatsBand';
+import { toStatsPanel } from '$lib/dashboard/toStatsPanel';
 import { dayIn } from '$lib/calendars/calendarDays';
 import type { WatchingNow } from '$lib/users/WatchingNow';
 
 let theme = $state('light');
-const loading = { episodes: undefined, shows: undefined, movies: undefined };
-const bands = [
-  { id: 'heavy', band: toStatsBand(sample.stats, sample.collected) },
-  { id: 'loading', band: toStatsBand(sample.stats, loading) },
-  { id: 'new', band: toStatsBand(sample.newStats, { episodes: 0, shows: 0, movies: 0 }) },
-  { id: 'older', band: toStatsBand({ ...sample.stats, progress: null, lists: null }, sample.collected) },
+const today = dayIn(new Date().toISOString(), 'UTC');
+const month = Number(today.slice(5, 7));
+const busy = [1900, 1400, 2200, 1700, 1500, 2000, 2600, 2300, 1834, 1200, 1500, 2100].slice(0, month - 1);
+const recapsOf = (plays: number[]) => Promise.resolve(toRecapRibbon({ today, plays, slug: 'og_tester' }));
+const greetings = [
+  { id: 'heavy', panel: toStatsPanel(sample.stats), recaps: recapsOf([...busy, 312]) },
+  { id: 'loading', panel: toStatsPanel({ ...sample.stats, progress: null }), recaps: new Promise<never>(() => {}) },
+  {
+    id: 'new',
+    panel: toStatsPanel(sample.newStats),
+    recaps: recapsOf([...busy.map(() => 0), 4]),
+  },
 ];
+// In January the strip shows last year under its Year in Review.
+const january = Promise.resolve(toRecapRibbon({
+  today: '2027-01-05',
+  plays: [1900, 1400, 2200, 1700, 1500, 2000, 2600, 2300, 1834, 1200, 1500, 2100],
+  slug: 'og_tester',
+}));
 const watching: WatchingNow = {
   action: 'checkin',
   title: 'The Boys',
@@ -38,23 +51,25 @@ $effect(() => {
 </svelte:head>
 
 <main>
-  {#each bands as { id, band } (id)}
+  {#each greetings as { id, panel, recaps } (id)}
     <div id="band-{id}">
-      <DashboardGreeting user={sample.user} memberSince="Aug 20, 2020 12:23 PM" watching={null} />
-      <DashboardStats {band} slug="og_tester" />
+      <DashboardGreeting user={sample.user} memberSince="Aug 20, 2020 12:23 PM" watching={null}>
+        <StatsPanel {panel} slug="og_tester" />
+      </DashboardGreeting>
+      <RecapRibbon {recaps} />
     </div>
   {/each}
+  <div id="january"><RecapRibbon recaps={january} /></div>
   <div id="watching">
-    <DashboardGreeting user={sample.user} memberSince="Aug 20, 2020 12:23 PM" {watching} />
-    <DashboardStats band={toStatsBand(sample.stats, sample.collected)} slug="og_tester" />
+    <DashboardGreeting user={sample.user} memberSince="Aug 20, 2020 12:23 PM" {watching}>
+      <StatsPanel panel={toStatsPanel(sample.stats)} slug="og_tester" />
+    </DashboardGreeting>
   </div>
-  <DashboardNotices notices={{ welcome: true, anniversary: '6th', additionalLists: 6 }}
-    day={dayIn(new Date().toISOString(), 'UTC')} />
   <DashboardInbox requests={sample.requests.slice(0, 2)} />
   <DashboardInbox requests={sample.requests} />
   <Container>
     <h2>Dashboard frame components</h2>
-    <p>Fake data for the greeting and its all-time band (a heavy user, the library still loading, a new member, stats without shows finished or lists, then checked in to an episode), Traktiversary banner, dismissible account welcome and follow requests: two as boxes, then six folded into the summary line.</p>
+    <p>Fake data for the greeting, its stats panel and the recap strip under it (a heavy user, stats without progress and the recaps still loading, a new member, the strip in January showing last year, then checked in to an episode) and follow requests: two as boxes, then six folded into the summary line.</p>
     <label>Theme <select bind:value={theme}><option value="light">Light</option><option value="dark">Dark</option></select></label>
   </Container>
 </main>

@@ -6,11 +6,11 @@ import type { ViewerSettings } from '../settings/ViewerSettings.ts';
 import { toProfileUser } from '../users/toProfileUser.ts';
 import { toWatchingNow } from '../users/toWatchingNow.ts';
 import { formatDate } from '../utils/formatDate.ts';
-import { dashboardNotices } from './dashboardNotices.ts';
 import { dashboardPrefs } from './dashboardPrefs.ts';
 import { userStatsSchema } from '../stats/userStatsSchema.ts';
 import { dashboardProfileSchema } from './dashboardProfileSchema.ts';
 import { fetchLastThirtyDays } from './fetchLastThirtyDays.ts';
+import { fetchRecapRibbon } from './fetchRecapRibbon.ts';
 import { fetchRecentlyWatched } from './fetchRecentlyWatched.ts';
 import { fetchRecommendations } from './fetchRecommendations.ts';
 import { fetchSchedule } from './fetchSchedule.ts';
@@ -70,12 +70,6 @@ export async function loadDashboard({ fetch, panelFetch = fetch, locals, cookies
   const panelClient = api({ fetch: panelFetch, token });
   // The Social Feed skips its request at zero, and the recommendations name the count: the stats strip's read has it.
   const following = Promise.resolve(parsedStats.data.network.following);
-  const notices = dashboardNotices({
-    joinedAt: parsedProfile.data.joined_at,
-    now,
-    isVip: !!user.vip,
-    listLimit: layout.settings?.limits?.list.count,
-  });
   return {
     profile: user,
     memberSince: formatDate(parsedProfile.data.joined_at, { ...layout.datePreferences, time: true }),
@@ -84,15 +78,8 @@ export async function loadDashboard({ fetch, panelFetch = fetch, locals, cookies
     requests: parsedRequests.data
       .toSorted((a, b) => Date.parse(b.requested_at) - Date.parse(a.requested_at))
       .map((row) => toFollowRequest(row, { datePreferences: layout.datePreferences, now })),
-    notices: {
-      ...notices,
-      welcome: notices.welcome && cookies.get('og-dashboard-welcome-hidden') !== '1',
-      anniversary: cookies.get('og-dashboard-anniversary-hidden') === now.toISOString().slice(0, 10)
-        ? null
-        : notices.anniversary,
-    },
-    noticeDay: now.toISOString().slice(0, 10),
     dashboard,
+    recaps: fetchRecapRibbon({ client: panelClient, slug: user.slug, timeZone: layout.datePreferences.timeZone, now }),
     upNext: unless(
       hidden.upNext,
       () => fetchUpNext({ api: panelClient, username: user.slug, settings: dashboard.upNext, fetch: panelFetch }),

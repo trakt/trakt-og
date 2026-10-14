@@ -34,7 +34,8 @@ function fetchSummary(client: ReturnType<typeof api>, { id, list }: { id: string
 /**
  * `/users/:id/lists/:list_id`: the list, then a page of its items in the
  * chosen sort. Public lists read without the token alongside the frame's load, so the worker's cache answers; a list
- * only the viewer can see, or a sort about the viewer, reads again with it.
+ * only the viewer can see, a sort about the viewer, or the owner's own list (fresh after their edits) reads again with
+ * it.
  */
 export async function loadList({ fetch, locals, params, url, parent, cookies }: Params) {
   const initialFilters = readListFilters({ search: url.searchParams, cookies, scope: 'list' });
@@ -81,7 +82,8 @@ export async function loadList({ fetch, locals, params, url, parent, cookies }: 
       first: unchanged ? anonymousItems : { ...anonymousItems, status: 0 },
       fallback: list.sort,
       viewerIsVip: user?.isVip ?? false,
-      needsToken: viewerSummary?.status === 200,
+      // The owner reads their own items with the token too: the worker's cache would hide what they just changed.
+      needsToken: viewerSummary?.status === 200 || isSelf,
       ownerIsVip: Boolean(profile.vip),
       viewerSignedIn: user !== null,
       datePreferences,

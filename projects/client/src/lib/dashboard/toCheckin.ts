@@ -5,7 +5,6 @@ import type { RecentPlay } from './toRecentPlay.ts';
 export type Checkin = {
   /** The pulsing "Checked in", then the episode type, in place of the future date. */
   readonly tags: readonly CardTag[];
-  readonly startedAt: string;
   /** How far in, 0 to 100. */
   readonly progress: number;
 };
@@ -26,7 +25,6 @@ export function toCheckin(
   const start = end - length;
   return {
     tags: [{ text: 'Checked in', kind: 'primary', live: true }, ...play.tags.slice(0, -1)],
-    startedAt: new Date(start).toISOString(),
     progress: Math.round(Math.min(Math.max((at - start) / length, 0), 1) * 100),
   };
 }

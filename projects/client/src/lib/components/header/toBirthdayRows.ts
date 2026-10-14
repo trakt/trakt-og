@@ -39,7 +39,7 @@ export function toBirthdayRows(people: readonly Person[], today: string, order?:
       title: person.name,
       type: 'Person',
       tag: rank(birthday, today) === 0 ? 'Today' : label(birthday),
-      genres: personTags(person, { today, order }),
+      tags: personTags(person, { today, order }),
       poster: imageUrl(person.images?.headshot?.at(0), 'thumb'),
     }));
 }

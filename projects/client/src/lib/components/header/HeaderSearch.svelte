@@ -397,11 +397,12 @@ afterNavigate(({ to }) => {
                 </span>
                 <span class="info">
                   {#if row.topTitle}<span class="top-title">{row.topTitle}</span>{/if}
-                  <span class="title">{row.title}</span>
+                  <span class="title">{row.title}{#if row.year}<span class="year">{row.year}</span>{/if}</span>
                   <TagPills tags={[
                     { text: row.type, kind: 'primary' },
                     ...(row.tag ? [{ text: row.tag, kind: 'light' as const }] : []),
-                    ...(row.genres ?? []).map((text) => ({ text })),
+                    ...(row.genres?.length ? [{ segments: row.genres }] : []),
+                    ...(row.tags ?? []).map((text) => ({ text })),
                   ]} />
                 </span>
               </a>
@@ -855,6 +856,13 @@ input {
 
 .title {
   font-weight: var(--font-weight-headings);
+}
+
+.year {
+  margin-inline-start: var(--space-search-year);
+  color: var(--color-search-year);
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-headings-light);
 }
 
 .all-results a {

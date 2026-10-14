@@ -1,7 +1,7 @@
 <!--
   A row of small tag pills, like the header search's results: `primary` is the brand red (a result's type), `light` the
-  pale one (its year), `badge` a bold clear pill with a brighter outline (a rating certificate), and the rest the dark outlined default (genres, a runtime).
-    <TagPills tags={[{ text: 'Movie', kind: 'primary' }, { text: '2026', kind: 'light' }, { text: 'Drama' }]} />
+  pale one (an episode's air date), `badge` a bold clear pill with a brighter outline (a rating certificate), and the rest the dark outlined default (genres, a runtime).
+    <TagPills tags={[{ text: 'Movie', kind: 'primary' }, { text: 'Jan 21, 2008', kind: 'light' }, { text: 'Drama' }]} />
   A `lead` is bold before the text: `{ lead: '202.7K', text: 'shows' }`. Related tags join into one pill split by thin
   lines: `{ segments: ['50m', '24 episodes'] }`.
 -->

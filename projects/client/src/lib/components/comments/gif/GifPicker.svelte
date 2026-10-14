@@ -1,7 +1,7 @@
 <!--
   The comment composer's GIF picker, a dialog of Klipy's GIFs: a search field, Klipy's categories as shortcuts until
   something's typed, and what's trending or the search's results in columns that load more as they scroll. Picking
-  one closes it.
+  one closes it. Nothing loads until it first opens, and a page that fails to load can be tried again.
 -->
 <script lang="ts">
 import { untrack } from 'svelte';
@@ -28,7 +28,6 @@ interface Props {
 
 let { open = $bindable(), onselect }: Props = $props();
 
-const customerId = klipyCustomerId();
 let search = $state('');
 let term = $state('');
 let categories = $state<readonly GifCategory[]>([]);
@@ -39,9 +38,9 @@ let loading = $state(false);
 let failed = $state(false);
 // Bumped for each new term, so a page that lands late for the old one is dropped.
 let generation = 0;
+// The term the results are for, unset until the picker first opens.
+let shown: string | undefined;
 const columns = $derived(toGifColumns(gifs, COLUMNS));
-
-void fetchGifCategories({ customerId }).then((loaded) => (categories = loaded));
 
 $effect(() => {
   const next = search.trim();
@@ -50,8 +49,13 @@ $effect(() => {
 });
 
 $effect(() => {
-  void term;
+  const next = term;
+  if (!open || next === shown) return;
   untrack(() => {
+    if (shown === undefined) {
+      void fetchGifCategories({ customerId: klipyCustomerId() }).then((loaded) => (categories = loaded));
+    }
+    shown = next;
     generation++;
     gifs = [];
     page = 0;
@@ -67,7 +71,7 @@ async function more() {
   const mine = generation;
   loading = true;
   try {
-    const next = await fetchGifs({ query: term, page: page + 1, limit: PAGE_SIZE, customerId });
+    const next = await fetchGifs({ query: term, page: page + 1, limit: PAGE_SIZE, customerId: klipyCustomerId() });
     if (mine !== generation) return;
     const seen = new Set(gifs.map(({ id }) => id));
     gifs = [...gifs, ...next.entries.filter(({ id }) => !seen.has(id))];
@@ -78,6 +82,11 @@ async function more() {
   } finally {
     if (mine === generation) loading = false;
   }
+}
+
+function retry() {
+  failed = false;
+  void more();
 }
 
 function pick(gif: GifEntry) {
@@ -108,13 +117,13 @@ function pick(gif: GifEntry) {
             </div>
           {/each}
         </div>
-        {#if hasNext}
-          <!-- It fires once, so each page gets its own. -->
-          {#key page}<div class="sentinel" {@attach nearViewport(() => void more())}></div>{/key}
-        {/if}
-      {:else if failed}
-        <p class="note">GIFs couldn't be loaded. Try again in a moment.</p>
-      {:else if !loading}
+      {/if}
+      {#if failed}
+        <p class="note">GIFs couldn't be loaded. <button type="button" onclick={retry}>Try again</button></p>
+      {:else if gifs.length > 0 && hasNext}
+        <!-- It fires once, so each page gets its own. -->
+        {#key page}<div class="sentinel" {@attach nearViewport(() => void more())}></div>{/key}
+      {:else if gifs.length === 0 && !loading}
         <p class="note">No GIFs found.</p>
       {/if}
     </div>

@@ -11,6 +11,7 @@
 <script lang="ts">
 import CommentAvatar from '$lib/components/comments/CommentAvatar.svelte';
 import CommentTag from '$lib/components/comments/CommentTag.svelte';
+import CommentGif from '$lib/components/comments/CommentGif.svelte';
 import CommentText from '$lib/components/comments/CommentText.svelte';
 import { authorOf } from '$lib/components/comments/authorOf';
 import { commentDates } from '$lib/components/comments/commentDates';
@@ -204,6 +205,7 @@ const revealOnKey = (event: KeyboardEvent, id: number) => {
               </p>
             </header>
 
+            {#snippet gif()}{#if current.comment.gif}<CommentGif gif={current.comment.gif} />{/if}{/snippet}
             <div class="said">
               <span class="mark"><Icon svg={quoteLeft} /></span>
               {#if blurred}
@@ -216,10 +218,10 @@ const revealOnKey = (event: KeyboardEvent, id: number) => {
                   onclick={() => reveal(id)}
                   onkeydown={(event) => revealOnKey(event, id)}
                 >
-                  <div class="text blur" aria-hidden="true" inert><CommentText {blocks} /></div>
+                  <div class="text blur" aria-hidden="true" inert><CommentText {blocks} />{@render gif()}</div>
                 </div>
               {:else}
-                <div class="text"><CommentText {blocks} /></div>
+                <div class="text"><CommentText {blocks} />{@render gif()}</div>
               {/if}
             </div>
 

@@ -13,8 +13,9 @@ import type { ViewerSettings } from '../lib/settings/ViewerSettings.ts';
  * It also sets `locals.theme`, the viewer's Dark Knight setting, which hooks.server.ts writes onto `<html>` so the
  * first paint is already in the right theme. Logged out is Dark Knight, og's default.
  * `platform` picks the store the mobile splash links, and `phone` keeps its phone wording in a browser's device mode.
+ * `gifs` says the Worker has a Klipy key, so comment composers get the GIF picker.
  */
-export async function load({ fetch, locals, cookies, request }) {
+export async function load({ fetch, locals, cookies, request, platform: worker }) {
   const hasSession = locals.token !== null;
   // The header search's type picker.
   const searchType = cookies.get('search_type') ?? '';
@@ -48,6 +49,7 @@ export async function load({ fetch, locals, cookies, request }) {
       searchType,
       platform,
       phone,
+      gifs: Boolean(worker?.env.KLIPY_API_KEY),
     };
     locals.theme = toTheme(toDarkKnight(settings));
     return data;

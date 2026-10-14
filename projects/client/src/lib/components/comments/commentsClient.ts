@@ -3,6 +3,8 @@ import { z } from 'zod/v4';
 import { api } from '../../api/api.ts';
 import { extractPageMeta } from '../../api/extractPageMeta.ts';
 import { rawApiFetch } from '../../api/rawApiFetch.ts';
+import type { GifEntry } from './gif/GifEntry.ts';
+import { toCommentGif } from './gif/toCommentGif.ts';
 import { commentWrite, type PostCommentResult } from './postComment.ts';
 
 type Api = ReturnType<typeof api>;
@@ -24,7 +26,7 @@ export type CommentsClient = {
    * `POST /comments/:id/replies`. API moves a reply to a
    * reply up to its top-level comment, but the contract says 404, so send the top-level id.
    */
-  reply: (id: number, comment: string) => Promise<PostCommentResult>;
+  reply: (id: number, comment: string, gif?: GifEntry | null) => Promise<PostCommentResult>;
   /** `PUT /comments/:id`: 200 with the saved comment. */
   edit: (id: number, body: { comment: string; spoiler: boolean }) => Promise<PostCommentResult>;
   /** `DELETE /comments/:id`: 204, or an empty 409. */
@@ -57,8 +59,14 @@ export function commentsClient(client: Api, fetch: typeof globalThis.fetch = glo
       const response = await client.comments.reactions.summary({ params: { id: String(id) } }).catch(() => null);
       return response?.status === 200 ? response.body : undefined;
     },
-    reply: (id, comment) =>
-      commentWrite(client.comments.reply({ params: { id: String(id) }, body: { comment, spoiler: false } }), 201),
+    reply: (id, comment, gif = null) =>
+      commentWrite(
+        client.comments.reply({
+          params: { id: String(id) },
+          body: { comment, spoiler: false, gif: toCommentGif(gif) },
+        }),
+        201,
+      ),
     edit: (id, body) => commentWrite(client.comments.edit({ params: { id: String(id) }, body }), 200),
     remove: (id) => commentWrite(client.comments.delete({ params: { id: String(id) } }), 204),
     block: async (slug) => {

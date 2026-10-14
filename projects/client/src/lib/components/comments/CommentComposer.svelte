@@ -1,6 +1,8 @@
 <!--
   The comment composer, shared by the new comment form, the reply box and the edit form: a rounded field with the
-  formatting toolbar, the word meter, the "Spoilers" switch, Cancel and the submit button under it.
+  formatting toolbar, the word meter, the "Spoilers" switch, Cancel and the submit button under it. With `gifs`, the
+  toolbar's GIF button opens the picker, and the picked GIF sits under the field until it posts or is taken off. A GIF
+  alone is a comment.
   It opens focused with the cursor at the end. Cmd/Ctrl+Enter submits, and a failure toasts the API's message and
   refocuses the field. `confirmLeave` asks before leaving the page or cancelling with text that hasn't been posted.
     <CommentComposer label="Your reply" placeholder="Reply to Sean..." submit="Reply" posting="Posting your reply"
@@ -15,6 +17,11 @@ import CommentAvatar from './CommentAvatar.svelte';
 import CommentSubmit from './CommentSubmit.svelte';
 import CommentToolbar from './CommentToolbar.svelte';
 import { type CommentFormat, formatSelection } from './formatSelection.ts';
+import ComposerGif from './gif/ComposerGif.svelte';
+import type { GifEntry } from './gif/GifEntry.ts';
+import GifPicker from './gif/GifPicker.svelte';
+import { klipyCustomerId } from './gif/klipyCustomerId.ts';
+import { shareGif } from './gif/shareGif.ts';
 import type { PostCommentResult } from './postComment.ts';
 import SpoilerSwitch from './SpoilerSwitch.svelte';
 import { submitShortcut } from './submitShortcut.ts';
@@ -47,9 +54,11 @@ interface Props {
   minWords?: number;
   /** Asks before leaving the page, or cancelling, with text that hasn't been posted. */
   confirmLeave?: boolean;
+  /** The GIF button, where the Worker has a Klipy key. Editing leaves a comment's GIF as it is. */
+  gifs?: boolean;
   /** A Cancel button. */
   oncancel?: () => void;
-  save: (text: string, spoiler: boolean) => Promise<PostCommentResult>;
+  save: (text: string, spoiler: boolean, gif: GifEntry | null) => Promise<PostCommentResult>;
   /** The saved comment (null when its body was off-contract), with what was sent. */
   onsaved: (comment: CommentResponse | null, text: string, spoiler: boolean) => void;
 }
@@ -66,6 +75,7 @@ const {
   spoiler: initialSpoiler,
   minWords = MIN_WORDS,
   confirmLeave = false,
+  gifs = false,
   oncancel,
   save,
   onsaved,
@@ -78,10 +88,12 @@ let text = $state(initial);
 // svelte-ignore state_referenced_locally
 let spoiler = $state(initialSpoiler ?? false);
 let posting = $state(false);
+let gif = $state<GifEntry | null>(null);
+let picking = $state(false);
 let textarea = $state<HTMLTextAreaElement>();
 const words = $derived(wordCount(text));
 const describedBy = $derived(
-  [rules ? `${id}-rules` : '', minWords > 0 ? `${id}-meter` : ''].filter(Boolean).join(' ') || undefined,
+  [rules ? `${id}-rules` : '', minWords > 0 && !gif ? `${id}-meter` : ''].filter(Boolean).join(' ') || undefined,
 );
 
 /** Moves the focus into the field, for "Add comment". */
@@ -95,7 +107,7 @@ const focusAtEnd = (element: HTMLTextAreaElement) => {
 };
 
 beforeNavigate((navigation) => {
-  if (!confirmLeave || !text.trim() || posting) return;
+  if (!confirmLeave || (!text.trim() && !gif) || posting) return;
   if (navigation.to?.url.pathname === location.pathname && navigation.to.url.search === location.search) return;
   // A reload or another site gets the browser's own prompt.
   if (navigation.willUnload) return navigation.cancel();
@@ -106,7 +118,7 @@ beforeNavigate((navigation) => {
 
 // Text that hasn't been posted is only thrown away once the member says so.
 function cancel() {
-  if (confirmLeave && text.trim() && !confirm(DISCARD)) {
+  if (confirmLeave && (text.trim() || gif) && !confirm(DISCARD)) {
     textarea?.focus();
     return;
   }
@@ -128,13 +140,15 @@ async function send(event: SubmitEvent) {
   posting = true;
   const sent = text.trim();
   const flagged = spoiler;
-  const result = await save(sent, flagged);
+  const picked = gif;
+  const result = await save(sent, flagged, picked);
   posting = false;
   if (!result.ok) {
     toast.error(result.message);
     textarea?.focus();
     return;
   }
+  if (picked) void shareGif({ slug: picked.slug, customerId: klipyCustomerId() });
   onsaved(result.comment, sent, flagged);
 }
 </script>
@@ -152,16 +166,19 @@ async function send(event: SubmitEvent) {
       onkeydown={submitShortcut}
       {@attach focusAtEnd}
     ></textarea>
+    {#if gif}<ComposerGif {gif} onremove={() => (gif = null)} />{/if}
     <div class="footer">
       {#if rules}<p class="rules" id="{id}-rules">{rules}</p>{/if}
-      <CommentToolbar onformat={format} />
-      {#if minWords > 0}<WordMeter id="{id}-meter" {words} min={minWords} />{/if}
+      <CommentToolbar onformat={format} ongif={gifs ? () => (picking = true) : undefined} />
+      <!-- A GIF alone is a comment, so the minimum stops counting once one is picked. -->
+      {#if minWords > 0 && !gif}<WordMeter id="{id}-meter" {words} min={minWords} />{/if}
       {#if initialSpoiler !== undefined}<SpoilerSwitch bind:spoiler />{/if}
       {#if oncancel}<button type="button" class="cancel" onclick={cancel}>Cancel</button>{/if}
       <CommentSubmit {posting} text={submitText} label={postingLabel} />
     </div>
   </div>
 </form>
+{#if picking}<GifPicker bind:open={picking} onselect={(picked) => (gif = picked)} />{/if}
 
 <style>
 .composer {

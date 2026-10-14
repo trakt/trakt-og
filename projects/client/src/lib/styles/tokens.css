@@ -1722,9 +1722,15 @@
   --color-gif-on-image: #fff; /* a category's name and the composer's remove button sit on a GIF in both themes */
   --composer-gif-height: 120px;
   --composer-gif-margin: 0 10px 4px 12px; /* under the field, in line with the toolbar */
-  --composer-gif-remove-size: 24px;
-  --composer-gif-remove-inset: 4px;
-  --color-composer-gif-remove-bg: rgb(0 0 0 / 0.6);
+  --composer-gif-remove-size: 26px;
+  --composer-gif-remove-inset: 6px;
+  --font-size-composer-gif-remove: 12px;
+  --composer-gif-remove-blur: blur(6px);
+  --color-composer-gif-remove-bg: rgb(0 0 0 / 0.45);
+  --color-composer-gif-remove-ring: rgb(255 255 255 / 0.35);
+  --color-composer-gif-remove-hover-bg: var(--brand-primary);
+  --shadow-composer-gif: 0 4px 14px rgb(0 0 0 / 0.3);
+  --shadow-composer-gif-remove: 0 1px 4px rgb(0 0 0 / 0.4);
   --gif-picker-gap: 12px;
   --gif-picker-tile-gap: 6px;
   --gif-picker-results-height: min(60vh, 520px);

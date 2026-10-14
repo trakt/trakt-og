@@ -82,14 +82,26 @@ const max = $derived(
   serverLimit ??
     (listLimit && lists.filter((list) => !list.collaboration).length >= listLimit.count ? listLimit.count : undefined),
 );
-let pressedAt = 0;
+// Holding the button for half a second opens the picker right away; the click that ends the press is then ignored.
+const LONG_PRESS = 500;
+let pressTimer: ReturnType<typeof setTimeout> | undefined;
 let longPressed = false;
-const pressStart = () => {
-  pressedAt = Date.now();
+const pressStart = (event: PointerEvent) => {
+  if (event.button !== 0) return;
   longPressed = false;
+  clearTimeout(pressTimer);
+  pressTimer = setTimeout(() => {
+    longPressed = true;
+    void open(true);
+  }, LONG_PRESS);
 };
-const pressEnd = () => {
-  longPressed = Date.now() - pressedAt >= 500;
+const pressEnd = () => clearTimeout(pressTimer);
+const click = () => {
+  if (longPressed) {
+    longPressed = false;
+    return;
+  }
+  void open();
 };
 const pickerKey = (event: KeyboardEvent) => {
   if (event.key !== 'ArrowDown') return;
@@ -124,11 +136,13 @@ async function open(force = false) {
   }
   busy = true;
   try {
-    await load();
+    // A quick add needs no lists: the overlay already knows whether it's on the watchlist.
     if (!force && watchlistMode && !selected) {
+      if (!loaded) watchlisted = Boolean(viewerState.watchlisted);
       await toggleWatchlist();
       return;
     }
+    await load();
     if (!force && lists.length === 0) {
       await toggleWatchlist();
       return;
@@ -249,19 +263,21 @@ async function save(draft: Parameters<typeof createList>[0]['draft'] & { collabo
     <SummaryAction bind:element={triggerButton} color="var(--brand-secondary)" icon={listIcon} text={label}
       detail={subtitle || undefined} {selected} busy={busy ? 'Saving lists' : undefined} aria-haspopup="dialog"
       aria-expanded={expanded} aria-controls="list-{id}" aria-keyshortcuts="ArrowDown" disabled={busy}
-      onpointerdown={pressStart} onpointerup={pressEnd} onkeydown={pickerKey} onclick={() => open(longPressed)}>
+      onpointerdown={pressStart} onpointerup={pressEnd} onpointerleave={pressEnd} onpointercancel={pressEnd}
+      oncontextmenu={(event) => event.preventDefault()} onkeydown={pickerKey} onclick={click}>
       {#snippet tiles()}
         <SummaryActionTile icon={plus} label={selected ? 'Manage lists' : 'Pick a list'} aria-haspopup="dialog"
           aria-controls="list-{id}" disabled={busy} onclick={() => open(true)} />
       {/snippet}
     </SummaryAction>
   {:else}
-    <Tooltip text={selected ? 'Manage lists' : label}>
+    <Tooltip text={selected ? 'Manage lists' : label} placement="bottom">
       {#snippet trigger(tooltip)}
         <button bind:this={triggerButton} type="button" class="trigger" aria-label={selected ? 'Manage lists' : label}
           aria-haspopup="dialog" aria-expanded={expanded} aria-controls="list-{id}" aria-busy={busy} disabled={busy}
-          aria-keyshortcuts="ArrowDown" onpointerdown={pressStart} onpointerup={pressEnd} onkeydown={pickerKey}
-          onclick={() => open(longPressed)} {...tooltip}>
+          aria-keyshortcuts="ArrowDown" onpointerdown={pressStart} onpointerup={pressEnd} onpointerleave={pressEnd}
+          onpointercancel={pressEnd} oncontextmenu={(event) => event.preventDefault()} onkeydown={pickerKey}
+          onclick={click} {...tooltip}>
           <Icon svg={listThick} fixedWidth />
           {#if busy}<span class="spinner"><Icon svg={spinner} /></span>{/if}
         </button>

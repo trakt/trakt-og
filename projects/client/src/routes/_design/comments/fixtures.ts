@@ -95,6 +95,23 @@ export const spoiler = comment({
   ),
 });
 
+// A GIF from Klipy's public CDN, with the size the API stores for a GIF picked in og.
+const GIF = {
+  url: 'https://static.klipy.com/ii/35ccce3d852f7995dd2da910f2abd795/18/d6/LgYBe6mK.webp',
+  width: 0,
+  height: 0,
+};
+
+export const gifOnly = comment({ id: 108, likes: 3, user: member('gif_fan', 'GIF Fan'), comment: '', gif: GIF });
+
+export const gifWithText = comment({
+  id: 109,
+  likes: 1,
+  user: member('reaction_haver', 'Reaction Haver'),
+  comment: 'Me after the cold open:',
+  gif: GIF,
+});
+
 export const inline = comment({
   id: 104,
   likes: 8,

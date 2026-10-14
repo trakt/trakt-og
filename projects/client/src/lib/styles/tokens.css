@@ -1717,6 +1717,21 @@
   --comment-shade-height: 100px;
   --user-comments-padding: 20px; /* #user-comments, */
   --blur-spoiler: blur(8px);
+  --comment-gif-height: 200px; /* a GIF in a comment, its width from its own shape */
+  --radius-comment-gif: 4px;
+  --color-gif-on-image: #fff; /* a category's name and the composer's remove button sit on a GIF in both themes */
+  --composer-gif-height: 120px;
+  --composer-gif-margin: 0 10px 4px 12px; /* under the field, in line with the toolbar */
+  --composer-gif-remove-size: 24px;
+  --composer-gif-remove-inset: 4px;
+  --color-composer-gif-remove-bg: rgb(0 0 0 / 0.6);
+  --gif-picker-gap: 12px;
+  --gif-picker-tile-gap: 6px;
+  --gif-picker-results-height: min(60vh, 520px);
+  --gif-category-width: 112px;
+  --gif-category-height: 64px;
+  --gif-category-padding: 4px 8px;
+  --gif-category-text-shadow: 0 1px 4px rgb(0 0 0 / 0.9);
 
   /* Comment threads: the avatar column, the text bubble, the quiet actions and the rail replies hang off. */
   --comment-avatar-nested: 32px; /* replies, and the reply box on the rail */

@@ -18,6 +18,7 @@ import type { ViewerSettings } from '$lib/settings/ViewerSettings';
 import CommentComposer from './CommentComposer.svelte';
 import type { CommentItem } from './CommentItem';
 import { focusComment } from './focusComment.ts';
+import type { GifEntry } from './gif/GifEntry.ts';
 import { newComment } from './newComment.svelte.ts';
 import { postComment } from './postComment.ts';
 
@@ -47,8 +48,8 @@ $effect(() => {
 const withAvatar = (comment: CommentResponse): CommentResponse =>
   comment.user.images || !settings ? comment : { ...comment, user: { ...comment.user, images: settings.user.images } };
 
-const save = (text: string, spoiler: boolean) =>
-  postComment({ fetch: authenticatedFetch({ manager: userManager() }), item, comment: text, spoiler });
+const save = (text: string, spoiler: boolean, gif: GifEntry | null) =>
+  postComment({ fetch: authenticatedFetch({ manager: userManager() }), item, comment: text, spoiler, gif });
 
 // The focus goes back to the "Add comment" button that opened the form.
 function cancel() {
@@ -80,6 +81,7 @@ async function posted(comment: CommentResponse | null) {
         rules="5+ words, be respectful, mark spoilers."
         spoiler={false}
         confirmLeave
+        gifs={page.data.gifs}
         oncancel={cancel}
         {save}
         onsaved={posted}

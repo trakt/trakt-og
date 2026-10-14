@@ -36,13 +36,14 @@ afterAll(() => server.close());
 const request = (userAgent?: string) =>
   new Request('https://og.test/', { headers: userAgent ? { 'user-agent': userAgent } : {} });
 
-const layout = (token: string | null = 'fake-token', searchType?: string, userAgent?: string) =>
+const layout = (token: string | null = 'fake-token', searchType?: string, userAgent?: string, klipyKey?: string) =>
   load(
     {
       fetch: globalThis.fetch,
       locals: { token },
       cookies: { get: (name: string) => (name === 'search_type' ? searchType : undefined) },
       request: request(userAgent),
+      platform: { env: { KLIPY_API_KEY: klipyKey } },
     } as Parameters<typeof load>[0],
   );
 
@@ -85,6 +86,13 @@ describe('root layout settings', () => {
       phone: false,
     });
     expect(seen).toHaveLength(0);
+  });
+
+  it('should offer the GIF picker only where the Worker has a Klipy key', async () => {
+    const withKey = await layout('fake-token', undefined, undefined, 'secret');
+    const without = await layout();
+    expect('gifs' in withKey && withKey.gifs).toBe(true);
+    expect('gifs' in without && without.gifs).toBe(false);
   });
 
   it('should pass the search_type cookie to the header search', async () => {

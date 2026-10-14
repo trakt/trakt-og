@@ -3,6 +3,8 @@ import { z } from 'zod/v4';
 import { api } from '../../api/api.ts';
 import { contractSchema } from '../../api/contractSchema.ts';
 import type { CommentItem } from './CommentItem.ts';
+import type { GifEntry } from './gif/GifEntry.ts';
+import { toCommentGif } from './gif/toCommentGif.ts';
 
 type PostCommentParams = {
   /** `authenticatedFetch` in the browser. */
@@ -10,6 +12,7 @@ type PostCommentParams = {
   item: Pick<CommentItem, 'type' | 'id'>;
   comment: string;
   spoiler: boolean;
+  gif?: GifEntry | null;
 };
 
 export type PostCommentResult =
@@ -58,11 +61,13 @@ export async function commentWrite(
 
 /**
  * `POST /comments`. It skips the web form's English check but
- * keeps the 5-word minimum. No `sharing`: the X, Mastodon and Tumblr integrations are gone.
+ * keeps the 5-word minimum, unless there's a GIF: a GIF alone is a comment. No `sharing`: the X, Mastodon and Tumblr integrations are gone.
  */
-export function postComment({ fetch, item, comment, spoiler }: PostCommentParams): Promise<PostCommentResult> {
+export function postComment({ fetch, item, comment, spoiler, gif }: PostCommentParams): Promise<PostCommentResult> {
   return commentWrite(
-    api({ fetch }).comments.post({ body: { [item.type]: { ids: { trakt: item.id } }, comment, spoiler } }),
+    api({ fetch }).comments.post({
+      body: { [item.type]: { ids: { trakt: item.id } }, comment, spoiler, gif: toCommentGif(gif ?? null) },
+    }),
     201,
   );
 }

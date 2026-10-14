@@ -18,6 +18,8 @@ import {
   deleted,
   episode,
   formatting,
+  gifOnly,
+  gifWithText,
   inline,
   movie,
   reply,
@@ -108,7 +110,7 @@ $effect(() => {
         {#if newComment.visible}
           <CommentComposer label="Your comment" placeholder="Add a comment as OG Viewer..." submit="Post"
             posting="Posting your comment" avatar={PLACEHOLDER_AVATAR} rules="5+ words, be respectful, mark spoilers."
-            spoiler={false} confirmLeave oncancel={cancel} save={post} onsaved={posted} />
+            spoiler={false} confirmLeave gifs oncancel={cancel} save={post} onsaved={posted} />
         {/if}
       </div>
 
@@ -124,6 +126,12 @@ $effect(() => {
       <CommentCard comment={spoiler} item={episode} viewer={viewerFor(spoiler)} {client}
         dateOptions={page.data.datePreferences} featured wide />
       <CommentCard comment={inline} item={episode} viewer={viewerFor(inline)} {client}
+        dateOptions={page.data.datePreferences} wide />
+
+      <h2>GIFs: on their own, and under text</h2>
+      <CommentCard comment={gifOnly} item={episode} viewer={viewerFor(gifOnly)} {client}
+        dateOptions={page.data.datePreferences} wide />
+      <CommentCard comment={gifWithText} item={episode} viewer={viewerFor(gifWithText)} {client}
         dateOptions={page.data.datePreferences} wide />
 
       <h2>Staff, and a deleted member</h2>

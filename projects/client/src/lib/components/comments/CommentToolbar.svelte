@@ -1,13 +1,15 @@
 <!--
   The comment composer's formatting toolbar: bold, italic, strikethrough and highlight, then spoiler, list, quote and
-  code. Each button says what it does in a tooltip under it. It's one tab stop, and the arrow keys, Home and End move
-  along it. A mouse press keeps the focus and the selection in the textarea, so the composer can format what's picked.
+  code, and the GIF picker when `ongif` is set. Each button says what it does in a tooltip under it. It's one tab
+  stop, and the arrow keys, Home and End move along it. A mouse press keeps the focus and the selection in the
+  textarea, so the composer can format what's picked.
 -->
 <script lang="ts">
 import Icon from '$lib/icons/Icon.svelte';
 import bold from '$lib/icons/solid/bold.svg?raw';
 import code from '$lib/icons/solid/code.svg?raw';
 import eyeSlash from '$lib/icons/solid/eye-slash.svg?raw';
+import gif from '$lib/icons/solid/gif.svg?raw';
 import highlighter from '$lib/icons/solid/highlighter.svg?raw';
 import italic from '$lib/icons/solid/italic.svg?raw';
 import listUl from '$lib/icons/solid/list-ul.svg?raw';
@@ -16,9 +18,11 @@ import strikethrough from '$lib/icons/solid/strikethrough.svg?raw';
 import Tooltip from '../tooltip/Tooltip.svelte';
 import type { CommentFormat } from './formatSelection.ts';
 
-const { onformat }: { onformat: (format: CommentFormat) => void } = $props();
+type Tool = CommentFormat | 'gif';
 
-const groups: readonly (readonly { format: CommentFormat; label: string; svg: string }[])[] = [
+const { onformat, ongif }: { onformat: (format: CommentFormat) => void; ongif?: () => void } = $props();
+
+const groups: readonly (readonly { format: Tool; label: string; svg: string }[])[] = $derived([
   [
     { format: 'bold', label: 'Bold', svg: bold },
     { format: 'italic', label: 'Italic', svg: italic },
@@ -31,11 +35,12 @@ const groups: readonly (readonly { format: CommentFormat; label: string; svg: st
     { format: 'quote', label: 'Quote', svg: quoteLeft },
     { format: 'code', label: 'Code', svg: code },
   ],
-];
-const formats = groups.flat().map(({ format }) => format);
+  ...(ongif ? [[{ format: 'gif' as const, label: 'Add a GIF', svg: gif }]] : []),
+]);
+const formats = $derived(groups.flat().map(({ format }) => format));
 
 // The button the toolbar's tab stop is on.
-let current = $state<CommentFormat>('bold');
+let current = $state<Tool>('bold');
 
 const keys: Record<string, (index: number) => number> = {
   ArrowRight: (index) => (index + 1) % formats.length,
@@ -66,7 +71,7 @@ function move(event: KeyboardEvent & { currentTarget: HTMLElement }) {
             tabindex={format === current ? 0 : -1}
             onmousedown={(event) => event.preventDefault()}
             onfocus={() => (current = format)}
-            onclick={() => onformat(format)}
+            onclick={() => (format === 'gif' ? ongif?.() : onformat(format))}
             {...tooltip}
           >
             <Icon {svg} />

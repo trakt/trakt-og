@@ -46,6 +46,7 @@ import { blockedMembers } from './blockedMembers.svelte.ts';
 import { browserCommentsClient } from './browserCommentsClient.ts';
 import CommentAvatar from './CommentAvatar.svelte';
 import CommentCard from './CommentCard.svelte';
+import CommentGif from './CommentGif.svelte';
 import CommentComposer from './CommentComposer.svelte';
 import { commentDates } from './commentDates.ts';
 import { commentSettings } from './commentSettings.ts';
@@ -478,6 +479,7 @@ const vanish = (node: Element) =>
           onsaved={edited}
         />
       {:else}
+        {#snippet gif()}{#if comment.gif}<CommentGif gif={comment.gif} />{/if}{/snippet}
         <div class="bubble">
           {#if titles}
             <p class="item-title">{titles.item}</p>
@@ -496,13 +498,13 @@ const vanish = (node: Element) =>
                   {...tooltip}
                 >
                   <div class="blur" aria-hidden="true" inert>
-                    <ReadMore><CommentText {blocks} /></ReadMore>
+                    <ReadMore><CommentText {blocks} />{@render gif()}</ReadMore>
                   </div>
                 </div>
               {/snippet}
             </Tooltip>
           {:else}
-            <ReadMore><CommentText {blocks} onvideo={(id) => (video = id)} /></ReadMore>
+            <ReadMore><CommentText {blocks} onvideo={(id) => (video = id)} />{@render gif()}</ReadMore>
           {/if}
         </div>
       {/if}
@@ -594,7 +596,8 @@ const vanish = (node: Element) =>
             avatar={settings?.user.images.avatar.full ?? PLACEHOLDER_AVATAR}
             small
             oncancel={closeReply}
-            save={(text) => api().reply(threadId, text)}
+            gifs={page.data.gifs}
+            save={(text, _spoiler, gif) => api().reply(threadId, text, gif)}
             onsaved={replied}
           />
         {:else if read && canReply}

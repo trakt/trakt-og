@@ -16,7 +16,8 @@ const user = z.object({
 });
 
 /**
- * One comment as the comment card reads it, for routes whose rows `@trakt/api` doesn't type. The card never renders a GIF, so `gif` isn't read.
+ * One comment as the comment card reads it, for routes whose rows `@trakt/api` doesn't type. `gif` is a Klipy GIF,
+ * which can be the whole comment.
  */
 export const commentSchema = z.object({
   id: z.number(),
@@ -24,6 +25,7 @@ export const commentSchema = z.object({
   created_at: z.string(),
   updated_at: z.string(),
   comment: z.string(),
+  gif: z.object({ url: z.string(), width: z.number(), height: z.number() }).nullish(),
   spoiler: z.boolean(),
   review: z.boolean(),
   replies: z.number(),

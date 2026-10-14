@@ -89,6 +89,12 @@ describe('commentsClient', () => {
     expect(result).toMatchObject({ ok: true, comment: { id: 10, parent_id: 1 } });
   });
 
+  it('should post a reply with a GIF', async () => {
+    const full = { url: 'https://static.klipy.com/a.webp', width: 400, height: 300 };
+    await client().reply(1, '', { id: '7', slug: 'a', title: 'A', preview: full, full });
+    expect(sent).toEqual([{ comment: '', spoiler: false, gif: full }]);
+  });
+
   it('should save an edit, or return the server message', async () => {
     const body = { comment: 'now with a spoiler flag on', spoiler: true };
     expect(await client().edit(9, body)).toMatchObject({ ok: true, comment: { id: 9 } });

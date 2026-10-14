@@ -42,6 +42,13 @@ describe('postComment', () => {
     expect(result).toMatchObject({ ok: true, comment: { id: 9, spoiler: true } });
   });
 
+  it("should post a picked GIF's medium size, with no text needed", async () => {
+    const full = { url: 'https://static.klipy.com/a.webp', width: 400, height: 300 };
+    const gif = { id: '7', slug: 'a', title: 'A', preview: { ...full, width: 200 }, full };
+    await postComment({ fetch, item: episode, comment: '', spoiler: false, gif });
+    expect(seen).toEqual([{ episode: { ids: { trakt: 73482 } }, comment: '', spoiler: false, gif: full }]);
+  });
+
   it('should still count an off-contract 201 as posted', async () => {
     reply = () => HttpResponse.json({ id: 9 }, { status: 201 });
     expect(await postComment({ fetch, item: episode, comment: 'x', spoiler: false })).toEqual({

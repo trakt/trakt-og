@@ -1,42 +1,68 @@
-import { http, HttpResponse } from 'msw';
+import { http, HttpResponse, type JsonBodyType } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
-import { api } from '../api/api.ts';
-import { fetchFollowingCount } from './fetchFollowingCount.ts';
+import type { DashboardSettings } from './DashboardSettings.ts';
 import { fetchRecommendations } from './fetchRecommendations.ts';
 
 const BASE = 'https://apiz.trakt.tv';
-const now = new Date('2026-09-30T12:00:00Z');
+const now = new Date('2026-10-14T12:00:00Z');
 const seen: Request[] = [];
 const server = setupServer();
-const client = api({ fetch: (...args) => globalThis.fetch(...args), token: 'abc' });
+const settings: DashboardSettings['recommendations'] = {
+  type: 'media',
+  ignoreCollected: false,
+};
 
 const media = (id: number, title: string, released: string) => ({
   title,
   year: 2020,
   ids: { trakt: id, slug: `slug-${id}` },
+  overview: 'An overview.',
   rating: 8.1,
   runtime: 50,
+  certification: 'TV-MA',
+  genres: ['science-fiction', 'drama', 'mystery', 'thriller'],
+  network: 'HBO',
   first_aired: released,
   released: released.slice(0, 10),
   aired_episodes: 12,
-  // Every image type, as API sends them.
   images: {
     poster: [`media.trakt.tv/images/x/${id}/posters/medium/p.jpg.webp`],
-    fanart: [],
-    logo: [],
-    clearart: [],
-    banner: [],
-    thumb: [],
+    fanart: [`media.trakt.tv/images/x/${id}/fanarts/medium/f.jpg.webp`],
   },
-  favorited_by: [],
-  recommended_by: [],
+  colors: { poster: ['#112233', '#445566'] },
 });
 
-const recommend = (type: 'shows' | 'movies', rows: readonly ReturnType<typeof media>[]) =>
-  http.get(`${BASE}/recommendations/${type}`, ({ request }) => {
+const rows = [
+  {
+    show: media(1, 'Severance', '2022-02-18T00:00:00.000Z'),
+    score: '0.9',
+    sources: [
+      { id: 10, type: 'activity', stars: 9, show: media(5, 'Dark', '2017-12-01T00:00:00.000Z') },
+      { id: 11, type: 'favorite', stars: null, movie: media(6, 'Alien', '1979-05-25T00:00:00.000Z') },
+      {
+        id: 12,
+        type: 'subgenre',
+        stars: null,
+        show: media(5, 'Dark', '2017-12-01T00:00:00.000Z'),
+        subgenres: [{ id: 1, name: 'Mind-bender', slug: 'mind-bender' }, { id: 2, name: 'Mystery box', slug: 'mb' }],
+      },
+      {
+        id: 13,
+        type: 'subgenre',
+        stars: null,
+        movie: media(6, 'Alien', '1979-05-25T00:00:00.000Z'),
+        subgenres: [{ id: 1, name: 'Mind-bender', slug: 'mind-bender' }],
+      },
+    ],
+  },
+  { movie: media(3, 'Soon', '2027-01-01T00:00:00.000Z'), score: 0.5, sources: [] },
+];
+
+const respond = (path: string, body: JsonBodyType = rows) =>
+  http.get(`${BASE}${path}`, ({ request }) => {
     seen.push(request);
-    return HttpResponse.json(rows);
+    return HttpResponse.json(body);
   });
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
@@ -46,95 +72,92 @@ afterEach(() => {
 });
 afterAll(() => server.close());
 
-const load = (following: number | null = 2) =>
-  fetchRecommendations({ api: client, following: Promise.resolve(following), now, order: 'mdy' });
+const load = (overrides: Partial<DashboardSettings['recommendations']> = {}) =>
+  fetchRecommendations({
+    fetch: (...args) => globalThis.fetch(...args),
+    token: 'abc',
+    settings: { ...settings, ...overrides },
+    now,
+  });
 
 describe('fetchRecommendations', () => {
-  it("should ask for ten of each and map them to poster cards with the viewer's following count", async () => {
-    server.use(
-      recommend('shows', [media(1, 'Out', '2020-01-01T00:00:00.000Z'), media(2, 'Soon', '2027-01-01T00:00:00.000Z')]),
-      recommend('movies', [media(3, 'Film', '2020-01-01T00:00:00.000Z')]),
-    );
+  it('should load shows and movies together with their images, colors and sources', async () => {
+    server.use(respond('/media/recommendations'));
 
     const recs = await load();
     const url = new URL(seen.at(0)?.url ?? '');
 
-    expect(url.searchParams.get('limit')).toBe('10');
-    expect(url.searchParams.get('extended')).toBe('full,images');
+    expect(url.searchParams.get('extended')).toBe('full,images,colors');
+    expect(url.searchParams.get('limit')).toBe('50');
+    expect(url.searchParams.get('ignore_watched')).toBe('true');
+    expect(url.searchParams.get('hide_watching')).toBe('true');
+    expect(url.searchParams.get('ignore_watchlisted')).toBe('true');
+    expect(url.searchParams.has('ignore_collected')).toBe(false);
     expect(seen.at(0)?.headers.get('authorization')).toBe('Bearer abc');
-    expect(recs.following).toBe(2);
-    expect(recs.shows?.map(({ href, released }) => ({ href, released }))).toEqual([
-      { href: '/shows/slug-1', released: true },
-      { href: '/shows/slug-2', released: false },
+    expect(recs.type).toBe('media');
+    expect(recs.items?.map(({ type, href, released }) => ({ type, href, released }))).toEqual([
+      { type: 'show', href: '/shows/slug-1', released: true },
+      { type: 'movie', href: '/movies/slug-3', released: false },
     ]);
-    expect(recs.movies?.at(0)?.image).toBe('https://media.trakt.tv/images/x/3/posters/thumb/p.jpg.webp');
   });
 
-  it('should let one column fail without the other', async () => {
-    server.use(
-      http.get(`${BASE}/recommendations/shows`, () => new HttpResponse(null, { status: 500 })),
-      recommend('movies', []),
-    );
+  it('should map the spotlight details', async () => {
+    server.use(respond('/media/recommendations'));
 
-    expect(await load(null)).toEqual({ shows: null, movies: [], following: null });
-  });
-});
+    const item = (await load()).items?.at(0);
 
-describe('fetchFollowingCount', () => {
-  it("should read the viewer's network.following, or null when the stats fail", async () => {
-    server.use(
-      http.get(
-        `${BASE}/users/me/stats`,
-        () => HttpResponse.json({ network: { friends: 0, followers: 9, following: 4 } }),
-      ),
-    );
-    expect(await fetchFollowingCount({ api: client })).toBe(4);
-
-    server.use(http.get(`${BASE}/users/me/stats`, () => new HttpResponse(null, { status: 401 })));
-    expect(await fetchFollowingCount({ api: client })).toBeNull();
+    expect(item).toMatchObject({
+      path: '/shows/1',
+      genres: ['Science fiction', 'Drama', 'Mystery'],
+      network: 'HBO',
+      certification: 'TV-MA',
+      fanart: 'https://media.trakt.tv/images/x/1/fanarts/medium/f.jpg.webp',
+      colors: ['#112233', '#445566'],
+    });
   });
 
-  describe('with the ignore settings', () => {
-    const loadIgnoring = (ignore: { ignoreCollected: boolean; ignoreWatchlisted: boolean }) =>
-      fetchRecommendations({ api: client, following: Promise.resolve(1), now, order: 'mdy', ignore });
+  it('should group the sources as watched, loved and liked subgenres', async () => {
+    server.use(respond('/media/recommendations'));
 
-    it('should leave out watchlisted items natively', async () => {
-      server.use(recommend('shows', []), recommend('movies', []));
+    const why = (await load()).items?.at(0)?.why;
 
-      await loadIgnoring({ ignoreCollected: false, ignoreWatchlisted: true });
-      const url = new URL(seen.at(0)?.url ?? '');
+    expect(why?.titles.map(({ title, stars, watched, loved }) => ({ title, stars, watched, loved }))).toEqual([
+      { title: 'Dark', stars: 9, watched: true, loved: false },
+      { title: 'Alien', stars: undefined, watched: false, loved: true },
+    ]);
+    expect(why?.titles.at(1)?.href).toBe('/movies/slug-6');
+    expect(why?.likes).toEqual(['Mind-bender', 'Mystery box']);
+  });
 
-      expect(url.searchParams.get('ignore_watchlisted')).toBe('true');
-      expect(url.searchParams.has('hide_collected')).toBe(false);
-    });
+  it('should merge a title watched and loved into one, keeping the rating', async () => {
+    const sources = [
+      { id: 1, type: 'activity', stars: 10, show: media(7, 'Superstore', '2015-11-30T00:00:00.000Z') },
+      { id: 2, type: 'favorite', stars: null, show: media(7, 'Superstore', '2015-11-30T00:00:00.000Z') },
+    ];
+    server.use(respond('/media/recommendations', [{ ...rows[0], sources }]));
 
-    it("should leave out the library through API, and drop a row that doesn't parse", async () => {
-      const broken = { title: 'No ids' };
-      server.use(
-        http.get(`${BASE}/recommendations/shows`, ({ request }) => {
-          seen.push(request);
-          return HttpResponse.json([media(1, 'Kept', '2020-01-01T00:00:00.000Z'), broken]);
-        }),
-        recommend('movies', [media(3, 'Film', '2020-01-01T00:00:00.000Z')]),
-      );
+    const titles = (await load()).items?.at(0)?.why.titles;
 
-      const recs = await loadIgnoring({ ignoreCollected: true, ignoreWatchlisted: false });
-      const url = new URL(seen.at(0)?.url ?? '');
+    expect(titles?.map(({ title, stars, watched, loved }) => ({ title, stars, watched, loved }))).toEqual([
+      { title: 'Superstore', stars: 10, watched: true, loved: true },
+    ]);
+  });
 
-      expect(url.searchParams.get('hide_collected')).toBe('true');
-      expect(url.searchParams.get('ignore_collected')).toBe('true');
-      expect(url.searchParams.has('ignore_watchlisted')).toBe(false);
-      expect(recs.shows?.map(({ href }) => href)).toEqual(['/shows/slug-1']);
-      expect(recs.movies).toHaveLength(1);
-    });
+  it("should load one type from its own route with the viewer's library switch", async () => {
+    server.use(respond('/movies/recommendations', [rows[1]]));
 
-    it('should send neither by default', async () => {
-      server.use(recommend('shows', []), recommend('movies', []));
+    const recs = await load({ type: 'movie', ignoreCollected: true });
+    const url = new URL(seen.at(0)?.url ?? '');
 
-      await load();
-      const url = new URL(seen.at(0)?.url ?? '');
+    expect(url.searchParams.get('ignore_collected')).toBe('true');
+    expect(recs).toMatchObject({ type: 'movie', items: [{ title: 'Soon' }] });
+  });
 
-      expect([...url.searchParams.keys()].toSorted()).toEqual(['extended', 'limit']);
-    });
+  it('should come back without items when the request fails or the body is unreadable', async () => {
+    server.use(http.get(`${BASE}/shows/recommendations`, () => new HttpResponse(null, { status: 500 })));
+    expect(await load({ type: 'show' })).toEqual({ type: 'show', items: null });
+
+    server.use(respond('/shows/recommendations', { nope: true }));
+    expect(await load({ type: 'show' })).toEqual({ type: 'show', items: null });
   });
 });

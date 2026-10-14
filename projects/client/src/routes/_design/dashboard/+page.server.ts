@@ -39,7 +39,7 @@ export async function load({ fetch, locals, parent, cookies }) {
     settings,
     prefs: dashboardPrefs.read(cookies.get(dashboardPrefs.COOKIE), user.slug),
   });
-  // Both panels read it: the Social Feed skips its request at zero, and the recommendations name the count.
+  // The Social Feed skips its request at zero.
   const following = fetchFollowingCount({ api: client });
   // A hidden panel isn't fetched at all, and comes back null like a signed-out one.
   const { hidden } = dashboard;
@@ -78,13 +78,9 @@ export async function load({ fetch, locals, parent, cookies }) {
       hidden.socialFeed,
       () => fetchSocialFeed({ fetch, token: token, following, now, datePreferences }),
     ),
-    recommendations: unless(hidden.recommendations, () =>
-      fetchRecommendations({
-        api: client,
-        following,
-        now,
-        order: datePreferences.order,
-        ignore: dashboard.recommendations,
-      })),
+    recommendations: unless(
+      hidden.recommendations,
+      () => fetchRecommendations({ fetch, token, settings: dashboard.recommendations, now }),
+    ),
   };
 }

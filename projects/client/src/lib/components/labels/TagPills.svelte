@@ -2,7 +2,8 @@
   A row of small tag pills, like the header search's results: `primary` is the brand red (a result's type), `light` the
   pale one (its year), `badge` a bold clear pill with a brighter outline (a rating certificate), and the rest the dark outlined default (genres, a runtime).
     <TagPills tags={[{ text: 'Movie', kind: 'primary' }, { text: '2026', kind: 'light' }, { text: 'Drama' }]} />
-  A `lead` is bold before the text: `{ lead: '202.7K', text: 'shows' }`.
+  A `lead` is bold before the text: `{ lead: '202.7K', text: 'shows' }`. Related tags join into one pill split by thin
+  lines: `{ segments: ['50m', '24 episodes'] }`.
 -->
 <script lang="ts">
 import type { TagPill } from './TagPill.ts';
@@ -11,8 +12,11 @@ const { tags }: { tags: readonly TagPill[] } = $props();
 </script>
 
 <span class="tag-pills">
-  {#each tags as tag, i (`${i}:${tag.text}`)}<span class={['pill', tag.kind, { lead: tag.lead }]}
-    >{#if tag.lead}<b>{tag.lead}</b> {tag.text}{:else}{tag.text}{/if}</span>{/each}
+  {#each tags as tag, i (`${i}:${'segments' in tag ? tag.segments.join() : tag.text}`)}{#if 'segments' in tag}<span
+        class="pill segments"
+      >{#each tag.segments as segment, s (s)}<span class="segment">{segment}</span>{/each}</span>{:else}<span
+        class={['pill', tag.kind, { lead: tag.lead }]}
+      >{#if tag.lead}<b>{tag.lead}</b> {tag.text}{:else}{tag.text}{/if}</span>{/if}{/each}
 </span>
 
 <style>
@@ -40,6 +44,19 @@ const { tags }: { tags: readonly TagPill[] } = $props();
 
   & b {
     font-weight: var(--font-weight-headings-heavy);
+  }
+}
+
+.segments {
+  display: inline-flex;
+  padding: 0;
+}
+
+.segment {
+  padding: var(--search-pill-padding);
+
+  & + & {
+    box-shadow: inset 1px 0 0 var(--color-tag-pill-line);
   }
 }
 

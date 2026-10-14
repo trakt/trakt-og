@@ -654,15 +654,105 @@
   --font-size-social-pill: 11px;
 
   /* The dashboard's Show and Movie Recommendations: a dark band in both themes */
-  --color-recommendations-bg: var(--gray-darker);
+  /* The Social Feed's, the section above it, in either theme. The spotlight over its fanart stays dark. */
+  --color-recommendations-bg: var(--color-social-feed-bg);
   --color-recommendations-text: #fff;
-  --color-recommendations-hide: #aaa;
-  --color-recommendations-hide-hover: #fff;
-  --color-recommendations-no-data-bg: light-dark(#444, var(--color-no-data-bg));
-  --color-recommendations-no-data-text: light-dark(var(--gray-light), var(--color-no-data-text));
-  --space-recommendations-help: 10px; /* h3.help-text margin-bottom */
-  --space-recommendations-navigator: 8px; /* .page-navigator margin-top */
-  --font-size-recommendations-hide-icon: 0.875em; /* fa-sm */
+  /* The spotlight: the pick's fanart with its details and actions, and the six after it beside it. */
+  --recommendations-layout: minmax(0, 1.6fr) minmax(0, 1fr);
+  --recommendations-layout-tablet: minmax(0, 1.35fr) minmax(0, 1fr);
+  --recommendations-layout-gap: 20px;
+  --space-recommendations-body: 18px; /* between the heading and the spotlight */
+  --space-recommendations-links: 24px; /* More shows, More movies */
+  --recommendations-spotlight-min-height: 430px;
+  --recommendations-spotlight-padding: 22px 24px;
+  --recommendations-spotlight-gap: 10px;
+  --radius-recommendations-spotlight: var(--radius-lg);
+  --color-recommendations-spotlight-bg: #1c1c1c; /* under art that hasn't loaded */
+  --color-recommendations-placeholder: light-dark(#e2e2e2, #1c1c1c); /* posters before they load, and the loading boxes */
+  --color-recommendations-poster-focus: light-dark(#222, #fff);
+  /* The spotlight's tags, dark in both themes since they sit on art. */
+  --color-recommendations-tag-bg: rgb(255 255 255 / 0.1);
+  --color-recommendations-tag-line: rgb(255 255 255 / 0.12);
+  --color-recommendations-tag-text: rgb(255 255 255 / 0.85);
+  --color-recommendations-tag-badge-line: rgb(255 255 255 / 0.45);
+  --gradient-recommendations-spotlight: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--recommendations-tint, #000) 35%, rgb(0 0 0 / 0.95)),
+    rgb(0 0 0 / 0.6) 48%,
+    rgb(0 0 0 / 0) 78%
+  );
+  /* No fanart: the poster's two API colors instead. */
+  --gradient-recommendations-no-art: linear-gradient(
+    135deg,
+    var(--recommendations-tint, #333),
+    var(--recommendations-tint-2, #111)
+  );
+  --font-size-recommendations-title: 32px;
+  --line-height-recommendations-title: 1.05;
+  --recommendations-overview-width: 62ch;
+  --font-size-recommendations-year: 19px;
+  --font-size-recommendations-overview: 13px;
+  --line-height-recommendations-overview: 1.45;
+  --color-recommendations-overview: rgb(255 255 255 / 0.78);
+  --color-recommendations-faint: rgb(255 255 255 / 0.6);
+  --space-recommendations-controls: 14px; /* the counter and arrows over the fanart */
+  --recommendations-round: 34px; /* previous, next and hide */
+  --recommendations-side-columns: 3;
+  --recommendations-side-columns-tablet: 4; /* under the spotlight on a smaller tablet */
+  --space-recommendations-side: var(--gutter); /* the 20px every other poster grid uses */
+  --radius-recommendations-poster: 6px;
+  --transition-recommendations-art: 0.5s ease-out;
+  --transition-recommendations-body: 0.35s;
+  --recommendations-poster-ring: 2px;
+  --recommendations-poster-lift: -2px;
+  --transition-recommendations-poster: 0.2s;
+  --shadow-recommendations-spotlit: 0 0 0 2px var(--brand-primary), 0 0 18px rgb(237 28 36 / 0.55);
+  --color-recommendations-poster-empty: light-dark(rgb(0 0 0 / 0.04), rgb(255 255 255 / 0.03));
+  --font-size-recommendations-side-head: 12px;
+  --letter-spacing-recommendations-side-head: 0.1em;
+  --opacity-recommendations-stale: 0.5; /* the last list while the next type loads */
+  /* "Why this?": a solid panel above the button, its arrow pointing down at it. */
+  --why-panel-width: 380px;
+  --why-panel-padding: 14px 16px;
+  --why-list-padding: 8px;
+  --why-row-padding: 6px 8px;
+  --why-foot-padding: 10px 16px;
+  --why-likes-padding: 10px 16px 18px; /* You like and its pills, apart from the rows above and the footer */
+  --space-why-likes: 10px;
+  --why-header-poster: 44px;
+  --why-row-poster: 32px;
+  --why-close: 28px;
+  --why-arrow: 14px;
+  --why-arrow-offset: 12px; /* the gap the arrow sits in */
+  --why-stars-gap: 3px;
+  --why-chips-gap: 6px;
+  --space-why-row: 12px;
+  --radius-why-panel: 12px;
+  --color-why-panel-bg: light-dark(#fff, #181818); /* solid, so the arrow joins it seamlessly */
+  --color-why-border: light-dark(rgb(0 0 0 / 0.12), rgb(255 255 255 / 0.12));
+  --color-why-text: light-dark(#222, #fff);
+  --color-why-faint: light-dark(#777, rgb(255 255 255 / 0.6));
+  --color-why-button: #f5c451; /* the Why this? button, always on art */
+  --color-why-mark: light-dark(#a87400, #f5c451); /* the sparkle and eyebrow, darker gold on white */
+  --color-why-stars: light-dark(var(--brand-primary), #ff5a60); /* the brand red, lifted for text on dark */
+  --color-why-more-hover: light-dark(rgb(0 0 0 / 0.05), rgb(255 255 255 / 0.08));
+  --gradient-why-header: linear-gradient(to bottom, rgb(245 196 81 / 0.1), transparent);
+  --shadow-why-panel: 0 18px 48px light-dark(rgb(0 0 0 / 0.18), rgb(0 0 0 / 0.6));
+  --font-size-why-panel-title: 17px;
+  /* Labelled glass buttons: an action's color over dark glass, solid once it's done. */
+  --glass-action-height: 34px;
+  --glass-action-padding: 14px;
+  --glass-action-gap: 8px;
+  --glass-action-line: 60%; /* how much of the action's color the outline keeps */
+  --glass-action-tint: 22%;
+  --glass-action-tint-hover: 36%;
+  --color-glass-action-bg: rgb(10 10 10 / 0.8);
+  --color-glass-action-text: #fff;
+  --color-glass-action-black: #000; /* Watch Now */
+  --color-glass-action-black-line: rgb(255 255 255 / 0.22);
+  --color-glass-action-black-hover: #1a1a1a;
+  --font-size-glass-action: 13px;
+  --font-weight-glass-action: var(--font-weight-headings);
 
   /* Layout */
   --header-height: 65px;

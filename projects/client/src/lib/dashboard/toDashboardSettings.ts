@@ -20,7 +20,6 @@ const schema = z.object({
     watchnow: z.object({ favorites: z.array(z.string()).nullish().catch(null) }).nullish().catch(null),
     recommendations: z.object({
       ignore_collected: z.boolean().nullish().catch(null),
-      ignore_watchlisted: z.boolean().nullish().catch(null),
     }).nullish().catch(null),
   }).nullish().catch(null),
 });
@@ -71,8 +70,8 @@ export function toDashboardSettings(
       poster: prefs.upcoming_poster,
     },
     recommendations: {
+      type: prefs.recommendations_type,
       ignoreCollected: browsing?.recommendations?.ignore_collected === true,
-      ignoreWatchlisted: browsing?.recommendations?.ignore_watchlisted === true,
     },
     hidden: {
       upNext: prefs.hide_on_deck,

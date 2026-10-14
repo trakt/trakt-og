@@ -99,7 +99,7 @@ const rows = noteRowsSchema.parse([
     <PrivateNotes {item} {note} signedIn datePreferences={preferences} />
   </Container>
 </section>
-<NotesDialog bind:open bind:draft {item} onsave={() => open = false} />
+<NotesDialog bind:open bind:draft {item} privacy="public" onsave={() => open = false} />
 
 <style>
 .badge-example {

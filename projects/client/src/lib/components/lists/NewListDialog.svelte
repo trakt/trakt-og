@@ -1,21 +1,38 @@
+<!--
+  The list editor: adds a list or edits one (or the watchlist or favorites, without a name, privacy or collaborators).
+  An art header shows the list's first posters (a striped placeholder for a new list) under dark glass, with card
+  tags over the title; then name, description, a row of privacy, comments and rank numbers (read only for the
+  watchlist and favorites), the default sort with its direction, and collaborators; then Cancel and Save. Over the lists limit, Save is off and a notice says why.
+-->
 <script lang="ts">
 import Dialog from '$lib/components/dialog/Dialog.svelte';
+import DialogArtHeader from '$lib/components/dialog/DialogArtHeader.svelte';
+import DialogForm from '$lib/components/dialog/DialogForm.svelte';
+import FieldLabel from '$lib/components/dialog/FieldLabel.svelte';
 import MultiSelect from '$lib/components/filters/MultiSelect.svelte';
 import type { ListDraft } from '$lib/components/lists/ListDraft';
-import { listItemSorts } from '$lib/lists/listItemSorts';
+import ListSettingsRow from '$lib/components/lists/ListSettingsRow.svelte';
+import ListSortField from '$lib/components/lists/ListSortField.svelte';
+import type { CardTag } from '$lib/components/media/CardTag';
 import { traktUrls } from '$lib/traktUrls';
+
 interface Props {
   open: boolean;
   busy?: boolean;
   error?: string;
   max?: number;
-  avatar?: string;
   vip?: boolean;
   following: readonly { slug: string; name: string; avatar?: string }[];
   initial?: ListDraft;
   kind?: 'list' | 'watchlist' | 'favorites';
   editing?: boolean;
   title?: string;
+  /** The list's first posters, for the header. A new list gets the striped placeholder. */
+  posters?: readonly string[];
+  /** Items on the list, as a tag in the header. */
+  count?: number;
+  /** A list saved as Link: its private URL, for the Copy share link button. */
+  shareLink?: string;
   fieldErrors?: Readonly<Record<string, readonly string[]>>;
   followingError?: boolean;
   onsave: (draft: ListDraft) => void;
@@ -26,7 +43,6 @@ let {
   busy = false,
   error = '',
   max,
-  avatar,
   vip = false,
   following,
   followingError = false,
@@ -36,8 +52,12 @@ let {
   kind = 'list',
   editing = false,
   title,
+  posters = [],
+  count,
+  shareLink,
   fieldErrors = {},
 }: Props = $props();
+const id = $props.id();
 // svelte-ignore state_referenced_locally
 let draft = $state<ListDraft>(
   initial ? { ...initial, collaborators: [...initial.collaborators] } : {
@@ -51,203 +71,85 @@ let draft = $state<ListDraft>(
     collaborators: [],
   },
 );
-const heading = $derived(title ?? (editing ? `Update your ${kind}` : 'Add a list'));
-const visibleSorts = $derived(listItemSorts.filter((sort) => vip || !sort.vip));
-const groups = $derived(
-  ['main', 'site', 'votes', 'mine'].map((group) => ({
-    group,
-    sorts: visibleSorts.filter((sort) => sort.group === group),
-  })),
-);
+const UPDATE_TITLES = { list: 'Update List', watchlist: 'Update Watchlist', favorites: 'Update Favorites' } as const;
+const heading = $derived(title ?? (editing ? UPDATE_TITLES[kind] : 'Add a list'));
+const headerTags = $derived<readonly CardTag[]>([
+  ...(kind === 'favorites' ? [{ text: 'Favorites', kind: 'favorite' } as const] : []),
+  ...(kind === 'watchlist' ? [{ text: 'Watchlist', kind: 'list' } as const] : []),
+  ...(kind === 'list' && !editing ? [{ text: 'New list', kind: 'generic' } as const] : []),
+  ...(count !== undefined ? [{ text: `${count.toLocaleString('en-US')} ${count === 1 ? 'item' : 'items'}`, kind: 'generic' } as const] : []),
+]);
 const options = $derived([{
   options: following.map((user) => ({ value: user.slug, label: user.name, avatar: user.avatar })),
 }]);
 </script>
+
 <!-- VIP destination is an external Trakt account page. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-<Dialog bind:open title={heading} {avatar} {onclose}>
-  {#snippet header(id)}<h2 {id} class="heading">{heading}</h2>{/snippet}
-  <form onsubmit={(event) => { event.preventDefault(); if (!busy && max === undefined) onsave(draft); }} aria-busy={busy}>
+<Dialog bind:open title={heading} size="md" variant="art" {onclose}>
+  {#snippet header(titleId)}<DialogArtHeader id={titleId} title={heading} {posters} tags={headerTags} />{/snippet}
+  <DialogForm save={busy ? 'Saving…' : 'Save List'} {busy} disabled={max !== undefined || (kind === 'list' && !draft.name.trim())}
+    onsubmit={() => onsave(draft)} oncancel={() => (open = false)}>
     {#if max !== undefined}
-      <p role="alert">You've already created <strong>{max}</strong> lists.
+      <p class="limit" role="alert">You've already created <strong>{max}</strong> lists.
         {#if !vip}<a href={traktUrls.vip} target="_blank" rel="noopener">Upgrade to VIP</a> to create unlimited lists.{/if}
       </p>
-      {#if !vip}<a class="upgrade" href={traktUrls.vip} target="_blank" rel="noopener">Upgrade Now ➟</a>{/if}
     {/if}
     {#if error}<p class="error" role="alert">{error}</p>{/if}
     {#if kind === 'list'}
-    <input {@attach (input) => { if (fieldErrors.name?.length) input.focus(); }} aria-invalid={Boolean(fieldErrors.name)} aria-label="Name" placeholder="Name" required maxlength="255" bind:value={draft.name} disabled={busy} />
-    {#if fieldErrors.name}<p class="error" role="alert">{fieldErrors.name.join(' ')}</p>{/if}
+      <div>
+        <FieldLabel text="Name" for="{id}-name" />
+        <input id="{id}-name" {@attach (input) => { if (fieldErrors.name?.length) input.focus(); }} aria-invalid={Boolean(fieldErrors.name)}
+          required maxlength="255" bind:value={draft.name} disabled={busy} />
+        {#if fieldErrors.name}<p class="error" role="alert">{fieldErrors.name.join(' ')}</p>{/if}
+      </div>
     {/if}
     {#each Object.entries(fieldErrors).filter(([field]) => field !== 'name' && field !== 'collaborators') as [field, errors] (field)}<p class="error" role="alert">{field}: {errors.join(' ')}</p>{/each}
-    <textarea aria-invalid={Boolean(fieldErrors.description)} aria-label="Description" placeholder="Description" rows="4" bind:value={draft.description} disabled={busy}></textarea>
+    <div>
+      <FieldLabel text="Description" for="{id}-description" />
+      <textarea id="{id}-description" aria-invalid={Boolean(fieldErrors.description)} rows="3" bind:value={draft.description}
+        disabled={busy}></textarea>
+    </div>
+    <ListSettingsRow bind:privacy={draft.privacy} bind:allowComments={draft.allow_comments}
+      bind:displayNumbers={draft.display_numbers} readonly={kind !== 'list'} {shareLink} disabled={busy} />
+    <ListSortField bind:by={draft.sort_by} bind:how={draft.sort_how} {vip} disabled={busy} />
     {#if kind === 'list'}
-    <fieldset disabled={busy}><legend>Privacy {#if draft.privacy === 'link'}<span>Share link unavailable</span>{/if}</legend>
-      <div class="choices">{#each [['private', 'Private'], ['link', 'Link'], ['friends', 'Following'], ['public', 'Public']] as choice (choice[0])}
-        <label class:selected={draft.privacy === choice[0]}><input type="radio" name="privacy" value={choice[0]} bind:group={draft.privacy} />{choice[1]}</label>
-      {/each}</div>
-    </fieldset>
-    <div class="collaborators"><h3>Collaborators</h3>
-      <MultiSelect variant="list" bind:value={draft.collaborators} {options} label="Collaborators" placeholder="Choose users..." disabled={busy || followingError} />
-    </div>
-    {#if followingError}<p class="error" role="status">Couldn't load collaborators. Close and reopen to retry.</p>{/if}
-    {#if fieldErrors.collaborators}<p class="error" role="alert">{fieldErrors.collaborators.join(' ')}</p>{/if}
+      <div class="collaborators">
+        <FieldLabel text="Collaborators" id="{id}-collaborators" />
+        <MultiSelect variant="list" bind:value={draft.collaborators} {options} label="Collaborators" placeholder="Search people you follow..."
+          disabled={busy || followingError} />
+        {#if followingError}<p class="error" role="status">Couldn't load collaborators. Close and reopen to retry.</p>{/if}
+        {#if fieldErrors.collaborators}<p class="error" role="alert">{fieldErrors.collaborators.join(' ')}</p>{/if}
+      </div>
     {/if}
-    <div class="split">
-      <fieldset disabled={busy}><legend>Allow Comments</legend><div class="choices">
-        {#each [true, false] as value (value)}<label class:selected={draft.allow_comments === value}><input type="radio" name="comments" {value} bind:group={draft.allow_comments} />{value ? 'Yes' : 'No'}</label>{/each}
-      </div></fieldset>
-      <fieldset disabled={busy}><legend>Display Rank</legend><div class="choices">
-        {#each [true, false] as value (value)}<label class:selected={draft.display_numbers === value}><input type="radio" name="rank" {value} bind:group={draft.display_numbers} />{value ? 'Yes' : 'No'}</label>{/each}
-      </div></fieldset>
-    </div>
-    <label class="sorting">Default Sorting<div class="sort-fields">
-      <select aria-label="Default Sorting" bind:value={draft.sort_by} disabled={busy}>{#each groups as group (group.group)}<optgroup label={{ main: 'Default Sorting', site: 'Site Ratings', votes: 'Votes', mine: 'Your data' }[group.group]}>{#each group.sorts as sort (sort.by)}<option value={sort.by}>{sort.label}</option>{/each}</optgroup>{/each}</select>
-      <select aria-label="Sort direction" bind:value={draft.sort_how} disabled={busy}><option value="asc">↓</option><option value="desc">↑</option></select>
-    </div></label>
-    <button class="save" type="submit" disabled={busy || max !== undefined}>{busy ? 'Saving…' : 'Save List'}</button>
-  </form>
+  </DialogForm>
 </Dialog>
+
 <style>
-.heading {
-  margin: var(--list-modal-heading-top) 0 var(--list-form-gap);
-  text-align: center;
-  font: italic var(--list-form-size) / var(--line-height-headings) var(--font-serif);
-}
-form {
-  padding: 0 var(--space-dialog-wide-inline) var(--space-dialog-inline);
-}
-input:not([type='radio']),
-textarea {
-  display: block;
-  inline-size: 100%;
-  border-radius: 0;
-  padding: var(--space-sm-inline);
-  font-size: var(--list-form-size);
-}
-input:not([type='radio']) {
-  block-size: auto;
-  margin-block-end: calc(-1 * var(--list-border));
-}
-textarea {
-  resize: vertical;
-  min-block-size: var(--list-description-height);
-}
-fieldset {
-  margin: var(--list-form-gap) 0 0;
-  padding: 0;
-  border: 0;
-  min-inline-size: 0;
-}
-legend,
-.collaborators h3,
-.sorting {
-  display: block;
-  inline-size: 100%;
-  margin: 0;
-  padding: 0;
-  color: var(--color-list-choice);
-  font: var(--font-weight-headings) var(--list-row-size) / var(--line-height-headings) var(--font-headings);
-  text-transform: uppercase;
-}
-legend span {
-  float: right;
-  font-size: var(--font-size-small);
-  color: var(--brand-primary);
-  text-transform: none;
-}
-.choices {
-  display: flex;
-  margin-block-start: var(--space-xs-inline);
-}
-.choices label {
-  position: relative;
-  flex: 1 1 auto;
-  padding: var(--space-sm-block) var(--space-xs-inline);
-  background: var(--color-input-bg);
-  color: var(--color-text-muted);
-  text-align: center;
-  cursor: pointer;
-  font-size: var(--font-size-base);
-}
-.choices label:first-child {
-  border-start-start-radius: var(--radius-rating-popover);
-  border-end-start-radius: var(--radius-rating-popover);
-}
-.choices label:last-child {
-  border-start-end-radius: var(--radius-rating-popover);
-  border-end-end-radius: var(--radius-rating-popover);
-}
-.choices label.selected {
-  background: var(--color-list-choice);
-  color: var(--color-text-inverse);
-}
-.choices label:has(:focus-visible) {
-  outline: var(--list-border) solid var(--color-input-border-focus);
-  outline-offset: var(--list-border);
-}
-.choices input {
-  position: absolute;
-  opacity: 0;
-  inline-size: 100%;
-  block-size: 100%;
-  inset: 0;
-  cursor: pointer;
-}
-.collaborators,
-.sorting {
-  margin-block-start: var(--list-form-gap);
-}
 .collaborators :global(.multi-select) {
   display: block;
   inline-size: 100%;
-  min-block-size: var(--list-collaborators-height);
-  margin-block-start: var(--space-xs-inline);
-  text-transform: none;
 }
-.split {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-lg-inline);
+
+.limit {
+  margin: 0;
+  padding: var(--dialog-art-alert-padding);
+  border: 1px solid var(--color-dialog-art-alert-border);
+  border-radius: var(--radius-control);
+  background-color: var(--color-dialog-art-alert-bg);
+  color: var(--color-dialog-art-alert-text);
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-base);
+
+  & a {
+    color: inherit;
+    font-weight: var(--font-weight-headings-heavy);
+    text-decoration: underline;
+  }
 }
-.sort-fields {
-  display: flex;
-  gap: var(--space-panel);
-  margin-block-start: var(--space-xs-inline);
-}
-.sort-fields select {
-  flex: 1;
-  min-inline-size: 0;
-  block-size: var(--list-select-height);
-  min-block-size: var(--list-select-height);
-  padding: 0 var(--space-sm-inline);
-  border-radius: 0;
-  font: var(--font-size-base) var(--font-body);
-}
-.sort-fields select:last-child {
-  flex: 0 0 var(--list-sort-direction-width);
-}
-.save {
-  inline-size: 100%;
-  margin-block-start: var(--list-form-gap);
-  padding: var(--space-lg-block) var(--space-lg-inline);
-  border: var(--list-border) solid var(--brand-primary);
-  border-radius: var(--list-submit-radius);
-  background: var(--brand-primary);
-  color: var(--color-text-inverse);
-  font: var(--font-weight-headings-heavy) var(--font-size-dialog-submit) / var(--line-height-base) var(--font-headings);
-  text-transform: uppercase;
-}
-.upgrade {
-  display: block;
-  text-align: center;
-  margin-block-end: var(--list-form-gap);
-}
-input[aria-invalid="true"],
-textarea[aria-invalid="true"] {
-  border-color: var(--brand-danger);
-}
+
 .error {
+  margin: var(--dialog-art-label-gap) 0 0;
   color: var(--brand-danger);
   font-size: var(--font-size-small);
 }

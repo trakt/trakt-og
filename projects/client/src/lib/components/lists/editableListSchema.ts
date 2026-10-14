@@ -5,6 +5,8 @@ export const editableListSchema = z.object({
   name: z.string(),
   description: z.string().nullish(),
   privacy: z.string(),
+  /** The private URL a Link list is shared by. */
+  share_link: z.string().nullish(),
   allow_comments: z.boolean(),
   display_numbers: z.boolean(),
   sort_by: z.string().nullish(),

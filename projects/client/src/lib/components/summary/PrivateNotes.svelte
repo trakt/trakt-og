@@ -92,7 +92,7 @@ async function save(text: string) {
 {/if}
 
 {#if signedIn}
-  <NotesDialog bind:open bind:draft {item} onsave={save} />
+  <NotesDialog bind:open bind:draft {item} privacy="private" onsave={save} />
 {/if}
 
 <style>

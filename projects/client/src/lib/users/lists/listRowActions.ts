@@ -15,7 +15,7 @@ type ListRowActionsParams = {
 /**
  * Which icons a list row shows the viewer: the report flag when signed in, the owner's
  * edit and (personal lists only) delete, a collaborator's "Stop collaborating", progress (not on official lists), and
- * share. Report and leave are wired; edit and delete remain unimplemented.
+ * share. The lists page wires the clicks: edit opens the list editor, or the watchlist or favorites editor on theirs.
  * The watchlist and favorites resolve their numeric list id from their comments on click.
  */
 export function listRowActions({ row, viewer, isCollaborator, origin }: ListRowActionsParams): ListRowActions {

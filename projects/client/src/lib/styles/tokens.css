@@ -287,25 +287,31 @@
   --color-list-pill-link: var(--brand-secondary);
   --color-list-pill-collaborators: var(--brand-seventh);
   --color-list-pill-collaborators-count: #b64903; /* darken(#e85d04, 10%) */
+  --list-pill-count-padding: 0 5px 0 4px; /* the collaborators count, flush with its pill's height; a hair more after the digit */
+  --list-pill-count-gap: 4px;
   --color-list-edit: var(--color-action-edit);
   --color-list-delete: var(--color-action-delete);
   --color-list-progress: light-dark(#555, #eee);
-  --font-size-list-row-action: 20px;
+  --font-size-list-row-action: var(--font-size-stat-icon); /* the row's action icons, level with its count icons */
   --font-size-list-row-leave: 15px;
   --list-row-action-gap: 15px;
   --color-list-add: #38a038; /* #btn-list-add */
   --color-list-reorder: light-dark(#333, #eee);
 
-  /* Lists index reorder controls (OG's poster edit overlay). */
-  --color-list-reorder-overlay: rgb(0 0 0 / 0.7);
-  --list-reorder-gap: 12px;
-  --font-size-list-reorder: 15px;
-  --font-size-list-reorder-drag: 18px;
+  /* Lists index reorder controls: the rank pill (the icons share manage mode's glass strip). */
   --list-reorder-rank-offset: -11px;
   --list-reorder-rank-size: 22px;
   --list-reorder-rank-radius: 11px;
   --list-reorder-rank-border: 2px;
-  --list-reorder-rank-scale: 1.3;
+  /* Editing a rank: a wider, taller dark field with one red ring, still centred on the poster's top edge. */
+  --list-reorder-rank-edit-size: 30px;
+  --list-reorder-rank-edit-width: 48px;
+  --list-reorder-rank-edit-offset: -15px;
+  --list-reorder-rank-edit-radius: 15px;
+  --font-size-list-reorder-rank-edit: 14px;
+  --color-list-reorder-rank-edit-bg: #111;
+  --shadow-list-reorder-rank-edit: 0 0 0 3px rgb(237 28 36 / 0.35); /* --brand-primary, soft */
+  --transition-rank-edit: 0.15s ease;
   --list-reorder-scroll-offset: 50px;
   --list-reorder-drag-opacity: 0.5;
 
@@ -314,10 +320,28 @@
   --space-list-manage-actions: 8px;
   --color-list-manage-button-border: rgb(255 255 255 / 0.45); /* outline buttons on the blue band */
   --color-list-manage-button-hover: rgb(255 255 255 / 0.15);
+  /* A mode button that's on (Manage on a list, Reorder on the lists page): the pill tabs' picked red wash. */
+  --color-mode-on-bg: var(--color-tab-picked-bg);
+  --color-mode-on-bg-hover: var(--color-tab-picked-bg-hover);
+  --color-mode-on-border: var(--color-tab-picked-border);
+  --color-mode-on-text: var(--color-tab-picked-text);
+  --color-list-manage-divider: rgb(255 255 255 / 0.3); /* between the band's groups: ranks, copy and move, delete */
+  --list-manage-divider-height: 24px;
+  --color-list-manage-delete: var(--brand-primary);
+  --color-list-manage-delete-hover: var(--brand-primary-darken);
   --font-size-list-manage: 16px;
-  --gradient-list-edit: linear-gradient(rgb(0 0 0 / 0) 25%, rgb(0 0 0 / 0.9) 100%);
-  --list-edit-icons-bottom: 15px;
-  --font-size-list-edit-notes: 16px;
+  /* The poster's manage icons: one glass strip across the bottom, the notes sheet's glass. */
+  --list-edit-bar-height: 36px;
+  --list-edit-bar-padding: 4px;
+  --list-edit-button-size: 28px;
+  --list-edit-centered-gap: 8px; /* between the icons on a wide lists-page tile */
+  --font-size-list-edit: 14px;
+  --color-list-edit-bar: var(--color-read-notes-sheet);
+  --blur-list-edit-bar: var(--blur-read-notes-sheet);
+  --color-list-edit-button-hover: rgb(255 255 255 / 0.14);
+  --color-list-edit-notes: #ff5a60; /* --brand-primary, lifted for an icon on dark glass: the item has notes */
+  --color-list-edit-delete-hover: #ff5a60;
+  --opacity-list-edit-disabled: 0.35; /* Move first on the first item, Move last on the last */
   --opacity-list-manage-quick-icons: 0.5; /* #sortable-grid.sortable .quick-icons > div */
 
   --list-tools-gap: 10px;
@@ -333,8 +357,35 @@
   --font-size-list-stat-under: 11px;
   --color-list-stat-under: #666;
   --list-stat-under-offset: -15px;
-  --color-read-notes-shade: rgb(0 0 0 / 0.7); /* .list-read-notes gradient's end */
+  /* A list poster's notes: a glass pill centred over the bottom (the profile pills' glass), and a glass sheet that slides
+     up the poster with the notes. Notes taller than the poster scroll, the bottom edge fading until the end. */
+  --read-notes-pill-bottom: 10px;
+  --read-notes-pill-height: 28px;
+  --read-notes-pill-padding: 12px;
+  --read-notes-pill-gap: 6px;
+  --radius-read-notes-pill: 14px;
+  --font-size-read-notes-pill: 12px;
+  --letter-spacing-read-notes-pill: 0.06em;
+  --blur-read-notes-pill: var(--blur-profile-pill);
+  --color-read-notes-pill-bg: var(--color-profile-pill-bg);
+  --color-read-notes-pill-text: var(--color-profile-pill-text);
+  --color-read-notes-pill-icon: var(--color-profile-pill-icon);
+  --color-read-notes-pill-hover: rgb(18 18 18 / 0.75);
+  --color-read-notes-border: var(--color-profile-pill-border);
+  --read-notes-sheet-padding: 12px;
+  --read-notes-edit-size: 26px; /* the editors' pencil in the sheet's corner */
+  --read-notes-edit-margin: 0 0 4px 8px; /* inside the note's scroll box, which clips anything past its edge */
+  --font-size-read-notes-edit: 12px;
+  --blur-read-notes-sheet: var(--blur-header-glass);
+  --color-read-notes-sheet: rgb(14 14 14 / 0.66);
+  --color-read-notes-text: #fff;
+  --shadow-read-notes-text: 0 1px 2px rgb(0 0 0 / 0.5); /* keeps the text clear of bright art behind the glass */
   --font-size-read-notes: 13px;
+  --line-height-read-notes: 1.45;
+  --read-notes-paragraph-gap: 0.6em;
+  --mask-read-notes-fade: linear-gradient(to bottom, #000 calc(100% - 34px), transparent);
+  --color-read-notes-scrollbar: rgb(255 255 255 / 0.3);
+  --transition-read-notes: 0.26s ease;
   --font-size-vip-sort: 12px; /* .dropdown-menu a.vip-only */
   --vip-sort-padding-block: 7px;
   --fanart-header-height: 500px;
@@ -719,6 +770,62 @@
   --notes-textarea-padding: 10px 30px 10px 10px; /* room for the counter, like OG's emoji button */
   --font-size-dialog-submit: 16px; /* .checkin-modal .btn-primary */
   --font-size-dialog-title: 13px;
+  /* Art dialogs (notes, the list editor): an art header under dark glass with card tags and the title, a glass close,
+     the toolbar's outlined fields, red-wash choice chips and a footer bar with the save shortcut, Cancel and Save. */
+  --dialog-width-art-notes: 480px;
+  --dialog-width-art-list: 540px;
+  --color-dialog-art-border: light-dark(rgb(0 0 0 / 0.08), rgb(255 255 255 / 0.08));
+  --dialog-art-header-min-height: 132px;
+  --dialog-art-header-padding: 20px 22px 18px;
+  --dialog-art-header-gap: 6px;
+  --gradient-dialog-art-shade: linear-gradient(to bottom, rgb(14 14 14 / 0.35), rgb(14 14 14 / 0.92));
+  --gradient-dialog-art-empty: repeating-linear-gradient(135deg, #1f1f1f 0 14px, #1a1a1a 14px 28px); /* a new list */
+  --dialog-art-tags-gap: 5px;
+  --font-size-dialog-art-title: 24px;
+  --line-height-dialog-art-title: 1.15;
+  --color-dialog-art-year: rgb(255 255 255 / 0.55);
+  --dialog-art-close-size: 34px;
+  --dialog-art-close-offset: 14px;
+  --font-size-dialog-art-close: 12px;
+  --dialog-art-inline: 22px;
+  --dialog-art-body-top: 20px;
+  --dialog-art-gap: 18px; /* between fields */
+  --dialog-art-columns-gap: 16px;
+  --dialog-art-footer-padding: 14px 22px;
+  --dialog-art-footer-gap: 10px;
+  --color-dialog-art-footer-bg: light-dark(#ececef, #181818);
+  --dialog-art-label-gap: 7px;
+  --font-size-dialog-art-label: 11.5px;
+  --letter-spacing-dialog-art-label: 0.07em;
+  --color-dialog-art-label: light-dark(#666, #aaa);
+  --dialog-art-field-padding: 10px 12px;
+  --font-size-dialog-art-field: 15px;
+  --shadow-dialog-art-field-focus: 0 0 0 3px rgb(102 175 233 / 0.2); /* --color-input-border-focus, soft */
+  --color-dialog-art-placeholder: light-dark(#999, #777);
+  --dialog-art-button-height: 40px;
+  --dialog-art-button-padding: 0 18px;
+  --font-size-dialog-art-button: 14.5px;
+  --color-dialog-art-button-hover: light-dark(rgb(0 0 0 / 0.04), rgb(255 255 255 / 0.04));
+  --dialog-art-meter-gap: 10px;
+  --dialog-art-meter-height: 3px;
+  --color-dialog-art-meter-track: light-dark(#ddd, #2c2c2c);
+  --color-dialog-art-meter-ok: var(--brand-success);
+  --color-dialog-art-meter-warn: var(--brand-warning);
+  --color-dialog-art-meter-full: light-dark(var(--brand-primary), #ff5a60);
+  --font-size-dialog-art-meter: 12px;
+  --dialog-art-kbd-gap: 4px;
+  --dialog-art-kbd-padding: 1px 5px;
+  --color-dialog-art-kbd-border: light-dark(#ccc, #3a3a3a);
+  --color-dialog-art-hint: light-dark(#777, #888);
+  --font-size-dialog-art-hint: 12px;
+  --font-size-dialog-art-kbd: 11px;
+  --color-dialog-art-alert-border: rgb(240 173 78 / 0.45); /* --brand-warning */
+  --color-dialog-art-alert-bg: rgb(240 173 78 / 0.1);
+  --color-dialog-art-alert-text: light-dark(#8a5a00, #ffd27a);
+  --dialog-art-alert-padding: 10px 12px;
+  --dialog-art-chip-gap: 6px;
+  --font-size-dialog-art-chip-icon: 13px;
+  --color-dialog-art-media-tag: var(--brand-fifth); /* the item type's card tag (Movie, Show) over the art */
   --space-panel: 15px; /* $modal-inner-padding, toast padding */
   --space-dialog-inline: 25px;
   --blur-dialog-backdrop: blur(8px); /* .modal-backdrop .image, the item's fanart behind the check-in modal */
@@ -1640,7 +1747,6 @@
   --font-size-comment-tool: 15px;
   --radius-comment-tool: 6px;
   --comment-tools-gap: 2px;
-  --opacity-comment-tools-idle: 0.35; /* the manage icons, until the card is hovered or focused */
   --transition-comment-quiet: 0.15s;
   --transition-comment-fade: 0.5s; /* a blocked or parent card opening */
   --comment-bubble-gap: 6px; /* above the bubble */
@@ -1781,6 +1887,9 @@
   --history-icon-gap: var(--space-tools);
   --history-pagination-end: 6px;
   --dropdown-limit-10-height: 250px; /* .dropdown-menu.limit-10: ten rows */
+  --line-height-dropdown-value: 1.3; /* a full-width trigger's value, tall enough for descenders */
+  --list-sort-hint-gap: 8px;
+  --list-sort-hint-padding: 3px 8px;
   --font-size-date-range-title: 11px;
   --color-date-range-title: light-dark(#666, #aaa);
   --font-size-date-range-button: 20px;
@@ -1859,6 +1968,14 @@
 
   /* List editor collaborator candidates. */
   --list-candidate-avatar: 24px;
+  --list-collaborators-padding: 5px; /* around the chips, in the art dialog's field */
+  --list-collaborators-input-min: 120px;
+  --list-collaborator-chip-height: 30px;
+  --list-collaborator-chip-padding: 0 4px 0 12px;
+  --list-collaborator-chip-gap: 6px;
+  --list-collaborator-remove-size: 22px;
+  --list-collaborator-chip-avatar: 24px;
+  --list-collaborator-chip-avatar-inset: 3px; /* the avatar sits close to the chip's round end */
   --color-list-candidate-chip: light-dark(#ddd, #444);
   --list-sort-direction-width: 50px;
   --list-avatar-size: 110px;

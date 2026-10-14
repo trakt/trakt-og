@@ -19,7 +19,7 @@ import userXmark from '$lib/icons/regular/user-xmark.svg?raw';
 import barsProgress from '$lib/icons/regular/bars-progress.svg?raw';
 import comment from '$lib/icons/regular/comment.svg?raw';
 import ManageConfirm from '$lib/components/comments/ManageConfirm.svelte';
-import deleteIcon from '$lib/icons/regular/trash-can.svg?raw';
+import deleteIcon from '$lib/icons/regular/trash-xmark.svg?raw';
 import document from '$lib/icons/regular/file.svg?raw';
 import flag from '$lib/icons/regular/flag.svg?raw';
 import pencil from '$lib/icons/regular/pen.svg?raw';
@@ -186,7 +186,7 @@ const plural = (count: number, word: string) => `${word}${count === 1 ? '' : 's'
               {/snippet}
             </Tooltip>
           {/if}
-          {#if actions.shareUrl}<span class="share"><ShareButton url={actions.shareUrl} title={name} /></span>{/if}
+          {#if actions.shareUrl}<span class="share"><ShareButton url={actions.shareUrl} title={name} large={false} /></span>{/if}
         {/if}
         <span class="count">{@render count('Items', document, itemCount, 'item')}</span>
         {#if likeCount !== undefined}
@@ -357,14 +357,19 @@ h3 {
 }
 
 .collaborators {
+  display: inline-flex;
+  align-items: center;
   background-color: var(--color-list-pill-collaborators);
 }
 
 /* The count at the pill's start, a shade darker. */
 .pill-title {
-  display: inline-block;
-  margin: 0 4px 0 -4px;
-  padding: 2px 4px 1px;
+  display: inline-flex;
+  align-items: center;
+  align-self: stretch;
+  /* Flush with the pill's edges: through its 1px block padding and its 4px start padding. */
+  margin: -1px var(--list-pill-count-gap) -1px -4px;
+  padding: var(--list-pill-count-padding);
   border-radius: 2px 0 0 2px;
   background-color: var(--color-list-pill-collaborators-count);
 }
@@ -380,15 +385,29 @@ h3 {
   white-space: nowrap;
 }
 
-.action {
+/* Each icon in a rounded box that fills on hover, like a comment's or a note's. The box overhangs the icon, so the
+   row keeps its spacing. */
+.action,
+.delete :global(.confirm > button),
+.share :global(button) {
+  display: inline-grid;
+  place-items: center;
+  inline-size: var(--comment-tool-size);
+  block-size: var(--comment-tool-size);
   min-block-size: 0;
+  margin-inline: calc((var(--comment-tool-size) - 1em) / -2);
   padding: 0;
   border: 0;
+  border-radius: var(--radius-comment-tool);
   background: none;
   color: inherit;
   font-size: var(--font-size-list-row-action);
   line-height: 1;
-  transition: opacity 0.5s;
+  transition: opacity 0.5s, background-color var(--transition-comment-quiet);
+
+  &:hover:not([aria-disabled='true']) {
+    background-color: var(--color-comment-chip);
+  }
 
   &[aria-disabled='true'] {
     cursor: default;
@@ -428,6 +447,7 @@ h3 {
 
 .share {
   color: var(--color-action-share);
+  font-size: var(--font-size-list-row-action);
 }
 
 /* A stat: the icon in blue, the number in white, the word for screen readers. */

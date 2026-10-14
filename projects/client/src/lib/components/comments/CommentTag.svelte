@@ -32,6 +32,9 @@ const { svg, tone, children }: Props = $props();
   font-size: var(--font-size-comment-tag);
   font-weight: var(--font-weight-headings);
   line-height: 1;
+  /* Its own case and spacing, even inside an uppercase label (the notes dialog's privacy tag). */
+  letter-spacing: normal;
+  text-transform: none;
   white-space: nowrap;
 
   &:is(.spoiler, .history, .collection, .rating, .media) {

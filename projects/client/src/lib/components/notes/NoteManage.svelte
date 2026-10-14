@@ -4,7 +4,7 @@ import ManageConfirm from '$lib/components/comments/ManageConfirm.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import pencil from '$lib/icons/regular/pen.svg?raw';
-import deleteIcon from '$lib/icons/regular/trash-can.svg?raw';
+import deleteIcon from '$lib/icons/regular/trash-xmark.svg?raw';
 
 const { onedit, ondelete, busy = false }: {
   onedit: () => void;
@@ -14,13 +14,13 @@ const { onedit, ondelete, busy = false }: {
 </script>
 
 <div class="note-manage">
-  <Tooltip text="Edit" placement="bottom">
+  <Tooltip text="Edit">
     {#snippet trigger(tooltip)}
       <button type="button" class="edit" aria-label="Edit" aria-disabled={busy || undefined}
         onclick={() => { if (!busy) onedit(); }} {...tooltip}><Icon svg={pencil} /></button>
     {/snippet}
   </Tooltip>
-  <ManageConfirm name="delete" svg={deleteIcon} label="Delete" yes="Yes, delete it!" {busy} placement="bottom"
+  <ManageConfirm name="delete" svg={deleteIcon} label="Delete" yes="Yes, delete it!" {busy}
     onconfirm={ondelete}>
     Delete your note?
   </ManageConfirm>
@@ -51,8 +51,16 @@ const { onedit, ondelete, busy = false }: {
 
   &:hover {
     background-color: var(--color-comment-chip);
-    color: var(--color-text);
   }
+}
+
+/* Edit and delete carry their colors, like a comment's. */
+.edit {
+  color: var(--color-comment-edit);
+}
+
+.note-manage :global(.confirm.delete > button) {
+  color: var(--color-comment-delete);
 }
 
 @media (prefers-reduced-motion: reduce) {

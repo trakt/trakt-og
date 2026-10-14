@@ -3,7 +3,7 @@
   the name, the member badge and the note's tags, the date, and the text in a soft bubble with read more and spoiler blur.
   The tags say what the note is attached to (history, library or rating), the item type, the privacy and spoilers, each
   in its own colour with an icon. Under the bubble, the watch, collect or rate date in the attachment's colour. The
-  manage icons at the end of the name row stay faint until the card is hovered or focused.
+  manage icons at the end of the name row show edit and delete in their colors, like a comment's.
 -->
 <script lang="ts">
 import type { Snippet } from 'svelte';
@@ -11,16 +11,14 @@ import CommentAvatar from '$lib/components/comments/CommentAvatar.svelte';
 import CommentTag from '$lib/components/comments/CommentTag.svelte';
 import VipLabel from '$lib/components/labels/VipLabel.svelte';
 import NoteText from '$lib/components/notes/NoteText.svelte';
+import PrivacyTag from '$lib/components/notes/PrivacyTag.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import cameraMovie from '$lib/icons/regular/camera-movie.svg?raw';
 import tvRetro from '$lib/icons/regular/tv-retro.svg?raw';
 import eyeSlash from '$lib/icons/solid/eye-slash.svg?raw';
-import globe from '$lib/icons/solid/globe.svg?raw';
 import heart from '$lib/icons/solid/heart.svg?raw';
-import lockKeyhole from '$lib/icons/solid/lock-keyhole.svg?raw';
 import check from '$lib/icons/trakt/check-thick.svg?raw';
 import collection from '$lib/icons/trakt/collection-thick.svg?raw';
-import friends from '$lib/icons/trakt/friends-thick.svg?raw';
 import user from '$lib/icons/trakt/user.svg?raw';
 import type { NoteView } from '$lib/users/notes/NoteView';
 
@@ -28,11 +26,6 @@ const { note, manage }: { note: NoteView; manage?: Snippet } = $props();
 
 const activityIcons = { history: check, collection, rating: heart };
 const mediaIcons = { movie: cameraMovie, show: tvRetro, season: tvRetro, episode: tvRetro, person: user };
-const privacy = {
-  private: { svg: lockKeyhole, label: 'Private' },
-  friends: { svg: friends, label: 'Friends' },
-  public: { svg: globe, label: 'Public' },
-};
 const mediaLabel = $derived(note.item.type.charAt(0).toUpperCase() + note.item.type.slice(1));
 // "Watched Sep 19, 2025 6:39 PM", "Collected ...", "Rated 9 · ...".
 const activityText = $derived.by(() => {
@@ -73,7 +66,7 @@ const activityText = $derived.by(() => {
           <CommentTag svg={activityIcons[note.activity.type]} tone={note.activity.type}>{note.activity.label}</CommentTag>
         {/if}
         <CommentTag svg={mediaIcons[note.item.type]} tone="media">{mediaLabel}</CommentTag>
-        <CommentTag svg={privacy[note.privacy].svg}>{privacy[note.privacy].label}</CommentTag>
+        <PrivacyTag privacy={note.privacy} />
         {#if note.spoiler}<CommentTag svg={eyeSlash} tone="spoiler">Spoilers</CommentTag>{/if}
       </p>
       <p class="when"><time datetime={note.updatedAt}>{note.updatedDate}</time></p>
@@ -148,22 +141,12 @@ const activityText = $derived.by(() => {
   font-size: var(--font-size-comment-meta);
 }
 
-/* Faint until the card is hovered or has the focus. Touch screens always show them. */
+/* The manage icons at the end of the name's line, in their colors like a comment's. */
 .tools {
   display: flex;
   grid-area: 1 / 2;
   align-self: center;
   margin-block: var(--comment-tools-overhang);
-  opacity: var(--opacity-comment-tools-idle);
-  transition: opacity var(--transition-comment-quiet);
-
-  @media (hover: none) {
-    opacity: 1;
-  }
-}
-
-.note-card:is(:hover, :focus-within) .tools {
-  opacity: 1;
 }
 
 .bubble {

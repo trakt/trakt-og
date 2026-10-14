@@ -2,18 +2,21 @@
   The dashboard's Recently Watched panel: the viewer's last nine plays as
   fanart cards, one row of three at first, with the less and more pill for up to three. Pass the unawaited
   `fetchRecentlyWatched` promise from the loader, so the page streams in and this panel spins until it lands, and
-  fails on its own if it doesn't.
+  fails on its own if it doesn't. A check-in still running reads as live, like the Social Feed's watching-now cards.
 -->
 <script lang="ts">
 import type { Snippet } from 'svelte';
 import { browser } from '$app/environment';
 import NoData from '$lib/components/empty/NoData.svelte';
 import FanartCard from '$lib/components/media/FanartCard.svelte';
+import UnderProgress from '$lib/components/media/UnderProgress.svelte';
+import Countdown from '$lib/components/status/Countdown.svelte';
 import PosterGrid from '$lib/components/media/PosterGrid.svelte';
 import { quickIconFill } from '$lib/components/media/quickIconFill';
 import PageNavigator from '$lib/components/page-navigator/PageNavigator.svelte';
 import { rowCount } from '$lib/dashboard/rowCount';
 import { savedRows } from '$lib/dashboard/savedRows';
+import { toCheckin } from '$lib/dashboard/toCheckin';
 import type { RecentPlay } from '$lib/dashboard/toRecentPlay';
 import clockRotateLeft from '$lib/icons/regular/clock-rotate-left.svg?raw';
 import { overlay } from '$lib/overlay/overlay';
@@ -33,9 +36,17 @@ interface Props {
 const { plays, username, isVip, datePreferences }: Props = $props();
 
 const PER_ROW = 3;
+const CLOCK_MS = 30_000;
 const storageKey = $derived(`recently_watched:${username}`);
 // The cards only render in the browser, once the streamed promise lands, so SSR never needs the saved count.
 let saved = $derived(browser ? savedRows.read(storageKey) : null);
+
+let now = $state(new Date());
+
+$effect(() => {
+  const clock = setInterval(() => (now = new Date()), CLOCK_MS);
+  return () => clearInterval(clock);
+});
 
 function changeRows(rows: number) {
   saved = rows;
@@ -59,6 +70,8 @@ function changeRows(rows: number) {
 
 {#snippet card(play: RecentPlay)}
   {@const state = overlay.state(play.type, play.id, play.season)}
+  {@const checkin = toCheckin(play, now)}
+  <div class="play">
   <FanartCard
   href={play.href}
   title={play.title}
@@ -66,7 +79,7 @@ function changeRows(rows: number) {
   number={play.number}
   smallTitle={play.smallTitle}
   image={play.image}
-  tags={play.tags}
+  tags={checkin?.tags ?? play.tags}
   userRating={state.rating}
   icons={{
       fill: quickIconFill({ state, datePreferences }),
@@ -79,6 +92,15 @@ function changeRows(rows: number) {
       listLabel: play.type === 'movie' ? 'Add to watchlist' : 'Add to list',
     }}
 />
+  {#if checkin}
+    <UnderProgress live href={play.href} percent={checkin.progress}
+      lines={[[{ text: `${checkin.progress}% watched` }]]} />
+    <p class="left">
+      <span>{checkin.progress}% watched</span>
+      <Countdown startedAt={checkin.startedAt} endsAt={play.watchedAt} />
+    </p>
+  {/if}
+  </div>
 {/snippet}
 
 {#await plays}
@@ -130,6 +152,23 @@ function changeRows(rows: number) {
   &:empty {
     padding-block: var(--space-heading-section) 0;
   }
+}
+
+.play {
+  min-inline-size: 0;
+}
+
+/* The Social Feed's line under a live card, with how far in on the left and the time left on the right. */
+.left {
+  display: flex;
+  gap: var(--space-sm-inline);
+  justify-content: space-between;
+  margin-block: calc(var(--space-under-progress-title) - var(--progress-under-height)) 0;
+  color: var(--color-card-subtitle);
+  font-family: var(--font-headings);
+  font-size: var(--font-size-card-subtitle);
+  font-weight: var(--font-weight-headings-heavy);
+  line-height: var(--line-height-social-who);
 }
 
 /* OG's alert sat in the fanarts row, which kept 20px above it. */

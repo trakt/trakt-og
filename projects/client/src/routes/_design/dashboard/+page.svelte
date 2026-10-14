@@ -101,8 +101,14 @@ const watchlistEmpty = Promise.resolve({ cards: [], total: 0, sortName: 'Rank', 
 const watchlistLoading = new Promise<DashboardWatchlist>(() => {});
 const watchlistFailed = browser ? Promise.reject(new Error('demo')) : watchlistLoading;
 
+// The first sample is a check-in with 30 minutes to go, which history holds at its end time.
+const checkinEnd = new Date(Date.now() + 30 * 60_000).toISOString();
 const recentPlays = $derived(
-  Promise.resolve(recentlyWatchedFixture.rows.map((row) => toRecentPlay(row, data.datePreferences))),
+  Promise.resolve(
+    recentlyWatchedFixture.rows.map((row, i) =>
+      toRecentPlay(i === 0 ? { ...row, watched_at: checkinEnd } : row, data.datePreferences)
+    ),
+  ),
 );
 const recentLoading = new Promise<readonly RecentPlay[]>(() => {});
 const recentFailed = browser ? Promise.reject(new Error('demo')) : recentLoading;

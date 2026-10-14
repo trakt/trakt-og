@@ -12,14 +12,13 @@ describe('toCheckin', () => {
   it('should swap the future date for a live tag and place now in the runtime', () => {
     expect(toCheckin(play, new Date('2026-10-14T23:16:00.000Z'))).toEqual({
       tags: [{ text: 'Checked in', kind: 'primary', live: true }, { text: 'Season Premiere', kind: 'season-premiere' }],
-      startedAt: '2026-10-14T23:06:00.000Z',
       progress: 20,
     });
   });
 
   it("should fall back to OG's runtime when the API has none", () => {
-    expect(toCheckin({ ...play, type: 'movie', runtime: undefined }, new Date('2026-10-14T23:11:00.000Z'))?.startedAt)
-      .toBe('2026-10-14T22:26:00.000Z');
+    expect(toCheckin({ ...play, type: 'movie', runtime: undefined }, new Date('2026-10-14T23:11:00.000Z'))?.progress)
+      .toBe(50);
   });
 
   it('should be null once the watched time has passed', () => {

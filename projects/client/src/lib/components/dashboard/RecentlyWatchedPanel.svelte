@@ -10,7 +10,6 @@ import { browser } from '$app/environment';
 import NoData from '$lib/components/empty/NoData.svelte';
 import FanartCard from '$lib/components/media/FanartCard.svelte';
 import UnderProgress from '$lib/components/media/UnderProgress.svelte';
-import Countdown from '$lib/components/status/Countdown.svelte';
 import PosterGrid from '$lib/components/media/PosterGrid.svelte';
 import { quickIconFill } from '$lib/components/media/quickIconFill';
 import PageNavigator from '$lib/components/page-navigator/PageNavigator.svelte';
@@ -95,10 +94,6 @@ function changeRows(rows: number) {
   {#if checkin}
     <UnderProgress live href={play.href} percent={checkin.progress}
       lines={[[{ text: `${checkin.progress}% watched` }]]} />
-    <p class="left">
-      <span>{checkin.progress}% watched</span>
-      <Countdown startedAt={checkin.startedAt} endsAt={play.watchedAt} />
-    </p>
   {/if}
   </div>
 {/snippet}
@@ -156,19 +151,6 @@ function changeRows(rows: number) {
 
 .play {
   min-inline-size: 0;
-}
-
-/* The Social Feed's line under a live card, with how far in on the left and the time left on the right. */
-.left {
-  display: flex;
-  gap: var(--space-sm-inline);
-  justify-content: space-between;
-  margin-block: calc(var(--space-under-progress-title) - var(--progress-under-height)) 0;
-  color: var(--color-card-subtitle);
-  font-family: var(--font-headings);
-  font-size: var(--font-size-card-subtitle);
-  font-weight: var(--font-weight-headings-heavy);
-  line-height: var(--line-height-social-who);
 }
 
 /* OG's alert sat in the fanarts row, which kept 20px above it. */

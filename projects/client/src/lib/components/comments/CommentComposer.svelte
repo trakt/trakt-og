@@ -178,7 +178,8 @@ async function send(event: SubmitEvent) {
     </div>
   </div>
 </form>
-{#if picking}<GifPicker bind:open={picking} onselect={(picked) => (gif = picked)} />{/if}
+<!-- Mounted while closed, so its dialog closes natively and hands the focus back to the GIF button. -->
+{#if gifs}<GifPicker bind:open={picking} onselect={(picked) => (gif = picked)} />{/if}
 
 <style>
 .composer {

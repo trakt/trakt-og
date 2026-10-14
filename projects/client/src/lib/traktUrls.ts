@@ -5,6 +5,7 @@ export const traktUrls = {
   vip: `${v3}/vip`,
   settings: `${v3}/settings`,
   yearInReview: (slug: string, year: number) => `${v3}/users/${encodeURIComponent(slug)}/year/${year}`,
+  allTimeStats: `${v3}/users/me/year/all`, /* the viewer's own, from their dashboard */
   monthInReview: (slug: string, year: number, month: number) =>
     `${v3}/users/${encodeURIComponent(slug)}/mir/${year}/${month}`,
   about: `${v3}/about`,

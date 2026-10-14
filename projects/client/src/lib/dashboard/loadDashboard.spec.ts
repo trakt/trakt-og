@@ -105,14 +105,10 @@ describe('loadDashboard', () => {
     await expect(load()).rejects.toMatchObject({ status: 502 });
   });
 
-  it('should honor browser dismissals and leave an empty inbox empty', async () => {
-    server.use(
-      http.get(`${API}/users/me`, () => HttpResponse.json({ ...profile, joined_at: '2026-09-29T12:00:00Z' })),
-      http.get(`${API}/users/requests`, () => HttpResponse.json([])),
-    );
-    const data = await load('token', { 'og-dashboard-welcome-hidden': '1' });
+  it('should leave an empty inbox empty', async () => {
+    server.use(http.get(`${API}/users/requests`, () => HttpResponse.json([])));
+    const data = await load('token');
     await Promise.all(panels(data));
-    expect(data.notices.welcome).toBe(false);
     expect(data.requests).toEqual([]);
   });
 

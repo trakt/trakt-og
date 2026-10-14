@@ -1,8 +1,8 @@
 <script lang="ts">
 import DashboardGreeting from '$lib/components/dashboard/DashboardGreeting.svelte';
-import DashboardStats from '$lib/components/dashboard/DashboardStats.svelte';
+import RecapRibbon from '$lib/components/dashboard/RecapRibbon.svelte';
+import StatsPanel from '$lib/components/dashboard/StatsPanel.svelte';
 import DashboardInbox from '$lib/components/dashboard/DashboardInbox.svelte';
-import DashboardNotices from '$lib/components/dashboard/DashboardNotices.svelte';
 import UpNextPanel from '$lib/components/dashboard/UpNextPanel.svelte';
 import SchedulePanel from '$lib/components/dashboard/SchedulePanel.svelte';
 import WatchlistPanel from '$lib/components/dashboard/WatchlistPanel.svelte';
@@ -15,8 +15,7 @@ import { userManager } from '$lib/auth/userManager';
 import type { DashboardSettings } from '$lib/dashboard/DashboardSettings';
 import { dashboardPrefs } from '$lib/dashboard/dashboardPrefs';
 import { fetchSchedule } from '$lib/dashboard/fetchSchedule';
-import { overlay } from '$lib/overlay/overlay';
-import { toStatsBand } from '$lib/dashboard/toStatsBand';
+import { toStatsPanel } from '$lib/dashboard/toStatsPanel';
 import type { loadDashboard } from '$lib/dashboard/loadDashboard';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
 import type { ViewerSettings } from '$lib/settings/ViewerSettings';
@@ -27,7 +26,7 @@ type Data = Awaited<ReturnType<typeof loadDashboard>> & {
 };
 
 const { data }: { data: Data } = $props();
-const band = $derived(toStatsBand(data.stats, overlay.collectionCounts()));
+const panel = $derived(toStatsPanel(data.stats));
 const username = $derived(data.profile.slug);
 const isVip = $derived(!!data.profile.vip);
 
@@ -51,9 +50,10 @@ function loadSchedule({ filter, movies }: Pick<DashboardSettings['schedule'], 'f
     content="Your Trakt dashboard: watching statistics, follow requests and what to watch next." />
 </svelte:head>
 
-<DashboardGreeting user={data.profile} memberSince={data.memberSince} watching={data.watching} />
-<DashboardStats {band} slug={username} />
-<DashboardNotices notices={data.notices} day={data.noticeDay} />
+<DashboardGreeting user={data.profile} memberSince={data.memberSince} watching={data.watching}>
+  <StatsPanel {panel} slug={username} />
+</DashboardGreeting>
+<RecapRibbon recaps={data.recaps} />
 <DashboardInbox requests={data.requests} />
 <!-- A panel the viewer hid comes back null. -->
 {#if data.upNext}

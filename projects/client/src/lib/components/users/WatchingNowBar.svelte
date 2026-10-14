@@ -1,9 +1,9 @@
 <!--
   The watching-now player: a now-playing bar along the bottom of a cover while someone is checked in or scrobbling,
   on the profile (over the tabs) and the dashboard greeting. Red-tinted glass blurs the cover behind it. A thumbnail
-  with a red progress line leads (the episode's screenshot or the fanart; without either, a badge says which: an
-  equaliser for playback, a check for a check-in), then a live dot with who is watching what, and a scrubber with the
-  time watched and the time left, ticking every second (once a minute under reduced motion). Over time it says
+  leads (the episode's screenshot or the fanart; without either, a badge says which: an equaliser for playback, a check
+  for a check-in), then a live dot with who is watching what, and a scrubber with a red fill and knob, the time watched
+  and the time left, ticking every second (once a minute under reduced motion). Over time it says
   "Finished" or "Wrapping up" with a still green dot for a few minutes, then fades out. Below 600px of its own width
   the scrubber becomes a hairline along the bottom. The bar spans the cover; its content lines up with the page
   column. Put it inside a positioned cover.
@@ -83,7 +83,6 @@ async function cancel() {
               {/if}
             </span>
           {/if}
-          <span class="thumb-progress"></span>
         </a>
         <div class="info">
           <p class="who">
@@ -191,7 +190,6 @@ async function cancel() {
   overflow: hidden;
   border-radius: var(--radius-watching-thumb);
   background-color: var(--color-watching-thumb-bg);
-  box-shadow: 0 0 0 1px var(--color-watching-thumb-ring);
 
   & img {
     position: absolute;
@@ -199,23 +197,6 @@ async function cancel() {
     inline-size: 100%;
     block-size: 100%;
     object-fit: cover;
-  }
-}
-
-.thumb-progress {
-  position: absolute;
-  inset-block-end: 0;
-  inset-inline: 0;
-  block-size: var(--watching-thumb-progress);
-  background-color: var(--color-watching-faint);
-
-  &::after {
-    position: absolute;
-    inset-block: 0;
-    inset-inline-start: 0;
-    inline-size: var(--progress);
-    background-color: var(--color-social-live);
-    content: '';
   }
 }
 
@@ -352,7 +333,7 @@ async function cancel() {
   inset-inline-start: 0;
   inline-size: var(--progress);
   border-radius: inherit;
-  background-color: var(--color-text-inverse);
+  background-color: var(--color-watching-fill);
 }
 
 /* Decorative: nothing can be scrubbed. */
@@ -363,7 +344,7 @@ async function cancel() {
   inline-size: var(--watching-knob-size);
   block-size: var(--watching-knob-size);
   border-radius: 50%;
-  background-color: var(--color-text-inverse);
+  background-color: var(--color-watching-fill);
   box-shadow: var(--shadow-watching-knob);
   translate: -50% -50%;
 }

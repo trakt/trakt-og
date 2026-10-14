@@ -1,4 +1,5 @@
 <script lang="ts">
+import type { Snippet } from 'svelte';
 import Container from '$lib/components/container/Container.svelte';
 import { headerArt } from '$lib/components/header/headerArt';
 import VipLabel from '$lib/components/labels/VipLabel.svelte';
@@ -6,39 +7,43 @@ import CoverPill from '$lib/components/users/CoverPill.svelte';
 import WatchingNowBar from '$lib/components/users/WatchingNowBar.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import calendar from '$lib/icons/regular/calendar-lines.svg?raw';
-import posterBackground from '$lib/assets/poster-bg.jpg';
+import defaultCover from '$lib/assets/profile-cover-default.jpg';
 import type { ProfileUser } from '$lib/users/ProfileUser';
 import type { WatchingNow } from '$lib/users/WatchingNow';
 
-const { user, memberSince, watching }: {
+const { user: viewer, memberSince, watching, children }: {
   user: ProfileUser;
   memberSince: string;
   watching: WatchingNow | null;
+  /** The stats panel, under the name. */
+  children?: Snippet;
 } = $props();
-const cover = $derived(watching?.fanartUrl ?? (user.vip ? user.coverUrl : null));
+const cover = $derived(watching?.fanartUrl ?? (viewer.vip ? viewer.coverUrl : null));
 </script>
 
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-<!-- The profile header's look: avatar, name with the VIP label, and one glass pill with the full join date. -->
+<!-- The profile header's look: avatar, name with the VIP label, and one glass pill with the full join date. The stats
+     panel sits under the name. Without cover art it's the profile's red damask, unshaded like the profile's. -->
 <section
-  class={['greeting-cover', { watching, covered: cover }]}
+  class={['greeting-cover', { watching }]}
   aria-labelledby="dashboard-heading"
-  {@attach headerArt(cover ?? undefined)}
+  {@attach headerArt(cover ?? defaultCover)}
 >
-  <div class="background" style:background-image="url('{cover ?? posterBackground}')"></div>
+  <div class="background" style:background-image="url('{cover ?? defaultCover}')"></div>
   {#if cover}<div class="shadow"></div>{/if}
   <Container>
     <div class="greeting">
       <div class="identity">
-        <a class="avatar-link" href="/users/{user.slug}" tabindex="-1" aria-hidden="true">
-          <img src={user.avatarUrl} alt="" width="72" height="72" />
+        <a class="avatar-link" href="/users/{viewer.slug}" tabindex="-1" aria-hidden="true">
+          <img src={viewer.avatarUrl} alt="" width="72" height="72" />
         </a>
         <div class="name-block">
-          <h1 id="dashboard-heading">Hello, {user.firstName}{#if user.vip}<VipLabel badge={user.vip} />{/if}</h1>
+          <h1 id="dashboard-heading">Hello, {viewer.firstName}{#if viewer.vip}<VipLabel badge={viewer.vip} />{/if}</h1>
           <CoverPill><Icon svg={calendar} />Joined <b>{memberSince}</b></CoverPill>
         </div>
       </div>
     </div>
+    {@render children?.()}
   </Container>
   {#if watching}<WatchingNowBar {watching} owner="self" />{/if}
 </section>
@@ -62,16 +67,8 @@ const cover = $derived(watching?.fanartUrl ?? (user.vip ? user.coverUrl : null))
   inset: 0;
 }
 .background {
-  background-size: var(--profile-placeholder-size);
-  filter: blur(var(--profile-placeholder-blur));
-  background-color: var(--color-profile-placeholder-bg);
-  opacity: var(--opacity-profile-placeholder);
-  .covered & {
-    background-position: center 20%;
-    background-size: cover;
-    filter: none;
-    opacity: 1;
-  }
+  background-position: center 20%;
+  background-size: cover;
 }
 .shadow {
   background: var(--gradient-profile-shadow);

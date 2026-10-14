@@ -2,7 +2,8 @@
   OG's thin progress bar under a poster's quick icons,
   as a link to the progress page with OG's progress tooltip below it. With `ticks`, OG's exact bar: one segment per
   aired episode, filled where it's watched. Without, the standard bar, which fills the watched share from the left.
-  The link's name carries every tooltip line, so nothing lives only in the tooltip.
+  `live` marks something being watched right now with a knob at the fill's end, like the watching-now player's
+  scrubber. The link's name carries every tooltip line, so nothing lives only in the tooltip.
 -->
 <script lang="ts">
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
@@ -16,9 +17,11 @@ interface Props {
   ticks?: readonly boolean[];
   /** Tooltip lines, in groups. A rewatch has a second group for the whole show, under a divider. */
   lines: readonly (readonly ProgressTooltipLine[])[];
+  /** Being watched now: a knob at the end of the fill. */
+  live?: boolean;
 }
 
-const { href, percent, ticks, lines }: Props = $props();
+const { href, percent, ticks, lines, live = false }: Props = $props();
 
 const spoken = ({ text, detail }: ProgressTooltipLine) => (detail ? `${text} (${detail})` : text);
 const label = $derived(lines.map((group) => group.map(spoken).join(', ')).join('; '));
@@ -36,6 +39,7 @@ const label = $derived(lines.map((group) => group.map(spoken).join(', ')).join('
           {/each}
         {:else}
           <span class="fill" style:inline-size="{percent}%"></span>
+          {#if live}<span class="knob" style:inset-inline-start="{percent}%"></span>{/if}
         {/if}
       </span>
     </a>
@@ -62,6 +66,7 @@ const label = $derived(lines.map((group) => group.map(spoken).join(', ')).join('
 }
 
 .track {
+  position: relative;
   display: block;
   block-size: 100%;
   background-color: var(--progress-under-bg);
@@ -93,6 +98,19 @@ const label = $derived(lines.map((group) => group.map(spoken).join(', ')).join('
   transition: inline-size var(--transition-card);
 }
 
+/* Decorative, like the watching-now player's: nothing can be scrubbed. */
+.knob {
+  position: absolute;
+  inset-block-start: 50%;
+  inline-size: var(--progress-under-knob);
+  block-size: var(--progress-under-knob);
+  border-radius: 50%;
+  background-color: var(--progress-bar);
+  box-shadow: var(--shadow-watching-knob);
+  translate: -50% -50%;
+  transition: inset-inline-start var(--transition-card);
+}
+
 .line {
   display: block;
 }
@@ -111,6 +129,7 @@ const label = $derived(lines.map((group) => group.map(spoken).join(', ')).join('
 
 @media (prefers-reduced-motion: reduce) {
   .fill,
+  .knob,
   .tick {
     transition: none;
   }

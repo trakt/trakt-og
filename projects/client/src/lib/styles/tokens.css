@@ -95,6 +95,7 @@
   --progress-bar: #ed1c24;
   --progress-under-bg: #530d0d;
   --progress-under-height: 5px;
+  --progress-under-knob: 11px; /* the knob on a watching-now bar */
   --space-under-progress-title: 14px; /* from the bar's top edge to the card title */
 
   /* Ratings, 1 to 10 */
@@ -400,38 +401,63 @@
   --color-page-navigator-dark-border: var(--gray-dark);
   --color-page-navigator-dark-text: #fff;
 
-  /* Dashboard frame: greeting, stats, inbox and account welcome. */
+  /* Dashboard frame: greeting, stats and inbox. */
   --dashboard-greeting-top: 30px; /* above the greeting, and below it (over the now-playing bar when watching) */
   --dashboard-avatar-gap: 15px;
-  --color-dashboard-stats-bg: light-dark(#1d1d1d, var(--dk-bg2)); /* dark in both themes */
-  --color-dashboard-stats-border: rgb(255 255 255 / 0.12);
-  /* The greeting's all-time band: equal columns on one ruled axis, each a label, a figure line, a rule and one caption
-     line. 6 across from 1200px, 3 from 768px, then 2. */
-  --dashboard-band-padding-block: 18px;
-  --dashboard-band-column-gap: 24px;
-  --dashboard-band-column-gap-phone: 16px;
-  --dashboard-band-row-gap: 16px;
-  --dashboard-band-kicker-gap: 6px;
-  --dashboard-band-kicker-height: 14px; /* one fixed label line, with or without an icon, so all labels line up */
-  --dashboard-band-line-top: 8px;
-  --dashboard-band-line-height: 28px; /* one fixed figure line, so all rules line up */
-  --dashboard-band-line-gap: 8px;
-  --dashboard-band-unit-gap: 4px;
-  --dashboard-band-rule-top: 7px;
-  --dashboard-band-rule: 3px; /* the meter's height; a plain rule draws its top pixel */
-  --dashboard-band-caption-top: 7px;
-  --dashboard-band-histogram-width: 96px;
-  --dashboard-band-histogram-min-width: 48px;
-  --dashboard-band-histogram-height: 22px;
-  --dashboard-band-tick: 3px;
-  --radius-dashboard-band-tick: 1px;
-  --dashboard-band-underline-offset: 3px;
-  --font-size-dashboard-band-kicker: 11px;
-  --font-size-dashboard-band-figure: 28px;
-  --font-size-dashboard-band-caption: 11px;
-  --line-height-dashboard-band-caption: 1.35;
-  --letter-spacing-dashboard-band-kicker: 0.06em;
-  --letter-spacing-dashboard-band-figure: -0.5px;
+  /* The greeting's stats panel: one glass panel on the cover (the profile pills' glass): All Time, Shows Finished,
+     Watched Shows and Watched Movies, a heading's watermark behind each label, one condensed figure each over a line
+     of the toolbars' stats. Two by two under 760px. */
+  --dashboard-panel-top: 36px; /* between the name and the panel */
+  --dashboard-panel-columns: 0.8fr 1fr 1.45fr 0.95fr; /* Watched Shows has three stats under it */
+  --dashboard-panel-columns-unfinished: 0.8fr 1.45fr 0.95fr;
+  --dashboard-panel-cell-padding: 16px 22px 18px;
+  --dashboard-panel-figure-gap: 14px; /* from the label down to the figure */
+  --dashboard-panel-stats-top: 16px; /* from the figure down to the stats; Shows Finished's meter sits in this gap */
+  --dashboard-panel-meter: 4px;
+  --dashboard-panel-meter-top: 6px; /* from the figure down to Shows Finished's meter */
+  --dashboard-panel-stats-gap: 14px;
+  --dashboard-panel-stats-row-gap: 2px; /* between wrapped lines of stats, on tablets */
+  --line-height-dashboard-panel-stats: 1.2;
+  --dashboard-panel-unit-gap: 0.04em 0.18em; /* before and after a unit */
+  --dashboard-panel-word-gap: 0.22em; /* before a word unit: "years", "of 642" */
+  --color-dashboard-panel-hover: #ff5a60; /* OG's dashboard stats hover (the brand red), lifted for text on dark glass */
+  --transition-dashboard-panel-hover: 0.2s;
+  --radius-dashboard-panel: 16px;
+  --font-dashboard-panel-figures: var(--font-box-office-figures); /* Box Office's trade-paper numbers */
+  --font-size-dashboard-panel-figure: 40px;
+  --font-size-dashboard-panel-unit: 0.55em;
+  --font-size-dashboard-panel-label: 12px;
+  --letter-spacing-dashboard-panel-label: 0.1em;
+  --color-dashboard-panel-line: rgb(255 255 255 / 0.12);
+  --color-dashboard-panel-mark: rgb(255 255 255 / 0.06); /* the label watermarks: a heading's mark, white on the glass */
+  --dashboard-panel-mark-inline: -34px; /* further in than a heading's, so the cell's edge clips less of it */
+  --dashboard-panel-mark-block: -4px;
+  /* The recap strip under the greeting: Discover's year ribbon (its colors, bars and cell padding), led by a Year to Date
+     cell, with a plays bar in each month. Months gone by stay bright, since they have recaps; months to come dim. A
+     hovered month lifts over its neighbours with a shadow, a stronger tint and fuller bars. */
+  --dashboard-recaps-year-share: 1.6fr; /* the Year to Date cell against a month's 1fr */
+  --dashboard-recaps-height: 86px; /* held while the counts load: a month name, its plays and the plays bar */
+  --dashboard-recaps-cell-padding: 12px 10px; /* top and sides; the bottom is the plays bar's room */
+  --dashboard-recaps-plays-height: 18px;
+  --dashboard-recaps-plays-inset: 12px; /* the plays bar's distance from a cell's sides and bottom */
+  --dashboard-recaps-plays-gap: 6px; /* between the plays line and the plays bar */
+  --dashboard-recaps-tag-height: 19px; /* the month line, sized to its tag so tagged and plain months line up */
+  --dashboard-recaps-tag-gap: 4px;
+  --dashboard-recaps-tag-padding: 2px 5px; /* the search pill's, a size tighter to fit beside a month */
+  --dashboard-recaps-tag-tint: 22%; /* the month's accent behind a tag */
+  --dashboard-recaps-tag-line: 55%; /* and around it */
+  --font-size-dashboard-recaps-tag: 11px;
+  --dashboard-recaps-plays-tint: 55%; /* how much of the month's accent fills its plays bar */
+  --dashboard-recaps-hover-tint: 14%; /* the month's accent over the strip, under a hovered month */
+  --dashboard-recaps-hover-lift: -3px;
+  --dashboard-recaps-plays-tint-hover: 90%;
+  --shadow-dashboard-recaps-hover: 0 8px 18px rgb(0 0 0 / 0.5);
+  --radius-dashboard-recaps-plays: 2px 2px 0 0;
+  --color-dashboard-recaps-year: var(--brand-primary);
+  --color-dashboard-recaps-year-wash: rgb(237 28 36 / 0.2); /* --brand-primary, fading down the Year to Date cell */
+  --color-dashboard-recaps-muted: var(--color-discover-muted);
+  --color-dashboard-recaps-text: var(--color-discover-text);
+  --opacity-dashboard-recaps-future: var(--opacity-season-ribbon-past);
   /* Follow requests: boxes three across, or a summary line with an avatar stack from four requests up. */
   --dashboard-inbox-bottom: 30px;
   --dashboard-inbox-heading-gap: 14px;
@@ -481,14 +507,6 @@
   --color-dashboard-inbox-stack-extra: #3a3a3a;
   --color-dashboard-inbox-count-bg: var(--brand-primary);
   --color-dashboard-inbox-approve-hover: rgb(92 184 92 / 0.12); /* --brand-success, faint */
-  --dashboard-welcome-padding: 70px 50px;
-  --dashboard-welcome-steps-top: 25px;
-  --dashboard-welcome-intro-line: 1.2;
-  --color-dashboard-anniversary-bg: var(--state-info-bg);
-  --color-dashboard-anniversary-text: var(--state-info-text);
-  --color-dashboard-reddit: #ff4500;
-  --color-dashboard-mastodon: #6364ff;
-  --color-dashboard-twitter: #000;
 
   /* The dashboard's Upcoming Schedule: the first day as cards, then four day columns of rows. */
   --color-schedule-bg: light-dark(#eee, var(--dk-bg2));
@@ -1058,7 +1076,7 @@
   --color-profile-remove: #ff5a60; /* brand red, lifted for text on dark glass */
   --color-profile-remove-hover: color-mix(in srgb, var(--brand-primary) 22%, rgb(10 10 10 / 0.88));
   --profile-tabs-height: 54px; /* the header's glass and link pills */
-  --profile-watching-height: 76px;
+  --profile-watching-height: 92px; /* 19px above and below the 54px thumbnail */
   --font-size-profile-meta: 16px; /* counts and location under an official list's name */
   /* Watching-now player: a now-playing bar over the cover. It always sits on a photo, so it doesn't follow the theme. */
   --watching-gap: 16px;
@@ -1066,7 +1084,6 @@
   --watching-text-share: 36%; /* of the bar's width; the scrubber takes the rest */
   --watching-thumb-width: 96px; /* 16:9 */
   --watching-thumb-width-phone: 64px;
-  --watching-thumb-progress: 3px;
   --radius-watching-thumb: 5px;
   --watching-kicker-gap: 7px; /* the live dot to "You are watching" */
   --watching-badge-size: 32px; /* in the thumbnail when there's no image */
@@ -1111,7 +1128,7 @@
   --color-watching-check: #7ddc8a;
   --color-watching-cancel-bg: rgb(0 0 0 / 0.25);
   --color-watching-thumb-bg: #111;
-  --color-watching-thumb-ring: rgb(255 255 255 / 0.15);
+  --color-watching-fill: var(--color-social-live); /* the scrubber's watched part and its knob: the live red */
   --shadow-watching-knob: 0 1px 4px rgb(0 0 0 / 0.5);
   /* Dark at the top for the header, then from the bottom left for the name block and the tabs. */
   --gradient-profile-shade:

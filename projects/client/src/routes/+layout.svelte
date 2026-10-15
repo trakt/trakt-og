@@ -7,6 +7,7 @@ import { syncSession } from '$lib/auth/syncSession';
 import { userManager } from '$lib/auth/userManager';
 import CheckinDialog from '$lib/components/checkin/CheckinDialog.svelte';
 import DropNoteDialog from '$lib/components/visibility/DropNoteDialog.svelte';
+import TotallyNinja from '$lib/components/easter/TotallyNinja.svelte';
 import { startCommentReactions } from '$lib/components/comments/startCommentReactions';
 import Footer from '$lib/components/footer/Footer.svelte';
 import Header from '$lib/components/header/Header.svelte';
@@ -58,6 +59,7 @@ onMount(() => {
 {/if}
 <Toaster />
 <CheckinDialog />
+<TotallyNinja />
 <DropNoteDialog />
 
 <style>

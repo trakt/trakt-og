@@ -16,8 +16,9 @@ interface Props {
   target: RatingTarget;
   trigger: ComponentProps<typeof RatingPopover>['trigger'];
   variant?: ComponentProps<typeof RatingPopover>['variant'];
+  hint?: ComponentProps<typeof RatingPopover>['hint'];
 }
-const { target, trigger, variant }: Props = $props();
+const { target, trigger, variant, hint }: Props = $props();
 let busy = $state(false);
 const userState = $derived(overlay.state(target.type, target.id, target.season));
 const value = $derived(userState.rating ?? null);
@@ -56,4 +57,6 @@ async function rate(rating: number | null) {
 }
 </script>
 
-<RatingPopover label="Rate {target.title}" {value} {busy} {locked} {variant} {trigger} onopen={open} onrate={rate} />
+<RatingPopover label="Rate {target.title}" {value} {busy} {locked} {variant} {hint} {trigger}
+  onopen={open}
+  onrate={rate} />

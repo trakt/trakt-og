@@ -11,11 +11,13 @@
   `text` breaks lines at `\n`; pass `children` instead for markup. Left without either, no tooltip renders.
   The trigger keeps its own accessible name: the tooltip only describes it (`aria-describedby`).
   `toggle` also opens and shuts it on a click, like OG's list notes, so touch can read it too. `variant="notable"` is
-  OG's `.notable-tooltip`: left-aligned rich text in a wider box that scrolls.
+  OG's `.notable-tooltip`: left-aligned rich text in a wider box that scrolls. `variant="titled"` sets the first line
+  bold and the rest muted, like the summary ratings strip's "Watchers" over "131,457".
 -->
 <script lang="ts">
 import type { Snippet } from 'svelte';
 import { type Attachment, createAttachmentKey } from 'svelte/attachments';
+import { anchorNames } from './anchorNames.ts';
 import { type TooltipEvent, type TooltipState, tooltipState } from './tooltipState.ts';
 
 type TriggerProps = { 'aria-describedby'?: string; [key: symbol]: Attachment<HTMLElement> };
@@ -26,8 +28,9 @@ interface Props {
   children?: Snippet;
   /** Which side of the trigger it shows on. Bootstrap's default is top. */
   placement?: 'top' | 'bottom' | 'left' | 'right';
-  /** OG's two-line chart tooltip, without the standard arrow. `notable` is OG's list notes tooltip. */
-  variant?: 'default' | 'chart' | 'notable';
+  /** OG's two-line chart tooltip, without the standard arrow. `notable` is OG's list notes tooltip. `titled` bolds
+      the first line of `text`. */
+  variant?: 'default' | 'chart' | 'notable' | 'titled';
   /** A click on the trigger opens and shuts it too. */
   toggle?: boolean;
 }
@@ -45,7 +48,9 @@ const inside = (element: Element | undefined, target: EventTarget | null) =>
 
 const attach: Attachment<HTMLElement> = (node) => {
   anchor = node;
-  node.style.setProperty('anchor-name', `--tooltip-${id}`);
+  // Beside any anchor the trigger already is, like a rating popover's: replacing it would leave that popover unplaced.
+  const name = `--tooltip-${id}`;
+  node.style.setProperty('anchor-name', anchorNames(node.style.getPropertyValue('anchor-name'), { add: name }));
 
   const enter = (event: PointerEvent) => {
     if (event.pointerType !== 'touch') send('enter');
@@ -83,7 +88,9 @@ const attach: Attachment<HTMLElement> = (node) => {
     node.removeEventListener('pointerleave', leave);
     node.removeEventListener('focusin', focus);
     node.removeEventListener('focusout', blur);
-    node.style.removeProperty('anchor-name');
+    const rest = anchorNames(node.style.getPropertyValue('anchor-name'), { remove: name });
+    if (rest) node.style.setProperty('anchor-name', rest);
+    else node.style.removeProperty('anchor-name');
     anchor = undefined;
   };
 };
@@ -136,6 +143,11 @@ const leaveTip = (event: PointerEvent) => {
 >
     {#if children}
       <span class="inner">{@render children()}</span>
+    {:else if variant === 'titled'}
+      {@const [title, ...detail] = (text ?? '').split('\n')}
+      <span class="inner text"><b class="title">{title}</b>{#if detail.length > 0}<span class="detail">{
+            detail.join('\n')
+          }</span>{/if}</span>
     {:else}
       <span class="inner text">{text}</span>
     {/if}
@@ -214,6 +226,16 @@ const leaveTip = (event: PointerEvent) => {
 /* OG joined tooltip lines with <br>. */
 .text {
   white-space: pre-line;
+}
+
+.title {
+  display: block;
+  font-weight: var(--font-weight-headings-heavy);
+}
+
+.detail {
+  display: block;
+  color: var(--color-tooltip-muted);
 }
 
 .top {

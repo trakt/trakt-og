@@ -12,10 +12,12 @@ export const RATING_LABELS: Readonly<Record<number, string>> = {
   10: 'Totally Ninja!',
 };
 
-/** The rating popover's title: `strong` is bold, `text` follows it. */
+/** The rating popover's title: `strong` is bold, `text` follows it, and `tint` is the rating its bar is tinted in. */
 export interface RatingPrompt {
   readonly strong: string;
   readonly text: string;
+  /** A rating, 1 to 10, for its color; `unrate` while pointing at the saved one; null with nothing to show. */
+  readonly tint: number | 'unrate' | null;
 }
 
 /**
@@ -23,10 +25,10 @@ export interface RatingPrompt {
  * rating, "7 — Good" while pointing at another one or at rest on a rating, "What do you think?" when there's none.
  */
 export function ratingPrompt(value: number | null, preview: number | null): RatingPrompt {
-  if (preview !== null && preview === value) return { strong: 'Unrate', text: '' };
+  if (preview !== null && preview === value) return { strong: 'Unrate', text: '', tint: 'unrate' };
 
   const shown = preview ?? value;
-  if (shown === null) return { strong: '', text: 'What do you think?' };
+  if (shown === null) return { strong: '', text: 'What do you think?', tint: null };
 
-  return { strong: String(shown), text: ` — ${RATING_LABELS[shown]}` };
+  return { strong: String(shown), text: ` — ${RATING_LABELS[shown]}`, tint: shown };
 }

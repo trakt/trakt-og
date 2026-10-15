@@ -69,7 +69,10 @@ async function autoWatch({ target, watchAfterRating, overlay, request, notify, n
   }
 }
 
-/** Rating and history are separate writes: a failed auto-watch never undoes a successfully saved rating. */
+/**
+ * Rating and history are separate writes: a failed auto-watch never undoes a successfully saved rating. A saved or
+ * removed rating shows on its own (the heart, the trigger), so only failures and the auto-watch get a toast.
+ */
 export async function rateMedia(params: Params): Promise<boolean> {
   const { target, rating, overlay, request, notify } = params;
   const rollback = overlay.patch('ratings', (ratings) => {
@@ -88,9 +91,6 @@ export async function rateMedia(params: Params): Promise<boolean> {
     if (!(error instanceof Error) || error.message !== '429') notify.error("Doh! You can't rate this item.");
     return false;
   }
-  notify.success(
-    rating === null ? `You removed your rating for ${target.title}.` : `You rated ${target.title} ${rating} out of 10.`,
-  );
   if (rating === null) return true;
   await autoWatch(params).catch(() =>
     notify.error('Your rating was saved, but we could not add this item to your watched history.')

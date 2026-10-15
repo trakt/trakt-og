@@ -1,4 +1,4 @@
-import type { StripCount } from './releasedCounts.ts';
+import type { StripCount } from './StripCount.ts';
 
 /** Which icon and color a count takes on the ratings strip. */
 export type StripStatKind = 'watchers' | 'plays' | 'libraries' | 'lists' | 'comments' | 'favorited';

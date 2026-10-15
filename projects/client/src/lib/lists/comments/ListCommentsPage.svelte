@@ -22,7 +22,6 @@ import SubpageTitle from '$lib/components/summary/SubpageTitle.svelte';
 import SummaryFrame from '$lib/components/summary/SummaryFrame.svelte';
 import SummaryPoster from '$lib/components/summary/SummaryPoster.svelte';
 import SectionToolbar from '$lib/components/toolbar/SectionToolbar.svelte';
-import commentsIcon from '$lib/icons/solid/comments.svg?raw';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
 import type { HeaderUser } from '$lib/components/header/HeaderUser';
 import type { PageMeta } from '$lib/api/PageMeta';
@@ -68,7 +67,7 @@ const sortHref = (sort: string) => {
 </svelte:head>
 
 <FanartHeader slim>
-  <SubpageTitle label="All Comments about..." icon={commentsIcon} title={data.list.title} href={data.list.href} />
+  <SubpageTitle label="Comments" title={data.list.title} href={data.list.href} />
 </FanartHeader>
 <SummaryFrame label={data.list.title} fullWidth>
   {#snippet subnav()}

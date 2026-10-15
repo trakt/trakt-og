@@ -19,7 +19,6 @@ import Pagination from '$lib/components/pagination/Pagination.svelte';
 import SubpageFrame from '$lib/components/summary/SubpageFrame.svelte';
 import SectionToolbar from '$lib/components/toolbar/SectionToolbar.svelte';
 import { withoutBlocked } from '$lib/components/comments/withoutBlocked';
-import commentsIcon from '$lib/icons/solid/comments.svg?raw';
 import { itemCommentsHref, type ItemCommentSortBy, itemCommentSorts } from './itemCommentSort.ts';
 import type { loadItemComments } from './loadItemComments.ts';
 
@@ -77,8 +76,7 @@ const href = (by: ItemCommentSortBy, how = data.sort.how) => itemCommentsHref(da
 
 <SubpageFrame
   {...data}
-  label="All Comments about..."
-  icon={commentsIcon}
+  label="Comments"
   sections={[{ label: count, href: '#comments' }]}
   {subnav}
 >

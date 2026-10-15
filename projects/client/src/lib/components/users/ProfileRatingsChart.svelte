@@ -2,22 +2,34 @@
   The profile's ratings chart, in the Last 30 Days chart's style: ratings 1 to 10 as rounded bars in their rating
   colors, each with its count over it, over dashed count lines labelled in a gutter and a dashed line at the average.
   Under the axis each rating has its name, the most given one picked out. Hovering or focusing a bar dims the others
-  and shows the rating, its count and its share of all ratings; clicking it opens the ratings page at that rating.
-  Each bar is a link named by its rating and count, so it works with the keyboard and a screen reader. A rating
-  with none gets a faint 0 over a dot and a hidden label.
+  and shows the rating, its count and its share of all ratings; given `href`, clicking it opens that rating's page.
+  Each bar is a link, or a button without `href`, named by its rating and count, so it works with the keyboard and a
+  screen reader. A rating with none gets a faint 0 over a dot and a hidden label. A title's stats page reuses it with
+  votes for ratings and no links.
 -->
 <script lang="ts">
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import { countLabel } from '$lib/utils/countLabel';
 import type { ProfileRatingBar, ProfileRatings } from '$lib/users/profile/toProfileRatings';
 
-const { chart, slug }: { chart: NonNullable<ProfileRatings['chart']>; slug: string } = $props();
+interface Props {
+  chart: NonNullable<ProfileRatings['chart']>;
+  /** Where a bar leads: the profile's ratings page at that rating. Left out, bars only show their tooltip. */
+  href?: (rating: number) => string;
+}
 
-const name = (bar: ProfileRatingBar) => `${bar.rating} — ${bar.name}: ${countLabel(bar.count, 'rating')}`;
+const { chart, href }: Props = $props();
+
+const name = (bar: ProfileRatingBar) => `${bar.rating} — ${bar.name}: ${countLabel(bar.count, chart.unit)}`;
 </script>
 
 <!-- The ratings page isn't built yet, and resolve() only takes routes that exist. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
+
+{#snippet barBody(bar: ProfileRatingBar)}
+  <span class="count" aria-hidden="true">{bar.count.toLocaleString('en-US')}</span>
+  <span class="bar" style:--fraction={bar.height / 100}></span>
+{/snippet}
 
 <div class="ratings-chart">
   <div class="plot">
@@ -35,16 +47,19 @@ const name = (bar: ProfileRatingBar) => `${bar.rating} — ${bar.name}: ${countL
           {#if bar.count > 0}
             <Tooltip variant="chart">
               {#snippet trigger(tooltip)}
-                <a class="bar-link" href="/users/{slug}/ratings/all/{bar.rating}" aria-label={name(bar)} {...tooltip}>
-                  <span class="count" aria-hidden="true">{bar.count.toLocaleString('en-US')}</span>
-                  <span class="bar" style:--fraction={bar.height / 100}></span>
-                </a>
+                {#if href}
+                  <a class="bar-link" href={href(bar.rating)} aria-label={name(bar)} {...tooltip}>
+                    {@render barBody(bar)}
+                  </a>
+                {:else}
+                  <button class="bar-link" type="button" aria-label={name(bar)} {...tooltip}>{@render barBody(bar)}</button>
+                {/if}
               {/snippet}
               <span class="tip">
                 <span class="tip-title">{bar.rating} · {bar.name}</span>
                 <span class="tip-count">{bar.count.toLocaleString('en-US')}<span class="tip-unit"
-                  >{bar.count === 1 ? 'rating' : 'ratings'}</span></span>
-                <span class="tip-line">{bar.share} of all ratings</span>
+                  >{chart.unit}{bar.count === 1 ? '' : 's'}</span></span>
+                <span class="tip-line">{bar.share} of all {chart.unit}s</span>
               </span>
             </Tooltip>
           {:else}
@@ -119,7 +134,7 @@ const name = (bar: ProfileRatingBar) => `${bar.rating} — ${bar.name}: ${countL
   inset-inline-start: var(--space-ratings-average-label);
   translate: 0 -50%;
   padding: var(--space-minutes-average-label);
-  background-color: var(--color-charts-bg);
+  background-color: var(--color-ratings-chart-bg);
   color: var(--color-minutes-mark);
   font-size: var(--font-size-minutes-label);
   line-height: 1;
@@ -155,6 +170,13 @@ const name = (bar: ProfileRatingBar) => `${bar.rating} — ${bar.name}: ${countL
   inset-inline: var(--ratings-bar-gap);
   display: flex;
   flex-direction: column;
+  min-block-size: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
   text-decoration: none;
   transition: opacity var(--transition-chart);
 

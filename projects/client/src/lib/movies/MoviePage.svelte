@@ -49,6 +49,7 @@ const day = (date: string) => formatDate(date, { ...data.datePreferences, format
 
 const sections = $derived([
   { label: 'Overview', href: '#overview' },
+  { label: 'Stats', href: `${movie.href}/stats`, page: true },
   { label: 'Activity', href: '#activity' },
   ...(movie.cast.length > 0
     ? [{ label: 'Actors', href: '#actors', more: { href: `${movie.href}/credits`, text: 'All cast & crew' } }]
@@ -80,11 +81,12 @@ const textLinks = $derived(movie.links.filter(({ icon }) => !icon));
     title={movie.title}
     year={movie.year}
     certification={movie.certification}
-    parent={movie.collection ?? undefined}
+    links={movie.collection ? [movie.collection] : undefined}
     credits={movie.videos}
   />
   {#snippet stats()}
-    <RatingsStrip rating={movie.rating} rateLabel="movie" {ratingTarget} external={movie.external} counts={movie.counts} />
+    <RatingsStrip rating={movie.rating} rateLabel="movie" {ratingTarget} external={movie.external} counts={movie.counts}
+      statsHref="{movie.href}/stats" />
   {/snippet}
   {#snippet edges()}
     <ItemNav previous={movie.collection?.previous} next={movie.collection?.next} up={movie.collection?.href} />

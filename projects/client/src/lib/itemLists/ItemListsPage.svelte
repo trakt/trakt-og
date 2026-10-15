@@ -12,7 +12,6 @@ import ListRow from '$lib/components/media/ListRow.svelte';
 import Pagination from '$lib/components/pagination/Pagination.svelte';
 import SubpageFrame from '$lib/components/summary/SubpageFrame.svelte';
 import SectionToolbar from '$lib/components/toolbar/SectionToolbar.svelte';
-import listThick from '$lib/icons/trakt/list-thick.svg?raw';
 import { countLabel } from '$lib/utils/countLabel';
 import {
   type ItemListQuery,
@@ -94,8 +93,7 @@ const viewer = $derived(data.user ? { slug: data.user.slug, isVip: data.user.isV
 
 <SubpageFrame
   {...data}
-  label="{typeLabel} featuring..."
-  icon={listThick}
+  label={typeLabel}
   sections={[{ label: countLabel(data.count, 'list'), href: '#lists' }]}
   {subnav}
 >

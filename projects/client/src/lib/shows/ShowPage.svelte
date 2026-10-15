@@ -47,6 +47,7 @@ const lazy = () => browserSectionsClient(data.user !== null);
 
 const sections = $derived([
   { label: 'Overview', href: '#overview' },
+  { label: 'Stats', href: `${show.href}/stats`, page: true },
   { label: 'Activity', href: '#activity' },
   { label: 'Recent Episodes', href: '#recent-episodes' },
   ...(show.cast.length > 0 || show.guestStars.length > 0
@@ -83,7 +84,8 @@ const sections = $derived([
 <FanartHeader image={show.fanart} dropped={overlay.state('show', show.id).dropped}>
   <SummaryTitle title={show.title} year={show.year} certification={show.certification} />
   {#snippet stats()}
-    <RatingsStrip rating={show.rating} rateLabel="show" {ratingTarget} external={show.external} counts={show.counts} />
+    <RatingsStrip rating={show.rating} rateLabel="show" {ratingTarget} external={show.external} counts={show.counts}
+      statsHref="{show.href}/stats" />
   {/snippet}
 </FanartHeader>
 

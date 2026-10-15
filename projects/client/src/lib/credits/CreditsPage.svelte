@@ -8,7 +8,6 @@ import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import PosterCard from '$lib/components/media/PosterCard.svelte';
 import PosterGrid from '$lib/components/media/PosterGrid.svelte';
 import SubpageFrame from '$lib/components/summary/SubpageFrame.svelte';
-import friends from '$lib/icons/trakt/friends-thick.svg?raw';
 import type { loadCredits } from './loadCredits.ts';
 
 const { data }: { data: Awaited<ReturnType<typeof loadCredits>> } = $props();
@@ -37,7 +36,7 @@ const pick = (key: string, id: string) => {
   {#if data.media.poster}<meta property="og:image" content={data.media.poster} />{/if}
 </svelte:head>
 
-<SubpageFrame {...data} label="Cast & Crew for..." icon={friends} {sections}>
+<SubpageFrame {...data} label="Cast & Crew" {sections}>
   {#each groups as { key, label, section, tabs } (key)}
     {@const current = tabs.find(({ id }) => id === pickedIn(key)) ?? tabs[0]}
     <section id={key} aria-labelledby="{key}-heading">

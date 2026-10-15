@@ -44,6 +44,7 @@ const media = $derived({ ...ratingTarget, slug: episode.slug, season: episode.se
 const lazy = () => browserSectionsClient(data.user !== null);
 const sections = $derived([
   { label: 'Overview', href: '#overview' },
+  { label: 'Stats', href: `${episode.href}/stats`, page: true },
   { label: 'Activity', href: '#activity' },
   ...(episode.cast.length + episode.guestStars.length > 0
     ? [{ label: 'Actors', href: '#actors', more: { href: `${episode.href}/credits`, text: 'All cast & crew' } }]
@@ -72,9 +73,10 @@ const sections = $derived([
   <meta property="video:series" content={`https://og.trakt.tv${episode.showHref}`} />
 </svelte:head>
 <FanartHeader dropped={overlay.state('show',episode.showId).dropped} image={episode.fanart}
-  screenshot={spoilers.screenshot ? undefined : episode.screenshot}>
-  <EpisodeTitle target={ratingTarget} show={{title:episode.showTitle,href:episode.showHref}} season={{title:episode.seasonTitle,href:episode.seasonHref}} number={episode.number} title={episode.title} year={episode.year} certification={episode.certification} type={episode.type} credits={episode.videos} />
-  {#snippet stats()}<RatingsStrip rating={episode.rating} external={episode.external} rateLabel="episode" {ratingTarget} counts={episode.counts} />{/snippet}
+  screenshot={spoilers.screenshot ? undefined : episode.screenshot} subnav>
+  <EpisodeTitle target={ratingTarget} links={episode.parents} number={episode.number} title={episode.title} year={episode.year} certification={episode.certification} type={episode.type} credits={episode.videos} />
+  {#snippet stats()}<RatingsStrip rating={episode.rating} external={episode.external} rateLabel="episode" {ratingTarget}
+    statsHref="{episode.href}/stats" />{/snippet}
   {#snippet edges()}<ItemNav previous={episode.previous} next={episode.next} up={episode.seasonHref} />{/snippet}
 </FanartHeader>
 <SummaryFrame label={safeTitle}>

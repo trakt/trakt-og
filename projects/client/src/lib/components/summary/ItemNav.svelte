@@ -1,5 +1,6 @@
 <!--
-  OG's previous and next arrows on a summary's fanart (`#previous-item-link`, `#next-item-link`), plus its keys:
+  OG's previous and next arrows on a summary's fanart (`#previous-item-link`, `#next-item-link`), as small glass
+  circles centered in the fanart between the site header and the ratings strip, plus its keys:
   p or Left follows the previous link, n or Right the next, u goes up a level (movie to collection, episode to
   season). Render it in FanartHeader's `edges` slot. The keys stay quiet while you type or hold a modifier.
 -->
@@ -7,8 +8,8 @@
 import { goto } from '$app/navigation';
 import { swipeDirection } from './swipeDirection.ts';
 import Icon from '$lib/icons/Icon.svelte';
-import angleLeft from '$lib/icons/light/angle-left.svg?raw';
-import angleRight from '$lib/icons/light/angle-right.svg?raw';
+import angleLeft from '$lib/icons/regular/angle-left.svg?raw';
+import angleRight from '$lib/icons/regular/angle-right.svg?raw';
 
 interface Link {
   readonly href: string;
@@ -71,38 +72,68 @@ function ontouchend(event: TouchEvent) {
 
 {#if previous}
   <a class="item-nav previous" href={previous.href} rel="prev" aria-label={previous.label}>
-  <Icon svg={angleLeft} />
+  <span class="arrow"><Icon svg={angleLeft} /></span>
 </a>
 {/if}
 {#if next}
   <a class="item-nav next" href={next.href} rel="next" aria-label={next.label}>
-  <Icon svg={angleRight} />
+  <span class="arrow"><Icon svg={angleRight} /></span>
 </a>
 {/if}
 
 <style>
+/* Centered in the fanart that shows: below the site header, above the strip (`--item-nav-band`, set by FanartHeader). */
 .item-nav {
   position: absolute;
-  inset-block-start: var(--item-nav-top);
+  inset-block-start: calc((var(--header-height) + 100% - var(--item-nav-band, 0px)) / 2);
   z-index: 100;
-  color: var(--color-card-text);
-  font-size: var(--font-size-item-nav);
+  display: grid;
+  place-items: center;
+  inline-size: var(--item-nav-size);
+  block-size: var(--item-nav-size);
+  border: 1px solid var(--color-item-nav-line);
+  border-radius: 50%;
+  background-color: var(--color-item-nav-bg);
+  backdrop-filter: var(--blur-header-glass);
+  color: var(--color-item-nav-text);
+  font-size: var(--font-size-item-nav-icon);
   line-height: 1;
-  filter: var(--shadow-item-nav);
-  opacity: 0.5;
-  transition: opacity var(--transition-card);
+  translate: 0 -50%;
+  transition: background-color var(--transition-card), border-color var(--transition-card), color
+    var(--transition-card);
 
   &:is(:hover, :focus-visible) {
+    border-color: var(--color-item-nav-line-hover);
+    background-color: var(--color-item-nav-hover);
     color: var(--color-card-text);
-    opacity: 0.9;
   }
 }
 
+.arrow {
+  display: inline-flex;
+  transition: translate var(--transition-card);
+}
+
 .previous {
-  inset-inline-start: 20px;
+  inset-inline-start: var(--space-item-nav);
+
+  &:is(:hover, :focus-visible) .arrow {
+    translate: calc(-1 * var(--space-item-nav-nudge)) 0;
+  }
 }
 
 .next {
-  inset-inline-end: 20px;
+  inset-inline-end: var(--space-item-nav);
+
+  &:is(:hover, :focus-visible) .arrow {
+    translate: var(--space-item-nav-nudge) 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .item-nav,
+  .arrow {
+    transition: none;
+  }
 }
 </style>

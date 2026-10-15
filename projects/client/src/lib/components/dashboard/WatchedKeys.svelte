@@ -17,7 +17,7 @@ const color = (key: (typeof keys)[number]) => {
 </script>
 
 <div class="watched-keys">
-  <ul class="keys">
+  <ul class="keys" style:--key-columns={Math.min(keys.length, 4)}>
   {#each keys as key (key.name)}
     <li class="key" style:--color={color(key)}>
       <span class="name">{key.name}</span>
@@ -38,7 +38,7 @@ const color = (key: (typeof keys)[number]) => {
 
 .keys {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(var(--key-columns), minmax(0, 1fr));
   gap: var(--space-genre-keys-row) var(--space-genre-keys-column);
   margin: 0;
   padding: 0;

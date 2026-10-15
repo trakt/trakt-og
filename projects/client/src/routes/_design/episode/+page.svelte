@@ -11,9 +11,11 @@ import SpoilerContent from '$lib/components/summary/SpoilerContent.svelte';
   <title>Episode summary components - Trakt</title>
 </svelte:head>
 <FanartHeader>
-  <EpisodeTitle show={{title:'Breaking Bad',href:'/shows/breaking-bad'}}
-    season={{title:'Season 1',href:'/shows/breaking-bad/seasons/1'}} number="1x01" title="Pilot" year={2008}
-    certification="TV-MA" type={{text:'Series Premiere',kind:'series-premiere'}} />
+  <EpisodeTitle links={[{ title: 'American Horror Story', href: '/shows/american-horror-story' },
+    { title: 'Season 12', href: '/shows/american-horror-story/seasons/12' },
+    { title: 'Delicate', href: '/shows/american-horror-story/seasons/12' }]} number="12x01" title="Multiply Thy Pain"
+    year={2023}
+    certification="TV-MA" type={{text:'Season Premiere',kind:'season-premiere'}} />
 </FanartHeader>
 <Container>
   <h2>Community stat icons</h2>

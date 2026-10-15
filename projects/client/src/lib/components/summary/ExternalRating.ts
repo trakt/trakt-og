@@ -11,17 +11,17 @@ export type ExternalRatingLogo =
   | 'metacritic'
   | 'justwatch';
 
-/** One entry in the ratings bar's "other sites" group: IMDb, TMDB, Rotten Tomatoes, Metacritic, JustWatch. */
+/** One entry in the ratings strip's "other sites" group: IMDb, TMDB, Rotten Tomatoes, Metacritic, JustWatch. */
 export interface ExternalRating {
   readonly logo: ExternalRatingLogo;
-  /** The tooltip: the site, then what the number is on a second line. */
+  /** The site's name: the image's alt text and the tooltip's bold first line. */
   readonly title: string;
+  /** The tooltip's second line: the exact vote count, or what the number is. */
+  readonly detail: string;
   readonly href: string;
   readonly rating: string;
-  /** The small line under the number. */
-  readonly votes?: string;
-  /** Metacritic colors its logo ring and bar by score. */
+  /** Metacritic colors its logo ring by score, like OG's `metascore_class`. */
   readonly metascore?: 'high' | 'medium' | 'low';
-  /** JustWatch's 30-day rank change, already signed ("+15", "-113"). */
-  readonly delta?: string;
+  /** JustWatch's 30-day rank change, signed ("+15", "-113"), leading the tooltip's second line in bold. */
+  readonly change?: { readonly text: string; readonly trend: 'up' | 'down' | 'flat' };
 }

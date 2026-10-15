@@ -73,7 +73,7 @@ const sections = $derived([
 </svelte:head>
 <FanartHeader dropped={overlay.state('show',episode.showId).dropped} image={episode.fanart}
   screenshot={spoilers.screenshot ? undefined : episode.screenshot}>
-  <EpisodeTitle target={ratingTarget} show={{title:episode.showTitle,href:episode.showHref}} season={{title:episode.seasonTitle,href:episode.seasonHref}} number={episode.number} title={episode.title} year={episode.year} certification={episode.certification} type={episode.type} />
+  <EpisodeTitle target={ratingTarget} show={{title:episode.showTitle,href:episode.showHref}} season={{title:episode.seasonTitle,href:episode.seasonHref}} number={episode.number} title={episode.title} year={episode.year} certification={episode.certification} type={episode.type} credits={episode.videos} />
   {#snippet stats()}<RatingsStrip rating={episode.rating} external={episode.external} rateLabel="episode" {ratingTarget} counts={episode.counts} />{/snippet}
   {#snippet edges()}<ItemNav previous={episode.previous} next={episode.next} up={episode.seasonHref} />{/snippet}
 </FanartHeader>

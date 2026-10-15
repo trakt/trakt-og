@@ -1,10 +1,12 @@
 <!--
   The title block pinned to the bottom of a summary's fanart: an optional parent line above (the movie's collection,
-  the episode's show and season), then the h1 with the year in a lighter span and the certification pill.
+  the episode's show and season), then the h1 with the year in a lighter span, the certification pill and, for a movie
+  with extra scenes, the post-credits tag.
   Render it as FanartHeader's children.
 -->
 <script lang="ts">
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
+import PostCreditsTag from './PostCreditsTag.svelte';
 import { certificationTip } from './certificationTip.ts';
 
 interface Props {
@@ -14,9 +16,11 @@ interface Props {
   certification?: string | null;
   /** The line above the title, linking up a level. */
   parent?: { readonly href: string; readonly title: string };
+  /** The API's `during_credits` and `after_credits`. */
+  credits?: { readonly duringCredits?: boolean | null; readonly afterCredits?: boolean | null };
 }
 
-const { title, year, certification, parent }: Props = $props();
+const { title, year, certification, parent, credits }: Props = $props();
 </script>
 
 <!-- Hrefs come in as props, and resolve() only takes literal routes. -->
@@ -36,6 +40,7 @@ const { title, year, certification, parent }: Props = $props();
         {/snippet}
       </Tooltip>
     {/if}
+    <PostCreditsTag during={credits?.duringCredits} after={credits?.afterCredits} />
   </h1>
 </div>
 

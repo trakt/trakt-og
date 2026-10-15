@@ -19,19 +19,18 @@ describe('toExternalRatings', () => {
     const result = toExternalRatings({
       ratings,
       rank: { rank: 74, delta: 15, link: 'https://www.justwatch.com/us/movie/x' },
-      countryName: 'United States',
     });
 
-    expect(result.map(({ logo, rating, votes }) => [logo, rating, votes])).toEqual([
-      ['imdb', '8.8', '2.6m'],
-      ['tmdb', '84%', '32.9k'],
-      ['tomatometer-fresh', '81%', 'Fresh'],
-      ['audience-upright', '96%', 'Audience'],
-      ['metacritic', '67', undefined],
-      ['justwatch', '74', 'United States'],
+    expect(result.map(({ logo, rating, title, detail }) => [logo, rating, title, detail])).toEqual([
+      ['imdb', '8.8', 'IMDb', '2,567,341 votes'],
+      ['tmdb', '84%', 'TMDB', '32,938 votes'],
+      ['tomatometer-fresh', '81%', 'Rotten Tomatoes', 'Tomatometer · Fresh'],
+      ['audience-upright', '96%', 'Rotten Tomatoes', 'Popcornmeter'],
+      ['metacritic', '67', 'Metacritic', 'Metascore'],
+      ['justwatch', '74', 'JustWatch', '30 Day Streaming Rank'],
     ]);
+    expect(result.at(-1)?.change).toEqual({ text: '+15', trend: 'up' });
     expect(result.at(0)?.href).toBe('https://www.imdb.com/title/tt0137523/ratings');
-    expect(result.at(-1)?.delta).toBe('+15');
   });
 
   it('should skip sites without a score or a link', () => {
@@ -61,10 +60,21 @@ describe('toExternalRatings', () => {
     expect([band(70), band(40), band(39)]).toEqual(['high', 'medium', 'low']);
   });
 
-  it('should sign a zero or negative rank change', () => {
-    const delta = (value: number) =>
-      toExternalRatings({ ratings: null, rank: { rank: 1, delta: value, link: 'x' } }).at(0)?.delta;
+  it('should sign the rank change and mark which way it went', () => {
+    const change = (delta: number | null) =>
+      toExternalRatings({ ratings: null, rank: { rank: 1, delta, link: 'x' } }).at(0)?.change;
 
-    expect([delta(0), delta(-113)]).toEqual(['+0', '-113']);
+    expect([change(1_204), change(-113), change(0), change(null)]).toEqual([
+      { text: '+1,204', trend: 'up' },
+      { text: '-113', trend: 'down' },
+      { text: '0', trend: 'flat' },
+      undefined,
+    ]);
+  });
+
+  it('should say vote for a single vote', () => {
+    const result = toExternalRatings({ ratings: { imdb: { rating: 7, votes: 1, link: 'x' } } });
+
+    expect(result.at(0)?.detail).toBe('1 vote');
   });
 });

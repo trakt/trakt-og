@@ -1,5 +1,4 @@
 import type { RatingsResponse } from '@trakt/api';
-import { readableStat } from '../../utils/readableStat.ts';
 import type { ExternalRating } from './ExternalRating.ts';
 
 /** The JustWatch 30-day rank from `/watchnow/:country?extended=streaming_ranks`. */
@@ -12,8 +11,6 @@ export interface StreamingRank {
 interface ExternalRatingsParams {
   ratings: RatingsResponse | null;
   rank?: StreamingRank | null;
-  /** The watch-now country's name, shown under the rank. */
-  countryName?: string;
 }
 
 type RottenTomatoes = NonNullable<RatingsResponse['rotten_tomatoes']>;
@@ -36,13 +33,21 @@ function metascoreBand(score: number) {
   return 'low';
 }
 
+function rankChange(delta?: number | null): ExternalRating['change'] {
+  if (typeof delta !== 'number') return undefined;
+  if (delta === 0) return { text: '0', trend: 'flat' };
+  return { text: `${delta < 0 ? '' : '+'}${delta.toLocaleString('en-US')}`, trend: delta < 0 ? 'down' : 'up' };
+}
+
 const capitalize = (text: string) => `${text.charAt(0).toUpperCase()}${text.slice(1)}`;
+const votes = (count?: number | null) => `${(count ?? 0).toLocaleString('en-US')} ${count === 1 ? 'vote' : 'votes'}`;
 
 /**
  * OG's `_ratings_stats` "other sites" group, in OG's order. Each shows only with a score above zero and a link.
- * The API has no Rotten Tomatoes audience counts, so the audience line always says "Audience".
+ * The strip shows only the number; the tooltip names the site and gives the exact vote count, or says what the number
+ * is where the API has no count (Rotten Tomatoes, Metacritic, JustWatch).
  */
-export function toExternalRatings({ ratings, rank, countryName = '' }: ExternalRatingsParams): ExternalRating[] {
+export function toExternalRatings({ ratings, rank }: ExternalRatingsParams): ExternalRating[] {
   const { imdb, tmdb, rotten_tomatoes: rt, metascore } = ratings ?? {};
   const tomatometer = rt ? tomatometerLogo(rt) : 'fresh';
 
@@ -50,45 +55,46 @@ export function toExternalRatings({ ratings, rank, countryName = '' }: ExternalR
     (imdb?.rating ?? 0) > 0 && !!imdb?.link && {
       logo: 'imdb',
       title: 'IMDb',
+      detail: votes(imdb.votes),
       href: `${imdb.link}/ratings`,
       rating: (imdb.rating ?? 0).toFixed(1),
-      votes: readableStat(imdb.votes),
     },
     (tmdb?.rating ?? 0) > 0 && !!tmdb?.link && {
       logo: 'tmdb',
       title: 'TMDB',
+      detail: votes(tmdb.votes),
       href: tmdb.link,
       rating: `${Math.trunc(((tmdb.rating ?? 0) / 10) * 100)}%`,
-      votes: readableStat(tmdb.votes),
     },
     (rt?.rating ?? 0) > 0 && !!rt?.link && {
       logo: `tomatometer-${tomatometer}`,
-      title: 'Rotten Tomatoes\nTomatometer',
+      title: 'Rotten Tomatoes',
+      detail: `Tomatometer · ${capitalize(tomatometer)}`,
       href: rt.link,
       rating: `${rt.rating}%`,
-      votes: capitalize(tomatometer),
     },
     (rt?.user_rating ?? 0) > 0 && !!rt?.link && {
       logo: `audience-${audienceLogo(rt)}`,
-      title: 'Rotten Tomatoes\nAudience Score',
+      title: 'Rotten Tomatoes',
+      detail: 'Popcornmeter',
       href: rt.link,
       rating: `${rt.user_rating}%`,
-      votes: 'Audience',
     },
     (metascore?.rating ?? 0) > 0 && !!metascore?.link && {
       logo: 'metacritic',
       title: 'Metacritic',
+      detail: 'Metascore',
       href: metascore.link,
       rating: String(metascore.rating),
       metascore: metascoreBand(metascore.rating ?? 0),
     },
     !!rank?.rank && !!rank.link && {
       logo: 'justwatch',
-      title: 'Justwatch\n30 Day Streaming Rank',
+      title: 'JustWatch',
+      detail: '30 Day Streaming Rank',
       href: rank.link,
       rating: String(rank.rank),
-      votes: countryName,
-      delta: typeof rank.delta === 'number' ? `${rank.delta < 0 ? '' : '+'}${rank.delta}` : undefined,
+      change: rankChange(rank.delta),
     },
   ];
 

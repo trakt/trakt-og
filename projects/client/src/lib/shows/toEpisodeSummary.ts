@@ -90,7 +90,7 @@ export function toEpisodeSummary(params: Params) {
         href: `${href}/stats`,
       }
       : undefined,
-    external: params.otherSiteRatings && aired ? toExternalRatings({ ratings, rank: null, countryName: '' }) : [],
+    external: params.otherSiteRatings && aired ? toExternalRatings({ ratings, rank: null }) : [],
     counts: releasedCounts([
       count(stats.watchers, 'watcher', 'watchers'),
       count(stats.plays, 'play', 'plays'),

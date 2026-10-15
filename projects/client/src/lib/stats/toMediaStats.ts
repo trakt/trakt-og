@@ -1,5 +1,4 @@
 import type { EpisodeStatsResponse, RatingsResponse } from '@trakt/api';
-import { countryName } from '../components/summary/names.ts';
 import { releasedCounts } from '../components/summary/releasedCounts.ts';
 import { type StreamingRank, toExternalRatings } from '../components/summary/toExternalRatings.ts';
 import type { SubpageMedia } from '../subpage/toSubpageMedia.ts';
@@ -10,13 +9,12 @@ type Params = {
   ratings: RatingsResponse;
   stats: EpisodeStatsResponse & { favorited?: number };
   rank: StreamingRank | null;
-  country: string;
   otherSiteRatings: boolean;
   now: Date;
 };
 
 /** The four stats pages share the ratings strip and OG's ten-bar distribution, including its empty axes. */
-export function toMediaStats({ media, ratings, stats, rank, country, otherSiteRatings, now }: Params) {
+export function toMediaStats({ media, ratings, stats, rank, otherSiteRatings, now }: Params) {
   // Before release the page shows empty bars, no ratings and only the list count, whatever the early-ratings setting.
   const released = !!media.released && new Date(media.released) <= now;
   const trakt = released ? ratings.trakt ?? ratings : {};
@@ -42,9 +40,7 @@ export function toMediaStats({ media, ratings, stats, rank, country, otherSiteRa
       rating: released ? { value, votes, href: `${media.href}/stats` } : undefined,
       rateLabel: type,
       ratingTarget: { type, id: media.item.id, title: media.item.title, season: media.spoilerTarget?.season },
-      external: otherSiteRatings && released && type !== 'season'
-        ? toExternalRatings({ ratings, rank, countryName: countryName(country) })
-        : [],
+      external: otherSiteRatings && released && type !== 'season' ? toExternalRatings({ ratings, rank }) : [],
       counts,
     },
   };

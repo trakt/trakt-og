@@ -81,6 +81,7 @@ const textLinks = $derived(movie.links.filter(({ icon }) => !icon));
     year={movie.year}
     certification={movie.certification}
     parent={movie.collection ?? undefined}
+    credits={movie.videos}
   />
   {#snippet stats()}
     <RatingsStrip rating={movie.rating} rateLabel="movie" {ratingTarget} external={movie.external} counts={movie.counts} />

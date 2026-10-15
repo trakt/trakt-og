@@ -14,8 +14,8 @@ describe('subpageParents', () => {
 
   it("should keep a titled season's name on the same subpage as its number", () => {
     const name = { title: 'Delicate', href: '/shows/ted-lasso/seasons/1' };
-    expect(subpageParents({ type: 'episode', parents: [show, season, name], suffix: 'credits' }).at(2)?.href).toBe(
-      '/shows/ted-lasso/seasons/1/credits',
+    expect(subpageParents({ type: 'episode', parents: [show, season, name], suffix: 'people' }).at(2)?.href).toBe(
+      '/shows/ted-lasso/seasons/1/people',
     );
   });
 

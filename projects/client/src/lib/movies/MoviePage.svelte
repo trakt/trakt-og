@@ -52,7 +52,7 @@ const sections = $derived([
   { label: 'Stats', href: `${movie.href}/stats`, page: true },
   { label: 'Activity', href: '#activity' },
   ...(movie.cast.length > 0
-    ? [{ label: 'Actors', href: '#actors', more: { href: `${movie.href}/credits`, text: 'All cast & crew' } }]
+    ? [{ label: 'People', href: '#people', more: { href: `${movie.href}/people`, text: 'All people' } }]
     : []),
   {
     label: countLabel(movie.commentCount, 'Comment'),
@@ -174,7 +174,7 @@ const textLinks = $derived(movie.links.filter(({ icon }) => !icon));
       {#snippet children(tabs)}<ActivityTabs {tabs} />{/snippet}
     </LazySection>
   {/key}
-  <ActorsStrip groups={[{ id: 'cast', label: 'Cast', cast: movie.cast }]} creditsHref="{movie.href}/credits" />
+  <ActorsStrip groups={[{ id: 'cast', label: 'Cast', cast: movie.cast }]} crew={movie.crew} creditsHref="{movie.href}/people" />
   {#key media.slug}
     <LazySection id="comments" load={() => lazy().comments(media)}>
       {#snippet children(tabs)}

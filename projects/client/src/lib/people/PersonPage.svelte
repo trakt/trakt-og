@@ -25,6 +25,7 @@ import RatingsStrip from '$lib/components/summary/RatingsStrip.svelte';
 import SectionNav from '$lib/components/summary/SectionNav.svelte';
 import SummaryFrame from '$lib/components/summary/SummaryFrame.svelte';
 import SummaryPoster from '$lib/components/summary/SummaryPoster.svelte';
+import { personPlaceholder } from '$lib/components/summary/personPlaceholder';
 import SummaryTitle from '$lib/components/summary/SummaryTitle.svelte';
 import { overlay } from '$lib/overlay/overlay';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
@@ -134,7 +135,7 @@ function yearLine(credit: PersonCredit) {
   {/snippet}
 
   {#snippet sidebar()}
-    <SummaryPoster image={person.headshot} alt={person.name} />
+    <SummaryPoster image={person.headshot ?? personPlaceholder(person.genderId)} alt={person.name} />
     <SectionNav
       sections={[{ label: 'Biography', href: '#overview' }, { label: 'Credits', href: '#credits' }]}
       label="{person.name} sections"

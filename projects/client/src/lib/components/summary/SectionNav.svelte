@@ -1,6 +1,6 @@
 <!--
   The sidebar's section links on a summary page (OG's `ul.nav.sections`): anchors down the page, some with a
-  circled arrow to the full subpage ("All cast & crew"). A `page` section is one link to another page, its arrow
+  circled arrow to the full subpage ("All people"). A `page` section is one link to another page, its arrow
   inside it, so the whole row opens that page (Stats).
   The settings sidebar uses it with `spy` off (OG never marked the panel in view there) and `ruled`, which adds a rule
   above the first link and drops the top margin.
@@ -13,7 +13,7 @@ import arrowRightLong from '$lib/icons/regular/arrow-right-long.svg?raw';
 
 interface Section {
   readonly label: string;
-  /** Usually an anchor on the page, like `#actors`. */
+  /** Usually an anchor on the page, like `#people`. */
   readonly href: string;
   readonly more?: { readonly href: string; readonly text: string };
   /** A link to another page instead of an anchor: the arrow sits inside it. */

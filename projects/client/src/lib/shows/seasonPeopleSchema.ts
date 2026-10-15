@@ -4,6 +4,7 @@ const member = z.object({
   person: z.object({
     name: z.string(),
     ids: z.object({ trakt: z.number().int(), slug: z.string() }),
+    gender: z.string().nullish(),
   }),
   character: z.string().nullish().transform((value) => value ?? ''),
   characters: z.array(z.string()).nullish().transform((value) => value ?? []),

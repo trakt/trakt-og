@@ -7,6 +7,9 @@ import SummaryPoster from '$lib/components/summary/SummaryPoster.svelte';
 import TitleTags from '$lib/components/summary/TitleTags.svelte';
 import Container from '$lib/components/container/Container.svelte';
 import ActivityTabs from '$lib/components/summary/ActivityTabs.svelte';
+import ActorsStrip from '$lib/components/summary/ActorsStrip.svelte';
+import CastCard from '$lib/components/summary/CastCard.svelte';
+import ViewToggle from '$lib/components/toolbar/ViewToggle.svelte';
 import CommentsPreview from '$lib/components/summary/CommentsPreview.svelte';
 import AddCommentLink from '$lib/components/comments/AddCommentLink.svelte';
 import { newComment } from '$lib/components/comments/newComment.svelte';
@@ -30,6 +33,25 @@ import { formatting, movie, review, spoiler } from '../comments/fixtures.ts';
 // Shows the Add comment buttons, as for a signed-in viewer; the page has no form for them to open.
 $effect(() => newComment.mount());
 let reporting = $state(false);
+let view = $state<'grid' | 'list'>('grid');
+// Made-up people with no headshots, so each Futurama silhouette shows: Leela, Fry, then Zoidberg.
+const person = (name: string, characters: string, gender?: string, episodes?: string) => ({
+  name,
+  href: `/people/${name.toLowerCase().replace(/ /g, '-')}`,
+  characters,
+  gender,
+  episodes,
+});
+const regulars = [
+  person('Avery Stone', 'Captain Mara Vell', 'female', '24 episodes'),
+  person('Jonah Pike', 'Dr. Felix Brandt Jr.', 'male', '24 episodes'),
+  person('Sam Okafor', 'The Archivist', 'non_binary', '18 episodes'),
+  person('Riley Quinn', 'Officer Dale Hart', undefined, '9 episodes'),
+];
+const crew = [
+  { id: 'directing', label: 'Directing', cast: [person('Noor Haddad', 'Director', 'female', '6 episodes')] },
+  { id: 'writing', label: 'Writing', cast: [person('Theo Marsh', 'Writer, Story', 'male', '12 episodes')] },
+];
 const reportTarget = {
   type: 'movie' as const,
   id: 1,
@@ -127,7 +149,7 @@ const related: readonly RelatedCard[] = Array.from({ length: 6 }, (_, i) => ({
       <TitleTags
         links={[{ title: 'Ted Lasso', href: '/shows/ted-lasso' }, { title: 'Season 1', href: '/shows/ted-lasso/seasons/1' }]}
         type={{ text: 'Series Premiere', kind: 'series-premiere' }} credits={{ afterCredits: true }} />
-      <TitleTags label="Cast & Crew"
+      <TitleTags label="People"
         links={[{ title: 'Ted Lasso', href: '/shows/ted-lasso' }, { title: 'Season 1', href: '/shows/ted-lasso/seasons/1' }]}
         type={{ text: 'Season Finale', kind: 'season-finale' }} />
     </div>
@@ -158,6 +180,23 @@ const related: readonly RelatedCard[] = Array.from({ length: 6 }, (_, i) => ({
       </SummaryAction>
       <SummaryAction color="var(--brand-seventh)" icon={star} text="Add to favorites" />
     </div>
+    <h2>People</h2>
+    <p>
+      The summary's People strip: one dropdown of the actor and crew groups, eight cards across that scroll sideways,
+      and "All People" linking to the picked group. People without a headshot get a silhouette by gender. Local OG:
+      <code>/shows/breaking-bad</code>.
+    </p>
+    <ActorsStrip groups={[{ id: 'season-regulars', label: 'Series Regulars', cast: regulars }]} {crew}
+      creditsHref="/shows/demo/people" />
+    <p>The people page's cards: <ViewToggle bind:view /> flips them between the grid card and the list row.</p>
+    <ul class={['people-demo', view]}>
+      {#each regulars as member (member.href)}
+        <li>
+          <CastCard name={member.name} href={member.href} gender={member.gender} role={member.characters}
+            episodes={member.episodes} layout={view === 'list' ? 'row' : 'card'} />
+        </li>
+      {/each}
+    </ul>
     <h1>Summary sections</h1>
     <p>
     What loads under a movie or show summary as it scrolls into view. Local OG: the bottom of
@@ -179,6 +218,20 @@ const related: readonly RelatedCard[] = Array.from({ length: 6 }, (_, i) => ({
 <RelatedItems title="Heat" load={() => Promise.resolve(related)} datePreferences={page.data.datePreferences} />
 
 <style>
+.people-demo {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--cast-grid-min), 1fr));
+  gap: var(--cast-grid-row-gap) var(--actors-gap);
+  margin-block: var(--gutter);
+  padding: 0;
+  list-style: none;
+
+  &.list {
+    grid-template-columns: repeat(var(--cast-list-columns), minmax(0, 1fr));
+    gap: var(--cast-list-gap);
+  }
+}
+
 .title-tags-demo {
   display: flex;
   flex-direction: column;

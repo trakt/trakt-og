@@ -10,6 +10,7 @@ export function toCastMembers(members: PeopleResponse['cast'] | undefined, actor
     href: `/people/${member.person.ids.slug}`,
     characters: (member.characters ?? []).join(', '),
     image: imageUrl(member.images?.headshot?.at(0), 'thumb'),
+    gender: member.person.gender ?? undefined,
     episodes: actorSpoilers && member.episode_count ? countLabel(member.episode_count, 'episode') : '',
   }));
 }

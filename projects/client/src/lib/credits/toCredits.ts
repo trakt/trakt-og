@@ -1,8 +1,8 @@
 import type { z } from 'zod/v4';
-import { titleize } from '../components/summary/names.ts';
 import type { seasonPeopleSchema } from '../shows/seasonPeopleSchema.ts';
 import { countLabel } from '../utils/countLabel.ts';
 import { imageUrl } from '../utils/imageUrl.ts';
+import { crewDepartments } from './crewDepartments.ts';
 
 type People = z.infer<typeof seasonPeopleSchema>;
 type Member = NonNullable<People['cast']>[number];
@@ -13,10 +13,14 @@ export type CreditPerson = {
   readonly name: string;
   readonly href: string;
   readonly image?: string;
+  /** Picks the silhouette when there's no headshot. */
+  readonly gender?: string;
   /** The characters or the jobs, joined: "Walter White, Heisenberg". */
   readonly role: string;
   /** Shows and seasons: "62 episodes". */
   readonly episodes?: string;
+  /** The same count as a number, for sorting. */
+  readonly episodeCount?: number;
 };
 
 /** A credits dropdown group: "Season Regulars 8", "Directing 3". */
@@ -33,13 +37,6 @@ type Params = {
   crew: People['crew'];
   /** Episodes and movies have no episode counts. */
   episodeCounts: boolean;
-};
-
-// these departments first, then the rest alphabetically.
-const FIRST_DEPARTMENTS = ['created by', 'directing', 'writing', 'production'];
-const rank = (department: string) => {
-  const index = FIRST_DEPARTMENTS.indexOf(department);
-  return index === -1 ? FIRST_DEPARTMENTS.length : index;
 };
 
 const parameterize = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
@@ -59,9 +56,11 @@ function group(
       name: member.person.name,
       href: `/people/${member.person.ids.slug}`,
       image: imageUrl(member.images?.headshot?.at(0), 'thumb'),
+      gender: member.person.gender ?? undefined,
       // `credits_characters`: "A / B" becomes "A, B".
       role: role(member).join(', '),
       episodes: counts && member.episode_count ? countLabel(member.episode_count, 'episode') : undefined,
+      episodeCount: counts && member.episode_count ? member.episode_count : undefined,
     })),
   };
 }
@@ -74,8 +73,7 @@ export function toCredits({ actors, crew, episodeCounts }: Params): {
   return {
     actors: actors.filter(({ members }) => members?.length)
       .map(({ label, members }) => group(label, members ?? [], ({ characters }) => characters, episodeCounts)),
-    crew: Object.entries(crew ?? {}).filter(([, members]) => members.length > 0)
-      .toSorted(([a], [b]) => rank(a) - rank(b) || a.localeCompare(b))
-      .map(([department, members]) => group(titleize(department), members, ({ jobs }) => jobs ?? [], episodeCounts)),
+    crew: crewDepartments(crew)
+      .map(({ label, members }) => group(label, members, ({ jobs }) => jobs ?? [], episodeCounts)),
   };
 }

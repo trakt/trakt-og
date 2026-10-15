@@ -66,7 +66,7 @@ const failure = (promise: Promise<unknown>) => promise.then(() => null, (error: 
 
 describe('loadCredits', () => {
   describe('for episodes', () => {
-    it("should pair the season's regulars with the episode's whole cast, and arrows to the sibling credits", async () => {
+    it("should pair the season's regulars with the episode's whole cast, and arrows to the sibling people pages", async () => {
       const data = await load({ type: 'episode', id: 'breaking-bad', season: '1', episode: '2' });
 
       expect(data.credits.actors.map(({ label, people }) => [label, people.map(({ name }) => name)])).toEqual([
@@ -75,8 +75,8 @@ describe('loadCredits', () => {
       ]);
       expect(data.credits.crew.map(({ label }) => label)).toEqual(['Writing']);
       expect(data.media).toMatchObject({ title: '1x02 Cat', href: '/shows/breaking-bad/seasons/1/episodes/2' });
-      expect(data.previous?.href).toBe('/shows/breaking-bad/seasons/1/episodes/1/credits');
-      expect(data.next?.href).toBe('/shows/breaking-bad/seasons/2/episodes/1/credits');
+      expect(data.previous?.href).toBe('/shows/breaking-bad/seasons/1/episodes/1/people');
+      expect(data.next?.href).toBe('/shows/breaking-bad/seasons/2/episodes/1/people');
       const people = requests.filter(({ pathname }) => pathname.endsWith('/people'));
       expect(people.map(({ searchParams }) => searchParams.get('extended'))).toEqual(['images', 'images']);
     });
@@ -136,8 +136,8 @@ describe('loadCredits', () => {
     });
   });
 
-  it('should keep the credits subpage on a canonical slug redirect', async () => {
+  it('should keep the people subpage on a canonical slug redirect', async () => {
     const thrown = await failure(load({ type: 'show', id: '1388' }));
-    expect(isRedirect(thrown) && thrown.location).toBe('/shows/breaking-bad/credits');
+    expect(isRedirect(thrown) && thrown.location).toBe('/shows/breaking-bad/people');
   });
 });

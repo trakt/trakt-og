@@ -16,6 +16,7 @@ import { formatDate } from '../utils/formatDate.ts';
 import { formatRuntime } from '../utils/formatRuntime.ts';
 import { imageUrl } from '../utils/imageUrl.ts';
 import type { SeasonWithEpisodes, ShowPeople } from './loadShow.ts';
+import { toCrewGroups } from '../components/summary/toCrewGroups.ts';
 
 type Tag = NonNullable<ComponentProps<typeof FanartCard>['tags']>[number];
 
@@ -291,6 +292,7 @@ export function toShowSummary(params: ShowSummaryParams) {
     links: externalLinks(params),
     cast: toCastMembers(params.people?.cast, params.actorSpoilers),
     guestStars: toCastMembers(params.people?.guest_stars, params.actorSpoilers),
+    crew: toCrewGroups(params.people?.crew, params.actorSpoilers),
     recent: {
       upNext: recent.upNext,
       next: recent.next && episodeCard(recent.next),

@@ -51,7 +51,7 @@ const sections = $derived([
   { label: 'Activity', href: '#activity' },
   { label: 'Recent Episodes', href: '#recent-episodes' },
   ...(show.cast.length > 0 || show.guestStars.length > 0
-    ? [{ label: 'Actors', href: '#actors', more: { href: `${show.href}/credits`, text: 'All cast & crew' } }]
+    ? [{ label: 'People', href: '#people', more: { href: `${show.href}/people`, text: 'All people' } }]
     : []),
   ...(show.seasonCount > 0
     ? [{
@@ -126,10 +126,11 @@ const sections = $derived([
   />
   <ActorsStrip
     groups={[
-      { id: 'series-regulars', label: 'Series Regulars', cast: show.cast },
+      { id: 'season-regulars', label: 'Series Regulars', cast: show.cast },
       { id: 'guest-stars', label: 'Guest Stars', cast: show.guestStars },
     ]}
-    creditsHref="{show.href}/credits"
+    crew={show.crew}
+    creditsHref="{show.href}/people"
   />
   <SeasonsGrid showId={show.id} seasons={show.seasons} signedIn={data.signedIn} initialFilters={data.filters} datePreferences={data.datePreferences} />
   {#key media.slug}

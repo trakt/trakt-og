@@ -1,12 +1,14 @@
 <!--
-  A summary's "Actors" section: the heading with "All Cast & Crew", a dropdown of the groups with their counts ("Cast",
-  or a show's "Series Regulars" and "Guest Stars"), and a row of headshots that scrolls sideways. Pointing at one dims
-  the rest. Empty groups aren't offered.
+  A summary's "People" section: the heading with "All People", a dropdown of every group with its count, under an
+  Actors header ("Cast", or a show's "Series Regulars" and "Guest Stars") and a Crew header ("Directing", "Writing"),
+  and a row of headshots sized so eight fit, that scrolls sideways for the rest. "All People" opens the people page on
+  the picked group. Pointing at one headshot dims the rest. Empty groups aren't offered.
 -->
 <script lang="ts">
 import SeeMore from '$lib/components/see-more/SeeMore.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
+import { peopleGroupHref } from '$lib/credits/peopleGroupHref';
+import CastCard from './CastCard.svelte';
 import type { CastMember } from './CastMember.ts';
 
 interface Group {
@@ -17,58 +19,58 @@ interface Group {
 
 interface Props {
   groups: readonly Group[];
+  /** The crew departments, with each person's jobs as their `characters`. */
+  crew?: readonly Group[];
   /** The full credits subpage. */
   creditsHref: string;
 }
 
-const { groups, creditsHref }: Props = $props();
-const tabs = $derived(groups.filter(({ cast }) => cast.length > 0));
+const { groups, crew = [], creditsHref }: Props = $props();
+const kinds = $derived(
+  [
+    { kind: 'Actors' as const, groups: groups.filter(({ cast }) => cast.length > 0) },
+    { kind: 'Crew' as const, groups: crew.filter(({ cast }) => cast.length > 0) },
+  ].filter(({ groups }) => groups.length > 0),
+);
+const tabs = $derived(
+  kinds.flatMap(({ kind, groups }) => groups.map((group) => ({ ...group, kind, key: `${kind}:${group.id}` }))),
+);
 let picked = $state<string>();
-const current = $derived(tabs.find(({ id }) => id === picked) ?? tabs[0]);
+const current = $derived(tabs.find(({ key }) => key === picked) ?? tabs[0]);
 </script>
 
-<!-- Person pages og hasn't built yet, and resolve() only takes routes that exist. -->
-<!-- eslint-disable svelte/no-navigation-without-resolve -->
-
-{#if tabs.length > 0}
-  <div class="actors" id="actors">
+{#if current}
+  <div class="actors" id="people">
   <div class="heading">
-    <h2>Actors</h2>
-    <SeeMore href={creditsHref} text="All Cast & Crew" />
+    <h2>People</h2>
+    <SeeMore
+      href={peopleGroupHref(creditsHref, { kind: current.kind, id: current.id, first: current.key === tabs[0]?.key })}
+      text="All People"
+    />
   </div>
   <div class="controls">
-    <Dropdown section="Role">
-      {#snippet trigger()}{current?.label}{#if current}<span class="tag"
-          >{current.cast.length.toLocaleString('en-US')}</span>{/if}{/snippet}
-      <ul>
-        {#each tabs as tab (tab.id)}
-          <li>
-            <button type="button" aria-current={tab.id === current?.id} onclick={() => (picked = tab.id)}
-              ><span>{tab.label}</span><span class="tag">{tab.cast.length.toLocaleString('en-US')}</span></button>
-          </li>
-        {/each}
-      </ul>
+    <Dropdown section={current.kind}>
+      {#snippet trigger()}{current.label}<span class="tag">{current.cast.length.toLocaleString('en-US')}</span>{/snippet}
+      {#each kinds as { kind, groups: list }, i (kind)}
+        {#if i > 0}<hr />{/if}
+        <ul>
+          <li class="header">{kind}</li>
+          {#each list as group (group.id)}
+            <li>
+              <button type="button" aria-current={`${kind}:${group.id}` === current.key}
+                onclick={() => (picked = `${kind}:${group.id}`)}
+              ><span>{group.label}</span><span class="tag">{group.cast.length.toLocaleString('en-US')}</span></button>
+            </li>
+          {/each}
+        </ul>
+      {/each}
     </Dropdown>
   </div>
   <ul class="cast">
-    {#each current?.cast ?? [] as member (member.href)}
+    {#each current.cast as member (member.href)}
       <li>
-        <Tooltip text={[member.name, member.characters, member.episodes].filter(Boolean).join('\n')}>
-          {#snippet trigger(tooltip)}
-            <a href={member.href} {...tooltip}>
-              {#if member.image}
-                <img class="headshot" src={member.image} alt="" loading="lazy" decoding="async" />
-              {:else}
-                <span class="headshot"></span>
-              {/if}
-              <span class="name">{member.name}</span>
-              <span class="character">{member.characters || ' '}</span>
-              {#if member.episodes !== undefined}
-                <span class="count">{member.episodes || ' '}</span>
-              {/if}
-            </a>
-          {/snippet}
-        </Tooltip>
+        <CastCard name={member.name} href={member.href} image={member.image} gender={member.gender} role={member.characters}
+          episodes={member.episodes} />
       </li>
     {/each}
   </ul>
@@ -76,6 +78,10 @@ const current = $derived(tabs.find(({ id }) => id === picked) ?? tabs[0]);
 {/if}
 
 <style>
+.actors {
+  container-type: inline-size;
+}
+
 .heading {
   display: flex;
   align-items: baseline;
@@ -91,83 +97,37 @@ const current = $derived(tabs.find(({ id }) => id === picked) ?? tabs[0]);
   padding-block-start: var(--space-heading-dropdowns);
 }
 
-/* As far under the dropdown as the comments and lists previews' first rows. */
+/* As far under the dropdown as the comments and lists previews' first rows. Eight cards fill the width, fewer in a
+   narrow column, and the rest scroll in from the right. */
 .cast {
-  display: flex;
+  --visible: var(--actors-visible);
+  display: grid;
+  grid-auto-columns: calc((100% - (var(--visible) - 1) * var(--actors-gap)) / var(--visible));
+  grid-auto-flow: column;
+  gap: var(--actors-gap);
   margin: var(--gutter) 0;
-  padding: 0;
+  padding: 0 0 var(--actors-scrollbar-gap);
   overflow-x: auto;
   list-style: none;
+  scroll-snap-type: x mandatory;
   scrollbar-color: var(--color-scrollbar-thumb) var(--color-scrollbar-track);
   scrollbar-width: thin;
 }
 
 .cast > li {
-  flex: 0 0 max(var(--actor-width), 90px);
   min-inline-size: 0;
-  padding-inline-end: 10px;
-}
-
-a {
-  display: block;
-  text-decoration: none;
-  transition: opacity var(--transition-card);
-
-  &:is(:hover, :focus) {
-    text-decoration: none;
-  }
-}
-
-.headshot {
-  display: block;
-  inline-size: 100%;
-  aspect-ratio: var(--ratio-poster);
-  object-fit: cover;
-  background-color: var(--color-card-bg);
+  scroll-snap-align: start;
   transition: opacity var(--transition-card);
 }
 
-.name,
-.character,
-.count {
-  display: block;
-  overflow: hidden;
-  font-family: var(--font-headings);
-  font-size: var(--font-size-small);
-  line-height: var(--line-height-headings);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  transition: color var(--transition-card);
+/* Like OG, pointing anywhere in the row fades every other actor. */
+.cast:hover > li:not(:hover) {
+  opacity: var(--opacity-actor-dimmed);
 }
 
-.name {
-  margin-block-start: 5px;
-  color: var(--color-actor-name);
-}
-
-.character {
-  margin-block-start: 1px;
-  color: var(--color-actor-character);
-}
-
-.count {
-  margin-block-start: 1px;
-  color: var(--color-actor-count);
-  text-align: center;
-}
-
-/* Like OG, pointing anywhere in the row greys every name and fades every other headshot. */
-.cast:hover {
-  & li:not(:hover) .headshot {
-    opacity: 0.7;
+@container (width < 760px) {
+  .cast {
+    --visible: var(--actors-visible-narrow);
   }
-
-  & :is(.name, .character, .count) {
-    color: var(--color-actor-dimmed);
-  }
-}
-span.headshot {
-  background-image: var(--image-placeholder-poster);
-  background-size: cover;
 }
 </style>

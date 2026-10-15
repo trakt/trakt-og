@@ -1,6 +1,7 @@
 <!--
   A summary section's heading : "Comments" with "All 12 Comments",
-  "Lists" with "All 3 Lists".
+  "Lists" with "All 3 Lists". `ruled` puts it over the history's divider line instead of a top margin, for headings
+  that split one list into groups (the cast & crew search).
 -->
 <script lang="ts">
 import type { Snippet } from 'svelte';
@@ -12,12 +13,13 @@ interface Props {
   more?: { readonly href: string; readonly text: string };
   /** Links before the see-more one, like the comments' "Add comment". */
   actions?: Snippet;
+  ruled?: boolean;
 }
 
-const { title, id, more, actions }: Props = $props();
+const { title, id, more, actions, ruled = false }: Props = $props();
 </script>
 
-<div class="heading">
+<div class={['heading', { ruled }]}>
   <h2 {id}>{title}</h2>
   {#if actions}<span class="actions">{@render actions()}</span>{/if}
   {#if more}<SeeMore href={more.href} text={more.text} />{/if}
@@ -32,6 +34,12 @@ const { title, id, more, actions }: Props = $props();
 
   & h2 {
     margin: 0;
+  }
+
+  &.ruled {
+    margin-block-start: 0;
+    padding-block-end: var(--space-heading-rule);
+    border-block-end: 1px solid var(--color-separator);
   }
 }
 

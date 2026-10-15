@@ -1,13 +1,16 @@
 <!--
   OG's `#summary-ratings-wrapper`: the dark bar along the bottom of a summary's fanart, as one row of icons and numbers.
-  The Trakt rating and the Rate button come first, then favorites, the other sites' ratings, and the rest of the
-  community counts. Each number has a two-line tooltip: what it is, then its exact value. On a narrow screen the row
-  starts beside the poster and runs to the page edge, scrolling sideways only past that edge, never wrapping. Render it
-  in FanartHeader's `stats` slot.
-  The Rate button opens the shared rating popover, ten bars from gray to red.
+  The Trakt rating and the Rate button come first, then favorites, the other sites' ratings and All Stats. A summary passes only
+  its favorites; the rest of the community counts live on the stats page. A person's passes its list count. Each
+  number has a two-line tooltip: what it is, then its exact value. On a narrow screen the row starts beside the poster
+  and runs to the page edge, scrolling sideways only past that edge, never wrapping. Render it in FanartHeader's
+  `stats` slot.
+  The Rate and All Stats buttons are glass actions like the dashboard's; Rate opens the shared rating popover, ten bars
+  from gray to red, and takes the rating's color once rated.
 -->
 <script lang="ts">
 import MediaSpoiler from '$lib/components/summary/MediaSpoiler.svelte';
+import GlassAction from '$lib/components/glass-action/GlassAction.svelte';
 import MediaRating from '$lib/components/rating/MediaRating.svelte';
 import type { SpoilerTarget } from '$lib/settings/SpoilerTarget';
 import type { RatingTarget } from '$lib/components/rating/RatingTarget';
@@ -15,27 +18,15 @@ import { RATING_LABELS } from '$lib/components/rating/ratingPrompt';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import heartOutline from '$lib/icons/regular/heart.svg?raw';
+import arrowRightLong from '$lib/icons/regular/arrow-right-long.svg?raw';
+import chartColumn from '$lib/icons/solid/chart-column.svg?raw';
 import heart from '$lib/icons/solid/heart.svg?raw';
-import comments from '$lib/icons/solid/comments.svg?raw';
-import star from '$lib/icons/solid/star.svg?raw';
-import collection from '$lib/icons/trakt/collection-thick.svg?raw';
-import friends from '$lib/icons/trakt/friends-thick.svg?raw';
-import list from '$lib/icons/trakt/list-thick.svg?raw';
-import play from '$lib/icons/trakt/play2-thick.svg?raw';
-import imdb from '$lib/assets/sites/imdb-solid.svg';
-import justwatch from '$lib/assets/sites/justwatch-yellow.svg';
-import metacritic from '$lib/assets/sites/metacritic.png';
-import audienceCertified from '$lib/assets/sites/rt/audience-certified.svg';
-import audienceSpilled from '$lib/assets/sites/rt/audience-spilled.svg';
-import audienceUpright from '$lib/assets/sites/rt/audience-upright.svg';
-import tomatometerCertified from '$lib/assets/sites/rt/tomatometer-certified.svg';
-import tomatometerFresh from '$lib/assets/sites/rt/tomatometer-fresh.svg';
-import tomatometerRotten from '$lib/assets/sites/rt/tomatometer-rotten.svg';
-import tmdb from '$lib/assets/sites/tmdb.svg';
 import { readableStat } from '$lib/utils/readableStat';
-import type { ExternalRating, ExternalRatingLogo } from './ExternalRating.ts';
-import type { StripCount } from './releasedCounts.ts';
-import { type StripStat, type StripStatKind, stripStats } from './stripStats.ts';
+import type { ExternalRating } from './ExternalRating.ts';
+import { externalRatingLogos as logos } from './externalRatingLogos.ts';
+import type { StripCount } from './StripCount.ts';
+import { stripStatIcons as icons } from './stripStatIcons.ts';
+import { type StripStat, stripStats } from './stripStats.ts';
 
 interface Props {
   /** The Trakt rating, 0 to 10. Left out, the rating is hidden (OG hid it before release). */
@@ -46,31 +37,11 @@ interface Props {
   external?: readonly ExternalRating[];
   /** Zero counts are dropped. */
   counts?: readonly StripCount[];
+  /** The stats page, for the Stats button after the Trakt group. Left out on the stats page itself. */
+  statsHref?: string;
 }
 
-const { rating, rateLabel, ratingTarget, external = [], counts = [] }: Props = $props();
-
-const logos: Record<ExternalRatingLogo, string> = {
-  imdb,
-  tmdb,
-  'tomatometer-certified': tomatometerCertified,
-  'tomatometer-fresh': tomatometerFresh,
-  'tomatometer-rotten': tomatometerRotten,
-  'audience-certified': audienceCertified,
-  'audience-spilled': audienceSpilled,
-  'audience-upright': audienceUpright,
-  metacritic,
-  justwatch,
-};
-
-const icons: Record<StripStatKind, string> = {
-  watchers: friends,
-  plays: play,
-  libraries: collection,
-  lists: list,
-  comments,
-  favorited: star,
-};
+const { rating, rateLabel, ratingTarget, external = [], counts = [], statsHref }: Props = $props();
 
 // OG truncated instead of rounding, so 79.9% reads 79%.
 const percent = $derived(rating ? Math.trunc(rating.value * 10) : 0);
@@ -132,10 +103,8 @@ const rateHint = (value: number | null) =>
       <li>
         <MediaRating target={ratingTarget} variant="summary" hint={rateHint}>
           {#snippet trigger({ value })}
-            <span class={['rate', { rated: value }]} style:--rated={value ? `var(--rating-${value})` : undefined}>
-              <Icon svg={value ? heart : heartOutline} />
-              {#if value}<span class="rate-score">{value}</span>{/if}
-            </span>
+            <GlassAction presentational glass icon={value ? heart : heartOutline}
+              color={value ? `var(--rating-${value})` : undefined}>{value ?? 'Rate'}</GlassAction>
           {/snippet}
         </MediaRating>
       </li>
@@ -165,6 +134,12 @@ const rateHint = (value: number | null) =>
         </li>
       {/each}
     {/if}
+    {#if statsHref}
+      <li class="all-stats">
+        <GlassAction href={statsHref} glass icon={chartColumn}>All Stats<span class="arrow"><Icon svg={arrowRightLong} /></span
+          ></GlassAction>
+      </li>
+    {/if}
     {#if stats.community.length > 0}
       {#if rating || external.length > 0}<li class="divider" aria-hidden="true"></li>{/if}
       {#each stats.community as stat (stat.kind)}{@render count(stat)}{/each}
@@ -174,14 +149,15 @@ const rateHint = (value: number | null) =>
 
 <style>
 /* One row from beside the poster to the page edge: the content column is centered in the stats bar, so reaching past
-   its end by half the difference lands on the bar's edge. It scrolls sideways past that, never wrapping. */
+   its end by half the difference lands on the bar's edge. It scrolls sideways past that, never wrapping. Padding the
+   end by that same reach keeps the row's own end, where All Stats sits, at the content column's edge. */
 .ratings-strip {
   display: flex;
   min-block-size: var(--stats-height);
   /* Out to the bar's top and bottom edges, so the dividers between the groups run its full height. */
   margin-block: calc(-1 * var(--stats-padding-block));
   margin-inline-end: calc((100% - 100cqi) / 2);
-  padding-inline: var(--summary-offset) var(--gutter);
+  padding-inline: var(--summary-offset) calc((100cqi - 100%) / 2 - var(--strip-item-pad-inline));
   overflow-x: auto;
   scrollbar-width: none;
   white-space: nowrap;
@@ -197,6 +173,7 @@ const rateHint = (value: number | null) =>
 
 ul {
   display: flex;
+  flex: 1;
   align-items: center;
   gap: var(--strip-gap);
   margin: 0;
@@ -305,45 +282,25 @@ li {
   }
 }
 
+/* The way to the stats page, at the row's end, its arrow nudging right on hover like a see-more link. */
+.all-stats {
+  margin-inline-start: auto;
+
+  & .arrow {
+    display: inline-flex;
+    transition: transform var(--transition-see-more);
+  }
+
+  &:is(:hover, :focus-within) .arrow {
+    transform: translateX(var(--space-see-more-nudge));
+  }
+}
+
 /* Between the Trakt, other sites and community groups, top to bottom of the bar. */
 .divider {
   align-self: stretch;
   inline-size: 1px;
   background-color: var(--color-strip-divider);
-}
-
-/* The Rate button: an outlined heart that fills in its rating's color, with the score beside it, once rated. */
-.rate {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--strip-rate-gap);
-  min-inline-size: var(--strip-rate-size);
-  block-size: var(--strip-rate-size);
-  padding-inline: var(--strip-rate-padding);
-  border: 1px solid var(--color-strip-rate-line);
-  border-radius: calc(var(--strip-rate-size) / 2);
-  background-color: var(--color-strip-rate-bg);
-  color: var(--color-card-text);
-  font-family: var(--font-headings);
-  font-size: var(--font-size-strip-rate);
-  font-weight: var(--font-weight-headings-heavy);
-  transition: background-color var(--transition-card), border-color var(--transition-card);
-
-  &:hover {
-    border-color: var(--color-strip-rate-line-hover);
-    background-color: var(--color-strip-rate-hover);
-  }
-
-  /* Rated, the heart and its outline take the rating's own color, gray at 1 to red at 10. */
-  &.rated {
-    border-color: color-mix(in srgb, var(--rated) var(--strip-rated-line-mix), transparent);
-    background-color: color-mix(in srgb, var(--rated) var(--strip-rated-bg-mix), transparent);
-
-    & :global(.icon) {
-      color: var(--rated);
-    }
-  }
 }
 
 .visually-hidden {
@@ -356,7 +313,7 @@ li {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .rate {
+  .all-stats .arrow {
     transition: none;
   }
 }

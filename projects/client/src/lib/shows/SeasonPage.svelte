@@ -44,6 +44,7 @@ const media = $derived({
 const lazy = () => browserSectionsClient(data.user !== null);
 const sections = $derived([
   { label: 'Overview', href: '#overview' },
+  { label: 'Stats', href: `${season.href}/stats`, page: true },
   { label: 'Activity', href: '#activity' },
   ...(season.cast.length + season.guestStars.length > 0
     ? [{ label: 'Actors', href: '#actors', more: { href: `${season.href}/credits`, text: 'All cast & crew' } }]
@@ -68,9 +69,10 @@ const sections = $derived([
   <meta name="description" content={season.overview ?? season.fullTitle} />
 </svelte:head>
 
-<FanartHeader image={season.fanart}>
-  <SummaryTitle title={season.title} year={season.years} certification={season.certification} parent={{ href: season.showHref, title: season.parentTitle }} />
-  {#snippet stats()}<RatingsStrip rating={season.rating} rateLabel="season" {ratingTarget} counts={season.counts} />{/snippet}
+<FanartHeader image={season.fanart} subnav>
+  <SummaryTitle title={season.title} year={season.years} certification={season.certification} links={season.parents} />
+  {#snippet stats()}<RatingsStrip rating={season.rating} rateLabel="season" {ratingTarget}
+    statsHref="{season.href}/stats" />{/snippet}
   {#snippet edges()}<ItemNav previous={season.previous} next={season.next} up={season.showHref} />{/snippet}
 </FanartHeader>
 <SummaryFrame label={season.fullTitle}>

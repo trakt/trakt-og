@@ -4,7 +4,10 @@
     <GlassAction icon={listThick} color="var(--brand-secondary)" selected={watchlisted} onclick={toggle}>
       Add to Watchlist
     </GlassAction>
-  Anything else (`aria-*`, `popovertarget`, a `style` with an `anchor-name`) goes on the button.
+  Anything else (`aria-*`, `popovertarget`, a `style` with an `anchor-name`) goes on the button. `glass` swaps the
+  black for the dark dropdown trigger's colors, see-through, for over a summary's fanart. With `href` it's a link
+  instead ("All Stats"), and `presentational` draws it without a control of its own, for inside another one's trigger
+  (the ratings strip's Rate, inside the rating popover's button).
 -->
 <script lang="ts">
 import Spinner from '$lib/components/loading/Spinner.svelte';
@@ -19,17 +22,37 @@ interface Props extends Omit<HTMLButtonAttributes, 'color'> {
   selected?: boolean;
   /** Names the wait for screen readers, and shows a spinner in place of the icon. */
   busy?: string;
+  /** A link to this page instead of a button. */
+  href?: string;
+  /** Only the look, for inside another control. */
+  presentational?: boolean;
+  /** Frosted rather than black, when it has no color. */
+  glass?: boolean;
   children: Snippet;
 }
 
-const { icon, color, selected = false, busy, children, ...rest }: Props = $props();
+const { icon, color, selected = false, busy, href, presentational = false, glass = false, children, ...rest }: Props =
+  $props();
+const classes = $derived(['glass-action', { glass, tinted: color, selected }]);
 </script>
 
-<button type="button" {...rest} class={['glass-action', { tinted: color, selected }]} style:--action={color}
-  aria-busy={busy ? 'true' : undefined}>
+{#snippet body()}
   {#if busy}<Spinner label={busy} />{:else}<span class="icon"><Icon svg={icon} /></span>{/if}
   {@render children()}
-</button>
+{/snippet}
+
+<!-- The href comes in as a prop, and resolve() only takes literal routes. -->
+<!-- eslint-disable svelte/no-navigation-without-resolve -->
+
+{#if href}
+  <a {href} class={classes} style:--action={color}>{@render body()}</a>
+{:else if presentational}
+  <span class={classes} style:--action={color}>{@render body()}</span>
+{:else}
+  <button type="button" {...rest} class={classes} style:--action={color} aria-busy={busy ? 'true' : undefined}>
+    {@render body()}
+  </button>
+{/if}
 
 <style>
 .glass-action {
@@ -45,16 +68,36 @@ const { icon, color, selected = false, busy, children, ...rest }: Props = $props
   font: inherit;
   font-size: var(--font-size-glass-action);
   font-weight: var(--font-weight-glass-action);
+  text-decoration: none;
   white-space: nowrap;
   cursor: pointer;
   transition: background-color var(--transition-card);
 
   &:is(:hover, :focus-visible) {
     background: var(--color-glass-action-black-hover);
+    color: var(--color-glass-action-text);
+    text-decoration: none;
   }
 
   &[aria-busy='true'] {
     cursor: wait;
+  }
+}
+
+/* In the dark dropdown trigger's colors, see-through, so it sits quietly in the art: a muted icon, a brighter
+   border on hover. */
+.glass {
+  border-color: var(--color-glass-action-glass-line);
+  background: var(--color-glass-action-glass);
+  backdrop-filter: var(--blur-header-glass);
+
+  & .icon {
+    color: var(--color-glass-action-glass-icon);
+  }
+
+  &:is(:hover, :focus-visible) {
+    border-color: var(--color-glass-action-glass-line-hover);
+    background: var(--color-glass-action-glass-hover);
   }
 }
 

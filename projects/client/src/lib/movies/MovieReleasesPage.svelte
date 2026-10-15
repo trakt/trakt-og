@@ -9,7 +9,6 @@ import SummaryPoster from '$lib/components/summary/SummaryPoster.svelte';
 import WatchNow from '$lib/components/watchnow/WatchNow.svelte';
 import CountryHeading from '$lib/components/table/CountryHeading.svelte';
 import DataPanel from '$lib/components/table/DataPanel.svelte';
-import calendar from '$lib/icons/trakt/calendar.svg?raw';
 import type { loadMovieReleases } from '$lib/movies/loadMovieReleases';
 
 const { data }: { data: Awaited<ReturnType<typeof loadMovieReleases>> } = $props();
@@ -24,7 +23,7 @@ const movie = $derived(data.movie);
 </svelte:head>
 
 <FanartHeader image={movie.fanart} slim>
-  <SubpageTitle label="Release dates for..." icon={calendar} title={movie.title} year={movie.year} href={movie.href} />
+  <SubpageTitle label="Release Dates" title={movie.title} year={movie.year} href={movie.href} />
 </FanartHeader>
 <SummaryFrame label={movie.title} fullWidth>
   {#snippet tools()}

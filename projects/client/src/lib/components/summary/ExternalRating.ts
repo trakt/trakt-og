@@ -1,6 +1,7 @@
 /** Which logo the ratings bar shows next to an external rating. */
 export type ExternalRatingLogo =
   | 'imdb'
+  | 'letterboxd'
   | 'tmdb'
   | 'tomatometer-certified'
   | 'tomatometer-fresh'
@@ -20,6 +21,8 @@ export interface ExternalRating {
   readonly detail: string;
   readonly href: string;
   readonly rating: string;
+  /** The rating on one 100 point scale, so sites compare: IMDb's 6.8 is 68. JustWatch's rank has none. */
+  readonly score?: number;
   /** Metacritic colors its logo ring by score, like OG's `metascore_class`. */
   readonly metascore?: 'high' | 'medium' | 'low';
   /** JustWatch's 30-day rank change, signed ("+15", "-113"), leading the tooltip's second line in bold. */

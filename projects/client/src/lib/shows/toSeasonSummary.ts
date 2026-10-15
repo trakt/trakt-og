@@ -9,7 +9,6 @@ import type {
 import type { z } from 'zod/v4';
 import { iconLinks } from '../components/summary/iconLinks.ts';
 import { countryName, languageName, titleize } from '../components/summary/names.ts';
-import { releasedCounts } from '../components/summary/releasedCounts.ts';
 import { toCastMembers } from '../components/summary/toCastMembers.ts';
 import type { DatePreferences } from '../settings/DatePreferences.ts';
 import { countLabel } from '../utils/countLabel.ts';
@@ -61,11 +60,6 @@ export function toSeasonSummary(params: Params) {
   const networkLink = network ? { name: network, href: popular('networks', network.replace('+', '-plus')) } : undefined;
   const aired = episodes.filter(({ first_aired }) => first_aired && new Date(first_aired) <= now);
   const total = season.total_runtime ?? aired.reduce((sum, episode) => sum + (episode.runtime ?? show.runtime ?? 0), 0);
-  const count = (value: number, one: string, many: string, link?: string) => ({
-    count: value,
-    label: value === 1 ? one : many,
-    href: link,
-  });
 
   return {
     id: season.ids.trakt,
@@ -73,7 +67,8 @@ export function toSeasonSummary(params: Params) {
     showId: show.ids.trakt,
     showHref,
     showTitle: show.title,
-    parentTitle: title === standardTitle ? show.title : `${show.title}: ${standardTitle}`,
+    /** The way up for the tag bar: the show, then "Season 10" when the season has a title of its own. */
+    parents: [{ title: show.title, href: showHref }, ...(title === standardTitle ? [] : [{ title: standardTitle }])],
     href,
     title,
     fullTitle,
@@ -90,13 +85,6 @@ export function toSeasonSummary(params: Params) {
         href: `${href}/stats`,
       }
       : undefined,
-    counts: releasedCounts([
-      count(stats.watchers, 'watcher', 'watchers'),
-      count(stats.plays, 'play', 'plays'),
-      count(stats.collectors, 'library', 'libraries'),
-      count(stats.comments, 'comment', 'comments', `${href}/comments`),
-      count(stats.lists, 'list', 'lists', `${href}/lists`),
-    ], premiered),
     commentCount: stats.comments,
     listCount: stats.lists,
     airedEpisodes: season.aired_episodes ?? aired.length,

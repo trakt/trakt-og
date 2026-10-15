@@ -26,7 +26,9 @@ const title = {
   homepage: z.string().nullish(),
   images,
   social_ids: socialIds,
+  certification: z.string().nullish(),
 };
+const credits = { during_credits: z.boolean().nullish(), after_credits: z.boolean().nullish() };
 
 /**
  * `/comments/:id/item?extended=full,images`: the `type` and the media under that key, with the show beside a season
@@ -36,11 +38,12 @@ const title = {
  */
 export const subpageItemSchema = z.object({
   type: z.string(),
-  movie: z.object({ ...title, released: z.string().nullish() }).nullish(),
+  movie: z.object({ ...title, ...credits, released: z.string().nullish() }).nullish(),
   show: z.object({ ...title, first_aired: z.string().nullish(), aired_episodes: z.number().nullish() }).nullish(),
   season: z.object({
     ids,
     number: z.number(),
+    title: z.string().nullish(),
     first_aired: z.string().nullish(),
     aired_episodes: z.number().nullish(),
     images,
@@ -53,6 +56,7 @@ export const subpageItemSchema = z.object({
     title: z.string().nullish(),
     first_aired: z.string().nullish(),
     images,
+    ...credits,
   }).nullish(),
   list: z.object({
     ids: z.object({ trakt: z.number(), slug: z.string() }),

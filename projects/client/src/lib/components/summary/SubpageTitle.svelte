@@ -1,39 +1,45 @@
 <!--
-  The title block of a slim fanart header on a subpage: the label line ("Release dates for...", "Shout by NAME"), for
-  seasons and episodes the show and season as links, then the h1 linking back to the item.
+  The title block of a slim fanart header on a subpage: the tag bar (the page label, "Stats" or "Shout by NAME", then
+  for seasons and episodes the show and season, an episode's type and post-credits scenes), then the h1 linking back
+  to the item, with the certification after it.
 -->
 <script lang="ts">
 import MediaSpoiler from '$lib/components/summary/MediaSpoiler.svelte';
 import type { SpoilerTarget } from '$lib/settings/SpoilerTarget';
-import Icon from '$lib/icons/Icon.svelte';
+import Certification from './Certification.svelte';
+import TitleTags from './TitleTags.svelte';
+import type { ComponentProps } from 'svelte';
 
 interface Props {
   label: string;
   target?: SpoilerTarget;
-  icon?: string;
-  /** OG's h2 above the title: the show, then the season. */
-  parents?: readonly { readonly title: string; readonly href: string }[];
-  title: string;
+  /** The way up: the show, then the season. */
+  parents?: ComponentProps<typeof TitleTags>['links'];
+  /** An episode's type: "Season Finale". */
+  type?: ComponentProps<typeof TitleTags>['type'];
+  /** A movie's or episode's scenes during and after the credits. */
+  credits?: ComponentProps<typeof TitleTags>['credits'];
+  certification?: string;
+  /** An episode's number, shown apart from its name so only the name hides behind the spoiler setting. */
+  number?: string;
+  /** The name: an episode's without its number, or the item's whole title. */
+  title?: string;
   year?: number | null;
   href: string;
 }
 
-const { label, icon, parents = [], title, year, href, target }: Props = $props();
-// OG's "Show: Season 1". A literal space would be trimmed at the block's edge.
-const separator = ': ';
+const { label, parents, type, credits, certification, number, title, year, href, target }: Props = $props();
 </script>
 
 <!-- The item's canonical URL comes from the API slug. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 <div class="subpage-title">
-  <p>{#if icon}<Icon svg={icon} />{/if} {label}</p>
-  {#if parents.length > 0}
-    <!-- A paragraph, so the page's first heading is the h1. -->
-    <p class="parents">
-      {#each parents as parent, i (parent.href)}{#if i > 0}{separator}{/if}<a href={parent.href}>{parent.title}</a>{/each}
-    </p>
-  {/if}
-  <h1><MediaSpoiler {target} kind="title" inline><a {href}>{title}{#if year}<span class="year">{` ${year}`}</span>{/if}</a></MediaSpoiler></h1>
+  <TitleTags {label} links={parents} {type} {credits} />
+  <h1>
+    {#if number}<a {href}><strong>{number}</strong></a>{/if}
+    {#if title}<MediaSpoiler {target} kind="title" inline><a {href}>{title}</a></MediaSpoiler>{/if}
+    {#if year}<span class="year">{year}</span>{/if}{#if certification}<Certification {certification} />{/if}
+  </h1>
 </div>
 
 <style>
@@ -46,28 +52,16 @@ const separator = ': ';
     padding-inline-start: 0;
   }
 }
-p {
-  margin: 0 0 var(--space-sm-block);
-  font-family: var(--font-headings);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-headings-heavy);
-  line-height: var(--line-height-headings);
-  text-transform: uppercase;
-}
-/* OG's `.summary h2`. */
-.parents {
-  color: var(--gray-lighter);
-  font-size: var(--font-size-summary-h2);
-  font-weight: var(--font-weight-headings);
-  text-shadow: var(--text-shadow-headings);
-  text-transform: none;
-}
 a {
   color: var(--gray-lighter);
   &:is(:hover, :focus-visible) {
     color: var(--brand-primary);
     text-decoration: none;
   }
+}
+/* The episode number in the title's own weight; only the name beside it can blur. */
+strong {
+  font-weight: inherit;
 }
 .year {
   color: var(--gray-light);

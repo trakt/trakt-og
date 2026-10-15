@@ -79,6 +79,14 @@ describe('mapper: toProfileRatings', () => {
       ]);
     });
 
+    it('should count votes instead of ratings for a title', () => {
+      const { keys, chart } = toProfileRatings({ distribution, unit: 'vote' });
+
+      expect(keys.map(({ name }) => name)).toEqual(['Votes', 'Average', 'Most given', 'Loved · 9 and 10']);
+      expect(keys.at(2)?.counts).toEqual(['Totally Ninja!', '405 votes']);
+      expect(chart?.unit).toBe('vote');
+    });
+
     it('should list rated seasons only when there are some, and no types without them', () => {
       expect(toProfileRatings({ distribution, types: { ...types, seasons: 1 } }).keys.at(0)?.counts)
         .toEqual(['498 movies', '141 shows', '1 season', '298 episodes']);

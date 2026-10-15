@@ -751,6 +751,12 @@
   --color-glass-action-black: #000; /* Watch Now */
   --color-glass-action-black-line: rgb(255 255 255 / 0.22);
   --color-glass-action-black-hover: #1a1a1a;
+  /* Over a summary's fanart: the dark dropdown trigger's colors, see-through, so it sits quietly in the strip. */
+  --color-glass-action-glass: rgb(35 35 35 / 0.82);
+  --color-glass-action-glass-line: #3b3b3b;
+  --color-glass-action-glass-hover: rgb(46 46 46 / 0.9);
+  --color-glass-action-glass-line-hover: #5c5c5c;
+  --color-glass-action-glass-icon: #8c8c8c;
   --font-size-glass-action: 13px;
   --font-weight-glass-action: var(--font-weight-headings);
 
@@ -1257,6 +1263,35 @@
   --color-profile-pill-border: rgb(255 255 255 / 0.14);
   --color-profile-pill-text: rgb(255 255 255 / 0.78);
   --color-profile-pill-icon: rgb(255 255 255 / 0.55);
+
+  /* The tag bar above a title: page label, the way up split by slashes, episode type and post-credits tags. */
+  --title-tags-height: 28px;
+  --title-tags-padding: 12px;
+  --title-tags-label-padding-end: 10px; /* "Stats" to the divider, a touch under its start to read even */
+  --title-tags-slant: 10px; /* how far the slash between steps leans across the bar, like a typed "/" */
+  --title-tags-slash-gap: 10px; /* text to the slash */
+  --space-title-tags: 5px; /* the bar to the title under it */
+  --space-title-tags-count: 4px; /* "Post Credits" to its "×2" */
+  --font-size-title-tags: 13px;
+  --color-title-tags-bg: rgb(20 20 20 / 0.32);
+  --color-title-tags-line: rgb(255 255 255 / 0.18);
+  --color-title-tags-divider: rgb(255 255 255 / 0.2);
+  --color-title-tags-text: #dcdcdc;
+  --color-title-tags-label: rgb(0 0 0 / 0.55);
+  --color-title-tags-hover: rgb(255 255 255 / 0.16);
+  --color-title-tags-credits-bg: #f2f2f2;
+  --color-title-tags-credits-text: #111;
+  --opacity-title-tags-count: 0.7;
+  /* A title's certification after its year: OG's size, in the frosted glass of the strip's All Stats button. */
+  --space-certification: 6px; /* the year to the certification */
+  --space-certification-padding: 3px 7px 2px;
+  --font-size-certification: 11px;
+  --color-certification-line: rgb(255 255 255 / 0.5);
+  --color-certification-bg: rgb(0 0 0 / 0.38); /* dark glass, so the white text holds on bright fanart too */
+  --color-certification-hover-bg: #fff; /* hovered, it fills white like OG's */
+  --color-certification-hover-text: #111;
+  --color-summary-demo-art: #2a3036; /* the design route's stand-in for fanart behind the bar */
+
   /* An incoming follow request: a second glass deck under the site header, the header's glass and art tint with a
      green wash, so it reads as part of the header but apart from it. */
   --profile-request-bar-height: 52px;
@@ -1456,16 +1491,52 @@
   --item-stats-icon-gap: 5px;
   --item-stats-check-size: 20px;
 
-  /* Media stats: 's 300px canvas, scaled by yirChart . */
+  /* Media stats: the shorter strip and poster overlap on season and episode stats. */
   --media-stats-compact-strip-height: 55px;
   --media-stats-compact-poster-overlap: 180px;
-  --media-ratings-chart-height: 300px;
-  --media-ratings-plot-height: 270px;
-  --media-ratings-plot-inset: 10px 0 0 10px;
-  --media-ratings-hit-height: 5px;
-  --media-ratings-heading-gap: 28px;
-  --media-ratings-heart-gap: 3px;
-  --media-ratings-dash-gap: 6px;
+
+  /* A title's stats page: Trakt Ratings, Community and Other Sites, each under a watermarked heading. */
+  --space-stats-section: 44px; /* between the sections */
+  --space-stats-body: 16px; /* between a heading and its section */
+  --stats-tile-min: 120px; /* a Community tile's narrowest */
+  --space-stats-tiles: 10px;
+  --space-stats-tile: 12px 12px 14px;
+  --space-stats-tile-value: 6px; /* between a tile's label and its number */
+  --stats-tile-rule: 3px; /* the count's color along a tile's top */
+  --color-stats-tile-bg: light-dark(#f2f2f2, #262626);
+  --color-stats-tile-hover: light-dark(#e2e2e2, #343434);
+  --font-size-stats-tile-value: 28px;
+  --stats-site-logo: 22px; /* every logo's width, IMDb's wide badge too */
+  --space-stats-site-cell: 10px;
+  --space-stats-site-rows: 8px; /* between the Second Opinions boxes */
+  --space-stats-site-logo: 6px; /* either side of a logo, so it sits as far from the edge as from the name */
+  --space-stats-site-score: 20px; /* more room before the score, past the column gap */
+  --stats-score-tag-min: 52px; /* so the score tags line up */
+  --space-stats-score-tag: 3px 8px;
+  --color-stats-score-tag: light-dark(rgb(0 0 0 / 0.07), rgb(255 255 255 / 0.08)); /* a wash, so it holds on hover too */
+  --stats-site-bar-height: 8px;
+  --space-stats-site-bar: 11px; /* either side of a bar, past the column gap */
+  --stats-site-bar-min: 140px;
+  --radius-stats-site-bar: 4px;
+  --color-stats-site-track: light-dark(#eee, #333);
+  --color-stats-site-track-hover: light-dark(#d4d4d4, #4a4a4a); /* still clear on a hovered box */
+  --stats-trakt-line: 1px; /* Trakt's score, dashed down every bar like the chart's average line */
+  --color-stats-trakt-line: var(--color-minutes-average);
+  --color-stats-diff-up: light-dark(#2e7d32, #6fcf7a);
+  --color-stats-diff-down: light-dark(#c62828, #ff5a60);
+  --color-stats-diff-flat: light-dark(#666, #bbb);
+  --stats-diff-bg-mix: 16%; /* a diff badge's tint of its own color */
+  --space-stats-diff: 2px 7px;
+  --radius-stats-diff: 4px;
+  --stats-diff-min: 38px; /* so the badges line up */
+  --space-stats-diff-edge: 10px; /* past the column gap, between a badge and its box's edge */
+  /* Each site's bar in its brand's primary color. */
+  --color-site-trakt: var(--brand-primary);
+  --color-site-imdb: #f5c518;
+  --color-site-letterboxd: #00e054;
+  --color-site-tmdb: #01b4e4;
+  --color-site-rotten-tomatoes: #fa320a;
+  --color-site-metacritic: #ffcc34;
 
   /* Profile charts: the genre band, the ratings chart and its tooltip, and the most watched columns
       */
@@ -1523,16 +1594,8 @@
   --opacity-genre-piece-dimmed: 0.35;
   --opacity-genre-key-dimmed: 0.45;
   --transition-chart: 0.5s;
-  --color-ratings-bar: #999;
-  --color-ratings-bar-hover: #ab2425;
-  --color-ratings-bar-top: light-dark(#666, #fff); /* the most rated bar */
   --color-chart-axis: light-dark(#ddd, #444);
   --color-chart-axis-label: light-dark(#aaa, #777);
-  --ratings-bar-spacing: 1px; /* the media votes chart's barValueSpacing */
-  --chart-tick: 5px;
-  --chart-axis-label-gap: 3px; /* between a tick's end and its label */
-  --font-size-chart-axis: 10px;
-  --font-chart: 'Helvetica Neue', Helvetica, Arial, sans-serif; /* Chart.js v1's scale font */
   --color-chart-tooltip-bg: rgb(0 0 0 / 0.9);
   --color-chart-tooltip-border: #666;
   --color-chart-tooltip-text: #fff;
@@ -1540,8 +1603,6 @@
   --radius-chart-tooltip: 6px;
   --space-chart-tooltip: 5px 8px;
   --chart-tooltip-offset: 20px; /* above the bar's top */
-  --font-size-chart-tooltip: 14px;
-  --font-size-chart-tooltip-small: 11px;
   /* The profile's ratings chart: bars in their rating colors over dashed count lines and a dashed average line, in
      the Last 30 Days chart's style, with genre-style keys under it. */
   --color-ratings-count: var(--color-genre-label); /* over each bar */
@@ -1549,6 +1610,7 @@
   --color-ratings-number: var(--color-genre-count); /* the ratings on the axis */
   --color-ratings-name: var(--color-chart-axis-label); /* their names under them */
   --color-ratings-top: var(--color-genre-label); /* the most given rating's number and name */
+  --color-ratings-chart-bg: var(--color-charts-bg); /* behind the average's label, matching what the chart sits on */
   --ratings-plot-height: 150px;
   --ratings-gutter: 32px; /* the count line labels, left of the plot */
   --ratings-bar-gap: 10px; /* either side of a bar */
@@ -1657,18 +1719,8 @@
   --strip-logo-size: 20px;
   --strip-imdb-height: 16px; /* IMDb's badge is wide, so it's sized by height */
   --strip-metascore-ring: 2px;
-  --color-strip-divider: rgb(255 255 255 / 0.18);
+  --color-strip-divider: var(--color-surface); /* the page right under the strip, as if the bar were cut through */
   --color-strip-hover: rgb(255 255 255 / 0.1);
-  --strip-rate-size: 28px;
-  --strip-rate-padding: 8px; /* beside the heart and score once rated */
-  --strip-rate-gap: 4px;
-  --font-size-strip-rate: 13px;
-  --color-strip-rate-line: rgb(255 255 255 / 0.3);
-  --color-strip-rate-line-hover: rgb(255 255 255 / 0.55);
-  --color-strip-rate-bg: rgb(255 255 255 / 0.06);
-  --color-strip-rate-hover: rgb(255 255 255 / 0.14);
-  --strip-rated-line-mix: 70%; /* how much of the rating's color the rated button's outline keeps */
-  --strip-rated-bg-mix: 28%;
   /* Each Trakt count's icon, in its action's color, lifted for the dark strip. */
   --color-strip-watchers: #5aa6d8;
   --color-strip-plays: #b884cf; /* history's purple */
@@ -1694,14 +1746,21 @@
   --color-action-bg: light-dark(#fff, #222); /* idle action buttons */
   --color-overview-shade: light-dark(#fff, #1d1d1d);
   --font-size-summary-label: 13px; /* external link and video tiles */
-  --font-size-summary-h2: 18px; /* the collection or show above the title */
-  --summary-title-tag-gap: 10px; /* before the post-credits tag, matching the certification's */
   --font-size-action: 15px;
   --font-size-action-icon: 30px;
   --font-size-item-nav: 100px; /* the prev/next chevrons */
   --shadow-item-nav: drop-shadow(0 0 10px #666);
-  --item-nav-top: 188px;
-  --item-nav-top-slim: 65px; /* subpages' slim header: OG's 50px (`body.credits_season`), matched to local OG */
+  /* A summary's previous and next arrows: small glass circles, centered in the fanart between the site header and
+     the ratings strip. */
+  --item-nav-size: 44px;
+  --font-size-item-nav-icon: 18px;
+  --space-item-nav: 20px; /* from the page's edge */
+  --space-item-nav-nudge: 2px; /* the arrow's shift toward where it goes, on hover */
+  --color-item-nav-bg: rgb(20 20 20 / 0.45);
+  --color-item-nav-line: rgb(255 255 255 / 0.18);
+  --color-item-nav-text: rgb(255 255 255 / 0.75);
+  --color-item-nav-hover: rgb(255 255 255 / 0.16);
+  --color-item-nav-line-hover: rgb(255 255 255 / 0.4);
   --radius-certification: 2px;
   --summary-min-height: 600px;
   --video-icon-width: 34px;
@@ -1745,9 +1804,6 @@
   --overview-collapsed: 300px;
 
   /* Episode summary title (OG at 2e0405a5f). */
-  --episode-title-gap: 5px;
-  --episode-title-certification-gap: 10px;
-  --episode-title-certification-padding: 2px 4px 1px;
 
   /* Episode list overview. */
   --episode-overview-collapsed: 200px;

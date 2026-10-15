@@ -42,6 +42,13 @@ const base: Parameters<typeof toEpisodeSummary>[0] = {
   otherSiteRatings: true,
 };
 describe('toEpisodeSummary', () => {
+  it('should step up through the show and the season by number, then by its own title when it has one', () => {
+    expect(toEpisodeSummary(base).parents.map(({ title }) => title)).toEqual(['Breaking Bad', 'Season 1']);
+    const titled = toEpisodeSummary({ ...base, season: { ...base.season, title: 'The Beginning' } });
+    expect(titled.parents.map(({ title }) => title)).toEqual(['Breaking Bad', 'Season 1', 'The Beginning']);
+    expect(titled.parents.at(2)?.href).toBe(titled.parents.at(1)?.href);
+  });
+
   it('should map episode facts with viewer time zone and shared crew notes', () => {
     const view = toEpisodeSummary(base);
     expect(view.fullTitle).toBe('Breaking Bad 1x02 Second');
@@ -49,7 +56,6 @@ describe('toEpisodeSummary', () => {
     expect(view.facts.runtime).toBe('45m');
     expect(view.facts.directors.at(0)?.href).toBe('/people/vince-gilligan');
     expect(view.facts.writers.at(0)?.note).toBe('story');
-    expect(view.counts.map(({ label }) => label)).not.toContain('favorited');
   });
   it('should navigate across seasons in number order with accessible episode names', () => {
     const view = toEpisodeSummary(base);
@@ -79,7 +85,6 @@ describe('toEpisodeSummary', () => {
     expect(view.rating).toBeUndefined();
     expect(view.type).toBeUndefined();
     expect(view.facts.aired?.label).toBe('Airs');
-    expect(view.counts.map(({ label }) => label)).toEqual(['lists']);
   });
   it('should omit actor episode counts and duplicate original titles', () => {
     const cast = {

@@ -31,6 +31,25 @@ describe('toExternalRatings', () => {
     ]);
     expect(result.at(-1)?.change).toEqual({ text: '+15', trend: 'up' });
     expect(result.at(0)?.href).toBe('https://www.imdb.com/title/tt0137523/ratings');
+    expect(result.map(({ score }) => score)).toEqual([88, 84, 81, 96, 67, undefined]);
+  });
+
+  it('should put Letterboxd after IMDb, its five stars scaled to 100', () => {
+    const result = toExternalRatings({
+      ratings: {
+        ...ratings,
+        letterboxd: { rating: 3.14, votes: 1234, link: 'https://letterboxd.com/film/fight-club' },
+      },
+    });
+    expect(result.map(({ logo }) => logo).slice(0, 3)).toEqual(['imdb', 'letterboxd', 'tmdb']);
+    expect(result.at(1)).toMatchObject({ title: 'Letterboxd', rating: '3.1', score: 62, detail: '1,234 votes' });
+  });
+
+  it('should skip Letterboxd without a score or a link', () => {
+    const logos = (letterboxd: { rating: number; link: string | null }) =>
+      toExternalRatings({ ratings: { letterboxd } }).map(({ logo }) => logo);
+    expect(logos({ rating: 0, link: 'x' })).toEqual([]);
+    expect(logos({ rating: 4, link: null })).toEqual([]);
   });
 
   it('should skip sites without a score or a link', () => {

@@ -45,15 +45,16 @@ const ratingTarget = $derived({ type: 'show' as const, id: show.id, title: show.
   <meta name="description" content={show.overview ?? show.fullTitle} />
 </svelte:head>
 
-<FanartHeader image={show.fanart}>
+<FanartHeader image={show.fanart} subnav>
   <SummaryTitle
     title={heading}
     year={years}
     certification={show.certification}
-    parent={{ href: show.href, title: show.title }}
+    links={[{ href: show.href, title: show.title }]}
   />
   {#snippet stats()}
-    <RatingsStrip rating={show.rating} rateLabel="show" {ratingTarget} external={show.external} counts={show.counts} />
+    <RatingsStrip rating={show.rating} rateLabel="show" {ratingTarget} external={show.external} counts={show.counts}
+      statsHref="{show.href}/stats" />
   {/snippet}
   {#snippet edges()}
     <ItemNav {previous} {next} up={show.href} />

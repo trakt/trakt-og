@@ -39,6 +39,8 @@ export type ProfileRatings = {
     readonly levels: readonly RatingsLevel[];
     /** The dashed average line: "8.50 average", `at` 0 to 100 along the ratings. */
     readonly average: { readonly label: string; readonly at: number; readonly labelBefore: boolean };
+    /** What one is called in the tooltips: a profile's "rating", a title's "vote". */
+    readonly unit: RatingsUnit;
   } | null;
   /** Ratings, average, most given and loved under the chart; empty with no ratings. */
   readonly keys: readonly RatingsKey[];
@@ -52,10 +54,14 @@ type RatedTypes = {
   readonly episodes: number;
 };
 
+type RatingsUnit = 'rating' | 'vote';
+
 type ToProfileRatingsParams = {
   readonly distribution: Readonly<Record<string, number>> | undefined;
   /** Left out, the Ratings key has no per-type line. */
   readonly types?: RatedTypes;
+  /** A title's stats page counts votes; a profile, ratings. */
+  readonly unit?: RatingsUnit;
 };
 
 const RATINGS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
@@ -111,7 +117,7 @@ function typesLine(types: RatedTypes) {
  * rating colors on a scale of count lines, the average along the ratings, and the total, average, most given rating
  * (the highest on a tie) and the share of 9s and 10s under it.
  */
-export function toProfileRatings({ distribution, types }: ToProfileRatingsParams): ProfileRatings {
+export function toProfileRatings({ distribution, types, unit = 'rating' }: ToProfileRatingsParams): ProfileRatings {
   const counts = RATINGS.map((rating) => distribution?.[rating] ?? 0);
   const total = counts.reduce((sum, n) => sum + n, 0);
   if (total === 0) return { count: '0', average: '0', chart: null, keys: [] };
@@ -142,17 +148,22 @@ export function toProfileRatings({ distribution, types }: ToProfileRatingsParams
         at: (average - 0.5) * 10,
         labelBefore: average > LABEL_BEFORE_FROM,
       },
+      unit,
     },
     keys: [
-      { name: 'Ratings', share: total.toLocaleString('en-US'), counts: types ? typesLine(types) : [] },
+      {
+        name: unit === 'vote' ? 'Votes' : 'Ratings',
+        share: total.toLocaleString('en-US'),
+        counts: types ? typesLine(types) : [],
+      },
       { name: 'Average', share: average.toFixed(2), counts: ['hearts out of 10'] },
       {
         name: 'Most given',
         rating: top,
         share: String(top),
-        counts: [RATING_LABELS[top] ?? '', countLabel(most, 'rating')],
+        counts: [RATING_LABELS[top] ?? '', countLabel(most, unit)],
       },
-      { name: 'Loved · 9 and 10', rating: 10, share: ratingShare(loved, total), counts: [countLabel(loved, 'rating')] },
+      { name: 'Loved · 9 and 10', rating: 10, share: ratingShare(loved, total), counts: [countLabel(loved, unit)] },
     ],
   };
 }

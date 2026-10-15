@@ -12,7 +12,8 @@ import type { subpageItemSchema } from './subpageItemSchema.ts';
 type Body = z.infer<typeof subpageItemSchema>;
 type Show = NonNullable<Body['show']>;
 
-type Link = { readonly title: string; readonly href: string };
+/** A step up for the tag bar; one without an href is the page's own, like a titled season's "Season 10". */
+type Step = { readonly title: string; readonly href?: string };
 
 /**
  * What a subpage (a comment, credits, stats, lists, comments) shows about its item: the header title, the sidebar
@@ -23,13 +24,20 @@ export type SubpageMedia = {
   readonly item: CommentItem;
   /** The h1: "Fight Club", "Season 1", "1x01 Pilot". */
   readonly title: string;
+  /** An episode's number and name apart, so only the name hides behind the spoiler setting: "1x01", "Pilot". */
+  readonly episodeNumber?: string;
+  readonly episodeName?: string;
   readonly year?: number;
   readonly href: string;
   /** Hides the ratings and most counts before release. */
   readonly released?: string | null;
   readonly episodeType?: ReturnType<typeof episodeType>;
   /** The h2 above the title, for seasons and episodes: the show, then the season. */
-  readonly parents: readonly Link[];
+  readonly parents: readonly Step[];
+  /** After the title: the movie's or show's rating ("PG-13", "TV-MA"). */
+  readonly certification?: string;
+  /** A movie's or episode's scenes during and after the credits, for the tag bar. */
+  readonly credits?: { readonly duringCredits?: boolean | null; readonly afterCredits?: boolean | null };
   readonly fanart?: string;
   readonly spoilerFanart?: string;
   readonly spoilerTarget?: SpoilerTarget;
@@ -45,6 +53,8 @@ type Params = {
   body: Body;
   /** The JustWatch link from the Watch Now rank, for movies, shows and seasons. */
   justwatch?: string | null;
+  /** The official list a movie belongs to, as the first step up. */
+  collection?: { readonly title: string; readonly href: string };
 };
 
 const IMDB = 'https://www.imdb.com/';
@@ -127,7 +137,7 @@ function episodeLinks(show: Show, episode: NonNullable<Body['episode']>): Extern
  * A subpage's view of its item, from `/comments/:id/item` or the summaries `loadSubpageMedia`
  * reads. `undefined` when the item is gone or isn't one og knows, which the page answers with a 404 like OG.
  */
-export function toSubpageMedia({ body, justwatch }: Params): SubpageMedia | undefined {
+export function toSubpageMedia({ body, justwatch, collection }: Params): SubpageMedia | undefined {
   const item = commentItemOf(body);
   if (!item) return undefined;
   const { movie, show, season, episode, list } = body;
@@ -148,7 +158,9 @@ export function toSubpageMedia({ body, justwatch }: Params): SubpageMedia | unde
       title: movie.title,
       year: movie.year ?? undefined,
       href: `/movies/${movie.ids.slug}`,
-      parents: [],
+      parents: collection ? [collection] : [],
+      certification: movie.certification ?? undefined,
+      credits: { duringCredits: movie.during_credits, afterCredits: movie.after_credits },
       released: movie.released,
       fanart: fanart(movie.images?.fanart?.at(0)),
       poster: poster(movie.images?.poster?.at(0)),
@@ -183,6 +195,7 @@ export function toSubpageMedia({ body, justwatch }: Params): SubpageMedia | unde
       year: show.year ?? undefined,
       href: showHref,
       parents: [],
+      certification: show.certification ?? undefined,
       released: show.first_aired,
       fanart: showFanart,
       poster: showPoster,
@@ -195,10 +208,15 @@ export function toSubpageMedia({ body, justwatch }: Params): SubpageMedia | unde
     return {
       item,
       spoilerTarget,
-      title: seasonName(season.number),
+      // A season with a title of its own goes by it, its number a step up in the tag bar, as on its summary.
+      title: season.title || seasonName(season.number),
       year: yearOf(season.first_aired),
       href: `${showHref}/seasons/${season.number}`,
-      parents: [{ title: show.title, href: showHref }],
+      parents: [
+        { title: show.title, href: showHref },
+        ...(season.title && season.title !== seasonName(season.number) ? [{ title: seasonName(season.number) }] : []),
+      ],
+      certification: show.certification ?? undefined,
       released: season.first_aired,
       fanart: showFanart,
       poster: poster(season.images?.poster?.at(0)) ?? showPoster,
@@ -212,9 +230,19 @@ export function toSubpageMedia({ body, justwatch }: Params): SubpageMedia | unde
       item,
       spoilerTarget,
       title: [sxe(episode.season, episode.number), episode.title?.trim()].filter(Boolean).join(' '),
+      episodeNumber: sxe(episode.season, episode.number),
+      episodeName: episode.title?.trim() || undefined,
       year: yearOf(episode.first_aired),
       href: `${seasonHref}/episodes/${episode.number}`,
-      parents: [{ title: show.title, href: showHref }, { title: seasonName(episode.season), href: seasonHref }],
+      parents: [
+        { title: show.title, href: showHref },
+        { title: seasonName(episode.season), href: seasonHref },
+        ...(season?.title && season.title !== seasonName(episode.season)
+          ? [{ title: season.title, href: seasonHref }]
+          : []),
+      ],
+      certification: show.certification ?? undefined,
+      credits: { duringCredits: episode.during_credits, afterCredits: episode.after_credits },
       released: episode.first_aired,
       episodeType: episodeType(episode),
       fanart: fanart(episode.images?.screenshot?.at(0)) ?? showFanart,

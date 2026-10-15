@@ -23,7 +23,7 @@ interface Props {
   image?: string;
   /** Episodes use a sufficiently large screenshot, falling back to show fanart on failure. */
   screenshot?: string;
-  /** Subpages ("Comments for...") use the short header. */
+  /** Subpages ("Comments") use the short header. */
   slim?: boolean;
   dropped?: boolean;
   caption?: Caption;
@@ -31,11 +31,24 @@ interface Props {
   stats?: Snippet;
   /** Stats pages for seasons and episodes have a 55px ratings strip. */
   statsHeight?: string;
+  /** A toolbar runs right under the header (the season links, a subpage's filters), so the strip's dividers take its
+   color instead of the page's. */
+  subnav?: boolean;
   edges?: Snippet;
 }
 
-const { image, screenshot, slim = false, dropped = false, caption, children, stats, statsHeight, edges }: Props =
-  $props();
+const {
+  image,
+  screenshot,
+  slim = false,
+  dropped = false,
+  caption,
+  children,
+  stats,
+  statsHeight,
+  subnav = false,
+  edges,
+}: Props = $props();
 let loadedScreenshot = $state<string>();
 const loadScreenshot: Attachment<HTMLElement> = () => {
   loadedScreenshot = undefined;
@@ -60,6 +73,7 @@ const backdrop = $derived(loadedScreenshot ?? image);
 <section
   class={['fanart-header', { slim, dropped, 'with-stats': stats }]}
   style:--stats-height={statsHeight}
+  style:--color-strip-divider={subnav ? 'var(--color-toolbar-bg)' : undefined}
   style:background-image={backdrop ? `url("${backdrop}")` : undefined}
   {@attach loadScreenshot}
   {@attach headerArt(backdrop)}
@@ -92,6 +106,7 @@ const backdrop = $derived(loadedScreenshot ?? image);
 <style>
 .fanart-header {
   --stats-height: 60px;
+  --item-nav-band: 0px; /* what the previous and next arrows center above: the strip, when there is one */
   --stats-padding-block: 10px; /* above and below the strip's content; a full-height divider reaches past it */
   position: relative;
   display: flex;
@@ -104,8 +119,11 @@ const backdrop = $derived(loadedScreenshot ?? image);
   color: var(--color-card-text);
 
   &.slim {
-    --item-nav-top: var(--item-nav-top-slim);
     block-size: calc(var(--fanart-header-height-slim) + var(--header-height));
+  }
+
+  &.with-stats {
+    --item-nav-band: var(--stats-height);
   }
 
   &.slim.with-stats {

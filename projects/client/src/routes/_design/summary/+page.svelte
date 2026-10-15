@@ -4,6 +4,7 @@ import { page } from '$app/state';
 import MediaTools from '$lib/components/summary/MediaTools.svelte';
 import ReportDialog from '$lib/components/summary/ReportDialog.svelte';
 import SummaryPoster from '$lib/components/summary/SummaryPoster.svelte';
+import TitleTags from '$lib/components/summary/TitleTags.svelte';
 import Container from '$lib/components/container/Container.svelte';
 import ActivityTabs from '$lib/components/summary/ActivityTabs.svelte';
 import CommentsPreview from '$lib/components/summary/CommentsPreview.svelte';
@@ -115,6 +116,21 @@ const related: readonly RelatedCard[] = Array.from({ length: 6 }, (_, i) => ({
     </div>
     <button type="button" onclick={() => { reporting = true; }}>Report Movie</button>
     <ReportDialog bind:open={reporting} target={reportTarget} />
+    <h2>Title tags</h2>
+    <p>The bar above a summary or subpage title, on dark art. The slash splits a show from its season.</p>
+    <div class="title-tags-demo">
+      <TitleTags links={[{ title: 'Spider-Man (MCU) Collection', href: '/lists/official/spider-man-mcu-collection' }]}
+        credits={{ duringCredits: true, afterCredits: true }} />
+      <TitleTags label="Stats" links={[{ title: 'TRON Collection', href: '/lists/official/tron-collection' }]} />
+      <TitleTags
+        links={[{ title: 'American Horror Story', href: '/shows/american-horror-story' }, { title: 'Season 10' }]} />
+      <TitleTags
+        links={[{ title: 'Ted Lasso', href: '/shows/ted-lasso' }, { title: 'Season 1', href: '/shows/ted-lasso/seasons/1' }]}
+        type={{ text: 'Series Premiere', kind: 'series-premiere' }} credits={{ afterCredits: true }} />
+      <TitleTags label="Cast & Crew"
+        links={[{ title: 'Ted Lasso', href: '/shows/ted-lasso' }, { title: 'Season 1', href: '/shows/ted-lasso/seasons/1' }]}
+        type={{ text: 'Season Finale', kind: 'season-finale' }} />
+    </div>
     <h2>Action stack</h2>
     <p>
       Not added, each action is one outlined button with its + inside. Added, it fills and the + splits off, with
@@ -163,6 +179,15 @@ const related: readonly RelatedCard[] = Array.from({ length: 6 }, (_, i) => ({
 <RelatedItems title="Heat" load={() => Promise.resolve(related)} datePreferences={page.data.datePreferences} />
 
 <style>
+.title-tags-demo {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  margin-block: var(--gutter);
+  padding: var(--gutter);
+  background-color: var(--color-summary-demo-art);
+}
+
 .actions-demo {
   display: flex;
   flex-direction: column;

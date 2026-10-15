@@ -9,7 +9,6 @@ import type { ExternalLink } from '../components/summary/ExternalLink.ts';
 import { iconLinks } from '../components/summary/iconLinks.ts';
 import type { NamedLink } from '../components/summary/NamedLink.ts';
 import { countryName, languageName, titleize } from '../components/summary/names.ts';
-import { releasedCounts } from '../components/summary/releasedCounts.ts';
 import { type StreamingRank, toExternalRatings } from '../components/summary/toExternalRatings.ts';
 import type { DatePreferences } from '../settings/DatePreferences.ts';
 import { countLabel } from '../utils/countLabel.ts';
@@ -223,11 +222,6 @@ export function toShowSummary(params: ShowSummaryParams) {
   const day = (date: string) => format(date, { format: 'LL' });
   const airs = (date: string) => format(date, { format: 'dddd', time: true }).replace(' ', ' at ');
 
-  const count = (value: number | undefined, one: string, many: string, link?: string) => ({
-    count: value ?? 0,
-    label: value === 1 ? one : many,
-    href: link,
-  });
   // Unaired shows show no ratings and only their list count, whatever the viewer's early-ratings setting.
   const aired = !!show.first_aired && new Date(show.first_aired) <= now;
 
@@ -279,14 +273,8 @@ export function toShowSummary(params: ShowSummaryParams) {
     poster: imageUrl(show.images?.poster?.at(0), 'medium'),
     rating: aired ? { value: show.rating ?? 0, votes: show.votes ?? 0, href: `${href}/stats` } : undefined,
     external: params.otherSiteRatings && aired ? toExternalRatings({ ratings: params.ratings, rank: params.rank }) : [],
-    counts: releasedCounts([
-      count(stats?.watchers, 'watcher', 'watchers'),
-      count(stats?.plays, 'play', 'plays'),
-      count(stats?.collectors, 'library', 'libraries'),
-      count(stats?.comments, 'comment', 'comments', `${href}/comments`),
-      count(stats?.lists, 'list', 'lists', `${href}/lists`),
-      count(stats?.favorited, 'favorited', 'favorited'),
-    ], aired),
+    /** The strip keeps only favorites; the stats page has the rest of the community counts. */
+    counts: aired ? [{ count: stats?.favorited ?? 0, label: 'favorited' }] : [],
     airedEpisodes: show.aired_episodes ?? 0,
     runtime: show.runtime ?? undefined,
     /** Minutes, every aired episode. */

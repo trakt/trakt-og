@@ -4,12 +4,10 @@ import type {
   MovieResponse,
   MovieStatsResponse,
   PeopleResponse,
-  RatingsResponse,
   StudioResponse,
 } from '@trakt/api';
 import type { CastMember } from '../components/summary/CastMember.ts';
 import { countryName, languageName, titleize } from '../components/summary/names.ts';
-import { releasedCounts } from '../components/summary/releasedCounts.ts';
 import { toCrewNames } from '../components/summary/toCrewNames.ts';
 import { type StreamingRank, toExternalRatings } from '../components/summary/toExternalRatings.ts';
 import { imageUrl } from '../utils/imageUrl.ts';
@@ -23,7 +21,8 @@ interface Release {
 
 interface MovieSummaryParams {
   movie: MovieResponse;
-  ratings: RatingsResponse | null;
+  /** With Letterboxd, which only movies have. */
+  ratings: Parameters<typeof toExternalRatings>[0]['ratings'];
   stats: MovieStatsResponse | null;
   people: PeopleResponse | null;
   studios: readonly StudioResponse[];
@@ -83,12 +82,6 @@ export function toMovieSummary(params: MovieSummaryParams) {
   const out = movie.status === 'released' || (!!released && new Date(released) <= now);
   const releasedStatus = [undefined, null, 'released', 'in production', 'post production'].includes(movie.status);
 
-  const count = (value: number | undefined, one: string, many: string, link?: string) => ({
-    count: value ?? 0,
-    label: value === 1 ? one : many,
-    href: link,
-  });
-
   return {
     updatedAt: movie.updated_at ?? null,
     id: movie.ids.trakt,
@@ -109,14 +102,8 @@ export function toMovieSummary(params: MovieSummaryParams) {
     released: out,
     rating: out ? { value: movie.rating ?? 0, votes: movie.votes ?? 0, href: `${href}/stats` } : undefined,
     external: params.otherSiteRatings && out ? toExternalRatings({ ratings: params.ratings, rank: params.rank }) : [],
-    counts: releasedCounts([
-      count(stats?.watchers, 'watcher', 'watchers'),
-      count(stats?.plays, 'play', 'plays'),
-      count(stats?.collectors, 'library', 'libraries'),
-      count(stats?.comments, 'comment', 'comments', `${href}/comments`),
-      count(stats?.lists, 'list', 'lists', `${href}/lists`),
-      count(stats?.favorited, 'favorited', 'favorited'),
-    ], out),
+    /** The strip keeps only favorites; the stats page has the rest of the community counts. */
+    counts: out ? [{ count: stats?.favorited ?? 0, label: 'favorited' }] : [],
     commentCount: stats?.comments ?? movie.comment_count ?? 0,
     listCount: stats?.lists ?? 0,
     facts: {

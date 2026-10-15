@@ -62,7 +62,6 @@ describe('toSeasonSummary', () => {
     expect(view.episodeIds).toEqual([101, 102]);
     expect(view.cast.at(0)).toMatchObject({ name: 'Actor', characters: 'Walter', episodes: '2 episodes' });
     expect(view.episodes.at(0)?.aired).toBe('20 January 2008 18:00');
-    expect(view.counts.map(({ label }) => label)).not.toContain('favorited');
   });
 
   it('should expose the season trailer to the shared player', () => {
@@ -101,7 +100,8 @@ describe('toSeasonSummary', () => {
     expect(view.poster).toContain('/posters/medium/b.jpg');
     const custom = toSeasonSummary({ ...base, season: { ...base.season, title: 'The Beginning' } });
     expect(custom.title).toBe('The Beginning');
-    expect(custom.parentTitle).toBe('Breaking Bad: Season 1');
+    expect(custom.parents).toEqual([{ title: 'Breaking Bad', href: '/shows/breaking-bad' }, { title: 'Season 1' }]);
+    expect(view.parents).toEqual([{ title: 'Breaking Bad', href: '/shows/breaking-bad' }]);
   });
 
   it('should honor actor spoilers, episode tags, VIP fact links and native runtime totals', () => {
@@ -136,6 +136,5 @@ describe('toSeasonSummary', () => {
     expect(view.facts.premiere?.label).toBe('Premieres');
     expect(view.episodeIds).toEqual([]);
     expect(view.facts.totalRuntime).toBeUndefined();
-    expect(view.counts.map(({ label }) => label)).toEqual(['lists']);
   });
 });

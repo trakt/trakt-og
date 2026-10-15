@@ -45,6 +45,22 @@ describe('toSubpageMedia', () => {
       expect(links?.map(({ label }) => label)).toEqual(['IMDB', 'TMDB', 'Fanart.tv', 'JustWatch', 'Wikipedia']);
       expect(links?.at(0)?.href).toBe('https://www.imdb.com/title/tt0137523');
     });
+
+    it('should carry the certification and post-credits scenes over from the summary', () => {
+      const rated = {
+        ...body,
+        movie: { ...body.movie, certification: 'R', during_credits: true, after_credits: false },
+      };
+      expect(toSubpageMedia({ body: rated })).toMatchObject({
+        certification: 'R',
+        credits: { duringCredits: true, afterCredits: false },
+      });
+    });
+
+    it('should step up to the official list the movie belongs to', () => {
+      const collection = { title: 'Fight Club Collection', href: '/lists/official/fight-club-collection' };
+      expect(toSubpageMedia({ body, collection })?.parents).toEqual([collection]);
+    });
   });
 
   describe('for shows', () => {
@@ -70,6 +86,14 @@ describe('toSubpageMedia', () => {
       first_aired: '2008-01-21T02:00:00.000Z',
       images: { poster: ['media.trakt.tv/s/medium/c.jpg'] },
     };
+
+    it("should go by a titled season's own name, with its number as the last step up", () => {
+      const titled = { ...season, title: 'Double Feature' };
+      expect(toSubpageMedia({ body: { type: 'season', season: titled, show } })).toMatchObject({
+        title: 'Double Feature',
+        parents: [{ title: 'Breaking Bad', href: '/shows/breaking-bad' }, { title: 'Season 1' }],
+      });
+    });
 
     it('should put the show above the season and fall back to the show fanart', () => {
       expect(toSubpageMedia({ body: { type: 'season', season, show } })).toMatchObject({
@@ -104,9 +128,20 @@ describe('toSubpageMedia', () => {
       images: { screenshot: ['media.trakt.tv/e/medium/d.jpg'] },
     };
 
+    it("should add the season's own title as a step after its number", () => {
+      const season = { ids: { trakt: 3950 }, number: 1, title: 'The Beginning' };
+      expect(toSubpageMedia({ body: { type: 'episode', episode, show, season } })?.parents).toEqual([
+        { title: 'Breaking Bad', href: '/shows/breaking-bad' },
+        { title: 'Season 1', href: '/shows/breaking-bad/seasons/1' },
+        { title: 'The Beginning', href: '/shows/breaking-bad/seasons/1' },
+      ]);
+    });
+
     it('should title it with its number, link the show and season, and use its screenshot', () => {
       expect(toSubpageMedia({ body: { type: 'episode', episode, show } })).toMatchObject({
         title: '1x01 Pilot',
+        episodeNumber: '1x01',
+        episodeName: 'Pilot',
         year: 2008,
         href: '/shows/breaking-bad/seasons/1/episodes/1',
         parents: [

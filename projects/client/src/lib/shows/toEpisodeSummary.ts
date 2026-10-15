@@ -11,7 +11,6 @@ import type { z } from 'zod/v4';
 import { episodeNumber, episodeType } from '../components/media/episodeTags.ts';
 import { iconLinks } from '../components/summary/iconLinks.ts';
 import { countryName, languageName, titleize } from '../components/summary/names.ts';
-import { releasedCounts } from '../components/summary/releasedCounts.ts';
 import { toCastMembers } from '../components/summary/toCastMembers.ts';
 import { toCrewNames } from '../components/summary/toCrewNames.ts';
 import { toExternalRatings } from '../components/summary/toExternalRatings.ts';
@@ -54,11 +53,7 @@ export function toEpisodeSummary(params: Params) {
   const fullTitle = `${show.title} ${number} ${title}`;
   const popular = (key: string, value: string) =>
     params.isVip ? `/shows/popular?${key}=${encodeURIComponent(value)}` : undefined;
-  const count = (value: number, one: string, many: string, link?: string) => ({
-    count: value,
-    label: value === 1 ? one : many,
-    href: link,
-  });
+  const seasonNumber = episode.season === 0 ? 'Specials' : `Season ${episode.season}`;
   return {
     id: episode.ids.trakt,
     showId: show.ids.trakt,
@@ -72,7 +67,13 @@ export function toEpisodeSummary(params: Params) {
     number,
     title,
     fullTitle,
-    seasonTitle: season.title || (episode.season === 0 ? 'Specials' : `Season ${episode.season}`),
+    seasonTitle: season.title || seasonNumber,
+    /** The tag bar's way up: the show, the season by number, then its own title when it has one. */
+    parents: [
+      { title: show.title, href: showHref },
+      { title: seasonNumber, href: seasonHref },
+      ...(season.title && season.title !== seasonNumber ? [{ title: season.title, href: seasonHref }] : []),
+    ],
     year: episode.first_aired ? new Date(episode.first_aired).getUTCFullYear() : undefined,
     certification: show.certification,
     type: params.episodeTypeTags ? episodeType(episode) : undefined,
@@ -91,13 +92,6 @@ export function toEpisodeSummary(params: Params) {
       }
       : undefined,
     external: params.otherSiteRatings && aired ? toExternalRatings({ ratings, rank: null }) : [],
-    counts: releasedCounts([
-      count(stats.watchers, 'watcher', 'watchers'),
-      count(stats.plays, 'play', 'plays'),
-      count(stats.collectors, 'library', 'libraries'),
-      count(stats.comments, 'comment', 'comments', `${href}/comments`),
-      count(stats.lists, 'list', 'lists', `${href}/lists`),
-    ], aired),
     commentCount: stats.comments,
     listCount: stats.lists,
     facts: {

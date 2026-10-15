@@ -24,7 +24,7 @@ const id = $props.id();
     <div class="block"><GenreBand {genres} /></div>
     <h2><HeadingMark svg={heart} />Ratings</h2>
     {#if ratings.chart}
-      <div class="ratings"><ProfileRatingsChart chart={ratings.chart} {slug} /></div>
+      <div class="ratings"><ProfileRatingsChart chart={ratings.chart} href={(rating) => `/users/${slug}/ratings/all/${rating}`} /></div>
       <div class="block"><WatchedKeys keys={ratings.keys} /></div>
     {:else}
       <p class="help"><b>{ratings.count}</b> ratings with an average of <b>{ratings.average}</b> hearts.</p>

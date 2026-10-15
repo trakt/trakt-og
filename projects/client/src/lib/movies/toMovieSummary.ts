@@ -12,6 +12,7 @@ import { toCrewNames } from '../components/summary/toCrewNames.ts';
 import { type StreamingRank, toExternalRatings } from '../components/summary/toExternalRatings.ts';
 import { imageUrl } from '../utils/imageUrl.ts';
 import { toMovieLinks } from './toMovieLinks.ts';
+import { toCrewGroups } from '../components/summary/toCrewGroups.ts';
 
 interface Release {
   readonly country: string;
@@ -61,6 +62,7 @@ function cast(people: PeopleResponse | null): CastMember[] {
     href: `/people/${member.person.ids.slug}`,
     characters: (member.characters ?? []).join(', '),
     image: imageUrl(member.images?.headshot?.at(0), 'thumb'),
+    gender: member.person.gender ?? undefined,
   }));
 }
 
@@ -145,5 +147,6 @@ export function toMovieSummary(params: MovieSummaryParams) {
     },
     links: toMovieLinks(params),
     cast: cast(params.people),
+    crew: toCrewGroups(params.people?.crew, false),
   };
 }

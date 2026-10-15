@@ -47,7 +47,7 @@ const sections = $derived([
   { label: 'Stats', href: `${episode.href}/stats`, page: true },
   { label: 'Activity', href: '#activity' },
   ...(episode.cast.length + episode.guestStars.length > 0
-    ? [{ label: 'Actors', href: '#actors', more: { href: `${episode.href}/credits`, text: 'All cast & crew' } }]
+    ? [{ label: 'People', href: '#people', more: { href: `${episode.href}/people`, text: 'All people' } }]
     : []),
   {
     label: countLabel(episode.commentCount, 'Comment'),
@@ -107,7 +107,7 @@ const sections = $derived([
     <NewCommentForm item={{ ...ratingTarget, show: episode.showId, season: episode.season }} />
     <LazySection id="activity" load={()=>lazy().activity(media)}>{#snippet children(tabs)}<ActivityTabs {tabs} />{/snippet}</LazySection>
   {/key}
-  <ActorsStrip groups={[{id:'season-regulars',label:'Season Regulars',cast:episode.cast},{id:'guest-stars',label:'Guest Stars',cast:episode.guestStars}]} creditsHref="{episode.href}/credits" />
+  <ActorsStrip groups={[{id:'season-regulars',label:'Season Regulars',cast:episode.cast},{id:'guest-stars',label:'Guest Stars',cast:episode.guestStars}]} crew={episode.crew} creditsHref="{episode.href}/people" />
   {#key episode.href}
     <LazySection id="comments" load={()=>lazy().comments(media)}>{#snippet children(tabs)}<CommentsPreview {tabs} item={{...ratingTarget,show:episode.showId,season:episode.season}} viewer={data.user ? {slug:data.user.slug}:null} count={episode.commentCount} href={episode.href} dateOptions={data.datePreferences} />{/snippet}</LazySection>
     <LazySection id="lists" load={()=>lazy().lists(media)}>{#snippet children(tabs)}<ListsPreview {tabs} count={episode.listCount} href={episode.href} />{/snippet}</LazySection>

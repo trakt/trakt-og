@@ -29,13 +29,13 @@ const apiPath = (item: SubpageItem): string => {
 };
 
 /**
- * `/movies/:id/credits`, `/shows/:id/credits` and the season and episode ones. Movies have one Cast tab. Shows and seasons split their Season Regulars from their
+ * `/movies/:id/people`, `/shows/:id/people` and the season and episode ones. Movies have one Cast tab. Shows and seasons split their Season Regulars from their
  * Guest Stars. An episode's Guest Stars are its whole cast, beside the season's regulars.
  */
 export async function loadCredits({ fetch, parent, item }: Params) {
   const path = apiPath(item);
   const [subpage, people, regulars] = await Promise.all([
-    loadSubpageMedia({ fetch, parent, item, suffix: 'credits' }),
+    loadSubpageMedia({ fetch, parent, item, suffix: 'people' }),
     readPeople(
       fetch,
       `${path}/people?extended=${item.type === 'show' || item.type === 'season' ? 'guest_stars,' : ''}images`,

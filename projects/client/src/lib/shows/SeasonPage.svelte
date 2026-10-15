@@ -47,7 +47,7 @@ const sections = $derived([
   { label: 'Stats', href: `${season.href}/stats`, page: true },
   { label: 'Activity', href: '#activity' },
   ...(season.cast.length + season.guestStars.length > 0
-    ? [{ label: 'Actors', href: '#actors', more: { href: `${season.href}/credits`, text: 'All cast & crew' } }]
+    ? [{ label: 'People', href: '#people', more: { href: `${season.href}/people`, text: 'All people' } }]
     : []),
   { label: countLabel(season.episodes.length, 'Episode'), href: '#episodes' },
   {
@@ -101,7 +101,7 @@ const sections = $derived([
     <NewCommentForm item={{ type: 'season', id: season.id, title: season.fullTitle, show: season.showId, number: season.number, airedEpisodes: season.airedEpisodes }} />
     <LazySection id="activity" load={() => lazy().activity(media)}>{#snippet children(tabs)}<ActivityTabs {tabs} />{/snippet}</LazySection>
   {/key}
-  <ActorsStrip groups={[{ id: 'season-regulars', label: 'Season Regulars', cast: season.cast }, { id: 'guest-stars', label: 'Guest Stars', cast: season.guestStars }]} creditsHref="{season.href}/credits" />
+  <ActorsStrip groups={[{ id: 'season-regulars', label: 'Season Regulars', cast: season.cast }, { id: 'guest-stars', label: 'Guest Stars', cast: season.guestStars }]} crew={season.crew} creditsHref="{season.href}/people" />
   {#key `${season.href}?${data.sort}&${data.terms}`}
     <EpisodeList showId={season.showId} signedIn={!!data.user} initialFilters={data.filters} rows={season.episodes} datePreferences={data.datePreferences} season search vip={data.user?.isVip ?? false} initialTerms={data.terms} initialSort={data.sort} />
   {/key}

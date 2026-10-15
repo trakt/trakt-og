@@ -36,6 +36,7 @@ describe('toCredits', () => {
         image: expect.stringContaining('/headshots/'),
         role: 'Walter White, Heisenberg',
         episodes: '62 episodes',
+        episodeCount: 62,
       }],
     }]);
   });
@@ -44,6 +45,7 @@ describe('toCredits', () => {
     const { actors } = toCredits({ actors: [{ label: 'Cast', members: [walter] }], crew: {}, episodeCounts: false });
 
     expect(actors.at(0)?.people.at(0)?.episodes).toBeUndefined();
+    expect(actors.at(0)?.people.at(0)?.episodeCount).toBeUndefined();
   });
 
   it('should order crew like OG: created by, directing, writing, production, then the rest alphabetically', () => {

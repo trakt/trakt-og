@@ -164,6 +164,8 @@ export function toPersonSummary(params: PersonSummaryParams) {
     href: `/people/${person.ids.slug}`,
     name: person.name,
     headshot: imageUrl(person.images?.headshot?.at(0), 'medium'),
+    /** The API's gender, for the silhouette when there's no headshot. */
+    genderId: person.gender ?? undefined,
     fanart: fanart(credits, params),
     listCount: params.listCount,
     facts: {

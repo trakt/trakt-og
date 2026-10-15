@@ -18,6 +18,7 @@ import { imageUrl } from '../utils/imageUrl.ts';
 import { seasonNeighbours } from './seasonNeighbours.ts';
 import type { seasonPeopleSchema } from './seasonPeopleSchema.ts';
 import { toShowEpisodes } from './toShowEpisodes.ts';
+import { toCrewGroups } from '../components/summary/toCrewGroups.ts';
 
 interface Params {
   show: ShowResponse;
@@ -118,6 +119,7 @@ export function toSeasonSummary(params: Params) {
     ],
     cast: toCastMembers(params.people.cast, params.actorSpoilers),
     guestStars: toCastMembers(params.people.guest_stars, params.actorSpoilers),
+    crew: toCrewGroups(params.people.crew, params.actorSpoilers),
     episodes: episodeList.rows,
     seasonLinks: [
       ...seasons.toSorted((a, b) => b.number - a.number).map(({ number }) => ({

@@ -69,7 +69,6 @@ export async function loadStats({ fetch, parent, item }: Params) {
       ratings: body(reads.ratings, ratingsResponseSchema, 'ratings'),
       stats: body(reads.stats, mediaStatsSchema, 'stats'),
       rank: subpage.streamingRank,
-      country: subpage.settings?.browsing?.watchnow?.country?.toLowerCase() || 'us',
       otherSiteRatings: subpage.settings?.browsing?.other_site_ratings ?? true,
       now: new Date(),
     }),

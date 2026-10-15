@@ -92,6 +92,7 @@ const backdrop = $derived(loadedScreenshot ?? image);
 <style>
 .fanart-header {
   --stats-height: 60px;
+  --stats-padding-block: 10px; /* above and below the strip's content; a full-height divider reaches past it */
   position: relative;
   display: flex;
   flex-direction: column;
@@ -185,10 +186,12 @@ const backdrop = $derived(loadedScreenshot ?? image);
   }
 }
 
+/* A size container, so the ratings strip inside can reach the page edge (`100cqi`) past the content column. */
 .stats {
   position: absolute;
   inset-inline: 0;
   inset-block-end: 0;
+  container-type: inline-size;
   background-color: var(--color-stats-bar);
 }
 
@@ -196,7 +199,7 @@ const backdrop = $derived(loadedScreenshot ?? image);
   max-inline-size: var(--container-lg);
   min-block-size: var(--stats-height);
   margin-inline: auto;
-  padding: 10px calc(var(--gutter) / 2);
+  padding: var(--stats-padding-block) calc(var(--gutter) / 2);
 }
 
 @media (width < 1200px) {

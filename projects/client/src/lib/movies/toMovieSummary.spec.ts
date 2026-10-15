@@ -14,7 +14,6 @@ const base = {
   releases: [],
   collection: null,
   rank: null,
-  country: 'us',
   otherSiteRatings: true,
   isVip: false,
   now: new Date('2026-09-29T00:00:00Z'),

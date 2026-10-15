@@ -1,7 +1,10 @@
 <!--
-  OG's `#summary-ratings-wrapper`: the dark bar along the bottom of a summary's fanart. The Trakt rating and the
-  viewer's rating, then other sites' ratings and the community counts. Render it in FanartHeader's `stats` slot.
-  The viewer rating opens the shared ten-heart popover.
+  OG's `#summary-ratings-wrapper`: the dark bar along the bottom of a summary's fanart, as one row of icons and numbers.
+  The Trakt rating and the Rate button come first, then favorites, the other sites' ratings, and the rest of the
+  community counts. Each number has a two-line tooltip: what it is, then its exact value. On a narrow screen the row
+  starts beside the poster and runs to the page edge, scrolling sideways only past that edge, never wrapping. Render it
+  in FanartHeader's `stats` slot.
+  The Rate button opens the shared rating popover, ten bars from gray to red.
 -->
 <script lang="ts">
 import MediaSpoiler from '$lib/components/summary/MediaSpoiler.svelte';
@@ -13,8 +16,14 @@ import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import heartOutline from '$lib/icons/regular/heart.svg?raw';
 import heart from '$lib/icons/solid/heart.svg?raw';
-import imdb from '$lib/assets/sites/imdb.png';
-import justwatch from '$lib/assets/sites/justwatch.svg';
+import comments from '$lib/icons/solid/comments.svg?raw';
+import star from '$lib/icons/solid/star.svg?raw';
+import collection from '$lib/icons/trakt/collection-thick.svg?raw';
+import friends from '$lib/icons/trakt/friends-thick.svg?raw';
+import list from '$lib/icons/trakt/list-thick.svg?raw';
+import play from '$lib/icons/trakt/play2-thick.svg?raw';
+import imdb from '$lib/assets/sites/imdb-solid.svg';
+import justwatch from '$lib/assets/sites/justwatch-yellow.svg';
 import metacritic from '$lib/assets/sites/metacritic.png';
 import audienceCertified from '$lib/assets/sites/rt/audience-certified.svg';
 import audienceSpilled from '$lib/assets/sites/rt/audience-spilled.svg';
@@ -25,23 +34,18 @@ import tomatometerRotten from '$lib/assets/sites/rt/tomatometer-rotten.svg';
 import tmdb from '$lib/assets/sites/tmdb.svg';
 import { readableStat } from '$lib/utils/readableStat';
 import type { ExternalRating, ExternalRatingLogo } from './ExternalRating.ts';
-
-interface Count {
-  readonly count: number;
-  /** Already pluralized: "watchers", "library". */
-  readonly label: string;
-  readonly href?: string;
-}
+import type { StripCount } from './releasedCounts.ts';
+import { type StripStat, type StripStatKind, stripStats } from './stripStats.ts';
 
 interface Props {
   /** The Trakt rating, 0 to 10. Left out, the rating is hidden (OG hid it before release). */
   rating?: { readonly value: number; readonly votes: number; readonly href: string };
-  /** "movie", "show", "season", "episode": finishes "Rate this ...". Left out, there's no rating slot. */
+  /** "movie", "show", "season", "episode": finishes "Rate this ...". Left out, there's no Rate button. */
   rateLabel?: string;
   ratingTarget?: RatingTarget & SpoilerTarget;
   external?: readonly ExternalRating[];
   /** Zero counts are dropped. */
-  counts?: readonly Count[];
+  counts?: readonly StripCount[];
 }
 
 const { rating, rateLabel, ratingTarget, external = [], counts = [] }: Props = $props();
@@ -59,96 +63,125 @@ const logos: Record<ExternalRatingLogo, string> = {
   justwatch,
 };
 
+const icons: Record<StripStatKind, string> = {
+  watchers: friends,
+  plays: play,
+  libraries: collection,
+  lists: list,
+  comments,
+  favorited: star,
+};
+
 // OG truncated instead of rounding, so 79.9% reads 79%.
 const percent = $derived(rating ? Math.trunc(rating.value * 10) : 0);
 const level = $derived(rating ? Math.min(Math.trunc(rating.value), 10) : 0);
-const shownCounts = $derived(counts.filter(({ count }) => count > 0));
+const votes = $derived(
+  rating ? `${rating.votes.toLocaleString('en-US')} ${rating.votes === 1 ? 'vote' : 'votes'}` : '',
+);
+const stats = $derived(stripStats(counts));
+
+const rateHint = (value: number | null) =>
+  value ? `Your rating\n${value} · ${RATING_LABELS[value]}` : `Rate this ${rateLabel}\nWhat did you think?`;
 </script>
 
 <!-- Links go out to other sites or to subpages og hasn't built yet, and resolve() only takes routes that exist. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
+{#snippet count(stat: StripStat)}
+  <li>
+  <Tooltip text={`${stat.title}\n${stat.detail}`} variant="titled">
+      {#snippet trigger(tooltip)}
+        <!-- Counts without a page of their own open the stats page, where they're broken down. -->
+        {@const href = stat.href ?? rating?.href}
+        {#if href}
+          <a class="stat" {href} aria-label="{stat.detail} {stat.label}" {...tooltip}>
+            <span class="glyph" style:color="var(--color-strip-{stat.kind})"><Icon svg={icons[stat.kind]} /></span>
+            <span class="number">{readableStat(stat.count)}</span>
+          </a>
+        {:else}
+          <span class="stat" {...tooltip}>
+            <span class="glyph" style:color="var(--color-strip-{stat.kind})"><Icon svg={icons[stat.kind]} /></span>
+            <span class="number" aria-hidden="true">{readableStat(stat.count)}</span>
+            <span class="visually-hidden">{stat.detail} {stat.label}</span>
+          </span>
+        {/if}
+      {/snippet}
+    </Tooltip>
+</li>
+{/snippet}
+
 <div class="ratings-strip">
-  <ul class="ratings">
+  <ul>
     {#if rating}
       <li>
-        <MediaSpoiler target={ratingTarget} kind="rating"><a href={rating.href}>
-          <span class="heart" style:color={level > 0 ? `var(--rating-${level})` : undefined}><Icon svg={heart} /></span>
-          <span class="number">
-            <span class="rating">{percent}%</span>
-            <span class="votes">{readableStat(rating.votes)} {rating.votes === 1 ? 'vote' : 'votes'}</span>
-          </span>
-        </a></MediaSpoiler>
+        <MediaSpoiler target={ratingTarget} kind="rating">
+          <Tooltip text={`Trakt Rating\n${votes}`} variant="titled">
+            {#snippet trigger(tooltip)}
+              <a class="stat" href={rating.href} aria-label="Trakt Rating {percent}%, {votes}" {...tooltip}>
+                <span class="glyph heart" style:color={level > 0 ? `var(--rating-${level})` : undefined}>
+                  <Icon svg={heart} />
+                </span>
+                <span class="number">{percent}%</span>
+              </a>
+            {/snippet}
+          </Tooltip>
+        </MediaSpoiler>
       </li>
     {/if}
     {#if rateLabel && ratingTarget}
       <li>
-        <MediaRating target={ratingTarget} variant="summary">
-          {#snippet trigger({ value, preview })}
-            {@const shown = preview ?? value}
-            {@const unrate = preview !== null && preview === value}
-            <span class="rate">
-              <span class="heart" style:color={shown && !unrate ? `var(--rating-${shown})` : undefined}>
-                <Icon svg={shown && !unrate ? heart : heartOutline} />
-              </span>
-              <span class="number">
-                {#if shown && !unrate}
-                  <span class="rating">{shown}</span>
-                  <span class="votes">{RATING_LABELS[shown]}</span>
-                {:else}
-                  <span class="question">{unrate ? 'Unrate' : `Rate this ${rateLabel}`}</span>
-                  <span class="votes">{unrate && shown ? RATING_LABELS[shown] : 'What did you think?'}</span>
-                {/if}
-              </span>
+        <MediaRating target={ratingTarget} variant="summary" hint={rateHint}>
+          {#snippet trigger({ value })}
+            <span class={['rate', { rated: value }]} style:--rated={value ? `var(--rating-${value})` : undefined}>
+              <Icon svg={value ? heart : heartOutline} />
+              {#if value}<span class="rate-score">{value}</span>{/if}
             </span>
           {/snippet}
         </MediaRating>
       </li>
     {/if}
-  </ul>
-  {#if external.length > 0 || shownCounts.length > 0}
-    <ul class="stats">
+    {#if stats.favorited}{@render count(stats.favorited)}{/if}
+    {#if external.length > 0}
+      <li class="divider" aria-hidden="true"></li>
       {#each external as site (site.logo)}
         <li class={site.metascore}>
-          <MediaSpoiler target={ratingTarget} kind="rating"><Tooltip text={site.title}>
-            {#snippet trigger(tooltip)}
-              <a href={site.href} target="_blank" rel="noopener" {...tooltip}>
-                <img class={['logo', site.logo]} src={logos[site.logo]} alt={site.title.split('\n').at(0)} />
-                <span class="number">
-                  <span class="rating">
-                    {site.rating}
-                    {#if site.delta}<span class="delta">{site.delta}</span>{/if}
-                  </span>
-                  {#if site.metascore}
-                    <span class="metascore-bar"></span>
-                  {:else}
-                    <span class="votes">{site.votes}</span>
-                  {/if}
-                </span>
-              </a>
-            {/snippet}
-          </Tooltip></MediaSpoiler>
+          <MediaSpoiler target={ratingTarget} kind="rating">
+            <Tooltip>
+              {#snippet trigger(tooltip)}
+                <a class="stat" href={site.href} target="_blank" rel="noopener"
+                  aria-label="{site.title} {site.rating}, {site.change ? `${site.change.text} ` : ''}{site.detail}"
+                  {...tooltip}>
+                  <img class={['logo', site.logo]} src={logos[site.logo]} alt="" />
+                  <span class="number">{site.rating}</span>
+                </a>
+              {/snippet}
+              <b class="tip-title">{site.title}</b>
+              <span class="tip-detail">
+                {#if site.change}<b class={['rank-change', site.change.trend]}>{site.change.text}</b>{/if}
+                {site.detail}
+              </span>
+            </Tooltip>
+          </MediaSpoiler>
         </li>
       {/each}
-      {#each shownCounts as { count, label, href } (label)}
-        <li>
-          <svelte:element this={href ? 'a' : 'span'} class="count" {href}>
-            <span class="number">
-              <span class="rating">{readableStat(count)}</span>
-              <span class="votes">{label}</span>
-            </span>
-          </svelte:element>
-        </li>
-      {/each}
-    </ul>
-  {/if}
+    {/if}
+    {#if stats.community.length > 0}
+      {#if rating || external.length > 0}<li class="divider" aria-hidden="true"></li>{/if}
+      {#each stats.community as stat (stat.kind)}{@render count(stat)}{/each}
+    {/if}
+  </ul>
 </div>
 
 <style>
+/* One row from beside the poster to the page edge: the content column is centered in the stats bar, so reaching past
+   its end by half the difference lands on the bar's edge. It scrolls sideways past that, never wrapping. */
 .ratings-strip {
   display: flex;
-  padding-block-start: 5px;
-  padding-inline-start: var(--summary-offset);
+  min-block-size: var(--stats-height);
+  /* Out to the bar's top and bottom edges, so the dividers between the groups run its full height. */
+  margin-block: calc(-1 * var(--stats-padding-block));
+  margin-inline-end: calc((100% - 100cqi) / 2);
+  padding-inline: var(--summary-offset) var(--gutter);
   overflow-x: auto;
   scrollbar-width: none;
   white-space: nowrap;
@@ -164,95 +197,67 @@ const shownCounts = $derived(counts.filter(({ count }) => count > 0));
 
 ul {
   display: flex;
-  gap: 30px;
+  align-items: center;
+  gap: var(--strip-gap);
   margin: 0;
-  padding: 0;
+  /* Room for the hover wash, which reaches past the first and last items' edges. */
+  padding: 0 var(--strip-item-pad-inline);
   list-style: none;
 }
 
-.stats {
-  margin-inline-start: 30px;
+li {
+  display: flex;
 }
 
-a,
-.count,
-.rate {
-  min-block-size: 0;
-  display: flex;
-  align-items: flex-start;
-  color: inherit;
+.stat {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--strip-item-gap);
+  margin: var(--strip-item-pull);
+  padding: var(--strip-item-pad);
+  border-radius: var(--radius-strip-item);
+  color: var(--color-card-text);
   text-decoration: none;
 
-  &:is(:hover, :focus) {
-    color: inherit;
+  &:is(a):is(:hover, :focus-visible) {
+    background-color: var(--color-strip-hover);
+    color: var(--color-card-text);
     text-decoration: none;
   }
 }
 
-.rate {
-  padding: 0;
-  border: 0;
-  background: none;
-  font: inherit;
-  cursor: pointer;
+.glyph {
+  display: inline-flex;
+  font-size: var(--font-size-strip-icon);
 }
 
-.heart {
-  margin-inline-end: 7px;
-  font-size: var(--font-size-action-icon);
+.number {
+  font-family: var(--font-headings);
+  font-size: var(--font-size-strip-number);
+  font-weight: var(--font-weight-headings-heavy);
+  font-variant-numeric: tabular-nums;
   line-height: 1;
   text-shadow: var(--text-shadow-headings);
 }
 
 .logo {
-  inline-size: 30px;
-  block-size: 30px;
-  margin-inline-end: 7px;
+  inline-size: var(--strip-logo-size);
+  block-size: var(--strip-logo-size);
+  object-fit: contain;
 
-  &.audience-spilled {
-    inline-size: 36px;
-    block-size: 36px;
-    margin-block: -3px;
+  /* v3's solid yellow badge, twice as wide as it is tall. */
+  &.imdb {
+    inline-size: auto;
+    block-size: var(--strip-imdb-height);
   }
 
   &.metacritic {
-    border: 2px solid var(--color-metascore-none);
+    border: var(--strip-metascore-ring) solid var(--color-metascore-none);
     border-radius: 50%;
   }
 }
 
-.number {
-  display: flex;
-  flex-direction: column;
-  line-height: 1;
-  color: var(--color-card-text);
-  text-shadow: var(--text-shadow-headings);
-}
-
-.rating {
-  font-family: var(--font-headings);
-  font-size: var(--font-size-large);
-  font-weight: var(--font-weight-headings-heavy);
-}
-
-.question {
-  padding-block: 2px;
-  font-family: var(--font-headings);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-headings-heavy);
-}
-
-.votes {
-  font-size: var(--font-size-small);
-  color: var(--color-ratings-muted);
-}
-
-.metascore-bar {
-  block-size: 8px;
-  margin-block-start: 2px;
-  background-color: var(--color-metascore-none);
-}
-
+/* OG's metascore_class: 70 and up green, 40 and up yellow, red below. */
 .high {
   --metascore: var(--color-metascore-high);
 }
@@ -265,13 +270,94 @@ a,
   --metascore: var(--color-metascore-low);
 }
 
-:is(.high, .medium, .low) {
-  & .logo {
-    border-color: var(--metascore);
+:is(.high, .medium, .low) .logo {
+  border-color: var(--metascore);
+}
+
+/* The other sites' tooltips: the site in bold, then what the number is, with JustWatch's rank change leading it in
+   green when positive and red when negative. */
+.tip-title,
+.tip-detail {
+  display: block;
+}
+
+.tip-title {
+  font-weight: var(--font-weight-headings-heavy);
+}
+
+.tip-detail {
+  color: var(--color-tooltip-muted);
+}
+
+.rank-change {
+  font-weight: var(--font-weight-headings-heavy);
+
+  &.up {
+    color: var(--color-strip-rank-up);
   }
 
-  & .metascore-bar {
-    background-color: var(--metascore);
+  &.down {
+    color: var(--color-strip-rank-down);
+  }
+
+  &.flat {
+    color: var(--color-tooltip-text);
+  }
+}
+
+/* Between the Trakt, other sites and community groups, top to bottom of the bar. */
+.divider {
+  align-self: stretch;
+  inline-size: 1px;
+  background-color: var(--color-strip-divider);
+}
+
+/* The Rate button: an outlined heart that fills in its rating's color, with the score beside it, once rated. */
+.rate {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--strip-rate-gap);
+  min-inline-size: var(--strip-rate-size);
+  block-size: var(--strip-rate-size);
+  padding-inline: var(--strip-rate-padding);
+  border: 1px solid var(--color-strip-rate-line);
+  border-radius: calc(var(--strip-rate-size) / 2);
+  background-color: var(--color-strip-rate-bg);
+  color: var(--color-card-text);
+  font-family: var(--font-headings);
+  font-size: var(--font-size-strip-rate);
+  font-weight: var(--font-weight-headings-heavy);
+  transition: background-color var(--transition-card), border-color var(--transition-card);
+
+  &:hover {
+    border-color: var(--color-strip-rate-line-hover);
+    background-color: var(--color-strip-rate-hover);
+  }
+
+  /* Rated, the heart and its outline take the rating's own color, gray at 1 to red at 10. */
+  &.rated {
+    border-color: color-mix(in srgb, var(--rated) var(--strip-rated-line-mix), transparent);
+    background-color: color-mix(in srgb, var(--rated) var(--strip-rated-bg-mix), transparent);
+
+    & :global(.icon) {
+      color: var(--rated);
+    }
+  }
+}
+
+.visually-hidden {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rate {
+    transition: none;
   }
 }
 </style>

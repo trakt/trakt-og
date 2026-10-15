@@ -31,8 +31,6 @@ interface ShowSummaryParams {
   progress: { next: EpisodeResponse | null } | null;
   signedIn: boolean;
   rank: StreamingRank | null;
-  /** The viewer's watch-now country, lowercase. */
-  country: string;
   otherSiteRatings: boolean;
   /** Off when the viewer hides actor spoilers: no episode counts. */
   actorSpoilers: boolean;
@@ -280,9 +278,7 @@ export function toShowSummary(params: ShowSummaryParams) {
     fanart: imageUrl(show.images?.fanart?.at(0), 'full'),
     poster: imageUrl(show.images?.poster?.at(0), 'medium'),
     rating: aired ? { value: show.rating ?? 0, votes: show.votes ?? 0, href: `${href}/stats` } : undefined,
-    external: params.otherSiteRatings && aired
-      ? toExternalRatings({ ratings: params.ratings, rank: params.rank, countryName: countryName(params.country) })
-      : [],
+    external: params.otherSiteRatings && aired ? toExternalRatings({ ratings: params.ratings, rank: params.rank }) : [],
     counts: releasedCounts([
       count(stats?.watchers, 'watcher', 'watchers'),
       count(stats?.plays, 'play', 'plays'),

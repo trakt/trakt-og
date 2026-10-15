@@ -114,7 +114,6 @@ export async function loadShowData({ fetch, token, parent, id: requested, path =
     progress: progress ? { next: progress.next_episode } : null,
     signedIn: user !== null,
     rank: watchnow.rank,
-    country,
     otherSiteRatings: settings?.browsing?.other_site_ratings ?? true,
     actorSpoilers: settings?.browsing?.spoilers?.actors !== 'hide',
     episodeTypeTags,

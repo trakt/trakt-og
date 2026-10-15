@@ -29,7 +29,6 @@ const base = {
   progress: null,
   signedIn: false,
   rank: null,
-  country: 'us',
   otherSiteRatings: true,
   actorSpoilers: true,
   episodeTypeTags: true,

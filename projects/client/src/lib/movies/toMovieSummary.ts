@@ -31,8 +31,6 @@ interface MovieSummaryParams {
   releases: readonly Release[];
   collection: { list: ListResponse; items: readonly ListedMovieResponse[] } | null;
   rank: StreamingRank | null;
-  /** The viewer's watch-now country, lowercase. */
-  country: string;
   /** The viewer's "other site ratings" setting; on when logged out. */
   otherSiteRatings: boolean;
   /** VIPs get the country, language, genre and studio facts as filter links. */
@@ -110,13 +108,7 @@ export function toMovieSummary(params: MovieSummaryParams) {
     /** Out somewhere by now: it can be watched, checked into and rated. */
     released: out,
     rating: out ? { value: movie.rating ?? 0, votes: movie.votes ?? 0, href: `${href}/stats` } : undefined,
-    external: params.otherSiteRatings && out
-      ? toExternalRatings({
-        ratings: params.ratings,
-        rank: params.rank,
-        countryName: countryName(params.country),
-      })
-      : [],
+    external: params.otherSiteRatings && out ? toExternalRatings({ ratings: params.ratings, rank: params.rank }) : [],
     counts: releasedCounts([
       count(stats?.watchers, 'watcher', 'watchers'),
       count(stats?.plays, 'play', 'plays'),

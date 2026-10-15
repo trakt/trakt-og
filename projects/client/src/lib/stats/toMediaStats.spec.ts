@@ -22,7 +22,6 @@ const params = {
   ratings,
   stats,
   rank: { rank: 10, delta: 1, link: 'https://www.justwatch.com/us/movie/fight-club' },
-  country: 'us',
   otherSiteRatings: true,
   now: new Date('2026-09-30T00:00:00Z'),
 };
@@ -34,7 +33,7 @@ describe('toMediaStats', () => {
     expect(view.bars).toHaveLength(10);
     expect(view.bars.at(9)?.height).toBeCloseTo(105 / 121 * 100);
     expect(view.strip.rating).toEqual({ value: 8.999, votes: 2723, href: `${media.href}/stats` });
-    expect(view.strip.external.map(({ title }) => title)).toEqual(['IMDb', 'Justwatch\n30 Day Streaming Rank']);
+    expect(view.strip.external.map(({ title }) => title)).toEqual(['IMDb', 'JustWatch']);
     expect(view.strip.counts.map(({ label }) => label)).toEqual([
       'watcher',
       'plays',

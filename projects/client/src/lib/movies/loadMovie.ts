@@ -74,7 +74,6 @@ export async function loadMovie({ fetch, token, parent, id: requested }: LoadMov
     releases: releases ?? [],
     collection: official,
     rank: watchnow.rank,
-    country,
     otherSiteRatings: settings?.browsing?.other_site_ratings ?? true,
     isVip: user?.isVip ?? false,
     now: new Date(),

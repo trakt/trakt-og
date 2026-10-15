@@ -9,6 +9,7 @@ import LoadingBar from '$lib/components/loading/LoadingBar.svelte';
 import LoadingOverlay from '$lib/components/loading/LoadingOverlay.svelte';
 import Pagination from '$lib/components/pagination/Pagination.svelte';
 import RatingPopover from '$lib/components/rating/RatingPopover.svelte';
+import { ninja } from '$lib/components/easter/ninja.svelte';
 import FilterMenu from '$lib/components/filters/FilterMenu.svelte';
 import TermsFilter from '$lib/components/filters/TermsFilter.svelte';
 import AdvancedFiltersToggle from '$lib/components/filters/AdvancedFiltersToggle.svelte';
@@ -130,12 +131,19 @@ $effect(() => {
           format={(v) => v.toFixed(1)} />
       </div>
 
-      <h2>Rating hearts</h2>
+      <h2>Rating meter</h2>
       <div id="rating">
-        <RatingPopover label="Rate the demo item" value={rating} onrate={(n) => (rating = n)}>
+        <RatingPopover label="Rate the demo item" value={rating}
+          onrate={(n) => (rating = n)}>
           {#snippet trigger()}<span>Rate this item: {rating ?? 'unrated'}</span>{/snippet}
         </RatingPopover>
-        <p>Arrow keys preview a heart; Enter or Space saves it. Choosing the current rating removes it.</p>
+        <RatingPopover label="Rate the demo item from its summary" variant="summary" value={rating}
+          onrate={(n) => (rating = n)}>
+          {#snippet trigger()}<span>From a summary, it opens above: {rating ?? 'unrated'}</span>{/snippet}
+        </RatingPopover>
+        <p>Arrow keys preview a heart; Enter or Space saves it. The trash button removes the rating. A 10 brings out the
+          Totally Ninja guy.</p>
+        <button type="button" onclick={() => ninja.show()}>Send the Totally Ninja guy</button>
       </div>
 
       <h2>Empty states</h2>

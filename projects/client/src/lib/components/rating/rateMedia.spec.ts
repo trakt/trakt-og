@@ -74,7 +74,7 @@ describe('rateMedia', () => {
       return HttpResponse.json({ deleted: { movies: 1 } });
     }));
     expect(await rateMedia({ ...params, rating: null, watchAfterRating: 'now' })).toBe(true);
-    expect(params.notify.success).toHaveBeenCalledOnce();
+    expect(params.notify.success).not.toHaveBeenCalled();
   });
 
   it.each([403, 429, 500])('should roll back failed ratings (%s)', async (status) => {

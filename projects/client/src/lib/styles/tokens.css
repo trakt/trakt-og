@@ -1117,21 +1117,26 @@
   --space-card-rating-top: 5px;
   --line-height-card-rating: 13px;
 
-  --rating-popover-width: 275px;
   --radius-rating-popover: 0;
   --rating-arrow-size: 10px;
   --rating-popover-gap: 10px;
   --rating-popover-border-width: 1px;
   --rating-popover-body-block: 9px;
-  --rating-summary-body-end: 5px;
   --rating-popover-body-inline: 14px;
-  --rating-prompt-block: 6px;
   --rating-prompt-inline: 8px;
-  --rating-summary-open-width: 175px;
   --rating-focus-width: 2px;
   --rating-busy-opacity: 0.65;
   --color-rating-prompt: light-dark(#f7f7f7, #333);
   --shadow-rating-popover: 0 5px 10px rgb(0 0 0 / 20%);
+  /* The rating popover: PromptPopover's look, its title bar tinted in the rating being pointed at, over OG's hearts. */
+  --rating-popover-width: 275px;
+  --rating-meter-arrow: 12px;
+  --rating-head-inline: 40px; /* both sides, so the title stays centered beside the trash */
+  --rating-remove-end: 8px;
+  --transition-rating-tint: 0.15s ease-out;
+  --color-rating-head-text: #fff; /* on the bar in a rating's full color */
+  --color-rating-remove-hover: rgb(0 0 0 / 0.25); /* the trash's wash over any bar */
+  --rating-arrow-gap: 5px; /* from the arrow's tip to the trigger */
 
   /* Core controls: pagination, pill tabs, rating hearts, empty and loading states */
   --font-size-pagination: 15px;
@@ -1157,6 +1162,17 @@
   --color-tab-picked-border: rgb(237 28 36 / 0.6);
   --color-tab-picked-text: light-dark(#b3161c, #fff);
   --color-rating-empty: light-dark(#ddd, #444);
+  /* The rating-10 easter egg: the Totally Ninja guy and his speech bubble */
+  --ninja-height: clamp(75px, 13vh, 120px);
+  --ninja-duration: 1.9s; /* 0.35s up, about a second of speech, 0.35s down; the keyframes are cut to this */
+  --ninja-bubble-gap: 12px; /* past the top of his head */
+  --ninja-bubble-padding: 8px 16px;
+  --radius-ninja-bubble: 18px;
+  --ninja-bubble-tail: 14px;
+  --font-size-ninja-bubble: 20px;
+  --color-ninja-bubble-bg: #fff;
+  --color-ninja-bubble-text: #111;
+  --shadow-ninja-bubble: 0 8px 24px rgb(0 0 0 / 0.35);
   --color-no-data-bg: light-dark(#f0f0f0, #333);
   --color-no-data-text: light-dark(#555, #ccc);
   --color-no-results-text: #555; /* on the dark charts frame in both themes */
@@ -1624,12 +1640,44 @@
   --color-bundle-subscriptions: #333; /* OG had no subscriptions bundle at 2e0405a5f */
 
   /* Summary pages: the movie, show, season, episode and person frame */
-  --color-ratings-muted: #aaa; /* vote counts and labels in the ratings bar */
   --color-fanart-caption-muted: #aaa; /* the role and year in a person fanart's caption */
   --color-metascore-high: #6c3;
   --color-metascore-medium: #fc3;
   --color-metascore-low: #f00;
   --color-metascore-none: #999;
+  /* The ratings strip: one row of icons and numbers on the fanart, so its colors hold in both themes. */
+  --strip-gap: 16px;
+  --strip-item-gap: 6px;
+  --strip-item-pad: 5px 6px; /* the hover wash around an item */
+  --strip-item-pad-inline: 6px;
+  --strip-item-pull: -5px -6px; /* and the same pulled back, so the wash doesn't space the row */
+  --radius-strip-item: 7px;
+  --font-size-strip-number: 16px;
+  --font-size-strip-icon: 17px;
+  --strip-logo-size: 20px;
+  --strip-imdb-height: 16px; /* IMDb's badge is wide, so it's sized by height */
+  --strip-metascore-ring: 2px;
+  --color-strip-divider: rgb(255 255 255 / 0.18);
+  --color-strip-hover: rgb(255 255 255 / 0.1);
+  --strip-rate-size: 28px;
+  --strip-rate-padding: 8px; /* beside the heart and score once rated */
+  --strip-rate-gap: 4px;
+  --font-size-strip-rate: 13px;
+  --color-strip-rate-line: rgb(255 255 255 / 0.3);
+  --color-strip-rate-line-hover: rgb(255 255 255 / 0.55);
+  --color-strip-rate-bg: rgb(255 255 255 / 0.06);
+  --color-strip-rate-hover: rgb(255 255 255 / 0.14);
+  --strip-rated-line-mix: 70%; /* how much of the rating's color the rated button's outline keeps */
+  --strip-rated-bg-mix: 28%;
+  /* Each Trakt count's icon, in its action's color, lifted for the dark strip. */
+  --color-strip-watchers: #5aa6d8;
+  --color-strip-plays: #b884cf; /* history's purple */
+  --color-strip-libraries: #2fc9a6; /* library's teal */
+  --color-strip-lists: #3fb8ef; /* watchlist's blue */
+  --color-strip-comments: #c4c4c4;
+  --color-strip-favorited: #f38a45; /* favorites' orange */
+  --color-strip-rank-up: #6fcf7a; /* JustWatch's rank change in the black tooltip */
+  --color-strip-rank-down: #ff5a60;
   --color-summary-label: #959595; /* stat labels, section nav, "Videos" */
   --color-summary-hover: light-dark(#000, #fff);
   --color-summary-alt: #999; /* "(62 episodes)" after a stat */
@@ -1647,6 +1695,7 @@
   --color-overview-shade: light-dark(#fff, #1d1d1d);
   --font-size-summary-label: 13px; /* external link and video tiles */
   --font-size-summary-h2: 18px; /* the collection or show above the title */
+  --summary-title-tag-gap: 10px; /* before the post-credits tag, matching the certification's */
   --font-size-action: 15px;
   --font-size-action-icon: 30px;
   --font-size-item-nav: 100px; /* the prev/next chevrons */
@@ -1979,6 +2028,7 @@
   --z-tooltip: 1070;
   --z-header: 1500;
   --z-toast: 30; /* under the header, which it hangs below */
+  --z-easter: 5000; /* the rating-10 Totally Ninja guy, over the header and dialogs, under the loaders */
   --z-loading-bar: 9999;
   --z-loading: 99999;
   /* Notes: comment thread cards with coloured tags for what the note is attached to and the item type. */

@@ -56,7 +56,7 @@ $effect(() => {
   <section>
     <h1>Dialog, dropdown, toast and tooltip</h1>
     <p>
-      OG's modals, Bootstrap dropdowns and tooltips, and toastr bars, on native <code>&lt;dialog&gt;</code> and the
+      OG's modals, Bootstrap dropdowns and tooltips, and glass toasts, on native <code>&lt;dialog&gt;</code> and the
       Popover API.
     </p>
     <label>
@@ -111,7 +111,9 @@ $effect(() => {
     <h2>Toast</h2>
     <div class="row">
       <button type="button" onclick={() => toast.success('Fight Club added to your watchlist.')}>Success</button>
-      <button type="button" onclick={() => toast.error('Something went wrong. Please try again.')}>Error</button>
+      <button type="button" onclick={() => toast.error('This item was recently refreshed. Please try again later.')}>
+        Error
+      </button>
     </div>
 
     <h2>Tooltip</h2>

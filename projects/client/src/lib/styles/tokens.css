@@ -123,8 +123,6 @@
   /* States (alerts) */
   --state-default-bg: #f6f6f6;
   --state-default-border-light: #f3f3f3;
-  --state-success-text: #3c763d;
-  --state-success-bg: #dff0d8;
   --state-info-text: #31708f;
   --state-info-bg: #d9edf7;
   --state-warning-text: #8a6d3b;
@@ -1163,11 +1161,30 @@
   --font-size-filter-icon-frame: 19px;
   --opacity-faded: 0.15; /* .grid-item.fade-*-on */
 
-  /* Toasts */
-  --state-success-border: #d6e9c6;
-  --state-danger-border: #ebccd1;
-  --font-size-toast-close: 20px;
-  --text-shadow-toast-close: 0 1px 0 #fff;
+  /* Toasts: cards in the header's dark glass, stacked down from under its right edge. Dark on both themes, like the
+     header. A line along the bottom drains with the auto-dismiss timer. */
+  --toast-width: 360px;
+  --toast-offset: 12px; /* from the header and the window's edge */
+  --toast-gap: 8px;
+  --toast-padding: 11px 8px 11px 14px;
+  --toast-icon-gap: 10px;
+  --toast-close-size: 28px;
+  --toast-timer-height: 2px;
+  --font-size-toast: 14px;
+  --font-size-toast-icon: 18px;
+  --font-size-toast-close: 14px;
+  --radius-toast: 10px;
+  --radius-toast-close: 6px;
+  --color-toast-bg: var(--color-header-panel);
+  --color-toast-text: #fff;
+  --color-toast-border: var(--color-header-edge);
+  --color-toast-close: var(--color-header-muted);
+  --color-toast-close-hover: var(--color-header-pill);
+  --color-toast-success: #6cc96c; /* --brand-success, lifted for an icon on dark glass */
+  --color-toast-error: #ff5a60; /* --brand-primary, lifted for an icon on dark glass */
+  --color-toast-error-border: rgb(255 90 96 / 0.5);
+  --blur-toast: var(--blur-header-glass);
+  --shadow-toast: 0 12px 32px rgb(0 0 0 / 0.45);
 
   /* Tooltips.
      Dark knight never restyled them, so both themes share these. */
@@ -2200,7 +2217,7 @@
   --z-popover: 1060;
   --z-tooltip: 1070;
   --z-header: 1500;
-  --z-toast: 30; /* under the header, which it hangs below */
+  --z-toast: 30; /* under the header and its menus, which open over the toasts */
   --z-summary-sidebar: 1; /* over the details' heading marks */
   --z-easter: 5000; /* the rating-10 Totally Ninja guy, over the header and dialogs, under the loaders */
   --z-loading-bar: 9999;

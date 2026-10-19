@@ -2627,6 +2627,7 @@
 
   /* The status control after the title: a dropdown with a status dot */
   --progress-status-dot: 8px;
+  --progress-status-ring: 1.5px; /* Not started's empty dot */
   --progress-status-dot-gap: 2px; /* on top of the trigger's own gap */
 
   /* The tick bar and its percent */

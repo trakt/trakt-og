@@ -50,6 +50,18 @@ describe('toProgressItems', () => {
     expect(ids(toProgressItems({ ...base, type: 'watched' }))).toEqual([1, 2]);
   });
 
+  it('should list every show on a list on Watched, unstarted, dropped and hidden ones too', () => {
+    const listShows = new Map([1, 3, 4, 6].map((id) => [id, { ...droppedShow, id, slug: `show-${id}` }]));
+    const items = toProgressItems({ ...base, type: 'watched', listShows });
+    expect(ids(items)).toEqual([1, 3, 4, 6]);
+    expect(items?.find(({ show }) => show.id === 6)).toMatchObject({ completed: 0, plays: 0 });
+  });
+
+  it('should keep filtering Rewatching by its own rule with a list', () => {
+    const listShows = new Map([1, 2, 6].map((id) => [id, { ...droppedShow, id }]));
+    expect(ids(toProgressItems({ ...base, type: 'rewatching', listShows }))).toEqual([2]);
+  });
+
   it('should count watches and plays from the overlay, not the endpoint’s completed count', () => {
     expect(toProgressItems({ ...base, type: 'watched' })?.at(0)).toMatchObject({
       aired: 10,

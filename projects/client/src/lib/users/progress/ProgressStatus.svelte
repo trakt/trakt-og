@@ -1,6 +1,6 @@
 <!--
   The status control after a progress row's title, drawn like the app's dropdowns: a dot in the status color and
-  where you are with the show (Watching, Rewatching since…, Caught up, Dropped…). Its menu lists the status, picked,
+  where you are with the show (Not started, Watching, Rewatching since…, Caught up, Dropped…). Its menu lists the status, picked,
   then the row's show actions: Rewatch and Drop, or Restore on Dropped. Those rows are the shared visibility controls, so each still asks for its date, and the
   menu stays open until it saves. `onremove` gets a drop or restore as it starts saving, since those take the
   row off the tab.
@@ -29,6 +29,8 @@ const target = $derived({ type: 'show' as const, id: row.id, title: row.title })
 const status = $derived.by(() => {
   if (type === 'dropped') return { tone: 'dropped', text: row.droppedOn ? `Dropped ${row.droppedOn}` : 'Dropped' };
   if (row.rewatchingSince) return { tone: 'rewatching', text: `Rewatching since ${row.rewatchingSince}` };
+  // A list's progress shows every show on it, including ones with no plays yet.
+  if (row.plays === 0) return { tone: 'not-started', text: 'Not started' };
   return row.left === 0 ? { tone: 'done', text: 'Caught up' } : { tone: 'watching', text: 'Watching' };
 });
 
@@ -59,11 +61,13 @@ function toggle(event: ToggleEvent & { currentTarget: HTMLElement }) {
           <VisibilityControl {target} action="restore" variant="menu" onsaving={removing}>Restore</VisibilityControl>
         </li>
       {:else}
-        <li>
-          <VisibilityControl {target} action="rewatch" variant="menu" onsaving={close}>
-            {row.rewatchingSince ? 'Start over again' : 'Rewatch'}
-          </VisibilityControl>
-        </li>
+        {#if status.tone !== 'not-started'}
+          <li>
+            <VisibilityControl {target} action="rewatch" variant="menu" onsaving={close}>
+              {row.rewatchingSince ? 'Start over again' : 'Rewatch'}
+            </VisibilityControl>
+          </li>
+        {/if}
         <li><VisibilityControl {target} action="drop" variant="menu" onsaving={removing}>Drop</VisibilityControl></li>
       {/if}
     </ul>
@@ -121,6 +125,12 @@ function toggle(event: ToggleEvent & { currentTarget: HTMLElement }) {
 
   &.dropped {
     --dot: var(--brand-primary);
+  }
+
+  /* Nothing watched yet: an empty ring. */
+  &.not-started .dot {
+    background: none;
+    box-shadow: inset 0 0 0 var(--progress-status-ring) var(--color-text-muted);
   }
 }
 

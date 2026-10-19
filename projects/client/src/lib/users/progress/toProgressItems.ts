@@ -12,6 +12,8 @@ type ToProgressItemsParams = {
   nitro: readonly ProgressItem[];
   /** Dropped shows' summaries from `/users/hidden/dropped`, for the ones the endpoint leaves out. */
   droppedShows?: ReadonlyMap<number, CachedShow>;
+  /** `?list=`: every show on the list, with its summary. */
+  listShows?: ReadonlyMap<number, CachedShow>;
   slices: Partial<OverlaySlices>;
   catalogs: ReadonlyMap<number, ShowCatalog>;
   options: ProgressOptions;
@@ -24,7 +26,8 @@ const dateOf = (values: Dates, id: number) => values instanceof Map ? values.get
 /**
  * A tab's shows, unsorted and unfiltered.
  * Watched is the endpoint's shows minus the dropped and hidden ones; Rewatching keeps the ones you're rewatching;
- * Dropped keeps the dropped ones, counting any the endpoint left out from the overlay and their summary.
+ * Dropped keeps the dropped ones, counting any the endpoint left out from the overlay and their summary. Watched for a
+ * list (`?list=`) is every show on it, like OG, whatever your account holds: unstarted, dropped or hidden ones too.
  *
  * The counts, plays and times come from the overlay's watches (`/sync/watched/shows`, already loaded app-wide), never
  * the endpoint's `completed`, which can count more episodes than were ever watched. Before a show's seasons open, the
@@ -32,20 +35,24 @@ const dateOf = (values: Dates, id: number) => values instanceof Map ? values.get
  * Null until the overlay knows your watches too, so the numbers don't jump.
  */
 export function toProgressItems(
-  { type, nitro, droppedShows, slices, catalogs, options, now }: ToProgressItemsParams,
+  { type, nitro, droppedShows, listShows, slices, catalogs, options, now }: ToProgressItemsParams,
 ): readonly ProgressItem[] | null {
   const { dropped, rewatching, progressHidden, hidden, watchedShows } = slices;
   if (!dropped || !rewatching || !progressHidden || !watchedShows) return null;
 
   const optimistic = hidden?.get('progress_watched');
   const isHidden = (id: number) => progressHidden.watched.shows.has(id) || Boolean(optimistic?.has(`show:${id}`));
+  const wholeList = type === 'watched' ? listShows : undefined;
   const keep = (id: number) => {
+    if (wholeList) return wholeList.has(id);
     if (type === 'dropped') return dropped.has(id);
     if (dropped.has(id) || isHidden(id)) return false;
     return type === 'watched' || rewatching.has(id);
   };
   const listed = new Set(nitro.map(({ show }) => show.id));
-  const missing = type === 'dropped'
+  const missing = wholeList
+    ? [...wholeList.values()].filter(({ id }) => !listed.has(id))
+    : type === 'dropped'
     ? [...(droppedShows?.values() ?? [])].filter(({ id }) => dropped.has(id) && !listed.has(id))
     : [];
 

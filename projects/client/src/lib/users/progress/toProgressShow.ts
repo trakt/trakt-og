@@ -1,8 +1,28 @@
 import type { UpNextResponse } from '@trakt/api';
 import type { CachedShow } from '../../shows/cache/CachedShow.ts';
 
-/** A show the progress endpoints return (`up_next_nitro`, `hidden/dropped`) as og's show summary. */
-export function toProgressShow(show: UpNextResponse['show'], fetchedAt: number): CachedShow {
+type Nullish<T> = T | null | undefined;
+
+/** The fields read from a show, which the progress endpoints and a list's `extended=full,images` items all send. */
+type ProgressShowSource = Pick<UpNextResponse['show'], 'title'> & {
+  readonly ids: { readonly trakt: number; readonly slug: string };
+  readonly year?: Nullish<number>;
+  readonly status?: Nullish<string>;
+  readonly genres?: Nullish<readonly string[]>;
+  readonly runtime?: Nullish<number>;
+  readonly total_runtime?: Nullish<number>;
+  readonly rating?: Nullish<number>;
+  readonly votes?: Nullish<number>;
+  readonly aired_episodes?: Nullish<number>;
+  readonly first_aired?: Nullish<string>;
+  readonly last_aired?: Nullish<string>;
+  readonly images?: Nullish<
+    { readonly poster?: Nullish<readonly string[]>; readonly fanart?: Nullish<readonly string[]> }
+  >;
+};
+
+/** A show the progress endpoints (`up_next_nitro`, `hidden/dropped`) or a list return, as og's show summary. */
+export function toProgressShow(show: ProgressShowSource, fetchedAt: number): CachedShow {
   return {
     id: show.ids.trakt,
     slug: show.ids.slug,

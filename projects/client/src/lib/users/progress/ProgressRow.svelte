@@ -8,6 +8,7 @@
   fades the row out and moves the focus on.
 -->
 <script lang="ts">
+import { nearViewport } from '$lib/utils/nearViewport';
 import { SvelteSet } from 'svelte/reactivity';
 import FanartCard from '$lib/components/media/FanartCard.svelte';
 import { quickIconFill } from '$lib/components/media/quickIconFill';
@@ -55,6 +56,9 @@ const plural = (n: number, word: string) => `${word}${n === 1 ? '' : 's'}`;
 const count = (n: number) => n.toLocaleString('en-US');
 const showTarget = $derived({ type: 'show' as const, id: row.id, title: row.title, airedEpisodes: row.aired });
 const caughtUp = $derived(type === 'dropped' ? 'Dropped' : 'Caught up');
+// Episodes left but no next one: the endpoint sends none for a show you haven't started (or a list's show it left out),
+// so the row reads its catalog as it nears the screen, and the card isn't "Caught up" meanwhile.
+const findsNext = $derived(type !== 'dropped' && !row.upNext && row.left > 0);
 
 /** Drop, hide and restore: the focus moves to the next row's title before this one fades out. */
 function remove(saved: Promise<boolean>) {
@@ -126,6 +130,7 @@ function toggleSeason(season: number) {
 {/snippet}
 
 <article bind:this={article} class="progress-row" aria-labelledby="progress-{row.id}"
+  {@attach nearViewport(() => { if (findsNext) onneed?.(); })}
   out:removeCard|global={() => removedByAction}>
   <a class="poster" href={row.href} tabindex="-1" aria-hidden="true">
     {#if row.poster}
@@ -186,7 +191,7 @@ function toggleSeason(season: number) {
         }} />
     {:else}
       <FanartCard href={row.href} title={row.status ?? row.title} image={row.fanart}
-        tags={[{ text: caughtUp, kind: 'generic' }]}
+        tags={findsNext ? [] : [{ text: caughtUp, kind: 'generic' }]}
         icons={{
           fill: quickIconFill({ state: overlay.state('show', row.id), airedEpisodes: row.aired, datePreferences }),
           ratingTarget: { type: 'show', id: row.id, title: row.title },

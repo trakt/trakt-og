@@ -26,7 +26,7 @@ import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
 import { userManager } from '$lib/auth/userManager';
 import type { HeaderUser } from '$lib/components/header/HeaderUser';
 import { toast } from '$lib/components/toast/toast.svelte';
-import { fetchListItemRefs } from '$lib/lists/fetchListItemRefs';
+import { loadListShows } from './loadListShows.ts';
 import { overlay } from '$lib/overlay/overlay';
 import type { CachedShow } from '$lib/shows/cache/CachedShow';
 import { loadShowCatalog } from '$lib/shows/cache/loadShowCatalog';
@@ -117,30 +117,35 @@ $effect(() => {
   });
 });
 
-const items = $derived(
-  nitro
-    ? toProgressItems({ type: data.type, nitro, droppedShows, slices, catalogs, options: data.options, now })
-    : null,
-);
-
-// `?list=`: the list's shows, read once.
-let listed = $state.raw<ReadonlySet<number> | null>(null);
+// `?list=`: the list's shows with their summaries, read once.
+let listShows = $state.raw<ReadonlyMap<number, CachedShow> | null>(null);
+const listed = $derived(listShows ? new Set(listShows.keys()) : null);
 $effect(() => {
   const list = data.list;
   if (list === undefined) return;
-  listed = null;
-  void fetchListItemRefs({
-    fetch: fetch(),
-    base: `/lists/${list}/items`,
-    query: { types: ['show'], genres: [] },
-    sort: { by: 'rank', how: 'asc' },
-  })
-    .then((refs) => (listed = new Set(refs.map(({ trakt }) => trakt))))
+  listShows = null;
+  void loadListShows({ fetch: fetch(), list })
+    .then((shows) => (listShows = shows))
     .catch(() => {
-      listed = new Set();
+      listShows = new Map();
       toast.error("Doh! We couldn't load that list.");
     });
 });
+
+const items = $derived(
+  nitro
+    ? toProgressItems({
+      type: data.type,
+      nitro,
+      droppedShows,
+      listShows: listShows ?? undefined,
+      slices,
+      catalogs,
+      options: data.options,
+      now,
+    })
+    : null,
+);
 
 /** Reads a row's catalog once, as its seasons open. */
 async function need(id: number) {

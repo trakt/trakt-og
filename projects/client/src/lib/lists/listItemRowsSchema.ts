@@ -28,6 +28,8 @@ const show = z.object({
   year: z.number().nullish(),
   ids: z.object({ trakt: z.number(), slug: z.string() }),
   first_aired: z.string().nullish(),
+  last_aired: z.string().nullish(),
+  status: z.string().nullish(),
   /** Per episode: an episode without its own runtime takes it. */
   runtime: z.number().nullish(),
   total_runtime: z.number().nullish(),

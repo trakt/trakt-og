@@ -1,23 +1,20 @@
 /**
- * OG's list types for an item's lists page, keyed by OG's URL segment. `api`
- * is the worker's name for it: Favorites were `recommendations` there.
+ * OG's list types for an item's lists page, keyed by OG's URL segment, with `api` the worker's name for each. OG's
+ * Watchlists and Favorites are left out until the API serves them: it answers both with no lists. Me is the signed-in
+ * viewer's own lists with the item, which come from `/listed` instead.
  */
 export const itemListTypes = {
   all: { label: 'All Lists', api: 'all' },
   personal: { label: 'Personal Lists', api: 'personal' },
   official: { label: 'Official Lists', api: 'official' },
-  watchlists: { label: 'Watchlists', api: 'watchlists' },
-  favorites: { label: 'Favorites', api: 'recommendations' },
+  me: { label: 'Me', api: 'listed' },
 } as const;
 
-/**
- * OG's sorts, less the 30-day ones the API can't serve. `note` is OG's italic
- * "(All Time)".
- */
+/** OG's sorts, less the 30-day ones the API can't serve. */
 export const itemListSorts = {
   popularity: { label: 'Popularity', api: 'popular' },
-  likes: { label: 'Reactions', note: 'All Time', api: 'likes' },
-  comments: { label: 'Comments', note: 'All Time', api: 'comments' },
+  likes: { label: 'Reactions', api: 'likes' },
+  comments: { label: 'Comments', api: 'comments' },
   items: { label: 'Items', api: 'items' },
   added: { label: 'Added Date', api: 'added' },
   updated: { label: 'Updated Date', api: 'updated' },

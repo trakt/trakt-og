@@ -1,5 +1,8 @@
 <script lang="ts">
 import OfficialListHeader from '$lib/components/lists/OfficialListHeader.svelte';
+import EmptyState from '$lib/components/empty/EmptyState.svelte';
+import listIcon from '$lib/icons/regular/list.svg?raw';
+import FollowingWatchingSection from '$lib/charts/FollowingWatchingSection.svelte';
 import WatchNowChips from '$lib/components/watchnow/WatchNowChips.svelte';
 import Container from '$lib/components/container/Container.svelte';
 import ListTransfer from '$lib/components/lists/ListTransfer.svelte';
@@ -114,6 +117,19 @@ const following = [{ slug: 'teodoro_2', name: 'Elsy Murphy (@teodoro_2)' }];
 </section>
 <section class="demo">
   <Container>
+    <h2>Empty state: an item's lists page with nothing for the picked type</h2>
+    <EmptyState icon={listIcon} action={{ href: '/movies/holes-2003/lists/all', text: 'See all lists' }}>
+      No official lists feature Holes.
+    </EmptyState>
+    <h2>Compact, in a sidebar: the charts' People you follow, with nobody watching</h2>
+    <div class="sidebar-sample">
+      <FollowingWatchingSection type="shows" open watching={() => Promise.resolve([])}
+        datePreferences={{ order: 'ymd', hour24: false, timeZone: 'UTC', weekStartDay: 0 }} />
+    </div>
+  </Container>
+</section>
+<section class="demo">
+  <Container>
     <h2>Lists index reorder controls</h2>
     <ListRow href="/users/og_tester/lists/all-time-favorites" name="All-Time Favorites"
       owner={{ name: 'OG Tester', href: '/users/og_tester' }} posters={[{}, {}, {}, {}, {}]} itemCount={12}
@@ -171,6 +187,13 @@ const following = [{ slug: 'teodoro_2', name: 'Elsy Murphy (@teodoro_2)' }];
 <style>
 .demo {
   padding-block: var(--header-height) var(--gutter);
+}
+
+/* A charts sidebar's width and frame. */
+.sidebar-sample {
+  inline-size: var(--sidebar-width);
+  padding: var(--sidebar-padding);
+  background-color: var(--color-frame);
 }
 .sample {
   max-inline-size: var(--list-picker-width);

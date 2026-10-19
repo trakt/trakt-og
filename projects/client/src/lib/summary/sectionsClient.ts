@@ -4,7 +4,6 @@ import type { api } from '../api/api.ts';
 import { contractSchema } from '../api/contractSchema.ts';
 import { rawApiFetch } from '../api/rawApiFetch.ts';
 import { socialRowsSchema } from './socialRowsSchema.ts';
-import { summaryListSchema } from './summaryListSchema.ts';
 import type { SocialRow } from './SocialRow.ts';
 import type { SummaryMedia } from './SummaryMedia.ts';
 import { type ActivityTab, toActivity } from './toActivity.ts';
@@ -28,12 +27,6 @@ export type CommentTab = {
   readonly comments: readonly CommentResponse[];
 };
 
-export type ListTab = {
-  readonly id: 'popular' | 'me';
-  readonly label: string;
-  readonly lists: readonly SummaryList[];
-};
-
 type SectionsClientParams = {
   /** Public calls, without the viewer's token: they stay cacheable and a stale token can't 401 them. */
   anonymous: Api;
@@ -49,7 +42,8 @@ export type SectionsClient = {
   /** "People You Follow", or `null` when nobody is watching and no followed member has any activity. */
   activity: (media: SummaryMedia) => Promise<readonly ActivityTab[] | null>;
   comments: (media: SummaryMedia) => Promise<readonly CommentTab[] | null>;
-  lists: (media: SummaryMedia) => Promise<readonly ListTab[] | null>;
+  /** The official lists, then the most popular personal ones; the lists page sorts and filters the rest. */
+  lists: (media: SummaryMedia) => Promise<readonly SummaryList[] | null>;
   related: (media: SummaryMedia) => Promise<readonly RelatedCard[] | null>;
 };
 
@@ -187,29 +181,12 @@ export function sectionsClient({
     },
 
     lists: async (media) => {
-      const [official, popular, mine] = await Promise.all([
+      const [official, popular] = await Promise.all([
         lists(media, 'official'),
         lists(media, 'personal', PREVIEW_LIMIT),
-        raw(
-          `${mediaPath(media)}/listed?extended=images`,
-          (body) => z.array(summaryListSchema).safeParse(body).data ?? null,
-        ),
       ]);
-      // OG put the official lists (a movie's collection) ahead of the popular personal ones. "Me" is only the
-      // viewer's personal lists, most liked first: `/listed` also sends the watchlist and favorites, newest first.
-      const tabs: readonly ListTab[] = [
-        { id: 'popular', label: 'Popular', lists: [...official ?? [], ...popular ?? []].map(toSummaryList) },
-        {
-          id: 'me',
-          label: 'Me',
-          lists: (mine ?? [])
-            .filter((list) => list.type === 'personal')
-            .toSorted((a, b) => b.likes - a.likes)
-            .slice(0, PREVIEW_LIMIT)
-            .map(toSummaryList),
-        },
-      ];
-      return nonEmpty(tabs.filter((tab) => tab.lists.length > 0));
+      // OG put the official lists (a movie's collection) ahead of the popular personal ones.
+      return nonEmpty([...official ?? [], ...popular ?? []].map(toSummaryList));
     },
 
     related: async (media) => {

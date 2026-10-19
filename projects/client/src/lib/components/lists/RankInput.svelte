@@ -59,11 +59,14 @@ const begin = (event: FocusEvent) => {
   min-block-size: 0;
   block-size: var(--list-reorder-rank-size);
   padding: 0 var(--space-xs-inline);
-  border: var(--list-reorder-rank-border) solid var(--color-rank-border);
+  border: var(--rank-pill-border) solid var(--color-rank-pill-border);
   border-radius: var(--list-reorder-rank-radius);
-  background: var(--gray-dark);
+  background: var(--color-rank-pill-bg);
+  backdrop-filter: var(--blur-rank-pill);
+  box-shadow: var(--shadow-rank-pill);
   color: var(--color-card-text);
-  font: bold var(--font-size-card-tag) / 1.6 var(--font-body);
+  font: var(--font-weight-headings-heavy) var(--font-size-rank-pill) / 1 var(--font-headings);
+  font-variant-numeric: tabular-nums;
   text-align: center;
   transition: min-inline-size var(--transition-rank-edit), block-size var(--transition-rank-edit),
     inset-block-start var(--transition-rank-edit), border-color var(--transition-rank-edit),

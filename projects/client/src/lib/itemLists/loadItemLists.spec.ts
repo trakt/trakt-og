@@ -41,6 +41,15 @@ const server = setupServer(
     () => HttpResponse.json([{ number: 1, ids: { trakt: 3950 }, first_aired: '2008-01-20T02:00:00.000Z' }]),
   ),
   http.get(`${API}/shows/:id/seasons/:season/lists/:type/:sort`, () => HttpResponse.json([list], { headers: pages })),
+  http.get(
+    `${API}/shows/:id/listed`,
+    () =>
+      HttpResponse.json([
+        { ...list, type: 'watchlist', ids: { trakt: 8, slug: 'watchlist' } },
+        { ...list, likes: 2, ids: { trakt: 9, slug: 'rewatch' } },
+        list,
+      ]),
+  ),
   http.get(`${API}/people/:id`, () => HttpResponse.json(person)),
   http.get(`${API}/people/:id/lists/:type/:sort`, () => HttpResponse.json([])),
   // Watch Now and anything missing.
@@ -54,7 +63,7 @@ afterEach(() => {
 });
 afterAll(() => server.close());
 
-const load = (item: ItemListsItem, path: string, type?: string, sortBy?: string) =>
+const load = (item: ItemListsItem, path: string, type?: string, sortBy?: string, token: string | null = null) =>
   loadItemLists({
     fetch: globalThis.fetch,
     parent: () =>
@@ -67,25 +76,48 @@ const load = (item: ItemListsItem, path: string, type?: string, sortBy?: string)
     url: new URL(path, 'http://og.test'),
     type,
     sortBy,
+    token,
   });
 
 describe('loadItemLists', () => {
+  it("should read the viewer's own personal lists for Me, most liked first, as one page", async () => {
+    const data = await load(
+      { type: 'show', id: 'breaking-bad' },
+      '/shows/breaking-bad/lists/me',
+      'me',
+      undefined,
+      'token',
+    );
+
+    const read = requests.find(({ pathname }) => pathname.endsWith('/listed'));
+    expect(read?.pathname).toBe('/shows/breaking-bad/listed');
+    expect(data.lists.map(({ id }) => id)).toEqual([7, 9]);
+    expect(data).toMatchObject({ count: 2, page: null, query: { type: 'me', sortBy: 'popularity' } });
+  });
+
+  it('should ask for no lists for Me signed out', async () => {
+    const data = await load({ type: 'show', id: 'breaking-bad' }, '/shows/breaking-bad/lists/me', 'me');
+
+    expect(requests.some(({ pathname }) => pathname.endsWith('/listed'))).toBe(false);
+    expect(data).toMatchObject({ lists: [], count: 0 });
+  });
+
   it("should read the season's page with the API's type and sort, the count and the pages", async () => {
     const data = await load(
       { type: 'season', id: 'breaking-bad', season: '1' },
-      '/shows/breaking-bad/seasons/1/lists/favorites/popularity?page=2',
-      'favorites',
-      'popularity',
+      '/shows/breaking-bad/seasons/1/lists/official/updated?page=2',
+      'official',
+      'updated',
     );
 
     const read = requests.find(({ pathname }) => pathname.includes('/lists/'));
-    expect(read?.pathname).toBe('/shows/breaking-bad/seasons/1/lists/recommendations/popular');
+    expect(read?.pathname).toBe('/shows/breaking-bad/seasons/1/lists/official/updated');
     expect(Object.fromEntries(read?.searchParams ?? [])).toEqual({ extended: 'images', page: '2', limit: '30' });
     expect(data).toMatchObject({
       lists: [{ id: 7, href: '/users/sean/lists/heist-night', likeCount: 40 }],
       count: 61,
       page: { type: 'paginated', current: 2, total: 3 },
-      query: { type: 'favorites', sortBy: 'popularity' },
+      query: { type: 'official', sortBy: 'updated' },
       kind: 'season',
       media: { title: 'Season 1', href: '/shows/breaking-bad/seasons/1' },
     });

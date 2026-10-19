@@ -12,7 +12,12 @@ describe('itemListQuery', () => {
 
   it('should fall back to popularity for the cut 30-day sorts', () => {
     expect(itemListQuery('official', 'likes_30')).toEqual({ type: 'official', sortBy: 'popularity' });
-    expect(itemListQuery('favorites', 'comments')).toEqual({ type: 'favorites', sortBy: 'comments' });
+    expect(itemListQuery('personal', 'comments')).toEqual({ type: 'personal', sortBy: 'comments' });
+  });
+
+  it('should show all lists for the watchlists and favorites the API answers empty', () => {
+    expect(itemListQuery('watchlists', undefined)).toEqual({ type: 'all', sortBy: 'popularity' });
+    expect(itemListQuery('favorites', 'likes')).toEqual({ type: 'all', sortBy: 'likes' });
   });
 });
 

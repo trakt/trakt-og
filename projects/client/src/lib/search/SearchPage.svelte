@@ -28,6 +28,8 @@ import SidebarFrame from '$lib/components/sidebar/SidebarFrame.svelte';
 import SidebarTitle from '$lib/components/sidebar/SidebarTitle.svelte';
 import { viewerRecentSearches } from '$lib/components/header/viewerRecentSearches';
 import { overlay } from '$lib/overlay/overlay';
+import ListEditor from '$lib/components/lists/ListEditor.svelte';
+import { createItemListActions } from '$lib/itemLists/createItemListActions.svelte';
 import { findSearchType } from '$lib/search/findSearchType';
 import RecentSearchesSection from '$lib/search/RecentSearchesSection.svelte';
 import { searchLinks } from '$lib/search/searchLinks';
@@ -98,6 +100,10 @@ const gridVariant = $derived(
 const cardVariant = $derived(
   data.imageType === 'poster' || data.imageType === 'banner' ? data.imageType : 'fanart',
 );
+// The Lists tab's row icons, with the owner's edit and delete, as on an item's lists page.
+const listViewer = $derived(page.data.user ? { slug: page.data.user.slug, isVip: page.data.user.isVip } : null);
+const own = createItemListActions({ viewer: () => listViewer, origin: () => page.url.origin });
+const listsShown = $derived(own.visible(data.lists));
 const hasResults = $derived(data.cards.length > 0 || data.lists.length > 0 || data.users.length > 0);
 let fadeHide = $derived(data.filters.fadeHide);
 
@@ -177,8 +183,9 @@ function save(next: FadeHide) {
     </FrameGrid>
   {:else if data.lists.length > 0}
     <div class="lists">
-      {#each data.lists as list (list.key)}
-        <ListRow {...list} likeTarget={{ id: list.id, ownerSlug: list.kind === 'personal' ? list.owner.slug : undefined, viewer: page.data.user?.slug ?? null }} />
+      {#each listsShown as list (list.key)}
+        <ListRow {...list} mine={list.owner.slug === page.data.user?.slug} likeTarget={{ id: list.id, ownerSlug: list.kind === 'personal' ? list.owner.slug : undefined, viewer: page.data.user?.slug ?? null }}
+          actions={own.actions(list)} />
       {/each}
     </div>
   {:else if data.cards.length > 0}
@@ -226,7 +233,15 @@ function save(next: FadeHide) {
   {/if}
 </SidebarFrame>
 
+{#if own.editor}<ListEditor id={own.editor.id} posters={own.editor.posters} count={own.editor.count}
+  onclose={own.closeEditor} />{/if}
+
 <style>
+/* The rows sit in from the frame's edges, like a page's sections. */
+.lists {
+  padding: 0 var(--gutter) var(--gutter);
+}
+
 .no-results {
   display: grid;
   place-items: center;

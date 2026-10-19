@@ -1,3 +1,4 @@
+import type { Collaborator } from '../users/lists/Collaborator.ts';
 import { error, redirect } from '@sveltejs/kit';
 import { readListFilters } from './readListFilters.ts';
 import { loadListFilterSources } from './loadListFilterSources.ts';
@@ -83,7 +84,7 @@ export async function loadOfficialList({ fetch, locals, params, url, parent, coo
     filterSources,
     ...items,
     datePreferences,
-    collaborators: [] as readonly string[],
+    collaborators: [] as readonly Collaborator[],
     isCollaborator: false,
     listCover: listCoverOf(cover?.rows.at(0)),
   };

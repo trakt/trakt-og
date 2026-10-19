@@ -1,6 +1,5 @@
 import type { z } from 'zod/v4';
 import { toListRow } from '../../lists/toListRow.ts';
-import { toVipBadge } from '../toVipBadge.ts';
 import type { listRowsSchema } from './listRowsSchema.ts';
 import type { UserListRow } from './UserListRow.ts';
 
@@ -13,7 +12,6 @@ export function toUserListRow(list: ListSource, rank: number): UserListRow {
 
   return {
     ...row,
-    owner: { ...row.owner, vip: toVipBadge(list.user) },
     shareLink: list.privacy === 'link',
     isPublic: list.privacy === 'public',
     updatedAt: list.updated_at,

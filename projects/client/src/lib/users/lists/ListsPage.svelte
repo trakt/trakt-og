@@ -389,6 +389,8 @@ const actions = (row: UserListRow) => {
 
 {#snippet row(list: UserListRow, rank: number | undefined)}
   <ListRow
+  kind={list.kind}
+  mine={!data.isSelf && list.owner.slug === data.user?.slug}
   href={list.href}
   name={list.name}
   owner={list.owner}
@@ -399,7 +401,7 @@ const actions = (row: UserListRow) => {
   commentCount={list.commentCount}
   pills={list.pills}
   shareLink={list.shareLink}
-  collaborators={list.id === null ? [] : (collaborators.get(list.id) ?? []).filter(({ slug }) => !left.get(list.id ?? 0) || slug !== data.user?.slug).map(({ name }) => name)}
+  collaborators={list.id === null ? [] : (collaborators.get(list.id) ?? []).filter(({ slug }) => !left.get(list.id ?? 0) || slug !== data.user?.slug)}
   description={list.description}
   {rank}
   actions={actions(list)}
@@ -475,7 +477,6 @@ const actions = (row: UserListRow) => {
       {#each builtIns as list (list.key)}
         <div transition:slide={{ duration }}>{@render row(list, undefined)}</div>
       {/each}
-      {#if builtIns.length > 0}<hr transition:slide={{ duration }} />{/if}
     {/if}
     <div class="rows" bind:this={rowsElement} {@attach dragEvents} aria-busy={busy}>
       {#each lists as list (list.key)}
@@ -502,10 +503,6 @@ const actions = (row: UserListRow) => {
   overflow: hidden;
   clip-path: inset(50%);
   white-space: nowrap;
-}
-
-hr {
-  margin-block: var(--gutter) 0;
 }
 
 .empty {

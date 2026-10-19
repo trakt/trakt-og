@@ -54,6 +54,7 @@ import NotesDialog from '$lib/components/notes/NotesDialog.svelte';
 import Pagination from '$lib/components/pagination/Pagination.svelte';
 import ReadMore from '$lib/components/readmore/ReadMore.svelte';
 import ShareButton from '$lib/components/share/ShareButton.svelte';
+import CollaboratorsPanel from '$lib/components/lists/CollaboratorsPanel.svelte';
 import SectionToolbar from '$lib/components/toolbar/SectionToolbar.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import Icon from '$lib/icons/Icon.svelte';
@@ -130,13 +131,19 @@ $effect(() => {
   leaving = false;
   reportOpen = false;
 });
-const collaboratorNames = $derived(
-  data.list
-    ? data.collaborators.filter((_, index) =>
-      !left || !('viewerCollaboratorName' in data) ||
-      index !== data.collaborators.indexOf(data.viewerCollaboratorName ?? '')
-    )
-    : [],
+// Once the viewer stops collaborating, they leave the chip and its panel.
+const collaborators = $derived(
+  data.list ? data.collaborators.filter(({ slug }) => !left || slug !== data.user?.slug) : [],
+);
+const listOwner = $derived(
+  'profile' in data
+    ? {
+      name: data.profile.displayName,
+      href: `/users/${data.profile.slug}`,
+      avatar: data.profile.avatarUrl,
+      vip: data.profile.vip,
+    }
+    : undefined,
 );
 async function leave() {
   if (!data.list || !data.user || leaving || left) return;
@@ -618,13 +625,13 @@ async function saveNotes(text: string) {
               {#snippet trigger(tooltip)}<span class="pill share-link" {...tooltip}>Link</span>{/snippet}
             </Tooltip>
           {/if}
-          {#if collaboratorNames.length > 0}
-            <Tooltip text={collaboratorNames.join('\n')}>
-              {#snippet trigger(tooltip)}
-                <span class="pill collaborators" {...tooltip}><span class="pill-title">{collaboratorNames.length}</span
-                  >{plural(collaboratorNames.length, 'collaborator')}</span>
+          {#if collaborators.length > 0}
+            <CollaboratorsPanel {collaborators} list={{ name: list.name, poster: data.cards.at(0)?.image }} owner={listOwner}>
+              {#snippet trigger(attrs)}
+                <button type="button" class="pill collaborators" {...attrs}><span class="pill-title">{collaborators.length}</span
+                  >{plural(collaborators.length, 'collaborator')}</button>
               {/snippet}
-            </Tooltip>
+            </CollaboratorsPanel>
           {/if}
         </h2>
         {#if actions}
@@ -632,7 +639,7 @@ async function saveNotes(text: string) {
           <div class="actions">
             {#if actions.report}{@render action('Report List', flag, 'report', undefined, () => { reportOpen = true; })}{/if}
             {#if actions.edit && data.kind !== 'personal'}{@render action('Edit', pencil, 'edit', undefined, owner ? editBuiltIn : undefined)}{:else if actions.edit}<Tooltip text="Edit">{#snippet trigger(tooltip)}<button type="button" class="action edit" aria-label="Edit" {...tooltip} onclick={() => { editing = true; }}><Icon svg={pencil} /></button>{/snippet}</Tooltip>{/if}
-            {#if actions.delete}<span class="delete" style:--confirm-icon-size="var(--font-size-tool)"><ManageConfirm name="delete" svg={deleteIcon} label="Delete" yes="Yes, delete it!" warning={deleteWarning} disabled={deleting} onconfirm={removeList}>Delete this list?</ManageConfirm></span>{/if}
+            {#if actions.delete}<span class="delete" style:--confirm-icon-size="var(--font-size-list-row-action)"><ManageConfirm name="delete" svg={deleteIcon} label="Delete" yes="Yes, delete it!" warning={deleteWarning} disabled={deleting} onconfirm={removeList}>Delete this list?</ManageConfirm></span>{/if}
             {#if actions.leave}{@render action('Stop collaborating on this list', userXmark, 'leave', undefined, leave)}{/if}
             <span class="share"><ShareButton url={actions.shareUrl} title={list.name} large={false} /></span>
             {#if actions.manage && canManage}
@@ -829,11 +836,20 @@ h2 {
   background-color: var(--color-list-pill-link);
 }
 
+/* A button: it opens the collaborators panel. */
 .collaborators {
   display: inline-flex;
   align-items: center;
+  min-block-size: 0;
+  border: 0;
   background-color: var(--color-list-pill-collaborators);
-  cursor: default;
+  font-family: inherit;
+  line-height: inherit;
+  cursor: pointer;
+
+  &:is(:hover, :focus-visible) {
+    filter: brightness(1.1);
+  }
 }
 
 .pill-title {
@@ -851,28 +867,45 @@ h2 {
   display: flex;
   align-items: center;
   gap: var(--space-list-title-actions);
-  color: var(--color-list-title-action);
 }
 
-.action {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-control-caret);
+/* The icons as on a list row: each in a rounded box that fills on hover, like a comment's tools. */
+.action,
+.delete :global(.confirm > button),
+.share :global(button) {
+  display: inline-grid;
+  place-items: center;
+  inline-size: var(--comment-tool-size);
+  block-size: var(--comment-tool-size);
   min-block-size: 0;
   padding: 0;
   border: 0;
+  border-radius: var(--radius-comment-tool);
   background: none;
   color: inherit;
-  font-size: var(--font-size-tool);
+  font-size: var(--font-size-list-row-action);
   line-height: 1;
   text-decoration: none;
+  transition: opacity 0.5s, background-color var(--transition-comment-quiet);
+
+  &:hover:not([aria-disabled='true']) {
+    background-color: var(--color-comment-chip);
+  }
 
   &[aria-disabled='true'] {
     cursor: default;
   }
+}
+
+.action {
+  color: var(--color-stat-noun);
 
   /* Manage and Progress: outline buttons that match the toolbar's controls. */
   &:has(.action-text) {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-control-caret);
+    inline-size: auto;
     min-block-size: var(--control-height);
     padding: 0 var(--space-control-inline);
     border: 1px solid var(--color-control-border);
@@ -899,7 +932,6 @@ h2 {
 /* OG faded the flag in while the pointer was over the title row. */
 .report {
   opacity: 0;
-  transition: opacity 0.5s;
 
   .title-row:hover &,
   &:focus-visible {
@@ -921,8 +953,7 @@ h2 {
 }
 
 .share {
-  color: var(--brand-secondary);
-  font-size: var(--font-size-list-title-share);
+  color: var(--color-action-share);
 }
 
 .description {

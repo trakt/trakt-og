@@ -18,7 +18,7 @@ const activities = (droppedAt = T0) => ({
   episodes: { watched_at: T0, collected_at: T0, rated_at: T0 },
   shows: { rated_at: T0, watchlisted_at: T0, favorited_at: T0, hidden_at: T0, dropped_at: droppedAt },
   seasons: { rated_at: T0 },
-  lists: { updated_at: T0 },
+  lists: { updated_at: T0, liked_at: T0 },
   watchlist: { updated_at: T0 },
   favorites: { updated_at: T0 },
   collaborations: { updated_at: T0 },
@@ -48,6 +48,7 @@ const library = [
   http.get(`${API}/users/hidden/dropped`, () => HttpResponse.json([{ type: 'show', show: ids(2) }])),
   http.get(`${API}/users/hidden/progress_watched`, () => HttpResponse.json([{ type: 'show', show: ids(5) }])),
   http.get(`${API}/users/hidden/progress_collected`, () => HttpResponse.json([])),
+  http.get(`${API}/users/me/likes/lists`, () => HttpResponse.json([{ liked_at: T0, list: ids(60) }])),
   http.get(`${API}/v3/users/me/lists`, () => HttpResponse.json([{ id: 50 }])),
   http.get(
     `${API}/lists/50/items`,
@@ -132,7 +133,8 @@ describe('createOverlay', () => {
       rating: null,
     });
     expect(overlay.slices().progressHidden?.watched.shows).toEqual(new Set([5]));
-    expect(records.get('sean')?.size).toBe(11);
+    expect(overlay.slices().likedLists).toEqual(new Set([60]));
+    expect(records.get('sean')?.size).toBe(12);
   });
 
   it('should hydrate an episode collection by show, season and episode number, including old date-only caches', async () => {

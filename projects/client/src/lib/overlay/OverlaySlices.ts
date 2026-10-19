@@ -33,6 +33,8 @@ export type OverlaySlices = {
   progressHidden: Readonly<Record<'watched' | 'collected', HiddenProgress>>;
   /** Optimistic hides on the current page, section to type:id keys. Never persisted as server truth. */
   hidden: ReadonlyMap<string, ReadonlySet<string>>;
+  /** Trakt ids of the lists the user liked, personal and official. */
+  likedLists: Ids;
   /** Ids in any of the user's own or collaborative lists. */
   listed: Readonly<Record<'movie' | 'show' | 'season' | 'episode', Ids>>;
 };

@@ -1,4 +1,5 @@
 <script lang="ts">
+import { PLACEHOLDER_AVATAR } from '$lib/components/comments/authorOf';
 import defaultCover from '$lib/assets/profile-cover-default.jpg';
 import FrameGrid from '$lib/components/frame/FrameGrid.svelte';
 import FanartCard from '$lib/components/media/FanartCard.svelte';
@@ -12,6 +13,13 @@ import { overlay } from '$lib/overlay/overlay';
 import { imageUrl } from '$lib/utils/imageUrl';
 
 const { data } = $props();
+const collaborator = (name: string, slug: string) => ({
+  slug,
+  name,
+  href: `/users/${slug}`,
+  avatar: PLACEHOLDER_AVATAR,
+  vip: null,
+});
 const weekendNotes = '**Saturday** first, then _Sunday_ if there is time.\n\n> One rule: no spoilers.';
 
 const shows = $derived(
@@ -212,6 +220,7 @@ $effect(() => {
         posters={shows.slice(0, 5).map(({ title, poster }) => ({ title, image: poster }))}
         itemCount={12}
         likeCount={3}
+        likeTarget={{ id: 21, ownerSlug: 'og_tester', viewer: null }}
         commentCount={1}
         rank={1}
         description="The ones I keep rewatching."
@@ -220,12 +229,48 @@ $effect(() => {
         href="/users/og_tester/lists/heist-night"
         name="Heist Night"
         owner={{ name: 'OG Tester', href: '/users/og_tester' }}
+        mine
         posters={shows.slice(5, 8).map(({ title, poster }) => ({ title, image: poster }))}
         itemCount={3}
         likeCount={0}
+        likeTarget={{ id: 22, ownerSlug: 'og_tester', viewer: null }}
         commentCount={0}
         pills={['Private']}
         description="Crews, vaults and one last job."
+      />
+      <p>The watchlist, a shade apart from the user's own lists, with no likes.</p>
+      <ListRow
+        kind="watchlist"
+        href="/users/og_tester/watchlist"
+        name="Watchlist"
+        owner={{ name: 'OG Tester', href: '/users/og_tester' }}
+        posters={shows.slice(3, 8).map(({ title, poster }) => ({ title, image: poster }))}
+        itemCount={318}
+        commentCount={2}
+      />
+      <p>An official list, and an empty one.</p>
+      <ListRow
+        href="/lists/official/emmy-winners"
+        name="Emmy Winners: Drama Series"
+        owner={{ name: 'Trakt', href: '/users/trakt' }}
+        posters={shows.slice(1, 6).map(({ title, poster }) => ({ title, image: poster }))}
+        itemCount={74}
+        likeCount={2_310}
+        likeTarget={{ id: 24, viewer: null }}
+        commentCount={14}
+        pills={['Official List']}
+        description="Every Outstanding Drama Series winner since 1951, newest first."
+      />
+      <ListRow
+        href="/users/og_tester/lists/halloween-2026"
+        name="Halloween 2026"
+        owner={{ name: 'OG Tester', href: '/users/og_tester' }}
+        posters={[]}
+        itemCount={0}
+        likeCount={0}
+        likeTarget={{ id: 25, ownerSlug: 'og_tester', viewer: null }}
+        commentCount={0}
+        pills={['Private']}
       />
       <p>The owner's row on their lists index: a link list with collaborators, a VIP owner and a markdown description.</p>
       <ListRow
@@ -235,10 +280,11 @@ $effect(() => {
         posters={shows.slice(2, 6).map(({ title, poster }) => ({ title, image: poster }))}
         itemCount={4}
         likeCount={2}
+        likeTarget={{ id: 23, ownerSlug: 'og_tester', viewer: null }}
         commentCount={5}
         pills={['Private']}
         shareLink
-        collaborators={['Kendal Hagenes', 'Sean']}
+        collaborators={[collaborator('Kendal Hagenes', 'kendal_hagenes_1'), collaborator('Sean', 'sean')]}
         description={weekendNotes}
         rank={2}
         actions={{ report: {}, edit: {}, delete: {}, progressHref: 'https://app.trakt.tv/vip', shareUrl: 'https://og.trakt.tv/users/og_tester/lists/watch-next-weekend' }}
@@ -252,7 +298,7 @@ $effect(() => {
         itemCount={1}
         likeCount={0}
         pills={['Following']}
-        collaborators={['OG Tester']}
+        collaborators={[collaborator('OG Tester', 'og_tester')]}
         actions={{ report: {}, leave: {}, progressHref: 'https://app.trakt.tv/vip', shareUrl: 'https://og.trakt.tv/users/kendal_hagenes_1/lists/heist-night' }}
       />
     </div>

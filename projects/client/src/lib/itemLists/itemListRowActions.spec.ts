@@ -7,7 +7,7 @@ const list = (extra: Partial<SummaryList> = {}): SummaryList => ({
   kind: 'personal',
   href: '/users/sean/lists/heist-night',
   name: 'Heist Night',
-  owner: { slug: 'sean', name: 'Sean', href: '/users/sean', avatar: '' },
+  owner: { slug: 'sean', name: 'Sean', href: '/users/sean', avatar: '', vip: null },
   posters: [],
   itemCount: 12,
   pills: [],

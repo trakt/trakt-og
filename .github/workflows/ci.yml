@@ -1,7 +1,9 @@
 name: Scrobble aka CI
 
-# Checks run locally by default; this workflow is manual.
+# Checks run locally before landing. Every push to main runs CI again and deploys og.trakt.tv, like trakt-web.
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -21,6 +23,10 @@ jobs:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-deno
       - run: bash scripts/leak-check.sh
+      - name: Checking the Ticket aka Require the Client ID
+        run: '[ -n "$TRAKT_CLIENT_ID" ] || { echo "::error::Add the TRAKT_CLIENT_ID repo secret."; exit 1; }'
+        env:
+          TRAKT_CLIENT_ID: ${{ secrets.TRAKT_CLIENT_ID }}
       - run: deno task ci
         env:
           TRAKT_CLIENT_ID: ${{ secrets.TRAKT_CLIENT_ID }}

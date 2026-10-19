@@ -15,7 +15,7 @@ Run these from the repository root:
 - `deno task client:build`: production build.
 - `deno task client:verify [pr]`: CI, supply chain, commit and leak checks.
 - `deno task client:land <pr>`: rebase, verify and land a PR, then close its issues.
-- `deno task client:deploy`: human-run deployment.
+- `deno task client:deploy`: manual redeploy of main from your machine. Merges to main deploy automatically.
 
 ## Hard rules
 
@@ -25,7 +25,7 @@ Run these from the repository root:
 - Clone the UI, not the code. Rebuild with this app's components and CSS.
 - Follow `.agents/rules/design-system.md` and the matching rules in `.agents/rules/` before changing code.
 - Follow the accessibility and testing rules in `.agents/rules/a11y.md` and `.agents/rules/testing.md`.
-- Agents never deploy; a human runs the deployment task.
+- Merging to main deploys og.trakt.tv through GitHub Actions. Agents never run `client:deploy` or wrangler deploys.
 
 ## Working an issue
 

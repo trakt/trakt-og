@@ -56,6 +56,11 @@ export const searchRowsSchema = z.array(z.object({
       name: z.string().nullish(),
       ids: z.object({ slug: z.string().nullish() }),
       images: z.object({ avatar: z.object({ full: z.string().nullish() }).nullish() }).nullish(),
+      vip: z.boolean().nullish(),
+      vip_ep: z.boolean().nullish(),
+      vip_og: z.boolean().nullish(),
+      vip_years: z.number().nullish(),
+      director: z.boolean().nullish(),
     }),
   }).nullish(),
 }));

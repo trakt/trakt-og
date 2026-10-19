@@ -1,3 +1,4 @@
+import type { Collaborator } from '../users/lists/Collaborator.ts';
 import { readListFilters } from './readListFilters.ts';
 import { loadListFilterSources } from './loadListFilterSources.ts';
 import type { ViewerSettings } from '../settings/ViewerSettings.ts';
@@ -130,7 +131,7 @@ export async function loadBuiltInList({ fetch, locals, params, url, parent, cook
     list,
     ...items,
     filterSources,
-    collaborators: [] as readonly string[],
+    collaborators: [] as readonly Collaborator[],
     isCollaborator: false,
   };
 }

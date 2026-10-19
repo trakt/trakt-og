@@ -247,8 +247,16 @@
   --color-card-text: #fff;
   --color-card-subtitle: light-dark(var(--gray-dark), #aaa);
   --color-watch-now: #aaa;
-  --color-rank-border: light-dark(#fff, #1d1d1d);
-  --color-list-row-header: light-dark(#fafafa, var(--dk-box-accent));
+  /* A list position over a poster's top edge: dark glass, like the profile pills, a touch more solid for the half
+     over the page. The reorder modes' editable rank rests in the same pill. */
+  --rank-pill-height: 24px;
+  --rank-pill-padding: 7px;
+  --rank-pill-border: 1px;
+  --font-size-rank-pill: 12px;
+  --color-rank-pill-bg: rgb(18 18 18 / 0.8);
+  --color-rank-pill-border: var(--color-profile-pill-border);
+  --blur-rank-pill: var(--blur-profile-pill);
+  --shadow-rank-pill: 0 2px 6px rgb(0 0 0 / 0.35);
   --color-pill: light-dark(var(--gray-light), var(--gray));
   --color-avatar-border: #464646;
   --color-fanart-avatar-shade: rgb(0 0 0 / 0.3); /* .fanart .avatar-wrapper, over a user's cover */
@@ -258,7 +266,6 @@
   --color-stats-bar: rgb(0 0 0 / 0.8);
   --gradient-shadow-base: linear-gradient(rgb(0 0 0 / 0), rgb(0 0 0 / 0.4));
   --gradient-shadow-header: linear-gradient(rgb(0 0 0 / 0), rgb(0 0 0 / 0.6));
-  --shadow-list-poster: 0 0 15px light-dark(rgb(255 255 255 / 0.5), #333); /* dark-knight's $dk-shadow-color */
   --font-size-card-title: 16px; /* poster card title */
   --font-size-card-subtitle: 12px;
   --line-height-card-subtitle: 13px;
@@ -284,6 +291,66 @@
   /* Profile grid removal: users.js/global.js fade, then collapse. */
   --card-remove-fade-duration: 1000ms;
 
+  /* A list row: one card with a poster fan, the name and its chips, the owner, the description, then a footer with the
+     Like button, the counts and the viewer's tools. */
+  --list-card-padding: 12px;
+  --list-card-spacing: var(--gutter); /* above each card */
+  --list-card-gap: 18px; /* the fan to the text */
+  --list-card-gap-tablet: 14px;
+  --list-card-body-gap: 4px;
+  --list-card-foot-gap: 10px; /* above the footer */
+  --radius-list-card: 14px;
+  --color-list-card-bg: light-dark(#f7f7f8, #242424);
+  --color-list-card-bg-hover: light-dark(#f1f1f3, var(--dk-box-accent));
+  --color-list-card-bg-built-in: light-dark(#ececef, #2e2e2e); /* the watchlist and favorites, a shade apart */
+  --color-list-card-bg-built-in-hover: light-dark(#e6e6ea, #333);
+  --color-list-card-border: light-dark(rgb(0 0 0 / 0.08), rgb(255 255 255 / 0.07));
+  --color-list-card-border-hover: light-dark(rgb(0 0 0 / 0.16), rgb(255 255 255 / 0.16));
+  /* The Like button before it's liked: the summary's dark glass in dark mode, a white button on a light card. */
+  --color-list-like-bg: light-dark(#fff, rgb(35 35 35 / 0.82));
+  --color-list-like-bg-hover: light-dark(#f3f3f5, rgb(46 46 46 / 0.9));
+  --color-list-like-line: light-dark(rgb(0 0 0 / 0.14), #3b3b3b);
+  --color-list-like-line-hover: light-dark(rgb(0 0 0 / 0.28), #5c5c5c);
+  --color-list-like-text: light-dark(#333, #fff);
+  --transition-list-card: 0.2s;
+  /* The fan: the first poster whole, the next four as slivers; pointing at one opens it. */
+  --list-card-poster-width: 120px;
+  --list-card-poster-height: 180px;
+  --list-card-sliver: 34px;
+  --list-card-poster-width-tablet: 96px;
+  --list-card-poster-height-tablet: 144px;
+  --list-card-sliver-tablet: 26px;
+  --list-card-poster-gap-narrow: 6px; /* the posters side by side, whole, in a narrow container */
+  --radius-list-card-fan: 8px;
+  --radius-list-card-poster-narrow: 6px;
+  --shadow-list-card-sliver: -6px 0 12px -2px rgb(0 0 0 / 0.55); /* each sliver over the poster before it */
+  --transition-list-card-fan: 0.28s cubic-bezier(0.3, 0, 0.2, 1);
+  --color-list-card-placeholder: light-dark(#e2e2e6, #2f2f2f);
+  --color-list-card-placeholder-line: light-dark(rgb(0 0 0 / 0.05), rgb(255 255 255 / 0.04));
+  --font-size-list-card-empty: 12px;
+  --font-size-list-card-empty-icon: 18px;
+  /* Status chips after the name: a see-through tint of their color, the text lifted toward the theme's text. */
+  --list-card-chip-height: 22px;
+  --list-card-chip-padding: 7px;
+  --list-card-chip-gap: 5px;
+  --radius-list-card-chip: 6px;
+  --font-size-list-card-chip: 12px;
+  --font-size-list-card-chip-icon: 11px;
+  --list-card-chip-tint: 16%;
+  --list-card-chip-line: 50%;
+  --list-card-chip-count-tint: 34%; /* the collaborators count's darker segment */
+  --list-card-chip-lift: 35%;
+  --color-list-card-chip-lift: light-dark(#000, #fff);
+  --color-list-chip-private: light-dark(#d68910, #ffc14d); /* the profile's private pill */
+  --color-list-chip-link: var(--brand-secondary);
+  --color-list-chip-official: var(--brand-primary);
+  --color-list-chip-mine: var(--brand-success);
+  --color-list-chip-following: var(--brand-sixth);
+  --color-list-chip-collaborators: var(--brand-seventh);
+  --list-card-avatar-size: 22px;
+  --color-list-card-description: light-dark(#555, #c2c2c2);
+  --color-list-card-like: var(--brand-secondary);
+
   /* List row pills and icons */
   --color-list-pill-link: var(--brand-secondary);
   --color-list-pill-collaborators: var(--brand-seventh);
@@ -295,15 +362,14 @@
   --color-list-progress: light-dark(#555, #eee);
   --font-size-list-row-action: var(--font-size-stat-icon); /* the row's action icons, level with its count icons */
   --font-size-list-row-leave: 15px;
-  --list-row-action-gap: 15px;
   --color-list-add: #38a038; /* #btn-list-add */
   --color-list-reorder: light-dark(#333, #eee);
 
   /* Lists index reorder controls: the rank pill (the icons share manage mode's glass strip). */
-  --list-reorder-rank-offset: -11px;
-  --list-reorder-rank-size: 22px;
-  --list-reorder-rank-radius: 11px;
-  --list-reorder-rank-border: 2px;
+  --list-reorder-rank-offset: calc(var(--rank-pill-height) / -2);
+  --list-reorder-rank-size: var(--rank-pill-height);
+  --list-reorder-rank-radius: calc(var(--rank-pill-height) / 2);
+  --list-reorder-rank-border: 2px; /* also the drag outlines */
   /* Editing a rank: a wider, taller dark field with one red ring, still centred on the poster's top edge. */
   --list-reorder-rank-edit-size: 30px;
   --list-reorder-rank-edit-width: 48px;
@@ -351,9 +417,7 @@
   --list-title-padding: 4px 0 6px; /* .subnav-wrapper.list-title-wrapper */
   --list-title-heading-margin: 10px 0; /* .subnav-wrapper .left h2 */
   --list-title-pill-gap: 5px;
-  --color-list-title-action: light-dark(#333, #fff); /* .btn-list-*, dark-knight's white subnav icons */
-  --font-size-list-title-share: 17px; /* a.share .trakt-icon */
-  --space-list-title-actions: 12px; /* between a list title's edit, delete, share and buttons */
+  --space-list-title-actions: var(--space-stat); /* between a list title's icons and buttons, as on a list row */
   /* The stats bar */
   --font-size-list-stat-under: 11px;
   --color-list-stat-under: #666;
@@ -593,7 +657,6 @@
   --space-schedule-day-row: 8px; /* above and below a day column's row */
   --space-schedule-row-gap: 10px;
   --font-size-schedule-row: 13px;
-  --schedule-nothing-padding: 10px 12px;
   --space-schedule-watch-now-icon: 6px;
   --space-schedule-watch-now: 14px; /* above Watch Now */
 
@@ -740,6 +803,12 @@
   --gradient-why-header: linear-gradient(to bottom, rgb(245 196 81 / 0.1), transparent);
   --shadow-why-panel: 0 18px 48px light-dark(rgb(0 0 0 / 0.18), rgb(0 0 0 / 0.6));
   --font-size-why-panel-title: 17px;
+  /* A list's collaborators panel: the Why panel's look, under the collaborators chip, in its orange. */
+  --collaborators-panel-width: 340px;
+  --collaborators-panel-height: 70vh; /* a long roster scrolls inside it */
+  --collaborators-panel-gap: 8px;
+  --color-collaborators-mark: light-dark(#b64903, #ff9a52); /* --brand-seventh, darker on white, lifted on dark */
+  --gradient-collaborators-header: linear-gradient(to bottom, rgb(232 93 4 / 0.12), transparent);
   /* Labelled glass buttons: an action's color over dark glass, solid once it's done. */
   --glass-action-height: 34px;
   --glass-action-padding: 14px;
@@ -1242,7 +1311,6 @@
   /* Profile frame: the cover, name block, watching-now player and section tabs on every /users/:id page */
   /* Official lists: the slim profile cover without the 40px profile tabs. */
   --official-list-cover-height: 130px;
-  --official-list-avatar-border: 3px;
 
   --profile-cover-height: 500px; /* under the header, the tabs included */
   --profile-cover-height-slim: 184px;
@@ -3068,6 +3136,15 @@
   --color-sidebar-rule: var(--color-frame-line);
   --color-sidebar-pill-bg: light-dark(#f2f2f2, #232323);
   --color-sidebar-pill-border: light-dark(#d6d6d6, #3b3b3b);
+  /* EmptyState: a dashed gap where a page's main list would be. */
+  --empty-state-padding: 32px 20px;
+  --empty-state-padding-compact: var(--space-base-block) var(--space-base-inline);
+  --empty-state-gap: 8px;
+  --radius-empty-state: var(--radius-list-card);
+  --color-empty-state-border: var(--color-list-card-border-hover);
+  --color-empty-state-text: var(--color-stat-noun);
+  --font-size-empty-state: 15px;
+  --font-size-empty-state-icon: 22px;
   --color-sidebar-pill-text: light-dark(#555, #b5b5b5);
   --color-sidebar-pill-set-bg: rgb(237 28 36 / 0.14); /* --brand-primary, faint */
   --color-sidebar-pill-set-border: rgb(237 28 36 / 0.6);

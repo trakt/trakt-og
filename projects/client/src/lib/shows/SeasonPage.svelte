@@ -109,7 +109,7 @@ const sections = $derived([
     <LazySection id="comments" load={() => lazy().comments(media)}>
       {#snippet children(tabs)}<CommentsPreview {tabs} item={{ type: 'season', id: season.id, title: season.fullTitle, show: season.showId, number: season.number, airedEpisodes: season.airedEpisodes }} viewer={data.user ? { slug: data.user.slug } : null} count={season.commentCount} href={season.href} dateOptions={data.datePreferences} />{/snippet}
     </LazySection>
-    <LazySection id="lists" load={() => lazy().lists(media)}>{#snippet children(tabs)}<ListsPreview {tabs} count={season.listCount} href={season.href} />{/snippet}</LazySection>
+    <LazySection id="lists" load={() => lazy().lists(media)}>{#snippet children(lists)}<ListsPreview {lists} count={season.listCount} href={season.href} />{/snippet}</LazySection>
   {/key}
 </SummaryFrame>
 

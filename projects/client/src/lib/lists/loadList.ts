@@ -97,8 +97,7 @@ export async function loadList({ fetch, locals, params, url, parent, cookies }: 
     list,
     ...items,
     filterSources,
-    collaborators: collaborators.map(({ name }) => name),
-    viewerCollaboratorName: collaborators.find(({ slug }) => slug === user?.slug)?.name,
+    collaborators,
     isCollaborator: !isSelf && collaborators.some(({ slug }) => slug === user?.slug),
   };
 }

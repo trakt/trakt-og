@@ -24,7 +24,7 @@ describe('toListRow', () => {
       kind: 'personal',
       href: '/users/sean/lists/heist-night',
       name: 'Heist Night',
-      owner: { slug: 'sean', name: 'Sean', href: '/users/sean', avatar: 'https://a.jpg' },
+      owner: { slug: 'sean', name: 'Sean', href: '/users/sean', avatar: 'https://a.jpg', vip: null },
       posters: ['a', 'b', 'c', 'd', 'e'].map((path) => ({ image: `https://${path}` })),
       itemCount: 12,
       likeCount: 40,
@@ -55,6 +55,16 @@ describe('toListRow', () => {
       href: '/users/sean/favorites',
       likeCount: undefined,
     });
+  });
+
+  it("should give the owner their VIP label from the list's own user", () => {
+    const vip = list({ user: { ...list().user, vip: true, vip_ep: true } });
+    expect(toListRow(vip).owner.vip).toEqual({
+      kind: 'vip',
+      tag: { text: 'EP', title: 'Executive Producer' },
+      years: null,
+    });
+    expect(toListRow(list({ user: { ...list().user, director: true } })).owner.vip).toEqual({ kind: 'director' });
   });
 
   it('should treat a missing or unknown type as personal', () => {

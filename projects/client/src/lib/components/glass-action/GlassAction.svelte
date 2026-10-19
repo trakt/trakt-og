@@ -28,11 +28,23 @@ interface Props extends Omit<HTMLButtonAttributes, 'color'> {
   presentational?: boolean;
   /** Frosted rather than black, when it has no color. */
   glass?: boolean;
+  /** The icon's own color on the frosted glass, in place of its muted gray: the list Like's blue thumb. */
+  iconColor?: string;
   children: Snippet;
 }
 
-const { icon, color, selected = false, busy, href, presentational = false, glass = false, children, ...rest }: Props =
-  $props();
+const {
+  icon,
+  color,
+  selected = false,
+  busy,
+  href,
+  presentational = false,
+  glass = false,
+  iconColor,
+  children,
+  ...rest
+}: Props = $props();
 const classes = $derived(['glass-action', { glass, tinted: color, selected }]);
 </script>
 
@@ -49,7 +61,8 @@ const classes = $derived(['glass-action', { glass, tinted: color, selected }]);
 {:else if presentational}
   <span class={classes} style:--action={color}>{@render body()}</span>
 {:else}
-  <button type="button" {...rest} class={classes} style:--action={color} aria-busy={busy ? 'true' : undefined}>
+  <button type="button" {...rest} class={classes} style:--action={color} style:--glass-action-icon={iconColor}
+  aria-busy={busy ? 'true' : undefined}>
     {@render body()}
   </button>
 {/if}
@@ -92,7 +105,7 @@ const classes = $derived(['glass-action', { glass, tinted: color, selected }]);
   backdrop-filter: var(--blur-header-glass);
 
   & .icon {
-    color: var(--color-glass-action-glass-icon);
+    color: var(--glass-action-icon, var(--color-glass-action-glass-icon));
   }
 
   &:is(:hover, :focus-visible) {

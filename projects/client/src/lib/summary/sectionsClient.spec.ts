@@ -139,12 +139,8 @@ describe('sectionsClient', () => {
       expect(tabs?.at(1)?.comments.map(({ id }) => id)).toEqual([3]);
     });
 
-    it('should put official lists first and keep only personal lists in Me, most liked first', async () => {
-      const tabs = await client(true).lists(movie);
-      expect(tabs?.map(({ id, lists }) => ({ id, lists: lists.map(({ id }) => id) }))).toEqual([
-        { id: 'popular', lists: [10, 11] },
-        { id: 'me', lists: [22, 21] },
-      ]);
+    it('should put the official lists ahead of the popular personal ones', async () => {
+      expect((await client(true).lists(movie))?.map(({ id }) => id)).toEqual([10, 11]);
     });
   });
 
@@ -186,10 +182,10 @@ describe('sectionsClient', () => {
         http.get(`${base}/comments/mine`, ({ request }) => record(request, [comment(3)])),
         http.get(`${base}/comments/:sort`, ({ request }) => record(request, [comment(1)])),
         http.get(`${base}/lists/:type/:sort`, ({ request }) => record(request, [list(10, 'personal')])),
-        http.get(`${base}/listed`, ({ request }) => record(request, [list(21, 'personal')])),
       );
       expect((await client(true).comments(season))?.map(({ id }) => id)).toEqual(['likes', 'recent', 'me']);
-      expect((await client(true).lists(season))?.map(({ id }) => id)).toEqual(['popular', 'me']);
+      // The stub answers the official and personal reads alike.
+      expect((await client(true).lists(season))?.map(({ id }) => id)).toEqual([10, 10]);
       expect(paths().every((path) => path.startsWith('/shows/breaking-bad/seasons/1/'))).toBe(true);
       expect(
         seen.filter((request) => request.url.includes('/comments/')).every((request) =>

@@ -8,6 +8,7 @@ import type { SubpageItem } from '../subpage/SubpageItem.ts';
 import { summaryListSchema } from '../summary/summaryListSchema.ts';
 import { type SummaryList, toSummaryList } from '../summary/toSummaryList.ts';
 import { type ItemListQuery, itemListQuery, itemListSorts, itemListTypes } from './itemListQuery.ts';
+import { sortOwnLists } from './sortOwnLists.ts';
 
 /** The item a lists page is under: a media subpage item, or a person. */
 export type ItemListsItem = SubpageItem | { readonly type: 'person'; readonly id: string };
@@ -18,13 +19,15 @@ type Params = Omit<Parameters<typeof loadSubpageMedia>[0], 'suffix' | 'item'> & 
   /** The optional `/:type` and `/:sort_by` segments. */
   type: string | undefined;
   sortBy: string | undefined;
+  /** The viewer's, for the Me type. */
+  token: string | null;
 };
 
 // OG's `per_page`.
 const LIMIT = 30;
 
-// @trakt/api 0.6.0 types the list types as `watchlist|favorites`, but the worker takes `watchlists|recommendations`
-// (and quietly serves personal lists for anything else), so og calls the route raw and parses it.
+// @trakt/api 0.6.0's list types don't match the worker's (which quietly serves personal lists for any it doesn't
+// know), so og calls the route raw and parses it.
 const listsSchema = z.array(summaryListSchema);
 
 const itemPath = (item: ItemListsItem): string => {
@@ -35,6 +38,24 @@ const itemPath = (item: ItemListsItem): string => {
   const season = `/shows/${id}/seasons/${encodeURIComponent(item.season)}`;
   return item.type === 'season' ? season : `${season}/episodes/${encodeURIComponent(item.episode)}`;
 };
+
+/** The viewer's own lists with the item: `/listed` sends them all at once, unsorted, so they come back as one page. */
+async function readOwnLists(
+  fetch: typeof globalThis.fetch,
+  item: ItemListsItem,
+  query: ItemListQuery,
+  token: string | null,
+) {
+  const none = { lists: [] as readonly SummaryList[], count: 0, page: null };
+  if (!token) return none;
+  const response = await rawApiFetch({ fetch, token, path: `${itemPath(item)}/listed?extended=images` });
+  if (response.status === 401 || response.status === 404) return none;
+  if (!response.ok) error(502, 'The Trakt API could not load your lists.');
+  const lists = listsSchema.safeParse(await response.json().catch(() => null));
+  if (!lists.success) error(502, 'The Trakt API returned invalid lists data.');
+  const own = sortOwnLists(lists.data, query.sortBy).map(toSummaryList);
+  return { lists: own, count: own.length, page: null };
+}
 
 async function readLists(fetch: typeof globalThis.fetch, item: ItemListsItem, query: ItemListQuery, page: number) {
   const { api: type } = itemListTypes[query.type];
@@ -57,14 +78,14 @@ async function readLists(fetch: typeof globalThis.fetch, item: ItemListsItem, qu
 /**
  * `/movies/:id/lists(/:type)(/:sort_by)`, the show, season, episode and person ones: 30 public lists a page under the subpage frame. The worker leaves out clones.
  */
-export async function loadItemLists({ fetch, parent, item, url, type, sortBy }: Params) {
+export async function loadItemLists({ fetch, parent, item, url, type, sortBy, token }: Params) {
   const query = itemListQuery(type, sortBy);
   const page = Math.max(1, Number.parseInt(url.searchParams.get('page') ?? '', 10) || 1);
   const [subpage, lists] = await Promise.all([
     item.type === 'person'
       ? loadPersonSubpage({ fetch, parent, id: item.id, suffix: 'lists' })
       : loadSubpageMedia({ fetch, parent, item, suffix: 'lists' }),
-    readLists(fetch, item, query, page),
+    query.type === 'me' ? readOwnLists(fetch, item, query, token) : readLists(fetch, item, query, page),
   ]);
   return { ...subpage, ...lists, kind: item.type, query };
 }

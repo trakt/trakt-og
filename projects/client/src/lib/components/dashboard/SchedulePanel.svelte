@@ -6,7 +6,9 @@
   Movies dropdowns under the title switch what it reads in place: the old days stay dimmed until the new ones land.
 -->
 <script lang="ts">
+import EmptyState from '$lib/components/empty/EmptyState.svelte';
 import NoData from '$lib/components/empty/NoData.svelte';
+import calendarDays from '$lib/icons/regular/calendar-days.svg?raw';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import WatchNowDialog from '$lib/components/watchnow/WatchNowDialog.svelte';
 import type { DashboardSettings } from '$lib/dashboard/DashboardSettings';
@@ -138,13 +140,13 @@ function watchNow(item: NonNullable<ScheduleItem['watchNow']>) {
   <NoData>The schedule didn't load. Refresh the page to try again.</NoData>
 </div>
   {:else if layout === null}
-    <p class="nothing">
-      {#if active.filter === 'none' && active.movies === 'none'}
-        Shows and Movies are both set to None.
-      {:else}
-        Nothing coming up on your calendar. <a href="/calendars/my/{calendar}">Open the calendar</a>.
-      {/if}
-    </p>
+    {@const off = active.filter === 'none' && active.movies === 'none'}
+    <div class="nothing">
+  <EmptyState icon={calendarDays}
+    action={off ? undefined : { href: `/calendars/my/${calendar}`, text: 'Open the calendar' }}>
+        {off ? 'Shows and Movies are both set to None.' : 'Nothing coming up on your calendar.'}
+      </EmptyState>
+</div>
   {:else if layout}
     {@const { spotlight } = layout}
     {@const cards = allCards ? [...spotlight.shown, ...spotlight.more] : spotlight.shown}
@@ -204,10 +206,6 @@ function watchNow(item: NonNullable<ScheduleItem['watchNow']>) {
 
 .nothing {
   margin: var(--gutter) 0 var(--space-schedule-heading);
-  padding: var(--schedule-nothing-padding);
-  border: 1px dashed var(--color-schedule-separator);
-  color: var(--color-schedule-muted);
-  font-size: var(--font-size-schedule-row);
 }
 
 .schedule {

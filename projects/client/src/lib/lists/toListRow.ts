@@ -1,4 +1,6 @@
 import { PLACEHOLDER_AVATAR } from '../components/comments/authorOf.ts';
+import { toVipBadge } from '../users/toVipBadge.ts';
+import type { VipBadge } from '../users/VipBadge.ts';
 import { imageUrl } from '../utils/imageUrl.ts';
 import { listPath } from './listPath.ts';
 
@@ -21,6 +23,12 @@ export type ListRowSource = {
     readonly name?: string | null;
     readonly ids: { readonly slug?: string | null };
     readonly images?: { readonly avatar?: { readonly full?: string | null } | null } | null;
+    /** Every list read sends these on its owner, so the row shows their VIP label without asking for it. */
+    readonly vip?: boolean | null;
+    readonly vip_ep?: boolean | null;
+    readonly vip_og?: boolean | null;
+    readonly vip_years?: number | null;
+    readonly director?: boolean | null;
   };
   readonly images?: { readonly posters?: readonly string[] | null } | null;
 };
@@ -34,7 +42,13 @@ export interface ListRow {
   readonly kind: ListKind;
   readonly href: string;
   readonly name: string;
-  readonly owner: { readonly slug: string; readonly name: string; readonly href: string; readonly avatar: string };
+  readonly owner: {
+    readonly slug: string;
+    readonly name: string;
+    readonly href: string;
+    readonly avatar: string;
+    readonly vip: VipBadge | null;
+  };
   readonly posters: readonly { readonly title?: string; readonly image?: string }[];
   readonly itemCount: number;
   /** Left out for a watchlist or favorites, which can't be liked. */
@@ -86,6 +100,7 @@ export function toListRow(list: ListRowSource): ListRow {
       name: list.user.name?.trim() || list.user.username,
       href: `/users/${ownerSlug}`,
       avatar: list.user.images?.avatar?.full || PLACEHOLDER_AVATAR,
+      vip: toVipBadge(list.user),
     },
     posters: (list.images?.posters ?? []).slice(0, 5).map((path) => ({ image: imageUrl(path, 'thumb') })),
     itemCount: list.item_count,

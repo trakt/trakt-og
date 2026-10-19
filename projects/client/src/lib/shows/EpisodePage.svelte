@@ -110,7 +110,7 @@ const sections = $derived([
   <ActorsStrip groups={[{id:'season-regulars',label:'Season Regulars',cast:episode.cast},{id:'guest-stars',label:'Guest Stars',cast:episode.guestStars}]} crew={episode.crew} creditsHref="{episode.href}/people" />
   {#key episode.href}
     <LazySection id="comments" load={()=>lazy().comments(media)}>{#snippet children(tabs)}<CommentsPreview {tabs} item={{...ratingTarget,show:episode.showId,season:episode.season}} viewer={data.user ? {slug:data.user.slug}:null} count={episode.commentCount} href={episode.href} dateOptions={data.datePreferences} />{/snippet}</LazySection>
-    <LazySection id="lists" load={()=>lazy().lists(media)}>{#snippet children(tabs)}<ListsPreview {tabs} count={episode.listCount} href={episode.href} />{/snippet}</LazySection>
+    <LazySection id="lists" load={()=>lazy().lists(media)}>{#snippet children(lists)}<ListsPreview {lists} count={episode.listCount} href={episode.href} />{/snippet}</LazySection>
   {/key}
 </SummaryFrame>
 <style>

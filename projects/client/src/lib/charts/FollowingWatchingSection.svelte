@@ -5,6 +5,7 @@
   24 hours, now and every 2 minutes while the tab is visible.
 -->
 <script lang="ts">
+import EmptyState from '$lib/components/empty/EmptyState.svelte';
 import { untrack } from 'svelte';
 import { apiQueue } from '$lib/api/apiQueue';
 import { rawApiFetch } from '$lib/api/rawApiFetch';
@@ -76,7 +77,7 @@ const noun = $derived(type === 'shows' ? 'show' : 'movie');
   {#if tiles === null}
     <p class="note">Checking who's watching…</p>
   {:else if tiles.length === 0}
-    <p class="note empty">No one is watching a {noun} right now.</p>
+    <EmptyState compact>No one is watching a {noun} right now.</EmptyState>
   {:else}
     <ul class="members">
       {#each tiles as { watch, progress, minutesLeft } (watch.member.key)}
@@ -108,15 +109,6 @@ const noun = $derived(type === 'shows' ? 'show' : 'movie');
   margin: 0;
   color: var(--color-sidebar-note);
   font-size: var(--font-size-control);
-}
-
-/* An empty state, not a row: quieter, in a dashed outline. */
-.empty {
-  padding: var(--space-base-block) var(--space-base-inline);
-  border: 1px dashed var(--color-sidebar-pill-border);
-  border-radius: var(--radius-control);
-  color: var(--color-frame-ink-muted);
-  text-align: center;
 }
 
 .members {

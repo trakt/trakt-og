@@ -127,9 +127,8 @@ describe('loadList', () => {
     if (!result.list) return;
     expect(result.sort).toEqual({ by: 'added', how: 'desc' });
     expect(result.cards.map(({ title }) => title)).toEqual(['Heat', 'Ronin']);
-    expect(result.collaborators).toEqual(['Kim']);
+    expect(result.collaborators.map(({ name }) => name)).toEqual(['Kim']);
     expect(result.isCollaborator).toBe(true);
-    expect(result.viewerCollaboratorName).toBe('Kim');
     expect(result.listCover).toBe('https://media.trakt.tv/images/movies/1/fanarts/full/f.jpg.webp');
     expect(paths().filter((path) => path.includes('/items'))).toHaveLength(2);
     expect(seen.every(({ auth }) => auth === null)).toBe(true);

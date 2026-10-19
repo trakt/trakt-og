@@ -1,11 +1,17 @@
-<!-- The list's likes count doubles as OG's like toggle. Initial liked state waits on; a first click likes. -->
+<!--
+  The list's likes count doubles as OG's like toggle. Whether the viewer liked it comes from the overlay's liked lists;
+  until that loads, a first click likes. `button` draws it as the summary's Rate button: frosted glass with a blue
+  thumb and the count, solid blue once liked.
+-->
 <script lang="ts">
 import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
 import { userManager } from '$lib/auth/userManager';
 import { changeListLike } from '$lib/components/lists/changeListLike';
+import GlassAction from '$lib/components/glass-action/GlassAction.svelte';
 import { toast } from '$lib/components/toast/toast.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import Icon from '$lib/icons/Icon.svelte';
+import { overlay } from '$lib/overlay/overlay';
 import voteYes from '$lib/icons/regular/thumbs-up.svg?raw';
 import voteYesThick from '$lib/icons/solid/thumbs-up.svg?raw';
 
@@ -15,19 +21,24 @@ interface Props {
   viewer: string | null;
   count: number;
   words?: boolean;
+  button?: boolean;
 }
-const { id, ownerSlug, viewer, count, words = false }: Props = $props();
-let liked = $state<boolean | undefined>();
+const { id, ownerSlug, viewer, count, words = false, button = false }: Props = $props();
+const liked = $derived(viewer ? overlay.slices().likedLists?.has(id) : undefined);
 let delta = $state(0);
 let busy = $state(false);
 const scope = $derived(`${viewer}:${ownerSlug}:${id}:${count}`);
 $effect(() => {
   void scope;
-  liked = undefined;
   delta = 0;
   busy = false;
 });
 const total = $derived(Math.max(0, count + delta));
+const label = $derived(
+  `${liked ? 'Unlike' : 'Like'} this list: ${total.toLocaleString('en-US')} ${total === 1 ? 'like' : 'likes'}`,
+);
+const withLike = (ids: ReadonlySet<number>, on: boolean): ReadonlySet<number> =>
+  new Set(on ? [...ids, id] : [...ids].filter((value) => value !== id));
 async function toggle() {
   if (busy) return;
   if (!viewer) {
@@ -42,13 +53,14 @@ async function toggle() {
     ownerSlug,
     liked: !liked,
     patch: () => {
-      const before = { liked, delta };
-      delta += liked ? -1 : 1;
-      liked = !liked;
+      const next = !liked;
+      const before = delta;
+      delta += next ? 1 : -1;
+      // An unknown slice starts from this like alone; the next activities check fetches the rest.
+      const rollback = overlay.patch('likedLists', (ids) => withLike(ids, next), new Set());
       return () => {
-        if (scope !== key) return;
-        liked = before.liked;
-        delta = before.delta;
+        rollback();
+        if (scope === key) delta = before;
       };
     },
     notify: (message) => {
@@ -59,17 +71,42 @@ async function toggle() {
 }
 </script>
 
-<Tooltip text="Likes">
-  {#snippet trigger(tooltip)}
-    <button type="button" class="like" aria-label={`${liked ? 'Unlike' : 'Like'} this list: ${total.toLocaleString('en-US')} ${total === 1 ? 'like' : 'likes'}`}
-      aria-pressed={liked === undefined ? undefined : liked} aria-busy={busy} aria-disabled={busy} onclick={toggle} {...tooltip}>
-      <span class="icon"><Icon svg={liked ? voteYesThick : voteYes} /></span><strong>{total.toLocaleString('en-US')}</strong>
-      {#if words}<span class="words"> {total === 1 ? 'like' : 'likes'}</span>{/if}
-    </button>
-  {/snippet}
-</Tooltip>
+{#if button}
+  <span class={['glass', { liked }]}><Tooltip text={liked ? 'Unlike this list' : 'Like this list'}>
+    {#snippet trigger(tooltip)}
+      <GlassAction glass={!liked} color={liked ? 'var(--color-list-card-like)' : undefined} selected={liked}
+        iconColor={liked ? undefined : 'var(--color-list-card-like)'}
+        icon={liked ? voteYesThick : voteYes} aria-label={label} aria-pressed={liked === undefined ? undefined : liked}
+        aria-disabled={busy} onclick={toggle} {...tooltip}>
+        <span class="number">{total.toLocaleString('en-US')}</span>
+      </GlassAction>
+    {/snippet}
+  </Tooltip></span>
+{:else}
+  <Tooltip text="Likes">
+    {#snippet trigger(tooltip)}
+      <button type="button" class="like" aria-label={label}
+        aria-pressed={liked === undefined ? undefined : liked} aria-busy={busy} aria-disabled={busy} onclick={toggle} {...tooltip}>
+        <span class="icon"><Icon svg={liked ? voteYesThick : voteYes} /></span><strong>{total.toLocaleString('en-US')}</strong>
+        {#if words}<span class="words"> {total === 1 ? 'like' : 'likes'}</span>{/if}
+      </button>
+    {/snippet}
+  </Tooltip>
+{/if}
 
 <style>
+/* Unliked, it sits on a list card, so it follows the theme instead of the summary's always-dark glass. */
+.glass {
+  display: contents;
+
+  &:not(.liked) {
+    --color-glass-action-glass: var(--color-list-like-bg);
+    --color-glass-action-glass-hover: var(--color-list-like-bg-hover);
+    --color-glass-action-glass-line: var(--color-list-like-line);
+    --color-glass-action-glass-line-hover: var(--color-list-like-line-hover);
+    --color-glass-action-text: var(--color-list-like-text);
+  }
+}
 .like {
   display: inline-flex;
   align-items: center;
@@ -90,6 +127,9 @@ strong {
   color: var(--color-stat-number);
   font-size: var(--font-size-stat-number);
   font-weight: var(--font-weight-headings-heavy);
+}
+.number {
+  font-variant-numeric: tabular-nums;
 }
 .words {
   position: absolute;

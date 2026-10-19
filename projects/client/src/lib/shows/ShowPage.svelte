@@ -149,7 +149,7 @@ const sections = $derived([
   {/key}
   {#key media.slug}
     <LazySection id="lists" load={() => lazy().lists(media)}>
-      {#snippet children(tabs)}<ListsPreview {tabs} count={show.listCount} href={show.href} />{/snippet}
+      {#snippet children(lists)}<ListsPreview {lists} count={show.listCount} href={show.href} />{/snippet}
     </LazySection>
   {/key}
 </SummaryFrame>

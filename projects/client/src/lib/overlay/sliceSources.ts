@@ -240,6 +240,13 @@ export const sliceSources: { [K in keyof OverlaySlices]: SliceSource<K> } = {
     activity: () => 'session',
     load: () => Promise.resolve(new Map()),
   },
+  likedLists: {
+    activity: (a) => join(a.lists?.liked_at),
+    load: async (get) => {
+      const likes = await getPages<{ list: Ids }>(get, `/users/me/likes/lists?limit=${PAGE_LIMIT}`);
+      return new Set(likes.map(({ list }) => list.ids.trakt));
+    },
+  },
   listed: {
     activity: (a) => join(a.lists?.updated_at, a.collaborations?.updated_at),
     load: async (get) => {

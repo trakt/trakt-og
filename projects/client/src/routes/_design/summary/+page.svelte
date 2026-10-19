@@ -25,7 +25,8 @@ import check from '$lib/icons/trakt/check.svg?raw';
 import collection from '$lib/icons/trakt/collection.svg?raw';
 import listIcon from '$lib/icons/trakt/list.svg?raw';
 import star from '$lib/icons/thin/star.svg?raw';
-import type { CommentTab, ListTab } from '$lib/summary/sectionsClient';
+import type { CommentTab } from '$lib/summary/sectionsClient';
+import type { SummaryList } from '$lib/summary/toSummaryList';
 import { type ActivityTab, toActivity } from '$lib/summary/toActivity';
 import type { RelatedCard } from '$lib/summary/toRelatedCard';
 import { formatting, movie, review, spoiler } from '../comments/fixtures.ts';
@@ -86,12 +87,18 @@ const comments: readonly CommentTab[] = [
   { id: 'recent', label: 'Recent', comments: [spoiler] },
 ];
 
-const list = (id: number, name: string, extra: Partial<ListTab['lists'][number]> = {}) => ({
+const list = (id: number, name: string, extra: Partial<SummaryList> = {}) => ({
   id,
   kind: 'personal' as const,
   href: `/users/og_tester/lists/${id}`,
   name,
-  owner: { slug: 'og_tester', name: 'OG Tester', href: '/users/og_tester', avatar: AVATAR },
+  owner: {
+    slug: 'og_tester',
+    name: 'OG Tester',
+    href: '/users/og_tester',
+    avatar: AVATAR,
+    vip: { kind: 'vip' as const, tag: null, years: null },
+  },
   posters: [{}, {}, {}, {}, {}],
   itemCount: 24,
   likeCount: 12,
@@ -100,21 +107,14 @@ const list = (id: number, name: string, extra: Partial<ListTab['lists'][number]>
   description: 'Crews, vaults and one last job.',
   ...extra,
 });
-const lists: readonly ListTab[] = [
-  {
-    id: 'popular',
-    label: 'Popular',
-    lists: [
-      list(1, 'Heat Collection', {
-        kind: 'official',
-        href: '/lists/official/heat-collection',
-        pills: ['Official List'],
-        commentCount: undefined,
-      }),
-      list(2, 'Heist Night'),
-    ],
-  },
-  { id: 'me', label: 'Me', lists: [list(3, 'Rewatch Soon', { pills: ['Private'], likeCount: 0 })] },
+const lists: readonly SummaryList[] = [
+  list(1, 'Heat Collection', {
+    kind: 'official',
+    href: '/lists/official/heat-collection',
+    pills: ['Official List'],
+    commentCount: undefined,
+  }),
+  list(2, 'Heist Night'),
 ];
 
 const related: readonly RelatedCard[] = Array.from({ length: 6 }, (_, i) => ({
@@ -212,7 +212,7 @@ const related: readonly RelatedCard[] = Array.from({ length: 6 }, (_, i) => ({
       dateOptions={page.data.datePreferences}
     />
     <p>The comments subnav's Add comment: <AddCommentLink /></p>
-    <ListsPreview tabs={lists} count={342} href="/movies/heat-1995" />
+    <ListsPreview {lists} count={342} href="/movies/heat-1995" />
   </Container>
 </section>
 <RelatedItems title="Heat" load={() => Promise.resolve(related)} datePreferences={page.data.datePreferences} />

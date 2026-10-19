@@ -269,7 +269,7 @@ describe('toSearchListRow', () => {
       kind: 'personal',
       href: '/users/preethi/lists/based-on-a-book',
       name: 'Based on a Book',
-      owner: { slug: 'preethi', name: 'preethi', href: '/users/preethi', avatar: undefined },
+      owner: { slug: 'preethi', name: 'preethi', href: '/users/preethi', avatar: undefined, vip: null },
       posters: [{
         title: 'Based on a Book',
         image: 'https://media.trakt.tv/images/shows/000/001/390/posters/thumb/abc.jpg.webp',
@@ -277,6 +277,7 @@ describe('toSearchListRow', () => {
       itemCount: 610,
       likeCount: 311,
       commentCount: undefined,
+      pills: [],
       description: 'Adaptations.',
     });
   });
@@ -285,6 +286,7 @@ describe('toSearchListRow', () => {
     expect(toSearchListRow(list('official', true))).toMatchObject({
       href: '/lists/official/based-on-a-book',
       commentCount: 4,
+      pills: ['Official List'],
     });
   });
 

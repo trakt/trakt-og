@@ -90,11 +90,12 @@ const number = (count: number) => count.toLocaleString('en-US');
       {/snippet}
     </Tooltip>
   {/if}
-  {@render count('Items', file, resolved?.count ?? itemCount, 'item', 'items')}
+  <!-- Like comes before the counts, as the list rows' button. -->
   {#if likeCount !== undefined}
-    {#if likeTarget}<ListLikeButton {...likeTarget} count={likeCount} />
+    {#if likeTarget}<ListLikeButton {...likeTarget} count={likeCount} button />
     {:else}{@render count('Likes', thumbsUp, likeCount, 'like', 'likes')}{/if}
   {/if}
+  {@render count('Items', file, resolved?.count ?? itemCount, 'item', 'items')}
   {#if comments}
     <Tooltip text="Comments">
       {#snippet trigger(tooltip)}

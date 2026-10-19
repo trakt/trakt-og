@@ -1,15 +1,20 @@
 <!--
-  A list row, as one card: a fan of the list's first five posters (empty slots filled in, so every row lines up), then
-  the list name with its status chips across from it, the owner with their VIP label, and the description, rendered
-  like a comment in as many of two lines as fit. A footer level with the fan's foot closes the card: the Like button
-  and the counts, then the viewer's tools. Hovering the fan opens up the poster under
-  the pointer. The card sizes itself to where it sits: a smaller fan in a tablet column, the posters whole across the
-  top in a narrow one.
+  A list row in the comments' style, with no box: a fan of the list's first five posters (empty slots filled in, so
+  every row lines up), then the list name with its tags across from it (the comment tags), the owner with their VIP
+  label, and the description, three lines at most. A footer level with the fan's foot closes it,
+  like a comment's stats bar: the Like button ("123 likes") and the items and comments as buttons, then the viewer's
+  tools. The watchlist and favorites wear a quiet tag of their own, and an owner the viewer follows a Friend or
+  Following tag. Hovering the row washes it, edge to edge, and turns the name red; hovering the fan opens up the
+  poster under the pointer. It sizes itself to where it sits: a smaller fan in a
+  tablet column, the posters whole across the top in a narrow one.
 -->
 <script lang="ts">
 import ReportDialog from '$lib/components/summary/ReportDialog.svelte';
 import ListLikeButton from '$lib/components/lists/ListLikeButton.svelte';
 import type { Snippet } from 'svelte';
+import CommentTag from '$lib/components/comments/CommentTag.svelte';
+import { memberRelation } from '$lib/components/comments/memberRelation';
+import { overlay } from '$lib/overlay/overlay';
 import CommentText from '$lib/components/comments/CommentText.svelte';
 import { parseComment } from '$lib/components/comments/text/parseComment';
 import VipLabel from '$lib/components/labels/VipLabel.svelte';
@@ -27,6 +32,8 @@ import listIcon from '$lib/icons/regular/list.svg?raw';
 import lock from '$lib/icons/regular/lock.svg?raw';
 import pencil from '$lib/icons/regular/pen.svg?raw';
 import user from '$lib/icons/regular/user.svg?raw';
+import heart from '$lib/icons/solid/heart.svg?raw';
+import watchlistIcon from '$lib/icons/trakt/list-thick.svg?raw';
 import userGroup from '$lib/icons/regular/user-group.svg?raw';
 import voteYes from '$lib/icons/regular/thumbs-up.svg?raw';
 import link from '$lib/icons/solid/link.svg?raw';
@@ -43,7 +50,7 @@ import { externalLink } from '$lib/externalLink';
 type Owner = { name: string; href: string; avatar?: string; vip?: VipBadge | null };
 
 interface Props {
-  /** The watchlist and favorites get a slightly different card, set apart from the user's own lists. */
+  /** The watchlist and favorites wear a quiet tag of their own, set apart from the user's own lists. */
   kind?: ListKind;
   href: string;
   name: string;
@@ -95,12 +102,17 @@ const {
 }: Props = $props();
 
 const FAN_SIZE = 5;
-const DESCRIPTION_LINES = 2;
-const CHIPS: Record<string, { tone: string; svg: string }> = {
-  Private: { tone: 'private', svg: lock },
-  'Official List': { tone: 'official', svg: traktIcon },
-  Following: { tone: 'following', svg: userGroup },
+const CHIPS: Record<string, { color: string; svg: string }> = {
+  Private: { color: 'var(--color-list-chip-private)', svg: lock },
+  'Official List': { color: 'var(--color-list-chip-official)', svg: traktIcon },
+  Following: { color: 'var(--color-list-chip-following)', svg: userGroup },
 };
+const BUILT_IN = { watchlist: { text: 'Watchlist', svg: watchlistIcon }, favorites: { text: 'Favorites', svg: heart } };
+const builtIn = $derived(kind === 'watchlist' || kind === 'favorites' ? BUILT_IN[kind] : undefined);
+// Friend or Following, from the viewer's network, as on comments; never on the viewer's own lists.
+const relation = $derived(
+  mine || kind === 'official' ? undefined : memberRelation(overlay.slices().network, owner.href.split('/users/')[1]),
+);
 
 let reportOpen = $state(false);
 const reportScope = $derived(`${likeTarget?.id}:${likeTarget?.viewer}`);
@@ -114,24 +126,6 @@ const avatar = $derived(kind === 'official' ? ogLogo : owner.avatar);
 const slots = $derived(itemCount === 0 ? [] : Array.from({ length: FAN_SIZE }, (_, i) => posters.at(i)));
 const blocks = $derived(parseComment(description?.trim() ?? ''));
 const plural = (count: number, word: string) => `${word}${count === 1 ? '' : 's'}`;
-
-// The description takes the room between the byline and the footer, and shows as many whole lines as fit there.
-let lines = $state(DESCRIPTION_LINES);
-const fitLines = (element: HTMLElement) => {
-  let frame = 0;
-  const observer = new ResizeObserver(() => {
-    cancelAnimationFrame(frame);
-    frame = requestAnimationFrame(() => {
-      const lineHeight = Number.parseFloat(getComputedStyle(element).lineHeight);
-      if (lineHeight > 0) lines = Math.min(DESCRIPTION_LINES, Math.floor(element.clientHeight / lineHeight));
-    });
-  });
-  observer.observe(element);
-  return () => {
-    cancelAnimationFrame(frame);
-    observer.disconnect();
-  };
-};
 </script>
 
 <!-- Hrefs come in as props pointing at OG routes og hasn't built yet, and resolve() only takes routes that exist. -->
@@ -154,18 +148,21 @@ const fitLines = (element: HTMLElement) => {
   </Tooltip>
 {/snippet}
 
-{#snippet count(label: string, svg: string, value: number, word: string)}
-  <Tooltip text={label}>
-    {#snippet trigger(tooltip)}
-      <span class="count-icon" {...tooltip}><Icon {svg} /></span>
-    {/snippet}
-  </Tooltip><strong>{value.toLocaleString('en-US')}</strong>
-  <span class="count-text">{plural(value, word)}</span>
+<!-- A count as a comment's "N replies": an outlined button where it leads somewhere, the same look where it doesn't. -->
+{#snippet count(svg: string, value: number, word: string, to?: string)}
+  {@const body = `${plural(value, word)}`}
+  {#if to}
+    <a class="count"
+  href={to}><Icon {svg} /><strong>{value.toLocaleString('en-US')}</strong><span class="count-text">{body}</span></a>
+  {:else}
+    <span
+  class="count"><Icon {svg} /><strong>{value.toLocaleString('en-US')}</strong><span class="count-text">{body}</span></span>
+  {/if}
 {/snippet}
 
-{#snippet chip(text: string, tone: string, svg: string, tip?: string)}
+{#snippet chip(text: string, color: string, svg: string, tip?: string)}
   <Tooltip text={tip}>
-    {#snippet trigger(tooltip)}<span class={['chip', tone]} {...tooltip}><Icon {svg} />{text}</span>{/snippet}
+    {#snippet trigger(tooltip)}<CommentTag {svg} {color} tint {...tooltip}>{text}</CommentTag>{/snippet}
   </Tooltip>
 {/snippet}
 
@@ -173,7 +170,7 @@ const fitLines = (element: HTMLElement) => {
   target={{ type: 'list', id: likeTarget.id, ownerSlug: likeTarget.ownerSlug, title: name, href }} />{/if}
 
 <article class="list-row">
-  <div class={['card', { 'built-in': kind === 'watchlist' || kind === 'favorites' }]}>
+  <div class="card">
     <div class="fan-frame">
       {#if rank !== undefined && !reorderControls}<span class="rank-anchor"><RankPill {rank} /></span>{/if}
       <!-- The list name link is the one in the tab order; this is the same link for the mouse. -->
@@ -198,9 +195,15 @@ const fitLines = (element: HTMLElement) => {
     <div class="body">
       <div class="head">
         <a class="name-link" {href}><h3>{name}</h3></a>
-        {#if mine || pills.length > 0 || shareLink || collaborators.length > 0}
+        {#if relation || builtIn || mine || pills.length > 0 || shareLink || collaborators.length > 0}
           <span class="chips">
-            {#if mine}{@render chip('Me', 'mine', user, 'Your list')}{/if}
+            {#if relation}
+              <CommentTag svg={relation === 'friend' ? userGroup : user} tone={relation} tint>
+                {relation === 'friend' ? 'Friend' : 'Following'}
+              </CommentTag>
+            {/if}
+            {#if builtIn}<CommentTag svg={builtIn.svg} tint>{builtIn.text}</CommentTag>{/if}
+            {#if mine}{@render chip('Me', 'var(--color-list-chip-mine)', user, 'Your list')}{/if}
             {#if collaborators.length > 0}
               <CollaboratorsPanel {collaborators} list={{ name, poster: posters.at(0)?.image }} {owner}>
                 {#snippet trigger(attrs)}
@@ -210,8 +213,8 @@ const fitLines = (element: HTMLElement) => {
                 {/snippet}
               </CollaboratorsPanel>
             {/if}
-            {#each pills as pill (pill)}{@render chip(pill, CHIPS[pill]?.tone ?? 'following', CHIPS[pill]?.svg ?? listIcon)}{/each}
-            {#if shareLink}{@render chip('Link', 'link', link, 'Anyone with this link can view the list')}{/if}
+            {#each pills as pill (pill)}{@render chip(pill, CHIPS[pill]?.color ?? 'var(--color-list-chip-following)', CHIPS[pill]?.svg ?? listIcon)}{/each}
+            {#if shareLink}{@render chip('Link', 'var(--color-list-chip-link)', link, 'Anyone with this link can view the list')}{/if}
           </span>
         {/if}
       </div>
@@ -222,20 +225,16 @@ const fitLines = (element: HTMLElement) => {
         {#if owner.vip}<VipLabel badge={owner.vip} pill />{/if}
       </p>
       {#if blocks.length > 0}
-        <div class="overview" {@attach fitLines}>
-          <div class={['clamp', { hidden: lines === 0 }]} style:--lines={lines}><CommentText {blocks} /></div>
-        </div>
+        <div class="overview"><div class="clamp"><CommentText {blocks} /></div></div>
       {/if}
       <footer class="foot">
         <div class="counts">
           {#if likeCount !== undefined}
             {#if likeTarget}<ListLikeButton {...likeTarget} count={likeCount} button />
-            {:else}<span class="count">{@render count('Likes', voteYes, likeCount, 'like')}</span>{/if}
+            {:else}{@render count(voteYes, likeCount, 'like')}{/if}
           {/if}
-          <span class="count">{@render count('Items', document, itemCount, 'item')}</span>
-          {#if commentCount !== undefined}
-            <a class="count" href="{href}/comments">{@render count('Comments', comment, commentCount, 'comment')}</a>
-          {/if}
+          {@render count(document, itemCount, 'item', href)}
+          {#if commentCount !== undefined}{@render count(comment, commentCount, 'comment', `${href}/comments`)}{/if}
         </div>
         {#if actions}
           <div class="tools">
@@ -273,29 +272,31 @@ const fitLines = (element: HTMLElement) => {
   --sliver: var(--list-card-sliver);
   display: grid;
   grid-template-columns: calc(var(--poster-width) + (var(--sliver) * 4)) minmax(0, 1fr);
+  position: relative;
+  isolation: isolate;
   column-gap: var(--list-card-gap);
-  row-gap: var(--list-card-padding);
-  padding: var(--list-card-padding);
-  border: 1px solid var(--color-list-card-border);
-  border-radius: var(--radius-list-card);
-  background-color: var(--color-list-card-bg);
-  /* Its own text color, so the card reads on a dark frame too (the search Lists tab). */
+  row-gap: var(--list-card-row-gap);
+  /* Its own text color, so the row reads on a dark frame too (the search Lists tab). */
   color: var(--color-text);
-  transition:
-    background-color var(--transition-list-card),
-    border-color var(--transition-list-card);
 
-  &:is(:hover, :focus-within) {
-    border-color: var(--color-list-card-border-hover);
-    background-color: var(--color-list-card-bg-hover);
+  /*
+    The hover wash: one layer behind the whole row, reaching a little past it, so the fan and the text share a single
+    fill with no seam between them.
+  */
+  &::before {
+    content: '';
+    position: absolute;
+    inset: calc(-1 * var(--list-card-wash-bleed));
+    z-index: -1;
+    border-radius: var(--radius-list-card);
+    background-color: var(--color-list-card-wash);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--transition-list-card);
   }
 
-  &.built-in {
-    background-color: var(--color-list-card-bg-built-in);
-
-    &:is(:hover, :focus-within) {
-      background-color: var(--color-list-card-bg-built-in-hover);
-    }
+  &:is(:hover, :focus-within)::before {
+    opacity: 1;
   }
 }
 
@@ -409,7 +410,9 @@ const fitLines = (element: HTMLElement) => {
   min-inline-size: 0;
   color: var(--color-text);
 
-  &:is(:hover, :focus-visible) {
+  /* No box to light up: hovering the row turns the name red. */
+  &:is(:hover, :focus-visible),
+  .card:hover & {
     color: var(--color-link);
   }
 }
@@ -425,46 +428,27 @@ h3 {
   display: inline-flex;
   flex-wrap: wrap;
   justify-content: flex-end;
-  gap: var(--list-card-chip-gap);
+  gap: var(--comment-tags-gap);
   margin-inline-start: auto;
 }
 
+/* The collaborators button, drawn as a comment tag with its count on a darker segment. */
 .chip {
   --tone: var(--color-list-chip-following);
   display: inline-flex;
   align-items: center;
   gap: var(--list-card-chip-gap);
-  block-size: var(--list-card-chip-height);
-  padding-inline: var(--list-card-chip-padding);
+  block-size: var(--comment-chip-height);
+  padding-inline: var(--comment-chip-padding);
   overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--tone) var(--list-card-chip-line), transparent);
   border-radius: var(--radius-list-card-chip);
   background-color: color-mix(in srgb, var(--tone) var(--list-card-chip-tint), transparent);
   color: color-mix(in srgb, var(--tone), var(--color-list-card-chip-lift) var(--list-card-chip-lift));
   font-family: var(--font-headings);
-  font-size: var(--font-size-list-card-chip);
+  font-size: var(--font-size-comment-tag);
   font-weight: var(--font-weight-headings);
   white-space: nowrap;
-
-  & :global(svg) {
-    font-size: var(--font-size-list-card-chip-icon);
-  }
-}
-
-.private {
-  --tone: var(--color-list-chip-private);
-}
-
-.official {
-  --tone: var(--color-list-chip-official);
-}
-
-.mine {
-  --tone: var(--color-list-chip-mine);
-}
-
-.link {
-  --tone: var(--color-list-chip-link);
 }
 
 /* A button: it opens the collaborators panel. */
@@ -489,7 +473,7 @@ h3 {
   display: inline-grid;
   place-items: center;
   align-self: stretch;
-  padding-inline: var(--list-card-chip-padding);
+  padding-inline: var(--comment-chip-padding);
   background-color: color-mix(in srgb, var(--tone) var(--list-card-chip-count-tint), transparent);
   color: var(--color-text);
   font-weight: var(--font-weight-headings-heavy);
@@ -535,26 +519,20 @@ h3 {
   }
 }
 
-/* Fills the room between the byline and the footer; the clamp shows the lines that fit. */
+/* The description, three lines at most. */
 .overview {
-  flex: 1 1 0;
-  min-block-size: 0;
   max-inline-size: 80ch;
-  margin-block-start: var(--list-card-body-gap);
-  overflow: hidden;
+  margin-block-start: var(--list-card-bubble-gap);
   color: var(--color-list-card-description);
+  overflow-wrap: break-word;
 }
 
 .clamp {
   display: -webkit-box;
   overflow: hidden;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: var(--lines);
-  line-clamp: var(--lines);
-
-  &.hidden {
-    visibility: hidden;
-  }
+  -webkit-line-clamp: var(--list-card-description-lines);
+  line-clamp: var(--list-card-description-lines);
 
   /* One run of text, so the clamp counts every line. */
   & :global(p) {
@@ -582,39 +560,43 @@ h3 {
   gap: var(--list-card-foot-gap) var(--space-stats);
 }
 
-/* A stat: the icon in blue, the number in white, then the word in gray. */
+/* A count as a comment's "N replies" button: outlined, the icon in blue, the number bold. */
 .count {
+  box-sizing: border-box;
   display: inline-flex;
   align-items: center;
-  color: var(--color-stat-noun);
-  font-size: var(--font-size-stat-noun);
+  gap: var(--glass-action-gap-card);
+  block-size: var(--control-height);
+  padding-inline: var(--glass-action-padding-card);
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius-control);
+  background-color: var(--color-control-bg);
+  color: var(--color-control-text);
+  font-family: var(--font-body);
+  font-size: var(--font-size-glass-action);
+  font-weight: var(--font-weight-glass-action-card);
+  white-space: nowrap;
+  transition: background-color var(--transition-comment-quiet), border-color var(--transition-comment-quiet);
+
+  & > :global(.icon) {
+    color: var(--color-stat-count);
+  }
 
   & strong {
-    color: var(--color-stat-number);
-    font-size: var(--font-size-stat-number);
     font-weight: var(--font-weight-headings-heavy);
     font-variant-numeric: tabular-nums;
   }
-}
 
-.count-icon {
-  display: inline-flex;
-  margin-inline-end: var(--space-stat);
-  color: var(--color-stat-count);
-  font-size: var(--font-size-stat-icon);
-  line-height: 1;
-}
-
-.count .count-text {
-  margin-inline-start: var(--space-stat-noun);
+  & .count-text {
+    margin-inline-start: calc(-1 * var(--glass-action-gap-card) + var(--space-stat-noun));
+  }
 }
 
 a.count:is(:hover, :focus-visible) {
-  color: var(--color-stat-noun);
-
-  & strong {
-    color: var(--color-stat-count);
-  }
+  border-color: var(--color-control-border-hover);
+  background-color: var(--color-control-hover-bg);
+  color: var(--color-control-text);
+  text-decoration: none;
 }
 
 .tools {
@@ -699,7 +681,7 @@ a.count:is(:hover, :focus-visible) {
     column-gap: var(--list-card-gap-tablet);
   }
 
-  .count .count-text {
+  .count-text {
     position: absolute;
     inline-size: 1px;
     block-size: 1px;
@@ -750,7 +732,8 @@ a.count:is(:hover, :focus-visible) {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .card,
+  .card::before,
+  .count,
   .slot,
   .action {
     transition: none;

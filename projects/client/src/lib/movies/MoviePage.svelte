@@ -197,5 +197,6 @@ const textLinks = $derived(movie.links.filter(({ icon }) => !icon));
 </SummaryFrame>
 
 {#key media.slug}
-  <RelatedItems title={movie.title} load={() => lazy().related(media)} datePreferences={data.datePreferences} />
+  <RelatedItems title={movie.title} source={data.relatedSource} load={() => lazy().related(media)}
+  loadPeople={(card) => lazy().relatedPeople(card)} datePreferences={data.datePreferences} />
 {/key}

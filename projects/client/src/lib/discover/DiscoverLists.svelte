@@ -15,7 +15,7 @@ import thumbsUp from '$lib/icons/regular/thumbs-up.svg?raw';
 import { sortThemeLists } from './sortThemeLists.ts';
 import type { ThemeList } from './ThemeList.ts';
 import { themeListSorts } from './themeListSorts.ts';
-import ToggleChips from './ToggleChips.svelte';
+import ToggleChips from '$lib/components/toggle-chips/ToggleChips.svelte';
 
 interface Props {
   lists: readonly ThemeList[];

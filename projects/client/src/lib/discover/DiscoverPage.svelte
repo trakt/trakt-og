@@ -65,6 +65,12 @@ const { data }: Props = $props();
 
 <style>
 .discover {
+  /* The toggle chips fill with the season's accent. */
+  --toggle-chip-on-bg: var(--season-accent);
+  --toggle-chip-on-border: var(--season-accent);
+  --toggle-chip-on-text: var(--color-discover-on-image);
+  --toggle-chip-count-on-bg: var(--color-toggle-chip-count-picked-bg);
+  --toggle-chip-count-on-text: inherit;
   background-color: var(--color-discover-bg);
   color: var(--color-discover-text);
 

@@ -30,6 +30,7 @@ describe('toRelatedCard', () => {
       rating: 7.5,
       airedEpisodes: undefined,
       runtime: 119,
+      subgenres: [],
     });
   });
 
@@ -47,5 +48,10 @@ describe('toRelatedCard', () => {
       airedEpisodes: 0,
       poster: undefined,
     });
+  });
+
+  it('should keep the subgenre slugs', () => {
+    const show = { title: 'Narcos', ids: { trakt: 3, slug: 'narcos' }, subgenres: ['drugs', 'outlaw'] } as ShowResponse;
+    expect(toRelatedCard({ type: 'show', item: show }, now).subgenres).toEqual(['drugs', 'outlaw']);
   });
 });

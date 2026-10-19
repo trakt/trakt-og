@@ -144,11 +144,42 @@ describe('sectionsClient', () => {
     });
   });
 
-  it('should ask for six related items with images', async () => {
+  it('should ask for eighteen related items with images', async () => {
     const cards = await client(false).related(movie);
     expect(cards?.map(({ href }) => href)).toEqual(['/movies/deadpool-2-2018']);
     const params = new URL(seen.at(0)?.url ?? '').searchParams;
-    expect([params.get('limit'), params.get('extended')]).toEqual(['6', 'full,images']);
+    expect([params.get('limit'), params.get('extended')]).toEqual(['18', 'full,images']);
+  });
+
+  it("should ask for a related card's people by its Trakt id", async () => {
+    server.use(http.get(`${API}/shows/:id/people`, ({ request, params }) => {
+      seen.push(request);
+      return HttpResponse.json({
+        cast: [{ person: { ids: { trakt: 5, slug: 'bob' }, name: `Bob ${params.id}` }, characters: ['Saul'] }],
+      });
+    }));
+    const card = {
+      type: 'show',
+      id: 59660,
+      href: '/shows/better-call-saul',
+      title: 'Better Call Saul',
+      released: true,
+      subgenres: [],
+    } as const;
+    expect(await client(false).relatedPeople(card)).toEqual([{ id: 5, name: 'Bob 59660' }]);
+  });
+
+  it("should come back null when a card's people fail", async () => {
+    server.use(http.get(`${API}/movies/:id/people`, () => HttpResponse.json({}, { status: 500 })));
+    const card = {
+      type: 'movie',
+      id: 2,
+      href: '/movies/deadpool-2-2018',
+      title: 'Deadpool 2',
+      released: true,
+      subgenres: [],
+    } as const;
+    expect(await client(false).relatedPeople(card)).toBeNull();
   });
 
   it('should come back null when a section has nothing', async () => {

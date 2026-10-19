@@ -15,6 +15,8 @@ export type RelatedCard = {
   readonly rating?: number;
   readonly airedEpisodes?: number;
   readonly runtime?: number;
+  /** Slugs, for what the pick shares with the summary's title. */
+  readonly subgenres: readonly string[];
 };
 
 type Related = { readonly type: 'movie'; readonly item: MovieResponse } | {
@@ -39,5 +41,6 @@ export function toRelatedCard(related: Related, now: Date): RelatedCard {
     rating: item.rating ?? undefined,
     airedEpisodes: related.type === 'show' ? (related.item.aired_episodes ?? undefined) : undefined,
     runtime: item.runtime ?? undefined,
+    subgenres: item.subgenres ?? [],
   };
 }

@@ -2,7 +2,6 @@ import { traktApi } from '@trakt/api';
 import { type ApiEnvironment, apiEnvironment } from './apiEnvironment.ts';
 import { authorizedFetch } from './authorizedFetch.ts';
 import { plainTextErrorFetch } from './plainTextErrorFetch.ts';
-import { TRAKT_CLIENT_ID } from './traktClientId.ts';
 
 export type ApiParams = {
   /** SvelteKit's `event.fetch` in loaders, the global one in the browser. */

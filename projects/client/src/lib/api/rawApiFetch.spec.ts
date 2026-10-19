@@ -2,7 +2,6 @@ import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { rawApiFetch } from './rawApiFetch.ts';
-import { TRAKT_CLIENT_ID } from './traktClientId.ts';
 
 const seen: Request[] = [];
 const server = setupServer(

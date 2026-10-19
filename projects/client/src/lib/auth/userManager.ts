@@ -1,4 +1,3 @@
-import { TRAKT_CLIENT_ID } from '../api/traktClientId.ts';
 import { UserManager, WebStorageStateStore } from 'oidc-client-ts';
 
 let manager: UserManager | null = null;

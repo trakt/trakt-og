@@ -1,8 +1,14 @@
 import adapter from '@sveltejs/adapter-cloudflare';
 import { sveltekit } from '@sveltejs/kit/vite';
+import process from 'node:process';
+import { loadEnv } from 'vite';
 import { defineConfig } from 'vitest/config';
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
+  define: {
+    // Inlined at build time, like trakt-web. Dev reads `.env.development`, builds and deploys read `.env.production`.
+    TRAKT_CLIENT_ID: JSON.stringify(loadEnv(mode, process.cwd(), 'TRAKT_').TRAKT_CLIENT_ID ?? ''),
+  },
   plugins: [
     sveltekit({
       compilerOptions: {
@@ -17,4 +23,4 @@ export default defineConfig({
     passWithNoTests: true,
     setupFiles: ['src/test/memoryStorage.ts'],
   },
-});
+}));

@@ -1,7 +1,6 @@
 import type { ApiParams } from './api.ts';
 import { apiEnvironment } from './apiEnvironment.ts';
 import { authorizedFetch } from './authorizedFetch.ts';
-import { TRAKT_CLIENT_ID } from './traktClientId.ts';
 
 type RawApiFetchParams = ApiParams & {
   /** Starts with `/`, e.g. `/v3/...`. */

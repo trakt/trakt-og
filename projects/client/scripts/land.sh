@@ -60,4 +60,4 @@ for issue in $issues; do
     gh issue close "$issue" --repo trakt/og --comment "Closed by https://github.com/trakt/og/pull/$pr after local verification."
   fi
 done
-echo "land: done. A human runs deno task client:deploy to update the site."
+echo "land: done. GitHub Actions deploys main to og.trakt.tv."

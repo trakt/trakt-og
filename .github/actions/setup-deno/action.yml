@@ -17,4 +17,3 @@ runs:
     - shell: bash
       run: deno task install
       working-directory: .
-      working-directory: .

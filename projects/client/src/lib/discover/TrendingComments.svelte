@@ -433,7 +433,7 @@ const revealOnKey = (event: KeyboardEvent, id: number) => {
 }
 
 .blur {
-  filter: var(--blur-spoiler);
+  filter: var(--blur-spoiler-text);
   user-select: none;
 }
 

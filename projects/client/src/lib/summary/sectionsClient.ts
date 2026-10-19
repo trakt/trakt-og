@@ -43,7 +43,12 @@ type SectionsClientParams = {
 export type SectionsClient = {
   /** "People You Follow", or `null` when nobody is watching and no followed member has any activity. */
   activity: (media: SummaryMedia) => Promise<readonly ActivityTab[] | null>;
-  comments: (media: SummaryMedia) => Promise<readonly CommentTab[] | null>;
+  /**
+   * Popular, Recent and Me, in English unless `language` picks another (`null` is every language); Me is all the
+   * viewer's own. Filtered to a language and empty, it's `[]`, so the section stays to switch languages; `null` only
+   * when the item has no comments in any.
+   */
+  comments: (media: SummaryMedia, language?: string | null) => Promise<readonly CommentTab[] | null>;
   /** The official lists, then the most popular personal ones; the lists page sorts and filters the rest. */
   lists: (media: SummaryMedia) => Promise<readonly SummaryList[] | null>;
   related: (media: SummaryMedia) => Promise<readonly RelatedCard[] | null>;
@@ -103,9 +108,12 @@ export function sectionsClient({
       ? ok(anonymous.movies.watching({ params: { id: slug }, query: {} }))
       : ok(anonymous.shows.watching({ params: { id: slug }, query: {} }));
 
-  const comments = (media: SummaryMedia, sort: 'likes' | 'newest') => {
+  const comments = (media: SummaryMedia, sort: 'likes' | 'newest', language: string | null) => {
     const { type, slug, season } = media;
-    const request = { params: { id: slug, sort }, query: { extended: 'images', limit: PREVIEW_LIMIT } } as const;
+    const request = {
+      params: { id: slug, sort },
+      query: { extended: 'images', limit: PREVIEW_LIMIT, ...(language && { language }) },
+    } as const;
     if (media.type === 'episode') {
       return ok(
         viewer.shows.episode.comments({
@@ -167,21 +175,22 @@ export function sectionsClient({
       return nonEmpty(toActivity({ watching: everyone ?? [], social, following: followed, show }));
     },
 
-    comments: async (media) => {
+    comments: async (media, language = 'en') => {
       const [likes, recent, mine] = await Promise.all([
-        comments(media, 'likes'),
-        comments(media, 'newest'),
+        comments(media, 'likes', language),
+        comments(media, 'newest', language),
         raw<readonly CommentResponse[]>(
           `${mediaPath(media)}/comments/mine?limit=${PREVIEW_LIMIT}&extended=images`,
           parsed(commentResponseSchema.array()),
         ),
       ]);
       const tabs: readonly CommentTab[] = [
-        { id: 'likes', label: 'Reactions', comments: likes ?? [] },
+        { id: 'likes', label: 'Popular', comments: likes ?? [] },
         { id: 'recent', label: 'Recent', comments: recent ?? [] },
         { id: 'me', label: 'Me', comments: mine ?? [] },
       ];
-      return nonEmpty(tabs.filter((tab) => tab.comments.length > 0));
+      const filled = tabs.filter((tab) => tab.comments.length > 0);
+      return language ? filled : nonEmpty(filled);
     },
 
     lists: async (media) => {

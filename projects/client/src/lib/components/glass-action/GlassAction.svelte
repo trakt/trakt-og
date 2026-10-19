@@ -7,7 +7,9 @@
   Anything else (`aria-*`, `popovertarget`, a `style` with an `anchor-name`) goes on the button. `glass` swaps the
   black for the dark dropdown trigger's colors, see-through, for over a summary's fanart. With `href` it's a link
   instead ("All Stats"), and `presentational` draws it without a control of its own, for inside another one's trigger
-  (the ratings strip's Rate, inside the rating popover's button).
+  (the ratings strip's Rate, inside the rating popover's button). `card` is the page's outlined control instead, as
+  tall and padded as View seasons, for a list row's Like and a comment's React and Reply; a selected tinted one stays
+  solid. Without `icon`, the label leads (a comment's chosen reaction brings its emoji).
 -->
 <script lang="ts">
 import Spinner from '$lib/components/loading/Spinner.svelte';
@@ -16,7 +18,7 @@ import type { Snippet } from 'svelte';
 import type { HTMLButtonAttributes } from 'svelte/elements';
 
 interface Props extends Omit<HTMLButtonAttributes, 'color'> {
-  icon: string;
+  icon?: string;
   /** The action's color, as a CSS color. Left out, the button is black. */
   color?: string;
   selected?: boolean;
@@ -30,6 +32,8 @@ interface Props extends Omit<HTMLButtonAttributes, 'color'> {
   glass?: boolean;
   /** The icon's own color on the frosted glass, in place of its muted gray: the list Like's blue thumb. */
   iconColor?: string;
+  /** The page's outlined control, off the artwork. */
+  card?: boolean;
   children: Snippet;
 }
 
@@ -42,14 +46,15 @@ const {
   presentational = false,
   glass = false,
   iconColor,
+  card = false,
   children,
   ...rest
 }: Props = $props();
-const classes = $derived(['glass-action', { glass, tinted: color, selected }]);
+const classes = $derived(['glass-action', { glass, tinted: color, selected, card }]);
 </script>
 
 {#snippet body()}
-  {#if busy}<Spinner label={busy} />{:else}<span class="icon"><Icon svg={icon} /></span>{/if}
+  {#if busy}<Spinner label={busy} />{:else if icon}<span class="icon"><Icon svg={icon} /></span>{/if}
   {@render children()}
 {/snippet}
 
@@ -59,7 +64,7 @@ const classes = $derived(['glass-action', { glass, tinted: color, selected }]);
 {#if href}
   <a {href} class={classes} style:--action={color}>{@render body()}</a>
 {:else if presentational}
-  <span class={classes} style:--action={color}>{@render body()}</span>
+  <span class={classes} style:--action={color} style:--glass-action-icon={iconColor}>{@render body()}</span>
 {:else}
   <button type="button" {...rest} class={classes} style:--action={color} style:--glass-action-icon={iconColor}
   aria-busy={busy ? 'true' : undefined}>
@@ -112,6 +117,24 @@ const classes = $derived(['glass-action', { glass, tinted: color, selected }]);
     border-color: var(--color-glass-action-glass-line-hover);
     background: var(--color-glass-action-glass-hover);
   }
+}
+
+/* Off its artwork: the page's outlined control, in its colors, padding and type. A selected tinted one stays solid. */
+.card {
+  gap: var(--glass-action-gap-card);
+  min-block-size: var(--control-height);
+  padding-inline: var(--glass-action-padding-card);
+  backdrop-filter: none;
+  font-family: var(--font-body);
+  font-weight: var(--font-weight-glass-action-card);
+}
+
+.card:not(.selected) {
+  --color-glass-action-glass: var(--color-control-bg);
+  --color-glass-action-glass-hover: var(--color-control-hover-bg);
+  --color-glass-action-glass-line: var(--color-control-border);
+  --color-glass-action-glass-line-hover: var(--color-control-border-hover);
+  --color-glass-action-text: var(--color-control-text);
 }
 
 /* Trakt-font glyphs sit a little high, as in the quick-icon bar. */

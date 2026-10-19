@@ -70,7 +70,7 @@ p {
   }
 }
 .hidden .text {
-  filter: var(--blur-spoiler);
+  filter: var(--blur-spoiler-text);
   user-select: none;
 }
 .reveal {

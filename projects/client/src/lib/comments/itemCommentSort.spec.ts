@@ -35,4 +35,13 @@ describe('itemCommentsHref', () => {
       '/shows/breaking-bad/comments/added?sort_how=desc',
     );
   });
+
+  it('should keep a picked comment language', () => {
+    expect(itemCommentsHref('/movies/fight-club-1999', 'likes', 'asc', 'language=pt')).toBe(
+      '/movies/fight-club-1999/comments?language=pt',
+    );
+    expect(itemCommentsHref('/shows/breaking-bad', 'added', 'desc', 'language=all')).toBe(
+      '/shows/breaking-bad/comments/added?sort_how=desc&language=all',
+    );
+  });
 });

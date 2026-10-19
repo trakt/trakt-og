@@ -1,4 +1,6 @@
 <script lang="ts">
+import { newComment } from '$lib/components/comments/newComment.svelte';
+import { gifArtContext } from '$lib/components/comments/gif/gifArtContext';
 import FanartHeader from '$lib/components/media/FanartHeader.svelte';
 import NewCommentForm from '$lib/components/comments/NewCommentForm.svelte';
 import ActionButtons from '$lib/components/summary/ActionButtons.svelte';
@@ -30,6 +32,8 @@ import { countLabel } from '$lib/utils/countLabel';
 import type { loadEpisode } from '$lib/shows/loadEpisode';
 const { data }: { data: Awaited<ReturnType<typeof loadEpisode>> } = $props();
 const episode = $derived(data.episode);
+// The GIF picker's header, in every comment box on the page.
+gifArtContext.set(() => episode.fanart);
 const facts = $derived(episode.facts);
 const spoilers = $derived(
   mediaSpoilers({
@@ -104,12 +108,12 @@ const sections = $derived([
   {/snippet}
   {#snippet actions()}<ActionButtons checkin={episode.aired ? ratingTarget : undefined} listTarget={ratingTarget} historyTarget={{...ratingTarget,runtime:episode.runtime,released:episode.aired,season:{show:episode.showId,number:episode.season,episode:episode.episodeNumber}}} />{/snippet}
   {#key episode.href}
-    <NewCommentForm item={{ ...ratingTarget, show: episode.showId, season: episode.season }} />
     <LazySection id="activity" load={()=>lazy().activity(media)}>{#snippet children(tabs)}<ActivityTabs {tabs} />{/snippet}</LazySection>
   {/key}
   <ActorsStrip groups={[{id:'season-regulars',label:'Season Regulars',cast:episode.cast},{id:'guest-stars',label:'Guest Stars',cast:episode.guestStars}]} crew={episode.crew} creditsHref="{episode.href}/people" />
   {#key episode.href}
-    <LazySection id="comments" load={()=>lazy().comments(media)}>{#snippet children(tabs)}<CommentsPreview {tabs} item={{...ratingTarget,show:episode.showId,season:episode.season}} viewer={data.user ? {slug:data.user.slug}:null} count={episode.commentCount} href={episode.href} dateOptions={data.datePreferences} />{/snippet}</LazySection>
+    {#snippet newCommentForm()}<NewCommentForm item={{ ...ratingTarget, show: episode.showId, season: episode.season }} />{/snippet}
+    <LazySection id="comments" load={() => lazy().comments(media)} eager={newComment.visible}>{#snippet children(tabs)}<CommentsPreview form={newCommentForm} reload={(language) => lazy().comments(media, language)} {tabs} item={{...ratingTarget,show:episode.showId,season:episode.season}} viewer={data.user ? {slug:data.user.slug}:null} count={episode.commentCount} href={episode.href} dateOptions={data.datePreferences} />{/snippet}</LazySection>
     <LazySection id="lists" load={()=>lazy().lists(media)}>{#snippet children(lists)}<ListsPreview {lists} count={episode.listCount} href={episode.href} />{/snippet}</LazySection>
   {/key}
 </SummaryFrame>

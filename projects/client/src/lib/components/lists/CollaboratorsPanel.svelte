@@ -83,17 +83,18 @@ function toggled(event: ToggleEvent) {
 </div>
 
 <style>
+/* Centred under the chip, its arrow pointing up at it, like Why this?'s. The list scrolls, so the arrow isn't clipped. */
 .panel {
   position: fixed;
-  position-area: bottom span-left;
-  position-try-fallbacks: flip-block, flip-inline;
+  position-area: bottom;
+  position-try-fallbacks: none;
   inset: auto;
   inline-size: var(--collaborators-panel-width);
   max-inline-size: calc(100vw - var(--gutter));
   max-block-size: var(--collaborators-panel-height);
-  margin: var(--collaborators-panel-gap) 0;
+  margin: var(--why-arrow-offset) 0 0;
   padding: 0;
-  overflow: auto;
+  overflow: visible;
   border: 1px solid var(--color-why-border);
   border-radius: var(--radius-why-panel);
   background: var(--color-why-panel-bg);
@@ -105,6 +106,25 @@ function toggled(event: ToggleEvent) {
 
   &:popover-open {
     display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+  }
+
+  /* The header's tint over the panel's fill, so it joins the header; clipped to the half outside the panel. */
+  &::before {
+    content: '';
+    position: absolute;
+    inset-block-end: 100%;
+    inset-inline-start: 50%;
+    clip-path: polygon(0 0, 100% 0, 0 100%);
+    inline-size: var(--why-arrow);
+    block-size: var(--why-arrow);
+    border-inline-start: 1px solid var(--color-why-border);
+    border-block-start: 1px solid var(--color-why-border);
+    background:
+      linear-gradient(var(--color-collaborators-header-tint), var(--color-collaborators-header-tint)),
+      var(--color-why-panel-bg);
+    translate: -50% 50%;
+    rotate: 45deg;
   }
 }
 
@@ -115,6 +135,8 @@ header {
   gap: var(--space-why-row);
   padding: var(--why-panel-padding);
   border-block-end: 1px solid var(--color-why-border);
+  border-start-start-radius: inherit;
+  border-start-end-radius: inherit;
   background: var(--gradient-collaborators-header);
 }
 
@@ -154,6 +176,7 @@ h4 {
   line-height: var(--line-height-recommendations-title);
 }
 
+/* Pulled toward the panel's corner. */
 .close {
   display: grid;
   place-items: center;
@@ -161,6 +184,8 @@ h4 {
   inline-size: var(--why-close);
   block-size: var(--why-close);
   min-block-size: 0;
+  margin-block-start: calc(-1 * var(--why-close-pull));
+  margin-inline-end: calc(-1 * var(--why-close-pull));
   padding: 0;
   border: 0;
   border-radius: 50%;
@@ -176,7 +201,9 @@ h4 {
 
 ul {
   display: grid;
+  align-content: start;
   margin: 0;
+  overflow-y: auto;
   padding: var(--why-list-padding);
   list-style: none;
 }

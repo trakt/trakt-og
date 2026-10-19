@@ -21,7 +21,7 @@ describe('util: watchedIndicator', () => {
     ).toMatchObject({ count: '1,200', label: 'plays', href: '/users/sean/history?episode=9' });
   });
 
-  it('should show a floored percentage of aired episodes on shows and seasons, capped at 100', () => {
+  it('should show a floored percentage of aired episodes on shows and seasons, capped at 100 and complete there', () => {
     const item = { type: 'show', id: 3, title: 'Breaking Bad', airedEpisodes: 62 } as const;
     expect(watchedIndicator({ stats: stats(70, 31), slug: 'sean', item })).toEqual({
       count: '50%',
@@ -29,7 +29,10 @@ describe('util: watchedIndicator', () => {
       title: '31/62 episodes\n70 plays',
       href: '/users/sean/history?show=3',
     });
-    expect(watchedIndicator({ stats: stats(70, 80), slug: 'sean', item })?.count).toBe('100%');
+    expect(watchedIndicator({ stats: stats(70, 80), slug: 'sean', item })).toMatchObject({
+      count: '100%',
+      complete: true,
+    });
   });
 
   it('should fall back to plays when the percentage rounds to 0 or the aired count is unknown', () => {

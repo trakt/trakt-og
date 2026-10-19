@@ -1,5 +1,7 @@
 <!-- The movie summary (`/movies/:id`): the media frame filled with one movie. -->
 <script lang="ts">
+import { newComment } from '$lib/components/comments/newComment.svelte';
+import { gifArtContext } from '$lib/components/comments/gif/gifArtContext';
 import MediaSpoiler from '$lib/components/summary/MediaSpoiler.svelte';
 import type { HeaderUser } from '$lib/components/header/HeaderUser';
 import FanartHeader from '$lib/components/media/FanartHeader.svelte';
@@ -39,6 +41,8 @@ type Props = {
 
 const { data }: Props = $props();
 const movie = $derived(data.movie);
+// The GIF picker's header, in every comment box on the page.
+gifArtContext.set(() => movie.fanart);
 const ratingTarget = $derived({ type: 'movie' as const, id: movie.id, title: movie.fullTitle });
 const facts = $derived(movie.facts);
 const media = $derived({ type: 'movie' as const, id: movie.id, slug: movie.slug, title: movie.fullTitle });
@@ -169,16 +173,16 @@ const textLinks = $derived(movie.links.filter(({ icon }) => !icon));
 
   <!-- Keyed on the item: moving to another movie or show keeps this page, so the lazy sections start over. -->
   {#key media.slug}
-    <NewCommentForm item={{ type: 'movie', id: movie.id, title: movie.fullTitle }} />
     <LazySection id="activity" load={() => lazy().activity(media)}>
       {#snippet children(tabs)}<ActivityTabs {tabs} />{/snippet}
     </LazySection>
   {/key}
   <ActorsStrip groups={[{ id: 'cast', label: 'Cast', cast: movie.cast }]} crew={movie.crew} creditsHref="{movie.href}/people" />
   {#key media.slug}
-    <LazySection id="comments" load={() => lazy().comments(media)}>
+    {#snippet newCommentForm()}<NewCommentForm item={{ type: 'movie', id: movie.id, title: movie.fullTitle }} />{/snippet}
+    <LazySection id="comments" load={() => lazy().comments(media)} eager={newComment.visible}>
       {#snippet children(tabs)}
-        <CommentsPreview
+        <CommentsPreview form={newCommentForm} reload={(language) => lazy().comments(media, language)}
           {tabs}
           item={{ type: 'movie', id: movie.id, title: movie.fullTitle }}
           viewer={data.user ? { slug: data.user.slug } : null}

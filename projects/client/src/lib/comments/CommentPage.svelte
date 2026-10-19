@@ -1,16 +1,16 @@
 <!--
   A comment's own page: the item's slim fanart header with "Shout by NAME", the summary sidebar with its section links,
-  then the comment as the root of its thread, scaled up, and every reply on one rail under it, oldest first, after a
-  small "N replies" divider. The thread ends with the reply box. There's no pagination and no comment form. A reply
+  then the comment as the root of its thread, and every reply on one rail under it, oldest first, which its
+  "N replies" button folds away. Reply opens the reply box at the thread's end. There's no pagination and no comment form. A reply
   posted here goes on top of the replies, and deleting the comment itself goes on to the item's comments.
 -->
 <script lang="ts">
+import { gifArtContext } from '$lib/components/comments/gif/gifArtContext';
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
 import type { CommentResponse } from '@trakt/api';
 import CommentCard from '$lib/components/comments/CommentCard.svelte';
 import { authorOf } from '$lib/components/comments/authorOf';
-import RepliesDivider from '$lib/components/comments/RepliesDivider.svelte';
 import { commentSettings } from '$lib/components/comments/commentSettings';
 import { withoutBlocked } from '$lib/components/comments/withoutBlocked';
 import FanartHeader from '$lib/components/media/FanartHeader.svelte';
@@ -24,6 +24,8 @@ import type { loadComment } from './loadComment.ts';
 
 const { data }: { data: Awaited<ReturnType<typeof loadComment>> } = $props();
 const media = $derived(data.media);
+// The GIF picker's header, in every comment box on the page.
+gifArtContext.set(() => media.fanart);
 let posted = $state<readonly CommentResponse[]>([]);
 // Blocked members' replies are dropped.
 const thread = $derived([
@@ -100,7 +102,6 @@ const title = $derived(`${media.item.title} ${type.toLowerCase()} by ${author.na
         {#snippet replies()}
           {#if thread.length > 0}
             <div id="replies" class="replies">
-              <RepliesDivider count={thread.length} />
               {#each thread as reply (reply.id)}
                 <CommentCard
                   comment={reply}

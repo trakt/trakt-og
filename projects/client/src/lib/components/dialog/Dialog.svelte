@@ -240,6 +240,8 @@ const syncOpen = (dialog: HTMLDialogElement) => {
     backdrop-filter: var(--blur-read-notes-pill);
     color: var(--color-card-text);
     font-size: var(--font-size-dialog-art-close);
+    /* The Trakt-font X sits high in its box; down to the circle's middle. */
+    --icon-shift: var(--quick-icon-trakt-shift);
 
     &:hover {
       background-color: var(--color-read-notes-pill-hover);
@@ -279,6 +281,11 @@ const syncOpen = (dialog: HTMLDialogElement) => {
   &::placeholder {
     color: var(--color-dialog-art-placeholder);
   }
+}
+
+/* A search field keeps room for its magnifier. */
+.art .panel :global(.search-field input:not([type='radio'], [type='checkbox']):not(.multi-select *)) {
+  padding-inline-start: var(--space-filter-popover-field-icon);
 }
 
 .art .panel :global(:is(input, textarea)[aria-invalid='true']) {

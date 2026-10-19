@@ -54,7 +54,12 @@ describe('loadItemComments', () => {
 
     const read = requests.find(({ pathname }) => pathname.includes('/comments/'));
     expect(read?.pathname).toBe('/shows/breaking-bad/seasons/1/comments/lowest');
-    expect(Object.fromEntries(read?.searchParams ?? [])).toEqual({ extended: 'images', page: '2', limit: '100' });
+    expect(Object.fromEntries(read?.searchParams ?? [])).toEqual({
+      extended: 'images',
+      page: '2',
+      limit: '100',
+      language: 'en',
+    });
     expect(data).toMatchObject({
       comments: [comment],
       count: 201,
@@ -62,6 +67,17 @@ describe('loadItemComments', () => {
       sort: { by: 'rating', how: 'desc' },
     });
     expect(data.next).toBeUndefined();
+  });
+
+  it('should read every language for All', async () => {
+    const data = await load(
+      { type: 'season', id: 'breaking-bad', season: '1' },
+      '/shows/breaking-bad/seasons/1/comments?language=all',
+    );
+
+    const read = requests.findLast(({ pathname }) => pathname.includes('/comments/'));
+    expect(read?.searchParams.has('language')).toBe(false);
+    expect(data.language.code).toBe('all');
   });
 
   it('should answer a missing item with a 404', async () => {

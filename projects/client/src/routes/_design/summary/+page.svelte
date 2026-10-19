@@ -83,7 +83,7 @@ const activity: readonly ActivityTab[] = toActivity({
 });
 
 const comments: readonly CommentTab[] = [
-  { id: 'likes', label: 'Reactions', comments: [review, formatting] },
+  { id: 'likes', label: 'Popular', comments: [review, formatting] },
   { id: 'recent', label: 'Recent', comments: [spoiler] },
 ];
 

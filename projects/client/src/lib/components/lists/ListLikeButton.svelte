@@ -72,16 +72,16 @@ async function toggle() {
 </script>
 
 {#if button}
-  <span class={['glass', { liked }]}><Tooltip text={liked ? 'Unlike this list' : 'Like this list'}>
+  <Tooltip text={liked ? 'Unlike this list' : 'Like this list'}>
     {#snippet trigger(tooltip)}
-      <GlassAction glass={!liked} color={liked ? 'var(--color-list-card-like)' : undefined} selected={liked}
+      <GlassAction glass={!liked} card color={liked ? 'var(--color-list-card-like)' : undefined} selected={liked}
         iconColor={liked ? undefined : 'var(--color-list-card-like)'}
         icon={liked ? voteYesThick : voteYes} aria-label={label} aria-pressed={liked === undefined ? undefined : liked}
         aria-disabled={busy} onclick={toggle} {...tooltip}>
         <span class="number">{total.toLocaleString('en-US')}</span>
       </GlassAction>
     {/snippet}
-  </Tooltip></span>
+  </Tooltip>
 {:else}
   <Tooltip text="Likes">
     {#snippet trigger(tooltip)}
@@ -95,18 +95,6 @@ async function toggle() {
 {/if}
 
 <style>
-/* Unliked, it sits on a list card, so it follows the theme instead of the summary's always-dark glass. */
-.glass {
-  display: contents;
-
-  &:not(.liked) {
-    --color-glass-action-glass: var(--color-list-like-bg);
-    --color-glass-action-glass-hover: var(--color-list-like-bg-hover);
-    --color-glass-action-glass-line: var(--color-list-like-line);
-    --color-glass-action-glass-line-hover: var(--color-list-like-line-hover);
-    --color-glass-action-text: var(--color-list-like-text);
-  }
-}
 .like {
   display: inline-flex;
   align-items: center;
@@ -129,6 +117,7 @@ strong {
   font-weight: var(--font-weight-headings-heavy);
 }
 .number {
+  font-weight: var(--font-weight-headings-heavy);
   font-variant-numeric: tabular-nums;
 }
 .words {

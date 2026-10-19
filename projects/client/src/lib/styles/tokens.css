@@ -306,12 +306,6 @@
   --color-list-card-bg-built-in-hover: light-dark(#e6e6ea, #333);
   --color-list-card-border: light-dark(rgb(0 0 0 / 0.08), rgb(255 255 255 / 0.07));
   --color-list-card-border-hover: light-dark(rgb(0 0 0 / 0.16), rgb(255 255 255 / 0.16));
-  /* The Like button before it's liked: the summary's dark glass in dark mode, a white button on a light card. */
-  --color-list-like-bg: light-dark(#fff, rgb(35 35 35 / 0.82));
-  --color-list-like-bg-hover: light-dark(#f3f3f5, rgb(46 46 46 / 0.9));
-  --color-list-like-line: light-dark(rgb(0 0 0 / 0.14), #3b3b3b);
-  --color-list-like-line-hover: light-dark(rgb(0 0 0 / 0.28), #5c5c5c);
-  --color-list-like-text: light-dark(#333, #fff);
   --transition-list-card: 0.2s;
   /* The fan: the first poster whole, the next four as slivers; pointing at one opens it. */
   --list-card-poster-width: 120px;
@@ -790,6 +784,7 @@
   --why-header-poster: 44px;
   --why-row-poster: 32px;
   --why-close: 28px;
+  --why-close-pull: 6px; /* the close, nearer the panel's corner than the header's padding */
   --why-arrow: 14px;
   --why-arrow-offset: 12px; /* the gap the arrow sits in */
   --why-stars-gap: 3px;
@@ -810,11 +805,14 @@
   /* A list's collaborators panel: the Why panel's look, under the collaborators chip, in its orange. */
   --collaborators-panel-width: 340px;
   --collaborators-panel-height: 70vh; /* a long roster scrolls inside it */
-  --collaborators-panel-gap: 8px;
   --color-collaborators-mark: light-dark(#b64903, #ff9a52); /* --brand-seventh, darker on white, lifted on dark */
-  --gradient-collaborators-header: linear-gradient(to bottom, rgb(232 93 4 / 0.12), transparent);
+  --color-collaborators-header-tint: rgb(232 93 4 / 0.12);
+  --gradient-collaborators-header: linear-gradient(to bottom, var(--color-collaborators-header-tint), transparent);
   /* Labelled glass buttons: an action's color over dark glass, solid once it's done. */
   --glass-action-height: 34px;
+  --glass-action-padding-card: 10px; /* `card`: the page's outlined control, as padded as View seasons */
+  --glass-action-gap-card: 6px;
+  --font-weight-glass-action-card: 400; /* View seasons' regular weight */
   --glass-action-padding: 14px;
   --glass-action-gap: 8px;
   --glass-action-line: 60%; /* how much of the action's color the outline keeps */
@@ -1991,21 +1989,9 @@
   --data-panel-label-padding: 3px 4px;
 
   /* Comment reaction picker. */
-  --reaction-icon-offset: -1px;
-  --reaction-popover-gap: 10px;
-  --reaction-popover-block: 9px;
-  --reaction-popover-inline: 5px;
-  --reaction-choice-margin: 3px;
-  --reaction-choice-block: 7px;
-  --reaction-choice-inline: 8px;
-  --reaction-close-width: 30px;
-  --reaction-close-start: 6px;
-  --reaction-close-size: 16px;
   --reaction-mobile-size: 11px;
   --reaction-hover-scale: 1.2;
   --reaction-duration: 0.5s;
-  --color-reaction-hover: rgb(255 255 255 / 0.2);
-  --color-reaction-selected: #000;
 
   /* Comment cards and reaction summary. */
   --color-comment-bg: light-dark(#fafafa, var(--dk-box-accent));
@@ -2032,8 +2018,15 @@
   --comment-padding: 20px;
   --comment-collapsed-height: 300px; /* read more */
   --comment-shade-height: 100px;
+  --read-more-height: 28px; /* Read more's pill, centred on the shade's foot */
+  --read-more-padding: 0 12px;
+  --read-more-gap: 6px;
+  --read-more-pull: 14px; /* how far it rides up onto the shade */
+  --font-size-read-more: 13px;
+  --font-size-read-more-caret: 10px;
   --user-comments-padding: 20px; /* #user-comments, */
   --blur-spoiler: blur(8px);
+  --blur-spoiler-text: blur(8px) grayscale(1); /* comment and note text: red links and emoji leave no tint or hint */
   --comment-gif-height: 200px; /* a GIF in a comment, its width from its own shape */
   --radius-comment-gif: 4px;
   --color-gif-on-image: #fff; /* a category's name and the composer's remove button sit on a GIF in both themes */
@@ -2057,7 +2050,7 @@
   --gif-category-text-shadow: 0 1px 4px rgb(0 0 0 / 0.9);
 
   /* Comment threads: the avatar column, the text bubble, the quiet actions and the rail replies hang off. */
-  --comment-avatar-nested: 32px; /* replies, and the reply box on the rail */
+  --comment-avatar-nested: 36px; /* replies, and the reply box on the rail */
   --comment-column-gap: 14px; /* between the avatar column and the text */
   --comment-column-gap-nested: 10px;
   --comment-rail-width: 2px;
@@ -2110,23 +2103,22 @@
   --font-size-comment-reaction-chip: 12.5px;
   --comment-reaction-more-padding: 0 9px;
   /* The breakdown "+N" opens: every reaction with its count. */
-  --reaction-breakdown-gap: 8px; /* from the "+N" */
-  --reaction-breakdown-padding: 8px;
-  --reaction-breakdown-item-gap: 4px;
-  --reaction-breakdown-item-width: 46px;
-  --reaction-breakdown-item-padding: 6px 4px;
-  --reaction-breakdown-emoji-gap: 2px;
-  --reaction-breakdown-caption-margin: 0 4px 2px;
   --reaction-breakdown-hover-scale: 1.15;
-  --radius-reaction-breakdown: 12px;
-  --radius-reaction-breakdown-item: 8px;
-  --font-size-reaction-breakdown-caption: 11px;
-  --font-size-reaction-breakdown-count: 12px;
-  --font-size-reaction-breakdown-emoji: 22px;
   --opacity-reaction-breakdown-zero: 0.55;
-  --color-reaction-breakdown-bg: light-dark(#fff, #2b2b2b);
-  --color-reaction-breakdown-border: var(--color-comment-rail);
-  --shadow-reaction-breakdown: 0 10px 28px rgb(0 0 0 / 0.28);
+  /* The reaction picker and breakdown: panels like Why this?, in the React blue. */
+  --reaction-panel-width: 340px;
+  --gradient-reaction-header: linear-gradient(to bottom, rgb(0 158 223 / 0.1), transparent);
+  --color-reaction-mark: light-dark(#0079ab, #4cc3f5); /* the eyebrow, darker blue on white */
+  --color-reaction-you: var(--brand-secondary); /* the viewer's own: the picked tile's ring */
+  --reaction-share-height: 6px;
+  --color-reaction-share: var(--brand-secondary);
+  --reaction-count-width: 2ch;
+  --font-size-reaction-row-emoji: 20px;
+  --reaction-tile-gap: 4px;
+  --reaction-tile-padding: 6px; /* a picker tile, square */
+  --reaction-tip-gap: 2px; /* a tile's tooltip above it */
+  --reaction-tip-inset: 8px; /* a breakdown tooltip, out past the row's padding */
+  --font-size-reaction-tile-emoji: 28px;
   --comment-thread-gap: 14px;
   --comment-main-padding-end: 6px;
   --opacity-comment-blocked: 0.3; /* a blocked member's collapsed card */
@@ -2138,19 +2130,42 @@
   --comment-replies-chevron-turn: 180deg;
   --color-comment-replies-open: var(--brand-secondary); /* "N replies" while the thread is open, and Reply while its box is open */
 
-  /* A comment's own page: the thread card scaled up as the root, one rail through the replies, the reply box last. */
-  --comment-avatar-root: 56px;
-  --comment-column-gap-root: 16px;
-  --font-size-comment-root-name: 18px;
-  --font-size-comment-root-text: 17px;
-  --comment-root-bubble-padding-block: 16px;
-  --comment-root-bubble-padding-inline: 20px;
-  --comment-rail-label-gap: 10px; /* between "1 reply" and its hairline */
-  --comment-rail-label-space: 8px; /* above "1 reply", on top of the thread's own gap */
-  --font-size-comment-rail-label: 12px;
-  --letter-spacing-comment-rail-label: 0.1em;
-  --comment-reply-prompt-padding: 9px 16px;
-  --radius-comment-reply-prompt: 20px;
+  /* Comments: the text in a bubble, tinted tags top right like a list row's chips, and a stats bar under it. */
+  --color-comment-bubble-border: var(--color-list-card-border);
+  --comment-stats-gap: 8px 14px;
+  --comment-stats-space: 12px; /* between the bubble and the stats bar */
+  --comment-tags-gap: 10px;
+  --radius-comment-bubble-round: 14px; /* the comment's bubble, every corner alike */
+  --comment-bubble-padding-nested: 9px 13px;
+  --comment-chip-height: var(--list-card-chip-height);
+  --comment-chip-padding: 9px;
+  --color-comment-chip-review: var(--brand-secondary);
+  --color-comment-chip-spoiler: var(--color-list-chip-private);
+  --color-comment-chip-rated: var(--brand-primary);
+  --color-comment-chip-op: var(--brand-quaternary); /* filled teal, apart from the rating's red and the plays' purple */
+  --color-comment-chip-watched: var(--color-stat-watched);
+  --color-comment-chip-friend: var(--brand-success);
+  --color-comment-chip-following: var(--color-list-chip-following);
+  --color-comment-chip-linked: var(--brand-secondary); /* the comment a link pointed at */
+  --color-comment-linked: color-mix(in srgb, var(--brand-secondary) 9%, transparent);
+  --comment-linked-padding: 8px;
+  --radius-comment-linked: 12px;
+  --color-comment-chip-quiet: var(--color-list-chip-following); /* Parent and Blocked */
+  --color-comment-rail-op: color-mix(in srgb, var(--brand-quaternary) 75%, transparent); /* the OP's stretch of the rail, and their avatar's ring */
+  --comment-reaction-segment-padding: 0 9px;
+  --color-comment-reaction-mine: color-mix(in srgb, var(--brand-secondary) 16%, transparent);
+  --color-comment-reaction-mine-hover: color-mix(in srgb, var(--brand-secondary) 26%, transparent);
+  --color-comment-reaction-mine-text: color-mix(in srgb, var(--brand-secondary), var(--color-list-card-chip-lift) 30%);
+  --color-comment-reacted: var(--brand-secondary); /* the React button once the viewer has reacted */
+  --color-comment-react-icon: var(--brand-secondary);
+  --font-size-comment-react-icon: 15px;
+  --color-comment-reply-icon: var(--brand-secondary);
+  --font-size-comment-reply-icon: 13px;
+  --font-size-comment-replies-icon: 14px;
+  --font-size-comment-replies-caret: var(--font-size-progress-toggle-icon);
+
+  /* A comment's own page: the comment as the thread's root, one rail through the replies, the reply box last. */
+  --comment-avatar-root: 56px; /* Discover's trending comments */
 
   /* The comment composer: the new comment form, the reply box and the edit form. */
   --color-comment-field-border: light-dark(#cfcfcf, #474747);
@@ -2159,33 +2174,26 @@
   --comment-field-height: 96px;
   --comment-composer-heading-gap: 16px;
   --comment-composer-footer-gap: 8px 12px;
-  --comment-composer-footer-padding: 4px 10px 10px 12px;
-  --comment-composer-rules-inset: 6px;
+  --comment-composer-toolbar-padding: 0 10px 8px 12px;
+  --comment-composer-bar-padding: 10px 10px 10px 12px;
+  --color-comment-composer-bar: light-dark(#f2f2f4, #242424); /* the bottom bar, a shade off the field */
+  --comment-spoiler-gap: 8px;
+  --comment-spoiler-room: 6px; /* above and below Reveal Spoilers on a short spoiler */
+  --note-activity-gap: 6px; /* a note's watch, collect or rate box */
   --comment-toolbar-gap: 2px;
   --comment-toolbar-button: 30px;
   --comment-toolbar-button-padding: 0 6px;
   --radius-comment-toolbar-button: 5px;
   --font-size-comment-toolbar: 14px;
   --comment-toolbar-separator-margin: 6px 4px;
-  --comment-meter-gap: 6px;
+  --comment-meter-gap: 8px;
   --comment-meter-ring: 22px;
   --comment-meter-ring-thickness: 3px;
-  --color-comment-meter-short: var(--brand-primary);
+  --comment-meter-padding: 0 12px;
+  --comment-meter-tint: 18%; /* the box's green wash once the minimum is met, a share of it per word before */
+  --comment-meter-line: 55%;
+  --comment-composer-actions-gap: 10px;
   --color-comment-meter-met: light-dark(#38a038, #5cb85c);
-  --comment-switch-gap: 8px;
-  --comment-switch-width: 30px;
-  --comment-switch-height: 18px;
-  --comment-switch-knob: 14px;
-  --comment-switch-inset: 2px;
-  --comment-switch-travel: 12px;
-  --color-comment-switch-track: light-dark(#e2e2e2, #3d3d3d);
-  --color-comment-switch-on: var(--brand-primary);
-  --color-comment-switch-knob: #fff;
-  --shadow-comment-switch-knob: 0 1px 2px rgb(0 0 0 / 0.3);
-  --comment-submit-height: 32px;
-  --comment-submit-padding: 0 16px;
-  --radius-comment-submit: 16px;
-  --comment-cancel-padding: 0 10px;
 
   /* Stacking (Bootstrap 3; OG's header sits at 1500) */
   --z-dropdown: 1000;
@@ -2196,6 +2204,7 @@
   --z-tooltip: 1070;
   --z-header: 1500;
   --z-toast: 30; /* under the header, which it hangs below */
+  --z-summary-sidebar: 1; /* over the details' heading marks */
   --z-easter: 5000; /* the rating-10 Totally Ninja guy, over the header and dialogs, under the loaders */
   --z-loading-bar: 9999;
   --z-loading: 99999;

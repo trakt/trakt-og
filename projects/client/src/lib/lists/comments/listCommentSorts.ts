@@ -1,6 +1,6 @@
 /** The native list-comment API supports all-time reactions/replies and both added-date directions. */
 export const listCommentSorts = {
-  likes: 'Reactions',
+  likes: 'Popular',
   replies: 'Replies',
   newest: 'Added Date',
   oldest: 'Added Date',

@@ -1,9 +1,8 @@
 <!--
-  A note on the comment card's thread layout: the author's avatar (with their rating on a rating note) in a column, then
-  the name, the member badge and the note's tags, the date, and the text in a soft bubble with read more and spoiler blur.
-  The tags say what the note is attached to (history, library or rating), the item type, the privacy and spoilers, each
-  in its own colour with an icon. Under the bubble, the watch, collect or rate date in the attachment's colour. The
-  manage icons at the end of the name row show edit and delete in their colors, like a comment's.
+  A note in the comments' style: the author's avatar in a column, then the name, member badge and date with tinted tags
+  top right (what it's attached to, the item type, the privacy and spoilers, each in its own colour with an icon), the
+  text in the comments' bordered bubble with read more and spoiler blur, and a footer bar like a comment's stats bar:
+  the watch, collect or rate date in the attachment's colour, and the manage icons at its end.
 -->
 <script lang="ts">
 import type { Snippet } from 'svelte';
@@ -27,19 +26,17 @@ const { note, manage }: { note: NoteView; manage?: Snippet } = $props();
 const activityIcons = { history: check, collection, rating: heart };
 const mediaIcons = { movie: cameraMovie, show: tvRetro, season: tvRetro, episode: tvRetro, person: user };
 const mediaLabel = $derived(note.item.type.charAt(0).toUpperCase() + note.item.type.slice(1));
-// "Watched Sep 19, 2025 6:39 PM", "Collected ...", "Rated 9 · ...".
-const activityText = $derived.by(() => {
+// "Watched", "Collected" or "Rated 9", bold before the date.
+const activityLabel = $derived.by(() => {
   const activity = note.activity;
   if (!activity) return '';
-  if (activity.type === 'rating') {
-    return [`Rated ${activity.rating ?? ''}`.trim(), activity.date].filter(Boolean).join(' · ');
-  }
-  return [{ history: 'Watched', collection: 'Collected' }[activity.type], activity.date].filter(Boolean).join(' ');
+  if (activity.type === 'rating') return `Rated ${activity.rating ?? ''}`.trim();
+  return { history: 'Watched', collection: 'Collected' }[activity.type];
 });
 </script>
 
 {#snippet avatar()}
-  <CommentAvatar src={note.author.avatar} rating={note.activity?.rating} />
+  <CommentAvatar src={note.author.avatar} />
 {/snippet}
 
 <!-- The API supplies canonical user URLs. -->
@@ -62,22 +59,30 @@ const activityText = $derived.by(() => {
           <strong class="username">{note.author.name}</strong>
         {/if}
         {#if note.author.vip}<VipLabel badge={note.author.vip} quiet />{/if}
-        {#if note.activity}
-          <CommentTag svg={activityIcons[note.activity.type]} tone={note.activity.type}>{note.activity.label}</CommentTag>
-        {/if}
-        <CommentTag svg={mediaIcons[note.item.type]} tone="media">{mediaLabel}</CommentTag>
-        <PrivacyTag privacy={note.privacy} />
-        {#if note.spoiler}<CommentTag svg={eyeSlash} tone="spoiler">Spoilers</CommentTag>{/if}
       </p>
       <p class="when"><time datetime={note.updatedAt}>{note.updatedDate}</time></p>
-      {#if manage}<div class="tools">{@render manage()}</div>{/if}
+      <p class="tags">
+        {#if note.activity}
+          <CommentTag svg={activityIcons[note.activity.type]} glyph={note.activity.type !== 'rating'} tone={note.activity.type}
+            tint>{note.activity.label}</CommentTag>
+        {/if}
+        <CommentTag svg={mediaIcons[note.item.type]} tone="media" tint>{mediaLabel}</CommentTag>
+        <PrivacyTag privacy={note.privacy} />
+        {#if note.spoiler}<CommentTag svg={eyeSlash} tone="spoiler" tint>Spoilers</CommentTag>{/if}
+      </p>
     </header>
 
     <div class="bubble"><NoteText text={note.text} concealed={note.concealed} /></div>
 
-    {#if note.activity}
+    {#if note.activity || manage}
       <footer class="under-note">
-        <span class={['activity', note.activity.type]}><Icon svg={activityIcons[note.activity.type]} />{activityText}</span>
+        {#if note.activity}
+          <span class={['activity', note.activity.type]}>
+            <span class={{ glyph: note.activity.type !== 'rating' }}><Icon svg={activityIcons[note.activity.type]} /></span>
+            <strong>{activityLabel}</strong>{#if note.activity.date}<span class="date">{note.activity.date}</span>{/if}
+          </span>
+        {/if}
+        {#if manage}<div class="tools">{@render manage()}</div>{/if}
       </footer>
     {/if}
   </div>
@@ -101,7 +106,7 @@ const activityText = $derived.by(() => {
   padding-block-end: var(--comment-main-padding-end);
 }
 
-/* Two lines centred against the avatar: the name, badge and tags, then the date. The manage icons end the name's line. */
+/* The name and badge, then the date, centred against the avatar, with the tags across from them at the top right. */
 .above-note {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -135,63 +140,92 @@ const activityText = $derived.by(() => {
   }
 }
 
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-self: start;
+  gap: var(--comment-tags-gap);
+  grid-area: 1 / 2 / span 2;
+  margin: 0;
+}
+
 .when {
-  grid-column: 1 / -1;
+  grid-column: 1;
   color: var(--color-comment-muted);
   font-size: var(--font-size-comment-meta);
 }
 
-/* The manage icons at the end of the name's line, in their colors like a comment's. */
+/* The manage icons at the footer's end, in their colors like a comment's. */
 .tools {
   display: flex;
-  grid-area: 1 / 2;
-  align-self: center;
-  margin-block: var(--comment-tools-overhang);
+  margin-inline-start: auto;
 }
 
+/* The comments' bubble: bordered, every corner alike. */
 .bubble {
   margin-block-start: var(--comment-bubble-gap);
   padding: var(--comment-bubble-padding);
-  border-radius: var(--radius-comment-bubble);
+  border: 1px solid var(--color-comment-bubble-border);
+  border-radius: var(--radius-comment-bubble-round);
   background-color: var(--color-comment-bg);
   overflow-wrap: break-word;
 }
 
-/* The comment card's quiet action row, holding the attachment's date in its colour. */
+/* Like a comment's stats bar: the attachment's date in its colour, then the tools at the end. */
 .under-note {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--comment-actions-gap);
-  padding: var(--comment-actions-padding);
+  gap: var(--comment-stats-gap);
+  padding-block-start: var(--comment-stats-space);
   font-family: var(--font-headings);
   font-size: var(--font-size-comment-meta);
   font-weight: var(--font-weight-headings);
   line-height: var(--line-height-base);
 }
 
+/* The watch, collect or rate date in a box the footer buttons' size, washed in the attachment's colour. */
 .activity {
+  --tone: var(--color-note-tag-history);
+  box-sizing: border-box;
   display: inline-flex;
   align-items: center;
-  gap: var(--comment-action-icon-gap);
+  gap: var(--note-activity-gap);
+  min-block-size: var(--control-height);
+  padding-inline: var(--glass-action-padding-card);
+  border: 1px solid color-mix(in srgb, var(--tone) var(--list-card-chip-line), transparent);
+  border-radius: var(--radius-control);
+  background-color: color-mix(in srgb, var(--tone) var(--list-card-chip-tint), transparent);
+  color: color-mix(in srgb, var(--tone), var(--color-list-card-chip-lift) var(--list-card-chip-lift));
+  font-family: var(--font-body);
+  font-size: var(--font-size-glass-action);
+  font-weight: normal;
+  white-space: nowrap;
 
   & :global(.icon) {
-    --icon-shift: var(--comment-action-icon-shift);
     flex: none;
-    font-size: var(--font-size-comment-action-icon);
+    color: var(--tone);
   }
 
-  &.history {
-    color: var(--color-note-tag-history);
+  & strong {
+    font-family: var(--font-headings);
+    font-weight: var(--font-weight-headings-heavy);
   }
 
   &.collection {
-    color: var(--color-note-tag-collection);
+    --tone: var(--color-note-tag-collection);
   }
 
   &.rating {
-    color: var(--color-note-tag-rating);
+    --tone: var(--color-note-tag-rating);
   }
+}
+
+/* The Trakt-font check and library icons sit high. */
+.glyph {
+  display: inline-flex;
+  --icon-shift: var(--quick-icon-trakt-shift);
 }
 
 @media (prefers-reduced-motion: reduce) {

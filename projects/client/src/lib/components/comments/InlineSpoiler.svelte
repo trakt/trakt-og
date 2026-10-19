@@ -43,7 +43,7 @@ const onkeydown = (event: KeyboardEvent) => {
 <style>
 .inline-spoiler {
   cursor: pointer;
-  filter: var(--blur-spoiler);
+  filter: var(--blur-spoiler-text);
   transition: filter 0.5s;
 }
 

@@ -1,10 +1,12 @@
 <!--
   The comments of a movie, show, season or episode: the subpage frame, a subnav
-  with the type dropdown on the left and the sort dropdown and direction on the right, then 100 comments a page with
+  with the type and language dropdowns on the left and the sort dropdown and direction on the right, then 100
+  comments a page in the picked language (English by default) with
   pagination above and below. Reviews are featured. The Reviews and Shouts types, the 30-day and Watched sorts and the
   locked-comments notice have no API. "Add comment" opens the new comment form, and what it posts goes on top.
 -->
 <script lang="ts">
+import { gifArtContext } from '$lib/components/comments/gif/gifArtContext';
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
 import AddCommentLink from '$lib/components/comments/AddCommentLink.svelte';
@@ -19,11 +21,15 @@ import Pagination from '$lib/components/pagination/Pagination.svelte';
 import SubpageFrame from '$lib/components/summary/SubpageFrame.svelte';
 import SectionToolbar from '$lib/components/toolbar/SectionToolbar.svelte';
 import { withoutBlocked } from '$lib/components/comments/withoutBlocked';
+import { commentLanguage } from './commentLanguage.ts';
+import { type CommentLanguage, commentLanguages } from './commentLanguages.ts';
 import { itemCommentsHref, type ItemCommentSortBy, itemCommentSorts } from './itemCommentSort.ts';
 import type { loadItemComments } from './loadItemComments.ts';
 
 const { data }: { data: Awaited<ReturnType<typeof loadItemComments>> } = $props();
 const title = $derived(`All comments for ${data.media.item.title}`);
+// The GIF picker's header, in every comment box on the page.
+gifArtContext.set(() => data.media.fanart);
 const viewer = $derived(data.user ? { slug: data.user.slug } : null);
 const count = $derived(`${data.count.toLocaleString('en-US')} ${data.count === 1 ? 'comment' : 'comments'}`);
 // Posted here since the page loaded, newest first. Blocked members' comments are dropped.
@@ -31,7 +37,9 @@ const comments = $derived([
   ...newComment.posted,
   ...withoutBlocked(data.comments, commentSettings(page.data.settings).blocked),
 ]);
-const href = (by: ItemCommentSortBy, how = data.sort.how) => itemCommentsHref(data.media.href, by, how);
+const href = (by: ItemCommentSortBy, how = data.sort.how, language = data.language.search) =>
+  itemCommentsHref(data.media.href, by, how, language);
+const languageHref = (code: CommentLanguage) => href(data.sort.by, data.sort.how, commentLanguage(code).search);
 </script>
 
 <!-- The item links are the canonical API slugs. -->
@@ -52,6 +60,18 @@ const href = (by: ItemCommentSortBy, how = data.sort.how) => itemCommentsHref(da
       <Dropdown section="Comments">
         {#snippet trigger()}All&nbsp;{/snippet}
         <ul><li><a href={href(data.sort.by)} aria-current="page">All</a></li></ul>
+      </Dropdown>
+      <Dropdown section="Language">
+        {#snippet trigger()}{data.language.label}&nbsp;{/snippet}
+        <ul>
+          {#each commentLanguages as language (language.code)}
+            <li>
+              <a href={languageHref(language.code)} aria-current={data.language.code === language.code ? 'page' : undefined}>
+                {language.label}
+              </a>
+            </li>
+          {/each}
+        </ul>
       </Dropdown>
       <AddCommentLink />
     {/snippet}

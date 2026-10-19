@@ -1,12 +1,14 @@
 <!--
-  A comment's React / Edit action and OG's seven-emoji popover. It takes its color and type from the row it sits in.
-  Native popovers provide Escape and light dismiss.
+  A comment's React button and OG's seven-emoji popover. Off, it's the card's glass button with the add-reaction face;
+  once the viewer has reacted it turns solid blue with their emoji and its name ("👍 Like"), and opens the popover to
+  change or take back the reaction. The popover is a panel like Why this?: a header, the seven emoji in a row (each
+  named in a tooltip of its own, the viewer's ringed in blue), and a line on taking it back. Native popovers provide Escape and light dismiss.
 -->
 <script lang="ts">
 import Icon from '$lib/icons/Icon.svelte';
 import smile from '$lib/icons/solid/face-smile-plus.svg?raw';
-import xmark from '$lib/icons/solid/xmark.svg?raw';
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
+import xmark from '$lib/icons/regular/xmark.svg?raw';
+import GlassAction from '$lib/components/glass-action/GlassAction.svelte';
 import { reactionOptions } from '$lib/components/comments/reactionOptions';
 
 interface Props {
@@ -61,65 +63,66 @@ function choose(type: typeof reactionOptions[number]['type']) {
   aria-disabled={busy || opening}
   onclick={open}
 >
-  {#if selected}<span class="emoji-icon" aria-hidden="true">{selected.emoji}</span>{:else}<Icon svg={smile} />{/if}<span class="add-text">{selected ? 'Edit' : 'React'}</span>
+  <GlassAction presentational card glass={!selected} color={selected ? 'var(--color-comment-reacted)' : undefined}
+    selected={Boolean(selected)} icon={selected ? undefined : smile} iconColor="var(--color-comment-react-icon)">
+    {#if selected}<span class="emoji-icon" aria-hidden="true">{selected.emoji}</span>{/if}<span class="add-text">{selected?.label ?? 'React'}</span>
+  </GlassAction>
 </button>
 <div
   bind:this={popover}
   id="reaction-{id}"
   class="reaction-popover"
   role="dialog"
-  aria-label="Choose a reaction"
+  aria-labelledby="reaction-{id}-title"
   popover="auto"
   style:position-anchor="--reaction-{id}"
   ontoggle={toggle}
 >
-  <Tooltip text="Close" placement="bottom">
-    {#snippet trigger(tooltip)}
-      <button class="close" type="button" aria-label="Close" onclick={() => popover?.hidePopover()} {...tooltip}>
-        <Icon svg={xmark} />
+  <header>
+    <div>
+      <span class="eyebrow"><Icon svg={smile} />React</span>
+      <h4 id="reaction-{id}-title">{selected ? `You reacted ${selected.label}` : 'Add a reaction'}</h4>
+    </div>
+    <button class="close" type="button" aria-label="Close" onclick={() => popover?.hidePopover()}>
+      <Icon svg={xmark} />
+    </button>
+  </header>
+  <div class="choices">
+    {#each reactionOptions as option (option.type)}
+      <button
+        class="choice"
+        type="button"
+        aria-label={option.label}
+        aria-pressed={value === option.type}
+        onclick={() => choose(option.type)}
+      >
+        <span class="choice-emoji" aria-hidden="true">{option.emoji}</span>
+        <span class="tip" aria-hidden="true">{option.label}</span>
       </button>
-    {/snippet}
-  </Tooltip>
-  {#each reactionOptions as option (option.type)}
-    <Tooltip text={option.label} placement="bottom">
-      {#snippet trigger(tooltip)}
-        <button
-          class="choice"
-          type="button"
-          aria-label={option.label}
-          aria-pressed={value === option.type}
-          onclick={() => choose(option.type)}
-          {...tooltip}
-        >
-          <span aria-hidden="true">{option.emoji}</span>
-        </button>
-      {/snippet}
-    </Tooltip>
-  {/each}
+    {/each}
+  </div>
+  <p
+    class="foot">{selected ? `Pick ${selected.label} again to take it back.` : 'One reaction per comment; pick another to switch.'}</p>
 </div>
 
 <style>
 .reaction-trigger {
   display: inline-flex;
-  align-items: center;
-  gap: var(--comment-action-icon-gap);
   min-block-size: 0;
   padding: 0;
   border: 0;
+  border-radius: var(--radius-control);
   background: none;
   color: inherit;
   font: inherit;
-  text-transform: inherit;
+  text-transform: none;
   cursor: pointer;
 
   /* Centred by the face's circle, not the glyph box the plus sticks out of. */
   & :global(.icon) {
-    --icon-shift: calc(var(--comment-action-icon-shift) + var(--comment-react-icon-circle-offset));
+    --icon-shift: var(--comment-react-icon-circle-offset);
     flex: none;
-    font-size: var(--font-size-comment-action-icon);
-  }
-  &:hover {
-    color: var(--color-text);
+    font-size: var(--font-size-comment-react-icon);
   }
   &[aria-disabled='true'] {
     cursor: wait;
@@ -130,79 +133,199 @@ function choose(type: typeof reactionOptions[number]['type']) {
   line-height: 1;
   translate: 0 var(--comment-reaction-emoji-shift);
 }
+/* Centred above React, pointing down at it: a panel like Why this?. */
 .reaction-popover {
-  &:popover-open {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-  }
   position: fixed;
-  position-area: bottom;
-  position-try-fallbacks: flip-inline, flip-block;
+  position-area: top;
+  position-try-fallbacks: none;
   inset: auto;
-  inline-size: max-content;
+  inline-size: var(--reaction-panel-width);
   max-inline-size: calc(100vw - var(--gutter));
-  margin: var(--reaction-popover-gap) 0;
-  padding: var(--reaction-popover-block) var(--reaction-popover-inline);
+  margin: 0 0 var(--why-arrow-offset);
+  padding: 0;
   overflow: visible;
-  border: var(--rating-popover-border-width) solid var(--color-dropdown-border);
-  border-radius: var(--radius-rating-popover);
-  background: var(--color-box);
-  color: var(--color-text);
-  box-shadow: var(--shadow-rating-popover);
-  font: var(--font-size-comment-meta) / var(--line-height-base) var(--font-body);
-  text-align: center;
+  border: 1px solid var(--color-why-border);
+  border-radius: var(--radius-why-panel);
+  background: var(--color-why-panel-bg);
+  box-shadow: var(--shadow-why-panel);
+  color: var(--color-why-text);
+  font-family: var(--font-body);
+  font-size: var(--font-size-menu);
+  text-align: start;
   text-transform: none;
+
+  &:popover-open {
+    display: grid;
+  }
+
+  /* The arrow, centered under the panel, pointing down at the button, like Why this?'s. */
+  &::after {
+    content: '';
+    position: absolute;
+    inset-block-start: 100%;
+    inset-inline-start: 50%;
+    inline-size: var(--why-arrow);
+    block-size: var(--why-arrow);
+    border-inline-end: 1px solid var(--color-why-border);
+    border-block-end: 1px solid var(--color-why-border);
+    background: var(--color-why-panel-bg);
+    translate: -50% -50%;
+    rotate: 45deg;
+  }
+}
+
+header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: var(--space-why-row);
+  padding: var(--why-panel-padding);
+  border-block-end: 1px solid var(--color-why-border);
+  border-start-start-radius: inherit;
+  border-start-end-radius: inherit;
+  background: var(--gradient-reaction-header);
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--why-stars-gap);
+  color: var(--color-reaction-mark);
+  font-family: var(--font-headings);
+  font-size: var(--font-size-recommendations-side-head);
+  font-weight: var(--font-weight-headings-heavy);
+  letter-spacing: var(--letter-spacing-recommendations-side-head);
+  text-transform: uppercase;
+}
+
+h4 {
+  margin: 0;
+  font-size: var(--font-size-why-panel-title);
+  font-weight: var(--font-weight-headings-heavy);
+}
+
+/* Why this?'s and the collaborators panel's close, pulled toward the corner. */
+.close {
+  display: grid;
+  place-items: center;
+  inline-size: var(--why-close);
+  block-size: var(--why-close);
+  min-block-size: 0;
+  margin-block-start: calc(-1 * var(--why-close-pull));
+  margin-inline-end: calc(-1 * var(--why-close-pull));
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--color-why-faint);
+  cursor: pointer;
+
+  &:is(:hover, :focus-visible) {
+    background: var(--color-why-more-hover);
+    color: var(--color-why-text);
+  }
+}
+
+/* The seven in one row. */
+.choices {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--reaction-tile-gap);
+  padding: var(--why-list-padding);
+}
+
+.choice {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  min-block-size: 0;
+  padding: var(--reaction-tile-padding);
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  background: none;
+  color: var(--color-why-faint);
+  font: inherit;
+  cursor: pointer;
+  transition: background-color var(--transition-comment-quiet), border-color var(--transition-comment-quiet);
+
+  &:is(:hover, :focus-visible) {
+    background: var(--color-why-more-hover);
+    color: var(--color-why-text);
+  }
+
+  &[aria-pressed='true'] {
+    border-color: var(--color-reaction-you);
+    background: var(--color-comment-reaction-mine);
+    color: var(--color-comment-reaction-mine-text);
+  }
+}
+
+/*
+  The tile's name, in the tooltips' black box over it. Its own rather than a Tooltip: a tooltip anchored inside this
+  anchored panel lands where the panel was before it moved into place.
+*/
+.tip {
+  position: absolute;
+  inset-block-end: calc(100% + var(--tooltip-arrow) + var(--reaction-tip-gap));
+  inset-inline-start: 50%;
+  z-index: 1;
+  padding: var(--space-tooltip);
+  border-radius: var(--radius-tooltip);
+  background-color: var(--color-tooltip-bg);
+  color: var(--color-tooltip-text);
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-tooltip);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  translate: -50% 0;
+  transition: opacity var(--transition-tooltip);
 
   &::after {
     content: '';
     position: absolute;
-    inset-inline-start: calc(50% - var(--rating-arrow-size));
-    inset-block-end: 100%;
-    border: var(--rating-arrow-size) solid transparent;
-    border-block-end-color: var(--color-box);
+    inset-block-start: 100%;
+    inset-inline-start: calc(50% - var(--tooltip-arrow));
+    border: var(--tooltip-arrow) solid transparent;
+    border-block-start-color: var(--color-tooltip-bg);
   }
-  & button {
-    display: inline-block;
-    min-block-size: 0;
-    margin: 0 var(--reaction-choice-margin);
-    padding: var(--reaction-choice-block) var(--reaction-choice-inline);
-    border: 0;
-    border-radius: 50%;
-    background: transparent;
-    color: inherit;
-    font: inherit;
-    cursor: pointer;
-    transition: transform var(--reaction-duration), background-color var(--reaction-duration);
-    &:hover {
-      background: var(--color-reaction-hover);
-    }
-    &[aria-pressed='true'] {
-      background: var(--color-reaction-selected);
-    }
-  }
-  & .close {
-    inline-size: var(--reaction-close-width);
-    padding-block-start: var(--reaction-close-start);
-    margin-block-start: var(--reaction-icon-offset);
-    font-size: var(--reaction-close-size);
-    line-height: 1;
-    vertical-align: middle;
-    &:hover {
-      background: transparent;
-    }
+
+  .choice:is(:hover, :focus-visible) > & {
+    opacity: var(--opacity-tooltip);
   }
 }
+
+.choice-emoji {
+  font-size: var(--font-size-reaction-tile-emoji);
+  line-height: 1;
+}
+
+.foot {
+  margin: 0;
+  padding: var(--why-foot-padding);
+  border-block-start: 1px solid var(--color-why-border);
+  color: var(--color-why-faint);
+  font-size: var(--font-size-small);
+}
+
 @media (prefers-reduced-motion: no-preference) {
-  .reaction-popover button:hover {
+  .choice-emoji {
+    transition: transform var(--reaction-duration);
+  }
+
+  .choice:hover .choice-emoji {
     transform: scale(var(--reaction-hover-scale));
   }
 }
+
 @media (prefers-reduced-motion: reduce) {
-  .reaction-popover button {
+  .choice,
+  .tip {
     transition: none;
   }
 }
+
 @media (max-width: 767px) {
   .add-text {
     position: absolute;

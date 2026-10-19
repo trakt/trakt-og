@@ -35,6 +35,8 @@ export type OverlaySlices = {
   hidden: ReadonlyMap<string, ReadonlySet<string>>;
   /** Trakt ids of the lists the user liked, personal and official. */
   likedLists: Ids;
+  /** The slugs of the members the user follows and of those who follow them; both ways is a friend. */
+  network: Readonly<Record<'following' | 'followers', ReadonlySet<string>>>;
   /** Ids in any of the user's own or collaborative lists. */
   listed: Readonly<Record<'movie' | 'show' | 'season' | 'episode', Ids>>;
 };

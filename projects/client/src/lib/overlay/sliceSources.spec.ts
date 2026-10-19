@@ -127,6 +127,19 @@ describe('sliceSources', () => {
     expect(data.show.size).toBe(0);
   });
 
+  it('should map the members the user follows and who follow them, by slug', async () => {
+    const member = (slug: string | null) => ({ followed_at: '2026-09-29T12:00:00Z', user: { ids: { slug } } });
+    server.use(
+      http.get(`${API}/users/me/following`, () => HttpResponse.json([member('dorond'), member('ralffff')])),
+      http.get(`${API}/users/me/followers`, () => HttpResponse.json([member('ralffff'), member(null)])),
+    );
+
+    expect(await sliceSources.network.load(get)).toEqual({
+      following: new Set(['dorond', 'ralffff']),
+      followers: new Set(['ralffff']),
+    });
+  });
+
   it('should map the minimal id endpoints', async () => {
     server.use(
       http.get(`${API}/sync/watchlist/seasons/rank/asc`, () => HttpResponse.json([{ season: ids(3) }])),

@@ -49,6 +49,8 @@ const library = [
   http.get(`${API}/users/hidden/progress_watched`, () => HttpResponse.json([{ type: 'show', show: ids(5) }])),
   http.get(`${API}/users/hidden/progress_collected`, () => HttpResponse.json([])),
   http.get(`${API}/users/me/likes/lists`, () => HttpResponse.json([{ liked_at: T0, list: ids(60) }])),
+  http.get(`${API}/users/me/following`, () => HttpResponse.json([])),
+  http.get(`${API}/users/me/followers`, () => HttpResponse.json([])),
   http.get(`${API}/v3/users/me/lists`, () => HttpResponse.json([{ id: 50 }])),
   http.get(
     `${API}/lists/50/items`,
@@ -134,7 +136,7 @@ describe('createOverlay', () => {
     });
     expect(overlay.slices().progressHidden?.watched.shows).toEqual(new Set([5]));
     expect(overlay.slices().likedLists).toEqual(new Set([60]));
-    expect(records.get('sean')?.size).toBe(12);
+    expect(records.get('sean')?.size).toBe(13);
   });
 
   it('should hydrate an episode collection by show, season and episode number, including old date-only caches', async () => {

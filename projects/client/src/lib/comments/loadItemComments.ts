@@ -4,6 +4,7 @@ import { api } from '../api/api.ts';
 import { extractPageMeta } from '../api/extractPageMeta.ts';
 import { loadSubpageMedia } from '../subpage/loadSubpageMedia.ts';
 import type { SubpageItem } from '../subpage/SubpageItem.ts';
+import { commentLanguage } from './commentLanguage.ts';
 import { type ItemCommentSort, itemCommentSort } from './itemCommentSort.ts';
 
 type Params = Omit<Parameters<typeof loadSubpageMedia>[0], 'suffix'> & {
@@ -15,11 +16,17 @@ type Params = Omit<Parameters<typeof loadSubpageMedia>[0], 'suffix'> & {
 // OG's `@per`.
 const LIMIT = 100;
 
-async function readComments(fetch: typeof globalThis.fetch, item: SubpageItem, sort: ItemCommentSort, page: number) {
+async function readComments({ fetch, item, sort, page, language }: {
+  fetch: typeof globalThis.fetch;
+  item: SubpageItem;
+  sort: ItemCommentSort;
+  page: number;
+  language: string | undefined;
+}) {
   const client = api({ fetch });
   const request = {
     params: { id: item.id, sort: sort.api },
-    query: { extended: 'images', page, limit: LIMIT },
+    query: { extended: 'images', page, limit: LIMIT, ...(language && { language }) },
   } as const;
   const response = item.type === 'movie'
     ? await client.movies.comments(request)
@@ -43,15 +50,16 @@ async function readComments(fetch: typeof globalThis.fetch, item: SubpageItem, s
 }
 
 /**
- * `/movies/:id/comments(/:sort_by)`, `/shows/:id/comments(/:sort_by)` and the season and episode ones: 100 comments a page under the subpage frame. The read is public, so blocked members
- * aren't filtered yet.
+ * `/movies/:id/comments(/:sort_by)`, `/shows/:id/comments(/:sort_by)` and the season and episode ones: 100 comments a page under the subpage frame, in English unless `?language=` picks another (or
+ * `all`). The read is public, so blocked members aren't filtered yet.
  */
 export async function loadItemComments({ fetch, parent, item, url, sortBy }: Params) {
   const sort = itemCommentSort(sortBy, url.searchParams.get('sort_how'));
   const page = Math.max(1, Number.parseInt(url.searchParams.get('page') ?? '', 10) || 1);
+  const language = commentLanguage(url.searchParams.get('language'));
   const [subpage, comments] = await Promise.all([
     loadSubpageMedia({ fetch, parent, item, suffix: 'comments' }),
-    readComments(fetch, item, sort, page),
+    readComments({ fetch, item, sort, page, language: language.api }),
   ]);
-  return { ...subpage, ...comments, sort };
+  return { ...subpage, ...comments, sort, language };
 }

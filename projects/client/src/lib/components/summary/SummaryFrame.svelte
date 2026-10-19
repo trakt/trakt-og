@@ -71,6 +71,8 @@ const { label, subnav, sidebar, details, actions, children, tools, posterOverlap
 .sidebar {
   position: sticky;
   inset-block-start: calc(var(--summary-sticky-gap) + var(--header-height));
+  /* Above the details column, whose headings' faint marks reach into the margin it fills. */
+  z-index: var(--z-summary-sidebar);
   align-self: start;
   margin-block: calc(-1 * var(--summary-poster-overlap)) var(--gutter);
 

@@ -1,16 +1,18 @@
 <!--
   "Why this?" beside a recommendation's actions, and the panel it opens above it, its arrow pointing back at the button.
   The panel leads with the recommendation's poster and title, lists each title behind it with a chip saying how
-  (Watched, with the viewer's rating, Loved, or both on one row), then the subgenres the viewer likes. Without any sources there's no
+  (the comments' tags: Watched joined with the viewer's rating, Loved, or both on one row), then the subgenres the viewer likes. Without any sources there's no
   button at all.
 -->
 <script lang="ts">
+import CommentTag from '$lib/components/comments/CommentTag.svelte';
 import GlassAction from '$lib/components/glass-action/GlassAction.svelte';
 import TagPills from '$lib/components/labels/TagPills.svelte';
 import type { Recommendation, RecommendationSource } from '$lib/dashboard/Recommendation';
 import Icon from '$lib/icons/Icon.svelte';
 import xmark from '$lib/icons/regular/xmark.svg?raw';
 import heart from '$lib/icons/solid/heart.svg?raw';
+import checkThick from '$lib/icons/trakt/check-thick.svg?raw';
 import sparkles from '$lib/icons/solid/sparkles.svg?raw';
 
 interface Props {
@@ -41,9 +43,20 @@ function toggled(event: ToggleEvent) {
     <span
       class="name"><span class="title">{source.title}</span>{#if source.year}<small>{source.year}</small>{/if}</span>
     <span class="chips">
-      {#if source.watched}<span class="chip">Watched{#if source.stars}<span class="stars"
-            aria-label="you rated it {source.stars}"><Icon svg={heart} />{source.stars}</span>{/if}</span>{/if}
-      {#if source.loved}<span class="chip loved"><Icon svg={heart} />Loved</span>{/if}
+      <!-- The comments' tags: Watched and the viewer's rating join into one, a segment each. -->
+      {#if source.watched}
+        <span class={['joined', { both: source.stars }]}>
+          <span class="segment watched-segment">
+            <CommentTag svg={checkThick} glyph tone="watched" tint>Watched</CommentTag>
+          </span>
+          {#if source.stars}
+            <span class="segment rated-segment">
+              <CommentTag svg={heart} tone="rated" tint><span class="visually-hidden">You rated it </span>{source.stars}</CommentTag>
+            </span>
+          {/if}
+        </span>
+      {/if}
+      {#if source.loved}<CommentTag svg={heart} tone="rated" tint>Loved</CommentTag>{/if}
     </span>
   </a>
 </li>
@@ -172,6 +185,7 @@ h4 {
   line-height: var(--line-height-recommendations-title);
 }
 
+/* Pulled toward the panel's corner. */
 .close {
   display: grid;
   place-items: center;
@@ -179,6 +193,8 @@ h4 {
   inline-size: var(--why-close);
   block-size: var(--why-close);
   min-block-size: 0;
+  margin-block-start: calc(-1 * var(--why-close-pull));
+  margin-inline-end: calc(-1 * var(--why-close-pull));
   padding: 0;
   border: 0;
   border-radius: 50%;
@@ -243,31 +259,32 @@ li a {
   gap: var(--why-chips-gap);
 }
 
-.chip {
-  --chip: var(--brand-tertiary);
+.joined,
+.segment {
   display: inline-flex;
-  align-items: center;
-  gap: var(--why-stars-gap);
-  padding: var(--search-pill-padding);
-  border-radius: var(--radius-search-pill);
-  background: color-mix(in srgb, var(--chip) var(--glass-action-tint), transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--chip) var(--glass-action-line), transparent);
-  font-size: var(--font-size-search-pill);
-  font-weight: var(--font-weight-headings-heavy);
-  white-space: nowrap;
+}
 
-  &.loved {
-    --chip: var(--brand-primary);
+.both > .watched-segment :global(.tag) {
+  border-start-end-radius: 0;
+  border-end-end-radius: 0;
+}
+
+.both > .rated-segment {
+  margin-inline-start: -1px;
+
+  & :global(.tag) {
+    border-start-start-radius: 0;
+    border-end-start-radius: 0;
   }
 }
 
-.stars {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--why-stars-gap);
-  margin-inline-start: var(--why-stars-gap);
-  color: var(--color-why-stars);
-  font-variant-numeric: tabular-nums;
+.visually-hidden {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .likes {

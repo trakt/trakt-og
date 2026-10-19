@@ -2,17 +2,25 @@
 import { page } from '$app/state';
 import { PLACEHOLDER_AVATAR } from '$lib/components/comments/authorOf';
 import CommentCard from '$lib/components/comments/CommentCard.svelte';
+import CommentTag from '$lib/components/comments/CommentTag.svelte';
 import AddCommentLink from '$lib/components/comments/AddCommentLink.svelte';
 import CommentComposer from '$lib/components/comments/CommentComposer.svelte';
 import { newComment } from '$lib/components/comments/newComment.svelte';
 import { toast } from '$lib/components/toast/toast.svelte';
 import ReactionControl from '$lib/components/comments/ReactionControl.svelte';
-import RepliesDivider from '$lib/components/comments/RepliesDivider.svelte';
 import { reactionOptions } from '$lib/components/comments/reactionOptions';
 import type { CommentViewer } from '$lib/components/comments/CommentViewer';
 import CommentWithPoster from '$lib/components/comments/CommentWithPoster.svelte';
 import Container from '$lib/components/container/Container.svelte';
 import type { CommentResponse } from '@trakt/api';
+import checkThick from '$lib/icons/trakt/check-thick.svg?raw';
+import circleCheck from '$lib/icons/solid/circle-check.svg?raw';
+import eyeSlash from '$lib/icons/solid/eye-slash.svg?raw';
+import commentSolid from '$lib/icons/solid/comment.svg?raw';
+import heart from '$lib/icons/solid/heart.svg?raw';
+import star from '$lib/icons/solid/star.svg?raw';
+import userGroup from '$lib/icons/regular/user-group.svg?raw';
+import userIcon from '$lib/icons/regular/user.svg?raw';
 import {
   client,
   deleted,
@@ -93,6 +101,26 @@ $effect(() => {
         </label>
       </div>
 
+      <h2>Comment tags</h2>
+      <p>
+        Top right on a comment, like a list row's chips: Friend (you follow each other) or Following, OP on a reply by
+        the thread's author, the author's plays (solid once they've watched every episode) and rating, which join into one tag on a comment,
+        Review, Spoilers, then Parent and Blocked.
+      </p>
+      <div class="tag-demo">
+        <CommentTag svg={userGroup} tone="friend" tint>Friend</CommentTag>
+        <CommentTag svg={userIcon} tone="following" tint>Following</CommentTag>
+        <CommentTag svg={commentSolid} tone="op" tint solid>OP</CommentTag>
+        <CommentTag svg={checkThick} glyph tone="watched" tint>2 plays</CommentTag>
+        <CommentTag svg={checkThick} glyph tone="watched" tint>62% Watched</CommentTag>
+        <CommentTag svg={circleCheck} tone="watched" tint solid>100% Watched</CommentTag>
+        <CommentTag svg={heart} tone="rated" tint>8</CommentTag>
+        <CommentTag svg={star} tone="review" tint>Review</CommentTag>
+        <CommentTag svg={eyeSlash} tone="spoiler" tint>Spoilers</CommentTag>
+        <CommentTag tint>Parent</CommentTag>
+        <CommentTag tint>Blocked</CommentTag>
+      </div>
+
       <h2>Reaction picker</h2>
       <p>Choose an emoji, replace it, or choose the selected one again to remove it. This example stays on this page.</p>
       <div class="reaction-demo">
@@ -109,7 +137,7 @@ $effect(() => {
         <p><AddCommentLink /></p>
         {#if newComment.visible}
           <CommentComposer label="Your comment" placeholder="Add a comment as OG Viewer..." submit="Post"
-            posting="Posting your comment" avatar={PLACEHOLDER_AVATAR} rules="5+ words, be respectful, mark spoilers."
+            posting="Posting your comment" avatar={PLACEHOLDER_AVATAR}
             spoiler={false} confirmLeave gifs oncancel={cancel} save={post} onsaved={posted} />
         {/if}
       </div>
@@ -146,14 +174,13 @@ $effect(() => {
 
       <h2>On its own page: the root of its thread</h2>
       <p>
-        Scaled up, with the page's replies on one rail under it and a one-line reply box at the end that opens in place,
-        as Reply does.
+        The same comment as in a list, with the page's replies open on one rail under it. "N replies" folds them away,
+        and Reply opens the box at the end.
       </p>
       <CommentCard comment={review} item={movie} viewer={viewerFor(review)} {client}
         dateOptions={page.data.datePreferences} wide read>
         {#snippet replies()}
           <div class="page-replies">
-            <RepliesDivider count={reviewReplies.length} />
             {#each reviewReplies as answer (answer.id)}
               <CommentCard comment={answer} item={movie} viewer={viewerFor(answer)} {client}
                 dateOptions={page.data.datePreferences} opSlug={review.user.ids.slug ?? undefined} nested />
@@ -189,6 +216,12 @@ section {
 .page-replies {
   display: grid;
   gap: var(--comment-thread-gap);
+}
+
+.tag-demo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--list-card-chip-gap);
 }
 
 .reaction-demo {

@@ -247,6 +247,20 @@ export const sliceSources: { [K in keyof OverlaySlices]: SliceSource<K> } = {
       return new Set(likes.map(({ list }) => list.ids.trakt));
     },
   },
+  network: {
+    activity: (a) => join(a.account?.following_at, a.account?.followed_at),
+    load: async (get) => {
+      const slugs = async (type: 'following' | 'followers') => {
+        const rows = await getPages<{ user: { ids: { slug?: string | null } } }>(
+          get,
+          `/users/me/${type}?limit=${PAGE_LIMIT}`,
+        );
+        return new Set(rows.map(({ user }) => user.ids.slug).filter((slug) => typeof slug === 'string'));
+      };
+      const [following, followers] = await Promise.all([slugs('following'), slugs('followers')]);
+      return { following, followers };
+    },
+  },
   listed: {
     activity: (a) => join(a.lists?.updated_at, a.collaborations?.updated_at),
     load: async (get) => {

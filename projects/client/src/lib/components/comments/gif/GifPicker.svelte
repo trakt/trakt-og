@@ -1,12 +1,15 @@
 <!--
-  The comment composer's GIF picker, a dialog of Klipy's GIFs: a search field, Klipy's categories as shortcuts until
-  something's typed, and what's trending or the search's results in columns that load more as they scroll. Picking
+  The comment composer's GIF picker, in the list and note dialogs' art style: a header strip of Klipy's category
+  previews (or the page's fanart) under the dark glass shade with "Add a GIF" over it and the glass close in its corner, then a search field, Klipy's categories as shortcuts until
+  something's typed, and GIFs for the title the comment's about (or what's trending), then the search's results in columns that load more as they scroll. Picking
   one closes it. Nothing loads until it first opens, and a page that fails to load can be tried again.
 -->
 <script lang="ts">
 import { untrack } from 'svelte';
 import { nearViewport } from '../../../utils/nearViewport.ts';
 import Dialog from '../../dialog/Dialog.svelte';
+import DialogArtHeader from '../../dialog/DialogArtHeader.svelte';
+import { gifArtContext } from './gifArtContext.ts';
 import SearchField from '../../filters/SearchField.svelte';
 import { fetchGifCategories } from './fetchGifCategories.ts';
 import { fetchGifs } from './fetchGifs.ts';
@@ -20,13 +23,18 @@ import { toGifColumns } from './toGifColumns.ts';
 const PAGE_SIZE = 24;
 const SEARCH_DELAY = 250;
 const COLUMNS = 3;
+// The header strip's previews.
+const HEADER_PREVIEWS = 6;
 
 interface Props {
   open: boolean;
   onselect: (gif: GifEntry) => void;
+  /** What shows before anything's typed, like the title the comment is about. Left out, it's what's trending. */
+  initialQuery?: string;
 }
 
-let { open = $bindable(), onselect }: Props = $props();
+let { open = $bindable(), onselect, initialQuery = '' }: Props = $props();
+const fanart = gifArtContext.get();
 
 let search = $state('');
 let term = $state('');
@@ -41,6 +49,9 @@ let generation = 0;
 // The term the results are for, unset until the picker first opens.
 let shown: string | undefined;
 const columns = $derived(toGifColumns(gifs, COLUMNS));
+const previews = $derived(categories.slice(0, HEADER_PREVIEWS).map(({ previewUrl }) => previewUrl));
+// The field stays empty; until something's typed the results are the initial query's.
+const query = $derived(term || initialQuery);
 
 $effect(() => {
   const next = search.trim();
@@ -49,7 +60,7 @@ $effect(() => {
 });
 
 $effect(() => {
-  const next = term;
+  const next = query;
   if (!open || next === shown) return;
   untrack(() => {
     if (shown === undefined) {
@@ -71,7 +82,7 @@ async function more() {
   const mine = generation;
   loading = true;
   try {
-    const next = await fetchGifs({ query: term, page: page + 1, limit: PAGE_SIZE, customerId: klipyCustomerId() });
+    const next = await fetchGifs({ query, page: page + 1, limit: PAGE_SIZE, customerId: klipyCustomerId() });
     if (mine !== generation) return;
     const seen = new Set(gifs.map(({ id }) => id));
     gifs = [...gifs, ...next.entries.filter(({ id }) => !seen.has(id))];
@@ -95,7 +106,8 @@ function pick(gif: GifEntry) {
 }
 </script>
 
-<Dialog bind:open title="Add a GIF" size="lg" lightDismiss>
+<Dialog bind:open title="Add a GIF" size="lg" variant="art" lightDismiss>
+  {#snippet header(titleId)}<DialogArtHeader id={titleId} title="Add a GIF" fanart={fanart?.()} posters={previews} />{/snippet}
   <div class="picker">
     <SearchField label="Search GIFs" placeholder="Search KLIPY" bind:value={search} />
     {#if !term && categories.length > 0}
@@ -134,6 +146,7 @@ function pick(gif: GifEntry) {
 .picker {
   display: grid;
   gap: var(--gif-picker-gap);
+  padding: var(--dialog-art-body-top) var(--dialog-art-inline);
 }
 
 .categories {

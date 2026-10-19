@@ -5,10 +5,11 @@
 <script lang="ts">
 import type { Snippet } from 'svelte';
 
-const { children }: { children: Snippet } = $props();
+/** `id` lets a field point at the line, like the comment form's rules. */
+const { id, children }: { id?: string; children: Snippet } = $props();
 </script>
 
-<p class="help">{@render children()}</p>
+<p class="help" {id}>{@render children()}</p>
 
 <style>
 .help {

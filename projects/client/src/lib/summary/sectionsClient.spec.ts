@@ -133,6 +133,20 @@ describe('sectionsClient', () => {
       expect(watching).toMatchObject({ id: 'watching', text: ['Watching', 'Now'] });
     });
 
+    it('should read English comments by default, a picked language, or every language, but all of Me', async () => {
+      const languages = async (language?: string | null) => {
+        seen.length = 0;
+        await client(true).comments(movie, language);
+        return seen.map((request) => new URL(request.url))
+          .filter(({ pathname }) => pathname.includes('/comments/'))
+          .map(({ pathname, searchParams }) => `${pathname.split('/').at(-1)}:${searchParams.get('language')}`)
+          .toSorted();
+      };
+      expect(await languages()).toEqual(['likes:en', 'mine:null', 'newest:en']);
+      expect(await languages('pt')).toEqual(['likes:pt', 'mine:null', 'newest:pt']);
+      expect(await languages(null)).toEqual(['likes:null', 'mine:null', 'newest:null']);
+    });
+
     it("should read the viewer's own comments into Me", async () => {
       const tabs = await client(true).comments(movie);
       expect(tabs?.map(({ id }) => id)).toEqual(['likes', 'me']);
@@ -235,7 +249,8 @@ describe('sectionsClient', () => {
         http.get(`${base}/comments/:sort`, () => HttpResponse.json([])),
         http.get(`${base}/comments/mine`, () => HttpResponse.json([{ id: 'bad' }])),
       );
-      expect(await client(true).comments(season)).toBeNull();
+      expect(await client(true).comments(season, null)).toBeNull();
+      expect(await client(true).comments(season)).toEqual([]);
     });
   });
   describe('episodes', () => {

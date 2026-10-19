@@ -1,6 +1,6 @@
 <!--
-  Who can read a note, as a comment tag with its icon: Private, Link, Friends or Public. The notes dialog shows it by
-  the note field, and note cards in their byline.
+  Who can read a note, as a tinted comment tag with its icon: Private, Link, Friends or Public. The notes dialog shows
+  it by the note field, and note cards with their tags.
     <PrivacyTag privacy="public" />
 -->
 <script lang="ts">
@@ -20,4 +20,4 @@ const tags: Readonly<Record<Privacy, { svg: string; label: string }>> = {
 };
 </script>
 
-<CommentTag svg={tags[privacy].svg}>{tags[privacy].label}</CommentTag>
+<CommentTag svg={tags[privacy].svg} tint>{tags[privacy].label}</CommentTag>

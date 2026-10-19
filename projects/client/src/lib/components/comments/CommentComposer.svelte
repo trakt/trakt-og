@@ -46,8 +46,8 @@ interface Props {
   avatar?: string;
   /** The smaller avatar of a reply on the thread's rail. */
   small?: boolean;
-  /** The line of rules over the toolbar. */
-  rules?: string;
+  /** The id of the rules line the form shows under its title, for the field to point at. */
+  rulesId?: string;
   /** The "Spoilers" switch, set to this. Left out, there's no switch. */
   spoiler?: boolean;
   /** The word minimum; 0 leaves the meter out, as for editing a review. */
@@ -56,6 +56,8 @@ interface Props {
   confirmLeave?: boolean;
   /** The GIF button, where the Worker has a Klipy key. Editing leaves a comment's GIF as it is. */
   gifs?: boolean;
+  /** The GIF picker's results before anything's typed: GIFs for the title the comment's about. */
+  gifQuery?: string;
   /** A Cancel button. */
   oncancel?: () => void;
   save: (text: string, spoiler: boolean, gif: GifEntry | null) => Promise<PostCommentResult>;
@@ -71,11 +73,12 @@ const {
   posting: postingLabel,
   avatar,
   small = false,
-  rules,
+  rulesId,
   spoiler: initialSpoiler,
   minWords = MIN_WORDS,
   confirmLeave = false,
   gifs = false,
+  gifQuery,
   oncancel,
   save,
   onsaved,
@@ -93,7 +96,7 @@ let picking = $state(false);
 let textarea = $state<HTMLTextAreaElement>();
 const words = $derived(wordCount(text));
 const describedBy = $derived(
-  [rules ? `${id}-rules` : '', minWords > 0 && !gif ? `${id}-meter` : ''].filter(Boolean).join(' ') || undefined,
+  [rulesId ?? '', minWords > 0 && !gif ? `${id}-meter` : ''].filter(Boolean).join(' ') || undefined,
 );
 
 /** Moves the focus into the field, for "Add comment". */
@@ -167,19 +170,23 @@ async function send(event: SubmitEvent) {
       {@attach focusAtEnd}
     ></textarea>
     {#if gif}<ComposerGif {gif} onremove={() => (gif = null)} />{/if}
-    <div class="footer">
-      {#if rules}<p class="rules" id="{id}-rules">{rules}</p>{/if}
-      <CommentToolbar onformat={format} ongif={gifs ? () => (picking = true) : undefined} />
-      <!-- A GIF alone is a comment, so the minimum stops counting once one is picked. -->
-      {#if minWords > 0 && !gif}<WordMeter id="{id}-meter" {words} min={minWords} />{/if}
-      {#if initialSpoiler !== undefined}<SpoilerSwitch bind:spoiler />{/if}
-      {#if oncancel}<button type="button" class="cancel" onclick={cancel}>Cancel</button>{/if}
-      <CommentSubmit {posting} text={submitText} label={postingLabel} />
+    <div class="toolbar"><CommentToolbar onformat={format} ongif={gifs ? () => (picking = true) : undefined} /></div>
+    <!-- What the comment is on the left, what to do with it on the right. -->
+    <div class="bar">
+      <div class="settings">
+        <!-- A GIF alone is a comment, so the minimum stops counting once one is picked. -->
+        {#if minWords > 0 && !gif}<WordMeter id="{id}-meter" {words} min={minWords} />{/if}
+        {#if initialSpoiler !== undefined}<SpoilerSwitch bind:spoiler />{/if}
+      </div>
+      <div class="actions">
+        {#if oncancel}<button type="button" class="cancel" onclick={cancel}>Cancel</button>{/if}
+        <CommentSubmit {posting} text={submitText} label={postingLabel} />
+      </div>
     </div>
   </div>
 </form>
 <!-- Mounted while closed, so its dialog closes natively and hands the focus back to the GIF button. -->
-{#if gifs}<GifPicker bind:open={picking} onselect={(picked) => (gif = picked)} />{/if}
+{#if gifs}<GifPicker bind:open={picking} initialQuery={gifQuery} onselect={(picked) => (gif = picked)} />{/if}
 
 <style>
 .composer {
@@ -234,33 +241,57 @@ textarea {
   }
 }
 
-.footer {
+.toolbar {
+  padding: var(--comment-composer-toolbar-padding);
+}
+
+/* The bottom bar, a shade off the field, under a hairline. */
+.bar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: space-between;
   gap: var(--comment-composer-footer-gap);
-  padding: var(--comment-composer-footer-padding);
+  padding: var(--comment-composer-bar-padding);
+  border-block-start: 1px solid var(--color-comment-field-border);
+  border-end-start-radius: inherit;
+  border-end-end-radius: inherit;
+  background-color: var(--color-comment-composer-bar);
 }
 
-.rules {
-  flex-basis: 100%;
-  margin: 0;
-  padding-inline-start: var(--comment-composer-rules-inset);
-  color: var(--color-comment-muted);
-  font-size: var(--font-size-small);
+.settings {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--comment-composer-actions-gap);
+}
+
+/* Cancel and the submit button, like a note's footer. */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--comment-composer-actions-gap);
+  margin-inline-start: auto;
 }
 
 .cancel {
-  min-block-size: var(--comment-submit-height);
-  padding: var(--comment-cancel-padding);
-  border: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-block-size: var(--dialog-art-button-height);
+  padding: var(--dialog-art-button-padding);
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius-control);
   background: none;
-  color: var(--color-comment-muted);
-  font-size: var(--font-size-comment-meta);
-  font-weight: var(--font-weight-headings);
+  color: var(--color-control-text);
+  font-family: var(--font-headings);
+  font-size: var(--font-size-dialog-art-button);
+  font-weight: var(--font-weight-headings-heavy);
+  line-height: 1;
 
   &:hover {
-    color: var(--color-text);
+    border-color: var(--color-control-border-hover);
+    background-color: var(--color-dialog-art-button-hover);
   }
 }
 

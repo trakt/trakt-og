@@ -9,6 +9,8 @@ export type WatchedIndicator = {
   /** The tooltip on shows and seasons: "5/62 episodes", then "9 plays". */
   readonly title?: string;
   readonly href: string;
+  /** Every aired episode of the show or season: the tag turns solid. */
+  readonly complete?: true;
 };
 
 const plural = (count: number, word: string) => `${word}${count === 1 ? '' : 's'}`;
@@ -30,5 +32,7 @@ export function watchedIndicator(
   const aired = item.airedEpisodes ?? 0;
   const title = `${stats.completed_count}/${aired} ${plural(aired, 'episode')}\n${plays.count} ${plays.label}`;
   const percentage = aired > 0 ? Math.min(Math.floor((stats.completed_count / aired) * 100), 100) : 0;
-  return percentage > 0 ? { count: `${percentage}%`, label: 'Watched', title, href } : { ...plays, title };
+  if (percentage <= 0) return { ...plays, title };
+  const watched = { count: `${percentage}%`, label: 'Watched', title, href };
+  return percentage === 100 ? { ...watched, complete: true } : watched;
 }

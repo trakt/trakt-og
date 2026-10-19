@@ -3,7 +3,7 @@
  * the 30-day sorts and Watched.
  */
 export const itemCommentSorts = {
-  likes: { label: 'Reactions' },
+  likes: { label: 'Popular' },
   replies: { label: 'Replies' },
   plays: { label: 'Plays' },
   rating: { label: 'Rating' },
@@ -36,7 +36,11 @@ export function itemCommentSort(sortBy: string | undefined, sortHow: string | nu
   return { by, how, reversible, api };
 }
 
-/** OG's `url_for(sort_by:, sort_how:)`: the default sort and direction stay out of the URL. */
-export function itemCommentsHref(mediaHref: string, by: ItemCommentSortBy, how: 'asc' | 'desc'): string {
-  return `${mediaHref}/comments${by === 'likes' ? '' : `/${by}`}${how === 'desc' ? '?sort_how=desc' : ''}`;
+/**
+ * OG's `url_for(sort_by:, sort_how:)`: the default sort and direction stay out of the URL. `language` is the comment
+ * language's query (`language=pt`), empty for the default.
+ */
+export function itemCommentsHref(mediaHref: string, by: ItemCommentSortBy, how: 'asc' | 'desc', language = ''): string {
+  const query = [how === 'desc' ? 'sort_how=desc' : '', language].filter(Boolean).join('&');
+  return `${mediaHref}/comments${by === 'likes' ? '' : `/${by}`}${query ? `?${query}` : ''}`;
 }

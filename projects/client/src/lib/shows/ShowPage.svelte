@@ -1,5 +1,7 @@
 <!-- The show summary (`/shows/:id`): the media frame filled with one show, its recent episodes and its seasons. -->
 <script lang="ts">
+import { newComment } from '$lib/components/comments/newComment.svelte';
+import { gifArtContext } from '$lib/components/comments/gif/gifArtContext';
 import type { HeaderUser } from '$lib/components/header/HeaderUser';
 import { overlay } from '$lib/overlay/overlay';
 import FanartHeader from '$lib/components/media/FanartHeader.svelte';
@@ -33,6 +35,8 @@ type Props = {
 
 const { data }: Props = $props();
 const show = $derived(data.show);
+// The GIF picker's header, in every comment box on the page.
+gifArtContext.set(() => show.fanart);
 const ratingTarget = $derived({ type: 'show' as const, id: show.id, title: show.fullTitle });
 const allEpisodes = $derived(`${show.href}/seasons/all`);
 const media = $derived({
@@ -112,7 +116,6 @@ const sections = $derived([
 
   <!-- Keyed on the item: moving to another movie or show keeps this page, so the lazy sections start over. -->
   {#key media.slug}
-    <NewCommentForm item={{ type: 'show', id: show.id, title: show.title, airedEpisodes: show.airedEpisodes }} />
     <LazySection id="activity" load={() => lazy().activity(media)}>
       {#snippet children(tabs)}<ActivityTabs {tabs} />{/snippet}
     </LazySection>
@@ -134,9 +137,10 @@ const sections = $derived([
   />
   <SeasonsGrid showId={show.id} seasons={show.seasons} signedIn={data.signedIn} initialFilters={data.filters} datePreferences={data.datePreferences} />
   {#key media.slug}
-    <LazySection id="comments" load={() => lazy().comments(media)}>
+    {#snippet newCommentForm()}<NewCommentForm item={{ type: 'show', id: show.id, title: show.title, airedEpisodes: show.airedEpisodes }} />{/snippet}
+    <LazySection id="comments" load={() => lazy().comments(media)} eager={newComment.visible}>
       {#snippet children(tabs)}
-        <CommentsPreview
+        <CommentsPreview form={newCommentForm} reload={(language) => lazy().comments(media, language)}
           {tabs}
           item={{ type: 'show', id: show.id, title: show.title, airedEpisodes: show.airedEpisodes }}
           viewer={data.user ? { slug: data.user.slug } : null}

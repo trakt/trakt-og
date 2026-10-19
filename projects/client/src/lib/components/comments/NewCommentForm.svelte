@@ -15,6 +15,10 @@ import { tick } from 'svelte';
 import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
 import { userManager } from '$lib/auth/userManager';
 import type { ViewerSettings } from '$lib/settings/ViewerSettings';
+import PanelHeading from '$lib/components/dashboard/PanelHeading.svelte';
+import PanelHelp from '$lib/components/dashboard/PanelHelp.svelte';
+import commentIcon from '$lib/icons/regular/comment.svg?raw';
+import { gifQueryOf } from './gif/gifQueryOf.ts';
 import CommentComposer from './CommentComposer.svelte';
 import type { CommentItem } from './CommentItem';
 import { focusComment } from './focusComment.ts';
@@ -39,7 +43,8 @@ $effect(() => (user ? newComment.mount() : undefined));
 $effect(() => {
   if (newComment.opened === 0) return;
   void tick().then(() => {
-    section?.scrollIntoView({ block: 'start' });
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    section?.scrollIntoView({ block: 'start', behavior: reduced ? 'auto' : 'smooth' });
     composer?.focus();
   });
 });
@@ -69,7 +74,10 @@ async function posted(comment: CommentResponse | null) {
 {#if user}
   <section id="new-comment" class="new-comment" bind:this={section} hidden={!newComment.visible}
   aria-labelledby="{id}-title">
-    <h2 id="{id}-title"><strong>Add</strong> your comment</h2>
+    <div class="heading">
+      <PanelHeading id="{id}-title" title="Add your comment" icon={commentIcon} />
+      <PanelHelp id="{id}-rules">Write at least 5 words, keep it respectful, and mark anything that spoils the story.</PanelHelp>
+    </div>
     {#if newComment.visible}
       <CommentComposer
         bind:this={composer}
@@ -78,10 +86,11 @@ async function posted(comment: CommentResponse | null) {
         submit="Post"
         posting="Posting your comment"
         avatar={user.images.avatar.full}
-        rules="5+ words, be respectful, mark spoilers."
+        rulesId="{id}-rules"
         spoiler={false}
         confirmLeave
         gifs={page.data.gifs}
+        gifQuery={gifQueryOf(item)}
         oncancel={cancel}
         {save}
         onsaved={posted}
@@ -106,12 +115,8 @@ async function posted(comment: CommentResponse | null) {
   }
 }
 
-h2 {
-  margin: 0 0 var(--comment-composer-heading-gap);
-  font-weight: var(--font-weight-headings-light);
-
-  & strong {
-    font-weight: var(--font-weight-headings);
-  }
+/* The dashboard panels' heading: the title over a faint comment mark, the rules as its help line. */
+.heading {
+  margin-block-end: var(--comment-composer-heading-gap);
 }
 </style>

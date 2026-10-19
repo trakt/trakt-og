@@ -22,6 +22,8 @@ jobs:
       - uses: ./.github/actions/setup-deno
       - run: bash scripts/leak-check.sh
       - run: deno task ci
+        env:
+          TRAKT_CLIENT_ID: ${{ secrets.TRAKT_CLIENT_ID }}
       - name: Now Playing aka Deploy to og.trakt.tv
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: deno run -A npm:wrangler deploy --message "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"

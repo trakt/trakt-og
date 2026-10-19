@@ -4,6 +4,9 @@ import type { loadViewerLists } from './lib/users/loadViewerLists.ts';
 // See https://svelte.dev/docs/kit/types#app.d.ts
 // for information about these interfaces
 declare global {
+  /** The Trakt app's public client ID, inlined by Vite from `TRAKT_CLIENT_ID` at build time. */
+  const TRAKT_CLIENT_ID: string;
+
   namespace App {
     // interface Error {}
     interface Locals {

@@ -1,7 +1,6 @@
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
-import { TRAKT_CLIENT_ID } from '../lib/api/traktClientId.ts';
 import { formatDate } from '../lib/utils/formatDate.ts';
 import { load } from './+layout.server.ts';
 

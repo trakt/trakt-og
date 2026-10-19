@@ -1,14 +1,17 @@
 <!--
   A row of toggle buttons in the dropdown trigger's look (og's control border, background and radius), the picked
-  one filled with the season's accent. An optional count sits in each as a small badge. Discover's moods, their Movies/Shows switch
-  and the premiere filters use it.
+  one washed red like PillTabs. An optional count sits in each as a small badge. Discover's moods, their Movies/Shows
+  switch and the premiere filters use it, filled with the season's accent (`--toggle-chip-on-bg`, `-border`, `-text`
+  and `--toggle-chip-count-on-bg` set on its page), and the related band's threads, where a `swatch` before the label
+  keys each chip to its color in the fingerprints.
     <ToggleChips label="Moods" options={[{ id: 'short', label: 'Under 95 Minutes' }]} bind:selected />
 -->
 <script lang="ts">
 interface Props {
   /** Names the group for screen readers. */
   label: string;
-  options: readonly { id: string; label: string; count?: number }[];
+  /** `swatch` is a CSS color for a small square before the label. */
+  options: readonly { id: string; label: string; count?: number; swatch?: string }[];
   selected: string;
 }
 
@@ -18,7 +21,9 @@ let { label, options, selected = $bindable() }: Props = $props();
 <div class="chips" role="group" aria-label={label}>
   {#each options as option (option.id)}
     <button type="button" aria-pressed={option.id === selected} onclick={() => (selected = option.id)}>
-      {option.label}{#if option.count !== undefined}<span class="count">{option.count}</span>{/if}
+      {#if option.swatch}<span class="swatch" style:background-color={option.swatch}></span>{/if}{option.label}{#if
+        option.count !== undefined
+      }<span class="count">{option.count}</span>{/if}
     </button>
   {/each}
 </div>
@@ -53,10 +58,16 @@ button {
   }
 
   &[aria-pressed='true'] {
-    border-color: var(--season-accent);
-    background-color: var(--season-accent);
-    color: var(--color-discover-on-image);
+    border-color: var(--toggle-chip-on-border, var(--color-tab-picked-border));
+    background-color: var(--toggle-chip-on-bg, var(--color-tab-picked-bg));
+    color: var(--toggle-chip-on-text, var(--color-tab-picked-text));
   }
+}
+
+.swatch {
+  inline-size: var(--toggle-chip-swatch-size);
+  block-size: var(--toggle-chip-swatch-size);
+  border-radius: var(--radius-toggle-chip-swatch);
 }
 
 .count {
@@ -68,7 +79,8 @@ button {
   font-variant-numeric: tabular-nums;
 
   [aria-pressed='true'] & {
-    background-color: var(--color-toggle-chip-count-picked-bg);
+    background-color: var(--toggle-chip-count-on-bg, var(--brand-primary));
+    color: var(--toggle-chip-count-on-text, var(--color-text-inverse));
   }
 }
 

@@ -506,18 +506,22 @@
   --color-on-deck-quick-icons: light-dark(#1d1d1d, var(--dk-bg2));
   --color-on-deck-border: light-dark(var(--gray-lighter), transparent);
 
-  /* The less and more pill under a dashboard panel (.page-navigator) */
-  --color-page-navigator-bg: light-dark(#fff, var(--dk-bg3));
-  --color-page-navigator-border: light-dark(#ddd, var(--gray-dark));
-  --radius-page-navigator: 5px;
+  /* The less and more pill under a panel (.page-navigator), in glass: the profile pills' see-through dark glass on a
+     dark page, a frosted white one on a light page, so the panel's edge shows through it. */
+  --color-page-navigator-bg: light-dark(rgb(255 255 255 / 0.55), var(--color-profile-pill-bg));
+  --color-page-navigator-border: light-dark(rgb(0 0 0 / 0.12), var(--color-profile-pill-border));
+  --color-page-navigator-text: light-dark(var(--gray-dark), var(--color-profile-pill-text));
+  --shadow-page-navigator: 0 2px 10px rgb(0 0 0 / 0.18);
+  --blur-page-navigator: var(--blur-profile-pill);
+  --radius-page-navigator: var(--radius-control);
   --font-size-page-navigator: 11px;
   --font-size-page-navigator-icon: 16px;
-  --opacity-page-navigator: 0.5;
+  --opacity-page-navigator: 0.65;
   --space-page-navigator-block: 4px;
   --space-page-navigator-inline: 6px;
-  --color-page-navigator-dark-bg: var(--dk-bg3); /* .page-navigator.dark */
-  --color-page-navigator-dark-border: var(--gray-dark);
-  --color-page-navigator-dark-text: #fff;
+  --color-page-navigator-dark-bg: var(--color-profile-pill-bg); /* .page-navigator.dark */
+  --color-page-navigator-dark-border: var(--color-profile-pill-border);
+  --color-page-navigator-dark-text: var(--color-profile-pill-text);
 
   /* Dashboard frame: greeting, stats and inbox. */
   --dashboard-greeting-top: 30px; /* above the greeting, and below it (over the now-playing bar when watching) */
@@ -1955,9 +1959,25 @@
   --radius-activity-opened: 6px;
   --activity-opened-arrow: 18px;
   --space-activity-opened: 15px; /* above and inside the opened stop's panel */
-  --color-related-bg: var(--gray-darker); /* #recommendations-wrapper, dark in both themes */
-  --color-related-text: #fff;
+  /* OG's #recommendations-wrapper was dark in both themes; og's follows the theme, light gray like the dashboard's
+     social feed. */
+  --color-related-bg: light-dark(var(--gray-lighter), var(--gray-darker));
+  --color-related-text: light-dark(var(--gray-dark), #fff);
   --related-min-height: 432px; /* .fixed-height, so the page doesn't jump when it loads */
+  /* Its threads: a chip for each thing the picks share with the title, and under each poster a fingerprint, one
+     block per chip in the same order, lit where the pick shares it. A chip's swatch is its block's color. */
+  --space-related-threads: 12px; /* between the heading, the chips and the posters */
+  --related-fingerprint-height: 6px;
+  --related-fingerprint-gap: 2px;
+  --radius-related-fingerprint: 1px;
+  --related-fingerprint-ring: 1px; /* around the picked chip's block */
+  --space-related-fingerprint: 6px; /* the title, the strip and the note under it */
+  --color-related-fingerprint-off: light-dark(#d4d4d4, #3d3d3d);
+  --color-related-fingerprint-on: light-dark(#6b6b6b, #cfcfcf);
+  --color-related-fingerprint-people: var(--brand-primary);
+  --color-related-fingerprint-focus: light-dark(#111, #fff); /* the block for the chip that's picked */
+  --color-related-note: light-dark(#666, #a3a3a3);
+  --font-size-related-note: var(--font-size-small);
 
   /* Country release panels and notification tables. */
   --color-data-panel-border: light-dark(#ddd, #444);
@@ -2594,6 +2614,8 @@
   --trending-comments-people-gap: 6px;
   /* The toggle buttons: moods, the Movies/Shows switch and the premiere filters. */
   --toggle-chip-gap: 8px;
+  --toggle-chip-swatch-size: 8px; /* a chip's key to something drawn in its color, like the related fingerprints */
+  --radius-toggle-chip-swatch: 2px;
   --toggle-chip-count-gap: 8px;
   --toggle-chip-count-padding: 3px 6px;
   --radius-toggle-chip-count: 3px;

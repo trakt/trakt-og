@@ -1,7 +1,8 @@
 <!--
-  OG's less and more pill under a dashboard panel. It hangs
+  OG's less and more pill under a panel, in glass. It hangs
   over the panel's bottom edge, centered, so put it last in a `position: relative` panel. `dark` is OG's
-  `.page-navigator.dark` for the recommendations band, and `--page-navigator-offset` moves it down from the content. "less" hides at one row and
+  `.page-navigator.dark` for a panel that's dark in both themes, and `--page-navigator-offset` moves it down from the
+  content. With `edge` it's centered on the bottom edge of that panel instead, half on each side. "less" hides at one row and
   "more" at the last, and the pill hides when there's only one row to show. Non-VIPs get links to the VIP page instead.
 -->
 <script lang="ts">
@@ -17,11 +18,13 @@ interface Props {
   upsellHref?: string;
   /** What the rows belong to, for screen readers: "Up Next". */
   label: string;
-  /** The black pill with white text, on a dark panel in either theme. */
+  /** The dark glass with white text, on a dark panel in either theme. */
   dark?: boolean;
+  /** Centered on the panel's bottom edge rather than under its content. */
+  edge?: boolean;
 }
 
-const { rows, maxRows, onchange, upsellHref, label, dark = false }: Props = $props();
+const { rows, maxRows, onchange, upsellHref, label, dark = false, edge = false }: Props = $props();
 </script>
 
 <!-- The VIP pages aren't built yet, and resolve() only takes routes that exist. -->
@@ -39,7 +42,7 @@ const { rows, maxRows, onchange, upsellHref, label, dark = false }: Props = $pro
 {/snippet}
 
 {#if maxRows > 1}
-  <div class={['page-navigator', { dark }]}>
+  <div class={['page-navigator', { dark, edge }]}>
     {#if rows > 1}
       {@render control('less', circleMinus, rows - 1)}
     {/if}
@@ -59,9 +62,17 @@ const { rows, maxRows, onchange, upsellHref, label, dark = false }: Props = $pro
   border: 1px solid var(--color-page-navigator-border);
   border-radius: var(--radius-page-navigator);
   background-color: var(--color-page-navigator-bg);
-  color: var(--color-text);
+  box-shadow: var(--shadow-page-navigator);
+  backdrop-filter: var(--blur-page-navigator);
+  color: var(--color-page-navigator-text);
   translate: -50% 0;
   white-space: nowrap;
+
+  &.edge {
+    inset-block-end: 0;
+    margin-block-start: 0;
+    translate: -50% 50%;
+  }
 
   &.dark {
     border-color: var(--color-page-navigator-dark-border);

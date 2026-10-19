@@ -17,7 +17,7 @@ import { overlay } from '$lib/overlay/overlay';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
 import { countLabel } from '$lib/utils/countLabel';
 import type { Premiere } from './toPremieres.ts';
-import ToggleChips from './ToggleChips.svelte';
+import ToggleChips from '$lib/components/toggle-chips/ToggleChips.svelte';
 
 interface Props {
   premieres: readonly Premiere[];

@@ -117,15 +117,27 @@ const lists: readonly SummaryList[] = [
   list(2, 'Heist Night'),
 ];
 
-const related: readonly RelatedCard[] = Array.from({ length: 6 }, (_, i) => ({
+// Eighteen picks, so more opens a second row and a third. Heat's crime subgenres spread over them, and two share its people.
+const relatedSubgenres = ['heist', 'organized-crime', 'neo-noir', 'police-detective', 'los-angeles'];
+const related: readonly RelatedCard[] = Array.from({ length: 18 }, (_, i) => ({
   type: 'movie',
   id: 900 + i,
   href: '/movies/heat-1995',
   title: `Related Movie ${i + 1}`,
   year: 1990 + i,
   released: true,
-  rating: 8 - i / 2,
+  rating: 8 - i / 6,
+  subgenres: relatedSubgenres.filter((_, j) => (i + j) % 3 !== 0),
 }));
+const relatedSource = { subgenres: relatedSubgenres, people: [1, 2, 3] };
+const relatedPeople = (card: RelatedCard) =>
+  Promise.resolve(
+    card.id === 901
+      ? [{ id: 1, name: 'Al Pacino' }, { id: 2, name: 'Robert De Niro' }, { id: 3, name: 'Michael Mann' }]
+      : card.id === 904
+      ? [{ id: 3, name: 'Michael Mann' }]
+      : [],
+  );
 </script>
 
 <section>
@@ -215,7 +227,8 @@ const related: readonly RelatedCard[] = Array.from({ length: 6 }, (_, i) => ({
     <ListsPreview {lists} count={342} href="/movies/heat-1995" />
   </Container>
 </section>
-<RelatedItems title="Heat" load={() => Promise.resolve(related)} datePreferences={page.data.datePreferences} />
+<RelatedItems title="Heat" source={relatedSource} load={() => Promise.resolve(related)} loadPeople={relatedPeople}
+  datePreferences={page.data.datePreferences} />
 
 <style>
 .people-demo {

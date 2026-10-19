@@ -7,14 +7,16 @@ import { socialRowsSchema } from './socialRowsSchema.ts';
 import type { SocialRow } from './SocialRow.ts';
 import type { SummaryMedia } from './SummaryMedia.ts';
 import { type ActivityTab, toActivity } from './toActivity.ts';
+import type { RelatedPerson } from './RelatedPerson.ts';
 import { type RelatedCard, toRelatedCard } from './toRelatedCard.ts';
+import { toRelatedPeople } from './toRelatedPeople.ts';
 import { type SummaryList, toSummaryList } from './toSummaryList.ts';
 
 type Api = ReturnType<typeof api>;
 
-// OG's `.limit(3)` comments and `summary_lists(limit: 3)`, and `related(6)`.
+// OG's `.limit(3)` comments and `summary_lists(limit: 3)`. OG's `related(6)` shows first, and more opens six at a time.
 const PREVIEW_LIMIT = 3;
-const RELATED_LIMIT = 6;
+const RELATED_LIMIT = 18;
 // The worker's page cap, so one call covers every followed member OG listed.
 const SOCIAL_LIMIT = 250;
 
@@ -45,6 +47,8 @@ export type SectionsClient = {
   /** The official lists, then the most popular personal ones; the lists page sorts and filters the rest. */
   lists: (media: SummaryMedia) => Promise<readonly SummaryList[] | null>;
   related: (media: SummaryMedia) => Promise<readonly RelatedCard[] | null>;
+  /** A related card's billed cast and key crew, to match against the summary's. */
+  relatedPeople: (card: RelatedCard) => Promise<readonly RelatedPerson[] | null>;
 };
 
 type Response = { status: number; body: unknown };
@@ -199,6 +203,14 @@ export function sectionsClient({
       }
       const shows = await ok(anonymous.shows.related({ params: { id: media.slug }, query }));
       return nonEmpty((shows ?? []).map((item) => toRelatedCard({ type: 'show', item }, date)));
+    },
+
+    relatedPeople: async (card) => {
+      const params = { id: String(card.id) };
+      const people = card.type === 'movie'
+        ? await ok(anonymous.movies.people({ params, query: {} }))
+        : await ok(anonymous.shows.people({ params, query: {} }));
+      return people ? toRelatedPeople(people) : null;
     },
   };
 }

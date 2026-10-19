@@ -11,6 +11,7 @@ import { loadWatchNow } from '../components/watchnow/loadWatchNow.ts';
 import { loadPrivateNote } from '../notes/loadPrivateNote.ts';
 import type { DatePreferences } from '../settings/DatePreferences.ts';
 import type { ViewerSettings } from '../settings/ViewerSettings.ts';
+import { toRelatedSource } from '../summary/toRelatedSource.ts';
 import { toShowEpisodes } from './toShowEpisodes.ts';
 import { toShowSummary } from './toShowSummary.ts';
 
@@ -123,6 +124,7 @@ export async function loadShowData({ fetch, token, parent, id: requested, path =
   });
   return {
     raw: show,
+    relatedSource: toRelatedSource({ subgenres: show.subgenres, people }),
     seasons: seasons ?? [],
     signedIn: user !== null,
     episodeTypeTags,
@@ -140,9 +142,10 @@ export async function loadShowData({ fetch, token, parent, id: requested, path =
 
 /** `/shows/:id` and `/shows/:id/seasons`: the summary and its Watch Now block. */
 export async function loadShow(params: LoadShowParams) {
-  const { summary, watchNow, privateNotes, signedIn } = await loadShowData(params);
+  const { summary, watchNow, privateNotes, signedIn, relatedSource } = await loadShowData(params);
   return {
     show: summary,
+    relatedSource,
     watchNow,
     privateNotes,
     signedIn,

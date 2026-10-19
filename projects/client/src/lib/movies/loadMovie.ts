@@ -5,6 +5,7 @@ import { loadWatchNow } from '../components/watchnow/loadWatchNow.ts';
 import { loadPrivateNote } from '../notes/loadPrivateNote.ts';
 import type { DatePreferences } from '../settings/DatePreferences.ts';
 import type { ViewerSettings } from '../settings/ViewerSettings.ts';
+import { toRelatedSource } from '../summary/toRelatedSource.ts';
 import { toMovieSummary } from './toMovieSummary.ts';
 
 type LoadMovieParams = {
@@ -81,6 +82,7 @@ export async function loadMovie({ fetch, token, parent, id: requested }: LoadMov
 
   return {
     movie: view,
+    relatedSource: toRelatedSource({ subgenres: movie.subgenres, people }),
     watchNow: watchnow.button,
     privateNotes: {
       item: { ...notable, title: movie.title, year: movie.year, fanart: view.fanart },

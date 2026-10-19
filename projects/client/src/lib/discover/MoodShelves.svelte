@@ -14,7 +14,7 @@ import masksTheater from '$lib/icons/regular/masks-theater.svg?raw';
 import { overlay } from '$lib/overlay/overlay';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
 import type { MoodShelf } from './MoodShelf.ts';
-import ToggleChips from './ToggleChips.svelte';
+import ToggleChips from '$lib/components/toggle-chips/ToggleChips.svelte';
 
 interface Props {
   moods: { readonly movie: readonly MoodShelf[]; readonly show: readonly MoodShelf[] };

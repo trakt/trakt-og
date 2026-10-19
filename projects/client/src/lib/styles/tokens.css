@@ -293,17 +293,17 @@
 
   /* A list row: one card with a poster fan, the name and its chips, the owner, the description, then a footer with the
      Like button, the counts and the viewer's tools. */
-  --list-card-padding: 12px;
-  --list-card-spacing: var(--gutter); /* above each card */
+  --list-card-spacing: 30px; /* above each row, with no box to set them apart */
   --list-card-gap: 18px; /* the fan to the text */
   --list-card-gap-tablet: 14px;
   --list-card-body-gap: 4px;
+  --list-card-row-gap: 12px; /* the fan to the text, stacked in a narrow column */
+  --list-card-wash-bleed: 10px; /* the hover wash, past the row's edges */
+  --color-list-card-wash: light-dark(rgb(0 0 0 / 0.04), rgb(255 255 255 / 0.04));
+  --list-card-bubble-gap: 6px; /* the byline to the description */
+  --list-card-description-lines: 3;
   --list-card-foot-gap: 10px; /* above the footer */
   --radius-list-card: 14px;
-  --color-list-card-bg: light-dark(#f7f7f8, #242424);
-  --color-list-card-bg-hover: light-dark(#f1f1f3, var(--dk-box-accent));
-  --color-list-card-bg-built-in: light-dark(#ececef, #2e2e2e); /* the watchlist and favorites, a shade apart */
-  --color-list-card-bg-built-in-hover: light-dark(#e6e6ea, #333);
   --color-list-card-border: light-dark(rgb(0 0 0 / 0.08), rgb(255 255 255 / 0.07));
   --color-list-card-border-hover: light-dark(rgb(0 0 0 / 0.16), rgb(255 255 255 / 0.16));
   --transition-list-card: 0.2s;
@@ -325,11 +325,8 @@
   --font-size-list-card-empty-icon: 18px;
   /* Status chips after the name: a see-through tint of their color, the text lifted toward the theme's text. */
   --list-card-chip-height: 22px;
-  --list-card-chip-padding: 7px;
   --list-card-chip-gap: 5px;
   --radius-list-card-chip: 6px;
-  --font-size-list-card-chip: 12px;
-  --font-size-list-card-chip-icon: 11px;
   --list-card-chip-tint: 16%;
   --list-card-chip-line: 50%;
   --list-card-chip-count-tint: 34%; /* the collaborators count's darker segment */

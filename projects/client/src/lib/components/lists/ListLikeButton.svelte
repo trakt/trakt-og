@@ -1,7 +1,7 @@
 <!--
   The list's likes count doubles as OG's like toggle. Whether the viewer liked it comes from the overlay's liked lists;
-  until that loads, a first click likes. `button` draws it as the summary's Rate button: frosted glass with a blue
-  thumb and the count, solid blue once liked.
+  until that loads, a first click likes. `button` draws it as a list row's outlined button: a blue thumb and
+  "123 likes", solid blue once liked.
 -->
 <script lang="ts">
 import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
@@ -78,7 +78,7 @@ async function toggle() {
         iconColor={liked ? undefined : 'var(--color-list-card-like)'}
         icon={liked ? voteYesThick : voteYes} aria-label={label} aria-pressed={liked === undefined ? undefined : liked}
         aria-disabled={busy} onclick={toggle} {...tooltip}>
-        <span class="number">{total.toLocaleString('en-US')}</span>
+        <span><span class="number">{total.toLocaleString('en-US')}</span> {total === 1 ? 'like' : 'likes'}</span>
       </GlassAction>
     {/snippet}
   </Tooltip>

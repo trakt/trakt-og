@@ -45,7 +45,8 @@ const server = setupServer(
     `${API}/shows/:id/listed`,
     () =>
       HttpResponse.json([
-        { ...list, type: 'watchlist', ids: { trakt: 8, slug: 'watchlist' } },
+        // The watchlist comes back without a name; it's left out, not a failed page.
+        { ...list, name: null, type: 'watchlist', ids: { trakt: 8, slug: 'watchlist' } },
         { ...list, likes: 2, ids: { trakt: 9, slug: 'rewatch' } },
         list,
       ]),

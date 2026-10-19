@@ -51,9 +51,14 @@ async function readOwnLists(
   const response = await rawApiFetch({ fetch, token, path: `${itemPath(item)}/listed?extended=images` });
   if (response.status === 401 || response.status === 404) return none;
   if (!response.ok) error(502, 'The Trakt API could not load your lists.');
-  const lists = listsSchema.safeParse(await response.json().catch(() => null));
-  if (!lists.success) error(502, 'The Trakt API returned invalid lists data.');
-  const own = sortOwnLists(lists.data, query.sortBy).map(toSummaryList);
+  const rows = z.array(z.unknown()).safeParse(await response.json().catch(() => null));
+  if (!rows.success) error(502, 'The Trakt API returned invalid lists data.');
+  // Row by row: the watchlist and favorites come back without a name, and only personal lists show here anyway.
+  const lists = rows.data.flatMap((row) => {
+    const parsed = summaryListSchema.safeParse(row);
+    return parsed.success ? [parsed.data] : [];
+  });
+  const own = sortOwnLists(lists, query.sortBy).map(toSummaryList);
   return { lists: own, count: own.length, page: null };
 }
 

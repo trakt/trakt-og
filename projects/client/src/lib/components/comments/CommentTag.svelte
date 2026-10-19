@@ -5,12 +5,15 @@
   wash of its tone. `solid` fills it with its tone, for a show or season the author has watched all of. `glyph` marks
   a Trakt-font icon, which sits high and is nudged down to the text's middle.
     <CommentTag svg={star} tone="review" tint>Review</CommentTag>
+  `color` sets any other tone (a list row's Private, Official List or Me), and the rest goes on the tag, a tooltip's
+  attributes say.
 -->
 <script lang="ts">
 import type { Snippet } from 'svelte';
+import type { HTMLAttributes } from 'svelte/elements';
 import Icon from '$lib/icons/Icon.svelte';
 
-interface Props {
+interface Props extends Omit<HTMLAttributes<HTMLSpanElement>, 'color'> {
   svg?: string;
   tone?:
     | 'spoiler'
@@ -28,13 +31,16 @@ interface Props {
   tint?: boolean;
   solid?: boolean;
   glyph?: boolean;
+  /** A tone by CSS color, over `tone`'s. */
+  color?: string;
   children: Snippet;
 }
 
-const { svg, tone, tint = false, solid = false, glyph = false, children }: Props = $props();
+const { svg, tone, tint = false, solid = false, glyph = false, color, children, ...rest }: Props = $props();
 </script>
 
-<span class={['tag', tone, { tint, solid, glyph }]}>{#if svg}<Icon {svg} />{/if}{@render children()}</span>
+<span {...rest} class={['tag', tone, { tint, solid, glyph }]}
+  style:--tone={color}>{#if svg}<Icon {svg} />{/if}{@render children()}</span>
 
 <style>
 .tag {

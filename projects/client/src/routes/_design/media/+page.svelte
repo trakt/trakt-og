@@ -238,7 +238,7 @@ $effect(() => {
         pills={['Private']}
         description="Crews, vaults and one last job."
       />
-      <p>The watchlist, a shade apart from the user's own lists, with no likes.</p>
+      <p>The watchlist, marked by its own quiet tag, with no likes.</p>
       <ListRow
         kind="watchlist"
         href="/users/og_tester/watchlist"

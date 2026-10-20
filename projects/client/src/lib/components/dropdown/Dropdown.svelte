@@ -22,11 +22,15 @@
   `variant="title"` is a page title that picks the page, like the calendar's: pass an `.eyebrow` ("My") and a `.name`
   ("Shows & Movies") as the trigger, and the caret sits right after the name. `block` stretches the trigger to its
   container, with the caret at the far end.
+  In a dialog the menu is pinned under the measured trigger instead of anchored to it: Safari misplaces an anchored
+  menu there once the page has scrolled.
 -->
 <script lang="ts">
 import checkThick from '$lib/icons/trakt/check-thick.svg?url';
 import type { Snippet } from 'svelte';
+import type { Attachment } from 'svelte/attachments';
 import Caret from './Caret.svelte';
+import { menuPlacement } from './menuPlacement.ts';
 
 interface Props {
   trigger: Snippet;
@@ -47,12 +51,44 @@ interface Props {
 const { trigger, children, label, section, joined = false, block = false, multiple = false, variant = 'default' }:
   Props = $props();
 const id = $props.id();
+let pinned = $state<{ top: number; left: number }>();
 
 const focusFirstItem = (event: ToggleEvent & { currentTarget: HTMLElement }) => {
   if (event.newState !== 'open') return;
   const menu = event.currentTarget;
   const field = multiple ? menu.querySelector<HTMLElement>('input') : null;
   (field ?? menu.querySelector<HTMLElement>('a, button'))?.focus();
+};
+
+// Placed before it shows so it never flashes at Safari's spot, then again with its real size, and as the dialog scrolls.
+const pinInDialog: Attachment<HTMLElement> = (dropdown) => {
+  const dialog = dropdown.closest('dialog');
+  const button = dropdown.querySelector<HTMLElement>(':scope > button');
+  const menu = dropdown.querySelector<HTMLElement>(':scope > [popover]');
+  if (!dialog || !button || !menu) return;
+  const place = (event: Event) => {
+    const opening = event instanceof ToggleEvent ? event.newState === 'open' : menu.matches(':popover-open');
+    if (!opening) {
+      pinned = undefined;
+      return;
+    }
+    pinned = menuPlacement({
+      trigger: button.getBoundingClientRect(),
+      menu: { width: menu.offsetWidth, height: menu.offsetHeight },
+      viewport: { width: innerWidth, height: innerHeight },
+      offset: parseFloat(getComputedStyle(menu).getPropertyValue('--space-menu-offset')) || 0,
+    });
+  };
+  menu.addEventListener('beforetoggle', place);
+  menu.addEventListener('toggle', place);
+  dialog.addEventListener('scroll', place, { capture: true, passive: true });
+  addEventListener('resize', place);
+  return () => {
+    menu.removeEventListener('beforetoggle', place);
+    menu.removeEventListener('toggle', place);
+    dialog.removeEventListener('scroll', place, { capture: true });
+    removeEventListener('resize', place);
+  };
 };
 
 const closeOnPick = (event: MouseEvent & { currentTarget: HTMLElement }) => {
@@ -62,7 +98,7 @@ const closeOnPick = (event: MouseEvent & { currentTarget: HTMLElement }) => {
 };
 </script>
 
-<div class={['dropdown', { block }]} style:anchor-name="--dropdown-{id}">
+<div class={['dropdown', { block }]} style:anchor-name="--dropdown-{id}" {@attach pinInDialog}>
   <button type="button" class={['trigger', variant, { joined, block }]} popovertarget="dropdown-{id}"
     aria-label={label}>
     {#if block}
@@ -75,9 +111,11 @@ const closeOnPick = (event: MouseEvent & { currentTarget: HTMLElement }) => {
   </button>
   <div
     id="dropdown-{id}"
-    class="menu"
+    class={['menu', { pinned: Boolean(pinned) }]}
     popover="auto"
     style:position-anchor="--dropdown-{id}"
+    style:--menu-top={pinned && `${pinned.top}px`}
+    style:--menu-left={pinned && `${pinned.left}px`}
     style:--check={`url("${checkThick}")`}
     ontoggle={focusFirstItem}
     onclick={closeOnPick}
@@ -286,6 +324,15 @@ const closeOnPick = (event: MouseEvent & { currentTarget: HTMLElement }) => {
   text-shadow: none;
   text-transform: none;
   box-shadow: var(--shadow-menu);
+}
+
+/* A dialog's menu, at the spot pinInDialog measured. */
+.menu.pinned {
+  position-area: none;
+  position-try-fallbacks: none;
+  inset-block-start: var(--menu-top);
+  inset-inline-start: var(--menu-left);
+  margin: 0;
 }
 
 /* Pushed to a row's end in the menu, and right after the value on the trigger. */

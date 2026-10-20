@@ -156,7 +156,8 @@ const plural = (count: number, word: string) => `${word}${count === 1 ? '' : 's'
 {/snippet}
 
 {#if likeTarget && actions?.report && !actions.report.onclick}<ReportDialog bind:open={reportOpen}
-  target={{ type: 'list', id: likeTarget.id, ownerSlug: likeTarget.ownerSlug, title: name, href }} />{/if}
+  target={{ type: 'list', id: likeTarget.id, ownerSlug: likeTarget.ownerSlug, title: name, href,
+    posters: posters.flatMap(({ image }) => (image ? [image] : [])).slice(0, 5) }} />{/if}
 
 <article class="list-row">
   <div class="card">

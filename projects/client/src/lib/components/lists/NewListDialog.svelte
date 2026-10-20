@@ -8,6 +8,7 @@
 import Dialog from '$lib/components/dialog/Dialog.svelte';
 import DialogArtHeader from '$lib/components/dialog/DialogArtHeader.svelte';
 import DialogForm from '$lib/components/dialog/DialogForm.svelte';
+import DialogNotice from '$lib/components/dialog/DialogNotice.svelte';
 import FieldLabel from '$lib/components/dialog/FieldLabel.svelte';
 import MultiSelect from '$lib/components/filters/MultiSelect.svelte';
 import type { ListDraft } from '$lib/components/lists/ListDraft';
@@ -93,9 +94,9 @@ const options = $derived([{
   <DialogForm save={busy ? 'Saving…' : 'Save List'} {busy} disabled={max !== undefined || (kind === 'list' && !draft.name.trim())}
     onsubmit={() => onsave(draft)} oncancel={() => (open = false)}>
     {#if max !== undefined}
-      <p class="limit" role="alert">You've already created <strong>{max}</strong> lists.
+      <DialogNotice role="alert">You've already created <strong>{max}</strong> lists.
         {#if !vip}<a href={traktUrls.vip} target="_blank" rel="noopener">Upgrade to VIP</a> to create unlimited lists.{/if}
-      </p>
+      </DialogNotice>
     {/if}
     {#if error}<p class="error" role="alert">{error}</p>{/if}
     {#if kind === 'list'}
@@ -131,23 +132,6 @@ const options = $derived([{
 .collaborators :global(.multi-select) {
   display: block;
   inline-size: 100%;
-}
-
-.limit {
-  margin: 0;
-  padding: var(--dialog-art-alert-padding);
-  border: 1px solid var(--color-dialog-art-alert-border);
-  border-radius: var(--radius-control);
-  background-color: var(--color-dialog-art-alert-bg);
-  color: var(--color-dialog-art-alert-text);
-  font-size: var(--font-size-small);
-  line-height: var(--line-height-base);
-
-  & a {
-    color: inherit;
-    font-weight: var(--font-weight-headings-heavy);
-    text-decoration: underline;
-  }
 }
 
 .error {

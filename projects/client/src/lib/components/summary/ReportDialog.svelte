@@ -1,14 +1,30 @@
-<!-- OG's report modals: items from media summaries and the user options menu, and comments. -->
+<!--
+  The report dialog for items from media summaries, lists, the user options menu and comments, in the notes and list
+  dialogs' art shell: the target's fanart, posters or stripes under glass with Report and type tags over its name and
+  the permalink, then a reason dropdown, the reason's instructions in a notice, a message whose placeholder follows the
+  reason, and Cancel and Send Report. Send stays off until the form is valid, and the footer says what's missing.
+  Cmd/Ctrl+Enter sends. A server error shows in a red notice and the dialog stays open.
+-->
 <script lang="ts">
 import { page } from '$app/state';
 import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
 import { userManager } from '$lib/auth/userManager';
+import ChoiceDropdown from '$lib/components/dialog/ChoiceDropdown.svelte';
 import Dialog from '$lib/components/dialog/Dialog.svelte';
+import DialogArtHeader from '$lib/components/dialog/DialogArtHeader.svelte';
+import DialogForm from '$lib/components/dialog/DialogForm.svelte';
+import DialogNotice from '$lib/components/dialog/DialogNotice.svelte';
+import FieldLabel from '$lib/components/dialog/FieldLabel.svelte';
+import type { CardTag } from '$lib/components/media/CardTag';
 import { toast } from '$lib/components/toast/toast.svelte';
 import type { ReportTarget } from '$lib/components/summary/ReportTarget';
+import { reportPlaceholder } from '$lib/components/summary/reportPlaceholder';
 import { reportReasons } from '$lib/components/summary/reportReasons';
 import { validateReport } from '$lib/components/summary/validateReport';
 import { writeMediaTool } from '$lib/components/summary/writeMediaTool';
+import Icon from '$lib/icons/Icon.svelte';
+import flag from '$lib/icons/solid/flag.svg?raw';
+import link from '$lib/icons/solid/link.svg?raw';
 
 interface Props {
   open: boolean;
@@ -16,14 +32,31 @@ interface Props {
 }
 let { open = $bindable(), target }: Props = $props();
 const id = $props.id();
+const TYPES: Readonly<Record<ReportTarget['type'], string>> = {
+  movie: 'Movie',
+  show: 'Show',
+  season: 'Season',
+  episode: 'Episode',
+  person: 'Person',
+  user: 'User',
+  comment: 'Comment',
+  list: 'List',
+};
 const permalink = $derived(`${page.url.origin}${target.href}`);
+const heading = $derived(target.title || `Report ${target.type}`);
+const tags = $derived<readonly CardTag[]>([
+  { text: 'Report', icon: flag },
+  { text: TYPES[target.type], color: 'var(--color-dialog-art-media-tag)' },
+]);
 let reason = $state('');
 let message = $state('');
 let error = $state('');
-let invalid = $state({ reason: false, message: false });
 let busy = $state(false);
-let select = $state<HTMLSelectElement>();
-let textarea = $state<HTMLTextAreaElement>();
+const invalid = $derived(validateReport({ type: target.type, reason, message }));
+const optional = $derived(!invalid.reason && !validateReport({ type: target.type, reason, message: '' }).message);
+const missing = $derived(
+  invalid.reason ? 'Pick a reason to send' : invalid.message ? 'Add a message to send' : undefined,
+);
 const instructions = $derived(
   target.type === 'comment'
     ? ['spoilers', 'duplicate', 'other'].includes(reason)
@@ -37,28 +70,17 @@ $effect(() => {
   reason = '';
   message = '';
   error = '';
-  invalid = { reason: false, message: false };
 });
 
-// Keep the permalink in the tab order, but start a report at its reason control.
-const focusReason = (control: HTMLSelectElement) => {
-  if (open) {
-    queueMicrotask(() => {
-      if (open) control.focus();
-    });
-  }
+// Keep the permalink in the tab order, but start a report at its reason.
+const focusReason = (field: HTMLElement) => {
+  if (!open) return;
+  queueMicrotask(() => {
+    if (open) field.querySelector('button')?.focus();
+  });
 };
 
-async function submit(event: SubmitEvent) {
-  event.preventDefault();
-  if (busy) return;
-  invalid = validateReport({ type: target.type, reason, message });
-  if (invalid.reason || invalid.message) {
-    // OG's comment modal only marks the fields.
-    error = target.type === 'comment' ? '' : 'Please choose a reason and type in a message.';
-    (invalid.reason ? select : textarea)?.focus();
-    return;
-  }
+async function submit() {
   busy = true;
   error = '';
   const result = await writeMediaTool({
@@ -79,26 +101,21 @@ async function submit(event: SubmitEvent) {
 
 <!-- External/permalink links aren't typed SvelteKit routes. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-<Dialog bind:open title="Report {target.type}" size="md" variant="report">
+<Dialog bind:open title={heading} size="md" variant="art">
   {#snippet header(titleId)}
-    <header class="report-title">
-      <h2 id={titleId}>Report {target.type}</h2>
-      {#if target.title}<p>{target.title}</p>{/if}
-      <a href={permalink} target="_blank" rel="noopener">{permalink}</a>
-    </header>
+    <DialogArtHeader id={titleId} title={heading} fanart={target.fanart} posters={target.posters} {tags}>
+      <a class="permalink" href={permalink} target="_blank" rel="noopener"><Icon svg={link} /><span>{permalink}</span></a>
+    </DialogArtHeader>
   {/snippet}
-  <form onsubmit={submit} novalidate aria-busy={busy}>
-    {#if error}<p id="{id}-error" class="error" role="alert">{error}</p>{/if}
-    <label for="{id}-reason">Reason</label>
-    <select {@attach focusReason} id="{id}-reason" bind:this={select} bind:value={reason} aria-invalid={invalid.reason} aria-describedby={error ? `${id}-error` : undefined} disabled={busy} onchange={() => { invalid.reason = false; textarea?.focus(); }}>
-      <option value=""></option>
-      {#each reportReasons(target.type) as option (option.value)}
-        <option value={option.value}>{option.label}</option>
-      {/each}
-    </select>
+
+  <DialogForm save={busy ? 'Sending…' : 'Send Report'} verb="send" hint={missing} {busy} disabled={Boolean(missing)}
+    onsubmit={submit} oncancel={() => (open = false)}>
+    <div {@attach focusReason}>
+      <ChoiceDropdown label="Reason" options={reportReasons(target.type)} bind:value={reason} placeholder="Choose a reason"
+        disabled={busy} />
+    </div>
     {#if instructions}
-      <h3>Instructions</h3>
-      <p class="instructions">
+      <DialogNotice role="status">
         {#if reason === 'spoilers'}
           If you've already seen this item, spoilers won't be hidden.
         {:else if reason === 'duplicate' && target.type === 'comment'}
@@ -120,91 +137,44 @@ async function submit(event: SubmitEvent) {
         {:else}
           If possible, please select a built in reason. If not, please be as detailed as you can.
         {/if}
-      </p>
+      </DialogNotice>
     {/if}
-    <label for="{id}-message">Message</label>
-    <textarea id="{id}-message" bind:this={textarea} bind:value={message} rows="2" disabled={busy} aria-invalid={invalid.message} aria-describedby={error ? `${id}-error` : undefined} oninput={() => { invalid.message = false; }}></textarea>
-    <button type="submit" class="send" disabled={busy}>{busy ? 'Sending...' : 'Send'}</button>
-  </form>
+    <div>
+      <FieldLabel text="Message" for="{id}-message">
+        {#snippet aside()}{#if optional}<span class="optional">Optional</span>{/if}{/snippet}
+      </FieldLabel>
+      <textarea id="{id}-message" bind:value={message} rows="4" placeholder={reportPlaceholder(target.type, reason)}
+        disabled={busy}></textarea>
+    </div>
+    {#if error}<DialogNotice tone="danger" role="alert">{error}</DialogNotice>{/if}
+  </DialogForm>
 </Dialog>
 
 <style>
-.report-title {
-  padding: var(--space-panel) var(--space-dialog-inline);
-  border-block-end: 1px solid var(--color-dialog-title-border);
-  background: var(--color-dialog-title-bg);
-  overflow-wrap: anywhere;
-  h2 {
-    margin: 0;
-    color: var(--color-dialog-title-text);
-    font-size: var(--font-size-dialog-title);
-    font-weight: var(--font-weight-headings);
-    margin-block-end: var(--report-label-gap);
-    text-transform: uppercase;
+.permalink {
+  display: flex;
+  align-items: center;
+  gap: var(--dialog-art-link-gap);
+  min-inline-size: 0;
+  color: var(--color-dialog-art-link);
+  font-size: var(--font-size-dialog-art-link);
+  text-decoration: none;
+
+  & span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
-  p {
-    margin: 0 0 var(--report-title-gap);
-    font-family: var(--font-headings);
-    line-height: var(--line-height-headings);
-  }
-}
-form {
-  padding: 0 var(--space-dialog-inline) var(--space-dialog-inline);
-}
-label,
-h3 {
-  display: block;
-  margin: var(--gutter) 0 var(--report-label-gap) var(--report-label-inline-offset);
-  color: var(--color-report-label);
-  font-family: var(--font-headings);
-  font-size: var(--font-size-dialog-title);
-  font-weight: var(--font-weight-headings);
-  line-height: var(--line-height-headings);
-  text-transform: uppercase;
-}
-select,
-textarea {
-  inline-size: 100%;
-  border-radius: var(--radius-base);
-}
-select {
-  block-size: var(--report-select-height);
-  min-block-size: 0;
-  padding: 0 var(--report-control-padding);
-}
-textarea {
-  display: block;
-  padding: var(--report-control-padding);
-  font-size: var(--font-size-dialog-submit);
-  resize: vertical;
-}
-.instructions {
-  margin: 0;
-}
-.error {
-  margin: 0 calc(-1 * var(--space-dialog-inline));
-  padding: var(--space-panel) var(--space-dialog-inline);
-  background: var(--color-report-error-bg);
-  color: var(--color-report-error);
-}
-[aria-invalid='true'] {
-  border-color: var(--color-report-error);
-  background: var(--color-report-invalid-bg);
-}
-.send {
-  display: block;
-  border-radius: var(--radius-base);
-  margin-block-start: var(--gutter);
-  padding: var(--space-lg-block) var(--space-lg-inline);
-  border-color: var(--color-btn-primary-border);
-  background: var(--brand-primary);
-  color: var(--color-text-inverse);
-  font-family: var(--font-headings);
-  font-size: var(--font-size-dialog-submit);
-  font-weight: var(--font-weight-headings-heavy);
-  text-transform: uppercase;
+
   &:is(:hover, :focus-visible) {
-    background: var(--brand-primary-darken);
+    color: var(--color-card-text);
+    text-decoration: underline;
   }
+}
+
+.optional {
+  font-weight: normal;
+  letter-spacing: normal;
+  text-transform: none;
 }
 </style>

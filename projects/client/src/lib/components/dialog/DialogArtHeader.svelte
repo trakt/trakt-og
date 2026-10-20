@@ -1,10 +1,11 @@
 <!--
   The art header on top of the notes and list dialogs: the item's fanart, a strip of the list's posters, or a striped
-  placeholder for a new list, under a dark glass shade, with card tags over the title. Pass it the id a Dialog
-  `header` snippet hands over. Goes with `<Dialog variant="art">`, whose glass close sits in its corner.
+  placeholder for a new list, under a dark glass shade, with card tags over the title and `children` under it (a
+  report's permalink). Pass it the id a Dialog `header` snippet hands over. Goes with `<Dialog variant="art">`, whose glass close sits in its corner.
     <DialogArtHeader {id} title="The Social Network" year={2010} fanart={url} tags={[{ text: 'Favorite', kind: 'favorite' }]} />
 -->
 <script lang="ts">
+import type { Snippet } from 'svelte';
 import CardTag from '$lib/components/media/CardTag.svelte';
 import type { CardTag as Tag } from '$lib/components/media/CardTag';
 
@@ -16,9 +17,10 @@ interface Props {
   fanart?: string;
   /** A list's first posters, side by side, when there's no fanart. */
   posters?: readonly string[];
+  children?: Snippet;
 }
 
-const { id, title, year, tags = [], fanart, posters = [] }: Props = $props();
+const { id, title, year, tags = [], fanart, posters = [], children }: Props = $props();
 </script>
 
 <header class="art-header">
@@ -32,6 +34,7 @@ const { id, title, year, tags = [], fanart, posters = [] }: Props = $props();
   <div class="titles">
     {#if tags.length > 0}<p class="tags">{#each tags as tag, i (i)}<CardTag {...tag} />{/each}</p>{/if}
     <h2 {id}>{title}{#if year}<span class="year">{year}</span>{/if}</h2>
+    {@render children?.()}
   </div>
 </header>
 

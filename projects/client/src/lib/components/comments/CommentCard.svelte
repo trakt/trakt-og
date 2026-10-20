@@ -670,7 +670,8 @@ const vanish = (node: Element) =>
 {/if}
 
 {#if reporting}
-  <ReportDialog bind:open={reporting} target={{ type: 'comment', id: comment.id, title: '', href: permalink }} />
+  <ReportDialog bind:open={reporting}
+  target={{ type: 'comment', id: comment.id, title: `Comment by ${author.name}`, href: permalink }} />
 {/if}
 
 <style>

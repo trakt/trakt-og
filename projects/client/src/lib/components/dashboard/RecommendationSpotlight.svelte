@@ -7,7 +7,7 @@
 <script lang="ts">
 import { page } from '$app/state';
 import TagPills from '$lib/components/labels/TagPills.svelte';
-import type { TagPill } from '$lib/components/labels/TagPill';
+import { mediaTags } from '$lib/components/labels/mediaTags';
 import GlassAction from '$lib/components/glass-action/GlassAction.svelte';
 import WatchlistButton from '$lib/components/lists/WatchlistButton.svelte';
 import MediaRating from '$lib/components/rating/MediaRating.svelte';
@@ -23,8 +23,6 @@ import chevronRight from '$lib/icons/regular/chevron-right.svg?raw';
 import xmark from '$lib/icons/regular/xmark.svg?raw';
 import heart from '$lib/icons/solid/heart.svg?raw';
 import play from '$lib/icons/solid/play.svg?raw';
-import { countLabel } from '$lib/utils/countLabel';
-import { formatRuntime } from '$lib/utils/formatRuntime';
 import RecommendationWhy from './RecommendationWhy.svelte';
 
 interface Props {
@@ -42,20 +40,8 @@ const { item, index, total, mixed, isVip, onstep }: Props = $props();
 
 const target = $derived({ type: item.type, id: item.id, title: item.title });
 const ratingLevel = $derived(Math.min(Math.max(Math.trunc(item.rating ?? 1), 1), 10));
-const tags = $derived<TagPill[]>([
-  ...(mixed ? [{ text: item.type === 'show' ? 'Show' : 'Movie', kind: 'primary' as const }] : []),
-  ...(item.certification ? [{ text: item.certification, kind: 'badge' as const }] : []),
-  ...segments([
-    ...(item.runtime ? [formatRuntime(item.runtime)] : []),
-    ...(item.airedEpisodes ? [countLabel(item.airedEpisodes, 'episode')] : []),
-  ]),
-  ...segments(item.genres.slice(0, 2)),
-  ...(item.network ? [{ text: item.network }] : []),
-]);
-
-function segments(parts: readonly string[]): TagPill[] {
-  return parts.length > 0 ? [{ segments: parts }] : [];
-}
+// The year sits by the title instead.
+const tags = $derived(mediaTags({ ...item, year: undefined, mixed }));
 
 // A plain crossfade: the new fanart fades in once it has loaded, over the last one, which only gives way to it
 // once the fade is done. The card never goes blank and never shows two pictures out of line.

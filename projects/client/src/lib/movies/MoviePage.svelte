@@ -99,7 +99,7 @@ const textLinks = $derived(movie.links.filter(({ icon }) => !icon));
 
 <SummaryFrame label={movie.title}>
   {#snippet tools()}
-    <MediaTools target={{ type: 'movie', id: movie.id, title: movie.fullTitle, href: movie.href, tmdb: movie.links.find((link) => link.label === 'TMDB')?.href }} updatedAt={movie.updatedAt} datasource="TMDB" />
+    <MediaTools target={{ type: 'movie', id: movie.id, title: movie.fullTitle, href: movie.href, tmdb: movie.links.find((link) => link.label === 'TMDB')?.href }} />
   {/snippet}
 
   {#snippet sidebar()}

@@ -30,6 +30,7 @@ describe('toListCard', () => {
       href: '/lists/10',
       name: 'Popular Horror',
       owner: {
+        slug: 'lish408',
         name: 'LISH',
         href: '/users/lish408',
         avatar: 'https://media.trakt.tv/images/users/1/avatars/medium/a.jpg',
@@ -58,7 +59,13 @@ describe('toListCard', () => {
   it('should fall back to the username and the placeholder avatar', () => {
     const card = toListCard({ ...list, user: { username: 'sean' } });
 
-    expect(card.owner).toEqual({ name: 'sean', href: '/users/sean', avatar: PLACEHOLDER_AVATAR, vip: null });
+    expect(card.owner).toEqual({
+      slug: 'sean',
+      name: 'sean',
+      href: '/users/sean',
+      avatar: PLACEHOLDER_AVATAR,
+      vip: null,
+    });
   });
 
   it('should leave out an empty description and the comments when they are off', () => {

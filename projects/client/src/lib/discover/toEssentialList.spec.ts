@@ -23,6 +23,7 @@ describe('toEssentialList', () => {
       ...imdb,
       href: '/lists/2142753',
       description: 'Top 250 movies, as rated by IMDB voters.',
+      ownerSlug: 'justin',
       counts: { items: 250, likes: 6061, comments: 6 },
       posters: ['https://media.trakt.tv/a/posters/thumb/p.jpg'],
     });

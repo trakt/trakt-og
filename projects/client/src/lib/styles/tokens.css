@@ -2209,6 +2209,7 @@
   /* Comments: the text in a bubble, tinted tags top right like a list row's chips, and a stats bar under it. */
   --color-comment-bubble-border: var(--color-list-card-border);
   --comment-stats-gap: 8px 14px;
+  --list-counts-gap: var(--comment-stats-gap); /* a list's count buttons, spaced like a comment's */
   --comment-stats-space: 12px; /* between the bubble and the stats bar */
   --comment-tags-gap: 10px;
   --radius-comment-bubble-round: 14px; /* the comment's bubble, every corner alike */
@@ -2423,8 +2424,6 @@
   --media-tools-row-padding: 4px;
   --media-tools-icon-column: 22px;
   --media-tools-line-height: 1.2;
-  --media-tools-under-margin: -2px;
-  --font-size-media-tools-under: 10px;
 }
 
 /* OG's phone header is 5px shorter. */
@@ -2527,6 +2526,7 @@
   --season-hero-bottom: 40px;
   --season-hero-info-height: 348px; /* every pick's details, so the posters and buttons stay put */
   --season-hero-name-height: 110px; /* the logo, or the title in up to two lines */
+  --season-hero-tags-height: 21px; /* one row of tag pills */
   --season-hero-logo-width: 440px;
   --shadow-season-hero-logo: 0 2px 10px rgb(0 0 0 / 0.7);
   --season-hero-action: 42px; /* the More info and Trailer buttons */
@@ -2610,11 +2610,6 @@
   --list-tile-by-gap: 6px;
   --list-tile-avatar: 40px;
   --list-tile-head-gap: 2px 12px;
-  --list-tile-counts-gap: 16px;
-  --list-tile-counts-inset: 4px;
-  --list-tile-stat-gap: 5px;
-  --font-size-list-tile-stat: 15px;
-  --font-size-list-tile-stat-icon: 15px;
   /* The essential lists' accordion: OG's Featured Lists art in tall slices, one open, and the green label. */
   --essential-height: 500px;
   --essential-gap: 4px;
@@ -2675,10 +2670,10 @@
   --trending-comments-poster: 170px;
   --trending-comments-title-gap: 30px;
   --trending-comments-gap: 56px;
-  --trending-comments-quote-gap: 16px;
   --trending-comments-byline-gap: 12px;
   --font-size-trending-comments-quote: 22px;
   --font-size-trending-comments-mark: 30px;
+  --trending-comments-collapsed-height: 180px; /* the quote before Read more */
   --trending-comments-person: 40px;
   --trending-comments-pager-gap: 24px;
   --trending-comments-pager-padding: 12px 18px;
@@ -2695,7 +2690,6 @@
   --trending-comments-peek-caption-bottom: 9px;
   --font-size-trending-comments-peek-title: 16px;
   --trending-comments-peek-avatar: 34px;
-  --line-height-trending-comments-byline: 1.35; /* the name's line and the date's */
   --trending-comments-people-gap: 6px;
   /* The toggle buttons: moods, the Movies/Shows switch and the premiere filters. */
   --toggle-chip-gap: 8px;
@@ -2713,12 +2707,6 @@
   --shadow-premiere-card: 0 6px 18px rgb(0 0 0 / 0.25);
   --premiere-logo-top: 20%; /* clear of the date chip */
   --premiere-logo-height: 42%;
-  --premiere-foot-inset: 12px;
-  --premiere-foot-gap: 8px;
-  --premiere-pill-gap: 6px;
-  --premiere-pill-padding: 3px 9px;
-  --font-size-premiere-pill: 12px;
-  --premiere-pill-dot: 7px;
   --premiere-chip-gap: 6px; /* between the countdown and the date */
   --color-premiere-cool: rgb(44 44 48 / 0.9); /* the countdown a month or more out */
   --color-premiere-warm: #c4690f; /* two weeks out */

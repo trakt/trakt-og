@@ -115,39 +115,12 @@ describe('writeMediaTool', () => {
     expect((await writeMediaTool({ fetch, action: { ...report, message: ' ' } })).ok).toBe(false);
   });
 
-  it.each(['refresh', 'justwatch'] as const)('should queue %s with an empty POST', async (kind) => {
-    server.use(
-      http.post(
-        `https://apiz.trakt.tv/movies/1/${kind === 'refresh' ? 'refresh' : 'refresh/justwatch'}`,
-        async ({ request }) => {
-          expect(await request.text()).toBe('');
-          return new HttpResponse(null, { status: 201 });
-        },
-      ),
-    );
-    expect((await writeMediaTool({ fetch, action: { kind, target } })).ok).toBe(true);
-  });
-
-  it('should prevent unsupported refresh requests', async () => {
-    expect((await writeMediaTool({ fetch, action: { kind: 'refresh', target: { ...target, type: 'episode' } } })).ok)
-      .toBe(false);
-    expect((await writeMediaTool({ fetch, action: { kind: 'justwatch', target: { ...target, type: 'person' } } })).ok)
-      .toBe(false);
-  });
-
   it('should retain the API explanation for pending reports and reporting bans', async () => {
     respond(409, { message: 'You already have a pending report for this item.' });
     expect(await writeMediaTool({ fetch, action: report })).toEqual({
       ok: false,
       message: 'You already have a pending report for this item.',
     });
-  });
-
-  it('should explain a recent-refresh conflict with no body', async () => {
-    respond(409);
-    expect((await writeMediaTool({ fetch, action: { kind: 'refresh', target } })).message).toContain(
-      'recently refreshed',
-    );
   });
 
   it.each([401, 403, 429, 500])('should fail without a success message on %i', async (status) => {

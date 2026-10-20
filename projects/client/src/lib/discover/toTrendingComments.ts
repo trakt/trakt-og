@@ -1,4 +1,5 @@
 import type { CommentResponse } from '@trakt/api';
+import type { CommentItem } from '../components/comments/CommentItem.ts';
 import { episodeNumber } from '../components/media/episodeTags.ts';
 import { imageUrl } from '../utils/imageUrl.ts';
 import type { TrendingCommentRow } from './trendingCommentRowsSchema.ts';
@@ -7,6 +8,8 @@ import type { TrendingCommentRow } from './trendingCommentRowsSchema.ts';
 export type TrendingComment = {
   readonly comment: CommentResponse;
   readonly href: string;
+  /** What the comment card needs for the author's plays, the viewer's spoiler reveal and the share title. */
+  readonly commentItem: CommentItem;
   readonly item: {
     readonly type: 'movie' | 'show';
     readonly id: number;
@@ -54,6 +57,21 @@ function toItem(row: TrendingCommentRow, now: Date): TrendingComment['item'] | u
   };
 }
 
+// The comment card's item: the episode itself where the row names it, else its movie or show.
+function toCommentItem(row: TrendingCommentRow, item: TrendingComment['item']): CommentItem {
+  const episode = row.type === 'episode' ? row.episode : undefined;
+  if (episode?.ids) {
+    const title = [item.title, item.episode?.number, item.episode?.title && `"${item.episode.title}"`]
+      .filter(Boolean)
+      .join(' ');
+    return { type: 'episode', id: episode.ids.trakt, title, show: item.id, season: episode.season };
+  }
+  if (item.type === 'movie') {
+    return { type: 'movie', id: item.id, title: item.year ? `${item.title} (${item.year})` : item.title };
+  }
+  return { type: 'show', id: item.id, title: item.title, airedEpisodes: item.airedEpisodes };
+}
+
 /**
  * The trending comments to show, most liked first as the API sends them, but one per title before any second one,
  * so a big episode night doesn't fill the section with one show. Only movies, shows and episodes, with a poster.
@@ -61,7 +79,9 @@ function toItem(row: TrendingCommentRow, now: Date): TrendingComment['item'] | u
 export function toTrendingComments(rows: readonly TrendingCommentRow[], now: Date, limit = 10): TrendingComment[] {
   const comments = rows.flatMap((row): TrendingComment[] => {
     const item = toItem(row, now);
-    return item?.poster ? [{ comment: row.comment, href: `/comments/${row.comment.id}`, item }] : [];
+    return item?.poster
+      ? [{ comment: row.comment, href: `/comments/${row.comment.id}`, commentItem: toCommentItem(row, item), item }]
+      : [];
   });
   const key = ({ item }: TrendingComment) => `${item.type}-${item.id}`;
   const firsts = comments.filter((comment, index) =>

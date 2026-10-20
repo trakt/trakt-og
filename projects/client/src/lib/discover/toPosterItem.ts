@@ -19,8 +19,8 @@ export type PosterItem = {
   readonly poster?: string;
   readonly fanart?: string;
   readonly logo?: string;
-  /** "Horror, Thriller". */
-  readonly genres?: string;
+  /** "Horror", "Science fiction". */
+  readonly genres: readonly string[];
   readonly certification?: string;
   readonly network?: string;
   readonly overview?: string;
@@ -46,7 +46,7 @@ export function toPosterItem(media: ThemeMedia, type: 'movie' | 'show', now: Dat
     poster: imageUrl(media.images?.poster?.at(0), 'thumb'),
     fanart: imageUrl(media.images?.fanart?.at(0), 'full'),
     logo: imageUrl(media.images?.logo?.at(0), 'medium'),
-    genres: (media.genres ?? []).slice(0, 3).map(humanize).join(', ') || undefined,
+    genres: (media.genres ?? []).map(humanize),
     certification: media.certification ?? undefined,
     network: media.network ?? undefined,
     overview: media.overview?.trim() || undefined,

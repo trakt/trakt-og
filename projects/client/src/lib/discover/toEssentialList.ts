@@ -6,6 +6,8 @@ import { toListCard } from './toListCard.ts';
 export type EssentialList = FeaturedList & {
   readonly href: string;
   readonly description?: string;
+  /** The owner's slug, for the Like toggle's route; only when the list loaded. */
+  readonly ownerSlug?: string;
   readonly counts?: { readonly items: number; readonly likes: number; readonly comments?: number };
   readonly posters: readonly string[];
 };
@@ -14,6 +16,6 @@ export type EssentialList = FeaturedList & {
 export function toEssentialList(tile: FeaturedList, list: ListSource | null): EssentialList {
   const href = `/lists/${tile.id}`;
   if (!list) return { ...tile, href, posters: [] };
-  const { description, items, likes, comments, posters } = toListCard(list);
-  return { ...tile, href, description, counts: { items, likes, comments }, posters };
+  const { description, owner, items, likes, comments, posters } = toListCard(list);
+  return { ...tile, href, description, ownerSlug: owner.slug, counts: { items, likes, comments }, posters };
 }

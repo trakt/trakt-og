@@ -1,6 +1,6 @@
 <!--
   The season hero: this month's theme from the month map as an auto-rotating carousel of up to twenty picks. Each pick
-  fills the hero with its fanart, and its logo (or title), details, overview, "More info" and "Trailer" sit on the
+  fills the hero with its fanart, and its logo (or title), tag pills, overview, "More info" and "Trailer" sit on the
   left in a block of fixed height, so nothing jumps between picks. The theme's badge is top-left and the All /
   Trending / Favorites switch top-right, its accent sliding to the picked button. A rail of same-size posters picks a
   slide and scrolls to keep the current one in view: it's full colour with an accent ring and a timer bar, the rest
@@ -9,6 +9,8 @@
   through.
 -->
 <script lang="ts">
+import { mediaTags } from '$lib/components/labels/mediaTags';
+import TagPills from '$lib/components/labels/TagPills.svelte';
 import VideoPopup from '$lib/components/dialog/VideoPopup.svelte';
 import { youtubeEmbedUrl } from '$lib/components/dialog/youtubeEmbedUrl';
 import { isPlainClick } from '$lib/utils/isPlainClick';
@@ -127,16 +129,6 @@ const controls: Attachment<HTMLElement> = (node) => {
     node.removeEventListener('keydown', onkeydown);
   };
 };
-
-const details = (item: SeasonPick) =>
-  [
-    item.year,
-    item.type === 'movie' && item.runtime ? `${item.runtime}m` : item.network,
-    item.certification,
-    item.genres,
-  ]
-    .filter(Boolean)
-    .join(' · ');
 </script>
 
 <!-- Media hrefs point at routes resolve() can't type from a string. -->
@@ -174,9 +166,7 @@ const details = (item: SeasonPick) =>
         <h2 class="name">
           {#if current.logo}<img src={current.logo} alt={current.title} />{:else}{current.title}{/if}
         </h2>
-        <p class="details">
-          {details(current)}
-        </p>
+        <div class="tags"><TagPills tags={mediaTags({ ...current, mixed: true })} /></div>
         <p class="overview">{current.overview ?? ''}</p>
         <div class="actions">
           <a class="button primary" href={current.href}>More info</a>
@@ -437,11 +427,11 @@ const details = (item: SeasonPick) =>
   }
 }
 
-.details {
+/* One row, so the block keeps its height. */
+.tags {
   overflow: hidden;
-  color: var(--color-season-hero-blurb);
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  block-size: var(--season-hero-tags-height);
+  text-shadow: none;
 }
 
 .overview {

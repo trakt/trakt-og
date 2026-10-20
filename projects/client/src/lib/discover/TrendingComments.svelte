@@ -2,20 +2,15 @@
   Discover's trending comments: one comment at a time over its title's fanart, which runs the full width behind the
   page column. Under the heading, dropdowns pick the kind of comment and the type of title (fetched as they change).
   The title's poster card is on the left (an episode's card shows the episode with its show under it, as history
-  does); on the right, the commenter's header as on a comment card (avatar with their rating's corner, name, VIP pill,
-  Review and Spoilers tags, date), the comment under a quote mark, and its likes and replies. A spoiler comment stays
-  blurred until clicked. Under it all, a pill of the commenters' avatars jumps between comments (hovering one shows a
-  card with the title's fanart, episode and name, the commenter, their rating and the comment's likes and replies),
-  and arrows on the section's edges step through.
+  does); on the right, the comment card itself in its spotlight style (the text large under a quote mark), so the tags,
+  spoiler blur, reactions, replies, Read thread and tools work as on any comment (Reply is left to the comment's page).
+  Under it all, a pill of the commenters' avatars jumps between comments (hovering one shows a card with the title's
+  fanart, episode and name, and the commenter), and arrows on the section's edges step through.
 -->
 <script lang="ts">
-import CommentAvatar from '$lib/components/comments/CommentAvatar.svelte';
-import CommentTag from '$lib/components/comments/CommentTag.svelte';
-import CommentGif from '$lib/components/comments/CommentGif.svelte';
-import CommentText from '$lib/components/comments/CommentText.svelte';
+import { page } from '$app/state';
+import CommentCard from '$lib/components/comments/CommentCard.svelte';
 import { authorOf } from '$lib/components/comments/authorOf';
-import { commentDates } from '$lib/components/comments/commentDates';
-import { parseComment } from '$lib/components/comments/text/parseComment';
 import PanelHeading from '$lib/components/dashboard/PanelHeading.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import VipLabel from '$lib/components/labels/VipLabel.svelte';
@@ -24,20 +19,13 @@ import { quickIconFill } from '$lib/components/media/quickIconFill';
 import Icon from '$lib/icons/Icon.svelte';
 import angleLeft from '$lib/icons/light/angle-left.svg?raw';
 import angleRight from '$lib/icons/light/angle-right.svg?raw';
-import comment from '$lib/icons/regular/comment.svg?raw';
 import comments from '$lib/icons/regular/comments.svg?raw';
-import thumbsUp from '$lib/icons/regular/thumbs-up.svg?raw';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import eyeSlash from '$lib/icons/solid/eye-slash.svg?raw';
-import heart from '$lib/icons/solid/heart.svg?raw';
-import quoteLeft from '$lib/icons/solid/quote-left.svg?raw';
-import star from '$lib/icons/solid/star.svg?raw';
 import { overlay } from '$lib/overlay/overlay';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
 import { fetchTrendingComments } from './fetchTrendingComments.ts';
 import { trendingCommentFilters } from './trendingCommentFilters.ts';
 import type { TrendingComment } from './toTrendingComments.ts';
-import { SvelteSet } from 'svelte/reactivity';
 
 interface Props {
   items: readonly TrendingComment[];
@@ -51,23 +39,13 @@ let media = $state<(typeof trendingCommentFilters.media)[number]['id']>('all');
 let fetched = $state<readonly TrendingComment[]>();
 let loading = $state(false);
 let index = $state(0);
-const revealed = new SvelteSet<number>();
 let request = 0;
 
 const list = $derived(fetched ?? items);
 const current = $derived(list.at(index));
-const author = $derived(current ? authorOf(current.comment.user) : undefined);
-const blocks = $derived(current ? parseComment(current.comment.comment) : []);
-const posted = $derived(
-  current
-    ? commentDates({ createdAt: current.comment.created_at, updatedAt: current.comment.created_at }, datePreferences)
-      .posted
-    : '',
-);
-const blurred = $derived(current ? current.comment.spoiler && !revealed.has(current.comment.id) : false);
+const commentViewer = $derived(page.data.user ? { slug: page.data.user.slug } : null);
 const kindLabel = $derived(trendingCommentFilters.kinds.find(({ id }) => id === kind)?.label);
 const mediaLabel = $derived(trendingCommentFilters.media.find(({ id }) => id === media)?.label);
-const count = (n: number) => n.toLocaleString('en-US');
 
 const step = (delta: number) => (index = (index + delta + list.length) % list.length);
 
@@ -83,13 +61,6 @@ async function filter(next: { kind?: typeof kind; media?: typeof media }) {
   index = 0;
   loading = false;
 }
-
-const reveal = (id: number) => revealed.add(id);
-const revealOnKey = (event: KeyboardEvent, id: number) => {
-  if (event.key !== 'Enter' && event.key !== ' ') return;
-  event.preventDefault();
-  reveal(id);
-};
 </script>
 
 <!-- Comment, media and user hrefs are built from ids and slugs, which resolve() can't type. -->
@@ -147,7 +118,7 @@ const revealOnKey = (event: KeyboardEvent, id: number) => {
           </Dropdown>
       </div>
 
-      {#if current && author}
+      {#if current}
         {@const viewer = overlay.state(current.item.type, current.item.id)}
         <div class="slide" aria-live="polite">
           <div class="poster">
@@ -188,48 +159,15 @@ const revealOnKey = (event: KeyboardEvent, id: number) => {
           </div>
 
           <div class="quote">
-            <header class="byline">
-              <span class="avatar">
-                <CommentAvatar src={author.avatar} rating={current.comment.user_stats.rating} large />
-              </span>
-              <p class="who">
-                {#if author.href}<a class="username" href={author.href}>{author.name}</a>{:else}<strong
-                    class="username"
-                  >{author.name}</strong>{/if}
-                {#if author.badge}<VipLabel badge={author.badge} quiet />{/if}
-                {#if current.comment.review}<CommentTag svg={star}>Review</CommentTag>{/if}
-                {#if current.comment.spoiler}<CommentTag svg={eyeSlash} tone="spoiler">Spoilers</CommentTag>{/if}
-              </p>
-              <p class="when">
-                <a href={current.href}><time datetime={current.comment.created_at}>{posted}</time></a>
-              </p>
-            </header>
-
-            {#snippet gif()}{#if current.comment.gif}<CommentGif gif={current.comment.gif} />{/if}{/snippet}
-            <div class="said">
-              <span class="mark"><Icon svg={quoteLeft} /></span>
-              {#if blurred}
-                {@const id = current.comment.id}
-                <div
-                  class="spoiler"
-                  role="button"
-                  tabindex="0"
-                  aria-label="Spoilers, click to reveal"
-                  onclick={() => reveal(id)}
-                  onkeydown={(event) => revealOnKey(event, id)}
-                >
-                  <div class="text blur" aria-hidden="true" inert><CommentText {blocks} />{@render gif()}</div>
-                </div>
-              {:else}
-                <div class="text"><CommentText {blocks} />{@render gif()}</div>
-              {/if}
-            </div>
-
-            <p class="reactions">
-              <span><Icon svg={thumbsUp} /><strong>{count(current.comment.likes)}</strong> likes</span>
-              <span><Icon svg={comment} /><strong>{count(current.comment.replies)}</strong> replies</span>
-              <a href={current.href}>Read thread</a>
-            </p>
+            {#key current.comment.id}
+              <CommentCard
+                comment={current.comment}
+                item={current.commentItem}
+                viewer={commentViewer}
+                dateOptions={datePreferences}
+                spotlight
+              />
+            {/key}
           </div>
         </div>
       {:else}
@@ -242,7 +180,6 @@ const revealOnKey = (event: KeyboardEvent, id: number) => {
               {@const person = authorOf(item.comment.user)}
               <li>
                 <Tooltip>
-                  {@const rating = item.comment.user_stats.rating}
                   <span class="peek">
                     <span class="banner">
                       {#if item.item.fanart}<img src={item.item.fanart} alt="" loading="lazy" />{/if}
@@ -255,21 +192,10 @@ const revealOnKey = (event: KeyboardEvent, id: number) => {
                     </span>
                     <span class="peek-who">
                       <img src={person.avatar} alt="" loading="lazy" />
-                      <span class="peek-lines">
-                        <span class="peek-name"><b>{person.name}</b>{#if person.badge}<VipLabel
-                              badge={person.badge}
-                              quiet
-                            />{/if}</span>
-                        <span class="peek-counts">
-                          <span><Icon svg={thumbsUp} />{count(item.comment.likes)}</span>
-                          <span><Icon svg={comment} />{count(item.comment.replies)}</span>
-                        </span>
-                      </span>
-                      {#if rating}
-                        <span class="peek-rating" style:--rating-color="var(--rating-{rating})"><Icon
-                            svg={heart}
-                          />{rating}</span>
-                      {/if}
+                      <span class="peek-name"><b>{person.name}</b>{#if person.badge}<VipLabel
+                            badge={person.badge}
+                            quiet
+                          />{/if}</span>
                     </span>
                   </span>
                   {#snippet trigger(tooltip)}
@@ -359,82 +285,7 @@ const revealOnKey = (event: KeyboardEvent, id: number) => {
 }
 
 .quote {
-  display: grid;
-  gap: var(--trending-comments-quote-gap);
   min-inline-size: 0;
-}
-
-/* The avatar, then the name's line and the date's held together beside it, as on a comment card. */
-.byline {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  grid-template-rows: 1fr auto auto 1fr;
-  column-gap: var(--trending-comments-byline-gap);
-  row-gap: var(--comment-head-line-gap);
-
-  & p {
-    margin: 0;
-  }
-}
-
-.avatar {
-  grid-row: 1 / -1;
-  align-self: center;
-}
-
-.who {
-  grid-row: 2;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--comment-head-gap);
-  line-height: var(--line-height-trending-comments-byline);
-}
-
-/* The comment card's name. */
-.username {
-  color: var(--color-discover-text);
-  font-family: var(--font-headings);
-  font-weight: var(--font-weight-headings-heavy);
-  text-decoration: none;
-
-  &:is(a):hover {
-    color: var(--color-link);
-  }
-}
-
-.when {
-  grid-row: 3;
-  grid-column: 2;
-  line-height: var(--line-height-trending-comments-byline);
-  color: var(--color-comment-muted);
-  font-size: var(--font-size-comment-meta);
-
-  & a {
-    color: inherit;
-  }
-}
-
-/* The quote mark hangs to the left of the text. */
-.said {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: var(--trending-comments-byline-gap);
-}
-
-.mark {
-  color: var(--season-accent);
-  font-size: var(--font-size-trending-comments-mark);
-  line-height: 1;
-}
-
-.spoiler {
-  cursor: pointer;
-}
-
-.blur {
-  filter: var(--blur-spoiler-text);
-  user-select: none;
 }
 
 .empty {
@@ -443,50 +294,6 @@ const revealOnKey = (event: KeyboardEvent, id: number) => {
   min-block-size: var(--trending-comments-height);
   margin: 0;
   color: var(--color-discover-muted);
-}
-
-.text {
-  display: -webkit-box;
-  overflow: hidden;
-  color: var(--color-discover-text);
-  font-size: var(--font-size-trending-comments-quote);
-  font-weight: var(--font-weight-headings);
-  line-height: var(--line-height-base);
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 5;
-  line-clamp: 5;
-
-  & :global(p) {
-    display: inline;
-    margin: 0;
-  }
-}
-
-.reactions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--trending-comments-byline-gap);
-  margin: 0;
-  color: var(--color-discover-muted);
-
-  & span {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-xs-inline);
-  }
-
-  & :global(svg) {
-    color: var(--brand-secondary);
-  }
-
-  & strong {
-    color: var(--color-discover-text);
-  }
-
-  & a {
-    color: var(--color-discover-text);
-    font-weight: var(--font-weight-headings-heavy);
-  }
 }
 
 /* The pager under the comment, centred in a glass pill so it reads as controls: one avatar per comment. */
@@ -617,7 +424,7 @@ const revealOnKey = (event: KeyboardEvent, id: number) => {
 
 .peek-who {
   display: grid;
-  grid-template-columns: var(--trending-comments-peek-avatar) minmax(0, 1fr) auto;
+  grid-template-columns: var(--trending-comments-peek-avatar) minmax(0, 1fr);
   align-items: center;
   gap: var(--trending-comments-peek-gap);
   padding: var(--trending-comments-peek-inset);
@@ -630,13 +437,6 @@ const revealOnKey = (event: KeyboardEvent, id: number) => {
   }
 }
 
-.peek-lines {
-  display: grid;
-  gap: var(--comment-head-line-gap);
-  min-inline-size: 0;
-  line-height: var(--line-height-headings);
-}
-
 .peek-name {
   display: flex;
   align-items: center;
@@ -647,38 +447,6 @@ const revealOnKey = (event: KeyboardEvent, id: number) => {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-  }
-}
-
-.peek-counts {
-  display: flex;
-  gap: var(--trending-comments-peek-gap);
-  color: var(--color-tooltip-muted);
-
-  & span {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-xs-inline);
-  }
-
-  & :global(svg) {
-    color: var(--brand-secondary);
-  }
-}
-
-.peek-rating {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--comment-tag-gap);
-  block-size: var(--comment-tag-height);
-  padding: var(--comment-tag-padding);
-  border-radius: var(--radius-comment-tag);
-  background-color: var(--rating-color);
-  font-size: var(--font-size-comment-tag);
-  font-weight: var(--font-weight-headings-heavy);
-
-  & :global(svg) {
-    font-size: var(--font-size-comment-tag-icon);
   }
 }
 

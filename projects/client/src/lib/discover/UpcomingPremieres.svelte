@@ -3,8 +3,8 @@
   hot premieres feed and the anticipated chart, with toggles for all, new series and returning seasons. Each is its
   own rounded fanart card, two wide then three a row: the show's logo centred over its dimmed fanart (its name when
   there's no logo yet), a countdown chip that heats up over the last month (on the day, "Today" on fire, and the
-  card glows) beside a calendar chip with the day, pills for the kind of premiere, the network and the lists it's on,
-  and og's quick-action bar.
+  card glows) beside a calendar chip with the day, the chart pages' card tags for the kind of premiere (in its episode type's
+  color), the lists it's on and the network, and og's quick-action bar.
 -->
 <script lang="ts">
 import PanelHeading from '$lib/components/dashboard/PanelHeading.svelte';
@@ -81,6 +81,13 @@ function soon(days: number) {
             logo={premiere.logo}
             logoMode
             hideTitle
+            tags={[
+              premiere.kind === 'series'
+                ? { text: 'New Series', kind: 'series-premiere' }
+                : { text: `Season ${premiere.season}`, kind: 'season-premiere' },
+              ...(premiere.lists ? [{ text: countLabel(premiere.lists, 'list'), kind: 'list' as const }] : []),
+              ...(premiere.network ? [{ text: premiere.network, kind: 'generic' as const }] : []),
+            ]}
             userRating={viewer.rating}
             icons={{
               fill: quickIconFill({ state: viewer, airedEpisodes: premiere.airedEpisodes, datePreferences }),
@@ -105,15 +112,6 @@ function soon(days: number) {
                 </span>
               </span>
               {#if !premiere.logo}<span class="name" aria-hidden="true">{premiere.title}</span>{/if}
-              <span class="foot">
-                <span class="pills">
-                  <span class={['pill', premiere.kind]}>
-                    {premiere.kind === 'series' ? 'New Series' : `Season ${premiere.season}`}
-                  </span>
-                  {#if premiere.network}<span class="pill">{premiere.network}</span>{/if}
-                  {#if premiere.lists}<span class="pill">{countLabel(premiere.lists, 'list')}</span>{/if}
-                </span>
-              </span>
             {/snippet}
           </FanartCard>
         </li>
@@ -233,46 +231,6 @@ function soon(days: number) {
   text-transform: uppercase;
   text-wrap: balance;
   pointer-events: none;
-}
-
-.foot {
-  position: absolute;
-  inset: auto var(--premiere-foot-inset) var(--premiere-foot-inset);
-  display: grid;
-  gap: var(--premiere-foot-gap);
-  pointer-events: none;
-}
-
-.pills {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--premiere-pill-gap);
-}
-
-.pill {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--premiere-pill-gap);
-  padding: var(--premiere-pill-padding);
-  border-radius: var(--radius-season-pill);
-  background-color: var(--color-season-hero-chrome);
-  box-shadow: inset 0 0 0 1px var(--color-season-hero-chrome-line);
-  color: var(--color-discover-on-image);
-  font-size: var(--font-size-premiere-pill);
-  font-weight: var(--font-weight-headings);
-  white-space: nowrap;
-
-  &:is(.series, .season)::before {
-    content: '';
-    inline-size: var(--premiere-pill-dot);
-    block-size: var(--premiere-pill-dot);
-    border-radius: 50%;
-    background-color: var(--episode-series-premiere);
-  }
-
-  &.season::before {
-    background-color: var(--episode-season-premiere);
-  }
 }
 
 .fire {

@@ -2,7 +2,7 @@
   The progress page's view: the subnav with the type dropdown, the summary strip, sort, view toggles and filters,
   then one row a show, or a poster grid when grid view is on. It sorts, filters, pages and totals `items` itself, so
   the same view renders live data (`ProgressPage.svelte`) and the design page's samples. `items` is null while your
-  progress is still loading. The grid view and simple bar toggles save to the viewer's watched progress settings,
+  progress is still loading, under the global Trakt loader. The grid view and simple bar toggles save to the viewer's watched progress settings,
   which every tab reads, and grid view reloads the page, as OG did.
 -->
 <script lang="ts">
@@ -16,7 +16,6 @@ import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import SortDirection from '$lib/components/dropdown/SortDirection.svelte';
 import NoData from '$lib/components/empty/NoData.svelte';
 import LoadingOverlay from '$lib/components/loading/LoadingOverlay.svelte';
-import Spinner from '$lib/components/loading/Spinner.svelte';
 import FadeHideMenu from '$lib/components/filters/FadeHideMenu.svelte';
 import TermsFilter from '$lib/components/filters/TermsFilter.svelte';
 import type { HeaderUser } from '$lib/components/header/HeaderUser';
@@ -212,14 +211,12 @@ function changeHide(hide: ProgressHide[]) {
   </Container>
 </section>
 
-<!-- OG's `showLoading()` while grid view saves and the page reloads. -->
-<LoadingOverlay visible={saving === 'grid_view'} />
+<!-- The global loader while your progress loads, and OG's `showLoading()` while grid view saves and the page reloads. -->
+<LoadingOverlay visible={shown === null || saving === 'grid_view'} />
 
 <section class={['progress', data.type]} aria-label={title} aria-busy={shown === null}>
   <Container>
-    {#if shown === null}
-      <div class="loading"><Spinner label="Loading your progress" /> <span aria-hidden="true">Loading your progress…</span></div>
-    {:else if rows.length > 0}
+    {#if shown !== null && rows.length > 0}
       {#if pageCount > 1}<Pagination {meta} label="Progress pages" />{/if}
       {#if data.grid}
         <div class="grid">
@@ -250,7 +247,7 @@ function changeHide(hide: ProgressHide[]) {
         {/each}
       {/if}
       {#if pageCount > 1}<Pagination {meta} label="Progress pages" />{/if}
-    {:else}
+    {:else if shown !== null}
       <div class="empty">
         {#if listFilter}
           <NoData>Add some TV shows to your list and they'll start showing up here.</NoData>
@@ -316,14 +313,6 @@ function changeHide(hide: ProgressHide[]) {
 
 .empty {
   padding-block-start: var(--line-height-computed);
-}
-
-.loading {
-  display: flex;
-  gap: var(--space-xs-inline);
-  align-items: center;
-  margin-block: var(--progress-row-margin);
-  color: var(--color-text-muted);
 }
 
 /* On a phone OG moved the strip to its own band under the subnav (`.list-stats-wrapper.visible-xs-block`). */

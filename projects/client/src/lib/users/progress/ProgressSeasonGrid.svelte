@@ -1,7 +1,7 @@
 <!--
   An open progress row's seasons: each season's name (linking to its page) with what's watched and left (the row's own
   `Stat`s, a size down), then its tick bar and percent, like the show's (exact episodes, or one fill with Simple
-  Progress Bars). A season's toggle, or the row's View all (`expanded`),
+  Progress Bars). A season's toggle (`expanded`)
   shows its episodes under it, a numbered pill each. A pill is purple once watched, the library's teal while it's in
   your library but not watched, outlined and pulsing for up next, and dashed until it airs. Each links to its episode,
   with a chart tooltip: the screenshot, the code and title, when it aired with its runtime and rating, then its status

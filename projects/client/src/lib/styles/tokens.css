@@ -2388,8 +2388,19 @@
   --list-transfer-divider-gap: 7px;
   --list-transfer-list-padding: 5px;
 
-  --list-picker-width: 302px;
-  --list-picker-gap: 5px;
+  /* The list picker: the shared prompt's surface, tinted in the card's list blue. */
+  --list-picker-width: var(--prompt-width);
+  --list-picker-scroll-height: 320px;
+  --space-list-picker-link: 8px; /* either side of a row's open link */
+  --space-list-picker-search: 10px 10px 0; /* around the filter field; the first group's header spaces it from the rows */
+  --space-list-picker-footer: 10px; /* around New list */
+  --list-picker-search-ring: 3px;
+  --color-list-picker-search-ring: rgb(0 158 223 / 0.25); /* --brand-secondary, the halo outside the focused field */
+  --transition-list-picker-search: 0.22s cubic-bezier(0.2, 0, 0, 1);
+  --list-picker-people-scale: 1.15;
+  --list-picker-link-scale: 0.85;
+  --color-list-picker-tone: var(--brand-fifth);
+  --color-list-picker-on: var(--brand-secondary); /* a picked row's icon and name, and the filter tool when it's on */
   --list-header-block: 8px;
   --list-row-size: 13px;
   --list-row-gap: 2px;

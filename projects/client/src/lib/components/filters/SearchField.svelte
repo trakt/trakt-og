@@ -17,15 +17,18 @@ interface Props {
   disabled?: boolean;
   /** A key that focuses it, shown at the end. */
   kbd?: string;
+  /** The input, for a caller that focuses it. */
+  element?: HTMLInputElement;
   oninput?: (value: string) => void;
 }
 
-let { value = $bindable(), label, placeholder, name, disabled = false, kbd, oninput }: Props = $props();
+let { value = $bindable(), label, placeholder, name, disabled = false, kbd, element = $bindable(), oninput }: Props =
+  $props();
 </script>
 
 <label class="search-field">
   <Icon svg={search} />
-  <input type="search" aria-label={label} {name} {placeholder} {disabled} autocomplete="off" bind:value
+  <input bind:this={element} type="search" aria-label={label} {name} {placeholder} {disabled} autocomplete="off" bind:value
     oninput={() => oninput?.(value)} />
   {#if kbd}<kbd>{kbd}</kbd>{/if}
 </label>

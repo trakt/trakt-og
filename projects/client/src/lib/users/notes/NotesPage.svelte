@@ -128,7 +128,7 @@ const filterHref = (type: string) => {
         {#snippet trigger()}Added Date{/snippet}
         <ul><li><a href={page.url.pathname + page.url.search} aria-current="page">Added Date</a></li></ul>
       </Dropdown>
-      <SortDirection joined disabled />
+      <SortDirection joined descending disabled />
     </span>
   {/snippet}
 </SectionToolbar>

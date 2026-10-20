@@ -40,7 +40,7 @@ import type { loadProgress } from './loadProgress.ts';
 import { hideOptionsFor, type ProgressHide } from './progressHide.ts';
 import type { ProgressItem } from './ProgressItem.ts';
 import ProgressRow from './ProgressRow.svelte';
-import { type ProgressSort, progressSortLabel, progressSorts } from './progressSort.ts';
+import { literalProgressSort, type ProgressSort, progressSortLabel, progressSorts } from './progressSort.ts';
 import ProgressSummary from './ProgressSummary.svelte';
 import { isProgressType, type ProgressType, progressTypes } from './progressTypes.ts';
 import { sortProgress } from './sortProgress.ts';
@@ -184,12 +184,12 @@ function changeHide(hide: ProgressHide[]) {
         {#snippet trigger()}{#if data.sort.supported}{progressSortLabel(data.sort.by)}{:else}{progressSortLabel(data.sort.by)} <em>(unsupported)</em>{/if}{/snippet}
         <ul>
           {#each Object.keys(progressSorts) as by (by)}
-            <li><a href={href(data.type, { by, how: data.sort.how })}
+            <li><a href={href(data.type, { by, how: 'asc' })}
               aria-current={data.sort.by === by ? 'page' : undefined}>{progressSortLabel(by)}</a></li>
           {/each}
         </ul>
       </Dropdown>
-      <SortDirection joined bind:flipped={
+      <SortDirection joined descending={literalProgressSort({ by: data.sort.by, how: 'asc' }).how === 'desc'} bind:flipped={
         () => data.sort.how === 'desc',
         (next) => goto(href(data.type, { by: data.sort.by, how: next ? 'desc' : 'asc' }))
       } />

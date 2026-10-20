@@ -239,9 +239,10 @@ $effect(() => {
   replaceState(`${page.url.pathname}${search}${page.url.hash}`, page.state);
 });
 
+// A new sort starts in its own direction.
 const pick = (sort: ListsQuery['sort']) => {
   if (sort === 'random') shuffle();
-  query = { ...query, sort };
+  query = { ...query, sort, reversed: false };
 };
 
 // The "N collaborators" pill, one request a list as its row nears the viewport. Public lists go without the token, so
@@ -455,7 +456,8 @@ const actions = (row: UserListRow) => {
           {/each}
         </ul>
       </Dropdown>
-      {#if reordering}<SortDirection joined disabled />{:else}<SortDirection joined bind:flipped={query.reversed} />{/if}
+      {#if reordering || query.sort === 'random'}<SortDirection joined disabled />{:else}<SortDirection joined
+        descending={sorts.find(({ id }) => id === query.sort)?.descending} bind:flipped={query.reversed} />{/if}
     </span>
     <span class="tools" inert={reordering}>
       <TermsFilter bind:terms={query.terms} vip={(data.user?.isVip ?? false) && !reordering} />

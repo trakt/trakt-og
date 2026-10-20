@@ -201,12 +201,13 @@ function yearLine(credit: PersonCredit) {
               {#each creditSorts as sort (sort.id)}
                 <li>
                   <button type="button" aria-current={sort.id === query.sort}
-                    onclick={() => (query = { ...query, sort: sort.id })}>{sort.label}</button>
+                    onclick={() => (query = { ...query, sort: sort.id, reversed: false })}>{sort.label}</button>
                 </li>
               {/each}
             </ul>
           </Dropdown>
-          <SortDirection joined bind:flipped={query.reversed} />
+          <SortDirection joined descending={creditSorts.find(({ id }) => id === query.sort)?.descending}
+            bind:flipped={query.reversed} />
         </span>
         <span class="filter-icons">
           <TermsFilter bind:terms={query.terms} vip={data.user?.isVip ?? false} />

@@ -8,7 +8,7 @@
 import FieldLabel from '$lib/components/dialog/FieldLabel.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import SortDirection from '$lib/components/dropdown/SortDirection.svelte';
-import { listItemSorts } from '$lib/lists/listItemSorts';
+import { listItemSorts, listSortHow, reverseHow } from '$lib/lists/listItemSorts';
 import { sortDirectionHint } from '$lib/lists/sortDirectionHint';
 
 interface Props {
@@ -41,15 +41,18 @@ const headers: Readonly<Record<string, string>> = { site: 'Site Ratings', votes:
         <ul>
           {#if headers[group]}<li class="header" role="presentation">{headers[group]}</li>{/if}
           {#each items as sort (sort.by)}
-            <li><button type="button" aria-current={sort.by === by ? 'true' : undefined} onclick={() => (by = sort.by)}
-              >{sort.label}</button></li>
+            <li><button type="button" aria-current={sort.by === by ? 'true' : undefined} onclick={() => {
+              by = sort.by;
+              how = listSortHow(sort.by);
+            }}>{sort.label}</button></li>
           {/each}
         </ul>
       {/each}
       </div>
     </Dropdown>
-    <SortDirection joined {disabled}
-      bind:flipped={() => how === 'desc', (flipped) => (how = flipped ? 'desc' : 'asc')} />
+    <!-- Flipped is away from the sort's own direction; Random has none. -->
+    <SortDirection joined descending={listSortHow(by) === 'desc'} disabled={disabled || by === 'random'}
+      bind:flipped={() => how !== listSortHow(by), (flipped) => (how = reverseHow(by, flipped))} />
   </span>
 </div>
 

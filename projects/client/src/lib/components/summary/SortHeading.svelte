@@ -1,6 +1,7 @@
 <!--
   A summary section's h2 with a bold count ("3 Seasons", "24 Episodes") and, on the right, OG's sort dropdown plus the
-  direction toggle. `by` and `flipped` are bindable.
+  direction toggle, its arrow the way the picked sort runs (`desc`). Picking a sort puts it back in its own direction.
+  `by` and `flipped` are bindable.
 -->
 <script lang="ts" generics="By extends string">
 import type { Snippet } from 'svelte';
@@ -12,7 +13,7 @@ interface Props {
   count: number;
   /** The singular noun after the count; the heading adds the "s". */
   noun: string;
-  sorts: readonly { readonly by: By; readonly name: string }[];
+  sorts: readonly { readonly by: By; readonly name: string; readonly desc: boolean }[];
   by: By;
   flipped: boolean;
   controls?: Snippet;
@@ -20,7 +21,7 @@ interface Props {
 }
 
 let { id, count, noun, sorts, by = $bindable(), flipped = $bindable(), controls, loading = false }: Props = $props();
-const sortName = $derived(sorts.find((sort) => sort.by === by)?.name);
+const picked = $derived(sorts.find((sort) => sort.by === by));
 </script>
 
 <div class="heading" aria-busy={loading}>
@@ -29,16 +30,19 @@ const sortName = $derived(sorts.find((sort) => sort.by === by)?.name);
     <span class="loading" role="status">{loading ? 'Loading stats…' : ''}</span>
     <span class="pair">
       <Dropdown joined section="Sort">
-        {#snippet trigger()}{sortName}{/snippet}
+        {#snippet trigger()}{picked?.name}{/snippet}
         <ul>
           {#each sorts as sort (sort.by)}
             <li>
-              <button type="button" aria-current={sort.by === by} onclick={() => (by = sort.by)}>{sort.name}</button>
+              <button type="button" aria-current={sort.by === by} onclick={() => {
+                by = sort.by;
+                flipped = false;
+              }}>{sort.name}</button>
             </li>
           {/each}
         </ul>
       </Dropdown>
-      <SortDirection joined bind:flipped />
+      <SortDirection joined bind:flipped descending={picked?.desc} />
     </span>
     {@render controls?.()}
   </div>

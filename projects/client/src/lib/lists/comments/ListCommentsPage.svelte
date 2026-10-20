@@ -90,7 +90,8 @@ const sortHref = (sort: string) => {
               {/each}
             </ul>
           </Dropdown>
-          <SortDirection joined disabled={!addedDate} bind:flipped={
+          <!-- Every comment sort runs most or newest first. -->
+          <SortDirection joined descending disabled={!addedDate} bind:flipped={
             () => data.sort === 'oldest',
             (next) => goto(sortHref(next ? 'oldest' : 'newest'))
           } />

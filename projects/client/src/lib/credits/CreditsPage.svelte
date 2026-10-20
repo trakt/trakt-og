@@ -122,12 +122,16 @@ const matches = $derived(results.reduce((total, group) => total + group.people.l
           <ul>
             {#each sorts as { id, label } (id)}
               <li>
-                <button type="button" aria-current={id === sort?.id} onclick={() => (sortBy = id)}>{label}</button>
+                <button type="button" aria-current={id === sort?.id} onclick={() => {
+                  sortBy = id;
+                  flipped = false;
+                }}>{label}</button>
               </li>
             {/each}
           </ul>
         </Dropdown>
-        <SortDirection joined bind:flipped />
+        <!-- Billing, Name and Role run first to last, A to Z; Episodes most first. -->
+        <SortDirection joined descending={sort?.id === 'episodes'} bind:flipped />
       </span>
       <span class="tools">
         <ViewToggle bind:view />

@@ -157,7 +157,7 @@ const country = $derived(data.settings?.browsing?.watchnow?.country?.toLowerCase
         {#snippet trigger()}Watched Date{/snippet}
         <ul><li><a href={page.url.pathname + page.url.search} aria-current="page">Watched Date</a></li></ul>
       </Dropdown>
-      <SortDirection joined disabled />
+      <SortDirection joined descending disabled />
     </span>
     <span class="icons">
       <DividersToggle bind:shown={dividers} />

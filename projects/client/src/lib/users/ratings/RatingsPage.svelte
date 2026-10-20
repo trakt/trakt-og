@@ -139,10 +139,12 @@ const count = $derived(data.total - (data.cards.length - cards.length));
       <Dropdown joined section="Sort">
         {#snippet trigger()}{sortLabel}{/snippet}
         <ul>{#each Object.entries(sorts) as [by, label] (by)}
-          <li><a href={href({ by: ratingQuery(`${data.query.type}/all/${by}`).by })} aria-current={data.query.by === by ? 'page' : undefined}>{label}</a></li>
+          <li><a href={href({ by: ratingQuery(`${data.query.type}/all/${by}`).by, how: 'asc' })} aria-current={data.query.by === by ? 'page' : undefined}>{label}</a></li>
         {/each}</ul>
       </Dropdown>
-      <SortDirection joined bind:flipped={() => flipped, (next) => goto(href({ how: next ? 'desc' : 'asc' }))} />
+      <!-- Every sort but Title runs newest, highest or longest first. -->
+      <SortDirection joined descending={data.query.by !== 'title'}
+        bind:flipped={() => flipped, (next) => goto(href({ how: next ? 'desc' : 'asc' }))} />
     </span>
     <span class="icons">
       {#if data.query.by === 'added'}<DividersToggle bind:shown={dividers} />{/if}

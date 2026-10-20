@@ -98,7 +98,7 @@ const lists = $derived(own.visible(data.lists));
             {/each}
           </ul>
         </Dropdown>
-        <SortDirection joined disabled />
+        <SortDirection joined descending disabled />
       </span>
     {/snippet}
   </SectionToolbar>

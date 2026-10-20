@@ -72,7 +72,7 @@ import { listHref } from '$lib/lists/listHref';
 import ListItemPoster from '$lib/lists/ListItemPoster.svelte';
 import { listPrivacy } from '$lib/lists/listPrivacy';
 import ListManageBar from '$lib/lists/ListManageBar.svelte';
-import type { ListSortGroup } from '$lib/lists/listItemSorts';
+import { type ListSortGroup, listSortHow, reverseHow } from '$lib/lists/listItemSorts';
 import { listTitleActions } from '$lib/lists/listTitleActions';
 import ListStats from '$lib/lists/ListStats.svelte';
 import { listTypeOptions } from '$lib/lists/listTypeOptions';
@@ -580,7 +580,7 @@ async function saveNotes(text: string) {
             <ul>
               {#if groupHeaders[group]}<li class="header" role="presentation">{groupHeaders[group]}</li>{/if}
               {#each items as sort (sort.by)}
-                <li><a href={listHref(page.url, { sort: { by: sort.by, how: data.sort.how } })}
+                <li><a href={listHref(page.url, { sort: { by: sort.by, how: listSortHow(sort.by) } })}
                   aria-current={sort.by === data.sort.by ? 'page' : undefined}>{sort.label}</a></li>
                 {#if sort.by === 'percentage' && !vip}
                   <li><a href={traktUrls.vip} target="_blank" rel="noopener" class="vip-only"><b class="vip-mark"><Icon svg={trakt} /> VIP</b> unlocks
@@ -590,10 +590,12 @@ async function saveNotes(text: string) {
             </ul>
           {/each}
         </Dropdown>
-        <SortDirection joined bind:flipped={
-          () => data.sort.how === 'desc',
-          (next) => goto(listHref(page.url, { sort: { by: data.sort.by, how: next ? 'desc' : 'asc' } }))
-        } />
+        <!-- Flipped is away from the sort's own direction; Random has none. -->
+        <SortDirection joined descending={listSortHow(data.sort.by) === 'desc'} disabled={data.sort.by === 'random'}
+          bind:flipped={
+            () => data.sort.how !== listSortHow(data.sort.by),
+            (next) => goto(listHref(page.url, { sort: { by: data.sort.by, how: reverseHow(data.sort.by, next) } }))
+          } />
       </span>
       <span class="filter-icons">
         <TermsFilter vip={vip} bind:terms={

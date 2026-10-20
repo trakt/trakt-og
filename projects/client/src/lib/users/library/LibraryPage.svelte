@@ -133,12 +133,13 @@ const flipped = $derived(data.sort.how === 'desc');
         {#snippet trigger()}{sortLabels[data.sort.by]}{/snippet}
         <ul>
           {#each librarySorts[data.type] as by (by)}
-            <li><a href={href(data.type, { by, how: data.sort.how })}
+            <li><a href={href(data.type, { by, how: 'asc' })}
               aria-current={data.sort.by === by ? 'page' : undefined}>{sortLabels[by]}</a></li>
           {/each}
         </ul>
       </Dropdown>
-      <SortDirection joined bind:flipped={
+      <!-- Every sort but Title runs newest, highest or longest first; the Shows route takes no sort at all. -->
+      <SortDirection joined descending={data.sort.by !== 'title'} disabled={data.type === 'shows'} bind:flipped={
         () => flipped,
         (next) => goto(href(data.type, { by: data.sort.by, how: next ? 'desc' : 'asc' }))
       } />

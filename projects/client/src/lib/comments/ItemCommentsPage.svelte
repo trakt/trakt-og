@@ -81,11 +81,12 @@ const languageHref = (code: CommentLanguage) => href(data.sort.by, data.sort.how
           {#snippet trigger()}{@render sortLabel(data.sort.by)}&nbsp;{/snippet}
           <ul>
             {#each Object.keys(itemCommentSorts) as ItemCommentSortBy[] as by (by)}
-              <li><a href={href(by)} aria-current={data.sort.by === by ? 'page' : undefined}>{@render sortLabel(by)}</a></li>
+              <li><a href={href(by, 'asc')} aria-current={data.sort.by === by ? 'page' : undefined}>{@render sortLabel(by)}</a></li>
             {/each}
           </ul>
         </Dropdown>
-        <SortDirection joined disabled={!data.sort.reversible} bind:flipped={
+        <!-- Every comment sort runs most, highest or newest first. -->
+        <SortDirection joined descending disabled={!data.sort.reversible} bind:flipped={
           () => data.sort.how === 'desc',
           (next) => goto(href(data.sort.by, next ? 'desc' : 'asc'))
         } />

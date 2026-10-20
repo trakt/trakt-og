@@ -1,6 +1,8 @@
 import { collectedDetails } from './collectedDetails.ts';
 import type { CollectionMetadata } from '../components/collection/CollectionMetadata.ts';
 import { collectedCounts } from './collectedCounts.ts';
+import { collectedSources } from './collectedSources.ts';
+import type { LibrarySource } from '../components/collection/LibrarySource.ts';
 import type { LastActivitiesResponse } from '@trakt/api';
 import type { OverlaySlices } from './OverlaySlices.ts';
 import type { OverlayStorage, SliceName, SliceRecord } from './overlayStorage.ts';
@@ -26,6 +28,8 @@ export type OverlayState = {
   /** Movies and episodes with their show/season/number supplied, or an optimistic episode id. */
   collectionMetadata?: CollectionMetadata;
   collectedAt?: string;
+  /** The media servers it was synced from. Shows and seasons: every source across their episodes. */
+  collectionSources?: readonly LibrarySource[];
   /** Shows only: unique non-special episodes. */
   collectedEpisodes?: number;
   /** `null` when the ratings are known and this item has none. */
@@ -61,6 +65,8 @@ const watchDetails = (dates: readonly string[] | undefined) => ({
   watchedPlays: dates?.length,
   lastWatchedAt: dates?.reduce((latest, date) => date > latest ? date : latest, '') || undefined,
 });
+
+const nonEmpty = <T>(list: readonly T[] | undefined) => list?.length ? list : undefined;
 
 const progress = (watchedEpisodes: number | undefined, collectedEpisodes: number | undefined) => ({
   watchedEpisodes,
@@ -102,6 +108,12 @@ function stateOf(slices: Partial<OverlaySlices>, type: MediaType, id: number, se
         ? false
         : undefined,
       ...collectedDetails(collection),
+      collectionSources: nonEmpty(
+        season
+          ? slices.syncedEpisodes?.get(season.show)?.get(season.number)?.get(id)
+          : [...(slices.syncedEpisodes?.values() ?? [])].flatMap((seasons) => [...seasons.values()])
+            .find((episodes) => episodes.has(id))?.get(id),
+      ),
       plays,
       watched: plays === undefined ? undefined : plays > 0,
     };
@@ -123,6 +135,7 @@ function stateOf(slices: Partial<OverlaySlices>, type: MediaType, id: number, se
       rewatchedEpisodes: rewatched?.filter((dates) => dates.length > 0).length,
       rewatchedPlays: rewatched?.reduce((sum, dates) => sum + dates.length, 0),
       ...progress(count(slices.watchedShows), count(slices.collectedShows)),
+      collectionSources: collectedSources(slices.syncedEpisodes?.get(season.show)?.get(season.number)?.values() ?? []),
       ...watchDetails(
         slices.watchedShows && [...(slices.watchedShows.get(season.show)?.get(season.number)?.values() ?? [])].flat(),
       ),
@@ -161,6 +174,9 @@ function stateOf(slices: Partial<OverlaySlices>, type: MediaType, id: number, se
     ...progress(
       slices.watchedShows && countEpisodes(slices.watchedShows.get(id)),
       slices.collectedShows && countEpisodes(slices.collectedShows.get(id)),
+    ),
+    collectionSources: collectedSources(
+      [...(slices.syncedEpisodes?.get(id)?.values() ?? [])].flatMap((episodes) => [...episodes.values()]),
     ),
     ...watchDetails(
       slices.watchedShows && [...(slices.watchedShows.get(id) ?? [])]

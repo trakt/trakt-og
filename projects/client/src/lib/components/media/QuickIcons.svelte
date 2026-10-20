@@ -9,6 +9,9 @@ import MediaFavorite from '$lib/components/favorites/MediaFavorite.svelte';
 import type { FavoriteTarget } from '$lib/favorites/FavoriteTarget';
 import MediaRating from '$lib/components/rating/MediaRating.svelte';
 import MediaCollection from '$lib/components/collection/MediaCollection.svelte';
+import { LIBRARY_ADDING } from '$lib/components/collection/libraryAdding';
+import LibrarySyncLink from '$lib/components/collection/LibrarySyncLink.svelte';
+import { librarySourceIcon } from '$lib/components/collection/librarySourceIcon';
 import MediaWatch from '$lib/components/history/MediaWatch.svelte';
 import type { HistoryPlay } from '$lib/components/history/HistoryPlay';
 import type { WatchTarget } from '$lib/components/history/WatchTarget';
@@ -143,7 +146,7 @@ const ratingLevel = $derived(rating === undefined ? 1 : Math.min(Math.max(Math.t
       fill.titles.watched,
     )}
     {/if}
-    {#if libraryTarget}<MediaCollection target={libraryTarget} onremove={onCollectionRemove} onsave={onCollectionSave} {small} />{:else}{@render action('collect', collection, 'Add to library', fill.collected, fill.titles.collected)}{/if}
+    {#if libraryTarget}<MediaCollection target={libraryTarget} onremove={onCollectionRemove} onsave={onCollectionSave} {small} />{:else if !LIBRARY_ADDING && fill.collected === 0}<LibrarySyncLink {small} />{:else}{@render action('collect', librarySourceIcon(fill.sources)?.svg ?? collection, 'Add to library', fill.collected, fill.titles.collected)}{/if}
     {#if targetList}
       <MediaList target={targetList} {small} />
     {:else}

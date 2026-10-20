@@ -56,6 +56,10 @@ interface Props {
   /** Why adding is off ("Not released yet"): the control stays, disabled, with this as its tooltip. */
   locked?: string;
   collection?: boolean;
+  /** False takes away every way to add (the +, long press, "Add remaining"), leaving remove and metadata. */
+  adding?: boolean;
+  /** Under the remove prompt's title. */
+  removeNote?: string;
   hasMetadata?: boolean;
   metadata?: Snippet<[() => void, boolean]>;
 }
@@ -80,6 +84,8 @@ const {
   tooltip,
   locked,
   collection = false,
+  adding = true,
+  removeNote,
   hasMetadata = false,
   metadata,
 }: Props = $props();
@@ -220,7 +226,7 @@ function release() {
   clearTimeout(press);
 }
 function pointerdown(event: PointerEvent) {
-  if (event.button !== 0) return;
+  if (event.button !== 0 || !adding) return;
   pressed = false;
   press = setTimeout(() => {
     pressed = true;
@@ -237,6 +243,13 @@ function click() {
 }
 </script>
 
+{#snippet tiles()}
+  {#if adding}
+    <SummaryActionTile bind:element={side} icon={plus} label={addLabel} aria-controls="watch-{id}"
+  aria-haspopup="dialog" aria-expanded={expanded} aria-disabled={busy || Boolean(locked)} onclick={() => open(true)} />
+  {/if}
+  {@render more?.()}
+{/snippet}
 {#if variant === 'summary' && summary}
   <div class="watch-control summary" style:anchor-name="--watch-{id}" aria-busy={busy}>
   <SummaryAction bind:element={button} color={collection ? 'var(--brand-quaternary)' : 'var(--brand-tertiary)'}
@@ -247,13 +260,7 @@ function click() {
     aria-label={label} aria-controls="watch-{id}" aria-haspopup="dialog" aria-expanded={expanded}
     aria-disabled={busy || Boolean(locked)} onclick={click} onpointerdown={pointerdown} onpointerup={release}
     onpointercancel={release}
-    onpointerleave={release}>
-      {#snippet tiles()}
-        <SummaryActionTile bind:element={side} icon={plus} label={addLabel} aria-controls="watch-{id}"
-          aria-haspopup="dialog" aria-expanded={expanded} aria-disabled={busy || Boolean(locked)} onclick={() => open(true)} />
-        {@render more?.()}
-      {/snippet}
-    </SummaryAction>
+    onpointerleave={release} tiles={adding || more ? tiles : undefined} />
 </div>
 {:else}
 <div class={['watch-control', variant, { small, collection, selected, locked }]} style:--watch-fill={fill}
@@ -272,7 +279,8 @@ function click() {
 </div>
 {/if}
 <PromptPopover id="watch-{id}" anchor="--watch-{id}" {title} tone={collection ? 'collected' : 'watched'}
-  note={confirmation?.note} size={editingMetadata ? 'wide' : 'default'} bind:element={popover} ontoggle={toggle}>
+  note={confirmation?.note ?? (mode === 'remove' && !editingMetadata ? removeNote : undefined)}
+  size={editingMetadata ? 'wide' : 'default'} bind:element={popover} ontoggle={toggle}>
   {#if confirmation}
     <PromptRow svg={check} onclick={() => reply(true)}>Yes, mark them watched</PromptRow>
     <PromptRow svg={xmark} onclick={() => popover?.hidePopover()}>Cancel</PromptRow>
@@ -312,7 +320,7 @@ function click() {
       <PromptRow svg={plus} onclick={() => { mode = 'date'; force = true; }}>{plural ? 'Add more plays' : 'Add another play'}</PromptRow>
     {/if}
   {:else}
-    <PromptRow svg={check} onclick={remaining}>{collection ? 'Add remaining' : 'Watch remaining'}</PromptRow>
+    {#if adding}<PromptRow svg={check} onclick={remaining}>{collection ? 'Add remaining' : 'Watch remaining'}</PromptRow>{/if}
     <PromptRow svg={trash} danger onclick={() => choose(null)}>Remove all</PromptRow>
     <hr />
     <PromptRow svg={xmark} onclick={() => popover?.hidePopover()}>Nothing</PromptRow>

@@ -1,5 +1,6 @@
 import type { CollectedItem } from './CollectedItem.ts';
 import type { HiddenProgress } from './HiddenProgress.ts';
+import type { LibrarySource } from '../components/collection/LibrarySource.ts';
 
 type Ids = ReadonlySet<number>;
 type ById<T> = ReadonlyMap<number, T>;
@@ -21,6 +22,8 @@ export type OverlaySlices = {
   collectedMovies: ById<CollectedItem>;
   /** Show id to season number to episode number to its collected date. */
   collectedShows: ById<Seasons<CollectedItem>>;
+  /** Show id to season number to episode id to the media servers it was synced from. Synced episodes only. */
+  syncedEpisodes: ById<Seasons<readonly LibrarySource[]>>;
   ratings: Readonly<Record<'movie' | 'show' | 'season' | 'episode', ById<number>>>;
   watchlist: Readonly<Record<'movie' | 'show', Ids> & Partial<Record<'season' | 'episode', Ids>>>;
   favorites: Readonly<Record<'movie' | 'show', Ids>> & {

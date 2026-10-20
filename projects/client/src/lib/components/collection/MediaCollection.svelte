@@ -13,9 +13,13 @@ import type { WatchTarget } from '$lib/components/history/WatchTarget';
 import CollectionLogos from '$lib/components/collection/CollectionLogos.svelte';
 import { collectionBadges } from '$lib/components/collection/collectionBadges';
 import CollectionMetadataFields from '$lib/components/collection/CollectionMetadataFields.svelte';
+import LibrarySyncLink from '$lib/components/collection/LibrarySyncLink.svelte';
 import type { CollectionMetadata } from '$lib/components/collection/CollectionMetadata';
 import { collectMedia } from '$lib/components/collection/collectMedia';
 import { collectionMetadataLabel } from '$lib/components/collection/collectionMetadataLabel';
+import { LIBRARY_ADDING } from '$lib/components/collection/libraryAdding';
+import { LIBRARY_SYNC_HINT } from '$lib/components/collection/librarySyncHint';
+import { librarySourceIcon } from '$lib/components/collection/librarySourceIcon';
 import { quickIconFill } from '$lib/components/media/quickIconFill';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import Icon from '$lib/icons/Icon.svelte';
@@ -62,6 +66,11 @@ const collectedDate = $derived(
 );
 const detail = $derived(plural ? `${viewerState.collectedEpisodes}/${target.airedEpisodes} episodes` : collectedDate);
 const badges = $derived(collectionBadges(viewerState.collectionMetadata));
+const source = $derived(librarySourceIcon(viewerState.collectionSources));
+const tooltipText = $derived([metadataText, source && `Synced from ${source.name}`].filter(Boolean).join('\n'));
+// With adding off, anything not in the library links to v3's sync settings instead. Unknown state keeps the usual
+// control, so posters don't fade while the overlay loads.
+const syncOnly = $derived(!LIBRARY_ADDING && fill.collected === 0 && !onremove);
 const request = (path: string, body?: unknown) =>
   rawApiFetch({
     fetch: path.startsWith('/search/') ? globalThis.fetch : authenticatedFetch({ manager: userManager() }),
@@ -97,6 +106,7 @@ async function open(force: boolean): Promise<'date' | 'remove' | 'partial' | nul
     return null;
   }
   draft = viewerState.collectionMetadata;
+  if (!LIBRARY_ADDING) return fill.collected > 0 || onremove ? 'remove' : null;
   return onremove && !force
     ? 'remove'
     : force || fill.collected === 0
@@ -109,13 +119,19 @@ async function open(force: boolean): Promise<'date' | 'remove' | 'partial' | nul
 
 <!-- Library routes use the same viewer alias as history. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-<WatchPopover collection hasMetadata={Object.values(draft ?? {}).some(Boolean)} {variant} {small} {busy} {plural}
+{#if syncOnly && viewerState.collected === false}
+  <LibrarySyncLink {variant} {small} />
+{:else}
+<WatchPopover collection adding={LIBRARY_ADDING} hasMetadata={Object.values(draft ?? {}).some(Boolean)}
+  {variant}
+  {small} {busy} {plural}
   label={onremove ? 'Remove from library' : label} fill={onremove ? 1 : fill.collected} datePreferences={dates}
-  tooltip={onremove ? 'Remove from library' : variant === 'card' ? fill.titles.collected ?? 'Add to library' : undefined}
+  tooltip={onremove ? 'Remove from library' : variant === 'card' ? fill.titles.collected ?? (syncOnly ? LIBRARY_SYNC_HINT : 'Add to library') : undefined}
+  removeNote={source && `${plural ? 'They' : 'It'} may come back on the next ${source.name} sync.`}
   onopen={open} onwatch={collect} onremaining={() => Promise.resolve(false)}
   oninvalid={() => toast.error('Invalid date format, please use the date picker.')}
-  summary={{ icon: collection, text: percent ? 'in library' : label, percent, detail: fill.collected > 0 ? detail : undefined, aside: badges && fill.collected > 0 ? logos : undefined, tooltip: fill.collected > 0 ? metadataText || undefined : undefined }}>
-  {#snippet trigger()}<span class="trakt-glyph"><Icon svg={collectionThick} /></span>{/snippet}
+  summary={{ icon: source?.svg ?? collection, text: percent ? 'in library' : label, percent, detail: fill.collected > 0 ? detail : undefined, aside: badges && fill.collected > 0 ? logos : undefined, tooltip: fill.collected > 0 ? tooltipText || undefined : undefined }}>
+  {#snippet trigger()}<span class="trakt-glyph"><Icon svg={source?.svg ?? collectionThick} /></span>{/snippet}
   {#snippet metadata(done, saving)}
     <CollectionMetadataFields value={draft ?? {}} {saving} onsave={(value) => { draft = value; done(); if (saving) void collect(undefined); }} />
   {/snippet}
@@ -129,6 +145,7 @@ async function open(force: boolean): Promise<'date' | 'remove' | 'partial' | nul
       </a>
     {/snippet}
   </Tooltip>
+{/if}
 {/if}
 
 <style>

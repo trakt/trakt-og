@@ -63,7 +63,7 @@ describe('staleSlices', () => {
     const cases: [Moved, string[]][] = [
       [{ movies: { watched_at: T1 } }, ['watchedMovies']],
       [{ movies: { collected_at: T1 } }, ['collectedMovies']],
-      [{ episodes: { collected_at: T1 } }, ['collectedShows']],
+      [{ episodes: { collected_at: T1 } }, ['collectedShows', 'syncedEpisodes']],
       [{ seasons: { rated_at: T1 } }, ['ratings']],
       [{ shows: { watchlisted_at: T1 } }, ['watchlist']],
       [{ seasons: { watchlisted_at: T1 } }, ['watchlist']],

@@ -1,4 +1,5 @@
 import { z } from 'zod/v4';
+import type { CollectedItem } from '../../overlay/CollectedItem.ts';
 import type { createOverlay } from '../../overlay/createOverlay.svelte.ts';
 import type { WatchEpisode } from '../history/WatchEpisode.ts';
 import type { WatchTarget } from '../history/WatchTarget.ts';
@@ -74,10 +75,11 @@ export async function collectMedia(params: Params): Promise<boolean> {
       : collectedAt && !['now', 'released'].includes(collectedAt)
       ? collectedAt
       : now().toISOString();
-    const updated = (before: string | { at: string; metadata?: CollectionMetadata } | undefined, id?: number) => ({
+    const updated = (before: CollectedItem | undefined, id?: number) => ({
       at: metadataOnly ? typeof before === 'string' ? before : before?.at ?? at : at,
       id,
       metadata: metadata ?? (typeof before === 'string' ? undefined : before?.metadata),
+      sources: typeof before === 'string' ? undefined : before?.sources,
     });
     rollback = target.type === 'movie'
       ? overlay.patch('collectedMovies', (before) => {

@@ -76,6 +76,19 @@ describe('quickIconFill', () => {
       expect(fill.titles.collected).toBe('Added to library on\nSep 29, 2026');
     });
 
+    it('should say which media server a library item was synced from', () => {
+      const movie = quickIconFill({
+        state: { collected: true, collectedAt: '2026-09-29T12:00:00.000Z', collectionSources: ['plex'] },
+      });
+      const show = quickIconFill({
+        state: { collectedEpisodes: 3, collectionSources: ['plex', 'jellyfin'] },
+        airedEpisodes: 3,
+      });
+      expect(movie.titles.collected).toBe('Added to library on\nSep 29, 2026\nSynced from Plex');
+      expect(movie.sources).toEqual(['plex']);
+      expect(show.titles.collected).toBe('100% in library\n3/3 episodes\nSynced from Plex and Jellyfin');
+    });
+
     it('should honor the viewer date order and zone in the collection tooltip', () => {
       const fill = quickIconFill({
         state: { collected: true, collectedAt: '2026-09-29T23:30:00Z' },

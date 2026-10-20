@@ -11,6 +11,8 @@ import { newComment } from '$lib/components/comments/newComment.svelte';
 import MediaFavorite from '$lib/components/favorites/MediaFavorite.svelte';
 import type { FavoriteTarget } from '$lib/favorites/FavoriteTarget';
 import MediaCollection from '$lib/components/collection/MediaCollection.svelte';
+import { LIBRARY_ADDING } from '$lib/components/collection/libraryAdding';
+import LibrarySyncLink from '$lib/components/collection/LibrarySyncLink.svelte';
 import MediaWatch from '$lib/components/history/MediaWatch.svelte';
 import type { WatchTarget } from '$lib/components/history/WatchTarget';
 import MediaList from '$lib/components/lists/MediaList.svelte';
@@ -128,6 +130,8 @@ const percentOf = (count: number) => `${progress?.visible ? Math.trunc(count / p
         <SummaryAction {color} {icon} text={label} aria-controls="new-comment" aria-expanded={newComment.visible}
           onclick={(event) => newComment.open(event.currentTarget)} />
       {/if}
+    {:else if kind === 'collect' && !LIBRARY_ADDING}
+      <LibrarySyncLink variant="summary" />
     {:else}
       <SummaryAction {color} {icon} text={label} aria-disabled="true">
         {#snippet tiles()}{#if side}<SummaryActionTile icon={circlePlus} label={side} aria-disabled="true" />{/if}{/snippet}

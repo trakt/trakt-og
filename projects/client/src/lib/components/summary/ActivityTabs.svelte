@@ -1,23 +1,31 @@
 <!--
-  OG's "People You Follow": big-number tabs over a box of round avatars.
-  Watching Now counts everyone watching: the followed members come first, each in their own spot, then everyone else
-  overlapped in a pile that fills the row. People Watched and Rated by place the followed members on a line, one stop
-  per plays range or rating: their faces over a coloured rule, and a genre-style key under it. A stop nobody landed on
-  stays on the line, faded. A stop with more members than it has room for ends in "+N"; that, its key, or the pile's
-  count opens everyone on it in OG's avatar grid under the line. A follower's rating colours their ring, and the
-  watched tab's tooltips add the play count. Private members get the placeholder avatar and no link. An ARIA tablist:
-  arrow keys, Home and End move between the tabs.
+  The summary's "People You Follow": a glass panel of three equal cells, Watching Now, People Watched and Rated by, each
+  an icon and a figure beside its label. It starts closed; a cell opens its view under the cells, and clicking it again
+  closes it. While someone the viewer follows is watching, Watching Now's cell takes the watching-now player's red with
+  their faces at its end, and its view shows them in the dashboard's live cards, then everyone else watching as faces.
+  People Watched's view is a bar of ranges (plays, or how much of a show), and Rated by's is the profile's ratings
+  chart; picking a range or a bar lists its followed members three across, each in a summary tile's box with the comment
+  card's tags: their plays split with, on a show, how much of it they've seen (red for all of it, yellow for half or
+  more, gray under half), or their rating in that rating's color. Twelve show at first, and the less and more pill on the panel's bottom edge
+  steps through the rest. Private members the viewer doesn't follow get the placeholder and no link.
 -->
 <script lang="ts">
-import { tick } from 'svelte';
 import type { Attachment } from 'svelte/attachments';
-import CornerRating from '$lib/components/media/CornerRating.svelte';
-import { nextTab } from '$lib/components/tabs/nextTab';
+import CommentTag from '$lib/components/comments/CommentTag.svelte';
+import SocialTile from '$lib/components/dashboard/SocialTile.svelte';
+import PosterGrid from '$lib/components/media/PosterGrid.svelte';
+import PageNavigator from '$lib/components/page-navigator/PageNavigator.svelte';
+import StatusDot from '$lib/components/status/StatusDot.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
+import ProfileRatingsChart from '$lib/components/users/ProfileRatingsChart.svelte';
+import SectionHeading from './SectionHeading.svelte';
+import { liveTiles } from '$lib/dashboard/liveTiles';
 import Icon from '$lib/icons/Icon.svelte';
+import chevronDown from '$lib/icons/solid/chevron-down.svg?raw';
 import heart from '$lib/icons/solid/heart.svg?raw';
+import checkThick from '$lib/icons/trakt/check-thick.svg?raw';
+import { progressTone } from '$lib/summary/progressTone';
 import type { ActivitySection, ActivityTab, ActivityUser } from '$lib/summary/toActivity';
-import { countLabel } from '$lib/utils/countLabel';
 
 interface Props {
   tabs: readonly ActivityTab[];
@@ -26,357 +34,383 @@ interface Props {
 const { tabs }: Props = $props();
 const id = $props.id();
 
-// The pile's count takes three avatars' worth of the row.
-const OTHERS_TEXT_COLUMNS = 3;
-// How much each stop's people widen it, by their square root so one crowded stop can't squash the rest.
-const WIDTH_PER_ROOT = 1.6;
+type WatchingTab = Extract<ActivityTab, { id: 'watching' }>;
+type LineTab = Extract<ActivityTab, { id: 'watched' | 'rated' }>;
 
-// svelte-ignore state_referenced_locally
-let selected = $state(tabs[0]?.id);
-/** The stop opened under the line, or `others` for everyone else watching now. */
-let opened = $state<string | null>(null);
-let width = $state(0);
-let panel = $state<HTMLElement>();
-let stopWidths = $state<Record<string, number>>({});
-/** The line's face size and overlap, read from the tokens, so each stop knows how many faces fit its width. */
-let faces = $state<{ readonly size: number; readonly step: number; readonly ring: number } | null>(null);
-
-const tab = $derived(tabs.find((candidate) => candidate.id === selected) ?? tabs[0]);
-const narrow = $derived(width > 0 && width < 720);
-// OG's col-md-1: twelve avatars a row, six on phones and tablets.
-const perRow = $derived(narrow ? 6 : 12);
-// The line in one row, or two on tablets, each row sharing out its own width.
-const rows = $derived.by(() => {
-  if (!tab || tab.id === 'watching') return [];
-  if (!narrow) return [tab.sections];
-  const half = Math.ceil(tab.sections.length / 2);
-  return [tab.sections.slice(0, half), tab.sections.slice(half)];
-});
-const openedRow = $derived(rows.findIndex((row) => row.some((section) => section.key === opened)));
-
-// The pile fills what the followed members leave of their last row, or a row of its own.
-const othersColumns = $derived.by(() => {
-  if (tab?.id !== 'watching') return 0;
-  const left = perRow - (tab.followed.length % perRow) - OTHERS_TEXT_COLUMNS;
-  return left >= 1 ? left : perRow - OTHERS_TEXT_COLUMNS;
-});
-// Overlapped by half, a column holds two faces: the first one whole, then a half for each after it.
-const piled = $derived(tab?.id === 'watching' ? tab.others.slice(0, othersColumns * 2 - 1) : []);
-
-const weightOf = (section: ActivitySection) => 1 + Math.sqrt(section.users.length) * WIDTH_PER_ROOT;
-// How many circles fit a stop's width, "+N" included.
-const roomOn = (section: ActivitySection) => {
-  const width = stopWidths[section.key];
-  if (!faces || !width) return 3;
-  return Math.max(1, Math.floor((width - faces.ring - faces.size) / faces.step) + 1);
+// Four rows of three a page, which the less and more pill steps through.
+const PEOPLE_PER_PAGE = 12;
+const FACES_IN_CELL = 3;
+// Often enough for the live cards' progress bars; their countdowns tick on their own.
+const CLOCK_MS = 30_000;
+const TONES = {
+  complete: 'var(--color-activity-progress-complete)',
+  half: 'var(--color-activity-progress-half)',
+  started: 'var(--color-activity-progress-started)',
 };
-const shownOn = (section: ActivitySection) => {
-  const room = roomOn(section);
-  return section.users.length > room ? section.users.slice(0, room - 1) : section.users;
-};
-const people = (n: number) => `${n.toLocaleString('en-US')} ${n === 1 ? 'person' : 'people'}`;
 
-const openedUsers = $derived.by(() => {
-  if (!opened || !tab) return null;
-  if (tab.id === 'watching') return opened === 'others' ? tab.others : null;
-  return tab.sections.find((section) => section.key === opened)?.users ?? null;
-});
-const openedTitle = $derived.by(() => {
-  if (!opened || !tab) return '';
-  if (tab.id === 'watching') return `${tab.others.length.toLocaleString('en-US')} others on Trakt`;
-  const section = tab.sections.find((candidate) => candidate.key === opened);
-  return section ? `${section.title}: ${people(section.users.length)}` : '';
+let opened = $state<ActivityTab['id'] | null>(null);
+let pickedRange = $state<string | null>(null);
+let pickedRating = $state<number | null>(null);
+let pages = $state(1);
+let watchersWidth = $state(0);
+/** The faces' size and overlap, read from the tokens, so as many fit on one line as its width allows. */
+let watcherFaces = $state<{ readonly size: number; readonly step: number; readonly room: number } | null>(null);
+let now = $state(new Date());
+
+$effect(() => {
+  const clock = setInterval(() => (now = new Date()), CLOCK_MS);
+  return () => clearInterval(clock);
 });
 
-const readFaces: Attachment<HTMLElement> = (node) => {
+const watching = $derived(tabs.find((tab): tab is WatchingTab => tab.id === 'watching'));
+const open = $derived(tabs.find((tab) => tab.id === opened));
+const line = $derived(open && open.id !== 'watching' ? open : undefined);
+
+const tiles = $derived(watching ? liveTiles(watching.live, now) : []);
+// Everyone watching without a live card: followed members whose watch didn't load, then everyone else.
+const watchers = $derived.by(() => {
+  if (!watching) return [];
+  const live = new Set(tiles.map(({ watch }) => watch.member.slug));
+  return [...watching.followed.filter(({ key }) => !live.has(key)), ...watching.others];
+});
+
+// One line of overlapped faces, leaving room for the count after them; when they don't all fit, the last spot is a
+// "+N" bubble for the rest.
+const fitted = $derived.by(() => {
+  if (!watcherFaces || watchersWidth === 0) return watchers;
+  const { size, step, room } = watcherFaces;
+  const fit = Math.max(2, Math.floor((watchersWidth - room - size) / step) + 1);
+  return watchers.length > fit ? watchers.slice(0, fit - 1) : watchers;
+});
+const unshown = $derived(watchers.length - fitted.length);
+
+const readWatcherFaces: Attachment<HTMLElement> = (node) => {
   const style = getComputedStyle(node);
   const px = (name: string) => Number.parseFloat(style.getPropertyValue(name)) || 0;
-  const size = px('--activity-line-face-size');
-  faces = { size, step: size - px('--activity-line-face-overlap'), ring: px('--activity-line-face-ring') };
+  const size = px('--activity-watcher');
+  watcherFaces = { size, step: size - px('--activity-watcher-overlap'), room: px('--activity-watchers-text-room') };
 };
 
-// The opened panel's arrow points at what opened it: the stop's number, or the pile's count.
-const pointAtOpener = (key: string | null): Attachment<HTMLElement> => (node) => {
-  const place = () => {
-    const opener = panel?.querySelector<HTMLElement>(`[data-opener="${key}"]`);
-    if (!opener) return;
-    const from = opener.getBoundingClientRect();
-    node.style.setProperty('--arrow-at', `${from.left + from.width / 2 - node.getBoundingClientRect().left}px`);
-  };
-  place();
-  const observer = new ResizeObserver(place);
-  observer.observe(node);
-  return () => observer.disconnect();
-};
+const largest = (sections: readonly ActivitySection[]) =>
+  sections.reduce((best, section) => (section.users.length > best.users.length ? section : best));
+// The picked range, or the one most followed members landed on.
+const section = $derived.by(() => {
+  if (!line || line.sections.length === 0) return undefined;
+  const key = line.id === 'watched' ? pickedRange : String(pickedRating ?? topRating(line));
+  return line.sections.find((candidate) => candidate.key === key) ?? largest(line.sections);
+});
+const people = $derived(section ? section.users : []);
+const shown = $derived(people.slice(0, pages * PEOPLE_PER_PAGE));
 
-// Opening moves focus to the first member it shows; opening it again closes it.
-const toggle = async (key: string) => {
-  opened = opened === key ? null : key;
-  if (!opened) return;
-  await tick();
-  panel?.querySelector<HTMLElement>('.opened .member')?.focus();
-};
-
-const select = (next: ActivityTab['id']) => {
-  selected = next;
-  opened = null;
-};
-
-function onkeydown(event: KeyboardEvent) {
-  const target = nextTab(tabs.map((candidate) => candidate.id), selected, event.key);
-  if (target === undefined) return;
-
-  event.preventDefault();
-  select(target as ActivityTab['id']);
-  document.getElementById(`${id}-tab-${target}`)?.focus();
+function topRating(tab: LineTab) {
+  return tab.chart?.bars.find((bar) => bar.top)?.rating ?? Number(largest(tab.sections).key);
 }
+
+const toggle = (tab: ActivityTab['id']) => {
+  opened = opened === tab ? null : tab;
+  pages = 1;
+};
+
+const pickRange = (key: string) => {
+  pickedRange = key;
+  pages = 1;
+};
+
+const pickRating = (rating: number) => {
+  pickedRating = rating;
+  pages = 1;
+};
+
+const viewName = (tab: ActivityTab) => `${tab.text[0]} ${tab.text[1]}`;
+// Beside the live cards they're everyone else; on their own, just people.
+const watcherNoun = (n: number, others: boolean) => {
+  if (others) return n === 1 ? 'other' : 'others';
+  return n === 1 ? 'person' : 'people';
+};
+const playsLabel = (n: number) => `${n.toLocaleString('en-US')} ${n === 1 ? 'play' : 'plays'}`;
+const peopleCount = (n: number) => `${n.toLocaleString('en-US')} ${n === 1 ? 'person' : 'people'}`;
 </script>
 
 <!-- Profiles og hasn't built yet, and resolve() only takes routes that exist. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
-{#snippet avatar(user: ActivityUser)}
-  <span class="user-avatar" style:--ring={user.rating ? `var(--rating-${user.rating})` : undefined}>
-    {#if user.rating}
-      <span class="block"></span>
-      <CornerRating rating={user.rating} label="Rated {user.rating}" />
-    {/if}
-    <img src={user.avatar} alt="" loading="lazy" decoding="async" />
-  </span>
-{/snippet}
-
 {#snippet face(user: ActivityUser)}
-  <span class="face" style:--ring={user.rating ? `var(--rating-${user.rating})` : undefined}>
-  <img src={user.avatar} alt="" loading="lazy" decoding="async" />
-</span>
-{/snippet}
-
-{#snippet member(user: ActivityUser, small: boolean)}
   {#if user.href}
     <Tooltip placement="bottom">
       {#snippet trigger(tooltip)}
-        <a class="member" href={user.href} aria-label={user.name} {...tooltip}>
-          {#if small}{@render face(user)}{:else}{@render avatar(user)}{/if}
+        <a class="watcher" href={user.href} aria-label={user.name} {...tooltip}>
+          <img src={user.avatar} alt="" loading="lazy" decoding="async" />
         </a>
       {/snippet}
-      <span class="line">{user.name}</span>
-      {#if tab?.id === 'watched' && user.plays}
-        <span class="divider"></span>
-        <span class="line">
-          {countLabel(user.plays, 'play')}{#if user.progress !== undefined}&ensp;·&ensp;{user.progress}% watched{/if}
-        </span>
-      {/if}
+      {user.name}
     </Tooltip>
   {:else}
     <Tooltip placement="bottom" text="Private member">
       {#snippet trigger(tooltip)}
-        <span class="member" role="img" aria-label="Private member" tabindex="-1" {...tooltip}>
-          {#if small}{@render face(user)}{:else}{@render avatar(user)}{/if}
+        <span class="watcher" role="img" aria-label="Private member" tabindex="-1" {...tooltip}>
+          <img src={user.avatar} alt="" loading="lazy" decoding="async" />
         </span>
       {/snippet}
     </Tooltip>
   {/if}
 {/snippet}
 
-{#snippet openedPanel()}
-  {#if openedUsers}
-    <div id="{id}-opened" class="opened" role="region" aria-label={openedTitle} {@attach pointAtOpener(opened)}>
-  <ul class="users">
-        {#each openedUsers as user (user.key)}
-          <li>{@render member(user, false)}</li>
-        {/each}
-      </ul>
-</div>
+<!-- The comment card's tags: plays and a show's share as one split tag, a segment each. -->
+{#snippet tags(user: ActivityUser, tab: LineTab)}
+  {#if tab.id === 'rated'}
+    {#if user.rating}
+      <!-- In the rating's own color, like its bar on the chart. -->
+      <CommentTag svg={heart} tint color="var(--rating-{user.rating})">
+        <span class="visually-hidden">Rated </span>{user.rating}
+      </CommentTag>
+    {/if}
+  {:else if user.plays}
+    <span class={['joined', { both: user.progress !== undefined }]}>
+      {#if user.history}
+        <a class="segment plays history" href={user.history} aria-label="{user.name}'s history: {playsLabel(user.plays)}">
+          <CommentTag svg={checkThick} glyph tone="watched" tint>{playsLabel(user.plays)}</CommentTag>
+        </a>
+      {:else}
+        <span class="segment plays">
+          <CommentTag svg={checkThick} glyph tone="watched" tint>{playsLabel(user.plays)}</CommentTag>
+        </span>
+      {/if}
+      {#if user.progress !== undefined}
+        <span class="segment percent">
+          <CommentTag tint color={TONES[progressTone(user.progress)]}>
+            {user.progress}%<span class="visually-hidden"> watched</span>
+          </CommentTag>
+        </span>
+      {/if}
+    </span>
   {/if}
 {/snippet}
 
-{#snippet key(section: ActivitySection)}
-  <span class="key-number" data-opener={section.key}>{section.label}</span>
-  <span class="key-name">{section.name}</span>
-  {#if section.users.length > 0}
-    <span class="key-count">{people(section.users.length)}</span>
+<!-- The face and name lead to the profile and the plays tag to their history, so the box holds two links. -->
+{#snippet person(user: ActivityUser, tab: LineTab)}
+  <div class="person">
+    {#if user.href}
+      <a class="who" href={user.href}>
+        <img src={user.avatar} alt="" loading="lazy" decoding="async" />
+        <span class="name">{user.name}</span>
+      </a>
+    {:else}
+      <span class="who">
+        <img src={user.avatar} alt="" loading="lazy" decoding="async" />
+        <span class="name">Private member</span>
+      </span>
+    {/if}
+    <span class="tags">{@render tags(user, tab)}</span>
+  </div>
+{/snippet}
+
+{#snippet peopleList(tab: LineTab)}
+  {#if section}
+    <ul id="{id}-people" class="people" aria-label="{section.title}: {peopleCount(people.length)}">
+      {#each shown as user (user.key)}
+        <li>{@render person(user, tab)}</li>
+      {/each}
+    </ul>
+    <PageNavigator
+  label={section.name}
+  rows={pages}
+  maxRows={Math.ceil(people.length / PEOPLE_PER_PAGE)}
+  onchange={(next) => (pages = next)}
+  edge
+/>
   {/if}
 {/snippet}
 
 <section class="summary-activity" aria-labelledby="{id}-heading">
-  <h2 id="{id}-heading">People You Follow</h2>
-  <div class="tabs" role="tablist" aria-labelledby="{id}-heading">
-    {#each tabs as candidate (candidate.id)}
-      <button
-        type="button"
-        role="tab"
-        id="{id}-tab-{candidate.id}"
-        class="tab"
-        aria-controls="{id}-panel"
-        aria-selected={candidate.id === tab?.id}
-        tabindex={candidate.id === tab?.id ? 0 : -1}
-        style:--heart={candidate.id !== 'watching' && candidate.heart ? `var(--rating-${candidate.heart})` : undefined}
-        onclick={() => select(candidate.id)}
-        {onkeydown}
-      >
-        <span class="number">
-          {#if candidate.id !== 'watching' && candidate.heart}
-            <Icon svg={heart} label="Average rating" />{candidate.number}<span class="percent-sign">%</span>
-          {:else}
-            {candidate.number}
-          {/if}
-        </span>
-        <span class="text">{candidate.text[0]}<br />{candidate.text[1]}</span>
-      </button>
-    {/each}
-  </div>
-  {#if tab}
-    <div
-      id="{id}-panel"
-      class="users-wrapper"
-      role="tabpanel"
-      aria-labelledby="{id}-tab-{tab.id}"
-      bind:clientWidth={width}
-      bind:this={panel}
-      style:--per-row={perRow}
-      {@attach readFaces}
-    >
-      {#if tab.id === 'watching'}
-        <ul class="users">
-          {#each tab.followed as user (user.key)}
-            <li>{@render member(user, false)}</li>
-          {/each}
-          {#if tab.others.length > 0}
-            <li class="others" style:--others-span={othersColumns + OTHERS_TEXT_COLUMNS}>
-              <span class="pile">
-                {#each piled as user (user.key)}
-                  {@render member(user, false)}
-                {/each}
-              </span>
-              {#if tab.others.length > piled.length}
-                <button
-                  type="button"
-                  class="others-count"
-                  data-opener="others"
-                  aria-expanded={opened === 'others'}
-                  aria-controls="{id}-opened"
-                  onclick={() => toggle('others')}
-                >
-                  <span class="others-number">+{tab.others.length.toLocaleString('en-US')}</span>
-                  {tab.followed.length > 0 ? 'others' : 'watching'} on Trakt
-                </button>
-              {/if}
-            </li>
-          {/if}
-        </ul>
-        {@render openedPanel()}
-      {:else}
-        {#each rows as row, index (index)}
-          <ol class="stops">
-          {#each row as section (section.key)}
-            {@const shown = shownOn(section)}
-            <li
-              class={['stop', { empty: section.users.length === 0, open: opened === section.key }]}
-              style:--color={tab.id === 'rated' && section.users.length > 0 ? `var(--rating-${section.level})` : undefined}
-              style:--step={(section.level - 1) / Math.max(tab.sections.length - 1, 1)}
-              style:--weight={weightOf(section)}
-              bind:clientWidth={stopWidths[section.key]}
-            >
-              <span class="faces">
-                {#each shown as user (user.key)}
-                  {@render member(user, true)}
-                {/each}
-                {#if section.users.length > shown.length}
-                  <button
-                    type="button"
-                    class="more"
-                    aria-label="Show all {people(section.users.length)}: {section.title}"
-                    aria-expanded={opened === section.key}
-                    aria-controls="{id}-opened"
-                    onclick={() => toggle(section.key)}
-                  >
-                    +{section.users.length - shown.length}
-                  </button>
-                {/if}
-              </span>
-              <span class="rule"></span>
-              {#if section.users.length === 0}
-                <span class="key">{@render key(section)}</span>
-              {:else}
-                <Tooltip variant="chart">
+  <SectionHeading title="People You Follow" id="{id}-heading" />
+  <div class={['panel', { closed: !open }]}>
+    <div class="cells">
+      {#each tabs as tab (tab.id)}
+        {@const followed = tab.id === 'watching' ? tab.followed : []}
+        <button
+          type="button"
+          class={['cell', { open: opened === tab.id, live: followed.length > 0 }]}
+          aria-expanded={opened === tab.id}
+          aria-controls="{id}-view"
+          onclick={() => toggle(tab.id)}
+        >
+          <span class="icon-slot">
+            {#if tab.id === 'watching'}
+              <StatusDot kind="live" />
+            {:else if tab.id === 'watched'}
+              <span class="watched-icon"><Icon svg={checkThick} /></span>
+            {:else}
+              <span class="heart" style:--heart="var(--rating-{tab.heart ?? 1})"><Icon svg={heart} /></span>
+            {/if}
+          </span>
+          <span class="stat">
+            <span class="figure">
+              {tab.number}{#if tab.id === 'rated'}<span class="unit">%</span>{/if}
+            </span>
+            <span class="label">{tab.text[0]}<br /> {tab.text[1]}</span>
+          </span>
+          {#if followed.length > 0}
+            <span class="faces">
+              {#each followed.slice(0, FACES_IN_CELL) as user (user.key)}
+                <Tooltip placement="bottom">
                   {#snippet trigger(tooltip)}
-                    <button
-                      type="button"
-                      class="key"
-                      aria-expanded={opened === section.key}
-                      aria-controls="{id}-opened"
-                      onclick={() => toggle(section.key)}
-                      {...tooltip}
-                    >
-                      {@render key(section)}
-                    </button>
+                    <span class="face" {...tooltip}><img src={user.avatar} alt="" loading="lazy" decoding="async" /></span>
                   {/snippet}
-                  <span class="tip-title">{section.title}</span>
-                  <span class="tip-count">
-                    {section.users.length.toLocaleString('en-US')}<span class="tip-unit">
-                      {section.users.length === 1 ? 'person' : 'people'}</span>
-                  </span>
-                  <span class="tip-line">{section.share}% of people you follow</span>
+                  {user.name}
                 </Tooltip>
+              {/each}
+            </span>
+            <span class="visually-hidden">, {followed.length.toLocaleString('en-US')} you follow</span>
+          {/if}
+          <span class="chevron"><Icon svg={chevronDown} /></span>
+        </button>
+      {/each}
+    </div>
+
+    <div
+      id="{id}-view"
+      class={['view', { paged: line && people.length > PEOPLE_PER_PAGE }]}
+      role="region" aria-label={open ? viewName(open) : undefined} hidden={!open}>
+      {#if open?.id === 'watching'}
+        {#if tiles.length > 0}
+          <PosterGrid columns={3} phoneColumns={2}>
+            {#each tiles as tile (tile.watch.member.key)}
+              <SocialTile {tile} />
+            {/each}
+          </PosterGrid>
+        {/if}
+        {#if watchers.length > 0}
+          <div
+            class={['watchers', { under: tiles.length > 0 }]}
+            bind:clientWidth={watchersWidth}
+            {@attach readWatcherFaces}
+          >
+            <ul class="watcher-faces">
+              {#each fitted as user (user.key)}
+                <li>{@render face(user)}</li>
+              {/each}
+              {#if unshown > 0}
+                <li class="rest" aria-label="{unshown.toLocaleString('en-US')} more">+{unshown.toLocaleString('en-US')}</li>
               {/if}
+            </ul>
+            <p class="watchers-text">
+              <strong>{watchers.length.toLocaleString('en-US')}</strong>
+              {watcherNoun(watchers.length, tiles.length > 0)} watching now
+            </p>
+          </div>
+        {/if}
+      {:else if line?.id === 'watched'}
+        <ol class="share" aria-label="How much of it they've watched">
+          {#each line.sections as stop (stop.key)}
+            {@const picked = stop.key === section?.key}
+            <li
+              style:--weight={1 + Math.sqrt(stop.users.length) * 1.6}
+              style:--step={(stop.level - 1) / Math.max(line.sections.length - 1, 1)}
+            >
+              <button
+                type="button"
+                class={['stop', { picked, empty: stop.users.length === 0 }]}
+                aria-pressed={picked}
+                aria-label="{stop.title}: {peopleCount(stop.users.length)}"
+                disabled={stop.users.length === 0}
+                onclick={() => pickRange(stop.key)}
+              >
+                <span class="stop-figure">
+                  {stop.label}{#if stop.unit}<span class="stop-unit">{stop.unit}</span>{/if}
+                </span>
+                <span class="stop-name">{stop.name}</span>
+                <span class="rule"></span>
+                <span class="stop-count">{peopleCount(stop.users.length)}</span>
+              </button>
             </li>
           {/each}
-          </ol>
-          {#if index === openedRow}{@render openedPanel()}{/if}
-        {/each}
+        </ol>
+        {@render peopleList(line)}
+      {:else if line?.id === 'rated'}
+        {#if line.chart}
+          <div class="ratings">
+            <ProfileRatingsChart chart={line.chart} picked={Number(section?.key)} onpick={pickRating} />
+          </div>
+        {/if}
+        {@render peopleList(line)}
       {/if}
     </div>
-  {/if}
+  </div>
 </section>
 
 <style>
 .summary-activity {
-  margin-block-start: var(--gutter);
-
-  & h2 {
-    margin-block-end: var(--gutter);
-  }
+  margin-block-end: var(--gutter);
 }
 
-.tabs {
+/* Positioned for the less and more pill on its bottom edge. */
+.panel {
   position: relative;
-  z-index: 1;
-  display: flex;
+  container-type: inline-size;
+  margin-block-start: var(--space-activity-panel-top);
+  border: 1px solid var(--color-activity-panel-line);
+  border-radius: var(--radius-activity-panel);
+  background-color: var(--color-activity-panel-bg);
 }
 
-.tab {
+.cells {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.cell {
   display: flex;
-  flex: 0 0 25%;
-  align-items: flex-start;
+  align-items: center;
+  gap: var(--activity-cell-gap);
   min-inline-size: 0;
+  min-block-size: var(--activity-cell-height);
   margin: 0;
-  padding: var(--activity-tab-padding);
-  border: 1px solid var(--color-activity-border);
-  border-radius: 0;
+  padding: var(--activity-cell-padding);
+  border: 0;
+  border-inline-start: 1px solid var(--color-activity-panel-line);
   background: none;
-  color: var(--color-activity-text);
-  font-family: var(--font-headings);
-  font-weight: var(--font-weight-headings-light);
-  line-height: 1;
+  color: var(--color-text);
+  font: inherit;
   text-align: start;
-  transition: all var(--transition-card);
+  cursor: pointer;
+  transition: background-color var(--transition-dashboard-panel-hover);
 
-  & > * {
-    opacity: var(--opacity-activity-idle);
-    transition: opacity var(--transition-card);
+  &:first-child {
+    border-inline-start: 0;
+    border-start-start-radius: var(--radius-activity-panel);
   }
 
-  &:not(:first-child) {
-    border-inline-start: none;
+  &:last-child {
+    border-start-end-radius: var(--radius-activity-panel);
   }
 
-  &[aria-selected='true'] {
-    border-block-end-color: var(--color-activity-bg);
-    background-color: var(--color-activity-bg);
+  .closed &:first-child {
+    border-end-start-radius: var(--radius-activity-panel);
+  }
 
-    & > * {
-      opacity: 1;
+  .closed &:last-child {
+    border-end-end-radius: var(--radius-activity-panel);
+  }
+
+  &:hover {
+    background-color: var(--color-activity-cell-hover);
+  }
+
+  &.live {
+    background-color: var(--color-activity-cell-live);
+
+    &:hover {
+      background-color: var(--color-activity-cell-live-hover);
     }
+  }
+
+  &.open {
+    background-color: var(--color-activity-cell-open);
+    box-shadow: inset 0 -2px 0 var(--color-activity-cell-open-line);
+  }
+
+  &.live.open {
+    background-color: var(--color-activity-cell-live-hover);
   }
 
   &:focus-visible {
@@ -385,230 +419,196 @@ function onkeydown(event: KeyboardEvent) {
   }
 }
 
-.number {
-  font-size: var(--font-size-activity-number);
-  font-weight: var(--font-weight-headings);
-  white-space: nowrap;
+/* One box for every cell's icon, so the dot, the check and the heart all center on the figure. */
+.icon-slot {
+  display: grid;
+  flex: none;
+  place-items: center;
+  inline-size: var(--activity-icon-slot);
+  block-size: var(--activity-icon-slot);
+  font-size: var(--font-size-activity-icon);
+  line-height: 1;
 
   & :global(.icon) {
-    margin-block-start: 3px;
-    margin-inline-end: 4px;
-    color: var(--heart, var(--rating-1));
-    font-size: var(--font-size-activity-heart);
-    vertical-align: top;
+    display: block;
   }
 }
 
-.percent-sign {
-  font-size: var(--font-size-activity-percent);
-  font-weight: var(--font-weight-headings-light);
-}
-
-.text {
-  padding: 2px 0 0 7px;
-  font-size: var(--font-size-small);
-  line-height: 1.2;
-  text-transform: uppercase;
-}
-
-.users-wrapper {
-  position: relative;
-  container-type: inline-size;
-  margin-block-start: -1px;
-  padding: var(--activity-users-padding);
-  border: 1px solid var(--color-activity-border);
-  background-color: var(--color-activity-bg);
-  /* One avatar column of the grid, which the pile's overlapped faces match. */
-  --face: calc((100cqi - (var(--per-row) - 1) * var(--activity-avatar-gap)) / var(--per-row));
-}
-
-.users {
-  display: grid;
-  grid-template-columns: repeat(var(--per-row), minmax(0, 1fr));
-  gap: var(--activity-avatar-gap);
-  margin: 0;
-  padding: 0 0 var(--activity-avatar-gap);
-  list-style: none;
-}
-
-.member {
-  display: block;
-
-  &:focus-visible {
-    outline: 2px solid var(--color-link);
-    outline-offset: 2px;
-    border-radius: 50%;
-  }
-}
-
-.user-avatar {
-  --ring: var(--color-avatar-border);
-  position: relative;
-  display: block;
-}
-
-/* OG's `.corner-rating.block`: the corner square the round avatar sits on. */
-.block {
-  position: absolute;
-  inset-block-start: 0;
-  inset-inline-end: 0;
-  z-index: 1;
-  inline-size: 50%;
-  block-size: 50%;
-  background-color: var(--ring);
-}
-
-img {
-  position: relative;
-  z-index: 5;
-  display: block;
-  inline-size: 100%;
-  aspect-ratio: 1;
-  object-fit: cover;
-  border-radius: 50%;
-  background-color: var(--color-avatar-border);
-}
-
-.user-avatar img {
-  border: var(--activity-avatar-border) solid var(--ring);
-}
-
-/* Everyone else watching now: faces overlapped by half, then how many there are. */
-.others {
+.watched-icon {
   display: flex;
-  grid-column: span var(--others-span);
+  color: var(--color-activity-watched-icon);
+}
+
+.heart {
+  display: flex;
+  color: var(--heart);
+}
+
+/* Trimmed to the cap height and the baseline, so the figure and the label center on the icon. */
+.stat {
+  display: flex;
   align-items: center;
-  gap: var(--activity-avatar-gap);
+  gap: var(--activity-figure-gap);
   min-inline-size: 0;
 }
 
-.pile {
-  display: flex;
-  flex: none;
-
-  & .member {
-    inline-size: var(--face);
-
-    &:not(:first-child) {
-      margin-inline-start: calc(var(--face) / -2);
-    }
-  }
-
-  & img {
-    box-shadow: 0 0 0 var(--activity-avatar-border) var(--color-activity-bg);
-  }
-}
-
-.others-count {
-  margin: 0;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--color-genre-count);
+.figure {
   font-family: var(--font-headings);
-  font-size: var(--font-size-genre-key-count);
-  text-align: start;
-  cursor: pointer;
-
-  &:hover {
-    color: var(--color-activity-text);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--color-link);
-    outline-offset: 2px;
-  }
+  font-size: var(--font-size-activity-figure);
+  font-weight: var(--font-weight-headings);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  white-space: nowrap;
+  text-box: trim-both cap alphabetic;
 }
 
-.others-number {
-  color: var(--color-activity-text);
+.unit {
+  font-size: var(--font-size-activity-unit);
+  font-weight: var(--font-weight-headings-light);
+}
+
+.label {
+  color: var(--color-activity-label);
+  font-family: var(--font-headings);
+  font-size: var(--font-size-activity-label);
   font-weight: var(--font-weight-headings-heavy);
-}
-
-/* The rating line: each stop is its faces, a coloured rule, and the key. */
-.stops {
-  display: flex;
-  column-gap: var(--activity-line-gap);
-  margin: 0;
-  padding: 0 0 var(--activity-avatar-gap);
-  list-style: none;
-
-  & + .stops,
-  .opened + & {
-    margin-block-start: var(--space-activity-line-rows);
-  }
-}
-
-.stop {
-  /* People Watched ramps from the least watched stop to the most, in the watched action's purple. */
-  --color: color-mix(
-    in srgb,
-    var(--color-activity-watched-high)
-      calc(var(--activity-watched-ramp-floor) + (100% - var(--activity-watched-ramp-floor)) * var(--step)),
-    var(--color-activity-watched-low)
-  );
-  display: flex;
-  /* Softened by the people on it: wider stops fit more faces. */
-  flex: var(--weight) 1 0;
-  flex-direction: column;
-  min-inline-size: var(--activity-line-stop-min);
-  transition: opacity var(--transition-chart);
-
-  /* Like the genre band: the stop under the pointer or focus is picked out and the rest fade, or else the opened one. */
-  .users-wrapper:has(.stop:not(.empty):is(:hover, :focus-within)) &:not(:hover, :focus-within),
-  .users-wrapper:has(.stop.open):not(:has(.stop:not(.empty):is(:hover, :focus-within))) &:not(.open) {
-    opacity: var(--opacity-genre-piece-dimmed);
-  }
-
-  &.empty {
-    --color: var(--color-activity-line-empty);
-
-    & .key {
-      opacity: var(--opacity-activity-line-empty);
-    }
-  }
+  letter-spacing: var(--letter-spacing-activity-label);
+  line-height: var(--line-height-activity-label);
+  text-transform: uppercase;
+  text-box: trim-both cap alphabetic;
 }
 
 .faces {
   display: flex;
-  align-items: flex-end;
-  min-block-size: calc(var(--activity-line-face-size) + 2 * var(--activity-line-face-ring));
-  padding-inline-start: var(--activity-line-face-ring);
-
-  & > :not(:first-child) {
-    margin-inline-start: calc(-1 * var(--activity-line-face-overlap));
-  }
-}
-
-.face {
-  --ring: var(--color-avatar-border);
-  display: block;
-  inline-size: var(--activity-line-face-size);
+  margin-inline-start: auto;
 
   & img {
-    border: var(--activity-line-face-ring) solid var(--ring);
-    box-shadow: 0 0 0 var(--activity-line-face-ring) var(--color-activity-bg);
+    display: block;
+    inline-size: var(--activity-face);
+    block-size: var(--activity-face);
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 0 0 var(--activity-face-ring) var(--color-activity-face-gap), 0 0 0
+      calc(var(--activity-face-ring) * 2) var(--color-social-live);
   }
 }
 
-.more {
-  position: relative;
-  z-index: 5;
+/* Each tooltip's popover sits between the faces, so siblings are matched with ~ rather than +; global, since they're
+   siblings through the Tooltip component. */
+.faces :global(.face ~ .face) {
+  margin-inline-start: calc(-1 * var(--activity-face-overlap));
+}
+
+/* The rest of the pile, as one more face. */
+.rest {
   display: grid;
-  flex: none;
   place-items: center;
-  inline-size: var(--activity-line-face-size);
-  block-size: var(--activity-line-face-size);
-  padding: 0;
-  border: 0;
+  box-sizing: border-box;
+  inline-size: var(--activity-watcher);
+  block-size: var(--activity-watcher);
+  border: var(--activity-watcher-ring) solid var(--color-avatar-border);
   border-radius: 50%;
-  background-color: var(--color-plus-more-bg);
-  box-shadow: 0 0 0 var(--activity-line-face-ring) var(--color-activity-bg);
-  color: var(--color-plus-more-text);
+  background-color: var(--color-activity-person-bg);
+  color: var(--color-text);
   font-family: var(--font-headings);
-  font-size: var(--font-size-genre-count);
+  font-size: var(--font-size-activity-rest);
   font-weight: var(--font-weight-headings-heavy);
-  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+}
+
+.chevron {
+  display: flex;
+  flex: none;
+  margin-inline-start: auto;
+  color: var(--color-activity-chevron);
+  font-size: var(--font-size-activity-chevron);
+  transition: rotate var(--transition-dashboard-panel-hover);
+
+  .faces + .visually-hidden + & {
+    margin-inline-start: 0;
+  }
+
+  .open & {
+    rotate: 180deg;
+    color: var(--color-text);
+  }
+}
+
+.view {
+  padding: var(--activity-detail-padding);
+  border-block-start: 1px solid var(--color-activity-panel-line);
+
+  /* Room above the less and more pill, which rides up from the panel's bottom edge. */
+  &.paged {
+    padding-block-end: var(--space-activity-pager);
+  }
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+.watchers {
+  display: flex;
+  align-items: center;
+  gap: var(--space-base-inline);
+  min-inline-size: 0;
+
+  &.under {
+    padding-block-start: var(--space-activity-watchers);
+    border-block-start: 1px solid var(--color-activity-panel-line);
+  }
+}
+
+/* One line, each face tucked under the next with a ring in the avatar border's gray, like OG's pile. */
+.watcher-faces {
+  display: flex;
+  flex: none;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  & li + li {
+    margin-inline-start: calc(-1 * var(--activity-watcher-overlap));
+  }
+
+  /* Positioned, so every face paints in the pile's order: a dimmed one (its filter a layer of its own) can't jump
+     above an undimmed neighbour. */
+  & li {
+    position: relative;
+    transition: filter var(--transition-activity-face);
+  }
+
+  /* The face under the pointer, or keyboard focus, lifts in place and the rest dim: darkened, not see-through, so the
+     faces under them don't show. Hover goes through the pile's own :hover, not :has(:hover), which Safari can leave
+     stuck after the pointer leaves; and a click's focus doesn't count, so nothing stays lit. */
+  &:hover li:not(:hover),
+  &:has(:focus-visible) li:not(:has(:focus-visible)) {
+    filter: var(--filter-activity-face-idle);
+  }
+
+  /* Only the picture lifts: the face's hit area stays put, so lifting can't slide it out from under the pointer. */
+  & li:hover img,
+  & li:has(:focus-visible) img {
+    translate: 0 calc(-1 * var(--activity-face-lift));
+  }
+}
+
+.watcher {
+  display: block;
+  border-radius: 50%;
+
+  & img {
+    display: block;
+    box-sizing: border-box;
+    transition: translate var(--transition-activity-face);
+    inline-size: var(--activity-watcher);
+    block-size: var(--activity-watcher);
+    border: var(--activity-watcher-ring) solid var(--color-avatar-border);
+    border-radius: 50%;
+    background-color: var(--color-avatar-border);
+    object-fit: cover;
+  }
 
   &:focus-visible {
     outline: 2px solid var(--color-link);
@@ -616,149 +616,326 @@ img {
   }
 }
 
-.rule {
-  display: block;
-  block-size: var(--activity-line-rule);
-  margin-block: var(--space-activity-line-rule);
-  background-color: var(--color);
+.watchers-text {
+  margin: 0;
+  white-space: nowrap;
+  color: var(--color-activity-watchers-text);
+  font-family: var(--font-headings);
+
+  & strong {
+    color: var(--color-text);
+  }
 }
 
-.key {
+.share {
+  display: flex;
+  align-items: end;
+  gap: var(--activity-share-gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  /* Never narrower than its figure, so neighbouring figures can't run into each other on a tablet. */
+  & li {
+    display: flex;
+    flex: var(--weight) 1 0;
+    min-inline-size: min-content;
+  }
+}
+
+.stop {
   display: grid;
-  align-content: start;
-  min-inline-size: 0;
+  flex: 1;
+  gap: var(--space-base-block);
+  align-content: end;
+  min-inline-size: var(--activity-share-stop-min);
   margin: 0;
   padding: 0;
   border: 0;
   background: none;
-  color: var(--color-activity-text);
-  font-family: var(--font-headings);
-  line-height: 1.25;
+  color: var(--color-text);
+  font: inherit;
   text-align: start;
+  cursor: pointer;
+  opacity: var(--opacity-activity-share-idle);
+  transition: opacity var(--transition-dashboard-panel-hover);
+
+  &:is(:hover, :focus-visible, .picked) {
+    opacity: 1;
+  }
+
+  &.empty {
+    cursor: default;
+    opacity: var(--opacity-activity-share-empty);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-link);
+    outline-offset: 4px;
+  }
 }
 
-button.key {
-  cursor: pointer;
+.stop-figure {
+  padding-inline-end: var(--space-activity-share-figure);
+  font-family: var(--font-headings);
+  font-size: var(--font-size-activity-share-figure);
+  font-weight: var(--font-weight-headings-heavy);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  white-space: nowrap;
+}
 
-  &:hover .key-name,
-  &[aria-expanded='true'] .key-name {
-    text-decoration: underline;
+.stop-unit {
+  margin-inline-start: 0.2em;
+  color: var(--color-activity-label);
+  font-family: var(--font-headings);
+  font-size: var(--font-size-activity-share-text);
+}
+
+.stop-name,
+.stop-count {
+  /* No say in the range's width: they trail off instead. */
+  contain: inline-size;
+  overflow: hidden;
+  font-family: var(--font-headings);
+  font-size: var(--font-size-activity-share-text);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stop-name {
+  color: var(--color-activity-share-name);
+}
+
+.stop-count {
+  color: var(--color-activity-share-count);
+
+  .picked & {
+    color: var(--color-text);
+    font-weight: var(--font-weight-headings-heavy);
+  }
+}
+
+/* The watched action's purple, from pale on the least watched range to full on the most. */
+.rule {
+  block-size: var(--activity-share-rule);
+  border-radius: var(--radius-activity-share-rule);
+  background-color: color-mix(
+    in srgb,
+    var(--color-activity-watched-high) calc(var(--activity-watched-ramp-floor) + var(--step) * (100% -
+    var(--activity-watched-ramp-floor))),
+    var(--color-activity-watched-low)
+  );
+
+  .picked & {
+    box-shadow: 0 0 0 var(--activity-share-picked-gap) var(--color-activity-panel-solid), 0 0 0
+      var(--activity-share-picked-ring) var(--color-activity-share-picked);
+  }
+}
+
+.ratings {
+  --color-ratings-chart-bg: var(--color-activity-panel-solid);
+}
+
+.people {
+  display: grid;
+  grid-template-columns: repeat(var(--activity-people-columns), minmax(0, 1fr));
+  gap: var(--activity-people-gap);
+  margin: var(--space-activity-people) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.person {
+  display: flex;
+  align-items: center;
+  gap: var(--activity-person-gap);
+  min-inline-size: 0;
+  block-size: var(--activity-person-height);
+  padding: var(--activity-person-padding);
+  border-radius: var(--radius-activity-person);
+  background-color: var(--color-activity-person-bg);
+  font-family: var(--font-headings);
+  transition: background-color var(--transition-dashboard-panel-hover);
+
+  &:has(a.who:is(:hover, :focus-visible)) {
+    background-color: var(--color-activity-person-hover);
+  }
+}
+
+/* The face and name: the profile link, stretched over the box up to the tags. */
+.who {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  align-self: stretch;
+  gap: var(--activity-person-gap);
+  min-inline-size: 0;
+  color: var(--color-text);
+  text-decoration: none;
+
+  &:is(:hover, :focus-visible) {
+    color: var(--color-text);
+    text-decoration: none;
   }
 
   &:focus-visible {
     outline: 2px solid var(--color-link);
     outline-offset: 2px;
+    border-radius: var(--radius-activity-person);
+  }
+
+  & img {
+    flex: none;
+    inline-size: var(--activity-person-avatar);
+    block-size: var(--activity-person-avatar);
+    border-radius: 50%;
+    object-fit: cover;
   }
 }
 
-/* Typeset like the profile's genre keys. */
-.key-number {
-  /* Only as wide as its text, so the opened panel's arrow points at the number itself. */
-  justify-self: start;
-  color: var(--color-genre-label);
-  font-size: var(--font-size-genre-share);
-  font-weight: var(--font-weight-headings-heavy);
-  font-variant-numeric: tabular-nums;
-  line-height: var(--line-height-genre-share);
+/* The plays tag as a link, deepening like a list row's chip under the pointer. */
+.history {
+  text-decoration: none;
+
+  &:is(:hover, :focus-visible) {
+    text-decoration: none;
+
+    & :global(.tag) {
+      background-color: color-mix(in srgb, var(--tone) var(--list-card-chip-count-tint), transparent);
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-link);
+    outline-offset: 2px;
+    border-radius: var(--radius-list-card-chip);
+  }
 }
 
-.key-count {
+.name {
+  flex: 1;
+  min-inline-size: 0;
   overflow: hidden;
+  font-weight: var(--font-weight-headings);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.key-name {
-  color: var(--color-genre-label);
-  font-size: var(--font-size-genre-label);
-  font-weight: var(--font-weight-headings);
+.tags {
+  display: flex;
+  flex: none;
 }
 
-.key-count {
-  color: var(--color-genre-count);
-  font-size: var(--font-size-genre-key-count);
+/* The comment card's watched and rated tag: segments meeting on a shared edge, at fixed widths so they form columns. */
+.joined {
+  display: inline-flex;
 }
 
-/* A stop or the pile, opened under the line in OG's avatar grid, on a panel whose arrow points back at it. */
-.opened {
-  position: relative;
-  margin-block-start: calc(var(--space-activity-opened) + var(--activity-opened-arrow) / 2);
-  padding: var(--space-activity-opened) var(--space-activity-opened) 0;
-  border-radius: var(--radius-activity-opened);
-  background-color: var(--color-activity-opened-bg);
+.segment {
+  display: flex;
 
-  /* Last in the box, it makes up OG's short bottom padding, like the avatar grid does, to match the sides. */
-  &:last-child {
-    margin-block-end: var(--activity-avatar-gap);
-  }
-
-  &::before {
-    content: '';
-    position: absolute;
-    inset-block-start: calc(var(--activity-opened-arrow) / -2);
-    /* Kept clear of the rounded corners when what opened it sits at either edge. */
-    --arrow-edge: calc(var(--radius-activity-opened) + var(--activity-opened-arrow) / 2);
-    inset-inline-start: clamp(var(--arrow-edge), var(--arrow-at, 50%), 100% - var(--arrow-edge));
-    inline-size: var(--activity-opened-arrow);
-    block-size: var(--activity-opened-arrow);
-    background-color: var(--color-activity-opened-bg);
-    transform: translateX(-50%) rotate(45deg);
-  }
-
-  & .users {
-    position: relative;
-    padding-block-end: var(--space-activity-opened);
+  & :global(.tag) {
+    flex: 1;
+    justify-content: center;
   }
 }
 
-.line {
-  display: block;
+.plays {
+  min-inline-size: var(--activity-tag-plays);
 }
 
-/* OG's `.tooltip-hr` between the name and the plays. */
-.divider {
-  display: block;
-  margin-block: var(--space-tooltip-divider);
-  border-block-end: 1px solid var(--color-tooltip-divider);
+.percent {
+  min-inline-size: var(--activity-tag-percent);
 }
 
-/* The stop's chart tooltip, like the profile's ratings chart. */
-.tip-title,
-.tip-count,
-.tip-line {
-  display: block;
-  text-align: start;
+.both > .plays :global(.tag) {
+  border-start-end-radius: 0;
+  border-end-end-radius: 0;
 }
 
-.tip-title {
-  color: var(--color-chart-tooltip-muted);
-  font-size: var(--font-size-genre-count);
-  text-transform: uppercase;
+.both > .percent {
+  margin-inline-start: -1px;
+
+  & :global(.tag) {
+    border-start-start-radius: 0;
+    border-end-start-radius: 0;
+  }
 }
 
-.tip-count {
-  font-size: var(--font-size-genre-share);
-  font-variant-numeric: tabular-nums;
-  font-weight: var(--font-weight-headings-heavy);
-  line-height: var(--line-height-genre-share);
+.visually-hidden {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
-.tip-unit {
-  margin-inline-start: var(--space-ratings-tip-unit);
-  color: var(--color-chart-tooltip-muted);
-  font-size: var(--font-size-genre-key-count);
-  font-weight: var(--font-weight-headings);
-}
+/* Small tablets: the label goes under the figure on one line, and the figure and faces shrink to fit a third. */
+@container (width < 880px) {
+  .cell {
+    gap: var(--activity-cell-gap-narrow);
+    padding: var(--activity-cell-padding-narrow);
+  }
 
-.tip-line {
-  font-size: var(--font-size-genre-key-count);
+  .stat {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--activity-figure-gap-narrow);
+  }
+
+  .figure {
+    font-size: var(--font-size-activity-figure-narrow);
+  }
+
+  .label {
+    max-inline-size: 100%;
+    overflow: hidden;
+    font-size: var(--font-size-activity-label-narrow);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    & br {
+      display: none;
+    }
+  }
+
+  /* Just the first face, so the label keeps its room. */
+  .faces img {
+    inline-size: var(--activity-face-narrow);
+    block-size: var(--activity-face-narrow);
+  }
+
+  .faces :global(.face ~ .face) {
+    display: none;
+  }
+
+  .people {
+    grid-template-columns: repeat(var(--activity-people-columns-narrow), minmax(0, 1fr));
+  }
+
+  .stop-figure {
+    font-size: var(--font-size-activity-share-figure-narrow);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .tab,
-  .tab > *,
-  .stop {
+  .cell,
+  .chevron,
+  .stop,
+  .person {
     transition: none;
+  }
+
+  /* The dimming still fades; only the lift goes. */
+  .watcher-faces li {
+    transition: filter var(--transition-activity-face);
+  }
+
+  .watcher-faces li:hover img,
+  .watcher-faces li:has(:focus-visible) img {
+    translate: none;
   }
 }
 </style>

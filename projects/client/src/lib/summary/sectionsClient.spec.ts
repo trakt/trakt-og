@@ -43,6 +43,7 @@ const list = (id: number, type: string, likes = 0) => ({
 const seen: Request[] = [];
 // Kept apart from `seen`: every activity load asks for it, and the path checks are about the item's own routes.
 const followingRequests: Request[] = [];
+const liveRequests: Request[] = [];
 const server = setupServer(
   http.get(`${API}/users/me/following`, ({ request }) => {
     followingRequests.push(request);
@@ -51,6 +52,11 @@ const server = setupServer(
   http.get(`${API}/movies/:id/watching`, ({ request }) => {
     seen.push(request);
     return HttpResponse.json([user('watcher')]);
+  }),
+  // Not watching, so no live card: what a live answer maps to is fetchWatching's to test.
+  http.get(`${API}/users/:id/watching`, ({ request }) => {
+    liveRequests.push(request);
+    return new HttpResponse(null, { status: 204 });
   }),
   http.get(`${API}/movies/:id/social`, ({ request }) => {
     seen.push(request);
@@ -82,6 +88,7 @@ afterEach(() => {
   server.resetHandlers();
   seen.length = 0;
   followingRequests.length = 0;
+  liveRequests.length = 0;
 });
 afterAll(() => server.close());
 
@@ -122,7 +129,7 @@ describe('sectionsClient', () => {
 
     it('should pick out the followed members watching now from the whole following list', async () => {
       const [watching] = await client(true).activity(movie) ?? [];
-      expect(watching).toMatchObject({ id: 'watching', text: ['Watching Now', '1 You Follow'] });
+      expect(watching?.id === 'watching' && watching.followed.map(({ key }) => key)).toEqual(['watcher']);
       expect(followingRequests.at(0)?.headers.get('authorization')).toBe('Bearer viewer');
       expect(new URL(followingRequests.at(0)?.url ?? '').searchParams.get('limit')).toBe('all');
     });
@@ -130,7 +137,14 @@ describe('sectionsClient', () => {
     it('should pick nobody out when the following list fails', async () => {
       server.use(http.get(`${API}/users/me/following`, () => HttpResponse.json({}, { status: 500 })));
       const [watching] = await client(true).activity(movie) ?? [];
-      expect(watching).toMatchObject({ id: 'watching', text: ['Watching', 'Now'] });
+      expect(watching?.id === 'watching' && watching.followed).toEqual([]);
+    });
+
+    it('should ask what each followed member watching now is watching, with the token', async () => {
+      const [watching] = await client(true).activity(movie) ?? [];
+      expect(liveRequests.map((request) => new URL(request.url).pathname)).toEqual(['/users/watcher/watching']);
+      expect(liveRequests.at(0)?.headers.get('authorization')).toBe('Bearer viewer');
+      expect(watching?.id === 'watching' && watching.live).toEqual([]);
     });
 
     it('should read English comments by default, a picked language, or every language, but all of Me', async () => {

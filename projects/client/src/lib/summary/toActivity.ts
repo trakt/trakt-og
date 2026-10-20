@@ -1,5 +1,7 @@
 import type { ProfileResponse } from '@trakt/api';
 import { RATING_LABELS } from '../components/rating/ratingPrompt.ts';
+import type { LiveWatch } from '../dashboard/fetchWatching.ts';
+import { type ProfileRatings, toProfileRatings } from '../users/profile/toProfileRatings.ts';
 import type { SocialRow } from './SocialRow.ts';
 
 // OG's avatar for private members and members without one.
@@ -9,7 +11,7 @@ export type ActivityUser = {
   readonly key: string;
   /** The tooltip's first line, OG's `user.username`. */
   readonly name: string;
-  /** Left out for private members, whose placeholder avatar isn't a link. */
+  /** Left out for private members the viewer doesn't follow, whose placeholder avatar isn't a link. */
   readonly href?: string;
   readonly avatar: string;
   /** Their rating of the item, 1 to 10: the ring colour and the corner badge. */
@@ -18,6 +20,8 @@ export type ActivityUser = {
   readonly plays?: number;
   /** Shows only: how much of the show they've watched, as a whole percentage ("82% watched"). */
   readonly progress?: number;
+  /** Their history filtered to the item, where the plays tag leads: OG's comment card link. */
+  readonly history?: string;
 };
 
 /** One stop on the rating line: a rating, or a range of plays, with the followed members who landed on it. */
@@ -25,6 +29,8 @@ export type ActivitySection = {
   readonly key: string;
   /** "10", a plays range like "4–5", or a share of a show like "50–89%". */
   readonly label: string;
+  /** "play" or "plays" after a plays range's label; a show's share and a rating have none. */
+  readonly unit?: string;
   /** OG's rating name ("Totally Ninja!"), or the range's name ("Deep in it"). */
   readonly name: string;
   /** The tooltip's and the opened stop's title: "10 · Totally Ninja!", "50–89% watched · Deep in it". */
@@ -44,8 +50,10 @@ export type ActivityTab =
     /** Everyone watching right now. */
     readonly number: string;
     readonly text: TabText;
-    /** Watching now and followed by the viewer: first, each on their own. */
+    /** Watching now and followed by the viewer, private profiles too: following one means they let you in. */
     readonly followed: readonly ActivityUser[];
+    /** What the followed members are watching, for the ones whose `/users/:id/watching` answered. */
+    readonly live: readonly LiveWatch[];
     /** Everyone else watching now. */
     readonly others: readonly ActivityUser[];
   }
@@ -58,6 +66,8 @@ export type ActivityTab =
     readonly heart?: number;
     /** Every stop on the line, the empty ones too. */
     readonly sections: readonly ActivitySection[];
+    /** "Rated by" only: the profile's ratings chart over the followed members' ratings. */
+    readonly chart?: NonNullable<ProfileRatings['chart']>;
   };
 
 type ToActivityParams = {
@@ -67,8 +77,12 @@ type ToActivityParams = {
   social: readonly SocialRow[] | null;
   /** The slugs the viewer follows, or `null` when logged out. */
   following: ReadonlySet<string> | null;
+  /** What the followed members watching now are watching: `/users/:id/watching` for each. */
+  live?: readonly LiveWatch[];
   /** A show's size, which turns People Watched into how much of it each member has seen. Movies and episodes count plays. */
   show?: { readonly airedEpisodes: number; readonly totalRuntime?: number };
+  /** The movie, show or episode, for each member's history link. */
+  item?: { readonly type: 'movie' | 'show' | 'season' | 'episode'; readonly id: number };
 };
 
 const count = (value: number) => value.toLocaleString('en-US');
@@ -106,9 +120,12 @@ type Member = {
   readonly images?: { readonly avatar?: { readonly full?: string | null } | null } | null;
 };
 
-function toUser(user: Member, index: number): ActivityUser {
+/** A private member shows as the placeholder, unless the viewer follows them: a follow on a private profile is approved. */
+function toUser(user: Member, index: number, followed = false): ActivityUser {
   const slug = user.ids.slug;
-  if (user.private || !slug) return { key: `private-${index}`, name: user.username, avatar: PLACEHOLDER_AVATAR };
+  if ((user.private && !followed) || !slug) {
+    return { key: `private-${index}`, name: user.username, avatar: PLACEHOLDER_AVATAR };
+  }
   return {
     key: slug,
     name: user.username,
@@ -130,37 +147,58 @@ function progressOf(row: SocialRow, show: NonNullable<ToActivityParams['show']>)
   return Math.floor(((row.watched?.plays ?? 0) / show.airedEpisodes) * 100);
 }
 
-function watchingTab(watching: readonly ProfileResponse[], following: ReadonlySet<string> | null) {
+type WatchingTabParams = Pick<ToActivityParams, 'watching' | 'following' | 'live'>;
+
+function watchingTab({ watching, following, live = [] }: WatchingTabParams) {
   if (watching.length === 0) return null;
 
-  const isFollowed = (profile: ProfileResponse) => !profile.private && following?.has(profile.ids.slug ?? '') === true;
-  const users = watching.map((profile, index) => ({ profile, user: toUser(profile, index) }));
+  const isFollowed = (profile: ProfileResponse) => following?.has(profile.ids.slug ?? '') === true;
+  const users = watching.map((profile, index) => ({ profile, user: toUser(profile, index, isFollowed(profile)) }));
   const followed = users.filter(({ profile }) => isFollowed(profile)).map(({ user }) => user);
   const others = users.filter(({ profile }) => !isFollowed(profile)).map(({ user }) => user);
-  const text: TabText = followed.length > 0
-    ? ['Watching Now', `${count(followed.length)} You Follow`]
-    : ['Watching', 'Now'];
-  return { id: 'watching', number: count(watching.length), text, followed, others } as const;
+  const keys = new Set(followed.map(({ key }) => key));
+  const text: TabText = ['Watching', 'Now'];
+  return {
+    id: 'watching',
+    number: count(watching.length),
+    text,
+    followed,
+    live: live.filter(({ member }) => keys.has(member.slug ?? '')),
+    others,
+  } as const;
+}
+
+/** The profile's ratings chart, drawn from how many followed members gave each rating. */
+function ratingsChart(sections: readonly ActivitySection[]) {
+  const distribution = Object.fromEntries(sections.map(({ level, users }) => [level, users.length]));
+  return toProfileRatings({ distribution }).chart ?? undefined;
 }
 
 /**
- * OG's "People You Follow" tabs, with the followed members placed on a line. Watching Now counts everyone, followed
- * members first. People Watched spreads the followed members over ranges of plays for a movie or an episode, or of
+ * The "People You Follow" panel's tabs. Watching Now counts everyone, with the followed members and what they're
+ * watching picked out. People Watched spreads the followed members over ranges of plays for a movie or an episode, or of
  * how much they've seen for a show; Rated by over the ratings 1 to 10. Every stop is kept, so a line reads the same
  * on every title of its kind. Tabs without anyone are left out, and no tabs at all
  * means no section. `cut:` In Library, since `/social` has no collections.
  */
-export function toActivity({ watching, social, following, show }: ToActivityParams): readonly ActivityTab[] {
+export function toActivity(
+  { watching, social, following, live, show, item }: ToActivityParams,
+): readonly ActivityTab[] {
   const watchers = (social ?? [])
     .filter((row) => row.watched)
     .toSorted((a, b) => (b.watched?.plays ?? 0) - (a.watched?.plays ?? 0));
   const raters = watchers.filter((row) => ratingOf(row) !== undefined);
-  const withDetails = (row: SocialRow, index: number) => ({
-    ...toUser(row.user, index),
-    rating: ratingOf(row),
-    plays: row.watched?.plays,
-    progress: show ? progressOf(row, show) : undefined,
-  });
+  // `/social` only lists members the viewer follows.
+  const withDetails = (row: SocialRow, index: number) => {
+    const user = toUser(row.user, index, true);
+    return {
+      ...user,
+      rating: ratingOf(row),
+      plays: row.watched?.plays,
+      progress: show ? progressOf(row, show) : undefined,
+      history: user.href && item ? `${user.href}/history?${item.type}=${item.id}` : undefined,
+    };
+  };
 
   // A show sorts its watchers by how much they've seen, a movie or an episode by plays.
   const ranges = show ? SHOW_RANGES : PLAY_RANGES;
@@ -174,6 +212,7 @@ export function toActivity({ watching, social, following, show }: ToActivityPara
     return {
       key: range.label,
       label: range.label,
+      ...(show ? {} : { unit: range.label === '1' ? 'play' : 'plays' }),
       name: range.name,
       title: titleOf(range),
       level: index + 1,
@@ -197,7 +236,7 @@ export function toActivity({ watching, social, following, show }: ToActivityPara
 
   const average = raters.reduce((sum, row) => sum + (ratingOf(row) ?? 0), 0) / (raters.length || 1);
   const tabs: readonly (ActivityTab | null)[] = [
-    watchingTab(watching, following),
+    watchingTab({ watching, following, live }),
     watchers.length > 0
       ? {
         id: 'watched',
@@ -214,6 +253,7 @@ export function toActivity({ watching, social, following, show }: ToActivityPara
         text: ['Rated by', `${count(raters.length)} ${people(raters.length)}`],
         heart: Math.min(Math.max(Math.trunc(average), 1), 10),
         sections: ratingSections,
+        chart: ratingsChart(ratingSections),
       }
       : null,
   ];

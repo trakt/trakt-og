@@ -1,5 +1,6 @@
 import type { ProfileResponse } from '@trakt/api';
 import { describe, expect, it } from 'vitest';
+import type { LiveWatch } from '../dashboard/fetchWatching.ts';
 import type { SocialRow } from './SocialRow.ts';
 import { type ActivityTab, toActivity } from './toActivity.ts';
 
@@ -44,15 +45,29 @@ describe('toActivity', () => {
       ]);
     });
 
-    it('should put the followed members first and name how many in the tab', () => {
+    it('should pick out the followed members, private ones too, and keep the rest as others', () => {
       const [tab] = toActivity({
-        watching: [profile('a'), profile('b'), profile('c', { private: true })],
+        watching: [profile('a'), profile('b'), profile('c', { private: true }), profile('d', { private: true })],
         social: null,
         following: new Set(['b', 'c']),
       });
-      expect(tab).toMatchObject({ number: '3', text: ['Watching Now', '1 You Follow'] });
-      expect(tab?.id === 'watching' && tab.followed.map(({ key }) => key)).toEqual(['b']);
-      expect(tab?.id === 'watching' && tab.others.map(({ key }) => key)).toEqual(['a', 'private-2']);
+      expect(tab).toMatchObject({ number: '4', text: ['Watching', 'Now'] });
+      expect(tab?.id === 'watching' && tab.followed).toEqual([
+        { key: 'b', name: 'b', href: '/users/b', avatar: 'https://media.trakt.tv/b.jpg' },
+        { key: 'c', name: 'c', href: '/users/c', avatar: 'https://media.trakt.tv/c.jpg' },
+      ]);
+      expect(tab?.id === 'watching' && tab.others.map(({ key }) => key)).toEqual(['a', 'private-3']);
+    });
+
+    it('should keep only the live watches of followed members watching this', () => {
+      const watch = (slug: string) => ({ member: { key: slug, name: slug, slug, avatar: '' } }) as LiveWatch;
+      const [tab] = toActivity({
+        watching: [profile('a'), profile('b')],
+        social: null,
+        following: new Set(['b', 'z']),
+        live: [watch('b'), watch('z')],
+      });
+      expect(tab?.id === 'watching' && tab.live.map(({ member }) => member.slug)).toEqual(['b']);
     });
   });
 
@@ -79,6 +94,38 @@ describe('toActivity', () => {
       expect(keysOn(watched, '4–5')).toEqual(['b']);
       expect(sectionsOf(watched).map(({ share }) => share)).toEqual([67, 0, 0, 33, 0, 0]);
       expect(sectionsOf(watched).at(0)?.title).toBe('1 play · One and done');
+      expect(sectionsOf(watched).map(({ unit }) => unit)).toEqual([
+        'play',
+        'plays',
+        'plays',
+        'plays',
+        'plays',
+        'plays',
+      ]);
+    });
+
+    it("should link each member's plays to their history filtered to the item", () => {
+      const [watched] = toActivity({
+        watching: [],
+        social: [social('a', 2), { user: { username: 'gone', ids: {} }, watched: { plays: 1 } }],
+        following: null,
+        item: { type: 'episode', id: 73640 },
+      });
+      expect(sectionsOf(watched).flatMap(({ users }) => users).map(({ history }) => history)).toEqual([
+        undefined,
+        '/users/a/history?episode=73640',
+      ]);
+    });
+
+    it('should name and show private members, since everyone on /social is followed', () => {
+      const [watched] = toActivity({
+        watching: [],
+        social: [{ user: { username: 'quiet', private: true, ids: { slug: 'quiet' } }, watched: { plays: 1 } }],
+        following: null,
+      });
+      expect(sectionsOf(watched).at(0)?.users).toEqual([
+        expect.objectContaining({ key: 'quiet', name: 'quiet', href: '/users/quiet', plays: 1 }),
+      ]);
     });
 
     it("should place a show's followed members by how much of it they've seen", () => {
@@ -108,6 +155,7 @@ describe('toActivity', () => {
       expect(sectionsOf(watched).find(({ label }) => label === '50–89%')).toMatchObject({
         title: '50–89% watched · Deep in it',
       });
+      expect(sectionsOf(watched).every(({ unit }) => unit === undefined)).toBe(true);
       expect(sectionsOf(watched).flatMap(({ users }) => users).find(({ key }) => key === 'rewatcher')?.progress)
         .toBe(220);
     });
@@ -128,6 +176,18 @@ describe('toActivity', () => {
         share: 33,
       });
       expect(keysOn(rated, '7')).toEqual(['a']);
+    });
+
+    it("should chart the followers' ratings like the profile's chart", () => {
+      const rated = toActivity({
+        watching: [],
+        social: [social('a', 1, 10), social('b', 1, 10), social('c', 1, 8)],
+        following: null,
+      }).find(({ id }) => id === 'rated');
+      const chart = rated?.id === 'rated' ? rated.chart : undefined;
+      expect(chart?.bars.map(({ count }) => count)).toEqual([0, 0, 0, 0, 0, 0, 0, 1, 0, 2]);
+      expect(chart?.bars.find(({ top }) => top)?.rating).toBe(10);
+      expect(chart?.average.label).toBe('9.33 average');
     });
   });
 

@@ -10,12 +10,13 @@ import { toast } from '$lib/components/toast/toast.svelte';
 import { listCatalog } from '$lib/components/lists/listCatalog.svelte';
 import { syncPickerOverlay } from '$lib/components/lists/syncPickerOverlay';
 import { loadPickerLists } from '$lib/components/lists/loadPickerLists';
-import { sortPickerLists } from '$lib/components/lists/sortPickerLists';
+import { type PickerSection, pickerSections } from '$lib/components/lists/pickerSections';
 import { toggleListItem } from '$lib/components/lists/toggleListItem';
 import { createList } from '$lib/components/lists/createList';
 import { loadFollowerCandidates } from '$lib/components/lists/loadFollowerCandidates';
 import LoadingOverlay from '$lib/components/loading/LoadingOverlay.svelte';
 import NewListDialog from '$lib/components/lists/NewListDialog.svelte';
+import SearchField from '$lib/components/filters/SearchField.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import SummaryAction from '$lib/components/summary/SummaryAction.svelte';
 import SummaryActionTile from '$lib/components/summary/SummaryActionTile.svelte';
@@ -26,13 +27,12 @@ import listIcon from '$lib/icons/trakt/list.svg?raw';
 import listThick from '$lib/icons/trakt/list-thick.svg?raw';
 import plus from '$lib/icons/light/circle-plus.svg?raw';
 import add from '$lib/icons/trakt/add-thick.svg?raw';
-import close from '$lib/icons/trakt/delete-thick.svg?raw';
-import search from '$lib/icons/solid/magnifying-glass.svg?raw';
-import dot from '$lib/icons/trakt/dot.svg?raw';
-import check from '$lib/icons/trakt/check-thick.svg?raw';
-import friends from '$lib/icons/trakt/friends.svg?raw';
-import friendsThick from '$lib/icons/trakt/friends-thick.svg?raw';
-import arrow from '$lib/icons/solid/angle-right.svg?raw';
+import close from '$lib/icons/regular/xmark.svg?raw';
+import search from '$lib/icons/regular/magnifying-glass.svg?raw';
+import friends from '$lib/icons/trakt/friends-thick.svg?raw';
+import lock from '$lib/icons/solid/lock-keyhole.svg?raw';
+import link from '$lib/icons/solid/link.svg?raw';
+import arrow from '$lib/icons/light/angle-right.svg?raw';
 import spinner from '$lib/icons/solid/arrows-rotate.svg?raw';
 interface Props {
   target: ListTarget;
@@ -49,6 +49,7 @@ let busy = $state(false);
 let loaded = $state(false);
 let pendingRow = $state<number | null>(null);
 let lists = $state<PickerList[]>([]);
+let sections = $state<PickerSection[]>([]);
 let watchlisted = $state(false);
 let terms = $state('');
 let searching = $state(false);
@@ -59,7 +60,20 @@ let following = $state<{ slug: string; name: string; avatar?: string }[]>([]);
 let followingError = $state(false);
 const viewerState = $derived(overlay.state(target.type, target.id));
 const selected = $derived(Boolean(viewerState.watchlisted || viewerState.listed));
-const rows = $derived(sortPickerLists(lists, searching ? terms : ''));
+const PRIVACY: Record<string, { svg: string; size?: 'people' | 'link' }> = {
+  private: { svg: lock },
+  link: { svg: link, size: 'link' },
+  friends: { svg: friends, size: 'people' },
+};
+const byId = $derived(new Map(lists.map((list) => [list.id, list])));
+const matches = (name: string) =>
+  !searching || name.toLocaleLowerCase('en-US').includes(terms.toLocaleLowerCase('en-US'));
+const shown = $derived(
+  sections.map((section) => ({
+    ...section,
+    ids: section.ids.filter((rowId) => matches(rowId ? byId.get(rowId)?.name ?? '' : 'Watchlist')),
+  })).filter(({ ids }) => ids.length),
+);
 const count = $derived(lists.filter((list) => list.selected).length);
 const watchlistCount = $derived(overlay.watchlistCount());
 const watchlistMode = $derived(
@@ -126,6 +140,7 @@ async function load() {
   lists = result.lists;
   listCatalog.update(page.data.user?.slug ?? '', lists.length);
   watchlisted = result.watchlisted ?? Boolean(viewerState.watchlisted);
+  sections = pickerSections(lists, watchlisted);
   loaded = true;
   syncPickerOverlay({ overlay, target, listed: lists.some((list) => list.selected), watchlisted });
 }
@@ -188,8 +203,22 @@ async function toggleRow(list?: PickerList) {
     pendingRow = null;
   }
 }
+// The item count beside the hovered or focused row, placed from the row's box: Safari can't anchor a tooltip to a row
+// inside the popover's scrolling list. A scroll moves it with its row and hides it once the row scrolls out of view.
+let countTip = $state<{ text: string; top: number }>();
+let countRow: HTMLElement | null = null;
+function placeCount(row: HTMLElement | null) {
+  countRow = row;
+  const list = row?.closest('.scroll')?.getBoundingClientRect();
+  const box = row?.getBoundingClientRect();
+  const middle = box ? box.top + box.height / 2 : 0;
+  countTip = row && box && list && popover && middle > list.top && middle < list.bottom
+    ? { text: row.dataset.count ?? '', top: middle - popover.getBoundingClientRect().top - popover.clientTop }
+    : undefined;
+}
 function toggle(event: ToggleEvent) {
   expanded = event.newState === 'open';
+  if (!expanded) placeCount(null);
   if (expanded) popover?.querySelector<HTMLButtonElement>('button')?.focus();
   else if (!newList) {
     triggerButton?.focus({ preventScroll: true });
@@ -241,6 +270,7 @@ async function save(draft: Parameters<typeof createList>[0]['draft'] & { collabo
     if (added) {
       lists = lists.map((list) => list.id === row.id ? { ...list, selected: true, count: list.count + 1 } : list);
     }
+    sections = pickerSections(lists, watchlisted);
     const collaborations = await Promise.all(
       collaborators.map((slug) =>
         request(`/lists/${row.id}/collaborators/${encodeURIComponent(slug)}`, {}).then((response) => response.ok).catch(
@@ -293,35 +323,65 @@ async function save(draft: Parameters<typeof createList>[0]['draft'] & { collabo
 </div>
 <div bind:this={popover} id="list-{id}" class={['picker', variant]} popover="auto" role="dialog"
   aria-label="Lists for {target.title}" style:position-anchor="--list-{id}" ontoggle={toggle}>
-  <header><span>Listed on <b>{count + Number(watchlisted)}</b> of {lists.length + 1} lists</span>
-    <div class="tools"><button aria-label="Filter by title" aria-pressed={searching} onclick={searchToggle}><Icon svg={search} /></button><button aria-label="Add to new list" onclick={openNew}><Icon svg={add} /></button><button aria-label="Close list picker" onclick={() => popover?.hidePopover()}><Icon svg={close} /></button></div>
+  <header class="head">
+    <div class="title">
+      <h3>Add to lists</h3>
+      <p>On <b>{count + Number(watchlisted)}</b> of {lists.length + 1}</p>
+    </div>
+    <button type="button" class="tool" aria-label="Filter lists" aria-pressed={searching} onclick={searchToggle}><Icon
+        svg={search} /></button>
+    <button type="button" class="tool" aria-label="Close list picker" onclick={() => popover?.hidePopover()}><Icon
+        svg={close} /></button>
   </header>
-  {#if searching}<div class="search"><input bind:this={searchInput} aria-label="Search lists" placeholder="Search term..." bind:value={terms} /></div>{/if}
-  <ul>
-    {#if !searching || 'watchlist'.includes(terms.toLowerCase())}
-      {@render row(null, 'Watchlist', watchlisted, watchlistCount, '', `/users/${page.data.user?.slug ?? 'me'}/watchlist`, page.data.settings?.limits?.watchlist?.item_count)}
-    {/if}
-    {#each rows as list (list.id)}{@render row(list, list.name, list.selected, list.count, list.privacy, `/lists/${list.id}`, listLimit?.item_count)}{/each}
-  </ul>
-  {#if searching && rows.length === 0 && !'watchlist'.includes(terms.toLowerCase())}<p class="empty">No matching lists.</p>{/if}
+  <div class={['search', { open: searching }]} inert={!searching}>
+    <div class="search-clip">
+      <div class="search-field">
+        <SearchField bind:element={searchInput} bind:value={terms} label="Filter lists" placeholder="Filter lists" />
+      </div>
+    </div>
+  </div>
+  <div class="scroll" onscroll={() => placeCount(countRow)}>
+    {#each shown as section (section.key)}
+      <h4 id="list-{id}-{section.key}">{section.title}</h4>
+      <ul aria-labelledby="list-{id}-{section.key}">
+        {#each section.ids as rowId (rowId)}
+          {@const list = byId.get(rowId)}
+          {#if rowId === 0}
+            {@render row(null, 'Watchlist', watchlisted, watchlistCount, '', `/users/${page.data.user?.slug ?? 'me'}/watchlist`, page.data.settings?.limits?.watchlist?.item_count)}
+          {:else if list}
+            {@render row(list, list.name, list.selected, list.count, list.privacy, `/lists/${list.id}`, listLimit?.item_count)}
+          {/if}
+        {/each}
+      </ul>
+    {:else}
+      <p class="empty">No matching lists.</p>
+    {/each}
+  </div>
+  {#if countTip}<div class="count-tip" aria-hidden="true" style:top="{countTip.top}px"><span>{countTip.text}</span></div>{/if}
+  <footer><button type="button" class="new" onclick={openNew}><Icon svg={add} />New list</button></footer>
 </div>
 {#snippet row(list: PickerList | null, name: string, active: boolean, total: number, privacy: string, href: string, limit?: number)}
   {@const maxed = limit !== undefined && total >= limit && !active}
-  <!-- OG's item count tooltip, on the left (global.js, lists.js). It describes the row's toggle for screen readers. -->
-  <li class:active class:maxed class:pending={pendingRow === (list?.id ?? 0)}>
-  <Tooltip text="{total.toLocaleString('en-US')} {total === 1 ? 'item' : 'items'}" placement="left">
-      {#snippet trigger({ 'aria-describedby': describedby, ...tooltip })}
-        <div class="row" {...tooltip}>
-          <button type="button" class="row-toggle" aria-pressed={active} aria-describedby={describedby}
-            disabled={busy || maxed} onclick={() => toggleRow(list ?? undefined)}>
-            <Icon
-              svg={pendingRow === (list?.id ?? 0) ? spinner : list?.collaboration ? active ? friendsThick : friends : active ? check : dot} />
-            <span>{name}{#if privacy && privacy !== 'public'}<span class="privacy">{privacy === 'friends' ? 'following' : privacy}</span>{/if}</span>
-          </button>
-          <a {href} target="_blank" rel="noopener" aria-label="View {name}"><Icon svg={arrow} /></a>
-        </div>
-      {/snippet}
-    </Tooltip>
+  {@const pending = pendingRow === (list?.id ?? 0)}
+  {@const kind = PRIVACY[privacy]}
+  {@const size = list?.collaboration ? 'people' : kind?.size}
+  {@const items = `${total.toLocaleString('en-US')} ${total === 1 ? 'item' : 'items'}`}
+  <!-- OG's item count tooltip, on the left (global.js, lists.js): the picker's `countTip`. The hidden copy describes
+       the row's toggle for screen readers. -->
+  <li class={[size, { active, maxed, pending }]}>
+  <div class="line" role="presentation" data-count={items}
+    onpointerenter={(event) => event.pointerType !== 'touch' && placeCount(event.currentTarget)}
+    onpointerleave={() => placeCount(null)}
+    onfocusin={(event) => event.target instanceof Element && event.target.matches(':focus-visible') && placeCount(event.currentTarget)}
+    onfocusout={() => placeCount(null)}>
+    <button type="button" class="row" aria-pressed={active} aria-describedby="list-{id}-count-{list?.id ?? 0}"
+      disabled={busy || maxed} onclick={() => toggleRow(list ?? undefined)}>
+      <Icon svg={pending ? spinner : list?.collaboration ? friends : kind?.svg ?? listThick} fixedWidth />
+      <span class="name">{name}</span>
+    </button>
+    <span class="described" id="list-{id}-count-{list?.id ?? 0}">{items}</span>
+    <a {href} target="_blank" rel="noopener" aria-label="Open {name}"><Icon svg={arrow} /></a>
+  </div>
 </li>
 {/snippet}
 <LoadingOverlay visible={loadingNew} />
@@ -386,143 +446,285 @@ a:focus-visible {
 .spinner :global(.icon) {
   animation: spin var(--list-spinner-duration) linear infinite;
 }
-.pending .row-toggle :global(.icon) {
-  animation: spin var(--list-spinner-duration) linear infinite;
-}
 @keyframes spin {
   to {
     transform: rotate(360deg);
   }
 }
+/* The shared prompt's surface and tinted title bar, with the filter and close tools, groups of menu rows and a New
+   list footer. */
 .picker {
+  --tone: var(--color-list-picker-tone);
   position: fixed;
   inset: auto;
   position-area: bottom;
   position-try-fallbacks: flip-block, flip-inline;
   inline-size: var(--list-picker-width);
   max-inline-size: calc(100vw - var(--gutter));
-  margin: var(--list-picker-gap) 0 0;
+  margin: var(--space-menu-offset) 0;
   padding: 0;
   overflow: visible;
-  border: var(--list-border) solid var(--color-dropdown-border);
-  border-radius: var(--radius-rating-popover);
-  background: var(--color-box);
-  color: var(--color-text);
-  box-shadow: var(--shadow-rating-popover);
-  font: var(--list-row-size) / var(--line-height-base) var(--font-body);
+  border: 1px solid var(--color-menu-border);
+  border-radius: var(--radius-menu);
+  background-color: var(--color-menu-bg);
+  color: var(--color-dropdown-menu-text);
+  box-shadow: var(--shadow-menu);
+  font: var(--font-size-menu) / var(--line-height-base) var(--font-body);
+  text-align: start;
 }
 .picker.summary {
   inline-size: anchor-size(width);
 }
-.picker::before {
-  content: '';
-  position: absolute;
-  inset-block-end: 100%;
-  inset-inline-start: calc(50% - var(--rating-arrow-size));
-  border: var(--rating-arrow-size) solid transparent;
-  border-block-end-color: var(--color-rating-prompt);
-}
-header {
+.head {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: var(--list-header-block) var(--space-sm-inline);
-  background: var(--color-rating-prompt);
-  border-block-end: var(--list-border) solid var(--color-menu-divider);
-  border-radius: var(--radius-rating-popover) var(--radius-rating-popover) 0 0;
-  font-family: var(--font-headings);
+  gap: var(--space-prompt-head-gap);
+  padding: var(--space-prompt-head);
+  border-block-end: 1px solid color-mix(in srgb, var(--tone) var(--prompt-tint-border), var(--color-menu-border));
+  border-radius: calc(var(--radius-menu) - 1px) calc(var(--radius-menu) - 1px) 0 0;
+  background: color-mix(in srgb, var(--tone) var(--prompt-tint), var(--color-menu-bg));
 }
-.tools {
-  display: flex;
-  gap: var(--space-xs-inline);
+.title {
+  flex: 1;
+  min-inline-size: 0;
+  & h3 {
+    margin: 0;
+    color: var(--color-prompt-title);
+    font-family: var(--font-headings);
+    font-size: var(--font-size-prompt-title);
+    font-weight: var(--font-weight-headings-heavy);
+    line-height: var(--line-height-prompt-title);
+  }
+  & p {
+    margin: 0;
+    color: var(--color-menu-header);
+    font-size: var(--font-size-small);
+  }
+  & b {
+    color: var(--color-prompt-title);
+    font-variant-numeric: tabular-nums;
+  }
 }
-.tools button {
-  border: 0;
-  padding: 0;
+.tool {
+  flex: none;
+  display: grid;
+  place-items: center;
+  inline-size: var(--prompt-close-size);
+  block-size: var(--prompt-close-size);
   min-block-size: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-menu-row);
   background: none;
-  color: var(--color-text-muted);
-  line-height: 1;
+  color: var(--color-menu-header);
+  font-size: var(--font-size-prompt-close);
+  &:is(:hover, :focus-visible, [aria-pressed='true']) {
+    background-color: var(--color-menu-row-hover);
+    color: var(--color-menu-row-hover-text);
+    outline: none;
+  }
+  &[aria-pressed='true'] {
+    color: var(--color-list-picker-on);
+  }
 }
-.tools button[aria-pressed='true'] {
-  color: var(--brand-primary);
+/* Opens by growing from nothing under the title bar and fading in. */
+.search {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition: grid-template-rows var(--transition-list-picker-search), opacity var(--transition-list-picker-search);
+  &.open {
+    grid-template-rows: 1fr;
+    opacity: 1;
+  }
+}
+.search-clip {
+  min-block-size: 0;
+  overflow: hidden;
+}
+.search-field {
+  padding: var(--space-list-picker-search);
+  & :global(input:focus) {
+    border-color: var(--color-list-picker-on);
+    box-shadow: 0 0 0 var(--list-picker-search-ring) var(--color-list-picker-search-ring);
+  }
+}
+.scroll {
+  max-block-size: var(--list-picker-scroll-height);
+  padding: 0 var(--space-menu) var(--space-menu);
+  overflow: hidden auto;
+  overscroll-behavior: contain;
+}
+h4 {
+  margin: 0;
+  padding: var(--space-menu-header);
+  color: var(--color-menu-header);
+  font-size: var(--font-size-menu-header);
+  font-weight: var(--font-weight-menu-header);
+  letter-spacing: var(--letter-spacing-menu-header);
+  text-transform: uppercase;
 }
 ul {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
   margin: 0;
-  padding: var(--space-sm-inline) 0;
-  max-block-size: var(--list-scroll-height);
-  overflow-y: auto;
-  overscroll-behavior: contain;
+  padding: 0;
   list-style: none;
 }
 li {
-  margin-block-start: var(--list-row-gap);
+  border-radius: var(--radius-menu-row);
+  &:has(:is(.row, a):is(:hover, :focus-visible)) {
+    background-color: var(--color-menu-row-hover);
+    color: var(--color-menu-row-hover-text);
+  }
+}
+.line {
+  display: flex;
+  align-items: center;
+  min-inline-size: 0;
 }
 .row {
   display: flex;
-  align-items: center;
-}
-li.active {
-  color: var(--brand-secondary);
-}
-li.maxed .row-toggle {
-  text-decoration: line-through;
-}
-.row-toggle {
-  display: flex;
-  align-items: center;
   flex: 1;
-  gap: var(--space-xs-inline);
-  padding: 0 0 0 var(--space-sm-inline);
-  border: 0;
+  align-items: center;
+  gap: var(--space-prompt-row-icon);
+  min-inline-size: 0;
   min-block-size: 0;
+  padding: var(--space-menu-row);
+  border: 0;
   background: none;
   color: inherit;
-  text-align: start;
   font: inherit;
+  text-align: start;
+  &:focus-visible {
+    outline: none;
+  }
+  & > :global(.icon) {
+    flex: none;
+    color: var(--color-menu-header);
+    font-size: var(--font-size-prompt-row-icon);
+  }
 }
-.row-toggle > :global(.icon) {
-  flex: 0 0 var(--list-row-icon);
+/* Scaled, not resized, so the names stay lined up. */
+li.people .row > :global(.icon) {
+  scale: var(--list-picker-people-scale);
 }
-.privacy {
-  display: inline-block;
-  margin-inline-start: var(--space-xs-inline);
-  padding: var(--space-xs-block) var(--list-privacy-inline);
-  background: var(--color-text-muted);
-  color: var(--color-text-inverse);
-  border-radius: var(--radius-sm);
-  font: var(--list-privacy-size) / var(--line-height-base) var(--font-headings);
-  text-transform: uppercase;
+li.link .row > :global(.icon) {
+  scale: var(--list-picker-link-scale);
 }
-.active .privacy {
-  background: var(--brand-secondary);
+.name {
+  flex: 1;
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+li.active .row,
+li.active .row > :global(.icon) {
+  color: var(--color-list-picker-on);
+}
+/* The count for screen readers; the tooltip shows it on screen. */
+.described {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+li.maxed .name {
+  text-decoration: line-through;
+}
+.pending .row > :global(.icon) {
+  animation: spin var(--list-spinner-duration) linear infinite;
 }
 li a {
-  padding-inline: var(--space-base-inline);
-  opacity: var(--list-link-opacity);
-  color: inherit;
+  display: grid;
+  flex: none;
+  place-items: center;
+  align-self: stretch;
+  padding-inline: var(--space-list-picker-link);
+  border-radius: var(--radius-menu-row);
+  color: var(--color-menu-header);
+  font-size: var(--font-size-menu-check);
+  &:is(:hover, :focus-visible) {
+    color: var(--color-menu-row-hover-text);
+    outline: none;
+  }
 }
-li a:is(:hover, :focus-visible) {
-  opacity: 1;
+/* The shared tooltip's left placement: a black box off the picker's edge, its arrow at the row. */
+.count-tip {
+  position: absolute;
+  inset-inline-end: 100%;
+  translate: 0 -50%;
+  padding-inline-end: calc(var(--tooltip-arrow) + var(--tooltip-offset));
+  color: var(--color-tooltip-text);
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-tooltip);
+  white-space: nowrap;
+  opacity: var(--opacity-tooltip);
+  pointer-events: none;
+  & span {
+    display: block;
+    padding: var(--space-tooltip);
+    border-radius: var(--radius-tooltip);
+    background-color: var(--color-tooltip-bg);
+  }
+  &::before {
+    content: '';
+    position: absolute;
+    inset-inline-end: calc(var(--tooltip-offset) - var(--tooltip-arrow));
+    inset-block-start: calc(50% - var(--tooltip-arrow));
+    border: var(--tooltip-arrow) solid transparent;
+    border-inline-start-color: var(--color-tooltip-bg);
+  }
 }
 .empty {
   margin: 0;
-  padding: var(--space-sm-inline);
-  text-align: center;
-  color: var(--color-text-muted);
+  padding: var(--space-menu-row);
+  padding-block-start: var(--space-menu);
+  color: var(--color-menu-header);
   font-style: italic;
+  text-align: center;
 }
-.search {
-  padding: var(--space-sm-inline);
-  background: var(--color-rating-prompt);
+footer {
+  padding: var(--space-list-picker-footer);
+  border-block-start: 1px solid var(--color-menu-divider);
 }
-.search input {
+.new {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-control-caret);
   inline-size: 100%;
+  min-block-size: var(--control-height);
+  padding: 0 var(--space-control-inline);
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius-control);
+  background-color: var(--color-control-raised-bg);
+  color: var(--color-control-text);
+  font-family: var(--font-headings);
+  font-size: var(--font-size-control);
+  font-weight: var(--font-weight-control);
+  transition: background-color 0.2s, border-color 0.2s;
+  & :global(.icon) {
+    color: var(--color-action-add);
+    font-size: var(--font-size-tool-icon-small);
+  }
+  &:is(:hover, :focus-visible) {
+    border-color: var(--color-action-add);
+    background-color: var(--color-control-raised-hover-bg);
+    outline: none;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   .spinner :global(.icon),
-  .pending .row-toggle :global(.icon) {
+  .pending .row > :global(.icon) {
     animation: none;
+  }
+  .new,
+  .search {
+    transition: none;
   }
 }
 </style>

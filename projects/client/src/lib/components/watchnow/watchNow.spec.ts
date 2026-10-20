@@ -29,6 +29,11 @@ const offers = (
   cinema: (rows.cinema ?? []).map((slug) => offer(slug)),
 });
 
+const prices = (...rows: ['Rent' | 'Buy', string, boolean][]) => ({
+  kind: 'prices',
+  prices: rows.map(([label, amount, lowest]) => ({ label, amount, lowest })),
+});
+
 const sources = new Map<string, Source>(
   ['netflix', 'apple_tv', 'amazon_video', 'youtube', 'starz_amazon_channel', 'amc_theatres'].map((slug) => [
     slug,
@@ -103,11 +108,47 @@ describe('toWatchNowSections', () => {
       ['subscription', ['netflix', 'starz_amazon_channel']],
       ['purchase', ['apple_tv']],
     ]);
-    expect(sections[1]?.links.map(({ price }) => price)).toEqual([
-      ['Included with', 'Subscription'],
-      ['with Starz Subscription'],
+    expect(sections.map(({ favorites }) => favorites)).toEqual([true, false, false]);
+    expect(sections[1]?.links.map(({ terms }) => terms)).toEqual([
+      { kind: 'note', title: 'Included', detail: 'with subscription' },
+      { kind: 'note', title: 'Included', detail: 'with Starz subscription' },
     ]);
-    expect(sections[2]?.links[0]?.price).toEqual(['Rent: $3.99', 'Buy: $19.99']);
+    expect(sections[2]?.links[0]?.terms).toEqual(prices(['Rent', '$3.99', false], ['Buy', '$19.99', false]));
+  });
+
+  describe('for stores', () => {
+    const priced = (rows: [string, string | null, string | null][]): Offers => ({
+      ...offers({}),
+      purchase: rows.map(([slug, rent, purchase]) => offer(slug, { prices: { rent, purchase } })),
+    });
+    const terms = (rows: [string, string | null, string | null][]) =>
+      toWatchNowSections({ offers: priced(rows), sources, favorites: ['youtube'] }).flatMap(({ links }) =>
+        links.map(({ slug, terms }) => [slug, terms])
+      );
+
+    it('should mark the cheapest rent and buy, favorites included', () => {
+      expect(terms([['apple_tv', '4.99', '17.99'], ['amazon_video', '4.99', '9.99'], ['youtube', '3.99', '19.99']]))
+        .toEqual([
+          ['youtube', prices(['Rent', '$3.99', true], ['Buy', '$19.99', false])],
+          ['apple_tv', prices(['Rent', '$4.99', false], ['Buy', '$17.99', false])],
+          ['amazon_video', prices(['Rent', '$4.99', false], ['Buy', '$9.99', true])],
+        ]);
+    });
+
+    it('should mark nothing when every store charges the same', () => {
+      const same = prices(['Rent', '$3.49', false], ['Buy', '$7.99', false]);
+      expect(terms([['apple_tv', '3.49', '7.99'], ['amazon_video', '3.49', '7.99']])).toEqual([
+        ['apple_tv', same],
+        ['amazon_video', same],
+      ]);
+    });
+
+    it('should show only the prices a store has, or a note with none', () => {
+      expect(terms([['apple_tv', null, '9.99'], ['amazon_video', null, null]])).toEqual([
+        ['apple_tv', prices(['Buy', '$9.99', false])],
+        ['amazon_video', { kind: 'note', title: 'Rent or buy' }],
+      ]);
+    });
   });
 
   it('is empty when nothing is available', () => {

@@ -1,13 +1,18 @@
 <!--
-  OG's where-to-watch modal : the title over the
-  item's fanart, "Your Favorites" and one section per offer type, then a country picker and "Powered by JustWatch"
-  on the backdrop underneath. It loads on first open, like OG did, and a new country only loads that country's
-  service names: one `/watchnow` call has every country's offers.
+  The where-to-watch modal in the notes and list dialogs' look: the item's fanart under dark glass with "Where to Watch"
+  and its type over the title, "Your Favorites" and one section per offer type as a grid of service tiles with what
+  each costs (the cheapest rent and buy in green), then a footer bar with the country picker and "Powered by
+  JustWatch". It loads on first open, like OG did, and a new country only loads that country's service names: one
+  `/watchnow` call has every country's offers.
 -->
 <script lang="ts">
 import justwatchLogo from '$lib/assets/sites/justwatch-logo.svg';
 import Dialog from '$lib/components/dialog/Dialog.svelte';
-import FanartTitle from '$lib/components/dialog/FanartTitle.svelte';
+import DialogArtHeader from '$lib/components/dialog/DialogArtHeader.svelte';
+import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
+import Icon from '$lib/icons/Icon.svelte';
+import heart from '$lib/icons/solid/heart.svg?raw';
+import play from '$lib/icons/solid/play.svg?raw';
 import { fetchWatchNow } from './fetchWatchNow.ts';
 import ServiceTile from './ServiceTile.svelte';
 import {
@@ -48,6 +53,10 @@ let loaded = $state(false);
 
 // An episode's JustWatch page is its season's, like OG.
 const justwatchPath = $derived(button.path.replace(/\/episodes\/\d+$/, ''));
+const tags = $derived([
+  { text: 'Where to Watch', icon: play },
+  { text: button.path.startsWith('/movies/') ? 'Movie' : 'Show', color: 'var(--color-dialog-art-media-tag)' },
+]);
 
 async function loadItem() {
   const [all, list, links] = await Promise.all([
@@ -83,7 +92,13 @@ const sections = $derived(
   }),
 );
 const loading = $derived(!loaded || !sources[country]);
-const flag = $derived(countries.find(({ code }) => code === country)?.images?.flag);
+const picked = $derived(countries.find(({ code }) => code === country));
+// The countries that have it first, so the picker opens near the viewer's own, then the rest after a divider.
+const countryGroups = $derived(
+  [countries.filter(({ code }) => counts[code]), countries.filter(({ code }) => !counts[code])].filter((rows) =>
+    rows.length > 0
+  ),
+);
 // OG linked the item's JustWatch page, or JustWatch's home for the country (which calls Britain "uk").
 const poweredBy = $derived.by(() => {
   const link = justwatch[country];
@@ -91,18 +106,42 @@ const poweredBy = $derived.by(() => {
 });
 </script>
 
-<Dialog bind:open title="Where to watch {title}" size="xl" lightDismiss>
+{#snippet flag(src: string | null | undefined)}
+  {#if src}<img class="flag" src={https(src)} alt="" />{/if}
+{/snippet}
+
+<Dialog bind:open title="Where to watch {title}" size="xl" variant="art" lightDismiss>
   {#snippet header(id)}
-    <FanartTitle {id} eyebrow="Where to watch" {title} {year} {fanart} />
+    <DialogArtHeader {id} {title} {year} {fanart} {tags} />
   {/snippet}
 
   <div class={['streaming-links', { loading }]} aria-busy={loading}>
     {#each sections as section (section.title)}
-      <h3 class="section-title">{section.title}</h3>
-      <div class="section">
-        {#each section.links as link (link.slug)}
-          <ServiceTile {link} price={link.price} uhd={link.uhd} />
-        {/each}
+      <div>
+        <h3 class="section-title">
+          {#if section.favorites}<span class="favorites"><Icon svg={heart} /></span>{/if}
+          {section.title}
+          <span class="count">{section.links.length}</span>
+        </h3>
+        <div class="tiles">
+          {#each section.links as link (link.slug)}
+            <ServiceTile {link} uhd={link.uhd}>
+              {#if link.terms.kind === 'prices'}
+                <dl class="terms prices">
+                  {#each link.terms.prices as { label, amount, lowest } (label)}
+                    <dt>{label}</dt>
+                    <dd class={{ lowest }}>{amount}{#if lowest}<span class="visually-hidden"> (lowest)</span>{/if}</dd>
+                  {/each}
+                </dl>
+              {:else}
+                <span class="terms note">
+                  <strong>{link.terms.title}</strong>
+                  {#if link.terms.detail}<span>{link.terms.detail}</span>{/if}
+                </span>
+              {/if}
+            </ServiceTile>
+          {/each}
+        </div>
       </div>
     {:else}
       {#if !loading}
@@ -111,37 +150,49 @@ const poweredBy = $derived.by(() => {
     {/each}
   </div>
 
-  {#snippet footer()}
-    <div class="footer">
-      {#if countries.length > 0}
-        <span class="country">
-          {#if flag}<img src={https(flag)} alt="" />{/if}
-          <select bind:value={country} aria-label="Country">
-            {#each countries as { code, name } (code)}
-              <option value={code}>{name}{counts[code] ? ` (${counts[code]})` : ''}</option>
+  <footer class="footer">
+    {#if countries.length > 0}
+      <Dropdown label="Country: {picked?.name ?? country.toUpperCase()}">
+        {#snippet trigger()}
+          {@render flag(picked?.images?.flag)}{picked?.name ?? country.toUpperCase()}
+          {#if counts[country]}<span class="tag">{counts[country]}</span>{/if}
+        {/snippet}
+        {#each countryGroups as rows, index (index)}
+          {#if index > 0}<hr />{/if}
+          <ul>
+            {#each rows as { code, name, images } (code)}
+              <li>
+                <button type="button" aria-current={code === country} onclick={() => (country = code)}>
+                  <span class="country">{@render flag(images?.flag)}{name}</span>
+                  {#if counts[code]}<span class="tag">{counts[code]}</span>{/if}
+                </button>
+              </li>
             {/each}
-          </select>
-        </span>
-      {/if}
-      <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
-      <a class="powered-by" href={poweredBy} target="_blank" rel="noopener">
-        Powered by <img src={justwatchLogo} alt="JustWatch" />
-      </a>
-    </div>
-  {/snippet}
+          </ul>
+        {/each}
+      </Dropdown>
+    {/if}
+    <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
+    <a class="powered-by" href={poweredBy} target="_blank" rel="noopener">
+      Powered by <img src={justwatchLogo} alt="JustWatch" />
+    </a>
+  </footer>
 </Dialog>
 
 <style>
 .streaming-links {
-  margin-block-end: 10px;
-  --service-width: var(--watch-now-modal-tile-width);
+  display: grid;
+  gap: var(--space-watch-now-sections);
+  padding: var(--dialog-art-body-top) var(--dialog-art-inline);
+  --service-width: 100%;
   --service-height: var(--watch-now-modal-tile-height);
-  --service-padding: 0 10px 20px;
+  --service-padding: 0;
+  --service-radius: var(--radius-service-modal);
+  --tile-width: var(--watch-now-modal-tile-width);
 
   @media (width < 768px) {
-    --service-width: var(--watch-now-modal-tile-width-sm);
     --service-height: var(--watch-now-modal-tile-height-sm);
-    --service-padding: 0 5px 15px;
+    --tile-width: var(--watch-now-modal-tile-width-sm);
   }
 
   &.loading {
@@ -153,11 +204,12 @@ const poweredBy = $derived.by(() => {
   }
 }
 
+/* A small tracked label with its count, the rule running on after it. */
 .section-title {
   display: flex;
   align-items: center;
-  gap: var(--space-sm-inline);
-  margin: 0 var(--space-dialog-wide-inline) var(--space-watch-now-section);
+  gap: var(--space-watch-now-label);
+  margin: 0 0 var(--space-watch-now-section);
   color: var(--color-watch-now-section);
   font-family: var(--font-headings);
   font-size: var(--font-size-watch-now-section);
@@ -166,75 +218,130 @@ const poweredBy = $derived.by(() => {
   line-height: var(--line-height-base);
   text-transform: uppercase;
 
-  /* A small tracked label, lined up with the tiles, with the rule running on after it. */
   &::after {
     flex: 1;
     border-block-start: 1px solid var(--color-dialog-title-border);
     content: '';
   }
+}
 
-  @media (width < 768px) {
-    margin-inline: 15px;
+.favorites {
+  display: inline-flex;
+  color: var(--color-watch-now-favorites);
+}
+
+.count {
+  padding: 0 var(--space-xs-inline);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-menu-tag-bg);
+  color: var(--color-menu-tag);
+  letter-spacing: normal;
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--tile-width), 1fr));
+  gap: var(--watch-now-modal-columns-gap);
+}
+
+.terms {
+  display: grid;
+  margin: var(--space-watch-now-terms) 0 0;
+  font-family: var(--font-body);
+  font-size: var(--font-size-watch-now-terms);
+  font-weight: normal;
+  line-height: var(--line-height-watch-now-terms);
+  text-align: start;
+}
+
+/* Rent and Buy down the left, their amounts lined up on the right. */
+.prices {
+  grid-template-columns: auto 1fr;
+  column-gap: var(--space-watch-now-terms-columns);
+  font-variant-numeric: tabular-nums;
+
+  & dt {
+    color: var(--color-control-muted);
+  }
+
+  & dd {
+    margin: 0;
+    font-weight: var(--font-weight-headings-heavy);
+    text-align: end;
+  }
+
+  & .lowest {
+    color: var(--color-watch-now-lowest);
   }
 }
 
-.section {
-  margin-inline: var(--gutter);
+.note {
+  & strong {
+    font-weight: var(--font-weight-headings-heavy);
+  }
 
-  @media (width < 768px) {
-    margin-inline: 10px;
+  & span {
+    color: var(--color-control-muted);
   }
 }
 
 .no-links {
   margin: 0;
-  padding: 10px 30px 15px;
+  color: var(--color-control-muted);
   font-style: italic;
+  text-align: center;
 }
 
-/* On the backdrop, under the panel. */
+/* The art dialogs' footer bar, pinned to the bottom while a long list scrolls. */
 .footer {
+  position: sticky;
+  inset-block-end: 0;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 5px 10px;
-  color: var(--color-text-inverse);
-  font-size: 11px;
+  gap: var(--dialog-art-footer-gap);
+  padding: var(--dialog-art-footer-padding);
+  border-block-start: 1px solid var(--color-dialog-art-border);
+  background-color: var(--color-dialog-art-footer-bg);
+}
+
+.flag {
+  flex: none;
+  inline-size: var(--watch-now-flag-size);
+  block-size: var(--watch-now-flag-size);
 }
 
 .country {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 5px;
-
-  & img {
-    inline-size: 20px;
-    block-size: 20px;
-  }
-
-  & select {
-    padding: 0 12px 0 0;
-    border: 0;
-    appearance: none;
-    background: transparent var(--select-arrow-inverse) no-repeat 100% 50%;
-    color: inherit;
-    font: inherit;
-
-    & option {
-      color: initial;
-    }
-  }
+  gap: var(--space-watch-now-label);
 }
 
 .powered-by {
   display: flex;
   align-items: center;
-  gap: 3px;
-  color: inherit;
+  gap: var(--space-control-section);
+  margin-inline-start: auto;
+  color: var(--color-control-muted);
+  font-size: var(--font-size-small);
   text-decoration: none;
 
-  & img {
-    block-size: 10px;
+  &:is(:hover, :focus-visible) {
+    color: var(--color-control-text);
   }
+
+  & img {
+    block-size: var(--watch-now-justwatch-height);
+  }
+}
+
+.visually-hidden {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 </style>

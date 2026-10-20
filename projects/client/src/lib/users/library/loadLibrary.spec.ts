@@ -69,6 +69,18 @@ describe('loadLibrary', () => {
     expect(result.cards[0]?.badges).toBeUndefined();
   });
 
+  it.each([
+    ['digital', '&available_on=digital'],
+    ['other', '&available_on=other'],
+    ['plex', ''],
+  ])('should filter the %s source', async (source, filter) => {
+    const result = await load({ query: `?source=${source}` });
+    expect(requested()).toEqual([
+      `/users/tester/collection/media?extended=full%2Cimages&page=1&limit=60&sort_by=added&sort_how=desc${filter}`,
+    ]);
+    expect(result.source).toBe(filter ? source : 'all');
+  });
+
   it('should group Added Date by day on All Types and show the owner their metadata', async () => {
     const result = await load({ isSelf: true });
     expect(requested()).toEqual([

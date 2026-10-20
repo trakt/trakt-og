@@ -2,16 +2,19 @@
   Discover's lists for the month's theme, under the standard panel heading, with toggles to sort them (trending this
   week, most liked, most comments, recently updated): six cards, three across. The list's first poster, blown up and blurred, fills each card in the list's colours, darkening
   towards the foot, with everything on it: the rank and this week's likes, the poster fan (hovering opens the poster
-  under the pointer), the owner's avatar beside the name and "by" line, and the counts at the bottom.
+  under the pointer), the owner's avatar beside the name and "by" line, and the list row's count buttons at the bottom
+  (Like, items, comments), the comments left out when they'd wrap to a second row.
 -->
 <script lang="ts">
+import { page } from '$app/state';
+import type { Attachment } from 'svelte/attachments';
 import PanelHeading from '$lib/components/dashboard/PanelHeading.svelte';
 import VipLabel from '$lib/components/labels/VipLabel.svelte';
-import Icon from '$lib/icons/Icon.svelte';
+import ListCount from '$lib/components/lists/ListCount.svelte';
+import ListLikeButton from '$lib/components/lists/ListLikeButton.svelte';
 import listIcon from '$lib/icons/regular/list.svg?raw';
 import comment from '$lib/icons/regular/comment.svg?raw';
 import file from '$lib/icons/regular/file.svg?raw';
-import thumbsUp from '$lib/icons/regular/thumbs-up.svg?raw';
 import { sortThemeLists } from './sortThemeLists.ts';
 import type { ThemeList } from './ThemeList.ts';
 import { themeListSorts } from './themeListSorts.ts';
@@ -26,7 +29,21 @@ const { lists, season }: Props = $props();
 let sort = $state<(typeof themeListSorts)[number]['id']>('trending');
 const shown = $derived(sortThemeLists(lists, sort));
 const count = (n: number) => n.toLocaleString('en-US');
-const plural = (n: number, word: string) => (n === 1 ? word : `${word}s`);
+
+// One row of count buttons: the last (the comments) hides whenever it would wrap under the others.
+const oneRow: Attachment<HTMLElement> = (node) => {
+  const fit = () => {
+    const buttons = [...node.children].filter((el): el is HTMLElement => el instanceof HTMLElement && !el.popover);
+    const [first, last] = [buttons.at(0), buttons.at(-1)];
+    if (!first || !last || first === last) return;
+    last.hidden = false;
+    last.hidden = last.offsetTop > first.offsetTop;
+  };
+  const resized = new ResizeObserver(fit);
+  for (const el of [node, ...node.children]) resized.observe(el);
+  fit();
+  return () => resized.disconnect();
+};
 </script>
 
 <!-- List and user hrefs are built from ids and slugs, which resolve() can't type. -->
@@ -63,16 +80,14 @@ const plural = (n: number, word: string) => (n === 1 ? word : `${word}s`);
                   {#if tile.owner.vip}<VipLabel badge={tile.owner.vip} pill />{/if}
                 </p>
               </div>
-              <p class="counts">
-                <span class="stat"><Icon svg={file} /><strong>{count(tile.items)}</strong>
-                  {plural(tile.items, 'item')}</span>
-                <span class="stat"><Icon svg={thumbsUp} /><strong>{count(tile.likes)}</strong>
-                  {plural(tile.likes, 'like')}</span>
+              <div class="counts" {@attach oneRow}>
+                <ListLikeButton id={tile.id} ownerSlug={tile.owner.slug} viewer={page.data.user?.slug ?? null}
+                  count={tile.likes} button />
+                <ListCount svg={file} value={tile.items} word="item" href={tile.href} />
                 {#if tile.comments !== undefined}
-                  <span class="stat"><Icon svg={comment} /><strong>{count(tile.comments)}</strong>
-                    {plural(tile.comments, 'comment')}</span>
+                  <ListCount svg={comment} value={tile.comments} word="comment" href="{tile.href}/comments" />
                 {/if}
-              </p>
+              </div>
             </div>
           </article>
         </li>
@@ -287,30 +302,12 @@ h3 {
 .counts {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--list-tile-counts-gap);
+  gap: var(--list-counts-gap);
   margin-block-start: auto;
   padding-block-start: var(--list-tile-body-gap);
-  padding-inline-start: var(--list-tile-counts-inset);
-}
 
-.stat {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--list-tile-stat-gap);
-  color: var(--color-discover-muted);
-  font-size: var(--font-size-list-tile-meta);
-  white-space: nowrap;
-
-  & :global(svg) {
-    color: var(--brand-secondary);
-    font-size: var(--font-size-list-tile-stat-icon);
-  }
-
-  & strong {
-    color: var(--color-discover-text);
-    font-size: var(--font-size-list-tile-stat);
-    font-weight: var(--font-weight-headings-heavy);
-    font-variant-numeric: tabular-nums;
+  & > :global([hidden]) {
+    display: none;
   }
 }
 </style>

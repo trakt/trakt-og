@@ -6,7 +6,7 @@ const list = (id: number, extra: Partial<ThemeList>): ThemeList => ({
   id,
   href: `/lists/${id}`,
   name: `List ${id}`,
-  owner: { name: 'sean', href: '/users/sean', avatar: 'a.jpg', vip: null },
+  owner: { slug: 'sean', name: 'sean', href: '/users/sean', avatar: 'a.jpg', vip: null },
   items: 50,
   likes: 0,
   posters: [],

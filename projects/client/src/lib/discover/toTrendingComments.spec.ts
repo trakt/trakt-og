@@ -30,7 +30,7 @@ const episodeRow = (id: number, showId: number): TrendingCommentRow => ({
   type: 'episode',
   comment: comment(id),
   show: show(showId),
-  episode: { season: 1, number: 8, title: 'Dirt and Stars' },
+  episode: { season: 1, number: 8, title: 'Dirt and Stars', ids: { trakt: id + 500 } },
 });
 
 describe('toTrendingComments', () => {
@@ -52,6 +52,20 @@ describe('toTrendingComments', () => {
       airedEpisodes: undefined,
       runtime: undefined,
     });
+    expect(first?.commentItem).toEqual({
+      type: 'episode',
+      id: 501,
+      title: 'Show 10 1x08 "Dirt and Stars"',
+      show: 10,
+      season: 1,
+    });
+  });
+
+  it('should give the card the show when an episode row has no episode id', () => {
+    const row = episodeRow(1, 10);
+    const [first] = toTrendingComments([{ ...row, episode: { season: 1, number: 8, title: 'Dirt and Stars' } }], now);
+
+    expect(first?.commentItem).toEqual({ type: 'show', id: 10, title: 'Show 10', airedEpisodes: undefined });
   });
 
   it('should keep ten, one for each avatar in the pager', () => {

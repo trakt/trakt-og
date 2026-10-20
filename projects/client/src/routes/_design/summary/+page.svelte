@@ -154,7 +154,7 @@ const relatedPeople = (card: RelatedCard) =>
       <SummaryPoster alt="List poster collage" posters={[{}, {}, {}, {}]} />
     </div>
     <div class="tools-demo">
-      <MediaTools target={reportTarget} updatedAt="2026-09-29T12:00:00Z" datasource="TMDB" />
+      <MediaTools target={reportTarget} />
     </div>
     <button type="button" onclick={() => { reporting = true; }}>Report Movie</button>
     <ReportDialog bind:open={reporting} target={reportTarget} />

@@ -10,6 +10,10 @@
   blocked member's card collapses to its faded name row until clicked, and their replies are dropped from the inline
   thread. Reactions share the viewer's choices and totals.
 
+  Discover's Trending Comments (`spotlight`) takes the same card over a fanart: the text large beside a quote mark
+  under the avatar, with no bubble or Reply, "N replies" going to the comment's page and "Read thread" always there.
+  A spoiler there is revealed by clicking its blurred text, without the Reveal Spoilers button.
+
   On the comment's own page (`read`) it looks the same, as the thread's root: the page lists the replies under it
   (`replies`), open, and "N replies" folds them away. Reply opens the box at the thread's end.
 -->
@@ -26,6 +30,7 @@ import eyeSlash from '$lib/icons/solid/eye-slash.svg?raw';
 import heart from '$lib/icons/solid/heart.svg?raw';
 import caretDown from '$lib/icons/solid/caret-down.svg?raw';
 import circleCheck from '$lib/icons/solid/circle-check.svg?raw';
+import quoteLeft from '$lib/icons/solid/quote-left.svg?raw';
 import commentSolid from '$lib/icons/solid/comment.svg?raw';
 import linkIcon from '$lib/icons/solid/link.svg?raw';
 import commentIcon from '$lib/icons/regular/comment.svg?raw';
@@ -112,6 +117,8 @@ interface Props {
    * text in full, and the avatar and name row pinned to the bottom of the nearest positioned ancestor.
    */
   veiled?: boolean;
+  /** Discover's Trending Comments: the text large, no bubble or Reply, and the replies on the comment's page. */
+  spotlight?: boolean;
   /** Takes a posted reply where the page lists the thread itself. Left out, it goes into the card's inline thread. */
   onreply?: (reply: CommentResponse) => void;
   /** After the comment is deleted. */
@@ -136,6 +143,7 @@ const {
   read = false,
   replies: pageReplies,
   veiled = false,
+  spotlight = false,
   onreply,
   ondelete,
 }: Props = $props();
@@ -172,7 +180,8 @@ const watched = $derived(
   viewer && author.slug && item ? watchedIndicator({ stats: comment.user_stats, slug: author.slug, item }) : undefined,
 );
 const permalink = $derived(`/comments/${comment.id}`);
-const canReply = $derived(member !== null && !member.commentingBanned && author.href !== undefined);
+// Discover's spotlight leaves replying to the comment's own page.
+const canReply = $derived(!spotlight && member !== null && !member.commentingBanned && author.href !== undefined);
 // Replies go to the top-level comment.
 const threadId = $derived(isReply ? comment.parent_id : comment.id);
 
@@ -386,6 +395,7 @@ const vanish = (node: Element) =>
       nested,
       read,
       veiled,
+      spotlight,
       reply: isReply,
       'has-thread': threadOpen,
       'as-parent': asParent,
@@ -508,6 +518,7 @@ const vanish = (node: Element) =>
       {:else}
         {#snippet gif()}{#if comment.gif}<CommentGif gif={comment.gif} />{/if}{/snippet}
         <div class="bubble">
+          {#if spotlight}<span class="mark" aria-hidden="true"><Icon svg={quoteLeft} /></span>{/if}
           {#if titles}
             <p class="item-title">{titles.item}</p>
             {#if titles.episode}<p class="episode-title">{titles.episode}</p>{/if}
@@ -518,9 +529,15 @@ const vanish = (node: Element) =>
               <div class="blur" aria-hidden="true" inert>
                 <ReadMore><CommentText {blocks} />{@render gif()}</ReadMore>
               </div>
-              <div class="reveal">
-                <GlassAction card glass icon={eyeSlash} onclick={() => (clicked = true)}>Reveal Spoilers</GlassAction>
-              </div>
+              {#if spotlight}
+                <!-- The spotlight's blurred text is its own reveal, without the button. -->
+                <button type="button" class="reveal-text" aria-label="Spoilers, click to reveal"
+                  onclick={() => (clicked = true)}></button>
+              {:else}
+                <div class="reveal">
+                  <GlassAction card glass icon={eyeSlash} onclick={() => (clicked = true)}>Reveal Spoilers</GlassAction>
+                </div>
+              {/if}
             </div>
           {:else}
             <ReadMore><CommentText {blocks} onvideo={(id) => (video = id)} />{@render gif()}</ReadMore>
@@ -562,18 +579,23 @@ const vanish = (node: Element) =>
             </GlassAction>
           </button>
         {/if}
-        <!-- The replies load when opened; the comment's own page lists them open. -->
+        <!-- The replies load when opened; the comment's own page lists them open. The spotlight just goes there. -->
         {#if !isReply && comment.replies > 0}
           <a
             class="comment-count"
             href={permalink}
-            aria-expanded={repliesShown}
-            aria-controls={repliesId}
-            onclick={toggleReplies}
+            aria-expanded={spotlight ? undefined : repliesShown}
+            aria-controls={spotlight ? undefined : repliesId}
+            onclick={spotlight ? undefined : toggleReplies}
           >
             <Icon svg={commentIcon} /><span><strong>{comment.replies.toLocaleString('en-US')}</strong>
-              {comment.replies === 1 ? 'reply' : 'replies'}</span><span class="chevron"><Icon svg={caretDown} /></span>
+              {comment.replies === 1 ? 'reply' : 'replies'}</span>{#if !spotlight}<span class="chevron"><Icon
+                  svg={caretDown}
+                /></span>{/if}
           </a>
+        {/if}
+        {#if spotlight}
+          <GlassAction card glass href={permalink}>Read thread</GlassAction>
         {/if}
       {/if}
 
@@ -1094,6 +1116,43 @@ const vanish = (node: Element) =>
 @keyframes spin {
   to {
     rotate: 360deg;
+  }
+}
+
+/* Discover's Trending Comments: the text large and bare over the fanart, the quote mark under the avatar. */
+.spotlight {
+  --bubble: transparent;
+  --comment-collapsed-height: var(--trending-comments-collapsed-height);
+
+  & > .main > .comment > .bubble {
+    position: relative;
+    padding: 0;
+    border: 0;
+    font-size: var(--font-size-trending-comments-quote);
+    font-weight: var(--font-weight-headings);
+  }
+
+  & .spoiler {
+    min-block-size: 0;
+  }
+
+  & .reveal-text {
+    align-self: stretch;
+    min-block-size: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+  }
+
+  /* Out in the avatar's column, just before the text, so the text lines up with the buttons under it. */
+  & .mark {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-end: calc(100% + var(--trending-comments-byline-gap));
+    color: var(--season-accent);
+    font-size: var(--font-size-trending-comments-mark);
+    line-height: 1;
   }
 }
 

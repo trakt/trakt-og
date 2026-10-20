@@ -26,6 +26,7 @@ const row = z.object({
     number: z.number(),
     number_abs: z.number().nullish(),
     title: z.string().nullish(),
+    ids: z.object({ trakt: z.number() }).nullish(),
   }).nullish(),
 });
 

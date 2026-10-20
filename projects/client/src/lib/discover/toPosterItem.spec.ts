@@ -37,7 +37,7 @@ describe('toPosterItem', () => {
       poster: 'https://media.trakt.tv/images/movies/7/posters/thumb/a.jpg.webp',
       fanart: 'https://media.trakt.tv/images/movies/7/fanarts/full/b.jpg.webp',
       logo: 'https://media.trakt.tv/images/movies/7/logos/medium/c.png.webp',
-      genres: 'Horror, Science fiction, Drama',
+      genres: ['Horror', 'Science fiction', 'Drama', 'War'],
       certification: 'R',
       network: undefined,
       overview: 'A creature.',

@@ -10,6 +10,7 @@
 -->
 <script lang="ts">
 import ReportDialog from '$lib/components/summary/ReportDialog.svelte';
+import ListCount from '$lib/components/lists/ListCount.svelte';
 import ListLikeButton from '$lib/components/lists/ListLikeButton.svelte';
 import type { Snippet } from 'svelte';
 import CommentTag from '$lib/components/comments/CommentTag.svelte';
@@ -148,18 +149,6 @@ const plural = (count: number, word: string) => `${word}${count === 1 ? '' : 's'
   </Tooltip>
 {/snippet}
 
-<!-- A count as a comment's "N replies": an outlined button where it leads somewhere, the same look where it doesn't. -->
-{#snippet count(svg: string, value: number, word: string, to?: string)}
-  {@const body = `${plural(value, word)}`}
-  {#if to}
-    <a class="count"
-  href={to}><Icon {svg} /><strong>{value.toLocaleString('en-US')}</strong><span class="count-text">{body}</span></a>
-  {:else}
-    <span
-  class="count"><Icon {svg} /><strong>{value.toLocaleString('en-US')}</strong><span class="count-text">{body}</span></span>
-  {/if}
-{/snippet}
-
 {#snippet chip(text: string, color: string, svg: string, tip?: string)}
   <Tooltip text={tip}>
     {#snippet trigger(tooltip)}<CommentTag {svg} {color} tint {...tooltip}>{text}</CommentTag>{/snippet}
@@ -231,10 +220,10 @@ const plural = (count: number, word: string) => `${word}${count === 1 ? '' : 's'
         <div class="counts">
           {#if likeCount !== undefined}
             {#if likeTarget}<ListLikeButton {...likeTarget} count={likeCount} button />
-            {:else}{@render count(voteYes, likeCount, 'like')}{/if}
+            {:else}<ListCount svg={voteYes} value={likeCount} word="like" />{/if}
           {/if}
-          {@render count(document, itemCount, 'item', href)}
-          {#if commentCount !== undefined}{@render count(comment, commentCount, 'comment', `${href}/comments`)}{/if}
+          <ListCount svg={document} value={itemCount} word="item" {href} />
+          {#if commentCount !== undefined}<ListCount svg={comment} value={commentCount} word="comment" href="{href}/comments" />{/if}
         </div>
         {#if actions}
           <div class="tools">
@@ -557,46 +546,7 @@ h3 {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--list-card-foot-gap) var(--space-stats);
-}
-
-/* A count as a comment's "N replies" button: outlined, the icon in blue, the number bold. */
-.count {
-  box-sizing: border-box;
-  display: inline-flex;
-  align-items: center;
-  gap: var(--glass-action-gap-card);
-  block-size: var(--control-height);
-  padding-inline: var(--glass-action-padding-card);
-  border: 1px solid var(--color-control-border);
-  border-radius: var(--radius-control);
-  background-color: var(--color-control-bg);
-  color: var(--color-control-text);
-  font-family: var(--font-body);
-  font-size: var(--font-size-glass-action);
-  font-weight: var(--font-weight-glass-action-card);
-  white-space: nowrap;
-  transition: background-color var(--transition-comment-quiet), border-color var(--transition-comment-quiet);
-
-  & > :global(.icon) {
-    color: var(--color-stat-count);
-  }
-
-  & strong {
-    font-weight: var(--font-weight-headings-heavy);
-    font-variant-numeric: tabular-nums;
-  }
-
-  & .count-text {
-    margin-inline-start: calc(-1 * var(--glass-action-gap-card) + var(--space-stat-noun));
-  }
-}
-
-a.count:is(:hover, :focus-visible) {
-  border-color: var(--color-control-border-hover);
-  background-color: var(--color-control-hover-bg);
-  color: var(--color-control-text);
-  text-decoration: none;
+  gap: var(--list-counts-gap);
 }
 
 .tools {
@@ -681,7 +631,7 @@ a.count:is(:hover, :focus-visible) {
     column-gap: var(--list-card-gap-tablet);
   }
 
-  .count-text {
+  .counts :global(.count-text) {
     position: absolute;
     inline-size: 1px;
     block-size: 1px;
@@ -733,7 +683,6 @@ a.count:is(:hover, :focus-visible) {
 
 @media (prefers-reduced-motion: reduce) {
   .card::before,
-  .count,
   .slot,
   .action {
     transition: none;

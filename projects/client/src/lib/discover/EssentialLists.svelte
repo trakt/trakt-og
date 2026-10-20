@@ -2,15 +2,16 @@
   Discover's essential lists as an accordion across the page's full width: eight tall slices of OG's list art, each
   closed one showing its number, its logo on its side (square logos stay upright) and its item count. Hovering a
   slice, or tabbing to it, opens it: the art brightens, and the logo, title, the IMDB lists' green label, two lines of
-  description, the counts, its first posters (rising in one by one) and "View list" come in over a shade, with an
+  description, the list row's count buttons (a working Like, the items and the comments page), its first posters (rising in one by one) and "View list" come in over a shade, with an
   accent bar along the bottom. The first starts open, and the last one opened stays open. Under reduced motion
-  nothing slides.
+  nothing slides. The slice's link is a layer under the open text, so the count buttons can sit over it.
 -->
 <script lang="ts">
-import Icon from '$lib/icons/Icon.svelte';
+import { page } from '$app/state';
+import ListCount from '$lib/components/lists/ListCount.svelte';
+import ListLikeButton from '$lib/components/lists/ListLikeButton.svelte';
 import comment from '$lib/icons/regular/comment.svg?raw';
 import file from '$lib/icons/regular/file.svg?raw';
-import thumbsUp from '$lib/icons/regular/thumbs-up.svg?raw';
 import type { EssentialList } from './toEssentialList.ts';
 
 const { lists }: { lists: readonly EssentialList[] } = $props();
@@ -26,7 +27,6 @@ const hover = (index: number) => {
 };
 const pad = (n: number) => String(n).padStart(2, '0');
 const count = (n: number) => n.toLocaleString('en-US');
-const plural = (n: number, word: string) => (n === 1 ? word : `${word}s`);
 </script>
 
 <!-- List hrefs are built from ids, which resolve() can't type. -->
@@ -38,14 +38,8 @@ const plural = (n: number, word: string) => (n === 1 ? word : `${word}s`);
   <ul onpointerleave={() => clearTimeout(timer)}>
       {#each lists as list, index (list.id)}
         {@const name = list.title.join(' ')}
-        <li class={{ open: open === index }}>
-          <a
-            href={list.href}
-            aria-label={name}
-            aria-current={open === index}
-            onpointerenter={() => hover(index)}
-            onfocus={() => (open = index)}
-          >
+        <li class={{ open: open === index }} onpointerenter={() => hover(index)}>
+          <a href={list.href} aria-label={name} aria-current={open === index} onfocus={() => (open = index)}>
             <img class="art" src={list.background} alt="" loading="lazy" decoding="async" />
             <span class="shade"></span>
             <span class="spine" aria-hidden="true">
@@ -54,31 +48,29 @@ const plural = (n: number, word: string) => (n === 1 ? word : `${word}s`);
               {#if list.counts}<span class="items">{count(list.counts.items)} items</span>{/if}
             </span>
             <span class="kicker" aria-hidden="true"><b>{pad(index + 1)}</b> / {pad(lists.length)} · Essential Lists</span>
-            <span class="body">
-              <img class="logo" src={list.logo} alt="" loading="lazy" />
-              <span class="name">{name}</span>
-              {#if list.label}<span class="label">{list.label}</span>{/if}
-              {#if list.description}<span class="description">{list.description}</span>{/if}
-              {#if list.counts}
-                <span class="counts">
-                  <span class="stat"><Icon svg={file} /><strong>{count(list.counts.items)}</strong>
-                    {plural(list.counts.items, 'item')}</span>
-                  <span class="stat"><Icon svg={thumbsUp} /><strong>{count(list.counts.likes)}</strong>
-                    {plural(list.counts.likes, 'like')}</span>
-                  {#if list.counts.comments !== undefined}
-                    <span class="stat"><Icon svg={comment} /><strong>{count(list.counts.comments)}</strong>
-                      {plural(list.counts.comments, 'comment')}</span>
-                  {/if}
-                </span>
-              {/if}
-              <span class="row">
-                {#each list.posters as poster, slot (poster)}
-                  <img class="poster" src={poster} alt="" loading="lazy" style:--slot={slot} />
-                {/each}
-                <span class="button">View list</span>
-              </span>
-            </span>
           </a>
+          <div class="body">
+            <img class="logo" src={list.logo} alt="" loading="lazy" />
+            <span class="name" aria-hidden="true">{name}</span>
+            {#if list.label}<span class="label">{list.label}</span>{/if}
+            {#if list.description}<span class="description">{list.description}</span>{/if}
+            {#if list.counts}
+              <div class="counts">
+                <ListLikeButton id={list.id} ownerSlug={list.ownerSlug} viewer={page.data.user?.slug ?? null}
+                  count={list.counts.likes} button />
+                <ListCount svg={file} value={list.counts.items} word="item" href={list.href} />
+                {#if list.counts.comments !== undefined}
+                  <ListCount svg={comment} value={list.counts.comments} word="comment" href="{list.href}/comments" />
+                {/if}
+              </div>
+            {/if}
+            <span class="row" aria-hidden="true">
+              {#each list.posters as poster, slot (poster)}
+                <img class="poster" src={poster} alt="" loading="lazy" style:--slot={slot} />
+              {/each}
+              <span class="button">View list</span>
+            </span>
+          </div>
         </li>
       {/each}
     </ul>
@@ -140,7 +132,6 @@ li {
 a {
   display: block;
   block-size: 100%;
-  color: var(--color-discover-on-image);
 
   &:is(:hover, :focus-visible) {
     color: var(--color-discover-on-image);
@@ -258,8 +249,11 @@ a {
   }
 }
 
+/* Over the link, letting clicks through to it everywhere but the count buttons. */
 .body {
   position: absolute;
+  color: var(--color-discover-on-image);
+  pointer-events: none;
   inset: auto auto var(--essential-body-bottom) var(--essential-inset);
   display: grid;
   justify-items: start;
@@ -317,28 +311,8 @@ a {
 .counts {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--list-tile-counts-gap);
-}
-
-.stat {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--list-tile-stat-gap);
-  color: var(--color-season-hero-blurb);
-  font-size: var(--font-size-list-tile-meta);
-  white-space: nowrap;
-
-  & :global(svg) {
-    color: var(--brand-secondary);
-    font-size: var(--font-size-list-tile-stat-icon);
-  }
-
-  & strong {
-    color: var(--color-discover-on-image);
-    font-size: var(--font-size-list-tile-stat);
-    font-weight: var(--font-weight-headings-heavy);
-    font-variant-numeric: tabular-nums;
-  }
+  gap: var(--list-counts-gap);
+  pointer-events: auto;
 }
 
 .row {
@@ -376,7 +350,7 @@ a {
   text-transform: uppercase;
   white-space: nowrap;
 
-  a:hover & {
+  a:hover + .body & {
     background-color: var(--season-accent);
   }
 }

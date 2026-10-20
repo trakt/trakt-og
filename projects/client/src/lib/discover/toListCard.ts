@@ -9,6 +9,7 @@ export type ListCard = {
   readonly href: string;
   readonly name: string;
   readonly owner: {
+    readonly slug: string;
     readonly name: string;
     readonly href: string;
     readonly avatar: string;
@@ -41,6 +42,7 @@ export function toListCard(list: ListSource): ListCard {
     href: `/lists/${list.ids.trakt}`,
     name: list.name,
     owner: {
+      slug,
       name: list.user.name?.trim() || list.user.username,
       href: `/users/${slug}`,
       avatar: list.user.images?.avatar?.full || PLACEHOLDER_AVATAR,

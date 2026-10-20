@@ -2340,8 +2340,19 @@
   --color-watch-now-tiles-bg: light-dark(#222, #333);
   --shadow-watch-now: 0 5px 20px light-dark(#666, #000);
   --color-watch-now-section: light-dark(#666, var(--gray-light));
-  --font-size-watch-now-section: 12px;
-  --space-watch-now-section: 15px; /* under a section label, above its tiles */
+  --font-size-watch-now-section: 11px;
+  --space-watch-now-section: 12px; /* under a section label, above its tiles */
+  --space-watch-now-sections: 18px;
+  --space-watch-now-label: 8px; /* between a section label's heart, name and count, and a country's flag and name */
+  --watch-now-justwatch-height: 10px;
+  --color-watch-now-favorites: var(--brand-seventh); /* the heart before "Your Favorites", the Favorite tag's orange */
+  --watch-now-modal-columns-gap: 16px 14px;
+  --space-watch-now-terms: 7px; /* between a tile and its prices */
+  --space-watch-now-terms-columns: 6px;
+  --font-size-watch-now-terms: 12px;
+  --line-height-watch-now-terms: 1.25;
+  --color-watch-now-lowest: light-dark(#2f8f3f, #6cc96c); /* the cheapest rent or buy, --brand-success deepened or lifted */
+  --watch-now-flag-size: 18px;
   --color-service-badge: #333; /* the "4K" circle */
   --color-service-badge-bg: #fff;
   --service-country-padding: 4px 3px; /* another country's code */
@@ -2351,15 +2362,22 @@
   --color-service-off: #333; /* a service the picker hasn't picked */
   --service-off-opacity: 0.75;
   --radius-service: 3px;
+  --radius-service-modal: 8px;
+  --service-uhd-offset: 5px; /* the 4K tag, in from the logo's corner */
+  --service-uhd-padding: 2px 4px;
+  --font-size-service-uhd: 9px;
+  --letter-spacing-service-uhd: 0.04em;
+  --color-service-uhd-bg: rgb(0 0 0 / 0.45);
+  --color-service-uhd-border: rgb(255 255 255 / 0.18);
+  --blur-service-uhd: blur(6px);
   --watch-now-tile-height: 39px;
   --watch-now-tile-height-md: 31px; /* under 1200px */
   --watch-now-tile-height-sm: 38px; /* under 992px, and the phone button */
   --watch-now-phone-tile-width: 80px;
-  --watch-now-modal-tile-width: 130px;
-  --watch-now-modal-tile-height: 57px;
-  --watch-now-modal-tile-width-sm: 100px;
-  --watch-now-modal-tile-height-sm: 49px;
-  --select-arrow-inverse: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4.95 10'%3E%3Cpath fill='%23fff' d='M1.41 4.67 2.48 3.18 3.54 4.67zM3.54 5.33 2.48 6.82 1.41 5.33z'/%3E%3C/svg%3E");
+  --watch-now-modal-tile-width: 112px; /* the narrowest column in the modal's grid */
+  --watch-now-modal-tile-height: 56px;
+  --watch-now-modal-tile-width-sm: 96px;
+  --watch-now-modal-tile-height-sm: 48px;
   /* List picker and new-list modal (OG desktop popover/checkin modal values). */
   --list-border: 1px;
   --list-spinner-duration: 1s;

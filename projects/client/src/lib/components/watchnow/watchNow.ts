@@ -38,7 +38,16 @@ export type WatchNowButton = {
   favoriteKeys: readonly string[];
 };
 
-export type WatchNowSection = { title: string; links: (ServiceLink & { uhd: boolean; price: string[] })[] };
+/** What an offer costs under its tile: Rent and Buy amounts, or a short note ("Included", "with subscription"). */
+export type OfferTerms =
+  | { kind: 'prices'; prices: readonly { label: 'Rent' | 'Buy'; amount: string; lowest: boolean }[] }
+  | { kind: 'note'; title: string; detail?: string };
+
+export type WatchNowSection = {
+  title: string;
+  favorites: boolean;
+  links: (ServiceLink & { uhd: boolean; terms: OfferTerms })[];
+};
 
 export const https = (path: string) => `https://${path.replace(/^https?:\/\//, '')}`;
 
@@ -126,28 +135,44 @@ const money = (amount: string, currency: string | null | undefined) =>
     Number(amount),
   );
 
-/** An Amazon, Roku or Apple TV channel says which one: "with Starz Subscription". */
+/** An Amazon, Roku or Apple TV channel says which one: "with Starz subscription". */
 const CHANNEL = /_amazon_prime|_ama?zon_channels?|_roku_premium_channel/;
 
-/** OG's `streaming_link_text`, one entry per line. */
-function priceLines(type: OfferType, offer: Offer, name: string): string[] {
+type Lowest = { rent: number | null; purchase: number | null };
+
+/** The cheapest rent and buy among the stores, or null where every store charges the same (nothing to point out). */
+function lowestPrices(offers: readonly Offer[]): Lowest {
+  const cheapest = (key: 'rent' | 'purchase') => {
+    const amounts = offers.flatMap(({ prices }) => (prices[key] ? [Number(prices[key])] : []));
+    const min = Math.min(...amounts);
+    return amounts.some((amount) => amount !== min) ? min : null;
+  };
+  return { rent: cheapest('rent'), purchase: cheapest('purchase') };
+}
+
+function offerTerms(type: OfferType, offer: Offer, name: string, lowest: Lowest): OfferTerms {
   switch (type) {
     case 'subscription':
-      return CHANNEL.test(offer.source)
-        ? [`with ${name.replace(/ \(on (Amazon|Roku|Apple TV)\)/, '')} Subscription`]
-        : ['Included with', 'Subscription'];
+      return {
+        kind: 'note',
+        title: 'Included',
+        detail: CHANNEL.test(offer.source)
+          ? `with ${name.replace(/ \(on (Amazon|Roku|Apple TV)\)/, '')} subscription`
+          : 'with subscription',
+      };
     case 'cable':
-      return ['Free with', 'Authorization'];
+      return { kind: 'note', title: 'Free', detail: 'with cable login' };
     case 'free':
-      return ['Free'];
+      return { kind: 'note', title: 'Free' };
     case 'cinema':
-      return ['Buy', 'Tickets'];
+      return { kind: 'note', title: 'In cinemas', detail: 'Buy tickets' };
     case 'purchase': {
-      const { rent, purchase } = offer.prices;
-      return [
-        ...(rent ? [`Rent: ${money(rent, offer.currency)}`] : []),
-        ...(purchase ? [`Buy: ${money(purchase, offer.currency)}`] : []),
-      ];
+      const row = (label: 'Rent' | 'Buy', key: 'rent' | 'purchase') => {
+        const amount = offer.prices[key];
+        return amount ? [{ label, amount: money(amount, offer.currency), lowest: Number(amount) === lowest[key] }] : [];
+      };
+      const prices = [...row('Rent', 'rent'), ...row('Buy', 'purchase')];
+      return prices.length > 0 ? { kind: 'prices', prices } : { kind: 'note', title: 'Rent or buy' };
     }
   }
 }
@@ -164,18 +189,19 @@ type WatchNowSectionsParams = {
  * isn't repeated below, empty sections drop out, and a service the sources list doesn't know is skipped.
  */
 export function toWatchNowSections({ offers, sources, favorites }: WatchNowSectionsParams): WatchNowSection[] {
-  const link = (type: OfferType, offer: Offer) => {
-    const source = sources.get(offer.source);
-    if (!source) return [];
-    const price = priceLines(type, offer, source.name);
-    return [{ ...source, slug: offer.source, href: https(offer.link), uhd: offer.uhd, price }];
-  };
   const byType = OFFER_TYPES.map((type) => ({
     type,
     offers: (offers?.[type] ?? []).filter(
       (offer, index, rows) => rows.findIndex((row) => row.source === offer.source) === index,
     ),
   }));
+  const lowest = lowestPrices(byType.find(({ type }) => type === 'purchase')?.offers ?? []);
+  const link = (type: OfferType, offer: Offer) => {
+    const source = sources.get(offer.source);
+    if (!source) return [];
+    const terms = offerTerms(type, offer, source.name, lowest);
+    return [{ ...source, slug: offer.source, href: https(offer.link), uhd: offer.uhd, terms }];
+  };
 
   const liked = favorites.flatMap((slug) => {
     const found = byType.find(({ offers }) => offers.some((offer) => offer.source === slug));
@@ -185,9 +211,10 @@ export function toWatchNowSections({ offers, sources, favorites }: WatchNowSecti
   const used = new Set(liked.map(({ slug }) => slug));
 
   return [
-    { title: 'Your Favorites', links: liked },
+    { title: 'Your Favorites', favorites: true, links: liked },
     ...byType.map(({ type, offers }) => ({
       title: type,
+      favorites: false,
       links: offers.filter(({ source }) => !used.has(source)).flatMap((offer) => link(type, offer)),
     })),
   ].filter(({ links }) => links.length > 0);

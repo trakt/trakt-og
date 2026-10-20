@@ -1,29 +1,31 @@
 <!--
   One streaming service (OG's `.streaming-links a`): its logo on its brand color, or its name when there's no logo,
-  a store badge for a channel sold through another service, and the price lines in the modal. Opens the offer in
-  a new tab. Its size comes from the parent: `--service-width` and `--service-height`. With no `href` it's a plain
+  a store badge for a channel sold through another service, and what it costs under it in the modal (`children`). Opens
+  the offer in a new tab. Its size comes from the parent: `--service-width` and `--service-height`, and
+  `--service-radius` rounds it more than OG's square tile. With no `href` it's a plain
   tile, like the applied filters' in the chart sidebar. `country` badges a service from another country, like the
   settings' favorites. With `onclick` it's a toggle button, OG's onboarding picker: gray until `pressed`, then its
   color and a check.
 -->
 <script lang="ts">
+import type { Snippet } from 'svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import check from '$lib/icons/solid/check.svg?raw';
 import type { ServiceLink } from './watchNow.ts';
 
 interface Props {
   link: ServiceLink;
-  /** "Included with", "Subscription". Left out in the sidebar. */
-  price?: readonly string[];
-  /** The "4K" badge. */
+  /** The "4K" tag in the logo's corner. */
   uhd?: boolean;
   /** The upper-case code in the corner badge. */
   country?: string;
   pressed?: boolean;
   onclick?: () => void;
+  /** Under the logo, inside the link: the modal's prices. */
+  children?: Snippet;
 }
 
-const { link, price = [], uhd = false, country, pressed = false, onclick }: Props = $props();
+const { link, uhd = false, country, pressed = false, onclick, children }: Props = $props();
 </script>
 
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
@@ -38,12 +40,9 @@ const { link, price = [], uhd = false, country, pressed = false, onclick }: Prop
       <span class="channel"><img src={link.channel} alt="" /></span>
     {/if}
     {#if onclick && pressed}<span class="check"><Icon svg={check} /></span>{/if}
+    {#if uhd}<span class="uhd">4K</span>{/if}
   </span>
-  {#if price.length > 0}
-    <span class="price">
-      {#each price as line, index (index)}{#if index > 0}<br />{/if}{line}{/each}
-    </span>
-  {/if}
+  {@render children?.()}
 {/snippet}
 
 {#if onclick}
@@ -54,7 +53,7 @@ const { link, price = [], uhd = false, country, pressed = false, onclick }: Prop
 {:else}
   <svelte:element
   this={link.href ? 'a' : 'span'}
-  class={['service', { uhd, 'has-country': country }]}
+  class={['service', { 'has-country': country }]}
   href={link.href || undefined}
   target={link.href ? '_blank' : undefined}
   rel={link.href ? 'nofollow noopener' : undefined}
@@ -89,7 +88,7 @@ const { link, price = [], uhd = false, country, pressed = false, onclick }: Prop
   block-size: var(--service-height);
   padding: 6px 10px;
   border: 2px solid var(--service-color);
-  border-radius: var(--radius-service);
+  border-radius: var(--service-radius, var(--radius-service));
   background-color: var(--service-color);
   color: var(--color-text-inverse);
   font-size: var(--font-size-small);
@@ -144,20 +143,23 @@ const { link, price = [], uhd = false, country, pressed = false, onclick }: Prop
   .toggle:is(:hover, :focus-visible, .pressed) & > :is(img, .text) {
     opacity: 1;
   }
+}
 
-  .uhd &::after {
-    content: '4K';
-    position: absolute;
-    inset-block-start: -8px;
-    inset-inline-end: -8px;
-    padding: 5px 4px;
-    border-radius: 50%;
-    background-color: var(--color-service-badge-bg);
-    box-shadow: 0 0 2px currentColor;
-    color: var(--color-service-badge);
-    font-size: 11px;
-    font-weight: var(--font-weight-headings-heavy);
-  }
+/* A small glass tag inside the logo's corner. */
+.uhd {
+  position: absolute;
+  inset-block-start: var(--service-uhd-offset);
+  inset-inline-end: var(--service-uhd-offset);
+  padding: var(--service-uhd-padding);
+  border: 1px solid var(--color-service-uhd-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-service-uhd-bg);
+  backdrop-filter: var(--blur-service-uhd);
+  color: var(--color-card-text);
+  font-size: var(--font-size-service-uhd);
+  font-weight: var(--font-weight-headings-heavy);
+  letter-spacing: var(--letter-spacing-service-uhd);
+  line-height: 1;
 }
 
 .text {
@@ -208,12 +210,5 @@ const { link, price = [], uhd = false, country, pressed = false, onclick }: Prop
   & img {
     block-size: 100%;
   }
-}
-
-.price {
-  display: block;
-  padding-block-start: 4px;
-  font-size: var(--font-size-small);
-  line-height: 1;
 }
 </style>

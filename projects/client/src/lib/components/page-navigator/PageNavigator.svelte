@@ -1,5 +1,5 @@
 <!--
-  OG's less and more pill under a panel, in glass. It hangs
+  OG's less and more pill under a panel, in Read more's pill: a segment each, with its plus or minus. It hangs
   over the panel's bottom edge, centered, so put it last in a `position: relative` panel. `dark` is OG's
   `.page-navigator.dark` for a panel that's dark in both themes, and `--page-navigator-offset` moves it down from the
   content. With `edge` it's centered on the bottom edge of that panel instead, half on each side. "less" hides at one row and
@@ -57,13 +57,12 @@ const { rows, maxRows, onchange, upsellHref, label, dark = false, edge = false }
   position: absolute;
   inset-inline-start: 50%;
   z-index: 1;
-  display: inline-block;
+  display: inline-flex;
+  overflow: hidden;
   margin-block-start: var(--page-navigator-offset, -2px);
   border: 1px solid var(--color-page-navigator-border);
   border-radius: var(--radius-page-navigator);
   background-color: var(--color-page-navigator-bg);
-  box-shadow: var(--shadow-page-navigator);
-  backdrop-filter: var(--blur-page-navigator);
   color: var(--color-page-navigator-text);
   translate: -50% 0;
   white-space: nowrap;
@@ -75,45 +74,51 @@ const { rows, maxRows, onchange, upsellHref, label, dark = false, edge = false }
   }
 
   &.dark {
-    border-color: var(--color-page-navigator-dark-border);
+    --color-page-navigator-border: var(--color-page-navigator-dark-border);
+    --color-page-navigator-icon: var(--color-page-navigator-dark-icon);
+    --color-page-navigator-hover-bg: var(--color-page-navigator-dark-hover-bg);
     background-color: var(--color-page-navigator-dark-bg);
     color: var(--color-page-navigator-dark-text);
   }
 }
 
 .control {
-  display: inline-block;
-  min-block-size: 0;
-  margin: var(--space-page-navigator-block) var(--space-page-navigator-inline);
-  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--page-navigator-gap);
+  min-block-size: var(--page-navigator-height);
+  margin: 0;
+  padding: var(--page-navigator-padding);
   border: 0;
   background: none;
   color: inherit;
   font-family: var(--font-headings);
-  font-weight: var(--font-weight-headings-light);
   font-size: var(--font-size-page-navigator);
-  line-height: var(--line-height-base);
+  font-weight: var(--font-weight-headings);
+  line-height: 1;
   text-decoration: none;
-  text-transform: uppercase;
-  opacity: var(--opacity-page-navigator);
+  text-transform: capitalize;
   cursor: pointer;
-  transition: color var(--transition-card), opacity var(--transition-card);
+  transition: background-color var(--transition-comment-quiet);
+
+  & + & {
+    border-inline-start: 1px solid var(--color-page-navigator-border);
+  }
 
   &:is(:hover, :focus-visible) {
-    color: var(--color-link);
+    background-color: var(--color-page-navigator-hover-bg);
+    color: inherit;
     text-decoration: none;
-    opacity: 1;
   }
 
   &:focus-visible {
     outline: 2px solid var(--color-link);
-    outline-offset: 2px;
+    outline-offset: -2px;
   }
 
   & :global(.icon) {
-    margin: -2px 5px 0 2px;
+    color: var(--color-page-navigator-icon);
     font-size: var(--font-size-page-navigator-icon);
-    vertical-align: middle;
   }
 }
 

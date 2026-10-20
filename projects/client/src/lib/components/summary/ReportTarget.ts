@@ -2,10 +2,14 @@
 export interface ReportTarget {
   readonly type: 'movie' | 'show' | 'season' | 'episode' | 'person' | 'user' | 'comment' | 'list';
   readonly id: number | string;
-  /** Under the dialog's heading. Comments have none. */
+  /** The dialog's heading: the item's name, or "Comment by" its author. Left blank, it reads "Report comment". */
   readonly title: string;
   readonly href: string;
   readonly tmdb?: string;
   /** Personal list reports use the owner-scoped route. Other list kinds report by numeric id. */
   readonly ownerSlug?: string;
+  /** The header art: an item's fanart, or a profile's cover. */
+  readonly fanart?: string;
+  /** A list's first posters, for the header when there's no fanart. */
+  readonly posters?: readonly string[];
 }

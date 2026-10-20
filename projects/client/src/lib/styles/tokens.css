@@ -936,7 +936,7 @@
   --shadow-dialog: 0 0 20px light-dark(#666, #000);
   --radius-dialog: 12px;
   --dialog-width: 360px;
-  --dialog-width-md: 500px; /* report item, report comment */
+  --dialog-width-md: 500px;
   --dialog-width-lg: 600px; /* .wider */
   --dialog-width-xl: 690px; /* #watch-now-modal */
   --dialog-width-notes: 440px; /* #notable-modal, #list-notes-modal */
@@ -999,6 +999,12 @@
   --color-dialog-art-alert-bg: rgb(240 173 78 / 0.1);
   --color-dialog-art-alert-text: light-dark(#8a5a00, #ffd27a);
   --dialog-art-alert-padding: 10px 12px;
+  --color-dialog-art-danger-border: rgb(237 28 36 / 0.45); /* --brand-primary */
+  --color-dialog-art-danger-bg: rgb(237 28 36 / 0.1);
+  --color-dialog-art-danger-text: light-dark(#a94442, #ffb3b5);
+  --color-dialog-art-link: rgb(255 255 255 / 0.6); /* a report's permalink under the title */
+  --font-size-dialog-art-link: 12.5px;
+  --dialog-art-link-gap: 6px;
   --dialog-art-chip-gap: 6px;
   --font-size-dialog-art-chip-icon: 13px;
   --color-dialog-art-media-tag: var(--brand-fifth); /* the item type's card tag (Movie, Show) over the art */
@@ -2438,18 +2444,8 @@
   --list-avatar-border: 5px;
   --color-list-choice: light-dark(#666, #555);
 
-  /* Report item modal and VIP sidebar tools, OG's report/check-in and vip-actions values. */
-  --report-title-gap: 3px;
-  --report-label-gap: 5px;
-  --report-label-inline-offset: 1px;
-  --report-control-padding: 10px;
-  --radius-report: 3px 3px var(--radius-dialog) var(--radius-dialog);
+  /* VIP sidebar tools, OG's vip-actions values. */
   --color-media-tools: light-dark(#666, #ccc);
-  --color-report-label: light-dark(#666, #999);
-  --report-select-height: 31px;
-  --color-report-error: #a94442;
-  --color-report-error-bg: #f2dede;
-  --color-report-invalid-bg: #fde9e9;
   --media-tools-padding: 8px 0 5px;
   --media-tools-row-padding: 4px;
   --media-tools-icon-column: 22px;

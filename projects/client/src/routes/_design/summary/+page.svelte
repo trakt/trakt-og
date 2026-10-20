@@ -60,6 +60,7 @@ const reportTarget = {
   title: 'Fight Club (1999)',
   href: '/movies/fight-club-1999',
   tmdb: 'https://www.themoviedb.org/movie/550',
+  fanart: 'https://media.trakt.tv/images/shows/000/099/080/fanarts/medium/a049f455c1.jpg',
 };
 
 const AVATAR = 'https://media.trakt.tv/hotlink-ok/placeholders/medium/zoidberg.png';

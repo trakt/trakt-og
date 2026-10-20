@@ -131,7 +131,7 @@ function yearLine(credit: PersonCredit) {
 
 <SummaryFrame label={person.name}>
   {#snippet tools()}
-    <MediaTools target={{ type: 'person', id: person.id, title: person.name, href: person.href, tmdb: person.links.find((link) => link.label === 'TMDB')?.href }} />
+    <MediaTools target={{ type: 'person', id: person.id, title: person.name, href: person.href, tmdb: person.links.find((link) => link.label === 'TMDB')?.href, fanart: person.fanart?.image }} />
   {/snippet}
 
   {#snippet sidebar()}

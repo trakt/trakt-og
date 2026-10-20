@@ -296,6 +296,7 @@ async function report(row: UserListRow) {
       title: row.name,
       href: row.href,
       ownerSlug: row.kind === 'personal' ? row.owner.slug : undefined,
+      posters: row.posters.slice(0, 5).flatMap(({ image }) => (image ? [image] : [])),
     };
     reportOpen = true;
   } catch {

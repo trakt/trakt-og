@@ -90,7 +90,7 @@ const sections = $derived([
     <SectionNav {sections} label="{safeTitle} sections" />
     <ExternalLinks links={episode.links} />
   {/snippet}
-  {#snippet tools()}<MediaTools target={{...ratingTarget,href:episode.href}} />{/snippet}
+  {#snippet tools()}<MediaTools target={{...ratingTarget,href:episode.href,fanart:episode.fanart}} />{/snippet}
   {#snippet details()}
     <AdditionalStats>
       {#if facts.aired}<AdditionalStat label={facts.aired.label}>{facts.aired.date} {#if facts.network}on <NameList names={[facts.network]} />{/if}</AdditionalStat>{:else if facts.network}<AdditionalStat label="Network"><NameList names={[facts.network]} /></AdditionalStat>{/if}

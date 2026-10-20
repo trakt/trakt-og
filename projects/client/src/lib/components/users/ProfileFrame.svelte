@@ -199,7 +199,8 @@ const change = (viewer: ViewerRelation, action: 'unfollow' | 'block' | 'unblock'
   {/if}
 </section>
 
-<ReportDialog bind:open={reporting} target={{ type: 'user', id: user.slug, title: user.displayName, href }} />
+<ReportDialog bind:open={reporting}
+  target={{ type: 'user', id: user.slug, title: user.displayName, href, fanart: cover ?? defaultCover }} />
 
 <style>
 .profile-cover {

@@ -1,9 +1,10 @@
 <!--
   OG's modal: a rounded panel centered over a dimmed page, with a title bar and a close button in the corner.
   A native modal <dialog>: it moves focus to the first control inside (or the one marked `autofocus`), keeps
-  focus inside while open, closes on Esc and hands focus back to whatever opened it.
-    <Dialog bind:open title="Report item" size="md">...</Dialog>
-  `lightDismiss` also closes it on a backdrop click, like OG's Watch Now modal. OG's report modals stay open.
+  focus inside while open, closes on Esc and hands focus back to whatever opened it. The page behind doesn't scroll
+  while it's open, so menus anchored inside it stay put.
+    <Dialog bind:open title="Watch now" lightDismiss>...</Dialog>
+  `lightDismiss` also closes it on a backdrop click, like OG's Watch Now modal. Form dialogs stay open.
   `backdrop` blurs an image (the item's fanart) over a black backdrop, like OG's check-in modal.
   `header` replaces the title bar (it gets the id to label the dialog with), and `footer` sits under the panel,
   on the backdrop, like the Watch Now modal's country picker.
@@ -18,17 +19,15 @@ interface Props {
   /** Names the dialog. Only shown when there's no `header`. */
   title: string;
   /**
-   * 360px like OG's check-in modal, 440px like its notes modal, 500px like its report modals, 600px like `.wider`, or
-   * 690px like Watch Now.
+   * 360px like OG's check-in modal, 440px like its notes modal, 500px, 600px like `.wider`, or 690px like Watch Now.
    */
   size?: 'sm' | 'notes' | 'md' | 'lg' | 'xl';
   lightDismiss?: boolean;
   /**
-   * OG's report panels have tighter top corners than item modals. `art` is the notes and list dialogs' look: a thin
-   * border, a glass close over a DialogArtHeader, and the toolbar's outlined fields inside; with `size` notes or md
-   * it takes their widths.
+   * `art` is the notes, list and report dialogs' look: a thin border, a glass close over a DialogArtHeader, and the
+   * toolbar's outlined fields inside; with `size` notes or md it takes their widths.
    */
-  variant?: 'report' | 'art';
+  variant?: 'art';
   /** Avatar over the top edge, like OG’s new-list modal. */
   avatar?: string;
   backdrop?: string;
@@ -92,6 +91,12 @@ const syncOpen = (dialog: HTMLDialogElement) => {
 </dialog>
 
 <style>
+/* Keeps the scrollbar's space, so the page doesn't shift sideways. */
+:global(html:has(dialog:modal)) {
+  overflow: hidden;
+  scrollbar-gutter: stable;
+}
+
 .dialog {
   inline-size: var(--dialog-width);
   max-inline-size: 90%;
@@ -119,11 +124,6 @@ const syncOpen = (dialog: HTMLDialogElement) => {
 
   &.image-backdrop::backdrop {
     background-color: var(--color-backdrop-image);
-  }
-
-  &.report {
-    inset-block-start: var(--header-height);
-    max-block-size: calc(100dvh - var(--header-height) - 2 * var(--gutter));
   }
 
   &.notes {
@@ -176,9 +176,6 @@ const syncOpen = (dialog: HTMLDialogElement) => {
   min-block-size: 0;
   overflow-y: auto;
   border-radius: var(--radius-dialog);
-  .report & {
-    border-radius: var(--radius-report);
-  }
   background-color: var(--color-dialog-bg);
   box-shadow: var(--shadow-dialog);
 }

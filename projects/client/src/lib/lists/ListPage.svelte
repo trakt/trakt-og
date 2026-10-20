@@ -532,7 +532,7 @@ async function saveNotes(text: string) {
 
 
   <ReportDialog bind:open={reportOpen} target={{ type: 'list', id: list.id, title: list.name, href: list.href,
-    ownerSlug: list.kind === 'personal' ? list.ownerSlug : undefined }} />
+    ownerSlug: list.kind === 'personal' ? list.ownerSlug : undefined, posters: listPosters }} />
 
   {#if data.kind === 'official'}<OfficialListHeader image={data.listCover} />{/if}
 

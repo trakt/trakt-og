@@ -1,6 +1,7 @@
 <!--
   An art dialog's form: its fields in a column, then a footer bar with the save shortcut hint, Cancel and the red
-  Save. Cmd or Ctrl+Enter anywhere in it saves. `onsubmit` only runs when it isn't busy or disabled.
+  Save. Cmd or Ctrl+Enter anywhere in it saves. `onsubmit` only runs when it isn't busy or disabled. `verb` names
+  the shortcut's action ("to send"), and `hint` takes the shortcut's place to say why Save is off.
     <DialogForm save="Save Note" {busy} onsubmit={() => onsave(draft)} oncancel={() => (open = false)}>...</DialogForm>
 -->
 <script lang="ts">
@@ -14,12 +15,17 @@ interface Props {
   busy?: boolean;
   /** Save is off: a new list without a name, the notes or lists limit reached. */
   disabled?: boolean;
+  /** The shortcut hint's action: "save", or "send" for a report. */
+  verb?: string;
+  /** Why Save is off, in place of the shortcut hint: "Pick a reason to send". */
+  hint?: string;
   onsubmit: () => void;
   oncancel: () => void;
   children: Snippet;
 }
 
-const { save, busy = false, disabled = false, onsubmit, oncancel, children }: Props = $props();
+const { save, busy = false, disabled = false, verb = 'save', hint, onsubmit, oncancel, children }: Props = $props();
+const id = $props.id();
 // The server can't tell the platform, so the hint starts as Ctrl and the browser corrects it.
 const showModifier = (kbd: HTMLElement) => {
   kbd.textContent = modifierKey(navigator.platform);
@@ -37,9 +43,14 @@ const showModifier = (kbd: HTMLElement) => {
 >
   <div class="fields">{@render children()}</div>
   <footer>
-    <span class="shortcut"><kbd {@attach showModifier}>Ctrl</kbd><kbd>↵</kbd> to save</span>
+    {#if hint}
+      <span id="{id}-hint" class="hint">{hint}</span>
+    {:else}
+      <span class="shortcut"><kbd {@attach showModifier}>Ctrl</kbd><kbd>↵</kbd> to {verb}</span>
+    {/if}
     <button type="button" class="cancel" onclick={oncancel}>Cancel</button>
-    <button type="submit" class="save" disabled={busy || disabled} aria-busy={busy}>{save}</button>
+    <button type="submit" class="save" disabled={busy || disabled} aria-busy={busy}
+      aria-describedby={hint ? `${id}-hint` : undefined}>{save}</button>
   </footer>
 </form>
 
@@ -58,6 +69,12 @@ footer {
   padding: var(--dialog-art-footer-padding);
   border-block-start: 1px solid var(--color-dialog-art-border);
   background-color: var(--color-dialog-art-footer-bg);
+}
+
+.hint {
+  flex: 1;
+  color: var(--color-dialog-art-hint);
+  font-size: var(--font-size-dialog-art-hint);
 }
 
 .shortcut {

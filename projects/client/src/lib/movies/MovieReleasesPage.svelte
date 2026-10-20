@@ -27,7 +27,7 @@ const movie = $derived(data.movie);
 </FanartHeader>
 <SummaryFrame label={movie.title} fullWidth>
   {#snippet tools()}
-    <MediaTools target={{ type: 'movie', id: movie.id, title: movie.fullTitle, href: movie.href, tmdb: movie.links.find((link) => link.label === 'TMDB')?.href }} />
+    <MediaTools target={{ type: 'movie', id: movie.id, title: movie.fullTitle, href: movie.href, tmdb: movie.links.find((link) => link.label === 'TMDB')?.href, fanart: movie.fanart }} />
   {/snippet}
 
   {#snippet sidebar()}

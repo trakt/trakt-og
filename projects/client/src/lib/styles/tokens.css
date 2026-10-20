@@ -1699,6 +1699,10 @@
   --color-ratings-top: var(--color-genre-label); /* the most given rating's number and name */
   --color-ratings-chart-bg: var(--color-charts-bg); /* behind the average's label, matching what the chart sits on */
   --ratings-plot-height: 150px;
+  --ratings-picked-gap: 2px; /* a picked bar's ring, off the bar by the chart's own ground */
+  --ratings-picked-ring: 3px;
+  --color-ratings-picked: light-dark(#111, #fff);
+  --color-ratings-picked-gap: var(--color-ratings-chart-bg);
   --ratings-gutter: 32px; /* the count line labels, left of the plot */
   --ratings-bar-gap: 10px; /* either side of a bar */
   --ratings-average-rise: 8px; /* the average line, over the plot's top */
@@ -1941,38 +1945,94 @@
   --font-size-episode-stat-icon: 16px;
 
   /* Summary lazy sections: People You Follow and the related band */
-  --color-activity-bg: light-dark(#fafafa, #333); /* .users-wrapper and the selected tab */
-  --color-activity-border: light-dark(#e1e1e1, #333);
-  --color-activity-text: light-dark(#333, #fff);
-  --color-plus-more-bg: #464646;
-  --color-plus-more-text: #fff;
-  --font-size-activity-number: 33px;
-  --font-size-activity-heart: 25px;
-  --font-size-activity-percent: 24px;
-  --font-size-plus-more: 16px;
-  --opacity-activity-idle: 0.4; /* an unselected tab's contents */
-  --activity-tab-padding: 10px 10px 8px;
-  --activity-users-padding: 15px 15px 5px;
-  --activity-avatar-gap: 10px;
-  --activity-avatar-border: 3px;
-  /* The rating line under People Watched and Rated by: a stop per rating or plays range, faces over a rule */
-  --color-activity-line-empty: light-dark(#e8e8e8, #444); /* a stop nobody landed on */
-  --color-activity-watched-low: light-dark(#dccbe6, #4b3757); /* the least watched stop, ramping up to... */
+  /* People You Follow: a glass panel of three equal cells, each opening its own view under them */
+  --color-activity-panel-bg: light-dark(#fafafa, rgb(255 255 255 / 0.035));
+  --color-activity-panel-solid: light-dark(#fafafa, #232323); /* the panel's glass over the section, as a solid */
+  --color-activity-panel-line: light-dark(#e1e1e1, rgb(255 255 255 / 0.12));
+  --color-activity-cell-hover: light-dark(rgb(0 0 0 / 0.03), rgb(255 255 255 / 0.05));
+  --color-activity-cell-open: light-dark(rgb(237 28 36 / 0.08), rgb(237 28 36 / 0.12));
+  --color-activity-cell-open-line: var(--brand-primary);
+  /* Watching Now's cell while someone the viewer follows is watching: the watching-now player's red glass */
+  --color-activity-cell-live: light-dark(rgb(237 28 36 / 0.1), var(--color-watching-bg));
+  --color-activity-cell-live-hover: light-dark(rgb(237 28 36 / 0.16), color-mix(in srgb, var(--brand-primary) 22%, rgb(18 18 18 / 0.6)));
+  --color-activity-label: light-dark(#555, rgb(255 255 255 / 0.78));
+  --color-activity-chevron: light-dark(#999, #888);
+  --color-activity-watched-icon: var(--color-progress-watched-text);
+  --radius-activity-panel: var(--radius-lg);
+  --space-activity-panel-top: 12px; /* from the heading down to the panel */
+  --activity-cell-height: 56px;
+  --activity-cell-padding: 8px 12px 8px 14px;
+  --activity-cell-gap: 10px;
+  /* Small tablets, under 880px of panel: the label under the figure */
+  --activity-cell-gap-narrow: 8px;
+  --activity-cell-padding-narrow: 8px 10px;
+  --activity-figure-gap-narrow: 4px;
+  --font-size-activity-figure-narrow: 26px;
+  --font-size-activity-label-narrow: 11px;
+  --activity-face-narrow: 26px;
+  --font-size-activity-share-figure-narrow: 15px;
+  --activity-icon-slot: 22px; /* a fixed box, so the dot, check and heart center on the figure alike */
+  --font-size-activity-icon: 20px;
+  --font-size-activity-figure: 33px; /* OG's tab number */
+  --font-size-activity-unit: 0.73em; /* OG's 24px percent sign */
+  --activity-figure-gap: 7px; /* OG's gap from the number to its label */
+  --font-size-activity-label: 13px;
+  --letter-spacing-activity-label: 0.06em;
+  --line-height-activity-label: 1.2;
+  --font-size-activity-chevron: 13px;
+  --activity-face: 34px; /* the followed faces in Watching Now's cell */
+  --activity-face-overlap: 8px;
+  --activity-face-ring: 2px;
+  --color-activity-face-gap: light-dark(#fff, #2a1b1c);
+  --activity-detail-padding: 18px 20px 20px;
+  --space-activity-pager: 32px; /* under the people when the less and more pill sits on the edge */
+  /* Watching now: the dashboard's live cards, then everyone else's faces */
+  --activity-watcher: 50px;
+  --activity-watcher-overlap: 22px; /* each face tucks under the next, like OG's pile */
+  --activity-watcher-ring: 3px;
+  --font-size-activity-rest: 14px; /* the "+22" face at the end of the pile */
+  --activity-face-lift: 4px; /* a hovered face rises this much */
+  --filter-activity-face-idle: brightness(0.45) saturate(0.5); /* the other faces while one is hovered */
+  --transition-activity-face: 0.2s;
+  --activity-watchers-text-room: 190px; /* kept free on the faces' line for "+44 watching on Trakt" */
+  --space-activity-watchers: 18px; /* above the faces, under the live cards */
+  --color-activity-watchers-text: light-dark(#777, #aaa);
+  /* People Watched: a bar of ranges in Box Office figures, the picked range's people under it */
+  --activity-share-gap: 4px;
+  --activity-share-stop-min: 48px; /* the narrowest a range gets, however few people it has */
+  --space-activity-share-figure: 8px; /* after each figure, so the next one never touches it */
+  --activity-share-rule: 8px;
+  --radius-activity-share-rule: 3px;
+  --font-size-activity-share-figure: 18px;
+  --font-size-activity-share-text: 12px;
+  --color-activity-share-name: light-dark(#555, #ccc);
+  --color-activity-share-count: light-dark(#777, #999);
+  --opacity-activity-share-idle: 0.6;
+  --opacity-activity-share-empty: 0.3;
+  --color-activity-share-picked: light-dark(#111, #fff);
+  --activity-share-picked-gap: 2px;
+  --activity-share-picked-ring: 3px;
+  --color-activity-watched-low: light-dark(#dccbe6, #4b3757); /* the least watched range, ramping up to... */
   --color-activity-watched-high: var(--brand-tertiary); /* ...the most watched, the watched action's purple */
-  --opacity-activity-line-empty: 0.35;
-  --activity-line-gap: 12px; /* between stops */
-  --activity-line-face-size: 34px;
-  --activity-line-face-overlap: 14px;
-  --activity-line-face-ring: 2px;
-  --activity-line-rule: 3px;
-  --space-activity-line-rule: 6px; /* above and below the rule */
-  --activity-line-stop-min: 64px; /* the narrowest a stop gets, however few people it has */
-  --space-activity-line-rows: 18px; /* between the line's two rows on tablets */
-  --activity-watched-ramp-floor: 35%; /* the least watched stop's share of the purple */
-  --color-activity-opened-bg: light-dark(#eee, #2a2a2a); /* the opened stop's panel and its arrow */
-  --radius-activity-opened: 6px;
-  --activity-opened-arrow: 18px;
-  --space-activity-opened: 15px; /* above and inside the opened stop's panel */
+  --activity-watched-ramp-floor: 35%; /* the least watched range's share of the purple */
+  /* Who's in the picked range or rating: three across, each in a summary tile's box with tinted tags */
+  --activity-people-columns: 3;
+  --activity-people-columns-narrow: 2;
+  --activity-people-gap: 8px;
+  --space-activity-people: 20px; /* between the chart and the people under it */
+  --activity-person-height: 46px;
+  --activity-person-padding: 0 10px 0 8px;
+  --activity-person-gap: 9px;
+  --activity-person-avatar: 28px;
+  --radius-activity-person: 6px;
+  --color-activity-person-bg: var(--color-summary-tile-bg);
+  --color-activity-person-hover: light-dark(#e2e2e2, #3d3d3d);
+  --activity-tag-plays: 72px; /* fixed widths, so the split tags line up in columns */
+  --activity-tag-percent: 50px;
+  /* A show's share on the split tag, in the comment chips' colors: all of it, half or more, less than half */
+  --color-activity-progress-complete: var(--color-comment-chip-rated);
+  --color-activity-progress-half: var(--color-comment-chip-spoiler);
+  --color-activity-progress-started: var(--color-comment-chip-following);
   /* OG's #recommendations-wrapper was dark in both themes; og's follows the theme, light gray like the dashboard's
      social feed. */
   --color-related-bg: light-dark(var(--gray-lighter), var(--gray-darker));

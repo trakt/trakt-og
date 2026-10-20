@@ -28,6 +28,7 @@ import star from '$lib/icons/thin/star.svg?raw';
 import type { CommentTab } from '$lib/summary/sectionsClient';
 import type { SummaryList } from '$lib/summary/toSummaryList';
 import { type ActivityTab, toActivity } from '$lib/summary/toActivity';
+import { socialFeedFixture } from '$lib/dashboard/socialFeedFixture';
 import type { RelatedCard } from '$lib/summary/toRelatedCard';
 import { formatting, movie, review, spoiler } from '../comments/fixtures.ts';
 
@@ -69,10 +70,17 @@ const watcher = (i: number) => ({
   ids: { trakt: i, slug: `member_${i}` },
   images: { avatar: { full: AVATAR } },
 });
+// One of the followed members watching now, in the dashboard's live card.
+const live = socialFeedFixture.live(new Date()).slice(2, 3).map((watch) => ({
+  ...watch,
+  member: { ...watch.member, key: 'member_2', name: 'member_2', slug: 'member_2', href: '/users/member_2' },
+}));
 // Thirty watching now, three of them followed; sixteen followed members with plays, a few with ratings.
 const activity: readonly ActivityTab[] = toActivity({
   watching: Array.from({ length: 30 }, (_, i) => watcher(i)),
   following: new Set(['member_2', 'member_5', 'member_11']),
+  live,
+  item: { type: reportTarget.type, id: reportTarget.id },
   social: Array.from({ length: 16 }, (_, i) => ({
     user: watcher(i + 40),
     watched: {

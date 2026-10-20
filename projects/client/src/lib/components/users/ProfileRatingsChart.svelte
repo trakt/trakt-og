@@ -5,7 +5,8 @@
   and shows the rating, its count and its share of all ratings; given `href`, clicking it opens that rating's page.
   Each bar is a link, or a button without `href`, named by its rating and count, so it works with the keyboard and a
   screen reader. A rating with none gets a faint 0 over a dot and a hidden label. A title's stats page reuses it with
-  votes for ratings and no links.
+  votes for ratings and no links. Given `onpick` instead, each bar is a toggle that picks its rating, ringed and named
+  in bold on the axis while `picked`, like the summary's People You Follow listing who gave it.
 -->
 <script lang="ts">
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
@@ -16,9 +17,13 @@ interface Props {
   chart: NonNullable<ProfileRatings['chart']>;
   /** Where a bar leads: the profile's ratings page at that rating. Left out, bars only show their tooltip. */
   href?: (rating: number) => string;
+  /** The rating picked out, with `onpick`. */
+  picked?: number;
+  /** Makes each bar a toggle that picks its rating. */
+  onpick?: (rating: number) => void;
 }
 
-const { chart, href }: Props = $props();
+const { chart, href, picked, onpick }: Props = $props();
 
 const name = (bar: ProfileRatingBar) => `${bar.rating} — ${bar.name}: ${countLabel(bar.count, chart.unit)}`;
 </script>
@@ -52,7 +57,14 @@ const name = (bar: ProfileRatingBar) => `${bar.rating} — ${bar.name}: ${countL
                     {@render barBody(bar)}
                   </a>
                 {:else}
-                  <button class="bar-link" type="button" aria-label={name(bar)} {...tooltip}>{@render barBody(bar)}</button>
+                  <button
+                    class={['bar-link', { picked: onpick && picked === bar.rating }]}
+                    type="button"
+                    aria-label={name(bar)}
+                    aria-pressed={onpick ? picked === bar.rating : undefined}
+                    onclick={onpick ? () => onpick(bar.rating) : undefined}
+                    {...tooltip}
+                  >{@render barBody(bar)}</button>
                 {/if}
               {/snippet}
               <span class="tip">
@@ -75,7 +87,7 @@ const name = (bar: ProfileRatingBar) => `${bar.rating} — ${bar.name}: ${countL
   <!-- Each bar's name already carries its rating's. -->
   <div class="axis" aria-hidden="true">
     {#each chart.bars as bar (bar.rating)}
-      <span class={['axis-label', { top: bar.top }]}>
+      <span class={['axis-label', { top: bar.top, picked: onpick && picked === bar.rating }]}>
         <span class="number">{bar.rating}</span>
         <span class="name">{bar.name}</span>
       </span>
@@ -208,6 +220,11 @@ const name = (bar: ProfileRatingBar) => `${bar.rating} — ${bar.name}: ${countL
   background-color: var(--color);
 }
 
+.picked .bar {
+  box-shadow: 0 0 0 var(--ratings-picked-gap) var(--color-ratings-picked-gap), 0 0 0 var(--ratings-picked-ring)
+    var(--color-ratings-picked);
+}
+
 .stub {
   inline-size: var(--minutes-stub);
   block-size: var(--minutes-stub);
@@ -300,6 +317,14 @@ const name = (bar: ProfileRatingBar) => `${bar.rating} — ${bar.name}: ${countL
 }
 
 .top .number {
+  font-weight: var(--font-weight-headings-heavy);
+}
+
+.picked :is(.number, .name) {
+  color: var(--color-ratings-picked);
+}
+
+.picked .number {
   font-weight: var(--font-weight-headings-heavy);
 }
 

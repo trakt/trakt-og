@@ -1,8 +1,10 @@
-import { type CommentResponse, commentResponseSchema } from '@trakt/api';
+import { type CommentResponse, commentResponseSchema, type ProfileResponse } from '@trakt/api';
 import { z } from 'zod/v4';
 import type { api } from '../api/api.ts';
 import { contractSchema } from '../api/contractSchema.ts';
 import { rawApiFetch } from '../api/rawApiFetch.ts';
+import { fetchWatching, type LiveWatch } from '../dashboard/fetchWatching.ts';
+import type { SocialMember } from '../dashboard/toSocialItem.ts';
 import { socialRowsSchema } from './socialRowsSchema.ts';
 import type { SocialRow } from './SocialRow.ts';
 import type { SummaryMedia } from './SummaryMedia.ts';
@@ -158,6 +160,23 @@ export function sectionsClient({
     return rows ? new Set(rows.flatMap(({ user }) => user.ids.slug ?? [])) : null;
   };
 
+  // What each followed member watching now is watching, for the dashboard's live cards.
+  const liveOf = (everyone: readonly ProfileResponse[], followed: ReadonlySet<string> | null) => {
+    const members: readonly SocialMember[] = everyone.flatMap(({ username, ids, images }) =>
+      ids.slug && followed?.has(ids.slug)
+        ? [{
+          key: username,
+          name: username,
+          slug: ids.slug,
+          href: `/users/${ids.slug}`,
+          avatar: images?.avatar?.full ?? '',
+        }]
+        : []
+    );
+    if (members.length === 0) return Promise.resolve<readonly LiveWatch[]>([]);
+    return fetchWatching({ get: (path) => rawApiFetch({ fetch: viewerFetch, path }), members }).catch(() => []);
+  };
+
   return {
     activity: async (media) => {
       const [everyone, social, followed] = await Promise.all([
@@ -172,7 +191,15 @@ export function sectionsClient({
       const show = media.type === 'show' && media.airedEpisodes
         ? { airedEpisodes: media.airedEpisodes, totalRuntime: media.totalRuntime }
         : undefined;
-      return nonEmpty(toActivity({ watching: everyone ?? [], social, following: followed, show }));
+      const live = await liveOf(everyone ?? [], followed);
+      return nonEmpty(toActivity({
+        watching: everyone ?? [],
+        social,
+        following: followed,
+        live,
+        show,
+        item: { type: media.type, id: media.id },
+      }));
     },
 
     comments: async (media, language = 'en') => {

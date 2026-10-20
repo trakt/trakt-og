@@ -1,8 +1,8 @@
 <!--
   One show on the progress page, as a ledger row: the poster; the title, its status menu (`ProgressStatus`), the tick
-  bar, the counts as stats, then View seasons beside a chip linking the episode you last watched; then the up-next card,
+  bar, the counts as stats, then Seasons beside a chip in the watched tag's colors linking the episode you last watched; then the up-next card,
   og's fanart card for the next episode with its quick icons, or the show's once every episode is done. The poster and
-  the card are the same height, and the text about matches them. View seasons reads the show's catalog (`onneed`) and
+  the card are the same height, and the text about matches them. Seasons reads the show's catalog (`onneed`) and
   opens the season list across the whole row, under the poster and the card (`ProgressSeasonGrid`); once read, the
   show's bar splits into its seasons on hover, each with a chart tip. A drop or restore
   fades the row out and moves the focus on.
@@ -43,11 +43,9 @@ interface Props {
 const { row, type, simple, datePreferences, onneed, loading = false }: Props = $props();
 
 let open = $state(false);
-// Which seasons show their episodes: View all sets `all`, and each season's own toggle flips it for that season.
-let all = $state(false);
+// Which seasons show their episodes: each season's own toggle.
 const flipped = new SvelteSet<number>();
-const expanded = (season: number) => all !== flipped.has(season);
-const allExpanded = $derived(open && all && flipped.size === 0);
+const expanded = (season: number) => flipped.has(season);
 let article = $state<HTMLElement>();
 // Read only when the row leaves: paging and filtering aren't removals.
 let removedByAction = false;
@@ -81,14 +79,6 @@ function remove(saved: Promise<boolean>) {
 function toggle() {
   open = !open;
   if (open) onneed?.();
-}
-
-/** View all: the seasons open with every season's episodes; again, the episodes fold away. */
-function toggleAll() {
-  const show = !allExpanded;
-  all = show;
-  flipped.clear();
-  if (show && !open) toggle();
 }
 
 function toggleSeason(season: number) {
@@ -163,13 +153,11 @@ function toggleSeason(season: number) {
 
     <div class="actions">
       <button type="button" class="toggle" aria-expanded={open} aria-controls="progress-seasons-{row.id}"
-        onclick={toggle}>{open ? 'Hide seasons' : 'View seasons'}<Icon svg={caretDown} /></button>
-      <button type="button" class="toggle" aria-pressed={allExpanded} onclick={toggleAll}>
-        {allExpanded ? 'Hide all' : 'View all'}<Icon svg={caretDown} /></button>
+        onclick={toggle}>Seasons<Icon svg={caretDown} /></button>
       {#if row.last}
         <a class="last" href={row.last.href ?? row.href}><Icon svg={history} />Last watched
           {#if row.last.number}<b>{row.last.number}</b>{row.last.title ? ` ${row.last.title}` : ''}{/if}
-          · {row.last.relative ?? row.last.date}</a>
+          {row.last.relative ?? row.last.date}</a>
       {/if}
       {#if open && loading}<span class="loading" role="status">Loading seasons…</span>{/if}
     </div>
@@ -303,7 +291,7 @@ function toggleSeason(season: number) {
   margin: 0;
 }
 
-/* The last watched chip and View seasons on one line, set apart from the stats. */
+/* The last watched chip and Seasons on one line, set apart from the stats. */
 .actions {
   display: flex;
   flex-wrap: wrap;
@@ -313,7 +301,7 @@ function toggleSeason(season: number) {
   margin-block-start: calc(var(--progress-last-gap) - var(--progress-main-gap));
 }
 
-/* View seasons and the last watched chip: one height, one type size. */
+/* Seasons and the last watched chip: one height, one type size. */
 .toggle,
 .last {
   box-sizing: border-box;
@@ -337,12 +325,15 @@ function toggleSeason(season: number) {
   }
 }
 
-/* The last episode, clearly a link. */
+/* The last episode, clearly a link, in the watched tag's wash, outline and text. */
 .last {
+  --tone: var(--color-comment-chip-watched);
   min-inline-size: 0;
   max-inline-size: 100%;
   overflow: hidden;
-  color: var(--color-text-muted);
+  border-color: color-mix(in srgb, var(--tone) var(--list-card-chip-line), transparent);
+  background-color: color-mix(in srgb, var(--tone) var(--list-card-chip-tint), transparent);
+  color: color-mix(in srgb, var(--tone), var(--color-list-card-chip-lift) var(--list-card-chip-lift));
   text-decoration: none;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -352,13 +343,12 @@ function toggleSeason(season: number) {
   }
 
   & b {
-    color: var(--color-text);
     font-family: var(--font-headings);
     font-weight: var(--font-weight-headings-heavy);
   }
 
   &:is(:hover, :focus-visible) {
-    border-color: var(--color-control-border-hover);
+    border-color: var(--tone);
 
     & b {
       text-decoration: underline;
@@ -366,14 +356,13 @@ function toggleSeason(season: number) {
   }
 }
 
-/* View seasons: first on the line, its caret flipping once open. */
+/* Seasons: first on the line, its caret flipping once open. */
 .toggle {
   flex: none;
   color: var(--color-control-text);
   cursor: pointer;
 
-  &:is(:hover, :focus-visible),
-  &:is([aria-expanded='true'], [aria-pressed='true']) {
+  &:is(:hover, :focus-visible, [aria-expanded='true']) {
     border-color: var(--color-control-border-hover);
     background: var(--color-control-hover-bg);
   }
@@ -383,7 +372,7 @@ function toggleSeason(season: number) {
     transition: rotate 0.2s;
   }
 
-  &:is([aria-expanded='true'], [aria-pressed='true']) :global(.icon) {
+  &[aria-expanded='true'] :global(.icon) {
     rotate: 180deg;
   }
 }

@@ -1,6 +1,6 @@
 <!--
   The progress page as its owner sees it, on sample shows: the view toggles, each row's status menu (rewatch and drop,
-  restore on Dropped) and its View seasons toggle. `?view=grid` shows the poster grid, `?view=simple` the simple bars,
+  restore on Dropped) and its Seasons toggle. `?view=grid` shows the poster grid, `?view=simple` the simple bars,
   `?type=rewatching` the Rewatching tab (Game of Thrones) and `?type=dropped` the Dropped tab (two of the sample
   shows). The rows carry their catalogs, so each shows its up-next card at once, and opening one shows its season
   lines (Breaking Bad has unwatched episodes in the library, Severance a season announced); `?estimates` leaves them

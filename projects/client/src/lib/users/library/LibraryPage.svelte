@@ -29,6 +29,7 @@ import type { ProfileUser } from '$lib/users/ProfileUser';
 import { formatRuntime } from '$lib/utils/formatRuntime';
 import { historyTypes, isHistoryType } from '../history/historyTypes.ts';
 import { type LibrarySort, librarySorts, sortLabels, validSort } from './librarySort.ts';
+import { librarySources } from './librarySources.ts';
 import type { loadLibrary } from './loadLibrary.ts';
 import { toHistoryDays } from '$lib/users/history/toHistoryCard';
 import type { LibraryCard } from './toLibraryCard.ts';
@@ -60,6 +61,15 @@ function href(type: string, sort: LibrarySort) {
     ? ''
     : `/${type}`;
   return `${base}${path}${query.size ? `?${query}` : ''}`;
+}
+
+// The same path with only the source changed, back on page one.
+function sourceHref(source: string) {
+  const query = new SvelteURLSearchParams(page.url.searchParams);
+  query.delete('page');
+  if (source === 'all') query.delete('source');
+  else query.set('source', source);
+  return `${page.url.pathname}${query.size ? `?${query}` : ''}`;
 }
 
 let dividers = $derived(data.dividers);
@@ -118,6 +128,14 @@ const flipped = $derived(data.sort.how === 'desc');
       <ul>
         {#each Object.entries(historyTypes) as [type, label] (type)}
           <li><a href={href(type, data.sort)} aria-current={data.type === type ? 'page' : undefined}>{label}</a></li>
+        {/each}
+      </ul>
+    </Dropdown>
+    <Dropdown section="Source">
+      {#snippet trigger()}{librarySources[data.source].label}{/snippet}
+      <ul>
+        {#each Object.entries(librarySources) as [source, { label }] (source)}
+          <li><a href={sourceHref(source)} aria-current={data.source === source ? 'page' : undefined}>{label}</a></li>
         {/each}
       </ul>
     </Dropdown>

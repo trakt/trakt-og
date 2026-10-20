@@ -11,6 +11,7 @@ import type { ProfileUser } from '../ProfileUser.ts';
 import { withShowPosters } from '../withShowPosters.ts';
 import { libraryRowsSchema, libraryShowsSchema } from './libraryRowsSchema.ts';
 import { apiSortHow, type LibrarySort, librarySort } from './librarySort.ts';
+import { isLibrarySourceFilter, type LibrarySourceFilter, librarySources } from './librarySources.ts';
 import { type LibraryCard, toLibraryCard, toLibraryShowCard } from './toLibraryCard.ts';
 
 type Params = {
@@ -36,12 +37,13 @@ const positiveInt = (value: string | null, fallback: number) => {
 type Fetched = { status: number; body: unknown; total: number; page: PageMeta };
 
 async function fetchPage(
-  { fetch, token, base, type, sort, range, current, limit }: {
+  { fetch, token, base, type, sort, source, range, current, limit }: {
     fetch: typeof globalThis.fetch;
     token: string | null;
     base: string;
     type: HistoryType;
     sort: LibrarySort;
+    source: LibrarySourceFilter;
     range: Range;
     current: number;
     limit: number;
@@ -55,6 +57,7 @@ async function fetchPage(
     ...(type !== 'shows' && { sort_by: sort.by, sort_how: apiSortHow(sort) }),
     ...(range.startAt && { start_at: range.startAt }),
     ...(range.endAt && { end_at: range.endAt }),
+    ...(librarySources[source].availableOn && { available_on: librarySources[source].availableOn }),
   });
   const response = await rawApiFetch({
     fetch,
@@ -77,6 +80,8 @@ async function fetchPage(
 export async function loadLibrary({ fetch, locals, params, url, cookies, parent }: Params) {
   const type: HistoryType = params.type && isHistoryType(params.type) ? params.type : 'all';
   const sort = librarySort(type, params.sort);
+  const sourceParam = url.searchParams.get('source');
+  const source: LibrarySourceFilter = isLibrarySourceFilter(sourceParam) ? sourceParam : 'all';
   const base = `/users/${encodeURIComponent(params.id)}`;
   const current = positiveInt(url.searchParams.get('page'), 1);
   const limit = Math.min(positiveInt(url.searchParams.get('limit'), PER_PAGE), MAX_LIMIT);
@@ -92,7 +97,7 @@ export async function loadLibrary({ fetch, locals, params, url, cookies, parent 
   );
   const range: Range = { ...(startAt && { startAt }), ...(endAt && { endAt }) };
 
-  const request = { fetch, base, type, sort, range, current, limit };
+  const request = { fetch, base, type, sort, source, range, current, limit };
   const [anonymous, { profile, isSelf, datePreferences }] = await Promise.all([
     fetchPage({ ...request, token: null }),
     layout,
@@ -101,6 +106,7 @@ export async function loadLibrary({ fetch, locals, params, url, cookies, parent 
   const shell = {
     type,
     sort,
+    source,
     range,
     isSelf,
     datePreferences,

@@ -37,6 +37,10 @@ const library = [
     `${API}/sync/collection/shows`,
     () => HttpResponse.json([{ show: ids(2), seasons: [{ number: 1, episodes: [{ number: 1, collected_at: T0 }] }] }]),
   ),
+  http.get(
+    `${API}/sync/collection/minimal/shows`,
+    () => HttpResponse.json({ '2': { '9|1': { '201': `${T0}|plex` } } }),
+  ),
   http.get(`${API}/sync/ratings`, () => HttpResponse.json([{ type: 'movie', rating: 9, movie: ids(1) }])),
   http.get(`${API}/sync/watchlist/seasons/rank/asc`, () => HttpResponse.json([{ season: ids(3) }])),
   http.get(`${API}/sync/watchlist/episodes/rank/asc`, () => HttpResponse.json([{ episode: ids(4) }])),
@@ -129,14 +133,18 @@ describe('createOverlay', () => {
       watchedEpisodes: 2,
       watched: true,
       collectedEpisodes: 1,
+      collectionSources: ['plex'],
       watchlisted: true,
       dropped: true,
       rewatching: true,
       rating: null,
     });
+    expect(overlay.state('season', 9, { show: 2, number: 1 }).collectionSources).toEqual(['plex']);
     expect(overlay.slices().progressHidden?.watched.shows).toEqual(new Set([5]));
     expect(overlay.slices().likedLists).toEqual(new Set([60]));
-    expect(records.get('sean')?.size).toBe(13);
+    expect(overlay.state('episode', 201, { show: 2, number: 1 }).collectionSources).toEqual(['plex']);
+    expect(overlay.state('episode', 201).collectionSources).toEqual(['plex']);
+    expect(records.get('sean')?.size).toBe(14);
   });
 
   it('should hydrate an episode collection by show, season and episode number, including old date-only caches', async () => {

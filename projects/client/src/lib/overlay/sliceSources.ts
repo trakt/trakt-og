@@ -1,6 +1,7 @@
 import { loadHiddenProgress } from './loadHiddenProgress.ts';
 import { loadHiddenShows } from './loadHiddenShows.ts';
 import { collectionMetadataSchema } from '../components/collection/collectionMetadataSchema.ts';
+import { librarySourcesSchema } from '../components/collection/librarySourcesSchema.ts';
 import { loadFavoriteRows } from '../favorites/loadFavoriteRows.ts';
 import type { LastActivitiesResponse } from '@trakt/api';
 import type { OverlaySlices } from './OverlaySlices.ts';
@@ -109,20 +110,28 @@ export const sliceSources: { [K in keyof OverlaySlices]: SliceSource<K> } = {
     load: (get) => loadHiddenShows(get, 'progress_watched_reset'),
   },
   collectedMovies: {
-    activity: (a) => `${join(a.movies?.collected_at)}|metadata-v1`,
+    activity: (a) => `${join(a.movies?.collected_at)}|metadata-v1|sources-v1`,
     load: async (get) => {
-      const rows = await getPages<unknown>(get, `/sync/collection/movies?extended=metadata&limit=${PAGE_LIMIT}`);
+      const rows = await getPages<unknown>(
+        get,
+        `/sync/collection/movies?extended=metadata,available_on&limit=${PAGE_LIMIT}`,
+      );
       const schema = z.array(
         z.object({
           movie: z.object({ ids: z.object({ trakt: z.number() }) }),
           collected_at: z.string(),
           metadata: collectionMetadataSchema.nullish(),
+          available_on: librarySourcesSchema,
         }),
       );
       return new Map(
         schema.parse(rows).map((
           row,
-        ) => [row.movie.ids.trakt, { at: row.collected_at, metadata: row.metadata ?? undefined }]),
+        ) => [row.movie.ids.trakt, {
+          at: row.collected_at,
+          metadata: row.metadata ?? undefined,
+          sources: row.available_on.length ? row.available_on : undefined,
+        }]),
       );
     },
   },
@@ -164,6 +173,32 @@ export const sliceSources: { [K in keyof OverlaySlices]: SliceSource<K> } = {
                   id: episode.ids?.trakt,
                   metadata: episode.metadata ?? undefined,
                 }]),
+              ),
+            ]),
+          ),
+        ]),
+      );
+    },
+  },
+  // The shows route sends no episode ids or sources, so synced episodes come from the minimal route.
+  syncedEpisodes: {
+    activity: (a) => `${join(a.episodes?.collected_at)}|synced-v1`,
+    load: async (get) => {
+      const { body } = await getJson<unknown>(
+        get,
+        '/sync/collection/minimal/shows?available_on=digital&season_numbers=true',
+      );
+      const schema = z.record(z.string(), z.record(z.string(), z.record(z.string(), z.string())));
+      return new Map(
+        Object.entries(schema.parse(body)).map(([showId, seasons]) => [
+          Number(showId),
+          new Map(
+            Object.entries(seasons).map(([key, episodes]) => [
+              Number(key.split('|').at(1)),
+              new Map(
+                Object.entries(episodes).map((
+                  [episodeId, value],
+                ) => [Number(episodeId), librarySourcesSchema.parse([{ name: value.split('|').at(1) ?? '' }])]),
               ),
             ]),
           ),

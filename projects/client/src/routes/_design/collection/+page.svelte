@@ -8,6 +8,9 @@ import type { CollectionMetadata } from '$lib/components/collection/CollectionMe
 import { toast } from '$lib/components/toast/toast.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import collection from '$lib/icons/trakt/collection.svg?raw';
+import collectionThick from '$lib/icons/trakt/collection-thick.svg?raw';
+import { librarySourceIcon } from '$lib/components/collection/librarySourceIcon';
+import LibrarySyncLink from '$lib/components/collection/LibrarySyncLink.svelte';
 const dates = { order: 'mdy', hour24: false, timeZone: 'America/Los_Angeles', weekStartDay: 0 } as const;
 const examples = [
   { label: 'Add to library', mode: 'date', fill: 0, text: 'Add to library' },
@@ -20,6 +23,11 @@ const shelf = [
   { media_type: 'dvd', audio: 'dts', audio_channels: '5.1' },
   { media_type: 'digital', resolution: 'hd_1080p' },
   { resolution: 'hd_720p' },
+] as const;
+const synced = [
+  { label: 'Added by hand', icon: undefined },
+  { label: 'Plex', icon: librarySourceIcon(['plex']) },
+  { label: 'Jellyfin', icon: librarySourceIcon(['jellyfin']) },
 ] as const;
 </script>
 <svelte:head>
@@ -55,6 +63,35 @@ const shelf = [
       {#snippet trigger()}<Icon svg={collection} />{/snippet}
       {#snippet metadata(done, saving)}<CollectionMetadataFields value={draft} {saving} onsave={(value) => { draft = value; done(); }} />{/snippet}
     </WatchPopover>
+    <h2>Synced library</h2>
+    <p>
+      With adding off, an item not in the library gets a faded link to v3's sync settings: "Sync your media center".
+      One in the library opens on removal and metadata, with no +, long press or "Add remaining". Items synced from a
+      media server show its icon in place of the library one.
+    </p>
+    <div class="example">
+      <LibrarySyncLink variant="summary" />
+    </div>
+    {#each synced as { label, icon } (label)}
+      <div class="example">
+        <WatchPopover collection adding={false} label="In Library" variant="summary" fill={1} datePreferences={dates}
+          removeNote={icon && `It may come back on the next ${icon.name} sync.`}
+          onopen={() => Promise.resolve('remove')} onwatch={() => toast.success('Removed from library.')}
+          onremaining={() => Promise.resolve(false)} oninvalid={() => {}}
+          summary={{ icon: icon?.svg ?? collection, text: 'In Library', detail: label, tooltip: icon && `Synced from ${icon.name}` }}>
+          {#snippet metadata(done, saving)}<CollectionMetadataFields value={draft} {saving} onsave={(value) => { draft = value; done(); }} />{/snippet}
+        </WatchPopover>
+      </div>
+    {/each}
+    <div class="posters">
+      <LibrarySyncLink />
+      {#each synced as { label, icon } (label)}
+        <WatchPopover collection adding={false} {label} fill={1} datePreferences={dates} tooltip={label}
+          onopen={() => Promise.resolve('remove')} onwatch={() => {}} onremaining={() => Promise.resolve(false)} oninvalid={() => {}}>
+          {#snippet trigger()}<span class="glyph"><Icon svg={icon?.svg ?? collectionThick} /></span>{/snippet}
+        </WatchPopover>
+      {/each}
+    </div>
   </section>
 </Container>
 <style>
@@ -63,6 +100,16 @@ section {
 }
 .example + .example {
   margin-block-start: var(--summary-action-stack-gap);
+}
+.posters {
+  display: flex;
+  margin-block-start: var(--summary-action-stack-gap);
+  background-color: var(--color-card-bg);
+  inline-size: max-content;
+}
+.glyph {
+  display: contents;
+  --icon-shift: var(--quick-icon-trakt-shift);
 }
 .example {
   max-inline-size: var(--collection-metadata-width);

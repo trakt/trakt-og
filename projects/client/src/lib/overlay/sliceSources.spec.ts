@@ -95,6 +95,36 @@ describe('sliceSources', () => {
     expect((await sliceSources.collectedShows.load(get)).get(3)?.get(1)?.get(2)).toEqual({ at: '2026-03-01' });
   });
 
+  it('should keep the media servers collected movies were synced from', async () => {
+    server.use(
+      http.get(`${API}/sync/collection/movies`, () =>
+        HttpResponse.json([
+          { movie: ids(7), collected_at: '2026-02-01', available_on: [{ name: 'plex' }] },
+          { movie: ids(8), collected_at: '2026-02-02', available_on: [] },
+        ])),
+    );
+
+    const movies = await sliceSources.collectedMovies.load(get);
+
+    expect(movies.get(7)).toEqual({ at: '2026-02-01', sources: ['plex'] });
+    expect(movies.get(8)).toEqual({ at: '2026-02-02' });
+  });
+
+  it('should map synced episodes by show, season number and episode id', async () => {
+    server.use(
+      http.get(`${API}/sync/collection/minimal/shows`, ({ request }) => {
+        seen.push(new URL(request.url).search);
+        return HttpResponse.json({ '3': { '30|1': { '301': '2026-03-01|jellyfin', '302': '2026-03-02|emby' } } });
+      }),
+    );
+
+    const synced = await sliceSources.syncedEpisodes.load(get);
+
+    expect(seen).toEqual(['?available_on=digital&season_numbers=true']);
+    expect(synced.get(3)?.get(1)?.get(301)).toEqual(['jellyfin']);
+    expect(synced.get(3)?.get(1)?.get(302)).toEqual([]);
+  });
+
   it('should fetch every page of a paginated slice', async () => {
     server.use(
       http.get(`${API}/sync/collection/shows`, ({ request }) => {

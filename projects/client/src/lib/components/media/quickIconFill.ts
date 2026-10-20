@@ -1,4 +1,6 @@
 import { collectionMetadataLabel } from '../collection/collectionMetadataLabel.ts';
+import type { LibrarySource } from '../collection/LibrarySource.ts';
+import { librarySourceIcon } from '../collection/librarySourceIcon.ts';
 import type { OverlayState } from '../../overlay/createOverlay.svelte.ts';
 import { countLabel } from '../../utils/countLabel.ts';
 import { formatDate, type FormatDateOptions } from '../../utils/formatDate.ts';
@@ -11,6 +13,8 @@ export type QuickIconFill = {
   listed: boolean;
   favorited: boolean;
   rewatching: boolean;
+  /** The media servers a library item was synced from, whose icon stands in for the library one. */
+  sources?: readonly LibrarySource[];
   /** The done-state tooltips, one line per `\n`. Left out, the icon keeps its idle "Add to ..." tooltip. */
   titles: Partial<Record<'watched' | 'collected' | 'listed' | 'favorited', string>>;
 };
@@ -74,15 +78,19 @@ function watchedTitle(params: QuickIconFillParams, includeZero = false): string 
 }
 
 function collectedTitle({ state, airedEpisodes, season, datePreferences }: QuickIconFillParams) {
+  const source = librarySourceIcon(state.collectionSources);
+  const synced = source && `Synced from ${source.name}`;
   if (state.collectedAt) {
     return [
       state.collectedAt.startsWith('1970-01-01')
         ? 'Added to library on\nUnknown date'
         : `Added to library on\n${formatDate(state.collectedAt, datePreferences)}`,
       collectionMetadataLabel(state.collectionMetadata),
+      synced,
     ].filter(Boolean).join('\n');
   }
-  return progressTitle(state.collectedEpisodes, airedEpisodes, season ? 'collected' : 'in library');
+  const progress = progressTitle(state.collectedEpisodes, airedEpisodes, season ? 'collected' : 'in library');
+  return progress && [progress, synced].filter(Boolean).join('\n');
 }
 
 // OG: "Manage lists" once anything is in a personal list, else "Remove from watchlist".
@@ -118,6 +126,7 @@ export function quickIconFill(params: QuickIconFillParams): QuickIconFill {
     listed: Boolean(state.watchlisted || state.listed),
     favorited: Boolean(state.favorited),
     rewatching: Boolean(state.rewatching),
+    sources: state.collectionSources,
     titles,
   };
 }

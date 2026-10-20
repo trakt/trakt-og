@@ -5,6 +5,7 @@ import { rawApiFetch } from '../../api/rawApiFetch.ts';
 import { createOverlay } from '../../overlay/createOverlay.svelte.ts';
 import { collectMedia } from './collectMedia.ts';
 import type { WatchTarget } from '../history/WatchTarget.ts';
+import type { CollectedItem } from '../../overlay/CollectedItem.ts';
 
 const API = 'https://apiz.trakt.tv';
 const server = setupServer();
@@ -23,7 +24,11 @@ async function setup(unknown = false) {
       load: () =>
         Promise.resolve(
           unknown ? [] : [
-            { name: 'collectedMovies', activity: '', data: new Map([[1, 'old']]) },
+            {
+              name: 'collectedMovies',
+              activity: '',
+              data: new Map<number, CollectedItem>([[1, 'old'], [2, { at: 'synced', sources: ['plex'] }]]),
+            },
             {
               name: 'collectedShows',
               activity: '',
@@ -76,6 +81,14 @@ describe('collectMedia', () => {
     }));
     expect(await collectMedia({ ...params, collectedAt: undefined, metadata })).toBe(true);
     expect(params.overlay.state('movie', 1)).toMatchObject({ collectedAt: 'old', collectionMetadata: metadata });
+  });
+  it('should keep where a synced item lives when its metadata changes', async () => {
+    const params = await setup();
+    server.use(http.post(`${API}/sync/collection`, () => HttpResponse.json({ updated: { movies: 1 } })));
+    const target = { type: 'movie', id: 2, title: 'Synced' } satisfies WatchTarget;
+    expect(await collectMedia({ ...params, target, collectedAt: undefined, metadata: { media_type: 'digital' } }))
+      .toBe(true);
+    expect(params.overlay.state('movie', 2)).toMatchObject({ collectedAt: 'synced', collectionSources: ['plex'] });
   });
   it.each([403, 429, 500])('should roll back metadata and dates after HTTP %s', async (status) => {
     const params = await setup();

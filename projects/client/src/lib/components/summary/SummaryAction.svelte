@@ -9,16 +9,17 @@
     </SummaryAction>
   `href` makes it a link, `readonly` a plain box (a person's credit progress). `busy` is the spinner's label while
   something saves. `aside` sits at the button's right edge (library format logos), and `tooltip` shows under it.
+  `trailing` is an icon in the tile column, centered where other buttons' + sits, outlined or split off.
   The other props land on the button itself.
 -->
 <script lang="ts">
 import type { Snippet } from 'svelte';
-import type { HTMLAttributes } from 'svelte/elements';
+import type { HTMLAnchorAttributes, HTMLAttributes } from 'svelte/elements';
 import Icon from '$lib/icons/Icon.svelte';
 import Spinner from '$lib/components/loading/Spinner.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 
-interface Props extends Omit<HTMLAttributes<HTMLElement>, 'title'> {
+interface Props extends Omit<HTMLAttributes<HTMLElement>, 'title'>, Pick<HTMLAnchorAttributes, 'target' | 'rel'> {
   color: string;
   icon: string;
   /** The uppercase line. */
@@ -37,6 +38,7 @@ interface Props extends Omit<HTMLAttributes<HTMLElement>, 'title'> {
   element?: HTMLElement;
   tiles?: Snippet;
   aside?: Snippet;
+  trailing?: Snippet;
   tooltip?: string;
 }
 
@@ -55,6 +57,7 @@ let {
   element = $bindable(),
   tiles,
   aside,
+  trailing,
   tooltip,
   ...rest
 }: Props = $props();
@@ -73,6 +76,7 @@ const tag = $derived(href ? 'a' : readonly ? 'div' : 'button');
           {#if typeof detail === 'string'}<span class="detail">{detail}</span>{:else if detail}<span class="detail">{@render detail()}</span>{/if}
         </span>
         {#if aside}<span class="aside">{@render aside()}</span>{/if}
+        {#if trailing}<span class="trailing">{@render trailing()}</span>{/if}
       </svelte:element>
     {/snippet}
   </Tooltip>
@@ -178,6 +182,15 @@ const tag = $derived(href ? 'a' : readonly ? 'div' : 'button');
   place-items: center end;
   flex-shrink: 0;
   padding-inline: var(--summary-action-aside-gap);
+}
+
+.trailing {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  align-self: stretch;
+  inline-size: var(--summary-action-tile-width);
+  font-size: var(--summary-action-trailing-icon-size);
 }
 
 .text {

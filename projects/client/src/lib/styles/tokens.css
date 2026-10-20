@@ -1892,7 +1892,7 @@
   --summary-action-stack-gap: 10px;
   --summary-action-gap: 3px; /* between an added button and its tiles, and between tiles */
   --summary-action-tile-width: 44px;
-  --summary-action-tile-inset: 10px 8px 10px 0; /* a tile inside a not-added button's outline */
+  --summary-action-tile-inset: 10px 4px; /* a tile inside a not-added button's outline, centered like an added one's */
   --summary-action-outline: 1.5px;
   --summary-action-outline-mix: 70%; /* how much of the button's color the outline keeps */
   --summary-action-tint: 7%; /* the not-added fill */
@@ -1903,6 +1903,7 @@
   --summary-action-aside-gap: 10px;
   --summary-action-icon-size: 26px;
   --summary-action-tile-icon-size: 18px;
+  --summary-action-trailing-icon-size: 15px; /* an icon in the tile column, like external-link, under the + */
   --summary-action-menu-icon-size: 16px; /* the ••• tile */
   --summary-action-tracking: 0.04em;
   --summary-action-title-line: 20px;

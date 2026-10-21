@@ -46,6 +46,9 @@ const { row, onwatchnow }: Props = $props();
   gap: var(--space-schedule-card-gap);
   padding: var(--space-schedule-card-padding);
   border-inline-start: var(--border-schedule-card) solid var(--brand-primary);
+  /* The red edge stays straight; only the far side rounds. */
+  border-start-end-radius: var(--radius-schedule-card);
+  border-end-end-radius: var(--radius-schedule-card);
   background-color: var(--color-surface);
 }
 
@@ -54,6 +57,7 @@ const { row, onwatchnow }: Props = $props();
   inline-size: var(--schedule-card-poster);
   aspect-ratio: 2 / 3;
   align-self: start;
+  border-radius: var(--radius-schedule-card);
   object-fit: cover;
 }
 

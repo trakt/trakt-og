@@ -54,7 +54,7 @@ const hasnt = (rest: string) =>
 
 {#snippet watched(card: WatchedCard)}
   {@const state = overlay.state(card.type, card.id)}
-  <PosterCard
+  <PosterCard framed
   href={card.href}
   title={card.title}
   number={card.number}

@@ -704,7 +704,7 @@ async function saveNotes(text: string) {
             {#each displayCards as item (item.key)}
               <div data-list-item={item.key} class={{ dragging: manager.dragging?.key === item.key,
                 'drop-target': manager.dragging && manager.dropRank === item.rank }} animate:flip={{ duration }}>
-                <ListItemPoster {item} rank={list.displayNumbers && !managing ? item.rank : undefined}
+                <ListItemPoster framed {item} rank={list.displayNumbers && !managing ? item.rank : undefined}
                   removing={() => removingFromOwner ? removedKeys.includes(item.key) : manager.isRemoved(item.key)} datePreferences={data.datePreferences}
                   edit={managing ? edit : undefined} fade={fadeHide.fade}
                   oneditnotes={owner || canManage ? (card) => owner ? editNotes(card) : openNotes(card) : undefined} />

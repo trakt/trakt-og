@@ -21,6 +21,7 @@ const state = $derived.by((): OverlayState =>
   <h2 class="inline-title">{note.item.showTitle ? `${note.item.showTitle}: ` : ''}{note.item.title}</h2>
   <div class="poster">
     <PosterCard
+      framed
       href={note.item.href}
       title={note.item.title}
       image={note.item.image}

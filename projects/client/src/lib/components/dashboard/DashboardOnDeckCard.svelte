@@ -64,7 +64,7 @@ function watched(watchedAt: string | null) {
 </script>
 
 <div bind:this={card}>
-  <OnDeckCard item={displayed}
+  <OnDeckCard framed item={displayed}
     state={item.complete ? overlay.state('show', item.showId) : overlay.state('episode', item.episodeId)} {refreshing}
     {needsRefresh}
     onWatchSave={watched} onRefresh={() => void refresh()} onRewatch={() => void refresh()} />

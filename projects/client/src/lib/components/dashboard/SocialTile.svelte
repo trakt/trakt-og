@@ -29,19 +29,23 @@ const tags = $derived([
 
 <div class="tile">
   <FanartCard
+    framed
     href={watch.href}
     title={watch.episode ? watch.episode.title ?? '' : watch.title.name}
     number={watch.code}
     smallTitle={watch.episode ? { text: watch.title.name, href: watch.title.href } : undefined}
     image={imageUrl(watch.still, 'medium')}
     {tags}
-  />
-  <UnderProgress
-    live
-    href={watch.href}
-    percent={tile.progress}
-    lines={[[{ text: `${tile.progress}% watched` }, { text: `${tile.minutesLeft}m left` }]]}
-  />
+  >
+    {#snippet progress()}
+      <UnderProgress
+        live
+        href={watch.href}
+        percent={tile.progress}
+        lines={[[{ text: `${tile.progress}% watched` }, { text: `${tile.minutesLeft}m left` }]]}
+      />
+    {/snippet}
+  </FanartCard>
   <div class="below">
     <p class="who">
       <img class="avatar" src={watch.member.avatar} alt="" loading="lazy" decoding="async" />

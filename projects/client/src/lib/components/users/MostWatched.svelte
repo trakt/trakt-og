@@ -82,7 +82,7 @@ const seeMore = (type: MostWatchedType, sortBy: string, tab: MostWatchedTab) =>
             <div class="posters">
               {#each cards as card (card.id)}
                 {@const state = overlay.state(card.type, card.id)}
-                <PosterCard
+                <PosterCard framed
                   href={card.href}
                   title={card.title}
                   image={card.image}

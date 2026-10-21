@@ -15,6 +15,7 @@ import AddCommentLink from '$lib/components/comments/AddCommentLink.svelte';
 import { newComment } from '$lib/components/comments/newComment.svelte';
 import ListsPreview from '$lib/components/summary/ListsPreview.svelte';
 import RelatedItems from '$lib/components/summary/RelatedItems.svelte';
+import VideosRail from '$lib/components/summary/VideosRail.svelte';
 import SummaryAction from '$lib/components/summary/SummaryAction.svelte';
 import SummaryActionTile from '$lib/components/summary/SummaryActionTile.svelte';
 import SummaryActionMenu from '$lib/components/summary/SummaryActionMenu.svelte';
@@ -30,6 +31,7 @@ import type { SummaryList } from '$lib/summary/toSummaryList';
 import { type ActivityTab, toActivity } from '$lib/summary/toActivity';
 import { socialFeedFixture } from '$lib/dashboard/socialFeedFixture';
 import type { RelatedCard } from '$lib/summary/toRelatedCard';
+import type { VideoCard } from '$lib/videos/toVideoCards';
 import { formatting, movie, review, spoiler } from '../comments/fixtures.ts';
 
 // Shows the Add comment buttons, as for a signed-in viewer; the page has no form for them to open.
@@ -147,6 +149,21 @@ const relatedPeople = (card: RelatedCard) =>
       ? [{ id: 3, name: 'Michael Mann' }]
       : [],
   );
+
+// Two real YouTube ids, so the thumbnails load; a start time keeps each card's link its own.
+const video = (type: VideoCard['type'], title: string, id: string, start: number): VideoCard => ({
+  type,
+  title,
+  href: `https://youtube.com/watch?v=${id}&t=${start}`,
+  image: `https://i.ytimg.com/vi/${id}/mqdefault.jpg`,
+});
+const videos: readonly VideoCard[] = [
+  video('trailer', 'Official Trailer', 'HhesaQXLuRY', 0),
+  video('teaser', 'Teaser', 'dfeUzm6KF4g', 0),
+  video('featurette', 'Inside the Episode', 'HhesaQXLuRY', 10),
+  video('clip', 'Opening Scene', 'dfeUzm6KF4g', 10),
+  video('behind the scenes', 'Making the Show', 'HhesaQXLuRY', 20),
+];
 </script>
 
 <section>
@@ -224,6 +241,11 @@ const relatedPeople = (card: RelatedCard) =>
     <code>/movies/fight-club-1999</code>.
   </p>
     <ActivityTabs tabs={activity} />
+    <p>
+      The videos row, from the API's videos: it opens on the trailers, else the teasers, else All, where each card tags its
+      type in the type's color. A plain click plays a video in the popup. OG had none; v3's Extras row is the model.
+    </p>
+    <VideosRail {videos} href="/shows/demo" />
     <CommentsPreview
       tabs={comments}
       item={movie}

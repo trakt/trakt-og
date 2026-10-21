@@ -52,7 +52,6 @@ export async function loadSeason({ fetch, parent, id, season: requestedSeason, u
     ratingsResponse,
     statsResponse,
     peopleResponse,
-    videosResponse,
     layout,
     watchNow,
   ] = await Promise.all([
@@ -66,7 +65,6 @@ export async function loadSeason({ fetch, parent, id, season: requestedSeason, u
       fetch,
       path: `/shows/${encodeURIComponent(id)}/seasons/${season}/people?extended=guest_stars,images`,
     }),
-    client.shows.season.videos({ params }),
     layoutRead,
     watchNowRead,
   ]);
@@ -86,7 +84,6 @@ export async function loadSeason({ fetch, parent, id, season: requestedSeason, u
   assertOk(episodesResponse, 'Episodes');
   assertOk(ratingsResponse, 'Ratings');
   assertOk(statsResponse, 'Stats');
-  assertOk(videosResponse, 'Videos');
   const view = toSeasonSummary({
     show,
     season: info,
@@ -95,7 +92,6 @@ export async function loadSeason({ fetch, parent, id, season: requestedSeason, u
     ratings: ratingsResponse.body,
     stats: statsResponse.body,
     people: people.data,
-    videos: videosResponse.body,
     isVip: layout.user?.isVip ?? false,
     actorSpoilers: layout.settings?.browsing?.spoilers?.actors !== 'hide',
     episodeTypeTags: !layout.settings?.browsing?.hide_episode_type_tags,

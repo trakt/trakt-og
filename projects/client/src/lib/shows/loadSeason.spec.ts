@@ -47,7 +47,7 @@ const params = () => ({
 describe('loadSeason', () => {
   it('should load all public reads anonymously and preserve query controls', async () => {
     const data = await loadSeason(params());
-    expect(seen.filter((request) => !isWatchNow(request))).toHaveLength(8);
+    expect(seen.filter((request) => !isWatchNow(request))).toHaveLength(7);
     expect(seen.every((request) => !request.headers.has('authorization'))).toBe(true);
     expect(data.season.id).toBe(3950);
     expect([data.sort, data.terms]).toEqual(['votes,desc', 'pilot']);

@@ -5,7 +5,6 @@ import type {
   RatingsResponse,
   SeasonsResponse,
   ShowResponse,
-  VideoResponse,
 } from '@trakt/api';
 import type { z } from 'zod/v4';
 import { episodeNumber, episodeType } from '../components/media/episodeTags.ts';
@@ -33,7 +32,6 @@ interface Params {
   regulars: z.infer<typeof seasonPeopleSchema>;
   ratings: RatingsResponse;
   stats: EpisodeStatsResponse;
-  videos: readonly VideoResponse[];
   datePreferences: DatePreferences;
   now: Date;
   isVip: boolean;
@@ -114,8 +112,7 @@ export function toEpisodeSummary(params: Params) {
         ? episode.original_title
         : undefined,
     },
-    videos: {
-      trailer: params.videos.find(({ type }) => type === 'trailer')?.url,
+    postCredits: {
       duringCredits: episode.during_credits,
       afterCredits: episode.after_credits,
     },

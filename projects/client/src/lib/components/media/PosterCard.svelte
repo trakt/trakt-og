@@ -332,7 +332,7 @@ h3,
 h3 {
   margin-block-start: 10px;
   font-size: var(--font-size-card-title);
-  line-height: 18px;
+  line-height: var(--line-height-card-title);
 
   /* OG kept the title 14px below the bar's top edge (`#ondeck-shows .titles h3`). */
   .with-progress & {

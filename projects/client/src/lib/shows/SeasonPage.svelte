@@ -23,8 +23,8 @@ import SectionNav from '$lib/components/summary/SectionNav.svelte';
 import SummaryFrame from '$lib/components/summary/SummaryFrame.svelte';
 import WatchNow from '$lib/components/watchnow/WatchNow.svelte';
 import SummaryPoster from '$lib/components/summary/SummaryPoster.svelte';
-import Videos from '$lib/components/summary/Videos.svelte';
 import SummaryTitle from '$lib/components/summary/SummaryTitle.svelte';
+import VideosRail from '$lib/components/summary/VideosRail.svelte';
 import { browserSectionsClient } from '$lib/summary/browserSectionsClient';
 import { countLabel } from '$lib/utils/countLabel';
 import EpisodeList from '$lib/shows/EpisodeList.svelte';
@@ -56,6 +56,7 @@ const sections = $derived([
     ? [{ label: 'People', href: '#people', more: { href: `${season.href}/people`, text: 'All people' } }]
     : []),
   { label: countLabel(season.episodes.length, 'Episode'), href: '#episodes' },
+  { label: 'Videos', href: '#videos', more: { href: `${season.href}/videos`, text: 'All videos' } },
   {
     label: countLabel(season.commentCount, 'Comment'),
     href: '#comments',
@@ -105,7 +106,6 @@ const sections = $derived([
       <AdditionalStat label="Links" phoneOnly><NameList names={season.links.filter(({ icon }) => !icon).map(({ label, href }) => ({ name: label, href }))} /></AdditionalStat>
     </AdditionalStats>
     <MediaSpoiler target={ratingTarget} kind="overview"><Overview overview={season.overview} /></MediaSpoiler>
-    <Videos title={season.fullTitle} trailer={season.trailer} />
   {/snippet}
   {#snippet actions()}<ActionButtons listTarget={ratingTarget} historyTarget={{ ...ratingTarget, season: { show: season.showId, number: season.number }, airedEpisodes: season.airedEpisodes, episodeIds: season.episodeIds, runtime: season.runtime }} />{/snippet}
   {#key season.href}
@@ -114,6 +114,11 @@ const sections = $derived([
   <ActorsStrip groups={[{ id: 'season-regulars', label: 'Season Regulars', cast: season.cast }, { id: 'guest-stars', label: 'Guest Stars', cast: season.guestStars }]} crew={season.crew} creditsHref="{season.href}/people" />
   {#key `${season.href}?${data.sort}&${data.terms}`}
     <EpisodeList showId={season.showId} signedIn={!!data.user} initialFilters={data.filters} rows={season.episodes} datePreferences={data.datePreferences} season search vip={data.user?.isVip ?? false} initialTerms={data.terms} initialSort={data.sort} />
+  {/key}
+  {#key season.href}
+    <LazySection id="videos" load={() => lazy().videos(media)}>
+      {#snippet children(videos)}<VideosRail {videos} href={season.href} />{/snippet}
+    </LazySection>
   {/key}
   {#key season.href}
     {#snippet newCommentForm()}<NewCommentForm item={{ type: 'season', id: season.id, title: season.fullTitle, show: season.showId, number: season.number, airedEpisodes: season.airedEpisodes }} />{/snippet}

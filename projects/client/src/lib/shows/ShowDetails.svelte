@@ -1,6 +1,6 @@
 <!--
-  The show's facts, overview and videos: the `details` column of every show page's SummaryFrame (summary, seasons,
-  all episodes). OG's `ul.additional-stats`, `#overview` and the notes/videos box.
+  The show's facts and overview: the `details` column of every show page's SummaryFrame (summary, seasons,
+  all episodes). OG's `ul.additional-stats`, `#overview` and the notes box.
 -->
 <script lang="ts">
 import MediaSpoiler from '$lib/components/summary/MediaSpoiler.svelte';
@@ -9,7 +9,6 @@ import AdditionalStats from '$lib/components/summary/AdditionalStats.svelte';
 import NameList from '$lib/components/summary/NameList.svelte';
 import Overview from '$lib/components/summary/Overview.svelte';
 import PrivateNotes from '$lib/components/summary/PrivateNotes.svelte';
-import Videos from '$lib/components/summary/Videos.svelte';
 import type { ComponentProps } from 'svelte';
 import type { toShowSummary } from './toShowSummary.ts';
 
@@ -84,7 +83,6 @@ const textLinks = $derived(show.links.filter(({ icon }) => !icon));
   <Overview tagline={show.tagline} overview={show.overview} />
 </MediaSpoiler>
 <PrivateNotes {...privateNotes} />
-<Videos title={show.fullTitle} trailer={show.trailer} />
 
 <style>
 .alt {

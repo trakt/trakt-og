@@ -26,7 +26,7 @@ import SectionNav from '$lib/components/summary/SectionNav.svelte';
 import SummaryFrame from '$lib/components/summary/SummaryFrame.svelte';
 import SummaryPoster from '$lib/components/summary/SummaryPoster.svelte';
 import SummaryTitle from '$lib/components/summary/SummaryTitle.svelte';
-import Videos from '$lib/components/summary/Videos.svelte';
+import VideosRail from '$lib/components/summary/VideosRail.svelte';
 import WatchNow from '$lib/components/watchnow/WatchNow.svelte';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
 import { browserSectionsClient } from '$lib/summary/browserSectionsClient';
@@ -58,6 +58,7 @@ const sections = $derived([
   ...(movie.cast.length > 0
     ? [{ label: 'People', href: '#people', more: { href: `${movie.href}/people`, text: 'All people' } }]
     : []),
+  { label: 'Videos', href: '#videos', more: { href: `${movie.href}/videos`, text: 'All videos' } },
   {
     label: countLabel(movie.commentCount, 'Comment'),
     href: '#comments',
@@ -86,7 +87,7 @@ const textLinks = $derived(movie.links.filter(({ icon }) => !icon));
     year={movie.year}
     certification={movie.certification}
     links={movie.collection ? [movie.collection] : undefined}
-    credits={movie.videos}
+    credits={movie.postCredits}
   />
   {#snippet stats()}
     <RatingsStrip rating={movie.rating} rateLabel="movie" {ratingTarget} external={movie.external} counts={movie.counts}
@@ -163,7 +164,6 @@ const textLinks = $derived(movie.links.filter(({ icon }) => !icon));
     </AdditionalStats>
     <MediaSpoiler target={ratingTarget} kind="overview"><Overview tagline={movie.tagline} overview={movie.overview} /></MediaSpoiler>
     <PrivateNotes {...data.privateNotes} />
-    <Videos title={movie.fullTitle} {...movie.videos} />
   {/snippet}
 
   {#snippet actions()}
@@ -178,6 +178,11 @@ const textLinks = $derived(movie.links.filter(({ icon }) => !icon));
     </LazySection>
   {/key}
   <ActorsStrip groups={[{ id: 'cast', label: 'Cast', cast: movie.cast }]} crew={movie.crew} creditsHref="{movie.href}/people" />
+  {#key media.slug}
+    <LazySection id="videos" load={() => lazy().videos(media)}>
+      {#snippet children(videos)}<VideosRail {videos} href={movie.href} />{/snippet}
+    </LazySection>
+  {/key}
   {#key media.slug}
     {#snippet newCommentForm()}<NewCommentForm item={{ type: 'movie', id: movie.id, title: movie.fullTitle }} />{/snippet}
     <LazySection id="comments" load={() => lazy().comments(media)} eager={newComment.visible}>

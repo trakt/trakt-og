@@ -13,6 +13,7 @@ import type { RelatedPerson } from './RelatedPerson.ts';
 import { type RelatedCard, toRelatedCard } from './toRelatedCard.ts';
 import { toRelatedPeople } from './toRelatedPeople.ts';
 import { type SummaryList, toSummaryList } from './toSummaryList.ts';
+import { toVideoCards, type VideoCard } from '../videos/toVideoCards.ts';
 
 type Api = ReturnType<typeof api>;
 
@@ -56,6 +57,8 @@ export type SectionsClient = {
   related: (media: SummaryMedia) => Promise<readonly RelatedCard[] | null>;
   /** A related card's billed cast and key crew, to match against the summary's. */
   relatedPeople: (card: RelatedCard) => Promise<readonly RelatedPerson[] | null>;
+  /** Every video that plays in the popup, newest first. */
+  videos: (media: SummaryMedia) => Promise<readonly VideoCard[] | null>;
 };
 
 type Response = { status: number; body: unknown };
@@ -148,6 +151,17 @@ export function sectionsClient({
       return ok(anonymous.shows.season.lists({ ...request, params: { ...request.params, season: season ?? 0 } }));
     }
     return type === 'movie' ? ok(anonymous.movies.lists(request)) : ok(anonymous.shows.lists(request));
+  };
+
+  const videosOf = (media: SummaryMedia) => {
+    const id = media.slug;
+    if (media.type === 'episode') {
+      return ok(anonymous.shows.episode.videos({ params: { id, season: media.season, episode: media.episode } }));
+    }
+    if (media.type === 'season') return ok(anonymous.shows.season.videos({ params: { id, season: media.season } }));
+    return media.type === 'movie'
+      ? ok(anonymous.movies.videos({ params: { id } }))
+      : ok(anonymous.shows.videos({ params: { id } }));
   };
 
   // The slugs the viewer follows, or `null` logged out or when the list doesn't load: nobody is picked out then.
@@ -247,6 +261,11 @@ export function sectionsClient({
         ? await ok(anonymous.movies.people({ params, query: {} }))
         : await ok(anonymous.shows.people({ params, query: {} }));
       return people ? toRelatedPeople(people) : null;
+    },
+
+    videos: async (media) => {
+      const videos = await videosOf(media);
+      return nonEmpty(toVideoCards(videos ?? []));
     },
   };
 }

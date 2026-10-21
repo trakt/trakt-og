@@ -53,7 +53,7 @@ const params = () => ({
 describe('loadEpisode', () => {
   it('should load all public reads anonymously and preserve layout preferences', async () => {
     const data = await loadEpisode(params());
-    expect(seen.filter((request) => !isWatchNow(request))).toHaveLength(10);
+    expect(seen.filter((request) => !isWatchNow(request))).toHaveLength(9);
     expect(seen.every((request) => !request.headers.has('authorization'))).toBe(true);
     expect(data.episode.id).toBe(73482);
     expect(data.datePreferences.timeZone).toBe('UTC');

@@ -43,7 +43,7 @@ const spoiler = $derived(icons.collectionTarget ?? icons.watchTarget ?? icons.ra
     {/snippet}
   </CalendarEntryTitles>
   <p class="tags">{#each [...tags.types, ...tags.line] as tag (tag.text)}<CardTag {...tag} />{/each}</p>
-  <QuickIcons {...icons} watchNowArt={entry.fanart} />
+  <QuickIcons row small {...icons} watchNowArt={entry.fanart} />
 </article>
 
 <style>
@@ -76,10 +76,8 @@ const spoiler = $derived(icons.collectionTarget ?? icons.watchTarget ?? icons.ra
     block-size: var(--calendar-agenda-text-row-height);
   }
 
-  /* On the page instead of og's dark bar: the rating takes the page's ink. */
+  /* The rating takes the frame's ink. */
   & > :global(.quick-icons) {
-    gap: var(--space-lg-inline);
-    background: none;
     color: var(--color-frame-ink);
   }
 }

@@ -289,6 +289,8 @@
   --quick-icon-hide-scale: 0.85em; /* the hide icon's circle reads heavier than the others at the same size */
   --font-size-quick-icon-busy: 16px; /* the saving spinner, a size under the glyph it stands in for */
   --font-size-quick-icon-busy-small: 13px;
+  --quick-icons-row-cell: 32px; /* a list row's icon square, inside its group's 1px border: a 34px control */
+  --quick-icons-row-rating-padding: 10px;
   --quick-icon-trakt-shift: 0.085em; /* Trakt-font glyphs (check, library, list) sit this far above center */
   --font-size-quick-icon-favorite: 0.85em; /* the solid star, down to the other glyphs' height */
   --font-size-rating: 20px;

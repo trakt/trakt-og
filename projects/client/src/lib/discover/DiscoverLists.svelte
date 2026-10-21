@@ -13,7 +13,7 @@ import VipLabel from '$lib/components/labels/VipLabel.svelte';
 import ListCount from '$lib/components/lists/ListCount.svelte';
 import ListLikeButton from '$lib/components/lists/ListLikeButton.svelte';
 import listIcon from '$lib/icons/regular/list.svg?raw';
-import comment from '$lib/icons/regular/comment.svg?raw';
+import { stripStatIcons } from '$lib/components/summary/stripStatIcons';
 import file from '$lib/icons/regular/file.svg?raw';
 import { sortThemeLists } from './sortThemeLists.ts';
 import type { ThemeList } from './ThemeList.ts';
@@ -85,7 +85,7 @@ const oneRow: Attachment<HTMLElement> = (node) => {
                   count={tile.likes} button />
                 <ListCount svg={file} value={tile.items} word="item" href={tile.href} />
                 {#if tile.comments !== undefined}
-                  <ListCount svg={comment} value={tile.comments} word="comment" href="{tile.href}/comments" />
+                  <ListCount svg={stripStatIcons.comments} iconColor="var(--color-stat-comments)" value={tile.comments} word="comment" href="{tile.href}/comments" />
                 {/if}
               </div>
             </div>

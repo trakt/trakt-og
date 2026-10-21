@@ -10,7 +10,7 @@
 import { page } from '$app/state';
 import ListCount from '$lib/components/lists/ListCount.svelte';
 import ListLikeButton from '$lib/components/lists/ListLikeButton.svelte';
-import comment from '$lib/icons/regular/comment.svg?raw';
+import { stripStatIcons } from '$lib/components/summary/stripStatIcons';
 import file from '$lib/icons/regular/file.svg?raw';
 import type { EssentialList } from './toEssentialList.ts';
 
@@ -60,7 +60,7 @@ const count = (n: number) => n.toLocaleString('en-US');
                   count={list.counts.likes} button />
                 <ListCount svg={file} value={list.counts.items} word="item" href={list.href} />
                 {#if list.counts.comments !== undefined}
-                  <ListCount svg={comment} value={list.counts.comments} word="comment" href="{list.href}/comments" />
+                  <ListCount svg={stripStatIcons.comments} iconColor="var(--color-stat-comments)" value={list.counts.comments} word="comment" href="{list.href}/comments" />
                 {/if}
               </div>
             {/if}

@@ -70,17 +70,22 @@ function changeRows(rows: number) {
 {#snippet card(play: RecentPlay)}
   {@const state = overlay.state(play.type, play.id, play.season)}
   {@const checkin = toCheckin(play, now)}
+  {#snippet checkinBar()}
+    <UnderProgress live href={play.href} percent={checkin?.progress ?? 0}
+  lines={[[{ text: `${checkin?.progress ?? 0}% watched` }]]} />
+  {/snippet}
   <div class="play">
   <FanartCard
-  href={play.href}
-  title={play.title}
-  year={play.year}
-  number={play.number}
-  smallTitle={play.smallTitle}
-  image={play.image}
-  tags={checkin?.tags ?? play.tags}
-  userRating={state.rating}
-  icons={{
+    framed
+    href={play.href}
+    title={play.title}
+    year={play.year}
+    number={play.number}
+    smallTitle={play.smallTitle}
+    image={play.image}
+    tags={checkin?.tags ?? play.tags}
+    userRating={state.rating}
+    icons={{
       fill: quickIconFill({ state, datePreferences }),
       rating: play.rating,
       ratingTarget: { type: play.type, id: play.id, title: play.title },
@@ -90,12 +95,9 @@ function changeRows(rows: number) {
       watchNow: 'play',
       listLabel: play.type === 'movie' ? 'Add to watchlist' : 'Add to list',
     }}
-/>
-  {#if checkin}
-    <UnderProgress live href={play.href} percent={checkin.progress}
-      lines={[[{ text: `${checkin.progress}% watched` }]]} />
-  {/if}
-  </div>
+    progress={checkin ? checkinBar : undefined}
+  />
+</div>
 {/snippet}
 
 {#await plays}

@@ -166,7 +166,7 @@ function toggleSeason(season: number) {
   <div class="card">
     {#if row.upNext}
       {@const next = row.upNext}
-      <FanartCard href={next.href} title={next.title} number={next.number} image={next.image}
+      <FanartCard framed href={next.href} title={next.title} number={next.number} image={next.image}
         spoilerImage={next.spoilerImage} tags={next.tags}
         icons={{
           fill: quickIconFill({ state: overlay.state('episode', next.target.id, next.target.season), datePreferences }),
@@ -178,7 +178,7 @@ function toggleSeason(season: number) {
           listLabel: 'Add to list',
         }} />
     {:else}
-      <FanartCard href={row.href} title={row.status ?? row.title} image={row.fanart}
+      <FanartCard framed href={row.href} title={row.status ?? row.title} image={row.fanart}
         tags={findsNext ? [] : [{ text: caughtUp, kind: 'generic' }]}
         icons={{
           fill: quickIconFill({ state: overlay.state('show', row.id), airedEpisodes: row.aired, datePreferences }),
@@ -215,6 +215,7 @@ function toggleSeason(season: number) {
     display: block;
     inline-size: 100%;
     aspect-ratio: var(--ratio-poster);
+    border-radius: var(--radius-object);
     object-fit: cover;
   }
 
@@ -259,6 +260,12 @@ function toggleSeason(season: number) {
       text-decoration: underline;
     }
   }
+}
+
+/* The year sits on the title's baseline; the status menu stays centered. */
+.title,
+.year {
+  align-self: baseline;
 }
 
 .year {

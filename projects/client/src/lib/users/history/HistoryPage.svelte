@@ -87,7 +87,7 @@ const country = $derived(data.settings?.browsing?.watchnow?.country?.toLowerCase
 {#snippet card(item: HistoryCard)}
   {@const state = overlay.state(item.type, item.id)}
   {@const fill = quickIconFill({ state, airedEpisodes: item.airedEpisodes, datePreferences: data.datePreferences })}
-  <PosterCard
+  <PosterCard framed
   href={item.href}
   title={item.title}
   number={item.number}

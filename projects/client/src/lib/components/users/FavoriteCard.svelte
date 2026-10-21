@@ -52,6 +52,7 @@ const blocks = $derived(parseComment(favorite.notes ?? ''));
   flex: 0 0 var(--favorite-poster-width);
   align-self: start;
   margin: var(--favorite-padding);
+  border-radius: var(--radius-favorite);
   box-shadow: var(--shadow-favorite-poster);
 
   img,
@@ -59,6 +60,7 @@ const blocks = $derived(parseComment(favorite.notes ?? ''));
     display: block;
     inline-size: 100%;
     aspect-ratio: var(--ratio-poster);
+    border-radius: var(--radius-favorite);
     object-fit: cover;
     background-color: var(--color-card-bg);
   }

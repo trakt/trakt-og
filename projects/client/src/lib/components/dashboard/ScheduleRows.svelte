@@ -59,6 +59,7 @@ ul {
 .poster {
   inline-size: 100%;
   aspect-ratio: 2 / 3;
+  border-radius: var(--radius-schedule-card);
   object-fit: cover;
 }
 

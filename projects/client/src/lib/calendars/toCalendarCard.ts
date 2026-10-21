@@ -26,7 +26,7 @@ export type CalendarCard = Omit<ComponentProps<typeof FanartCard>, 'icons'> & {
   hideTarget?: { type: 'show'; id: number; title: string };
   overlay: { type: 'episode' | 'movie'; id: number };
   collectionContext?: { show: number; number: number; episode: number };
-  /** Episodes get the watch-now and "Drop this show" icons. */
+  /** Episodes get the watch-now icon and a ••• with Drop show. */
   episode: boolean;
   /** An episode's show, whose watchlisting the fade and hide menu counts too. */
   show?: number;

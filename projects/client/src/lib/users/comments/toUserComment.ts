@@ -61,6 +61,7 @@ function commentPoster(row: UserCommentRow): Poster | undefined {
       image: thumb(episode.images?.screenshot?.at(0)),
       variant: 'screenshot',
       show: { text: show.title, href: showHref(show) },
+      seasonOf: { show: show.ids.trakt, number: episode.season, episode: episode.number },
       rating: episode.rating ?? undefined,
     };
   }

@@ -35,6 +35,11 @@ import check from '$lib/icons/trakt/check-thick.svg?raw';
 import collection from '$lib/icons/trakt/collection-thick.svg?raw';
 import list from '$lib/icons/trakt/list-thick.svg?raw';
 import type { QuickIconFill } from './quickIconFill.ts';
+import type { QuickIconMore } from './QuickIconMore.ts';
+import SummaryActionMenu from '$lib/components/summary/SummaryActionMenu.svelte';
+import ellipsis from '$lib/icons/regular/ellipsis.svg?raw';
+import circleMinus from '$lib/icons/light/circle-minus.svg?raw';
+import lightBackward from '$lib/icons/light/backward.svg?raw';
 
 interface Props {
   fill: QuickIconFill;
@@ -60,17 +65,21 @@ interface Props {
   /** For season/episode stars, pass the parent show. */
   favoriteTarget?: FavoriteTarget;
   /**
-   * `cinema` swaps the play icon for a ticket, for movies only in cinemas. Left out, no watch-now icon. It opens the
-   * page's Watch Now dialog for the first target it can find the item's API path from (a season or episode needs its
-   * show and number); with none, there's no icon.
+   * On by default: every bar gets a watch-now icon that opens the page's Watch Now dialog, for the first target it can
+   * find the item's API path from (a season or episode needs its show and number); with none, there's no icon.
+   * `cinema` swaps the play icon for a ticket, for movies only in cinemas.
    */
   watchNow?: 'play' | 'cinema';
   /** The card's fanart, for the Watch Now dialog's header. Left out, the dialog fetches the item's own. */
   watchNowArt?: string;
+  /** What Watch Now opens, for a bar with no other target to find it from (a profile's history, a comment's poster). */
+  watchNowTarget?: WatchTarget;
   /** Names the thing being hidden ("show", "movie"). Left out, no hide icon. */
   hide?: string;
   hideTarget?: VisibilityTarget;
   hideSection?: 'calendar' | 'recommendations' | 'progress_watched' | 'progress_collected' | 'dropped';
+  /** The ••• menu's rows, after the other icons. Left out or empty, no •••. */
+  more?: readonly QuickIconMore[];
   /** "Add to watchlist" on movies and shows; "Add to list" on seasons and episodes. */
   listLabel?: string;
 }
@@ -92,16 +101,28 @@ const {
   compact = false,
   favorite = false,
   favoriteTarget,
-  watchNow,
+  watchNow = 'play',
   watchNowArt,
+  watchNowTarget,
   hide,
   hideTarget,
   hideSection = 'recommendations',
+  more = [],
   listLabel = 'Add to watchlist',
 }: Props = $props();
 
+let moreButton = $state<HTMLButtonElement>();
+// The drop prompt sits by the ••• itself: a visible anchor, so no browser hides the prompt for want of one. It's
+// on the button's fill layer, as the tooltip names the button.
+const uid = $props.id();
+const moreAnchor = `--quick-more-${uid}`;
+// The ••• rows that open a prompt, by kind: each one's control sits outside the menu.
+const prompts = $state<Record<string, { openPrompt: () => Promise<void> } | undefined>>({});
+const menuWatchNow = $derived(more.some((row) => row.kind === 'watch-now'));
+const promptRows = $derived(more.filter((row) => row.kind !== 'watch-now'));
+const menuRows = $derived(more.filter((row) => row.kind !== 'watch-now' || watchNowItem));
 const watchNowItem = $derived.by(() => {
-  for (const candidate of [watchTarget, collectionTarget, ratingTarget]) {
+  for (const candidate of [watchNowTarget, watchTarget, collectionTarget, ratingTarget, listTarget, hideTarget]) {
     const path = candidate && watchNowPath(candidate);
     if (candidate && path) return { path, title: candidate.title, fanart: watchNowArt };
   }
@@ -186,14 +207,44 @@ const ratingLevel = $derived(rating === undefined ? 1 : Math.min(Math.max(Math.t
         {@render action('favorite', star, 'Add to favorites', fill.favorited ? 1 : 0, fill.titles.favorited)}
       {/if}
     {/if}
-    {#if watchNow && watchNowItem}
+    {#if watchNow && watchNowItem && !menuWatchNow}
       {@const item = watchNowItem}
       {@render action('watch-now', watchNow === 'cinema' ? ticket : play, 'Watch now', 0, 'Watch now', () => openWatchNow(item))}
     {/if}
     {#if hide}
       {#if hiddenTarget}
-        <VisibilityControl target={hiddenTarget} action={hideSection === 'dropped' ? 'drop' : 'hide'} section={hideSection === 'dropped' ? undefined : hideSection} variant="card" {small}><span class:ban={hideSection !== 'dropped'} class:drop={hideSection === 'dropped'}><Icon svg={hideSection === 'dropped' ? minus : ban} /></span></VisibilityControl>
+        <VisibilityControl target={hiddenTarget} action={hideSection === 'dropped' ? 'drop' : 'hide'} section={hideSection === 'dropped' ? undefined : hideSection} variant="card" {small}><span class:ban={hideSection !== 'dropped'}><Icon svg={hideSection === 'dropped' ? minus : ban} /></span></VisibilityControl>
       {:else}{@render action('ignore', ban, `Hide this ${hide}`, 0)}{/if}
+    {/if}
+    {#if menuRows.length > 0}
+      <!-- A row closes the menu, then opens its prompt beside the •••, so the prompt never nests in the menu. -->
+      <SummaryActionMenu label="More" placement="bottom">
+        {#snippet trigger(attrs)}
+          <button bind:this={moreButton} type="button" class={['action', 'more']} {...attrs}><span class="base" style:anchor-name={moreAnchor}></span><Icon svg={ellipsis} /></button>
+        {/snippet}
+        {#snippet children(close)}
+          {#each menuRows as row (row.kind)}
+            {#if row.kind === 'watch-now'}
+              {#if watchNowItem}
+                {@const item = watchNowItem}
+                <button type="button" aria-haspopup="dialog" onclick={() => { close(); openWatchNow(item); }}>
+                  <Icon svg={watchNow === 'cinema' ? ticket : play} fixedWidth />Watch now
+                </button>
+              {/if}
+            {:else}
+              <button type="button" onclick={() => { close(); void prompts[row.kind]?.openPrompt(); }}>
+                <Icon svg={row.kind === 'rewatch' ? lightBackward : circleMinus} fixedWidth />{row.kind === 'rewatch'
+                  ? 'Rewatch'
+                  : 'Drop'} {row.target.type}
+              </button>
+            {/if}
+          {/each}
+        {/snippet}
+      </SummaryActionMenu>
+      {#each promptRows as row (row.kind)}
+        <VisibilityControl bind:this={prompts[row.kind]} target={row.target} action={row.kind} onsave={row.onsave}
+          headless returnFocus={moreButton} anchor={moreAnchor} />
+      {/each}
     {/if}
   </div>
   {#if rating !== undefined && released !== false}
@@ -220,8 +271,9 @@ const ratingLevel = $derived(rating === undefined ? 1 : Math.min(Math.max(Math.t
   block-size: var(--bar);
   overflow: hidden;
   white-space: nowrap;
-  background-color: var(--color-quick-icons-bg);
-  color: var(--color-quick-icons-text);
+  /* Picked here, not in the tokens, so a panel's own --color-card-bg still colors the dark bar. */
+  background-color: light-dark(var(--color-quick-icons-light-bg), var(--color-card-bg));
+  color: light-dark(var(--color-quick-icons-light-text), var(--color-card-text));
 
   &.small {
     --bar: 35px;
@@ -340,13 +392,10 @@ const ratingLevel = $derived(rating === undefined ? 1 : Math.min(Math.max(Math.t
   }
 }
 
-/* The drop icon in the watch-now gray, until the button under it lights up. */
-.drop {
+/* The ••• in the watch-now gray, its fill gray like the hide icon's. */
+.more {
+  --color: var(--gray);
   color: var(--color-watch-now);
-
-  :global(.visibility-trigger:is(:hover, :focus-visible)) & {
-    color: inherit;
-  }
 }
 
 .ban {

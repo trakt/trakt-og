@@ -55,6 +55,7 @@ describe('toWatchedEpisode', () => {
       rating: 8.4,
       episodeBadge: { label: 'Season Premiere', kind: 'season-premiere' },
       show: { text: 'Andor', href: '/shows/andor' },
+      season: { show: 1, number: 2, episode: 1 },
       watchedDate: 'Sep 28, 2026 10:00 PM',
     });
   });

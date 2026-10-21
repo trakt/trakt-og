@@ -1,14 +1,10 @@
 <!--
-  OG's on-deck card: a show's next episode as a poster card with the progress bar
-  under its quick icons, the episode as the title, then rewatch and drop icons before the show's title. The dashboard's
-  Up Next panel and the progress page's grid view both use it.
-  The shared visibility controls start a rewatch or drop the show. Dashboard callbacks refresh the card after saves.
+  OG's on-deck card: a show's next episode as a poster card with the progress bar under its quick icons, the episode
+  as the title, then the show's title. The dashboard's Up Next panel and the progress page's grid view both use it.
+  The quick icons' ••• holds Watch Now, and for a show still in progress Rewatch and Drop through the shared prompts.
+  Dashboard callbacks refresh the card after saves.
 -->
 <script lang="ts">
-import VisibilityControl from '$lib/components/visibility/VisibilityControl.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import backward from '$lib/icons/light/backward.svg?raw';
-import circleMinus from '$lib/icons/light/circle-minus.svg?raw';
 import type { OverlayState } from '$lib/overlay/createOverlay.svelte';
 import type { OnDeckItem } from '$lib/components/media/OnDeckItem';
 import PosterCard from '$lib/components/media/PosterCard.svelte';
@@ -17,6 +13,7 @@ import { progressPercent } from '$lib/components/media/progressPercent';
 import { progressTooltip } from '$lib/components/media/progressTooltip';
 import { quickIconFill } from '$lib/components/media/quickIconFill';
 import UnderProgress from '$lib/components/media/UnderProgress.svelte';
+import type { QuickIconMore } from '$lib/components/media/QuickIconMore';
 
 interface Props {
   item: OnDeckItem;
@@ -57,6 +54,14 @@ const showTarget = $derived({
   runtime: item.runtime,
 });
 
+const more = $derived<QuickIconMore[]>(
+  item.complete ? [{ kind: 'watch-now' }] : [
+    { kind: 'watch-now' },
+    { kind: 'rewatch', target: showTarget, onsave: onRewatch },
+    { kind: 'drop', target: showTarget },
+  ],
+);
+
 const title = $derived(item.episodeTitle ? `${item.episodeNumber} ${item.episodeTitle}` : item.episodeNumber);
 const lines = $derived(
   progressTooltip({ progress: item.progress, fullProgress: item.fullProgress, runtime: item.runtime }),
@@ -76,7 +81,7 @@ const lines = $derived(
     episodeBadge={item.complete ? undefined : item.episodeBadge}
     rewatching={item.rewatching}
     userRating={state.rating}
-    icons={{ listTarget: item.complete ? showTarget : target, watchTarget: item.complete ? showTarget : target, collectionTarget: item.complete ? showTarget : target, ratingTarget: item.complete ? showTarget : target, onWatchSave, fill: quickIconFill({ state }), rating: item.complete ? undefined : item.rating, listLabel: item.complete ? 'Add to watchlist' : 'Add to list' }}
+    icons={{ listTarget: item.complete ? showTarget : target, watchTarget: item.complete ? showTarget : target, collectionTarget: item.complete ? showTarget : target, ratingTarget: item.complete ? showTarget : target, onWatchSave, fill: quickIconFill({ state }), rating: item.complete ? undefined : item.rating, listLabel: item.complete ? 'Add to watchlist' : 'Add to list', more }}
   >
     {#snippet progress()}
       <UnderProgress href={item.progressHref} percent={progressPercent(item.progress)} ticks={item.ticks} {lines} />
@@ -86,11 +91,7 @@ const lines = $derived(
       {:else if item.complete}<div class="completion">{item.completionLabel}</div>{/if}
     {/snippet}
     {#if item.complete}<div class="show-line"><b>100% watched!</b></div>{:else}
-    <div class="show-line">
-      <div class="action"><VisibilityControl target={showTarget} action="rewatch" variant="badge" onsave={onRewatch}><Icon svg={backward} /></VisibilityControl></div>
-      <div class="action drop"><VisibilityControl target={showTarget} action="drop" variant="badge"><Icon svg={circleMinus} /></VisibilityControl></div>
-      <a class="show-link" href={item.showHref}>{item.showTitle}</a>
-    </div>
+    <div class="show-line"><a class="show-link" href={item.showHref}>{item.showTitle}</a></div>
     {/if}
   </PosterCard>
 </div>
@@ -128,47 +129,12 @@ const lines = $derived(
   white-space: nowrap;
 }
 
-.action {
-  display: inline;
-  min-block-size: 0;
-  margin: 0 var(--space-xs-inline) 0 0;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--color-card-action);
-  font-size: inherit;
-  line-height: inherit;
-  vertical-align: middle;
-  cursor: pointer;
-  transition: color var(--transition-card);
-
-  &:is(:hover, :focus-visible) {
-    color: var(--color-card-action-hover);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--color-link);
-    outline-offset: 1px;
-  }
-}
-
-/* fa-sm */
-.drop {
-  font-size: 0.875em;
-}
-
 .show-link {
   color: var(--color-text);
   vertical-align: middle;
 
   &:is(:hover, :focus-visible) {
     color: var(--color-text);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .action {
-    transition: none;
   }
 }
 </style>

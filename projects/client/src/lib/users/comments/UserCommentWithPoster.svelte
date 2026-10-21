@@ -39,7 +39,7 @@ const state = $derived(poster.type === 'list' ? {} : overlay.state(poster.type, 
     icons: poster.type === 'list' ? undefined : {
       fill: quickIconFill({ state, airedEpisodes: poster.airedEpisodes, datePreferences }),
       rating: poster.rating,
-      watchNow: 'play',
+      watchNowTarget: { type: poster.type, id: poster.id, title: poster.title, season: poster.seasonOf },
       listLabel: poster.type === 'movie' || poster.type === 'show' ? 'Add to watchlist' : 'Add to list',
     },
   }}

@@ -29,6 +29,8 @@ export type WatchedCard = {
   readonly episodeBadge?: OnDeckItem['episodeBadge'];
   /** The show under an episode's title, linked to the show. */
   readonly show?: { readonly text: string; readonly href: string };
+  /** An episode's show, season and number, for its Watch Now. */
+  readonly season?: { readonly show: number; readonly number: number; readonly episode: number };
   readonly watchedDate: string;
 };
 
@@ -86,6 +88,7 @@ export function toWatchedEpisode(row: EpisodeRow, datePreferences: DatePreferenc
     rating: row.episode.rating ?? undefined,
     episodeBadge: episodeBadge(row.episode),
     show: { text: row.show.title, href: showHref(row.show) },
+    season: { show: row.show.ids.trakt, number: row.episode.season, episode: row.episode.number },
     watchedDate: watchedDate(row.watched_at, datePreferences),
   };
 }

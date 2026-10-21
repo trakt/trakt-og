@@ -54,8 +54,8 @@ async function watchSeason(at: string | null) {
             {#snippet children(close)}
               <a href="#history"><Icon svg={historyIcon} fixedWidth />View history</a>
               <hr />
-              <VisibilityControl target={{ type: 'show', id: 1, title: 'Breaking Bad' }} action="rewatch" variant="menu" onsaving={close}><Icon svg={backward} fixedWidth />Rewatch this show</VisibilityControl>
-              <VisibilityControl target={{ type: 'show', id: 1, title: 'Breaking Bad' }} action="drop" variant="menu" onsaving={close}><Icon svg={circleMinus} fixedWidth />Drop this show</VisibilityControl>
+              <VisibilityControl target={{ type: 'show', id: 1, title: 'Breaking Bad' }} action="rewatch" variant="menu" onsaving={close}><Icon svg={backward} fixedWidth />Rewatch show</VisibilityControl>
+              <VisibilityControl target={{ type: 'show', id: 1, title: 'Breaking Bad' }} action="drop" variant="menu" onsaving={close}><Icon svg={circleMinus} fixedWidth />Drop show</VisibilityControl>
             {/snippet}
           </SummaryActionMenu>
         {/snippet}

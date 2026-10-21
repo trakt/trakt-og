@@ -180,16 +180,16 @@ async function open(force: boolean): Promise<'date' | 'remove' | 'partial' | nul
       {#if (showActions || dropped) && hasHistory}<hr />{/if}
       {#if showActions}
         <VisibilityControl target={{ ...target, type: 'show' }} action="rewatch" variant="menu" onsaving={close}>
-          <Icon svg={lightBackward} fixedWidth />Rewatch this show
+          <Icon svg={lightBackward} fixedWidth />Rewatch show
         </VisibilityControl>
       {/if}
       {#if dropped}
         <VisibilityControl target={{ ...target, type: 'show' }} action="restore" variant="menu" onsaving={close}>
-          <Icon svg={circleMinus} fixedWidth />Restore this show{#if viewerState.droppedAt}<em>, dropped {formatDate(viewerState.droppedAt, dates)}</em>{/if}
+          <Icon svg={circleMinus} fixedWidth />Restore show{#if viewerState.droppedAt}<em>, dropped {formatDate(viewerState.droppedAt, dates)}</em>{/if}
         </VisibilityControl>
       {:else if showActions}
         <VisibilityControl target={{ ...target, type: 'show' }} action="drop" variant="menu" onsaving={close}>
-          <Icon svg={circleMinus} fixedWidth />Drop this show
+          <Icon svg={circleMinus} fixedWidth />Drop show
         </VisibilityControl>
       {/if}
     {/snippet}

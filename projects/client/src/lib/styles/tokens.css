@@ -252,8 +252,8 @@
   --color-card-bg: #1d1d1d; /* quick-icon bar and fanart backdrop, both themes */
   --color-card-border: light-dark(#eee, #000);
   --color-card-text: #fff;
-  --color-quick-icons-bg: light-dark(#f4f4f5, var(--color-card-bg)); /* the quick-icon bar: light in the light theme */
-  --color-quick-icons-text: light-dark(#222, var(--color-card-text)); /* its rating */
+  --color-quick-icons-light-bg: #f4f4f5; /* the quick-icon bar in the light theme; the dark one is --color-card-bg */
+  --color-quick-icons-light-text: #222; /* its rating in the light theme */
   --color-card-subtitle: light-dark(var(--gray-dark), #aaa);
   --color-watch-now: #aaa;
   /* A list position over a poster's top edge: dark glass, like the profile pills, a touch more solid for the half
@@ -1863,7 +1863,7 @@
   --radius-summary-poster: var(--radius-headshot);
   --rewatching-badge-offset: -10px; /* up and left, so the badge sits over the poster's top-left corner */
   --radius-card-framed: var(--radius-headshot); /* a framed fanart or poster card, as round as the actor photos */
-  --color-fanart-card-frame-bg: light-dark(var(--color-quick-icons-bg), #262626); /* its quick-icon panel: the bar's own in the light theme, a step lighter in the dark one */
+  --color-fanart-card-frame-bg: light-dark(var(--color-quick-icons-light-bg), #262626); /* its quick-icon panel: the bar's own in the light theme, a step lighter in the dark one */
   --color-fanart-card-frame-line: light-dark(rgb(0 0 0 / 0.08), rgb(255 255 255 / 0.08));
   --radius-summary-poster-outer: calc(var(--radius-summary-poster) + var(--summary-poster-border-width));
   /* Cast cards on a summary's actors row and the cast & crew page: name first, then the role, then episodes. */

@@ -1,3 +1,4 @@
+import { loadWatchNow } from '../components/watchnow/loadWatchNow.ts';
 import { readFadeHide } from '../components/filters/readFadeHide.ts';
 import type { Cookies } from '@sveltejs/kit';
 import { error, redirect } from '@sveltejs/kit';
@@ -30,6 +31,19 @@ export async function loadSeason({ fetch, parent, id, season: requestedSeason, u
   if (!Number.isSafeInteger(season)) error(404, 'Season not found');
   const client = api({ fetch });
   const params = { id, season };
+  const layoutRead = parent();
+  const seasonPath = `/shows/${encodeURIComponent(id)}/seasons/${season}`;
+  // Like the show's: the season's offers, or its first episode's when it has none.
+  const watchNowRead = layoutRead.then((layout) =>
+    loadWatchNow({
+      fetch,
+      path: seasonPath,
+      fallback: `${seasonPath}/episodes/1`,
+      country: layout.settings?.browsing?.watchnow?.country?.toLowerCase() || 'us',
+      settings: layout.settings,
+      isVip: layout.user?.isVip ?? false,
+    })
+  );
   const [
     showResponse,
     seasonResponse,
@@ -40,6 +54,7 @@ export async function loadSeason({ fetch, parent, id, season: requestedSeason, u
     peopleResponse,
     videosResponse,
     layout,
+    watchNow,
   ] = await Promise.all([
     client.shows.summary({ params: { id }, query: { extended: 'full,images' } }),
     client.shows.season.info({ params, query: { extended: 'full,images' } }),
@@ -52,7 +67,8 @@ export async function loadSeason({ fetch, parent, id, season: requestedSeason, u
       path: `/shows/${encodeURIComponent(id)}/seasons/${season}/people?extended=guest_stars,images`,
     }),
     client.shows.season.videos({ params }),
-    parent(),
+    layoutRead,
+    watchNowRead,
   ]);
   assertOk(showResponse, 'Show');
   // A season the show doesn't have answers an empty 204, not a 404.
@@ -88,6 +104,7 @@ export async function loadSeason({ fetch, parent, id, season: requestedSeason, u
   });
   return {
     season: view,
+    watchNow: watchNow.button,
     user: layout.user,
     datePreferences: layout.datePreferences,
     filters: readFadeHide({ cookies, search: url.searchParams, scope: 'season' }),

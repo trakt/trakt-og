@@ -3,7 +3,9 @@
   then the full-size quick-icon bar. Charts and the dashboard lay these out in a PosterGrid. With a `logo`, the fanart
   dims behind it, like OG's `image_type: 'logo'` on the calendars. The `poster` variant is OG's `image_type: 'poster'`
   with `search_mode` (the search grid): the same card at the poster ratio, with the small quick-icon bar. An `avatar`
-  is OG's user card on the Users search tab: the round avatar centered over the dimmed cover.
+  is OG's user card on the Users search tab: the round avatar centered over the dimmed cover. `framed` rounds the card
+  like the actor photos and sets the quick-icon bar on a lighter panel inside a faint outline, so it reads as part of
+  the card on a dark page (the summary's Up Next and Recently Aired).
 -->
 <script lang="ts">
 import MediaSpoiler from '$lib/components/summary/MediaSpoiler.svelte';
@@ -57,8 +59,12 @@ interface Props {
   /** The poster already names it: the title stays for screen readers and the keyboard only. */
   hideTitle?: boolean;
   variant?: 'fanart' | 'poster' | 'banner';
+  /** Rounded, with the quick-icon bar on its own panel inside a faint outline. */
+  framed?: boolean;
   /** Left out, the card has no quick-icon bar. */
   icons?: Omit<ComponentProps<typeof QuickIcons>, 'small'>;
+  /** A bar under the card (a live check-in's UnderProgress), which closes a framed card's bottom. */
+  progress?: Snippet;
   /** Over the whole image, above the titles: the progress row's Next Episode cover. */
   fanartOverlay?: Snippet;
 }
@@ -84,7 +90,9 @@ const {
   titles = true,
   hideTitle = false,
   variant = 'fanart',
+  framed = false,
   icons,
+  progress,
   fanartOverlay,
 }: Props = $props();
 const target = $derived(icons?.hideTarget ?? icons?.ratingTarget ?? icons?.watchTarget ?? icons?.listTarget);
@@ -114,7 +122,8 @@ const restoreTarget = $derived(target?.type === 'show' ? { ...target, type: 'sho
 <!-- Hrefs come in as props pointing at OG routes og hasn't built yet, and resolve() only takes routes that exist. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
-<article hidden={hidden} class={['fanart-card', { dropped: isDropped && image, faded }]}>
+<article hidden={hidden}
+  class={['fanart-card', { dropped: isDropped && image, faded, framed, 'with-icons': icons, 'with-progress': progress }]}>
   <div class={['fanart', variant, { 'logo-mode': logoMode, worded }]}>
     <!-- The title link is the one in the tab order; this is the same link for the mouse. -->
     <a class="image-link" {href} tabindex="-1" aria-hidden="true">
@@ -150,8 +159,9 @@ const restoreTarget = $derived(target?.type === 'show' ? { ...target, type: 'sho
     {@render fanartOverlay?.()}
   </div>
   {#if icons}
-    <QuickIcons {...icons} small={variant === 'poster'} />
+    <QuickIcons {...icons} small={variant === 'poster'} watchNowArt={variant === 'fanart' ? shownImage : undefined} />
   {/if}
+  {@render progress?.()}
 </article>
 
 <style>
@@ -172,6 +182,36 @@ const restoreTarget = $derived(target?.type === 'show' ? { ...target, type: 'sho
   position: relative;
   overflow: hidden;
   background-color: var(--color-card-bg);
+}
+
+/* The art rounded on top and the quick icons on a lighter panel rounded below, all inside a faint outline. */
+.framed {
+  border-radius: var(--radius-card-framed);
+  box-shadow: 0 0 0 1px var(--color-fanart-card-frame-line);
+
+  & .fanart {
+    border-start-start-radius: var(--radius-card-framed);
+    border-start-end-radius: var(--radius-card-framed);
+  }
+
+  & :global(.quick-icons) {
+    border-end-start-radius: var(--radius-card-framed);
+    border-end-end-radius: var(--radius-card-framed);
+    background-color: var(--color-fanart-card-frame-bg);
+  }
+
+  /* With nothing under it, the art is the whole card. */
+  &:not(.with-icons, .with-progress) .fanart {
+    border-radius: var(--radius-card-framed);
+  }
+
+  /* A bar under the card closes it with a straight edge. */
+  &.with-progress {
+    & :global(.quick-icons) {
+      border-end-start-radius: 0;
+      border-end-end-radius: 0;
+    }
+  }
 }
 
 .image-link {

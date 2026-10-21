@@ -4,6 +4,8 @@ export interface ReportTarget {
   readonly id: number | string;
   /** The dialog's heading: the item's name, or "Comment by" its author. Left blank, it reads "Report comment". */
   readonly title: string;
+  /** Beside the title in the dialog header, as on the summary: "Runner 2026". */
+  readonly year?: number | null;
   readonly href: string;
   readonly tmdb?: string;
   /** Personal list reports use the owner-scoped route. Other list kinds report by numeric id. */

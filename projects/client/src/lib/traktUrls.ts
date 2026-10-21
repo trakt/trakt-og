@@ -15,6 +15,7 @@ export const traktUrls = {
   branding: `${v3}/branding`,
   web: v3,
   developer: 'https://developer.trakt.tv',
+  admin: 'https://admin.trakt.tv', /* a director's Moderate: the same path there */
   traktTime: 'https://tvtime.trakt.tv',
   showlyAppStore: 'https://apps.apple.com/us/app/track-shows-movies-showly/id6739016219',
   showlyGooglePlay: 'https://play.google.com/store/apps/details?id=com.michaldrabik.showly2',

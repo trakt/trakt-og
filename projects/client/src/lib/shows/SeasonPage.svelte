@@ -11,6 +11,7 @@ import AdditionalStat from '$lib/components/summary/AdditionalStat.svelte';
 import AdditionalStats from '$lib/components/summary/AdditionalStats.svelte';
 import CommentsPreview from '$lib/components/summary/CommentsPreview.svelte';
 import ExternalLinks from '$lib/components/summary/ExternalLinks.svelte';
+import MediaTools from '$lib/components/summary/MediaTools.svelte';
 import ItemNav from '$lib/components/summary/ItemNav.svelte';
 import LazySection from '$lib/components/summary/LazySection.svelte';
 import ListsPreview from '$lib/components/summary/ListsPreview.svelte';
@@ -20,6 +21,7 @@ import RatingsStrip from '$lib/components/summary/RatingsStrip.svelte';
 import SeasonLinks from '$lib/components/summary/SeasonLinks.svelte';
 import SectionNav from '$lib/components/summary/SectionNav.svelte';
 import SummaryFrame from '$lib/components/summary/SummaryFrame.svelte';
+import WatchNow from '$lib/components/watchnow/WatchNow.svelte';
 import SummaryPoster from '$lib/components/summary/SummaryPoster.svelte';
 import Videos from '$lib/components/summary/Videos.svelte';
 import SummaryTitle from '$lib/components/summary/SummaryTitle.svelte';
@@ -80,13 +82,18 @@ const sections = $derived([
   {#snippet edges()}<ItemNav previous={season.previous} next={season.next} up={season.showHref} />{/snippet}
 </FanartHeader>
 <SummaryFrame label={season.fullTitle}>
+  {#snippet tools()}
+    <MediaTools target={{ type: 'season', id: season.id, title: season.fullTitle, href: season.href, fanart: season.fanart }} />
+  {/snippet}
   {#snippet subnav()}<SeasonLinks label="Season" links={season.seasonLinks} />{/snippet}
   {#snippet sidebar()}
     <a class="poster-link" href={season.showHref} aria-label="Back to {season.showTitle}"><SummaryPoster {ratingTarget} image={season.poster} alt={season.fullTitle} /></a>
+    <WatchNow button={data.watchNow} title={season.fullTitle} fanart={season.fanart} />
     <SectionNav {sections} label="{season.fullTitle} sections" />
     <ExternalLinks links={season.links} />
   {/snippet}
   {#snippet details()}
+    <WatchNow button={data.watchNow} title={season.fullTitle} fanart={season.fanart} phone />
     <AdditionalStats>
       {#if facts.premiere}<AdditionalStat label={facts.premiere.label}>{facts.premiere.date} {#if facts.network}on <NameList names={[facts.network]} />{/if}</AdditionalStat>
       {:else if facts.network}<AdditionalStat label="Network"><NameList names={[facts.network]} /></AdditionalStat>{/if}

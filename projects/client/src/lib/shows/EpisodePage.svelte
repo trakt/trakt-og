@@ -24,6 +24,7 @@ import MediaSpoiler from '$lib/components/summary/MediaSpoiler.svelte';
 import { page } from '$app/state';
 import { mediaSpoilers } from '$lib/settings/mediaSpoilers';
 import SummaryFrame from '$lib/components/summary/SummaryFrame.svelte';
+import WatchNow from '$lib/components/watchnow/WatchNow.svelte';
 import SummaryPoster from '$lib/components/summary/SummaryPoster.svelte';
 import Videos from '$lib/components/summary/Videos.svelte';
 import { overlay } from '$lib/overlay/overlay';
@@ -87,11 +88,13 @@ const sections = $derived([
   {#snippet subnav()}<SeasonLinks label="Episode" links={episode.episodeLinks} />{/snippet}
   {#snippet sidebar()}
     <a class="poster-link" href={episode.seasonHref} aria-label="Back to {episode.seasonTitle}"><SummaryPoster showTarget={{type:'show',id:episode.showId,title:episode.showTitle}} image={episode.poster} alt="{episode.showTitle}: {episode.seasonTitle}" {ratingTarget} /></a>
+    <WatchNow button={data.watchNow} title={episode.fullTitle} year={episode.year} fanart={episode.fanart} />
     <SectionNav {sections} label="{safeTitle} sections" />
     <ExternalLinks links={episode.links} />
   {/snippet}
   {#snippet tools()}<MediaTools target={{...ratingTarget,href:episode.href,fanart:episode.fanart}} />{/snippet}
   {#snippet details()}
+    <WatchNow button={data.watchNow} title={episode.fullTitle} year={episode.year} fanart={episode.fanart} phone />
     <AdditionalStats>
       {#if facts.aired}<AdditionalStat label={facts.aired.label}>{facts.aired.date} {#if facts.network}on <NameList names={[facts.network]} />{/if}</AdditionalStat>{:else if facts.network}<AdditionalStat label="Network"><NameList names={[facts.network]} /></AdditionalStat>{/if}
       {#if facts.runtime}<AdditionalStat label="Runtime">{facts.runtime}</AdditionalStat>{/if}

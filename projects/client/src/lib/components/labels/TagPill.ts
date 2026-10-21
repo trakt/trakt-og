@@ -2,8 +2,14 @@
  * One pill in TagPills: `primary` is the brand red, `light` the pale one, `badge` a bold, clear-filled pill with a
  * brighter outline (a rating certificate), and no kind the dark outlined default. A `lead` goes before the text in
  * bold, like a count pill's number. With `segments`, related tags share one pill split by thin lines (a runtime and
- * an episode count, two genres).
+ * an episode count, two genres). A `color` fills the pill with that color instead (an episode's type, in its own
+ * color).
  */
 export type TagPill =
-  | { readonly text: string; readonly lead?: string; readonly kind?: 'primary' | 'light' | 'badge' }
+  | {
+    readonly text: string;
+    readonly lead?: string;
+    readonly kind?: 'primary' | 'light' | 'badge';
+    readonly color?: string;
+  }
   | { readonly segments: readonly string[] };

@@ -85,7 +85,8 @@ const under = $derived(
     inline-size: 100%;
     padding: 5px;
     border: 0;
-    border-radius: 0 0 4px 4px;
+    border-end-start-radius: var(--radius-summary-poster-outer);
+    border-end-end-radius: var(--radius-summary-poster-outer);
     background-color: var(--color-watch-now-bg);
     box-shadow: var(--shadow-watch-now);
     color: inherit;

@@ -27,6 +27,7 @@ const cards = $derived(next ? [next, ...aired] : aired);
   {@const state = overlay.state('episode', id, collectionContext)}
   <FanartCard
   {...episode}
+  framed
   userRating={state.rating}
   icons={{ ratingTarget: { type: 'episode', id, title: episode.title }, collectionTarget: { type: 'episode', id, title: episode.title, season: collectionContext }, fill: quickIconFill({ state, datePreferences }), rating, released, listLabel: 'Add to list', watchNow: 'play' }}
 />

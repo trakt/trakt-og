@@ -33,7 +33,7 @@ import circleCheck from '$lib/icons/solid/circle-check.svg?raw';
 import quoteLeft from '$lib/icons/solid/quote-left.svg?raw';
 import commentSolid from '$lib/icons/solid/comment.svg?raw';
 import linkIcon from '$lib/icons/solid/link.svg?raw';
-import commentIcon from '$lib/icons/regular/comment.svg?raw';
+import { stripStatIcons } from '$lib/components/summary/stripStatIcons';
 import userGroup from '$lib/icons/regular/user-group.svg?raw';
 import userIcon from '$lib/icons/regular/user.svg?raw';
 import replyIcon from '$lib/icons/solid/reply.svg?raw';
@@ -588,7 +588,7 @@ const vanish = (node: Element) =>
             aria-controls={spotlight ? undefined : repliesId}
             onclick={spotlight ? undefined : toggleReplies}
           >
-            <Icon svg={commentIcon} /><span><strong>{comment.replies.toLocaleString('en-US')}</strong>
+            <Icon svg={stripStatIcons.comments} /><span><strong>{comment.replies.toLocaleString('en-US')}</strong>
               {comment.replies === 1 ? 'reply' : 'replies'}</span>{#if !spotlight}<span class="chevron"><Icon
                   svg={caretDown}
                 /></span>{/if}
@@ -1041,7 +1041,7 @@ const vanish = (node: Element) =>
   transition: background-color var(--transition-comment-quiet), border-color var(--transition-comment-quiet);
 
   & > :global(.icon) {
-    color: var(--color-comment-reply-icon);
+    color: var(--color-stat-comments);
     font-size: var(--font-size-comment-replies-icon);
   }
 

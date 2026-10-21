@@ -1,6 +1,7 @@
 <!--
-  OG's `.subnav-wrapper.season-links` under a show's fanart: a label ("Order", "Season") and a row of links with the
-  current one in bold. Render it in SummaryFrame's `subnav` slot. A long row scrolls sideways.
+  OG's `.subnav-wrapper.season-links` under a show's fanart: a label ("Order", "Season", "Episode") and a row of links
+  drawn as the pill tabs, the current one in their picked red. Render it in SummaryFrame's `subnav` slot. A long row
+  scrolls sideways.
 -->
 <script lang="ts">
 import type { Attachment } from 'svelte/attachments';
@@ -43,11 +44,13 @@ const revealSelected: Attachment<HTMLUListElement> = (element) => {
 .season-links {
   background: var(--color-toolbar-bg);
   color: var(--color-season-links-label);
-  line-height: var(--season-links-height);
 }
 
 .inner {
   display: flex;
+  align-items: center;
+  gap: var(--season-links-gap);
+  min-block-size: var(--season-links-height);
   padding-inline-start: var(--summary-offset);
 
   @media (width < 992px) {
@@ -61,17 +64,19 @@ const revealSelected: Attachment<HTMLUListElement> = (element) => {
 
 .label {
   flex: none;
-  margin-inline-end: 10px;
   font-family: var(--font-headings);
-  font-weight: var(--font-weight-headings-light);
+  font-size: var(--font-size-season-links-label);
+  font-weight: var(--font-weight-headings);
+  letter-spacing: var(--letter-spacing-season-links-label);
   text-transform: uppercase;
 }
 
+/* Room above and below so the pills' focus rings aren't cut off by the scroll. */
 ul {
   display: flex;
-  gap: 10px;
+  gap: var(--toggle-chip-gap);
   margin: 0;
-  padding: 0;
+  padding: var(--season-links-pad) 0;
   overflow-x: auto;
   white-space: nowrap;
   list-style: none;
@@ -79,18 +84,44 @@ ul {
 }
 
 a {
-  color: var(--color-season-link);
+  display: inline-flex;
+  align-items: center;
+  min-block-size: var(--tab-height);
+  padding: 0 var(--season-links-pill-padding);
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius-control);
+  background-color: var(--color-control-bg);
+  color: var(--color-control-text);
+  font-size: var(--font-size-tab);
+  font-weight: var(--font-weight-control);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
   text-decoration: none;
 
   &:hover {
-    color: var(--brand-primary);
+    border-color: var(--color-control-border-hover);
+    background-color: var(--color-control-hover-bg);
+    color: var(--color-control-text);
     text-decoration: none;
   }
 }
 
 .selected {
-  color: var(--color-season-link-selected);
-  font-family: var(--font-headings);
+  border-color: var(--color-tab-picked-border);
+  background-color: var(--color-tab-picked-bg);
+  color: var(--color-tab-picked-text);
   font-weight: var(--font-weight-headings-heavy);
+
+  &:hover {
+    border-color: var(--color-tab-picked-border);
+    background-color: var(--color-tab-picked-bg-hover);
+    color: var(--color-tab-picked-text);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a {
+    transition: background-color var(--transition-season-ribbon), border-color var(--transition-season-ribbon);
+  }
 }
 </style>

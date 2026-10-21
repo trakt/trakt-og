@@ -23,6 +23,8 @@ const server = setupServer(
     }
     return HttpResponse.json([]);
   }),
+  // The Watch Now block's service names; its offers come through the item's own path above.
+  http.get(`${API}/watchnow/*`, () => HttpResponse.json([])),
   http.get(`${API}/shows/:id`, ({ request }) => {
     seen.push(request);
     return HttpResponse.json({ title: 'Breaking Bad', ids: { slug: 'breaking-bad', trakt: 1388 } });
@@ -30,6 +32,7 @@ const server = setupServer(
 );
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 afterAll(() => server.close());
+const isWatchNow = (request: Request) => new URL(request.url).pathname.includes('/watchnow');
 afterEach(() => {
   server.resetHandlers();
   seen.length = 0;
@@ -50,7 +53,7 @@ const params = () => ({
 describe('loadEpisode', () => {
   it('should load all public reads anonymously and preserve layout preferences', async () => {
     const data = await loadEpisode(params());
-    expect(seen).toHaveLength(10);
+    expect(seen.filter((request) => !isWatchNow(request))).toHaveLength(10);
     expect(seen.every((request) => !request.headers.has('authorization'))).toBe(true);
     expect(data.episode.id).toBe(73482);
     expect(data.datePreferences.timeZone).toBe('UTC');

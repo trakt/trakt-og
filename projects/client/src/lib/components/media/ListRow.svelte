@@ -24,7 +24,7 @@ import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import userXmark from '$lib/icons/regular/user-xmark.svg?raw';
 import barsProgress from '$lib/icons/regular/bars-progress.svg?raw';
-import comment from '$lib/icons/regular/comment.svg?raw';
+import { stripStatIcons } from '$lib/components/summary/stripStatIcons';
 import ManageConfirm from '$lib/components/comments/ManageConfirm.svelte';
 import deleteIcon from '$lib/icons/regular/trash-xmark.svg?raw';
 import document from '$lib/icons/regular/file.svg?raw';
@@ -224,7 +224,7 @@ const plural = (count: number, word: string) => `${word}${count === 1 ? '' : 's'
             {:else}<ListCount svg={voteYes} value={likeCount} word="like" />{/if}
           {/if}
           <ListCount svg={document} value={itemCount} word="item" {href} />
-          {#if commentCount !== undefined}<ListCount svg={comment} value={commentCount} word="comment" href="{href}/comments" />{/if}
+          {#if commentCount !== undefined}<ListCount svg={stripStatIcons.comments} iconColor="var(--color-stat-comments)" value={commentCount} word="comment" href="{href}/comments" />{/if}
         </div>
         {#if actions}
           <div class="tools">

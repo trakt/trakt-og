@@ -24,7 +24,7 @@ const { tiles }: { tiles: readonly Tile[] } = $props();
 
 <ul class="tiles">
   {#each tiles as tile (tile.kind)}
-    <li style:--color="var(--color-strip-{tile.kind})">
+    <li style:--color={tile.kind === 'comments' ? 'var(--color-stat-comments)' : `var(--color-strip-${tile.kind})`}>
       {#if tile.href}
         <a class="tile" href={tile.href}>{@render body(tile)}</a>
       {:else}

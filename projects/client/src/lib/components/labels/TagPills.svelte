@@ -15,7 +15,7 @@ const { tags }: { tags: readonly TagPill[] } = $props();
   {#each tags as tag, i (`${i}:${'segments' in tag ? tag.segments.join() : tag.text}`)}{#if 'segments' in tag}<span
         class="pill segments"
       >{#each tag.segments as segment, s (s)}<span class="segment">{segment}</span>{/each}</span>{:else}<span
-        class={['pill', tag.kind, { lead: tag.lead }]}
+        class={['pill', tag.kind, { lead: tag.lead, colored: tag.color }]} style:--pill-color={tag.color}
       >{#if tag.lead}<b>{tag.lead}</b> {tag.text}{:else}{tag.text}{/if}</span>{/if}{/each}
 </span>
 
@@ -72,6 +72,12 @@ const { tags }: { tags: readonly TagPill[] } = $props();
   color: var(--color-frame-ink);
   font-weight: var(--font-weight-headings-heavy);
   letter-spacing: var(--letter-spacing-tag-badge);
+}
+
+.colored {
+  background-color: var(--pill-color);
+  box-shadow: none;
+  color: var(--color-text-inverse);
 }
 
 .light {

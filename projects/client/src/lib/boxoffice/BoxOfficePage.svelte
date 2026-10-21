@@ -2,14 +2,13 @@
   The weekend box office (`/movies/boxoffice`) in a SidebarFrame, like the charts: the chart picker and the list's
   description, This Weekend (the top 10's total, #1's share, the openers and a strip of each film's share) and the
   films opening on Friday in the sidebar. The content is the chart as a table: rank, poster, title with its pills,
-  its run, the weekend gross against #1's, its share, and the quick icons (no favorite, as in OG).
+  its run, the weekend gross against #1's, its share, and the list row's quick icons with the rating (no favorite, as
+  in OG).
 -->
 <script lang="ts">
 import ChartPicker from '$lib/charts/ChartPicker.svelte';
 import TagPills from '$lib/components/labels/TagPills.svelte';
 import QuickIcons from '$lib/components/media/QuickIcons.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import heart from '$lib/icons/solid/heart.svg?raw';
 import { quickIconFill } from '$lib/components/media/quickIconFill';
 import RailGroup from '$lib/components/sidebar/RailGroup.svelte';
 import SidebarFrame from '$lib/components/sidebar/SidebarFrame.svelte';
@@ -33,8 +32,6 @@ const percent = (fraction: number) => `${(fraction * 100).toFixed(1)}%`;
 const dollars = (amount: number) => `$${amount.toLocaleString('en-US')}`;
 const millions = (amount: number) => `$${(amount / 1_000_000).toFixed(1)}M`;
 const openers = $derived(data.rows.filter((row) => row.run?.kind === 'opening').length);
-// The heart's colour, as on the quick-icon bar: rating-1 to rating-10 by the whole number.
-const ratingLevel = (rating: number) => Math.min(Math.max(Math.trunc(rating), 1), 10);
 const runPill = (run: WeekInRelease) => ({
   text: run.label,
   kind: run.kind === 'opening' ? ('primary' as const) : run.kind === 'week' ? ('light' as const) : undefined,
@@ -118,7 +115,6 @@ const runPill = (run: WeekInRelease) => ({
           <th scope="col">Run</th>
           <th scope="col" class="number">Weekend gross</th>
           <th scope="col" class="number">Share</th>
-          <th scope="col" class="number">Rating</th>
           <th scope="col"><span class="visually-hidden">Actions</span></th>
         </tr>
       </thead>
@@ -142,17 +138,9 @@ const runPill = (run: WeekInRelease) => ({
               <span class="bar" style:--share="{top ? (row.revenue / top) * 100 : 0}%"></span>
             </td>
             <td class="number share-cell"><span class="line">{percent(share(row.revenue))}</span></td>
-            <td class="number rating">
-              <span class="line">
-                {#if row.rating !== undefined}
-                  <span class="heart" style:color="var(--rating-{ratingLevel(row.rating)})"><Icon svg={heart} /></span
-                  >{Math.trunc(row.rating * 10)}%
-                {/if}
-              </span>
-            </td>
             <td class="actions">
-              <QuickIcons small fill={quickIconFill({ state, datePreferences: data.datePreferences })}
-                released favorite={false}
+              <QuickIcons row small fill={quickIconFill({ state, datePreferences: data.datePreferences })}
+                released favorite={false} rating={row.rating}
                 ratingTarget={{ type: 'movie', id: row.id, title: row.title }}
                 watchTarget={{ type: 'movie', id: row.id, title: row.title, runtime: row.runtime }} />
             </td>
@@ -210,9 +198,11 @@ const runPill = (run: WeekInRelease) => ({
   border: 1px solid var(--color-control-border);
   border-radius: var(--radius-control);
 
+  /* Trimmed to the figure's cap height and the label's baseline, so the pair sits centred in its box. */
   & div {
     display: grid;
-    padding: var(--space-sm-block) var(--space-sm-inline);
+    gap: var(--box-office-kpi-gap);
+    padding: var(--box-office-kpi-padding);
   }
 
   & div + div {
@@ -221,6 +211,7 @@ const runPill = (run: WeekInRelease) => ({
 
   & dt {
     order: 1;
+    text-box: trim-both cap alphabetic;
     color: var(--color-sidebar-label);
     font-size: var(--font-size-sidebar-section);
     letter-spacing: var(--letter-spacing-sidebar-label);
@@ -235,6 +226,7 @@ const runPill = (run: WeekInRelease) => ({
     line-height: 1;
     font-weight: var(--font-weight-headings-heavy);
     font-variant-numeric: tabular-nums;
+    text-box: trim-both cap alphabetic;
   }
 }
 
@@ -277,8 +269,10 @@ const runPill = (run: WeekInRelease) => ({
       background-color: transparent;
     }
 
+    /* Trimmed to the digits' cap height, so each rank sits on the tile's centre line. */
     & span {
       position: relative;
+      text-box: trim-both cap alphabetic;
     }
   }
 }
@@ -436,6 +430,8 @@ td.rank {
   line-height: 1;
   font-weight: var(--font-weight-headings-heavy);
   text-align: center;
+  /* Trimmed to the digits, so the rank sits on the poster's centre line. */
+  text-box: trim-both cap alphabetic;
 
   .top & {
     color: var(--color-frame-ink);
@@ -508,18 +504,6 @@ td.film {
   }
 }
 
-.rating {
-  font-size: var(--font-size-box-office-share);
-  font-weight: var(--font-weight-headings);
-  white-space: nowrap;
-
-  & .heart {
-    display: inline-flex;
-    margin-inline-end: var(--space-xs-inline);
-    font-size: 0.85em;
-  }
-}
-
 .share-cell {
   color: var(--color-sidebar-pill-text);
   font-size: var(--font-size-box-office-share);
@@ -527,12 +511,8 @@ td.film {
 
 td.actions {
   inline-size: 1%;
+  padding-inline-start: var(--box-office-actions-gap);
   white-space: nowrap;
-
-  /* On the row, not on a card: no bar behind the icons, so hover and the picked film tint through. */
-  & :global(.quick-icons) {
-    background: none;
-  }
 }
 
 .visually-hidden {

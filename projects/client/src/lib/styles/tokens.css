@@ -3250,10 +3250,9 @@
   --box-office-padding: 24px 28px 32px;
   --box-office-gap: 18px;
   --box-office-poster-gap: 10px; /* after a film's poster */
-  --box-office-line: 35px;
+  --box-office-line: 34px; /* a row's first line: the quick-icon strip's height */
   --rail-total-padding: 4px 0 5px;
   --font-size-box-office-rail-total: 16px; /* the collapsed rail's "$92.5M" */
-  /* a row's first line: the small quick-icon bar's height */
   --box-office-mast-gap: 10px; /* from the red eyebrow to the weekend's dates */
   --font-size-box-office-eyebrow: 12px;
   --font-size-box-office-heading: 52px;
@@ -3269,6 +3268,9 @@
   --box-office-poster-width: 54px;
   --box-office-cell-padding: 8px;
   --box-office-row-padding: 14px; /* above and below a film */
+  --box-office-actions-gap: 40px; /* from the share to the quick-icon strip */
+  --box-office-kpi-padding: 10px 8px; /* around a This Weekend figure and its label */
+  --box-office-kpi-gap: 8px; /* from the figure to its label */
   --box-office-bar-height: 4px;
   --box-office-share-height: 28px;
   --box-office-opening-poster-width: 32px;

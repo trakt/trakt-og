@@ -29,11 +29,11 @@ interface Props {
   edit?: Snippet<[ListItemCard]>;
   /** Someone who can edit the list: a poster without notes offers to add some, and open notes to edit them. */
   oneditnotes?: (item: ListItemCard) => void;
-  /** PosterCard's `framed`: rounded, with the quick icons on their own panel. */
+  /** PosterCard's `framed`: rounded, with the quick icons on their own panel. On unless set to false. */
   framed?: boolean;
 }
 
-const { item, rank, datePreferences, removing, edit, oneditnotes, fade = [], framed = false }: Props = $props();
+const { item, rank, datePreferences, removing, edit, oneditnotes, fade = [], framed = true }: Props = $props();
 const state = $derived(item.type === 'person' ? undefined : overlay.state(item.type, item.id, item.seasonOf));
 const fill = $derived(quickIconFill({ state: state ?? {}, airedEpisodes: item.airedEpisodes, datePreferences }));
 </script>

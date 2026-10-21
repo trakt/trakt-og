@@ -1,8 +1,9 @@
 <!--
   OG's poster card: poster or episode screenshot, the quick-icon bar, then a one-line
   title and optional sub-lines. Lay several out with PosterGrid. `--card-border-width: 0` drops the 1px frame, as on
-  the dashboard's recommendations band. `framed` rounds the card like the actor photos, with the quick-icon bar on a
-  lighter panel inside a faint outline, as FanartCard's `framed` does (the summary's seasons and related picks).
+  the dashboard's recommendations band. Cards are framed by default: rounded like the actor photos, with the quick-icon
+  bar on a lighter panel inside a faint outline, as FanartCard's `framed` does. `framed={false}` opts out, for OG's
+  square card.
 -->
 <script lang="ts">
 import { page } from '$app/state';
@@ -69,7 +70,7 @@ interface Props {
   removing?: () => boolean;
   /** A rewatching badge on the top-left corner, where OG's progress pages put one. */
   rewatching?: boolean;
-  /** Rounded, with the quick-icon bar on its own panel inside a faint outline. */
+  /** Rounded, with the quick-icon bar on its own panel inside a faint outline. On unless set to false. */
   framed?: boolean;
   /** Left out, the card has no quick-icon bar. */
   icons?: Omit<ComponentProps<typeof QuickIcons>, 'small'>;
@@ -92,7 +93,7 @@ const {
   fullTitle = number ? `${number} ${title}` : title,
   image,
   variant = 'poster',
-  framed = false,
+  framed = true,
   logo,
   logoMode = !!logo,
   calendar = false,

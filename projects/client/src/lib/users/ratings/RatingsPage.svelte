@@ -97,7 +97,7 @@ const count = $derived(data.total - (data.cards.length - cards.length));
   {@const state = overlay.state(item.type, item.id, item.seasonOf)}
   {@const fill = quickIconFill({ state, airedEpisodes: item.airedEpisodes, datePreferences: data.datePreferences })}
   {@const rating = ownerRating(item)}
-  <PosterCard framed href={item.href} title={item.title} number={item.number} image={item.image} variant={item.variant}
+  <PosterCard href={item.href} title={item.title} number={item.number} image={item.image} variant={item.variant}
   episodeBadge={item.episodeBadge} subtitles={item.subtitles} userRating={state.rating}
   icons={{ fill, rating: item.rating,
       ratingTarget: { type: item.type, id: item.id, title: item.title },

@@ -80,7 +80,7 @@ const allText = (total: number) => `All ${total.toLocaleString('en-US')} ${total
       <div class="cards" bind:clientWidth={width}>
   <PosterGrid columns={PER_ROW}>
           {#each list.cards.slice(0, rows.rows * perRow) as item (item.key)}
-            <ListItemPoster {item} {datePreferences} framed />
+            <ListItemPoster {item} {datePreferences} />
           {/each}
         </PosterGrid>
 </div>

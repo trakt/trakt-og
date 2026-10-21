@@ -201,7 +201,6 @@ const lead = $derived(period === 'today' ? 'today' : period === 'yesterday' ? 'y
   {@const target = item.target}
   {@const state = overlay.state(target.type, target.id, target.season)}
   <PosterCard
-  framed
   href={item.href}
   title={item.title}
   number={item.number}

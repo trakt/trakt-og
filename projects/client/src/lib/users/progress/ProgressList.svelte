@@ -224,7 +224,7 @@ function changeHide(hide: ProgressHide[]) {
             {#each rows as row (row.id)}
               {@const state = overlay.state('show', row.id)}
               {@const done = `${row.percent}% watched`}
-              <PosterCard framed href={row.href} title={row.title} image={row.poster} rewatching={Boolean(row.rewatchingSince)}
+              <PosterCard href={row.href} title={row.title} image={row.poster} rewatching={Boolean(row.rewatchingSince)}
                 userRating={state.rating}
                 subtitles={[row.percent === 100 ? `${done}!` : done]}
                 icons={{

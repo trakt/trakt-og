@@ -88,7 +88,7 @@ const flipped = $derived(data.sort.how === 'desc');
 {#snippet card(item: LibraryCard)}
   {@const state = overlay.state(item.type, item.id)}
   {@const fill = quickIconFill({ state, airedEpisodes: item.airedEpisodes, datePreferences: data.datePreferences })}
-  <PosterCard framed
+  <PosterCard
   href={item.href}
   title={item.title}
   number={item.number}

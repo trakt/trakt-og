@@ -86,7 +86,6 @@ const icons = (card: RelatedCard) => {
     {#each shown as pick (pick.card.id)}
       {@const card = pick.card}
       <PosterCard
-        framed
         href={card.href}
         title={card.title}
         fullTitle={card.year ? `${card.title} (${card.year})` : card.title}

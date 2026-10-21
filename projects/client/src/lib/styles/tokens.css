@@ -1381,6 +1381,7 @@
   /* The tag bar above a title: page label, the way up split by slashes, episode type and post-credits tags. */
   --title-tags-height: 28px;
   --title-tags-padding: 12px;
+  --title-tags-tint: 32%; /* a tinted step's wash: the person fanart's character */
   --title-tags-label-padding-end: 10px; /* "Stats" to the divider, a touch under its start to read even */
   --title-tags-slant: 10px; /* how far the slash between steps leans across the bar, like a typed "/" */
   --title-tags-slash-gap: 10px; /* text to the slash */
@@ -1822,7 +1823,8 @@
   --color-bundle-subscriptions: #333; /* OG had no subscriptions bundle at 2e0405a5f */
 
   /* Summary pages: the movie, show, season, episode and person frame */
-  --color-fanart-caption-muted: #aaa; /* the role and year in a person fanart's caption */
+  --color-person-fanart-character: var(--brand-primary); /* the character in the person fanart's tag bar */
+  --fanart-caption-max-width: 50%; /* the person page's fanart tag bar, at the title block's bottom right */
   --color-metascore-high: #6c3;
   --color-metascore-medium: #fc3;
   --color-metascore-low: #f00;
@@ -3407,4 +3409,62 @@
   --filter-toggle-size: 28px;
   --filter-picker-width: 280px;
   --filter-picker-height: 360px;
+}
+
+/*
+  The person page: the career eras in the sidebar (five years a row, a bar for how busy each was, the part you've
+  watched solid) and the credits list, a row per credit under its year in Box Office's trade-paper figures.
+*/
+:root {
+  --color-person-era-1: #6fb6e0;
+  --color-person-era-2: #4f7dde;
+  --color-person-era-3: #9b59b6;
+  --color-person-era-4: #e8517a;
+  --color-person-era-5: #d43c3c;
+  --color-person-era-6: #e0662a;
+  --color-person-era-7: #f2b233;
+  --color-person-era-8: #3fae5a;
+  --person-fanart-position: 50% 15%; /* a credit's still in the slim header: faces sit in the top third of most stills */
+  --person-eras-padding: 10px; /* above the first era and below the last, inside the rules */
+  --person-eras-row-padding-block: 4px; /* tighter than the section nav's links, so the chart stays compact */
+  --person-eras-row-bleed: 6px; /* the hover and pick wash, past the sidebar's text edges */
+  --person-eras-columns: 72px 1fr 24px; /* years, bar, count tag: fixed, so every bar starts and ends together */
+  --person-eras-column-gap: 8px;
+  --person-eras-bar-height: 8px;
+  --radius-person-eras-bar: 3px;
+  --radius-person-eras-row: 6px;
+  --color-person-eras-track: light-dark(#e6e6e6, #262626);
+  --person-eras-rest-tint: 45%; /* the accent behind the part not watched */
+  --person-eras-picked-tint: 18%; /* the accent behind the picked era */
+  --color-person-eras-hover: var(--color-list-card-wash);
+  --font-size-person-eras-years: 11px;
+  --letter-spacing-person-eras-years: 0.04em;
+  --font-size-person-eras-count: 12px;
+  --person-eras-count-padding: 1px 4px; /* the dropdowns' count tag */
+  --person-credits-year-width: 84px;
+  --person-credits-year-gap: 12px;
+  --person-credits-year-sticky-gap: 16px; /* a pinned year's distance under the site header */
+  --person-credits-year-padding: 24px; /* above and below a year, inside its rules: room for a hovered row's wash */
+  --font-person-credits-year: var(--font-box-office-figures);
+  --font-size-person-credits-year: 44px;
+  --font-size-person-credits-year-undated: 24px;
+  --line-height-person-credits-year: 0.9;
+  --person-credits-year-mark-width: 26px;
+  --person-credits-year-mark-height: 4px;
+  --person-credits-year-mark-gap: 10px;
+  --font-size-person-credits-year-count: 11px;
+  --person-credit-row-padding: 10px;
+  --person-credit-row-gap: 16px;
+  --person-credit-row-poster-width: 54px;
+  --radius-person-credit-row-poster: 7px;
+  --font-size-person-credit-row-title: 18px;
+  --font-size-person-credit-row-year: 12px;
+  --person-credit-row-year-gap: 6px; /* the search results' gap between a title and its year */
+  --line-height-person-credit-row-title: 1.25;
+  --color-person-credit-row-year: light-dark(rgb(0 0 0 / 0.6), rgb(255 255 255 / 0.6));
+  --font-size-person-credit-row-role: 13px;
+  --color-person-credit-row-role: light-dark(#777, #a3a3a3);
+  --person-credit-row-line-gap: 1px; /* title to character */
+  --person-credit-row-tags-gap: 8px; /* character to tags */
+  --person-credit-row-icons-width: max-content;
 }

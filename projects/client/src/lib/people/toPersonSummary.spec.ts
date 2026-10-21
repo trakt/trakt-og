@@ -60,6 +60,7 @@ const base = {
   person,
   movies,
   shows,
+  knownFor: [],
   listCount: 3,
   random: 0,
   now: new Date('2026-09-29T00:00:00Z'),
@@ -117,18 +118,63 @@ describe('toPersonSummary', () => {
   it('should caption the fanart with the character and the department', () => {
     expect(toPersonSummary(base).fanart).toEqual({
       image: 'https://media.trakt.tv/images/drive/fanarts/full/a.jpg.webp',
-      characters: 'Shannon',
-      role: 'Acting',
-      title: 'drive-2011',
-      year: 2010,
-      href: '/movies/drive-2011',
+      caption: { characters: 'Shannon', role: 'Acting', title: 'drive-2011', year: 2010, href: '/movies/drive-2011' },
     });
+  });
+
+  it("should pass over the person's own fanart, a portrait poster", () => {
+    const own = { ...person, images: fanart('people/1') as PersonResponse['images'] };
+    expect(toPersonSummary({ ...base, person: own }).fanart?.image).toBe(
+      'https://media.trakt.tv/images/drive/fanarts/full/a.jpg.webp',
+    );
+  });
+
+  it('should pick the fanart from the Known For row when any of it has fanart', () => {
+    const famous = movie('godzilla-2014', 12, {
+      released: '2014-05-16',
+      images: fanart('godzilla') as MovieResponse['images'],
+    });
+    const summary = toPersonSummary({
+      ...base,
+      movies: {
+        ...movies,
+        cast: [...(movies.cast ?? []), { movie: famous, characters: ['Joe Brody'], character: '' }],
+      },
+      knownFor: [{ type: 'movie', movie: { ids: { trakt: 12 } } }],
+    });
+
+    expect(summary.knownFor.map(({ id }) => id)).toEqual([12]);
+    expect(summary.fanart?.caption?.title).toBe('godzilla-2014');
+  });
+
+  it('should caption a Known For fanart with the role played, not a crew job on the same title', () => {
+    const bad = show('breaking-bad', 20, {
+      first_aired: '2008-01-20T02:00:00.000Z',
+      images: fanart('breaking-bad') as ShowResponse['images'],
+    });
+    const summary = toPersonSummary({
+      ...base,
+      movies: null,
+      shows: {
+        cast: [{
+          show: bad,
+          characters: ['Walter White'],
+          character: 'Walter White',
+          episode_count: 62,
+          series_regular: true,
+        }],
+        crew: { production: [{ show: bad, jobs: ['Producer'], job: 'Producer', episode_count: 5 }] },
+      } as PeopleShowCreditsResponse,
+      knownFor: [{ type: 'show', show: { ids: { trakt: 20 } } }],
+    });
+
+    expect(summary.fanart?.caption).toMatchObject({ characters: 'Walter White', role: 'Acting' });
   });
 
   it('should fall back to any credit when none in the known-for department has fanart', () => {
     const summary = toPersonSummary({ ...base, person: { ...person, known_for_department: 'writing' } });
 
-    expect(summary.fanart?.role).toBe('Acting');
+    expect(summary.fanart?.caption?.role).toBe('Acting');
     expect(summary.defaultDepartment).toBe('acting');
   });
 

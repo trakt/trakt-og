@@ -1,7 +1,7 @@
 <!--
   OG's magnific-popup video: a YouTube player centered over a dark page, closed with the × above it, Esc or a click
   on the backdrop. Every video lightbox uses it: the summary trailer tile and YouTube links in comments.
-  A native modal <dialog>, so focus moves to the × and back to the link that opened it.
+  A native modal <dialog> that takes focus itself, not the ×, and gives it back to the link that opened it.
     <VideoPopup bind:url title="Fight Club (1999) trailer" />
   Set `url` to a YouTube link to open it. Closing sets it back to `undefined`. Open it only for a plain click
   (`isPlainClick`) on a link `youtubeEmbedUrl` can embed, so a middle or modified click still opens YouTube.
@@ -20,9 +20,13 @@ let { url = $bindable(), title = 'YouTube video' }: Props = $props();
 
 const embed = $derived(url ? youtubeEmbedUrl(url) : undefined);
 
-// Reads `embed`, so it re-runs whenever the link changes.
+// Reads `embed`, so it re-runs whenever the link changes. Opening moves focus to the ×, so the dialog takes it back
+// before anything paints; Tab still reaches the ×.
 const syncOpen = (dialog: HTMLDialogElement) => {
-  if (embed && !dialog.open) dialog.showModal();
+  if (embed && !dialog.open) {
+    dialog.showModal();
+    dialog.focus();
+  }
   if (!embed && dialog.open) dialog.close();
 };
 
@@ -31,13 +35,16 @@ const close = (event: MouseEvent & { currentTarget: HTMLButtonElement }) =>
   event.currentTarget.closest('dialog')?.close();
 </script>
 
-<dialog class="video-popup" aria-label={title} closedby="any" onclose={() => (url = undefined)} {@attach syncOpen}>
-  <!-- First, so it takes focus on open and Enter closes like Esc. -->
-  <button type="button" class="close" title="Close (Esc)" aria-label="Close" autofocus onclick={close}>
+<dialog class="video-popup" aria-label={title} closedby="any" tabindex="-1" onclose={() => (url = undefined)}
+  {@attach syncOpen}>
+  <button type="button" class="close" title="Close (Esc)" aria-label="Close" onclick={close}>
     <span aria-hidden="true">×</span>
   </button>
   {#if embed}
-    <iframe src={embed} {title} allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen>
+    <!-- YouTube refuses an embed with no referrer (its error 153), and the app sends none off-site: this sends it the
+         origin only, never the page. -->
+    <iframe src={embed} {title} allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen
+      referrerpolicy="strict-origin-when-cross-origin">
     </iframe>
   {/if}
 </dialog>
@@ -56,6 +63,11 @@ const close = (event: MouseEvent & { currentTarget: HTMLButtonElement }) =>
 
   &::backdrop {
     background-color: var(--color-lightbox-backdrop);
+  }
+
+  /* The dialog holds focus only as a starting point; the player and the × show their own. */
+  &:focus {
+    outline: none;
   }
 
   @media (width < 800px) {

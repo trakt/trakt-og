@@ -2,6 +2,7 @@
   The small ••• tile under a `SummaryAction`'s +, opening a menu of its quieter actions (view history, rewatch,
   drop). Rows are links, or controls that style themselves as menu rows (`VisibilityControl variant="menu"`).
   `children` gets a function that closes the menu, for rows that open a popover of their own and finish later.
+  `trigger` swaps the tile for the caller's own button (a quick-icon bar's •••), spread with the menu's attributes.
     <SummaryActionMenu>
       {#snippet children(close)}
         <a href="/users/me/history">View history</a>
@@ -11,6 +12,7 @@
 -->
 <script lang="ts">
 import type { Snippet } from 'svelte';
+import type { HTMLButtonAttributes } from 'svelte/elements';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import ellipsis from '$lib/icons/regular/ellipsis.svg?raw';
@@ -18,9 +20,12 @@ import ellipsis from '$lib/icons/regular/ellipsis.svg?raw';
 interface Props {
   children: Snippet<[() => void]>;
   label?: string;
+  /** The caller's own button in place of the tile. Spread `attrs` on it: they open the menu and carry the tooltip. */
+  trigger?: Snippet<[HTMLButtonAttributes]>;
+  placement?: 'right' | 'bottom';
 }
 
-const { children, label = 'More actions' }: Props = $props();
+const { children, label = 'More actions', trigger: custom, placement = 'right' }: Props = $props();
 const id = $props.id();
 let menu = $state<HTMLDivElement>();
 let expanded = $state(false);
@@ -32,11 +37,19 @@ const toggle = (event: ToggleEvent & { currentTarget: HTMLElement }) => {
 const close = () => menu?.hidePopover();
 </script>
 
-<div class="more" style:anchor-name="--summary-menu-{id}">
-  <Tooltip text={label} placement="right">
+<div class={['more', { custom }]} style:anchor-name="--summary-menu-{id}">
+  <Tooltip text={label} {placement}>
     {#snippet trigger(tip)}
-      <button type="button" class="tile" popovertarget="summary-menu-{id}" aria-label={label} aria-haspopup="menu"
-        aria-expanded={expanded} {...tip}><Icon svg={ellipsis} /></button>
+      {@const attrs = {
+      popovertarget: `summary-menu-${id}`,
+      'aria-label': label,
+      'aria-haspopup': 'menu' as const,
+      'aria-expanded': expanded,
+      ...tip,
+    }}
+      {#if custom}{@render custom(attrs)}{:else}<button type="button" class="tile" {...attrs}><Icon
+            svg={ellipsis}
+          /></button>{/if}
     {/snippet}
   </Tooltip>
   <div bind:this={menu} id="summary-menu-{id}" class="menu" popover="auto" style:position-anchor="--summary-menu-{id}"
@@ -47,8 +60,11 @@ const close = () => menu?.hidePopover();
 
 <style>
 .more {
-  flex: 1;
   display: flex;
+
+  &:not(.custom) {
+    flex: 1;
+  }
 }
 
 .tile {
@@ -78,31 +94,41 @@ const close = () => menu?.hidePopover();
   }
 }
 
+/* The dropdown menus' surface: their border, corners, padding and shadow. */
 .menu {
   position: fixed;
   position-area: bottom span-left;
   position-try-fallbacks: flip-block, flip-inline;
   inset: auto;
-  inline-size: var(--summary-action-menu-width);
-  margin: var(--summary-action-menu-gap) 0;
-  padding: var(--space-sm-block) 0;
-  border: 1px solid var(--color-dropdown-border);
-  border-radius: var(--radius-summary-action);
-  background: var(--color-box);
-  color: var(--color-dropdown-text);
-  box-shadow: var(--shadow-dropdown);
-  font: var(--font-size-base) / var(--line-height-base) var(--font-body);
+  min-inline-size: var(--menu-min-width);
+  margin: var(--space-menu-offset) 0;
+  padding: var(--space-menu);
+  border: 1px solid var(--color-menu-border);
+  border-radius: var(--radius-menu);
+  background-color: var(--color-menu-bg);
+  color: var(--color-dropdown-menu-text);
+  box-shadow: var(--shadow-menu);
+  font: normal var(--font-size-menu) / var(--line-height-base) var(--font-body);
   text-align: start;
 }
 
-/* Link rows; controls in the menu draw the same row themselves. */
-.menu > :global(a) {
+/* Link and button rows, as a dropdown's; controls in the menu draw the same row themselves. */
+.menu > :global(:is(a, button)) {
   display: flex;
   align-items: center;
   gap: var(--summary-action-menu-row-gap);
-  padding: var(--space-sm-block) var(--gutter);
+  inline-size: 100%;
+  min-block-size: 0;
+  padding: var(--space-menu-row);
+  border: 0;
+  border-radius: var(--radius-menu-row);
+  background: none;
   color: inherit;
+  font: inherit;
+  text-align: start;
   text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
 
   & > :global(.icon) {
     color: var(--color-text-muted);
@@ -111,9 +137,10 @@ const close = () => menu?.hidePopover();
 }
 
 /* Whole-selector global: a nested `&:hover` gets this component's scope class, which the caller's link doesn't have. */
-.menu > :global(a:is(:hover, :focus-visible)) {
-  background: var(--color-dropdown-hover-bg);
-  color: var(--color-dropdown-hover-text);
+.menu > :global(:is(a, button):is(:hover, :focus-visible)) {
+  background-color: var(--color-menu-row-hover);
+  color: var(--color-menu-row-hover-text);
+  outline: none;
 }
 
 .menu > :global(hr) {

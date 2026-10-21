@@ -32,7 +32,17 @@ interface Props {
   small?: boolean;
   tooltip?: string;
   placement?: ComponentProps<typeof Tooltip>['placement'];
-  children: Snippet;
+  /** The trigger's content. A headless control has none. */
+  children?: Snippet;
+  /**
+   * No button of its own: the caller opens the prompt with `openPrompt()` (a ••• menu's row, which closes first so the
+   * prompt isn't nested in it), and the prompt anchors where the control is placed.
+   */
+  headless?: boolean;
+  /** Where the focus goes back to when a headless control's prompt closes. */
+  returnFocus?: HTMLElement;
+  /** The `anchor-name` (with its `--`) the prompt sits by instead of the control's own: a headless control's button. */
+  anchor?: string;
   onsave?: () => void;
   /**
    * Called as the save starts, with whether it went through. A page that removes or reloads the item itself (the
@@ -49,6 +59,9 @@ const {
   tooltip,
   placement = 'bottom',
   children,
+  headless = false,
+  returnFocus,
+  anchor,
   onsave,
   onsaving,
 }: Props = $props();
@@ -90,10 +103,14 @@ async function open() {
     globalThis.open(traktUrls.vip, '_blank', 'noopener');
     return;
   }
-  returnTo = button?.closest('article')?.querySelector<HTMLElement>('.titles-link') ??
+  returnTo = returnFocus ?? button?.closest('article')?.querySelector<HTMLElement>('.titles-link') ??
     button?.closest('main')?.querySelector<HTMLElement>('.watch-trigger') ?? button;
   other = false;
   popover?.showPopover();
+}
+/** Opens the prompt as the trigger would: a headless control's way in. */
+export function openPrompt() {
+  return open();
 }
 function toggle(event: ToggleEvent) {
   expanded = event.newState === 'open';
@@ -165,18 +182,21 @@ function submit(event: SubmitEvent) {
 }
 </script>
 
-<span class={['visibility-control', variant]} style:anchor-name="--visibility-{id}">
+<span class={['visibility-control', variant, { headless }]}
+  style:anchor-name={anchor ? undefined : `--visibility-${id}`}>
+  {#if !headless}
   <Tooltip text={variant === 'menu' ? undefined : tooltip ?? label} {placement}>
   {#snippet trigger(tip)}
     <button bind:this={button} type="button" class={['visibility-trigger', variant, { small }]}
       aria-label={label} aria-haspopup="dialog" aria-controls="visibility-{id}" aria-expanded={expanded}
       aria-busy={busy} aria-disabled={busy} onclick={open} {...tip}>
-      {#if busy}<Spinner label="Saving {target.title}" />{:else}{@render children()}{/if}
+      {#if busy}<Spinner label="Saving {target.title}" />{:else}{@render children?.()}{/if}
     </button>
   {/snippet}
   </Tooltip>
+  {/if}
 </span>
-<PromptPopover id="visibility-{id}" anchor="--visibility-{id}" {title} {tone} bind:element={popover}
+<PromptPopover id="visibility-{id}" anchor={anchor ?? `--visibility-${id}`} {title} {tone} bind:element={popover}
   ontoggle={toggle}>
   {#if other}
     <PromptDateForm id="visibility-date-{id}" label="{action === 'rewatch' ? 'Rewatch' : 'Dropped'} date and time"
@@ -200,6 +220,11 @@ function submit(event: SubmitEvent) {
   }
   &.side {
     inline-size: 100%;
+  }
+  /* No button: only a point for the prompt to anchor to, taking no room in a row of icons. */
+  &.headless {
+    flex: none;
+    inline-size: 0;
   }
 }
 .visibility-trigger {
@@ -245,17 +270,22 @@ function submit(event: SubmitEvent) {
     font-size: inherit;
     line-height: 1;
   }
+  /* A dropdown menu's row. */
   &.menu {
     justify-content: start;
     gap: var(--summary-action-menu-row-gap);
     inline-size: 100%;
-    padding: var(--space-sm-block) var(--gutter);
-    color: var(--color-dropdown-text);
-    font: var(--font-size-base) / var(--line-height-base) var(--font-body);
+    padding: var(--space-menu-row);
+    border-radius: var(--radius-menu-row);
+    color: inherit;
+    font: inherit;
+    line-height: var(--line-height-base);
     text-align: start;
+    white-space: nowrap;
     &:is(:hover, :focus-visible) {
-      background: var(--color-dropdown-hover-bg);
-      color: var(--color-dropdown-hover-text);
+      background: var(--color-menu-row-hover);
+      color: var(--color-menu-row-hover-text);
+      outline: none;
     }
     & > :global(.icon) {
       color: var(--color-text-muted);

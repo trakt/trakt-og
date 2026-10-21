@@ -215,7 +215,6 @@ function cardIcons(entry: CalendarEntry): Omit<ComponentProps<typeof QuickIcons>
     released: entry.released,
     ratingTarget: { ...entry.overlay, title: entry.title },
     listLabel: entry.episode ? 'Add to list' : undefined,
-    watchNow: entry.episode || display.artwork === 'none' ? 'play' : undefined,
     hideTarget: entry.hideTarget,
     hideSection: 'calendar',
     more: dropMenu(entry),

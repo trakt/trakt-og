@@ -36,6 +36,7 @@ describe('toUserComment', () => {
         variant: 'screenshot',
         rating: 8.4,
         show: { text: 'Andor', href: '/shows/andor' },
+        seasonOf: { show: 1, number: 2, episode: 1 },
       },
     });
   });

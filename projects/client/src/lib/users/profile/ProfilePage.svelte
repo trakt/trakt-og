@@ -67,7 +67,7 @@ const hasnt = (rest: string) =>
       listTarget: { type: card.type, id: card.id, title: card.title },
       fill: quickIconFill({ state, datePreferences: data.datePreferences }),
       rating: card.rating,
-      watchNow: 'play',
+      watchNowTarget: { type: card.type, id: card.id, title: card.title, season: card.season },
       listLabel: card.type === 'episode' ? 'Add to list' : 'Add to watchlist',
     }}
 />

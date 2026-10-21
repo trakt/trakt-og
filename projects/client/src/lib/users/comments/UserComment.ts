@@ -17,7 +17,8 @@ export type UserComment = {
     readonly variant: 'poster' | 'screenshot';
     /** A season or episode's show, linked under the title. */
     readonly show?: { readonly text: string; readonly href: string };
-    readonly seasonOf?: { readonly show: number; readonly number: number };
+    /** A season's or episode's show and season number, and an episode's number: its overlay state and Watch Now. */
+    readonly seasonOf?: { readonly show: number; readonly number: number; readonly episode?: number };
     readonly rating?: number;
     readonly airedEpisodes?: number;
   };

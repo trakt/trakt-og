@@ -6,6 +6,7 @@ import { loadPrivateNote } from '../notes/loadPrivateNote.ts';
 import type { DatePreferences } from '../settings/DatePreferences.ts';
 import type { ViewerSettings } from '../settings/ViewerSettings.ts';
 import { type KnownForItem, knownForSchema } from './knownForSchema.ts';
+import { toBirthday } from './toBirthday.ts';
 import { toCreditsQuery } from './toCreditsQuery.ts';
 import { toPersonSummary } from './toPersonSummary.ts';
 
@@ -61,6 +62,7 @@ export async function loadPerson({ fetch, token, parent, id: requested, search }
     loadPrivateNote({ fetch, token: user ? token : null, item: notable }),
   ]);
 
+  const now = new Date();
   const view = toPersonSummary({
     person,
     movies,
@@ -68,11 +70,17 @@ export async function loadPerson({ fetch, token, parent, id: requested, search }
     knownFor: picks,
     listCount: lists?.status === 200 ? Number(lists.headers.get('x-pagination-item-count')) || 0 : 0,
     random: Math.random(),
-    now: new Date(),
+    now,
   });
 
   return {
     person: view,
+    // On their birthday in the viewer's time zone, so it turns at the viewer's midnight.
+    birthday: toBirthday({
+      birthday: person.birthday,
+      death: person.death,
+      today: now.toLocaleDateString('en-CA', { timeZone: datePreferences.timeZone }),
+    }),
     query: toCreditsQuery(search),
     // OG's `display_actor_episode_counts`.
     hideEpisodeCounts: settings?.browsing?.spoilers?.actors === 'hide',

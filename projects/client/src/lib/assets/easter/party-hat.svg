@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 96">
+  <defs>
+    <linearGradient id="cone" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0" stop-color="#b06ad0" />
+      <stop offset=".5" stop-color="#8e44ad" />
+      <stop offset="1" stop-color="#5e2477" />
+    </linearGradient>
+    <pattern id="stripes" width="21" height="21" patternUnits="userSpaceOnUse" patternTransform="rotate(-34)">
+      <rect width="3.5" height="21" fill="#009edf" />
+      <rect x="7" width="3.5" height="21" fill="#f5c451" />
+      <rect x="14" width="3.5" height="21" fill="#16a085" />
+    </pattern>
+    <linearGradient id="shade" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0" stop-color="#fff" stop-opacity=".18" />
+      <stop offset=".5" stop-color="#000" stop-opacity="0" />
+      <stop offset="1" stop-color="#000" stop-opacity=".28" />
+    </linearGradient>
+    <linearGradient id="gold" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#ffe08a" />
+      <stop offset="1" stop-color="#d9a02c" />
+    </linearGradient>
+  </defs>
+  <path d="M41 13c4-6 11-7 14-3s-3 7-6 4" fill="none" stroke="#ed1c24" stroke-width="2.4" stroke-linecap="round" />
+  <path d="M39 13c-4-7-11-7-13-3s4 6 6 3" fill="none" stroke="#009edf" stroke-width="2.4" stroke-linecap="round" />
+  <path d="M40 12c-1-6 2-10 6-9s2 6-1 5" fill="none" stroke="#f5c451" stroke-width="2.4" stroke-linecap="round" />
+  <path d="M40 12c2-5 0-9-4-9" fill="none" stroke="#16a085" stroke-width="2.2" stroke-linecap="round" />
+  <path d="M40 12 12 80 Q40 88 68 80Z" fill="url(#cone)" />
+  <path d="M40 12 12 80 Q40 88 68 80Z" fill="url(#stripes)" opacity=".85" />
+  <path d="M40 12 12 80 Q40 88 68 80Z" fill="url(#shade)" />
+  <circle cx="40" cy="54" r="13.5" fill="#fff" />
+  <circle cx="40" cy="54" r="12" fill="#ed1c24" />
+  <path transform="translate(28.74 44.14) scale(0.044)" fill="#fff"
+    d="M104 363Q133 394 172 412Q211 430 256 430Q279 430 300.50 425Q322 420 342 411L199 269L104 363M198 182L90 290L76 276L323 29Q307 24 290 21Q273 18 256 18Q213 18 176 34Q138 50 110 78Q82 106 66 144Q50 181 50 224Q50 259 61 290.50Q72 322 91 348L199 240L206 247L361 401Q363 400 365.50 398.50Q368 397 370 396L199 225L95 329L81 314L199 196L206 203L387 383Q389 382 391 380Q393 378 395 377L200 182L198 182M360 64L242 182L228 167L346 49L360 64M263 204L249 190L351 88L366 102L263 204M409 362Q434 335 448 299.50Q462 264 462 224Q462 162 429 112Q396 62 343 37L214 167L409 362M256-6Q208-6 166 12Q124 30 93 61Q62 92 44 134Q26 176 26 224Q26 272 44 314Q62 356 93 387Q124 418 166 436Q208 454 256 454Q304 454 346 436Q388 418 419 387Q450 356 468 314Q486 272 486 224Q486 176 468 134Q450 92 419 61Q388 30 346 12Q304-6 256-6M256 480Q203 480 156 460Q110 440 75 405Q40 370 20 324Q0 277 0 224Q0 171 20 124Q40 78 75 43Q110 8 156-12Q203-32 256-32Q309-32 356-12Q402 8 437 43Q472 78 492 124Q512 171 512 224Q512 277 492 324Q472 370 437 405Q402 440 356 460Q309 480 256 480" />
+  <path
+    d="M12.0 77.5 L16.0 78.6 L20.0 79.5 L24.0 80.2 L28.0 80.8 L32.0 81.2 L36.0 81.4 L40.0 81.5 L44.0 81.4 L48.0 81.2 L52.0 80.8 L56.0 80.2 L60.0 79.5 L64.0 78.6 L68.0 77.5 L68.0 83.0 L64.0 87.6 L60.0 85.0 L56.0 89.2 L52.0 86.3 L48.0 90.2 L44.0 86.9 L40.0 90.5 L36.0 86.9 L32.0 90.2 L28.0 86.3 L24.0 89.2 L20.0 85.0 L16.0 87.6 L12.0 83.0Z"
+    fill="url(#gold)" stroke="#b07d1c" stroke-width=".6" stroke-linejoin="round" />
+  <circle cx="40" cy="12" r="2.6" fill="#f5c451" />
+</svg>

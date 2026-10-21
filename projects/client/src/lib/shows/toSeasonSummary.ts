@@ -1,11 +1,4 @@
-import type {
-  EpisodeResponse,
-  EpisodeStatsResponse,
-  RatingsResponse,
-  SeasonsResponse,
-  ShowResponse,
-  VideoResponse,
-} from '@trakt/api';
+import type { EpisodeResponse, EpisodeStatsResponse, RatingsResponse, SeasonsResponse, ShowResponse } from '@trakt/api';
 import type { z } from 'zod/v4';
 import { iconLinks } from '../components/summary/iconLinks.ts';
 import { countryName, languageName, titleize } from '../components/summary/names.ts';
@@ -28,7 +21,6 @@ interface Params {
   ratings: RatingsResponse;
   stats: EpisodeStatsResponse;
   people: z.infer<typeof seasonPeopleSchema>;
-  videos?: readonly VideoResponse[];
   isVip: boolean;
   actorSpoilers: boolean;
   episodeTypeTags: boolean;
@@ -78,7 +70,6 @@ export function toSeasonSummary(params: Params) {
     fanart: imageUrl(show.images?.fanart?.at(0), 'full'),
     poster: imageUrl(season.images?.poster?.at(0) ?? show.images?.poster?.at(0), 'medium'),
     overview: season.overview || show.overview,
-    trailer: params.videos?.find(({ type }) => type === 'trailer')?.url,
     rating: premiered
       ? {
         value: ratings.rating ?? season.rating ?? 0,

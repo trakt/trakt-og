@@ -1,5 +1,5 @@
 /** The subpages a season has. A show has every one, lists included. */
-const SEASON_SUBPAGES: ReadonlySet<string> = new Set(['comments', 'people', 'stats']);
+const SEASON_SUBPAGES: ReadonlySet<string> = new Set(['comments', 'people', 'stats', 'videos']);
 
 type Parent = { readonly title: string; readonly href?: string };
 
@@ -7,7 +7,7 @@ type Params = {
   /** The subpage's item: a season's parent is its show, an episode's its show and season. */
   type: string;
   parents: readonly Parent[];
-  /** "comments", "people", "lists", "stats". */
+  /** "comments", "people", "lists", "stats", "videos". */
   suffix: string;
 };
 

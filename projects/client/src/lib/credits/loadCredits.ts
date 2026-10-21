@@ -3,7 +3,7 @@ import type { z } from 'zod/v4';
 import { rawApiFetch } from '../api/rawApiFetch.ts';
 import { seasonPeopleSchema } from '../shows/seasonPeopleSchema.ts';
 import { loadSubpageMedia } from '../subpage/loadSubpageMedia.ts';
-import type { SubpageItem } from '../subpage/SubpageItem.ts';
+import { subpageApiPath } from '../subpage/subpageApiPath.ts';
 import { toCredits } from './toCredits.ts';
 
 type Params = Omit<Parameters<typeof loadSubpageMedia>[0], 'suffix'>;
@@ -20,20 +20,12 @@ async function readPeople(fetch: typeof globalThis.fetch, path: string): Promise
   return people.data;
 }
 
-const apiPath = (item: SubpageItem): string => {
-  const show = `/shows/${encodeURIComponent(item.id)}`;
-  if (item.type === 'movie') return `/movies/${encodeURIComponent(item.id)}`;
-  if (item.type === 'show') return show;
-  const season = `${show}/seasons/${encodeURIComponent(item.season)}`;
-  return item.type === 'season' ? season : `${season}/episodes/${encodeURIComponent(item.episode)}`;
-};
-
 /**
  * `/movies/:id/people`, `/shows/:id/people` and the season and episode ones. Movies have one Cast tab. Shows and seasons split their Season Regulars from their
  * Guest Stars. An episode's Guest Stars are its whole cast, beside the season's regulars.
  */
 export async function loadCredits({ fetch, parent, item }: Params) {
-  const path = apiPath(item);
+  const path = subpageApiPath(item);
   const [subpage, people, regulars] = await Promise.all([
     loadSubpageMedia({ fetch, parent, item, suffix: 'people' }),
     readPeople(
@@ -41,7 +33,7 @@ export async function loadCredits({ fetch, parent, item }: Params) {
       `${path}/people?extended=${item.type === 'show' || item.type === 'season' ? 'guest_stars,' : ''}images`,
     ),
     item.type === 'episode'
-      ? readPeople(fetch, `${apiPath({ ...item, type: 'season' })}/people?extended=images`)
+      ? readPeople(fetch, `${subpageApiPath({ ...item, type: 'season' })}/people?extended=images`)
       : null,
   ]);
   const actors = item.type === 'movie'

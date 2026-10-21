@@ -303,4 +303,48 @@ describe('sectionsClient', () => {
       ).toBe(true);
     });
   });
+
+  describe('videos', () => {
+    const trailer = {
+      title: 'Official Trailer',
+      url: 'https://youtube.com/watch?v=HhesaQXLuRY',
+      site: 'youtube',
+      type: 'trailer',
+      size: 1080,
+      official: true,
+      published_at: '2025-01-01T00:00:00.000Z',
+      country: 'us',
+      language: 'en',
+    };
+    const items: readonly [SummaryMedia, string][] = [
+      [movie, '/movies/deadpool-2016/videos'],
+      [{ type: 'show', id: 1388, slug: 'breaking-bad', title: 'Breaking Bad' }, '/shows/breaking-bad/videos'],
+      [
+        { type: 'season', id: 3950, slug: 'breaking-bad', season: 1, title: 'Breaking Bad: Season 1' },
+        '/shows/breaking-bad/seasons/1/videos',
+      ],
+      [
+        { type: 'episode', id: 73482, slug: 'breaking-bad', season: 1, episode: 1, title: 'Pilot' },
+        '/shows/breaking-bad/seasons/1/episodes/1/videos',
+      ],
+    ];
+
+    it.each(items)('should read the %o videos from its own path without the token', async (media, path) => {
+      server.use(http.get(`${API}/*`, ({ request }) => {
+        seen.push(request);
+        return HttpResponse.json([trailer]);
+      }));
+      const videos = await client(true).videos(media);
+      expect(videos?.map(({ image }) => image)).toEqual(['https://i.ytimg.com/vi/HhesaQXLuRY/mqdefault.jpg']);
+      expect(paths()).toEqual([path]);
+      expect(seen.at(0)?.headers.has('authorization')).toBe(false);
+    });
+
+    it('should come back null when there are no videos or they fail', async () => {
+      server.use(http.get(`${API}/movies/:id/videos`, () => HttpResponse.json([])));
+      expect(await client(false).videos(movie)).toBeNull();
+      server.use(http.get(`${API}/movies/:id/videos`, () => HttpResponse.json([], { status: 500 })));
+      expect(await client(false).videos(movie)).toBeNull();
+    });
+  });
 });

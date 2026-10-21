@@ -26,7 +26,7 @@ import { mediaSpoilers } from '$lib/settings/mediaSpoilers';
 import SummaryFrame from '$lib/components/summary/SummaryFrame.svelte';
 import WatchNow from '$lib/components/watchnow/WatchNow.svelte';
 import SummaryPoster from '$lib/components/summary/SummaryPoster.svelte';
-import Videos from '$lib/components/summary/Videos.svelte';
+import VideosRail from '$lib/components/summary/VideosRail.svelte';
 import { overlay } from '$lib/overlay/overlay';
 import { browserSectionsClient } from '$lib/summary/browserSectionsClient';
 import { countLabel } from '$lib/utils/countLabel';
@@ -54,6 +54,7 @@ const sections = $derived([
   ...(episode.cast.length + episode.guestStars.length > 0
     ? [{ label: 'People', href: '#people', more: { href: `${episode.href}/people`, text: 'All people' } }]
     : []),
+  { label: 'Videos', href: '#videos', more: { href: `${episode.href}/videos`, text: 'All videos' } },
   {
     label: countLabel(episode.commentCount, 'Comment'),
     href: '#comments',
@@ -79,7 +80,7 @@ const sections = $derived([
 </svelte:head>
 <FanartHeader dropped={overlay.state('show',episode.showId).dropped} image={episode.fanart}
   screenshot={spoilers.screenshot ? undefined : episode.screenshot} subnav>
-  <EpisodeTitle target={ratingTarget} links={episode.parents} number={episode.number} title={episode.title} year={episode.year} certification={episode.certification} type={episode.type} credits={episode.videos} />
+  <EpisodeTitle target={ratingTarget} links={episode.parents} number={episode.number} title={episode.title} year={episode.year} certification={episode.certification} type={episode.type} credits={episode.postCredits} />
   {#snippet stats()}<RatingsStrip rating={episode.rating} external={episode.external} rateLabel="episode" {ratingTarget}
     statsHref="{episode.href}/stats" />{/snippet}
   {#snippet edges()}<ItemNav previous={episode.previous} next={episode.next} up={episode.seasonHref} />{/snippet}
@@ -107,13 +108,17 @@ const sections = $derived([
       <AdditionalStat label="Links" phoneOnly><NameList names={episode.links.filter(({icon})=>!icon).map(({label,href})=>({name:label,href}))} /></AdditionalStat>
     </AdditionalStats>
     {#key episode.id}<MediaSpoiler target={ratingTarget} kind="overview"><Overview overview={episode.overview} /></MediaSpoiler>{/key}
-    <Videos title={episode.fullTitle} {...episode.videos} />
   {/snippet}
   {#snippet actions()}<ActionButtons checkin={episode.aired ? ratingTarget : undefined} listTarget={ratingTarget} historyTarget={{...ratingTarget,runtime:episode.runtime,released:episode.aired,season:{show:episode.showId,number:episode.season,episode:episode.episodeNumber}}} />{/snippet}
   {#key episode.href}
     <LazySection id="activity" load={()=>lazy().activity(media)}>{#snippet children(tabs)}<ActivityTabs {tabs} />{/snippet}</LazySection>
   {/key}
   <ActorsStrip groups={[{id:'season-regulars',label:'Season Regulars',cast:episode.cast},{id:'guest-stars',label:'Guest Stars',cast:episode.guestStars}]} crew={episode.crew} creditsHref="{episode.href}/people" />
+  {#key episode.href}
+    <LazySection id="videos" load={() => lazy().videos(media)}>
+      {#snippet children(videos)}<VideosRail {videos} href={episode.href} />{/snippet}
+    </LazySection>
+  {/key}
   {#key episode.href}
     {#snippet newCommentForm()}<NewCommentForm item={{ ...ratingTarget, show: episode.showId, season: episode.season }} />{/snippet}
     <LazySection id="comments" load={() => lazy().comments(media)} eager={newComment.visible}>{#snippet children(tabs)}<CommentsPreview form={newCommentForm} reload={(language) => lazy().comments(media, language)} {tabs} item={{...ratingTarget,show:episode.showId,season:episode.season}} viewer={data.user ? {slug:data.user.slug}:null} count={episode.commentCount} href={episode.href} dateOptions={data.datePreferences} />{/snippet}</LazySection>

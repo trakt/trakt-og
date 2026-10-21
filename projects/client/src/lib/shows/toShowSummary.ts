@@ -288,7 +288,6 @@ export function toShowSummary(params: ShowSummaryParams) {
     facts: facts({ ...params, day, airs }),
     tagline: show.tagline ?? null,
     overview: show.overview ?? null,
-    trailer: show.trailer ?? null,
     links: externalLinks(params),
     cast: toCastMembers(params.people?.cast, params.actorSpoilers),
     guestStars: toCastMembers(params.people?.guest_stars, params.actorSpoilers),

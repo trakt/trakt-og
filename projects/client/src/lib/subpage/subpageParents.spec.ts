@@ -19,6 +19,12 @@ describe('subpageParents', () => {
     );
   });
 
+  it("should step an episode's videos up to the season's videos", () => {
+    expect(subpageParents({ type: 'episode', parents: [show, season], suffix: 'videos' }).at(1)?.href).toBe(
+      '/shows/ted-lasso/seasons/1/videos',
+    );
+  });
+
   it("should keep a season's show on the same subpage", () => {
     expect(subpageParents({ type: 'season', parents: [show], suffix: 'stats' }).at(0)?.href).toBe(
       '/shows/ted-lasso/stats',

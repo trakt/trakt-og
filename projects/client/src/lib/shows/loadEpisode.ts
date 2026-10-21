@@ -6,7 +6,6 @@ import {
   ratingsResponseSchema,
   seasonResponseSchema,
   showResponseSchema,
-  videoResponseSchema,
 } from '@trakt/api';
 import { api } from '../api/api.ts';
 import { contractSchema } from '../api/contractSchema.ts';
@@ -82,7 +81,6 @@ export async function loadEpisode(
     regularsResponse,
     ratingsResponse,
     statsResponse,
-    videosResponse,
     layout,
     watchNow,
   ] = await Promise.all([
@@ -95,7 +93,6 @@ export async function loadEpisode(
     rawApiFetch({ fetch, path: `${path}/people?extended=images` }),
     client.shows.episode.ratings({ params, query: { extended: 'all' } }),
     client.shows.episode.stats({ params }),
-    client.shows.episode.videos({ params }),
     layoutRead,
     watchNowRead,
   ]);
@@ -119,7 +116,6 @@ export async function loadEpisode(
     regulars,
     ratings: body(ratingsResponse, ratingsResponseSchema, 'Ratings'),
     stats: body(statsResponse, episodeStatsResponseSchema, 'Stats'),
-    videos: body(videosResponse, videoResponseSchema.array(), 'Videos'),
     datePreferences: layout.datePreferences,
     now: new Date(),
     isVip: layout.user?.isVip ?? false,

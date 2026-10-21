@@ -119,6 +119,15 @@
   --episode-series-finale: #a608a6;
   --episode-bonus: #7d19c4;
   --episode-trailer: #777;
+  /* A video card's type tag, one color a type. */
+  --video-trailer: var(--brand-primary);
+  --video-teaser: #d35400;
+  --video-clip: var(--episode-mid-season-premiere);
+  --video-featurette: var(--episode-bonus);
+  --video-behind-the-scenes: var(--episode-series-premiere);
+  --video-recap: var(--episode-season-premiere);
+  --video-opening-credits: var(--episode-mid-season-finale);
+  --video-bloopers: #b7791f;
 
   /* States (alerts) */
   --state-default-bg: #f6f6f6;
@@ -276,6 +285,7 @@
   --gradient-shadow-base: linear-gradient(rgb(0 0 0 / 0), rgb(0 0 0 / 0.4));
   --gradient-shadow-header: linear-gradient(rgb(0 0 0 / 0), rgb(0 0 0 / 0.6));
   --font-size-card-title: 16px; /* poster card title */
+  --line-height-card-title: 18px;
   --font-size-card-subtitle: 12px;
   --line-height-card-subtitle: 13px;
   --space-card-subtitle: 5px; /* above each line under the title */
@@ -1853,11 +1863,11 @@
   --color-strip-favorited: #f38a45; /* favorites' orange */
   --color-strip-rank-up: #6fcf7a; /* JustWatch's rank change in the black tooltip */
   --color-strip-rank-down: #ff5a60;
-  --color-summary-label: #959595; /* stat labels, section nav, "Videos" */
+  --color-summary-label: #959595; /* stat labels, section nav */
   --color-summary-hover: light-dark(#000, #fff);
   --color-summary-alt: #999; /* "(62 episodes)" after a stat */
   --color-summary-separator: light-dark(#cacaca, #444);
-  --color-summary-tile-bg: light-dark(#eee, #333); /* external links and video tiles */
+  --color-summary-tile-bg: light-dark(#eee, #333); /* external links and the notes tiles */
   --color-summary-tile-text: light-dark(#666, #ccc);
   --color-summary-tile-hover-bg: light-dark(#666, #555);
   --color-summary-poster-border: light-dark(#fff, #000);
@@ -1894,6 +1904,10 @@
   --actors-visible-narrow: 5;
   --actors-gap: 14px;
   --actors-scrollbar-gap: 8px;
+  --videos-visible: 4; /* video cards a row: the summary's, before it scrolls, and the videos page's */
+  --videos-visible-narrow: 2;
+  --video-caption-gap: 8px; /* a video card's image to its title */
+  --video-tag-inset: 8px; /* its type tag from the image's bottom-left corner */
   --cast-grid-min: 104px; /* the narrowest card in a cast & crew grid, so 1440px fits eight */
   --cast-grid-row-gap: 20px;
   --cast-heading-gap: 14px; /* a search result group's heading rule to its people */

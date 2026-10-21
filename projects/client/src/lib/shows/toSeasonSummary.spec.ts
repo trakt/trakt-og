@@ -64,22 +64,6 @@ describe('toSeasonSummary', () => {
     expect(view.episodes.at(0)?.aired).toBe('20 January 2008 18:00');
   });
 
-  it('should expose the season trailer to the shared player', () => {
-    const video = {
-      title: 'Trailer',
-      url: 'https://youtube.com/watch?v=HhesaQXLuRY',
-      type: 'trailer',
-      site: 'youtube',
-      size: 720,
-      official: true,
-      published_at: '2020-01-01T00:00:00Z',
-      country: 'us',
-      language: 'en',
-    } as const;
-    expect(toSeasonSummary({ ...base, videos: [video] }).trailer).toBe(video.url);
-    expect(toSeasonSummary(base).trailer).toBeUndefined();
-  });
-
   it('should link the subnav newest first and only navigate to consecutive seasons', () => {
     const view = toSeasonSummary(base);
     expect(view.seasonLinks.map(({ text }) => text)).toEqual(['4', '2', '1', 'Specials', 'All']);

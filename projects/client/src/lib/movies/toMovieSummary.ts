@@ -140,8 +140,7 @@ export function toMovieSummary(params: MovieSummaryParams) {
     },
     tagline: movie.tagline ?? null,
     overview: movie.overview ?? null,
-    videos: {
-      trailer: movie.trailer ?? null,
+    postCredits: {
       duringCredits: movie.during_credits ?? null,
       afterCredits: movie.after_credits ?? null,
     },

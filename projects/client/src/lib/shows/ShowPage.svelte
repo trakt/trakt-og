@@ -20,6 +20,7 @@ import SectionNav from '$lib/components/summary/SectionNav.svelte';
 import SummaryFrame from '$lib/components/summary/SummaryFrame.svelte';
 import SummaryPoster from '$lib/components/summary/SummaryPoster.svelte';
 import SummaryTitle from '$lib/components/summary/SummaryTitle.svelte';
+import VideosRail from '$lib/components/summary/VideosRail.svelte';
 import WatchNow from '$lib/components/watchnow/WatchNow.svelte';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
 import { browserSectionsClient } from '$lib/summary/browserSectionsClient';
@@ -64,6 +65,7 @@ const sections = $derived([
       more: { href: allEpisodes, text: 'All episodes' },
     }]
     : []),
+  { label: 'Videos', href: '#videos', more: { href: `${show.href}/videos`, text: 'All videos' } },
   {
     label: countLabel(show.commentCount, 'Comment'),
     href: '#comments',
@@ -136,6 +138,11 @@ const sections = $derived([
     creditsHref="{show.href}/people"
   />
   <SeasonsGrid showId={show.id} seasons={show.seasons} signedIn={data.signedIn} initialFilters={data.filters} datePreferences={data.datePreferences} />
+  {#key media.slug}
+    <LazySection id="videos" load={() => lazy().videos(media)}>
+      {#snippet children(videos)}<VideosRail {videos} href={show.href} />{/snippet}
+    </LazySection>
+  {/key}
   {#key media.slug}
     {#snippet newCommentForm()}<NewCommentForm item={{ type: 'show', id: show.id, title: show.title, airedEpisodes: show.airedEpisodes }} />{/snippet}
     <LazySection id="comments" load={() => lazy().comments(media)} eager={newComment.visible}>

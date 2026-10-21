@@ -1,9 +1,11 @@
 import { error, redirect } from '@sveltejs/kit';
 import { api } from '../api/api.ts';
+import { rawApiFetch } from '../api/rawApiFetch.ts';
 import type { HeaderUser } from '../components/header/HeaderUser.ts';
 import { loadPrivateNote } from '../notes/loadPrivateNote.ts';
 import type { DatePreferences } from '../settings/DatePreferences.ts';
 import type { ViewerSettings } from '../settings/ViewerSettings.ts';
+import { type KnownForItem, knownForSchema } from './knownForSchema.ts';
 import { toCreditsQuery } from './toCreditsQuery.ts';
 import { toPersonSummary } from './toPersonSummary.ts';
 
@@ -25,9 +27,17 @@ type Body<R extends Response> = Extract<R, { status: 200 }>['body'];
 const ok = <R extends Response>(request: Promise<R>): Promise<Body<R> | null> =>
   request.then((response) => (response.status === 200 ? response.body : null)).catch(() => null);
 
+/** The API's known-for picks, or none when the call fails, the person has none (a 204) or the body doesn't parse. */
+async function knownFor(fetcher: typeof fetch, id: string): Promise<KnownForItem[]> {
+  const response = await rawApiFetch({ fetch: fetcher, path: `/people/${id}/known_for` }).catch(() => null);
+  if (!response?.ok) return [];
+  const parsed = knownForSchema.safeParse(await response.json().catch(() => null));
+  return parsed.success ? parsed.data : [];
+}
+
 /**
  * Loads `/people/:id` for SSR: the person with the layout data (404s and canonical redirects need it), then the
- * movie and show credits, the list count and the private note in parallel. Only the note sends the user's token.
+ * movie and show credits, the known-for picks, the list count and the private note in parallel. Only the note sends the user's token.
  */
 export async function loadPerson({ fetch, token, parent, id: requested, search }: LoadPersonParams) {
   const client = api({ fetch });
@@ -43,9 +53,10 @@ export async function loadPerson({ fetch, token, parent, id: requested, search }
   if (requested !== id) redirect(301, `/people/${id}${search.size > 0 ? `?${search}` : ''}`);
 
   const notable = { type: 'person', id: person.ids.trakt, slug: id } as const;
-  const [movies, shows, lists, note] = await Promise.all([
+  const [movies, shows, picks, lists, note] = await Promise.all([
     ok(client.people.movies({ params: { id }, query: { extended: 'full,images' } })),
     ok(client.people.shows({ params: { id }, query: { extended: 'full,images' } })),
+    knownFor(fetch, id),
     client.people.lists({ params: { id, type: 'all', sort: 'popular' }, query: { limit: 1 } }).catch(() => null),
     loadPrivateNote({ fetch, token: user ? token : null, item: notable }),
   ]);
@@ -54,6 +65,7 @@ export async function loadPerson({ fetch, token, parent, id: requested, search }
     person,
     movies,
     shows,
+    knownFor: picks,
     listCount: lists?.status === 200 ? Number(lists.headers.get('x-pagination-item-count')) || 0 : 0,
     random: Math.random(),
     now: new Date(),

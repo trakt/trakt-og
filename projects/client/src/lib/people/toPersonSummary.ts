@@ -7,8 +7,10 @@ import type {
 } from '@trakt/api';
 import { titleize } from '../components/summary/names.ts';
 import { imageUrl } from '../utils/imageUrl.ts';
+import type { KnownForItem } from './knownForSchema.ts';
 import type { PersonCredit } from './PersonCredit.ts';
 import { personLinks } from './personLinks.ts';
+import { toKnownFor } from './toKnownFor.ts';
 
 interface PersonSummaryParams {
   person: PersonResponse;
@@ -16,6 +18,8 @@ interface PersonSummaryParams {
   shows: PeopleShowCreditsResponse | null;
   /** `X-Pagination-Item-Count` of the person's lists. */
   listCount: number;
+  /** The API's known-for picks. */
+  knownFor: readonly KnownForItem[];
   /** 0 to 1, picks the fanart. OG picked one at random on every page view. */
   random: number;
   now: Date;
@@ -113,26 +117,47 @@ function departments(credits: readonly RawCredit[], params: Pick<PersonSummaryPa
     .toSorted((a, b) => b.credits.length - a.credits.length);
 }
 
+// One poster row.
+const KNOWN_FOR_LIMIT = 5;
+
+type FanartParams = Pick<PersonSummaryParams, 'person' | 'random'> & {
+  /** The Known For row's titles, as `type-id`. */
+  known: ReadonlySet<string>;
+};
+
 /**
- * OG's random fanart: up to 21 movie and 21 show credits with fanart, narrowed to
- * the person's known-for department when any match, then one at random. Its caption names the source.
+ * The header's fanart: a random credit's, from the Known For row when any of it has fanart, else OG's pick: up to 21
+ * movie and 21 show credits with fanart, narrowed to the person's known-for department when any match. Its caption
+ * names the source. A person's own fanart isn't used: it's nearly always a portrait poster, which a wide header crops
+ * to a sliver.
  */
-function fanart(credits: readonly RawCredit[], { person, random }: Pick<PersonSummaryParams, 'person' | 'random'>) {
+function fanart(credits: readonly RawCredit[], { person, random, known }: FanartParams) {
   const withFanart = (type: RawCredit['type']) =>
     credits.filter((credit) => credit.type === type && credit.item.images?.fanart?.at(0)).slice(0, 21);
   const candidates = [...withFanart('movie'), ...withFanart('show')];
-  const known = candidates.filter(({ role }) => role === person.known_for_department);
-  const pool = known.length > 0 ? known : candidates;
+  const inDepartment = candidates.filter(({ role }) => role === person.known_for_department);
+  // A title once, captioned by the person's own department where they have it (the role played, not "Producer").
+  const famous = [...new Map(
+    credits
+      .filter((credit) => known.has(`${credit.type}-${credit.item.ids.trakt}`) && credit.item.images?.fanart?.at(0))
+      .toSorted((a, b) =>
+        Number(a.role === person.known_for_department) - Number(b.role === person.known_for_department)
+      )
+      .map((credit) => [`${credit.type}-${credit.item.ids.trakt}`, credit]),
+  ).values()];
+  const pool = [famous, inDepartment, candidates].find((list) => list.length > 0) ?? [];
   const pick = pool.at(Math.floor(random * pool.length));
   if (!pick) return undefined;
 
   return {
     image: imageUrl(pick.item.images?.fanart?.at(0), 'full'),
-    characters: [...new Set(pick.names.filter(Boolean))].join(', '),
-    role: titleize(pick.role),
-    title: pick.item.title,
-    year: pick.item.year ?? undefined,
-    href: `/${pick.type}s/${pick.item.ids.slug}`,
+    caption: {
+      characters: [...new Set(pick.names.filter(Boolean))].join(', '),
+      role: titleize(pick.role),
+      title: pick.item.title,
+      year: pick.item.year ?? undefined,
+      href: `/${pick.type}s/${pick.item.ids.slug}`,
+    },
   };
 }
 
@@ -156,6 +181,14 @@ export function toPersonSummary(params: PersonSummaryParams) {
   const credits = rawCredits(params);
   const tabs = departments(credits, params);
   const known = person.known_for_department ? parameterize(person.known_for_department) : undefined;
+  // OG opened the known-for tab, else the first.
+  const defaultDepartment = tabs.find(({ id }) => id === known)?.id ?? tabs.at(0)?.id;
+  const knownFor = toKnownFor({
+    items: params.knownFor,
+    departments: tabs,
+    department: defaultDepartment,
+    limit: KNOWN_FOR_LIMIT,
+  });
 
   return {
     updatedAt: person.updated_at ?? null,
@@ -166,7 +199,7 @@ export function toPersonSummary(params: PersonSummaryParams) {
     headshot: imageUrl(person.images?.headshot?.at(0), 'medium'),
     /** The API's gender, for the silhouette when there's no headshot. */
     genderId: person.gender ?? undefined,
-    fanart: fanart(credits, params),
+    fanart: fanart(credits, { ...params, known: new Set(knownFor.map(({ type, id }) => `${type}-${id}`)) }),
     listCount: params.listCount,
     facts: {
       age: person.birthday ? age(person.birthday, person.death, now) : undefined,
@@ -180,7 +213,7 @@ export function toPersonSummary(params: PersonSummaryParams) {
       null,
     links: personLinks(person),
     departments: tabs,
-    // OG opened the known-for tab, else the first.
-    defaultDepartment: tabs.find(({ id }) => id === known)?.id ?? tabs.at(0)?.id,
+    defaultDepartment,
+    knownFor,
   };
 }

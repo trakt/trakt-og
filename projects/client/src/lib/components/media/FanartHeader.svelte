@@ -9,24 +9,17 @@ import type { Snippet } from 'svelte';
 import type { Attachment } from 'svelte/attachments';
 import { headerArt } from '$lib/components/header/headerArt';
 
-interface Caption {
-  /** Who they played, or their jobs. */
-  readonly characters?: string;
-  /** The department, shown after the characters: "Acting". */
-  readonly role?: string;
-  readonly title: string;
-  readonly year?: number;
-  readonly href: string;
-}
-
 interface Props {
   image?: string;
   /** Episodes use a sufficiently large screenshot, falling back to show fanart on failure. */
   screenshot?: string;
   /** Subpages ("Comments") use the short header. */
   slim?: boolean;
+  /** Where the fanart's crop sits, as a `background-position`. Left out, near the top, like OG. */
+  position?: string;
   dropped?: boolean;
-  caption?: Caption;
+  /** Bottom right, over the art: where the fanart is from (the person page's tag bar). Hidden on phones. */
+  caption?: Snippet;
   children: Snippet;
   stats?: Snippet;
   /** Stats pages for seasons and episodes have a 55px ratings strip. */
@@ -41,6 +34,7 @@ const {
   image,
   screenshot,
   slim = false,
+  position,
   dropped = false,
   caption,
   children,
@@ -67,34 +61,22 @@ const loadScreenshot: Attachment<HTMLElement> = () => {
 const backdrop = $derived(loadedScreenshot ?? image);
 </script>
 
-<!-- The caption links to the item the fanart came from, and resolve() only takes literal routes. -->
-<!-- eslint-disable svelte/no-navigation-without-resolve -->
-
 <section
   class={['fanart-header', { slim, dropped, 'with-stats': stats }]}
   style:--stats-height={statsHeight}
   style:--color-strip-divider={subnav ? 'var(--color-toolbar-bg)' : undefined}
   style:background-image={backdrop ? `url("${backdrop}")` : undefined}
+  style:background-position={position}
   {@attach loadScreenshot}
   {@attach headerArt(backdrop)}
 >
   {#if dropped}<span class="dropped-layer"></span>{/if}
   <div class="shadow-base">
-    {#if caption}
-      <p class="caption">
-        {#if caption.characters}
-          <span class="characters">
-            {caption.characters}
-            {#if caption.role}<span class="role">({caption.role})</span>{/if}
-          </span>
-        {/if}
-        <a href={caption.href}>{caption.title} {#if caption.year}<span class="year">{caption.year}</span>{/if}</a>
-      </p>
-    {/if}
   </div>
   {@render edges?.()}
   <div class="summary">
     {@render children()}
+    {#if caption}<div class="caption">{@render caption()}</div>{/if}
   </div>
   {#if stats}
     <div class="stats">
@@ -150,37 +132,20 @@ const backdrop = $derived(loadedScreenshot ?? image);
 }
 
 /* OG's #fanart-info, hidden on phones. */
+/* At the bottom right of the title block, so it lines up with the content column's right edge. */
 .caption {
   position: absolute;
-  inset-block-end: 15px;
-  inset-inline-end: 15px;
-  margin: 0;
-  font-family: var(--font-headings);
-  font-size: var(--font-size-small);
-  text-align: end;
-  text-shadow: var(--text-shadow-headings);
+  inset-block-end: 0;
+  inset-inline-end: calc(var(--gutter) / 2);
+  max-inline-size: var(--fanart-caption-max-width);
+
+  /* A tag bar sits on the corner, not above a title. */
+  & :global(.title-tags) {
+    margin: 0;
+  }
 
   @media (width < 768px) {
     display: none;
-  }
-}
-
-.characters {
-  display: block;
-  line-height: 1;
-}
-
-.role,
-.year {
-  color: var(--color-fanart-caption-muted);
-}
-
-.caption a {
-  color: var(--color-card-text);
-  text-decoration: none;
-
-  & .year {
-    font-weight: var(--font-weight-headings-light);
   }
 }
 

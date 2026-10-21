@@ -1,6 +1,10 @@
-<!-- The person summary (`/people/:id`): the media frame with a bio, then the credits grid by department. -->
+<!--
+  The person summary (`/people/:id`): the media frame with a bio, the Known For posters, then the credits by department,
+  as rows or posters under their years. The sidebar's career chart narrows the credits to five years.
+-->
 <script lang="ts">
 import { afterNavigate, replaceState } from '$app/navigation';
+import { tick } from 'svelte';
 import { page } from '$app/state';
 import type { HeaderUser } from '$lib/components/header/HeaderUser';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
@@ -13,6 +17,7 @@ import FadeHideItems from '$lib/components/filters/FadeHideItems.svelte';
 import { fadeHideOptions } from '$lib/components/filters/fadeHide';
 import FilterMenu from '$lib/components/filters/FilterMenu.svelte';
 import TermsFilter from '$lib/components/filters/TermsFilter.svelte';
+import ViewToggle from '$lib/components/toolbar/ViewToggle.svelte';
 import ActionButtons from '$lib/components/summary/ActionButtons.svelte';
 import AdditionalStat from '$lib/components/summary/AdditionalStat.svelte';
 import AdditionalStats from '$lib/components/summary/AdditionalStats.svelte';
@@ -27,16 +32,22 @@ import SummaryFrame from '$lib/components/summary/SummaryFrame.svelte';
 import SummaryPoster from '$lib/components/summary/SummaryPoster.svelte';
 import { personPlaceholder } from '$lib/components/summary/personPlaceholder';
 import SummaryTitle from '$lib/components/summary/SummaryTitle.svelte';
+import TitleTags from '$lib/components/summary/TitleTags.svelte';
 import { overlay } from '$lib/overlay/overlay';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
 import { countLabel } from '$lib/utils/countLabel';
 import { formatDate } from '$lib/utils/formatDate';
+import CareerEras from './CareerEras.svelte';
 import { creditHideOptions } from './creditHideOptions.ts';
+import CreditRow from './CreditRow.svelte';
+import { eraAccent } from './eraAccent.ts';
+import { groupCreditsByYear } from './groupCreditsByYear.ts';
 import { matchesCreditFilter } from './matchesCreditFilter.ts';
 import { creditSorts } from './creditSorts.ts';
 import type { CreditsQuery } from './CreditsQuery.ts';
 import type { loadPerson } from './loadPerson.ts';
 import type { PersonCredit } from './PersonCredit.ts';
+import { toCareerEras } from './toCareerEras.ts';
 import { toCreditsSearch } from './toCreditsSearch.ts';
 import { visibleCredits } from './visibleCredits.ts';
 
@@ -69,7 +80,49 @@ const tabs = $derived(
   }),
 );
 const current = $derived(tabs.find(({ id }) => id === tab) ?? tabs[0]);
+
+let view = $state<'grid' | 'list'>('list');
+// The sidebar chart's pick: the first year of five.
+let era = $state<number | null>(null);
+// Appearances as themselves (archive footage, talk shows) would stretch the chart back before the career began.
+const eras = $derived(
+  toCareerEras({
+    credits: current?.credits ?? [],
+    span: (current?.credits ?? []).filter((credit) => !matchesCreditFilter({ option: 'self', credit, state: {} })),
+  }),
+);
+const picked = $derived(eras.find(({ start }) => start === era));
+const shown = $derived(
+  (current?.credits ?? []).filter(({ year }) =>
+    !picked || (year !== undefined && year >= picked.start && year <= picked.end)
+  ),
+);
+// Years only read as a timeline under the released sort.
+const years = $derived(query.sort === 'released' ? groupCreditsByYear(shown) : undefined);
+
+function yearAccent(year: number | undefined) {
+  const index = eras.findIndex(({ start, end }) => year !== undefined && year >= start && year <= end);
+  return index < 0 ? 'var(--color-text-muted)' : eraAccent(index);
+}
+
+// Acting credits are named by the character, crew credits by the title.
+const eraName = (credit: PersonCredit) =>
+  tab === 'acting' && credit.characters ? credit.characters.split(', ')[0] ?? credit.title : credit.title;
 const sortName = $derived(creditSorts.find(({ id }) => id === query.sort)?.label);
+// The fanart's source as a tag bar: the department, then the title, its year and who they played, tinted.
+const fanartSource = $derived.by(() => {
+  const source = person.fanart?.caption;
+  if (!source) return undefined;
+  const who = source.characters?.split(', ')[0];
+  return {
+    label: source.role,
+    links: [
+      { title: source.title, href: source.href },
+      ...(source.year ? [{ title: String(source.year) }] : []),
+      ...(who ? [{ title: who, tint: 'var(--color-person-fanart-character)' }] : []),
+    ],
+  };
+});
 const textLinks = $derived(person.links.filter(({ icon }) => !icon));
 const filtered = $derived(
   !query.movies || !query.shows || query.terms !== '' || query.fade.length > 0 || query.hide.length > 0,
@@ -98,11 +151,51 @@ $effect(() => {
   replaceState(`${page.url.pathname}${search}${page.url.hash}`, page.state);
 });
 
+const episodesLabel = (credit: PersonCredit) =>
+  credit.episodeCount > 0 && !data.hideEpisodeCounts ? countLabel(credit.episodeCount, 'episode') : undefined;
+
+function cardIcons(credit: PersonCredit, state: ReturnType<typeof overlay.state>) {
+  return {
+    fill: quickIconFill({
+      state,
+      airedEpisodes: credit.airedEpisodes,
+      runtime: credit.runtime,
+      datePreferences: data.datePreferences,
+    }),
+    ratingTarget: { type: credit.type, id: credit.id, title: credit.title },
+    watchTarget: {
+      type: credit.type,
+      id: credit.id,
+      title: credit.title,
+      airedEpisodes: credit.airedEpisodes,
+      runtime: credit.runtime,
+    },
+    rating: credit.rating,
+    // ponytail: OG showed watch now only with sources in the viewer's country. Until #60 brings
+    // sources, anything not out yet is taken to have none, like the chart pages.
+    watchNow: credit.released ? ('play' as const) : undefined,
+  };
+}
+
+// A picked era swaps the list under the chart, so bring the list's top into view, once the new list is drawn: aimed at
+// the old one, a smooth scroll from far down the page would stop short as the page shrinks under it.
+async function showCredits() {
+  await tick();
+  document.getElementById('credits')?.scrollIntoView({
+    block: 'start',
+    behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth',
+  });
+}
+
+const watchedCredit = (credit: PersonCredit) =>
+  quickIconFill({ state: overlay.state(credit.type, credit.id), airedEpisodes: credit.airedEpisodes }).watched === 1;
+
+const isFaded = (credit: PersonCredit, state: ReturnType<typeof overlay.state>) =>
+  !!data.user && query.fade.some((option) => matchesCreditFilter({ option, credit, state }));
+
 // OG's under-title: year, then the status of an unreleased movie or a show's episode count, in italics.
 function yearLine(credit: PersonCredit) {
-  const episodes = credit.episodeCount > 0 && !data.hideEpisodeCounts
-    ? countLabel(credit.episodeCount, 'episode')
-    : undefined;
+  const episodes = episodesLabel(credit);
   const parts = [
     credit.year ? String(credit.year) : undefined,
     credit.status ? { em: credit.status } : undefined,
@@ -118,6 +211,39 @@ function yearLine(credit: PersonCredit) {
   {#if person.biography}<meta name="description" content={person.biography} />{/if}
 </svelte:head>
 
+{#snippet card(credit: PersonCredit, faded: boolean)}
+  {@const state = overlay.state(credit.type, credit.id)}
+  <PosterCard
+  faded={faded && isFaded(credit, state)}
+  href={credit.href}
+  title={credit.title}
+  fullTitle={credit.year ? `${credit.title} (${credit.year})` : credit.title}
+  image={credit.image}
+  subtitles={[yearLine(credit), credit.characters || ' ']}
+  userRating={state.rating}
+  dropped={state.dropped}
+  icons={cardIcons(credit, state)}
+/>
+{/snippet}
+
+{#snippet row(credit: PersonCredit)}
+  {@const state = overlay.state(credit.type, credit.id)}
+  <CreditRow {credit} episodes={episodesLabel(credit)} userRating={state.rating} faded={isFaded(credit, state)}
+  icons={cardIcons(credit, state)} />
+{/snippet}
+
+{#snippet credits(list: readonly PersonCredit[], columns: number)}
+  {#if view === 'list'}
+    <div class="rows">
+      {#each list as credit (`${credit.type}-${credit.id}`)}{@render row(credit)}{/each}
+    </div>
+  {:else}
+    <PosterGrid {columns}>
+      {#each list as credit (`${credit.type}-${credit.id}`)}{@render card(credit, true)}{/each}
+    </PosterGrid>
+  {/if}
+{/snippet}
+
 <!-- OG's person ratings bar only ever counted lists, and it collapsed with none (`.no-stats`). -->
 {#snippet lists()}
   <RatingsStrip
@@ -125,7 +251,11 @@ function yearLine(credit: PersonCredit) {
 />
 {/snippet}
 
-<FanartHeader image={person.fanart?.image} caption={person.fanart} stats={person.listCount > 0 ? lists : undefined}>
+{#snippet fanartTags()}{#if fanartSource}<TitleTags {...fanartSource} />{/if}{/snippet}
+
+<FanartHeader image={person.fanart?.image} caption={fanartSource ? fanartTags : undefined} slim
+  position="var(--person-fanart-position)"
+  stats={person.listCount > 0 ? lists : undefined}>
   <SummaryTitle title={person.name} />
 </FanartHeader>
 
@@ -137,9 +267,17 @@ function yearLine(credit: PersonCredit) {
   {#snippet sidebar()}
     <SummaryPoster image={person.headshot ?? personPlaceholder(person.genderId)} alt={person.name} />
     <SectionNav
-      sections={[{ label: 'Biography', href: '#overview' }, { label: 'Credits', href: '#credits' }]}
+      sections={[
+        { label: 'Biography', href: '#overview' },
+        ...(person.knownFor.length > 0 ? [{ label: 'Known For', href: '#known-for' }] : []),
+        { label: 'Credits', href: '#credits' },
+      ]}
       label="{person.name} sections"
     />
+    {#if eras.length > 1}
+      <CareerEras {eras} bind:selected={era} name={eraName} onpick={showCredits}
+        watched={data.user ? watchedCredit : undefined} />
+    {/if}
     <ExternalLinks links={person.links} />
   {/snippet}
 
@@ -177,6 +315,15 @@ function yearLine(credit: PersonCredit) {
     <ActionButtons progress={data.user ? progress : undefined} history={false} library={false} comment={false} list={false} />
   {/snippet}
 
+  {#if person.knownFor.length > 0}
+    <section class="known-for" id="known-for" aria-labelledby="known-for-heading">
+      <h2 id="known-for-heading"><strong>Known</strong> For</h2>
+      <PosterGrid columns={5}>
+        {#each person.knownFor as credit (`${credit.type}-${credit.id}`)}{@render card(credit, false)}{/each}
+      </PosterGrid>
+    </section>
+  {/if}
+
   <section class="credits" id="credits" aria-labelledby="credits-heading">
     <h2 id="credits-heading"><strong>Credits</strong></h2>
     <div class="toolbar">
@@ -186,7 +333,8 @@ function yearLine(credit: PersonCredit) {
           <ul>
             {#each tabs as department (department.id)}
               <li>
-                <button type="button" aria-current={department.id === current.id} onclick={() => (tab = department.id)}
+                <button type="button" aria-current={department.id === current.id}
+                  onclick={() => ((tab = department.id), (era = null))}
                   ><span>{department.label}</span><span class="tag">{department.count}</span></button>
               </li>
             {/each}
@@ -210,6 +358,7 @@ function yearLine(credit: PersonCredit) {
             bind:flipped={query.reversed} />
         </span>
         <span class="filter-icons">
+          <ViewToggle bind:view />
           <TermsFilter bind:terms={query.terms} vip={data.user?.isVip ?? false} />
           <FilterMenu active={filtered} count={query.fade.length + query.hide.length + Number(!query.movies) + Number(!query.shows)}>
             <FadeHideItems value={query} fadeOptions={data.user ? fadeHideOptions : []} hideOptions={data.user ? creditHideOptions : creditHideOptions.filter(({ id }) => ['released', 'unreleased', 'noreleasedate', 'self'].includes(id))}
@@ -230,43 +379,51 @@ function yearLine(credit: PersonCredit) {
       </div>
     </div>
 
-    {#if current}
-      <PosterGrid columns={5}>
-        {#each current.credits as credit (`${credit.type}-${credit.id}`)}
-          {@const state = overlay.state(credit.type, credit.id)}
-          <PosterCard
-            faded={!!data.user && query.fade.some((option) => matchesCreditFilter({ option, credit, state }))}
-            href={credit.href}
-            title={credit.title}
-            fullTitle={credit.year ? `${credit.title} (${credit.year})` : credit.title}
-            image={credit.image}
-            subtitles={[yearLine(credit), credit.characters || ' ']}
-            userRating={state.rating}
-            dropped={state.dropped}
-            icons={{
-              fill: quickIconFill({
-                state,
-                airedEpisodes: credit.airedEpisodes,
-                runtime: credit.runtime,
-                datePreferences: data.datePreferences,
-              }),
-              ratingTarget: { type: credit.type, id: credit.id, title: credit.title },
-              watchTarget: { type: credit.type, id: credit.id, title: credit.title, airedEpisodes: credit.airedEpisodes, runtime: credit.runtime },
-              rating: credit.rating,
-              // ponytail: OG showed watch now only with sources in the viewer's country. Until #60 brings
-              // sources, anything not out yet is taken to have none, like the chart pages.
-              watchNow: credit.released ? 'play' : undefined,
-            }}
-          />
-        {/each}
-      </PosterGrid>
+    {#if years}
+      {#each years as group, i (`${group.year}-${i}`)}
+        <section class={['year', view]} style:--era-accent={yearAccent(group.year)}
+          aria-label={group.year ? String(group.year) : 'No release date'}>
+          <p class="year-label" aria-hidden="true">
+            <span class={['figure', { undated: !group.year }]}>{group.year ?? 'TBA'}</span>
+            <span class="count">{countLabel(group.credits.length, 'credit')}</span>
+          </p>
+          {#if view === 'list'}
+            {@render credits(group.credits, 4)}
+          {:else}
+            <div class="year-posters">
+              {#each group.credits as credit (`${credit.type}-${credit.id}`)}{@render card(credit, true)}{/each}
+            </div>
+          {/if}
+        </section>
+      {/each}
+    {:else}
+      {@render credits(shown, 5)}
     {/if}
   </section>
 </SummaryFrame>
 
 <style>
 .credits {
+  --year-slots: 5;
+  scroll-margin-block-start: calc(var(--header-height) + var(--gutter));
+  --year-posters: 4;
+  container-type: inline-size;
   margin-block-start: var(--gutter);
+}
+
+/* The grid's columns by width, as PosterGrid drops them: the year takes one poster's slot. */
+@container (width < 940px) {
+  .credits {
+    --year-slots: 4;
+    --year-posters: 3;
+  }
+}
+
+@container (width < 720px) {
+  .credits {
+    --year-slots: 3;
+    --year-posters: 2;
+  }
 }
 
 .sort,
@@ -282,6 +439,82 @@ function yearLine(credit: PersonCredit) {
 
 h2 {
   margin: 0;
+}
+
+.known-for {
+  margin-block-start: var(--gutter);
+}
+
+/* A year's credits beside its figure, in Box Office's trade-paper numbers under its era's color. */
+.year {
+  display: grid;
+  grid-template-columns: var(--person-credits-year-width) minmax(0, 1fr);
+  gap: var(--person-credits-year-gap);
+  align-items: start;
+  /* Even above and below, so a year's credits sit centered between its rules. */
+  padding-block: var(--person-credits-year-padding);
+
+  & + & {
+    border-block-start: 1px solid var(--color-separator);
+  }
+
+  /* One poster's width for the year, so its posters match the five-across grid. */
+  &.grid {
+    grid-template-columns: calc((100% - (var(--year-slots) - 1) * var(--gutter)) / var(--year-slots)) minmax(0, 1fr);
+    column-gap: var(--gutter);
+  }
+}
+
+.year-posters {
+  display: grid;
+  grid-template-columns: repeat(var(--year-posters), minmax(0, 1fr));
+  gap: var(--gutter);
+  /* A row's padding, so the posters sit as far from the rules as the rows do. */
+  padding-block: var(--person-credit-row-padding);
+}
+
+.year-label {
+  /* Pinned under the site header while its year scrolls by, until the next year's section takes over. */
+  position: sticky;
+  inset-block-start: calc(var(--header-height) + var(--person-credits-year-sticky-gap));
+  display: grid;
+  margin: 0;
+  padding-block-start: var(--person-credit-row-padding);
+
+  &::before {
+    content: '';
+    inline-size: var(--person-credits-year-mark-width);
+    block-size: var(--person-credits-year-mark-height);
+    margin-block-end: var(--person-credits-year-mark-gap);
+    border-radius: var(--radius-person-eras-bar);
+    background-color: var(--era-accent);
+  }
+}
+
+.figure {
+  font-family: var(--font-person-credits-year);
+  font-size: var(--font-size-person-credits-year);
+  font-weight: var(--font-weight-headings);
+  font-variant-numeric: tabular-nums;
+  line-height: var(--line-height-person-credits-year);
+
+  &.undated {
+    font-size: var(--font-size-person-credits-year-undated);
+  }
+}
+
+.count {
+  margin-block-start: var(--person-credits-year-mark-gap);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-person-credits-year-count);
+  font-weight: var(--font-weight-headings-heavy);
+  letter-spacing: var(--letter-spacing-person-eras-years);
+  text-transform: uppercase;
+}
+
+.rows {
+  position: relative;
+  z-index: 0;
 }
 
 /* The department dropdown under the heading, with the sort and the filter tools on its line, pushed right. */

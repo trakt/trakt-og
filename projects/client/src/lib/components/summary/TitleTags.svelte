@@ -14,8 +14,11 @@ import { postCredits } from './postCredits.ts';
 interface Props {
   /** The subpage this is: "Stats", "Cast & Crew". */
   label?: string;
-  /** The way up, outermost first. One without an href is this page itself, like a titled season's "Season 10". */
-  links?: readonly { readonly title: string; readonly href?: string }[];
+  /**
+   * The way up, outermost first. One without an href is this page itself, like a titled season's "Season 10". A
+   * `tint` washes its block in that color: a person fanart's character.
+   */
+  links?: readonly { readonly title: string; readonly href?: string; readonly tint?: string }[];
   /** The episode type: "Season Premiere", colored by `--episode-{kind}`. */
   type?: { readonly text: string; readonly kind: string };
   /** The API's `during_credits` and `after_credits`. */
@@ -37,9 +40,10 @@ const slashed = (i: number) => ({ 'before-slash': i < links.length - 1, 'after-s
       <span class="part links">
         {#each links as link, i (link.title)}
           {#if link.href}
-            <a class={['link', slashed(i)]} href={link.href} rel={i === links.length - 1 ? 'up' : undefined}>{link.title}</a>
+            <a class={['link', slashed(i), { tinted: link.tint }]} style:--link-tint={link.tint} href={link.href}
+              rel={i === links.length - 1 ? 'up' : undefined}>{link.title}</a>
           {:else}
-            <span class={['link', slashed(i)]}>{link.title}</span>
+            <span class={['link', slashed(i), { tinted: link.tint }]} style:--link-tint={link.tint}>{link.title}</span>
           {/if}
         {/each}
       </span>
@@ -109,6 +113,11 @@ const slashed = (i: number) => ({ 'before-slash': i < links.length - 1, 'after-s
   color: inherit;
   text-decoration: none;
   transition: background-color var(--transition-card), color var(--transition-card);
+}
+
+.tinted {
+  background-color: color-mix(in srgb, var(--link-tint) var(--title-tags-tint), transparent);
+  color: var(--color-text-inverse);
 }
 
 a.link:is(:hover, :focus-visible) {

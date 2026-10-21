@@ -8,10 +8,13 @@
     <TitleTags links={[{ title: 'Ted Lasso', href: '/shows/ted-lasso' }, { title: 'Season 1', href }]} {type} {credits} />
 -->
 <script lang="ts">
+import Icon from '$lib/icons/Icon.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import { postCredits } from './postCredits.ts';
 
 interface Props {
+  /** A gold part that leads the bar and catches the light once: a person's "70th birthday". */
+  highlight?: { readonly text: string; readonly svg?: string };
   /** The subpage this is: "Stats", "Cast & Crew". */
   label?: string;
   /**
@@ -25,7 +28,7 @@ interface Props {
   credits?: { readonly duringCredits?: boolean | null; readonly afterCredits?: boolean | null };
 }
 
-const { label, links = [], type, credits }: Props = $props();
+const { highlight, label, links = [], type, credits }: Props = $props();
 const scenes = $derived(postCredits({ during: credits?.duringCredits, after: credits?.afterCredits }));
 const slashed = (i: number) => ({ 'before-slash': i < links.length - 1, 'after-slash': i > 0 });
 </script>
@@ -33,8 +36,9 @@ const slashed = (i: number) => ({ 'before-slash': i < links.length - 1, 'after-s
 <!-- The links are canonical API slugs, and resolve() only takes literal routes. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
-{#if label || links.length > 0 || type || scenes}
+{#if highlight || label || links.length > 0 || type || scenes}
   <div class="title-tags">
+    {#if highlight}<span class="part highlight">{#if highlight.svg}<Icon svg={highlight.svg} />{/if}{highlight.text}</span>{/if}
     {#if label}<span class="part label">{label}</span>{/if}
     {#if links.length > 0}
       <span class="part links">
@@ -85,6 +89,37 @@ const slashed = (i: number) => ({ 'before-slash': i < links.length - 1, 'after-s
   display: inline-flex;
   align-items: center;
   padding-inline: var(--title-tags-padding);
+}
+
+/* Gold, with one sweep of light across it after the page opens. */
+.highlight {
+  position: relative;
+  gap: var(--title-tags-highlight-gap);
+  overflow: hidden;
+  background-color: var(--color-title-tags-highlight);
+  color: var(--color-title-tags-highlight-text);
+  font-weight: var(--font-weight-headings-heavy);
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(100deg, transparent 30%, var(--color-title-tags-shine) 50%, transparent 70%);
+    translate: -120% 0;
+    animation: shine var(--title-tags-shine-duration) ease var(--title-tags-shine-delay) both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &::after {
+      display: none;
+    }
+  }
+}
+
+@keyframes shine {
+  to {
+    translate: 120% 0;
+  }
 }
 
 .label {

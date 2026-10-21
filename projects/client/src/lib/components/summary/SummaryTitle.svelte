@@ -17,13 +17,15 @@ interface Props {
   links?: ComponentProps<typeof TitleTags>['links'];
   /** The API's `during_credits` and `after_credits`. */
   credits?: ComponentProps<typeof TitleTags>['credits'];
+  /** The tag bar's gold lead: a person's birthday. */
+  highlight?: ComponentProps<typeof TitleTags>['highlight'];
 }
 
-const { title, year, certification, links, credits }: Props = $props();
+const { title, year, certification, links, credits, highlight }: Props = $props();
 </script>
 
 <div class="summary-title">
-  <TitleTags {links} {credits} />
+  <TitleTags {highlight} {links} {credits} />
   <h1>
     {title}
     {#if year}<span class="year">{year}</span>{/if}

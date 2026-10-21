@@ -1,11 +1,13 @@
+<!--
+  An item's community stats as a list row's count buttons, numbers only: watchers, plays, in libraries, lists and
+  comments, each with the ratings strip's icon and color (the stats page's), a short number ("204k") and a tooltip
+  with the full count ("204,312 watchers"). Each links on: lists and comments to their pages, the rest to the stats page.
+  Zeros are left out.
+-->
 <script lang="ts">
+import ListCount from '$lib/components/lists/ListCount.svelte';
+import { stripStatIcons } from '$lib/components/summary/stripStatIcons';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import user from '$lib/icons/trakt/user.svg?raw';
-import check from '$lib/icons/trakt/check.svg?raw';
-import collection from '$lib/icons/trakt/collection.svg?raw';
-import list from '$lib/icons/trakt/list.svg?raw';
-import comment from '$lib/icons/trakt/comment.svg?raw';
 import { readableStat } from '$lib/utils/readableStat';
 
 interface Props {
@@ -17,63 +19,78 @@ interface Props {
 }
 const { href, stats, comments = 0, released = true }: Props = $props();
 const shown = (count: number | undefined) => (released ? count ?? 0 : 0);
-const entries = $derived([
-  { label: 'Watchers', icon: user, count: shown(stats?.watchers) },
-  { label: 'Plays', icon: check, count: shown(stats?.plays), check: true },
-  { label: 'Collected', icon: collection, count: shown(stats?.collectors) },
-  { label: 'Lists', icon: list, count: stats?.lists ?? 0, href: `${href}/lists` },
-  { label: 'Comments', icon: comment, count: shown(comments), href: `${href}/comments` },
+
+type Entry = { word: string; plural?: string; icon: string; count: number; color?: string; href: string };
+const entries = $derived<readonly Entry[]>([
+  {
+    word: 'watcher',
+    icon: stripStatIcons.watchers,
+    count: shown(stats?.watchers),
+    color: 'var(--color-strip-watchers)',
+    href: `${href}/stats`,
+  },
+  {
+    word: 'play',
+    icon: stripStatIcons.plays,
+    count: shown(stats?.plays),
+    color: 'var(--color-strip-plays)',
+    href: `${href}/stats`,
+  },
+  {
+    word: 'in libraries',
+    plural: 'in libraries',
+    icon: stripStatIcons.libraries,
+    count: shown(stats?.collectors),
+    color: 'var(--color-strip-libraries)',
+    href: `${href}/stats`,
+  },
+  {
+    word: 'list',
+    icon: stripStatIcons.lists,
+    count: stats?.lists ?? 0,
+    color: 'var(--color-strip-lists)',
+    href: `${href}/lists`,
+  },
+  {
+    word: 'comment',
+    icon: stripStatIcons.comments,
+    count: shown(comments),
+    color: 'var(--color-stat-comments)',
+    href: `${href}/comments`,
+  },
 ]);
+const label = ({ count, word, plural = `${word}s` }: Entry) =>
+  `${count.toLocaleString('en-US')} ${count === 1 ? word : plural}`;
 </script>
+
 <!-- Item URLs come from the media mappers. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
-<div class="item-stats" aria-label="Community stats">
-  {#each entries as entry (entry.label)}
-    <span class="slot">
-      {#if entry.count > 0}
-        <Tooltip text={entry.label}>
-          {#snippet trigger(tooltip)}
-            <a href={entry.href ?? `${href}/stats`} class:check={entry.check} aria-label="{entry.count.toLocaleString('en-US')} {entry.label.toLowerCase()}" {...tooltip}>
-              <Icon svg={entry.icon} />{readableStat(entry.count)}
-            </a>
-          {/snippet}
-        </Tooltip>
-      {/if}
-    </span>
+<div class="item-stats" role="group" aria-label="Community stats">
+  {#each entries.filter(({ count }) => count > 0) as entry (entry.word)}
+    <Tooltip text={label(entry)}>
+      {#snippet trigger(tooltip)}
+        <ListCount svg={entry.icon} value={entry.count} shown={readableStat(entry.count)} word={entry.word}
+          plural={entry.plural} iconColor={entry.color} href={entry.href} {...tooltip} />
+      {/snippet}
+    </Tooltip>
   {/each}
 </div>
 
 <style>
 .item-stats {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  min-block-size: var(--item-stats-row-height);
   gap: var(--item-stats-gap);
-  font-family: var(--font-headings);
-  font-size: var(--font-size-episode-meta);
-  color: var(--color-episode-stat);
-}
-.slot {
-  display: flex;
-  align-items: center;
-}
-.slot:empty {
-  display: none;
-}
-a {
-  display: inline-flex;
-  align-items: center;
-  color: inherit;
-  text-decoration: none;
-  white-space: nowrap;
-  line-height: 1;
-  gap: var(--item-stats-icon-gap);
-}
-.item-stats :global(svg) {
-  font-size: var(--font-size-episode-stat-icon);
-}
-.check :global(svg) {
-  font-size: var(--item-stats-check-size);
+
+  /* The number only; the word stays for screen readers, and the tooltip says it in full. */
+  & :global(.count-text) {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
 }
 </style>

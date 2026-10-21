@@ -1,3 +1,4 @@
+import { loadWatchNow } from '../components/watchnow/loadWatchNow.ts';
 import { error, redirect } from '@sveltejs/kit';
 import {
   episodeResponseSchema,
@@ -61,6 +62,16 @@ export async function loadEpisode(
   const client = api({ fetch });
   const params = { id, season, episode };
   const path = `/shows/${encodeURIComponent(id)}/seasons/${season}`;
+  const layoutRead = parent();
+  const watchNowRead = layoutRead.then((layout) =>
+    loadWatchNow({
+      fetch,
+      path: `${path}/episodes/${episode}`,
+      country: layout.settings?.browsing?.watchnow?.country?.toLowerCase() || 'us',
+      settings: layout.settings,
+      isVip: layout.user?.isVip ?? false,
+    })
+  );
   const [
     showResponse,
     episodeResponse,
@@ -73,6 +84,7 @@ export async function loadEpisode(
     statsResponse,
     videosResponse,
     layout,
+    watchNow,
   ] = await Promise.all([
     client.shows.summary({ params: { id }, query: { extended: 'full,images' } }),
     client.shows.episode.summary({ params, query: { extended: 'full,images' } }),
@@ -84,7 +96,8 @@ export async function loadEpisode(
     client.shows.episode.ratings({ params, query: { extended: 'all' } }),
     client.shows.episode.stats({ params }),
     client.shows.episode.videos({ params }),
-    parent(),
+    layoutRead,
+    watchNowRead,
   ]);
   const show = body(showResponse, showResponseSchema, 'Show');
   const info = body(episodeResponse, episodeResponseSchema, 'Episode');
@@ -115,6 +128,7 @@ export async function loadEpisode(
   });
   return {
     episode: view,
+    watchNow: watchNow.button,
     user: layout.user,
     datePreferences: layout.datePreferences,
   };

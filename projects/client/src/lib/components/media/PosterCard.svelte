@@ -1,7 +1,8 @@
 <!--
   OG's poster card: poster or episode screenshot, the quick-icon bar, then a one-line
   title and optional sub-lines. Lay several out with PosterGrid. `--card-border-width: 0` drops the 1px frame, as on
-  the dashboard's recommendations band.
+  the dashboard's recommendations band. `framed` rounds the card like the actor photos, with the quick-icon bar on a
+  lighter panel inside a faint outline, as FanartCard's `framed` does (the summary's seasons and related picks).
 -->
 <script lang="ts">
 import { page } from '$app/state';
@@ -68,6 +69,8 @@ interface Props {
   removing?: () => boolean;
   /** A rewatching badge on the top-left corner, where OG's progress pages put one. */
   rewatching?: boolean;
+  /** Rounded, with the quick-icon bar on its own panel inside a faint outline. */
+  framed?: boolean;
   /** Left out, the card has no quick-icon bar. */
   icons?: Omit<ComponentProps<typeof QuickIcons>, 'small'>;
   /** A thin progress bar right under the quick icons, like OG's `under_progress`. */
@@ -89,6 +92,7 @@ const {
   fullTitle = number ? `${number} ${title}` : title,
   image,
   variant = 'poster',
+  framed = false,
   logo,
   logoMode = !!logo,
   calendar = false,
@@ -143,7 +147,7 @@ const restoreTarget = $derived(target?.type === 'show' ? { ...target, type: 'sho
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
 <article out:removeCard|global={() => removedByAction || removing()} hidden={hidden}
-  class={['poster-card', { dropped: isDropped && image, faded, calendar }]}>
+  class={['poster-card', { dropped: isDropped && image, faded, calendar, framed, 'with-icons': cardIcons, 'with-progress': progress }]}>
   {#if rank !== undefined}
     <RankPill {rank} />
   {/if}
@@ -228,6 +232,35 @@ const restoreTarget = $derived(target?.type === 'show' ? { ...target, type: 'sho
 
 .poster-wrapper {
   position: relative;
+}
+
+/* The poster rounded on top and the quick icons on a lighter panel rounded below, inside the faint outline. */
+.framed {
+  --color-card-border: var(--color-fanart-card-frame-line);
+
+  & .poster {
+    border-start-start-radius: var(--radius-card-framed);
+    border-start-end-radius: var(--radius-card-framed);
+  }
+
+  & :global(.quick-icons) {
+    border-end-start-radius: var(--radius-card-framed);
+    border-end-end-radius: var(--radius-card-framed);
+    background-color: var(--color-fanart-card-frame-bg);
+  }
+
+  /* With nothing under it (a person), the poster is the whole card. */
+  &:not(.with-icons, .with-progress) .poster {
+    border-radius: var(--radius-card-framed);
+  }
+
+  /* Up Next's progress bar closes it with a straight edge. */
+  &.with-progress {
+    & :global(.quick-icons) {
+      border-end-start-radius: 0;
+      border-end-end-radius: 0;
+    }
+  }
 }
 .poster-card[hidden] {
   display: none;

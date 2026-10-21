@@ -3,6 +3,8 @@
   the left, the Trakt rating on the right. Watch, rating and favorites use shared browser controls.
 -->
 <script lang="ts">
+import { openWatchNow } from '$lib/components/watchnow/watchNowLauncher.svelte';
+import { watchNowPath } from '$lib/components/watchnow/watchNowPath';
 import MediaSpoiler from '$lib/components/summary/MediaSpoiler.svelte';
 import Spinner from '$lib/components/loading/Spinner.svelte';
 import MediaFavorite from '$lib/components/favorites/MediaFavorite.svelte';
@@ -57,8 +59,14 @@ interface Props {
   favorite?: boolean;
   /** For season/episode stars, pass the parent show. */
   favoriteTarget?: FavoriteTarget;
-  /** `cinema` swaps the play icon for a ticket, for movies only in cinemas. Left out, no watch-now icon. */
+  /**
+   * `cinema` swaps the play icon for a ticket, for movies only in cinemas. Left out, no watch-now icon. It opens the
+   * page's Watch Now dialog for the first target it can find the item's API path from (a season or episode needs its
+   * show and number); with none, there's no icon.
+   */
   watchNow?: 'play' | 'cinema';
+  /** The card's fanart, for the Watch Now dialog's header. Left out, the dialog fetches the item's own. */
+  watchNowArt?: string;
   /** Names the thing being hidden ("show", "movie"). Left out, no hide icon. */
   hide?: string;
   hideTarget?: VisibilityTarget;
@@ -85,12 +93,20 @@ const {
   favorite = false,
   favoriteTarget,
   watchNow,
+  watchNowArt,
   hide,
   hideTarget,
   hideSection = 'recommendations',
   listLabel = 'Add to watchlist',
 }: Props = $props();
 
+const watchNowItem = $derived.by(() => {
+  for (const candidate of [watchTarget, collectionTarget, ratingTarget]) {
+    const path = candidate && watchNowPath(candidate);
+    if (candidate && path) return { path, title: candidate.title, fanart: watchNowArt };
+  }
+  return undefined;
+});
 const target = $derived(
   favoriteTarget ??
     (ratingTarget?.type === 'movie' || ratingTarget?.type === 'show'
@@ -116,7 +132,7 @@ const ratingLevel = $derived(rating === undefined ? 1 : Math.min(Math.max(Math.t
 </script>
 
 <!-- `label` names the action; `title` is the tooltip, which says what's done once it is. -->
-{#snippet action(kind: string, svg: string, label: string, amount: number, title = label)}
+{#snippet action(kind: string, svg: string, label: string, amount: number, title = label, onclick?: () => void)}
   <Tooltip text={title} placement="bottom">
     {#snippet trigger(tooltip)}
       <button
@@ -124,6 +140,7 @@ const ratingLevel = $derived(rating === undefined ? 1 : Math.min(Math.max(Math.t
         class={['action', kind, { selected: amount > 0 }]}
         style:--fill={amount}
         aria-label={label}
+        {onclick}
         {...tooltip}
       >
         <span class="base"></span>
@@ -169,8 +186,9 @@ const ratingLevel = $derived(rating === undefined ? 1 : Math.min(Math.max(Math.t
         {@render action('favorite', star, 'Add to favorites', fill.favorited ? 1 : 0, fill.titles.favorited)}
       {/if}
     {/if}
-    {#if watchNow}
-      {@render action('watch-now', watchNow === 'cinema' ? ticket : play, 'Watch now', 0)}
+    {#if watchNow && watchNowItem}
+      {@const item = watchNowItem}
+      {@render action('watch-now', watchNow === 'cinema' ? ticket : play, 'Watch now', 0, 'Watch now', () => openWatchNow(item))}
     {/if}
     {#if hide}
       {#if hiddenTarget}

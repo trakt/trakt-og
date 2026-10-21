@@ -23,8 +23,9 @@ const focusRevealed: Attachment<HTMLElement> = (element) => {
 <style>
 .spoiler-content {
   position: relative;
+  /* Inline, it wraps with the text around it, so a long hidden title stays beside its episode number. */
   &.inline {
-    display: inline-block;
+    display: inline;
   }
 }
 .blurred {

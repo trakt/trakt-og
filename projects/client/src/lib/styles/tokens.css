@@ -227,7 +227,16 @@
 
   /* Radii: Bootstrap's are all 0 in OG */
   --radius-base: 0;
-  --radius-code: 3px;
+  /*
+    Three corner sizes. Object: buttons, controls, dropdowns and their menus, images, cards, tiles and the People You
+    Follow panel, with tags, chips and pills 2px tighter (`--radius-tag`). Container: dialogs, larger panels and toasts. Round: pills and counts. Bars, slider tracks
+    and tiny marks keep their own.
+  */
+  --radius-object: 8px;
+  --radius-tag: calc(var(--radius-object) - 2px); /* tags, chips and pills: a little tighter than the objects they sit on */
+  --radius-container: 12px;
+  --radius-round: 999px;
+  --radius-code: var(--radius-object);
 
   /* Shadows */
   --shadow-dropdown: 0 6px 12px rgb(0 0 0 / 0.175);
@@ -269,7 +278,7 @@
   --line-height-card-subtitle: 13px;
   --space-card-subtitle: 5px; /* above each line under the title */
   --font-size-card-tag: 11px; /* tags above a title, rank pill */
-  --radius-card-tag: var(--radius-sm); /* the calendar's Today tag */
+  --radius-card-tag: var(--radius-tag); /* the calendar's Today tag */
   --space-card-tag-icon: 4px; /* a tag's heart to its number */
   --space-card-small-title: 1px; /* a fanart card's show to the episode under it */
   --font-size-fanart-title: 18px;
@@ -301,7 +310,7 @@
   --list-card-bubble-gap: 6px; /* the byline to the description */
   --list-card-description-lines: 3;
   --list-card-foot-gap: 10px; /* above the footer */
-  --radius-list-card: 14px;
+  --radius-list-card: var(--radius-container);
   --color-list-card-border: light-dark(rgb(0 0 0 / 0.08), rgb(255 255 255 / 0.07));
   --color-list-card-border-hover: light-dark(rgb(0 0 0 / 0.16), rgb(255 255 255 / 0.16));
   --transition-list-card: 0.2s;
@@ -313,8 +322,8 @@
   --list-card-poster-height-tablet: 144px;
   --list-card-sliver-tablet: 26px;
   --list-card-poster-gap-narrow: 6px; /* the posters side by side, whole, in a narrow container */
-  --radius-list-card-fan: 8px;
-  --radius-list-card-poster-narrow: 6px;
+  --radius-list-card-fan: var(--radius-object);
+  --radius-list-card-poster-narrow: var(--radius-object);
   --shadow-list-card-sliver: -6px 0 12px -2px rgb(0 0 0 / 0.55); /* each sliver over the poster before it */
   --transition-list-card-fan: 0.28s cubic-bezier(0.3, 0, 0.2, 1);
   --color-list-card-placeholder: light-dark(#e2e2e6, #2f2f2f);
@@ -324,7 +333,7 @@
   /* Status chips after the name: a see-through tint of their color, the text lifted toward the theme's text. */
   --list-card-chip-height: 22px;
   --list-card-chip-gap: 5px;
-  --radius-list-card-chip: 6px;
+  --radius-list-card-chip: var(--radius-tag);
   --list-card-chip-tint: 16%;
   --list-card-chip-line: 50%;
   --list-card-chip-count-tint: 34%; /* the collaborators count's darker segment */
@@ -417,7 +426,7 @@
   --read-notes-pill-height: 28px;
   --read-notes-pill-padding: 12px;
   --read-notes-pill-gap: 6px;
-  --radius-read-notes-pill: 14px;
+  --radius-read-notes-pill: var(--radius-round);
   --font-size-read-notes-pill: 12px;
   --letter-spacing-read-notes-pill: 0.06em;
   --blur-read-notes-pill: var(--blur-profile-pill);
@@ -535,7 +544,7 @@
   --dashboard-panel-word-gap: 0.22em; /* before a word unit: "years", "of 642" */
   --color-dashboard-panel-hover: #ff5a60; /* OG's dashboard stats hover (the brand red), lifted for text on dark glass */
   --transition-dashboard-panel-hover: 0.2s;
-  --radius-dashboard-panel: 16px;
+  --radius-dashboard-panel: var(--radius-container);
   --font-dashboard-panel-figures: var(--font-box-office-figures); /* Box Office's trade-paper numbers */
   --font-size-dashboard-panel-figure: 40px;
   --font-size-dashboard-panel-unit: 0.55em;
@@ -591,7 +600,7 @@
   /* Outlined action buttons: "Add comment" and the lists page's owner tools. */
   --action-button-padding: var(--space-sm-block) var(--space-sm-inline);
   --action-button-border-width: 1px;
-  --radius-action-button: 4px;
+  --radius-action-button: var(--radius-object);
   --font-size-action-button: 12px;
   --font-size-action-button-icon: 15px;
   --space-action-button-icon: 6px;
@@ -602,7 +611,7 @@
   --color-action-border-hover: var(--gray-light);
   --opacity-action-disabled: 0.5;
   --radius-dashboard-inbox: var(--radius-action-button);
-  --radius-dashboard-inbox-count: 10px;
+  --radius-dashboard-inbox-count: var(--radius-round);
   --dashboard-inbox-count-padding: 2px 7px;
   --dashboard-inbox-count-width: 22px;
   --font-size-dashboard-inbox-name: 14px;
@@ -646,6 +655,7 @@
   --space-schedule-card-gap: 14px; /* poster to text */
   --schedule-card-poster: 80px;
   --border-schedule-card: 3px;
+  --radius-schedule-card: var(--radius-object); /* the cards and every schedule poster */
   --space-schedule-row: 4px; /* beside a row's poster and text */
   --space-schedule-more: 6px 4px; /* inside "Show N more" */
   --schedule-day-poster: 46px; /* a row's poster in a day column */
@@ -759,7 +769,7 @@
   --recommendations-side-columns: 3;
   --recommendations-side-columns-tablet: 4; /* under the spotlight on a smaller tablet */
   --space-recommendations-side: var(--gutter); /* the 20px every other poster grid uses */
-  --radius-recommendations-poster: 6px;
+  --radius-recommendations-poster: var(--radius-object);
   --transition-recommendations-art: 0.5s ease-out;
   --transition-recommendations-body: 0.35s;
   --recommendations-poster-ring: 2px;
@@ -787,7 +797,7 @@
   --why-stars-gap: 3px;
   --why-chips-gap: 6px;
   --space-why-row: 12px;
-  --radius-why-panel: 12px;
+  --radius-why-panel: var(--radius-container);
   --color-why-panel-bg: light-dark(#fff, #181818); /* solid, so the arrow joins it seamlessly */
   --color-why-border: light-dark(rgb(0 0 0 / 0.12), rgb(255 255 255 / 0.12));
   --color-why-text: light-dark(#222, #fff);
@@ -809,6 +819,7 @@
   --glass-action-height: 34px;
   --glass-action-padding-card: 10px; /* `card`: the page's outlined control, as padded as View seasons */
   --glass-action-gap-card: 6px;
+  --font-size-glass-action-square: 20px; /* `square`: a summary's link-out logos */
   --font-weight-glass-action-card: 400; /* View seasons' regular weight */
   --glass-action-padding: 14px;
   --glass-action-gap: 8px;
@@ -826,6 +837,9 @@
   --color-glass-action-glass-hover: rgb(46 46 46 / 0.9);
   --color-glass-action-glass-line-hover: #5c5c5c;
   --color-glass-action-glass-icon: #8c8c8c;
+  --color-glass-action-ghost-icon: light-dark(#444, #d9d9d9); /* `ghost`: brighter than the outlined card's */
+  --color-glass-action-ghost-bg: light-dark(rgb(0 0 0 / 0.04), rgb(255 255 255 / 0.05));
+  --color-glass-action-ghost-hover-bg: light-dark(rgb(0 0 0 / 0.09), rgb(255 255 255 / 0.11));
   --font-size-glass-action: 13px;
   --font-weight-glass-action: var(--font-weight-headings);
 
@@ -839,8 +853,8 @@
   --font-size-nav: 16px; /* header links, buttons, search field */
   --font-size-footer: 13px;
   --font-size-footer-small: 11px; /* copyright */
-  --radius-sm: 4px; /* header buttons */
-  --radius-lg: 8px; /* search field, header menus */
+  --radius-sm: var(--radius-object); /* header buttons */
+  --radius-lg: var(--radius-container); /* search field, header menus */
   --color-header-bg: rgb(0 0 0 / 0.5); /* OG's bar, still used by the official list header */
   --color-header-text: #fff;
   --color-menu-text: light-dark(#000, #ccc);
@@ -872,8 +886,8 @@
   --header-avatar-ring: 2px; /* a VIP avatar's ring */
   --header-avatar-open-ring: 3px; /* around the avatar while its menu is open */
   --shadow-header-logo: drop-shadow(0 1px 4px rgb(0 0 0 / 0.35));
-  --radius-header-pill: 9px; /* links, the search icon, the menu button */
-  --radius-header-control: 11px; /* Get VIP, Sign In, the search field */
+  --radius-header-pill: var(--radius-object); /* links, the search icon, the menu button */
+  --radius-header-control: var(--radius-object); /* Get VIP, Sign In, the search field */
   --header-pill-height: 34px;
   --header-control-height: 40px;
   --header-avatar-size: 36px;
@@ -889,7 +903,7 @@
   --search-pill-padding: 3px 8px;
   --space-search-pill-row: 5px; /* between a result's title and its pills */
   --space-search-year: 6px; /* between a result's title and its year */
-  --radius-search-pill: var(--radius-menu-row); /* squared like the dropdown menus' rows */
+  --radius-search-pill: var(--radius-tag); /* squared like the dropdown menus' rows */
   --font-size-search-pill: 12px;
   --line-height-search-pill: 1.2;
   --search-poster-width: 40px;
@@ -898,9 +912,9 @@
   --search-close-size: 30px;
   --space-search-panel-gap: 8px; /* between the bar and the panel */
   --space-search-section: 8px;
-  --radius-search-panel: 16px;
-  --radius-search-row: 8px;
-  --radius-search-kbd: 4px;
+  --radius-search-panel: var(--radius-container);
+  --radius-search-row: var(--radius-object);
+  --radius-search-kbd: var(--radius-tag);
   --shadow-search-panel: 0 16px 40px rgb(0 0 0 / 0.35), 0 2px 8px rgb(0 0 0 / 0.15);
   --color-search-backdrop: rgb(0 0 0 / 0.5); /* the page behind an open search */
   --blur-search-backdrop: blur(6px);
@@ -934,7 +948,7 @@
   --color-dialog-fanart-shade: rgb(0 0 0 / 0.7); /* the title band over an item modal's fanart */
   --color-backdrop: rgb(0 0 0 / 0.7); /* body.moderate and .blur backdrops */
   --shadow-dialog: 0 0 20px light-dark(#666, #000);
-  --radius-dialog: 12px;
+  --radius-dialog: var(--radius-container);
   --dialog-width: 360px;
   --dialog-width-md: 500px;
   --dialog-width-lg: 600px; /* .wider */
@@ -951,9 +965,11 @@
   --dialog-width-art-list: 540px;
   --color-dialog-art-border: light-dark(rgb(0 0 0 / 0.08), rgb(255 255 255 / 0.08));
   --dialog-art-header-min-height: 132px;
+  --dialog-art-full-ratio: 16 / 9; /* `full`: a fanart's own shape */
   --dialog-art-header-padding: 20px 22px 18px;
   --dialog-art-header-gap: 6px;
   --gradient-dialog-art-shade: linear-gradient(to bottom, rgb(14 14 14 / 0.35), rgb(14 14 14 / 0.92));
+  --gradient-dialog-art-full-shade: linear-gradient(to top, rgb(14 14 14 / 0.9), rgb(14 14 14 / 0.5) 22%, transparent 45%);
   --gradient-dialog-art-empty: repeating-linear-gradient(135deg, #1f1f1f 0 14px, #1a1a1a 14px 28px); /* a new list */
   --dialog-art-tags-gap: 5px;
   --font-size-dialog-art-title: 24px;
@@ -1035,7 +1051,7 @@
   --checkin-logo-height: 116px; /* h1.logo min-height */
   --checkin-shadow-height: 100px; /* .shadow-base over the screenshot */
   --color-checkin-fanart-border: light-dark(#ddd, #444); /* .screenshot .fanart, $dk-separator-color */
-  --radius-checkin-submit: 8px;
+  --radius-checkin-submit: var(--radius-object);
   --font-size-checkin-message: 16px; /* .form-signin .form-control */
   --checkin-message-padding: 10px;
 
@@ -1055,7 +1071,7 @@
   --shadow-btn-active: inset 0 3px 5px rgb(0 0 0 / 0.125);
 
   /* Refreshed controls: one height, rounded, a solid caret; menus with inset rows and the check on the right. */
-  --radius-control: 7px;
+  --radius-control: var(--radius-object);
   --font-size-control: 14px;
   --font-weight-control: 500;
   --space-control-inline: 12px;
@@ -1082,8 +1098,8 @@
   --color-tool-hover: light-dark(#111, #fff);
   --color-tool-hover-bg: light-dark(#efefef, #303030);
   --menu-min-width: 210px;
-  --radius-menu: 10px;
-  --radius-menu-row: 6px;
+  --radius-menu: var(--radius-object);
+  --radius-menu-row: var(--radius-object);
   --space-menu: 6px;
   --space-menu-row: 7px 10px;
   --space-menu-check: 18px; /* between a row's label and its check */
@@ -1138,7 +1154,7 @@
   --service-mini-width: 44px; /* a service's logo tile in the streaming filter */
   --service-mini-height: 28px;
   --service-mini-padding: 4px 6px;
-  --radius-service-mini: 6px;
+  --radius-service-mini: var(--radius-object);
   --space-service-row: 12px;
   --space-service-row-padding: 6px 10px 6px 6px;
   --space-service-tag: 3px 6px; /* a store badge (Amazon, Free) at a service row's end */
@@ -1181,8 +1197,8 @@
   --font-size-toast: 14px;
   --font-size-toast-icon: 18px;
   --font-size-toast-close: 14px;
-  --radius-toast: 10px;
-  --radius-toast-close: 6px;
+  --radius-toast: var(--radius-container);
+  --radius-toast-close: var(--radius-object);
   --color-toast-bg: var(--color-header-panel);
   --color-toast-text: #fff;
   --color-toast-border: var(--color-header-edge);
@@ -1201,7 +1217,7 @@
   --tooltip-arrow: 5px;
   --tooltip-offset: 3px; /* between the arrow's tip and the trigger */
   --space-tooltip: 3px 8px;
-  --radius-tooltip: 3px;
+  --radius-tooltip: var(--radius-object);
   --color-tooltip-bg: #000;
   --color-tooltip-text: #fff;
   --opacity-tooltip: 0.9;
@@ -1217,7 +1233,7 @@
   --space-card-rating-top: 5px;
   --line-height-card-rating: 13px;
 
-  --radius-rating-popover: 0;
+  --radius-rating-popover: var(--radius-container);
   --rating-arrow-size: 10px;
   --rating-popover-gap: 10px;
   --rating-popover-border-width: 1px;
@@ -1267,7 +1283,7 @@
   --ninja-duration: 1.9s; /* 0.35s up, about a second of speech, 0.35s down; the keyframes are cut to this */
   --ninja-bubble-gap: 12px; /* past the top of his head */
   --ninja-bubble-padding: 8px 16px;
-  --radius-ninja-bubble: 18px;
+  --radius-ninja-bubble: var(--radius-container);
   --ninja-bubble-tail: 14px;
   --font-size-ninja-bubble: 20px;
   --color-ninja-bubble-bg: #fff;
@@ -1439,7 +1455,7 @@
   --watching-text-share: 36%; /* of the bar's width; the scrubber takes the rest */
   --watching-thumb-width: 96px; /* 16:9 */
   --watching-thumb-width-phone: 64px;
-  --radius-watching-thumb: 5px;
+  --radius-watching-thumb: var(--radius-object);
   --watching-kicker-gap: 7px; /* the live dot to "You are watching" */
   --watching-badge-size: 32px; /* in the thumbnail when there's no image */
   --watching-badge-icon: 14px;
@@ -1499,7 +1515,7 @@
   --profile-placeholder-size: 240px 240px;
   --profile-placeholder-blur: 4px;
   --opacity-profile-placeholder: 0.3;
-  --radius-profile-chip: 3px;
+  --radius-profile-chip: var(--radius-tag);
   --font-size-profile-box-title: 18px;
   --font-size-profile-box-subtitle: 13px;
   --font-size-profile-chip: 11px;
@@ -1560,7 +1576,7 @@
   --filter-profile-box-collage: brightness(0.55);
   --favorite-poster-width: 30%;
   --favorite-padding: 20px;
-  --radius-favorite: 15px;
+  --radius-favorite: var(--radius-object); /* the card and its poster alike */
   --font-size-favorite-title: 18px;
   --shadow-favorite-poster: 0 0 10px 0 rgb(0 0 0 / 0.25);
   --color-favorites-bg: light-dark(var(--gray-lighter), var(--dk-bg2));
@@ -1579,10 +1595,6 @@
   --gradient-welcome-right: linear-gradient(to right, rgb(0 0 0 / 0.5) 0, rgb(0 0 0 / 0) 20%);
 
   /* Lazy season/episode community icons (red-era episode-stats). */
-  --item-stats-row-height: 20px;
-  --item-stats-gap: 15px;
-  --item-stats-icon-gap: 5px;
-  --item-stats-check-size: 20px;
 
   /* Media stats: the shorter strip and poster overlap on season and episode stats. */
   --media-stats-compact-strip-height: 55px;
@@ -1620,16 +1632,22 @@
   --color-stats-diff-flat: light-dark(#666, #bbb);
   --stats-diff-bg-mix: 16%; /* a diff badge's tint of its own color */
   --space-stats-diff: 2px 7px;
-  --radius-stats-diff: 4px;
+  --radius-stats-diff: var(--radius-tag);
   --stats-diff-min: 38px; /* so the badges line up */
   --space-stats-diff-edge: 10px; /* past the column gap, between a badge and its box's edge */
-  /* Each site's bar in its brand's primary color. */
+  /* Each site's bar in its brand's primary color, and a summary link's logo under the pointer. */
   --color-site-trakt: var(--brand-primary);
   --color-site-imdb: #f5c518;
   --color-site-letterboxd: #00e054;
   --color-site-tmdb: #01b4e4;
   --color-site-rotten-tomatoes: #fa320a;
   --color-site-metacritic: #ffcc34;
+  --color-site-tvdb: #6cd591;
+  --color-site-fanart: #20b6e1;
+  --color-site-justwatch: #fbd446;
+  --color-site-twitter: #1da1f2;
+  --color-site-facebook: #1877f2;
+  --color-site-instagram: #e4405f;
 
   /* Profile charts: the genre band, the ratings chart and its tooltip, and the most watched columns
       */
@@ -1693,7 +1711,7 @@
   --color-chart-tooltip-border: #666;
   --color-chart-tooltip-text: #fff;
   --color-chart-tooltip-muted: #999;
-  --radius-chart-tooltip: 6px;
+  --radius-chart-tooltip: var(--radius-object);
   --space-chart-tooltip: 5px 8px;
   --chart-tooltip-offset: 20px; /* above the bar's top */
   /* The profile's ratings chart: bars in their rating colors over dashed count lines and a dashed average line, in
@@ -1763,7 +1781,7 @@
   --color-filter-control-bg: #333;
   --color-filter-control-text: #eee;
   --color-filter-label: #666;
-  --radius-filter-control: 3px;
+  --radius-filter-control: var(--radius-object);
   --filter-control-height: 28px;
   --font-size-filter-control: 13px;
   --space-filter-chip-block: 4px; /* above and below a picked chip, so wrapped rows space evenly */
@@ -1810,7 +1828,7 @@
   --strip-item-pad: 5px 6px; /* the hover wash around an item */
   --strip-item-pad-inline: 6px;
   --strip-item-pull: -5px -6px; /* and the same pulled back, so the wash doesn't space the row */
-  --radius-strip-item: 7px;
+  --radius-strip-item: var(--radius-object);
   --font-size-strip-number: 16px;
   --font-size-strip-icon: 17px;
   --strip-logo-size: 20px;
@@ -1823,7 +1841,8 @@
   --color-strip-plays: #b884cf; /* history's purple */
   --color-strip-libraries: #2fc9a6; /* library's teal */
   --color-strip-lists: #3fb8ef; /* watchlist's blue */
-  --color-strip-comments: #c4c4c4;
+  --color-strip-comments: #c4c4c4; /* on the strip's dark bar, in both themes */
+  --color-stat-comments: light-dark(#6e6e6e, var(--color-strip-comments)); /* a comments count on the page: darker in light mode */
   --color-strip-favorited: #f38a45; /* favorites' orange */
   --color-strip-rank-up: #6fcf7a; /* JustWatch's rank change in the black tooltip */
   --color-strip-rank-down: #ff5a60;
@@ -1836,6 +1855,14 @@
   --color-summary-tile-hover-bg: light-dark(#666, #555);
   --color-summary-poster-border: light-dark(#fff, #000);
   --shadow-summary-poster: 0 0 20px light-dark(#666, #000);
+  --summary-poster-border-width: 3px;
+  /* The poster's art as round as the actor photos; its border and Watch Now's bottom curve just outside that. */
+  --radius-summary-poster: var(--radius-headshot);
+  --rewatching-badge-offset: -10px; /* up and left, so the badge sits over the poster's top-left corner */
+  --radius-card-framed: var(--radius-headshot); /* a framed fanart or poster card, as round as the actor photos */
+  --color-fanart-card-frame-bg: #262626; /* its quick-icon panel: a step lighter than the bar's own --color-card-bg, dark in both themes for its white icons */
+  --color-fanart-card-frame-line: light-dark(rgb(0 0 0 / 0.08), rgb(255 255 255 / 0.08));
+  --radius-summary-poster-outer: calc(var(--radius-summary-poster) + var(--summary-poster-border-width));
   /* Cast cards on a summary's actors row and the cast & crew page: name first, then the role, then episodes. */
   --color-actor-name: light-dark(#333, #fff);
   --color-actor-character: light-dark(#777, #a3a3a3);
@@ -1844,7 +1871,7 @@
   --font-size-cast-card-name: 14px;
   --font-size-cast-card-role: 13px;
   --line-height-cast-card: 1.25;
-  --radius-headshot: var(--radius-recommendations-poster);
+  --radius-headshot: var(--radius-object);
   --cast-card-line-gap: 2px;
   --cast-card-headshot-gap: 6px; /* the headshot to the name, on top of the line gap */
   --cast-card-count-gap: 4px;
@@ -1915,7 +1942,7 @@
   --summary-action-title-line: 20px;
   --summary-action-detail-line: 16px;
   --font-size-summary-action-percent: 21px;
-  --radius-summary-action: 6px;
+  --radius-summary-action: var(--radius-object);
   --transition-summary-action: 0.2s;
   --summary-action-menu-gap: 6px;
   --summary-action-menu-width: 190px;
@@ -1937,19 +1964,23 @@
   --summary-offset-sm: calc((100% + var(--gutter)) / 4);
 
   /* Show seasons and episode lists: the Order / Season subnav and the all-episodes rows */
-  --color-season-links-label: #bbb;
-  --color-season-link: var(--gray-light);
-  --color-season-link-selected: light-dark(#000, #fff);
+  --color-season-links-label: var(--color-control-muted);
   --season-links-height: 50px;
+  --season-links-gap: 12px; /* the label to its pills */
+  --season-links-pad: 4px;
+  --season-links-pill-padding: 10px; /* wider than a pill tab, so a lone digit isn't a sliver */
+  --font-size-season-links-label: 12px;
+  --letter-spacing-season-links-label: 0.08em;
   --summary-poster-overlap-subnav: 245px; /* the sidebar rises past the subnav too */
-  --color-episode-titles-bg: light-dark(#fafafa, #333);
-  --color-episode-stats-bg: light-dark(#f6f6f6, var(--dk-box-accent));
-  --color-episode-stat: #009edf;
+  --episode-titles-gap: 4px; /* the title and its pills */
+  --episode-meta-gap: 2px; /* a little more air above the pills */
+  --item-stats-gap: 8px; /* between an episode's number-only count buttons */
+  --episode-info-gap: 12px; /* the titles, the overview and the stats */
+  --episode-overview-collapsed-height: 60px; /* three lines; a fourth still shows whole (Read More's 16px margin) */
+  --episode-overview-shade-height: 40px;
+  --font-size-episode-overview: var(--font-size-base);
   --color-episode-title: light-dark(#000, #fff);
-  --color-episode-unknown: #aaa;
   --font-size-episode-title: 20px;
-  --font-size-episode-meta: 13px;
-  --font-size-episode-stat-icon: 16px;
 
   /* Summary lazy sections: People You Follow and the related band */
   /* People You Follow: a glass panel of three equal cells, each opening its own view under them */
@@ -1965,7 +1996,7 @@
   --color-activity-label: light-dark(#555, rgb(255 255 255 / 0.78));
   --color-activity-chevron: light-dark(#999, #888);
   --color-activity-watched-icon: var(--color-progress-watched-text);
-  --radius-activity-panel: var(--radius-lg);
+  --radius-activity-panel: var(--radius-object);
   --space-activity-panel-top: 12px; /* from the heading down to the panel */
   --activity-cell-height: 56px;
   --activity-cell-padding: 8px 12px 8px 14px;
@@ -2031,7 +2062,7 @@
   --activity-person-padding: 0 10px 0 8px;
   --activity-person-gap: 9px;
   --activity-person-avatar: 28px;
-  --radius-activity-person: 6px;
+  --radius-activity-person: var(--radius-object);
   --color-activity-person-bg: var(--color-summary-tile-bg);
   --color-activity-person-hover: light-dark(#e2e2e2, #3d3d3d);
   --activity-tag-plays: 72px; /* fixed widths, so the split tags line up in columns */
@@ -2111,7 +2142,7 @@
   --blur-spoiler: blur(8px);
   --blur-spoiler-text: blur(8px) grayscale(1); /* comment and note text: red links and emoji leave no tint or hint */
   --comment-gif-height: 200px; /* a GIF in a comment, its width from its own shape */
-  --radius-comment-gif: 4px;
+  --radius-comment-gif: var(--radius-object);
   --color-gif-on-image: #fff; /* a category's name and the composer's remove button sit on a GIF in both themes */
   --composer-gif-height: 120px;
   --composer-gif-margin: 0 10px 4px 12px; /* under the field, in line with the toolbar */
@@ -2151,7 +2182,7 @@
   --comment-badge-height: calc(var(--comment-tag-height) - 2px);
   --comment-tag-padding: 0 7px;
   --comment-tag-gap: 4px;
-  --radius-comment-tag: 10px;
+  --radius-comment-tag: var(--radius-tag);
   --font-size-comment-tag: 12px;
   --font-size-comment-tag-icon: 11px;
   --color-comment-tag-border: var(--color-comment-field-border);
@@ -2160,14 +2191,14 @@
   --comment-meta-separator-gap: 7px;
   --comment-tool-size: 28px;
   --font-size-comment-tool: 15px;
-  --radius-comment-tool: 6px;
+  --radius-comment-tool: var(--radius-object);
   --comment-tools-gap: 2px;
   --transition-comment-quiet: 0.15s;
   --transition-comment-fade: 0.5s; /* a blocked or parent card opening */
   --comment-bubble-gap: 6px; /* above the bubble */
   --comment-bubble-padding-inline: 16px;
   --comment-bubble-padding: 12px var(--comment-bubble-padding-inline);
-  --radius-comment-bubble: 4px 14px 14px 14px; /* the corner by the avatar stays tight */
+  --radius-comment-bubble: 4px var(--radius-container) var(--radius-container) var(--radius-container); /* the corner by the avatar stays tight */
   --comment-actions-gap: 4px 16px;
   --comment-actions-padding: 8px 0 2px var(--comment-bubble-padding-inline); /* starts under the bubble's text */
   --comment-action-icon-gap: 5px;
@@ -2182,7 +2213,7 @@
   --font-size-comment-reaction-emoji: 13px;
   --comment-reaction-chip-height: 26px;
   --comment-reaction-chip-padding: 0 8px;
-  --radius-comment-reaction-chip: 13px; /* fully round */
+  --radius-comment-reaction-chip: var(--radius-round); /* fully round */
   --font-size-comment-reaction-chip: 12.5px;
   --comment-reaction-more-padding: 0 9px;
   /* The breakdown "+N" opens: every reaction with its count. */
@@ -2209,7 +2240,7 @@
   --opacity-comment-parent: 0.4; /* a reply's collapsed parent */
   --comment-parent-padding: 10px;
   --comment-parent-border: 4px;
-  --radius-comment-parent: 0 10px 10px 0;
+  --radius-comment-parent: 0 var(--radius-container) var(--radius-container) 0;
   --comment-replies-chevron-turn: 180deg;
   --color-comment-replies-open: var(--brand-secondary); /* "N replies" while the thread is open, and Reply while its box is open */
 
@@ -2219,7 +2250,7 @@
   --list-counts-gap: var(--comment-stats-gap); /* a list's count buttons, spaced like a comment's */
   --comment-stats-space: 12px; /* between the bubble and the stats bar */
   --comment-tags-gap: 10px;
-  --radius-comment-bubble-round: 14px; /* the comment's bubble, every corner alike */
+  --radius-comment-bubble-round: var(--radius-container); /* the comment's bubble, every corner alike */
   --comment-bubble-padding-nested: 9px 13px;
   --comment-chip-height: var(--list-card-chip-height);
   --comment-chip-padding: 9px;
@@ -2233,7 +2264,7 @@
   --color-comment-chip-linked: var(--brand-secondary); /* the comment a link pointed at */
   --color-comment-linked: color-mix(in srgb, var(--brand-secondary) 9%, transparent);
   --comment-linked-padding: 8px;
-  --radius-comment-linked: 12px;
+  --radius-comment-linked: var(--radius-container);
   --color-comment-chip-quiet: var(--color-list-chip-following); /* Parent and Blocked */
   --color-comment-rail-op: color-mix(in srgb, var(--brand-quaternary) 75%, transparent); /* the OP's stretch of the rail, and their avatar's ring */
   --comment-reaction-segment-padding: 0 9px;
@@ -2253,7 +2284,7 @@
 
   /* The comment composer: the new comment form, the reply box and the edit form. */
   --color-comment-field-border: light-dark(#cfcfcf, #474747);
-  --radius-comment-field: 14px;
+  --radius-comment-field: var(--radius-container);
   --comment-field-padding: 10px 18px;
   --comment-field-height: 96px;
   --comment-composer-heading-gap: 16px;
@@ -2267,7 +2298,7 @@
   --comment-toolbar-gap: 2px;
   --comment-toolbar-button: 30px;
   --comment-toolbar-button-padding: 0 6px;
-  --radius-comment-toolbar-button: 5px;
+  --radius-comment-toolbar-button: var(--radius-object);
   --font-size-comment-toolbar: 14px;
   --comment-toolbar-separator-margin: 6px 4px;
   --comment-meter-gap: 8px;
@@ -2300,7 +2331,7 @@
   --color-note-media: light-dark(#2b678f, #555); /* the notes dialog's type pill */
   --color-note-inline-title: light-dark(#e1e1e1, #333);
   --note-padding: 20px;
-  --radius-note: 2px;
+  --radius-note: var(--radius-container);
   --font-size-note-author: 13px;
   --font-size-note-pill: 11px;
   --line-height-note-pill: 1.1;
@@ -2354,6 +2385,7 @@
   --color-watch-now-favorites: var(--brand-seventh); /* the heart before "Your Favorites", the Favorite tag's orange */
   --watch-now-modal-columns-gap: 16px 14px;
   --space-watch-now-terms: 7px; /* between a tile and its prices */
+  --space-watch-now-terms-inline: 5px; /* the text under a tile, a little in from its edges */
   --space-watch-now-terms-columns: 6px;
   --font-size-watch-now-terms: 12px;
   --line-height-watch-now-terms: 1.25;
@@ -2367,8 +2399,8 @@
   --font-size-service-check: 15px;
   --color-service-off: #333; /* a service the picker hasn't picked */
   --service-off-opacity: 0.75;
-  --radius-service: 3px;
-  --radius-service-modal: 8px;
+  --radius-service: var(--radius-object);
+  --radius-service-modal: var(--radius-object);
   --service-uhd-offset: 5px; /* the 4K tag, in from the logo's corner */
   --service-uhd-padding: 2px 4px;
   --font-size-service-uhd: 9px;
@@ -2445,11 +2477,11 @@
   --color-list-choice: light-dark(#666, #555);
 
   /* VIP sidebar tools, OG's vip-actions values. */
-  --color-media-tools: light-dark(#666, #ccc);
-  --media-tools-padding: 8px 0 5px;
-  --media-tools-row-padding: 4px;
-  --media-tools-icon-column: 22px;
-  --media-tools-line-height: 1.2;
+  --media-tools-padding: 14px 0 5px;
+  --media-tools-gap: 6px;
+  --external-links-gap: 6px;
+  --external-links-margin: 14px 0;
+  --external-links-logo-max-width: 28px; /* wide logos (TVDB) shrink to fit their square */
 }
 
 /* OG's phone header is 5px shorter. */
@@ -2559,7 +2591,7 @@
   --season-hero-button-inline: 18px;
   --color-season-hero-chrome: rgb(0 0 0 / 0.55); /* the badge, the switch and the arrows over the fanart */
   --color-season-hero-chrome-line: rgb(255 255 255 / 0.18);
-  --radius-season-pill: 999px;
+  --radius-season-pill: var(--radius-round);
   --season-hero-badge-gap: 8px;
   --season-hero-badge-padding: 7px 14px 7px 7px;
   --season-hero-dot: 22px;
@@ -2580,7 +2612,7 @@
   --season-hero-arrow-inset: 40px;
   --font-size-season-hero-arrow: 28px;
   --season-source-padding: 3px 6px 2px;
-  --radius-season-source: 3px;
+  --radius-season-source: var(--radius-tag);
   --font-size-season-source: 10px;
   --letter-spacing-season-source: 0.1em;
   --color-season-source-trending: var(--brand-primary); /* "Trending now" */
@@ -2592,8 +2624,8 @@
   --line-height-season-title: 0.95;
   --letter-spacing-season-title: -0.02em;
   --shadow-season-wall: 0 8px 22px rgb(0 0 0 / 0.7);
-  --radius-season-poster: 3px;
-  --radius-season-button: 4px;
+  --radius-season-poster: var(--radius-object);
+  --radius-season-button: var(--radius-object);
   --font-size-season-button: 12px;
   --color-season-button-bg: #fff;
   --color-season-button-text: #111;
@@ -2613,13 +2645,13 @@
   --transition-season-ribbon: 0.2s;
   --color-list-tile-bg: #111; /* under the blurred poster while it loads */
   --color-list-tile-rank-bg: rgb(0 0 0 / 0.8);
-  --radius-list-tile: 8px;
+  --radius-list-tile: var(--radius-object);
   --list-tile-media-padding: 12px 14px 16px;
   --list-tile-media-gap: 12px;
   --list-tile-backdrop-bleed: 30px; /* the blur's soft edge, cropped */
   --filter-list-tile-backdrop: blur(22px) brightness(0.6) saturate(1.3);
   --list-tile-shade: linear-gradient(to bottom, transparent 35%, rgb(0 0 0 / 0.55));
-  --radius-list-tile-fan: 4px;
+  --radius-list-tile-fan: var(--radius-object);
   --shadow-list-tile-fan-frame: 0 8px 20px rgb(0 0 0 / 0.45);
   --list-tile-gap: 24px 20px;
   --list-tile-fan-height: 140px;
@@ -2668,7 +2700,7 @@
   --essential-row-gap: 4px;
   --essential-poster: 62px;
   --essential-poster-gap: 8px;
-  --radius-essential-poster: 3px;
+  --radius-essential-poster: var(--radius-object);
   --shadow-essential-poster: 0 8px 18px rgb(0 0 0 / 0.6);
   --essential-button-gap: 14px;
   --essential-button-padding: 10px 18px;
@@ -2681,7 +2713,7 @@
   --essential-poster-stagger: 0.05s;
   --color-featured-list-label: var(--brand-success); /* "Updated Daily" (`.label-success`) */
   --featured-list-label-padding: 4px 6px 3px;
-  --radius-featured-list-label: 3px;
+  --radius-featured-list-label: var(--radius-tag);
   --font-size-featured-list-label: 10px;
   --letter-spacing-featured-list-label: 0.1em;
   /* Trending comments: one comment at a time over its title's fanart. */
@@ -2708,7 +2740,7 @@
   --trending-comments-peek-gap: 10px; /* an avatar's hover card */
   --trending-comments-peek-bleed: -3px -8px 10px; /* over the tooltip's padding, with room below for the arrow */
   --trending-comments-peek-arrow: 12px;
-  --radius-trending-comments-peek: 6px;
+  --radius-trending-comments-peek: var(--radius-object);
   --trending-comments-peek-width: 300px;
   --trending-comments-peek-banner: 112px;
   --trending-comments-peek-shade: linear-gradient(transparent 20%, rgb(0 0 0 / 0.85));
@@ -2729,7 +2761,7 @@
   --color-toggle-chip-count-picked-bg: rgb(0 0 0 / 0.25); /* on the accent */
   /* Upcoming premieres: separate rounded fanart cards, the fanart dimmed further behind the logo. */
   --premiere-grid-gap: 16px;
-  --radius-premiere-card: 6px;
+  --radius-premiere-card: var(--radius-object);
   --shadow-premiere-card: 0 6px 18px rgb(0 0 0 / 0.25);
   --premiere-logo-top: 20%; /* clear of the date chip */
   --premiere-logo-height: 42%;
@@ -2745,7 +2777,7 @@
   --premiere-date-inset: 10px;
   --premiere-date-width: 44px;
   --premiere-date-padding: 5px 6px 6px;
-  --radius-premiere-date: 6px;
+  --radius-premiere-date: var(--radius-tag);
   --font-size-premiere-date-day: 20px;
   --font-size-premiere-date-month: 10px;
   --premiere-name-inset: 20px;
@@ -2833,7 +2865,7 @@
   /* The open row's seasons: a heading line, then a numbered square an episode */
   --font-size-progress-toggle-icon: 10px;
   --progress-strip-gap: 20px; /* the row's top to its season list */
-  --radius-progress-band: 8px;
+  --radius-progress-band: var(--radius-container);
   --color-progress-band: light-dark(#f5f5f5, #262626); /* the season list */
   --progress-band-padding: 4px 14px 8px;
   --progress-season-percent: 44px; /* fits 100%, so every season's bar ends at the same point */
@@ -2873,7 +2905,7 @@
   /* A square's chart tooltip: its screenshot, then status lines after a dash in their color */
   --progress-tip-width: 200px;
   --progress-tip-image-gap: 6px;
-  --radius-progress-tip-image: 3px;
+  --radius-progress-tip-image: var(--radius-object);
   --color-progress-tip-watched: #b583cf; /* the watched purple, lifted for the black tooltip */
   --color-progress-tip-collected: var(--brand-quaternary);
   --color-progress-tip-next: var(--brand-primary);
@@ -2916,7 +2948,7 @@
   --splash-title-tracking: -0.5px;
   --splash-title-measure: 10em; /* title and lede balance to about the same line length */
   --splash-lede-measure: 20em;
-  --radius-splash-sheet: 16px;
+  --radius-splash-sheet: var(--radius-container);
   --splash-panel-padding-block: 18px;
   --splash-panel-gap: 14px;
   --splash-mark-size: 40px;
@@ -2929,7 +2961,7 @@
   --splash-label-tracking: 1px;
   --splash-label-gap: 4px;
   --splash-app-icon: 34px;
-  --radius-splash-app-icon: 8px;
+  --radius-splash-app-icon: var(--radius-object);
   --splash-row-height: 48px;
   --splash-row-gap: 12px;
   --font-size-splash-app: 14px;
@@ -3155,7 +3187,7 @@
   --home-sign-in-height: 50px;
   --home-sign-in-inline: 24px;
   --font-size-home-sign-in: 17px;
-  --radius-home-pill: 999px;
+  --radius-home-pill: var(--radius-round);
   /* Motion: the mark rolls in, then G, Redux and the copy rise into place. Off under reduced motion. */
   --home-roll-duration: 1.5s;
   --home-roll-from: -1200px;
@@ -3274,9 +3306,9 @@
   --font-size-sidebar-pill: var(--font-size-control); /* the same size as the sidebar's dropdowns */
   --font-size-filter-chip: var(--font-size-control);
   --font-size-menu-pill: 11px;
-  --radius-menu-pill: 10px;
+  --radius-menu-pill: var(--radius-round);
   --rail-tool-width: 48px;
-  --radius-sidebar-pill: 15px;
+  --radius-sidebar-pill: var(--radius-round);
   --filter-chip-site: 16px; /* a rating chip's site logo */
   --filter-chip-remove: 20px;
   --font-size-live-now: 30px; /* trending's Live now count */
@@ -3298,7 +3330,7 @@
   --color-mini-month-heat: var(--brand-primary);
   --mini-month-heat-max: 80%; /* the busiest day's share of red */
   --mini-month-gap: 3px;
-  --radius-mini-month-cell: 6px;
+  --radius-mini-month-cell: var(--radius-object);
   --font-size-mini-month: 13px;
   --font-size-mini-month-weekday: 10px;
   --color-mini-month-marked: #66afe9; /* the first day in view */

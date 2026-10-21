@@ -6,6 +6,7 @@
   `/watchnow` call has every country's offers.
 -->
 <script lang="ts">
+import type { Attachment } from 'svelte/attachments';
 import justwatchLogo from '$lib/assets/sites/justwatch-logo.svg';
 import Dialog from '$lib/components/dialog/Dialog.svelte';
 import DialogArtHeader from '$lib/components/dialog/DialogArtHeader.svelte';
@@ -104,6 +105,14 @@ const poweredBy = $derived.by(() => {
   const link = justwatch[country];
   return link ? https(link) : `https://www.justwatch.com/${country === 'gb' ? 'uk' : country}`;
 });
+
+// While the tiles load, the browser's first focus lands in the footer (Powered by JustWatch): start on the dialog.
+const focusAboveFooter: Attachment<HTMLElement> = (footer) => {
+  if (!open) return;
+  queueMicrotask(() => {
+    if (footer.contains(document.activeElement)) footer.closest('dialog')?.focus();
+  });
+};
 </script>
 
 {#snippet flag(src: string | null | undefined)}
@@ -150,7 +159,7 @@ const poweredBy = $derived.by(() => {
     {/each}
   </div>
 
-  <footer class="footer">
+  <footer class="footer" {@attach focusAboveFooter}>
     {#if countries.length > 0}
       <Dropdown label="Country: {picked?.name ?? country.toUpperCase()}">
         {#snippet trigger()}
@@ -247,6 +256,7 @@ const poweredBy = $derived.by(() => {
 .terms {
   display: grid;
   margin: var(--space-watch-now-terms) 0 0;
+  padding-inline: var(--space-watch-now-terms-inline);
   font-family: var(--font-body);
   font-size: var(--font-size-watch-now-terms);
   font-weight: normal;

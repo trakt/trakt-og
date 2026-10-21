@@ -1,7 +1,8 @@
 <!--
   A show's episode list (OG's `#seasons-episodes-sortable` of `.row.fanarts`): "N Episodes" with the sort dropdown,
-  then a row per episode. The fanart card with quick icons sits on the left; on the right the type tag, "1x02 Title",
-  the air date and runtime, the comment count and the overview.
+  then a row per episode. The framed fanart card with quick icons sits on the left; on the right "1x02 Title", tag
+  pills for the air date (red), the runtime and the type (Season Premiere, in its own color), the overview cut to a few lines under Read More, and
+  the community stats as number-only count buttons along the card's foot.
 -->
 <script lang="ts">
 import MediaSpoiler from '$lib/components/summary/MediaSpoiler.svelte';
@@ -11,7 +12,9 @@ import { replaceState } from '$app/navigation';
 import { page } from '$app/state';
 import { SvelteURLSearchParams } from 'svelte/reactivity';
 import TermsFilter from '$lib/components/filters/TermsFilter.svelte';
-import Overview from '$lib/components/summary/Overview.svelte';
+import ReadMore from '$lib/components/readmore/ReadMore.svelte';
+import TagPills from '$lib/components/labels/TagPills.svelte';
+import type { TagPill } from '$lib/components/labels/TagPill';
 import FanartCard from '$lib/components/media/FanartCard.svelte';
 import { quickIconFill } from '$lib/components/media/quickIconFill';
 import SortHeading from '$lib/components/summary/SortHeading.svelte';
@@ -91,6 +94,13 @@ function saveFilters(next: FadeHide) {
   // eslint-disable-next-line svelte/no-navigation-without-resolve -- only this page's query changes
   replaceState(`${page.url.pathname}?${search}${page.url.hash}`, page.state);
 }
+
+// The air date in red, the runtime, then the episode's type (Season Premiere) in its own color.
+const metaTags = (row: EpisodeRow): readonly TagPill[] => [
+  row.aired ? { text: row.aired, kind: 'primary' } : { text: 'No air date' },
+  ...(row.runtime ? [{ text: row.runtime }] : []),
+  ...(row.type ? [{ text: row.type.text, color: `var(--episode-${row.type.kind})` }] : []),
+];
 </script>
 
 <!-- Hrefs are built from API slugs, and resolve() only takes literal routes. -->
@@ -107,6 +117,7 @@ function saveFilters(next: FadeHide) {
       {@const state = item.state}
       <article class={["row", { faded: item.faded }]} aria-labelledby="episode-{row.id}" {@attach stats.observe({ id: row.id, show: showId, season: row.season, episode: row.episode })}>
         <FanartCard
+          framed
           href={row.href}
           title={row.title}
           number={row.number}
@@ -126,19 +137,17 @@ function saveFilters(next: FadeHide) {
         />
         <div class="info">
           <div class="titles">
-            {#if row.type}
-              <p class="type" style:--episode-color="var(--episode-{row.type.kind})">{row.type.text}</p>
-            {/if}
             <h3 id="episode-{row.id}"><a href={row.href}><span class="number">{row.number}</span></a> <MediaSpoiler target={{type:"episode",id:row.id}} kind="title" inline><a href={row.href}>{row.title}</a></MediaSpoiler></h3>
-            <p class="meta">
-              {#if row.aired}{row.aired}{:else}<span class="unknown">no air date</span>{/if}
-              {#if row.runtime}<span class="unknown">&mdash; {row.runtime}</span>{/if}
-            </p>
-            <div class="stats">
-              <ItemStatIcons href={row.href} stats={stats.counts.get(row.id)} comments={row.comments} released={row.released} />
-            </div>
+            <div class="meta"><TagPills tags={metaTags(row)} /></div>
           </div>
-          {#if row.overview}<div class="overview"><MediaSpoiler target={{type:"episode",id:row.id}} kind="overview"><Overview overview={row.overview} compact /></MediaSpoiler></div>{/if}
+          {#if row.overview}
+            <div class="overview">
+              <MediaSpoiler target={{ type: 'episode', id: row.id }} kind="overview"><ReadMore>{row.overview}</ReadMore></MediaSpoiler>
+            </div>
+          {/if}
+          <div class="stats">
+            <ItemStatIcons href={row.href} stats={stats.counts.get(row.id)} comments={row.comments} released={row.released} />
+          </div>
         </div>
       </article>
     {/each}
@@ -158,7 +167,6 @@ function saveFilters(next: FadeHide) {
   display: grid;
   grid-template-columns: calc((100% + var(--gutter)) * 4 / 12 - var(--gutter)) minmax(0, 1fr);
   column-gap: var(--gutter);
-  align-items: start;
   margin-block-start: var(--gutter);
 
   @media (width < 992px) {
@@ -170,26 +178,16 @@ function saveFilters(next: FadeHide) {
   }
 }
 
-.titles {
-  margin-inline-start: calc(-1 * var(--gutter));
-  padding: 10px 0 8px var(--gutter);
-  background-color: var(--color-episode-titles-bg);
-
-  @media (width < 768px) {
-    margin-inline-start: 0;
-  }
+.info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--episode-info-gap);
+  min-inline-size: 0;
 }
 
-.type {
-  display: inline-block;
-  margin: 0 5px 5px 0;
-  padding: 3px 5px;
-  background-color: var(--episode-color);
-  color: var(--color-card-text);
-  font-family: var(--font-headings);
-  font-size: var(--font-size-card-tag);
-  font-weight: var(--font-weight-headings);
-  line-height: var(--line-height-headings);
+.titles {
+  display: grid;
+  gap: var(--episode-titles-gap);
 }
 
 h3 {
@@ -197,6 +195,8 @@ h3 {
   font-family: var(--font-headings);
   font-size: var(--font-size-episode-title);
   font-weight: var(--font-weight-headings);
+
+  line-height: var(--line-height-headings);
 
   & a {
     color: var(--color-episode-title);
@@ -214,28 +214,19 @@ h3 {
 }
 
 .meta {
-  margin: 0;
-  font-size: var(--font-size-episode-meta);
+  margin-block-start: var(--episode-meta-gap);
 }
 
-.unknown {
-  color: var(--color-episode-unknown);
-  font-style: italic;
-}
-
+/* Level with the card's foot; a longer, opened overview pushes it down. */
 .stats {
-  margin: 5px 0 -10px calc(-1 * var(--gutter));
-  padding: 7px 0 7px var(--gutter);
-  background-color: var(--color-episode-stats-bg);
-  font-family: var(--font-headings);
-  font-size: var(--font-size-episode-meta);
-
-  @media (width < 768px) {
-    margin-inline-start: 0;
-  }
+  margin-block-start: auto;
 }
 
+/* A few lines, under a short fade in the page's color. */
 .overview {
-  margin: 15px 0 10px;
+  --comment-collapsed-height: var(--episode-overview-collapsed-height);
+  --comment-shade-height: var(--episode-overview-shade-height);
+  --read-more-shade: var(--color-surface);
+  font-size: var(--font-size-episode-overview);
 }
 </style>

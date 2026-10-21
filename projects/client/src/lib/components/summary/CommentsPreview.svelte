@@ -2,9 +2,10 @@
   OG's comments preview on a summary: "Comments" with "All N Comments", then a Filter dropdown picking Popular,
   Recent or Me and a Language dropdown (English first, reloading through `reload`) with "Add comment" beside them,
   the new comment form (`form`) under them while it's open, and up to three comments of the pick, reviews featured.
-  An item without comments in any language shows only the form, without the heading. Picks without comments are left out by the caller; with
-  none in the language, a dashed note says so. "Add comment" opens the page's new comment form; what it posts goes on top of
-  Recent, which it switches to.
+  With nothing to show in the first language (English), only the form renders, without the heading, so the page's
+  Add Comment still opens it; a comment posted from it shows the section. Picks without comments are left out by the
+  caller. After picking another language with none, the controls stay so another can be picked. "Add comment" opens
+  the page's new comment form; what it posts goes on top of Recent, which it switches to.
   `cut:` "Likes 30 Days" and "Following" (no API sort or filter).
 -->
 <script lang="ts">
@@ -22,7 +23,6 @@ import type { FormatDateOptions } from '$lib/utils/formatDate';
 import { countLabel } from '$lib/utils/countLabel';
 import { commentLanguage } from '$lib/comments/commentLanguage';
 import { type CommentLanguage, commentLanguages } from '$lib/comments/commentLanguages';
-import EmptyState from '$lib/components/empty/EmptyState.svelte';
 import SectionHeading from './SectionHeading.svelte';
 import { withoutBlocked } from '$lib/components/comments/withoutBlocked';
 import { withPostedComments } from './withPostedComments.ts';
@@ -71,8 +71,8 @@ $effect(() => {
 const current = $derived(tabs.find(({ id }) => id === picked) ?? tabs[0]);
 </script>
 
-<!-- An item without comments in any language has only the form. -->
-{#if current || count > 0}
+<!-- Nothing to show until another language is picked: only the form. -->
+{#if current || reloaded}
 <div class="summary-comments">
   <SectionHeading title="Comments" more={{ href: `${href}/comments`, text: `All ${countLabel(count, 'Comment')}` }} />
   <div class="controls">
@@ -105,11 +105,6 @@ const current = $derived(tabs.find(({ id }) => id === picked) ?? tabs[0]);
     <AddCommentLink />
   </div>
   {#if form}<div class="form">{@render form()}</div>{/if}
-  {#if !current}
-    <div class="comment">
-      <EmptyState compact>No comments{language === 'all' ? '' : ` in ${shown.label}`} yet.</EmptyState>
-    </div>
-  {/if}
   {#each current?.comments ?? [] as comment (comment.id)}
     <div class="comment">
       <CommentCard {comment} {item} {viewer} {dateOptions} featured={comment.review} wide />

@@ -53,9 +53,14 @@ const state = $derived(badgeTarget ? overlay.state(badgeTarget.type, badgeTarget
 </div>
 
 <style>
+/*
+  Rounded, with the art and the rating corner rounded just inside the border, so badges that reach past the edge
+  aren't clipped.
+*/
 .summary-poster {
   position: relative;
-  border: 3px solid var(--color-summary-poster-border);
+  border: var(--summary-poster-border-width) solid var(--color-summary-poster-border);
+  border-radius: var(--radius-summary-poster-outer);
   background-color: var(--color-card-bg);
   box-shadow: var(--shadow-summary-poster);
 
@@ -68,7 +73,30 @@ const state = $derived(badgeTarget ? overlay.state(badgeTarget.type, badgeTarget
     aspect-ratio: var(--ratio-poster);
     object-fit: cover;
   }
+
+  & > :is(img, .placeholder),
+  & .collage {
+    border-radius: var(--radius-summary-poster);
+  }
+
+  & :global(.corner-rating) {
+    border-start-end-radius: var(--radius-summary-poster);
+  }
 }
+
+/* Watch Now under it, or under the link around it (a season's or episode's): the bottom stays square to meet it. */
+.summary-poster:has(+ :global(.watch-now)),
+:global(:has(+ .watch-now)) > .summary-poster {
+  border-end-start-radius: 0;
+  border-end-end-radius: 0;
+
+  & > :is(img, .placeholder),
+  & .collage {
+    border-end-start-radius: 0;
+    border-end-end-radius: 0;
+  }
+}
+
 .collage {
   position: absolute;
   inset: 0;

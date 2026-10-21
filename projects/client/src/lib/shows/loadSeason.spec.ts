@@ -17,6 +17,8 @@ const server = setupServer(
     }
     return HttpResponse.json([]);
   }),
+  // The Watch Now block's service names; its offers come through the item's own path above.
+  http.get(`${API}/watchnow/*`, () => HttpResponse.json([])),
   http.get(`${API}/shows/:id`, ({ request }) => {
     seen.push(request);
     return HttpResponse.json({ title: 'Breaking Bad', ids: { slug: 'breaking-bad', trakt: 1388 } });
@@ -24,6 +26,7 @@ const server = setupServer(
 );
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 afterAll(() => server.close());
+const isWatchNow = (request: Request) => new URL(request.url).pathname.includes('/watchnow');
 afterEach(() => {
   server.resetHandlers();
   seen.length = 0;
@@ -44,10 +47,16 @@ const params = () => ({
 describe('loadSeason', () => {
   it('should load all public reads anonymously and preserve query controls', async () => {
     const data = await loadSeason(params());
-    expect(seen).toHaveLength(8);
+    expect(seen.filter((request) => !isWatchNow(request))).toHaveLength(8);
     expect(seen.every((request) => !request.headers.has('authorization'))).toBe(true);
     expect(data.season.id).toBe(3950);
     expect([data.sort, data.terms]).toEqual(['votes,desc', 'pilot']);
+  });
+  it("should load the season's Watch Now, falling back to its first episode with no offers", async () => {
+    await loadSeason(params());
+    const paths = seen.filter(isWatchNow).map((request) => new URL(request.url).pathname);
+    expect(paths).toContain('/shows/breaking-bad/seasons/1/watchnow/us');
+    expect(paths).toContain('/shows/breaking-bad/seasons/1/episodes/1/watchnow/us');
   });
   it('should reject malformed season numbers before fetching', async () => {
     await expect(loadSeason({ ...params(), season: '-1' })).rejects.toMatchObject({ status: 404 });

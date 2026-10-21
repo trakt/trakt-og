@@ -27,10 +27,20 @@ interface Props {
   onRefresh?: () => void;
   needsRefresh?: boolean;
   refreshing?: boolean;
+  /** PosterCard's `framed`: rounded, with the quick icons on their own panel. */
+  framed?: boolean;
 }
 
-const { item, state = {}, onRewatch, onWatchSave, onRefresh, needsRefresh = false, refreshing = false }: Props =
-  $props();
+const {
+  item,
+  state = {},
+  onRewatch,
+  onWatchSave,
+  onRefresh,
+  needsRefresh = false,
+  refreshing = false,
+  framed = false,
+}: Props = $props();
 const target = $derived({
   type: 'episode' as const,
   id: item.episodeId,
@@ -58,6 +68,7 @@ const lines = $derived(
 
 <div class="on-deck-card" aria-busy={refreshing}>
   <PosterCard
+    {framed}
     href={item.complete ? item.showHref : item.episodeHref}
     title={item.complete ? item.showTitle : title}
     fullTitle={item.complete ? item.showTitle : `${item.showTitle} ${item.episodeNumber}`}

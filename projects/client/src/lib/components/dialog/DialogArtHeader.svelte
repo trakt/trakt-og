@@ -1,7 +1,8 @@
 <!--
   The art header on top of the notes and list dialogs: the item's fanart, a strip of the list's posters, or a striped
   placeholder for a new list, under a dark glass shade, with card tags over the title and `children` under it (a
-  report's permalink). Pass it the id a Dialog `header` snippet hands over. Goes with `<Dialog variant="art">`, whose glass close sits in its corner.
+  report's permalink). `full` shows the whole fanart, uncropped, for a dialog about the art itself (Set as cover
+  image). Pass it the id a Dialog `header` snippet hands over. Goes with `<Dialog variant="art">`, whose glass close sits in its corner.
     <DialogArtHeader {id} title="The Social Network" year={2010} fanart={url} tags={[{ text: 'Favorite', kind: 'favorite' }]} />
 -->
 <script lang="ts">
@@ -17,13 +18,15 @@ interface Props {
   fanart?: string;
   /** A list's first posters, side by side, when there's no fanart. */
   posters?: readonly string[];
+  /** The whole fanart at its own shape, not a band of it. */
+  full?: boolean;
   children?: Snippet;
 }
 
-const { id, title, year, tags = [], fanart, posters = [], children }: Props = $props();
+const { id, title, year, tags = [], fanart, posters = [], full = false, children }: Props = $props();
 </script>
 
-<header class="art-header">
+<header class={['art-header', { full }]}>
   {#if fanart}
     <img class="art" src={fanart} alt="" />
   {:else if posters.length > 0}
@@ -53,6 +56,19 @@ const { id, title, year, tags = [], fanart, posters = [], children }: Props = $p
     inset: 0;
     z-index: 1;
     background: var(--gradient-dialog-art-shade);
+  }
+}
+
+/* The art in full color, shaded only along the bottom where the tags and title sit. */
+.full {
+  aspect-ratio: var(--dialog-art-full-ratio);
+
+  &::before {
+    background: var(--gradient-dialog-art-full-shade);
+  }
+
+  & .art {
+    object-position: center;
   }
 }
 

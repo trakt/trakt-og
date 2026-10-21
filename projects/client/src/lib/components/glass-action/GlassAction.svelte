@@ -9,15 +9,19 @@
   instead ("All Stats"), and `presentational` draws it without a control of its own, for inside another one's trigger
   (the ratings strip's Rate, inside the rating popover's button). `card` is the page's outlined control instead, as
   tall and padded as View seasons, for a list row's Like and a comment's React and Reply; a selected tinted one stays
-  solid. Without `icon`, the label leads (a comment's chosen reaction brings its emoji).
+  solid. Without `icon`, the label leads (a comment's chosen reaction brings its emoji). `square` is icon only, as wide
+  as it is tall with a bigger, centered icon, for a summary's links out; give it an `aria-label`. `ghost` swaps the
+  card's outline for a soft fill that brightens under the pointer, with a brighter icon;
+  `--glass-action-ghost-hover-icon` colors the icon under the pointer (a site's brand color). A link takes `target` and
+  `rel`.
 -->
 <script lang="ts">
 import Spinner from '$lib/components/loading/Spinner.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import type { Snippet } from 'svelte';
-import type { HTMLButtonAttributes } from 'svelte/elements';
+import type { HTMLAnchorAttributes, HTMLButtonAttributes } from 'svelte/elements';
 
-interface Props extends Omit<HTMLButtonAttributes, 'color'> {
+interface Props extends Omit<HTMLButtonAttributes, 'color'>, Pick<HTMLAnchorAttributes, 'target' | 'rel'> {
   icon?: string;
   /** The action's color, as a CSS color. Left out, the button is black. */
   color?: string;
@@ -34,7 +38,11 @@ interface Props extends Omit<HTMLButtonAttributes, 'color'> {
   iconColor?: string;
   /** The page's outlined control, off the artwork. */
   card?: boolean;
-  children: Snippet;
+  /** Only the icon, in a square. */
+  square?: boolean;
+  /** A soft fill and no outline. */
+  ghost?: boolean;
+  children?: Snippet;
 }
 
 const {
@@ -47,22 +55,26 @@ const {
   glass = false,
   iconColor,
   card = false,
+  square = false,
+  ghost = false,
   children,
   ...rest
 }: Props = $props();
-const classes = $derived(['glass-action', { glass, tinted: color, selected, card }]);
+const classes = $derived(['glass-action', { glass, tinted: color, selected, card, square, ghost }]);
+// What a link shares with the button: `target`, `rel`, `aria-*` and a tooltip's attachment.
+const linkAttributes = $derived(rest as HTMLAnchorAttributes);
 </script>
 
 {#snippet body()}
   {#if busy}<Spinner label={busy} />{:else if icon}<span class="icon"><Icon svg={icon} /></span>{/if}
-  {@render children()}
+  {@render children?.()}
 {/snippet}
 
 <!-- The href comes in as a prop, and resolve() only takes literal routes. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
 {#if href}
-  <a {href} class={classes} style:--action={color}>{@render body()}</a>
+  <a {href} {...linkAttributes} class={classes} style:--action={color}>{@render body()}</a>
 {:else if presentational}
   <span class={classes} style:--action={color} style:--glass-action-icon={iconColor}>{@render body()}</span>
 {:else}
@@ -135,6 +147,36 @@ const classes = $derived(['glass-action', { glass, tinted: color, selected, card
   --color-glass-action-glass-line: var(--color-control-border);
   --color-glass-action-glass-line-hover: var(--color-control-border-hover);
   --color-glass-action-text: var(--color-control-text);
+}
+
+.square {
+  justify-content: center;
+  inline-size: var(--control-height);
+  padding-inline: 0;
+  font-size: var(--font-size-glass-action-square);
+
+  /* A logo sits in the middle of its square, not on a text baseline. */
+  & .icon {
+    --icon-shift: 0;
+  }
+}
+
+.ghost {
+  border-color: transparent;
+  background: var(--color-glass-action-ghost-bg);
+
+  &:is(:hover, :focus-visible) {
+    border-color: transparent;
+    background: var(--color-glass-action-ghost-hover-bg);
+  }
+
+  & .icon {
+    color: var(--color-glass-action-ghost-icon);
+  }
+
+  &:is(:hover, :focus-visible) .icon {
+    color: var(--glass-action-ghost-hover-icon, var(--color-control-text));
+  }
 }
 
 /* Trakt-font glyphs sit a little high, as in the quick-icon bar. */

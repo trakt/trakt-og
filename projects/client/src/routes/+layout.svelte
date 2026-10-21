@@ -13,6 +13,7 @@ import Footer from '$lib/components/footer/Footer.svelte';
 import Header from '$lib/components/header/Header.svelte';
 import MobileSplash from '$lib/components/mobile-splash/MobileSplash.svelte';
 import Toaster from '$lib/components/toast/Toaster.svelte';
+import WatchNowHost from '$lib/components/watchnow/WatchNowHost.svelte';
 import { startOverlay } from '$lib/overlay/startOverlay';
 import { toDarkKnight } from '$lib/settings/toDarkKnight';
 import { toTheme } from '$lib/settings/toTheme';
@@ -58,6 +59,7 @@ onMount(() => {
 </MobileSplash>
 {/if}
 <Toaster />
+<WatchNowHost />
 <CheckinDialog />
 <TotallyNinja />
 <DropNoteDialog />

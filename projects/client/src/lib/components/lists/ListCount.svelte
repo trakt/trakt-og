@@ -1,26 +1,33 @@
 <!--
   A list's count as a comment's "N replies": an outlined button where it leads somewhere, the same look where it
-  doesn't (inside a card that's already a link). The icon is blue and the number bold.
+  doesn't (inside a card that's already a link). The icon is blue and the number bold. `shown` replaces the number
+  as written ("204k"), `plural` a plural that isn't the word plus s, and `iconColor` the blue (plays' purple). The
+  rest (a tooltip's attributes) goes on the button.
     <ListCount svg={file} value={330} word="item" href="/lists/7" />
 -->
 <script lang="ts">
 import Icon from '$lib/icons/Icon.svelte';
+import type { HTMLAttributes } from 'svelte/elements';
 
-interface Props {
+interface Props extends HTMLAttributes<HTMLElement> {
   svg: string;
   value: number;
-  /** Singular; an s is added for any other count. */
+  /** Singular; `plural` (the word plus s) shows for any other count. */
   word: string;
+  plural?: string;
+  /** The number as written, when not in full. */
+  shown?: string;
+  iconColor?: string;
   href?: string;
 }
-const { svg, value, word, href }: Props = $props();
+const { svg, value, word, plural = `${word}s`, shown, iconColor, href, ...rest }: Props = $props();
 </script>
 
 <!-- List hrefs are built from ids, which resolve() can't type. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-<svelte:element this={href ? 'a' : 'span'} {href} class="count"
-><Icon {svg} /><strong>{value.toLocaleString('en-US')}</strong><span class="count-text"
-  >{word}{value === 1 ? '' : 's'}</span></svelte:element>
+<svelte:element this={href ? 'a' : 'span'} {href} {...rest} class="count" style:--count-icon={iconColor}
+><Icon {svg} /><strong>{shown ?? value.toLocaleString('en-US')}</strong><span class="count-text"
+  >{value === 1 ? word : plural}</span></svelte:element>
 
 <style>
 .count {
@@ -41,7 +48,7 @@ const { svg, value, word, href }: Props = $props();
   transition: background-color var(--transition-comment-quiet), border-color var(--transition-comment-quiet);
 
   & > :global(.icon) {
-    color: var(--color-stat-count);
+    color: var(--count-icon, var(--color-stat-count));
   }
 
   & strong {

@@ -1,31 +1,28 @@
 <!--
-  The sidebar's links out : grey tiles, text first, then icon tiles.
-  Every link opens a new tab.
+  The sidebar's links out: logos four across, each named by a tooltip, that only get the outlined button's fill under
+  the pointer, where a branded logo turns its site's color. A site without a logo comes last, as text. Every link
+  opens a new tab.
 -->
 <script lang="ts">
+import GlassAction from '$lib/components/glass-action/GlassAction.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import Icon from '$lib/icons/Icon.svelte';
 import type { ExternalLink } from './ExternalLink.ts';
+import { withSiteLogos } from './withSiteLogos.ts';
 
 const { links }: { links: readonly ExternalLink[] } = $props();
+const buttons = $derived(withSiteLogos(links));
 </script>
 
-<!-- Links out to other sites. -->
-<!-- eslint-disable svelte/no-navigation-without-resolve -->
-
-{#if links.length > 0}
+{#if buttons.length > 0}
   <ul class="external-links">
-    {#each links as link (link.href)}
-      <li>
+    {#each buttons as link (link.href)}
+      <li style:--glass-action-ghost-hover-icon={link.color}>
         <Tooltip text={link.title ?? (link.icon ? link.label : undefined)}>
           {#snippet trigger(tooltip)}
-            <a href={link.href} target="_blank" rel="noopener" {...tooltip}>
-              {#if link.icon}
-                <Icon svg={link.icon} label={link.label} />
-              {:else}
-                {link.label}
-              {/if}
-            </a>
+            <GlassAction card glass ghost square={!!link.icon} icon={link.icon} href={link.href} target="_blank" rel="noopener"
+              aria-label={link.icon ? link.label : undefined} {...tooltip}>
+              {#if !link.icon}{link.label}{/if}
+            </GlassAction>
           {/snippet}
         </Tooltip>
       </li>
@@ -35,38 +32,19 @@ const { links }: { links: readonly ExternalLink[] } = $props();
 
 <style>
 .external-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin: 14px 0 14px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--external-links-gap);
+  margin: var(--external-links-margin);
   padding: 0;
   list-style: none;
-}
 
-a {
-  display: inline-block;
-  padding: 3px 5px;
-  border: 1px solid var(--color-summary-tile-bg);
-  border-radius: var(--radius-code);
-  background-color: var(--color-summary-tile-bg);
-  color: var(--color-summary-tile-text);
-  font-family: var(--font-headings);
-  font-size: var(--font-size-summary-label);
-  font-weight: var(--font-weight-headings-light);
-  line-height: var(--line-height-base);
-  text-decoration: none;
-  transition: all var(--transition-card);
-
-  & :global(.icon) {
-    padding-inline: 2px;
-    box-sizing: content-box;
+  & :global(.glass-action) {
+    inline-size: 100%;
   }
 
-  &:is(:hover, :focus-visible) {
-    border-color: var(--color-summary-tile-hover-bg);
-    background-color: var(--color-summary-tile-hover-bg);
-    color: var(--color-card-text);
-    text-decoration: none;
+  & :global(.icon) {
+    max-inline-size: var(--external-links-logo-max-width);
   }
 }
 </style>

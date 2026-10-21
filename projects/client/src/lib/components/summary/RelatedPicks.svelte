@@ -86,6 +86,7 @@ const icons = (card: RelatedCard) => {
     {#each shown as pick (pick.card.id)}
       {@const card = pick.card}
       <PosterCard
+        framed
         href={card.href}
         title={card.title}
         fullTitle={card.year ? `${card.title} (${card.year})` : card.title}
@@ -108,6 +109,7 @@ const icons = (card: RelatedCard) => {
   <PosterGrid columns={1}>
     {#each cards.slice(0, PHONE_CARDS) as card (card.id)}
       <FanartCard
+        framed
         href={card.href}
         title={card.title}
         year={card.year}

@@ -20,8 +20,8 @@ const { date }: { date?: string } = $props();
 <style>
 .rewatching-badge {
   position: absolute;
-  inset-block-start: -10px;
-  inset-inline-start: 0;
+  inset-block-start: var(--rewatching-badge-offset);
+  inset-inline-start: var(--rewatching-badge-offset);
   z-index: 30;
   inline-size: var(--badge-size);
   block-size: var(--badge-size);

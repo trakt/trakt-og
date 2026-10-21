@@ -103,7 +103,8 @@ async function submit() {
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 <Dialog bind:open title={heading} size="md" variant="art">
   {#snippet header(titleId)}
-    <DialogArtHeader id={titleId} title={heading} fanart={target.fanart} posters={target.posters} {tags}>
+    <DialogArtHeader id={titleId} title={heading} year={target.year} fanart={target.fanart} posters={target.posters}
+      {tags}>
       <a class="permalink" href={permalink} target="_blank" rel="noopener"><Icon svg={link} /><span>{permalink}</span></a>
     </DialogArtHeader>
   {/snippet}

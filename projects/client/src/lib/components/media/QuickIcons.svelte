@@ -60,6 +60,11 @@ interface Props {
   small?: boolean;
   /** Tight text-card actions, like OG calendar schedules. */
   compact?: boolean;
+  /**
+   * In a list row instead of under a poster: no bar, each action a rounded tool in its own color. Hovered, done and
+   * part-done actions keep the bar's fills.
+   */
+  row?: boolean;
   /** Only where OG turned it on (charts). */
   favorite?: boolean;
   /** For season/episode stars, pass the parent show. */
@@ -99,6 +104,7 @@ const {
   listTarget,
   small = false,
   compact = false,
+  row = false,
   favorite = false,
   favoriteTarget,
   watchNow = 'play',
@@ -171,8 +177,10 @@ const ratingLevel = $derived(rating === undefined ? 1 : Math.min(Math.max(Math.t
   </Tooltip>
 {/snippet}
 
-<div class={['quick-icons', { small, compact }]}>
+<div class={['quick-icons', { small, compact, row }]}>
   <div class="actions">
+    <!-- A row draws the tools and the ••• as separate outlined groups; on a card they're one run of icons. -->
+    <div class="tools">
     {#if historyTarget}
       <MediaWatch target={historyTarget} play={historyPlay} onremove={onWatchRemove} onsave={onWatchSave} {small} />
     {:else}
@@ -216,7 +224,9 @@ const ratingLevel = $derived(rating === undefined ? 1 : Math.min(Math.max(Math.t
         <VisibilityControl target={hiddenTarget} action={hideSection === 'dropped' ? 'drop' : 'hide'} section={hideSection === 'dropped' ? undefined : hideSection} variant="card" {small}><span class:ban={hideSection !== 'dropped'}><Icon svg={hideSection === 'dropped' ? minus : ban} /></span></VisibilityControl>
       {:else}{@render action('ignore', ban, `Hide this ${hide}`, 0)}{/if}
     {/if}
+    </div>
     {#if menuRows.length > 0}
+      <div class="more-group">
       <!-- A row closes the menu, then opens its prompt beside the •••, so the prompt never nests in the menu. -->
       <SummaryActionMenu label="More" placement="bottom">
         {#snippet trigger(attrs)}
@@ -245,6 +255,7 @@ const ratingLevel = $derived(rating === undefined ? 1 : Math.min(Math.max(Math.t
         <VisibilityControl bind:this={prompts[row.kind]} target={row.target} action={row.kind} onsave={row.onsave}
           headless returnFocus={moreButton} anchor={moreAnchor} />
       {/each}
+      </div>
     {/if}
   </div>
   {#if rating !== undefined && released !== false}
@@ -295,6 +306,11 @@ const ratingLevel = $derived(rating === undefined ? 1 : Math.min(Math.max(Math.t
 }
 .actions {
   display: flex;
+}
+
+.tools,
+.more-group {
+  display: contents;
 }
 
 .action {
@@ -442,6 +458,54 @@ const ratingLevel = $derived(rating === undefined ? 1 : Math.min(Math.max(Math.t
   .small & {
     margin-inline-end: 4px;
     font-size: var(--font-size-rating-small);
+  }
+}
+
+/*
+  A row's tools: one outlined control on the page, like joined controls, at the row's end. The watch, library, list
+  and watch-now icons come first, then the ••• and the rating, each set off by a divider. Every icon, the ones other
+  controls draw too, is the same square inside the border.
+*/
+.quick-icons.row {
+  --bar: var(--quick-icons-row-cell);
+  --action-width: var(--quick-icons-row-cell);
+  --watch-card-width: var(--quick-icons-row-cell);
+  --watch-card-height: var(--quick-icons-row-cell);
+  --watch-card-small-width: var(--quick-icons-row-cell);
+  --watch-card-small-height: var(--quick-icons-row-cell);
+  --list-card-width: var(--quick-icons-row-cell);
+  --list-card-height: var(--quick-icons-row-cell);
+  --list-card-small-width: var(--quick-icons-row-cell);
+  --list-card-small-height: var(--quick-icons-row-cell);
+  align-items: center;
+  inline-size: max-content;
+  block-size: auto;
+  margin-inline-start: auto;
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius-control);
+  background-color: var(--color-control-bg);
+  color: var(--color-text);
+
+  & :is(.tools, .more-group) {
+    display: flex;
+    align-items: center;
+  }
+
+  & :is(.more-group, .percentage) {
+    border-inline-start: 1px solid var(--color-control-border);
+  }
+
+  & .action {
+    block-size: var(--bar);
+  }
+
+  & .percentage {
+    block-size: var(--quick-icons-row-cell);
+    padding-inline: var(--quick-icons-row-rating-padding);
+  }
+
+  & .heart {
+    block-size: auto;
   }
 }
 

@@ -44,6 +44,15 @@ describe('toCalendarImage', () => {
     });
     expect(toCalendarImage(item, 'none').image).toBeUndefined();
   });
+  it("should bring the show's fanart, standing in for a spoiling still", () => {
+    expect(toCalendarImage(item, 'logo').fanart).toBe('https://example.test/fanarts/thumb/a.jpg');
+    expect(toCalendarImage(item, 'logo').spoilerImage).toBeUndefined();
+    expect(toCalendarImage(item, 'screenshot')).toMatchObject({
+      image: 'https://example.test/screenshots/thumb/a.jpg',
+      spoilerImage: 'https://example.test/fanarts/thumb/a.jpg',
+    });
+  });
+
   it('should fall back from an absent thumb to the screenshot and retain titles when artwork is absent', () => {
     const missing = { ...item, show: { ...item.show, images: {} } } as Extract<CalendarItem, { type: 'episode' }>;
     expect(toCalendarImage(missing, 'thumb').image).toBe('https://example.test/screenshots/medium/a.jpg');

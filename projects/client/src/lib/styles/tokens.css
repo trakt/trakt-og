@@ -284,6 +284,7 @@
   --font-size-fanart-title: 18px;
   --font-size-quick-icon: 1.7em;
   --font-size-quick-icon-small: 1.3em;
+  --quick-icon-hide-scale: 0.85em; /* the hide icon's circle reads heavier than the others at the same size */
   --font-size-quick-icon-busy: 16px; /* the saving spinner, a size under the glyph it stands in for */
   --font-size-quick-icon-busy-small: 13px;
   --quick-icon-trakt-shift: 0.085em; /* Trakt-font glyphs (check, library, list) sit this far above center */
@@ -3336,8 +3337,7 @@
   --color-mini-month-marked: #66afe9; /* the first day in view */
   --rail-week-height: 10px;
   --rail-today-width: 44px;
-  --color-calendar-text-hover: light-dark(#f5f5f5, #232323); /* a text card under the pointer */
-  --calendar-poster-width: 200px; /* a poster card in the list view */
+  --calendar-poster-min-width: 160px; /* a poster card in the list view; the row fills out from there */
   --episode-tray-height: 360px; /* a grouped card's episodes popup scrolls past this */
   --calendar-logo-max-width: 80%; /* wide logos keep a margin on both sides */
   --rail-week-width: 36px;
@@ -3355,6 +3355,41 @@
   --color-calendar-weekdays: light-dark(#f2f2f2, #151515); /* the month grid's weekday banner, set off from the days' bars */
   --calendar-month-day-height: 40px; /* a month day's pinned number row, room for today's circle and tag */
   --color-calendar-out: light-dark(#f7f7f7, #191919); /* a neighbouring month's day in the grid */
+}
+
+/* Calendar cards: one card for the list and the month, and the agenda's rows. */
+:root {
+  --color-calendar-card: light-dark(#fff, #242424); /* raised off the page and off a month's day */
+  --color-calendar-card-line: light-dark(rgb(0 0 0 / 0.08), rgb(255 255 255 / 0.07));
+  --radius-calendar-card: 10px;
+  --radius-calendar-month-card: 7px;
+  --calendar-card-gap: 14px; /* between the list's cards */
+  --calendar-list-padding: 14px 16px 18px;
+  --calendar-caption-padding: 10px 12px;
+  --calendar-caption-gap: 6px;
+  --calendar-tags-height: 20px; /* one line of card tags, kept when empty so cards line up */
+  --calendar-art-tag-inset: 8px; /* an episode's types from the art's bottom-left corner */
+  --calendar-show-line: 18px; /* an episode's show, small, over its title */
+  --calendar-title-line: 21px;
+  --calendar-titles-height: calc(var(--calendar-show-line) + var(--calendar-title-line));
+  --calendar-narrow-bar-height: 28px; /* the quick-icon bar on a poster or a month's day */
+  --calendar-month-gap: 8px; /* between a month's days, and a day's cards */
+  --calendar-month-cell-padding: 6px;
+  --radius-calendar-day: 10px;
+  --color-calendar-day: var(--color-calendar-weekdays); /* a month day's tile */
+  --calendar-day-bar-height: 48px; /* a list or agenda day's pinned bar */
+  --calendar-agenda-time-width: 96px;
+  --calendar-agenda-thumb-width: 118px; /* 16:9 art at the row's height, less its padding */
+  --calendar-agenda-poster-width: 44px;
+  --calendar-agenda-row-height: 92px; /* a 66px thumbnail with 13px above and below */
+  --calendar-agenda-text-row-height: 56px;
+  --calendar-agenda-tags-width: 300px;
+  --calendar-agenda-actions-width: 264px; /* the widest quick-icon bar, an episode's, so a movie's lines up */
+  --calendar-agenda-gap: 14px;
+  --radius-calendar-thumb: 5px;
+  --font-size-calendar-agenda-time: 15px;
+  --color-calendar-agenda-hover: light-dark(#f5f5f5, #232323); /* a row under the pointer */
+  --color-calendar-slot-line: light-dark(rgb(0 0 0 / 0.18), rgb(255 255 255 / 0.16)); /* between air times */
 }
 
 /* Include and exclude pickers (v3's filters, og's colors): green keeps a value, red leaves it out. */

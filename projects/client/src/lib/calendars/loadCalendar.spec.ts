@@ -163,9 +163,9 @@ describe('loadCalendar', () => {
   });
 
   it("should read the viewer's display choices from their cookies", async () => {
-    expect((await load({})).display).toEqual({ view: 'list', artwork: 'logo', episodes: 'grouped' });
-    const cookies = { calendar_view: 'month', calendar_artwork: 'poster', calendar_episodes: 'each' };
-    expect((await load({ cookies })).display).toEqual({ view: 'month', artwork: 'poster', episodes: 'each' });
+    expect((await load({})).display).toEqual({ view: 'month', artwork: 'poster', episodes: 'grouped' });
+    const cookies = { calendar_view: 'agenda', calendar_artwork: 'logo', calendar_episodes: 'each' };
+    expect((await load({ cookies })).display).toEqual({ view: 'agenda', artwork: 'logo', episodes: 'each' });
   });
 
   it('should apply episode types on SSR', async () => {

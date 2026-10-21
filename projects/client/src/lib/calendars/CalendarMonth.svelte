@@ -1,8 +1,8 @@
 <!--
-  The calendar's month view: whole weeks under a pinned weekday row, each day a cell with its number pinned while its
-  week scrolls, then its cards stacked one wide, each with the full quick-icon bar. Today's cell has a red top edge, a
-  red date, a TODAY tag and a tint over the day and its cards; past dates are grey. Days from the neighbouring months
-  only pad the weeks.
+  The calendar's month view: whole weeks under a pinned weekday row, each day a rounded tile with gutters between the
+  days and between its cards, its number pinned while its week scrolls, then its cards stacked one wide, each with the
+  full quick-icon bar. Today's tile has a red date, a TODAY tag and a red tint; past dates are grey.
+  Days from the neighbouring months only pad the weeks.
     <CalendarMonth month="2026-10" {days} today={data.today} artwork="poster" {cardIcons} />
 -->
 <script lang="ts">
@@ -19,10 +19,12 @@ interface Props {
   today: string;
   artwork: CalendarArtwork;
   weekStart?: number;
+  /** Shows and movies on one calendar: movies get a Movie tag. */
+  mixed?: boolean;
   cardIcons: (entry: CalendarEntry) => Omit<ComponentProps<typeof QuickIcons>, 'small'>;
 }
 
-const { month, days, today, artwork, weekStart = 0, cardIcons }: Props = $props();
+const { month, days, today, artwork, weekStart = 0, mixed = false, cardIcons }: Props = $props();
 
 const weeks = $derived(monthGrid({ month, weekStart }));
 const byDate = $derived(new Map(days.map((day) => [day.date, day.entries])));
@@ -83,7 +85,7 @@ const longDate = (date: string) =>
               {#if cell.date === today}<span class="tag">Today</span>{/if}
             </h2>
             <div class="cards">
-              {#each entries as entry (entry.key)}<CalendarEntryCard {entry} icons={cardIcons(entry)} {artwork} compact />{/each}
+              {#each entries as entry (entry.key)}<CalendarEntryCard {entry} icons={cardIcons(entry)} {artwork} {mixed} />{/each}
             </div>
           </section>
         {:else}
@@ -104,7 +106,9 @@ const longDate = (date: string) =>
   z-index: 4;
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--calendar-month-gap);
   block-size: var(--calendar-weekdays-height);
+  padding-inline: var(--calendar-month-gap);
   background-color: var(--color-calendar-weekdays);
   border-block-end: 1px solid var(--color-frame-line);
 
@@ -125,7 +129,7 @@ const longDate = (date: string) =>
 
   & > span {
     align-self: center;
-    padding-inline: var(--space-sm-inline);
+    padding-inline: var(--space-xs-inline);
     color: var(--color-sidebar-label);
     font-size: var(--font-size-sidebar-section);
     font-weight: var(--font-weight-menu-header);
@@ -141,28 +145,20 @@ const longDate = (date: string) =>
 .grid {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--calendar-month-gap);
+  padding: var(--calendar-month-gap);
 }
 
 .cell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--calendar-month-gap);
   min-inline-size: 0;
   min-block-size: var(--calendar-month-cell-min);
-  background-color: var(--color-frame-page);
-  border-inline-end: 1px solid var(--color-frame-line);
-  border-block-end: 1px solid var(--color-frame-line);
+  padding: 0 var(--calendar-month-cell-padding) var(--calendar-month-gap);
+  border-radius: var(--radius-calendar-day);
+  background-color: var(--color-calendar-day);
   scroll-margin-block-start: calc(var(--header-height) + var(--calendar-weekdays-height));
-
-  &:nth-child(7n) {
-    border-inline-end: 0;
-  }
-
-  /* Narrow cards: smaller captions, and the network left to the card's link. */
-  & :global(.fanart .titles h3) {
-    font-size: var(--font-size-base);
-  }
-
-  & :global(.fanart .tag.generic) {
-    display: none;
-  }
 
   &.out {
     background-color: var(--color-calendar-out);
@@ -170,14 +166,15 @@ const longDate = (date: string) =>
 
   &.today {
     background-color: var(--color-calendar-today-tint);
-    /* The tint runs behind the day's cards too. */
-    & :global(:is(.text-card, .poster-card, .fanart-card, .quick-icons)) {
-      background-color: transparent;
-    }
+  }
+
+  & :global(.calendar-entry) {
+    block-size: auto;
+    border-radius: var(--radius-calendar-month-card);
   }
 }
 
-/* Pinned under the weekday row while its week scrolls. */
+/* Pinned under the weekday row while its week scrolls, on the tile's own color. */
 .number {
   position: sticky;
   inset-block-start: calc(var(--header-height) + var(--calendar-weekdays-height));
@@ -187,16 +184,13 @@ const longDate = (date: string) =>
   gap: var(--space-sm-inline);
   box-sizing: border-box;
   min-block-size: var(--calendar-month-day-height);
-  margin: 0;
+  margin: 0 calc(-1 * var(--calendar-month-cell-padding));
   padding: 0 var(--space-sm-inline);
-  background-color: var(--color-date-separator);
+  border-radius: var(--radius-calendar-day) var(--radius-calendar-day) 0 0;
+  background-color: inherit;
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-headings-heavy);
   line-height: 1;
-
-  .cell:not(.out) & {
-    border-block-end: 1px solid var(--color-frame-line);
-  }
 
   .past & .date {
     color: var(--color-calendar-past);
@@ -206,21 +200,8 @@ const longDate = (date: string) =>
     color: var(--color-mini-month-out);
   }
 
-  /* The list's today bar: the red tint and edge over a blur. */
-  .today & {
-    background: var(--color-calendar-today-bar);
-    backdrop-filter: var(--calendar-today-blur);
-    box-shadow: inset 4px 0 0 var(--brand-primary);
-  }
-
   .today & .date {
-    display: grid;
-    place-items: center;
-    inline-size: 24px;
-    block-size: 24px;
-    border-radius: 50%;
-    background-color: var(--brand-primary);
-    color: var(--color-text-inverse);
+    color: var(--brand-primary);
   }
 }
 
@@ -243,10 +224,6 @@ const longDate = (date: string) =>
 
 .cards {
   display: grid;
-
-  /* A line between a day's cards. */
-  & > :global(.calendar-entry + .calendar-entry) {
-    border-block-start: 1px solid var(--color-frame-line);
-  }
+  gap: var(--calendar-month-gap);
 }
 </style>

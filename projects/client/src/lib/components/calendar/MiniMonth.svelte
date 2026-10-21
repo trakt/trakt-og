@@ -1,6 +1,7 @@
 <!--
   The calendar sidebar's month at a glance: a square per day, redder the more airs that day, today ringed in white and
-  the first day in view outlined in blue. Picking a day jumps the page to it.
+  the first day in view outlined in blue, or with `markWeek` its whole week (the grid view shows a week at a time).
+  Picking a day jumps the page to it.
     <MiniMonth month="2026-10" counts={countsByDate} today="2026-10-09" marked={firstVisible} onpick={jump} />
 -->
 <script lang="ts">
@@ -14,11 +15,13 @@ interface Props {
   today: string;
   /** The first day in view. */
   marked?: string;
+  /** Outline the marked day's whole week instead of the day. */
+  markWeek?: boolean;
   weekStart?: number;
   onpick: (date: string) => void;
 }
 
-const { month, counts, today, marked, weekStart = 0, onpick }: Props = $props();
+const { month, counts, today, marked, markWeek = false, weekStart = 0, onpick }: Props = $props();
 
 const weeks = $derived(monthGrid({ month, weekStart }));
 const max = $derived(Math.max(1, ...counts.values()));
@@ -41,12 +44,13 @@ const heat = (date: string) => `calc(var(--mini-month-heat-max) * ${(counts.get(
   </thead>
   <tbody>
     {#each weeks as week (week.at(0)?.date)}
+      {@const weekMarked = markWeek && week.some((cell) => cell.date === marked)}
       <tr>
-        {#each week as cell (cell.date)}
-          <td>
+        {#each week as cell, i (cell.date)}
+          <td class={{ 'week-start': weekMarked && i === 0 }}>
             {#if cell.inMonth}
               {@const count = counts.get(cell.date) ?? 0}
-              <button type="button" class={{ today: cell.date === today, marked: cell.date === marked }}
+              <button type="button" class={{ today: cell.date === today, marked: !markWeek && cell.date === marked }}
                 style:--heat={heat(cell.date)} aria-current={cell.date === today ? 'date' : undefined}
                 aria-label="{fullDate(cell.date)}, {count} {count === 1 ? 'item' : 'items'}"
                 onclick={() => onpick(cell.date)}>{Number(cell.date.slice(8))}</button>
@@ -80,6 +84,23 @@ th {
 
 td {
   padding: 0;
+}
+
+/* One outline round the marked week: drawn from its first cell across all seven and the gaps between them. */
+.week-start {
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset-block: calc(-0.5 * var(--mini-month-gap));
+    inset-inline-start: calc(-0.5 * var(--mini-month-gap));
+    z-index: 1;
+    inline-size: calc(700% + 7 * var(--mini-month-gap));
+    border: 2px solid var(--color-mini-month-marked);
+    border-radius: calc(var(--radius-mini-month-cell) + var(--mini-month-gap) / 2);
+    pointer-events: none;
+  }
 }
 
 button,

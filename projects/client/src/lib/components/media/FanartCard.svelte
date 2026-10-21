@@ -65,6 +65,8 @@ interface Props {
   icons?: Omit<ComponentProps<typeof QuickIcons>, 'small'>;
   /** A bar under the card (a live check-in's UnderProgress), which closes a framed card's bottom. */
   progress?: Snippet;
+  /** Off when the quick-icon bar sits under a caption instead (the calendar's cards). The icons still drive spoilers. */
+  iconBar?: boolean;
   /** Over the whole image, above the titles: the progress row's Next Episode cover. */
   fanartOverlay?: Snippet;
 }
@@ -93,6 +95,7 @@ const {
   framed = false,
   icons,
   progress,
+  iconBar = true,
   fanartOverlay,
 }: Props = $props();
 const target = $derived(icons?.hideTarget ?? icons?.ratingTarget ?? icons?.watchTarget ?? icons?.listTarget);
@@ -158,7 +161,7 @@ const restoreTarget = $derived(target?.type === 'show' ? { ...target, type: 'sho
     {/if}
     {@render fanartOverlay?.()}
   </div>
-  {#if icons}
+  {#if icons && iconBar}
     <QuickIcons {...icons} small={variant === 'poster'} watchNowArt={variant === 'fanart' ? shownImage : undefined} />
   {/if}
   {@render progress?.()}

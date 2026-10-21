@@ -1,6 +1,7 @@
 <!--
-  The calendar's list view: every day of the month under its pinned day bar, its cards in a grid that adds columns as
-  the content gets wider (more for posters). Each day is a section the sidebar can jump to and follow.
+  The calendar's list view: every day of the month under its pinned day bar, its cards in a grid with gutters that
+  adds columns as the content gets wider (posters fill the width at their own size). Each day is a section the sidebar
+  can jump to and follow.
     <CalendarList {days} today={data.today} artwork="logo" {cardIcons} />
 -->
 <script lang="ts">
@@ -17,10 +18,12 @@ interface Props {
   today: string;
   artwork: CalendarArtwork;
   autoscroll?: boolean;
+  /** Shows and movies on one calendar: movies get a Movie tag. */
+  mixed?: boolean;
   cardIcons: (entry: CalendarEntry) => Omit<ComponentProps<typeof QuickIcons>, 'small'>;
 }
 
-const { days, today, artwork, autoscroll = false, cardIcons }: Props = $props();
+const { days, today, artwork, autoscroll = false, mixed = false, cardIcons }: Props = $props();
 </script>
 
 <div class={['calendar-list', artwork]}>
@@ -28,12 +31,12 @@ const { days, today, artwork, autoscroll = false, cardIcons }: Props = $props();
     <section class="day" id="day-{day.date}" data-day={day.date}>
       <CalendarDayHeader date={day.date} today={day.date === today} past={day.date < today} {autoscroll} />
       {#if day.entries.length === 0}
-        <NoData inFrame>Nothing on this day.</NoData>
+        <div class="empty"><NoData>Nothing on this day.</NoData></div>
       {:else}
         <div class="width">
           <div class="cards">
             {#each day.entries as entry (entry.key)}
-              <div class="card"><CalendarEntryCard {entry} icons={cardIcons(entry)} {artwork} /></div>
+              <CalendarEntryCard {entry} icons={cardIcons(entry)} {artwork} {mixed} />
             {/each}
           </div>
         </div>
@@ -43,6 +46,16 @@ const { days, today, artwork, autoscroll = false, cardIcons }: Props = $props();
 </div>
 
 <style>
+/* The theme's quiet box, set in like the cards. */
+.empty {
+  padding: var(--calendar-list-padding);
+
+  & :global(.no-data) {
+    margin: 0;
+    border-radius: var(--radius-calendar-card);
+  }
+}
+
 .day {
   background: none;
   scroll-margin-block-start: var(--header-height);
@@ -56,6 +69,8 @@ const { days, today, artwork, autoscroll = false, cardIcons }: Props = $props();
 .cards {
   display: grid;
   grid-template-columns: repeat(var(--columns, 1), minmax(0, 1fr));
+  gap: var(--calendar-card-gap);
+  padding: var(--calendar-list-padding);
 }
 
 /* OG's calendar columns by width. */
@@ -77,14 +92,8 @@ const { days, today, artwork, autoscroll = false, cardIcons }: Props = $props();
   }
 }
 
-/* Posters are a fixed width, as many to a row as fit. */
+/* Posters fill the row at about their own width. */
 .poster .cards {
-  grid-template-columns: repeat(auto-fill, var(--calendar-poster-width));
-}
-
-.card {
-  min-inline-size: 0;
-  border-inline-end: 1px solid var(--color-frame-line);
-  border-block-end: 1px solid var(--color-frame-line);
+  grid-template-columns: repeat(auto-fill, minmax(var(--calendar-poster-min-width), 1fr));
 }
 </style>

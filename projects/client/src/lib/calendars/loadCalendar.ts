@@ -68,11 +68,7 @@ export async function loadCalendar(
   const today = dayIn(now.toISOString(), timeZone);
   // Both views page by month; the month grid pads its own weeks.
   const window = calendarWindow({ start, today, period: 'month', layout: 'list', startDay: preferences.startDay });
-  const display = calendarDisplay({
-    cookies,
-    accountArtwork: preferences.imageType,
-    imagesAllowed: preferences.imagesAllowed,
-  });
+  const display = calendarDisplay({ cookies, imagesAllowed: preferences.imagesAllowed });
   const ranges = calendarRanges(window.request.start_date, window.request.days);
   const filterConfig = calendarFilters({ slug, now });
   const filters = fromFilterDraft(toFilterDraft(parseAdvancedFilters(url.searchParams), filterConfig), filterConfig);

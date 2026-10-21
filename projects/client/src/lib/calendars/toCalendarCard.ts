@@ -19,10 +19,14 @@ export type CalendarCard = Omit<ComponentProps<typeof FanartCard>, 'icons'> & {
   /** Aired or released by now. Before that the card shows no rating. */
   released: boolean;
   schedule?: string;
+  /** The show or movie's fanart, whatever the artwork: the Watch Now modal's backdrop. */
+  fanart?: string;
+  /** An episode's air time in the viewer's clock. Movies have none: a release date has no time. */
+  time?: string;
   hideTarget?: { type: 'show'; id: number; title: string };
   overlay: { type: 'episode' | 'movie'; id: number };
   collectionContext?: { show: number; number: number; episode: number };
-  /** Episodes get the watch-now and "Hide this show" icons. */
+  /** Episodes get the watch-now and "Drop this show" icons. */
   episode: boolean;
   /** An episode's show, whose watchlisting the fade and hide menu counts too. */
   show?: number;
@@ -55,9 +59,10 @@ export function toCalendarCard(
 
   const { show, episode } = item;
   const label = episodeType(episode);
+  const time = airTime(item.at, clock);
   const tags: Tag[] = [
     ...(label ? [label] : []),
-    { text: airTime(item.at, clock) },
+    { text: time },
     ...(show.network ? [{ text: show.network, kind: 'generic' as const }] : []),
   ];
 
@@ -74,7 +79,8 @@ export function toCalendarCard(
     smallTitle: { text: show.title, href: `/shows/${show.ids.slug}` },
     rating: episode.rating ?? undefined,
     released,
-    schedule: `${airTime(item.at, clock)}${show.network ? ` on ${show.network}` : ''}`,
+    schedule: `${time}${show.network ? ` on ${show.network}` : ''}`,
+    time,
     ...toCalendarImage(item, clock.imageType ?? 'logo'),
     tags,
     episodeBadge: label ? { label: label.text, kind: label.kind } : undefined,

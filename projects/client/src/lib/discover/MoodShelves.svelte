@@ -57,7 +57,6 @@ const mood = $derived(shelves.find(({ id }) => id === picked) ?? shelves.at(0));
         {#each mood.items as item (item.key)}
           {@const viewer = overlay.state(item.type, item.id)}
           <PosterCard
-            framed
             href={item.href}
             title={item.title}
             fullTitle={item.year ? `${item.title} (${item.year})` : item.title}

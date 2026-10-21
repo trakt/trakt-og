@@ -24,7 +24,7 @@ interface Props {
   onRefresh?: () => void;
   needsRefresh?: boolean;
   refreshing?: boolean;
-  /** PosterCard's `framed`: rounded, with the quick icons on their own panel. */
+  /** PosterCard's `framed`: rounded, with the quick icons on their own panel. On unless set to false. */
   framed?: boolean;
 }
 
@@ -36,7 +36,7 @@ const {
   onRefresh,
   needsRefresh = false,
   refreshing = false,
-  framed = false,
+  framed = true,
 }: Props = $props();
 const target = $derived({
   type: 'episode' as const,

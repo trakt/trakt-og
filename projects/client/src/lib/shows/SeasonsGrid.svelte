@@ -62,7 +62,6 @@ const sorted = $derived(
         {@const view = cards.find(({ card }) => card.id === id)}
         {@const state = view?.state ?? {}}
         <PosterCard
-          framed
           {...card}
           faded={view?.faded}
           subtitles={[episodes]}

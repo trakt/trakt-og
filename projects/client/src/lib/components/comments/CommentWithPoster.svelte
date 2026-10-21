@@ -20,7 +20,7 @@ const { poster, inlineTitle, children }: Props = $props();
 
 <div class="comment-with-poster">
   <div class="poster">
-    <PosterCard {...poster} framed />
+    <PosterCard {...poster} />
   </div>
   <div class="comment">
     <p class="inline-title">{inlineTitle}</p>

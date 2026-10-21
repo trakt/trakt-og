@@ -123,7 +123,6 @@ async function filter(next: { kind?: typeof kind; media?: typeof media }) {
         <div class="slide" aria-live="polite">
           <div class="poster">
             <PosterCard
-              framed
               {...current.item.episode
               ? {
                 href: current.item.episode.href,

@@ -241,7 +241,7 @@ const focusAboveFooter: Attachment<HTMLElement> = (footer) => {
 
 .count {
   padding: 0 var(--space-xs-inline);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-tag);
   background-color: var(--color-menu-tag-bg);
   color: var(--color-menu-tag);
   letter-spacing: normal;

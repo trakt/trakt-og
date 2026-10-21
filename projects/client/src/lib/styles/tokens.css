@@ -233,7 +233,7 @@
     and tiny marks keep their own.
   */
   --radius-object: 8px;
-  --radius-tag: calc(var(--radius-object) - 2px); /* tags, chips and pills: a little tighter than the objects they sit on */
+  --radius-tag: calc(var(--radius-object) - 4px); /* tags, chips and pills: clearly tighter than the objects they sit on */
   --radius-container: 12px;
   --radius-round: 999px;
   --radius-code: var(--radius-object);
@@ -252,6 +252,8 @@
   --color-card-bg: #1d1d1d; /* quick-icon bar and fanart backdrop, both themes */
   --color-card-border: light-dark(#eee, #000);
   --color-card-text: #fff;
+  --color-quick-icons-bg: light-dark(#f4f4f5, var(--color-card-bg)); /* the quick-icon bar: light in the light theme */
+  --color-quick-icons-text: light-dark(#222, var(--color-card-text)); /* its rating */
   --color-card-subtitle: light-dark(var(--gray-dark), #aaa);
   --color-watch-now: #aaa;
   /* A list position over a poster's top edge: dark glass, like the profile pills, a touch more solid for the half
@@ -1861,7 +1863,7 @@
   --radius-summary-poster: var(--radius-headshot);
   --rewatching-badge-offset: -10px; /* up and left, so the badge sits over the poster's top-left corner */
   --radius-card-framed: var(--radius-headshot); /* a framed fanart or poster card, as round as the actor photos */
-  --color-fanart-card-frame-bg: #262626; /* its quick-icon panel: a step lighter than the bar's own --color-card-bg, dark in both themes for its white icons */
+  --color-fanart-card-frame-bg: light-dark(var(--color-quick-icons-bg), #262626); /* its quick-icon panel: the bar's own in the light theme, a step lighter in the dark one */
   --color-fanart-card-frame-line: light-dark(rgb(0 0 0 / 0.08), rgb(255 255 255 / 0.08));
   --radius-summary-poster-outer: calc(var(--radius-summary-poster) + var(--summary-poster-border-width));
   /* Cast cards on a summary's actors row and the cast & crew page: name first, then the role, then episodes. */
@@ -3266,6 +3268,7 @@
   --color-frame-ink: light-dark(#222, #fff); /* its text */
   --color-frame-ink-muted: light-dark(#777, #999);
   --color-frame-line: light-dark(#e6e6e6, #2d2d2d); /* its rules and grid lines */
+  --color-sidebar-bg: light-dark(#f5f5f6, #171717); /* the sidebar and its rail, a step darker than the page */
   --color-site-logo-backing: #000; /* behind a white site logo (IMDb), both themes */
   --radius-site-logo-backing: 3px;
   --color-tag-pill-bg: light-dark(rgb(0 0 0 / 0.04), rgb(255 255 255 / 0.1));

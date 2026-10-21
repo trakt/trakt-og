@@ -220,8 +220,8 @@ const ratingLevel = $derived(rating === undefined ? 1 : Math.min(Math.max(Math.t
   block-size: var(--bar);
   overflow: hidden;
   white-space: nowrap;
-  background-color: var(--color-card-bg);
-  color: var(--color-card-text);
+  background-color: var(--color-quick-icons-bg);
+  color: var(--color-quick-icons-text);
 
   &.small {
     --bar: 35px;

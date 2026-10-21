@@ -131,6 +131,7 @@ function onkeydown(event: KeyboardEvent) {
   z-index: 2;
   min-inline-size: 0;
   border-inline-end: 1px solid var(--color-frame-line);
+  background-color: var(--color-sidebar-bg);
 }
 
 .inner {

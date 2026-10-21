@@ -340,7 +340,7 @@ const closeOnPick = (event: MouseEvent & { currentTarget: HTMLElement }) => {
   flex: none;
   margin-inline-start: auto;
   padding: 1px 4px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-tag);
   background-color: var(--color-menu-tag-bg);
   color: var(--color-menu-tag);
   font-size: var(--font-size-small);

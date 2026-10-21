@@ -3486,8 +3486,7 @@
 
 /*
   A person's birthday on their page: the gold "70th birthday" tag, "70 today", confetti from the title, a party hat
-  that drops onto the headshot, the age rolling over, and after ten seconds in view one random surprise: a Known For
-  character crashing in, or the Known For hearts floating off as balloons.
+  that drops onto the headshot, the age rolling over, and after a minute in view a Known For character crashing in.
 */
 :root {
   --color-birthday: light-dark(#a87400, #f5c451); /* "70 today": the Why this? gold, darker on white */
@@ -3517,10 +3516,4 @@
   --party-crasher-duration: 3.4s;
   --color-party-crasher-from: #666;
   --font-size-party-crasher-from: 12px;
-  --balloon-size: 34px;
-  --balloon-string: 52px;
-  --balloon-duration: 4.4s;
-  --balloon-stagger: 0.18s;
-  --shadow-balloon: 0 4px 6px rgb(0 0 0 / 0.4);
-  --color-balloon-string: rgb(255 255 255 / 0.6);
 }

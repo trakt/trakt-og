@@ -43,9 +43,7 @@ import cake from '$lib/icons/solid/cake-candles.svg?raw';
 import sparkles from '$lib/icons/solid/sparkles.svg?raw';
 import { confettiBurst } from '$lib/components/easter/confettiBurst';
 import PartyHat from '$lib/components/easter/PartyHat.svelte';
-import BalloonHearts from './BalloonHearts.svelte';
 import PartyCrasher from './PartyCrasher.svelte';
-import { type BirthdaySurprise, pickSurprise } from './pickSurprise.ts';
 import { toAgeDigits } from './toAgeDigits.ts';
 import { formatDate } from '$lib/utils/formatDate';
 import CareerEras from './CareerEras.svelte';
@@ -138,14 +136,13 @@ const textLinks = $derived(person.links.filter(({ icon }) => !icon));
 const filtered = $derived(
   !query.movies || !query.shows || query.terms !== '' || query.fade.length > 0 || query.hide.length > 0,
 );
-// Their birthday: the gold tag, the party hat, the confetti, and after a while in view, one surprise at random.
+// Their birthday: the gold tag, the party hat, the confetti, and after a long while in view, a Known For character.
 const birthday = $derived(data.birthday);
 const firstName = $derived(person.name.split(' ')[0] ?? person.name);
-// Long after the confetti, so it's a second beat for someone who stayed to read, not part of the arrival.
-const SURPRISE_AFTER_MS = 10000;
-let surprise = $state<BirthdaySurprise | undefined>();
+// Long after the confetti, so only someone who stayed on the page finds it.
+const SURPRISE_AFTER_MS = 60000;
+let surprise = $state(false);
 let announced = $state('');
-let knownForGrid = $state<HTMLElement>();
 let headshot = $state<HTMLElement>();
 const crasher = $derived.by(() => {
   const cast = person.knownFor.filter((credit) => credit.image && credit.characters);
@@ -157,16 +154,10 @@ $effect(() => {
   return afterVisibleFor({
     ms: SURPRISE_AFTER_MS,
     callback: () => {
-      surprise = pickSurprise({
-        random: Math.random,
-        reducedMotion: matchMedia('(prefers-reduced-motion: reduce)').matches,
-        knownFor: crasher ? person.knownFor.length : 0,
-      });
+      surprise = !matchMedia('(prefers-reduced-motion: reduce)').matches;
     },
   });
 });
-const ratingColor = (rating: number | undefined) =>
-  rating === undefined ? undefined : `var(--rating-${Math.min(10, Math.max(1, Math.trunc(rating)))})`;
 
 const progress = $derived.by(() => {
   const credits = tabs.find(({ id }) => id === tab)?.credits ?? [];
@@ -307,11 +298,9 @@ function yearLine(credit: PersonCredit) {
   <p class="visually-hidden" aria-live="polite">{announced}</p>
   <!-- Out here, not in the sidebar: the sticky sidebar's layer would keep the hat under the header. -->
   {#if headshot}<PartyHat anchor={headshot} />{/if}
-  {#if surprise === 'crasher' && crasher?.image}
+  {#if surprise && crasher?.image}
     <PartyCrasher image={crasher.image} name={firstName} from={crasher.characters.split(', ')[0] ?? crasher.title}
-  ondone={() => (surprise = undefined)} />
-  {:else if surprise === 'balloons' && knownForGrid}
-    <BalloonHearts from={knownForGrid} ondone={() => (surprise = undefined)} />
+  ondone={() => (surprise = false)} />
   {/if}
 {/if}
 
@@ -386,13 +375,9 @@ function yearLine(credit: PersonCredit) {
   {#if person.knownFor.length > 0}
     <section class="known-for" id="known-for" aria-labelledby="known-for-heading">
       <h2 id="known-for-heading"><strong>Known</strong> For</h2>
-      <div bind:this={knownForGrid}>
-        <PosterGrid columns={5}>
-          {#each person.knownFor as credit (`${credit.type}-${credit.id}`)}
-            <div data-balloon={ratingColor(credit.rating)}>{@render card(credit, false)}</div>
-          {/each}
-        </PosterGrid>
-      </div>
+      <PosterGrid columns={5}>
+        {#each person.knownFor as credit (`${credit.type}-${credit.id}`)}{@render card(credit, false)}{/each}
+      </PosterGrid>
     </section>
   {/if}
 

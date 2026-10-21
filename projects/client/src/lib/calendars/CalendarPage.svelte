@@ -2,8 +2,9 @@
   The calendars (`/calendars/[calendar]/[[start]]` and `/calendars/my/[calendar]/[[start]]`): a month of one calendar in
   a SidebarFrame. The sidebar holds every control, so the content is only the month: the calendar picker with the
   fade/hide and filter tools, the counts, the month pager over a heat-map mini month that follows the scroll, the
-  applied filters, the display choices and the iCal feed. The month shows as a list of days or as a month grid, with a
-  show's episodes from one day grouped into one card when the viewer wants that.
+  applied filters, the display choices and the iCal feed. The month shows as a grid of weeks, a list of days or an
+  agenda of rows by air time, without the shows the viewer dropped, and with a show's episodes from one day grouped
+  into one card when the viewer wants that.
 -->
 <script lang="ts">
 import { goto } from '$app/navigation';
@@ -35,6 +36,7 @@ import SidebarTitle from '$lib/components/sidebar/SidebarTitle.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import calendarDays from '$lib/icons/regular/calendar-days.svg?raw';
 import grid from '$lib/icons/regular/grid-2.svg?raw';
+import list from '$lib/icons/regular/list.svg?raw';
 import { overlay } from '$lib/overlay/overlay';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
 import type { ComponentProps } from 'svelte';
@@ -48,6 +50,7 @@ import {
 } from './calendarDisplay.ts';
 import type { CalendarEntry } from './CalendarEntry.ts';
 import { calendarFilterState } from './calendarFilterState.ts';
+import CalendarAgenda from './CalendarAgenda.svelte';
 import CalendarList from './CalendarList.svelte';
 import CalendarMonth from './CalendarMonth.svelte';
 import { type CalendarGroup, groupCalendarItems } from './groupCalendarItems.ts';
@@ -80,15 +83,16 @@ function setDisplay(patch: Partial<CalendarDisplay>) {
   }
 }
 const views: readonly { value: CalendarView; label: string; icon: string }[] = [
+  { value: 'month', label: 'Grid', icon: calendarDays },
   { value: 'list', label: 'List', icon: grid },
-  { value: 'month', label: 'Month', icon: calendarDays },
+  { value: 'agenda', label: 'Agenda', icon: list },
 ];
 const artworkLabels: Record<CalendarArtwork, string> = {
   logo: 'Logo',
   fanart: 'Fanart',
   screenshot: 'Still',
   poster: 'Poster',
-  none: 'Text',
+  none: 'None',
   thumb: 'Thumb',
   banner: 'Banner',
 };
@@ -133,9 +137,12 @@ let fadeHide = $derived<FadeHide>(data.fadeHide);
 
 /* ---------- cards ---------- */
 
+// Off the calendar: anything hidden from it, and any show the viewer dropped.
+const isHidden = (type: 'show' | 'movie', id: number) =>
+  overlay.isHidden('calendar', type, id) || (type === 'show' && overlay.state('show', id).dropped === true);
 const clock = $derived({ ...data.datePreferences, imageType: display.artwork });
 const shown = $derived(
-  visibleCalendarDays({ days: data.days, isHidden: (type, id) => overlay.isHidden('calendar', type, id) }),
+  visibleCalendarDays({ days: data.days, isHidden }),
 );
 
 type Match = (typeof options)[number]['id'];
@@ -169,6 +176,10 @@ const days = $derived(
   })),
 );
 
+// An episode's ••• drops its show; a movie has nothing to drop, so no •••.
+const dropMenu = (entry: CalendarEntry) =>
+  entry.hideTarget ? [{ kind: 'drop' as const, target: entry.hideTarget }] : [];
+
 function cardIcons(entry: CalendarEntry): Omit<ComponentProps<typeof QuickIcons>, 'small'> {
   if ('group' in entry) {
     const { group } = entry;
@@ -191,9 +202,9 @@ function cardIcons(entry: CalendarEntry): Omit<ComponentProps<typeof QuickIcons>
       rating: entry.rating,
       released: entry.released,
       watchNow: 'play',
-      hide: 'show',
       hideTarget: entry.hideTarget,
       hideSection: 'calendar',
+      more: dropMenu(entry),
     };
   }
   return {
@@ -205,9 +216,9 @@ function cardIcons(entry: CalendarEntry): Omit<ComponentProps<typeof QuickIcons>
     ratingTarget: { ...entry.overlay, title: entry.title },
     listLabel: entry.episode ? 'Add to list' : undefined,
     watchNow: entry.episode || display.artwork === 'none' ? 'play' : undefined,
-    hide: entry.episode ? 'show' : undefined,
     hideTarget: entry.hideTarget,
     hideSection: 'calendar',
+    more: dropMenu(entry),
   };
 }
 
@@ -220,6 +231,7 @@ const entries = $derived(days.flatMap((day) => day.entries));
 const episodeCount = $derived(
   entries.reduce((sum, entry) => sum + ('group' in entry ? entry.group.episodes.length : entry.episode ? 1 : 0), 0),
 );
+const mixed = $derived(kind === 'both');
 const movieCount = $derived(entries.filter((entry) => !('group' in entry) && !entry.episode).length);
 const heat = $derived(new Map(days.map((day) => [day.date, day.entries.length])));
 
@@ -365,7 +377,8 @@ const title = $derived(`${data.target === 'my' ? 'My ' : ''}${data.calendar.labe
       <MonthPager label={monthLabel} prevHref={href(data.target, data.calendar.slug, data.window.previous)}
         nextHref={href(data.target, data.calendar.slug, data.window.next)}
         todayHref={href(data.target, data.calendar.slug)} {todayLabel} {years} />
-      <MiniMonth {month} counts={heat} today={data.today} marked={firstVisible} {weekStart} onpick={jump} />
+      <MiniMonth {month} counts={heat} today={data.today} marked={firstVisible} markWeek={display.view === 'month'}
+        {weekStart} onpick={jump} />
     </div>
 
     {#if filterCount > 0}
@@ -436,10 +449,13 @@ const title = $derived(`${data.target === 'my' ? 'My ' : ''}${data.calendar.labe
 
   <div class="calendar" {@attach followScroll}>
     {#if display.view === 'month'}
-      <CalendarMonth {month} {days} today={data.today} artwork={display.artwork} {weekStart} {cardIcons} />
+      <CalendarMonth {month} {days} today={data.today} artwork={display.artwork} {weekStart} {mixed} {cardIcons} />
+    {:else if display.view === 'agenda'}
+      <CalendarAgenda {days} today={data.today} artwork={display.artwork} autoscroll={data.preferences.autoscroll}
+        {mixed} {cardIcons} />
     {:else}
       <CalendarList {days} today={data.today} artwork={display.artwork} autoscroll={data.preferences.autoscroll}
-        {cardIcons} />
+        {mixed} {cardIcons} />
     {/if}
   </div>
 </SidebarFrame>

@@ -43,6 +43,7 @@ describe('toCalendarCard', () => {
 
     it('should tag the UTC air time and the network', () => {
       expect(toCalendarCard(episode(), UTC).tags).toEqual([{ text: '9:00 pm' }, { text: 'FX', kind: 'generic' }]);
+      expect(toCalendarCard(episode(), UTC).time).toBe('9:00 pm');
       expect(toCalendarCard({ ...episode(), at: '2026-09-29T09:05:00.000Z' }, UTC).tags?.at(0)).toEqual({
         text: '9:05 am',
       });

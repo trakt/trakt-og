@@ -192,7 +192,7 @@ const ratingLevel = $derived(rating === undefined ? 1 : Math.min(Math.max(Math.t
     {/if}
     {#if hide}
       {#if hiddenTarget}
-        <VisibilityControl target={hiddenTarget} action={hideSection === 'dropped' ? 'drop' : 'hide'} section={hideSection === 'dropped' ? undefined : hideSection} variant="card" {small}><span class:ban={hideSection !== 'dropped'}><Icon svg={hideSection === 'dropped' ? minus : ban} /></span></VisibilityControl>
+        <VisibilityControl target={hiddenTarget} action={hideSection === 'dropped' ? 'drop' : 'hide'} section={hideSection === 'dropped' ? undefined : hideSection} variant="card" {small}><span class:ban={hideSection !== 'dropped'} class:drop={hideSection === 'dropped'}><Icon svg={hideSection === 'dropped' ? minus : ban} /></span></VisibilityControl>
       {:else}{@render action('ignore', ban, `Hide this ${hide}`, 0)}{/if}
     {/if}
   </div>
@@ -340,8 +340,18 @@ const ratingLevel = $derived(rating === undefined ? 1 : Math.min(Math.max(Math.t
   }
 }
 
+/* The drop icon in the watch-now gray, until the button under it lights up. */
+.drop {
+  color: var(--color-watch-now);
+
+  :global(.visibility-trigger:is(:hover, :focus-visible)) & {
+    color: inherit;
+  }
+}
+
 .ban {
   rotate: 90deg;
+  font-size: var(--quick-icon-hide-scale);
 }
 
 .ignore {

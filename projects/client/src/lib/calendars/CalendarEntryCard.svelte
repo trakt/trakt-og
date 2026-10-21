@@ -1,210 +1,153 @@
 <!--
-  One calendar card in either view, with og's full quick-icon bar under the artwork whatever the artwork style. A card
-  that groups a show's episodes from one day shows its episode count on the art, a strip that fills purple as they're
-  watched, and opens to its episodes.
-    <CalendarEntryCard {entry} icons={cardIcons(entry)} artwork="logo" />
+  One calendar card, the same in the list and the month whatever the artwork: the art (none for Text), a caption with
+  the card tags and the titles, then og's full quick-icon bar across the bottom. The caption's lines have fixed
+  heights, so cards in a row line up whether or not they have a show line. An episode's types (a premiere, a finale)
+  sit over the art's bottom-left corner, so the caption keeps one line of tags: the time and network, the network
+  cut short on a narrow card. With no art, the types lead that line. The logo sits in the middle of the art. A grouped card has its episodes pill in the art's top-right corner
+  (at the end of the tag line for Text), with a tick per episode along the art's bottom edge.
+    <CalendarEntryCard {entry} icons={cardIcons(entry)} artwork="logo" mixed />
 -->
 <script lang="ts">
 import FanartCard from '$lib/components/media/FanartCard.svelte';
-import type QuickIcons from '$lib/components/media/QuickIcons.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import clone from '$lib/icons/regular/clone.svg?raw';
-import chevron from '$lib/icons/solid/chevron-down.svg?raw';
-import { overlay } from '$lib/overlay/overlay';
+import CardTag from '$lib/components/media/CardTag.svelte';
+import QuickIcons from '$lib/components/media/QuickIcons.svelte';
 import type { ComponentProps } from 'svelte';
 import type { CalendarArtwork } from './calendarDisplay.ts';
 import type { CalendarEntry } from './CalendarEntry.ts';
-import CalendarPosterCard from './CalendarPosterCard.svelte';
-import CalendarTextCard from './CalendarTextCard.svelte';
-import PromptPopover from '$lib/components/prompt/PromptPopover.svelte';
-import EpisodeTray from './EpisodeTray.svelte';
+import CalendarEntryTitles from './CalendarEntryTitles.svelte';
+import CalendarEpisodes from './CalendarEpisodes.svelte';
+import { calendarTags } from './calendarTags.ts';
 
 interface Props {
   entry: CalendarEntry;
   icons: Omit<ComponentProps<typeof QuickIcons>, 'small'>;
   artwork: CalendarArtwork;
-  /** A month cell: an episode shows only its number, since the cell is narrow; movies keep their title. */
-  compact?: boolean;
+  /** Shows and movies on one calendar: a movie gets a Movie tag. */
+  mixed?: boolean;
 }
 
-const { entry, icons, artwork, compact = false }: Props = $props();
-const uid = $props.id();
-let open = $state(false);
+const { entry, icons, artwork, mixed = false }: Props = $props();
 
 const group = $derived('group' in entry ? entry.group : undefined);
-const watched = $derived(
-  group?.episodes.map((episode) =>
-    overlay.state('episode', episode.id, { show: group.show.id, number: episode.season }).watched === true
-  ) ?? [],
-);
-const watchedCount = $derived(watched.filter(Boolean).length);
-const shownTitle = $derived(compact && entry.episode ? '' : entry.title);
+const tags = $derived(calendarTags({ entry, mixed }));
+const spoiler = $derived(icons.collectionTarget ?? icons.watchTarget ?? icons.ratingTarget);
 </script>
 
-<!-- Opens the episodes: how many there are, or how many of them are watched once any are. -->
-{#snippet badge(inline: boolean)}
-  {#if group}
-    <button type="button" class={['badge', { inline, open }]} aria-expanded={open} aria-controls="{uid}-episodes"
-  popovertarget="{uid}-episodes" style:anchor-name="--episodes-{uid}"
-  title="{group.label}: {watchedCount} of {group.episodes.length} watched">
-      <Icon svg={clone} /><span>{watchedCount > 0 ? `${watchedCount}/${group.episodes.length} watched` : `${group
-          .episodes.length} episodes`}</span><Icon svg={chevron} />
-    </button>
-  {/if}
-{/snippet}
-
-<div class={['calendar-entry', { grouped: group }]}>
-  {#if artwork === 'none'}
-    <CalendarTextCard {entry} {icons}>{#snippet overlay()}{@render badge(false)}{/snippet}</CalendarTextCard>
-  {:else if artwork === 'poster'}
-    <CalendarPosterCard {entry} {icons}>
-      {#snippet overlay()}
-        {#if group}
-          {@render badge(false)}
-          <span class="ticks" aria-hidden="true">{#each watched as done, i (i)}<i class:done></i>{/each}</span>
-        {/if}
-      {/snippet}
-    </CalendarPosterCard>
-  {:else}
-    <FanartCard {...entry} title={shownTitle} episodeBadge={undefined} userRating={entry.state.rating} {icons}>
+<article class={['calendar-entry', artwork, { faded: entry.faded }]}>
+  {#if artwork !== 'none'}
+    <FanartCard {...entry} faded={false} titles={false} iconBar={false} episodeBadge={undefined}
+      userRating={entry.state.rating} {icons}>
       {#snippet fanartOverlay()}
-        {#if group}
-          {@render badge(false)}
-          <span class="ticks" aria-hidden="true">{#each watched as done, i (i)}<i class:done></i>{/each}</span>
-        {/if}
+        {#if tags.types.length > 0}<p class="types">{#each tags.types as tag (tag.text)}<CardTag {...tag} />{/each}</p>{/if}
+        {#if group}<CalendarEpisodes {group} released={entry.released} onArt />{/if}
       {/snippet}
     </FanartCard>
   {/if}
-  {#if group}
-    <PromptPopover id="{uid}-episodes" anchor="--episodes-{uid}" tone="watched"
-      ontoggle={(event) => (open = event.newState === 'open')}>
-      {#snippet title()}<span class="popup-show">{group.show.title}</span><span class="popup-detail">Season {group
-            .season} · {group.label}</span>{/snippet}
-      {#if open}
-        <EpisodeTray id="{uid}-tray" show={group.show.id} title={group.show.title} episodes={group.episodes}
-          released={entry.released} />
-      {/if}
-    </PromptPopover>
-  {/if}
-</div>
+  <div class="caption">
+    <p class="tags">
+      {#if artwork === 'none'}{#each tags.types as tag (tag.text)}<CardTag {...tag} />{/each}{/if}
+      {#each tags.line as tag (tag.text)}<CardTag {...tag} />{/each}
+      {#if group && artwork === 'none'}<span class="end"><CalendarEpisodes {group} released={entry.released} /></span>{/if}
+    </p>
+    <div class="titles"><CalendarEntryTitles {entry} {spoiler} /></div>
+  </div>
+  <QuickIcons {...icons} small={artwork === 'poster'} watchNowArt={entry.fanart} />
+</article>
 
 <style>
 .calendar-entry {
-  position: relative;
   container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  block-size: 100%;
   min-inline-size: 0;
+  overflow: hidden;
+  border: 1px solid var(--color-calendar-card-line);
+  border-radius: var(--radius-calendar-card);
+  background-color: var(--color-calendar-card);
+  transition: opacity 0.5s;
+
+  &.faded:not(:hover, :focus-within) {
+    opacity: var(--opacity-faded);
+  }
+
+  /* A hairline between the caption and the bar, which is light like the card in the light theme. */
+  & > :global(.quick-icons) {
+    margin-block-start: auto;
+    border-block-start: 1px solid var(--color-calendar-card-line);
+  }
+
+  & :global(.fanart .logo) {
+    inset-block: 0;
+    max-inline-size: var(--calendar-logo-max-width);
+    margin-block: auto;
+  }
+
+  /* The shade under titles on the art; there are none here, and on a thumbnail it would cover the logo. */
+  & :global(.fanart .shadow-base) {
+    display: none;
+  }
 }
 
-.calendar-entry :global(.fanart .logo) {
-  max-inline-size: var(--calendar-logo-max-width);
+.caption {
+  display: grid;
+  gap: var(--calendar-caption-gap);
+  padding: var(--calendar-caption-padding);
 }
 
-/* "1x07 Title" reads as one line that wraps: the number bold, the title regular, a blurred spoiler title kept inline. */
-.calendar-entry :global(.fanart h3) {
-  font-weight: normal;
-}
-
-.calendar-entry :global(.fanart h3 .spoiler-content.inline) {
-  display: inline;
-}
-
-/* The episodes popup's title bar: the show, then the season and what kind of drop it is. */
-.popup-show {
-  display: block;
-}
-
-.popup-detail {
-  display: block;
-  margin-block-start: 2px;
-  font-size: var(--font-size-small);
-  font-weight: normal;
-  line-height: 1.2;
-  opacity: 0.8;
-}
-
-/* A frosted pill in the art's top-right corner that opens the episodes; white while they're open. */
-.badge {
-  position: absolute;
-  inset-block-start: var(--space-sm-block);
-  inset-inline-end: var(--space-sm-block);
-  z-index: 2;
-  display: inline-flex;
+/* One line of tags, kept when empty so cards line up. The network gives way first, ending in an ellipsis. */
+.tags {
+  display: flex;
   align-items: center;
   gap: var(--space-xs-inline);
-  min-block-size: 0;
-  padding: 4px 8px 4px 9px;
-  border: 1px solid rgb(255 255 255 / 0.18);
-  border-radius: var(--radius-sidebar-pill);
-  background-color: rgb(0 0 0 / 0.55);
-  backdrop-filter: blur(6px);
-  color: var(--color-frame-text);
-  font-size: var(--font-size-small);
-  font-weight: var(--font-weight-menu-header);
-  line-height: 1;
-  cursor: pointer;
+  block-size: var(--calendar-tags-height);
+  margin: 0;
+  overflow: hidden;
 
-  & :global(.icon:last-child) {
-    font-size: 0.75em;
-
-    @media (prefers-reduced-motion: no-preference) {
-      transition: rotate var(--transition-card);
-    }
+  & :global(.card-tag) {
+    flex: none;
   }
 
-  &:is(:hover, :focus-visible) {
-    background-color: rgb(0 0 0 / 0.8);
-  }
-
-  &.open {
-    border-color: var(--color-frame-text);
-    background-color: var(--color-frame-text);
-    color: var(--color-card-bg);
-
-    & :global(.icon:last-child) {
-      rotate: 180deg;
-    }
-  }
-
-  &.inline {
-    position: static;
-    margin: 0 var(--space-sm-inline) var(--space-sm-block);
-  }
-
-  @container (width < 200px) {
-    & span {
-      display: none;
-    }
+  & :global(.card-tag.generic) {
+    display: block;
+    flex: 0 1 auto;
+    min-inline-size: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 
-/* One tick per episode along the art's bottom edge, purple once watched. */
-.ticks {
+/* An episode's types over the art's bottom-left corner, above the episodes' ticks. */
+.types {
   position: absolute;
-  inset-inline: 0;
-  inset-block-end: 0;
+  inset-inline: var(--calendar-art-tag-inset);
+  inset-block-end: var(--calendar-art-tag-inset);
   z-index: 2;
   display: flex;
-  gap: 2px;
-  block-size: 4px;
-
-  & i {
-    flex: 1;
-    background-color: rgb(255 255 255 / 0.28);
-  }
-
-  & i.done {
-    background-color: var(--brand-tertiary);
-  }
+  flex-wrap: wrap;
+  gap: var(--space-xs-inline);
+  margin: 0;
+  pointer-events: none;
 }
 
-/* Narrow cards (a month's day, a poster) keep every quick icon, just smaller. */
+/* A None card's episodes pill: at the line's right end. */
+.end {
+  margin-inline-start: auto;
+}
+
+.titles {
+  display: grid;
+  block-size: var(--calendar-titles-height);
+}
+
+/* Narrow cards (a month's day, a poster) keep every quick icon, just smaller and in a shorter bar. */
 @container (width < 300px) {
   .calendar-entry.calendar-entry :global(.quick-icons) {
-    --bar: 34px;
-    --watch-card-height: 34px;
-    --watch-card-small-height: 34px;
-    --list-card-height: 34px;
-    --list-card-small-height: 34px;
+    --bar: var(--calendar-narrow-bar-height);
+    --watch-card-height: var(--calendar-narrow-bar-height);
+    --watch-card-small-height: var(--calendar-narrow-bar-height);
+    --list-card-height: var(--calendar-narrow-bar-height);
+    --list-card-small-height: var(--calendar-narrow-bar-height);
     --action-width: 26px;
     --watch-card-width: 26px;
     --watch-card-small-width: 26px;

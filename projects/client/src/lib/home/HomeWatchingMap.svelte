@@ -49,6 +49,8 @@ const most = $derived(Math.max(1, ...ranked.map(total)));
 
 let hovered = $state<{ code: string; x: number; y: number } | null>(null);
 let box = $state<HTMLElement>();
+// The map repaints when the lit country changes, not on every pointer move inside it.
+const hoveredCode = $derived(hovered?.code);
 
 const tip = $derived.by(() => {
   if (!hovered) return null;
@@ -74,11 +76,14 @@ const label = $derived(
  */
 const draw: Attachment<HTMLCanvasElement> = (canvas) => {
   const counts = byCode;
-  const lit = hovered?.code;
+  const lit = hoveredCode;
   const sweeping = !live && !prefersReducedMotion.current;
   const style = getComputedStyle(canvas);
-  const shade = (level: number) =>
-    style.getPropertyValue(level === 0 ? '--color-home-map-dot' : `--color-home-map-heat-${level}`);
+  // Index 0 is a country nobody watches in; read once per paint, so a theme switch still shows mid-sweep.
+  const shades = () => [
+    style.getPropertyValue('--color-home-map-dot'),
+    ...KEY.map(({ level }) => style.getPropertyValue(`--color-home-map-heat-${level}`)),
+  ];
   const hover = style.getPropertyValue('--color-home-map-hover');
   const shimmer = style.getPropertyValue('--color-home-map-shimmer');
   const sweepMs = Number(style.getPropertyValue('--home-map-shimmer-ms'));
@@ -91,6 +96,7 @@ const draw: Attachment<HTMLCanvasElement> = (canvas) => {
     const scale = canvas.width / world.width;
     const radius = world.step * Number(style.getPropertyValue('--home-map-dot')) * scale;
     const light = time === undefined ? undefined : ((time % sweepMs) / sweepMs) * (world.width + 2 * band) - band;
+    const shade = shades();
     const dotAt = (dot: MapDot) => {
       context.beginPath();
       context.arc(dot.x * scale, dot.y * scale, radius, 0, Math.PI * 2);
@@ -100,7 +106,7 @@ const draw: Attachment<HTMLCanvasElement> = (canvas) => {
     context.clearRect(0, 0, canvas.width, canvas.height);
     map.dots.forEach((dot: MapDot) => {
       const here = counts.get(dot.code)?.country;
-      context.fillStyle = lit === dot.code ? hover : shade(here ? heatLevel(total(here)) : 0);
+      context.fillStyle = lit === dot.code ? hover : shade[here ? heatLevel(total(here)) : 0] ?? '';
       dotAt(dot);
       const away = light === undefined ? band : Math.abs(dot.x - light);
       if (away >= band) return;

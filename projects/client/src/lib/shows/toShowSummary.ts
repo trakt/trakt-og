@@ -5,8 +5,6 @@ import type { ComponentProps } from 'svelte';
 import { episodeNumber, episodeType } from '../components/media/episodeTags.ts';
 import type FanartCard from '../components/media/FanartCard.svelte';
 import { toCastMembers } from '../components/summary/toCastMembers.ts';
-import type { ExternalLink } from '../components/summary/ExternalLink.ts';
-import { iconLinks } from '../components/summary/iconLinks.ts';
 import type { NamedLink } from '../components/summary/NamedLink.ts';
 import { countryName, languageName, titleize } from '../components/summary/names.ts';
 import { type StreamingRank, toExternalRatings } from '../components/summary/toExternalRatings.ts';
@@ -19,6 +17,7 @@ import type { SeasonWithEpisodes, ShowPeople } from './loadShow.ts';
 import { toCrewGroups } from '../components/summary/toCrewGroups.ts';
 import { seasonName } from '../utils/seasonName.ts';
 import { ratingPercent } from '../utils/ratingPercent.ts';
+import { toShowLinks } from './toShowLinks.ts';
 
 type Tag = NonNullable<ComponentProps<typeof FanartCard>['tags']>[number];
 
@@ -109,31 +108,6 @@ const person = (member: { person: { name: string; ids: { slug: string } } }): Na
   name: member.person.name,
   href: `/people/${member.person.ids.slug}`,
 });
-
-function externalLinks({ show, rank }: Pick<ShowSummaryParams, 'show' | 'rank'>): ExternalLink[] {
-  const { ids, homepage } = show;
-  const links: (ExternalLink | false)[] = [
-    !!homepage && { label: 'Official Site', href: homepage },
-    {
-      label: 'IMDB',
-      href: ids.imdb
-        ? `https://www.imdb.com/title/${ids.imdb}`
-        : `https://www.imdb.com/find?${new URLSearchParams({ q: show.title, s: 'tt' })}`,
-    },
-    !!ids.tmdb && { label: 'TMDB', href: `https://www.themoviedb.org/tv/${ids.tmdb}` },
-    // OG hid TVDB for shows sourced from TMDB. The API doesn't say which, so any TVDB id gets the link.
-    !!ids.tvdb && { label: 'TVDB', href: `https://www.thetvdb.com/dereferrer/series/${ids.tvdb}` },
-    !!ids.tvdb && { label: 'Fanart.tv', href: `https://fanart.tv/series/${ids.tvdb}` },
-  ];
-  return [
-    ...links.filter((link) => link !== false),
-    ...iconLinks({
-      social: show.social_ids,
-      justwatch: rank?.link,
-      search: `${show.year ? `${show.title} ${show.year}` : show.title} TV Series`,
-    }),
-  ];
-}
 
 /**
  * OG's recent episodes. Signed in with progress, the first card is Up Next (the next to watch,
@@ -290,7 +264,7 @@ export function toShowSummary(params: ShowSummaryParams) {
     facts: facts({ ...params, day, airs }),
     tagline: show.tagline ?? null,
     overview: show.overview ?? null,
-    links: externalLinks(params),
+    links: toShowLinks({ show: params.show, justwatch: params.rank?.link }),
     cast: toCastMembers(params.people?.cast, params.actorSpoilers),
     guestStars: toCastMembers(params.people?.guest_stars, params.actorSpoilers),
     crew: toCrewGroups(params.people?.crew, params.actorSpoilers),

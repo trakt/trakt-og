@@ -46,7 +46,7 @@ export async function loadMovieReleases({ fetch, parent, id }: {
       overview: movie.overview,
       fanart: imageUrl(movie.images?.fanart?.at(0), 'full'),
       poster: imageUrl(movie.images?.poster?.at(0), 'medium'),
-      links: toMovieLinks({ movie, rank: null }),
+      links: toMovieLinks({ movie }),
     },
     countries: toMovieReleases({ releases: releases.body, originalCountry: movie.country, datePreferences }),
   };

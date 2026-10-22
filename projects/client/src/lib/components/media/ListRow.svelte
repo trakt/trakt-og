@@ -42,7 +42,7 @@ import traktIcon from '$lib/icons/trakt/trakt-v2.svg?raw';
 import ogLogo from '$lib/assets/trakt-logo-red.png';
 import type { VipBadge } from '$lib/users/VipBadge';
 import type { ListKind } from '$lib/lists/toListRow';
-import CollaboratorsPanel from '$lib/components/lists/CollaboratorsPanel.svelte';
+import CollaboratorsChip from '$lib/components/lists/CollaboratorsChip.svelte';
 import type { Collaborator } from '$lib/users/lists/Collaborator';
 import type { ListRowActions } from './ListRowActions.ts';
 import RankPill from './RankPill.svelte';
@@ -126,7 +126,6 @@ $effect(() => {
 const avatar = $derived(kind === 'official' ? ogLogo : owner.avatar);
 const slots = $derived(itemCount === 0 ? [] : Array.from({ length: FAN_SIZE }, (_, i) => posters.at(i)));
 const blocks = $derived(parseComment(description?.trim() ?? ''));
-const plural = (count: number, word: string) => `${word}${count === 1 ? '' : 's'}`;
 </script>
 
 <!-- Hrefs come in as props pointing at OG routes og hasn't built yet, and resolve() only takes routes that exist. -->
@@ -195,13 +194,7 @@ const plural = (count: number, word: string) => `${word}${count === 1 ? '' : 's'
             {#if builtIn}<CommentTag svg={builtIn.svg} tint>{builtIn.text}</CommentTag>{/if}
             {#if mine}{@render chip('Me', 'var(--color-list-chip-mine)', user, 'Your list')}{/if}
             {#if collaborators.length > 0}
-              <CollaboratorsPanel {collaborators} list={{ name, poster: posters.at(0)?.image }} {owner}>
-                {#snippet trigger(attrs)}
-                  <button type="button" class="chip collaborators" {...attrs}>
-                    <strong class="chip-count">{collaborators.length}</strong>{plural(collaborators.length, 'collaborator')}
-                  </button>
-                {/snippet}
-              </CollaboratorsPanel>
+              <CollaboratorsChip {collaborators} list={{ name, poster: posters.at(0)?.image }} {owner} />
             {/if}
             {#each pills as pill (pill)}{@render chip(pill, CHIPS[pill]?.color ?? 'var(--color-list-chip-following)', CHIPS[pill]?.svg ?? listIcon)}{/each}
             {#if shareLink}{@render chip('Link', 'var(--color-list-chip-link)', link, 'Anyone with this link can view the list')}{/if}
@@ -422,7 +415,7 @@ h3 {
   margin-inline-start: auto;
 }
 
-/* The collaborators button, drawn as a comment tag with its count on a darker segment. */
+/* A status chip, drawn as a comment tag. */
 .chip {
   --tone: var(--color-list-chip-following);
   display: inline-flex;
@@ -439,34 +432,6 @@ h3 {
   font-size: var(--font-size-comment-tag);
   font-weight: var(--font-weight-headings);
   white-space: nowrap;
-}
-
-/* A button: it opens the collaborators panel. */
-.collaborators {
-  --tone: var(--color-list-chip-collaborators);
-  /* Off the global button's height, padding and line height, so it sits like the other chips. */
-  min-block-size: 0;
-  margin: 0;
-  padding-block: 0;
-  padding-inline-start: 0;
-  line-height: 1;
-  cursor: pointer;
-  transition: background-color var(--transition-list-card);
-
-  &:is(:hover, :focus-visible) {
-    background-color: color-mix(in srgb, var(--tone) var(--list-card-chip-count-tint), transparent);
-  }
-}
-
-/* The count leads, on a darker segment of the chip. */
-.chip-count {
-  display: inline-grid;
-  place-items: center;
-  align-self: stretch;
-  padding-inline: var(--comment-chip-padding);
-  background-color: color-mix(in srgb, var(--tone) var(--list-card-chip-count-tint), transparent);
-  color: var(--color-text);
-  font-weight: var(--font-weight-headings-heavy);
 }
 
 /* The VIP label brings its own space after the name. */

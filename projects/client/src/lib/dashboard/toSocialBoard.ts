@@ -6,6 +6,7 @@ import { formatDate } from '../utils/formatDate.ts';
 import type { LiveWatch } from './fetchWatching.ts';
 import type { SocialWindow } from './socialWindows.ts';
 import type { SocialItem, SocialMember, SocialTarget } from './toSocialItem.ts';
+import { uniqueBy } from '../utils/uniqueBy.ts';
 
 export type SocialView = 'title' | 'person' | 'time';
 
@@ -116,7 +117,7 @@ function activitiesOf(items: readonly SocialItem[], live: readonly LiveWatch[]):
 /** Each member in the order they last did something, now first. */
 function membersOf(activities: readonly Activity[]): readonly SocialMember[] {
   const members = activities.map(memberOf);
-  return members.filter((member, i) => members.findIndex(({ key }) => key === member.key) === i);
+  return uniqueBy(members, ({ key }) => key);
 }
 
 function groupBy(activities: readonly Activity[], key: (activity: Activity) => string) {

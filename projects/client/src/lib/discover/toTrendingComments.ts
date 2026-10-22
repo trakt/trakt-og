@@ -3,6 +3,7 @@ import type { CommentItem } from '../components/comments/CommentItem.ts';
 import { episodeNumber } from '../components/media/episodeTags.ts';
 import { imageUrl } from '../utils/imageUrl.ts';
 import type { TrendingCommentRow } from './trendingCommentRowsSchema.ts';
+import { uniqueBy } from '../utils/uniqueBy.ts';
 
 /** One trending comment: the comment, and the movie or show it's about, as a poster card. */
 export type TrendingComment = {
@@ -84,8 +85,6 @@ export function toTrendingComments(rows: readonly TrendingCommentRow[], now: Dat
       : [];
   });
   const key = ({ item }: TrendingComment) => `${item.type}-${item.id}`;
-  const firsts = comments.filter((comment, index) =>
-    comments.findIndex((other) => key(other) === key(comment)) === index
-  );
+  const firsts = uniqueBy(comments, key);
   return [...firsts, ...comments.filter((comment) => !firsts.includes(comment))].slice(0, limit);
 }

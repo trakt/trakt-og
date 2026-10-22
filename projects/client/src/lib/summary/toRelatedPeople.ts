@@ -1,5 +1,6 @@
 import type { PeopleResponse } from '@trakt/api';
 import type { RelatedPerson } from './RelatedPerson.ts';
+import { uniqueBy } from '../utils/uniqueBy.ts';
 
 /** The billed cast that counts as shared. Past it, a day player in both titles would read as a real link. */
 const CAST_LIMIT = 25;
@@ -23,8 +24,6 @@ export function toRelatedPeople(people: PeopleResponse | null | undefined): read
     .filter((member) => member.jobs.some((job) => KEY_JOBS.has(job)))
     .map(({ person }) => person);
 
-  const firsts = [...cast, ...crew].filter((person, i, all) =>
-    all.findIndex((other) => other.ids.trakt === person.ids.trakt) === i
-  );
+  const firsts = uniqueBy([...cast, ...crew], (person) => person.ids.trakt);
   return firsts.map((person) => ({ id: person.ids.trakt, name: person.name }));
 }

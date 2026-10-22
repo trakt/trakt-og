@@ -1,5 +1,6 @@
 import type { ThemeMedia } from './themeRowsSchema.ts';
 import { type PosterItem, toPosterItem } from './toPosterItem.ts';
+import { uniqueBy } from '../utils/uniqueBy.ts';
 
 /** A season pick, and whether it's trending now or one of the all-time favorites. */
 export type SeasonPick = PosterItem & { readonly source: 'trending' | 'favorite' };
@@ -28,7 +29,7 @@ export function toSeasonPicks({ trending, favorites, now, limit = 20 }: SeasonPi
     { type: 'show' as const, media: favorites.show.at(index), source: 'favorite' as const },
   ]).flat().flatMap(({ type, media, source }) => (media ? [{ ...toPosterItem(media, type, now), source }] : []));
 
-  return candidates
-    .filter((item, index) => item.poster && candidates.findIndex(({ key }) => key === item.key) === index)
+  return uniqueBy(candidates, ({ key }) => key)
+    .filter((item) => item.poster)
     .slice(0, limit);
 }

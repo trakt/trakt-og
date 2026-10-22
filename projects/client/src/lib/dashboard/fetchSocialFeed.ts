@@ -4,6 +4,7 @@ import type { DatePreferences } from '../settings/DatePreferences.ts';
 import { socialActivitySchema } from './socialActivitySchema.ts';
 import { type SocialWindow, socialWindows } from './socialWindows.ts';
 import { type SocialItem, type SocialMember, toSocialItem } from './toSocialItem.ts';
+import { uniqueBy } from '../utils/uniqueBy.ts';
 
 type FetchSocialFeedParams = {
   fetch: typeof globalThis.fetch;
@@ -69,8 +70,7 @@ async function fetchWindow(get: SocialGet, window: SocialWindow, datePreferences
 /** Each member once, most recent first, up to `RECENT_MEMBERS`. Deleted members have no slug to ask about. */
 function recentMembers(items: readonly SocialItem[]): readonly SocialMember[] {
   const members = items.map(({ member }) => member).filter(({ slug }) => slug);
-  return members.filter((member, i) => members.findIndex(({ key }) => key === member.key) === i)
-    .slice(0, RECENT_MEMBERS);
+  return uniqueBy(members, ({ key }) => key).slice(0, RECENT_MEMBERS);
 }
 
 type FetchRecentMembersParams = { get: SocialGet; now: Date; datePreferences: DatePreferences };
@@ -106,8 +106,7 @@ export async function fetchSocialItems(
 
   // Both ends of a window are inclusive, so a row on a boundary can come back twice.
   const items = found.flat();
-  return items
-    .filter((item, i) => items.findIndex(({ key }) => key === item.key) === i)
+  return uniqueBy(items, ({ key }) => key)
     .toSorted((a, b) => Date.parse(b.at) - Date.parse(a.at));
 }
 

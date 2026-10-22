@@ -8,8 +8,6 @@ import { page } from '$app/state';
 import logo from '$lib/assets/trakt-logo-red.png';
 import Icon from '$lib/icons/Icon.svelte';
 import rocket from '$lib/icons/solid/rocket.svg?raw';
-import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
-import { userManager } from '$lib/auth/userManager';
 import { toast } from '$lib/components/toast/toast.svelte';
 import type { DarkKnight } from '$lib/settings/DarkKnight';
 import { saveSettings, type SaveSettingsResult } from '$lib/settings/saveSettings';
@@ -24,6 +22,7 @@ import HeaderSearch from './HeaderSearch.svelte';
 import HeaderTint from './HeaderTint.svelte';
 import type { HeaderUser } from './HeaderUser.ts';
 import { reviewLinks } from './reviewLinks.ts';
+import { viewerFetch } from '../../auth/viewerFetch.ts';
 
 interface Props {
   user: HeaderUser | null;
@@ -37,7 +36,7 @@ interface Props {
 
 const browserSave = (body: SettingsBody) =>
   saveSettings({
-    request: settingsRequest(authenticatedFetch({ manager: userManager() })),
+    request: settingsRequest(viewerFetch()),
     body,
   });
 

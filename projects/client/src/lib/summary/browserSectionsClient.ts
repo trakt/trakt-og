@@ -1,7 +1,6 @@
 import { api } from '../api/api.ts';
-import { authenticatedFetch } from '../auth/authenticatedFetch.ts';
-import { userManager } from '../auth/userManager.ts';
 import { type SectionsClient, sectionsClient } from './sectionsClient.ts';
+import { viewerFetch } from '../auth/viewerFetch.ts';
 
 const clients = new Map<boolean, SectionsClient>();
 
@@ -13,8 +12,13 @@ export function browserSectionsClient(signedIn: boolean): SectionsClient {
   const existing = clients.get(signedIn);
   if (existing) return existing;
 
-  const viewerFetch = authenticatedFetch({ manager: userManager() });
-  const client = sectionsClient({ anonymous: api(), viewer: api({ fetch: viewerFetch }), viewerFetch, signedIn });
+  const signedInFetch = viewerFetch();
+  const client = sectionsClient({
+    anonymous: api(),
+    viewer: api({ fetch: signedInFetch }),
+    viewerFetch: signedInFetch,
+    signedIn,
+  });
   clients.set(signedIn, client);
   return client;
 }

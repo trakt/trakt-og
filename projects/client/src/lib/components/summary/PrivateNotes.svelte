@@ -6,8 +6,6 @@
 -->
 <script lang="ts">
 import { tick } from 'svelte';
-import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
-import { userManager } from '$lib/auth/userManager';
 import NotesDialog from '$lib/components/notes/NotesDialog.svelte';
 import { toast } from '$lib/components/toast/toast.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
@@ -16,6 +14,7 @@ import type { PrivateNote } from '$lib/notes/PrivateNote';
 import { saveNote } from '$lib/notes/saveNote';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
 import { formatDate } from '$lib/utils/formatDate';
+import { viewerFetch } from '../../auth/viewerFetch.ts';
 
 interface Props {
   item: NotableItem;
@@ -58,7 +57,7 @@ async function save(text: string) {
   saving = true;
   void refocus();
   const result = await saveNote({
-    fetch: authenticatedFetch({ manager: userManager() }),
+    fetch: viewerFetch(),
     item,
     note: previous,
     text: trimmed,

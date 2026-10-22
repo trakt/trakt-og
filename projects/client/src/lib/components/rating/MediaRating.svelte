@@ -2,7 +2,6 @@
 import { page } from '$app/state';
 import type { ComponentProps } from 'svelte';
 import { rawApiFetch } from '$lib/api/rawApiFetch';
-import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
 import { login } from '$lib/auth/login';
 import { userManager } from '$lib/auth/userManager';
 import { overlay } from '$lib/overlay/overlay';
@@ -11,6 +10,7 @@ import RatingPopover from '$lib/components/rating/RatingPopover.svelte';
 import { rateMedia } from '$lib/components/rating/rateMedia';
 import type { RatingTarget } from '$lib/components/rating/RatingTarget';
 import { watchedFirst } from '$lib/components/rating/watchedFirst';
+import { viewerFetch } from '../../auth/viewerFetch.ts';
 
 interface Props {
   target: RatingTarget;
@@ -42,7 +42,7 @@ async function rate(rating: number | null) {
       watchAfterRating: page.data.settings?.browsing?.watch_after_rating,
       request: (path, body) =>
         rawApiFetch({
-          fetch: path.startsWith('/search/') ? globalThis.fetch : authenticatedFetch({ manager: userManager() }),
+          fetch: path.startsWith('/search/') ? globalThis.fetch : viewerFetch(),
           path,
           init: body === undefined ? undefined : {
             method: 'POST',

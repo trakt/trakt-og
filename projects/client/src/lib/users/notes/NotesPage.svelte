@@ -6,8 +6,6 @@ import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import SortDirection from '$lib/components/dropdown/SortDirection.svelte';
 import NoData from '$lib/components/empty/NoData.svelte';
 import { tick } from 'svelte';
-import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
-import { userManager } from '$lib/auth/userManager';
 import { removeNote } from '$lib/components/notes/removeNote';
 import NoteManage from '$lib/components/notes/NoteManage.svelte';
 import NotesDialog from '$lib/components/notes/NotesDialog.svelte';
@@ -23,6 +21,7 @@ import type { DatePreferences } from '$lib/settings/DatePreferences';
 import type { ProfileUser } from '$lib/users/ProfileUser';
 import type { loadNotes } from '$lib/users/notes/loadNotes';
 import { noteTypes } from '$lib/users/notes/noteTypes';
+import { viewerFetch } from '../../auth/viewerFetch.ts';
 
 type Props = {
   data: Awaited<ReturnType<typeof loadNotes>> & {
@@ -68,7 +67,7 @@ async function save(note: NoteView, text: string) {
   const result = await edits.save({
     note,
     text,
-    fetch: authenticatedFetch({ manager: userManager() }),
+    fetch: viewerFetch(),
     datePreferences: data.datePreferences,
     now: new Date().toISOString(),
   });

@@ -1,7 +1,6 @@
 import { api } from '../../api/api.ts';
-import { authenticatedFetch } from '../../auth/authenticatedFetch.ts';
-import { userManager } from '../../auth/userManager.ts';
 import { type CommentsClient, commentsClient } from './commentsClient.ts';
+import { viewerFetch } from '../../auth/viewerFetch.ts';
 
 let client: CommentsClient | undefined;
 
@@ -9,7 +8,7 @@ let client: CommentsClient | undefined;
 export function browserCommentsClient(): CommentsClient {
   if (!client) {
     const reads = commentsClient(api({ fetch: globalThis.fetch }));
-    const fetch = authenticatedFetch({ manager: userManager() });
+    const fetch = viewerFetch();
     const writes = commentsClient(api({ fetch }), fetch);
     // The summary is publicly cached for one minute in the browser and three at the worker. A post-write
     // read needs a new cache key, or it would replace the optimistic total with the pre-write response.

@@ -3,8 +3,6 @@ import { goto } from '$app/navigation';
 import { resolve } from '$app/paths';
 import { page } from '$app/state';
 import { tick } from 'svelte';
-import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
-import { userManager } from '$lib/auth/userManager';
 import { login } from '$lib/auth/login';
 import { rawApiFetch } from '$lib/api/rawApiFetch';
 import { overlay } from '$lib/overlay/overlay';
@@ -27,6 +25,7 @@ import arrow from '$lib/icons/solid/angle-right.svg?raw';
 import spinner from '$lib/icons/solid/arrows-rotate.svg?raw';
 import { traktUrls } from '$lib/traktUrls';
 import { GENERIC_ERROR } from '../../utils/genericError.ts';
+import { viewerFetch } from '../../auth/viewerFetch.ts';
 
 interface Props {
   source: ListView;
@@ -73,7 +72,7 @@ $effect(() => {
   created = null;
   popover?.hidePopover();
 });
-const authFetch = () => authenticatedFetch({ manager: userManager() });
+const authFetch = () => viewerFetch();
 const request = (path: string, body: unknown) =>
   rawApiFetch({
     fetch: authFetch(),

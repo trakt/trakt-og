@@ -3,8 +3,6 @@ import { page } from '$app/state';
 import { tick } from 'svelte';
 import { invalidateAll } from '$app/navigation';
 import { rawApiFetch } from '$lib/api/rawApiFetch';
-import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
-import { userManager } from '$lib/auth/userManager';
 import LoadingOverlay from '$lib/components/loading/LoadingOverlay.svelte';
 import NewListDialog from '$lib/components/lists/NewListDialog.svelte';
 import { loadListEditor } from '$lib/components/lists/loadListEditor';
@@ -14,6 +12,7 @@ import type { ListDraft } from '$lib/components/lists/ListDraft';
 import { listCatalog } from '$lib/components/lists/listCatalog.svelte';
 import { toast } from '$lib/components/toast/toast.svelte';
 import { overlay } from '$lib/overlay/overlay';
+import { viewerFetch } from '../../auth/viewerFetch.ts';
 interface Props {
   id: number | null;
   onclose: () => void;
@@ -40,7 +39,7 @@ let fields = $state<Readonly<Record<string, readonly string[]>>>({});
 let serverLimit = $state<number>();
 // svelte-ignore state_referenced_locally
 let savedId = $state<number | undefined>(id ?? undefined);
-const fetch = authenticatedFetch({ manager: userManager() });
+const fetch = viewerFetch();
 const request = (path: string, method: string, body?: unknown) =>
   rawApiFetch({
     fetch,

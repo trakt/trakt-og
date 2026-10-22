@@ -16,8 +16,6 @@ import { SvelteMap } from 'svelte/reactivity';
 import { slide } from 'svelte/transition';
 import { goto, invalidateAll, replaceState } from '$app/navigation';
 import { page } from '$app/state';
-import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
-import { userManager } from '$lib/auth/userManager';
 import Container from '$lib/components/container/Container.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import SortDirection from '$lib/components/dropdown/SortDirection.svelte';
@@ -53,6 +51,7 @@ import type { UserListRow } from './UserListRow.ts';
 import { moveList } from '$lib/users/lists/moveList';
 import { saveListOrder } from '$lib/users/lists/saveListOrder';
 import { visibleLists } from './visibleLists.ts';
+import { viewerFetch } from '../../auth/viewerFetch.ts';
 
 type Props = {
   data: Awaited<ReturnType<typeof loadLists>> & { profile: ProfileUser; isSelf: boolean; user: HeaderUser | null };
@@ -137,7 +136,7 @@ async function moveRow(list: UserListRow, rank: number) {
     rank: next.flatMap(({ id }) => id === null ? [] : [id]),
     request: (path, body) =>
       rawApiFetch({
-        fetch: authenticatedFetch({ manager: userManager() }),
+        fetch: viewerFetch(),
         path,
         init: { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) },
       }),
@@ -201,8 +200,7 @@ async function removeList(row: UserListRow) {
     id,
     overlay,
     notify: toast,
-    request: (path, method) =>
-      rawApiFetch({ fetch: authenticatedFetch({ manager: userManager() }), path, init: { method } }),
+    request: (path, method) => rawApiFetch({ fetch: viewerFetch(), path, init: { method } }),
     remove: () => {
       removed = [...removed, id];
       return () => {
@@ -251,7 +249,7 @@ const collaborators = new SvelteMap<number, readonly Collaborator[]>();
 const loadCollaborators = (row: UserListRow) => () => {
   if (row.id === null || collaborators.has(row.id)) return;
   const id = row.id;
-  const fetch = row.isPublic || !data.user ? globalThis.fetch : authenticatedFetch({ manager: userManager() });
+  const fetch = row.isPublic || !data.user ? globalThis.fetch : viewerFetch();
   fetchCollaborators({ fetch, listId: id }).then((found) => collaborators.set(id, found));
 };
 
@@ -277,7 +275,7 @@ async function progress(row: UserListRow) {
   if (!data.user?.isVip) return;
   const source = data;
   try {
-    const id = await resolveRowListId({ fetch: authenticatedFetch({ manager: userManager() }), row });
+    const id = await resolveRowListId({ fetch: viewerFetch(), row });
     if (data !== source) return;
     // eslint-disable-next-line svelte/no-navigation-without-resolve -- canonical OG progress URL with its list query
     await goto(`/users/${data.user.slug}/progress?list=${id}`);
@@ -288,7 +286,7 @@ async function progress(row: UserListRow) {
 async function report(row: UserListRow) {
   const source = data;
   try {
-    const id = await resolveRowListId({ fetch: authenticatedFetch({ manager: userManager() }), row });
+    const id = await resolveRowListId({ fetch: viewerFetch(), row });
     if (data !== source) return;
     reportTarget = {
       type: 'list',
@@ -308,7 +306,7 @@ async function leave(row: UserListRow) {
   const source = data;
   const id = row.id;
   const ok = await leaveList({
-    fetch: authenticatedFetch({ manager: userManager() }),
+    fetch: viewerFetch(),
     id,
     viewer: data.user.slug,
     patch: () => {

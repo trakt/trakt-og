@@ -9,8 +9,6 @@
 import { SvelteURLSearchParams } from 'svelte/reactivity';
 import { goto, invalidateAll } from '$app/navigation';
 import { page } from '$app/state';
-import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
-import { userManager } from '$lib/auth/userManager';
 import Container from '$lib/components/container/Container.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import SortDirection from '$lib/components/dropdown/SortDirection.svelte';
@@ -45,6 +43,7 @@ import { isProgressType, type ProgressType, progressTypes } from './progressType
 import { sortProgress } from './sortProgress.ts';
 import { sumProgressTotals } from './sumProgressTotals.ts';
 import { toProgressRow } from './toProgressRow.ts';
+import { viewerFetch } from '../../auth/viewerFetch.ts';
 
 type Props = {
   data: Awaited<ReturnType<typeof loadProgress>> & { profile: ProfileUser; user: HeaderUser | null };
@@ -108,7 +107,7 @@ async function toggleView(view: 'simple_progress' | 'grid_view') {
         if (view === 'grid_view') gridOn = value;
         else simple = value;
       },
-      request: settingsRequest(authenticatedFetch({ manager: userManager() })),
+      request: settingsRequest(viewerFetch()),
       notify: toast,
     });
     // The layout's settings feed every later load, so they're read again either way.

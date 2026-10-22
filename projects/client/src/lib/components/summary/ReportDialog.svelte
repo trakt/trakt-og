@@ -7,8 +7,6 @@
 -->
 <script lang="ts">
 import { page } from '$app/state';
-import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
-import { userManager } from '$lib/auth/userManager';
 import ChoiceDropdown from '$lib/components/dialog/ChoiceDropdown.svelte';
 import Dialog from '$lib/components/dialog/Dialog.svelte';
 import DialogArtHeader from '$lib/components/dialog/DialogArtHeader.svelte';
@@ -25,6 +23,7 @@ import { writeMediaTool } from '$lib/components/summary/writeMediaTool';
 import Icon from '$lib/icons/Icon.svelte';
 import flag from '$lib/icons/solid/flag.svg?raw';
 import link from '$lib/icons/solid/link.svg?raw';
+import { viewerFetch } from '../../auth/viewerFetch.ts';
 
 interface Props {
   open: boolean;
@@ -84,7 +83,7 @@ async function submit() {
   busy = true;
   error = '';
   const result = await writeMediaTool({
-    fetch: authenticatedFetch({ manager: userManager() }),
+    fetch: viewerFetch(),
     action: { kind: 'report', target, reason, message },
   });
   busy = false;

@@ -10,8 +10,6 @@ import RecentlyWatchedPanel from '$lib/components/dashboard/RecentlyWatchedPanel
 import LastThirtyDaysPanel from '$lib/components/dashboard/LastThirtyDaysPanel.svelte';
 import RecommendationsPanel from '$lib/components/dashboard/RecommendationsPanel.svelte';
 import SocialFeedPanel from '$lib/components/dashboard/SocialFeedPanel.svelte';
-import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
-import { userManager } from '$lib/auth/userManager';
 import type { DashboardSettings } from '$lib/dashboard/DashboardSettings';
 import { dashboardPrefs } from '$lib/dashboard/dashboardPrefs';
 import { fetchRecommendations } from '$lib/dashboard/fetchRecommendations';
@@ -20,6 +18,7 @@ import { toStatsPanel } from '$lib/dashboard/toStatsPanel';
 import type { loadDashboard } from '$lib/dashboard/loadDashboard';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
 import type { ViewerSettings } from '$lib/settings/ViewerSettings';
+import { viewerFetch } from '../auth/viewerFetch.ts';
 
 type Data = Awaited<ReturnType<typeof loadDashboard>> & {
   datePreferences: DatePreferences;
@@ -35,7 +34,7 @@ const isVip = $derived(!!data.profile.vip);
 function loadSchedule({ filter, movies }: Pick<DashboardSettings['schedule'], 'filter' | 'movies'>) {
   dashboardPrefs.save(username, { ...dashboardPrefs.load(username), upcoming_filter: filter, upcoming_movies: movies });
   return fetchSchedule({
-    fetch: authenticatedFetch({ manager: userManager() }),
+    fetch: viewerFetch(),
     token: null,
     settings: data.settings,
     datePreferences: data.datePreferences,
@@ -48,7 +47,7 @@ function loadSchedule({ filter, movies }: Pick<DashboardSettings['schedule'], 'f
 function loadRecommendations(type: DashboardSettings['recommendations']['type']) {
   dashboardPrefs.save(username, { ...dashboardPrefs.load(username), recommendations_type: type });
   return fetchRecommendations({
-    fetch: authenticatedFetch({ manager: userManager() }),
+    fetch: viewerFetch(),
     token: null,
     settings: { ...data.dashboard.recommendations, type },
   });

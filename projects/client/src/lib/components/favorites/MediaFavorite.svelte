@@ -2,7 +2,6 @@
 import { page } from '$app/state';
 import type { Snippet } from 'svelte';
 import { rawApiFetch } from '$lib/api/rawApiFetch';
-import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
 import { login } from '$lib/auth/login';
 import { userManager } from '$lib/auth/userManager';
 import NotesDialog from '$lib/components/notes/NotesDialog.svelte';
@@ -14,6 +13,7 @@ import { saveFavoriteNote } from '$lib/favorites/saveFavoriteNote';
 import { toggleFavorite } from '$lib/favorites/toggleFavorite';
 import { overlay } from '$lib/overlay/overlay';
 import { formatDate } from '$lib/utils/formatDate';
+import { viewerFetch } from '../../auth/viewerFetch.ts';
 
 interface Props {
   target: FavoriteTarget;
@@ -35,7 +35,7 @@ const date = $derived(
 
 const request = (method: 'POST' | 'PUT') => (path: string, body?: unknown) =>
   rawApiFetch({
-    fetch: authenticatedFetch({ manager: userManager() }),
+    fetch: viewerFetch(),
     path,
     init: body === undefined ? undefined : {
       method,

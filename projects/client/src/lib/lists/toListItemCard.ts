@@ -184,18 +184,19 @@ export function toListItemCard(row: ListItemRow, { sortBy, datePreferences, now 
     case 'episode': {
       const { show, episode } = row;
       const href = `${showHref(show.ids.slug)}/seasons/${episode.season}/episodes/${episode.number}`;
+      const number = episodeNumber(episode, show.genres);
       return {
         ...base,
         type: 'episode',
         id: episode.ids.trakt,
         href,
         title: episode.title ?? '',
-        number: episodeNumber(episode, show.genres),
+        number,
         image: imageUrl(show.images?.poster?.at(0), 'thumb'),
         rating: rated(episode.rating, episode.first_aired),
         seasonOf: { show: show.ids.trakt, number: episode.season, episode: episode.number },
         noteTitle: {
-          title: `${episodeNumber(episode, show.genres)} ${episode.title ?? ''}`.trim(),
+          title: `${number} ${episode.title ?? ''}`.trim(),
           show: show.title,
           fanart: fanart(show.images),
         },

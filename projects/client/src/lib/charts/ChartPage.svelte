@@ -1,8 +1,10 @@
 <!--
   One chart page in a SidebarFrame, like the calendar's. The sidebar holds every control: the chart picker (Shows or
   Movies over the chart's name) with the fade/hide and filter tools, the counts, the under-title, the page pager, the
-  period and the applied filters. The content is only the flush fanart grid. `/shows/[chart]` and `/movies/[chart]`
-  render it; Box Office has its own page.
+  period and the applied filters. The content is the chart. Page 1 opens with larger cards, each ranked: on trending
+  #1 as an edge-to-edge hero and #2 and #3 as large framed cards with their logos, on the other charts #1 and #2 as
+  those large cards. Then every page is a grid of framed fanart cards.
+  `/shows/[chart]` and `/movies/[chart]` render it; Box Office has its own page.
 -->
 <script lang="ts">
 import { goto, invalidateAll } from '$app/navigation';
@@ -25,6 +27,7 @@ import {
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import FrameGrid from '$lib/components/frame/FrameGrid.svelte';
 import FanartCard from '$lib/components/media/FanartCard.svelte';
+import type { QuickIconFill } from '$lib/components/media/quickIconFill';
 import { quickIconFill } from '$lib/components/media/quickIconFill';
 import NoResults from '$lib/components/empty/NoResults.svelte';
 import { pageHref } from '$lib/components/pagination/pageWindow';
@@ -40,6 +43,9 @@ import ChartPicker from '$lib/charts/ChartPicker.svelte';
 import FollowingWatchingSection from '$lib/charts/FollowingWatchingSection.svelte';
 import LiveNowSection from '$lib/charts/LiveNowSection.svelte';
 import { chartPeriodText } from '$lib/charts/chartPeriod';
+import ChartHero from '$lib/charts/ChartHero.svelte';
+import ChartRank from '$lib/charts/ChartRank.svelte';
+import type { ChartCard } from '$lib/charts/toChartCard';
 import type { HeaderUser } from '$lib/components/header/HeaderUser';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
 import type { loadChart } from '$lib/charts/loadChart';
@@ -103,6 +109,50 @@ const nextHref = $derived(
 const menu = $derived(data.chart !== 'recommendations');
 const options = $derived(fadeHideOptions.filter((option) => data.type === 'shows' || !('showsOnly' in option)));
 let fadeHide = $derived<FadeHide>(data.fadeHide);
+
+// The cards the hide menu leaves, each with its place in the chart, the overlay's fills and whether it's faded.
+type Entry = {
+  card: ChartCard;
+  rank: number;
+  fill: QuickIconFill;
+  faded: boolean;
+  rating?: number | null;
+  dropped?: boolean;
+};
+const entries = $derived(
+  data.cards.flatMap((card, i): Entry[] => {
+    const state = overlay.state(card.type, card.id);
+    const fill = quickIconFill({ state, airedEpisodes: card.airedEpisodes, datePreferences: data.datePreferences });
+    const matches = (id: FadeHideOption) => matchesFadeHide(id, state, fill);
+    if (menu && fadeHide.hide.some(matches)) return [];
+    const faded = menu && fadeHide.fade.some(matches);
+    return [{ card, rank: i + 1, fill, faded, rating: state.rating, dropped: state.dropped }];
+  }),
+);
+// Page 1 opens with larger cards: trending's hero and the pair after it, or the pair alone.
+const opening = $derived(data.page.current === 1);
+const withHero = $derived(opening && data.chart === 'trending');
+const hero = $derived(withHero ? entries.at(0) : undefined);
+const pairStart = $derived(withHero ? 1 : 0);
+const pair = $derived(opening ? entries.slice(pairStart, pairStart + 2) : []);
+const grid = $derived(opening ? entries.slice(pairStart + 2) : entries);
+
+const icons = ({ card, fill }: Entry) => ({
+  fill,
+  ratingTarget: { type: card.type, id: card.id, title: card.title },
+  watchTarget: {
+    type: card.type,
+    id: card.id,
+    title: card.title,
+    airedEpisodes: card.airedEpisodes,
+    runtime: card.runtime,
+  },
+  rating: card.released ? card.rating : undefined,
+  favorite: true,
+  // ponytail: OG showed watch now only with sources in the user's country. Until #60 brings sources, an
+  // item that isn't out yet is taken to have none.
+  watchNow: card.released ? ('play' as const) : undefined,
+});
 
 function save(next: FadeHide) {
   const reload = apiHideOptions.some((id) => fadeHide.hide.includes(id) !== next.hide.includes(id));
@@ -174,6 +224,17 @@ const period = $derived(advanced.config.period);
   {/if}
   <AdvancedFiltersToggle bind:open={panelOpen} bind:button={funnel} controls="{panelId}-filters" regular
   active={advanced.count > 0} count={vip ? advanced.count : 0} />
+{/snippet}
+
+{#snippet fanart(entry: Entry, large = false)}
+  <FanartCard framed href={entry.card.href} title={entry.card.title} year={entry.card.year}
+    image={large ? (entry.card.fanart ?? entry.card.image) : entry.card.image}
+    titleLogo={large ? entry.card.logo : undefined} tags={entry.card.tags} userRating={entry.rating}
+    dropped={entry.dropped} faded={entry.faded} icons={icons(entry)}>
+    {#snippet fanartOverlay()}
+      {#if large}<span class="rank"><ChartRank rank={entry.rank} live={data.chart === 'trending'} /></span>{/if}
+    {/snippet}
+  </FanartCard>
 {/snippet}
 
 <SidebarFrame label="{title} charts" collapsed={data.sidebar.collapsed} {prevHref} {nextHref}
@@ -254,36 +315,22 @@ const period = $derived(advanced.config.period);
     <RailGroup tools>{@render tools()}</RailGroup>
   {/snippet}
 
-  {#if data.cards.length > 0}
-    <FrameGrid>
-      {#each data.cards as card (card.id)}
-        {@const state = overlay.state(card.type, card.id)}
-        {@const fill = quickIconFill({ state, airedEpisodes: card.airedEpisodes, datePreferences: data.datePreferences })}
-        {@const matches = (id: FadeHideOption) => matchesFadeHide(id, state, fill)}
-        {#if !menu || !fadeHide.hide.some(matches)}
-        <FanartCard
-          href={card.href}
-          title={card.title}
-          year={card.year}
-          image={card.image}
-          tags={card.tags}
-          userRating={state.rating}
-          dropped={state.dropped}
-          faded={menu && fadeHide.fade.some(matches)}
-          icons={{
-            fill,
-            ratingTarget: { type: card.type, id: card.id, title: card.title },
-            watchTarget: { type: card.type, id: card.id, title: card.title, airedEpisodes: card.airedEpisodes, runtime: card.runtime },
-            rating: card.released ? card.rating : undefined,
-            favorite: true,
-            // ponytail: OG showed watch now only with sources in the user's country. Until #60 brings sources, an
-            // item that isn't out yet is taken to have none.
-            watchNow: card.released ? 'play' : undefined,
-          }}
-        />
-        {/if}
-      {/each}
-    </FrameGrid>
+  {#if entries.length > 0}
+    {#if hero}
+      <ChartHero card={hero.card} rank={hero.rank} live={data.chart === 'trending'} icons={icons(hero)} />
+    {/if}
+    {#if pair.length > 0}
+      <div class="pair-frame">
+        <div class="pair">
+          {#each pair as entry (entry.card.id)}{@render fanart(entry, true)}{/each}
+        </div>
+      </div>
+    {/if}
+    {#if grid.length > 0}
+      <FrameGrid variant="framed">
+        {#each grid as entry (entry.card.id)}{@render fanart(entry)}{/each}
+      </FrameGrid>
+    {/if}
   {:else}
     <div class="no-results">
       <NoResults />
@@ -306,6 +353,30 @@ const period = $derived(advanced.config.period);
   & :is(b, strong) {
     color: var(--color-frame-ink);
   }
+}
+
+.pair-frame {
+  container-type: inline-size;
+}
+
+/* Two a row where the grid has two or more, with its gutter, and none under them: the grid's own starts the next row. */
+.pair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--chart-pair-gap);
+  padding: var(--gutter) var(--gutter) 0;
+}
+
+@container (width >= 560px) {
+  .pair {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.rank {
+  position: absolute;
+  inset-block-start: var(--chart-rank-inset);
+  inset-inline-start: var(--chart-rank-inset);
 }
 
 /* OG centred the droids in the frame from 1025px up. */

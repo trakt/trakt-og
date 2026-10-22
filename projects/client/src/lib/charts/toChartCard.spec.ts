@@ -37,10 +37,33 @@ describe('toChartCard', () => {
       title: 'Harry Potter',
       year: 2026,
       image: 'https://media.trakt.tv/images/shows/000/204/167/fanarts/thumb/abc.jpg.webp',
+      fanart: 'https://media.trakt.tv/images/shows/000/204/167/fanarts/full/abc.jpg.webp',
       released: false,
       rating: 6.6,
       airedEpisodes: 0,
       tags: [],
+      genres: [],
+      network: 'HBO Max',
+    });
+  });
+
+  it('should carry the logo and the details the podium hero shows', () => {
+    const details = {
+      ...show,
+      images: { ...show.images, logo: ['media.trakt.tv/images/shows/000/204/167/logos/medium/def.png.webp'] },
+      overview: ' A boy learns he is a wizard. ',
+      certification: 'TV-14',
+      genres: ['science-fiction', 'drama'],
+      trailer: 'https://youtube.com/watch?v=abc',
+    } as ShowResponse;
+
+    expect(toChartCard({ show: details }, options)).toMatchObject({
+      logo: 'https://media.trakt.tv/images/shows/000/204/167/logos/medium/def.png.webp',
+      overview: 'A boy learns he is a wizard.',
+      certification: 'TV-14',
+      genres: ['Science fiction', 'Drama'],
+      network: 'HBO Max',
+      trailer: 'https://youtube.com/watch?v=abc',
     });
   });
 

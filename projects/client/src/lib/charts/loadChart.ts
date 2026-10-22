@@ -13,6 +13,9 @@ import { recommendationFilters } from './chartFilters.ts';
 import { type ChartAlias, chartAliases, type ChartName, isChartAlias, isPeriodChart } from './chartNames.ts';
 import { type ChartPeriod, chartPeriod } from './chartPeriod.ts';
 import { fetchLiveNow } from './fetchLiveNow.ts';
+import { chartPageCount } from './chartPageCount.ts';
+import { type ChartPageRequest, chartPageRequests } from './chartPageRequests.ts';
+import { type ChartPageSize, chartPageSize } from './chartPageSize.ts';
 import { type ChartRow, toChartCard } from './toChartCard.ts';
 
 export type MediaType = 'shows' | 'movies';
@@ -42,8 +45,10 @@ type Query = {
   [filter: string]: string | number | boolean | undefined;
 };
 
-// OG's `setup_pagination`: 38 a page unless `limit` says otherwise.
-const PER_PAGE = 38;
+// Page 1's opening cards and grid. Recommendations come as one page, so they ask for this many.
+const firstPage = ({ podium, grid }: ChartPageSize) => podium + grid;
+
+type Rows = { headers: Headers; rows: readonly ChartRow[] };
 
 function positiveInt(value: string | null, fallback: number): number {
   const parsed = Number.parseInt(value ?? '', 10);
@@ -53,7 +58,7 @@ function positiveInt(value: string | null, fallback: number): number {
 type Client = ReturnType<typeof api>;
 
 // Popular rows are the bare show or movie, so they're wrapped to look like the other charts' rows.
-async function fetchPopular(client: Client, type: MediaType, query: Query) {
+async function fetchPopular(client: Client, type: MediaType, query: Query): Promise<Rows | null> {
   if (type === 'shows') {
     const response = await client.shows.popular({ query });
     return response.status === 200
@@ -67,15 +72,16 @@ async function fetchPopular(client: Client, type: MediaType, query: Query) {
     : null;
 }
 
-// `@trakt/api` has no contract for the worker's `/shows|movies/recommendations`. OG asked for 38 and had no paging
-// so the paging headers are dropped. The API hides watched items by default.
+// `@trakt/api` has no contract for the worker's `/shows|movies/recommendations`. There's no paging, so the paging
+// headers are dropped. The API hides watched items by default.
 async function fetchRecommendations(
   fetch: typeof globalThis.fetch,
   token: string,
   type: MediaType,
   filters: Record<string, string>,
 ) {
-  const search = new URLSearchParams({ extended: 'full,images', limit: `${PER_PAGE}`, ...filters });
+  const limit = firstPage(chartPageSize('recommendations'));
+  const search = new URLSearchParams({ extended: 'full,images', limit: `${limit}`, ...filters });
   const response = await rawApiFetch({ fetch, token, path: `/${type}/recommendations?${search}` });
   if (response.status === 401) return 'signed-out';
   if (!response.ok) return null;
@@ -93,6 +99,13 @@ const fetchSources = (fetch: typeof globalThis.fetch, country: string): Promise<
     .then(async (response) => (response.ok ? toFilterSources(await response.json(), country) : new Map()))
     .catch(() => new Map());
 
+// The chart's own pages, which don't line up with the API's.
+const pageMeta = (page: number, total: number) => ({
+  type: 'paginated' as const,
+  current: Math.min(page, total),
+  total,
+});
+
 function signIn(url: URL): never {
   redirect(302, `/auth/signin?redirect_to=${encodeURIComponent(url.pathname)}`);
 }
@@ -103,7 +116,7 @@ async function fetchRows(
   chart: Exclude<ChartName, 'recommendations'>,
   period: ChartPeriod,
   query: Query,
-) {
+): Promise<Rows | null> {
   if (chart === 'popular') return fetchPopular(client, type, query);
   if (isPeriodChart(chart)) {
     const response = await client[type][chart === 'library' ? 'collected' : chart]({ params: { period }, query });
@@ -112,6 +125,18 @@ async function fetchRows(
 
   const response = await client[type][chart]({ query });
   return response.status === 200 ? { headers: response.headers, rows: response.body } : null;
+}
+
+// One chart page from its API pages, each from its `skip`. The first one's headers carry the counts.
+async function fetchPage(
+  requests: readonly ChartPageRequest[],
+  fetchPart: (part: { page: number; limit: number }) => Promise<Rows | null>,
+): Promise<Rows | null> {
+  const parts = await Promise.all(requests.map(({ page, limit }) => fetchPart({ page, limit })));
+  const [first] = parts;
+  if (!first || parts.some((part) => !part)) return null;
+
+  return { headers: first.headers, rows: parts.flatMap((part, i) => part?.rows.slice(requests.at(i)?.skip) ?? []) };
 }
 
 /**
@@ -131,7 +156,10 @@ export async function loadChart(
   // The period the nav links keep. The charts without one link to the weekly default, as in OG.
   const period = chartPeriod(periodParam);
   const page = chart === 'recommendations' ? 1 : positiveInt(url.searchParams.get('page'), 1);
-  const limit = positiveInt(url.searchParams.get('limit'), PER_PAGE);
+  // OG's `limit` param still sets plain pages of that size. Otherwise page 1 holds the opening cards and a grid.
+  const size = chartPageSize(chart);
+  const limit = url.searchParams.has('limit') ? positiveInt(url.searchParams.get('limit'), firstPage(size)) : undefined;
+  const requests = limit ? [{ page, limit, skip: 0 }] : chartPageRequests(page, size);
 
   // OG's `filter-fade-shows-*` and `filter-hide-shows-*`, one cookie a menu section. The page fades and hides by the
   // overlay; the API also drops the `apiHideOptions` it runs natively, so those pages stay full.
@@ -142,17 +170,20 @@ export async function loadChart(
   // The advanced filters go to the API as they are in the URL, so SSR renders the filtered chart.
   const filters = parseAdvancedFilters(url.searchParams);
   const filterQuery = advancedFiltersQuery(filters, chart === 'recommendations' ? recommendationFilters : undefined);
-  const query: Query = { extended: 'full,images', page, limit, ...filterQuery };
+  const query = { extended: 'full,images' as const, ...filterQuery };
   const ignore = {
     ...(fadeHide.hide.includes('watched') && { ignore_watched: true as const }),
     ...(fadeHide.hide.includes('watchlisted') && { ignore_watchlisted: true as const }),
   };
 
   const publicRows = (chart: Exclude<ChartName, 'recommendations'>) =>
-    fetchRows(api({ fetch }), type, chart, period, query);
+    fetchPage(requests, (part) => fetchRows(api({ fetch }), type, chart, period, { ...query, ...part }));
   // A stale token fails the viewer's request, so the page falls back to the public one and the overlay hides.
   const viewerRows = async (chart: Exclude<ChartName, 'recommendations'>) =>
-    (await fetchRows(api({ fetch, token }), type, chart, period, { ...query, ...ignore })) ?? publicRows(chart);
+    (await fetchPage(
+      requests,
+      (part) => fetchRows(api({ fetch, token }), type, chart, period, { ...query, ...ignore, ...part }),
+    )) ?? publicRows(chart);
 
   // Watch now filters by the viewer's country and favorites, which the API reads from their token.
   const viewer = Object.keys(ignore).length > 0 || filters.watchnow.length > 0;
@@ -194,7 +225,9 @@ export async function loadChart(
     watchNowCountry: country,
     watchNowFavorites: favorites,
     cards: response.rows.map((row) => toChartCard(row, { chart, now: new Date(), order: datePreferences.order })),
-    page: extractPageMeta(headers, page),
+    page: limit || !headers.has('x-pagination-item-count')
+      ? extractPageMeta(headers, page)
+      : pageMeta(page, chartPageCount(positiveInt(headers.get('x-pagination-item-count'), 0), size)),
     /** The chart's size, for the sidebar's count. Recommendations send no paging, so theirs is 0. */
     itemCount: positiveInt(headers.get('x-pagination-item-count'), 0),
     /** Without filters: what the count is out of. Left out when nothing is filtered or that request failed. */

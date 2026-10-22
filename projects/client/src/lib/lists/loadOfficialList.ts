@@ -31,14 +31,15 @@ function fetchSummary(fetch: typeof globalThis.fetch, id: string) {
 
 /** official lists use the public list endpoints and a random, unfiltered item's fanart, without a profile. */
 export async function loadOfficialList({ fetch, locals, params, url, parent, cookies }: Params) {
+  const parsed = toListQuery(url.searchParams);
   const fadeHide = readListFilters({
     search: url.searchParams,
     cookies,
     scope: 'list',
     kind: 'official',
-    types: toListQuery(url.searchParams).types,
+    types: parsed.types,
   });
-  const query = { ...toListQuery(url.searchParams), hide: fadeHide.hide };
+  const query = { ...parsed, hide: fadeHide.hide };
   const summary = await fetchSummary(fetch, params.slug);
   assertListFound(summary);
   if (summary.body.type !== 'official') error(404, 'Page Not Found');

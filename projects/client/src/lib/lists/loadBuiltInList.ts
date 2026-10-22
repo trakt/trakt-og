@@ -77,7 +77,7 @@ export async function loadBuiltInList({ fetch, locals, params, url, parent, cook
     search: url.searchParams,
     cookies,
     scope: kind,
-    kind: kind,
+    kind,
     types: initialQuery.types,
     isSelf: user?.slug === profile.slug,
   });

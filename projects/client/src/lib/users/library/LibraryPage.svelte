@@ -180,9 +180,9 @@ const flipped = $derived(data.sort.how === 'desc');
   <Container>
     {#if cards.length > 0}
       {#if data.page.type === 'paginated'}<Pagination meta={data.page} label="Library pages" />{/if}
-      {#if days.length > 0}
+      {#if days.length > 0 && dividers}
         {#each days as day (day.key)}
-          <DayGroup weekday={day.weekday} date={day.date} divider={dividers}
+          <DayGroup weekday={day.weekday} date={day.date}
             runtime={data.type === 'shows' ? undefined : formatRuntime(day.runtime)}>
             {@render grid(day.cards)}
           </DayGroup>

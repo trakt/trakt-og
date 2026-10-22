@@ -1,6 +1,7 @@
 <!--
   `/users/:id/history(/:type)` under the profile frame: the subnav with the type, genre
-  and date filters, the counter, sort and filter icons, then every play as a poster card under day dividers.
+  and date filters, the counter, sort and filter icons, then every play as a poster card under day dividers, or in
+  one grid with the dividers off.
 -->
 <script lang="ts">
 import type { HistoryPlay } from '$lib/components/history/HistoryPlay';
@@ -110,6 +111,11 @@ const country = $derived(data.settings?.browsing?.watchnow?.country?.toLowerCase
   faded={fadeHide.fade.some((id) => matchesFadeHide(id, state, fill))}
 />
 {/snippet}
+{#snippet grid(items: readonly HistoryCard[])}
+  <PosterGrid columns={data.screenshots ? 4 : 6}>
+    {#each items as item (item.key)}{@render card(item)}{/each}
+  </PosterGrid>
+{/snippet}
 
 <SectionToolbar>
   {#snippet filters()}
@@ -173,14 +179,16 @@ const country = $derived(data.settings?.browsing?.watchnow?.country?.toLowerCase
   <Container>
     {#if days.length > 0}
       {#if data.page.type === 'paginated'}<Pagination meta={data.page} label="History pages" />{/if}
-      {#each days as day (day.key)}
-        <DayGroup weekday={day.weekday} date={day.date} divider={dividers}
-          runtime={data.type === 'shows' ? undefined : formatRuntime(day.runtime)}>
-          <PosterGrid columns={data.screenshots ? 4 : 6}>
-            {#each day.cards as item (item.key)}{@render card(item)}{/each}
-          </PosterGrid>
-        </DayGroup>
-      {/each}
+      {#if dividers}
+        {#each days as day (day.key)}
+          <DayGroup weekday={day.weekday} date={day.date}
+            runtime={data.type === 'shows' ? undefined : formatRuntime(day.runtime)}>
+            {@render grid(day.cards)}
+          </DayGroup>
+        {/each}
+      {:else}
+        {@render grid(days.flatMap((day) => day.cards))}
+      {/if}
       {#if data.page.type === 'paginated'}<Pagination meta={data.page} label="History pages" />{/if}
     {:else}
       <div class="empty"><NoData /></div>

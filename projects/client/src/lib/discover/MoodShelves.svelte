@@ -92,7 +92,7 @@ const mood = $derived(shelves.find(({ id }) => id === picked) ?? shelves.at(0));
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--toggle-chip-gap);
+  gap: var(--space-dropdown-row);
   margin-block: var(--space-heading-dropdowns) var(--discover-heading-margin);
 }
 </style>

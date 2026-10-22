@@ -32,7 +32,7 @@ let { label, options, selected = $bindable() }: Props = $props();
 .chips {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--toggle-chip-gap);
+  gap: var(--space-dropdown-row);
 }
 
 button {

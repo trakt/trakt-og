@@ -468,7 +468,7 @@ const controls: Attachment<HTMLElement> = (node) => {
   display: flex;
   margin-block-start: var(--season-hero-actions-gap);
   align-items: center;
-  gap: var(--season-hero-gap);
+  gap: var(--space-dropdown-row);
   text-shadow: none;
 }
 

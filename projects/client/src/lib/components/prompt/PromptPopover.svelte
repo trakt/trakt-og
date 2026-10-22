@@ -4,7 +4,8 @@
   the action's color (`tone`: purple to watch, teal for the library, red to remove, gray otherwise): the question in
   bold with the close button centered on its first line. The choices are
   `PromptRow`s, `<hr>`s between groups, or a form (`PromptDateForm`, the library metadata). A longer warning goes in
-  `note`, between the header and the choices; a short one belongs on its row as the detail. The caller owns opening it
+  `note`, between the header and the choices, or in the dialogs' amber notice box as `notice` when it needs the eye
+  (a bulk watch's count); a short one belongs on its row as the detail. The caller owns opening it
   (`popovertarget`, or `showPopover()` on the bound `element`) and the focus, as before.
     <PromptPopover id="watch-{id}" anchor="--watch-{id}" title="When did you watch this?" tone="watched"
       bind:element={popover} ontoggle={toggle}>
@@ -12,6 +13,7 @@
     </PromptPopover>
 -->
 <script lang="ts">
+import DialogNotice from '$lib/components/dialog/DialogNotice.svelte';
 import type { Snippet } from 'svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import xmark from '$lib/icons/regular/xmark.svg?raw';
@@ -26,6 +28,8 @@ interface Props {
   tone?: 'watched' | 'collected' | 'danger' | 'neutral';
   /** A warning too long for its row, between the header and the choices. */
   note?: string;
+  /** A warning in the dialogs' amber notice box instead, with markup: a bulk watch's count in bold. */
+  notice?: Snippet;
   /** The panel's width: `wide` for the library metadata form. */
   size?: 'default' | 'wide';
   element?: HTMLDivElement;
@@ -39,6 +43,7 @@ let {
   title,
   tone = 'neutral',
   note,
+  notice,
   size = 'default',
   element = $bindable(),
   ontoggle,
@@ -54,7 +59,8 @@ let {
         svg={xmark}
       /></button>
   </header>
-  {#if note}<p class="note">{note}</p>{/if}
+  {#if notice}<div class="notice"><DialogNotice>{@render notice()}</DialogNotice></div>
+  {:else if note}<p class="note">{note}</p>{/if}
   <div class="body">{@render children()}</div>
 </div>
 
@@ -153,6 +159,10 @@ h3 {
   padding: var(--space-menu-row);
   color: var(--color-menu-header);
   font-size: var(--font-size-small);
+}
+
+.notice {
+  margin: var(--space-menu) var(--space-menu) 0;
 }
 
 .body {

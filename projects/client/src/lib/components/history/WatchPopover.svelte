@@ -106,7 +106,7 @@ let returnTo = $state<HTMLElement>();
 let press: ReturnType<typeof setTimeout> | undefined;
 let pressed = false;
 // A bulk watch asks here before writing (`confirm`), in the same prompt as the dates.
-let confirmation = $state<{ question: string; note: string } | null>(null);
+let confirmation = $state<{ question: string; episodes: string; name: string } | null>(null);
 let answer: ((yes: boolean) => void) | undefined;
 const title = $derived(
   confirmation
@@ -159,7 +159,7 @@ function toggle(event: ToggleEvent) {
 export function confirm({ count, title: name }: { count: number; title: string }): Promise<boolean> {
   reply(false);
   const episodes = countLabel(count, 'episode');
-  confirmation = { question: `Mark ${episodes} watched?`, note: `This adds ${episodes} of ${name} to your history.` };
+  confirmation = { question: `Mark ${episodes} watched?`, episodes, name };
   editingMetadata = false;
   other = false;
   returnTo = button;
@@ -278,8 +278,12 @@ function click() {
   {#if busy}<span class="busy"><Spinner label={collection ? "Saving collection" : "Saving watched history"} /></span>{/if}
 </div>
 {/if}
+{#snippet bulkNotice()}
+  This adds <strong>{confirmation?.episodes}</strong> of {confirmation?.name} to your history.
+{/snippet}
 <PromptPopover id="watch-{id}" anchor="--watch-{id}" {title} tone={collection ? 'collected' : 'watched'}
-  note={confirmation?.note ?? (mode === 'remove' && !editingMetadata ? removeNote : undefined)}
+  note={!confirmation && mode === 'remove' && !editingMetadata ? removeNote : undefined}
+  notice={confirmation ? bulkNotice : undefined}
   size={editingMetadata ? 'wide' : 'default'} bind:element={popover} ontoggle={toggle}>
   {#if confirmation}
     <PromptRow svg={check} onclick={() => reply(true)}>Yes, mark them watched</PromptRow>

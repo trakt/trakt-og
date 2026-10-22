@@ -1,8 +1,8 @@
-import { PLACEHOLDER_AVATAR } from '../components/comments/authorOf.ts';
 import { toVipBadge } from '../users/toVipBadge.ts';
 import type { VipBadge } from '../users/VipBadge.ts';
 import { imageUrl } from '../utils/imageUrl.ts';
 import { listPath } from './listPath.ts';
+import { PLACEHOLDER_AVATAR } from '../users/placeholderAvatar.ts';
 
 /**
  * Any list the API sends: a typed `ListResponse`, a parsed `/users/:id/lists` or `/:type/:id/lists` row, or a search

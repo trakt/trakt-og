@@ -1,7 +1,7 @@
-import { PLACEHOLDER_AVATAR } from '../components/comments/authorOf.ts';
 import type { DatePreferences } from '../settings/DatePreferences.ts';
 import type { SocialActivity } from './socialActivitySchema.ts';
 import { toSocialMedia } from './toSocialMedia.ts';
+import { PLACEHOLDER_AVATAR } from '../users/placeholderAvatar.ts';
 
 export type SocialMember = {
   /** Groups a member's rows: the username, which deleted members keep too. */

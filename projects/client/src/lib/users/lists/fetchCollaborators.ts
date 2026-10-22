@@ -1,8 +1,8 @@
 import { rawApiFetch } from '../../api/rawApiFetch.ts';
-import { PLACEHOLDER_AVATAR } from '../../components/comments/authorOf.ts';
 import { toVipBadge } from '../toVipBadge.ts';
 import type { Collaborator } from './Collaborator.ts';
 import { collaboratorsSchema } from './collaboratorsSchema.ts';
+import { PLACEHOLDER_AVATAR } from '../placeholderAvatar.ts';
 
 type FetchCollaboratorsParams = {
   /** A plain fetch for public lists (the worker caches those), the signed-in one for the rest. */

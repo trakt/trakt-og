@@ -1,6 +1,6 @@
 <script lang="ts">
 import { page } from '$app/state';
-import { PLACEHOLDER_AVATAR } from '$lib/components/comments/authorOf';
+import { PLACEHOLDER_AVATAR } from '$lib/users/placeholderAvatar';
 import CommentCard from '$lib/components/comments/CommentCard.svelte';
 import CommentTag from '$lib/components/comments/CommentTag.svelte';
 import AddCommentLink from '$lib/components/comments/AddCommentLink.svelte';

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { PLACEHOLDER_AVATAR } from '../components/comments/authorOf.ts';
+import { PLACEHOLDER_AVATAR } from '../users/placeholderAvatar.ts';
 import { toListCard } from './toListCard.ts';
 
 const list = {

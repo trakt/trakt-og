@@ -1,8 +1,8 @@
-import { PLACEHOLDER_AVATAR } from '../components/comments/authorOf.ts';
 import type { VipBadge } from '../users/VipBadge.ts';
 import { toVipBadge } from '../users/toVipBadge.ts';
 import { imageUrl } from '../utils/imageUrl.ts';
 import type { ListSource } from './listSchema.ts';
+import { PLACEHOLDER_AVATAR } from '../users/placeholderAvatar.ts';
 
 export type ListCard = {
   readonly id: number;

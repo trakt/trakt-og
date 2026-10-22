@@ -1,5 +1,5 @@
 <script lang="ts">
-import { PLACEHOLDER_AVATAR } from '$lib/components/comments/authorOf';
+import { PLACEHOLDER_AVATAR } from '$lib/users/placeholderAvatar';
 import defaultCover from '$lib/assets/profile-cover-default.jpg';
 import FrameGrid from '$lib/components/frame/FrameGrid.svelte';
 import FanartCard from '$lib/components/media/FanartCard.svelte';

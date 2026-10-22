@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { PLACEHOLDER_AVATAR } from '../components/comments/authorOf.ts';
+import { PLACEHOLDER_AVATAR } from '../users/placeholderAvatar.ts';
 import { socialFeedFixture } from './socialFeedFixture.ts';
 import { socialActivitySchema } from './socialActivitySchema.ts';
 import { toSocialItem } from './toSocialItem.ts';

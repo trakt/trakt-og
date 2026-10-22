@@ -5,6 +5,7 @@ import { imageUrl } from '../../utils/imageUrl.ts';
 import { toVipBadge } from '../toVipBadge.ts';
 import type { noteRowsSchema } from './noteRowsSchema.ts';
 import { seasonName } from '../../utils/seasonName.ts';
+import { PLACEHOLDER_AVATAR } from '../placeholderAvatar.ts';
 
 type Row = z.infer<typeof noteRowsSchema>[number];
 type Image = NonNullable<NonNullable<Row['movie']>['images']>['poster'];
@@ -124,8 +125,7 @@ export function toNote(row: Row, datePreferences: DatePreferences) {
     author: {
       name: user?.name?.trim() || user?.username || 'Deleted User',
       href: user ? `/users/${user.ids.slug ?? user.username}` : null,
-      avatar: user?.images?.avatar.thumb ?? user?.images?.avatar.full ??
-        'https://media.trakt.tv/hotlink-ok/placeholders/medium/zoidberg.png',
+      avatar: user?.images?.avatar.thumb ?? user?.images?.avatar.full ?? PLACEHOLDER_AVATAR,
       vip: user ? toVipBadge(user) : null,
     },
     activity: activity(row, datePreferences),

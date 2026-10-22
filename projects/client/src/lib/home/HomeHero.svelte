@@ -1,22 +1,28 @@
 <!--
-  The landing hero: "Trakt" over a giant OG Redux lockup, where the red Trakt mark rolls in from the left and lands as
-  the O, then the red G, the white "Redux" and the copy rise into place. Behind it, the hand-picked titles' fanart
-  crossfades every six seconds, each settling from a slight zoom, and tints the header's glass. The current title is
-  credited bottom right with a link to its page. Under reduced motion nothing rolls, rises or rotates.
+  The landing hero: "Trakt" over the OG Redux lockup, where the red Trakt mark rolls in from the left and lands as
+  the O, then the red G, the white "Redux" and the copy rise into place. Beside it, the Live now box. Behind it, the
+  hand-picked titles' fanart crossfades every six seconds, each settling from a slight zoom, and tints the header's
+  glass. The current title is credited bottom right with a link to its page. Under reduced motion nothing rolls, rises
+  or rotates.
 -->
 <script lang="ts">
 import { resolve } from '$app/paths';
 import TraktMark from '$lib/components/brand/TraktMark.svelte';
 import { headerArt } from '$lib/components/header/headerArt';
 import { SvelteSet } from 'svelte/reactivity';
+import HomeLiveCard from './HomeLiveCard.svelte';
+import type { HomeLive } from './live/toHomeLive.ts';
 import type { HomeFanart } from './toHomeFanarts.ts';
 
 interface Props {
   fanarts: readonly HomeFanart[];
   signedIn: boolean;
+  /** Null until the count streams in, and when it fails; `showLive` says whether to keep the box. */
+  live: HomeLive | null;
+  showLive: boolean;
 }
 
-const { fanarts, signedIn }: Props = $props();
+const { fanarts, signedIn, live, showLive }: Props = $props();
 const ROTATE_MS = 6000;
 
 let index = $state(0);
@@ -51,21 +57,32 @@ $effect(() => {
     {/if}
   {/each}
 
-  <div class="copy">
-    <h1 id="home-title" class="lockup" aria-label="Trakt OG Redux">
-      <span class="trakt" aria-hidden="true">Trakt</span>
-      <span class="name" aria-hidden="true">
-        <svg class="mark" viewBox="0 0 98.1 98.1"><TraktMark ink="var(--brand-primary)" /></svg>
-        <span class="g">G</span>
-        <span class="redux">Redux</span>
-      </span>
-    </h1>
-    <div class="lede">
-      <p>A rebuild of classic Trakt for big screens. Built on the Trakt API, and open source.</p>
-      <a class="sign-in" href={signedIn ? resolve('/dashboard') : resolve('/auth/signin')}>
-        {signedIn ? 'Dashboard' : 'Sign in'} ➟
-      </a>
+  <div class="stage">
+    <div class="copy">
+      <h1 id="home-title" class="lockup" aria-label="Trakt OG Redux">
+        <span class="trakt" aria-hidden="true">Trakt</span>
+        <span class="name" aria-hidden="true">
+          <svg class="mark" viewBox="0 0 98.1 98.1"><TraktMark ink="var(--brand-primary)" /></svg>
+          <span class="g">G</span>
+          <span class="redux">Redux</span>
+        </span>
+      </h1>
+      <div class="lede">
+        <p>A rebuild of classic Trakt for big screens. Built on the Trakt API, and open source.</p>
+        <div class="actions">
+          {#if signedIn}
+            <a class="button primary" href={resolve('/dashboard')}>Dashboard</a>
+          {:else}
+            <a class="button primary" href={resolve('/auth/signin')}>Sign In</a>
+            <!-- Trakt's sign-in page also creates accounts. -->
+            <a class="button" href={resolve('/auth/signin')}>Join Trakt</a>
+          {/if}
+        </div>
+      </div>
     </div>
+    {#if showLive}
+      <div class="live-slot"><HomeLiveCard {live} /></div>
+    {/if}
   </div>
 
   {#if current}
@@ -121,6 +138,13 @@ $effect(() => {
     opacity: 1;
     scale: 1;
   }
+}
+
+.stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--home-hero-columns-gap);
+  align-items: center;
 }
 
 .copy {
@@ -183,22 +207,38 @@ $effect(() => {
   }
 }
 
-.sign-in {
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--home-actions-gap);
+}
+
+/* og's standard buttons, a size up for the hero: red to sign in, a light outline to join. */
+.button {
   display: inline-flex;
   align-items: center;
-  block-size: var(--home-sign-in-height);
-  padding-inline: var(--home-sign-in-inline);
-  border-radius: var(--radius-home-pill);
-  background: var(--brand-primary);
+  block-size: var(--control-height-large);
+  padding-inline: var(--home-button-inline);
+  border-radius: var(--radius-object);
+  box-shadow: inset 0 0 0 1px var(--color-home-button-line);
   color: var(--color-home-text);
-  font-size: var(--font-size-home-sign-in);
+  font-size: var(--font-size-home-button);
   font-weight: var(--font-weight-headings-heavy);
   text-decoration: none;
+  transition: background-color 0.2s, box-shadow 0.2s;
 
-  &:hover,
-  &:focus-visible {
-    background: var(--brand-primary-darken);
+  &:is(:hover, :focus-visible) {
+    background: var(--color-home-button-hover);
     color: var(--color-home-text);
+  }
+
+  &.primary {
+    background: var(--brand-primary);
+    box-shadow: none;
+
+    &:is(:hover, :focus-visible) {
+      background: var(--brand-primary-darken);
+    }
   }
 }
 
@@ -292,6 +332,38 @@ $effect(() => {
   from {
     opacity: 0;
     translate: 0 var(--home-rise-from);
+  }
+}
+
+/* Smaller tablets: a smaller lockup and lede, so the Live now box keeps its place on the right. */
+@container (width < 1100px) {
+  .name {
+    font-size: var(--font-size-home-wordmark-tablet);
+  }
+
+  .lede p {
+    font-size: var(--font-size-home-lede-tablet);
+  }
+}
+
+/* The smallest tablet: the copy alone, in from the edge. The width is inside the hero's padding. */
+@container (width < 760px) {
+  .stage {
+    grid-template-columns: minmax(0, 1fr);
+    padding-inline-start: var(--home-hero-indent-small);
+  }
+
+  .live-slot {
+    display: none;
+  }
+
+  /* With the box gone, the lockup and lede take their full size again. */
+  .name {
+    font-size: var(--font-size-home-wordmark);
+  }
+
+  .lede p {
+    font-size: var(--font-size-home-lede);
   }
 }
 </style>

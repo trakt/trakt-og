@@ -3,6 +3,7 @@ import type { seasonPeopleSchema } from '../shows/seasonPeopleSchema.ts';
 import { countLabel } from '../utils/countLabel.ts';
 import { imageUrl } from '../utils/imageUrl.ts';
 import { crewDepartments } from './crewDepartments.ts';
+import { parameterize } from '../utils/parameterize.ts';
 
 type People = z.infer<typeof seasonPeopleSchema>;
 type Member = NonNullable<People['cast']>[number];
@@ -38,8 +39,6 @@ type Params = {
   /** Episodes and movies have no episode counts. */
   episodeCounts: boolean;
 };
-
-const parameterize = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
 function group(
   label: string,

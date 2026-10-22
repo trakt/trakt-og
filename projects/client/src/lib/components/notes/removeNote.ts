@@ -1,4 +1,5 @@
 import type { TransitionConfig } from 'svelte/transition';
+import { prefersReducedMotion } from 'svelte/motion';
 
 /** OG hides the entire note/poster row over one second. Hand focus to the next row or the section. */
 export function removeNote(node: HTMLElement): TransitionConfig {
@@ -14,7 +15,7 @@ export function removeNote(node: HTMLElement): TransitionConfig {
     if (focus === section && section) section.tabIndex = -1;
     focus?.focus({ preventScroll: true });
   }
-  const duration = matchMedia('(prefers-reduced-motion: reduce)').matches
+  const duration = prefersReducedMotion.current
     ? 0
     : Number.parseFloat(getComputedStyle(node).getPropertyValue('--card-remove-fade-duration'));
   const height = node.getBoundingClientRect().height;

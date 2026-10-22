@@ -81,6 +81,7 @@ import { spoilerRevealed } from './spoilerRevealed.ts';
 import { parseComment } from './text/parseComment.ts';
 import { watchedIndicator } from './watchedIndicator.ts';
 import { withoutBlocked } from './withoutBlocked.ts';
+import { prefersReducedMotion } from 'svelte/motion';
 
 interface Props {
   comment: CommentResponse;
@@ -283,7 +284,7 @@ const toggleReplies = (event: MouseEvent) => {
   repliesOpen = !repliesOpen;
   if (!repliesOpen) return;
 
-  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const reduced = prefersReducedMotion.current;
   card?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
   void loadReplies();
 };
@@ -357,8 +358,7 @@ const block = async () => {
   blockedMembers.add(comment.user.ids.trakt);
 };
 
-const vanish = (node: Element) =>
-  fade(node, { duration: matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 1000 });
+const vanish = (node: Element) => fade(node, { duration: prefersReducedMotion.current ? 0 : 1000 });
 </script>
 
 {#snippet manageIcon(name: string, svg: string, label: string, onclick: () => void, expanded?: boolean)}

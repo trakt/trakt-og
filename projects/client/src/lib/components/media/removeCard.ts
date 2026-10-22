@@ -1,4 +1,5 @@
 import type { TransitionConfig } from 'svelte/transition';
+import { prefersReducedMotion } from 'svelte/motion';
 
 /** OG fades a removed card for a second, then collapses it for a second. */
 export function removeCard(node: HTMLElement, enabled: () => boolean): TransitionConfig {
@@ -13,7 +14,7 @@ export function removeCard(node: HTMLElement, enabled: () => boolean): Transitio
     if (focus === section && section) section.tabIndex = -1;
     focus?.focus({ preventScroll: true });
   }
-  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return { duration: 0 };
+  if (prefersReducedMotion.current) return { duration: 0 };
   const duration = Number.parseFloat(getComputedStyle(node).getPropertyValue('--card-remove-fade-duration'));
   const height = node.getBoundingClientRect().height;
   return {

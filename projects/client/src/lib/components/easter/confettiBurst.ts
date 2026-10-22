@@ -1,4 +1,5 @@
 import type { Attachment } from 'svelte/attachments';
+import { prefersReducedMotion } from 'svelte/motion';
 
 type Piece = {
   x: number;
@@ -43,7 +44,7 @@ function pieces(origin: DOMRect, colors: readonly string[]): Piece[] {
  *   <h1 {@attach confettiBurst}>
  */
 export const confettiBurst: Attachment<HTMLElement> = (element) => {
-  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if (prefersReducedMotion.current) return;
 
   const root = getComputedStyle(document.documentElement);
   const colors = TOKENS.map((token) => root.getPropertyValue(token).trim()).filter(Boolean);

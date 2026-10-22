@@ -62,6 +62,7 @@ import { PUBLIC_CALENDARS } from './publicCalendars.ts';
 import { toCalendarCard } from './toCalendarCard.ts';
 import { toCalendarGroupCard } from './toCalendarGroupCard.ts';
 import { visibleCalendarDays } from './visibleCalendarDays.ts';
+import { prefersReducedMotion } from 'svelte/motion';
 
 type Props = {
   data: Awaited<ReturnType<typeof loadCalendar>> & { user: HeaderUser | null; datePreferences: DatePreferences };
@@ -309,7 +310,7 @@ afterNavigate(({ type, from, to }) => {
 function jump(date: string) {
   document.getElementById(`day-${date}`)?.scrollIntoView({
     block: 'start',
-    behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth',
+    behavior: prefersReducedMotion.current ? 'instant' : 'smooth',
   });
 }
 const weekStarts = $derived(

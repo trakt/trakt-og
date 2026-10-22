@@ -8,6 +8,7 @@ import { removeListItems } from './removeListItems.ts';
 import { reorderListItems } from './reorderListItems.ts';
 import type { ListView } from './toListView.ts';
 import type { ListSort } from './resolveListSort.ts';
+import { listItemsPath } from './listItemsPath.ts';
 
 const resultSchema = z.object({
   added: z.record(z.string(), z.number().int().nonnegative()),
@@ -137,7 +138,7 @@ async function addItems({ target, items, overlay, request }: {
     const body: Record<string, { ids: { trakt: number } }[]> = {};
     for (const { type, trakt } of items) (body[`${type}s`] ??= []).push({ ids: { trakt } });
     const response = await request(
-      target.watchlist ? '/sync/watchlist' : `/users/${encodeURIComponent(target.owner)}/lists/${target.id}/items`,
+      target.watchlist ? '/sync/watchlist' : listItemsPath(target.owner, target.id),
       body,
     );
     if (!response.ok) throw new Error(response.status === 429 ? '429' : await listWriteError(response));

@@ -17,6 +17,7 @@ import type { ListSort } from './resolveListSort.ts';
 import { saveListItemNote } from './saveListItemNote.ts';
 import type { ListItemCard } from './toListItemCard.ts';
 import type { ListView } from './toListView.ts';
+import { listItemsPath } from './listItemsPath.ts';
 
 type Source = {
   list: Pick<ListView, 'id' | 'slug' | 'ownerSlug' | 'name' | 'href'> | null;
@@ -59,7 +60,7 @@ export function createListManager(source: () => Source, isBlocked: () => boolean
       list,
       owner: list.ownerSlug,
       listId: list.id,
-      base: `/users/${encodeURIComponent(list.ownerSlug)}/lists/${encodeURIComponent(list.slug)}/items`,
+      base: listItemsPath(list.ownerSlug, list.slug),
       query,
       sort,
     };

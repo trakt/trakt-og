@@ -1,4 +1,5 @@
 import { listWriteError } from './listWriteError.ts';
+import { listItemsPath } from './listItemsPath.ts';
 
 type Params = {
   owner: string;
@@ -23,7 +24,7 @@ export async function saveListItemNote({ owner, listId, id, notes, request }: Pa
   const text = notes.trim();
   let response: Response | undefined;
   try {
-    response = await request(`/users/${encodeURIComponent(owner)}/lists/${listId}/items/${id}`, { notes: text });
+    response = await request(`${listItemsPath(owner, listId)}/${id}`, { notes: text });
     if (response.ok) return { ok: true, notes: text };
     if (response.status === 420) return { ok: false, limit: response.headers.get('x-account-limit') ?? 'the most' };
   } catch {

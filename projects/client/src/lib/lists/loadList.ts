@@ -11,6 +11,7 @@ import type { ProfileUser } from '../users/ProfileUser.ts';
 import { fetchListItems, loadListItems, urlListSort } from './loadListItems.ts';
 import { toListQuery } from './toListQuery.ts';
 import { toListView } from './toListView.ts';
+import { listItemsPath } from './listItemsPath.ts';
 
 type Params = {
   cookies?: { get: (name: string) => string | undefined };
@@ -40,7 +41,7 @@ function fetchSummary(client: ReturnType<typeof api>, { id, list }: { id: string
 export async function loadList({ fetch, locals, params, url, parent, cookies }: Params) {
   const initialFilters = readListFilters({ search: url.searchParams, cookies, scope: 'list' });
   const initialQuery = { ...toListQuery(url.searchParams), hide: initialFilters.hide };
-  const base = `/users/${encodeURIComponent(params.id)}/lists/${encodeURIComponent(params.list)}/items`;
+  const base = listItemsPath(params.id, params.list);
   const token = locals.token;
 
   const [anonymousSummary, anonymousItems, { profile, isSelf, user, datePreferences, settings }] = await Promise.all([

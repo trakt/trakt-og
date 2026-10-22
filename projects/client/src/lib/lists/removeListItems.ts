@@ -1,6 +1,7 @@
 import { z } from 'zod/v4';
 import type { ListItemRef } from './fetchListItemRefs.ts';
 import { listWriteError } from './listWriteError.ts';
+import { listItemsPath } from './listItemsPath.ts';
 
 const resultSchema = z.object({ deleted: z.record(z.string(), z.number()) });
 const KEYS = { movie: 'movies', show: 'shows', season: 'seasons', episode: 'episodes', person: 'people' } as const;
@@ -22,7 +23,7 @@ export async function removeListItems({ owner, listId, items, request, notify }:
   for (const { type, trakt } of items) (body[KEYS[type]] ??= []).push({ ids: { trakt } });
   let response: Response | undefined;
   try {
-    response = await request(`/users/${encodeURIComponent(owner)}/lists/${listId}/items/remove`, body);
+    response = await request(`${listItemsPath(owner, listId)}/remove`, body);
     if (response.ok && resultSchema.safeParse(await response.json()).success) return true;
   } catch {
     // A network failure gets the generic toast.

@@ -6,6 +6,7 @@ import { imageUrl } from '../../utils/imageUrl.ts';
 import { episodeBadge } from '../profile/toProfileSummary.ts';
 import type { ratingRowsSchema } from './ratingRowsSchema.ts';
 import type { ratingQuery } from './ratingQuery.ts';
+import { seasonName } from '../../utils/seasonName.ts';
 
 type Row = z.infer<typeof ratingRowsSchema>[number];
 type Options = {
@@ -28,7 +29,7 @@ export function toRatingCard(row: Row, { type, by, datePreferences }: Options) {
   const showHref = `/shows/${show?.ids.slug}`;
   const screenshots = row.type === 'episode' && type === 'episodes';
   const seasonTitle = row.type === 'season' && row.season
-    ? row.season.title ?? (row.season.number === 0 ? 'Specials' : `Season ${row.season.number}`)
+    ? row.season.title ?? seasonName(row.season.number)
     : undefined;
   const href = row.type === 'movie' && row.movie
     ? `/movies/${row.movie.ids.slug}`

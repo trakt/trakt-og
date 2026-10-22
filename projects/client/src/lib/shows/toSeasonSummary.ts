@@ -12,6 +12,7 @@ import { seasonNeighbours } from './seasonNeighbours.ts';
 import type { seasonPeopleSchema } from './seasonPeopleSchema.ts';
 import { toShowEpisodes } from './toShowEpisodes.ts';
 import { toCrewGroups } from '../components/summary/toCrewGroups.ts';
+import { seasonName } from '../utils/seasonName.ts';
 
 interface Params {
   show: ShowResponse;
@@ -33,7 +34,7 @@ export function toSeasonSummary(params: Params) {
   const { show, season, seasons, episodes, stats, ratings, datePreferences, now } = params;
   const showHref = `/shows/${show.ids.slug}`;
   const href = `${showHref}/seasons/${season.number}`;
-  const standardTitle = season.number === 0 ? 'Specials' : `Season ${season.number}`;
+  const standardTitle = seasonName(season.number);
   const title = season.title || standardTitle;
   const fullTitle = `${show.title}: ${title}`;
   const episodeList = toShowEpisodes({

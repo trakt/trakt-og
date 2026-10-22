@@ -1,4 +1,5 @@
 import type { CommentItem } from './CommentItem.ts';
+import { seasonName } from '../../utils/seasonName.ts';
 
 type Ids = { readonly trakt: number };
 type Movie = { readonly ids: Ids; readonly title?: string | null; readonly year?: number | null };
@@ -24,8 +25,7 @@ const trim = (title: string | null | undefined) => title?.trim() ?? '';
 const aired = (count: number | null | undefined) => count ?? undefined;
 
 // OG's full titles, the share sheet's title.
-const seasonTitle = (show: Show, number: number) =>
-  `${trim(show.title)} ${number === 0 ? 'Specials' : `Season ${number}`}`.trim();
+const seasonTitle = (show: Show, number: number) => `${trim(show.title)} ${seasonName(number)}`.trim();
 
 function episodeTitle(show: Show, episode: Episode): string {
   const number = episode.season === 0

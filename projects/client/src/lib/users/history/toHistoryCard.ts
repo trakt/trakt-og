@@ -6,6 +6,7 @@ import { imageUrl } from '../../utils/imageUrl.ts';
 import { episodeBadge, type WatchedCard } from '../profile/toProfileSummary.ts';
 import type { HistoryItem } from './historyFilters.ts';
 import type { HistoryRow, WatchedShowRow } from './historyRowsSchema.ts';
+import { seasonName } from '../../utils/seasonName.ts';
 
 /** One poster card in the history grid. */
 export type HistoryCard = {
@@ -152,8 +153,6 @@ export function toHistoryDays<Card extends Pick<HistoryCard, 'watchedAt' | 'runt
   }
   return days;
 }
-
-const seasonName = (number: number) => (number === 0 ? 'Specials' : `Season ${number}`);
 
 /** OG's `full_title` of the one item, for the type dropdown's label. */
 export function historyItemTitle(item: HistoryItem, row: HistoryRow | undefined): string | undefined {

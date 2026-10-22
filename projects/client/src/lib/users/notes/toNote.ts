@@ -4,6 +4,7 @@ import { formatDate } from '../../utils/formatDate.ts';
 import { imageUrl } from '../../utils/imageUrl.ts';
 import { toVipBadge } from '../toVipBadge.ts';
 import type { noteRowsSchema } from './noteRowsSchema.ts';
+import { seasonName } from '../../utils/seasonName.ts';
 
 type Row = z.infer<typeof noteRowsSchema>[number];
 type Image = NonNullable<NonNullable<Row['movie']>['images']>['poster'];
@@ -77,7 +78,7 @@ function itemDetails(row: Row) {
     if (!showHref || item.number == null) return null;
     return {
       ...base,
-      title: item.title || (item.number === 0 ? 'Specials' : `Season ${item.number}`),
+      title: item.title || seasonName(item.number),
       href: `${showHref}/seasons/${item.number}`,
       image: posterUrl(item.images?.poster) ?? posterUrl(show?.images?.poster),
     };

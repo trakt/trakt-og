@@ -8,6 +8,7 @@ import { formatDate } from '../utils/formatDate.ts';
 import { formatRuntime } from '../utils/formatRuntime.ts';
 import { imageUrl } from '../utils/imageUrl.ts';
 import type { SeasonWithEpisodes } from './loadShow.ts';
+import { seasonName } from '../utils/seasonName.ts';
 
 interface ShowEpisodesParams {
   show: ShowResponse;
@@ -102,7 +103,6 @@ export function toShowEpisodes({ show, seasons, signedIn, episodeTypeTags, dateP
   const href = `/shows/${show.ids.slug}`;
   const timeZone = signedIn ? datePreferences.timeZone : show.airs?.timezone ?? datePreferences.timeZone;
   const seasonHref = (number: number) => `${href}/seasons/${number}`;
-  const seasonName = (number: number) => (number === 0 ? 'Specials' : `Season ${number}`);
   const episodes: EpisodeResponse[] = seasons.flatMap((season) => season.episodes ?? []);
 
   const rows = episodes.map((episode): EpisodeRow => {

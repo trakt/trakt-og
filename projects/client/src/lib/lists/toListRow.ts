@@ -2,6 +2,7 @@ import { PLACEHOLDER_AVATAR } from '../components/comments/authorOf.ts';
 import { toVipBadge } from '../users/toVipBadge.ts';
 import type { VipBadge } from '../users/VipBadge.ts';
 import { imageUrl } from '../utils/imageUrl.ts';
+import type { ListKind } from './ListKind.ts';
 import { listPath } from './listPath.ts';
 
 /**
@@ -32,8 +33,6 @@ export type ListRowSource = {
   };
   readonly images?: { readonly posters?: readonly string[] | null } | null;
 };
-
-export type ListKind = 'personal' | 'official' | 'watchlist' | 'favorites';
 
 /** What a list row shows for one list. */
 export interface ListRow {

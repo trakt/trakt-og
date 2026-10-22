@@ -1,7 +1,5 @@
 import type { ListItemType } from './listItemSorts.ts';
-
-/** Which list the page shows: they differ in the types they hold. */
-export type ListKind = 'personal' | 'official' | 'watchlist' | 'favorites';
+import type { ListKind } from './ListKind.ts';
 
 const types: Readonly<Record<ListItemType, string>> = {
   movie: 'Movies',

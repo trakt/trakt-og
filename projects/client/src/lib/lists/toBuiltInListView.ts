@@ -1,8 +1,9 @@
 import type { ProfileUser } from '../users/ProfileUser.ts';
+import type { ListKind } from './ListKind.ts';
 import type { ListSort } from './resolveListSort.ts';
 import type { ListView } from './toListView.ts';
 
-export type BuiltInListKind = 'watchlist' | 'favorites';
+export type BuiltInListKind = Extract<ListKind, 'watchlist' | 'favorites'>;
 
 type BuiltInListViewParams = {
   kind: BuiltInListKind;

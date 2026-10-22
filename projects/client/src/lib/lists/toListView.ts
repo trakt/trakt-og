@@ -1,6 +1,6 @@
 import type { ListResponse } from '@trakt/api';
 import { listPath } from './listPath.ts';
-import type { ListKind } from './listTypeOptions.ts';
+import type { ListKind } from './ListKind.ts';
 import type { ListSort } from './resolveListSort.ts';
 
 /** The list a list page shows: from `/users/:id/lists/:list` or `/lists/:id`, or built for a watchlist or favorites. */

@@ -41,7 +41,7 @@ import link from '$lib/icons/solid/link.svg?raw';
 import traktIcon from '$lib/icons/trakt/trakt-v2.svg?raw';
 import ogLogo from '$lib/assets/trakt-logo-red.png';
 import type { VipBadge } from '$lib/users/VipBadge';
-import type { ListKind } from '$lib/lists/toListRow';
+import type { ListKind } from '$lib/lists/ListKind';
 import CollaboratorsPanel from '$lib/components/lists/CollaboratorsPanel.svelte';
 import type { Collaborator } from '$lib/users/lists/Collaborator';
 import type { ListRowActions } from './ListRowActions.ts';

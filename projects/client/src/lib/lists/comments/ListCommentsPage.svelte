@@ -26,8 +26,9 @@ import type { DatePreferences } from '$lib/settings/DatePreferences';
 import type { HeaderUser } from '$lib/components/header/HeaderUser';
 import type { PageMeta } from '$lib/api/PageMeta';
 import type { CommentResponse } from '@trakt/api';
-import type { ListCommentsTarget } from './ListCommentsTarget';
-import { listCommentMenu, listCommentSorts } from './listCommentSorts';
+import { countLabel } from '$lib/utils/countLabel';
+import type { ListCommentsTarget } from './ListCommentsTarget.ts';
+import { listCommentMenu, listCommentSorts } from './listCommentSorts.ts';
 
 const { data }: {
   data: {
@@ -43,8 +44,8 @@ const { data }: {
 const item = $derived(data.list.id ? { type: 'list' as const, id: data.list.id, title: data.list.title } : undefined);
 const viewer = $derived(data.user ? { slug: data.user.slug } : null);
 const canComment = $derived(Boolean(item && data.list.allowComments));
-// Posted here since the page loaded, newest first. OG left out the members the viewer blocked
-//; the count stays the API's total.
+// Posted here since the page loaded, newest first. OG left out the members the viewer blocked; the count stays
+// the API's total.
 const comments = $derived([
   ...(canComment ? newComment.posted : []),
   ...withoutBlocked(data.comments, commentSettings(page.data.settings).blocked),
@@ -101,7 +102,7 @@ const sortHref = (sort: string) => {
   {/snippet}
   {#snippet sidebar()}
     <a href={data.list.href}><SummaryPoster alt={data.list.title} posters={data.list.posters} /></a>
-    <SectionNav sections={[{ label: `${data.itemCount.toLocaleString('en-US')} ${data.itemCount === 1 ? 'comment' : 'comments'}`, href: '#comments' }]} />
+    <SectionNav sections={[{ label: countLabel(data.itemCount, 'comment'), href: '#comments' }]} />
   {/snippet}
   {#snippet details()}
     {#if canComment && item}<NewCommentForm {item} />{/if}

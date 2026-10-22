@@ -1,4 +1,5 @@
 import { titleize } from '../components/summary/names.ts';
+import { parameterize } from '../utils/parameterize.ts';
 
 // these departments first, then the rest alphabetically.
 const FIRST_DEPARTMENTS = ['created by', 'directing', 'writing', 'production'];
@@ -6,8 +7,6 @@ const rank = (department: string) => {
   const index = FIRST_DEPARTMENTS.indexOf(department);
   return index === -1 ? FIRST_DEPARTMENTS.length : index;
 };
-
-const parameterize = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
 /**
  * A `/people` crew record in OG's order: created by, directing, writing, production, then the rest alphabetically.

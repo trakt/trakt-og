@@ -12,6 +12,7 @@ import type { PersonCredit } from './PersonCredit.ts';
 import { personLinks } from './personLinks.ts';
 import { toKnownFor } from './toKnownFor.ts';
 import { ratingPercent } from '../utils/ratingPercent.ts';
+import { parameterize } from '../utils/parameterize.ts';
 
 interface PersonSummaryParams {
   person: PersonResponse;
@@ -30,9 +31,6 @@ type Media = { type: 'movie'; item: MovieResponse } | { type: 'show'; item: Show
 
 /** One API credit before it's grouped: which department, which item, and the characters or jobs. */
 type RawCredit = Media & { role: string; names: readonly string[]; episodeCount: number };
-
-// API's `parameterize`: the tab ids and OG's `#default-tab`.
-const parameterize = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
 /** Every credit in API order: movie cast, movie crew, show cast, show crew. The cast is the "acting" department. */
 function rawCredits({ movies, shows }: Pick<PersonSummaryParams, 'movies' | 'shows'>): RawCredit[] {

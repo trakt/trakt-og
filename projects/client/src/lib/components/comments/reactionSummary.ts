@@ -2,6 +2,7 @@ import type { ReactionsSummaryResponse } from '@trakt/api';
 import { readableStat } from '../../utils/readableStat.ts';
 
 import { reactionOptions } from './reactionOptions.ts';
+import { countLabel } from '../../utils/countLabel.ts';
 
 type ReactionType = typeof reactionOptions[number]['type'];
 
@@ -30,8 +31,6 @@ export type ReactionSummary = {
 
 const TOP = 3;
 
-const counted = (count: number, noun: string) => `${count.toLocaleString('en-US')} ${noun}${count === 1 ? '' : 's'}`;
-
 /** The summary under a comment: its top three reaction kinds, and every kind's count for the breakdown. */
 export function reactionSummary(summary: ReactionsSummaryResponse | undefined): ReactionSummary | undefined {
   if (!summary || summary.reaction_count <= 0) return undefined;
@@ -44,7 +43,7 @@ export function reactionSummary(summary: ReactionsSummaryResponse | undefined): 
       label,
       count,
       text: count > 0 ? readableStat(count) : '',
-      name: counted(count, `${label} reaction`),
+      name: countLabel(count, `${label} reaction`),
     };
   });
   // `toSorted` is stable, so equal counts stay in OG's order.
@@ -53,6 +52,6 @@ export function reactionSummary(summary: ReactionsSummaryResponse | undefined): 
     top: given.slice(0, TOP),
     more: Math.max(0, given.length - TOP),
     all,
-    total: counted(summary.reaction_count, 'reaction'),
+    total: countLabel(summary.reaction_count, 'reaction'),
   };
 }

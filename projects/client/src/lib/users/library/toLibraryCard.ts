@@ -9,6 +9,7 @@ import type { HistoryCard } from '../history/toHistoryCard.ts';
 import { episodeBadge } from '../profile/toProfileSummary.ts';
 import type { LibraryRow, LibraryShowRow } from './libraryRowsSchema.ts';
 import type { LibrarySortBy } from './librarySort.ts';
+import { countLabel } from '../../utils/countLabel.ts';
 
 type Link = { readonly text: string; readonly href: string };
 
@@ -32,8 +33,7 @@ type Options = {
 };
 
 const showHref = (slug: string) => `/shows/${slug}`;
-const votes = (count: number | null | undefined) =>
-  `${(count ?? 0).toLocaleString('en-US')} vote${count === 1 ? '' : 's'}`;
+const votes = (count: number | null | undefined) => countLabel(count ?? 0, 'vote');
 
 /** The sorted line OG put under the title. */
 function sortLine(

@@ -7,6 +7,7 @@ import { episodeBadge } from '../profile/toProfileSummary.ts';
 import type { ratingRowsSchema } from './ratingRowsSchema.ts';
 import type { ratingQuery } from './ratingQuery.ts';
 import { seasonName } from '../../utils/seasonName.ts';
+import { countLabel } from '../../utils/countLabel.ts';
 
 type Row = z.infer<typeof ratingRowsSchema>[number];
 type Options = {
@@ -47,7 +48,7 @@ export function toRatingCard(row: Row, { type, by, datePreferences }: Options) {
     : by === 'runtime'
     ? `${runtime ?? 0} minute${runtime === 1 ? '' : 's'}`
     : ['percentage', 'votes'].includes(by)
-    ? `${(item.votes ?? 0).toLocaleString('en-US')} vote${item.votes === 1 ? '' : 's'}`
+    ? countLabel(item.votes ?? 0, 'vote')
     : undefined;
   const poster = row.type === 'episode' ? show?.images?.poster : item.images?.poster;
   return {

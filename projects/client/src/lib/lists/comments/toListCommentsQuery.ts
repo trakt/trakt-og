@@ -1,5 +1,6 @@
 import { listCommentSort } from './listCommentSort.ts';
 import type { listCommentSorts } from './listCommentSorts.ts';
+import { positiveInt } from '../../utils/positiveInt.ts';
 
 export type ListCommentsQuery = {
   readonly sort: keyof typeof listCommentSorts;
@@ -8,13 +9,11 @@ export type ListCommentsQuery = {
   readonly limit: number;
 };
 
-const positive = (value: string | null) => Math.max(1, Number.parseInt(value ?? '', 10) || 1);
-
 /** A list comments URL's sort, page and page size. */
 export function toListCommentsQuery(query: URLSearchParams): ListCommentsQuery {
   return {
     sort: listCommentSort(query),
-    page: positive(query.get('page')),
-    limit: Math.min(100, positive(query.get('limit') ?? '100')),
+    page: positiveInt(query.get('page'), 1),
+    limit: Math.min(100, positiveInt(query.get('limit') ?? '100', 1)),
   };
 }

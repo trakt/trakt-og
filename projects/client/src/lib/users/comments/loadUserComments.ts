@@ -10,6 +10,7 @@ import type { UserComment } from './UserComment.ts';
 import type { UserCommentRow } from './UserCommentRow.ts';
 import type { userCommentMediaTypes } from './userCommentMediaTypes.ts';
 import type { userCommentTypes } from './userCommentTypes.ts';
+import { positiveInt } from '../../utils/positiveInt.ts';
 
 type CommentType = keyof typeof userCommentTypes;
 type MediaType = keyof typeof userCommentMediaTypes;
@@ -29,8 +30,6 @@ export type UserCommentEntry = { readonly row: UserComment; readonly parent?: Co
 
 /** OG's `.per(params[:limit] || 30)`. */
 const PAGE_SIZE = 30;
-
-const pageNumber = (value: string | null) => Math.max(1, Number.parseInt(value ?? '', 10) || 1);
 
 type Listing =
   | { readonly status: 'ok'; readonly rows: readonly UserCommentRow[]; readonly headers: Headers }
@@ -95,8 +94,8 @@ async function fetchParents(fetch: typeof globalThis.fetch, comments: readonly U
 export async function loadUserComments({ fetch, parent, locals, params, url, liked = false }: Params) {
   const commentType = liked ? 'all' : params.comment_type ?? 'all';
   const type = liked ? 'all' : params.type ?? 'all';
-  const current = pageNumber(url.searchParams.get('page'));
-  const limit = Math.min(100, pageNumber(url.searchParams.get('limit') ?? String(PAGE_SIZE)));
+  const current = positiveInt(url.searchParams.get('page'), 1);
+  const limit = Math.min(100, positiveInt(url.searchParams.get('limit') ?? String(PAGE_SIZE), 1));
   const listing = (token: string | null) => {
     const request = { fetch, token, id: params.id, page: current, limit };
     return liked ? fetchLiked(request) : fetchWritten({ ...request, commentType, type });

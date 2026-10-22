@@ -22,6 +22,7 @@ import EpisodeTypeBadge from './EpisodeTypeBadge.svelte';
 import CornerRating from './CornerRating.svelte';
 import DroppedBadge from './DroppedBadge.svelte';
 import QuickIcons from './QuickIcons.svelte';
+import TrimmedLogo from './TrimmedLogo.svelte';
 import { fadeInOnLoad } from '$lib/utils/fadeInOnLoad';
 
 interface Props {
@@ -40,7 +41,8 @@ interface Props {
   spoilerImage?: string;
   /** A logo over the dimmed fanart. */
   logo?: string;
-  /** The title as artwork, in the title's place under the tags. Left out, the title shows. */
+  /** The title as artwork, in the title's place under the tags, its transparent margins trimmed when it's
+   * same-origin (`proxiedLogoUrl`). Left out, the title shows. */
   titleLogo?: string;
   /** A user's avatar, round over the dimmed image (OG's `.avatar-wrapper`). */
   avatar?: string;
@@ -168,8 +170,8 @@ const restoreTarget = $derived(target?.type === 'show' ? { ...target, type: 'sho
       {/if}
       <div class={['title-wrapper', { 'hidden-title': hideTitle }]}>
         {#if titleLogo}
-          <h3><a class="titles-link" {href}><img class="title-logo" src={titleLogo} alt={title} loading="lazy"
-                decoding="async" /></a></h3>
+          <h3 class="title-logo"><a class="titles-link" {href}><TrimmedLogo src={titleLogo} alt={title}
+                loading="lazy" /></a></h3>
         {:else}
         <h3>{#if number}<a class="titles-link" {href}><span class="number">{number}</span></a>{/if} <MediaSpoiler target={spoilerTarget} kind="title" inline><a class="titles-link" {href}>{title}</a></MediaSpoiler>{#if year}<span class="year">{year}</span>{/if}</h3>
         {/if}
@@ -383,12 +385,11 @@ h3 {
 }
 
 .title-logo {
-  display: block;
-  max-inline-size: var(--fanart-title-logo-width);
-  max-block-size: var(--fanart-title-logo-height);
-  object-fit: contain;
-  object-position: left bottom;
-  filter: drop-shadow(var(--shadow-fanart-title-logo));
+  --trimmed-logo-width: var(--fanart-title-logo-width);
+  --trimmed-logo-height: var(--fanart-title-logo-height);
+  --trimmed-logo-margin-start: var(--fanart-title-logo-margin);
+  --trimmed-logo-margin-end: var(--fanart-title-logo-margin);
+  --trimmed-logo-filter: drop-shadow(var(--shadow-fanart-title-logo));
 }
 
 .year {

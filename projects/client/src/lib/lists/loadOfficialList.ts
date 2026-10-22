@@ -29,15 +29,19 @@ function fetchSummary(fetch: typeof globalThis.fetch, id: string) {
 
 /** official lists use the public list endpoints and a random, unfiltered item's fanart, without a profile. */
 export async function loadOfficialList({ fetch, locals, params, url, parent, cookies }: Params) {
+  const urlQuery = toListQuery(url.searchParams);
   const fadeHide = readListFilters({
     search: url.searchParams,
     cookies,
     scope: 'list',
     kind: 'official',
-    types: toListQuery(url.searchParams).types,
+    types: urlQuery.types,
   });
-  const query = { ...toListQuery(url.searchParams), hide: fadeHide.hide };
-  const summary = await fetchSummary(fetch, params.slug);
+  const query = { ...urlQuery, hide: fadeHide.hide };
+  const [summary, { user, datePreferences, settings }] = await Promise.all([
+    fetchSummary(fetch, params.slug),
+    parent(),
+  ]);
   if (!summary || [204, 401, 403, 404].includes(summary.status)) error(404, 'Page Not Found');
   if (summary.status !== 200) error(502, 'Trakt is having trouble loading this list.');
   if (summary.body.type !== 'official') error(404, 'Page Not Found');
@@ -47,7 +51,7 @@ export async function loadOfficialList({ fetch, locals, params, url, parent, coo
   // The items endpoints take only the Trakt id: a slug answers 400.
   const base = `/lists/${list.id}/items`;
   const urlSort = urlListSort(query);
-  const [anonymousItems, cover, { user, datePreferences, settings }] = await Promise.all([
+  const [anonymousItems, cover] = await Promise.all([
     fetchListItems({ fetch, token: null, base, query, sort: urlSort }),
     fetchListItems({
       fetch,
@@ -56,7 +60,6 @@ export async function loadOfficialList({ fetch, locals, params, url, parent, coo
       query: { ...query, types: [], genres: [], hide: [], terms: undefined, watchnow: undefined, page: 1, limit: 1 },
       sort: { by: 'random', how: 'asc' },
     }).catch(() => null),
-    parent(),
   ]);
 
   const [items, filterSources] = await Promise.all([

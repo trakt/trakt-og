@@ -1,9 +1,11 @@
 <!--
   The liquid-fill loader at every size we use, on a light and a dark ground, with the reduced-motion breathe next to it.
-  The last row is static/loader.svg as a plain <img>, the version for places outside Svelte.
+  The last row is static/loader.svg as a plain <img>, the version for places outside Svelte. Under them, the shimmering
+  bars that hold a number's or a name's place.
 -->
 <script lang="ts">
 import Header from '$lib/components/header/Header.svelte';
+import Shimmer from '$lib/components/loading/Shimmer.svelte';
 import TraktLoader from '$lib/components/loading/TraktLoader.svelte';
 
 const sizes = [16, 32, 64, 128];
@@ -40,6 +42,12 @@ const schemes = ['light', 'dark'] as const;
         <h3>static/loader.svg</h3>
         <div class="row" data-row="static">
           {#each sizes as size (size)}<img src="/loader.svg" width={size} height={size} alt="Loading" />{/each}
+        </div>
+        <h3>Shimmer</h3>
+        <div class="row" data-row="shimmer">
+          <Shimmer inline="var(--home-flag-size)" block="var(--home-flag-size)" round />
+          <Shimmer inline="var(--home-rank-shimmer-name-width)" block="var(--font-size-home-rank-name)" />
+          <Shimmer inline="var(--home-live-shimmer-pill-width)" block="var(--home-live-shimmer-pill-height)" />
         </div>
       </section>
     {/each}

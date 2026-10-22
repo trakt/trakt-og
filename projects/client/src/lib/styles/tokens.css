@@ -1320,6 +1320,15 @@
   ); /* the disc before it fills */
   --color-loader-stripe: #fff; /* the monogram */
 
+  /* Shimmer: a bar standing in for numbers and names while they load */
+  --shimmer: linear-gradient(
+    90deg,
+    light-dark(rgb(0 0 0 / 0.06), rgb(255 255 255 / 0.08)) 25%,
+    light-dark(rgb(0 0 0 / 0.14), rgb(255 255 255 / 0.2)) 50%,
+    light-dark(rgb(0 0 0 / 0.06), rgb(255 255 255 / 0.08)) 75%
+  );
+  --shimmer-duration: 1.4s;
+
   /* VIP and Private labels. The VIP label is one round red pill: the logo and VIP (or Director), the OG or EP tag as a
      darker segment, and the years as a light gray segment (a black star and count), which reads on dark and light
      pages alike. */
@@ -3322,6 +3331,13 @@
   --home-live-split-gap: 3px;
   --color-home-movies: #6b6b6b; /* movies' share wherever shows are red */
   --home-live-roll: 1.4s; /* the count rolling to a new number */
+  --home-live-shimmer-count-width: 154px; /* the count's place until it arrives, as wide as four figures */
+  --home-live-shimmer-count-height: 66px; /* the figures' own height */
+  --home-live-shimmer-count-margin: -8.3px 17.7px; /* the figures rise above their line, which runs on below them */
+  --home-live-shimmer-caption-width: 155px; /* "watching right now" */
+  --home-live-shimmer-caption-height: 13px; /* the caption's letters, down to its baseline */
+  --home-live-shimmer-pill-width: 106px;
+  --home-live-shimmer-pill-height: 26px; /* a pill at --font-size-home-live-key */
   /* The map band under the hero. */
   --color-home-band: #0b0b0b;
   --home-band-padding-block: 44px 40px;
@@ -3336,6 +3352,9 @@
   --color-home-map-heat-4: var(--brand-primary); /* 60+ */
   --color-home-map-heat-5: #ff7a7f; /* 150+ */
   --color-home-map-hover: #fff;
+  --color-home-map-shimmer: #5a5a5a; /* the light that sweeps across the gray dots until the count arrives */
+  --home-map-shimmer-ms: 2200; /* one sweep, west to east */
+  --home-map-shimmer-band: 0.18; /* the light's half-width, as a share of the map */
   --home-map-scale-gap: 5px; /* a key dot to its count */
   --home-map-key-gap: 12px;
   --home-map-key-top: 14px; /* under the map */
@@ -3358,6 +3377,9 @@
   --color-home-rank-hover: rgb(255 255 255 / 0.07);
   --home-rank-bar-height: 4px;
   --home-rank-bar-gap: 2px;
+  --home-rank-shimmer-name-width: 120px; /* a country's name until the count arrives */
+  --home-rank-shimmer-name-short-width: 84px; /* every other row, so the list doesn't read as a grid */
+  --home-rank-shimmer-count-width: 44px;
   /* Trending shows and movies, side by side under the map. */
   --home-trending-padding-block: 44px 64px;
   --home-trending-columns-gap: 76px; /* room for each heading's watermark */

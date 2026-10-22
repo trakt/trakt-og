@@ -1,11 +1,13 @@
 <!--
   The hero's Live now box: how many people are watching the trending titles right now, then shows against movies as a
   bar and a pill for each that links to its trending chart, as on Trending's Live now. When the page refreshes the numbers, they roll to the new ones.
-  Until the first count arrives it says it's counting.
+  Until the first count arrives, shimmering bars hold the count's, its caption's, the bar's and the pills' places,
+  each where its letters will be.
 -->
 <script lang="ts">
 import { resolve } from '$app/paths';
 import TagPills from '$lib/components/labels/TagPills.svelte';
+import Shimmer from '$lib/components/loading/Shimmer.svelte';
 import StatusDot from '$lib/components/status/StatusDot.svelte';
 import { cubicOut } from 'svelte/easing';
 import { prefersReducedMotion, Tween } from 'svelte/motion';
@@ -34,7 +36,7 @@ $effect(() => {
 const count = (n: number) => Math.round(n).toLocaleString('en-US');
 </script>
 
-<section class="live" aria-labelledby="home-live-title">
+<section class="live" aria-labelledby="home-live-title" aria-busy={!live}>
   <h2 id="home-live-title" class="label"><StatusDot kind="live" />Live now on Trakt</h2>
   {#if live}
     <div class="meter">
@@ -54,6 +56,19 @@ const count = (n: number) => Math.round(n).toLocaleString('en-US');
     </p>
   {:else}
     <p class="counting">Counting everyone watching…</p>
+    <div class="meter" aria-hidden="true">
+      <p class="count">
+        <span class="figures">
+          <Shimmer inline="var(--home-live-shimmer-count-width)" block="var(--home-live-shimmer-count-height)" />
+        </span>
+        <Shimmer inline="var(--home-live-shimmer-caption-width)" block="var(--home-live-shimmer-caption-height)" />
+      </p>
+      <Shimmer inline="100%" block="var(--home-live-split-height)" />
+    </div>
+    <p class="key" aria-hidden="true">
+      <Shimmer inline="var(--home-live-shimmer-pill-width)" block="var(--home-live-shimmer-pill-height)" />
+      <Shimmer inline="var(--home-live-shimmer-pill-width)" block="var(--home-live-shimmer-pill-height)" />
+    </p>
   {/if}
 </section>
 
@@ -146,9 +161,19 @@ const count = (n: number) => Math.round(n).toLocaleString('en-US');
   }
 }
 
+/* Where the figures' ink sits on their line, so their bar sits where they will. */
+.figures {
+  display: flex;
+  margin-block: var(--home-live-shimmer-count-margin);
+}
+
+/* Said to screen readers only; the shimmer shows it. */
 .counting {
-  margin: 0;
-  font-size: var(--font-size-home-live-caption);
-  color: var(--color-home-muted);
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 </style>

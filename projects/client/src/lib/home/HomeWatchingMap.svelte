@@ -3,15 +3,17 @@
   watching the trending titles right now, and beside it the countries with the most, each with its flag. Hovering a
   country, on the map or in the list, lights its dots and its row and shows a card with its count, rank, shows against
   movies and what most people there are watching. A key to the shades sits under the map. Until the count arrives
-  the dots stay gray.
+  a light sweeps across the gray dots and shimmering rows hold the countries' places.
 -->
 <script lang="ts">
 import PanelHeading from '$lib/components/dashboard/PanelHeading.svelte';
 import PanelHelp from '$lib/components/dashboard/PanelHelp.svelte';
 import TagPills from '$lib/components/labels/TagPills.svelte';
+import Shimmer from '$lib/components/loading/Shimmer.svelte';
 import { flagCountries } from '$lib/components/table/flagCountries';
 import globe from '$lib/icons/solid/globe.svg?raw';
 import type { Attachment } from 'svelte/attachments';
+import { prefersReducedMotion } from 'svelte/motion';
 import { heatLevel } from './live/heatLevel.ts';
 import type { HomeLive, HomeLiveCountry } from './live/toHomeLive.ts';
 import { type MapDot, toMapDots, type WorldDots } from './live/toMapDots.ts';
@@ -66,35 +68,67 @@ const label = $derived(
     : 'World map of where people are watching right now.',
 );
 
-/** Draws the dots at the canvas's own pixel size, again whenever it resizes or the counts or hover change. */
+/**
+ * Draws the dots at the canvas's own pixel size, again whenever it resizes or the counts or hover change. Until the
+ * count arrives a light sweeps across them, west to east, every frame.
+ */
 const draw: Attachment<HTMLCanvasElement> = (canvas) => {
-  const paint = () => {
+  const counts = byCode;
+  const lit = hovered?.code;
+  const sweeping = !live && !prefersReducedMotion.current;
+  const style = getComputedStyle(canvas);
+  const shade = (level: number) =>
+    style.getPropertyValue(level === 0 ? '--color-home-map-dot' : `--color-home-map-heat-${level}`);
+  const hover = style.getPropertyValue('--color-home-map-hover');
+  const shimmer = style.getPropertyValue('--color-home-map-shimmer');
+  const sweepMs = Number(style.getPropertyValue('--home-map-shimmer-ms'));
+  const band = Number(style.getPropertyValue('--home-map-shimmer-band')) * world.width;
+  let frame = 0;
+
+  const paint = (time?: number) => {
     const context = canvas.getContext('2d');
     if (!context) return;
-    const ratio = globalThis.devicePixelRatio || 1;
-    canvas.width = Math.round(canvas.clientWidth * ratio);
-    canvas.height = Math.round(canvas.clientHeight * ratio);
     const scale = canvas.width / world.width;
-    const style = getComputedStyle(canvas);
-    const shade = (level: number) =>
-      style.getPropertyValue(level === 0 ? '--color-home-map-dot' : `--color-home-map-heat-${level}`);
-    const hover = style.getPropertyValue('--color-home-map-hover');
     const radius = world.step * Number(style.getPropertyValue('--home-map-dot')) * scale;
-
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    map.dots.forEach((dot: MapDot) => {
-      const here = byCode.get(dot.code)?.country;
-      context.fillStyle = hovered?.code === dot.code ? hover : shade(here ? heatLevel(total(here)) : 0);
+    const light = time === undefined ? undefined : ((time % sweepMs) / sweepMs) * (world.width + 2 * band) - band;
+    const dotAt = (dot: MapDot) => {
       context.beginPath();
       context.arc(dot.x * scale, dot.y * scale, radius, 0, Math.PI * 2);
       context.fill();
+    };
+
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    map.dots.forEach((dot: MapDot) => {
+      const here = counts.get(dot.code)?.country;
+      context.fillStyle = lit === dot.code ? hover : shade(here ? heatLevel(total(here)) : 0);
+      dotAt(dot);
+      const away = light === undefined ? band : Math.abs(dot.x - light);
+      if (away >= band) return;
+      context.globalAlpha = (1 + Math.cos((Math.PI * away) / band)) / 2;
+      context.fillStyle = shimmer;
+      dotAt(dot);
+      context.globalAlpha = 1;
     });
   };
+  const sweep = (time: number) => {
+    paint(time);
+    frame = requestAnimationFrame(sweep);
+  };
+  const resize = () => {
+    const ratio = globalThis.devicePixelRatio || 1;
+    canvas.width = Math.round(canvas.clientWidth * ratio);
+    canvas.height = Math.round(canvas.clientHeight * ratio);
+    paint(sweeping ? performance.now() : undefined);
+  };
 
-  paint();
-  const resized = new ResizeObserver(paint);
+  resize();
+  if (sweeping) frame = requestAnimationFrame(sweep);
+  const resized = new ResizeObserver(resize);
   resized.observe(canvas);
-  return () => resized.disconnect();
+  return () => {
+    resized.disconnect();
+    cancelAnimationFrame(frame);
+  };
 };
 
 function point(event: PointerEvent) {
@@ -115,7 +149,7 @@ function showCountry(code: string) {
 }
 </script>
 
-<section class="band" aria-labelledby="home-map-title">
+<section class="band" aria-labelledby="home-map-title" aria-busy={!live}>
   <div class="inner">
     <div class="world">
       <PanelHeading id="home-map-title" title="Trakt Worldwide" icon={globe} />
@@ -191,6 +225,26 @@ function showCountry(code: string) {
                 <span class="shows" style:inline-size="{(country.shows / most) * 100}%"></span>
                 <span class="movies" style:inline-size="{(country.movies / most) * 100}%"></span>
               </span>
+            </li>
+          {/each}
+        </ol>
+      </div>
+    {:else if !live}
+      <div class="side" aria-hidden="true">
+        <ol class="rank">
+          {#each Array.from({ length: RANKED }, (_, row) => row) as row (row)}
+            <li>
+              <span class="name">
+                <Shimmer inline="var(--home-flag-size)" block="var(--home-flag-size)" round />
+                <Shimmer
+                  inline="var({row % 2 ? '--home-rank-shimmer-name-short-width' : '--home-rank-shimmer-name-width'})"
+                  block="var(--font-size-home-rank-name)"
+                />
+              </span>
+              <span class="number">
+                <Shimmer inline="var(--home-rank-shimmer-count-width)" block="var(--font-size-home-rank-count)" />
+              </span>
+              <span class="bar"><Shimmer inline="100%" block="var(--home-rank-bar-height)" /></span>
             </li>
           {/each}
         </ol>

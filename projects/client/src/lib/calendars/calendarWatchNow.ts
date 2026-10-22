@@ -1,5 +1,6 @@
 import { z } from 'zod/v4';
 import { favoriteSlugs } from '../components/watchnow/watchNow.ts';
+import { watchNowCountry } from '../settings/watchNowCountry.ts';
 
 const schema = z.object({
   browsing: z.object({
@@ -14,6 +15,6 @@ const schema = z.object({
 export function calendarWatchNow(settings: unknown) {
   const result = schema.safeParse(settings);
   const watchnow = result.success ? result.data?.browsing?.watchnow : undefined;
-  const country = watchnow?.country?.toLowerCase() || 'us';
+  const country = watchNowCountry(result.success ? result.data : undefined);
   return { country, favorites: favoriteSlugs(watchnow?.favorites ?? [], country, country) };
 }

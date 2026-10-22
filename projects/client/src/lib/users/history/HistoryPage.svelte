@@ -33,6 +33,7 @@ import { formatRuntime } from '$lib/utils/formatRuntime';
 import { genresFor, historyTypes } from './historyTypes.ts';
 import type { loadHistory } from './loadHistory.ts';
 import type { HistoryCard } from './toHistoryCard.ts';
+import { watchNowCountry } from '../../settings/watchNowCountry.ts';
 
 type Props = {
   data: Awaited<ReturnType<typeof loadHistory>> & {
@@ -75,7 +76,7 @@ function href(type: string, changes: Record<string, string | null>) {
 let dividers = $derived(data.dividers);
 let fadeHide = $derived<FadeHide>(data.fadeHide);
 const fadeOptions = $derived(fadeHideOptions.filter((option) => data.type === 'shows' || !('showsOnly' in option)));
-const country = $derived(data.settings?.browsing?.watchnow?.country?.toLowerCase() || 'us');
+const country = $derived(watchNowCountry(data.settings));
 </script>
 
 <!-- Filter URLs keep the canonical profile slug and the query string. -->

@@ -9,6 +9,7 @@ import type { ViewerSettings } from '../settings/ViewerSettings.ts';
 import { subpageItemSchema } from '../subpage/subpageItemSchema.ts';
 import { subpageWatchNowPath } from '../subpage/subpageWatchNowPath.ts';
 import { toSubpageMedia } from '../subpage/toSubpageMedia.ts';
+import { watchNowCountry } from '../settings/watchNowCountry.ts';
 
 type Params = {
   fetch: typeof globalThis.fetch;
@@ -56,7 +57,7 @@ export async function loadComment({ fetch, parent, id }: Params) {
     ? await loadWatchNow({
       fetch,
       ...target,
-      country: settings?.browsing?.watchnow?.country?.toLowerCase() || 'us',
+      country: watchNowCountry(settings),
       settings,
       isVip: user?.isVip ?? false,
     })

@@ -2,7 +2,7 @@
   The band Manage opens under a list's title row, in OG's blue: "N items selected" (the filtered count) and the
   whole-selection actions in three groups split by thin rules: Reset ranks, then Copy and Move as light outline
   buttons, then Delete in solid red.
-  Reset Ranks and Delete ask first; Copy and Move are 's.
+  Reset Ranks and Delete ask first; Copy and Move are ListTransfer buttons.
 -->
 <script lang="ts">
 import { prefersReducedMotion } from 'svelte/motion';
@@ -23,25 +23,26 @@ interface Props {
 
 const { count, busy, onreset, ondelete, transfers }: Props = $props();
 const items = $derived(`item${count === 1 ? '' : 's'}`);
+const total = $derived(count.toLocaleString('en-US'));
 </script>
 
 <section class="manage" aria-label="Manage items" aria-busy={busy}
   transition:slide={{ duration: prefersReducedMotion.current ? 0 : 500 }}>
   <Container>
     <div class="bar">
-      <p class="count"><b>{count.toLocaleString('en-US')}</b> {items} selected</p>
+      <p class="count"><b>{total}</b> {items} selected</p>
       <div class="actions">
         <div class="group">
         <ManageConfirm name="reset" svg={resetIcon} label="Set current order as your ranks" text="Reset ranks" yes="Yes"
           {busy} onconfirm={onreset}>
-          Reset ranks on <b>{count.toLocaleString('en-US')}</b> {items}?
+          Reset ranks on <b>{total}</b> {items}?
         </ManageConfirm>
         </div>
         {#if transfers}<div class="group">{@render transfers()}</div>{/if}
         <div class="group">
         <ManageConfirm name="delete" svg={trashXmark} label="Delete items" text="Delete" yes="Yes, delete them!"
           warning="This can't be undone!" {busy} onconfirm={ondelete}>
-          Delete <b>{count.toLocaleString('en-US')}</b> {items} from this list?
+          Delete <b>{total}</b> {items} from this list?
         </ManageConfirm>
         </div>
       </div>

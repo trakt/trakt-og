@@ -17,6 +17,7 @@ import thumbsUp from '$lib/icons/regular/thumbs-up.svg?raw';
 import checkThick from '$lib/icons/trakt/check-thick.svg?raw';
 import collectionThick from '$lib/icons/trakt/collection-thick.svg?raw';
 import { overlay } from '$lib/overlay/overlay';
+import { countLabel } from '$lib/utils/countLabel';
 import { formatRuntime } from '$lib/utils/formatRuntime';
 import { listProgress, type ListProgressStat } from './listProgress.ts';
 import type { ListStats } from './toListStats.ts';
@@ -51,8 +52,7 @@ const number = (count: number) => count.toLocaleString('en-US');
       <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
       <span class={['stat', kind]} tabindex="0" {...tooltip}>
         <span class="icon-slot"><Icon {svg} /></span><span class="text-wrapper"><span class="hidden">{label} </span
-          ><strong>{value.percent}%</strong><span class="under-count">{value.count}<span class="slash">/</span>{number(total)}
-            {plural(total, 'item')}</span></span>
+          ><strong>{value.percent}%</strong><span class="under-count">{value.count}<span class="slash">/</span>{countLabel(total, 'item')}</span></span>
       </span>
     {/snippet}
   </Tooltip>

@@ -10,7 +10,7 @@ type Params = {
   request: (path: string, body: unknown) => Promise<Response>;
 };
 
-export type SaveListItemNoteResult =
+type SaveListItemNoteResult =
   | { readonly ok: true; readonly notes: string }
   | { readonly ok: false; readonly message: string }
   /** API's account limit (420): the viewer already has this many notes. */

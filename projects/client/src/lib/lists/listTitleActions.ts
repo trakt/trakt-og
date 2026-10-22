@@ -5,7 +5,7 @@ import { traktUrls } from '../traktUrls.ts';
 type TitleAction = { readonly onclick?: () => void };
 
 /** The icons on the right of a list page's title row, each set one shown. */
-export interface ListTitleActions {
+interface ListTitleActions {
   readonly report?: TitleAction;
   readonly edit?: TitleAction;
   readonly delete?: TitleAction;

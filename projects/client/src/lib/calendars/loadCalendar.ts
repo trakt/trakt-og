@@ -59,14 +59,13 @@ export async function loadCalendar(
   if (!calendar) error(404, 'Not Found');
   if (target === 'my' && !token) signIn(url);
 
-  // Hidden items and shared settings run together. The feed range depends on the account's period/start day.
-  const [hidden, { datePreferences, settings }] = await Promise.all([
-    token ? fetchHiddenCalendar({ fetch, token }) : NOTHING_HIDDEN,
-    parent(),
-  ]);
+  // The feed range depends on the account's start day, so the calendar waits for the shared settings. The hidden list
+  // (never rejects) only filters the result, so the calendar doesn't wait for it.
+  const hiddenItems = token ? fetchHiddenCalendar({ fetch, token }) : Promise.resolve(NOTHING_HIDDEN);
+  const { datePreferences, settings } = await parent();
   const preferences = toCalendarPreferences(token ? settings : null);
   const { timeZone } = datePreferences;
-  const today = dayIn(now.toISOString(), timeZone);
+  const today = dayIn(now, timeZone);
   // Both views page by month; the month grid pads its own weeks.
   const window = calendarWindow({ start, today, period: 'month', layout: 'list', startDay: preferences.startDay });
   const display = calendarDisplay({ cookies, imagesAllowed: preferences.imagesAllowed });
@@ -96,9 +95,10 @@ export async function loadCalendar(
     }));
   // Filtered, the sidebar counts "12 of 40": the same month without filters, fetched alongside.
   const filtered = hasAdvancedFilters(filters);
-  const [responses, unfilteredResponses] = await Promise.all([
+  const [responses, unfilteredResponses, hidden] = await Promise.all([
     fetchItems(query, calendarToken),
     filtered ? fetchItems({}, target === 'my' ? token : null) : Promise.resolve(undefined),
+    hiddenItems,
   ]);
   if ([...responses, ...(unfilteredResponses ?? [])].some((items) => items === 'signed-out')) signIn(url);
   const flatten = (lists: typeof responses) => lists.flatMap((items) => items === 'signed-out' ? [] : items);

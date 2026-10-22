@@ -529,10 +529,10 @@ async function saveNotes(text: string) {
 {#if data.list}
   {@const list = data.list}
 
-  {#snippet action(label: string, svg: string, kind: string, text?: string, onclick?: () => void)}
+  {#snippet action(label: string, svg: string, kind: string, text?: string, onclick?: () => void, shortcut?: string)}
     <Tooltip text={label}>
       {#snippet trigger(tooltip)}
-        <button type="button" class={['action', kind]} aria-label={text ? undefined : label} aria-disabled={!onclick || ownerBusy} aria-pressed={kind === 'manage' && onclick ? ownerManaging : undefined}
+        <button type="button" class={['action', kind]} aria-label={text ? undefined : label} aria-disabled={!onclick || ownerBusy} aria-pressed={kind === 'manage' && onclick ? ownerManaging : undefined} aria-keyshortcuts={shortcut}
           onclick={() => { if (!ownerBusy) onclick?.(); }} {...tooltip}>
           <Icon {svg} />{#if text}<span class="action-text">{text}</span>{/if}
         </button>
@@ -664,7 +664,7 @@ async function saveNotes(text: string) {
                 {/snippet}
               </Tooltip>
             {:else if actions.manage}
-              {@render action('Reorder, copy, move and delete', move, 'manage', 'Manage', owner ? toggleManage : undefined)}
+              {@render action('Reorder, copy, move and delete', move, 'manage', 'Manage', owner ? toggleManage : undefined, owner ? 'm' : undefined)}
             {/if}
             {#if actions.progressHref}
               <Tooltip text="View watched progress">

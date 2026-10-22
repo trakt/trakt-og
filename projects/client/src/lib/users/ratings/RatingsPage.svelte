@@ -27,6 +27,7 @@ import type { RatingCard } from '$lib/users/ratings/RatingCard';
 import { ratingQuery } from '$lib/users/ratings/ratingQuery';
 import { ratingSorts } from '$lib/users/ratings/ratingSorts';
 import { ratingTypes } from '$lib/users/ratings/ratingTypes';
+import { capitalize } from '../../utils/capitalize.ts';
 
 const { data }: { data: Awaited<ReturnType<typeof loadRatings>> & { profile: ProfileUser } } = $props();
 const title = $derived(
@@ -133,7 +134,7 @@ const count = $derived(data.total - (data.cards.length - cards.length));
     </Dropdown>
   {/snippet}
   {#snippet stats()}
-    <SubnavCount svg={file} {count} {noun} tooltip={`${noun.charAt(0).toUpperCase()}${noun.slice(1)}s`} />
+    <SubnavCount svg={file} {count} {noun} tooltip={`${capitalize(noun)}s`} />
   {/snippet}
   {#snippet summary()}
     <span class="sort">

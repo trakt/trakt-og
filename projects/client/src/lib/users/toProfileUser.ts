@@ -2,6 +2,7 @@ import type { GenderIcon, ProfileUser } from './ProfileUser.ts';
 import { webpImageUrl } from '../utils/imageUrl.ts';
 import { toVipBadge } from './toVipBadge.ts';
 import { PLACEHOLDER_AVATAR } from './placeholderAvatar.ts';
+import { capitalize } from '../utils/capitalize.ts';
 
 /** The fields of `GET /users/:id?extended=full,vip` the frame reads. */
 export type ProfileResponse = {
@@ -58,6 +59,6 @@ function genderTitle(gender: string): string {
 
   return gender
     .split(/[_\s]+/)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .map(capitalize)
     .join(' ');
 }

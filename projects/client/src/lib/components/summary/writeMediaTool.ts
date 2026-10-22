@@ -2,6 +2,7 @@ import { z } from 'zod/v4';
 import { rawApiFetch } from '../../api/rawApiFetch.ts';
 import type { ReportTarget } from './ReportTarget.ts';
 import { validateReport } from './validateReport.ts';
+import { capitalize } from '../../utils/capitalize.ts';
 
 type Action = {
   readonly kind: 'report';
@@ -42,9 +43,7 @@ export async function writeMediaTool({ fetch, action }: { fetch: typeof globalTh
     }
     return {
       ok: true,
-      message: `${target.type.charAt(0).toUpperCase()}${
-        target.type.slice(1)
-      } reported! Thanks for the info, we'll investigate soon.`,
+      message: `${capitalize(target.type)} reported! Thanks for the info, we'll investigate soon.`,
     };
   } catch {
     return { ok: false, message: failed };

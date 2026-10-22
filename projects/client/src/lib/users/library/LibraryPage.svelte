@@ -33,6 +33,7 @@ import { librarySources } from './librarySources.ts';
 import type { loadLibrary } from './loadLibrary.ts';
 import { toHistoryDays } from '$lib/users/history/toHistoryCard';
 import type { LibraryCard } from './toLibraryCard.ts';
+import { capitalize } from '../../utils/capitalize.ts';
 
 type Props = { data: Awaited<ReturnType<typeof loadLibrary>> & { profile: ProfileUser } };
 
@@ -143,7 +144,7 @@ const flipped = $derived(data.sort.how === 'desc');
       datePreferences={data.datePreferences} />
   {/snippet}
   {#snippet stats()}
-    <SubnavCount svg={collection} count={data.total} {noun} tone="collected" tooltip={`${noun.charAt(0).toUpperCase()}${noun.slice(1)}s`} />
+    <SubnavCount svg={collection} count={data.total} {noun} tone="collected" tooltip={`${capitalize(noun)}s`} />
   {/snippet}
   {#snippet summary()}
     <span class="sort">

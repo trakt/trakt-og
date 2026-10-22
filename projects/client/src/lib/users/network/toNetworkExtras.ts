@@ -1,11 +1,10 @@
 import type { NetworkExtra } from './NetworkExtra.ts';
+import { capitalize } from '../../utils/capitalize.ts';
 
 type ExtraRow = {
   readonly followed_at?: string | null;
   readonly user: { readonly vip_veteran_title?: string | null };
 };
-
-const capitalize = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
 
 /** Each row's VIP veteran title and follow date, by the slug its card is keyed on. */
 export function toNetworkExtras(

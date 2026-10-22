@@ -5,6 +5,7 @@ import type { WatchedItemRow } from '../watchedItemsSchema.ts';
 import type { BoxInput } from './BoxInput.ts';
 import { boxExtraLoader } from './boxExtraLoader.ts';
 import { boxMath } from './boxMath.ts';
+import { capitalize } from '../../../utils/capitalize.ts';
 
 /**
  * Four made-up users for the box specs and the design page: a binge TV watcher, a movie buff who rates everything, a
@@ -170,8 +171,8 @@ const profile = (
 ): ProfileUser => ({
   slug,
   username: slug,
-  displayName: slug.charAt(0).toUpperCase() + slug.slice(1),
-  firstName: slug.charAt(0).toUpperCase() + slug.slice(1),
+  displayName: capitalize(slug),
+  firstName: capitalize(slug),
   avatarUrl: 'https://media.trakt.tv/hotlink-ok/placeholders/medium/zoidberg.png',
   isPrivate: false,
   isLocked: false,

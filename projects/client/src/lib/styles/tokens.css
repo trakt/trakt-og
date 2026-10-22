@@ -1629,6 +1629,7 @@
   --space-stats-tile: 12px 12px 14px;
   --space-stats-tile-value: 6px; /* between a tile's label and its number */
   --stats-tile-rule: 3px; /* the count's color along a tile's top */
+  --radius-stats-tile: var(--radius-object); /* a community tile's bottom corners and a site score's box */
   --color-stats-tile-bg: light-dark(#f2f2f2, #262626);
   --color-stats-tile-hover: light-dark(#e2e2e2, #343434);
   --font-size-stats-tile-value: 28px;

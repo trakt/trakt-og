@@ -85,6 +85,7 @@ li {
   grid-template-columns: subgrid;
   align-items: center;
   padding-block: var(--space-stats-site-cell);
+  border-radius: var(--radius-stats-tile);
   background-color: var(--color-stats-tile-bg);
   color: var(--color-text);
   text-decoration: none;

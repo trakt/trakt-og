@@ -49,6 +49,8 @@ const { tiles }: { tiles: readonly Tile[] } = $props();
   block-size: 100%;
   padding: var(--space-stats-tile);
   border-block-start: var(--stats-tile-rule) solid var(--color);
+  border-end-start-radius: var(--radius-stats-tile);
+  border-end-end-radius: var(--radius-stats-tile);
   background-color: var(--color-stats-tile-bg);
   color: var(--color-text);
   text-decoration: none;

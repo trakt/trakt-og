@@ -1,4 +1,5 @@
 import { z } from 'zod/v4';
+import { GENERIC_ERROR } from '../utils/genericError.ts';
 
 type Params = {
   id: number;
@@ -18,10 +19,10 @@ export async function saveFavoriteNote({ id, notes, request, notify }: Params): 
     }
     const body = errorSchema.safeParse(await response.json().catch(() => null));
     if (response.status !== 429) {
-      notify.error(body.success && body.data.message ? body.data.message : 'Doh! We ran into some sort of error.');
+      notify.error(body.success && body.data.message ? body.data.message : GENERIC_ERROR);
     }
   } catch {
-    notify.error('Doh! We ran into some sort of error.');
+    notify.error(GENERIC_ERROR);
   }
   return false;
 }

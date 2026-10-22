@@ -6,6 +6,7 @@ import { rawApiFetch } from '../../api/rawApiFetch.ts';
 import type { GifEntry } from './gif/GifEntry.ts';
 import { toCommentGif } from './gif/toCommentGif.ts';
 import { commentWrite, type PostCommentResult } from './postComment.ts';
+import { GENERIC_ERROR } from '../../utils/genericError.ts';
 
 type Api = ReturnType<typeof api>;
 
@@ -14,7 +15,6 @@ const REPLIES_PAGE = 100;
 const MAX_REPLY_PAGES = 10;
 
 // No contract: API's hide response counts what it hid.
-const FAILED = 'Doh! We ran into some sort of error.';
 const hiddenSchema = z.object({ added: z.object({ users: z.number() }) });
 
 export type CommentsClient = {
@@ -80,12 +80,12 @@ export function commentsClient(client: Api, fetch: typeof globalThis.fetch = glo
             body: JSON.stringify({ users: [{ ids: { slug } }] }),
           },
         });
-        if (response.status !== 201) return { ok: false, message: FAILED };
+        if (response.status !== 201) return { ok: false, message: GENERIC_ERROR };
         return hiddenSchema.parse(await response.json()).added.users > 0
           ? { ok: true }
-          : { ok: false, message: FAILED };
+          : { ok: false, message: GENERIC_ERROR };
       } catch {
-        return { ok: false, message: FAILED };
+        return { ok: false, message: GENERIC_ERROR };
       }
     },
   };

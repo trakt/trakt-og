@@ -83,6 +83,7 @@ import { watchedIndicator } from './watchedIndicator.ts';
 import { withoutBlocked } from './withoutBlocked.ts';
 import { prefersReducedMotion } from 'svelte/motion';
 import { PLACEHOLDER_AVATAR } from '../../users/placeholderAvatar.ts';
+import { GENERIC_ERROR } from '../../utils/genericError.ts';
 
 interface Props {
   comment: CommentResponse;
@@ -268,7 +269,7 @@ const loadSummary = (element: HTMLElement) => {
 const loadReplies = async () => {
   if (replies) return;
   replies = await api().replies(comment.id).catch(() => {
-    toast.error('Doh! We ran into some sort of error.');
+    toast.error(GENERIC_ERROR);
     repliesOpen = false;
     return undefined;
   });

@@ -21,24 +21,18 @@ import { toast } from '$lib/components/toast/toast.svelte';
 import VipLabel from '$lib/components/labels/VipLabel.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import ban from '$lib/icons/regular/ban.svg?raw';
-import calendar from '$lib/icons/regular/calendar-lines.svg?raw';
-import lock from '$lib/icons/regular/lock.svg?raw';
 import circleCheck from '$lib/icons/regular/circle-check.svg?raw';
 import ellipsis from '$lib/icons/regular/ellipsis.svg?raw';
 import flag from '$lib/icons/regular/flag.svg?raw';
-import genderless from '$lib/icons/solid/genderless.svg?raw';
-import locationPin from '$lib/icons/solid/location-pin.svg?raw';
-import mars from '$lib/icons/solid/mars.svg?raw';
 import skull from '$lib/icons/solid/skull.svg?raw';
 import userXmark from '$lib/icons/regular/user-xmark.svg?raw';
-import venus from '$lib/icons/solid/venus.svg?raw';
 import type { ProfileTab } from '$lib/users/profileTabs';
 import type { ProfileUser } from '$lib/users/ProfileUser';
 import type { ViewerRelation } from '$lib/users/ViewerRelation';
 import type { WatchingNow } from '$lib/users/WatchingNow';
-import CoverPill from './CoverPill.svelte';
 import FollowButtons from './FollowButtons.svelte';
 import FollowRequest from './FollowRequest.svelte';
+import ProfilePills from './ProfilePills.svelte';
 import ProfileTabs from './ProfileTabs.svelte';
 import WatchingNowBar from './WatchingNowBar.svelte';
 
@@ -63,7 +57,6 @@ const relationships = getContext<ReturnType<typeof createRelationshipOverlay>>('
   createRelationshipOverlay();
 setContext('user-relationships', relationships);
 let reporting = $state(false);
-const genderIcons = { mars, venus, genderless };
 const href = $derived(`/users/${user.slug}`);
 const cover = $derived(user.isLocked ? privateCover : (watching?.fanartUrl ?? coverUrl ?? user.coverUrl));
 const slim = $derived(!user.isLocked && (!large || !cover));
@@ -150,19 +143,7 @@ const change = (viewer: ViewerRelation, action: 'unfollow' | 'block' | 'unblock'
           </h1>
 
           {#if !user.isLocked}
-            <div class="pills">
-              {#if user.isPrivate}<CoverPill tone="private"><Icon svg={lock} />Private</CoverPill>{/if}
-              <CoverPill><Icon svg={locationPin} />{user.location}</CoverPill>
-              <CoverPill title={user.gender.title}>
-                <Icon svg={genderIcons[user.gender.icon]} label={user.gender.title} />
-                {#if user.age !== null}<b title="Age">{user.age}</b>{/if}
-              </CoverPill>
-              {#if user.joinedAt}
-                <CoverPill>
-                  <Icon svg={calendar} />Joined <b>{new Date(user.joinedAt).getUTCFullYear()}</b>
-                </CoverPill>
-              {/if}
-            </div>
+            <ProfilePills {user} />
           {/if}
         </div>
 
@@ -347,14 +328,17 @@ h1 {
 
 .options {
   display: inline-flex;
+  align-self: center;
+  align-items: center;
   margin-inline-start: var(--profile-about-gap);
+  line-height: 0;
   font-size: var(--font-size-base);
   text-shadow: none;
 
-  /* The ellipsis matches the cover's glass buttons; the menu is the shared dropdown card. */
+  /* The ellipsis matches the cover's glass buttons, at the VIP label's height; the menu is the shared dropdown card. */
   & :global(.trigger.circle) {
-    inline-size: var(--profile-button-height);
-    block-size: var(--profile-button-height);
+    inline-size: var(--profile-options-size);
+    block-size: var(--profile-options-size);
     border: var(--action-button-border-width) solid var(--color-profile-button-border);
     background-color: var(--color-profile-pill-bg);
     backdrop-filter: var(--blur-profile-pill);
@@ -370,12 +354,6 @@ h1 {
   display: flex;
   align-items: center;
   gap: var(--space-sm-inline);
-}
-
-.pills {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--profile-pill-gap);
 }
 
 .buttons {

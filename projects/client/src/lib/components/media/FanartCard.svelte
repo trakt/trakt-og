@@ -21,6 +21,7 @@ import EpisodeTypeBadge from './EpisodeTypeBadge.svelte';
 import CornerRating from './CornerRating.svelte';
 import DroppedBadge from './DroppedBadge.svelte';
 import QuickIcons from './QuickIcons.svelte';
+import { fadeInOnLoad } from '$lib/utils/fadeInOnLoad';
 
 interface Props {
   href: string;
@@ -69,6 +70,8 @@ interface Props {
   iconBar?: boolean;
   /** Over the whole image, above the titles: the progress row's Next Episode cover. */
   fanartOverlay?: Snippet;
+  /** Eases the art in once it loads, for a card that appears after the page: a network card turning live. */
+  fadeIn?: boolean;
 }
 
 const {
@@ -97,6 +100,7 @@ const {
   progress,
   iconBar = true,
   fanartOverlay,
+  fadeIn = false,
 }: Props = $props();
 const target = $derived(icons?.hideTarget ?? icons?.ratingTarget ?? icons?.watchTarget ?? icons?.listTarget);
 const spoilerTarget: SpoilerTarget | undefined = $derived(icons?.collectionTarget ?? icons?.watchTarget ?? target);
@@ -114,6 +118,8 @@ const hideScreenshot = $derived(
 const screenshotArtwork = $derived(spoilerImage !== undefined || image?.includes('/screenshots/'));
 const shownImage = $derived(hideScreenshot && screenshotArtwork ? spoilerImage : image);
 const isDropped = $derived(dropped || state?.dropped);
+// Something playing now: a deeper shade under the pulsing tags and the title, so they read over any art.
+const live = $derived(tags.some((tag) => tag.live));
 const hidden = $derived(
   target && icons?.hideSection !== 'dropped'
     ? overlay.isHidden(icons?.hideSection ?? 'recommendations', target.type, target.id)
@@ -127,11 +133,12 @@ const restoreTarget = $derived(target?.type === 'show' ? { ...target, type: 'sho
 
 <article hidden={hidden}
   class={['fanart-card', { dropped: isDropped && image, faded, framed, 'with-icons': icons, 'with-progress': progress }]}>
-  <div class={['fanart', variant, { 'logo-mode': logoMode, worded }]}>
+  <div class={['fanart', variant, { 'logo-mode': logoMode, worded, live }]}>
     <!-- The title link is the one in the tab order; this is the same link for the mouse. -->
     <a class="image-link" {href} tabindex="-1" aria-hidden="true">
       {#if shownImage}
-        <img class="image" src={shownImage} alt="" loading="lazy" decoding="async" />
+        <img class="image" src={shownImage} alt="" loading="lazy" decoding="async"
+          {@attach fadeIn ? fadeInOnLoad() : undefined} />
       {:else}
         <span class="image"></span>
       {/if}
@@ -277,6 +284,11 @@ const restoreTarget = $derived(target?.type === 'show' ? { ...target, type: 'sho
   inset-block-end: 0;
   block-size: 100px;
   background: var(--gradient-shadow-base);
+
+  .live & {
+    block-size: var(--fanart-live-shade-height);
+    background: var(--gradient-shadow-live);
+  }
 }
 
 .titles {

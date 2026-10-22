@@ -9,19 +9,14 @@
 import FanartCard from '$lib/components/media/FanartCard.svelte';
 import UnderProgress from '$lib/components/media/UnderProgress.svelte';
 import Countdown from '$lib/components/status/Countdown.svelte';
+import { liveTags } from '$lib/dashboard/liveTags';
 import type { LiveTile } from '$lib/dashboard/liveTiles';
-import type { SocialTarget } from '$lib/dashboard/toSocialItem';
 import { imageUrl } from '$lib/utils/imageUrl';
 
 const { tile }: { tile: LiveTile } = $props();
 
-const TYPES: Readonly<Record<SocialTarget['type'], string>> = { episode: 'Episode', movie: 'Movie', show: 'Show' };
-
 const watch = $derived(tile.watch);
-const tags = $derived([
-  { text: watch.kind === 'checkin' ? 'Checked in' : 'Watching now', kind: 'primary' as const, live: true },
-  { text: TYPES[watch.target.type], kind: 'generic' as const },
-]);
+const tags = $derived(liveTags(watch));
 </script>
 
 <!-- Hrefs point at OG routes og hasn't built yet, and resolve() only takes routes that exist. -->

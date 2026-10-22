@@ -283,6 +283,8 @@
   --fanart-avatar-border: 5px;
   --color-stats-bar: rgb(0 0 0 / 0.8);
   --gradient-shadow-base: linear-gradient(rgb(0 0 0 / 0), rgb(0 0 0 / 0.4));
+  --gradient-shadow-live: linear-gradient(rgb(0 0 0 / 0), rgb(0 0 0 / 0.45) 45%, rgb(0 0 0 / 0.8)); /* under a live card's tags and title */
+  --fanart-live-shade-height: 70%;
   --gradient-shadow-header: linear-gradient(rgb(0 0 0 / 0), rgb(0 0 0 / 0.6));
   --font-size-card-title: 16px; /* poster card title */
   --line-height-card-title: 18px;
@@ -1322,6 +1324,7 @@
      darker segment, and the years as a light gray segment (a black star and count), which reads on dark and light
      pages alike. */
   --label-vip-height: 28px; /* after a name in a heading */
+  --profile-options-size: var(--label-vip-height); /* the ••• after a profile name, as tall as its VIP label */
   --label-vip-height-small: var(--comment-tag-height); /* in comment headers, cards and list rows */
   --font-size-label-vip: 16px; /* OG's label size */
   --font-size-label-vip-small: 11px;
@@ -1347,21 +1350,26 @@
   --color-label-private: var(--gray-light);
   --radius-label-small: 2px; /* .label-private.smaller */
 
-  /* User cards: the network page grid */
-  --user-card-radius: 15px;
-  --user-card-overlap: 15px; /* the info panel rides up over the cover */
-  --user-card-avatar-column: 80px;
-  --user-card-avatar-size: 70px;
-  --user-card-avatar-inset: 10px;
-  --user-card-info-padding: 25px 0 15px 10px;
-  --user-card-icon-gap: 5px;
-  --user-card-icon-lead: 10px; /* before the gender icon */
-  --user-card-btn-padding: 4px 8px;
+  /* User cards: the network page grid. Each is a small profile header (avatar, name and glass pills on the cover) over a
+     footer with the follow buttons and chips, framed like the dashboard's fanart cards. */
+  --user-card-radius: var(--radius-card-framed);
+  --user-card-inset: 12px; /* the cover's overlays and the footer, in from the card's edges */
+  --user-card-avatar-size: 56px;
+  --user-card-avatar-border: 2px;
+  --user-card-who-gap: 10px; /* the avatar to the name */
+  --user-card-stack-gap: 6px; /* the name to its pills */
   --user-card-btn-gap: 10px;
-  --user-card-btn-icon-gap: 5px;
+  --user-card-band-padding: var(--user-card-inset); /* the chips' band along the bottom, padded like the buttons above it */
+  --user-card-band-height: calc(var(--comment-chip-height) + 2 * var(--user-card-inset)); /* one chip row, chips or not */
   --font-size-user-card-name: 16px;
-  --color-user-card-info-bg: light-dark(var(--gray-lighter), var(--gray-dark));
-  --color-btn-follows-you: #000;
+  --color-user-card-avatar-ring: rgb(255 255 255 / 0.85);
+  --color-user-card-foot-bg: var(--color-fanart-card-frame-bg);
+  --color-user-card-band-bg: var(--color-dialog-art-footer-bg); /* the chips' band, like a dialog's footer */
+  --color-user-card-band-line: var(--color-dialog-art-border);
+  --color-user-card-frame-line: var(--color-fanart-card-frame-line);
+  --color-user-card-chip-veteran: var(--brand-tertiary); /* Veteran and Legend, apart from Private's amber */
+  --gradient-user-card-shade: linear-gradient(rgb(0 0 0 / 0) 35%, rgb(0 0 0 / 0.5) 65%, rgb(0 0 0 / 0.85));
+  --gradient-user-card-live-shade: linear-gradient(rgb(0 0 0 / 0.6), rgb(0 0 0 / 0) 35%, rgb(0 0 0 / 0) 45%, rgb(0 0 0 / 0.85));
 
   /* Profile frame: the cover, name block, watching-now player and section tabs on every /users/:id page */
   /* Official lists: the slim profile cover without the 40px profile tabs. */
@@ -1454,6 +1462,7 @@
   --color-profile-button-border: rgb(255 255 255 / 0.3);
   --color-profile-button-border-hover: rgb(255 255 255 / 0.6);
   --color-profile-follow: var(--brand-success);
+  --color-profile-follow-text: var(--color-profile-approve-text); /* Follow, outlined: the fill is for Following */
   --color-profile-follow-hover-border: #7ddc8a;
   --shadow-profile-follow-hover: 0 4px 14px rgb(92 184 92 / 0.4); /* the header's current-pill glow, in green */
   /* Hovers go darker than the glass, so the outline's color reads on bright art. */
@@ -1496,11 +1505,7 @@
   --color-btn-circle-bg-hover: rgb(255 255 255 / 0.3);
   --color-profile-private-overlay: rgb(0 0 0 / 0.4);
   --color-profile-private-message-bg: rgb(0 0 0 / 0.5);
-  --color-btn-pending: #666;
 
-  /* Relationship action states (OG users buttons, before the October 2024 retheme). */
-  --color-relationship-card-remove-bg: #4d4d4d;
-  --color-relationship-card-remove-border: #474747;
   --color-watching-tint: var(--brand-primary);
   --watching-tint: 16%; /* a subtle red over the header's glass */
   --color-watching-bg: color-mix(in srgb, var(--color-watching-tint) var(--watching-tint), rgb(18 18 18 / 0.6));

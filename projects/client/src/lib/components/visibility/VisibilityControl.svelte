@@ -30,6 +30,8 @@ interface Props {
   section?: 'calendar' | 'recommendations' | 'progress_watched' | 'progress_collected';
   variant?: 'side' | 'pill' | 'badge' | 'card' | 'menu';
   small?: boolean;
+  /** Names the button for screen readers, and its tooltip, in place of the action's own "Hide this movie". */
+  label?: string;
   tooltip?: string;
   placement?: ComponentProps<typeof Tooltip>['placement'];
   /** The trigger's content. A headless control has none. */
@@ -56,6 +58,7 @@ const {
   section,
   variant = 'side',
   small = false,
+  label: labelOverride,
   tooltip,
   placement = 'bottom',
   children,
@@ -87,13 +90,14 @@ const title = $derived(
     : `Hide this ${target.type}?`,
 );
 const label = $derived(
-  action === 'rewatch'
-    ? 'Rewatch this show'
-    : action === 'drop'
-    ? 'Drop this show'
-    : action === 'restore'
-    ? 'Restore this show'
-    : `Hide this ${target.type}`,
+  labelOverride ??
+    (action === 'rewatch'
+      ? 'Rewatch this show'
+      : action === 'drop'
+      ? 'Drop this show'
+      : action === 'restore'
+      ? 'Restore this show'
+      : `Hide this ${target.type}`),
 );
 const instant = $derived(watchDateInstant(value, dates.timeZone));
 async function open() {

@@ -1,5 +1,6 @@
 import { error, redirect } from '@sveltejs/kit';
 import { api } from '../../api/api.ts';
+import { assertListFound } from '../assertListFound.ts';
 import { fetchListSummary } from '../fetchListSummary.ts';
 import { readListComments } from './readListComments.ts';
 import { toListCommentsQuery } from './toListCommentsQuery.ts';
@@ -21,8 +22,7 @@ export async function loadOfficialListComments({ fetch, params, url }: Params) {
   const found = await fetchListSummary(() =>
     client.lists.summary({ params: { id: params.slug }, query: { extended: 'images' } })
   );
-  if (!found || [204, 401, 403, 404].includes(found.status)) error(404, 'Page Not Found');
-  if (found.status !== 200) error(502, 'Trakt is having trouble loading this list.');
+  assertListFound(found);
   // OG finds only official lists here (`OfficialList.friendly.find`).
   if (found.body.type !== 'official') error(404, 'Page Not Found');
 

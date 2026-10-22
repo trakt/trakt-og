@@ -1,6 +1,7 @@
-import { error, redirect } from '@sveltejs/kit';
+import { redirect } from '@sveltejs/kit';
 import { api } from '../../api/api.ts';
 import type { ProfileUser } from '../../users/ProfileUser.ts';
+import { assertListFound } from '../assertListFound.ts';
 import { fetchListSummary } from '../fetchListSummary.ts';
 import type { ListCommentsTarget } from './ListCommentsTarget.ts';
 import { emptyListComments, readListComments } from './readListComments.ts';
@@ -57,8 +58,7 @@ export async function loadPersonalListComments({ fetch, parent, locals, params, 
     ? await Promise.all([summary(locals.token), comments(locals.token)])
     : [null, null];
   const found = viewerSummary?.status === 200 ? viewerSummary : anonymousSummary;
-  if (!found || [204, 401, 403, 404].includes(found.status)) error(404, 'Page Not Found');
-  if (found.status !== 200) error(502, 'Trakt is having trouble loading this list.');
+  assertListFound(found);
 
   const list = toListCommentsTarget(found.body);
   // OG took an id or an old slug too; og keeps one URL per list.

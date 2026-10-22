@@ -6,6 +6,7 @@ import type { ViewerSettings } from '../settings/ViewerSettings.ts';
 import { api } from '../api/api.ts';
 import type { HeaderUser } from '../components/header/HeaderUser.ts';
 import type { DatePreferences } from '../settings/DatePreferences.ts';
+import { assertListFound } from './assertListFound.ts';
 import { fetchListSummary } from './fetchListSummary.ts';
 import { fetchListItems, loadListItems, urlListSort } from './loadListItems.ts';
 import { listCoverOf } from './listCoverOf.ts';
@@ -38,8 +39,7 @@ export async function loadOfficialList({ fetch, locals, params, url, parent, coo
   });
   const query = { ...toListQuery(url.searchParams), hide: fadeHide.hide };
   const summary = await fetchSummary(fetch, params.slug);
-  if (!summary || [204, 401, 403, 404].includes(summary.status)) error(404, 'Page Not Found');
-  if (summary.status !== 200) error(502, 'Trakt is having trouble loading this list.');
+  assertListFound(summary);
   if (summary.body.type !== 'official') error(404, 'Page Not Found');
   const list = toListView(summary.body);
   if (params.slug !== list.slug) redirect(301, `${list.href}${url.search}`);

@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod/v4';
 import type { createOverlay } from '../../overlay/createOverlay.svelte.ts';
 import type { RatingTarget } from './RatingTarget.ts';
 import { UNKNOWN_DATE } from '../../utils/unknownDate.ts';

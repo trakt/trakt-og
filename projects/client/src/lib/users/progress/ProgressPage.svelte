@@ -132,6 +132,15 @@ $effect(() => {
     });
 });
 
+// One derived per slice the list reads. `slices()` is a new object on any overlay change, but an untouched slice
+// keeps its identity, so a rating or a list add elsewhere doesn't rebuild every row.
+const watchedShows = $derived(slices.watchedShows);
+const rewatching = $derived(slices.rewatching);
+const droppedSlice = $derived(slices.dropped);
+const progressHidden = $derived(slices.progressHidden);
+const hidden = $derived(slices.hidden);
+const collectedShows = $derived(slices.collectedShows);
+
 const items = $derived(
   nitro
     ? toProgressItems({
@@ -139,7 +148,7 @@ const items = $derived(
       nitro,
       droppedShows,
       listShows: listShows ?? undefined,
-      slices,
+      slices: { watchedShows, rewatching, dropped: droppedSlice, progressHidden, hidden, collectedShows },
       catalogs,
       options: data.options,
       now,

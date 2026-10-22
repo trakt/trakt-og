@@ -2315,6 +2315,8 @@
   --comment-field-padding: 10px 18px;
   --comment-field-height: 96px;
   --comment-composer-heading-gap: 16px;
+  --comment-composer-pull-up: calc(var(--line-height-computed) * -1); /* takes back the heading's whole top margin */
+  --comment-composer-space-end: calc(var(--gutter) * 2); /* the form to the comments under it */
   --comment-composer-footer-gap: 8px 12px;
   --comment-composer-toolbar-padding: 0 10px 8px 12px;
   --comment-composer-bar-padding: 10px 10px 10px 12px;

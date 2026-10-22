@@ -101,7 +101,8 @@ async function posted(comment: CommentResponse | null) {
 
 <style>
 .new-comment {
-  padding-block-end: var(--gutter);
+  margin-block-start: var(--comment-composer-pull-up);
+  padding-block-end: var(--comment-composer-space-end);
   scroll-margin-block-start: var(--header-height);
 
   @media (prefers-reduced-motion: no-preference) {

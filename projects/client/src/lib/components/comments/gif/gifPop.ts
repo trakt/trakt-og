@@ -1,8 +1,9 @@
 import { backOut } from 'svelte/easing';
+import { prefersReducedMotion } from 'svelte/motion';
 
 /** A picked GIF springs into the composer: it grows, untilts and fades in. Reduced motion skips it. */
 export function gifPop(_node: Element) {
-  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const still = prefersReducedMotion.current;
   return {
     delay: 80,
     duration: still ? 0 : 450,

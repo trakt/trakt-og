@@ -13,6 +13,7 @@ import { SvelteSet } from 'svelte/reactivity';
 import HomeLiveCard from './HomeLiveCard.svelte';
 import type { HomeLive } from './live/toHomeLive.ts';
 import type { HomeFanart } from './toHomeFanarts.ts';
+import { prefersReducedMotion } from 'svelte/motion';
 
 interface Props {
   fanarts: readonly HomeFanart[];
@@ -31,7 +32,7 @@ const shown = new SvelteSet([0, 1]);
 const current = $derived(fanarts.at(index));
 
 $effect(() => {
-  if (fanarts.length < 2 || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if (fanarts.length < 2 || prefersReducedMotion.current) return;
   const next = (index + 1) % fanarts.length;
   const timer = setTimeout(() => {
     shown.add((next + 1) % fanarts.length);

@@ -59,6 +59,7 @@ import type { PersonCredit } from './PersonCredit.ts';
 import { toCareerEras } from './toCareerEras.ts';
 import { toCreditsSearch } from './toCreditsSearch.ts';
 import { visibleCredits } from './visibleCredits.ts';
+import { prefersReducedMotion } from 'svelte/motion';
 
 type Props = {
   data: Awaited<ReturnType<typeof loadPerson>> & { datePreferences: DatePreferences; user: HeaderUser | null };
@@ -154,7 +155,7 @@ $effect(() => {
   return afterVisibleFor({
     ms: SURPRISE_AFTER_MS,
     callback: () => {
-      surprise = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+      surprise = !prefersReducedMotion.current;
     },
   });
 });
@@ -215,7 +216,7 @@ async function showCredits() {
   await tick();
   document.getElementById('credits')?.scrollIntoView({
     block: 'start',
-    behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth',
+    behavior: prefersReducedMotion.current ? 'instant' : 'smooth',
   });
 }
 

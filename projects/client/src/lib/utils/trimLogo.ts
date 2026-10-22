@@ -1,5 +1,6 @@
 import type { Attachment } from 'svelte/attachments';
 import { logoBounds } from './logoBounds.ts';
+import { prefersReducedMotion } from 'svelte/motion';
 
 // The trimmed copy of each logo this session, by its source, so a logo is measured once.
 const trimmed = new Map<string, Promise<string | undefined>>();
@@ -49,7 +50,7 @@ export function trimLogo(source: string | undefined): Attachment<HTMLImageElemen
       if (!live) return;
       const from = `${image.getBoundingClientRect().height}px`;
       image.removeAttribute('data-trim');
-      if (globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+      if (prefersReducedMotion.current) return;
       const to = `${image.getBoundingClientRect().height}px`;
       image.animate([
         { blockSize: from, opacity: 0 },

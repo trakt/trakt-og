@@ -13,6 +13,7 @@ import SeeMore from '$lib/components/see-more/SeeMore.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import arrowRightLong from '$lib/icons/regular/arrow-right-long.svg?raw';
 import { isPlainClick } from '$lib/utils/isPlainClick';
+import { prefersReducedMotion } from 'svelte/motion';
 
 interface Section {
   readonly label: string;
@@ -57,7 +58,7 @@ function headingTop(section: HTMLElement) {
 // The page can still shift under a glide as lazy sections load, so once it settles it glides again, a few times at most.
 function glide(section: HTMLElement, tries = 3) {
   const top = headingTop(section);
-  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const reduced = prefersReducedMotion.current;
   window.scrollTo({ top, behavior: reduced ? 'auto' : 'smooth' });
   if (tries <= 1) return;
   const settled = () => {

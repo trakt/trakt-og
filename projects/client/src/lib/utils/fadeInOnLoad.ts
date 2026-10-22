@@ -1,4 +1,5 @@
 import type { Attachment } from 'svelte/attachments';
+import { prefersReducedMotion } from 'svelte/motion';
 
 const FADE_MS = 300;
 
@@ -9,7 +10,7 @@ const FADE_MS = 300;
 export function fadeInOnLoad(): Attachment<HTMLImageElement> {
   return (image) => {
     const fade = () => {
-      if (globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+      if (prefersReducedMotion.current) return;
       image.animate([{ opacity: 0 }, { opacity: 1 }], { duration: FADE_MS, easing: 'ease-out' });
     };
 

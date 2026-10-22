@@ -26,6 +26,7 @@ import play from '$lib/icons/solid/play.svg?raw';
 import type { Attachment } from 'svelte/attachments';
 import { SvelteSet } from 'svelte/reactivity';
 import type { SeasonPick } from './toSeasonPicks.ts';
+import { prefersReducedMotion } from 'svelte/motion';
 
 interface Props {
   title: string;
@@ -75,7 +76,7 @@ function pick(next: (typeof MODES)[number]['id']) {
 }
 
 $effect(() => {
-  if (paused || slides.length < 2 || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if (paused || slides.length < 2 || prefersReducedMotion.current) return;
   // Reading `index` restarts the timer whenever the slide changes, by the timer or by hand.
   const at = index;
   const timer = setTimeout(() => show(at + 1), ROTATE_MS);
@@ -86,7 +87,7 @@ $effect(() => {
 $effect(() => {
   const button = rail?.querySelectorAll('button')[index];
   if (!rail || !button) return;
-  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const reduced = prefersReducedMotion.current;
   rail.scrollTo({
     left: button.offsetLeft - (rail.clientWidth - button.offsetWidth) / 2,
     behavior: reduced ? 'instant' : 'smooth',

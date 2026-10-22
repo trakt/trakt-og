@@ -12,6 +12,7 @@ import xmark from '$lib/icons/regular/xmark.svg?raw';
 import { flip } from 'svelte/animate';
 import { fly } from 'svelte/transition';
 import { toast } from './toast.svelte.ts';
+import { prefersReducedMotion } from 'svelte/motion';
 
 const TIMEOUT = 5000;
 const EXTENDED_TIMEOUT = 1000;
@@ -19,7 +20,7 @@ const EXTENDED_TIMEOUT = 1000;
 const icons = { success: circleCheck, error: circleExclamation };
 
 // Svelte transitions skip base.css's reduced-motion rule.
-const duration = (ms: number) => (matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : ms);
+const duration = (ms: number) => (prefersReducedMotion.current ? 0 : ms);
 
 // Dismisses the toast after `ms`, draining its timer line from `from` (1 is full) to empty on the way.
 const countdown = (node: HTMLElement, id: number) => (from: number, ms: number) => {

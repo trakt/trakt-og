@@ -25,6 +25,7 @@ import { focusComment } from './focusComment.ts';
 import type { GifEntry } from './gif/GifEntry.ts';
 import { newComment } from './newComment.svelte.ts';
 import { postComment } from './postComment.ts';
+import { prefersReducedMotion } from 'svelte/motion';
 
 const { item }: { item: CommentItem } = $props();
 
@@ -43,7 +44,7 @@ $effect(() => (user ? newComment.mount() : undefined));
 $effect(() => {
   if (newComment.opened === 0) return;
   void tick().then(() => {
-    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reduced = prefersReducedMotion.current;
     section?.scrollIntoView({ block: 'start', behavior: reduced ? 'auto' : 'smooth' });
     composer?.focus();
   });

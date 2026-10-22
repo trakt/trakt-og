@@ -1,5 +1,6 @@
 import { z } from 'zod/v4';
 import { reactionTypeSchema } from './reactionTypeSchema.ts';
+import type { ReactionType } from './ReactionType.ts';
 
 const rowsSchema = z.array(z.object({
   reaction: z.object({ type: reactionTypeSchema }),
@@ -8,7 +9,7 @@ const rowsSchema = z.array(z.object({
 
 /** Fetch the viewer's whole set once, including every page. API's minimal shape is parsed at this boundary. */
 export async function loadCommentReactions(request: (path: string) => Promise<Response>) {
-  const read = async (page: number): Promise<Map<number, z.infer<typeof reactionTypeSchema>>> => {
+  const read = async (page: number): Promise<Map<number, ReactionType>> => {
     const response = await request(`/users/reactions/comments?extended=min&limit=100&page=${page}`);
     if (!response.ok) throw new Error('Could not load your reactions');
     const rows = rowsSchema.parse(await response.json());

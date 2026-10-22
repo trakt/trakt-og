@@ -1,4 +1,5 @@
 <script lang="ts">
+import type { ReactionType } from '$lib/components/comments/ReactionType';
 import { page } from '$app/state';
 import { PLACEHOLDER_AVATAR } from '$lib/users/placeholderAvatar';
 import CommentCard from '$lib/components/comments/CommentCard.svelte';
@@ -8,7 +9,6 @@ import CommentComposer from '$lib/components/comments/CommentComposer.svelte';
 import { newComment } from '$lib/components/comments/newComment.svelte';
 import { toast } from '$lib/components/toast/toast.svelte';
 import ReactionControl from '$lib/components/comments/ReactionControl.svelte';
-import { reactionOptions } from '$lib/components/comments/reactionOptions';
 import type { CommentViewer } from '$lib/components/comments/CommentViewer';
 import CommentWithPoster from '$lib/components/comments/CommentWithPoster.svelte';
 import Container from '$lib/components/container/Container.svelte';
@@ -47,7 +47,7 @@ const viewerFor = (comment: CommentResponse): CommentViewer => {
   return { slug: page.data.user?.slug ?? 'og_viewer' };
 };
 
-let reaction = $state<typeof reactionOptions[number]['type']>();
+let reaction = $state<ReactionType>();
 
 // The new comment form's composer, posting nowhere: the reply API's answer stands in, so short text is turned down.
 // Add comment opens it, as on a summary page; Cancel and posting hide it again.

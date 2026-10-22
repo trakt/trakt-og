@@ -2,10 +2,9 @@ import type { ReactionsSummaryResponse } from '@trakt/api';
 import { z } from 'zod/v4';
 import { loadCommentReactions } from './loadCommentReactions.ts';
 import { patchReactionSummary } from './patchReactionSummary.ts';
-import type { reactionTypeSchema } from './reactionTypeSchema.ts';
 import { GENERIC_ERROR } from '../../utils/genericError.ts';
+import type { ReactionType } from './ReactionType.ts';
 
-type Reaction = z.infer<typeof reactionTypeSchema>;
 type SummaryReader = (id: number, fresh?: boolean) => Promise<ReactionsSummaryResponse | undefined>;
 const empty = (): ReactionsSummaryResponse => ({ reaction_count: 0, user_count: 0, distribution: {} });
 const errorSchema = z.object({ message: z.string() });
@@ -18,7 +17,7 @@ export function createCommentReactions({ request, notify }: {
   let viewer: string | null = null;
   let generation = $state(0);
   let loaded = $state(false);
-  let choices = $state<Readonly<Record<number, Reaction>>>({});
+  let choices = $state<Readonly<Record<number, ReactionType>>>({});
   let summaries = $state<Readonly<Record<number, ReactionsSummaryResponse>>>({});
   let busy = $state<Readonly<Record<number, boolean>>>({});
   let loading: Promise<boolean> | undefined;
@@ -76,10 +75,10 @@ export function createCommentReactions({ request, notify }: {
   };
 
   // Patches only this comment; another card's concurrent change survives a rollback.
-  const patch = (id: number, next: Reaction | undefined) => {
+  const patch = (id: number, next: ReactionType | undefined) => {
     const previous = choices[id];
     const oldSummary = summaries[id];
-    const choose = (choice: Reaction | undefined) => {
+    const choose = (choice: ReactionType | undefined) => {
       const updated = Object.fromEntries(Object.entries(choices).filter(([key]) => key !== String(id)));
       choices = choice ? { ...updated, [id]: choice } : updated;
     };
@@ -95,7 +94,7 @@ export function createCommentReactions({ request, notify }: {
 
   const change = async ({ id, type, likes, read }: {
     id: number;
-    type: Reaction;
+    type: ReactionType;
     likes: number;
     read: SummaryReader;
   }): Promise<boolean> => {

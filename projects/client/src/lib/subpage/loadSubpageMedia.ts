@@ -15,6 +15,7 @@ import { subpageParents } from './subpageParents.ts';
 import { toSubpageStrip } from './toSubpageStrip.ts';
 import { toSubpageMedia } from './toSubpageMedia.ts';
 import { watchNowCountry } from '../settings/watchNowCountry.ts';
+import { assertOk } from '../api/assertOk.ts';
 
 type Params = {
   fetch: typeof globalThis.fetch;
@@ -29,11 +30,6 @@ type Params = {
 };
 
 type Link = { readonly href: string; readonly label: string };
-
-function assertOk<T extends { status: number }>(response: T, name: string): asserts response is T & { status: 200 } {
-  if (response.status === 404) error(404, `${name} not found`);
-  if (response.status !== 200) error(502, `The Trakt API could not load this ${name.toLowerCase()}.`);
-}
 
 function number(value: string, name: string) {
   if (!/^\d+$/.test(value) || !Number.isSafeInteger(Number(value))) error(404, `${name} not found`);

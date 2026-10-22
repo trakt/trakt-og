@@ -10,6 +10,7 @@ import type { ViewerSettings } from '../settings/ViewerSettings.ts';
 import { seasonPeopleSchema } from './seasonPeopleSchema.ts';
 import { toSeasonSummary } from './toSeasonSummary.ts';
 import { watchNowCountry } from '../settings/watchNowCountry.ts';
+import { assertOk } from '../api/assertOk.ts';
 
 interface Params {
   fetch: typeof fetch;
@@ -18,11 +19,6 @@ interface Params {
   url: URL;
   cookies?: Cookies;
   parent: () => Promise<{ user: HeaderUser | null; settings: ViewerSettings | null; datePreferences: DatePreferences }>;
-}
-
-function assertOk<T extends { status: number }>(response: T, name: string): asserts response is T & { status: 200 } {
-  if (response.status === 404) error(404, `${name} not found`);
-  if (response.status !== 200) error(502, `The Trakt API could not load this ${name.toLowerCase()}.`);
 }
 
 /** Public season reads never carry the cookie token. The layout data and all reads start together. */

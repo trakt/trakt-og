@@ -136,12 +136,25 @@ const boundsOf = (points: Ring): Bounds => [
   Math.max(...points.map(([, y]) => y)),
 ];
 
+// A ring that crosses the date line jumps from 180 to -180; carry on past it instead, so a ray across it doesn't
+// light every dot at that latitude around the world.
+const unwrap = (points: Ring): Ring =>
+  points.reduce<Point[]>((unwrapped, [lon, lat]) => {
+    const previous = unwrapped.at(-1)?.[0] ?? lon;
+    unwrapped.push([lon + 360 * Math.round((previous - lon) / 360), lat]);
+    return unwrapped;
+  }, []);
+
+type Shape = { polygon: Polygon; unwrapped: Polygon; bounds: Bounds };
 const countries = topology.objects.countries.geometries
   .map((geometry) => ({
     iso2: isoByNumeric.get(String(Number(geometry.id))),
-    polygons: polygonsOf(geometry).map((polygon) => ({ polygon, bounds: boundsOf(polygon[0]) })),
+    polygons: polygonsOf(geometry).map((polygon) => {
+      const unwrapped: Polygon = polygon.map(unwrap);
+      return { polygon, unwrapped, bounds: boundsOf(unwrapped[0]) };
+    }),
   }))
-  .filter((country): country is { iso2: string; polygons: { polygon: Polygon; bounds: Bounds }[] } =>
+  .filter((country): country is { iso2: string; polygons: Shape[] } =>
     country.iso2 !== undefined && country.iso2 !== 'AQ' && country.polygons.length > 0
   );
 
@@ -151,12 +164,13 @@ const insideRing = ([x, y]: Point, points: Ring) =>
     return (yi > y) !== (yj > y) && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi ? !inside : inside;
   }, false);
 
-const insidePolygon = (point: Point, { polygon: [outer, ...holes], bounds: [west, south, east, north] }: {
-  polygon: Polygon;
-  bounds: Bounds;
-}) =>
+const insideShape = (point: Point, { unwrapped: [outer, ...holes], bounds: [west, south, east, north] }: Shape) =>
   point[0] >= west && point[0] <= east && point[1] >= south && point[1] <= north &&
   insideRing(point, outer) && !holes.some((hole) => insideRing(point, hole));
+
+// An unwrapped ring can run past ±180, so the point is also tried a turn either side.
+const insidePolygon = ([lon, lat]: Point, shape: Shape) =>
+  [lon, lon - 360, lon + 360].some((each) => insideShape([each, lat], shape));
 
 // Natural Earth I (Šavrič et al.), in radians.
 const RADIANS = Math.PI / 180;

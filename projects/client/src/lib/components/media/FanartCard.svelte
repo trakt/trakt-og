@@ -150,13 +150,14 @@ const restoreTarget = $derived(target?.type === 'show' ? { ...target, type: 'sho
       {/if}
       <span class="shadow-base"></span>
     </a>
-    {#if episodeBadge}<EpisodeTypeBadge {...episodeBadge} />{/if}
+    {#if episodeBadge && !titles}<EpisodeTypeBadge {...episodeBadge} />{/if}
     {#if isDropped && image}<DroppedBadge target={restoreTarget} date={state?.droppedAt ? formatDate(state.droppedAt, page.data.datePreferences) : undefined} />{/if}
     {#if userRating}
       <CornerRating rating={userRating} />
     {/if}
     {#if titles}
     <div class="titles">
+      {#if episodeBadge}<EpisodeTypeBadge {...episodeBadge} inline />{/if}
       {#each tags as tag, i (i)}<CardTag {...tag} />{/each}
       {#if smallTitle && !logo && !hideSmallTitle}
         <a class="titles-link small-title" href={smallTitle.href}>{smallTitle.text}</a>

@@ -56,7 +56,7 @@ interface Props {
    * `{ rating: 7.2, votes: 1234, href }`.
    */
   subtitles?: readonly Subtitle[];
-  /** The OG banner above an episode screenshot. */
+  /** An episode's type tag over the art's bottom-left corner. */
   episodeBadge?: ComponentProps<typeof EpisodeTypeBadge>;
   /** The viewer's own rating, 1 to 10. */
   userRating?: number | null;

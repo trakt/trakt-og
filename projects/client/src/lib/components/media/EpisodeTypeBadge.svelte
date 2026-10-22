@@ -1,5 +1,13 @@
+<!--
+  An episode's type (Season Finale, Series Premiere) as a card tag in its kind's color, over the bottom-left corner of
+  the art, the way the calendar shows it. `inline` drops it into a card's own row of tags instead. Hidden when the
+  viewer turns episode type tags off.
+    <EpisodeTypeBadge label="Season Finale" kind="season-finale" />
+-->
 <script lang="ts">
 import { page } from '$app/state';
+import CardTag from './CardTag.svelte';
+
 interface Props {
   label: string;
   kind:
@@ -11,34 +19,23 @@ interface Props {
     | 'series-finale'
     | 'bonus'
     | 'trailer';
+  inline?: boolean;
 }
-const { label, kind }: Props = $props();
+const { label, kind, inline = false }: Props = $props();
 </script>
 
-{#if !page.data.settings?.browsing?.hide_episode_type_tags}<span class="episode-badge"
-  style:--episode-color="var(--episode-{kind})">{label}</span>{/if}
+{#if !page.data.settings?.browsing?.hide_episode_type_tags}
+  {#if inline}<CardTag text={label} {kind} />{:else}<span class="corner"><CardTag text={label} {kind} /></span>{/if}
+{/if}
 
 <style>
-.episode-badge {
+.corner {
   position: absolute;
-  inset-block-start: 0;
-  inset-inline: 0;
+  inset-inline-start: var(--episode-tag-inset);
+  inset-block-end: var(--episode-tag-inset);
   z-index: 1;
-  padding-block: var(--episode-badge-padding);
-  color: var(--color-text-inverse);
-  font-family: var(--font-headings);
-  font-size: var(--font-size-episode-badge);
-  font-weight: var(--font-weight-headings);
-  line-height: 1;
-  letter-spacing: var(--episode-badge-letter-spacing);
-  text-align: center;
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    background: var(--episode-color);
-    opacity: var(--episode-badge-opacity);
-  }
+  display: flex;
+  max-inline-size: calc(100% - 2 * var(--episode-tag-inset));
+  pointer-events: none;
 }
 </style>

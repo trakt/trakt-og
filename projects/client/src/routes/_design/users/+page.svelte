@@ -2,7 +2,7 @@
   The profile frame in every state, on sample data: covers, labels, follow states, the request banner and the
   watching-now bar. Real profiles only show the states the signed-in viewer is actually in. Under it, a favorite
   card, the welcome hero, the charts, the most watched columns (OG's defaults, then a saved sort and tab), and the
-  network page's user cards in each follow state. The stat boxes have their own page, `/_design/profile-boxes`.
+  network page's user cards in each follow state, watching now and checked in. The stat boxes have their own page, `/_design/profile-boxes`.
 -->
 <script lang="ts">
 import Container from '$lib/components/container/Container.svelte';
@@ -12,6 +12,8 @@ import ProfileCharts from '$lib/components/users/ProfileCharts.svelte';
 import ProfileFrame from '$lib/components/users/ProfileFrame.svelte';
 import UserCard from '$lib/components/users/UserCard.svelte';
 import WelcomeHero from '$lib/components/users/WelcomeHero.svelte';
+import { liveTiles } from '$lib/dashboard/liveTiles';
+import { socialFeedFixture } from '$lib/dashboard/socialFeedFixture';
 import { profileTabs } from '$lib/users/profileTabs';
 import { toGenreBar } from '$lib/users/profile/toGenreBar';
 import { toProfileRatings } from '$lib/users/profile/toProfileRatings';
@@ -211,6 +213,22 @@ const cards = [
   },
   { key: 'self', user: { ...free, slug: 'self', displayName: 'You (or signed out)' }, relation: null },
 ];
+const demoNow = new Date();
+const tiles = liveTiles(socialFeedFixture.live(demoNow), demoNow);
+const liveCards = [
+  {
+    key: 'watching',
+    user: { ...free, slug: 'bender', displayName: 'Bender' },
+    relation: cardRelation({ follow: 'following', followsYou: true }),
+    watch: tiles.find(({ watch }) => watch.kind === 'watch') ?? null,
+  },
+  {
+    key: 'checked-in',
+    user: { ...vip, slug: 'amy', displayName: 'Amy Wong' },
+    relation: cardRelation({ follow: 'following' }),
+    watch: tiles.find(({ watch }) => watch.kind === 'checkin') ?? null,
+  },
+];
 </script>
 
 <svelte:head>
@@ -279,10 +297,18 @@ const cards = [
   datePreferences={{ order: 'mdy', hour24: false, timeZone: 'UTC', weekStartDay: 0 }}
 />
 
-<h2 class="state">User cards: follow, friends, pending and private, follows you, yourself or signed out</h2>
+<h2 class="state">User cards: watching now, checked in, each follow state, yourself or signed out</h2>
 <Container>
   <ul class="user-cards">
-    {#each cards as card (card.key)}<li><UserCard user={card.user} relation={card.relation} /></li>{/each}
+    {#each liveCards as card (card.key)}
+      <li><UserCard user={card.user} relation={card.relation} watch={card.watch} since="2014-03-02T10:00:00.000Z" /></li>
+    {/each}
+    {#each cards as card, i (card.key)}
+      <li>
+        <UserCard user={card.user} relation={card.relation} veteran={i === 1 ? 'Legend' : i === 2 ? 'Veteran' : null}
+          since="2012-06-11T10:00:00.000Z" />
+      </li>
+    {/each}
   </ul>
 </Container>
 

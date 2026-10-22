@@ -1,6 +1,7 @@
 <!--
   `/users/:id/network(/:type)` under the profile frame: the subnav with the list picker,
-  the people count and the sort menu, then 54 user cards a page with pagination above and below.
+  the people count and the sort menu, then 54 user cards a page with pagination above and below. Each card fills in
+  its cover and whether they're watching now once it's on screen.
 -->
 <script lang="ts">
 import { page } from '$app/state';
@@ -11,11 +12,11 @@ import NoData from '$lib/components/empty/NoData.svelte';
 import Pagination from '$lib/components/pagination/Pagination.svelte';
 import SectionToolbar from '$lib/components/toolbar/SectionToolbar.svelte';
 import SubnavCount from '$lib/components/toolbar/SubnavCount.svelte';
-import UserCard from '$lib/components/users/UserCard.svelte';
 import userIcon from '$lib/icons/regular/user.svg?raw';
 import type { ProfileUser } from '$lib/users/ProfileUser';
 import type { ViewerRelation } from '$lib/users/ViewerRelation';
 import type { loadNetwork } from './loadNetwork.ts';
+import NetworkUserCard from './NetworkUserCard.svelte';
 import { type NetworkType, networkTypes } from './networkTypes.ts';
 
 type Props = {
@@ -46,7 +47,10 @@ const relationOf = (relations: Readonly<Record<string, ViewerRelation>> | null, 
 {#snippet grid(relations: Readonly<Record<string, ViewerRelation>> | null)}
   <ul class="cards">
     {#each data.users as user (user.slug)}
-      <li><UserCard {user} relation={relationOf(relations, user)} canFollow={data.canFollow} /></li>
+      <li>
+        <NetworkUserCard {user} extra={data.extras[user.slug]} relation={relationOf(relations, user)}
+          canFollow={data.canFollow} />
+      </li>
     {/each}
   </ul>
 {/snippet}

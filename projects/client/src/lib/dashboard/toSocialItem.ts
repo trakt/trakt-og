@@ -56,6 +56,8 @@ export type SocialItem = {
   readonly target: SocialTarget;
   /** An image path from the API: the episode's screenshot, else the show's or movie's fanart. */
   readonly still?: string;
+  /** The show's or movie's own fanart, never an episode's screenshot: a user card's cover while they watch it. */
+  readonly fanart?: string;
   /** 1 to 10, on a rating. */
   readonly rating?: number;
   /** On a comment or review. */

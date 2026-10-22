@@ -8,6 +8,7 @@ import type { ProfileUser } from '../ProfileUser.ts';
 import { toProfileUser } from '../toProfileUser.ts';
 import { toViewerRelation } from '../toViewerRelation.ts';
 import { networkRowsSchema } from './networkRowsSchema.ts';
+import { toNetworkExtras } from './toNetworkExtras.ts';
 import { type NetworkType, networkTypes } from './networkTypes.ts';
 
 type Params = {
@@ -92,7 +93,7 @@ export async function loadNetwork({ fetch, parent, locals, params, url }: Params
     itemCount: 0,
     page: extractPageMeta(new Headers(), current),
   };
-  if (profile.isLocked) return { ...empty, isSelf, viewerSlug: viewer?.slug ?? null, relations: null };
+  if (profile.isLocked) return { ...empty, extras: {}, isSelf, viewerSlug: viewer?.slug ?? null, relations: null };
 
   // OG only offers Following (Pending) on your own profile and shows Following anywhere else.
   const fetched = requested === 'following_pending' && (!isSelf || !initial) ? await list('following') : initial;
@@ -103,7 +104,8 @@ export async function loadNetwork({ fetch, parent, locals, params, url }: Params
   const parsed = networkRowsSchema.safeParse(await response.json().catch(() => null));
   if (!parsed.success) error(502, 'Trakt returned an invalid network response.');
 
-  const all = parsed.data.filter((row) => !row.user.deleted).map((row) => toProfileUser(row.user));
+  const alive = parsed.data.filter((row) => !row.user.deleted).map((row) => ({ row, user: toProfileUser(row.user) }));
+  const all = alive.map(({ user }) => user);
   const { rows: users, page } = type === 'following_pending'
     ? slicePage(all, current)
     : { rows: all, page: extractPageMeta(response.headers, current) };
@@ -115,6 +117,7 @@ export async function loadNetwork({ fetch, parent, locals, params, url }: Params
     type,
     canFollow: settings?.permissions?.following !== false,
     users,
+    extras: toNetworkExtras(alive.map(({ row, user }) => ({ slug: user.slug, row }))),
     itemCount,
     page,
     isSelf,

@@ -1,182 +1,294 @@
 <!--
-  OG's user card, three to a row on the network page: the user's cover (the default
-  one when unset), then an info panel that rides up over it with the avatar, the name with the VIP and Private labels,
-  the location and gender line, and the follow buttons. A private user's card leaves the location line blank.
+  OG's user card, three to a row on the network page, as a small profile header: the avatar, the name with the VIP
+  label and the header's glass pills sit on the user's cover (the default one when unset, theirs fading in once it
+  loads), then the profile header's follow buttons, and a darker band along the bottom, like a dialog's footer, with
+  the chips: Private, the VIP veteran title and the year the follow started, as a green "Friends since" when they
+  follow each other and a grey "Since" otherwise. `watch` marks someone watching now: the cover becomes the show's or movie's
+  fanart with the dashboard's pulsing tags and title at the top, the time left across from them, and the live
+  progress bar along the bottom edge.
   `relation` is the viewer's follow state with this user; pass null for your own card or when signed out, which
-  leaves the button row empty. Buttons update the viewer's relationship immediately, with rollback on a failed write.
+  leaves the buttons out. Buttons update the viewer's relationship immediately, with rollback on a failed write.
     <UserCard user={toProfileUser(row.user)} relation={relations[row.user.ids.slug]} />
 -->
 <script lang="ts">
-import FollowButtons from '$lib/components/users/FollowButtons.svelte';
 import defaultCover from '$lib/assets/profile-cover-default.jpg';
-import PrivateLabel from '$lib/components/labels/PrivateLabel.svelte';
+import CommentTag from '$lib/components/comments/CommentTag.svelte';
 import VipLabel from '$lib/components/labels/VipLabel.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import genderless from '$lib/icons/solid/genderless.svg?raw';
-import locationPin from '$lib/icons/solid/location-pin.svg?raw';
-import mars from '$lib/icons/solid/mars.svg?raw';
-import venus from '$lib/icons/solid/venus.svg?raw';
+import CardTag from '$lib/components/media/CardTag.svelte';
+import UnderProgress from '$lib/components/media/UnderProgress.svelte';
+import Countdown from '$lib/components/status/Countdown.svelte';
+import FollowButtons from '$lib/components/users/FollowButtons.svelte';
+import ProfilePills from '$lib/components/users/ProfilePills.svelte';
+import { liveTags } from '$lib/dashboard/liveTags';
+import type { LiveTile } from '$lib/dashboard/liveTiles';
+import lock from '$lib/icons/regular/lock.svg?raw';
+import userGroup from '$lib/icons/regular/user-group.svg?raw';
+import star from '$lib/icons/solid/star.svg?raw';
 import type { ProfileUser } from '$lib/users/ProfileUser';
 import type { ViewerRelation } from '$lib/users/ViewerRelation';
+import { fadeInOnLoad } from '$lib/utils/fadeInOnLoad';
+import { imageUrl } from '$lib/utils/imageUrl';
 
 interface Props {
   user: ProfileUser;
   relation?: ViewerRelation | null;
   canFollow?: boolean;
+  /** What they're watching now, with how far in. */
+  watch?: LiveTile | null;
+  /** The VIP veteran title: "Veteran" or "Legend". */
+  veteran?: string | null;
+  /** When the follow started, as the API's ISO timestamp. */
+  since?: string | null;
 }
 
-const { user, relation = null, canFollow = true }: Props = $props();
-const genderIcons = { mars, venus, genderless };
+const { user, relation = null, canFollow = true, watch = null, veteran = null, since = null }: Props = $props();
 const href = $derived(`/users/${user.slug}`);
+const media = $derived(watch?.watch ?? null);
+const tags = $derived(media ? liveTags(media) : []);
+const friends = $derived(relation?.follow === 'following' && relation.followsYou);
+const sinceYear = $derived(since ? new Date(since).getUTCFullYear() : null);
 </script>
 
-<!-- Profile links go to /users/:id pages, some of which other issues build; resolve() only takes routes that exist. -->
+<!-- Profile and media links go to OG routes some of which other issues build; resolve() only takes routes that exist. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-<div class="user-card">
-  <a class="cover" {href} tabindex="-1" aria-hidden="true">
-    <img src={user.coverUrl ?? defaultCover} alt="" loading="lazy" />
-  </a>
-  <div class="info-wrapper">
-    <a class="avatar" {href} tabindex="-1" aria-hidden="true">
-      <img src={user.avatarUrl} alt="" loading="lazy" />
-    </a>
-    <div class="info">
-      <h2 class="name">
-        <a {href}>{user.displayName}</a>
-        {#if user.vip}<VipLabel badge={user.vip} pill />{/if}
-        {#if user.isPrivate}<PrivateLabel smaller />{/if}
-      </h2>
-      {#if user.isPrivate}
-        <p class="blank">&nbsp;</p>
+<article class={['user-card', { live: media }]}>
+  <div class="art">
+    <a class="cover" {href} tabindex="-1" aria-hidden="true">
+      {#if media}
+        <img src={imageUrl(media.fanart ?? media.still, 'medium')} alt="" {@attach fadeInOnLoad()} />
       {:else}
-        <p class="location">
-          <Icon svg={locationPin} />{user.location}
-          <span class="gender" title={user.gender.title}>
-            <Icon svg={genderIcons[user.gender.icon]} label={user.gender.title} />
-          </span>
-        </p>
+        <img src={defaultCover} alt="" loading="lazy" />
+        {#if user.coverUrl}<img src={user.coverUrl} alt="" loading="lazy" {@attach fadeInOnLoad()} />{/if}
       {/if}
-      <div class="buttons">
-        {#if relation}
-          <FollowButtons slug={user.slug} isPrivate={user.isPrivate} {relation} {canFollow} variant="card" />
-        {/if}
-        <!-- OG's trailing blank button: it keeps the row's height when there's no button to show. -->
-        <span class="btn spacer" aria-hidden="true">&nbsp;</span>
+      <span class="shade"></span>
+    </a>
+
+    {#if watch && media}
+      <div class="now">
+        <div class="now-title">
+          <span class="tags">{#each tags as tag, i (i)}<CardTag {...tag} />{/each}</span>
+          {#if media.episode}<a class="show" href={media.title.href}>{media.title.name}</a>{/if}
+          <a class="watching" href={media.href}>{media.episode ? media.code : media.title.name}</a>
+        </div>
+        <span class="left"><Countdown startedAt={media.startedAt} endsAt={media.expiresAt} /></span>
+      </div>
+      <div class="bar">
+        <UnderProgress
+          live
+          href={media.href}
+          percent={watch.progress}
+          lines={[[{ text: `${watch.progress}% watched` }, { text: `${watch.minutesLeft}m left` }]]}
+        />
+      </div>
+    {/if}
+
+    <div class="who">
+      <a class="avatar" {href} tabindex="-1" aria-hidden="true"><img src={user.avatarUrl} alt="" loading="lazy" /></a>
+      <div class="stack">
+        <h2 class="name">
+          <a {href}>{user.displayName}</a>
+          {#if user.vip}<VipLabel badge={user.vip} pill />{/if}
+        </h2>
+        {#if !user.isLocked}<ProfilePills {user} withPrivate={false} withJoined={false} />{/if}
       </div>
     </div>
   </div>
-</div>
+
+  {#if relation}
+    <div class="buttons"><FollowButtons slug={user.slug} isPrivate={user.isPrivate} {relation} {canFollow} /></div>
+  {/if}
+  <!-- Always there, chips or not, so every card in a row has the same shape. -->
+  <footer class="band">
+    {#if user.isPrivate}<CommentTag svg={lock} color="var(--color-list-chip-private)" tint>Private</CommentTag>{/if}
+    {#if veteran}<CommentTag svg={star} color="var(--color-user-card-chip-veteran)" tint>{veteran}</CommentTag>{/if}
+    {#if friends}
+      <CommentTag svg={userGroup} tone="friend" tint>Friends{#if sinceYear}&nbsp;since {sinceYear}{/if}</CommentTag>
+    {:else if sinceYear}
+      <CommentTag tone="following" tint>Since {sinceYear}</CommentTag>
+    {/if}
+  </footer>
+</article>
 
 <style>
-.user-card a {
-  color: inherit;
+.user-card {
+  display: flex;
+  flex-direction: column;
+  block-size: 100%;
+  overflow: hidden;
+  border-radius: var(--user-card-radius);
+  background-color: var(--color-user-card-foot-bg);
+  box-shadow: 0 0 0 1px var(--color-user-card-frame-line);
+
+  & a {
+    color: inherit;
+  }
+}
+
+.art {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background-color: var(--color-surface);
 }
 
 .cover {
-  display: block;
-  overflow: hidden;
-  border-radius: var(--user-card-radius) var(--user-card-radius) 0 0;
-  background-color: var(--color-surface);
+  position: absolute;
+  inset: 0;
 
   & img {
-    display: block;
+    position: absolute;
+    inset: 0;
     inline-size: 100%;
-    aspect-ratio: 16 / 9;
+    block-size: 100%;
     object-fit: cover;
   }
 }
 
-.info-wrapper {
-  position: relative;
+/* Under the name and pills; a live card is shaded at the top too, for the tags and title. */
+.shade {
+  position: absolute;
+  inset: 0;
+  background: var(--gradient-user-card-shade);
+
+  .live & {
+    background: var(--gradient-user-card-live-shade);
+  }
+}
+
+.now {
+  position: absolute;
+  inset-block-start: var(--user-card-inset);
+  inset-inline: var(--user-card-inset);
+  display: flex;
+  gap: var(--space-sm-inline);
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.now-title {
   display: grid;
-  grid-template-columns: var(--user-card-avatar-column) minmax(0, 1fr);
-  margin-block-start: calc(-1 * var(--user-card-overlap));
-  overflow: clip;
-  border-radius: 0 0 var(--user-card-radius) var(--user-card-radius);
-  background: linear-gradient(
-    to bottom,
-    transparent var(--user-card-overlap),
-    var(--color-user-card-info-bg) var(--user-card-overlap)
-  );
+  justify-items: start;
+  min-inline-size: 0;
+  font-family: var(--font-headings);
+  font-weight: var(--font-weight-headings);
+  line-height: var(--line-height-headings);
+  text-shadow: var(--text-shadow-headings);
 }
 
-.avatar {
-  margin-inline-start: var(--user-card-avatar-inset);
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs-inline);
+  margin-block-end: var(--space-card-small-title);
+}
 
-  & img {
-    display: block;
-    box-sizing: border-box;
-    inline-size: var(--user-card-avatar-size);
-    block-size: var(--user-card-avatar-size);
-    border: 3px solid var(--color-avatar-border);
-    border-radius: 50%;
-    background-color: var(--color-avatar-border);
-    object-fit: cover;
+.show {
+  color: var(--gray-lighter);
+  font-size: var(--font-size-h5);
+}
+
+.watching {
+  font-size: var(--font-size-fanart-title);
+  font-weight: var(--font-weight-headings-heavy);
+}
+
+.show,
+.watching {
+  max-inline-size: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  &:is(:hover, :focus-visible) {
+    text-decoration: underline;
   }
 }
 
-.info {
-  padding: var(--user-card-info-padding);
+.left {
+  flex: none;
+  color: var(--color-card-text);
+  font-family: var(--font-headings);
+  font-size: var(--font-size-card-subtitle);
+  font-weight: var(--font-weight-headings-heavy);
+  font-variant-numeric: tabular-nums;
+  text-shadow: var(--text-shadow-headings);
 }
 
+.bar {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
+  z-index: 1;
+}
+
+/* Always clear of the live progress bar's room, so the avatar and name sit in the same place live or not. */
+.who {
+  position: absolute;
+  inset-inline: var(--user-card-inset);
+  inset-block-end: calc(var(--user-card-inset) + var(--progress-under-height));
+  display: flex;
+  gap: var(--user-card-who-gap);
+  align-items: flex-end;
+}
+
+.avatar img {
+  display: block;
+  box-sizing: border-box;
+  inline-size: var(--user-card-avatar-size);
+  block-size: var(--user-card-avatar-size);
+  border: var(--user-card-avatar-border) solid var(--color-user-card-avatar-ring);
+  border-radius: 50%;
+  background-color: var(--color-avatar-border);
+  object-fit: cover;
+}
+
+.stack {
+  display: grid;
+  gap: var(--user-card-stack-gap);
+  min-inline-size: 0;
+}
+
+/* The name with its VIP label centered on it. */
 .name {
+  display: flex;
+  align-items: center;
+  min-inline-size: 0;
   margin: 0;
+  color: var(--color-card-text);
   font-family: var(--font-headings);
   font-size: var(--font-size-user-card-name);
   font-weight: var(--font-weight-headings);
   line-height: var(--line-height-base);
   white-space: nowrap;
-}
+  text-shadow: var(--text-shadow-headings);
 
-.location,
-.blank {
-  margin: 0;
-}
-
-.location {
-  font-size: var(--font-size-small);
-  white-space: nowrap;
-
-  & :global(.icon) {
-    margin: 0 var(--user-card-icon-gap) 0 0;
+  & > a {
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
-}
 
-.gender :global(.icon) {
-  margin-inline-start: var(--user-card-icon-lead);
+  & :global(.label-vip) {
+    flex: none;
+    text-shadow: none;
+  }
 }
 
 .buttons {
-  white-space: nowrap;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--user-card-btn-gap);
+  padding: var(--user-card-inset);
 }
 
-.btn {
-  display: inline-block;
-  margin: var(--user-card-btn-gap) var(--user-card-btn-gap) 0 0;
-  padding: var(--user-card-btn-padding);
-  border: 1px solid var(--btn-bg);
-  border-radius: var(--radius-sm);
-  background-color: var(--btn-bg);
-  color: var(--color-text-inverse);
-  font-family: var(--font-headings);
-  font-size: var(--font-size-small);
-  font-weight: var(--font-weight-headings-heavy);
-  line-height: var(--line-height-base);
-  text-transform: uppercase;
-  vertical-align: middle;
-  cursor: default;
-
-  & :global(.icon) {
-    margin-inline-end: var(--user-card-btn-icon-gap);
-  }
-}
-
-.spacer {
-  --btn-bg: transparent;
-
-  visibility: hidden;
-  inline-size: 0;
-  padding-inline: 0;
-  border-inline-width: 0;
+/* Along the card's bottom edge, a step darker with a rule on top, like a dialog's footer. */
+.band {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--user-card-inset);
+  align-items: center;
+  min-block-size: var(--user-card-band-height);
+  margin-block-start: auto;
+  padding: var(--user-card-band-padding);
+  border-block-start: 1px solid var(--color-user-card-band-line);
+  background-color: var(--color-user-card-band-bg);
 }
 </style>

@@ -5,7 +5,7 @@ const episodeCode = (season: number, number: number) =>
   season === 0 ? `Special ${number}` : `${season}x${String(number).padStart(2, '0')}`;
 
 /** The part of a Social Feed item that says what it was about. */
-export type SocialItemMedia = Pick<SocialItem, 'title' | 'episode' | 'code' | 'href' | 'still' | 'target'>;
+export type SocialItemMedia = Pick<SocialItem, 'title' | 'episode' | 'code' | 'href' | 'still' | 'fanart' | 'target'>;
 
 type Ids = {
   readonly ids: { readonly trakt: number };
@@ -32,6 +32,7 @@ export function toSocialMedia(activity: SocialMedia): SocialItemMedia {
       title: { key: `movie:${movie.ids.slug}`, name: movie.title, href, poster: movie.images?.poster?.at(0), target },
       href,
       still: movie.images?.fanart?.at(0),
+      fanart: movie.images?.fanart?.at(0),
       target,
     };
   }
@@ -48,6 +49,7 @@ export function toSocialMedia(activity: SocialMedia): SocialItemMedia {
       target,
     },
     still: show.images?.fanart?.at(0),
+    fanart: show.images?.fanart?.at(0),
     target,
   };
   if (activity.type === 'show') return { ...common, href: showHref };

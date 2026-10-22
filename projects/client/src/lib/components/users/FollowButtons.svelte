@@ -17,9 +17,8 @@ interface Props {
   isPrivate: boolean;
   relation: ViewerRelation;
   canFollow?: boolean;
-  variant?: 'profile' | 'card';
 }
-const { slug, isPrivate, relation, canFollow = true, variant = 'profile' }: Props = $props();
+const { slug, isPrivate, relation, canFollow = true }: Props = $props();
 const overlay = getContext<ReturnType<typeof createRelationshipOverlay>>('user-relationships') ??
   createRelationshipOverlay();
 const entry = $derived(overlay.state(slug, relation));
@@ -44,10 +43,10 @@ async function change(action: 'follow' | 'unfollow' | 'block' | 'unblock') {
 </script>
 
 {#if removing || canFollow}
-  <button bind:this={followButton} type="button" class={['btn', variant, current.follow, { removing }]}
+  <button bind:this={followButton} type="button" class={['btn', 'profile', current.follow, { removing }]}
   aria-label="{removing ? hover : label} {slug}" aria-busy={busy} aria-disabled={busy}
   onclick={() => change(removing ? 'unfollow' : 'follow')}>
-    {#if !removing && variant === 'profile'}<Icon svg={userPlus} />{/if}
+    {#if !removing}<Icon svg={userPlus} />{/if}
     {#if removing}
       <span class="status-icon"><Icon svg={current.follow === 'pending' ? timer : checkThick} /></span>
       <span class="remove-icon"><Icon svg={deleteThick} /></span>
@@ -55,9 +54,7 @@ async function change(action: 'follow' | 'unfollow' | 'block' | 'unblock') {
     <span class="normal-text">{label}</span>{#if removing}<span class="hover-text">{hover}</span>{/if}
   </button>
 {/if}
-{#if variant === 'card'}
-  {#if current.followsYou}<span class="btn card follows-you"><Icon svg={checkThick} />Follows You</span>{/if}
-{:else if !entry.hideBlock && (current.followsYou || current.blocked)}
+{#if !entry.hideBlock && (current.followsYou || current.blocked)}
   <button type="button" class={['btn', 'profile', 'secondary', 'removing', { blocked: current.blocked }]}
   aria-busy={busy} aria-disabled={busy}
   aria-label="{current.blocked ? 'Unblock' : 'Block'} {slug}"
@@ -82,7 +79,7 @@ button {
 button[aria-disabled="true"] {
   cursor: wait;
 }
-/* On the cover: outlined glass, green to follow and while following, red on hover for anything that removes. */
+/* On the cover: green outlined glass to follow, solid green while following, red on hover for anything that removes. */
 .profile {
   display: inline-flex;
   align-items: center;
@@ -97,9 +94,10 @@ button[aria-disabled="true"] {
   font-size: var(--font-size-action-button);
   line-height: 1;
   transition: background-color 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s;
+  /* Not following yet: only the outline and text are green, so the solid fill means you follow them. */
   &.none {
     border-color: var(--color-profile-follow);
-    background-color: var(--color-profile-follow-solid);
+    color: var(--color-profile-follow-text);
     &:is(:hover, :focus-visible) {
       border-color: var(--color-profile-follow-hover-border);
       background-color: var(--color-profile-follow-hover);
@@ -125,37 +123,6 @@ button[aria-disabled="true"] {
     border-color: var(--color-profile-button-border-hover);
     background-color: var(--color-profile-button-hover-bg);
     color: var(--color-text-inverse);
-  }
-}
-.card {
-  min-block-size: 0;
-  display: inline-block;
-  margin: var(--user-card-btn-gap) var(--user-card-btn-gap) 0 0;
-  padding: var(--user-card-btn-padding);
-  border: 1px solid var(--btn-bg);
-  border-radius: var(--radius-sm);
-  font-size: var(--font-size-small);
-  line-height: var(--line-height-base);
-  vertical-align: middle;
-  background-color: var(--btn-bg);
-  & :global(.icon) {
-    margin-inline-end: var(--user-card-btn-icon-gap);
-  }
-  &.none {
-    --btn-bg: var(--brand-primary);
-  }
-  &.following {
-    --btn-bg: var(--brand-quaternary);
-  }
-  &.pending {
-    --btn-bg: var(--color-btn-pending);
-  }
-  &.follows-you {
-    --btn-bg: var(--color-btn-follows-you);
-  }
-  &.removing:is(:hover, :focus-visible) {
-    background-color: var(--color-relationship-card-remove-bg);
-    border-color: var(--color-relationship-card-remove-border);
   }
 }
 .hover-text,

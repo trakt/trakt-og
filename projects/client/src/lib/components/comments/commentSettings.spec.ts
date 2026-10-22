@@ -17,4 +17,9 @@ describe('util: commentSettings', () => {
       expect(settings.blocked.size).toBe(0);
     }
   });
+
+  it('should return the same result for the same settings object', () => {
+    const settings = { browsing: { comments: { blocked_uids: [7] } } };
+    expect(commentSettings(settings)).toBe(commentSettings(settings));
+  });
 });

@@ -1,16 +1,12 @@
 import { listItemSorts, type ListItemType } from './listItemSorts.ts';
 import { readListFilters } from './readListFilters.ts';
 import type { ListQuery } from './ListQuery.ts';
+import { positiveInt } from '../utils/positiveInt.ts';
 
 const ITEM_TYPES: readonly ListItemType[] = ['movie', 'show', 'season', 'episode', 'person'];
 // OG's `params[:limit] ||= 120`, capped at the worker's page limit.
 const PER_PAGE = 120;
 const MAX_LIMIT = 250;
-
-const positiveInt = (value: string | null, fallback: number) => {
-  const parsed = Number.parseInt(value ?? '', 10);
-  return parsed > 0 ? parsed : fallback;
-};
 
 const csv = (value: string | null) => (value ?? '').split(',').map((part) => part.trim()).filter(Boolean);
 const isItemType = (value: string): value is ListItemType => ITEM_TYPES.some((type) => type === value);

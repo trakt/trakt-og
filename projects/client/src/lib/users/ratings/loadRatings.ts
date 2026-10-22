@@ -11,6 +11,7 @@ import { ratingRowsSchema } from './ratingRowsSchema.ts';
 import { sortRatings } from './sortRatings.ts';
 import { toRatingCard } from './toRatingCard.ts';
 import type { RatingCard } from './RatingCard.ts';
+import { positiveInt } from '../../utils/positiveInt.ts';
 
 type Params = {
   fetch: typeof fetch;
@@ -19,10 +20,6 @@ type Params = {
   url: URL;
   cookies: { get: (name: string) => string | undefined };
   parent: () => Promise<{ profile: ProfileUser; isSelf: boolean; datePreferences: DatePreferences }>;
-};
-const positive = (value: string | null, fallback: number) => {
-  const n = Number.parseInt(value ?? '', 10);
-  return Number.isFinite(n) && n > 0 ? n : fallback;
 };
 
 async function read({ fetch, id, token, query, current, limit }: {
@@ -70,8 +67,8 @@ async function read({ fetch, id, token, query, current, limit }: {
 /** Public ratings alongside the profile frame. Private profiles retry with the viewer token; SSR never refreshes. */
 export async function loadRatings({ fetch, locals, params, url, cookies, parent }: Params) {
   const query = ratingQuery(params.type ? `${params.type}/${params.filters ?? ''}` : params.filters);
-  const current = positive(url.searchParams.get('page'), 1);
-  const limit = Math.min(positive(url.searchParams.get('limit'), 60), 250);
+  const current = positiveInt(url.searchParams.get('page'), 1);
+  const limit = Math.min(positiveInt(url.searchParams.get('limit'), 60), 250);
   const request = { fetch, id: params.id, query, current, limit };
   const fetchRatings = (token: string | null) =>
     read({ ...request, token }).catch(() => ({
@@ -102,7 +99,7 @@ export async function loadRatings({ fetch, locals, params, url, cookies, parent 
   const localSort = query.by !== 'added' || query.how !== 'asc';
   const total = localSort
     ? parsed.data.length
-    : positive(result.headers.get('x-pagination-item-count'), parsed.data.length);
+    : positiveInt(result.headers.get('x-pagination-item-count'), parsed.data.length);
   const headers = localSort
     ? new Headers({
       'x-pagination-page': String(current),

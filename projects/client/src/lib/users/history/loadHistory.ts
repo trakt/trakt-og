@@ -18,6 +18,7 @@ import {
   toShowsFromPlays,
   toWatchedShowCard,
 } from './toHistoryCard.ts';
+import { positiveInt } from '../../utils/positiveInt.ts';
 
 type Params = {
   fetch: typeof fetch;
@@ -40,11 +41,6 @@ const MAX_LIMIT = 250;
 // ponytail: the filtered Shows tab reads up to 2,000 plays and groups them by show. A long genre or Watch Now filter
 // on a heavy account only lists the shows among its 2,000 newest matching plays; page further if anyone notices.
 const MAX_PAGES = 8;
-
-const positiveInt = (value: string | null, fallback: number) => {
-  const parsed = Number.parseInt(value ?? '', 10);
-  return parsed > 0 ? parsed : fallback;
-};
 
 type Fetched = {
   status: number;

@@ -6,6 +6,7 @@ import { loadSubpageMedia } from '../subpage/loadSubpageMedia.ts';
 import type { SubpageItem } from '../subpage/SubpageItem.ts';
 import { commentLanguage } from './commentLanguage.ts';
 import { type ItemCommentSort, itemCommentSort } from './itemCommentSort.ts';
+import { positiveInt } from '../utils/positiveInt.ts';
 
 type Params = Omit<Parameters<typeof loadSubpageMedia>[0], 'suffix'> & {
   url: URL;
@@ -55,7 +56,7 @@ async function readComments({ fetch, item, sort, page, language }: {
  */
 export async function loadItemComments({ fetch, parent, item, url, sortBy }: Params) {
   const sort = itemCommentSort(sortBy, url.searchParams.get('sort_how'));
-  const page = Math.max(1, Number.parseInt(url.searchParams.get('page') ?? '', 10) || 1);
+  const page = positiveInt(url.searchParams.get('page'), 1);
   const language = commentLanguage(url.searchParams.get('language'));
   const [subpage, comments] = await Promise.all([
     loadSubpageMedia({ fetch, parent, item, suffix: 'comments' }),

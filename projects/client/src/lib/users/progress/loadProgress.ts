@@ -7,6 +7,7 @@ import type { ProgressOptions } from './ProgressOptions.ts';
 import { readProgressHide } from './progressHide.ts';
 import { progressSort } from './progressSort.ts';
 import { isProgressType, type ProgressType } from './progressTypes.ts';
+import { positiveInt } from '../../utils/positiveInt.ts';
 
 type Params = {
   locals: { token: string | null };
@@ -20,11 +21,6 @@ type Params = {
     settings: ViewerSettings | null;
     datePreferences: DatePreferences;
   }>;
-};
-
-const positiveInt = (value: string | null, fallback: number) => {
-  const parsed = Number.parseInt(value ?? '', 10);
-  return parsed > 0 ? parsed : fallback;
 };
 
 const signIn = (url: URL) => redirect(302, `/auth/signin?redirect_to=${encodeURIComponent(url.pathname + url.search)}`);

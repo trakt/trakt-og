@@ -6,6 +6,7 @@ import type { ProfileUser } from '../ProfileUser.ts';
 import { noteRowsSchema } from './noteRowsSchema.ts';
 import { noteTypes } from './noteTypes.ts';
 import { toNote } from './toNote.ts';
+import { positiveInt } from '../../utils/positiveInt.ts';
 
 type Params = {
   fetch: typeof fetch;
@@ -13,11 +14,6 @@ type Params = {
   locals: { token: string | null };
   params: { id: string; type?: string };
   url: URL;
-};
-
-const positiveInt = (value: string | null, fallback: number) => {
-  const parsed = Number.parseInt(value ?? '', 10);
-  return parsed > 0 ? parsed : fallback;
 };
 
 export async function loadNotes({ fetch, parent, locals, params, url }: Params) {

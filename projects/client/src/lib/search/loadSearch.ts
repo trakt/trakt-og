@@ -12,6 +12,7 @@ import { searchRowsSchema } from './searchRowsSchema.ts';
 import { searchFilters } from './searchFilters.ts';
 import { searchUsersSchema } from './searchUsersSchema.ts';
 import { toSearchUserCard } from './toSearchUserCard.ts';
+import { positiveInt } from '../utils/positiveInt.ts';
 
 type LoadSearchParams = {
   fetch: typeof fetch;
@@ -31,11 +32,6 @@ const PER_PAGE = 36;
 const EXTENDED = 'full,images';
 // Users come from API, where `full` brings the avatar and `vip` the cover.
 const USERS_EXTENDED = 'full,vip';
-
-function positiveInt(value: string | null, fallback: number): number {
-  const parsed = Number.parseInt(value ?? '', 10);
-  return parsed > 0 ? parsed : fallback;
-}
 
 // The tabs where a poster stands in for the title.
 const POSTER_TITLES = new Set(['', 'shows', 'movies']);

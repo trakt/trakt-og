@@ -13,6 +13,7 @@ import { libraryRowsSchema, libraryShowsSchema } from './libraryRowsSchema.ts';
 import { apiSortHow, type LibrarySort, librarySort } from './librarySort.ts';
 import { isLibrarySourceFilter, type LibrarySourceFilter, librarySources } from './librarySources.ts';
 import { type LibraryCard, toLibraryCard, toLibraryShowCard } from './toLibraryCard.ts';
+import { positiveInt } from '../../utils/positiveInt.ts';
 
 type Params = {
   fetch: typeof fetch;
@@ -28,11 +29,6 @@ type Range = { readonly startAt?: string; readonly endAt?: string };
 // OG's `per(params[:limit] || 60)`, capped at the worker's MAX_LIMIT.
 const PER_PAGE = 60;
 const MAX_LIMIT = 250;
-
-const positiveInt = (value: string | null, fallback: number) => {
-  const parsed = Number.parseInt(value ?? '', 10);
-  return parsed > 0 ? parsed : fallback;
-};
 
 type Fetched = { status: number; body: unknown; total: number; page: PageMeta };
 

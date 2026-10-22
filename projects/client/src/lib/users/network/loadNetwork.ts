@@ -10,6 +10,7 @@ import { toViewerRelation } from '../toViewerRelation.ts';
 import { networkRowsSchema } from './networkRowsSchema.ts';
 import { toNetworkExtras } from './toNetworkExtras.ts';
 import { type NetworkType, networkTypes } from './networkTypes.ts';
+import { positiveInt } from '../../utils/positiveInt.ts';
 
 type Params = {
   fetch: typeof fetch;
@@ -28,11 +29,6 @@ type Params = {
 
 /** OG's page size ( `per(54)`). */
 export const NETWORK_PAGE_SIZE = 54;
-
-const positiveInt = (value: string | null, fallback: number) => {
-  const parsed = Number.parseInt(value ?? '', 10);
-  return parsed > 0 ? parsed : fallback;
-};
 
 const isNetworkType = (value: string): value is NetworkType => Object.hasOwn(networkTypes, value);
 

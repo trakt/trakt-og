@@ -17,6 +17,7 @@ import { chartPageCount } from './chartPageCount.ts';
 import { type ChartPageRequest, chartPageRequests } from './chartPageRequests.ts';
 import { type ChartPageSize, chartPageSize } from './chartPageSize.ts';
 import { type ChartRow, toChartCard } from './toChartCard.ts';
+import { positiveInt } from '../utils/positiveInt.ts';
 
 export type MediaType = 'shows' | 'movies';
 
@@ -49,11 +50,6 @@ type Query = {
 const firstPage = ({ podium, grid }: ChartPageSize) => podium + grid;
 
 type Rows = { headers: Headers; rows: readonly ChartRow[] };
-
-function positiveInt(value: string | null, fallback: number): number {
-  const parsed = Number.parseInt(value ?? '', 10);
-  return parsed > 0 ? parsed : fallback;
-}
 
 type Client = ReturnType<typeof api>;
 

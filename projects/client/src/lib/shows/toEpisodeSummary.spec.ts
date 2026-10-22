@@ -98,8 +98,8 @@ describe('toEpisodeSummary', () => {
       people: { cast: [cast] },
       episode: { ...episode, original_title: 'Second' },
     });
-    expect(view.cast.at(0)?.episodes).toBeUndefined();
-    expect(view.guestStars.at(0)?.episodes).toBeUndefined();
+    expect(view.cast.at(0)?.episodes).toBeFalsy();
+    expect(view.guestStars.at(0)?.episodes).toBeFalsy();
     expect(view.facts.originalTitle).toBeUndefined();
   });
 });

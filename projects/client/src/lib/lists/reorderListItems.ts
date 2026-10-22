@@ -1,8 +1,6 @@
-import { z } from 'zod/v4';
+import { reorderResultSchema } from './reorderResultSchema.ts';
 import { listWriteError } from './listWriteError.ts';
 import { listItemsPath } from './listItemsPath.ts';
-
-const resultSchema = z.object({ updated: z.number().int().nonnegative(), skipped_ids: z.array(z.number()) });
 
 type Params = {
   /** The owner's slug: collaborators write to the owner's path too. */
@@ -24,7 +22,7 @@ export async function reorderListItems({ owner, listId, rank, request, notify, f
   let response: Response | undefined;
   try {
     response = await request(`${listItemsPath(owner, listId)}/reorder`, { rank });
-    if (response.ok && resultSchema.parse(await response.json()).skipped_ids.length === 0) return true;
+    if (response.ok && reorderResultSchema.parse(await response.json()).skipped_ids.length === 0) return true;
   } catch {
     // A network failure or an unexpected body gets the generic toast.
   }

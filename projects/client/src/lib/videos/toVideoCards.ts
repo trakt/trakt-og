@@ -1,6 +1,7 @@
 import type { VideoResponse } from '@trakt/api';
 import { youtubeId } from '../components/dialog/youtubeId.ts';
 import { isVideoType, type VideoTabId, type VideoType, videoTypes } from './videoTypes.ts';
+import { uniqueBy } from '../utils/uniqueBy.ts';
 
 export type VideoCard = {
   readonly title: string;
@@ -33,7 +34,7 @@ export function toVideoCards(videos: readonly VideoResponse[]): readonly VideoCa
   const cards = videos
     .toSorted((a, b) => b.published_at.localeCompare(a.published_at))
     .flatMap((video) => toVideoCard(video) ?? []);
-  return cards.filter((card, i) => cards.findIndex(({ href }) => href === card.href) === i);
+  return uniqueBy(cards, ({ href }) => href);
 }
 
 /** The type dropdowns' choices: All, then each type with videos in the dropdowns' order. One type needs no All. */

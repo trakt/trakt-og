@@ -1,6 +1,7 @@
 import type { CalendarShowResponse, ShowAnticipatedResponse } from '@trakt/api';
 import { dayIn } from '../calendars/calendarDays.ts';
 import { imageUrl } from '../utils/imageUrl.ts';
+import { uniqueBy } from '../utils/uniqueBy.ts';
 
 /** An upcoming premiere: a new series or a returning season, and how anticipated it is. */
 export type Premiere = {
@@ -83,7 +84,6 @@ export function toPremieres({ premieres, anticipated, now, until, timeZone }: Pr
   const all = [...fromFeed, ...fromAnticipated]
     .filter((premiere) => new Date(premiere.at) > now && premiere.fanart);
   const score = (premiere: Premiere) => premiere.lists ?? premiere.votes;
-  return all
-    .filter((premiere, index) => all.findIndex(({ key }) => key === premiere.key) === index)
+  return uniqueBy(all, ({ key }) => key)
     .toSorted((a, b) => score(b) - score(a));
 }

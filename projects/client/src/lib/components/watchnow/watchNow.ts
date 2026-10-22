@@ -1,4 +1,5 @@
 import type { CountryOffers, Offer, WatchNowOffers, WatchNowSources } from './watchNowSchema.ts';
+import { uniqueBy } from '../../utils/uniqueBy.ts';
 
 /** One country's offers from `/watchnow/:country`. */
 export type Offers = CountryOffers;
@@ -191,9 +192,7 @@ type WatchNowSectionsParams = {
 export function toWatchNowSections({ offers, sources, favorites }: WatchNowSectionsParams): WatchNowSection[] {
   const byType = OFFER_TYPES.map((type) => ({
     type,
-    offers: (offers?.[type] ?? []).filter(
-      (offer, index, rows) => rows.findIndex((row) => row.source === offer.source) === index,
-    ),
+    offers: uniqueBy(offers?.[type] ?? [], ({ source }) => source),
   }));
   const lowest = lowestPrices(byType.find(({ type }) => type === 'purchase')?.offers ?? []);
   const link = (type: OfferType, offer: Offer) => {

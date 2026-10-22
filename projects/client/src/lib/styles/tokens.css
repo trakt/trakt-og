@@ -221,7 +221,7 @@
   --space-base-block: 6px;
   --space-heading-dropdowns: 8px; /* a panel or section heading to the row of dropdowns under it */
   --space-heading-rule: 2px; /* a heading to the divider line under it, like the history's days */
-  --space-dropdown-row: var(--space-base-block); /* between the dropdowns in that row; an action button keeps --toolbar-gap */
+  --space-dropdown-row: var(--toolbar-gap); /* between the dropdowns, chips and count buttons in a row, as in the toolbar */
   --space-base-inline: 12px;
   --space-lg-block: 10px;
   --space-lg-inline: 16px;
@@ -2272,7 +2272,7 @@
 
   /* Comments: the text in a bubble, tinted tags top right like a list row's chips, and a stats bar under it. */
   --color-comment-bubble-border: var(--color-list-card-border);
-  --comment-stats-gap: 8px 14px;
+  --comment-stats-gap: 8px var(--space-dropdown-row);
   --list-counts-gap: var(--comment-stats-gap); /* a list's count buttons, spaced like a comment's */
   --comment-stats-space: 12px; /* between the bubble and the stats bar */
   --comment-tags-gap: 10px;

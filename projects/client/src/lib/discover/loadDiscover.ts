@@ -157,24 +157,29 @@ async function premieres(
 
 /**
  * Loads `/discover`, Seasons & Moods, for SSR. Today's theme comes from the month map in the viewer's time zone, so
- * the layout data comes first. Everything is public and goes without the viewer's token. These routes have no
+ * the themed reads wait for the layout data. Everything is public and goes without the viewer's token. These routes have no
  * `@trakt/api` contract with filters or images, so each is parsed here. The premieres use the typed client. Any
  * call failing only hides its part.
  */
 export async function loadDiscover({ fetch, parent, now = new Date() }: LoadDiscoverParams) {
-  const { datePreferences } = await parent();
-  const today = dayIn(now.toISOString(), datePreferences.timeZone);
-  const theme = themeFor(DISCOVER_THEMES, today);
-  if (!theme) error(500, 'The month map has no theme for today.');
-
-  const [picks, movieMoods, showMoods, staples, lists, comments, upcoming] = await Promise.all([
-    seasonPicks(fetch, theme, now),
+  // The moods, essentials and comments don't depend on the day, so they start before the layout's settings call ends.
+  // None of them reject: a failed call resolves to its section's empty fallback.
+  const timeless = Promise.all([
     Promise.all(DISCOVER_MOODS.map((mood) => moodShelf(fetch, mood, 'movie', now))),
     Promise.all(DISCOVER_MOODS.map((mood) => moodShelf(fetch, mood, 'show', now))),
     essentials(fetch),
-    themeLists(fetch, theme),
     fetchTrendingComments({ fetch, kind: 'all', media: 'all', now }),
+  ]);
+  const { datePreferences } = await parent();
+  const today = dayIn(now, datePreferences.timeZone);
+  const theme = themeFor(DISCOVER_THEMES, today);
+  if (!theme) error(500, 'The month map has no theme for today.');
+
+  const [picks, lists, upcoming, [movieMoods, showMoods, staples, comments]] = await Promise.all([
+    seasonPicks(fetch, theme, now),
+    themeLists(fetch, theme),
     premieres(fetch, { today, now, timeZone: datePreferences.timeZone }),
+    timeless,
   ]);
   // Each type's moods, the season's first; moods with nothing for the type are left out.
   const shelves = (type: MediaType, moods: readonly MoodShelf[]): MoodShelf[] =>

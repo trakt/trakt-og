@@ -1,4 +1,5 @@
 import type { StripCount } from './StripCount.ts';
+import { capitalize } from '../../utils/capitalize.ts';
 
 /** Which icon and color a count takes on the ratings strip. */
 export type StripStatKind = 'watchers' | 'plays' | 'libraries' | 'lists' | 'comments' | 'favorited';
@@ -34,8 +35,6 @@ const KINDS: Readonly<Record<string, StripStatKind>> = {
 };
 
 const ORDER: readonly StripStatKind[] = ['watchers', 'plays', 'libraries', 'lists', 'comments'];
-
-const capitalize = (text: string) => `${text.charAt(0).toUpperCase()}${text.slice(1)}`;
 
 /**
  * The summary pages label their counts in OG's words ("watcher" or "watchers"); this reads the kind from that label,

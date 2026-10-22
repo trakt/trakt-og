@@ -20,12 +20,13 @@ import check from '$lib/icons/trakt/check-thick.svg?raw';
 import collection from '$lib/icons/trakt/collection-thick.svg?raw';
 import user from '$lib/icons/trakt/user.svg?raw';
 import type { NoteView } from '$lib/users/notes/NoteView';
+import { capitalize } from '../../utils/capitalize.ts';
 
 const { note, manage }: { note: NoteView; manage?: Snippet } = $props();
 
 const activityIcons = { history: check, collection, rating: heart };
 const mediaIcons = { movie: cameraMovie, show: tvRetro, season: tvRetro, episode: tvRetro, person: user };
-const mediaLabel = $derived(note.item.type.charAt(0).toUpperCase() + note.item.type.slice(1));
+const mediaLabel = $derived(capitalize(note.item.type));
 // "Watched", "Collected" or "Rated 9", bold before the date.
 const activityLabel = $derived.by(() => {
   const activity = note.activity;

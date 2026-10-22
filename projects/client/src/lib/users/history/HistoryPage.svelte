@@ -34,6 +34,7 @@ import { genresFor, historyTypes } from './historyTypes.ts';
 import type { loadHistory } from './loadHistory.ts';
 import type { HistoryCard } from './toHistoryCard.ts';
 import { watchNowCountry } from '../../settings/watchNowCountry.ts';
+import { capitalize } from '../../utils/capitalize.ts';
 
 type Props = {
   data: Awaited<ReturnType<typeof loadHistory>> & {
@@ -60,7 +61,6 @@ const title = $derived(`${data.profile.displayName}'s ${metaType} watched histor
 const genres = $derived(genresFor(data.type));
 const base = $derived(`/users/${data.profile.slug}/history`);
 const plural = (count: number, word: string) => `${word}${count === 1 ? '' : 's'}`;
-const titleCase = (word: string) => word.charAt(0).toUpperCase() + word.slice(1);
 
 // OG's `link_params`: the query string without the page, and without the genre when the type changes.
 function href(type: string, changes: Record<string, string | null>) {
@@ -150,7 +150,7 @@ const country = $derived(watchNowCountry(data.settings));
     <span class="counts">
       {#if data.counts.unique}
         {@const { count, noun } = data.counts.unique}
-        <SubnavCount svg={file} {count} {noun} tooltip={titleCase(`${noun}s`)} />
+        <SubnavCount svg={file} {count} {noun} tooltip={capitalize(`${noun}s`)} />
       {/if}
       {#if data.counts.plays !== undefined}
         <SubnavCount svg={check} count={data.counts.plays} noun="play" tooltip={plural(data.counts.plays, 'Play')}

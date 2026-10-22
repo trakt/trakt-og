@@ -23,6 +23,7 @@ import ProfileBoxStrip from '$lib/users/profile/boxes/ProfileBoxStrip.svelte';
 import type { ProfileUser } from '$lib/users/ProfileUser';
 import type { loadProfile } from './loadProfile.ts';
 import type { WatchedCard } from './toProfileSummary.ts';
+import { capitalize } from '../../utils/capitalize.ts';
 
 type Props = {
   data: Awaited<ReturnType<typeof loadProfile>> & {
@@ -42,9 +43,7 @@ const description = $derived(
 
 // OG's `.user-first-name.titlecase`, which its JS swapped for "You" on your own profile (users.js:127-140).
 const hasnt = (rest: string) =>
-  data.isSelf
-    ? `You haven't ${rest}`
-    : `${data.profile.firstName.charAt(0).toUpperCase()}${data.profile.firstName.slice(1)} hasn't ${rest}`;
+  data.isSelf ? `You haven't ${rest}` : `${capitalize(data.profile.firstName)} hasn't ${rest}`;
 </script>
 
 <svelte:head>

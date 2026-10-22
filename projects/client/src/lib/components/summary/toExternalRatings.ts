@@ -1,5 +1,6 @@
 import type { RatingsResponse } from '@trakt/api';
 import type { ExternalRating } from './ExternalRating.ts';
+import { capitalize } from '../../utils/capitalize.ts';
 
 /** The JustWatch 30-day rank from `/watchnow/:country?extended=streaming_ranks`. */
 export interface StreamingRank {
@@ -42,7 +43,6 @@ function rankChange(delta?: number | null): ExternalRating['change'] {
   return { text: `${delta < 0 ? '' : '+'}${delta.toLocaleString('en-US')}`, trend: delta < 0 ? 'down' : 'up' };
 }
 
-const capitalize = (text: string) => `${text.charAt(0).toUpperCase()}${text.slice(1)}`;
 const votes = (count?: number | null) => `${(count ?? 0).toLocaleString('en-US')} ${count === 1 ? 'vote' : 'votes'}`;
 
 /**

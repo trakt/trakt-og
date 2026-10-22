@@ -7,6 +7,7 @@ import type { DashboardSettings } from './DashboardSettings.ts';
 import { fetchSeasonPosters } from './fetchSeasonPosters.ts';
 import { fetchUpNextTicks } from './fetchUpNext.ts';
 import { toDashboardSettings } from './toDashboardSettings.ts';
+import { capitalize } from '../utils/capitalize.ts';
 
 async function findEntry(client: ReturnType<typeof api>, id: number, page = 1): Promise<UpNextEntry | undefined> {
   const response = await client.sync.progress.upNext.standard({
@@ -64,9 +65,7 @@ export async function fetchOnDeckItem(
     ...item,
     complete: true,
     ticks: settings.simpleProgress ? undefined : Array.from({ length: progress.body.aired }, () => true),
-    completionLabel: status === 'ended' || status === 'canceled'
-      ? status.charAt(0).toUpperCase() + status.slice(1)
-      : 'Returns next season!',
+    completionLabel: status === 'ended' || status === 'canceled' ? capitalize(status) : 'Returns next season!',
     progress: {
       aired: progress.body.aired,
       completed: progress.body.aired,

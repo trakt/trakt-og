@@ -12,6 +12,7 @@ import { imageUrl } from '../../utils/imageUrl.ts';
 import { relativeDate } from '../../utils/relativeDate.ts';
 import type { ProgressItem } from './ProgressItem.ts';
 import { type ProgressSeason, toProgressSeasons } from './toProgressSeasons.ts';
+import { capitalize } from '../../utils/capitalize.ts';
 
 type Tag = NonNullable<ComponentProps<typeof FanartCard>['tags']>[number];
 
@@ -159,7 +160,7 @@ export function toProgressRow(params: ToProgressRowParams): ProgressRow {
     href,
     poster: imageUrl(show.poster, 'thumb'),
     fanart: imageUrl(show.fanart, 'medium'),
-    status: show.status && show.status.charAt(0).toUpperCase() + show.status.slice(1),
+    status: show.status && capitalize(show.status),
     rating: show.rating,
     percent: progressPercent(item),
     ticks: episodeStates.length > 0 ? tickRuns(episodeStates) : countRuns(item.completed, item.aired),

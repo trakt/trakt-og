@@ -1,3 +1,4 @@
+import { capitalize } from '../../utils/capitalize.ts';
 /** OG's progress sort options, in its order. */
 export const progressSorts = {
   added: 'Activity Date',
@@ -86,8 +87,7 @@ export function literalProgressSort(
   return { by: sortBy, how: sortHow === 'asc' ? 'desc' : 'asc' };
 }
 
-const titleCase = (value: string) =>
-  value.split('-').map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+const titleCase = (value: string) => value.split('-').map(capitalize).join(' ');
 
 /** A sort's dropdown label. Activity Date reads "Watched Date", as OG's Watched tab did. */
 export function progressSortLabel(by: string): string {

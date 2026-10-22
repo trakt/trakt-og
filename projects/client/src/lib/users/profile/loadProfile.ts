@@ -84,6 +84,10 @@ async function fetchSections(
   };
 }
 
+/** Your saved favorites order on your own profile; everyone else's favorites come in random order. */
+const favoritesSortOf = (isSelf: boolean, settings: unknown): FavoritesSort =>
+  (isSelf ? toPanelSettings(settings).profile.favorites : null) ?? RANDOM;
+
 /**
  * The profile page under the frame: the stat boxes or the welcome hero, favorites, the
  * recently watched rows, the genre and ratings charts, the most watched columns and the newest comments. Public reads
@@ -94,10 +98,20 @@ async function fetchSections(
 export async function loadProfile({ fetch, locals, params, parent, now = new Date() }: Params) {
   // The boxes' extra requests start as soon as the frame says which ones could pay off, alongside the sections.
   const frame = parent();
-  const [anonymous, { profile, stats, isSelf, datePreferences, settings }, boxes] = await Promise.all([
+  const token = locals.token;
+  // Your own favorites in a saved order only need the frame, so they don't wait for the public sections.
+  const ownFavoritesRead = frame.then(({ profile, isSelf, settings }) => {
+    const sort = favoritesSortOf(isSelf, settings);
+    const saved = sort.sort_by !== RANDOM.sort_by || sort.sort_how !== RANDOM.sort_how;
+    return saved && !profile.isLocked && !profile.isPrivate && token
+      ? fetchFavorites(api({ fetch, token }), params.id, sort)
+      : null;
+  });
+  const [anonymous, { profile, stats, isSelf, datePreferences, settings }, boxes, ownFavorites] = await Promise.all([
     fetchSections({ fetch }, params.id, now),
     frame,
-    frame.then((data) => startBoxes(data, { fetch, token: locals.token, id: params.id })),
+    frame.then((data) => startBoxes(data, { fetch, token, id: params.id })),
+    ownFavoritesRead,
   ]);
 
   if (profile.isLocked) {
@@ -114,13 +128,9 @@ export async function loadProfile({ fetch, locals, params, parent, now = new Dat
   }
 
   const prefs = isSelf ? toPanelSettings(settings).profile : null;
-  const favoritesSort: FavoritesSort = prefs?.favorites ?? RANDOM;
-  const saved = favoritesSort.sort_by !== RANDOM.sort_by || favoritesSort.sort_how !== RANDOM.sort_how;
-  const token = locals.token;
-  const [sections, ownFavorites] = await Promise.all([
-    profile.isPrivate ? fetchSections({ fetch, token }, params.id, now, favoritesSort) : anonymous,
-    saved && !profile.isPrivate && token ? fetchFavorites(api({ fetch, token }), params.id, favoritesSort) : null,
-  ]);
+  const sections = profile.isPrivate
+    ? await fetchSections({ fetch, token }, params.id, now, favoritesSortOf(isSelf, settings))
+    : anonymous;
   const episodes = sections.episodes.status === 200 ? sections.episodes.body : [];
   const movies = sections.movies.status === 200 ? sections.movies.body : [];
   // A saved order the worker refused, or a stale token, keeps the random ones.
@@ -129,9 +139,9 @@ export async function loadProfile({ fetch, locals, params, parent, now = new Dat
   const comments: readonly UserCommentRow[] = sections.comments.status === 200 ? sections.comments.body : [];
   const watchlist = sections.watchlist.status === 200 ? sections.watchlist : null;
 
-  return {
-    boxes: boxes
-      ? await toProfileBoxes({
+  const [profileBoxes, topShows] = await Promise.all([
+    boxes
+      ? toProfileBoxes({
         ...boxes.frame,
         today: boxMath.utcDay(now),
         latest: { episode: episodes.at(0), movie: movies.at(0) },
@@ -144,6 +154,11 @@ export async function loadProfile({ fetch, locals, params, parent, now = new Dat
         genres: sections.charts.genres,
       }, boxes.extras)
       : null,
+    withTopShowPosters(fetch, sections.charts.shows, prefs?.most_watched_shows),
+  ]);
+
+  return {
+    boxes: profileBoxes,
     welcome: isSelf && stats !== null && !hasActivity(stats),
     favorites: favorites.map(toFavoriteCard),
     episodes: episodes.map((row) => toWatchedEpisode(row, datePreferences)),
@@ -168,7 +183,7 @@ export async function loadProfile({ fetch, locals, params, parent, now = new Dat
     mostWatched: {
       shows: toMostWatched('shows', {
         history: sections.recent.episodes,
-        watched: await withTopShowPosters(fetch, sections.charts.shows, prefs?.most_watched_shows),
+        watched: topShows,
         prefs: prefs?.most_watched_shows,
       }),
       movies: toMostWatched('movies', {

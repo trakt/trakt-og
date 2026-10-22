@@ -9,6 +9,7 @@ import { countLabel } from '../utils/countLabel.ts';
 import { toCommunityStats } from './toCommunityStats.ts';
 import type { letterboxdSchema } from './letterboxdSchema.ts';
 import { toSiteScores } from './toSiteScores.ts';
+import { ratingPercent } from '../utils/ratingPercent.ts';
 
 type Params = {
   media: SubpageMedia;
@@ -81,7 +82,7 @@ export function toMediaStats({ media, ratings, letterboxd, stats, rank, otherSit
   const trakt = released ? ratings.trakt ?? ratings : {};
   const value = trakt.rating ?? 0;
   const votes = trakt.votes ?? 0;
-  const percent = Math.trunc(value * 10);
+  const percent = ratingPercent(value);
   const type = media.item.type;
   if (type === 'list') throw new Error('Lists have no ratings');
   const favorites = type === 'movie' || type === 'show';

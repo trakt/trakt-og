@@ -9,6 +9,7 @@ import { formatRuntime } from '../utils/formatRuntime.ts';
 import { imageUrl } from '../utils/imageUrl.ts';
 import type { SeasonWithEpisodes } from './loadShow.ts';
 import { seasonName } from '../utils/seasonName.ts';
+import { ratingPercent } from '../utils/ratingPercent.ts';
 
 interface ShowEpisodesParams {
   show: ShowResponse;
@@ -59,7 +60,7 @@ const sortKey: Record<Exclude<EpisodeSort, (typeof statSorts)[number]['by']>, (r
   aired: (row) => row.airedAt ?? -Infinity,
   number: (row) => row.season * 10_000 + row.episode,
   // OG sorted on the integer percentage.
-  percentage: (row) => Math.trunc(row.rating * 10),
+  percentage: (row) => ratingPercent(row.rating),
   votes: (row) => row.votes,
 };
 

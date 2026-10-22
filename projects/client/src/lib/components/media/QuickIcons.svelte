@@ -40,6 +40,7 @@ import SummaryActionMenu from '$lib/components/summary/SummaryActionMenu.svelte'
 import ellipsis from '$lib/icons/regular/ellipsis.svg?raw';
 import circleMinus from '$lib/icons/light/circle-minus.svg?raw';
 import lightBackward from '$lib/icons/light/backward.svg?raw';
+import { ratingPercent } from '../../utils/ratingPercent.ts';
 
 interface Props {
   fill: QuickIconFill;
@@ -264,11 +265,11 @@ const ratingLevel = $derived(rating === undefined ? 1 : Math.min(Math.max(Math.t
     {#if ratingTarget}
       <MediaRating target={ratingTarget}>
         {#snippet trigger()}
-          <span class="percentage"><span class="heart" style:color="var(--rating-{ratingLevel})"><Icon svg={heart} /></span><span class="value">{Math.trunc(rating * 10)}%</span></span>
+          <span class="percentage"><span class="heart" style:color="var(--rating-{ratingLevel})"><Icon svg={heart} /></span><span class="value">{ratingPercent(rating)}%</span></span>
         {/snippet}
       </MediaRating>
     {:else}
-      <p class="percentage"><span class="heart" style:color="var(--rating-{ratingLevel})"><Icon svg={heart} /></span><span class="value">{Math.trunc(rating * 10)}%</span></p>
+      <p class="percentage"><span class="heart" style:color="var(--rating-{ratingLevel})"><Icon svg={heart} /></span><span class="value">{ratingPercent(rating)}%</span></p>
     {/if}
     </MediaSpoiler>
   {/if}

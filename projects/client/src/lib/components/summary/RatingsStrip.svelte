@@ -27,6 +27,7 @@ import { externalRatingLogos as logos } from './externalRatingLogos.ts';
 import type { StripCount } from './StripCount.ts';
 import { stripStatIcons as icons } from './stripStatIcons.ts';
 import { type StripStat, stripStats } from './stripStats.ts';
+import { ratingPercent } from '../../utils/ratingPercent.ts';
 
 interface Props {
   /** The Trakt rating, 0 to 10. Left out, the rating is hidden (OG hid it before release). */
@@ -44,7 +45,7 @@ interface Props {
 const { rating, rateLabel, ratingTarget, external = [], counts = [], statsHref }: Props = $props();
 
 // OG truncated instead of rounding, so 79.9% reads 79%.
-const percent = $derived(rating ? Math.trunc(rating.value * 10) : 0);
+const percent = $derived(rating ? ratingPercent(rating.value) : 0);
 const level = $derived(rating ? Math.min(Math.trunc(rating.value), 10) : 0);
 const votes = $derived(
   rating ? `${rating.votes.toLocaleString('en-US')} ${rating.votes === 1 ? 'vote' : 'votes'}` : '',

@@ -18,6 +18,7 @@ import { imageUrl } from '../utils/imageUrl.ts';
 import type { SeasonWithEpisodes, ShowPeople } from './loadShow.ts';
 import { toCrewGroups } from '../components/summary/toCrewGroups.ts';
 import { seasonName } from '../utils/seasonName.ts';
+import { ratingPercent } from '../utils/ratingPercent.ts';
 
 type Tag = NonNullable<ComponentProps<typeof FanartCard>['tags']>[number];
 
@@ -320,7 +321,7 @@ export type SeasonSort = (typeof SEASON_SORTS)[number]['by'];
 const sortKey: Record<Exclude<SeasonSort, (typeof statSorts)[number]['by']>, (card: SeasonCard) => number> = {
   number: (card) => card.number,
   // OG sorted on the integer percentage.
-  percentage: (card) => Math.trunc(card.rating * 10),
+  percentage: (card) => ratingPercent(card.rating),
   votes: (card) => card.votes,
 };
 

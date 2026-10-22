@@ -22,7 +22,7 @@ const { title, id, more, actions, ruled = false }: Props = $props();
 <div class={['heading', { ruled }]}>
   <h2 {id}>{title}</h2>
   {#if actions}<span class="actions">{@render actions()}</span>{/if}
-  {#if more}<SeeMore href={more.href} text={more.text} />{/if}
+  {#if more}<span class="more"><SeeMore href={more.href} text={more.text} /></span>{/if}
 </div>
 
 <style>
@@ -45,5 +45,10 @@ const { title, id, more, actions, ruled = false }: Props = $props();
 
 .actions {
   margin-inline-start: auto;
+}
+
+/* The link's tall line hangs below the title without making the row taller, so what's under it spaces from the h2. */
+.more {
+  margin-block-end: -1lh;
 }
 </style>

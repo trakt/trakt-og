@@ -7,10 +7,10 @@
 import VideoPopup from '$lib/components/dialog/VideoPopup.svelte';
 import { videoLinkClicks } from '$lib/components/dialog/videoLinkClicks';
 import VideoFanartCard from '$lib/components/media/VideoFanartCard.svelte';
-import SeeMore from '$lib/components/see-more/SeeMore.svelte';
 import { defaultVideoTab, toVideoTabs, type VideoCard } from '$lib/videos/toVideoCards';
 import VideoTypeDropdown from '$lib/videos/VideoTypeDropdown.svelte';
 import { videosHref, type VideoTabId } from '$lib/videos/videoTypes';
+import SectionHeading from './SectionHeading.svelte';
 
 interface Props {
   videos: readonly VideoCard[];
@@ -29,10 +29,8 @@ const playingTitle = $derived(videos.find((video) => video.href === playing)?.ti
 
 {#if current}
   <div class="videos">
-  <div class="heading">
-    <h2>Videos</h2>
-    <SeeMore href={videosHref(href, current === fallback ? undefined : current.id)} text="All Videos" />
-  </div>
+  <SectionHeading title="Videos"
+    more={{ href: videosHref(href, current === fallback ? undefined : current.id), text: 'All Videos' }} />
   <div class="controls">
     <VideoTypeDropdown {tabs} {current} onpick={(id) => (picked = id)} />
   </div>
@@ -53,17 +51,6 @@ const playingTitle = $derived(videos.find((video) => video.href === playing)?.ti
 <style>
 .videos {
   container-type: inline-size;
-}
-
-.heading {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  margin-block-start: var(--gutter);
-
-  & h2 {
-    margin: 0;
-  }
 }
 
 .controls {

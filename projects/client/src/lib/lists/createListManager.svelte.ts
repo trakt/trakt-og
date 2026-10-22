@@ -7,6 +7,7 @@ import { rawApiFetch } from '../api/rawApiFetch.ts';
 import { authenticatedFetch } from '../auth/authenticatedFetch.ts';
 import { userManager } from '../auth/userManager.ts';
 import { toast } from '../components/toast/toast.svelte.ts';
+import { countLabel } from '../utils/countLabel.ts';
 import { fetchListItemRefs } from './fetchListItemRefs.ts';
 import type { ListQuery } from './ListQuery.ts';
 import { moveListItem } from './moveListItem.ts';
@@ -273,7 +274,7 @@ export function createListManager(source: () => Source, isBlocked: () => boolean
         if (!await removeListItems({ owner, listId, items: refs, request: request('POST'), notify: toast })) return;
         managing = false;
         toast.success(
-          `Deleted ${refs.length.toLocaleString('en-US')} item${refs.length === 1 ? '' : 's'} from ${list.name}!`,
+          `Deleted ${countLabel(refs.length, 'item')} from ${list.name}!`,
         );
         await goto(resolve('/users/[id]/lists/[list]', { id: list.ownerSlug, list: list.slug }), {
           invalidateAll: true,

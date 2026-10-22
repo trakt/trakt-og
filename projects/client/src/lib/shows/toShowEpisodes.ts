@@ -65,7 +65,10 @@ const sortKey: Record<Exclude<EpisodeSort, (typeof statSorts)[number]['by']>, (r
 const byAir = (a: EpisodeRow, b: EpisodeRow) =>
   sortKey.aired(a) - sortKey.aired(b) || a.season - b.season || a.episode - b.episode;
 
-/** The rows in `by` order; `flipped` is the direction toggle. Ties fall back to air order. */
+/**
+ * The rows in `by` order; `flipped` is the direction toggle. Ties fall back to air order, except on air date itself,
+ * where episodes that dropped at once keep their number order in the chosen direction.
+ */
 export function sortEpisodes({ rows, by, flipped, stats = new Map() }: {
   rows: readonly EpisodeRow[];
   by: EpisodeSort;
@@ -79,7 +82,8 @@ export function sortEpisodes({ rows, by, flipped, stats = new Map() }: {
     const local = by as keyof typeof sortKey;
     return sortKey[local](row);
   };
-  return rows.toSorted((a, b) => (desc ? key(b) - key(a) : key(a) - key(b)) || byAir(a, b));
+  const compare = (a: EpisodeRow, b: EpisodeRow) => (by === 'aired' ? byAir(a, b) : key(a) - key(b));
+  return rows.toSorted((a, b) => (desc ? compare(b, a) : compare(a, b)) || byAir(a, b));
 }
 
 /** "2008 - 2010" from the first and last air years, "2008" for one, undefined without dates. */

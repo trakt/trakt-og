@@ -15,9 +15,11 @@ import { traktUrls } from '$lib/traktUrls';
 interface Props {
   terms: string;
   vip: boolean;
+  /** What the term matches, under the panel's title. */
+  help?: string;
 }
 
-let { terms = $bindable(), vip }: Props = $props();
+let { terms = $bindable(), vip, help = 'Only display items with a title matching your search term.' }: Props = $props();
 let draft = $state('');
 let popover = $state<ReturnType<typeof FilterPopover>>();
 
@@ -47,7 +49,7 @@ function onkeydown(event: KeyboardEvent) {
 
 {#if vip}
   <FilterPopover bind:this={popover} svg={search} label="Filter by title" tooltip="Filter by Title" title="Search terms"
-  help="Only display items with a title matching your search term." active={Boolean(terms)}
+  {help} active={Boolean(terms)}
   clearable={Boolean(terms)} onopen={() => (draft = terms)} onapply={apply} onclear={clear}>
   <label class="panel-field">
     <Icon svg={search} />

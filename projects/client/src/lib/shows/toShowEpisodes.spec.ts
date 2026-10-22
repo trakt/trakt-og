@@ -143,4 +143,16 @@ describe('sortEpisodes', () => {
   it('should flip air date to newest first', () => {
     expect(numbers('aired', true)).toEqual(['2x01', '1x02', '1x01', 'Special 1']);
   });
+
+  it('should flip a season that dropped at once, last episode first', () => {
+    const drop = '2025-10-15T07:00:00.000Z';
+    const { rows: dropped } = toShowEpisodes({
+      ...base,
+      seasons: [season(1, [episode(1, 1, drop), episode(1, 2, drop), episode(1, 3, drop)])],
+    });
+    const aired = (flipped: boolean) =>
+      sortEpisodes({ rows: dropped, by: 'aired', flipped }).map(({ number }) => number);
+    expect(aired(false)).toEqual(['1x01', '1x02', '1x03']);
+    expect(aired(true)).toEqual(['1x03', '1x02', '1x01']);
+  });
 });

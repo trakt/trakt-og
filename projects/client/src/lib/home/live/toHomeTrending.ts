@@ -17,10 +17,10 @@ export type HomeTrendingTitle = {
   readonly type: HomeMediaType;
   readonly slug: string;
   readonly title: string;
-  readonly year: number | undefined;
+  readonly year?: number;
   readonly href: string;
   /** Undefined when the title has no poster; the card shows the placeholder. */
-  readonly poster: string | undefined;
+  readonly poster?: string;
 };
 
 /** Trending rows as the home page's posters, and the titles whose watchers fill the map. */

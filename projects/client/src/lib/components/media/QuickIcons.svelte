@@ -72,9 +72,10 @@ interface Props {
   /**
    * On by default: every bar gets a watch-now icon that opens the page's Watch Now dialog, for the first target it can
    * find the item's API path from (a season or episode needs its show and number); with none, there's no icon.
-   * `cinema` swaps the play icon for a ticket, for movies only in cinemas.
+   * `cinema` swaps the play icon for a ticket, for movies only in cinemas. `false` leaves it out, beside a Watch now
+   * button of its own (the chart hero).
    */
-  watchNow?: 'play' | 'cinema';
+  watchNow?: 'play' | 'cinema' | false;
   /** The card's fanart, for the Watch Now dialog's header. Left out, the dialog fetches the item's own. */
   watchNowArt?: string;
   /** What Watch Now opens, for a bar with no other target to find it from (a profile's history, a comment's poster). */

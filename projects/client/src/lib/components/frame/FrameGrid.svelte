@@ -6,13 +6,16 @@
   The other variants are the search grids, none with wide cards. `poster` is
   the default image type: two a row, then four, six from a 1200px viewport and twelve from 2000px. `uniform` is the
   fanart columns, for the Users tab and the thumb, screenshot, fanart and logo image types. `banner` is one a row, two
-  from a 992px viewport and three from 1600px.
+  from a 992px viewport and three from 1600px. `framed` is the charts' grid of framed cards, with the page's gutter
+  between and around them instead of separators: one a row, then two, three and four, each wide enough for its full
+  quick-icon bar.
 -->
 <script lang="ts">
 import type { Snippet } from 'svelte';
 
-const { children, variant = 'fanart' }: { children: Snippet; variant?: 'fanart' | 'poster' | 'uniform' | 'banner' } =
-  $props();
+type Variant = 'fanart' | 'poster' | 'uniform' | 'banner' | 'framed';
+
+const { children, variant = 'fanart' }: { children: Snippet; variant?: Variant } = $props();
 </script>
 
 <div class="frame-grid-frame">
@@ -65,6 +68,35 @@ const { children, variant = 'fanart' }: { children: Snippet; variant?: 'fanart' 
 /* OG's col-sm-6 col-md-4 col-xlg-3: the fanart columns, every card the same width. */
 .frame-grid.uniform {
   --span-wide: var(--span);
+}
+
+.frame-grid.framed {
+  --span: 12;
+  --span-wide: var(--span);
+  gap: var(--gutter);
+  padding: var(--gutter);
+
+  & > :global(*) {
+    border: 0;
+  }
+}
+
+@container (width >= 560px) {
+  .frame-grid.framed {
+    --span: 6;
+  }
+}
+
+@container (width >= 860px) {
+  .frame-grid.framed {
+    --span: 4;
+  }
+}
+
+@container (width >= 1300px) {
+  .frame-grid.framed {
+    --span: 3;
+  }
 }
 
 /* OG's col-md-6 col-xlg-4, as frame widths. */

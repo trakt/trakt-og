@@ -40,7 +40,7 @@ const redirectOf = (promise: Promise<unknown>) =>
   promise.then(() => null, (thrown: unknown) => (isRedirect(thrown) ? thrown.location : thrown));
 
 describe('loadChart recommendations', () => {
-  it('should ask for 38 with the token and ignore paging, like OG', async () => {
+  it("should ask for page 1's two large cards and grid with the token and ignore paging", async () => {
     const data = await recommendations('fake-token');
 
     const request = seen.at(0);
@@ -258,5 +258,57 @@ describe('loadChart advanced filters', () => {
     expect(data.watchNowCountry).toBe('gb');
     expect(data.watchNowFavorites).toEqual(['netflix']);
     expect([...(data.filterSources?.keys() ?? [])]).toEqual(['netflix']);
+  });
+});
+
+describe('loadChart pages', () => {
+  const popular = (search: string) =>
+    loadChart({
+      fetch: globalThis.fetch,
+      token: null,
+      cookies: { get: () => undefined },
+      parent: () => Promise.resolve({ datePreferences: { order: 'mdy' }, settings: null }),
+      url: new URL(`https://og.test/shows/popular${search}`),
+      type: 'shows',
+      chart: 'popular',
+    });
+  // A chart of 738 shows, each titled by its place.
+  const chart = () =>
+    http.get('https://apiz.trakt.tv/shows/popular', ({ request }) => {
+      seen.push(request);
+      const params = new URL(request.url).searchParams;
+      const [page, limit] = [Number(params.get('page')), Number(params.get('limit'))];
+      const rows = Array.from({ length: limit }, (_, i) => {
+        const place = (page - 1) * limit + i + 1;
+        return { ...SHOW, title: `#${place}`, ids: { trakt: place, slug: `show-${place}` } };
+      });
+      return HttpResponse.json(rows, {
+        headers: { 'X-Pagination-Page': `${page}`, 'X-Pagination-Page-Count': '20', 'X-Pagination-Item-Count': '738' },
+      });
+    });
+
+  it('should give page 1 its two large cards and a grid of 36', async () => {
+    server.use(chart());
+    const data = await popular('');
+
+    expect(data.cards.map((card) => card.title)).toEqual(Array.from({ length: 38 }, (_, i) => `#${i + 1}`));
+    expect(data.page).toEqual({ type: 'paginated', current: 1, total: 21 });
+  });
+
+  it('should fill page 2 with #39 to #74 from two API pages', async () => {
+    server.use(chart());
+    const data = await popular('?page=2');
+
+    expect(data.cards.map((card) => card.title)).toEqual(Array.from({ length: 36 }, (_, i) => `#${i + 39}`));
+    expect(data.page).toEqual({ type: 'paginated', current: 2, total: 21 });
+  });
+
+  it("should keep OG's limit param as plain pages", async () => {
+    server.use(chart());
+    const data = await popular('?page=2&limit=10');
+
+    expect(data.cards.at(0)?.title).toBe('#11');
+    expect(seen).toHaveLength(1);
+    expect(data.page).toEqual({ type: 'paginated', current: 2, total: 20 });
   });
 });

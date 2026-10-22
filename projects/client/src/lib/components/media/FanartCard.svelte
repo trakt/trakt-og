@@ -5,7 +5,8 @@
   with `search_mode` (the search grid): the same card at the poster ratio, with the small quick-icon bar. An `avatar`
   is OG's user card on the Users search tab: the round avatar centered over the dimmed cover. `framed` rounds the card
   like the actor photos and sets the quick-icon bar on a lighter panel inside a faint outline, so it reads as part of
-  the card on a dark page (the summary's Up Next and Recently Aired).
+  the card on a dark page (the summary's Up Next and Recently Aired). A `titleLogo` takes the title's place under the
+  tags (the chart podium's #2 and #3).
 -->
 <script lang="ts">
 import MediaSpoiler from '$lib/components/summary/MediaSpoiler.svelte';
@@ -39,6 +40,8 @@ interface Props {
   spoilerImage?: string;
   /** A logo over the dimmed fanart. */
   logo?: string;
+  /** The title as artwork, in the title's place under the tags. Left out, the title shows. */
+  titleLogo?: string;
   /** A user's avatar, round over the dimmed image (OG's `.avatar-wrapper`). */
   avatar?: string;
   /** Keep OG's logo-mode dimming when the API has no logo. */
@@ -84,6 +87,7 @@ const {
   image,
   spoilerImage,
   logo,
+  titleLogo,
   avatar,
   logoMode = !!logo,
   worded = false,
@@ -163,7 +167,12 @@ const restoreTarget = $derived(target?.type === 'show' ? { ...target, type: 'sho
         <a class="titles-link small-title" href={smallTitle.href}>{smallTitle.text}</a>
       {/if}
       <div class={['title-wrapper', { 'hidden-title': hideTitle }]}>
+        {#if titleLogo}
+          <h3><a class="titles-link" {href}><img class="title-logo" src={titleLogo} alt={title} loading="lazy"
+                decoding="async" /></a></h3>
+        {:else}
         <h3>{#if number}<a class="titles-link" {href}><span class="number">{number}</span></a>{/if} <MediaSpoiler target={spoilerTarget} kind="title" inline><a class="titles-link" {href}>{title}</a></MediaSpoiler>{#if year}<span class="year">{year}</span>{/if}</h3>
+        {/if}
       </div>
     </div>
     {/if}
@@ -371,6 +380,15 @@ h3 {
 
 .number {
   font-weight: var(--font-weight-headings-heavy);
+}
+
+.title-logo {
+  display: block;
+  max-inline-size: var(--fanart-title-logo-width);
+  max-block-size: var(--fanart-title-logo-height);
+  object-fit: contain;
+  object-position: left bottom;
+  filter: drop-shadow(var(--shadow-fanart-title-logo));
 }
 
 .year {

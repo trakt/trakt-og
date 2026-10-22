@@ -26,6 +26,10 @@ export type ChartCard = {
   title: string;
   year?: number;
   image?: string;
+  /** The full-size fanart, for the podium. */
+  fanart?: string;
+  /** The title as artwork, for the podium. */
+  logo?: string;
   /** Out by `now`. OG hid the rating of anything unreleased or undated . */
   released: boolean;
   rating?: number;
@@ -33,7 +37,18 @@ export type ChartCard = {
   runtime?: number;
   /** The labels over the fanart. No kind is the red one. */
   tags: { text: string; kind?: 'list' | 'generic' | 'favorite' | 'collect' }[];
+  /** The hero's details. */
+  overview?: string;
+  certification?: string;
+  /** "Science fiction", "Drama". */
+  genres: string[];
+  network?: string;
+  /** A YouTube link. */
+  trailer?: string;
 };
+
+// ponytail: discover's toPosterItem has the same helper; move it to lib/utils in a follow-up.
+const humanize = (slug: string) => slug.replaceAll('-', ' ').replace(/^\w/, (letter) => letter.toUpperCase());
 
 type Tag = ChartCard['tags'][number];
 
@@ -110,11 +125,18 @@ export function toChartCard(
     title: media.title,
     year: media.year ?? undefined,
     image: imageUrl(media.images?.fanart?.at(0), 'thumb'),
+    fanart: imageUrl(media.images?.fanart?.at(0), 'full'),
+    logo: imageUrl(media.images?.logo?.at(0), 'medium'),
     released,
     rating: media.rating ?? undefined,
     runtime: media.runtime ?? undefined,
     airedEpisodes: 'show' in row ? (row.show.aired_episodes ?? undefined) : undefined,
     // Before release a card shows no counts: only the anticipated chart's list count, which is real anticipation.
     tags: released || chart === 'anticipated' ? tags(row, chart, order) : [],
+    overview: media.overview?.trim() || undefined,
+    certification: media.certification ?? undefined,
+    genres: (media.genres ?? []).map(humanize),
+    network: 'show' in row ? (row.show.network ?? undefined) : undefined,
+    trailer: media.trailer ?? undefined,
   };
 }

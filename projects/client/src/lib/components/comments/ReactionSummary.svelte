@@ -13,11 +13,9 @@ import Icon from '$lib/icons/Icon.svelte';
 import smile from '$lib/icons/solid/face-smile-plus.svg?raw';
 import ellipsis from '$lib/icons/regular/ellipsis.svg?raw';
 import xmark from '$lib/icons/regular/xmark.svg?raw';
-import type { reactionOptions } from './reactionOptions.ts';
 import { reactionPickLabel } from './reactionPickLabel.ts';
 import type { ReactionCount, ReactionSummary } from './reactionSummary.ts';
-
-type ReactionType = typeof reactionOptions[number]['type'];
+import type { ReactionType } from './ReactionType.ts';
 
 interface Props {
   summary: ReactionSummary;

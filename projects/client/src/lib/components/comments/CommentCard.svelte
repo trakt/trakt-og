@@ -23,7 +23,6 @@ import { fade } from 'svelte/transition';
 import { type Snippet, untrack } from 'svelte';
 import ReactionControl from '$lib/components/comments/ReactionControl.svelte';
 import { commentReactions } from '$lib/components/comments/commentReactions';
-import type { reactionOptions } from '$lib/components/comments/reactionOptions';
 import Icon from '$lib/icons/Icon.svelte';
 import arrowsRotate from '$lib/icons/solid/arrows-rotate.svg?raw';
 import eyeSlash from '$lib/icons/solid/eye-slash.svg?raw';
@@ -84,6 +83,7 @@ import { withoutBlocked } from './withoutBlocked.ts';
 import { prefersReducedMotion } from 'svelte/motion';
 import { PLACEHOLDER_AVATAR } from '../../users/placeholderAvatar.ts';
 import { GENERIC_ERROR } from '../../utils/genericError.ts';
+import type { ReactionType } from './ReactionType.ts';
 
 interface Props {
   comment: CommentResponse;
@@ -246,7 +246,7 @@ let reporting = $state(false);
 const api = () => client ?? browserCommentsClient();
 
 // From the picker or the summary's breakdown: the same reaction again takes it back.
-const react = (type: typeof reactionOptions[number]['type']) =>
+const react = (type: ReactionType) =>
   commentReactions.change({
     id: comment.id,
     type,

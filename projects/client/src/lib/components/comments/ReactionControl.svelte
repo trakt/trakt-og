@@ -10,12 +10,13 @@ import smile from '$lib/icons/solid/face-smile-plus.svg?raw';
 import xmark from '$lib/icons/regular/xmark.svg?raw';
 import GlassAction from '$lib/components/glass-action/GlassAction.svelte';
 import { reactionOptions } from '$lib/components/comments/reactionOptions';
+import type { ReactionType } from './ReactionType.ts';
 
 interface Props {
-  value?: typeof reactionOptions[number]['type'];
+  value?: ReactionType;
   busy?: boolean;
   onopen: () => Promise<boolean>;
-  onselect: (type: typeof reactionOptions[number]['type']) => void;
+  onselect: (type: ReactionType) => void;
 }
 const { value, busy = false, onopen, onselect }: Props = $props();
 const id = $props.id();
@@ -43,7 +44,7 @@ function toggle(event: ToggleEvent) {
     trigger?.focus({ preventScroll: true });
   }
 }
-function choose(type: typeof reactionOptions[number]['type']) {
+function choose(type: ReactionType) {
   if (busy) return;
   popover?.hidePopover();
   onselect(type);

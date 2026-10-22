@@ -1,14 +1,11 @@
 import type { ReactionsSummaryResponse } from '@trakt/api';
-import type { z } from 'zod/v4';
-import type { reactionTypeSchema } from './reactionTypeSchema.ts';
-
-type Reaction = z.infer<typeof reactionTypeSchema>;
+import type { ReactionType } from './ReactionType.ts';
 
 /** Replacing a choice moves its distribution count, while adding/removing also moves the total and likes. */
 export function patchReactionSummary({ summary, previous, next }: {
   summary: ReactionsSummaryResponse;
-  previous: Reaction | undefined;
-  next: Reaction | undefined;
+  previous: ReactionType | undefined;
+  next: ReactionType | undefined;
 }): ReactionsSummaryResponse {
   const distribution = { ...summary.distribution };
   if (previous) distribution[previous] = Math.max(0, (distribution[previous] ?? 0) - 1);

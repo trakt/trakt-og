@@ -3,8 +3,7 @@ import { readableStat } from '../../utils/readableStat.ts';
 
 import { reactionOptions } from './reactionOptions.ts';
 import { countLabel } from '../../utils/countLabel.ts';
-
-type ReactionType = typeof reactionOptions[number]['type'];
+import type { ReactionType } from './ReactionType.ts';
 
 export type ReactionCount = {
   readonly type: ReactionType;

@@ -25,6 +25,7 @@ import RankPill from './RankPill.svelte';
 import type { HistoryPlay } from '$lib/components/history/HistoryPlay';
 import { removeCard } from '$lib/components/media/removeCard';
 import RewatchingBadge from './RewatchingBadge.svelte';
+import { ratingPercent } from '../../utils/ratingPercent.ts';
 
 /** OG's sorted Trakt rating line: a heart in the rating's color, "72%", the votes. */
 type RatingSubtitle = { readonly rating: number; readonly votes: number; readonly href: string };
@@ -199,7 +200,7 @@ const restoreTarget = $derived(target?.type === 'show' ? { ...target, type: 'sho
             <span style:color={subtitle.rating >= 1 ? `var(--rating-${Math.floor(subtitle.rating)})` : undefined}><Icon
                 svg={heart}
               /></span>
-            <b>{Math.trunc(subtitle.rating * 10)}%</b> — {readableStat(subtitle.votes)}
+            <b>{ratingPercent(subtitle.rating)}%</b> — {readableStat(subtitle.votes)}
             {subtitle.votes === 1 ? 'vote' : 'votes'}
           {:else if 'text' in subtitle}
             {subtitle.text}

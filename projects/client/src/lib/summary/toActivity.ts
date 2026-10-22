@@ -4,6 +4,7 @@ import type { LiveWatch } from '../dashboard/fetchWatching.ts';
 import { type ProfileRatings, toProfileRatings } from '../users/profile/toProfileRatings.ts';
 import type { SocialRow } from './SocialRow.ts';
 import { PLACEHOLDER_AVATAR } from '../users/placeholderAvatar.ts';
+import { ratingPercent } from '../utils/ratingPercent.ts';
 
 export type ActivityUser = {
   readonly key: string;
@@ -247,7 +248,7 @@ export function toActivity(
       ? {
         id: 'rated',
         // API's percentage truncates: 7.99 is 79%.
-        number: String(Math.trunc(average * 10)),
+        number: String(ratingPercent(average)),
         text: ['Rated by', `${count(raters.length)} ${people(raters.length)}`],
         heart: Math.min(Math.max(Math.trunc(average), 1), 10),
         sections: ratingSections,

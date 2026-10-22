@@ -7,6 +7,7 @@ import { imageUrl } from '../../utils/imageUrl.ts';
 import type { ProgressSeasonData } from './ProgressItem.ts';
 import { seasonName } from '../../utils/seasonName.ts';
 import { isUnknownDate } from '../../utils/isUnknownDate.ts';
+import { ratingPercent } from '../../utils/ratingPercent.ts';
 
 export type EpisodeSquareState = 'watched' | 'not-watched' | 'up-next' | 'not-aired';
 
@@ -136,7 +137,7 @@ function toSquare(
     ].filter(Boolean).join(', '),
     image: imageUrl(episode.screenshot, 'thumb'),
     meta: aired
-      ? [airs, runtime ? formatRuntime(runtime) : undefined, rating !== undefined && `${Math.trunc(rating * 10)}%`]
+      ? [airs, runtime ? formatRuntime(runtime) : undefined, rating !== undefined && `${ratingPercent(rating)}%`]
         .filter(Boolean).join(' · ')
       : undefined,
     lines: [

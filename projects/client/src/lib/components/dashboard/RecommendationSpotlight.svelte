@@ -25,6 +25,7 @@ import heart from '$lib/icons/solid/heart.svg?raw';
 import play from '$lib/icons/solid/play.svg?raw';
 import RecommendationWhy from './RecommendationWhy.svelte';
 import { watchNowCountry } from '../../settings/watchNowCountry.ts';
+import { ratingPercent } from '../../utils/ratingPercent.ts';
 
 interface Props {
   item: Recommendation;
@@ -137,7 +138,7 @@ async function openWatchNow() {
             {#snippet trigger()}
               <span class="percent"><span class="heart" style:color="var(--rating-{ratingLevel})"><Icon
                     svg={heart}
-                  /></span>{Math.trunc((item.rating ?? 0) * 10)}%</span>
+                  /></span>{ratingPercent(item.rating ?? 0)}%</span>
             {/snippet}
           </MediaRating>
         </span>

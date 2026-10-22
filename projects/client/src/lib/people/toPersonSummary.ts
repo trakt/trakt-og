@@ -11,6 +11,7 @@ import type { KnownForItem } from './knownForSchema.ts';
 import type { PersonCredit } from './PersonCredit.ts';
 import { personLinks } from './personLinks.ts';
 import { toKnownFor } from './toKnownFor.ts';
+import { ratingPercent } from '../utils/ratingPercent.ts';
 
 interface PersonSummaryParams {
   person: PersonResponse;
@@ -91,7 +92,7 @@ function toCredit(credit: RawCredit, { now }: Pick<PersonSummaryParams, 'now'>) 
     sortBy: {
       released: date ?? '3000-01-01',
       title: sortTitle(item.title),
-      percentage: Math.trunc((item.rating ?? 0) * 10),
+      percentage: ratingPercent(item.rating ?? 0),
       votes: item.votes ?? 0,
       runtime: (runtime ?? 0) * (airedEpisodes ?? 1),
       episodes: credit.episodeCount,

@@ -3,6 +3,8 @@ import { rawApiFetch } from '../../api/rawApiFetch.ts';
 import { listItemsSchema } from '../../users/lists/listItemsSchema.ts';
 import { toBuiltInRow } from '../../users/lists/toBuiltInRow.ts';
 import type { ProfileUser } from '../../users/ProfileUser.ts';
+import { builtInListName } from '../builtInListName.ts';
+import type { BuiltInListKind } from '../toBuiltInListView.ts';
 import type { ListCommentsTarget } from './ListCommentsTarget.ts';
 import { emptyListComments, readListComments } from './readListComments.ts';
 import { toListCommentsQuery } from './toListCommentsQuery.ts';
@@ -13,7 +15,7 @@ type Params = {
   locals: { token: string | null };
   params: { id: string };
   url: URL;
-  kind: 'watchlist' | 'favorites';
+  kind: BuiltInListKind;
 };
 
 /** `/users/:id/watchlist/comments` and `/favorites/comments`. */
@@ -26,7 +28,7 @@ export async function loadBuiltInListComments({ fetch, parent, locals, params, u
     rawApiFetch({ fetch, path: itemsPath }),
     parent(),
   ]);
-  const name = kind === 'watchlist' ? 'Watchlist' : 'Favorites';
+  const name = builtInListName(kind);
   const target = (id: number | null, posters: ListCommentsTarget['posters'] = []): ListCommentsTarget => ({
     title: name,
     fullTitle: `${profile.displayName}'s ${name}`,

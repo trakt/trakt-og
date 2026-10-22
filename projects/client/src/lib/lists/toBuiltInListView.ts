@@ -1,4 +1,5 @@
 import type { ProfileUser } from '../users/ProfileUser.ts';
+import { builtInListName } from './builtInListName.ts';
 import type { ListKind } from './ListKind.ts';
 import type { ListSort } from './resolveListSort.ts';
 import type { ListView } from './toListView.ts';
@@ -29,7 +30,7 @@ export function toBuiltInListView(
   return {
     id: id ?? 0,
     slug: kind,
-    name: kind === 'watchlist' ? 'Watchlist' : 'Favorites',
+    name: builtInListName(kind),
     href: `/users/${profile.slug}/${kind}`,
     kind,
     ownerSlug: profile.slug,

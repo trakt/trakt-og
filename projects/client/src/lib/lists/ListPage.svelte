@@ -269,16 +269,20 @@ let savedNotes = $state<Readonly<Record<number, string>>>({});
 const listPosters = $derived(
   (data.list ? data.cards : []).slice(0, 5).flatMap((card) => (card.image ? [card.image] : [])),
 );
-const ownerCards = $derived(
-  (ownerManaging && allItems && selectedKeys
+// Reversed so the first card per key wins, as `find` did.
+const indexByKey = (items: readonly ListItemCard[]) => new Map(items.toReversed().map((item) => [item.key, item]));
+const ownerCards = $derived.by(() => {
+  const loaded = indexByKey(allItems ?? []);
+  const removed = new Set(removedKeys);
+  return (ownerManaging && allItems && selectedKeys
     ? selectedKeys.flatMap((key) => {
-      const item = allItems?.find((row) => row.key === key);
+      const item = loaded.get(key);
       return item ? [item] : [];
     })
-    : (data.list ? data.cards : []).map((item) => allItems?.find((row) => row.key === item.key) ?? item))
-    .filter((item) => !removedKeys.includes(item.key))
-    .map((item) => item.key in savedNotes ? { ...item, notes: savedNotes[item.key] || undefined } : item),
-);
+    : (data.list ? data.cards : []).map((item) => loaded.get(item.key) ?? item))
+    .filter((item) => !removed.has(item.key))
+    .map((item) => item.key in savedNotes ? { ...item, notes: savedNotes[item.key] || undefined } : item);
+});
 const request = (path: string, init?: Parameters<typeof rawApiFetch>[0]['init']) =>
   rawApiFetch({ fetch: authenticatedFetch({ manager: userManager() }), path, init });
 $effect(() => {
@@ -313,7 +317,8 @@ async function toggleManage() {
     if (source !== data || !data.list) return;
     const options = { sortBy: data.sort.by, datePreferences: data.datePreferences };
     const items = complete.map((row) => toListItemCard(row, options));
-    if (selection.some((row) => !items.some((item) => item.key === row.id))) throw new Error('List changed');
+    const known = new Set(items.map((item) => item.key));
+    if (selection.some((row) => !known.has(row.id))) throw new Error('List changed');
     allItems = items;
     selectedKeys = selection.map((row) => row.id);
     ownerManaging = true;
@@ -329,7 +334,8 @@ async function saveOrder(next: readonly ListItemCard[]) {
   const before = allItems;
   const beforeKeys = selectedKeys;
   allItems = next;
-  selectedKeys = next.filter((item) => beforeKeys?.includes(item.key)).map((item) => item.key);
+  const selected = new Set(beforeKeys);
+  selectedKeys = next.filter((item) => selected.has(item.key)).map((item) => item.key);
   ownerBusy = true;
   const ok = await writeOwnerList({
     kind: ownerKind,
@@ -352,9 +358,9 @@ function moveItem(item: ListItemCard, rank: number) {
 }
 function resetOrder() {
   if (!allItems || ownerBusy || transferBusy) return;
-  const keys = ownerCards.map((item) => item.key);
+  const keys = new Set(ownerCards.map((item) => item.key));
   void saveOrder(
-    [...ownerCards, ...allItems.filter((item) => !keys.includes(item.key))].map((item, i) => ({
+    [...ownerCards, ...allItems.filter((item) => !keys.has(item.key))].map((item, i) => ({
       ...item,
       rank: i + 1,
     })),
@@ -366,7 +372,8 @@ async function removeItems(items: readonly ListItemCard[]) {
   const before = allItems;
   const beforeRemoved = removedKeys;
   const keys = items.map((item) => item.key);
-  allItems = allItems.filter((item) => !keys.includes(item.key)).map((item, i) => ({ ...item, rank: i + 1 }));
+  const gone = new Set(keys);
+  allItems = allItems.filter((item) => !gone.has(item.key)).map((item, i) => ({ ...item, rank: i + 1 }));
   removedKeys = [...removedKeys, ...keys];
   ownerBusy = true;
   const ok = await removeOwnerItems({ kind: ownerKind, items, overlay, request, notify: toast });

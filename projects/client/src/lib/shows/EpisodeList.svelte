@@ -5,6 +5,7 @@
   the community stats as number-only count buttons along the card's foot.
 -->
 <script lang="ts">
+import EmptyState from '$lib/components/empty/EmptyState.svelte';
 import MediaSpoiler from '$lib/components/summary/MediaSpoiler.svelte';
 import FadeHideMenu from '$lib/components/filters/FadeHideMenu.svelte';
 import { type FadeHide, fadeHideOptions, matchesFadeHide } from '$lib/components/filters/fadeHide';
@@ -22,6 +23,9 @@ import { overlay } from '$lib/overlay/overlay';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
 import ItemStatIcons from '$lib/components/media/ItemStatIcons.svelte';
 import { lazyItemStats } from '$lib/shows/lazyItemStats.svelte';
+import eyeSlash from '$lib/icons/solid/eye-slash.svg?raw';
+import magnifyingGlass from '$lib/icons/regular/magnifying-glass.svg?raw';
+import { countLabel } from '$lib/utils/countLabel';
 import { EPISODE_SORTS, type EpisodeRow, type EpisodeSort, sortEpisodes } from './toShowEpisodes.ts';
 
 interface Props {
@@ -67,10 +71,14 @@ const view = (row: EpisodeRow) => {
   const matches = (id: (typeof options)[number]['id']) => matchesFadeHide(id, state, fill);
   return { state, fill, hidden: signedIn && filters.hide.some(matches), faded: signedIn && filters.fade.some(matches) };
 };
-const filtered = $derived(
-  rows.filter(({ title }) => title.toLocaleLowerCase().includes(terms.trim().toLocaleLowerCase()))
-    .filter((row) => !view(row).hidden),
-);
+// The search looks through each episode's title and overview.
+const matching = $derived.by(() => {
+  const term = terms.trim().toLocaleLowerCase();
+  return rows.filter(({ title, overview }) =>
+    title.toLocaleLowerCase().includes(term) || (overview?.toLocaleLowerCase().includes(term) ?? false)
+  );
+});
+const filtered = $derived(matching.filter((row) => !view(row).hidden));
 const stats = lazyItemStats({
   items: () => filtered.map((row) => ({ id: row.id, show: showId, season: row.season, episode: row.episode })),
   sort: () => by,
@@ -109,9 +117,22 @@ const metaTags = (row: EpisodeRow): readonly TagPill[] => [
 {#if rows.length > 0}
   <section class="episodes" aria-labelledby="episodes">
     <SortHeading id="episodes" count={filtered.length} noun="Episode" {sorts} bind:by bind:flipped loading={stats.loading}>
-      {#snippet controls()}{#if search}<TermsFilter bind:terms {vip} />{/if}{#if signedIn}<FadeHideMenu value={filters} {options} cookie="season" variant="default" onchange={saveFilters} />{/if}{/snippet}
+      {#snippet controls()}{#if search}<TermsFilter bind:terms {vip} help="Only display episodes with a title or overview matching your search term." />{/if}{#if signedIn}<FadeHideMenu value={filters} {options} cookie="season" variant="default" onchange={saveFilters} />{/if}{/snippet}
     </SortHeading>
-    {#if filtered.length === 0}<p role="status">No episodes match your filters.</p>{/if}
+    {#if filtered.length === 0}
+      <div class="empty" role="status">
+        {#if matching.length === 0}
+          <EmptyState icon={magnifyingGlass} action={{ text: 'Clear search', onclick: () => (terms = '') }}>
+            No episode titles or overviews mention “{terms.trim()}”.
+          </EmptyState>
+        {:else}
+          <EmptyState icon={eyeSlash}>
+            Your hide filters cover {terms.trim() ? `the ${countLabel(matching.length, 'episode')} matching “${terms.trim()}”` : `all ${countLabel(matching.length, 'episode')}`}.
+            Change them from the eye menu.
+          </EmptyState>
+        {/if}
+      </div>
+    {/if}
     {#each sorted as row (row.id)}
       {@const item = view(row)}
       {@const state = item.state}
@@ -155,6 +176,11 @@ const metaTags = (row: EpisodeRow): readonly TagPill[] => [
 {/if}
 
 <style>
+/* Room under the last episode before the next section, like a poster grid's. */
+.episodes {
+  margin-block-end: var(--gutter);
+}
+
 /* OG's col-md-4 / col-md-8 (col-sm-5 / col-sm-7), stacked on phones. */
 .row {
   transition: opacity var(--transition-card);
@@ -215,6 +241,10 @@ h3 {
 
 .meta {
   margin-block-start: var(--episode-meta-gap);
+}
+
+.empty {
+  margin-block-start: var(--gutter);
 }
 
 /* Level with the card's foot; a longer, opened overview pushes it down. */

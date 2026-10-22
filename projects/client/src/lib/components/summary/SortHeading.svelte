@@ -44,7 +44,7 @@ const picked = $derived(sorts.find((sort) => sort.by === by));
       </Dropdown>
       <SortDirection joined bind:flipped descending={picked?.desc} />
     </span>
-    {@render controls?.()}
+    {#if controls}<span class="tools">{@render controls()}</span>{/if}
   </div>
 </div>
 
@@ -77,5 +77,12 @@ const picked = $derived(sorts.find((sort) => sort.by === by));
 .pair {
   display: flex;
   align-items: center;
+}
+
+/* The icon tools sit as close as a toolbar's, their own padding doing the spacing. */
+.tools {
+  display: flex;
+  align-items: center;
+  gap: var(--space-tools);
 }
 </style>

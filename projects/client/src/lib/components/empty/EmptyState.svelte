@@ -13,8 +13,8 @@ import type { Snippet } from 'svelte';
 interface Props {
   /** Raw SVG above the line. */
   icon?: string;
-  /** A link out of the empty state: to a wider filter, say. */
-  action?: { readonly href: string; readonly text: string };
+  /** A way out of the empty state: a link to a wider filter, or a button that clears one on the page. */
+  action?: { readonly href: string; readonly text: string } | { readonly onclick: () => void; readonly text: string };
   /** Tighter and smaller, for a sidebar. */
   compact?: boolean;
   children: Snippet;
@@ -28,7 +28,8 @@ const { icon, action, compact = false, children }: Props = $props();
 <div class={['empty-state', { compact }]}>
   {#if icon}<span class="icon"><Icon svg={icon} /></span>{/if}
   <p>{@render children()}</p>
-  {#if action}<a href={action.href}>{action.text}</a>{/if}
+  {#if action && 'href' in action}<a href={action.href}>{action.text}</a>
+  {:else if action}<button type="button" onclick={action.onclick}>{action.text}</button>{/if}
 </div>
 
 <style>
@@ -64,12 +65,24 @@ p {
   text-wrap: balance;
 }
 
-a {
+a,
+button {
   color: var(--color-link);
   font-weight: var(--font-weight-headings);
 
   &:is(:hover, :focus-visible) {
     text-decoration: underline;
   }
+}
+
+/* The button reads as the link. */
+button {
+  min-block-size: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: var(--font-weight-headings);
+  cursor: pointer;
 }
 </style>

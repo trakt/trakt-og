@@ -43,12 +43,10 @@ const data = $derived({ shows, movies });
 const picked = $state<Partial<Record<MostWatchedType, MostWatchedTab>>>({});
 const selected = (type: MostWatchedType) => picked[type] ?? data[type].tab;
 
-// OG's see-more link: the column's order, and `start_at` in UTC to the second with
-// the colons left unescaped.
-const seeMore = (type: MostWatchedType, sortBy: string, tab: MostWatchedTab) =>
-  `/users/${slug}/history/${type}/${sortBy}${
-    tab === 'lastMonth' ? `?start_at=${windowStart.replace(/\.\d+Z$/, 'Z')}` : ''
-  }`;
+// OG's see-more link, minus its sort segment: the history page only sorts by watched date and
+// redirects it away. `start_at` is in UTC to the second with the colons left unescaped.
+const seeMore = (type: MostWatchedType, tab: MostWatchedTab) =>
+  `/users/${slug}/history/${type}${tab === 'lastMonth' ? `?start_at=${windowStart.replace(/\.\d+Z$/, 'Z')}` : ''}`;
 </script>
 
 <div class="most-watched">
@@ -63,7 +61,7 @@ const seeMore = (type: MostWatchedType, sortBy: string, tab: MostWatchedTab) =>
             id={headingId}
             title={column.title}
             icon={column.icon}
-            seeMore={{ href: seeMore(column.type, data[column.type].sortBy, period), text: 'See more' }}
+            seeMore={{ href: seeMore(column.type, period), text: 'See more' }}
           />
           <div class="controls">
             <Dropdown section="Period">

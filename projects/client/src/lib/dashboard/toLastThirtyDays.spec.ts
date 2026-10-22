@@ -179,6 +179,6 @@ describe('mapper: toLastThirtyDays', () => {
   it("should start the genre links at the window's first day", () => {
     const { genres } = build({});
 
-    expect(genres.at(0)?.counts.at(0)?.href).toBe('/users/sean/history/movies/plays?genres=drama&start_at=2026-08-31');
+    expect(genres.at(0)?.counts.at(0)?.href).toBe('/users/sean/history/movies?genres=drama&start_at=2026-08-31');
   });
 });

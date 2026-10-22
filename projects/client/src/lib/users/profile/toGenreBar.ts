@@ -47,7 +47,7 @@ export function toGenreBar(row: WatchedGenreRow, { slug, startAt }: ToGenreBarOp
       ? ` (${row[key].play_count.toLocaleString('en-US')})`
       : '';
     const query = new URLSearchParams({ genres: row.genre.slug, ...(startAt && { start_at: startAt }) });
-    return [{ text: `${countLabel(unique, word)}${plays}`, href: `/users/${slug}/history/${key}/plays?${query}` }];
+    return [{ text: `${countLabel(unique, word)}${plays}`, href: `/users/${slug}/history/${key}?${query}` }];
   });
 
   return {

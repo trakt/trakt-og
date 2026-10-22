@@ -35,9 +35,9 @@ describe('mapper: toGenreBar', () => {
     );
 
     expect(bar.counts).toEqual([
-      { text: '12 episodes (15)', href: '/users/sean/history/episodes/plays?genres=science-fiction' },
-      { text: '3 shows', href: '/users/sean/history/shows/plays?genres=science-fiction' },
-      { text: '1 movie', href: '/users/sean/history/movies/plays?genres=science-fiction' },
+      { text: '12 episodes (15)', href: '/users/sean/history/episodes?genres=science-fiction' },
+      { text: '3 shows', href: '/users/sean/history/shows?genres=science-fiction' },
+      { text: '1 movie', href: '/users/sean/history/movies?genres=science-fiction' },
     ]);
   });
 
@@ -52,7 +52,7 @@ describe('mapper: toGenreBar', () => {
   it('should start the history links at the chart window when it has one', () => {
     const bar = toGenreBar(row({ movies: { play_count: 1, ids: [4] } }), { slug: 'sean', startAt: '2026-08-31' });
     expect(bar.counts.at(0)?.href).toBe(
-      '/users/sean/history/movies/plays?genres=science-fiction&start_at=2026-08-31',
+      '/users/sean/history/movies?genres=science-fiction&start_at=2026-08-31',
     );
   });
 });

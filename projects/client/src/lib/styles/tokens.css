@@ -2390,16 +2390,11 @@
   --font-size-date-range-chip: 12px;
   --watchnow-filter-list-height: 240px;
   --font-size-modal-lead: 16px; /* .checkin-modal h2 */
-  --font-size-day-divider-runtime: 14px; /* h2 .time-spent */
-  --color-day-divider-runtime: #aaa;
   --color-subnav-text-bg: light-dark(#f3f3f3, #252525); /* .subnav-text, the library's description band */
   --font-size-subnav-text: 13px;
   --subnav-text-padding: 10px; /* .text's padding-top, then the paragraph's margin */
-  /* Episode screenshot banner. */
-  --episode-badge-padding: 4px;
-  --font-size-episode-badge: 11px;
-  --episode-badge-letter-spacing: 0.5px;
-  --episode-badge-opacity: 0.7;
+  /* An episode's type tag over its art. */
+  --episode-tag-inset: 8px; /* from the art's bottom-left corner */
 
   /* Watch Now: the sidebar block, its phone button and the where-to-watch modal. */
   --color-watch-now-bg: #444;
@@ -3400,7 +3395,7 @@
   --calendar-caption-padding: 10px 12px;
   --calendar-caption-gap: 6px;
   --calendar-tags-height: 20px; /* one line of card tags, kept when empty so cards line up */
-  --calendar-art-tag-inset: 8px; /* an episode's types from the art's bottom-left corner */
+  --calendar-art-tag-inset: var(--episode-tag-inset); /* an episode's types from the art's bottom-left corner */
   --calendar-show-line: 18px; /* an episode's show, small, over its title */
   --calendar-title-line: 21px;
   --calendar-titles-height: calc(var(--calendar-show-line) + var(--calendar-title-line));

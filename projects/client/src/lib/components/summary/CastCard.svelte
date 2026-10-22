@@ -88,6 +88,12 @@ const { name, href, image, gender, role, episodes, layout = 'card' }: Props = $p
   gap: var(--cast-card-line-gap);
   inline-size: 100%;
   min-inline-size: 0;
+
+  /* Under the headshot, centered like the rest of the page; beside it in a row, flush left. */
+  .card & {
+    justify-items: center;
+    text-align: center;
+  }
 }
 
 .name,
@@ -100,6 +106,14 @@ const { name, href, image, gender, role, episodes, layout = 'card' }: Props = $p
   -webkit-line-clamp: 2;
   line-clamp: 2;
   transition: color var(--transition-card);
+
+  /* One line each under the headshot, cut wherever the width runs out, so every card is the same height. */
+  .card & {
+    display: block;
+    justify-self: stretch;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }
 
 .name {

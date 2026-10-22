@@ -210,14 +210,15 @@ const pageTitle = $derived(
 let editing = $state(false);
 let deleting = $state(false);
 let personalCount = $state<number>();
-const limit = $derived(page.data.settings?.limits?.list?.count);
+const limit = $derived(data.settings?.limits?.list?.count);
 const deleteWarning = $derived(
   limit !== undefined && (personalCount ?? 0) > limit
     ? `You're over the ${limit} list limit. You won't be able to re-create this list if you delete it.`
     : "This can't be undone!",
 );
+const canDelete = $derived(Boolean(actions?.delete));
 $effect(() => {
-  if (!actions?.delete) return;
+  if (!canDelete) return;
   api({ fetch: authenticatedFetch({ manager: userManager() }) }).users.lists.personal({
     params: { id: 'me' },
     query: { limit: 1 },

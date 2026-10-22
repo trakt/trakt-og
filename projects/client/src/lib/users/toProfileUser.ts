@@ -1,6 +1,7 @@
 import type { GenderIcon, ProfileUser } from './ProfileUser.ts';
 import { webpImageUrl } from '../utils/imageUrl.ts';
 import { toVipBadge } from './toVipBadge.ts';
+import { PLACEHOLDER_AVATAR } from './placeholderAvatar.ts';
 
 /** The fields of `GET /users/:id?extended=full,vip` the frame reads. */
 export type ProfileResponse = {
@@ -23,8 +24,6 @@ export type ProfileResponse = {
 };
 
 const DEFAULT_LOCATION = 'Omicron Persei 8';
-/** OG's `avatar_placeholder` for a user whose gender it can't see. */
-const PLACEHOLDER_AVATAR = 'https://media.trakt.tv/hotlink-ok/placeholders/medium/zoidberg.png';
 
 const GENDER_ICONS: Readonly<Record<string, GenderIcon>> = { male: 'mars', female: 'venus' };
 

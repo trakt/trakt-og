@@ -54,7 +54,7 @@ import ReportDialog from '$lib/components/summary/ReportDialog.svelte';
 import { toast } from '../toast/toast.svelte.ts';
 import Tooltip from '../tooltip/Tooltip.svelte';
 import VipLabel from '../labels/VipLabel.svelte';
-import { authorOf, PLACEHOLDER_AVATAR } from './authorOf.ts';
+import { authorOf } from './authorOf.ts';
 import { blockedMembers } from './blockedMembers.svelte.ts';
 import { browserCommentsClient } from './browserCommentsClient.ts';
 import CommentAvatar from './CommentAvatar.svelte';
@@ -82,6 +82,7 @@ import { parseComment } from './text/parseComment.ts';
 import { watchedIndicator } from './watchedIndicator.ts';
 import { withoutBlocked } from './withoutBlocked.ts';
 import { prefersReducedMotion } from 'svelte/motion';
+import { PLACEHOLDER_AVATAR } from '../../users/placeholderAvatar.ts';
 
 interface Props {
   comment: CommentResponse;

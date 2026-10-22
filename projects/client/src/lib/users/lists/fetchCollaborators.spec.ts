@@ -1,7 +1,7 @@
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
-import { PLACEHOLDER_AVATAR } from '../../components/comments/authorOf.ts';
+import { PLACEHOLDER_AVATAR } from '../placeholderAvatar.ts';
 import { fetchCollaborators } from './fetchCollaborators.ts';
 
 const ENDPOINT = 'https://apiz.trakt.tv/lists/42/collaborators';

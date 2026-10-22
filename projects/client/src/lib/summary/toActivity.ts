@@ -3,9 +3,7 @@ import { RATING_LABELS } from '../components/rating/ratingPrompt.ts';
 import type { LiveWatch } from '../dashboard/fetchWatching.ts';
 import { type ProfileRatings, toProfileRatings } from '../users/profile/toProfileRatings.ts';
 import type { SocialRow } from './SocialRow.ts';
-
-// OG's avatar for private members and members without one.
-const PLACEHOLDER_AVATAR = 'https://media.trakt.tv/hotlink-ok/placeholders/medium/zoidberg.png';
+import { PLACEHOLDER_AVATAR } from '../users/placeholderAvatar.ts';
 
 export type ActivityUser = {
   readonly key: string;

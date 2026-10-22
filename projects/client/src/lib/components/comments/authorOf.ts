@@ -1,9 +1,7 @@
 import type { CommentResponse } from '@trakt/api';
 import { toVipBadge } from '../../users/toVipBadge.ts';
 import type { VipBadge } from '../../users/VipBadge.ts';
-
-// OG's placeholder when a member has no avatar and the API sends none (private members, deleted accounts).
-export const PLACEHOLDER_AVATAR = 'https://media.trakt.tv/hotlink-ok/placeholders/medium/zoidberg.png';
+import { PLACEHOLDER_AVATAR } from '../../users/placeholderAvatar.ts';
 
 export type CommentAuthor = {
   readonly name: string;

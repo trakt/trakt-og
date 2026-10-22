@@ -1,7 +1,8 @@
 <!--
-  OG's user card, three to a row on the network page, as a small profile header: the avatar, the name with the VIP
-  label and the header's glass pills sit on the user's cover (the default one when unset, theirs fading in once it
-  loads), then the profile header's follow buttons, and a darker band along the bottom, like a dialog's footer, with
+  OG's user card, three to a row on the network page, as a small profile header: the avatar and the name with the VIP
+  label over small grey tags with the location, gender and age, centered on it, sit on the user's cover (the default
+  one when unset, theirs fading in once it loads), then the profile header's follow buttons, and a darker band along
+  the bottom, like a dialog's footer, with
   the chips: Private, the VIP veteran title and the year the follow started, as a green "Friends since" when they
   follow each other and a grey "Since" otherwise. `watch` marks someone watching now: the cover becomes the show's or movie's
   fanart with the dashboard's pulsing tags and title at the top, the time left across from them, and the live
@@ -18,12 +19,15 @@ import CardTag from '$lib/components/media/CardTag.svelte';
 import UnderProgress from '$lib/components/media/UnderProgress.svelte';
 import Countdown from '$lib/components/status/Countdown.svelte';
 import FollowButtons from '$lib/components/users/FollowButtons.svelte';
-import ProfilePills from '$lib/components/users/ProfilePills.svelte';
 import { liveTags } from '$lib/dashboard/liveTags';
 import type { LiveTile } from '$lib/dashboard/liveTiles';
 import lock from '$lib/icons/regular/lock.svg?raw';
 import userGroup from '$lib/icons/regular/user-group.svg?raw';
+import genderless from '$lib/icons/solid/genderless.svg?raw';
+import locationPin from '$lib/icons/solid/location-pin.svg?raw';
+import mars from '$lib/icons/solid/mars.svg?raw';
 import star from '$lib/icons/solid/star.svg?raw';
+import venus from '$lib/icons/solid/venus.svg?raw';
 import type { ProfileUser } from '$lib/users/ProfileUser';
 import type { ViewerRelation } from '$lib/users/ViewerRelation';
 import { fadeInOnLoad } from '$lib/utils/fadeInOnLoad';
@@ -47,6 +51,7 @@ const media = $derived(watch?.watch ?? null);
 const tags = $derived(media ? liveTags(media) : []);
 const friends = $derived(relation?.follow === 'following' && relation.followsYou);
 const sinceYear = $derived(since ? new Date(since).getUTCFullYear() : null);
+const genderIcons = { mars, venus, genderless };
 </script>
 
 <!-- Profile and media links go to OG routes some of which other issues build; resolve() only takes routes that exist. -->
@@ -84,12 +89,19 @@ const sinceYear = $derived(since ? new Date(since).getUTCFullYear() : null);
 
     <div class="who">
       <a class="avatar" {href} tabindex="-1" aria-hidden="true"><img src={user.avatarUrl} alt="" loading="lazy" /></a>
-      <div class="stack">
+      <div class="text">
         <h2 class="name">
           <a {href}>{user.displayName}</a>
           {#if user.vip}<VipLabel badge={user.vip} pill />{/if}
         </h2>
-        {#if !user.isLocked}<ProfilePills {user} withPrivate={false} withJoined={false} />{/if}
+        {#if !user.isLocked}
+          <p class="facts">
+            <CommentTag svg={locationPin} tone="following" tint><b>{user.location}</b></CommentTag>
+            <CommentTag svg={genderIcons[user.gender.icon]} tone="following" tint title={user.gender.title}
+              aria-label={user.age === null ? user.gender.title : `${user.gender.title}, ${user.age}`}
+            >{#if user.age !== null}<b>{user.age}</b>{/if}</CommentTag>
+          </p>
+        {/if}
       </div>
     </div>
   </div>
@@ -178,7 +190,7 @@ const sinceYear = $derived(since ? new Date(since).getUTCFullYear() : null);
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-xs-inline);
-  margin-block-end: var(--space-card-small-title);
+  margin-block-end: var(--user-card-live-gap);
 }
 
 .show {
@@ -227,7 +239,7 @@ const sinceYear = $derived(since ? new Date(since).getUTCFullYear() : null);
   inset-block-end: calc(var(--user-card-inset) + var(--progress-under-height));
   display: flex;
   gap: var(--user-card-who-gap);
-  align-items: flex-end;
+  align-items: center;
 }
 
 .avatar img {
@@ -241,10 +253,24 @@ const sinceYear = $derived(since ? new Date(since).getUTCFullYear() : null);
   object-fit: cover;
 }
 
-.stack {
+/* The name over the location, gender and age, as small tags rather than the profile header's pills. */
+.text {
   display: grid;
-  gap: var(--user-card-stack-gap);
+  gap: var(--user-card-text-gap);
   min-inline-size: 0;
+}
+
+/* The bottom bar's grey tags, so the facts read as quietly as "Since", their values in bold white like the header's. */
+.facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--comment-tags-gap);
+  margin: 0;
+
+  & b {
+    color: var(--color-card-text);
+    font-weight: var(--font-weight-headings-heavy);
+  }
 }
 
 /* The name with its VIP label centered on it. */

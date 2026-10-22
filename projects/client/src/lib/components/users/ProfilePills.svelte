@@ -1,9 +1,7 @@
 <!--
   A user's glass pills, as the profile header lines them up under the name: private status first in amber, then
-  location, gender and age, and the year they joined. The header shows them on the cover, the network page's user cards
-  under the name without the join year, and with the Private pill left to the card's cover.
+  location, gender and age, and the year they joined.
     <ProfilePills {user} />
-    <ProfilePills {user} withPrivate={false} withJoined={false} />
 -->
 <script lang="ts">
 import Icon from '$lib/icons/Icon.svelte';
@@ -18,22 +16,20 @@ import CoverPill from './CoverPill.svelte';
 
 interface Props {
   user: ProfileUser;
-  withPrivate?: boolean;
-  withJoined?: boolean;
 }
 
-const { user, withPrivate = true, withJoined = true }: Props = $props();
+const { user }: Props = $props();
 const genderIcons = { mars, venus, genderless };
 </script>
 
 <div class="pills">
-  {#if withPrivate && user.isPrivate}<CoverPill tone="private"><Icon svg={lock} />Private</CoverPill>{/if}
-  <CoverPill><Icon svg={locationPin} />{user.location}</CoverPill>
+  {#if user.isPrivate}<CoverPill tone="private"><Icon svg={lock} />Private</CoverPill>{/if}
+  <CoverPill><Icon svg={locationPin} /><b>{user.location}</b></CoverPill>
   <CoverPill title={user.gender.title}>
     <Icon svg={genderIcons[user.gender.icon]} label={user.gender.title} />
     {#if user.age !== null}<b title="Age">{user.age}</b>{/if}
   </CoverPill>
-  {#if withJoined && user.joinedAt}
+  {#if user.joinedAt}
     <CoverPill>
       <Icon svg={calendar} />Joined <b>{new Date(user.joinedAt).getUTCFullYear()}</b>
     </CoverPill>

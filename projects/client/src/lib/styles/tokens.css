@@ -1357,11 +1357,12 @@
   --user-card-avatar-size: 56px;
   --user-card-avatar-border: 2px;
   --user-card-who-gap: 10px; /* the avatar to the name */
-  --user-card-stack-gap: 6px; /* the name to its pills */
   --user-card-btn-gap: 10px;
   --user-card-band-padding: var(--user-card-inset); /* the chips' band along the bottom, padded like the buttons above it */
   --user-card-band-height: calc(var(--comment-chip-height) + 2 * var(--user-card-inset)); /* one chip row, chips or not */
   --font-size-user-card-name: 16px;
+  --user-card-text-gap: 6px; /* the name to its tags */
+  --user-card-live-gap: var(--user-card-text-gap); /* the watching-now tags to the show and episode */
   --color-user-card-avatar-ring: rgb(255 255 255 / 0.85);
   --color-user-card-foot-bg: var(--color-fanart-card-frame-bg);
   --color-user-card-band-bg: var(--color-dialog-art-footer-bg); /* the chips' band, like a dialog's footer */

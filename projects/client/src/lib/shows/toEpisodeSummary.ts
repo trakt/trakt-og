@@ -117,8 +117,8 @@ export function toEpisodeSummary(params: Params) {
       duringCredits: episode.during_credits,
       afterCredits: episode.after_credits,
     },
-    cast: toCastMembers(params.regulars.cast, false).map((member) => ({ ...member, episodes: undefined })),
-    guestStars: toCastMembers(params.people.cast, false).map((member) => ({ ...member, episodes: undefined })),
+    cast: toCastMembers(params.regulars.cast, false),
+    guestStars: toCastMembers(params.people.cast, false),
     crew: toCrewGroups(params.people.crew, false),
     episodeLinks: params.episodes.toSorted((a, b) => a.number - b.number).map((item) => ({
       text: `${item.number}`,

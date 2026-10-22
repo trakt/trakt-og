@@ -6,13 +6,13 @@ import type {
   PeopleResponse,
   StudioResponse,
 } from '@trakt/api';
-import type { CastMember } from '../components/summary/CastMember.ts';
 import { countryName, languageName, titleize } from '../components/summary/names.ts';
 import { toCrewNames } from '../components/summary/toCrewNames.ts';
 import { type StreamingRank, toExternalRatings } from '../components/summary/toExternalRatings.ts';
 import { imageUrl } from '../utils/imageUrl.ts';
 import { toMovieLinks } from './toMovieLinks.ts';
 import { toCrewGroups } from '../components/summary/toCrewGroups.ts';
+import { toCastMembers } from '../components/summary/toCastMembers.ts';
 
 interface Release {
   readonly country: string;
@@ -54,16 +54,6 @@ function neighbours({ collection, movie }: Pick<MovieSummaryParams, 'collection'
     previous: index > 0 ? link(collection.items.at(index - 1), 'Previous') : undefined,
     next: link(collection.items.at(index + 1), 'Next'),
   };
-}
-
-function cast(people: PeopleResponse | null): CastMember[] {
-  return (people?.cast ?? []).map((member) => ({
-    name: member.person.name,
-    href: `/people/${member.person.ids.slug}`,
-    characters: (member.characters ?? []).join(', '),
-    image: imageUrl(member.images?.headshot?.at(0), 'thumb'),
-    gender: member.person.gender ?? undefined,
-  }));
 }
 
 /** Everything the movie summary shows, from the loader's API responses. Dates stay ISO; the page formats them. */
@@ -145,7 +135,7 @@ export function toMovieSummary(params: MovieSummaryParams) {
       afterCredits: movie.after_credits ?? null,
     },
     links: toMovieLinks({ movie: params.movie, justwatch: params.rank?.link }),
-    cast: cast(params.people),
+    cast: toCastMembers(params.people?.cast, false),
     crew: toCrewGroups(params.people?.crew, false),
   };
 }

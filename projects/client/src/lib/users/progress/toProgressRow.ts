@@ -13,6 +13,7 @@ import { relativeDate } from '../../utils/relativeDate.ts';
 import type { ProgressItem } from './ProgressItem.ts';
 import { type ProgressSeason, toProgressSeasons } from './toProgressSeasons.ts';
 import { capitalize } from '../../utils/capitalize.ts';
+import { isUnknownDate } from '../../utils/isUnknownDate.ts';
 
 type Tag = NonNullable<ComponentProps<typeof FanartCard>['tags']>[number];
 
@@ -83,8 +84,6 @@ type ToProgressRowParams = {
   now: Date;
 };
 
-const UNKNOWN_DATE = Date.parse('1970-01-01T00:00:00Z');
-const isUnknown = (date: string) => Date.parse(date) === UNKNOWN_DATE;
 const runtime = (minutes: number, exact: boolean) => `${exact ? '' : '~'}${formatRuntime(minutes)}`;
 
 /** Without seasons, the watched share from the left, which is how the ticks look when episodes go in order. */
@@ -132,7 +131,7 @@ function toLast({ item, datePreferences, now }: ToProgressRowParams, showHref: s
   if (!at) return undefined;
 
   const episode = item.last ?? item.detail?.last;
-  const unknown = isUnknown(at);
+  const unknown = isUnknownDate(at);
   return {
     ...(episode && {
       number: episodeNumber(tagged(episode), item.show.genres),

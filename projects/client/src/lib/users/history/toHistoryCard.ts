@@ -7,6 +7,7 @@ import { episodeBadge, type WatchedCard } from '../profile/toProfileSummary.ts';
 import type { HistoryItem } from './historyFilters.ts';
 import type { HistoryRow, WatchedShowRow } from './historyRowsSchema.ts';
 import { seasonName } from '../../utils/seasonName.ts';
+import { isUnknownDate } from '../../utils/isUnknownDate.ts';
 
 /** One poster card in the history grid. */
 export type HistoryCard = {
@@ -43,7 +44,6 @@ export type HistoryDay<Card = HistoryCard> = {
 };
 
 // OG's UNKNOWN_WATCHED_DATE.
-const UNKNOWN = Date.parse('1970-01-01T00:00:00Z');
 
 const showHref = (slug: string) => `/shows/${slug}`;
 const watchedDate = (at: string, datePreferences: DatePreferences) =>
@@ -136,7 +136,7 @@ export function toHistoryDays<Card extends Pick<HistoryCard, 'watchedAt' | 'runt
 ): HistoryDay<Card>[] {
   const days: HistoryDay<Card>[] = [];
   for (const card of cards) {
-    const unknown = Date.parse(card.watchedAt) === UNKNOWN;
+    const unknown = isUnknownDate(card.watchedAt);
     const key = unknown ? 'unknown' : watchDateInput(new Date(card.watchedAt), datePreferences.timeZone).slice(0, 10);
     const last = days.at(-1);
     if (last?.key === key) {

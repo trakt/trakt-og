@@ -4,6 +4,7 @@ import type { WatchEpisode } from './WatchEpisode.ts';
 import type { HistoryPlay } from './HistoryPlay.ts';
 import type { WatchTarget } from './WatchTarget.ts';
 import { GENERIC_ERROR } from '../../utils/genericError.ts';
+import { UNKNOWN_DATE } from '../../utils/unknownDate.ts';
 
 type Params = {
   target: WatchTarget;
@@ -94,7 +95,7 @@ export async function watchMedia(params: Params): Promise<boolean> {
       if (params.confirm && !(await params.confirm(episodes.length))) return false;
     }
     const at = watchedAt === 'unknown'
-      ? '1970-01-01T00:00:00.000Z'
+      ? UNKNOWN_DATE
       : watchedAt && !['now', 'released'].includes(watchedAt)
       ? watchedAt
       : now().toISOString();

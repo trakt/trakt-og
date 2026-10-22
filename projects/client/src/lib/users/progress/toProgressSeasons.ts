@@ -6,6 +6,7 @@ import { formatRuntime } from '../../utils/formatRuntime.ts';
 import { imageUrl } from '../../utils/imageUrl.ts';
 import type { ProgressSeasonData } from './ProgressItem.ts';
 import { seasonName } from '../../utils/seasonName.ts';
+import { isUnknownDate } from '../../utils/isUnknownDate.ts';
 
 export type EpisodeSquareState = 'watched' | 'not-watched' | 'up-next' | 'not-aired';
 
@@ -72,7 +73,6 @@ type ToProgressSeasonsParams = {
   datePreferences: DatePreferences;
 };
 
-const UNKNOWN_DATE = Date.parse('1970-01-01T00:00:00Z');
 const code = (season: number, number: number) => `${season}x${String(number).padStart(2, '0')}`;
 
 type Episode = {
@@ -104,7 +104,7 @@ function toSquare(
     : 'not-watched';
   const collected = !done && episode.collected;
   const day = (date: string | undefined) =>
-    date && Date.parse(date) !== UNKNOWN_DATE ? formatDate(date, { ...datePreferences, format: 'll' }) : undefined;
+    date && !isUnknownDate(date) ? formatDate(date, { ...datePreferences, format: 'll' }) : undefined;
   const airs = day(firstAired) ?? 'TBA';
   const doneAt = day(at);
   const status = {
@@ -156,7 +156,7 @@ function toSquare(
 /** The season's latest watch, as a date. */
 function lastDay(episodes: readonly Episode[], datePreferences: DatePreferences): string | undefined {
   const at = episodes.reduce<string | undefined>((max, { at }) => (at && (!max || at > max) ? at : max), undefined);
-  return at && Date.parse(at) !== UNKNOWN_DATE ? formatDate(at, { ...datePreferences, format: 'll' }) : undefined;
+  return at && !isUnknownDate(at) ? formatDate(at, { ...datePreferences, format: 'll' }) : undefined;
 }
 
 /** Maps an open row's seasons onto their headings and squares, a square an episode, aired or announced. */

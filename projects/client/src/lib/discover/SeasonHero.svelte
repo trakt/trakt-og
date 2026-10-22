@@ -11,11 +11,13 @@
 <script lang="ts">
 import { mediaTags } from '$lib/components/labels/mediaTags';
 import TagPills from '$lib/components/labels/TagPills.svelte';
+import TrimmedLogo from '$lib/components/media/TrimmedLogo.svelte';
 import VideoPopup from '$lib/components/dialog/VideoPopup.svelte';
 import { youtubeEmbedUrl } from '$lib/components/dialog/youtubeEmbedUrl';
 import { watchNowPath } from '$lib/components/watchnow/watchNowPath';
 import { openWatchNow } from '$lib/components/watchnow/watchNowLauncher.svelte';
 import { isPlainClick } from '$lib/utils/isPlainClick';
+import { proxiedLogoUrl } from '$lib/utils/proxiedLogoUrl';
 import Icon from '$lib/icons/Icon.svelte';
 import youtube from '$lib/icons/brands/youtube.svg?raw';
 import angleLeft from '$lib/icons/light/angle-left.svg?raw';
@@ -163,12 +165,16 @@ const controls: Attachment<HTMLElement> = (node) => {
       </div>
 
       <div class="info" aria-live="polite">
-        <span class={['source', current.source]}>
-          {current.source === 'trending' ? 'Trending now' : 'All-time favorite'}
-        </span>
-        <h2 class="name">
-          {#if current.logo}<img src={current.logo} alt={current.title} />{:else}{current.title}{/if}
-        </h2>
+        <div class="headline">
+          <span class={['source', current.source]}>
+            {current.source === 'trending' ? 'Trending now' : 'All-time favorite'}
+          </span>
+          <h2 class="name">
+            {#if current.logo}
+              <TrimmedLogo src={proxiedLogoUrl(current.logo) ?? current.logo} alt={current.title} />
+            {:else}{current.title}{/if}
+          </h2>
+        </div>
         <div class="tags"><TagPills tags={mediaTags({ ...current, mixed: true })} /></div>
         <p class="overview">{current.overview ?? ''}</p>
         <div class="actions">
@@ -397,7 +403,7 @@ const controls: Attachment<HTMLElement> = (node) => {
 /* A fixed height, so the posters and buttons stay put from one pick to the next. */
 .info {
   display: grid;
-  grid-template-rows: auto var(--season-hero-name-height) auto auto auto;
+  grid-template-rows: var(--season-hero-headline-height) auto auto auto;
   align-content: start;
   gap: var(--season-hero-copy-gap);
   block-size: var(--season-hero-info-height);
@@ -409,8 +415,18 @@ const controls: Attachment<HTMLElement> = (node) => {
   }
 }
 
+/* The source and the name together at the bottom of their space, so the source rides just over the logo. */
+.headline {
+  display: flex;
+  flex-direction: column;
+  justify-content: end;
+  align-items: start;
+  gap: var(--season-hero-source-gap);
+  min-block-size: 0;
+  overflow: hidden;
+}
+
 .source {
-  justify-self: start;
   padding: var(--season-source-padding);
   border-radius: var(--radius-season-source);
   background-color: var(--color-season-source-favorite);
@@ -425,7 +441,12 @@ const controls: Attachment<HTMLElement> = (node) => {
   }
 }
 
+/* A logo sits on the tags with room under it; the headline's gap is the room above. */
 .name {
+  --trimmed-logo-width: var(--season-hero-logo-width);
+  --trimmed-logo-height: calc(var(--season-hero-name-height) - 2 * var(--trimmed-logo-margin));
+  --trimmed-logo-margin-end: var(--trimmed-logo-margin);
+  --trimmed-logo-filter: drop-shadow(var(--shadow-season-hero-logo));
   display: flex;
   align-items: end;
   margin: 0;
@@ -435,14 +456,6 @@ const controls: Attachment<HTMLElement> = (node) => {
   letter-spacing: var(--letter-spacing-season-title);
   line-height: var(--line-height-season-title);
   text-wrap: balance;
-
-  & img {
-    max-inline-size: var(--season-hero-logo-width);
-    max-block-size: 100%;
-    object-fit: contain;
-    object-position: left bottom;
-    filter: drop-shadow(var(--shadow-season-hero-logo));
-  }
 }
 
 /* One row, so the block keeps its height. */

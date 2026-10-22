@@ -1835,6 +1835,19 @@
   --color-chart-rank-text: #fff;
   --color-chart-rank-live: #ff3b42; /* the live red on the dark glass, in both themes */
   --color-chart-rank-live-glow: rgb(255 59 66 / 0.5);
+  --trimmed-logo-margin: 10px; /* above and below a logo cut to its lettering (trimLogo), so it has room */
+  --trimmed-logo-fallback: 3s; /* when a logo still waiting to be trimmed shows anyway, if no script runs */
+  --trimmed-logo-placeholder-width: 160px; /* the shimmering bar in a logo's place while it's trimmed */
+  --trimmed-logo-placeholder-height: 24px;
+  --trimmed-logo-shimmer: linear-gradient(
+    90deg,
+    rgb(255 255 255 / 0.08) 25%,
+    rgb(255 255 255 / 0.22) 50%,
+    rgb(255 255 255 / 0.08) 75%
+  ); /* over fanart, so light on dark in both themes */
+  --trimmed-logo-shimmer-duration: 1.4s;
+  --trimmed-logo-offstage: -10000px 0; /* the waiting logo's own pixels, out of its box */
+  --fanart-title-logo-margin: var(--trimmed-logo-margin);
   --fanart-title-logo-width: min(280px, 70%);
   --fanart-title-logo-height: 84px;
   --shadow-fanart-title-logo: 0 2px 6px rgb(0 0 0 / 0.6);
@@ -2651,6 +2664,11 @@
   --season-hero-bottom: 40px;
   --season-hero-info-height: 348px; /* every pick's details, so the posters and buttons stay put */
   --season-hero-name-height: 110px; /* the logo, or the title in up to two lines */
+  --season-hero-source-height: 19px; /* the Trending now / All-time favorite chip */
+  --season-hero-source-gap: 20px; /* from the chip down to the logo or title */
+  --season-hero-headline-height: calc(
+    var(--season-hero-source-height) + var(--season-hero-copy-gap) + var(--season-hero-name-height)
+  ); /* the chip and the name together, the space the two had as separate rows */
   --season-hero-tags-height: 21px; /* one row of tag pills */
   --season-hero-logo-width: 440px;
   --shadow-season-hero-logo: 0 2px 10px rgb(0 0 0 / 0.7);

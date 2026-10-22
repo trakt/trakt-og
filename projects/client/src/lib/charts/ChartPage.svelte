@@ -46,6 +46,7 @@ import { chartPeriodText } from '$lib/charts/chartPeriod';
 import ChartHero from '$lib/charts/ChartHero.svelte';
 import ChartRank from '$lib/charts/ChartRank.svelte';
 import type { ChartCard } from '$lib/charts/toChartCard';
+import { proxiedLogoUrl } from '$lib/utils/proxiedLogoUrl';
 import type { HeaderUser } from '$lib/components/header/HeaderUser';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
 import type { loadChart } from '$lib/charts/loadChart';
@@ -228,9 +229,9 @@ const period = $derived(advanced.config.period);
 
 {#snippet fanart(entry: Entry, large = false)}
   <FanartCard framed href={entry.card.href} title={entry.card.title} year={entry.card.year}
-    image={large ? (entry.card.fanart ?? entry.card.image) : entry.card.image}
-    titleLogo={large ? entry.card.logo : undefined} tags={entry.card.tags} userRating={entry.rating}
-    dropped={entry.dropped} faded={entry.faded} icons={icons(entry)}>
+  image={large ? (entry.card.fanart ?? entry.card.image) : entry.card.image}
+  titleLogo={large ? proxiedLogoUrl(entry.card.logo) : undefined} tags={entry.card.tags} userRating={entry.rating}
+  dropped={entry.dropped} faded={entry.faded} icons={icons(entry)}>
     {#snippet fanartOverlay()}
       {#if large}<span class="rank"><ChartRank rank={entry.rank} live={data.chart === 'trending'} /></span>{/if}
     {/snippet}

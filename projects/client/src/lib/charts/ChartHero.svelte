@@ -10,9 +10,11 @@ import TagPills from '$lib/components/labels/TagPills.svelte';
 import VideoPopup from '$lib/components/dialog/VideoPopup.svelte';
 import { youtubeEmbedUrl } from '$lib/components/dialog/youtubeEmbedUrl';
 import QuickIcons from '$lib/components/media/QuickIcons.svelte';
+import TrimmedLogo from '$lib/components/media/TrimmedLogo.svelte';
 import { openWatchNow } from '$lib/components/watchnow/watchNowLauncher.svelte';
 import { watchNowPath } from '$lib/components/watchnow/watchNowPath';
 import { isPlainClick } from '$lib/utils/isPlainClick';
+import { proxiedLogoUrl } from '$lib/utils/proxiedLogoUrl';
 import Icon from '$lib/icons/Icon.svelte';
 import youtube from '$lib/icons/brands/youtube.svg?raw';
 import play from '$lib/icons/solid/play.svg?raw';
@@ -32,6 +34,8 @@ interface Props {
 
 const { card, rank, live, icons }: Props = $props();
 let video = $state<string>();
+// Through og, so its transparent margins can be trimmed.
+const logo = $derived(proxiedLogoUrl(card.logo));
 const trailer = $derived(card.trailer && youtubeEmbedUrl(card.trailer) ? card.trailer : undefined);
 </script>
 
@@ -49,7 +53,9 @@ const trailer = $derived(card.trailer && youtubeEmbedUrl(card.trailer) ? card.tr
 
       <div class="info">
         <h2 class="name" id="chart-hero-{card.id}">
-          <a href={card.href}>{#if card.logo}<img src={card.logo} alt={card.title} />{:else}{card.title}{/if}</a>
+          <a href={card.href}>
+            {#if logo}<TrimmedLogo src={logo} alt={card.title} />{:else}{card.title}{/if}
+          </a>
         </h2>
         <TagPills tags={chartHeroTags(card)} />
         {#if card.overview}<p class="overview">{card.overview}</p>{/if}
@@ -170,6 +176,11 @@ const trailer = $derived(card.trailer && youtubeEmbedUrl(card.trailer) ? card.tr
 }
 
 .name {
+  --trimmed-logo-width: var(--chart-hero-logo-width);
+  --trimmed-logo-height: var(--chart-hero-logo-height);
+  --trimmed-logo-margin-start: var(--trimmed-logo-margin);
+  --trimmed-logo-margin-end: var(--trimmed-logo-margin);
+  --trimmed-logo-filter: drop-shadow(var(--shadow-season-hero-logo));
   margin: 0;
   font-size: var(--font-size-season-title);
   font-weight: var(--font-weight-headings-heavy);
@@ -181,15 +192,6 @@ const trailer = $derived(card.trailer && youtubeEmbedUrl(card.trailer) ? card.tr
     display: block;
     color: inherit;
     text-decoration: none;
-  }
-
-  & img {
-    display: block;
-    max-inline-size: var(--chart-hero-logo-width);
-    max-block-size: var(--chart-hero-logo-height);
-    object-fit: contain;
-    object-position: left bottom;
-    filter: drop-shadow(var(--shadow-season-hero-logo));
   }
 }
 
@@ -269,10 +271,8 @@ const trailer = $derived(card.trailer && youtubeEmbedUrl(card.trailer) ? card.tr
   .name {
     font-size: var(--font-size-chart-hero-title-narrow);
 
-    & img {
-      max-inline-size: var(--chart-hero-logo-width-narrow);
-      max-block-size: var(--chart-hero-logo-height-narrow);
-    }
+    --trimmed-logo-width: var(--chart-hero-logo-width-narrow);
+    --trimmed-logo-height: var(--chart-hero-logo-height-narrow);
   }
 
   .overview {

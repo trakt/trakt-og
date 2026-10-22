@@ -5,6 +5,7 @@ import type { WatchEpisode } from '../history/WatchEpisode.ts';
 import type { WatchTarget } from '../history/WatchTarget.ts';
 import type { CollectionMetadata } from './CollectionMetadata.ts';
 import { GENERIC_ERROR } from '../../utils/genericError.ts';
+import { UNKNOWN_DATE } from '../../utils/unknownDate.ts';
 
 type Params = {
   target: WatchTarget;
@@ -72,7 +73,7 @@ export async function collectMedia(params: Params): Promise<boolean> {
       return false;
     }
     const at = collectedAt === 'unknown'
-      ? '1970-01-01T00:00:00.000Z'
+      ? UNKNOWN_DATE
       : collectedAt && !['now', 'released'].includes(collectedAt)
       ? collectedAt
       : now().toISOString();

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import type { createOverlay } from '../../overlay/createOverlay.svelte.ts';
 import type { RatingTarget } from './RatingTarget.ts';
+import { UNKNOWN_DATE } from '../../utils/unknownDate.ts';
 
 type Request = (path: string, body?: unknown) => Promise<Response>;
 type Params = {
@@ -41,7 +42,7 @@ async function autoWatch({ target, watchAfterRating, overlay, request, notify, n
     if (z.array(z.unknown()).parse(await history.json()).length > 0) return;
   }
 
-  const at = watchAfterRating === 'unknown' ? '1970-01-01T00:00:00.000Z' : now().toISOString();
+  const at = watchAfterRating === 'unknown' ? UNKNOWN_DATE : now().toISOString();
   const episode = target.type === 'episode'
     ? await request(`/search/trakt/${target.id}?type=episode&extended=full`).then(async (response) => {
       if (!response.ok) throw new Error('Episode unavailable');

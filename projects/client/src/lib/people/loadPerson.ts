@@ -9,6 +9,7 @@ import { type KnownForItem, knownForSchema } from './knownForSchema.ts';
 import { toBirthday } from './toBirthday.ts';
 import { toCreditsQuery } from './toCreditsQuery.ts';
 import { toPersonSummary } from './toPersonSummary.ts';
+import { okBody } from '../api/okBody.ts';
 
 type LoadPersonParams = {
   fetch: typeof fetch;
@@ -20,13 +21,6 @@ type LoadPersonParams = {
   /** The page URL's query: OG's `?sort=`, `?display=` and `?terms=`, so a shared view renders filtered. */
   search: URLSearchParams;
 };
-
-type Response = { status: number; body: unknown };
-type Body<R extends Response> = Extract<R, { status: 200 }>['body'];
-
-/** The body of a 200, or null for anything else. The page still renders with no credits. */
-const ok = <R extends Response>(request: Promise<R>): Promise<Body<R> | null> =>
-  request.then((response) => (response.status === 200 ? response.body : null)).catch(() => null);
 
 /** The API's known-for picks, or none when the call fails, the person has none (a 204) or the body doesn't parse. */
 async function knownFor(fetcher: typeof fetch, id: string): Promise<KnownForItem[]> {
@@ -55,8 +49,8 @@ export async function loadPerson({ fetch, token, parent, id: requested, search }
 
   const notable = { type: 'person', id: person.ids.trakt, slug: id } as const;
   const [movies, shows, picks, lists, note] = await Promise.all([
-    ok(client.people.movies({ params: { id }, query: { extended: 'full,images' } })),
-    ok(client.people.shows({ params: { id }, query: { extended: 'full,images' } })),
+    okBody(client.people.movies({ params: { id }, query: { extended: 'full,images' } })),
+    okBody(client.people.shows({ params: { id }, query: { extended: 'full,images' } })),
     knownFor(fetch, id),
     client.people.lists({ params: { id, type: 'all', sort: 'popular' }, query: { limit: 1 } }).catch(() => null),
     loadPrivateNote({ fetch, token: user ? token : null, item: notable }),

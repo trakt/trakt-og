@@ -18,6 +18,7 @@ import search from '$lib/icons/regular/magnifying-glass.svg?raw';
 import check from '$lib/icons/trakt/check-thick.svg?raw';
 import { api } from '../../api/api.ts';
 import { favoriteSlugs, type Source, toSourceMap } from './watchNow.ts';
+import { okBody } from '../../api/okBody.ts';
 
 interface Props {
   /** The applied `watchnow` list. */
@@ -55,8 +56,7 @@ async function prepare() {
   picked = [...applied];
   query = '';
   if (sources) return;
-  const response = await api().watchnow.sources.country({ params: { countryCode: country } }).catch(() => null);
-  sources = toSourceMap(response?.status === 200 ? response.body : null, country);
+  sources = toSourceMap(await okBody(api().watchnow.sources.country({ params: { countryCode: country } })), country);
 }
 
 function reload(slugs: readonly string[]) {

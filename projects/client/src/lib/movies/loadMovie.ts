@@ -8,6 +8,7 @@ import type { ViewerSettings } from '../settings/ViewerSettings.ts';
 import { toRelatedSource } from '../summary/toRelatedSource.ts';
 import { toMovieSummary } from './toMovieSummary.ts';
 import { watchNowCountry } from '../settings/watchNowCountry.ts';
+import { okBody } from '../api/okBody.ts';
 
 type LoadMovieParams = {
   fetch: typeof fetch;
@@ -17,13 +18,6 @@ type LoadMovieParams = {
   parent: () => Promise<{ settings: ViewerSettings | null; user: HeaderUser | null; datePreferences: DatePreferences }>;
   id: string;
 };
-
-type Response = { status: number; body: unknown };
-type Body<R extends Response> = Extract<R, { status: 200 }>['body'];
-
-/** The body of a 200, or null for anything else. The summary still renders without its extras. */
-const ok = <R extends Response>(request: Promise<R>): Promise<Body<R> | null> =>
-  request.then((response) => (response.status === 200 ? response.body : null)).catch(() => null);
 
 /**
  * Loads `/movies/:id` for SSR: the summary with the layout data (404s and canonical redirects need it), then
@@ -45,22 +39,22 @@ export async function loadMovie({ fetch, token, parent, id: requested }: LoadMov
 
   const country = watchNowCountry(settings);
 
-  const collection = ok(client.movies.lists({ params: { id, type: 'official', sort: 'popular' } })).then(
+  const collection = okBody(client.movies.lists({ params: { id, type: 'official', sort: 'popular' } })).then(
     async (lists) => {
       const list = lists?.at(0);
       if (!list) return null;
-      const items = await ok(client.lists.items.movie({ params: { id: String(list.ids.trakt) }, query: {} }));
+      const items = await okBody(client.lists.items.movie({ params: { id: String(list.ids.trakt) }, query: {} }));
       return items ? { list, items } : null;
     },
   );
 
   const notable = { type: 'movie', id: movie.ids.trakt, slug: id } as const;
   const [ratings, stats, people, studios, releases, watchnow, official, note] = await Promise.all([
-    ok(client.movies.ratings({ params: { id }, query: { extended: 'all' } })),
-    ok(client.movies.stats({ params: { id } })),
-    ok(client.movies.people({ params: { id }, query: { extended: 'images' } })),
-    ok(client.movies.studios({ params: { id } })),
-    ok(client.movies.releases({ params: { id } })),
+    okBody(client.movies.ratings({ params: { id }, query: { extended: 'all' } })),
+    okBody(client.movies.stats({ params: { id } })),
+    okBody(client.movies.people({ params: { id }, query: { extended: 'images' } })),
+    okBody(client.movies.studios({ params: { id } })),
+    okBody(client.movies.releases({ params: { id } })),
     loadWatchNow({ fetch, path: `/movies/${id}`, country, settings, isVip: user?.isVip ?? false }),
     collection,
     loadPrivateNote({ fetch, token: user ? token : null, item: notable }),

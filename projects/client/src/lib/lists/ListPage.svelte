@@ -199,7 +199,7 @@ const actions = $derived(
     })
     : null,
 );
-// : the watchlist and favorites are titled after their owner.
+// The watchlist and favorites are titled after their owner.
 const pageTitle = $derived(
   data.kind === 'official'
     ? data.list.name
@@ -434,7 +434,7 @@ function dragItem(item: ListItemCard, event: PointerEvent) {
 }
 const plural = (count: number, word: string) => `${word}${count === 1 ? '' : 's'}`;
 
-// Manage mode. The watchlist and favorites get it with their own endpoints in.
+// Manage mode. The watchlist and favorites get it too, through their own endpoints.
 const canManage = $derived(Boolean(actions?.manage) && data.list?.kind === 'personal');
 let transferBusy = $state(false);
 const manager = createListManager(
@@ -982,7 +982,7 @@ h2 {
   display: flow-root;
   padding-block-end: var(--space-panel);
 
-  /* The top pagination spacing and.pagination-bottom. */
+  /* Both paginations sit a line below what precedes them, with no space after. */
   & :global(nav) {
     margin-block: var(--line-height-computed) 0;
   }

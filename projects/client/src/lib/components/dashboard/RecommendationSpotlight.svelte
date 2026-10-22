@@ -1,8 +1,8 @@
 <!--
   The dashboard recommendation in the spotlight: its fanart (or, without one, its poster's two API colors), the
-  counter, previous, next and hide over it, then the title, tag pills (the type in the mix, the certificate, runtime and
-  episodes joined, two genres joined, the network), two lines of overview and labelled glass actions: Add to
-  Watchlist, Watch Now and Why this?, with the Trakt rating at the end.
+  counter, previous, next and a "Not interested" hide over it, then the title, tag pills (the type in the
+  mix, the certificate, runtime and episodes joined, two genres joined, the network), two lines of overview and
+  labelled glass actions: Add to Watchlist, Watch Now and Why this?, with the Trakt rating at the end.
 -->
 <script lang="ts">
 import { page } from '$app/state';
@@ -18,9 +18,9 @@ import type { WatchNowButton } from '$lib/components/watchnow/watchNow';
 import WatchNowDialog from '$lib/components/watchnow/WatchNowDialog.svelte';
 import type { Recommendation } from '$lib/dashboard/Recommendation';
 import Icon from '$lib/icons/Icon.svelte';
+import ban from '$lib/icons/regular/ban.svg?raw';
 import chevronLeft from '$lib/icons/regular/chevron-left.svg?raw';
 import chevronRight from '$lib/icons/regular/chevron-right.svg?raw';
-import xmark from '$lib/icons/regular/xmark.svg?raw';
 import heart from '$lib/icons/solid/heart.svg?raw';
 import play from '$lib/icons/solid/play.svg?raw';
 import RecommendationWhy from './RecommendationWhy.svelte';
@@ -114,9 +114,8 @@ async function openWatchNow() {
           svg={chevronRight}
         /></button>
     {/if}
-    <VisibilityControl {target} action="hide" section="recommendations" variant="badge"><span class="round"><Icon
-          svg={xmark}
-        /></span></VisibilityControl>
+    <VisibilityControl {target} action="hide" section="recommendations" variant="badge" label="Not interested"><span
+        class="round"><Icon svg={ban} /></span></VisibilityControl>
   </div>
   {#key item.id}
   <div class="body">

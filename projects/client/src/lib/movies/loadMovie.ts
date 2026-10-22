@@ -20,25 +20,17 @@ type LoadMovieParams = {
 };
 
 /**
- * Loads `/movies/:id` for SSR: the summary with the layout data (404s and canonical redirects need it), then
- * everything else in parallel. The collection's items wait on the collection itself. Every call but the private note
+ * Loads `/movies/:id` for SSR: the summary, the layout data and everything else in parallel, with the 404 and canonical
+ * redirect checked before the rest is used. The collection's items wait on the collection itself. Every call but the private note
  * is public and goes without the user's token: a stale cookie token would get a 401 for data that doesn't need it.
  */
 export async function loadMovie({ fetch, token, parent, id: requested }: LoadMovieParams) {
   const client = api({ fetch });
-  const [summary, { settings, user, datePreferences }] = await Promise.all([
-    client.movies.summary({ params: { id: requested }, query: { extended: 'full,images' } }),
-    parent(),
-  ]);
-  if (summary.status === 404) error(404, 'Movie not found');
-  if (summary.status !== 200) error(502, 'The Trakt API could not load this movie.');
-
-  const movie = summary.body;
-  const id = movie.ids.slug;
-  if (requested !== id) redirect(301, `/movies/${id}`);
-
-  const country = watchNowCountry(settings);
-
+  const summaryRead = client.movies.summary({ params: { id: requested }, query: { extended: 'full,images' } });
+  const layout = parent();
+  // The extras go by the requested id alongside the summary, not after it; a non-canonical id redirects before they're
+  // used. Each resolves to null on failure, and the catch only stops a failed summary leaving them unhandled.
+  const id = requested;
   const collection = okBody(client.movies.lists({ params: { id, type: 'official', sort: 'popular' } })).then(
     async (lists) => {
       const list = lists?.at(0);
@@ -48,17 +40,43 @@ export async function loadMovie({ fetch, token, parent, id: requested }: LoadMov
     },
   );
 
-  const notable = { type: 'movie', id: movie.ids.trakt, slug: id } as const;
-  const [ratings, stats, people, studios, releases, watchnow, official, note] = await Promise.all([
+  const extras = Promise.all([
     okBody(client.movies.ratings({ params: { id }, query: { extended: 'all' } })),
     okBody(client.movies.stats({ params: { id } })),
     okBody(client.movies.people({ params: { id }, query: { extended: 'images' } })),
     okBody(client.movies.studios({ params: { id } })),
     okBody(client.movies.releases({ params: { id } })),
-    loadWatchNow({ fetch, path: `/movies/${id}`, country, settings, isVip: user?.isVip ?? false }),
+    layout.then(({ settings, user }) =>
+      loadWatchNow({
+        fetch,
+        path: `/movies/${id}`,
+        country: watchNowCountry(settings),
+        settings,
+        isVip: user?.isVip ?? false,
+      })
+    ),
     collection,
-    loadPrivateNote({ fetch, token: user ? token : null, item: notable }),
+    Promise.all([summaryRead, layout]).then(([summary, { user }]) =>
+      summary.status === 200
+        ? loadPrivateNote({
+          fetch,
+          token: user ? token : null,
+          item: { type: 'movie', id: summary.body.ids.trakt, slug: summary.body.ids.slug } as const,
+        })
+        : null
+    ),
   ]);
+  extras.catch(() => {});
+
+  const [summary, { settings, user, datePreferences }] = await Promise.all([summaryRead, layout]);
+  if (summary.status === 404) error(404, 'Movie not found');
+  if (summary.status !== 200) error(502, 'The Trakt API could not load this movie.');
+
+  const movie = summary.body;
+  if (requested !== movie.ids.slug) redirect(301, `/movies/${movie.ids.slug}`);
+  const notable = { type: 'movie', id: movie.ids.trakt, slug: movie.ids.slug } as const;
+
+  const [ratings, stats, people, studios, releases, watchnow, official, note] = await extras;
 
   const view = toMovieSummary({
     movie,

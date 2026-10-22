@@ -1,4 +1,3 @@
-import { dayIn } from '../calendars/calendarDays.ts';
 import type { DatePreferences } from '../settings/DatePreferences.ts';
 import type { GenreBar } from '../users/profile/toGenreBar.ts';
 import { countLabel } from '../utils/countLabel.ts';
@@ -7,6 +6,7 @@ import type { LiveWatch } from './fetchWatching.ts';
 import type { SocialWindow } from './socialWindows.ts';
 import type { SocialItem, SocialMember, SocialTarget } from './toSocialItem.ts';
 import { uniqueBy } from '../utils/uniqueBy.ts';
+import { dayIn } from '../utils/dayIn.ts';
 
 export type SocialView = 'title' | 'person' | 'time';
 

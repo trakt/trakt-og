@@ -34,6 +34,7 @@ import { searchTypes } from './searchTypes.ts';
 import { viewerRecentSearches } from './viewerRecentSearches.ts';
 import type { RecentSearch } from './createRecentSearches.svelte.ts';
 import type { SearchRow } from './toSearchRow.ts';
+import { dayIn } from '../../utils/dayIn.ts';
 
 const { savedType = '', viewer = null }: { savedType?: string; viewer?: string | null } = $props();
 
@@ -130,7 +131,7 @@ const runSearch = () => {
 };
 
 // The viewer's date, for People's birthdays and ages.
-const viewerToday = () => new Date().toLocaleDateString('en-CA', { timeZone: page.data.datePreferences?.timeZone });
+const viewerToday = () => dayIn(new Date(), page.data.datePreferences?.timeZone);
 
 const loadTrending = (picked: (typeof searchTypes)[number]) => {
   if (picked.slug in trending) return;

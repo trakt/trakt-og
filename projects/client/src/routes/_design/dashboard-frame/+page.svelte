@@ -7,7 +7,7 @@ import DashboardInbox from '$lib/components/dashboard/DashboardInbox.svelte';
 import Container from '$lib/components/container/Container.svelte';
 import { dashboardFrameFixture as sample } from '$lib/dashboard/dashboardFrameFixture';
 import { toStatsPanel } from '$lib/dashboard/toStatsPanel';
-import { dayIn } from '$lib/calendars/calendarDays';
+import { dayIn } from '$lib/utils/dayIn';
 import type { WatchingNow } from '$lib/users/WatchingNow';
 
 let theme = $state('light');

@@ -1,7 +1,7 @@
 import { watchNowResponseSchema } from '@trakt/api';
 import { api } from '../api/api.ts';
 import { rawApiFetch } from '../api/rawApiFetch.ts';
-import { type CalendarItem, dayIn } from '../calendars/calendarDays.ts';
+import type { CalendarItem } from '../calendars/calendarDays.ts';
 import { fetchCalendar } from '../calendars/fetchCalendar.ts';
 import { fetchHiddenCalendar } from '../calendars/fetchHiddenCalendar.ts';
 import { toCalendarPreferences } from '../calendars/toCalendarPreferences.ts';
@@ -20,6 +20,7 @@ import { toDashboardSettings } from './toDashboardSettings.ts';
 import { toScheduleDays } from './toScheduleDays.ts';
 import { upcomingDays } from './upcomingDays.ts';
 import { watchNowCountry } from '../settings/watchNowCountry.ts';
+import { dayIn } from '../utils/dayIn.ts';
 
 type FetchScheduleParams = {
   fetch: typeof globalThis.fetch;

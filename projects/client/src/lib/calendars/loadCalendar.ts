@@ -11,7 +11,7 @@ import { matchesCalendarFilters } from './matchesCalendarFilters.ts';
 import { api } from '../api/api.ts';
 import { parseFadeHide } from '../components/filters/fadeHide.ts';
 import type { DatePreferences } from '../settings/DatePreferences.ts';
-import { calendarDays, dayIn } from './calendarDays.ts';
+import { calendarDays } from './calendarDays.ts';
 import { calendarRanges } from './calendarRanges.ts';
 import { calendarWindow } from './calendarWindow.ts';
 import { calendarFeedUrls } from './calendarFeedUrls.ts';
@@ -22,6 +22,7 @@ import { PUBLIC_CALENDARS } from './publicCalendars.ts';
 import { viewerAirTime } from './viewerAirTime.ts';
 import { toCalendarPreferences } from './toCalendarPreferences.ts';
 import { withoutHidden } from './withoutHidden.ts';
+import { dayIn } from '../utils/dayIn.ts';
 
 type LoadCalendarParams = {
   fetch: typeof fetch;

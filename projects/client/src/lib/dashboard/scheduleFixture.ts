@@ -1,4 +1,5 @@
 import type { HotReleaseResponse, WatchNowResponse } from '@trakt/api';
+import { addDays } from '../utils/addDays.ts';
 
 type Show = NonNullable<HotReleaseResponse['show']>;
 type Movie = NonNullable<HotReleaseResponse['movie']>;
@@ -165,12 +166,6 @@ const dropAirings = Array.from({ length: 10 }, (_, i): Airing => ({
   day: 0,
   hour: 7,
 }));
-
-const addDays = (today: string, days: number) => {
-  const date = new Date(`${today}T00:00:00Z`);
-  date.setUTCDate(date.getUTCDate() + days);
-  return date.toISOString().slice(0, 10);
-};
 
 const offers = (source: string, type: 'subscription' | 'cinema'): Offers => ({
   free: [],

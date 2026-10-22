@@ -1,5 +1,6 @@
-import { calendarDays, type CalendarItem, dayIn } from '../calendars/calendarDays.ts';
+import { calendarDays, type CalendarItem } from '../calendars/calendarDays.ts';
 import { viewerAirTime } from '../calendars/viewerAirTime.ts';
+import { dayIn } from '../utils/dayIn.ts';
 
 type UpcomingDaysParams = {
   items: readonly CalendarItem[];

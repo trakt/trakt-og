@@ -10,6 +10,7 @@ import { toBirthday } from './toBirthday.ts';
 import { toCreditsQuery } from './toCreditsQuery.ts';
 import { toPersonSummary } from './toPersonSummary.ts';
 import { okBody } from '../api/okBody.ts';
+import { dayIn } from '../utils/dayIn.ts';
 
 type LoadPersonParams = {
   fetch: typeof fetch;
@@ -73,7 +74,7 @@ export async function loadPerson({ fetch, token, parent, id: requested, search }
     birthday: toBirthday({
       birthday: person.birthday,
       death: person.death,
-      today: now.toLocaleDateString('en-CA', { timeZone: datePreferences.timeZone }),
+      today: dayIn(now, datePreferences.timeZone),
     }),
     query: toCreditsQuery(search),
     // OG's `display_actor_episode_counts`.

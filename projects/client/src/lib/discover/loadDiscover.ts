@@ -2,7 +2,6 @@ import { error } from '@sveltejs/kit';
 import { z } from 'zod/v4';
 import { api } from '../api/api.ts';
 import { rawApiFetch } from '../api/rawApiFetch.ts';
-import { dayIn } from '../calendars/calendarDays.ts';
 import type { DatePreferences } from '../settings/DatePreferences.ts';
 import { chartHref } from './chartHref.ts';
 import { DISCOVER_MOODS, type DiscoverMood } from './discoverMoods.ts';
@@ -21,6 +20,7 @@ import { toPosterItem } from './toPosterItem.ts';
 import { toPremieres } from './toPremieres.ts';
 import { fetchTrendingComments } from './fetchTrendingComments.ts';
 import { toSeasonPicks } from './toSeasonPicks.ts';
+import { dayIn } from '../utils/dayIn.ts';
 
 type LoadDiscoverParams = {
   fetch: typeof fetch;

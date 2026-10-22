@@ -245,8 +245,8 @@ section {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-sm-inline);
-  margin-block-start: var(--space-sm-block);
+  gap: var(--space-dropdown-row);
+  margin-block-start: var(--space-heading-dropdowns);
 }
 
 .body {

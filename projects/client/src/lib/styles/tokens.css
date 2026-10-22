@@ -219,7 +219,7 @@
   --space-sm-block: 5px;
   --space-sm-inline: 10px;
   --space-base-block: 6px;
-  --space-heading-dropdowns: 8px; /* a panel or section heading to the row of dropdowns under it */
+  --space-heading-dropdowns: 11px; /* a panel or section heading to the row of dropdowns under it */
   --space-heading-rule: 2px; /* a heading to the divider line under it, like the history's days */
   --space-dropdown-row: var(--toolbar-gap); /* between the dropdowns, chips and count buttons in a row, as in the toolbar */
   --space-base-inline: 12px;

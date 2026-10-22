@@ -128,7 +128,8 @@ function soon(days: number) {
 }
 
 .controls {
-  margin-block-end: var(--discover-controls-gap);
+  /* The grid's gap, trimmed to the heading-to-controls space every section uses. */
+  margin-block: calc(var(--space-heading-dropdowns) - var(--discover-heading-margin)) var(--discover-controls-gap);
 }
 
 .grid {

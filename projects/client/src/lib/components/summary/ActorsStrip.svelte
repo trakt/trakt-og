@@ -5,11 +5,11 @@
   the picked group. Pointing at one headshot dims the rest. Empty groups aren't offered.
 -->
 <script lang="ts">
-import SeeMore from '$lib/components/see-more/SeeMore.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import { peopleGroupHref } from '$lib/credits/peopleGroupHref';
 import CastCard from './CastCard.svelte';
 import type { CastMember } from './CastMember.ts';
+import SectionHeading from './SectionHeading.svelte';
 
 interface Group {
   readonly id: string;
@@ -41,13 +41,10 @@ const current = $derived(tabs.find(({ key }) => key === picked) ?? tabs[0]);
 
 {#if current}
   <div class="actors" id="people">
-  <div class="heading">
-    <h2>People</h2>
-    <SeeMore
-      href={peopleGroupHref(creditsHref, { kind: current.kind, id: current.id, first: current.key === tabs[0]?.key })}
-      text="All People"
-    />
-  </div>
+  <SectionHeading title="People" more={{
+    href: peopleGroupHref(creditsHref, { kind: current.kind, id: current.id, first: current.key === tabs[0]?.key }),
+    text: 'All People',
+  }} />
   <div class="controls">
     <Dropdown section={current.kind}>
       {#snippet trigger()}{current.label}<span class="tag">{current.cast.length.toLocaleString('en-US')}</span>{/snippet}
@@ -80,17 +77,6 @@ const current = $derived(tabs.find(({ key }) => key === picked) ?? tabs[0]);
 <style>
 .actors {
   container-type: inline-size;
-}
-
-.heading {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  margin-block-start: var(--gutter);
-
-  & h2 {
-    margin: 0;
-  }
 }
 
 .controls {

@@ -9,27 +9,14 @@ interface Props {
   date: string;
   today?: boolean;
   past?: boolean;
-  /** Scroll today's bar into view on load: the account's autoscroll setting. */
-  autoscroll?: boolean;
 }
 
-const { date, today = false, past = false, autoscroll = false }: Props = $props();
+const { date, today = false, past = false }: Props = $props();
 const format = (options: Intl.DateTimeFormatOptions) =>
   new Intl.DateTimeFormat('en-US', { ...options, timeZone: 'UTC' }).format(new Date(`${date}T00:00:00Z`));
-
-function scrollToday(node: HTMLElement) {
-  if (!today || !autoscroll) return;
-  const frame = requestAnimationFrame(() =>
-    node.scrollIntoView({
-      block: 'start',
-      behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth',
-    })
-  );
-  return () => cancelAnimationFrame(frame);
-}
 </script>
 
-<h2 class={['date-separator', { today, past }]} {@attach scrollToday}>
+<h2 class={['date-separator', { today, past }]}>
   <span class="date">{Number(date.slice(8))}</span>
   <span class="lines"><span class="month">{format({ month: 'long' })}</span><span class="weekday">{
       format({ weekday: 'long' })

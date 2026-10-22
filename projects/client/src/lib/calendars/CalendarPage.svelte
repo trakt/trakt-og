@@ -7,7 +7,7 @@
   into one card when the viewer wants that.
 -->
 <script lang="ts">
-import { goto } from '$app/navigation';
+import { afterNavigate, goto } from '$app/navigation';
 import { page } from '$app/state';
 import CalendarFeed from '$lib/components/calendar/CalendarFeed.svelte';
 import MiniMonth from '$lib/components/calendar/MiniMonth.svelte';
@@ -39,7 +39,7 @@ import grid from '$lib/icons/regular/grid-2.svg?raw';
 import list from '$lib/icons/regular/list.svg?raw';
 import { overlay } from '$lib/overlay/overlay';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
-import type { ComponentProps } from 'svelte';
+import { type ComponentProps, tick } from 'svelte';
 import type { CalendarItem } from './calendarDays.ts';
 import {
   CALENDAR_ARTWORK,
@@ -77,7 +77,9 @@ const weekStart = $derived(Math.max(0, WEEKDAYS.indexOf(data.preferences.startDa
 
 let display = $derived<CalendarDisplay>(data.display);
 function setDisplay(patch: Partial<CalendarDisplay>) {
+  const viewChanged = patch.view !== undefined && patch.view !== display.view;
   display = { ...display, ...patch };
+  if (viewChanged) tick().then(scrollToToday);
   for (const key of Object.keys(patch) as (keyof CalendarDisplay)[]) {
     document.cookie = `${CALENDAR_DISPLAY_COOKIES[key]}=${display[key]}; path=/; samesite=lax; max-age=31536000`;
   }
@@ -291,6 +293,19 @@ function followScroll(node: HTMLElement) {
     removeEventListener('resize', schedule);
   };
 }
+// Landing on a month that holds today, or switching its view, opens at today; filter changes stay on the same path
+// and keep their place. The server-rendered page also jumps there before its first paint, ahead of hydration.
+// The closing tag is split so it doesn't end this script block.
+function todayScript(today: string) {
+  const day = JSON.stringify(`day-${today}`);
+  return `<script>document.getElementById(${day})?.scrollIntoView({ block: 'start' })${'<'}/script>`;
+}
+function scrollToToday() {
+  document.getElementById(`day-${data.today}`)?.scrollIntoView({ block: 'start', behavior: 'instant' });
+}
+afterNavigate(({ type, from, to }) => {
+  if (type === 'enter' || from?.url.pathname !== to?.url.pathname) scrollToToday();
+});
 function jump(date: string) {
   document.getElementById(`day-${date}`)?.scrollIntoView({
     block: 'start',
@@ -450,13 +465,13 @@ const title = $derived(`${data.target === 'my' ? 'My ' : ''}${data.calendar.labe
     {#if display.view === 'month'}
       <CalendarMonth {month} {days} today={data.today} artwork={display.artwork} {weekStart} {mixed} {cardIcons} />
     {:else if display.view === 'agenda'}
-      <CalendarAgenda {days} today={data.today} artwork={display.artwork} autoscroll={data.preferences.autoscroll}
-        {mixed} {cardIcons} />
+      <CalendarAgenda {days} today={data.today} artwork={display.artwork} {mixed} {cardIcons} />
     {:else}
-      <CalendarList {days} today={data.today} artwork={display.artwork} autoscroll={data.preferences.autoscroll}
-        {mixed} {cardIcons} />
+      <CalendarList {days} today={data.today} artwork={display.artwork} {mixed} {cardIcons} />
     {/if}
   </div>
+  <!-- eslint-disable-next-line svelte/no-at-html-tags -- a fixed script built from an ISO date -->
+  {@html todayScript(data.today)}
 </SidebarFrame>
 
 <style>

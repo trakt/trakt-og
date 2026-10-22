@@ -17,19 +17,18 @@ interface Props {
   days: readonly { readonly date: string; readonly entries: readonly CalendarEntry[] }[];
   today: string;
   artwork: CalendarArtwork;
-  autoscroll?: boolean;
   /** Shows and movies on one calendar: movies get a Movie tag. */
   mixed?: boolean;
   cardIcons: (entry: CalendarEntry) => Omit<ComponentProps<typeof QuickIcons>, 'small'>;
 }
 
-const { days, today, artwork, autoscroll = false, mixed = false, cardIcons }: Props = $props();
+const { days, today, artwork, mixed = false, cardIcons }: Props = $props();
 </script>
 
 <div class={['calendar-list', artwork]}>
   {#each days as day (day.date)}
     <section class="day" id="day-{day.date}" data-day={day.date}>
-      <CalendarDayHeader date={day.date} today={day.date === today} past={day.date < today} {autoscroll} />
+      <CalendarDayHeader date={day.date} today={day.date === today} past={day.date < today} />
       {#if day.entries.length === 0}
         <div class="empty"><NoData>Nothing on this day.</NoData></div>
       {:else}

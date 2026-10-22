@@ -14,6 +14,7 @@ import { type RelatedCard, toRelatedCard } from './toRelatedCard.ts';
 import { toRelatedPeople } from './toRelatedPeople.ts';
 import { type SummaryList, toSummaryList } from './toSummaryList.ts';
 import { toVideoCards, type VideoCard } from '../videos/toVideoCards.ts';
+import { okBody } from '../api/okBody.ts';
 
 type Api = ReturnType<typeof api>;
 
@@ -61,13 +62,6 @@ export type SectionsClient = {
   videos: (media: SummaryMedia) => Promise<readonly VideoCard[] | null>;
 };
 
-type Response = { status: number; body: unknown };
-type Body<R extends Response> = Extract<R, { status: 200 }>['body'];
-
-/** The body of a 200, or `null` for anything else: a section loses a tab, not the page. */
-const ok = <R extends Response>(request: Promise<R>): Promise<Body<R> | null> =>
-  request.then((response) => (response.status === 200 ? response.body : null)).catch(() => null);
-
 const nonEmpty = <T>(items: readonly T[]) => (items.length > 0 ? items : null);
 
 /**
@@ -99,7 +93,7 @@ export function sectionsClient({
 
   const watching = (media: SummaryMedia) =>
     media.type === 'episode'
-      ? ok(
+      ? okBody(
         anonymous.shows.episode.watching({
           params: { id: media.slug, season: media.season, episode: media.episode },
           query: {},
@@ -108,10 +102,10 @@ export function sectionsClient({
       : watchingOther(media);
   const watchingOther = ({ type, slug, season }: SummaryMedia) =>
     type === 'season'
-      ? ok(anonymous.shows.season.watching({ params: { id: slug, season: season ?? 0 }, query: {} }))
+      ? okBody(anonymous.shows.season.watching({ params: { id: slug, season: season ?? 0 }, query: {} }))
       : type === 'movie'
-      ? ok(anonymous.movies.watching({ params: { id: slug }, query: {} }))
-      : ok(anonymous.shows.watching({ params: { id: slug }, query: {} }));
+      ? okBody(anonymous.movies.watching({ params: { id: slug }, query: {} }))
+      : okBody(anonymous.shows.watching({ params: { id: slug }, query: {} }));
 
   const comments = (media: SummaryMedia, sort: 'likes' | 'newest', language: string | null) => {
     const { type, slug, season } = media;
@@ -120,7 +114,7 @@ export function sectionsClient({
       query: { extended: 'images', limit: PREVIEW_LIMIT, ...(language && { language }) },
     } as const;
     if (media.type === 'episode') {
-      return ok(
+      return okBody(
         viewer.shows.episode.comments({
           ...request,
           params: { ...request.params, season: media.season, episode: media.episode },
@@ -128,9 +122,9 @@ export function sectionsClient({
       );
     }
     if (type === 'season') {
-      return ok(viewer.shows.season.comments({ ...request, params: { ...request.params, season: season ?? 0 } }));
+      return okBody(viewer.shows.season.comments({ ...request, params: { ...request.params, season: season ?? 0 } }));
     }
-    return type === 'movie' ? ok(viewer.movies.comments(request)) : ok(viewer.shows.comments(request));
+    return type === 'movie' ? okBody(viewer.movies.comments(request)) : okBody(viewer.shows.comments(request));
   };
 
   const lists = (media: SummaryMedia, kind: 'official' | 'personal', limit?: number) => {
@@ -140,7 +134,7 @@ export function sectionsClient({
       query: { extended: 'images', limit },
     } as const;
     if (media.type === 'episode') {
-      return ok(
+      return okBody(
         anonymous.shows.episode.lists({
           ...request,
           params: { ...request.params, season: media.season, episode: media.episode },
@@ -148,20 +142,20 @@ export function sectionsClient({
       );
     }
     if (type === 'season') {
-      return ok(anonymous.shows.season.lists({ ...request, params: { ...request.params, season: season ?? 0 } }));
+      return okBody(anonymous.shows.season.lists({ ...request, params: { ...request.params, season: season ?? 0 } }));
     }
-    return type === 'movie' ? ok(anonymous.movies.lists(request)) : ok(anonymous.shows.lists(request));
+    return type === 'movie' ? okBody(anonymous.movies.lists(request)) : okBody(anonymous.shows.lists(request));
   };
 
   const videosOf = (media: SummaryMedia) => {
     const id = media.slug;
     if (media.type === 'episode') {
-      return ok(anonymous.shows.episode.videos({ params: { id, season: media.season, episode: media.episode } }));
+      return okBody(anonymous.shows.episode.videos({ params: { id, season: media.season, episode: media.episode } }));
     }
-    if (media.type === 'season') return ok(anonymous.shows.season.videos({ params: { id, season: media.season } }));
+    if (media.type === 'season') return okBody(anonymous.shows.season.videos({ params: { id, season: media.season } }));
     return media.type === 'movie'
-      ? ok(anonymous.movies.videos({ params: { id } }))
-      : ok(anonymous.shows.videos({ params: { id } }));
+      ? okBody(anonymous.movies.videos({ params: { id } }))
+      : okBody(anonymous.shows.videos({ params: { id } }));
   };
 
   // The slugs the viewer follows, or `null` logged out or when the list doesn't load: nobody is picked out then.
@@ -169,7 +163,7 @@ export function sectionsClient({
     if (!signedIn) return null;
     // The contract omits limit, but the worker supports limit=all.
     const request = { params: { id: 'me' }, query: { extended: undefined, limit: 'all' } };
-    const body = await ok(viewer.users.following(request));
+    const body = await okBody(viewer.users.following(request));
     const rows = followingSchema.safeParse(body).data;
     return rows ? new Set(rows.flatMap(({ user }) => user.ids.slug ?? [])) : null;
   };
@@ -248,18 +242,18 @@ export function sectionsClient({
       const query = { extended: 'full,images', limit: RELATED_LIMIT } as const;
       const date = now();
       if (media.type === 'movie') {
-        const movies = await ok(anonymous.movies.related({ params: { id: media.slug }, query }));
+        const movies = await okBody(anonymous.movies.related({ params: { id: media.slug }, query }));
         return nonEmpty((movies ?? []).map((item) => toRelatedCard({ type: 'movie', item }, date)));
       }
-      const shows = await ok(anonymous.shows.related({ params: { id: media.slug }, query }));
+      const shows = await okBody(anonymous.shows.related({ params: { id: media.slug }, query }));
       return nonEmpty((shows ?? []).map((item) => toRelatedCard({ type: 'show', item }, date)));
     },
 
     relatedPeople: async (card) => {
       const params = { id: String(card.id) };
       const people = card.type === 'movie'
-        ? await ok(anonymous.movies.people({ params, query: {} }))
-        : await ok(anonymous.shows.people({ params, query: {} }));
+        ? await okBody(anonymous.movies.people({ params, query: {} }))
+        : await okBody(anonymous.shows.people({ params, query: {} }));
       return people ? toRelatedPeople(people) : null;
     },
 

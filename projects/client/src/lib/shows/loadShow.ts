@@ -15,6 +15,7 @@ import { toRelatedSource } from '../summary/toRelatedSource.ts';
 import { toShowEpisodes } from './toShowEpisodes.ts';
 import { toShowSummary } from './toShowSummary.ts';
 import { watchNowCountry } from '../settings/watchNowCountry.ts';
+import { okBody } from '../api/okBody.ts';
 
 type LoadShowParams = {
   fetch: typeof fetch;
@@ -32,17 +33,10 @@ type LoadShowParams = {
   url?: URL;
 };
 
-type Response = { status: number; body: unknown };
-type Body<R extends Response> = Extract<R, { status: 200 }>['body'];
-
 /** `extended=episodes` adds each season's episodes, which `@trakt/api` doesn't type. */
 export type SeasonWithEpisodes = SeasonsResponse[number] & { episodes?: readonly EpisodeResponse[] };
 /** `extended=guest_stars` adds the guest stars, which `@trakt/api` doesn't type. */
 export type ShowPeople = PeopleResponse & { guest_stars?: PeopleResponse['cast'] };
-
-/** The body of a 200, or null for anything else. The summary still renders without its extras. */
-const ok = <R extends Response>(request: Promise<R>): Promise<Body<R> | null> =>
-  request.then((response) => (response.status === 200 ? response.body : null)).catch(() => null);
 
 // The published schemas use zod 3. Wrap their parsers in zod 4 at this off-contract boundary, retaining the
 // extended fields (`episodes` and `guest_stars`) that the base contract would strip.
@@ -85,10 +79,10 @@ export async function loadShowData({ fetch, token, parent, id: requested, path =
 
   const notable = { type: 'show', id: show.ids.trakt, slug: id } as const;
   const [ratings, stats, people, studios, seasons, watchnow, progress, note] = await Promise.all([
-    ok(client.shows.ratings({ params: { id }, query: { extended: 'all' } })),
-    ok(client.shows.stats({ params: { id } })),
+    okBody(client.shows.ratings({ params: { id }, query: { extended: 'all' } })),
+    okBody(client.shows.stats({ params: { id } })),
     raw(fetch, `/shows/${id}/people?extended=guest_stars,images`, peopleBody),
-    ok(client.shows.studios({ params: { id } })),
+    okBody(client.shows.studios({ params: { id } })),
     // ponytail: every episode of every season in one response (~1KB each). Split per season if long runners get slow.
     raw(fetch, `/shows/${id}/seasons?extended=full,images,episodes`, seasonsBody),
     loadWatchNow({
@@ -100,7 +94,7 @@ export async function loadShowData({ fetch, token, parent, id: requested, path =
       isVip: user?.isVip ?? false,
     }),
     // A stale token gets a 401 here, and the page renders Next Episode like a logged-out visit.
-    token ? ok(api({ fetch, token }).shows.progress.watched({ params: { id }, query: {} })) : null,
+    token ? okBody(api({ fetch, token }).shows.progress.watched({ params: { id }, query: {} })) : null,
     loadPrivateNote({ fetch, token: user ? token : null, item: notable }),
   ]);
 

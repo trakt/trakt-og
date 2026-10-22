@@ -1,10 +1,10 @@
 <!--
   The season hero: this month's theme from the month map as an auto-rotating carousel of up to twenty picks. Each pick
-  fills the hero with its fanart, and its logo (or title), tag pills, overview, "More info" and "Trailer" sit on the
-  left in a block of fixed height, so nothing jumps between picks. The theme's badge is top-left and the All /
+  fills the hero with its fanart, and its logo (or title), tag pills, overview, "More info", "Watch now" (once it's
+  out) and "Trailer" sit on the left in a block of fixed height, so nothing jumps between picks. The theme's badge is top-left and the All /
   Trending / Favorites switch top-right, its accent sliding to the picked button. A rail of same-size posters picks a
   slide and scrolls to keep the current one in view: it's full colour with an accent ring and a timer bar, the rest
-  dim. "Trailer" plays the pick's trailer in og's video popup. It moves on every six seconds, pausing while the
+  dim. "Watch now" opens the page's Watch Now dialog; "Trailer" plays the pick's trailer in og's video popup. It moves on every six seconds, pausing while the
   pointer or focus is inside and not at all under reduced motion; the arrows, and ← → with focus inside, step
   through.
 -->
@@ -13,8 +13,11 @@ import { mediaTags } from '$lib/components/labels/mediaTags';
 import TagPills from '$lib/components/labels/TagPills.svelte';
 import VideoPopup from '$lib/components/dialog/VideoPopup.svelte';
 import { youtubeEmbedUrl } from '$lib/components/dialog/youtubeEmbedUrl';
+import { watchNowPath } from '$lib/components/watchnow/watchNowPath';
+import { openWatchNow } from '$lib/components/watchnow/watchNowLauncher.svelte';
 import { isPlainClick } from '$lib/utils/isPlainClick';
 import Icon from '$lib/icons/Icon.svelte';
+import youtube from '$lib/icons/brands/youtube.svg?raw';
 import angleLeft from '$lib/icons/light/angle-left.svg?raw';
 import angleRight from '$lib/icons/light/angle-right.svg?raw';
 import play from '$lib/icons/solid/play.svg?raw';
@@ -170,6 +173,21 @@ const controls: Attachment<HTMLElement> = (node) => {
         <p class="overview">{current.overview ?? ''}</p>
         <div class="actions">
           <a class="button primary" href={current.href}>More info</a>
+          {#if current.released}
+            {@const pick = current}
+            <button
+              type="button"
+              class="button accent"
+              aria-haspopup="dialog"
+              onclick={() =>
+                openWatchNow({
+                  path: watchNowPath(pick) ?? pick.href,
+                  title: pick.title,
+                  year: pick.year,
+                  fanart: pick.fanart,
+                })}
+            ><Icon svg={play} /> Watch now</button>
+          {/if}
           {#if current.trailer && youtubeEmbedUrl(current.trailer)}
             <a
               class="button secondary"
@@ -181,7 +199,7 @@ const controls: Attachment<HTMLElement> = (node) => {
                 event.preventDefault();
                 video = current.trailer;
               }}
-            ><Icon svg={play} /> Trailer</a>
+            ><Icon svg={youtube} /> Trailer</a>
           {/if}
         </div>
       </div>
@@ -461,12 +479,16 @@ const controls: Attachment<HTMLElement> = (node) => {
   white-space: nowrap;
   gap: var(--season-hero-badge-gap);
   block-size: var(--season-hero-action);
+  min-block-size: 0;
   padding-inline: var(--season-hero-button-inline);
+  border: 0;
   border-radius: var(--radius-season-button);
+  font: inherit;
   font-size: var(--font-size-season-button);
   font-weight: var(--font-weight-headings-heavy);
   letter-spacing: var(--letter-spacing-season-eyebrow);
   text-transform: uppercase;
+  cursor: pointer;
 
   &:is(:hover, :focus-visible) {
     background-color: var(--season-accent);
@@ -484,6 +506,17 @@ const controls: Attachment<HTMLElement> = (node) => {
   background-color: var(--color-season-hero-chrome);
   box-shadow: inset 0 0 0 1px var(--color-season-hero-chrome-line);
   color: var(--color-discover-text);
+}
+
+/* Watch now in the season's accent, so it stands apart from the trailer's glass; it lights up white instead. */
+.accent {
+  background-color: var(--season-accent);
+  color: var(--color-discover-on-image);
+
+  &:is(:hover, :focus-visible) {
+    background-color: var(--color-season-button-bg);
+    color: var(--color-season-button-text);
+  }
 }
 
 /* One row that scrolls sideways, fading out at the end, with room for the current poster's ring. */

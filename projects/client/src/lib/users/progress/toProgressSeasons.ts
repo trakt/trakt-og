@@ -5,6 +5,7 @@ import { formatDate } from '../../utils/formatDate.ts';
 import { formatRuntime } from '../../utils/formatRuntime.ts';
 import { imageUrl } from '../../utils/imageUrl.ts';
 import type { ProgressSeasonData } from './ProgressItem.ts';
+import { seasonName } from '../../utils/seasonName.ts';
 
 export type EpisodeSquareState = 'watched' | 'not-watched' | 'up-next' | 'not-aired';
 
@@ -73,7 +74,6 @@ type ToProgressSeasonsParams = {
 
 const UNKNOWN_DATE = Date.parse('1970-01-01T00:00:00Z');
 const code = (season: number, number: number) => `${season}x${String(number).padStart(2, '0')}`;
-const seasonName = (number: number) => number === 0 ? 'Specials' : `Season ${number}`;
 
 type Episode = {
   number: number;

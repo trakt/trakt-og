@@ -21,6 +21,7 @@ import { episodeNeighbours } from './episodeNeighbours.ts';
 import type { episodeSeasonsSchema } from './episodeSeasonsSchema.ts';
 import type { seasonPeopleSchema } from './seasonPeopleSchema.ts';
 import { toCrewGroups } from '../components/summary/toCrewGroups.ts';
+import { seasonName } from '../utils/seasonName.ts';
 
 interface Params {
   show: ShowResponse;
@@ -52,7 +53,7 @@ export function toEpisodeSummary(params: Params) {
   const fullTitle = `${show.title} ${number} ${title}`;
   const popular = (key: string, value: string) =>
     params.isVip ? `/shows/popular?${key}=${encodeURIComponent(value)}` : undefined;
-  const seasonNumber = episode.season === 0 ? 'Specials' : `Season ${episode.season}`;
+  const seasonNumber = seasonName(episode.season);
   return {
     id: episode.ids.trakt,
     showId: show.ids.trakt,

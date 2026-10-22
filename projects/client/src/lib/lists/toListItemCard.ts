@@ -6,6 +6,7 @@ import { formatRuntime } from '../utils/formatRuntime.ts';
 import { imageUrl } from '../utils/imageUrl.ts';
 import { episodeBadge } from '../users/profile/toProfileSummary.ts';
 import type { ListItemRow } from './listItemRowsSchema.ts';
+import { seasonName } from '../utils/seasonName.ts';
 
 type Link = { readonly text: string; readonly href: string };
 /** The Trakt rating line: the heart, "72%" and the votes. */
@@ -155,7 +156,7 @@ export function toListItemCard(row: ListItemRow, { sortBy, datePreferences, now 
     case 'season': {
       const { show, season } = row;
       const href = `${showHref(show.ids.slug)}/seasons/${season.number}`;
-      const name = season.number === 0 ? 'Specials' : `Season ${season.number}`;
+      const name = seasonName(season.number);
       // `item_title(season_title: true)`: a season with its own name reads "2: The Name".
       const title = season.title && season.title !== name ? `${season.number}: ${season.title}` : name;
       return {

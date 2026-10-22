@@ -17,6 +17,7 @@ import { formatRuntime } from '../utils/formatRuntime.ts';
 import { imageUrl } from '../utils/imageUrl.ts';
 import type { SeasonWithEpisodes, ShowPeople } from './loadShow.ts';
 import { toCrewGroups } from '../components/summary/toCrewGroups.ts';
+import { seasonName } from '../utils/seasonName.ts';
 
 type Tag = NonNullable<ComponentProps<typeof FanartCard>['tags']>[number];
 
@@ -251,7 +252,7 @@ export function toShowSummary(params: ShowSummaryParams) {
     id: season.ids.trakt,
     number: season.number,
     href: `${href}/seasons/${season.number}`,
-    title: season.title ?? (season.number === 0 ? 'Specials' : `Season ${season.number}`),
+    title: season.title ?? seasonName(season.number),
     fullTitle: `${show.title} ${season.title ?? `Season ${season.number}`}`,
     image: imageUrl(season.images?.poster?.at(0), 'thumb'),
     episodes: countLabel(season.episode_count ?? 0, 'episode'),

@@ -8,6 +8,7 @@ import type { ExternalLink } from '../components/summary/ExternalLink.ts';
 import { iconLinks } from '../components/summary/iconLinks.ts';
 import { imageUrl } from '../utils/imageUrl.ts';
 import type { subpageItemSchema } from './subpageItemSchema.ts';
+import { seasonName } from '../utils/seasonName.ts';
 
 type Body = z.infer<typeof subpageItemSchema>;
 type Show = NonNullable<Body['show']>;
@@ -61,7 +62,6 @@ const IMDB = 'https://www.imdb.com/';
 const TMDB = 'https://www.themoviedb.org/';
 
 const yearOf = (date: string | null | undefined) => (date ? new Date(date).getUTCFullYear() : undefined);
-const seasonName = (number: number) => (number === 0 ? 'Specials' : `Season ${number}`);
 const sxe = (season: number, number: number) =>
   season === 0 ? `Special ${number}` : `${season}x${String(number).padStart(2, '0')}`;
 const find = (q: string, s: string) => `${IMDB}find?${new URLSearchParams({ q, s })}`;

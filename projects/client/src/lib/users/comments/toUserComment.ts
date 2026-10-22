@@ -3,12 +3,13 @@ import { episodeNumber } from '../../components/media/episodeTags.ts';
 import { imageUrl } from '../../utils/imageUrl.ts';
 import type { UserComment } from './UserComment.ts';
 import type { UserCommentRow } from './UserCommentRow.ts';
+import { seasonName } from '../../utils/seasonName.ts';
 
 type Poster = UserComment['poster'];
 
 const showHref = (show: { readonly ids: { readonly slug: string } }) => `/shows/${show.ids.slug}`;
-const seasonName = (season: { title?: string | null; number: number }) =>
-  season.title?.trim() || (season.number === 0 ? 'Specials' : `Season ${season.number}`);
+const seasonTitle = (season: { title?: string | null; number: number }) =>
+  season.title?.trim() || seasonName(season.number);
 const thumb = (path: string | null | undefined) => imageUrl(path, 'thumb');
 
 function commentPoster(row: UserCommentRow): Poster | undefined {
@@ -42,7 +43,7 @@ function commentPoster(row: UserCommentRow): Poster | undefined {
       type: 'season',
       id: season.ids.trakt,
       href: `${showHref(show)}/seasons/${season.number}`,
-      title: seasonName(season),
+      title: seasonTitle(season),
       image: thumb(season.images?.poster?.at(0) ?? show.images?.poster?.at(0)),
       variant: 'poster',
       show: { text: show.title, href: showHref(show) },

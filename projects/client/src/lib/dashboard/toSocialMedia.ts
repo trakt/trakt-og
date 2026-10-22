@@ -1,5 +1,6 @@
 import type { SocialMedia } from './socialMediaSchema.ts';
 import type { SocialItem } from './toSocialItem.ts';
+import { seasonName } from '../utils/seasonName.ts';
 
 const episodeCode = (season: number, number: number) =>
   season === 0 ? `Special ${number}` : `${season}x${String(number).padStart(2, '0')}`;
@@ -55,7 +56,7 @@ export function toSocialMedia(activity: SocialMedia): SocialItemMedia {
   if (activity.type === 'show') return { ...common, href: showHref };
   if (activity.type === 'season') {
     const { number } = activity.season;
-    return { ...common, code: number === 0 ? 'Specials' : `Season ${number}`, href: `${showHref}/seasons/${number}` };
+    return { ...common, code: seasonName(number), href: `${showHref}/seasons/${number}` };
   }
 
   const { season, number, images, ids, rating, runtime, title } = activity.episode;

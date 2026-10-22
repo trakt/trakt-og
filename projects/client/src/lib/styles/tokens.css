@@ -1906,16 +1906,16 @@
   --cast-list-columns: 2; /* rows side by side in list view */
   --color-cast-row-bg: light-dark(#f5f5f5, #262626);
   --color-cast-row-hover-bg: light-dark(#ececec, #303030);
-  --actors-visible: 8; /* cards that fit a summary's actors row before it scrolls */
+  --actors-visible: 7; /* cards that fit a summary's actors row before it scrolls */
   --actors-visible-narrow: 5;
-  --actors-gap: 14px;
+  --actors-gap: var(--gutter); /* between actors, in the summary strip and the cast & crew grid, like a poster grid */
   --actors-scrollbar-gap: 8px;
   --videos-visible: 4; /* video cards a row: the summary's, before it scrolls, and the videos page's */
   --videos-visible-narrow: 2;
   --video-caption-gap: 8px; /* a video card's image to its title */
   --video-tag-inset: 8px; /* its type tag from the image's bottom-left corner */
-  --cast-grid-min: 104px; /* the narrowest card in a cast & crew grid, so 1440px fits eight */
-  --cast-grid-row-gap: 20px;
+  --cast-grid-min: 104px; /* the narrowest card in a cast & crew grid, so 1440px fits seven, like the summary */
+  --cast-grid-row-gap: var(--gutter);
   --cast-heading-gap: 14px; /* a search result group's heading rule to its people */
   --cast-groups-gap: 34px; /* between search result groups */
   --color-action-bg: light-dark(#fff, #222); /* idle action buttons */

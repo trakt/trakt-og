@@ -1,6 +1,5 @@
 import { episodeResponseSchema, peopleResponseSchema, seasonResponseSchema } from '@trakt/api';
 import type { EpisodeResponse, PeopleResponse, SeasonsResponse } from '@trakt/api';
-import { z } from 'zod/v4';
 import { readFadeHide } from '../components/filters/readFadeHide.ts';
 import type { Cookies } from '@sveltejs/kit';
 import { error, redirect } from '@sveltejs/kit';
@@ -16,6 +15,7 @@ import { toShowEpisodes } from './toShowEpisodes.ts';
 import { toShowSummary } from './toShowSummary.ts';
 import { watchNowCountry } from '../settings/watchNowCountry.ts';
 import { okBody } from '../api/okBody.ts';
+import { contractSchema } from '../api/contractSchema.ts';
 
 type LoadShowParams = {
   fetch: typeof fetch;
@@ -48,12 +48,7 @@ const raw = async <T>(fetch: typeof globalThis.fetch, path: string, schema: {
 }): Promise<T | null> => {
   const response = await rawApiFetch({ fetch, path }).catch(() => null);
   if (!response?.ok) return null;
-  const body = z.unknown().transform((input, context) => {
-    const parsed = schema.safeParse(input);
-    if (parsed.success) return parsed.data;
-    context.addIssue({ code: 'custom', message: 'Invalid extended show response' });
-    return z.NEVER;
-  }).safeParse(await response.json().catch(() => null));
+  const body = contractSchema(schema).safeParse(await response.json().catch(() => null));
   return body.success ? body.data : null;
 };
 

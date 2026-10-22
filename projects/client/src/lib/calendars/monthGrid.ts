@@ -1,11 +1,6 @@
+import { addDays } from '../utils/addDays.ts';
 const toDate = (iso: string) => new Date(`${iso}T00:00:00Z`);
 const toIso = (date: Date) => date.toISOString().slice(0, 10);
-
-function addDays(iso: string, days: number) {
-  const date = toDate(iso);
-  date.setUTCDate(date.getUTCDate() + days);
-  return toIso(date);
-}
 
 /** One square of a month grid. */
 export type MonthCell = { readonly date: string; readonly inMonth: boolean };

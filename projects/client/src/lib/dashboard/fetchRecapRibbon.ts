@@ -1,8 +1,8 @@
 import type { api } from '../api/api.ts';
-import { dayIn } from '../calendars/calendarDays.ts';
 import type { RecapRibbon } from './RecapRibbon.ts';
 import { recapWindows } from './recapWindows.ts';
 import { toRecapRibbon } from './toRecapRibbon.ts';
+import { dayIn } from '../utils/dayIn.ts';
 
 type FetchRecapRibbonParams = {
   client: ReturnType<typeof api>;

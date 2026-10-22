@@ -1,4 +1,3 @@
-import { dayIn } from '../calendars/calendarDays.ts';
 import type { DatePreferences } from '../settings/DatePreferences.ts';
 import { playRuntime } from '../users/playRuntime.ts';
 import { toGenreBar } from '../users/profile/toGenreBar.ts';
@@ -6,6 +5,7 @@ import type { WatchedGenreRow } from '../users/profile/watchedGenresSchema.ts';
 import { countLabel } from '../utils/countLabel.ts';
 import { formatRuntime } from '../utils/formatRuntime.ts';
 import type { LastThirtyDays, MinutesChartData, MinutesDay } from './LastThirtyDays.ts';
+import { dayIn } from '../utils/dayIn.ts';
 
 type Ids = { readonly ids: { readonly trakt: number }; readonly runtime?: number | null };
 

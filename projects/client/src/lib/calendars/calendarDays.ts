@@ -1,4 +1,5 @@
 import type { CalendarMovieResponse, CalendarShowResponse } from '@trakt/api';
+import { dayIn } from '../utils/dayIn.ts';
 
 /** One calendar entry: an episode airing (`first_aired`) or a movie release (`released`). */
 export type CalendarItem =
@@ -23,9 +24,6 @@ type CalendarDaysParams = {
   /** The viewer's zone. Episodes fall on the day they air there; movie release dates have no time, so stay put. */
   timeZone: string;
 };
-
-/** `YYYY-MM-DD` of an instant in a zone. en-CA formats dates that way. */
-export const dayIn = (at: string, timeZone: string) => new Date(at).toLocaleDateString('en-CA', { timeZone });
 
 /**
  * OG's `fill_dates`: every day in the window, empty or not, with its entries in

@@ -9,7 +9,7 @@ import UpNextPanel from '$lib/components/dashboard/UpNextPanel.svelte';
 import WatchlistPanel from '$lib/components/dashboard/WatchlistPanel.svelte';
 import Container from '$lib/components/container/Container.svelte';
 import type { OnDeckItem } from '$lib/components/media/OnDeckItem';
-import { dayIn } from '$lib/calendars/calendarDays';
+import { dayIn } from '$lib/utils/dayIn';
 import { toCalendarItems } from '$lib/calendars/toCalendarItems';
 import type { DashboardRecommendations } from '$lib/dashboard/fetchRecommendations';
 import type { DashboardWatchlist } from '$lib/dashboard/fetchWatchlist';

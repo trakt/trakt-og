@@ -4,6 +4,7 @@ import { chartPeriod } from '../charts/chartPeriod.ts';
 import { boxOfficeWeekend } from './boxOfficeWeekend.ts';
 import { toBoxOfficeRow } from './toBoxOfficeRow.ts';
 import { toOpeningRow } from './toOpeningRow.ts';
+import { dayIn } from '../utils/dayIn.ts';
 
 // The IMDb weekend box office list the chart is built
 const BOX_OFFICE_LIST_ID = '1267169';
@@ -36,9 +37,7 @@ type LoadBoxOfficeParams = {
 export async function loadBoxOffice({ fetch, cookies, parent, now = new Date() }: LoadBoxOfficeParams) {
   const client = api({ fetch });
   const layout = parent();
-  const today = layout.then(({ datePreferences }) =>
-    now.toLocaleDateString('en-CA', { timeZone: datePreferences.timeZone })
-  );
+  const today = layout.then(({ datePreferences }) => dayIn(now, datePreferences.timeZone));
   const [response, list, date, opening] = await Promise.all([
     client.movies.boxoffice({ query: { extended: 'full,images' } }),
     client.lists.summary({ params: { id: BOX_OFFICE_LIST_ID } }),

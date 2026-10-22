@@ -1,4 +1,4 @@
-import { dayIn } from '../calendars/calendarDays.ts';
+import { dayIn } from '../utils/dayIn.ts';
 
 export type SocialPeriod = 'today' | 'yesterday' | 'week';
 

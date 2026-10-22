@@ -1,7 +1,7 @@
 import type { CalendarShowResponse, ShowAnticipatedResponse } from '@trakt/api';
-import { dayIn } from '../calendars/calendarDays.ts';
 import { imageUrl } from '../utils/imageUrl.ts';
 import { uniqueBy } from '../utils/uniqueBy.ts';
+import { dayIn } from '../utils/dayIn.ts';
 
 /** An upcoming premiere: a new series or a returning season, and how anticipated it is. */
 export type Premiere = {

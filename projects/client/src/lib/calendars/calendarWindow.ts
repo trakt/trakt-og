@@ -1,3 +1,4 @@
+import { addDays } from '../utils/addDays.ts';
 /** A calendar window. Every date is a `YYYY-MM-DD` UTC day. */
 export type CalendarWindow = {
   start: string;
@@ -22,12 +23,6 @@ const DAYS = 7;
 
 const toDate = (iso: string) => new Date(`${iso}T00:00:00Z`);
 const toIso = (date: Date) => date.toISOString().slice(0, 10);
-
-function addDays(iso: string, days: number) {
-  const date = toDate(iso);
-  date.setUTCDate(date.getUTCDate() + days);
-  return toIso(date);
-}
 
 // API's `date + 1.month` clamps to the month's last day: Mar 31 - 1 month is Feb 28.
 function addMonths(iso: string, months: number) {

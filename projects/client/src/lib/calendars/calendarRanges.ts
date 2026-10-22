@@ -1,13 +1,8 @@
+import { addDays } from '../utils/addDays.ts';
 /** The worker's cap on `days`. */
 const MAX_DAYS = 33;
 // `days=N` covers N + 1 days, end inclusive, so one window covers at most 34 days.
 const SPAN = MAX_DAYS + 1;
-
-const addDays = (iso: string, days: number) => {
-  const date = new Date(`${iso}T00:00:00Z`);
-  date.setUTCDate(date.getUTCDate() + days);
-  return date.toISOString().slice(0, 10);
-};
 
 /**
  * The calendar requests that cover `count` days from `start` (`YYYY-MM-DD`), each day exactly once and each within

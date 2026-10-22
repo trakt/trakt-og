@@ -480,6 +480,7 @@ const actions = (row: UserListRow) => {
       {#each builtIns as list (list.key)}
         <div transition:slide={{ duration }}>{@render row(list, undefined)}</div>
       {/each}
+      {#if builtIns.length > 0 && lists.length > 0}<hr class="rule" transition:slide={{ duration }} />{/if}
     {/if}
     <div class="rows" bind:this={rowsElement} {@attach dragEvents} aria-busy={busy}>
       {#each lists as list (list.key)}
@@ -497,6 +498,13 @@ const actions = (row: UserListRow) => {
 <style>
 .lists {
   padding-block-end: var(--gutter);
+}
+
+/* Between the watchlist and favorites and the custom lists: a row's own spacing above, the next row's below. */
+.rule {
+  margin-block: var(--list-card-spacing) 0;
+  border: 0;
+  border-block-start: 1px solid var(--color-separator);
 }
 
 .visually-hidden {

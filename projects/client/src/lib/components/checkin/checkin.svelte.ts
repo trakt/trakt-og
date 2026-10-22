@@ -6,6 +6,7 @@ import { userManager } from '../../auth/userManager.ts';
 import { toast } from '../toast/toast.svelte.ts';
 import type { CheckinTarget } from './CheckinTarget.ts';
 import { loadCheckinTarget } from './loadCheckinTarget.ts';
+import { GENERIC_ERROR } from '../../utils/genericError.ts';
 
 let target = $state<CheckinTarget | null>(null);
 
@@ -18,7 +19,7 @@ export const checkin = {
     if (!(await userManager().getUser())?.access_token) return login();
     const loaded = await loadCheckinTarget({ ...item, fetch: (path) => rawApiFetch({ path }) }).catch(() => null);
     if (loaded) target = loaded;
-    else toast.error('Doh! We ran into some sort of error.');
+    else toast.error(GENERIC_ERROR);
   },
   close() {
     target = null;

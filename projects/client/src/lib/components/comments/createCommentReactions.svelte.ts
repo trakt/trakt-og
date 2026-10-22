@@ -3,12 +3,12 @@ import { z } from 'zod/v4';
 import { loadCommentReactions } from './loadCommentReactions.ts';
 import { patchReactionSummary } from './patchReactionSummary.ts';
 import type { reactionTypeSchema } from './reactionTypeSchema.ts';
+import { GENERIC_ERROR } from '../../utils/genericError.ts';
 
 type Reaction = z.infer<typeof reactionTypeSchema>;
 type SummaryReader = (id: number, fresh?: boolean) => Promise<ReactionsSummaryResponse | undefined>;
 const empty = (): ReactionsSummaryResponse => ({ reaction_count: 0, user_count: 0, distribution: {} });
 const errorSchema = z.object({ message: z.string() });
-const unknownError = 'Doh! We ran into some sort of error.';
 
 /** Client-only session state: one viewer read, shared per-comment choices, totals and serialized optimistic writes. */
 export function createCommentReactions({ request, notify }: {
@@ -107,7 +107,7 @@ export function createCommentReactions({ request, notify }: {
     const previous = choices[id];
     const next = previous === type ? undefined : type;
     const rollback = patch(id, next);
-    let message = unknownError;
+    let message = GENERIC_ERROR;
     try {
       // API's typed delete also unlikes; delete-all skips that step.
       const response = await request(`/comments/${id}/reactions/${type}`, {
@@ -119,7 +119,7 @@ export function createCommentReactions({ request, notify }: {
           ? body.data.message
           : response.status === 409
           ? 'Doh! You are banned from reacting.'
-          : unknownError;
+          : GENERIC_ERROR;
         throw new Error(message);
       }
       // Both writes return no content. Re-read the public summary to reconcile concurrent members' reactions.

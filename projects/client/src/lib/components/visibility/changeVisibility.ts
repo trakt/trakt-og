@@ -1,6 +1,7 @@
 import { z } from 'zod/v4';
 import type { createOverlay } from '../../overlay/createOverlay.svelte.ts';
 import type { VisibilityTarget } from './VisibilityTarget.ts';
+import { GENERIC_ERROR } from '../../utils/genericError.ts';
 
 type Params = {
   target: VisibilityTarget;
@@ -70,7 +71,7 @@ export async function changeVisibility(
     }
   } catch (error) {
     rollbacks.toReversed().forEach((rollback) => rollback());
-    if (!(error instanceof Error) || error.message !== '429') notify.error('Doh! We ran into some sort of error.');
+    if (!(error instanceof Error) || error.message !== '429') notify.error(GENERIC_ERROR);
     return false;
   }
   notify.success(

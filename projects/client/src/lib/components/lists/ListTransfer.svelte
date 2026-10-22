@@ -26,6 +26,7 @@ import friends from '$lib/icons/trakt/friends.svg?raw';
 import arrow from '$lib/icons/solid/angle-right.svg?raw';
 import spinner from '$lib/icons/solid/arrows-rotate.svg?raw';
 import { traktUrls } from '$lib/traktUrls';
+import { GENERIC_ERROR } from '../../utils/genericError.ts';
 
 interface Props {
   source: ListView;
@@ -203,7 +204,7 @@ async function transfer(list: PickerList | null, watchlist = false) {
     void overlay.refresh();
   } catch {
     failed = row;
-    toast.error('Doh! We ran into some sort of error.');
+    toast.error(GENERIC_ERROR);
   } finally {
     busy = false;
     onbusychange(false);

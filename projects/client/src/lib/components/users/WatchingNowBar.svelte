@@ -22,6 +22,7 @@ import xmark from '$lib/icons/solid/xmark.svg?raw';
 import type { WatchingNow } from '$lib/users/WatchingNow';
 import { watchingProgress } from '$lib/users/watchingProgress';
 import { prefersReducedMotion } from 'svelte/motion';
+import { GENERIC_ERROR } from '../../utils/genericError.ts';
 
 interface Props {
   watching: WatchingNow;
@@ -61,7 +62,7 @@ async function cancel() {
       ? ` ${watching.episode.number}${watching.episode.title ? ` "${watching.episode.title}"` : ''}`
       : '';
     toast.success(`You cancelled your check in for ${watching.title}${episode}.`);
-  } else if (response?.status !== 429) toast.error('Doh! We ran into some sort of error.');
+  } else if (response?.status !== 429) toast.error(GENERIC_ERROR);
 }
 </script>
 

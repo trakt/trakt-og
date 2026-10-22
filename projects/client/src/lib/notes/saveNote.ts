@@ -2,6 +2,7 @@ import { z } from 'zod/v4';
 import { rawApiFetch } from '../api/rawApiFetch.ts';
 import type { NotableItem } from './NotableItem.ts';
 import type { PrivateNote } from './PrivateNote.ts';
+import { GENERIC_ERROR } from '../utils/genericError.ts';
 
 type SaveNoteParams = {
   /** `authenticatedFetch` in the browser. */
@@ -15,7 +16,6 @@ type SaveNoteResult =
   | { readonly ok: true; readonly note: PrivateNote | null }
   | { readonly ok: false; readonly message: string };
 
-const FAILED = 'Doh! We ran into some sort of error.';
 const writtenNote = z.object({
   id: z.number().int().positive(),
   notes: z.string().nullish(),
@@ -50,14 +50,14 @@ export async function saveNote({ fetch, item, note, text }: SaveNoteParams): Pro
         message: `You've already added ${response.headers.get('x-account-limit') ?? 'the most'} notes.`,
       };
     }
-    if (note || response.status !== 201) return { ok: false, message: FAILED };
+    if (note || response.status !== 201) return { ok: false, message: GENERIC_ERROR };
     const parsed = writtenNote.safeParse(await response.json().catch(() => null));
-    if (!parsed.success) return { ok: false, message: FAILED };
+    if (!parsed.success) return { ok: false, message: GENERIC_ERROR };
     return {
       ok: true,
       note: { id: parsed.data.id, text: parsed.data.notes ?? '', updatedAt: parsed.data.updated_at ?? null },
     };
   } catch {
-    return { ok: false, message: FAILED };
+    return { ok: false, message: GENERIC_ERROR };
   }
 }

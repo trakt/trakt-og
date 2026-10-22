@@ -8,6 +8,7 @@ import { removeListItems } from './removeListItems.ts';
 import { reorderListItems } from './reorderListItems.ts';
 import type { ListView } from './toListView.ts';
 import type { ListSort } from './resolveListSort.ts';
+import { GENERIC_ERROR } from '../utils/genericError.ts';
 
 const resultSchema = z.object({
   added: z.record(z.string(), z.number().int().nonnegative()),
@@ -94,9 +95,7 @@ export async function transferListItems(
   } catch (error) {
     if (!(error instanceof Error) || error.message !== '429') {
       notify.error(
-        error instanceof Error && !(error instanceof z.ZodError)
-          ? error.message
-          : 'Doh! We ran into some sort of error.',
+        error instanceof Error && !(error instanceof z.ZodError) ? error.message : GENERIC_ERROR,
       );
     }
     return { ok: false as const, target };

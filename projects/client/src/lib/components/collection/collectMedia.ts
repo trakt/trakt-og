@@ -4,6 +4,7 @@ import type { createOverlay } from '../../overlay/createOverlay.svelte.ts';
 import type { WatchEpisode } from '../history/WatchEpisode.ts';
 import type { WatchTarget } from '../history/WatchTarget.ts';
 import type { CollectionMetadata } from './CollectionMetadata.ts';
+import { GENERIC_ERROR } from '../../utils/genericError.ts';
 
 type Params = {
   target: WatchTarget;
@@ -131,7 +132,7 @@ export async function collectMedia(params: Params): Promise<boolean> {
   } catch (error) {
     rollback();
     if (remove || !(error instanceof Error) || error.message !== '429') {
-      notify.error('Doh! We ran into some sort of error.');
+      notify.error(GENERIC_ERROR);
     }
     return false;
   }

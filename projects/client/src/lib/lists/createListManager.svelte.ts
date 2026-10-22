@@ -17,6 +17,7 @@ import type { ListSort } from './resolveListSort.ts';
 import { saveListItemNote } from './saveListItemNote.ts';
 import type { ListItemCard } from './toListItemCard.ts';
 import type { ListView } from './toListView.ts';
+import { GENERIC_ERROR } from '../utils/genericError.ts';
 
 type Source = {
   list: Pick<ListView, 'id' | 'slug' | 'ownerSlug' | 'name' | 'href'> | null;
@@ -90,7 +91,7 @@ export function createListManager(source: () => Source, isBlocked: () => boolean
     try {
       await run();
     } catch {
-      toast.error('Doh! We ran into some sort of error.');
+      toast.error(GENERIC_ERROR);
     } finally {
       busy = false;
     }

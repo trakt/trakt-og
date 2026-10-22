@@ -28,7 +28,7 @@ type Params = {
 };
 
 /** OG's page size ( `per(54)`). */
-export const NETWORK_PAGE_SIZE = 54;
+const NETWORK_PAGE_SIZE = 54;
 
 const isNetworkType = (value: string): value is NetworkType => Object.hasOwn(networkTypes, value);
 

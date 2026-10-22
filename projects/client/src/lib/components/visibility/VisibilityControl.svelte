@@ -2,7 +2,6 @@
 import { page } from '$app/state';
 import { type ComponentProps, type Snippet, tick } from 'svelte';
 import { rawApiFetch } from '$lib/api/rawApiFetch';
-import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
 import { userManager } from '$lib/auth/userManager';
 import { login } from '$lib/auth/login';
 import { overlay } from '$lib/overlay/overlay';
@@ -23,6 +22,7 @@ import { changeVisibility } from '$lib/components/visibility/changeVisibility';
 import { dropNote } from '$lib/components/visibility/dropNote.svelte';
 import type { VisibilityTarget } from '$lib/components/visibility/VisibilityTarget';
 import { traktUrls } from '$lib/traktUrls';
+import { viewerFetch } from '../../auth/viewerFetch.ts';
 
 interface Props {
   target: VisibilityTarget;
@@ -154,7 +154,7 @@ async function save(at?: string) {
       request: (path, body) =>
         rawApiFetch({
           path,
-          fetch: authenticatedFetch({ manager: userManager() }),
+          fetch: viewerFetch(),
           init: { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) },
         }),
     });

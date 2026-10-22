@@ -12,8 +12,6 @@
 import { page } from '$app/state';
 import type { CommentResponse } from '@trakt/api';
 import { tick } from 'svelte';
-import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
-import { userManager } from '$lib/auth/userManager';
 import type { ViewerSettings } from '$lib/settings/ViewerSettings';
 import PanelHeading from '$lib/components/dashboard/PanelHeading.svelte';
 import PanelHelp from '$lib/components/dashboard/PanelHelp.svelte';
@@ -26,6 +24,7 @@ import type { GifEntry } from './gif/GifEntry.ts';
 import { newComment } from './newComment.svelte.ts';
 import { postComment } from './postComment.ts';
 import { prefersReducedMotion } from 'svelte/motion';
+import { viewerFetch } from '../../auth/viewerFetch.ts';
 
 const { item }: { item: CommentItem } = $props();
 
@@ -55,7 +54,7 @@ const withAvatar = (comment: CommentResponse): CommentResponse =>
   comment.user.images || !settings ? comment : { ...comment, user: { ...comment.user, images: settings.user.images } };
 
 const save = (text: string, spoiler: boolean, gif: GifEntry | null) =>
-  postComment({ fetch: authenticatedFetch({ manager: userManager() }), item, comment: text, spoiler, gif });
+  postComment({ fetch: viewerFetch(), item, comment: text, spoiler, gif });
 
 // The focus goes back to the "Add comment" button that opened the form.
 function cancel() {

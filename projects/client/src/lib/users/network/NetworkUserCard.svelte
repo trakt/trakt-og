@@ -9,8 +9,6 @@
 import { untrack } from 'svelte';
 import { apiQueue } from '$lib/api/apiQueue';
 import { rawApiFetch } from '$lib/api/rawApiFetch';
-import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
-import { userManager } from '$lib/auth/userManager';
 import UserCard from '$lib/components/users/UserCard.svelte';
 import { fetchWatching, type LiveWatch } from '$lib/dashboard/fetchWatching';
 import { liveTiles } from '$lib/dashboard/liveTiles';
@@ -20,6 +18,7 @@ import type { ViewerRelation } from '$lib/users/ViewerRelation';
 import { inViewport } from '$lib/utils/inViewport';
 import { fetchNetworkProfile } from './fetchNetworkProfile.ts';
 import type { NetworkExtra } from './NetworkExtra.ts';
+import { viewerFetch } from '../../auth/viewerFetch.ts';
 
 interface Props {
   user: ProfileUser;
@@ -33,8 +32,7 @@ const { user, extra, relation = null, canFollow = true }: Props = $props();
 /** A little under the poll's 2 minutes, so each tick asks again but a quick scroll back doesn't. */
 const RECHECK_MS = 110_000;
 const CLOCK_MS = 30_000;
-const get = (path: string) =>
-  apiQueue.run(() => rawApiFetch({ fetch: authenticatedFetch({ manager: userManager() }), path }));
+const get = (path: string) => apiQueue.run(() => rawApiFetch({ fetch: viewerFetch(), path }));
 
 let visible = $state(false);
 let profile = $state<ProfileUser | null>(null);

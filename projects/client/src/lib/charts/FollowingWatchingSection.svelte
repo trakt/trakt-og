@@ -9,8 +9,6 @@ import EmptyState from '$lib/components/empty/EmptyState.svelte';
 import { untrack } from 'svelte';
 import { apiQueue } from '$lib/api/apiQueue';
 import { rawApiFetch } from '$lib/api/rawApiFetch';
-import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
-import { userManager } from '$lib/auth/userManager';
 import UnderProgress from '$lib/components/media/UnderProgress.svelte';
 import Countdown from '$lib/components/status/Countdown.svelte';
 import SidebarSection from '$lib/components/sidebar/SidebarSection.svelte';
@@ -21,6 +19,7 @@ import type { SocialMember } from '$lib/dashboard/toSocialItem';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
 import { followingWatching } from './followingWatching';
 import type { MediaType } from './loadChart';
+import { viewerFetch } from '../auth/viewerFetch.ts';
 
 interface Props {
   type: MediaType;
@@ -30,8 +29,7 @@ interface Props {
   watching?: () => Promise<readonly LiveWatch[]>;
 }
 
-const get: SocialGet = (path) =>
-  apiQueue.run(() => rawApiFetch({ fetch: authenticatedFetch({ manager: userManager() }), path }));
+const get: SocialGet = (path) => apiQueue.run(() => rawApiFetch({ fetch: viewerFetch(), path }));
 
 // Who to ask stays put for the visit; what they're watching is asked again each time.
 let members: Promise<readonly SocialMember[]> | undefined;

@@ -10,8 +10,6 @@
 -->
 <script lang="ts">
 import { rawApiFetch } from '$lib/api/rawApiFetch';
-import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
-import { userManager } from '$lib/auth/userManager';
 import { toast } from '$lib/components/toast/toast.svelte';
 import Container from '$lib/components/container/Container.svelte';
 import StatusDot from '$lib/components/status/StatusDot.svelte';
@@ -23,6 +21,7 @@ import type { WatchingNow } from '$lib/users/WatchingNow';
 import { watchingProgress } from '$lib/users/watchingProgress';
 import { prefersReducedMotion } from 'svelte/motion';
 import { GENERIC_ERROR } from '../../utils/genericError.ts';
+import { viewerFetch } from '../../auth/viewerFetch.ts';
 
 interface Props {
   watching: WatchingNow;
@@ -51,7 +50,7 @@ async function cancel() {
   if (cancelling) return;
   cancelling = true;
   const response = await rawApiFetch({
-    fetch: authenticatedFetch({ manager: userManager() }),
+    fetch: viewerFetch(),
     path: '/checkin',
     init: { method: 'DELETE' },
   }).catch(() => null);

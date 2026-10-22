@@ -10,6 +10,7 @@
 -->
 <script lang="ts" module>
 import type { ProgressItem } from './ProgressItem.ts';
+import { viewerFetch } from '../../auth/viewerFetch.ts';
 
 /** v3's `staleTime` for progress. */
 const FRESH_FOR = 30 * 60_000;
@@ -22,8 +23,6 @@ import { untrack } from 'svelte';
 import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 import { api } from '$lib/api/api';
 import { apiQueue } from '$lib/api/apiQueue';
-import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
-import { userManager } from '$lib/auth/userManager';
 import type { HeaderUser } from '$lib/components/header/HeaderUser';
 import { toast } from '$lib/components/toast/toast.svelte';
 import { loadListShows } from './loadListShows.ts';
@@ -46,7 +45,7 @@ type Props = {
 const { data }: Props = $props();
 
 const now = Date.now();
-const fetch = () => authenticatedFetch({ manager: userManager() });
+const fetch = () => viewerFetch();
 /** The typed client, its requests through the shared queue. */
 const client = () => {
   const signedIn = fetch();

@@ -4,7 +4,6 @@
 -->
 <script lang="ts">
 import { rawApiFetch } from '$lib/api/rawApiFetch';
-import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
 import { login } from '$lib/auth/login';
 import { userManager } from '$lib/auth/userManager';
 import GlassAction from '$lib/components/glass-action/GlassAction.svelte';
@@ -13,6 +12,7 @@ import { toggleListItem } from '$lib/components/lists/toggleListItem';
 import { toast } from '$lib/components/toast/toast.svelte';
 import listThick from '$lib/icons/trakt/list-thick.svg?raw';
 import { overlay } from '$lib/overlay/overlay';
+import { viewerFetch } from '../../auth/viewerFetch.ts';
 
 const { target }: { target: ListTarget } = $props();
 let busy = $state(false);
@@ -20,7 +20,7 @@ const watchlisted = $derived(Boolean(overlay.state(target.type, target.id).watch
 
 const request = (path: string, body: unknown) =>
   rawApiFetch({
-    fetch: authenticatedFetch({ manager: userManager() }),
+    fetch: viewerFetch(),
     path,
     init: { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) },
   });

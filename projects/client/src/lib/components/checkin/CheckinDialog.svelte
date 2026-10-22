@@ -8,8 +8,6 @@
 import { page } from '$app/state';
 import { invalidateAll } from '$app/navigation';
 import { rawApiFetch } from '$lib/api/rawApiFetch';
-import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
-import { userManager } from '$lib/auth/userManager';
 import Dialog from '$lib/components/dialog/Dialog.svelte';
 import CardTag from '$lib/components/media/CardTag.svelte';
 import Spinner from '$lib/components/loading/Spinner.svelte';
@@ -17,6 +15,7 @@ import { toast } from '$lib/components/toast/toast.svelte';
 import { checkin } from '$lib/components/checkin/checkin.svelte';
 import { checkinMedia } from '$lib/components/checkin/checkinMedia';
 import { formatDate } from '$lib/utils/formatDate';
+import { viewerFetch } from '../../auth/viewerFetch.ts';
 
 const target = $derived(checkin.target);
 const shot = $derived(target?.episode ? target.episode.screenshot : target?.fanart);
@@ -32,7 +31,7 @@ $effect.pre(() => {
 
 const request = (path: string, body?: unknown) =>
   rawApiFetch({
-    fetch: authenticatedFetch({ manager: userManager() }),
+    fetch: viewerFetch(),
     path,
     init: body === undefined
       ? undefined

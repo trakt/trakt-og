@@ -3,12 +3,11 @@
   a note on the show, the same kind v3 saves after a drop. Closing it without text leaves no note.
 -->
 <script lang="ts">
-import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
-import { userManager } from '$lib/auth/userManager';
 import NotesDialog from '$lib/components/notes/NotesDialog.svelte';
 import { toast } from '$lib/components/toast/toast.svelte';
 import { saveNote } from '$lib/notes/saveNote';
 import { dropNote } from './dropNote.svelte';
+import { viewerFetch } from '../../auth/viewerFetch.ts';
 
 let open = $state(false);
 let draft = $state('');
@@ -34,7 +33,7 @@ async function save(text: string) {
   busy = true;
   try {
     const result = await saveNote({
-      fetch: authenticatedFetch({ manager: userManager() }),
+      fetch: viewerFetch(),
       item: { type: 'show', id: target.id },
       note: null,
       text,

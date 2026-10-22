@@ -10,7 +10,6 @@ import { tick } from 'svelte';
 import { page } from '$app/state';
 import { rawApiFetch } from '$lib/api/rawApiFetch';
 import { createRequestQueue } from '$lib/api/createRequestQueue';
-import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
 import { userManager } from '$lib/auth/userManager';
 import { login } from '$lib/auth/login';
 import { changeRelationship } from '$lib/users/changeRelationship';
@@ -29,6 +28,7 @@ import check from '$lib/icons/solid/check.svg?raw';
 import xmark from '$lib/icons/solid/xmark.svg?raw';
 import { followRequestSummary } from '$lib/dashboard/followRequestSummary';
 import type { toFollowRequest } from '$lib/dashboard/toFollowRequest';
+import { viewerFetch } from '../../auth/viewerFetch.ts';
 
 type Request = ReturnType<typeof toFollowRequest>;
 
@@ -66,8 +66,7 @@ const send = (request: Request, action: 'approve' | 'deny' | 'blockRequest') =>
     relation: relation(request.id),
     action,
     overlay: relationships,
-    request: (path, method) =>
-      writes.run(() => rawApiFetch({ path, fetch: authenticatedFetch({ manager: userManager() }), init: { method } })),
+    request: (path, method) => writes.run(() => rawApiFetch({ path, fetch: viewerFetch(), init: { method } })),
     notify: toast,
   });
 async function approveAll() {

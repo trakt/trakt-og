@@ -1,13 +1,12 @@
 import { invalidateAll } from '$app/navigation';
 import { rawApiFetch } from '../api/rawApiFetch.ts';
-import { authenticatedFetch } from '../auth/authenticatedFetch.ts';
-import { userManager } from '../auth/userManager.ts';
 import { deleteList } from '../components/lists/deleteList.ts';
 import type { ListRowActions } from '../components/media/ListRowActions.ts';
 import { toast } from '../components/toast/toast.svelte.ts';
 import { overlay } from '../overlay/overlay.ts';
 import type { SummaryList } from '../summary/toSummaryList.ts';
 import { type ActionList, itemListRowActions } from './itemListRowActions.ts';
+import { viewerFetch } from '../auth/viewerFetch.ts';
 
 type Viewer = { readonly slug: string; readonly isVip: boolean } | null;
 type ActionRow = ActionList & Pick<SummaryList, 'posters' | 'itemCount'>;
@@ -30,8 +29,7 @@ export function createItemListActions({ viewer, origin }: { viewer: () => Viewer
       id: list.id,
       overlay,
       notify: toast,
-      request: (path, method) =>
-        rawApiFetch({ fetch: authenticatedFetch({ manager: userManager() }), path, init: { method } }),
+      request: (path, method) => rawApiFetch({ fetch: viewerFetch(), path, init: { method } }),
       remove: () => {
         removed = [...removed, list.id];
         return () => {

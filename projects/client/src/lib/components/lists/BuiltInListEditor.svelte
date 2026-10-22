@@ -6,14 +6,13 @@
 -->
 <script lang="ts">
 import { rawApiFetch } from '$lib/api/rawApiFetch';
-import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
-import { userManager } from '$lib/auth/userManager';
 import BuiltInListDialog from '$lib/components/lists/BuiltInListDialog.svelte';
 import LoadingOverlay from '$lib/components/loading/LoadingOverlay.svelte';
 import { toast } from '$lib/components/toast/toast.svelte';
 import { loadBuiltInDefaults } from '$lib/lists/loadBuiltInDefaults';
 import type { BuiltInListKind } from '$lib/lists/toBuiltInListView';
 import { writeOwnerList } from '$lib/lists/writeOwnerList';
+import { viewerFetch } from '../../auth/viewerFetch.ts';
 
 type Saved = { description?: string; sort_by: string; sort_how: string };
 
@@ -35,7 +34,7 @@ interface Props {
 const { kind, vip, description, posters, count, privacy, allowComments, displayNumbers, onclose, onsaved }: Props =
   $props();
 const request = (path: string, init?: Parameters<typeof rawApiFetch>[0]['init']) =>
-  rawApiFetch({ fetch: authenticatedFetch({ manager: userManager() }), path, init });
+  rawApiFetch({ fetch: viewerFetch(), path, init });
 
 let defaults = $state<{ by: string; how: string }>();
 let open = $state(false);

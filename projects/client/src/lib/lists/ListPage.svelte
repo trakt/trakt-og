@@ -5,8 +5,6 @@
 -->
 <script lang="ts">
 import { rawApiFetch } from '$lib/api/rawApiFetch';
-import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
-import { userManager } from '$lib/auth/userManager';
 import BuiltInListEditor from '$lib/components/lists/BuiltInListEditor.svelte';
 import { overlay } from '$lib/overlay/overlay';
 import { toast } from '$lib/components/toast/toast.svelte';
@@ -84,6 +82,7 @@ import { visibleListSorts } from '$lib/lists/visibleListSorts';
 import { externalLink } from '$lib/externalLink';
 import { traktUrls } from '$lib/traktUrls';
 import { watchNowCountry } from '../settings/watchNowCountry.ts';
+import { viewerFetch } from '../auth/viewerFetch.ts';
 
 type Props = {
   data:
@@ -151,7 +150,7 @@ async function leave() {
   const source = data;
   leaving = true;
   const ok = await leaveList({
-    fetch: authenticatedFetch({ manager: userManager() }),
+    fetch: viewerFetch(),
     id: data.list.id,
     viewer: data.user.slug,
     patch: () => {
@@ -219,7 +218,7 @@ const deleteWarning = $derived(
 );
 $effect(() => {
   if (!actions?.delete) return;
-  api({ fetch: authenticatedFetch({ manager: userManager() }) }).users.lists.personal({
+  api({ fetch: viewerFetch() }).users.lists.personal({
     params: { id: 'me' },
     query: { limit: 1 },
   }).then((response) => {
@@ -235,8 +234,7 @@ async function removeList() {
     id: data.list.id,
     overlay,
     notify: toast,
-    request: (path, method) =>
-      rawApiFetch({ fetch: authenticatedFetch({ manager: userManager() }), path, init: { method } }),
+    request: (path, method) => rawApiFetch({ fetch: viewerFetch(), path, init: { method } }),
     remove: () => () => {},
   });
   deleting = false;
@@ -280,7 +278,7 @@ const ownerCards = $derived(
     .map((item) => item.key in savedNotes ? { ...item, notes: savedNotes[item.key] || undefined } : item),
 );
 const request = (path: string, init?: Parameters<typeof rawApiFetch>[0]['init']) =>
-  rawApiFetch({ fetch: authenticatedFetch({ manager: userManager() }), path, init });
+  rawApiFetch({ fetch: viewerFetch(), path, init });
 $effect(() => {
   void (data.list ? data.cards : undefined);
   ownerBusy = false;

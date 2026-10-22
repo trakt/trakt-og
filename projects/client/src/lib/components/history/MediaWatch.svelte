@@ -2,7 +2,6 @@
 import { episodeBatchState } from '$lib/components/history/episodeBatchState';
 import { page } from '$app/state';
 import { rawApiFetch } from '$lib/api/rawApiFetch';
-import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
 import { login } from '$lib/auth/login';
 import { userManager } from '$lib/auth/userManager';
 import { overlay } from '$lib/overlay/overlay';
@@ -28,6 +27,7 @@ import backward from '$lib/icons/solid/backward.svg?raw';
 import { countLabel } from '$lib/utils/countLabel';
 import { formatDate } from '$lib/utils/formatDate';
 import { formatRuntime } from '$lib/utils/formatRuntime';
+import { viewerFetch } from '../../auth/viewerFetch.ts';
 
 interface Props {
   target: WatchTarget;
@@ -107,7 +107,7 @@ const dropped = $derived(target.type === 'show' && Boolean(viewerState.dropped))
 const locked = $derived(target.released === false && !hasHistory ? 'Not released yet' : undefined);
 const request = (path: string, body?: unknown) =>
   rawApiFetch({
-    fetch: path.startsWith('/search/') ? globalThis.fetch : authenticatedFetch({ manager: userManager() }),
+    fetch: path.startsWith('/search/') ? globalThis.fetch : viewerFetch(),
     path,
     init: body === undefined
       ? undefined
@@ -125,7 +125,7 @@ async function watch(watchedAt: string | null, force: boolean, onlyPlay?: Histor
       overlay,
       request,
       notify: toast,
-      episodes: () => loadWatchEpisodes({ target, fetch: authenticatedFetch({ manager: userManager() }) }),
+      episodes: () => loadWatchEpisodes({ target, fetch: viewerFetch() }),
       confirm: (count) => prompt?.confirm({ count, title: target.title }) ?? Promise.resolve(false),
     });
     if (saved && watchedAt === null) onremove?.(onlyPlay);

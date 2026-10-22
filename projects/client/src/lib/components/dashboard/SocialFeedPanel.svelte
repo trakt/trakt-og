@@ -11,8 +11,6 @@ import type { Snippet } from 'svelte';
 import { browser } from '$app/environment';
 import { apiQueue } from '$lib/api/apiQueue';
 import { rawApiFetch } from '$lib/api/rawApiFetch';
-import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
-import { userManager } from '$lib/auth/userManager';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import NoData from '$lib/components/empty/NoData.svelte';
 import PosterCard from '$lib/components/media/PosterCard.svelte';
@@ -45,6 +43,7 @@ import user from '$lib/icons/regular/user.svg?raw';
 import fire from '$lib/icons/solid/fire.svg?raw';
 import DashboardPanel from './DashboardPanel.svelte';
 import SocialTile from './SocialTile.svelte';
+import { viewerFetch } from '../../auth/viewerFetch.ts';
 
 interface Props {
   feed: Promise<SocialFeed>;
@@ -57,8 +56,7 @@ interface Props {
   rowsFor?: (period: Exclude<SocialPeriod, 'today'>) => Promise<readonly SocialItem[]>;
 }
 
-const get: SocialGet = (path) =>
-  apiQueue.run(() => rawApiFetch({ fetch: authenticatedFetch({ manager: userManager() }), path }));
+const get: SocialGet = (path) => apiQueue.run(() => rawApiFetch({ fetch: viewerFetch(), path }));
 
 const { feed, datePreferences, username, watching = (members) => fetchWatching({ get, members }), rowsFor }: Props =
   $props();

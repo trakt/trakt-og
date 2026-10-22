@@ -1,13 +1,12 @@
 <script lang="ts">
 import { tick } from 'svelte';
-import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
-import { userManager } from '$lib/auth/userManager';
 import { fetchOnDeckItem } from '$lib/dashboard/fetchOnDeckItem';
 import type { DashboardSettings } from '$lib/dashboard/DashboardSettings';
 import OnDeckCard from '$lib/components/media/OnDeckCard.svelte';
 import type { OnDeckItem } from '$lib/components/media/OnDeckItem';
 import { toast } from '$lib/components/toast/toast.svelte';
 import { overlay } from '$lib/overlay/overlay';
+import { viewerFetch } from '../../auth/viewerFetch.ts';
 
 const { initial, username, settings }: {
   initial: OnDeckItem;
@@ -34,7 +33,7 @@ async function refresh() {
     document.activeElement?.classList.contains('refresh-cover');
   refreshing = true;
   const [result] = await Promise.allSettled([
-    fetchOnDeckItem({ item, username, settings, fetch: authenticatedFetch({ manager: userManager() }) }),
+    fetchOnDeckItem({ item, username, settings, fetch: viewerFetch() }),
     new Promise((resolve) => setTimeout(resolve, 500)),
   ]);
   if (source !== initial || viewer !== username) return;

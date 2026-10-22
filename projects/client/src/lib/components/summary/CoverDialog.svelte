@@ -4,8 +4,6 @@
     <CoverDialog bind:open={covering} item={{ type: 'show', id, title, fanart }} onset={() => (isCover = true)} />
 -->
 <script lang="ts">
-import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
-import { userManager } from '$lib/auth/userManager';
 import Dialog from '$lib/components/dialog/Dialog.svelte';
 import DialogArtHeader from '$lib/components/dialog/DialogArtHeader.svelte';
 import DialogForm from '$lib/components/dialog/DialogForm.svelte';
@@ -14,6 +12,7 @@ import type { CardTag } from '$lib/components/media/CardTag';
 import { toast } from '$lib/components/toast/toast.svelte';
 import image from '$lib/icons/regular/image.svg?raw';
 import { type CoverType, setCoverImage } from './coverImage.ts';
+import { viewerFetch } from '../../auth/viewerFetch.ts';
 
 interface Props {
   open: boolean;
@@ -43,7 +42,7 @@ async function submit() {
   busy = true;
   error = '';
   const result = await setCoverImage({
-    fetch: authenticatedFetch({ manager: userManager() }),
+    fetch: viewerFetch(),
     type: item.type,
     id: item.id,
   });

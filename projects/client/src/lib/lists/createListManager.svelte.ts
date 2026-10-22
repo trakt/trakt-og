@@ -4,8 +4,6 @@ import { tick } from 'svelte';
 import { prefersReducedMotion } from 'svelte/motion';
 import { SvelteSet } from 'svelte/reactivity';
 import { rawApiFetch } from '../api/rawApiFetch.ts';
-import { authenticatedFetch } from '../auth/authenticatedFetch.ts';
-import { userManager } from '../auth/userManager.ts';
 import { toast } from '../components/toast/toast.svelte.ts';
 import { fetchListItemRefs } from './fetchListItemRefs.ts';
 import type { ListQuery } from './ListQuery.ts';
@@ -18,6 +16,7 @@ import { saveListItemNote } from './saveListItemNote.ts';
 import type { ListItemCard } from './toListItemCard.ts';
 import type { ListView } from './toListView.ts';
 import { GENERIC_ERROR } from '../utils/genericError.ts';
+import { viewerFetch } from '../auth/viewerFetch.ts';
 
 type Source = {
   list: Pick<ListView, 'id' | 'slug' | 'ownerSlug' | 'name' | 'href'> | null;
@@ -32,7 +31,7 @@ const MOVE_FAILED =
 
 const request = (method: 'POST' | 'PUT') => (path: string, body: unknown) =>
   rawApiFetch({
-    fetch: authenticatedFetch({ manager: userManager() }),
+    fetch: viewerFetch(),
     path,
     init: { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) },
   });
@@ -76,7 +75,7 @@ export function createListManager(source: () => Source, isBlocked: () => boolean
   async function wholeOrder() {
     const { base } = items();
     order ??= (await fetchListItemRefs({
-      fetch: authenticatedFetch({ manager: userManager() }),
+      fetch: viewerFetch(),
       base,
       query: { types: [], genres: [] },
       sort: { by: 'rank', how: 'asc' },
@@ -242,7 +241,7 @@ export function createListManager(source: () => Source, isBlocked: () => boolean
       exclusive(async () => {
         const { owner, listId, base, query, sort } = items();
         const refs = await fetchListItemRefs({
-          fetch: authenticatedFetch({ manager: userManager() }),
+          fetch: viewerFetch(),
           base,
           query,
           sort,
@@ -265,7 +264,7 @@ export function createListManager(source: () => Source, isBlocked: () => boolean
       exclusive(async () => {
         const { owner, listId, base, query, list } = items();
         const refs = await fetchListItemRefs({
-          fetch: authenticatedFetch({ manager: userManager() }),
+          fetch: viewerFetch(),
           base,
           query,
           sort: { by: 'rank', how: 'asc' },

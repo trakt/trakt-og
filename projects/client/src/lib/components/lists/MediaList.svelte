@@ -2,7 +2,6 @@
 import { page } from '$app/state';
 import { tick } from 'svelte';
 import { rawApiFetch } from '$lib/api/rawApiFetch';
-import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
 import { userManager } from '$lib/auth/userManager';
 import { login } from '$lib/auth/login';
 import { overlay } from '$lib/overlay/overlay';
@@ -34,6 +33,7 @@ import lock from '$lib/icons/solid/lock-keyhole.svg?raw';
 import link from '$lib/icons/solid/link.svg?raw';
 import arrow from '$lib/icons/light/angle-right.svg?raw';
 import spinner from '$lib/icons/solid/arrows-rotate.svg?raw';
+import { viewerFetch } from '../../auth/viewerFetch.ts';
 interface Props {
   target: ListTarget;
   variant?: 'summary' | 'card';
@@ -123,7 +123,7 @@ const pickerKey = (event: KeyboardEvent) => {
   event.preventDefault();
   void open(true);
 };
-const authFetch = () => authenticatedFetch({ manager: userManager() });
+const authFetch = () => viewerFetch();
 const request = (path: string, body: unknown) =>
   rawApiFetch({
     fetch: authFetch(),

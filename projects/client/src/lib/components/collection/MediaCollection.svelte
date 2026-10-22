@@ -2,7 +2,6 @@
 import { episodeBatchState } from '$lib/components/history/episodeBatchState';
 import { page } from '$app/state';
 import { rawApiFetch } from '$lib/api/rawApiFetch';
-import { authenticatedFetch } from '$lib/auth/authenticatedFetch';
 import { login } from '$lib/auth/login';
 import { userManager } from '$lib/auth/userManager';
 import { overlay } from '$lib/overlay/overlay';
@@ -26,6 +25,7 @@ import Icon from '$lib/icons/Icon.svelte';
 import collection from '$lib/icons/trakt/collection.svg?raw';
 import collectionThick from '$lib/icons/trakt/collection-thick.svg?raw';
 import { formatDate } from '$lib/utils/formatDate';
+import { viewerFetch } from '../../auth/viewerFetch.ts';
 
 interface Props {
   target: WatchTarget;
@@ -73,7 +73,7 @@ const tooltipText = $derived([metadataText, source && `Synced from ${source.name
 const syncOnly = $derived(!LIBRARY_ADDING && fill.collected === 0 && !onremove);
 const request = (path: string, body?: unknown) =>
   rawApiFetch({
-    fetch: path.startsWith('/search/') ? globalThis.fetch : authenticatedFetch({ manager: userManager() }),
+    fetch: path.startsWith('/search/') ? globalThis.fetch : viewerFetch(),
     path,
     init: body === undefined
       ? undefined
@@ -91,8 +91,7 @@ async function collect(collectedAt: string | null | undefined, force = false) {
       overlay,
       request,
       notify: toast,
-      episodes: () =>
-        loadWatchEpisodes({ target, fetch: authenticatedFetch({ manager: userManager() }), progress: 'collection' }),
+      episodes: () => loadWatchEpisodes({ target, fetch: viewerFetch(), progress: 'collection' }),
     });
     if (saved && collectedAt === null) onremove?.();
     if (saved) onsave?.(collectedAt);

@@ -454,6 +454,8 @@ afterNavigate(() => {
 });
 const managing = $derived(owner ? ownerManaging : canManage && manager.managing);
 const displayCards = $derived(owner ? ownerCards : manager.cards);
+const manageCount = $derived(owner ? ownerCards.length : data.list ? data.total : 0);
+const pagination = $derived(!(owner && managing) && data.list && data.page.type === 'paginated' ? data.page : null);
 const writing = $derived((owner ? ownerBusy : manager.busy) || transferBusy);
 // OG dragged only a ranked list that fits one page, and offered "Change position" in the other sorts.
 const draggable = $derived(
@@ -680,12 +682,12 @@ async function saveNotes(text: string) {
 </section>
 
   {#if managing}
-    <ListManageBar count={owner ? ownerCards.length : data.total} busy={writing}
+    <ListManageBar count={manageCount} busy={writing}
   onreset={owner ? resetOrder : manager.resetRanks}
   ondelete={owner ? () => void removeItems(ownerCards) : manager.deleteAll}>
       {#snippet transfers()}
-        <ListTransfer source={list} query={data.query} sort={data.sort} count={owner ? ownerCards.length : data.total} svg={clone} busy={writing} onbusychange={(busy) => transferBusy = busy} managing />
-        <ListTransfer source={list} query={data.query} sort={data.sort} count={owner ? ownerCards.length : data.total} svg={fileExport} busy={writing} onbusychange={(busy) => transferBusy = busy} move managing />
+        <ListTransfer source={list} query={data.query} sort={data.sort} count={manageCount} svg={clone} busy={writing} onbusychange={(busy) => transferBusy = busy} managing />
+        <ListTransfer source={list} query={data.query} sort={data.sort} count={manageCount} svg={fileExport} busy={writing} onbusychange={(busy) => transferBusy = busy} move managing />
       {/snippet}
     </ListManageBar>
   {/if}
@@ -706,7 +708,7 @@ async function saveNotes(text: string) {
   <section class={['items', { managing }]} aria-label="{list.name} items" aria-busy={writing} {@attach shortcut}>
   <Container>
       {#if displayCards.length > 0}
-        {#if !(owner && managing) && data.page.type === 'paginated'}<Pagination meta={data.page} label="List pages" />{/if}
+        {#if pagination}<Pagination meta={pagination} label="List pages" />{/if}
         <div class="grid" {@attach manager.dragEvents}>
           <PosterGrid>
             {#each displayCards as item (item.key)}
@@ -728,7 +730,7 @@ async function saveNotes(text: string) {
             ondrag={(event) => owner ? dragItem(item, event) : manager.startDrag(item, event)} onchangerank={() => rankInputs[item.key]?.focus()}
             onremove={() => owner ? void removeItems([item]) : manager.remove(item)} onnotes={() => owner ? editNotes(item) : openNotes(item)} />
         {/snippet}
-        {#if !(owner && managing) && data.page.type === 'paginated'}<Pagination meta={data.page} label="List pages" />{/if}
+        {#if pagination}<Pagination meta={pagination} label="List pages" />{/if}
       {:else}
         <div class="empty"><NoData /></div>
       {/if}

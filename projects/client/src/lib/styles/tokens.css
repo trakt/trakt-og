@@ -368,15 +368,15 @@
 
   /* List row pills and icons */
   --color-list-pill-link: var(--brand-secondary);
-  --color-list-pill-collaborators: var(--brand-seventh);
-  --color-list-pill-collaborators-count: #b64903; /* darken(#e85d04, 10%) */
-  --list-pill-count-padding: 0 5px 0 4px; /* the collaborators count, flush with its pill's height; a hair more after the digit */
-  --list-pill-count-gap: 4px;
   --color-list-edit: var(--color-action-edit);
   --color-list-delete: var(--color-action-delete);
   --color-list-progress: light-dark(#555, #eee);
   --font-size-list-row-action: var(--font-size-stat-icon); /* the row's action icons, level with its count icons */
   --font-size-list-row-leave: 15px;
+  /* A list page's Leave button: a red outline, its text a softer red that reads in both themes. */
+  --color-list-leave-border: color-mix(in srgb, var(--color-list-delete) 45%, transparent);
+  --color-list-leave-text: var(--color-dialog-art-danger-text);
+  --color-list-leave-hover-bg: color-mix(in srgb, var(--color-list-delete) 12%, transparent);
   --color-list-add: #38a038; /* #btn-list-add */
   --color-list-reorder: light-dark(#333, #eee);
 

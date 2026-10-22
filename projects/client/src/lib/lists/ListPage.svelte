@@ -54,7 +54,7 @@ import NotesDialog from '$lib/components/notes/NotesDialog.svelte';
 import Pagination from '$lib/components/pagination/Pagination.svelte';
 import ReadMore from '$lib/components/readmore/ReadMore.svelte';
 import ShareButton from '$lib/components/share/ShareButton.svelte';
-import CollaboratorsPanel from '$lib/components/lists/CollaboratorsPanel.svelte';
+import CollaboratorsChip from '$lib/components/lists/CollaboratorsChip.svelte';
 import SectionToolbar from '$lib/components/toolbar/SectionToolbar.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import Icon from '$lib/icons/Icon.svelte';
@@ -424,7 +424,6 @@ function dragItem(item: ListItemCard, event: PointerEvent) {
   handle.addEventListener('pointerup', end, { once: true });
   handle.addEventListener('pointercancel', cancel, { once: true });
 }
-const plural = (count: number, word: string) => `${word}${count === 1 ? '' : 's'}`;
 
 // Manage mode. The watchlist and favorites get it with their own endpoints in.
 const canManage = $derived(Boolean(actions?.manage) && data.list?.kind === 'personal');
@@ -628,12 +627,8 @@ async function saveNotes(text: string) {
             </Tooltip>
           {/if}
           {#if collaborators.length > 0}
-            <CollaboratorsPanel {collaborators} list={{ name: list.name, poster: data.cards.at(0)?.image }} owner={listOwner}>
-              {#snippet trigger(attrs)}
-                <button type="button" class="pill collaborators" {...attrs}><span class="pill-title">{collaborators.length}</span
-                  >{plural(collaborators.length, 'collaborator')}</button>
-              {/snippet}
-            </CollaboratorsPanel>
+            <span class="title-chip"><CollaboratorsChip {collaborators}
+              list={{ name: list.name, poster: data.cards.at(0)?.image }} owner={listOwner} /></span>
           {/if}
         </h2>
         {#if actions}
@@ -642,8 +637,8 @@ async function saveNotes(text: string) {
             {#if actions.report}{@render action('Report List', flag, 'report', undefined, () => { reportOpen = true; })}{/if}
             {#if actions.edit && data.kind !== 'personal'}{@render action('Edit', pencil, 'edit', undefined, owner ? editBuiltIn : undefined)}{:else if actions.edit}<Tooltip text="Edit">{#snippet trigger(tooltip)}<button type="button" class="action edit" aria-label="Edit" {...tooltip} onclick={() => { editing = true; }}><Icon svg={pencil} /></button>{/snippet}</Tooltip>{/if}
             {#if actions.delete}<span class="delete" style:--confirm-icon-size="var(--font-size-list-row-action)"><ManageConfirm name="delete" svg={deleteIcon} label="Delete" yes="Yes, delete it!" warning={deleteWarning} disabled={deleting} onconfirm={removeList}>Delete this list?</ManageConfirm></span>{/if}
-            {#if actions.leave}{@render action('Stop collaborating on this list', userXmark, 'leave', undefined, leave)}{/if}
             <span class="share"><ShareButton url={actions.shareUrl} title={list.name} large={false} /></span>
+            {#if actions.leave}{@render action('Stop collaborating on this list', userXmark, 'leave', 'Leave', leave)}{/if}
             {#if actions.manage && canManage}
               <Tooltip text="Reorder, copy, move and delete">
                 {#snippet trigger(tooltip)}
@@ -838,31 +833,11 @@ h2 {
   background-color: var(--color-list-pill-link);
 }
 
-/* A button: it opens the collaborators panel. */
-.collaborators {
+/* The collaborators chip, as on a list row, after the name. */
+.title-chip {
   display: inline-flex;
-  align-items: center;
-  min-block-size: 0;
-  border: 0;
-  background-color: var(--color-list-pill-collaborators);
-  font-family: inherit;
-  line-height: inherit;
-  cursor: pointer;
-
-  &:is(:hover, :focus-visible) {
-    filter: brightness(1.1);
-  }
-}
-
-.pill-title {
-  display: inline-flex;
-  align-items: center;
-  align-self: stretch;
-  /* Flush with the pill's edges: through its 1px block padding and its 4px start padding. */
-  margin: -1px var(--list-pill-count-gap) -1px -4px;
-  padding: var(--list-pill-count-padding);
-  border-radius: 2px 0 0 2px;
-  background-color: var(--color-list-pill-collaborators-count);
+  margin-inline-start: var(--list-title-pill-gap);
+  vertical-align: middle;
 }
 
 .actions {
@@ -945,13 +920,24 @@ h2 {
   color: var(--color-list-edit);
 }
 
-.delete,
-.leave {
+.delete {
   color: var(--color-list-delete);
 }
 
-.leave {
-  font-size: var(--font-size-list-row-leave);
+/* An outline button like Manage, in red: it takes the viewer off the list. */
+.action.leave {
+  border-color: var(--color-list-leave-border);
+  color: var(--color-list-leave-text);
+
+  &:is(:hover, :focus-visible) {
+    border-color: var(--color-list-delete);
+    background-color: var(--color-list-leave-hover-bg);
+    color: var(--color-list-leave-text);
+  }
+
+  & > :first-child {
+    color: var(--color-list-delete);
+  }
 }
 
 .share {

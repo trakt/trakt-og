@@ -7,6 +7,7 @@ import type { DatePreferences } from '../settings/DatePreferences.ts';
 import type { ViewerSettings } from '../settings/ViewerSettings.ts';
 import { toRelatedSource } from '../summary/toRelatedSource.ts';
 import { toMovieSummary } from './toMovieSummary.ts';
+import { watchNowCountry } from '../settings/watchNowCountry.ts';
 
 type LoadMovieParams = {
   fetch: typeof fetch;
@@ -42,8 +43,7 @@ export async function loadMovie({ fetch, token, parent, id: requested }: LoadMov
   const id = movie.ids.slug;
   if (requested !== id) redirect(301, `/movies/${id}`);
 
-  // ponytail: OG fell back to the visitor's IP country; og uses US until the viewer's setting says otherwise.
-  const country = settings?.browsing?.watchnow?.country?.toLowerCase() || 'us';
+  const country = watchNowCountry(settings);
 
   const collection = ok(client.movies.lists({ params: { id, type: 'official', sort: 'popular' } })).then(
     async (lists) => {

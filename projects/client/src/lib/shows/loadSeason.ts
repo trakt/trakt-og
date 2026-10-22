@@ -9,6 +9,7 @@ import type { DatePreferences } from '../settings/DatePreferences.ts';
 import type { ViewerSettings } from '../settings/ViewerSettings.ts';
 import { seasonPeopleSchema } from './seasonPeopleSchema.ts';
 import { toSeasonSummary } from './toSeasonSummary.ts';
+import { watchNowCountry } from '../settings/watchNowCountry.ts';
 
 interface Params {
   fetch: typeof fetch;
@@ -39,7 +40,7 @@ export async function loadSeason({ fetch, parent, id, season: requestedSeason, u
       fetch,
       path: seasonPath,
       fallback: `${seasonPath}/episodes/1`,
-      country: layout.settings?.browsing?.watchnow?.country?.toLowerCase() || 'us',
+      country: watchNowCountry(layout.settings),
       settings: layout.settings,
       isVip: layout.user?.isVip ?? false,
     })

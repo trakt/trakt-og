@@ -7,6 +7,7 @@ import type { ViewerSettings } from '../settings/ViewerSettings.ts';
 import { imageUrl } from '../utils/imageUrl.ts';
 import { toMovieLinks } from './toMovieLinks.ts';
 import { toMovieReleases } from './toMovieReleases.ts';
+import { watchNowCountry } from '../settings/watchNowCountry.ts';
 
 /** Public release dates never send a viewer token. */
 export async function loadMovieReleases({ fetch, parent, id }: {
@@ -25,7 +26,7 @@ export async function loadMovieReleases({ fetch, parent, id }: {
   const movie = summary.body;
   if (id !== movie.ids.slug) redirect(301, `/movies/${movie.ids.slug}/releases`);
   if (releases.status !== 200) error(502, 'The Trakt API could not load these release dates.');
-  const country = settings?.browsing?.watchnow?.country?.toLowerCase() || 'us';
+  const country = watchNowCountry(settings);
   const watchNow = await loadWatchNow({
     fetch,
     path: `/movies/${movie.ids.slug}`,

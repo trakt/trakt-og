@@ -83,6 +83,7 @@ import type { ListItemCard } from '$lib/lists/toListItemCard';
 import { visibleListSorts } from '$lib/lists/visibleListSorts';
 import { externalLink } from '$lib/externalLink';
 import { traktUrls } from '$lib/traktUrls';
+import { watchNowCountry } from '../settings/watchNowCountry.ts';
 
 type Props = {
   data:
@@ -109,7 +110,7 @@ const filterOptions = $derived(
     isSelf: data.kind !== 'official' && data.user?.slug === data.profile.slug,
   }),
 );
-const country = $derived(data.settings?.browsing?.watchnow?.country?.toLowerCase() || 'us');
+const country = $derived(watchNowCountry(data.settings));
 const favoriteKeys = $derived(data.settings?.browsing?.watchnow?.favorites ?? []);
 const tiles = $derived(
   data.list

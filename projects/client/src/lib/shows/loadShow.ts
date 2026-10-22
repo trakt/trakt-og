@@ -14,6 +14,7 @@ import type { ViewerSettings } from '../settings/ViewerSettings.ts';
 import { toRelatedSource } from '../summary/toRelatedSource.ts';
 import { toShowEpisodes } from './toShowEpisodes.ts';
 import { toShowSummary } from './toShowSummary.ts';
+import { watchNowCountry } from '../settings/watchNowCountry.ts';
 
 type LoadShowParams = {
   fetch: typeof fetch;
@@ -80,8 +81,7 @@ export async function loadShowData({ fetch, token, parent, id: requested, path =
   const id = show.ids.slug;
   if (requested !== id) redirect(301, `/shows/${id}${path}`);
 
-  // ponytail: OG fell back to the visitor's IP country; og uses US until the viewer's setting says otherwise.
-  const country = settings?.browsing?.watchnow?.country?.toLowerCase() || 'us';
+  const country = watchNowCountry(settings);
 
   const notable = { type: 'show', id: show.ids.trakt, slug: id } as const;
   const [ratings, stats, people, studios, seasons, watchnow, progress, note] = await Promise.all([

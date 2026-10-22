@@ -24,6 +24,7 @@ import chevronRight from '$lib/icons/regular/chevron-right.svg?raw';
 import heart from '$lib/icons/solid/heart.svg?raw';
 import play from '$lib/icons/solid/play.svg?raw';
 import RecommendationWhy from './RecommendationWhy.svelte';
+import { watchNowCountry } from '../../settings/watchNowCountry.ts';
 
 interface Props {
   item: Recommendation;
@@ -62,7 +63,7 @@ async function openWatchNow() {
   if (loadingWatchNow) return;
   loadingWatchNow = true;
   const settings = page.data.settings ?? null;
-  const country = settings?.browsing?.watchnow?.country?.toLowerCase() || 'us';
+  const country = watchNowCountry(settings);
   try {
     const { button } = await loadWatchNow({
       fetch,

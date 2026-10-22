@@ -17,6 +17,7 @@ import { episodePeopleSchema } from './episodePeopleSchema.ts';
 import { episodeSeasonsSchema } from './episodeSeasonsSchema.ts';
 import { seasonPeopleSchema } from './seasonPeopleSchema.ts';
 import { toEpisodeSummary } from './toEpisodeSummary.ts';
+import { watchNowCountry } from '../settings/watchNowCountry.ts';
 
 interface Params {
   fetch: typeof fetch;
@@ -66,7 +67,7 @@ export async function loadEpisode(
     loadWatchNow({
       fetch,
       path: `${path}/episodes/${episode}`,
-      country: layout.settings?.browsing?.watchnow?.country?.toLowerCase() || 'us',
+      country: watchNowCountry(layout.settings),
       settings: layout.settings,
       isVip: layout.user?.isVip ?? false,
     })

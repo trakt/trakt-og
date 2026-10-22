@@ -19,6 +19,7 @@ import { scheduleWatchNowPath } from './scheduleWatchNowPath.ts';
 import { toDashboardSettings } from './toDashboardSettings.ts';
 import { toScheduleDays } from './toScheduleDays.ts';
 import { upcomingDays } from './upcomingDays.ts';
+import { watchNowCountry } from '../settings/watchNowCountry.ts';
 
 type FetchScheduleParams = {
   fetch: typeof globalThis.fetch;
@@ -106,7 +107,7 @@ export async function fetchSchedule(
 
   const soon = pick(nearest);
   const days = soon.length < DAYS ? pick([...nearest, ...(await Promise.all(rest.map(load))).flat()]) : soon;
-  const country = settings?.browsing?.watchnow?.country?.toLowerCase() || 'us';
+  const country = watchNowCountry(settings);
   const spotlight = days.at(0)?.items ?? [];
   const [offers, seasonPoster] = await Promise.all([
     offersByPath(fetch, spotlight, country),

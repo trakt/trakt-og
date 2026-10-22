@@ -14,6 +14,7 @@ import { readSubpageRatings } from './readSubpageRatings.ts';
 import { subpageParents } from './subpageParents.ts';
 import { toSubpageStrip } from './toSubpageStrip.ts';
 import { toSubpageMedia } from './toSubpageMedia.ts';
+import { watchNowCountry } from '../settings/watchNowCountry.ts';
 
 type Params = {
   fetch: typeof globalThis.fetch;
@@ -142,7 +143,7 @@ export async function loadSubpageMedia({ fetch, parent, item, suffix, neighbours
     ? await loadWatchNow({
       fetch,
       ...target,
-      country: settings?.browsing?.watchnow?.country?.toLowerCase() || 'us',
+      country: watchNowCountry(settings),
       settings,
       isVip: user?.isVip ?? false,
     })

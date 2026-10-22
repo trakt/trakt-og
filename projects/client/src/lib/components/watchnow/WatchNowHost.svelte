@@ -9,6 +9,7 @@ import WatchNowDialog from './WatchNowDialog.svelte';
 import type { WatchNowButton } from './watchNow.ts';
 import { fetchWatchNowArt } from './fetchWatchNowArt.ts';
 import { watchNowLauncher } from './watchNowLauncher.svelte';
+import { watchNowCountry } from '../../settings/watchNowCountry.ts';
 
 const settings = $derived(page.data.settings?.browsing?.watchnow);
 let fetched = $state<{ path: string; fanart?: string }>();
@@ -30,7 +31,7 @@ const button = $derived<WatchNowButton | undefined>(
     favorites: 0,
     cinemaOnly: false,
     hidden: false,
-    country: settings?.country?.toLowerCase() || 'us',
+    country: watchNowCountry(page.data.settings),
     favoriteKeys: settings?.favorites ?? [],
   },
 );

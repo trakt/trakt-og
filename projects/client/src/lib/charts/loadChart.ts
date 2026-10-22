@@ -18,6 +18,7 @@ import { type ChartPageRequest, chartPageRequests } from './chartPageRequests.ts
 import { type ChartPageSize, chartPageSize } from './chartPageSize.ts';
 import { type ChartRow, toChartCard } from './toChartCard.ts';
 import { positiveInt } from '../utils/positiveInt.ts';
+import { watchNowCountry } from '../settings/watchNowCountry.ts';
 
 export type MediaType = 'shows' | 'movies';
 
@@ -85,9 +86,6 @@ async function fetchRecommendations(
   const rows: ChartRow[] = await response.json();
   return { headers: new Headers(), rows };
 }
-
-const watchNowCountry = (settings: ViewerSettings | null) =>
-  settings?.browsing?.watchnow?.country?.toLowerCase() || 'us';
 
 // Watch-now routes are public, so no token goes with it. A failure only costs the sidebar its tiles.
 const fetchSources = (fetch: typeof globalThis.fetch, country: string): Promise<Map<string, FilterSource>> =>

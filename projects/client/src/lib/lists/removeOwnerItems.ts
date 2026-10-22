@@ -12,8 +12,10 @@ export async function removeOwnerItems({ kind, items, overlay, request, notify }
   notify: { error: (message: string) => void };
 }) {
   const targets = items.flatMap((item) => item.type === 'person' ? [] : [{ type: item.type, id: item.id }]);
+  const gone = new Set(targets.map((item) => `${item.type}:${item.id}`));
+  const isGone = (type: string, id: number) => gone.has(`${type}:${id}`);
   const subtract = (ids: ReadonlySet<number> | undefined, type: string) =>
-    new Set([...ids ?? []].filter((id) => !targets.some((item) => item.type === type && item.id === id)));
+    new Set([...ids ?? []].filter((id) => !isGone(type, id)));
   const rollback = kind === 'watchlist'
     ? overlay.patch('watchlist', (data) => ({
       ...data,
@@ -27,14 +29,8 @@ export async function removeOwnerItems({ kind, items, overlay, request, notify }
       movie: subtract(data.movie, 'movie'),
       show: subtract(data.show, 'show'),
       dates: {
-        movie: new Map(
-          [...data.dates?.movie ?? []].filter(([id]) =>
-            !targets.some((item) => item.type === 'movie' && item.id === id)
-          ),
-        ),
-        show: new Map(
-          [...data.dates?.show ?? []].filter(([id]) => !targets.some((item) => item.type === 'show' && item.id === id)),
-        ),
+        movie: new Map([...data.dates?.movie ?? []].filter(([id]) => !isGone('movie', id))),
+        show: new Map([...data.dates?.show ?? []].filter(([id]) => !isGone('show', id))),
       },
     }), { movie: new Set(), show: new Set() });
   const ok = await writeOwnerList({ kind, change: { type: 'remove', items: targets }, request, notify });

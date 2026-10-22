@@ -10,7 +10,6 @@ describe('toCalendarPreferences', () => {
       layout: 'list',
       startDay: 'today',
       imageType: 'logo',
-      autoscroll: false,
       hideSpecials: false,
       imagesAllowed: false,
     };
@@ -26,14 +25,12 @@ describe('toCalendarPreferences', () => {
       layout: 'grid',
       start_day: 'monday',
       image_type: 'none',
-      autoscroll: true,
       hide_specials: true,
     }))).toEqual({
       period: 'month',
       layout: 'grid',
       startDay: 'monday',
       imageType: 'none',
-      autoscroll: true,
       hideSpecials: true,
       imagesAllowed: true,
     });

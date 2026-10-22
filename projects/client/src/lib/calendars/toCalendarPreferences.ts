@@ -21,7 +21,6 @@ const schema = z.object({
         'saturday',
       ]).nullish().catch(null),
       image_type: z.enum(['logo', 'screenshot', 'fanart', 'thumb', 'banner', 'poster', 'none']).nullish().catch(null),
-      autoscroll: z.boolean().nullish(),
       hide_specials: z.boolean().nullish(),
     }).nullish(),
   }).nullish(),
@@ -38,7 +37,6 @@ export function toCalendarPreferences(settings: unknown) {
     layout: calendar?.layout ?? 'list',
     startDay: calendar?.start_day ?? 'today',
     imageType: imagesAllowed ? calendar?.image_type ?? 'logo' : 'logo',
-    autoscroll: calendar?.autoscroll === true,
     hideSpecials: calendar?.hide_specials === true,
     imagesAllowed,
   };

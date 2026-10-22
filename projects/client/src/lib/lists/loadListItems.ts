@@ -5,6 +5,7 @@ import type { DatePreferences } from '../settings/DatePreferences.ts';
 import { listCoverOf } from './listCoverOf.ts';
 import { type ListItemRow, listItemRowsSchema } from './listItemRowsSchema.ts';
 import { listPageMeta } from './listPageMeta.ts';
+import { firstItemQuery } from './firstItemQuery.ts';
 import type { ListQuery } from './ListQuery.ts';
 import { type ListSort, resolveListSort } from './resolveListSort.ts';
 import { type ListItemCard, toListItemCard } from './toListItemCard.ts';
@@ -142,7 +143,7 @@ export async function loadListItems(
       fetch,
       token: viewerToken,
       base,
-      query: { ...query, types: [], genres: [], hide: [], terms: undefined, watchnow: undefined, page: 1, limit: 1 },
+      query: firstItemQuery(query),
       sort: { by: 'rank', how: 'asc' },
     }).catch(() => null)
     : null;

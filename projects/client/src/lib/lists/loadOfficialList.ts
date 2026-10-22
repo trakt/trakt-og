@@ -7,6 +7,7 @@ import { api } from '../api/api.ts';
 import type { HeaderUser } from '../components/header/HeaderUser.ts';
 import type { DatePreferences } from '../settings/DatePreferences.ts';
 import { assertListFound } from './assertListFound.ts';
+import { firstItemQuery } from './firstItemQuery.ts';
 import { fetchListSummary } from './fetchListSummary.ts';
 import { fetchListItems, loadListItems, urlListSort } from './loadListItems.ts';
 import { listCoverOf } from './listCoverOf.ts';
@@ -53,7 +54,7 @@ export async function loadOfficialList({ fetch, locals, params, url, parent, coo
       fetch,
       token: null,
       base,
-      query: { ...query, types: [], genres: [], hide: [], terms: undefined, watchnow: undefined, page: 1, limit: 1 },
+      query: firstItemQuery(query),
       sort: { by: 'random', how: 'asc' },
     }).catch(() => null),
     parent(),

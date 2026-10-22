@@ -4,6 +4,7 @@ import type { VipBadge } from '../users/VipBadge.ts';
 import { imageUrl } from '../utils/imageUrl.ts';
 import type { ListKind } from './ListKind.ts';
 import { listPath } from './listPath.ts';
+import { privacyPills } from './privacyPills.ts';
 
 /**
  * Any list the API sends: a typed `ListResponse`, a parsed `/users/:id/lists` or `/:type/:id/lists` row, or a search
@@ -65,13 +66,8 @@ function kindOf(type: string | null | undefined): ListKind {
   return KINDS.find((kind) => kind === type) ?? 'personal';
 }
 
-// official lists get their pill, otherwise Private (a link list is private too)
-// or Following for friends-only.
 function pills(list: ListRowSource, kind: ListKind): readonly string[] {
-  if (kind === 'official') return ['Official List'];
-  if (list.privacy === 'private' || list.privacy === 'link') return ['Private'];
-  if (list.privacy === 'friends') return ['Following'];
-  return [];
+  return kind === 'official' ? ['Official List'] : privacyPills(list.privacy);
 }
 
 function href(list: ListRowSource, kind: ListKind): string {

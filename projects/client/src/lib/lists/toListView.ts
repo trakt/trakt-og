@@ -1,6 +1,7 @@
 import type { ListResponse } from '@trakt/api';
 import { listPath } from './listPath.ts';
 import type { ListKind } from './ListKind.ts';
+import { privacyPills } from './privacyPills.ts';
 import type { ListSort } from './resolveListSort.ts';
 
 /** The list a list page shows: from `/users/:id/lists/:list` or `/lists/:id`, or built for a watchlist or favorites. */
@@ -46,13 +47,6 @@ type ListSource =
   >
   & { readonly user: { readonly username: string; readonly ids: { readonly slug?: string | null } } };
 
-// a link list is private too, and friends-only reads "Following".
-function pills(privacy: string): readonly string[] {
-  if (privacy === 'private' || privacy === 'link') return ['Private'];
-  if (privacy === 'friends') return ['Following'];
-  return [];
-}
-
 /** A list response as the list page's view of it. */
 export function toListView(list: ListSource): ListView {
   const ownerSlug = list.user.ids.slug ?? list.user.username;
@@ -65,7 +59,7 @@ export function toListView(list: ListSource): ListView {
     href: listPath(list),
     kind: official ? 'official' : 'personal',
     ownerSlug,
-    pills: pills(list.privacy),
+    pills: privacyPills(list.privacy),
     shareLink: list.privacy === 'link',
     isPublic: list.privacy === 'public',
     displayNumbers: list.display_numbers,

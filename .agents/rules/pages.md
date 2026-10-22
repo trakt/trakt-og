@@ -21,6 +21,6 @@ How an og page is built. The charts pages are the reference. Copy their shape.
 
 - It renders inside the shell's `<main>`, never its own. The fixed header is 65px, so the page supplies its own hero or top offset.
 - `<svelte:head>`: `<title>` as "<Title> - Trakt" and a meta description.
-- Build from the design system: the `components/frame/` sidebar frame (`Frame`, `FrameNav`, `FrameGrid`), `components/media/` cards, `Pagination` / `PageNav`, `Tooltip`, `Container`. Anything new that another page could use goes into `src/lib/components/` in the same PR, with its tokens in their own group in `tokens.css`.
+- Build from the design system: the sidebar frame (`components/sidebar/SidebarFrame`, `components/frame/FrameGrid`), `components/media/` cards, `Pagination` / `PageNavigator`, `Tooltip`, `Container`. Anything new that another page could use goes into `src/lib/components/` in the same PR, with its tokens in their own group in `tokens.css`.
 - User state on posters: `overlay.state(type, id)` plus `quickIconFill({ state, airedEpisodes, datePreferences })`.
 - If two areas need the same helper (media URL builders, say) and it's not in `src/lib/` yet, keep yours local and note it in the PR for a follow-up dedup. Don't race another open PR to create the shared one.

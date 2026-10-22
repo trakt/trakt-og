@@ -15,6 +15,23 @@
 - If you find yourself writing a helper used in 2+ places, consider whether it belongs in `lib/utils/`.
 - If you refactor shared logic, document the new pattern.
 
+## Shared Helpers
+
+Reach for these before writing your own:
+
+- **Query params:** `utils/positiveInt` (page and limit).
+- **Viewer settings:** `settings/watchNowCountry` (lowercase country, US default).
+- **Requests:** `auth/viewerFetch` (the browser's signed-in fetch), `api/okBody` (a 200's body or null),
+  `api/assertOk` (404/502 guard), `api/contractSchema` (zod 4 boundary over a `@trakt/api` contract).
+- **Dates:** `utils/dayIn` (`YYYY-MM-DD` in a zone), `utils/addDays` (UTC day math), `utils/unknownDate` and
+  `utils/isUnknownDate` (OG's 1970 epoch for an unknown watch, collect or rating date).
+- **Labels:** `utils/seasonName` (Specials / Season N), `utils/capitalize`, `utils/countLabel` ("1,234 votes"),
+  `utils/ratingPercent` (truncated, 7.99 is 79%), `utils/parameterize` (anchor ids), `utils/genericError` (OG's
+  catch-all toast), `users/placeholderAvatar`.
+- **Lists:** `utils/uniqueBy` (first per key, one pass; never `filter` + `findIndex`).
+- **Motion:** `prefersReducedMotion` from `svelte/motion`, never a raw `matchMedia` query.
+- **Links:** `movies/toMovieLinks` and `shows/toShowLinks` for a movie's or show's external links.
+
 ## API Responses
 
 - **Native routes with a contract:** use the typed `api` client. Its types are trusted, but `@trakt/api` doesn't validate at runtime, so a wrong contract means wrong types.

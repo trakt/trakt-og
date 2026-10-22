@@ -53,45 +53,57 @@ const raw = async <T>(fetch: typeof globalThis.fetch, path: string, schema: {
 };
 
 /**
- * Loads a show page for SSR (`/shows/:id` and its seasons subpages): the summary with the layout data (404s and canonical redirects need it), then everything
- * else in parallel. One seasons call with `extended=episodes` fills both the seasons grid and Recently Aired, so the
+ * Loads a show page for SSR (`/shows/:id` and its seasons subpages): the summary, the layout data and everything else in
+ * parallel, with the 404 and canonical redirect checked before the rest is used. One seasons call with `extended=episodes` fills both the seasons grid and Recently Aired, so the
  * proxied `/next_episode` and `/last_episode` aren't needed. Everything but Up Next and the private note is public and goes without the token.
  */
 export async function loadShowData({ fetch, token, parent, id: requested, path = '' }: LoadShowParams) {
   const client = api({ fetch });
-  const [summary, { settings, user, datePreferences }] = await Promise.all([
-    client.shows.summary({ params: { id: requested }, query: { extended: 'full,images' } }),
-    parent(),
-  ]);
-  if (summary.status === 404) error(404, 'Show not found');
-  if (summary.status !== 200) error(502, 'The Trakt API could not load this show.');
-
-  const show = summary.body;
-  const id = show.ids.slug;
-  if (requested !== id) redirect(301, `/shows/${id}${path}`);
-
-  const country = watchNowCountry(settings);
-
-  const notable = { type: 'show', id: show.ids.trakt, slug: id } as const;
-  const [ratings, stats, people, studios, seasons, watchnow, progress, note] = await Promise.all([
+  const summaryRead = client.shows.summary({ params: { id: requested }, query: { extended: 'full,images' } });
+  const layout = parent();
+  // The extras go by the requested id alongside the summary, not after it; a non-canonical id redirects before they're
+  // used. Each resolves to null on failure, and the catch only stops a failed summary leaving them unhandled.
+  const id = requested;
+  const extras = Promise.all([
     okBody(client.shows.ratings({ params: { id }, query: { extended: 'all' } })),
     okBody(client.shows.stats({ params: { id } })),
     raw(fetch, `/shows/${id}/people?extended=guest_stars,images`, peopleBody),
     okBody(client.shows.studios({ params: { id } })),
     // ponytail: every episode of every season in one response (~1KB each). Split per season if long runners get slow.
     raw(fetch, `/shows/${id}/seasons?extended=full,images,episodes`, seasonsBody),
-    loadWatchNow({
-      fetch,
-      path: `/shows/${id}`,
-      fallback: `/shows/${id}/seasons/1/episodes/1`,
-      country,
-      settings,
-      isVip: user?.isVip ?? false,
-    }),
+    layout.then(({ settings, user }) =>
+      loadWatchNow({
+        fetch,
+        path: `/shows/${id}`,
+        fallback: `/shows/${id}/seasons/1/episodes/1`,
+        country: watchNowCountry(settings),
+        settings,
+        isVip: user?.isVip ?? false,
+      })
+    ),
     // A stale token gets a 401 here, and the page renders Next Episode like a logged-out visit.
     token ? okBody(api({ fetch, token }).shows.progress.watched({ params: { id }, query: {} })) : null,
-    loadPrivateNote({ fetch, token: user ? token : null, item: notable }),
+    Promise.all([summaryRead, layout]).then(([summary, { user }]) =>
+      summary.status === 200
+        ? loadPrivateNote({
+          fetch,
+          token: user ? token : null,
+          item: { type: 'show', id: summary.body.ids.trakt, slug: summary.body.ids.slug } as const,
+        })
+        : null
+    ),
   ]);
+  extras.catch(() => {});
+
+  const [summary, { settings, user, datePreferences }] = await Promise.all([summaryRead, layout]);
+  if (summary.status === 404) error(404, 'Show not found');
+  if (summary.status !== 200) error(502, 'The Trakt API could not load this show.');
+
+  const show = summary.body;
+  if (requested !== show.ids.slug) redirect(301, `/shows/${show.ids.slug}${path}`);
+  const notable = { type: 'show', id: show.ids.trakt, slug: show.ids.slug } as const;
+
+  const [ratings, stats, people, studios, seasons, watchnow, progress, note] = await extras;
 
   const episodeTypeTags = !settings?.browsing?.hide_episode_type_tags;
   const view = toShowSummary({

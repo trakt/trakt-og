@@ -32,30 +32,44 @@ async function knownFor(fetcher: typeof fetch, id: string): Promise<KnownForItem
 }
 
 /**
- * Loads `/people/:id` for SSR: the person with the layout data (404s and canonical redirects need it), then the
- * movie and show credits, the known-for picks, the list count and the private note in parallel. Only the note sends the user's token.
+ * Loads `/people/:id` for SSR: the person, the layout data, the movie and show credits, the known-for picks, the list
+ * count and the private note in parallel, with the 404 and canonical redirect checked before the rest is used. Only the note sends the user's token.
  */
 export async function loadPerson({ fetch, token, parent, id: requested, search }: LoadPersonParams) {
   const client = api({ fetch });
-  const [summary, { settings, user, datePreferences }] = await Promise.all([
-    client.people.summary({ params: { id: requested }, query: { extended: 'full,images' } }),
-    parent(),
-  ]);
-  if (summary.status === 404) error(404, 'Person not found');
-  if (summary.status !== 200) error(502, 'The Trakt API could not load this person.');
-
-  const person = summary.body;
-  const id = person.ids.slug;
-  if (requested !== id) redirect(301, `/people/${id}${search.size > 0 ? `?${search}` : ''}`);
-
-  const notable = { type: 'person', id: person.ids.trakt, slug: id } as const;
-  const [movies, shows, picks, lists, note] = await Promise.all([
+  const summaryRead = client.people.summary({ params: { id: requested }, query: { extended: 'full,images' } });
+  const layout = parent();
+  // The extras go by the requested id alongside the summary, not after it; a non-canonical id redirects before they're
+  // used. Each resolves to null on failure, and the catch only stops a failed summary leaving them unhandled.
+  const id = requested;
+  const extras = Promise.all([
     okBody(client.people.movies({ params: { id }, query: { extended: 'full,images' } })),
     okBody(client.people.shows({ params: { id }, query: { extended: 'full,images' } })),
     knownFor(fetch, id),
     client.people.lists({ params: { id, type: 'all', sort: 'popular' }, query: { limit: 1 } }).catch(() => null),
-    loadPrivateNote({ fetch, token: user ? token : null, item: notable }),
+    Promise.all([summaryRead, layout]).then(([summary, { user }]) =>
+      summary.status === 200
+        ? loadPrivateNote({
+          fetch,
+          token: user ? token : null,
+          item: { type: 'person', id: summary.body.ids.trakt, slug: summary.body.ids.slug } as const,
+        })
+        : null
+    ),
   ]);
+  extras.catch(() => {});
+
+  const [summary, { settings, user, datePreferences }] = await Promise.all([summaryRead, layout]);
+  if (summary.status === 404) error(404, 'Person not found');
+  if (summary.status !== 200) error(502, 'The Trakt API could not load this person.');
+
+  const person = summary.body;
+  if (requested !== person.ids.slug) {
+    redirect(301, `/people/${person.ids.slug}${search.size > 0 ? `?${search}` : ''}`);
+  }
+  const notable = { type: 'person', id: person.ids.trakt, slug: person.ids.slug } as const;
+
+  const [movies, shows, picks, lists, note] = await extras;
 
   const now = new Date();
   const view = toPersonSummary({

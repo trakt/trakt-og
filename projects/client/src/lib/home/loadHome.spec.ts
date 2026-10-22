@@ -4,6 +4,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import type { HeaderUser } from '../components/header/HeaderUser.ts';
 import { createTtlCache } from '../utils/createTtlCache.ts';
 import { homeFanartTitles } from './homeFanartTitles.ts';
+import type { KeyedCache } from '../utils/sharedCache.ts';
 import { loadHome } from './loadHome.ts';
 import type { HomeTrending } from './live/fetchHomeTrending.ts';
 import type { HomeLive } from './live/toHomeLive.ts';
@@ -133,5 +134,32 @@ describe('loadHome', () => {
 
     expect(data.posters).toBeNull();
     expect(await data.live).toBeNull();
+  });
+
+  it('should share the fanart, trending and the live count between workers through the data center cache', async () => {
+    const kept = new Map<string, string>();
+    const cache = {
+      match: (key: string) => Promise.resolve(kept.has(key) ? new Response(kept.get(key)) : undefined),
+      put: async (key: string, response: Response) => void kept.set(key, await response.text()),
+    } satisfies KeyedCache;
+    const read: string[] = [];
+    server.events.on('request:start', ({ request }) => void read.push(new URL(request.url).pathname));
+
+    const first = await loadHome({ fetch, now: 0, random: Math.random, parent: parent(), cache, ...fresh() });
+    await first.live;
+    const shared = read.filter((path) => path.endsWith('/trending') || path.endsWith('/watching')).length;
+    read.length = 0;
+    seen.length = 0;
+
+    // A second worker, with empty memory of its own.
+    const second = await loadHome({ fetch, now: 0, random: Math.random, parent: parent(), cache, ...fresh() });
+
+    expect(shared).toBe(6);
+    expect(await second.live).toEqual(await first.live);
+    expect(second.posters).toEqual(first.posters);
+    expect(second.fanarts.map(({ key }) => key).toSorted()).toEqual(first.fanarts.map(({ key }) => key).toSorted());
+    expect(read).toEqual([]);
+    expect(seen).toEqual([]);
+    server.events.removeAllListeners();
   });
 });

@@ -1,9 +1,9 @@
-import type { MovieResponse } from '@trakt/api';
 import type { ExternalLink } from '../components/summary/ExternalLink.ts';
 import { iconLinks } from '../components/summary/iconLinks.ts';
-import type { StreamingRank } from '../components/summary/toExternalRatings.ts';
+import type { LinkedMedia } from '../components/summary/LinkedMedia.ts';
 
-export function toMovieLinks({ movie, rank }: { movie: MovieResponse; rank: StreamingRank | null }): ExternalLink[] {
+/** A movie's external links: its site, IMDB, TMDB and Fanart.tv, then JustWatch, Wikipedia and its socials. */
+export function toMovieLinks({ movie, justwatch }: { movie: LinkedMedia; justwatch?: string | null }): ExternalLink[] {
   const { ids, homepage } = movie;
   const links: (ExternalLink | false)[] = [
     !!homepage && { label: 'Official Site', href: homepage },
@@ -20,7 +20,7 @@ export function toMovieLinks({ movie, rank }: { movie: MovieResponse; rank: Stre
     ...links.filter((link) => link !== false),
     ...iconLinks({
       social: movie.social_ids,
-      justwatch: rank?.link,
+      justwatch,
       search: `${movie.year ? `${movie.title} ${movie.year}` : movie.title} Movie`,
     }),
   ];

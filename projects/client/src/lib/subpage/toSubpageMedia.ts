@@ -9,6 +9,8 @@ import { iconLinks } from '../components/summary/iconLinks.ts';
 import { imageUrl } from '../utils/imageUrl.ts';
 import type { subpageItemSchema } from './subpageItemSchema.ts';
 import { seasonName } from '../utils/seasonName.ts';
+import { toMovieLinks } from '../movies/toMovieLinks.ts';
+import { toShowLinks } from '../shows/toShowLinks.ts';
 
 type Body = z.infer<typeof subpageItemSchema>;
 type Show = NonNullable<Body['show']>;
@@ -69,38 +71,6 @@ const find = (q: string, s: string) => `${IMDB}find?${new URLSearchParams({ q, s
 const showQuery = (show: Show) => `${show.title}${show.year ? ` ${show.year}` : ''} TV Series`;
 
 const onlyLinks = (links: readonly (ExternalLink | false)[]) => links.filter((link) => link !== false);
-
-// External links from `imdb_url`, `tmdb_url`, `tvdb_url` and `fanart_url`.
-function movieLinks(movie: NonNullable<Body['movie']>, justwatch: string | null | undefined): ExternalLink[] {
-  const { ids } = movie;
-  return [
-    ...onlyLinks([
-      !!movie.homepage && { label: 'Official Site', href: movie.homepage },
-      { label: 'IMDB', href: ids.imdb ? `${IMDB}title/${ids.imdb}` : find(movie.title, 'tt') },
-      !!ids.tmdb && { label: 'TMDB', href: `${TMDB}movie/${ids.tmdb}` },
-      !!ids.tmdb && { label: 'Fanart.tv', href: `https://fanart.tv/movie/${ids.tmdb}` },
-    ]),
-    ...iconLinks({
-      social: movie.social_ids,
-      justwatch,
-      search: `${movie.year ? `${movie.title} ${movie.year}` : movie.title} Movie`,
-    }),
-  ];
-}
-
-function showLinks(show: Show, justwatch: string | null | undefined): ExternalLink[] {
-  const { ids } = show;
-  return [
-    ...onlyLinks([
-      !!show.homepage && { label: 'Official Site', href: show.homepage },
-      { label: 'IMDB', href: ids.imdb ? `${IMDB}title/${ids.imdb}` : find(show.title, 'tt') },
-      !!ids.tmdb && { label: 'TMDB', href: `${TMDB}tv/${ids.tmdb}` },
-      !!ids.tvdb && { label: 'TVDB', href: `https://www.thetvdb.com/dereferrer/series/${ids.tvdb}` },
-      !!ids.tvdb && { label: 'Fanart.tv', href: `https://fanart.tv/series/${ids.tvdb}` },
-    ]),
-    ...iconLinks({ social: show.social_ids, justwatch, search: showQuery(show) }),
-  ];
-}
 
 function seasonLinks(show: Show, number: number, justwatch: string | null | undefined): ExternalLink[] {
   const { ids } = show;
@@ -164,7 +134,7 @@ export function toSubpageMedia({ body, justwatch, collection }: Params): Subpage
       released: movie.released,
       fanart: fanart(movie.images?.fanart?.at(0)),
       poster: poster(movie.images?.poster?.at(0)),
-      links: movieLinks(movie, justwatch),
+      links: toMovieLinks({ movie, justwatch }),
       watchNow: { title: movie.title, year: movie.year ?? undefined },
       ratingTarget: { type: 'movie', id: movie.ids.trakt, title: item.title },
     };
@@ -199,7 +169,7 @@ export function toSubpageMedia({ body, justwatch, collection }: Params): Subpage
       released: show.first_aired,
       fanart: showFanart,
       poster: showPoster,
-      links: showLinks(show, justwatch),
+      links: toShowLinks({ show, justwatch }),
       watchNow,
       ratingTarget: { type: 'show', id: show.ids.trakt, title: item.title },
     };

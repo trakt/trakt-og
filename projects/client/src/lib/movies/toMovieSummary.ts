@@ -144,7 +144,7 @@ export function toMovieSummary(params: MovieSummaryParams) {
       duringCredits: movie.during_credits ?? null,
       afterCredits: movie.after_credits ?? null,
     },
-    links: toMovieLinks(params),
+    links: toMovieLinks({ movie: params.movie, justwatch: params.rank?.link }),
     cast: cast(params.people),
     crew: toCrewGroups(params.people?.crew, false),
   };

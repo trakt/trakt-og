@@ -1,13 +1,13 @@
-import type { MovieResponse } from '@trakt/api';
 import facebook from '../../icons/brands/facebook.svg?raw';
 import instagram from '../../icons/brands/instagram.svg?raw';
 import twitter from '../../icons/brands/twitter.svg?raw';
 import wikipedia from '../../icons/brands/wikipedia-w.svg?raw';
 import justwatch from '../../icons/kit/justwatch.svg?raw';
 import type { ExternalLink } from './ExternalLink.ts';
+import type { LinkedMedia } from './LinkedMedia.ts';
 
 type IconLinksParams = {
-  social: MovieResponse['social_ids'];
+  social: LinkedMedia['social_ids'];
   /** From the watch-now response's streaming rank. */
   justwatch?: string | null;
   /** OG's DuckDuckGo "!wikipedia" search when there's no Wikipedia page: "Breaking Bad 2008 TV Series". */

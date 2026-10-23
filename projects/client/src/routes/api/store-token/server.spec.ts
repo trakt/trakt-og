@@ -33,10 +33,16 @@ describe('POST /api/store-token', () => {
     ['an expired token', JSON.stringify({ token: 'abc', expiresAt: Date.now() - 1 })],
     ['a token of the wrong type', JSON.stringify({ token: 42, expiresAt: Date.now() + 60_000 })],
     ['a body that is not JSON', 'nope'],
+    ['an empty token', JSON.stringify({ token: '', expiresAt: Date.now() + 60_000 })],
+    ['a token without an expiry', JSON.stringify({ token: 'abc' })],
+    ['an expiry of the wrong type', JSON.stringify({ token: 'abc', expiresAt: String(Date.now() + 60_000) })],
+    ['a JSON null', 'null'],
+    ['a JSON array', JSON.stringify([{ token: 'abc', expiresAt: Date.now() + 60_000 }])],
   ])('should clear the cookie for %s', async (_, body) => {
     const { cookies, response } = post(body);
 
-    await response;
+    expect((await response).status).toBe(204);
+    expect(await (await response).text()).toBe('');
     expect(cookies.set).not.toHaveBeenCalled();
     expect(cookies.delete).toHaveBeenCalledWith(AUTH_COOKIE, { path: '/' });
   });

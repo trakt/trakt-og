@@ -31,18 +31,51 @@ const shown = $derived(sortThemeLists(lists, sort));
 const count = (n: number) => n.toLocaleString('en-US');
 
 // One row of count buttons: the last (the comments) hides whenever it would wrap under the others.
-const oneRow: Attachment<HTMLElement> = (node) => {
-  const fit = () => {
-    const buttons = [...node.children].filter((el): el is HTMLElement => el instanceof HTMLElement && !el.popover);
+// Every row unhides, then every row is read, then every row hides, so the rows share one layout instead of forcing one each.
+const rowOf = new WeakMap<Element, HTMLElement>();
+let pending: HTMLElement[] = [];
+let resized: ResizeObserver | undefined;
+
+const fitRows = (rows: Iterable<HTMLElement>) => {
+  const measured: { first: HTMLElement; last: HTMLElement }[] = [];
+  for (const row of rows) {
+    const buttons = [...row.children].filter((el): el is HTMLElement => el instanceof HTMLElement && !el.popover);
     const [first, last] = [buttons.at(0), buttons.at(-1)];
-    if (!first || !last || first === last) return;
+    if (!first || !last || first === last) continue;
     last.hidden = false;
-    last.hidden = last.offsetTop > first.offsetTop;
+    measured.push({ first, last });
+  }
+  const wraps = measured.map(({ first, last }) => last.offsetTop > first.offsetTop);
+  measured.forEach(({ last }, index) => last.hidden = wraps[index] === true);
+};
+
+const flushPending = () => {
+  const rows = pending.filter((row) => row.isConnected);
+  pending = [];
+  fitRows(rows);
+};
+
+const oneRow: Attachment<HTMLElement> = (node) => {
+  resized ??= new ResizeObserver((entries) => {
+    const rows: HTMLElement[] = [];
+    for (const { target } of entries) {
+      const row = rowOf.get(target);
+      if (row && !rows.includes(row)) rows.push(row);
+    }
+    fitRows(rows);
+  });
+  const observer = resized;
+  const watched = [node, ...node.children];
+  for (const el of watched) {
+    rowOf.set(el, node);
+    observer.observe(el);
+  }
+  pending.push(node);
+  queueMicrotask(flushPending);
+  return () => {
+    pending = pending.filter((row) => row !== node);
+    for (const el of watched) observer.unobserve(el);
   };
-  const resized = new ResizeObserver(fit);
-  for (const el of [node, ...node.children]) resized.observe(el);
-  fit();
-  return () => resized.disconnect();
 };
 </script>
 

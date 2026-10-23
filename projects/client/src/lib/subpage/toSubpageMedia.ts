@@ -1,7 +1,7 @@
 import type { z } from 'zod/v4';
 import type { CommentItem } from '../components/comments/CommentItem.ts';
 import { commentItemOf } from '../components/comments/commentItemOf.ts';
-import { episodeType } from '../components/media/episodeTags.ts';
+import { episodeNumber, episodeType } from '../components/media/episodeTags.ts';
 import type { SpoilerTarget } from '../settings/SpoilerTarget.ts';
 import type { RatingTarget } from '../components/rating/RatingTarget.ts';
 import type { ExternalLink } from '../components/summary/ExternalLink.ts';
@@ -64,8 +64,6 @@ const IMDB = 'https://www.imdb.com/';
 const TMDB = 'https://www.themoviedb.org/';
 
 const yearOf = (date: string | null | undefined) => (date ? new Date(date).getUTCFullYear() : undefined);
-const sxe = (season: number, number: number) =>
-  season === 0 ? `Special ${number}` : `${season}x${String(number).padStart(2, '0')}`;
 const find = (q: string, s: string) => `${IMDB}find?${new URLSearchParams({ q, s })}`;
 // OG's DuckDuckGo "!wikipedia" query for seasons and episodes: "Breaking Bad 2008 TV Series Season 1".
 const showQuery = (show: Show) => `${show.title}${show.year ? ` ${show.year}` : ''} TV Series`;
@@ -199,8 +197,8 @@ export function toSubpageMedia({ body, justwatch, collection }: Params): Subpage
     return {
       item,
       spoilerTarget,
-      title: [sxe(episode.season, episode.number), episode.title?.trim()].filter(Boolean).join(' '),
-      episodeNumber: sxe(episode.season, episode.number),
+      title: [episodeNumber(episode, null), episode.title?.trim()].filter(Boolean).join(' '),
+      episodeNumber: episodeNumber(episode, null),
       episodeName: episode.title?.trim() || undefined,
       year: yearOf(episode.first_aired),
       href: `${seasonHref}/episodes/${episode.number}`,

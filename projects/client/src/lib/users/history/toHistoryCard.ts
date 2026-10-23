@@ -161,8 +161,5 @@ export function historyItemTitle(item: HistoryItem, row: HistoryRow | undefined)
   const { show, episode } = row;
   if (item.type === 'show') return show.title;
   if (item.type === 'season') return `${show.title} ${seasonName(episode.season)}`;
-  const number = episode.season === 0
-    ? `Special ${episode.number}`
-    : `${episode.season}x${String(episode.number).padStart(2, '0')}`;
-  return `${show.title} ${number}${episode.title ? ` "${episode.title}"` : ''}`;
+  return `${show.title} ${episodeNumber(episode, null)}${episode.title ? ` "${episode.title}"` : ''}`;
 }

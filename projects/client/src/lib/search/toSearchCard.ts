@@ -1,6 +1,6 @@
 import type { ComponentProps } from 'svelte';
 import type FanartCard from '../components/media/FanartCard.svelte';
-import { episodeType } from '../components/media/episodeTags.ts';
+import { episodeNumber, episodeType } from '../components/media/episodeTags.ts';
 import type { SearchHit } from './SearchHit.ts';
 import type { SearchImageType } from './SearchImageType.ts';
 import type { SeasonOf } from '../overlay/createOverlay.svelte.ts';
@@ -49,10 +49,6 @@ type SearchCardOptions = {
   now: Date;
   order: DateOrder;
 };
-
-// OG's season_x_episode: "1x05", or "Special 3" for season 0.
-const seasonEpisode = (season: number, number: number) =>
-  season === 0 ? `Special ${number}` : `${season}x${String(number).padStart(2, '0')}`;
 
 const released = (date: string | null | undefined, now: Date) => (date ? new Date(date) <= now : false);
 
@@ -122,7 +118,7 @@ export function toSearchCard(hit: SearchHit, options: SearchCardOptions): Search
       id: episode.ids.trakt,
       season: { show: show.ids.trakt, number: episode.season, episode: episode.number },
       href: `${showHref}/seasons/${episode.season}/episodes/${episode.number}`,
-      title: `${seasonEpisode(episode.season, episode.number)} ${episode.title ?? ''}`.trim(),
+      title: `${episodeNumber(episode, null)} ${episode.title ?? ''}`.trim(),
       smallTitle: worded ? undefined : { text: show.title, href: showHref },
       ...art,
       tags: [

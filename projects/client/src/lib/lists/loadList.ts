@@ -66,7 +66,7 @@ export async function loadList({ fetch, locals, params, url, parent, cookies }: 
     ? await fetchSummary(api({ fetch, token }), { id: params.id, list: params.list })
     : null;
   const summary = viewerSummary?.status === 200 ? viewerSummary : anonymousSummary;
-  if (!summary || [204, 403, 404].includes(summary.status)) error(404, 'Page Not Found');
+  if (!summary || [204, 401, 403, 404].includes(summary.status)) error(404, 'Page Not Found');
   if (summary.status !== 200) error(502, 'Trakt is having trouble loading this list.');
 
   const list = toListView(summary.body);

@@ -9,19 +9,31 @@ import { loadCheckinTarget } from './loadCheckinTarget.ts';
 import { GENERIC_ERROR } from '../../utils/genericError.ts';
 
 let target = $state<CheckinTarget | null>(null);
+let loading = $state(false);
+let opening = 0;
 
 export const checkin = {
   get target() {
     return target;
   },
+  /** The dialog is already up while the target loads. */
+  get loading() {
+    return loading;
+  },
   /** Logged out, it sends the viewer to sign in instead, like OG. */
   async open(item: Pick<CheckinTarget, 'type' | 'id'>): Promise<void> {
     if (!(await userManager().getUser())?.access_token) return login();
+    const attempt = ++opening;
+    loading = true;
     const loaded = await loadCheckinTarget({ ...item, fetch: (path) => rawApiFetch({ path }) }).catch(() => null);
+    if (attempt !== opening) return;
+    loading = false;
     if (loaded) target = loaded;
     else toast.error(GENERIC_ERROR);
   },
   close() {
+    opening++;
+    loading = false;
     target = null;
   },
 };

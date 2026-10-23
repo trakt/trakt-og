@@ -72,7 +72,7 @@ export type SocialItem = {
 };
 
 function memberOf(user: SocialActivity['user']): SocialMember {
-  if (user.deleted || !user.ids.slug) return { key: user.username, name: 'Deleted', avatar: PLACEHOLDER_AVATAR };
+  if (user.deleted || !user.ids.slug) return { key: user.username, name: 'Deleted User', avatar: PLACEHOLDER_AVATAR };
 
   const { slug } = user.ids;
   const avatar = user.images?.avatar.full ?? PLACEHOLDER_AVATAR;

@@ -37,9 +37,9 @@ describe('util: authorOf', () => {
     expect(authorOf(user({ vip: true, vip_ep: true })).badge).toMatchObject({ kind: 'vip', tag: { text: 'EP' } });
   });
 
-  it('should show deleted members as "Deleted" without a link', () => {
+  it('should show deleted members as "Deleted User" without a link', () => {
     expect(authorOf(user({ deleted: true }))).toEqual({
-      name: 'Deleted',
+      name: 'Deleted User',
       avatar: expect.stringContaining('zoidberg'),
       badge: null,
     });

@@ -8,7 +8,7 @@ const movie = {
   ids: { trakt: 1, slug: 'fight-club-1999' },
   images: { poster: 'media.trakt.tv/posters/medium/1.jpg' },
 };
-const user = { username: 'tester', name: 'OG Tester', ids: { slug: 'og_tester' }, vip: true, vip_years: 7 };
+const user = { username: 'tester', name: 'OG Tester', ids: { slug: 'og_tester', trakt: 7 }, vip: true, vip_years: 7 };
 const note = { id: 1, notes: 'A note', privacy: 'friends', spoiler: true, updated_at: '2026-09-29T01:00:00Z', user };
 const map = (row: unknown) =>
   toNote(noteRowsSchema.parse([row]).at(0) as ReturnType<typeof noteRowsSchema.parse>[number], preferences);
@@ -23,7 +23,7 @@ describe('toNote', () => {
       spoiler: true,
       concealed: true,
       updatedDate: '28 Sep 2026 18:00',
-      author: { name: 'OG Tester', href: '/users/og_tester', vip: { years: 7 } },
+      author: { id: 7, name: 'OG Tester', href: '/users/og_tester', vip: { years: 7 } },
       item: { href: '/movies/fight-club-1999', image: 'https://media.trakt.tv/posters/thumb/1.jpg' },
     });
   });
@@ -104,7 +104,7 @@ describe('toNote', () => {
     expect(map({ ...row, type: 'episode', episode: { ids: { trakt: 3 } }, show: null })).toBeNull();
     expect(map({ ...row, note: { ...note, notes: null, user: null } })).toMatchObject({
       text: '',
-      author: { name: 'Deleted User', href: null, vip: null },
+      author: { id: null, name: 'Deleted User', href: null, vip: null },
     });
   });
 });

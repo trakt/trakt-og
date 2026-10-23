@@ -863,15 +863,6 @@ const peopleCount = (n: number) => `${n.toLocaleString('en-US')} ${n === 1 ? 'pe
   }
 }
 
-.visually-hidden {
-  position: absolute;
-  inline-size: 1px;
-  block-size: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-
 /* Small tablets: the label goes under the figure on one line, and the figure and faces shrink to fit a third. */
 @container (width < 880px) {
   .cell {

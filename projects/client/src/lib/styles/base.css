@@ -212,3 +212,13 @@ button {
     scroll-behavior: auto !important;
   }
 }
+
+/* Text for screen readers only. `!important` so a component's own position or size rules can't reveal it. */
+.visually-hidden {
+  position: absolute !important;
+  inline-size: 1px !important;
+  block-size: 1px !important;
+  overflow: hidden !important;
+  clip-path: inset(50%) !important;
+  white-space: nowrap !important;
+}

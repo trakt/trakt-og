@@ -83,15 +83,6 @@ const count = (n: number) => n.toLocaleString('en-US');
   color-scheme: dark;
 }
 
-.visually-hidden {
-  position: absolute;
-  inline-size: 1px;
-  block-size: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-
 ul {
   display: flex;
   gap: var(--essential-gap);

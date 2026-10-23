@@ -67,13 +67,4 @@ strong {
   font-size: var(--font-size-stat-number);
   font-weight: var(--font-weight-headings-heavy);
 }
-
-.visually-hidden {
-  position: absolute;
-  inline-size: 1px;
-  block-size: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
 </style>

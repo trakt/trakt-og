@@ -152,13 +152,4 @@ const turn = { bottom: '0deg', left: '90deg', right: '-90deg' }[edge];
     scale: 1;
   }
 }
-
-.visually-hidden {
-  position: absolute;
-  inline-size: 1px;
-  block-size: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
 </style>

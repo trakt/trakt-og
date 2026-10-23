@@ -53,13 +53,4 @@ const { rank, live = false, size = 'card' }: Props = $props();
   margin-inline-end: var(--chart-rank-hash-gap);
   opacity: var(--opacity-chart-rank-hash);
 }
-
-.visually-hidden {
-  position: absolute;
-  inline-size: 1px;
-  block-size: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
 </style>

@@ -345,13 +345,4 @@ const focusAboveFooter: Attachment<HTMLElement> = (footer) => {
     block-size: var(--watch-now-justwatch-height);
   }
 }
-
-.visually-hidden {
-  position: absolute;
-  inline-size: 1px;
-  block-size: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
 </style>

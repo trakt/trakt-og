@@ -304,15 +304,6 @@ li {
   background-color: var(--color-strip-divider);
 }
 
-.visually-hidden {
-  position: absolute;
-  inline-size: 1px;
-  block-size: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-
 @media (prefers-reduced-motion: reduce) {
   .all-stats .arrow {
     transition: none;

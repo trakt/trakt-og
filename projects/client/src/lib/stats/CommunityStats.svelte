@@ -93,13 +93,4 @@ const { tiles }: { tiles: readonly Tile[] } = $props();
   color: var(--color-genre-count);
   font-size: var(--font-size-genre-key-count);
 }
-
-.visually-hidden {
-  position: absolute;
-  inline-size: 1px;
-  block-size: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
 </style>

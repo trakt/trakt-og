@@ -505,15 +505,6 @@ const actions = (row: UserListRow) => {
   border-block-start: 1px solid var(--color-separator);
 }
 
-.visually-hidden {
-  position: absolute;
-  inline-size: 1px;
-  block-size: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-
 .empty {
   padding-block-start: var(--gutter);
 }

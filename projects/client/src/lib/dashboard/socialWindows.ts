@@ -1,4 +1,5 @@
 import { dayIn } from '../utils/dayIn.ts';
+import { fromWallClock } from '../utils/fromWallClock.ts';
 
 export type SocialPeriod = 'today' | 'yesterday' | 'week';
 
@@ -9,29 +10,8 @@ const DAY_MS = 86_400_000;
 const MINUTE_MS = 60_000;
 const WEEK_DAYS = 7;
 
-/** How far `timeZone`'s wall clock is ahead of UTC at `at`, in ms. */
-function offsetAt(at: number, timeZone: string): number {
-  const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone,
-    hourCycle: 'h23',
-    year: 'numeric',
-    month: 'numeric',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: 'numeric',
-    second: 'numeric',
-  }).formatToParts(at);
-  const part = (type: Intl.DateTimeFormatPartTypes) => Number(parts.find((p) => p.type === type)?.value ?? 0);
-  const wall = Date.UTC(part('year'), part('month') - 1, part('day'), part('hour'), part('minute'), part('second'));
-  return wall - Math.floor(at / 1000) * 1000;
-}
-
-/** The instant `day` (`YYYY-MM-DD`) starts in `timeZone`. A second pass settles a DST change between the guesses. */
-function midnight(day: string, timeZone: string): number {
-  const utc = Date.parse(`${day}T00:00:00Z`);
-  const guess = utc - offsetAt(utc, timeZone);
-  return utc - offsetAt(guess, timeZone);
-}
+/** The instant `day` (`YYYY-MM-DD`) starts in `timeZone`. */
+const midnight = (day: string, timeZone: string) => fromWallClock(Date.parse(`${day}T00:00:00Z`), timeZone);
 
 const iso = (at: number) => new Date(at).toISOString();
 

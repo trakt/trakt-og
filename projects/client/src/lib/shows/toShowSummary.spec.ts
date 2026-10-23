@@ -43,6 +43,36 @@ describe('airsAt', () => {
     expect(airsAt(base.show.airs, base.now)).toBe('2026-10-05T01:00:00.000Z');
   });
 
+  it('should find the slot in a half-hour zone', () => {
+    expect(airsAt({ day: 'Sunday', time: '21:00', timezone: 'Asia/Kolkata' }, base.now)).toBe(
+      '2026-10-04T15:30:00.000Z',
+    );
+    expect(airsAt({ day: 'Sunday', time: '20:00', timezone: 'Australia/Lord_Howe' }, new Date('2026-10-06T12:00:00Z')))
+      .toBe('2026-10-11T09:00:00.000Z');
+  });
+
+  it('should move a slot the clocks skip forward by the gap', () => {
+    // Lord Howe Island goes from 2:00 to 2:30 am on October 4, 2026.
+    expect(airsAt({ day: 'Sunday', time: '02:15', timezone: 'Australia/Lord_Howe' }, base.now)).toBe(
+      '2026-10-03T15:45:00.000Z',
+    );
+    // New York goes from 2:00 to 3:00 am on March 8, 2026, so 2:30 am is 3:30 am EDT.
+    expect(airsAt({ day: 'Sunday', time: '02:30', timezone: 'America/New_York' }, new Date('2026-03-03T12:00:00Z')))
+      .toBe('2026-03-08T07:30:00.000Z');
+  });
+
+  it('should pick the first of a repeated hour when the clocks go back', () => {
+    expect(airsAt({ day: 'Sunday', time: '01:30', timezone: 'America/New_York' }, new Date('2026-10-27T12:00:00Z')))
+      .toBe('2026-11-01T05:30:00.000Z');
+    // 2:30 am CEST, before Berlin goes back from 3:00 to 2:00 am on October 25, 2026.
+    expect(airsAt({ day: 'Sunday', time: '02:30', timezone: 'Europe/Berlin' }, new Date('2026-10-20T12:00:00Z')))
+      .toBe('2026-10-25T00:30:00.000Z');
+  });
+
+  it('should give up on a zone it does not know', () => {
+    expect(airsAt({ day: 'Sunday', time: '21:00', timezone: 'Mars/Olympus_Mons' }, base.now)).toBeUndefined();
+  });
+
   it('should give up without a day, time or zone', () => {
     expect(airsAt({ day: 'Sunday', time: null, timezone: 'America/New_York' }, base.now)).toBeUndefined();
     expect(airsAt(null, base.now)).toBeUndefined();

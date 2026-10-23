@@ -39,6 +39,33 @@ describe('viewerAirTime', () => {
     );
   });
 
+  it('should keep prime time on the days the clocks change', () => {
+    // 9:00 pm EST on Saturday, March 7, and 9:00 pm EDT on Sunday, March 8, 2026.
+    expect(at(viewerAirTime(episode('us', '2026-03-08T02:00:00.000Z'), 'America/Los_Angeles'))).toBe(
+      '2026-03-08T05:00:00.000Z',
+    );
+    expect(at(viewerAirTime(episode('us', '2026-03-09T01:00:00.000Z'), 'America/Los_Angeles'))).toBe(
+      '2026-03-09T04:00:00.000Z',
+    );
+    expect(at(viewerAirTime(episode('us', '2026-03-09T01:00:00.000Z'), 'America/Chicago'))).toBe(
+      '2026-03-09T01:00:00.000Z',
+    );
+  });
+
+  it('should pick the first of a repeated hour when the clocks go back', () => {
+    // 1:30 am EST, the second 1:30 in New York on November 1, 2026; the first 1:30 in Los Angeles is PDT.
+    expect(at(viewerAirTime(episode('us', '2026-11-01T06:30:00.000Z'), 'America/Los_Angeles'))).toBe(
+      '2026-11-01T08:30:00.000Z',
+    );
+  });
+
+  it('should move a time the clocks skip forward by the gap', () => {
+    // 3:30 am EDT on March 8, 2026 is 2:30 am in Chicago, which the clocks skip, so 3:30 am CDT.
+    expect(at(viewerAirTime(episode('us', '2026-03-08T07:30:00.000Z'), 'America/Chicago'))).toBe(
+      '2026-03-08T08:30:00.000Z',
+    );
+  });
+
   it('should leave other shows, zones and movies alone', () => {
     expect(at(viewerAirTime(episode('gb'), 'America/Los_Angeles'))).toBe(PRIME_TIME);
     expect(at(viewerAirTime(episode(null), 'America/Los_Angeles'))).toBe(PRIME_TIME);

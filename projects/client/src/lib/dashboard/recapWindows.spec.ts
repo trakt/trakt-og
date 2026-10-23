@@ -59,4 +59,18 @@ describe('recapWindows', () => {
     const [january] = recapWindows({ now, timeZone: 'Asia/Tokyo' });
     expect(january).toEqual({ month: 1, start: '2025-12-31T15:00:00.000Z', end: '2026-01-31T15:00:00.000Z' });
   });
+
+  it('should handle half-hour zones and half-hour daylight saving', () => {
+    const [january] = recapWindows({ now: new Date('2026-02-15T00:00:00Z'), timeZone: 'Asia/Kolkata' });
+    expect(january).toEqual({ month: 1, start: '2025-12-31T18:30:00.000Z', end: '2026-01-31T18:30:00.000Z' });
+
+    const april = recapWindows({ now: new Date('2026-05-10T00:00:00Z'), timeZone: 'Australia/Lord_Howe' }).at(3);
+    expect(april).toEqual({ month: 4, start: '2026-03-31T13:00:00.000Z', end: '2026-04-30T13:30:00.000Z' });
+  });
+
+  it('should follow the clocks going back between months', () => {
+    const now = new Date('2026-12-10T12:00:00Z');
+    const november = recapWindows({ now, timeZone: 'America/New_York' }).at(10);
+    expect(november).toEqual({ month: 11, start: '2026-11-01T04:00:00.000Z', end: '2026-12-01T05:00:00.000Z' });
+  });
 });

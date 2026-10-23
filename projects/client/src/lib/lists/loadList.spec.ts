@@ -205,6 +205,12 @@ describe('loadList', () => {
     await expect(load({ list: 'missing' })).rejects.toMatchObject({ status: 404 });
   });
 
+  it('should 404 a list whose summary answers 401', async () => {
+    server.use(http.get(`${API}/users/sean/lists/:list`, () => new HttpResponse('Unauthorized', { status: 401 })));
+    await expect(load()).rejects.toMatchObject({ status: 404 });
+    await expect(load({ token: 'stale' })).rejects.toMatchObject({ status: 404 });
+  });
+
   it('should count a list that fits its page from that page', async () => {
     const signedOut = await loaded();
     // Two movies without runtimes: OG's 90 minutes each.

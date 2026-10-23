@@ -231,6 +231,7 @@ async function searchToggle() {
   await tick();
   if (searching) searchInput?.focus();
 }
+let loadingMounted = $state(false);
 let loadingNew = $state(false);
 async function openNew() {
   createError = '';
@@ -238,6 +239,11 @@ async function openNew() {
   followingError = false;
   popover?.hidePopover();
   // The Trakt loader covers the page while the collaborators load, then the dialog opens with them in.
+  if (!loadingMounted) {
+    loadingMounted = true;
+    await tick();
+    await new Promise(requestAnimationFrame);
+  }
   loadingNew = true;
   try {
     following = await loadFollowerCandidates(authFetch());
@@ -384,7 +390,7 @@ async function save(draft: Parameters<typeof createList>[0]['draft'] & { collabo
   </div>
 </li>
 {/snippet}
-<LoadingOverlay visible={loadingNew} />
+{#if loadingMounted}<LoadingOverlay visible={loadingNew} />{/if}
 {#if newList}<NewListDialog title="Add to new list" bind:open={newList} {busy} error={createError} {max}
   vip={page.data.user?.isVip} {following} {followingError}
   onclose={async () => { await tick(); triggerButton?.focus({ preventScroll: true }); }}

@@ -19,7 +19,7 @@ const server = setupServer(
       return HttpResponse.json(episode);
     }
     if (path.endsWith('/seasons')) {
-      return HttpResponse.json([{ number: 1, episodes: [episode] }]);
+      return HttpResponse.json([{ number: 1, episodes: [{ ...episode, number: 2, ids: { trakt: 73483 } }, episode] }]);
     }
     return HttpResponse.json([]);
   }),
@@ -53,10 +53,16 @@ const params = () => ({
 describe('loadEpisode', () => {
   it('should load all public reads anonymously and preserve layout preferences', async () => {
     const data = await loadEpisode(params());
-    expect(seen.filter((request) => !isWatchNow(request))).toHaveLength(9);
+    expect(seen.filter((request) => !isWatchNow(request))).toHaveLength(8);
     expect(seen.every((request) => !request.headers.has('authorization'))).toBe(true);
     expect(data.episode.id).toBe(73482);
     expect(data.datePreferences.timeZone).toBe('UTC');
+  });
+  it("should build the episode strip from the seasons read, without loading the season's episodes", async () => {
+    const data = await loadEpisode(params());
+    const paths = seen.map((request) => new URL(request.url).pathname);
+    expect(paths).not.toContain('/shows/breaking-bad/seasons/1/episodes');
+    expect(data.episode.episodeLinks.map(({ text }) => text)).toEqual(['1', '2']);
   });
   it('should reject invalid numbers before fetching', async () => {
     await expect(loadEpisode({ ...params(), episode: '-1' })).rejects.toMatchObject({ status: 404 });

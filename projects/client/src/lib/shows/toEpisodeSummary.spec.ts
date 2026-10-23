@@ -25,7 +25,6 @@ const base: Parameters<typeof toEpisodeSummary>[0] = {
   },
   season: { number: 1, ids: { trakt: 3950 } },
   episode,
-  episodes: [episode, { season: 1, number: 1, title: 'Pilot', ids: { trakt: 101 } }],
   seasons: [{ number: 0, episodes: [{ season: 0, number: 1, ids: { trakt: 99 } }] }, {
     number: 2,
     episodes: [{ season: 2, number: 1, title: 'Third', ids: { trakt: 103 } }],
@@ -106,5 +105,13 @@ describe('toEpisodeSummary', () => {
     const links = toEpisodeSummary({ ...base, show: { ...base.show, ids: { ...base.show.ids, tvdb: 81189 } } }).links;
     expect(links.map(({ label }) => label)).toEqual(['IMDB', 'TMDB', 'Wikipedia']);
     expect(links.at(0)?.href).toBe('https://www.imdb.com/find?q=Breaking+Bad+Second&s=ep');
+  });
+  it('should list only the episodes of its own season in the strip', () => {
+    const view = toEpisodeSummary({ ...base, episode: { ...episode, season: 2, number: 1 } });
+    expect(view.episodeLinks).toEqual([{
+      text: '1',
+      href: '/shows/breaking-bad/seasons/2/episodes/1',
+      selected: true,
+    }]);
   });
 });

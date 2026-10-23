@@ -27,8 +27,7 @@ import {
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import FrameGrid from '$lib/components/frame/FrameGrid.svelte';
 import FanartCard from '$lib/components/media/FanartCard.svelte';
-import type { QuickIconFill } from '$lib/components/media/quickIconFill';
-import { quickIconFill } from '$lib/components/media/quickIconFill';
+import { mediaQuickIcons } from '$lib/components/media/mediaQuickIcons';
 import NoResults from '$lib/components/empty/NoResults.svelte';
 import { pageHref } from '$lib/components/pagination/pageWindow';
 import CountPill from '$lib/components/sidebar/CountPill.svelte';
@@ -111,11 +110,11 @@ const menu = $derived(data.chart !== 'recommendations');
 const options = $derived(fadeHideOptions.filter((option) => data.type === 'shows' || !('showsOnly' in option)));
 let fadeHide = $derived<FadeHide>(data.fadeHide);
 
-// The cards the hide menu leaves, each with its place in the chart, the overlay's fills and whether it's faded.
+// The cards the hide menu leaves, each with its place in the chart, its quick icons and whether it's faded.
 type Entry = {
   card: ChartCard;
   rank: number;
-  fill: QuickIconFill;
+  icons: ReturnType<typeof mediaQuickIcons> & { favorite: true };
   faded: boolean;
   rating?: number | null;
   dropped?: boolean;
@@ -123,11 +122,14 @@ type Entry = {
 const entries = $derived(
   data.cards.flatMap((card, i): Entry[] => {
     const state = overlay.state(card.type, card.id);
-    const fill = quickIconFill({ state, airedEpisodes: card.airedEpisodes, datePreferences: data.datePreferences });
-    const matches = (id: FadeHideOption) => matchesFadeHide(id, state, fill);
+    const icons = {
+      ...mediaQuickIcons({ item: card, state, datePreferences: data.datePreferences }),
+      favorite: true as const,
+    };
+    const matches = (id: FadeHideOption) => matchesFadeHide(id, state, icons.fill);
     if (menu && fadeHide.hide.some(matches)) return [];
     const faded = menu && fadeHide.fade.some(matches);
-    return [{ card, rank: i + 1, fill, faded, rating: state.rating, dropped: state.dropped }];
+    return [{ card, rank: i + 1, icons, faded, rating: state.rating, dropped: state.dropped }];
   }),
 );
 // Page 1 opens with larger cards: trending's hero and the pair after it, or the pair alone.
@@ -137,23 +139,6 @@ const hero = $derived(withHero ? entries.at(0) : undefined);
 const pairStart = $derived(withHero ? 1 : 0);
 const pair = $derived(opening ? entries.slice(pairStart, pairStart + 2) : []);
 const grid = $derived(opening ? entries.slice(pairStart + 2) : entries);
-
-const icons = ({ card, fill }: Entry) => ({
-  fill,
-  ratingTarget: { type: card.type, id: card.id, title: card.title },
-  watchTarget: {
-    type: card.type,
-    id: card.id,
-    title: card.title,
-    airedEpisodes: card.airedEpisodes,
-    runtime: card.runtime,
-  },
-  rating: card.released ? card.rating : undefined,
-  favorite: true,
-  // ponytail: OG showed watch now only with sources in the user's country. Until #60 brings sources, an
-  // item that isn't out yet is taken to have none.
-  watchNow: card.released ? ('play' as const) : undefined,
-});
 
 function save(next: FadeHide) {
   const reload = apiHideOptions.some((id) => fadeHide.hide.includes(id) !== next.hide.includes(id));
@@ -231,7 +216,7 @@ const period = $derived(advanced.config.period);
   <FanartCard framed href={entry.card.href} title={entry.card.title} year={entry.card.year}
   image={large ? (entry.card.fanart ?? entry.card.image) : entry.card.image}
   titleLogo={large ? proxiedLogoUrl(entry.card.logo) : undefined} tags={entry.card.tags} userRating={entry.rating}
-  dropped={entry.dropped} faded={entry.faded} icons={icons(entry)}>
+  dropped={entry.dropped} faded={entry.faded} icons={entry.icons}>
     {#snippet fanartOverlay()}
       {#if large}<span class="rank"><ChartRank rank={entry.rank} live={data.chart === 'trending'} /></span>{/if}
     {/snippet}
@@ -318,7 +303,7 @@ const period = $derived(advanced.config.period);
 
   {#if entries.length > 0}
     {#if hero}
-      <ChartHero card={hero.card} rank={hero.rank} live={data.chart === 'trending'} icons={icons(hero)} />
+      <ChartHero card={hero.card} rank={hero.rank} live={data.chart === 'trending'} icons={hero.icons} />
     {/if}
     {#if pair.length > 0}
       <div class="pair-frame">

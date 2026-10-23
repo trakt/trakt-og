@@ -1,6 +1,7 @@
 import adapter from '@sveltejs/adapter-cloudflare';
 import { sveltekit } from '@sveltejs/kit/vite';
 import process from 'node:process';
+import { fileURLToPath } from 'node:url';
 import { loadEnv } from 'vite';
 import { defineConfig } from 'vitest/config';
 
@@ -10,6 +11,15 @@ export default defineConfig(({ mode }) => ({
     TRAKT_CLIENT_ID: JSON.stringify(loadEnv(mode, process.cwd(), 'TRAKT_').TRAKT_CLIENT_ID ?? ''),
   },
   plugins: [
+    {
+      name: 'zod-openapi-shim',
+      enforce: 'pre',
+      // The real package's CommonJS build bundles a second copy of zod into the browser. The server keeps it.
+      resolveId(source, _importer, options) {
+        if (source !== '@anatine/zod-openapi' || options.ssr) return null;
+        return fileURLToPath(new URL('./src/lib/zodOpenApiShim.ts', import.meta.url));
+      },
+    },
     sveltekit({
       compilerOptions: {
         // Force runes mode for the project, except for libraries. Can be removed in svelte 6.

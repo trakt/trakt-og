@@ -70,7 +70,10 @@ export async function loadAbout({
       load: () => fetchAboutGithub({ fetch: liveFetch, token: githubToken }),
     });
   // Streamed, so a cache miss never holds up the page; null when GitHub can't be read and nothing's cached.
-  const github = githubPool({ now, load: readGithub }).catch(() => null);
+  const github = githubPool({ now, load: readGithub }).catch((reason: unknown) => {
+    console.warn('about: GitHub could not be read', reason);
+    return null;
+  });
 
   const team = await pool({ now, load: readTeam }).catch((): AboutMember[] => []);
 

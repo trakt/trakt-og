@@ -7,6 +7,8 @@ import type { z } from 'zod/v4';
 
 const API = 'https://api.github.com';
 const REPO = 'trakt/trakt-og';
+/** GitHub refuses a request without one, and a Worker's fetch doesn't send one of its own. */
+const USER_AGENT = 'og.trakt.tv';
 const OPEN = 10;
 const CLOSED = 10;
 const COMMITS = 50;
@@ -42,7 +44,11 @@ const toIssue = (at: (item: SearchItem) => string) => (item: SearchItem): Issue 
 });
 
 async function get({ fetch, token }: FetchAboutGithubParams, path: string): Promise<Response> {
-  const headers = { accept: 'application/vnd.github+json', ...(token && { authorization: `Bearer ${token}` }) };
+  const headers = {
+    accept: 'application/vnd.github+json',
+    'user-agent': USER_AGENT,
+    ...(token && { authorization: `Bearer ${token}` }),
+  };
   const response = await fetch(`${API}${path}`, { headers });
   if (!response.ok) throw new Error(`GitHub answered ${response.status} for ${path}`);
   return response;

@@ -1,5 +1,6 @@
 import { RATING_LABELS } from '../../components/rating/ratingPrompt.ts';
 import { countLabel } from '../../utils/countLabel.ts';
+import { ratingDistribution } from './ratingDistribution.ts';
 
 /** One bar of the profile's ratings chart. */
 export type ProfileRatingBar = {
@@ -118,14 +119,10 @@ function typesLine(types: RatedTypes) {
  * (the highest on a tie) and the share of 9s and 10s under it.
  */
 export function toProfileRatings({ distribution, types, unit = 'rating' }: ToProfileRatingsParams): ProfileRatings {
-  const counts = RATINGS.map((rating) => distribution?.[rating] ?? 0);
-  const total = counts.reduce((sum, n) => sum + n, 0);
+  const { counts, total, average, most, mostGiven: top } = ratingDistribution(distribution);
   if (total === 0) return { count: '0', average: '0', chart: null, keys: [] };
 
   const countOf = (rating: number) => counts.at(rating - 1) ?? 0;
-  const average = counts.reduce((sum, n, i) => sum + n * (i + 1), 0) / total;
-  const most = Math.max(...counts);
-  const top = RATINGS.findLast((rating) => countOf(rating) === most) ?? 10;
   const loved = LOVED.reduce((sum, rating) => sum + countOf(rating), 0);
   const scale = ratingsScale(most);
 

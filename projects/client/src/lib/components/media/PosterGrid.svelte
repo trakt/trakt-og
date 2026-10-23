@@ -18,7 +18,7 @@ interface Props {
 const { columns = 6, flush = false, phoneColumns = 2, children }: Props = $props();
 </script>
 
-<div class="poster-grid-frame">
+<div class="poster-grid-frame" data-sveltekit-preload-data="tap">
   <div class={['poster-grid', { flush }]} style:--columns={columns} style:--phone-columns={phoneColumns}>
     {@render children()}
   </div>

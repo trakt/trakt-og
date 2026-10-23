@@ -102,7 +102,10 @@ $effect(() => {
 </section>
 
 <style>
+/* Dark in either theme, over its fanart. Its text color is set again so it resolves dark here too. */
 .hero {
+  color-scheme: dark;
+  color: var(--color-home-text);
   position: relative;
   isolation: isolate;
   container-type: inline-size;

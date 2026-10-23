@@ -79,13 +79,20 @@ const draw: Attachment<HTMLCanvasElement> = (canvas) => {
   const lit = hoveredCode;
   const sweeping = !live && !prefersReducedMotion.current;
   const style = getComputedStyle(canvas);
+  // The color tokens are light-dark() pairs, which a canvas can't read, so each resolves through the canvas's own
+  // color in its current scheme.
+  const color = (token: string) => {
+    canvas.style.color = `var(${token})`;
+    const resolved = style.color;
+    canvas.style.color = '';
+    return resolved;
+  };
   // Index 0 is a country nobody watches in; read once per paint, so a theme switch still shows mid-sweep.
   const shades = () => [
-    style.getPropertyValue('--color-home-map-dot'),
-    ...KEY.map(({ level }) => style.getPropertyValue(`--color-home-map-heat-${level}`)),
+    color('--color-home-map-dot'),
+    ...KEY.map(({ level }) => color(`--color-home-map-heat-${level}`)),
   ];
-  const hover = style.getPropertyValue('--color-home-map-hover');
-  const shimmer = style.getPropertyValue('--color-home-map-shimmer');
+  const tones = () => ({ hover: color('--color-home-map-hover'), shimmer: color('--color-home-map-shimmer') });
   const sweepMs = Number(style.getPropertyValue('--home-map-shimmer-ms'));
   const band = Number(style.getPropertyValue('--home-map-shimmer-band')) * world.width;
   let frame = 0;
@@ -97,6 +104,7 @@ const draw: Attachment<HTMLCanvasElement> = (canvas) => {
     const radius = world.step * Number(style.getPropertyValue('--home-map-dot')) * scale;
     const light = time === undefined ? undefined : ((time % sweepMs) / sweepMs) * (world.width + 2 * band) - band;
     const shade = shades();
+    const { hover, shimmer } = tones();
     const dotAt = (dot: MapDot) => {
       context.beginPath();
       context.arc(dot.x * scale, dot.y * scale, radius, 0, Math.PI * 2);
@@ -131,8 +139,12 @@ const draw: Attachment<HTMLCanvasElement> = (canvas) => {
   if (sweeping) frame = requestAnimationFrame(sweep);
   const resized = new ResizeObserver(resize);
   resized.observe(canvas);
+  // Dark Knight flips data-theme on <html>; the dots repaint in the new scheme.
+  const themed = new MutationObserver(() => paint(sweeping ? performance.now() : undefined));
+  themed.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
   return () => {
     resized.disconnect();
+    themed.disconnect();
     cancelAnimationFrame(frame);
   };
 };

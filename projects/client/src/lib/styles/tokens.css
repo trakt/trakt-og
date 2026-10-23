@@ -3244,13 +3244,14 @@
 }
 
 :root {
-  /* Home: the OG Redux landing at /home. Dark in both themes, like OG's home page over fanart. */
-  --color-home-bg: #111;
-  --color-home-text: #fff;
-  --color-home-soft: rgb(255 255 255 / 0.82);
-  --color-home-muted: #999;
-  --color-home-line: rgb(255 255 255 / 0.1);
-  --color-home-dash: rgb(255 255 255 / 0.28);
+  /* Home: the OG Redux landing at /home, and the about page. Both follow the theme, but their heroes stay dark over
+     fanart and film scenes, like OG's home page. */
+  --color-home-bg: light-dark(#fff, #111);
+  --color-home-text: light-dark(#222, #fff);
+  --color-home-soft: light-dark(rgb(0 0 0 / 0.72), rgb(255 255 255 / 0.82));
+  --color-home-muted: light-dark(#757575, #999);
+  --color-home-line: light-dark(rgb(0 0 0 / 0.1), rgb(255 255 255 / 0.1));
+  --color-home-dash: light-dark(rgb(0 0 0 / 0.25), rgb(255 255 255 / 0.28));
   --home-content-width: 1170px; /* OG's container, so the copy starts 135px in at 1440 */
   --home-gutter: 24px;
   --home-hero-min-height: 640px;
@@ -3281,8 +3282,8 @@
   --home-actions-gap: 12px;
   --home-button-inline: 22px;
   --font-size-home-button: 16px;
-  --color-home-button-line: rgb(255 255 255 / 0.4);
-  --color-home-button-hover: rgb(255 255 255 / 0.12);
+  --color-home-button-line: light-dark(rgb(0 0 0 / 0.3), rgb(255 255 255 / 0.4));
+  --color-home-button-hover: light-dark(rgb(0 0 0 / 0.06), rgb(255 255 255 / 0.12));
   --font-size-home-wordmark-tablet: 7.4cqi; /* under 1100px, beside the Live now box */
   --font-size-home-lede-tablet: 18px;
   --home-hero-indent-small: 24px; /* extra, on the smallest tablet without the box */
@@ -3329,7 +3330,7 @@
   --home-live-pill-padding: 4px 10px;
   --home-live-split-height: 8px;
   --home-live-split-gap: 3px;
-  --color-home-movies: #6b6b6b; /* movies' share wherever shows are red */
+  --color-home-movies: light-dark(#a3a3a3, #6b6b6b); /* movies' share wherever shows are red */
   --home-live-roll: 1.4s; /* the count rolling to a new number */
   --home-live-shimmer-count-width: 154px; /* the count's place until it arrives, as wide as four figures */
   --home-live-shimmer-count-height: 66px; /* the figures' own height */
@@ -3339,20 +3340,20 @@
   --home-live-shimmer-pill-width: 106px;
   --home-live-shimmer-pill-height: 26px; /* a pill at --font-size-home-live-key */
   /* The map band under the hero. */
-  --color-home-band: #0b0b0b;
+  --color-home-band: light-dark(#f4f4f4, #0b0b0b);
   --home-band-padding-block: 44px 40px;
   --home-band-gap: 48px;
   --home-band-side: 300px; /* the ranked countries */
   --home-map-top: 18px; /* the help line down to the map */
   --home-map-dot: 0.33; /* a dot's radius, as a share of the grid step */
-  --color-home-map-dot: #2e2e2e;
-  --color-home-map-heat-1: #4d1517; /* 1+ watching */
-  --color-home-map-heat-2: #7d191d; /* 5+ */
-  --color-home-map-heat-3: #b51b22; /* 20+ */
+  --color-home-map-dot: light-dark(#dcdcdc, #2e2e2e);
+  --color-home-map-heat-1: light-dark(#f7c6c8, #4d1517); /* 1+ watching: on light the ramp darkens as it heats */
+  --color-home-map-heat-2: light-dark(#ef8f94, #7d191d); /* 5+ */
+  --color-home-map-heat-3: light-dark(#e2474e, #b51b22); /* 20+ */
   --color-home-map-heat-4: var(--brand-primary); /* 60+ */
-  --color-home-map-heat-5: #ff7a7f; /* 150+ */
-  --color-home-map-hover: #fff;
-  --color-home-map-shimmer: #5a5a5a; /* the light that sweeps across the gray dots until the count arrives */
+  --color-home-map-heat-5: light-dark(#9e0f15, #ff7a7f); /* 150+ */
+  --color-home-map-hover: light-dark(#111, #fff);
+  --color-home-map-shimmer: light-dark(#b5b5b5, #5a5a5a); /* the light that sweeps across the gray dots until the count arrives */
   --home-map-shimmer-ms: 2200; /* one sweep, west to east */
   --home-map-shimmer-band: 0.18; /* the light's half-width, as a share of the map */
   --home-map-scale-gap: 5px; /* a key dot to its count */
@@ -3369,12 +3370,12 @@
   --home-map-tip-rank-inset: 8px;
   --home-map-tip-body-padding: 16px 14px;
   --home-map-tip-count-bottom: -4px;
-  --color-home-map-tip-band: rgb(255 255 255 / 0.08);
+  --color-home-map-tip-band: light-dark(rgb(0 0 0 / 0.05), rgb(255 255 255 / 0.08));
   --font-size-home-rank-name: 15px;
   --font-size-home-rank-count: 18px;
   --home-rank-padding: 9px 10px;
   --home-rank-gap: 2px;
-  --color-home-rank-hover: rgb(255 255 255 / 0.07);
+  --color-home-rank-hover: light-dark(rgb(0 0 0 / 0.05), rgb(255 255 255 / 0.07));
   --home-rank-bar-height: 4px;
   --home-rank-bar-gap: 2px;
   --home-rank-shimmer-name-width: 120px; /* a country's name until the count arrives */
@@ -3400,8 +3401,8 @@
   --link-button-gap: 8px;
   --link-button-inline: 16px;
   --link-button-duration: 0.2s;
-  --color-link-button-line: rgb(255 255 255 / 0.4);
-  --color-link-button-hover: rgb(255 255 255 / 0.12);
+  --color-link-button-line: light-dark(rgb(0 0 0 / 0.3), rgb(255 255 255 / 0.4));
+  --color-link-button-hover: light-dark(rgb(0 0 0 / 0.06), rgb(255 255 255 / 0.12));
 }
 
 /* About: /about, dark in both themes like the home page. A repo-style header over a film-inspired scene, the Trakt
@@ -3456,7 +3457,7 @@
   /* The Trakt API banner, with the new Trakt mark in brand violet. */
   --brand-violet: oklch(49% 0.217 289);
   --brand-violet-darken: oklch(43% 0.217 289); /* the violet button's hover */
-  --color-about-web-name: oklch(68% 0.17 289); /* trakt-web's name on the dark header, the violet lifted to read */
+  --color-about-web-name: light-dark(oklch(49% 0.217 289), oklch(68% 0.17 289)); /* trakt-web's name, lifted on dark */
   --about-name-mark: 1.1em; /* a project's mark beside its name in the lede */
   --about-name-mark-gap: 0.3em;
   --color-about-api-tint: oklch(49% 0.217 289 / 0.22);
@@ -3489,8 +3490,8 @@
   --about-chip-gap: 10px;
   --about-chip-padding: 10px 14px 10px 10px;
   --about-chip-avatar: 36px;
-  --color-about-chip-bg: rgb(255 255 255 / 0.03);
-  --color-about-chip-hover: rgb(255 255 255 / 0.07);
+  --color-about-chip-bg: light-dark(rgb(0 0 0 / 0.03), rgb(255 255 255 / 0.03));
+  --color-about-chip-hover: light-dark(rgb(0 0 0 / 0.07), rgb(255 255 255 / 0.07));
   --about-panel-avatar: 96px;
   --about-member-padding: 20px 28px 28px;
   --about-member-shade: linear-gradient(180deg, rgb(17 17 17 / 0.55), rgb(17 17 17 / 0.92) 55%), linear-gradient(90deg, rgb(17 17 17 / 0.85) 25%, transparent 80%);
@@ -3499,7 +3500,7 @@
   --about-stat-gap: 22px; /* between the heading's numbers, either side of a rule */
   --about-stat-tuck: -0.3em;
   --font-size-about-stat: 34px; /* the dashboard's figures face, which runs condensed */
-  --color-about-stat-plays: #c59be0; /* the plays purple, lifted for big numbers on dark */
+  --color-about-stat-plays: light-dark(#8e44ad, #c59be0); /* the plays purple, lifted for big numbers on dark */
   --about-team-after: 24px; /* the band to What shipped */
   --about-team-help-space: 32px; /* the subtitle to the roster */
   --color-about-team-bg: var(--color-social-feed-bg); /* the dashboard's social feed and schedule band */
@@ -3535,7 +3536,7 @@
   --about-panel-head-padding: 16px 16px 16px var(--about-panel-inline); /* the tag as far from the right as the top */
   --about-panel-body-padding: 6px var(--about-panel-inline) 0;
   --about-panel-button-space: 10px;
-  --color-about-panel-head: rgb(255 255 255 / 0.05);
+  --color-about-panel-head: light-dark(rgb(0 0 0 / 0.04), rgb(255 255 255 / 0.05));
   --about-panel-fine-gap: 4px;
   --font-size-about-panel-fine: 10px;
   --letter-spacing-about-panel-fine: 0.08em;
@@ -3553,7 +3554,7 @@
   --letter-spacing-about-vcr-rewind: -0.15em;
   --about-empty-width: 240px;
   --about-empty-glyph: 22px;
-  --color-about-issue-closed: #a371f7;
+  --color-about-issue-closed: light-dark(#8250df, #a371f7);
 }
 
 /* Box Office: the weekend's chart as a table in the dark frame, and its sidebar summary. */
@@ -3614,11 +3615,11 @@
   --tag-pill-large-padding: 5px 11px;
   --tag-pill-large-gap: 10px; /* between a header's large count pills */
   --font-size-tag-pill-large: 14px;
-  --color-github-star: #e3b341; /* GitHub's star gold */
-  --color-github-forks: #39c5cf; /* its accent cyan, for forks */
-  --color-github-open: #3fb950; /* its open-issue green */
-  --color-github-closed: #a371f7; /* its closed-as-completed purple */
-  --color-github-commits: #58a6ff; /* its link blue, for commits */
+  --color-github-star: light-dark(#9a6700, #e3b341); /* GitHub's star gold, in its light and dark themes */
+  --color-github-forks: light-dark(#1b7c83, #39c5cf); /* its accent cyan, for forks */
+  --color-github-open: light-dark(#1a7f37, #3fb950); /* its open-issue green */
+  --color-github-closed: light-dark(#8250df, #a371f7); /* its closed-as-completed purple */
+  --color-github-commits: light-dark(#0969da, #58a6ff); /* its link blue, for commits */
   --color-tag-pill-light-bg: light-dark(#3a3a3a, #e6e6e6); /* a year or a week: the pale pill, dark in light mode */
   --color-tag-pill-light-text: light-dark(#fff, #111);
   --sidebar-width: 350px;

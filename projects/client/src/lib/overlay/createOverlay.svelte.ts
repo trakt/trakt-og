@@ -1,3 +1,4 @@
+import type { CollectedItem } from './CollectedItem.ts';
 import { collectedDetails } from './collectedDetails.ts';
 import type { CollectionMetadata } from '../components/collection/CollectionMetadata.ts';
 import { collectedCounts } from './collectedCounts.ts';
@@ -78,6 +79,39 @@ const progress = (watchedEpisodes: number | undefined, collectedEpisodes: number
   collected: collectedEpisodes === undefined ? undefined : collectedEpisodes > 0,
 });
 
+type Shows<T> = ReadonlyMap<number, ReadonlyMap<number, ReadonlyMap<number, T>>>;
+
+// Slices are replaced on every apply and patch, never mutated, so an index stays right for as long as its map lives.
+const episodeIndexes = new WeakMap<object, Map<number, unknown>>();
+
+function episodeIndex<T, V>(shows: Shows<T>, pick: (episode: T, key: number) => [number, V] | undefined) {
+  const cached = episodeIndexes.get(shows) as Map<number, V> | undefined;
+  if (cached) return cached;
+  // eslint-disable-next-line svelte/prefer-svelte-reactivity -- a plain cache, never read reactively
+  const index = new Map<number, V>();
+  for (const seasons of shows.values()) {
+    for (const episodes of seasons.values()) {
+      for (const [key, episode] of episodes) {
+        const entry = pick(episode, key);
+        if (entry && !index.has(entry[0])) index.set(entry[0], entry[1]);
+      }
+    }
+  }
+  episodeIndexes.set(shows, index);
+  return index;
+}
+
+const datesOfEpisode = (shows: Shows<readonly string[]>, id: number) =>
+  episodeIndex(shows, (dates, key) => [key, dates]).get(id);
+
+const sourcesOfEpisode = (shows: Shows<readonly LibrarySource[]>, id: number) =>
+  episodeIndex(shows, (sources, key) => [key, sources]).get(id);
+
+const collectedEpisode = (shows: Shows<CollectedItem>, id: number) =>
+  episodeIndex(shows, (item) => typeof item === 'string' || item.id === undefined ? undefined : [item.id, item]).get(
+    id,
+  );
+
 function stateOf(slices: Partial<OverlaySlices>, type: MediaType, id: number, season?: SeasonOf): OverlayState {
   // People have no user state; spoiler checks still ask.
   if (type === 'person') return {};
@@ -89,15 +123,11 @@ function stateOf(slices: Partial<OverlaySlices>, type: MediaType, id: number, se
     const dates = slices.watchedShows &&
       (season
         ? slices.watchedShows.get(season.show)?.get(season.number)?.get(id)
-        : [...slices.watchedShows.values()].flatMap((seasons) => [...seasons.values()])
-          .find((episodes) => episodes.has(id))?.get(id));
+        : datesOfEpisode(slices.watchedShows, id));
     const plays = slices.watchedShows && (dates?.length ?? 0);
     const collection = season?.episode !== undefined
       ? slices.collectedShows?.get(season.show)?.get(season.number)?.get(season.episode)
-      : slices.collectedShows &&
-        [...slices.collectedShows.values()].flatMap((seasons) => [...seasons.values()]).flatMap((
-          episodes,
-        ) => [...episodes.values()]).find((item) => typeof item !== 'string' && item.id === id);
+      : slices.collectedShows && collectedEpisode(slices.collectedShows, id);
     return {
       rating,
       listed,
@@ -114,8 +144,7 @@ function stateOf(slices: Partial<OverlaySlices>, type: MediaType, id: number, se
       collectionSources: nonEmpty(
         season
           ? slices.syncedEpisodes?.get(season.show)?.get(season.number)?.get(id)
-          : [...(slices.syncedEpisodes?.values() ?? [])].flatMap((seasons) => [...seasons.values()])
-            .find((episodes) => episodes.has(id))?.get(id),
+          : slices.syncedEpisodes && sourcesOfEpisode(slices.syncedEpisodes, id),
       ),
       plays,
       watched: plays === undefined ? undefined : plays > 0,

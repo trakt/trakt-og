@@ -1,18 +1,16 @@
 <script lang="ts">
 import Container from '$lib/components/container/Container.svelte';
-import { returnPath } from '$lib/auth/returnPath';
+import { callbackReturnPath } from '$lib/auth/callbackReturnPath';
 import { storeToken } from '$lib/auth/storeToken';
 import { userManager } from '$lib/auth/userManager';
 import { onMount } from 'svelte';
-
-type ReturnState = { returnTo?: unknown } | undefined;
 
 onMount(async () => {
   const user = await userManager().signinCallback().catch(() => undefined);
   if (user) await storeToken(user).catch(() => {});
 
   // replace, not goto: the ?code= URL must not stay in history, and a full load renders the signed-in SSR.
-  location.replace(returnPath((user?.state as ReturnState)?.returnTo));
+  location.replace(callbackReturnPath(user?.state));
 });
 </script>
 

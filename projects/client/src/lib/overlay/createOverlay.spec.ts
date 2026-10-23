@@ -222,6 +222,23 @@ describe('createOverlay', () => {
     });
   });
 
+  describe('memoized state', () => {
+    it('should return the same object for the same arguments until a patch', async () => {
+      const { overlay } = setup();
+      await overlay.start('sean');
+
+      const first = overlay.state('episode', 102, { show: 2, number: 1 });
+      expect(overlay.state('episode', 102, { show: 2, number: 1 })).toBe(first);
+      expect(overlay.state('episode', 102)).not.toBe(first);
+
+      overlay.patch('dropped', (dropped) => new Set([...dropped.keys(), 7]));
+
+      const after = overlay.state('episode', 102, { show: 2, number: 1 });
+      expect(after).not.toBe(first);
+      expect(after).toEqual(first);
+    });
+  });
+
   describe('episode lookups without a season', () => {
     const seasonOf = { show: 2, number: 1 };
 

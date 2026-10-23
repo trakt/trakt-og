@@ -25,8 +25,8 @@ import xmark from '$lib/icons/regular/xmark.svg?raw';
 import angleDown from '$lib/icons/solid/angle-down.svg?raw';
 import { isSearchShortcut } from './isSearchShortcut.ts';
 import { recentSearchType } from './recentSearchType.ts';
-import { searchAutocomplete, type SearchAutocompleteResult } from './searchAutocomplete.ts';
-import { type SearchTrending, searchTrending } from './searchTrending.ts';
+import type { SearchAutocompleteResult } from './searchAutocomplete.ts';
+import type { SearchTrending } from './searchTrending.ts';
 import TagPills from '$lib/components/labels/TagPills.svelte';
 import SearchTermRow from './SearchTermRow.svelte';
 import RecentClearAll from './RecentClearAll.svelte';
@@ -117,13 +117,17 @@ const runSearch = () => {
   timer = setTimeout(async () => {
     const controller = new AbortController();
     inflight = controller;
-    const next = await searchAutocomplete({
-      type: searched,
-      query: text,
-      dates: page.data.datePreferences,
-      today: viewerToday(),
-      signal: controller.signal,
-    }).catch(() => null);
+    const next = await import('./searchAutocomplete.ts')
+      .then(({ searchAutocomplete }) =>
+        searchAutocomplete({
+          type: searched,
+          query: text,
+          dates: page.data.datePreferences,
+          today: viewerToday(),
+          signal: controller.signal,
+        })
+      )
+      .catch(() => null);
     if (!next || controller.signal.aborted) return;
     result = next;
     highlight = -1;
@@ -136,7 +140,10 @@ const viewerToday = () => dayIn(new Date(), page.data.datePreferences?.timeZone)
 const loadTrending = (picked: (typeof searchTypes)[number]) => {
   if (picked.slug in trending) return;
   trending = { ...trending, [picked.slug]: { label: '', rows: [] } };
-  void searchTrending({ type: picked, today: viewerToday(), order: page.data.datePreferences?.order })
+  void import('./searchTrending.ts')
+    .then(({ searchTrending }) =>
+      searchTrending({ type: picked, today: viewerToday(), order: page.data.datePreferences?.order })
+    )
     .then((found) => (trending = { ...trending, [picked.slug]: found }))
     // Rate limited or offline: forget it, so the next open asks again.
     .catch(() => (trending = Object.fromEntries(Object.entries(trending).filter(([slug]) => slug !== picked.slug))));

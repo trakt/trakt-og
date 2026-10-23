@@ -905,6 +905,7 @@
   --gap-header: 12px;
   --gap-header-links: 2px;
   --space-header-pill-inline: 14px;
+  --space-header-user: 20px; /* between the account controls: getting started, Get VIP, the avatar */
   --space-header-control-inline: 18px; /* Sign In, so the one call to action reads a little bigger */
   --header-avatar-ring: 2px; /* a VIP avatar's ring */
   --header-avatar-open-ring: 3px; /* around the avatar while its menu is open */
@@ -976,6 +977,7 @@
   --dialog-width-md: 500px;
   --dialog-width-lg: 600px; /* .wider */
   --dialog-width-xl: 690px; /* #watch-now-modal */
+  --dialog-width-xxl: 820px; /* one more column of Watch Now's tiles */
   --dialog-width-notes: 440px; /* #notable-modal, #list-notes-modal */
   --space-dialog-wide-inline: 30px; /* item modals: the fanart title band and the notes form */
   --notes-textarea-height: 130px; /* the notes modal's five rows */
@@ -1146,6 +1148,10 @@
   /* The shared prompt (`PromptPopover`): the menu's surface under a title bar tinted in the action's color */
   --prompt-width: 340px; /* one line for "When did you start rewatching?" */
   --prompt-width-wide: 340px; /* the library metadata form */
+  --prompt-width-book: 540px; /* the getting-started book: one-line ticket names */
+  --prompt-arrow: 12px;
+  --space-prompt-foot: 10px 12px;
+  --color-prompt-foot-bg: light-dark(rgb(0 0 0 / 0.03), rgb(0 0 0 / 0.2));
   --space-prompt-head: 12px 8px 12px 16px;
   --space-prompt-head-gap: 8px; /* the title to its close button */
   --prompt-tint: 16%; /* the action's color in the title bar */
@@ -1675,6 +1681,8 @@
   --space-stats-diff-edge: 10px; /* past the column gap, between a badge and its box's edge */
   /* Each site's bar in its brand's primary color, and a summary link's logo under the pointer. */
   --color-site-trakt: var(--brand-primary);
+  --color-site-plex: #e5a00d;
+  --color-site-jellyfin: #aa5cc3;
   --color-site-imdb: #f5c518;
   --color-site-letterboxd: #00e054;
   --color-site-tmdb: #01b4e4;
@@ -2422,6 +2430,7 @@
   --z-tooltip: 1070;
   --z-header: 1500;
   --z-toast: 30; /* under the header and its menus, which open over the toasts */
+  --z-first-night-bar: 25; /* the welcome reel: over the page, under the toasts and the header */
   --z-summary-sidebar: 1; /* over the details' heading marks */
   --z-party-hat: calc(var(--z-header) + 1); /* a birthday's party hat, its peak over the header bar */
   --z-easter: 5000; /* the rating-10 Totally Ninja guy, over the header and dialogs, under the loaders */
@@ -2490,6 +2499,8 @@
   --line-height-watch-now-terms: 1.25;
   --color-watch-now-lowest: light-dark(#2f8f3f, #6cc96c); /* the cheapest rent or buy, --brand-success deepened or lifted */
   --watch-now-flag-size: 18px;
+  --service-tile-padding-block: 6px; /* inside a service tile's 2px border */
+  --service-tile-padding-inline: 10px;
   --color-service-badge: #333; /* the "4K" circle */
   --color-service-badge-bg: #fff;
   --service-country-padding: 4px 3px; /* another country's code */
@@ -3853,4 +3864,155 @@
   --party-crasher-duration: 3.4s;
   --color-party-crasher-from: #666;
   --font-size-party-crasher-from: 12px;
+
+  /* First night: the welcome wall, the empty panels' prompts and the getting-started checklist. The art behind
+     them is always dark, so their text stays light in both themes. */
+  --first-night-button-height: 40px;
+  --first-night-button-inline: 18px;
+  --first-night-button-small-height: 34px;
+  --first-night-button-small-inline: 14px;
+  --first-night-bar-padding: 12px;
+  --first-night-unlock-room: 15px; /* under the reel, for its unlock labels */
+  --first-night-bar-gap: 16px;
+  --color-first-night-bar: rgb(17 17 17 / 0.88);
+  --color-first-night-bar-line: rgb(255 255 255 / 0.1);
+  --font-size-first-night-bar-count: 20px;
+  --first-night-meter-width: 180px;
+  --first-night-dot: 10px;
+  --font-size-first-night-button: 14px;
+  --color-first-night-button-line: rgb(255 255 255 / 0.4);
+  --color-first-night-button-hover: rgb(255 255 255 / 0.12);
+  --color-first-night-text: #fff;
+  --color-first-night-muted: #d6d6d6;
+  --color-first-night-dim: #9a9a9a;
+  --color-first-night-gold: #ffd27a;
+  --color-first-night-bg: #111;
+  --color-first-night-side: #141414;
+  --color-first-night-track: #333;
+  --color-first-night-tab: rgb(255 255 255 / 0.08);
+  --color-first-night-tab-current: #fff;
+  --color-first-night-tab-current-text: #111;
+  --color-first-night-done: #5cb85c;
+  --first-night-glow: linear-gradient(90deg, rgb(17 17 17 / 0.92) 0%, rgb(17 17 17 / 0.6) 45%, rgb(17 17 17 / 0.25) 100%),
+    linear-gradient(to top, rgb(17 17 17 / 0.95) 0%, transparent 45%);
+  --first-night-meter: linear-gradient(90deg, var(--brand-primary), #ff7a3d);
+  --first-night-meter-height: 8px;
+  --first-night-padding: 28px 30px;
+  --font-size-first-night-title: 34px;
+  --font-size-first-night-count: 64px;
+  --font-size-first-night-label: 11px;
+  --letter-spacing-first-night-label: 0.14em;
+  --first-night-wall-columns: 6;
+  --first-night-wall-columns-narrow: 4;
+  --panel-prompt-min-height: 170px;
+  --panel-prompt-padding: 22px 24px;
+  --panel-prompt-tall-height: 260px;
+  --panel-prompt-bottom: var(--gutter);
+  --panel-prompt-bottom-roomy: 30px; /* under the schedule, watchlist and history prompts, which have no footer */
+  --panel-prompt-veil: linear-gradient(90deg, rgb(12 12 12 / 0.95) 0%, rgb(12 12 12 / 0.75) 45%, rgb(12 12 12 / 0.05) 100%);
+  --panel-prompt-veil-stacked: linear-gradient(0deg, rgb(12 12 12 / 0.95) 15%, rgb(12 12 12 / 0.35) 100%);
+  --font-size-panel-prompt-quote: 26px;
+  --font-size-panel-prompt-quote-stacked: 22px;
+  --font-size-panel-prompt-text: 14px;
+  --panel-prompt-text-width: 560px;
+  --color-getting-started-pill: rgb(255 255 255 / 0.1); /* the header's glass pill */
+  --color-getting-started-pill-text: #fff;
+  --color-getting-started-pill-hover: rgb(255 255 255 / 0.18);
+  --font-size-getting-started-pill: 12.5px;
+  --color-getting-started-ring-track: rgb(255 255 255 / 0.25);
+  --color-getting-started-muted: light-dark(#666, #9a9a9a);
+  --color-ticket: #f3e6c8;
+  --color-ticket-text: #3b2a12;
+  --color-ticket-hover: #ecdab0;
+  --color-ticket-admit: #9a2a12;
+  --color-ticket-used: light-dark(#e4e4e4, #3a3a3a); /* clear of the menu's own background in both themes */
+  --color-ticket-used-text: light-dark(#666, #b3b3b3);
+  --reopen-tint: 14%;
+  --reopen-tint-hover: 24%;
+  --reopen-tint-line: 55%;
+  --one-sheet-width: 300px;
+  --one-sheet-backdrop: radial-gradient(90% 120% at 20% 50%, #3a0a0d, #141414 70%);
+  --one-sheet-bg: linear-gradient(180deg, #120304 0%, #3a0a0d 60%, #ed1c24 140%);
+  /* A premiere one-sheet: searchlights from the foot, a sunburst behind the title, halftone and grain. */
+  --one-sheet-beams:
+    conic-gradient(from -28deg at 18% 108%, transparent 0deg, rgb(255 214 170 / 0.3) 5deg, transparent 12deg),
+    conic-gradient(from 16deg at 82% 108%, transparent 0deg, rgb(255 214 170 / 0.3) 5deg, transparent 12deg),
+    conic-gradient(from -6deg at 50% 112%, transparent 0deg, rgb(255 214 170 / 0.18) 6deg, transparent 12deg);
+  --one-sheet-rays: repeating-conic-gradient(from 0deg at 50% 46%, rgb(255 255 255 / 0.07) 0deg 4deg, transparent 4deg 12deg);
+  --one-sheet-rays-mask: radial-gradient(closest-side at 50% 46%, #000 20%, transparent 100%);
+  --one-sheet-halftone: radial-gradient(circle, rgb(0 0 0 / 0.45) 0.9px, transparent 1.4px) 0 0 / 5px 5px;
+  --one-sheet-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
+  --one-sheet-frame: rgb(217 178 106 / 0.55);
+  --one-sheet-frame-inset: 8px;
+  --one-sheet-spot: radial-gradient(60% 40% at 50% 46%, rgb(237 28 36 / 0.45), transparent 70%);
+  --one-sheet-shadow: 0 20px 40px rgb(0 0 0 / 0.6), inset 0 0 0 1px rgb(255 255 255 / 0.12);
+  --font-size-one-sheet-title: 34px;
+  --one-sheet-tick: 18px;
+  --font-size-one-sheet-tick: 9px;
+  --color-one-sheet-tagline: #ffb3b6;
+  --color-one-sheet-billing: #e6c9c9;
+  --color-one-sheet-rule: #2c2c2c;
+  --taste-genre-min: 82px; /* eight a row in the popup */
+  --taste-genre-height: 60px;
+  --taste-genre-tick: 18px;
+  --font-size-taste-genre-icon: 18px;
+  --font-size-taste-genre-tick: 10px;
+  --color-taste-genre-bg: light-dark(rgb(0 0 0 / 0.03), rgb(255 255 255 / 0.04));
+  --color-taste-genre-line: light-dark(rgb(0 0 0 / 0.1), rgb(255 255 255 / 0.1));
+  --color-taste-genre-hover-line: light-dark(rgb(0 0 0 / 0.3), rgb(255 255 255 / 0.3));
+  --color-taste-genre-text: light-dark(#666, #9a9a9a);
+  --color-taste-genre-on-bg: color-mix(in srgb, var(--brand-primary) 16%, transparent);
+  --color-taste-genre-on-text: light-dark(#222, #fff);
+  --nudge-width: 340px;
+  --nudge-shadow: 0 16px 40px rgb(0 0 0 / 0.5);
+  --pick-shadow: 0 6px 16px rgb(0 0 0 / 0.45);
+  --import-tile-height: 64px;
+  --import-logo-height: 28px;
+  --color-import-tile: rgb(255 255 255 / 0.06);
+  --color-import-tile-hover: rgb(255 255 255 / 0.12);
+  --color-import-tile-line: rgb(255 255 255 / 0.14);
+  --color-tv-time: #ffd400;
+  --color-tv-time-text: #111;
+  --name-prompt-input-min: 220px;
+  --name-prompt-input-max: 260px;
+  --team-follow-columns: 2;
+  --team-follow-padding: 12px;
+  --team-follow-avatar: 44px;
+  --color-team-follow-bg: light-dark(rgb(0 0 0 / 0.04), rgb(255 255 255 / 0.05));
+  --first-night-avatar: 96px;
+  --first-night-avatar-badge: 30px;
+  --first-night-avatar-ring: 0 0 0 3px rgb(255 255 255 / 0.15);
+  --color-first-night-avatar-veil: rgb(0 0 0 / 0.55);
+  --first-night-intro-gap: 22px;
+  /* The first-night reel: ten frames between sprocket holes. */
+  --first-night-frame-width: 36px;
+  --first-night-frame-gap: 5px;
+  --first-night-frame-radius: 3px;
+  --first-night-reel-padding-block: 7px;
+  --first-night-reel-padding: var(--first-night-reel-padding-block) 8px;
+  --first-night-reel-radius: 4px;
+  --color-first-night-reel: #050505;
+  --color-first-night-frame: #232323;
+  --first-night-sprockets:
+    radial-gradient(circle, rgb(255 255 255 / 0.22) 1.2px, transparent 1.6px) 0 1px / 9px 5px repeat-x,
+    radial-gradient(circle, rgb(255 255 255 / 0.22) 1.2px, transparent 1.6px) 0 calc(100% - 1px) / 9px 5px repeat-x;
+  --font-size-first-night-unlock: 9px;
+  --first-night-line-width: 200px;
+  --first-night-backdrop-opacity: 0.6;
+  --first-night-backdrop-position: center 25%;
+  --first-night-ring: 52px;
+  --first-night-status-width: 190px;
+  --color-import-tile-glass: rgb(10 10 10 / 0.6);
+  --blur-import-tile: blur(14px);
+  --taste-search-width: 160px;
+  --taste-tiles-row-gap: 16px; /* Watch Now's tile gaps, one by one */
+  --taste-tiles-column-gap: 14px;
+  --taste-tiles-room: 8px; /* inside the scrolling tiles, so the ticks over their corners aren't clipped */
+  --taste-country-menu-height: 320px;
+  --taste-none-icon: 40px;
+  --team-quick-avatar: 40px;
+  --team-quick-badge: 18px;
+  --font-size-team-quick: 10px;
+  --color-team-quick-ring: rgb(255 255 255 / 0.15);
+  --color-team-quick-on: var(--brand-success);
 }

@@ -8,6 +8,9 @@
 import type { Snippet } from 'svelte';
 import { browser } from '$app/environment';
 import NoData from '$lib/components/empty/NoData.svelte';
+import PanelPrompt from '$lib/components/first-night/PanelPrompt.svelte';
+import StarterPicks from '$lib/components/first-night/StarterPicks.svelte';
+import { panelQuotes } from '$lib/firstNight/panelQuotes';
 import PosterGrid from '$lib/components/media/PosterGrid.svelte';
 import { visibleColumns } from '$lib/components/media/visibleColumns';
 import PageNavigator from '$lib/components/page-navigator/PageNavigator.svelte';
@@ -73,9 +76,10 @@ const allText = (total: number) => `All ${total.toLocaleString('en-US')} ${total
   {@const rows = rowCount({ rows: saved, items: list.cards.length, perRow })}
   {#snippet cards()}
     {#if list.cards.length === 0}
-      <div class="notice">
-  <NoData>Add some TV shows and movies to this list and they'll show up here.</NoData>
-</div>
+      <PanelPrompt roomy --panel-prompt-offset="var(--space-lg-block)" quote={panelQuotes.watchlist}
+  text="Save what you want to watch next. These are the most anticipated right now.">
+        {#snippet picks()}<StarterPicks chart="anticipated" type="both" count={4} action="watchlist" />{/snippet}
+      </PanelPrompt>
     {:else}
       <div class="cards" bind:clientWidth={width}>
   <PosterGrid columns={PER_ROW}>

@@ -9,6 +9,9 @@
 import type { Snippet } from 'svelte';
 import { browser } from '$app/environment';
 import NoData from '$lib/components/empty/NoData.svelte';
+import PanelPrompt from '$lib/components/first-night/PanelPrompt.svelte';
+import StarterPicks from '$lib/components/first-night/StarterPicks.svelte';
+import { panelQuotes } from '$lib/firstNight/panelQuotes';
 import DashboardOnDeckCard from '$lib/components/dashboard/DashboardOnDeckCard.svelte';
 import type { OnDeckItem } from '$lib/components/media/OnDeckItem';
 import PosterGrid from '$lib/components/media/PosterGrid.svelte';
@@ -81,9 +84,10 @@ const STREAMING = ' + streaming on your ';
   {@const rows = rowCount({ rows: saved, items: visible.length, perRow })}
   {#snippet cards()}
     {#if visible.length === 0}
-      <div class="notice">
-  <NoData>Start watching some TV shows and they'll show up here.</NoData>
-</div>
+      <PanelPrompt quote={panelQuotes.upNext}
+  text="Add a show to your watchlist and its next episode is waiting here, every time you come back.">
+        {#snippet picks()}<StarterPicks chart="trending" type="shows" count={4} action="watchlist" />{/snippet}
+      </PanelPrompt>
     {:else}
       <div class="cards" bind:clientWidth={width}>
   <PosterGrid columns={PER_ROW}>

@@ -12,7 +12,7 @@ import type { DarkKnight } from '$lib/settings/DarkKnight';
 import type { SettingsBody } from '$lib/settings/SettingsBody';
 import { toTheme } from '$lib/settings/toTheme';
 
-const demoUser = { slug: 'og_red', firstName: 'OG', avatarUrl: avatar };
+const demoUser = { slug: 'og_red', firstName: 'OG', avatarUrl: avatar, joinedAt: null, named: true };
 const users: Record<string, HeaderUser | null> = {
   'Signed out': null,
   'Signed in': { ...demoUser, isVip: false },

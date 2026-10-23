@@ -25,13 +25,18 @@ interface Props {
   anchor: string;
   /** The question: text, or markup like a member's name in bold. */
   title: string | Snippet;
-  tone?: 'watched' | 'collected' | 'danger' | 'neutral';
+  /** `brand` is the Trakt red, for a prompt that isn't an action: the getting-started book. */
+  tone?: 'watched' | 'collected' | 'danger' | 'neutral' | 'brand';
   /** A warning too long for its row, between the header and the choices. */
   note?: string;
   /** A warning in the dialogs' amber notice box instead, with markup: a bulk watch's count in bold. */
   notice?: Snippet;
   /** The panel's width: `wide` for the library metadata form. */
-  size?: 'default' | 'wide';
+  size?: 'default' | 'wide' | 'book';
+  /** A caret from the title bar up to the trigger, centred on it however the prompt is placed. */
+  arrow?: boolean;
+  /** A bar under the choices, for the prompt's own controls. */
+  footer?: Snippet;
   element?: HTMLDivElement;
   ontoggle?: (event: ToggleEvent) => void;
   children: Snippet;
@@ -45,6 +50,8 @@ let {
   note,
   notice,
   size = 'default',
+  arrow = false,
+  footer,
   element = $bindable(),
   ontoggle,
   children,
@@ -62,6 +69,8 @@ let {
   {#if notice}<div class="notice"><DialogNotice>{@render notice()}</DialogNotice></div>
   {:else if note}<p class="note">{note}</p>{/if}
   <div class="body">{@render children()}</div>
+  {#if footer}<footer class="foot">{@render footer()}</footer>{/if}
+  {#if arrow}<span class="arrow" aria-hidden="true"></span>{/if}
 </div>
 
 <style>
@@ -93,6 +102,14 @@ let {
 
   &.wide {
     inline-size: var(--prompt-width-wide);
+  }
+
+  &.book {
+    inline-size: var(--prompt-width-book);
+  }
+
+  &.brand {
+    --tone: var(--brand-primary);
   }
 
   &.watched {
@@ -174,6 +191,33 @@ h3 {
     border: 0;
     border-block-start: 1px solid var(--color-menu-divider);
   }
+}
+
+/* The prompt's footer bar, under the choices. */
+.foot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-sm-inline);
+  padding: var(--space-prompt-foot);
+  border-block-start: 1px solid var(--color-menu-border);
+  background: var(--color-prompt-foot-bg);
+}
+
+/* A caret on the title bar's top edge, pinned under the trigger's centre through the same anchor. The prompt sets no
+   transform, so a fixed child is placed against the viewport and can follow the anchor. */
+.arrow {
+  position: fixed;
+  position-anchor: inherit;
+  inset: auto;
+  inset-block-start: calc(anchor(bottom) + var(--space-menu-offset) - var(--prompt-arrow) / 2);
+  inset-inline-start: calc(anchor(center) - var(--prompt-arrow) / 2);
+  inline-size: var(--prompt-arrow);
+  block-size: var(--prompt-arrow);
+  border-block-start: 1px solid var(--color-menu-border);
+  border-inline-start: 1px solid var(--color-menu-border);
+  background: color-mix(in srgb, var(--tone) var(--prompt-tint), var(--color-menu-bg));
+  rotate: 45deg;
 }
 
 @position-try --prompt-start {

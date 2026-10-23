@@ -13,6 +13,9 @@ import { apiQueue } from '$lib/api/apiQueue';
 import { rawApiFetch } from '$lib/api/rawApiFetch';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import NoData from '$lib/components/empty/NoData.svelte';
+import PanelPrompt from '$lib/components/first-night/PanelPrompt.svelte';
+import TeamToFollow from '$lib/components/first-night/TeamToFollow.svelte';
+import { panelQuotes } from '$lib/firstNight/panelQuotes';
 import PosterCard from '$lib/components/media/PosterCard.svelte';
 import PosterGrid from '$lib/components/media/PosterGrid.svelte';
 import { visibleColumns } from '$lib/components/media/visibleColumns';
@@ -332,9 +335,10 @@ const lead = $derived(period === 'today' ? 'today' : period === 'yesterday' ? 'y
 {#snippet pending()}{/snippet}
 
 {#snippet nobody()}
-  <div class="notice">
-  <NoData>Follow some Trakt members to see what they're watching.</NoData>
-</div>
+  <PanelPrompt quote={panelQuotes.socialFeed}
+  text="Follow a few people and their watches, ratings and comments show up here. Start with the Trakt team.">
+    {#snippet picks()}<TeamToFollow />{/snippet}
+  </PanelPrompt>
 {/snippet}
 
 {#snippet broken()}

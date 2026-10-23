@@ -87,7 +87,7 @@ const load = ({ kind = 'watchlist', query = '', token = null, viewer, profile = 
     parent: () =>
       Promise.resolve({
         profile,
-        user: viewer ? { firstName: 'X', avatarUrl: '', ...viewer } : null,
+        user: viewer ? { firstName: 'X', avatarUrl: '', joinedAt: null, named: true, ...viewer } : null,
         datePreferences,
       }),
     kind,

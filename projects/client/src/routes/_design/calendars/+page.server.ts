@@ -6,6 +6,8 @@ const VIEWER: HeaderUser = {
   slug: 'og_tester',
   firstName: 'OG',
   avatarUrl: 'https://media.trakt.tv/hotlink-ok/placeholders/medium/leela.png',
+  joinedAt: null,
+  named: true,
   isVip: true,
 };
 const DATE_PREFERENCES: DatePreferences = {

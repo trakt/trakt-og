@@ -8,6 +8,8 @@
 <script lang="ts">
 import EmptyState from '$lib/components/empty/EmptyState.svelte';
 import NoData from '$lib/components/empty/NoData.svelte';
+import PanelPrompt from '$lib/components/first-night/PanelPrompt.svelte';
+import { panelQuotes } from '$lib/firstNight/panelQuotes';
 import calendarDays from '$lib/icons/regular/calendar-days.svg?raw';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import WatchNowDialog from '$lib/components/watchnow/WatchNowDialog.svelte';
@@ -141,12 +143,15 @@ function watchNow(item: NonNullable<ScheduleItem['watchNow']>) {
 </div>
   {:else if layout === null}
     {@const off = active.filter === 'none' && active.movies === 'none'}
-    <div class="nothing">
-  <EmptyState icon={calendarDays}
-    action={off ? undefined : { href: `/calendars/my/${calendar}`, text: 'Open the calendar' }}>
-        {off ? 'Shows and Movies are both set to None.' : 'Nothing coming up on your calendar.'}
-      </EmptyState>
+    {#if off}
+      <div class="nothing">
+  <EmptyState icon={calendarDays}>Shows and Movies are both set to None.</EmptyState>
 </div>
+    {:else}
+      <PanelPrompt quote={panelQuotes.schedule} tall roomy
+  --panel-prompt-offset="calc(var(--gutter) + var(--space-lg-block))"
+  text="Nothing on your schedule yet. Add shows you watch and new episodes land here the day they air." />
+    {/if}
   {:else if layout}
     {@const { spotlight } = layout}
     {@const cards = allCards ? [...spotlight.shown, ...spotlight.more] : spotlight.shown}

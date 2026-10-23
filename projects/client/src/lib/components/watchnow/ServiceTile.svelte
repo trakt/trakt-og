@@ -86,7 +86,7 @@ const { link, uhd = false, country, pressed = false, onclick, children }: Props 
   align-items: center;
   justify-content: center;
   block-size: var(--service-height);
-  padding: 6px 10px;
+  padding: var(--service-tile-padding-block) var(--service-tile-padding-inline);
   border: 2px solid var(--service-color);
   border-radius: var(--service-radius, var(--radius-service));
   background-color: var(--service-color);

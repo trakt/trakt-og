@@ -19,9 +19,10 @@ interface Props {
   /** Names the dialog. Only shown when there's no `header`. */
   title: string;
   /**
-   * 360px like OG's check-in modal, 440px like its notes modal, 500px, 600px like `.wider`, or 690px like Watch Now.
+   * 360px like OG's check-in modal, 440px like its notes modal, 500px, 600px like `.wider`, 690px like Watch Now, or
+   * 820px, one more column of Watch Now's tiles.
    */
-  size?: 'sm' | 'notes' | 'md' | 'lg' | 'xl';
+  size?: 'sm' | 'notes' | 'md' | 'lg' | 'xl' | 'xxl';
   lightDismiss?: boolean;
   /**
    * `art` is the notes, list and report dialogs' look: a thin border, a glass close over a DialogArtHeader, and the
@@ -140,6 +141,10 @@ const syncOpen = (dialog: HTMLDialogElement) => {
 
   &.xl {
     inline-size: var(--dialog-width-xl);
+  }
+
+  &.xxl {
+    inline-size: var(--dialog-width-xxl);
   }
 
   &.art.notes {

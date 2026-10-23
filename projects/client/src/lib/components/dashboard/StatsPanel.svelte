@@ -18,7 +18,8 @@ import listCheck from '$lib/icons/regular/list-check.svg?raw';
 import check from '$lib/icons/trakt/check-thick.svg?raw';
 import { traktUrls } from '$lib/traktUrls';
 
-const { panel, slug }: { panel: StatsPanel; slug: string } = $props();
+/** `fresh`: nothing watched yet, so each cell names its first milestone in place of its zero counts. */
+const { panel, slug, fresh = false }: { panel: StatsPanel; slug: string; fresh?: boolean } = $props();
 const user = $derived(`/users/${encodeURIComponent(slug)}`);
 </script>
 
@@ -43,7 +44,8 @@ const user = $derived(`/users/${encodeURIComponent(slug)}`);
         aria-label="{panel.allTime.spoken} watched, All Time Stats">
         {panel.allTime.value}<small class="word">{panel.allTime.unit}</small>
       </a>
-      <p class="counts">{@render stat(play, panel.allTime.plays, `${user}/history`)}</p>
+      {#if fresh}<p class="next">Next up: your first hour</p>{:else}
+      <p class="counts">{@render stat(play, panel.allTime.plays, `${user}/history`)}</p>{/if}
     </div>
     {#if panel.finished}
       {@const finished = panel.finished}
@@ -57,33 +59,44 @@ const user = $derived(`/users/${encodeURIComponent(slug)}`);
             <i style:--share="{finished.meter.started}%"></i>
           </div>
         {/if}
+        {#if fresh}<p class="next">Finish a show to start the count</p>{:else}
         <p class="counts">
           {@render stat(barsProgress, finished.started, `${user}/progress`)}
           {@render stat(ban, finished.dropped, `${user}/progress/dropped`)}
-        </p>
+        </p>{/if}
       </div>
     {/if}
     <div class="cell">
       <p class="label"><HeadingMark svg={tvRetro} /><a href="{user}/history/episodes">Watched Shows</a></p>
       {@render time(panel.shows.time, `${user}/history/episodes`)}
+      {#if fresh}<p class="next">Mark an episode to start the clock</p>{:else}
       <p class="counts">
         {@render stat(play, panel.shows.plays, `${user}/history/episodes`)}
         {@render stat(check, panel.shows.episodes, `${user}/history/episodes`, 'watched')}
         {@render stat(tvRetro, panel.shows.shows, `${user}/history/shows`, 'watched')}
-      </p>
+      </p>{/if}
     </div>
     <div class="cell">
       <p class="label"><HeadingMark svg={cameraMovie} /><a href="{user}/history/movies">Watched Movies</a></p>
       {@render time(panel.movies.time, `${user}/history/movies`)}
+      {#if fresh}<p class="next">Mark a movie to start the clock</p>{:else}
       <p class="counts">
         {@render stat(play, panel.movies.plays, `${user}/history/movies`)}
         {@render stat(cameraMovie, panel.movies.movies, `${user}/history/movies`, 'watched')}
-      </p>
+      </p>{/if}
     </div>
   </div>
 </div>
 
 <style>
+/* A new member's first milestone, in the welcome wall's gold. */
+.next {
+  margin: 0;
+  color: var(--color-first-night-gold);
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-headings);
+}
+
 .stats {
   /* On the cover in both themes, so the toolbar stats take their dark colors. */
   color-scheme: dark;

@@ -17,6 +17,8 @@ export type DashboardRecommendations = {
   readonly type: DashboardSettings['recommendations']['type'];
   /** Null when the request failed. */
   readonly items: readonly Recommendation[] | null;
+  /** No recommendations yet, so these are trending titles. */
+  readonly fallback?: boolean;
 };
 
 /** Enough to still fill the band once anything already watched is filtered out in the browser. */
@@ -48,6 +50,29 @@ async function load({ fetch, token, settings, now = new Date() }: FetchRecommend
   return parsed.success ? parsed.data.flatMap((row) => toRecommendation(row, now) ?? []) : null;
 }
 
+const TRENDING = {
+  media: ['/shows/trending', '/movies/trending'],
+  show: ['/shows/trending'],
+  movie: ['/movies/trending'],
+} as const;
+
+// A new account gets no recommendations until it has history, so the panel deals trending titles meanwhile, shows
+// and movies alternately. Trending rows are recommendation rows without the sources.
+async function loadTrending({ fetch, settings, now = new Date() }: FetchRecommendationsParams) {
+  const search = new URLSearchParams({ extended: 'full,images,colors', limit: String(LIMIT) });
+  const lists = await Promise.all(
+    TRENDING[settings.type].map(async (path) => {
+      const response = await rawApiFetch({ fetch, path: `${path}?${search}` });
+      if (!response.ok) return [];
+      const parsed = recommendationsSchema.safeParse(await response.json());
+      return parsed.success ? parsed.data.flatMap((row) => toRecommendation(row, now) ?? []) : [];
+    }),
+  );
+  const longest = Math.max(...lists.map((list) => list.length));
+  return Array.from({ length: longest }, (_, i) => lists.map((list) => list[i])).flat()
+    .filter((item): item is Recommendation => item !== undefined);
+}
+
 /**
  * The viewer's recommendations, as v3 loads them: shows and movies together from `/media/recommendations`, or one
  * type from its own route, each with the sources that led to it. They're calculated daily and leave out what the
@@ -55,5 +80,9 @@ async function load({ fetch, token, settings, now = new Date() }: FetchRecommend
  */
 export async function fetchRecommendations(params: FetchRecommendationsParams): Promise<DashboardRecommendations> {
   const items = await load(params).catch(() => null);
+  if (items?.length === 0) {
+    const trending = await loadTrending(params).catch(() => []);
+    if (trending.length > 0) return { type: params.settings.type, items: trending, fallback: true };
+  }
   return { type: params.settings.type, items };
 }

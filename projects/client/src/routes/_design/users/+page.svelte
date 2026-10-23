@@ -264,7 +264,7 @@ const liveCards = [
 </Container>
 
 <h2 class="state">Welcome hero</h2>
-<WelcomeHero />
+<WelcomeHero displayName="leela" named={false} slug="leela" />
 
 <h2 class="state">Charts</h2>
 <ProfileCharts {genres} {ratings} slug="leela" />

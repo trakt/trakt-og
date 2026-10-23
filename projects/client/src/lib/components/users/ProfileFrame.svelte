@@ -30,6 +30,7 @@ import type { ProfileTab } from '$lib/users/profileTabs';
 import type { ProfileUser } from '$lib/users/ProfileUser';
 import type { ViewerRelation } from '$lib/users/ViewerRelation';
 import type { WatchingNow } from '$lib/users/WatchingNow';
+import { savedName } from '$lib/firstNight/savedName.svelte';
 import FollowButtons from './FollowButtons.svelte';
 import FollowRequest from './FollowRequest.svelte';
 import ProfilePills from './ProfilePills.svelte';
@@ -63,6 +64,8 @@ const slim = $derived(!user.isLocked && (!large || !cover));
 // The tall cover is shaded at the top for the header, and from the bottom left for the name. The slim and private ones
 // are shaded from the left, except the slim damask, which needs none.
 const overlay = $derived(slim || user.isLocked ? (cover ? 'shadow' : null) : 'shade');
+// Your own name updates here the moment you save it on the page.
+const name = $derived((isSelf && savedName.value) || user.displayName);
 const showOthersControls = $derived(signedIn && !isSelf);
 const change = (viewer: ViewerRelation, action: 'unfollow' | 'block' | 'unblock') =>
   changeRelationship({
@@ -105,7 +108,7 @@ const change = (viewer: ViewerRelation, action: 'unfollow' | 'block' | 'unblock'
         </a>
         <div class="identity">
           <h1>
-            <a {href}>{user.displayName}</a>
+            <a {href}>{name}</a>
             {#if user.vip}<VipLabel badge={user.vip} />{/if}
             {#if showOthersControls}
               <span class="options">
@@ -181,7 +184,7 @@ const change = (viewer: ViewerRelation, action: 'unfollow' | 'block' | 'unblock'
 </section>
 
 <ReportDialog bind:open={reporting}
-  target={{ type: 'user', id: user.slug, title: user.displayName, href, fanart: cover ?? defaultCover }} />
+  target={{ type: 'user', id: user.slug, title: name, href, fanart: cover ?? defaultCover }} />
 
 <style>
 .profile-cover {

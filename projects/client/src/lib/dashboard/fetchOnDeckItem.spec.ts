@@ -16,7 +16,7 @@ const item = initial;
 const API = 'https://apiz.trakt.tv';
 const calls: Request[] = [];
 const server = setupServer(
-  http.get(`${API}/sync/progress/up_next`, ({ request }) => {
+  http.get(`${API}/sync/progress/up_next_nitro`, ({ request }) => {
     calls.push(request);
     return HttpResponse.json([{
       ...entry,
@@ -81,7 +81,7 @@ describe('fetchOnDeckItem', () => {
     ).toBeUndefined();
   });
   it('should find a rewatch beyond the first page and keep lifetime progress', async () => {
-    server.use(http.get(`${API}/sync/progress/up_next`, ({ request }) => {
+    server.use(http.get(`${API}/sync/progress/up_next_nitro`, ({ request }) => {
       const page = new URL(request.url).searchParams.get('page');
       return HttpResponse.json(
         page === '1'
@@ -99,7 +99,7 @@ describe('fetchOnDeckItem', () => {
   it("should give a rewatch the same progress as the panel's first load", async () => {
     const rewatch = { ...entry, progress: { ...entry.progress, completed: 2, reset_at: '2026-09-30T12:00:00Z' } };
     server.use(
-      http.get(`${API}/sync/progress/up_next`, () => HttpResponse.json([rewatch])),
+      http.get(`${API}/sync/progress/up_next_nitro`, () => HttpResponse.json([rewatch])),
       http.get(`${API}/shows/1388/progress/watched`, () =>
         HttpResponse.json({
           ...entry.progress,
@@ -125,7 +125,7 @@ describe('fetchOnDeckItem', () => {
     expect(refreshed.fullProgress).toEqual(loaded?.fullProgress);
   });
   it('should retain a completed show with its status and avoid authenticating its public summary', async () => {
-    server.use(http.get(`${API}/sync/progress/up_next`, () => HttpResponse.json([])));
+    server.use(http.get(`${API}/sync/progress/up_next_nitro`, () => HttpResponse.json([])));
     expect(await refresh()).toMatchObject({
       complete: true,
       completionLabel: 'Ended',
@@ -136,16 +136,16 @@ describe('fetchOnDeckItem', () => {
   });
   it('should say Returns next season for a continuing show', async () => {
     server.use(
-      http.get(`${API}/sync/progress/up_next`, () => HttpResponse.json([])),
+      http.get(`${API}/sync/progress/up_next_nitro`, () => HttpResponse.json([])),
       http.get(`${API}/shows/1388`, () => HttpResponse.json({ ...entry.show, status: 'returning series' })),
     );
     expect((await refresh()).completionLabel).toBe('Returns next season!');
   });
   it('should leave the current card available for retry when refresh fails or a partial show is filtered', async () => {
-    server.use(http.get(`${API}/sync/progress/up_next`, () => new HttpResponse(null, { status: 503 })));
+    server.use(http.get(`${API}/sync/progress/up_next_nitro`, () => new HttpResponse(null, { status: 503 })));
     await expect(refresh()).rejects.toThrow();
     server.use(
-      http.get(`${API}/sync/progress/up_next`, () => HttpResponse.json([])),
+      http.get(`${API}/sync/progress/up_next_nitro`, () => HttpResponse.json([])),
       http.get(`${API}/shows/1388/progress/watched`, () => HttpResponse.json(entry.progress)),
     );
     await expect(refresh()).rejects.toThrow('Show is no longer in Up Next');

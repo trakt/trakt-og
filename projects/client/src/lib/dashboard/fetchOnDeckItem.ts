@@ -11,8 +11,8 @@ import { toDashboardSettings } from './toDashboardSettings.ts';
 import { capitalize } from '../utils/capitalize.ts';
 
 async function findEntry(client: ReturnType<typeof api>, id: number, page = 1): Promise<UpNextEntry | undefined> {
-  const response = await client.sync.progress.upNext.standard({
-    query: { extended: 'full,images', limit: 250, page, sort_by: 'default', sort_how: 'desc' },
+  const response = await client.sync.progress.upNext.nitro({
+    query: { intent: 'all', limit: 250, page, sort_by: 'default', sort_how: 'desc' },
   });
   if (response.status !== 200) throw new Error('Could not refresh this show');
   const entry = response.body.find(({ show }) => show.ids.trakt === id);

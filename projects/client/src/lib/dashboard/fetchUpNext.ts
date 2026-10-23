@@ -21,7 +21,7 @@ type FetchUpNextParams = {
   fetch?: typeof globalThis.fetch;
 };
 
-type Query = { sort_by: string; sort_how: 'asc' | 'desc'; limit: number; watchnow?: string };
+type Query = { sort_by: string; sort_how: 'asc' | 'desc'; limit: number; watchnow?: 'favorites' };
 
 /** OG's dashboard shows up to three rows of six. */
 const LIMIT = 18;
@@ -41,15 +41,14 @@ function request({ sort, favorites }: DashboardSettings['upNext']): { query: Que
     : { sort_by: 'default', sort_how: 'desc' as const };
 
   return {
-    query: { ...order, limit: worker ? LIMIT : SORTED_LIMIT, ...(favorites > 0 && { watchnow: 'favorites' }) },
+    query: { ...order, limit: worker ? LIMIT : SORTED_LIMIT, ...(favorites > 0 && { watchnow: 'favorites' as const }) },
     sorted: !worker,
   };
 }
 
 async function upNext(client: Client, query: Query): Promise<readonly UpNextEntry[]> {
-  // @trakt/api 0.6.0's up_next contract lacks `watchnow`, which the worker's `sources` reads. The client sends
-  // every query key it's given.
-  const response = await client.sync.progress.upNext.standard({ query: { extended: 'full,images', ...query } });
+  // The nitro route, as trakt-web reads it. The worker serves it full with images, and its `watchnow` filter is typed.
+  const response = await client.sync.progress.upNext.nitro({ query: { intent: 'all', ...query } });
   if (response.status !== 200) throw new Error(`Up Next failed with ${response.status}`);
 
   return response.body;

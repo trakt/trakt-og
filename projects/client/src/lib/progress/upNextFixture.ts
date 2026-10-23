@@ -170,7 +170,7 @@ function toEntry(sample: Sample, lifetime = false): UpNextEntry {
 }
 
 /**
- * Sample `/sync/progress/up_next` entries, and each show's whole progress as `/shows/:id/progress/watched` counts it
+ * Sample `/sync/progress/up_next_nitro` entries, and each show's whole progress as `/shows/:id/progress/watched` counts it
  * (all aired episodes, ignoring a rewatch reset) in `lifetime`.
  */
 export const upNextFixture = {

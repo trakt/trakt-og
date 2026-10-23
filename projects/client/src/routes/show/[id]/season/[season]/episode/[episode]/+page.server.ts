@@ -1,10 +1,5 @@
-import { redirect } from '@sveltejs/kit';
+import { legacyRedirect } from '../../../../../../../lib/routing/legacyRedirect.ts';
 
 export function load({ params, url }) {
-  redirect(
-    301,
-    `/shows/${encodeURIComponent(params.id)}/seasons/${encodeURIComponent(params.season)}/episodes/${
-      encodeURIComponent(params.episode)
-    }${url.search}`,
-  );
+  legacyRedirect(301, ['shows', params.id, 'seasons', params.season, 'episodes', params.episode], url);
 }

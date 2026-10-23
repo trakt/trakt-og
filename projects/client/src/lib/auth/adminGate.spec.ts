@@ -47,6 +47,22 @@ describe('isAdmin', () => {
     expect(await check('abc', vi.fn<typeof fetch>(() => Promise.reject(new TypeError('x'))))).toBe(false);
   });
 
+  it.each([
+    ['a null body', null],
+    ['an array', [{ u: { a: true } }]],
+    ['a claim that is not an object', { u: true }],
+    ['a null claim', { u: null }],
+    ['a truthy non-boolean flag', { u: { a: 1 } }],
+  ])('should be false for %s', async (_, body) => {
+    expect(await isAdmin({ token: 'abc', fetch: userinfo(body), cache: new Map() })).toBe(false);
+  });
+
+  it('should be false for a body that is not JSON', async () => {
+    const fetch = vi.fn<typeof globalThis.fetch>(() => Promise.resolve(new Response('<html>')));
+
+    expect(await isAdmin({ token: 'abc', fetch, cache: new Map() })).toBe(false);
+  });
+
   it('should remember an admin token until the TTL runs out', async () => {
     vi.useFakeTimers();
     const cache = new Map<string, number>();

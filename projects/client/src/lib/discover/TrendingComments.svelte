@@ -15,7 +15,7 @@ import PanelHeading from '$lib/components/dashboard/PanelHeading.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import VipLabel from '$lib/components/labels/VipLabel.svelte';
 import PosterCard from '$lib/components/media/PosterCard.svelte';
-import { quickIconFill } from '$lib/components/media/quickIconFill';
+import { mediaQuickIcons } from '$lib/components/media/mediaQuickIcons';
 import Icon from '$lib/icons/Icon.svelte';
 import angleLeft from '$lib/icons/light/angle-left.svg?raw';
 import angleRight from '$lib/icons/light/angle-right.svg?raw';
@@ -137,24 +137,7 @@ async function filter(next: { kind?: typeof kind; media?: typeof media }) {
               }}
               image={current.item.poster}
               userRating={viewer.rating}
-              icons={{
-                fill: quickIconFill({
-                  state: viewer,
-                  airedEpisodes: current.item.airedEpisodes,
-                  runtime: current.item.runtime,
-                  datePreferences,
-                }),
-                ratingTarget: { type: current.item.type, id: current.item.id, title: current.item.title },
-                watchTarget: {
-                  type: current.item.type,
-                  id: current.item.id,
-                  title: current.item.title,
-                  airedEpisodes: current.item.airedEpisodes,
-                  runtime: current.item.runtime,
-                },
-                rating: current.item.released ? current.item.rating : undefined,
-                watchNow: current.item.released ? 'play' : undefined,
-              }}
+              icons={mediaQuickIcons({ item: current.item, state: viewer, datePreferences })}
             />
           </div>
 

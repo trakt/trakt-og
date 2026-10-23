@@ -9,7 +9,7 @@ import PanelHeading from '$lib/components/dashboard/PanelHeading.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import PosterCard from '$lib/components/media/PosterCard.svelte';
 import PosterGrid from '$lib/components/media/PosterGrid.svelte';
-import { quickIconFill } from '$lib/components/media/quickIconFill';
+import { mediaQuickIcons } from '$lib/components/media/mediaQuickIcons';
 import masksTheater from '$lib/icons/regular/masks-theater.svg?raw';
 import { overlay } from '$lib/overlay/overlay';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
@@ -63,19 +63,7 @@ const mood = $derived(shelves.find(({ id }) => id === picked) ?? shelves.at(0));
             image={item.poster}
             userRating={viewer.rating}
             dropped={viewer.dropped}
-            icons={{
-              fill: quickIconFill({ state: viewer, airedEpisodes: item.airedEpisodes, runtime: item.runtime, datePreferences }),
-              ratingTarget: { type: item.type, id: item.id, title: item.title },
-              watchTarget: {
-                type: item.type,
-                id: item.id,
-                title: item.title,
-                airedEpisodes: item.airedEpisodes,
-                runtime: item.runtime,
-              },
-              rating: item.released ? item.rating : undefined,
-              watchNow: item.released ? 'play' : undefined,
-            }}
+            icons={mediaQuickIcons({ item, state: viewer, datePreferences })}
           />
         {/each}
       </PosterGrid>

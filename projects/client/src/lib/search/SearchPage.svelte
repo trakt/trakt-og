@@ -18,7 +18,7 @@ import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import FrameGrid from '$lib/components/frame/FrameGrid.svelte';
 import FanartCard from '$lib/components/media/FanartCard.svelte';
 import ListRow from '$lib/components/media/ListRow.svelte';
-import { quickIconFill } from '$lib/components/media/quickIconFill';
+import { mediaQuickIcons } from '$lib/components/media/mediaQuickIcons';
 import NoResults from '$lib/components/empty/NoResults.svelte';
 import { pageHref } from '$lib/components/pagination/pageWindow';
 import PagePager from '$lib/components/sidebar/PagePager.svelte';
@@ -192,8 +192,10 @@ function save(next: FadeHide) {
     <FrameGrid variant={gridVariant}>
       {#each data.cards as card (card.key)}
         {@const state = card.type === 'person' ? undefined : overlay.state(card.type, card.id, card.season)}
-        {@const fill = quickIconFill({ state: state ?? {}, airedEpisodes: card.airedEpisodes, datePreferences: data.datePreferences })}
-        {#if !state || !fadeHide.hide.some((id) => matchesFadeHide(id, state, fill))}
+        {@const icons = state && card.type !== 'person'
+          ? mediaQuickIcons({ item: { ...card, type: card.type }, state, datePreferences: data.datePreferences })
+          : undefined}
+        {#if !state || !icons || !fadeHide.hide.some((id) => matchesFadeHide(id, state, icons.fill))}
         <FanartCard
           variant={cardVariant}
           href={card.href}
@@ -208,18 +210,8 @@ function save(next: FadeHide) {
           episodeBadge={card.episodeBadge}
           userRating={state?.rating}
           dropped={state?.dropped}
-          faded={Boolean(state && fadeHide.fade.some((id) => matchesFadeHide(id, state, fill)))}
-          icons={state && card.type !== 'person'
-          ? {
-            fill,
-            ratingTarget: { type: card.type, id: card.id, title: card.title },
-            watchTarget: { type: card.type, id: card.id, title: card.title, airedEpisodes: card.airedEpisodes, runtime: card.runtime, season: card.season },
-            rating: card.released ? card.rating : undefined,
-            // ponytail: like the charts, an item that isn't out yet is taken to have no sources until #60.
-            watchNow: card.released ? 'play' : undefined,
-            listLabel: card.type === 'episode' ? 'Add to list' : undefined,
-          }
-          : undefined}
+          faded={Boolean(state && icons && fadeHide.fade.some((id) => matchesFadeHide(id, state, icons.fill)))}
+          icons={icons && { ...icons, listLabel: card.type === 'episode' ? 'Add to list' : undefined }}
         />
         {/if}
       {/each}

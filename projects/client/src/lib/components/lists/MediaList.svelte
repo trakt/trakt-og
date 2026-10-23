@@ -45,6 +45,7 @@ let triggerButton = $state<HTMLElement>();
 let popover = $state<HTMLDivElement>();
 let searchInput = $state<HTMLInputElement>();
 let expanded = $state(false);
+let opened = $state(false);
 let busy = $state(false);
 let loaded = $state(false);
 let pendingRow = $state<number | null>(null);
@@ -216,6 +217,9 @@ function placeCount(row: HTMLElement | null) {
     ? { text: row.dataset.count ?? '', top: middle - popover.getBoundingClientRect().top - popover.clientTop }
     : undefined;
 }
+function beforeToggle(event: ToggleEvent) {
+  if (event.newState === 'open') opened = true;
+}
 function toggle(event: ToggleEvent) {
   expanded = event.newState === 'open';
   if (!expanded) placeCount(null);
@@ -328,7 +332,9 @@ async function save(draft: Parameters<typeof createList>[0]['draft'] & { collabo
   {/if}
 </div>
 <div bind:this={popover} id="list-{id}" class={['picker', variant]} popover="auto" role="dialog"
-  aria-label="Lists for {target.title}" style:position-anchor="--list-{id}" ontoggle={toggle}>
+  aria-label="Lists for {target.title}" style:position-anchor="--list-{id}" onbeforetoggle={beforeToggle}
+  ontoggle={toggle}>
+  {#if opened}
   <header class="head">
     <div class="title">
       <h3>Add to lists</h3>
@@ -365,6 +371,7 @@ async function save(draft: Parameters<typeof createList>[0]['draft'] & { collabo
   </div>
   {#if countTip}<div class="count-tip" aria-hidden="true" style:top="{countTip.top}px"><span>{countTip.text}</span></div>{/if}
   <footer><button type="button" class="new" onclick={openNew}><Icon svg={add} />New list</button></footer>
+  {/if}
 </div>
 {#snippet row(list: PickerList | null, name: string, active: boolean, total: number, privacy: string, href: string, limit?: number)}
   {@const maxed = limit !== undefined && total >= limit && !active}

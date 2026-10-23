@@ -1,4 +1,5 @@
 import { dayIn } from '../utils/dayIn.ts';
+import { fromWallClock } from '../utils/fromWallClock.ts';
 
 export type RecapWindow = {
   /** 1 to 12. */
@@ -10,30 +11,9 @@ export type RecapWindow = {
 
 type RecapWindowsParams = { now: Date; timeZone: string };
 
-/** How far `timeZone`'s wall clock runs ahead of UTC at `at`, in milliseconds. */
-function offsetAt(at: number, timeZone: string) {
-  const parts = Object.fromEntries(
-    new Intl.DateTimeFormat('en-US', {
-      timeZone,
-      hourCycle: 'h23',
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-    }).formatToParts(at).map(({ type, value }) => [type, Number(value)]),
-  );
-  const wall = Date.UTC(parts.year ?? 0, (parts.month ?? 1) - 1, parts.day, parts.hour, parts.minute, parts.second);
-  return wall - Math.floor(at / 1000) * 1000;
-}
-
-/** Midnight on the 1st of `month` in `timeZone`, checked again at the result so a DST change that day lands right. */
-function monthStart(year: number, month: number, timeZone: string) {
-  const wall = Date.UTC(year, month - 1, 1);
-  const guess = wall - offsetAt(wall, timeZone);
-  return wall - offsetAt(guess, timeZone);
-}
+/** Midnight on the 1st of `month` in `timeZone`. */
+const monthStart = (year: number, month: number, timeZone: string) =>
+  fromWallClock(Date.UTC(year, month - 1, 1), timeZone);
 
 /**
  * This year's months up to today in the viewer's zone, each as a history window: whole months for those gone by, and

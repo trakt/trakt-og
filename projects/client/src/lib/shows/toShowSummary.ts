@@ -12,6 +12,7 @@ import { type StreamingRank, toExternalRatings } from '../components/summary/toE
 import type { DatePreferences } from '../settings/DatePreferences.ts';
 import { countLabel } from '../utils/countLabel.ts';
 import { formatDate } from '../utils/formatDate.ts';
+import { fromWallClock } from '../utils/fromWallClock.ts';
 import { formatRuntime } from '../utils/formatRuntime.ts';
 import { imageUrl } from '../utils/imageUrl.ts';
 import type { SeasonWithEpisodes, ShowPeople } from './loadShow.ts';
@@ -70,22 +71,6 @@ export type SeasonCard = {
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-// How far `timeZone`'s wall clock is ahead of UTC at `at`, in ms.
-function zoneOffset(at: number, timeZone: string) {
-  const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone,
-    hourCycle: 'h23',
-    year: 'numeric',
-    month: 'numeric',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: 'numeric',
-  }).formatToParts(at);
-  const part = (type: Intl.DateTimeFormatPartTypes) => Number(parts.find((p) => p.type === type)?.value);
-  const wall = Date.UTC(part('year'), part('month') - 1, part('day'), part('hour'), part('minute'));
-  return wall - Math.floor(at / 60_000) * 60_000;
-}
-
 /**
  * The next instant at which the show's weekly slot ("Sunday", "21:00", "America/New_York") falls, as ISO, so the page
  * can say it in the viewer's zone. OG pinned the slot to a week in January 2018, which is off by an hour in summer.
@@ -98,8 +83,7 @@ export function airsAt(airs: ShowResponse['airs'], now: Date): string | undefine
   const ahead = (day - now.getUTCDay() + 7) % 7;
   const wall = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + ahead, hour, minute);
   try {
-    const guess = wall - zoneOffset(wall, airs.timezone);
-    return new Date(wall - zoneOffset(guess, airs.timezone)).toISOString();
+    return new Date(fromWallClock(wall, airs.timezone)).toISOString();
   } catch {
     return undefined;
   }

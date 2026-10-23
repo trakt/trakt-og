@@ -62,7 +62,6 @@ const begin = (event: FocusEvent) => {
   border: var(--rank-pill-border) solid var(--color-rank-pill-border);
   border-radius: var(--list-reorder-rank-radius);
   background: var(--color-rank-pill-bg);
-  backdrop-filter: var(--blur-rank-pill);
   box-shadow: var(--shadow-rank-pill);
   color: var(--color-card-text);
   font: var(--font-weight-headings-heavy) var(--font-size-rank-pill) / 1 var(--font-headings);

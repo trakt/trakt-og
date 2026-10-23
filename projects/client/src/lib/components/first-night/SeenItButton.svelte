@@ -12,6 +12,7 @@ import type { WatchTarget } from '$lib/components/history/WatchTarget';
 import { toast } from '$lib/components/toast/toast.svelte';
 import check from '$lib/icons/trakt/check-thick.svg?raw';
 import { overlay } from '$lib/overlay/overlay';
+import { refreshSoon } from '$lib/overlay/refreshSoon';
 
 const { target }: { target: WatchTarget } = $props();
 let busy = $state(false);
@@ -40,7 +41,7 @@ async function toggle() {
       // Saying "seen it" about a whole show is the confirmation.
       confirm: () => Promise.resolve(true),
     });
-    if (saved) void overlay.refresh();
+    if (saved) refreshSoon();
   } finally {
     busy = false;
   }

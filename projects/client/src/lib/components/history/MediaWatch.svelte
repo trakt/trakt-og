@@ -5,6 +5,7 @@ import { rawApiFetch } from '$lib/api/rawApiFetch';
 import { login } from '$lib/auth/login';
 import { userManager } from '$lib/auth/userManager';
 import { overlay } from '$lib/overlay/overlay';
+import { refreshSoon } from '$lib/overlay/refreshSoon';
 import { checkin } from '$lib/components/checkin/checkin.svelte';
 import { toast } from '$lib/components/toast/toast.svelte';
 import VisibilityControl from '$lib/components/visibility/VisibilityControl.svelte';
@@ -130,7 +131,7 @@ async function watch(watchedAt: string | null, force: boolean, onlyPlay?: Histor
     });
     if (saved && watchedAt === null) onremove?.(onlyPlay);
     if (saved) onsave?.(watchedAt);
-    if (saved) void overlay.refresh();
+    if (saved) refreshSoon();
   } finally {
     busy = false;
   }

@@ -311,7 +311,7 @@ const period = $derived(advanced.config.period);
       <ChartHero card={hero.card} rank={hero.rank} live={data.chart === 'trending'} icons={hero.icons} />
     {/if}
     {#if pair.length > 0}
-      <div class="pair-frame">
+      <div class="pair-frame" data-sveltekit-preload-data="tap">
         <div class="pair">
           {#each pair as entry (entry.card.id)}{@render fanart(entry, true)}{/each}
         </div>

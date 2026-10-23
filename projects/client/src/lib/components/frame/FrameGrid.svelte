@@ -18,7 +18,7 @@ type Variant = 'fanart' | 'poster' | 'uniform' | 'banner' | 'framed';
 const { children, variant = 'fanart' }: { children: Snippet; variant?: Variant } = $props();
 </script>
 
-<div class="frame-grid-frame">
+<div class="frame-grid-frame" data-sveltekit-preload-data="tap">
   <div class={['frame-grid', variant]}>
     {@render children()}
   </div>

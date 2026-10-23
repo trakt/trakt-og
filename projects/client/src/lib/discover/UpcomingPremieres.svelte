@@ -69,7 +69,7 @@ function soon(days: number) {
       bind:selected
     />
   </div>
-  <ul class="grid">
+  <ul class="grid" data-sveltekit-preload-data="tap">
       {#each shown as premiere (premiere.key)}
         {@const viewer = overlay.state('show', premiere.id)}
         {@const days = daysAway(premiere.day)}

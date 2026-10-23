@@ -41,7 +41,7 @@ const { data } = $props();
 
 const samples: readonly OnDeckItem[] = upNextFixture.entries.flatMap((entry) => {
   const lifetime = upNextFixture.lifetime.find(({ show }) => show.ids.trakt === entry.show.ids.trakt);
-  const item = toOnDeckItem({ entry, lifetime, username: 'me' });
+  const item = toOnDeckItem({ entry, lifetime: lifetime?.progress, username: 'me' });
   return item ? [item] : [];
 });
 

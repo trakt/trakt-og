@@ -17,9 +17,14 @@ const simple: DashboardSettings['upNext'] = { ...defaults, simpleProgress: true 
 // Looked up per call: MSW swaps the global fetch once it listens.
 const fetch = (...args: Parameters<typeof globalThis.fetch>) => globalThis.fetch(...args);
 
-// Breaking Bad's progress: the first two episodes watched, the third skipped, the fourth watched.
+const lost = upNextFixture.lifetime.find(({ show }) => show.title === 'Lost');
+if (!lost) throw new Error('Missing fixture');
+
+// Breaking Bad's progress: the first two episodes watched, the third skipped, the fourth watched. Lost, being
+// rewatched, answers with its whole run.
 const showProgress = http.get(`${API}/shows/:id/progress/watched`, ({ params, request }) => {
   seen.push(new URL(request.url));
+  if (params.id === '1394') return HttpResponse.json({ ...lost.progress, seasons: [], hidden_seasons: [] });
   if (params.id !== '1388') return new HttpResponse(null, { status: 500 });
   return HttpResponse.json({
     aired: 4,
@@ -50,19 +55,17 @@ afterEach(() => {
 });
 afterAll(() => server.close());
 
-const answer = (lifetimeStatus = 200) =>
+const answer = () =>
   http.get(UP_NEXT, ({ request }) => {
-    const url = new URL(request.url);
-    seen.push(url);
-    if (url.searchParams.get('lifetime_stats') !== 'true') return HttpResponse.json(upNextFixture.entries);
-    return lifetimeStatus === 200
-      ? HttpResponse.json(upNextFixture.lifetime)
-      : new HttpResponse(null, { status: lifetimeStatus });
+    seen.push(new URL(request.url));
+    return HttpResponse.json(upNextFixture.entries);
   });
+const upNextCalls = () => seen.filter(({ pathname }) => pathname === '/sync/progress/up_next');
+const progressCalls = () => seen.filter(({ pathname }) => pathname.endsWith('/progress/watched'));
 
 describe('fetchUpNext', () => {
   it('should ask for 18 shows in the default sort', async () => {
-    server.use(answer());
+    server.use(answer(), showProgress);
 
     const items = await fetchUpNext({ api: api({ token: 'abc' }), username: 'sean', settings: simple });
 
@@ -73,16 +76,24 @@ describe('fetchUpNext', () => {
     expect(seen.at(0)?.searchParams.get('extended')).toBe('full,images');
   });
 
-  it('should fetch lifetime stats only when something is being rewatched', async () => {
-    server.use(answer());
+  it("should fetch the whole show's progress for each rewatch, and nothing else", async () => {
+    server.use(answer(), showProgress);
 
     const items = await fetchUpNext({ api: api({ token: 'abc' }), username: 'sean', settings: simple });
 
-    expect(seen).toHaveLength(2);
-    expect(items.find(({ showTitle }) => showTitle === 'Lost')?.fullProgress?.completed).toBe(118);
+    expect(upNextCalls()).toHaveLength(1);
+    expect(upNextCalls().at(0)?.searchParams.has('lifetime_stats')).toBe(false);
+    expect(progressCalls().map(({ pathname }) => pathname)).toEqual(['/shows/1394/progress/watched']);
+    expect(items.find(({ showTitle }) => showTitle === 'Lost')?.fullProgress).toEqual({
+      aired: 118,
+      completed: 118,
+      plays: 123,
+      minutesWatched: 123 * 43,
+      minutesLeft: 0,
+    });
   });
 
-  it('should skip the lifetime request with no rewatch', async () => {
+  it("should skip the whole show's progress with no rewatch", async () => {
     const entries = upNextFixture.entries.filter(({ progress }) => !progress.reset_at);
     server.use(http.get(UP_NEXT, ({ request }) => {
       seen.push(new URL(request.url));
@@ -94,8 +105,8 @@ describe('fetchUpNext', () => {
     expect(seen).toHaveLength(1);
   });
 
-  it('should still show a rewatch when its lifetime request fails', async () => {
-    server.use(answer(500));
+  it("should still show a rewatch when its whole show's progress fails", async () => {
+    server.use(answer(), http.get(`${API}/shows/:id/progress/watched`, () => new HttpResponse(null, { status: 500 })));
 
     const items = await fetchUpNext({ api: api({ token: 'abc' }), username: 'sean', settings: simple });
     const lost = items.find(({ showTitle }) => showTitle === 'Lost');
@@ -114,7 +125,7 @@ describe('fetchUpNext', () => {
 
   describe('with the saved sort', () => {
     const sorted = async (sort: DashboardSettings['upNext']['sort'], favorites = 0) => {
-      server.use(answer());
+      server.use(answer(), showProgress);
       return await fetchUpNext({
         api: api({ token: 'abc' }),
         username: 'sean',
@@ -128,7 +139,7 @@ describe('fetchUpNext', () => {
       await sorted({ by: 'total-runtime', how: 'desc', title: 'Total Runtime' });
       await sorted({ by: 'episodes', how: 'asc', title: 'Episodes Left' });
 
-      const firsts = seen.filter(({ searchParams }) => !searchParams.has('lifetime_stats'));
+      const firsts = upNextCalls();
       expect(firsts.map(({ searchParams }) => [searchParams.get('sort_by'), searchParams.get('sort_how')])).toEqual([
         ['title', 'desc'],
         ['released', 'desc'],
@@ -170,30 +181,31 @@ describe('fetchUpNext', () => {
       expect(items.find(({ showId }) => showId === 1390)?.ticks).toBeUndefined();
     });
 
-    it('should not ask for a rewatch, whose run the show progress leaves out', async () => {
+    it("should leave a rewatch's bar plain, since the show progress leaves its run out", async () => {
       server.use(answer(), showProgress);
 
       const items = await fetchUpNext({ api: api({ token: 'abc' }), username: 'sean', settings: defaults });
-      const lost = items.find(({ showTitle }) => showTitle === 'Lost');
-      const progressRequests = seen.filter(({ pathname }) => pathname.endsWith('/progress/watched'));
+      const rewatch = items.find(({ showTitle }) => showTitle === 'Lost');
 
-      expect(lost?.ticks).toBeUndefined();
-      expect(progressRequests.some(({ pathname }) => pathname.includes(`/${lost?.showId}/`))).toBe(false);
-      expect(progressRequests).toHaveLength(items.length - 1);
+      expect(rewatch?.ticks).toBeUndefined();
+      expect(rewatch?.fullProgress?.completed).toBe(118);
+      expect(progressCalls()).toHaveLength(items.length);
     });
 
-    it('should not ask with the standard bar', async () => {
-      server.use(answer());
+    it('should only ask for the rewatch with the standard bar', async () => {
+      server.use(answer(), showProgress);
 
       await fetchUpNext({ api: api({ token: 'abc' }), username: 'sean', settings: simple });
 
-      expect(seen.some(({ pathname }) => pathname.includes('/shows/'))).toBe(false);
+      expect(seen.filter(({ pathname }) => pathname.includes('/shows/')).map(({ pathname }) => pathname)).toEqual([
+        '/shows/1394/progress/watched',
+      ]);
     });
   });
 
   describe('with the season poster', () => {
     it("should use the next episode's season poster, and the show's when there's none", async () => {
-      server.use(answer(), seasons);
+      server.use(answer(), showProgress, seasons);
 
       const items = await fetchUpNext({
         api: api({ token: 'abc' }),

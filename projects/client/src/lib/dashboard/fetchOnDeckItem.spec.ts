@@ -1,9 +1,11 @@
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { api } from '../api/api.ts';
 import { toOnDeckItem } from '../progress/toOnDeckItem.ts';
 import { upNextFixture } from '../progress/upNextFixture.ts';
 import { fetchOnDeckItem } from './fetchOnDeckItem.ts';
+import { fetchUpNext } from './fetchUpNext.ts';
 import { toDashboardSettings } from './toDashboardSettings.ts';
 
 const entry = upNextFixture.entries.at(0);
@@ -93,6 +95,34 @@ describe('fetchOnDeckItem', () => {
       progress: { completed: 0 },
       fullProgress: { completed: entry.progress.aired },
     });
+  });
+  it("should give a rewatch the same progress as the panel's first load", async () => {
+    const rewatch = { ...entry, progress: { ...entry.progress, completed: 2, reset_at: '2026-09-30T12:00:00Z' } };
+    server.use(
+      http.get(`${API}/sync/progress/up_next`, () => HttpResponse.json([rewatch])),
+      http.get(`${API}/shows/1388/progress/watched`, () =>
+        HttpResponse.json({
+          ...entry.progress,
+          completed: 40,
+          stats: { play_count: 52, minutes_watched: 52 * 47, minutes_left: 22 * 47 },
+          seasons: [],
+          hidden_seasons: [],
+        })),
+    );
+    const settings = { ...toDashboardSettings({ settings: null }).upNext, simpleProgress: true };
+
+    const [loaded] = await fetchUpNext({ api: api({ fetch: authorized }), username: 'tester', settings });
+    const refreshed = await fetchOnDeckItem({ item, username: 'tester', fetch: authorized, settings });
+
+    expect(loaded?.fullProgress).toEqual({
+      aired: 62,
+      completed: 40,
+      plays: 52,
+      minutesWatched: 2444,
+      minutesLeft: 1034,
+    });
+    expect(refreshed.progress).toEqual(loaded?.progress);
+    expect(refreshed.fullProgress).toEqual(loaded?.fullProgress);
   });
   it('should retain a completed show with its status and avoid authenticating its public summary', async () => {
     server.use(http.get(`${API}/sync/progress/up_next`, () => HttpResponse.json([])));

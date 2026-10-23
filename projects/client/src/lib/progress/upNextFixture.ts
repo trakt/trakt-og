@@ -169,7 +169,10 @@ function toEntry(sample: Sample, lifetime = false): UpNextEntry {
   };
 }
 
-/** Sample `/sync/progress/up_next` responses: the default request, and the same with `lifetime_stats=true`. */
+/**
+ * Sample `/sync/progress/up_next` entries, and each show's whole progress as `/shows/:id/progress/watched` counts it
+ * (all aired episodes, ignoring a rewatch reset) in `lifetime`.
+ */
 export const upNextFixture = {
   entries: samples.map((sample) => toEntry(sample)),
   lifetime: samples.map((sample) => toEntry(sample, true)),

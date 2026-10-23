@@ -148,9 +148,13 @@ const shown = $derived(
   visibleCalendarDays({ days: data.days, isHidden }),
 );
 
+const cardOf = $derived(
+  new Map(data.days.flatMap((day) => day.items.map((item) => [item, toCalendarCard(item, clock)] as const))),
+);
+
 type Match = (typeof options)[number]['id'];
 function itemState(item: CalendarItem) {
-  const card = toCalendarCard(item, clock);
+  const card = cardOf.get(item) ?? toCalendarCard(item, clock);
   const state = overlay.state(card.overlay.type, card.overlay.id, card.collectionContext);
   const fill = quickIconFill({ state, datePreferences: data.datePreferences });
   const filterState = calendarFilterState(state, card.show ? overlay.state('show', card.show) : undefined);

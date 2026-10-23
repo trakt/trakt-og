@@ -125,14 +125,14 @@ describe('loadDashboard', () => {
     expect(data.upNext).not.toBeNull();
     await Promise.all(panels(data));
     server.events.removeListener('request:start', record);
-    expect(paths).toContain('/sync/progress/up_next');
+    expect(paths).toContain('/sync/progress/up_next_nitro');
     expect(paths.some((path) => path.includes('/watchlist') || path.startsWith('/recommendations'))).toBe(false);
     expect(paths.some((path) => path.includes('/following/activities'))).toBe(false);
   });
 
   it("should load the panels in the viewer's settings", async () => {
     const upNext: URL[] = [];
-    server.use(http.get(`${API}/sync/progress/up_next`, ({ request }) => {
+    server.use(http.get(`${API}/sync/progress/up_next_nitro`, ({ request }) => {
       upNext.push(new URL(request.url));
       return HttpResponse.json([]);
     }));

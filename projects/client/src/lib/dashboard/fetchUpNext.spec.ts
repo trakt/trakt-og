@@ -9,7 +9,7 @@ import { fetchUpNext } from './fetchUpNext.ts';
 import { toDashboardSettings } from './toDashboardSettings.ts';
 
 const API = 'https://apiz.trakt.tv';
-const UP_NEXT = `${API}/sync/progress/up_next`;
+const UP_NEXT = `${API}/sync/progress/up_next_nitro`;
 const seen: URL[] = [];
 const server = setupServer();
 const defaults = toDashboardSettings({ settings: null }).upNext;
@@ -60,7 +60,7 @@ const answer = () =>
     seen.push(new URL(request.url));
     return HttpResponse.json(upNextFixture.entries);
   });
-const upNextCalls = () => seen.filter(({ pathname }) => pathname === '/sync/progress/up_next');
+const upNextCalls = () => seen.filter(({ pathname }) => pathname === '/sync/progress/up_next_nitro');
 const progressCalls = () => seen.filter(({ pathname }) => pathname.endsWith('/progress/watched'));
 
 describe('fetchUpNext', () => {
@@ -73,7 +73,7 @@ describe('fetchUpNext', () => {
     expect(seen.at(0)?.searchParams.get('limit')).toBe('18');
     expect(seen.at(0)?.searchParams.get('sort_by')).toBe('default');
     expect(seen.at(0)?.searchParams.get('sort_how')).toBe('desc');
-    expect(seen.at(0)?.searchParams.get('extended')).toBe('full,images');
+    expect(seen.at(0)?.searchParams.get('intent')).toBe('all');
   });
 
   it("should fetch the whole show's progress for each rewatch, and nothing else", async () => {

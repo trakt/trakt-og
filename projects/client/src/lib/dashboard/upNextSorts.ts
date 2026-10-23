@@ -2,7 +2,7 @@
  * OG's Up Next sorts, in the settings form's
  * order. `title` is the help line's name; `label` is the form's, which calls Activity Date "Watched Date"
  * *
- * `worker` is the `/sync/progress/up_next` sort that gives the same order, where there is one
+ * `worker` is the `/sync/progress/up_next_nitro` sort that gives the same order, where there is one
  * OG's directions are "natural": its `asc` runs most recent
  * activity, most completed and newest premiere first, so `invert` flips the
  * direction for the worker. The rest are sorted by og (`sortUpNext`).

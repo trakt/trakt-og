@@ -1,4 +1,5 @@
 import type { ReactionsSummaryResponse } from '@trakt/api';
+import { SvelteMap } from 'svelte/reactivity';
 import { z } from 'zod/v4';
 import { loadCommentReactions } from './loadCommentReactions.ts';
 import { patchReactionSummary } from './patchReactionSummary.ts';
@@ -17,9 +18,9 @@ export function createCommentReactions({ request, notify }: {
   let viewer: string | null = null;
   let generation = $state(0);
   let loaded = $state(false);
-  let choices = $state<Readonly<Record<number, ReactionType>>>({});
-  let summaries = $state<Readonly<Record<number, ReactionsSummaryResponse>>>({});
-  let busy = $state<Readonly<Record<number, boolean>>>({});
+  const choices = new SvelteMap<number, ReactionType>();
+  const summaries = new SvelteMap<number, ReactionsSummaryResponse>();
+  const busy = new SvelteMap<number, boolean>();
   let loading: Promise<boolean> | undefined;
   // Pending promises are bookkeeping, not UI state.
   // eslint-disable-next-line svelte/prefer-svelte-reactivity
@@ -30,10 +31,10 @@ export function createCommentReactions({ request, notify }: {
     viewer = sub;
     const current = ++generation;
     loaded = false;
-    choices = {};
-    busy = {};
+    choices.clear();
+    busy.clear();
     // A previous session's pending patches must not survive a viewer change.
-    summaries = {};
+    summaries.clear();
     summaryRequests.clear();
     if (!sub) {
       loading = undefined;
@@ -41,7 +42,8 @@ export function createCommentReactions({ request, notify }: {
     }
     loading = loadCommentReactions(request).then((rows) => {
       if (current !== generation) return false;
-      choices = Object.fromEntries(rows);
+      choices.clear();
+      for (const [id, type] of rows) choices.set(id, type);
       loaded = true;
       return true;
     }).catch(() => false);
@@ -50,16 +52,16 @@ export function createCommentReactions({ request, notify }: {
 
   const loadSummary = (id: number, likes: number, read: SummaryReader, session = generation): Promise<void> => {
     if (session !== generation) return Promise.resolve();
-    if (summaries[id] !== undefined) return Promise.resolve();
+    if (summaries.has(id)) return Promise.resolve();
     const pending = summaryRequests.get(id);
     if (pending) return pending;
     if (likes <= 0) {
-      summaries = { ...summaries, [id]: empty() };
+      summaries.set(id, empty());
       return Promise.resolve();
     }
     const current = generation;
     const task = read(id).then((summary) => {
-      if (current === generation && summary) summaries = { ...summaries, [id]: summary };
+      if (current === generation && summary) summaries.set(id, summary);
     }).catch(() => {}).finally(() => {
       if (current === generation) summaryRequests.delete(id);
     });
@@ -76,19 +78,19 @@ export function createCommentReactions({ request, notify }: {
 
   // Patches only this comment; another card's concurrent change survives a rollback.
   const patch = (id: number, next: ReactionType | undefined) => {
-    const previous = choices[id];
-    const oldSummary = summaries[id];
+    const previous = choices.get(id);
+    const oldSummary = summaries.get(id);
     const choose = (choice: ReactionType | undefined) => {
-      const updated = Object.fromEntries(Object.entries(choices).filter(([key]) => key !== String(id)));
-      choices = choice ? { ...updated, [id]: choice } : updated;
+      if (choice) choices.set(id, choice);
+      else choices.delete(id);
     };
     choose(next);
     if (oldSummary) {
-      summaries = { ...summaries, [id]: patchReactionSummary({ summary: oldSummary, previous, next }) };
+      summaries.set(id, patchReactionSummary({ summary: oldSummary, previous, next }));
     }
     return () => {
       choose(previous);
-      if (oldSummary) summaries = { ...summaries, [id]: oldSummary };
+      if (oldSummary) summaries.set(id, oldSummary);
     };
   };
 
@@ -98,12 +100,12 @@ export function createCommentReactions({ request, notify }: {
     likes: number;
     read: SummaryReader;
   }): Promise<boolean> => {
-    if (busy[id] === true || !loaded) return false;
+    if (busy.get(id) === true || !loaded) return false;
     const current = generation;
-    busy = { ...busy, [id]: true };
+    busy.set(id, true);
     await loadSummary(id, likes, read);
     if (current !== generation) return false;
-    const previous = choices[id];
+    const previous = choices.get(id);
     const next = previous === type ? undefined : type;
     const rollback = patch(id, next);
     let message = GENERIC_ERROR;
@@ -123,7 +125,7 @@ export function createCommentReactions({ request, notify }: {
       }
       // Both writes return no content. Re-read the public summary to reconcile concurrent members' reactions.
       const summary = await read(id, true).catch(() => undefined);
-      if (current === generation && summary) summaries = { ...summaries, [id]: summary };
+      if (current === generation && summary) summaries.set(id, summary);
       return true;
     } catch {
       if (current !== generation) return false;
@@ -131,7 +133,7 @@ export function createCommentReactions({ request, notify }: {
       notify(message);
       return false;
     } finally {
-      if (current === generation) busy = { ...busy, [id]: false };
+      if (current === generation) busy.set(id, false);
     }
   };
 
@@ -143,6 +145,6 @@ export function createCommentReactions({ request, notify }: {
     ready,
     loadSummary,
     change,
-    state: (id: number) => ({ reaction: choices[id], summary: summaries[id], busy: busy[id] === true }),
+    state: (id: number) => ({ reaction: choices.get(id), summary: summaries.get(id), busy: busy.get(id) === true }),
   };
 }

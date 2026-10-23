@@ -2,6 +2,7 @@ import { error, redirect } from '@sveltejs/kit';
 import { api } from '../api/api.ts';
 import { signInRedirect } from '../auth/signInRedirect.ts';
 import { loadViewerLists } from './loadViewerLists.ts';
+import { lazy } from '../utils/lazy.ts';
 import { userStatsSchema } from '../stats/userStatsSchema.ts';
 import { profileResponseSchema } from './profileResponseSchema.ts';
 import { toViewerRelation } from './toViewerRelation.ts';
@@ -15,6 +16,7 @@ type Params = {
   params: { id: string };
   parent: () => Promise<{ user: HeaderUser | null }>;
   url: URL;
+  isDataRequest?: boolean;
 };
 
 /** The profile, its stats and the frame's watching-now bar. Neither of the last two is worth failing the page over. */
@@ -31,7 +33,7 @@ async function readFrame(client: ReturnType<typeof api>, id: string) {
  * The profile frame every `/users/:id/*` page shares. Subpage loaders `await parent()` and skip their own requests when
  * `profile.isLocked`: a private profile the viewer can't see renders the frame only, on every subpage.
  */
-export async function loadProfileFrame({ fetch, locals, params, parent, url }: Params) {
+export async function loadProfileFrame({ fetch, locals, params, parent, url, isDataRequest = false }: Params) {
   if (params.id === 'me' && !locals.token) {
     signInRedirect(url);
   }
@@ -59,7 +61,10 @@ export async function loadProfileFrame({ fetch, locals, params, parent, url }: P
 
   const isSelf = viewer?.slug === user.slug;
 
-  if (viewer && !isSelf) locals.viewerLists ??= loadViewerLists({ client });
+  // A client navigation may discard this layout's result, so it reads the lists only if they get used. A full page
+  // render always streams them, so it starts them now.
+  const readLists = () => isDataRequest ? lazy(() => loadViewerLists({ client })) : loadViewerLists({ client });
+  const viewerLists = viewer && !isSelf ? (locals.viewerLists ??= readLists()) : null;
   const parsedStats = stats?.status === 200 ? userStatsSchema.safeParse(stats.body) : null;
   const userStats = parsedStats?.success ? parsedStats.data : null;
 
@@ -70,9 +75,8 @@ export async function loadProfileFrame({ fetch, locals, params, parent, url }: P
     watching: watching?.status === 200 ? toWatchingNow(watching.body) : null,
     isSelf,
     signedIn: viewer !== null,
-    // Streamed: the page renders without waiting for the viewer's five network lists.
-    relation: viewer && !isSelf
-      ? (locals.viewerLists?.then((lists) => toViewerRelation(user.slug, lists)) ?? null)
-      : null,
+    // Streamed: the page renders without waiting for the viewer's five network lists. Lazy, so a tab switch that
+    // discards this layout result never reads them.
+    relation: viewerLists ? lazy(async () => toViewerRelation(user.slug, await viewerLists)) : null,
   };
 }

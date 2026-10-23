@@ -1,6 +1,8 @@
 import type { SearchResultResponse } from '@trakt/api';
 import type { DatePreferences } from '../../settings/DatePreferences.ts';
 import { formatDate } from '../../utils/formatDate.ts';
+import { genreLabel } from '../../utils/genreLabel.ts';
+import { episodeNumber } from '../media/episodeTags.ts';
 import { personTags } from '../../people/personTags.ts';
 import { imageUrl } from '../../utils/imageUrl.ts';
 
@@ -29,21 +31,12 @@ export interface SearchRow {
 
 const GENRE_LIMIT = 3;
 
-// Titled here, not by the pill's CSS, so other tags like "250 items" keep their case.
 const genres = (slugs: ReadonlyArray<string> | null | undefined) =>
-  slugs?.length
-    ? slugs.slice(0, GENRE_LIMIT).map((slug) =>
-      slug.replaceAll('-', ' ').replace(/\b\w/g, (letter) => letter.toUpperCase())
-    )
-    : undefined;
+  slugs?.length ? slugs.slice(0, GENRE_LIMIT).map(genreLabel) : undefined;
 
 const year = (value: number | null | undefined) => (value ? String(value) : undefined);
 
 const poster = (paths: ReadonlyArray<string> | null | undefined) => imageUrl(paths?.at(0), 'thumb');
-
-// OG's season_x_episode: "1x05", or "Special 3" for season 0.
-const seasonEpisode = (season: number, number: number) =>
-  season === 0 ? `Special ${number}` : `${season}x${String(number).padStart(2, '0')}`;
 
 /**
  * Maps a `/search` hit to the row OG drew for it, dating episodes in the viewer's order and zone. `today` (the viewer's
@@ -88,7 +81,7 @@ export function toSearchRow(
       recent: { query: episode.title ?? '', type: 'episodes', id: episode.ids.trakt },
       href: `/shows/${show.ids.slug}/seasons/${episode.season}/episodes/${episode.number}`,
       topTitle: show.title,
-      title: `${seasonEpisode(episode.season, episode.number)} ${episode.title ?? ''}`.trim(),
+      title: `${episodeNumber(episode, null)} ${episode.title ?? ''}`.trim(),
       type: 'Episode',
       tag: episode.first_aired ? formatDate(episode.first_aired, dates) : undefined,
       genres: genres(show.genres),

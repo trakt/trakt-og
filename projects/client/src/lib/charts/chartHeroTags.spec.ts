@@ -13,7 +13,7 @@ const card: ChartCard = {
   airedEpisodes: 4,
   tags: [{ text: '11,688 watchers' }],
   certification: 'TV-14',
-  genres: ['Fantasy', 'Science fiction', 'Drama'],
+  genres: ['Fantasy', 'Science Fiction', 'Drama'],
   network: 'Disney+',
 };
 
@@ -24,7 +24,7 @@ describe('chartHeroTags', () => {
       { text: '2026' },
       { text: 'TV-14', kind: 'badge' },
       { segments: ['4 episodes'] },
-      { segments: ['Fantasy', 'Science fiction'] },
+      { segments: ['Fantasy', 'Science Fiction'] },
       { text: 'Disney+' },
     ]);
   });

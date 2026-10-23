@@ -1,5 +1,6 @@
 import type { AdvancedFilters, ListFilterKey, RangeFilterKey } from './advancedFilters.ts';
 import { listFilterKeys } from './advancedFilters.ts';
+import { genreLabel } from '../../utils/genreLabel.ts';
 
 /** The rating site whose logo leads a range tag. */
 export type TagSite = 'trakt' | 'imdb' | 'rt' | 'rt-audience';
@@ -31,6 +32,7 @@ const displayName = (type: 'language' | 'region', code: string) => {
 export function filterValueLabel(key: ListFilterKey, value: string): string {
   switch (key) {
     case 'genres':
+      return genreLabel(value);
     case 'status':
     case 'episode_types':
       return titleCase(value);

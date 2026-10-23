@@ -1,4 +1,5 @@
 import { imageUrl } from '../utils/imageUrl.ts';
+import { genreLabel } from '../utils/genreLabel.ts';
 import type { ThemeMedia } from './themeRowsSchema.ts';
 
 /** A show or movie as discover's poster cards, the season wall and the hero show it. */
@@ -19,7 +20,7 @@ export type PosterItem = {
   readonly poster?: string;
   readonly fanart?: string;
   readonly logo?: string;
-  /** "Horror", "Science fiction". */
+  /** "Horror", "Science Fiction". */
   readonly genres: readonly string[];
   readonly certification?: string;
   readonly network?: string;
@@ -27,8 +28,6 @@ export type PosterItem = {
   /** A YouTube link. */
   readonly trailer?: string;
 };
-
-const humanize = (slug: string) => slug.replaceAll('-', ' ').replace(/^\w/, (letter) => letter.toUpperCase());
 
 export function toPosterItem(media: ThemeMedia, type: 'movie' | 'show', now: Date): PosterItem {
   const releaseDate = type === 'show' ? media.first_aired : media.released;
@@ -46,7 +45,7 @@ export function toPosterItem(media: ThemeMedia, type: 'movie' | 'show', now: Dat
     poster: imageUrl(media.images?.poster?.at(0), 'thumb'),
     fanart: imageUrl(media.images?.fanart?.at(0), 'full'),
     logo: imageUrl(media.images?.logo?.at(0), 'medium'),
-    genres: (media.genres ?? []).map(humanize),
+    genres: (media.genres ?? []).map(genreLabel),
     certification: media.certification ?? undefined,
     network: media.network ?? undefined,
     overview: media.overview?.trim() || undefined,

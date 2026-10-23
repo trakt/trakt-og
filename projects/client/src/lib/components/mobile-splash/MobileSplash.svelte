@@ -50,7 +50,7 @@ const headingId = $props.id();
   aria-labelledby={headingId}
 >
   <div class="hero">
-    <img class="logo" src={logo} alt="Trakt" width="289" height="98" />
+    <img class="logo" src={logo} alt="Trakt" width="289" height="98" loading="lazy" />
     <div class="message">
       <h1 id={headingId}>
         <span class="phone">OG is made for bigger screens.</span>
@@ -67,7 +67,7 @@ const headingId = $props.id();
 
   <div class="trakt">
     <p class="brand">
-      <img src={traktMark} alt="" width="40" height="40" />
+      <img src={traktMark} alt="" width="40" height="40" loading="lazy" />
       <span><strong>Trakt</strong> Same account, made for any screen</span>
     </p>
     <div class="actions">
@@ -83,7 +83,7 @@ const headingId = $props.id();
       {#each links.apps as app (app.id)}
         <li>
           <a href={app.href} target="_blank" rel="noopener">
-            <img src={appIcons[app.id]} alt="" width="34" height="34" />
+            <img src={appIcons[app.id]} alt="" width="34" height="34" loading="lazy" />
             <span class="name">{app.name}</span>
             <span class="tag">{app.tag}</span>
             <span class="chevron"><Icon svg={angleRight} /></span>

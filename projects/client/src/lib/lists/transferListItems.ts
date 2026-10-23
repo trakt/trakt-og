@@ -5,6 +5,7 @@ import type { ListItemRef } from './fetchListItemRefs.ts';
 import { listWriteError } from './listWriteError.ts';
 import { removeOwnerItems } from './removeOwnerItems.ts';
 import { removeListItems } from './removeListItems.ts';
+import { reorderApplied } from './reorderApplied.ts';
 import { reorderListItems } from './reorderListItems.ts';
 import type { ListView } from './toListView.ts';
 import type { ListSort } from './resolveListSort.ts';
@@ -157,8 +158,7 @@ async function addItems({ target, items, overlay, request }: {
 async function reorderWatchlist(request: Params['request'], rank: readonly number[]) {
   const response = await request('/sync/watchlist/reorder', { rank });
   if (!response.ok) throw new Error(response.status === 429 ? '429' : await listWriteError(response));
-  const result = z.object({ updated: z.number(), skipped_ids: z.array(z.number()) }).parse(await response.json());
-  if (result.skipped_ids.length) {
+  if (!reorderApplied(await response.json())) {
     throw new Error(
       'Items were copied, but their order could not be saved. The source list was kept. Retry to finish.',
     );

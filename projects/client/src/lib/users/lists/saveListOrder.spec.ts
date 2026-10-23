@@ -30,8 +30,12 @@ describe('saveListOrder', () => {
     }));
     expect(await save()).toBe(true);
   });
-  it('should reject skipped ids, partial writes and invalid success bodies', async () => {
-    for (const result of [{ updated: 2, skipped_ids: [3] }, { updated: 2, skipped_ids: [] }, { ok: true }]) {
+  it('should keep an order the API took every id of, whatever its updated count', async () => {
+    server.use(http.post(endpoint, () => HttpResponse.json({ updated: 2, skipped_ids: [] })));
+    expect(await save()).toBe(true);
+  });
+  it('should reject skipped ids and invalid success bodies', async () => {
+    for (const result of [{ updated: 2, skipped_ids: [3] }, { ok: true }]) {
       server.use(http.post(endpoint, () => HttpResponse.json(result)));
       expect(await save()).toBe(false);
     }

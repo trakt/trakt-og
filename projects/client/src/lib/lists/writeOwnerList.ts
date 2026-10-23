@@ -1,4 +1,5 @@
 import { z } from 'zod/v4';
+import { reorderApplied } from './reorderApplied.ts';
 import type { BuiltInListKind } from './toBuiltInListView.ts';
 
 const metadata = z.object({
@@ -6,7 +7,6 @@ const metadata = z.object({
   sort_by: z.string(),
   sort_how: z.enum(['asc', 'desc']),
 });
-const reordered = z.object({ updated: z.number().int().nonnegative(), skipped_ids: z.array(z.number()) });
 const removed = z.object({
   deleted: z.record(z.string(), z.number().int().nonnegative()),
   not_found: z.record(z.string(), z.array(z.unknown())),
@@ -54,10 +54,7 @@ export async function writeOwnerList({ kind, change, request, notify }: {
     }
     const result: unknown = await response.json();
     if (change.type === 'metadata') metadata.parse(result);
-    if (change.type === 'order') {
-      const order = reordered.parse(result);
-      if (order.updated !== change.rank.length || order.skipped_ids.length) throw new Error('Incomplete reorder');
-    }
+    if (change.type === 'order' && !reorderApplied(result)) throw new Error('Incomplete reorder');
     if (change.type === 'remove') {
       const removal = removed.parse(result);
       if (

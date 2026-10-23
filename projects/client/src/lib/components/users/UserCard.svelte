@@ -1,6 +1,6 @@
 <!--
   OG's user card, three to a row on the network page, as a small profile header: the avatar and the name with the VIP
-  label over small grey tags with the location, gender and age, centered on it, sit on the user's cover (the default
+  label over a small grey location tag, centered on it, sit on the user's cover (the default
   one when unset, theirs fading in once it loads), then the profile header's follow buttons, and a darker band along
   the bottom, like a dialog's footer, with
   the chips: Private, the VIP veteran title and the year the follow started, as a green "Friends since" when they
@@ -23,11 +23,8 @@ import { liveTags } from '$lib/dashboard/liveTags';
 import type { LiveTile } from '$lib/dashboard/liveTiles';
 import lock from '$lib/icons/regular/lock.svg?raw';
 import userGroup from '$lib/icons/regular/user-group.svg?raw';
-import genderless from '$lib/icons/solid/genderless.svg?raw';
 import locationPin from '$lib/icons/solid/location-pin.svg?raw';
-import mars from '$lib/icons/solid/mars.svg?raw';
 import star from '$lib/icons/solid/star.svg?raw';
-import venus from '$lib/icons/solid/venus.svg?raw';
 import type { ProfileUser } from '$lib/users/ProfileUser';
 import type { ViewerRelation } from '$lib/users/ViewerRelation';
 import { fadeInOnLoad } from '$lib/utils/fadeInOnLoad';
@@ -51,7 +48,6 @@ const media = $derived(watch?.watch ?? null);
 const tags = $derived(media ? liveTags(media) : []);
 const friends = $derived(relation?.follow === 'following' && relation.followsYou);
 const sinceYear = $derived(since ? new Date(since).getUTCFullYear() : null);
-const genderIcons = { mars, venus, genderless };
 </script>
 
 <!-- Profile and media links go to OG routes some of which other issues build; resolve() only takes routes that exist. -->
@@ -97,9 +93,6 @@ const genderIcons = { mars, venus, genderless };
         {#if !user.isLocked}
           <p class="facts">
             <CommentTag svg={locationPin} tone="following" tint><b>{user.location}</b></CommentTag>
-            <CommentTag svg={genderIcons[user.gender.icon]} tone="following" tint title={user.gender.title}
-              aria-label={user.age === null ? user.gender.title : `${user.gender.title}, ${user.age}`}
-            >{#if user.age !== null}<b>{user.age}</b>{/if}</CommentTag>
           </p>
         {/if}
       </div>
@@ -253,7 +246,7 @@ const genderIcons = { mars, venus, genderless };
   object-fit: cover;
 }
 
-/* The name over the location, gender and age, as small tags rather than the profile header's pills. */
+/* The name over the location, as a small tag rather than the profile header's pill. */
 .text {
   display: grid;
   gap: var(--user-card-text-gap);

@@ -1,5 +1,5 @@
 <!--
-  A glass pill on a cover photo: the profile's private status, location, gender and age, and join date, and the
+  A glass pill on a cover photo: the profile's private status, location and join date, and the
   dashboard greeting's join date. A leading icon is muted and a <b> inside stands out in white. `tone="private"` tints
   it amber, icon and all, so a status reads apart from the facts next to it.
     <CoverPill title="Joined September 25, 2010"><Icon svg={calendar} />Joined <b>2010</b></CoverPill>

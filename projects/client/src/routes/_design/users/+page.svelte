@@ -31,8 +31,6 @@ const vip: ProfileUser = {
   isLocked: false,
   vip: { kind: 'vip', tag: { text: 'OG', title: 'Original VIP Member' }, years: 15 },
   location: 'Planet Express',
-  gender: { icon: 'venus', title: 'Female' },
-  age: 28,
   coverUrl: 'https://media.trakt.tv/images/shows/000/099/080/fanarts/full/a049f455c1.jpg',
   about: null,
   joinedAt: '2010-09-25T17:49:25.000Z',
@@ -48,8 +46,6 @@ const free: ProfileUser = {
   isPrivate: false,
   vip: { kind: 'vip', tag: { text: 'EP', title: 'Executive Producer' }, years: null },
   location: 'Omicron Persei 8',
-  gender: { icon: 'genderless', title: 'Unknown' },
-  age: null,
   coverUrl: null,
 };
 

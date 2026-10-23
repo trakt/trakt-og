@@ -11,8 +11,6 @@ const sean = {
   director: false,
   ids: { slug: 'sean', trakt: 2 },
   location: 'California',
-  gender: 'male',
-  age: 44,
   images: { avatar: { full: 'https://media.trakt.tv/images/users/000/000/002/avatars/large/f69ca213e8.jpg' } },
   vip_og: true,
   vip_years: 17,
@@ -33,8 +31,6 @@ describe('toProfileUser', () => {
       isLocked: false,
       vip: { kind: 'vip', tag: { text: 'OG', title: 'Original VIP Member' }, years: 17 },
       location: 'California',
-      gender: { icon: 'mars', title: 'Male' },
-      age: 44,
       coverUrl: `${sean.vip_cover_image}.webp`,
       about: 'Huge tv nerd',
       joinedAt: '2010-09-25T17:49:25.000Z',
@@ -46,26 +42,13 @@ describe('toProfileUser', () => {
       ...sean,
       name: '',
       location: ' ',
-      gender: null,
-      age: null,
       vip_cover_image: null,
     });
 
     expect(user.displayName).toBe('sean');
     expect(user.firstName).toBe('sean');
     expect(user.location).toBe('Omicron Persei 8');
-    expect(user.gender).toEqual({ icon: 'genderless', title: 'Unknown' });
-    expect(user.age).toBeNull();
     expect(user.coverUrl).toBeNull();
-  });
-
-  it('should title-case the gender like OG', () => {
-    expect(toProfileUser({ ...sean, gender: 'female' }).gender).toEqual({ icon: 'venus', title: 'Female' });
-    expect(toProfileUser({ ...sean, gender: 'non_binary' }).gender).toEqual({
-      icon: 'genderless',
-      title: 'Non-binary',
-    });
-    expect(toProfileUser({ ...sean, gender: 'prefer_not_to_say' }).gender.title).toBe('Prefer Not To Say');
   });
 
   describe('for a private profile', () => {

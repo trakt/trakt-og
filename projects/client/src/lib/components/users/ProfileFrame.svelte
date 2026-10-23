@@ -1,6 +1,6 @@
 <!--
   The profile header, shared by every /users/:id page: the cover, avatar, name with the VIP and Private labels, the
-  options menu, follow buttons (an incoming follow request gets its own bar across the top of the cover), a line of glass pills for private status, location, gender and age, and the year they joined, the
+  options menu, follow buttons (an incoming follow request gets its own bar across the top of the cover), a line of glass pills for private status, location and the year they joined, the
   watching-now player and the section tabs. The name block is one left-aligned row: centered on the slim cover, and
   low on the tall one so the art shows. The profile page gets the tall cover when there's art to show (the owner's
   cover or what they're watching); every subpage, and a profile without art, gets the slim one on OG's damask. A

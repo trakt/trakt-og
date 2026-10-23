@@ -4,12 +4,10 @@ import type { CollectionMetadata } from '../components/collection/CollectionMeta
 import { collectedCounts } from './collectedCounts.ts';
 import { collectedSources } from './collectedSources.ts';
 import type { LibrarySource } from '../components/collection/LibrarySource.ts';
-import { contractSchema } from '../api/contractSchema.ts';
-import { lastActivitiesResponseSchema } from '@trakt/api';
 import type { OverlaySlices } from './OverlaySlices.ts';
 import type { OverlayStorage, SliceName, SliceRecord } from './overlayStorage.ts';
-import { type ApiGet, sliceSources } from './sliceSources.ts';
-import { staleSlices } from './staleSlices.ts';
+import type { ApiGet } from './sliceSources.ts';
+import { SLICE_NAMES } from './sliceNames.ts';
 
 type MediaType = 'movie' | 'show' | 'season' | 'episode' | 'person';
 
@@ -60,7 +58,7 @@ type CreateOverlayParams = {
 // The visibility recheck runs at most this often.
 const RECHECK_MS = 60_000;
 
-const activitiesSchema = contractSchema(lastActivitiesResponseSchema);
+const loadChecker = () => import('./checkActivities.ts');
 
 const countEpisodes = (seasons: ReadonlyMap<number, ReadonlyMap<number, unknown>> | undefined) =>
   [...(seasons ?? new Map())].reduce((sum, [number, episodes]) => number === 0 ? sum : sum + episodes.size, 0);
@@ -254,31 +252,34 @@ export function createOverlay({ get, storage, now = Date.now }: CreateOverlayPar
     known = { ...known, [name]: activity };
   };
 
-  const fetchSlice = async (forUser: string, name: SliceName, activity: string) => {
-    const record: SliceRecord = { name, activity, data: await sliceSources[name].load(get) };
+  // `start` begins the import with the cache read, so the chunk loads while IndexedDB answers.
+  let checker: ReturnType<typeof loadChecker> | null = null;
+  const preloadChecker = () => {
+    const loading = checker ??= loadChecker();
+    loading.catch(() => {
+      if (checker === loading) checker = null;
+    });
+    return loading;
+  };
+
+  const saveSlice = async (forUser: string, record: SliceRecord) => {
     if (user !== forUser) return;
     apply(record);
-    if (name !== 'hidden') await storage.save(forUser, record);
+    if (record.name !== 'hidden') await storage.save(forUser, record);
   };
 
   const check = async (forUser: string) => {
     checkedAt = now();
-    const response = await get('/sync/last_activities').catch(() => null);
-    // Keep the cached slices as they are. The next visibility check retries.
-    if (!response?.ok || user !== forUser) return;
+    const loaded = await preloadChecker().catch(() => null);
+    // A chunk that fails to load is a failed check: keep the cached slices. The next visibility check retries.
+    if (!loaded || user !== forUser) return;
 
-    const parsed = activitiesSchema.safeParse(await response.json().catch(() => null));
-    // A body that doesn't match the contract is a failed check too.
-    if (!parsed.success) return;
-
-    const activities = parsed.data;
-    const stale = staleSlices(known, activities);
-    const fetchAll = (names: SliceName[]) =>
-      Promise.allSettled(names.map((name) => fetchSlice(forUser, name, sliceSources[name].activity(activities))));
-
-    // A failed slice keeps its previous copy, or stays unknown. Lists cost a request each, so they go last.
-    await fetchAll(stale.filter((name) => name !== 'listed'));
-    await fetchAll(stale.filter((name) => name === 'listed'));
+    await loaded.checkActivities({
+      get,
+      known: () => known,
+      isCurrent: () => user === forUser,
+      onSlice: (record) => saveSlice(forUser, record),
+    });
   };
 
   const refresh = (): Promise<void> => {
@@ -316,10 +317,11 @@ export function createOverlay({ get, storage, now = Date.now }: CreateOverlayPar
       forget();
       user = nextUser;
 
+      preloadChecker().catch(() => {});
       await storage.clearExcept(nextUser);
       const records = await storage.load(nextUser);
       if (user !== nextUser) return;
-      records.filter((record) => Object.hasOwn(sliceSources, record.name)).forEach(apply);
+      records.filter((record) => SLICE_NAMES.includes(record.name)).forEach(apply);
       await refresh();
     },
 

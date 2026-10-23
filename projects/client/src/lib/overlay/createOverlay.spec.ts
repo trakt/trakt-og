@@ -1,10 +1,12 @@
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { rawApiFetch } from '../api/rawApiFetch.ts';
 import { workerUnauthorized } from '../api/workerUnauthorized.ts';
 import { createOverlay } from './createOverlay.svelte.ts';
+import { SLICE_NAMES } from './sliceNames.ts';
 import type { OverlayStorage, SliceRecord } from './overlayStorage.ts';
+import { sliceSources } from './sliceSources.ts';
 
 const API = 'https://apiz.trakt.tv';
 const T0 = '2026-01-01T00:00:00.000Z';
@@ -492,6 +494,32 @@ describe('createOverlay', () => {
       now = 60_000;
       await overlay.recheck();
       expect(requests).toEqual(['/sync/last_activities']);
+    });
+  });
+
+  it('should list every slice source by name', () => {
+    expect([...SLICE_NAMES].sort()).toEqual(Object.keys(sliceSources).sort());
+  });
+
+  describe('when the checker chunk fails to load', () => {
+    afterEach(() => {
+      vi.doUnmock('./checkActivities.ts');
+      vi.resetModules();
+    });
+
+    it('should keep the cached slices and skip the check', async () => {
+      vi.resetModules();
+      vi.doMock('./checkActivities.ts', () => {
+        throw new Error('chunk failed');
+      });
+      const fresh = await import('./createOverlay.svelte.ts');
+      const { storage } = fakeStorage({ sean: [droppedRecord(T0, 7)] });
+      const overlay = fresh.createOverlay({ get: (path) => rawApiFetch({ path, token: 't' }), storage });
+
+      await overlay.start('sean');
+
+      expect(overlay.state('show', 7).dropped).toBe(true);
+      expect(requests).toEqual([]);
     });
   });
 });

@@ -56,10 +56,13 @@ let {
   ontoggle,
   children,
 }: Props = $props();
+
+let opened = $state(false);
 </script>
 
 <div bind:this={element} {id} class={['prompt', tone, size]} popover="auto" role="dialog"
-  aria-labelledby="{id}-title" style:position-anchor={anchor} {ontoggle}>
+  aria-labelledby="{id}-title" style:position-anchor={anchor}
+  onbeforetoggle={(event) => { if (event.newState === 'open') opened = true; }} {ontoggle}>
   <header class="head">
     <h3 id="{id}-title">{#if typeof title === 'string'}{title}{:else}{@render title()}{/if}</h3>
     <button type="button" class="close" aria-label="Close" onclick={() => element?.hidePopover()}><Icon
@@ -68,8 +71,10 @@ let {
   </header>
   {#if notice}<div class="notice"><DialogNotice>{@render notice()}</DialogNotice></div>
   {:else if note}<p class="note">{note}</p>{/if}
-  <div class="body">{@render children()}</div>
-  {#if footer}<footer class="foot">{@render footer()}</footer>{/if}
+  {#if opened}
+    <div class="body">{@render children()}</div>
+    {#if footer}<footer class="foot">{@render footer()}</footer>{/if}
+  {/if}
   {#if arrow}<span class="arrow" aria-hidden="true"></span>{/if}
 </div>
 

@@ -29,6 +29,7 @@ const { children, label = 'More actions', trigger: custom, placement = 'right' }
 const id = $props.id();
 let menu = $state<HTMLDivElement>();
 let expanded = $state(false);
+let opened = $state(false);
 
 const toggle = (event: ToggleEvent & { currentTarget: HTMLElement }) => {
   expanded = event.newState === 'open';
@@ -53,8 +54,8 @@ const close = () => menu?.hidePopover();
     {/snippet}
   </Tooltip>
   <div bind:this={menu} id="summary-menu-{id}" class="menu" popover="auto" style:position-anchor="--summary-menu-{id}"
-    ontoggle={toggle}>
-    {@render children(close)}
+    onbeforetoggle={(event) => { if (event.newState === 'open') opened = true; }} ontoggle={toggle}>
+    {#if opened}{@render children(close)}{/if}
   </div>
 </div>
 

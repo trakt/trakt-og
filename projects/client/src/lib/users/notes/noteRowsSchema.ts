@@ -25,7 +25,7 @@ const media = z.object({
 const user = z.object({
   username: z.string(),
   name: z.string().nullish(),
-  ids: z.object({ slug: z.string().nullish() }),
+  ids: z.object({ slug: z.string().nullish(), trakt: z.number().nullish() }),
   vip: z.boolean().nullish(),
   vip_ep: z.boolean().nullish(),
   vip_og: z.boolean().nullish(),

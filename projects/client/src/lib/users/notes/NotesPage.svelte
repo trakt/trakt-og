@@ -22,12 +22,15 @@ import type { ProfileUser } from '$lib/users/ProfileUser';
 import type { loadNotes } from '$lib/users/notes/loadNotes';
 import { noteTypes } from '$lib/users/notes/noteTypes';
 import { viewerFetch } from '../../auth/viewerFetch.ts';
+import { ownsNote } from '$lib/users/notes/ownsNote';
+import type { ViewerSettings } from '$lib/settings/ViewerSettings';
 
 type Props = {
   data: Awaited<ReturnType<typeof loadNotes>> & {
     profile: ProfileUser;
     datePreferences: DatePreferences;
     isSelf: boolean;
+    settings: ViewerSettings | null;
   };
 };
 const { data }: Props = $props();
@@ -138,7 +141,7 @@ const filterHref = (type: string) => {
       <div data-note-row out:removeNote onoutroend={refocus}>
       <NoteRow {note} datePreferences={data.datePreferences}>
         {#snippet manage()}
-          {#if data.isSelf && note.author.href === `/users/${data.profile.slug}`}
+          {#if ownsNote(data.settings?.user.ids.trakt, note.author)}
             <NoteManage busy={edits.busy(note.id)} onedit={() => edit(note)} ondelete={() => save(note, '')} />
           {/if}
         {/snippet}

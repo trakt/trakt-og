@@ -108,8 +108,11 @@ function activity(row: Row, datePreferences: DatePreferences) {
 }
 
 function author(user: Row['note']['user']) {
-  if (!user || user.deleted) return { name: 'Deleted User', href: null, avatar: PLACEHOLDER_AVATAR, vip: null };
+  if (!user || user.deleted) {
+    return { id: null, name: 'Deleted User', href: null, avatar: PLACEHOLDER_AVATAR, vip: null };
+  }
   return {
+    id: user.ids.trakt ?? null,
     name: user.name?.trim() || user.username,
     href: `/users/${user.ids.slug ?? user.username}`,
     avatar: user.images?.avatar.thumb ?? user.images?.avatar.full ?? PLACEHOLDER_AVATAR,

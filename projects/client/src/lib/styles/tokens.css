@@ -3387,6 +3387,175 @@
   --home-trending-stack-padding-block: 28px 40px;
 }
 
+/* RollingNumber: digits that roll into place like an odometer. */
+:root {
+  --rolling-number-line: 1.15em;
+  --rolling-number-duration: 1.6s;
+  --rolling-number-easing: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --rolling-number-stagger: 60ms; /* each digit a beat after the one before */
+}
+
+/* LinkButton: a link styled as og's standard button, red or a light outline. */
+:root {
+  --link-button-gap: 8px;
+  --link-button-inline: 16px;
+  --link-button-duration: 0.2s;
+  --color-link-button-line: rgb(255 255 255 / 0.4);
+  --color-link-button-hover: rgb(255 255 255 / 0.12);
+}
+
+/* About: /about, dark in both themes like the home page. A repo-style header over a film-inspired scene, the Trakt
+   API banner, the bug and feature cards, the team's banners and a weekly summary of what shipped. */
+:root {
+  --about-hero-top: 64px; /* below the fixed header */
+  --about-hero-bottom: 64px;
+  --about-hero-columns: minmax(0, 1fr) 420px;
+  --about-count-shimmer-height: 27px; /* a large count pill's height, held while GitHub answers */
+  /* Each count's measured width: stars, forks, commits, open and closed issues. */
+  --about-count-shimmer-1: 92px;
+  --about-count-shimmer-2: 77px;
+  --about-count-shimmer-3: 138px;
+  --about-count-shimmer-4: 127px;
+  --about-count-shimmer-5: 144px;
+  --about-hero-gap: 56px;
+  --about-hero-shade:
+    linear-gradient(90deg, rgb(11 11 11 / 0.94) 0%, rgb(11 11 11 / 0.72) 42%, rgb(11 11 11 / 0.25) 75%, rgb(11 11 11 / 0.55)),
+    linear-gradient(to top, rgb(11 11 11 / 0.92), rgb(11 11 11 / 0.5) 30%, transparent 55%);
+  /* The grid scenes are brighter, so the copy and counts get a fade up from the bottom as well as from the left. */
+  --about-hero-shade-grid:
+    linear-gradient(to top, rgb(11 11 11 / 0.92), rgb(11 11 11 / 0.6) 30%, transparent 60%),
+    linear-gradient(90deg, rgb(11 11 11 / 0.8) 0%, rgb(11 11 11 / 0.35) 45%, transparent 70%);
+  --about-hero-shade-quiet: radial-gradient(80% 120% at 85% 0%, rgb(237 28 36 / 0.18), transparent 60%);
+  --color-about-hero-bg: #0b0b0b;
+  --about-repo-gap: 8px;
+  --about-repo-icon: 18px;
+  --font-size-about-title: 54px;
+  --letter-spacing-about-title: -0.03em;
+  --about-title-space: 14px;
+  --line-height-about-lede: 1.6;
+  --about-lede-width: 580px;
+  --about-link-underline: 3px;
+  --about-stats-space: 22px;
+  --about-terminal-padding: 18px;
+  --about-terminal-gap: 10px;
+  --about-terminal-dot: 10px;
+  --color-about-terminal-dot: #333;
+  --color-about-terminal-bg: rgb(0 0 0 / 0.82);
+  --shadow-about-terminal: 0 20px 60px rgb(0 0 0 / 0.5);
+  --about-terminal-blur: 6px;
+  --line-height-about-terminal: 1.8;
+  --color-about-terminal-comment: #666;
+  --about-copy-height: 30px;
+  --about-copy-inline: 12px;
+
+  /* The scenes behind the header, drawn on a canvas from these. */
+  --color-about-scene-red: #ed1c24;
+  --color-about-scene-cyan: #6ff3ff;
+  --color-about-scene-ink: #0b0b0b;
+
+  /* The Trakt API banner, with the new Trakt mark in brand violet. */
+  --brand-violet: oklch(49% 0.217 289);
+  --brand-violet-darken: oklch(43% 0.217 289); /* the violet button's hover */
+  --color-about-web-name: oklch(68% 0.17 289); /* trakt-web's name on the dark header, the violet lifted to read */
+  --about-name-mark: 1.1em; /* a project's mark beside its name in the lede */
+  --about-name-mark-gap: 0.3em;
+  --color-about-api-tint: oklch(49% 0.217 289 / 0.22);
+  --about-api-mark: 54px;
+  --about-api-padding: 20px 24px;
+  --about-api-gap: 18px;
+  --about-api-space: 36px; /* below the header */
+  --about-body-width: 760px;
+  --line-height-about-body: 1.55;
+
+  /* The bug and feature cards. */
+  --about-card-padding: 24px;
+  --about-card-columns: 54px minmax(0, 1fr);
+  --about-card-gap: 6px 18px;
+  --about-card-icon: 54px;
+  --about-card-glyph: 28px;
+  --about-card-icon-radius: 12px;
+  --color-about-card-icon: rgb(237 28 36 / 0.16);
+  --about-card-lift: -3px;
+  --about-hover-duration: 0.2s;
+  --shadow-about-card-hover: 0 14px 30px rgb(0 0 0 / 0.45);
+  --about-card-list-space: 6px;
+  --about-card-list-indent: 18px;
+  --about-flow-gap: 6px;
+  --about-go-space: 20px;
+
+  /* The team: a roster of avatar chips beside one member's panel. */
+  --about-roster-width: 340px;
+  --about-roster-gap: 10px;
+  --about-chip-gap: 10px;
+  --about-chip-padding: 10px 14px 10px 10px;
+  --about-chip-avatar: 36px;
+  --color-about-chip-bg: rgb(255 255 255 / 0.03);
+  --color-about-chip-hover: rgb(255 255 255 / 0.07);
+  --about-panel-avatar: 96px;
+  --about-member-padding: 20px 28px 28px;
+  --about-member-shade: linear-gradient(180deg, rgb(17 17 17 / 0.55), rgb(17 17 17 / 0.92) 55%), linear-gradient(90deg, rgb(17 17 17 / 0.85) 25%, transparent 80%);
+  --about-favorites: 5;
+  --about-name-gap: 6px; /* a member's name to their tags */
+  --about-stat-gap: 22px; /* between the heading's numbers, either side of a rule */
+  --about-stat-tuck: -0.3em;
+  --font-size-about-stat: 34px; /* the dashboard's figures face, which runs condensed */
+  --color-about-stat-plays: #c59be0; /* the plays purple, lifted for big numbers on dark */
+  --about-team-after: 24px; /* the band to What shipped */
+  --about-team-help-space: 32px; /* the subtitle to the roster */
+  --color-about-team-bg: var(--color-social-feed-bg); /* the dashboard's social feed and schedule band */
+  --color-about-member-bg: var(--color-dashboard-inbox-box);
+  --about-section-padding-block: 36px 64px;
+  --about-banner-radius: 10px;
+  --about-banner-blur: blur(22px) brightness(0.55) saturate(1.3);
+  --about-banner-blur-zoom: 1.4;
+  --shadow-about-avatar: 0 0 0 3px rgb(255 255 255 / 0.12);
+  --shadow-about-poster: 0 0 0 1px rgb(255 255 255 / 0.15);
+
+  /* What shipped: one summary a week, beside the open and closed issues. */
+  --about-log-columns-side: 340px; /* the issues sidebar */
+  --about-log-columns: minmax(0, 1fr) var(--about-log-columns-side);
+  --about-log-gap: 48px;
+  --about-log-padding-block: 8px 64px;
+  --about-week-head-padding: 12px 0 10px;
+  --about-week-avatar: 22px;
+  --about-commit-columns: var(--about-commit-tile) minmax(0, 1fr) auto;
+  --about-commit-tile: 38px;
+  --about-day-rule-gap: 16px; /* a day label to its rule */
+  --about-day-first-space: 16px; /* the tagline to the first day */
+  --font-size-about-commit-icon: 18px;
+  --about-commit-tag-gap: 8px; /* the section tag before a commit's subject */
+  --about-change-gap: 12px;
+  --about-change-padding: 6px;
+  --about-panel-gap: 12px;
+  --about-issue-padding: 10px;
+  --about-issue-number: 40px; /* #1234 in the small mono face */
+  --about-issue-number-nudge: 2px; /* onto the title's first line */
+  --about-empty-top: 24px;
+  --about-panel-inline: 22px;
+  --about-panel-head-padding: 16px 16px 16px var(--about-panel-inline); /* the tag as far from the right as the top */
+  --about-panel-body-padding: 6px var(--about-panel-inline) 0;
+  --about-panel-button-space: 10px;
+  --color-about-panel-head: rgb(255 255 255 / 0.05);
+  --about-panel-fine-gap: 4px;
+  --font-size-about-panel-fine: 10px;
+  --letter-spacing-about-panel-fine: 0.08em;
+  --color-about-trailer-band: #0f4d26; /* the green band card before a trailer */
+  --color-about-trailer-line: rgb(255 255 255 / 0.55); /* ...and the thin line framing it */
+  --color-about-trailer-fine: rgb(255 255 255 / 0.8);
+  --about-trailer-inset: 5px;
+  --letter-spacing-about-trailer-title: 0.04em;
+  --color-about-vcr-bg: #0a0a14;
+  --about-vcr-scanlines: repeating-linear-gradient(0deg, rgb(255 255 255 / 0.035) 0 1px, transparent 1px 3px);
+  --color-about-vcr-text: #e8f4ff;
+  --color-about-vcr-fine: #8fb4d9;
+  --text-shadow-about-vcr: 0 0 6px rgb(120 180 255 / 0.55);
+  --about-vcr-rewind-gap: 0.4em;
+  --letter-spacing-about-vcr-rewind: -0.15em;
+  --about-empty-width: 240px;
+  --about-empty-glyph: 22px;
+  --color-about-issue-closed: #a371f7;
+}
+
 /* Box Office: the weekend's chart as a table in the dark frame, and its sidebar summary. */
 :root {
   --box-office-padding: 24px 28px 32px;
@@ -3437,6 +3606,19 @@
   --color-tag-pill-bg: light-dark(rgb(0 0 0 / 0.04), rgb(255 255 255 / 0.1));
   --color-tag-pill-line: light-dark(rgb(0 0 0 / 0.14), rgb(255 255 255 / 0.12));
   --color-tag-pill-text: light-dark(#444, rgb(255 255 255 / 0.85));
+  --color-tag-pill-icon: light-dark(#777, rgb(255 255 255 / 0.6)); /* an icon pill's icon, a step quieter than its count */
+  --tag-pill-icon-gap: 5px;
+  --tag-pill-tint-fill: 14%; /* a tinted pill's wash */
+  --tag-pill-tint-line: 45%; /* ...and its outline */
+  --tag-pill-tint-hover: 26%; /* a linked pill under the pointer */
+  --tag-pill-large-padding: 5px 11px;
+  --tag-pill-large-gap: 10px; /* between a header's large count pills */
+  --font-size-tag-pill-large: 14px;
+  --color-github-star: #e3b341; /* GitHub's star gold */
+  --color-github-forks: #39c5cf; /* its accent cyan, for forks */
+  --color-github-open: #3fb950; /* its open-issue green */
+  --color-github-closed: #a371f7; /* its closed-as-completed purple */
+  --color-github-commits: #58a6ff; /* its link blue, for commits */
   --color-tag-pill-light-bg: light-dark(#3a3a3a, #e6e6e6); /* a year or a week: the pale pill, dark in light mode */
   --color-tag-pill-light-text: light-dark(#fff, #111);
   --sidebar-width: 350px;

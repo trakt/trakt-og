@@ -1,0 +1,22 @@
+/** The site sections the about page sorts changes into, in the words members know them by. */
+export const aboutSections = [
+  'Profiles',
+  'Titles',
+  'Design',
+  'Dashboard',
+  'Calendar',
+  'Comments',
+  'Search',
+  'Layout',
+  'Discover',
+  'Movies',
+  'Shows',
+  'Lists',
+  'People',
+  'Charts',
+  'Home',
+  'About',
+  'Languages',
+  'Settings',
+  'General',
+] as const;

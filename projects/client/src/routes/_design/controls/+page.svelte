@@ -17,6 +17,7 @@ import MultiSelect from '$lib/components/filters/MultiSelect.svelte';
 import RangeSlider from '$lib/components/filters/RangeSlider.svelte';
 import { filterRanges } from '$lib/components/filters/filterRanges';
 import PillTabs from '$lib/components/tabs/PillTabs.svelte';
+import LinkButton from '$lib/components/button/LinkButton.svelte';
 
 let filters = $state<FadeHide>({ fade: [], hide: [] });
 let current = $state(1);
@@ -85,6 +86,14 @@ $effect(() => {
         <ActionButtons history={false} library={false} comment={false}
           progress={{ watched: 1, collected: 0, visible: 3, total: 3 }} />
       </div>
+      <h2>Link buttons</h2>
+      <div class="block link-buttons" id="link-buttons">
+        <LinkButton href="#link-buttons">Primary</LinkButton>
+        <LinkButton href="https://github.com/trakt/trakt-og/issues/new?labels=bug"
+          external>Open a bug report</LinkButton>
+        <LinkButton href="https://developer.trakt.tv" variant="outline" external>Developer portal</LinkButton>
+      </div>
+
       <h2>Pagination</h2>
       <div class="knobs">
         <label>Page <input type="number" min="1" max={total} bind:value={current} /></label>
@@ -179,6 +188,14 @@ section {
   max-inline-size: var(--container-lg);
   margin-inline: auto;
   padding-inline: calc(var(--gutter) / 2);
+}
+
+.link-buttons {
+  display: flex;
+  gap: var(--gutter);
+  padding: var(--gutter);
+  background: var(--color-home-bg);
+  color: var(--color-home-text);
 }
 
 .knobs {

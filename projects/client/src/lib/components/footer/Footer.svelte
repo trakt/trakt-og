@@ -10,10 +10,10 @@ import github from '$lib/icons/brands/github.svg?raw';
 import googlePlay from '$lib/icons/brands/google-play.svg?raw';
 import redditAlien from '$lib/icons/brands/reddit-alien.svg?raw';
 import spaceStationMoon from '$lib/icons/solid/space-station-moon.svg?raw';
+import { resolve } from '$app/paths';
 import { traktUrls } from '$lib/traktUrls';
 
 const pages = [
-  { title: 'About', href: traktUrls.about },
   { title: 'VIP', href: traktUrls.vip },
   { title: 'Developer', href: traktUrls.developer },
   { title: 'Forums', href: traktUrls.forums },
@@ -31,14 +31,15 @@ const social = [
 ];
 </script>
 
-<!-- Every link leaves og (v3 web, the app stores, community sites), so each opens in a new tab. resolve() only takes og's
-     own routes. -->
+<!-- Every link but About leaves og (v3 web, the app stores, community sites), so each opens in a new tab. resolve()
+     only takes og's own routes. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
 <footer>
   <div class="links">
     <nav aria-label="Footer">
       <ul>
+        <li><a href={resolve('/about')}>About</a></li>
         {#each pages as link (link.title)}
           <li><a href={link.href} target="_blank" rel="noopener">{link.title}</a></li>
         {/each}

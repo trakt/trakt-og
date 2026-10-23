@@ -7,6 +7,7 @@ import globe from '$lib/icons/regular/globe.svg?raw';
 import heart from '$lib/icons/regular/heart.svg?raw';
 import userGroup from '$lib/icons/regular/user-group.svg?raw';
 import CommunityStats from '$lib/stats/CommunityStats.svelte';
+import RollingNumber from '$lib/components/stats/RollingNumber.svelte';
 import SiteScores from '$lib/stats/SiteScores.svelte';
 import StatsSection from '$lib/stats/StatsSection.svelte';
 import { toCommunityStats } from '$lib/stats/toCommunityStats';
@@ -57,6 +58,11 @@ const sites = toSiteScores({
     <StatsSection id="community" title="Community" icon={userGroup}>
       <CommunityStats tiles={community} />
     </StatsSection>
+    <h2>Rolling number</h2>
+    <p class="rolling">
+      <RollingNumber value={12} /> people · <RollingNumber value={150_660} /> episodes ·
+      <RollingNumber value={13_626} /> movies
+    </p>
     <StatsSection id="second-opinions" title="Second Opinions" icon={globe}>
       <SiteScores trakt={{ percent: 71, votes: 17_976 }} {sites} />
     </StatsSection>
@@ -67,6 +73,11 @@ const sites = toSiteScores({
 .demo {
   padding-block: calc(var(--header-height) + var(--gutter)) var(--gutter);
   background-color: var(--color-surface);
+}
+
+.rolling {
+  font-size: var(--font-size-about-stat);
+  font-weight: var(--font-weight-headings-heavy);
 }
 
 .chart {

@@ -223,6 +223,20 @@ function stateOf(slices: Partial<OverlaySlices>, type: MediaType, id: number, se
   };
 }
 
+const memos = new WeakMap<object, Map<string, OverlayState>>();
+
+function memoizedStateOf(slices: Partial<OverlaySlices>, type: MediaType, id: number, season?: SeasonOf) {
+  // eslint-disable-next-line svelte/prefer-svelte-reactivity -- a plain cache, never read reactively
+  const memo = memos.get(slices) ?? new Map<string, OverlayState>();
+  memos.set(slices, memo);
+  const key = `${type}:${id}:${season?.show}:${season?.number}:${season?.episode}`;
+  const cached = memo.get(key);
+  if (cached) return cached;
+  const state = stateOf(slices, type, id, season);
+  memo.set(key, state);
+  return state;
+}
+
 /**
  * The signed-in user's library state for posters. Reads are synchronous against memory and reactive, because the
  * slices live in `$state`. `start` loads the cache and checks `last_activities`; `stop` forgets the user.
@@ -291,7 +305,7 @@ export function createOverlay({ get, storage, now = Date.now }: CreateOverlayPar
      * collected progress when `season` says which show and number it is. An episode finds its own season, and
      * `season` only makes that a direct lookup.
      */
-    state: (type: MediaType, id: number, season?: SeasonOf): OverlayState => stateOf(slices, type, id, season),
+    state: (type: MediaType, id: number, season?: SeasonOf): OverlayState => memoizedStateOf(slices, type, id, season),
 
     /** Every slice as it stands, for views that compute from the whole library. Reactive; missing means unknown. */
     slices: (): Partial<OverlaySlices> => slices,

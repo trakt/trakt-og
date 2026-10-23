@@ -53,6 +53,7 @@ const fill = $derived(
     datePreferences: dates,
   }),
 );
+const libraryHref = $derived(`/users/${page.data.user?.slug ?? 'me'}/library`);
 const plural = $derived(target.type === 'show' || target.type === 'season');
 const label = $derived(
   fill.collected > 0 ? plural ? `${Math.floor(fill.collected * 100)}% in library` : 'In Library' : 'Add to library',
@@ -139,7 +140,7 @@ async function open(force: boolean): Promise<'date' | 'remove' | 'partial' | nul
 {#if variant === 'summary' && plural && fill.collected > 0 && target.airedEpisodes}
   <Tooltip text={fill.titles.collected} placement="bottom">
     {#snippet trigger(tip)}
-      <a class="collection-progress" href="/users/me/library" aria-label={fill.titles.collected} {...tip}>
+      <a class="collection-progress" href={libraryHref} aria-label={fill.titles.collected} {...tip}>
         {#each Array.from({ length: target.airedEpisodes ?? 0 }) as _, index (index)}<span class:done={index < (viewerState.collectedEpisodes ?? 0)}></span>{/each}
       </a>
     {/snippet}

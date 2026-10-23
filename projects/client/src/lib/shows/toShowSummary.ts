@@ -19,6 +19,7 @@ import { toCrewGroups } from '../components/summary/toCrewGroups.ts';
 import { seasonName } from '../utils/seasonName.ts';
 import { ratingPercent } from '../utils/ratingPercent.ts';
 import { toShowLinks } from './toShowLinks.ts';
+import { genreLabel } from '../utils/genreLabel.ts';
 
 type Tag = NonNullable<ComponentProps<typeof FanartCard>['tags']>[number];
 
@@ -180,7 +181,7 @@ function facts({ show, studios, people, isVip, now, day, airs }: Facts) {
     })),
     studios: studios.map(({ name, ids }) => ({ name, href: isVip ? popular('studio_ids', ids.trakt) : undefined })),
     genres: (show.genres ?? []).map((genre) => ({
-      name: titleize(genre),
+      name: genreLabel(genre),
       href: isVip ? popular('genres', genre) : undefined,
     })),
     originalTitle: show.original_title && show.original_title.toLowerCase() !== show.title.toLowerCase()

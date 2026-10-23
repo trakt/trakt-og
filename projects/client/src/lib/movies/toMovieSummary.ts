@@ -13,6 +13,7 @@ import { imageUrl } from '../utils/imageUrl.ts';
 import { toMovieLinks } from './toMovieLinks.ts';
 import { toCrewGroups } from '../components/summary/toCrewGroups.ts';
 import { toCastMembers } from '../components/summary/toCastMembers.ts';
+import { genreLabel } from '../utils/genreLabel.ts';
 
 interface Release {
   readonly country: string;
@@ -121,7 +122,7 @@ export function toMovieSummary(params: MovieSummaryParams) {
         href: isVip ? popular('studio_ids', ids.trakt) : undefined,
       })),
       genres: (movie.genres ?? []).map((genre) => ({
-        name: titleize(genre),
+        name: genreLabel(genre),
         href: isVip ? popular('genres', genre) : undefined,
       })),
       originalTitle: movie.original_title && movie.original_title.toLowerCase() !== movie.title.toLowerCase()

@@ -75,6 +75,7 @@ import { manageLinks } from './manageLinks.ts';
 import ReactionSummary from './ReactionSummary.svelte';
 import { gifQueryOf } from './gif/gifQueryOf.ts';
 import { memberRelation } from './memberRelation.ts';
+import { onceInView } from './onceInView.ts';
 import { reactionSummary } from './reactionSummary.ts';
 import { spoilerRevealed } from './spoilerRevealed.ts';
 import { parseComment } from './text/parseComment.ts';
@@ -257,13 +258,9 @@ const react = (type: ReactionType) =>
 // A reaction also counts as a like, so a comment without likes has no reactions and needs no request.
 const loadSummary = (element: HTMLElement) => {
   if (asParent) return;
-  const observer = new IntersectionObserver((entries) => {
-    if (!entries.some((entry) => entry.isIntersecting)) return;
-    observer.disconnect();
+  return onceInView(element, () => {
     inView = true;
-  }, { rootMargin: '200px' });
-  observer.observe(element);
-  return () => observer.disconnect();
+  });
 };
 
 const loadReplies = async () => {

@@ -202,7 +202,7 @@ describe('loadDiscover', () => {
       ['short', '/movies/trending?runtimes=60-95'],
       ['most-watched', '/movies/watched/weekly'],
       ['top-rated', '/movies/trending?ratings=80-100'],
-      ['comedies', '/movies/trending?genres=comedy'],
+      ['comedies', '/movies/trending?genres=comedy,-animation,-anime,-horror'],
       ['family', '/movies/trending?genres=family'],
     ]);
     expect(data.moods.show.find(({ id }) => id === 'top-rated')?.more).toBe('/shows/trending?ratings=85-100');

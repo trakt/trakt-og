@@ -1,18 +1,18 @@
+import { advancedFiltersSearch, parseAdvancedFilters } from '../components/filters/advancedFilters.ts';
 import type { ThemeFilter } from './discoverThemes.ts';
 
 /**
- * The chart a shelf's "View more" opens (trending unless another is named), with what of its filters the chart pages read from the URL: the
- * included genres (the chart's genres take one mode for the whole list, so the excluded ones are dropped), and the
- * runtime and rating ranges. Subgenres have no chart filter, so a subgenre theme opens its genre's chart, or the
- * plain one.
+ * The chart a shelf's "View more" opens (trending unless another is named), with the shelf's genres, runtimes and
+ * ratings in the URL the chart's own filter panel writes. Subgenres have no chart filter, so a subgenre theme opens
+ * its genre's chart, or the plain one.
  */
 export function chartHref(type: 'movie' | 'show', filter: ThemeFilter, chart = 'trending'): string {
-  const genres = (filter.genres?.split(',') ?? []).filter((genre) => genre && !genre.startsWith('-'));
+  const { genres, runtimes, ratings } = filter;
   const params = new URLSearchParams({
-    ...(genres.length > 0 && { genres: genres.join(',') }),
-    ...(filter.runtimes && { runtimes: filter.runtimes }),
-    ...(filter.ratings && { ratings: filter.ratings }),
+    ...(genres && { genres }),
+    ...(runtimes && { runtimes }),
+    ...(ratings && { ratings }),
   });
-  const query = params.toString();
+  const query = advancedFiltersSearch(parseAdvancedFilters(params));
   return `/${type}s/${chart}${query ? `?${query}` : ''}`;
 }

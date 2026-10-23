@@ -102,12 +102,34 @@ describe('loadLibrary', () => {
     });
   });
 
-  it('should read a private library again with the token, and skip a locked one', async () => {
-    await load({ token: 'abc' }, { isPrivate: true });
-    expect(seen.map((request) => request.headers.get('authorization'))).toEqual([null, 'Bearer abc']);
-    seen.length = 0;
-    const locked = await load({}, { isLocked: true });
-    expect(locked.cards).toEqual([]);
+  describe('privacy', () => {
+    const tokens = () => seen.flatMap((request) => request.headers.get('authorization') ?? []);
+    const privateLibrary = () =>
+      server.use(http.get(/^https:\/\/apiz\.trakt\.tv\/users\/tester\/collection\/media/, ({ request }) => {
+        seen.push(request);
+        return HttpResponse.json(request.headers.has('authorization') ? [movie] : [], { headers: pages });
+      }));
+
+    it('should read a private library the viewer may see with the token, once', async () => {
+      privateLibrary();
+      const result = await load({ token: 'abc' }, { isPrivate: true });
+      expect(result.cards).toHaveLength(1);
+      expect(tokens()).toEqual(['Bearer abc']);
+    });
+
+    it('should make only the token read once a bare date has waited on the frame', async () => {
+      privateLibrary();
+      await load({ token: 'abc', query: '?start_at=2026-09-01' }, { isPrivate: true });
+      expect(seen.map((request) => request.headers.get('authorization'))).toEqual(['Bearer abc']);
+    });
+
+    it('should skip a locked library and never send the token', async () => {
+      expect((await load({ token: 'abc' }, { isPrivate: true, isLocked: true })).cards).toEqual([]);
+      expect(tokens()).toEqual([]);
+      seen.length = 0;
+      await load({ token: 'abc', query: '?start_at=2026-09-01' }, { isPrivate: true, isLocked: true });
+      expect(seen).toEqual([]);
+    });
   });
 
   it('should fail on an off-contract body', async () => {

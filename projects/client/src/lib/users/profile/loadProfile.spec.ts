@@ -133,9 +133,20 @@ describe('loadProfile', () => {
     expect(await load({ stats: stats(0) })).toMatchObject({ boxes: null, welcome: false });
   });
 
-  it('should read a private profile the viewer can see again with the token', async () => {
-    await load({ isPrivate: true });
-    expect(seen.some((request) => request.headers.get('authorization') === 'Bearer viewer-token')).toBe(true);
+  it('should read a private profile the viewer can see with the token, each section once', async () => {
+    server.use(http.get('https://apiz.trakt.tv/users/tester/history/movies', ({ request }) => {
+      seen.push(request);
+      if (!request.headers.has('authorization')) return new HttpResponse(null, { status: 401 });
+      return HttpResponse.json(new URL(request.url).searchParams.has('start_at') ? [] : [movie(9, 100)]);
+    }));
+    const data = await load({ isPrivate: true });
+
+    expect(data.movies.map(({ id }) => id)).toEqual([9]);
+    const latest = seen.filter((request) => {
+      const url = new URL(request.url);
+      return url.pathname === '/users/tester/history/movies' && !url.searchParams.has('start_at');
+    });
+    expect(latest.flatMap((request) => request.headers.get('authorization') ?? [])).toEqual(['Bearer viewer-token']);
   });
 
   it('should build the charts from the watched genres and the ratings in the stats', async () => {
@@ -269,13 +280,22 @@ describe('loadProfile', () => {
       expect(data.mostWatched?.movies).toMatchObject({ sortBy: 'time', tab: 'lastMonth' });
     });
 
+    it("should read your private profile's favorites once, in your saved order, with your token", async () => {
+      await load({ isSelf: true, isPrivate: true, settings });
+      const tokened = favoriteReads().filter((request) => request.headers.has('authorization'));
+      expect(tokened.map((request) => new URL(request.url).pathname)).toEqual([
+        '/users/tester/favorites/movie,show/watched/desc',
+      ]);
+    });
+
     it('should read your favorites once when you kept the random order', async () => {
       await load({ isSelf: true, settings: { browsing: {} } as unknown as ViewerSettings });
       expect(favoriteReads()).toHaveLength(1);
     });
   });
 
-  it('should leave the charts and most watched out of a locked profile', async () => {
-    expect(await load({ isLocked: true })).toMatchObject({ charts: null, mostWatched: null });
+  it('should leave the charts and most watched out of a locked profile and never send the token', async () => {
+    expect(await load({ isPrivate: true, isLocked: true })).toMatchObject({ charts: null, mostWatched: null });
+    expect(seen.every((request) => !request.headers.has('authorization'))).toBe(true);
   });
 });

@@ -225,35 +225,38 @@ async function cancel() {
 
   & i {
     inline-size: var(--watching-eq-bar);
+    block-size: 100%;
     border-radius: 1px;
     background-color: currentcolor;
+    transform: scaleY(var(--level));
+    transform-origin: bottom;
     animation: equaliser 1s ease-in-out infinite;
 
     &:nth-child(1) {
-      block-size: 60%;
+      --level: 0.6;
       animation-delay: -0.2s;
     }
 
     &:nth-child(2) {
-      block-size: 100%;
+      --level: 1;
       animation-delay: -0.5s;
     }
 
     &:nth-child(3) {
-      block-size: 40%;
+      --level: 0.4;
       animation-delay: -0.8s;
     }
   }
 
   .done & i {
-    block-size: 30%;
+    --level: 0.3;
     animation: none;
   }
 }
 
 @keyframes equaliser {
   50% {
-    block-size: 20%;
+    transform: scaleY(0.2);
   }
 }
 

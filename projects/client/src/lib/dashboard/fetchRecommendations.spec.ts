@@ -108,7 +108,7 @@ describe('fetchRecommendations', () => {
 
     expect(item).toMatchObject({
       path: '/shows/1',
-      genres: ['Science fiction', 'Drama', 'Mystery'],
+      genres: ['Science Fiction', 'Drama', 'Mystery'],
       network: 'HBO',
       certification: 'TV-MA',
       fanart: 'https://media.trakt.tv/images/x/1/fanarts/medium/f.jpg.webp',

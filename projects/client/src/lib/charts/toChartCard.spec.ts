@@ -61,7 +61,7 @@ describe('toChartCard', () => {
       logo: 'https://media.trakt.tv/images/shows/000/204/167/logos/medium/def.png.webp',
       overview: 'A boy learns he is a wizard.',
       certification: 'TV-14',
-      genres: ['Science fiction', 'Drama'],
+      genres: ['Science Fiction', 'Drama'],
       network: 'HBO Max',
       trailer: 'https://youtube.com/watch?v=abc',
     });

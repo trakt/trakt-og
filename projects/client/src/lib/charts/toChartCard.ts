@@ -1,6 +1,7 @@
 import type { MovieResponse, ShowResponse } from '@trakt/api';
 import { countLabel } from '../utils/countLabel.ts';
 import { type DateOrder, formatDate } from '../utils/formatDate.ts';
+import { genreLabel } from '../utils/genreLabel.ts';
 import { imageUrl } from '../utils/imageUrl.ts';
 import type { ChartName } from './chartNames.ts';
 
@@ -40,15 +41,12 @@ export type ChartCard = {
   /** The hero's details. */
   overview?: string;
   certification?: string;
-  /** "Science fiction", "Drama". */
+  /** "Science Fiction", "Drama". */
   genres: string[];
   network?: string;
   /** A YouTube link. */
   trailer?: string;
 };
-
-// ponytail: discover's toPosterItem has the same helper; move it to lib/utils in a follow-up.
-const humanize = (slug: string) => slug.replaceAll('-', ' ').replace(/^\w/, (letter) => letter.toUpperCase());
 
 type Tag = ChartCard['tags'][number];
 
@@ -135,7 +133,7 @@ export function toChartCard(
     tags: released || chart === 'anticipated' ? tags(row, chart, order) : [],
     overview: media.overview?.trim() || undefined,
     certification: media.certification ?? undefined,
-    genres: (media.genres ?? []).map(humanize),
+    genres: (media.genres ?? []).map(genreLabel),
     network: 'show' in row ? (row.show.network ?? undefined) : undefined,
     trailer: media.trailer ?? undefined,
   };

@@ -1,3 +1,5 @@
+import { genreLabel } from '../../utils/genreLabel.ts';
+
 /** OG's history type dropdown. */
 export const historyTypes = {
   all: 'All',
@@ -11,70 +13,72 @@ export type HistoryType = keyof typeof historyTypes;
 export const isHistoryType = (value: string): value is HistoryType => Object.hasOwn(historyTypes, value);
 
 // OG's MOVIE_GENRES and TV_GENRES, the genres dropdown's options.
-const shared = {
-  action: 'Action',
-  adventure: 'Adventure',
-  animation: 'Animation',
-  anime: 'Anime',
-} as const;
+const labelled = (slugs: readonly string[]) => Object.fromEntries(slugs.map((slug) => [slug, genreLabel(slug)]));
 
-export const movieGenres: Readonly<Record<string, string>> = {
-  ...shared,
-  comedy: 'Comedy',
-  crime: 'Crime',
-  documentary: 'Documentary',
-  donghua: 'Donghua',
-  drama: 'Drama',
-  family: 'Family',
-  fantasy: 'Fantasy',
-  history: 'History',
-  holiday: 'Holiday',
-  horror: 'Horror',
-  music: 'Music',
-  musical: 'Musical',
-  mystery: 'Mystery',
-  romance: 'Romance',
-  'science-fiction': 'Science Fiction',
-  short: 'Short',
-  'sporting-event': 'Sporting Event',
-  superhero: 'Superhero',
-  suspense: 'Suspense',
-  thriller: 'Thriller',
-  war: 'War',
-  western: 'Western',
-};
+const shared = [
+  'action',
+  'adventure',
+  'animation',
+  'anime',
+] as const;
 
-export const tvGenres: Readonly<Record<string, string>> = {
+export const movieGenres: Readonly<Record<string, string>> = labelled([
   ...shared,
-  children: 'Children',
-  comedy: 'Comedy',
-  crime: 'Crime',
-  documentary: 'Documentary',
-  donghua: 'Donghua',
-  drama: 'Drama',
-  family: 'Family',
-  fantasy: 'Fantasy',
-  'game-show': 'Game Show',
-  history: 'History',
-  holiday: 'Holiday',
-  'home-and-garden': 'Home & Garden',
-  horror: 'Horror',
-  music: 'Music',
-  mystery: 'Mystery',
-  news: 'News',
-  reality: 'Reality',
-  romance: 'Romance',
-  'science-fiction': 'Science Fiction',
-  soap: 'Soap',
-  'special-interest': 'Special Interest',
-  'sporting-event': 'Sporting Event',
-  superhero: 'Superhero',
-  suspense: 'Suspense',
-  'talk-show': 'Talk Show',
-  thriller: 'Thriller',
-  war: 'War',
-  western: 'Western',
-};
+  'comedy',
+  'crime',
+  'documentary',
+  'donghua',
+  'drama',
+  'family',
+  'fantasy',
+  'history',
+  'holiday',
+  'horror',
+  'music',
+  'musical',
+  'mystery',
+  'romance',
+  'science-fiction',
+  'short',
+  'sporting-event',
+  'superhero',
+  'suspense',
+  'thriller',
+  'war',
+  'western',
+]);
+
+export const tvGenres: Readonly<Record<string, string>> = labelled([
+  ...shared,
+  'children',
+  'comedy',
+  'crime',
+  'documentary',
+  'donghua',
+  'drama',
+  'family',
+  'fantasy',
+  'game-show',
+  'history',
+  'holiday',
+  'home-and-garden',
+  'horror',
+  'music',
+  'mystery',
+  'news',
+  'reality',
+  'romance',
+  'science-fiction',
+  'soap',
+  'special-interest',
+  'sporting-event',
+  'superhero',
+  'suspense',
+  'talk-show',
+  'thriller',
+  'war',
+  'western',
+]);
 
 /** The genres a type filters by. All Types has none. */
 export const genresFor = (type: HistoryType) => type === 'movies' ? movieGenres : type === 'all' ? undefined : tvGenres;

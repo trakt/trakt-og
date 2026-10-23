@@ -11,6 +11,8 @@
   // Served only on og.trakt.tv. wrangler deploy creates the DNS record and cert (same pattern as the auth worker).
   "routes": [{ "pattern": "og.trakt.tv", "custom_domain": true }],
   "workers_dev": false,
+  // The about page's weekly summaries and GitHub numbers, written by .github/workflows/summaries.yml.
+  "kv_namespaces": [{ "binding": "ABOUT", "id": "REPLACE_WITH_THE_ABOUT_NAMESPACE_ID" }],
   "observability": {
     "enabled": true
   }

@@ -25,6 +25,11 @@ declare global {
         OG_ADMIN_GATE?: string;
         /** Klipy's API key, a Worker secret. Unset, comments can't pick GIFs. */
         KLIPY_API_KEY?: string;
+        /**
+         * The about page's KV namespace: weekly summaries and the repo's GitHub numbers, written by the summaries
+         * workflow. Typed by the one read the page makes, since Cloudflare's own types clash with the DOM's.
+         */
+        ABOUT?: { get(key: string, type: 'json'): Promise<unknown> };
       };
     }
   }

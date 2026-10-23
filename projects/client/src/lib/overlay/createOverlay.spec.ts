@@ -12,16 +12,33 @@ const T1 = '2026-02-01T00:00:00.000Z';
 const ids = (trakt: number) => ({ ids: { trakt } });
 
 const requests: string[] = [];
+const stamps = (...fields: string[]) => Object.fromEntries(fields.map((field) => [field, T0]));
 const activities = (droppedAt = T0) => ({
   all: T0,
-  movies: { watched_at: T0, collected_at: T0, rated_at: T0, watchlisted_at: T0, favorited_at: T0 },
-  episodes: { watched_at: T0, collected_at: T0, rated_at: T0 },
-  shows: { rated_at: T0, watchlisted_at: T0, favorited_at: T0, hidden_at: T0, dropped_at: droppedAt },
-  seasons: { rated_at: T0 },
-  lists: { updated_at: T0, liked_at: T0 },
-  watchlist: { updated_at: T0 },
-  favorites: { updated_at: T0 },
-  collaborations: { updated_at: T0 },
+  movies: stamps(
+    'watched_at',
+    'collected_at',
+    'rated_at',
+    'watchlisted_at',
+    'favorited_at',
+    'commented_at',
+    'paused_at',
+    'hidden_at',
+  ),
+  episodes: stamps('watched_at', 'collected_at', 'rated_at', 'watchlisted_at', 'commented_at', 'paused_at'),
+  shows: {
+    ...stamps('rated_at', 'watchlisted_at', 'favorited_at', 'commented_at', 'hidden_at'),
+    dropped_at: droppedAt,
+  },
+  seasons: stamps('rated_at', 'watchlisted_at', 'commented_at', 'hidden_at'),
+  comments: stamps('liked_at', 'reacted_at', 'blocked_at'),
+  lists: stamps('liked_at', 'reacted_at', 'updated_at', 'commented_at'),
+  watchlist: stamps('updated_at'),
+  favorites: stamps('updated_at'),
+  collaborations: stamps('updated_at'),
+  account: stamps('settings_at', 'followed_at', 'following_at', 'pending_at', 'requested_at'),
+  saved_filters: stamps('updated_at'),
+  notes: stamps('updated_at'),
 });
 
 const library = [
@@ -243,6 +260,22 @@ describe('createOverlay', () => {
       expect(requests).toEqual(['/sync/last_activities']);
       expect(overlay.state('show', 99).dropped).toBe(true);
       expect(overlay.state('movie', 1).watched).toBeUndefined();
+    });
+
+    it.each([
+      ['a body missing fields', () => HttpResponse.json({ all: T0, movies: { watched_at: T0 } })],
+      ['a body with a timestamp of the wrong type', () => HttpResponse.json({ ...activities(), all: 1 })],
+      ['a body that is not JSON', () => new HttpResponse('nope', { headers: { 'Content-Type': 'application/json' } })],
+    ])('should treat %s the same way', async (_, respond) => {
+      server.use(http.get(`${API}/sync/last_activities`, respond));
+      const { overlay, records } = setup({ sean: [droppedRecord('old', 99)] });
+
+      await overlay.start('sean');
+
+      expect(requests).toEqual(['/sync/last_activities']);
+      expect(overlay.state('show', 99).dropped).toBe(true);
+      expect(overlay.state('movie', 1).watched).toBeUndefined();
+      expect(records.get('sean')?.get('dropped')?.activity).toBe('old|dates-v1');
     });
   });
 

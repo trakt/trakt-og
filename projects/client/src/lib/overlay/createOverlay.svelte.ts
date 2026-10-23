@@ -3,7 +3,8 @@ import type { CollectionMetadata } from '../components/collection/CollectionMeta
 import { collectedCounts } from './collectedCounts.ts';
 import { collectedSources } from './collectedSources.ts';
 import type { LibrarySource } from '../components/collection/LibrarySource.ts';
-import type { LastActivitiesResponse } from '@trakt/api';
+import { contractSchema } from '../api/contractSchema.ts';
+import { lastActivitiesResponseSchema } from '@trakt/api';
 import type { OverlaySlices } from './OverlaySlices.ts';
 import type { OverlayStorage, SliceName, SliceRecord } from './overlayStorage.ts';
 import { type ApiGet, sliceSources } from './sliceSources.ts';
@@ -57,6 +58,8 @@ type CreateOverlayParams = {
 
 // The visibility recheck runs at most this often.
 const RECHECK_MS = 60_000;
+
+const activitiesSchema = contractSchema(lastActivitiesResponseSchema);
 
 const countEpisodes = (seasons: ReadonlyMap<number, ReadonlyMap<number, unknown>> | undefined) =>
   [...(seasons ?? new Map())].reduce((sum, [number, episodes]) => number === 0 ? sum : sum + episodes.size, 0);
@@ -221,7 +224,11 @@ export function createOverlay({ get, storage, now = Date.now }: CreateOverlayPar
     // Keep the cached slices as they are. The next visibility check retries.
     if (!response?.ok || user !== forUser) return;
 
-    const activities: LastActivitiesResponse = await response.json();
+    const parsed = activitiesSchema.safeParse(await response.json().catch(() => null));
+    // A body that doesn't match the contract is a failed check too.
+    if (!parsed.success) return;
+
+    const activities = parsed.data;
     const stale = staleSlices(known, activities);
     const fetchAll = (names: SliceName[]) =>
       Promise.allSettled(names.map((name) => fetchSlice(forUser, name, sliceSources[name].activity(activities))));

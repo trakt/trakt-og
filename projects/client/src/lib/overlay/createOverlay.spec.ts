@@ -222,6 +222,64 @@ describe('createOverlay', () => {
     });
   });
 
+  describe('episode lookups without a season', () => {
+    const seasonOf = { show: 2, number: 1 };
+
+    it('should match the with-season result for watched, collected and synced episodes', async () => {
+      server.use(
+        http.get(
+          `${API}/sync/collection/shows`,
+          () =>
+            HttpResponse.json([{
+              show: ids(2),
+              seasons: [{ number: 1, episodes: [{ number: 1, collected_at: T0, ids: { trakt: 101 } }] }],
+            }]),
+        ),
+      );
+      const { overlay } = setup();
+      await overlay.start('sean');
+
+      expect(overlay.state('episode', 102)).toEqual(overlay.state('episode', 102, seasonOf));
+      expect(overlay.state('episode', 101)).toEqual(overlay.state('episode', 101, { ...seasonOf, episode: 1 }));
+      expect(overlay.state('episode', 101).collectedAt).toBe(T0);
+      expect(overlay.state('episode', 103)).toEqual(overlay.state('episode', 103, seasonOf));
+      expect(overlay.state('episode', 201).collectionSources).toEqual(
+        overlay.state('episode', 201, seasonOf).collectionSources,
+      );
+      expect(overlay.state('episode', 201).collectionSources).toHaveLength(1);
+    });
+
+    it('should let the first match win when an id sits in two seasons', async () => {
+      const { overlay } = setup();
+      await overlay.start('sean');
+      overlay.patch('watchedShows', (shows) =>
+        new Map(shows)
+          .set(1, new Map([[1, new Map([[102, ['first']]])]]))
+          .set(3, new Map([[1, new Map([[102, ['second', 'second']]])]])));
+
+      expect(overlay.state('episode', 102)).toMatchObject({ plays: 2 });
+      expect(overlay.state('episode', 102, { show: 3, number: 1 })).toMatchObject({ plays: 2 });
+      expect(overlay.state('episode', 102).lastWatchedAt).toBe('d');
+    });
+
+    it('should index a patched slice again', async () => {
+      const { overlay } = setup();
+      await overlay.start('sean');
+      expect(overlay.state('episode', 500)).toMatchObject({ watched: false, plays: 0 });
+
+      const rollback = overlay.patch(
+        'watchedShows',
+        (shows) => new Map(shows).set(2, new Map([[1, new Map([[500, ['2026-03-01']]])]])),
+      );
+      expect(overlay.state('episode', 500)).toMatchObject({ watched: true, plays: 1 });
+      expect(overlay.state('episode', 102)).toMatchObject({ watched: false });
+
+      rollback();
+      expect(overlay.state('episode', 500)).toMatchObject({ watched: false });
+      expect(overlay.state('episode', 102)).toMatchObject({ watched: true });
+    });
+  });
+
   it('should fetch lists after every other slice', async () => {
     const { overlay } = setup();
 

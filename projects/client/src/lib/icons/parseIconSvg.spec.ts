@@ -9,6 +9,13 @@ describe('parseIconSvg', () => {
     expect(parseIconSvg(svg)).toEqual({ viewBox: '0 0 320 512', pathData: 'M0 448L256 448Z' });
   });
 
+  it('should return the same result for the same SVG', () => {
+    const svg = '<svg viewBox="0 0 8 8"><path d="M1 1Z"/></svg>';
+
+    expect(parseIconSvg(svg)).toEqual({ viewBox: '0 0 8 8', pathData: 'M1 1Z' });
+    expect(parseIconSvg(svg)).toBe(parseIconSvg(svg));
+  });
+
   it('should throw when the SVG has no path', () => {
     expect(() => parseIconSvg('<svg viewBox="0 0 1 1"></svg>')).toThrow('needs a viewBox and one path');
   });

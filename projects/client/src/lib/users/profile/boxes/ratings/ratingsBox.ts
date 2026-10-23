@@ -3,13 +3,11 @@ import type { BoxInput } from '../BoxInput.ts';
 import { boxMath } from '../boxMath.ts';
 import { defineProfileBox } from '../defineProfileBox.ts';
 import { fetchLatestTen } from '../fetchLatestTen.ts';
+import { ratingDistribution } from '../../ratingDistribution.ts';
 import RatingsBox from './RatingsBox.svelte';
 import type { RatingsView } from './RatingsView.ts';
 
 const MIN_RATINGS = 25;
-const SCORES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
-
-const counts = ({ ratings }: BoxInput['stats']) => SCORES.map((score) => ratings.distribution[score]);
 
 function comments({ movies, shows, seasons, episodes }: BoxInput['stats']) {
   return movies.comments + shows.comments + seasons.comments + episodes.comments;
@@ -35,21 +33,17 @@ export const ratingsBox = defineProfileBox({
     );
   },
   view: ({ stats }, latestTen): RatingsView | null => {
-    const values = counts(stats);
-    const rated = values.reduce((sum, count) => sum + count, 0);
-    if (stats.ratings.total < MIN_RATINGS || rated === 0) return null;
-    const top = Math.max(...values);
-    const mode = values.indexOf(top);
-    const average = values.reduce((sum, count, i) => sum + count * (i + 1), 0) / rated;
+    const { counts, total, average, most, mostGiven } = ratingDistribution(stats.ratings.distribution);
+    if (stats.ratings.total < MIN_RATINGS || total === 0) return null;
     return {
       total: `${stats.ratings.total.toLocaleString('en-US')} rated`,
       average: average.toFixed(1),
-      bars: values.map((count, i) => ({
-        height: (count / top) * 100,
-        mode: i === mode,
+      bars: counts.map((count, i) => ({
+        height: (count / most) * 100,
+        mode: i + 1 === mostGiven,
         title: `${i + 1}: ${countLabel(count, 'rating')}`,
       })),
-      chartLabel: `Ratings from 1 to 10, most often ${mode + 1}.`,
+      chartLabel: `Ratings from 1 to 10, most often ${mostGiven}.`,
       latestTen: latestTen ? { text: latestTen.title, href: latestTen.href } : null,
       comments: countLabel(comments(stats), 'comment'),
     };

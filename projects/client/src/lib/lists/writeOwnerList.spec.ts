@@ -36,8 +36,8 @@ describe('writeOwnerList', () => {
       body: '{"notes":""}',
     }]);
   });
-  it('should reject skipped ranks, incomplete writes, malformed responses and network failures', async () => {
-    for (const result of [{ updated: 1, skipped_ids: [2] }, { updated: 1, skipped_ids: [] }, {}, null]) {
+  it('should reject skipped ranks, malformed responses and network failures', async () => {
+    for (const result of [{ updated: 1, skipped_ids: [2] }, {}, null]) {
       const alerts = notify();
       const ok = await writeOwnerList({
         kind: 'watchlist',
@@ -52,15 +52,17 @@ describe('writeOwnerList', () => {
       expect(alerts.error).toHaveBeenCalledOnce();
     }
   });
-  it('should accept only a complete reorder', async () => {
-    expect(
-      await writeOwnerList({
-        kind: 'favorites',
-        change: { type: 'order', rank: [2, 1] },
-        request: async () => await Response.json({ updated: 2, skipped_ids: [] }),
-        notify: notify(),
-      }),
-    ).toBe(true);
+  it('should accept a reorder that skipped no id, whatever its updated count', async () => {
+    for (const updated of [2, 1]) {
+      expect(
+        await writeOwnerList({
+          kind: 'favorites',
+          change: { type: 'order', rank: [2, 1] },
+          request: async () => await Response.json({ updated, skipped_ids: [] }),
+          notify: notify(),
+        }),
+      ).toBe(true);
+    }
   });
   it('should group removals by media id and reject partial deletes', async () => {
     const request = vi.fn(async () =>

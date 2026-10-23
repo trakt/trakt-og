@@ -9,6 +9,7 @@ import { fetchListItemRefs } from './fetchListItemRefs.ts';
 import type { ListQuery } from './ListQuery.ts';
 import { moveListItem } from './moveListItem.ts';
 import { removeListItems } from './removeListItems.ts';
+import { REORDER_FAILED } from './reorderFailed.ts';
 import { reorderListItems } from './reorderListItems.ts';
 import { rerankListCards } from './rerankListCards.ts';
 import type { ListSort } from './resolveListSort.ts';
@@ -24,10 +25,6 @@ type Source = {
   sort: ListSort;
   query: ListQuery;
 };
-
-// OG's `saveListOrder` toast .
-const MOVE_FAILED =
-  'Doh! We ran into an error. Please try signing out of Trakt, clear your browser cache, and sign back in.';
 
 const request = (method: 'POST' | 'PUT') => (path: string, body: unknown) =>
   rawApiFetch({
@@ -195,7 +192,7 @@ export function createListManager(source: () => Source, isBlocked: () => boolean
           rank: next,
           request: request('POST'),
           notify: toast,
-          failure: MOVE_FAILED,
+          failure: REORDER_FAILED,
         });
         if (!ok && data === source().cards) {
           order = before.order;
@@ -230,7 +227,7 @@ export function createListManager(source: () => Source, isBlocked: () => boolean
             rank: all.filter((id) => id !== card.key),
             request: request('POST'),
             notify: toast,
-            failure: MOVE_FAILED,
+            failure: REORDER_FAILED,
           });
         }
         await invalidateAll();

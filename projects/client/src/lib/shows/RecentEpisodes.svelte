@@ -29,7 +29,7 @@ const cards = $derived(next ? [next, ...aired] : aired);
   {...episode}
   framed
   userRating={state.rating}
-  icons={{ ratingTarget: { type: 'episode', id, title: episode.title }, collectionTarget: { type: 'episode', id, title: episode.title, season: collectionContext }, fill: quickIconFill({ state, datePreferences }), rating, released, listLabel: 'Add to list', watchNow: 'play' }}
+  icons={{ ratingTarget: { type: 'episode', id, title: episode.title, season: collectionContext }, watchTarget: { type: 'episode', id, title: episode.title, season: collectionContext }, collectionTarget: { type: 'episode', id, title: episode.title, season: collectionContext }, fill: quickIconFill({ state, datePreferences }), rating, released, listLabel: 'Add to list', watchNow: 'play' }}
 />
 {/snippet}
 

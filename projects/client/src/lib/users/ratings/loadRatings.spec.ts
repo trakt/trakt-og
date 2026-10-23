@@ -60,10 +60,18 @@ describe('loadRatings', () => {
     await load('seasons/all');
     expect(new URL(seen.at(0)?.url ?? '').pathname).toBe('/users/tester/ratings/seasons');
   });
-  it('should retry private profiles with the token and leave locked profiles empty', async () => {
-    await load('', '', { isPrivate: true }, 'abc');
-    expect(seen.map((r) => r.headers.get('authorization'))).toEqual([null, 'Bearer abc']);
-    expect((await load('', '', { isLocked: true })).cards).toEqual([]);
+  it('should read a private profile the viewer may see with the token, once', async () => {
+    server.use(http.get(/^https:\/\/apiz\.trakt\.tv\/users\/tester\/ratings/, ({ request }) => {
+      seen.push(request);
+      if (!request.headers.has('authorization')) return new HttpResponse(null, { status: 401 });
+      return HttpResponse.json(rows.slice(0, 3), { headers: { 'x-pagination-item-count': '3' } });
+    }));
+    expect((await load('', '', { isPrivate: true }, 'abc')).cards).toHaveLength(3);
+    expect(seen.flatMap((r) => r.headers.get('authorization') ?? [])).toEqual(['Bearer abc']);
+  });
+  it('should leave a locked profile empty and never send the token', async () => {
+    expect((await load('', '', { isPrivate: true, isLocked: true }, 'abc')).cards).toEqual([]);
+    expect(seen.every((r) => !r.headers.has('authorization'))).toBe(true);
   });
   it('should reject malformed proxy bodies and surface API errors', async () => {
     server.use(http.get(/ratings/, () => HttpResponse.json([{ broken: true }], { headers: { 'x-runtime': '0.2' } })));

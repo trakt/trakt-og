@@ -106,10 +106,35 @@ describe('loadHistory', () => {
     });
   });
 
-  it('should read a private profile again with the token, and show only the frame when locked', async () => {
-    await load({ token: 'viewer-token' }, { isPrivate: true });
-    expect(seen.map((request) => request.headers.get('authorization'))).toEqual([null, 'Bearer viewer-token']);
-    expect((await load({}, { isLocked: true })).days).toEqual([]);
+  describe('privacy', () => {
+    const tokens = () => seen.flatMap((request) => request.headers.get('authorization') ?? []);
+    const privateHistory = () =>
+      server.use(http.get(/^https:\/\/apiz\.trakt\.tv\/users\/tester\/history/, ({ request }) => {
+        seen.push(request);
+        if (!request.headers.has('authorization')) return new HttpResponse(null, { status: 401 });
+        return HttpResponse.json([play], { headers: pages });
+      }));
+
+    it('should read a private profile the viewer may see with the token, once', async () => {
+      privateHistory();
+      const result = await load({ token: 'viewer-token' }, { isPrivate: true });
+      expect(result.days).toHaveLength(1);
+      expect(tokens()).toEqual(['Bearer viewer-token']);
+    });
+
+    it('should make only the token read once a bare date has waited on the frame', async () => {
+      privateHistory();
+      await load({ token: 'viewer-token', query: '?start_at=2026-09-01' }, { isPrivate: true });
+      expect(seen.map((request) => request.headers.get('authorization'))).toEqual(['Bearer viewer-token']);
+    });
+
+    it('should show only the frame of a locked profile and never send the token', async () => {
+      expect((await load({ token: 'viewer-token' }, { isPrivate: true, isLocked: true })).days).toEqual([]);
+      expect(tokens()).toEqual([]);
+      seen.length = 0;
+      await load({ token: 'viewer-token', query: '?start_at=2026-09-01' }, { isPrivate: true, isLocked: true });
+      expect(seen).toEqual([]);
+    });
   });
 
   it('should report missing items and bad responses', async () => {

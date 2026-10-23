@@ -5,6 +5,7 @@ import { rawApiFetch } from '../../api/rawApiFetch.ts';
 import { type FadeHide, parseFadeHide } from '../../components/filters/fadeHide.ts';
 import type { DatePreferences } from '../../settings/DatePreferences.ts';
 import type { ProfileUser } from '../ProfileUser.ts';
+import { readProfileTab } from '../readProfileTab.ts';
 import { toHistoryDays } from '../history/toHistoryCard.ts';
 import { ratingQuery } from './ratingQuery.ts';
 import { ratingRowsSchema } from './ratingRowsSchema.ts';
@@ -64,22 +65,22 @@ async function read({ fetch, id, token, query, current, limit }: {
   };
 }
 
-/** Public ratings alongside the profile frame. Private profiles retry with the viewer token; SSR never refreshes. */
+/**
+ * One read per `readProfileTab`: a public profile's ratings go without the token alongside the frame's load, and a
+ * private profile the viewer may see is read with it. SSR never refreshes.
+ */
 export async function loadRatings({ fetch, locals, params, url, cookies, parent }: Params) {
   const query = ratingQuery(params.type ? `${params.type}/${params.filters ?? ''}` : params.filters);
   const current = positiveInt(url.searchParams.get('page'), 1);
   const limit = Math.min(positiveInt(url.searchParams.get('limit'), 60), 250);
-  const request = { fetch, id: params.id, query, current, limit };
-  const fetchRatings = (token: string | null) =>
-    read({ ...request, token }).catch(() => ({
-      status: 502,
-      body: null,
-      headers: new Headers(),
-    }));
-  const [anonymous, { profile, isSelf, datePreferences }] = await Promise.all([
-    fetchRatings(null),
-    parent(),
-  ]);
+  const request = { id: params.id, query, current, limit };
+  const { frame: { isSelf, datePreferences }, result } = await readProfileTab({
+    fetch,
+    token: locals.token,
+    frame: parent(),
+    read: (credentials) =>
+      read({ ...request, ...credentials }).catch(() => ({ status: 502, body: null, headers: new Headers() })),
+  });
   const shell = {
     query,
     isSelf,
@@ -87,11 +88,9 @@ export async function loadRatings({ fetch, locals, params, url, cookies, parent 
     fadeHide: { fade: parseFadeHide(cookies.get('filter-fade-ratings')), hide: [] } satisfies FadeHide,
     dividers: cookies.get('filter-hide-dividers') !== '1',
   };
-  if (profile.isLocked) {
+  if (!result) {
     return { ...shell, cards: [] as RatingCard[], days: [], total: 0, page: extractPageMeta(new Headers(), current) };
   }
-  const viewer = profile.isPrivate && locals.token ? await fetchRatings(locals.token) : null;
-  const result = viewer?.status === 200 ? viewer : anonymous;
   if (result.status === 404) error(404, 'Page Not Found');
   if (result.status !== 200) error(502, 'Trakt is having trouble loading these ratings.');
   const parsed = ratingRowsSchema.safeParse(result.body);

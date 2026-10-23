@@ -7,6 +7,7 @@ import { toUserComment } from '../comments/toUserComment.ts';
 import type { UserCommentRow } from '../comments/UserCommentRow.ts';
 import { fetchRecentHistory } from '../fetchRecentHistory.ts';
 import type { ProfileUser } from '../ProfileUser.ts';
+import { readProfileTab } from '../readProfileTab.ts';
 import { withShowPosters } from '../withShowPosters.ts';
 import { boxExtraLoader } from './boxes/boxExtraLoader.ts';
 import type { BoxFrame } from './boxes/BoxFrame.ts';
@@ -50,6 +51,13 @@ const fetchFavorites = (client: Client, id: string, sort: FavoritesSort) =>
     query: { extended: 'full,images', limit: 3 },
   });
 
+/** Your own panel settings on your own profile; nobody else's can be known. */
+const profilePrefs = ({ isSelf, settings }: Pick<Frame, 'isSelf' | 'settings'>) =>
+  isSelf ? toPanelSettings(settings).profile : null;
+
+const favoritesSortOf = (frame: Pick<Frame, 'isSelf' | 'settings'>): FavoritesSort =>
+  profilePrefs(frame)?.favorites ?? RANDOM;
+
 async function fetchSections(
   { fetch, token }: { fetch: typeof globalThis.fetch; token?: string | null },
   id: string,
@@ -84,37 +92,41 @@ async function fetchSections(
   };
 }
 
-/** Your saved favorites order on your own profile; everyone else's favorites come in random order. */
-const favoritesSortOf = (isSelf: boolean, settings: unknown): FavoritesSort =>
-  (isSelf ? toPanelSettings(settings).profile.favorites : null) ?? RANDOM;
-
 /**
  * The profile page under the frame: the stat boxes or the welcome hero, favorites, the
- * recently watched rows, the genre and ratings charts, the most watched columns and the newest comments. Public reads
- * go without the token and alongside the frame's load; a private profile the viewer may see is read again with it.
- * On your own profile your saved favorites sort, most watched sorts and default tabs apply; favorites in a
- * saved order are read again with your token, since the sort may be about you (Watched or Collected Date).
+ * recently watched rows, the genre and ratings charts, the most watched columns and the newest comments, read once per
+ * `readProfileTab`: a public profile's sections go without the token alongside the frame's load, and a private profile
+ * the viewer may see is read with it. On your own profile your saved favorites sort, most watched sorts and default
+ * tabs apply; favorites in a saved order are read again with your token, since the sort may be about you (Watched or
+ * Collected Date).
  */
 export async function loadProfile({ fetch, locals, params, parent, now = new Date() }: Params) {
   // The boxes' extra requests start as soon as the frame says which ones could pay off, alongside the sections.
   const frame = parent();
   const token = locals.token;
-  // Your own favorites in a saved order only need the frame, so they don't wait for the public sections.
+  // Your own favorites in a saved order only need the frame, so they don't wait for the sections.
   const ownFavoritesRead = frame.then(({ profile, isSelf, settings }) => {
-    const sort = favoritesSortOf(isSelf, settings);
+    const sort = favoritesSortOf({ isSelf, settings });
     const saved = sort.sort_by !== RANDOM.sort_by || sort.sort_how !== RANDOM.sort_how;
     return saved && !profile.isLocked && !profile.isPrivate && token
       ? fetchFavorites(api({ fetch, token }), params.id, sort)
       : null;
   });
-  const [anonymous, { profile, stats, isSelf, datePreferences, settings }, boxes, ownFavorites] = await Promise.all([
-    fetchSections({ fetch }, params.id, now),
-    frame,
+  const [tab, boxes, ownFavorites] = await Promise.all([
+    readProfileTab({
+      fetch,
+      token,
+      frame,
+      read: ({ fetch, token, frame: known }) =>
+        fetchSections({ fetch, token }, params.id, now, token && known ? favoritesSortOf(known) : RANDOM),
+    }),
     frame.then((data) => startBoxes(data, { fetch, token, id: params.id })),
     ownFavoritesRead,
   ]);
+  const { profile, stats, isSelf, datePreferences, settings } = tab.frame;
+  const sections = tab.result;
 
-  if (profile.isLocked) {
+  if (!sections) {
     return {
       boxes: null,
       welcome: false,
@@ -127,10 +139,7 @@ export async function loadProfile({ fetch, locals, params, parent, now = new Dat
     };
   }
 
-  const prefs = isSelf ? toPanelSettings(settings).profile : null;
-  const sections = profile.isPrivate
-    ? await fetchSections({ fetch, token }, params.id, now, favoritesSortOf(isSelf, settings))
-    : anonymous;
+  const prefs = profilePrefs({ isSelf, settings });
   const episodes = sections.episodes.status === 200 ? sections.episodes.body : [];
   const movies = sections.movies.status === 200 ? sections.movies.body : [];
   // A saved order the worker refused, or a stale token, keeps the random ones.

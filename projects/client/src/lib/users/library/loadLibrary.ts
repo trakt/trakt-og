@@ -8,6 +8,7 @@ import { historyFilters } from '../history/historyFilters.ts';
 import { type HistoryType, isHistoryType } from '../history/historyTypes.ts';
 import { toHistoryDays } from '../history/toHistoryCard.ts';
 import type { ProfileUser } from '../ProfileUser.ts';
+import { readProfileTab } from '../readProfileTab.ts';
 import { withShowPosters } from '../withShowPosters.ts';
 import { libraryRowsSchema, libraryShowsSchema } from './libraryRowsSchema.ts';
 import { apiSortHow, type LibrarySort, librarySort } from './librarySort.ts';
@@ -70,8 +71,9 @@ async function fetchPage(
 
 /**
  * `/users/:id/library(/:type)(/:sort_by/:sort_how)`: owned items newest first, under
- * day dividers on Added Date. Public reads go without the token alongside the frame's load; a private profile is read
- * again with it, since the worker shows a private library to its owner only.
+ * day dividers on Added Date. One read per `readProfileTab`: a public profile's goes without the token alongside the
+ * frame's load, and a private profile the viewer may see is read with it (the worker shows a private library to its
+ * owner only).
  */
 export async function loadLibrary({ fetch, locals, params, url, cookies, parent }: Params) {
   const type: HistoryType = params.type && isHistoryType(params.type) ? params.type : 'all';
@@ -86,18 +88,17 @@ export async function loadLibrary({ fetch, locals, params, url, cookies, parent 
   // A bare date is read in the viewer's zone, which waits on the layout. Instants and no range don't.
   const dates = [url.searchParams.get('start_at'), url.searchParams.get('end_at')].filter(Boolean);
   const bare = dates.some((value) => !/(Z|[+-]\d\d:?\d\d)$/i.test(value ?? ''));
-  const { startAt, endAt } = historyFilters(
-    url.searchParams,
-    type,
-    bare ? (await layout).datePreferences.timeZone : 'UTC',
-  );
+  const known = bare ? await layout : null;
+  const { startAt, endAt } = historyFilters(url.searchParams, type, known?.datePreferences.timeZone ?? 'UTC');
   const range: Range = { ...(startAt && { startAt }), ...(endAt && { endAt }) };
 
-  const request = { fetch, base, type, sort, source, range, current, limit };
-  const [anonymous, { profile, isSelf, datePreferences }] = await Promise.all([
-    fetchPage({ ...request, token: null }),
-    layout,
-  ]);
+  const request = { base, type, sort, source, range, current, limit };
+  const { frame: { isSelf, datePreferences }, result } = await readProfileTab({
+    fetch,
+    token: locals.token,
+    frame: known ?? layout,
+    read: ({ fetch, token }) => fetchPage({ ...request, fetch, token }),
+  });
 
   const shell = {
     type,
@@ -116,11 +117,7 @@ export async function loadLibrary({ fetch, locals, params, url, cookies, parent 
     total: 0,
     page: extractPageMeta(new Headers(), current),
   };
-  if (profile.isLocked) return empty;
-
-  // A token that stopped working keeps the anonymous read: the server never refreshes, the browser does.
-  const viewer = profile.isPrivate && locals.token ? await fetchPage({ ...request, token: locals.token }) : null;
-  const result = viewer?.status === 200 ? viewer : anonymous;
+  if (!result) return empty;
   if (result.status === 404) error(404, 'Page Not Found');
   if (result.status !== 200) error(502, 'Trakt is having trouble loading this library.');
 

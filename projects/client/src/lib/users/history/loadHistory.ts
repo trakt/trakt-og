@@ -7,6 +7,7 @@ import { rawApiFetch } from '../../api/rawApiFetch.ts';
 import { type FadeHide, parseFadeHide } from '../../components/filters/fadeHide.ts';
 import type { DatePreferences } from '../../settings/DatePreferences.ts';
 import type { ProfileUser } from '../ProfileUser.ts';
+import { readProfileTab } from '../readProfileTab.ts';
 import { withShowPosters } from '../withShowPosters.ts';
 import { type HistoryCounts, historyCounts } from './historyCounts.ts';
 import { type HistoryFilters, historyFilters } from './historyFilters.ts';
@@ -140,8 +141,8 @@ async function fetchPage(
 
 /**
  * `/users/:id/history(/:type)`: newest plays first, as poster cards under day dividers.
- * Public reads go without the token alongside the frame's load; a private profile the viewer may see is read again
- * with it.
+ * One read per `readProfileTab`: a public profile's goes without the token alongside the frame's load, and a private
+ * profile the viewer may see is read with it.
  */
 export async function loadHistory({ fetch, locals, params, url, cookies, parent }: Params) {
   const type: HistoryType = params.type && isHistoryType(params.type) ? params.type : 'all';
@@ -155,20 +156,24 @@ export async function loadHistory({ fetch, locals, params, url, cookies, parent 
   // A bare date is read in the viewer's zone, which waits on the layout. Instants and no range don't.
   const range = [url.searchParams.get('start_at'), url.searchParams.get('end_at')].filter(Boolean);
   const bare = range.some((value) => !/(Z|[+-]\d\d:?\d\d)$/i.test(value ?? ''));
-  const filters = historyFilters(url.searchParams, type, bare ? (await layout).datePreferences.timeZone : 'UTC');
+  const known = bare ? await layout : null;
+  const filters = historyFilters(url.searchParams, type, known?.datePreferences.timeZone ?? 'UTC');
 
-  const request = { fetch, base, type, filters, current, limit };
-  const [anonymous, { profile, stats, user, datePreferences }] = await Promise.all([
-    fetchPage({ ...request, token: null }),
-    layout,
-  ]);
+  const request = { base, type, filters, current, limit };
+  const { frame: { stats, user, datePreferences }, result } = await readProfileTab({
+    fetch,
+    token: locals.token,
+    frame: known ?? layout,
+    read: ({ fetch, token }) => fetchPage({ ...request, fetch, token }),
+  });
   // OG sent signed-out visitors past page 1 to sign in.
   if (current > 1 && !user) signInRedirect(url);
 
   const fadeHide: FadeHide = { fade: parseFadeHide(cookies.get('filter-fade-history')), hide: [] };
   const dividers = cookies.get('filter-hide-dividers') !== '1';
   const shell = { type, filters, fadeHide, dividers, datePreferences };
-  if (profile.isLocked) {
+  // A locked profile shows the frame only.
+  if (!result) {
     const counts: HistoryCounts = {};
     return {
       ...shell,
@@ -180,10 +185,6 @@ export async function loadHistory({ fetch, locals, params, url, cookies, parent 
     };
   }
 
-  // A private profile shows its plays to the owner and approved followers only. A token that stopped working keeps
-  // the anonymous read: the server never refreshes, the browser does.
-  const viewer = profile.isPrivate && locals.token ? await fetchPage({ ...request, token: locals.token }) : null;
-  const result = viewer?.status === 200 ? viewer : anonymous;
   if (result.status === 404) error(404, 'Page Not Found');
   if (result.status !== 200) error(502, 'Trakt is having trouble loading this history.');
 

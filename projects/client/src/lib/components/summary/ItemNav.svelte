@@ -26,7 +26,6 @@ interface Props {
 const { previous, next, up }: Props = $props();
 
 function onkeydown(event: KeyboardEvent) {
-  if (document.querySelector('dialog[open], [popover]:popover-open')) return;
   if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
   if (event.target instanceof HTMLElement && event.target.closest('input, textarea, select, [contenteditable]')) return;
 
@@ -38,6 +37,7 @@ function onkeydown(event: KeyboardEvent) {
     u: up,
   }[event.key];
   if (!href) return;
+  if (document.querySelector('dialog[open], [popover]:popover-open')) return;
 
   event.preventDefault();
   // eslint-disable-next-line svelte/no-navigation-without-resolve -- hrefs are built by the page from API slugs
@@ -46,10 +46,11 @@ function onkeydown(event: KeyboardEvent) {
 let touch: { x: number; y: number } | null = null;
 function ontouchstart(event: TouchEvent) {
   touch = null;
-  if (event.touches.length !== 1 || document.querySelector('dialog[open], [popover]:popover-open')) return;
+  if (event.touches.length !== 1) return;
   if (
     event.target instanceof HTMLElement && event.target.closest('a, button, input, textarea, select, [contenteditable]')
   ) return;
+  if (document.querySelector('dialog[open], [popover]:popover-open')) return;
   const point = event.touches.item(0);
   if (point) touch = { x: point.clientX, y: point.clientY };
 }

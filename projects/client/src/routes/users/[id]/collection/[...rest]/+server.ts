@@ -1,6 +1,6 @@
-import { redirect } from '@sveltejs/kit';
+import { legacyRedirect } from '../../../../../lib/routing/legacyRedirect.ts';
 
 /** OG's deprecated `/users/:id/collection(/...)` rendered the library. */
 export function GET({ params, url }) {
-  redirect(302, `/users/${params.id}/library${params.rest ? `/${params.rest}` : ''}${url.search}`);
+  legacyRedirect(302, ['users', params.id, 'library', ...(params.rest ? params.rest.split('/') : [])], url);
 }

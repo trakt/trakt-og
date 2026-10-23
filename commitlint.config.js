@@ -32,6 +32,7 @@ export default {
       'layout',
       'tokens',
       // areas
+      'about',
       'calendars',
       'charts',
       'comments',

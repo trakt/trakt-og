@@ -25,6 +25,8 @@ declare global {
         OG_ADMIN_GATE?: string;
         /** Klipy's API key, a Worker secret. Unset, comments can't pick GIFs. */
         KLIPY_API_KEY?: string;
+        /** A read-only GitHub token, a Worker secret, for the about page's GitHub reads. Unset, it reads without one. */
+        GITHUB_TOKEN?: string;
       };
     }
   }

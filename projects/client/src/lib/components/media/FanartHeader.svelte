@@ -61,6 +61,10 @@ const loadScreenshot: Attachment<HTMLElement> = () => {
 const backdrop = $derived(loadedScreenshot ?? image);
 </script>
 
+<svelte:head>
+  {#if image}<link rel="preload" as="image" href={image} fetchpriority="high" />{/if}
+</svelte:head>
+
 <section
   class={['fanart-header', { slim, dropped, 'with-stats': stats }]}
   style:--stats-height={statsHeight}

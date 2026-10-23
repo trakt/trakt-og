@@ -1,13 +1,22 @@
 #!/usr/bin/env bash
 # Scan tracked files, branch commit messages and an optional public PR body.
+# `leak-check --text <file>` scans only that file's text, for generated copy that's about to be published.
 # Exact-line exceptions use repository-relative path, a tab, then the complete line.
 set -euo pipefail
-[ "$#" -le 1 ] || { echo 'usage: leak-check [pr]' >&2; exit 1; }
-pr="${1:-}"
+usage() { echo 'usage: leak-check [pr] | leak-check --text <file>' >&2; exit 1; }
+text=''
+if [ "${1:-}" = --text ]; then
+  [ "$#" = 2 ] || usage
+  text=$(realpath "$2")
+  pr=''
+else
+  [ "$#" -le 1 ] || usage
+  pr="${1:-}"
+fi
 [ -z "$pr" ] || [[ "$pr" =~ ^[0-9]+$ ]] || { echo 'leak-check: PR number must be digits' >&2; exit 1; }
 root=$(git rev-parse --show-toplevel)
 cd "$root"
-python3 - "$pr" <<'PY'
+python3 - "$pr" "$text" <<'PY'
 import pathlib
 import re
 import subprocess
@@ -30,6 +39,7 @@ exceptions = set(exception_file.read_text().splitlines())
 if any('\t' not in entry or not entry.split('\t', 1)[0] for entry in exceptions):
     sys.exit('leak-check: exact-line exceptions must use path, tab, complete line')
 hits = 0
+text = sys.argv[2]
 
 def scan(name, content):
     global hits
@@ -41,6 +51,11 @@ def scan(name, content):
                 continue
             print(f'{name}:{number}:{match.group()}')
             hits += 1
+
+if text:
+    scan('text', pathlib.Path(text).read_text())
+    print(f'leak-check: {hits} hits in the text')
+    sys.exit(1 if hits else 0)
 
 files = subprocess.check_output(['git', 'ls-files', '-z']).decode().split('\0')
 for name in files:

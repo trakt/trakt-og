@@ -868,8 +868,14 @@
 
   /* Header and footer */
   --font-size-nav: 16px; /* header links, buttons, search field */
-  --font-size-footer: 13px;
-  --font-size-footer-small: 11px; /* copyright */
+  --font-size-footer-small: 12px; /* copyright */
+  --line-height-footer-copyright: 1.35;
+  --footer-padding: 18px var(--gutter) 20px;
+  --footer-gap: 8px; /* between the links and the copyright */
+  --footer-social-gap: 6px;
+  --footer-mark-size: 30px;
+  --footer-mark-gap: 12px;
+  --opacity-footer-mark: 0.5;
   --radius-sm: var(--radius-object); /* header buttons */
   --radius-lg: var(--radius-container); /* search field, header menus */
   --color-header-bg: rgb(0 0 0 / 0.5); /* OG's bar, still used by the official list header */
@@ -1680,6 +1686,10 @@
   --color-site-twitter: #1da1f2;
   --color-site-facebook: #1877f2;
   --color-site-instagram: #e4405f;
+  --color-site-google-play: #01d277;
+  --color-site-reddit: #ff4500;
+  --color-site-youtube: #f00;
+  --color-site-status: #3fb950; /* all systems go */
 
   /* Profile charts: the genre band, the ratings chart and its tooltip, and the most watched columns
       */

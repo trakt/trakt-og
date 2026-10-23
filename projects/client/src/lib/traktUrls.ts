@@ -21,8 +21,9 @@ export const traktUrls = {
   ripppleAppStore: 'https://apps.apple.com/app/id6758765611',
   appStore: 'https://apps.apple.com/us/app/trakt/id1514873602', /* OG's /a/trakt-ios and /a/trakt-tvos */
   googlePlay: 'https://play.google.com/store/apps/details?id=tv.trakt.trakt', /* /a/trakt-android(-tv) */
-  forums: 'https://forums.trakt.tv/c/trakt',
+  support: 'https://support.trakt.tv',
   reddit: 'https://www.reddit.com/r/trakt',
+  youtube: 'https://www.youtube.com/@trakt-tv',
   github: 'https://github.com/trakt/trakt-og',
   webRepo: 'https://github.com/trakt/trakt-web', /* v3 web, which og forked */
   mastodon: 'https://ruby.social/@trakt',

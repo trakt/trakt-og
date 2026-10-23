@@ -248,8 +248,17 @@ async function close() {
   }
 
   .next & {
-    box-shadow: inset 0 0 0 2px var(--brand-primary);
-    animation: wait 1.6s ease-in-out infinite;
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      box-shadow: inset 0 0 0 2px var(--brand-primary);
+      pointer-events: none;
+      animation: wait 1.6s ease-in-out infinite;
+    }
   }
 }
 
@@ -307,12 +316,13 @@ async function close() {
 
 @keyframes wait {
   50% {
-    box-shadow: inset 0 0 0 2px transparent;
+    opacity: 0;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .art {
+  .art,
+  .art::after {
     animation: none !important;
   }
 

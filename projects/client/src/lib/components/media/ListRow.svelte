@@ -116,6 +116,7 @@ const relation = $derived(
 );
 
 let reportOpen = $state(false);
+let reportMounted = $state(false);
 const reportScope = $derived(`${likeTarget?.id}:${likeTarget?.viewer}`);
 $effect(() => {
   void reportScope;
@@ -154,7 +155,7 @@ const blocks = $derived(parseComment(description?.trim() ?? ''));
   </Tooltip>
 {/snippet}
 
-{#if likeTarget && actions?.report && !actions.report.onclick}<ReportDialog bind:open={reportOpen}
+{#if reportMounted && likeTarget && actions?.report && !actions.report.onclick}<ReportDialog bind:open={reportOpen}
   target={{ type: 'list', id: likeTarget.id, ownerSlug: likeTarget.ownerSlug, title: name, href,
     posters: posters.flatMap(({ image }) => (image ? [image] : [])).slice(0, 5) }} />{/if}
 
@@ -221,7 +222,7 @@ const blocks = $derived(parseComment(description?.trim() ?? ''));
         </div>
         {#if actions}
           <div class="tools">
-            {#if actions.report}{@render action('Report List', flag, 'report', actions.report.onclick ? actions.report : { onclick: likeTarget?.viewer ? () => { reportOpen = true; } : undefined })}{/if}
+            {#if actions.report}{@render action('Report List', flag, 'report', actions.report.onclick ? actions.report : { onclick: likeTarget?.viewer ? () => { reportMounted = true; reportOpen = true; } : undefined })}{/if}
             {#if actions.edit}{@render action('Edit', pencil, 'edit', actions.edit)}{/if}
             {#if actions.delete?.onclick}<span class="delete" style:--confirm-icon-size="var(--font-size-list-row-action)"><ManageConfirm name="delete" svg={deleteIcon} label="Delete" yes="Yes, delete it!" warning={actions.delete.warning} disabled={actions.delete.busy} onconfirm={actions.delete.onclick}>Delete this list?</ManageConfirm></span>{:else if actions.delete}{@render action('Delete', deleteIcon, 'delete', actions.delete)}{/if}
             {#if actions.leave}{@render action('Stop collaborating on this list', userXmark, 'leave', actions.leave)}{/if}

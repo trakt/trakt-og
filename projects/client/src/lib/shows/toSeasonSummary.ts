@@ -1,7 +1,7 @@
 import type { EpisodeResponse, EpisodeStatsResponse, RatingsResponse, SeasonsResponse, ShowResponse } from '@trakt/api';
 import type { z } from 'zod/v4';
 import { iconLinks } from '../components/summary/iconLinks.ts';
-import { countryName, languageName, titleize } from '../components/summary/names.ts';
+import { countryName, languageName } from '../components/summary/names.ts';
 import { networkSlug } from '../utils/networkSlug.ts';
 import { toCastMembers } from '../components/summary/toCastMembers.ts';
 import type { DatePreferences } from '../settings/DatePreferences.ts';
@@ -14,6 +14,7 @@ import type { seasonPeopleSchema } from './seasonPeopleSchema.ts';
 import { toShowEpisodes } from './toShowEpisodes.ts';
 import { toCrewGroups } from '../components/summary/toCrewGroups.ts';
 import { seasonName } from '../utils/seasonName.ts';
+import { genreLabel } from '../utils/genreLabel.ts';
 
 interface Params {
   show: ShowResponse;
@@ -98,7 +99,7 @@ export function toSeasonSummary(params: Params) {
         : undefined,
       country: show.country ? { name: countryName(show.country), href: popular('countries', show.country) } : undefined,
       languages: (show.languages ?? []).map((code) => ({ name: languageName(code), href: popular('languages', code) })),
-      genres: (show.genres ?? []).map((genre) => ({ name: titleize(genre), href: popular('genres', genre) })),
+      genres: (show.genres ?? []).map((genre) => ({ name: genreLabel(genre), href: popular('genres', genre) })),
     },
     links: [
       ...(show.ids.imdb

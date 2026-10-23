@@ -18,6 +18,7 @@ import RangeSlider from '$lib/components/filters/RangeSlider.svelte';
 import { filterRanges } from '$lib/components/filters/filterRanges';
 import PillTabs from '$lib/components/tabs/PillTabs.svelte';
 import LinkButton from '$lib/components/button/LinkButton.svelte';
+import DemoSection from '$lib/design/DemoSection.svelte';
 
 let filters = $state<FadeHide>({ fade: [], hide: [] });
 let current = $state(1);
@@ -53,124 +54,107 @@ function showOverlay() {
   overlay = true;
   setTimeout(() => (overlay = false), 2000);
 }
-
-let theme = $state('light');
-$effect(() => {
-  document.documentElement.dataset.theme = theme;
-  return () => delete document.documentElement.dataset.theme;
-});
 </script>
 
-<svelte:head>
-  <title>Controls · og design system</title>
-</svelte:head>
+<DemoSection title="Media fade and hide" note="The menu fades or hides watched items; the poster fades as you pick.">
+  <div class="media-filters">
+    <FadeHideMenu value={filters} options={fadeHideOptions} cookie="design-media" variant="default"
+      onchange={(next) => (filters = next)} />
+    <PosterCard title="Season 1" href="/shows/breaking-bad/seasons/1" faded={filters.fade.includes('watched')}
+      subtitles={['7 episodes']} />
+    <ActionButtons history={false} library={false} comment={false}
+      progress={{ watched: 1, collected: 0, visible: 3, total: 3 }} />
+  </div>
+</DemoSection>
 
-<main>
-  <section>
-    <div class="container">
-      <h1>Controls</h1>
-      <label>
-        Theme
-        <select bind:value={theme}>
-          <option value="light">Light (OG default)</option>
-          <option value="dark">Dark (dark knight)</option>
-        </select>
-      </label>
+<DemoSection title="Link buttons" note="Primary, external and outline, on the home page's ground.">
+  <div class="link-buttons" id="link-buttons">
+    <LinkButton href="#link-buttons">Primary</LinkButton>
+    <LinkButton href="https://github.com/trakt/trakt-og/issues/new?labels=bug" external>Open a bug report</LinkButton>
+    <LinkButton href="https://developer.trakt.tv" variant="outline" external>Developer portal</LinkButton>
+  </div>
+</DemoSection>
 
-      <h2>Media fade and hide</h2>
-      <div class="block media-filters">
-        <FadeHideMenu value={filters} options={fadeHideOptions} cookie="design-media" variant="default"
-          onchange={(next) => (filters = next)} />
-        <PosterCard title="Season 1" href="/shows/breaking-bad/seasons/1" faded={filters.fade.includes('watched')}
-          subtitles={['7 episodes']} />
-        <ActionButtons history={false} library={false} comment={false}
-          progress={{ watched: 1, collected: 0, visible: 3, total: 3 }} />
-      </div>
-      <h2>Link buttons</h2>
-      <div class="block link-buttons" id="link-buttons">
-        <LinkButton href="#link-buttons">Primary</LinkButton>
-        <LinkButton href="https://github.com/trakt/trakt-og/issues/new?labels=bug"
-          external>Open a bug report</LinkButton>
-        <LinkButton href="https://developer.trakt.tv" variant="outline" external>Developer portal</LinkButton>
-      </div>
+<DemoSection title="Pagination">
+  <div class="knobs">
+    <label>Page <input type="number" min="1" max={total} bind:value={current} /></label>
+    <label>Pages <input type="number" min="1" bind:value={total} /></label>
+  </div>
+  <div id="pagination">
+    <Pagination meta={{ current, total }} {href} />
+  </div>
+</DemoSection>
 
-      <h2>Pagination</h2>
-      <div class="knobs">
-        <label>Page <input type="number" min="1" max={total} bind:value={current} /></label>
-        <label>Pages <input type="number" min="1" bind:value={total} /></label>
-      </div>
-      <div class="block" id="pagination">
-        <Pagination meta={{ current, total }} {href} />
-      </div>
+<DemoSection title="Pill tabs">
+  <div id="tabs">
+    <PillTabs label="Comments" {tabs} bind:selected={tab}>
+      {#snippet panel(id)}<p class="panel">Panel for <code>{id}</code></p>{/snippet}
+    </PillTabs>
+  </div>
+</DemoSection>
 
-      <h2>Pill tabs</h2>
-      <div class="block" id="tabs">
-        <PillTabs label="Comments" {tabs} bind:selected={tab}>
-          {#snippet panel(id)}<p class="panel">Panel for <code>{id}</code></p>{/snippet}
-        </PillTabs>
-      </div>
+<DemoSection title="Filter controls" note="The search terms box, for a VIP and everyone else, and the funnel menu.">
+  <div class="filters" id="sortable">
+    <TermsFilter bind:terms vip />
+    <TermsFilter bind:terms vip={false} />
+    <FilterMenu active={!movies || terms !== ''} count={movies ? 0 : 1}>
+      <ul>
+        <li><button type="button" onclick={() => ((movies = true), (terms = ''))}>Show All</button></li>
+      </ul>
+      <hr />
+      <ul>
+        <li class="header" role="presentation">Types</li>
+        <li><button type="button" aria-pressed={movies} onclick={() => (movies = !movies)}>Movies</button></li>
+      </ul>
+    </FilterMenu>
+    <p>{terms ? `"${terms}"` : 'no terms'}{movies ? '' : ', no movies'}</p>
+  </div>
+</DemoSection>
 
-      <h2>Filter controls</h2>
-      <div class="block" id="sortable">
-        <TermsFilter bind:terms vip />
-        <TermsFilter bind:terms vip={false} />
-        <FilterMenu active={!movies || terms !== ''} count={movies ? 0 : 1}>
-          <ul>
-            <li><button type="button" onclick={() => ((movies = true), (terms = ''))}>Show All</button></li>
-          </ul>
-          <hr />
-          <ul>
-            <li class="header" role="presentation">Types</li>
-            <li><button type="button" aria-pressed={movies} onclick={() => (movies = !movies)}>Movies</button></li>
-          </ul>
-        </FilterMenu>
-        <p>{terms ? `"${terms}"` : 'no terms'}{movies ? '' : ', no movies'}</p>
-      </div>
+<DemoSection title="Advanced filter controls"
+  note="In a sidebar frame: the funnel toggle, a multi-select and range sliders.">
+  <div class="frame advanced" id="advanced">
+    <AdvancedFiltersToggle bind:open={funnelOpen} controls="advanced" active={genres.length > 0}
+      count={genres.length} />
+    <MultiSelect bind:value={genres} options={[{ options: genreOptions }]} label="Genres"
+      placeholder="Choose genres..." />
+    <p>Released in {years[0]} to {years[1]}</p>
+    <RangeSlider bind:value={years} scale={scales.years} label="Released" />
+    <p>IMDb</p>
+    <RangeSlider labeled bind:value={imdb} scale={scales.imdb_ratings} label="IMDb rating"
+      format={(v) => v.toFixed(1)} />
+  </div>
+</DemoSection>
 
-      <h2>Advanced filter controls</h2>
-      <div class="block frame advanced" id="advanced">
-        <AdvancedFiltersToggle bind:open={funnelOpen} controls="advanced" active={genres.length > 0}
-          count={genres.length} />
-        <MultiSelect bind:value={genres} options={[{ options: genreOptions }]} label="Genres"
-          placeholder="Choose genres..." />
-        <p>Released in {years[0]} to {years[1]}</p>
-        <RangeSlider bind:value={years} scale={scales.years} label="Released" />
-        <p>IMDb</p>
-        <RangeSlider labeled bind:value={imdb} scale={scales.imdb_ratings} label="IMDb rating"
-          format={(v) => v.toFixed(1)} />
-      </div>
+<DemoSection title="Rating meter"
+  note="Arrow keys preview a heart; Enter or Space saves it. The trash button removes the rating. A 10 brings out the Totally Ninja guy.">
+  <div class="rating" id="rating">
+    <RatingPopover label="Rate the demo item" value={rating} onrate={(n) => (rating = n)}>
+      {#snippet trigger()}<span>Rate this item: {rating ?? 'unrated'}</span>{/snippet}
+    </RatingPopover>
+    <RatingPopover label="Rate the demo item from its summary" variant="summary" value={rating}
+      onrate={(n) => (rating = n)}>
+      {#snippet trigger()}<span>From a summary, it opens above: {rating ?? 'unrated'}</span>{/snippet}
+    </RatingPopover>
+    <button type="button" onclick={() => ninja.show()}>Send the Totally Ninja guy</button>
+  </div>
+</DemoSection>
 
-      <h2>Rating meter</h2>
-      <div id="rating">
-        <RatingPopover label="Rate the demo item" value={rating}
-          onrate={(n) => (rating = n)}>
-          {#snippet trigger()}<span>Rate this item: {rating ?? 'unrated'}</span>{/snippet}
-        </RatingPopover>
-        <RatingPopover label="Rate the demo item from its summary" variant="summary" value={rating}
-          onrate={(n) => (rating = n)}>
-          {#snippet trigger()}<span>From a summary, it opens above: {rating ?? 'unrated'}</span>{/snippet}
-        </RatingPopover>
-        <p>Arrow keys preview a heart; Enter or Space saves it. The trash button removes the rating. A 10 brings out the
-          Totally Ninja guy.</p>
-        <button type="button" onclick={() => ninja.show()}>Send the Totally Ninja guy</button>
-      </div>
+<DemoSection title="Empty states" note="No data in a box, then no results in a frame.">
+  <div id="no-data">
+    <NoData />
+  </div>
+  <div class="frame" id="no-results">
+    <NoResults />
+  </div>
+</DemoSection>
 
-      <h2>Empty states</h2>
-      <div class="block" id="no-data">
-        <NoData />
-      </div>
-      <div class="frame" id="no-results">
-        <NoResults />
-      </div>
-
-      <h2>Loading states</h2>
-      <div class="knobs">
-        <button type="button" onclick={showOverlay}>Show the page loader for 2s</button>
-        <label><input type="checkbox" bind:checked={bar} /> Loading bar</label>
-      </div>
-    </div>
-  </section>
-</main>
+<DemoSection title="Loading states" note="The page loader over everything, and the bar along the top.">
+  <div class="knobs">
+    <button type="button" onclick={showOverlay}>Show the page loader for 2s</button>
+    <label class="check"><input type="checkbox" bind:checked={bar} /> Loading bar</label>
+  </div>
+</DemoSection>
 
 <LoadingOverlay visible={overlay} />
 <LoadingBar visible={bar} />
@@ -178,16 +162,6 @@ $effect(() => {
 <style>
 .media-filters {
   max-inline-size: var(--dropdown-min-width);
-}
-
-section {
-  padding-block: var(--gutter) calc(var(--gutter) * 2);
-}
-
-.container {
-  max-inline-size: var(--container-lg);
-  margin-inline: auto;
-  padding-inline: calc(var(--gutter) / 2);
 }
 
 .link-buttons {
@@ -202,12 +176,25 @@ section {
   display: flex;
   flex-wrap: wrap;
   gap: var(--gutter);
-  align-items: center;
+  align-items: end;
   margin-block-end: var(--gutter);
+
+  & label:not(.check) {
+    display: inline-grid;
+    gap: var(--space-sm-block);
+  }
 }
 
-.block {
-  margin-block-end: var(--gutter);
+.filters,
+.rating {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--gutter);
+
+  & p {
+    margin: 0;
+  }
 }
 
 .panel {
@@ -216,6 +203,10 @@ section {
 
 .frame {
   background-color: var(--color-frame);
+}
+
+#no-results {
+  margin-block-start: var(--gutter);
 }
 
 .advanced {

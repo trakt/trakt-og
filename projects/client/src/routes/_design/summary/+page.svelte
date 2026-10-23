@@ -5,8 +5,8 @@ import MediaTools from '$lib/components/summary/MediaTools.svelte';
 import ReportDialog from '$lib/components/summary/ReportDialog.svelte';
 import SummaryPoster from '$lib/components/summary/SummaryPoster.svelte';
 import TitleTags from '$lib/components/summary/TitleTags.svelte';
-import Container from '$lib/components/container/Container.svelte';
 import ActivityTabs from '$lib/components/summary/ActivityTabs.svelte';
+import DemoSection from '$lib/design/DemoSection.svelte';
 import ActorsStrip from '$lib/components/summary/ActorsStrip.svelte';
 import CastCard from '$lib/components/summary/CastCard.svelte';
 import ViewToggle from '$lib/components/toolbar/ViewToggle.svelte';
@@ -166,100 +166,104 @@ const videos: readonly VideoCard[] = [
 ];
 </script>
 
-<section>
-  <Container>
-    <div class="list-cover-demo">
-      <SummaryPoster alt="List poster collage" posters={[{}, {}, {}, {}]} />
-    </div>
-    <div class="tools-demo">
-      <MediaTools target={reportTarget} />
-    </div>
-    <button type="button" onclick={() => { reporting = true; }}>Report Movie</button>
-    <ReportDialog bind:open={reporting} target={reportTarget} />
-    <h2>Title tags</h2>
-    <p>The bar above a summary or subpage title, on dark art. The slash splits a show from its season.</p>
-    <div class="title-tags-demo">
-      <TitleTags links={[{ title: 'Spider-Man (MCU) Collection', href: '/lists/official/spider-man-mcu-collection' }]}
-        credits={{ duringCredits: true, afterCredits: true }} />
-      <TitleTags label="Stats" links={[{ title: 'TRON Collection', href: '/lists/official/tron-collection' }]} />
-      <TitleTags
-        links={[{ title: 'American Horror Story', href: '/shows/american-horror-story' }, { title: 'Season 10' }]} />
-      <TitleTags
-        links={[{ title: 'Ted Lasso', href: '/shows/ted-lasso' }, { title: 'Season 1', href: '/shows/ted-lasso/seasons/1' }]}
-        type={{ text: 'Series Premiere', kind: 'series-premiere' }} credits={{ afterCredits: true }} />
-      <TitleTags label="People"
-        links={[{ title: 'Ted Lasso', href: '/shows/ted-lasso' }, { title: 'Season 1', href: '/shows/ted-lasso/seasons/1' }]}
-        type={{ text: 'Season Finale', kind: 'season-finale' }} />
-    </div>
-    <h2>Action stack</h2>
-    <p>
-      Not added, each action is one outlined button with its + inside. Added, it fills and the + splits off, with
-      quieter actions under •••. Every button is the same height.
-    </p>
-    <div class="actions-demo">
-      <SummaryAction color="var(--brand-tertiary)" icon={check} text="Add to history">
-        {#snippet tiles()}<SummaryActionTile icon={plus} label="Pick a watched date" />{/snippet}
-      </SummaryAction>
-      <SummaryAction color="var(--brand-tertiary)" icon={check} percent="6%" text="watched" selected>
-        {#snippet detail()}13/186 eps &mdash; 25 plays <em>(8h 20m)</em>{/snippet}
-        {#snippet tiles()}
-          <SummaryActionTile icon={plus} label="Add more plays" />
-          <SummaryActionMenu>
-            <a href="#history"><Icon svg={historyIcon} fixedWidth />View history</a>
-          </SummaryActionMenu>
-        {/snippet}
-      </SummaryAction>
-      <SummaryAction color="var(--brand-quaternary)" icon={collection} percent="95%" text="in library" selected
-        detail="177/186 episodes">
-        {#snippet tiles()}<SummaryActionTile icon={plus} label="Add to library" />{/snippet}
-      </SummaryAction>
-      <SummaryAction color="var(--brand-secondary)" icon={listIcon} text="Listed on" detail="Personal lists" selected>
-        {#snippet tiles()}<SummaryActionTile icon={plus} label="Manage lists" />{/snippet}
-      </SummaryAction>
-      <SummaryAction color="var(--brand-seventh)" icon={star} text="Add to favorites" />
-    </div>
-    <h2>People</h2>
-    <p>
-      The summary's People strip: one dropdown of the actor and crew groups, eight cards across that scroll sideways,
-      and "All People" linking to the picked group. People without a headshot get a silhouette by gender. Local OG:
-      <code>/shows/breaking-bad</code>.
-    </p>
-    <ActorsStrip groups={[{ id: 'season-regulars', label: 'Series Regulars', cast: regulars }]} {crew}
-      creditsHref="/shows/demo/people" />
-    <p>The people page's cards: <ViewToggle bind:view /> flips them between the grid card and the list row.</p>
-    <ul class={['people-demo', view]}>
-      {#each regulars as member (member.href)}
-        <li>
-          <CastCard name={member.name} href={member.href} gender={member.gender} role={member.characters}
-            episodes={member.episodes} layout={view === 'list' ? 'row' : 'card'} />
-        </li>
-      {/each}
-    </ul>
-    <h1>Summary sections</h1>
-    <p>
-    What loads under a movie or show summary as it scrolls into view. Local OG: the bottom of
-    <code>/movies/fight-club-1999</code>.
-  </p>
-    <ActivityTabs tabs={activity} />
-    <p>
-      The videos row, from the API's videos: it opens on the trailers, else the teasers, else All, where each card tags its
-      type in the type's color. A plain click plays a video in the popup. OG had none; v3's Extras row is the model.
-    </p>
-    <VideosRail {videos} href="/shows/demo" />
-    <CommentsPreview
-      tabs={comments}
-      item={movie}
-      viewer={page.data.user ? { slug: page.data.user.slug } : null}
-      count={128}
-      href="/movies/heat-1995"
-      dateOptions={page.data.datePreferences}
-    />
-    <p>The comments subnav's Add comment: <AddCommentLink /></p>
-    <ListsPreview {lists} count={342} href="/movies/heat-1995" />
-  </Container>
-</section>
-<RelatedItems title="Heat" source={relatedSource} load={() => Promise.resolve(related)} loadPeople={relatedPeople}
-  datePreferences={page.data.datePreferences} />
+<DemoSection title="Poster column"
+  note="A list's poster collage, the media tools under a summary poster, and the report dialog.">
+  <div class="poster-demo">
+    <SummaryPoster alt="List poster collage" posters={[{}, {}, {}, {}]} />
+  </div>
+  <div class="poster-demo">
+    <MediaTools target={reportTarget} />
+  </div>
+  <button type="button" onclick={() => { reporting = true; }}>Report Movie</button>
+  <ReportDialog bind:open={reporting} target={reportTarget} />
+</DemoSection>
+
+<DemoSection title="Title tags"
+  note="The bar above a summary or subpage title, on dark art. The slash splits a show from its season.">
+  <div class="title-tags-demo">
+    <TitleTags links={[{ title: 'Spider-Man (MCU) Collection', href: '/lists/official/spider-man-mcu-collection' }]}
+      credits={{ duringCredits: true, afterCredits: true }} />
+    <TitleTags label="Stats" links={[{ title: 'TRON Collection', href: '/lists/official/tron-collection' }]} />
+    <TitleTags
+      links={[{ title: 'American Horror Story', href: '/shows/american-horror-story' }, { title: 'Season 10' }]} />
+    <TitleTags
+      links={[{ title: 'Ted Lasso', href: '/shows/ted-lasso' }, { title: 'Season 1', href: '/shows/ted-lasso/seasons/1' }]}
+      type={{ text: 'Series Premiere', kind: 'series-premiere' }} credits={{ afterCredits: true }} />
+    <TitleTags label="People"
+      links={[{ title: 'Ted Lasso', href: '/shows/ted-lasso' }, { title: 'Season 1', href: '/shows/ted-lasso/seasons/1' }]}
+      type={{ text: 'Season Finale', kind: 'season-finale' }} />
+  </div>
+</DemoSection>
+
+<DemoSection title="Action stack"
+  note="Not added, each action is one outlined button with its + inside. Added, it fills and the + splits off, with quieter actions under •••. Every button is the same height.">
+  <div class="actions-demo">
+    <SummaryAction color="var(--brand-tertiary)" icon={check} text="Add to history">
+      {#snippet tiles()}<SummaryActionTile icon={plus} label="Pick a watched date" />{/snippet}
+    </SummaryAction>
+    <SummaryAction color="var(--brand-tertiary)" icon={check} percent="6%" text="watched" selected>
+      {#snippet detail()}13/186 eps &mdash; 25 plays <em>(8h 20m)</em>{/snippet}
+      {#snippet tiles()}
+        <SummaryActionTile icon={plus} label="Add more plays" />
+        <SummaryActionMenu>
+          <a href="#history"><Icon svg={historyIcon} fixedWidth />View history</a>
+        </SummaryActionMenu>
+      {/snippet}
+    </SummaryAction>
+    <SummaryAction color="var(--brand-quaternary)" icon={collection} percent="95%" text="in library" selected
+      detail="177/186 episodes">
+      {#snippet tiles()}<SummaryActionTile icon={plus} label="Add to library" />{/snippet}
+    </SummaryAction>
+    <SummaryAction color="var(--brand-secondary)" icon={listIcon} text="Listed on" detail="Personal lists" selected>
+      {#snippet tiles()}<SummaryActionTile icon={plus} label="Manage lists" />{/snippet}
+    </SummaryAction>
+    <SummaryAction color="var(--brand-seventh)" icon={star} text="Add to favorites" />
+  </div>
+</DemoSection>
+
+<DemoSection title="People"
+  note="One dropdown of the actor and crew groups, eight cards across that scroll sideways, and All People linking to the picked group. People without a headshot get a silhouette by gender. Local OG: /shows/breaking-bad.">
+  <ActorsStrip groups={[{ id: 'season-regulars', label: 'Series Regulars', cast: regulars }]} {crew}
+    creditsHref="/shows/demo/people" />
+  <p>The people page's cards: <ViewToggle bind:view /> flips them between the grid card and the list row.</p>
+  <ul class={['people-demo', view]}>
+    {#each regulars as member (member.href)}
+      <li>
+        <CastCard name={member.name} href={member.href} gender={member.gender} role={member.characters}
+          episodes={member.episodes} layout={view === 'list' ? 'row' : 'card'} />
+      </li>
+    {/each}
+  </ul>
+</DemoSection>
+
+<DemoSection title="Activity" note="Watching now and People You Follow, with one followed member watching live.">
+  <ActivityTabs tabs={activity} />
+</DemoSection>
+
+<DemoSection title="Videos"
+  note="It opens on the trailers, else the teasers, else All, where each card tags its type in the type's color. A plain click plays a video in the popup. OG had none; v3's Extras row is the model.">
+  <VideosRail {videos} href="/shows/demo" />
+</DemoSection>
+
+<DemoSection title="Comments and lists previews"
+  note="What loads at the bottom of /movies/fight-club-1999 as it scrolls into view.">
+  <CommentsPreview
+    tabs={comments}
+    item={movie}
+    viewer={page.data.user ? { slug: page.data.user.slug } : null}
+    count={128}
+    href="/movies/heat-1995"
+    dateOptions={page.data.datePreferences}
+  />
+  <p>The comments subnav's Add comment: <AddCommentLink /></p>
+  <ListsPreview {lists} count={342} href="/movies/heat-1995" />
+</DemoSection>
+
+<DemoSection title="Related" bleed
+  note="Eighteen picks, so More opens a second row and a third. Two share Heat's people.">
+  <RelatedItems title="Heat" source={relatedSource} load={() => Promise.resolve(related)} loadPeople={relatedPeople}
+    datePreferences={page.data.datePreferences} />
+</DemoSection>
 
 <style>
 .people-demo {
@@ -280,7 +284,6 @@ const videos: readonly VideoCard[] = [
   display: flex;
   flex-direction: column;
   align-items: start;
-  margin-block: var(--gutter);
   padding: var(--gutter);
   background-color: var(--color-summary-demo-art);
 }
@@ -290,16 +293,10 @@ const videos: readonly VideoCard[] = [
   flex-direction: column;
   gap: var(--summary-action-stack-gap);
   max-inline-size: var(--watch-date-width); /* about the stack's width on a summary page */
-  margin-block: var(--gutter);
 }
 
-.tools-demo {
+.poster-demo {
   inline-size: calc(var(--summary-offset) - var(--gutter));
-  margin-block: var(--gutter);
-}
-
-.list-cover-demo {
-  inline-size: calc(var(--summary-offset) - var(--gutter));
-  margin-block: var(--gutter);
+  margin-block-end: var(--gutter);
 }
 </style>

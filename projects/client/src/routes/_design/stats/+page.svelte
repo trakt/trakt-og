@@ -1,6 +1,6 @@
 <script lang="ts">
 import WatchedKeys from '$lib/components/dashboard/WatchedKeys.svelte';
-import Container from '$lib/components/container/Container.svelte';
+import DemoSection from '$lib/design/DemoSection.svelte';
 import { toExternalRatings } from '$lib/components/summary/toExternalRatings';
 import ProfileRatingsChart from '$lib/components/users/ProfileRatingsChart.svelte';
 import globe from '$lib/icons/regular/globe.svg?raw';
@@ -44,37 +44,35 @@ const sites = toSiteScores({
 });
 </script>
 
-<svelte:head>
-  <title>Media stats - Trakt</title>
-</svelte:head>
-<div class="demo">
-  <Container>
-    <StatsSection id="trakt" title="Trakt" icon={heart}>
-      {#if ratings.chart}
-        <div class="chart"><ProfileRatingsChart chart={ratings.chart} /></div>
-        <WatchedKeys keys={ratings.keys} />
-      {/if}
-    </StatsSection>
-    <StatsSection id="community" title="Community" icon={userGroup}>
-      <CommunityStats tiles={community} />
-    </StatsSection>
-    <h2>Rolling number</h2>
-    <p class="rolling">
-      <RollingNumber value={12} /> people · <RollingNumber value={150_660} /> episodes ·
-      <RollingNumber value={13_626} /> movies
-    </p>
-    <StatsSection id="second-opinions" title="Second Opinions" icon={globe}>
-      <SiteScores trakt={{ percent: 71, votes: 17_976 }} {sites} />
-    </StatsSection>
-  </Container>
-</div>
+<DemoSection title="Trakt ratings" note="The distribution of votes, with the keys under it.">
+  <StatsSection id="trakt" title="Trakt" icon={heart}>
+    {#if ratings.chart}
+      <div class="chart"><ProfileRatingsChart chart={ratings.chart} /></div>
+      <WatchedKeys keys={ratings.keys} />
+    {/if}
+  </StatsSection>
+</DemoSection>
+
+<DemoSection title="Community">
+  <StatsSection id="community" title="Community" icon={userGroup}>
+    <CommunityStats tiles={community} />
+  </StatsSection>
+</DemoSection>
+
+<DemoSection title="Second opinions" note="Every other site's score beside Trakt's.">
+  <StatsSection id="second-opinions" title="Second Opinions" icon={globe}>
+    <SiteScores trakt={{ percent: 71, votes: 17_976 }} {sites} />
+  </StatsSection>
+</DemoSection>
+
+<DemoSection title="Rolling number" note="Rolls up to its value as it comes into view.">
+  <p class="rolling">
+    <RollingNumber value={12} /> people · <RollingNumber value={150_660} /> episodes ·
+    <RollingNumber value={13_626} /> movies
+  </p>
+</DemoSection>
 
 <style>
-.demo {
-  padding-block: calc(var(--header-height) + var(--gutter)) var(--gutter);
-  background-color: var(--color-surface);
-}
-
 .rolling {
   font-size: var(--font-size-about-stat);
   font-weight: var(--font-weight-headings-heavy);

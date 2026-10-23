@@ -1,84 +1,71 @@
 <!--
-  The liquid-fill loader at every size we use, on a light and a dark ground, with the reduced-motion breathe next to it.
-  The last row is static/loader.svg as a plain <img>, the version for places outside Svelte. Under them, the shimmering
-  bars that hold a number's or a name's place.
+  The liquid-fill loader at every size we use, its reduced-motion breathe, static/loader.svg for places outside Svelte,
+  and the shimmering bars that hold a number's or a name's place. Each on a light and a dark ground.
 -->
 <script lang="ts">
-import Header from '$lib/components/header/Header.svelte';
 import Shimmer from '$lib/components/loading/Shimmer.svelte';
 import TraktLoader from '$lib/components/loading/TraktLoader.svelte';
+import DemoSection from '$lib/design/DemoSection.svelte';
+import type { Snippet } from 'svelte';
 
 const sizes = [16, 32, 64, 128];
 const schemes = ['light', 'dark'] as const;
 </script>
 
-<svelte:head>
-  <title>Loader · og design system</title>
-</svelte:head>
-
-<Header user={null} />
-
-<main>
-  <section class="intro">
-    <h1>Loader</h1>
-    <p>
-      <code>TraktLoader</code>: red rises in a wave behind the monogram until the disc is full, then drains. Below 24px
-      the surface rises flat. With reduced motion, or <code>reducedMotion</code>, the full mark breathes instead.
-    </p>
-  </section>
-
-  <div class="swatches">
+{#snippet grounds(row: string, sample: Snippet)}
+  <div class="grounds">
     {#each schemes as scheme (scheme)}
-      <section class="swatch" style:color-scheme={scheme} aria-labelledby="{scheme}-heading">
-        <h2 id="{scheme}-heading">{scheme === 'light' ? 'Light' : 'Dark'}</h2>
-        <h3>Animated</h3>
-        <div class="row" data-row="animated">
-          {#each sizes as size (size)}<TraktLoader {size} label="Loading at {size}px" />{/each}
-        </div>
-        <h3>Reduced motion</h3>
-        <div class="row" data-row="reduced">
-          {#each sizes as size (size)}<TraktLoader {size} reducedMotion label="Loading at {size}px" />{/each}
-        </div>
-        <h3>static/loader.svg</h3>
-        <div class="row" data-row="static">
-          {#each sizes as size (size)}<img src="/loader.svg" width={size} height={size} alt="Loading" />{/each}
-        </div>
-        <h3>Shimmer</h3>
-        <div class="row" data-row="shimmer">
-          <Shimmer inline="var(--home-flag-size)" block="var(--home-flag-size)" round />
-          <Shimmer inline="var(--home-rank-shimmer-name-width)" block="var(--font-size-home-rank-name)" />
-          <Shimmer inline="var(--home-live-shimmer-pill-width)" block="var(--home-live-shimmer-pill-height)" />
-        </div>
-      </section>
+      <div class="ground" style:color-scheme={scheme} data-row={row}>{@render sample()}</div>
     {/each}
   </div>
-</main>
+{/snippet}
+
+{#snippet animated()}{#each sizes as size (size)}<TraktLoader {size} label="Loading at {size}px" />{/each}{/snippet}
+{#snippet reduced()}
+  {#each sizes as size (size)}<TraktLoader {size} reducedMotion label="Loading at {size}px" />{/each}
+{/snippet}
+{#snippet still()}
+  {#each sizes as size (size)}<img src="/loader.svg" width={size} height={size} alt="Loading" />{/each}
+{/snippet}
+{#snippet shimmer()}
+  <Shimmer inline="var(--home-flag-size)" block="var(--home-flag-size)" round />
+  <Shimmer inline="var(--home-rank-shimmer-name-width)" block="var(--font-size-home-rank-name)" />
+  <Shimmer inline="var(--home-live-shimmer-pill-width)" block="var(--home-live-shimmer-pill-height)" />
+{/snippet}
+
+<DemoSection title="Animated"
+  note="TraktLoader: red rises in a wave behind the monogram until the disc is full, then drains. Below 24px the surface rises flat.">
+  {@render grounds('animated', animated)}
+</DemoSection>
+
+<DemoSection title="Reduced motion" note="With reduced motion, or reducedMotion, the full mark breathes instead.">
+  {@render grounds('reduced', reduced)}
+</DemoSection>
+
+<DemoSection title="Static SVG" note="static/loader.svg as a plain img, for places outside Svelte.">
+  {@render grounds('static', still)}
+</DemoSection>
+
+<DemoSection title="Shimmer" note="Holds a flag's, a name's or a pill's place while it loads.">
+  {@render grounds('shimmer', shimmer)}
+</DemoSection>
 
 <style>
-main {
-  padding-block-start: var(--header-height);
-}
-
-.intro {
-  padding: var(--gutter);
-}
-
-.swatches {
+.grounds {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 480px), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 400px), 1fr));
+  border-radius: var(--radius-object);
+  overflow: hidden;
+  border: 1px solid var(--color-separator);
 }
 
-.swatch {
-  padding: var(--gutter);
-  background-color: var(--color-surface);
-  color: var(--color-text);
-}
-
-.row {
+.ground {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--gutter);
-  padding-block: var(--space-sm-inline);
+  padding: var(--gutter);
+  background-color: var(--color-surface);
+  color: var(--color-text);
 }
 </style>

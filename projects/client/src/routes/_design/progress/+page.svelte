@@ -9,6 +9,7 @@
 -->
 <script lang="ts">
 import { page } from '$app/state';
+import DemoSection from '$lib/design/DemoSection.svelte';
 import { progressFixture } from '$lib/users/progress/progressFixture';
 import ProgressList from '$lib/users/progress/ProgressList.svelte';
 import { isProgressType, type ProgressType } from '$lib/users/progress/progressTypes';
@@ -24,6 +25,14 @@ const type = $derived.by<ProgressType>(() => {
   const value = page.url.searchParams.get('type') ?? '';
   return isProgressType(value) ? value : 'watched';
 });
+const variants = [
+  { label: 'List', query: '' },
+  { label: 'Grid', query: '?view=grid' },
+  { label: 'Simple', query: '?view=simple' },
+  { label: 'Rewatching', query: '?type=rewatching' },
+  { label: 'Dropped', query: '?type=dropped' },
+  { label: 'Estimates', query: '?estimates' },
+];
 const items = $derived(progressFixture[type](expanded));
 const data = $derived({
   type,
@@ -41,12 +50,38 @@ const data = $derived({
 });
 </script>
 
-<div class="demo">
+<!-- The variants only change this page's query, so resolve() has nothing to add. -->
+<!-- eslint-disable svelte/no-navigation-without-resolve -->
+<DemoSection title="Progress list" bleed
+  note="The list on sample shows, with each row's catalog so its up-next card shows at once. Signed in, the controls write to your account.">
+  <nav class="variants" aria-label="Progress variants">
+    {#each variants as variant (variant.label)}
+      <a href="{page.url.pathname}{variant.query}" aria-current={page.url.search === variant.query ? 'page' : undefined}>
+        {variant.label}
+      </a>
+    {/each}
+  </nav>
   <ProgressList {data} {items} {now} />
-</div>
+</DemoSection>
 
 <style>
-.demo {
-  padding-block-start: var(--header-height);
+.variants {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm-inline);
+  padding: 0 var(--design-stage-padding) var(--gutter);
+
+  & a {
+    padding: var(--space-xs-block) var(--space-sm-inline);
+    border: 1px solid var(--color-separator);
+    border-radius: var(--radius-round);
+    color: inherit;
+    text-decoration: none;
+
+    &[aria-current='page'] {
+      border-color: var(--brand-primary);
+      color: var(--brand-primary);
+    }
+  }
 }
 </style>

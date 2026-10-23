@@ -3,34 +3,27 @@
   every box alone in each user's state and its empty states.
 -->
 <script lang="ts">
-import Container from '$lib/components/container/Container.svelte';
+import DemoSection from '$lib/design/DemoSection.svelte';
 import { profileBoxComponent } from '$lib/users/profile/boxes/profileBoxComponent';
 import ProfileBoxStrip from '$lib/users/profile/boxes/ProfileBoxStrip.svelte';
 
 const { data } = $props();
 </script>
 
-<svelte:head>
-  <title>Profile boxes - Trakt</title>
-</svelte:head>
+<DemoSection title="Each member's strip" bleed
+  note="Each member gets the four best-scoring boxes. Scores of 40 or more count; the floor fills the rest.">
+  {#each data.strips as strip (strip.name)}
+    <div class="strip-head">
+      <h3>{strip.name}, {strip.label.toLowerCase()}</h3>
+      <p class="scores">
+        {#each strip.scores as { key, score } (key)}<span>{key} <b>{score ?? '–'}</b></span>{/each}
+      </p>
+    </div>
+    <ProfileBoxStrip boxes={strip.boxes} />
+  {/each}
+</DemoSection>
 
-<Container>
-  <h1>Profile boxes</h1>
-  <p>Each user gets the four best-scoring boxes. Scores of 40 or more count; the floor fills the rest.</p>
-</Container>
-
-{#each data.strips as strip (strip.name)}
-  <Container>
-  <h2>{strip.name}, {strip.label.toLowerCase()}</h2>
-  <p class="scores">
-      {#each strip.scores as { key, score } (key)}<span>{key} <b>{score ?? '–'}</b></span>{/each}
-    </p>
-</Container>
-  <ProfileBoxStrip boxes={strip.boxes} />
-{/each}
-
-<Container>
-  <h2>Each box</h2>
+<DemoSection title="Each box" note="Every box alone, in each member's state, then your own empty one and nothing yet.">
   {#each data.alone as box (box.key)}
     <h3>{box.key}</h3>
     <div class="variants">
@@ -45,11 +38,16 @@ const { data } = $props();
       {/each}
     </div>
   {/each}
-</Container>
+</DemoSection>
 
 <style>
-h2 {
-  margin-block-start: var(--space-lg-block);
+.strip-head {
+  padding: var(--gutter) var(--design-stage-padding) 0;
+
+  & h3 {
+    margin: 0;
+    font-size: var(--font-size-h4);
+  }
 }
 
 .scores {

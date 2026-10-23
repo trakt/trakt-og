@@ -1,5 +1,6 @@
 <script lang="ts">
 import TraktMark from '$lib/components/brand/TraktMark.svelte';
+import DemoSection from '$lib/design/DemoSection.svelte';
 
 // Each way a page draws the mark today: ink alone, or ink on a face.
 const marks = [
@@ -10,17 +11,11 @@ const marks = [
 ];
 </script>
 
-<svelte:head>
-  <title>Brand · og design system</title>
-</svelte:head>
-
-<main>
-  <h1>Brand</h1>
+<DemoSection title="Inks and faces">
   <p>
-    <code>TraktMark</code> draws the classic Trakt mark into a parent <code>&lt;svg viewBox="0 0 98.1 98.1"&gt;</code>.
-    <code>ink</code> colors the mark; <code>face</code> fills the disc behind it.
+    <code>TraktMark</code> draws into a parent <code>&lt;svg viewBox="0 0 98.1 98.1"&gt;</code>. <code>ink</code>
+    colors the mark; <code>face</code> fills the disc behind it. The gray tile shows a mark with no face.
   </p>
-
   <ul>
     {#each marks as mark (mark.name)}
       <li>
@@ -30,20 +25,14 @@ const marks = [
       </li>
     {/each}
   </ul>
-</main>
+</DemoSection>
 
 <style>
-/* Plain values, like the other demos. The gray backdrop shows a mark with no face. */
-main {
-  padding: 1rem;
-  font-family: system-ui, sans-serif;
-  font-size: 14px;
-}
-
 ul {
   display: flex;
   flex-wrap: wrap;
-  gap: 1.5rem;
+  gap: var(--gutter);
+  margin: var(--gutter) 0 0;
   padding: 0;
   list-style: none;
 }
@@ -51,10 +40,12 @@ ul {
 li {
   display: grid;
   justify-items: center;
-  gap: 0.25rem;
-  padding: 1rem;
-  background: #555;
-  color: #fff;
+  gap: var(--space-sm-block);
+  inline-size: 200px;
+  padding: var(--gutter);
+  border-radius: var(--radius-object);
+  background-color: var(--gray);
+  color: var(--gray-lighter);
   text-align: center;
 }
 

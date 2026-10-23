@@ -3,30 +3,19 @@
   Summer TV Shows showcase uses. OG's version is at the top of https://og-shots.trakt.tv/128/2b493502-discover-1440-fold.png.
 -->
 <script lang="ts">
-import Header from '$lib/components/header/Header.svelte';
 import SeeMore from '$lib/components/see-more/SeeMore.svelte';
 import FanartSlider from '$lib/components/slider/FanartSlider.svelte';
+import DemoSection from '$lib/design/DemoSection.svelte';
 
 // No artwork: media.trakt.tv refuses a localhost referer, so the slides show the bare behind the shade.
 const fanarts = Array.from({ length: 10 }, () => undefined);
 </script>
 
-<svelte:head>
-  <title>Fanart slider · og design system</title>
-</svelte:head>
-
-<Header user={null} />
-
-<main>
-  <section class="intro">
-    <h1>Fanart slider</h1>
-    <p>
-      OG's <code>.popular-items-wrapper</code>. The chevrons wrap around; with <code>ranks</code> the pills pick a
-      slide, and with <code>keys</code> <kbd>p</kbd> or left and <kbd>n</kbd> or right step through it while focus is
-      inside.
-    </p>
-  </section>
-
+<DemoSection title="Ranked and bare" bleed>
+  <p class="note">
+    OG's <code>.popular-items-wrapper</code>. The chevrons wrap around; with <code>ranks</code> the pills pick a slide,
+    and with <code>keys</code> <kbd>p</kbd> or left and <kbd>n</kbd> or right step through it while focus is inside.
+  </p>
   <div class="sliders">
     <FanartSlider title="Top TV Shows Last Week" {fanarts} ranks keys>
       {#snippet action()}<SeeMore href="/shows/watched" />{/snippet}
@@ -37,15 +26,11 @@ const fanarts = Array.from({ length: 10 }, () => undefined);
       {#snippet slide(index)}<p class="content">Slide {index + 1} of 4</p>{/snippet}
     </FanartSlider>
   </div>
-</main>
+</DemoSection>
 
 <style>
-main {
-  padding-block-start: var(--header-height);
-}
-
-.intro {
-  padding: var(--gutter);
+.note {
+  margin: 0 var(--design-stage-padding) var(--gutter);
 }
 
 .sliders {

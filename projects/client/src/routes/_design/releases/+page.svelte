@@ -1,4 +1,5 @@
 <script lang="ts">
+import DemoSection from '$lib/design/DemoSection.svelte';
 import MovieReleasesPage from '$lib/movies/MovieReleasesPage.svelte';
 import { toMovieReleases } from '$lib/movies/toMovieReleases';
 
@@ -43,4 +44,7 @@ const data = {
 };
 </script>
 
-<MovieReleasesPage {data} />
+<DemoSection title="Releases by country" bleed
+  note="The whole subpage on three releases: limited, theatrical and on disc.">
+  <MovieReleasesPage {data} />
+</DemoSection>

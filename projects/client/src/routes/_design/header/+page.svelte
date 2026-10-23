@@ -57,10 +57,6 @@ function save(body: SettingsBody) {
 }
 </script>
 
-<svelte:head>
-  <title>Header and footer · og design system</title>
-</svelte:head>
-
 <Header {user} {darkKnight} {save} />
 
 <main>

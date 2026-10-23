@@ -7,7 +7,7 @@ import SocialFeedPanel from '$lib/components/dashboard/SocialFeedPanel.svelte';
 import SchedulePanel from '$lib/components/dashboard/SchedulePanel.svelte';
 import UpNextPanel from '$lib/components/dashboard/UpNextPanel.svelte';
 import WatchlistPanel from '$lib/components/dashboard/WatchlistPanel.svelte';
-import Container from '$lib/components/container/Container.svelte';
+import DemoSection from '$lib/design/DemoSection.svelte';
 import type { OnDeckItem } from '$lib/components/media/OnDeckItem';
 import { dayIn } from '$lib/utils/dayIn';
 import { toCalendarItems } from '$lib/calendars/toCalendarItems';
@@ -219,44 +219,10 @@ function customScheduleDays(): ScheduleDay[] {
 const customSchedule = $derived(Promise.resolve(customScheduleDays()));
 const hiddenNames = Object.entries({ Watchlist: custom.hidden.watchlist, 'Social Feed': custom.hidden.socialFeed })
   .flatMap(([name, hidden]) => (hidden ? [name] : []));
-
-let theme = $state('light');
-$effect(() => {
-  document.documentElement.dataset.theme = theme;
-  return () => delete document.documentElement.dataset.theme;
-});
 </script>
 
-<svelte:head>
-  <title>Dashboard panels: og</title>
-</svelte:head>
-
-<main>
-  <section class="intro">
-    <Container>
-      <h1>Dashboard panels</h1>
-      <p>
-        The panels the dashboard frame (#144) mounts: Up Next, the Upcoming Schedule, the Watchlist, Last 30 Days,
-        Recently Watched, the Social Feed and the recommendations. Signed in, the first of each is yours; the rest use
-        sample titles with made-up members, progress, dates and plays. Hover a progress bar for its tooltip, a schedule
-        entry for its poster, or a day's bar for what was watched. Each panel's row count is kept in this browser.
-        With nothing watched in 30 days, Last 30 Days hides itself, as OG's did.
-      </p>
-      <label>
-        Theme
-        <select bind:value={theme}>
-          <option value="light">Light (OG default)</option>
-          <option value="dark">Dark (dark knight)</option>
-        </select>
-      </label>
-    </Container>
-  </section>
-
-  {#if data.viewer && data.upNext}
-    <UpNextPanel upNext={data.upNext} username={data.viewer.username} isVip={data.viewer.isVip}
-      settings={data.dashboard?.upNext} />
-    <div class="gap"></div>
-  {/if}
+<DemoSection title="Up Next" bleed
+  note="A VIP, everyone else, empty, loading and failed. Hover a progress bar for its tooltip.">
   <UpNextPanel upNext={sample} username="me" isVip />
   <div class="gap"></div>
   <UpNextPanel upNext={sample} username="demo-non-vip" isVip={false} />
@@ -267,37 +233,44 @@ $effect(() => {
   <div class="gap"></div>
   <UpNextPanel upNext={failed} username="me" isVip />
   <div class="gap"></div>
+</DemoSection>
 
+<DemoSection title="Upcoming Schedule" bleed
+  note="A busy week with network links as a VIP sees them, a season dropping today, nothing on until the day after tomorrow, a quiet week, two days as everyone else sees them, then empty, loading and failed. Hover an entry for its poster.">
   <div id="schedule">
-    {#if data.schedule}
-      <SchedulePanel schedule={data.schedule} filter={data.dashboard?.schedule.filter} />
-      <div class="gap"></div>
-    {/if}
     <!-- The dropdowns reload the same sample, so the demo saves nothing. -->
-    <div id="schedule-sample"><SchedulePanel {schedule} onpick={() => schedule} /></div>
+    <div id="schedule-sample">
+      <SchedulePanel {schedule} onpick={() => schedule} />
+    </div>
     <div class="gap"></div>
-    <div id="schedule-drop"><SchedulePanel schedule={scheduleDrop} /></div>
+    <div id="schedule-drop">
+      <SchedulePanel schedule={scheduleDrop} />
+    </div>
     <div class="gap"></div>
-    <div id="schedule-later"><SchedulePanel schedule={scheduleLater} /></div>
+    <div id="schedule-later">
+      <SchedulePanel schedule={scheduleLater} />
+    </div>
     <div class="gap"></div>
-    <div id="schedule-quiet"><SchedulePanel schedule={scheduleQuiet} /></div>
+    <div id="schedule-quiet">
+      <SchedulePanel schedule={scheduleQuiet} />
+    </div>
     <div class="gap"></div>
     <SchedulePanel schedule={scheduleTwoDays} />
     <div class="gap"></div>
-    <div id="schedule-empty"><SchedulePanel schedule={Promise.resolve([])} /></div>
+    <div id="schedule-empty">
+      <SchedulePanel schedule={Promise.resolve([])} />
+    </div>
     <div class="gap"></div>
     <SchedulePanel schedule={scheduleLoading} />
     <div class="gap"></div>
     <SchedulePanel schedule={scheduleFailed} />
   </div>
   <div class="gap"></div>
+</DemoSection>
 
+<DemoSection title="Watchlist" bleed
+  note="Added Date, newest first, as a VIP sees it; Trakt Percentage for everyone else; then empty, loading and failed.">
   <div id="watchlist">
-    {#if data.viewer && data.watchlist}
-      <WatchlistPanel watchlist={data.watchlist} username={data.viewer.username} isVip={data.viewer.isVip}
-        datePreferences={data.datePreferences} />
-      <div class="gap"></div>
-    {/if}
     <div id="watchlist-sample">
       <WatchlistPanel {watchlist} username="me" isVip datePreferences={data.datePreferences} />
     </div>
@@ -314,13 +287,14 @@ $effect(() => {
     <WatchlistPanel watchlist={watchlistFailed} username="me" isVip datePreferences={data.datePreferences} />
   </div>
   <div class="gap"></div>
+</DemoSection>
 
+<DemoSection title="Last 30 Days" bleed
+  note="Thirty days of plays and their genres, the genres alone as OG showed them without the chart, then loading and failed. With nothing watched it hides itself, as OG's did. Hover a day's bar for what was watched.">
   <div id="last-30-days">
-    {#if data.lastThirtyDays}
-      <LastThirtyDaysPanel stats={data.lastThirtyDays} />
-      <div class="gap"></div>
-    {/if}
-    <div id="last-30-days-sample"><LastThirtyDaysPanel stats={lastMonth} /></div>
+    <div id="last-30-days-sample">
+      <LastThirtyDaysPanel stats={lastMonth} />
+    </div>
     <div class="gap"></div>
     <LastThirtyDaysPanel stats={genresOnly} />
     <div class="gap"></div>
@@ -329,13 +303,11 @@ $effect(() => {
     <LastThirtyDaysPanel stats={lastMonthFailed} />
   </div>
   <div class="gap"></div>
+</DemoSection>
 
+<DemoSection title="Recently Watched" bleed
+  note="A check-in with 30 minutes to go first, then empty, loading and failed.">
   <div id="recently-watched">
-    {#if data.viewer && data.recentlyWatched}
-      <RecentlyWatchedPanel plays={data.recentlyWatched} username={data.viewer.username} isVip={data.viewer.isVip}
-        datePreferences={data.datePreferences} />
-      <div class="gap"></div>
-    {/if}
     <div id="recently-watched-sample">
       <RecentlyWatchedPanel plays={recentPlays} username="me" isVip datePreferences={data.datePreferences} />
     </div>
@@ -349,33 +321,36 @@ $effect(() => {
     <RecentlyWatchedPanel plays={recentFailed} username="me" isVip datePreferences={data.datePreferences} />
   </div>
   <div class="gap"></div>
+</DemoSection>
 
+<DemoSection title="Social Feed" bleed
+  note="Nobody, one, three and seven members watching now (seven puts four behind the +4 tile), a quiet week, following nobody, then loading and failed.">
   <div id="social-feed">
-    {#if data.socialFeed}
-      <SocialFeedPanel feed={data.socialFeed} username={data.viewer?.username ?? 'me'} datePreferences={data.datePreferences} />
-      <div class="gap"></div>
-    {/if}
     {#each [0, 1, 3, 7] as count (count)}
-      <div id="social-feed-live-{count}"><SocialFeedPanel feed={social} watching={watchingNow(count)} rowsFor={socialRowsFor}
-        username="me" datePreferences={data.datePreferences} /></div>
+      <div id="social-feed-live-{count}">
+        <SocialFeedPanel feed={social} watching={watchingNow(count)} rowsFor={socialRowsFor} username="me"
+          datePreferences={data.datePreferences} />
+      </div>
       <div class="gap"></div>
     {/each}
-    <div id="social-feed-empty"><SocialFeedPanel feed={socialEmpty} rowsFor={socialRowsFor} username="me" datePreferences={data.datePreferences} /></div>
+    <div id="social-feed-empty">
+      <SocialFeedPanel feed={socialEmpty} rowsFor={socialRowsFor} username="me" datePreferences={data.datePreferences} />
+    </div>
     <div class="gap"></div>
-    <div id="social-feed-nobody"><SocialFeedPanel feed={socialNobody} username="me" datePreferences={data.datePreferences} /></div>
+    <div id="social-feed-nobody">
+      <SocialFeedPanel feed={socialNobody} username="me" datePreferences={data.datePreferences} />
+    </div>
     <div class="gap"></div>
     <SocialFeedPanel feed={socialLoading} username="me" datePreferences={data.datePreferences} />
     <div class="gap"></div>
     <SocialFeedPanel feed={socialFailed} username="me" datePreferences={data.datePreferences} />
   </div>
   <div class="gap"></div>
+</DemoSection>
 
+<DemoSection title="Recommendations" bleed
+  note="Shows and movies together, picked from the dropdown; one title; nothing to recommend; then loading and failed.">
   <div id="recommendations">
-    {#if data.viewer && data.recommendations && data.dashboard}
-      <RecommendationsPanel recommendations={data.recommendations} type={data.dashboard.recommendations.type}
-        isVip={data.viewer.isVip} />
-      <div class="gap"></div>
-    {/if}
     <div id="recommendations-sample">
       <RecommendationsPanel recommendations={recs} type="media" isVip onpick={recsFor} />
     </div>
@@ -391,16 +366,11 @@ $effect(() => {
     <RecommendationsPanel recommendations={recsFailed} type="media" isVip />
   </div>
   <div class="gap"></div>
-  <section class="intro" id="settings">
-    <Container>
-      <h2>With dashboard settings</h2>
-      <p>
-        A VIP's saved settings, in fixtures: Up Next sorted by completion % with only favorites and exact progress bars
-        (an episode skipped halfway through each show), the schedule's finales from yesterday, and the
-        {hiddenNames.join(' and ')} panels hidden, so they're left out below.
-      </p>
-    </Container>
-  </section>
+</DemoSection>
+
+<DemoSection title="With dashboard settings" bleed
+  note="A VIP's saved settings: Up Next by completion % with only favorites and exact progress bars (an episode skipped halfway through each show), and the schedule's finales from yesterday.">
+  <p class="hidden-note">The {hiddenNames.join(' and ')} panels are hidden, so they're left out.</p>
   <div id="settings-up-next">
     <UpNextPanel upNext={customUpNext} username="me" isVip settings={custom.upNext} />
   </div>
@@ -412,20 +382,22 @@ $effect(() => {
     <WatchlistPanel {watchlist} username="me" isVip datePreferences={data.datePreferences} />
   {/if}
   {#if !custom.hidden.socialFeed}
-    <SocialFeedPanel feed={social} watching={watchingNow(0)} rowsFor={socialRowsFor} username="me" datePreferences={data.datePreferences} />
+    <SocialFeedPanel feed={social} watching={watchingNow(0)} rowsFor={socialRowsFor} username="me"
+      datePreferences={data.datePreferences} />
   {/if}
   <div class="gap"></div>
   <RecentlyWatchedPanel plays={recentPlays} username="me" isVip datePreferences={data.datePreferences} />
-</main>
+</DemoSection>
 
 <style>
-.intro {
-  padding-block-end: var(--gutter);
-}
-
 /* Room for the pill that hangs under each panel. */
 .gap {
   block-size: calc(var(--gutter) * 2);
-  background-color: var(--color-surface);
+}
+
+.hidden-note {
+  margin: 0;
+  padding: 0 var(--design-stage-padding) var(--gutter);
+  color: var(--color-text-muted);
 }
 </style>

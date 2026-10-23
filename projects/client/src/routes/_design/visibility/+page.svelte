@@ -1,5 +1,5 @@
 <script lang="ts">
-import Container from '$lib/components/container/Container.svelte';
+import DemoSection from '$lib/design/DemoSection.svelte';
 import VisibilityControl from '$lib/components/visibility/VisibilityControl.svelte';
 import PosterCard from '$lib/components/media/PosterCard.svelte';
 import FanartCard from '$lib/components/media/FanartCard.svelte';
@@ -18,40 +18,33 @@ const icons = $derived({
   hideSection: 'recommendations' as const,
 });
 </script>
-<svelte:head>
-  <title>Visibility controls · og design system</title>
-</svelte:head>
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-<main tabindex="-1">
-  <Container>
-    <section>
-      <h1>Rewatch, drop and hide</h1>
-      <p>Sign in to try the date picker and confirmations. These controls share the history popover tokens.</p>
-      <div class="examples">
-        <VisibilityControl {target} action="rewatch">
-          <Icon svg={backward} />
-        </VisibilityControl>
-        <VisibilityControl {target} action="drop">
-          <Icon svg={minus} />
-        </VisibilityControl>
-        <VisibilityControl {target} action="restore" variant="pill">Dropped</VisibilityControl>
-        <VisibilityControl {target} action="hide" section="recommendations" variant="card">
-          <Icon svg={ban} />
-        </VisibilityControl>
-      </div>
-      <h2>Poster and fanart actions</h2>
-      <PosterGrid columns={6}>
-        <PosterCard href="/shows/breaking-bad" title="Breaking Bad" image="/favicon.svg" {icons} />
-        <FanartCard href="/shows/breaking-bad" title="Breaking Bad" image="/favicon.svg"
-          icons={{ ...icons, hideSection: 'calendar' }} />
-      </PosterGrid>
-    </section>
-  </Container>
-</main>
+<DemoSection title="The controls"
+  note="Rewatch, drop, the Dropped pill's restore, and hide. Sign in to try the date picker and confirmations.">
+  <div class="examples">
+    <VisibilityControl {target} action="rewatch">
+      <Icon svg={backward} />
+    </VisibilityControl>
+    <VisibilityControl {target} action="drop">
+      <Icon svg={minus} />
+    </VisibilityControl>
+    <VisibilityControl {target} action="restore" variant="pill">Dropped</VisibilityControl>
+    <VisibilityControl {target} action="hide" section="recommendations" variant="card">
+      <Icon svg={ban} />
+    </VisibilityControl>
+  </div>
+</DemoSection>
+
+<DemoSection title="Poster and fanart actions"
+  note="Hide from recommendations on a poster, and from the calendar on a fanart card.">
+  <PosterGrid columns={6}>
+    <PosterCard href="/shows/breaking-bad" title="Breaking Bad" image="/favicon.svg" {icons} />
+    <FanartCard href="/shows/breaking-bad" title="Breaking Bad" image="/favicon.svg"
+      icons={{ ...icons, hideSection: 'calendar' }} />
+  </PosterGrid>
+</DemoSection>
+
 <style>
-section {
-  padding-block: calc(var(--header-height) + var(--gutter)) var(--gutter);
-}
 .examples {
   display: grid;
   grid-template-columns: repeat(4, var(--action-icon-width));

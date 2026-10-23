@@ -2,10 +2,10 @@
   The profile frame in every state, on sample data: covers, labels, follow states, the request banner and the
   watching-now bar. Real profiles only show the states the signed-in viewer is actually in. Under it, a favorite
   card, the welcome hero, the charts, the most watched columns (OG's defaults, then a saved sort and tab), and the
-  network page's user cards in each follow state, watching now and checked in. The stat boxes have their own page, `/_design/profile-boxes`.
+  network page's user cards in each follow state, watching now and checked in. The stat boxes have their own demo.
 -->
 <script lang="ts">
-import Container from '$lib/components/container/Container.svelte';
+import DemoSection from '$lib/design/DemoSection.svelte';
 import FavoriteCard from '$lib/components/users/FavoriteCard.svelte';
 import MostWatched from '$lib/components/users/MostWatched.svelte';
 import ProfileCharts from '$lib/components/users/ProfileCharts.svelte';
@@ -227,26 +227,24 @@ const liveCards = [
 ];
 </script>
 
-<svelte:head>
-  <title>Profile frame: og</title>
-</svelte:head>
+<DemoSection title="Profile frame" bleed
+  note="Covers, labels, follow states, the request banner and the watching-now bar. Real profiles only show the states the viewer is actually in.">
+  {#each states as { title, props } (title)}
+    <h3 class="state">{title}</h3>
+    <ProfileFrame
+      user={props.user}
+      watching={props.watching ?? null}
+      tabs={tabs(props.user.slug, props.tab)}
+      large={props.large}
+      isSelf={props.isSelf ?? false}
+      signedIn={props.signedIn ?? true}
+      canFollow={props.canFollow ?? true}
+      relation={props.relation ?? null}
+    />
+  {/each}
+</DemoSection>
 
-{#each states as { title, props } (title)}
-  <h2 class="state">{title}</h2>
-  <ProfileFrame
-  user={props.user}
-  watching={props.watching ?? null}
-  tabs={tabs(props.user.slug, props.tab)}
-  large={props.large}
-  isSelf={props.isSelf ?? false}
-  signedIn={props.signedIn ?? true}
-  canFollow={props.canFollow ?? true}
-  relation={props.relation ?? null}
-/>
-{/each}
-
-<h2 class="state">Favorite card</h2>
-<Container>
+<DemoSection title="Favorite card">
   <div class="favorite">
     <FavoriteCard
       favorite={{
@@ -261,40 +259,42 @@ const liveCards = [
       }}
     />
   </div>
-</Container>
+</DemoSection>
 
-<h2 class="state">Welcome hero</h2>
-<WelcomeHero displayName="leela" named={false} slug="leela" />
+<DemoSection title="Welcome hero" bleed note="For a member who hasn't set a name yet.">
+  <WelcomeHero displayName="leela" named={false} slug="leela" />
+</DemoSection>
 
-<h2 class="state">Charts</h2>
-<ProfileCharts {genres} {ratings} slug="leela" />
+<DemoSection title="Charts" bleed
+  note="Genres and ratings; a generous rater, whose average past 9 puts the line's label before it; then no ratings at all.">
+  <ProfileCharts {genres} {ratings} slug="leela" />
+  <h3 class="state">A generous rater</h3>
+  <ProfileCharts genres={genreBars(genreRows.slice(0, 4))} ratings={generous} slug="leela" />
+  <h3 class="state">No ratings</h3>
+  <ProfileCharts genres={genreBars(genreRows.slice(0, 4))} ratings={unrated} slug="leela" />
+</DemoSection>
 
-<h2 class="state">Charts, a generous rater</h2>
-<ProfileCharts genres={genreBars(genreRows.slice(0, 4))} ratings={generous} slug="leela" />
+<DemoSection title="Most watched" bleed
+  note="Your own profile on OG's defaults, then your saved sort and tab: shows on All Time by time watched.">
+  <MostWatched
+    {...mostWatched}
+    slug="leela"
+    windowStart="2026-08-30T00:00:00.000Z"
+    hasnt={(rest) => `You haven't ${rest}`}
+    datePreferences={{ order: 'mdy', hour24: false, timeZone: 'UTC', weekStartDay: 0 }}
+  />
+  <h3 class="state">Saved sort and tab</h3>
+  <MostWatched
+    {...savedMostWatched}
+    slug="leela"
+    windowStart="2026-08-30T00:00:00.000Z"
+    hasnt={(rest) => `You haven't ${rest}`}
+    datePreferences={{ order: 'mdy', hour24: false, timeZone: 'UTC', weekStartDay: 0 }}
+  />
+</DemoSection>
 
-<h2 class="state">Charts, no ratings</h2>
-<ProfileCharts genres={genreBars(genreRows.slice(0, 4))} ratings={unrated} slug="leela" />
-
-<h2 class="state">Most watched, your own profile</h2>
-<MostWatched
-  {...mostWatched}
-  slug="leela"
-  windowStart="2026-08-30T00:00:00.000Z"
-  hasnt={(rest) => `You haven't ${rest}`}
-  datePreferences={{ order: 'mdy', hour24: false, timeZone: 'UTC', weekStartDay: 0 }}
-/>
-
-<h2 class="state">Most watched, your saved sort and default tab (shows on All Time by time watched)</h2>
-<MostWatched
-  {...savedMostWatched}
-  slug="leela"
-  windowStart="2026-08-30T00:00:00.000Z"
-  hasnt={(rest) => `You haven't ${rest}`}
-  datePreferences={{ order: 'mdy', hour24: false, timeZone: 'UTC', weekStartDay: 0 }}
-/>
-
-<h2 class="state">User cards: watching now, checked in, each follow state, yourself or signed out</h2>
-<Container>
+<DemoSection title="User cards"
+  note="The network page's cards: watching now, checked in, each follow state, then yourself or signed out.">
   <ul class="user-cards">
     {#each liveCards as card (card.key)}
       <li><UserCard user={card.user} relation={card.relation} watch={card.watch} since="2014-03-02T10:00:00.000Z" /></li>
@@ -306,7 +306,7 @@ const liveCards = [
       </li>
     {/each}
   </ul>
-</Container>
+</DemoSection>
 
 <style>
 .user-cards {
@@ -314,20 +314,20 @@ const liveCards = [
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--gutter);
   margin: 0;
-  padding: var(--gutter) 0;
+  padding: 0;
   list-style: none;
 }
 
 .favorite {
   inline-size: calc(100% / 3);
-  background-color: var(--color-favorites-bg);
   padding-block: var(--gutter);
+  background-color: var(--color-favorites-bg);
 }
 
 .state {
   margin: 0;
-  padding: var(--space-lg-block) var(--gutter);
-  background-color: var(--color-surface);
-  font-size: var(--font-size-h4);
+  padding: var(--gutter) var(--design-stage-padding) var(--space-lg-block);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-h5);
 }
 </style>

@@ -1,5 +1,6 @@
 <script lang="ts">
 import AboutIssues from '$lib/about/AboutIssues.svelte';
+import DemoSection from '$lib/design/DemoSection.svelte';
 
 const issue = (number: number, title: string, label: string | null, at: string) => ({ number, title, label, at });
 
@@ -28,43 +29,23 @@ const closed = {
 const none = { total: 0, issues: [] };
 </script>
 
-<svelte:head>
-  <title>About - Trakt</title>
-</svelte:head>
-
-<div class="demo">
-  <section>
-    <h2>Issues</h2>
+<DemoSection title="Issues, loaded, empty and loading"
+  note="Each column at the issues sidebar's width, on the page's own background, in the picked theme.">
+  <div class="columns">
     <AboutIssues {open} {closed} loading={false} />
-  </section>
-  <section>
-    <h2>No issues</h2>
     <AboutIssues open={none} closed={none} loading={false} />
-  </section>
-  <section>
-    <h2>Loading</h2>
     <AboutIssues open={null} closed={null} loading />
-  </section>
-</div>
+  </div>
+</DemoSection>
 
 <style>
-.demo {
+.columns {
   display: grid;
   grid-template-columns: repeat(3, var(--about-log-columns-side));
   gap: var(--gutter);
   align-items: start;
-  padding: calc(var(--header-height) + var(--gutter)) var(--gutter) var(--gutter);
+  padding: var(--gutter);
   background-color: var(--color-home-bg);
   color: var(--color-home-text);
-  color-scheme: dark;
-}
-
-section {
-  background-color: transparent;
-}
-
-h2 {
-  margin-block: 0 var(--gutter);
-  font-size: var(--font-size-h4);
 }
 </style>

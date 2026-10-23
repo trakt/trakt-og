@@ -4015,3 +4015,25 @@
   --color-team-quick-ring: rgb(255 255 255 / 0.15);
   --color-team-quick-on: var(--brand-success);
 }
+
+/* The design system shell at /_design: a dark nav like the site header beside the demos, in the picked theme. */
+:root {
+  --design-nav-width: 240px;
+  --design-rail-width: 48px;
+  --design-stage-padding: 32px;
+  --design-section-gap: 48px;
+  --design-note-width: 72ch;
+  --color-design-nav-bg: #111;
+  --color-design-nav-text: #ccc;
+  --color-design-nav-muted: #777;
+  --color-design-nav-hover: #1d1d1d;
+  --color-design-nav-active: #fff;
+  --color-design-nav-border: #262626;
+  --color-design-nav-input: #1d1d1d;
+  --color-design-card-border: light-dark(#e5e5e5, #333);
+  --color-design-card-hover: light-dark(#f7f7f7, #262626);
+  --font-size-design-eyebrow: 12px;
+  --font-size-design-lead: 16px;
+  --letter-spacing-design-eyebrow: 0.08em;
+  --shadow-design-pill: 0 6px 24px rgb(0 0 0 / 0.45);
+}

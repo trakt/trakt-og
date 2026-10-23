@@ -4,6 +4,7 @@
 -->
 <script lang="ts">
 import MobileSplash from '$lib/components/mobile-splash/MobileSplash.svelte';
+import DemoSection from '$lib/design/DemoSection.svelte';
 
 const frames = [
   { label: 'Phone, iOS', platform: 'ios', preview: 'phone', width: 390, height: 664 },
@@ -13,19 +14,8 @@ const frames = [
 ] as const;
 </script>
 
-<svelte:head>
-  <title>Mobile splash · og design system</title>
-</svelte:head>
-
-<main>
-  <div class="intro">
-    <h1>Mobile splash</h1>
-    <p>
-      <code>MobileSplash</code> wraps the app. Below 768px wide, or on a phone held sideways, it shows instead. The
-      store follows the user agent.
-    </p>
-  </div>
-
+<DemoSection title="Frames"
+  note="MobileSplash wraps the app. Below 768px wide, or on a phone held sideways, it shows instead. The store follows the user agent.">
   <div class="frames">
     {#each frames as frame (frame.label)}
       <figure>
@@ -36,20 +26,18 @@ const frames = [
       </figure>
     {/each}
   </div>
-</main>
+</DemoSection>
 
 <style>
-main {
-  padding: var(--gutter);
-  background: var(--color-page);
-  color: var(--color-splash-text);
-}
-
 .frames {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
   gap: var(--gutter);
+  padding: var(--gutter);
+  border-radius: var(--radius-object);
+  background: var(--color-page);
+  color: var(--color-splash-text);
 }
 
 figure {

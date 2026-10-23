@@ -4,7 +4,7 @@ import EmptyState from '$lib/components/empty/EmptyState.svelte';
 import listIcon from '$lib/icons/regular/list.svg?raw';
 import FollowingWatchingSection from '$lib/charts/FollowingWatchingSection.svelte';
 import WatchNowChips from '$lib/components/watchnow/WatchNowChips.svelte';
-import Container from '$lib/components/container/Container.svelte';
+import DemoSection from '$lib/design/DemoSection.svelte';
 import ListTransfer from '$lib/components/lists/ListTransfer.svelte';
 import clone from '$lib/icons/regular/clone.svg?raw';
 import fileExport from '$lib/icons/regular/file-export.svg?raw';
@@ -63,84 +63,92 @@ const initial = {
 };
 const following = [{ slug: 'teodoro_2', name: 'Elsy Murphy (@teodoro_2)' }];
 </script>
-<svelte:head>
-  <title>List picker design system - Trakt</title>
-</svelte:head>
-<OfficialListHeader />
-<section class="demo">
-  <Container><h1>List picker</h1><p>Local OG references: <a href="https://og-shots.trakt.tv/135/2d64380a-rails-add.png">Add list</a>, <a href="https://og-shots.trakt.tv/135/68548be2-rails-edit.png">Edit list</a> and <a href="https://og-shots.trakt.tv/135/5e5d9cba-rails-delete.png">Delete confirmation</a>.</p><div class="sample"><MediaList target={{ type: 'movie', id: 1, title: 'Fight Club' }} variant="summary" /></div>{#each ['add', 'edit', 'watchlist', 'favorites'] as value (value)}<button onclick={() => { mode = value as typeof mode; open = true; }}>Preview {value}</button>{/each}</Container>
-</section>
-<section class="demo">
-  <Container>
-    <h2>List poster: notes (short and at the 500-character limit) and the rating line</h2>
-    <PosterGrid>
-      <PosterCard href="/movies/heat-1995" title="Heat" rank={3}
-        subtitles={[{ rating: 8.19, votes: 12_400, href: '/movies/heat-1995' }, '\u00a0']}>
-        {#snippet posterOverlay()}<ReadNotes notes="Watch the **director's cut** :fire:" />{/snippet}
-      </PosterCard>
-      <PosterCard href="/movies/alien-1979" title="Alien" rank={4} subtitles={['\u00a0']}>
-        {#snippet posterOverlay()}<ReadNotes notes={longNotes} onedit={() => {}} />{/snippet}
-      </PosterCard>
-      <PosterCard href="/movies/aliens-1986" title="Aliens" rank={5} subtitles={['Shown on hover']}>
-        {#snippet posterOverlay()}<NotesPill add svg={plus} label="Add Note" onclick={() => {}} />{/snippet}
-      </PosterCard>
-    </PosterGrid>
-  </Container>
-</section>
-<section class="demo">
-  <Container>
-    <h2>List poster in manage mode</h2>
+<!-- The OG references are screenshots on og-shots, outside the app. -->
+<!-- eslint-disable svelte/no-navigation-without-resolve -->
+<DemoSection title="List picker" note="The summary's list button, then each of the list dialogs it opens.">
+  <p>
+    Local OG references: <a href="https://og-shots.trakt.tv/135/2d64380a-rails-add.png">Add list</a>,
+    <a href="https://og-shots.trakt.tv/135/68548be2-rails-edit.png">Edit list</a> and
+    <a href="https://og-shots.trakt.tv/135/5e5d9cba-rails-delete.png">Delete confirmation</a>.
+  </p>
+  <div class="sample">
+    <MediaList target={{ type: 'movie', id: 1, title: 'Fight Club' }} variant="summary" />
+  </div>
+  <div class="buttons">
+    {#each ['add', 'edit', 'watchlist', 'favorites'] as value (value)}
+      <button type="button" onclick={() => { mode = value as typeof mode; open = true; }}>Preview {value}</button>
+    {/each}
+    <button type="button" onclick={() => builtInOpen = true}>Preview watchlist edit</button>
+  </div>
+</DemoSection>
+
+<DemoSection title="Official list header" bleed note="The cover over an official Trakt list.">
+  <OfficialListHeader />
+</DemoSection>
+
+<DemoSection title="Notes on posters"
+  note="Short notes, notes at the 500-character limit that scroll, the add pill shown on hover, and the rating line.">
+  <PosterGrid>
+    <PosterCard href="/movies/heat-1995" title="Heat" rank={3}
+      subtitles={[{ rating: 8.19, votes: 12_400, href: '/movies/heat-1995' }, '\u00a0']}>
+      {#snippet posterOverlay()}<ReadNotes notes="Watch the **director's cut** :fire:" />{/snippet}
+    </PosterCard>
+    <PosterCard href="/movies/alien-1979" title="Alien" rank={4} subtitles={['\u00a0']}>
+      {#snippet posterOverlay()}<ReadNotes notes={longNotes} onedit={() => {}} />{/snippet}
+    </PosterCard>
+    <PosterCard href="/movies/aliens-1986" title="Aliens" rank={5} subtitles={['Shown on hover']}>
+      {#snippet posterOverlay()}<NotesPill add svg={plus} label="Add Note" onclick={() => {}} />{/snippet}
+    </PosterCard>
+  </PosterGrid>
+</DemoSection>
+
+<DemoSection title="Manage mode" bleed
+  note="Rank inputs and the edit tiles on each poster, then the bar with copy, move, reset and delete.">
+  <div class="padded">
     <PosterGrid>
       <PosterCard href="/movies/heat-1995" title="Heat" subtitles={['\u00a0']}>
-        {#snippet posterOverlay()}
-          <RankInput name="Heat" rank={posterRank} onmove={(next) => posterRank = clamp(next)} />
-          <ListItemEdit name="Heat" rank={posterRank} total={12} notes draggable changeRank={false}
-            onmove={(next) => posterRank = clamp(next)} ondrag={() => {}} onchangerank={() => {}} onremove={() => {}}
-            onnotes={() => {}} />
-        {/snippet}
-      </PosterCard>
+      {#snippet posterOverlay()}
+        <RankInput name="Heat" rank={posterRank} onmove={(next) => posterRank = clamp(next)} />
+        <ListItemEdit name="Heat" rank={posterRank} total={12} notes draggable changeRank={false}
+          onmove={(next) => posterRank = clamp(next)} ondrag={() => {}} onchangerank={() => {}} onremove={() => {}}
+          onnotes={() => {}} />
+      {/snippet}
+    </PosterCard>
       <PosterCard href="/movies/alien-1979" title="Alien" subtitles={['\u00a0']}>
-        {#snippet posterOverlay()}
-          <RankInput name="Alien" rank={7} onmove={() => {}} />
-          <ListItemEdit name="Alien" rank={7} total={12} notes={false} draggable={false} changeRank onmove={() => {}}
-            ondrag={() => {}} onchangerank={() => {}} onremove={() => {}} onnotes={() => {}} />
-        {/snippet}
-      </PosterCard>
+      {#snippet posterOverlay()}
+        <RankInput name="Alien" rank={7} onmove={() => {}} />
+        <ListItemEdit name="Alien" rank={7} total={12} notes={false} draggable={false} changeRank onmove={() => {}}
+          ondrag={() => {}} onchangerank={() => {}} onremove={() => {}} onnotes={() => {}} />
+      {/snippet}
+    </PosterCard>
     </PosterGrid>
-  </Container>
+  </div>
   <ListManageBar count={12} busy={false} onreset={() => {}} ondelete={() => {}}>
     {#snippet transfers()}
-      <ListTransfer source={{ ...transferSource, kind: 'personal', name: 'All-Time Favorites' }} query={{ types: [], genres: [], page: 1, limit: 120 }} sort={{ by: 'rank', how: 'asc' }} count={12} svg={clone} managing />
-      <ListTransfer source={{ ...transferSource, kind: 'personal', name: 'All-Time Favorites' }} query={{ types: [], genres: [], page: 1, limit: 120 }} sort={{ by: 'rank', how: 'asc' }} count={12} svg={fileExport} managing move />
+      <ListTransfer source={{ ...transferSource, kind: 'personal', name: 'All-Time Favorites' }}
+        query={{ types: [], genres: [], page: 1, limit: 120 }} sort={{ by: 'rank', how: 'asc' }} count={12} svg={clone}
+        managing />
+      <ListTransfer source={{ ...transferSource, kind: 'personal', name: 'All-Time Favorites' }}
+        query={{ types: [], genres: [], page: 1, limit: 120 }} sort={{ by: 'rank', how: 'asc' }} count={12}
+        svg={fileExport} managing move />
     {/snippet}
   </ListManageBar>
-</section>
-<section class="demo">
-  <Container>
-    <h2>Empty state: an item's lists page with nothing for the picked type</h2>
-    <EmptyState icon={listIcon} action={{ href: '/movies/holes-2003/lists/all', text: 'See all lists' }}>
-      No official lists feature Holes.
-    </EmptyState>
-    <h2>Compact, in a sidebar: the charts' People you follow, with nobody watching</h2>
-    <div class="sidebar-sample">
-      <FollowingWatchingSection type="shows" open watching={() => Promise.resolve([])}
-        datePreferences={{ order: 'ymd', hour24: false, timeZone: 'UTC', weekStartDay: 0 }} />
-    </div>
-  </Container>
-</section>
-<section class="demo">
-  <Container>
-    <h2>Lists index reorder controls</h2>
-    <ListRow href="/users/og_tester/lists/all-time-favorites" name="All-Time Favorites"
-      owner={{ name: 'OG Tester', href: '/users/og_tester' }} posters={[{}, {}, {}, {}, {}]} itemCount={12}
-      likeCount={3} likeTarget={{ id: 23, ownerSlug: 'og_tester', viewer: 'og_tester' }}>
-      {#snippet reorderControls()}<ListReorderControls name="All-Time Favorites" {rank} total={5} onmove={(next) => rank = Math.max(1, Math.min(5, next))} ondrag={() => {}} />{/snippet}
-    </ListRow>
-  </Container>
-</section>
-<section class="demo">
-  <Container><h2>List stats bar</h2></Container>
-  {#snippet none()}{/snippet}
+</DemoSection>
+
+<DemoSection title="Lists index reorder" note="The arrows and drag handle on a row of the owner's lists index.">
+  <ListRow href="/users/og_tester/lists/all-time-favorites" name="All-Time Favorites"
+    owner={{ name: 'OG Tester', href: '/users/og_tester' }} posters={[{}, {}, {}, {}, {}]} itemCount={12}
+    likeCount={3} likeTarget={{ id: 23, ownerSlug: 'og_tester', viewer: 'og_tester' }}>
+    {#snippet reorderControls()}
+      <ListReorderControls name="All-Time Favorites" {rank} total={5}
+        onmove={(next) => rank = Math.max(1, Math.min(5, next))} ondrag={() => {}} />
+    {/snippet}
+  </ListRow>
+</DemoSection>
+
+{#snippet none()}{/snippet}
+<DemoSection title="List stats bar" bleed
+  note="A signed-in viewer's bar on a made-up library: 2 of 10 watched and 5 collected, all of a 3-item list, still streaming, then signed out.">
   <SectionToolbar filters={none}>
     {#snippet stats()}
       <ListStats itemCount={10} stats={{ count: 10, runtime: 3844, items }} progress stateOf={library} likeCount={0}
@@ -150,10 +158,10 @@ const following = [{ slug: 'teodoro_2', name: 'Elsy Murphy (@teodoro_2)' }];
   <SectionToolbar filters={none}>
     {#snippet stats()}
       <ListStats itemCount={3} stats={{ count: 3, runtime: 481, items: items.slice(0, 3) }} progress
-        stateOf={everything} likeCount={1_204} comments={{ count: 12, href: '/users/og_tester/lists/heist-night/comments' }} />
+        stateOf={everything} likeCount={1_204}
+        comments={{ count: 12, href: '/users/og_tester/lists/heist-night/comments' }} />
     {/snippet}
   </SectionToolbar>
-  <Container><p>Streaming (pending), and signed out:</p></Container>
   <SectionToolbar filters={none}>
     {#snippet stats()}
       <ListStats itemCount={1_523} stats={never} progress stateOf={library} likeCount={3} />
@@ -164,39 +172,55 @@ const following = [{ slug: 'teodoro_2', name: 'Elsy Murphy (@teodoro_2)' }];
       <ListStats itemCount={57} stats={{ count: 57, runtime: 6012 }} likeCount={3} />
     {/snippet}
   </SectionToolbar>
-</section>
-<section class="demo">
-  <Container>
-    <h2>Applied streaming filters</h2>
-  </Container>
+</DemoSection>
+
+<DemoSection title="Applied streaming filters" bleed>
   <WatchNowChips tiles={[
     { kind: 'bundle', id: 'subscriptions', name: 'Streaming Subscriptions', country: 'US' },
     { kind: 'service', id: 'netflix', source: { name: 'Netflix', color: '#e50914' } },
   ]} />
-</section>
-<section class="demo">
-  <Container><h2>Built-in list edit</h2><button onclick={() => builtInOpen = true}>Preview watchlist edit</button></Container>
-</section>
+</DemoSection>
+
+<DemoSection title="Empty and compact"
+  note="An item's lists page with nothing for the picked type, then the charts' People you follow in a sidebar, with nobody watching.">
+  <EmptyState icon={listIcon} action={{ href: '/movies/holes-2003/lists/all', text: 'See all lists' }}>
+    No official lists feature Holes.
+  </EmptyState>
+  <div class="sidebar-sample">
+    <FollowingWatchingSection type="shows" open watching={() => Promise.resolve([])}
+      datePreferences={{ order: 'ymd', hour24: false, timeZone: 'UTC', weekStartDay: 0 }} />
+  </div>
+</DemoSection>
+
 <BuiltInListDialog bind:open={builtInOpen} kind="watchlist" count={12} vip busy={false} description={undefined}
-  sortBy="rank"
-  sortHow="asc" onsave={() => builtInOpen = false} />
-{#if open}<NewListDialog bind:open {following} initial={mode === 'add' ? undefined : initial} editing={mode !== 'add'}
+  sortBy="rank" sortHow="asc" onsave={() => builtInOpen = false} />
+{#if open}
+  <NewListDialog bind:open {following} initial={mode === 'add' ? undefined : initial} editing={mode !== 'add'}
   shareLink={mode === 'edit' ? 'https://trakt.tv/lists/share/sci-fi-club' : undefined}
-  kind={mode === 'watchlist' || mode === 'favorites' ? mode : 'list'} onsave={() => open = false} />{/if}
+  kind={mode === 'watchlist' || mode === 'favorites' ? mode : 'list'} onsave={() => open = false} />
+{/if}
 
 <style>
-.demo {
-  padding-block: var(--header-height) var(--gutter);
-}
-
 /* A charts sidebar's width and frame. */
 .sidebar-sample {
   inline-size: var(--sidebar-width);
+  margin-block-start: var(--gutter);
   padding: var(--sidebar-padding);
   background-color: var(--color-frame);
 }
+
 .sample {
   max-inline-size: var(--list-picker-width);
   margin-block: var(--gutter);
+}
+
+.padded {
+  padding-inline: var(--design-stage-padding);
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm-inline);
 }
 </style>

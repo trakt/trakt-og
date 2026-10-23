@@ -11,7 +11,6 @@ import { overlay } from '$lib/overlay/overlay';
 import Icon from '$lib/icons/Icon.svelte';
 import xmark from '$lib/icons/regular/xmark.svg?raw';
 import CtaLink from './CtaLink.svelte';
-import TasteSetup from './TasteSetup.svelte';
 
 interface Props {
   slug: string;
@@ -25,6 +24,7 @@ const { slug, firstName, joinedAt, taste }: Props = $props();
 const active = $derived(browser && isRecentMember(joinedAt));
 let current = $state<Nudge | null>(null);
 let tuning = $state(false);
+let tasteWanted = $state(false);
 let before: NudgeCounts | null = null;
 
 function show(nudge: Nudge) {
@@ -58,7 +58,10 @@ $effect(() => {
 });
 
 function act() {
-  if (!current?.action.href) tuning = true;
+  if (!current?.action.href) {
+    tasteWanted = true;
+    tuning = true;
+  }
   current = null;
 }
 </script>
@@ -74,8 +77,10 @@ function act() {
 </aside>
 {/if}
 
-{#if active}
-  <TasteSetup bind:open={tuning} country={taste.country} services={taste.services} genres={taste.genres} />
+{#if active && tasteWanted}
+  {#await import('./TasteSetup.svelte') then { default: TasteSetup }}
+    <TasteSetup bind:open={tuning} country={taste.country} services={taste.services} genres={taste.genres} />
+  {/await}
 {/if}
 
 <style>

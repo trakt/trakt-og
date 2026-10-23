@@ -5,7 +5,6 @@
 -->
 <script lang="ts">
 import { page } from '$app/state';
-import WatchNowDialog from './WatchNowDialog.svelte';
 import type { WatchNowButton } from './watchNow.ts';
 import { fetchWatchNowArt } from './fetchWatchNowArt.ts';
 import { watchNowLauncher } from './watchNowLauncher.svelte';
@@ -39,7 +38,9 @@ const button = $derived<WatchNowButton | undefined>(
 
 {#if watchNowLauncher.item && button}
   {#key watchNowLauncher.item}
-    <WatchNowDialog bind:open={watchNowLauncher.open} {button} title={watchNowLauncher.item.title}
+    {#await import('./WatchNowDialog.svelte') then { default: WatchNowDialog }}
+      <WatchNowDialog bind:open={watchNowLauncher.open} {button} title={watchNowLauncher.item.title}
   year={watchNowLauncher.item.year} {fanart} />
+    {/await}
   {/key}
 {/if}

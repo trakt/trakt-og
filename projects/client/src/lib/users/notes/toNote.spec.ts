@@ -35,6 +35,15 @@ describe('toNote', () => {
       .toMatchObject({ year: 1999, fanart: 'https://media.trakt.tv/fanarts/medium/1.jpg' });
   });
 
+  it('should treat a user flagged deleted as a deleted author', () => {
+    expect(map({ ...row, note: { ...note, user: { ...user, deleted: true } } })?.author).toMatchObject({
+      name: 'Deleted User',
+      href: null,
+      avatar: 'https://media.trakt.tv/hotlink-ok/placeholders/medium/zoidberg.png',
+      vip: null,
+    });
+  });
+
   it('should show activity labels and dates without blurring attached spoilers', () => {
     expect(map({ ...row, attached_to: { type: 'history', watched_at: '2026-09-29T01:00:00Z' } })).toMatchObject({
       concealed: false,

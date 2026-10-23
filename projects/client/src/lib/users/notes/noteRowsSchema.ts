@@ -31,6 +31,7 @@ const user = z.object({
   vip_og: z.boolean().nullish(),
   vip_years: z.number().nullish(),
   director: z.boolean().nullish(),
+  deleted: z.boolean().nullish(),
   images: z.object({ avatar: image }).nullish(),
 });
 

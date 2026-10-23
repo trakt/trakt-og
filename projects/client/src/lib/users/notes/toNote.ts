@@ -106,12 +106,21 @@ function activity(row: Row, datePreferences: DatePreferences) {
   } as const;
 }
 
+function author(user: Row['note']['user']) {
+  if (!user || user.deleted) return { name: 'Deleted User', href: null, avatar: PLACEHOLDER_AVATAR, vip: null };
+  return {
+    name: user.name?.trim() || user.username,
+    href: `/users/${user.ids.slug ?? user.username}`,
+    avatar: user.images?.avatar.thumb ?? user.images?.avatar.full ?? PLACEHOLDER_AVATAR,
+    vip: toVipBadge(user),
+  };
+}
+
 /** A pure view model; missing nested media is omitted rather than rendering a broken card. */
 export function toNote(row: Row, datePreferences: DatePreferences) {
   const item = itemDetails(row);
   if (!item) return null;
   const { note } = row;
-  const user = note.user;
   return {
     id: note.id,
     item,
@@ -122,12 +131,7 @@ export function toNote(row: Row, datePreferences: DatePreferences) {
     concealed: Boolean(note.spoiler && ['movie', 'show', 'season', 'episode'].includes(row.attached_to.type)),
     updatedAt: note.updated_at,
     updatedDate: formatDate(note.updated_at, { ...datePreferences, time: true }),
-    author: {
-      name: user?.name?.trim() || user?.username || 'Deleted User',
-      href: user ? `/users/${user.ids.slug ?? user.username}` : null,
-      avatar: user?.images?.avatar.thumb ?? user?.images?.avatar.full ?? PLACEHOLDER_AVATAR,
-      vip: user ? toVipBadge(user) : null,
-    },
+    author: author(note.user),
     activity: activity(row, datePreferences),
   };
 }

@@ -13,11 +13,11 @@ export type CommentAuthor = {
   readonly badge: VipBadge | null;
 };
 
-/** The author row's member. A deleted member shows as "Deleted". */
+/** The author row's member. A deleted member shows as "Deleted User". */
 export function authorOf(user: CommentResponse['user']): CommentAuthor {
   const avatar = user.images?.avatar.full ?? PLACEHOLDER_AVATAR;
   if (user.deleted || !user.ids.slug) {
-    return { name: 'Deleted', avatar: PLACEHOLDER_AVATAR, badge: null };
+    return { name: 'Deleted User', avatar: PLACEHOLDER_AVATAR, badge: null };
   }
 
   return {

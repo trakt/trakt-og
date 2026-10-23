@@ -72,7 +72,7 @@ describe('toSocialItem', () => {
 
     expect(toSocialItem(deleted, datePreferences).member).toEqual({
       key: 'gone',
-      name: 'Deleted',
+      name: 'Deleted User',
       avatar: PLACEHOLDER_AVATAR,
     });
   });

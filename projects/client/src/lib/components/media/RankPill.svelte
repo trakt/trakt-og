@@ -28,7 +28,6 @@ const { rank }: Props = $props();
   border: var(--rank-pill-border) solid var(--color-rank-pill-border);
   border-radius: calc(var(--rank-pill-height) / 2);
   background-color: var(--color-rank-pill-bg);
-  backdrop-filter: var(--blur-rank-pill);
   box-shadow: var(--shadow-rank-pill);
   color: var(--color-card-text);
   font-family: var(--font-headings);

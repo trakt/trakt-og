@@ -56,6 +56,12 @@ const { svg, label, add = false, ...rest }: Props = $props();
 
   &.add {
     border-style: dashed;
+    background-color: var(--color-rank-pill-bg);
+    backdrop-filter: none;
+
+    &:hover {
+      background-color: var(--color-read-notes-pill-hover);
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {

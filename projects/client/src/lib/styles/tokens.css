@@ -271,9 +271,8 @@
   --rank-pill-padding: 7px;
   --rank-pill-border: 1px;
   --font-size-rank-pill: 12px;
-  --color-rank-pill-bg: rgb(18 18 18 / 0.8);
+  --color-rank-pill-bg: rgb(18 18 18 / 0.85);
   --color-rank-pill-border: var(--color-profile-pill-border);
-  --blur-rank-pill: var(--blur-profile-pill);
   --shadow-rank-pill: 0 2px 6px rgb(0 0 0 / 0.35);
   --color-pill: light-dark(var(--gray-light), var(--gray));
   --color-avatar-border: #464646;

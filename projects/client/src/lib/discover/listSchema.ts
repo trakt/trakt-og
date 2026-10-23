@@ -6,7 +6,8 @@ import { z } from 'zod/v4';
  * list tile shows.
  */
 export const listSchema = z.object({
-  ids: z.object({ trakt: z.number() }),
+  type: z.string().nullish(),
+  ids: z.object({ trakt: z.number(), slug: z.string().nullish() }),
   name: z.string(),
   description: z.string().nullish(),
   allow_comments: z.boolean().nullish(),

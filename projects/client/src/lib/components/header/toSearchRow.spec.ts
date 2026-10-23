@@ -110,11 +110,11 @@ describe('toSearchRow', () => {
     expect(toSearchRow(hit({ type: 'person', person }), undefined, '2026-10-10')?.tags).toEqual(['Age 67', 'Acting']);
   });
 
-  it('should link lists by id and name official ones', () => {
+  it('should link official lists and name them', () => {
     const list = { name: 'Best Mindfucks', type: 'official', ids: { trakt: 800238, slug: 'best-mindfucks' } };
 
     expect(toSearchRow(hit({ type: 'list', list }))).toMatchObject({
-      href: '/lists/800238',
+      href: '/lists/official/best-mindfucks',
       title: 'Best Mindfucks',
       type: 'Official List',
     });
@@ -134,6 +134,18 @@ describe('toSearchRow', () => {
       tag: 'lish408',
       tags: ['1,250 items'],
     });
+  });
+
+  it("should link a personal list to its owner's page, and fall back to the id without an owner", () => {
+    const list = {
+      name: 'Popular Horror',
+      type: 'personal',
+      ids: { trakt: 1, slug: 'popular-horror' },
+      user: { username: 'lish408', ids: { slug: 'lish408' } },
+    };
+
+    expect(toSearchRow(hit({ type: 'list', list }))?.href).toBe('/users/lish408/lists/popular-horror');
+    expect(toSearchRow(hit({ type: 'list', list: { ...list, user: undefined } }))?.href).toBe('/lists/1');
   });
 
   it('should return null when the named object is missing', () => {

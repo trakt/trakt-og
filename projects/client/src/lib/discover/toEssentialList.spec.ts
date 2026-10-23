@@ -29,6 +29,13 @@ describe('toEssentialList', () => {
     });
   });
 
+  it("should link the loaded list's own page", () => {
+    if (!imdb) throw new Error('no essentials');
+    const official = { ...list, type: 'official', ids: { trakt: 2_142_753, slug: 'imdb-top-250' } };
+
+    expect(toEssentialList(imdb, official).href).toBe('/lists/official/imdb-top-250');
+  });
+
   it('should keep the art and title when the list did not load', () => {
     if (!imdb) throw new Error('no essentials');
 

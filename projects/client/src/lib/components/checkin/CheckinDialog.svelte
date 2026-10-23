@@ -29,6 +29,12 @@ $effect.pre(() => {
   busy = false;
 });
 
+// The form mounts after the dialog opened, where `autofocus` no longer applies. Leave focus alone if the viewer moved it.
+const focusIfIdle = (field: HTMLTextAreaElement) => {
+  const active = document.activeElement;
+  if (!active || active === document.body || active instanceof HTMLDialogElement) field.focus();
+};
+
 const request = (path: string, body?: unknown) =>
   rawApiFetch({
     fetch: viewerFetch(),
@@ -50,10 +56,11 @@ async function submit(event: SubmitEvent) {
 }
 </script>
 
-<Dialog open={target !== null} title="Check in" backdrop={target?.fanart} onclose={() => checkin.close()}>
+<Dialog open={target !== null || checkin.loading} title="Check in" backdrop={target?.fanart}
+  onclose={() => checkin.close()}>
   {#snippet header(id)}
     <h2 {id} class={['heading', { logo: target?.logo }]}>
-      {#if target?.logo}<img src={target.logo} alt={target.topTitle} />{:else}{target?.topTitle}{/if}
+      {#if target?.logo}<img src={target.logo} alt={target.topTitle} />{:else}{target?.topTitle ?? 'Check in'}{/if}
     </h2>
   {/snippet}
   {#if target}
@@ -73,12 +80,13 @@ async function submit(event: SubmitEvent) {
           {/if}
         </div>
       {/if}
-      <!-- svelte-ignore a11y_autofocus -->
-      <textarea bind:value={message} aria-label="Check in message" placeholder="Write a check in message..." rows="3" autofocus></textarea>
+      <textarea bind:value={message} aria-label="Check in message" placeholder="Write a check in message..." rows="3" {@attach focusIfIdle}></textarea>
       <button type="submit" class="submit" aria-disabled={busy}>
         {#if busy}<Spinner label="Checking in" />{:else}Check In{/if}
       </button>
     </form>
+  {:else}
+    <p class="loading" aria-busy="true"><Spinner label="Loading check in" /></p>
   {/if}
 </Dialog>
 
@@ -99,6 +107,14 @@ async function submit(event: SubmitEvent) {
     display: block;
     inline-size: 100%;
   }
+}
+
+.loading {
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: var(--space-dialog-inline) var(--space-dialog-wide-inline);
+  font-size: var(--font-size-checkin-heading);
 }
 
 form {

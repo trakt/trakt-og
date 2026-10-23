@@ -1,0 +1,48 @@
+name: Previously On aka About Summaries
+
+# Keeps the about page's data in the ABOUT KV namespace: a record per week of what shipped and the repo's GitHub
+# numbers. Runs after each deploy, and early on Monday to finalize last week. It never fails the run: a problem is a
+# warning, and KV keeps its last good values.
+on:
+  workflow_run:
+    workflows: [Scrobble aka CI]
+    types: [completed]
+    branches: [main]
+  schedule:
+    - cron: '10 0 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+
+concurrency:
+  group: about-summaries
+  cancel-in-progress: false
+
+jobs:
+  summaries:
+    name: Weekly Recap aka Summaries
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    defaults:
+      run:
+        working-directory: projects/client
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # weeks are built from the whole og history on main
+      - uses: ./.github/actions/setup-deno
+      - name: Catching Up aka Write the About Data
+        run: deno task about:summaries
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          # Optional. An OpenAI-compatible chat completions URL, its model id and key. Without them the weeks and
+          # numbers still update and summaries stay as they are.
+          ABOUT_MODEL_URL: ${{ vars.ABOUT_MODEL_URL }}
+          ABOUT_MODEL: ${{ vars.ABOUT_MODEL }}
+          ABOUT_MODEL_KEY: ${{ secrets.ABOUT_MODEL_KEY }}

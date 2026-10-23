@@ -48,7 +48,7 @@ const sections = $derived([
   { title: 'Discover', href: '/discover' },
   { title: 'Shows', href: '/shows/trending' },
   { title: 'Movies', href: '/movies/trending' },
-  { title: 'Calendar', href: '/calendars' },
+  { title: 'Calendar', href: user ? '/calendars/my/shows-movies' : '/calendars/premieres' },
 ]);
 
 const profileTabs = ['History', 'Progress', 'Watchlist', 'Library', 'Ratings', 'Lists', 'Comments', 'Notes', 'Network'];

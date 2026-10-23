@@ -1,7 +1,5 @@
 import type { VipBadge } from './VipBadge.ts';
 
-export type GenderIcon = 'mars' | 'venus' | 'genderless';
-
 /** The user the `/users/:id/*` frame is about, mapped from `/users/:id?extended=full,vip`. */
 export interface ProfileUser {
   readonly slug: string;
@@ -18,8 +16,6 @@ export interface ProfileUser {
   readonly vip: VipBadge | null;
   /** OG's `display_location`: "Omicron Persei 8" when blank. */
   readonly location: string;
-  readonly gender: { readonly icon: GenderIcon; readonly title: string };
-  readonly age: number | null;
   /** The About Me text, as the owner typed it. */
   readonly about: string | null;
   /** When the account was made, as API's ISO timestamp. Missing on a locked profile. */

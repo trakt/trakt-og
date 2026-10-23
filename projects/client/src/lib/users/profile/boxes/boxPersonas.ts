@@ -178,8 +178,6 @@ const profile = (
   isLocked: false,
   vip: vipYears > 0 ? { kind: 'vip', tag: null, years: vipYears } : null,
   location,
-  gender: { icon: 'genderless', title: 'Unknown' },
-  age: null,
   about,
   joinedAt,
   coverUrl: null,

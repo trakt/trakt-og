@@ -1,8 +1,7 @@
-import type { GenderIcon, ProfileUser } from './ProfileUser.ts';
+import type { ProfileUser } from './ProfileUser.ts';
 import { webpImageUrl } from '../utils/imageUrl.ts';
 import { toVipBadge } from './toVipBadge.ts';
 import { PLACEHOLDER_AVATAR } from './placeholderAvatar.ts';
-import { capitalize } from '../utils/capitalize.ts';
 
 /** The fields of `GET /users/:id?extended=full,vip` the frame reads. */
 export type ProfileResponse = {
@@ -17,16 +16,12 @@ export type ProfileResponse = {
   readonly director?: boolean | null;
   readonly ids: { readonly slug?: string | null };
   readonly location?: string | null;
-  readonly gender?: string | null;
-  readonly age?: number | null;
   readonly about?: string | null;
   readonly joined_at?: string | null;
   readonly images?: { readonly avatar: { readonly full: string } } | null;
 };
 
 const DEFAULT_LOCATION = 'Omicron Persei 8';
-
-const GENDER_ICONS: Readonly<Record<string, GenderIcon>> = { male: 'mars', female: 'venus' };
 
 export function toProfileUser(profile: ProfileResponse): ProfileUser {
   const displayName = profile.name?.trim() || profile.username;
@@ -42,23 +37,8 @@ export function toProfileUser(profile: ProfileResponse): ProfileUser {
     isLocked: profile.private && profile.name === undefined,
     vip: toVipBadge(profile),
     location: profile.location?.trim() || DEFAULT_LOCATION,
-    gender: {
-      icon: GENDER_ICONS[profile.gender ?? ''] ?? 'genderless',
-      title: profile.gender ? genderTitle(profile.gender) : 'Unknown',
-    },
-    age: profile.age ?? null,
     about: profile.about?.trim() || null,
     joinedAt: profile.joined_at ?? null,
     coverUrl: profile.vip_cover_image ? webpImageUrl(profile.vip_cover_image) : null,
   };
-}
-
-/** OG's `gender_title`: `non_binary` reads "Non-binary", anything else is title-cased. */
-function genderTitle(gender: string): string {
-  if (gender === 'non_binary') return 'Non-binary';
-
-  return gender
-    .split(/[_\s]+/)
-    .map(capitalize)
-    .join(' ');
 }

@@ -37,6 +37,7 @@ let button = $state<HTMLButtonElement>();
 let popover = $state<HTMLDivElement>();
 let preview = $state<number | null>(null);
 let expanded = $state(false);
+let opened = $state(false);
 const prompt = $derived(ratingPrompt(value, preview));
 const tip = $derived(locked ?? hint?.(value));
 // The title bar takes the color of the rating being pointed at, or the saved one at rest.
@@ -102,6 +103,7 @@ function toggle(event: ToggleEvent) {
   aria-label={label}
   style:position-anchor="--rating-{id}"
   style:--tone={tone}
+  onbeforetoggle={(event) => { if (event.newState === 'open') opened = true; }}
   ontoggle={toggle}
 >
   <!-- The shared prompt's look: a title bar tinted in the rating's color over the hearts. The title follows the heart
@@ -117,9 +119,11 @@ function toggle(event: ToggleEvent) {
       </Tooltip>
     {/if}
   </header>
-  <div class="body">
-    <RatingHearts {value} onrate={rate} onpreview={(rating) => (preview = rating)} />
-  </div>
+  {#if opened}
+    <div class="body">
+      <RatingHearts {value} onrate={rate} onpreview={(rating) => (preview = rating)} />
+    </div>
+  {/if}
 </div>
 
 <style>

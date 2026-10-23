@@ -75,6 +75,13 @@ describe('fetchAboutGithub', () => {
     await expect(fetchAboutGithub({ fetch: fakeFetch(new Set(['commits'])) })).rejects.toThrow('403');
   });
 
+  it('should name itself, since GitHub refuses a request without a user agent', async () => {
+    seen.length = 0;
+    await fetchAboutGithub({ fetch: fakeFetch() });
+
+    expect(seen.every((headers) => headers.get('user-agent') === 'og.trakt.tv')).toBe(true);
+  });
+
   it('should send the token when there is one', async () => {
     seen.length = 0;
     await fetchAboutGithub({ fetch: fakeFetch(), token: 'secret' });

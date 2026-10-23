@@ -8,6 +8,7 @@ import { listPageMeta } from './listPageMeta.ts';
 import type { ListQuery } from './ListQuery.ts';
 import { type ListSort, resolveListSort } from './resolveListSort.ts';
 import { type ListItemCard, toListItemCard } from './toListItemCard.ts';
+import { toListItemsSearch } from './toListItemsSearch.ts';
 import { type ListStats, toListStats } from './toListStats.ts';
 
 // Sorts about the viewer: the worker needs their token to order by them.
@@ -33,16 +34,7 @@ export async function fetchListItems(
 ): Promise<ListItems> {
   const types = query.types.length > 0 ? query.types.join(',') : 'all';
   const path = sort ? `/${types}/${sort.by}/${sort.how}` : query.types.length > 0 ? `/${types}` : '';
-  const search = new URLSearchParams({
-    extended,
-    page: String(query.page),
-    limit: String(query.limit),
-    ...(query.genres.length > 0 && { genres: query.genres.join(',') }),
-  });
-  if (query.terms) search.set('terms', query.terms);
-  if (query.watchnow) search.set('watchnow', query.watchnow);
-  if (query.hide?.length) search.set('hide', query.hide.join(','));
-  for (const id of query.hide ?? []) search.set(`hide_${id === 'nonotes' ? 'no_notes' : id}`, 'true');
+  const search = toListItemsSearch({ query, extended, page: query.page, limit: query.limit });
   const response = await rawApiFetch({ fetch, token, path: `${base}${path}?${search}` });
   if (response.status !== 200) return { status: response.status, rows: [], headers: response.headers };
   const rows = listItemRowsSchema.safeParse(await response.json().catch(() => null));

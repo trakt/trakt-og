@@ -24,8 +24,8 @@ describe('loadOwnerItems', () => {
     expect(rows).toHaveLength(252);
     expect(rows.at(-1)?.id).toBe(252);
     expect(request.mock.calls.map(([path]) => path)).toEqual([
-      '/sync/watchlist/all/rank/asc?extended=full%2Cimages&limit=250&page=1',
-      '/sync/watchlist/all/rank/asc?extended=full%2Cimages&limit=250&page=2',
+      '/sync/watchlist/all/rank/asc?extended=full%2Cimages&page=1&limit=250',
+      '/sync/watchlist/all/rank/asc?extended=full%2Cimages&page=2&limit=250',
     ]);
   });
   it('should preserve type, genre, text, streaming, hide, and sorting for the selected items', async () => {
@@ -39,7 +39,7 @@ describe('loadOwnerItems', () => {
           genres: ['drama'],
           terms: 'Heat',
           watchnow: 'netflix',
-          hide: ['watched'],
+          hide: ['watched', 'nonotes'],
           page: 3,
           limit: 24,
         },
@@ -47,7 +47,8 @@ describe('loadOwnerItems', () => {
       },
     });
     expect(request).toHaveBeenCalledWith(
-      '/users/me/favorites/movie/title/desc?extended=full%2Cimages&limit=250&page=1&genres=drama&terms=Heat&watchnow=netflix&hide=watched',
+      '/users/me/favorites/movie/title/desc?extended=full%2Cimages&page=1&limit=250&genres=drama&terms=Heat' +
+        '&watchnow=netflix&hide=watched%2Cnonotes&hide_watched=true&hide_no_notes=true',
     );
   });
   it('should refuse incomplete, malformed, duplicate, and unavailable reads', async () => {

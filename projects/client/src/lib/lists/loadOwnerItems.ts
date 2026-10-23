@@ -3,6 +3,7 @@ import { listItemRowsSchema } from './listItemRowsSchema.ts';
 import type { ListQuery } from './ListQuery.ts';
 import type { ListSort } from './resolveListSort.ts';
 import type { BuiltInListKind } from './toBuiltInListView.ts';
+import { toListItemsSearch } from './toListItemsSearch.ts';
 
 /** Fetch all pages before changing ranks. A missing, malformed, or shifting page must never produce a partial order. */
 export async function loadOwnerItems({ kind, request, selection }: {
@@ -14,11 +15,12 @@ export async function loadOwnerItems({ kind, request, selection }: {
     const path = selection
       ? `/users/me/${kind}/${selection.query.types.join(',') || 'all'}/${selection.sort.by}/${selection.sort.how}`
       : `/sync/${kind}/all/rank/asc`;
-    const search = new URLSearchParams({ extended: 'full,images', limit: '250', page: String(page) });
-    if (selection?.query.genres.length) search.set('genres', selection.query.genres.join(','));
-    if (selection?.query.terms) search.set('terms', selection.query.terms);
-    if (selection?.query.watchnow) search.set('watchnow', selection.query.watchnow);
-    if (selection?.query.hide?.length) search.set('hide', selection.query.hide.join(','));
+    const search = toListItemsSearch({
+      query: selection?.query ?? { genres: [] },
+      extended: 'full,images',
+      page,
+      limit: 250,
+    });
     const response = await request(`${path}?${search}`);
     if (!response.ok) throw new Error('Could not load your complete list.');
     const body = z.array(z.unknown()).parse(await response.json());

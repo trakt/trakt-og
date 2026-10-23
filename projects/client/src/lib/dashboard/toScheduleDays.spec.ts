@@ -79,6 +79,17 @@ describe('toScheduleDays', () => {
 
       expect(today?.items.at(0)?.network?.href).toBe('/shows/popular?networks=Prime%20Video');
     });
+
+    it('should write a plus in a network as -plus in the link', () => {
+      const rows = scheduleFixture.rows(TODAY).map((row) =>
+        row.show?.network === 'Apple TV' ? { ...row, show: { ...row.show, network: 'Apple TV+' } } : row
+      );
+      const plusDays = upcomingDays({ items: toCalendarItems(rows), start: TODAY, timeZone: 'UTC', count: 5 });
+      const [today] = toScheduleDays({ ...base, days: plusDays, isVip: true });
+      const severance = today?.items.find((entry) => entry.title === 'Severance');
+
+      expect(severance?.network?.href).toBe('/shows/popular?networks=Apple%20TV-plus');
+    });
   });
 
   describe('for movies', () => {

@@ -2,6 +2,7 @@ import type { EpisodeResponse, EpisodeStatsResponse, RatingsResponse, SeasonsRes
 import type { z } from 'zod/v4';
 import { iconLinks } from '../components/summary/iconLinks.ts';
 import { countryName, languageName, titleize } from '../components/summary/names.ts';
+import { networkSlug } from '../utils/networkSlug.ts';
 import { toCastMembers } from '../components/summary/toCastMembers.ts';
 import type { DatePreferences } from '../settings/DatePreferences.ts';
 import { countLabel } from '../utils/countLabel.ts';
@@ -51,7 +52,7 @@ export function toSeasonSummary(params: Params) {
   const network = season.network ?? show.network;
   const popular = (key: string, value: string) =>
     params.isVip ? `/shows/popular?${key}=${encodeURIComponent(value)}` : undefined;
-  const networkLink = network ? { name: network, href: popular('networks', network.replace('+', '-plus')) } : undefined;
+  const networkLink = network ? { name: network, href: popular('networks', networkSlug(network)) } : undefined;
   const aired = episodes.filter(({ first_aired }) => first_aired && new Date(first_aired) <= now);
   const total = season.total_runtime ?? aired.reduce((sum, episode) => sum + (episode.runtime ?? show.runtime ?? 0), 0);
 

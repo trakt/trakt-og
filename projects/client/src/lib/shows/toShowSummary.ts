@@ -7,6 +7,7 @@ import type FanartCard from '../components/media/FanartCard.svelte';
 import { toCastMembers } from '../components/summary/toCastMembers.ts';
 import type { NamedLink } from '../components/summary/NamedLink.ts';
 import { countryName, languageName, titleize } from '../components/summary/names.ts';
+import { networkSlug } from '../utils/networkSlug.ts';
 import { type StreamingRank, toExternalRatings } from '../components/summary/toExternalRatings.ts';
 import type { DatePreferences } from '../settings/DatePreferences.ts';
 import { countLabel } from '../utils/countLabel.ts';
@@ -145,7 +146,7 @@ type Facts = Pick<ShowSummaryParams, 'show' | 'studios' | 'people' | 'isVip' | '
 function facts({ show, studios, people, isVip, now, day, airs }: Facts) {
   const upcoming = !!show.first_aired && new Date(show.first_aired) > now;
   const network = show.network
-    ? { name: show.network, href: isVip ? popular('networks', show.network.replace('+', '-plus')) : undefined }
+    ? { name: show.network, href: isVip ? popular('networks', networkSlug(show.network)) : undefined }
     : undefined;
   const slot = airsAt(show.airs, now);
   const airing = !upcoming && !['ended', 'canceled', 'pilot'].includes(show.status ?? '') && !!show.first_aired &&

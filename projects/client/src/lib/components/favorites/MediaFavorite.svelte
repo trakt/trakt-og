@@ -51,16 +51,18 @@ async function toggle() {
     return;
   }
   busy = true;
+  const remove = Boolean(membership.favorited);
+  const loading = remove ? undefined : loadFavoriteTarget(target);
   try {
     const note = await toggleFavorite({
       target,
-      remove: Boolean(membership.favorited),
+      remove,
       overlay,
       request: request('POST'),
       notify: toast,
     });
-    if (note) {
-      promptTarget = await loadFavoriteTarget(target);
+    if (note && loading) {
+      promptTarget = await loading;
       noteId = note.id;
       draft = note.notes;
       open = true;

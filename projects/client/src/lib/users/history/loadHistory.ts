@@ -1,5 +1,6 @@
 import type { UserStats } from '../../stats/userStatsSchema.ts';
 import { error, redirect } from '@sveltejs/kit';
+import { signInRedirect } from '../../auth/signInRedirect.ts';
 import { extractPageMeta } from '../../api/extractPageMeta.ts';
 import type { PageMeta } from '../../api/PageMeta.ts';
 import { rawApiFetch } from '../../api/rawApiFetch.ts';
@@ -162,7 +163,7 @@ export async function loadHistory({ fetch, locals, params, url, cookies, parent 
     layout,
   ]);
   // OG sent signed-out visitors past page 1 to sign in.
-  if (current > 1 && !user) redirect(302, `/auth/signin?redirect_to=${encodeURIComponent(url.pathname + url.search)}`);
+  if (current > 1 && !user) signInRedirect(url);
 
   const fadeHide: FadeHide = { fade: parseFadeHide(cookies.get('filter-fade-history')), hide: [] };
   const dividers = cookies.get('filter-hide-dividers') !== '1';

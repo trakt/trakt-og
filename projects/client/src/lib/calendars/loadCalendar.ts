@@ -1,4 +1,5 @@
-import { type Cookies, error, redirect } from '@sveltejs/kit';
+import { type Cookies, error } from '@sveltejs/kit';
+import { signInRedirect } from '../auth/signInRedirect.ts';
 import { rawApiFetch } from '../api/rawApiFetch.ts';
 import { hasAdvancedFilters, parseAdvancedFilters } from '../components/filters/advancedFilters.ts';
 import { advancedFiltersQuery } from '../components/filters/advancedFiltersQuery.ts';
@@ -41,10 +42,6 @@ type LoadCalendarParams = {
 
 const NOTHING_HIDDEN: HiddenCalendar = { shows: new Set(), movies: new Set() };
 
-function signIn(url: URL): never {
-  redirect(302, `/auth/signin?redirect_to=${encodeURIComponent(url.pathname)}`);
-}
-
 /**
  * Loads one calendar month for SSR, with the viewer's display choices (list or month view, artwork, grouped episodes)
  * from their cookies. The public calendars go without the user's token: a stale cookie token would get a
@@ -57,7 +54,7 @@ export async function loadCalendar(
 ) {
   const calendar = (target === 'my' ? MY_CALENDARS : PUBLIC_CALENDARS).find((c) => c.slug === slug);
   if (!calendar) error(404, 'Not Found');
-  if (target === 'my' && !token) signIn(url);
+  if (target === 'my' && !token) signInRedirect(url);
 
   // The feed range depends on the account's start day, so the calendar waits for the shared settings. The hidden list
   // (never rejects) only filters the result, so the calendar doesn't wait for it.
@@ -100,7 +97,7 @@ export async function loadCalendar(
     filtered ? fetchItems({}, target === 'my' ? token : null) : Promise.resolve(undefined),
     hiddenItems,
   ]);
-  if ([...responses, ...(unfilteredResponses ?? [])].some((items) => items === 'signed-out')) signIn(url);
+  if ([...responses, ...(unfilteredResponses ?? [])].some((items) => items === 'signed-out')) signInRedirect(url);
   const flatten = (lists: typeof responses) => lists.flatMap((items) => items === 'signed-out' ? [] : items);
   const visible = (items: ReturnType<typeof flatten>) =>
     withoutHidden(items, { hidden, hideSpecials: preferences.hideSpecials });

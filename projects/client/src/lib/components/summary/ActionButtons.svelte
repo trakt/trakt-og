@@ -5,6 +5,7 @@
 -->
 <script lang="ts">
 import { page } from '$app/state';
+import { signInHref } from '$lib/auth/signInHref';
 import { checkin as checkinModal } from '$lib/components/checkin/checkin.svelte';
 import type { CheckinTarget } from '$lib/components/checkin/CheckinTarget';
 import { newComment } from '$lib/components/comments/newComment.svelte';
@@ -67,7 +68,7 @@ async function openCheckin(item: Pick<CheckinTarget, 'type' | 'id'>) {
 }
 
 // Logged out, "Add comment" signs in and comes back. Banned from commenting, it's gone (the page has no form).
-const signIn = $derived(`/auth/signin?${new URLSearchParams({ redirect_to: page.url.pathname })}`);
+const signIn = $derived(signInHref(page.url));
 
 const buttons = $derived(
   [

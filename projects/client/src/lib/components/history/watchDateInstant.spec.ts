@@ -17,4 +17,12 @@ describe('watchDateInstant', () => {
       expect(watchDateInstant(value, 'America/Los_Angeles')).toBeNull();
     },
   );
+
+  it('should reject a time the clocks skip', () => {
+    expect(watchDateInstant('2026-03-08T02:30', 'America/New_York')).toBeNull();
+  });
+
+  it('should take the first of a time the clocks repeat', () => {
+    expect(watchDateInstant('2026-10-25T02:30', 'Europe/Berlin')).toBe('2026-10-25T00:30:00.000Z');
+  });
 });

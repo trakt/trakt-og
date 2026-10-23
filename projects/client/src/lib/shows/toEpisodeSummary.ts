@@ -8,7 +8,6 @@ import type {
 } from '@trakt/api';
 import type { z } from 'zod/v4';
 import { episodeNumber, episodeType } from '../components/media/episodeTags.ts';
-import { iconLinks } from '../components/summary/iconLinks.ts';
 import { countryName, languageName } from '../components/summary/names.ts';
 import { networkSlug } from '../utils/networkSlug.ts';
 import { toCastMembers } from '../components/summary/toCastMembers.ts';
@@ -24,6 +23,7 @@ import type { seasonPeopleSchema } from './seasonPeopleSchema.ts';
 import { toCrewGroups } from '../components/summary/toCrewGroups.ts';
 import { seasonName } from '../utils/seasonName.ts';
 import { genreLabel } from '../utils/genreLabel.ts';
+import { toEpisodeLinks } from './toEpisodeLinks.ts';
 
 interface Params {
   show: ShowResponse;
@@ -126,16 +126,6 @@ export function toEpisodeSummary(params: Params) {
       selected: item.number === episode.number,
     })),
     ...episodeNeighbours({ showHref, genres: show.genres, episode, seasons: params.seasons }),
-    links: [
-      ...(episode.ids.imdb ? [{ label: 'IMDB', href: `https://www.imdb.com/title/${episode.ids.imdb}` }] : []),
-      ...(show.ids.tmdb
-        ? [{
-          label: 'TMDB',
-          href: `https://www.themoviedb.org/tv/${show.ids.tmdb}/season/${episode.season}/episode/${episode.number}`,
-        }]
-        : []),
-      ...(show.ids.tvdb ? [{ label: 'Fanart.tv', href: `https://fanart.tv/series/${show.ids.tvdb}` }] : []),
-      ...iconLinks({ social: null, search: fullTitle }),
-    ],
+    links: toEpisodeLinks({ show, episode }),
   };
 }

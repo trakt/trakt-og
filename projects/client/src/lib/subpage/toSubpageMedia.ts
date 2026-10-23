@@ -5,15 +5,15 @@ import { episodeNumber, episodeType } from '../components/media/episodeTags.ts';
 import type { SpoilerTarget } from '../settings/SpoilerTarget.ts';
 import type { RatingTarget } from '../components/rating/RatingTarget.ts';
 import type { ExternalLink } from '../components/summary/ExternalLink.ts';
-import { iconLinks } from '../components/summary/iconLinks.ts';
 import { imageUrl } from '../utils/imageUrl.ts';
 import type { subpageItemSchema } from './subpageItemSchema.ts';
 import { seasonName } from '../utils/seasonName.ts';
 import { toMovieLinks } from '../movies/toMovieLinks.ts';
 import { toShowLinks } from '../shows/toShowLinks.ts';
+import { toSeasonLinks } from '../shows/toSeasonLinks.ts';
+import { toEpisodeLinks } from '../shows/toEpisodeLinks.ts';
 
 type Body = z.infer<typeof subpageItemSchema>;
-type Show = NonNullable<Body['show']>;
 
 /** A step up for the tag bar; one without an href is the page's own, like a titled season's "Season 10". */
 type Step = { readonly title: string; readonly href?: string };
@@ -60,46 +60,7 @@ type Params = {
   collection?: { readonly title: string; readonly href: string };
 };
 
-const IMDB = 'https://www.imdb.com/';
-const TMDB = 'https://www.themoviedb.org/';
-
 const yearOf = (date: string | null | undefined) => (date ? new Date(date).getUTCFullYear() : undefined);
-const find = (q: string, s: string) => `${IMDB}find?${new URLSearchParams({ q, s })}`;
-// OG's DuckDuckGo "!wikipedia" query for seasons and episodes: "Breaking Bad 2008 TV Series Season 1".
-const showQuery = (show: Show) => `${show.title}${show.year ? ` ${show.year}` : ''} TV Series`;
-
-const onlyLinks = (links: readonly (ExternalLink | false)[]) => links.filter((link) => link !== false);
-
-function seasonLinks(show: Show, number: number, justwatch: string | null | undefined): ExternalLink[] {
-  const { ids } = show;
-  return [
-    {
-      label: 'IMDB',
-      href: ids.imdb
-        ? `${IMDB}title/${ids.imdb}/episodes?season=${number}`
-        : find(`${show.title} season ${number}`, 'tt'),
-    },
-    ...onlyLinks([!!ids.tmdb && { label: 'TMDB', href: `${TMDB}tv/${ids.tmdb}/season/${number}` }]),
-    ...iconLinks({ social: null, justwatch, search: `${showQuery(show)} Season ${number}` }),
-  ];
-}
-
-function episodeLinks(show: Show, episode: NonNullable<Body['episode']>): ExternalLink[] {
-  const title = episode.title?.trim() ?? '';
-  return [
-    {
-      label: 'IMDB',
-      href: episode.ids.imdb ? `${IMDB}title/${episode.ids.imdb}` : find(`${show.title} ${title}`.trim(), 'ep'),
-    },
-    ...onlyLinks([
-      !!show.ids.tmdb && {
-        label: 'TMDB',
-        href: `${TMDB}tv/${show.ids.tmdb}/season/${episode.season}/episode/${episode.number}`,
-      },
-    ]),
-    ...iconLinks({ social: null, search: `${showQuery(show)}${title ? ` ${title}` : ''}` }),
-  ];
-}
 
 /**
  * A subpage's view of its item, from `/comments/:id/item` or the summaries `loadSubpageMedia`
@@ -188,7 +149,7 @@ export function toSubpageMedia({ body, justwatch, collection }: Params): Subpage
       released: season.first_aired,
       fanart: showFanart,
       poster: poster(season.images?.poster?.at(0)) ?? showPoster,
-      links: seasonLinks(show, season.number, justwatch),
+      links: toSeasonLinks({ show, number: season.number, justwatch }),
       watchNow,
     };
   }
@@ -216,7 +177,7 @@ export function toSubpageMedia({ body, justwatch, collection }: Params): Subpage
       fanart: fanart(episode.images?.screenshot?.at(0)) ?? showFanart,
       spoilerFanart: showFanart,
       poster: showPoster,
-      links: episodeLinks(show, episode),
+      links: toEpisodeLinks({ show, episode }),
       watchNow,
     };
   }

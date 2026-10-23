@@ -116,6 +116,12 @@ describe('toSubpageMedia', () => {
       });
       expect(media?.links.at(0)?.href).toBe('https://www.imdb.com/title/tt0903747/episodes?season=0');
     });
+
+    it('should link out like the season summary, with the JustWatch link when there is one', () => {
+      const justwatch = 'https://www.justwatch.com/us/tv-show/breaking-bad/season-1';
+      const links = toSubpageMedia({ body: { type: 'season', season, show }, justwatch })?.links;
+      expect(links?.map(({ label }) => label)).toEqual(['IMDB', 'TMDB', 'JustWatch', 'Wikipedia']);
+    });
   });
 
   describe('for episodes', () => {
@@ -158,6 +164,15 @@ describe('toSubpageMedia', () => {
       const media = toSubpageMedia({ body: { type: 'episode', episode: { ...episode, season: 0, number: 3 }, show } });
       expect(media?.title).toBe('Special 3 Pilot');
       expect(media?.links.map(({ href }) => href)).toContain('https://www.themoviedb.org/tv/1396/season/0/episode/3');
+    });
+
+    it('should link out like the episode summary, without JustWatch', () => {
+      const links = toSubpageMedia({
+        body: { type: 'episode', episode, show },
+        justwatch: 'https://www.justwatch.com/us',
+      })
+        ?.links;
+      expect(links?.map(({ label }) => label)).toEqual(['IMDB', 'TMDB', 'Wikipedia']);
     });
   });
 

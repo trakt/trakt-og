@@ -28,9 +28,10 @@ const measure = (element: HTMLElement) => {
   let frame = 0;
   const observer = new ResizeObserver(() => {
     cancelAnimationFrame(frame);
+    const tall = element.scrollHeight > collapsed + HEIGHT_MARGIN;
     // Updating the collapsed layout during ResizeObserver delivery can trigger a browser resize loop.
     frame = requestAnimationFrame(() => {
-      collapsible = element.scrollHeight > collapsed + HEIGHT_MARGIN;
+      collapsible = tall;
     });
   });
   observer.observe(element);

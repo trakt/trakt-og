@@ -15,9 +15,10 @@ function measure(element: HTMLElement) {
   let frame = 0;
   const observer = new ResizeObserver(() => {
     cancelAnimationFrame(frame);
+    const maximum = Number.parseFloat(getComputedStyle(element).getPropertyValue('--note-text-max-height'));
+    const tall = element.scrollHeight > maximum;
     frame = requestAnimationFrame(() => {
-      const maximum = Number.parseFloat(getComputedStyle(element).getPropertyValue('--note-text-max-height'));
-      collapsible = element.scrollHeight > maximum;
+      collapsible = tall;
     });
   });
   observer.observe(element);

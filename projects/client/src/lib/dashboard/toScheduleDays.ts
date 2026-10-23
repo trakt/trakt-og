@@ -5,6 +5,7 @@ import { type Offers, toWatchNowButton } from '../components/watchnow/watchNow.t
 import type { DatePreferences } from '../settings/DatePreferences.ts';
 import { formatDate } from '../utils/formatDate.ts';
 import { imageUrl } from '../utils/imageUrl.ts';
+import { networkSlug } from '../utils/networkSlug.ts';
 import type { SeasonPoster } from './fetchSeasonPosters.ts';
 import type { ScheduleDay } from './ScheduleDay.ts';
 import type { ScheduleItem } from './ScheduleItem.ts';
@@ -101,7 +102,7 @@ function toItem(item: CalendarItem, context: Context): ScheduleItem {
     network: show.network
       ? {
         name: show.network,
-        href: context.isVip ? `/shows/popular?networks=${encodeURIComponent(show.network)}` : undefined,
+        href: context.isVip ? `/shows/popular?networks=${encodeURIComponent(networkSlug(show.network))}` : undefined,
       }
       : undefined,
     watchNow: watchNow(item, context),

@@ -1,5 +1,6 @@
 import { error, redirect } from '@sveltejs/kit';
 import { signInRedirect } from '../auth/signInRedirect.ts';
+import { z } from 'zod/v4';
 import { api } from '../api/api.ts';
 import { extractPageMeta } from '../api/extractPageMeta.ts';
 import { rawApiFetch } from '../api/rawApiFetch.ts';
@@ -17,6 +18,7 @@ import { fetchLiveNow } from './fetchLiveNow.ts';
 import { chartPageCount } from './chartPageCount.ts';
 import { type ChartPageRequest, chartPageRequests } from './chartPageRequests.ts';
 import { type ChartPageSize, chartPageSize } from './chartPageSize.ts';
+import { chartRowSchema } from './chartRowSchema.ts';
 import { type ChartRow, toChartCard } from './toChartCard.ts';
 import { positiveInt } from '../utils/positiveInt.ts';
 import { watchNowCountry } from '../settings/watchNowCountry.ts';
@@ -70,22 +72,24 @@ async function fetchPopular(client: Client, type: MediaType, query: Query): Prom
     : null;
 }
 
-// `@trakt/api` has no contract for the worker's `/shows|movies/recommendations`. There's no paging, so the paging
-// headers are dropped. The API hides watched items by default.
+const recommendationRowsSchema = z.array(chartRowSchema);
+
+// `@trakt/api` has no contract for the worker's `/shows|movies/recommendations`, so the body is parsed here. There's
+// no paging, so the paging headers are dropped. The API hides watched items by default.
 async function fetchRecommendations(
   fetch: typeof globalThis.fetch,
   token: string,
   type: MediaType,
   filters: Record<string, string>,
-) {
+): Promise<Rows | 'signed-out' | 'failed'> {
   const limit = firstPage(chartPageSize('recommendations'));
   const search = new URLSearchParams({ extended: 'full,images', limit: `${limit}`, ...filters });
   const response = await rawApiFetch({ fetch, token, path: `/${type}/recommendations?${search}` });
   if (response.status === 401) return 'signed-out';
-  if (!response.ok) return null;
+  if (!response.ok) return 'failed';
 
-  const rows: ChartRow[] = await response.json();
-  return { headers: new Headers(), rows };
+  const parsed = recommendationRowsSchema.safeParse(await response.json().catch(() => null));
+  return parsed.success ? { headers: new Headers(), rows: parsed.data } : 'failed';
 }
 
 // Watch-now routes are public, so no token goes with it. A failure only costs the sidebar its tiles.
@@ -181,9 +185,11 @@ export async function loadChart(
   // Filtered, the sidebar counts "120 of 735 shows", so the chart's unfiltered size comes along: one row, public.
   const filtered = Object.keys(filterQuery).length > 0;
   const layout = parent();
-  const [response, { datePreferences, settings }, filterSources, unfiltered, live] = await Promise.all([
+  const [fetched, { datePreferences, settings }, filterSources, unfiltered, live] = await Promise.all([
     chart === 'recommendations'
-      ? (token ? fetchRecommendations(fetch, token, type, filterQuery) : signInRedirect(url))
+      ? (token
+        ? fetchRecommendations(fetch, token, type, filterQuery).catch(() => 'failed' as const)
+        : signInRedirect(url))
       : token && viewer
       ? viewerRows(chart)
       : publicRows(chart),
@@ -197,7 +203,10 @@ export async function loadChart(
       : undefined,
     chart === 'trending' ? fetchLiveNow(fetch) : null,
   ]);
-  if (response === 'signed-out') signInRedirect(url);
+  if (fetched === 'signed-out') signInRedirect(url);
+  // Recommendations that didn't load keep the sidebar working and say so where the cards go.
+  const failed = fetched === 'failed';
+  const response = failed ? { headers: new Headers(), rows: [] } : fetched;
   if (!response) error(502, 'The Trakt API could not load this chart.');
 
   const { headers } = response;
@@ -215,6 +224,8 @@ export async function loadChart(
     filterSources: filterSources && new Map([...filterSources].filter(([slug]) => picked.has(slug))),
     watchNowCountry: country,
     watchNowFavorites: favorites,
+    /** Recommendations didn't load. The other charts fail the whole page instead. */
+    failed,
     cards: response.rows.map((row) => toChartCard(row, { chart, now: new Date(), order: datePreferences.order })),
     page: limit || !headers.has('x-pagination-item-count')
       ? extractPageMeta(headers, page)

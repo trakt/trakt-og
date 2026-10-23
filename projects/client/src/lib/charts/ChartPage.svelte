@@ -28,6 +28,7 @@ import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import FrameGrid from '$lib/components/frame/FrameGrid.svelte';
 import FanartCard from '$lib/components/media/FanartCard.svelte';
 import { mediaQuickIcons } from '$lib/components/media/mediaQuickIcons';
+import NoData from '$lib/components/empty/NoData.svelte';
 import NoResults from '$lib/components/empty/NoResults.svelte';
 import { pageHref } from '$lib/components/pagination/pageWindow';
 import CountPill from '$lib/components/sidebar/CountPill.svelte';
@@ -301,7 +302,11 @@ const period = $derived(advanced.config.period);
     <RailGroup tools>{@render tools()}</RailGroup>
   {/snippet}
 
-  {#if entries.length > 0}
+  {#if data.failed}
+    <div class="no-results">
+      <NoData inFrame>Recommendations didn't load. Refresh the page to try again.</NoData>
+    </div>
+  {:else if entries.length > 0}
     {#if hero}
       <ChartHero card={hero.card} rank={hero.rank} live={data.chart === 'trending'} icons={hero.icons} />
     {/if}

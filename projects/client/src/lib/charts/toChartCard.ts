@@ -1,9 +1,9 @@
-import type { MovieResponse, ShowResponse } from '@trakt/api';
 import { countLabel } from '../utils/countLabel.ts';
 import { type DateOrder, formatDate } from '../utils/formatDate.ts';
 import { genreLabel } from '../utils/genreLabel.ts';
 import { imageUrl } from '../utils/imageUrl.ts';
 import type { ChartName } from './chartNames.ts';
+import type { ChartMedia } from './chartRowSchema.ts';
 
 // Trending sends `watchers`, anticipated `list_count`, favorited `user_count`, and watched, played and collected
 // all four of the last. Shows' `collector_count` is owners, and their `collected_count` is episodes.
@@ -18,7 +18,7 @@ type Stats = {
 };
 
 /** One chart row. Most charts send rows like this; popular rows are wrapped to match. */
-export type ChartRow = ({ show: ShowResponse } | { movie: MovieResponse }) & Stats;
+export type ChartRow = ({ show: ChartMedia } | { movie: ChartMedia }) & Stats;
 
 export type ChartCard = {
   type: 'show' | 'movie';
@@ -51,7 +51,7 @@ export type ChartCard = {
 type Tag = ChartCard['tags'][number];
 
 // the premiere in the show's own zone, then the network.
-function showTags(show: ShowResponse, order: DateOrder): Tag[] {
+function showTags(show: ChartMedia, order: DateOrder): Tag[] {
   const timeZone = show.airs?.timezone;
   return [
     ...(show.first_aired && timeZone
@@ -62,7 +62,7 @@ function showTags(show: ShowResponse, order: DateOrder): Tag[] {
 }
 
 // `released` is a bare date, so it's formatted in UTC to keep the day.
-function movieTags(movie: MovieResponse, order: DateOrder): Tag[] {
+function movieTags(movie: ChartMedia, order: DateOrder): Tag[] {
   return movie.released ? [{ text: formatDate(movie.released, { format: 'LL', timeZone: 'UTC', order }) }] : [];
 }
 

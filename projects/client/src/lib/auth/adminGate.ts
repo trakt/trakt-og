@@ -1,7 +1,12 @@
+import { z } from 'zod/v4';
+
 /** Paths anyone can load while og is admin-only: the placeholder, and what signing in and out needs. */
 const OPEN_PATHS = new Set(['/', '/auth/signin', '/callback', '/logout', '/api/store-token']);
 
 const USERINFO = 'https://auth.trakt.tv/api/auth/oauth2/userinfo';
+
+/** The userinfo claim that marks an admin. Only a literal `true` counts. */
+const adminClaimsSchema = z.object({ u: z.object({ a: z.literal(true) }) });
 
 /** Whether the gate lets this path through for everyone. SvelteKit's `__data.json` requests count as their page. */
 export function isOpenPath(pathname: string): boolean {
@@ -26,8 +31,7 @@ async function fetchIsAdmin(token: string, fetch: typeof globalThis.fetch) {
     const response = await fetch(USERINFO, { headers: { Authorization: `Bearer ${token}` } });
     if (!response.ok) return false;
 
-    const claims: unknown = await response.json();
-    return (claims as { u?: { a?: unknown } } | null)?.u?.a === true;
+    return adminClaimsSchema.safeParse(await response.json()).success;
   } catch {
     return false;
   }

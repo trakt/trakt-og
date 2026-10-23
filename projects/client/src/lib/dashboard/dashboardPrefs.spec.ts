@@ -20,6 +20,7 @@ describe('dashboardPrefs', () => {
       hide_recently_watched: false,
       hide_network: false,
       hide_recommendations: false,
+      hide_first_night: false,
     });
   });
 

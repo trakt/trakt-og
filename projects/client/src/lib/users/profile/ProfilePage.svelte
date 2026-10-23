@@ -76,7 +76,8 @@ const hasnt = (rest: string) =>
 {#if data.boxes}
   <ProfileBoxStrip boxes={data.boxes} />
 {:else if data.welcome}
-  <WelcomeHero />
+  <WelcomeHero displayName={data.profile.displayName} named={data.profile.displayName !== data.profile.username}
+  slug={data.profile.slug} />
 {/if}
 
 <!-- No favorites, no panel. -->

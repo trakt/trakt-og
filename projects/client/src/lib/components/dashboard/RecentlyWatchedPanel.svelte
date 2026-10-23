@@ -8,6 +8,9 @@
 import type { Snippet } from 'svelte';
 import { browser } from '$app/environment';
 import NoData from '$lib/components/empty/NoData.svelte';
+import PanelPrompt from '$lib/components/first-night/PanelPrompt.svelte';
+import StarterPicks from '$lib/components/first-night/StarterPicks.svelte';
+import { panelQuotes } from '$lib/firstNight/panelQuotes';
 import FanartCard from '$lib/components/media/FanartCard.svelte';
 import UnderProgress from '$lib/components/media/UnderProgress.svelte';
 import PosterGrid from '$lib/components/media/PosterGrid.svelte';
@@ -106,9 +109,11 @@ function changeRows(rows: number) {
   {@const rows = rowCount({ rows: saved, items: items.length, perRow: PER_ROW })}
   {#snippet cards()}
     {#if items.length === 0}
-      <div class="notice">
-  <NoData>Add some TV shows and movies to your watched history and they'll show up here.</NoData>
-</div>
+      <PanelPrompt roomy --panel-prompt-offset="calc(var(--space-lg-block) + var(--space-fanarts-row-end))"
+  quote={panelQuotes.recentlyWatched}
+  text="Mark a few things you've watched. Your stats, recaps and recommendations follow.">
+        {#snippet picks()}<StarterPicks chart="popular" type="movies" count={4} action="seen" />{/snippet}
+      </PanelPrompt>
     {:else}
       <div class="cards">
   <PosterGrid columns={PER_ROW} phoneColumns={1}>

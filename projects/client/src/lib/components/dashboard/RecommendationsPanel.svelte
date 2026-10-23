@@ -12,6 +12,8 @@ import { SvelteSet } from 'svelte/reactivity';
 import Container from '$lib/components/container/Container.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import NoData from '$lib/components/empty/NoData.svelte';
+import PanelPrompt from '$lib/components/first-night/PanelPrompt.svelte';
+import { panelQuotes } from '$lib/firstNight/panelQuotes';
 import SeeMore from '$lib/components/see-more/SeeMore.svelte';
 import type { DashboardRecommendations } from '$lib/dashboard/fetchRecommendations';
 import type { Recommendation } from '$lib/dashboard/Recommendation';
@@ -185,6 +187,12 @@ const step = (count: number, by: -1 | 1) => (focus = (focus + by + count) % coun
   {:else if !spotlight}
     <NoData>Start watching some shows and movies to get recommendations!</NoData>
   {:else}
+    {#if recs.fallback}
+      <div class="fallback">
+  <PanelPrompt quote={panelQuotes.recommendations} tall
+    text="Rate 5 titles and your picks get personal. Until then, here's what everyone's watching." />
+</div>
+    {/if}
     <div class="layout">
       <div class="stage">
         <RecommendationSpotlight item={spotlight} index={at} total={items.length} mixed={recs.type === 'media'}
@@ -222,6 +230,15 @@ const step = (count: number, by: -1 | 1) => (focus = (focus + by + count) % coun
 </div>
 
 <style>
+/* The body already sits its own space below the dropdowns; the prompt tops that up to a gutter. */
+.fallback {
+  margin-block-end: var(--gutter);
+
+  & :global(.panel-prompt) {
+    padding-block-start: calc(var(--gutter) - var(--space-recommendations-body));
+  }
+}
+
 /* OG's `#recommendations-wrapper`, in the page's theme like the Social Feed above it. The spotlight stays dark. */
 .recommendations {
   overflow-anchor: none;

@@ -1,5 +1,7 @@
 <script lang="ts">
 import DashboardGreeting from '$lib/components/dashboard/DashboardGreeting.svelte';
+import FirstNightHero from '$lib/components/first-night/FirstNightHero.svelte';
+import FirstNightProgress from '$lib/components/first-night/FirstNightProgress.svelte';
 import RecapRibbon from '$lib/components/dashboard/RecapRibbon.svelte';
 import StatsPanel from '$lib/components/dashboard/StatsPanel.svelte';
 import DashboardInbox from '$lib/components/dashboard/DashboardInbox.svelte';
@@ -60,10 +62,22 @@ function loadRecommendations(type: DashboardSettings['recommendations']['type'])
     content="Your Trakt dashboard: watching statistics, follow requests and what to watch next." />
 </svelte:head>
 
-<DashboardGreeting user={data.profile} memberSince={data.memberSince} watching={data.watching}>
-  <StatsPanel {panel} slug={username} />
+{#if data.firstNight}
+  <FirstNightProgress slug={username}
+  watched={data.stats.movies.watched + data.stats.shows.watched}
+  taste={{
+      country: data.settings?.browsing?.watchnow?.country?.toLowerCase() || 'us',
+      services: data.settings?.browsing?.watchnow?.favorites ?? [],
+      genres: data.settings?.browsing?.genres?.favorites ?? [],
+    }} />
+  <FirstNightHero firstNight={data.firstNight} firstName={data.profile.firstName}
+  named={!!data.settings?.user.name?.trim()} avatarUrl={data.profile.avatarUrl} />
+{:else}
+  <DashboardGreeting user={data.profile} memberSince={data.memberSince} watching={data.watching}>
+  <StatsPanel {panel} slug={username} fresh={data.stats.movies.plays + data.stats.episodes.plays === 0} />
 </DashboardGreeting>
-<RecapRibbon recaps={data.recaps} />
+  {#if data.recaps}<RecapRibbon recaps={data.recaps} />{/if}
+{/if}
 <DashboardInbox requests={data.requests} />
 <!-- A panel the viewer hid comes back null. -->
 {#if data.upNext}

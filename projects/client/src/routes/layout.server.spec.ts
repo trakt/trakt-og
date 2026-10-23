@@ -61,6 +61,8 @@ describe('root layout settings', () => {
       firstName: 'OG',
       isVip: true,
       avatarUrl: SETTINGS.user.images.avatar.full,
+      joinedAt: null,
+      named: true,
     });
     expect(data.datePreferences).toEqual({ order: 'ydm', hour24: true, timeZone: 'Asia/Tokyo', weekStartDay: 1 });
     expect(formatDate('2026-09-29T23:30:00Z', { ...data.datePreferences, time: true })).toBe('2026 30 Sep 08:30');

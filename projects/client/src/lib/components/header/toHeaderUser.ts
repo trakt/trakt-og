@@ -7,6 +7,7 @@ export type SettingsUser = {
   readonly vip: boolean;
   readonly ids: { readonly slug: string };
   readonly images: { readonly avatar: { readonly full: string } };
+  readonly joined_at?: string | null;
 };
 
 /** OG's: the first word of the full name, or the username when there's no name. */
@@ -18,5 +19,7 @@ export function toHeaderUser(user: SettingsUser): HeaderUser {
     firstName: displayName.split(' ')[0] ?? displayName,
     avatarUrl: user.images.avatar.full,
     isVip: user.vip,
+    joinedAt: user.joined_at ?? null,
+    named: !!user.name?.trim(),
   };
 }

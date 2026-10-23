@@ -20,6 +20,7 @@ import { fetchWatchlist } from './fetchWatchlist.ts';
 import { followRequestsSchema } from './followRequestsSchema.ts';
 import { toDashboardSettings } from './toDashboardSettings.ts';
 import { toFollowRequest } from './toFollowRequest.ts';
+import { fetchFirstNight, isNewAccount } from '../firstNight/firstNight.ts';
 
 type Params = {
   fetch: typeof fetch;
@@ -62,11 +63,10 @@ export async function loadDashboard({ fetch, panelFetch = fetch, locals, cookies
     error(502, 'Trakt returned an invalid dashboard response.');
   }
   const user = toProfileUser(parsedProfile.data);
-  const dashboard = toDashboardSettings({
-    settings: layout.settings,
-    prefs: dashboardPrefs.read(cookies.get(dashboardPrefs.COOKIE), user.slug),
-  });
+  const prefs = dashboardPrefs.read(cookies.get(dashboardPrefs.COOKIE), user.slug);
+  const dashboard = toDashboardSettings({ settings: layout.settings, prefs });
   const { hidden } = dashboard;
+  const welcome = isNewAccount(parsedStats.data) && !prefs.hide_first_night;
   const panelClient = api({ fetch: panelFetch, token });
   // The Social Feed skips its request at zero: the stats strip's read has the count.
   const following = Promise.resolve(parsedStats.data.network.following);
@@ -79,7 +79,11 @@ export async function loadDashboard({ fetch, panelFetch = fetch, locals, cookies
       .toSorted((a, b) => Date.parse(b.requested_at) - Date.parse(a.requested_at))
       .map((row) => toFollowRequest(row, { datePreferences: layout.datePreferences, now })),
     dashboard,
-    recaps: fetchRecapRibbon({ client: panelClient, slug: user.slug, timeZone: layout.datePreferences.timeZone, now }),
+    // A new member's welcome wall stands in for the greeting and the recaps until they close it.
+    firstNight: welcome ? fetchFirstNight({ fetch: panelFetch, now }) : null,
+    recaps: welcome
+      ? null
+      : fetchRecapRibbon({ client: panelClient, slug: user.slug, timeZone: layout.datePreferences.timeZone, now }),
     upNext: unless(
       hidden.upNext,
       () => fetchUpNext({ api: panelClient, username: user.slug, settings: dashboard.upNext, fetch: panelFetch }),

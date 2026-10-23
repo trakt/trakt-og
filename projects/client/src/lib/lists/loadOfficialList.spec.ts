@@ -68,7 +68,9 @@ const load = (query = '', slug = 'collection', signedIn = false) =>
     url: new URL(`https://og.trakt.tv/lists/official/${slug}${query}`),
     parent: () =>
       Promise.resolve({
-        user: signedIn ? { slug: 'kim', firstName: 'Kim', isVip: false, avatarUrl: '' } : null,
+        user: signedIn
+          ? { slug: 'kim', firstName: 'Kim', isVip: false, avatarUrl: '', joinedAt: null, named: true }
+          : null,
         datePreferences: { order: 'mdy', hour24: false, timeZone: 'UTC', weekStartDay: 0 },
       }),
   });

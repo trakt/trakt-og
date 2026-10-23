@@ -18,6 +18,7 @@ import type { SettingsBody } from '$lib/settings/SettingsBody';
 import { traktUrls } from '$lib/traktUrls';
 import { MediaQuery } from 'svelte/reactivity';
 import HeaderMenu from './HeaderMenu.svelte';
+import GettingStarted from '$lib/components/first-night/GettingStarted.svelte';
 import HeaderSearch from './HeaderSearch.svelte';
 import HeaderTint from './HeaderTint.svelte';
 import type { HeaderUser } from './HeaderUser.ts';
@@ -111,6 +112,7 @@ async function toggleDarkKnight() {
 
   <div class="user">
     {#if user}
+      <GettingStarted slug={user.slug} named={user.named} joinedAt={user.joinedAt} />
       {#if !user.isVip}
         <a class="get-vip" href={traktUrls.vip} target="_blank" rel="noopener"><Icon svg={rocket} /> Get VIP</a>
       {/if}
@@ -215,7 +217,7 @@ async function toggleDarkKnight() {
 .user {
   display: flex;
   align-items: center;
-  gap: var(--space-sm-inline);
+  gap: var(--space-header-user);
   margin-inline-start: auto;
   white-space: nowrap;
   font-size: var(--font-size-header-link);
@@ -233,13 +235,16 @@ async function toggleDarkKnight() {
   transition: background-color 0.2s, color 0.2s;
 }
 
+/* Get VIP is a link pill like the main nav's, in the Trakt brand violet. */
 .get-vip {
-  background-color: var(--color-header-vip-bg);
-  color: var(--color-header-vip-text);
+  block-size: var(--header-pill-height);
+  border-radius: var(--radius-header-pill);
+  background-color: var(--brand-violet);
+  color: var(--color-text-inverse);
 
   &:is(:hover, :focus-visible) {
-    background-color: var(--brand-tertiary);
-    color: var(--color-header-text);
+    background-color: var(--brand-violet-darken);
+    color: var(--color-text-inverse);
   }
 }
 

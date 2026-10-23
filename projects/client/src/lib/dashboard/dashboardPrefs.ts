@@ -35,6 +35,8 @@ const prefsSchema = z.object({
   hide_recently_watched: z.boolean().catch(false),
   hide_network: z.boolean().catch(false),
   hide_recommendations: z.boolean().catch(false),
+  /** og's own: the new member closed the welcome wall. */
+  hide_first_night: z.boolean().catch(false),
 });
 
 /** The dashboard settings with no `/users/settings` field. */

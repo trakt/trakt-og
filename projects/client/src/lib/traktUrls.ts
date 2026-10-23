@@ -5,6 +5,8 @@ export const traktUrls = {
   vip: `${v3}/vip`,
   settings: `${v3}/settings`,
   syncSettings: `${v3}/settings/sync`, /* connect Plex or Jellyfin */
+  importData: `${v3}/settings/data`, /* TV Time, IMDb, Letterboxd and other imports */
+  importFrom: (source: 'tvtime' | 'imdb' | 'letterboxd') => `${v3}/settings/data?source=${source}`,
   yearInReview: (slug: string, year: number) => `${v3}/users/${encodeURIComponent(slug)}/year/${year}`,
   allTimeStats: `${v3}/users/me/year/all`, /* the viewer's own, from their dashboard */
   monthInReview: (slug: string, year: number, month: number) =>

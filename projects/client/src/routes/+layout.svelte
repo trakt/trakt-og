@@ -13,6 +13,7 @@ import Footer from '$lib/components/footer/Footer.svelte';
 import Header from '$lib/components/header/Header.svelte';
 import MobileSplash from '$lib/components/mobile-splash/MobileSplash.svelte';
 import Toaster from '$lib/components/toast/Toaster.svelte';
+import Nudges from '$lib/components/first-night/Nudges.svelte';
 import WatchNowHost from '$lib/components/watchnow/WatchNowHost.svelte';
 import { startOverlay } from '$lib/overlay/startOverlay';
 import { toDarkKnight } from '$lib/settings/toDarkKnight';
@@ -59,6 +60,13 @@ onMount(() => {
 </MobileSplash>
 {/if}
 <Toaster />
+{#if data.user && !bare}
+  <Nudges slug={data.user.slug} firstName={data.user.firstName} joinedAt={data.user.joinedAt} taste={{
+    country: data.settings?.browsing?.watchnow?.country?.toLowerCase() || 'us',
+    services: data.settings?.browsing?.watchnow?.favorites ?? [],
+    genres: data.settings?.browsing?.genres?.favorites ?? [],
+  }} />
+{/if}
 <WatchNowHost />
 <CheckinDialog />
 <TotallyNinja />

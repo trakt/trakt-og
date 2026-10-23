@@ -10,7 +10,9 @@ onMount(async () => {
   if (user) await storeToken(user).catch(() => {});
 
   // replace, not goto: the ?code= URL must not stay in history, and a full load renders the signed-in SSR.
-  location.replace(callbackReturnPath(user?.state));
+  // Signing in from the header or the home page lands on the dashboard, where a new member's welcome wall is.
+  const to = callbackReturnPath(user?.state);
+  location.replace(user && (to === '/' || to === '/home') ? '/dashboard' : to);
 });
 </script>
 

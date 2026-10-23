@@ -44,10 +44,10 @@ describe('toOnDeckItem', () => {
     expect(item?.episodeNumber).toBe('2x03 (28)');
   });
 
-  it('should take the whole show from the lifetime entry while rewatching', () => {
+  it("should take the whole show from the show's progress while rewatching", () => {
     const item = toOnDeckItem({
       entry: byTitle(upNextFixture.entries, 'Lost'),
-      lifetime: byTitle(upNextFixture.lifetime, 'Lost'),
+      lifetime: byTitle(upNextFixture.lifetime, 'Lost').progress,
       username: 'sean',
     });
 

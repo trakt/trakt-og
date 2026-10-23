@@ -4,6 +4,7 @@ import { toOnDeckItem } from '../progress/toOnDeckItem.ts';
 import type { UpNextEntry } from '../progress/UpNextEntry.ts';
 import type { DashboardSettings } from './DashboardSettings.ts';
 import { fetchSeasonPosters } from './fetchSeasonPosters.ts';
+import { fetchWholeShowProgress } from './fetchWholeShowProgress.ts';
 import { sortUpNext } from './sortUpNext.ts';
 import { toDashboardSettings } from './toDashboardSettings.ts';
 import { upNextSorts } from './upNextSorts.ts';
@@ -45,11 +46,10 @@ function request({ sort, favorites }: DashboardSettings['upNext']): { query: Que
   };
 }
 
-async function upNext(client: Client, query: Query, lifetime: boolean): Promise<readonly UpNextEntry[]> {
+async function upNext(client: Client, query: Query): Promise<readonly UpNextEntry[]> {
   // @trakt/api 0.6.0's up_next contract lacks `watchnow`, which the worker's `sources` reads. The client sends
   // every query key it's given.
-  const params = { extended: 'full,images' as const, ...query, ...(lifetime && { lifetime_stats: true }) };
-  const response = await client.sync.progress.upNext.standard({ query: params });
+  const response = await client.sync.progress.upNext.standard({ query: { extended: 'full,images', ...query } });
   if (response.status !== 200) throw new Error(`Up Next failed with ${response.status}`);
 
   return response.body;
@@ -71,34 +71,36 @@ export async function fetchUpNextTicks(client: Client, entry: UpNextEntry): Prom
 
 /**
  * The viewer's Up Next cards in their saved sort. The endpoint always answers for the token's owner. With
- * "only favorites", only shows streaming on their favorite services. A rewatch needs the whole show's progress too, so
- * only then does a second request fetch it with `lifetime_stats`. OG's exact progress bars need each show's progress,
- * and the season poster setting each show's seasons; those requests run only with those settings.
+ * "only favorites", only shows streaming on their favorite services. A rewatch needs the whole show's progress too,
+ * which each rewatched show fetches on its own. OG's exact progress bars need each show's progress, and the season
+ * poster setting each show's seasons; those requests run only with those settings.
  */
 export async function fetchUpNext(
   { api: client, username, settings = toDashboardSettings({ settings: null }).upNext, fetch = globalThis.fetch }:
     FetchUpNextParams,
 ): Promise<readonly OnDeckItem[]> {
   const { query, sorted } = request(settings);
-  const fetched = (await upNext(client, query, false)).filter((entry) => entry.progress.next_episode);
+  const fetched = (await upNext(client, query)).filter((entry) => entry.progress.next_episode);
   const entries = (sorted ? sortUpNext({ entries: fetched, ...settings.sort }) : fetched).slice(0, LIMIT);
-  const rewatching = entries.some((entry) => entry.progress.reset_at);
   const episodes = entries.flatMap(({ show, progress }) =>
     progress.next_episode ? [{ showId: show.ids.trakt, season: progress.next_episode.season }] : []
   );
 
   const [lifetime, posterFor, showTicks] = await Promise.all([
-    rewatching ? upNext(client, query, true).catch(() => []) : [],
+    Promise.all(
+      entries.map((entry) =>
+        entry.progress.reset_at ? fetchWholeShowProgress(client, entry.show.ids.trakt) : undefined
+      ),
+    ),
     settings.poster === 'season' ? fetchSeasonPosters({ fetch, episodes }) : undefined,
     settings.simpleProgress ? [] : Promise.all(entries.map((entry) => fetchUpNextTicks(client, entry))),
   ]);
-  const lifetimeById = new Map(lifetime.map((entry) => [entry.show.ids.trakt, entry]));
 
   return entries.flatMap((entry, i) => {
     const season = entry.progress.next_episode?.season;
     const item = toOnDeckItem({
       entry,
-      lifetime: lifetimeById.get(entry.show.ids.trakt),
+      lifetime: lifetime.at(i),
       username,
       seasonPoster: season === undefined ? undefined : posterFor?.(entry.show.ids.trakt, season),
       ticks: showTicks.at(i),

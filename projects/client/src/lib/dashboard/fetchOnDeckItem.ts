@@ -6,6 +6,7 @@ import { extractPageMeta } from '../api/extractPageMeta.ts';
 import type { DashboardSettings } from './DashboardSettings.ts';
 import { fetchSeasonPosters } from './fetchSeasonPosters.ts';
 import { fetchUpNextTicks } from './fetchUpNext.ts';
+import { fetchWholeShowProgress } from './fetchWholeShowProgress.ts';
 import { toDashboardSettings } from './toDashboardSettings.ts';
 import { capitalize } from '../utils/capitalize.ts';
 
@@ -21,7 +22,10 @@ async function findEntry(client: ReturnType<typeof api>, id: number, page = 1): 
   return more ? findEntry(client, id, page + 1) : undefined;
 }
 
-/** Up Next respects rewatch resets; per-show watched progress supplies lifetime stats and completed shows. */
+/**
+ * Up Next respects rewatch resets; per-show watched progress supplies a rewatch's whole show, as the panel does, and
+ * completed shows. The default sort puts the show just watched first, so the scan rarely reads past the first page.
+ */
 export async function fetchOnDeckItem(
   { item, username, fetch, settings = toDashboardSettings({ settings: null }).upNext }: {
     item: OnDeckItem;
@@ -35,9 +39,7 @@ export async function fetchOnDeckItem(
   if (entry) {
     const season = entry.progress.next_episode?.season;
     const [lifetime, ticks, posterFor] = await Promise.all([
-      entry.progress.reset_at
-        ? client.shows.progress.watched({ params: { id: String(item.showId) }, query: { extended: 'full' } })
-        : null,
+      entry.progress.reset_at ? fetchWholeShowProgress(client, item.showId) : undefined,
       settings.simpleProgress ? undefined : fetchUpNextTicks(client, entry),
       settings.poster === 'season' && season !== undefined
         ? fetchSeasonPosters({ fetch: globalThis.fetch, episodes: [{ showId: item.showId, season }] })
@@ -45,7 +47,7 @@ export async function fetchOnDeckItem(
     ]);
     const mapped = toOnDeckItem({
       entry,
-      lifetime: lifetime?.status === 200 ? { show: entry.show, progress: lifetime.body } : undefined,
+      lifetime,
       username,
       ticks,
       seasonPoster: season === undefined ? undefined : posterFor?.(item.showId, season),

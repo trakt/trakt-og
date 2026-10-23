@@ -26,10 +26,12 @@ function toEpisodeBadge(episode: NonNullable<UpNextEntry['progress']['next_episo
   return { label: type.text, kind: type.kind };
 }
 
+type Progress = Pick<UpNextEntry['progress'], 'aired' | 'completed' | 'stats'>;
+
 type ToOnDeckItemParams = {
   entry: UpNextEntry;
-  /** The same show fetched with `lifetime_stats`, for a rewatch's whole-show progress. */
-  lifetime?: UpNextEntry;
+  /** While rewatching, the whole show's progress (`/shows/:id/progress/watched`). */
+  lifetime?: Progress;
   /** The viewer's slug, for the progress link. */
   username: string;
   /** With the season poster setting, the next episode's season poster. */
@@ -38,7 +40,7 @@ type ToOnDeckItemParams = {
   ticks?: readonly boolean[];
 };
 
-function toShowProgress({ aired, completed, stats }: UpNextEntry['progress']): ShowProgress {
+function toShowProgress({ aired, completed, stats }: Progress): ShowProgress {
   return {
     aired,
     completed,
@@ -76,7 +78,7 @@ export function toOnDeckItem(
     progressHref: `/users/${username}/progress?show=${show.ids.trakt}`,
     progress: toShowProgress(progress),
     ticks: ticks && ticks.length > 0 ? ticks : undefined,
-    fullProgress: rewatching && lifetime ? toShowProgress(lifetime.progress) : undefined,
+    fullProgress: rewatching && lifetime ? toShowProgress(lifetime) : undefined,
     rewatching,
   };
 }

@@ -62,8 +62,8 @@ $effect(() => {
 </div>
 
 <style>
+/* The page follows the viewer's theme; the hero stays dark over its fanart. */
 .home {
-  color-scheme: dark;
   background-color: var(--color-home-bg);
   color: var(--color-home-text);
 }

@@ -103,6 +103,15 @@ describe('toSeasonSummary', () => {
     expect(view.links.map(({ label }) => label)).not.toContain('Official Site');
   });
 
+  it('should link out like its subpages, with the JustWatch link from Watch Now', () => {
+    const justwatch = 'https://www.justwatch.com/us/tv-show/breaking-bad/season-1';
+    const links = toSeasonSummary({ ...base, justwatch }).links;
+    expect(links.map(({ label }) => label)).toEqual(['IMDB', 'TMDB', 'JustWatch', 'Wikipedia']);
+    expect(links.at(0)?.href).toBe('https://www.imdb.com/title/tt0903747/episodes?season=1');
+    const noImdb = toSeasonSummary({ ...base, show: { ...base.show, ids: { trakt: 1388, slug: 'breaking-bad' } } });
+    expect(noImdb.links.at(0)?.href).toBe('https://www.imdb.com/find?q=Breaking+Bad+season+1&s=tt');
+  });
+
   it('should omit unaired ratings and exclude future episodes from runtime and history', () => {
     const future = {
       ...base,

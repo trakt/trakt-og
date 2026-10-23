@@ -1,6 +1,5 @@
 import type { EpisodeResponse, EpisodeStatsResponse, RatingsResponse, SeasonsResponse, ShowResponse } from '@trakt/api';
 import type { z } from 'zod/v4';
-import { iconLinks } from '../components/summary/iconLinks.ts';
 import { countryName, languageName } from '../components/summary/names.ts';
 import { networkSlug } from '../utils/networkSlug.ts';
 import { toCastMembers } from '../components/summary/toCastMembers.ts';
@@ -15,6 +14,7 @@ import { toShowEpisodes } from './toShowEpisodes.ts';
 import { toCrewGroups } from '../components/summary/toCrewGroups.ts';
 import { seasonName } from '../utils/seasonName.ts';
 import { genreLabel } from '../utils/genreLabel.ts';
+import { toSeasonLinks } from './toSeasonLinks.ts';
 
 interface Params {
   show: ShowResponse;
@@ -24,6 +24,8 @@ interface Params {
   ratings: RatingsResponse;
   stats: EpisodeStatsResponse;
   people: z.infer<typeof seasonPeopleSchema>;
+  /** From the season's Watch Now rank. */
+  justwatch?: string | null;
   isVip: boolean;
   actorSpoilers: boolean;
   episodeTypeTags: boolean;
@@ -101,16 +103,7 @@ export function toSeasonSummary(params: Params) {
       languages: (show.languages ?? []).map((code) => ({ name: languageName(code), href: popular('languages', code) })),
       genres: (show.genres ?? []).map((genre) => ({ name: genreLabel(genre), href: popular('genres', genre) })),
     },
-    links: [
-      ...(show.ids.imdb
-        ? [{ label: 'IMDB', href: `https://www.imdb.com/title/${show.ids.imdb}/episodes/?season=${season.number}` }]
-        : []),
-      ...(show.ids.tmdb
-        ? [{ label: 'TMDB', href: `https://www.themoviedb.org/tv/${show.ids.tmdb}/season/${season.number}` }]
-        : []),
-      ...(show.ids.tvdb ? [{ label: 'Fanart.tv', href: `https://fanart.tv/series/${show.ids.tvdb}` }] : []),
-      ...iconLinks({ social: null, search: `${show.title} ${title}` }),
-    ],
+    links: toSeasonLinks({ show, number: season.number, justwatch: params.justwatch }),
     cast: toCastMembers(params.people.cast, params.actorSpoilers),
     guestStars: toCastMembers(params.people.guest_stars, params.actorSpoilers),
     crew: toCrewGroups(params.people.crew, params.actorSpoilers),

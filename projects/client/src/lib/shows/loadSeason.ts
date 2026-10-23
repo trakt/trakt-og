@@ -89,6 +89,7 @@ export async function loadSeason({ fetch, parent, id, season: requestedSeason, u
     ratings: ratingsResponse.body,
     stats: statsResponse.body,
     people: people.data,
+    justwatch: watchNow.rank?.link,
     isVip: layout.user?.isVip ?? false,
     actorSpoilers: layout.settings?.browsing?.spoilers?.actors !== 'hide',
     episodeTypeTags: !layout.settings?.browsing?.hide_episode_type_tags,

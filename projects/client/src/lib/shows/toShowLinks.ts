@@ -1,6 +1,7 @@
 import type { ExternalLink } from '../components/summary/ExternalLink.ts';
 import { iconLinks } from '../components/summary/iconLinks.ts';
 import type { LinkedMedia } from '../components/summary/LinkedMedia.ts';
+import { showSearch } from './showSearch.ts';
 
 /** A show's external links: its site, IMDB, TMDB, TVDB and Fanart.tv, then JustWatch, Wikipedia and its socials. */
 export function toShowLinks({ show, justwatch }: { show: LinkedMedia; justwatch?: string | null }): ExternalLink[] {
@@ -20,10 +21,6 @@ export function toShowLinks({ show, justwatch }: { show: LinkedMedia; justwatch?
   ];
   return [
     ...links.filter((link) => link !== false),
-    ...iconLinks({
-      social: show.social_ids,
-      justwatch,
-      search: `${show.year ? `${show.title} ${show.year}` : show.title} TV Series`,
-    }),
+    ...iconLinks({ social: show.social_ids, justwatch, search: showSearch(show) }),
   ];
 }

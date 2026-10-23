@@ -102,4 +102,9 @@ describe('toEpisodeSummary', () => {
     expect(view.guestStars.at(0)?.episodes).toBeFalsy();
     expect(view.facts.originalTitle).toBeUndefined();
   });
+  it('should link out like its subpages, searching IMDB for an episode without an id', () => {
+    const links = toEpisodeSummary({ ...base, show: { ...base.show, ids: { ...base.show.ids, tvdb: 81189 } } }).links;
+    expect(links.map(({ label }) => label)).toEqual(['IMDB', 'TMDB', 'Wikipedia']);
+    expect(links.at(0)?.href).toBe('https://www.imdb.com/find?q=Breaking+Bad+Second&s=ep');
+  });
 });

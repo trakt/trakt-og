@@ -29,7 +29,6 @@ interface Params {
   show: ShowResponse;
   season: SeasonsResponse[number];
   episode: EpisodeResponse;
-  episodes: readonly EpisodeResponse[];
   seasons: z.infer<typeof episodeSeasonsSchema>;
   people: PeopleResponse;
   regulars: z.infer<typeof seasonPeopleSchema>;
@@ -120,11 +119,12 @@ export function toEpisodeSummary(params: Params) {
     cast: toCastMembers(params.regulars.cast, false),
     guestStars: toCastMembers(params.people.cast, false),
     crew: toCrewGroups(params.people.crew, false),
-    episodeLinks: params.episodes.toSorted((a, b) => a.number - b.number).map((item) => ({
-      text: `${item.number}`,
-      href: `${seasonHref}/episodes/${item.number}`,
-      selected: item.number === episode.number,
-    })),
+    episodeLinks: (params.seasons.find(({ number }) => number === episode.season)?.episodes ?? [])
+      .toSorted((a, b) => a.number - b.number).map((item) => ({
+        text: `${item.number}`,
+        href: `${seasonHref}/episodes/${item.number}`,
+        selected: item.number === episode.number,
+      })),
     ...episodeNeighbours({ showHref, genres: show.genres, episode, seasons: params.seasons }),
     links: toEpisodeLinks({ show, episode }),
   };

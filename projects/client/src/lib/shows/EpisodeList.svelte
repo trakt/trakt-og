@@ -136,6 +136,7 @@ const metaTags = (row: EpisodeRow): readonly TagPill[] => [
     {#each sorted as row (row.id)}
       {@const item = view(row)}
       {@const state = item.state}
+      {@const season = { show: showId, number: row.season, episode: row.episode }}
       <article class={["row", { faded: item.faded }]} aria-labelledby="episode-{row.id}" {@attach stats.observe({ id: row.id, show: showId, season: row.season, episode: row.episode })}>
         <FanartCard
           framed
@@ -148,8 +149,9 @@ const metaTags = (row: EpisodeRow): readonly TagPill[] => [
           userRating={state.rating}
           icons={{
             fill: item.fill,
-            ratingTarget: { type: 'episode', id: row.id, title: row.title },
-            collectionTarget: { type: 'episode', id: row.id, title: row.title, season: { show: showId, number: row.season, episode: row.episode } },
+            ratingTarget: { type: 'episode', id: row.id, title: row.title, season },
+            watchTarget: { type: 'episode', id: row.id, title: row.title, season },
+            collectionTarget: { type: 'episode', id: row.id, title: row.title, season },
             rating: row.rating,
             released: row.released,
             listLabel: 'Add to list',

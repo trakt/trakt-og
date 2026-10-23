@@ -17,36 +17,56 @@ type SliceSource<K extends keyof OverlaySlices> = {
   load: (get: ApiGet) => Promise<OverlaySlices[K]>;
 };
 
-type Ids = { ids: { trakt: number } };
-type TypedItem = { type: string } & Partial<Record<string, Ids | string | number | null>>;
-type WatchedShowsMinimal = Record<string, Record<string, Record<string, string[]>>>;
+const ids = z.object({ ids: z.object({ trakt: z.number() }) });
+const typedItemSchema = z.object({
+  type: z.string(),
+  movie: ids.nullish(),
+  show: ids.nullish(),
+  season: ids.nullish(),
+  episode: ids.nullish(),
+});
+type TypedItem = z.infer<typeof typedItemSchema>;
+const watchedShowsSchema = z.record(z.string(), z.record(z.string(), z.record(z.string(), z.array(z.string()))));
+type WatchedShowsMinimal = z.infer<typeof watchedShowsSchema>;
+
+const TYPED_KEYS = ['movie', 'show', 'season', 'episode'] as const;
 
 // The worker's page cap.
 const PAGE_LIMIT = 250;
 // Shows per page once `limit=all` hits the 99,000-episode guard.
 const WATCHED_SHOWS_PAGE = 500;
 
-async function getJson<T>(get: ApiGet, path: string): Promise<{ body: T; pageCount: number }> {
+type GetJsonParams<T> = { get: ApiGet; path: string; schema: z.ZodType<T> };
+
+/** A failed request or a body that doesn't match `schema` throws, so the slice keeps its previous copy. */
+async function getJson<T>({ get, path, schema }: GetJsonParams<T>): Promise<{ body: T; pageCount: number }> {
   const response = await get(path);
   if (!response.ok) throw new Error(`${path} returned ${response.status}`);
 
-  return { body: await response.json(), pageCount: Number(response.headers.get('X-Pagination-Page-Count') ?? 1) };
+  return {
+    body: schema.parse(await response.json()),
+    pageCount: Number(response.headers.get('X-Pagination-Page-Count') ?? 1),
+  };
 }
 
-/** Every page of a paginated array endpoint. Pages after the first are fetched in parallel. */
-async function getPages<T>(get: ApiGet, path: string): Promise<T[]> {
-  const first = await getJson<T[]>(get, path);
+/** Every page of a paginated array endpoint, each row parsed with `schema`. Later pages are fetched in parallel. */
+async function getPages<T>({ get, path, schema }: GetJsonParams<T>): Promise<T[]> {
+  const rows = z.array(schema);
+  const first = await getJson({ get, path, schema: rows });
   const separator = path.includes('?') ? '&' : '?';
   const rest = await Promise.all(
-    Array.from({ length: first.pageCount - 1 }, (_, i) => getJson<T[]>(get, `${path}${separator}page=${i + 2}`)),
+    Array.from(
+      { length: first.pageCount - 1 },
+      (_, i) => getJson({ get, path: `${path}${separator}page=${i + 2}`, schema: rows }),
+    ),
   );
 
   return [first, ...rest].flatMap(({ body }) => body);
 }
 
 function idOf(item: TypedItem): number | undefined {
-  const media = item[item.type];
-  return typeof media === 'object' ? media?.ids.trakt : undefined;
+  const key = TYPED_KEYS.find((type) => type === item.type);
+  return key ? item[key]?.ids.trakt : undefined;
 }
 
 function idsOfType(items: readonly TypedItem[], type: string): ReadonlySet<number> {
@@ -74,7 +94,7 @@ function toWatchedShows(pages: readonly WatchedShowsMinimal[]): OverlaySlices['w
 
 async function watchedShowPages(get: ApiGet, page = 1): Promise<WatchedShowsMinimal[]> {
   const path = `/sync/watched/shows?extended=min&season_numbers=true&limit=${WATCHED_SHOWS_PAGE}&page=${page}`;
-  const { body } = await getJson<WatchedShowsMinimal>(get, path);
+  const { body } = await getJson({ get, path, schema: watchedShowsSchema });
   if (Object.keys(body).length < WATCHED_SHOWS_PAGE) return [body];
 
   return [body, ...await watchedShowPages(get, page + 1)];
@@ -87,7 +107,7 @@ async function loadWatchedShows(get: ApiGet): Promise<OverlaySlices['watchedShow
   if (response.status === 413) return toWatchedShows(await watchedShowPages(get));
   if (!response.ok) throw new Error(`${path} returned ${response.status}`);
 
-  return toWatchedShows([await response.json()]);
+  return toWatchedShows([watchedShowsSchema.parse(await response.json())]);
 }
 
 const join = (...timestamps: (string | undefined)[]) => timestamps.join('|');
@@ -97,7 +117,11 @@ export const sliceSources: { [K in keyof OverlaySlices]: SliceSource<K> } = {
   watchedMovies: {
     activity: (a) => join(a.movies?.watched_at),
     load: async (get) => {
-      const { body } = await getJson<Record<string, string[]>>(get, '/sync/watched/movies?extended=min&limit=all');
+      const { body } = await getJson({
+        get,
+        path: '/sync/watched/movies?extended=min&limit=all',
+        schema: z.record(z.string(), z.array(z.string())),
+      });
       return byNumericKey(body);
     },
   },
@@ -112,20 +136,18 @@ export const sliceSources: { [K in keyof OverlaySlices]: SliceSource<K> } = {
   collectedMovies: {
     activity: (a) => `${join(a.movies?.collected_at)}|metadata-v1|sources-v1`,
     load: async (get) => {
-      const rows = await getPages<unknown>(
+      const rows = await getPages({
         get,
-        `/sync/collection/movies?extended=metadata,available_on&limit=${PAGE_LIMIT}`,
-      );
-      const schema = z.array(
-        z.object({
-          movie: z.object({ ids: z.object({ trakt: z.number() }) }),
+        path: `/sync/collection/movies?extended=metadata,available_on&limit=${PAGE_LIMIT}`,
+        schema: z.object({
+          movie: ids,
           collected_at: z.string(),
           metadata: collectionMetadataSchema.nullish(),
           available_on: librarySourcesSchema,
         }),
-      );
+      });
       return new Map(
-        schema.parse(rows).map((
+        rows.map((
           row,
         ) => [row.movie.ids.trakt, {
           at: row.collected_at,
@@ -138,25 +160,28 @@ export const sliceSources: { [K in keyof OverlaySlices]: SliceSource<K> } = {
   collectedShows: {
     activity: (a) => `${join(a.episodes?.collected_at)}|metadata-v1`,
     load: async (get) => {
-      const rows = await getPages<unknown>(get, `/sync/collection/shows?extended=metadata&limit=${PAGE_LIMIT}`);
-      const schema = z.array(z.object({
-        show: z.object({ ids: z.object({ trakt: z.number() }) }),
-        seasons: z.array(
-          z.object({
-            number: z.number(),
-            episodes: z.array(
-              z.object({
-                number: z.number(),
-                collected_at: z.string(),
-                ids: z.object({ trakt: z.number() }).nullish(),
-                metadata: collectionMetadataSchema.nullish(),
-              }),
-            ),
-          }),
-        ),
-      }));
+      const rows = await getPages({
+        get,
+        path: `/sync/collection/shows?extended=metadata&limit=${PAGE_LIMIT}`,
+        schema: z.object({
+          show: ids,
+          seasons: z.array(
+            z.object({
+              number: z.number(),
+              episodes: z.array(
+                z.object({
+                  number: z.number(),
+                  collected_at: z.string(),
+                  ids: z.object({ trakt: z.number() }).nullish(),
+                  metadata: collectionMetadataSchema.nullish(),
+                }),
+              ),
+            }),
+          ),
+        }),
+      });
       return new Map(
-        schema.parse(rows).map((
+        rows.map((
           { show, seasons },
         ) => [
           show.ids.trakt,
@@ -184,13 +209,13 @@ export const sliceSources: { [K in keyof OverlaySlices]: SliceSource<K> } = {
   syncedEpisodes: {
     activity: (a) => `${join(a.episodes?.collected_at)}|synced-v1`,
     load: async (get) => {
-      const { body } = await getJson<unknown>(
+      const { body } = await getJson({
         get,
-        '/sync/collection/minimal/shows?available_on=digital&season_numbers=true',
-      );
-      const schema = z.record(z.string(), z.record(z.string(), z.record(z.string(), z.string())));
+        path: '/sync/collection/minimal/shows?available_on=digital&season_numbers=true',
+        schema: z.record(z.string(), z.record(z.string(), z.record(z.string(), z.string()))),
+      });
       return new Map(
-        Object.entries(schema.parse(body)).map(([showId, seasons]) => [
+        Object.entries(body).map(([showId, seasons]) => [
           Number(showId),
           new Map(
             Object.entries(seasons).map(([key, episodes]) => [
@@ -209,7 +234,11 @@ export const sliceSources: { [K in keyof OverlaySlices]: SliceSource<K> } = {
   ratings: {
     activity: (a) => join(a.movies?.rated_at, a.shows?.rated_at, a.seasons?.rated_at, a.episodes?.rated_at),
     load: async (get) => {
-      const items = await getPages<TypedItem & { rating: number }>(get, '/sync/ratings');
+      const items = await getPages({
+        get,
+        path: '/sync/ratings',
+        schema: typedItemSchema.extend({ rating: z.number() }),
+      });
       const ofType = (type: string) =>
         new Map(
           items.filter((item) => item.type === type).flatMap((item) => {
@@ -278,7 +307,11 @@ export const sliceSources: { [K in keyof OverlaySlices]: SliceSource<K> } = {
   likedLists: {
     activity: (a) => join(a.lists?.liked_at),
     load: async (get) => {
-      const likes = await getPages<{ list: Ids }>(get, `/users/me/likes/lists?limit=${PAGE_LIMIT}`);
+      const likes = await getPages({
+        get,
+        path: `/users/me/likes/lists?limit=${PAGE_LIMIT}`,
+        schema: z.object({ list: ids }),
+      });
       return new Set(likes.map(({ list }) => list.ids.trakt));
     },
   },
@@ -286,10 +319,11 @@ export const sliceSources: { [K in keyof OverlaySlices]: SliceSource<K> } = {
     activity: (a) => join(a.account?.following_at, a.account?.followed_at),
     load: async (get) => {
       const slugs = async (type: 'following' | 'followers') => {
-        const rows = await getPages<{ user: { ids: { slug?: string | null } } }>(
+        const rows = await getPages({
           get,
-          `/users/me/${type}?limit=${PAGE_LIMIT}`,
-        );
+          path: `/users/me/${type}?limit=${PAGE_LIMIT}`,
+          schema: z.object({ user: z.object({ ids: z.object({ slug: z.string().nullish() }) }) }),
+        });
         return new Set(rows.map(({ user }) => user.ids.slug).filter((slug) => typeof slug === 'string'));
       };
       const [following, followers] = await Promise.all([slugs('following'), slugs('followers')]);
@@ -300,9 +334,15 @@ export const sliceSources: { [K in keyof OverlaySlices]: SliceSource<K> } = {
     activity: (a) => join(a.lists?.updated_at, a.collaborations?.updated_at),
     load: async (get) => {
       // Own and collaborative lists come back without items, so membership costs one request per list.
-      const { body: lists } = await getJson<{ id: number }[]>(get, '/v3/users/me/lists');
+      const { body: lists } = await getJson({
+        get,
+        path: '/v3/users/me/lists',
+        schema: z.array(z.object({ id: z.number() })),
+      });
       const items = (await Promise.all(
-        lists.map(({ id }) => getPages<TypedItem>(get, `/lists/${id}/items?limit=${PAGE_LIMIT}`)),
+        lists.map(({ id }) =>
+          getPages({ get, path: `/lists/${id}/items?limit=${PAGE_LIMIT}`, schema: typedItemSchema })
+        ),
       )).flat();
       return {
         movie: idsOfType(items, 'movie'),

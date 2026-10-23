@@ -229,4 +229,20 @@ describe('sliceSources', () => {
 
     await expect(sliceSources.dropped.load(get)).rejects.toThrow('500');
   });
+
+  describe('when a body does not match its schema', () => {
+    it.each(
+      [
+        ['watchedMovies', `${API}/sync/watched/movies`, { '12': 'nope' }],
+        ['watchedShows', `${API}/sync/watched/shows`, [{ show: 1 }]],
+        ['ratings', `${API}/sync/ratings`, [{ type: 'movie', movie: ids(1) }]],
+        ['likedLists', `${API}/users/me/likes/lists`, [{ list: { ids: {} } }]],
+        ['listed', `${API}/v3/users/me/lists`, { id: 10 }],
+      ] as const,
+    )('should throw for %s like a failed request', async (name, url, body) => {
+      server.use(http.get(url, () => HttpResponse.json(body)));
+
+      await expect(sliceSources[name].load(get)).rejects.toThrow();
+    });
+  });
 });

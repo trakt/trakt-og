@@ -102,6 +102,7 @@ const max = $derived(
 const LONG_PRESS = 500;
 let pressTimer: ReturnType<typeof setTimeout> | undefined;
 let longPressed = false;
+let changed = false;
 const pressStart = (event: PointerEvent) => {
   if (event.button !== 0) return;
   longPressed = false;
@@ -176,6 +177,7 @@ async function toggleWatchlist() {
   watchlisted = !before;
   const ok = await toggleListItem({ target, list: null, remove: before, overlay, request, notify: toast });
   if (!ok) watchlisted = before;
+  return ok;
 }
 async function toggleRow(list?: PickerList) {
   if (busy) return;
@@ -183,7 +185,7 @@ async function toggleRow(list?: PickerList) {
   pendingRow = list?.id ?? 0;
   try {
     if (!list) {
-      await toggleWatchlist();
+      if (await toggleWatchlist()) changed = true;
       return;
     }
     lists = lists.map((row) =>
@@ -198,7 +200,8 @@ async function toggleRow(list?: PickerList) {
       request,
       notify: toast,
     });
-    if (!ok) lists = lists.map((row) => row.id === list.id ? list : row);
+    if (ok) changed = true;
+    else lists = lists.map((row) => row.id === list.id ? list : row);
   } finally {
     busy = false;
     pendingRow = null;
@@ -226,7 +229,10 @@ function toggle(event: ToggleEvent) {
   if (expanded) popover?.querySelector<HTMLButtonElement>('button')?.focus();
   else if (!newList) {
     triggerButton?.focus({ preventScroll: true });
-    void overlay.refresh();
+    if (changed) {
+      changed = false;
+      void overlay.refresh();
+    }
   }
 }
 async function searchToggle() {
@@ -274,6 +280,7 @@ async function save(draft: Parameters<typeof createList>[0]['draft'] & { collabo
       collaboration: false,
       selected: false,
     };
+    changed = true;
     lists = [row, ...lists];
     listCatalog.update(page.data.user?.slug ?? '', lists.length);
     const added = await toggleListItem({ target, list: row, remove: false, overlay, request, notify: toast });

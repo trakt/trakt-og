@@ -290,6 +290,11 @@ describe('loadCalendar', () => {
       expect(seen).toHaveLength(0);
     });
 
+    it('should bring the query string back from sign in', async () => {
+      expect(await redirectOf(load({ token: null, search: '?genres=drama' })))
+        .toBe('/auth/signin?redirect_to=%2Fcalendars%2Fmy%2Fshows-movies%3Fgenres%3Ddrama');
+    });
+
     it("should send a viewer whose token stopped working to sign in on the worker's plain-text 401", async () => {
       server.use(
         http.get(`${API}/calendars/my/media/:start/:days`, () => workerUnauthorized()),

@@ -1,5 +1,6 @@
 import { error, redirect } from '@sveltejs/kit';
 import { api } from '../api/api.ts';
+import { signInRedirect } from '../auth/signInRedirect.ts';
 import { loadViewerLists } from './loadViewerLists.ts';
 import { userStatsSchema } from '../stats/userStatsSchema.ts';
 import { profileResponseSchema } from './profileResponseSchema.ts';
@@ -32,7 +33,7 @@ async function readFrame(client: ReturnType<typeof api>, id: string) {
  */
 export async function loadProfileFrame({ fetch, locals, params, parent, url }: Params) {
   if (params.id === 'me' && !locals.token) {
-    redirect(302, `/auth/signin?redirect_to=${encodeURIComponent(url.pathname)}`);
+    signInRedirect(url);
   }
 
   const client = api({ fetch, token: locals.token });
@@ -41,7 +42,7 @@ export async function loadProfileFrame({ fetch, locals, params, parent, url }: P
   // A token that stopped working: `/users/me` signs in again, like OG with no session, and anyone else's profile
   // renders logged-out. The server never refreshes; the browser renews.
   const stale = viewerFrame.profile.status === 401 && locals.token !== null;
-  if (stale && params.id === 'me') redirect(302, `/auth/signin?redirect_to=${encodeURIComponent(url.pathname)}`);
+  if (stale && params.id === 'me') signInRedirect(url);
   const { profile, stats, watching } = stale ? await readFrame(api({ fetch }), params.id) : viewerFrame;
   if (profile.status === 404 || (profile.status === 200 && profile.body.deleted)) error(404, 'Page Not Found');
   if (profile.status !== 200) error(502, 'Trakt is having trouble loading this profile.');

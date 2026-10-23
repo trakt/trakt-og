@@ -68,13 +68,17 @@ describe('loadChart recommendations', () => {
   });
 
   it('should send a signed-out viewer to sign in without calling the API', async () => {
-    expect(await redirectOf(recommendations(null))).toBe('/auth/signin?redirect_to=%2Fshows%2Frecommendations');
+    expect(await redirectOf(recommendations(null))).toBe(
+      '/auth/signin?redirect_to=%2Fshows%2Frecommendations%3Fpage%3D2',
+    );
     expect(seen).toHaveLength(0);
   });
 
   it('should send a viewer whose token stopped working to sign in', async () => {
     server.use(http.get('https://apiz.trakt.tv/shows/recommendations', () => new HttpResponse(null, { status: 401 })));
-    expect(await redirectOf(recommendations('stale'))).toBe('/auth/signin?redirect_to=%2Fshows%2Frecommendations');
+    expect(await redirectOf(recommendations('stale'))).toBe(
+      '/auth/signin?redirect_to=%2Fshows%2Frecommendations%3Fpage%3D2',
+    );
   });
 });
 

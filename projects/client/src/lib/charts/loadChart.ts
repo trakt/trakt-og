@@ -1,4 +1,5 @@
 import { error, redirect } from '@sveltejs/kit';
+import { signInRedirect } from '../auth/signInRedirect.ts';
 import { api } from '../api/api.ts';
 import { extractPageMeta } from '../api/extractPageMeta.ts';
 import { rawApiFetch } from '../api/rawApiFetch.ts';
@@ -100,10 +101,6 @@ const pageMeta = (page: number, total: number) => ({
   total,
 });
 
-function signIn(url: URL): never {
-  redirect(302, `/auth/signin?redirect_to=${encodeURIComponent(url.pathname)}`);
-}
-
 async function fetchRows(
   client: Client,
   type: MediaType,
@@ -186,7 +183,7 @@ export async function loadChart(
   const layout = parent();
   const [response, { datePreferences, settings }, filterSources, unfiltered, live] = await Promise.all([
     chart === 'recommendations'
-      ? (token ? fetchRecommendations(fetch, token, type, filterQuery) : signIn(url))
+      ? (token ? fetchRecommendations(fetch, token, type, filterQuery) : signInRedirect(url))
       : token && viewer
       ? viewerRows(chart)
       : publicRows(chart),
@@ -200,7 +197,7 @@ export async function loadChart(
       : undefined,
     chart === 'trending' ? fetchLiveNow(fetch) : null,
   ]);
-  if (response === 'signed-out') signIn(url);
+  if (response === 'signed-out') signInRedirect(url);
   if (!response) error(502, 'The Trakt API could not load this chart.');
 
   const { headers } = response;

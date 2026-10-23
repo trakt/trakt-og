@@ -1,4 +1,5 @@
 import { redirect } from '@sveltejs/kit';
+import { signInRedirect } from '../../auth/signInRedirect.ts';
 import type { HeaderUser } from '../../components/header/HeaderUser.ts';
 import type { DatePreferences } from '../../settings/DatePreferences.ts';
 import type { ViewerSettings } from '../../settings/ViewerSettings.ts';
@@ -23,8 +24,6 @@ type Params = {
   }>;
 };
 
-const signIn = (url: URL) => redirect(302, `/auth/signin?redirect_to=${encodeURIComponent(url.pathname + url.search)}`);
-
 /**
  * `/users/:id/progress(/:type)(/:sort_by/:sort_how)`: your own progress only. Someone else's goes to their profile,
  * and a signed-out viewer (or a token that stopped working) signs in and comes back. The rows load in the browser
@@ -32,11 +31,11 @@ const signIn = (url: URL) => redirect(302, `/auth/signin?redirect_to=${encodeURI
  * watched progress settings: sort, view, and the specials and next-episode choices the season lists use.
  */
 export async function loadProgress({ locals, params, url, cookies, parent }: Params) {
-  if (!locals.token) signIn(url);
+  if (!locals.token) signInRedirect(url);
 
   const type: ProgressType = params.type && isProgressType(params.type) ? params.type : 'watched';
   const { profile, isSelf, user, settings, datePreferences } = await parent();
-  if (!user) signIn(url);
+  if (!user) signInRedirect(url);
   if (!isSelf) redirect(302, `/users/${profile.slug}`);
 
   const saved = settings?.browsing?.progress?.watched;

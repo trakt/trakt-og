@@ -3,6 +3,7 @@ import { toVipBadge } from '../users/toVipBadge.ts';
 import { imageUrl } from '../utils/imageUrl.ts';
 import type { ListSource } from './listSchema.ts';
 import { PLACEHOLDER_AVATAR } from '../users/placeholderAvatar.ts';
+import { listPath } from '../lists/listPath.ts';
 
 export type ListCard = {
   readonly id: number;
@@ -39,7 +40,13 @@ export function toListCard(list: ListSource): ListCard {
   const slug = list.user.ids?.slug ?? list.user.username;
   return {
     id: list.ids.trakt,
-    href: `/lists/${list.ids.trakt}`,
+    href: list.type && list.ids.slug
+      ? listPath({
+        type: list.type,
+        ids: { slug: list.ids.slug },
+        user: { username: list.user.username, ids: { slug } },
+      })
+      : `/lists/${list.ids.trakt}`,
     name: list.name,
     owner: {
       slug,

@@ -5,6 +5,7 @@ import { genreLabel } from '../../utils/genreLabel.ts';
 import { episodeNumber } from '../media/episodeTags.ts';
 import { personTags } from '../../people/personTags.ts';
 import { imageUrl } from '../../utils/imageUrl.ts';
+import { listPath } from '../../lists/listPath.ts';
 
 /** One autocomplete row. */
 export interface SearchRow {
@@ -37,6 +38,15 @@ const genres = (slugs: ReadonlyArray<string> | null | undefined) =>
 const year = (value: number | null | undefined) => (value ? String(value) : undefined);
 
 const poster = (paths: ReadonlyArray<string> | null | undefined) => imageUrl(paths?.at(0), 'thumb');
+
+type SearchList = NonNullable<SearchResultResponse['list']>;
+
+// An official list has no owner to read, and a list that came without its slug keeps OG's id route.
+const listHref = (list: SearchList) => {
+  if (!list.ids.slug) return `/lists/${list.ids.trakt}`;
+  if (list.type === 'official') return `/lists/official/${list.ids.slug}`;
+  return list.user?.ids ? listPath(list) : `/lists/${list.ids.trakt}`;
+};
 
 /**
  * Maps a `/search` hit to the row OG drew for it, dating episodes in the viewer's order and zone. `today` (the viewer's
@@ -105,7 +115,7 @@ export function toSearchRow(
     return {
       key: `list-${list.ids.trakt}`,
       recent: { query: list.name, type: list.type === 'official' ? 'official_lists' : 'lists', id: list.ids.trakt },
-      href: `/lists/${list.ids.trakt}`,
+      href: listHref(list),
       title: list.name,
       type: list.type === 'official' ? 'Official List' : 'List',
       // Whose list it is, beside the type, then how big it is. Official lists have no owner.

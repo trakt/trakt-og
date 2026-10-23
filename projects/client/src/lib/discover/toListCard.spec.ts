@@ -44,6 +44,14 @@ describe('toListCard', () => {
     });
   });
 
+  it("should link the list's own page, by its type", () => {
+    const personal = { ...list, type: 'personal', ids: { trakt: 10, slug: 'popular-horror' } };
+
+    expect(toListCard(personal).href).toBe('/users/lish408/lists/popular-horror');
+    expect(toListCard({ ...personal, type: 'official' }).href).toBe('/lists/official/popular-horror');
+    expect(toListCard({ ...personal, type: 'watchlist' }).href).toBe('/users/lish408/watchlist');
+  });
+
   it('should keep each poster once', () => {
     const repeated = {
       ...list,

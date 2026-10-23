@@ -14,8 +14,7 @@ export type EssentialList = FeaturedList & {
 
 /** One essential list with what the API sent for it; without it, the slice still shows its art and title. */
 export function toEssentialList(tile: FeaturedList, list: ListSource | null): EssentialList {
-  const href = `/lists/${tile.id}`;
-  if (!list) return { ...tile, href, posters: [] };
-  const { description, owner, items, likes, comments, posters } = toListCard(list);
+  if (!list) return { ...tile, href: `/lists/${tile.id}`, posters: [] };
+  const { href, description, owner, items, likes, comments, posters } = toListCard(list);
   return { ...tile, href, description, ownerSlug: owner.slug, counts: { items, likes, comments }, posters };
 }

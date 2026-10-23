@@ -1,9 +1,7 @@
 import type { SocialMedia } from './socialMediaSchema.ts';
+import { episodeNumber } from '../components/media/episodeTags.ts';
 import type { SocialItem } from './toSocialItem.ts';
 import { seasonName } from '../utils/seasonName.ts';
-
-const episodeCode = (season: number, number: number) =>
-  season === 0 ? `Special ${number}` : `${season}x${String(number).padStart(2, '0')}`;
 
 /** The part of a Social Feed item that says what it was about. */
 export type SocialItemMedia = Pick<SocialItem, 'title' | 'episode' | 'code' | 'href' | 'still' | 'fanart' | 'target'>;
@@ -71,7 +69,7 @@ export function toSocialMedia(activity: SocialMedia): SocialItemMedia {
       season: { show: show.ids.trakt, number: season, episode: number },
     },
     episode: { season, number, ...(title && { title }) },
-    code: episodeCode(season, number),
+    code: episodeNumber({ season, number }, null),
     href: `${showHref}/seasons/${season}/episodes/${number}`,
     still: images?.screenshot?.at(0) ?? common.still,
   };

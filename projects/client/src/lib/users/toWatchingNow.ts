@@ -1,4 +1,5 @@
 import { imageUrl } from '../utils/imageUrl.ts';
+import { episodeNumber } from '../components/media/episodeTags.ts';
 import type { WatchingNow } from './WatchingNow.ts';
 
 type Images = {
@@ -59,18 +60,12 @@ export function toWatchingNow(watching: WatchingResponse): WatchingNow | null {
   return {
     ...base,
     title: show.title ?? '',
-    episode: { number: seasonByEpisode(episode), title: episode.title ?? '' },
+    episode: { number: episodeNumber(episode, null), title: episode.title ?? '' },
     href: `${showPath}/seasons/${episode.season}/episodes/${episode.number}`,
     fanartUrl: fanart(show.images),
     stillUrl: imageUrl(episode.images?.screenshot?.at(0), 'medium') ?? still(show.images),
     runtime: episode.runtime || show.runtime || DEFAULT_RUNTIME.episode,
   };
-}
-
-/** OG's `season_x_episode`: `1x05`, or `Special 5` for season 0. */
-function seasonByEpisode({ season, number }: { season: number; number: number }): string {
-  if (season === 0) return `Special ${number}`;
-  return `${season}x${String(number).padStart(2, '0')}`;
 }
 
 function fanart(images: Images | undefined): string | null {

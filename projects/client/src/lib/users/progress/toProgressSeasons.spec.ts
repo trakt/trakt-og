@@ -103,6 +103,10 @@ describe('toProgressSeasons', () => {
     it('should name specials apart', () => {
       expect(seasons([season(0, [false])]).at(0)?.name).toBe('Specials');
     });
+
+    it('should label special squares "Special 1" instead of "0x01"', () => {
+      expect(seasons([season(0, [false])]).at(0)?.squares.at(0)?.label).toMatch(/^Special 1 /);
+    });
   });
 
   describe('the squares', () => {

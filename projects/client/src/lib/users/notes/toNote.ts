@@ -1,6 +1,7 @@
 import type { z } from 'zod/v4';
 import type { DatePreferences } from '../../settings/DatePreferences.ts';
 import { formatDate } from '../../utils/formatDate.ts';
+import { episodeNumber } from '../../components/media/episodeTags.ts';
 import { imageUrl } from '../../utils/imageUrl.ts';
 import { toVipBadge } from '../toVipBadge.ts';
 import type { noteRowsSchema } from './noteRowsSchema.ts';
@@ -69,7 +70,7 @@ function itemDetails(row: Row) {
     if (!showHref || item.season == null || item.number == null) return null;
     return {
       ...base,
-      title: `${item.season}x${String(item.number).padStart(2, '0')} ${item.title ?? 'Episode'}`,
+      title: `${episodeNumber({ season: item.season, number: item.number }, null)} ${item.title ?? 'Episode'}`,
       href: `${showHref}/seasons/${item.season}/episodes/${item.number}`,
       image: posterUrl(item.images?.screenshot),
       episodeBadge: episodeBadge(item),

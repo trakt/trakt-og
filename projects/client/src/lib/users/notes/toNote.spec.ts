@@ -35,6 +35,14 @@ describe('toNote', () => {
       .toMatchObject({ year: 1999, fanart: 'https://media.trakt.tv/fanarts/medium/1.jpg' });
   });
 
+  it('should call a season-zero episode "Special 1"', () => {
+    const show = { title: 'Breaking Bad', ids: { trakt: 2, slug: 'breaking-bad' } };
+    expect(
+      map({ ...row, type: 'episode', show, episode: { title: 'Extra', season: 0, number: 1, ids: { trakt: 3 } } })?.item
+        .title,
+    ).toBe('Special 1 Extra');
+  });
+
   it('should treat a user flagged deleted as a deleted author', () => {
     expect(map({ ...row, note: { ...note, user: { ...user, deleted: true } } })?.author).toMatchObject({
       name: 'Deleted User',

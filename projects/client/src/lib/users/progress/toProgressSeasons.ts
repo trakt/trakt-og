@@ -1,5 +1,6 @@
 import type { TickRun } from '../../components/media/TickRun.ts';
 import { tickRuns } from '../../components/media/tickRuns.ts';
+import { episodeNumber } from '../../components/media/episodeTags.ts';
 import type { DatePreferences } from '../../settings/DatePreferences.ts';
 import { formatDate } from '../../utils/formatDate.ts';
 import { formatRuntime } from '../../utils/formatRuntime.ts';
@@ -74,8 +75,6 @@ type ToProgressSeasonsParams = {
   datePreferences: DatePreferences;
 };
 
-const code = (season: number, number: number) => `${season}x${String(number).padStart(2, '0')}`;
-
 type Episode = {
   number: number;
   title?: string;
@@ -120,7 +119,7 @@ function toSquare(
     'up-next': { text: 'Up next', tone: 'next' } as const,
     'not-aired': { text: `Airs ${airs}`, tone: 'muted' } as const,
   }[state];
-  const episodeCode = code(season, number);
+  const episodeCode = episodeNumber({ season, number }, null);
 
   return {
     number,
@@ -185,7 +184,9 @@ export function toProgressSeasons(params: ToProgressSeasonsParams): readonly Pro
       announced: season.aired === 0 ? season.upcoming.length : undefined,
       ticks: tickRuns(episodes.filter(({ aired }) => aired).map(({ done }) => done)),
       collected: episodes.filter(({ aired, done, collected }) => aired && !done && collected).length,
-      upNext: params.next?.season === season.number ? code(season.number, params.next.number) : undefined,
+      upNext: params.next?.season === season.number
+        ? episodeNumber({ season: season.number, number: params.next.number }, null)
+        : undefined,
       lastWatched: lastDay(episodes, params.datePreferences),
       squares: episodes.map((episode) => toSquare({ ...params, season: season.number, episode })),
     };

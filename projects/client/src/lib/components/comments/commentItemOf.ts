@@ -1,5 +1,6 @@
 import type { CommentItem } from './CommentItem.ts';
 import { seasonName } from '../../utils/seasonName.ts';
+import { episodeNumber } from '../media/episodeTags.ts';
 
 type Ids = { readonly trakt: number };
 type Movie = { readonly ids: Ids; readonly title?: string | null; readonly year?: number | null };
@@ -28,9 +29,7 @@ const aired = (count: number | null | undefined) => count ?? undefined;
 const seasonTitle = (show: Show, number: number) => `${trim(show.title)} ${seasonName(number)}`.trim();
 
 function episodeTitle(show: Show, episode: Episode): string {
-  const number = episode.season === 0
-    ? `Special ${episode.number}`
-    : `${episode.season}x${String(episode.number).padStart(2, '0')}`;
+  const number = episodeNumber(episode, null);
   const title = trim(episode.title);
   return [trim(show.title), number, title && `"${title}"`].filter(Boolean).join(' ');
 }

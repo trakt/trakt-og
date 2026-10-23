@@ -67,6 +67,28 @@ describe('loadChart recommendations', () => {
     expect(query.has('certifications')).toBe(false);
   });
 
+  it('should load the recommendations without failing', async () => {
+    expect((await recommendations('fake-token')).failed).toBe(false);
+  });
+
+  it('should keep the page and flag the recommendations when the API fails', async () => {
+    server.use(http.get('https://apiz.trakt.tv/shows/recommendations', () => new HttpResponse(null, { status: 500 })));
+    const data = await recommendations('fake-token');
+
+    expect(data.failed).toBe(true);
+    expect(data.cards).toEqual([]);
+  });
+
+  it('should flag the recommendations when the body is not a list of shows and movies', async () => {
+    server.use(
+      http.get('https://apiz.trakt.tv/shows/recommendations', () => HttpResponse.json([{ show: { title: 1 } }])),
+    );
+    const data = await recommendations('fake-token');
+
+    expect(data.failed).toBe(true);
+    expect(data.cards).toEqual([]);
+  });
+
   it('should send a signed-out viewer to sign in without calling the API', async () => {
     expect(await redirectOf(recommendations(null))).toBe(
       '/auth/signin?redirect_to=%2Fshows%2Frecommendations%3Fpage%3D2',

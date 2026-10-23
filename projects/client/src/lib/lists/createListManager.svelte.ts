@@ -41,11 +41,11 @@ const request = (method: 'POST' | 'PUT') => (path: string, body: unknown) =>
 export function createListManager(source: () => Source, isBlocked: () => boolean = () => false) {
   let managing = $state(false);
   let busy = $state(false);
-  let patched = $state<readonly ListItemCard[] | null>(null);
+  let patched = $state.raw<readonly ListItemCard[] | null>(null);
   /** Every list item id in rank order, read the first time a move needs it. */
   let order: readonly number[] | null = null;
   const removed = new SvelteSet<number>();
-  let dragging = $state<ListItemCard | null>(null);
+  let dragging = $state.raw<ListItemCard | null>(null);
   let dropRank = $state<number | null>(null);
 
   const cards = $derived(patched ?? source().cards);

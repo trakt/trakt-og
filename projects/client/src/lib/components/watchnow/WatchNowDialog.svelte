@@ -15,6 +15,7 @@ import Icon from '$lib/icons/Icon.svelte';
 import heart from '$lib/icons/solid/heart.svg?raw';
 import play from '$lib/icons/solid/play.svg?raw';
 import { fetchWatchNow } from './fetchWatchNow.ts';
+import { fetchWatchNowShared } from './fetchWatchNowShared.ts';
 import ServiceTile from './ServiceTile.svelte';
 import {
   countryCounts,
@@ -62,7 +63,7 @@ const tags = $derived([
 async function loadItem() {
   const [all, list, links] = await Promise.all([
     fetchWatchNow({ path: `${button.path}/watchnow`, schema: watchNowOffersSchema }),
-    fetchWatchNow({ path: '/watchnow/countries', schema: watchNowCountriesSchema }),
+    fetchWatchNowShared({ path: '/watchnow/countries', schema: watchNowCountriesSchema }),
     fetchWatchNow({ path: `${justwatchPath}/watchnow/justwatch_links`, schema: justWatchLinksSchema }),
   ]);
   offers = all;
@@ -72,7 +73,7 @@ async function loadItem() {
 }
 
 async function loadSources(code: string) {
-  const response = await fetchWatchNow({ path: `/watchnow/sources/${code}`, schema: watchNowSourcesSchema });
+  const response = await fetchWatchNowShared({ path: `/watchnow/sources/${code}`, schema: watchNowSourcesSchema });
   sources = { ...sources, [code]: toSourceMap(response, code) };
 }
 

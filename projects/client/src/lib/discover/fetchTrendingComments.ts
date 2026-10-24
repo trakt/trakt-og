@@ -1,4 +1,4 @@
-import { rawApiFetch } from '../api/rawApiFetch.ts';
+import { api } from '../api/api.ts';
 import { toTrendingComments, type TrendingComment } from './toTrendingComments.ts';
 import { trendingCommentFilters } from './trendingCommentFilters.ts';
 import { trendingCommentRowsSchema } from './trendingCommentRowsSchema.ts';
@@ -17,9 +17,13 @@ export async function fetchTrendingComments({
   media,
   now,
 }: FetchTrendingCommentsParams): Promise<TrendingComment[]> {
-  const path = `/comments/trending/${kind}/${media}?limit=30&extended=images`;
-  const response = await rawApiFetch({ fetch, path }).catch(() => null);
-  if (!response?.ok) return [];
-  const parsed = trendingCommentRowsSchema.safeParse(await response.json().catch(() => null));
+  const response = await api({ fetch })
+    .comments.trending({
+      params: { comment_type: kind, type: media },
+      query: { limit: 30, extended: 'images' },
+    })
+    .catch(() => null);
+  if (!response || response.status < 200 || response.status >= 300) return [];
+  const parsed = trendingCommentRowsSchema.safeParse(response.body);
   return parsed.success ? toTrendingComments(parsed.data, now) : [];
 }

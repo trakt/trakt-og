@@ -19,7 +19,7 @@ const media = z.object({
 });
 
 /**
- * Rows from `/:type/trending` and `/:type/favorited/all` with a theme's filters. `@trakt/api` 0.6.0's favorited
+ * Rows from `/:type/trending` and `/:type/favorited/all` with a theme's filters. `@trakt/api`'s movie favorited
  * contract has no filter params, so both go through `rawApiFetch` and are parsed here. Only what a showcase slide uses
  * is kept.
  */

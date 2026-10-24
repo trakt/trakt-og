@@ -38,6 +38,18 @@ const ANTICIPATED_DAYS = 90;
 const DAY_MS = 86_400_000;
 const searchRowsSchema = z.array(z.object({ list: listSchema }));
 
+/** A typed API body parsed by `schema`, or `fallback` when the call or the parse fails: its section just hides. */
+async function parsedBody<T>(
+  request: Promise<{ status: number; body: unknown }>,
+  schema: z.ZodType<T>,
+  fallback: T,
+): Promise<T> {
+  const response = await request.catch(() => null);
+  if (!response || response.status < 200 || response.status >= 300) return fallback;
+  const parsed = schema.safeParse(response.body);
+  return parsed.success ? parsed.data : fallback;
+}
+
 /** A raw API body parsed by `schema`, or `fallback` when the call or the parse fails: its section just hides. */
 async function rawBody<T>(fetcher: typeof fetch, path: string, schema: z.ZodType<T>, fallback: T): Promise<T> {
   const response = await rawApiFetch({ fetch: fetcher, path }).catch(() => null);
@@ -103,9 +115,17 @@ async function moodShelf(fetcher: typeof fetch, mood: DiscoverMood, type: MediaT
 
 /** The essential lists' art, with each list's description, counts and posters; one that fails keeps its art. */
 function essentials(fetcher: typeof fetch) {
+  const client = api({ fetch: fetcher });
   return Promise.all(
     featuredLists.map(async (tile) =>
-      toEssentialList(tile, await rawBody(fetcher, `/lists/${tile.id}?extended=images`, listSchema.nullable(), null)),
+      toEssentialList(
+        tile,
+        await parsedBody(
+          client.lists.summary({ params: { id: `${tile.id}` }, query: { extended: 'images' } }),
+          listSchema.nullable(),
+          null,
+        ),
+      ),
     ),
   );
 }
@@ -118,7 +138,7 @@ async function themeLists(fetcher: typeof fetch, theme: DiscoverTheme) {
   const search = new URLSearchParams({ query: theme.listQuery, limit: '30', extended: 'images' });
   const [found, trending] = await Promise.all([
     rawBody(fetcher, `/search/list?${search}`, searchRowsSchema, []),
-    rawBody(fetcher, '/lists/trending?limit=100', listRowsSchema, []),
+    parsedBody(api({ fetch: fetcher }).lists.trending({ query: { limit: 100 } }), listRowsSchema, []),
   ]);
   const essentials = new Set(featuredLists.map(({ id }) => id));
   const weekLikes = new Map(trending.map(({ list, like_count }) => [list.ids.trakt, like_count ?? 0]));
@@ -161,9 +181,9 @@ async function premieres(
 
 /**
  * Loads `/discover`, Seasons & Moods, for SSR. Today's theme comes from the month map in the viewer's time zone, so
- * the themed reads wait for the layout data. Everything is public and goes without the viewer's token. These routes have no
- * `@trakt/api` contract with filters or images, so each is parsed here. The premieres use the typed client. Any
- * call failing only hides its part.
+ * the themed reads wait for the layout data. Everything is public and goes without the viewer's token. Each body but the
+ * premieres' is parsed here: the themed charts and the list search have no `@trakt/api` contract with their filters or
+ * images, so they go through `rawApiFetch`. Any call failing only hides its part.
  */
 export async function loadDiscover({ fetch, parent, now = new Date() }: LoadDiscoverParams) {
   // The moods, essentials and comments don't depend on the day, so they start before the layout's settings call ends.

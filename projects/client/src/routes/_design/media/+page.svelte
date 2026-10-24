@@ -3,15 +3,22 @@ import { PLACEHOLDER_AVATAR } from '$lib/users/placeholderAvatar';
 import defaultCover from '$lib/assets/profile-cover-default.jpg';
 import FrameGrid from '$lib/components/frame/FrameGrid.svelte';
 import Specimen from '$lib/design/Specimen.svelte';
+import Variant from '$lib/design/Variant.svelte';
 import FanartCard from '$lib/components/media/FanartCard.svelte';
 import FanartHeader from '$lib/components/media/FanartHeader.svelte';
 import ListRow from '$lib/components/media/ListRow.svelte';
+import { mediaQuickIcons } from '$lib/components/media/mediaQuickIcons';
 import PosterCard from '$lib/components/media/PosterCard.svelte';
 import PosterGrid from '$lib/components/media/PosterGrid.svelte';
 import { quickIconFill } from '$lib/components/media/quickIconFill';
+import RatingsStrip from '$lib/components/summary/RatingsStrip.svelte';
+import SubpageTitle from '$lib/components/summary/SubpageTitle.svelte';
+import SummaryTitle from '$lib/components/summary/SummaryTitle.svelte';
 import type { OverlayState } from '$lib/overlay/createOverlay.svelte';
 import { overlay } from '$lib/overlay/overlay';
+import { countLabel } from '$lib/utils/countLabel';
 import { imageUrl } from '$lib/utils/imageUrl';
+import { breakingBad, seasonOneEpisodes } from '../summary/fixtures.ts';
 
 const { data } = $props();
 const collaborator = (name: string, slug: string) => ({
@@ -25,12 +32,17 @@ const weekendNotes = '**Saturday** first, then _Sunday_ if there is time.\n\n> O
 
 const shows = $derived(
   data.trending.map(({ show, watchers }) => ({
+    type: 'show' as const,
     id: show.ids.trakt,
     href: `/shows/${show.ids.slug}`,
     title: show.title,
     year: show.year ?? undefined,
+    certification: show.certification,
+    released: true,
     rating: show.rating ?? undefined,
+    votes: show.votes ?? 0,
     airedEpisodes: show.aired_episodes ?? undefined,
+    runtime: show.runtime ?? undefined,
     poster: imageUrl(show.images?.poster?.at(0), 'thumb'),
     fanart: imageUrl(show.images?.fanart?.at(0), 'thumb'),
     fanartFull: imageUrl(show.images?.fanart?.at(0), 'full'),
@@ -38,7 +50,7 @@ const shows = $derived(
   })),
 );
 
-// One card per overlay slot, so every state shows without signing in.
+// Sample states for each card, so every quick-icon state shows without signing in.
 const samples: { label: string; state: OverlayState; userRating?: number; rank?: number }[] = [
   { label: 'Idle', state: {}, rank: 1 },
   { label: 'Watched', state: { watched: true, watchedEpisodes: 99 }, rank: 2 },
@@ -72,29 +84,39 @@ const members = $derived([
 ]);
 </script>
 
-<Specimen title="Fanart header" bleed
-  note="A summary's header on the top trending show, then the slim one a subpage uses.">
+<!-- eslint-disable svelte/no-navigation-without-resolve -->
+<Specimen title="Summary header" bleed
+  note="The top trending show's header: its title, then the ratings strip with Rate and All Stats.">
   {#if featured}
-    <FanartHeader image={featured.fanartFull}>
-      <h1>{featured.title} <span class="year">{featured.year}</span></h1>
+    <FanartHeader image={featured.fanartFull} dropped={overlay.state('show', featured.id).dropped}>
+      <SummaryTitle title={featured.title} year={featured.year} certification={featured.certification} />
       {#snippet stats()}
-        <p class="stats">{featured.watchers.toLocaleString('en-US')} watchers right now</p>
+        <RatingsStrip rating={{ value: featured.rating ?? 0, votes: featured.votes, href: `${featured.href}/stats` }}
+          rateLabel="show" ratingTarget={{ type: 'show', id: featured.id, title: featured.title }}
+          statsHref="{featured.href}/stats" />
       {/snippet}
     </FanartHeader>
   {/if}
-  <div class="slim">
-    <FanartHeader image={shows.at(1)?.fanartFull} slim>
-      <h2>Comments for {shows.at(1)?.title}</h2>
-    </FanartHeader>
-  </div>
 </Specimen>
 
-<Specimen title="Search poster cards" note="Six per row, in the frame grid.">
+<Specimen title="Subpage header" bleed note="The slim header a subpage like Comments uses, its title linking back.">
+  {@const show = shows.at(1)}
+  {#if show}
+    <FanartHeader image={show.fanartFull} slim>
+      <SubpageTitle label="Comments" title={show.title} year={show.year} certification={show.certification ?? undefined}
+        href={show.href} />
+    </FanartHeader>
+  {/if}
+</Specimen>
+
+<Specimen title="Search poster cards" note="Six per row, in the frame grid, with the viewer's own quick icons.">
   <FrameGrid variant="poster">
     {#each shows.slice(0, 6) as show (show.id)}
-      <FanartCard variant="poster" href={show.href} title={show.title} image={show.poster} hideTitle={show.poster !== undefined}
+      {@const state = overlay.state('show', show.id)}
+      <FanartCard variant="poster" href={show.href} title={show.title} year={show.year} image={show.poster}
+        hideTitle={show.poster !== undefined} userRating={state.rating} dropped={state.dropped}
         tags={[{ text: 'Show' }, ...(show.year ? [{ text: String(show.year), kind: 'generic' as const }] : [])]}
-        icons={{ fill: quickIconFill({ state: {} }), rating: show.rating }} />
+        icons={mediaQuickIcons({ item: show, state, datePreferences: data.datePreferences })} />
     {/each}
   </FrameGrid>
 </Specimen>
@@ -108,98 +130,100 @@ const members = $derived([
   </FrameGrid>
 </Specimen>
 
-<Specimen title="Every overlay slot"
-  note="Sample state in each quick icon, so every state shows without signing in.">
+<Specimen title="Quick icon states"
+  note="Sample states, so each one shows without signing in. Hover an icon for its tooltip.">
   <PosterGrid>
     {#each samples as sample, i (sample.label)}
       {@const show = shows.at(i)}
       {#if show}
-        <PosterCard
-          href={show.href}
-          title={show.title}
-          image={show.poster}
-          subtitles={[sample.label]}
-          rank={sample.rank}
-          userRating={sample.userRating}
-          dropped={sample.state.dropped}
-          rewatching={sample.state.rewatching}
-          icons={{
-            fill: quickIconFill({
-              state: sample.state,
-              airedEpisodes: sample.state.watchedEpisodes === 1 ? 2 : 99,
-              runtime: 104,
-              datePreferences: data.datePreferences,
-            }),
-            rating: show.rating,
-            watchNow: 'play',
-          }}
-        />
+        <Variant label={sample.label}>
+          <PosterCard
+            href={show.href}
+            title={show.title}
+            image={show.poster}
+            subtitles={show.year ? [String(show.year)] : []}
+            rank={sample.rank}
+            userRating={sample.userRating}
+            dropped={sample.state.dropped}
+            rewatching={sample.state.rewatching}
+            icons={{
+              fill: quickIconFill({
+                state: sample.state,
+                airedEpisodes: sample.state.watchedEpisodes === 1 ? 2 : 99,
+                runtime: 104,
+                datePreferences: data.datePreferences,
+              }),
+              rating: show.rating,
+              watchNowTarget: { type: 'show', id: show.id, title: show.title },
+            }}
+          />
+        </Variant>
       {/if}
     {/each}
   </PosterGrid>
 </Specimen>
 
-<Specimen title="Live overlay" note="The signed-in viewer's own state for each trending show.">
+<Specimen title="Live overlay"
+  note="Discover's poster shelf on the trending shows, with the signed-in viewer's own state. Click an icon to try it.">
   <PosterGrid>
     {#each shows.slice(0, 12) as show (show.id)}
       {@const state = overlay.state('show', show.id)}
       <PosterCard
         href={show.href}
         title={show.title}
+        fullTitle={show.year ? `${show.title} (${show.year})` : show.title}
         image={show.poster}
-        subtitles={show.year ? [String(show.year)] : []}
         userRating={state.rating}
         dropped={state.dropped}
+        icons={mediaQuickIcons({ item: show, state, datePreferences: data.datePreferences })}
+      />
+    {/each}
+  </PosterGrid>
+</Specimen>
+
+<Specimen title="Screenshot cards" note="Four a row for episodes, as history and ratings show them.">
+  <PosterGrid columns={4}>
+    {#each seasonOneEpisodes as episode (episode.id)}
+      {@const target = { type: episode.type, id: episode.id, title: episode.title, season: episode.season }}
+      <PosterCard
+        href={episode.href}
+        title={episode.title}
+        number={episode.number}
+        variant="screenshot"
+        image={episode.screenshot}
+        subtitles={[breakingBad.title]}
+        userRating={overlay.state('episode', episode.id, episode.season).rating}
         icons={{
-          fill: quickIconFill({ state, airedEpisodes: show.airedEpisodes, datePreferences: data.datePreferences }),
-          rating: show.rating,
+          fill: quickIconFill({ state: overlay.state('episode', episode.id, episode.season) }),
+          rating: episode.rating,
+          ratingTarget: target,
+          watchTarget: target,
           watchNow: 'play',
+          listLabel: 'Add to list',
         }}
       />
     {/each}
   </PosterGrid>
 </Specimen>
 
-<Specimen title="Screenshot cards" note="Four a row, for episodes.">
-  <PosterGrid columns={4}>
-    {#each shows.slice(0, 4) as show (show.id)}
-      <PosterCard
-        href={show.href}
-        title="1x01 Pilot"
-        fullTitle="{show.title}: 1x01 Pilot"
-        variant="screenshot"
-        image={show.fanart}
-        subtitles={[show.title]}
-        icons={{ fill: quickIconFill({ state: {} }), rating: show.rating, listLabel: 'Add to list' }}
-      />
-    {/each}
-  </PosterGrid>
-</Specimen>
-
-<Specimen title="Fanart cards" note="Flush, like the chart pages, with tags, a rating and a drop.">
-  <PosterGrid columns={3} flush>
-    {#each shows.slice(0, 6) as show, i (show.id)}
+<Specimen title="Chart cards"
+  note="The chart grid's framed fanart cards, each with its watchers tag and a favorite star.">
+  <FrameGrid variant="framed">
+    {#each shows.slice(0, 6) as show (show.id)}
+      {@const state = overlay.state('show', show.id)}
       <FanartCard
+        framed
         href={show.href}
         title={show.title}
         year={show.year}
         image={show.fanart}
-        userRating={i === 1 ? 9 : undefined}
-        dropped={i === 4}
-        tags={[
-          { text: `${show.watchers.toLocaleString('en-US')} watchers` },
-          ...(i === 2 ? [{ text: 'Series Premiere', kind: 'premiere' as const }] : []),
-          ...(i === 3 ? [{ text: '12 collected', kind: 'collect' as const }] : []),
-        ]}
-        icons={{
-          fill: quickIconFill({ state: i === 0 ? { watched: true, favorited: true } : {} }),
-          rating: show.rating,
-          favorite: true,
-          watchNow: 'play',
-        }}
+        tags={[{ text: countLabel(show.watchers, 'watcher') }]}
+        userRating={state.rating}
+        dropped={state.dropped}
+        icons={{ ...mediaQuickIcons({ item: show, state, datePreferences: data.datePreferences }), favorite: true }}
       />
     {/each}
-  </PosterGrid>
+  </FrameGrid>
 </Specimen>
 
 <Specimen title="List rows"
@@ -293,20 +317,3 @@ const members = $derived([
     actions={{ report: {}, leave: {}, progressHref: 'https://app.trakt.tv/vip', shareUrl: 'https://og.trakt.tv/users/kendal_hagenes_1/lists/heist-night' }}
   />
 </Specimen>
-
-<style>
-.year {
-  color: var(--gray-light);
-  font-weight: var(--font-weight-headings-light);
-  font-size: var(--font-size-header-year);
-}
-
-.stats {
-  margin: 0;
-  line-height: calc(var(--line-height-computed) * 2);
-}
-
-.slim {
-  margin-block-start: var(--gutter);
-}
-</style>

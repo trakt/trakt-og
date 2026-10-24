@@ -1,15 +1,6 @@
 import { loadCalendar } from '../../../lib/calendars/loadCalendar.ts';
-import type { HeaderUser } from '../../../lib/components/header/HeaderUser.ts';
 import type { DatePreferences } from '../../../lib/settings/DatePreferences.ts';
-
-const VIEWER: HeaderUser = {
-  slug: 'og_tester',
-  firstName: 'OG',
-  avatarUrl: 'https://media.trakt.tv/hotlink-ok/placeholders/medium/leela.png',
-  joinedAt: null,
-  named: true,
-  isVip: true,
-};
+import { demoViewer } from './demoViewer.ts';
 const DATE_PREFERENCES: DatePreferences = {
   order: 'mdy',
   hour24: false,
@@ -72,5 +63,5 @@ export async function load({ fetch, url, cookies }) {
     sidenavHidden: false,
   });
 
-  return { ...calendar, user: { ...VIEWER, isVip }, datePreferences: DATE_PREFERENCES };
+  return { ...calendar, user: { ...demoViewer, isVip }, datePreferences: DATE_PREFERENCES };
 }

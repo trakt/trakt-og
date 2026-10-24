@@ -14,6 +14,7 @@ import { designToc } from '$lib/design/designToc.svelte';
 import { findDesignDemo } from '$lib/design/findDesignDemo';
 import { guardWrites } from '$lib/design/guardWrites';
 import { toast } from '$lib/components/toast/toast.svelte';
+import { countLabel } from '$lib/utils/countLabel';
 import ThemeSwitch from '$lib/design/ThemeSwitch.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import angleLeft from '$lib/icons/light/angle-left.svg?raw';
@@ -71,7 +72,7 @@ $effect(() => {
       <div class="column">
         {#if demo}
           <DesignIntro tag={demo.group} title={demo.title}
-            facts={[`${toc.entries.length} sections`, `$lib/${demo.source}`]}>
+            facts={[countLabel(toc.entries.length, 'section'), `$lib/${demo.source}`]}>
             {#snippet lead()}{demo.summary}{/snippet}
           </DesignIntro>
         {/if}

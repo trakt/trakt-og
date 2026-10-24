@@ -2,13 +2,13 @@
   The progress page as its owner sees it, on sample shows: the view toggles, each row's status menu (rewatch and drop,
   restore on Dropped) and its Seasons toggle. `?view=grid` shows the poster grid, `?view=simple` the simple bars,
   `?type=rewatching` the Rewatching tab (Game of Thrones) and `?type=dropped` the Dropped tab (two of the sample
-  shows). The rows carry their catalogs, so each shows its up-next card at once, and opening one shows its season
-  lines (Breaking Bad has unwatched episodes in the library, Severance a season announced); `?estimates` leaves them
-  out, for the collapsed counts. The page data's viewer makes the controls live; with a browser session they write to
-  that account, so screenshots stub the API.
+  shows). `?list=1` filters to a list's shows and `?list=2` to an empty list, each after a short wait. Rows start with
+  the up-next episode and estimated counts, as the page does; opening one's seasons reads its catalog after a short
+  wait (Breaking Bad has unwatched episodes in the library, Severance a season announced).
 -->
 <script lang="ts">
 import { page } from '$app/state';
+import { SvelteSet } from 'svelte/reactivity';
 import Specimen from '$lib/design/Specimen.svelte';
 import { progressFixture } from '$lib/users/progress/progressFixture';
 import ProgressList from '$lib/users/progress/ProgressList.svelte';
@@ -19,8 +19,9 @@ const datePreferences = { order: 'mdy', hour24: false, timeZone: 'America/Los_An
 const now = new Date(progressFixture.now);
 const profile = toProfileUser({ username: 'demo', name: 'Demo User', private: false, ids: { slug: 'demo' } });
 
+const WAIT = 900;
 const view = $derived(page.url.searchParams.get('view'));
-const expanded = $derived(!page.url.searchParams.has('estimates'));
+const list = $derived(Number.parseInt(page.url.searchParams.get('list') ?? '', 10) || undefined);
 const type = $derived.by<ProgressType>(() => {
   const value = page.url.searchParams.get('type') ?? '';
   return isProgressType(value) ? value : 'watched';
@@ -31,9 +32,40 @@ const variants = [
   { label: 'Simple', query: '?view=simple' },
   { label: 'Rewatching', query: '?type=rewatching' },
   { label: 'Dropped', query: '?type=dropped' },
-  { label: 'Estimates', query: '?estimates' },
+  { label: 'On a list', query: '?list=1' },
+  { label: 'Empty list', query: '?list=2' },
 ];
-const items = $derived(progressFixture[type](expanded));
+
+// Like the page: up-next comes with the progress, and a row's catalog is read as its seasons open.
+const catalogs = new SvelteSet<number>();
+const loading = new SvelteSet<number>();
+function need(id: number) {
+  if (catalogs.has(id) || loading.has(id)) return;
+  loading.add(id);
+  setTimeout(() => {
+    loading.delete(id);
+    catalogs.add(id);
+  }, WAIT);
+}
+const exact = $derived(progressFixture[type](true));
+const items = $derived(
+  progressFixture[type](false).map((item) => {
+    const full = exact.find(({ show }) => show.id === item.show.id);
+    if (!full) return item;
+    if (catalogs.has(item.show.id)) return full;
+    return { ...item, next: full.next ?? full.detail?.next, last: full.last ?? full.detail?.last };
+  }),
+);
+
+// `?list=1` holds Breaking Bad and Severance, `?list=2` nothing.
+let listed = $state<ReadonlySet<number> | null>(null);
+$effect(() => {
+  const id = list;
+  listed = null;
+  if (id === undefined) return;
+  const timer = setTimeout(() => (listed = new Set(id === 1 ? [1388, 60300] : [])), WAIT);
+  return () => clearTimeout(timer);
+});
 const data = $derived({
   type,
   sort: { by: 'added', how: 'asc' as const, supported: true },
@@ -41,7 +73,7 @@ const data = $derived({
   grid: view === 'grid',
   simple: view === 'simple',
   terms: '',
-  list: undefined,
+  list,
   page: 1,
   options: { includeSpecials: false, useLastActivity: false },
   datePreferences,
@@ -53,7 +85,7 @@ const data = $derived({
 <!-- The variants only change this page's query, so resolve() has nothing to add. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 <Specimen title="Progress list" bleed
-  note="The list on sample shows, with each row's catalog so its up-next card shows at once. Signed in, the controls write to your account.">
+  note="Open a row's seasons to see them load. The list variants show the loader, then the filtered rows or the empty list.">
   <nav class="variants" aria-label="Progress variants">
     {#each variants as variant (variant.label)}
       <a href="{page.url.pathname}{variant.query}" aria-current={page.url.search === variant.query ? 'page' : undefined}>
@@ -61,7 +93,7 @@ const data = $derived({
       </a>
     {/each}
   </nav>
-  <ProgressList {data} {items} {now} />
+  <ProgressList {data} {items} {listed} {loading} onneed={need} {now} />
 </Specimen>
 
 <style>

@@ -1,90 +1,120 @@
 <script lang="ts">
-import Dialog from '$lib/components/dialog/Dialog.svelte';
+import Container from '$lib/components/container/Container.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
-import Specimen from '$lib/design/Specimen.svelte';
+import FilterMenu from '$lib/components/filters/FilterMenu.svelte';
+import ReportDialog from '$lib/components/summary/ReportDialog.svelte';
 import { toast } from '$lib/components/toast/toast.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import WatchNow from '$lib/components/watchnow/WatchNow.svelte';
-import type { WatchNowButton } from '$lib/components/watchnow/watchNow';
+import WatchNowDialog from '$lib/components/watchnow/WatchNowDialog.svelte';
+import Specimen from '$lib/design/Specimen.svelte';
+import Variant from '$lib/design/Variant.svelte';
 import Icon from '$lib/icons/Icon.svelte';
+import ellipsis from '$lib/icons/regular/ellipsis.svg?raw';
+import flag from '$lib/icons/solid/flag.svg?raw';
 import check from '$lib/icons/trakt/check-thick.svg?raw';
+import { fightClub, reportTarget, watchNow } from './fixtures.ts';
+
+const { data } = $props();
+const report = $derived({ ...reportTarget, fanart: data.fanart });
 
 const sorts = ['Watched Date', 'Title', 'Released', 'Runtime'];
-const placements = ['top', 'right', 'bottom', 'left'] as const;
-const plays = '12 plays\n1 day 2 hours'; // lines break at \n, like OG's <br>
+const calendars = { my: ['Shows & Movies', 'Shows', 'Movies'], all: ['Shows & Movies', 'Shows', 'Movies'] };
 
 let sort = $state('Watched Date');
+let calendar = $state({ group: 'my', name: 'Shows & Movies' });
+let movies = $state(true);
+let shows = $state(true);
 let reportOpen = $state(false);
 let watchOpen = $state(false);
-
-// The modal loads Fight Club's real offers from the API when it opens.
-const logo = (slug: string) => `https://media.trakt.tv/watchnow/sources/${slug}.webp`;
-const watchNow: WatchNowButton = {
-  path: '/movies/fight-club-1999',
-  tiles: [
-    { slug: 'apple_tv', name: 'Apple TV', color: '#000000', logo: logo('apple_tv'), href: '#apple' },
-    {
-      slug: 'google_play_movies',
-      name: 'Google Play',
-      color: '#607d8b',
-      logo: logo('google_play_movies'),
-      href: '#gp',
-    },
-  ],
-  count: 5,
-  favorites: 1,
-  cinemaOnly: false,
-  hidden: false,
-  country: 'us',
-  favoriteKeys: ['us-youtube'],
+// Lines break at \n, like OG's <br>.
+const tips = {
+  plays: '12 plays\nLast watched Sep 29, 2026',
+  rating: 'Trakt Rating\n12,345 votes',
+  chart: 'Monday, Sep 29\n2h 14m',
 };
 </script>
 
-<Specimen title="Dropdown"
-  note="OG's Bootstrap dropdown on the Popover API, then the transparent one on discover's black titles column.">
-  <Dropdown>
-    {#snippet trigger()}{sort}{/snippet}
-    <ul>
-      {#each sorts as option (option)}
-        <li>
-          <button type="button" aria-current={option === sort} onclick={() => (sort = option)}>{option}</button>
-        </li>
-      {/each}
-    </ul>
-    <hr />
-    <ul>
-      <li><a href="#top">A link row</a></li>
-    </ul>
-  </Dropdown>
-
-  <div class="dark-band">
-    <Dropdown variant="transparent" label="Media type: {sort}">
-      {#snippet trigger()}{sort}{/snippet}
-      <ul>
-        {#each sorts as option (option)}
-          <li><button type="button" onclick={() => (sort = option)}>{option}</button></li>
+<Specimen title="Dropdown" row
+  note="Every look a page uses. Click or press Enter to open; Esc or a click outside closes it.">
+  <Variant label="Default, in a section toolbar">
+    <div class="toolbar">
+      <Dropdown section="Sort">
+        {#snippet trigger()}{sort}{/snippet}
+        <ul>
+          {#each sorts as option (option)}
+            <li>
+              <button type="button" aria-current={option === sort} onclick={() => (sort = option)}>{option}</button>
+            </li>
+          {/each}
+        </ul>
+      </Dropdown>
+    </div>
+  </Variant>
+  <Variant label="Title, a sidebar's page picker">
+    <div class="sidebar">
+      <Dropdown variant="title" label="Pick a calendar">
+        {#snippet trigger()}<span class="eyebrow">{calendar.group === 'my' ? 'My' : 'All'}</span><span class="name"
+          >{calendar.name}</span>{/snippet}
+        {#each Object.entries(calendars) as [group, names] (group)}
+          <ul>
+            <li class="header">{group === 'my' ? 'My' : 'All'}</li>
+            {#each names as name (name)}
+              <li>
+                <button type="button" aria-current={calendar.group === group && calendar.name === name}
+                  onclick={() => (calendar = { group, name })}>{name}</button>
+              </li>
+            {/each}
+          </ul>
         {/each}
-      </ul>
-    </Dropdown>
-  </div>
+      </Dropdown>
+    </div>
+  </Variant>
+  <Variant label="Circle, after a profile name">
+    <div class="start cover">
+      <Dropdown variant="circle" label="User options">
+        {#snippet trigger()}<Icon svg={ellipsis} />{/snippet}
+        <ul>
+          <li><button type="button" onclick={() => toast.success('Unfollowed, on this page only.')}>Unfollow</button></li>
+          <li><button type="button" onclick={() => toast.success('Blocked, on this page only.')}>Block</button></li>
+        </ul>
+      </Dropdown>
+    </div>
+  </Variant>
+  <Variant label="Icon, the filter eye">
+    <div class="toolbar">
+      <FilterMenu active={!movies || !shows} count={Number(!movies) + Number(!shows)}>
+        <ul>
+          <li class="header" role="presentation">Types</li>
+          <li><button type="button" aria-pressed={movies} onclick={() => (movies = !movies)}>Movies</button></li>
+          <li><button type="button" aria-pressed={shows} onclick={() => (shows = !shows)}>Shows</button></li>
+        </ul>
+      </FilterMenu>
+    </div>
+  </Variant>
 </Specimen>
 
-<Specimen title="Dialog" note="OG's modals on a native dialog element, at two sizes.">
-  <div class="row">
-    <button type="button" onclick={() => (reportOpen = true)}>Report item (500px)</button>
-    <button type="button" onclick={() => (watchOpen = true)}>Watch now (360px, click outside closes)</button>
-  </div>
+<Specimen title="Dialog" row
+  note="The art dialogs: the item's fanart under glass, with the form below. Report sends to the stubbed API; Where to watch loads Fight Club's real offers.">
+  <Variant label="md: Report">
+    <button type="button" class="start" onclick={() => (reportOpen = true)}>Report Fight Club</button>
+  </Variant>
+  <Variant label="xl, click outside closes: Where to watch">
+    <button type="button" class="start" onclick={() => (watchOpen = true)}>Where to watch Fight Club</button>
+  </Variant>
 </Specimen>
 
-<Specimen title="Watch Now"
-  note="The sidebar block under a summary poster. The button opens the where-to-watch modal on Fight Club's real offers.">
-  <div class="sidebar-demo">
-    <WatchNow button={watchNow} title="Fight Club" year={1999} />
-  </div>
+<Specimen title="Watch Now" bleed
+  note="The block under a summary poster, at the sidebar's width. Its button opens the where-to-watch dialog.">
+  <Container>
+    <div class="summary-sidebar">
+      <WatchNow button={watchNow} title={fightClub.title} year={fightClub.year} fanart={data.fanart} />
+    </div>
+  </Container>
 </Specimen>
 
 <Specimen title="Toast" note="Glass toasts, top right under where the header sits.">
-  <div class="row">
+  <div class="buttons">
     <button type="button" onclick={() => toast.success('Fight Club added to your watchlist.')}>Success</button>
     <button type="button" onclick={() => toast.error('This item was recently refreshed. Please try again later.')}>
       Error
@@ -92,95 +122,101 @@ const watchNow: WatchNowButton = {
   </div>
 </Specimen>
 
-<Specimen title="Tooltip" note="Hover or tab to a trigger. Esc hides it; touch never opens one.">
-  <div class="row tooltips">
-    {#each placements as placement (placement)}
-      <Tooltip text="Tooltip on {placement}" {placement}>
-        {#snippet trigger(tooltip)}
-          <button type="button" {...tooltip}>{placement}</button>
-        {/snippet}
-      </Tooltip>
-    {/each}
-    <Tooltip text={plays} placement="bottom">
+<Specimen title="Tooltip" row
+  note="Hover or tab to a trigger; Esc hides it and touch never opens one. Chart tips also open on a click or tap.">
+  <Variant label="Bottom, a quick icon">
+    <Tooltip text={tips.plays} placement="bottom">
       {#snippet trigger(tooltip)}
-        <button type="button" class="icon-button" aria-label="Add to watched history" {...tooltip}>
+        <button type="button" class="start quick-icon" aria-label="Add to watched history" {...tooltip}>
           <Icon svg={check} />
         </button>
       {/snippet}
     </Tooltip>
-    <Tooltip placement="bottom">
+  </Variant>
+  <Variant label="Right, a summary tool">
+    <Tooltip text="Report" placement="right">
       {#snippet trigger(tooltip)}
-        <a href="#top" {...tooltip}>Markup inside</a>
-      {/snippet}
-      <em>Added to library on</em><br />September 1, 2026
-    </Tooltip>
-    <Tooltip text="A longer tooltip wraps once it reaches OG's 400px limit, which Bootstrap's default of 200px was raised to for titles like these ones.">
-      {#snippet trigger(tooltip)}
-        <button type="button" {...tooltip}>Long</button>
+        <button type="button" class="start" aria-label="Report" {...tooltip}><Icon svg={flag} /></button>
       {/snippet}
     </Tooltip>
-  </div>
+  </Variant>
+  <Variant label="Left, a filter's site logo">
+    <Tooltip placement="left">
+      {#snippet trigger(tooltip)}<span class="start site" {...tooltip}>RT</span>{/snippet}
+      Rotten Tomatoes<br /><em>Tomatometer</em>
+    </Tooltip>
+  </Variant>
+  <Variant label="Titled, the ratings strip">
+    <Tooltip text={tips.rating} variant="titled">
+      {#snippet trigger(tooltip)}<a class="start" href="#tooltip" {...tooltip}>86%</a>{/snippet}
+    </Tooltip>
+  </Variant>
+  <Variant label="Chart, a day's bar">
+    <Tooltip variant="chart" text={tips.chart}>
+      {#snippet trigger(tooltip)}<a class="bar" href="#tooltip" aria-label="Monday, Sep 29" {...tooltip}></a>{/snippet}
+    </Tooltip>
+  </Variant>
+  <Variant label="Long text">
+    <Tooltip
+      text="A longer tooltip wraps once it reaches OG's 400px limit, which Bootstrap's default of 200px was raised to for titles like these ones.">
+      {#snippet trigger(tooltip)}<button type="button" class="start" {...tooltip}>Long</button>{/snippet}
+    </Tooltip>
+  </Variant>
 </Specimen>
 
-<Dialog bind:open={reportOpen} title="Report item" size="md">
-  <form method="dialog" class="form">
-    <label>
-      Reason
-      <select>
-        <option></option>
-        <option>Duplicate</option>
-        <option>Invalid Metadata</option>
-      </select>
-    </label>
-    <label>
-      Message
-      <textarea rows="3"></textarea>
-    </label>
-    <button type="submit">Send</button>
-  </form>
-</Dialog>
-
-<Dialog bind:open={watchOpen} title="Watch now" lightDismiss>
-  <p>Fight Club streams on 2 services in the United States.</p>
-</Dialog>
+<ReportDialog bind:open={reportOpen} target={report} />
+<WatchNowDialog bind:open={watchOpen} button={watchNow} title={fightClub.title} year={fightClub.year}
+  fanart={data.fanart} />
 
 <style>
-/* Where the transparent variant sits: discover's black titles column. */
-.dark-band {
-  margin-block-start: var(--gutter);
+/* Triggers keep their own width in a Variant's column. */
+.start {
+  justify-self: start;
+}
+
+.toolbar {
+  display: flex;
+  padding: var(--toolbar-padding) var(--gutter);
+  background: var(--color-toolbar-bg);
+}
+
+.sidebar {
+  inline-size: var(--sidebar-width);
+  padding: var(--sidebar-padding-top) var(--sidebar-padding) var(--sidebar-padding);
+  background-color: var(--color-sidebar-bg);
+  color: var(--color-frame-ink);
+}
+
+.cover {
   padding: var(--gutter);
-  background-color: var(--color-recent-comments-titles-bg);
+  background-color: var(--color-page);
+  color: var(--color-text-inverse);
 }
 
-.sidebar-demo {
-  inline-size: 173px;
+.summary-sidebar {
+  inline-size: calc(var(--summary-offset) - var(--gutter));
+  padding-block: var(--gutter);
 }
 
-.row {
+.buttons {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-sm-inline);
 }
 
-.tooltips {
-  align-items: center;
-  gap: var(--gutter);
-  padding-block: calc(var(--gutter) * 3);
-  padding-inline: calc(var(--gutter) * 2);
-}
-
-.icon-button {
+.quick-icon {
   color: var(--brand-tertiary);
   font-size: var(--font-size-quick-icon);
 }
 
-.form {
-  display: grid;
-  gap: var(--space-panel);
+.site {
+  font-weight: var(--font-weight-headings-heavy);
+}
 
-  & label {
-    display: grid;
-    gap: var(--space-sm-block);
-  }
+.bar {
+  display: block;
+  inline-size: var(--gutter);
+  block-size: calc(var(--gutter) * 3);
+  background-color: var(--brand-primary);
 }
 </style>

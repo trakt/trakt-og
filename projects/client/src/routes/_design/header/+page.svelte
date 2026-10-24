@@ -11,12 +11,29 @@ import type { HeaderUser } from '$lib/components/header/HeaderUser';
 import type { DarkKnight } from '$lib/settings/DarkKnight';
 import type { SettingsBody } from '$lib/settings/SettingsBody';
 import { toTheme } from '$lib/settings/toTheme';
+import { PLACEHOLDER_AVATAR } from '$lib/users/placeholderAvatar';
+import { dayIn } from '$lib/utils/dayIn';
+import { libraryStages, toDemoLibrary } from '../first-night/library.ts';
+import { seedOverlay } from '../first-night/seedOverlay.svelte.ts';
 
-const demoUser = { slug: 'og_red', firstName: 'OG', avatarUrl: avatar, joinedAt: null, named: true };
+const { data } = $props();
+
+const demoUser = { slug: 'og_red', firstName: 'OG', avatarUrl: avatar, joinedAt: '2020-08-20T19:23:00Z', named: true };
+// Joined twelve days ago, so the Getting started pill shows.
+const joinedAt = `${dayIn(new Date(Date.now() - 12 * 86_400_000).toISOString(), 'UTC')}T20:41:00Z`;
+const NEW_MEMBER = 'New member';
 const users: Record<string, HeaderUser | null> = {
   'Signed out': null,
   'Signed in': { ...demoUser, isVip: false },
   'Signed in, VIP': { ...demoUser, isVip: true },
+  [NEW_MEMBER]: {
+    slug: 'reel_rookie',
+    firstName: 'reel_rookie',
+    avatarUrl: PLACEHOLDER_AVATAR,
+    joinedAt,
+    named: false,
+    isVip: false,
+  },
 };
 
 const SETTINGS: ReadonlyArray<readonly [DarkKnight, string]> = [
@@ -39,6 +56,8 @@ let backdrop = $state('Dark art');
 const art = $derived(BACKDROPS[backdrop]);
 let darkKnight = $state<DarkKnight>('false');
 const user = $derived(users[who] ?? null);
+const threeSeen = libraryStages.find(({ id }) => id === 'three') ?? libraryStages[0];
+seedOverlay(() => (who === NEW_MEMBER ? toDemoLibrary(threeSeen, []) : null));
 
 $effect(() => {
   const root = document.documentElement;
@@ -57,7 +76,7 @@ function save(body: SettingsBody) {
 }
 </script>
 
-<Header {user} {darkKnight} {save} />
+<Header {user} searchType={data.searchType} {darkKnight} {save} />
 
 <main>
   {#if art}<div class="backdrop" style:background-image="url('{art}')" {@attach headerArt(art)}></div>{/if}
@@ -65,8 +84,9 @@ function save(body: SettingsBody) {
     <h1>Header and footer</h1>
     <p>
       The fixed top bar and OG's footer. The bar is dark glass, tinted by the page's backdrop. Click the magnifier or
-      press <kbd>/</kbd> to open search, and hover the profile button for its menu. The links stay in the bar down to
-      768px, where phones get the splash instead.
+      press <kbd>/</kbd> to open search, and hover the profile button for its menu. A new member's first 30 days add
+      the Getting started pill; signed out, it counts a made-up library, signed in your own. The links stay in the bar
+      down to 768px, where phones get the splash instead.
     </p>
     <fieldset>
       <legend>User</legend>

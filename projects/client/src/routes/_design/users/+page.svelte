@@ -1,11 +1,15 @@
 <!--
-  The profile frame in every state, on sample data: covers, labels, follow states, the request banner and the
-  watching-now bar. Real profiles only show the states the signed-in viewer is actually in. Under it, a favorite
-  card, the welcome hero, the charts, the most watched columns (OG's defaults, then a saved sort and tab), and the
-  network page's user cards in each follow state, watching now and checked in. The stat boxes have their own demo.
+  The profile frame in every state, on sample data: covers, labels, follow states, the request banner, the lock screen
+  and the watching-now bar. Real profiles only show the states the signed-in viewer is actually in. Under it, the
+  favorites panel, the welcome hero, the charts, the most watched columns (OG's defaults, then a saved sort and tab),
+  and the network page's user cards in each follow state, watching now and checked in. The stat boxes have their own
+  demo.
 -->
 <script lang="ts">
+import DashboardPanel from '$lib/components/dashboard/DashboardPanel.svelte';
 import Specimen from '$lib/design/Specimen.svelte';
+import Variant from '$lib/design/Variant.svelte';
+import star from '$lib/icons/regular/star.svg?raw';
 import FavoriteCard from '$lib/components/users/FavoriteCard.svelte';
 import MostWatched from '$lib/components/users/MostWatched.svelte';
 import ProfileCharts from '$lib/components/users/ProfileCharts.svelte';
@@ -15,6 +19,7 @@ import WelcomeHero from '$lib/components/users/WelcomeHero.svelte';
 import { liveTiles } from '$lib/dashboard/liveTiles';
 import { socialFeedFixture } from '$lib/dashboard/socialFeedFixture';
 import { profileTabs } from '$lib/users/profileTabs';
+import type { FavoriteCard as Favorite } from '$lib/users/profile/toProfileSummary';
 import { toGenreBar } from '$lib/users/profile/toGenreBar';
 import { toProfileRatings } from '$lib/users/profile/toProfileRatings';
 import type { ProfileUser } from '$lib/users/ProfileUser';
@@ -31,7 +36,7 @@ const vip: ProfileUser = {
   isLocked: false,
   vip: { kind: 'vip', tag: { text: 'OG', title: 'Original VIP Member' }, years: 15 },
   location: 'Planet Express',
-  coverUrl: 'https://media.trakt.tv/images/shows/000/099/080/fanarts/full/a049f455c1.jpg',
+  coverUrl: 'https://media.trakt.tv/images/shows/000/099/080/fanarts/full/a049f455c1.jpg.webp',
   about: null,
   joinedAt: '2010-09-25T17:49:25.000Z',
 };
@@ -66,13 +71,15 @@ const scrobbling: WatchingNow = {
   episode: null,
   href: '/movies/futurama-bender-s-big-score-2007',
   fanartUrl: vip.coverUrl,
-  stillUrl: 'https://media.trakt.tv/images/shows/000/099/080/fanarts/medium/a049f455c1.jpg',
+  stillUrl: 'https://media.trakt.tv/images/shows/000/099/080/fanarts/medium/a049f455c1.jpg.webp',
   endsAt: endsIn(73),
   runtime: 89,
 };
 
 const relation = (value: Partial<ViewerRelation>) =>
   Promise.resolve({ follow: 'none', followsYou: false, blocked: false, requestId: null, ...value } as const);
+
+const listCover = 'https://media.trakt.tv/images/shows/000/167/187/fanarts/full/88ea4a00c4.jpg.webp';
 
 const tabs = (slug: string, section = '') => profileTabs({ slug, pathname: `/users/${slug}/${section}`, isSelf: true });
 
@@ -109,6 +116,14 @@ const states = [
   { title: 'Default cover, blocked', props: { user: free, large: true, relation: relation({ blocked: true }) } },
   { title: 'Slim, your own check-in, no fanart', props: { user: free, tab: 'network', watching, isSelf: true } },
   { title: 'Signed out', props: { user: free, large: true, signedIn: false } },
+  {
+    title: "Private profile the viewer can't see",
+    props: { user: { ...free, isPrivate: true, isLocked: true }, large: true, relation: relation({}) },
+  },
+  {
+    title: "A VIP owner's list page, on its first item's fanart",
+    props: { user: free, tab: 'lists/sci-fi-club', coverUrl: listCover, relation: relation({}) },
+  },
   { title: 'Follow permission disabled', props: { user: free, large: true, canFollow: false, relation: relation({}) } },
   {
     title: 'Incoming request from someone who does not follow you yet',
@@ -207,7 +222,34 @@ const cards = [
     user: { ...free, slug: 'fry', displayName: 'Philip J. Fry', vip: null },
     relation: cardRelation({ followsYou: true }),
   },
+  {
+    key: 'no-follow',
+    user: { ...free, slug: 'hermes', displayName: 'Hermes Conrad', vip: null },
+    relation: cardRelation({}),
+    canFollow: false,
+  },
   { key: 'self', user: { ...free, slug: 'self', displayName: 'You (or signed out)' }, relation: null },
+];
+const favorite = (
+  id: number,
+  title: string,
+  slug: string,
+  year: number,
+  gradient: readonly [string, string],
+): Favorite => ({
+  type: 'show',
+  id,
+  href: `/shows/${slug}`,
+  title,
+  typeLabel: 'Show',
+  year,
+  gradient,
+  notes: null,
+});
+const favorites = [
+  { ...favorite(1, 'The Boys', 'the-boys-2019', 2019, ['#FBB91E', '#A74B2B']), notes: 'Rewatch every year.' },
+  favorite(2, 'Futurama', 'futurama', 1999, ['#4FA3D1', '#2B3F7A']),
+  favorite(3, 'The Wire', 'the-wire', 2002, ['#6BBF59', '#1F5130']),
 ];
 const demoNow = new Date();
 const tiles = liveTiles(socialFeedFixture.live(demoNow), demoNow);
@@ -229,36 +271,33 @@ const liveCards = [
 
 <Specimen title="Profile frame" bleed
   note="Covers, labels, follow states, the request banner and the watching-now bar. Real profiles only show the states the viewer is actually in.">
-  {#each states as { title, props } (title)}
-    <h3 class="state">{title}</h3>
-    <ProfileFrame
-      user={props.user}
-      watching={props.watching ?? null}
-      tabs={tabs(props.user.slug, props.tab)}
-      large={props.large}
-      isSelf={props.isSelf ?? false}
-      signedIn={props.signedIn ?? true}
-      canFollow={props.canFollow ?? true}
-      relation={props.relation ?? null}
-    />
-  {/each}
+  <div class="states">
+    {#each states as { title, props } (title)}
+      <Variant label={title}>
+        <ProfileFrame
+          user={props.user}
+          watching={props.watching ?? null}
+          tabs={tabs(props.user.slug, props.tab)}
+          large={props.large}
+          isSelf={props.isSelf ?? false}
+          signedIn={props.signedIn ?? true}
+          canFollow={props.canFollow ?? true}
+          relation={props.relation ?? null}
+          coverUrl={props.coverUrl}
+        />
+      </Variant>
+    {/each}
+  </div>
 </Specimen>
 
-<Specimen title="Favorite card">
-  <div class="favorite">
-    <FavoriteCard
-      favorite={{
-        type: 'show',
-        id: 1,
-        href: '/shows/the-boys-2019',
-        title: 'The Boys',
-        typeLabel: 'Show',
-        year: 2019,
-        gradient: ['#FBB91E', '#A74B2B'],
-        notes: 'Rewatch every year.',
-      }}
-    />
-  </div>
+<Specimen title="Favorites" bleed
+  note="The profile's Favorites panel, only when there are some, with up to three cards.">
+  <DashboardPanel --panel-bg="var(--color-favorites-bg)" title="Favorites" icon={star}
+    seeMore={{ href: '/users/leela/favorites', text: 'All Favorites' }}>
+    <div class="favorites">
+      {#each favorites as favorite (favorite.id)}<FavoriteCard {favorite} />{/each}
+    </div>
+  </DashboardPanel>
 </Specimen>
 
 <Specimen title="Welcome hero" bleed note="For a member who hasn't set a name yet.">
@@ -267,41 +306,53 @@ const liveCards = [
 
 <Specimen title="Charts" bleed
   note="Genres and ratings; a generous rater, whose average past 9 puts the line's label before it; then no ratings at all.">
-  <ProfileCharts {genres} {ratings} slug="leela" />
-  <h3 class="state">A generous rater</h3>
-  <ProfileCharts genres={genreBars(genreRows.slice(0, 4))} ratings={generous} slug="leela" />
-  <h3 class="state">No ratings</h3>
-  <ProfileCharts genres={genreBars(genreRows.slice(0, 4))} ratings={unrated} slug="leela" />
+  <div class="states">
+    <Variant label="Genres and ratings">
+      <ProfileCharts {genres} {ratings} slug="leela" />
+    </Variant>
+    <Variant label="A generous rater">
+      <ProfileCharts genres={genreBars(genreRows.slice(0, 4))} ratings={generous} slug="leela" />
+    </Variant>
+    <Variant label="No ratings">
+      <ProfileCharts genres={genreBars(genreRows.slice(0, 4))} ratings={unrated} slug="leela" />
+    </Variant>
+  </div>
 </Specimen>
 
 <Specimen title="Most watched" bleed
   note="Your own profile on OG's defaults, then your saved sort and tab: shows on All Time by time watched.">
-  <MostWatched
-    {...mostWatched}
-    slug="leela"
-    windowStart="2026-08-30T00:00:00.000Z"
-    hasnt={(rest) => `You haven't ${rest}`}
-    datePreferences={{ order: 'mdy', hour24: false, timeZone: 'UTC', weekStartDay: 0 }}
-  />
-  <h3 class="state">Saved sort and tab</h3>
-  <MostWatched
-    {...savedMostWatched}
-    slug="leela"
-    windowStart="2026-08-30T00:00:00.000Z"
-    hasnt={(rest) => `You haven't ${rest}`}
-    datePreferences={{ order: 'mdy', hour24: false, timeZone: 'UTC', weekStartDay: 0 }}
-  />
+  <div class="states">
+    <Variant label="OG's defaults">
+      <MostWatched
+        {...mostWatched}
+        slug="leela"
+        windowStart="2026-08-30T00:00:00.000Z"
+        hasnt={(rest) => `You haven't ${rest}`}
+        datePreferences={{ order: 'mdy', hour24: false, timeZone: 'UTC', weekStartDay: 0 }}
+      />
+    </Variant>
+    <Variant label="Saved sort and tab">
+      <MostWatched
+        {...savedMostWatched}
+        slug="leela"
+        windowStart="2026-08-30T00:00:00.000Z"
+        hasnt={(rest) => `You haven't ${rest}`}
+        datePreferences={{ order: 'mdy', hour24: false, timeZone: 'UTC', weekStartDay: 0 }}
+      />
+    </Variant>
+  </div>
 </Specimen>
 
 <Specimen title="User cards"
-  note="The network page's cards: watching now, checked in, each follow state, then yourself or signed out.">
+  note="The network page's cards: watching now, checked in, each follow state, a viewer who isn't allowed to follow, then yourself or signed out.">
   <ul class="user-cards">
     {#each liveCards as card (card.key)}
       <li><UserCard user={card.user} relation={card.relation} watch={card.watch} since="2014-03-02T10:00:00.000Z" /></li>
     {/each}
     {#each cards as card, i (card.key)}
       <li>
-        <UserCard user={card.user} relation={card.relation} veteran={i === 1 ? 'Legend' : i === 2 ? 'Veteran' : null}
+        <UserCard user={card.user} relation={card.relation} canFollow={'canFollow' in card ? card.canFollow : true}
+          veteran={i === 1 ? 'Legend' : i === 2 ? 'Veteran' : null}
           since="2012-06-11T10:00:00.000Z" />
       </li>
     {/each}
@@ -318,16 +369,21 @@ const liveCards = [
   list-style: none;
 }
 
-.favorite {
-  inline-size: calc(100% / 3);
-  padding-block: var(--gutter);
-  background-color: var(--color-favorites-bg);
+/* ProfilePage's favorites row. */
+.favorites {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--gutter);
+  margin-block: var(--gutter) var(--space-lg-block);
 }
 
-.state {
-  margin: 0;
-  padding: var(--gutter) var(--design-canvas-padding) var(--space-lg-block);
-  color: var(--color-text-muted);
-  font-size: var(--font-size-h5);
+.states {
+  display: grid;
+  gap: var(--gutter);
+  padding-block-start: var(--gutter);
+
+  & :global(figcaption) {
+    padding-inline: var(--design-canvas-padding);
+  }
 }
 </style>

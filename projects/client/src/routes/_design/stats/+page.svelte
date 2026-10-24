@@ -1,4 +1,5 @@
 <script lang="ts">
+import Container from '$lib/components/container/Container.svelte';
 import WatchedKeys from '$lib/components/dashboard/WatchedKeys.svelte';
 import Specimen from '$lib/design/Specimen.svelte';
 import { toExternalRatings } from '$lib/components/summary/toExternalRatings';
@@ -7,12 +8,12 @@ import globe from '$lib/icons/regular/globe.svg?raw';
 import heart from '$lib/icons/regular/heart.svg?raw';
 import userGroup from '$lib/icons/regular/user-group.svg?raw';
 import CommunityStats from '$lib/stats/CommunityStats.svelte';
-import RollingNumber from '$lib/components/stats/RollingNumber.svelte';
 import SiteScores from '$lib/stats/SiteScores.svelte';
 import StatsSection from '$lib/stats/StatsSection.svelte';
 import { toCommunityStats } from '$lib/stats/toCommunityStats';
 import { toSiteScores } from '$lib/stats/toSiteScores';
 import { toProfileRatings } from '$lib/users/profile/toProfileRatings';
+import type { Snippet } from 'svelte';
 
 const ratings = toProfileRatings({
   distribution: { 1: 180, 2: 150, 3: 230, 4: 590, 5: 1280, 6: 3650, 7: 4371, 8: 3830, 9: 1230, 10: 2465 },
@@ -44,38 +45,51 @@ const sites = toSiteScores({
 });
 </script>
 
-<Specimen title="Trakt ratings" note="The distribution of votes, with the keys under it.">
-  <StatsSection id="trakt" title="Trakt" icon={heart}>
+{#snippet column(content: Snippet)}
+  <Container>
+  <div class="column">{@render content()}</div>
+</Container>
+{/snippet}
+
+{#snippet trakt()}
+  <StatsSection id="trakt" title="Trakt" icon={heart} hideHeading>
     {#if ratings.chart}
       <div class="chart"><ProfileRatingsChart chart={ratings.chart} /></div>
       <WatchedKeys keys={ratings.keys} />
     {/if}
   </StatsSection>
-</Specimen>
+{/snippet}
 
-<Specimen title="Community">
+{#snippet communityTiles()}
   <StatsSection id="community" title="Community" icon={userGroup}>
-    <CommunityStats tiles={community} />
-  </StatsSection>
-</Specimen>
+  <CommunityStats tiles={community} />
+</StatsSection>
+{/snippet}
 
-<Specimen title="Second opinions" note="Every other site's score beside Trakt's.">
+{#snippet secondOpinions()}
   <StatsSection id="second-opinions" title="Second Opinions" icon={globe}>
-    <SiteScores trakt={{ percent: 71, votes: 17_976 }} {sites} />
-  </StatsSection>
+  <SiteScores trakt={{ percent: 71, votes: 17_976 }} {sites} />
+</StatsSection>
+{/snippet}
+
+<Specimen title="Trakt ratings" bleed
+  note="The page opens on the vote chart with its keys under it; its heading is only for screen readers.">
+  {@render column(trakt)}
 </Specimen>
 
-<Specimen title="Rolling number" note="Rolls up to its value as it comes into view.">
-  <p class="rolling">
-    <RollingNumber value={12} /> people · <RollingNumber value={150_660} /> episodes ·
-    <RollingNumber value={13_626} /> movies
-  </p>
+<Specimen title="Community" bleed note="Favorites, then the counts, each with what it means per watcher.">
+  {@render column(communityTiles)}
+</Specimen>
+
+<Specimen title="Second opinions" bleed note="Every other site's score beside Trakt's.">
+  {@render column(secondOpinions)}
 </Specimen>
 
 <style>
-.rolling {
-  font-size: var(--font-size-about-stat);
-  font-weight: var(--font-weight-headings-heavy);
+/* The stats page's content column, beside where the summary sidebar sits. */
+.column {
+  margin-inline-start: var(--summary-offset);
+  padding-block: var(--gutter) var(--space-stats-section);
 }
 
 .chart {

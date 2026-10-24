@@ -1,10 +1,15 @@
-<!-- The summary pages' lazy sections with made-up data: People You Follow, the comments and lists previews, related. -->
+<!-- A movie summary's top with real art, then its lazy sections with made-up data: activity, comments, lists, related. -->
 <script lang="ts">
 import { page } from '$app/state';
+import FanartHeader from '$lib/components/media/FanartHeader.svelte';
+import ActionButtons from '$lib/components/summary/ActionButtons.svelte';
 import MediaTools from '$lib/components/summary/MediaTools.svelte';
-import ReportDialog from '$lib/components/summary/ReportDialog.svelte';
+import Overview from '$lib/components/summary/Overview.svelte';
+import RatingsStrip from '$lib/components/summary/RatingsStrip.svelte';
+import SubpageTitle from '$lib/components/summary/SubpageTitle.svelte';
+import SummaryFrame from '$lib/components/summary/SummaryFrame.svelte';
 import SummaryPoster from '$lib/components/summary/SummaryPoster.svelte';
-import TitleTags from '$lib/components/summary/TitleTags.svelte';
+import SummaryTitle from '$lib/components/summary/SummaryTitle.svelte';
 import ActivityTabs from '$lib/components/summary/ActivityTabs.svelte';
 import Specimen from '$lib/design/Specimen.svelte';
 import ActorsStrip from '$lib/components/summary/ActorsStrip.svelte';
@@ -12,20 +17,11 @@ import CastCard from '$lib/components/summary/CastCard.svelte';
 import ViewToggle from '$lib/components/toolbar/ViewToggle.svelte';
 import CommentsPreview from '$lib/components/summary/CommentsPreview.svelte';
 import AddCommentLink from '$lib/components/comments/AddCommentLink.svelte';
+import NewCommentForm from '$lib/components/comments/NewCommentForm.svelte';
 import { newComment } from '$lib/components/comments/newComment.svelte';
 import ListsPreview from '$lib/components/summary/ListsPreview.svelte';
 import RelatedItems from '$lib/components/summary/RelatedItems.svelte';
 import VideosRail from '$lib/components/summary/VideosRail.svelte';
-import SummaryAction from '$lib/components/summary/SummaryAction.svelte';
-import SummaryActionTile from '$lib/components/summary/SummaryActionTile.svelte';
-import SummaryActionMenu from '$lib/components/summary/SummaryActionMenu.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import plus from '$lib/icons/light/circle-plus.svg?raw';
-import historyIcon from '$lib/icons/light/clock-rotate-left.svg?raw';
-import check from '$lib/icons/trakt/check.svg?raw';
-import collection from '$lib/icons/trakt/collection.svg?raw';
-import listIcon from '$lib/icons/trakt/list.svg?raw';
-import star from '$lib/icons/thin/star.svg?raw';
 import type { CommentTab } from '$lib/summary/sectionsClient';
 import type { SummaryList } from '$lib/summary/toSummaryList';
 import { type ActivityTab, toActivity } from '$lib/summary/toActivity';
@@ -33,10 +29,10 @@ import { socialFeedFixture } from '$lib/dashboard/socialFeedFixture';
 import type { RelatedCard } from '$lib/summary/toRelatedCard';
 import type { VideoCard } from '$lib/videos/toVideoCards';
 import { formatting, movie, review, spoiler } from '../comments/fixtures.ts';
+import { breakingBad, noWayHome, pilot } from './fixtures.ts';
 
-// Shows the Add comment buttons, as for a signed-in viewer; the page has no form for them to open.
+// Shows the Add comment buttons, as for a signed-in viewer; they open the comments preview's form.
 $effect(() => newComment.mount());
-let reporting = $state(false);
 let view = $state<'grid' | 'list'>('grid');
 // Made-up people with no headshots, so each Futurama silhouette shows: Leela, Fry, then Zoidberg.
 const person = (name: string, characters: string, gender?: string, episodes?: string) => ({
@@ -56,14 +52,7 @@ const crew = [
   { id: 'directing', label: 'Directing', cast: [person('Noor Haddad', 'Director', 'female', '6 episodes')] },
   { id: 'writing', label: 'Writing', cast: [person('Theo Marsh', 'Writer, Story', 'male', '12 episodes')] },
 ];
-const reportTarget = {
-  type: 'movie' as const,
-  id: 1,
-  title: 'Fight Club (1999)',
-  href: '/movies/fight-club-1999',
-  tmdb: 'https://www.themoviedb.org/movie/550',
-  fanart: 'https://media.trakt.tv/images/shows/000/099/080/fanarts/medium/a049f455c1.jpg',
-};
+const ratingTarget = { type: 'movie', id: noWayHome.id, title: noWayHome.fullTitle } as const;
 
 const AVATAR = 'https://media.trakt.tv/hotlink-ok/placeholders/medium/zoidberg.png';
 const watcher = (i: number) => ({
@@ -83,7 +72,7 @@ const activity: readonly ActivityTab[] = toActivity({
   watching: Array.from({ length: 30 }, (_, i) => watcher(i)),
   following: new Set(['member_2', 'member_5', 'member_11']),
   live,
-  item: { type: reportTarget.type, id: reportTarget.id },
+  item: { type: ratingTarget.type, id: ratingTarget.id },
   social: Array.from({ length: 16 }, (_, i) => ({
     user: watcher(i + 40),
     watched: {
@@ -166,58 +155,51 @@ const videos: readonly VideoCard[] = [
 ];
 </script>
 
-<Specimen title="Poster column"
-  note="A list's poster collage, the media tools under a summary poster, and the report dialog.">
-  <div class="poster-demo">
-    <SummaryPoster alt="List poster collage" posters={[{}, {}, {}, {}]} />
-  </div>
-  <div class="poster-demo">
-    <MediaTools target={reportTarget} />
-  </div>
-  <button type="button" onclick={() => { reporting = true; }}>Report Movie</button>
-  <ReportDialog bind:open={reporting} target={reportTarget} />
+{#snippet newCommentForm()}<NewCommentForm item={movie} />{/snippet}
+
+<!-- eslint-disable svelte/no-navigation-without-resolve -->
+<Specimen title="Summary top" bleed
+  note="A movie's page as it opens: the title tags and ratings strip on the art, the poster rising into it, the overview and the action stack. Each action works for a signed-in viewer.">
+  <FanartHeader image={noWayHome.fanart}>
+    <SummaryTitle title={noWayHome.title} year={noWayHome.year} certification={noWayHome.certification}
+      links={[noWayHome.collection]} credits={noWayHome.credits} />
+    {#snippet stats()}
+      <RatingsStrip rating={{ value: noWayHome.rating, votes: noWayHome.votes, href: `${noWayHome.href}/stats` }}
+        rateLabel="movie" {ratingTarget} external={noWayHome.external}
+        counts={[{ count: noWayHome.favorited, label: 'favorited' }]} statsHref="{noWayHome.href}/stats" />
+    {/snippet}
+  </FanartHeader>
+  <SummaryFrame label={noWayHome.title}>
+    {#snippet tools()}
+      <MediaTools target={{ type: 'movie', id: noWayHome.id, title: noWayHome.title, year: noWayHome.year, href: noWayHome.href, tmdb: noWayHome.tmdb, fanart: noWayHome.fanart }} />
+    {/snippet}
+    {#snippet sidebar()}
+      <SummaryPoster {ratingTarget} image={noWayHome.poster} alt={noWayHome.fullTitle} />
+    {/snippet}
+    {#snippet details()}
+      <Overview tagline={noWayHome.tagline} overview={noWayHome.overview} />
+    {/snippet}
+    {#snippet actions()}
+      <ActionButtons listTarget={ratingTarget} checkin={{ type: 'movie', id: noWayHome.id }} favorites
+        favoriteTarget={{ ...ratingTarget, title: noWayHome.title, year: noWayHome.year, fanart: noWayHome.fanart }}
+        historyTarget={{ ...ratingTarget, runtime: noWayHome.runtime, released: true }} />
+    {/snippet}
+  </SummaryFrame>
 </Specimen>
 
-<Specimen title="Title tags"
-  note="The bar above a summary or subpage title, on dark art. The slash splits a show from its season.">
-  <div class="title-tags-demo">
-    <TitleTags links={[{ title: 'Spider-Man (MCU) Collection', href: '/lists/official/spider-man-mcu-collection' }]}
-      credits={{ duringCredits: true, afterCredits: true }} />
-    <TitleTags label="Stats" links={[{ title: 'TRON Collection', href: '/lists/official/tron-collection' }]} />
-    <TitleTags
-      links={[{ title: 'American Horror Story', href: '/shows/american-horror-story' }, { title: 'Season 10' }]} />
-    <TitleTags
-      links={[{ title: 'Ted Lasso', href: '/shows/ted-lasso' }, { title: 'Season 1', href: '/shows/ted-lasso/seasons/1' }]}
-      type={{ text: 'Series Premiere', kind: 'series-premiere' }} credits={{ afterCredits: true }} />
-    <TitleTags label="People"
-      links={[{ title: 'Ted Lasso', href: '/shows/ted-lasso' }, { title: 'Season 1', href: '/shows/ted-lasso/seasons/1' }]}
-      type={{ text: 'Season Finale', kind: 'season-finale' }} />
-  </div>
+<Specimen title="Subpage title" bleed
+  note="An episode's Stats page: the page label leads the tag bar, a slash splits the show from its season, then the episode type.">
+  <FanartHeader image={pilot.screenshot} slim>
+    <SubpageTitle label="Stats" target={{ type: 'episode', id: pilot.id, season: pilot.season }} parents={pilot.parents}
+      type={pilot.episodeType} certification={breakingBad.certification} number={pilot.number} title={pilot.title}
+      href={pilot.href} />
+  </FanartHeader>
 </Specimen>
 
-<Specimen title="Action stack"
-  note="Not added, each action is one outlined button with its + inside. Added, it fills and the + splits off, with quieter actions under •••. Every button is the same height.">
-  <div class="actions-demo">
-    <SummaryAction color="var(--brand-tertiary)" icon={check} text="Add to history">
-      {#snippet tiles()}<SummaryActionTile icon={plus} label="Pick a watched date" />{/snippet}
-    </SummaryAction>
-    <SummaryAction color="var(--brand-tertiary)" icon={check} percent="6%" text="watched" selected>
-      {#snippet detail()}13/186 eps &mdash; 25 plays <em>(8h 20m)</em>{/snippet}
-      {#snippet tiles()}
-        <SummaryActionTile icon={plus} label="Add more plays" />
-        <SummaryActionMenu>
-          <a href="#history"><Icon svg={historyIcon} fixedWidth />View history</a>
-        </SummaryActionMenu>
-      {/snippet}
-    </SummaryAction>
-    <SummaryAction color="var(--brand-quaternary)" icon={collection} percent="95%" text="in library" selected
-      detail="177/186 episodes">
-      {#snippet tiles()}<SummaryActionTile icon={plus} label="Add to library" />{/snippet}
-    </SummaryAction>
-    <SummaryAction color="var(--brand-secondary)" icon={listIcon} text="Listed on" detail="Personal lists" selected>
-      {#snippet tiles()}<SummaryActionTile icon={plus} label="Manage lists" />{/snippet}
-    </SummaryAction>
-    <SummaryAction color="var(--brand-seventh)" icon={star} text="Add to favorites" />
+<Specimen title="List poster" note="A list's summary poster: its first four posters, quartered.">
+  <div class="poster-demo">
+    <SummaryPoster alt="Heist Night"
+      posters={[{ image: noWayHome.posterThumb }, { image: breakingBad.posterThumb }, {}, {}]} />
   </div>
 </Specimen>
 
@@ -248,6 +230,8 @@ const videos: readonly VideoCard[] = [
 <Specimen title="Comments and lists previews"
   note="What loads at the bottom of /movies/fight-club-1999 as it scrolls into view.">
   <CommentsPreview
+    form={newCommentForm}
+    reload={() => Promise.resolve(comments)}
     tabs={comments}
     item={movie}
     viewer={page.data.user ? { slug: page.data.user.slug } : null}
@@ -280,23 +264,8 @@ const videos: readonly VideoCard[] = [
   }
 }
 
-.title-tags-demo {
-  display: flex;
-  flex-direction: column;
-  align-items: start;
-  padding: var(--gutter);
-  background-color: var(--color-summary-demo-art);
-}
-
-.actions-demo {
-  display: flex;
-  flex-direction: column;
-  gap: var(--summary-action-stack-gap);
-  max-inline-size: var(--watch-date-width); /* about the stack's width on a summary page */
-}
-
+/* The summary sidebar's width. */
 .poster-demo {
   inline-size: calc(var(--summary-offset) - var(--gutter));
-  margin-block-end: var(--gutter);
 }
 </style>

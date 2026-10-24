@@ -3,25 +3,38 @@ import ItemStatIcons from '$lib/components/media/ItemStatIcons.svelte';
 import FanartHeader from '$lib/components/media/FanartHeader.svelte';
 import EpisodeTitle from '$lib/components/summary/EpisodeTitle.svelte';
 import Overview from '$lib/components/summary/Overview.svelte';
+import RatingsStrip from '$lib/components/summary/RatingsStrip.svelte';
 import SpoilerContent from '$lib/components/summary/SpoilerContent.svelte';
 import Specimen from '$lib/design/Specimen.svelte';
+import Variant from '$lib/design/Variant.svelte';
+import { overlay } from '$lib/overlay/overlay';
+import { breakingBad, pilot } from '../summary/fixtures.ts';
+
+const ratingTarget = { type: 'episode', id: pilot.id, title: pilot.fullTitle } as const;
 </script>
 
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-<Specimen title="Episode title" bleed
-  note="The show, season and episode links over the fanart, with the episode type.">
-  <FanartHeader>
-    <EpisodeTitle links={[{ title: 'American Horror Story', href: '/shows/american-horror-story' },
-      { title: 'Season 12', href: '/shows/american-horror-story/seasons/12' },
-      { title: 'Delicate', href: '/shows/american-horror-story/seasons/12' }]} number="12x01" title="Multiply Thy Pain"
-      year={2023} certification="TV-MA" type={{ text: 'Season Premiere', kind: 'season-premiere' }} />
+<Specimen title="Episode header" bleed
+  note="The show and season links over the screenshot, the episode type, then the ratings strip. Rate it from the strip.">
+  <FanartHeader dropped={overlay.state('show', breakingBad.id).dropped} image={breakingBad.fanart}
+    screenshot={pilot.screenshot}>
+    <EpisodeTitle target={ratingTarget} links={pilot.parents} number={pilot.number} title={pilot.title}
+      year={pilot.year} certification={breakingBad.certification} type={pilot.episodeType} />
+    {#snippet stats()}
+      <RatingsStrip rating={{ value: pilot.rating, votes: pilot.votes, href: `${pilot.href}/stats` }}
+        external={pilot.external} rateLabel="episode" {ratingTarget} statsHref="{pilot.href}/stats" />
+    {/snippet}
   </FanartHeader>
 </Specimen>
 
-<Specimen title="Community stat icons" note="Loaded, then the space they keep while loading.">
-  <ItemStatIcons href="/shows/breaking-bad/seasons/1/episodes/1"
-    stats={{ watchers: 4321, plays: 5678, collectors: 1234, lists: 987 }} comments={23} />
-  <ItemStatIcons href="/shows/breaking-bad/seasons/1/episodes/1" />
+<Specimen title="Community stat icons"
+  note="An episode row's counts. Zero counts drop out, and before an episode airs only its list count shows.">
+  <Variant label="Aired">
+    <ItemStatIcons href={pilot.href} stats={pilot.stats} comments={pilot.comments} />
+  </Variant>
+  <Variant label="Not aired yet">
+    <ItemStatIcons href={pilot.href} stats={pilot.stats} comments={pilot.comments} released={false} />
+  </Variant>
 </Specimen>
 
 <Specimen title="Spoilers" note="A hidden overview, then inline spoilers on a title and a rating.">

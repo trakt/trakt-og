@@ -4,6 +4,7 @@
 -->
 <script lang="ts">
 import Specimen from '$lib/design/Specimen.svelte';
+import Variant from '$lib/design/Variant.svelte';
 import { profileBoxComponent } from '$lib/users/profile/boxes/profileBoxComponent';
 import ProfileBoxStrip from '$lib/users/profile/boxes/ProfileBoxStrip.svelte';
 
@@ -11,7 +12,7 @@ const { data } = $props();
 </script>
 
 <Specimen title="Each member's strip" bleed
-  note="Each member gets the four best-scoring boxes. Scores of 40 or more count; the floor fills the rest.">
+  note="Four boxes each: About Me first when it's written, then the best scores of 40 or more (at most two number boxes), always one image box, and floor boxes fill any slot left.">
   {#each data.strips as strip (strip.name)}
     <div class="strip-head">
       <h3>{strip.name}, {strip.label.toLowerCase()}</h3>
@@ -30,10 +31,9 @@ const { data } = $props();
       {#each box.variants as variant (variant.caption)}
         {#if variant.entry}
           {@const Box = profileBoxComponent(variant.entry.key)}
-          <figure>
+          <Variant label={variant.caption}>
             {#if Box}<Box view={variant.entry.view} />{/if}
-            <figcaption>{variant.caption}</figcaption>
-          </figure>
+          </Variant>
         {/if}
       {/each}
     </div>
@@ -57,18 +57,11 @@ const { data } = $props();
   color: var(--color-text-muted);
 }
 
+/* The strip's text color, which the boxes inherit. */
 .variants {
   display: grid;
+  color: var(--color-card-text);
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: var(--gutter);
-}
-
-figure {
-  margin: 0;
-  color: var(--color-card-text);
-}
-
-figcaption {
-  color: var(--color-text-muted);
 }
 </style>

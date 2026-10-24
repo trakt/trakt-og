@@ -1,17 +1,16 @@
 <script lang="ts">
 import type { ReactionType } from '$lib/components/comments/ReactionType';
 import { page } from '$app/state';
-import { PLACEHOLDER_AVATAR } from '$lib/users/placeholderAvatar';
 import CommentCard from '$lib/components/comments/CommentCard.svelte';
 import CommentTag from '$lib/components/comments/CommentTag.svelte';
 import AddCommentLink from '$lib/components/comments/AddCommentLink.svelte';
-import CommentComposer from '$lib/components/comments/CommentComposer.svelte';
-import { newComment } from '$lib/components/comments/newComment.svelte';
-import { toast } from '$lib/components/toast/toast.svelte';
+import NewCommentForm from '$lib/components/comments/NewCommentForm.svelte';
+import PosterCard from '$lib/components/media/PosterCard.svelte';
 import ReactionControl from '$lib/components/comments/ReactionControl.svelte';
 import type { CommentViewer } from '$lib/components/comments/CommentViewer';
 import CommentWithPoster from '$lib/components/comments/CommentWithPoster.svelte';
 import Specimen from '$lib/design/Specimen.svelte';
+import Variant from '$lib/design/Variant.svelte';
 import type { CommentResponse } from '@trakt/api';
 import checkThick from '$lib/icons/trakt/check-thick.svg?raw';
 import circleCheck from '$lib/icons/solid/circle-check.svg?raw';
@@ -48,25 +47,12 @@ const viewerFor = (comment: CommentResponse): CommentViewer => {
 };
 
 let reaction = $state<ReactionType>();
-
-// The new comment form's composer, posting nowhere: the reply API's answer stands in, so short text is turned down.
-// Add comment opens it, as on a summary page; Cancel and posting hide it again.
-$effect(() => newComment.mount());
-const post = (text: string) => client.reply(0, text);
-const posted = () => {
-  newComment.close();
-  toast.success('Posted, on this page only.');
-};
-const cancel = () => {
-  const opener = newComment.opener;
-  newComment.close();
-  opener?.focus();
-};
+const fanart = 'https://media.trakt.tv/images/shows/000/167/187/fanarts/full/88ea4a00c4.jpg.webp';
 </script>
 
 <div class="cards">
   <Specimen title="Viewer"
-    note="Replying, editing, deleting and blocking work on the page and never reach the API. The reaction picker works for the signed-in viewer, and the report dialog sends for real.">
+    note="Who the cards below are shown to. Replying, editing, deleting, blocking and reporting all stay on this page.">
     <label class="viewer">
       View as
       <select bind:value={viewAs}>
@@ -102,13 +88,13 @@ const cancel = () => {
     </div>
   </Specimen>
 
-  <Specimen title="Composer"
-    note="Hidden until Add comment opens it, focused. Select text and use the toolbar; the meter turns green at 5 words. Cancel hides it again, asking first when there's text.">
-    <p><AddCommentLink /></p>
-    {#if newComment.visible}
-      <CommentComposer label="Your comment" placeholder="Add a comment as OG Viewer..." submit="Post"
-        posting="Posting your comment" avatar={PLACEHOLDER_AVATAR}
-        spoiler={false} confirmLeave gifs oncancel={cancel} save={post} onsaved={posted} />
+  <Specimen title="New comment form"
+    note="A summary's form, for members who may comment: Add comment opens it with the field focused. The meter turns green at 5 words; Cancel asks first when there's text.">
+    {#if page.data.settings}
+      <p><AddCommentLink /></p>
+      <NewCommentForm item={movie} />
+    {:else}
+      <p>Sign in to see the form. Signed out, the page has no form and no Add comment button.</p>
     {/if}
   </Specimen>
 
@@ -123,25 +109,37 @@ const cancel = () => {
       dateOptions={page.data.datePreferences} wide />
   </Specimen>
 
-  <Specimen title="Spoilers" note="The whole comment, then an inline spoiler.">
-    <CommentCard comment={spoiler} item={episode} viewer={viewerFor(spoiler)} {client}
-      dateOptions={page.data.datePreferences} featured wide />
-    <CommentCard comment={inline} item={episode} viewer={viewerFor(inline)} {client}
-      dateOptions={page.data.datePreferences} wide />
+  <Specimen title="Spoilers" note="Click a blurred spoiler to reveal it.">
+    <Variant label="Whole comment">
+      <CommentCard comment={spoiler} item={episode} viewer={viewerFor(spoiler)} {client}
+        dateOptions={page.data.datePreferences} featured wide />
+    </Variant>
+    <Variant label="Inline spoiler">
+      <CommentCard comment={inline} item={episode} viewer={viewerFor(inline)} {client}
+        dateOptions={page.data.datePreferences} wide />
+    </Variant>
   </Specimen>
 
-  <Specimen title="GIFs" note="On their own, and under text.">
-    <CommentCard comment={gifOnly} item={episode} viewer={viewerFor(gifOnly)} {client}
-      dateOptions={page.data.datePreferences} wide />
-    <CommentCard comment={gifWithText} item={episode} viewer={viewerFor(gifWithText)} {client}
-      dateOptions={page.data.datePreferences} wide />
+  <Specimen title="GIFs">
+    <Variant label="On its own">
+      <CommentCard comment={gifOnly} item={episode} viewer={viewerFor(gifOnly)} {client}
+        dateOptions={page.data.datePreferences} wide />
+    </Variant>
+    <Variant label="Under text">
+      <CommentCard comment={gifWithText} item={episode} viewer={viewerFor(gifWithText)} {client}
+        dateOptions={page.data.datePreferences} wide />
+    </Variant>
   </Specimen>
 
   <Specimen title="Staff and deleted members">
-    <CommentCard comment={staff} item={episode} viewer={viewerFor(staff)} {client}
-      dateOptions={page.data.datePreferences} />
-    <CommentCard comment={deleted} item={show} viewer={viewerFor(deleted)} {client}
-      dateOptions={page.data.datePreferences} />
+    <Variant label="Staff">
+      <CommentCard comment={staff} item={episode} viewer={viewerFor(staff)} {client}
+        dateOptions={page.data.datePreferences} wide />
+    </Variant>
+    <Variant label="Deleted member">
+      <CommentCard comment={deleted} item={show} viewer={viewerFor(deleted)} {client}
+        dateOptions={page.data.datePreferences} wide />
+    </Variant>
   </Specimen>
 
   <Specimen title="Reply with its parent" note="A reply shown out of its thread.">
@@ -164,10 +162,17 @@ const cancel = () => {
     </CommentCard>
   </Specimen>
 
-  <Specimen title="Veiled" note="Discover's Recent Comments: veiled, the author row pinned to the column's bottom.">
-    <div class="veiled">
-      <CommentCard comment={review} item={movie} viewer={viewerFor(review)} {client}
-        dateOptions={page.data.datePreferences} wide veiled hideInteractions />
+  <Specimen title="Spotlight" bleed
+    note="Discover's trending comments: one comment at a time beside its title's poster, the text large under a quote mark.">
+    <div class="spotlight">
+      <img class="backdrop" src={fanart} alt="" />
+      <div class="slide">
+        <PosterCard href="/movies/heat-1995" title="Heat" subtitles={['1995']} />
+        <div class="quote">
+          <CommentCard comment={review} item={movie} viewer={viewerFor(review)} {client}
+            dateOptions={page.data.datePreferences} spotlight />
+        </div>
+      </div>
     </div>
   </Specimen>
 
@@ -208,13 +213,45 @@ const cancel = () => {
   font-size: var(--font-size-comment-meta);
 }
 
-/* Discover's comment column: the veil over a stand-in fanart, positioned for the author row. */
-.veiled {
+/* Discover's trending comments section: the title's fanart under its shade. */
+.spotlight {
   position: relative;
-  min-block-size: 400px;
-  background:
-    linear-gradient(var(--color-recent-comments-veil), var(--color-recent-comments-veil)),
-    linear-gradient(var(--color-slider-bg), var(--brand-primary));
+  isolation: isolate;
+  overflow: hidden;
+  color-scheme: dark;
+  padding: var(--trending-comments-top) var(--design-canvas-padding) var(--trending-comments-bottom);
+  background-color: var(--color-trending-comments-bg);
+  color: var(--color-discover-text);
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--trending-comments-shade);
+  }
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  opacity: var(--opacity-trending-comments-backdrop);
+}
+
+.slide {
+  display: grid;
+  grid-template-columns: var(--trending-comments-poster) minmax(0, 1fr);
+  gap: var(--trending-comments-gap);
+  align-items: center;
+  min-block-size: var(--trending-comments-height);
+}
+
+.quote {
+  min-inline-size: 0;
 }
 
 .viewer {

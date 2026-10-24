@@ -27,19 +27,19 @@ export const designCatalog: readonly DesignGroup[] = [
       {
         slug: 'icons',
         title: 'Icons',
-        summary: "One icon per family, extracted from OG's fonts, in text, fixed width and large.",
+        summary: "One icon per family in text, fixed width and large, plus the library logos at OG's sizes.",
         source: 'icons',
       },
       {
         slug: 'brand',
         title: 'Brand mark',
-        summary: 'The classic Trakt mark in each ink and face a page draws it with.',
+        summary: "The classic Trakt mark as each page draws it, with that page's ink, face and ground.",
         source: 'components/brand',
       },
       {
         slug: 'loader',
         title: 'Loaders',
-        summary: 'The liquid-fill loader at every size, its reduced-motion breathe, and the shimmer bars.',
+        summary: 'The page loader over a list while it loads, and the shimmer bars on the home page.',
         source: 'components/loading',
       },
     ],
@@ -50,7 +50,8 @@ export const designCatalog: readonly DesignGroup[] = [
       {
         slug: 'controls',
         title: 'Controls',
-        summary: 'Link buttons, pagination, pill tabs, filters, the rating meter, and empty and loading states.',
+        summary:
+          'Sidebar and toolbar filters, link buttons, pagination, the rating meter, empty states and the page loader.',
         source: 'components/filters',
       },
       {
@@ -62,7 +63,8 @@ export const designCatalog: readonly DesignGroup[] = [
       {
         slug: 'rating-line',
         title: 'Rating lines',
-        summary: 'The heart and label under a Social Feed poster, for every rating from 1 to 10.',
+        summary:
+          'The heart and label under a poster on the Ratings page and the Social Feed, for every rating from 1 to 10.',
         source: 'components/rating',
       },
     ],
@@ -73,13 +75,15 @@ export const designCatalog: readonly DesignGroup[] = [
       {
         slug: 'media',
         title: 'Cards and rows',
-        summary: 'Poster, screenshot and fanart cards, every quick-icon state, and list rows, on trending shows.',
+        summary:
+          'Summary and subpage headers, search, discover, screenshot and chart cards, quick-icon states, and list rows.',
         source: 'components/media',
       },
       {
         slug: 'summary',
         title: 'Summary sections',
-        summary: 'Title tags, the action stack, people, activity, videos, comments, lists and related titles.',
+        summary:
+          "A movie's summary top with its action stack, subpage and list titles, people, activity, videos, comments, lists and related titles.",
         source: 'components/summary',
       },
       {
@@ -91,7 +95,7 @@ export const designCatalog: readonly DesignGroup[] = [
       {
         slug: 'stats',
         title: 'Media stats',
-        summary: "A title's rating chart, community tiles, second opinions and the rolling number.",
+        summary: "A title's rating chart, community tiles and second opinions, in the stats page's column.",
         source: 'stats',
       },
     ],
@@ -102,25 +106,27 @@ export const designCatalog: readonly DesignGroup[] = [
       {
         slug: 'history',
         title: 'History',
-        summary: 'The watch buttons and poster icon, their date and remove popovers, and day dividers.',
+        summary: 'The summary watch buttons, the poster check icons and day dividers, on real titles.',
         source: 'components/history',
       },
       {
         slug: 'collection',
         title: 'Library',
-        summary: 'Collecting with metadata, the format logos, and libraries synced from Plex and Jellyfin.',
+        summary:
+          'The library button with adding off: the sync link, Plex and Jellyfin items, format logos and metadata.',
         source: 'components/collection',
       },
       {
         slug: 'favorites',
         title: 'Favorites',
-        summary: 'The summary star and the poster stars, which share one favorite state.',
+        summary:
+          'The summary favorite button and the stars on chart and Recently Watched cards, which share one state.',
         source: 'components/favorites',
       },
       {
         slug: 'visibility',
         title: 'Rewatch, drop and hide',
-        summary: 'The visibility controls on their own and on poster and fanart cards.',
+        summary: 'The dropped badge, Not interested on recommendations, and rewatch and drop in the ••• menus.',
         source: 'components/visibility',
       },
     ],
@@ -137,7 +143,8 @@ export const designCatalog: readonly DesignGroup[] = [
       {
         slug: 'notes',
         title: 'Notes',
-        summary: 'Note cards for each thing a note hangs on, the private notes box and the notes dialog.',
+        summary:
+          'Notes beside their posters for each thing a note hangs on, the private notes box and the notes dialog.',
         source: 'components/notes',
       },
     ],
@@ -148,13 +155,15 @@ export const designCatalog: readonly DesignGroup[] = [
       {
         slug: 'comments',
         title: 'Comments',
-        summary: 'The comment card in every state, its tags, the reaction picker and the composer.',
+        summary:
+          "The comment card in every state, its tags, the reaction picker, the new comment form and Discover's spotlight.",
         source: 'components/comments',
       },
       {
         slug: 'users',
         title: 'Profiles',
-        summary: 'The profile frame in every follow and watching state, charts, most watched and user cards.',
+        summary:
+          'The profile frame in every follow, watching and lock state, the favorites panel, charts, most watched and user cards.',
         source: 'components/users',
       },
       {
@@ -166,7 +175,8 @@ export const designCatalog: readonly DesignGroup[] = [
       {
         slug: 'progress',
         title: 'Progress',
-        summary: 'The progress page as its owner sees it: views, status menus and season lines.',
+        summary:
+          'The progress page as its owner sees it: views, status menus, seasons that load as they open, and the list filter.',
         source: 'users/progress',
       },
     ],
@@ -179,6 +189,13 @@ export const designCatalog: readonly DesignGroup[] = [
         title: 'Greeting and recaps',
         summary: 'The greeting with its stats panel, the recap ribbon and follow requests.',
         source: 'components/dashboard',
+      },
+      {
+        slug: 'first-night',
+        title: 'First night',
+        summary:
+          'What a new member sees in place of the greeting: the welcome wall and its reel, the getting-started pill and the corner nudges.',
+        source: 'components/first-night',
       },
       {
         slug: 'dashboard',
@@ -194,7 +211,8 @@ export const designCatalog: readonly DesignGroup[] = [
       {
         slug: 'header',
         title: 'Header and footer',
-        summary: 'The glass top bar for each viewer and backdrop, its search and menus, and the footer.',
+        summary:
+          "The glass top bar for each viewer, a new member's getting-started pill and each backdrop, its search and menus, and the footer.",
         source: 'components/header',
         page: true,
         ownTheme: true,
@@ -215,8 +233,9 @@ export const designCatalog: readonly DesignGroup[] = [
       },
       {
         slug: 'about',
-        title: 'About issues',
-        summary: "The about page's open and closed issue columns, loaded, empty and loading.",
+        title: 'About',
+        summary:
+          "The about page's team panel with its rolling totals, and the issue columns loaded, empty, loading and failed.",
         source: 'about',
       },
       {

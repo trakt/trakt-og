@@ -1,18 +1,19 @@
 <script lang="ts">
-import WatchedKeys from '$lib/components/dashboard/WatchedKeys.svelte';
 import Container from '$lib/components/container/Container.svelte';
+import WatchedKeys from '$lib/components/dashboard/WatchedKeys.svelte';
+import Specimen from '$lib/design/Specimen.svelte';
 import { toExternalRatings } from '$lib/components/summary/toExternalRatings';
 import ProfileRatingsChart from '$lib/components/users/ProfileRatingsChart.svelte';
 import globe from '$lib/icons/regular/globe.svg?raw';
 import heart from '$lib/icons/regular/heart.svg?raw';
 import userGroup from '$lib/icons/regular/user-group.svg?raw';
 import CommunityStats from '$lib/stats/CommunityStats.svelte';
-import RollingNumber from '$lib/components/stats/RollingNumber.svelte';
 import SiteScores from '$lib/stats/SiteScores.svelte';
 import StatsSection from '$lib/stats/StatsSection.svelte';
 import { toCommunityStats } from '$lib/stats/toCommunityStats';
 import { toSiteScores } from '$lib/stats/toSiteScores';
 import { toProfileRatings } from '$lib/users/profile/toProfileRatings';
+import type { Snippet } from 'svelte';
 
 const ratings = toProfileRatings({
   distribution: { 1: 180, 2: 150, 3: 230, 4: 590, 5: 1280, 6: 3650, 7: 4371, 8: 3830, 9: 1230, 10: 2465 },
@@ -44,40 +45,51 @@ const sites = toSiteScores({
 });
 </script>
 
-<svelte:head>
-  <title>Media stats - Trakt</title>
-</svelte:head>
-<div class="demo">
+{#snippet column(content: Snippet)}
   <Container>
-    <StatsSection id="trakt" title="Trakt" icon={heart}>
-      {#if ratings.chart}
-        <div class="chart"><ProfileRatingsChart chart={ratings.chart} /></div>
-        <WatchedKeys keys={ratings.keys} />
-      {/if}
-    </StatsSection>
-    <StatsSection id="community" title="Community" icon={userGroup}>
-      <CommunityStats tiles={community} />
-    </StatsSection>
-    <h2>Rolling number</h2>
-    <p class="rolling">
-      <RollingNumber value={12} /> people · <RollingNumber value={150_660} /> episodes ·
-      <RollingNumber value={13_626} /> movies
-    </p>
-    <StatsSection id="second-opinions" title="Second Opinions" icon={globe}>
-      <SiteScores trakt={{ percent: 71, votes: 17_976 }} {sites} />
-    </StatsSection>
-  </Container>
-</div>
+  <div class="column">{@render content()}</div>
+</Container>
+{/snippet}
+
+{#snippet trakt()}
+  <StatsSection id="trakt" title="Trakt" icon={heart} hideHeading>
+    {#if ratings.chart}
+      <div class="chart"><ProfileRatingsChart chart={ratings.chart} /></div>
+      <WatchedKeys keys={ratings.keys} />
+    {/if}
+  </StatsSection>
+{/snippet}
+
+{#snippet communityTiles()}
+  <StatsSection id="community" title="Community" icon={userGroup}>
+  <CommunityStats tiles={community} />
+</StatsSection>
+{/snippet}
+
+{#snippet secondOpinions()}
+  <StatsSection id="second-opinions" title="Second Opinions" icon={globe}>
+  <SiteScores trakt={{ percent: 71, votes: 17_976 }} {sites} />
+</StatsSection>
+{/snippet}
+
+<Specimen title="Trakt ratings" bleed
+  note="The page opens on the vote chart with its keys under it; its heading is only for screen readers.">
+  {@render column(trakt)}
+</Specimen>
+
+<Specimen title="Community" bleed note="Favorites, then the counts, each with what it means per watcher.">
+  {@render column(communityTiles)}
+</Specimen>
+
+<Specimen title="Second opinions" bleed note="Every other site's score beside Trakt's.">
+  {@render column(secondOpinions)}
+</Specimen>
 
 <style>
-.demo {
-  padding-block: calc(var(--header-height) + var(--gutter)) var(--gutter);
-  background-color: var(--color-surface);
-}
-
-.rolling {
-  font-size: var(--font-size-about-stat);
-  font-weight: var(--font-weight-headings-heavy);
+/* The stats page's content column, beside where the summary sidebar sits. */
+.column {
+  margin-inline-start: var(--summary-offset);
+  padding-block: var(--gutter) var(--space-stats-section);
 }
 
 .chart {

@@ -17,8 +17,7 @@
   trigger or a row is OG's gray note ("(Pending)"), and a span.tag is the advanced filters' gray tag at the row's end
   ("216"), and after the value on the trigger when the picked row has one.
   `variant="circle"` is the round translucent icon button with no caret that OG put after a profile name.
-  `variant="icon"` is a toolbar icon tool with a caret, like the filter eye: a square that fills on hover. `variant="transparent"` is OG's
-  `.btn-transparent`: the default button's size and caret with no fill, for dark bands (discover's Recent Comments).
+  `variant="icon"` is a toolbar icon tool with a caret, like the filter eye: a square that fills on hover.
   `variant="title"` is a page title that picks the page, like the calendar's: pass an `.eyebrow` ("My") and a `.name`
   ("Shows & Movies") as the trigger, and the caret sits right after the name. `block` stretches the trigger to its
   container, with the caret at the far end.
@@ -45,7 +44,7 @@ interface Props {
   block?: boolean;
   /** A checklist: picking a row keeps the menu open, and opening it focuses its search field first. */
   multiple?: boolean;
-  variant?: 'default' | 'circle' | 'icon' | 'transparent' | 'title';
+  variant?: 'default' | 'circle' | 'icon' | 'title';
 }
 
 const { trigger, children, label, section, joined = false, block = false, multiple = false, variant = 'default' }:
@@ -286,17 +285,6 @@ const closeOnPick = (event: MouseEvent & { currentTarget: HTMLElement }) => {
   &:hover,
   .dropdown:has(.menu:popover-open) & {
     background-color: var(--color-tool-hover-bg);
-  }
-}
-
-.transparent {
-  border-color: var(--color-dropdown-transparent-border);
-  background: none;
-  color: var(--color-dropdown-transparent-text);
-
-  &:hover,
-  .dropdown:has(.menu:popover-open) & {
-    color: var(--color-dropdown-transparent-hover);
   }
 }
 

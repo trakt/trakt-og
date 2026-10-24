@@ -127,7 +127,7 @@ function save(next: FadeHide) {
 
 {#snippet tools()}
   <FadeHideMenu value={fadeHide} options={data.filters.options} hideOptions={data.filters.hideOptions}
-  cookie="search" variant="default" onchange={save} />
+  cookie="search" onchange={save} />
 {/snippet}
 
 <SidebarFrame label="Search" collapsed={data.sidebar.collapsed} {prevHref} {nextHref}>

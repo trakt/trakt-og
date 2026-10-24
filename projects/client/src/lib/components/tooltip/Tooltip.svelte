@@ -7,12 +7,12 @@
       {/snippet}
     </Tooltip>
   It shows while the mouse is over the trigger (or the tooltip) and while the trigger has keyboard focus, and Esc,
-  blur or the mouse leaving hides it. Default tooltips never open on touch; chart tips also toggle on click or tap.
+  blur or the mouse leaving hides it. Default tooltips never open on touch; chart tips also open and shut on a click
+  or tap.
   `text` breaks lines at `\n`; pass `children` instead for markup. Left without either, no tooltip renders.
   The trigger keeps its own accessible name: the tooltip only describes it (`aria-describedby`).
-  `toggle` also opens and shuts it on a click, like OG's list notes, so touch can read it too. `variant="notable"` is
-  OG's `.notable-tooltip`: left-aligned rich text in a wider box that scrolls. `variant="titled"` sets the first line
-  bold and the rest muted, like the summary ratings strip's "Watchers" over "131,457".
+  `variant="titled"` sets the first line bold and the rest muted, like the summary ratings strip's "Watchers" over
+  "131,457".
 -->
 <script lang="ts">
 import type { Snippet } from 'svelte';
@@ -28,14 +28,11 @@ interface Props {
   children?: Snippet;
   /** Which side of the trigger it shows on. Bootstrap's default is top. */
   placement?: 'top' | 'bottom' | 'left' | 'right';
-  /** OG's two-line chart tooltip, without the standard arrow. `notable` is OG's list notes tooltip. `titled` bolds
-      the first line of `text`. */
-  variant?: 'default' | 'chart' | 'notable' | 'titled';
-  /** A click on the trigger opens and shuts it too. */
-  toggle?: boolean;
+  /** OG's two-line chart tooltip, without the standard arrow. `titled` bolds the first line of `text`. */
+  variant?: 'default' | 'chart' | 'titled';
 }
 
-const { trigger, text, children, placement = 'top', variant = 'default', toggle = false }: Props = $props();
+const { trigger, text, children, placement = 'top', variant = 'default' }: Props = $props();
 const id = $props.id();
 
 let status = $state<TooltipState>({ hovered: false, focused: false, pinned: false, dismissed: false, open: false });
@@ -69,12 +66,7 @@ const attach: Attachment<HTMLElement> = (node) => {
     if (!inside(node, event.relatedTarget)) queueMicrotask(() => send('blur'));
   };
 
-  const click = (event: MouseEvent) => {
-    if (toggle) {
-      event.preventDefault();
-      send('toggle');
-      return;
-    }
+  const click = () => {
     if (variant === 'chart') send(status.open ? 'dismiss' : 'focus');
   };
   node.addEventListener('click', click);
@@ -134,7 +126,7 @@ const leaveTip = (event: PointerEvent) => {
   <span
   bind:this={tip}
   id="tooltip-{id}"
-  class={['tooltip', placement, { chart: variant === 'chart', notable: variant === 'notable' }]}
+  class={['tooltip', placement, { chart: variant === 'chart' }]}
   popover="hint"
   role="tooltip"
   style:position-anchor="--tooltip-{id}"
@@ -205,22 +197,6 @@ const leaveTip = (event: PointerEvent) => {
   padding: var(--space-tooltip);
   border-radius: var(--radius-tooltip);
   background-color: var(--color-tooltip-bg);
-}
-
-/* OG's `.notable-tooltip.tooltip-inner`. */
-.notable .inner {
-  max-block-size: var(--tooltip-notable-max-height);
-  overflow-y: auto;
-  padding: var(--space-tooltip-notable);
-  text-align: start;
-
-  & :global(p:first-child) {
-    margin-block-start: 0;
-  }
-
-  & :global(p:last-child) {
-    margin-block-end: 0;
-  }
 }
 
 /* OG joined tooltip lines with <br>. */

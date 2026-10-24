@@ -8,18 +8,16 @@ import type { Snippet } from 'svelte';
 interface Props {
   /** Columns at desktop width. */
   columns?: number;
-  /** No gutter, like the fanart grids on the chart pages. */
-  flush?: boolean;
   /** Columns below OG's sm width: two, or one for fanart cards that were `col-xs-12` there. */
   phoneColumns?: number;
   children: Snippet;
 }
 
-const { columns = 6, flush = false, phoneColumns = 2, children }: Props = $props();
+const { columns = 6, phoneColumns = 2, children }: Props = $props();
 </script>
 
 <div class="poster-grid-frame" data-sveltekit-preload-data="tap">
-  <div class={['poster-grid', { flush }]} style:--columns={columns} style:--phone-columns={phoneColumns}>
+  <div class="poster-grid" style:--columns={columns} style:--phone-columns={phoneColumns}>
     {@render children()}
   </div>
 </div>
@@ -37,10 +35,6 @@ const { columns = 6, flush = false, phoneColumns = 2, children }: Props = $props
   gap: var(--gutter);
   /* OG gave every card a 20px top margin, which also leaves room for rank pills and badges above the first row. */
   padding-block-start: var(--gutter);
-
-  &.flush {
-    gap: 0;
-  }
 }
 
 /* col-sm-3 below OG's md container, col-xs-6 below sm. */

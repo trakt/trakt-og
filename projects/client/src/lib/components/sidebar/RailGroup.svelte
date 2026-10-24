@@ -1,7 +1,7 @@
 <!--
   A group in a collapsed SidebarFrame's rail: its items stacked and centered, a rule above every group but the first.
   `tools` sizes the page's tools (the fade/hide eye, the filter toggle) to the rail's width.
-    <RailGroup tools><FadeHideMenu … /><AdvancedFiltersToggle … regular /></RailGroup>
+    <RailGroup tools><FadeHideMenu … /><AdvancedFiltersToggle … /></RailGroup>
 -->
 <script lang="ts">
 import type { Snippet } from 'svelte';

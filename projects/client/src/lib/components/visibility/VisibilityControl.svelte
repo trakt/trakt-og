@@ -28,8 +28,8 @@ interface Props {
   target: VisibilityTarget;
   action: 'rewatch' | 'drop' | 'restore' | 'hide';
   section?: 'calendar' | 'recommendations' | 'progress_watched' | 'progress_collected';
-  variant?: 'side' | 'pill' | 'badge' | 'card' | 'menu';
-  small?: boolean;
+  /** Left out, only for `headless`, which draws no button. */
+  variant?: 'badge' | 'menu';
   /** Names the button for screen readers, and its tooltip, in place of the action's own "Hide this movie". */
   label?: string;
   tooltip?: string;
@@ -56,8 +56,7 @@ const {
   target,
   action,
   section,
-  variant = 'side',
-  small = false,
+  variant,
   label: labelOverride,
   tooltip,
   placement = 'bottom',
@@ -191,7 +190,7 @@ function submit(event: SubmitEvent) {
   {#if !headless}
   <Tooltip text={variant === 'menu' ? undefined : tooltip ?? label} {placement}>
   {#snippet trigger(tip)}
-    <button bind:this={button} type="button" class={['visibility-trigger', variant, { small }]}
+    <button bind:this={button} type="button" class={['visibility-trigger', variant]}
       aria-label={label} aria-haspopup="dialog" aria-controls="visibility-{id}" aria-expanded={expanded}
       aria-busy={busy} aria-disabled={busy} onclick={open} {...tip}>
       {#if busy}<Spinner label="Saving {target.title}" />{:else}{@render children?.()}{/if}
@@ -222,9 +221,6 @@ function submit(event: SubmitEvent) {
   &.menu {
     display: flex;
   }
-  &.side {
-    inline-size: 100%;
-  }
   /* No button: only a point for the prompt to anchor to, taking no room in a row of icons. */
   &.headless {
     flex: none;
@@ -248,27 +244,6 @@ function submit(event: SubmitEvent) {
   }
   &[aria-busy='true'] {
     cursor: wait;
-  }
-  &.side {
-    inline-size: 100%;
-    block-size: var(--visibility-side-height);
-    font-size: var(--visibility-side-size);
-    opacity: var(--visibility-side-opacity);
-    &:is(:hover, :focus-visible) {
-      opacity: 1;
-    }
-  }
-  &.pill {
-    padding: var(--watch-history-block) var(--watch-history-inline);
-    margin-inline-end: var(--space-xs-inline);
-    border-radius: var(--watch-choice-radius);
-    background: var(--visibility-pill-bg);
-    font-family: var(--font-headings);
-    font-size: var(--watch-history-size);
-    font-weight: var(--font-weight-headings-heavy);
-    &:is(:hover, :focus-visible) {
-      background: var(--visibility-pill-hover);
-    }
   }
   &.badge {
     font-size: inherit;
@@ -294,27 +269,6 @@ function submit(event: SubmitEvent) {
     & > :global(.icon) {
       color: var(--color-text-muted);
       font-size: var(--font-size-summary-action-menu-icon);
-    }
-  }
-  &.card {
-    inline-size: var(--watch-card-width);
-    block-size: var(--watch-card-height);
-    color: var(--gray);
-    font-size: var(--font-size-quick-icon);
-    &.small {
-      inline-size: var(--watch-card-small-width);
-      block-size: var(--watch-card-small-height);
-      font-size: var(--font-size-quick-icon-small);
-    }
-    & :global(.spinner) {
-      font-size: var(--font-size-quick-icon-busy);
-    }
-    &.small :global(.spinner) {
-      font-size: var(--font-size-quick-icon-busy-small);
-    }
-    &:is(:hover, :focus-visible) {
-      background: var(--gray);
-      color: var(--color-card-text);
     }
   }
 }

@@ -207,9 +207,9 @@ const period = $derived(advanced.config.period);
 
 {#snippet tools()}
   {#if menu}
-    <FadeHideMenu value={fadeHide} {options} cookie={data.type} variant="default" onchange={save} />
+    <FadeHideMenu value={fadeHide} {options} cookie={data.type} onchange={save} />
   {/if}
-  <AdvancedFiltersToggle bind:open={panelOpen} bind:button={funnel} controls="{panelId}-filters" regular
+  <AdvancedFiltersToggle bind:open={panelOpen} bind:button={funnel} controls="{panelId}-filters"
   active={advanced.count > 0} count={vip ? advanced.count : 0} />
 {/snippet}
 

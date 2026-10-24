@@ -9,7 +9,7 @@ import Footer from '$lib/components/footer/Footer.svelte';
 const { data } = $props();
 </script>
 
-<Header user={data.user} />
+<Header user={data.user} searchType={data.searchType} />
 <main id="content">
   <CalendarPage {data} />
 </main>

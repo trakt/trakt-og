@@ -1,6 +1,6 @@
 <!--
-  OG's quick-icon bar under a poster or fanart card: watch, library, list, optional favorite, watch now and hide on
-  the left, the Trakt rating on the right. Watch, rating and favorites use shared browser controls.
+  OG's quick-icon bar under a poster or fanart card: watch, library, list, optional favorite and watch now on the left,
+  the Trakt rating on the right. Watch, rating and favorites use shared browser controls.
 -->
 <script lang="ts">
 import { openWatchNow } from '$lib/components/watchnow/watchNowLauncher.svelte';
@@ -22,8 +22,6 @@ import MediaList from '$lib/components/lists/MediaList.svelte';
 import type { ListTarget } from '$lib/components/lists/ListTarget';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import Icon from '$lib/icons/Icon.svelte';
-import ban from '$lib/icons/regular/ban.svg?raw';
-import minus from '$lib/icons/regular/circle-minus.svg?raw';
 import VisibilityControl from '$lib/components/visibility/VisibilityControl.svelte';
 import type { VisibilityTarget } from '$lib/components/visibility/VisibilityTarget';
 import backward from '$lib/icons/solid/backward.svg?raw';
@@ -81,8 +79,6 @@ interface Props {
   watchNowArt?: string;
   /** What Watch Now opens, for a bar with no other target to find it from (a profile's history, a comment's poster). */
   watchNowTarget?: WatchTarget;
-  /** Names the thing being hidden ("show", "movie"). Left out, no hide icon. */
-  hide?: string;
   hideTarget?: VisibilityTarget;
   hideSection?: 'calendar' | 'recommendations' | 'progress_watched' | 'progress_collected' | 'dropped';
   /** The ••• menu's rows, after the other icons. Left out or empty, no •••. */
@@ -112,9 +108,7 @@ const {
   watchNow = 'play',
   watchNowArt,
   watchNowTarget,
-  hide,
   hideTarget,
-  hideSection = 'recommendations',
   more = [],
   listLabel = 'Add to watchlist',
 }: Props = $props();
@@ -139,12 +133,6 @@ const watchNowItem = $derived.by(() => {
 const target = $derived(
   favoriteTarget ??
     (ratingTarget?.type === 'movie' || ratingTarget?.type === 'show'
-      ? { ...ratingTarget, type: ratingTarget.type }
-      : undefined),
-);
-const hiddenTarget = $derived(
-  hideTarget ??
-    (ratingTarget?.type === 'movie' || ratingTarget?.type === 'show' || ratingTarget?.type === 'season'
       ? { ...ratingTarget, type: ratingTarget.type }
       : undefined),
 );
@@ -220,11 +208,6 @@ const ratingLevel = $derived(rating === undefined ? 1 : Math.min(Math.max(Math.t
     {#if watchNow && watchNowItem && !menuWatchNow}
       {@const item = watchNowItem}
       {@render action('watch-now', watchNow === 'cinema' ? ticket : play, 'Watch now', 0, 'Watch now', () => openWatchNow(item))}
-    {/if}
-    {#if hide}
-      {#if hiddenTarget}
-        <VisibilityControl target={hiddenTarget} action={hideSection === 'dropped' ? 'drop' : 'hide'} section={hideSection === 'dropped' ? undefined : hideSection} variant="card" {small}><span class:ban={hideSection !== 'dropped'}><Icon svg={hideSection === 'dropped' ? minus : ban} /></span></VisibilityControl>
-      {:else}{@render action('ignore', ban, `Hide this ${hide}`, 0)}{/if}
     {/if}
     </div>
     {#if menuRows.length > 0}
@@ -410,19 +393,10 @@ const ratingLevel = $derived(rating === undefined ? 1 : Math.min(Math.max(Math.t
   }
 }
 
-/* The ••• in the watch-now gray, its fill gray like the hide icon's. */
+/* The ••• in the watch-now gray. */
 .more {
   --color: var(--gray);
   color: var(--color-watch-now);
-}
-
-.ban {
-  rotate: 90deg;
-  font-size: var(--quick-icon-hide-scale);
-}
-
-.ignore {
-  --color: var(--gray);
 }
 
 .watch-now {

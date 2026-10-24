@@ -55,7 +55,7 @@ const sorted = $derived(
 {#if seasons.length > 0}
   <section class="seasons" aria-labelledby="seasons">
   <SortHeading id="seasons" {count} noun="Season" sorts={SEASON_SORTS} bind:by bind:flipped loading={stats.loading}>
-    {#snippet controls()}{#if signedIn}<FadeHideMenu value={filters} options={fadeHideOptions} cookie="show" variant="default" onchange={(next) => (filters = next)} />{/if}{/snippet}
+    {#snippet controls()}{#if signedIn}<FadeHideMenu value={filters} options={fadeHideOptions} cookie="show" onchange={(next) => (filters = next)} />{/if}{/snippet}
   </SortHeading>
   <PosterGrid columns={5}>
       {#each sorted as { id, number, rating, released, votes: _, airedEpisodes, episodes, ...card } (id)}

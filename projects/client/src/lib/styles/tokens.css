@@ -42,12 +42,6 @@
   }
 
   /* History controls: OG watch popovers and summary buttons. */
-  /* Rewatch, drop, restore and hide controls. */
-  --visibility-side-height: 20px;
-  --visibility-side-size: 15px;
-  --visibility-side-opacity: 0.75;
-  --visibility-pill-bg: rgb(0 0 0 / 0.6);
-  --visibility-pill-hover: rgb(0 0 0 / 0.8);
 
   --watch-focus: 2px;
   --watch-busy-opacity: 0.6;
@@ -55,15 +49,11 @@
   --watch-card-height: 40px;
   --watch-card-small-width: 28px;
   --watch-card-small-height: 34px;
-  --watch-choice-radius: 3px;
   --watch-date-width: 288px;
-  --watch-history-size: 11px;
   --watch-progress-height: 4px;
   --watch-progress-gap: 4px; /* between a summary button and its progress bar */
   --radius-watch-progress: 2px;
   --color-watch-progress-track: light-dark(#e2e2e2, #333);
-  --watch-history-block: 3px;
-  --watch-history-inline: 5px;
 
   /* Grays (Bootstrap 3) */
   --gray-darker: #222;
@@ -87,7 +77,6 @@
   --brand-info: #5bc0de;
   --brand-warning: #f0ad4e;
   --brand-danger: #d9534f;
-  --color-orange: #ef9549;
 
   /* Progress bars. The thin bar under posters sat
      on #530d0d; theme-red later used darken(#ed1c24, 30%) = #68080c there, and wins. */
@@ -251,7 +240,6 @@
   --shadow-dropdown: 0 6px 12px rgb(0 0 0 / 0.175);
   --shadow-input: inset 0 1px 1px rgb(0 0 0 / 0.075);
   --shadow-input-focus: inset 0 1px 1px rgb(0 0 0 / 0.075), 0 0 8px rgb(102 175 233 / 0.6);
-  --shadow-soft: 0 0 5px rgb(0 0 0 / 0.3);
 
   /* Images */
   --ratio-poster: 2 / 3;
@@ -297,7 +285,6 @@
   --font-size-fanart-title: 18px;
   --font-size-quick-icon: 1.7em;
   --font-size-quick-icon-small: 1.3em;
-  --quick-icon-hide-scale: 0.85em; /* the hide icon's circle reads heavier than the others at the same size */
   --font-size-quick-icon-busy: 16px; /* the saving spinner, a size under the glyph it stands in for */
   --font-size-quick-icon-busy-small: 13px;
   --quick-icons-row-cell: 32px; /* a list row's icon square, inside its group's 1px border: a 34px control */
@@ -1088,10 +1075,6 @@
   --color-dropdown-hover-text: light-dark(#262626, #ccc);
   --color-dropdown-hover-bg: light-dark(#f5f5f5, #222);
   --color-dropdown-note: light-dark(#999, #888); /* an <em> in a trigger or a row */
-  /* variant="transparent" (`.btn.btn-transparent` in a discover `.subnav-wrapper`) */
-  --color-dropdown-transparent-text: #eee;
-  --color-dropdown-transparent-hover: #fff;
-  --color-dropdown-transparent-border: transparent; /* `.btn` without `.btn-default` */
   --shadow-btn-active: inset 0 3px 5px rgb(0 0 0 / 0.125);
 
   /* Refreshed controls: one height, rounded, a solid caret; menus with inset rows and the check on the right. */
@@ -1209,8 +1192,6 @@
 
   /* Sort and filter controls */
   --color-filter-icon: light-dark(var(--gray-dark), #fff);
-  --color-filter-icon-frame: #fff; /* frame-wrapper h1.filter-dropdown.icon, */
-  --font-size-filter-icon-frame: 19px;
   --opacity-faded: 0.15; /* .grid-item.fade-*-on */
 
   /* Toasts: cards in the header's dark glass, stacked down from under its right edge. Dark on both themes, like the
@@ -1252,8 +1233,6 @@
   --transition-tooltip: 0.15s linear;
   --color-tooltip-muted: #aaa; /* .tooltip .collection-metadata */
   --color-tooltip-divider: #444; /* .tooltip-hr */
-  --tooltip-notable-max-height: 400px; /* .notable-tooltip .tooltip-inner */
-  --space-tooltip-notable: 8px;
   --space-tooltip-divider: 5px;
 
   /* Rating popovers (OG Bootstrap popover and summary rating trigger). */
@@ -1293,7 +1272,6 @@
   --font-size-icon-lg: 20px; /* pagination arrows, rating hearts */
   --font-size-no-results: 26px;
   --tab-height: var(--control-height-small); /* a pill tab, a step smaller than a control */
-  --tab-padding-inline: 7px;
   --font-size-tab: 13px;
   --no-results-padding: 100px;
   --no-results-image: 150px;
@@ -1323,7 +1301,7 @@
   --color-frame: #1d1d1d; /* the charts and search frame, dark in both themes */
   --color-text-inverse: #fff; /* on red: the current page, the active tab, the loading states */
 
-  /* Loader: the liquid-fill Trakt mark (TraktLoader, static/loader.svg) */
+  /* Loader: the liquid-fill Trakt mark (TraktLoader) */
   --color-loader-brand: var(--brand-primary); /* the ring and the rising fill */
   --color-loader-empty: light-dark(
     color-mix(in srgb, var(--brand-primary) 18%, transparent),
@@ -1444,7 +1422,6 @@
   --color-certification-bg: rgb(0 0 0 / 0.38); /* dark glass, so the white text holds on bright fanart too */
   --color-certification-hover-bg: #fff; /* hovered, it fills white like OG's */
   --color-certification-hover-text: #111;
-  --color-summary-demo-art: #2a3036; /* the design route's stand-in for fanart behind the bar */
 
   /* An incoming follow request: a second glass deck under the site header, the header's glass and art tint with a
      green wash, so it reads as part of the header but apart from it. */
@@ -1805,9 +1782,7 @@
   --quick-icons-compact-height: 26px;
   --quick-icons-compact-width: 23px;
   --quick-icons-compact-size: 1em;
-  --calendar-text-title-size: 20px;
   --image-placeholder-banner: url('../assets/placeholders/banner.png');
-  --calendar-text-tag-padding: 2px 4px;
   --calendar-worded-padding: 3px 5px;
   --calendar-worded-title-top: 20px;
   --calendar-worded-small-title-top: 44px;
@@ -1879,7 +1854,6 @@
   --shadow-fanart-title-logo: 0 2px 6px rgb(0 0 0 / 0.6);
 
   /* Advanced filters: the funnel, the slide-out panel, its Chosen fields and noUiSliders and the applied tags */
-  --filter-toggle-overhang: 12px; /* into the sidebar's right padding */
   --color-filter-panel-bg: light-dark(#f7f7f7, #222);
   --color-filter-control-bg: #333;
   --color-filter-control-text: #eee;
@@ -2004,8 +1978,6 @@
   --font-size-summary-label: 13px; /* external link and video tiles */
   --font-size-action: 15px;
   --font-size-action-icon: 30px;
-  --font-size-item-nav: 100px; /* the prev/next chevrons */
-  --shadow-item-nav: drop-shadow(0 0 10px #666);
   /* A summary's previous and next arrows: small glass circles, centered in the fanart between the site header and
      the ratings strip. */
   --item-nav-size: 44px;
@@ -2433,7 +2405,6 @@
   --z-summary-sidebar: 1; /* over the details' heading marks */
   --z-party-hat: calc(var(--z-header) + 1); /* a birthday's party hat, its peak over the header bar */
   --z-easter: 5000; /* the rating-10 Totally Ninja guy, over the header and dialogs, under the loaders */
-  --z-loading-bar: 9999;
   --z-loading: 99999;
   /* Notes: comment thread cards with coloured tags for what the note is attached to and the item type. */
   --color-note-tag-history: light-dark(#8e44ad, #b583cf); /* brand-tertiary, lifted for dark */
@@ -2626,41 +2597,9 @@
   --font-size-collection-logos-small: 13px;
 }
 
-/* Discover: the "Top... Last Week" sliders.
-   Dark in both themes, like the frame. */
+/* The dark ground behind Discover's and Charts' fanart bands, in both themes, like the frame. */
 :root {
-  --slider-height-short: calc(100vh - 50px); /* every other fanart slider, and Trends below 800px: OG's 50px header */
-  --slider-min-height-phone: 500px;
   --color-slider-bg: #111;
-  --color-slider-shade: rgb(0 0 0 / 0.6); /* over the fanart */
-  --color-slider-text: #fff;
-  --color-slider-muted: #aaa; /* "watchers", "plays", "libraries" */
-  --color-slider-link: #ccc; /* "See more" */
-  --slider-titles-top: 30px;
-  --slider-titles-inline: 30px;
-  --slider-titles-top-phone: 15px;
-  --slider-titles-inline-phone: 15px;
-  --font-size-slider-title: 14px;
-  --slider-nav-top: 50px; /* the chevrons' hit area, top and bottom */
-  --slider-nav-bottom: 100px;
-  --slider-nav-inline: 20px;
-  --transition-slider: 0.5s;
-  --slider-poster-width: 210px;
-  --slider-poster-width-phone: 200px;
-  --shadow-slider-poster: 0 0 30px #222;
-  --slider-quick-icons-height: 34px;
-  --color-slider-quick-icons: rgb(0 0 0 / 0.6);
-  --slider-stats-top: 16px; /* OG's 10px margin plus the 6px line gap under its inline-block poster */
-  --slider-stats-bottom: 6px; /* the stats' own line gap, which OG's centring counted */
-  --slider-stat-inline: 15px;
-  --font-size-slider-stat: 18px;
-  --font-size-slider-stat-label: 12px;
-  --slider-rank-width: 30px;
-  --slider-rank-height: 26px;
-  --font-size-slider-rank: 13px;
-  --color-slider-rank: #ccc;
-  --color-slider-rank-bg: rgb(0 0 0 / 0.5);
-  --color-slider-rank-hover: #111;
 }
 
 /* Discover: Seasons & Moods. The page follows the theme; the season hero, the year ribbon and the comments band stay
@@ -4014,4 +3953,47 @@
   --font-size-team-quick: 10px;
   --color-team-quick-ring: rgb(255 255 255 / 0.15);
   --color-team-quick-on: var(--brand-success);
+}
+
+/*
+ * The design system shell at /_design: a dark nav like the site header, then each demo's parts as cards on a quiet
+ * ground. A card's canvas is dotted so a component's own edges show against it. Everything but the nav follows the
+ * picked theme.
+ */
+:root {
+  --design-nav-width: 240px;
+  --design-rail-width: 48px;
+  --design-toc-width: 200px;
+  --design-stage-padding: 20px;
+  --design-stage-gap: 24px;
+  --design-card-gap: 20px;
+  --design-canvas-padding: 24px;
+  --design-dot-spacing: 16px;
+  --design-note-width: 72ch;
+  --color-design-nav-bg: #111;
+  --color-design-nav-text: #ccc;
+  --color-design-nav-muted: #777;
+  --color-design-nav-hover: #1d1d1d;
+  --color-design-nav-active: #fff;
+  --color-design-nav-border: #262626;
+  --color-design-nav-input: #1d1d1d;
+  --color-design-ground: light-dark(#f2f2f4, #0c0c0d);
+  --color-design-card: light-dark(#fff, #18181a);
+  --color-design-card-border: light-dark(#e3e3e7, #2b2b2f);
+  --color-design-card-hover: light-dark(#fafafb, #202023);
+  --color-design-canvas: light-dark(#fafafa, #141416);
+  --color-design-dot: light-dark(#e1e1e5, #26262a);
+  --color-design-muted: light-dark(#6e6e76, #9a9aa2);
+  --color-design-caption: light-dark(#8a8a92, #85858d);
+  --color-design-tool-on: light-dark(#1d1d1f, #f2f2f4);
+  --color-design-tool-on-text: light-dark(#fff, #111);
+  --font-size-design-title: 32px;
+  --font-size-design-card-title: 17px;
+  --font-size-design-eyebrow: 11px;
+  --font-size-design-lead: 16px;
+  --font-size-design-caption: 11px;
+  --font-weight-design-title: 800;
+  --letter-spacing-design-title: -0.01em;
+  --letter-spacing-design-eyebrow: 0.08em;
+  --shadow-design-pill: 0 6px 24px rgb(0 0 0 / 0.45);
 }

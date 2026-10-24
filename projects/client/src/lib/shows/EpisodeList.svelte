@@ -117,7 +117,7 @@ const metaTags = (row: EpisodeRow): readonly TagPill[] => [
 {#if rows.length > 0}
   <section class="episodes" aria-labelledby="episodes">
     <SortHeading id="episodes" count={filtered.length} noun="Episode" {sorts} bind:by bind:flipped loading={stats.loading}>
-      {#snippet controls()}{#if search}<TermsFilter bind:terms {vip} help="Only display episodes with a title or overview matching your search term." />{/if}{#if signedIn}<FadeHideMenu value={filters} {options} cookie="season" variant="default" onchange={saveFilters} />{/if}{/snippet}
+      {#snippet controls()}{#if search}<TermsFilter bind:terms {vip} help="Only display episodes with a title or overview matching your search term." />{/if}{#if signedIn}<FadeHideMenu value={filters} {options} cookie="season" onchange={saveFilters} />{/if}{/snippet}
     </SortHeading>
     {#if filtered.length === 0}
       <div class="empty" role="status">

@@ -1,4 +1,4 @@
-import { rawApiFetch } from '../api/rawApiFetch.ts';
+import { api } from '../api/api.ts';
 import { hiddenCalendarSchema } from './hiddenCalendarSchema.ts';
 
 /** The shows and movies the viewer hid from the calendar, by Trakt id. */
@@ -7,7 +7,7 @@ export type HiddenCalendar = { shows: ReadonlySet<number>; movies: ReadonlySet<n
 const NOTHING_HIDDEN: HiddenCalendar = { shows: new Set(), movies: new Set() };
 
 // API has no cap on this route's limit, so one page holds every hidden item.
-const PATH = '/users/hidden/calendar?limit=10000';
+const LIMIT = 10_000;
 
 /**
  * OG's `Ignore.show_ids` / `Ignore.movie_ids` for the calendar section. The worker's
@@ -15,10 +15,15 @@ const PATH = '/users/hidden/calendar?limit=10000';
  * still renders, with the hidden items in it.
  */
 export async function fetchHiddenCalendar({ fetch, token }: { fetch: typeof globalThis.fetch; token: string | null }) {
-  const response = await rawApiFetch({ fetch, token, path: PATH }).catch(() => null);
+  const response = await api({ fetch, token })
+    .users.hidden.getBySection({
+      params: { section: 'calendar' },
+      query: { limit: LIMIT },
+    })
+    .catch(() => null);
   if (response?.status !== 200) return NOTHING_HIDDEN;
 
-  const rows = hiddenCalendarSchema.safeParse(await response.json().catch(() => null));
+  const rows = hiddenCalendarSchema.safeParse(response.body);
   if (!rows.success) return NOTHING_HIDDEN;
 
   const ids = (type: 'show' | 'movie') =>

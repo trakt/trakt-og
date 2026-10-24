@@ -43,9 +43,13 @@ export type ShowPeople = PeopleResponse & { guest_stars?: PeopleResponse['cast']
 const seasonsBody = seasonResponseSchema.extend({ episodes: episodeResponseSchema.array().optional() }).array();
 const peopleBody = peopleResponseSchema.extend({ guest_stars: peopleResponseSchema.shape.cast });
 
-const raw = async <T>(fetch: typeof globalThis.fetch, path: string, schema: {
-  safeParse: (input: unknown) => { success: true; data: T } | { success: false };
-}): Promise<T | null> => {
+const raw = async <T>(
+  fetch: typeof globalThis.fetch,
+  path: string,
+  schema: {
+    safeParse: (input: unknown) => { success: true; data: T } | { success: false };
+  },
+): Promise<T | null> => {
   const response = await rawApiFetch({ fetch, path }).catch(() => null);
   if (!response?.ok) return null;
   const body = contractSchema(schema).safeParse(await response.json().catch(() => null));
@@ -79,18 +83,18 @@ export async function loadShowData({ fetch, token, parent, id: requested, path =
         country: watchNowCountry(settings),
         settings,
         isVip: user?.isVip ?? false,
-      })
+      }),
     ),
     // A stale token gets a 401 here, and the page renders Next Episode like a logged-out visit.
     token ? okBody(api({ fetch, token }).shows.progress.watched({ params: { id }, query: {} })) : null,
     Promise.all([summaryRead, layout]).then(([summary, { user }]) =>
       summary.status === 200
         ? loadPrivateNote({
-          fetch,
-          token: user ? token : null,
-          item: { type: 'show', id: summary.body.ids.trakt, slug: summary.body.ids.slug } as const,
-        })
-        : null
+            fetch,
+            token: user ? token : null,
+            item: { type: 'show', id: summary.body.ids.trakt, slug: summary.body.ids.slug } as const,
+          })
+        : null,
     ),
   ]);
   extras.catch(() => {});

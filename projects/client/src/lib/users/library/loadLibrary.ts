@@ -33,19 +33,27 @@ const MAX_LIMIT = 250;
 
 type Fetched = { status: number; body: unknown; total: number; page: PageMeta };
 
-async function fetchPage(
-  { fetch, token, base, type, sort, source, range, current, limit }: {
-    fetch: typeof globalThis.fetch;
-    token: string | null;
-    base: string;
-    type: HistoryType;
-    sort: LibrarySort;
-    source: LibrarySourceFilter;
-    range: Range;
-    current: number;
-    limit: number;
-  },
-): Promise<Fetched> {
+async function fetchPage({
+  fetch,
+  token,
+  base,
+  type,
+  sort,
+  source,
+  range,
+  current,
+  limit,
+}: {
+  fetch: typeof globalThis.fetch;
+  token: string | null;
+  base: string;
+  type: HistoryType;
+  sort: LibrarySort;
+  source: LibrarySourceFilter;
+  range: Range;
+  current: number;
+  limit: number;
+}): Promise<Fetched> {
   const query = new URLSearchParams({
     extended: 'full,images',
     page: String(current),
@@ -93,7 +101,10 @@ export async function loadLibrary({ fetch, locals, params, url, cookies, parent 
   const range: Range = { ...(startAt && { startAt }), ...(endAt && { endAt }) };
 
   const request = { base, type, sort, source, range, current, limit };
-  const { frame: { isSelf, datePreferences }, result } = await readProfileTab({
+  const {
+    frame: { isSelf, datePreferences },
+    result,
+  } = await readProfileTab({
     fetch,
     token: locals.token,
     frame: known ?? layout,

@@ -14,9 +14,8 @@ const report = { kind: 'report', target, reason: 'duplicate', message: '  Correc
 
 function respond(status: number, body?: unknown) {
   server.use(
-    http.post(
-      'https://apiz.trakt.tv/*',
-      () => body === undefined ? new HttpResponse(null, { status }) : HttpResponse.json(body, { status }),
+    http.post('https://apiz.trakt.tv/*', () =>
+      body === undefined ? new HttpResponse(null, { status }) : HttpResponse.json(body, { status }),
     ),
   );
 }
@@ -52,11 +51,13 @@ describe('validateReport', () => {
 describe('writeMediaTool', () => {
   it('should send only the API reason and trimmed message and accept an empty 201', async () => {
     let received: unknown;
-    server.use(http.post('https://apiz.trakt.tv/movies/1/report', async ({ request }) => {
-      received = await request.json();
-      expect(request.headers.get('trakt-api-key')).toBeTruthy();
-      return new HttpResponse(null, { status: 201 });
-    }));
+    server.use(
+      http.post('https://apiz.trakt.tv/movies/1/report', async ({ request }) => {
+        received = await request.json();
+        expect(request.headers.get('trakt-api-key')).toBeTruthy();
+        return new HttpResponse(null, { status: 201 });
+      }),
+    );
     const result = await writeMediaTool({ fetch, action: report });
     expect(received).toEqual({ reason: 'duplicate', message: 'Correct item: /movies/correct' });
     expect(result.ok).toBe(true);
@@ -64,10 +65,12 @@ describe('writeMediaTool', () => {
 
   it('should report a comment by its id with the comment toast', async () => {
     let received: unknown;
-    server.use(http.post('https://apiz.trakt.tv/comments/7/report', async ({ request }) => {
-      received = await request.json();
-      return new HttpResponse(null, { status: 201 });
-    }));
+    server.use(
+      http.post('https://apiz.trakt.tv/comments/7/report', async ({ request }) => {
+        received = await request.json();
+        return new HttpResponse(null, { status: 201 });
+      }),
+    );
     const comment = { type: 'comment', id: 7, title: '', href: '/comments/7' } as const;
     const result = await writeMediaTool({
       fetch,
@@ -88,10 +91,12 @@ describe('writeMediaTool', () => {
         ),
       );
       expect(
-        (await writeMediaTool({
-          fetch,
-          action: { ...report, reason: 'other', target: { ...target, type, id: 'someone else' } },
-        })).ok,
+        (
+          await writeMediaTool({
+            fetch,
+            action: { ...report, reason: 'other', target: { ...target, type, id: 'someone else' } },
+          })
+        ).ok,
       ).toBe(true);
     },
   );
@@ -106,8 +111,7 @@ describe('writeMediaTool', () => {
           fetch,
           action: { ...report, target: { type: 'list', id: 7, title: 'Heist Night', href: '/lists/7', ownerSlug } },
         }),
-      )
-        .toEqual({ ok: true, message: "List reported! Thanks for the info, we'll investigate soon." });
+      ).toEqual({ ok: true, message: "List reported! Thanks for the info, we'll investigate soon." });
     },
   );
 

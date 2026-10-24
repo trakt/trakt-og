@@ -3,9 +3,9 @@ import { imageUrl } from '../../utils/imageUrl.ts';
 import { listPath } from '../listPath.ts';
 import type { ListCommentsTarget } from './ListCommentsTarget.ts';
 
-type ListSource =
-  & Pick<ListResponse, 'name' | 'description' | 'type' | 'allow_comments' | 'ids' | 'images'>
-  & { readonly user: { readonly username: string; readonly ids: { readonly slug?: string | null } } };
+type ListSource = Pick<ListResponse, 'name' | 'description' | 'type' | 'allow_comments' | 'ids' | 'images'> & {
+  readonly user: { readonly username: string; readonly ids: { readonly slug?: string | null } };
+};
 
 /** A personal or official list's summary (`extended=images`) as its comments page's subject. */
 export function toListCommentsTarget(list: ListSource): ListCommentsTarget {

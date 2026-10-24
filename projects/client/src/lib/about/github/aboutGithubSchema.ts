@@ -13,13 +13,15 @@ export const aboutGithubSchema = z.object({
   closed: issues,
   /** Missing from copies cached before the count existed. */
   commitCount: z.number().nullable().catch(null),
-  commits: z.array(z.object({
-    sha: z.string(),
-    href: z.string(),
-    day: z.string(),
-    type: z.string().nullable(),
-    section: z.enum(aboutSections),
-    subject: z.string(),
-    author: z.object({ login: z.string(), avatar: z.string() }).nullable(),
-  })),
+  commits: z.array(
+    z.object({
+      sha: z.string(),
+      href: z.string(),
+      day: z.string(),
+      type: z.string().nullable(),
+      section: z.enum(aboutSections),
+      subject: z.string(),
+      author: z.object({ login: z.string(), avatar: z.string() }).nullable(),
+    }),
+  ),
 });

@@ -14,11 +14,9 @@ type Media = {
 };
 
 /** The fields of `GET /users/:id/watching?extended=full,images` the bar reads. */
-export type WatchingResponse =
-  & { readonly expires_at: string; readonly started_at: string; readonly action: string }
-  & (
-    | { readonly type: 'movie'; readonly movie?: Media | null }
-    | {
+export type WatchingResponse = { readonly expires_at: string; readonly started_at: string; readonly action: string } & (
+  | { readonly type: 'movie'; readonly movie?: Media | null }
+  | {
       readonly type: 'episode';
       readonly show?: Media | null;
       readonly episode?: {
@@ -29,7 +27,7 @@ export type WatchingResponse =
         readonly images?: Images;
       } | null;
     }
-  );
+);
 
 /** OG's `full_runtime` fallbacks when the API has none. */
 const DEFAULT_RUNTIME = { movie: 90, episode: 42 } as const;

@@ -17,7 +17,9 @@ describe('withSiteLogos', () => {
 
   it('should give every known site its logo', () => {
     const labels = ['Official Site', 'IMDB', 'TVDB', 'Fanart.tv'];
-    const icons = withSiteLogos(links).filter((link) => labels.includes(link.label)).map((link) => link.icon);
+    const icons = withSiteLogos(links)
+      .filter((link) => labels.includes(link.label))
+      .map((link) => link.icon);
     expect(icons).toHaveLength(4);
     icons.forEach((icon) => expect(icon).toContain('<svg'));
   });

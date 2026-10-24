@@ -15,12 +15,14 @@ const media = z.object({
   rating: z.number().nullish(),
   aired_episodes: z.number().nullish(),
   episode_type: z.string().nullish(),
-  images: z.object({
-    fanart: z.union([z.string(), z.array(z.string()), image]).nullish(),
-    poster: z.union([z.string(), z.array(z.string()), image]).nullish(),
-    screenshot: z.union([z.string(), z.array(z.string()), image]).nullish(),
-    headshot: z.union([z.string(), z.array(z.string()), image]).nullish(),
-  }).nullish(),
+  images: z
+    .object({
+      fanart: z.union([z.string(), z.array(z.string()), image]).nullish(),
+      poster: z.union([z.string(), z.array(z.string()), image]).nullish(),
+      screenshot: z.union([z.string(), z.array(z.string()), image]).nullish(),
+      headshot: z.union([z.string(), z.array(z.string()), image]).nullish(),
+    })
+    .nullish(),
 });
 const user = z.object({
   username: z.string(),
@@ -36,26 +38,28 @@ const user = z.object({
 });
 
 /** API's listing wraps each note; @trakt/api 0.6.0 types this endpoint as a bare NoteResponse[]. */
-export const noteRowsSchema = z.array(z.object({
-  attached_to: z.object({
-    type: z.string(),
-    watched_at: z.iso.datetime({ offset: true }).nullish(),
-    collected_at: z.iso.datetime({ offset: true }).nullish(),
-    rated_at: z.iso.datetime({ offset: true }).nullish(),
-    rating: z.number().nullish(),
+export const noteRowsSchema = z.array(
+  z.object({
+    attached_to: z.object({
+      type: z.string(),
+      watched_at: z.iso.datetime({ offset: true }).nullish(),
+      collected_at: z.iso.datetime({ offset: true }).nullish(),
+      rated_at: z.iso.datetime({ offset: true }).nullish(),
+      rating: z.number().nullish(),
+    }),
+    type: z.enum(['movie', 'show', 'season', 'episode', 'person']),
+    movie: media.nullish(),
+    show: media.nullish(),
+    season: media.nullish(),
+    episode: media.nullish(),
+    person: media.nullish(),
+    note: z.object({
+      id: z.number(),
+      notes: z.string().nullish(),
+      privacy: z.enum(['public', 'friends', 'private']),
+      spoiler: z.boolean().nullish(),
+      updated_at: z.iso.datetime({ offset: true }),
+      user: user.nullish(),
+    }),
   }),
-  type: z.enum(['movie', 'show', 'season', 'episode', 'person']),
-  movie: media.nullish(),
-  show: media.nullish(),
-  season: media.nullish(),
-  episode: media.nullish(),
-  person: media.nullish(),
-  note: z.object({
-    id: z.number(),
-    notes: z.string().nullish(),
-    privacy: z.enum(['public', 'friends', 'private']),
-    spoiler: z.boolean().nullish(),
-    updated_at: z.iso.datetime({ offset: true }),
-    user: user.nullish(),
-  }),
-}));
+);

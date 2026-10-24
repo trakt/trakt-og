@@ -63,7 +63,7 @@ export async function loadProfileFrame({ fetch, locals, params, parent, url, isD
 
   // A client navigation may discard this layout's result, so it reads the lists only if they get used. A full page
   // render always streams them, so it starts them now.
-  const readLists = () => isDataRequest ? lazy(() => loadViewerLists({ client })) : loadViewerLists({ client });
+  const readLists = () => (isDataRequest ? lazy(() => loadViewerLists({ client })) : loadViewerLists({ client }));
   const viewerLists = viewer && !isSelf ? (locals.viewerLists ??= readLists()) : null;
   const parsedStats = stats?.status === 200 ? userStatsSchema.safeParse(stats.body) : null;
   const userStats = parsedStats?.success ? parsedStats.data : null;

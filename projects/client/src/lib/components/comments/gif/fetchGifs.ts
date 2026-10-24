@@ -20,9 +20,13 @@ type FetchGifsParams = {
 type GifPage = { readonly entries: readonly GifEntry[]; readonly hasNext: boolean };
 
 /** A page of Klipy's trending GIFs, or of a search. Rejects when Klipy can't be reached. */
-export async function fetchGifs(
-  { query, page, limit, customerId, fetch = globalThis.fetch }: FetchGifsParams,
-): Promise<GifPage> {
+export async function fetchGifs({
+  query,
+  page,
+  limit,
+  customerId,
+  fetch = globalThis.fetch,
+}: FetchGifsParams): Promise<GifPage> {
   const params = new URLSearchParams({ customer_id: customerId, page: `${page}`, per_page: `${limit}` });
   if (query) params.set('q', query);
 

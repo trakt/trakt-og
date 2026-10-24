@@ -11,7 +11,6 @@ export async function fetchWholeShowProgress(
   client: ReturnType<typeof api>,
   showId: number,
 ): Promise<ShowProgressResponse | undefined> {
-  const response = await client.shows.progress.watched({ params: { id: String(showId) }, query: {} })
-    .catch(() => null);
+  const response = await client.shows.progress.watched({ params: { id: String(showId) }, query: {} }).catch(() => null);
   return response?.status === 200 ? response.body : undefined;
 }

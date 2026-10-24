@@ -81,11 +81,14 @@ describe('toTrendingComments', () => {
   });
 
   it('should give a movie its year, and skip lists and titles without a poster', () => {
-    const comments = toTrendingComments([
-      { type: 'movie', comment: comment(4), movie: { ...show(30), released: '2027-01-01' } },
-      { type: 'list', comment: comment(5), movie: show(31) },
-      { type: 'movie', comment: comment(6), movie: show(32, { images: null }) },
-    ], now);
+    const comments = toTrendingComments(
+      [
+        { type: 'movie', comment: comment(4), movie: { ...show(30), released: '2027-01-01' } },
+        { type: 'list', comment: comment(5), movie: show(31) },
+        { type: 'movie', comment: comment(6), movie: show(32, { images: null }) },
+      ],
+      now,
+    );
 
     expect(comments.map(({ item }) => [item.year, item.episode, item.released])).toEqual([[2026, undefined, false]]);
   });

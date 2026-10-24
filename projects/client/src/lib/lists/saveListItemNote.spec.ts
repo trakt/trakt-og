@@ -22,10 +22,12 @@ const save = (notes: string) =>
 
 describe('saveListItemNote', () => {
   it('should save the trimmed note', async () => {
-    server.use(http.put(endpoint, async ({ request }) => {
-      expect(await request.json()).toEqual({ notes: 'Watch it twice' });
-      return new HttpResponse(null, { status: 204 });
-    }));
+    server.use(
+      http.put(endpoint, async ({ request }) => {
+        expect(await request.json()).toEqual({ notes: 'Watch it twice' });
+        return new HttpResponse(null, { status: 204 });
+      }),
+    );
     await expect(save('  Watch it twice ')).resolves.toEqual({ ok: true, notes: 'Watch it twice' });
   });
 

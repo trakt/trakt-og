@@ -128,7 +128,7 @@ describe('sectionsClient', () => {
     });
 
     it('should pick out the followed members watching now from the whole following list', async () => {
-      const [watching] = await client(true).activity(movie) ?? [];
+      const [watching] = (await client(true).activity(movie)) ?? [];
       expect(watching?.id === 'watching' && watching.followed.map(({ key }) => key)).toEqual(['watcher']);
       expect(followingRequests.at(0)?.headers.get('authorization')).toBe('Bearer viewer');
       expect(new URL(followingRequests.at(0)?.url ?? '').searchParams.get('limit')).toBe('all');
@@ -136,12 +136,12 @@ describe('sectionsClient', () => {
 
     it('should pick nobody out when the following list fails', async () => {
       server.use(http.get(`${API}/users/me/following`, () => HttpResponse.json({}, { status: 500 })));
-      const [watching] = await client(true).activity(movie) ?? [];
+      const [watching] = (await client(true).activity(movie)) ?? [];
       expect(watching?.id === 'watching' && watching.followed).toEqual([]);
     });
 
     it('should ask what each followed member watching now is watching, with the token', async () => {
-      const [watching] = await client(true).activity(movie) ?? [];
+      const [watching] = (await client(true).activity(movie)) ?? [];
       expect(liveRequests.map((request) => new URL(request.url).pathname)).toEqual(['/users/watcher/watching']);
       expect(liveRequests.at(0)?.headers.get('authorization')).toBe('Bearer viewer');
       expect(watching?.id === 'watching' && watching.live).toEqual([]);
@@ -151,7 +151,8 @@ describe('sectionsClient', () => {
       const languages = async (language?: string | null) => {
         seen.length = 0;
         await client(true).comments(movie, language);
-        return seen.map((request) => new URL(request.url))
+        return seen
+          .map((request) => new URL(request.url))
           .filter(({ pathname }) => pathname.includes('/comments/'))
           .map(({ pathname, searchParams }) => `${pathname.split('/').at(-1)}:${searchParams.get('language')}`)
           .toSorted();
@@ -180,12 +181,14 @@ describe('sectionsClient', () => {
   });
 
   it("should ask for a related card's people by its Trakt id", async () => {
-    server.use(http.get(`${API}/shows/:id/people`, ({ request, params }) => {
-      seen.push(request);
-      return HttpResponse.json({
-        cast: [{ person: { ids: { trakt: 5, slug: 'bob' }, name: `Bob ${params.id}` }, characters: ['Saul'] }],
-      });
-    }));
+    server.use(
+      http.get(`${API}/shows/:id/people`, ({ request, params }) => {
+        seen.push(request);
+        return HttpResponse.json({
+          cast: [{ person: { ids: { trakt: 5, slug: 'bob' }, name: `Bob ${params.id}` }, characters: ['Saul'] }],
+        });
+      }),
+    );
     const card = {
       type: 'show',
       id: 59660,
@@ -247,14 +250,14 @@ describe('sectionsClient', () => {
       expect((await client(true).lists(season))?.map(({ id }) => id)).toEqual([10, 10]);
       expect(paths().every((path) => path.startsWith('/shows/breaking-bad/seasons/1/'))).toBe(true);
       expect(
-        seen.filter((request) => request.url.includes('/comments/')).every((request) =>
-          request.headers.get('authorization') === 'Bearer viewer'
-        ),
+        seen
+          .filter((request) => request.url.includes('/comments/'))
+          .every((request) => request.headers.get('authorization') === 'Bearer viewer'),
       ).toBe(true);
       expect(
-        seen.filter((request) => request.url.includes('/lists/')).every((request) =>
-          !request.headers.has('authorization')
-        ),
+        seen
+          .filter((request) => request.url.includes('/lists/'))
+          .every((request) => !request.headers.has('authorization')),
       ).toBe(true);
     });
 
@@ -278,28 +281,33 @@ describe('sectionsClient', () => {
     };
     const base = `${API}/shows/:id/seasons/:season/episodes/:episode`;
     it('should use episode paths and viewer credentials only for viewer data', async () => {
-      server.use(http.get(`${base}/*`, ({ request }) => {
-        seen.push(request);
-        const path = new URL(request.url).pathname;
-        if (path.endsWith('/watching')) return HttpResponse.json([user('watcher')]);
-        if (path.endsWith('/social')) return HttpResponse.json([]);
-        if (path.includes('/comments/')) return HttpResponse.json([comment(1)]);
-        return HttpResponse.json([list(10, 'personal')]);
-      }));
+      server.use(
+        http.get(`${base}/*`, ({ request }) => {
+          seen.push(request);
+          const path = new URL(request.url).pathname;
+          if (path.endsWith('/watching')) return HttpResponse.json([user('watcher')]);
+          if (path.endsWith('/social')) return HttpResponse.json([]);
+          if (path.includes('/comments/')) return HttpResponse.json([comment(1)]);
+          return HttpResponse.json([list(10, 'personal')]);
+        }),
+      );
       await client(true).activity(episode);
       await client(true).comments(episode);
       await client(true).lists(episode);
       expect(await client(true).related(episode)).toBeNull();
       expect(paths().every((path) => path.startsWith('/shows/breaking-bad/seasons/1/episodes/1/'))).toBe(true);
       expect(
-        seen.filter((request) => request.url.includes('/watching') || request.url.includes('/lists/')).every(
-          (request) => !request.headers.has('authorization'),
-        ),
+        seen
+          .filter((request) => request.url.includes('/watching') || request.url.includes('/lists/'))
+          .every((request) => !request.headers.has('authorization')),
       ).toBe(true);
       expect(
-        seen.filter((request) =>
-          request.url.includes('/social') || request.url.includes('/comments/') || request.url.includes('/listed')
-        ).every((request) => request.headers.get('authorization') === 'Bearer viewer'),
+        seen
+          .filter(
+            (request) =>
+              request.url.includes('/social') || request.url.includes('/comments/') || request.url.includes('/listed'),
+          )
+          .every((request) => request.headers.get('authorization') === 'Bearer viewer'),
       ).toBe(true);
     });
   });
@@ -330,10 +338,12 @@ describe('sectionsClient', () => {
     ];
 
     it.each(items)('should read the %o videos from its own path without the token', async (media, path) => {
-      server.use(http.get(`${API}/*`, ({ request }) => {
-        seen.push(request);
-        return HttpResponse.json([trailer]);
-      }));
+      server.use(
+        http.get(`${API}/*`, ({ request }) => {
+          seen.push(request);
+          return HttpResponse.json([trailer]);
+        }),
+      );
       const videos = await client(true).videos(media);
       expect(videos?.map(({ image }) => image)).toEqual(['https://i.ytimg.com/vi/HhesaQXLuRY/mqdefault.jpg']);
       expect(paths()).toEqual([path]);

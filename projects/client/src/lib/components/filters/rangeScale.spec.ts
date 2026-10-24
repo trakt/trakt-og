@@ -28,6 +28,9 @@ describe('util: rangeScale', () => {
   });
 
   it('should run anticipated years from this year to ten years out', () => {
-    expect(filterRanges({ now, upcoming: true }).years.stops).toEqual([[0, 2026], [100, 2036]]);
+    expect(filterRanges({ now, upcoming: true }).years.stops).toEqual([
+      [0, 2026],
+      [100, 2036],
+    ]);
   });
 });

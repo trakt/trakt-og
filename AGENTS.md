@@ -6,7 +6,6 @@ The app lives in `projects/client/`. Shared code and design rules live in `.agen
 ## Commands
 
 Run these from the repository root:
-
 - `deno task install`: install pinned dependencies from the lockfile.
 - `deno task client:dev`: start the dev server.
 - `deno task client:ci`: formatting, lint, types, tests and production build.

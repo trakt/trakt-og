@@ -134,11 +134,13 @@ describe('loadProfile', () => {
   });
 
   it('should read a private profile the viewer can see with the token, each section once', async () => {
-    server.use(http.get('https://apiz.trakt.tv/users/tester/history/movies', ({ request }) => {
-      seen.push(request);
-      if (!request.headers.has('authorization')) return new HttpResponse(null, { status: 401 });
-      return HttpResponse.json(new URL(request.url).searchParams.has('start_at') ? [] : [movie(9, 100)]);
-    }));
+    server.use(
+      http.get('https://apiz.trakt.tv/users/tester/history/movies', ({ request }) => {
+        seen.push(request);
+        if (!request.headers.has('authorization')) return new HttpResponse(null, { status: 401 });
+        return HttpResponse.json(new URL(request.url).searchParams.has('start_at') ? [] : [movie(9, 100)]);
+      }),
+    );
     const data = await load({ isPrivate: true });
 
     expect(data.movies.map(({ id }) => id)).toEqual([9]);
@@ -167,14 +169,14 @@ describe('loadProfile', () => {
   it('should read posters for the all time top three shows only, since the watched list has none', async () => {
     const summaries: string[] = [];
     server.use(
-      http.get(
-        'https://apiz.trakt.tv/users/tester/watched/shows',
-        () =>
-          HttpResponse.json([1, 2, 3, 4, 5].map((id) => ({
+      http.get('https://apiz.trakt.tv/users/tester/watched/shows', () =>
+        HttpResponse.json(
+          [1, 2, 3, 4, 5].map((id) => ({
             plays: id,
             last_watched_at: '2026-01-01T00:00:00.000Z',
             show: { title: `Show ${id}`, ids: { trakt: id, slug: `show-${id}` }, runtime: 30 },
-          }))),
+          })),
+        ),
       ),
       http.get('https://apiz.trakt.tv/shows/:id', ({ params }) => {
         summaries.push(String(params.id));

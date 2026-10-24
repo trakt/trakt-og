@@ -15,8 +15,14 @@ describe('chartPageRequests', () => {
   });
 
   it('should start page 2 right after page 1', () => {
-    expect(covered(2)).toEqual([[40, 72], [73, 75]]);
-    expect(covered(2, others)).toEqual([[39, 72], [73, 74]]);
+    expect(covered(2)).toEqual([
+      [40, 72],
+      [73, 75],
+    ]);
+    expect(covered(2, others)).toEqual([
+      [39, 72],
+      [73, 74],
+    ]);
   });
 
   it('should leave no gap or overlap between pages', () => {

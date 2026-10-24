@@ -69,7 +69,8 @@ async function loadTrending({ fetch, settings, now = new Date() }: FetchRecommen
     }),
   );
   const longest = Math.max(...lists.map((list) => list.length));
-  return Array.from({ length: longest }, (_, i) => lists.map((list) => list[i])).flat()
+  return Array.from({ length: longest }, (_, i) => lists.map((list) => list[i]))
+    .flat()
     .filter((item): item is Recommendation => item !== undefined);
 }
 

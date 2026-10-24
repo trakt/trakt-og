@@ -34,9 +34,11 @@ describe('itemListRowActions', () => {
   });
 
   it('should leave progress off official lists and delete off a watchlist', () => {
-    expect(itemListRowActions({ list: list({ kind: 'official', href: '/lists/x' }), viewer: null, origin }))
-      .toEqual({ shareUrl: 'https://og.trakt.tv/lists/x' });
-    expect(itemListRowActions({ list: list({ kind: 'watchlist' }), viewer: { slug: 'sean', isVip: false }, origin }))
-      .not.toHaveProperty('delete');
+    expect(itemListRowActions({ list: list({ kind: 'official', href: '/lists/x' }), viewer: null, origin })).toEqual({
+      shareUrl: 'https://og.trakt.tv/lists/x',
+    });
+    expect(
+      itemListRowActions({ list: list({ kind: 'watchlist' }), viewer: { slug: 'sean', isVip: false }, origin }),
+    ).not.toHaveProperty('delete');
   });
 });

@@ -16,10 +16,7 @@ const packument = (
   'dist-tags': { latest: latest ?? Object.keys(releases).at(-1) ?? '' },
   time: Object.fromEntries(Object.entries(releases).map(([version, hours]) => [version, hoursAgo(hours)])),
   versions: Object.fromEntries(
-    Object.keys(releases).map((version) => [
-      version,
-      deprecated.includes(version) ? { deprecated: 'do not use' } : {},
-    ]),
+    Object.keys(releases).map((version) => [version, deprecated.includes(version) ? { deprecated: 'do not use' } : {}]),
   ),
 });
 
@@ -77,13 +74,15 @@ describe('util: pickTargets', () => {
 
   describe('for release channels', () => {
     it('should skip pre-releases', () => {
-      expect(pick('6.0.3', packument({ '6.0.3': 900, '6.1.0-beta': 200, '6.1.0-rc.1': 100 }, { latest: '6.0.3' })))
-        .toEqual({});
+      expect(
+        pick('6.0.3', packument({ '6.0.3': 900, '6.1.0-beta': 200, '6.1.0-rc.1': 100 }, { latest: '6.0.3' })),
+      ).toEqual({});
     });
 
     it('should skip deprecated releases', () => {
-      expect(pick('1.0.0', packument({ '1.0.0': 900, '1.1.0': 500, '1.2.0': 300 }, { deprecated: ['1.2.0'] })))
-        .toEqual({ minor: '1.1.0' });
+      expect(pick('1.0.0', packument({ '1.0.0': 900, '1.1.0': 500, '1.2.0': 300 }, { deprecated: ['1.2.0'] }))).toEqual(
+        { minor: '1.1.0' },
+      );
     });
 
     it('should never go past the latest dist-tag', () => {

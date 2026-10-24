@@ -85,10 +85,12 @@ function tags(row: ChartRow, chart: ChartName, order: DateOrder): Tag[] {
     }
     case 'favorited': {
       const people = row.user_count ?? 0;
-      return [{
-        text: `${people.toLocaleString('en-US')} ${people === 1 ? 'person' : 'people'} favorited`,
-        kind: 'favorite',
-      }];
+      return [
+        {
+          text: `${people.toLocaleString('en-US')} ${people === 1 ? 'person' : 'people'} favorited`,
+          kind: 'favorite',
+        },
+      ];
     }
     case 'watched':
       return [{ text: watchers }, generic(plays)];
@@ -97,9 +99,9 @@ function tags(row: ChartRow, chart: ChartName, order: DateOrder): Tag[] {
     case 'library':
       return 'show' in row
         ? [
-          { text: countLabel(row.collected_count ?? 0, 'episode'), kind: 'collect' },
-          generic(countLabel(row.collector_count ?? 0, 'owner')),
-        ]
+            { text: countLabel(row.collected_count ?? 0, 'episode'), kind: 'collect' },
+            generic(countLabel(row.collector_count ?? 0, 'owner')),
+          ]
         : [{ text: countLabel(row.collected_count ?? 0, 'owner'), kind: 'collect' }];
   }
 }

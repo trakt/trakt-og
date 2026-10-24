@@ -15,12 +15,7 @@ export const isHistoryType = (value: string): value is HistoryType => Object.has
 // OG's MOVIE_GENRES and TV_GENRES, the genres dropdown's options.
 const labelled = (slugs: readonly string[]) => Object.fromEntries(slugs.map((slug) => [slug, genreLabel(slug)]));
 
-const shared = [
-  'action',
-  'adventure',
-  'animation',
-  'anime',
-] as const;
+const shared = ['action', 'adventure', 'animation', 'anime'] as const;
 
 export const movieGenres: Readonly<Record<string, string>> = labelled([
   ...shared,
@@ -81,4 +76,5 @@ export const tvGenres: Readonly<Record<string, string>> = labelled([
 ]);
 
 /** The genres a type filters by. All Types has none. */
-export const genresFor = (type: HistoryType) => type === 'movies' ? movieGenres : type === 'all' ? undefined : tvGenres;
+export const genresFor = (type: HistoryType) =>
+  type === 'movies' ? movieGenres : type === 'all' ? undefined : tvGenres;

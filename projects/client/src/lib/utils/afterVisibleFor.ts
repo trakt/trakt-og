@@ -25,10 +25,13 @@ export function afterVisibleFor({ ms, callback, document = globalThis.document }
   const resume = () => {
     if (timer !== undefined) return;
     startedAt = Date.now();
-    timer = setTimeout(() => {
-      cancel();
-      callback();
-    }, Math.max(0, left));
+    timer = setTimeout(
+      () => {
+        cancel();
+        callback();
+      },
+      Math.max(0, left),
+    );
   };
   const change = () => (document.visibilityState === 'visible' ? resume() : pause());
   const cancel = () => {

@@ -49,9 +49,18 @@ const NOTHING_HIDDEN: HiddenCalendar = { shows: new Set(), movies: new Set() };
  * one whose token stopped working) to sign in. Signed in, both leave out what the viewer hid from the calendar, and
  * specials with the "hide specials" setting on, as OG did on every calendar.
  */
-export async function loadCalendar(
-  { fetch, parent, url, target, slug, start, token, cookies, sidenavHidden, now = new Date() }: LoadCalendarParams,
-) {
+export async function loadCalendar({
+  fetch,
+  parent,
+  url,
+  target,
+  slug,
+  start,
+  token,
+  cookies,
+  sidenavHidden,
+  now = new Date(),
+}: LoadCalendarParams) {
   const calendar = (target === 'my' ? MY_CALENDARS : PUBLIC_CALENDARS).find((c) => c.slug === slug);
   if (!calendar) error(404, 'Not Found');
   if (target === 'my' && !token) signInRedirect(url);
@@ -71,25 +80,28 @@ export async function loadCalendar(
   const filters = fromFilterDraft(toFilterDraft(parseAdvancedFilters(url.searchParams), filterConfig), filterConfig);
   const query = advancedFiltersQuery(filters);
   const watchnow = calendarWatchNow(settings);
-  const sources = filters.watchnow.length > 0
-    ? rawApiFetch({ fetch, path: `/watchnow/sources/${watchnow.country}` })
-      .then(async (response) =>
-        response.ok ? toFilterSources(await response.json(), watchnow.country) : new Map<string, FilterSource>()
-      )
-      .catch(() => new Map<string, FilterSource>())
-    : Promise.resolve(undefined);
+  const sources =
+    filters.watchnow.length > 0
+      ? rawApiFetch({ fetch, path: `/watchnow/sources/${watchnow.country}` })
+          .then(async (response) =>
+            response.ok ? toFilterSources(await response.json(), watchnow.country) : new Map<string, FilterSource>(),
+          )
+          .catch(() => new Map<string, FilterSource>())
+      : Promise.resolve(undefined);
   // Watch now is viewer-specific (country/favorites); other public filters carry no token.
   const calendarToken = target === 'my' || filters.watchnow.length > 0 ? token : null;
   // A token that stopped working loads no settings, so the page renders logged-out (All Shows' short feed included).
   const signedIn = token !== null && settings !== null;
   const fetchItems = (filterQuery: Readonly<Record<string, string>>, token: string | null) =>
-    Promise.all(ranges.map(async (range) => {
-      const request = { target, slug: calendar.slug, range, signedIn, filters: filterQuery };
-      const response = await fetchCalendar({ client: api({ fetch, token }).calendars, ...request });
-      return response === 'signed-out' && target === 'all'
-        ? fetchCalendar({ ...request, client: api({ fetch }).calendars })
-        : response;
-    }));
+    Promise.all(
+      ranges.map(async (range) => {
+        const request = { target, slug: calendar.slug, range, signedIn, filters: filterQuery };
+        const response = await fetchCalendar({ client: api({ fetch, token }).calendars, ...request });
+        return response === 'signed-out' && target === 'all'
+          ? fetchCalendar({ ...request, client: api({ fetch }).calendars })
+          : response;
+      }),
+    );
   // Filtered, the sidebar counts "12 of 40": the same month without filters, fetched alongside.
   const filtered = hasAdvancedFilters(filters);
   const [responses, unfilteredResponses, hidden] = await Promise.all([
@@ -98,7 +110,7 @@ export async function loadCalendar(
     hiddenItems,
   ]);
   if ([...responses, ...(unfilteredResponses ?? [])].some((items) => items === 'signed-out')) signInRedirect(url);
-  const flatten = (lists: typeof responses) => lists.flatMap((items) => items === 'signed-out' ? [] : items);
+  const flatten = (lists: typeof responses) => lists.flatMap((items) => (items === 'signed-out' ? [] : items));
   const visible = (items: ReturnType<typeof flatten>) =>
     withoutHidden(items, { hidden, hideSpecials: preferences.hideSpecials });
   const shown = visible(flatten(responses).filter((item) => matchesCalendarFilters(item, filters)));

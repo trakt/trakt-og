@@ -7,8 +7,8 @@ const ALIAS = /^npm:((?:@[^/@]+\/)?[^@]+)@(.+)$/;
 // a pre-release) is left alone: it isn't the bump job's to move.
 export function parsePin(key: string, spec: string): Pin | undefined {
   const alias = ALIAS.exec(spec);
-  const registryName = alias ? alias[1] ?? '' : key;
-  const version = alias ? alias[2] ?? '' : spec;
+  const registryName = alias ? (alias[1] ?? '') : key;
+  const version = alias ? (alias[2] ?? '') : spec;
   if (!parseVersion(version)) return undefined;
 
   return { key, registryName, version, prefix: alias ? `npm:${registryName}@` : '' };

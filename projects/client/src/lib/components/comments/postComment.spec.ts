@@ -59,8 +59,10 @@ describe('postComment', () => {
 
   it("should toast the server's message on a 422", async () => {
     reply = () => HttpResponse.json({ errors: { comment: ['must be at least 5 words'] } }, { status: 422 });
-    expect(await postComment({ fetch, item: episode, comment: 'Too short', spoiler: false }))
-      .toEqual({ ok: false, message: 'Comment must be at least 5 words.' });
+    expect(await postComment({ fetch, item: episode, comment: 'Too short', spoiler: false })).toEqual({
+      ok: false,
+      message: 'Comment must be at least 5 words.',
+    });
   });
 });
 

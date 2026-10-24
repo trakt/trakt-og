@@ -16,9 +16,10 @@ type ProgressShowSource = Pick<UpNextResponse['show'], 'title'> & {
   readonly aired_episodes?: Nullish<number>;
   readonly first_aired?: Nullish<string>;
   readonly last_aired?: Nullish<string>;
-  readonly images?: Nullish<
-    { readonly poster?: Nullish<readonly string[]>; readonly fanart?: Nullish<readonly string[]> }
-  >;
+  readonly images?: Nullish<{
+    readonly poster?: Nullish<readonly string[]>;
+    readonly fanart?: Nullish<readonly string[]>;
+  }>;
 };
 
 /** A show the progress endpoints (`up_next_nitro`, `hidden/dropped`) or a list return, as og's show summary. */

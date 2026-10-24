@@ -14,7 +14,7 @@ export const featuredListBox = defineProfileBox({
   group: 'image',
   floor: true,
   component: FeaturedListBox,
-  score: ({ watchlist }) => watchlist.count > 0 ? 100 * (0.2 + 0.3 * boxMath.cap(watchlist.count, 50)) : null,
+  score: ({ watchlist }) => (watchlist.count > 0 ? 100 * (0.2 + 0.3 * boxMath.cap(watchlist.count, 50)) : null),
   view: ({ profile, watchlist }): FeaturedListView => {
     const media = watchlist.count > 0 ? watchlist.rows.slice(0, 3).flatMap((row) => row.movie ?? row.show ?? []) : [];
     return {

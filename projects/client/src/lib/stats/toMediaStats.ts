@@ -79,7 +79,7 @@ function ratingKeys({ chart, votes, watchers, percent, level }: KeysParams) {
 export function toMediaStats({ media, ratings, letterboxd, stats, rank, otherSiteRatings, now }: Params) {
   // Before release the page shows no ratings and only the list count, whatever the early-ratings setting.
   const released = !!media.released && new Date(media.released) <= now;
-  const trakt = released ? ratings.trakt ?? ratings : {};
+  const trakt = released ? (ratings.trakt ?? ratings) : {};
   const value = trakt.rating ?? 0;
   const votes = trakt.votes ?? 0;
   const percent = ratingPercent(value);

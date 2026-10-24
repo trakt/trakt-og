@@ -53,21 +53,26 @@ describe('listRowActions', () => {
 
   it('should let a collaborator stop collaborating, but not the owner', () => {
     const viewer = { slug: 'friend', isVip: false };
-    expect(icons(listRowActions({ row: row(), viewer, isCollaborator: true, origin })))
-      .toEqual(['leave', 'progressHref', 'report', 'shareUrl']);
-    expect(listRowActions({ row: row(), viewer: { slug: 'owner', isVip: false }, isCollaborator: true, origin }).leave)
-      .toBeUndefined();
+    expect(icons(listRowActions({ row: row(), viewer, isCollaborator: true, origin }))).toEqual([
+      'leave',
+      'progressHref',
+      'report',
+      'shareUrl',
+    ]);
+    expect(
+      listRowActions({ row: row(), viewer: { slug: 'owner', isVip: false }, isCollaborator: true, origin }).leave,
+    ).toBeUndefined();
   });
 
   it('should send a non-VIP or signed-out viewer of a built-in row to list-progress VIP', () => {
     const builtIn = row({ id: null, kind: 'favorites' });
-    expect(listRowActions({ row: builtIn, viewer: null, isCollaborator: false, origin }).progressHref)
-      .toBe('https://app.trakt.tv/vip');
+    expect(listRowActions({ row: builtIn, viewer: null, isCollaborator: false, origin }).progressHref).toBe(
+      'https://app.trakt.tv/vip',
+    );
     expect(
       listRowActions({ row: builtIn, viewer: { slug: 'friend', isVip: false }, isCollaborator: false, origin })
         .progressHref,
-    )
-      .toBe('https://app.trakt.tv/vip');
+    ).toBe('https://app.trakt.tv/vip');
   });
 
   it('should leave progress off official lists', () => {

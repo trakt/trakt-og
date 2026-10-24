@@ -55,9 +55,8 @@ async function getPages<T>({ get, path, schema }: GetJsonParams<T>): Promise<T[]
   const first = await getJson({ get, path, schema: rows });
   const separator = path.includes('?') ? '&' : '?';
   const rest = await Promise.all(
-    Array.from(
-      { length: first.pageCount - 1 },
-      (_, i) => getJson({ get, path: `${path}${separator}page=${i + 2}`, schema: rows }),
+    Array.from({ length: first.pageCount - 1 }, (_, i) =>
+      getJson({ get, path: `${path}${separator}page=${i + 2}`, schema: rows }),
     ),
   );
 
@@ -70,7 +69,12 @@ function idOf(item: TypedItem): number | undefined {
 }
 
 function idsOfType(items: readonly TypedItem[], type: string): ReadonlySet<number> {
-  return new Set(items.filter((item) => item.type === type).map(idOf).filter((id) => id !== undefined));
+  return new Set(
+    items
+      .filter((item) => item.type === type)
+      .map(idOf)
+      .filter((id) => id !== undefined),
+  );
 }
 
 function byNumericKey<T>(record: Record<string, T>): ReadonlyMap<number, T> {
@@ -79,17 +83,16 @@ function byNumericKey<T>(record: Record<string, T>): ReadonlyMap<number, T> {
 
 // Season keys come back as `<season id>|<season number>` with `season_numbers=true`.
 function toWatchedShows(pages: readonly WatchedShowsMinimal[]): OverlaySlices['watchedShows'] {
-  return new Map(pages.flatMap((page) =>
-    Object.entries(page).map(([showId, seasons]) => [
-      Number(showId),
-      new Map(
-        Object.entries(seasons).map(([key, episodes]) => [
-          Number(key.split('|').at(1)),
-          byNumericKey(episodes),
-        ]),
-      ),
-    ])
-  ));
+  return new Map(
+    pages.flatMap((page) =>
+      Object.entries(page).map(([showId, seasons]) => [
+        Number(showId),
+        new Map(
+          Object.entries(seasons).map(([key, episodes]) => [Number(key.split('|').at(1)), byNumericKey(episodes)]),
+        ),
+      ]),
+    ),
+  );
 }
 
 async function watchedShowPages(get: ApiGet, page = 1): Promise<WatchedShowsMinimal[]> {
@@ -97,7 +100,7 @@ async function watchedShowPages(get: ApiGet, page = 1): Promise<WatchedShowsMini
   const { body } = await getJson({ get, path, schema: watchedShowsSchema });
   if (Object.keys(body).length < WATCHED_SHOWS_PAGE) return [body];
 
-  return [body, ...await watchedShowPages(get, page + 1)];
+  return [body, ...(await watchedShowPages(get, page + 1))];
 }
 
 async function loadWatchedShows(get: ApiGet): Promise<OverlaySlices['watchedShows']> {
@@ -147,13 +150,14 @@ export const sliceSources: { [K in keyof OverlaySlices]: SliceSource<K> } = {
         }),
       });
       return new Map(
-        rows.map((
-          row,
-        ) => [row.movie.ids.trakt, {
-          at: row.collected_at,
-          metadata: row.metadata ?? undefined,
-          sources: row.available_on.length ? row.available_on : undefined,
-        }]),
+        rows.map((row) => [
+          row.movie.ids.trakt,
+          {
+            at: row.collected_at,
+            metadata: row.metadata ?? undefined,
+            sources: row.available_on.length ? row.available_on : undefined,
+          },
+        ]),
       );
     },
   },
@@ -181,23 +185,20 @@ export const sliceSources: { [K in keyof OverlaySlices]: SliceSource<K> } = {
         }),
       });
       return new Map(
-        rows.map((
-          { show, seasons },
-        ) => [
+        rows.map(({ show, seasons }) => [
           show.ids.trakt,
           new Map(
-            seasons.map((
-              season,
-            ) => [
+            seasons.map((season) => [
               season.number,
               new Map(
-                season.episodes.map((
-                  episode,
-                ) => [episode.number, {
-                  at: episode.collected_at,
-                  id: episode.ids?.trakt,
-                  metadata: episode.metadata ?? undefined,
-                }]),
+                season.episodes.map((episode) => [
+                  episode.number,
+                  {
+                    at: episode.collected_at,
+                    id: episode.ids?.trakt,
+                    metadata: episode.metadata ?? undefined,
+                  },
+                ]),
               ),
             ]),
           ),
@@ -221,9 +222,10 @@ export const sliceSources: { [K in keyof OverlaySlices]: SliceSource<K> } = {
             Object.entries(seasons).map(([key, episodes]) => [
               Number(key.split('|').at(1)),
               new Map(
-                Object.entries(episodes).map((
-                  [episodeId, value],
-                ) => [Number(episodeId), librarySourcesSchema.parse([{ name: value.split('|').at(1) ?? '' }])]),
+                Object.entries(episodes).map(([episodeId, value]) => [
+                  Number(episodeId),
+                  librarySourcesSchema.parse([{ name: value.split('|').at(1) ?? '' }]),
+                ]),
               ),
             ]),
           ),
@@ -241,10 +243,12 @@ export const sliceSources: { [K in keyof OverlaySlices]: SliceSource<K> } = {
       });
       const ofType = (type: string) =>
         new Map(
-          items.filter((item) => item.type === type).flatMap((item) => {
-            const id = idOf(item);
-            return id === undefined ? [] : [[id, item.rating] as const];
-          }),
+          items
+            .filter((item) => item.type === type)
+            .flatMap((item) => {
+              const id = idOf(item);
+              return id === undefined ? [] : [[id, item.rating] as const];
+            }),
         );
       return { movie: ofType('movie'), show: ofType('show'), season: ofType('season'), episode: ofType('episode') };
     },
@@ -252,15 +256,13 @@ export const sliceSources: { [K in keyof OverlaySlices]: SliceSource<K> } = {
   watchlist: {
     // Refetch older movie/show-only caches once to include seasons and episodes.
     activity: (a) =>
-      `${
-        join(
-          a.watchlist?.updated_at,
-          a.movies?.watchlisted_at,
-          a.shows?.watchlisted_at,
-          a.seasons?.watchlisted_at,
-          a.episodes?.watchlisted_at,
-        )
-      }|types-v2`,
+      `${join(
+        a.watchlist?.updated_at,
+        a.movies?.watchlisted_at,
+        a.shows?.watchlisted_at,
+        a.seasons?.watchlisted_at,
+        a.episodes?.watchlisted_at,
+      )}|types-v2`,
     load: async (get) => {
       const [response, extras] = await Promise.all([get('/v3/users/me/watchlist/minimal'), loadWatchlistExtras(get)]);
       if (!response.ok) throw new Error('Watchlist unavailable');
@@ -274,11 +276,13 @@ export const sliceSources: { [K in keyof OverlaySlices]: SliceSource<K> } = {
     load: async (get) => {
       const items = await loadFavoriteRows(get);
       const dates = (type: 'movie' | 'show') =>
-        new Map(items.flatMap((item) => {
-          if (item.type !== type || !item.listed_at) return [];
-          const id = item.type === 'movie' ? item.movie.ids.trakt : item.show.ids.trakt;
-          return [[id, item.listed_at] as const];
-        }));
+        new Map(
+          items.flatMap((item) => {
+            if (item.type !== type || !item.listed_at) return [];
+            const id = item.type === 'movie' ? item.movie.ids.trakt : item.show.ids.trakt;
+            return [[id, item.listed_at] as const];
+          }),
+        );
       return {
         movie: idsOfType(items, 'movie'),
         show: idsOfType(items, 'show'),
@@ -339,11 +343,13 @@ export const sliceSources: { [K in keyof OverlaySlices]: SliceSource<K> } = {
         path: '/v3/users/me/lists',
         schema: z.array(z.object({ id: z.number() })),
       });
-      const items = (await Promise.all(
-        lists.map(({ id }) =>
-          getPages({ get, path: `/lists/${id}/items?limit=${PAGE_LIMIT}`, schema: typedItemSchema })
-        ),
-      )).flat();
+      const items = (
+        await Promise.all(
+          lists.map(({ id }) =>
+            getPages({ get, path: `/lists/${id}/items?limit=${PAGE_LIMIT}`, schema: typedItemSchema }),
+          ),
+        )
+      ).flat();
       return {
         movie: idsOfType(items, 'movie'),
         show: idsOfType(items, 'show'),

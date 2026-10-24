@@ -33,11 +33,13 @@ describe('upcomingDays', () => {
   });
 
   it('should group episodes by the day they air in the viewer zone', () => {
-    const late = toCalendarItems([{
-      ...scheduleFixture.rows('2026-09-30')[0],
-      first_aired: '2026-09-30T23:00:00.000Z',
-      show: { title: 'Late Show', ids: { trakt: 1, slug: 'late-show' }, country: 'gb' },
-    }]);
+    const late = toCalendarItems([
+      {
+        ...scheduleFixture.rows('2026-09-30')[0],
+        first_aired: '2026-09-30T23:00:00.000Z',
+        show: { title: 'Late Show', ids: { trakt: 1, slug: 'late-show' }, country: 'gb' },
+      },
+    ]);
 
     const [day] = upcomingDays({ items: late, start: '2026-09-30', timeZone: 'Asia/Tokyo', count: 5 });
 

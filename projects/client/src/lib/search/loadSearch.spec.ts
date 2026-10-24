@@ -15,9 +15,8 @@ const server = setupServer(
     });
   }),
   http.get('https://apiz.trakt.tv/search/:idType/:id', ({ params }) =>
-    HttpResponse.json(
-      params.id === 'tt0903747' ? [{ score: 1, type: 'show', show: SHOW }] : [],
-    )),
+    HttpResponse.json(params.id === 'tt0903747' ? [{ score: 1, type: 'show', show: SHOW }] : []),
+  ),
 );
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
@@ -42,7 +41,7 @@ const search = (path: string, { settings = null, ...extra }: { type?: string; id
 const thrownBy = (promise: Promise<unknown>) =>
   promise.then(
     () => null,
-    (thrown: unknown) => isRedirect(thrown) ? thrown.location : isHttpError(thrown) ? thrown.status : thrown,
+    (thrown: unknown) => (isRedirect(thrown) ? thrown.location : isHttpError(thrown) ? thrown.status : thrown),
   );
 
 describe('loadSearch', () => {
@@ -58,16 +57,18 @@ describe('loadSearch', () => {
   });
 
   it('should cap public search limits at 50', async () => {
-    server.use(http.get('https://apiz.trakt.tv/search/:type', ({ request }) => {
-      seen.push(request);
-      return HttpResponse.json([{ type: 'show', show: SHOW }], {
-        headers: {
-          'X-Pagination-Page': '1',
-          'X-Pagination-Page-Count': '1',
-          'X-Pagination-Item-Count': '50',
-        },
-      });
-    }));
+    server.use(
+      http.get('https://apiz.trakt.tv/search/:type', ({ request }) => {
+        seen.push(request);
+        return HttpResponse.json([{ type: 'show', show: SHOW }], {
+          headers: {
+            'X-Pagination-Page': '1',
+            'X-Pagination-Page-Count': '1',
+            'X-Pagination-Item-Count': '50',
+          },
+        });
+      }),
+    );
     const data = await search('/search?query=breaking&limit=80');
     expect(new URL(seen.at(0)?.url ?? '').searchParams.get('limit')).toBe('50');
 
@@ -108,9 +109,8 @@ describe('loadSearch', () => {
 
   it('should validate API Hide results before mapping them', async () => {
     server.use(
-      http.get(
-        'https://apiz.trakt.tv/search/:type',
-        () => HttpResponse.json([{ type: 'show', show: { title: 'Bad' } }], { headers: { 'X-Runtime': '0.01' } }),
+      http.get('https://apiz.trakt.tv/search/:type', () =>
+        HttpResponse.json([{ type: 'show', show: { title: 'Bad' } }], { headers: { 'X-Runtime': '0.01' } }),
       ),
     );
     expect(await thrownBy(viewerSearch('viewer'))).toBe(502);
@@ -142,19 +142,21 @@ describe('loadSearch', () => {
     });
 
     it('should ask API for public users with their avatars and covers and read its paging headers', async () => {
-      server.use(http.get('https://apiz.trakt.tv/search/user', ({ request }) => {
-        seen.push(request);
-        return HttpResponse.json(
-          [
-            user('sean', { vip: true, name: 'Sean' }),
-            user('sean-gone', { deleted: true }),
-            user('sean-private', {
-              private: true,
-            }),
-          ],
-          { headers: { 'X-Pagination-Page': '2', 'X-Pagination-Page-Count': '4', 'X-Pagination-Item-Count': '140' } },
-        );
-      }));
+      server.use(
+        http.get('https://apiz.trakt.tv/search/user', ({ request }) => {
+          seen.push(request);
+          return HttpResponse.json(
+            [
+              user('sean', { vip: true, name: 'Sean' }),
+              user('sean-gone', { deleted: true }),
+              user('sean-private', {
+                private: true,
+              }),
+            ],
+            { headers: { 'X-Pagination-Page': '2', 'X-Pagination-Page-Count': '4', 'X-Pagination-Item-Count': '140' } },
+          );
+        }),
+      );
       const data = await search('/search/users?query=sean&page=2', { type: 'users' });
 
       const url = new URL(seen.at(0)?.url ?? '');
@@ -187,9 +189,8 @@ describe('loadSearch', () => {
 
   it('should reject malformed successful responses at the boundary', async () => {
     server.use(
-      http.get(
-        'https://apiz.trakt.tv/search/:type',
-        () => HttpResponse.json([{ type: 'show', show: { title: 'Bad' } }]),
+      http.get('https://apiz.trakt.tv/search/:type', () =>
+        HttpResponse.json([{ type: 'show', show: { title: 'Bad' } }]),
       ),
     );
     expect(await thrownBy(search('/search?query=bad'))).toBe(502);

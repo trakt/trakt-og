@@ -36,7 +36,7 @@ export const aboutMeBox = defineProfileBox({
   group: 'pinned',
   floor: true,
   component: AboutMeBox,
-  score: ({ profile }) => profile.about ? 100 : null,
+  score: ({ profile }) => (profile.about ? 100 : null),
   view: (input): AboutMeView => {
     const { profile, isSelf } = input;
     if (profile.about) {

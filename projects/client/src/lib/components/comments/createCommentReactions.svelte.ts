@@ -11,7 +11,10 @@ const empty = (): ReactionsSummaryResponse => ({ reaction_count: 0, user_count: 
 const errorSchema = z.object({ message: z.string() });
 
 /** Client-only session state: one viewer read, shared per-comment choices, totals and serialized optimistic writes. */
-export function createCommentReactions({ request, notify }: {
+export function createCommentReactions({
+  request,
+  notify,
+}: {
   request: (path: string, init?: RequestInit) => Promise<Response>;
   notify: (message: string) => void;
 }) {
@@ -40,13 +43,15 @@ export function createCommentReactions({ request, notify }: {
       loading = undefined;
       return Promise.resolve(false);
     }
-    loading = loadCommentReactions(request).then((rows) => {
-      if (current !== generation) return false;
-      choices.clear();
-      for (const [id, type] of rows) choices.set(id, type);
-      loaded = true;
-      return true;
-    }).catch(() => false);
+    loading = loadCommentReactions(request)
+      .then((rows) => {
+        if (current !== generation) return false;
+        choices.clear();
+        for (const [id, type] of rows) choices.set(id, type);
+        loaded = true;
+        return true;
+      })
+      .catch(() => false);
     return loading;
   };
 
@@ -60,11 +65,14 @@ export function createCommentReactions({ request, notify }: {
       return Promise.resolve();
     }
     const current = generation;
-    const task = read(id).then((summary) => {
-      if (current === generation && summary) summaries.set(id, summary);
-    }).catch(() => {}).finally(() => {
-      if (current === generation) summaryRequests.delete(id);
-    });
+    const task = read(id)
+      .then((summary) => {
+        if (current === generation && summary) summaries.set(id, summary);
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (current === generation) summaryRequests.delete(id);
+      });
     summaryRequests.set(id, task);
     return task;
   };
@@ -94,7 +102,12 @@ export function createCommentReactions({ request, notify }: {
     };
   };
 
-  const change = async ({ id, type, likes, read }: {
+  const change = async ({
+    id,
+    type,
+    likes,
+    read,
+  }: {
     id: number;
     type: ReactionType;
     likes: number;
@@ -119,8 +132,8 @@ export function createCommentReactions({ request, notify }: {
         message = body.success
           ? body.data.message
           : response.status === 409
-          ? 'Doh! You are banned from reacting.'
-          : GENERIC_ERROR;
+            ? 'Doh! You are banned from reacting.'
+            : GENERIC_ERROR;
         throw new Error(message);
       }
       // Both writes return no content. Re-read the public summary to reconcile concurrent members' reactions.

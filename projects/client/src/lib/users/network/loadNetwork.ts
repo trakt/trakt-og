@@ -14,14 +14,12 @@ import { positiveInt } from '../../utils/positiveInt.ts';
 
 type Params = {
   fetch: typeof fetch;
-  parent: () => Promise<
-    {
-      profile: ProfileUser;
-      isSelf: boolean;
-      user: { readonly slug: string } | null;
-      settings?: { permissions?: { following?: boolean } } | null;
-    }
-  >;
+  parent: () => Promise<{
+    profile: ProfileUser;
+    isSelf: boolean;
+    user: { readonly slug: string } | null;
+    settings?: { permissions?: { following?: boolean } } | null;
+  }>;
   locals: { token: string | null; viewerLists?: ReturnType<typeof loadViewerLists> };
   params: { id: string; type?: string };
   url: URL;
@@ -35,7 +33,13 @@ const isNetworkType = (value: string): value is NetworkType => Object.hasOwn(net
 type Fetched = { response: Response; type: NetworkType };
 
 /** Following and Followers page on the API. A stale cookie falls back to the public list, never a refresh. */
-async function fetchList({ fetch, token, id, type, page }: {
+async function fetchList({
+  fetch,
+  token,
+  id,
+  type,
+  page,
+}: {
   fetch: typeof globalThis.fetch;
   token: string | null;
   id: string;
@@ -51,8 +55,10 @@ async function fetchList({ fetch, token, id, type, page }: {
 
 /** The viewer's own unapproved follows. API sends the whole list, so og pages it here. */
 function fetchPending({ fetch, token }: { fetch: typeof globalThis.fetch; token: string | null }): Promise<Fetched> {
-  return rawApiFetch({ fetch, token, path: '/users/requests/following?extended=full,vip' })
-    .then((response) => ({ response, type: 'following_pending' as const }));
+  return rawApiFetch({ fetch, token, path: '/users/requests/following?extended=full,vip' }).then((response) => ({
+    response,
+    type: 'following_pending' as const,
+  }));
 }
 
 /** The page window of a list that came back whole. */
@@ -102,12 +108,12 @@ export async function loadNetwork({ fetch, parent, locals, params, url }: Params
 
   const alive = parsed.data.filter((row) => !row.user.deleted).map((row) => ({ row, user: toProfileUser(row.user) }));
   const all = alive.map(({ user }) => user);
-  const { rows: users, page } = type === 'following_pending'
-    ? slicePage(all, current)
-    : { rows: all, page: extractPageMeta(response.headers, current) };
-  const itemCount = type === 'following_pending'
-    ? all.length
-    : positiveInt(response.headers.get('x-pagination-item-count'), 0);
+  const { rows: users, page } =
+    type === 'following_pending'
+      ? slicePage(all, current)
+      : { rows: all, page: extractPageMeta(response.headers, current) };
+  const itemCount =
+    type === 'following_pending' ? all.length : positiveInt(response.headers.get('x-pagination-item-count'), 0);
 
   return {
     type,
@@ -119,10 +125,11 @@ export async function loadNetwork({ fetch, parent, locals, params, url }: Params
     isSelf,
     viewerSlug: viewer?.slug ?? null,
     // Streamed: the cards render first, then their buttons. Only the cards' relations go to the browser.
-    relations: viewer && token
-      ? (locals.viewerLists ?? loadViewerLists({ client: api({ fetch, token }) })).then((lists) =>
-        Object.fromEntries(users.map((user) => [user.slug, toViewerRelation(user.slug, lists)]))
-      )
-      : null,
+    relations:
+      viewer && token
+        ? (locals.viewerLists ?? loadViewerLists({ client: api({ fetch, token }) })).then((lists) =>
+            Object.fromEntries(users.map((user) => [user.slug, toViewerRelation(user.slug, lists)])),
+          )
+        : null,
   };
 }

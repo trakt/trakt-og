@@ -18,7 +18,10 @@ export function startOverlay(manager: UserManager): () => void {
   manager.events.addUserLoaded(follow);
   manager.events.addUserUnloaded(onUnloaded);
   document.addEventListener('visibilitychange', onVisible);
-  manager.getUser().then(follow).catch(() => {});
+  manager
+    .getUser()
+    .then(follow)
+    .catch(() => {});
 
   return () => {
     manager.events.removeUserLoaded(follow);

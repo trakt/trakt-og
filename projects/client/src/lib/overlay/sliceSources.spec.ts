@@ -66,21 +66,19 @@ describe('sliceSources', () => {
 
   it('should map collected movies and shows, reading a numeric 3D flag as a boolean', async () => {
     server.use(
-      http.get(
-        `${API}/sync/collection/movies`,
-        () =>
-          HttpResponse.json([
-            { movie: ids(7), collected_at: '2026-02-01', metadata: { media_type: 'bluray' } },
-            { movie: ids(8), collected_at: '2026-02-02', metadata: { '3d': 1 } },
-          ]),
+      http.get(`${API}/sync/collection/movies`, () =>
+        HttpResponse.json([
+          { movie: ids(7), collected_at: '2026-02-01', metadata: { media_type: 'bluray' } },
+          { movie: ids(8), collected_at: '2026-02-02', metadata: { '3d': 1 } },
+        ]),
       ),
-      http.get(
-        `${API}/sync/collection/shows`,
-        () =>
-          HttpResponse.json([{
+      http.get(`${API}/sync/collection/shows`, () =>
+        HttpResponse.json([
+          {
             show: ids(3),
             seasons: [{ number: 1, episodes: [{ number: 2, collected_at: '2026-03-01' }] }],
-          }]),
+          },
+        ]),
       ),
     );
 
@@ -101,7 +99,8 @@ describe('sliceSources', () => {
         HttpResponse.json([
           { movie: ids(7), collected_at: '2026-02-01', available_on: [{ name: 'plex' }] },
           { movie: ids(8), collected_at: '2026-02-02', available_on: [] },
-        ])),
+        ]),
+      ),
     );
 
     const movies = await sliceSources.collectedMovies.load(get);
@@ -147,7 +146,8 @@ describe('sliceSources', () => {
         HttpResponse.json([
           { type: 'movie', rating: 8, movie: ids(1) },
           { type: 'episode', rating: 3, episode: ids(1) },
-        ])),
+        ]),
+      ),
     );
 
     const data = await sliceSources.ratings.load(get);
@@ -175,17 +175,14 @@ describe('sliceSources', () => {
       http.get(`${API}/sync/watchlist/seasons/rank/asc`, () => HttpResponse.json([{ season: ids(3) }])),
       http.get(`${API}/sync/watchlist/episodes/rank/asc`, () => HttpResponse.json([{ episode: ids(5) }])),
       http.get(`${API}/v3/users/me/watchlist/minimal`, () => HttpResponse.json({ movies: [1], shows: [2] })),
-      http.get(
-        `${API}/users/hidden/dropped`,
-        () => HttpResponse.json([{ type: 'show', show: ids(4), hidden_at: '2026-09-29T12:00:00Z' }]),
+      http.get(`${API}/users/hidden/dropped`, () =>
+        HttpResponse.json([{ type: 'show', show: ids(4), hidden_at: '2026-09-29T12:00:00Z' }]),
       ),
-      http.get(
-        `${API}/sync/favorites`,
-        () => HttpResponse.json([{ type: 'show', show: ids(5), id: 50, listed_at: '2026-09-29T12:00:00Z' }]),
+      http.get(`${API}/sync/favorites`, () =>
+        HttpResponse.json([{ type: 'show', show: ids(5), id: 50, listed_at: '2026-09-29T12:00:00Z' }]),
       ),
-      http.get(
-        `${API}/users/hidden/progress_watched_reset`,
-        () => HttpResponse.json([{ type: 'show', show: ids(6), hidden_at: '2026-09-29T12:00:00Z' }]),
+      http.get(`${API}/users/hidden/progress_watched_reset`, () =>
+        HttpResponse.json([{ type: 'show', show: ids(6), hidden_at: '2026-09-29T12:00:00Z' }]),
       ),
     );
 
@@ -207,13 +204,14 @@ describe('sliceSources', () => {
   it('should collect list membership across every list', async () => {
     server.use(
       http.get(`${API}/v3/users/me/lists`, () => HttpResponse.json([{ id: 10 }, { id: 11 }])),
-      http.get(
-        `${API}/lists/10/items`,
-        () => HttpResponse.json([{ type: 'movie', movie: ids(1), id: 10, listed_at: '2026-09-29T12:00:00Z' }]),
+      http.get(`${API}/lists/10/items`, () =>
+        HttpResponse.json([{ type: 'movie', movie: ids(1), id: 10, listed_at: '2026-09-29T12:00:00Z' }]),
       ),
-      http.get(
-        `${API}/lists/11/items`,
-        () => HttpResponse.json([{ type: 'person', person: ids(2) }, { type: 'show', show: ids(3) }]),
+      http.get(`${API}/lists/11/items`, () =>
+        HttpResponse.json([
+          { type: 'person', person: ids(2) },
+          { type: 'show', show: ids(3) },
+        ]),
       ),
     );
 
@@ -231,15 +229,13 @@ describe('sliceSources', () => {
   });
 
   describe('when a body does not match its schema', () => {
-    it.each(
-      [
-        ['watchedMovies', `${API}/sync/watched/movies`, { '12': 'nope' }],
-        ['watchedShows', `${API}/sync/watched/shows`, [{ show: 1 }]],
-        ['ratings', `${API}/sync/ratings`, [{ type: 'movie', movie: ids(1) }]],
-        ['likedLists', `${API}/users/me/likes/lists`, [{ list: { ids: {} } }]],
-        ['listed', `${API}/v3/users/me/lists`, { id: 10 }],
-      ] as const,
-    )('should throw for %s like a failed request', async (name, url, body) => {
+    it.each([
+      ['watchedMovies', `${API}/sync/watched/movies`, { '12': 'nope' }],
+      ['watchedShows', `${API}/sync/watched/shows`, [{ show: 1 }]],
+      ['ratings', `${API}/sync/ratings`, [{ type: 'movie', movie: ids(1) }]],
+      ['likedLists', `${API}/users/me/likes/lists`, [{ list: { ids: {} } }]],
+      ['listed', `${API}/v3/users/me/lists`, { id: 10 }],
+    ] as const)('should throw for %s like a failed request', async (name, url, body) => {
       server.use(http.get(url, () => HttpResponse.json(body)));
 
       await expect(sliceSources[name].load(get)).rejects.toThrow();

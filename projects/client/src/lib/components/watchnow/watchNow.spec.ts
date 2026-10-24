@@ -123,28 +123,43 @@ describe('toWatchNowSections', () => {
     });
     const terms = (rows: [string, string | null, string | null][]) =>
       toWatchNowSections({ offers: priced(rows), sources, favorites: ['youtube'] }).flatMap(({ links }) =>
-        links.map(({ slug, terms }) => [slug, terms])
+        links.map(({ slug, terms }) => [slug, terms]),
       );
 
     it('should mark the cheapest rent and buy, favorites included', () => {
-      expect(terms([['apple_tv', '4.99', '17.99'], ['amazon_video', '4.99', '9.99'], ['youtube', '3.99', '19.99']]))
-        .toEqual([
-          ['youtube', prices(['Rent', '$3.99', true], ['Buy', '$19.99', false])],
-          ['apple_tv', prices(['Rent', '$4.99', false], ['Buy', '$17.99', false])],
-          ['amazon_video', prices(['Rent', '$4.99', false], ['Buy', '$9.99', true])],
-        ]);
+      expect(
+        terms([
+          ['apple_tv', '4.99', '17.99'],
+          ['amazon_video', '4.99', '9.99'],
+          ['youtube', '3.99', '19.99'],
+        ]),
+      ).toEqual([
+        ['youtube', prices(['Rent', '$3.99', true], ['Buy', '$19.99', false])],
+        ['apple_tv', prices(['Rent', '$4.99', false], ['Buy', '$17.99', false])],
+        ['amazon_video', prices(['Rent', '$4.99', false], ['Buy', '$9.99', true])],
+      ]);
     });
 
     it('should mark nothing when every store charges the same', () => {
       const same = prices(['Rent', '$3.49', false], ['Buy', '$7.99', false]);
-      expect(terms([['apple_tv', '3.49', '7.99'], ['amazon_video', '3.49', '7.99']])).toEqual([
+      expect(
+        terms([
+          ['apple_tv', '3.49', '7.99'],
+          ['amazon_video', '3.49', '7.99'],
+        ]),
+      ).toEqual([
         ['apple_tv', same],
         ['amazon_video', same],
       ]);
     });
 
     it('should show only the prices a store has, or a note with none', () => {
-      expect(terms([['apple_tv', null, '9.99'], ['amazon_video', null, null]])).toEqual([
+      expect(
+        terms([
+          ['apple_tv', null, '9.99'],
+          ['amazon_video', null, null],
+        ]),
+      ).toEqual([
         ['apple_tv', prices(['Buy', '$9.99', false])],
         ['amazon_video', { kind: 'note', title: 'Rent or buy' }],
       ]);
@@ -158,8 +173,9 @@ describe('toWatchNowSections', () => {
 
 describe('helpers', () => {
   it('counts distinct services per country', () => {
-    expect(countryCounts({ us: offers({ free: ['youtube'], purchase: ['youtube', 'apple_tv'] }), gb: offers({}) }))
-      .toEqual({ us: 2, gb: 0 });
+    expect(
+      countryCounts({ us: offers({ free: ['youtube'], purchase: ['youtube', 'apple_tv'] }), gb: offers({}) }),
+    ).toEqual({ us: 2, gb: 0 });
   });
 
   it('keeps favorites for the picked country', () => {
@@ -168,18 +184,23 @@ describe('helpers', () => {
   });
 
   it('maps a country’s sources with https images', () => {
-    const map = toSourceMap([
-      {
-        us: [{
-          source: 'netflix',
-          name: 'Netflix',
-          free: false,
-          cinema: false,
-          color: '#e50914',
-          images: { logo: 'media.trakt.tv/watchnow/sources/netflix.webp', channel: null },
-        }],
-      },
-    ], 'us');
+    const map = toSourceMap(
+      [
+        {
+          us: [
+            {
+              source: 'netflix',
+              name: 'Netflix',
+              free: false,
+              cinema: false,
+              color: '#e50914',
+              images: { logo: 'media.trakt.tv/watchnow/sources/netflix.webp', channel: null },
+            },
+          ],
+        },
+      ],
+      'us',
+    );
     expect(map.get('netflix')).toEqual({
       name: 'Netflix',
       color: '#e50914',

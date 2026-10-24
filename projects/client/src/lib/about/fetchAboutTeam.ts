@@ -8,10 +8,12 @@ type Client = ReturnType<typeof api>;
 async function fetchMember(client: Client, user: AboutUserRow): Promise<AboutMember> {
   const id = user.ids.slug ?? user.username;
   const [favorites, stats] = await Promise.all([
-    client.users.favorites.typedSorted({
-      params: { id, type: 'movie,show', sort_by: 'rank', sort_how: 'asc' },
-      query: { extended: 'full,images', limit: 10 },
-    }).catch(() => null),
+    client.users.favorites
+      .typedSorted({
+        params: { id, type: 'movie,show', sort_by: 'rank', sort_how: 'asc' },
+        query: { extended: 'full,images', limit: 10 },
+      })
+      .catch(() => null),
     client.users.stats({ params: { id } }).catch(() => null),
   ]);
 

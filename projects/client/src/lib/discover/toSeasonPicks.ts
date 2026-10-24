@@ -27,7 +27,9 @@ export function toSeasonPicks({ trending, favorites, now, limit = 20 }: SeasonPi
     { type: 'show' as const, media: trending.show.at(index), source: 'trending' as const },
     { type: 'movie' as const, media: favorites.movie.at(index), source: 'favorite' as const },
     { type: 'show' as const, media: favorites.show.at(index), source: 'favorite' as const },
-  ]).flat().flatMap(({ type, media, source }) => (media ? [{ ...toPosterItem(media, type, now), source }] : []));
+  ])
+    .flat()
+    .flatMap(({ type, media, source }) => (media ? [{ ...toPosterItem(media, type, now), source }] : []));
 
   return uniqueBy(candidates, ({ key }) => key)
     .filter((item) => item.poster)

@@ -53,9 +53,12 @@ export async function loadDashboard({ fetch, panelFetch = fetch, locals, cookies
   // A stale cookie renders logged-out. The browser owns renewal; no isolate refreshes the token.
   if ([profile, stats, watching, requests].some(({ status }) => status === 401) || !layout.user) redirect(302, '/');
   if (
-    profile.status !== 200 || stats.status !== 200 || requests.status !== 200 ||
+    profile.status !== 200 ||
+    stats.status !== 200 ||
+    requests.status !== 200 ||
     ![200, 204].includes(watching.status)
-  ) error(502, 'Trakt is having trouble loading your dashboard.');
+  )
+    error(502, 'Trakt is having trouble loading your dashboard.');
   const parsedProfile = dashboardProfileSchema.safeParse(profile.body);
   const parsedRequests = followRequestsSchema.safeParse(requests.body);
   const parsedStats = userStatsSchema.safeParse(stats.body);
@@ -84,9 +87,8 @@ export async function loadDashboard({ fetch, panelFetch = fetch, locals, cookies
     recaps: welcome
       ? null
       : fetchRecapRibbon({ client: panelClient, slug: user.slug, timeZone: layout.datePreferences.timeZone, now }),
-    upNext: unless(
-      hidden.upNext,
-      () => fetchUpNext({ api: panelClient, username: user.slug, settings: dashboard.upNext, fetch: panelFetch }),
+    upNext: unless(hidden.upNext, () =>
+      fetchUpNext({ api: panelClient, username: user.slug, settings: dashboard.upNext, fetch: panelFetch }),
     ),
     schedule: unless(hidden.schedule, () =>
       fetchSchedule({
@@ -97,10 +99,10 @@ export async function loadDashboard({ fetch, panelFetch = fetch, locals, cookies
         isVip: !!user.vip,
         schedule: dashboard.schedule,
         now,
-      })),
-    watchlist: unless(
-      hidden.watchlist,
-      () => fetchWatchlist({ fetch: panelFetch, token, datePreferences: layout.datePreferences }),
+      }),
+    ),
+    watchlist: unless(hidden.watchlist, () =>
+      fetchWatchlist({ fetch: panelFetch, token, datePreferences: layout.datePreferences }),
     ),
     lastThirtyDays: unless(hidden.lastThirtyDays, () =>
       fetchLastThirtyDays({
@@ -110,10 +112,10 @@ export async function loadDashboard({ fetch, panelFetch = fetch, locals, cookies
         timeZone: layout.datePreferences.timeZone,
         weekStartDay: layout.datePreferences.weekStartDay,
         now,
-      })),
-    recentlyWatched: unless(
-      hidden.recentlyWatched,
-      () => fetchRecentlyWatched({ fetch: panelFetch, token, datePreferences: layout.datePreferences }),
+      }),
+    ),
+    recentlyWatched: unless(hidden.recentlyWatched, () =>
+      fetchRecentlyWatched({ fetch: panelFetch, token, datePreferences: layout.datePreferences }),
     ),
     socialFeed: unless(hidden.socialFeed, () =>
       fetchSocialFeed({
@@ -122,10 +124,10 @@ export async function loadDashboard({ fetch, panelFetch = fetch, locals, cookies
         following,
         now,
         datePreferences: layout.datePreferences,
-      })),
-    recommendations: unless(
-      hidden.recommendations,
-      () => fetchRecommendations({ fetch: panelFetch, token, settings: dashboard.recommendations, now }),
+      }),
+    ),
+    recommendations: unless(hidden.recommendations, () =>
+      fetchRecommendations({ fetch: panelFetch, token, settings: dashboard.recommendations, now }),
     ),
   };
 }

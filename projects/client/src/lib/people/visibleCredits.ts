@@ -11,8 +11,9 @@ export function visibleCredits(credits: readonly PersonCredit[], query: CreditsQ
   // ponytail: OG treated the terms as a regex; a plain substring can't throw on "(" and matches what people type.
   return credits
     .filter(({ type }) => (type === 'movie' ? query.movies : query.shows))
-    .filter(({ title, characters }) =>
-      !terms || title.toLowerCase().includes(terms) || characters.toLowerCase().includes(terms)
+    .filter(
+      ({ title, characters }) =>
+        !terms || title.toLowerCase().includes(terms) || characters.toLowerCase().includes(terms),
     )
     .toSorted((a, b) => {
       const x = a.sortBy[sort.key];

@@ -101,9 +101,9 @@ function toItem(item: CalendarItem, context: Context): ScheduleItem {
     time: airTime(item.at, context.datePreferences),
     network: show.network
       ? {
-        name: show.network,
-        href: context.isVip ? `/shows/popular?networks=${encodeURIComponent(networkSlug(show.network))}` : undefined,
-      }
+          name: show.network,
+          href: context.isVip ? `/shows/popular?networks=${encodeURIComponent(networkSlug(show.network))}` : undefined,
+        }
       : undefined,
     watchNow: watchNow(item, context),
   };

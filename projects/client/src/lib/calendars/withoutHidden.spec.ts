@@ -13,9 +13,9 @@ const episode = (show: number, season: number) =>
 const movie = (id: number) => ({ type: 'movie', at: '2026-09-30', movie: { ids: { trakt: id } } }) as CalendarItem;
 
 const keys = (items: readonly CalendarItem[]) =>
-  items.map((
-    item,
-  ) => (item.type === 'movie' ? `m${item.movie.ids.trakt}` : `${item.show.ids.trakt}s${item.episode.season}`));
+  items.map((item) =>
+    item.type === 'movie' ? `m${item.movie.ids.trakt}` : `${item.show.ids.trakt}s${item.episode.season}`,
+  );
 
 const items = [episode(1, 1), episode(1, 0), episode(2, 3), movie(7), movie(8)];
 

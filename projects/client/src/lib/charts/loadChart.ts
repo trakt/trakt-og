@@ -139,9 +139,16 @@ async function fetchPage(
  * from the worker for data that doesn't depend on it. Recommendations need one, and send a signed-out viewer to
  * sign in.
  */
-export async function loadChart(
-  { fetch, token, cookies, parent, url, type, chart, period: periodParam }: LoadChartParams,
-) {
+export async function loadChart({
+  fetch,
+  token,
+  cookies,
+  parent,
+  url,
+  type,
+  chart,
+  period: periodParam,
+}: LoadChartParams) {
   if (isChartAlias(chart)) {
     redirect(301, `/${type}/${chartAliases[chart]}${periodParam ? `/${periodParam}` : ''}${url.search}`);
   }
@@ -175,9 +182,8 @@ export async function loadChart(
     fetchPage(requests, (part) => fetchRows(api({ fetch }), type, chart, period, { ...query, ...part }));
   // A stale token fails the viewer's request, so the page falls back to the public one and the overlay hides.
   const viewerRows = async (chart: Exclude<ChartName, 'recommendations'>) =>
-    (await fetchPage(
-      requests,
-      (part) => fetchRows(api({ fetch, token }), type, chart, period, { ...query, ...ignore, ...part }),
+    (await fetchPage(requests, (part) =>
+      fetchRows(api({ fetch, token }), type, chart, period, { ...query, ...ignore, ...part }),
     )) ?? publicRows(chart);
 
   // Watch now filters by the viewer's country and favorites, which the API reads from their token.
@@ -187,12 +193,12 @@ export async function loadChart(
   const layout = parent();
   const [fetched, { datePreferences, settings }, filterSources, unfiltered, live] = await Promise.all([
     chart === 'recommendations'
-      ? (token
+      ? token
         ? fetchRecommendations(fetch, token, type, filterQuery).catch(() => 'failed' as const)
-        : signInRedirect(url))
+        : signInRedirect(url)
       : token && viewer
-      ? viewerRows(chart)
-      : publicRows(chart),
+        ? viewerRows(chart)
+        : publicRows(chart),
     layout,
     // The sidebar shows watch-now filters as service tiles, so it needs the country's services.
     filters.watchnow.length > 0
@@ -227,9 +233,10 @@ export async function loadChart(
     /** Recommendations didn't load. The other charts fail the whole page instead. */
     failed,
     cards: response.rows.map((row) => toChartCard(row, { chart, now: new Date(), order: datePreferences.order })),
-    page: limit || !headers.has('x-pagination-item-count')
-      ? extractPageMeta(headers, page)
-      : pageMeta(page, chartPageCount(positiveInt(headers.get('x-pagination-item-count'), 0), size)),
+    page:
+      limit || !headers.has('x-pagination-item-count')
+        ? extractPageMeta(headers, page)
+        : pageMeta(page, chartPageCount(positiveInt(headers.get('x-pagination-item-count'), 0), size)),
     /** The chart's size, for the sidebar's count. Recommendations send no paging, so theirs is 0. */
     itemCount: positiveInt(headers.get('x-pagination-item-count'), 0),
     /** Without filters: what the count is out of. Left out when nothing is filtered or that request failed. */

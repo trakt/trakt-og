@@ -40,13 +40,14 @@ export function toListCard(list: ListSource): ListCard {
   const slug = list.user.ids?.slug ?? list.user.username;
   return {
     id: list.ids.trakt,
-    href: list.type && list.ids.slug
-      ? listPath({
-        type: list.type,
-        ids: { slug: list.ids.slug },
-        user: { username: list.user.username, ids: { slug } },
-      })
-      : `/lists/${list.ids.trakt}`,
+    href:
+      list.type && list.ids.slug
+        ? listPath({
+            type: list.type,
+            ids: { slug: list.ids.slug },
+            user: { username: list.user.username, ids: { slug } },
+          })
+        : `/lists/${list.ids.trakt}`,
     name: list.name,
     owner: {
       slug,

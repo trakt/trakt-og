@@ -11,9 +11,9 @@ describe('toEpisodeLinks', () => {
       { label: 'TMDB', href: 'https://www.themoviedb.org/tv/1396/season/1/episode/2' },
       {
         label: 'Wikipedia',
-        href: `https://duckduckgo.com/?q=${
-          encodeURIComponent("!wikipedia Breaking Bad 2008 TV Series Cat's in the Bag...")
-        }`,
+        href: `https://duckduckgo.com/?q=${encodeURIComponent(
+          "!wikipedia Breaking Bad 2008 TV Series Cat's in the Bag...",
+        )}`,
       },
     ]);
   });

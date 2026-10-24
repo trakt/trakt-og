@@ -17,7 +17,8 @@ const server = setupServer(
         vip_ep: true,
       },
       { username: 'sean', name: null, ids: { slug: null } },
-    ])),
+    ]),
+  ),
 );
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 afterEach(() => server.resetHandlers());

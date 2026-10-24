@@ -39,9 +39,13 @@ const USERS_LIMIT = 10;
 const toRows = (
   hits: ReadonlyArray<SearchResultResponse>,
   { dates, today }: Pick<SearchAutocompleteParams, 'dates' | 'today'>,
-) => hits.map((hit) => toSearchRow(hit, dates, today)).filter((row) => row !== null).slice(0, SHOWN);
+) =>
+  hits
+    .map((hit) => toSearchRow(hit, dates, today))
+    .filter((row) => row !== null)
+    .slice(0, SHOWN);
 
-const toCount = (count: number) => count >= COUNT_LIMIT ? `${COUNT_LIMIT}+` : count.toLocaleString('en-US');
+const toCount = (count: number) => (count >= COUNT_LIMIT ? `${COUNT_LIMIT}+` : count.toLocaleString('en-US'));
 
 const none: SearchAutocompleteResult = { rows: [], count: null };
 
@@ -64,9 +68,14 @@ async function searchUsers({ query, fetch, signal }: Pick<SearchAutocompletePara
 }
 
 /** The header dropdown's results for one type and query. */
-export async function searchAutocomplete(
-  { type, query, dates, today, fetch, signal }: SearchAutocompleteParams,
-): Promise<SearchAutocompleteResult> {
+export async function searchAutocomplete({
+  type,
+  query,
+  dates,
+  today,
+  fetch,
+  signal,
+}: SearchAutocompleteParams): Promise<SearchAutocompleteResult> {
   const client = api({ fetch });
   const fetchOptions = { signal };
 

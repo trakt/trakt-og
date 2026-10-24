@@ -23,7 +23,14 @@ type Params = {
   parent: () => Promise<{ profile: ProfileUser; isSelf: boolean; datePreferences: DatePreferences }>;
 };
 
-async function read({ fetch, id, token, query, current, limit }: {
+async function read({
+  fetch,
+  id,
+  token,
+  query,
+  current,
+  limit,
+}: {
   fetch: typeof globalThis.fetch;
   id: string;
   token: string | null;
@@ -74,7 +81,10 @@ export async function loadRatings({ fetch, locals, params, url, cookies, parent 
   const current = positiveInt(url.searchParams.get('page'), 1);
   const limit = Math.min(positiveInt(url.searchParams.get('limit'), 60), 250);
   const request = { id: params.id, query, current, limit };
-  const { frame: { isSelf, datePreferences }, result } = await readProfileTab({
+  const {
+    frame: { isSelf, datePreferences },
+    result,
+  } = await readProfileTab({
     fetch,
     token: locals.token,
     frame: parent(),
@@ -101,17 +111,17 @@ export async function loadRatings({ fetch, locals, params, url, cookies, parent 
     : positiveInt(result.headers.get('x-pagination-item-count'), parsed.data.length);
   const headers = localSort
     ? new Headers({
-      'x-pagination-page': String(current),
-      'x-pagination-page-count': String(Math.max(1, Math.ceil(total / limit))),
-    })
+        'x-pagination-page': String(current),
+        'x-pagination-page-count': String(Math.max(1, Math.ceil(total / limit))),
+      })
     : result.headers;
   const page = extractPageMeta(headers, current);
   const pageNumber = page.current;
   const rows = localSort
     ? sortRatings(parsed.data, query).slice((pageNumber - 1) * limit, pageNumber * limit)
     : parsed.data;
-  const cards = rows.map((row) => toRatingCard(row, { ...query, datePreferences })).filter((card): card is RatingCard =>
-    card !== null
-  );
+  const cards = rows
+    .map((row) => toRatingCard(row, { ...query, datePreferences }))
+    .filter((card): card is RatingCard => card !== null);
   return { ...shell, cards, days: query.by === 'added' ? toHistoryDays(cards, datePreferences) : [], total, page };
 }

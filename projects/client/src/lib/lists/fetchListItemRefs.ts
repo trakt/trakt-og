@@ -29,7 +29,12 @@ const traktId = (row: ListItemRow) => {
  * Every item matching the page's filters, in a sort, read page by page in the browser: OG's `list_all_item_ids` and
  * `list_filtered_item_ids`. Throws when a page fails or the list is too long to read whole.
  */
-export async function fetchListItemRefs({ fetch, base, query, sort }: {
+export async function fetchListItemRefs({
+  fetch,
+  base,
+  query,
+  sort,
+}: {
   /** `authenticatedFetch`: a private list only reads with the viewer's token. */
   fetch: typeof globalThis.fetch;
   base: string;

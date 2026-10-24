@@ -50,7 +50,7 @@ export function commentsClient(client: Api, fetch: typeof globalThis.fetch = glo
     const meta = extractPageMeta(response.headers, page);
     const more = meta.type === 'paginated' && meta.current < meta.total && page < MAX_REPLY_PAGES;
     if (!more) return response.body;
-    return [...response.body, ...await repliesFrom(id, page + 1).catch(() => [])];
+    return [...response.body, ...(await repliesFrom(id, page + 1).catch(() => []))];
   };
 
   return {

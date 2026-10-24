@@ -26,8 +26,9 @@ export function withoutFilterTag(filters: AdvancedFilters, id: string): Advanced
   // With nothing kept, a list that only leaves values out is OG's "none".
   return {
     ...filters,
-    [key]: values.length === 0 && excluded.length > 0
-      ? { values: excluded, mode: 'none' }
-      : { values, mode: values.length === 0 ? 'any' : list.mode, ...(excluded.length > 0 && { excluded }) },
+    [key]:
+      values.length === 0 && excluded.length > 0
+        ? { values: excluded, mode: 'none' }
+        : { values, mode: values.length === 0 ? 'any' : list.mode, ...(excluded.length > 0 && { excluded }) },
   };
 }

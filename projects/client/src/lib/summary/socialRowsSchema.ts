@@ -14,11 +14,15 @@ const user = z.object({
  * `/movies/:id/social` and `/shows/:id/social` (native, no `@trakt/api` contract): the followed members who watched or
  * watchlisted the item. The rating only comes inside `watched`.
  */
-export const socialRowsSchema = z.array(z.object({
-  user,
-  watched: z.object({
-    plays: z.number(),
-    minutes_watched: z.number().nullish(),
-    rating: z.object({ rating: z.number() }).nullish(),
-  }).nullish(),
-}));
+export const socialRowsSchema = z.array(
+  z.object({
+    user,
+    watched: z
+      .object({
+        plays: z.number(),
+        minutes_watched: z.number().nullish(),
+        rating: z.object({ rating: z.number() }).nullish(),
+      })
+      .nullish(),
+  }),
+);

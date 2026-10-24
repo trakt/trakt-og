@@ -45,7 +45,10 @@ const rows = [
         type: 'subgenre',
         stars: null,
         show: media(5, 'Dark', '2017-12-01T00:00:00.000Z'),
-        subgenres: [{ id: 1, name: 'Mind-bender', slug: 'mind-bender' }, { id: 2, name: 'Mystery box', slug: 'mb' }],
+        subgenres: [
+          { id: 1, name: 'Mind-bender', slug: 'mind-bender' },
+          { id: 2, name: 'Mystery box', slug: 'mb' },
+        ],
       },
       {
         id: 13,

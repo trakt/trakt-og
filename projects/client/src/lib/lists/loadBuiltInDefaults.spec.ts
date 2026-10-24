@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { loadBuiltInDefaults } from './loadBuiltInDefaults.ts';
 
-const answer = (headers: Record<string, string>, status = 200) => () =>
-  Promise.resolve(new Response(JSON.stringify([]), { status, headers }));
+const answer =
+  (headers: Record<string, string>, status = 200) =>
+  () =>
+    Promise.resolve(new Response(JSON.stringify([]), { status, headers }));
 
 describe('loadBuiltInDefaults', () => {
   it("should read the owner's default sort from the headers", async () => {

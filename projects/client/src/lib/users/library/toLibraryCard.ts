@@ -38,7 +38,12 @@ const votes = (count: number | null | undefined) => countLabel(count ?? 0, 'vote
 /** The sorted line OG put under the title. */
 function sortLine(
   sortBy: LibrarySortBy,
-  { collectedAt, released, runtime, count }: {
+  {
+    collectedAt,
+    released,
+    runtime,
+    count,
+  }: {
     collectedAt: string;
     released?: string;
     runtime?: number | null;
@@ -71,13 +76,17 @@ export function toLibraryCard(row: LibraryRow, { sortBy, screenshots, owner, dat
   };
   if ('movie' in row) {
     const { movie } = row;
-    const line = sortLine(sortBy, {
-      collectedAt: row.collected_at,
-      // A bare date, so it's formatted in UTC to keep the day.
-      released: movie.released ? formatDate(movie.released, { ...datePreferences, timeZone: 'UTC' }) : undefined,
-      runtime: movie.runtime,
-      count: movie.votes,
-    }, datePreferences);
+    const line = sortLine(
+      sortBy,
+      {
+        collectedAt: row.collected_at,
+        // A bare date, so it's formatted in UTC to keep the day.
+        released: movie.released ? formatDate(movie.released, { ...datePreferences, timeZone: 'UTC' }) : undefined,
+        runtime: movie.runtime,
+        count: movie.votes,
+      },
+      datePreferences,
+    );
     return {
       ...common,
       key: movie.ids.trakt,
@@ -94,11 +103,15 @@ export function toLibraryCard(row: LibraryRow, { sortBy, screenshots, owner, dat
   }
 
   const { episode, show } = row;
-  const line = sortLine(sortBy, {
-    collectedAt: row.collected_at,
-    released: episode.first_aired ? formatDate(episode.first_aired, { ...datePreferences, time: true }) : undefined,
-    count: episode.votes,
-  }, datePreferences);
+  const line = sortLine(
+    sortBy,
+    {
+      collectedAt: row.collected_at,
+      released: episode.first_aired ? formatDate(episode.first_aired, { ...datePreferences, time: true }) : undefined,
+      count: episode.votes,
+    },
+    datePreferences,
+  );
   return {
     ...common,
     key: episode.ids.trakt,
@@ -113,10 +126,7 @@ export function toLibraryCard(row: LibraryRow, { sortBy, screenshots, owner, dat
     rating: episode.rating ?? undefined,
     episodeBadge: episodeBadge(episode),
     runtime: episode.runtime ?? show.runtime ?? 0,
-    subtitles: [
-      ...(screenshots ? [{ text: show.title, href: showHref(show.ids.slug) }] : []),
-      ...(line ? [line] : []),
-    ],
+    subtitles: [...(screenshots ? [{ text: show.title, href: showHref(show.ids.slug) }] : []), ...(line ? [line] : [])],
   };
 }
 

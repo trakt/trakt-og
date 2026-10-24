@@ -11,10 +11,14 @@ afterAll(() => server.close());
 describe('fetchWatchNowArt', () => {
   it("should load a season's or episode's art from its show", async () => {
     let requested = '';
-    server.use(http.get('https://apiz.trakt.tv/shows/:id', ({ request }) => {
-      requested = new URL(request.url).pathname;
-      return HttpResponse.json({ images: { fanart: ['walter-r2.trakt.tv/images/shows/000/001/fanarts/thumb/a.jpg'] } });
-    }));
+    server.use(
+      http.get('https://apiz.trakt.tv/shows/:id', ({ request }) => {
+        requested = new URL(request.url).pathname;
+        return HttpResponse.json({
+          images: { fanart: ['walter-r2.trakt.tv/images/shows/000/001/fanarts/thumb/a.jpg'] },
+        });
+      }),
+    );
     const art = await fetchWatchNowArt('/shows/1388/seasons/1/episodes/1');
     expect(requested).toBe('/shows/1388');
     expect(art).toBe('https://walter-r2.trakt.tv/images/shows/000/001/fanarts/medium/a.jpg');

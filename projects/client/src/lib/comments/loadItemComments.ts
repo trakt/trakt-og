@@ -17,7 +17,13 @@ type Params = Omit<Parameters<typeof loadSubpageMedia>[0], 'suffix'> & {
 // OG's `@per`.
 const LIMIT = 100;
 
-async function readComments({ fetch, item, sort, page, language }: {
+async function readComments({
+  fetch,
+  item,
+  sort,
+  page,
+  language,
+}: {
   fetch: typeof globalThis.fetch;
   item: SubpageItem;
   sort: ItemCommentSort;
@@ -29,16 +35,20 @@ async function readComments({ fetch, item, sort, page, language }: {
     params: { id: item.id, sort: sort.api },
     query: { extended: 'images', page, limit: LIMIT, ...(language && { language }) },
   } as const;
-  const response = item.type === 'movie'
-    ? await client.movies.comments(request)
-    : item.type === 'show'
-    ? await client.shows.comments(request)
-    : item.type === 'season'
-    ? await client.shows.season.comments({ ...request, params: { ...request.params, season: Number(item.season) } })
-    : await client.shows.episode.comments({
-      ...request,
-      params: { ...request.params, season: Number(item.season), episode: Number(item.episode) },
-    });
+  const response =
+    item.type === 'movie'
+      ? await client.movies.comments(request)
+      : item.type === 'show'
+        ? await client.shows.comments(request)
+        : item.type === 'season'
+          ? await client.shows.season.comments({
+              ...request,
+              params: { ...request.params, season: Number(item.season) },
+            })
+          : await client.shows.episode.comments({
+              ...request,
+              params: { ...request.params, season: Number(item.season), episode: Number(item.episode) },
+            });
   // The item's own 404 comes from the summary read.
   if (response.status === 404) return { comments: [] as readonly CommentResponse[], count: 0, page: null };
   if (response.status !== 200) error(502, 'The Trakt API could not load the comments.');

@@ -24,8 +24,9 @@ describe('pageWindow', () => {
 
 describe('pageHref', () => {
   it('should set the page and keep the other params', () => {
-    expect(pageHref(new URL('https://og.trakt.tv/users/sean/history?genres=drama'), 3))
-      .toBe('/users/sean/history?genres=drama&page=3');
+    expect(pageHref(new URL('https://og.trakt.tv/users/sean/history?genres=drama'), 3)).toBe(
+      '/users/sean/history?genres=drama&page=3',
+    );
   });
 
   it('should replace an existing page', () => {

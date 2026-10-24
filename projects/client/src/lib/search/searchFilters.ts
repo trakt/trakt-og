@@ -15,7 +15,9 @@ export function searchFilters({ slug, search, cookies }: SearchFiltersParams) {
   const hideOptions = ['shows', 'movies', 'episodes'].includes(slug) ? options : [];
   // The API calls it watchlist; the shared eye menu and cookie call it watchlisted.
   const hide = (search.get('hide') ?? cookies.get('filter-hide-search') ?? '')
-    .split(',').map((id) => id === 'watchlist' ? 'watchlisted' : id).join(',');
+    .split(',')
+    .map((id) => (id === 'watchlist' ? 'watchlisted' : id))
+    .join(',');
   const fadeHide: FadeHide = {
     fade: parseFadeHide(cookies.get('filter-fade-search')).filter((id) => options.some((option) => option.id === id)),
     hide: parseFadeHide(hide).filter((id) => hideOptions.some((option) => option.id === id)),

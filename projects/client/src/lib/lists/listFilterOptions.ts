@@ -1,6 +1,9 @@
 import { fadeHideOptions } from '../components/filters/fadeHide.ts';
 
-const notes = [{ id: 'notes', label: 'Notes' }, { id: 'nonotes', label: 'No Notes' }] as const;
+const notes = [
+  { id: 'notes', label: 'Notes' },
+  { id: 'nonotes', label: 'No Notes' },
+] as const;
 const release = [
   { id: 'released', label: 'Released' },
   { id: 'unreleased', label: 'Not Released' },
@@ -10,13 +13,17 @@ const release = [
 ] as const;
 
 /** ListShowable's eye menu: partial show state, list notes, release and airing state, and owner exclusions. */
-export function listFilterOptions({ kind, types, isSelf }: {
+export function listFilterOptions({
+  kind,
+  types,
+  isSelf,
+}: {
   kind: string;
   types: readonly string[];
   isSelf: boolean;
 }) {
-  const partial = kind !== 'official' &&
-    (types.length === 0 || types.some((type) => ['show', 'season'].includes(type)));
+  const partial =
+    kind !== 'official' && (types.length === 0 || types.some((type) => ['show', 'season'].includes(type)));
   const state = fadeHideOptions.filter((option) => {
     if ('showsOnly' in option && !partial) return false;
     if (isSelf && kind === 'watchlist' && ['watchlisted', 'unwatchlisted'].includes(option.id)) return false;

@@ -57,20 +57,23 @@ const offsets: Readonly<Record<string, number>> = { yesterday: -1, two_days_ago:
 const distance = (a: string, b: string) => Math.round((toDate(b).getTime() - toDate(a).getTime()) / 86_400_000);
 
 /** Settings affect default weeks and every month; explicit weekly dates keep their own start. */
-export function calendarWindow(
-  { start, today, period = 'week', layout = 'list', startDay = 'today' }:
-    & { start?: string; today: string }
-    & Preferences,
-): CalendarWindow {
+export function calendarWindow({
+  start,
+  today,
+  period = 'week',
+  layout = 'list',
+  startDay = 'today',
+}: { start?: string; today: string } & Preferences): CalendarWindow {
   const requested = startDate(start, today);
   const weekday = weekdays.indexOf(startDay);
-  const first = period === 'month'
-    ? `${requested.slice(0, 7)}-01`
-    : !start && weekday >= 0
-    ? addDays(requested, -((toDate(requested).getUTCDay() - weekday + 7) % 7))
-    : !start
-    ? addDays(requested, offsets[startDay] ?? 0)
-    : requested;
+  const first =
+    period === 'month'
+      ? `${requested.slice(0, 7)}-01`
+      : !start && weekday >= 0
+        ? addDays(requested, -((toDate(requested).getUTCDay() - weekday + 7) % 7))
+        : !start
+          ? addDays(requested, offsets[startDay] ?? 0)
+          : requested;
   const last = period === 'month' ? addDays(addMonths(first, 1), -1) : addDays(first, DAYS - 1);
   const padded = period === 'month' && layout === 'grid' && weekday >= 0;
   const displayStart = padded ? addDays(first, -((toDate(first).getUTCDay() - weekday + 7) % 7)) : first;

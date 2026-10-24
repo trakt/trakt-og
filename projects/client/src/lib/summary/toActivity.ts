@@ -45,29 +45,29 @@ type TabText = readonly [string, string];
 
 export type ActivityTab =
   | {
-    readonly id: 'watching';
-    /** Everyone watching right now. */
-    readonly number: string;
-    readonly text: TabText;
-    /** Watching now and followed by the viewer, private profiles too: following one means they let you in. */
-    readonly followed: readonly ActivityUser[];
-    /** What the followed members are watching, for the ones whose `/users/:id/watching` answered. */
-    readonly live: readonly LiveWatch[];
-    /** Everyone else watching now. */
-    readonly others: readonly ActivityUser[];
-  }
+      readonly id: 'watching';
+      /** Everyone watching right now. */
+      readonly number: string;
+      readonly text: TabText;
+      /** Watching now and followed by the viewer, private profiles too: following one means they let you in. */
+      readonly followed: readonly ActivityUser[];
+      /** What the followed members are watching, for the ones whose `/users/:id/watching` answered. */
+      readonly live: readonly LiveWatch[];
+      /** Everyone else watching now. */
+      readonly others: readonly ActivityUser[];
+    }
   | {
-    readonly id: 'watched' | 'rated';
-    /** A count, or the average rating's percentage (no sign) for "Rated by". */
-    readonly number: string;
-    readonly text: TabText;
-    /** "Rated by" only: the average's rating level, 1 to 10, which colours the heart before the percentage. */
-    readonly heart?: number;
-    /** Every stop on the line, the empty ones too. */
-    readonly sections: readonly ActivitySection[];
-    /** "Rated by" only: the profile's ratings chart over the followed members' ratings. */
-    readonly chart?: NonNullable<ProfileRatings['chart']>;
-  };
+      readonly id: 'watched' | 'rated';
+      /** A count, or the average rating's percentage (no sign) for "Rated by". */
+      readonly number: string;
+      readonly text: TabText;
+      /** "Rated by" only: the average's rating level, 1 to 10, which colours the heart before the percentage. */
+      readonly heart?: number;
+      /** Every stop on the line, the empty ones too. */
+      readonly sections: readonly ActivitySection[];
+      /** "Rated by" only: the profile's ratings chart over the followed members' ratings. */
+      readonly chart?: NonNullable<ProfileRatings['chart']>;
+    };
 
 type ToActivityParams = {
   /** `/:type/:id/watching`: everyone watching right now. */
@@ -180,9 +180,14 @@ function ratingsChart(sections: readonly ActivitySection[]) {
  * on every title of its kind. Tabs without anyone are left out, and no tabs at all
  * means no section. `cut:` In Library, since `/social` has no collections.
  */
-export function toActivity(
-  { watching, social, following, live, show, item }: ToActivityParams,
-): readonly ActivityTab[] {
+export function toActivity({
+  watching,
+  social,
+  following,
+  live,
+  show,
+  item,
+}: ToActivityParams): readonly ActivityTab[] {
   const watchers = (social ?? [])
     .filter((row) => row.watched)
     .toSorted((a, b) => (b.watched?.plays ?? 0) - (a.watched?.plays ?? 0));
@@ -238,22 +243,22 @@ export function toActivity(
     watchingTab({ watching, following, live }),
     watchers.length > 0
       ? {
-        id: 'watched',
-        number: count(watchers.length),
-        text: [people(watchers.length), 'Watched'],
-        sections: watchedSections,
-      }
+          id: 'watched',
+          number: count(watchers.length),
+          text: [people(watchers.length), 'Watched'],
+          sections: watchedSections,
+        }
       : null,
     raters.length > 0
       ? {
-        id: 'rated',
-        // API's percentage truncates: 7.99 is 79%.
-        number: String(ratingPercent(average)),
-        text: ['Rated by', `${count(raters.length)} ${people(raters.length)}`],
-        heart: Math.min(Math.max(Math.trunc(average), 1), 10),
-        sections: ratingSections,
-        chart: ratingsChart(ratingSections),
-      }
+          id: 'rated',
+          // API's percentage truncates: 7.99 is 79%.
+          number: String(ratingPercent(average)),
+          text: ['Rated by', `${count(raters.length)} ${people(raters.length)}`],
+          heart: Math.min(Math.max(Math.trunc(average), 1), 10),
+          sections: ratingSections,
+          chart: ratingsChart(ratingSections),
+        }
       : null,
   ];
   return tabs.filter((tab) => tab !== null);

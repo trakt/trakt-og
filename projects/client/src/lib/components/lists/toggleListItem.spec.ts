@@ -23,11 +23,13 @@ describe('toggleListItem', () => {
     'should add a %s to watchlist and update unknown overlay state before the response',
     async (type) => {
       const params = setup();
-      server.use(http.post('https://apiz.trakt.tv/sync/watchlist', async ({ request }) => {
-        expect(params.overlay.state(type, 1).watchlisted).toBe(true);
-        expect(await request.json()).toEqual({ [`${type}s`]: [{ ids: { trakt: 1 } }] });
-        return HttpResponse.json({ added: { [type]: 1 } }, { status: 201 });
-      }));
+      server.use(
+        http.post('https://apiz.trakt.tv/sync/watchlist', async ({ request }) => {
+          expect(params.overlay.state(type, 1).watchlisted).toBe(true);
+          expect(await request.json()).toEqual({ [`${type}s`]: [{ ids: { trakt: 1 } }] });
+          return HttpResponse.json({ added: { [type]: 1 } }, { status: 201 });
+        }),
+      );
       expect(await toggleListItem({ ...params, target: { ...params.target, type }, list: null, remove: false })).toBe(
         true,
       );
@@ -36,10 +38,12 @@ describe('toggleListItem', () => {
   );
   it('should write collaborative list items through their owner and preserve membership in another list', async () => {
     const params = setup();
-    server.use(http.post('https://apiz.trakt.tv/users/friend/lists/12/items/remove', () => {
-      expect(params.overlay.state('season', 1).listed).toBe(true);
-      return HttpResponse.json({ deleted: { seasons: 1 } });
-    }));
+    server.use(
+      http.post('https://apiz.trakt.tv/users/friend/lists/12/items/remove', () => {
+        expect(params.overlay.state('season', 1).listed).toBe(true);
+        return HttpResponse.json({ deleted: { seasons: 1 } });
+      }),
+    );
     expect(
       await toggleListItem({
         ...params,
@@ -68,9 +72,8 @@ describe('toggleListItem', () => {
   it('should remove an item from the final personal list', async () => {
     const params = setup();
     server.use(
-      http.post(
-        'https://apiz.trakt.tv/users/me/lists/2/items/remove',
-        () => HttpResponse.json({ deleted: { movies: 1 } }),
+      http.post('https://apiz.trakt.tv/users/me/lists/2/items/remove', () =>
+        HttpResponse.json({ deleted: { movies: 1 } }),
       ),
     );
     expect(await toggleListItem({ ...params, list: { id: 2, owner: 'me' }, remove: true })).toBe(true);

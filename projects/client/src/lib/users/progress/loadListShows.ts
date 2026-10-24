@@ -10,7 +10,11 @@ const MAX_PAGES = 20;
  * Every show on a list, with its summary, for `?list=` progress: OG listed every one of them, started or not. Read page
  * by page in the browser; throws when a page fails or the list is too long to read whole.
  */
-export async function loadListShows({ fetch, list, now = Date.now }: {
+export async function loadListShows({
+  fetch,
+  list,
+  now = Date.now,
+}: {
   /** `authenticatedFetch`: a private list only reads with the viewer's token. */
   fetch: typeof globalThis.fetch;
   list: number;

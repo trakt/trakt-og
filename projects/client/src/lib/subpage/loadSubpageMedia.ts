@@ -137,12 +137,12 @@ export async function loadSubpageMedia({ fetch, parent, item, suffix, neighbours
   const target = subpageWatchNowPath(read.body);
   const watchNow = target
     ? await loadWatchNow({
-      fetch,
-      ...target,
-      country: watchNowCountry(settings),
-      settings,
-      isVip: user?.isVip ?? false,
-    })
+        fetch,
+        ...target,
+        country: watchNowCountry(settings),
+        settings,
+        isVip: user?.isVip ?? false,
+      })
     : null;
   const collection = 'collection' in read ? read.collection : undefined;
   const media = toSubpageMedia({ body: read.body, justwatch: watchNow?.rank?.link, collection });
@@ -152,12 +152,12 @@ export async function loadSubpageMedia({ fetch, parent, item, suffix, neighbours
   const sibling = (link: Link | undefined) => link && { ...link, href: `${link.href}/${suffix}` };
   const strip = reads
     ? toSubpageStrip({
-      media,
-      reads,
-      rank: watchNow?.rank ?? null,
-      otherSiteRatings: settings?.browsing?.other_site_ratings ?? true,
-      now: new Date(),
-    })
+        media,
+        reads,
+        rank: watchNow?.rank ?? null,
+        otherSiteRatings: settings?.browsing?.other_site_ratings ?? true,
+        now: new Date(),
+      })
     : undefined;
   return {
     /** The public ratings and counts behind the strip, for the stats page; null when they didn't load. */

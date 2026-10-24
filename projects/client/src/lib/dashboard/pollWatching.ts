@@ -12,16 +12,21 @@ type PollWatchingParams<T> = {
  * stops asking; showing it again asks at once and starts the clock over. Returns the stop function, after which a
  * late answer is dropped. A failed load keeps what was there.
  */
-export function pollWatching<T>(
-  { load, onupdate, page = document, intervalMs = 120_000 }: PollWatchingParams<T>,
-): () => void {
+export function pollWatching<T>({
+  load,
+  onupdate,
+  page = document,
+  intervalMs = 120_000,
+}: PollWatchingParams<T>): () => void {
   let timer: ReturnType<typeof setInterval> | undefined;
   let stopped = false;
 
   const ask = () => {
-    load().then((value) => {
-      if (!stopped) onupdate(value);
-    }).catch(() => {});
+    load()
+      .then((value) => {
+        if (!stopped) onupdate(value);
+      })
+      .catch(() => {});
   };
 
   const sync = () => {

@@ -18,14 +18,16 @@ const season = z.object({
  * Also parses typed responses so API responses and the season's extra full/image fields cross a validated boundary.
  * Deleted media are null; the mapper skips those cards as OG did.
  */
-export const ratingRowsSchema = z.array(z.discriminatedUnion('type', [
-  z.object({ ...rated, type: z.literal('movie'), movie: movie.extend(fields).nullish() }),
-  z.object({ ...rated, type: z.literal('show'), show: show.extend(fields).nullish() }),
-  z.object({ ...rated, type: z.literal('season'), season: season.nullish(), show: show.extend(fields).nullish() }),
-  z.object({
-    ...rated,
-    type: z.literal('episode'),
-    episode: episode.extend(fields).nullish(),
-    show: show.extend(fields).nullish(),
-  }),
-]));
+export const ratingRowsSchema = z.array(
+  z.discriminatedUnion('type', [
+    z.object({ ...rated, type: z.literal('movie'), movie: movie.extend(fields).nullish() }),
+    z.object({ ...rated, type: z.literal('show'), show: show.extend(fields).nullish() }),
+    z.object({ ...rated, type: z.literal('season'), season: season.nullish(), show: show.extend(fields).nullish() }),
+    z.object({
+      ...rated,
+      type: z.literal('episode'),
+      episode: episode.extend(fields).nullish(),
+      show: show.extend(fields).nullish(),
+    }),
+  ]),
+);

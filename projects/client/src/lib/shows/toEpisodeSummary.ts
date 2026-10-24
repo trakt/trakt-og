@@ -87,10 +87,10 @@ export function toEpisodeSummary(params: Params) {
     aired,
     rating: aired
       ? {
-        value: ratings.rating ?? episode.rating ?? 0,
-        votes: ratings.votes ?? episode.votes ?? 0,
-        href: `${href}/stats`,
-      }
+          value: ratings.rating ?? episode.rating ?? 0,
+          votes: ratings.votes ?? episode.votes ?? 0,
+          href: `${href}/stats`,
+        }
       : undefined,
     external: params.otherSiteRatings && aired ? toExternalRatings({ ratings, rank: null }) : [],
     commentCount: stats.comments,
@@ -98,19 +98,20 @@ export function toEpisodeSummary(params: Params) {
     facts: {
       aired: episode.first_aired
         ? {
-          label: new Date(episode.first_aired) > now ? 'Airs' : 'Aired',
-          date: formatDate(episode.first_aired, { ...params.datePreferences, format: 'LL', time: true }),
-        }
+            label: new Date(episode.first_aired) > now ? 'Airs' : 'Aired',
+            date: formatDate(episode.first_aired, { ...params.datePreferences, format: 'LL', time: true }),
+          }
         : undefined,
       network: show.network ? { name: show.network, href: popular('networks', networkSlug(show.network)) } : undefined,
-      runtime: episode.runtime ?? show.runtime ? formatRuntime(episode.runtime ?? show.runtime ?? 0) : undefined,
+      runtime: (episode.runtime ?? show.runtime) ? formatRuntime(episode.runtime ?? show.runtime ?? 0) : undefined,
       ...toCrewNames(params.people),
       country: show.country ? { name: countryName(show.country), href: popular('countries', show.country) } : undefined,
       languages: (show.languages ?? []).map((code) => ({ name: languageName(code), href: popular('languages', code) })),
       genres: (show.genres ?? []).map((genre) => ({ name: genreLabel(genre), href: popular('genres', genre) })),
-      originalTitle: episode.original_title && episode.original_title.toLowerCase() !== title.toLowerCase()
-        ? episode.original_title
-        : undefined,
+      originalTitle:
+        episode.original_title && episode.original_title.toLowerCase() !== title.toLowerCase()
+          ? episode.original_title
+          : undefined,
     },
     postCredits: {
       duringCredits: episode.during_credits,
@@ -120,7 +121,8 @@ export function toEpisodeSummary(params: Params) {
     guestStars: toCastMembers(params.people.cast, false),
     crew: toCrewGroups(params.people.crew, false),
     episodeLinks: (params.seasons.find(({ number }) => number === episode.season)?.episodes ?? [])
-      .toSorted((a, b) => a.number - b.number).map((item) => ({
+      .toSorted((a, b) => a.number - b.number)
+      .map((item) => ({
         text: `${item.number}`,
         href: `${seasonHref}/episodes/${item.number}`,
         selected: item.number === episode.number,

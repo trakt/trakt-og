@@ -10,15 +10,14 @@ describe('toFollowRequest', () => {
       user: { username: 'toby', name: 'Toby Gerlach', private: false, ids: { slug: 'toby-gerlach' } },
     };
     const datePreferences = { timeZone: 'America/Los_Angeles', order: 'dmy', hour24: true, weekStartDay: 1 } as const;
-    expect(toFollowRequest(row, { datePreferences, now: new Date('2026-10-05T12:00:00Z') }))
-      .toMatchObject({
-        id: 4,
-        slug: 'toby-gerlach',
-        name: 'Toby Gerlach',
-        requestedAt: '29 Sep 2026 17:15',
-        requestedIso: '2026-09-30T00:15:00Z',
-        requestedAgo: '5 days ago',
-      });
+    expect(toFollowRequest(row, { datePreferences, now: new Date('2026-10-05T12:00:00Z') })).toMatchObject({
+      id: 4,
+      slug: 'toby-gerlach',
+      name: 'Toby Gerlach',
+      requestedAt: '29 Sep 2026 17:15',
+      requestedIso: '2026-09-30T00:15:00Z',
+      requestedAgo: '5 days ago',
+    });
   });
 
   it('should reject malformed proxied rows before their dates or profiles reach the page', () => {

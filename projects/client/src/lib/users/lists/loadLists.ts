@@ -41,7 +41,8 @@ async function fetchPersonal(fetch: typeof globalThis.fetch, id: string, token: 
       api({ fetch, token: viewer }).users.lists.personal({
         params: { id },
         query: { extended: 'images', page: n, limit: LIMIT },
-      }));
+      }),
+    );
   const first = await page(1);
   if (first.status !== 200) return { status: first.status, lists: [], likedAt: [] };
 
@@ -51,15 +52,14 @@ async function fetchPersonal(fetch: typeof globalThis.fetch, id: string, token: 
   return {
     status: 200,
     complete: pageCount <= MAX_PAGES && rest.every((response) => response.status === 200),
-    lists: [first, ...rest].flatMap((response) => response.status === 200 ? response.body : []),
+    lists: [first, ...rest].flatMap((response) => (response.status === 200 ? response.body : [])),
     likedAt: [],
   };
 }
 
 async function fetchCollaborations(fetch: typeof globalThis.fetch, id: string, token: string | null) {
-  const response = await withViewer(
-    token,
-    (viewer) => rawApiFetch({ fetch, token: viewer, path: `/users/${id}/lists/collaborations?extended=images` }),
+  const response = await withViewer(token, (viewer) =>
+    rawApiFetch({ fetch, token: viewer, path: `/users/${id}/lists/collaborations?extended=images` }),
   );
   if (response.status !== 200) return { status: response.status, lists: [], likedAt: [] };
   const rows = listRowsSchema.safeParse(await response.json().catch(() => null));
@@ -73,21 +73,19 @@ async function fetchCollaborations(fetch: typeof globalThis.fetch, id: string, t
  */
 async function fetchLiked(fetch: typeof globalThis.fetch, id: string, token: string | null, official: boolean) {
   const page = (n: number) =>
-    withViewer(
-      token,
-      (viewer) =>
-        rawApiFetch({
-          fetch,
-          token: viewer,
-          path: `/users/${id}/likes/lists?extended=images&page=${n}&limit=${LIMIT}`,
-        }),
+    withViewer(token, (viewer) =>
+      rawApiFetch({
+        fetch,
+        token: viewer,
+        path: `/users/${id}/likes/lists?extended=images&page=${n}&limit=${LIMIT}`,
+      }),
     );
   const first = await page(1);
   if (first.status !== 200) return { status: first.status, lists: [], likedAt: [] };
   const pageCount = Number(first.headers.get('x-pagination-page-count')) || 1;
   const rest = await Promise.all(Array.from({ length: Math.min(pageCount, MAX_PAGES) - 1 }, (_, i) => page(i + 2)));
   const bodies = await Promise.all(
-    [first, ...rest].map(async (response) => response.status === 200 ? await response.json().catch(() => null) : []),
+    [first, ...rest].map(async (response) => (response.status === 200 ? await response.json().catch(() => null) : [])),
   );
   const likes = likedListsSchema.safeParse(bodies.flat());
   if (!likes.success) error(502, 'Trakt returned an invalid lists response.');
@@ -97,11 +95,9 @@ async function fetchLiked(fetch: typeof globalThis.fetch, id: string, token: str
 
 /** The first five items and the total, for a watchlist or favorites row. Either failing leaves the row empty. */
 async function fetchBuiltIn(fetch: typeof globalThis.fetch, path: string, token: string | null) {
-  const response = await withViewer(
-    token,
-    (viewer) => rawApiFetch({ fetch, token: viewer, path: `${path}/rank/asc?limit=5&extended=images` }),
-  )
-    .catch(() => null);
+  const response = await withViewer(token, (viewer) =>
+    rawApiFetch({ fetch, token: viewer, path: `${path}/rank/asc?limit=5&extended=images` }),
+  ).catch(() => null);
   if (response?.status !== 200) return { items: [], itemCount: 0 };
   const items = listItemsSchema.safeParse(await response.json().catch(() => null));
   return {
@@ -122,8 +118,8 @@ export async function loadLists({ fetch, locals, params, url, parent, mode }: Pa
     mode === 'personal'
       ? fetchPersonal(fetch, id, token)
       : mode === 'collaborations'
-      ? fetchCollaborations(fetch, id, token)
-      : fetchLiked(fetch, id, token, mode === 'liked-official'),
+        ? fetchCollaborations(fetch, id, token)
+        : fetchLiked(fetch, id, token, mode === 'liked-official'),
     mode === 'personal' ? fetchBuiltIn(fetch, `/users/${id}/watchlist/movie,show,season,episode`, token) : null,
     mode === 'personal' ? fetchBuiltIn(fetch, `/users/${id}/favorites/movie,show`, token) : null,
     parent(),

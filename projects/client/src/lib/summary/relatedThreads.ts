@@ -52,7 +52,7 @@ export function relatedThreads({ source, cards, people }: RelatedThreadsParams):
 
   const picks = cards.map((card) => {
     const shared = sharedPeople(card);
-    const has = (thread: RelatedThread) => thread.people ? shared.length > 0 : card.subgenres.includes(thread.id);
+    const has = (thread: RelatedThread) => (thread.people ? shared.length > 0 : card.subgenres.includes(thread.id));
     return { card, people: shared, threads: threads.filter(has).map(({ id }) => id) };
   });
   const subgenreCount = (pick: RelatedPick) => pick.threads.filter((id) => id !== PEOPLE).length;

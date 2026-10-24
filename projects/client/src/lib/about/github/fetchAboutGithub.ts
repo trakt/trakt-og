@@ -36,12 +36,14 @@ interface FetchAboutGithubParams {
   token?: string;
 }
 
-const toIssue = (at: (item: SearchItem) => string) => (item: SearchItem): Issue => ({
-  number: item.number,
-  title: item.title,
-  label: item.labels.at(0)?.name ?? null,
-  at: at(item),
-});
+const toIssue =
+  (at: (item: SearchItem) => string) =>
+  (item: SearchItem): Issue => ({
+    number: item.number,
+    title: item.title,
+    label: item.labels.at(0)?.name ?? null,
+    at: at(item),
+  });
 
 async function get({ fetch, token }: FetchAboutGithubParams, path: string): Promise<Response> {
   const headers = {
@@ -70,9 +72,9 @@ async function countCommits(params: FetchAboutGithubParams): Promise<number> {
 }
 
 const search = (query: string, sort: string, perPage: number) =>
-  `/search/issues?q=${
-    encodeURIComponent(`repo:${REPO} is:issue ${query}`)
-  }&sort=${sort}&order=desc&per_page=${perPage}`;
+  `/search/issues?q=${encodeURIComponent(
+    `repo:${REPO} is:issue ${query}`,
+  )}&sort=${sort}&order=desc&per_page=${perPage}`;
 
 /**
  * The repo's stars, its newest open issues and latest closed ones with their totals, the latest commits on main and

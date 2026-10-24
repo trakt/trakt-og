@@ -7,9 +7,11 @@ const MENTION = /(^|\s)@[\p{L}\p{N}_.-]+/gu;
 
 /** The word count for the 5-word minimum: the API's, less any tagged members. */
 export function wordCount(text: string): number {
-  return text
-    .replace(MENTION, '$1')
-    .replace(EMOJI, ' e ')
-    .replace(CJK, ' $& ')
-    .match(/[\p{L}\p{N}]+/gu)?.length ?? 0;
+  return (
+    text
+      .replace(MENTION, '$1')
+      .replace(EMOJI, ' e ')
+      .replace(CJK, ' $& ')
+      .match(/[\p{L}\p{N}]+/gu)?.length ?? 0
+  );
 }

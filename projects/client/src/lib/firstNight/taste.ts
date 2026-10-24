@@ -98,7 +98,8 @@ export async function fetchTasteServices(fetch: typeof globalThis.fetch, country
     const response = await rawApiFetch({ fetch, path: `/watchnow/sources/${country}` });
     if (!response.ok) return [];
     const body: Record<string, SourceRow[]>[] = await response.json();
-    return body.flatMap((byCountry) => byCountry[country] ?? [])
+    return body
+      .flatMap((byCountry) => byCountry[country] ?? [])
       .filter(isService)
       .toSorted(byRank)
       .map(({ source, name, color, images }) => ({

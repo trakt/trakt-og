@@ -20,25 +20,29 @@ function create() {
   };
 }
 function viewer() {
-  server.use(http.get(`${base}/users/reactions/comments`, () =>
-    HttpResponse.json([
-      { comment: { id: 2 }, reaction: { type: 'like', emoji: '👍' } },
-    ])));
+  server.use(
+    http.get(`${base}/users/reactions/comments`, () =>
+      HttpResponse.json([{ comment: { id: 2 }, reaction: { type: 'like', emoji: '👍' } }]),
+    ),
+  );
 }
 
 describe('createCommentReactions', () => {
   it('should load every page once per viewer and share the selected reaction', async () => {
     const { store } = create();
     const pages: string[] = [];
-    server.use(http.get(`${base}/users/reactions/comments`, ({ request }) => {
-      const url = new URL(request.url);
-      expect(url.searchParams.get('extended')).toBe('min');
-      const page = url.searchParams.get('page') ?? '';
-      pages.push(page);
-      return HttpResponse.json([
-        { comment: { id: Number(page) }, reaction: { type: page === '1' ? 'like' : 'love' } },
-      ], { headers: { 'x-pagination-page-count': '2' } });
-    }));
+    server.use(
+      http.get(`${base}/users/reactions/comments`, ({ request }) => {
+        const url = new URL(request.url);
+        expect(url.searchParams.get('extended')).toBe('min');
+        const page = url.searchParams.get('page') ?? '';
+        pages.push(page);
+        return HttpResponse.json(
+          [{ comment: { id: Number(page) }, reaction: { type: page === '1' ? 'like' : 'love' } }],
+          { headers: { 'x-pagination-page-count': '2' } },
+        );
+      }),
+    );
     await Promise.all([store.start('one'), store.start('one')]);
     expect(pages).toEqual(['1', '2']);
     expect(store.state(2).reaction).toBe('love');
@@ -49,10 +53,11 @@ describe('createCommentReactions', () => {
   });
 
   it('should refuse a write when the viewer response is malformed', async () => {
-    server.use(http.get(`${base}/users/reactions/comments`, () =>
-      HttpResponse.json([
-        { comment: { id: 2 }, reaction: { type: 'unknown' } },
-      ])));
+    server.use(
+      http.get(`${base}/users/reactions/comments`, () =>
+        HttpResponse.json([{ comment: { id: 2 }, reaction: { type: 'unknown' } }]),
+      ),
+    );
     const { store, messages } = create();
     await store.start('one');
     expect(await store.ready()).toBe(false);
@@ -87,11 +92,13 @@ describe('createCommentReactions', () => {
     const writing = new Promise<void>((resolve) => {
       entered = resolve;
     });
-    server.use(http.post(`${base}/comments/2/reactions/love`, async () => {
-      entered();
-      await gate;
-      return new HttpResponse(null, { status: 204 });
-    }));
+    server.use(
+      http.post(`${base}/comments/2/reactions/love`, async () => {
+        entered();
+        await gate;
+        return new HttpResponse(null, { status: 204 });
+      }),
+    );
     const fresh = {
       ...total,
       reaction_count: 6,
@@ -155,10 +162,12 @@ describe('createCommentReactions', () => {
     const gate = new Promise<void>((resolve) => {
       release = resolve;
     });
-    server.use(http.get(`${base}/users/reactions/comments`, async () => {
-      await gate;
-      return HttpResponse.json([{ comment: { id: 2 }, reaction: { type: 'love' } }]);
-    }));
+    server.use(
+      http.get(`${base}/users/reactions/comments`, async () => {
+        await gate;
+        return HttpResponse.json([{ comment: { id: 2 }, reaction: { type: 'love' } }]);
+      }),
+    );
     const { store } = create();
     const started = store.start('one');
     await store.start(null);
@@ -179,11 +188,13 @@ describe('createCommentReactions', () => {
     const writing = new Promise<void>((resolve) => {
       entered = resolve;
     });
-    server.use(http.post(`${base}/comments/2/reactions/love`, async () => {
-      entered();
-      await gate;
-      return HttpResponse.json({}, { status: 409 });
-    }));
+    server.use(
+      http.post(`${base}/comments/2/reactions/love`, async () => {
+        entered();
+        await gate;
+        return HttpResponse.json({}, { status: 409 });
+      }),
+    );
     const saving = store.change({ id: 2, type: 'love', likes: 5, read: () => Promise.resolve(total) });
     await writing;
     await store.start(null);

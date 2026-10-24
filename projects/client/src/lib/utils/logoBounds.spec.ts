@@ -10,15 +10,36 @@ function image(width: number, height: number, pixels: [number, number, number][]
 
 describe('logoBounds', () => {
   it('should box the drawn pixels', () => {
-    expect(logoBounds(image(10, 6, [[2, 1, 255], [7, 4, 255]]))).toEqual({ x: 2, y: 1, width: 6, height: 4 });
+    expect(
+      logoBounds(
+        image(10, 6, [
+          [2, 1, 255],
+          [7, 4, 255],
+        ]),
+      ),
+    ).toEqual({ x: 2, y: 1, width: 6, height: 4 });
   });
 
   it('should keep a logo that fills its image', () => {
-    expect(logoBounds(image(3, 2, [[0, 0, 255], [2, 1, 255]]))).toEqual({ x: 0, y: 0, width: 3, height: 2 });
+    expect(
+      logoBounds(
+        image(3, 2, [
+          [0, 0, 255],
+          [2, 1, 255],
+        ]),
+      ),
+    ).toEqual({ x: 0, y: 0, width: 3, height: 2 });
   });
 
   it('should ignore faint pixels under the threshold', () => {
-    expect(logoBounds(image(10, 6, [[0, 0, 5], [4, 3, 200]]))).toEqual({ x: 4, y: 3, width: 1, height: 1 });
+    expect(
+      logoBounds(
+        image(10, 6, [
+          [0, 0, 5],
+          [4, 3, 200],
+        ]),
+      ),
+    ).toEqual({ x: 4, y: 3, width: 1, height: 1 });
   });
 
   it('should find nothing in a transparent image', () => {

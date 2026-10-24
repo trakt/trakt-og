@@ -40,7 +40,9 @@ export function createRecentSearches({ key, storage }: Params) {
     try {
       if (next.length) storage?.setItem(key, JSON.stringify(next));
       else storage?.removeItem(key);
-    } catch { /* Private mode or a full quota: the history lasts as long as the page. */ }
+    } catch {
+      /* Private mode or a full quota: the history lasts as long as the page. */
+    }
   };
   const latest = () => read() ?? terms;
 

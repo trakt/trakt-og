@@ -59,9 +59,8 @@ async function fetchPage(get: SocialGet, window: SocialWindow, page: number, dat
 async function fetchWindow(get: SocialGet, window: SocialWindow, datePreferences: DatePreferences) {
   const first = await fetchPage(get, window, 1, datePreferences);
   const rest = await Promise.all(
-    Array.from(
-      { length: Math.min(first.pages, MAX_PAGES) - 1 },
-      (_, i) => fetchPage(get, window, i + 2, datePreferences),
+    Array.from({ length: Math.min(first.pages, MAX_PAGES) - 1 }, (_, i) =>
+      fetchPage(get, window, i + 2, datePreferences),
     ),
   );
   return [first, ...rest].flatMap(({ items }) => items);
@@ -79,9 +78,11 @@ type FetchRecentMembersParams = { get: SocialGet; now: Date; datePreferences: Da
  * Up to 10 members the viewer follows who were active in the last 24 hours, most recent first: the ones worth asking
  * what they're watching. Only the feed's newest page, since the first 10 members are on it.
  */
-export async function fetchRecentMembers(
-  { get, now, datePreferences }: FetchRecentMembersParams,
-): Promise<readonly SocialMember[]> {
+export async function fetchRecentMembers({
+  get,
+  now,
+  datePreferences,
+}: FetchRecentMembersParams): Promise<readonly SocialMember[]> {
   const [today] = socialWindows('today', now, datePreferences.timeZone);
   if (!today) return [];
   const { items } = await fetchPage(get, today, 1, datePreferences);
@@ -94,9 +95,11 @@ type FetchSocialItemsParams = { get: SocialGet; windows: readonly SocialWindow[]
  * Every watch, rating and comment in the windows, newest first. A window that fails is left out as long as another
  * one answered; when none do, the first error is thrown.
  */
-export async function fetchSocialItems(
-  { get, windows, datePreferences }: FetchSocialItemsParams,
-): Promise<readonly SocialItem[]> {
+export async function fetchSocialItems({
+  get,
+  windows,
+  datePreferences,
+}: FetchSocialItemsParams): Promise<readonly SocialItem[]> {
   const results = await Promise.all(
     windows.map((window) => fetchWindow(get, window, datePreferences).catch((error: unknown) => ({ error }))),
   );
@@ -106,8 +109,7 @@ export async function fetchSocialItems(
 
   // Both ends of a window are inclusive, so a row on a boundary can come back twice.
   const items = found.flat();
-  return uniqueBy(items, ({ key }) => key)
-    .toSorted((a, b) => Date.parse(b.at) - Date.parse(a.at));
+  return uniqueBy(items, ({ key }) => key).toSorted((a, b) => Date.parse(b.at) - Date.parse(a.at));
 }
 
 /**
@@ -115,9 +117,13 @@ export async function fetchSocialItems(
  * worker's v3 feed. That feed falls back to the Trakt team's activity when you follow nobody, so a viewer who follows
  * nobody gets the empty panel without asking.
  */
-export async function fetchSocialFeed(
-  { fetch, token, following, now, datePreferences }: FetchSocialFeedParams,
-): Promise<SocialFeed> {
+export async function fetchSocialFeed({
+  fetch,
+  token,
+  following,
+  now,
+  datePreferences,
+}: FetchSocialFeedParams): Promise<SocialFeed> {
   if ((await following) === 0) return { follows: false, items: [], recent: [] };
 
   const items = await fetchSocialItems({

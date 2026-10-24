@@ -10,7 +10,7 @@ export function visibleCalendarDays<Day extends CalendarDay>({ days, isHidden }:
   return days.map((day) => ({
     ...day,
     items: day.items.filter((item) =>
-      item.type === 'episode' ? !isHidden('show', item.show.ids.trakt) : !isHidden('movie', item.movie.ids.trakt)
+      item.type === 'episode' ? !isHidden('show', item.show.ids.trakt) : !isHidden('movie', item.movie.ids.trakt),
     ),
   }));
 }

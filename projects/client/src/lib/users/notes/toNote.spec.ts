@@ -31,8 +31,7 @@ describe('toNote', () => {
   it('should retain the year and available fanart for the shared editor', () => {
     expect(
       map({ ...row, movie: { ...movie, year: 1999, images: { fanart: ['media.trakt.tv/fanarts/full/1.jpg'] } } })?.item,
-    )
-      .toMatchObject({ year: 1999, fanart: 'https://media.trakt.tv/fanarts/medium/1.jpg' });
+    ).toMatchObject({ year: 1999, fanart: 'https://media.trakt.tv/fanarts/medium/1.jpg' });
   });
 
   it('should call a season-zero episode "Special 1"', () => {
@@ -57,10 +56,12 @@ describe('toNote', () => {
       concealed: false,
       activity: { label: 'History', date: '28 Sep 2026 18:00' },
     });
-    expect(map({ ...row, attached_to: { type: 'collection', collected_at: '2026-09-29T01:00:00Z' } })?.activity)
-      .toMatchObject({ label: 'Library' });
-    expect(map({ ...row, attached_to: { type: 'rating', rating: 7, rated_at: '2026-09-29T01:00:00Z' } })?.activity)
-      .toMatchObject({ label: 'Rating', rating: 7 });
+    expect(
+      map({ ...row, attached_to: { type: 'collection', collected_at: '2026-09-29T01:00:00Z' } })?.activity,
+    ).toMatchObject({ label: 'Library' });
+    expect(
+      map({ ...row, attached_to: { type: 'rating', rating: 7, rated_at: '2026-09-29T01:00:00Z' } })?.activity,
+    ).toMatchObject({ label: 'Rating', rating: 7 });
   });
 
   it('should link episodes and seasons under their show with separate show titles', () => {
@@ -83,8 +84,9 @@ describe('toNote', () => {
   });
 
   it('should support shows, people and API image arrays and objects', () => {
-    expect(map({ ...row, movie: { ...movie, images: { poster: ['media.trakt.tv/posters/thumb/1.jpg'] } } })?.item.image)
-      .toBe('https://media.trakt.tv/posters/thumb/1.jpg');
+    expect(
+      map({ ...row, movie: { ...movie, images: { poster: ['media.trakt.tv/posters/thumb/1.jpg'] } } })?.item.image,
+    ).toBe('https://media.trakt.tv/posters/thumb/1.jpg');
     expect(map({ ...row, type: 'show', show: movie })?.item.href).toBe('/shows/fight-club-1999');
     expect(
       map({

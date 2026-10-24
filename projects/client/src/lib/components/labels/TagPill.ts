@@ -9,14 +9,14 @@
  */
 export type TagPill =
   | {
-    readonly text: string;
-    readonly lead?: string;
-    readonly kind?: 'primary' | 'light' | 'badge';
-    readonly color?: string;
-    readonly icon?: string;
-    readonly tint?: string;
-    readonly href?: string;
-    /** What a screen reader hears, for a pill that's only an icon and a number. */
-    readonly label?: string;
-  }
+      readonly text: string;
+      readonly lead?: string;
+      readonly kind?: 'primary' | 'light' | 'badge';
+      readonly color?: string;
+      readonly icon?: string;
+      readonly tint?: string;
+      readonly href?: string;
+      /** What a screen reader hears, for a pill that's only an icon and a number. */
+      readonly label?: string;
+    }
   | { readonly segments: readonly string[] };

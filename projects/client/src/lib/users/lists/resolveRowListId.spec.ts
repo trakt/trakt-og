@@ -17,27 +17,24 @@ describe('resolveRowListId', () => {
   });
   it.each(['watchlist', 'favorites'] as const)('should read the %s id even when it has no comments', async (kind) => {
     server.use(
-      http.get(
-        `https://apiz.trakt.tv/users/owner/${kind}/comments/newest`,
-        () => HttpResponse.json([], { headers: { 'X-List-ID': '23' } }),
+      http.get(`https://apiz.trakt.tv/users/owner/${kind}/comments/newest`, () =>
+        HttpResponse.json([], { headers: { 'X-List-ID': '23' } }),
       ),
     );
     expect(await resolveRowListId({ fetch, row: { ...row, kind } })).toBe(23);
   });
   it.each([undefined, '0', 'oops'])('should reject a missing or invalid id %s', async (id) => {
     server.use(
-      http.get(
-        'https://apiz.trakt.tv/users/owner/watchlist/comments/newest',
-        () => HttpResponse.json([], { headers: id ? { 'X-List-ID': id } : {} }),
+      http.get('https://apiz.trakt.tv/users/owner/watchlist/comments/newest', () =>
+        HttpResponse.json([], { headers: id ? { 'X-List-ID': id } : {} }),
       ),
     );
     await expect(resolveRowListId({ fetch, row })).rejects.toThrow();
   });
   it('should reject a malformed body', async () => {
     server.use(
-      http.get(
-        'https://apiz.trakt.tv/users/owner/watchlist/comments/newest',
-        () => HttpResponse.json({}, { headers: { 'X-List-ID': '23' } }),
+      http.get('https://apiz.trakt.tv/users/owner/watchlist/comments/newest', () =>
+        HttpResponse.json({}, { headers: { 'X-List-ID': '23' } }),
       ),
     );
     await expect(resolveRowListId({ fetch, row })).rejects.toThrow();

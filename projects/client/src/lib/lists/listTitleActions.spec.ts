@@ -36,8 +36,7 @@ describe('listTitleActions', () => {
     expect(keys(actions)).toEqual(['report', 'shareUrl']);
     expect(
       keys(listTitleActions({ list: official, viewer: { slug: 'kim', isVip: true }, isCollaborator: true, origin })),
-    )
-      .toEqual(['report', 'shareUrl']);
+    ).toEqual(['report', 'shareUrl']);
   });
 
   it('should avoid a progress query with a missing built-in id', () => {
@@ -48,8 +47,7 @@ describe('listTitleActions', () => {
         isCollaborator: false,
         origin,
       }).progressHref,
-    )
-      .toBe('https://app.trakt.tv/vip');
+    ).toBe('https://app.trakt.tv/vip');
   });
 
   it('should give a watchlist owner edit and manage, but no delete', () => {

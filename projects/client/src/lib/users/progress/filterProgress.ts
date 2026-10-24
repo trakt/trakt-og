@@ -25,9 +25,10 @@ export function filterProgress(
   { hide, terms, listed }: FilterProgressParams,
 ): readonly ProgressItem[] {
   const needle = terms?.trim().toLocaleLowerCase();
-  return items.filter((item) =>
-    !hide.some((id) => HIDES[id](item)) &&
-    (!needle || item.show.title.toLocaleLowerCase().includes(needle)) &&
-    (!listed || listed.has(item.show.id))
+  return items.filter(
+    (item) =>
+      !hide.some((id) => HIDES[id](item)) &&
+      (!needle || item.show.title.toLocaleLowerCase().includes(needle)) &&
+      (!listed || listed.has(item.show.id)),
   );
 }

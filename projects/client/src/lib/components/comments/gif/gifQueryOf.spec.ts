@@ -7,8 +7,9 @@ describe('util: gifQueryOf', () => {
   });
 
   it("should search an episode or season by its show's title", () => {
-    expect(gifQueryOf({ type: 'episode', id: 2, title: 'Breaking Bad 1x01 "Pilot"', show: 1, season: 1 }))
-      .toBe('Breaking Bad');
+    expect(gifQueryOf({ type: 'episode', id: 2, title: 'Breaking Bad 1x01 "Pilot"', show: 1, season: 1 })).toBe(
+      'Breaking Bad',
+    );
     expect(gifQueryOf({ type: 'season', id: 3, title: 'Severance Season 2', show: 1, number: 2 })).toBe('Severance');
   });
 

@@ -48,7 +48,7 @@ export async function loadSearch({ fetch, token, cookies, parent, url, type: slu
   const limit = Math.min(positiveInt(url.searchParams.get('limit'), PER_PAGE), 50);
 
   const filters = searchFilters({ slug: type.slug, search: url.searchParams, cookies });
-  const hide = filters.fadeHide.hide.map((id) => id === 'watchlisted' ? 'watchlist' : id).join(',');
+  const hide = filters.fadeHide.hide.map((id) => (id === 'watchlisted' ? 'watchlist' : id)).join(',');
 
   const search = async () => {
     // OG listed everything by rank for a blank query. The worker wants one, so that's the empty state.

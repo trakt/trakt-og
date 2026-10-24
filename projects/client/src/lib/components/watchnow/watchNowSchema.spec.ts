@@ -29,13 +29,15 @@ describe('schema: watchNowOffersSchema', () => {
   it('should parse a country’s offers and its JustWatch rank', () => {
     const parsed = watchNowOffersSchema.parse({ us });
 
-    expect(parsed.us?.purchase).toEqual([{
-      source: 'amazon_video',
-      link: 'watchnow.trakt.tv/watchnow/228530305',
-      uhd: true,
-      currency: 'usd',
-      prices: { rent: '3.99', purchase: '4.99' },
-    }]);
+    expect(parsed.us?.purchase).toEqual([
+      {
+        source: 'amazon_video',
+        link: 'watchnow.trakt.tv/watchnow/228530305',
+        uhd: true,
+        currency: 'usd',
+        prices: { rent: '3.99', purchase: '4.99' },
+      },
+    ]);
     expect(parsed.us?.streaming_ranks?.link).toBe('https://www.justwatch.com/us/movie/fight-club');
   });
 
@@ -79,26 +81,28 @@ describe('schema: watchNowOrderSchema', () => {
 
 describe('schema: watchNowSourcesSchema', () => {
   it('should parse a country’s sources, with or without a logo and a channel badge', () => {
-    const parsed = watchNowSourcesSchema.parse([{
-      us: [
-        {
-          source: 'aande_crime_central_apple_tv_channel',
-          name: 'A&E Crime Central (on Apple TV)',
-          free: false,
-          cinema: false,
-          amazon: false,
-          link_count: 4103,
-          color: '#000000',
-          images: {
-            logo: 'media.trakt.tv/watchnow/sources/aande_crime_central_apple_tv_channel.webp',
-            logo_colorized: null,
-            channel: 'media.trakt.tv/watchnow/badges/apple-tv.webp',
+    const parsed = watchNowSourcesSchema.parse([
+      {
+        us: [
+          {
+            source: 'aande_crime_central_apple_tv_channel',
+            name: 'A&E Crime Central (on Apple TV)',
+            free: false,
+            cinema: false,
+            amazon: false,
+            link_count: 4103,
+            color: '#000000',
+            images: {
+              logo: 'media.trakt.tv/watchnow/sources/aande_crime_central_apple_tv_channel.webp',
+              logo_colorized: null,
+              channel: 'media.trakt.tv/watchnow/badges/apple-tv.webp',
+            },
           },
-        },
-        { source: 'plex', name: 'Plex', color: '#e5a00d', images: { logo: null, channel: null } },
-        { name: 'no source' },
-      ],
-    }]);
+          { source: 'plex', name: 'Plex', color: '#e5a00d', images: { logo: null, channel: null } },
+          { name: 'no source' },
+        ],
+      },
+    ]);
 
     expect(parsed[0]?.us?.map(({ source }) => source)).toEqual(['aande_crime_central_apple_tv_channel', 'plex']);
     expect(parsed[0]?.us?.[0]?.images?.channel).toBe('media.trakt.tv/watchnow/badges/apple-tv.webp');
@@ -107,10 +111,12 @@ describe('schema: watchNowSourcesSchema', () => {
 
 describe('schema: watchNowCountriesSchema', () => {
   it('should parse the picker’s countries', () => {
-    expect(watchNowCountriesSchema.parse([
-      { name: 'Albania', code: 'al', images: { flag: 'media.trakt.tv/watchnow/flags/al.svg' } },
-      { name: 'Nowhere' },
-    ])).toEqual([{ name: 'Albania', code: 'al', images: { flag: 'media.trakt.tv/watchnow/flags/al.svg' } }]);
+    expect(
+      watchNowCountriesSchema.parse([
+        { name: 'Albania', code: 'al', images: { flag: 'media.trakt.tv/watchnow/flags/al.svg' } },
+        { name: 'Nowhere' },
+      ]),
+    ).toEqual([{ name: 'Albania', code: 'al', images: { flag: 'media.trakt.tv/watchnow/flags/al.svg' } }]);
   });
 });
 

@@ -1,10 +1,12 @@
 import { z } from 'zod/v4';
 
-export const images = z.object({
-  poster: z.array(z.string()).nullish(),
-  fanart: z.array(z.string()).nullish(),
-  screenshot: z.array(z.string()).nullish(),
-}).nullish();
+export const images = z
+  .object({
+    poster: z.array(z.string()).nullish(),
+    fanart: z.array(z.string()).nullish(),
+    screenshot: z.array(z.string()).nullish(),
+  })
+  .nullish();
 
 export const movie = z.object({
   ids: z.object({ trakt: z.number(), slug: z.string() }),
@@ -38,10 +40,7 @@ const play = { id: z.number(), watched_at: z.string() };
  * `/users/:id/history[/:type][/:item_id]?extended=full,images`. Read raw because `@trakt/api` 0.6.0 types `watchnow`
  * as a few keywords, while the worker takes service slugs too (`middleware/sources.ts`).
  */
-export const historyRowsSchema = z.array(z.union([
-  z.object({ ...play, movie }),
-  z.object({ ...play, episode, show }),
-]));
+export const historyRowsSchema = z.array(z.union([z.object({ ...play, movie }), z.object({ ...play, episode, show })]));
 
 /** `/users/:id/watched/shows?extended=full,images`, the Shows tab's rows. */
 export const watchedShowsSchema = z.array(z.object({ plays: z.number(), last_watched_at: z.string(), show }));

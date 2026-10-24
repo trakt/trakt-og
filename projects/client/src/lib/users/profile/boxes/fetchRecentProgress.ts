@@ -2,14 +2,16 @@ import { z } from 'zod/v4';
 import { rawApiFetch } from '../../../api/rawApiFetch.ts';
 import type { boxExtraLoader } from './boxExtraLoader.ts';
 
-const recentProgressSchema = z.array(z.object({
-  show: z.object({ ids: z.object({ trakt: z.number(), slug: z.string() }), title: z.string() }),
-  progress: z.object({
-    aired: z.number(),
-    completed: z.number(),
-    last_watched_at: z.string().nullish(),
+const recentProgressSchema = z.array(
+  z.object({
+    show: z.object({ ids: z.object({ trakt: z.number(), slug: z.string() }), title: z.string() }),
+    progress: z.object({
+      aired: z.number(),
+      completed: z.number(),
+      last_watched_at: z.string().nullish(),
+    }),
   }),
-}));
+);
 
 /**
  * `/users/:id/progress/watched/added/desc?limit=10`: the ten shows the user watched most recently, newest first, each

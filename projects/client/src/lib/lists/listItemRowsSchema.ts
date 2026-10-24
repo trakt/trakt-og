@@ -1,12 +1,14 @@
 // FIXME(zod-4): see noteRowsSchema.ts. og uses the zod @trakt/api depends on, through its `zod/v4` API.
 import { z } from 'zod/v4';
 
-const images = z.object({
-  poster: z.array(z.string()).nullish(),
-  fanart: z.array(z.string()).nullish(),
-  screenshot: z.array(z.string()).nullish(),
-  headshot: z.array(z.string()).nullish(),
-}).nullish();
+const images = z
+  .object({
+    poster: z.array(z.string()).nullish(),
+    fanart: z.array(z.string()).nullish(),
+    screenshot: z.array(z.string()).nullish(),
+    headshot: z.array(z.string()).nullish(),
+  })
+  .nullish();
 
 const stats = {
   rating: z.number().nullish(),
@@ -95,5 +97,5 @@ export const listItemRowsSchema = z.array(z.unknown()).transform((rows) =>
   rows.flatMap((value): ListItemRow[] => {
     const parsed = row.safeParse(value);
     return parsed.success ? [parsed.data] : [];
-  })
+  }),
 );

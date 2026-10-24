@@ -1,13 +1,16 @@
 import { describe, expect, it, vi } from 'vitest';
 import { deleteList } from './deleteList.ts';
-const catalog = [{ id: 12, name: 'Delete', count: 1, display_order: 0, type: 'standard', owner_id: 1 }, {
-  id: 13,
-  name: 'Keep',
-  count: 1,
-  display_order: 1,
-  type: 'collaborative',
-  owner_id: 2,
-}];
+const catalog = [
+  { id: 12, name: 'Delete', count: 1, display_order: 0, type: 'standard', owner_id: 1 },
+  {
+    id: 13,
+    name: 'Keep',
+    count: 1,
+    display_order: 1,
+    type: 'collaborative',
+    owner_id: 2,
+  },
+];
 describe('deleteList', () => {
   it('should keep membership from remaining collaborative lists and roll back a failed delete', async () => {
     const rollback = vi.fn();
@@ -33,7 +36,7 @@ describe('deleteList', () => {
     const restore = vi.fn();
     const notify = { success: vi.fn(), error: vi.fn() };
     const request = vi.fn((_path, method) =>
-      Promise.resolve(new Response(null, { status: method === 'DELETE' ? 204 : 503 }))
+      Promise.resolve(new Response(null, { status: method === 'DELETE' ? 204 : 503 })),
     );
     expect(await deleteList({ id: 12, request, overlay: { patch }, remove: () => restore, notify })).toBe(true);
     expect(patch).not.toHaveBeenCalled();

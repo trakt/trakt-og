@@ -3,8 +3,9 @@ import { DISCOVER_THEMES } from './discoverThemes.ts';
 import { themeFor } from './themeFor.ts';
 
 const days = (year: number) =>
-  Array.from({ length: 366 }, (_, index) => new Date(Date.UTC(year, 0, 1 + index)).toISOString().slice(0, 10))
-    .filter((day) => day.startsWith(String(year)));
+  Array.from({ length: 366 }, (_, index) => new Date(Date.UTC(year, 0, 1 + index)).toISOString().slice(0, 10)).filter(
+    (day) => day.startsWith(String(year)),
+  );
 
 describe('themeFor', () => {
   it('should give every day of a leap year a theme', () => {

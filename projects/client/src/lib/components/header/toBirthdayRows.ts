@@ -28,8 +28,9 @@ const rank = (birthday: string, today: string) =>
 export function toBirthdayRows(people: readonly Person[], today: string, order?: DateOrder): SearchRow[] {
   return people
     .flatMap((person) => (person.birthday ? [{ person, birthday: person.birthday }] : []))
-    .toSorted((a, b) =>
-      rank(a.birthday, today) - rank(b.birthday, today) || monthDay(a.birthday).localeCompare(monthDay(b.birthday))
+    .toSorted(
+      (a, b) =>
+        rank(a.birthday, today) - rank(b.birthday, today) || monthDay(a.birthday).localeCompare(monthDay(b.birthday)),
     )
     .slice(0, SHOWN)
     .map(({ person, birthday }) => ({

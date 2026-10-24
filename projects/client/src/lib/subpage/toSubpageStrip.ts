@@ -26,9 +26,10 @@ export function toSubpageStrip({ media, reads, rank, otherSiteRatings, now }: Pa
     rating: released ? { value: trakt.rating ?? 0, votes: trakt.votes ?? 0, href: `${media.href}/stats` } : undefined,
     rateLabel: type,
     ratingTarget: { type, id: media.item.id, title: media.item.title, season: media.spoilerTarget?.season },
-    external: otherSiteRatings && released && type !== 'season'
-      ? toExternalRatings({ ratings: { ...ratings, letterboxd }, rank })
-      : [],
+    external:
+      otherSiteRatings && released && type !== 'season'
+        ? toExternalRatings({ ratings: { ...ratings, letterboxd }, rank })
+        : [],
     counts: favorites && released ? [{ count: stats.favorited ?? 0, label: 'favorited' }] : [],
   };
 }

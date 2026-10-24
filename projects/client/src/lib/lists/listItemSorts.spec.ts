@@ -5,8 +5,7 @@ describe('listSortHow', () => {
   it('should start dates, scores, votes and popularity newest or highest first', () => {
     expect(
       ['added', 'released', 'watched', 'collected', 'percentage', 'votes', 'popularity', 'my_rating'].map(listSortHow),
-    )
-      .toEqual(['desc', 'desc', 'desc', 'desc', 'desc', 'desc', 'desc', 'desc']);
+    ).toEqual(['desc', 'desc', 'desc', 'desc', 'desc', 'desc', 'desc', 'desc']);
   });
 
   it('should start Rank, Title, Runtime and Random first to last', () => {

@@ -32,10 +32,12 @@ function setup() {
 describe('checkinMedia', () => {
   it('should post the item and message without sharing flags', async () => {
     let body: unknown;
-    server.use(http.post(`${API}/checkin`, async ({ request }) => {
-      body = await request.json();
-      return HttpResponse.json({ id: 1 }, { status: 201 });
-    }));
+    server.use(
+      http.post(`${API}/checkin`, async ({ request }) => {
+        body = await request.json();
+        return HttpResponse.json({ id: 1 }, { status: 201 });
+      }),
+    );
     const params = setup();
 
     expect(await checkinMedia(params)).toBe(true);
@@ -51,7 +53,8 @@ describe('checkinMedia', () => {
           type: 'episode',
           show: { title: 'Breaking Bad' },
           episode: { season: 1, number: 1, title: 'Pilot' },
-        })),
+        }),
+      ),
     );
     const params = setup();
 

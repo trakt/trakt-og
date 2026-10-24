@@ -89,19 +89,21 @@ type Episode = {
   at?: string;
 };
 
-function toSquare(
-  { season, episode, next, showHref, datePreferences }:
-    & Omit<ToProgressSeasonsParams, 'seasons'>
-    & { season: number; episode: Episode },
-): EpisodeSquare {
+function toSquare({
+  season,
+  episode,
+  next,
+  showHref,
+  datePreferences,
+}: Omit<ToProgressSeasonsParams, 'seasons'> & { season: number; episode: Episode }): EpisodeSquare {
   const { number, title, firstAired, runtime, rating, aired, done, plays, at } = episode;
   const state: EpisodeSquareState = !aired
     ? 'not-aired'
     : done
-    ? 'watched'
-    : next?.season === season && next.number === number
-    ? 'up-next'
-    : 'not-watched';
+      ? 'watched'
+      : next?.season === season && next.number === number
+        ? 'up-next'
+        : 'not-watched';
   const collected = !done && episode.collected;
   const day = (date: string | undefined) =>
     date && !isUnknownDate(date) ? formatDate(date, { ...datePreferences, format: 'll' }) : undefined;
@@ -133,20 +135,25 @@ function toSquare(
       status,
       collected && 'in your library',
       aired && state !== 'watched' && `aired ${airs}`,
-    ].filter(Boolean).join(', '),
+    ]
+      .filter(Boolean)
+      .join(', '),
     image: imageUrl(episode.screenshot, 'thumb'),
     meta: aired
       ? [airs, runtime ? formatRuntime(runtime) : undefined, rating !== undefined && `${ratingPercent(rating)}%`]
-        .filter(Boolean).join(' · ')
+          .filter(Boolean)
+          .join(' · ')
       : undefined,
     lines: [
       statusLine,
       // A rewatch's episode not yet seen again still shows when you last did, and how often before.
       ...(doneAt
-        ? [{
-          text: `Last watched ${doneAt}${!done && plays > 0 ? ` · ${plays} ${plays === 1 ? 'play' : 'plays'}` : ''}`,
-          tone: 'time' as const,
-        }]
+        ? [
+            {
+              text: `Last watched ${doneAt}${!done && plays > 0 ? ` · ${plays} ${plays === 1 ? 'play' : 'plays'}` : ''}`,
+              tone: 'time' as const,
+            },
+          ]
         : []),
       ...(collected ? [{ text: 'In your library', tone: 'collected' as const }] : []),
     ],
@@ -175,7 +182,7 @@ export function toProgressSeasons(params: ToProgressSeasonsParams): readonly Pro
       name,
       title: title && title !== name ? title : undefined,
       href: `${params.showHref}/seasons/${season.number}`,
-      percent: season.aired === 0 ? 0 : Math.floor(season.completed / season.aired * 100),
+      percent: season.aired === 0 ? 0 : Math.floor((season.completed / season.aired) * 100),
       complete: season.aired > 0 && left <= 0,
       count: `${season.completed}/${season.aired}`,
       done: season.completed,
@@ -184,9 +191,10 @@ export function toProgressSeasons(params: ToProgressSeasonsParams): readonly Pro
       announced: season.aired === 0 ? season.upcoming.length : undefined,
       ticks: tickRuns(episodes.filter(({ aired }) => aired).map(({ done }) => done)),
       collected: episodes.filter(({ aired, done, collected }) => aired && !done && collected).length,
-      upNext: params.next?.season === season.number
-        ? episodeNumber({ season: season.number, number: params.next.number }, null)
-        : undefined,
+      upNext:
+        params.next?.season === season.number
+          ? episodeNumber({ season: season.number, number: params.next.number }, null)
+          : undefined,
       lastWatched: lastDay(episodes, params.datePreferences),
       squares: episodes.map((episode) => toSquare({ ...params, season: season.number, episode })),
     };

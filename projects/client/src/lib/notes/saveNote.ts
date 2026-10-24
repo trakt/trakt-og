@@ -34,10 +34,12 @@ export async function saveNote({ fetch, item, note, text }: SaveNoteParams): Pro
         method: !notes ? 'DELETE' : note ? 'PUT' : 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify(
-          note ? { type: 'note', ...(!notes ? {} : { notes }) } : {
-            [item.type]: { ids: { trakt: item.id } },
-            notes,
-          },
+          note
+            ? { type: 'note', ...(!notes ? {} : { notes }) }
+            : {
+                [item.type]: { ids: { trakt: item.id } },
+                notes,
+              },
         ),
       },
     });

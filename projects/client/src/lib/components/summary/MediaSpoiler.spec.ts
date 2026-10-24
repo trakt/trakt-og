@@ -69,10 +69,12 @@ describe('MediaSpoiler', () => {
           icons: { fill: quickIconFill({ state: {} }), ratingTarget: { type: 'episode', id: 1, title: 'Pilot' } },
         },
       }).body;
-    expect(card('https://media.trakt.tv/screenshots/pilot.jpg', 'https://media.trakt.tv/fanarts/show.jpg'))
-      .not.toContain('src="https://media.trakt.tv/screenshots/pilot.jpg"');
-    expect(card('https://media.trakt.tv/screenshots/pilot.jpg', 'https://media.trakt.tv/fanarts/show.jpg'))
-      .toContain('src="https://media.trakt.tv/fanarts/show.jpg"');
+    expect(
+      card('https://media.trakt.tv/screenshots/pilot.jpg', 'https://media.trakt.tv/fanarts/show.jpg'),
+    ).not.toContain('src="https://media.trakt.tv/screenshots/pilot.jpg"');
+    expect(card('https://media.trakt.tv/screenshots/pilot.jpg', 'https://media.trakt.tv/fanarts/show.jpg')).toContain(
+      'src="https://media.trakt.tv/fanarts/show.jpg"',
+    );
     expect(card('https://media.trakt.tv/posters/show.jpg')).toContain('src="https://media.trakt.tv/posters/show.jpg"');
   });
 });

@@ -3,8 +3,8 @@ import { writeOwnerList } from './writeOwnerList.ts';
 const notify = () => ({ error: vi.fn() });
 describe('writeOwnerList', () => {
   it('should omit an untouched description and the two cut settings', async () => {
-    const request = vi.fn(async () =>
-      await Response.json({ sort_by: 'title', sort_how: 'desc', description: 'Keep me' })
+    const request = vi.fn(
+      async () => await Response.json({ sort_by: 'title', sort_how: 'desc', description: 'Keep me' }),
     );
     expect(
       await writeOwnerList({
@@ -14,11 +14,14 @@ describe('writeOwnerList', () => {
         notify: notify(),
       }),
     ).toBe(true);
-    expect(request.mock.calls.at(0)).toEqual(['/sync/watchlist', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: '{"sort_by":"title","sort_how":"desc"}',
-    }]);
+    expect(request.mock.calls.at(0)).toEqual([
+      '/sync/watchlist',
+      {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: '{"sort_by":"title","sort_how":"desc"}',
+      },
+    ]);
   });
   it('should save blank notes as removal using the list item id', async () => {
     const request = vi.fn(async () => await new Response(null, { status: 204 }));
@@ -30,11 +33,14 @@ describe('writeOwnerList', () => {
         notify: notify(),
       }),
     ).toBe(true);
-    expect(request.mock.calls.at(0)).toEqual(['/sync/favorites/123', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: '{"notes":""}',
-    }]);
+    expect(request.mock.calls.at(0)).toEqual([
+      '/sync/favorites/123',
+      {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: '{"notes":""}',
+      },
+    ]);
   });
   it('should reject skipped ranks, malformed responses and network failures', async () => {
     for (const result of [{ updated: 1, skipped_ids: [2] }, {}, null]) {
@@ -65,13 +71,19 @@ describe('writeOwnerList', () => {
     }
   });
   it('should group removals by media id and reject partial deletes', async () => {
-    const request = vi.fn(async () =>
-      await Response.json({ deleted: { movies: 1, shows: 0 }, not_found: { shows: [{}] } })
+    const request = vi.fn(
+      async () => await Response.json({ deleted: { movies: 1, shows: 0 }, not_found: { shows: [{}] } }),
     );
     expect(
       await writeOwnerList({
         kind: 'watchlist',
-        change: { type: 'remove', items: [{ type: 'movie', id: 10 }, { type: 'show', id: 20 }] },
+        change: {
+          type: 'remove',
+          items: [
+            { type: 'movie', id: 10 },
+            { type: 'show', id: 20 },
+          ],
+        },
         request,
         notify: notify(),
       }),

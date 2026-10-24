@@ -34,9 +34,9 @@ export function pickProfileBoxes<C extends Candidate>(candidates: readonly C[]):
   const withImage = ensureImage(best, ranked);
   const picks = showable
     .filter((box) => box.floor && !withImage.includes(box))
-    .reduce((filled, box) => filled.length < SLOTS ? [...filled, box] : filled, withImage);
+    .reduce((filled, box) => (filled.length < SLOTS ? [...filled, box] : filled), withImage);
 
-  return candidates.flatMap((box) => picks.includes(box) && box.entry ? [box.entry] : []);
+  return candidates.flatMap((box) => (picks.includes(box) && box.entry ? [box.entry] : []));
 }
 
 /** The strip needs a picture: swap the lowest-ranked unpinned pick for the best image box, or add it. */
@@ -47,5 +47,5 @@ function ensureImage<C extends Candidate>(picks: readonly C[], ranked: readonly 
   if (picks.length < SLOTS) return [...picks, image];
 
   const lowest = ranked.findLast((box) => picks.includes(box));
-  return lowest ? picks.map((pick) => pick === lowest ? image : pick) : picks;
+  return lowest ? picks.map((pick) => (pick === lowest ? image : pick)) : picks;
 }

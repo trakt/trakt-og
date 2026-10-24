@@ -24,19 +24,19 @@ function setup() {
 }
 
 describe('changeProgressView', () => {
-  it.each(
-    [
-      ['simple_progress', 'watched', true],
-      ['grid_view', 'collected', false],
-    ] as const,
-  )('should save %s for %s progress', async (view, settings, on) => {
+  it.each([
+    ['simple_progress', 'watched', true],
+    ['grid_view', 'collected', false],
+  ] as const)('should save %s for %s progress', async (view, settings, on) => {
     const { shown, params } = setup();
-    server.use(http.put(`${API}/users/settings`, async ({ request }) => {
-      expect(await request.json()).toEqual({ browsing: { progress: { [settings]: { [view]: on } } } });
-      // The new state shows before the API answers.
-      expect(shown).toEqual([on]);
-      return HttpResponse.json({});
-    }));
+    server.use(
+      http.put(`${API}/users/settings`, async ({ request }) => {
+        expect(await request.json()).toEqual({ browsing: { progress: { [settings]: { [view]: on } } } });
+        // The new state shows before the API answers.
+        expect(shown).toEqual([on]);
+        return HttpResponse.json({});
+      }),
+    );
 
     expect(await changeProgressView({ ...params, view, settings, on })).toBe(true);
     expect(shown).toEqual([on]);

@@ -4,7 +4,10 @@
  * string when nothing is left.
  */
 export function anchorNames(current: string, change: { readonly add?: string; readonly remove?: string }): string {
-  const names = current.split(',').map((name) => name.trim()).filter((name) => name && name !== 'none')
+  const names = current
+    .split(',')
+    .map((name) => name.trim())
+    .filter((name) => name && name !== 'none')
     .filter((name) => name !== change.remove && name !== change.add);
 
   return (change.add ? [...names, change.add] : names).join(', ');

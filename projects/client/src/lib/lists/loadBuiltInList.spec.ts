@@ -107,7 +107,10 @@ describe('loadBuiltInList', () => {
     expect(result.stats).toEqual({
       count: 2,
       runtime: 180,
-      items: [{ type: 'movie', id: 1 }, { type: 'movie', id: 2 }],
+      items: [
+        { type: 'movie', id: 1 },
+        { type: 'movie', id: 2 },
+      ],
     });
     expect(result.collaborators).toEqual([]);
     // The owner is a VIP, so the first ranked item takes the cover.

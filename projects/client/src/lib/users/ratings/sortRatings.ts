@@ -5,7 +5,7 @@ import type { ratingQuery } from './ratingQuery.ts';
 type Row = z.infer<typeof ratingRowsSchema>[number];
 const media = (row: Row) =>
   row.type === 'movie' ? row.movie : row.type === 'show' ? row.show : row.type === 'season' ? row.season : row.episode;
-const time = (date: string | null | undefined) => date ? Date.parse(date) || 0 : 0;
+const time = (date: string | null | undefined) => (date ? Date.parse(date) || 0 : 0);
 const title = (row: Row) => (media(row)?.title ?? '').toLowerCase().replace(/^(the |an |a )/, '');
 
 /** OG's natural directions, article-free title sorting and rated-date tie break. Never mutates the API rows. */
@@ -18,7 +18,7 @@ export function sortRatings(rows: readonly Row[], { by, how }: ReturnType<typeof
       case 'released':
         return time(item?.first_aired ?? item?.released);
       case 'runtime':
-        return item && 'runtime' in item ? item.runtime ?? 0 : 0;
+        return item && 'runtime' in item ? (item.runtime ?? 0) : 0;
       case 'percentage':
         return item?.rating ?? 0;
       case 'votes':

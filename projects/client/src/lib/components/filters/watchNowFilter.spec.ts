@@ -1,20 +1,22 @@
 import { describe, expect, it } from 'vitest';
 import { toFilterSources, watchNowOptions, watchNowTiles } from './watchNowFilter.ts';
 
-const body = [{
-  us: [
-    {
-      source: 'netflix',
-      name: 'Netflix',
-      cinema: false,
-      color: '#e50914',
-      images: { logo: 'media.trakt.tv/netflix.webp', channel: null },
-    },
-    { source: 'amc_plus_amazon', name: 'AMC+ (on Amazon)', cinema: false, color: '#000', images: { logo: null } },
-    { source: 'tubi', name: 'Tubi TV (free)', cinema: false, color: '#fa382f', images: null },
-    { source: 'fandango', name: 'Fandango', cinema: true, color: '#f60', images: null },
-  ],
-}];
+const body = [
+  {
+    us: [
+      {
+        source: 'netflix',
+        name: 'Netflix',
+        cinema: false,
+        color: '#e50914',
+        images: { logo: 'media.trakt.tv/netflix.webp', channel: null },
+      },
+      { source: 'amc_plus_amazon', name: 'AMC+ (on Amazon)', cinema: false, color: '#000', images: { logo: null } },
+      { source: 'tubi', name: 'Tubi TV (free)', cinema: false, color: '#fa382f', images: null },
+      { source: 'fandango', name: 'Fandango', cinema: true, color: '#f60', images: null },
+    ],
+  },
+];
 
 const sources = toFilterSources(body, 'us');
 
@@ -59,7 +61,10 @@ describe('util: watchNowOptions', () => {
     const [favorites, , services] = watchNowOptions({ sources, country: 'us', favorites: ['netflix'] });
     expect(favorites).toEqual({
       label: 'Your Favorites',
-      options: [{ value: 'favorites', label: 'All Favorites' }, { value: 'netflix', label: 'Netflix' }],
+      options: [
+        { value: 'favorites', label: 'All Favorites' },
+        { value: 'netflix', label: 'Netflix' },
+      ],
     });
     expect(services?.options.map((option) => option.value)).toEqual(['amc_plus_amazon', 'tubi']);
   });

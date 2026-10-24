@@ -77,10 +77,10 @@ export function toSeasonSummary(params: Params) {
     overview: season.overview || show.overview,
     rating: premiered
       ? {
-        value: ratings.rating ?? season.rating ?? 0,
-        votes: ratings.votes ?? season.votes ?? 0,
-        href: `${href}/stats`,
-      }
+          value: ratings.rating ?? season.rating ?? 0,
+          votes: ratings.votes ?? season.votes ?? 0,
+          href: `${href}/stats`,
+        }
       : undefined,
     commentCount: stats.comments,
     listCount: stats.lists,
@@ -90,15 +90,16 @@ export function toSeasonSummary(params: Params) {
     facts: {
       premiere: first
         ? {
-          label: new Date(first) > now ? 'Premieres' : 'Premiered',
-          date: formatDate(first, { ...datePreferences, format: 'LL' }),
-        }
+            label: new Date(first) > now ? 'Premieres' : 'Premiered',
+            date: formatDate(first, { ...datePreferences, format: 'LL' }),
+          }
         : undefined,
       network: networkLink,
       runtime: show.runtime ? formatRuntime(show.runtime) : undefined,
-      totalRuntime: total > 0
-        ? { time: formatRuntime(total), episodes: countLabel(season.aired_episodes ?? aired.length, 'episode') }
-        : undefined,
+      totalRuntime:
+        total > 0
+          ? { time: formatRuntime(total), episodes: countLabel(season.aired_episodes ?? aired.length, 'episode') }
+          : undefined,
       country: show.country ? { name: countryName(show.country), href: popular('countries', show.country) } : undefined,
       languages: (show.languages ?? []).map((code) => ({ name: languageName(code), href: popular('languages', code) })),
       genres: (show.genres ?? []).map((genre) => ({ name: genreLabel(genre), href: popular('genres', genre) })),
@@ -109,11 +110,13 @@ export function toSeasonSummary(params: Params) {
     crew: toCrewGroups(params.people.crew, params.actorSpoilers),
     episodes: episodeList.rows,
     seasonLinks: [
-      ...seasons.toSorted((a, b) => b.number - a.number).map(({ number }) => ({
-        text: number === 0 ? 'Specials' : `${number}`,
-        href: `${showHref}/seasons/${number}`,
-        selected: number === season.number,
-      })),
+      ...seasons
+        .toSorted((a, b) => b.number - a.number)
+        .map(({ number }) => ({
+          text: number === 0 ? 'Specials' : `${number}`,
+          href: `${showHref}/seasons/${number}`,
+          selected: number === season.number,
+        })),
       { text: 'All', href: `${showHref}/seasons/all`, selected: false },
     ],
     ...seasonNeighbours({ showHref, number: season.number, seasons }),

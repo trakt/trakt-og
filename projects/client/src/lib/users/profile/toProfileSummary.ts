@@ -119,7 +119,7 @@ export function toFavoriteCard(row: FavoriteRow): FavoriteCard {
     year: media.year ?? undefined,
     image: imageUrl(media.images?.poster?.at(0), 'thumb'),
     rating: media.rating ?? undefined,
-    airedEpisodes: row.type === 'show' ? row.show.aired_episodes ?? undefined : undefined,
+    airedEpisodes: row.type === 'show' ? (row.show.aired_episodes ?? undefined) : undefined,
     gradient: [start, end],
     notes: row.notes?.trim() || null,
   };

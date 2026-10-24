@@ -4,11 +4,14 @@ import type { OverlaySlices } from './OverlaySlices.ts';
 export function collectedCounts(slices: Partial<Pick<OverlaySlices, 'collectedShows' | 'collectedMovies'>>) {
   const shows = slices.collectedShows;
   return {
-    episodes: shows && [...shows.values()].reduce(
-      (total, seasons) => total + [...seasons.values()].reduce((count, episodes) => count + episodes.size, 0),
-      0,
-    ),
-    shows: shows &&
+    episodes:
+      shows &&
+      [...shows.values()].reduce(
+        (total, seasons) => total + [...seasons.values()].reduce((count, episodes) => count + episodes.size, 0),
+        0,
+      ),
+    shows:
+      shows &&
       [...shows.values()].filter((seasons) => [...seasons.values()].some((episodes) => episodes.size > 0)).length,
     movies: slices.collectedMovies?.size,
   };

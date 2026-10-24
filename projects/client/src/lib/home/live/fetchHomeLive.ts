@@ -8,8 +8,10 @@ async function watchingOf(
   title: HomeTrendingTitle,
 ): Promise<HomeWatchingSource | null> {
   const request = { params: { id: title.slug }, query: { extended: 'full' as const } };
-  const response = await (title.type === 'shows' ? client.shows.watching(request) : client.movies.watching(request))
-    .catch(() => null);
+  const response = await (title.type === 'shows'
+    ? client.shows.watching(request)
+    : client.movies.watching(request)
+  ).catch(() => null);
   if (response?.status !== 200) return null;
   return { type: title.type, title: title.title, year: title.year, href: title.href, watchers: response.body };
 }

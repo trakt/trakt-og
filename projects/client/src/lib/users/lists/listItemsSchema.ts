@@ -11,10 +11,12 @@ const media = z.object({
  * The first items of a watchlist or favorites (`/users/:id/{watchlist,favorites}/:type/rank/asc`), for the row's
  * posters. `@trakt/api` types these as movies and shows only, and the watchlist also holds seasons and episodes.
  */
-export const listItemsSchema = z.array(z.object({
-  type: z.enum(['movie', 'show', 'season', 'episode']),
-  movie: media.nullish(),
-  show: media.nullish(),
-  season: media.nullish(),
-  episode: media.nullish(),
-}));
+export const listItemsSchema = z.array(
+  z.object({
+    type: z.enum(['movie', 'show', 'season', 'episode']),
+    movie: media.nullish(),
+    show: media.nullish(),
+    season: media.nullish(),
+    episode: media.nullish(),
+  }),
+);

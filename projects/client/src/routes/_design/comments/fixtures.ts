@@ -51,14 +51,7 @@ export const review = comment({
   user: member('sample_reviewer', 'Sample Reviewer'),
   comment: [
     'A crime movie that actually understands what makes the genre work.',
-    ...[
-      'direction',
-      'score',
-      'cast',
-      'editing',
-      'cinematography',
-      'ending',
-    ].map(paragraph),
+    ...['direction', 'score', 'cast', 'editing', 'cinematography', 'ending'].map(paragraph),
   ].join('\n\n'),
 });
 
@@ -75,7 +68,7 @@ export const formatting = comment({
     '> A quote from the show.\n> > And one inside it.',
     '~1 An author paragraph, with its coloured rule.',
     'Links for trakt.tv/shows/breaking-bad and [the IMDb page](https://www.imdb.com/title/tt0903747/), a video at ' +
-    'https://www.youtube.com/watch?v=HhesaQXLuRY, but not https://example.com or [this](https://example.com).',
+      'https://www.youtube.com/watch?v=HhesaQXLuRY, but not https://example.com or [this](https://example.com).',
     'Hi @og_tester :wave: :thumbsup_tone3: The ending: [spoiler]the finale has a twist[/spoiler].',
     // Split, or the demo's own <script> block would end here.
     `<${'script'}>alert("HTML stays text")</${'script'}> <b>not bold</b>`,

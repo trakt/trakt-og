@@ -13,8 +13,14 @@ const ids = (columns: GifEntry[][]) => columns.map((column) => column.map((entry
 
 describe('toGifColumns', () => {
   it('should spread square GIFs round robin', () => {
-    const columns = toGifColumns(['a', 'b', 'c', 'd', 'e'].map((id) => gif(id, 100, 100)), 2);
-    expect(ids(columns)).toEqual([['a', 'c', 'e'], ['b', 'd']]);
+    const columns = toGifColumns(
+      ['a', 'b', 'c', 'd', 'e'].map((id) => gif(id, 100, 100)),
+      2,
+    );
+    expect(ids(columns)).toEqual([
+      ['a', 'c', 'e'],
+      ['b', 'd'],
+    ]);
   });
 
   it('should always append to the shortest column', () => {

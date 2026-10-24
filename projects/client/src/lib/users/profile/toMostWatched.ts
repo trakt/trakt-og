@@ -74,7 +74,7 @@ function toCard(type: MostWatchedType, { media, plays, minutes }: Tally): MostWa
     title: media.title,
     image: imageUrl(media.images?.poster?.at(0), 'thumb'),
     rating: media.rating ?? undefined,
-    airedEpisodes: type === 'shows' ? media.aired_episodes ?? undefined : undefined,
+    airedEpisodes: type === 'shows' ? (media.aired_episodes ?? undefined) : undefined,
     time: formatRuntime(minutes),
     plays: countLabel(plays, 'play'),
   };
@@ -83,7 +83,10 @@ function toCard(type: MostWatchedType, { media, plays, minutes }: Tally): MostWa
 const DEFAULT_SORT: Readonly<Record<MostWatchedType, MostWatchedSort>> = { shows: 'plays', movies: 'time' };
 
 const top = (type: MostWatchedType, sortBy: MostWatchedSort, tallies: readonly Tally[]) =>
-  tallies.toSorted(sortBy === 'plays' ? byPlays : byTime).slice(0, LIMIT).map((tally) => toCard(type, tally));
+  tallies
+    .toSorted(sortBy === 'plays' ? byPlays : byTime)
+    .slice(0, LIMIT)
+    .map((tally) => toCard(type, tally));
 
 // Last 30 Days: plays counted per show or movie, and every play's own runtime summed, like OG's charts query with
 // `watched_at >= 30 days ago`.
@@ -107,9 +110,10 @@ function fromHistory(rows: readonly HistoryRow[]): Tally[] {
 // time uses the show's runtime for every play.
 function fromWatched(rows: readonly WatchedItemRow[]): Tally[] {
   return rows.map((row): Tally => {
-    const [media, runtime] = 'movie' in row
-      ? [row.movie, playRuntime({ movie: row.movie })]
-      : [row.show, playRuntime({ episode: {}, show: row.show })];
+    const [media, runtime] =
+      'movie' in row
+        ? [row.movie, playRuntime({ movie: row.movie })]
+        : [row.show, playRuntime({ episode: {}, show: row.show })];
     return { media, plays: row.plays, minutes: row.plays * runtime, lastWatchedAt: row.last_watched_at };
   });
 }
@@ -121,7 +125,11 @@ function fromWatched(rows: readonly WatchedItemRow[]): Tally[] {
  */
 export function toMostWatched(
   type: MostWatchedType,
-  { history, watched, prefs }: {
+  {
+    history,
+    watched,
+    prefs,
+  }: {
     history: readonly HistoryRow[];
     watched: readonly WatchedItemRow[];
     prefs?: MostWatchedPrefs | null;

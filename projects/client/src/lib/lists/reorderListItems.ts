@@ -25,6 +25,6 @@ export async function reorderListItems({ owner, listId, rank, request, notify, f
   } catch {
     // A network failure or an unexpected body gets the generic toast.
   }
-  if (response?.status !== 429) notify.error(failure ?? await listWriteError(response));
+  if (response?.status !== 429) notify.error(failure ?? (await listWriteError(response)));
   return false;
 }

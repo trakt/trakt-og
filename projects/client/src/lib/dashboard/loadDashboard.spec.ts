@@ -21,18 +21,17 @@ const server = setupServer(
     seen.push(request);
     return HttpResponse.json(profile, { headers: { 'X-Runtime': '0.1' } });
   }),
-  http.get(
-    `${API}/users/me/stats`,
-    () => HttpResponse.json(dashboardFrameFixture.newStats),
-  ),
+  http.get(`${API}/users/me/stats`, () => HttpResponse.json(dashboardFrameFixture.newStats)),
   http.get(`${API}/users/me/watching`, () => new HttpResponse(null, { status: 204 })),
   http.get(`${API}/users/requests`, ({ request }) => {
     seen.push(request);
-    return HttpResponse.json([{
-      id: 1,
-      requested_at: '2026-09-29T22:00:00Z',
-      user: { ...profile, name: 'Toby Gerlach' },
-    }]);
+    return HttpResponse.json([
+      {
+        id: 1,
+        requested_at: '2026-09-29T22:00:00Z',
+        user: { ...profile, name: 'Toby Gerlach' },
+      },
+    ]);
   }),
   http.get(`${API}/*`, () => HttpResponse.json([])),
 );
@@ -90,7 +89,7 @@ describe('loadDashboard', () => {
   it("should redirect, not throw, on the worker's plain-text 401 for every frame read", async () => {
     server.use(
       ...['/users/me', '/users/me/stats', '/users/me/watching', '/users/requests'].map((path) =>
-        http.get(`${API}${path}`, () => workerUnauthorized())
+        http.get(`${API}${path}`, () => workerUnauthorized()),
       ),
     );
     await expect(load()).rejects.toMatchObject({ status: 302, location: '/' });
@@ -132,10 +131,12 @@ describe('loadDashboard', () => {
 
   it("should load the panels in the viewer's settings", async () => {
     const upNext: URL[] = [];
-    server.use(http.get(`${API}/sync/progress/up_next_nitro`, ({ request }) => {
-      upNext.push(new URL(request.url));
-      return HttpResponse.json([]);
-    }));
+    server.use(
+      http.get(`${API}/sync/progress/up_next_nitro`, ({ request }) => {
+        upNext.push(new URL(request.url));
+        return HttpResponse.json([]);
+      }),
+    );
     const settings = {
       browsing: { progress: { on_deck: { sort: 'title', sort_how: 'desc', simple_progress: true } } },
     };

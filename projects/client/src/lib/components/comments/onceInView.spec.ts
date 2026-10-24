@@ -6,7 +6,10 @@ function stubObserver() {
   const created: FakeObserver[] = [];
   class FakeObserver {
     observed = new Set<Element>();
-    constructor(readonly callback: (entries: Entries) => void, readonly options?: IntersectionObserverInit) {
+    constructor(
+      readonly callback: (entries: Entries) => void,
+      readonly options?: IntersectionObserverInit,
+    ) {
       created.push(this);
     }
     observe = (element: Element) => this.observed.add(element);

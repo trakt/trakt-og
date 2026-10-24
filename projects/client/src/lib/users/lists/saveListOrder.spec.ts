@@ -23,11 +23,13 @@ const save = () =>
   });
 describe('saveListOrder', () => {
   it('should save the complete numeric order on the viewer endpoint', async () => {
-    server.use(http.post(endpoint, async ({ request }) => {
-      expect(request.headers.get('authorization')).toBe('Bearer viewer');
-      expect(await request.json()).toEqual({ rank: [3, 1, 2] });
-      return HttpResponse.json({ updated: 3, skipped_ids: [] }, { headers: { 'X-Runtime': '0.04' } });
-    }));
+    server.use(
+      http.post(endpoint, async ({ request }) => {
+        expect(request.headers.get('authorization')).toBe('Bearer viewer');
+        expect(await request.json()).toEqual({ rank: [3, 1, 2] });
+        return HttpResponse.json({ updated: 3, skipped_ids: [] }, { headers: { 'X-Runtime': '0.04' } });
+      }),
+    );
     expect(await save()).toBe(true);
   });
   it('should keep an order the API took every id of, whatever its updated count', async () => {

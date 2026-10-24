@@ -37,7 +37,15 @@ describe('relatedThreads', () => {
 
   it('should lead with people once a pick shares some, without moving the picks', () => {
     const cards = [card(1, ['drugs', 'outlaw']), card(2, ['dark'])];
-    const people = new Map([[2, [{ id: 11, name: 'Bob Odenkirk' }, { id: 99, name: 'Someone Else' }]]]);
+    const people = new Map([
+      [
+        2,
+        [
+          { id: 11, name: 'Bob Odenkirk' },
+          { id: 99, name: 'Someone Else' },
+        ],
+      ],
+    ]);
     const { threads, picks } = relatedThreads({ source, cards, people });
     expect(threads.at(0)).toEqual({ id: '@people', label: 'People', count: 1, people: true });
     expect(picks.map(({ card }) => card.id)).toEqual([1, 2]);

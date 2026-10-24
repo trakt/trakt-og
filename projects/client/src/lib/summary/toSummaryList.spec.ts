@@ -44,13 +44,17 @@ describe('toSummaryList', () => {
   });
 
   it('should send official lists to their page with their pill', () => {
-    expect(toSummaryList(list({ type: 'official', ids: { trakt: 9, slug: 'deadpool-collection' } })))
-      .toMatchObject({ href: '/lists/official/deadpool-collection', pills: ['Official List'] });
+    expect(toSummaryList(list({ type: 'official', ids: { trakt: 9, slug: 'deadpool-collection' } }))).toMatchObject({
+      href: '/lists/official/deadpool-collection',
+      pills: ['Official List'],
+    });
   });
 
   it('should mark private and friends lists, and drop the comment count when comments are off', () => {
-    expect(toSummaryList(list({ privacy: 'private', allow_comments: false })))
-      .toMatchObject({ pills: ['Private'], commentCount: undefined });
+    expect(toSummaryList(list({ privacy: 'private', allow_comments: false }))).toMatchObject({
+      pills: ['Private'],
+      commentCount: undefined,
+    });
     expect(toSummaryList(list({ privacy: 'friends' })).pills).toEqual(['Following']);
   });
 

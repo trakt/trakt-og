@@ -20,25 +20,32 @@ const crewMember = (trakt: number, name: string, jobs: string[]) => ({
 describe('toCredits', () => {
   it('should keep the actor tabs in order and drop empty ones', () => {
     const { actors } = toCredits({
-      actors: [{ label: 'Season Regulars', members: [walter] }, { label: 'Guest Stars', members: [] }],
+      actors: [
+        { label: 'Season Regulars', members: [walter] },
+        { label: 'Guest Stars', members: [] },
+      ],
       crew: null,
       episodeCounts: true,
     });
 
-    expect(actors).toEqual([{
-      id: 'season-regulars',
-      label: 'Season Regulars',
-      count: '1',
-      people: [{
-        id: 1,
-        name: 'Bryan Cranston',
-        href: '/people/bryan-cranston',
-        image: expect.stringContaining('/headshots/'),
-        role: 'Walter White, Heisenberg',
-        episodes: '62 episodes',
-        episodeCount: 62,
-      }],
-    }]);
+    expect(actors).toEqual([
+      {
+        id: 'season-regulars',
+        label: 'Season Regulars',
+        count: '1',
+        people: [
+          {
+            id: 1,
+            name: 'Bryan Cranston',
+            href: '/people/bryan-cranston',
+            image: expect.stringContaining('/headshots/'),
+            role: 'Walter White, Heisenberg',
+            episodes: '62 episodes',
+            episodeCount: 62,
+          },
+        ],
+      },
+    ]);
   });
 
   it('should leave the episode count out for movies and episodes', () => {

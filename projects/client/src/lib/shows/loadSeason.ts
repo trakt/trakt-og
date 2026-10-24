@@ -39,7 +39,7 @@ export async function loadSeason({ fetch, parent, id, season: requestedSeason, u
       country: watchNowCountry(layout.settings),
       settings: layout.settings,
       isVip: layout.user?.isVip ?? false,
-    })
+    }),
   );
   const [
     showResponse,

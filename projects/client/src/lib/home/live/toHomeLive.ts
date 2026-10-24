@@ -53,13 +53,17 @@ const toCountry = (code: string, seen: readonly Seen[]): HomeLiveCountry => ({
 export function toHomeLive(sources: readonly HomeWatchingSource[]): HomeLive {
   const people = new Map<string, Seen>(
     sources.flatMap((source) =>
-      source.watchers.map(({ username, location }) =>
-        [username, { type: source.type, code: countryOfLocation(location), source }] as const
-      )
+      source.watchers.map(
+        ({ username, location }) =>
+          [username, { type: source.type, code: countryOfLocation(location), source }] as const,
+      ),
     ),
   );
   const seen = [...people.values()];
-  const byCountry = Map.groupBy(seen.filter(({ code }) => code !== null), ({ code }) => code ?? '');
+  const byCountry = Map.groupBy(
+    seen.filter(({ code }) => code !== null),
+    ({ code }) => code ?? '',
+  );
 
   return {
     shows: seen.filter(({ type }) => type === 'shows').length,

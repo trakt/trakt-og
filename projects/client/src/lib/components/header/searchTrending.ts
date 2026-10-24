@@ -37,13 +37,15 @@ async function mostSearched(
   kinds: readonly ('movies' | 'shows')[],
   signal?: AbortSignal,
 ) {
-  const responses = await Promise.all(kinds.map((kind) =>
-    client.search.trending({
-      params: { type: kind },
-      query: { limit: SHOWN, extended: 'full,images' },
-      fetchOptions: { signal },
-    })
-  ));
+  const responses = await Promise.all(
+    kinds.map((kind) =>
+      client.search.trending({
+        params: { type: kind },
+        query: { limit: SHOWN, extended: 'full,images' },
+        fetchOptions: { signal },
+      }),
+    ),
+  );
   if (responses.some((response) => response.status !== 200)) failed();
 
   return responses
@@ -53,8 +55,8 @@ async function mostSearched(
       hit.type === 'movie'
         ? toSearchRow({ type: 'movie', score: hit.count, movie: hit.movie })
         : hit.type === 'show'
-        ? toSearchRow({ type: 'show', score: hit.count, show: hit.show })
-        : null
+          ? toSearchRow({ type: 'show', score: hit.count, show: hit.show })
+          : null,
     )
     .filter((row) => row !== null)
     .slice(0, SHOWN);
@@ -64,9 +66,7 @@ async function mostSearched(
 async function trendingLists(client: ReturnType<typeof api>, signal?: AbortSignal) {
   const response = await client.lists.trending({ query: { limit: SHOWN, extended: 'full' }, fetchOptions: { signal } });
   if (response.status !== 200) return failed();
-  return response.body
-    .map(({ list }) => toSearchRow({ type: 'list', score: 0, list }))
-    .filter((row) => row !== null);
+  return response.body.map(({ list }) => toSearchRow({ type: 'list', score: 0, list })).filter((row) => row !== null);
 }
 
 // The API keeps no trending people, so People shows this month's birthdays, like v3's search.
@@ -81,9 +81,13 @@ async function birthdays({ fetch, signal, today, order }: Omit<SearchTrendingPar
  * What the header dropdown lists for a type before anything is typed: the most searched shows and movies, the trending
  * lists, or this month's birthdays for People. The other types have nothing.
  */
-export async function searchTrending(
-  { type, today, order, fetch, signal }: SearchTrendingParams,
-): Promise<SearchTrending> {
+export async function searchTrending({
+  type,
+  today,
+  order,
+  fetch,
+  signal,
+}: SearchTrendingParams): Promise<SearchTrending> {
   const client = api({ fetch });
   const kinds = KINDS[type.slug];
   if (kinds) return { label: 'Most Searched', rows: await mostSearched(client, kinds, signal) };

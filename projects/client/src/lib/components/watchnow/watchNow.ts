@@ -104,10 +104,10 @@ export function toWatchNowButton(params: WatchNowButtonParams): WatchNowButton {
   const { path, offers, order, sources, country, favorites, onlyFavorites, isVip } = params;
   const slugs = offerSlugs(offers);
   const liked = favoriteSlugs(favorites, country, country).filter((slug) => slugs.includes(slug));
-  const ranked = order?.flatMap((key) => (key.startsWith(`${country}-`) ? [key.slice(country.length + 1)] : [])) ??
-    slugs;
-  const cinemaOnly = (offers?.cinema.length ?? 0) > 0 &&
-    slugs.every((slug) => offers?.cinema.some((offer) => offer.source === slug));
+  const ranked =
+    order?.flatMap((key) => (key.startsWith(`${country}-`) ? [key.slice(country.length + 1)] : [])) ?? slugs;
+  const cinemaOnly =
+    (offers?.cinema.length ?? 0) > 0 && slugs.every((slug) => offers?.cinema.some((offer) => offer.source === slug));
 
   return {
     path,

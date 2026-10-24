@@ -16,12 +16,17 @@ export type FilterSource = {
 export function toFilterSources(body: unknown, country: string): Map<string, FilterSource> {
   const rows = watchNowSourcesSchema.parse(body).flatMap((byCountry) => byCountry[country] ?? []);
   return new Map(
-    rows.filter(({ cinema }) => !cinema).map(({ source, name, color, images }) => [source, {
-      name: name.trim(),
-      color: color ?? '#000',
-      ...(images?.logo && { logo: https(images.logo) }),
-      ...(images?.channel && { channel: https(images.channel) }),
-    }]),
+    rows
+      .filter(({ cinema }) => !cinema)
+      .map(({ source, name, color, images }) => [
+        source,
+        {
+          name: name.trim(),
+          color: color ?? '#000',
+          ...(images?.logo && { logo: https(images.logo) }),
+          ...(images?.channel && { channel: https(images.channel) }),
+        },
+      ]),
   );
 }
 
@@ -80,13 +85,15 @@ type WatchNowTilesParams = Omit<WatchNowOptionsParams, 'favorites'> & {
  * first, then each service. "All Favorites" shows the favorites themselves. Unknown slugs are skipped, like OG.
  */
 export function watchNowTiles({ watchnow, sources, country, favorites }: WatchNowTilesParams): WatchNowTile[] {
-  const bundles = watchNowBundles.filter(({ id }) => watchnow.includes(id)).map(({ id, name }) => ({
-    kind: 'bundle' as const,
-    id,
-    name,
-    country: country.toUpperCase(),
-  }));
-  const slugs = [...new Set(watchnow.flatMap((value) => value === 'favorites' ? favorites : [value]))];
+  const bundles = watchNowBundles
+    .filter(({ id }) => watchnow.includes(id))
+    .map(({ id, name }) => ({
+      kind: 'bundle' as const,
+      id,
+      name,
+      country: country.toUpperCase(),
+    }));
+  const slugs = [...new Set(watchnow.flatMap((value) => (value === 'favorites' ? favorites : [value])))];
   const services = slugs.flatMap((id) => {
     const source = sources.get(id);
     return source ? [{ kind: 'service' as const, id, source }] : [];

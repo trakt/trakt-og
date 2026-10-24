@@ -18,13 +18,15 @@ const calls: Request[] = [];
 const server = setupServer(
   http.get(`${API}/sync/progress/up_next_nitro`, ({ request }) => {
     calls.push(request);
-    return HttpResponse.json([{
-      ...entry,
-      progress: {
-        ...entry.progress,
-        next_episode: { ...entry.progress.next_episode, number: 6, title: 'Next episode', ids: { trakt: 200 } },
+    return HttpResponse.json([
+      {
+        ...entry,
+        progress: {
+          ...entry.progress,
+          next_episode: { ...entry.progress.next_episode, number: 6, title: 'Next episode', ids: { trakt: 200 } },
+        },
       },
-    }]);
+    ]);
   }),
   http.get(`${API}/shows/1388`, ({ request }) => {
     calls.push(request);
@@ -36,7 +38,15 @@ const server = setupServer(
       ...entry.progress,
       completed: entry.progress.aired,
       next_episode: null,
-      seasons: [{ number: 2, episodes: [{ number: 5, completed: true }, { number: 6, completed: false }] }],
+      seasons: [
+        {
+          number: 2,
+          episodes: [
+            { number: 5, completed: true },
+            { number: 6, completed: false },
+          ],
+        },
+      ],
     });
   }),
 );
@@ -62,34 +72,42 @@ describe('fetchOnDeckItem', () => {
     expect(calls.at(0)?.headers.get('authorization')).toBe('Bearer fake');
   });
   it('should preserve season posters and exact or simple progress when swapping episodes', async () => {
-    server.use(http.get(`${API}/shows/1388/seasons`, ({ request }) => {
-      expect(request.headers.get('authorization')).toBeNull();
-      return HttpResponse.json([{ number: 2, ids: { trakt: 2 }, images: { poster: ['images.trakt.tv/season.jpg'] } }]);
-    }));
+    server.use(
+      http.get(`${API}/shows/1388/seasons`, ({ request }) => {
+        expect(request.headers.get('authorization')).toBeNull();
+        return HttpResponse.json([
+          { number: 2, ids: { trakt: 2 }, images: { poster: ['images.trakt.tv/season.jpg'] } },
+        ]);
+      }),
+    );
     const settings = { ...toDashboardSettings({ settings: null }).upNext, poster: 'season' as const };
     expect(await fetchOnDeckItem({ item, username: 'tester', fetch: authorized, settings })).toMatchObject({
       poster: 'https://images.trakt.tv/season.jpg',
       ticks: [true, false],
     });
     expect(
-      (await fetchOnDeckItem({
-        item,
-        username: 'tester',
-        fetch: authorized,
-        settings: { ...settings, simpleProgress: true },
-      })).ticks,
+      (
+        await fetchOnDeckItem({
+          item,
+          username: 'tester',
+          fetch: authorized,
+          settings: { ...settings, simpleProgress: true },
+        })
+      ).ticks,
     ).toBeUndefined();
   });
   it('should find a rewatch beyond the first page and keep lifetime progress', async () => {
-    server.use(http.get(`${API}/sync/progress/up_next_nitro`, ({ request }) => {
-      const page = new URL(request.url).searchParams.get('page');
-      return HttpResponse.json(
-        page === '1'
-          ? []
-          : [{ ...entry, progress: { ...entry.progress, completed: 0, reset_at: '2026-09-30T12:00:00Z' } }],
-        { headers: { 'X-Pagination-Page-Count': '2' } },
-      );
-    }));
+    server.use(
+      http.get(`${API}/sync/progress/up_next_nitro`, ({ request }) => {
+        const page = new URL(request.url).searchParams.get('page');
+        return HttpResponse.json(
+          page === '1'
+            ? []
+            : [{ ...entry, progress: { ...entry.progress, completed: 0, reset_at: '2026-09-30T12:00:00Z' } }],
+          { headers: { 'X-Pagination-Page-Count': '2' } },
+        );
+      }),
+    );
     expect(await refresh()).toMatchObject({
       rewatching: true,
       progress: { completed: 0 },
@@ -107,7 +125,8 @@ describe('fetchOnDeckItem', () => {
           stats: { play_count: 52, minutes_watched: 52 * 47, minutes_left: 22 * 47 },
           seasons: [],
           hidden_seasons: [],
-        })),
+        }),
+      ),
     );
     const settings = { ...toDashboardSettings({ settings: null }).upNext, simpleProgress: true };
 
@@ -131,8 +150,9 @@ describe('fetchOnDeckItem', () => {
       completionLabel: 'Ended',
       progress: { completed: 62, aired: 62 },
     });
-    expect(calls.find((request) => new URL(request.url).pathname === '/shows/1388')?.headers.get('authorization'))
-      .toBeNull();
+    expect(
+      calls.find((request) => new URL(request.url).pathname === '/shows/1388')?.headers.get('authorization'),
+    ).toBeNull();
   });
   it('should say Returns next season for a continuing show', async () => {
     server.use(

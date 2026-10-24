@@ -56,63 +56,70 @@ export function toExternalRatings({ ratings, rank }: ExternalRatingsParams): Ext
   const tomatometer = rt ? tomatometerLogo(rt) : 'fresh';
 
   const entries: (ExternalRating | false)[] = [
-    (imdb?.rating ?? 0) > 0 && !!imdb?.link && {
-      logo: 'imdb',
-      title: 'IMDb',
-      detail: votes(imdb.votes),
-      href: `${imdb.link}/ratings`,
-      rating: (imdb.rating ?? 0).toFixed(1),
-      score: Math.round(Number((imdb.rating ?? 0).toFixed(1)) * 10),
-    },
-    stars > 0 && !!letterboxd?.link && {
-      logo: 'letterboxd',
-      title: 'Letterboxd',
-      detail: votes(letterboxd.votes),
-      href: letterboxd.link,
-      rating: stars.toFixed(1),
-      score: Math.round(stars * 20),
-    },
-    (tmdb?.rating ?? 0) > 0 && !!tmdb?.link && {
-      logo: 'tmdb',
-      title: 'TMDB',
-      detail: votes(tmdb.votes),
-      href: tmdb.link,
-      rating: `${Math.trunc(((tmdb.rating ?? 0) / 10) * 100)}%`,
-      score: Math.trunc(((tmdb.rating ?? 0) / 10) * 100),
-    },
-    (rt?.rating ?? 0) > 0 && !!rt?.link && {
-      logo: `tomatometer-${tomatometer}`,
-      title: 'Rotten Tomatoes',
-      detail: `Tomatometer · ${capitalize(tomatometer)}`,
-      href: rt.link,
-      rating: `${rt.rating}%`,
-      score: rt.rating ?? 0,
-    },
-    (rt?.user_rating ?? 0) > 0 && !!rt?.link && {
-      logo: `audience-${audienceLogo(rt)}`,
-      title: 'Rotten Tomatoes',
-      detail: 'Popcornmeter',
-      href: rt.link,
-      rating: `${rt.user_rating}%`,
-      score: rt.user_rating ?? 0,
-    },
-    (metascore?.rating ?? 0) > 0 && !!metascore?.link && {
-      logo: 'metacritic',
-      title: 'Metacritic',
-      detail: 'Metascore',
-      href: metascore.link,
-      rating: String(metascore.rating),
-      score: metascore.rating ?? 0,
-      metascore: metascoreBand(metascore.rating ?? 0),
-    },
-    !!rank?.rank && !!rank.link && {
-      logo: 'justwatch',
-      title: 'JustWatch',
-      detail: '30 Day Streaming Rank',
-      href: rank.link,
-      rating: String(rank.rank),
-      change: rankChange(rank.delta),
-    },
+    (imdb?.rating ?? 0) > 0 &&
+      !!imdb?.link && {
+        logo: 'imdb',
+        title: 'IMDb',
+        detail: votes(imdb.votes),
+        href: `${imdb.link}/ratings`,
+        rating: (imdb.rating ?? 0).toFixed(1),
+        score: Math.round(Number((imdb.rating ?? 0).toFixed(1)) * 10),
+      },
+    stars > 0 &&
+      !!letterboxd?.link && {
+        logo: 'letterboxd',
+        title: 'Letterboxd',
+        detail: votes(letterboxd.votes),
+        href: letterboxd.link,
+        rating: stars.toFixed(1),
+        score: Math.round(stars * 20),
+      },
+    (tmdb?.rating ?? 0) > 0 &&
+      !!tmdb?.link && {
+        logo: 'tmdb',
+        title: 'TMDB',
+        detail: votes(tmdb.votes),
+        href: tmdb.link,
+        rating: `${Math.trunc(((tmdb.rating ?? 0) / 10) * 100)}%`,
+        score: Math.trunc(((tmdb.rating ?? 0) / 10) * 100),
+      },
+    (rt?.rating ?? 0) > 0 &&
+      !!rt?.link && {
+        logo: `tomatometer-${tomatometer}`,
+        title: 'Rotten Tomatoes',
+        detail: `Tomatometer · ${capitalize(tomatometer)}`,
+        href: rt.link,
+        rating: `${rt.rating}%`,
+        score: rt.rating ?? 0,
+      },
+    (rt?.user_rating ?? 0) > 0 &&
+      !!rt?.link && {
+        logo: `audience-${audienceLogo(rt)}`,
+        title: 'Rotten Tomatoes',
+        detail: 'Popcornmeter',
+        href: rt.link,
+        rating: `${rt.user_rating}%`,
+        score: rt.user_rating ?? 0,
+      },
+    (metascore?.rating ?? 0) > 0 &&
+      !!metascore?.link && {
+        logo: 'metacritic',
+        title: 'Metacritic',
+        detail: 'Metascore',
+        href: metascore.link,
+        rating: String(metascore.rating),
+        score: metascore.rating ?? 0,
+        metascore: metascoreBand(metascore.rating ?? 0),
+      },
+    !!rank?.rank &&
+      !!rank.link && {
+        logo: 'justwatch',
+        title: 'JustWatch',
+        detail: '30 Day Streaming Rank',
+        href: rank.link,
+        rating: String(rank.rank),
+        change: rankChange(rank.delta),
+      },
   ];
 
   return entries.filter((entry) => entry !== false);

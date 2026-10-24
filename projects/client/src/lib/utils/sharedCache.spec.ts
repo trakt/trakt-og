@@ -43,8 +43,7 @@ describe('util: sharedCache', () => {
 
     expect(
       await sharedCache({ cache, key: KEY, ttlSeconds: 60, parse: isCount, load: () => Promise.resolve({ count: 3 }) }),
-    )
-      .toEqual({ count: 3 });
+    ).toEqual({ count: 3 });
     expect(kept.get(KEY)).toBe('{"count":3}');
   });
 
@@ -56,8 +55,7 @@ describe('util: sharedCache', () => {
 
     expect(
       await sharedCache({ cache, key: KEY, ttlSeconds: 60, parse: isCount, load: () => Promise.resolve({ count: 3 }) }),
-    )
-      .toEqual({ count: 3 });
+    ).toEqual({ count: 3 });
   });
 
   it('should load every time without a cache', async () => {

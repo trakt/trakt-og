@@ -26,10 +26,11 @@ export const ratingsBox = defineProfileBox({
   extra: { load: fetchLatestTen, when: ({ stats }) => stats.ratings.total >= MIN_RATINGS },
   score: ({ stats }) => {
     if (stats.ratings.total < MIN_RATINGS) return null;
-    return 100 * (
-      0.45 * boxMath.cap(stats.ratings.total, 1000) +
-      0.35 * ratedShare(stats) +
-      0.2 * boxMath.cap(comments(stats), 100)
+    return (
+      100 *
+      (0.45 * boxMath.cap(stats.ratings.total, 1000) +
+        0.35 * ratedShare(stats) +
+        0.2 * boxMath.cap(comments(stats), 100))
     );
   },
   view: ({ stats }, latestTen): RatingsView | null => {

@@ -15,14 +15,17 @@ type Stats = Pick<UserStatsResponse, 'movies' | 'episodes'>;
  * single item, date range or genre shows plays only. Otherwise the unique count comes from the stats, and All Types
  * takes its plays from there too. `total` is the page's item count.
  */
-export function historyCounts(
-  { type, filters, stats, total }: {
-    type: HistoryType;
-    filters: HistoryFilters;
-    stats: Stats | null;
-    total: number;
-  },
-): HistoryCounts {
+export function historyCounts({
+  type,
+  filters,
+  stats,
+  total,
+}: {
+  type: HistoryType;
+  filters: HistoryFilters;
+  stats: Stats | null;
+  total: number;
+}): HistoryCounts {
   if (type === 'shows') return { unique: { count: total, noun: 'show' } };
   if (filters.item || filters.startAt || filters.endAt || filters.genre || !stats) return { plays: total };
   if (type === 'all') {

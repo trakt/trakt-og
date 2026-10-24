@@ -22,9 +22,11 @@ const LIMIT = 100;
  * (`/sync/progress/up_next_nitro`): the first page says how many there are, then the rest load together. About five
  * requests for 440 shows. A failed page fails the whole read, so the page never shows half your shows as all of them.
  */
-export async function loadNitroProgress(
-  { request, now = Date.now, limit = LIMIT }: LoadNitroProgressParams,
-): Promise<readonly ProgressItem[]> {
+export async function loadNitroProgress({
+  request,
+  now = Date.now,
+  limit = LIMIT,
+}: LoadNitroProgressParams): Promise<readonly ProgressItem[]> {
   const read = async (page: number) => {
     const response = await request(page, limit);
     if (!response.ok) throw new Error(`up_next_nitro page ${page}: ${response.status}`);
@@ -37,9 +39,11 @@ export async function loadNitroProgress(
   const seen = new Set<number>();
 
   // A show that moves between pages while they load would come back twice.
-  return [first, ...rest].flatMap(({ body }) => body).flatMap((row) => {
-    if (seen.has(row.show.ids.trakt)) return [];
-    seen.add(row.show.ids.trakt);
-    return [toNitroItem(row, fetchedAt)];
-  });
+  return [first, ...rest]
+    .flatMap(({ body }) => body)
+    .flatMap((row) => {
+      if (seen.has(row.show.ids.trakt)) return [];
+      seen.add(row.show.ids.trakt);
+      return [toNitroItem(row, fetchedAt)];
+    });
 }

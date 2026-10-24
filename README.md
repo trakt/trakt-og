@@ -16,7 +16,6 @@ trakt-web has moved to Bun. OG Redux will follow, but for now every command here
 ## 1. Create a Trakt app
 
 OG Redux signs in with Trakt in the browser (OAuth with PKCE), so it only needs a client ID. There's no client secret.
-
 1. Go to the [Trakt developer portal](https://developer.trakt.tv/apps/new) and create a new app.
 2. Under its redirect URIs, add one per line:
    - `http://localhost:5173/callback`

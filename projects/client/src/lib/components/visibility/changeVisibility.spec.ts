@@ -21,15 +21,17 @@ async function setup(unknown = false) {
       save: () => Promise.resolve(),
       load: () =>
         Promise.resolve(
-          unknown ? [] : [
-            { name: 'dropped', activity: '', data: new Set([1, 2]) },
-            { name: 'rewatching', activity: '', data: new Map([[2, '2026-01-01']]) },
-            {
-              name: 'watchedShows',
-              activity: '',
-              data: new Map([[1, new Map([[1, new Map([[100, ['2026-01-01', '2026-10-01']]])]])]]),
-            },
-          ],
+          unknown
+            ? []
+            : [
+                { name: 'dropped', activity: '', data: new Set([1, 2]) },
+                { name: 'rewatching', activity: '', data: new Map([[2, '2026-01-01']]) },
+                {
+                  name: 'watchedShows',
+                  activity: '',
+                  data: new Map([[1, new Map([[1, new Map([[100, ['2026-01-01', '2026-10-01']]])]])]]),
+                },
+              ],
         ),
     },
   });
@@ -50,44 +52,50 @@ async function setup(unknown = false) {
 describe('changeVisibility', () => {
   it('should reset progress and restore a dropped show without deleting any history', async () => {
     const params = await setup();
-    server.use(http.post(`${API}/shows/1/progress/watched/reset`, async ({ request }) => {
-      expect(await request.json()).toEqual({ reset_at: AT });
-      expect(params.overlay.state('show', 1)).toMatchObject({
-        dropped: false,
-        rewatching: true,
-        rewatchingAt: AT,
-        watchedEpisodes: 1,
-        watchedPlays: 2,
-        rewatchedEpisodes: 1,
-        rewatchedPlays: 1,
-      });
-      return HttpResponse.json({ reset_at: AT }, { status: 201 });
-    }));
+    server.use(
+      http.post(`${API}/shows/1/progress/watched/reset`, async ({ request }) => {
+        expect(await request.json()).toEqual({ reset_at: AT });
+        expect(params.overlay.state('show', 1)).toMatchObject({
+          dropped: false,
+          rewatching: true,
+          rewatchingAt: AT,
+          watchedEpisodes: 1,
+          watchedPlays: 2,
+          rewatchedEpisodes: 1,
+          rewatchedPlays: 1,
+        });
+        return HttpResponse.json({ reset_at: AT }, { status: 201 });
+      }),
+    );
     expect(await changeVisibility({ ...params, action: 'rewatch' })).toBe(true);
     expect(params.overlay.state('show', 2)).toMatchObject({ dropped: true, rewatching: true });
   });
   it.each(['drop', 'restore'] as const)('should %s a show with the expected API body', async (action) => {
     const params = await setup();
-    server.use(http.post(`${API}/users/hidden/dropped${action === 'restore' ? '/remove' : ''}`, async ({ request }) => {
-      expect(await request.json()).toEqual({
-        shows: [{ ids: { trakt: 1 }, ...(action === 'drop' ? { hidden_at: AT } : {}) }],
-      });
-      expect(params.overlay.state('show', 1).dropped).toBe(action === 'drop');
-      return HttpResponse.json({ [action === 'restore' ? 'deleted' : 'added']: { shows: 1 } });
-    }));
+    server.use(
+      http.post(`${API}/users/hidden/dropped${action === 'restore' ? '/remove' : ''}`, async ({ request }) => {
+        expect(await request.json()).toEqual({
+          shows: [{ ids: { trakt: 1 }, ...(action === 'drop' ? { hidden_at: AT } : {}) }],
+        });
+        expect(params.overlay.state('show', 1).dropped).toBe(action === 'drop');
+        return HttpResponse.json({ [action === 'restore' ? 'deleted' : 'added']: { shows: 1 } });
+      }),
+    );
     expect(await changeVisibility({ ...params, action })).toBe(true);
   });
   it.each(['calendar', 'recommendations', 'progress_watched', 'progress_collected'] as const)(
     'should hide a show only in %s',
     async (section) => {
       const params = await setup();
-      server.use(http.post(`${API}/users/hidden/${section}`, async ({ request }) => {
-        expect(await request.json()).toEqual({ shows: [{ ids: { trakt: 1 }, hidden_at: AT }] });
-        expect(params.overlay.isHidden(section, 'show', 1)).toBe(true);
-        expect(params.overlay.isHidden(section, 'movie', 1)).toBe(false);
-        expect(params.overlay.state('show', 1).dropped).toBe(true);
-        return HttpResponse.json({ added: { shows: 1 } });
-      }));
+      server.use(
+        http.post(`${API}/users/hidden/${section}`, async ({ request }) => {
+          expect(await request.json()).toEqual({ shows: [{ ids: { trakt: 1 }, hidden_at: AT }] });
+          expect(params.overlay.isHidden(section, 'show', 1)).toBe(true);
+          expect(params.overlay.isHidden(section, 'movie', 1)).toBe(false);
+          expect(params.overlay.state('show', 1).dropped).toBe(true);
+          return HttpResponse.json({ added: { shows: 1 } });
+        }),
+      );
       expect(await changeVisibility({ ...params, action: 'hide', section })).toBe(true);
     },
   );
@@ -98,9 +106,13 @@ describe('changeVisibility', () => {
     expect(params.overlay.state('show', 1)).toMatchObject({ dropped: true, rewatching: false });
     expect(params.notify.error).toHaveBeenCalledTimes(status === 429 ? 0 : 1);
   });
-  it.each([{ added: { shows: 0 } }, { added: { shows: 1 }, not_found: { shows: [{ ids: { trakt: 1 } }] } }, {
-    wrong: true,
-  }])('should reject an unsuccessful or malformed success body', async (body) => {
+  it.each([
+    { added: { shows: 0 } },
+    { added: { shows: 1 }, not_found: { shows: [{ ids: { trakt: 1 } }] } },
+    {
+      wrong: true,
+    },
+  ])('should reject an unsuccessful or malformed success body', async (body) => {
     const params = await setup(true);
     server.use(http.post(`${API}/users/hidden/dropped`, () => HttpResponse.json(body)));
     expect(await changeVisibility({ ...params, action: 'drop' })).toBe(false);
@@ -131,12 +143,14 @@ describe('changeVisibility', () => {
 
     it('should hide it through its show without patching the hidden slice', async () => {
       const params = await setup();
-      server.use(http.post(`${API}/users/hidden/progress_watched`, async ({ request }) => {
-        expect(await request.json()).toEqual({
-          shows: [{ ids: { trakt: 1 }, seasons: [{ number: 2, hidden_at: AT }] }],
-        });
-        return HttpResponse.json({ added: { seasons: 1 }, not_found: { shows: [], seasons: [] } });
-      }));
+      server.use(
+        http.post(`${API}/users/hidden/progress_watched`, async ({ request }) => {
+          expect(await request.json()).toEqual({
+            shows: [{ ids: { trakt: 1 }, seasons: [{ number: 2, hidden_at: AT }] }],
+          });
+          return HttpResponse.json({ added: { seasons: 1 }, not_found: { shows: [], seasons: [] } });
+        }),
+      );
       expect(await changeVisibility({ ...params, target: season, action: 'hide', section: 'progress_watched' })).toBe(
         true,
       );
@@ -147,8 +161,9 @@ describe('changeVisibility', () => {
     it('should fail when API hid nothing', async () => {
       const params = await setup();
       server.use(http.post(`${API}/users/hidden/progress_collected`, () => HttpResponse.json({ added: { shows: 0 } })));
-      expect(await changeVisibility({ ...params, target: season, action: 'hide', section: 'progress_collected' }))
-        .toBe(false);
+      expect(await changeVisibility({ ...params, target: season, action: 'hide', section: 'progress_collected' })).toBe(
+        false,
+      );
       expect(params.notify.error).toHaveBeenCalledWith('Doh! We ran into some sort of error.');
     });
   });

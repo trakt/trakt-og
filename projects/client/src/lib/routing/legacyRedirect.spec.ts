@@ -16,7 +16,7 @@ describe('routing: legacyRedirect', () => {
   describe('legacyRedirect', () => {
     it('should keep the status and join the segments', () => {
       const result = thrown(() =>
-        legacyRedirect(302, ['users', 'tester', 'library'], new URL('https://og.trakt.tv/x'))
+        legacyRedirect(302, ['users', 'tester', 'library'], new URL('https://og.trakt.tv/x')),
       );
       expect(result.status).toBe(302);
       expect(result.location).toBe('/users/tester/library');
@@ -24,7 +24,7 @@ describe('routing: legacyRedirect', () => {
 
     it('should keep the query string', () => {
       const result = thrown(() =>
-        legacyRedirect(301, ['movies', 'tron'], new URL('https://og.trakt.tv/movie/tron?a=1'))
+        legacyRedirect(301, ['movies', 'tron'], new URL('https://og.trakt.tv/movie/tron?a=1')),
       );
       expect(result.status).toBe(301);
       expect(result.location).toBe('/movies/tron?a=1');

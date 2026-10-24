@@ -40,22 +40,26 @@ describe('fetchGifs', () => {
   it('should map GIFs, preferring webp, and skip sponsored and malformed items', async () => {
     const { fetch } = klipy(page([klipyGif, { type: 'ad', id: 8 }, { type: 'gif' }], false));
     expect(await fetchGifs({ query: '', page: 1, limit: 24, customerId: 'device', fetch })).toEqual({
-      entries: [{
-        id: '7',
-        slug: 'happy-dance',
-        title: 'Happy dance',
-        preview: source('gif', 200),
-        full: source('webp', 400),
-        still: source('jpg', 200),
-      }],
+      entries: [
+        {
+          id: '7',
+          slug: 'happy-dance',
+          title: 'Happy dance',
+          preview: source('gif', 200),
+          full: source('webp', 400),
+          still: source('jpg', 200),
+        },
+      ],
       hasNext: false,
     });
   });
 
   it("should reject when Klipy can't be reached, and read an off-contract page as empty", async () => {
-    await expect(fetchGifs({ query: '', page: 1, limit: 24, customerId: 'd', fetch: klipy({}, 404).fetch }))
-      .rejects.toThrow();
-    expect(await fetchGifs({ query: '', page: 1, limit: 24, customerId: 'd', fetch: klipy({ nope: 1 }).fetch }))
-      .toEqual({ entries: [], hasNext: false });
+    await expect(
+      fetchGifs({ query: '', page: 1, limit: 24, customerId: 'd', fetch: klipy({}, 404).fetch }),
+    ).rejects.toThrow();
+    expect(
+      await fetchGifs({ query: '', page: 1, limit: 24, customerId: 'd', fetch: klipy({ nope: 1 }).fetch }),
+    ).toEqual({ entries: [], hasNext: false });
   });
 });

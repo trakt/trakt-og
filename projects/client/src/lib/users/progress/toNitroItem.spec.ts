@@ -16,31 +16,32 @@ const episode = {
   images: { screenshot: ['walter.trakt.tv/images/episodes/203.jpg'] },
 };
 
-const row = (progress: Partial<UpNextResponse['progress']> = {}): UpNextResponse => ({
-  show: {
-    title: 'Severance',
-    year: 2022,
-    runtime: 50,
-    ids: { trakt: 7, slug: 'severance' },
-    images: { poster: ['walter.trakt.tv/images/shows/7.jpg'], fanart: [] },
-  },
-  progress: {
-    aired: 19,
-    completed: 12,
-    last_watched_at: '2026-10-01T20:00:00.000Z',
-    reset_at: null,
-    next_episode: episode,
-    last_episode: null,
-    ...progress,
-  },
-} as unknown as UpNextResponse);
+const row = (progress: Partial<UpNextResponse['progress']> = {}): UpNextResponse =>
+  ({
+    show: {
+      title: 'Severance',
+      year: 2022,
+      runtime: 50,
+      ids: { trakt: 7, slug: 'severance' },
+      images: { poster: ['walter.trakt.tv/images/shows/7.jpg'], fanart: [] },
+    },
+    progress: {
+      aired: 19,
+      completed: 12,
+      last_watched_at: '2026-10-01T20:00:00.000Z',
+      reset_at: null,
+      next_episode: episode,
+      last_episode: null,
+      ...progress,
+    },
+  }) as unknown as UpNextResponse;
 
 describe('toNitroItem', () => {
   it('should take the counts, minutes and next episode from the API', () => {
     const item = toNitroItem(
-      row(
-        { stats: { play_count: 14, minutes_watched: 640, minutes_left: 300 } } as Partial<UpNextResponse['progress']>,
-      ),
+      row({ stats: { play_count: 14, minutes_watched: 640, minutes_left: 300 } } as Partial<
+        UpNextResponse['progress']
+      >),
       1,
     );
 

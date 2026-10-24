@@ -19,10 +19,16 @@ type Options = {
   viewerSettings?: ViewerSettings | null;
   cookie?: string;
 };
-const load = (
-  { type, sort, query = '', token = 'token', isSelf = true, signedIn = true, viewerSettings = null, cookie }: Options =
-    {},
-) =>
+const load = ({
+  type,
+  sort,
+  query = '',
+  token = 'token',
+  isSelf = true,
+  signedIn = true,
+  viewerSettings = null,
+  cookie,
+}: Options = {}) =>
   loadProgress({
     locals: { token },
     params: { id: 'tester', type, sort },

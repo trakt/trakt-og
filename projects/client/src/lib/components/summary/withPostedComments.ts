@@ -8,7 +8,7 @@ export function withPostedComments(
 ): readonly CommentTab[] {
   if (posted.length === 0) return tabs;
   const recent = tabs.find((tab) => tab.id === 'recent');
-  const merged: CommentTab = { id: 'recent', label: 'Recent', comments: [...posted, ...recent?.comments ?? []] };
+  const merged: CommentTab = { id: 'recent', label: 'Recent', comments: [...posted, ...(recent?.comments ?? [])] };
   if (recent) return tabs.map((tab) => (tab === recent ? merged : tab));
   const afterLikes = tabs.findIndex((tab) => tab.id === 'likes') + 1;
   return [...tabs.slice(0, afterLikes), merged, ...tabs.slice(afterLikes)];

@@ -90,9 +90,10 @@ function ratingShare(part: number, whole: number) {
 function ratingsScale(tallest: number) {
   const want = Math.max(tallest, 1) * HEADROOM;
   const exponent = Math.floor(Math.log10(want / MAX_LEVELS));
-  const step = [exponent, exponent + 1]
-    .flatMap((e) => STEPS.map((m) => m * 10 ** e))
-    .find((s) => Number.isInteger(s) && Math.ceil(want / s) <= MAX_LEVELS) ?? 10 ** (exponent + 1);
+  const step =
+    [exponent, exponent + 1]
+      .flatMap((e) => STEPS.map((m) => m * 10 ** e))
+      .find((s) => Number.isInteger(s) && Math.ceil(want / s) <= MAX_LEVELS) ?? 10 ** (exponent + 1);
   const lines = Math.ceil(want / step);
   const top = lines * step;
   return {

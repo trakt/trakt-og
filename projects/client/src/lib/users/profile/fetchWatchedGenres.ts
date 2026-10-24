@@ -14,9 +14,12 @@ type FetchWatchedGenresParams = {
  * `/users/:id/watched/genres(/:days)`, most played first. It's API and has no contract, so it's parsed here,
  * and anything but a good 200 is no genres: the charts it feeds hide without them.
  */
-export async function fetchWatchedGenres(
-  { fetch, token, id, days }: FetchWatchedGenresParams,
-): Promise<readonly WatchedGenreRow[]> {
+export async function fetchWatchedGenres({
+  fetch,
+  token,
+  id,
+  days,
+}: FetchWatchedGenresParams): Promise<readonly WatchedGenreRow[]> {
   const path = `/users/${encodeURIComponent(id)}/watched/genres${days ? `/${days}` : ''}`;
   const response = await rawApiFetch({ fetch, token, path });
   if (response.status !== 200) return [];

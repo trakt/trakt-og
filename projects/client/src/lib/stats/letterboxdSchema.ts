@@ -5,9 +5,11 @@ import { z } from 'zod/v4';
  * doesn't export the movie ratings schema, so it's read from the raw body here.
  */
 export const letterboxdSchema = z.object({
-  letterboxd: z.object({
-    rating: z.number().nonnegative().nullish(),
-    link: z.string().nullish(),
-    votes: z.number().int().nonnegative().nullish(),
-  }).nullish(),
+  letterboxd: z
+    .object({
+      rating: z.number().nonnegative().nullish(),
+      link: z.string().nullish(),
+      votes: z.number().int().nonnegative().nullish(),
+    })
+    .nullish(),
 });

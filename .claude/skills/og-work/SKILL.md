@@ -1,4 +1,5 @@
 ---
+
 name: og-work
 description: "Work one trakt/og issue end to end: take it (assign yourself), build it in its own worktree, land it with deno task client:land. Trigger on /og-work, 'work the board', 'pick up an og issue'."
 ---

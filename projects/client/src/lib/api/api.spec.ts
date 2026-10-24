@@ -13,9 +13,8 @@ const server = setupServer(
   http.get('http://localhost:8787/movies/:id', () => HttpResponse.json({ title: 'local' })),
   http.get('https://apiz.trakt.tv/sync/progress/up_next', () => workerUnauthorized()),
   http.get('https://apiz.trakt.tv/shows/:id/seasons/:season/stats', ({ params }) => HttpResponse.json(params)),
-  http.get(
-    'https://apiz.trakt.tv/shows/:id/seasons/:season/episodes/:episode/stats',
-    ({ params }) => HttpResponse.json(params),
+  http.get('https://apiz.trakt.tv/shows/:id/seasons/:season/episodes/:episode/stats', ({ params }) =>
+    HttpResponse.json(params),
   ),
 );
 

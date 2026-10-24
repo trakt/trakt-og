@@ -13,11 +13,12 @@ type Image = NonNullable<NonNullable<Row['movie']>['images']>['poster'];
 
 // API sends an image-path array (older responses used size objects); the native worker sends a path.
 function posterUrl(image: Image, size: 'thumb' | 'medium' = 'thumb'): string | undefined {
-  const path = typeof image === 'string'
-    ? image
-    : Array.isArray(image)
-    ? image.at(0)
-    : image?.thumb ?? image?.medium ?? image?.full;
+  const path =
+    typeof image === 'string'
+      ? image
+      : Array.isArray(image)
+        ? image.at(0)
+        : (image?.thumb ?? image?.medium ?? image?.full);
   return imageUrl(path, size);
 }
 
@@ -32,14 +33,14 @@ function episodeBadge(item: NonNullable<Row['episode']>) {
     bonus: 'Bonus Episode',
     trailer: 'Trailer',
   } as const;
-  const fallback = item.number === 1 && item.season === 1
-    ? 'series-premiere'
-    : item.number === 1 && (item.season ?? 0) > 1
-    ? 'season-premiere'
-    : '';
-  const kind = item.episode_type && item.episode_type !== 'standard'
-    ? item.episode_type.replaceAll('_', '-')
-    : fallback;
+  const fallback =
+    item.number === 1 && item.season === 1
+      ? 'series-premiere'
+      : item.number === 1 && (item.season ?? 0) > 1
+        ? 'season-premiere'
+        : '';
+  const kind =
+    item.episode_type && item.episode_type !== 'standard' ? item.episode_type.replaceAll('_', '-') : fallback;
   if (!Object.hasOwn(labels, kind)) return undefined;
   const key = kind as keyof typeof labels;
   return { kind: key, label: labels[key] };
@@ -59,11 +60,10 @@ function itemDetails(row: Row) {
     rating: item.rating ?? undefined,
     airedEpisodes: item.aired_episodes ?? undefined,
     episodeBadge: undefined,
-    variant: row.type === 'episode' ? 'screenshot' as const : 'poster' as const,
-    seasonOf: row.type === 'season' && show && item.number != null
-      ? { show: show.ids.trakt, number: item.number }
-      : undefined,
-    showTitle: row.type === 'episode' || row.type === 'season' ? show?.title ?? null : null,
+    variant: row.type === 'episode' ? ('screenshot' as const) : ('poster' as const),
+    seasonOf:
+      row.type === 'season' && show && item.number != null ? { show: show.ids.trakt, number: item.number } : undefined,
+    showTitle: row.type === 'episode' || row.type === 'season' ? (show?.title ?? null) : null,
     showHref: row.type === 'episode' || row.type === 'season' ? showHref : null,
   };
   if (row.type === 'episode') {
@@ -103,7 +103,7 @@ function activity(row: Row, datePreferences: DatePreferences) {
     type: attached.type,
     label: { history: 'History', collection: 'Library', rating: 'Rating' }[attached.type],
     date: at ? formatDate(at, { ...datePreferences, time: true }) : '',
-    rating: attached.type === 'rating' ? attached.rating ?? null : null,
+    rating: attached.type === 'rating' ? (attached.rating ?? null) : null,
   } as const;
 }
 

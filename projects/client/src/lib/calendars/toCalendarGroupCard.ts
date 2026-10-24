@@ -47,9 +47,15 @@ function numberRange(first: Episode, last: Episode) {
  * title, every episode type that's in it (a premiere and a finale on one drop), and the show's rating. Its link goes
  * to the season.
  */
-export function toCalendarGroupCard({ group, label, clock }: { group: CalendarGroup; label: string; clock: Clock }):
-  | CalendarGroupCard
-  | undefined {
+export function toCalendarGroupCard({
+  group,
+  label,
+  clock,
+}: {
+  group: CalendarGroup;
+  label: string;
+  clock: Clock;
+}): CalendarGroupCard | undefined {
   const episodes = group.items.filter(isEpisode);
   const first = episodes.at(0);
   const last = episodes.at(-1);
@@ -57,10 +63,14 @@ export function toCalendarGroupCard({ group, label, clock }: { group: CalendarGr
 
   const base = toCalendarCard(first, clock);
   const { show } = first;
-  const types = [...new Map(episodes.flatMap(({ episode }) => {
-    const type = episodeType(episode);
-    return type ? [[type.text, type] as const] : [];
-  })).values()];
+  const types = [
+    ...new Map(
+      episodes.flatMap(({ episode }) => {
+        const type = episodeType(episode);
+        return type ? [[type.text, type] as const] : [];
+      }),
+    ).values(),
+  ];
 
   return {
     ...base,

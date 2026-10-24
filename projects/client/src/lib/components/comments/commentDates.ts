@@ -17,7 +17,8 @@ export function commentDates(
   const updated = new Date(updatedAt);
   if (updated.getTime() <= created.getTime() + DAY_MS) return { posted };
 
-  const sameYear = formatDate(created, { ...options, format: 'MY' }).slice(-4) ===
+  const sameYear =
+    formatDate(created, { ...options, format: 'MY' }).slice(-4) ===
     formatDate(updated, { ...options, format: 'MY' }).slice(-4);
   return { posted, updated: formatDate(updated, { ...options, format: sameYear ? 'l' : 'll' }) };
 }

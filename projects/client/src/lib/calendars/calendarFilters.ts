@@ -15,13 +15,13 @@ export function calendarFilters({ slug, now }: { slug: string; now: Date }): Adv
       'certifications',
       'languages',
       'countries',
-      ...(!movie ? ['networks', 'episode_types'] as const : []),
+      ...(!movie ? (['networks', 'episode_types'] as const) : []),
     ],
     ranges: [
       'runtimes',
       'ratings',
       'imdb_ratings',
-      ...(movie || mixed ? ['rt_meters', 'rt_user_meters'] as const : []),
+      ...(movie || mixed ? (['rt_meters', 'rt_user_meters'] as const) : []),
     ],
     scales: filterRanges({ now }),
   };

@@ -35,7 +35,11 @@ const load = (id = 'fight-club-1999') =>
       }),
     id,
   });
-const failure = (promise: Promise<unknown>) => promise.then(() => null, (error: unknown) => error);
+const failure = (promise: Promise<unknown>) =>
+  promise.then(
+    () => null,
+    (error: unknown) => error,
+  );
 
 describe('loadMovieReleases', () => {
   it('should load public endpoints without authorization and use the layout date preferences', async () => {

@@ -90,13 +90,19 @@ describe('toMovieSummary', () => {
             { person: person('Fincher'), jobs: ['Director'] },
             { person: person('Topoozian'), jobs: ['First Assistant Director'] },
           ],
-          writing: [{ person: person('Uhls'), jobs: ['Screenplay'] }, { person: person('Doe'), jobs: ['Writer'] }],
+          writing: [
+            { person: person('Uhls'), jobs: ['Screenplay'] },
+            { person: person('Doe'), jobs: ['Writer'] },
+          ],
         },
       } as never,
     });
 
     expect(facts.directors).toEqual([{ name: 'Fincher', href: '/people/fincher' }]);
-    expect(facts.writers.map(({ name, note }) => [name, note])).toEqual([['Uhls', 'screenplay'], ['Doe', undefined]]);
+    expect(facts.writers.map(({ name, note }) => [name, note])).toEqual([
+      ['Uhls', 'screenplay'],
+      ['Doe', undefined],
+    ]);
   });
 
   it('should link country, languages and genres for VIPs only', () => {

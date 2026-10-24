@@ -15,6 +15,6 @@ export function withoutHidden(items: readonly CalendarItem[], { hidden, hideSpec
   return items.filter((item) =>
     item.type === 'movie'
       ? !hidden.movies.has(item.movie.ids.trakt)
-      : !hidden.shows.has(item.show.ids.trakt) && !(hideSpecials && item.episode.season === 0)
+      : !hidden.shows.has(item.show.ids.trakt) && !(hideSpecials && item.episode.season === 0),
   );
 }

@@ -46,13 +46,11 @@ describe('toKnownFor', () => {
   });
 
   it("should lead with picks from the person's own department", () => {
-    const acting = [
-      ...departments,
-      { id: 'production', credits: [credit(5, 'movie', 999, 'Producer')] },
-    ];
+    const acting = [...departments, { id: 'production', credits: [credit(5, 'movie', 999, 'Producer')] }];
     const picks = [...items, { type: 'movie' as const, movie: { ids: { trakt: 5 } } }];
-    expect(toKnownFor({ items: picks, departments: acting, department: 'acting', limit: 10 }).map(({ id }) => id))
-      .toEqual([1, 4, 2, 5]);
+    expect(
+      toKnownFor({ items: picks, departments: acting, department: 'acting', limit: 10 }).map(({ id }) => id),
+    ).toEqual([1, 4, 2, 5]);
   });
 
   it('should keep only as many as the limit', () => {

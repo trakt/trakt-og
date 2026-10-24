@@ -33,11 +33,11 @@
   --color-feed-title: light-dark(#f7f7f7, #292929);
   --color-feed-divider: light-dark(#ebebeb, #444);
 
-  &[data-theme='dark'] {
+  &[data-theme="dark"] {
     color-scheme: dark;
   }
 
-  &[data-theme='system'] {
+  &[data-theme="system"] {
     color-scheme: light dark;
   }
 
@@ -186,10 +186,10 @@
    * Figtree (OFL, Google Fonts) everywhere, as one family with three weights. Figtree is the closest open
    * match to Proxima Nova and runs narrower than Montserrat, which og used before.
    */
-  --font-body: Figtree, 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  --font-headings: Figtree, 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  --font-serif: Georgia, 'Times New Roman', Times, serif;
-  --font-mono: Menlo, Monaco, Consolas, 'Courier New', monospace;
+  --font-body: Figtree, "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-headings: Figtree, "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-serif: Georgia, "Times New Roman", Times, serif;
+  --font-mono: Menlo, Monaco, Consolas, "Courier New", monospace;
   --font-weight-headings-light: 400; /* the regular part of a heading with a bold part (OG: "Proxima Nova") */
   --font-weight-headings: 600; /* headings, bold inside headings (OG: "Proxima Nova Semibold") */
   --font-weight-headings-heavy: 700; /* b, strong (OG: "Proxima Nova Bold") */
@@ -221,7 +221,9 @@
   --space-base-block: 6px;
   --space-heading-dropdowns: 11px; /* a panel or section heading to the row of dropdowns under it */
   --space-heading-rule: 2px; /* a heading to the divider line under it, like the history's days */
-  --space-dropdown-row: var(--toolbar-gap); /* between the dropdowns, chips and count buttons in a row, as in the toolbar */
+  --space-dropdown-row: var(
+    --toolbar-gap
+  ); /* between the dropdowns, chips and count buttons in a row, as in the toolbar */
   --space-base-inline: 12px;
   --space-lg-block: 10px;
   --space-lg-inline: 16px;
@@ -242,7 +244,10 @@
     and tiny marks keep their own.
   */
   --radius-object: 8px;
-  --radius-tag: calc(var(--radius-object) - 4px); /* tags, chips and pills: clearly tighter than the objects they sit on */
+  --radius-tag: calc(
+    var(--radius-object) -
+    4px
+  ); /* tags, chips and pills: clearly tighter than the objects they sit on */
   --radius-container: 12px;
   --radius-round: 999px;
   --radius-code: var(--radius-object);
@@ -282,7 +287,11 @@
   --fanart-avatar-border: 5px;
   --color-stats-bar: rgb(0 0 0 / 0.8);
   --gradient-shadow-base: linear-gradient(rgb(0 0 0 / 0), rgb(0 0 0 / 0.4));
-  --gradient-shadow-live: linear-gradient(rgb(0 0 0 / 0), rgb(0 0 0 / 0.45) 45%, rgb(0 0 0 / 0.8)); /* under a live card's tags and title */
+  --gradient-shadow-live: linear-gradient(
+    rgb(0 0 0 / 0),
+    rgb(0 0 0 / 0.45) 45%,
+    rgb(0 0 0 / 0.8)
+  ); /* under a live card's tags and title */
   --fanart-live-shade-height: 70%;
   --gradient-shadow-header: linear-gradient(rgb(0 0 0 / 0), rgb(0 0 0 / 0.6));
   --font-size-card-title: 16px; /* poster card title */
@@ -471,8 +480,8 @@
   --fanart-header-height-slim: 150px;
 
   /* Missing media images: OG's placeholders/thumb assets, shared by summary, cast and episode cards. */
-  --image-placeholder-poster: url('../assets/placeholders/poster.png');
-  --image-placeholder-fanart: url('../assets/placeholders/fanart.png');
+  --image-placeholder-poster: url("../assets/placeholders/poster.png");
+  --image-placeholder-fanart: url("../assets/placeholders/fanart.png");
 
   /* Poster badges: rewatching and dropped */
   --badge-size: 30px;
@@ -567,7 +576,9 @@
   --font-size-dashboard-panel-label: 12px;
   --letter-spacing-dashboard-panel-label: 0.1em;
   --color-dashboard-panel-line: rgb(255 255 255 / 0.12);
-  --color-dashboard-panel-mark: rgb(255 255 255 / 0.06); /* the label watermarks: a heading's mark, white on the glass */
+  --color-dashboard-panel-mark: rgb(
+    255 255 255 / 0.06
+  ); /* the label watermarks: a heading's mark, white on the glass */
   --dashboard-panel-mark-inline: -34px; /* further in than a heading's, so the cell's edge clips less of it */
   --dashboard-panel-mark-block: -4px;
   /* The recap strip under the greeting: Discover's year ribbon (its colors, bars and cell padding), led by a Year to Date
@@ -622,7 +633,10 @@
   --space-action-button-icon: 6px;
   /* Green for actions that add something, gray for the rest; the inbox keeps its own, as it's always dark. */
   --color-action-add: light-dark(var(--color-list-add), var(--brand-success));
-  --color-action-add-hover: light-dark(rgb(56 160 56 / 0.1), var(--color-dashboard-inbox-approve-hover)); /* faint fill */
+  --color-action-add-hover: light-dark(
+    rgb(56 160 56 / 0.1),
+    var(--color-dashboard-inbox-approve-hover)
+  ); /* faint fill */
   --color-action-border: light-dark(#ccc, #444);
   --color-action-border-hover: var(--gray-light);
   --opacity-action-disabled: 0.5;
@@ -640,7 +654,11 @@
   --color-dashboard-inbox-box-border: #333;
   /* The summary line takes the profile request deck's green. */
   --color-dashboard-inbox-summary-bg: color-mix(in srgb, var(--brand-success) 10%, var(--color-dashboard-inbox-box));
-  --color-dashboard-inbox-summary-border: color-mix(in srgb, var(--brand-success) 35%, var(--color-dashboard-inbox-box-border));
+  --color-dashboard-inbox-summary-border: color-mix(
+    in srgb,
+    var(--brand-success) 35%,
+    var(--color-dashboard-inbox-box-border)
+  );
   --color-dashboard-inbox-muted: var(--gray-light);
   --color-dashboard-inbox-stack-extra: #3a3a3a;
   --color-dashboard-inbox-count-bg: var(--brand-primary);
@@ -753,7 +771,10 @@
   --recommendations-spotlight-gap: 10px;
   --radius-recommendations-spotlight: var(--radius-lg);
   --color-recommendations-spotlight-bg: #1c1c1c; /* under art that hasn't loaded */
-  --color-recommendations-placeholder: light-dark(#e2e2e2, #1c1c1c); /* posters before they load, and the loading boxes */
+  --color-recommendations-placeholder: light-dark(
+    #e2e2e2,
+    #1c1c1c
+  ); /* posters before they load, and the loading boxes */
   --color-recommendations-poster-focus: light-dark(#222, #fff);
   /* The spotlight's tags, dark in both themes since they sit on art. */
   --color-recommendations-tag-bg: rgb(255 255 255 / 0.1);
@@ -956,11 +977,17 @@
   --color-search-kbd-bg: light-dark(rgb(0 0 0 / 0.07), rgb(255 255 255 / 0.1));
   --color-search-tip-bg: rgb(0 0 0 / 0.8); /* the search icon's "Search /" tooltip */
   --color-search-type: light-dark(var(--brand-primary), #ff5a5f); /* a result's type; lighter on dark for contrast */
-  --color-tag-badge-line: light-dark(rgb(0 0 0 / 0.45), rgb(255 255 255 / 0.45)); /* a certificate's outline, brighter than a pill's */
+  --color-tag-badge-line: light-dark(
+    rgb(0 0 0 / 0.45),
+    rgb(255 255 255 / 0.45)
+  ); /* a certificate's outline, brighter than a pill's */
   --letter-spacing-tag-badge: 0.03em;
   --color-search-term: light-dark(rgb(0 0 0 / 0.75), rgb(255 255 255 / 0.85));
   --color-search-in-type: light-dark(rgb(0 0 0 / 0.4), rgb(255 255 255 / 0.4));
-  --color-search-year: light-dark(rgb(0 0 0 / 0.6), rgb(255 255 255 / 0.6)); /* a result's year, dimmer than its title */
+  --color-search-year: light-dark(
+    rgb(0 0 0 / 0.6),
+    rgb(255 255 255 / 0.6)
+  ); /* a result's year, dimmer than its title */
 
   /* Dialogs */
   --color-dialog-bg: light-dark(#f5f5f7, #1d1d1d);
@@ -993,7 +1020,12 @@
   --dialog-art-header-padding: 20px 22px 18px;
   --dialog-art-header-gap: 6px;
   --gradient-dialog-art-shade: linear-gradient(to bottom, rgb(14 14 14 / 0.35), rgb(14 14 14 / 0.92));
-  --gradient-dialog-art-full-shade: linear-gradient(to top, rgb(14 14 14 / 0.9), rgb(14 14 14 / 0.5) 22%, transparent 45%);
+  --gradient-dialog-art-full-shade: linear-gradient(
+    to top,
+    rgb(14 14 14 / 0.9),
+    rgb(14 14 14 / 0.5) 22%,
+    transparent 45%
+  );
   --gradient-dialog-art-empty: repeating-linear-gradient(135deg, #1f1f1f 0 14px, #1a1a1a 14px 28px); /* a new list */
   --dialog-art-tags-gap: 5px;
   --font-size-dialog-art-title: 24px;
@@ -1378,8 +1410,14 @@
   --user-card-avatar-border: 2px;
   --user-card-who-gap: 10px; /* the avatar to the name */
   --user-card-btn-gap: 10px;
-  --user-card-band-padding: var(--user-card-inset); /* the chips' band along the bottom, padded like the buttons above it */
-  --user-card-band-height: calc(var(--comment-chip-height) + 2 * var(--user-card-inset)); /* one chip row, chips or not */
+  --user-card-band-padding: var(
+    --user-card-inset
+  ); /* the chips' band along the bottom, padded like the buttons above it */
+  --user-card-band-height: calc(
+    var(--comment-chip-height) +
+    2 *
+    var(--user-card-inset)
+  ); /* one chip row, chips or not */
   --font-size-user-card-name: 16px;
   --user-card-text-gap: 6px; /* the name to its tags */
   --user-card-live-gap: var(--user-card-text-gap); /* the watching-now tags to the show and episode */
@@ -1390,7 +1428,12 @@
   --color-user-card-frame-line: var(--color-fanart-card-frame-line);
   --color-user-card-chip-veteran: var(--brand-tertiary); /* Veteran and Legend, apart from Private's amber */
   --gradient-user-card-shade: linear-gradient(rgb(0 0 0 / 0) 35%, rgb(0 0 0 / 0.5) 65%, rgb(0 0 0 / 0.85));
-  --gradient-user-card-live-shade: linear-gradient(rgb(0 0 0 / 0.6), rgb(0 0 0 / 0) 35%, rgb(0 0 0 / 0) 45%, rgb(0 0 0 / 0.85));
+  --gradient-user-card-live-shade: linear-gradient(
+    rgb(0 0 0 / 0.6),
+    rgb(0 0 0 / 0) 35%,
+    rgb(0 0 0 / 0) 45%,
+    rgb(0 0 0 / 0.85)
+  );
 
   /* Profile frame: the cover, name block, watching-now player and section tabs on every /users/:id page */
   /* Official lists: the slim profile cover without the 40px profile tabs. */
@@ -1453,7 +1496,9 @@
   --font-size-profile-request-question: 12px;
   --profile-request-question-tracking: 0.08em;
   --profile-request-button-height: 32px;
-  --color-profile-request-wash: rgb(92 184 92 / 0.24); /* --brand-success, the Approve color, across the glass and its art tint */
+  --color-profile-request-wash: rgb(
+    92 184 92 / 0.24
+  ); /* --brand-success, the Approve color, across the glass and its art tint */
   --color-profile-approve-text: #8be08b; /* --brand-success, lifted for text on dark */
   /* Outlined buttons on a darker tint of their own color: green approves, red denies, neutral blocks (red on hover). */
   --color-profile-approve-border: rgb(92 184 92 / 0.85);
@@ -1661,7 +1706,10 @@
   --space-stats-site-score: 20px; /* more room before the score, past the column gap */
   --stats-score-tag-min: 52px; /* so the score tags line up */
   --space-stats-score-tag: 3px 8px;
-  --color-stats-score-tag: light-dark(rgb(0 0 0 / 0.07), rgb(255 255 255 / 0.08)); /* a wash, so it holds on hover too */
+  --color-stats-score-tag: light-dark(
+    rgb(0 0 0 / 0.07),
+    rgb(255 255 255 / 0.08)
+  ); /* a wash, so it holds on hover too */
   --stats-site-bar-height: 8px;
   --space-stats-site-bar: 11px; /* either side of a bar, past the column gap */
   --stats-site-bar-min: 140px;
@@ -1806,13 +1854,13 @@
   --quick-icons-compact-width: 23px;
   --quick-icons-compact-size: 1em;
   --calendar-text-title-size: 20px;
-  --image-placeholder-banner: url('../assets/placeholders/banner.png');
+  --image-placeholder-banner: url("../assets/placeholders/banner.png");
   --calendar-text-tag-padding: 2px 4px;
   --calendar-worded-padding: 3px 5px;
   --calendar-worded-title-top: 20px;
   --calendar-worded-small-title-top: 44px;
   --calendar-empty-opacity: 0.5;
-  --image-placeholder-clearart: url('../assets/placeholders/clearart.png');
+  --image-placeholder-clearart: url("../assets/placeholders/clearart.png");
 
   /* Chart frame: the sticky sidebar and flush fanart grid of the chart and search pages, dark in both themes
       */
@@ -1946,7 +1994,10 @@
   --color-strip-libraries: #2fc9a6; /* library's teal */
   --color-strip-lists: #3fb8ef; /* watchlist's blue */
   --color-strip-comments: #c4c4c4; /* on the strip's dark bar, in both themes */
-  --color-stat-comments: light-dark(#6e6e6e, var(--color-strip-comments)); /* a comments count on the page: darker in light mode */
+  --color-stat-comments: light-dark(
+    #6e6e6e,
+    var(--color-strip-comments)
+  ); /* a comments count on the page: darker in light mode */
   --color-strip-favorited: #f38a45; /* favorites' orange */
   --color-strip-rank-up: #6fcf7a; /* JustWatch's rank change in the black tooltip */
   --color-strip-rank-down: #ff5a60;
@@ -1964,7 +2015,10 @@
   --radius-summary-poster: var(--radius-headshot);
   --rewatching-badge-offset: -10px; /* up and left, so the badge sits over the poster's top-left corner */
   --radius-card-framed: var(--radius-headshot); /* a framed fanart or poster card, as round as the actor photos */
-  --color-fanart-card-frame-bg: light-dark(var(--color-quick-icons-light-bg), #262626); /* its quick-icon panel: the bar's own in the light theme, a step lighter in the dark one */
+  --color-fanart-card-frame-bg: light-dark(
+    var(--color-quick-icons-light-bg),
+    #262626
+  ); /* its quick-icon panel: the bar's own in the light theme, a step lighter in the dark one */
   --color-fanart-card-frame-line: light-dark(rgb(0 0 0 / 0.08), rgb(255 255 255 / 0.08));
   --radius-summary-poster-outer: calc(var(--radius-summary-poster) + var(--summary-poster-border-width));
   /* Cast cards on a summary's actors row and the cast & crew page: name first, then the role, then episodes. */
@@ -2100,7 +2154,10 @@
   --color-activity-cell-open-line: var(--brand-primary);
   /* Watching Now's cell while someone the viewer follows is watching: the watching-now player's red glass */
   --color-activity-cell-live: light-dark(rgb(237 28 36 / 0.1), var(--color-watching-bg));
-  --color-activity-cell-live-hover: light-dark(rgb(237 28 36 / 0.16), color-mix(in srgb, var(--brand-primary) 22%, rgb(18 18 18 / 0.6)));
+  --color-activity-cell-live-hover: light-dark(
+    rgb(237 28 36 / 0.16),
+    color-mix(in srgb, var(--brand-primary) 22%, rgb(18 18 18 / 0.6))
+  );
   --color-activity-label: light-dark(#555, rgb(255 255 255 / 0.78));
   --color-activity-chevron: light-dark(#999, #888);
   --color-activity-watched-icon: var(--color-progress-watched-text);
@@ -2350,7 +2407,9 @@
   --comment-parent-border: 4px;
   --radius-comment-parent: 0 var(--radius-container) var(--radius-container) 0;
   --comment-replies-chevron-turn: 180deg;
-  --color-comment-replies-open: var(--brand-secondary); /* "N replies" while the thread is open, and Reply while its box is open */
+  --color-comment-replies-open: var(
+    --brand-secondary
+  ); /* "N replies" while the thread is open, and Reply while its box is open */
 
   /* Comments: the text in a bubble, tinted tags top right like a list row's chips, and a stats bar under it. */
   --color-comment-bubble-border: var(--color-list-card-border);
@@ -2374,7 +2433,11 @@
   --comment-linked-padding: 8px;
   --radius-comment-linked: var(--radius-container);
   --color-comment-chip-quiet: var(--color-list-chip-following); /* Parent and Blocked */
-  --color-comment-rail-op: color-mix(in srgb, var(--brand-quaternary) 75%, transparent); /* the OP's stretch of the rail, and their avatar's ring */
+  --color-comment-rail-op: color-mix(
+    in srgb,
+    var(--brand-quaternary) 75%,
+    transparent
+  ); /* the OP's stretch of the rail, and their avatar's ring */
   --comment-reaction-segment-padding: 0 9px;
   --color-comment-reaction-mine: color-mix(in srgb, var(--brand-secondary) 16%, transparent);
   --color-comment-reaction-mine-hover: color-mix(in srgb, var(--brand-secondary) 26%, transparent);
@@ -2496,7 +2559,10 @@
   --space-watch-now-terms-columns: 6px;
   --font-size-watch-now-terms: 12px;
   --line-height-watch-now-terms: 1.25;
-  --color-watch-now-lowest: light-dark(#2f8f3f, #6cc96c); /* the cheapest rent or buy, --brand-success deepened or lifted */
+  --color-watch-now-lowest: light-dark(
+    #2f8f3f,
+    #6cc96c
+  ); /* the cheapest rent or buy, --brand-success deepened or lifted */
   --watch-now-flag-size: 18px;
   --service-tile-padding-block: 6px; /* inside a service tile's 2px border */
   --service-tile-padding-inline: 10px;
@@ -2696,7 +2762,9 @@
   --season-hero-source-height: 19px; /* the Trending now / All-time favorite chip */
   --season-hero-source-gap: 20px; /* from the chip down to the logo or title */
   --season-hero-headline-height: calc(
-    var(--season-hero-source-height) + var(--season-hero-copy-gap) + var(--season-hero-name-height)
+    var(--season-hero-source-height) +
+    var(--season-hero-copy-gap) +
+    var(--season-hero-name-height)
   ); /* the chip and the name together, the space the two had as separate rows */
   --season-hero-tags-height: 21px; /* one row of tag pills */
   --season-hero-logo-width: 440px;
@@ -2833,7 +2901,13 @@
   /* Trending comments: one comment at a time over its title's fanart. */
   --color-trending-comments-bg: #000; /* the band the fanart fades into, in both themes */
   --trending-comments-shade:
-    linear-gradient(to bottom, var(--color-trending-comments-bg), transparent 18%, transparent 82%, var(--color-trending-comments-bg)),
+    linear-gradient(
+      to bottom,
+      var(--color-trending-comments-bg),
+      transparent 18%,
+      transparent 82%,
+      var(--color-trending-comments-bg)
+    ),
     linear-gradient(90deg, rgb(0 0 0 / 0.75), rgb(0 0 0 / 0.88) 35%, rgb(0 0 0 / 0.75));
   --opacity-trending-comments-backdrop: 0.4;
   --trending-comments-height: 360px;
@@ -3148,8 +3222,8 @@
   --vhs-tracking-bar-width: 18px;
   --vhs-tracking-bar-height: 26px;
   --vhs-tape-width: 520px;
-  --font-vhs: VT323, 'Courier New', monospace;
-  --font-vhs-marker: 'Permanent Marker', cursive;
+  --font-vhs: VT323, "Courier New", monospace;
+  --font-vhs-marker: "Permanent Marker", cursive;
   --font-size-vhs-osd: 44px;
   --font-size-vhs-title: clamp(88px, 11vw, 168px);
   --font-size-vhs-subtitle: clamp(32px, 3.4vw, 48px);
@@ -3192,8 +3266,8 @@
   --seance-flame-height: 40px;
   --seance-wick: 8px;
   --seance-credits-gap: 8px;
-  --font-seance: 'IM Fell English', Georgia, serif;
-  --font-seance-caps: 'IM Fell English SC', Georgia, serif;
+  --font-seance: "IM Fell English", Georgia, serif;
+  --font-seance-caps: "IM Fell English SC", Georgia, serif;
   --font-size-seance-eyebrow: 14px;
   --font-size-seance-title: clamp(44px, 5.4vw, 76px);
   --font-size-seance-spelled: 22px;
@@ -3222,8 +3296,7 @@
   );
   --tabloid-age: radial-gradient(ellipse at 50% 45%, transparent 55%, rgb(150 115 55 / 0.22) 100%);
   --tabloid-light: linear-gradient(115deg, rgb(255 255 255 / 0.55), transparent 45%, rgb(0 0 0 / 0.25));
-  --tabloid-shadow:
-    0 1px 2px rgb(0 0 0 / 0.4), 0 12px 24px rgb(0 0 0 / 0.35), 0 36px 80px rgb(0 0 0 / 0.45);
+  --tabloid-shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 12px 24px rgb(0 0 0 / 0.35), 0 36px 80px rgb(0 0 0 / 0.45);
   --tabloid-tilt: 0.4deg;
   --tabloid-padding: 20px 28px;
   --tabloid-max: 1760px;
@@ -3246,7 +3319,7 @@
   --tabloid-aside-basis: 280px;
   --font-tabloid-masthead: UnifrakturCook, serif;
   --font-tabloid-headline: Anton, sans-serif;
-  --font-tabloid-body: 'Libre Baskerville', Georgia, serif;
+  --font-tabloid-body: "Libre Baskerville", Georgia, serif;
   --font-size-tabloid-ear: 12px;
   --font-size-tabloid-ear-title: 15px;
   --font-size-tabloid-dateline: 15px;
@@ -3373,7 +3446,10 @@
   --color-home-map-heat-4: var(--brand-primary); /* 60+ */
   --color-home-map-heat-5: light-dark(#9e0f15, #ff7a7f); /* 150+ */
   --color-home-map-hover: light-dark(#111, #fff);
-  --color-home-map-shimmer: light-dark(#b5b5b5, #5a5a5a); /* the light that sweeps across the gray dots until the count arrives */
+  --color-home-map-shimmer: light-dark(
+    #b5b5b5,
+    #5a5a5a
+  ); /* the light that sweeps across the gray dots until the count arrives */
   --home-map-shimmer-ms: 2200; /* one sweep, west to east */
   --home-map-shimmer-band: 0.18; /* the light's half-width, as a share of the map */
   --home-map-scale-gap: 5px; /* a key dot to its count */
@@ -3440,7 +3516,13 @@
   --about-count-shimmer-5: 144px;
   --about-hero-gap: 56px;
   --about-hero-shade:
-    linear-gradient(90deg, rgb(11 11 11 / 0.94) 0%, rgb(11 11 11 / 0.72) 42%, rgb(11 11 11 / 0.25) 75%, rgb(11 11 11 / 0.55)),
+    linear-gradient(
+      90deg,
+      rgb(11 11 11 / 0.94) 0%,
+      rgb(11 11 11 / 0.72) 42%,
+      rgb(11 11 11 / 0.25) 75%,
+      rgb(11 11 11 / 0.55)
+    ),
     linear-gradient(to top, rgb(11 11 11 / 0.92), rgb(11 11 11 / 0.5) 30%, transparent 55%);
   /* The grid scenes are brighter, so the copy and counts get a fade up from the bottom as well as from the left. */
   --about-hero-shade-grid:
@@ -3514,7 +3596,9 @@
   --color-about-chip-hover: light-dark(rgb(0 0 0 / 0.07), rgb(255 255 255 / 0.07));
   --about-panel-avatar: 96px;
   --about-member-padding: 20px 28px 28px;
-  --about-member-shade: linear-gradient(180deg, rgb(17 17 17 / 0.55), rgb(17 17 17 / 0.92) 55%), linear-gradient(90deg, rgb(17 17 17 / 0.85) 25%, transparent 80%);
+  --about-member-shade:
+    linear-gradient(180deg, rgb(17 17 17 / 0.55), rgb(17 17 17 / 0.92) 55%),
+    linear-gradient(90deg, rgb(17 17 17 / 0.85) 25%, transparent 80%);
   --about-favorites: 5;
   --about-name-gap: 6px; /* a member's name to their tags */
   --about-stat-gap: 22px; /* between the heading's numbers, either side of a rule */
@@ -3594,8 +3678,8 @@
   --font-size-box-office-kpi: 30px;
   /* The trade-paper numbers: a condensed face the system already has (macOS's DIN Condensed, Windows' Bahnschrift),
      so nothing extra loads; elsewhere Figtree. */
-  --font-box-office-figures: 'DIN Condensed', 'Bahnschrift Condensed', Bahnschrift, 'Roboto Condensed', 'Arial Narrow',
-    var(--font-headings);
+  --font-box-office-figures:
+    "DIN Condensed", "Bahnschrift Condensed", Bahnschrift, "Roboto Condensed", "Arial Narrow", var(--font-headings);
   --box-office-rank-width: 48px;
   --box-office-poster-width: 54px;
   --box-office-cell-padding: 8px;
@@ -3627,7 +3711,10 @@
   --color-tag-pill-bg: light-dark(rgb(0 0 0 / 0.04), rgb(255 255 255 / 0.1));
   --color-tag-pill-line: light-dark(rgb(0 0 0 / 0.14), rgb(255 255 255 / 0.12));
   --color-tag-pill-text: light-dark(#444, rgb(255 255 255 / 0.85));
-  --color-tag-pill-icon: light-dark(#777, rgb(255 255 255 / 0.6)); /* an icon pill's icon, a step quieter than its count */
+  --color-tag-pill-icon: light-dark(
+    #777,
+    rgb(255 255 255 / 0.6)
+  ); /* an icon pill's icon, a step quieter than its count */
   --tag-pill-icon-gap: 5px;
   --tag-pill-tint-fill: 14%; /* a tinted pill's wash */
   --tag-pill-tint-line: 45%; /* ...and its outline */
@@ -3710,8 +3797,13 @@
   --episode-tray-height: 360px; /* a grouped card's episodes popup scrolls past this */
   --calendar-logo-max-width: 80%; /* wide logos keep a margin on both sides */
   --rail-week-width: 36px;
-  --color-calendar-today-tint: color-mix(in srgb, var(--brand-primary) 10%, var(--color-frame-page)); /* solid, under pinned dates */
-  --color-calendar-today-bar: linear-gradient(90deg, rgb(237 28 36 / 0.32), rgb(237 28 36 / 0.1) 60%, transparent),
+  --color-calendar-today-tint: color-mix(
+    in srgb,
+    var(--brand-primary) 10%,
+    var(--color-frame-page)
+  ); /* solid, under pinned dates */
+  --color-calendar-today-bar:
+    linear-gradient(90deg, rgb(237 28 36 / 0.32), rgb(237 28 36 / 0.1) 60%, transparent),
     light-dark(rgb(255 255 255 / 0.85), rgb(42 42 42 / 0.82)); /* over a blur, so cards scrolling under it don't show through */
   --calendar-today-blur: blur(12px);
   --color-calendar-past: light-dark(#999, #8a8a8a);
@@ -3721,7 +3813,10 @@
 :root {
   --calendar-weekdays-height: 31px; /* the month grid's pinned weekday row */
   --calendar-month-cell-min: 120px;
-  --color-calendar-weekdays: light-dark(#f2f2f2, #151515); /* the month grid's weekday banner, set off from the days' bars */
+  --color-calendar-weekdays: light-dark(
+    #f2f2f2,
+    #151515
+  ); /* the month grid's weekday banner, set off from the days' bars */
   --calendar-month-day-height: 40px; /* a month day's pinned number row, room for today's circle and tag */
   --color-calendar-out: light-dark(#f7f7f7, #191919); /* a neighbouring month's day in the grid */
 }
@@ -3892,7 +3987,8 @@
   --color-first-night-tab-current: #fff;
   --color-first-night-tab-current-text: #111;
   --color-first-night-done: #5cb85c;
-  --first-night-glow: linear-gradient(90deg, rgb(17 17 17 / 0.92) 0%, rgb(17 17 17 / 0.6) 45%, rgb(17 17 17 / 0.25) 100%),
+  --first-night-glow:
+    linear-gradient(90deg, rgb(17 17 17 / 0.92) 0%, rgb(17 17 17 / 0.6) 45%, rgb(17 17 17 / 0.25) 100%),
     linear-gradient(to top, rgb(17 17 17 / 0.95) 0%, transparent 45%);
   --first-night-meter: linear-gradient(90deg, var(--brand-primary), #ff7a3d);
   --first-night-meter-height: 8px;
@@ -3908,7 +4004,12 @@
   --panel-prompt-tall-height: 260px;
   --panel-prompt-bottom: var(--gutter);
   --panel-prompt-bottom-roomy: 30px; /* under the schedule, watchlist and history prompts, which have no footer */
-  --panel-prompt-veil: linear-gradient(90deg, rgb(12 12 12 / 0.95) 0%, rgb(12 12 12 / 0.75) 45%, rgb(12 12 12 / 0.05) 100%);
+  --panel-prompt-veil: linear-gradient(
+    90deg,
+    rgb(12 12 12 / 0.95) 0%,
+    rgb(12 12 12 / 0.75) 45%,
+    rgb(12 12 12 / 0.05) 100%
+  );
   --panel-prompt-veil-stacked: linear-gradient(0deg, rgb(12 12 12 / 0.95) 15%, rgb(12 12 12 / 0.35) 100%);
   --font-size-panel-prompt-quote: 26px;
   --font-size-panel-prompt-quote-stacked: 22px;
@@ -3937,7 +4038,11 @@
     conic-gradient(from -28deg at 18% 108%, transparent 0deg, rgb(255 214 170 / 0.3) 5deg, transparent 12deg),
     conic-gradient(from 16deg at 82% 108%, transparent 0deg, rgb(255 214 170 / 0.3) 5deg, transparent 12deg),
     conic-gradient(from -6deg at 50% 112%, transparent 0deg, rgb(255 214 170 / 0.18) 6deg, transparent 12deg);
-  --one-sheet-rays: repeating-conic-gradient(from 0deg at 50% 46%, rgb(255 255 255 / 0.07) 0deg 4deg, transparent 4deg 12deg);
+  --one-sheet-rays: repeating-conic-gradient(
+    from 0deg at 50% 46%,
+    rgb(255 255 255 / 0.07) 0deg 4deg,
+    transparent 4deg 12deg
+  );
   --one-sheet-rays-mask: radial-gradient(closest-side at 50% 46%, #000 20%, transparent 100%);
   --one-sheet-halftone: radial-gradient(circle, rgb(0 0 0 / 0.45) 0.9px, transparent 1.4px) 0 0 / 5px 5px;
   --one-sheet-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");

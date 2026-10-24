@@ -28,9 +28,13 @@ async function fetchShow(get: ApiGet, id: number, now: number): Promise<CachedSh
  * Summaries for these shows: cached ones while fresh and complete, the rest read one show at a time and saved. A
  * show that fails to load keeps its stale record, or is left out.
  */
-export async function loadCachedShows(
-  { ids, store, get, now = Date.now, ttl = TWELVE_HOURS }: LoadCachedShowsParams,
-): Promise<ReadonlyMap<number, CachedShow>> {
+export async function loadCachedShows({
+  ids,
+  store,
+  get,
+  now = Date.now,
+  ttl = TWELVE_HOURS,
+}: LoadCachedShowsParams): Promise<ReadonlyMap<number, CachedShow>> {
   const cached = await store.get(ids);
   const stale = ids.filter((id) => {
     const show = cached.get(id);
@@ -40,8 +44,10 @@ export async function loadCachedShows(
 
   const fetched = (await Promise.all(stale.map((id) => fetchShow(get, id, now())))).filter((show) => show !== null);
   const saved = await saveCachedShows({ store, shows: fetched });
-  return new Map(ids.flatMap((id) => {
-    const show = saved.get(id) ?? cached.get(id);
-    return show ? [[id, show] as const] : [];
-  }));
+  return new Map(
+    ids.flatMap((id) => {
+      const show = saved.get(id) ?? cached.get(id);
+      return show ? [[id, show] as const] : [];
+    }),
+  );
 }

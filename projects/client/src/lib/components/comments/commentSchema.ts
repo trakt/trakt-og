@@ -5,13 +5,25 @@ import { z } from 'zod/v4';
 // flags and avatar out for a private author. The card reads neither the author's trakt id nor their privacy.
 const user = z.object({
   username: z.string(),
-  private: z.boolean().nullish().transform((value) => value ?? false),
-  deleted: z.boolean().nullish().transform((value) => value ?? false),
+  private: z
+    .boolean()
+    .nullish()
+    .transform((value) => value ?? false),
+  deleted: z
+    .boolean()
+    .nullish()
+    .transform((value) => value ?? false),
   name: z.string().nullish(),
   vip: z.boolean().nullish(),
   vip_ep: z.boolean().nullish(),
   director: z.boolean().nullish(),
-  ids: z.object({ slug: z.string().nullish(), trakt: z.number().nullish().transform((value) => value ?? 0) }),
+  ids: z.object({
+    slug: z.string().nullish(),
+    trakt: z
+      .number()
+      .nullish()
+      .transform((value) => value ?? 0),
+  }),
   images: z.object({ avatar: z.object({ full: z.string() }) }).nullish(),
 });
 

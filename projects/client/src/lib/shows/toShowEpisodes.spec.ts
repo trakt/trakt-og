@@ -71,11 +71,13 @@ describe('toShowEpisodes', () => {
   it('should retain ratings for sorting while hiding future and undated card ratings by default', () => {
     const { rows } = toShowEpisodes({
       ...base,
-      seasons: [season(1, [
-        episode(1, 1, '2008-01-21T02:00:00Z', { rating: 8 }),
-        episode(1, 2, '2030-01-21T02:00:00Z', { rating: 9 }),
-        episode(1, 3, null, { rating: 7 }),
-      ])],
+      seasons: [
+        season(1, [
+          episode(1, 1, '2008-01-21T02:00:00Z', { rating: 8 }),
+          episode(1, 2, '2030-01-21T02:00:00Z', { rating: 9 }),
+          episode(1, 3, null, { rating: 7 }),
+        ]),
+      ],
     });
     expect(rows.find(({ episode }) => episode === 1)?.released).toBe(true);
     expect(rows.find(({ episode }) => episode === 2)).toMatchObject({ released: false, rating: 9 });

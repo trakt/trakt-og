@@ -36,12 +36,14 @@ const base: Parameters<typeof toSeasonSummary>[0] = {
   ratings: { rating: 8.2, votes: 1600 },
   stats: { watchers: 10, plays: 20, collectors: 2, comments: 3, lists: 4, votes: 1600 },
   people: {
-    cast: [{
-      person: { name: 'Actor', ids: { trakt: 1, slug: 'actor' } },
-      character: 'Walter',
-      characters: ['Walter'],
-      episode_count: 2,
-    }],
+    cast: [
+      {
+        person: { name: 'Actor', ids: { trakt: 1, slug: 'actor' } },
+        character: 'Walter',
+        characters: ['Walter'],
+        episode_count: 2,
+      },
+    ],
     guest_stars: [],
   },
   isVip: false,
@@ -115,13 +117,15 @@ describe('toSeasonSummary', () => {
   it('should omit unaired ratings and exclude future episodes from runtime and history', () => {
     const future = {
       ...base,
-      episodes: [{
-        ...base.episodes.at(0),
-        season: 1,
-        number: 1,
-        ids: { trakt: 99 },
-        first_aired: '2027-01-01T02:00:00Z',
-      }],
+      episodes: [
+        {
+          ...base.episodes.at(0),
+          season: 1,
+          number: 1,
+          ids: { trakt: 99 },
+          first_aired: '2027-01-01T02:00:00Z',
+        },
+      ],
       season: { ...base.season, aired_episodes: 0 },
     };
     const view = toSeasonSummary(future);

@@ -23,7 +23,11 @@ describe('agendaSlots', () => {
   });
 
   it('should start a new slot when a time comes back later in the day', () => {
-    const entries = [{ key: 'a', time: '8:00 pm' }, { key: 'b', time: '9:00 pm' }, { key: 'c', time: '8:00 pm' }];
+    const entries = [
+      { key: 'a', time: '8:00 pm' },
+      { key: 'b', time: '9:00 pm' },
+      { key: 'c', time: '8:00 pm' },
+    ];
     expect(agendaSlots(entries).map(({ time }) => time)).toEqual(['8:00 pm', '9:00 pm', '8:00 pm']);
   });
 

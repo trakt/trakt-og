@@ -9,8 +9,9 @@ describe('watchNowPath', () => {
 
   it('should nest seasons and episodes under their show', () => {
     expect(watchNowPath({ type: 'season', id: 3, season: { show: 2, number: 1 } })).toBe('/shows/2/seasons/1');
-    expect(watchNowPath({ type: 'episode', id: 4, season: { show: 2, number: 1, episode: 5 } }))
-      .toBe('/shows/2/seasons/1/episodes/5');
+    expect(watchNowPath({ type: 'episode', id: 4, season: { show: 2, number: 1, episode: 5 } })).toBe(
+      '/shows/2/seasons/1/episodes/5',
+    );
   });
 
   it('should have no path for a season or episode without its show', () => {

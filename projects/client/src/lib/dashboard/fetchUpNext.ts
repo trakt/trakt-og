@@ -61,7 +61,8 @@ async function upNext(client: Client, query: Query): Promise<readonly UpNextEntr
 export async function fetchUpNextTicks(client: Client, entry: UpNextEntry): Promise<readonly boolean[] | undefined> {
   if (entry.progress.reset_at) return undefined;
 
-  const response = await client.shows.progress.watched({ params: { id: String(entry.show.ids.trakt) }, query: {} })
+  const response = await client.shows.progress
+    .watched({ params: { id: String(entry.show.ids.trakt) }, query: {} })
     .catch(() => null);
   if (response?.status !== 200) return undefined;
 
@@ -74,21 +75,23 @@ export async function fetchUpNextTicks(client: Client, entry: UpNextEntry): Prom
  * which each rewatched show fetches on its own. OG's exact progress bars need each show's progress, and the season
  * poster setting each show's seasons; those requests run only with those settings.
  */
-export async function fetchUpNext(
-  { api: client, username, settings = toDashboardSettings({ settings: null }).upNext, fetch = globalThis.fetch }:
-    FetchUpNextParams,
-): Promise<readonly OnDeckItem[]> {
+export async function fetchUpNext({
+  api: client,
+  username,
+  settings = toDashboardSettings({ settings: null }).upNext,
+  fetch = globalThis.fetch,
+}: FetchUpNextParams): Promise<readonly OnDeckItem[]> {
   const { query, sorted } = request(settings);
   const fetched = (await upNext(client, query)).filter((entry) => entry.progress.next_episode);
   const entries = (sorted ? sortUpNext({ entries: fetched, ...settings.sort }) : fetched).slice(0, LIMIT);
   const episodes = entries.flatMap(({ show, progress }) =>
-    progress.next_episode ? [{ showId: show.ids.trakt, season: progress.next_episode.season }] : []
+    progress.next_episode ? [{ showId: show.ids.trakt, season: progress.next_episode.season }] : [],
   );
 
   const [lifetime, posterFor, showTicks] = await Promise.all([
     Promise.all(
       entries.map((entry) =>
-        entry.progress.reset_at ? fetchWholeShowProgress(client, entry.show.ids.trakt) : undefined
+        entry.progress.reset_at ? fetchWholeShowProgress(client, entry.show.ids.trakt) : undefined,
       ),
     ),
     settings.poster === 'season' ? fetchSeasonPosters({ fetch, episodes }) : undefined,

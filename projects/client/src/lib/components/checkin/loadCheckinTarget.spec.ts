@@ -15,12 +15,16 @@ const images = (kind: string) => [`media.trakt.tv/images/${kind}/medium/a.jpg.we
 
 describe('loadCheckinTarget', () => {
   it('should build a movie target with its full title and images', async () => {
-    server.use(http.get(`${API}/search/trakt/432`, ({ request }) => {
-      expect(new URL(request.url).searchParams.get('type')).toBe('movie');
-      return HttpResponse.json([{
-        movie: { title: 'Fight Club', year: 1999, images: { fanart: images('fanarts'), logo: images('logos') } },
-      }]);
-    }));
+    server.use(
+      http.get(`${API}/search/trakt/432`, ({ request }) => {
+        expect(new URL(request.url).searchParams.get('type')).toBe('movie');
+        return HttpResponse.json([
+          {
+            movie: { title: 'Fight Club', year: 1999, images: { fanart: images('fanarts'), logo: images('logos') } },
+          },
+        ]);
+      }),
+    );
 
     expect(await loadCheckinTarget({ type: 'movie', id: 432, fetch })).toEqual({
       type: 'movie',
@@ -33,17 +37,22 @@ describe('loadCheckinTarget', () => {
   });
 
   it('should build an episode target from its show', async () => {
-    server.use(http.get(`${API}/search/trakt/73482`, () =>
-      HttpResponse.json([{
-        show: { title: 'Breaking Bad', year: 2008, images: { fanart: images('fanarts') } },
-        episode: {
-          season: 1,
-          number: 1,
-          title: 'Pilot',
-          first_aired: '2008-01-21T02:00:00.000Z',
-          images: { screenshot: images('screenshots') },
-        },
-      }])));
+    server.use(
+      http.get(`${API}/search/trakt/73482`, () =>
+        HttpResponse.json([
+          {
+            show: { title: 'Breaking Bad', year: 2008, images: { fanart: images('fanarts') } },
+            episode: {
+              season: 1,
+              number: 1,
+              title: 'Pilot',
+              first_aired: '2008-01-21T02:00:00.000Z',
+              images: { screenshot: images('screenshots') },
+            },
+          },
+        ]),
+      ),
+    );
 
     expect(await loadCheckinTarget({ type: 'episode', id: 73482, fetch })).toEqual({
       type: 'episode',

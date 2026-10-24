@@ -94,13 +94,15 @@ function scale(busiest: number) {
 type Week = { readonly dates: readonly string[]; readonly minutes: number; readonly best: boolean };
 
 /** The 30 days in runs that start on the viewer's first day of the week, with their totals and the best one. */
-function toWeeks(
-  { dates, weekStartDay, minutesOn }: {
-    dates: readonly string[];
-    weekStartDay: number;
-    minutesOn: (date: string) => number;
-  },
-): readonly Week[] {
+function toWeeks({
+  dates,
+  weekStartDay,
+  minutesOn,
+}: {
+  dates: readonly string[];
+  weekStartDay: number;
+  minutesOn: (date: string) => number;
+}): readonly Week[] {
   const runs = dates.reduce<readonly (readonly string[])[]>(
     (weeks, date, i) =>
       i === 0 || weekday(date) === weekStartDay
@@ -122,15 +124,19 @@ function weekRange({ dates }: Week) {
   return `${shortDate(first)} to ${first.slice(0, 7) === last.slice(0, 7) ? dayOfMonth(last) : shortDate(last)}`;
 }
 
-function toChart(
-  { dates, playsOn, active, weeks, slug }: {
-    dates: readonly string[];
-    playsOn: (date: string) => readonly Play[];
-    active: number;
-    weeks: readonly Week[];
-    slug: string;
-  },
-): MinutesChartData {
+function toChart({
+  dates,
+  playsOn,
+  active,
+  weeks,
+  slug,
+}: {
+  dates: readonly string[];
+  playsOn: (date: string) => readonly Play[];
+  active: number;
+  weeks: readonly Week[];
+  slug: string;
+}): MinutesChartData {
   const minutesOn = (date: string) => minutesOf(playsOn(date));
   const { top, hours } = scale(Math.max(...dates.map(minutesOn)));
   const average = Math.round(sum(dates.map(minutesOn)) / active);
@@ -195,27 +201,38 @@ function toKeys({ plays, active, weeks }: { plays: readonly Play[]; active: numb
  * as OG's `watched_minutes_per_day` did, split into episodes and movies, with week totals, the average day and the
  * keys over it, and the watched genres. The scale tops out at the busiest day rounded up to the hour, two at least.
  */
-export function toLastThirtyDays(
-  { episodes, movies, genres, start, slug, now, timeZone, weekStartDay }: ToLastThirtyDaysParams,
-): LastThirtyDays {
+export function toLastThirtyDays({
+  episodes,
+  movies,
+  genres,
+  start,
+  slug,
+  now,
+  timeZone,
+  weekStartDay,
+}: ToLastThirtyDaysParams): LastThirtyDays {
   const today = dayIn(now.toISOString(), timeZone);
   const dates = Array.from({ length: DAYS }, (_, i) => shiftDate(today, i - DAYS + 1));
   const first = dates.at(0) ?? today;
 
   const plays = [
-    ...episodes.map((row): Play => ({
-      type: 'episode',
-      id: row.episode.ids.trakt,
-      show: row.show.ids.trakt,
-      date: dayIn(row.watched_at, timeZone),
-      minutes: playRuntime(row),
-    })),
-    ...movies.map((row): Play => ({
-      type: 'movie',
-      id: row.movie.ids.trakt,
-      date: dayIn(row.watched_at, timeZone),
-      minutes: playRuntime(row),
-    })),
+    ...episodes.map(
+      (row): Play => ({
+        type: 'episode',
+        id: row.episode.ids.trakt,
+        show: row.show.ids.trakt,
+        date: dayIn(row.watched_at, timeZone),
+        minutes: playRuntime(row),
+      }),
+    ),
+    ...movies.map(
+      (row): Play => ({
+        type: 'movie',
+        id: row.movie.ids.trakt,
+        date: dayIn(row.watched_at, timeZone),
+        minutes: playRuntime(row),
+      }),
+    ),
   ].filter(({ date }) => date >= first && date <= today);
   const genreBars = genres.map((row) => toGenreBar(row, { slug, startAt: start.slice(0, 10) }));
   if (minutesOf(plays) === 0) return { chart: null, keys: [], genres: genreBars };

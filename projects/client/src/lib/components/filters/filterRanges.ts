@@ -15,11 +15,30 @@ type FilterRangesParams = {
 export function filterRanges({ now, upcoming = false }: FilterRangesParams): Record<RangeFilterKey, RangeScale> {
   const year = now.getFullYear();
   return {
-    years: upcoming ? linearScale(year, year + 10) : {
-      stops: [[0, 1880], [15, 1920], [30, 1960], [50, 1975], [75, 2000], [100, year + 5]],
+    years: upcoming
+      ? linearScale(year, year + 10)
+      : {
+          stops: [
+            [0, 1880],
+            [15, 1920],
+            [30, 1960],
+            [50, 1975],
+            [75, 2000],
+            [100, year + 5],
+          ],
+          step: 1,
+        },
+    runtimes: {
+      stops: [
+        [0, 0],
+        [20, 30],
+        [40, 60],
+        [60, 90],
+        [80, 120],
+        [100, 500],
+      ],
       step: 1,
     },
-    runtimes: { stops: [[0, 0], [20, 30], [40, 60], [60, 90], [80, 120], [100, 500]], step: 1 },
     ratings: linearScale(0, 100),
     imdb_ratings: linearScale(0, 10, 0.1),
     rt_meters: linearScale(0, 100),

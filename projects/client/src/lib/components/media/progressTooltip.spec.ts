@@ -26,11 +26,9 @@ describe('progressTooltip', () => {
   it('should drop the remaining line when nothing is left', () => {
     const progress = { aired: 1, completed: 1, plays: 1, minutesWatched: 42, minutesLeft: 0 };
 
-    expect(asText(progressTooltip({ progress, runtime: 42 }))).toEqual([[
-      '100% watched',
-      '1/1 episode',
-      '1 play (42m)',
-    ]]);
+    expect(asText(progressTooltip({ progress, runtime: 42 }))).toEqual([
+      ['100% watched', '1/1 episode', '1 play (42m)'],
+    ]);
   });
 
   it('should add the whole show under a rewatch', () => {

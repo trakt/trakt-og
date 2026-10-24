@@ -4,7 +4,11 @@ import type { ViewerSettings } from '../settings/ViewerSettings.ts';
 import { watchNowCountry } from '../settings/watchNowCountry.ts';
 
 /** Applied streaming chips only need a source read when the URL has a streaming filter. Failure leaves the list usable. */
-export async function loadListFilterSources({ fetch, watchnow, settings }: {
+export async function loadListFilterSources({
+  fetch,
+  watchnow,
+  settings,
+}: {
   fetch: typeof globalThis.fetch;
   watchnow?: string;
   settings?: ViewerSettings | null;

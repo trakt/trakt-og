@@ -22,10 +22,12 @@ export async function fetchHiddenCalendar({ fetch, token }: { fetch: typeof glob
   if (!rows.success) return NOTHING_HIDDEN;
 
   const ids = (type: 'show' | 'movie') =>
-    new Set(rows.data.flatMap((row) => {
-      const id = row.type === type ? row[type]?.ids.trakt : undefined;
-      return id === undefined ? [] : [id];
-    }));
+    new Set(
+      rows.data.flatMap((row) => {
+        const id = row.type === type ? row[type]?.ids.trakt : undefined;
+        return id === undefined ? [] : [id];
+      }),
+    );
 
   return { shows: ids('show'), movies: ids('movie') } satisfies HiddenCalendar;
 }

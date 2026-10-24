@@ -25,7 +25,10 @@ const episode = {
   images: { screenshot: ['media.trakt.tv/screenshots/medium/p.jpg'] },
 };
 const map = (raw: unknown, options = opts) =>
-  ratingRowsSchema.parse([raw]).map((row) => toRatingCard(row, options)).at(0);
+  ratingRowsSchema
+    .parse([raw])
+    .map((row) => toRatingCard(row, options))
+    .at(0);
 describe('toRatingCard', () => {
   it('should keep the profile rating separate and format the rated date in the viewer zone', () => {
     expect(map({ ...base, type: 'movie', movie })).toMatchObject({
@@ -52,12 +55,15 @@ describe('toRatingCard', () => {
     expect(toRatingCard(row, opts)?.image).toBe('https://media.trakt.tv/posters/thumb/b.jpg');
   });
   it('should support specials, season-specific posters and released/runtime/votes lines', () => {
-    const rows = ratingRowsSchema.parse([{
-      ...base,
-      type: 'season',
-      season: { ids: { trakt: 3 }, number: 0, images: { poster: ['media.trakt.tv/posters/medium/s.jpg'] } },
-      show,
-    }, { ...base, type: 'movie', movie }]);
+    const rows = ratingRowsSchema.parse([
+      {
+        ...base,
+        type: 'season',
+        season: { ids: { trakt: 3 }, number: 0, images: { poster: ['media.trakt.tv/posters/medium/s.jpg'] } },
+        show,
+      },
+      { ...base, type: 'movie', movie },
+    ]);
     const season = rows.at(0);
     const film = rows.at(1);
     if (!season || !film) throw new Error('fixture missing');

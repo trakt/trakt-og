@@ -44,10 +44,13 @@ describe('toPremieres', () => {
   });
 
   it("should add anticipated series due before the cutoff, and give the day in the viewer's zone", () => {
-    const premieres = run([], [
-      anticipated(5, 900, { first_aired: '2026-12-25T02:00:00Z' }),
-      anticipated(6, 900, { first_aired: '2027-03-01T00:00:00Z' }),
-    ]);
+    const premieres = run(
+      [],
+      [
+        anticipated(5, 900, { first_aired: '2026-12-25T02:00:00Z' }),
+        anticipated(6, 900, { first_aired: '2027-03-01T00:00:00Z' }),
+      ],
+    );
 
     expect(premieres.map(({ id, day, season }) => [id, day, season])).toEqual([[5, '2026-12-24', 1]]);
   });
@@ -63,9 +66,10 @@ describe('toPremieres', () => {
   });
 
   it('should show each show once', () => {
-    const premieres = run([premiere(1, 'season_premiere', '2026-10-08T01:00:00Z', { votes: 4000 })], [
-      anticipated(1, 100, { first_aired: '2026-10-08T01:00:00Z' }),
-    ]);
+    const premieres = run(
+      [premiere(1, 'season_premiere', '2026-10-08T01:00:00Z', { votes: 4000 })],
+      [anticipated(1, 100, { first_aired: '2026-10-08T01:00:00Z' })],
+    );
 
     expect(premieres).toHaveLength(1);
   });

@@ -6,8 +6,14 @@ const member = z.object({
     ids: z.object({ trakt: z.number().int(), slug: z.string() }),
     gender: z.string().nullish(),
   }),
-  character: z.string().nullish().transform((value) => value ?? ''),
-  characters: z.array(z.string()).nullish().transform((value) => value ?? []),
+  character: z
+    .string()
+    .nullish()
+    .transform((value) => value ?? ''),
+  characters: z
+    .array(z.string())
+    .nullish()
+    .transform((value) => value ?? []),
   jobs: z.array(z.string()).nullish(),
   episode_count: z.number().int().nullish(),
   images: z.object({ headshot: z.array(z.string()) }).nullish(),

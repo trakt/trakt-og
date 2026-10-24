@@ -28,23 +28,25 @@ const source = toListView({
   ids: { trakt: 1, slug: 'heist-night' },
   user: { username: 'friend', ids: { slug: 'friend' } },
 });
-const items = [{ id: 10, type: 'movie', trakt: 100 }, { id: 11, type: 'show', trakt: 200 }, {
-  id: 12,
-  type: 'person',
-  trakt: 300,
-}] as const;
+const items = [
+  { id: 10, type: 'movie', trakt: 100 },
+  { id: 11, type: 'show', trakt: 200 },
+  {
+    id: 12,
+    type: 'person',
+    trakt: 300,
+  },
+] as const;
 const target = { id: 2, owner: 'collaborator', name: 'Target' };
 const rollback = vi.fn();
 const overlay = { patch: vi.fn(() => rollback) };
 const notify = { error: vi.fn() };
 const read = vi.fn(() =>
-  Promise.resolve(
-    [
-      { id: 21, type: 'show', trakt: 200 },
-      { id: 22, type: 'movie', trakt: 999 },
-      { id: 23, type: 'movie', trakt: 100 },
-    ] as const,
-  )
+  Promise.resolve([
+    { id: 21, type: 'show', trakt: 200 },
+    { id: 22, type: 'movie', trakt: 999 },
+    { id: 23, type: 'movie', trakt: 100 },
+  ] as const),
 );
 const writes: string[] = [];
 const request = (path: string, body: unknown) => {
@@ -112,11 +114,13 @@ describe('transferListItems', () => {
       storage: { load: () => Promise.resolve([]), save: () => Promise.resolve(), clearExcept: () => Promise.resolve() },
     });
     await actual.start('tester');
-    server.use(http.post(add, () => {
-      expect(actual.state('movie', 100).listed).toBe(true);
-      expect(actual.state('show', 200).listed).toBe(true);
-      return new HttpResponse(null, { status: 500 });
-    }));
+    server.use(
+      http.post(add, () => {
+        expect(actual.state('movie', 100).listed).toBe(true);
+        expect(actual.state('show', 200).listed).toBe(true);
+        return new HttpResponse(null, { status: 500 });
+      }),
+    );
     expect((await transfer({ overlay: actual })).ok).toBe(false);
     expect(actual.state('movie', 100).listed).toBeUndefined();
   });
@@ -167,13 +171,15 @@ describe('transferListItems', () => {
           sort_by: 'title',
           sort_how: 'desc',
         });
-        return HttpResponse.json({ ids: { trakt: 3 }, name: 'Heist Night copy', privacy: 'private', item_count: 0 }, {
-          status: 201,
-        });
+        return HttpResponse.json(
+          { ids: { trakt: 3 }, name: 'Heist Night copy', privacy: 'private', item_count: 0 },
+          {
+            status: 201,
+          },
+        );
       }),
-      http.post(
-        'https://apiz.trakt.tv/users/me/lists/3/items',
-        () => HttpResponse.json({ message: 'Full' }, { status: 420 }),
+      http.post('https://apiz.trakt.tv/users/me/lists/3/items', () =>
+        HttpResponse.json({ message: 'Full' }, { status: 420 }),
       ),
     );
     expect(await transfer({ destination: null })).toEqual({
@@ -184,9 +190,8 @@ describe('transferListItems', () => {
   });
   it('should add and reorder a watchlist, with its own overlay slice', async () => {
     server.use(
-      http.post(
-        'https://apiz.trakt.tv/sync/watchlist',
-        () => HttpResponse.json({ added: { movies: 1, shows: 1 }, existing: {} }),
+      http.post('https://apiz.trakt.tv/sync/watchlist', () =>
+        HttpResponse.json({ added: { movies: 1, shows: 1 }, existing: {} }),
       ),
       http.post('https://apiz.trakt.tv/sync/watchlist/reorder', async ({ request }) => {
         expect(await request.json()).toEqual({ rank: [22, 23, 21] });
@@ -200,16 +205,18 @@ describe('transferListItems', () => {
   });
   it('should move from a watchlist through its sync removal and shared overlay helper', async () => {
     success();
-    server.use(http.post('https://apiz.trakt.tv/sync/watchlist/remove', async ({ request }) => {
-      const body = await request.json();
-      expect(body).toEqual({
-        movies: [{ ids: { trakt: 100 } }],
-        shows: [{ ids: { trakt: 200 } }],
-        seasons: [],
-        episodes: [],
-      });
-      return HttpResponse.json({ deleted: { movies: 1, shows: 1 }, not_found: {} });
-    }));
+    server.use(
+      http.post('https://apiz.trakt.tv/sync/watchlist/remove', async ({ request }) => {
+        const body = await request.json();
+        expect(body).toEqual({
+          movies: [{ ids: { trakt: 100 } }],
+          shows: [{ ids: { trakt: 200 } }],
+          seasons: [],
+          episodes: [],
+        });
+        return HttpResponse.json({ deleted: { movies: 1, shows: 1 }, not_found: {} });
+      }),
+    );
     expect((await transfer({ source: { ...source, kind: 'watchlist' } })).ok).toBe(true);
     expect(writes.at(-1)).toBe('/sync/watchlist/remove');
     expect(overlay.patch).toHaveBeenCalledWith('watchlist', expect.any(Function), expect.any(Object));

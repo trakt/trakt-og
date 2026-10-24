@@ -19,7 +19,7 @@ export async function loadListCatalog(fetch: typeof globalThis.fetch): Promise<P
   const pageCount = Number(first.headers.get('x-pagination-page-count')) || 1;
   const rest = await Promise.all(Array.from({ length: pageCount - 1 }, (_, i) => page(i + 2)));
   if (rest.some((response) => response.status !== 200)) throw new Error('Lists unavailable');
-  const own = [first, ...rest].flatMap((response) => response.status === 200 ? response.body : []);
+  const own = [first, ...rest].flatMap((response) => (response.status === 200 ? response.body : []));
 
   return [
     ...own.map((list, i) => ({

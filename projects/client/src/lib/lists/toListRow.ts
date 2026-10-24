@@ -104,8 +104,8 @@ export function toListRow(list: ListRowSource): ListRow {
     },
     posters: (list.images?.posters ?? []).slice(0, 5).map((path) => ({ image: imageUrl(path, 'thumb') })),
     itemCount: list.item_count,
-    likeCount: likeable ? list.likes ?? 0 : undefined,
-    commentCount: list.allow_comments ? list.comment_count ?? 0 : undefined,
+    likeCount: likeable ? (list.likes ?? 0) : undefined,
+    commentCount: list.allow_comments ? (list.comment_count ?? 0) : undefined,
     pills: pills(list, kind),
     description: list.description?.trim() || undefined,
   };

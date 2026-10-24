@@ -10,8 +10,10 @@ type ExtraRow = {
 export function toNetworkExtras(
   rows: readonly { readonly slug: string; readonly row: ExtraRow }[],
 ): Readonly<Record<string, NetworkExtra>> {
-  return Object.fromEntries(rows.map(({ slug, row }) => {
-    const veteran = row.user.vip_veteran_title?.trim();
-    return [slug, { veteran: veteran ? capitalize(veteran) : null, since: row.followed_at ?? null }];
-  }));
+  return Object.fromEntries(
+    rows.map(({ slug, row }) => {
+      const veteran = row.user.vip_veteran_title?.trim();
+      return [slug, { veteran: veteran ? capitalize(veteran) : null, since: row.followed_at ?? null }];
+    }),
+  );
 }

@@ -1,13 +1,19 @@
 import { listFilterOptions } from './listFilterOptions.ts';
 
 type Option = ReturnType<typeof listFilterOptions>['hide'][number]['id'];
-const parse = (
-  value: string | undefined | null,
-  allowed: readonly { id: Option }[],
-) => [...new Set((value ?? '').split(',').filter((id): id is Option => allowed.some((option) => option.id === id)))];
+const parse = (value: string | undefined | null, allowed: readonly { id: Option }[]) => [
+  ...new Set((value ?? '').split(',').filter((id): id is Option => allowed.some((option) => option.id === id))),
+];
 
 /** An explicit URL (even empty) overrides the browser's preference for this kind of list. */
-export function readListFilters({ search, cookies, scope, kind = 'personal', types = [], isSelf = false }: {
+export function readListFilters({
+  search,
+  cookies,
+  scope,
+  kind = 'personal',
+  types = [],
+  isSelf = false,
+}: {
   search: URLSearchParams;
   cookies?: { get: (name: string) => string | undefined };
   scope: string;

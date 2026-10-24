@@ -10,10 +10,13 @@ const toEmoji = (codepoints: string) =>
 
 const load = () =>
   new Map(
-    table.split('\n').filter(Boolean).map((line) => {
-      const [name = '', codepoints = ''] = line.split(' ');
-      return [name, codepoints];
-    }),
+    table
+      .split('\n')
+      .filter(Boolean)
+      .map((line) => {
+        const [name = '', codepoints = ''] = line.split(' ');
+        return [name, codepoints];
+      }),
   );
 
 /**

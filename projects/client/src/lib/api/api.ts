@@ -39,9 +39,11 @@ function keepZeroParams<T extends object>(client: T): T {
  * render a 401 logged-out.
  */
 export function api({ fetch = globalThis.fetch, token, environment = apiEnvironment() }: ApiParams = {}) {
-  return keepZeroParams(traktApi({
-    apiKey: TRAKT_CLIENT_ID,
-    environment,
-    fetch: plainTextErrorFetch(authorizedFetch(fetch, token)),
-  }));
+  return keepZeroParams(
+    traktApi({
+      apiKey: TRAKT_CLIENT_ID,
+      environment,
+      fetch: plainTextErrorFetch(authorizedFetch(fetch, token)),
+    }),
+  );
 }

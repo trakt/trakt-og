@@ -8,7 +8,11 @@ const ITEM_TYPES: readonly ListItemType[] = ['movie', 'show', 'season', 'episode
 const PER_PAGE = 120;
 const MAX_LIMIT = 250;
 
-const csv = (value: string | null) => (value ?? '').split(',').map((part) => part.trim()).filter(Boolean);
+const csv = (value: string | null) =>
+  (value ?? '')
+    .split(',')
+    .map((part) => part.trim())
+    .filter(Boolean);
 const isItemType = (value: string): value is ListItemType => ITEM_TYPES.some((type) => type === value);
 
 /**

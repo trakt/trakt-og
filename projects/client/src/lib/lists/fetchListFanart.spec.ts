@@ -26,7 +26,8 @@ const server = setupServer(
         listed_at: '2026-01-01T00:00:00.000Z',
         id: 2,
       },
-    ])),
+    ]),
+  ),
   http.get(`${API}/lists/10/items`, () => new HttpResponse(null, { status: 404 })),
 );
 

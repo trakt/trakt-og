@@ -49,7 +49,10 @@ describe('mapper: toGenreBand', () => {
       expect(band.other?.tip).toEqual({
         title: 'Other · 4 genres',
         share: '7.1%',
-        lines: [{ type: 'shows', text: '12 shows' }, { type: 'movies', text: '7 movies' }],
+        lines: [
+          { type: 'shows', text: '12 shows' },
+          { type: 'movies', text: '7 movies' },
+        ],
         footer: 'Animation, Horror, War, …',
       });
     });
@@ -70,7 +73,10 @@ describe('mapper: toGenreBand', () => {
     expect(top?.tip).toEqual({
       title: '#1 Drama',
       share: '31%',
-      lines: [{ type: 'shows', text: '240 shows' }, { type: 'movies', text: '380 movies' }],
+      lines: [
+        { type: 'shows', text: '240 shows' },
+        { type: 'movies', text: '380 movies' },
+      ],
       footer: '620 titles · your top genre',
     });
     expect(second?.share).toBe('8.9%');

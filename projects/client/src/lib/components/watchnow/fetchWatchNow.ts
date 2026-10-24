@@ -12,9 +12,11 @@ type FetchWatchNowParams<T extends z.ZodType> = {
  * One watch-now read, parsed at the boundary. Every watch-now route is Official-gated and public, so none sends the
  * token. A failed, unreadable or malformed response is `null`, which the block and the modal show as no offers.
  */
-export async function fetchWatchNow<T extends z.ZodType>(
-  { fetch, path, schema }: FetchWatchNowParams<T>,
-): Promise<z.output<T> | null> {
+export async function fetchWatchNow<T extends z.ZodType>({
+  fetch,
+  path,
+  schema,
+}: FetchWatchNowParams<T>): Promise<z.output<T> | null> {
   const response = await rawApiFetch({ fetch, path }).catch(() => null);
   if (!response?.ok) return null;
 

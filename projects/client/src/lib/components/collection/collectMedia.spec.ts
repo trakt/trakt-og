@@ -23,18 +23,31 @@ async function setup(unknown = false) {
     storage: {
       load: () =>
         Promise.resolve(
-          unknown ? [] : [
-            {
-              name: 'collectedMovies',
-              activity: '',
-              data: new Map<number, CollectedItem>([[1, 'old'], [2, { at: 'synced', sources: ['plex'] }]]),
-            },
-            {
-              name: 'collectedShows',
-              activity: '',
-              data: new Map([[5, new Map([[1, new Map([[1, 'old']])], [2, new Map([[1, 'older']])]])]]),
-            },
-          ],
+          unknown
+            ? []
+            : [
+                {
+                  name: 'collectedMovies',
+                  activity: '',
+                  data: new Map<number, CollectedItem>([
+                    [1, 'old'],
+                    [2, { at: 'synced', sources: ['plex'] }],
+                  ]),
+                },
+                {
+                  name: 'collectedShows',
+                  activity: '',
+                  data: new Map([
+                    [
+                      5,
+                      new Map([
+                        [1, new Map([[1, 'old']])],
+                        [2, new Map([[1, 'older']])],
+                      ]),
+                    ],
+                  ]),
+                },
+              ],
         ),
       save: () => Promise.resolve(),
       clearExcept: () => Promise.resolve(),
@@ -51,22 +64,27 @@ async function setup(unknown = false) {
     request: (path: string, body?: unknown) =>
       rawApiFetch({
         path,
-        init: body === undefined ? undefined : {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body),
-        },
+        init:
+          body === undefined
+            ? undefined
+            : {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body),
+              },
       }),
   };
 }
 describe('collectMedia', () => {
   it.each(['now', 'released', 'unknown', at])('should collect with optional metadata using %s', async (collectedAt) => {
     const params = await setup(true);
-    server.use(http.post(`${API}/sync/collection`, async ({ request }) => {
-      expect(params.overlay.state('movie', 1).collected).toBe(true);
-      expect(await request.json()).toEqual({ movies: [{ ids: { trakt: 1 }, collected_at: collectedAt }] });
-      return HttpResponse.json({ added: { movies: 1 } }, { status: 201 });
-    }));
+    server.use(
+      http.post(`${API}/sync/collection`, async ({ request }) => {
+        expect(params.overlay.state('movie', 1).collected).toBe(true);
+        expect(await request.json()).toEqual({ movies: [{ ids: { trakt: 1 }, collected_at: collectedAt }] });
+        return HttpResponse.json({ added: { movies: 1 } }, { status: 201 });
+      }),
+    );
     expect(await collectMedia({ ...params, collectedAt })).toBe(true);
     expect(params.overlay.state('movie', 1).collectedAt).toBe(
       collectedAt === 'unknown' ? '1970-01-01T00:00:00.000Z' : at,
@@ -75,10 +93,12 @@ describe('collectMedia', () => {
   it('should change and clear metadata without altering collection dates', async () => {
     const params = await setup();
     const metadata = { media_type: 'bluray', resolution: null, '3d': false };
-    server.use(http.post(`${API}/sync/collection`, async ({ request }) => {
-      expect(await request.json()).toEqual({ movies: [{ ids: { trakt: 1 }, ...metadata }] });
-      return HttpResponse.json({ updated: { movies: 1 } });
-    }));
+    server.use(
+      http.post(`${API}/sync/collection`, async ({ request }) => {
+        expect(await request.json()).toEqual({ movies: [{ ids: { trakt: 1 }, ...metadata }] });
+        return HttpResponse.json({ updated: { movies: 1 } });
+      }),
+    );
     expect(await collectMedia({ ...params, collectedAt: undefined, metadata })).toBe(true);
     expect(params.overlay.state('movie', 1)).toMatchObject({ collectedAt: 'old', collectionMetadata: metadata });
   });
@@ -86,8 +106,9 @@ describe('collectMedia', () => {
     const params = await setup();
     server.use(http.post(`${API}/sync/collection`, () => HttpResponse.json({ updated: { movies: 1 } })));
     const target = { type: 'movie', id: 2, title: 'Synced' } satisfies WatchTarget;
-    expect(await collectMedia({ ...params, target, collectedAt: undefined, metadata: { media_type: 'digital' } }))
-      .toBe(true);
+    expect(await collectMedia({ ...params, target, collectedAt: undefined, metadata: { media_type: 'digital' } })).toBe(
+      true,
+    );
     expect(params.overlay.state('movie', 2)).toMatchObject({ collectedAt: 'synced', collectionSources: ['plex'] });
   });
   it.each([403, 429, 500])('should roll back metadata and dates after HTTP %s', async (status) => {
@@ -108,23 +129,27 @@ describe('collectMedia', () => {
   );
   it('should add only the remaining aired episodes', async () => {
     const params = await setup();
-    server.use(http.post(`${API}/sync/collection`, async ({ request }) => {
-      expect(params.overlay.state('show', 5).collectedEpisodes).toBe(3);
-      expect(await request.json()).toEqual({ episodes: [{ ids: { trakt: 11 }, collected_at: 'now', hdr: 'hdr10' }] });
-      return HttpResponse.json({ added: { episodes: 1 } });
-    }));
+    server.use(
+      http.post(`${API}/sync/collection`, async ({ request }) => {
+        expect(params.overlay.state('show', 5).collectedEpisodes).toBe(3);
+        expect(await request.json()).toEqual({ episodes: [{ ids: { trakt: 11 }, collected_at: 'now', hdr: 'hdr10' }] });
+        return HttpResponse.json({ added: { episodes: 1 } });
+      }),
+    );
     expect(
       await collectMedia({ ...params, target: { type: 'show', id: 5, title: 'Show' }, metadata: { hdr: 'hdr10' } }),
     ).toBe(true);
   });
   it('should force recollection and patch both episode ids and episode numbers', async () => {
     const params = await setup();
-    server.use(http.post(`${API}/sync/collection`, async ({ request }) => {
-      expect(await request.json()).toEqual({
-        episodes: [10, 11].map((id) => ({ ids: { trakt: id }, collected_at: 'now' })),
-      });
-      return HttpResponse.json({ updated: { episodes: 1 }, added: { episodes: 1 } });
-    }));
+    server.use(
+      http.post(`${API}/sync/collection`, async ({ request }) => {
+        expect(await request.json()).toEqual({
+          episodes: [10, 11].map((id) => ({ ids: { trakt: id }, collected_at: 'now' })),
+        });
+        return HttpResponse.json({ updated: { episodes: 1 }, added: { episodes: 1 } });
+      }),
+    );
     expect(
       await collectMedia({
         ...params,
@@ -137,10 +162,12 @@ describe('collectMedia', () => {
   });
   it('should update only collected episodes for a metadata-only show edit', async () => {
     const params = await setup();
-    server.use(http.post(`${API}/sync/collection`, async ({ request }) => {
-      expect(await request.json()).toEqual({ episodes: [{ ids: { trakt: 10 }, media_type: 'dvd' }] });
-      return HttpResponse.json({ updated: { episodes: 1 } });
-    }));
+    server.use(
+      http.post(`${API}/sync/collection`, async ({ request }) => {
+        expect(await request.json()).toEqual({ episodes: [{ ids: { trakt: 10 }, media_type: 'dvd' }] });
+        return HttpResponse.json({ updated: { episodes: 1 } });
+      }),
+    );
     expect(
       await collectMedia({
         ...params,
@@ -154,10 +181,12 @@ describe('collectMedia', () => {
   it.each(['movie', 'show', 'season'] as const)('should remove a %s and leave other seasons alone', async (type) => {
     const params = await setup();
     const target: WatchTarget = { type, id: type === 'movie' ? 1 : 5, title: 'Item', season: { show: 5, number: 1 } };
-    server.use(http.post(`${API}/sync/collection/remove`, async ({ request }) => {
-      expect(await request.json()).toEqual({ [`${type}s`]: [{ ids: { trakt: target.id } }] });
-      return HttpResponse.json({ deleted: { movies: 1, episodes: 1 } });
-    }));
+    server.use(
+      http.post(`${API}/sync/collection/remove`, async ({ request }) => {
+        expect(await request.json()).toEqual({ [`${type}s`]: [{ ids: { trakt: target.id } }] });
+        return HttpResponse.json({ deleted: { movies: 1, episodes: 1 } });
+      }),
+    );
     expect(await collectMedia({ ...params, target, collectedAt: null })).toBe(true);
     expect(params.overlay.state(type, target.id, target.season).collected).toBe(false);
     if (type === 'season') expect(params.overlay.state('show', 5).collectedEpisodes).toBe(1);
@@ -165,14 +194,14 @@ describe('collectMedia', () => {
   it('should resolve an episode and remove its number from its parent collection', async () => {
     const params = await setup();
     server.use(
-      http.get(
-        `${API}/search/trakt/10`,
-        () => HttpResponse.json([{ show: { ids: { trakt: 5 } }, episode: { season: 1, number: 1 } }]),
+      http.get(`${API}/search/trakt/10`, () =>
+        HttpResponse.json([{ show: { ids: { trakt: 5 } }, episode: { season: 1, number: 1 } }]),
       ),
     );
     server.use(http.post(`${API}/sync/collection/remove`, () => HttpResponse.json({ deleted: { episodes: 1 } })));
-    expect(await collectMedia({ ...params, target: { type: 'episode', id: 10, title: 'Episode' }, collectedAt: null }))
-      .toBe(true);
+    expect(
+      await collectMedia({ ...params, target: { type: 'episode', id: 10, title: 'Episode' }, collectedAt: null }),
+    ).toBe(true);
     expect(params.overlay.state('episode', 10, { show: 5, number: 1, episode: 1 }).collected).toBe(false);
   });
   it('should not write when no aired episodes or progress is available', async () => {
@@ -195,12 +224,14 @@ describe('collectMedia', () => {
   });
   it('should remove an episode with page context without a search request', async () => {
     const params = await setup();
-    server.use(http.post(`${API}/sync/collection/remove`, async ({ request }) => {
-      expect(await request.json()).toEqual({ episodes: [{ ids: { trakt: 10 } }] });
-      expect(params.overlay.state('episode', 10, { show: 5, number: 1, episode: 1 }).collected).toBe(false);
-      expect(params.overlay.state('episode', 20, { show: 5, number: 2, episode: 1 }).collected).toBe(true);
-      return HttpResponse.json({ deleted: { episodes: 1 } });
-    }));
+    server.use(
+      http.post(`${API}/sync/collection/remove`, async ({ request }) => {
+        expect(await request.json()).toEqual({ episodes: [{ ids: { trakt: 10 } }] });
+        expect(params.overlay.state('episode', 10, { show: 5, number: 1, episode: 1 }).collected).toBe(false);
+        expect(params.overlay.state('episode', 20, { show: 5, number: 2, episode: 1 }).collected).toBe(true);
+        return HttpResponse.json({ deleted: { episodes: 1 } });
+      }),
+    );
     expect(
       await collectMedia({
         ...params,

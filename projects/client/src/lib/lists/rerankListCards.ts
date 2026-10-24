@@ -12,5 +12,5 @@ export function rerankListCards<T extends { readonly key: number; readonly rank:
   const ranks = new Map(order.map((id, i) => [id, i + 1]));
   const next = cards.map((card) => ({ ...card, rank: ranks.get(card.key) ?? card.rank }));
   if (sort.by !== 'rank') return next;
-  return next.toSorted((a, b) => sort.how === 'desc' ? b.rank - a.rank : a.rank - b.rank);
+  return next.toSorted((a, b) => (sort.how === 'desc' ? b.rank - a.rank : a.rank - b.rank));
 }

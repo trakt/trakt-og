@@ -34,7 +34,7 @@ export function advancedFiltersQuery(filters: AdvancedFilters, only?: Picked): R
     if (values.length === 0) return [];
     const list: [string, string] = [
       listParams[key],
-      [...values.map((value) => mode === 'none' ? `-${value}` : value), ...excluded.map((value) => `-${value}`)].join(
+      [...values.map((value) => (mode === 'none' ? `-${value}` : value)), ...excluded.map((value) => `-${value}`)].join(
         ',',
       ),
     ];
@@ -44,9 +44,8 @@ export function advancedFiltersQuery(filters: AdvancedFilters, only?: Picked): R
     const range = filters[key];
     return range ? [[rangeParams[key], `${range[0]}-${range[1]}`] as [string, string]] : [];
   });
-  const watchnow: [string, string][] = keep('watchnow') && filters.watchnow.length > 0
-    ? [['watchnow', filters.watchnow.join(',')]]
-    : [];
+  const watchnow: [string, string][] =
+    keep('watchnow') && filters.watchnow.length > 0 ? [['watchnow', filters.watchnow.join(',')]] : [];
 
   return Object.fromEntries([...watchnow, ...lists, ...ranges]);
 }

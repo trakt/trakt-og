@@ -25,10 +25,14 @@ const base: Parameters<typeof toEpisodeSummary>[0] = {
   },
   season: { number: 1, ids: { trakt: 3950 } },
   episode,
-  seasons: [{ number: 0, episodes: [{ season: 0, number: 1, ids: { trakt: 99 } }] }, {
-    number: 2,
-    episodes: [{ season: 2, number: 1, title: 'Third', ids: { trakt: 103 } }],
-  }, { number: 1, episodes: [episode, { season: 1, number: 1, title: 'Pilot', ids: { trakt: 101 } }] }],
+  seasons: [
+    { number: 0, episodes: [{ season: 0, number: 1, ids: { trakt: 99 } }] },
+    {
+      number: 2,
+      episodes: [{ season: 2, number: 1, title: 'Third', ids: { trakt: 103 } }],
+    },
+    { number: 1, episodes: [episode, { season: 1, number: 1, title: 'Pilot', ids: { trakt: 101 } }] },
+  ],
   people: { cast: [], crew: { directing: [member], writing: [{ ...member, jobs: ['Writer', 'Story'] }] } },
   regulars: { cast: [], guest_stars: [] },
   ratings: { rating: 8.2, votes: 1600 },
@@ -108,10 +112,12 @@ describe('toEpisodeSummary', () => {
   });
   it('should list only the episodes of its own season in the strip', () => {
     const view = toEpisodeSummary({ ...base, episode: { ...episode, season: 2, number: 1 } });
-    expect(view.episodeLinks).toEqual([{
-      text: '1',
-      href: '/shows/breaking-bad/seasons/2/episodes/1',
-      selected: true,
-    }]);
+    expect(view.episodeLinks).toEqual([
+      {
+        text: '1',
+        href: '/shows/breaking-bad/seasons/2/episodes/1',
+        selected: true,
+      },
+    ]);
   });
 });

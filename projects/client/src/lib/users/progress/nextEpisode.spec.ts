@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { nextEpisode } from './nextEpisode.ts';
 
 const episodes = [1, 2, 3, 4, 5].map((id) => ({ id }));
-const doneIn = (ids: number[]) => ({ id }: { id: number }) => ids.includes(id);
+const doneIn =
+  (ids: number[]) =>
+  ({ id }: { id: number }) =>
+    ids.includes(id);
 
 describe('nextEpisode', () => {
   it('should start at the first episode when nothing is watched', () => {

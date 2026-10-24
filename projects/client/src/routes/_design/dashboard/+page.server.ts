@@ -48,9 +48,8 @@ export async function load({ fetch, locals, parent, cookies }) {
   return {
     viewer: { username: user.slug, isVip: user.isVip },
     dashboard,
-    upNext: unless(
-      hidden.upNext,
-      () => fetchUpNext({ api: client, username: user.slug, settings: dashboard.upNext, fetch }),
+    upNext: unless(hidden.upNext, () =>
+      fetchUpNext({ api: client, username: user.slug, settings: dashboard.upNext, fetch }),
     ),
     schedule: unless(hidden.schedule, () =>
       fetchSchedule({
@@ -60,7 +59,8 @@ export async function load({ fetch, locals, parent, cookies }) {
         datePreferences,
         isVip: user.isVip,
         schedule: dashboard.schedule,
-      })),
+      }),
+    ),
     watchlist: unless(hidden.watchlist, () => fetchWatchlist({ fetch, token: token, datePreferences })),
     lastThirtyDays: unless(hidden.lastThirtyDays, () =>
       fetchLastThirtyDays({
@@ -69,18 +69,16 @@ export async function load({ fetch, locals, parent, cookies }) {
         slug: user.slug,
         timeZone: datePreferences.timeZone,
         weekStartDay: datePreferences.weekStartDay,
-      })),
-    recentlyWatched: unless(
-      hidden.recentlyWatched,
-      () => fetchRecentlyWatched({ fetch, token: token, datePreferences }),
+      }),
     ),
-    socialFeed: unless(
-      hidden.socialFeed,
-      () => fetchSocialFeed({ fetch, token: token, following, now, datePreferences }),
+    recentlyWatched: unless(hidden.recentlyWatched, () =>
+      fetchRecentlyWatched({ fetch, token: token, datePreferences }),
     ),
-    recommendations: unless(
-      hidden.recommendations,
-      () => fetchRecommendations({ fetch, token, settings: dashboard.recommendations, now }),
+    socialFeed: unless(hidden.socialFeed, () =>
+      fetchSocialFeed({ fetch, token: token, following, now, datePreferences }),
+    ),
+    recommendations: unless(hidden.recommendations, () =>
+      fetchRecommendations({ fetch, token, settings: dashboard.recommendations, now }),
     ),
   };
 }

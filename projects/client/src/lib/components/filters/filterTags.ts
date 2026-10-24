@@ -14,7 +14,11 @@ export type FilterTag = {
 };
 
 const titleCase = (value: string) =>
-  value.split(/[-_\s]+/).filter(Boolean).map((word) => word[0]?.toUpperCase() + word.slice(1)).join(' ');
+  value
+    .split(/[-_\s]+/)
+    .filter(Boolean)
+    .map((word) => word[0]?.toUpperCase() + word.slice(1))
+    .join(' ');
 
 const displayName = (type: 'language' | 'region', code: string) => {
   try {
@@ -73,7 +77,7 @@ export function filterTags(filters: AdvancedFilters): FilterTag[] {
   const bounds = ranges.flatMap(({ key, site, suffix, decimals }) => {
     const range = filters[key];
     if (!range) return [];
-    const [min, max] = range.map((value) => decimals ? value.toFixed(decimals) : `${value}`);
+    const [min, max] = range.map((value) => (decimals ? value.toFixed(decimals) : `${value}`));
     return [{ id: key, text: `${min} - ${max}${suffix}`, without: false, ...(site && { site }) }];
   });
 

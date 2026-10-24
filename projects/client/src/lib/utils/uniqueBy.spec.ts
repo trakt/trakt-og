@@ -3,7 +3,13 @@ import { uniqueBy } from './uniqueBy.ts';
 
 describe('util: uniqueBy', () => {
   it('should keep the first item for each key in order', () => {
-    const items = [{ id: 2, n: 'a' }, { id: 1, n: 'b' }, { id: 2, n: 'c' }, { id: 3, n: 'd' }, { id: 1, n: 'e' }];
+    const items = [
+      { id: 2, n: 'a' },
+      { id: 1, n: 'b' },
+      { id: 2, n: 'c' },
+      { id: 3, n: 'd' },
+      { id: 1, n: 'e' },
+    ];
     expect(uniqueBy(items, ({ id }) => id).map(({ n }) => n)).toEqual(['a', 'b', 'd']);
   });
 

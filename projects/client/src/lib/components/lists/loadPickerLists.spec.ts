@@ -31,15 +31,20 @@ function fixture() {
 describe('loadPickerLists', () => {
   it('should load every list with its privacy and owner in two requests, and membership across all pages', async () => {
     const catalogRequests = fixture();
-    server.use(http.get('https://apiz.trakt.tv/movies/1/listed', ({ request }) => {
-      const page = new URL(request.url).searchParams.get('page');
-      return HttpResponse.json(
-        page === '1'
-          ? [{ ids: { trakt: 12 }, type: 'personal' }]
-          : [{ ids: { trakt: null }, type: 'watchlist' }, { ids: { trakt: 100 }, type: 'favorites' }],
-        { headers: { 'X-Pagination-Page-Count': '2' } },
-      );
-    }));
+    server.use(
+      http.get('https://apiz.trakt.tv/movies/1/listed', ({ request }) => {
+        const page = new URL(request.url).searchParams.get('page');
+        return HttpResponse.json(
+          page === '1'
+            ? [{ ids: { trakt: 12 }, type: 'personal' }]
+            : [
+                { ids: { trakt: null }, type: 'watchlist' },
+                { ids: { trakt: 100 }, type: 'favorites' },
+              ],
+          { headers: { 'X-Pagination-Page-Count': '2' } },
+        );
+      }),
+    );
     const result = await loadPickerLists({ fetch, target });
     expect(catalogRequests()).toBe(2);
     expect(result.watchlisted).toBe(true);

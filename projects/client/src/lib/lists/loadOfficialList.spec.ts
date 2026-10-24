@@ -115,11 +115,13 @@ describe('loadOfficialList', () => {
   });
 
   it('should keep the public items when a viewer sort rejects a stale token', async () => {
-    server.use(http.get(`${root}/lists/:id/items*`, ({ request }) => {
-      record(request);
-      if (request.headers.has('authorization')) return new HttpResponse(null, { status: 401 });
-      return HttpResponse.json([row]);
-    }));
+    server.use(
+      http.get(`${root}/lists/:id/items*`, ({ request }) => {
+        record(request);
+        if (request.headers.has('authorization')) return new HttpResponse(null, { status: 401 });
+        return HttpResponse.json([row]);
+      }),
+    );
     const result = await load('?sort=my_rating,desc', 'collection', true);
     expect(result.cards.at(0)?.title).toBe('Heat');
     expect(result.stats).toEqual({ count: 1, runtime: 90 });
@@ -148,12 +150,10 @@ describe('loadOfficialList', () => {
 
   it('should distinguish item failures from an unavailable decorative cover', async () => {
     server.use(
-      http.get(
-        `${root}/lists/:id/items*`,
-        ({ request }) =>
-          new URL(request.url).pathname.endsWith('/random/asc')
-            ? new HttpResponse(null, { status: 500 })
-            : HttpResponse.json([row]),
+      http.get(`${root}/lists/:id/items*`, ({ request }) =>
+        new URL(request.url).pathname.endsWith('/random/asc')
+          ? new HttpResponse(null, { status: 500 })
+          : HttpResponse.json([row]),
       ),
     );
     expect((await load()).listCover).toBeUndefined();

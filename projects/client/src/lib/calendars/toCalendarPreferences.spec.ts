@@ -20,13 +20,20 @@ describe('toCalendarPreferences', () => {
     ).toEqual(defaults);
   });
   it('should honor every valid setting for VIPs', () => {
-    expect(toCalendarPreferences(settings({ vip: true }, {
-      period: 'month',
-      layout: 'grid',
-      start_day: 'monday',
-      image_type: 'none',
-      hide_specials: true,
-    }))).toEqual({
+    expect(
+      toCalendarPreferences(
+        settings(
+          { vip: true },
+          {
+            period: 'month',
+            layout: 'grid',
+            start_day: 'monday',
+            image_type: 'none',
+            hide_specials: true,
+          },
+        ),
+      ),
+    ).toEqual({
       period: 'month',
       layout: 'grid',
       startDay: 'monday',

@@ -107,10 +107,15 @@ export function toSearchCard(hit: SearchHit, options: SearchCardOptions): Search
     const timeZone = show.airs?.timezone ?? 'UTC';
     const premiere = premiereTag ? episodeType(episode) : undefined;
     const kind = premiere?.kind;
-    const badge = kind === 'series-premiere' || kind === 'season-premiere' || kind === 'mid-season-premiere' ||
-        kind === 'mid-season-finale' || kind === 'season-finale' || kind === 'series-finale'
-      ? { label: premiere?.text ?? '', kind }
-      : undefined;
+    const badge =
+      kind === 'series-premiere' ||
+      kind === 'season-premiere' ||
+      kind === 'mid-season-premiere' ||
+      kind === 'mid-season-finale' ||
+      kind === 'season-finale' ||
+      kind === 'series-finale'
+        ? { label: premiere?.text ?? '', kind }
+        : undefined;
     const showHref = `/shows/${show.ids.slug ?? show.ids.trakt}`;
     return {
       key: `episode-${episode.ids.trakt}`,

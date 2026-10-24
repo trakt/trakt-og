@@ -8,7 +8,7 @@ export function createNoteOverlay() {
   let revision = 0;
   let entries = $state<Readonly<Record<number, NoteView | null>>>({});
   let pending = $state<Readonly<Record<number, boolean>>>({});
-  const state = (note: NoteView) => Object.hasOwn(entries, note.id) ? entries[note.id] : note;
+  const state = (note: NoteView) => (Object.hasOwn(entries, note.id) ? entries[note.id] : note);
   return {
     state,
     busy(id: number) {
@@ -19,7 +19,13 @@ export function createNoteOverlay() {
       entries = {};
       pending = {};
     },
-    async save({ note, text, fetch, datePreferences, now }: {
+    async save({
+      note,
+      text,
+      fetch,
+      datePreferences,
+      now,
+    }: {
       note: NoteView;
       text: string;
       fetch: typeof globalThis.fetch;

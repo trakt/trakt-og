@@ -71,7 +71,12 @@ const byAir = (a: EpisodeRow, b: EpisodeRow) =>
  * The rows in `by` order; `flipped` is the direction toggle. Ties fall back to air order, except on air date itself,
  * where episodes that dropped at once keep their number order in the chosen direction.
  */
-export function sortEpisodes({ rows, by, flipped, stats = new Map() }: {
+export function sortEpisodes({
+  rows,
+  by,
+  flipped,
+  stats = new Map(),
+}: {
   rows: readonly EpisodeRow[];
   by: EpisodeSort;
   flipped: boolean;
@@ -102,7 +107,7 @@ export function yearRange(dates: readonly (string | null | undefined)[]): string
  */
 export function toShowEpisodes({ show, seasons, signedIn, episodeTypeTags, datePreferences, now }: ShowEpisodesParams) {
   const href = `/shows/${show.ids.slug}`;
-  const timeZone = signedIn ? datePreferences.timeZone : show.airs?.timezone ?? datePreferences.timeZone;
+  const timeZone = signedIn ? datePreferences.timeZone : (show.airs?.timezone ?? datePreferences.timeZone);
   const seasonHref = (number: number) => `${href}/seasons/${number}`;
   const episodes: EpisodeResponse[] = seasons.flatMap((season) => season.episodes ?? []);
 

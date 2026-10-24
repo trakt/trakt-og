@@ -20,20 +20,21 @@ function fixture() {
   server.use(
     http.get(`${base}/users/me/followers`, ({ request }) => {
       expect(new URL(request.url).searchParams.get('limit')).toBe('all');
-      return HttpResponse.json([{
-        user: {
-          username: 'new',
-          name: 'New follower',
-          ids: { slug: 'new' },
-          images: { avatar: { full: 'avatar.jpg' } },
+      return HttpResponse.json([
+        {
+          user: {
+            username: 'new',
+            name: 'New follower',
+            ids: { slug: 'new' },
+            images: { avatar: { full: 'avatar.jpg' } },
+          },
         },
-      }]);
+      ]);
     }),
     http.get(`${base}/users/me/lists`, () => HttpResponse.json([], { headers: { 'x-pagination-item-count': '5' } })),
     http.get(`${base}/users/me/lists/12`, () => HttpResponse.json(list)),
-    http.get(
-      `${base}/lists/12/collaborators`,
-      () => HttpResponse.json([{ username: 'old', name: 'Existing friend', ids: { slug: 'old' } }]),
+    http.get(`${base}/lists/12/collaborators`, () =>
+      HttpResponse.json([{ username: 'old', name: 'Existing friend', ids: { slug: 'old' } }]),
     ),
   );
 }
@@ -59,9 +60,8 @@ describe('loadListEditor', () => {
   it('should ignore the share link of a list not saved as Link', async () => {
     fixture();
     server.use(
-      http.get(
-        `${base}/users/me/lists/12`,
-        () => HttpResponse.json({ ...list, share_link: 'https://trakt.tv/lists/12' }),
+      http.get(`${base}/users/me/lists/12`, () =>
+        HttpResponse.json({ ...list, share_link: 'https://trakt.tv/lists/12' }),
       ),
     );
     expect((await loadListEditor({ fetch, id: 12 })).shareLink).toBeUndefined();

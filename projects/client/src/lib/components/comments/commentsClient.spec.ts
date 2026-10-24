@@ -16,9 +16,8 @@ const server = setupServer(
     return HttpResponse.json([{ id: 100 + page }], { headers: pages(page, 2) });
   }),
   http.get(`${API}/comments/2/replies`, () => new HttpResponse(null, { status: 404 })),
-  http.get(
-    `${API}/comments/1/reactions/summary`,
-    () => HttpResponse.json({ reaction_count: 3, user_count: 3, distribution: { like: 3 } }),
+  http.get(`${API}/comments/1/reactions/summary`, () =>
+    HttpResponse.json({ reaction_count: 3, user_count: 3, distribution: { like: 3 } }),
   ),
   http.get(`${API}/comments/2/reactions/summary`, () => new HttpResponse(null, { status: 500 })),
   http.post(`${API}/comments/1/replies`, async ({ request }) => {
@@ -29,18 +28,20 @@ const server = setupServer(
     sent.push(await request.json());
     return HttpResponse.json({ ...saved, id: 9 });
   }),
-  http.put(
-    `${API}/comments/8`,
-    () => HttpResponse.json({ errors: { comment: ['must be at least 5 words'] } }, { status: 422 }),
+  http.put(`${API}/comments/8`, () =>
+    HttpResponse.json({ errors: { comment: ['must be at least 5 words'] } }, { status: 422 }),
   ),
   http.delete(`${API}/comments/9`, () => new HttpResponse(null, { status: 204 })),
   http.post(`${API}/users/hidden/comments`, async ({ request }) => {
     const body = await request.json();
     sent.push(body);
     const found = JSON.stringify(body).includes('"slug":"sean"');
-    return HttpResponse.json({ added: { movies: 0, shows: 0, seasons: 0, users: found ? 1 : 0 }, not_found: {} }, {
-      status: 201,
-    });
+    return HttpResponse.json(
+      { added: { movies: 0, shows: 0, seasons: 0, users: found ? 1 : 0 }, not_found: {} },
+      {
+        status: 201,
+      },
+    );
   }),
   http.delete(`${API}/comments/8`, () => new HttpResponse(null, { status: 409 })),
 );

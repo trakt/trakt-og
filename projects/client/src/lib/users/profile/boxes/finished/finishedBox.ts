@@ -18,14 +18,14 @@ function recentlyFinished(today: number, rows: Progress | undefined) {
   return (rows ?? []).flatMap(({ show, progress }) =>
     progress.aired > 0 && progress.completed >= progress.aired && progress.last_watched_at
       ? [{ show, days: boxMath.daysAgo(today, progress.last_watched_at) }]
-      : []
+      : [],
   );
 }
 
 /** Stats without `progress` finished nothing as far as the box can tell. */
 const NO_PROGRESS = { finished: 0, started: 0 };
 
-const daysLabel = (days: number) => days <= 0 ? 'today' : days === 1 ? 'yesterday' : `${days} days ago`;
+const daysLabel = (days: number) => (days <= 0 ? 'today' : days === 1 ? 'yesterday' : `${days} days ago`);
 
 /** Scores how many shows are finished (300 is a lot), the share of started ones, and how recent the last finish is. */
 export const finishedBox = defineProfileBox({
@@ -37,10 +37,11 @@ export const finishedBox = defineProfileBox({
     const { finished, started } = stats.progress ?? NO_PROGRESS;
     if (finished < MIN_FINISHED) return null;
     const latest = recentlyFinished(today, rows).at(0);
-    return 100 * (
-      0.35 * boxMath.cap(finished, 300) +
-      0.25 * boxMath.cap(finished, Math.max(started, 1)) +
-      0.4 * (latest ? boxMath.fresh(latest.days, 14) : 0)
+    return (
+      100 *
+      (0.35 * boxMath.cap(finished, 300) +
+        0.25 * boxMath.cap(finished, Math.max(started, 1)) +
+        0.4 * (latest ? boxMath.fresh(latest.days, 14) : 0))
     );
   },
   view: ({ stats, today }, rows): FinishedView | null => {
@@ -57,9 +58,9 @@ export const finishedBox = defineProfileBox({
       month: month > 0 ? `+${month} this month` : null,
       latest: latest
         ? {
-          title: { text: latest.show.title, href: `/shows/${latest.show.ids.slug}` },
-          when: daysLabel(latest.days),
-        }
+            title: { text: latest.show.title, href: `/shows/${latest.show.ids.slug}` },
+            when: daysLabel(latest.days),
+          }
         : null,
     };
   },

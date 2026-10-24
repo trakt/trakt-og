@@ -25,13 +25,12 @@ const listHeaders = { 'X-Pagination-Page': '2', 'X-Pagination-Page-Count': '3', 
 const server = setupServer(
   http.get(`${API}/users/sean/:type`, ({ request }) => {
     seen.push(request);
-    return HttpResponse.json([
-      followRow('leela'),
-      followRow('fry', { private: true }),
-      followRow('gone', { deleted: true }),
-    ], {
-      headers: listHeaders,
-    });
+    return HttpResponse.json(
+      [followRow('leela'), followRow('fry', { private: true }), followRow('gone', { deleted: true })],
+      {
+        headers: listHeaders,
+      },
+    );
   }),
   http.get(`${API}/users/requests/following`, ({ request }) => {
     seen.push(request);
@@ -104,12 +103,14 @@ describe('loadNetwork', () => {
   });
 
   it('should fall back to the public list on a stale token without refreshing', async () => {
-    server.use(http.get(`${API}/users/sean/following`, ({ request }) => {
-      seen.push(request);
-      return request.headers.has('authorization')
-        ? new HttpResponse(null, { status: 401 })
-        : HttpResponse.json([followRow('leela')]);
-    }));
+    server.use(
+      http.get(`${API}/users/sean/following`, ({ request }) => {
+        seen.push(request);
+        return request.headers.has('authorization')
+          ? new HttpResponse(null, { status: 401 })
+          : HttpResponse.json([followRow('leela')]);
+      }),
+    );
 
     const result = await load({ token: 'stale' });
 

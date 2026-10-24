@@ -24,9 +24,15 @@ const TABS = [
  * The tabs for `slug`, with the one `pathname` is on marked current. OG matched on the third path segment. Progress is
  * your own profile's only.
  */
-export function profileTabs(
-  { slug, pathname, isSelf }: { slug: string; pathname: string; isSelf: boolean },
-): readonly ProfileTab[] {
+export function profileTabs({
+  slug,
+  pathname,
+  isSelf,
+}: {
+  slug: string;
+  pathname: string;
+  isSelf: boolean;
+}): readonly ProfileTab[] {
   const section = pathname.split('/').at(3) ?? '';
 
   return TABS.filter(({ segment }) => isSelf || segment !== 'progress').map(({ label, segment, also }) => ({

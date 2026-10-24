@@ -55,7 +55,11 @@ const load = (item: SubpageItem) =>
       }),
     item,
   });
-const failure = (promise: Promise<unknown>) => promise.then(() => null, (error: unknown) => error);
+const failure = (promise: Promise<unknown>) =>
+  promise.then(
+    () => null,
+    (error: unknown) => error,
+  );
 
 describe('loadVideos', () => {
   it.each<SubpageItem>([

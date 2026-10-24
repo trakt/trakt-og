@@ -35,15 +35,18 @@ const KEYS: Partial<Record<UpNextSortBy, { key: Key; highestFirst: boolean }>> =
  */
 export function sortUpNext({ entries, by, how, random = Math.random }: SortUpNextParams): readonly UpNextEntry[] {
   if (by === 'random') {
-    return entries.map((entry) => ({ entry, at: random() })).toSorted((a, b) => a.at - b.at).map(({ entry }) => entry);
+    return entries
+      .map((entry) => ({ entry, at: random() }))
+      .toSorted((a, b) => a.at - b.at)
+      .map(({ entry }) => entry);
   }
 
   const sort = KEYS[by];
   if (!sort) return entries;
 
   const direction = sort.highestFirst ? -1 : 1;
-  const ascending = entries.toSorted((a, b) =>
-    direction * (sort.key(a) - sort.key(b)) || b.show.ids.trakt - a.show.ids.trakt
+  const ascending = entries.toSorted(
+    (a, b) => direction * (sort.key(a) - sort.key(b)) || b.show.ids.trakt - a.show.ids.trakt,
   );
   return how === 'desc' ? ascending.toReversed() : ascending;
 }

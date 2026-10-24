@@ -77,12 +77,15 @@ const run = async (command: ReadonlyArray<string>) => {
 
 // Runs each step until one fails. The log covers every step that ran.
 const runAll = (steps: ReadonlyArray<ReadonlyArray<string>>) =>
-  steps.reduce<Promise<{ success: boolean; log: string }>>(async (previous, step) => {
-    const done = await previous;
-    if (!done.success) return done;
-    const next = await run(step);
-    return { success: next.success, log: `${done.log}${next.log}` };
-  }, Promise.resolve({ success: true, log: '' }));
+  steps.reduce<Promise<{ success: boolean; log: string }>>(
+    async (previous, step) => {
+      const done = await previous;
+      if (!done.success) return done;
+      const next = await run(step);
+      return { success: next.success, log: `${done.log}${next.log}` };
+    },
+    Promise.resolve({ success: true, log: '' }),
+  );
 
 const tail = (log: string) => log.trimEnd().split('\n').slice(-LOG_TAIL_LINES).join('\n');
 
@@ -97,7 +100,10 @@ const makeProbe = (initial: Snapshot, logs: Record<string, string>) => {
     await restore(state.baseline);
     await writeJson('package.json', applyUpgrades(JSON.parse(state.baseline['package.json']), set));
 
-    const verified = await runAll([['bun', 'install'], ['bun', 'run', 'ci']]);
+    const verified = await runAll([
+      ['bun', 'install'],
+      ['bun', 'run', 'ci'],
+    ]);
 
     if (verified.success) {
       state.baseline = await snapshot();
@@ -132,11 +138,10 @@ const writeOutputs = async (report: BumpReport, out: string) => {
 
 const packageJson = await readJson<PackageJson>('package.json');
 const minimumAge = minimumAgeMinutes(await readFile('../../bunfig.toml', 'utf8'));
-const pins = Object.entries({ ...packageJson.dependencies, ...packageJson.devDependencies })
-  .flatMap(([key, spec]) => {
-    const pin = parsePin(key, spec);
-    return pin ? [pin] : [];
-  });
+const pins = Object.entries({ ...packageJson.dependencies, ...packageJson.devDependencies }).flatMap(([key, spec]) => {
+  const pin = parsePin(key, spec);
+  return pin ? [pin] : [];
+});
 
 const now = new Date();
 const targets: ReadonlyArray<{ pin: Pin; targets: Targets }> = await Promise.all(
@@ -155,12 +160,15 @@ const targets: ReadonlyArray<{ pin: Pin; targets: Targets }> = await Promise.all
 console.log(`Minimum release age: ${minimumAge} minutes (bunfig.toml minimumReleaseAge)`);
 console.table(
   Object.fromEntries(
-    targets.map(({ pin, targets }) => [pin.key, {
-      current: pin.version,
-      minor: targets.minor ?? '',
-      major: targets.major ?? '',
-      held: targets.held ?? '',
-    }]),
+    targets.map(({ pin, targets }) => [
+      pin.key,
+      {
+        current: pin.version,
+        minor: targets.minor ?? '',
+        major: targets.major ?? '',
+        held: targets.held ?? '',
+      },
+    ]),
   ),
 );
 
@@ -169,7 +177,7 @@ const held: ReadonlyArray<HeldPackage> = targets.flatMap(({ pin, targets }) => {
   return targets.held && hold ? [{ key: pin.key, current: pin.version, held: targets.held, reason: hold.reason }] : [];
 });
 const minorCandidates: ReadonlyArray<Upgrade> = targets.flatMap(({ pin, targets }) =>
-  targets.minor ? [{ pin, to: targets.minor }] : []
+  targets.minor ? [{ pin, to: targets.minor }] : [],
 );
 
 if (dryRun) process.exit(0);
@@ -183,7 +191,7 @@ const minor: BisectResult = await bisectUpgrades({ candidates: minorCandidates, 
 // Majors go on top of the adopted minors, measured from the version the minor pass left them on.
 const adoptedMinor = new Map(minor.adopted.map(({ pin, to }) => [pin.key, to]));
 const majorCandidates: ReadonlyArray<Upgrade> = targets.flatMap(({ pin, targets }) =>
-  targets.major ? [{ pin: { ...pin, version: adoptedMinor.get(pin.key) ?? pin.version }, to: targets.major }] : []
+  targets.major ? [{ pin: { ...pin, version: adoptedMinor.get(pin.key) ?? pin.version }, to: targets.major }] : [],
 );
 const major: BisectResult = await bisectUpgrades({ candidates: majorCandidates, probe });
 
@@ -192,7 +200,7 @@ await restore(baseline());
 await run(['bun', 'install']);
 
 const report: BumpReport = { minor, major, held, logs };
-const out = outArg ?? await mkdtemp(join(tmpdir(), 'og-bump-'));
+const out = outArg ?? (await mkdtemp(join(tmpdir(), 'og-bump-')));
 await writeOutputs(report, out);
 
 console.log(`\n${pullRequestBody(report)}`);

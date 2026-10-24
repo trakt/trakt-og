@@ -44,8 +44,8 @@ const fixtureFont = () =>
     descender: -75,
     glyphs: [
       new Glyph({ name: '.notdef', advanceWidth: 512, path: new Path() }),
-      ...[0xf00d, 0xe00a, 0xe601, 0xe60e].map((unicode) =>
-        new Glyph({ name: `u${unicode.toString(16)}`, unicode, advanceWidth: 320, path: box() })
+      ...[0xf00d, 0xe00a, 0xe601, 0xe60e].map(
+        (unicode) => new Glyph({ name: `u${unicode.toString(16)}`, unicode, advanceWidth: 320, path: box() }),
       ),
     ],
   }).toArrayBuffer();

@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { ninjaEntrance } from './ninjaEntrance.ts';
 
-const sequence = (...values: number[]) => () => values.shift() ?? 0;
+const sequence =
+  (...values: number[]) =>
+  () =>
+    values.shift() ?? 0;
 
 describe('ninjaEntrance', () => {
   it('should pick each edge from its quarter of the range', () => {

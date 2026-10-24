@@ -22,14 +22,24 @@ async function setup(unknown = false) {
     storage: {
       load: () =>
         Promise.resolve(
-          unknown ? [] : [
-            { name: 'watchedMovies', activity: '', data: new Map([[1, ['2026-01-01T00:00:00Z']]]) },
-            {
-              name: 'watchedShows',
-              activity: '',
-              data: new Map([[5, new Map([[1, new Map([[10, ['old']]])], [2, new Map([[20, ['old']]])]])]]),
-            },
-          ],
+          unknown
+            ? []
+            : [
+                { name: 'watchedMovies', activity: '', data: new Map([[1, ['2026-01-01T00:00:00Z']]]) },
+                {
+                  name: 'watchedShows',
+                  activity: '',
+                  data: new Map([
+                    [
+                      5,
+                      new Map([
+                        [1, new Map([[10, ['old']]])],
+                        [2, new Map([[20, ['old']]])],
+                      ]),
+                    ],
+                  ]),
+                },
+              ],
         ),
       save: () => Promise.resolve(),
       clearExcept: () => Promise.resolve(),
@@ -46,22 +56,27 @@ async function setup(unknown = false) {
     request: (path: string, body?: unknown) =>
       rawApiFetch({
         path,
-        init: body === undefined ? undefined : {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body),
-        },
+        init:
+          body === undefined
+            ? undefined
+            : {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body),
+              },
       }),
   };
 }
 describe('watchMedia', () => {
   it.each(['now', 'released', 'unknown', at])('should add another movie play using %s', async (watchedAt) => {
     const params = await setup();
-    server.use(http.post(`${API}/sync/history`, async ({ request }) => {
-      expect(params.overlay.state('movie', 1).plays).toBe(2);
-      expect(await request.json()).toEqual({ movies: [{ ids: { trakt: 1 }, watched_at: watchedAt }] });
-      return HttpResponse.json({ added: { movies: 1 } }, { status: 201 });
-    }));
+    server.use(
+      http.post(`${API}/sync/history`, async ({ request }) => {
+        expect(params.overlay.state('movie', 1).plays).toBe(2);
+        expect(await request.json()).toEqual({ movies: [{ ids: { trakt: 1 }, watched_at: watchedAt }] });
+        return HttpResponse.json({ added: { movies: 1 } }, { status: 201 });
+      }),
+    );
     expect(await watchMedia({ ...params, watchedAt })).toBe(true);
     expect(params.overlay.state('movie', 1).plays).toBe(2);
   });
@@ -76,11 +91,13 @@ describe('watchMedia', () => {
     'should handle a successful or missing-item removal',
     async (body) => {
       const params = await setup();
-      server.use(http.post(`${API}/sync/history/remove`, async ({ request }) => {
-        expect(params.overlay.state('movie', 1).watched).toBe(false);
-        expect(await request.json()).toEqual({ movies: [{ ids: { trakt: 1 } }] });
-        return HttpResponse.json(body);
-      }));
+      server.use(
+        http.post(`${API}/sync/history/remove`, async ({ request }) => {
+          expect(params.overlay.state('movie', 1).watched).toBe(false);
+          expect(await request.json()).toEqual({ movies: [{ ids: { trakt: 1 } }] });
+          return HttpResponse.json(body);
+        }),
+      );
       expect(await watchMedia({ ...params, watchedAt: null })).toBe(!('not_found' in body));
       expect(params.overlay.state('movie', 1).plays).toBe('not_found' in body ? 1 : 0);
     },
@@ -99,13 +116,15 @@ describe('watchMedia', () => {
   });
   it.each([false, true])('should watch only remaining episodes unless forced (%s)', async (force) => {
     const params = await setup();
-    server.use(http.post(`${API}/sync/history`, async ({ request }) => {
-      expect(await request.json()).toEqual({
-        episodes: (force ? episodes : episodes.slice(1)).map(({ id }) => ({ ids: { trakt: id }, watched_at: 'now' })),
-      });
-      expect(params.overlay.state('show', 5).watchedEpisodes).toBe(3);
-      return HttpResponse.json({ added: { episodes: force ? 2 : 1 } });
-    }));
+    server.use(
+      http.post(`${API}/sync/history`, async ({ request }) => {
+        expect(await request.json()).toEqual({
+          episodes: (force ? episodes : episodes.slice(1)).map(({ id }) => ({ ids: { trakt: id }, watched_at: 'now' })),
+        });
+        expect(params.overlay.state('show', 5).watchedEpisodes).toBe(3);
+        return HttpResponse.json({ added: { episodes: force ? 2 : 1 } });
+      }),
+    );
     await watchMedia({ ...params, target: { type: 'show', id: 5, title: 'Breaking Bad' }, force });
     expect(params.overlay.state('season', 99, { show: 5, number: 1 })).toMatchObject({
       watchedEpisodes: 2,
@@ -114,10 +133,12 @@ describe('watchMedia', () => {
   });
   it('should remove a season while retaining other seasons', async () => {
     const params = await setup();
-    server.use(http.post(`${API}/sync/history/remove`, async ({ request }) => {
-      expect(await request.json()).toEqual({ seasons: [{ ids: { trakt: 99 } }] });
-      return HttpResponse.json({ deleted: { episodes: 1 } });
-    }));
+    server.use(
+      http.post(`${API}/sync/history/remove`, async ({ request }) => {
+        expect(await request.json()).toEqual({ seasons: [{ ids: { trakt: 99 } }] });
+        return HttpResponse.json({ deleted: { episodes: 1 } });
+      }),
+    );
     await watchMedia({
       ...params,
       target: { type: 'season', id: 99, title: 'Season 1', season: { show: 5, number: 1 } },
@@ -136,17 +157,21 @@ describe('watchMedia', () => {
       season: { show: 5, number: 1 },
       onlyEpisodeIds: [10, 11],
     } satisfies WatchTarget;
-    server.use(http.post(`${API}/sync/history`, async ({ request }) => {
-      expect(await request.json()).toEqual({ episodes: [{ ids: { trakt: 11 }, watched_at: 'now' }] });
-      return HttpResponse.json({ added: { episodes: 1 } });
-    }));
+    server.use(
+      http.post(`${API}/sync/history`, async ({ request }) => {
+        expect(await request.json()).toEqual({ episodes: [{ ids: { trakt: 11 }, watched_at: 'now' }] });
+        return HttpResponse.json({ added: { episodes: 1 } });
+      }),
+    );
     expect(await watchMedia({ ...params, target })).toBe(true);
     expect(params.overlay.state('episode', 11).watched).toBe(true);
 
-    server.use(http.post(`${API}/sync/history/remove`, async ({ request }) => {
-      expect(await request.json()).toEqual({ episodes: [{ ids: { trakt: 10 } }, { ids: { trakt: 11 } }] });
-      return HttpResponse.json({ deleted: { episodes: 2 } });
-    }));
+    server.use(
+      http.post(`${API}/sync/history/remove`, async ({ request }) => {
+        expect(await request.json()).toEqual({ episodes: [{ ids: { trakt: 10 } }, { ids: { trakt: 11 } }] });
+        return HttpResponse.json({ deleted: { episodes: 2 } });
+      }),
+    );
     expect(await watchMedia({ ...params, target: { ...target, onlyEpisodeIds: [10, 11] }, watchedAt: null })).toBe(
       true,
     );
@@ -156,17 +181,16 @@ describe('watchMedia', () => {
   it('should remove an entire show and roll it back if the response is malformed', async () => {
     const params = await setup();
     server.use(http.post(`${API}/sync/history/remove`, () => HttpResponse.json({ deleted: 'invalid' })));
-    expect(await watchMedia({ ...params, target: { type: 'show', id: 5, title: 'Breaking Bad' }, watchedAt: null }))
-      .toBe(false);
+    expect(
+      await watchMedia({ ...params, target: { type: 'show', id: 5, title: 'Breaking Bad' }, watchedAt: null }),
+    ).toBe(false);
     expect(params.overlay.state('show', 5).watchedEpisodes).toBe(2);
   });
   it('should patch episode, season and show together', async () => {
     const params = await setup();
     server.use(
-      http.get(
-        `${API}/search/trakt/11`,
-        () =>
-          HttpResponse.json([{ show: { ids: { trakt: 5 } }, episode: { ids: { trakt: 11 }, season: 1, number: 2 } }]),
+      http.get(`${API}/search/trakt/11`, () =>
+        HttpResponse.json([{ show: { ids: { trakt: 5 } }, episode: { ids: { trakt: 11 }, season: 1, number: 2 } }]),
       ),
     );
     server.use(http.post(`${API}/sync/history`, () => HttpResponse.json({ added: { episodes: 1 } })));
@@ -207,10 +231,13 @@ describe('watchMedia', () => {
   it('should refuse a whole show past the bulk limit and point to seasons', async () => {
     const params = await setup();
     const confirm = vi.fn(() => Promise.resolve(true));
-    const jeopardy = Array.from(
-      { length: BULK_WATCH_LIMIT + 1 },
-      (_, index) => ({ id: 1000 + index, show: 5, season: 1, number: index + 1, completed: false }),
-    );
+    const jeopardy = Array.from({ length: BULK_WATCH_LIMIT + 1 }, (_, index) => ({
+      id: 1000 + index,
+      show: 5,
+      season: 1,
+      number: index + 1,
+      completed: false,
+    }));
 
     expect(
       await watchMedia({
@@ -221,9 +248,7 @@ describe('watchMedia', () => {
       }),
     ).toBe(false);
     expect(confirm).not.toHaveBeenCalled();
-    expect(params.notify.error).toHaveBeenCalledWith(
-      "That's 301 episodes. Mark them watched one season at a time.",
-    );
+    expect(params.notify.error).toHaveBeenCalledWith("That's 301 episodes. Mark them watched one season at a time.");
   });
 
   it('should remove one history id and retain another play at the same instant', async () => {
@@ -232,11 +257,13 @@ describe('watchMedia', () => {
       'watchedMovies',
       () => new Map([[1, ['2026-01-01T00:00:00.000Z', '2026-01-01T00:00:00Z', at]]]),
     );
-    server.use(http.post(`${API}/sync/history/remove`, async ({ request }) => {
-      expect(await request.json()).toEqual({ ids: [900] });
-      expect(params.overlay.state('movie', 1).plays).toBe(2);
-      return HttpResponse.json({ deleted: { movies: 1 }, not_found: { ids: [] } });
-    }));
+    server.use(
+      http.post(`${API}/sync/history/remove`, async ({ request }) => {
+        expect(await request.json()).toEqual({ ids: [900] });
+        expect(params.overlay.state('movie', 1).plays).toBe(2);
+        return HttpResponse.json({ deleted: { movies: 1 }, not_found: { ids: [] } });
+      }),
+    );
     expect(await watchMedia({ ...params, watchedAt: null, play: { id: 900, watchedAt: '2026-01-01T00:00:00Z' } })).toBe(
       true,
     );
@@ -247,14 +274,30 @@ describe('watchMedia', () => {
     const params = await setup();
     params.overlay.patch(
       'watchedShows',
-      () => new Map([[5, new Map([[1, new Map([[10, [at, '2026-01-01T00:00:00Z']], [11, [at]]])]])]]),
+      () =>
+        new Map([
+          [
+            5,
+            new Map([
+              [
+                1,
+                new Map([
+                  [10, [at, '2026-01-01T00:00:00Z']],
+                  [11, [at]],
+                ]),
+              ],
+            ]),
+          ],
+        ]),
     );
-    server.use(http.post(`${API}/sync/history/remove`, async ({ request }) => {
-      expect(await request.json()).toEqual({ ids: [901] });
-      expect(params.overlay.state('episode', 10).plays).toBe(1);
-      expect(params.overlay.state('episode', 11).plays).toBe(1);
-      return HttpResponse.json({ deleted: { episodes: 1 } });
-    }));
+    server.use(
+      http.post(`${API}/sync/history/remove`, async ({ request }) => {
+        expect(await request.json()).toEqual({ ids: [901] });
+        expect(params.overlay.state('episode', 10).plays).toBe(1);
+        expect(params.overlay.state('episode', 11).plays).toBe(1);
+        return HttpResponse.json({ deleted: { episodes: 1 } });
+      }),
+    );
     expect(
       await watchMedia({
         ...params,
@@ -269,13 +312,13 @@ describe('watchMedia', () => {
     async (status) => {
       const params = await setup();
       server.use(
-        http.post(
-          `${API}/sync/history/remove`,
-          () => HttpResponse.json({ deleted: { movies: 0 }, not_found: { ids: [900] } }, { status }),
+        http.post(`${API}/sync/history/remove`, () =>
+          HttpResponse.json({ deleted: { movies: 0 }, not_found: { ids: [900] } }, { status }),
         ),
       );
-      expect(await watchMedia({ ...params, watchedAt: null, play: { id: 900, watchedAt: '2026-01-01T00:00:00Z' } }))
-        .toBe(false);
+      expect(
+        await watchMedia({ ...params, watchedAt: null, play: { id: 900, watchedAt: '2026-01-01T00:00:00Z' } }),
+      ).toBe(false);
       expect(params.overlay.state('movie', 1).plays).toBe(1);
       expect(params.notify.error).toHaveBeenCalledOnce();
     },
@@ -291,8 +334,9 @@ describe('watchMedia', () => {
     async (body) => {
       const params = await setup();
       server.use(http.post(`${API}/sync/history/remove`, () => HttpResponse.json(body)));
-      expect(await watchMedia({ ...params, watchedAt: null, play: { id: 900, watchedAt: '2026-01-01T00:00:00Z' } }))
-        .toBe(false);
+      expect(
+        await watchMedia({ ...params, watchedAt: null, play: { id: 900, watchedAt: '2026-01-01T00:00:00Z' } }),
+      ).toBe(false);
       expect(params.overlay.state('movie', 1).plays).toBe(1);
       expect(params.notify.success).not.toHaveBeenCalled();
     },
@@ -300,9 +344,8 @@ describe('watchMedia', () => {
   it('should use the API message when it supplies one', async () => {
     const params = await setup();
     server.use(
-      http.post(
-        `${API}/sync/history/remove`,
-        () => HttpResponse.json({ deleted: { movies: 1 }, message: 'Play removed.' }),
+      http.post(`${API}/sync/history/remove`, () =>
+        HttpResponse.json({ deleted: { movies: 1 }, message: 'Play removed.' }),
       ),
     );
     expect(await watchMedia({ ...params, watchedAt: null, play: { id: 900, watchedAt: '2026-01-01T00:00:00Z' } })).toBe(

@@ -53,17 +53,17 @@ export async function loadMovie({ fetch, token, parent, id: requested }: LoadMov
         country: watchNowCountry(settings),
         settings,
         isVip: user?.isVip ?? false,
-      })
+      }),
     ),
     collection,
     Promise.all([summaryRead, layout]).then(([summary, { user }]) =>
       summary.status === 200
         ? loadPrivateNote({
-          fetch,
-          token: user ? token : null,
-          item: { type: 'movie', id: summary.body.ids.trakt, slug: summary.body.ids.slug } as const,
-        })
-        : null
+            fetch,
+            token: user ? token : null,
+            item: { type: 'movie', id: summary.body.ids.trakt, slug: summary.body.ids.slug } as const,
+          })
+        : null,
     ),
   ]);
   extras.catch(() => {});

@@ -14,7 +14,7 @@ export function fetchListOptions(key: ListFilterKey, config: AdvancedFiltersConf
   if (key === 'episode_types') return Promise.resolve([...episodeTypeOptions]);
   return Promise.all(
     (config.optionTypes ?? [config.type]).map((type) =>
-      fetchFilterBody(optionPaths[key](type)).then(optionMappers[key])
+      fetchFilterBody(optionPaths[key](type)).then(optionMappers[key]),
     ),
   ).then(mergeFilterOptions);
 }

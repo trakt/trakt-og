@@ -1,13 +1,13 @@
 /** The API's video types in the order the type dropdowns list them, each with its singular and plural label. */
 export const videoTypes = {
-  'trailer': { label: 'Trailer', plural: 'Trailers' },
-  'teaser': { label: 'Teaser', plural: 'Teasers' },
-  'clip': { label: 'Clip', plural: 'Clips' },
-  'featurette': { label: 'Featurette', plural: 'Featurettes' },
+  trailer: { label: 'Trailer', plural: 'Trailers' },
+  teaser: { label: 'Teaser', plural: 'Teasers' },
+  clip: { label: 'Clip', plural: 'Clips' },
+  featurette: { label: 'Featurette', plural: 'Featurettes' },
   'behind the scenes': { label: 'Behind the Scenes', plural: 'Behind the Scenes' },
-  'recap': { label: 'Recap', plural: 'Recaps' },
+  recap: { label: 'Recap', plural: 'Recaps' },
   'opening credits': { label: 'Opening Credits', plural: 'Opening Credits' },
-  'bloopers': { label: 'Bloopers', plural: 'Bloopers' },
+  bloopers: { label: 'Bloopers', plural: 'Bloopers' },
 } as const;
 
 export type VideoType = keyof typeof videoTypes;

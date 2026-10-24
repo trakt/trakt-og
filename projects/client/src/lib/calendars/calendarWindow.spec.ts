@@ -50,15 +50,13 @@ describe('calendarWindow', () => {
 
 describe('calendar settings windows', () => {
   it('should shift only default weeks for relative start-day settings', () => {
-    for (
-      const [startDay, expected] of [
-        ['today', '2026-09-29'],
-        ['yesterday', '2026-09-28'],
-        ['two_days_ago', '2026-09-27'],
-        ['three_days_ago', '2026-09-26'],
-        ['tomorrow', '2026-09-30'],
-      ]
-    ) {
+    for (const [startDay, expected] of [
+      ['today', '2026-09-29'],
+      ['yesterday', '2026-09-28'],
+      ['two_days_ago', '2026-09-27'],
+      ['three_days_ago', '2026-09-26'],
+      ['tomorrow', '2026-09-30'],
+    ]) {
       expect(calendarWindow({ today, startDay }).start).toBe(expected);
       expect(calendarWindow({ today, startDay, start: '2026-10-10' }).start).toBe('2026-10-10');
     }

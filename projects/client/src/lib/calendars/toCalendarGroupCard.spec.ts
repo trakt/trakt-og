@@ -34,15 +34,17 @@ describe('toCalendarGroupCard', () => {
   });
 
   it('should list the episodes for the tray', () => {
-    expect(card?.group.episodes.map(({ id, label }) => [id, label])).toEqual([[401, '4x01'], [402, '4x02'], [
-      403,
-      '4x03',
-    ]]);
+    expect(card?.group.episodes.map(({ id, label }) => [id, label])).toEqual([
+      [401, '4x01'],
+      [402, '4x02'],
+      [403, '4x03'],
+    ]);
     expect(card?.group.show).toEqual({ id: 1, title: 'The Diplomat', slug: 'the-diplomat' });
   });
 
   it('should make no card for a single episode', () => {
-    expect(toCalendarGroupCard({ group: { key: 'episode-401', items: [episode(1)] }, label: '', clock: UTC }))
-      .toBeUndefined();
+    expect(
+      toCalendarGroupCard({ group: { key: 'episode-401', items: [episode(1)] }, label: '', clock: UTC }),
+    ).toBeUndefined();
   });
 });

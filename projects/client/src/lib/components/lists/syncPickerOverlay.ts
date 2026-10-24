@@ -2,7 +2,12 @@ import type { createOverlay } from '../../overlay/createOverlay.svelte.ts';
 import type { ListTarget } from './ListTarget.ts';
 
 /** Reconcile fresh picker reads with the shared poster state, without writing to the cached record. */
-export function syncPickerOverlay({ overlay, target, listed, watchlisted }: {
+export function syncPickerOverlay({
+  overlay,
+  target,
+  listed,
+  watchlisted,
+}: {
   overlay: Pick<ReturnType<typeof createOverlay>, 'patch'>;
   target: ListTarget;
   listed: boolean;

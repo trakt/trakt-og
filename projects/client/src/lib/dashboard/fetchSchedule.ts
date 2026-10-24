@@ -46,23 +46,25 @@ async function offersFor(fetch: typeof globalThis.fetch, path: string, country: 
   if (!response?.ok) return null;
 
   const parsed = watchNowResponseSchema.safeParse(await response.json().catch(() => null));
-  return parsed.success ? parsed.data[country] ?? null : null;
+  return parsed.success ? (parsed.data[country] ?? null) : null;
 }
 
 async function offersByPath(fetch: typeof globalThis.fetch, items: readonly CalendarItem[], country: string) {
   const paths = [...new Set(items.map(scheduleWatchNowPath))];
   const offers = await Promise.all(paths.map((path) => offersFor(fetch, path, country)));
 
-  return new Map(paths.flatMap((path, i): [string, Offers][] => {
-    const found = offers.at(i);
-    return found ? [[path, found]] : [];
-  }));
+  return new Map(
+    paths.flatMap((path, i): [string, Offers][] => {
+      const found = offers.at(i);
+      return found ? [[path, found]] : [];
+    }),
+  );
 }
 
 // With the season poster setting, the spotlight day's episodes get their season's poster.
 function seasonPosters(fetch: typeof globalThis.fetch, items: readonly CalendarItem[]) {
   const episodes = items.flatMap((item) =>
-    item.type === 'episode' ? [{ showId: item.show.ids.trakt, season: item.episode.season }] : []
+    item.type === 'episode' ? [{ showId: item.show.ids.trakt, season: item.episode.season }] : [],
   );
   return fetchSeasonPosters({ fetch, episodes });
 }
@@ -74,17 +76,15 @@ function seasonPosters(fetch: typeof globalThis.fetch, items: readonly CalendarI
  * fewer than five days does the rest of OG's window load, all at once. Then the spotlight day's Watch Now offers in the
  * viewer's country, since only its cards show the button, and its season posters with that setting.
  */
-export async function fetchSchedule(
-  {
-    fetch,
-    token,
-    settings,
-    datePreferences,
-    isVip,
-    schedule = toDashboardSettings({ settings: null }).schedule,
-    now = new Date(),
-  }: FetchScheduleParams,
-): Promise<readonly ScheduleDay[]> {
+export async function fetchSchedule({
+  fetch,
+  token,
+  settings,
+  datePreferences,
+  isVip,
+  schedule = toDashboardSettings({ settings: null }).schedule,
+  now = new Date(),
+}: FetchScheduleParams): Promise<readonly ScheduleDay[]> {
   const { timeZone } = datePreferences;
   const today = dayIn(now.toISOString(), timeZone);
   const start = scheduleStart(today, schedule.startDay);

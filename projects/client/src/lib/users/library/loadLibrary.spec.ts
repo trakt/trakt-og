@@ -28,9 +28,8 @@ const server = setupServer(
     const row = { last_collected_at: movie.collected_at, show, seasons: [{ number: 1, episodes: [{ number: 1 }] }] };
     return HttpResponse.json([row], { headers: pages });
   }),
-  http.get(
-    'https://apiz.trakt.tv/shows/1388',
-    () => HttpResponse.json({ ...show, images: { poster: ['media.trakt.tv/posters/medium/bb.jpg.webp'] } }),
+  http.get('https://apiz.trakt.tv/shows/1388', () =>
+    HttpResponse.json({ ...show, images: { poster: ['media.trakt.tv/posters/medium/bb.jpg.webp'] } }),
   ),
 );
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
@@ -105,10 +104,12 @@ describe('loadLibrary', () => {
   describe('privacy', () => {
     const tokens = () => seen.flatMap((request) => request.headers.get('authorization') ?? []);
     const privateLibrary = () =>
-      server.use(http.get(/^https:\/\/apiz\.trakt\.tv\/users\/tester\/collection\/media/, ({ request }) => {
-        seen.push(request);
-        return HttpResponse.json(request.headers.has('authorization') ? [movie] : [], { headers: pages });
-      }));
+      server.use(
+        http.get(/^https:\/\/apiz\.trakt\.tv\/users\/tester\/collection\/media/, ({ request }) => {
+          seen.push(request);
+          return HttpResponse.json(request.headers.has('authorization') ? [movie] : [], { headers: pages });
+        }),
+      );
 
     it('should read a private library the viewer may see with the token, once', async () => {
       privateLibrary();

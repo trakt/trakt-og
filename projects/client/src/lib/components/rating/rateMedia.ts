@@ -17,10 +17,12 @@ type Params = {
 const syncResult = z.object({
   not_found: z.record(z.string(), z.array(z.unknown())).optional(),
 });
-const episodeResult = z.array(z.object({
-  episode: z.object({ season: z.number() }),
-  show: z.object({ ids: z.object({ trakt: z.number() }) }),
-}));
+const episodeResult = z.array(
+  z.object({
+    episode: z.object({ season: z.number() }),
+    show: z.object({ ids: z.object({ trakt: z.number() }) }),
+  }),
+);
 
 async function write(request: Request, path: string, body: unknown) {
   const response = await request(path, body);
@@ -43,20 +45,21 @@ async function autoWatch({ target, watchAfterRating, overlay, request, notify, n
   }
 
   const at = watchAfterRating === 'unknown' ? UNKNOWN_DATE : now().toISOString();
-  const episode = target.type === 'episode'
-    ? await request(`/search/trakt/${target.id}?type=episode&extended=full`).then(async (response) => {
-      if (!response.ok) throw new Error('Episode unavailable');
-      const row = episodeResult.parse(await response.json()).at(0);
-      if (!row) throw new Error('Episode not found');
-      return row;
-    })
-    : null;
+  const episode =
+    target.type === 'episode'
+      ? await request(`/search/trakt/${target.id}?type=episode&extended=full`).then(async (response) => {
+          if (!response.ok) throw new Error('Episode unavailable');
+          const row = episodeResult.parse(await response.json()).at(0);
+          if (!row) throw new Error('Episode not found');
+          return row;
+        })
+      : null;
   const rollback = episode
     ? overlay.patch('watchedShows', (shows) => {
-      const seasons = new Map(shows.get(episode.show.ids.trakt));
-      seasons.set(episode.episode.season, new Map(seasons.get(episode.episode.season)).set(target.id, [at]));
-      return new Map(shows).set(episode.show.ids.trakt, seasons);
-    })
+        const seasons = new Map(shows.get(episode.show.ids.trakt));
+        seasons.set(episode.episode.season, new Map(seasons.get(episode.episode.season)).set(target.id, [at]));
+        return new Map(shows).set(episode.show.ids.trakt, seasons);
+      })
     : overlay.patch('watchedMovies', (movies) => new Map(movies).set(target.id, [at]));
   try {
     // API resolves these values using the account timezone and release-date runtime preference.
@@ -76,12 +79,16 @@ async function autoWatch({ target, watchAfterRating, overlay, request, notify, n
  */
 export async function rateMedia(params: Params): Promise<boolean> {
   const { target, rating, overlay, request, notify } = params;
-  const rollback = overlay.patch('ratings', (ratings) => {
-    const values = new Map(ratings[target.type]);
-    if (rating === null) values.delete(target.id);
-    else values.set(target.id, rating);
-    return { ...ratings, [target.type]: values };
-  }, { movie: new Map(), show: new Map(), season: new Map(), episode: new Map() });
+  const rollback = overlay.patch(
+    'ratings',
+    (ratings) => {
+      const values = new Map(ratings[target.type]);
+      if (rating === null) values.delete(target.id);
+      else values.set(target.id, rating);
+      return { ...ratings, [target.type]: values };
+    },
+    { movie: new Map(), show: new Map(), season: new Map(), episode: new Map() },
+  );
 
   try {
     await write(request, `/sync/ratings${rating === null ? '/remove' : ''}`, {
@@ -94,7 +101,7 @@ export async function rateMedia(params: Params): Promise<boolean> {
   }
   if (rating === null) return true;
   await autoWatch(params).catch(() =>
-    notify.error('Your rating was saved, but we could not add this item to your watched history.')
+    notify.error('Your rating was saved, but we could not add this item to your watched history.'),
   );
   return true;
 }

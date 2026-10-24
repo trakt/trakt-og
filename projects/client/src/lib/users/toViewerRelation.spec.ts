@@ -15,8 +15,9 @@ describe('toViewerRelation', () => {
   });
 
   it('should prefer an approved follow over a pending one', () => {
-    expect(toViewerRelation('sean', { ...empty, following: [row('sean')], pending: [row('sean')] }).follow)
-      .toBe('following');
+    expect(toViewerRelation('sean', { ...empty, following: [row('sean')], pending: [row('sean')] }).follow).toBe(
+      'following',
+    );
     expect(toViewerRelation('sean', { ...empty, pending: [row('sean')] }).follow).toBe('pending');
   });
 
@@ -28,7 +29,10 @@ describe('toViewerRelation', () => {
   });
 
   it('should pick out their follow request', () => {
-    const requests = [{ id: 7, ...row('justin') }, { id: 9, ...row('sean') }];
+    const requests = [
+      { id: 7, ...row('justin') },
+      { id: 9, ...row('sean') },
+    ];
 
     expect(toViewerRelation('sean', { ...empty, requests }).requestId).toBe(9);
   });

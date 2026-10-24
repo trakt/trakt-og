@@ -26,9 +26,12 @@ type Params<F extends Frame, T> = {
  * profile, the usual case, doesn't wait on the frame. A private profile cancels it, then reads with the token at once.
  * Given the frame's data, it makes the right read only.
  */
-export async function readProfileTab<F extends Frame, T>(
-  { fetch, token, frame, read }: Params<F, T>,
-): Promise<{ frame: F; result: T | null }> {
+export async function readProfileTab<F extends Frame, T>({
+  fetch,
+  token,
+  frame,
+  read,
+}: Params<F, T>): Promise<{ frame: F; result: T | null }> {
   const readFor = (known: F) => {
     const access = profileAccess(known.profile);
     if (access === 'none') return null;

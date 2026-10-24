@@ -10,24 +10,27 @@ const season = {
 };
 const people = {
   cast: [],
-  guest_stars: [{
-    person: { name: 'Guest', ids: { trakt: 9, slug: 'guest' } },
-    character: 'Self',
-    characters: ['Self'],
-  }],
+  guest_stars: [
+    {
+      person: { name: 'Guest', ids: { trakt: 9, slug: 'guest' } },
+      character: 'Self',
+      characters: ['Self'],
+    },
+  ],
 };
 
 function params(seasons: unknown, cast: unknown = people) {
   const fetcher: typeof fetch = (input, init) => {
     const request = new Request(input, init);
     const path = new URL(request.url).pathname;
-    const body = path === '/shows/breaking-bad'
-      ? { title: 'Breaking Bad', year: 2008, ids: { trakt: 1388, slug: 'breaking-bad' } }
-      : path.endsWith('/seasons')
-      ? seasons
-      : path.endsWith('/people')
-      ? cast
-      : null;
+    const body =
+      path === '/shows/breaking-bad'
+        ? { title: 'Breaking Bad', year: 2008, ids: { trakt: 1388, slug: 'breaking-bad' } }
+        : path.endsWith('/seasons')
+          ? seasons
+          : path.endsWith('/people')
+            ? cast
+            : null;
     return Promise.resolve(Response.json(body, { status: body === null ? 503 : 200 }));
   };
   return {

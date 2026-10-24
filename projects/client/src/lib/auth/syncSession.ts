@@ -24,11 +24,14 @@ export function syncSession({ manager, hasSession, reload }: SyncSessionParams):
   manager.events.addUserLoaded(store);
   manager.events.addUserUnloaded(onUnloaded);
 
-  manager.getUser().then(async (user) => {
-    // Renewing raises userLoaded, or removes the user on a refused grant, and both land in `store`.
-    if (user?.expired) await renewAccessToken({ manager });
-    else if ((user !== null) !== hasSession) await store(user);
-  }).catch(() => {});
+  manager
+    .getUser()
+    .then(async (user) => {
+      // Renewing raises userLoaded, or removes the user on a refused grant, and both land in `store`.
+      if (user?.expired) await renewAccessToken({ manager });
+      else if ((user !== null) !== hasSession) await store(user);
+    })
+    .catch(() => {});
 
   return () => {
     manager.events.removeUserLoaded(store);

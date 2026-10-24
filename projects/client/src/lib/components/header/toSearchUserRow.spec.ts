@@ -5,11 +5,15 @@ import { toSearchUserRow } from './toSearchUserRow.ts';
 const AVATAR = 'https://media.trakt.tv/images/users/000/000/002/avatars/large/abc.jpg';
 
 const user = (fields: object) =>
-  searchUsersSchema.parse([{
-    type: 'user',
-    score: 0,
-    user: { username: 'sean', private: false, deleted: false, ids: { slug: 'sean', trakt: 2 }, ...fields },
-  }]).at(0)?.user ?? { username: '', private: false, ids: {} };
+  searchUsersSchema
+    .parse([
+      {
+        type: 'user',
+        score: 0,
+        user: { username: 'sean', private: false, deleted: false, ids: { slug: 'sean', trakt: 2 }, ...fields },
+      },
+    ])
+    .at(0)?.user ?? { username: '', private: false, ids: {} };
 
 describe('toSearchUserRow', () => {
   it('should draw the display name, the round avatar and a User tag', () => {

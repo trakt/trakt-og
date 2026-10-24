@@ -10,6 +10,6 @@ export function spoilerRevealed(item: CommentItem | undefined, state: OverlaySta
   if (item.type === 'list') return true;
   if (item.type === 'movie' || item.type === 'episode') return state.watched === true;
 
-  const aired = item.type === 'show' || item.type === 'season' ? item.airedEpisodes ?? 0 : 0;
+  const aired = item.type === 'show' || item.type === 'season' ? (item.airedEpisodes ?? 0) : 0;
   return aired > 0 && (state.watchedEpisodes ?? 0) >= aired;
 }

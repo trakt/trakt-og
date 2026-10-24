@@ -88,8 +88,12 @@ describe('mapper: toProfileRatings', () => {
     });
 
     it('should list rated seasons only when there are some, and no types without them', () => {
-      expect(toProfileRatings({ distribution, types: { ...types, seasons: 1 } }).keys.at(0)?.counts)
-        .toEqual(['498 movies', '141 shows', '1 season', '298 episodes']);
+      expect(toProfileRatings({ distribution, types: { ...types, seasons: 1 } }).keys.at(0)?.counts).toEqual([
+        '498 movies',
+        '141 shows',
+        '1 season',
+        '298 episodes',
+      ]);
       expect(toProfileRatings({ distribution }).keys.at(0)?.counts).toEqual([]);
     });
 

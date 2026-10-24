@@ -37,10 +37,12 @@ const body = { browsing: { dark_knight: 'true' } };
 
 describe('saveSettings', () => {
   it('should send the body as the viewer', async () => {
-    server.use(http.put(`${API}/users/settings`, async ({ request }) => {
-      await record(request);
-      return new HttpResponse(null, { status: 201 });
-    }));
+    server.use(
+      http.put(`${API}/users/settings`, async ({ request }) => {
+        await record(request);
+        return new HttpResponse(null, { status: 201 });
+      }),
+    );
 
     expect(await saveSettings({ request: viewer(), body })).toEqual({ saved: true, errors: [] });
     expect(seen).toEqual([{ path: '/users/settings', method: 'PUT', body, bearer: 'Bearer viewer-token' }]);
@@ -48,9 +50,8 @@ describe('saveSettings', () => {
 
   it("should show API's validation message", async () => {
     server.use(
-      http.put(
-        `${API}/users/settings`,
-        () => HttpResponse.json({ message: 'Dark knight is invalid' }, { status: 400 }),
+      http.put(`${API}/users/settings`, () =>
+        HttpResponse.json({ message: 'Dark knight is invalid' }, { status: 400 }),
       ),
     );
 
@@ -62,10 +63,12 @@ describe('saveSettings', () => {
 
   it('should retry a spent token once, then say the session expired', async () => {
     const bearers: Array<string | null> = [];
-    server.use(http.put(`${API}/users/settings`, ({ request }) => {
-      bearers.push(request.headers.get('authorization'));
-      return new HttpResponse(null, { status: 401 });
-    }));
+    server.use(
+      http.put(`${API}/users/settings`, ({ request }) => {
+        bearers.push(request.headers.get('authorization'));
+        return new HttpResponse(null, { status: 401 });
+      }),
+    );
 
     const result = await saveSettings({
       request: viewer(() => Promise.resolve(fakeUser('renewed-token', 3600))),

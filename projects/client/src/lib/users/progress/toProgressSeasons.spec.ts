@@ -30,38 +30,31 @@ const season = (
     rating: 8.1,
     screenshot: index === 0 ? 'media.trakt.tv/images/episodes/1/screenshots/medium/a.jpg.webp' : undefined,
   })),
-  upcoming: Array.from(
-    { length: upcoming },
-    (_, index) => ({
-      number: done.length + index + 1,
-      firstAired: index === 0 ? '2027-01-14T20:00:00.000Z' : undefined,
-    }),
-  ),
+  upcoming: Array.from({ length: upcoming }, (_, index) => ({
+    number: done.length + index + 1,
+    firstAired: index === 0 ? '2027-01-14T20:00:00.000Z' : undefined,
+  })),
 });
 
-const seasons = (
-  data: readonly ProgressSeasonData[],
-  next?: { season: number; number: number },
-) => toProgressSeasons({ seasons: data, next, showHref: '/shows/x', datePreferences });
+const seasons = (data: readonly ProgressSeasonData[], next?: { season: number; number: number }) =>
+  toProgressSeasons({ seasons: data, next, showHref: '/shows/x', datePreferences });
 
 describe('toProgressSeasons', () => {
   describe('the seasons', () => {
     it('should link each season with its percent, count and time left', () => {
-      const result = seasons([
-        season(1, [true, true]),
-        season(2, [true, true, false]),
-        season(3, [], { upcoming: 3 }),
-      ]);
+      const result = seasons([season(1, [true, true]), season(2, [true, true, false]), season(3, [], { upcoming: 3 })]);
 
-      expect(result.map(({ name, href, percent, complete, count, timeLeft, announced }) => ({
-        name,
-        href,
-        percent,
-        complete,
-        count,
-        timeLeft,
-        announced,
-      }))).toEqual([
+      expect(
+        result.map(({ name, href, percent, complete, count, timeLeft, announced }) => ({
+          name,
+          href,
+          percent,
+          complete,
+          count,
+          timeLeft,
+          announced,
+        })),
+      ).toEqual([
         {
           name: 'Season 1',
           href: '/shows/x/seasons/1',
@@ -94,9 +87,9 @@ describe('toProgressSeasons', () => {
 
     it('should keep a season title only when it says more than the name', () => {
       expect(
-        seasons([season(1, [true], { title: 'The Streets' }), season(2, [true], { title: 'Season 2' })]).map((
-          { title },
-        ) => title),
+        seasons([season(1, [true], { title: 'The Streets' }), season(2, [true], { title: 'Season 2' })]).map(
+          ({ title }) => title,
+        ),
       ).toEqual(['The Streets', undefined]);
     });
 
@@ -105,7 +98,11 @@ describe('toProgressSeasons', () => {
     });
 
     it('should label special squares "Special 1" instead of "0x01"', () => {
-      expect(seasons([season(0, [false])]).at(0)?.squares.at(0)?.label).toMatch(/^Special 1 /);
+      expect(
+        seasons([season(0, [false])])
+          .at(0)
+          ?.squares.at(0)?.label,
+      ).toMatch(/^Special 1 /);
     });
   });
 
@@ -137,7 +134,10 @@ describe('toProgressSeasons', () => {
       expect(squares.map(({ meta, lines }) => ({ meta, lines }))).toEqual([
         {
           meta: 'Sep 1, 2026 · 22m · 81%',
-          lines: [{ text: 'Watched 3 times', tone: 'watched' }, { text: 'Last watched Sep 29, 2026', tone: 'time' }],
+          lines: [
+            { text: 'Watched 3 times', tone: 'watched' },
+            { text: 'Last watched Sep 29, 2026', tone: 'time' },
+          ],
         },
         { meta: 'Sep 2, 2026 · 22m · 81%', lines: [{ text: 'Up next', tone: 'next' }] },
         { meta: 'Sep 3, 2026 · 22m · 81%', lines: [{ text: 'Not watched', tone: 'muted' }] },

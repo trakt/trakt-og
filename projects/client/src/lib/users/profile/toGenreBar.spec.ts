@@ -42,17 +42,14 @@ describe('mapper: toGenreBar', () => {
   });
 
   it('should skip the types with nothing watched', () => {
-    const bar = toGenreBar(
-      row({ movies: { play_count: 1_500, ids: Array.from({ length: 1_200 }, (_, i) => i) } }),
-      { slug: 's' },
-    );
+    const bar = toGenreBar(row({ movies: { play_count: 1_500, ids: Array.from({ length: 1_200 }, (_, i) => i) } }), {
+      slug: 's',
+    });
     expect(bar.counts.map(({ text }) => text)).toEqual(['1,200 movies (1,500)']);
   });
 
   it('should start the history links at the chart window when it has one', () => {
     const bar = toGenreBar(row({ movies: { play_count: 1, ids: [4] } }), { slug: 'sean', startAt: '2026-08-31' });
-    expect(bar.counts.at(0)?.href).toBe(
-      '/users/sean/history/movies?genres=science-fiction&start_at=2026-08-31',
-    );
+    expect(bar.counts.at(0)?.href).toBe('/users/sean/history/movies?genres=science-fiction&start_at=2026-08-31');
   });
 });

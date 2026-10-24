@@ -31,7 +31,12 @@ export const collectionFields = [
   {
     key: 'hdr',
     label: 'HDR',
-    options: [['dolby_vision', 'Dolby Vision'], ['hdr10', 'HDR10'], ['hdr10_plus', 'HDR10+'], ['hlg', 'HLG']],
+    options: [
+      ['dolby_vision', 'Dolby Vision'],
+      ['hdr10', 'HDR10'],
+      ['hdr10_plus', 'HDR10+'],
+      ['hlg', 'HLG'],
+    ],
   },
   { key: '3d', label: '3D', options: [['true', 'Yes']], empty: 'No' },
   {

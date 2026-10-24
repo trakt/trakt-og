@@ -26,15 +26,19 @@ const genre: WatchedGenreRow = {
   movies: { play_count: 2, ids: [1, 2] },
 };
 
-const build = (
-  { episodes = [], movies = [], timeZone = 'UTC', weekStartDay = 0, at = now }: {
-    episodes?: ReturnType<typeof episode>[];
-    movies?: ReturnType<typeof movie>[];
-    timeZone?: string;
-    weekStartDay?: 0 | 1;
-    at?: Date;
-  },
-) => toLastThirtyDays({ episodes, movies, genres: [genre], start, slug: 'sean', now: at, timeZone, weekStartDay });
+const build = ({
+  episodes = [],
+  movies = [],
+  timeZone = 'UTC',
+  weekStartDay = 0,
+  at = now,
+}: {
+  episodes?: ReturnType<typeof episode>[];
+  movies?: ReturnType<typeof movie>[];
+  timeZone?: string;
+  weekStartDay?: 0 | 1;
+  at?: Date;
+}) => toLastThirtyDays({ episodes, movies, genres: [genre], start, slug: 'sean', now: at, timeZone, weekStartDay });
 
 const key = (last: ReturnType<typeof build>, name: string) => last.keys.find((k) => k.name === name);
 
@@ -74,7 +78,10 @@ describe('mapper: toLastThirtyDays', () => {
 
       expect(chart?.days.at(-1)).toMatchObject({ minutes: 75, episodes: 62.5, movies: 0, time: '1h 15m' });
       expect(chart?.days.at(-2)?.movies).toBeCloseTo(41.67);
-      expect(chart?.hours).toEqual([{ label: '1h', height: 50 }, { label: '2h', height: 100 }]);
+      expect(chart?.hours).toEqual([
+        { label: '1h', height: 50 },
+        { label: '2h', height: 100 },
+      ]);
     });
 
     it('should round a busier top up to the hour', () => {

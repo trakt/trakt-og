@@ -52,11 +52,11 @@ function rawCredits({ movies, shows }: Pick<PersonSummaryParams, 'movies' | 'sho
   return [
     ...(movies?.cast ?? []).map((credit) => movie('acting', credit.characters, credit.movie)),
     ...Object.entries(movies?.crew ?? {}).flatMap(([role, crew]) =>
-      crew.map((credit) => movie(role, credit.jobs, credit.movie))
+      crew.map((credit) => movie(role, credit.jobs, credit.movie)),
     ),
     ...(shows?.cast ?? []).map((credit) => show('acting', credit.characters, credit.show, credit.episode_count)),
     ...Object.entries(shows?.crew ?? {}).flatMap(([role, crew]) =>
-      crew.map((credit) => show(role, credit.jobs, credit.show, credit.episode_count))
+      crew.map((credit) => show(role, credit.jobs, credit.show, credit.episode_count)),
     ),
   ];
 }
@@ -136,14 +136,16 @@ function fanart(credits: readonly RawCredit[], { person, random, known }: Fanart
   const candidates = [...withFanart('movie'), ...withFanart('show')];
   const inDepartment = candidates.filter(({ role }) => role === person.known_for_department);
   // A title once, captioned by the person's own department where they have it (the role played, not "Producer").
-  const famous = [...new Map(
-    credits
-      .filter((credit) => known.has(`${credit.type}-${credit.item.ids.trakt}`) && credit.item.images?.fanart?.at(0))
-      .toSorted((a, b) =>
-        Number(a.role === person.known_for_department) - Number(b.role === person.known_for_department)
-      )
-      .map((credit) => [`${credit.type}-${credit.item.ids.trakt}`, credit]),
-  ).values()];
+  const famous = [
+    ...new Map(
+      credits
+        .filter((credit) => known.has(`${credit.type}-${credit.item.ids.trakt}`) && credit.item.images?.fanart?.at(0))
+        .toSorted(
+          (a, b) => Number(a.role === person.known_for_department) - Number(b.role === person.known_for_department),
+        )
+        .map((credit) => [`${credit.type}-${credit.item.ids.trakt}`, credit]),
+    ).values(),
+  ];
   const pool = [famous, inDepartment, candidates].find((list) => list.length > 0) ?? [];
   const pick = pool.at(Math.floor(random * pool.length));
   if (!pick) return undefined;
@@ -164,7 +166,8 @@ function fanart(credits: readonly RawCredit[], { person, random, known }: Fanart
 function age(birthday: string, death: string | null | undefined, now: Date) {
   const born = new Date(birthday);
   const end = death ? new Date(death) : now;
-  const hadBirthday = end.getUTCMonth() > born.getUTCMonth() ||
+  const hadBirthday =
+    end.getUTCMonth() > born.getUTCMonth() ||
     (end.getUTCMonth() === born.getUTCMonth() && end.getUTCDate() >= born.getUTCDate());
   return end.getUTCFullYear() - born.getUTCFullYear() - (hadBirthday ? 0 : 1);
 }
@@ -208,8 +211,8 @@ export function toPersonSummary(params: PersonSummaryParams) {
       birthplace: person.birthplace ?? undefined,
       knownFor: person.known_for_department ? titleize(person.known_for_department) : undefined,
     },
-    biography: person.biography?.replace('From Wikipedia, the free encyclopedia.', '').replace(/\s+/g, ' ').trim() ||
-      null,
+    biography:
+      person.biography?.replace('From Wikipedia, the free encyclopedia.', '').replace(/\s+/g, ' ').trim() || null,
     links: personLinks(person),
     departments: tabs,
     defaultDepartment,

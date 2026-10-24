@@ -14,7 +14,10 @@ export const scaleMax = (scale: RangeScale) => scale.stops.at(-1)?.[1] ?? 0;
 
 /** A linear scale from `min` to `max`. */
 export const linearScale = (min: number, max: number, step = 1): RangeScale => ({
-  stops: [[0, min], [100, max]],
+  stops: [
+    [0, min],
+    [100, max],
+  ],
   step,
 });
 

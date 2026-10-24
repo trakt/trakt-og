@@ -24,15 +24,11 @@ const trendingRow = (type: string, slug: string) => ({
 
 const seen: Request[] = [];
 const server = setupServer(
-  http.get(
-    'https://apiz.trakt.tv/:type/trending',
-    ({ params }) =>
-      HttpResponse.json([trendingRow(String(params.type), 'one'), trendingRow(String(params.type), 'two')]),
+  http.get('https://apiz.trakt.tv/:type/trending', ({ params }) =>
+    HttpResponse.json([trendingRow(String(params.type), 'one'), trendingRow(String(params.type), 'two')]),
   ),
-  http.get(
-    'https://apiz.trakt.tv/:type/:slug/watching',
-    ({ params }) =>
-      HttpResponse.json([{ username: `${params.type}-${params.slug}`, private: false, location: 'Brazil' }]),
+  http.get('https://apiz.trakt.tv/:type/:slug/watching', ({ params }) =>
+    HttpResponse.json([{ username: `${params.type}-${params.slug}`, private: false, location: 'Brazil' }]),
   ),
   http.get('https://apiz.trakt.tv/:type/:slug', ({ request, params }) => {
     seen.push(request);
@@ -53,7 +49,10 @@ const fresh = () => ({
   trendingPool: createTtlCache<HomeTrending>({ ttlMs: 1000, retryMs: 100 }),
   livePool: createTtlCache<HomeLive>({ ttlMs: 1000, retryMs: 100 }),
 });
-const parent = (user: HeaderUser | null = null) => () => Promise.resolve({ user });
+const parent =
+  (user: HeaderUser | null = null) =>
+  () =>
+    Promise.resolve({ user });
 
 describe('loadHome', () => {
   it('should read every hand-picked title without a token and return them all', async () => {

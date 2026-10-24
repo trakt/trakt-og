@@ -29,17 +29,20 @@ type Params = {
 type ListComments = { id: number | null; count: number };
 
 /** The list's id and comment count, from the headers of one comment. Neither is worth failing the page over. */
-async function fetchListComments(
-  { fetch, token, id, kind }: {
-    fetch: typeof globalThis.fetch;
-    token: string | null;
-    id: string;
-    kind: BuiltInListKind;
-  },
-): Promise<ListComments> {
+async function fetchListComments({
+  fetch,
+  token,
+  id,
+  kind,
+}: {
+  fetch: typeof globalThis.fetch;
+  token: string | null;
+  id: string;
+  kind: BuiltInListKind;
+}): Promise<ListComments> {
   const none = { id: null, count: 0 };
-  const response = await api({ fetch, token }).users[kind]
-    .comments({ params: { id, sort: 'newest' }, query: { page: 1, limit: 1 } })
+  const response = await api({ fetch, token })
+    .users[kind].comments({ params: { id, sort: 'newest' }, query: { page: 1, limit: 1 } })
     .catch(() => null);
   if (response?.status !== 200) return none;
   const listId = Number(response.headers.get('x-list-id'));
@@ -91,9 +94,9 @@ export async function loadBuiltInList({ fetch, locals, params, url, parent, cook
   const needsToken = (profile.isPrivate || user?.slug === profile.slug) && Boolean(token);
   const [viewerItems, comments] = needsToken
     ? await Promise.all([
-      fetchListItems({ fetch, token, base, query, sort: urlSort }),
-      fetchListComments({ fetch, token, id: params.id, kind }),
-    ])
+        fetchListItems({ fetch, token, base, query, sort: urlSort }),
+        fetchListComments({ fetch, token, id: params.id, kind }),
+      ])
     : [null, anonymousComments];
   // A stale token keeps the anonymous answer: the server never refreshes, the browser does.
   const viewerFirst = viewerItems !== null && viewerItems.status !== 401;

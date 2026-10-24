@@ -3,7 +3,12 @@ import type { OverlayState } from '../overlay/createOverlay.svelte.ts';
 import type { QuickIconFill } from '../components/media/quickIconFill.ts';
 
 /** Notes are list data; the other fade choices use the same overlay state as charts. */
-export function matchesListFade({ option, notes, state, fill }: {
+export function matchesListFade({
+  option,
+  notes,
+  state,
+  fill,
+}: {
   option: string;
   notes?: string;
   state: OverlayState;

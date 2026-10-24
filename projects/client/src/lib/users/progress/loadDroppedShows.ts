@@ -20,9 +20,11 @@ const LIMIT = 100;
  * The shows you dropped, with their summaries, from the endpoint v3's Dropped tab reads (`/users/hidden/dropped`), a
  * page of 100 at a time. The Dropped tab reads it only for the dropped shows `up_next_nitro` leaves out.
  */
-export async function loadDroppedShows(
-  { request, now = Date.now, limit = LIMIT }: LoadDroppedShowsParams,
-): Promise<ReadonlyMap<number, CachedShow>> {
+export async function loadDroppedShows({
+  request,
+  now = Date.now,
+  limit = LIMIT,
+}: LoadDroppedShowsParams): Promise<ReadonlyMap<number, CachedShow>> {
   const read = async (page: number) => {
     const response = await request(page, limit);
     if (!response.ok) throw new Error(`hidden/dropped page ${page}: ${response.status}`);

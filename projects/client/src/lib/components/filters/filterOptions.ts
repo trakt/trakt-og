@@ -35,7 +35,8 @@ export const toCodedOptions = (body: unknown): FilterOption[] =>
  * "NETFLIX") match the same shows, so they list once, as the first one.
  */
 export function toNetworkOptions(body: unknown): FilterOption[] {
-  const rows = networks.parse(body)
+  const rows = networks
+    .parse(body)
     .map(({ name, country }) => ({ name: name.trim(), country }))
     .filter(({ name }) => name !== '');
   const byName = new Map(rows.toReversed().map((row) => [row.name.toLowerCase(), row]));

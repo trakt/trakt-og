@@ -12,20 +12,27 @@ const none = { shows: new Set<number>(), seasons: new Map<number, ReadonlySet<nu
 const nitro = [1, 2, 3, 4, 5].map((id) => progressItemFixture(id));
 const slices: Partial<OverlaySlices> = {
   rewatching: new Map([[2, '2026-07-02T00:00:00.000Z']]),
-  dropped: new Map([[3, '2026-02-01T00:00:00.000Z'], [6, '2026-03-01T00:00:00.000Z']]),
+  dropped: new Map([
+    [3, '2026-02-01T00:00:00.000Z'],
+    [6, '2026-03-01T00:00:00.000Z'],
+  ]),
   progressHidden: { watched: { shows: new Set([4]), seasons: new Map() }, collected: none },
   hidden: new Map([['progress_watched', new Set(['show:5'])]]),
   // Show 1: two episodes watched, one of them twice. The endpoint claims 5.
-  watchedShows: new Map([[
-    1,
-    new Map([[
+  watchedShows: new Map([
+    [
       1,
-      new Map([[11, ['2026-01-02T00:00:00Z', '2026-01-01T00:00:00Z']], [
-        12,
-        ['2026-01-03T00:00:00Z'],
-      ]]),
-    ]]),
-  ]]),
+      new Map([
+        [
+          1,
+          new Map([
+            [11, ['2026-01-02T00:00:00Z', '2026-01-01T00:00:00Z']],
+            [12, ['2026-01-03T00:00:00Z']],
+          ]),
+        ],
+      ]),
+    ],
+  ]),
 };
 const base = { nitro, slices, catalogs: new Map<number, ShowCatalog>(), options, now: 0 };
 const ids = (items: ReturnType<typeof toProgressItems>) => items?.map(({ show }) => show.id);
@@ -96,10 +103,12 @@ describe('toProgressItems', () => {
     const catalog: ShowCatalog = {
       id: 1,
       fetchedAt: 0,
-      seasons: [{
-        number: 1,
-        episodes: [{ id: 11, season: 1, number: 1, firstAired: '2026-01-01T00:00:00.000Z' }],
-      }],
+      seasons: [
+        {
+          number: 1,
+          episodes: [{ id: 11, season: 1, number: 1, firstAired: '2026-01-01T00:00:00.000Z' }],
+        },
+      ],
     };
     const items = toProgressItems({ ...base, type: 'watched', catalogs: new Map([[1, catalog]]), now: Date.now() });
 

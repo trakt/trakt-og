@@ -42,9 +42,9 @@ const SHIMMERS = [1, 2, 3, 4, 5];
 const COMMANDS = [
   `git clone ${ogRepoUrls.clone}`,
   'cd trakt-og',
-  'deno task install',
+  'bun run install:frozen',
   'echo "TRAKT_CLIENT_ID=[your api key]" \\\n  > projects/client/.env.development',
-  'deno task client:dev',
+  'bun run client:dev',
 ];
 
 let scene = $state<AboutScene | null>(null);

@@ -1,5 +1,5 @@
 <!--
-  An OG icon, extracted from OG's fonts by `deno task icon <family> <name>`.
+  An OG icon, extracted from OG's fonts by `bun run icon <family> <name>`.
   Import the SVG raw so only the icons a page uses get bundled:
     import gear from '$lib/icons/thin/gear.svg?raw';
     <Icon svg={gear} />

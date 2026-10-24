@@ -8,10 +8,9 @@ OG Redux is a SvelteKit app forked from [trakt-web](https://github.com/trakt/tra
 
 ## Requirements
 
-- [Deno](https://docs.deno.com/runtime/getting_started/installation/) 2.x. CI uses the latest 2.x release.
+- [Bun](https://bun.com/docs/installation) 1.4 or newer. CI pins 1.4.4.
+- [Node.js](https://nodejs.org/) 24. Vite, Vitest and svelte-check run on it.
 - Git.
-
-trakt-web has moved to Bun. OG Redux will follow, but for now every command here runs through Deno.
 
 ## 1. Create a Trakt app
 
@@ -37,7 +36,7 @@ OG Redux signs in with Trakt in the browser (OAuth with PKCE), so it only needs 
 2. **Install dependencies** from the lockfile
 
    ```sh
-   deno task install
+   bun run install:frozen
    ```
 
 3. **Set your client ID.** Create `projects/client/.env.development` with your app's Client ID:
@@ -55,7 +54,7 @@ OG Redux signs in with Trakt in the browser (OAuth with PKCE), so it only needs 
 4. **Start the dev server**
 
    ```sh
-   deno task client:dev
+   bun run client:dev
    ```
 
    Open [http://localhost:5173](http://localhost:5173) and sign in from the header. Add `--port 5174` to run a second copy.
@@ -77,18 +76,18 @@ OG Redux signs in with Trakt in the browser (OAuth with PKCE), so it only needs 
 
 Run these from the repository root.
 
-| Command                        | What it does                                                                 |
-| ------------------------------ | ---------------------------------------------------------------------------- |
-| `deno task client:dev`         | Starts the dev server on port 5173.                                          |
-| `deno task client:check`       | Type checks.                                                                 |
-| `deno task client:test`        | Runs the tests.                                                              |
-| `deno task client:build`       | Builds for production.                                                       |
-| `deno task client:ci`          | Formatting, lint, types, tests and the production build: everything CI runs. |
-| `deno task client:verify [pr]` | CI plus the supply chain, commit and leak checks.                            |
-| `deno task client:land <pr>`   | Rebases, verifies and lands a PR, then closes its issues.                    |
+| Command                      | What it does                                                                 |
+| ---------------------------- | ---------------------------------------------------------------------------- |
+| `bun run client:dev`         | Starts the dev server on port 5173.                                          |
+| `bun run client:check`       | Type checks.                                                                 |
+| `bun run client:test`        | Runs the tests.                                                              |
+| `bun run client:build`       | Builds for production.                                                       |
+| `bun run client:ci`          | Formatting, lint, types, tests and the production build: everything CI runs. |
+| `bun run client:verify [pr]` | CI plus the supply chain, commit and leak checks.                            |
+| `bun run client:land <pr>`   | Rebases, verifies and lands a PR, then closes its issues.                    |
 
-To try the production build locally, run `deno task preview` in `projects/client/`. It builds, then serves the Cloudflare Worker with `wrangler dev`.
+To try the production build locally, run `bun run preview` in `projects/client/`. It builds, then serves the Cloudflare Worker with `wrangler dev`.
 
 ## Deploys
 
-Every merge to main deploys og.trakt.tv through GitHub Actions, built with the `TRAKT_CLIENT_ID` repo secret. PRs land through `deno task client:land <pr>`, never straight to main. `deno task client:deploy` is a manual redeploy of main for maintainers.
+Every merge to main deploys og.trakt.tv through GitHub Actions, built with the `TRAKT_CLIENT_ID` repo secret. PRs land through `bun run client:land <pr>`, never straight to main. `bun run client:deploy` is a manual redeploy of main for maintainers.

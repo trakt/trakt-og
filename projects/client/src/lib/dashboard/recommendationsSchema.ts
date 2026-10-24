@@ -1,9 +1,11 @@
 import { z } from 'zod/v4';
 
-const images = z.object({
-  poster: z.array(z.string()).nullish(),
-  fanart: z.array(z.string()).nullish(),
-}).nullish();
+const images = z
+  .object({
+    poster: z.array(z.string()).nullish(),
+    fanart: z.array(z.string()).nullish(),
+  })
+  .nullish();
 
 const ids = z.object({ trakt: z.number(), slug: z.string().nullish() });
 

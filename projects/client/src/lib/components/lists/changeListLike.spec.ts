@@ -24,12 +24,14 @@ describe('changeListLike', () => {
     'should %s a personal list at its owner route and retain the optimistic state',
     async (liked) => {
       const ui = state();
-      server.use(http.all('https://apiz.trakt.tv/users/other%20user/lists/7/like', ({ request }) => {
-        expect(request.method).toBe(liked ? 'POST' : 'DELETE');
-        expect(ui.selected()).toBe(true);
-        expect(request.headers.get('trakt-api-key')).toBeTruthy();
-        return new HttpResponse(null, { status: 204 });
-      }));
+      server.use(
+        http.all('https://apiz.trakt.tv/users/other%20user/lists/7/like', ({ request }) => {
+          expect(request.method).toBe(liked ? 'POST' : 'DELETE');
+          expect(ui.selected()).toBe(true);
+          expect(request.headers.get('trakt-api-key')).toBeTruthy();
+          return new HttpResponse(null, { status: 204 });
+        }),
+      );
       expect(await changeListLike({ fetch, id: 7, ownerSlug: 'other user', liked, ...ui })).toBe(true);
       expect(ui.selected()).toBe(true);
       expect(ui.notify).not.toHaveBeenCalled();

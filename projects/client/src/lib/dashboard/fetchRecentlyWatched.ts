@@ -16,9 +16,11 @@ const LIMIT = 9;
  * The viewer's last nine plays, newest first, from `/sync/history`, which always answers for the token's owner.
  * Read raw, with the history page's schema, since that is where the fanart cards' fields are.
  */
-export async function fetchRecentlyWatched(
-  { fetch, token, datePreferences }: FetchRecentlyWatchedParams,
-): Promise<readonly RecentPlay[]> {
+export async function fetchRecentlyWatched({
+  fetch,
+  token,
+  datePreferences,
+}: FetchRecentlyWatchedParams): Promise<readonly RecentPlay[]> {
   const response = await rawApiFetch({ fetch, token, path: `/sync/history?limit=${LIMIT}&extended=full,images` });
   if (response.status !== 200) throw new Error(`Recently Watched failed with ${response.status}`);
 

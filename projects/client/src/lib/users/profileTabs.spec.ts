@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { profileTabs } from './profileTabs.ts';
 
 const current = (pathname: string) =>
-  profileTabs({ slug: 'sean', pathname, isSelf: true }).filter((tab) => tab.current).map((tab) => tab.label);
+  profileTabs({ slug: 'sean', pathname, isSelf: true })
+    .filter((tab) => tab.current)
+    .map((tab) => tab.label);
 
 describe('profileTabs', () => {
   it('should list OG tabs without the cut and deferred ones', () => {

@@ -18,44 +18,44 @@ const MARGIN = 4;
 
 // Spellings people type that aren't a country's English or GeoNames name.
 const ALIASES: Record<string, string> = {
-  'usa': 'US',
-  'us': 'US',
+  usa: 'US',
+  us: 'US',
   'u s a': 'US',
-  'america': 'US',
+  america: 'US',
   'united states of america': 'US',
-  'uk': 'GB',
+  uk: 'GB',
   'u k': 'GB',
-  'england': 'GB',
-  'scotland': 'GB',
-  'wales': 'GB',
+  england: 'GB',
+  scotland: 'GB',
+  wales: 'GB',
   'northern ireland': 'GB',
   'great britain': 'GB',
-  'brasil': 'BR',
-  'deutschland': 'DE',
-  'espana': 'ES',
-  'italia': 'IT',
-  'turkiye': 'TR',
-  'russia': 'RU',
+  brasil: 'BR',
+  deutschland: 'DE',
+  espana: 'ES',
+  italia: 'IT',
+  turkiye: 'TR',
+  russia: 'RU',
   'south korea': 'KR',
-  'korea': 'KR',
-  'holland': 'NL',
+  korea: 'KR',
+  holland: 'NL',
   'the netherlands': 'NL',
-  'nederland': 'NL',
-  'czechia': 'CZ',
-  'iran': 'IR',
-  'uae': 'AE',
-  'schweiz': 'CH',
-  'suisse': 'CH',
-  'osterreich': 'AT',
-  'polska': 'PL',
-  'sverige': 'SE',
-  'norge': 'NO',
-  'danmark': 'DK',
-  'suomi': 'FI',
-  'belgique': 'BE',
-  'belgie': 'BE',
+  nederland: 'NL',
+  czechia: 'CZ',
+  iran: 'IR',
+  uae: 'AE',
+  schweiz: 'CH',
+  suisse: 'CH',
+  osterreich: 'AT',
+  polska: 'PL',
+  sverige: 'SE',
+  norge: 'NO',
+  danmark: 'DK',
+  suomi: 'FI',
+  belgique: 'BE',
+  belgie: 'BE',
   'ivory coast': 'CI',
-  'vietnam': 'VN',
+  vietnam: 'VN',
 };
 
 type Point = readonly [number, number];
@@ -72,11 +72,19 @@ type Topology = {
 };
 
 const normalize = (text: string) =>
-  text.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ')
+  text
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9 ]/g, ' ')
+    .replace(/\s+/g, ' ')
     .trim();
 
 const rows = (text: string) =>
-  text.split('\n').filter((line) => line && !line.startsWith('#')).map((line) => line.split('\t'));
+  text
+    .split('\n')
+    .filter((line) => line && !line.startsWith('#'))
+    .map((line) => line.split('\t'));
 
 const countryRows = rows(await readFile(`${source}/countryInfo.txt`, 'utf8'));
 const isoByNumeric = new Map(countryRows.map(([iso2, , numeric]) => [String(Number(numeric)), iso2]));
@@ -157,19 +165,24 @@ const countries = topology.objects.countries.geometries
       return { polygon, unwrapped, bounds: boundsOf(unwrapped[0]) };
     }),
   }))
-  .filter((country): country is { iso2: string; polygons: Shape[] } =>
-    country.iso2 !== undefined && country.iso2 !== 'AQ' && country.polygons.length > 0
+  .filter(
+    (country): country is { iso2: string; polygons: Shape[] } =>
+      country.iso2 !== undefined && country.iso2 !== 'AQ' && country.polygons.length > 0,
   );
 
 const insideRing = ([x, y]: Point, points: Ring) =>
   points.reduce((inside, [xi, yi], i) => {
     const [xj, yj] = points.at(i - 1) ?? [xi, yi];
-    return (yi > y) !== (yj > y) && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi ? !inside : inside;
+    return yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi ? !inside : inside;
   }, false);
 
 const insideShape = (point: Point, { unwrapped: [outer, ...holes], bounds: [west, south, east, north] }: Shape) =>
-  point[0] >= west && point[0] <= east && point[1] >= south && point[1] <= north &&
-  insideRing(point, outer) && !holes.some((hole) => insideRing(point, hole));
+  point[0] >= west &&
+  point[0] <= east &&
+  point[1] >= south &&
+  point[1] <= north &&
+  insideRing(point, outer) &&
+  !holes.some((hole) => insideRing(point, hole));
 
 // An unwrapped ring can run past ±180, so the point is also tried a turn either side.
 const insidePolygon = ([lon, lat]: Point, shape: Shape) =>
@@ -189,14 +202,15 @@ const inverseLatitude = (y: number) =>
   Array.from({ length: 25 }).reduce<number>((phi) => {
     const phi2 = phi * phi;
     const phi4 = phi2 * phi2;
-    const delta = (phi * (1.007226 + phi2 * (0.015085 + phi4 * (-0.044475 + 0.028874 * phi2 - 0.005916 * phi4))) - y) /
+    const delta =
+      (phi * (1.007226 + phi2 * (0.015085 + phi4 * (-0.044475 + 0.028874 * phi2 - 0.005916 * phi4))) - y) /
       (1.007226 + phi2 * (0.015085 * 3 + phi4 * (-0.044475 * 7 + 0.028874 * 9 * phi2 - 0.005916 * 11 * phi4)));
     return phi - delta;
   }, y);
 
 // Fit the land itself (no Antarctica) into the box, the way d3's fitExtent would.
 const projected = countries.flatMap(({ polygons }) =>
-  polygons.flatMap(({ polygon: [outer] }) => outer.map(([lon, lat]) => naturalEarth(lon * RADIANS, lat * RADIANS)))
+  polygons.flatMap(({ polygon: [outer] }) => outer.map(([lon, lat]) => naturalEarth(lon * RADIANS, lat * RADIANS))),
 );
 const [left, bottom, right, top] = boundsOf(projected);
 const fit = Math.min((WIDTH - 2 * MARGIN) / (right - left), (HEIGHT - 2 * MARGIN) / (top - bottom));

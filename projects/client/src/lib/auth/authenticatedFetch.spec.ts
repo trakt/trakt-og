@@ -24,7 +24,8 @@ describe('authenticatedFetch', () => {
       current: fakeUser('spent', 3600),
       signinSilent: () => Promise.resolve(fakeUser('renewed', 3600)),
     });
-    const baseFetch = vi.fn<typeof fetch>()
+    const baseFetch = vi
+      .fn<typeof fetch>()
       .mockResolvedValueOnce(new Response(null, { status: 401 }))
       .mockResolvedValueOnce(new Response(null, { status: 200 }));
 
@@ -64,7 +65,8 @@ describe('authenticatedFetch', () => {
         current: fakeUser('spent', 3600),
         signinSilent: () => Promise.resolve(fakeUser('renewed', 3600)),
       });
-      const baseFetch = vi.fn<typeof fetch>()
+      const baseFetch = vi
+        .fn<typeof fetch>()
         .mockResolvedValueOnce(workerUnauthorized())
         .mockResolvedValueOnce(Response.json([]));
 

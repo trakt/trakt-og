@@ -22,22 +22,26 @@ const errorSchema = z.object({ message: z.string().optional() });
 /** Optimistic membership; failure to read the note id never undoes a successful favorite. */
 export async function toggleFavorite({ target, remove, overlay, request, notify, now = () => new Date() }: Params) {
   const date = now().toISOString();
-  const rollback = overlay.patch('favorites', (favorites) => {
-    const ids = new Set(favorites[target.type]);
-    const dates = new Map(favorites.dates?.[target.type]);
-    if (remove) {
-      ids.delete(target.id);
-      dates.delete(target.id);
-    } else {
-      ids.add(target.id);
-      dates.set(target.id, date);
-    }
-    return {
-      ...favorites,
-      [target.type]: ids,
-      dates: { movie: new Map(), show: new Map(), ...favorites.dates, [target.type]: dates },
-    };
-  }, { movie: new Set(), show: new Set() });
+  const rollback = overlay.patch(
+    'favorites',
+    (favorites) => {
+      const ids = new Set(favorites[target.type]);
+      const dates = new Map(favorites.dates?.[target.type]);
+      if (remove) {
+        ids.delete(target.id);
+        dates.delete(target.id);
+      } else {
+        ids.add(target.id);
+        dates.set(target.id, date);
+      }
+      return {
+        ...favorites,
+        [target.type]: ids,
+        dates: { movie: new Map(), show: new Map(), ...favorites.dates, [target.type]: dates },
+      };
+    },
+    { movie: new Set(), show: new Set() },
+  );
 
   try {
     const response = await request(`/sync/favorites${remove ? '/remove' : ''}`, {
@@ -69,8 +73,8 @@ export async function toggleFavorite({ target, remove, overlay, request, notify,
   if (remove) return null;
   try {
     const rows = await loadFavoriteRows(request);
-    const row = rows.find((row) =>
-      row.type === target.type && (row.type === 'movie' ? row.movie : row.show).ids.trakt === target.id
+    const row = rows.find(
+      (row) => row.type === target.type && (row.type === 'movie' ? row.movie : row.show).ids.trakt === target.id,
     );
     if (!row) throw new Error('Favorite not found');
     if (row.listed_at) {

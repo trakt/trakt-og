@@ -137,15 +137,17 @@ const CARRIE = [
 const busyAirings: readonly Airing[] = [
   { show: busy.ghosts, season: 5, number: 3, title: 'The Polterguest', day: 0, hour: 13 },
   { show: busy.survivor, season: 49, number: 4, title: 'Hidden in Plain Sight', day: 0, hour: 14 },
-  ...CARRIE.map((title, i): Airing => ({
-    show: busy.carrie,
-    season: 1,
-    number: i + 1,
-    title,
-    type: i === 0 ? 'season_premiere' : undefined,
-    day: 1,
-    hour: 10,
-  })),
+  ...CARRIE.map(
+    (title, i): Airing => ({
+      show: busy.carrie,
+      season: 1,
+      number: i + 1,
+      title,
+      type: i === 0 ? 'season_premiere' : undefined,
+      day: 1,
+      hour: 10,
+    }),
+  ),
   { show: busy.abbott, season: 5, number: 2, title: 'Field Day', day: 1, hour: 12 },
   { show: busy.tracker, season: 3, number: 2, title: 'Red Flag', day: 1, hour: 13 },
   { show: busy.shrinking, season: 3, number: 4, title: 'Going Viral', day: 1, hour: 14 },
@@ -157,15 +159,18 @@ const busyAirings: readonly Airing[] = [
 ];
 
 // A whole season dropping today.
-const dropAirings = Array.from({ length: 10 }, (_, i): Airing => ({
-  show: busy.bridgerton,
-  season: 4,
-  number: i + 1,
-  title: `Chapter ${i + 1}`,
-  type: i === 0 ? 'season_premiere' : undefined,
-  day: 0,
-  hour: 7,
-}));
+const dropAirings = Array.from(
+  { length: 10 },
+  (_, i): Airing => ({
+    show: busy.bridgerton,
+    season: 4,
+    number: i + 1,
+    title: `Chapter ${i + 1}`,
+    type: i === 0 ? 'season_premiere' : undefined,
+    day: 0,
+    hour: 7,
+  }),
+);
 
 const offers = (source: string, type: 'subscription' | 'cinema'): Offers => ({
   free: [],

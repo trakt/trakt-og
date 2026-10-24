@@ -10,13 +10,16 @@ const part = (date: string, options: Intl.DateTimeFormatOptions) =>
 function label(friday: string, sunday: string) {
   const [fridayYear, sundayYear] = [friday.slice(0, 4), sunday.slice(0, 4)];
   if (fridayYear !== sundayYear) {
-    return `${part(friday, { month: 'short', day: 'numeric', year: 'numeric' })} – ${
-      part(sunday, { month: 'short', day: 'numeric', year: 'numeric' })
-    }`;
+    return `${part(friday, { month: 'short', day: 'numeric', year: 'numeric' })} – ${part(sunday, {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    })}`;
   }
-  const end = friday.slice(5, 7) === sunday.slice(5, 7)
-    ? part(sunday, { day: 'numeric' })
-    : part(sunday, { month: 'short', day: 'numeric' });
+  const end =
+    friday.slice(5, 7) === sunday.slice(5, 7)
+      ? part(sunday, { day: 'numeric' })
+      : part(sunday, { month: 'short', day: 'numeric' });
   return `${part(friday, { month: 'short', day: 'numeric' })} – ${end}, ${sundayYear}`;
 }
 

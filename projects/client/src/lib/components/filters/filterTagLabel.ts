@@ -22,5 +22,5 @@ export function filterTagLabel(id: string): string {
     .filter((name) => id === name || id.startsWith(`${name}-`))
     .toSorted((a, b) => b.length - a.length)
     .at(0);
-  return key ? labels[key] ?? '' : '';
+  return key ? (labels[key] ?? '') : '';
 }

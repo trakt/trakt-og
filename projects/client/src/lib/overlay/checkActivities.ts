@@ -27,10 +27,12 @@ export async function checkActivities({ get, known, isCurrent, onSlice }: CheckA
   const activities = parsed.data;
   const stale = staleSlices(known(), activities);
   const fetchAll = (names: SliceName[]) =>
-    Promise.allSettled(names.map(async (name) => {
-      const activity = sliceSources[name].activity(activities);
-      await onSlice({ name, activity, data: await sliceSources[name].load(get) });
-    }));
+    Promise.allSettled(
+      names.map(async (name) => {
+        const activity = sliceSources[name].activity(activities);
+        await onSlice({ name, activity, data: await sliceSources[name].load(get) });
+      }),
+    );
 
   // A failed slice keeps its previous copy, or stays unknown. Lists cost a request each, so they go last.
   await fetchAll(stale.filter((name) => name !== 'listed'));

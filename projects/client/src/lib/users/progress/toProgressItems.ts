@@ -21,7 +21,7 @@ type ToProgressItemsParams = {
 };
 
 type Dates = ReadonlySet<number> | ReadonlyMap<number, string> | undefined;
-const dateOf = (values: Dates, id: number) => values instanceof Map ? values.get(id) || undefined : undefined;
+const dateOf = (values: Dates, id: number) => (values instanceof Map ? values.get(id) || undefined : undefined);
 
 /**
  * A tab's shows, unsorted and unfiltered.
@@ -34,9 +34,16 @@ const dateOf = (values: Dates, id: number) => values instanceof Map ? values.get
  * endpoint's aired count is the total; once its catalog is in, every count is exact and matches the season lines.
  * Null until the overlay knows your watches too, so the numbers don't jump.
  */
-export function toProgressItems(
-  { type, nitro, droppedShows, listShows, slices, catalogs, options, now }: ToProgressItemsParams,
-): readonly ProgressItem[] | null {
+export function toProgressItems({
+  type,
+  nitro,
+  droppedShows,
+  listShows,
+  slices,
+  catalogs,
+  options,
+  now,
+}: ToProgressItemsParams): readonly ProgressItem[] | null {
   const { dropped, rewatching, progressHidden, hidden, watchedShows } = slices;
   if (!dropped || !rewatching || !progressHidden || !watchedShows) return null;
 
@@ -53,8 +60,8 @@ export function toProgressItems(
   const missing = wholeList
     ? [...wholeList.values()].filter(({ id }) => !listed.has(id))
     : type === 'dropped'
-    ? [...(droppedShows?.values() ?? [])].filter(({ id }) => dropped.has(id) && !listed.has(id))
-    : [];
+      ? [...(droppedShows?.values() ?? [])].filter(({ id }) => dropped.has(id) && !listed.has(id))
+      : [];
 
   const counted = (show: CachedShow, base?: ProgressItem): ProgressItem => {
     const resetAt = dateOf(rewatching, show.id);

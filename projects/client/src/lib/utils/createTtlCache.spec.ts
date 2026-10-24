@@ -15,7 +15,8 @@ describe('util: createTtlCache', () => {
   describe('when a reload fails', () => {
     it('should keep serving the last good value until the retry is due', async () => {
       const get = createTtlCache<string>({ ttlMs: 100, retryMs: 10 });
-      const load = vi.fn()
+      const load = vi
+        .fn()
         .mockResolvedValueOnce('good')
         .mockRejectedValueOnce(new Error('down'))
         .mockResolvedValueOnce('fresh');

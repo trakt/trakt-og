@@ -150,18 +150,21 @@ export async function loadProfile({ fetch, locals, params, parent, now = new Dat
 
   const [profileBoxes, topShows] = await Promise.all([
     boxes
-      ? toProfileBoxes({
-        ...boxes.frame,
-        today: boxMath.utcDay(now),
-        latest: { episode: episodes.at(0), movie: movies.at(0) },
-        recent: sections.recent,
-        watchlist: {
-          count: Number(watchlist?.headers.get('x-pagination-item-count')) || 0,
-          rows: watchlist?.body ?? [],
-        },
-        watched: { shows: sections.charts.shows, movies: sections.charts.movies },
-        genres: sections.charts.genres,
-      }, boxes.extras)
+      ? toProfileBoxes(
+          {
+            ...boxes.frame,
+            today: boxMath.utcDay(now),
+            latest: { episode: episodes.at(0), movie: movies.at(0) },
+            recent: sections.recent,
+            watchlist: {
+              count: Number(watchlist?.headers.get('x-pagination-item-count')) || 0,
+              rows: watchlist?.body ?? [],
+            },
+            watched: { shows: sections.charts.shows, movies: sections.charts.movies },
+            genres: sections.charts.genres,
+          },
+          boxes.extras,
+        )
       : null,
     withTopShowPosters(fetch, sections.charts.shows, prefs?.most_watched_shows),
   ]);
@@ -173,22 +176,23 @@ export async function loadProfile({ fetch, locals, params, parent, now = new Dat
     episodes: episodes.map((row) => toWatchedEpisode(row, datePreferences)),
     movies: movies.map((row) => toWatchedMovie(row, datePreferences)),
     // OG hid the whole charts section, ratings too, when there were no genres (`users.js:383-386`).
-    charts: sections.charts.genres.length > 0
-      ? {
-        genres: sections.charts.genres.map((row) => toGenreBar(row, { slug: profile.slug })),
-        ratings: toProfileRatings({
-          distribution: stats?.ratings.distribution,
-          types: stats
-            ? {
-              movies: stats.movies.ratings,
-              shows: stats.shows.ratings,
-              seasons: stats.seasons.ratings,
-              episodes: stats.episodes.ratings,
-            }
-            : undefined,
-        }),
-      }
-      : null,
+    charts:
+      sections.charts.genres.length > 0
+        ? {
+            genres: sections.charts.genres.map((row) => toGenreBar(row, { slug: profile.slug })),
+            ratings: toProfileRatings({
+              distribution: stats?.ratings.distribution,
+              types: stats
+                ? {
+                    movies: stats.movies.ratings,
+                    shows: stats.shows.ratings,
+                    seasons: stats.seasons.ratings,
+                    episodes: stats.episodes.ratings,
+                  }
+                : undefined,
+            }),
+          }
+        : null,
     mostWatched: {
       shows: toMostWatched('shows', {
         history: sections.recent.episodes,
@@ -217,7 +221,7 @@ async function withTopShowPosters(
   prefs: Parameters<typeof toMostWatched>[1]['prefs'],
 ): Promise<readonly WatchedItemRow[]> {
   const top = new Set(toMostWatched('shows', { history: [], watched, prefs }).allTime.map(({ id }) => id));
-  const rows = watched.flatMap((row) => 'show' in row && top.has(row.show.ids.trakt) ? [row] : []);
+  const rows = watched.flatMap((row) => ('show' in row && top.has(row.show.ids.trakt) ? [row] : []));
   const posters = new Map((await withShowPosters(fetch, rows)).map((row) => [row.show.ids.trakt, row]));
   return watched.map((row) => ('show' in row ? posters.get(row.show.ids.trakt) : undefined) ?? row);
 }

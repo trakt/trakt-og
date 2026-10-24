@@ -17,7 +17,10 @@ describe('RecentSearchesSection', () => {
   });
 
   it('should link each search to its results and mark the current one', () => {
-    const body = html([{ query: 'Dune', type: 'movies' }, { query: 'Tron Legacy', type: '' }]);
+    const body = html([
+      { query: 'Dune', type: 'movies' },
+      { query: 'Tron Legacy', type: '' },
+    ]);
 
     expect(body).toContain('href="/search/movies?query=Dune" aria-current="page"');
     expect(body).toContain('href="/search?query=Tron%20Legacy"');

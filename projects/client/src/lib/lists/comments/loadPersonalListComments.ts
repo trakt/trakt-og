@@ -33,7 +33,7 @@ export async function loadPersonalListComments({ fetch, parent, locals, params, 
   const ids = { id: params.id, list_id: params.list };
   const summary = (token: string | null) =>
     fetchListSummary(() =>
-      api({ fetch, token }).users.lists.list.summary({ params: ids, query: { extended: 'images' } })
+      api({ fetch, token }).users.lists.list.summary({ params: ids, query: { extended: 'images' } }),
     );
   // A missing or private list's comments answer a 403.
   const comments = (token: string | null) =>
@@ -53,9 +53,10 @@ export async function loadPersonalListComments({ fetch, parent, locals, params, 
   }
 
   // A stale token keeps the anonymous answer: the server never refreshes, the browser does.
-  const [viewerSummary, viewerComments] = anonymousSummary?.status !== 200 && locals.token
-    ? await Promise.all([summary(locals.token), comments(locals.token)])
-    : [null, null];
+  const [viewerSummary, viewerComments] =
+    anonymousSummary?.status !== 200 && locals.token
+      ? await Promise.all([summary(locals.token), comments(locals.token)])
+      : [null, null];
   const found = viewerSummary?.status === 200 ? viewerSummary : anonymousSummary;
   if (!found || [204, 401, 403, 404].includes(found.status)) error(404, 'Page Not Found');
   if (found.status !== 200) error(502, 'Trakt is having trouble loading this list.');

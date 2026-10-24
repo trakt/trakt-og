@@ -70,13 +70,20 @@ export function toSubpageMedia({ body, justwatch, collection }: Params): Subpage
   const item = commentItemOf(body);
   if (!item) return undefined;
   const { movie, show, season, episode, list } = body;
-  const spoilerTarget: SpoilerTarget | undefined = item.type === 'list' ? undefined : {
-    type: item.type,
-    id: item.id,
-    season: (item.type === 'season' || item.type === 'episode') && show
-      ? { show: show.ids.trakt, number: item.type === 'season' ? season?.number ?? 0 : episode?.season ?? 0 }
-      : undefined,
-  };
+  const spoilerTarget: SpoilerTarget | undefined =
+    item.type === 'list'
+      ? undefined
+      : {
+          type: item.type,
+          id: item.id,
+          season:
+            (item.type === 'season' || item.type === 'episode') && show
+              ? {
+                  show: show.ids.trakt,
+                  number: item.type === 'season' ? (season?.number ?? 0) : (episode?.season ?? 0),
+                }
+              : undefined,
+        };
   const fanart = (path: string | null | undefined) => imageUrl(path, 'full');
   const poster = (path: string | null | undefined) => imageUrl(path, 'medium');
 

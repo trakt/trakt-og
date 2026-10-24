@@ -32,11 +32,10 @@ describe('toSeasonPicks', () => {
 
   it('should fill from the favorites when nothing in the theme is trending', () => {
     expect(
-      toSeasonPicks({ trending: none, favorites: { movie: [media(1), media(2)], show: [] }, now }).map(({ key }) =>
-        key
+      toSeasonPicks({ trending: none, favorites: { movie: [media(1), media(2)], show: [] }, now }).map(
+        ({ key }) => key,
       ),
-    )
-      .toEqual(['movie-1', 'movie-2']);
+    ).toEqual(['movie-1', 'movie-2']);
   });
 
   it('should skip repeats and titles without a poster', () => {

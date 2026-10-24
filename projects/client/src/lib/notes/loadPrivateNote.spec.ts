@@ -14,12 +14,14 @@ const server = setupServer(
   }),
   http.get('https://apiz.trakt.tv/users/me/notes/people', ({ request }) => {
     seen.push(request);
-    return HttpResponse.json([{
-      type: 'person',
-      person: { name: 'Someone', ids: { trakt: 2, slug: 'someone' } },
-      attached_to: { type: 'person' },
-      note: { id: 9, notes: 'Great in everything', privacy: 'private', updated_at: '2026-09-28T10:00:00.000Z' },
-    }]);
+    return HttpResponse.json([
+      {
+        type: 'person',
+        person: { name: 'Someone', ids: { trakt: 2, slug: 'someone' } },
+        attached_to: { type: 'person' },
+        note: { id: 9, notes: 'Great in everything', privacy: 'private', updated_at: '2026-09-28T10:00:00.000Z' },
+      },
+    ]);
   }),
 );
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
@@ -31,8 +33,9 @@ afterAll(() => server.close());
 
 describe('loadPrivateNote', () => {
   it('should skip the API when logged out', async () => {
-    expect(await loadPrivateNote({ fetch, token: null, item: { type: 'movie', id: 1, slug: 'fight-club-1999' } }))
-      .toBeNull();
+    expect(
+      await loadPrivateNote({ fetch, token: null, item: { type: 'movie', id: 1, slug: 'fight-club-1999' } }),
+    ).toBeNull();
     expect(seen).toHaveLength(0);
   });
 
@@ -54,8 +57,9 @@ describe('loadPrivateNote', () => {
   });
 
   it('should return null for a person without a note', async () => {
-    expect(await loadPrivateNote({ fetch, token: 'viewer', item: { type: 'person', id: 3, slug: 'nobody' } }))
-      .toBeNull();
+    expect(
+      await loadPrivateNote({ fetch, token: 'viewer', item: { type: 'person', id: 3, slug: 'nobody' } }),
+    ).toBeNull();
   });
 
   it('should return null when the read fails', async () => {

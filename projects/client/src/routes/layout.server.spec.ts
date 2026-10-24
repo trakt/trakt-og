@@ -36,15 +36,13 @@ const request = (userAgent?: string) =>
   new Request('https://og.test/', { headers: userAgent ? { 'user-agent': userAgent } : {} });
 
 const layout = (token: string | null = 'fake-token', searchType?: string, userAgent?: string, klipyKey?: string) =>
-  load(
-    {
-      fetch: globalThis.fetch,
-      locals: { token },
-      cookies: { get: (name: string) => (name === 'search_type' ? searchType : undefined) },
-      request: request(userAgent),
-      platform: { env: { KLIPY_API_KEY: klipyKey } },
-    } as Parameters<typeof load>[0],
-  );
+  load({
+    fetch: globalThis.fetch,
+    locals: { token },
+    cookies: { get: (name: string) => (name === 'search_type' ? searchType : undefined) },
+    request: request(userAgent),
+    platform: { env: { KLIPY_API_KEY: klipyKey } },
+  } as Parameters<typeof load>[0]);
 
 describe('root layout settings', () => {
   it('should load extended settings once and share them with the header and date helpers', async () => {
@@ -133,10 +131,12 @@ describe('root layout settings', () => {
   });
 
   it('should keep settings isolated between requests and clear them after logout', async () => {
-    server.use(http.get('https://apiz.trakt.tv/users/settings', ({ request }) => {
-      const slug = request.headers.get('authorization') === 'Bearer first' ? 'first' : 'second';
-      return HttpResponse.json({ ...SETTINGS, user: { ...SETTINGS.user, ids: { slug } } });
-    }));
+    server.use(
+      http.get('https://apiz.trakt.tv/users/settings', ({ request }) => {
+        const slug = request.headers.get('authorization') === 'Bearer first' ? 'first' : 'second';
+        return HttpResponse.json({ ...SETTINGS, user: { ...SETTINGS.user, ids: { slug } } });
+      }),
+    );
     const [first, second] = await Promise.all([layout('first'), layout('second')]);
     expect(first.settings?.user.ids.slug).toBe('first');
     expect(second.settings?.user.ids.slug).toBe('second');
@@ -155,16 +155,19 @@ describe('root layout theme', () => {
   const darkKnight = (value: unknown) =>
     server.use(
       http.get('https://apiz.trakt.tv/users/settings', () =>
-        HttpResponse.json({ ...SETTINGS, browsing: { ...SETTINGS.browsing, dark_knight: value } })),
+        HttpResponse.json({ ...SETTINGS, browsing: { ...SETTINGS.browsing, dark_knight: value } }),
+      ),
     );
 
-  it.each([['true', 'dark'], ['false', 'light'], ['auto', 'system'], ['', 'dark']])(
-    'should render dark_knight "%s" as the %s theme',
-    async (value, expected) => {
-      darkKnight(value);
-      expect(await theme()).toBe(expected);
-    },
-  );
+  it.each([
+    ['true', 'dark'],
+    ['false', 'light'],
+    ['auto', 'system'],
+    ['', 'dark'],
+  ])('should render dark_knight "%s" as the %s theme', async (value, expected) => {
+    darkKnight(value);
+    expect(await theme()).toBe(expected);
+  });
 
   it('should leave the theme to the Dark Knight default when logged out or the settings fail', async () => {
     expect(await theme(null)).toBeUndefined();

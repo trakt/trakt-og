@@ -23,19 +23,17 @@ export async function changeRelationship({ slug, isPrivate, relation, action, ov
   const current = previous.relation;
   const requestAction = ['approve', 'deny', 'blockRequest'].includes(action);
   if (requestAction && (current.requestId === null || previous.decision !== null)) return false;
-  const follow = action === 'follow'
-    ? (isPrivate ? 'pending' : 'following')
-    : action === 'unfollow'
-    ? 'none'
-    : current.follow;
+  const follow =
+    action === 'follow' ? (isPrivate ? 'pending' : 'following') : action === 'unfollow' ? 'none' : current.follow;
   const blocking = action === 'block' || action === 'blockRequest';
-  const decision = action === 'approve'
-    ? 'approve'
-    : action === 'deny'
-    ? 'deny'
-    : action === 'blockRequest'
-    ? 'block'
-    : previous.decision;
+  const decision =
+    action === 'approve'
+      ? 'approve'
+      : action === 'deny'
+        ? 'deny'
+        : action === 'blockRequest'
+          ? 'block'
+          : previous.decision;
   const next = {
     ...previous,
     relation: {
@@ -48,13 +46,13 @@ export async function changeRelationship({ slug, isPrivate, relation, action, ov
     decision,
     // A block shows its Blocked button at once, so it can be undone. OG left a just-approved follower's Follows You
     // button for the next load.
-    hideBlock: blocking || action === 'unblock'
-      ? false
-      : (action === 'approve' && !current.followsYou) || previous.hideBlock,
+    hideBlock:
+      blocking || action === 'unblock' ? false : (action === 'approve' && !current.followsYou) || previous.hideBlock,
   };
-  const path = requestAction && action !== 'blockRequest'
-    ? `/users/requests/${current.requestId}`
-    : `/users/${encodeURIComponent(slug)}/${action === 'follow' || action === 'unfollow' ? 'follow' : 'block'}`;
+  const path =
+    requestAction && action !== 'blockRequest'
+      ? `/users/requests/${current.requestId}`
+      : `/users/${encodeURIComponent(slug)}/${action === 'follow' || action === 'unfollow' ? 'follow' : 'block'}`;
   const method = ['unfollow', 'unblock', 'deny'].includes(action) ? 'DELETE' : 'POST';
   overlay.start(slug);
   const rollback = overlay.patch(slug, next);

@@ -14,14 +14,15 @@ const external = toExternalRatings({
 
 describe('toSiteScores', () => {
   it('should score each site out of 100 against Trakt, in brand colors, without JustWatch', () => {
-    expect(toSiteScores({ external, trakt: 71 }).map(({ brand, score, diff }) => [brand, score, diff.text, diff.trend]))
-      .toEqual([
-        ['imdb', 68, '−3', 'down'],
-        ['tmdb', 65, '−6', 'down'],
-        ['rotten-tomatoes', 51, '−20', 'down'],
-        ['rotten-tomatoes', 71, '0', 'flat'],
-        ['metacritic', 49, '−22', 'down'],
-      ]);
+    expect(
+      toSiteScores({ external, trakt: 71 }).map(({ brand, score, diff }) => [brand, score, diff.text, diff.trend]),
+    ).toEqual([
+      ['imdb', 68, '−3', 'down'],
+      ['tmdb', 65, '−6', 'down'],
+      ['rotten-tomatoes', 51, '−20', 'down'],
+      ['rotten-tomatoes', 71, '0', 'flat'],
+      ['metacritic', 49, '−22', 'down'],
+    ]);
   });
 
   it('should color Letterboxd in its own brand', () => {

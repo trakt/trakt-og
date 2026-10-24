@@ -5,13 +5,17 @@ const stats = (play_count: number, completed_count = 0) => ({ rating: null, play
 
 describe('util: watchedIndicator', () => {
   it('should show nothing when the author has no plays', () => {
-    expect(watchedIndicator({ stats: stats(0), slug: 'sean', item: { type: 'movie', id: 1, title: 'Heat' } }))
-      .toBeUndefined();
+    expect(
+      watchedIndicator({ stats: stats(0), slug: 'sean', item: { type: 'movie', id: 1, title: 'Heat' } }),
+    ).toBeUndefined();
   });
 
   it('should count plays on movies and episodes, and link to the history', () => {
-    expect(watchedIndicator({ stats: stats(1), slug: 'sean', item: { type: 'movie', id: 7, title: 'Heat' } }))
-      .toEqual({ count: '1', label: 'play', href: '/users/sean/history?movie=7' });
+    expect(watchedIndicator({ stats: stats(1), slug: 'sean', item: { type: 'movie', id: 7, title: 'Heat' } })).toEqual({
+      count: '1',
+      label: 'play',
+      href: '/users/sean/history?movie=7',
+    });
     expect(
       watchedIndicator({
         stats: stats(1200),
@@ -48,7 +52,8 @@ describe('util: watchedIndicator', () => {
   });
 
   it('should show nothing on lists', () => {
-    expect(watchedIndicator({ stats: stats(3), slug: 'sean', item: { type: 'list', id: 1, title: 'Faves' } }))
-      .toBeUndefined();
+    expect(
+      watchedIndicator({ stats: stats(3), slug: 'sean', item: { type: 'list', id: 1, title: 'Faves' } }),
+    ).toBeUndefined();
   });
 });

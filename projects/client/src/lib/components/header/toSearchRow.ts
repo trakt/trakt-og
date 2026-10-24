@@ -120,9 +120,10 @@ export function toSearchRow(
       type: list.type === 'official' ? 'Official List' : 'List',
       // Whose list it is, beside the type, then how big it is. Official lists have no owner.
       tag: list.user?.username ?? undefined,
-      tags: typeof list.item_count === 'number'
-        ? [`${list.item_count.toLocaleString('en-US')} ${list.item_count === 1 ? 'item' : 'items'}`]
-        : undefined,
+      tags:
+        typeof list.item_count === 'number'
+          ? [`${list.item_count.toLocaleString('en-US')} ${list.item_count === 1 ? 'item' : 'items'}`]
+          : undefined,
       poster: poster(list.images?.posters),
     };
   }

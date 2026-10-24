@@ -81,31 +81,33 @@ export function sectionsClient({
     if (!response?.ok) return null;
     return parse(await response.json().catch(() => null));
   };
-  const parsed = <T>(schema: { safeParse: (body: unknown) => { success: boolean; data?: T } }) => (body: unknown) =>
-    contractSchema(schema).safeParse(body).data ?? null;
+  const parsed =
+    <T>(schema: { safeParse: (body: unknown) => { success: boolean; data?: T } }) =>
+    (body: unknown) =>
+      contractSchema(schema).safeParse(body).data ?? null;
 
   const mediaPath = (media: SummaryMedia) =>
     media.type === 'episode'
       ? `/shows/${media.slug}/seasons/${media.season}/episodes/${media.episode}`
       : media.type === 'season'
-      ? `/shows/${media.slug}/seasons/${media.season}`
-      : `/${media.type}s/${media.slug}`;
+        ? `/shows/${media.slug}/seasons/${media.season}`
+        : `/${media.type}s/${media.slug}`;
 
   const watching = (media: SummaryMedia) =>
     media.type === 'episode'
       ? okBody(
-        anonymous.shows.episode.watching({
-          params: { id: media.slug, season: media.season, episode: media.episode },
-          query: {},
-        }),
-      )
+          anonymous.shows.episode.watching({
+            params: { id: media.slug, season: media.season, episode: media.episode },
+            query: {},
+          }),
+        )
       : watchingOther(media);
   const watchingOther = ({ type, slug, season }: SummaryMedia) =>
     type === 'season'
       ? okBody(anonymous.shows.season.watching({ params: { id: slug, season: season ?? 0 }, query: {} }))
       : type === 'movie'
-      ? okBody(anonymous.movies.watching({ params: { id: slug }, query: {} }))
-      : okBody(anonymous.shows.watching({ params: { id: slug }, query: {} }));
+        ? okBody(anonymous.movies.watching({ params: { id: slug }, query: {} }))
+        : okBody(anonymous.shows.watching({ params: { id: slug }, query: {} }));
 
   const comments = (media: SummaryMedia, sort: 'likes' | 'newest', language: string | null) => {
     const { type, slug, season } = media;
@@ -172,14 +174,16 @@ export function sectionsClient({
   const liveOf = (everyone: readonly ProfileResponse[], followed: ReadonlySet<string> | null) => {
     const members: readonly SocialMember[] = everyone.flatMap(({ username, ids, images }) =>
       ids.slug && followed?.has(ids.slug)
-        ? [{
-          key: username,
-          name: username,
-          slug: ids.slug,
-          href: `/users/${ids.slug}`,
-          avatar: images?.avatar?.full ?? '',
-        }]
-        : []
+        ? [
+            {
+              key: username,
+              name: username,
+              slug: ids.slug,
+              href: `/users/${ids.slug}`,
+              avatar: images?.avatar?.full ?? '',
+            },
+          ]
+        : [],
     );
     if (members.length === 0) return Promise.resolve<readonly LiveWatch[]>([]);
     return fetchWatching({ get: (path) => rawApiFetch({ fetch: viewerFetch, path }), members }).catch(() => []);
@@ -189,25 +193,30 @@ export function sectionsClient({
     activity: async (media) => {
       const [everyone, social, followed] = await Promise.all([
         watching(media),
-        media.type === 'season' ? null : raw<readonly SocialRow[]>(
-          `${mediaPath(media)}/social?limit=${SOCIAL_LIMIT}&extended=images`,
-          parsed(socialRowsSchema),
-        ),
+        media.type === 'season'
+          ? null
+          : raw<readonly SocialRow[]>(
+              `${mediaPath(media)}/social?limit=${SOCIAL_LIMIT}&extended=images`,
+              parsed(socialRowsSchema),
+            ),
         following(),
       ]);
       // A show's People Watched measures how much of it each member has seen, so it needs its size.
-      const show = media.type === 'show' && media.airedEpisodes
-        ? { airedEpisodes: media.airedEpisodes, totalRuntime: media.totalRuntime }
-        : undefined;
+      const show =
+        media.type === 'show' && media.airedEpisodes
+          ? { airedEpisodes: media.airedEpisodes, totalRuntime: media.totalRuntime }
+          : undefined;
       const live = await liveOf(everyone ?? [], followed);
-      return nonEmpty(toActivity({
-        watching: everyone ?? [],
-        social,
-        following: followed,
-        live,
-        show,
-        item: { type: media.type, id: media.id },
-      }));
+      return nonEmpty(
+        toActivity({
+          watching: everyone ?? [],
+          social,
+          following: followed,
+          live,
+          show,
+          item: { type: media.type, id: media.id },
+        }),
+      );
     },
 
     comments: async (media, language = 'en') => {
@@ -234,7 +243,7 @@ export function sectionsClient({
         lists(media, 'personal', PREVIEW_LIMIT),
       ]);
       // OG put the official lists (a movie's collection) ahead of the popular personal ones.
-      return nonEmpty([...official ?? [], ...popular ?? []].map(toSummaryList));
+      return nonEmpty([...(official ?? []), ...(popular ?? [])].map(toSummaryList));
     },
 
     related: async (media) => {
@@ -251,9 +260,10 @@ export function sectionsClient({
 
     relatedPeople: async (card) => {
       const params = { id: String(card.id) };
-      const people = card.type === 'movie'
-        ? await okBody(anonymous.movies.people({ params, query: {} }))
-        : await okBody(anonymous.shows.people({ params, query: {} }));
+      const people =
+        card.type === 'movie'
+          ? await okBody(anonymous.movies.people({ params, query: {} }))
+          : await okBody(anonymous.shows.people({ params, query: {} }));
       return people ? toRelatedPeople(people) : null;
     },
 

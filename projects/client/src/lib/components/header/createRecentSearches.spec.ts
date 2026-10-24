@@ -34,7 +34,10 @@ describe('createRecentSearches', () => {
     recent.record({ query: 'Breaking Bad', type: 'shows' });
     recent.record({ query: ' Tron ', type: '' });
 
-    expect(recent.terms).toEqual([{ query: 'Tron', type: '' }, { query: 'Breaking Bad', type: 'shows' }]);
+    expect(recent.terms).toEqual([
+      { query: 'Tron', type: '' },
+      { query: 'Breaking Bad', type: 'shows' },
+    ]);
     expect(saved.saved()).toEqual(recent.terms);
     expect(createRecentSearches({ key, storage: saved }).terms).toEqual(recent.terms);
   });
@@ -52,7 +55,10 @@ describe('createRecentSearches', () => {
     recent.record({ query: 'Dune', type: 'movies' });
     recent.record({ query: 'TRON', type: '' });
 
-    expect(recent.terms).toEqual([{ query: 'TRON', type: '' }, { query: 'Dune', type: 'movies' }]);
+    expect(recent.terms).toEqual([
+      { query: 'TRON', type: '' },
+      { query: 'Dune', type: 'movies' },
+    ]);
   });
 
   it('should keep the same query in different search types apart', () => {
@@ -71,7 +77,10 @@ describe('createRecentSearches', () => {
   });
 
   it('should remove one search', () => {
-    const saved = storage([{ query: 'Dune', type: 'movies' }, { query: 'Tron', type: '' }]);
+    const saved = storage([
+      { query: 'Dune', type: 'movies' },
+      { query: 'Tron', type: '' },
+    ]);
     const recent = createRecentSearches({ key, storage: saved });
     recent.remove({ query: 'dune', type: 'movies' });
 
@@ -111,7 +120,10 @@ describe('createRecentSearches', () => {
       ]),
     });
 
-    expect(recent.terms).toEqual([{ query: 'Dune', type: '' }, { query: 'Alien', type: 'movies' }]);
+    expect(recent.terms).toEqual([
+      { query: 'Dune', type: '' },
+      { query: 'Alien', type: 'movies' },
+    ]);
   });
 
   it('should start empty when the saved copy is not a list', () => {
@@ -138,7 +150,10 @@ describe('createRecentSearches', () => {
     there.record({ query: 'Dune', type: 'movies' });
     here.record({ query: 'Tron', type: '' });
 
-    expect(here.terms).toEqual([{ query: 'Tron', type: '' }, { query: 'Dune', type: 'movies' }]);
+    expect(here.terms).toEqual([
+      { query: 'Tron', type: '' },
+      { query: 'Dune', type: 'movies' },
+    ]);
   });
 
   it('should pick up a change from another tab on reload', () => {

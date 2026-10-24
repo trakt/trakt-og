@@ -20,17 +20,18 @@ export function groupLabel({ group, days }: GroupLabelParams): string | undefine
   if (group.items.length === 2) return 'Double episode';
 
   const sameSeason = (day: CalendarDay) =>
-    day.items.filter((item) =>
-      item.type === 'episode' && item.show.ids.trakt === first.show.ids.trakt &&
-      item.episode.season === first.episode.season
+    day.items.filter(
+      (item) =>
+        item.type === 'episode' &&
+        item.show.ids.trakt === first.show.ids.trakt &&
+        item.episode.season === first.episode.season,
     ).length;
   const counts = days.map((day) => ({ date: day.date, count: sameSeason(day) })).filter(({ count }) => count > 0);
   const batches = counts.filter(({ count }) => count > 1);
   const firstId = first.episode.ids.trakt;
   const date = days.find((day) =>
-    day.items.some((item) => item.type === 'episode' && item.episode.ids.trakt === firstId)
-  )
-    ?.date;
+    day.items.some((item) => item.type === 'episode' && item.episode.ids.trakt === firstId),
+  )?.date;
   const batch = batches.findIndex((day) => day.date === date);
 
   if (batches.length > 1 && batch >= 0) {

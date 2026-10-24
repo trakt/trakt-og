@@ -22,7 +22,7 @@ describe('toMovieReleases', () => {
 
   it('should preserve calendar dates west of UTC and distinguish every release type', () => {
     const releases = ['premiere', 'limited', 'theatrical', 'digital', 'physical', 'tv', 'unknown'].map((type) =>
-      row('us', '1999-10-15T00:00:00.000Z', type)
+      row('us', '1999-10-15T00:00:00.000Z', type),
     );
     const rows = toMovieReleases({ releases, originalCountry: 'gb', datePreferences }).at(0)?.rows;
     expect(rows?.map(({ type, qualifier }) => [type, qualifier])).toEqual([
@@ -35,8 +35,8 @@ describe('toMovieReleases', () => {
       ['Unknown', ''],
     ]);
     expect(
-      rows?.every(({ dateText, certification, note }) =>
-        dateText === '15 Oct 1999' && certification === '' && note === ''
+      rows?.every(
+        ({ dateText, certification, note }) => dateText === '15 Oct 1999' && certification === '' && note === '',
       ),
     ).toBe(true);
   });

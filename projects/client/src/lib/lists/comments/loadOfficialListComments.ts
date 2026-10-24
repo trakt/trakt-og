@@ -19,7 +19,7 @@ export async function loadOfficialListComments({ fetch, params, url }: Params) {
   const query = toListCommentsQuery(url.searchParams);
   const client = api({ fetch });
   const found = await fetchListSummary(() =>
-    client.lists.summary({ params: { id: params.slug }, query: { extended: 'images' } })
+    client.lists.summary({ params: { id: params.slug }, query: { extended: 'images' } }),
   );
   if (!found || [204, 401, 403, 404].includes(found.status)) error(404, 'Page Not Found');
   if (found.status !== 200) error(502, 'Trakt is having trouble loading this list.');

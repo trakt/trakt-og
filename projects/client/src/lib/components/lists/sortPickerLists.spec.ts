@@ -12,8 +12,9 @@ const list = (name: string, rank = 0, selected = false) => ({
 });
 describe('sortPickerLists', () => {
   it('should keep selected rows first and ignore title articles', () => {
-    expect(sortPickerLists([list('The Zebra'), list('An Apple'), list('The Selected', 0, true)]).map((l) => l.name))
-      .toEqual(['The Selected', 'An Apple', 'The Zebra']);
+    expect(
+      sortPickerLists([list('The Zebra'), list('An Apple'), list('The Selected', 0, true)]).map((l) => l.name),
+    ).toEqual(['The Selected', 'An Apple', 'The Zebra']);
   });
   it('should use user rank when both rows have one', () => {
     expect(sortPickerLists([list('Apple', 3), list('Zebra', 1)]).map((l) => l.name)).toEqual(['Zebra', 'Apple']);

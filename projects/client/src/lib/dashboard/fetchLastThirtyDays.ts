@@ -20,9 +20,14 @@ type FetchLastThirtyDaysParams = {
  * built from the plays of the profile's 30-day history; the genres are `/users/me/watched/genres/30`. A history page
  * that fails fails the panel, since the totals would be short; the genres alone just go missing.
  */
-export async function fetchLastThirtyDays(
-  { fetch, token, slug, timeZone, weekStartDay, now = new Date() }: FetchLastThirtyDaysParams,
-): Promise<LastThirtyDays> {
+export async function fetchLastThirtyDays({
+  fetch,
+  token,
+  slug,
+  timeZone,
+  weekStartDay,
+  now = new Date(),
+}: FetchLastThirtyDaysParams): Promise<LastThirtyDays> {
   const [recent, genres] = await Promise.all([
     fetchRecentHistory({ client: api({ fetch, token }), id: 'me', now }),
     fetchWatchedGenres({ fetch, token, id: 'me', days: 30 }),

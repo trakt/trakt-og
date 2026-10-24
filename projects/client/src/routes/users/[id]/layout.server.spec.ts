@@ -11,8 +11,10 @@ const PROFILE = { username: 'justin', private: false, name: 'Justin', ids: { slu
 const STATS = { ...dashboardFrameFixture.newStats, network: { friends: 0, followers: 3, following: 4 } };
 
 // Every native route answers a stale token with the worker's plain-text 401, public ones included.
-const refusingStale = (answer: () => Response) => ({ request }: { request: Request }) =>
-  request.headers.get('authorization') === 'Bearer stale' ? workerUnauthorized() : answer();
+const refusingStale =
+  (answer: () => Response) =>
+  ({ request }: { request: Request }) =>
+    request.headers.get('authorization') === 'Bearer stale' ? workerUnauthorized() : answer();
 
 const seen: Request[] = [];
 const server = setupServer(
@@ -20,8 +22,14 @@ const server = setupServer(
     seen.push(info.request);
     return refusingStale(() => HttpResponse.json(PROFILE))(info);
   }),
-  http.get(`${API}/users/:id/stats`, refusingStale(() => HttpResponse.json(STATS))),
-  http.get(`${API}/users/:id/watching`, refusingStale(() => new HttpResponse(null, { status: 204 }))),
+  http.get(
+    `${API}/users/:id/stats`,
+    refusingStale(() => HttpResponse.json(STATS)),
+  ),
+  http.get(
+    `${API}/users/:id/watching`,
+    refusingStale(() => new HttpResponse(null, { status: 204 })),
+  ),
 );
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
@@ -32,19 +40,20 @@ afterEach(() => {
 afterAll(() => server.close());
 
 const layout = (id: string, token: string | null) =>
-  load(
-    {
-      fetch: (...args: Parameters<typeof fetch>) => globalThis.fetch(...args),
-      locals: { token },
-      params: { id },
-      // A stale token loads no settings, so the root layout has no viewer.
-      parent: () => Promise.resolve({ user: null }),
-      url: new URL(`https://og.test/users/${id}/watchlist`),
-    } as unknown as Parameters<typeof load>[0],
-  );
+  load({
+    fetch: (...args: Parameters<typeof fetch>) => globalThis.fetch(...args),
+    locals: { token },
+    params: { id },
+    // A stale token loads no settings, so the root layout has no viewer.
+    parent: () => Promise.resolve({ user: null }),
+    url: new URL(`https://og.test/users/${id}/watchlist`),
+  } as unknown as Parameters<typeof load>[0]);
 
 const redirectOf = (promise: Promise<unknown>) =>
-  promise.then(() => null, (thrown: unknown) => (isRedirect(thrown) ? thrown.location : thrown));
+  promise.then(
+    () => null,
+    (thrown: unknown) => (isRedirect(thrown) ? thrown.location : thrown),
+  );
 
 describe('users/[id] layout', () => {
   describe('for a token that stopped working', () => {

@@ -8,9 +8,13 @@ export function toCrewNames(people: Pick<PeopleResponse, 'crew'> | null) {
     href: `/people/${member.person.ids.slug}`,
   });
   const directors: NamedLink[] = (people?.crew?.directing ?? [])
-    .filter(({ jobs }) => jobs.includes('Director')).map(person);
+    .filter(({ jobs }) => jobs.includes('Director'))
+    .map(person);
   const writers: NamedLink[] = (people?.crew?.writing ?? []).map((member) => {
-    const note = member.jobs.filter((job) => job.toLowerCase() !== 'writer').join(', ').toLowerCase();
+    const note = member.jobs
+      .filter((job) => job.toLowerCase() !== 'writer')
+      .join(', ')
+      .toLowerCase();
     return { ...person(member), note: note || undefined };
   });
   return { directors, writers };

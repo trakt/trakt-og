@@ -11,18 +11,21 @@ const count = (n: number, word: string): PanelCount => ({ text: exact(n), word: 
 
 /** OG's `humanize_minutes` in parts, so the units can sit smaller than the numbers. */
 const time = (minutes: number): PanelTime => ({
-  parts: formatRuntime(minutes).split(' ').map((part) => ({ value: part.slice(0, -1), unit: part.slice(-1) })),
+  parts: formatRuntime(minutes)
+    .split(' ')
+    .map((part) => ({ value: part.slice(0, -1), unit: part.slice(-1) })),
   spoken: formatRuntime(minutes, { short: false }),
 });
 
 function allTime(stats: UserStats) {
   const minutes = stats.total_minutes;
   const days = minutes / MINUTES_PER_DAY;
-  const [value, unit] = days >= 365
-    ? [(days / 365).toFixed(1), 'year']
-    : days >= 1
-    ? [String(Math.round(days)), 'day']
-    : [String(Math.round(minutes / 60)), 'hour'];
+  const [value, unit] =
+    days >= 365
+      ? [(days / 365).toFixed(1), 'year']
+      : days >= 1
+        ? [String(Math.round(days)), 'day']
+        : [String(Math.round(minutes / 60)), 'hour'];
   return {
     value,
     unit: value === '1' ? unit : `${unit}s`,

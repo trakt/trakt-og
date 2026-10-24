@@ -29,9 +29,7 @@ async function readWatched({ fetch, token, id }: Params, type: 'shows' | 'movies
   };
 
   const first = await page(1);
-  const rest = await Promise.all(
-    Array.from({ length: Math.min(first.count, MAX_PAGES) - 1 }, (_, i) => page(i + 2)),
-  );
+  const rest = await Promise.all(Array.from({ length: Math.min(first.count, MAX_PAGES) - 1 }, (_, i) => page(i + 2)));
   return [first, ...rest].flatMap(({ rows }) => rows);
 }
 

@@ -61,7 +61,8 @@ function prefixLines({ text, start, end }: TextSelection, format: keyof typeof P
 
   const lines = text.slice(lineStart, lineEnd).split('\n');
   // A quote keeps its blank lines so it stays one quote; a list skips them, unless that's all there is.
-  const marked = lines.map((line) => format === 'list' && isBlank(line) && lines.length > 1 ? line : prefix + line)
+  const marked = lines
+    .map((line) => (format === 'list' && isBlank(line) && lines.length > 1 ? line : prefix + line))
     .join('\n');
 
   const previous = text.slice(text.lastIndexOf('\n', lineStart - 2) + 1, Math.max(lineStart - 1, 0));

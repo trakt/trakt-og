@@ -84,9 +84,8 @@ describe('loadSeason', () => {
   });
   it('should reject malformed off-contract cast data at the boundary', async () => {
     server.use(
-      http.get(
-        `${API}/shows/:id/seasons/:season/people`,
-        () => HttpResponse.json({ cast: [{ person: { name: 42 } }] }),
+      http.get(`${API}/shows/:id/seasons/:season/people`, () =>
+        HttpResponse.json({ cast: [{ person: { name: 42 } }] }),
       ),
     );
     await expect(loadSeason(params())).rejects.toMatchObject({ status: 502 });

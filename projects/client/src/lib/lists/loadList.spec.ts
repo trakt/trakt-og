@@ -74,13 +74,12 @@ const server = setupServer(
     if (params.list !== 'heist-night' || !visible(request)) {
       return new HttpResponse('List is private or does not exist', { status: 403 });
     }
-    const [, by = 'added', how = 'desc'] = new URL(request.url).pathname.split('/items').at(1)?.split('/').slice(1) ??
-      [];
+    const [, by = 'added', how = 'desc'] =
+      new URL(request.url).pathname.split('/items').at(1)?.split('/').slice(1) ?? [];
     return HttpResponse.json([movie(1, 'Heat'), movie(2, 'Ronin')], { headers: pageHeaders(by, how) });
   }),
-  http.get(
-    `${API}/watchnow/sources/us`,
-    () => HttpResponse.json([{ us: [{ source: 'netflix', name: 'Netflix', color: '#e50914', images: {} }] }]),
+  http.get(`${API}/watchnow/sources/us`, () =>
+    HttpResponse.json([{ us: [{ source: 'netflix', name: 'Netflix', color: '#e50914', images: {} }] }]),
   ),
   http.get(`${API}/lists/44/collaborators`, ({ request }) => {
     record(request);
@@ -132,8 +131,9 @@ describe('loadList', () => {
     expect(result.listCover).toBe('https://media.trakt.tv/images/movies/1/fanarts/full/f.jpg.webp');
     expect(paths().filter((path) => path.includes('/items'))).toHaveLength(2);
     expect(seen.every(({ auth }) => auth === null)).toBe(true);
-    expect(seen.find(({ url }) => url.pathname.endsWith('/items'))?.url.search)
-      .toBe('?extended=full%2Cimages&page=1&limit=120');
+    expect(seen.find(({ url }) => url.pathname.endsWith('/items'))?.url.search).toBe(
+      '?extended=full%2Cimages&page=1&limit=120',
+    );
   });
 
   it('should fall back to rank for a VIP sort and send the filters', async () => {
@@ -167,8 +167,8 @@ describe('loadList', () => {
       viewer: { slug: 'kim', isVip: true },
     });
     if (!result.list) throw new Error('no list');
-    const filtered = seen.filter(({ url, auth }) =>
-      url.pathname.includes('/items') && auth === 'Bearer abc' && url.searchParams.has('hide')
+    const filtered = seen.filter(
+      ({ url, auth }) => url.pathname.includes('/items') && auth === 'Bearer abc' && url.searchParams.has('hide'),
     );
     expect(filtered).toHaveLength(1);
     expect(filtered.at(0)?.url.searchParams.get('hide')).toBe('nonotes,watched');
@@ -190,10 +190,12 @@ describe('loadList', () => {
   });
 
   it('should keep the public response when a viewer’s filter token is stale', async () => {
-    server.use(http.get(`${API}/users/sean/lists/:list/items*`, ({ request }) => {
-      if (request.headers.get('authorization')) return new HttpResponse(null, { status: 401 });
-      return HttpResponse.json([movie(1, 'Heat')], { headers: pageHeaders('added', 'desc') });
-    }));
+    server.use(
+      http.get(`${API}/users/sean/lists/:list/items*`, ({ request }) => {
+        if (request.headers.get('authorization')) return new HttpResponse(null, { status: 401 });
+        return HttpResponse.json([movie(1, 'Heat')], { headers: pageHeaders('added', 'desc') });
+      }),
+    );
     const result = await load({ query: '?hide=watched', token: 'stale' });
     if (!result.list) throw new Error('no list');
     expect(result.cards.at(0)?.title).toBe('Heat');
@@ -220,7 +222,10 @@ describe('loadList', () => {
     expect(signedIn.stats).toEqual({
       count: 2,
       runtime: 180,
-      items: [{ type: 'movie', id: 1 }, { type: 'movie', id: 2 }],
+      items: [
+        { type: 'movie', id: 1 },
+        { type: 'movie', id: 2 },
+      ],
     });
     expect(paths().filter((path) => path.includes('/items'))).toHaveLength(2);
   });
@@ -235,9 +240,8 @@ describe('loadList', () => {
         const limit = Number(url.searchParams.get('limit'));
         if (url.searchParams.get('extended') === 'full') statsPages.push(url);
         const first = (page - 1) * limit + 1;
-        const rows = Array.from(
-          { length: Math.max(0, Math.min(limit, 600 - first + 1)) },
-          (_, i) => movie(first + i, `Movie ${first + i}`),
+        const rows = Array.from({ length: Math.max(0, Math.min(limit, 600 - first + 1)) }, (_, i) =>
+          movie(first + i, `Movie ${first + i}`),
         );
         return HttpResponse.json(rows, {
           headers: { ...pageHeaders('rank', 'asc'), 'X-Pagination-Item-Count': '600', 'X-Pagination-Page-Count': '5' },
@@ -250,8 +254,8 @@ describe('loadList', () => {
     expect(stats).toMatchObject({ count: 600, runtime: 600 * 90 });
     expect(stats?.items).toHaveLength(600);
     expect(statsPages.map((url) => `${url.pathname}?${url.searchParams}`)).toEqual(
-      [1, 2, 3].map((page) =>
-        `/users/sean/lists/heist-night/items/movie/rank/asc?extended=full&page=${page}&limit=250`
+      [1, 2, 3].map(
+        (page) => `/users/sean/lists/heist-night/items/movie/rank/asc?extended=full&page=${page}&limit=250`,
       ),
     );
   });
@@ -262,9 +266,12 @@ describe('loadList', () => {
         if (new URL(request.url).searchParams.get('extended') === 'full') {
           return new HttpResponse(null, { status: 500 });
         }
-        return HttpResponse.json(Array.from({ length: 120 }, (_, i) => movie(i + 1, `Movie ${i + 1}`)), {
-          headers: { ...pageHeaders('added', 'desc'), 'X-Pagination-Item-Count': '300' },
-        });
+        return HttpResponse.json(
+          Array.from({ length: 120 }, (_, i) => movie(i + 1, `Movie ${i + 1}`)),
+          {
+            headers: { ...pageHeaders('added', 'desc'), 'X-Pagination-Item-Count': '300' },
+          },
+        );
       }),
     );
     const result = await loaded();
@@ -272,7 +279,9 @@ describe('loadList', () => {
   });
 
   it('should redirect an id to the list slug', async () => {
-    await expect(load({ list: '44', query: '?sort=title,asc' }))
-      .rejects.toMatchObject({ status: 301, location: '/users/sean/lists/heist-night?sort=title,asc' });
+    await expect(load({ list: '44', query: '?sort=title,asc' })).rejects.toMatchObject({
+      status: 301,
+      location: '/users/sean/lists/heist-night?sort=title,asc',
+    });
   });
 });

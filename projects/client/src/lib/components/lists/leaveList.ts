@@ -1,7 +1,13 @@
 import { rawApiFetch } from '../../api/rawApiFetch.ts';
 
 /** There is no @trakt/api contract for this native, Official-client route. Success is an empty 204. */
-export async function leaveList({ fetch, id, viewer, patch, notify }: {
+export async function leaveList({
+  fetch,
+  id,
+  viewer,
+  patch,
+  notify,
+}: {
   fetch: typeof globalThis.fetch;
   id: number;
   viewer: string;

@@ -20,9 +20,15 @@ const plural = (count: number, word: string) => `${word}${count === 1 ? '' : 's'
  * seasons as a percentage of aired episodes, anything else (and a show at 0%) as plays. It links to the author's
  * history for the item. `undefined` when they haven't watched it.
  */
-export function watchedIndicator(
-  { stats, slug, item }: { stats: CommentResponse['user_stats']; slug: string; item: CommentItem },
-): WatchedIndicator | undefined {
+export function watchedIndicator({
+  stats,
+  slug,
+  item,
+}: {
+  stats: CommentResponse['user_stats'];
+  slug: string;
+  item: CommentItem;
+}): WatchedIndicator | undefined {
   if (stats.play_count <= 0 || item.type === 'list') return undefined;
 
   const href = `/users/${slug}/history?${item.type}=${item.id}`;

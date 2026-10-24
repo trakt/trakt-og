@@ -12,8 +12,9 @@ export function mediaSpoilers({ spoilers, type, watched }: Params) {
   const mode = type === 'episode' ? spoilers?.episodes : type === 'movie' ? spoilers?.movies : spoilers?.shows;
   const protectedItem = type !== 'person' && watched !== true;
   return {
-    overview: protectedItem && (mode === 'hide' ||
-      (type === 'episode' && (mode === 'hide_overviews' || mode === 'hide_screenshots_overviews'))),
+    overview:
+      protectedItem &&
+      (mode === 'hide' || (type === 'episode' && (mode === 'hide_overviews' || mode === 'hide_screenshots_overviews'))),
     title: protectedItem && type === 'episode' && mode === 'hide',
     screenshot: protectedItem && type === 'episode' && (mode === 'hide' || mode === 'hide_screenshots_overviews'),
     rating: protectedItem && spoilers?.ratings === 'hide',

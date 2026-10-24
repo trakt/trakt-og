@@ -36,18 +36,25 @@ export async function loadCredits({ fetch, parent, item }: Params) {
       ? readPeople(fetch, `${subpageApiPath({ ...item, type: 'season' })}/people?extended=images`)
       : null,
   ]);
-  const actors = item.type === 'movie'
-    ? [{ label: 'Cast', members: people.cast }]
-    : item.type === 'episode'
-    ? [{ label: 'Season Regulars', members: regulars?.cast }, { label: 'Guest Stars', members: people.cast }]
-    : [{ label: 'Season Regulars', members: people.cast }, { label: 'Guest Stars', members: people.guest_stars }];
+  const actors =
+    item.type === 'movie'
+      ? [{ label: 'Cast', members: people.cast }]
+      : item.type === 'episode'
+        ? [
+            { label: 'Season Regulars', members: regulars?.cast },
+            { label: 'Guest Stars', members: people.cast },
+          ]
+        : [
+            { label: 'Season Regulars', members: people.cast },
+            { label: 'Guest Stars', members: people.guest_stars },
+          ];
   return {
     ...subpage,
     credits: toCredits({
       actors,
       crew: people.crew,
-      episodeCounts: (item.type === 'show' || item.type === 'season') &&
-        subpage.settings?.browsing?.spoilers?.actors !== 'hide',
+      episodeCounts:
+        (item.type === 'show' || item.type === 'season') && subpage.settings?.browsing?.spoilers?.actors !== 'hide',
     }),
   };
 }

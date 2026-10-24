@@ -88,11 +88,16 @@ describe('loadOfficialListComments', () => {
     await expect(load('someones-list')).rejects.toMatchObject({ status: 404 });
   });
   it("should 404, not throw, on the comments read's plain-text 403", async () => {
-    server.use(http.get(`${API}/lists/:id/comments/:sort`, () =>
-      new HttpResponse('List is private or does not exist', {
-        status: 403,
-        headers: { 'content-type': 'application/json; charset=utf-8' },
-      })));
+    server.use(
+      http.get(
+        `${API}/lists/:id/comments/:sort`,
+        () =>
+          new HttpResponse('List is private or does not exist', {
+            status: 403,
+            headers: { 'content-type': 'application/json; charset=utf-8' },
+          }),
+      ),
+    );
     await expect(load()).rejects.toMatchObject({ status: 404 });
   });
   it('should redirect an id to the canonical slug', async () => {

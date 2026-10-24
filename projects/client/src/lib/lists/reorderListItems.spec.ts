@@ -25,12 +25,17 @@ const reorder = (failure?: string) =>
 
 describe('reorderListItems', () => {
   it("should send the order to the owner's path", async () => {
-    server.use(http.post(endpoint, async ({ request }) => {
-      expect(await request.json()).toEqual({ rank: [3, 1, 2] });
-      return HttpResponse.json({ updated: 2, skipped_ids: [], list: { item_count: 3 } }, {
-        headers: { 'X-Runtime': '0.1' },
-      });
-    }));
+    server.use(
+      http.post(endpoint, async ({ request }) => {
+        expect(await request.json()).toEqual({ rank: [3, 1, 2] });
+        return HttpResponse.json(
+          { updated: 2, skipped_ids: [], list: { item_count: 3 } },
+          {
+            headers: { 'X-Runtime': '0.1' },
+          },
+        );
+      }),
+    );
     await expect(reorder()).resolves.toBe(true);
     expect(notify.error).not.toHaveBeenCalled();
   });

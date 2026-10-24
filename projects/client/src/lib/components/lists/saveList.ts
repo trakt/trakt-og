@@ -4,7 +4,11 @@ import { editableListSchema } from './editableListSchema.ts';
 import { ListWriteError } from './ListWriteError.ts';
 import { collaboratorsSchema } from '../../users/lists/collaboratorsSchema.ts';
 /** Metadata is saved once. A partial collaborator failure keeps its id for a safe retry. */
-export async function saveList({ request, draft, id }: {
+export async function saveList({
+  request,
+  draft,
+  id,
+}: {
   request: (path: string, method: string, body?: unknown) => Promise<Response>;
   draft: ListDraft;
   id?: number;
@@ -33,9 +37,10 @@ export async function saveList({ request, draft, id }: {
     }
     return { list, collaboratorError: '' };
   } catch (cause) {
-    const message = cause instanceof ListWriteError && cause.status === 420
-      ? 'A list can have at most 10 collaborators.'
-      : 'Could not update collaborators. They must follow you. Your list was saved; retry to finish.';
+    const message =
+      cause instanceof ListWriteError && cause.status === 420
+        ? 'A list can have at most 10 collaborators.'
+        : 'Could not update collaborators. They must follow you. Your list was saved; retry to finish.';
     return { list, collaboratorError: message };
   }
 }

@@ -20,12 +20,16 @@ const LINGER = 5 * 60_000;
  * Where `now` falls in `runtime` minutes ending at `endsAt`, like OG's ticker: it started `runtime` before the end.
  * `reducedMotion` drops the seconds, since the bar then only ticks once a minute.
  */
-export function watchingProgress(
-  { endsAt, runtime, action, now, reducedMotion }: Pick<WatchingNow, 'endsAt' | 'runtime' | 'action'> & {
-    now: number;
-    reducedMotion: boolean;
-  },
-): WatchingProgress {
+export function watchingProgress({
+  endsAt,
+  runtime,
+  action,
+  now,
+  reducedMotion,
+}: Pick<WatchingNow, 'endsAt' | 'runtime' | 'action'> & {
+  now: number;
+  reducedMotion: boolean;
+}): WatchingProgress {
   const end = Date.parse(endsAt);
   const length = runtime * 60_000;
   const watched = Math.min(length, Math.max(0, now - (end - length)));

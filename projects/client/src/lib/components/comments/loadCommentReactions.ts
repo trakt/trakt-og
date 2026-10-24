@@ -2,10 +2,12 @@ import { z } from 'zod/v4';
 import { reactionTypeSchema } from './reactionTypeSchema.ts';
 import type { ReactionType } from './ReactionType.ts';
 
-const rowsSchema = z.array(z.object({
-  reaction: z.object({ type: reactionTypeSchema }),
-  comment: z.object({ id: z.number().int().positive() }),
-}));
+const rowsSchema = z.array(
+  z.object({
+    reaction: z.object({ type: reactionTypeSchema }),
+    comment: z.object({ id: z.number().int().positive() }),
+  }),
+);
 
 /** Fetch the viewer's whole set once, including every page. API's minimal shape is parsed at this boundary. */
 export async function loadCommentReactions(request: (path: string) => Promise<Response>) {

@@ -26,16 +26,22 @@ describe('stripStats', () => {
   });
 
   it('should read singular labels', () => {
-    const { community } = stripStats([{ count: 1, label: 'library' }, { count: 1, label: 'watcher' }]);
+    const { community } = stripStats([
+      { count: 1, label: 'library' },
+      { count: 1, label: 'watcher' },
+    ]);
 
-    expect(community.map(({ kind, title }) => [kind, title])).toEqual([['watchers', 'Watcher'], [
-      'libraries',
-      'Library',
-    ]]);
+    expect(community.map(({ kind, title }) => [kind, title])).toEqual([
+      ['watchers', 'Watcher'],
+      ['libraries', 'Library'],
+    ]);
   });
 
   it('should drop zeros and labels it doesn’t know', () => {
-    const { favorited, community } = stripStats([{ count: 0, label: 'plays' }, { count: 4, label: 'votes' }]);
+    const { favorited, community } = stripStats([
+      { count: 0, label: 'plays' },
+      { count: 4, label: 'votes' },
+    ]);
 
     expect(favorited).toBeUndefined();
     expect(community).toEqual([]);

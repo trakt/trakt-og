@@ -17,9 +17,8 @@ function thirtyDays({ recent, today }: BoxInput) {
   const plays = [...recent.episodes, ...recent.movies]
     .map((play) => ({ day: boxMath.utcDay(play.watched_at), minutes: playRuntime(play), movie: 'movie' in play }))
     .filter(({ day }) => day >= first && day <= today);
-  const minutes = Array.from(
-    { length: DAYS },
-    (_, i) => plays.filter(({ day }) => day === first + i).reduce((sum, play) => sum + play.minutes, 0),
+  const minutes = Array.from({ length: DAYS }, (_, i) =>
+    plays.filter(({ day }) => day === first + i).reduce((sum, play) => sum + play.minutes, 0),
   );
   const movies = plays.filter(({ movie }) => movie).length;
   return { first, minutes, episodes: plays.length - movies, movies };
@@ -32,7 +31,9 @@ const dayLabel = (day: number) =>
 
 /** Days since the newest play, or `null` with none. */
 function sinceLastPlay({ latest, today }: BoxInput) {
-  const at = [latest.episode?.watched_at, latest.movie?.watched_at].filter((value) => value !== undefined).toSorted()
+  const at = [latest.episode?.watched_at, latest.movie?.watched_at]
+    .filter((value) => value !== undefined)
+    .toSorted()
     .at(-1);
   return at ? boxMath.daysAgo(today, at) : null;
 }
@@ -56,15 +57,18 @@ function toView(input: BoxInput): WatchTimeView {
       episodes > 0 ? countLabel(episodes, 'ep') : null,
       movies > 0 ? countLabel(movies, 'movie') : null,
       countLabel(activeDays(minutes), 'active day'),
-    ].filter(Boolean).join(' · '),
+    ]
+      .filter(Boolean)
+      .join(' · '),
     days: minutes.map((value, i) => ({
       height: top > 0 ? (value / top) * 100 : 0,
       peak: top > 0 && i === peak,
       title: `${dayLabel(first + i)}: ${formatRuntime(value)}`,
     })),
-    chartLabel: top > 0
-      ? `Time watched per day for the last 30 days. Busiest: ${dayLabel(first + peak)}, ${formatRuntime(top)}.`
-      : 'Nothing watched in the last 30 days.',
+    chartLabel:
+      top > 0
+        ? `Time watched per day for the last 30 days. Busiest: ${dayLabel(first + peak)}, ${formatRuntime(top)}.`
+        : 'Nothing watched in the last 30 days.',
     allTime: {
       time: longRuntime(stats.episodes.minutes + stats.movies.minutes),
       episodes: countLabel(stats.episodes.watched, 'ep'),
@@ -87,10 +91,11 @@ export const watchTimeBox = defineProfileBox({
     const hours = total(minutes) / 60;
     if (hours === 0 && input.stats.episodes.plays + input.stats.movies.plays === 0) return null;
     const since = sinceLastPlay(input);
-    return 100 * (
-      0.5 * boxMath.cap(hours, 80) +
-      0.3 * boxMath.cap(activeDays(minutes), DAYS) +
-      0.2 * (since === null ? 0 : boxMath.fresh(since, 7))
+    return (
+      100 *
+      (0.5 * boxMath.cap(hours, 80) +
+        0.3 * boxMath.cap(activeDays(minutes), DAYS) +
+        0.2 * (since === null ? 0 : boxMath.fresh(since, 7)))
     );
   },
   view: toView,

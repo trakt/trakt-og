@@ -11,10 +11,12 @@ describe('leaveList', () => {
   it('should remove the viewer through the native route after patching permissions', async () => {
     let left = false;
     const notify = vi.fn();
-    server.use(http.delete('https://apiz.trakt.tv/lists/7/collaborators/my%20slug', () => {
-      expect(left).toBe(true);
-      return new HttpResponse(null, { status: 204 });
-    }));
+    server.use(
+      http.delete('https://apiz.trakt.tv/lists/7/collaborators/my%20slug', () => {
+        expect(left).toBe(true);
+        return new HttpResponse(null, { status: 204 });
+      }),
+    );
     expect(
       await leaveList({
         fetch,

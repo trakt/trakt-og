@@ -61,34 +61,38 @@ export function toCommunityStats({ stats, href, favorites, released }: Params) {
 
   return [
     ...(favorites && released
-      ? [{
-        kind: 'favorited' as const,
-        title: 'Favorites',
-        count: favorited,
-        note: relative(favorited, countLabel(favorited, 'favorite')),
-      }]
+      ? [
+          {
+            kind: 'favorited' as const,
+            title: 'Favorites',
+            count: favorited,
+            note: relative(favorited, countLabel(favorited, 'favorite')),
+          },
+        ]
       : []),
     ...(released
       ? [
-        { kind: 'watchers' as const, title: 'Watchers', count: watchers, note: people(watchers) },
-        { kind: 'plays' as const, title: 'Plays', count: plays, note: perWatcher },
-        {
-          kind: 'libraries' as const,
-          title: 'Libraries',
-          count: collectors,
-          note: relative(collectors, libraries(collectors)),
-        },
-      ]
+          { kind: 'watchers' as const, title: 'Watchers', count: watchers, note: people(watchers) },
+          { kind: 'plays' as const, title: 'Plays', count: plays, note: perWatcher },
+          {
+            kind: 'libraries' as const,
+            title: 'Libraries',
+            count: collectors,
+            note: relative(collectors, libraries(collectors)),
+          },
+        ]
       : []),
     { kind: 'lists' as const, title: 'Lists', count: lists, note: countLabel(lists, 'list'), href: `${href}/lists` },
     ...(released
-      ? [{
-        kind: 'comments' as const,
-        title: 'Comments',
-        count: comments,
-        note: countLabel(comments, 'comment'),
-        href: `${href}/comments`,
-      }]
+      ? [
+          {
+            kind: 'comments' as const,
+            title: 'Comments',
+            count: comments,
+            note: countLabel(comments, 'comment'),
+            href: `${href}/comments`,
+          },
+        ]
       : []),
   ].map(tile);
 }

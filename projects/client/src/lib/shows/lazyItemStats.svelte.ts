@@ -10,7 +10,11 @@ import type { ItemStatsTarget } from './ItemStatsTarget.ts';
 type Item = ItemStatsTarget & { id: number };
 
 /** Local reactive view over the shared queue, with on-demand sort completion and observer cleanup. */
-export function lazyItemStats<By extends string>({ items, sort, fallback }: {
+export function lazyItemStats<By extends string>({
+  items,
+  sort,
+  fallback,
+}: {
   items: () => readonly Item[];
   sort: () => By;
   fallback: () => By;

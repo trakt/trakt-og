@@ -3,7 +3,10 @@ import { rawApiFetch } from '../../api/rawApiFetch.ts';
 import type { UserListRow } from './UserListRow.ts';
 
 /** Built-in rows have no summary; their comments route supplies the numeric list id on demand. */
-export async function resolveRowListId({ fetch, row }: {
+export async function resolveRowListId({
+  fetch,
+  row,
+}: {
   fetch: typeof globalThis.fetch;
   row: Pick<UserListRow, 'id' | 'owner' | 'kind'>;
 }): Promise<number> {

@@ -33,9 +33,10 @@ export function chartFilters({ type, chart, period, now }: ChartFiltersParams): 
   };
   if (chart === 'recommendations') return { ...base, lists: ['genres'], ranges: ['years', 'ratings'] };
 
-  const lists: ListFilterKey[] = type === 'shows'
-    ? ['genres', 'certifications', 'languages', 'countries', 'networks', 'status']
-    : ['genres', 'certifications', 'languages', 'countries'];
+  const lists: ListFilterKey[] =
+    type === 'shows'
+      ? ['genres', 'certifications', 'languages', 'countries', 'networks', 'status']
+      : ['genres', 'certifications', 'languages', 'countries'];
   const ranges: RangeFilterKey[] = ['years', 'runtimes', 'ratings', 'imdb_ratings', 'rt_meters', 'rt_user_meters'];
   return { ...base, lists, ranges };
 }

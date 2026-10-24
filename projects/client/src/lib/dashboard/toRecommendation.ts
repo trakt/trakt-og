@@ -37,11 +37,11 @@ function merged(titles: readonly RecommendationSource[]): RecommendationSource[]
       key,
       seen
         ? {
-          ...seen,
-          stars: seen.stars ?? title.stars,
-          watched: seen.watched || title.watched,
-          loved: seen.loved || title.loved,
-        }
+            ...seen,
+            stars: seen.stars ?? title.stars,
+            watched: seen.watched || title.watched,
+            loved: seen.loved || title.loved,
+          }
         : title,
     );
   }, new Map<string, RecommendationSource>());
@@ -81,7 +81,7 @@ export function toRecommendation(row: Row, now: Date): Recommendation | null {
     airedEpisodes: media.aired_episodes ?? undefined,
     certification: media.certification ?? undefined,
     genres: (media.genres ?? []).slice(0, 3).map(genreLabel),
-    network: type === 'show' ? media.network ?? undefined : undefined,
+    network: type === 'show' ? (media.network ?? undefined) : undefined,
     poster: imageUrl(media.images?.poster?.at(0), 'medium'),
     fanart: imageUrl(media.images?.fanart?.at(0), 'medium'),
     colors: toColors(media.colors?.poster),

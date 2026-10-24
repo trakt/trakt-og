@@ -33,32 +33,38 @@ const resultSchema = z.object({
   deleted: z.object({ movies: z.number().optional(), episodes: z.number().optional() }).optional(),
   not_found: z.record(z.string(), z.array(z.unknown())).optional(),
 });
-const episodeSchema = z.array(z.object({
-  show: z.object({ ids: z.object({ trakt: z.number() }) }),
-  episode: z.object({ season: z.number(), number: z.number(), ids: z.object({ trakt: z.number() }) }),
-}));
+const episodeSchema = z.array(
+  z.object({
+    show: z.object({ ids: z.object({ trakt: z.number() }) }),
+    episode: z.object({ season: z.number(), number: z.number(), ids: z.object({ trakt: z.number() }) }),
+  }),
+);
 
 async function episodeContext({ target, request }: Params): Promise<WatchEpisode[]> {
   if (target.season?.episode !== undefined) {
-    return [{
-      id: target.id,
-      show: target.season.show,
-      season: target.season.number,
-      number: target.season.episode,
-      completed: false,
-    }];
+    return [
+      {
+        id: target.id,
+        show: target.season.show,
+        season: target.season.number,
+        number: target.season.episode,
+        completed: false,
+      },
+    ];
   }
   const response = await request(`/search/trakt/${target.id}?type=episode`);
   if (!response.ok) throw new Error(String(response.status));
   const row = episodeSchema.parse(await response.json()).at(0);
   if (!row) throw new Error('Episode not found');
-  return [{
-    id: target.id,
-    show: row.show.ids.trakt,
-    season: row.episode.season,
-    number: row.episode.number,
-    completed: false,
-  }];
+  return [
+    {
+      id: target.id,
+      show: row.show.ids.trakt,
+      season: row.episode.season,
+      number: row.episode.number,
+      completed: false,
+    },
+  ];
 }
 
 /** Remove one matching instant, retaining duplicate dates belonging to other history rows. */
@@ -74,13 +80,14 @@ export async function watchMedia(params: Params): Promise<boolean> {
   const only = target.type === 'season' ? target.onlyEpisodeIds : undefined;
   let rollback = () => {};
   try {
-    const episodes = target.type === 'episode'
-      ? await episodeContext(params)
-      : target.type === 'movie' || (remove && !only)
-      ? []
-      : (await params.episodes()).filter((episode) =>
-        only ? only.includes(episode.id) && (remove || force || !episode.completed) : force || !episode.completed
-      );
+    const episodes =
+      target.type === 'episode'
+        ? await episodeContext(params)
+        : target.type === 'movie' || (remove && !only)
+          ? []
+          : (await params.episodes()).filter((episode) =>
+              only ? only.includes(episode.id) && (remove || force || !episode.completed) : force || !episode.completed,
+            );
     if (!remove && target.type !== 'movie' && episodes.length === 0) {
       notify.error('Doh! No aired episodes were found to watch.');
       return false;
@@ -94,54 +101,70 @@ export async function watchMedia(params: Params): Promise<boolean> {
       }
       if (params.confirm && !(await params.confirm(episodes.length))) return false;
     }
-    const at = watchedAt === 'unknown'
-      ? UNKNOWN_DATE
-      : watchedAt && !['now', 'released'].includes(watchedAt)
-      ? watchedAt
-      : now().toISOString();
-    rollback = target.type === 'movie'
-      ? overlay.patch('watchedMovies', (before) => {
-        const after = new Map(before);
-        if (remove && play) {
-          const dates = withoutPlay(before.get(target.id) ?? [], play.watchedAt);
-          if (dates.length > 0) after.set(target.id, dates);
-          else after.delete(target.id);
-        } else if (remove) after.delete(target.id);
-        else after.set(target.id, [at, ...(before.get(target.id) ?? [])]);
-        return after;
-      }, play ? undefined : new Map())
-      : overlay.patch('watchedShows', (before) => {
-        const after = new Map(before);
-        if (remove && target.type === 'show') {
-          after.delete(target.id);
-          return after;
-        }
-        if (remove && target.type === 'season' && !only) {
-          if (!target.season) throw new Error('Season context unavailable');
-          const seasons = new Map(after.get(target.season.show));
-          seasons.delete(target.season.number);
-          after.set(target.season.show, seasons);
-          return after;
-        }
-        for (const episode of episodes) {
-          const seasons = new Map(after.get(episode.show));
-          const values = new Map(seasons.get(episode.season));
-          if (remove && play) {
-            const dates = withoutPlay(values.get(episode.id) ?? [], play.watchedAt);
-            if (dates.length > 0) values.set(episode.id, dates);
-            else values.delete(episode.id);
-          } else if (remove) values.delete(episode.id);
-          else values.set(episode.id, [at, ...(values.get(episode.id) ?? [])]);
-          seasons.set(episode.season, values);
-          after.set(episode.show, seasons);
-        }
-        return after;
-      }, play ? undefined : new Map());
-    const items = remove && play
-      ? { ids: [play.id] }
-      : target.type === 'movie' || (remove && !only)
-      ? { [`${target.type}s`]: [{ ids: { trakt: target.id }, ...(remove ? {} : { watched_at: watchedAt }) }] }
-      : { episodes: episodes.map(({ id }) => ({ ids: { trakt: id }, ...(remove ? {} : { watched_at: watchedAt }) })) };
+    const at =
+      watchedAt === 'unknown'
+        ? UNKNOWN_DATE
+        : watchedAt && !['now', 'released'].includes(watchedAt)
+          ? watchedAt
+          : now().toISOString();
+    rollback =
+      target.type === 'movie'
+        ? overlay.patch(
+            'watchedMovies',
+            (before) => {
+              const after = new Map(before);
+              if (remove && play) {
+                const dates = withoutPlay(before.get(target.id) ?? [], play.watchedAt);
+                if (dates.length > 0) after.set(target.id, dates);
+                else after.delete(target.id);
+              } else if (remove) after.delete(target.id);
+              else after.set(target.id, [at, ...(before.get(target.id) ?? [])]);
+              return after;
+            },
+            play ? undefined : new Map(),
+          )
+        : overlay.patch(
+            'watchedShows',
+            (before) => {
+              const after = new Map(before);
+              if (remove && target.type === 'show') {
+                after.delete(target.id);
+                return after;
+              }
+              if (remove && target.type === 'season' && !only) {
+                if (!target.season) throw new Error('Season context unavailable');
+                const seasons = new Map(after.get(target.season.show));
+                seasons.delete(target.season.number);
+                after.set(target.season.show, seasons);
+                return after;
+              }
+              for (const episode of episodes) {
+                const seasons = new Map(after.get(episode.show));
+                const values = new Map(seasons.get(episode.season));
+                if (remove && play) {
+                  const dates = withoutPlay(values.get(episode.id) ?? [], play.watchedAt);
+                  if (dates.length > 0) values.set(episode.id, dates);
+                  else values.delete(episode.id);
+                } else if (remove) values.delete(episode.id);
+                else values.set(episode.id, [at, ...(values.get(episode.id) ?? [])]);
+                seasons.set(episode.season, values);
+                after.set(episode.show, seasons);
+              }
+              return after;
+            },
+            play ? undefined : new Map(),
+          );
+    const items =
+      remove && play
+        ? { ids: [play.id] }
+        : target.type === 'movie' || (remove && !only)
+          ? { [`${target.type}s`]: [{ ids: { trakt: target.id }, ...(remove ? {} : { watched_at: watchedAt }) }] }
+          : {
+              episodes: episodes.map(({ id }) => ({
+                ids: { trakt: id },
+                ...(remove ? {} : { watched_at: watchedAt }),
+              })),
+            };
     const response = await request(`/sync/history${remove ? '/remove' : ''}`, items);
     if (!response.ok) throw new Error(String(response.status));
     const result = resultSchema.parse(await response.json());
@@ -152,7 +175,9 @@ export async function watchMedia(params: Params): Promise<boolean> {
     notify.success(
       result.message ??
         (remove
-          ? play ? `You removed this play of ${target.title}.` : `You removed all plays of ${target.title}.`
+          ? play
+            ? `You removed this play of ${target.title}.`
+            : `You removed all plays of ${target.title}.`
           : `You watched ${target.title}.`),
     );
     return true;

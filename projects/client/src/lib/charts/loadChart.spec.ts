@@ -37,7 +37,10 @@ const recommendations = (token: string | null) =>
   });
 
 const redirectOf = (promise: Promise<unknown>) =>
-  promise.then(() => null, (thrown: unknown) => (isRedirect(thrown) ? thrown.location : thrown));
+  promise.then(
+    () => null,
+    (thrown: unknown) => (isRedirect(thrown) ? thrown.location : thrown),
+  );
 
 describe('loadChart recommendations', () => {
   it("should ask for page 1's two large cards and grid with the token and ignore paging", async () => {
@@ -177,13 +180,11 @@ describe('loadChart live now', () => {
 
   it("should load trending's Live now from both charts", async () => {
     server.use(
-      http.get(
-        'https://apiz.trakt.tv/shows/trending',
-        () => HttpResponse.json([{ watchers: 3, show: SHOW }], { headers: { 'X-Trending-User-Count': '6473' } }),
+      http.get('https://apiz.trakt.tv/shows/trending', () =>
+        HttpResponse.json([{ watchers: 3, show: SHOW }], { headers: { 'X-Trending-User-Count': '6473' } }),
       ),
-      http.get(
-        'https://apiz.trakt.tv/movies/trending',
-        () => HttpResponse.json([], { headers: { 'X-Trending-User-Count': '2494' } }),
+      http.get('https://apiz.trakt.tv/movies/trending', () =>
+        HttpResponse.json([], { headers: { 'X-Trending-User-Count': '2494' } }),
       ),
     );
     const data = await loadChart({
@@ -270,12 +271,15 @@ describe('loadChart advanced filters', () => {
     server.use(
       chart(),
       http.get('https://apiz.trakt.tv/watchnow/sources/gb', () =>
-        HttpResponse.json([{
-          gb: [
-            { source: 'netflix', name: 'Netflix', color: '#e50914', images: { logo: null } },
-            { source: 'itvx', name: 'ITVX', color: '#000', images: { logo: null } },
-          ],
-        }])),
+        HttpResponse.json([
+          {
+            gb: [
+              { source: 'netflix', name: 'Netflix', color: '#e50914', images: { logo: null } },
+              { source: 'itvx', name: 'ITVX', color: '#000', images: { logo: null } },
+            ],
+          },
+        ]),
+      ),
     );
     const data = await watched('fake-token', 'watchnow=favorites');
 

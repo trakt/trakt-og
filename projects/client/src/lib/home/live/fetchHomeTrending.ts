@@ -12,11 +12,17 @@ async function trendingOf(client: ReturnType<typeof api>, type: HomeMediaType) {
   if (type === 'shows') {
     const response = await client.shows.trending(query);
     if (response.status !== 200) throw new Error(`Trending shows answered ${response.status}.`);
-    return toHomeTrending(type, response.body.map(({ watchers, show }) => ({ watchers, item: show })));
+    return toHomeTrending(
+      type,
+      response.body.map(({ watchers, show }) => ({ watchers, item: show })),
+    );
   }
   const response = await client.movies.trending(query);
   if (response.status !== 200) throw new Error(`Trending movies answered ${response.status}.`);
-  return toHomeTrending(type, response.body.map(({ watchers, movie }) => ({ watchers, item: movie })));
+  return toHomeTrending(
+    type,
+    response.body.map(({ watchers, movie }) => ({ watchers, item: movie })),
+  );
 }
 
 /** Trending shows and movies, read without a token. Either failing throws, so the cache keeps the last good pair. */

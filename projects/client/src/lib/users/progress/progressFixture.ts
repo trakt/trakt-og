@@ -36,21 +36,10 @@ const samples: readonly Sample[] = [
     status: 'ended',
     genres: ['drama'],
     runtime: 47,
-    seasons: [Array(7).fill(true), [
-      true,
-      true,
-      true,
-      true,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-    ]],
+    seasons: [
+      Array(7).fill(true),
+      [true, true, true, true, false, false, false, false, false, false, false, false, false],
+    ],
     rewatches: 2,
     collectedOnly: { 2: [5, 6, 7, 8] },
   },
@@ -111,7 +100,8 @@ function toShow(sample: Sample): CachedShow {
   };
 }
 
-const OVERVIEW = 'A sample overview, long enough to run past one line so the banner has to cut it short and keep the ' +
+const OVERVIEW =
+  'A sample overview, long enough to run past one line so the banner has to cut it short and keep the ' +
   'whole text in its tooltip.';
 
 function toCatalog(sample: Sample): ShowCatalog {
@@ -143,29 +133,40 @@ function toCatalog(sample: Sample): ShowCatalog {
 
 /** Watch dates by season and episode id: one a watched episode, the rewatches on the first one. */
 function toWatched(sample: Sample) {
-  return new Map(sample.seasons.map((season, s) => [
-    s + 1,
-    new Map(season.flatMap((done, e) => {
-      if (!done) return [];
-      const extra = s === 0 && e === 0 ? sample.rewatches ?? 0 : 0;
-      return [[episodeId(sample, s + 1, e + 1), Array.from({ length: 1 + extra }, () => at(s + 1, e + 1))] as const];
-    })),
-  ]));
+  return new Map(
+    sample.seasons.map((season, s) => [
+      s + 1,
+      new Map(
+        season.flatMap((done, e) => {
+          if (!done) return [];
+          const extra = s === 0 && e === 0 ? (sample.rewatches ?? 0) : 0;
+          return [
+            [episodeId(sample, s + 1, e + 1), Array.from({ length: 1 + extra }, () => at(s + 1, e + 1))] as const,
+          ];
+        }),
+      ),
+    ]),
+  );
 }
 
 /** The library: every watched episode, and the sample's unwatched extras. */
 function toCollected(sample: Sample): ReadonlyMap<number, ReadonlyMap<number, CollectedItem>> {
-  return new Map(sample.seasons.map((season, s) => [
-    s + 1,
-    new Map(
-      season.flatMap((done, e) =>
-        done || sample.collectedOnly?.[s + 1]?.includes(e + 1) ? [[e + 1, { at: at(s + 1, e + 1) }] as const] : []
+  return new Map(
+    sample.seasons.map((season, s) => [
+      s + 1,
+      new Map(
+        season.flatMap((done, e) =>
+          done || sample.collectedOnly?.[s + 1]?.includes(e + 1) ? [[e + 1, { at: at(s + 1, e + 1) }] as const] : [],
+        ),
       ),
-    ),
-  ]));
+    ]),
+  );
 }
 
-const dropped = new Map([[1390, '2025-12-01T21:40:00.000Z'], [60300, '2025-04-17T17:53:00.000Z']]);
+const dropped = new Map([
+  [1390, '2025-12-01T21:40:00.000Z'],
+  [60300, '2025-04-17T17:53:00.000Z'],
+]);
 
 type Options = { expanded: boolean; dropped?: boolean };
 

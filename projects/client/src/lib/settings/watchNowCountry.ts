@@ -1,7 +1,7 @@
 type WatchNowSettings =
   | {
-    readonly browsing?: { readonly watchnow?: { readonly country?: string | null } | null } | null;
-  }
+      readonly browsing?: { readonly watchnow?: { readonly country?: string | null } | null } | null;
+    }
   | null
   | undefined;
 

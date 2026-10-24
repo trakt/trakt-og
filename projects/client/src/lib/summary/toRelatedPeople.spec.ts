@@ -13,14 +13,19 @@ describe('toRelatedPeople', () => {
           { person: person(2, 'Vince Gilligan'), job: 'Creator', jobs: ['Creator', 'Writer'] },
           { person: person(1, 'Bob Odenkirk'), job: 'Writer', jobs: ['Writer'] },
         ],
-        production: [{
-          person: person(3, 'An Accountant'),
-          job: 'Production Accountant',
-          jobs: ['Production Accountant'],
-        }],
+        production: [
+          {
+            person: person(3, 'An Accountant'),
+            job: 'Production Accountant',
+            jobs: ['Production Accountant'],
+          },
+        ],
       },
     } as unknown as PeopleResponse;
-    expect(toRelatedPeople(people)).toEqual([{ id: 1, name: 'Bob Odenkirk' }, { id: 2, name: 'Vince Gilligan' }]);
+    expect(toRelatedPeople(people)).toEqual([
+      { id: 1, name: 'Bob Odenkirk' },
+      { id: 2, name: 'Vince Gilligan' },
+    ]);
   });
 
   it('should stop the cast at the first 25 billed', () => {

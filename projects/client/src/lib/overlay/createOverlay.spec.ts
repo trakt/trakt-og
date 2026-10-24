@@ -46,27 +46,23 @@ const activities = (droppedAt = T0) => ({
 const library = [
   http.get(`${API}/sync/last_activities`, () => HttpResponse.json(activities())),
   http.get(`${API}/sync/watched/movies`, () => HttpResponse.json({ '1': ['2026-01-02', '2026-01-01'] })),
-  http.get(
-    `${API}/sync/watched/shows`,
-    () => HttpResponse.json({ '2': { '10|0': { '100': ['d'] }, '11|1': { '101': ['d'], '102': ['d', 'd'] } } }),
+  http.get(`${API}/sync/watched/shows`, () =>
+    HttpResponse.json({ '2': { '10|0': { '100': ['d'] }, '11|1': { '101': ['d'], '102': ['d', 'd'] } } }),
   ),
   http.get(`${API}/users/hidden/progress_watched_reset`, () => HttpResponse.json([{ type: 'show', show: ids(2) }])),
   http.get(`${API}/sync/collection/movies`, () => HttpResponse.json([{ movie: ids(1), collected_at: T0 }])),
-  http.get(
-    `${API}/sync/collection/shows`,
-    () => HttpResponse.json([{ show: ids(2), seasons: [{ number: 1, episodes: [{ number: 1, collected_at: T0 }] }] }]),
+  http.get(`${API}/sync/collection/shows`, () =>
+    HttpResponse.json([{ show: ids(2), seasons: [{ number: 1, episodes: [{ number: 1, collected_at: T0 }] }] }]),
   ),
-  http.get(
-    `${API}/sync/collection/minimal/shows`,
-    () => HttpResponse.json({ '2': { '9|1': { '201': `${T0}|plex` } } }),
+  http.get(`${API}/sync/collection/minimal/shows`, () =>
+    HttpResponse.json({ '2': { '9|1': { '201': `${T0}|plex` } } }),
   ),
   http.get(`${API}/sync/ratings`, () => HttpResponse.json([{ type: 'movie', rating: 9, movie: ids(1) }])),
   http.get(`${API}/sync/watchlist/seasons/rank/asc`, () => HttpResponse.json([{ season: ids(3) }])),
   http.get(`${API}/sync/watchlist/episodes/rank/asc`, () => HttpResponse.json([{ episode: ids(4) }])),
   http.get(`${API}/v3/users/me/watchlist/minimal`, () => HttpResponse.json({ movies: [], shows: [2] })),
-  http.get(
-    `${API}/sync/favorites`,
-    () => HttpResponse.json([{ type: 'movie', movie: ids(1), id: 10, listed_at: '2026-09-29T12:00:00Z' }]),
+  http.get(`${API}/sync/favorites`, () =>
+    HttpResponse.json([{ type: 'movie', movie: ids(1), id: 10, listed_at: '2026-09-29T12:00:00Z' }]),
   ),
   http.get(`${API}/users/hidden/dropped`, () => HttpResponse.json([{ type: 'show', show: ids(2) }])),
   http.get(`${API}/users/hidden/progress_watched`, () => HttpResponse.json([{ type: 'show', show: ids(5) }])),
@@ -75,9 +71,8 @@ const library = [
   http.get(`${API}/users/me/following`, () => HttpResponse.json([])),
   http.get(`${API}/users/me/followers`, () => HttpResponse.json([])),
   http.get(`${API}/v3/users/me/lists`, () => HttpResponse.json([{ id: 50 }])),
-  http.get(
-    `${API}/lists/50/items`,
-    () => HttpResponse.json([{ type: 'movie', movie: ids(1), id: 10, listed_at: '2026-09-29T12:00:00Z' }]),
+  http.get(`${API}/lists/50/items`, () =>
+    HttpResponse.json([{ type: 'movie', movie: ids(1), id: 10, listed_at: '2026-09-29T12:00:00Z' }]),
   ),
 ];
 
@@ -246,13 +241,13 @@ describe('createOverlay', () => {
 
     it('should match the with-season result for watched, collected and synced episodes', async () => {
       server.use(
-        http.get(
-          `${API}/sync/collection/shows`,
-          () =>
-            HttpResponse.json([{
+        http.get(`${API}/sync/collection/shows`, () =>
+          HttpResponse.json([
+            {
               show: ids(2),
               seasons: [{ number: 1, episodes: [{ number: 1, collected_at: T0, ids: { trakt: 101 } }] }],
-            }]),
+            },
+          ]),
         ),
       );
       const { overlay } = setup();
@@ -274,7 +269,8 @@ describe('createOverlay', () => {
       overlay.patch('watchedShows', (shows) =>
         new Map(shows)
           .set(1, new Map([[1, new Map([[102, ['first']]])]]))
-          .set(3, new Map([[1, new Map([[102, ['second', 'second']]])]])));
+          .set(3, new Map([[1, new Map([[102, ['second', 'second']]])]])),
+      );
 
       expect(overlay.state('episode', 102)).toMatchObject({ plays: 2 });
       expect(overlay.state('episode', 102, { show: 3, number: 1 })).toMatchObject({ plays: 2 });
@@ -286,9 +282,8 @@ describe('createOverlay', () => {
       await overlay.start('sean');
       expect(overlay.state('episode', 500)).toMatchObject({ watched: false, plays: 0 });
 
-      const rollback = overlay.patch(
-        'watchedShows',
-        (shows) => new Map(shows).set(2, new Map([[1, new Map([[500, ['2026-03-01']]])]])),
+      const rollback = overlay.patch('watchedShows', (shows) =>
+        new Map(shows).set(2, new Map([[1, new Map([[500, ['2026-03-01']]])]])),
       );
       expect(overlay.state('episode', 500)).toMatchObject({ watched: true, plays: 1 });
       expect(overlay.state('episode', 102)).toMatchObject({ watched: false });

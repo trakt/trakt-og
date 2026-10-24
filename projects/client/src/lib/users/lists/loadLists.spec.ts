@@ -57,9 +57,7 @@ afterEach(() => {
 });
 afterAll(() => server.close());
 
-const load = (
-  options: { mode?: ListsMode; token?: string | null; locked?: boolean; query?: string } = {},
-) =>
+const load = (options: { mode?: ListsMode; token?: string | null; locked?: boolean; query?: string } = {}) =>
   loadLists({
     fetch,
     locals: { token: options.token ?? null },
@@ -74,19 +72,26 @@ describe('loadLists', () => {
     const result = await load({ query: '?sort=title,desc' });
     expect(result.query).toEqual({ sort: 'title', reversed: true, terms: '' });
     expect(result.listsComplete).toBe(true);
-    expect(result.lists.map(({ name, rank }) => [name, rank])).toEqual([['List 1', 1], ['List 2', 2]]);
-    expect(result.builtIns.map(({ name, itemCount, posters }) => [name, itemCount, posters.length]))
-      .toEqual([['Watchlist', 315, 1], ['Favorites', 0, 0]]);
+    expect(result.lists.map(({ name, rank }) => [name, rank])).toEqual([
+      ['List 1', 1],
+      ['List 2', 2],
+    ]);
+    expect(result.builtIns.map(({ name, itemCount, posters }) => [name, itemCount, posters.length])).toEqual([
+      ['Watchlist', 315, 1],
+      ['Favorites', 0, 0],
+    ]);
     expect(new URL(seen.at(0)?.url ?? '').search).toBe('?extended=images&page=1&limit=250');
   });
 
   it('should send the viewer token and fall back to public lists when it has gone stale', async () => {
-    server.use(http.get(`${API}/lists`, ({ request }) => {
-      seen.push(request);
-      return request.headers.has('authorization')
-        ? new HttpResponse(null, { status: 401 })
-        : HttpResponse.json([list(1, 'Public')]);
-    }));
+    server.use(
+      http.get(`${API}/lists`, ({ request }) => {
+        seen.push(request);
+        return request.headers.has('authorization')
+          ? new HttpResponse(null, { status: 401 })
+          : HttpResponse.json([list(1, 'Public')]);
+      }),
+    );
     const result = await load({ token: 'stale' });
     expect(result.lists.map(({ name }) => name)).toEqual(['Public']);
     const reads = seen.filter((request) => new URL(request.url).pathname === '/users/tester/lists');
@@ -94,17 +99,21 @@ describe('loadLists', () => {
   });
 
   it('should prevent reordering a truncated or partially failed list read', async () => {
-    server.use(http.get(`${API}/lists`, ({ request }) => {
-      const page = Number(new URL(request.url).searchParams.get('page'));
-      return HttpResponse.json([list(page, `List ${page}`)], { headers: pageHeaders(page, 11) });
-    }));
+    server.use(
+      http.get(`${API}/lists`, ({ request }) => {
+        const page = Number(new URL(request.url).searchParams.get('page'));
+        return HttpResponse.json([list(page, `List ${page}`)], { headers: pageHeaders(page, 11) });
+      }),
+    );
     expect((await load()).listsComplete).toBe(false);
-    server.use(http.get(`${API}/lists`, ({ request }) => {
-      const page = Number(new URL(request.url).searchParams.get('page'));
-      return page === 1
-        ? HttpResponse.json([list(1, 'First')], { headers: pageHeaders(1, 2) })
-        : new HttpResponse(null, { status: 503 });
-    }));
+    server.use(
+      http.get(`${API}/lists`, ({ request }) => {
+        const page = Number(new URL(request.url).searchParams.get('page'));
+        return page === 1
+          ? HttpResponse.json([list(1, 'First')], { headers: pageHeaders(1, 2) })
+          : new HttpResponse(null, { status: 503 });
+      }),
+    );
     expect((await load()).listsComplete).toBe(false);
   });
 
@@ -117,14 +126,19 @@ describe('loadLists', () => {
 
   it('should split liked lists into personal and official, newest liked first, with when each was liked', async () => {
     const official = { ...list(3, 'Bond'), type: 'official', user: { username: 'Trakt', ids: { slug: null } } };
-    server.use(http.get(`${API}/likes/lists`, ({ request }) => {
-      seen.push(request);
-      return HttpResponse.json([
-        { liked_at: '2026-10-02T00:00:00.000Z', type: 'list', list: list(1, 'Picks') },
-        { liked_at: '2026-10-01T00:00:00.000Z', type: 'list', list: official },
-        { liked_at: '2026-09-01T00:00:00.000Z', type: 'list', list: list(2, 'Horror') },
-      ], { headers: pageHeaders(1, 1) });
-    }));
+    server.use(
+      http.get(`${API}/likes/lists`, ({ request }) => {
+        seen.push(request);
+        return HttpResponse.json(
+          [
+            { liked_at: '2026-10-02T00:00:00.000Z', type: 'list', list: list(1, 'Picks') },
+            { liked_at: '2026-10-01T00:00:00.000Z', type: 'list', list: official },
+            { liked_at: '2026-09-01T00:00:00.000Z', type: 'list', list: list(2, 'Horror') },
+          ],
+          { headers: pageHeaders(1, 1) },
+        );
+      }),
+    );
     const personal = await load({ mode: 'liked' });
     expect(personal.builtIns).toEqual([]);
     expect(personal.lists.map(({ name, likedAt }) => [name, likedAt])).toEqual([

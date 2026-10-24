@@ -50,7 +50,7 @@ describe('profileBoxes', () => {
       key: 'new',
       group: 'colour',
       component: FeaturedListBox,
-      score: ({ stats }) => stats.episodes.plays > 1_000 ? 95 : null,
+      score: ({ stats }) => (stats.episodes.plays > 1_000 ? 95 : null),
       view: () => ({ name: 'New', href: '/new', count: null, posters: [], next: null }),
     });
     const { input, extras } = boxPersonas.maya;

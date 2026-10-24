@@ -42,13 +42,15 @@ async function fetchIsAdmin(token: string, fetch: typeof globalThis.fetch) {
  * Any failure (no token, expired, network) is "not an admin".
  * A yes is remembered for `ADMIN_TTL_MS`, so page navigations skip the userinfo round trip. A no is never remembered.
  */
-export async function isAdmin(
-  { token, fetch, cache = confirmedAdmins }: {
-    token: string | null;
-    fetch: typeof globalThis.fetch;
-    cache?: Map<string, number>;
-  },
-) {
+export async function isAdmin({
+  token,
+  fetch,
+  cache = confirmedAdmins,
+}: {
+  token: string | null;
+  fetch: typeof globalThis.fetch;
+  cache?: Map<string, number>;
+}) {
   if (token === null) return false;
 
   const key = await hashToken(token);

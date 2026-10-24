@@ -13,11 +13,12 @@ type Play = BoxInput['recent']['episodes'][number];
 function biggest({ recent }: BoxInput) {
   const days = Map.groupBy(recent.episodes, (play) => `${play.show.ids.trakt}:${boxMath.utcDay(play.watched_at)}`);
   return [...days.values()]
-    .flatMap((plays) => plays[0] ? [{ plays, day: boxMath.utcDay(plays[0].watched_at) }] : [])
+    .flatMap((plays) => (plays[0] ? [{ plays, day: boxMath.utcDay(plays[0].watched_at) }] : []))
     .reduce<{ plays: readonly Play[]; day: number } | null>(
       (best, binge) =>
-        !best || binge.plays.length > best.plays.length ||
-          (binge.plays.length === best.plays.length && binge.day > best.day)
+        !best ||
+        binge.plays.length > best.plays.length ||
+        (binge.plays.length === best.plays.length && binge.day > best.day)
           ? binge
           : best,
       null,

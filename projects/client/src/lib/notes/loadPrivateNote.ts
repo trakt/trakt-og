@@ -11,12 +11,14 @@ type LoadPrivateNoteParams = {
 };
 
 // v3 has no `@trakt/api` contract. Its rows include the favorites-list note (`type: 'favorites'`), which isn't this one.
-const v3NotesSchema = z.array(z.object({
-  id: z.number(),
-  notes: z.string().nullish(),
-  updated_at: z.string().nullish(),
-  type: z.string(),
-}));
+const v3NotesSchema = z.array(
+  z.object({
+    id: z.number(),
+    notes: z.string().nullish(),
+    updated_at: z.string().nullish(),
+    type: z.string(),
+  }),
+);
 
 const json = (response: Response): Promise<unknown> =>
   response.ok ? response.json().catch(() => null) : Promise.resolve(null);

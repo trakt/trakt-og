@@ -7,12 +7,14 @@ import { loadNotes } from './loadNotes.ts';
 const profile = toProfileUser({ username: 'tester', name: 'Tester', private: false, ids: { slug: 'tester' } });
 const datePreferences = { order: 'mdy', hour24: false, timeZone: 'UTC', weekStartDay: 0 } as const;
 const seen: Request[] = [];
-const rows = [{
-  type: 'movie',
-  movie: { title: 'Fight Club', ids: { trakt: 1 } },
-  attached_to: { type: 'movie' },
-  note: { id: 1, notes: 'Hi', privacy: 'public', updated_at: '2026-09-29T12:00:00Z' },
-}];
+const rows = [
+  {
+    type: 'movie',
+    movie: { title: 'Fight Club', ids: { trakt: 1 } },
+    attached_to: { type: 'movie' },
+    note: { id: 1, notes: 'Hi', privacy: 'public', updated_at: '2026-09-29T12:00:00Z' },
+  },
+];
 const server = setupServer(
   http.get(/^https:\/\/apiz\.trakt\.tv\/users\/tester\/notes(?:\/[^?]+)?(?:\?.*)?$/, ({ request }) => {
     seen.push(request);
@@ -56,10 +58,12 @@ describe('loadNotes', () => {
   });
 
   it('should fall back to public notes on a stale token without refreshing', async () => {
-    server.use(http.get('https://apiz.trakt.tv/users/tester/notes', ({ request }) => {
-      seen.push(request);
-      return request.headers.has('authorization') ? new HttpResponse(null, { status: 401 }) : HttpResponse.json([]);
-    }));
+    server.use(
+      http.get('https://apiz.trakt.tv/users/tester/notes', ({ request }) => {
+        seen.push(request);
+        return request.headers.has('authorization') ? new HttpResponse(null, { status: 401 }) : HttpResponse.json([]);
+      }),
+    );
     expect((await load({ token: 'stale' })).notes).toEqual([]);
     expect(seen.map((request) => request.headers.get('authorization'))).toEqual(['Bearer stale', null]);
   });

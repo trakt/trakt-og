@@ -24,9 +24,8 @@ const server = setupServer(
     seen.push(request);
     return HttpResponse.json([{ plays: 3, last_watched_at: play.watched_at, show }], { headers: pages });
   }),
-  http.get(
-    'https://apiz.trakt.tv/shows/1388',
-    () => HttpResponse.json({ ...show, images: { poster: ['media.trakt.tv/posters/medium/bb.jpg.webp'] } }),
+  http.get('https://apiz.trakt.tv/shows/1388', () =>
+    HttpResponse.json({ ...show, images: { poster: ['media.trakt.tv/posters/medium/bb.jpg.webp'] } }),
   ),
 );
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
@@ -109,11 +108,13 @@ describe('loadHistory', () => {
   describe('privacy', () => {
     const tokens = () => seen.flatMap((request) => request.headers.get('authorization') ?? []);
     const privateHistory = () =>
-      server.use(http.get(/^https:\/\/apiz\.trakt\.tv\/users\/tester\/history/, ({ request }) => {
-        seen.push(request);
-        if (!request.headers.has('authorization')) return new HttpResponse(null, { status: 401 });
-        return HttpResponse.json([play], { headers: pages });
-      }));
+      server.use(
+        http.get(/^https:\/\/apiz\.trakt\.tv\/users\/tester\/history/, ({ request }) => {
+          seen.push(request);
+          if (!request.headers.has('authorization')) return new HttpResponse(null, { status: 401 });
+          return HttpResponse.json([play], { headers: pages });
+        }),
+      );
 
     it('should read a private profile the viewer may see with the token, once', async () => {
       privateHistory();

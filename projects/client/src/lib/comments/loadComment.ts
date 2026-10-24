@@ -33,7 +33,9 @@ export async function loadComment({ fetch, parent, id }: Params) {
     // A missing comment is a plain-text 404 under a JSON content type, which the typed client can't parse.
     client.comments.summary({ params: { id } }).catch(() => null),
     rawApiFetch({ fetch, path: `/comments/${id}/item?extended=full,images` }),
-    commentsClient(client).replies(Number(id)).catch(() => null),
+    commentsClient(client)
+      .replies(Number(id))
+      .catch(() => null),
     parent(),
   ]);
 
@@ -55,12 +57,12 @@ export async function loadComment({ fetch, parent, id }: Params) {
   const target = subpageWatchNowPath(body.data);
   const watchNow = target
     ? await loadWatchNow({
-      fetch,
-      ...target,
-      country: watchNowCountry(settings),
-      settings,
-      isVip: user?.isVip ?? false,
-    })
+        fetch,
+        ...target,
+        country: watchNowCountry(settings),
+        settings,
+        isVip: user?.isVip ?? false,
+      })
     : null;
   const media = toSubpageMedia({ body: body.data, justwatch: watchNow?.rank?.link });
   if (!media) notFound();

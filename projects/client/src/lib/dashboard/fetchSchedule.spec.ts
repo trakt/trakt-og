@@ -44,7 +44,11 @@ const calendarRequests = () => seen.filter(({ pathname }) => pathname.startsWith
 
 describe('fetchSchedule', () => {
   it('should read one window when it has five days', async () => {
-    server.use(calendar(() => scheduleFixture.rows('2026-09-30')), hidden(), watchNow);
+    server.use(
+      calendar(() => scheduleFixture.rows('2026-09-30')),
+      hidden(),
+      watchNow,
+    );
 
     const days = await fetchSchedule(params);
 
@@ -87,7 +91,11 @@ describe('fetchSchedule', () => {
   });
 
   it("should look up Watch Now in the viewer country for the spotlight day's items only", async () => {
-    server.use(calendar(() => scheduleFixture.rows('2026-09-30')), hidden(), watchNow);
+    server.use(
+      calendar(() => scheduleFixture.rows('2026-09-30')),
+      hidden(),
+      watchNow,
+    );
 
     const days = await fetchSchedule(params);
     const items = days.flatMap(({ items }) => items);
@@ -172,7 +180,11 @@ describe('fetchSchedule', () => {
     });
 
     it('should read nothing with Shows: None and Movies: None', async () => {
-      server.use(calendar(() => rows), hidden(), watchNow);
+      server.use(
+        calendar(() => rows),
+        hidden(),
+        watchNow,
+      );
 
       const days = await fetchSchedule(settingsFor({ filter: 'none', movies: 'none' }));
 
@@ -181,7 +193,11 @@ describe('fetchSchedule', () => {
     });
 
     it('should only look 40 days ahead for all my TV shows, as OG did', async () => {
-      server.use(calendar(() => []), hidden(), watchNow);
+      server.use(
+        calendar(() => []),
+        hidden(),
+        watchNow,
+      );
 
       await fetchSchedule(settingsFor({ filter: 'shows' }));
 
@@ -190,7 +206,11 @@ describe('fetchSchedule', () => {
     });
 
     it('should start on the start day', async () => {
-      server.use(calendar(() => scheduleFixture.rows('2026-09-29')), hidden(), watchNow);
+      server.use(
+        calendar(() => scheduleFixture.rows('2026-09-29')),
+        hidden(),
+        watchNow,
+      );
 
       const days = await fetchSchedule(settingsFor({ startDay: 'yesterday' }));
 

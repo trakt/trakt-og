@@ -38,9 +38,15 @@ type Listing =
 type Request = { fetch: typeof globalThis.fetch; token: string | null; id: string; page: number; limit: number };
 
 // Native. The worker answers an empty page for a private profile the token can't see.
-async function fetchWritten(
-  { fetch, token, id, page, limit, commentType, type }: Request & { commentType: CommentType; type: MediaType },
-): Promise<Listing> {
+async function fetchWritten({
+  fetch,
+  token,
+  id,
+  page,
+  limit,
+  commentType,
+  type,
+}: Request & { commentType: CommentType; type: MediaType }): Promise<Listing> {
   const response = await api({ fetch, token }).users.comments({
     params: { id, comment_type: commentType === 'replies' ? 'all' : commentType, type },
     query: {
@@ -80,11 +86,13 @@ async function fetchLiked({ fetch, token, id, page, limit }: Request): Promise<L
 async function fetchParents(fetch: typeof globalThis.fetch, comments: readonly UserComment[]) {
   const ids = [...new Set(comments.map(({ comment }) => comment.parent_id).filter((id) => id > 0))];
   const client = api({ fetch });
-  const parents = await Promise.all(ids.map(async (id) => {
-    const response = await client.comments.summary({ params: { id: String(id) } }).catch(() => null);
-    return response?.status === 200 && response.body.user ? response.body : null;
-  }));
-  return new Map(parents.flatMap((parent) => parent ? [[parent.id, parent] as const] : []));
+  const parents = await Promise.all(
+    ids.map(async (id) => {
+      const response = await client.comments.summary({ params: { id: String(id) } }).catch(() => null);
+      return response?.status === 200 && response.body.user ? response.body : null;
+    }),
+  );
+  return new Map(parents.flatMap((parent) => (parent ? [[parent.id, parent] as const] : [])));
 }
 
 /**
@@ -92,8 +100,8 @@ async function fetchParents(fetch: typeof globalThis.fetch, comments: readonly U
  * public reads, sent with the token only for a private profile the frame already let the viewer see.
  */
 export async function loadUserComments({ fetch, parent, locals, params, url, liked = false }: Params) {
-  const commentType = liked ? 'all' : params.comment_type ?? 'all';
-  const type = liked ? 'all' : params.type ?? 'all';
+  const commentType = liked ? 'all' : (params.comment_type ?? 'all');
+  const type = liked ? 'all' : (params.type ?? 'all');
   const current = positiveInt(url.searchParams.get('page'), 1);
   const limit = Math.min(100, positiveInt(url.searchParams.get('limit') ?? String(PAGE_SIZE), 1));
   const listing = (token: string | null) => {

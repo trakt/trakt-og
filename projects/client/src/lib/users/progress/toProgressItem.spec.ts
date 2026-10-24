@@ -41,7 +41,13 @@ const catalog: ShowCatalog = {
 
 const watched = new Map([
   [0, new Map([[1, ['2026-02-01T00:00:00Z']]])],
-  [1, new Map([[11, ['2026-02-02T00:00:00Z', '2026-01-02T00:00:00Z']], [13, ['2026-02-03T00:00:00Z']]])],
+  [
+    1,
+    new Map([
+      [11, ['2026-02-02T00:00:00Z', '2026-01-02T00:00:00Z']],
+      [13, ['2026-02-03T00:00:00Z']],
+    ]),
+  ],
 ]);
 
 const base = { show, includeSpecials: false, useLastActivity: false, now: NOW };
@@ -103,16 +109,22 @@ describe('toProgressItem', () => {
     });
 
     it('should flag episodes in the library on the watched tab, watched or not', () => {
-      const collected = new Map([[
-        1,
-        new Map<number, CollectedItem>([[1, '2026-03-01T00:00:00Z'], [2, '2026-03-01T00:00:00Z']]),
-      ]]);
+      const collected = new Map([
+        [
+          1,
+          new Map<number, CollectedItem>([
+            [1, '2026-03-01T00:00:00Z'],
+            [2, '2026-03-01T00:00:00Z'],
+          ]),
+        ],
+      ]);
       const episodes = toProgressItem({ ...base, watched, collected, catalog }).detail?.seasons.at(0)?.episodes ?? [];
 
-      expect(episodes.map(({ done, collected }) => [done, collected])).toEqual([[true, true], [false, true], [
-        true,
-        false,
-      ]]);
+      expect(episodes.map(({ done, collected }) => [done, collected])).toEqual([
+        [true, true],
+        [false, true],
+        [true, false],
+      ]);
     });
 
     it('should fall back to the show runtime for an episode without one', () => {
@@ -135,12 +147,29 @@ describe('toProgressItem', () => {
     it('should pick the next episode after the furthest watched one, then the gap', () => {
       expect(toProgressItem({ ...base, watched, catalog }).detail?.next?.id).toBe(21);
 
-      const all = new Map([[1, new Map([[11, [AIRED]], [13, [AIRED]]])], [2, new Map([[21, [AIRED]]])]]);
+      const all = new Map([
+        [
+          1,
+          new Map([
+            [11, [AIRED]],
+            [13, [AIRED]],
+          ]),
+        ],
+        [2, new Map([[21, [AIRED]]])],
+      ]);
       expect(toProgressItem({ ...base, watched: all, catalog }).detail?.next?.id).toBe(12);
     });
 
     it('should pick the episode after the most recent watch with Calculate Up Next Using', () => {
-      const recent = new Map([[1, new Map([[11, ['2026-03-01T00:00:00Z']], [13, ['2026-02-01T00:00:00Z']]])]]);
+      const recent = new Map([
+        [
+          1,
+          new Map([
+            [11, ['2026-03-01T00:00:00Z']],
+            [13, ['2026-02-01T00:00:00Z']],
+          ]),
+        ],
+      ]);
       const item = toProgressItem({ ...base, watched: recent, catalog, useLastActivity: true });
 
       expect(item.detail?.next?.id).toBe(12);

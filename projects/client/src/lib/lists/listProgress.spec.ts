@@ -33,11 +33,18 @@ describe('listProgress', () => {
       collected: { count: 3, percent: 60, complete: false },
     });
     // Seasons and episodes are looked up where the slices keep them.
-    expect(seen.filter(Boolean)).toEqual([{ show: 7, number: 1 }, { show: 7, number: 1, episode: 2 }]);
+    expect(seen.filter(Boolean)).toEqual([
+      { show: 7, number: 1 },
+      { show: 7, number: 1, episode: 2 },
+    ]);
   });
 
   it('should round down and mark a fully watched list complete', () => {
-    const three: ListStatsItem[] = [{ type: 'movie', id: 1 }, { type: 'movie', id: 2 }, { type: 'movie', id: 3 }];
+    const three: ListStatsItem[] = [
+      { type: 'movie', id: 1 },
+      { type: 'movie', id: 2 },
+      { type: 'movie', id: 3 },
+    ];
     const progress = listProgress(three, (_, id) => ({ watched: true, collected: id === 1 }));
     expect(progress.watched).toEqual({ count: 3, percent: 100, complete: true });
     expect(progress.collected).toEqual({ count: 1, percent: 33, complete: false });

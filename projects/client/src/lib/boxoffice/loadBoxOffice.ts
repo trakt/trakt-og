@@ -46,7 +46,7 @@ export async function loadBoxOffice({ fetch, cookies, parent, now = new Date() }
       client.calendars.movies({
         params: { target: 'all', start_date: nextFriday(start).date, days: 1 },
         query: { extended: 'full,images' },
-      })
+      }),
     ),
   ]);
   if (response.status !== 200) error(502, 'The Trakt API could not load the box office.');

@@ -52,15 +52,22 @@ export function trimLogo(source: string | undefined): Attachment<HTMLImageElemen
       image.removeAttribute('data-trim');
       if (prefersReducedMotion.current) return;
       const to = `${image.getBoundingClientRect().height}px`;
-      image.animate([
-        { blockSize: from, opacity: 0 },
-        { blockSize: to, opacity: 0, offset: GROW },
-        { blockSize: to, opacity: 1 },
-      ], { duration: REVEAL_MS, easing: 'ease-out' });
+      image.animate(
+        [
+          { blockSize: from, opacity: 0 },
+          { blockSize: to, opacity: 0, offset: GROW },
+          { blockSize: to, opacity: 1 },
+        ],
+        { duration: REVEAL_MS, easing: 'ease-out' },
+      );
     };
 
     image.setAttribute('data-trim', '');
-    if (!trimmed.has(source)) trimmed.set(source, trim(source).catch(() => undefined));
+    if (!trimmed.has(source))
+      trimmed.set(
+        source,
+        trim(source).catch(() => undefined),
+      );
     void trimmed.get(source)?.then(async (url) => {
       if (!live) return;
       if (url) {

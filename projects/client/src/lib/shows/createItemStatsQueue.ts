@@ -28,10 +28,14 @@ export function createItemStatsQueue({
       if (!job) return;
       active++;
       // Catch network, parsing and synchronous loader failures; a failure stays empty for this session.
-      Promise.resolve().then(() => load(job.target)).catch(() => null).then(job.resolve).finally(() => {
-        active--;
-        drain();
-      });
+      Promise.resolve()
+        .then(() => load(job.target))
+        .catch(() => null)
+        .then(job.resolve)
+        .finally(() => {
+          active--;
+          drain();
+        });
     }
   }
 

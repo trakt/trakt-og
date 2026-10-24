@@ -104,7 +104,11 @@ describe('toListItemCard', () => {
   });
 
   it('should skip rows the schema cannot read', () => {
-    expect(listItemRowsSchema.parse([{ type: 'movie', ...listed }, { type: 'person', person: movie, ...listed }]))
-      .toEqual([]);
+    expect(
+      listItemRowsSchema.parse([
+        { type: 'movie', ...listed },
+        { type: 'person', person: movie, ...listed },
+      ]),
+    ).toEqual([]);
   });
 });

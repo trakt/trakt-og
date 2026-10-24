@@ -16,15 +16,17 @@ afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
 async function setup({ unknown = false, watched = false } = {}) {
-  const records: SliceRecord[] = unknown ? [] : [
-    {
-      name: 'ratings',
-      activity: '',
-      data: { movie: new Map([[1, 8]]), show: new Map(), season: new Map(), episode: new Map() },
-    },
-    { name: 'watchedMovies', activity: '', data: watched ? new Map([[1, ['d']]]) : new Map() },
-    { name: 'watchedShows', activity: '', data: new Map() },
-  ];
+  const records: SliceRecord[] = unknown
+    ? []
+    : [
+        {
+          name: 'ratings',
+          activity: '',
+          data: { movie: new Map([[1, 8]]), show: new Map(), season: new Map(), episode: new Map() },
+        },
+        { name: 'watchedMovies', activity: '', data: watched ? new Map([[1, ['d']]]) : new Map() },
+        { name: 'watchedShows', activity: '', data: new Map() },
+      ];
   const overlay = createOverlay({
     get: () => Promise.resolve(new Response(null, { status: 503 })),
     storage: {
@@ -38,11 +40,14 @@ async function setup({ unknown = false, watched = false } = {}) {
   const request = (path: string, body?: unknown) =>
     rawApiFetch({
       path,
-      init: body === undefined ? undefined : {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      },
+      init:
+        body === undefined
+          ? undefined
+          : {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(body),
+            },
     });
   return { overlay, notify, request, target, now };
 }
@@ -56,11 +61,13 @@ describe('rateMedia', () => {
     'should rate a %s and patch its shared overlay before the response',
     async (type) => {
       const params = await setup();
-      server.use(http.post(`${API}/sync/ratings`, async ({ request }) => {
-        expect(params.overlay.state(type, 1).rating).toBe(9);
-        expect(await request.json()).toEqual({ [`${type}s`]: [{ ids: { trakt: 1 }, rating: 9 }] });
-        return HttpResponse.json({ added: { [`${type}s`]: 1 } }, { status: 201 });
-      }));
+      server.use(
+        http.post(`${API}/sync/ratings`, async ({ request }) => {
+          expect(params.overlay.state(type, 1).rating).toBe(9);
+          expect(await request.json()).toEqual({ [`${type}s`]: [{ ids: { trakt: 1 }, rating: 9 }] });
+          return HttpResponse.json({ added: { [`${type}s`]: 1 } }, { status: 201 });
+        }),
+      );
       expect(await rateMedia({ ...params, target: { ...target, type }, rating: 9 })).toBe(true);
       expect(params.overlay.state(type, 1).rating).toBe(9);
     },
@@ -68,11 +75,13 @@ describe('rateMedia', () => {
 
   it('should remove the current rating without adding history', async () => {
     const params = await setup();
-    server.use(http.post(`${API}/sync/ratings/remove`, async ({ request }) => {
-      expect(params.overlay.state('movie', 1).rating).toBeNull();
-      expect(await request.json()).toEqual({ movies: [{ ids: { trakt: 1 } }] });
-      return HttpResponse.json({ deleted: { movies: 1 } });
-    }));
+    server.use(
+      http.post(`${API}/sync/ratings/remove`, async ({ request }) => {
+        expect(params.overlay.state('movie', 1).rating).toBeNull();
+        expect(await request.json()).toEqual({ movies: [{ ids: { trakt: 1 } }] });
+        return HttpResponse.json({ deleted: { movies: 1 } });
+      }),
+    );
     expect(await rateMedia({ ...params, rating: null, watchAfterRating: 'now' })).toBe(true);
     expect(params.notify.success).not.toHaveBeenCalled();
   });
@@ -111,11 +120,13 @@ describe('rateMedia', () => {
     async (mode) => {
       const params = await setup();
       ratingResponse();
-      server.use(http.post(`${API}/sync/history`, async ({ request }) => {
-        expect(params.overlay.state('movie', 1).watched).toBe(true);
-        expect(await request.json()).toEqual({ movies: [{ ids: { trakt: 1 }, watched_at: mode }] });
-        return HttpResponse.json({ added: { movies: 1 } }, { status: 201 });
-      }));
+      server.use(
+        http.post(`${API}/sync/history`, async ({ request }) => {
+          expect(params.overlay.state('movie', 1).watched).toBe(true);
+          expect(await request.json()).toEqual({ movies: [{ ids: { trakt: 1 }, watched_at: mode }] });
+          return HttpResponse.json({ added: { movies: 1 } }, { status: 201 });
+        }),
+      );
       expect(await rateMedia({ ...params, rating: 9, watchAfterRating: mode })).toBe(true);
       expect(params.overlay.state('movie', 1).plays).toBe(1);
       expect(params.notify.error).not.toHaveBeenCalled();
@@ -152,10 +163,11 @@ describe('rateMedia', () => {
   it('should add an episode to its show and season and skip a second auto-watch', async () => {
     const params = await setup();
     ratingResponse();
-    server.use(http.get(`${API}/search/trakt/1`, () =>
-      HttpResponse.json([
-        { episode: { season: 2 }, show: { ids: { trakt: 5 } } },
-      ])));
+    server.use(
+      http.get(`${API}/search/trakt/1`, () =>
+        HttpResponse.json([{ episode: { season: 2 }, show: { ids: { trakt: 5 } } }]),
+      ),
+    );
     const history = vi.fn(() => HttpResponse.json({}, { status: 201 }));
     server.use(http.post(`${API}/sync/history`, history));
     const episodeParams = {

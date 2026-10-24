@@ -6,20 +6,26 @@ const AVATAR = 'https://media.trakt.tv/images/users/000/000/002/avatars/large/ab
 const COVER = 'https://media.trakt.tv/images/shows/000/001/693/fanarts/full/def.jpg';
 
 const user = (fields: object) =>
-  searchUsersSchema.parse([{
-    type: 'user',
-    score: 0,
-    user: { username: 'sean', private: false, deleted: false, ids: { slug: 'sean', trakt: 2 }, ...fields },
-  }]).at(0)?.user ?? { username: '', private: false, ids: {} };
+  searchUsersSchema
+    .parse([
+      {
+        type: 'user',
+        score: 0,
+        user: { username: 'sean', private: false, deleted: false, ids: { slug: 'sean', trakt: 2 }, ...fields },
+      },
+    ])
+    .at(0)?.user ?? { username: '', private: false, ids: {} };
 
 describe('toSearchUserCard', () => {
   it('should title the card with the display name and use the avatar and VIP cover', () => {
-    const card = toSearchUserCard(user({
-      name: 'Sean',
-      vip: true,
-      images: { avatar: { full: AVATAR } },
-      vip_cover_image: COVER,
-    }));
+    const card = toSearchUserCard(
+      user({
+        name: 'Sean',
+        vip: true,
+        images: { avatar: { full: AVATAR } },
+        vip_cover_image: COVER,
+      }),
+    );
 
     expect(card).toEqual({
       key: 'sean',

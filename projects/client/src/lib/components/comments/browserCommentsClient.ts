@@ -12,13 +12,15 @@ export function browserCommentsClient(): CommentsClient {
     const writes = commentsClient(api({ fetch }), fetch);
     // The summary is publicly cached for one minute in the browser and three at the worker. A post-write
     // read needs a new cache key, or it would replace the optimistic total with the pre-write response.
-    const freshReads = commentsClient(api({
-      fetch: (input, init) => {
-        const url = new URL(input instanceof Request ? input.url : input);
-        url.searchParams.set('og_reaction', crypto.randomUUID());
-        return globalThis.fetch(url, { ...init, cache: 'no-store' });
-      },
-    }));
+    const freshReads = commentsClient(
+      api({
+        fetch: (input, init) => {
+          const url = new URL(input instanceof Request ? input.url : input);
+          url.searchParams.set('og_reaction', crypto.randomUUID());
+          return globalThis.fetch(url, { ...init, cache: 'no-store' });
+        },
+      }),
+    );
     client = {
       ...writes,
       replies: reads.replies,

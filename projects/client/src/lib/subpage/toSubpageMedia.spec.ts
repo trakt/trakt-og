@@ -170,8 +170,7 @@ describe('toSubpageMedia', () => {
       const links = toSubpageMedia({
         body: { type: 'episode', episode, show },
         justwatch: 'https://www.justwatch.com/us',
-      })
-        ?.links;
+      })?.links;
       expect(links?.map(({ label }) => label)).toEqual(['IMDB', 'TMDB', 'Wikipedia']);
     });
   });

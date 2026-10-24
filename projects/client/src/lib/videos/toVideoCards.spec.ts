@@ -25,12 +25,14 @@ const card = (type: VideoCard['type'], id: string): VideoCard => ({
 describe('toVideoCards', () => {
   describe('toVideoCards', () => {
     it('should map a YouTube video to a card with its 16:9 thumbnail', () => {
-      expect(toVideoCards([video({})])).toEqual([{
-        title: 'Official Trailer',
-        href: 'https://youtube.com/watch?v=HhesaQXLuRY',
-        image: 'https://i.ytimg.com/vi/HhesaQXLuRY/mqdefault.jpg',
-        type: 'trailer',
-      }]);
+      expect(toVideoCards([video({})])).toEqual([
+        {
+          title: 'Official Trailer',
+          href: 'https://youtube.com/watch?v=HhesaQXLuRY',
+          image: 'https://i.ytimg.com/vi/HhesaQXLuRY/mqdefault.jpg',
+          type: 'trailer',
+        },
+      ]);
     });
 
     it('should put the newest first', () => {

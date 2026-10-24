@@ -11,7 +11,8 @@ const text = ({ line }: SocialCard) => line.map((part) => part.text).join(' · '
 const now = new Date('2026-09-30T12:00:30.500Z');
 const datePreferences = { order: 'mdy', hour24: false, timeZone: 'UTC', weekStartDay: 0 } as const;
 const windows = socialWindows('today', now, 'UTC');
-const items = socialFeedFixture.rows(now)
+const items = socialFeedFixture
+  .rows(now)
   .filter(({ activity_at }) => Date.parse(activity_at) >= Date.parse(windows[0]?.start ?? ''))
   .map((row) => toSocialItem(row, datePreferences));
 const board = (view: SocialView, live = socialFeedFixture.live(now).slice(0, 1)) =>
@@ -25,11 +26,11 @@ const card = (view: SocialView, key: string, live?: Parameters<typeof board>[1])
 describe('toSocialBoard', () => {
   describe('by title', () => {
     it("should list each title by who's touched it last, leaving out who's watching now", () => {
-      expect(board('title').cards.slice(0, 3).map(({ key }) => key)).toEqual([
-        'title:show:that-70s-show',
-        'title:show:home-improvement',
-        'title:show:lizzie-mcguire',
-      ]);
+      expect(
+        board('title')
+          .cards.slice(0, 3)
+          .map(({ key }) => key),
+      ).toEqual(['title:show:that-70s-show', 'title:show:home-improvement', 'title:show:lizzie-mcguire']);
     });
 
     it('should count the friends on a title, latest first', () => {
@@ -70,7 +71,8 @@ describe('toSocialBoard', () => {
       expect(binge.href).toBe('/shows/lanterns');
       expect(text(binge)).toBe('3 episodes · Yesterday, 9:45 PM');
       expect(binge.line[0]).toMatchObject({
-        href: '/users/sample-mmf/history?start_at=2026-09-29T12%3A00%3A00.000Z&end_at=2026-09-30T12%3A00%3A00.000Z' +
+        href:
+          '/users/sample-mmf/history?start_at=2026-09-29T12%3A00%3A00.000Z&end_at=2026-09-30T12%3A00%3A00.000Z' +
           '&show=157599',
       });
       expect(card('time', 'time:watch:10').number).toBe('1x08');

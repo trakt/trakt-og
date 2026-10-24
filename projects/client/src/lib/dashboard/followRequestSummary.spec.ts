@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { followRequestSummary } from './followRequestSummary.ts';
 
 const sentence = (names: string[]) =>
-  followRequestSummary(names).map(({ text, strong }) => strong ? `*${text}*` : text).join('');
+  followRequestSummary(names)
+    .map(({ text, strong }) => (strong ? `*${text}*` : text))
+    .join('');
 
 describe('followRequestSummary', () => {
   it('should name a single requester', () => {

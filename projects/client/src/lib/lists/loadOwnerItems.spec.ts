@@ -11,14 +11,16 @@ const response = (rows: unknown[], total = rows.length) =>
   Response.json(rows, { headers: { 'x-pagination-item-count': String(total) } });
 describe('loadOwnerItems', () => {
   it('should read every page in rank order using list item ids', async () => {
-    const request = vi.fn(async (path: string) =>
-      await Promise.resolve(response(
-        Array.from(
-          { length: path.includes('page=2') ? 2 : 250 },
-          (_, i) => row(i + (path.includes('page=2') ? 251 : 1)),
+    const request = vi.fn(
+      async (path: string) =>
+        await Promise.resolve(
+          response(
+            Array.from({ length: path.includes('page=2') ? 2 : 250 }, (_, i) =>
+              row(i + (path.includes('page=2') ? 251 : 1)),
+            ),
+            252,
+          ),
         ),
-        252,
-      ))
     );
     const rows = await loadOwnerItems({ kind: 'watchlist', request });
     expect(rows).toHaveLength(252);
@@ -52,15 +54,13 @@ describe('loadOwnerItems', () => {
     );
   });
   it('should refuse incomplete, malformed, duplicate, and unavailable reads', async () => {
-    for (
-      const result of [
-        response([row(1)], 2),
-        response([{}]),
-        response([row(1), row(1)]),
-        new Response(null, { status: 401 }),
-        Response.json([row(1)]),
-      ]
-    ) {
+    for (const result of [
+      response([row(1)], 2),
+      response([{}]),
+      response([row(1), row(1)]),
+      new Response(null, { status: 401 }),
+      Response.json([row(1)]),
+    ]) {
       await expect(loadOwnerItems({ kind: 'watchlist', request: () => Promise.resolve(result) })).rejects.toThrow();
     }
   });

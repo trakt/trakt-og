@@ -11,14 +11,14 @@ const comment = { id: 7, comment: 'Great.', review: false, spoiler: false, repli
 const requests: URL[] = [];
 const server = setupServer(
   http.get(`${API}/shows/:id`, () => HttpResponse.json(show)),
-  http.get(
-    `${API}/shows/:id/seasons`,
-    () => HttpResponse.json([{ number: 1, ids: { trakt: 3950 }, first_aired: '2008-01-20T02:00:00.000Z' }]),
+  http.get(`${API}/shows/:id/seasons`, () =>
+    HttpResponse.json([{ number: 1, ids: { trakt: 3950 }, first_aired: '2008-01-20T02:00:00.000Z' }]),
   ),
   http.get(`${API}/shows/:id/seasons/:season/comments/:sort`, () =>
     HttpResponse.json([comment], {
       headers: { 'x-pagination-page': '2', 'x-pagination-page-count': '3', 'x-pagination-item-count': '201' },
-    })),
+    }),
+  ),
   // Watch Now and anything missing.
   http.get(`${API}/*`, () => new HttpResponse(null, { status: 404 })),
 );

@@ -37,8 +37,7 @@ describe('toSocialItem', () => {
 
   it("should tell a check-in from a watch, and use the viewer's zone and clock", () => {
     expect(item(13).kind).toBe('checkin');
-    expect(toSocialItem(row17(), { ...datePreferences, hour24: true, timeZone: 'Europe/Berlin' }).time)
-      .toBe('18:06');
+    expect(toSocialItem(row17(), { ...datePreferences, hour24: true, timeZone: 'Europe/Berlin' }).time).toBe('18:06');
   });
 
   it('should map a movie, a show rating and a review', () => {

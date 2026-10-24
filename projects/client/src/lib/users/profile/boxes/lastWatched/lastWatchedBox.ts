@@ -20,7 +20,7 @@ function newest({ episode, movie }: Latest): Newest | null {
   return movie ? { kind: 'movie', row: movie } : null;
 }
 
-const whenLabel = (days: number) => days <= 0 ? 'Today' : days === 1 ? 'Yesterday' : `${days} days ago`;
+const whenLabel = (days: number) => (days <= 0 ? 'Today' : days === 1 ? 'Yesterday' : `${days} days ago`);
 
 function progressOf(show: number, rows: Progress | undefined) {
   const row = rows?.find((candidate) => candidate.show.ids.trakt === show);

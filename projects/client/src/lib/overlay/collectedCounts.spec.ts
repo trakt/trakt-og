@@ -14,11 +14,31 @@ describe('collectedCounts', () => {
 
   it('should count every episode including specials, omit empty shows, and count each movie once', () => {
     const shows = new Map([
-      [1, new Map([[0, new Map([[1, 'date']])], [1, new Map([[1, 'date'], [2, 'date']])]])],
+      [
+        1,
+        new Map([
+          [0, new Map([[1, 'date']])],
+          [
+            1,
+            new Map([
+              [1, 'date'],
+              [2, 'date'],
+            ]),
+          ],
+        ]),
+      ],
       [2, new Map([[1, new Map([[1, 'date']])]])],
       [3, new Map([[1, new Map<number, string>()]])],
     ]);
-    expect(collectedCounts({ collectedShows: shows, collectedMovies: new Map([[1, 'date'], [2, 'date']]) })).toEqual({
+    expect(
+      collectedCounts({
+        collectedShows: shows,
+        collectedMovies: new Map([
+          [1, 'date'],
+          [2, 'date'],
+        ]),
+      }),
+    ).toEqual({
       episodes: 4,
       shows: 2,
       movies: 2,

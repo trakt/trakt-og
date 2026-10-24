@@ -12,7 +12,9 @@ type RenewAccessTokenParams = {
 async function renew({ manager, rejectedToken }: RenewAccessTokenParams): Promise<User | null> {
   const current = await manager.getUser();
   const expiringAt = Date.now() + manager.settings.accessTokenExpiringNotificationTimeInSeconds * 1000;
-  const didAnotherTabRenew = current !== null && !current.expired &&
+  const didAnotherTabRenew =
+    current !== null &&
+    !current.expired &&
     current.access_token !== rejectedToken &&
     (current.expires_at ?? 0) * 1000 > expiringAt;
 

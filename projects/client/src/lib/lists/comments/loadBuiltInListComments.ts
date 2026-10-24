@@ -39,12 +39,13 @@ export async function loadBuiltInListComments({ fetch, parent, locals, params, u
   if (profile.isLocked) return { sort: query.sort, list: target(null), ...emptyListComments(query) };
 
   // Public reads stay token-free; a private profile already authorized by its frame needs the viewer's cookie.
-  const [response, itemsResponse] = profile.isPrivate && locals.token
-    ? await Promise.all([
-      api({ fetch, token: locals.token }).users[kind].comments(request),
-      rawApiFetch({ fetch, token: locals.token, path: itemsPath }),
-    ])
-    : [initial, itemsInitial];
+  const [response, itemsResponse] =
+    profile.isPrivate && locals.token
+      ? await Promise.all([
+          api({ fetch, token: locals.token }).users[kind].comments(request),
+          rawApiFetch({ fetch, token: locals.token, path: itemsPath }),
+        ])
+      : [initial, itemsInitial];
   const comments = readListComments({ response, query });
   const items = itemsResponse.ok ? listItemsSchema.safeParse(await itemsResponse.json().catch(() => null)) : null;
   const posters = toBuiltInRow({ kind, profile, items: items?.success ? items.data : [], itemCount: 0 }).posters;

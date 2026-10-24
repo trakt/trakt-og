@@ -90,10 +90,16 @@ const text = (value: string | undefined, href: string): Link => ({ text: value ?
  * OG's two lines: a season or episode puts its show first, linking to the show, then the sorted line; everything
  * else puts the sorted line first.
  */
-function lines(
-  { top, sorted, href }: { top?: Link; sorted?: string | RatingLine; href: string },
-): readonly [ListCardLine, ListCardLine] {
-  const line = (value: string | RatingLine | undefined) => typeof value === 'object' ? value : text(value, href);
+function lines({
+  top,
+  sorted,
+  href,
+}: {
+  top?: Link;
+  sorted?: string | RatingLine;
+  href: string;
+}): readonly [ListCardLine, ListCardLine] {
+  const line = (value: string | RatingLine | undefined) => (typeof value === 'object' ? value : text(value, href));
   return top ? [top, line(sorted)] : [line(sorted), text(undefined, href)];
 }
 
@@ -143,12 +149,15 @@ export function toListItemCard(row: ListItemRow, { sortBy, datePreferences, now 
         airedEpisodes: show.aired_episodes ?? undefined,
         noteTitle: { title: show.title, year: show.year ?? undefined, fanart: fanart(show.images) },
         lines: lines({
-          sorted: sorted({
-            ...show,
-            rating: rated(show.rating ?? 0, show.first_aired),
-            firstAired: show.first_aired,
-            runtime: show.total_runtime,
-          }, href),
+          sorted: sorted(
+            {
+              ...show,
+              rating: rated(show.rating ?? 0, show.first_aired),
+              firstAired: show.first_aired,
+              runtime: show.total_runtime,
+            },
+            href,
+          ),
           href,
         }),
       };
@@ -172,12 +181,15 @@ export function toListItemCard(row: ListItemRow, { sortBy, datePreferences, now 
         noteTitle: { title: `${show.title}: ${name}`, fanart: fanart(show.images) },
         lines: lines({
           top: { text: show.title, href: showHref(show.ids.slug) },
-          sorted: sorted({
-            ...season,
-            rating: rated(season.rating ?? 0, season.first_aired),
-            firstAired: season.first_aired,
-            runtime: season.total_runtime,
-          }, href),
+          sorted: sorted(
+            {
+              ...season,
+              rating: rated(season.rating ?? 0, season.first_aired),
+              firstAired: season.first_aired,
+              runtime: season.total_runtime,
+            },
+            href,
+          ),
           href,
         }),
       };
@@ -203,11 +215,14 @@ export function toListItemCard(row: ListItemRow, { sortBy, datePreferences, now 
         episodeBadge: episodeBadge(episode),
         lines: lines({
           top: { text: show.title, href: showHref(show.ids.slug) },
-          sorted: sorted({
-            ...episode,
-            rating: rated(episode.rating ?? 0, episode.first_aired),
-            firstAired: episode.first_aired,
-          }, href),
+          sorted: sorted(
+            {
+              ...episode,
+              rating: rated(episode.rating ?? 0, episode.first_aired),
+              firstAired: episode.first_aired,
+            },
+            href,
+          ),
           href,
         }),
       };

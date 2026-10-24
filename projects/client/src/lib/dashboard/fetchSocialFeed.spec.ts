@@ -22,10 +22,12 @@ const byWindow = (rows = socialFeedFixture.rows(now)) =>
     seen.push(url);
     const start = Date.parse(url.searchParams.get('start_at') ?? '');
     const end = Date.parse(url.searchParams.get('end_at') ?? '');
-    return HttpResponse.json(rows.filter(({ activity_at }) => {
-      const at = Date.parse(activity_at);
-      return at >= start && at <= end;
-    }));
+    return HttpResponse.json(
+      rows.filter(({ activity_at }) => {
+        const at = Date.parse(activity_at);
+        return at >= start && at <= end;
+      }),
+    );
   });
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
@@ -71,12 +73,14 @@ describe('fetchSocialFeed', () => {
 
   it('should page on when the window has more rows than a page holds', async () => {
     const [first] = socialFeedFixture.rows(now);
-    server.use(http.get(FEED, ({ request }) => {
-      const url = new URL(request.url);
-      seen.push(url);
-      const page = Number(url.searchParams.get('page'));
-      return HttpResponse.json([{ ...first, id: page }], { headers: { 'x-pagination-page-count': '3' } });
-    }));
+    server.use(
+      http.get(FEED, ({ request }) => {
+        const url = new URL(request.url);
+        seen.push(url);
+        const page = Number(url.searchParams.get('page'));
+        return HttpResponse.json([{ ...first, id: page }], { headers: { 'x-pagination-page-count': '3' } });
+      }),
+    );
 
     const social = await feed();
 
@@ -116,11 +120,13 @@ describe('fetchSocialFeed', () => {
 describe('fetchRecentMembers', () => {
   it("should read who was active from the last 24 hours' newest page only", async () => {
     const [first] = socialFeedFixture.rows(now);
-    server.use(http.get(FEED, ({ request }) => {
-      const url = new URL(request.url);
-      seen.push(url);
-      return HttpResponse.json([first], { headers: { 'x-pagination-page-count': '3' } });
-    }));
+    server.use(
+      http.get(FEED, ({ request }) => {
+        const url = new URL(request.url);
+        seen.push(url);
+        return HttpResponse.json([first], { headers: { 'x-pagination-page-count': '3' } });
+      }),
+    );
 
     const members = await fetchRecentMembers({ get, now, datePreferences });
 
@@ -141,10 +147,12 @@ describe('fetchRecentMembers', () => {
 describe('fetchSocialItems', () => {
   it("should ask for each of the week's days and drop a row repeated on a window boundary", async () => {
     const [first] = socialFeedFixture.rows(now);
-    server.use(http.get(FEED, ({ request }) => {
-      seen.push(new URL(request.url));
-      return HttpResponse.json([first]);
-    }));
+    server.use(
+      http.get(FEED, ({ request }) => {
+        seen.push(new URL(request.url));
+        return HttpResponse.json([first]);
+      }),
+    );
 
     const items = await fetchSocialItems({ get, windows: socialWindows('week', now, 'UTC'), datePreferences });
 
@@ -154,10 +162,12 @@ describe('fetchSocialItems', () => {
 
   it('should keep the days that answered when another one fails', async () => {
     const [first] = socialFeedFixture.rows(now);
-    server.use(http.get(FEED, ({ request }) => {
-      seen.push(new URL(request.url));
-      return seen.length === 1 ? HttpResponse.json([first]) : new HttpResponse(null, { status: 502 });
-    }));
+    server.use(
+      http.get(FEED, ({ request }) => {
+        seen.push(new URL(request.url));
+        return seen.length === 1 ? HttpResponse.json([first]) : new HttpResponse(null, { status: 502 });
+      }),
+    );
 
     const items = await fetchSocialItems({ get, windows: socialWindows('week', now, 'UTC'), datePreferences });
 
@@ -167,7 +177,8 @@ describe('fetchSocialItems', () => {
   it('should reject when every day fails', async () => {
     server.use(http.get(FEED, () => new HttpResponse(null, { status: 502 })));
 
-    await expect(fetchSocialItems({ get, windows: socialWindows('week', now, 'UTC'), datePreferences }))
-      .rejects.toThrow('502');
+    await expect(
+      fetchSocialItems({ get, windows: socialWindows('week', now, 'UTC'), datePreferences }),
+    ).rejects.toThrow('502');
   });
 });

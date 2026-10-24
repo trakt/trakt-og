@@ -21,13 +21,15 @@ const row = z.object({
   comment: commentSchema,
   movie: z.object(media).nullish(),
   show: z.object(media).nullish(),
-  episode: z.object({
-    season: z.number(),
-    number: z.number(),
-    number_abs: z.number().nullish(),
-    title: z.string().nullish(),
-    ids: z.object({ trakt: z.number() }).nullish(),
-  }).nullish(),
+  episode: z
+    .object({
+      season: z.number(),
+      number: z.number(),
+      number_abs: z.number().nullish(),
+      title: z.string().nullish(),
+      ids: z.object({ trakt: z.number() }).nullish(),
+    })
+    .nullish(),
 });
 
 export type TrendingCommentRow = z.infer<typeof row>;
@@ -40,5 +42,5 @@ export const trendingCommentRowsSchema = z.array(z.unknown()).transform((rows) =
   rows.flatMap((value): TrendingCommentRow[] => {
     const parsed = row.safeParse(value);
     return parsed.success ? [parsed.data] : [];
-  })
+  }),
 );

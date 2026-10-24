@@ -31,7 +31,7 @@ const windowStart = (now: Date) => new Date(Math.floor(now.getTime() / DAY) * DA
 async function allPages<R extends { status: number; headers: Headers }>(page: (n: number) => Promise<R>) {
   const first = await page(1);
   const count = first.status === 200 ? Number(first.headers.get('x-pagination-page-count')) || 1 : 1;
-  return [first, ...await Promise.all(Array.from({ length: Math.min(count, MAX_PAGES) - 1 }, (_, i) => page(i + 2)))];
+  return [first, ...(await Promise.all(Array.from({ length: Math.min(count, MAX_PAGES) - 1 }, (_, i) => page(i + 2))))];
 }
 
 /**
@@ -49,8 +49,8 @@ export async function fetchRecentHistory({ client, id, now }: FetchRecentHistory
 
   return {
     start,
-    episodes: episodes.flatMap((response) => response.status === 200 ? response.body : []),
-    movies: movies.flatMap((response) => response.status === 200 ? response.body : []),
+    episodes: episodes.flatMap((response) => (response.status === 200 ? response.body : [])),
+    movies: movies.flatMap((response) => (response.status === 200 ? response.body : [])),
     complete: [...episodes, ...movies].every((response) => response.status === 200),
   };
 }

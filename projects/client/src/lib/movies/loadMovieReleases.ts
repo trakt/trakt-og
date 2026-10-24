@@ -10,7 +10,11 @@ import { toMovieReleases } from './toMovieReleases.ts';
 import { watchNowCountry } from '../settings/watchNowCountry.ts';
 
 /** Public release dates never send a viewer token. */
-export async function loadMovieReleases({ fetch, parent, id }: {
+export async function loadMovieReleases({
+  fetch,
+  parent,
+  id,
+}: {
   fetch: typeof globalThis.fetch;
   parent: () => Promise<{ datePreferences: DatePreferences; settings: ViewerSettings | null; user: HeaderUser | null }>;
   id: string;

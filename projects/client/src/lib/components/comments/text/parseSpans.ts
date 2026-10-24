@@ -89,9 +89,8 @@ function emphasisAt(src: string, at: number): Match | undefined {
   if (close === -1 || close === at + length) return undefined;
 
   const children = parseSpans(src.slice(at + length, close));
-  const node: CommentInline = kind === 'strong-em'
-    ? { type: 'strong', children: [{ type: 'em', children }] }
-    : { type: kind, children };
+  const node: CommentInline =
+    kind === 'strong-em' ? { type: 'strong', children: [{ type: 'em', children }] } : { type: kind, children };
   return { nodes: [node], end: close + length };
 }
 

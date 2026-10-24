@@ -45,8 +45,8 @@ export const onRepeatBox = defineProfileBox({
     const best = mostRewatched(input);
     if (!best) return null;
     const days = boxMath.daysAgo(input.today, best.row.last_watched_at);
-    return 100 * (
-      0.5 * boxMath.cap(best.times - 2, 8) + 0.2 * boxMath.cap(best.others, 15) + 0.3 * boxMath.fresh(days, 60)
+    return (
+      100 * (0.5 * boxMath.cap(best.times - 2, 8) + 0.2 * boxMath.cap(best.others, 15) + 0.3 * boxMath.fresh(days, 60))
     );
   },
   view: (input): OnRepeatView | null => {

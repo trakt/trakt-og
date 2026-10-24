@@ -29,10 +29,12 @@ describe('isCoverOf', () => {
 describe('setCoverImage', () => {
   it('should send the item as the cover', async () => {
     let body: unknown;
-    server.use(http.put('https://apiz.trakt.tv/users/set_cover', async ({ request }) => {
-      body = await request.json();
-      return new HttpResponse(null, { status: 204 });
-    }));
+    server.use(
+      http.put('https://apiz.trakt.tv/users/set_cover', async ({ request }) => {
+        body = await request.json();
+        return new HttpResponse(null, { status: 204 });
+      }),
+    );
     const result = await setCoverImage({ fetch, type: 'show', id: 170297 });
     expect(body).toEqual({ cover_type: 'show', cover_id: 170297 });
     expect(result.ok).toBe(true);

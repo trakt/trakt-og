@@ -32,9 +32,17 @@ type Params = {
 };
 
 /** Add, verify every item and preserve the order before a Move is allowed to remove anything. */
-export async function transferListItems(
-  { source, sort, items, destination, move, request, read, overlay, notify }: Params,
-) {
+export async function transferListItems({
+  source,
+  sort,
+  items,
+  destination,
+  move,
+  request,
+  read,
+  overlay,
+  notify,
+}: Params) {
   const supported = items.filter((item) => item.type !== 'person');
   const skipped = items.length - supported.length;
   let target = destination;
@@ -50,11 +58,12 @@ export async function transferListItems(
         draft: {
           name: `${source.name} copy`,
           description: source.description ?? '',
-          privacy: source.shareLink || source.pills.includes('Private')
-            ? 'private'
-            : source.pills.includes('Following')
-            ? 'friends'
-            : 'public',
+          privacy:
+            source.shareLink || source.pills.includes('Private')
+              ? 'private'
+              : source.pills.includes('Following')
+                ? 'friends'
+                : 'public',
           display_numbers: source.displayNumbers,
           allow_comments: source.allowComments,
           sort_by: sort.by,
@@ -77,33 +86,36 @@ export async function transferListItems(
       ...destinationItems.filter((item) => !selection.has(key(item))).map(({ id }) => id),
       ...transferred.filter((id): id is number => id !== undefined),
     ];
-    const ordered = target.watchlist ? await reorderWatchlist(request, rank) : await reorderListItems({
-      owner: target.owner,
-      listId: target.id,
-      rank,
-      request,
-      notify,
-      failure: 'Items were copied, but their order could not be saved. The source list was kept. Retry to finish.',
-    });
+    const ordered = target.watchlist
+      ? await reorderWatchlist(request, rank)
+      : await reorderListItems({
+          owner: target.owner,
+          listId: target.id,
+          rank,
+          request,
+          notify,
+          failure: 'Items were copied, but their order could not be saved. The source list was kept. Retry to finish.',
+        });
     if (!ordered) return { ok: false as const, target };
-    if (
-      move && !await removeSource({ source, items: supported, overlay, request, notify })
-    ) {
+    if (move && !(await removeSource({ source, items: supported, overlay, request, notify }))) {
       notify.error('Items were copied, but could not be removed from the source. Retry Move to finish.');
       return { ok: false as const, target };
     }
     return { ok: true as const, target, count: supported.length, skipped };
   } catch (error) {
     if (!(error instanceof Error) || error.message !== '429') {
-      notify.error(
-        error instanceof Error && !(error instanceof z.ZodError) ? error.message : GENERIC_ERROR,
-      );
+      notify.error(error instanceof Error && !(error instanceof z.ZodError) ? error.message : GENERIC_ERROR);
     }
     return { ok: false as const, target };
   }
 }
 
-async function addItems({ target, items, overlay, request }: {
+async function addItems({
+  target,
+  items,
+  overlay,
+  request,
+}: {
   target: Destination;
   items: readonly ListItemRef[];
   overlay: Params['overlay'];
@@ -113,26 +125,26 @@ async function addItems({ target, items, overlay, request }: {
     new Set([...(ids ?? []), ...items.filter((item) => item.type === type).map(({ trakt }) => trakt)]);
   const rollback = target.watchlist
     ? overlay.patch(
-      'watchlist',
-      (data) => ({
-        movie: update(data.movie, 'movie'),
-        show: update(data.show, 'show'),
-        season: update(data.season, 'season'),
-        episode: update(data.episode, 'episode'),
-      }),
-      { movie: new Set(), show: new Set() },
-    )
+        'watchlist',
+        (data) => ({
+          movie: update(data.movie, 'movie'),
+          show: update(data.show, 'show'),
+          season: update(data.season, 'season'),
+          episode: update(data.episode, 'episode'),
+        }),
+        { movie: new Set(), show: new Set() },
+      )
     : overlay.patch(
-      'listed',
-      (data) => ({
-        ...data,
-        movie: update(data.movie, 'movie'),
-        show: update(data.show, 'show'),
-        season: update(data.season, 'season'),
-        episode: update(data.episode, 'episode'),
-      }),
-      { movie: new Set(), show: new Set(), season: new Set(), episode: new Set() },
-    );
+        'listed',
+        (data) => ({
+          ...data,
+          movie: update(data.movie, 'movie'),
+          show: update(data.show, 'show'),
+          season: update(data.season, 'season'),
+          episode: update(data.episode, 'episode'),
+        }),
+        { movie: new Set(), show: new Set(), season: new Set(), episode: new Set() },
+      );
   try {
     const body: Record<string, { ids: { trakt: number } }[]> = {};
     for (const { type, trakt } of items) (body[`${type}s`] ??= []).push({ ids: { trakt } });
@@ -142,7 +154,8 @@ async function addItems({ target, items, overlay, request }: {
     );
     if (!response.ok) throw new Error(response.status === 429 ? '429' : await listWriteError(response));
     const result = resultSchema.parse(await response.json());
-    const accepted = Object.values(result.added).reduce((sum, count) => sum + count, 0) +
+    const accepted =
+      Object.values(result.added).reduce((sum, count) => sum + count, 0) +
       Object.values(result.existing).reduce((sum, count) => sum + count, 0);
     if (accepted !== items.length || Object.values(result.not_found ?? {}).some((rows) => rows.length)) {
       rollback();
@@ -167,9 +180,13 @@ async function reorderWatchlist(request: Params['request'], rank: readonly numbe
 }
 
 /** Built-in lists use their sync route, including the shared overlay rollback from the owner tools. */
-function removeSource(
-  { source, items, overlay, request, notify }: Pick<Params, 'source' | 'items' | 'overlay' | 'request' | 'notify'>,
-) {
+function removeSource({
+  source,
+  items,
+  overlay,
+  request,
+  notify,
+}: Pick<Params, 'source' | 'items' | 'overlay' | 'request' | 'notify'>) {
   if (source.kind === 'watchlist' || source.kind === 'favorites') {
     return removeOwnerItems({
       kind: source.kind,

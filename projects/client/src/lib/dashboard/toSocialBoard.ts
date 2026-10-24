@@ -54,10 +54,12 @@ type ToSocialBoardParams = {
 type Context = Omit<ToSocialBoardParams, 'items' | 'live' | 'view'>;
 
 /** A watch, rating or comment, or a live watch, as one thing someone did. */
-type Activity = { readonly item: SocialItem; readonly live?: undefined } | {
-  readonly item?: undefined;
-  readonly live: LiveWatch;
-};
+type Activity =
+  | { readonly item: SocialItem; readonly live?: undefined }
+  | {
+      readonly item?: undefined;
+      readonly live: LiveWatch;
+    };
 
 const isWatch = (item: SocialItem) => item.kind === 'watch' || item.kind === 'checkin';
 const isMovie = (target: SocialTarget) => target.type === 'movie';
@@ -178,7 +180,13 @@ function byTitle(activities: readonly Activity[], context: Context): SocialCard[
       href: title.href,
       title: title.name,
       line: members.length > 1 ? [{ text: countLabel(members.length, 'friend') }] : soloLine(group, context),
-      rating: members.length > 1 ? undefined : ratingOf(group.map(({ item }) => item), context),
+      rating:
+        members.length > 1
+          ? undefined
+          : ratingOf(
+              group.map(({ item }) => item),
+              context,
+            ),
       poster: title.poster,
       members,
       target: title.target,
@@ -268,21 +276,23 @@ const TYPES = [
 
 /** Each member's episodes, movies, ratings and comments as a band piece, the most active first. */
 function barsOf(activities: readonly Activity[], context: Context): GenreBar[] {
-  const tallies = groupBy(activities, (activity) => memberOf(activity).key).map((group) => {
-    const target = ({ item, live }: Activity) => (item ?? live).title.target;
-    const watched = group.filter(({ item }) => !item || isWatch(item));
-    const counts = {
-      episodes: watched.filter((activity) => !isMovie(target(activity))).length,
-      movies: watched.filter((activity) => isMovie(target(activity))).length,
-      ratings: group.filter(({ item }) => item?.kind === 'rating').length,
-      comments: group.filter(({ item }) => item?.kind === 'comment' || item?.kind === 'review').length,
-    };
-    const titles = (movie: boolean) =>
-      unique(group.filter((activity) => isMovie(target(activity)) === movie).map((a) => titleOf(a).key)).length;
-    const [first] = group;
-    if (!first) throw new Error('An empty member group');
-    return { member: memberOf(first), total: group.length, counts, shows: titles(false), movies: titles(true) };
-  }).toSorted((a, b) => b.total - a.total);
+  const tallies = groupBy(activities, (activity) => memberOf(activity).key)
+    .map((group) => {
+      const target = ({ item, live }: Activity) => (item ?? live).title.target;
+      const watched = group.filter(({ item }) => !item || isWatch(item));
+      const counts = {
+        episodes: watched.filter((activity) => !isMovie(target(activity))).length,
+        movies: watched.filter((activity) => isMovie(target(activity))).length,
+        ratings: group.filter(({ item }) => item?.kind === 'rating').length,
+        comments: group.filter(({ item }) => item?.kind === 'comment' || item?.kind === 'review').length,
+      };
+      const titles = (movie: boolean) =>
+        unique(group.filter((activity) => isMovie(target(activity)) === movie).map((a) => titleOf(a).key)).length;
+      const [first] = group;
+      if (!first) throw new Error('An empty member group');
+      return { member: memberOf(first), total: group.length, counts, shows: titles(false), movies: titles(true) };
+    })
+    .toSorted((a, b) => b.total - a.total);
 
   const all = tallies.reduce((sum, { total }) => sum + total, 0) || 1;
   const top = tallies[0]?.total || 1;
@@ -316,11 +326,8 @@ function barsOf(activities: readonly Activity[], context: Context): GenreBar[] {
 export function toSocialBoard({ items, live, view, ...context }: ToSocialBoardParams): SocialBoard {
   const done = activitiesOf(items, []);
   const activities = activitiesOf(items, live);
-  const cards = view === 'title'
-    ? byTitle(done, context)
-    : view === 'person'
-    ? byPerson(done, context)
-    : byTime(done, context);
+  const cards =
+    view === 'title' ? byTitle(done, context) : view === 'person' ? byPerson(done, context) : byTime(done, context);
 
   return {
     cards,

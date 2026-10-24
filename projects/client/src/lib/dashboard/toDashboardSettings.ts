@@ -5,23 +5,40 @@ import { upNextSorts } from './upNextSorts.ts';
 
 // `/users/settings` is API, so only the fields the dashboard reads are parsed, each on its own.
 const schema = z.object({
-  user: z.object({ vip: z.boolean().nullish().catch(null), joined_at: z.string().nullish().catch(null) }).nullish()
+  user: z
+    .object({ vip: z.boolean().nullish().catch(null), joined_at: z.string().nullish().catch(null) })
+    .nullish()
     .catch(null),
-  browsing: z.object({
-    progress: z.object({
-      on_deck: z.object({
-        sort: z.string().nullish().catch(null),
-        sort_how: z.enum(['asc', 'desc']).nullish().catch(null),
-        refresh: z.boolean().nullish().catch(null),
-        simple_progress: z.boolean().nullish().catch(null),
-        only_favorites: z.boolean().nullish().catch(null),
-      }).nullish().catch(null),
-    }).nullish().catch(null),
-    watchnow: z.object({ favorites: z.array(z.string()).nullish().catch(null) }).nullish().catch(null),
-    recommendations: z.object({
-      ignore_collected: z.boolean().nullish().catch(null),
-    }).nullish().catch(null),
-  }).nullish().catch(null),
+  browsing: z
+    .object({
+      progress: z
+        .object({
+          on_deck: z
+            .object({
+              sort: z.string().nullish().catch(null),
+              sort_how: z.enum(['asc', 'desc']).nullish().catch(null),
+              refresh: z.boolean().nullish().catch(null),
+              simple_progress: z.boolean().nullish().catch(null),
+              only_favorites: z.boolean().nullish().catch(null),
+            })
+            .nullish()
+            .catch(null),
+        })
+        .nullish()
+        .catch(null),
+      watchnow: z
+        .object({ favorites: z.array(z.string()).nullish().catch(null) })
+        .nullish()
+        .catch(null),
+      recommendations: z
+        .object({
+          ignore_collected: z.boolean().nullish().catch(null),
+        })
+        .nullish()
+        .catch(null),
+    })
+    .nullish()
+    .catch(null),
 });
 
 type ToDashboardSettingsParams = {
@@ -45,13 +62,14 @@ function upNextSort(sort: string | null | undefined, how: 'asc' | 'desc' | null 
  * anything unset. As in OG, hiding Up Next and Recently Watched works for
  * everyone, and the other section switches only for VIPs and members who joined before September 11, 2024.
  */
-export function toDashboardSettings(
-  { settings, prefs = dashboardPrefs.defaults }: ToDashboardSettingsParams,
-): DashboardSettings {
+export function toDashboardSettings({
+  settings,
+  prefs = dashboardPrefs.defaults,
+}: ToDashboardSettingsParams): DashboardSettings {
   const parsed = schema.safeParse(settings ?? {});
   const { user, browsing } = parsed.success ? parsed.data : {};
   const onDeck = browsing?.progress?.on_deck;
-  const favorites = onDeck?.only_favorites ? browsing?.watchnow?.favorites?.length ?? 0 : 0;
+  const favorites = onDeck?.only_favorites ? (browsing?.watchnow?.favorites?.length ?? 0) : 0;
   const grandfathered = user?.vip === true || (user?.joined_at?.slice(0, 10) ?? '9999') < GRANDFATHERED_BEFORE;
   const vipHidden = (hidden: boolean) => grandfathered && hidden;
 

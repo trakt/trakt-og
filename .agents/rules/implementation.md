@@ -18,7 +18,6 @@
 ## Shared Helpers
 
 Reach for these before writing your own:
-
 - **Query params:** `utils/positiveInt` (page and limit).
 - **Viewer settings:** `settings/watchNowCountry` (lowercase country, US default).
 - **Requests:** `auth/viewerFetch` (the browser's signed-in fetch), `api/okBody` (a 200's body or null),

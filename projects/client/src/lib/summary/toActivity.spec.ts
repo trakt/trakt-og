@@ -20,7 +20,9 @@ const social = (slug: string, plays: number | null, rating?: number): SocialRow 
 
 const sectionsOf = (tab: ActivityTab | undefined) => (tab && tab.id !== 'watching' ? tab.sections : []);
 const keysOn = (tab: ActivityTab | undefined, label: string) =>
-  sectionsOf(tab).find((section) => section.label === label)?.users.map(({ key }) => key);
+  sectionsOf(tab)
+    .find((section) => section.label === label)
+    ?.users.map(({ key }) => key);
 
 describe('toActivity', () => {
   it('should leave out every tab when nobody watches and nobody is followed', () => {
@@ -111,10 +113,11 @@ describe('toActivity', () => {
         following: null,
         item: { type: 'episode', id: 73640 },
       });
-      expect(sectionsOf(watched).flatMap(({ users }) => users).map(({ history }) => history)).toEqual([
-        undefined,
-        '/users/a/history?episode=73640',
-      ]);
+      expect(
+        sectionsOf(watched)
+          .flatMap(({ users }) => users)
+          .map(({ history }) => history),
+      ).toEqual([undefined, '/users/a/history?episode=73640']);
     });
 
     it('should name and show private members, since everyone on /social is followed', () => {
@@ -156,8 +159,11 @@ describe('toActivity', () => {
         title: '50–89% watched · Deep in it',
       });
       expect(sectionsOf(watched).every(({ unit }) => unit === undefined)).toBe(true);
-      expect(sectionsOf(watched).flatMap(({ users }) => users).find(({ key }) => key === 'rewatcher')?.progress)
-        .toBe(220);
+      expect(
+        sectionsOf(watched)
+          .flatMap(({ users }) => users)
+          .find(({ key }) => key === 'rewatcher')?.progress,
+      ).toBe(220);
     });
   });
 
@@ -193,6 +199,9 @@ describe('toActivity', () => {
 
   it('should say Person for one', () => {
     const tabs = toActivity({ watching: [], social: [social('a', 2, 6)], following: null });
-    expect(tabs.map(({ text }) => text)).toEqual([['Person', 'Watched'], ['Rated by', '1 Person']]);
+    expect(tabs.map(({ text }) => text)).toEqual([
+      ['Person', 'Watched'],
+      ['Rated by', '1 Person'],
+    ]);
   });
 });

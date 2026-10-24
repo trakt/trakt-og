@@ -38,10 +38,7 @@ async function membership(fetch: typeof globalThis.fetch, target: ListTarget) {
 
 /** Fresh own and collaborative lists, and this item's membership, when the picker opens. */
 export async function loadPickerLists({ fetch, target }: { fetch: typeof globalThis.fetch; target: ListTarget }) {
-  const [lists, selected] = await Promise.all([
-    loadListCatalog(fetch),
-    membership(fetch, target),
-  ]);
+  const [lists, selected] = await Promise.all([loadListCatalog(fetch), membership(fetch, target)]);
   return {
     lists: lists.map((list) => ({ ...list, selected: selected.ids.has(list.id) })),
     watchlisted: selected.watchlisted,

@@ -14,7 +14,10 @@ function curated(lists: Lists | undefined) {
   const likes = lists.reduce((sum, list) => sum + list.likes, 0);
   if (likes < 5 && lists.length < 3) return null;
   const top = lists.toSorted((a, b) => b.likes - a.likes || b.updated_at.localeCompare(a.updated_at)).at(0);
-  const updated = lists.map((list) => list.updated_at).toSorted().at(-1);
+  const updated = lists
+    .map((list) => list.updated_at)
+    .toSorted()
+    .at(-1);
   return top && updated ? { likes, top, updated, count: lists.length } : null;
 }
 
@@ -27,10 +30,11 @@ export const topListBox = defineProfileBox({
   score: ({ today }, lists) => {
     const found = curated(lists);
     if (!found) return null;
-    return 100 * (
-      0.5 * boxMath.cap(found.likes, 500) +
-      0.2 * boxMath.cap(found.count, 15) +
-      0.3 * boxMath.fresh(boxMath.daysAgo(today, found.updated), 30)
+    return (
+      100 *
+      (0.5 * boxMath.cap(found.likes, 500) +
+        0.2 * boxMath.cap(found.count, 15) +
+        0.3 * boxMath.fresh(boxMath.daysAgo(today, found.updated), 30))
     );
   },
   view: ({ profile }, lists): TopListView | null => {
@@ -46,8 +50,7 @@ export const topListBox = defineProfileBox({
         countLabel(top.likes, 'like'),
         countLabel(top.item_count, 'item'),
         countLabel(top.comment_count, 'comment'),
-      ]
-        .join(' · '),
+      ].join(' · '),
     };
   },
 });

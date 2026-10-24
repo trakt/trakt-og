@@ -19,10 +19,12 @@ export type RelatedCard = {
   readonly subgenres: readonly string[];
 };
 
-type Related = { readonly type: 'movie'; readonly item: MovieResponse } | {
-  readonly type: 'show';
-  readonly item: ShowResponse;
-};
+type Related =
+  | { readonly type: 'movie'; readonly item: MovieResponse }
+  | {
+      readonly type: 'show';
+      readonly item: ShowResponse;
+    };
 
 /** One `/:type/:id/related?extended=full,images` row as a poster card. */
 export function toRelatedCard(related: Related, now: Date): RelatedCard {

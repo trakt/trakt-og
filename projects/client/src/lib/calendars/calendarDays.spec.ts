@@ -12,9 +12,9 @@ const episode = (at: string, show: number, season: number, number: number) =>
 const movie = (at: string, id: number) => ({ type: 'movie', at, movie: { ids: { trakt: id } } }) as CalendarItem;
 
 const keys = (items: readonly CalendarItem[]) =>
-  items.map((
-    item,
-  ) => (item.type === 'movie' ? `m${item.movie.ids.trakt}` : `${item.show.ids.trakt}x${item.episode.number}`));
+  items.map((item) =>
+    item.type === 'movie' ? `m${item.movie.ids.trakt}` : `${item.show.ids.trakt}x${item.episode.number}`,
+  );
 
 describe('calendarDays', () => {
   it('should keep every day, empty or not', () => {

@@ -28,23 +28,21 @@ export interface ListView {
   readonly sort: ListSort;
 }
 
-type ListSource =
-  & Pick<
-    ListResponse,
-    | 'name'
-    | 'description'
-    | 'privacy'
-    | 'type'
-    | 'display_numbers'
-    | 'allow_comments'
-    | 'sort_by'
-    | 'sort_how'
-    | 'item_count'
-    | 'comment_count'
-    | 'likes'
-    | 'ids'
-  >
-  & { readonly user: { readonly username: string; readonly ids: { readonly slug?: string | null } } };
+type ListSource = Pick<
+  ListResponse,
+  | 'name'
+  | 'description'
+  | 'privacy'
+  | 'type'
+  | 'display_numbers'
+  | 'allow_comments'
+  | 'sort_by'
+  | 'sort_how'
+  | 'item_count'
+  | 'comment_count'
+  | 'likes'
+  | 'ids'
+> & { readonly user: { readonly username: string; readonly ids: { readonly slug?: string | null } } };
 
 // a link list is private too, and friends-only reads "Following".
 function pills(privacy: string): readonly string[] {

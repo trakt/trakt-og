@@ -22,10 +22,11 @@ type Piece = {
   readonly tip: GenreTip;
 };
 
-type GenreSlice = Piece & Pick<GenreBar, 'slug' | 'name' | 'counts' | 'avatar' | 'href'> & {
-  /** Its color, 1 to 6. */
-  readonly slot: number;
-};
+type GenreSlice = Piece &
+  Pick<GenreBar, 'slug' | 'name' | 'counts' | 'avatar' | 'href'> & {
+    /** Its color, 1 to 6. */
+    readonly slot: number;
+  };
 
 type GenreTailRow = Pick<GenreBar, 'slug' | 'name' | 'counts'> & {
   readonly share: string;
@@ -90,9 +91,8 @@ export function toGenreBand(genres: readonly GenreBar[], words: BandWords = GENR
         title: `#${i + 1} ${genre.name}`,
         share: formatShare(genre.percentage),
         lines: tipLines(genre),
-        footer: i === 0
-          ? `${titles} · ${words.top}`
-          : `${titles} · ${formatShare(genre.percentageRow)} of ${words.top}`,
+        footer:
+          i === 0 ? `${titles} · ${words.top}` : `${titles} · ${formatShare(genre.percentageRow)} of ${words.top}`,
       },
     };
   });
@@ -102,7 +102,10 @@ export function toGenreBand(genres: readonly GenreBar[], words: BandWords = GENR
   const share = sum(tail.map(({ percentage }) => percentage));
   const biggest = Math.max(...tail.map(({ percentage }) => percentage)) || 1;
   const label = `Other · ${words.rest(tail.length)}`;
-  const names = tail.slice(0, 3).map(({ name }) => name).join(', ');
+  const names = tail
+    .slice(0, 3)
+    .map(({ name }) => name)
+    .join(', ');
 
   return {
     slices,

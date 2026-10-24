@@ -53,15 +53,18 @@ function watchedTitle(params: QuickIconFillParams, includeZero = false): string 
   if (!state.plays) {
     if (state.rewatching && state.rewatchedEpisodes !== undefined) {
       const full = watchedTitle({ ...params, state: { ...state, rewatching: false } });
-      const rewatch = watchedTitle({
-        ...params,
-        state: {
-          ...state,
-          rewatching: false,
-          watchedEpisodes: state.rewatchedEpisodes,
-          watchedPlays: state.rewatchedPlays,
+      const rewatch = watchedTitle(
+        {
+          ...params,
+          state: {
+            ...state,
+            rewatching: false,
+            watchedEpisodes: state.rewatchedEpisodes,
+            watchedPlays: state.rewatchedPlays,
+          },
         },
-      }, true);
+        true,
+      );
       return [rewatch?.replace('watched', 'rewatched'), full].filter(Boolean).join('\n\n') || undefined;
     }
     const progress = progressTitle(state.watchedEpisodes, airedEpisodes, 'watched', includeZero);
@@ -87,7 +90,9 @@ function collectedTitle({ state, airedEpisodes, season, datePreferences }: Quick
         : `Added to library on\n${formatDate(state.collectedAt, datePreferences)}`,
       collectionMetadataLabel(state.collectionMetadata),
       synced,
-    ].filter(Boolean).join('\n');
+    ]
+      .filter(Boolean)
+      .join('\n');
   }
   const progress = progressTitle(state.collectedEpisodes, airedEpisodes, season ? 'collected' : 'in library');
   return progress && [progress, synced].filter(Boolean).join('\n');
@@ -116,7 +121,7 @@ export function quickIconFill(params: QuickIconFillParams): QuickIconFill {
   return {
     watched: fraction(
       params.adjustRewatching !== false && state.rewatching
-        ? state.rewatchedEpisodes ?? state.watchedEpisodes
+        ? (state.rewatchedEpisodes ?? state.watchedEpisodes)
         : state.watchedEpisodes,
       airedEpisodes,
       state.watched,

@@ -7,8 +7,10 @@ describe('util: personTags', () => {
       'Age 57',
       'Acting',
     ]);
-    expect(personTags({ birthday: '1968-10-10', known_for_department: 'directing' }, { today: '2026-10-10' }))
-      .toEqual(['Age 58', 'Directing']);
+    expect(personTags({ birthday: '1968-10-10', known_for_department: 'directing' }, { today: '2026-10-10' })).toEqual([
+      'Age 58',
+      'Directing',
+    ]);
   });
 
   it('should tag the date of death instead of an age, in the viewer order', () => {

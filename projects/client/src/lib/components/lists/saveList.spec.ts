@@ -14,27 +14,36 @@ const draft = {
 const list = { ...draft, ids: { trakt: 12, slug: 'friday' }, item_count: 0 };
 describe('saveList', () => {
   it('should save preferences and remove collaborators before adding replacements', async () => {
-    const request = vi.fn().mockResolvedValueOnce(Response.json(list)).mockResolvedValueOnce(
-      Response.json([{ username: 'old', ids: { slug: 'old-follower' } }]),
-    ).mockResolvedValue(new Response(null, { status: 204 }));
+    const request = vi
+      .fn()
+      .mockResolvedValueOnce(Response.json(list))
+      .mockResolvedValueOnce(Response.json([{ username: 'old', ids: { slug: 'old-follower' } }]))
+      .mockResolvedValue(new Response(null, { status: 204 }));
     expect((await saveList({ draft, id: 12, request })).collaboratorError).toBe('');
     expect(request.mock.calls).toEqual([
-      ['/users/me/lists/12', 'PUT', {
-        name: 'Friday',
-        description: 'Movies',
-        privacy: 'friends',
-        allow_comments: false,
-        display_numbers: true,
-        sort_by: 'title',
-        sort_how: 'desc',
-      }],
+      [
+        '/users/me/lists/12',
+        'PUT',
+        {
+          name: 'Friday',
+          description: 'Movies',
+          privacy: 'friends',
+          allow_comments: false,
+          display_numbers: true,
+          sort_by: 'title',
+          sort_how: 'desc',
+        },
+      ],
       ['/lists/12/collaborators', 'GET'],
       ['/lists/12/collaborators/old-follower', 'DELETE'],
       ['/lists/12/collaborators/new-follower', 'POST'],
     ]);
   });
   it('should retain the created id when a collaborator fails so retry cannot create a duplicate', async () => {
-    const request = vi.fn().mockResolvedValueOnce(Response.json(list)).mockResolvedValueOnce(Response.json([]))
+    const request = vi
+      .fn()
+      .mockResolvedValueOnce(Response.json(list))
+      .mockResolvedValueOnce(Response.json([]))
       .mockResolvedValueOnce(new Response(null, { status: 403 }));
     const result = await saveList({ draft, request });
     expect(result.list.ids.trakt).toBe(12);

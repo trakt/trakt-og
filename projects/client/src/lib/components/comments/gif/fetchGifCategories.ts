@@ -12,19 +12,21 @@ const categoriesSchema = z.object({
 type FetchGifCategoriesParams = { customerId: string; fetch?: typeof fetch };
 
 /** Klipy's GIF categories, for the picker's row of shortcuts. Empty when they can't be loaded. */
-export async function fetchGifCategories(
-  { customerId, fetch = globalThis.fetch }: FetchGifCategoriesParams,
-): Promise<readonly GifCategory[]> {
-  const response = await fetch(klipyUrl('gifs/categories', new URLSearchParams({ customer_id: customerId })))
-    .catch(() => null);
+export async function fetchGifCategories({
+  customerId,
+  fetch = globalThis.fetch,
+}: FetchGifCategoriesParams): Promise<readonly GifCategory[]> {
+  const response = await fetch(klipyUrl('gifs/categories', new URLSearchParams({ customer_id: customerId }))).catch(
+    () => null,
+  );
   if (!response?.ok) return [];
 
   const parsed = categoriesSchema.safeParse(await response.json().catch(() => null));
   return parsed.success
     ? parsed.data.data.categories.map(({ category, query, preview_url }) => ({
-      title: category,
-      query,
-      previewUrl: preview_url,
-    }))
+        title: category,
+        query,
+        previewUrl: preview_url,
+      }))
     : [];
 }

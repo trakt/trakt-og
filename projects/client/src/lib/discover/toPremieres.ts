@@ -67,13 +67,15 @@ export function toPremieres({ premieres, anticipated, now, until, timeZone }: Pr
     const votes = row.show.votes ?? 0;
     const popular = series ? (count ?? 0) >= SERIES_LISTS || votes >= SERIES_VOTES : votes >= SEASON_VOTES;
     if (!popular) return [];
-    return [{
-      ...showCard(row.show, row.first_aired, timeZone),
-      kind: series ? 'series' : 'season',
-      season: row.episode.season,
-      lists: series ? count : undefined,
-      rating: series ? undefined : row.show.rating ?? undefined,
-    }];
+    return [
+      {
+        ...showCard(row.show, row.first_aired, timeZone),
+        kind: series ? 'series' : 'season',
+        season: row.episode.season,
+        lists: series ? count : undefined,
+        rating: series ? undefined : (row.show.rating ?? undefined),
+      },
+    ];
   });
   const fromAnticipated = anticipated.flatMap((row): Premiere[] => {
     const at = row.show.first_aired;
@@ -81,9 +83,7 @@ export function toPremieres({ premieres, anticipated, now, until, timeZone }: Pr
     return [{ ...showCard(row.show, at, timeZone), kind: 'series', season: 1, lists: row.list_count }];
   });
 
-  const all = [...fromFeed, ...fromAnticipated]
-    .filter((premiere) => new Date(premiere.at) > now && premiere.fanart);
+  const all = [...fromFeed, ...fromAnticipated].filter((premiere) => new Date(premiere.at) > now && premiere.fanart);
   const score = (premiere: Premiere) => premiere.lists ?? premiere.votes;
-  return uniqueBy(all, ({ key }) => key)
-    .toSorted((a, b) => score(b) - score(a));
+  return uniqueBy(all, ({ key }) => key).toSorted((a, b) => score(b) - score(a));
 }

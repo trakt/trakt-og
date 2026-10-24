@@ -5,10 +5,12 @@ import { fetchItemStats } from './fetchItemStats.ts';
 
 const stats = { watchers: 12, plays: 34, collectors: 5, lists: 6, comments: 7, votes: 8 };
 const seen: Headers[] = [];
-const server = setupServer(http.get('https://apiz.trakt.tv/shows/1/seasons/*', ({ request }) => {
-  seen.push(request.headers);
-  return HttpResponse.json(stats);
-}));
+const server = setupServer(
+  http.get('https://apiz.trakt.tv/shows/1/seasons/*', ({ request }) => {
+    seen.push(request.headers);
+    return HttpResponse.json(stats);
+  }),
+);
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 afterEach(() => {
   server.resetHandlers();
@@ -28,16 +30,14 @@ describe('fetchItemStats', () => {
     server.use(http.get('https://apiz.trakt.tv/shows/1/seasons/*', () => new HttpResponse(null, { status: 429 })));
     expect(await fetchItemStats({ show: 1, season: 1 })).toBeNull();
     server.use(
-      http.get(
-        'https://apiz.trakt.tv/shows/1/seasons/*',
-        () => HttpResponse.json({ watchers: 'twelve' }, { headers: { 'X-Runtime': '0.2' } }),
+      http.get('https://apiz.trakt.tv/shows/1/seasons/*', () =>
+        HttpResponse.json({ watchers: 'twelve' }, { headers: { 'X-Runtime': '0.2' } }),
       ),
     );
     expect(await fetchItemStats({ show: 1, season: 1 })).toBeNull();
     server.use(
-      http.get(
-        'https://apiz.trakt.tv/shows/1/seasons/*',
-        () => HttpResponse.json(stats, { headers: { 'X-Runtime': '0.2' } }),
+      http.get('https://apiz.trakt.tv/shows/1/seasons/*', () =>
+        HttpResponse.json(stats, { headers: { 'X-Runtime': '0.2' } }),
       ),
     );
     expect(await fetchItemStats({ show: 1, season: 1 })).toEqual(stats);

@@ -36,11 +36,13 @@ const person = { type: 'person', id: 2 } as const;
 describe('saveNote', () => {
   it('should create a note on the item type', async () => {
     const result = await saveNote({ fetch, item: person, note: null, text: '  New note \n' });
-    expect(seen).toEqual([{
-      method: 'POST',
-      path: '/notes',
-      body: { person: { ids: { trakt: 2 } }, notes: 'New note' },
-    }]);
+    expect(seen).toEqual([
+      {
+        method: 'POST',
+        path: '/notes',
+        body: { person: { ids: { trakt: 2 } }, notes: 'New note' },
+      },
+    ]);
     expect(result).toEqual({ ok: true, note: { id: 5, text: 'Saved text', updatedAt: '2026-09-29T12:00:00.000Z' } });
   });
 
@@ -73,13 +75,17 @@ describe('saveNote', () => {
         () => new HttpResponse(null, { status: 420, headers: { 'X-Account-Limit': '100' } }),
       ),
     );
-    expect(await saveNote({ fetch, item: person, note: null, text: 'One more' }))
-      .toEqual({ ok: false, message: "You've already added 100 notes." });
+    expect(await saveNote({ fetch, item: person, note: null, text: 'One more' })).toEqual({
+      ok: false,
+      message: "You've already added 100 notes.",
+    });
   });
 
   it("should fail with OG's error on anything else", async () => {
     server.use(http.put('https://apiz.trakt.tv/v3/users/me/notes/:id', () => new HttpResponse(null, { status: 500 })));
-    expect(await saveNote({ fetch, item: person, note: existing, text: 'x' }))
-      .toEqual({ ok: false, message: 'Doh! We ran into some sort of error.' });
+    expect(await saveNote({ fetch, item: person, note: existing, text: 'x' })).toEqual({
+      ok: false,
+      message: 'Doh! We ran into some sort of error.',
+    });
   });
 });

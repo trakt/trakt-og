@@ -49,7 +49,11 @@ const load = (item: SubpageItem) =>
       }),
     item,
   });
-const failure = (promise: Promise<unknown>) => promise.then(() => null, (error: unknown) => error);
+const failure = (promise: Promise<unknown>) =>
+  promise.then(
+    () => null,
+    (error: unknown) => error,
+  );
 
 describe('loadStats', () => {
   it.each<SubpageItem>([
@@ -83,9 +87,10 @@ describe('loadStats', () => {
       }),
       http.get(`${API}/movies/:id/ratings`, () => new HttpResponse(null, { status: 404 })),
     );
-    for (
-      const item of [{ type: 'movie', id: 'missing' }, { type: 'season', id: 'breaking-bad', season: 'bad' }] as const
-    ) {
+    for (const item of [
+      { type: 'movie', id: 'missing' },
+      { type: 'season', id: 'breaking-bad', season: 'bad' },
+    ] as const) {
       const result = await failure(load(item));
       expect(isHttpError(result) && result.status).toBe(404);
     }
@@ -107,9 +112,8 @@ describe('loadStats', () => {
     expect(isHttpError(unavailable) && unavailable.status).toBe(502);
     server.resetHandlers();
     server.use(
-      http.get(
-        `${API}/*/stats`,
-        () => HttpResponse.json({ ...stats, watchers: 'ten' }, { headers: { 'X-Runtime': '0.1' } }),
+      http.get(`${API}/*/stats`, () =>
+        HttpResponse.json({ ...stats, watchers: 'ten' }, { headers: { 'X-Runtime': '0.1' } }),
       ),
     );
     const malformed = await failure(load({ type: 'show', id: 'breaking-bad' }));

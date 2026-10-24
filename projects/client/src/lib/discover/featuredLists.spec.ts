@@ -4,14 +4,7 @@ import { featuredLists } from './featuredLists.ts';
 describe('featuredLists', () => {
   it('should keep the eight essentials in order', () => {
     expect(featuredLists.map(({ id }) => id)).toEqual([
-      2_142_753,
-      2_143_363,
-      1_248_149,
-      2_233_867,
-      832_943,
-      5_790_552,
-      1_257_909,
-      1_402_475,
+      2_142_753, 2_143_363, 1_248_149, 2_233_867, 832_943, 5_790_552, 1_257_909, 1_402_475,
     ]);
   });
 

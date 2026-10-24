@@ -9,7 +9,8 @@ export function matchesCalendarFilters(item: CalendarItem, filters: AdvancedFilt
     media.overview,
     ...(item.type === 'episode' ? [item.episode.title, item.episode.overview] : []),
   ]
-    .join(' ').toLocaleLowerCase('en');
+    .join(' ')
+    .toLocaleLowerCase('en');
   const terms = filters.query.toLocaleLowerCase('en').split(/\s+/).filter(Boolean);
   if (!terms.every((term) => text.includes(term))) return false;
   // Episode type filters leave movies alone on the mixed calendar, as OG's episode-only condition did.

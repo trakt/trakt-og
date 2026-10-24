@@ -3,15 +3,17 @@ import { toHomeTrending } from './toHomeTrending.ts';
 
 describe('toHomeTrending', () => {
   it('should map a row to its page, title, year and medium poster', () => {
-    const [title] = toHomeTrending('shows', [{
-      watchers: 10,
-      item: {
-        title: 'Slow Horses',
-        year: 2022,
-        ids: { slug: 'slow-horses' },
-        images: { poster: ['media.trakt.tv/images/shows/000/1/posters/thumb/a.jpg.webp'] },
+    const [title] = toHomeTrending('shows', [
+      {
+        watchers: 10,
+        item: {
+          title: 'Slow Horses',
+          year: 2022,
+          ids: { slug: 'slow-horses' },
+          images: { poster: ['media.trakt.tv/images/shows/000/1/posters/thumb/a.jpg.webp'] },
+        },
       },
-    }]);
+    ]);
 
     expect(title).toEqual({
       key: 'shows-slow-horses',

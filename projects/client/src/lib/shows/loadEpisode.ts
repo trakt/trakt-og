@@ -54,9 +54,14 @@ async function parsed<T>(
 }
 
 /** All public reads and the parent start together, without the viewer's cookie token. */
-export async function loadEpisode(
-  { fetch, parent, id, season: requestedSeason, episode: requestedEpisode, url }: Params,
-) {
+export async function loadEpisode({
+  fetch,
+  parent,
+  id,
+  season: requestedSeason,
+  episode: requestedEpisode,
+  url,
+}: Params) {
   const season = number(requestedSeason, 'Season');
   const episode = number(requestedEpisode, 'Episode');
   const client = api({ fetch });
@@ -70,7 +75,7 @@ export async function loadEpisode(
       country: watchNowCountry(layout.settings),
       settings: layout.settings,
       isVip: layout.user?.isVip ?? false,
-    })
+    }),
   );
   const [
     showResponse,

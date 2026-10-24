@@ -15,7 +15,11 @@ const remove = () =>
   removeListItems({
     owner: 'sean',
     listId: 7,
-    items: [{ type: 'movie', trakt: 1 }, { type: 'person', trakt: 2 }, { type: 'movie', trakt: 3 }],
+    items: [
+      { type: 'movie', trakt: 1 },
+      { type: 'person', trakt: 2 },
+      { type: 'movie', trakt: 3 },
+    ],
     notify,
     request: (path, body) =>
       rawApiFetch({ fetch, token: 'viewer', path, init: { method: 'POST', body: JSON.stringify(body) } }),
@@ -23,13 +27,15 @@ const remove = () =>
 
 describe('removeListItems', () => {
   it('should send the media grouped by type', async () => {
-    server.use(http.post(endpoint, async ({ request }) => {
-      expect(await request.json()).toEqual({
-        movies: [{ ids: { trakt: 1 } }, { ids: { trakt: 3 } }],
-        people: [{ ids: { trakt: 2 } }],
-      });
-      return HttpResponse.json({ deleted: { movies: 2, people: 1 }, not_found: { movies: [] } });
-    }));
+    server.use(
+      http.post(endpoint, async ({ request }) => {
+        expect(await request.json()).toEqual({
+          movies: [{ ids: { trakt: 1 } }, { ids: { trakt: 3 } }],
+          people: [{ ids: { trakt: 2 } }],
+        });
+        return HttpResponse.json({ deleted: { movies: 2, people: 1 }, not_found: { movies: [] } });
+      }),
+    );
     await expect(remove()).resolves.toBe(true);
   });
 

@@ -28,11 +28,16 @@ export function itemCommentSort(sortBy: string | undefined, sortHow: string | nu
   const by = sortBy && isSortBy(sortBy) ? sortBy : 'likes';
   const reversible = by === 'rating' || by === 'added';
   const how = reversible && sortHow === 'desc' ? 'desc' : 'asc';
-  const api = by === 'rating'
-    ? how === 'asc' ? 'highest' : 'lowest'
-    : by === 'added'
-    ? how === 'asc' ? 'newest' : 'oldest'
-    : by;
+  const api =
+    by === 'rating'
+      ? how === 'asc'
+        ? 'highest'
+        : 'lowest'
+      : by === 'added'
+        ? how === 'asc'
+          ? 'newest'
+          : 'oldest'
+        : by;
   return { by, how, reversible, api };
 }
 

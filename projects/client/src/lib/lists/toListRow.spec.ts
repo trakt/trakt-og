@@ -73,15 +73,17 @@ describe('toListRow', () => {
   });
 
   it('should fill in what the API left out', () => {
-    const row = toListRow(list({
-      description: ' ',
-      allow_comments: null,
-      comment_count: null,
-      likes: null,
-      ids: { trakt: 7, slug: null },
-      user: { username: 'Sean', ids: {}, images: null },
-      images: null,
-    }));
+    const row = toListRow(
+      list({
+        description: ' ',
+        allow_comments: null,
+        comment_count: null,
+        likes: null,
+        ids: { trakt: 7, slug: null },
+        user: { username: 'Sean', ids: {}, images: null },
+        images: null,
+      }),
+    );
     expect(row).toMatchObject({
       href: '/users/Sean/lists/7',
       owner: { slug: 'Sean', name: 'Sean', href: '/users/Sean' },

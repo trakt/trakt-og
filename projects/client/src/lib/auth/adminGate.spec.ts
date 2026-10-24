@@ -44,7 +44,12 @@ describe('isAdmin', () => {
     expect(await check('abc', userinfo({ u: { a: false } }))).toBe(false);
     expect(await check('abc', userinfo({ u: { a: 'true' } }))).toBe(false);
     expect(await check('abc', userinfo({ u: { a: true } }, 401))).toBe(false);
-    expect(await check('abc', vi.fn<typeof fetch>(() => Promise.reject(new TypeError('x'))))).toBe(false);
+    expect(
+      await check(
+        'abc',
+        vi.fn<typeof fetch>(() => Promise.reject(new TypeError('x'))),
+      ),
+    ).toBe(false);
   });
 
   it.each([

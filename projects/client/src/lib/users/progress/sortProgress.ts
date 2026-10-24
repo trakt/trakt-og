@@ -27,10 +27,12 @@ const compare = (a: number | string, b: number | string) =>
   typeof a === 'string' && typeof b === 'string' ? a.localeCompare(b) : Number(a) - Number(b);
 
 /** A stable 0-1 number for a show, so a random order holds still while the rows recompute. */
-const shuffle = (seed: number) => ({ show }: ProgressItem) => {
-  const hashed = Math.imul(show.id ^ seed, 2_654_435_761) >>> 0;
-  return hashed / 2 ** 32;
-};
+const shuffle =
+  (seed: number) =>
+  ({ show }: ProgressItem) => {
+    const hashed = Math.imul(show.id ^ seed, 2_654_435_761) >>> 0;
+    return hashed / 2 ** 32;
+  };
 
 /**
  * The tab's sort, applied in the browser. Ties go to the higher show id either way. `seed`

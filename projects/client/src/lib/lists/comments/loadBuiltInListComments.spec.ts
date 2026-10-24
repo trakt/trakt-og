@@ -33,10 +33,12 @@ const server = setupServer(
   }),
   http.get(/^https:\/\/apiz\.trakt\.tv\/users\/tester\/(watchlist|favorites)\/all\/rank\/asc/, ({ request }) => {
     seen.push(request);
-    return HttpResponse.json([{
-      type: 'movie',
-      movie: { title: 'Film', images: { poster: ['media.trakt.tv/poster.jpg'] } },
-    }]);
+    return HttpResponse.json([
+      {
+        type: 'movie',
+        movie: { title: 'Film', images: { poster: ['media.trakt.tv/poster.jpg'] } },
+      },
+    ]);
   }),
 );
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
@@ -97,7 +99,10 @@ describe('loadBuiltInListComments', () => {
     );
   });
   it('should report missing lists and upstream failures', async () => {
-    for (const [status, expected] of [[404, 404], [500, 502]]) {
+    for (const [status, expected] of [
+      [404, 404],
+      [500, 502],
+    ]) {
       server.use(
         http.get(
           'https://apiz.trakt.tv/users/tester/watchlist/comments/likes',
@@ -108,23 +113,28 @@ describe('loadBuiltInListComments', () => {
     }
   });
   it('should return an empty list and no item id when there are no comments', async () => {
-    server.use(http.get('https://apiz.trakt.tv/users/tester/watchlist/comments/likes', () =>
-      HttpResponse.json([], {
-        headers: { 'X-Pagination-Item-Count': '0', 'X-Pagination-Page-Count': '1' },
-      })));
+    server.use(
+      http.get('https://apiz.trakt.tv/users/tester/watchlist/comments/likes', () =>
+        HttpResponse.json([], {
+          headers: { 'X-Pagination-Item-Count': '0', 'X-Pagination-Page-Count': '1' },
+        }),
+      ),
+    );
     expect(await load()).toMatchObject({ comments: [], itemCount: 0, list: { id: null } });
   });
   it('should render no private comments on a stale token and cap oversized page sizes', async () => {
-    server.use(http.get('https://apiz.trakt.tv/users/tester/watchlist/comments/likes', ({ request }) => {
-      seen.push(request);
-      // The worker's 401 is plain text under a JSON content type.
-      return request.headers.has('authorization')
-        ? new HttpResponse('Unauthorized', {
-          status: 401,
-          headers: { 'content-type': 'application/json; charset=utf-8' },
-        })
-        : HttpResponse.json([]);
-    }));
+    server.use(
+      http.get('https://apiz.trakt.tv/users/tester/watchlist/comments/likes', ({ request }) => {
+        seen.push(request);
+        // The worker's 401 is plain text under a JSON content type.
+        return request.headers.has('authorization')
+          ? new HttpResponse('Unauthorized', {
+              status: 401,
+              headers: { 'content-type': 'application/json; charset=utf-8' },
+            })
+          : HttpResponse.json([]);
+      }),
+    );
     expect((await load({ private: true, token: 'stale', query: '?limit=500&page=bad' })).comments).toEqual([]);
     expect(seen.filter((r) => r.url.includes('/comments/')).every((r) => r.url.includes('page=1&limit=100'))).toBe(
       true,

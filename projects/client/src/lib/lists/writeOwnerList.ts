@@ -18,29 +18,38 @@ type Change =
   | { type: 'remove'; items: readonly { type: 'movie' | 'show' | 'season' | 'episode'; id: number }[] };
 
 /** Validate every proxied response; the caller owns optimistic page state and its rollback. */
-export async function writeOwnerList({ kind, change, request, notify }: {
+export async function writeOwnerList({
+  kind,
+  change,
+  request,
+  notify,
+}: {
   kind: BuiltInListKind;
   change: Change;
   request: (path: string, init: RequestInit) => Promise<Response>;
   notify: { error: (message: string) => void };
 }): Promise<boolean> {
-  const suffix = change.type === 'order'
-    ? '/reorder'
-    : change.type === 'remove'
-    ? '/remove'
-    : change.type === 'notes'
-    ? `/${change.id}`
-    : '';
-  const body = change.type === 'metadata'
-    ? change.body
-    : change.type === 'order'
-    ? { rank: change.rank }
-    : change.type === 'notes'
-    ? { notes: change.notes.trim() }
-    : Object.fromEntries(['movie', 'show', 'season', 'episode'].map((type) => [
-      `${type}s`,
-      change.items.filter((item) => item.type === type).map(({ id }) => ({ ids: { trakt: id } })),
-    ]));
+  const suffix =
+    change.type === 'order'
+      ? '/reorder'
+      : change.type === 'remove'
+        ? '/remove'
+        : change.type === 'notes'
+          ? `/${change.id}`
+          : '';
+  const body =
+    change.type === 'metadata'
+      ? change.body
+      : change.type === 'order'
+        ? { rank: change.rank }
+        : change.type === 'notes'
+          ? { notes: change.notes.trim() }
+          : Object.fromEntries(
+              ['movie', 'show', 'season', 'episode'].map((type) => [
+                `${type}s`,
+                change.items.filter((item) => item.type === type).map(({ id }) => ({ ids: { trakt: id } })),
+              ]),
+            );
   try {
     const response = await request(`/sync/${kind}${suffix}`, {
       method: change.type === 'metadata' || change.type === 'notes' ? 'PUT' : 'POST',
@@ -60,7 +69,8 @@ export async function writeOwnerList({ kind, change, request, notify }: {
       if (
         Object.values(removal.not_found).some((rows) => rows.length) ||
         Object.values(removal.deleted).reduce((sum, count) => sum + count, 0) !== change.items.length
-      ) throw new Error('Incomplete removal');
+      )
+        throw new Error('Incomplete removal');
     }
     return true;
   } catch {

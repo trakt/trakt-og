@@ -127,9 +127,8 @@ describe('loadPersonalListComments', () => {
   });
   it("should 404, not throw, on the comments read's plain-text 403 even when the summary reads", async () => {
     server.use(
-      http.get(
-        `${API}/users/sean/lists/:list/comments/:sort`,
-        () => plainText('List is private or does not exist', 403),
+      http.get(`${API}/users/sean/lists/:list/comments/:sort`, () =>
+        plainText('List is private or does not exist', 403),
       ),
     );
     await expect(load()).rejects.toMatchObject({ status: 404 });

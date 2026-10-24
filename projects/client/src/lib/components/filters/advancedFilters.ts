@@ -33,22 +33,24 @@ export type ListFilterKey = (typeof listFilterKeys)[number];
 export const rangeFilterKeys = ['years', 'runtimes', 'ratings', 'imdb_ratings', 'rt_meters', 'rt_user_meters'] as const;
 export type RangeFilterKey = (typeof rangeFilterKeys)[number];
 
-export type AdvancedFilters =
-  & { readonly watchnow: readonly string[]; readonly query: string }
-  & { readonly [key in ListFilterKey]: ListFilter }
-  & { readonly [key in RangeFilterKey]: Range | null };
+export type AdvancedFilters = { readonly watchnow: readonly string[]; readonly query: string } & {
+  readonly [key in ListFilterKey]: ListFilter;
+} & { readonly [key in RangeFilterKey]: Range | null };
 
 const noList: ListFilter = { values: [], mode: 'any' };
 
 export const emptyFilters: AdvancedFilters = {
   watchnow: [],
   query: '',
-  ...Object.fromEntries(listFilterKeys.map((key) => [key, noList])) as { [key in ListFilterKey]: ListFilter },
-  ...Object.fromEntries(rangeFilterKeys.map((key) => [key, null])) as { [key in RangeFilterKey]: null },
+  ...(Object.fromEntries(listFilterKeys.map((key) => [key, noList])) as { [key in ListFilterKey]: ListFilter }),
+  ...(Object.fromEntries(rangeFilterKeys.map((key) => [key, null])) as { [key in RangeFilterKey]: null }),
 };
 
 const split = (param: string | null) =>
-  (param ?? '').split(',').map((value) => value.trimEnd()).filter((value) => value.trim() !== '');
+  (param ?? '')
+    .split(',')
+    .map((value) => value.trimEnd())
+    .filter((value) => value.trim() !== '');
 
 // A literal `+` in a query string decodes to a space, so OG's "all" prefix arrives as a leading space. API
 // checked for it the same way (`searcher_conjunction_select`).
@@ -87,12 +89,12 @@ export function parseAdvancedFilters(search: URLSearchParams): AdvancedFilters {
   return {
     query: query === '*' ? '' : query,
     watchnow: [...new Set(split(search.get('watchnow')).map((value) => value.trim().toLowerCase()))],
-    ...Object.fromEntries(listFilterKeys.map((key) => [key, parseList(search.get(key))])) as {
+    ...(Object.fromEntries(listFilterKeys.map((key) => [key, parseList(search.get(key))])) as {
       [key in ListFilterKey]: ListFilter;
-    },
-    ...Object.fromEntries(rangeFilterKeys.map((key) => [key, parseRange(search.get(key))])) as {
+    }),
+    ...(Object.fromEntries(rangeFilterKeys.map((key) => [key, parseRange(search.get(key))])) as {
       [key in RangeFilterKey]: Range | null;
-    },
+    }),
   };
 }
 
@@ -103,7 +105,7 @@ const prefix = { any: '', all: '+', none: '-' } as const;
 const encodeList = (values: readonly string[], mode: ListMode) =>
   values.map((value) => prefix[mode] + encodeURIComponent(value)).join(',');
 
-const formatNumber = (value: number, key: RangeFilterKey) => key === 'imdb_ratings' ? value.toFixed(1) : `${value}`;
+const formatNumber = (value: number, key: RangeFilterKey) => (key === 'imdb_ratings' ? value.toFixed(1) : `${value}`);
 
 /** The query string for these filters (no `?`), in OG's param order. Empty when nothing is filtered. */
 export function advancedFiltersSearch(filters: AdvancedFilters): string {

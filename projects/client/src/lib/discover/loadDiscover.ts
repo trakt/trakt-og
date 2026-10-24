@@ -95,7 +95,7 @@ async function moodShelf(fetcher: typeof fetch, mood: DiscoverMood, type: MediaT
   const filter = mood[type] ?? {};
   return {
     id: mood.id,
-    label: type === 'show' ? mood.showLabel ?? mood.label : mood.label,
+    label: type === 'show' ? (mood.showLabel ?? mood.label) : mood.label,
     more: chartHref(type, filter, chart),
     items,
   };
@@ -105,7 +105,7 @@ async function moodShelf(fetcher: typeof fetch, mood: DiscoverMood, type: MediaT
 function essentials(fetcher: typeof fetch) {
   return Promise.all(
     featuredLists.map(async (tile) =>
-      toEssentialList(tile, await rawBody(fetcher, `/lists/${tile.id}?extended=images`, listSchema.nullable(), null))
+      toEssentialList(tile, await rawBody(fetcher, `/lists/${tile.id}?extended=images`, listSchema.nullable(), null)),
     ),
   );
 }
@@ -124,11 +124,13 @@ async function themeLists(fetcher: typeof fetch, theme: DiscoverTheme) {
   const weekLikes = new Map(trending.map(({ list, like_count }) => [list.ids.trakt, like_count ?? 0]));
 
   return found
-    .map(({ list }): ThemeList => ({
-      ...toListCard(list),
-      weekLikes: weekLikes.get(list.ids.trakt) ?? 0,
-      ...(list.updated_at && { updatedAt: list.updated_at }),
-    }))
+    .map(
+      ({ list }): ThemeList => ({
+        ...toListCard(list),
+        weekLikes: weekLikes.get(list.ids.trakt) ?? 0,
+        ...(list.updated_at && { updatedAt: list.updated_at }),
+      }),
+    )
     .filter((card) => card.items >= 8 && !essentials.has(card.id));
 }
 
@@ -139,10 +141,12 @@ async function premieres(
 ) {
   const client = api({ fetch: fetcher });
   const [feed, anticipated] = await Promise.all([
-    client.calendars.releasesHotPremieres({
-      params: { start_date: today, days: PREMIERE_DAYS },
-      query: { extended: 'full,images' },
-    }).catch(() => null),
+    client.calendars
+      .releasesHotPremieres({
+        params: { start_date: today, days: PREMIERE_DAYS },
+        query: { extended: 'full,images' },
+      })
+      .catch(() => null),
     client.shows.anticipated({ query: { extended: 'full,images', limit: 60 } }).catch(() => null),
   ]);
   if (feed?.status !== 200) return [];
@@ -196,9 +200,9 @@ export async function loadDiscover({ fetch, parent, now = new Date() }: LoadDisc
   return {
     theme: { id: theme.id, title: theme.title, blurb: theme.blurb },
     /** "October on Trakt". */
-    eyebrow: `${
-      new Intl.DateTimeFormat('en-US', { month: 'long', timeZone: 'UTC' }).format(new Date(`${today}T00:00:00Z`))
-    } on Trakt`,
+    eyebrow: `${new Intl.DateTimeFormat('en-US', { month: 'long', timeZone: 'UTC' }).format(
+      new Date(`${today}T00:00:00Z`),
+    )} on Trakt`,
     today,
     ribbon: seasonRibbon(DISCOVER_THEMES, today),
     picks: picks.hero,

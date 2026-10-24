@@ -26,7 +26,7 @@ type ToProgressItemParams = {
 
 const latest = (dates: readonly string[]) =>
   dates.reduce<string | undefined>((max, date) => (max === undefined || date > max ? date : max), undefined);
-const collectedAt = (item: CollectedItem | undefined) => typeof item === 'string' ? item : item?.at;
+const collectedAt = (item: CollectedItem | undefined) => (typeof item === 'string' ? item : item?.at);
 const sum = (values: readonly number[]) => values.reduce((total, value) => total + value, 0);
 
 /** Without a catalog: the summary's aired count against the overlay's episodes, specials left out like the count. */
@@ -107,11 +107,11 @@ function fromCatalog(params: ToProgressItemParams, catalog: ShowCatalog): Progre
 
   const all = seasons.flatMap(({ episodes }) => episodes);
   const last = all.reduce<Episode | undefined>(
-    (found, episode) => episode.at && (!found?.at || episode.at > found.at) ? episode : found,
+    (found, episode) => (episode.at && (!found?.at || episode.at > found.at) ? episode : found),
     undefined,
   );
   const rows = seasons.map(toSeason);
-  const doneIds = new Set(all.flatMap(({ episode, done }) => done ? [episode.id] : []));
+  const doneIds = new Set(all.flatMap(({ episode, done }) => (done ? [episode.id] : [])));
 
   return {
     show,

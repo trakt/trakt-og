@@ -46,10 +46,12 @@ export function showStore<T extends { readonly id: number }>(name: (typeof STORE
       const missing = ids.filter((id) => !memory.has(id));
       const stored = missing.length > 0 ? await read(missing).catch(() => []) : [];
       stored.forEach((record) => memory.set(record.id, record));
-      return new Map(ids.flatMap((id) => {
-        const record = memory.get(id);
-        return record ? [[id, record] as const] : [];
-      }));
+      return new Map(
+        ids.flatMap((id) => {
+          const record = memory.get(id);
+          return record ? [[id, record] as const] : [];
+        }),
+      );
     },
     put: async (records) => {
       records.forEach((record) => memory.set(record.id, record));

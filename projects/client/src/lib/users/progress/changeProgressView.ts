@@ -19,9 +19,14 @@ type ChangeProgressViewParams = {
  * `browsing.progress.<settings>` through `PUT /users/settings`, the settings page's save path. The page shows the new
  * state before the save and goes back to the old one, with the error, if it fails. Resolves whether it saved.
  */
-export async function changeProgressView(
-  { view, settings, on, apply, request, notify }: ChangeProgressViewParams,
-): Promise<boolean> {
+export async function changeProgressView({
+  view,
+  settings,
+  on,
+  apply,
+  request,
+  notify,
+}: ChangeProgressViewParams): Promise<boolean> {
   apply(on);
   const result = await saveSettings({
     request,

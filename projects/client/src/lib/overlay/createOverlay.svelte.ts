@@ -61,14 +61,14 @@ const RECHECK_MS = 60_000;
 const loadChecker = () => import('./checkActivities.ts');
 
 const countEpisodes = (seasons: ReadonlyMap<number, ReadonlyMap<number, unknown>> | undefined) =>
-  [...(seasons ?? new Map())].reduce((sum, [number, episodes]) => number === 0 ? sum : sum + episodes.size, 0);
+  [...(seasons ?? new Map())].reduce((sum, [number, episodes]) => (number === 0 ? sum : sum + episodes.size), 0);
 
 const watchDetails = (dates: readonly string[] | undefined) => ({
   watchedPlays: dates?.length,
-  lastWatchedAt: dates?.reduce((latest, date) => date > latest ? date : latest, '') || undefined,
+  lastWatchedAt: dates?.reduce((latest, date) => (date > latest ? date : latest), '') || undefined,
 });
 
-const nonEmpty = <T>(list: readonly T[] | undefined) => list?.length ? list : undefined;
+const nonEmpty = <T>(list: readonly T[] | undefined) => (list?.length ? list : undefined);
 
 const progress = (watchedEpisodes: number | undefined, collectedEpisodes: number | undefined) => ({
   watchedEpisodes,
@@ -106,7 +106,7 @@ const sourcesOfEpisode = (shows: Shows<readonly LibrarySource[]>, id: number) =>
   episodeIndex(shows, (sources, key) => [key, sources]).get(id);
 
 const collectedEpisode = (shows: Shows<CollectedItem>, id: number) =>
-  episodeIndex(shows, (item) => typeof item === 'string' || item.id === undefined ? undefined : [item.id, item]).get(
+  episodeIndex(shows, (item) => (typeof item === 'string' || item.id === undefined ? undefined : [item.id, item])).get(
     id,
   );
 
@@ -118,26 +118,29 @@ function stateOf(slices: Partial<OverlaySlices>, type: MediaType, id: number, se
   const listed = slices.listed?.[type].has(id);
   if (type === 'episode') {
     // With its season it's one lookup; without, find the season that has it.
-    const dates = slices.watchedShows &&
+    const dates =
+      slices.watchedShows &&
       (season
         ? slices.watchedShows.get(season.show)?.get(season.number)?.get(id)
         : datesOfEpisode(slices.watchedShows, id));
     const plays = slices.watchedShows && (dates?.length ?? 0);
-    const collection = season?.episode !== undefined
-      ? slices.collectedShows?.get(season.show)?.get(season.number)?.get(season.episode)
-      : slices.collectedShows && collectedEpisode(slices.collectedShows, id);
+    const collection =
+      season?.episode !== undefined
+        ? slices.collectedShows?.get(season.show)?.get(season.number)?.get(season.episode)
+        : slices.collectedShows && collectedEpisode(slices.collectedShows, id);
     return {
       rating,
       listed,
       watchlisted,
       ...watchDetails(dates),
-      collected: slices.collectedShows === undefined
-        ? undefined
-        : collection !== undefined
-        ? true
-        : season?.episode !== undefined
-        ? false
-        : undefined,
+      collected:
+        slices.collectedShows === undefined
+          ? undefined
+          : collection !== undefined
+            ? true
+            : season?.episode !== undefined
+              ? false
+              : undefined,
       ...collectedDetails(collection),
       collectionSources: nonEmpty(
         season
@@ -154,8 +157,9 @@ function stateOf(slices: Partial<OverlaySlices>, type: MediaType, id: number, se
       shows && (shows.get(season.show)?.get(season.number)?.size ?? 0);
     const resetAt = slices.rewatching instanceof Map ? slices.rewatching.get(season.show) : undefined;
     const rewatched = resetAt
-      ? [...(slices.watchedShows?.get(season.show)?.get(season.number)?.values() ?? [])]
-        .map((dates) => dates.filter((date) => date >= resetAt))
+      ? [...(slices.watchedShows?.get(season.show)?.get(season.number)?.values() ?? [])].map((dates) =>
+          dates.filter((date) => date >= resetAt),
+        )
       : undefined;
     return {
       rating,
@@ -196,8 +200,8 @@ function stateOf(slices: Partial<OverlaySlices>, type: MediaType, id: number, se
   const resetAt = slices.rewatching instanceof Map ? slices.rewatching.get(id) : undefined;
   const rewatched = resetAt
     ? [...(slices.watchedShows?.get(id) ?? [])]
-      .filter(([number]) => number > 0)
-      .flatMap(([, episodes]) => [...episodes.values()].map((dates) => dates.filter((date) => date >= resetAt)))
+        .filter(([number]) => number > 0)
+        .flatMap(([, episodes]) => [...episodes.values()].map((dates) => dates.filter((date) => date >= resetAt)))
     : undefined;
   return {
     ...common,
@@ -209,8 +213,10 @@ function stateOf(slices: Partial<OverlaySlices>, type: MediaType, id: number, se
       [...(slices.syncedEpisodes?.get(id)?.values() ?? [])].flatMap((episodes) => [...episodes.values()]),
     ),
     ...watchDetails(
-      slices.watchedShows && [...(slices.watchedShows.get(id) ?? [])]
-        .filter(([number]) => number > 0).flatMap(([, episodes]) => [...episodes.values()].flat()),
+      slices.watchedShows &&
+        [...(slices.watchedShows.get(id) ?? [])]
+          .filter(([number]) => number > 0)
+          .flatMap(([, episodes]) => [...episodes.values()].flat()),
     ),
     dropped: slices.dropped?.has(id),
     rewatching: slices.rewatching?.has(id),
@@ -255,7 +261,7 @@ export function createOverlay({ get, storage, now = Date.now }: CreateOverlayPar
   // `start` begins the import with the cache read, so the chunk loads while IndexedDB answers.
   let checker: ReturnType<typeof loadChecker> | null = null;
   const preloadChecker = () => {
-    const loading = checker ??= loadChecker();
+    const loading = (checker ??= loadChecker());
     loading.catch(() => {
       if (checker === loading) checker = null;
     });
@@ -356,7 +362,7 @@ export function createOverlay({ get, storage, now = Date.now }: CreateOverlayPar
     },
 
     /** The visibility check: a `refresh` at most once a minute. */
-    recheck: (): Promise<void> => now() - checkedAt < RECHECK_MS ? Promise.resolve() : refresh(),
+    recheck: (): Promise<void> => (now() - checkedAt < RECHECK_MS ? Promise.resolve() : refresh()),
 
     /**
      * Applies an optimistic write to a loaded slice and returns its rollback. Call it right before the request and
@@ -366,7 +372,7 @@ export function createOverlay({ get, storage, now = Date.now }: CreateOverlayPar
       name: K,
       update: (data: OverlaySlices[K]) => OverlaySlices[K],
       initial?: OverlaySlices[K],
-    ): () => void => {
+    ): (() => void) => {
       const before = slices[name];
       const base = before ?? initial;
       if (base === undefined) return () => {};

@@ -103,8 +103,9 @@ describe('quickIconFill', () => {
     });
 
     it('should keep the idle tooltip for anything not done', () => {
-      expect(quickIconFill({ state: { plays: 0, watchedEpisodes: 0, favorited: false }, airedEpisodes: 5 }).titles)
-        .toEqual({});
+      expect(
+        quickIconFill({ state: { plays: 0, watchedEpisodes: 0, favorited: false }, airedEpisodes: 5 }).titles,
+      ).toEqual({});
     });
   });
   it('should format the favorite date in the viewer timezone and date order', () => {

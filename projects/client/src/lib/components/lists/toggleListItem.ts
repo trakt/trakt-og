@@ -24,15 +24,15 @@ export async function toggleListItem({ target, list, remove, stillListed = false
   };
   const rollback = list
     ? overlay.patch(
-      'listed',
-      (data) => ({ ...data, [target.type]: update(data[target.type], !remove || stillListed) }),
-      { movie: new Set(), show: new Set(), season: new Set(), episode: new Set() },
-    )
+        'listed',
+        (data) => ({ ...data, [target.type]: update(data[target.type], !remove || stillListed) }),
+        { movie: new Set(), show: new Set(), season: new Set(), episode: new Set() },
+      )
     : overlay.patch(
-      'watchlist',
-      (data) => ({ ...data, [target.type]: update(data[target.type] ?? new Set(), !remove) }),
-      { movie: new Set(), show: new Set() },
-    );
+        'watchlist',
+        (data) => ({ ...data, [target.type]: update(data[target.type] ?? new Set(), !remove) }),
+        { movie: new Set(), show: new Set() },
+      );
   const path = list ? `/users/${encodeURIComponent(list.owner)}/lists/${list.id}/items` : '/sync/watchlist';
   try {
     const response = await request(`${path}${remove ? '/remove' : ''}`, {

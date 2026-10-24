@@ -62,9 +62,10 @@ export async function loadList({ fetch, locals, params, url, parent, cookies }: 
   if (profile.isLocked) return { ...shell, list: null };
 
   // A stale token keeps the anonymous answer: the server never refreshes, the browser does.
-  const viewerSummary = anonymousSummary?.status !== 200 && token
-    ? await fetchSummary(api({ fetch, token }), { id: params.id, list: params.list })
-    : null;
+  const viewerSummary =
+    anonymousSummary?.status !== 200 && token
+      ? await fetchSummary(api({ fetch, token }), { id: params.id, list: params.list })
+      : null;
   const summary = viewerSummary?.status === 200 ? viewerSummary : anonymousSummary;
   if (!summary || [204, 401, 403, 404].includes(summary.status)) error(404, 'Page Not Found');
   if (summary.status !== 200) error(502, 'Trakt is having trouble loading this list.');

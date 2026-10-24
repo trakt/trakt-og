@@ -18,17 +18,21 @@ type Params = {
   notify: { success: (message: string) => void; error: (message: string) => void };
   now?: () => Date;
 };
-const resultSchema = z.object({
-  message: z.string().optional(),
-  added: z.object({ movies: z.number().optional(), episodes: z.number().optional() }).optional(),
-  updated: z.object({ movies: z.number().optional(), episodes: z.number().optional() }).optional(),
-  deleted: z.object({ movies: z.number().optional(), episodes: z.number().optional() }).optional(),
-  not_found: z.record(z.string(), z.array(z.unknown())).optional(),
-}).refine((result) => Boolean(result.added || result.updated || result.deleted), 'Missing collection result counts');
-const episodeSchema = z.array(z.object({
-  show: z.object({ ids: z.object({ trakt: z.number() }) }),
-  episode: z.object({ season: z.number(), number: z.number() }),
-}));
+const resultSchema = z
+  .object({
+    message: z.string().optional(),
+    added: z.object({ movies: z.number().optional(), episodes: z.number().optional() }).optional(),
+    updated: z.object({ movies: z.number().optional(), episodes: z.number().optional() }).optional(),
+    deleted: z.object({ movies: z.number().optional(), episodes: z.number().optional() }).optional(),
+    not_found: z.record(z.string(), z.array(z.unknown())).optional(),
+  })
+  .refine((result) => Boolean(result.added || result.updated || result.deleted), 'Missing collection result counts');
+const episodeSchema = z.array(
+  z.object({
+    show: z.object({ ids: z.object({ trakt: z.number() }) }),
+    episode: z.object({ season: z.number(), number: z.number() }),
+  }),
+);
 
 /** Writes aired episodes only; metadata-only changes preserve collection dates and membership. */
 export async function collectMedia(params: Params): Promise<boolean> {
@@ -38,85 +42,103 @@ export async function collectMedia(params: Params): Promise<boolean> {
   const only = target.type === 'season' ? target.onlyEpisodeIds : undefined;
   let rollback = () => {};
   try {
-    const context = target.type === 'episode' && target.season?.episode === undefined
-      ? await request(`/search/trakt/${target.id}?type=episode`)
-      : undefined;
+    const context =
+      target.type === 'episode' && target.season?.episode === undefined
+        ? await request(`/search/trakt/${target.id}?type=episode`)
+        : undefined;
     if (context && !context.ok) throw new Error(String(context.status));
     const row = context ? episodeSchema.parse(await context.json()).at(0) : undefined;
     if (target.type === 'episode' && !row && target.season?.episode === undefined) throw new Error('Episode not found');
-    const episodes = target.type === 'episode' && target.season?.episode !== undefined
-      ? [{
-        id: target.id,
-        show: target.season.show,
-        season: target.season.number,
-        number: target.season.episode,
-        completed: false,
-      }]
-      : row
-      ? [{
-        id: target.id,
-        show: row.show.ids.trakt,
-        season: row.episode.season,
-        number: row.episode.number,
-        completed: false,
-      }]
-      : target.type === 'movie' || (remove && !only)
-      ? []
-      : (await params.episodes()).filter((episode) =>
-        (!only || only.includes(episode.id)) &&
-        (remove || (metadataOnly ? episode.completed : force || !episode.completed))
-      );
+    const episodes =
+      target.type === 'episode' && target.season?.episode !== undefined
+        ? [
+            {
+              id: target.id,
+              show: target.season.show,
+              season: target.season.number,
+              number: target.season.episode,
+              completed: false,
+            },
+          ]
+        : row
+          ? [
+              {
+                id: target.id,
+                show: row.show.ids.trakt,
+                season: row.episode.season,
+                number: row.episode.number,
+                completed: false,
+              },
+            ]
+          : target.type === 'movie' || (remove && !only)
+            ? []
+            : (await params.episodes()).filter(
+                (episode) =>
+                  (!only || only.includes(episode.id)) &&
+                  (remove || (metadataOnly ? episode.completed : force || !episode.completed)),
+              );
     if (!remove && target.type !== 'movie' && episodes.length === 0) {
       notify.error(
         metadataOnly ? 'No collected episodes were found to update.' : 'Doh! No aired episodes were found to collect.',
       );
       return false;
     }
-    const at = collectedAt === 'unknown'
-      ? UNKNOWN_DATE
-      : collectedAt && !['now', 'released'].includes(collectedAt)
-      ? collectedAt
-      : now().toISOString();
+    const at =
+      collectedAt === 'unknown'
+        ? UNKNOWN_DATE
+        : collectedAt && !['now', 'released'].includes(collectedAt)
+          ? collectedAt
+          : now().toISOString();
     const updated = (before: CollectedItem | undefined, id?: number) => ({
-      at: metadataOnly ? typeof before === 'string' ? before : before?.at ?? at : at,
+      at: metadataOnly ? (typeof before === 'string' ? before : (before?.at ?? at)) : at,
       id,
       metadata: metadata ?? (typeof before === 'string' ? undefined : before?.metadata),
       sources: typeof before === 'string' ? undefined : before?.sources,
     });
-    rollback = target.type === 'movie'
-      ? overlay.patch('collectedMovies', (before) => {
-        const after = new Map(before);
-        if (remove) after.delete(target.id);
-        else after.set(target.id, updated(before.get(target.id)));
-        return after;
-      }, new Map())
-      : overlay.patch('collectedShows', (before) => {
-        const after = new Map(before);
-        if (remove && target.type === 'show') {
-          after.delete(target.id);
-          return after;
-        }
-        if (remove && target.type === 'season' && !only) {
-          if (!target.season) throw new Error('Season context unavailable');
-          const seasons = new Map(after.get(target.season.show));
-          seasons.delete(target.season.number);
-          after.set(target.season.show, seasons);
-          return after;
-        }
-        for (const episode of episodes) {
-          const seasons = new Map(after.get(episode.show));
-          const values = new Map(seasons.get(episode.season));
-          if (remove) values.delete(episode.number);
-          else values.set(episode.number, updated(values.get(episode.number), episode.id));
-          seasons.set(episode.season, values);
-          after.set(episode.show, seasons);
-        }
-        return after;
-      }, new Map());
+    rollback =
+      target.type === 'movie'
+        ? overlay.patch(
+            'collectedMovies',
+            (before) => {
+              const after = new Map(before);
+              if (remove) after.delete(target.id);
+              else after.set(target.id, updated(before.get(target.id)));
+              return after;
+            },
+            new Map(),
+          )
+        : overlay.patch(
+            'collectedShows',
+            (before) => {
+              const after = new Map(before);
+              if (remove && target.type === 'show') {
+                after.delete(target.id);
+                return after;
+              }
+              if (remove && target.type === 'season' && !only) {
+                if (!target.season) throw new Error('Season context unavailable');
+                const seasons = new Map(after.get(target.season.show));
+                seasons.delete(target.season.number);
+                after.set(target.season.show, seasons);
+                return after;
+              }
+              for (const episode of episodes) {
+                const seasons = new Map(after.get(episode.show));
+                const values = new Map(seasons.get(episode.season));
+                if (remove) values.delete(episode.number);
+                else values.set(episode.number, updated(values.get(episode.number), episode.id));
+                seasons.set(episode.season, values);
+                after.set(episode.show, seasons);
+              }
+              return after;
+            },
+            new Map(),
+          );
     const fields = remove ? {} : { ...(metadataOnly ? {} : { collected_at: collectedAt }), ...metadata };
-    const items = target.type === 'movie' || (remove && !only) || target.type === 'episode'
-      ? { [`${target.type}s`]: [{ ids: { trakt: target.id }, ...fields }] }
-      : { episodes: episodes.map(({ id }) => ({ ids: { trakt: id }, ...fields })) };
+    const items =
+      target.type === 'movie' || (remove && !only) || target.type === 'episode'
+        ? { [`${target.type}s`]: [{ ids: { trakt: target.id }, ...fields }] }
+        : { episodes: episodes.map(({ id }) => ({ ids: { trakt: id }, ...fields })) };
     const response = await request(`/sync/collection${remove ? '/remove' : ''}`, items);
     if (!response.ok) throw new Error(String(response.status));
     const result = resultSchema.parse(await response.json());
@@ -126,8 +148,8 @@ export async function collectMedia(params: Params): Promise<boolean> {
         (remove
           ? `You removed ${target.title} from your library.`
           : metadataOnly
-          ? 'Your collection metadata was saved.'
-          : `You added ${target.title} to your library.`),
+            ? 'Your collection metadata was saved.'
+            : `You added ${target.title} to your library.`),
     );
     return true;
   } catch (error) {

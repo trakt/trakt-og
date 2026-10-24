@@ -22,9 +22,14 @@ type BuiltInListViewParams = {
  * list object, so og supplies its classic names, no likes, the watchlist unranked and favorites ranked. Comments are on
  * when the list has any, since OG only linked them when they were allowed.
  */
-export function toBuiltInListView(
-  { kind, profile, id, commentCount, itemCount, sort }: BuiltInListViewParams,
-): ListView {
+export function toBuiltInListView({
+  kind,
+  profile,
+  id,
+  commentCount,
+  itemCount,
+  sort,
+}: BuiltInListViewParams): ListView {
   return {
     id: id ?? 0,
     slug: kind,

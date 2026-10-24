@@ -19,10 +19,12 @@ afterAll(() => server.close());
 
 describe('fetchRecentlyWatched', () => {
   it("should ask for the token owner's last nine plays", async () => {
-    server.use(http.get(HISTORY, ({ request }) => {
-      seen.push(request);
-      return HttpResponse.json(recentlyWatchedFixture.rows);
-    }));
+    server.use(
+      http.get(HISTORY, ({ request }) => {
+        seen.push(request);
+        return HttpResponse.json(recentlyWatchedFixture.rows);
+      }),
+    );
 
     const plays = await fetchRecentlyWatched({ fetch, token: 'abc', datePreferences });
     const url = new URL(seen.at(0)?.url ?? '');

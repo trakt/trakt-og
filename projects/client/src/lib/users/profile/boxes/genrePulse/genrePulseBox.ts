@@ -57,13 +57,13 @@ export const genrePulseBox = defineProfileBox({
       spike: `${found.spike.ratio.toFixed(1)}×`,
       genre: found.spike.name,
       // The hot genre first, then the month's biggest others.
-      rows: [found.spike, ...found.rows.filter(({ slug }) => slug !== found.spike.slug)].slice(0, 3).map((
-        { name, now, usual },
-      ) => ({
-        name,
-        now: Math.round(now),
-        usual: Math.round(Math.min(usual, 100)),
-      })),
+      rows: [found.spike, ...found.rows.filter(({ slug }) => slug !== found.spike.slug)]
+        .slice(0, 3)
+        .map(({ name, now, usual }) => ({
+          name,
+          now: Math.round(now),
+          usual: Math.round(Math.min(usual, 100)),
+        })),
     };
   },
 });

@@ -34,8 +34,9 @@ describe('toOnDeckItem', () => {
     const item = toOnDeckItem({ entry: byTitle(upNextFixture.entries, 'The Office'), username: 'sean' });
 
     expect(item?.episodeBadge).toEqual({ label: 'Season Finale', kind: 'season-finale' });
-    expect(toOnDeckItem({ entry: byTitle(upNextFixture.entries, 'Breaking Bad'), username: 'sean' })?.episodeBadge)
-      .toBeUndefined();
+    expect(
+      toOnDeckItem({ entry: byTitle(upNextFixture.entries, 'Breaking Bad'), username: 'sean' })?.episodeBadge,
+    ).toBeUndefined();
   });
 
   it('should use absolute numbers for anime', () => {

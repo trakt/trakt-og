@@ -43,13 +43,15 @@ const movies = {
 } as PeopleMovieCreditsResponse;
 
 const shows = {
-  cast: [{
-    show: show('breaking-bad', 20, { first_aired: '2008-01-20T02:00:00.000Z', aired_episodes: 62, runtime: 47 }),
-    characters: ['Walter White', 'Walter White'],
-    character: 'Walter White',
-    episode_count: 62,
-    series_regular: true,
-  }],
+  cast: [
+    {
+      show: show('breaking-bad', 20, { first_aired: '2008-01-20T02:00:00.000Z', aired_episodes: 62, runtime: 47 }),
+      characters: ['Walter White', 'Walter White'],
+      character: 'Walter White',
+      episode_count: 62,
+      series_regular: true,
+    },
+  ],
   crew: {
     production: [{ show: show('breaking-bad', 20), jobs: ['Producer'], job: 'Producer', episode_count: 5 }],
     directing: [{ show: show('malcolm-in-the-middle', 21), jobs: ['Director'], job: 'Director', episode_count: 3 }],
@@ -100,7 +102,9 @@ describe('toPersonSummary', () => {
       ...base,
       movies: { cast: [{ movie: upcoming, characters: [], character: '' }] },
       shows: null,
-    }).departments.at(0)?.credits.at(0);
+    })
+      .departments.at(0)
+      ?.credits.at(0);
 
     expect(credit).toMatchObject({ released: false, status: 'Post Production', rating: undefined, characters: '' });
   });
@@ -156,13 +160,15 @@ describe('toPersonSummary', () => {
       ...base,
       movies: null,
       shows: {
-        cast: [{
-          show: bad,
-          characters: ['Walter White'],
-          character: 'Walter White',
-          episode_count: 62,
-          series_regular: true,
-        }],
+        cast: [
+          {
+            show: bad,
+            characters: ['Walter White'],
+            character: 'Walter White',
+            episode_count: 62,
+            series_regular: true,
+          },
+        ],
         crew: { production: [{ show: bad, jobs: ['Producer'], job: 'Producer', episode_count: 5 }] },
       } as PeopleShowCreditsResponse,
       knownFor: [{ type: 'show', show: { ids: { trakt: 20 } } }],

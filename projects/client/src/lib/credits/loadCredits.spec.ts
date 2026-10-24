@@ -28,18 +28,20 @@ const server = setupServer(
     HttpResponse.json(
       new URL(request.url).searchParams.get('extended') === 'episodes'
         ? [
-          { number: 1, episodes: [episode(1, 1, 'Pilot'), episode(1, 2, "Cat's in the Bag...")] },
-          { number: 2, episodes: [episode(2, 1, 'Seven Thirty-Seven')] },
-        ]
+            { number: 1, episodes: [episode(1, 1, 'Pilot'), episode(1, 2, "Cat's in the Bag...")] },
+            { number: 2, episodes: [episode(2, 1, 'Seven Thirty-Seven')] },
+          ]
         : [{ number: 1, ids: { trakt: 3950 }, first_aired: '2008-01-20T02:00:00.000Z' }],
-    )),
+    ),
+  ),
   http.get(`${API}/shows/:id/seasons/:season/episodes/:episode`, () => HttpResponse.json(episode(1, 2, 'Cat'))),
   http.get(`${API}/shows/:id/seasons/:season/people`, () => HttpResponse.json({ cast: [actor(1, 'Bryan Cranston')] })),
   http.get(`${API}/shows/:id/seasons/:season/episodes/:episode/people`, () =>
     HttpResponse.json({
       cast: [actor(1, 'Bryan Cranston'), actor(2, 'Max Arciniega')],
       crew: { writing: [{ ...actor(3, 'Vince Gilligan'), jobs: ['Writer'] }] },
-    })),
+    }),
+  ),
   // Watch Now: the sidebar renders without it.
   http.get(`${API}/*`, () => new HttpResponse(null, { status: 404 })),
 );
@@ -62,7 +64,11 @@ const load = (item: SubpageItem) =>
       }),
     item,
   });
-const failure = (promise: Promise<unknown>) => promise.then(() => null, (error: unknown) => error);
+const failure = (promise: Promise<unknown>) =>
+  promise.then(
+    () => null,
+    (error: unknown) => error,
+  );
 
 describe('loadCredits', () => {
   describe('for episodes', () => {
@@ -89,7 +95,8 @@ describe('loadCredits', () => {
           HttpResponse.json({
             cast: [{ ...actor(1, 'Bryan Cranston'), episode_count: 7 }],
             crew: { writing: [{ ...actor(2, 'Vince Gilligan'), jobs: ['Writer'], episode_count: 7 }] },
-          })),
+          }),
+        ),
         http.get(`${API}/users/settings`, () =>
           HttpResponse.json({
             user: {
@@ -99,7 +106,8 @@ describe('loadCredits', () => {
               images: { avatar: { full: 'https://example.test/avatar.png' } },
             },
             browsing: { spoilers: { actors: 'hide' } },
-          })),
+          }),
+        ),
       );
       const data = await loadCredits({
         fetch,
@@ -121,16 +129,16 @@ describe('loadCredits', () => {
 
     it('should ask for guest stars and 404 a season the show lacks', async () => {
       server.use(
-        http.get(
-          `${API}/shows/:id/seasons/:season/people`,
-          () => HttpResponse.json({ cast: [actor(1, 'Bryan Cranston')], guest_stars: [actor(2, 'Max Arciniega')] }),
+        http.get(`${API}/shows/:id/seasons/:season/people`, () =>
+          HttpResponse.json({ cast: [actor(1, 'Bryan Cranston')], guest_stars: [actor(2, 'Max Arciniega')] }),
         ),
       );
       const data = await load({ type: 'season', id: 'breaking-bad', season: '1' });
 
       expect(data.credits.actors.map(({ label }) => label)).toEqual(['Season Regulars', 'Guest Stars']);
-      expect(requests.find(({ pathname }) => pathname.endsWith('/people'))?.searchParams.get('extended'))
-        .toBe('guest_stars,images');
+      expect(requests.find(({ pathname }) => pathname.endsWith('/people'))?.searchParams.get('extended')).toBe(
+        'guest_stars,images',
+      );
       const missing = await failure(load({ type: 'season', id: 'breaking-bad', season: '7' }));
       expect(isHttpError(missing) && missing.status).toBe(404);
     });

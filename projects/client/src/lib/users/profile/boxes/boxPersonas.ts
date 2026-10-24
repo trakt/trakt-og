@@ -19,7 +19,9 @@ const DAY = 86_400_000;
 const at = (daysAgo: number, hour = 20) => new Date((TODAY - daysAgo) * DAY + hour * 3_600_000).toISOString();
 
 const imagePath = (kind: 'shows' | 'movies', trakt: number) =>
-  `media.trakt.tv/images/${kind}/${String(trakt).padStart(9, '0').replace(/(\d{3})(\d{3})(\d{3})/, '$1/$2/$3')}`;
+  `media.trakt.tv/images/${kind}/${String(trakt)
+    .padStart(9, '0')
+    .replace(/(\d{3})(\d{3})(\d{3})/, '$1/$2/$3')}`;
 
 type MediaArgs = [
   trakt: number,
@@ -79,9 +81,12 @@ const moviePlay = (movie: Movie, daysAgo: number) => ({ watched_at: at(daysAgo),
 
 /** Episodes per day for the last 30 days, oldest first, cycling through `shows`. */
 const episodesByDay = (perDay: string, shows: readonly Show[]) =>
-  perDay.split(' ').map(Number).flatMap((count, i) =>
-    Array.from({ length: count }, (_, n) => episodePlay(shows[(i + n) % shows.length] ?? severance, 29 - i))
-  );
+  perDay
+    .split(' ')
+    .map(Number)
+    .flatMap((count, i) =>
+      Array.from({ length: count }, (_, n) => episodePlay(shows[(i + n) % shows.length] ?? severance, 29 - i)),
+    );
 
 /** Rows of the watched lists: plays, and when last watched. */
 const watchedShow = (watched: Show, plays: number, daysAgo: number): WatchedItemRow => ({
@@ -96,30 +101,33 @@ const watchedMovie = (movie: Movie, plays: number, daysAgo: number): WatchedItem
 });
 /** Movies to fill out a watched list. */
 const filler = (count: number, plays: number, daysAgo: number) =>
-  Array.from(
-    { length: count },
-    (_, i) =>
-      watchedMovie(
-        { ...theThing, ids: { trakt: 900_000 + i, slug: `filler-${i}` }, title: `Filler ${i}` },
-        plays,
-        daysAgo,
-      ),
+  Array.from({ length: count }, (_, i) =>
+    watchedMovie(
+      { ...theThing, ids: { trakt: 900_000 + i, slug: `filler-${i}` }, title: `Filler ${i}` },
+      plays,
+      daysAgo,
+    ),
   );
 
 type Distribution = readonly [number, number, number, number, number, number, number, number, number, number];
 
-const stats = (
-  { episodes, movies, ratings = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], comments = 0, progress = [0, 0], lists = 0 }: {
-    episodes: { plays: number; watched: number; hours: number };
-    movies: { plays: number; watched: number };
-    /** How many 1s to 10s. */
-    ratings?: Distribution;
-    comments?: number;
-    /** Shows finished and started. */
-    progress?: readonly [number, number];
-    lists?: number;
-  },
-): UserStatsResponse => ({
+const stats = ({
+  episodes,
+  movies,
+  ratings = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  comments = 0,
+  progress = [0, 0],
+  lists = 0,
+}: {
+  episodes: { plays: number; watched: number; hours: number };
+  movies: { plays: number; watched: number };
+  /** How many 1s to 10s. */
+  ratings?: Distribution;
+  comments?: number;
+  /** Shows finished and started. */
+  progress?: readonly [number, number];
+  lists?: number;
+}): UserStatsResponse => ({
   movies: {
     plays: movies.plays,
     watched: movies.watched,
@@ -162,7 +170,12 @@ const stats = (
 
 const profile = (
   slug: string,
-  { about = null, joinedAt, location, vipYears = 0 }: {
+  {
+    about = null,
+    joinedAt,
+    location,
+    vipYears = 0,
+  }: {
     about?: string | null;
     joinedAt: string;
     location: string;
@@ -229,18 +242,20 @@ type Answers = {
 };
 
 /** The boxes' extra requests, answered from a persona's data. */
-const answering = (id: string, { progress = [], lists = [], latestTen }: Answers) => () =>
-  boxExtraLoader({
-    fetch: (request) => {
-      const { pathname } = new URL(request instanceof Request ? request.url : request.toString());
-      if (pathname.includes('/progress/watched')) return Promise.resolve(Response.json(progress));
-      if (pathname.endsWith('/lists')) return Promise.resolve(Response.json(lists));
-      const ten = latestTen ? [{ type: 'movie', rating: 10, movie: latestTen }] : [];
-      return Promise.resolve(Response.json(pathname.includes('/ratings/') ? ten : []));
-    },
-    token: null,
-    id,
-  });
+const answering =
+  (id: string, { progress = [], lists = [], latestTen }: Answers) =>
+  () =>
+    boxExtraLoader({
+      fetch: (request) => {
+        const { pathname } = new URL(request instanceof Request ? request.url : request.toString());
+        if (pathname.includes('/progress/watched')) return Promise.resolve(Response.json(progress));
+        if (pathname.endsWith('/lists')) return Promise.resolve(Response.json(lists));
+        const ten = latestTen ? [{ type: 'movie', rating: 10, movie: latestTen }] : [];
+        return Promise.resolve(Response.json(pathname.includes('/ratings/') ? ten : []));
+      },
+      token: null,
+      id,
+    });
 
 type Persona = {
   readonly label: string;
@@ -252,10 +267,12 @@ type Persona = {
 const maya = ((): Persona => {
   const latest = episodePlay(severance, 0, 2, 9, 'The After Hours');
   const binge = Array.from({ length: 11 }, (_, i) => episodePlay(severance, 9, 2, i + 1));
-  const recent = episodesByDay(
-    '3 2 0 5 8 12 14 2 1 0 3 4 10 12 3 2 3 0 5 14 0 2 2 4 0 6 12 14 3 1',
-    [severance, slowHorses, thePitt, pluribus],
-  );
+  const recent = episodesByDay('3 2 0 5 8 12 14 2 1 0 3 4 10 12 3 2 3 0 5 14 0 2 2 4 0 6 12 14 3 1', [
+    severance,
+    slowHorses,
+    thePitt,
+    pluribus,
+  ]);
   return {
     label: 'Binge TV watcher',
     input: {
@@ -288,7 +305,7 @@ const maya = ((): Persona => {
 const dex = ((): Persona => {
   const horror = [theThing, alien, sinners, weapons, nosferatu];
   const movies = [1, 4, 5, 7, 9, 11, 12, 15, 17, 19, 20, 22, 24, 27, 29].map((daysAgo, i) =>
-    moviePlay(horror[i % horror.length] ?? theThing, daysAgo)
+    moviePlay(horror[i % horror.length] ?? theThing, daysAgo),
   );
   return {
     label: 'Movie buff and rater',
@@ -381,9 +398,8 @@ const lena = ((): Persona => {
       progress: [progress(shogun, 7, 10, 3), progress(theBear, 46, 46, 50)],
       lists: [
         list('80s Horror Essentials', [1_204, 87, 64, 2], [theThing, alien, nosferatu]),
-        ...Array.from(
-          { length: 22 },
-          (_, i) => list(`Lena's list ${i + 1}`, [i < 12 ? 53 : 0, 20, 2, 30 + i], [arrival, sicario, dune]),
+        ...Array.from({ length: 22 }, (_, i) =>
+          list(`Lena's list ${i + 1}`, [i < 12 ? 53 : 0, 20, 2, 30 + i], [arrival, sicario, dune]),
         ),
       ],
       latestTen: film(842677, 'past-lives-2023', 'Past Lives', 2023, 'none none', 'drama'),

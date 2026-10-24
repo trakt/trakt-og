@@ -5,23 +5,22 @@ import { toProfileUser } from '../toProfileUser.ts';
 import { loadRatings } from './loadRatings.ts';
 const profile = toProfileUser({ username: 'tester', name: 'Tester', private: false, ids: { slug: 'tester' } });
 const datePreferences = { order: 'mdy', hour24: false, timeZone: 'America/Los_Angeles', weekStartDay: 0 } as const;
-const rows = Array.from(
-  { length: 65 },
-  (_, i) => ({
-    type: 'movie',
-    rating: 1 + i % 10,
-    rated_at: `2026-09-${String(1 + i % 28).padStart(2, '0')}T00:00:00Z`,
-    movie: { ids: { trakt: i + 1, slug: `movie-${i + 1}` }, title: `Movie ${i + 1}` },
+const rows = Array.from({ length: 65 }, (_, i) => ({
+  type: 'movie',
+  rating: 1 + (i % 10),
+  rated_at: `2026-09-${String(1 + (i % 28)).padStart(2, '0')}T00:00:00Z`,
+  movie: { ids: { trakt: i + 1, slug: `movie-${i + 1}` }, title: `Movie ${i + 1}` },
+}));
+const seen: Request[] = [];
+const server = setupServer(
+  http.get(/^https:\/\/apiz\.trakt\.tv\/users\/tester\/ratings/, ({ request }) => {
+    seen.push(request);
+    const url = new URL(request.url);
+    return HttpResponse.json(url.searchParams.get('limit') === 'all' ? rows : rows.slice(0, 60), {
+      headers: { 'x-pagination-page': '1', 'x-pagination-page-count': '2', 'x-pagination-item-count': '65' },
+    });
   }),
 );
-const seen: Request[] = [];
-const server = setupServer(http.get(/^https:\/\/apiz\.trakt\.tv\/users\/tester\/ratings/, ({ request }) => {
-  seen.push(request);
-  const url = new URL(request.url);
-  return HttpResponse.json(url.searchParams.get('limit') === 'all' ? rows : rows.slice(0, 60), {
-    headers: { 'x-pagination-page': '1', 'x-pagination-page-count': '2', 'x-pagination-item-count': '65' },
-  });
-}));
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 afterEach(() => {
   server.resetHandlers();
@@ -34,7 +33,7 @@ const load = (filters = '', search = '', overrides = {}, token: string | null = 
     locals: { token },
     params: { id: 'tester', filters },
     url: new URL(`https://og.trakt.tv/users/tester/ratings${search}`),
-    cookies: { get: (name) => name === 'filter-fade-ratings' ? 'rated,bogus' : undefined },
+    cookies: { get: (name) => (name === 'filter-fade-ratings' ? 'rated,bogus' : undefined) },
     parent: () => Promise.resolve({ profile: { ...profile, ...overrides }, isSelf: false, datePreferences }),
   });
 describe('loadRatings', () => {
@@ -61,11 +60,13 @@ describe('loadRatings', () => {
     expect(new URL(seen.at(0)?.url ?? '').pathname).toBe('/users/tester/ratings/seasons');
   });
   it('should read a private profile the viewer may see with the token, once', async () => {
-    server.use(http.get(/^https:\/\/apiz\.trakt\.tv\/users\/tester\/ratings/, ({ request }) => {
-      seen.push(request);
-      if (!request.headers.has('authorization')) return new HttpResponse(null, { status: 401 });
-      return HttpResponse.json(rows.slice(0, 3), { headers: { 'x-pagination-item-count': '3' } });
-    }));
+    server.use(
+      http.get(/^https:\/\/apiz\.trakt\.tv\/users\/tester\/ratings/, ({ request }) => {
+        seen.push(request);
+        if (!request.headers.has('authorization')) return new HttpResponse(null, { status: 401 });
+        return HttpResponse.json(rows.slice(0, 3), { headers: { 'x-pagination-item-count': '3' } });
+      }),
+    );
     expect((await load('', '', { isPrivate: true }, 'abc')).cards).toHaveLength(3);
     expect(seen.flatMap((r) => r.headers.get('authorization') ?? [])).toEqual(['Bearer abc']);
   });

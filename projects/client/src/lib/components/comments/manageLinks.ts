@@ -15,13 +15,15 @@ export type ManageLinks = {
  * any member, report unless they're banned from commenting, edit and delete on their own comments. Delete also needs
  * no replies, or a comment under two weeks old. Share is for everyone, so it isn't here.
  */
-export function manageLinks(
-  { comment, viewer, now = Date.now() }: {
-    comment: Pick<CommentResponse, 'user' | 'replies' | 'created_at'>;
-    viewer: CommentViewer;
-    now?: number;
-  },
-): ManageLinks {
+export function manageLinks({
+  comment,
+  viewer,
+  now = Date.now(),
+}: {
+  comment: Pick<CommentResponse, 'user' | 'replies' | 'created_at'>;
+  viewer: CommentViewer;
+  now?: number;
+}): ManageLinks {
   if (!viewer) return { block: false, report: false, edit: false, delete: false };
 
   const canWrite = !viewer.commentingBanned;

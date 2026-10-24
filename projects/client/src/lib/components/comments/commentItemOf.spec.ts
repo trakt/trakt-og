@@ -19,8 +19,9 @@ describe('util: commentItemOf', () => {
       title: 'Breaking Bad',
       airedEpisodes: 62,
     });
-    expect(commentItemOf({ type: 'season', show, season: { ids: { trakt: 3 }, number: 1, aired_episodes: 7 } }))
-      .toEqual({ type: 'season', id: 3, title: 'Breaking Bad Season 1', show: 1388, number: 1, airedEpisodes: 7 });
+    expect(
+      commentItemOf({ type: 'season', show, season: { ids: { trakt: 3 }, number: 1, aired_episodes: 7 } }),
+    ).toEqual({ type: 'season', id: 3, title: 'Breaking Bad Season 1', show: 1388, number: 1, airedEpisodes: 7 });
     expect(commentItemOf({ type: 'season', show, season: { ids: { trakt: 2 }, number: 0 } })?.title).toBe(
       'Breaking Bad Specials',
     );
@@ -30,8 +31,9 @@ describe('util: commentItemOf', () => {
     expect(
       commentItemOf({ type: 'episode', show, episode: { ids: { trakt: 9 }, season: 1, number: 1, title: 'Pilot' } }),
     ).toEqual({ type: 'episode', id: 9, title: 'Breaking Bad 1x01 "Pilot"', show: 1388, season: 1 });
-    expect(commentItemOf({ type: 'episode', show, episode: { ids: { trakt: 8 }, season: 0, number: 2 } })?.title)
-      .toBe('Breaking Bad Special 2');
+    expect(commentItemOf({ type: 'episode', show, episode: { ids: { trakt: 8 }, season: 0, number: 2 } })?.title).toBe(
+      'Breaking Bad Special 2',
+    );
   });
 
   it('should name lists, and skip what it does not know', () => {

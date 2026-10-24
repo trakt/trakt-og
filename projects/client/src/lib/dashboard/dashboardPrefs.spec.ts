@@ -64,9 +64,9 @@ describe('dashboardPrefs', () => {
     dashboardPrefs.save('sean', { ...dashboardPrefs.defaults, hide_network: true });
 
     expect(jar.cookie).toBe(
-      `og-dashboard=${
-        encodeURIComponent('{"sean":{"hide_network":true}}')
-      }; path=/; samesite=lax; max-age=34560000; secure`,
+      `og-dashboard=${encodeURIComponent(
+        '{"sean":{"hide_network":true}}',
+      )}; path=/; samesite=lax; max-age=34560000; secure`,
     );
     jar.cookie = `other=1; ${jar.cookie.split(';')[0]}`;
     expect(dashboardPrefs.load('sean').hide_network).toBe(true);

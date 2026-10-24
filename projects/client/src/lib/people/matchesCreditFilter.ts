@@ -5,7 +5,11 @@ import type { creditHideOptions } from './creditHideOptions.ts';
 import type { PersonCredit } from './PersonCredit.ts';
 
 /** Release and character filters work without a viewer; state filters wait for their overlay slice. */
-export function matchesCreditFilter({ option, credit, state }: {
+export function matchesCreditFilter({
+  option,
+  credit,
+  state,
+}: {
   option: (typeof creditHideOptions)[number]['id'];
   credit: PersonCredit;
   state: OverlayState;

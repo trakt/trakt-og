@@ -46,7 +46,8 @@ const darkKnight = (value: string) =>
           images: { avatar: { full: '' } },
         },
         browsing: { dark_knight: value },
-      })),
+      }),
+    ),
   );
 
 describe('hooks: theme', () => {

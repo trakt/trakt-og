@@ -39,11 +39,13 @@ export async function loadListEditor({ fetch, id }: { fetch: typeof globalThis.f
     shareLink: list.privacy === 'link' ? (list.share_link ?? undefined) : undefined,
     candidates: [
       ...candidates,
-      ...collaborators.filter((user) => !known.has(user.ids.slug ?? user.username)).map((user) => ({
-        slug: user.ids.slug ?? user.username,
-        name: user.name ?? user.username,
-        avatar: undefined,
-      })),
+      ...collaborators
+        .filter((user) => !known.has(user.ids.slug ?? user.username))
+        .map((user) => ({
+          slug: user.ids.slug ?? user.username,
+          name: user.name ?? user.username,
+          avatar: undefined,
+        })),
     ],
   };
 }

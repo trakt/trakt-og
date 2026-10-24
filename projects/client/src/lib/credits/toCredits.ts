@@ -70,9 +70,11 @@ export function toCredits({ actors, crew, episodeCounts }: Params): {
   crew: CreditGroup[];
 } {
   return {
-    actors: actors.filter(({ members }) => members?.length)
+    actors: actors
+      .filter(({ members }) => members?.length)
       .map(({ label, members }) => group(label, members ?? [], ({ characters }) => characters, episodeCounts)),
-    crew: crewDepartments(crew)
-      .map(({ label, members }) => group(label, members, ({ jobs }) => jobs ?? [], episodeCounts)),
+    crew: crewDepartments(crew).map(({ label, members }) =>
+      group(label, members, ({ jobs }) => jobs ?? [], episodeCounts),
+    ),
   };
 }

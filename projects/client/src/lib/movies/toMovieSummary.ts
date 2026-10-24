@@ -101,17 +101,18 @@ export function toMovieSummary(params: MovieSummaryParams) {
     listCount: stats?.lists ?? 0,
     facts: {
       status: movie.status && movie.status !== 'released' ? titleize(movie.status) : undefined,
-      released: released && releasedStatus
-        ? { date: released, upcoming: new Date(released) > now, more: Math.max(releases.length - 1, 0) }
-        : undefined,
+      released:
+        released && releasedStatus
+          ? { date: released, upcoming: new Date(released) > now, more: Math.max(releases.length - 1, 0) }
+          : undefined,
       dvd: usPhysical,
       runtime: movie.runtime ?? undefined,
       ...toCrewNames(params.people),
       country: movie.country
         ? {
-          name: countryName(movie.country),
-          href: isVip ? popular('countries', movie.country) : undefined,
-        }
+            name: countryName(movie.country),
+            href: isVip ? popular('countries', movie.country) : undefined,
+          }
         : undefined,
       languages: (movie.languages ?? []).map((code) => ({
         name: languageName(code),
@@ -125,9 +126,10 @@ export function toMovieSummary(params: MovieSummaryParams) {
         name: genreLabel(genre),
         href: isVip ? popular('genres', genre) : undefined,
       })),
-      originalTitle: movie.original_title && movie.original_title.toLowerCase() !== movie.title.toLowerCase()
-        ? movie.original_title
-        : undefined,
+      originalTitle:
+        movie.original_title && movie.original_title.toLowerCase() !== movie.title.toLowerCase()
+          ? movie.original_title
+          : undefined,
     },
     tagline: movie.tagline ?? null,
     overview: movie.overview ?? null,

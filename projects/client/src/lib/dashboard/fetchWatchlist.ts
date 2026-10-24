@@ -27,9 +27,11 @@ const LIMIT = 18;
  * when the request names none and reports in `X-Sort-By` and `X-Sort-How`. The cards carry the list page's
  * sort-dependent lines.
  */
-export async function fetchWatchlist(
-  { fetch, token, datePreferences }: FetchWatchlistParams,
-): Promise<DashboardWatchlist> {
+export async function fetchWatchlist({
+  fetch,
+  token,
+  datePreferences,
+}: FetchWatchlistParams): Promise<DashboardWatchlist> {
   const items = await fetchListItems({
     fetch,
     token,

@@ -108,8 +108,14 @@ function recentEpisodes({ seasons, progress, now }: Pick<ShowSummaryParams, 'sea
   const at = (episode: EpisodeResponse) => new Date(episode.first_aired ?? 0).getTime();
   const byAir = (a: EpisodeResponse, b: EpisodeResponse) => at(a) - at(b) || a.number - b.number;
 
-  const upcoming = episodes.filter((episode) => at(episode) > now.getTime()).toSorted(byAir).at(0);
-  const aired = episodes.filter((episode) => at(episode) <= now.getTime()).toSorted(byAir).toReversed();
+  const upcoming = episodes
+    .filter((episode) => at(episode) > now.getTime())
+    .toSorted(byAir)
+    .at(0);
+  const aired = episodes
+    .filter((episode) => at(episode) <= now.getTime())
+    .toSorted(byAir)
+    .toReversed();
   const watchNext = progress?.next && episodes.find(({ ids }) => ids.trakt === progress.next?.ids.trakt);
   const next = (progress ? watchNext : undefined) ?? upcoming;
 
@@ -134,8 +140,8 @@ function facts({ show, studios, people, isVip, now, day, airs }: Facts) {
     ? { name: show.network, href: isVip ? popular('networks', networkSlug(show.network)) : undefined }
     : undefined;
   const slot = airsAt(show.airs, now);
-  const airing = !upcoming && !['ended', 'canceled', 'pilot'].includes(show.status ?? '') && !!show.first_aired &&
-    !!slot;
+  const airing =
+    !upcoming && !['ended', 'canceled', 'pilot'].includes(show.status ?? '') && !!show.first_aired && !!slot;
   const status = show.status
     ? upcoming || !show.last_aired
       ? { label: 'Status', value: titleize(show.status) }
@@ -151,9 +157,9 @@ function facts({ show, studios, people, isVip, now, day, airs }: Facts) {
     runtime: show.runtime ? formatRuntime(show.runtime) : undefined,
     totalRuntime: show.total_runtime
       ? {
-        time: formatRuntime(show.total_runtime),
-        episodes: show.aired_episodes ? countLabel(show.aired_episodes, 'episode') : undefined,
-      }
+          time: formatRuntime(show.total_runtime),
+          episodes: show.aired_episodes ? countLabel(show.aired_episodes, 'episode') : undefined,
+        }
       : undefined,
     creators: (people?.crew?.['created by'] ?? []).map(person),
     country: show.country
@@ -168,9 +174,10 @@ function facts({ show, studios, people, isVip, now, day, airs }: Facts) {
       name: genreLabel(genre),
       href: isVip ? popular('genres', genre) : undefined,
     })),
-    originalTitle: show.original_title && show.original_title.toLowerCase() !== show.title.toLowerCase()
-      ? show.original_title
-      : undefined,
+    originalTitle:
+      show.original_title && show.original_title.toLowerCase() !== show.title.toLowerCase()
+        ? show.original_title
+        : undefined,
   };
 }
 
@@ -179,7 +186,7 @@ export function toShowSummary(params: ShowSummaryParams) {
   const { show, stats, seasons, now, datePreferences } = params;
   const slug = show.ids.slug;
   const href = `/shows/${slug}`;
-  const timeZone = params.signedIn ? datePreferences.timeZone : show.airs?.timezone ?? datePreferences.timeZone;
+  const timeZone = params.signedIn ? datePreferences.timeZone : (show.airs?.timezone ?? datePreferences.timeZone);
   const format = (date: string, options: Parameters<typeof formatDate>[1]) =>
     formatDate(date, { ...datePreferences, timeZone, ...options });
   const day = (date: string) => format(date, { format: 'LL' });
@@ -242,9 +249,12 @@ export function toShowSummary(params: ShowSummaryParams) {
     runtime: show.runtime ?? undefined,
     /** Minutes, every aired episode. */
     totalRuntime: show.total_runtime ?? undefined,
-    episodeIds: seasons.filter(({ number }) => number > 0).flatMap(({ episodes }) => episodes ?? [])
+    episodeIds: seasons
+      .filter(({ number }) => number > 0)
+      .flatMap(({ episodes }) => episodes ?? [])
       .filter(({ first_aired }) => first_aired && new Date(first_aired) <= params.now)
-      .sort((a, b) => a.season - b.season || a.number - b.number).map(({ ids }) => ids.trakt),
+      .sort((a, b) => a.season - b.season || a.number - b.number)
+      .map(({ ids }) => ids.trakt),
     commentCount: stats?.comments ?? show.comment_count ?? 0,
     listCount: stats?.lists ?? 0,
     facts: facts({ ...params, day, airs }),
@@ -286,7 +296,12 @@ const sortKey: Record<Exclude<SeasonSort, (typeof statSorts)[number]['by']>, (ca
 };
 
 /** The seasons in `by` order; `flipped` is the direction toggle. Ties keep season order. */
-export function sortSeasons({ cards, by, flipped, stats = new Map() }: {
+export function sortSeasons({
+  cards,
+  by,
+  flipped,
+  stats = new Map(),
+}: {
   cards: readonly SeasonCard[];
   by: SeasonSort;
   flipped: boolean;

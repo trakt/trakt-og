@@ -29,12 +29,14 @@ const showProgress = http.get(`${API}/shows/:id/progress/watched`, ({ params, re
   return HttpResponse.json({
     aired: 4,
     completed: 3,
-    seasons: [{
-      number: 1,
-      aired: 4,
-      completed: 3,
-      episodes: [true, true, false, true].map((completed, i) => ({ number: i + 1, completed })),
-    }],
+    seasons: [
+      {
+        number: 1,
+        aired: 4,
+        completed: 3,
+        episodes: [true, true, false, true].map((completed, i) => ({ number: i + 1, completed })),
+      },
+    ],
     hidden_seasons: [],
   });
 });
@@ -95,10 +97,12 @@ describe('fetchUpNext', () => {
 
   it("should skip the whole show's progress with no rewatch", async () => {
     const entries = upNextFixture.entries.filter(({ progress }) => !progress.reset_at);
-    server.use(http.get(UP_NEXT, ({ request }) => {
-      seen.push(new URL(request.url));
-      return HttpResponse.json(entries);
-    }));
+    server.use(
+      http.get(UP_NEXT, ({ request }) => {
+        seen.push(new URL(request.url));
+        return HttpResponse.json(entries);
+      }),
+    );
 
     await fetchUpNext({ api: api({ token: 'abc' }), username: 'sean', settings: simple });
 
@@ -106,7 +110,10 @@ describe('fetchUpNext', () => {
   });
 
   it("should still show a rewatch when its whole show's progress fails", async () => {
-    server.use(answer(), http.get(`${API}/shows/:id/progress/watched`, () => new HttpResponse(null, { status: 500 })));
+    server.use(
+      answer(),
+      http.get(`${API}/shows/:id/progress/watched`, () => new HttpResponse(null, { status: 500 })),
+    );
 
     const items = await fetchUpNext({ api: api({ token: 'abc' }), username: 'sean', settings: simple });
     const lost = items.find(({ showTitle }) => showTitle === 'Lost');

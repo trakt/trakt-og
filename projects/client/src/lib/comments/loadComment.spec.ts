@@ -61,7 +61,11 @@ const load = (id = '10') =>
       }),
     id,
   });
-const failure = (promise: Promise<unknown>) => promise.then(() => null, (error: unknown) => error);
+const failure = (promise: Promise<unknown>) =>
+  promise.then(
+    () => null,
+    (error: unknown) => error,
+  );
 const status = async (promise: Promise<unknown>) => {
   const thrown = await failure(promise);
   return isHttpError(thrown) ? thrown.status : thrown;

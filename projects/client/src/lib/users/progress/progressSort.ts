@@ -79,10 +79,11 @@ export function progressSort({ segments, saved }: ProgressSortParams): ProgressS
 }
 
 /** OG's sort as a literal key order: `asc` is smallest first. */
-export function literalProgressSort(
-  { by, how }: Pick<ProgressSort, 'by' | 'how'>,
-): { by: ProgressSortBy; how: 'asc' | 'desc' } {
-  const [sortBy, sortHow] = isSortBy(by) ? [by, how] as const : DEPRECATED[by] ?? ['added', 'asc'] as const;
+export function literalProgressSort({ by, how }: Pick<ProgressSort, 'by' | 'how'>): {
+  by: ProgressSortBy;
+  how: 'asc' | 'desc';
+} {
+  const [sortBy, sortHow] = isSortBy(by) ? ([by, how] as const) : (DEPRECATED[by] ?? (['added', 'asc'] as const));
   if (!DESCENDING.has(sortBy)) return { by: sortBy, how: sortHow };
   return { by: sortBy, how: sortHow === 'asc' ? 'desc' : 'asc' };
 }

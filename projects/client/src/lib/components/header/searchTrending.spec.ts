@@ -83,7 +83,10 @@ describe('searchTrending', () => {
 
     expect(seen.map((url) => url.pathname)).toEqual(['/lists/trending']);
     expect(label).toBe('Trending Lists');
-    expect(rows.map((row) => [row.title, row.href])).toEqual([['List 1', '/lists/1'], ['List 2', '/lists/2']]);
+    expect(rows.map((row) => [row.title, row.href])).toEqual([
+      ['List 1', '/lists/1'],
+      ['List 2', '/lists/2'],
+    ]);
   });
 
   it("should list this month's birthdays for People, today's first", async () => {

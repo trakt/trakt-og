@@ -172,7 +172,8 @@ export function toProgressRow(params: ToProgressRowParams): ProgressRow {
     last: toLast(params, href),
     droppedOn: item.droppedAt ? formatDate(item.droppedAt, { ...datePreferences, format: 'LL' }) : undefined,
     rewatchingSince: item.resetAt ? formatDate(item.resetAt, { ...datePreferences, format: 'LL' }) : undefined,
-    seasons: detail &&
+    seasons:
+      detail &&
       toProgressSeasons({
         seasons,
         next: next && { season: next.season, number: next.number },

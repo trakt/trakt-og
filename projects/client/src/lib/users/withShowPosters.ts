@@ -11,14 +11,17 @@ export async function withShowPosters<T extends { show: z.infer<typeof show> }>(
   rows: readonly T[],
 ): Promise<T[]> {
   const client = api({ fetch });
-  return await Promise.all(rows.map(async (row) => {
-    const summary = await client.shows.summary({
-      params: { id: String(row.show.ids.trakt) },
-      query: { extended: 'images' },
-    })
-      .catch(() => null);
-    return summary?.status === 200
-      ? { ...row, show: { ...row.show, images: { poster: summary.body.images?.poster } } }
-      : row;
-  }));
+  return await Promise.all(
+    rows.map(async (row) => {
+      const summary = await client.shows
+        .summary({
+          params: { id: String(row.show.ids.trakt) },
+          query: { extended: 'images' },
+        })
+        .catch(() => null);
+      return summary?.status === 200
+        ? { ...row, show: { ...row.show, images: { poster: summary.body.images?.poster } } }
+        : row;
+    }),
+  );
 }

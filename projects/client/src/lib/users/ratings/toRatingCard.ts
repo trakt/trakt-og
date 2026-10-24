@@ -18,38 +18,40 @@ type Options = {
 
 /** One rated poster or episode still, reusing summary numbering, badges, image and date helpers. */
 export function toRatingCard(row: Row, { type, by, datePreferences }: Options) {
-  const item = row.type === 'movie'
-    ? row.movie
-    : row.type === 'show'
-    ? row.show
-    : row.type === 'season'
-    ? row.season
-    : row.episode;
+  const item =
+    row.type === 'movie'
+      ? row.movie
+      : row.type === 'show'
+        ? row.show
+        : row.type === 'season'
+          ? row.season
+          : row.episode;
   if (!item || ((row.type === 'season' || row.type === 'episode') && !row.show)) return null;
   const show = 'show' in row ? row.show : null;
   const showHref = `/shows/${show?.ids.slug}`;
   const screenshots = row.type === 'episode' && type === 'episodes';
-  const seasonTitle = row.type === 'season' && row.season
-    ? row.season.title ?? seasonName(row.season.number)
-    : undefined;
-  const href = row.type === 'movie' && row.movie
-    ? `/movies/${row.movie.ids.slug}`
-    : row.type === 'season' && row.season
-    ? `${showHref}/seasons/${row.season.number}`
-    : row.type === 'episode' && row.episode
-    ? `${showHref}/seasons/${row.episode.season}/episodes/${row.episode.number}`
-    : showHref;
+  const seasonTitle =
+    row.type === 'season' && row.season ? (row.season.title ?? seasonName(row.season.number)) : undefined;
+  const href =
+    row.type === 'movie' && row.movie
+      ? `/movies/${row.movie.ids.slug}`
+      : row.type === 'season' && row.season
+        ? `${showHref}/seasons/${row.season.number}`
+        : row.type === 'episode' && row.episode
+          ? `${showHref}/seasons/${row.episode.season}/episodes/${row.episode.number}`
+          : showHref;
   const released = item.released ?? item.first_aired;
   const runtime = 'runtime' in item ? item.runtime : undefined;
-  const line = by === 'added'
-    ? formatDate(row.rated_at, { ...datePreferences, time: true })
-    : by === 'released' && released
-    ? formatDate(released, { ...datePreferences, ...(row.type === 'movie' ? { timeZone: 'UTC' } : { time: true }) })
-    : by === 'runtime'
-    ? `${runtime ?? 0} minute${runtime === 1 ? '' : 's'}`
-    : ['percentage', 'votes'].includes(by)
-    ? countLabel(item.votes ?? 0, 'vote')
-    : undefined;
+  const line =
+    by === 'added'
+      ? formatDate(row.rated_at, { ...datePreferences, time: true })
+      : by === 'released' && released
+        ? formatDate(released, { ...datePreferences, ...(row.type === 'movie' ? { timeZone: 'UTC' } : { time: true }) })
+        : by === 'runtime'
+          ? `${runtime ?? 0} minute${runtime === 1 ? '' : 's'}`
+          : ['percentage', 'votes'].includes(by)
+            ? countLabel(item.votes ?? 0, 'vote')
+            : undefined;
   const poster = row.type === 'episode' ? show?.images?.poster : item.images?.poster;
   return {
     key: `${row.type}-${item.ids.trakt}`,
@@ -59,14 +61,15 @@ export function toRatingCard(row: Row, { type, by, datePreferences }: Options) {
     title: seasonTitle ?? item.title ?? '',
     number: row.type === 'episode' && row.episode ? episodeNumber(row.episode, show?.genres) : undefined,
     image: imageUrl((screenshots ? item.images?.screenshot : poster)?.at(0), 'thumb'),
-    variant: screenshots ? 'screenshot' as const : 'poster' as const,
+    variant: screenshots ? ('screenshot' as const) : ('poster' as const),
     episodeBadge: row.type === 'episode' && row.episode ? episodeBadge(row.episode) : undefined,
-    seasonOf: row.type === 'season' && row.season && show
-      ? { show: show.ids.trakt, number: row.season.number }
-      : row.type === 'episode' && row.episode && show
-      ? { show: show.ids.trakt, number: row.episode.season, episode: row.episode.number }
-      : undefined,
-    airedEpisodes: 'aired_episodes' in item ? item.aired_episodes ?? undefined : undefined,
+    seasonOf:
+      row.type === 'season' && row.season && show
+        ? { show: show.ids.trakt, number: row.season.number }
+        : row.type === 'episode' && row.episode && show
+          ? { show: show.ids.trakt, number: row.episode.season, episode: row.episode.number }
+          : undefined,
+    airedEpisodes: 'aired_episodes' in item ? (item.aired_episodes ?? undefined) : undefined,
     rating: item.rating ?? undefined,
     ownerRating: row.rating,
     subtitles: [...(screenshots && show ? [{ text: show.title, href: showHref }] : []), ...(line ? [line] : [])],

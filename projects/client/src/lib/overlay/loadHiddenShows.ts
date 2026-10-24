@@ -1,11 +1,13 @@
 import { z } from 'zod/v4';
 import type { ApiGet } from './sliceSources.ts';
 
-const rowsSchema = z.array(z.object({
-  type: z.literal('show'),
-  hidden_at: z.string().nullish(),
-  show: z.object({ ids: z.object({ trakt: z.number() }) }),
-}));
+const rowsSchema = z.array(
+  z.object({
+    type: z.literal('show'),
+    hidden_at: z.string().nullish(),
+    show: z.object({ ids: z.object({ trakt: z.number() }) }),
+  }),
+);
 
 /** API hidden rows carry the date used by the rewatch and dropped badges. */
 export async function loadHiddenShows(get: ApiGet, section: 'dropped' | 'progress_watched_reset') {

@@ -18,9 +18,11 @@ type Params = {
   locals: { token: string | null };
   params: { slug: string };
   url: URL;
-  parent: () => Promise<
-    { user: HeaderUser | null; datePreferences: DatePreferences; settings?: ViewerSettings | null }
-  >;
+  parent: () => Promise<{
+    user: HeaderUser | null;
+    datePreferences: DatePreferences;
+    settings?: ViewerSettings | null;
+  }>;
 };
 
 function fetchSummary(fetch: typeof globalThis.fetch, id: string) {

@@ -19,9 +19,8 @@ function readList(fetch: typeof globalThis.fetch, id: string, token: string | nu
  */
 export async function redirectToList({ fetch, locals, params }: RedirectToListParams): Promise<never> {
   const anonymous = await readList(fetch, params.id, null);
-  const response = anonymous?.status !== 200 && locals.token
-    ? await readList(fetch, params.id, locals.token)
-    : anonymous;
+  const response =
+    anonymous?.status !== 200 && locals.token ? await readList(fetch, params.id, locals.token) : anonymous;
   if (response?.status === 200) redirect(301, listPath(response.body));
   if (!response || [204, 401, 403, 404].includes(response.status)) error(404, 'Page Not Found');
   error(502, 'Trakt is having trouble loading this list.');

@@ -25,11 +25,14 @@ const pages = { 'X-Pagination-Page': '2', 'X-Pagination-Page-Count': '3', 'X-Pag
 const server = setupServer(
   http.get(/^https:\/\/apiz\.trakt\.tv\/users\/tester\/comments\//, ({ request }) => {
     seen.push(request);
-    return HttpResponse.json([
-      { type: 'movie', movie, comment: comment(1) },
-      { type: 'movie', movie, comment: comment(2, 9) },
-      { type: 'movie', movie, comment: comment(3, 9) },
-    ], { headers: pages });
+    return HttpResponse.json(
+      [
+        { type: 'movie', movie, comment: comment(1) },
+        { type: 'movie', movie, comment: comment(2, 9) },
+        { type: 'movie', movie, comment: comment(3, 9) },
+      ],
+      { headers: pages },
+    );
   }),
   http.get('https://apiz.trakt.tv/comments/9', ({ request }) => {
     seen.push(request);
@@ -39,16 +42,24 @@ const server = setupServer(
     seen.push(request);
     // API's shape: no `ids.trakt` for the author, and an official list typed by its class.
     const { user } = comment(4);
-    return HttpResponse.json([
-      { liked_at: '2026-09-29T12:00:00.000Z', type: 'comment', comment_type: 'movie', movie, comment: comment(4) },
-      {
-        liked_at: '2026-09-28T12:00:00.000Z',
-        type: 'comment',
-        comment_type: 'officiallist',
-        comment: { ...comment(5), user: { ...user, ids: { slug: 'tester' } } },
-        list: { name: 'Picks', privacy: 'public', ids: { trakt: 7, slug: 'picks' }, user: { ids: { slug: 'trakt' } } },
-      },
-    ], { headers: pages });
+    return HttpResponse.json(
+      [
+        { liked_at: '2026-09-29T12:00:00.000Z', type: 'comment', comment_type: 'movie', movie, comment: comment(4) },
+        {
+          liked_at: '2026-09-28T12:00:00.000Z',
+          type: 'comment',
+          comment_type: 'officiallist',
+          comment: { ...comment(5), user: { ...user, ids: { slug: 'tester' } } },
+          list: {
+            name: 'Picks',
+            privacy: 'public',
+            ids: { trakt: 7, slug: 'picks' },
+            user: { ids: { slug: 'trakt' } },
+          },
+        },
+      ],
+      { headers: pages },
+    );
   }),
 );
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
@@ -110,10 +121,7 @@ describe('loadUserComments', () => {
     it('should read a private profile again with the viewer token', async () => {
       await load({ private: true, token: 'secret' });
 
-      expect(listingRequests().map((request) => request.headers.get('authorization'))).toEqual([
-        null,
-        'Bearer secret',
-      ]);
+      expect(listingRequests().map((request) => request.headers.get('authorization'))).toEqual([null, 'Bearer secret']);
     });
 
     it('should render a locked profile empty', async () => {

@@ -50,11 +50,11 @@ export async function loadPerson({ fetch, token, parent, id: requested, search }
     Promise.all([summaryRead, layout]).then(([summary, { user }]) =>
       summary.status === 200
         ? loadPrivateNote({
-          fetch,
-          token: user ? token : null,
-          item: { type: 'person', id: summary.body.ids.trakt, slug: summary.body.ids.slug } as const,
-        })
-        : null
+            fetch,
+            token: user ? token : null,
+            item: { type: 'person', id: summary.body.ids.trakt, slug: summary.body.ids.slug } as const,
+          })
+        : null,
     ),
   ]);
   extras.catch(() => {});

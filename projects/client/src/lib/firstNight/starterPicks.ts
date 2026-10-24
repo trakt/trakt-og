@@ -59,7 +59,7 @@ export function toStarterPick(media: Media, type: 'show' | 'movie', now: Date): 
     released: releaseDate ? new Date(releaseDate) <= now : false,
     rating: media.rating ?? undefined,
     runtime: media.runtime ?? undefined,
-    airedEpisodes: type === 'show' ? media.aired_episodes ?? undefined : undefined,
+    airedEpisodes: type === 'show' ? (media.aired_episodes ?? undefined) : undefined,
   };
 }
 
@@ -72,9 +72,13 @@ type FetchStarterPicksParams = {
 };
 
 /** A public chart, read without a token, as starter picks. An error comes back as no picks. */
-export async function fetchStarterPicks(
-  { fetch, chart, type, limit, now = new Date() }: FetchStarterPicksParams,
-): Promise<StarterPick[]> {
+export async function fetchStarterPicks({
+  fetch,
+  chart,
+  type,
+  limit,
+  now = new Date(),
+}: FetchStarterPicksParams): Promise<StarterPick[]> {
   const search = new URLSearchParams({ extended: 'full,images', limit: String(limit) });
   try {
     const response = await rawApiFetch({ fetch, path: `/${type}/${chart}?${search}` });

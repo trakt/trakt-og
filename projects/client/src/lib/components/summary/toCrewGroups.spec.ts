@@ -9,12 +9,15 @@ const member = (name: string, jobs: string[], episode_count?: number) => ({
 
 describe('toCrewGroups', () => {
   it('should order departments like OG and drop empty ones', () => {
-    const groups = toCrewGroups({
-      sound: [member('Dave Porter', ['Original Music Composer'])],
-      production: [member('Stewart Lyons', ['Producer'])],
-      'created by': [member('Vince Gilligan', ['Creator'])],
-      art: [],
-    }, false);
+    const groups = toCrewGroups(
+      {
+        sound: [member('Dave Porter', ['Original Music Composer'])],
+        production: [member('Stewart Lyons', ['Producer'])],
+        'created by': [member('Vince Gilligan', ['Creator'])],
+        art: [],
+      },
+      false,
+    );
 
     expect(groups.map(({ id, label }) => [id, label])).toEqual([
       ['created-by', 'Created By'],

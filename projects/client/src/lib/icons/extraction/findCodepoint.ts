@@ -30,8 +30,9 @@ const kitEntries = (scss: string) => {
 
 // `.trakt-icon-check:before { content: "\e601"; }`
 const iconFontEntries = (css: string, prefix: string) =>
-  [...css.matchAll(new RegExp(`\\.${prefix}-icon-([a-z0-9_-]+):before\\s*\\{\\s*content:\\s*"\\\\([0-9a-f]+)"`, 'g'))]
-    .map(toEntry);
+  [
+    ...css.matchAll(new RegExp(`\\.${prefix}-icon-([a-z0-9_-]+):before\\s*\\{\\s*content:\\s*"\\\\([0-9a-f]+)"`, 'g')),
+  ].map(toEntry);
 
 const entriesFor = ({ lookup, stylesheet }: Omit<FindCodepointParams, 'name'>) => {
   if (lookup === 'fa') return faEntries(stylesheet);

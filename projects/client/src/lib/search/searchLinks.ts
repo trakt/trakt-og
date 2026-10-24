@@ -19,5 +19,8 @@ export function searchLinks(current: SearchType, query: string, search = new URL
         href: `/search${type.slug ? `/${type.slug}` : ''}${suffix}`,
         current: type.slug === current.slug,
       }));
-  return [{ label: 'Trakt', links: links(false) }, { label: 'By ID', links: links(true) }];
+  return [
+    { label: 'Trakt', links: links(false) },
+    { label: 'By ID', links: links(true) },
+  ];
 }

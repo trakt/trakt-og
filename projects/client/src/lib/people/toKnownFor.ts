@@ -25,18 +25,24 @@ export function toKnownFor({ items, departments, department, limit }: ToKnownFor
   );
   const ordered = departments.toSorted((a, b) => Number(b.id === 'acting') - Number(a.id === 'acting'));
   const credits = new Map(
-    ordered.flatMap(({ credits }) => credits).toReversed().map((credit) => [key(credit.type, credit.id), credit]),
+    ordered
+      .flatMap(({ credits }) => credits)
+      .toReversed()
+      .map((credit) => [key(credit.type, credit.id), credit]),
   );
-  const picks = new Set(items.flatMap(({ type, movie, show }) => {
-    const id = (type === 'movie' ? movie : show)?.ids.trakt;
-    return id === undefined ? [] : [key(type, id)];
-  }));
+  const picks = new Set(
+    items.flatMap(({ type, movie, show }) => {
+      const id = (type === 'movie' ? movie : show)?.ids.trakt;
+      return id === undefined ? [] : [key(type, id)];
+    }),
+  );
 
   return [...picks]
     .flatMap((pick) => credits.get(pick) ?? [])
     .filter((credit) => !matchesCreditFilter({ option: 'self', credit, state: {} }))
-    .toSorted((a, b) =>
-      Number(own.has(key(b.type, b.id))) - Number(own.has(key(a.type, a.id))) || creditFame(b) - creditFame(a)
+    .toSorted(
+      (a, b) =>
+        Number(own.has(key(b.type, b.id))) - Number(own.has(key(a.type, a.id))) || creditFame(b) - creditFame(a),
     )
     .slice(0, limit);
 }

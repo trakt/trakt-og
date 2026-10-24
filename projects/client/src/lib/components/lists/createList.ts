@@ -7,7 +7,10 @@ const listSchema = z.object({
   item_count: z.number(),
 });
 /** Create first; callers retain the created list if adding its item or collaborators fails. */
-export async function createList({ request, draft }: {
+export async function createList({
+  request,
+  draft,
+}: {
   request: (path: string, body: unknown) => Promise<Response>;
   draft: {
     name: string;

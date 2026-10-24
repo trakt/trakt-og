@@ -18,9 +18,13 @@ const TWELVE_HOURS = 12 * 60 * 60_000;
  * A show's catalog: the cached one while fresh, otherwise one read, saved. A failed read falls back to a stale
  * catalog, and rejects without one.
  */
-export async function loadShowCatalog(
-  { id, store, get, now = Date.now, ttl = TWELVE_HOURS }: LoadShowCatalogParams,
-): Promise<ShowCatalog> {
+export async function loadShowCatalog({
+  id,
+  store,
+  get,
+  now = Date.now,
+  ttl = TWELVE_HOURS,
+}: LoadShowCatalogParams): Promise<ShowCatalog> {
   const cached = (await store.get([id])).get(id);
   if (cached && now() - cached.fetchedAt < ttl) return cached;
 

@@ -248,7 +248,7 @@ function live(now: Date): readonly LiveWatch[] {
     return {
       ...toSocialMedia(media),
       member: item.member,
-      kind: checkin ? 'checkin' as const : 'watch' as const,
+      kind: checkin ? ('checkin' as const) : ('watch' as const),
       label: item.label,
       startedAt: ago(now, started),
       expiresAt: ago(now, -left),

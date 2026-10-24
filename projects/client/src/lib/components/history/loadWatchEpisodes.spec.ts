@@ -18,17 +18,21 @@ const seasons = [0, 1, 2].map((number) => ({
   ],
 }));
 function setup(progress = 'watched') {
-  server.use(http.get(`${API}/shows/5/progress/${progress}`, ({ request }) => {
-    expect(request.headers.get('authorization')).toBe('Bearer fake-token');
-    expect(new URL(request.url).searchParams.get('hidden')).toBe('true');
-    return HttpResponse.json({ seasons });
-  }));
-  server.use(http.get(`${API}/shows/5/seasons/:season`, ({ request, params }) => {
-    expect(request.headers.has('authorization')).toBe(false);
-    return HttpResponse.json(
-      [1, 2, 3].map((number) => ({ number, ids: { trakt: Number(params.season) * 10 + number } })),
-    );
-  }));
+  server.use(
+    http.get(`${API}/shows/5/progress/${progress}`, ({ request }) => {
+      expect(request.headers.get('authorization')).toBe('Bearer fake-token');
+      expect(new URL(request.url).searchParams.get('hidden')).toBe('true');
+      return HttpResponse.json({ seasons });
+    }),
+  );
+  server.use(
+    http.get(`${API}/shows/5/seasons/:season`, ({ request, params }) => {
+      expect(request.headers.has('authorization')).toBe(false);
+      return HttpResponse.json(
+        [1, 2, 3].map((number) => ({ number, ids: { trakt: Number(params.season) * 10 + number } })),
+      );
+    }),
+  );
   return (input: RequestInfo | URL, init?: RequestInit) =>
     fetch(input, { ...init, headers: { ...init?.headers, authorization: 'Bearer fake-token' } });
 }

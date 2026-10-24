@@ -43,12 +43,14 @@ const ORDER: readonly StripStatKind[] = ['watchers', 'plays', 'libraries', 'list
 export function stripStats(counts: readonly StripCount[]): StripStats {
   const stats = counts
     .filter(({ count, label }) => count > 0 && label in KINDS)
-    .map((count): StripStat => ({
-      ...count,
-      kind: KINDS[count.label] ?? 'watchers',
-      title: capitalize(count.label),
-      detail: count.count.toLocaleString('en-US'),
-    }));
+    .map(
+      (count): StripStat => ({
+        ...count,
+        kind: KINDS[count.label] ?? 'watchers',
+        title: capitalize(count.label),
+        detail: count.count.toLocaleString('en-US'),
+      }),
+    );
 
   return {
     favorited: stats.find(({ kind }) => kind === 'favorited'),

@@ -44,7 +44,7 @@ const rows = ratingRowsSchema.parse([
   },
 ]);
 const ids = (by: string, how = 'asc') =>
-  sortRatings(rows, ratingQuery(`movies/all/${by}/${how}`)).map((r) => r.type === 'movie' ? r.movie?.ids.trakt : 0);
+  sortRatings(rows, ratingQuery(`movies/all/${by}/${how}`)).map((r) => (r.type === 'movie' ? r.movie?.ids.trakt : 0));
 describe('sortRatings', () => {
   it('should sort titles without articles, newest date ties, and rating highest first', () => {
     expect(ids('title')).toEqual([3, 2, 1]);

@@ -92,9 +92,8 @@ describe('loadEpisode', () => {
   });
   it('should validate API summary bodies', async () => {
     server.use(
-      http.get(
-        `${API}/shows/:id/seasons/:season/episodes/:episode`,
-        () => HttpResponse.json({ title: 42 }, { headers: { 'X-Runtime': '0.1' } }),
+      http.get(`${API}/shows/:id/seasons/:season/episodes/:episode`, () =>
+        HttpResponse.json({ title: 42 }, { headers: { 'X-Runtime': '0.1' } }),
       ),
     );
     await expect(loadEpisode(params())).rejects.toMatchObject({ status: 502 });

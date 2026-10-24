@@ -21,7 +21,10 @@ const base = {
 };
 const schedule = toScheduleDays(base);
 const item = (title: string, index = 0) =>
-  schedule.flatMap(({ items }) => items).filter((entry) => entry.title === title).at(index);
+  schedule
+    .flatMap(({ items }) => items)
+    .filter((entry) => entry.title === title)
+    .at(index);
 
 describe('toScheduleDays', () => {
   it('should name today and tomorrow, then the weekday', () => {
@@ -81,9 +84,11 @@ describe('toScheduleDays', () => {
     });
 
     it('should write a plus in a network as -plus in the link', () => {
-      const rows = scheduleFixture.rows(TODAY).map((row) =>
-        row.show?.network === 'Apple TV' ? { ...row, show: { ...row.show, network: 'Apple TV+' } } : row
-      );
+      const rows = scheduleFixture
+        .rows(TODAY)
+        .map((row) =>
+          row.show?.network === 'Apple TV' ? { ...row, show: { ...row.show, network: 'Apple TV+' } } : row,
+        );
       const plusDays = upcomingDays({ items: toCalendarItems(rows), start: TODAY, timeZone: 'UTC', count: 5 });
       const [today] = toScheduleDays({ ...base, days: plusDays, isVip: true });
       const severance = today?.items.find((entry) => entry.title === 'Severance');

@@ -8,8 +8,9 @@ type Title = (typeof homeFanartTitles)[number];
 async function fetchSource(fetch: typeof globalThis.fetch, { type, slug }: Title): Promise<HomeFanartSource | null> {
   const client = api({ fetch });
   const query = { params: { id: slug }, query: { extended: 'full,images' as const } };
-  const response = await (type === 'movie' ? client.movies.summary(query) : client.shows.summary(query))
-    .catch(() => null);
+  const response = await (type === 'movie' ? client.movies.summary(query) : client.shows.summary(query)).catch(
+    () => null,
+  );
   if (response?.status !== 200) return null;
   return { type, slug, title: response.body.title, fanart: response.body.images?.fanart?.at(0) };
 }

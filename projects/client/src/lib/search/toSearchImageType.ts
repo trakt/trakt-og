@@ -3,11 +3,15 @@ import { z } from 'zod/v4';
 // The choices on OG's profile form. The API sends null to a member who isn't VIP or
 // grandfathered, so og doesn't check that again.
 const schema = z.object({
-  browsing: z.object({
-    search: z.object({
-      image_type: z.enum(['poster', 'thumb', 'screenshot', 'fanart', 'logo', 'banner']).nullish().catch(null),
-    }).nullish(),
-  }).nullish(),
+  browsing: z
+    .object({
+      search: z
+        .object({
+          image_type: z.enum(['poster', 'thumb', 'screenshot', 'fanart', 'logo', 'banner']).nullish().catch(null),
+        })
+        .nullish(),
+    })
+    .nullish(),
 });
 
 type SearchImageTypeParams = {

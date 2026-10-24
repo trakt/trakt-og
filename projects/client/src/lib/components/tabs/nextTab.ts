@@ -13,6 +13,9 @@ export function nextTab(ids: readonly string[], selected: string | undefined, ke
   const move = MOVES[key];
   if (!move || ids.length === 0) return undefined;
 
-  const index = Math.max(ids.findIndex((id) => id === selected), 0);
+  const index = Math.max(
+    ids.findIndex((id) => id === selected),
+    0,
+  );
   return ids.at(move(index, ids.length));
 }

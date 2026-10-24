@@ -41,7 +41,10 @@ describe('toProgressRow', () => {
     });
 
     it('should fill the ticks from the left', () => {
-      expect(collapsed('Breaking Bad').ticks).toEqual([{ done: true, count: 11 }, { done: false, count: 9 }]);
+      expect(collapsed('Breaking Bad').ticks).toEqual([
+        { done: true, count: 11 },
+        { done: false, count: 9 },
+      ]);
     });
   });
 
@@ -63,12 +66,13 @@ describe('toProgressRow', () => {
     it('should line up each season, announced episodes included', () => {
       const { seasons } = expanded('Severance');
 
-      expect(seasons?.map(({ name, href, percent, count, announced }) => [name, href, percent, count, announced]))
-        .toEqual([
-          ['Season 1', '/shows/severance/seasons/1', 100, '9/9', undefined],
-          ['Season 2', '/shows/severance/seasons/2', 100, '10/10', undefined],
-          ['Season 3', '/shows/severance/seasons/3', 0, '0/0', 3],
-        ]);
+      expect(
+        seasons?.map(({ name, href, percent, count, announced }) => [name, href, percent, count, announced]),
+      ).toEqual([
+        ['Season 1', '/shows/severance/seasons/1', 100, '9/9', undefined],
+        ['Season 2', '/shows/severance/seasons/2', 100, '10/10', undefined],
+        ['Season 3', '/shows/severance/seasons/3', 0, '0/0', 3],
+      ]);
       expect(seasons?.at(2)?.squares.at(0)).toMatchObject({
         code: '3x01',
         href: '/shows/severance/seasons/3/episodes/1',

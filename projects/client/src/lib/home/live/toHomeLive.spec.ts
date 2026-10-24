@@ -26,7 +26,10 @@ describe('toHomeLive', () => {
         { username: 'b', location: 'London, United Kingdom' },
         { username: 'c', location: 'Manchester, England' },
       ]),
-      source('movies', 'Tron', [{ username: 'd', location: 'Brasil' }, { username: 'e', location: 'UK' }]),
+      source('movies', 'Tron', [
+        { username: 'd', location: 'Brasil' },
+        { username: 'e', location: 'UK' },
+      ]),
     ]);
 
     expect(live.countries.map(({ code, shows, movies }) => ({ code, shows, movies }))).toEqual([
@@ -39,7 +42,10 @@ describe('toHomeLive', () => {
   it("should name each country's most watched title", () => {
     const live = toHomeLive([
       source('shows', 'Severance', [{ username: 'a', location: 'Spain' }]),
-      source('movies', 'Tron', [{ username: 'b', location: 'Spain' }, { username: 'c', location: 'Madrid, Spain' }]),
+      source('movies', 'Tron', [
+        { username: 'b', location: 'Spain' },
+        { username: 'c', location: 'Madrid, Spain' },
+      ]),
     ]);
 
     expect(live.countries.at(0)?.top).toEqual({ type: 'movies', title: 'Tron', href: '/movies/tron' });

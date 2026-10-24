@@ -26,14 +26,17 @@ async function findEntry(client: ReturnType<typeof api>, id: number, page = 1): 
  * Up Next respects rewatch resets; per-show watched progress supplies a rewatch's whole show, as the panel does, and
  * completed shows. The default sort puts the show just watched first, so the scan rarely reads past the first page.
  */
-export async function fetchOnDeckItem(
-  { item, username, fetch, settings = toDashboardSettings({ settings: null }).upNext }: {
-    item: OnDeckItem;
-    username: string;
-    fetch: typeof globalThis.fetch;
-    settings?: DashboardSettings['upNext'];
-  },
-): Promise<OnDeckItem> {
+export async function fetchOnDeckItem({
+  item,
+  username,
+  fetch,
+  settings = toDashboardSettings({ settings: null }).upNext,
+}: {
+  item: OnDeckItem;
+  username: string;
+  fetch: typeof globalThis.fetch;
+  settings?: DashboardSettings['upNext'];
+}): Promise<OnDeckItem> {
   const client = api({ fetch });
   const entry = await findEntry(client, item.showId);
   if (entry) {

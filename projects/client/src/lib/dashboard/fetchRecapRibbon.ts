@@ -17,12 +17,15 @@ type FetchRecapRibbonParams = {
  * history page and its `X-Pagination-Item-Count`, all together. A month that fails fails the strip, since a gap would
  * read as a month with nothing watched.
  */
-export async function fetchRecapRibbon(
-  { client, slug, timeZone, now = new Date() }: FetchRecapRibbonParams,
-): Promise<RecapRibbon> {
+export async function fetchRecapRibbon({
+  client,
+  slug,
+  timeZone,
+  now = new Date(),
+}: FetchRecapRibbonParams): Promise<RecapRibbon> {
   const responses = await Promise.all(
     recapWindows({ now, timeZone }).map(({ start, end }) =>
-      client.users.history.all({ params: { id: 'me' }, query: { start_at: start, end_at: end, limit: 1 } })
+      client.users.history.all({ params: { id: 'me' }, query: { start_at: start, end_at: end, limit: 1 } }),
     ),
   );
   if (responses.some(({ status }) => status !== 200)) throw new Error('A month of history did not load');

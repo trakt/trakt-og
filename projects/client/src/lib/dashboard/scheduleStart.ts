@@ -10,7 +10,7 @@ const OFFSETS: Readonly<Record<string, number>> = { yesterday: -1, two_days_ago:
 export function scheduleStart(today: string, startDay: DashboardPrefs['upcoming_start_day']): string {
   const date = new Date(`${today}T00:00:00Z`);
   const weekday = WEEKDAYS.indexOf(startDay);
-  const offset = weekday >= 0 ? -((date.getUTCDay() - weekday + 7) % 7) : OFFSETS[startDay] ?? 0;
+  const offset = weekday >= 0 ? -((date.getUTCDay() - weekday + 7) % 7) : (OFFSETS[startDay] ?? 0);
   date.setUTCDate(date.getUTCDate() + offset);
   return date.toISOString().slice(0, 10);
 }

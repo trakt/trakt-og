@@ -71,31 +71,31 @@ type Options = {
   stale?: boolean;
 };
 
-const load = (
-  {
-    target = 'my',
-    slug = 'shows-movies',
-    token = 'fake-token',
-    timeZone = 'UTC',
-    hideSpecials,
-    feedToken,
-    cookies = {},
-    calendar = {},
-    start,
-    search = '',
-    stale = false,
-  }: Options,
-) =>
+const load = ({
+  target = 'my',
+  slug = 'shows-movies',
+  token = 'fake-token',
+  timeZone = 'UTC',
+  hideSpecials,
+  feedToken,
+  cookies = {},
+  calendar = {},
+  start,
+  search = '',
+  stale = false,
+}: Options) =>
   loadCalendar({
     fetch: globalThis.fetch,
     parent: () =>
       Promise.resolve({
         datePreferences: { timeZone },
-        settings: stale ? null : {
-          user: { vip: true },
-          account: { token: feedToken },
-          browsing: { calendar: { hide_specials: hideSpecials, ...calendar } },
-        },
+        settings: stale
+          ? null
+          : {
+              user: { vip: true },
+              account: { token: feedToken },
+              browsing: { calendar: { hide_specials: hideSpecials, ...calendar } },
+            },
       }),
     url: new URL(`https://og.test/calendars/${target === 'my' ? 'my/' : ''}${slug}${search}`),
     target,
@@ -109,13 +109,16 @@ const load = (
 
 const shownKeys = (data: Awaited<ReturnType<typeof load>>) =>
   data.days.flatMap(({ items }) =>
-    items.map((
-      item,
-    ) => (item.type === 'movie' ? `m${item.movie.ids.trakt}` : `${item.show.ids.trakt}s${item.episode.season}`))
+    items.map((item) =>
+      item.type === 'movie' ? `m${item.movie.ids.trakt}` : `${item.show.ids.trakt}s${item.episode.season}`,
+    ),
   );
 
 const redirectOf = (promise: Promise<unknown>) =>
-  promise.then(() => null, (thrown: unknown) => (isRedirect(thrown) ? thrown.location : thrown));
+  promise.then(
+    () => null,
+    (thrown: unknown) => (isRedirect(thrown) ? thrown.location : thrown),
+  );
 
 const requestTo = (path: string) => seen.find((request) => new URL(request.url).pathname.startsWith(path));
 
@@ -128,8 +131,9 @@ describe('loadCalendar', () => {
         expect(data.window.start).toBe('2026-09-01');
         expect(data.window.dates).toHaveLength(30);
         expect(shownKeys(data)).toEqual(target === 'my' ? ['m7'] : ['m7', 'm8']);
-        expect(new URL(requestTo(`/calendars/${target}/movies/`)?.url ?? '').pathname)
-          .toBe(`/calendars/${target}/movies/2026-08-30/33`);
+        expect(new URL(requestTo(`/calendars/${target}/movies/`)?.url ?? '').pathname).toBe(
+          `/calendars/${target}/movies/2026-08-30/33`,
+        );
       }
     },
   );
@@ -291,8 +295,9 @@ describe('loadCalendar', () => {
     });
 
     it('should bring the query string back from sign in', async () => {
-      expect(await redirectOf(load({ token: null, search: '?genres=drama' })))
-        .toBe('/auth/signin?redirect_to=%2Fcalendars%2Fmy%2Fshows-movies%3Fgenres%3Ddrama');
+      expect(await redirectOf(load({ token: null, search: '?genres=drama' }))).toBe(
+        '/auth/signin?redirect_to=%2Fcalendars%2Fmy%2Fshows-movies%3Fgenres%3Ddrama',
+      );
     });
 
     it("should send a viewer whose token stopped working to sign in on the worker's plain-text 401", async () => {
@@ -311,8 +316,9 @@ describe('loadCalendar', () => {
 
   it('should redirect when either monthly chunk reports an expired viewer token', async () => {
     server.use(http.get(`${API}/calendars/my/media/2026-08-17/16`, () => new HttpResponse(null, { status: 401 })));
-    expect(await redirectOf(load({ start: '2026-08-12', calendar: { period: 'month' } })))
-      .toBe('/auth/signin?redirect_to=%2Fcalendars%2Fmy%2Fshows-movies');
+    expect(await redirectOf(load({ start: '2026-08-12', calendar: { period: 'month' } }))).toBe(
+      '/auth/signin?redirect_to=%2Fcalendars%2Fmy%2Fshows-movies',
+    );
   });
 
   it('should use defaults for a signed-out viewer even if parent settings are populated', async () => {
@@ -352,10 +358,12 @@ describe('loadCalendar', () => {
     });
 
     it('should skip the hidden items when signed out', async () => {
-      server.use(http.get(`${API}/calendars/releases/hot/:start/:days`, ({ request }) => {
-        seen.push(request);
-        return HttpResponse.json([airing(2, 1)]);
-      }));
+      server.use(
+        http.get(`${API}/calendars/releases/hot/:start/:days`, ({ request }) => {
+          seen.push(request);
+          return HttpResponse.json([airing(2, 1)]);
+        }),
+      );
       const data = await load({ target: 'all', slug: 'shows', token: null });
 
       expect(requestTo('/users/hidden/calendar')).toBeUndefined();

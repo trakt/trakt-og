@@ -40,8 +40,8 @@ describe('loadWatchNow', () => {
       const body = pathname.startsWith('/watchnow/sources')
         ? { us: 'nope' }
         : pathname.includes('favorites')
-        ? { order: [] }
-        : [{ us: {} }];
+          ? { order: [] }
+          : [{ us: {} }];
       return Promise.resolve(new Response(JSON.stringify(body)));
     }) as typeof globalThis.fetch;
 

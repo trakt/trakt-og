@@ -30,10 +30,12 @@ const list = (id: number, name: string, items = 50) => ({
 });
 
 const seen: Request[] = [];
-const json = (body: JsonBodyType) => ({ request }: { request: Request }) => {
-  seen.push(request);
-  return HttpResponse.json(body);
-};
+const json =
+  (body: JsonBodyType) =>
+  ({ request }: { request: Request }) => {
+    seen.push(request);
+    return HttpResponse.json(body);
+  };
 // Theme calls carry `subgenres`; the mood shelves don't.
 const themed = (request: Request) => new URL(request.url).searchParams.has('subgenres');
 
@@ -139,7 +141,10 @@ describe('loadDiscover', () => {
   it("should ask for the theme's trending and all-time favorites with its filters", async () => {
     const data = await load();
 
-    const paths = seen.filter(themed).map((request) => new URL(request.url).pathname).toSorted();
+    const paths = seen
+      .filter(themed)
+      .map((request) => new URL(request.url).pathname)
+      .toSorted();
     expect(paths).toEqual(['/movies/favorited/all', '/movies/trending', '/shows/favorited/all', '/shows/trending']);
     for (const request of seen.filter(themed)) expect(new URL(request.url).searchParams.get('genres')).toBe('horror');
     expect(data.picks.map(({ key }) => key)).toEqual(['movie-7', 'movie-8', 'show-9']);
@@ -211,12 +216,12 @@ describe('loadDiscover', () => {
   it('should load the trending comments and the upcoming premieres from today', async () => {
     const data = await load();
 
-    expect(data.comments.map(({ href, item }) => [href, item.title, item.episode?.number, item.episode?.title]))
-      .toEqual([
-        ['/comments/50', 'Show 40', '1x08', 'Finale'],
-      ]);
-    expect(seen.some((request) => new URL(request.url).pathname === '/calendars/releases/hot/premieres/2026-10-07/60'))
-      .toBe(true);
+    expect(
+      data.comments.map(({ href, item }) => [href, item.title, item.episode?.number, item.episode?.title]),
+    ).toEqual([['/comments/50', 'Show 40', '1x08', 'Finale']]);
+    expect(
+      seen.some((request) => new URL(request.url).pathname === '/calendars/releases/hot/premieres/2026-10-07/60'),
+    ).toBe(true);
     expect(data.premieres.map(({ title, kind, lists, day }) => [title, kind, lists, day])).toEqual([
       ['Show 60', 'series', 8000, '2026-10-08'],
     ]);

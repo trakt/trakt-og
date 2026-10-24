@@ -23,9 +23,10 @@ export async function writeMediaTool({ fetch, action }: { fetch: typeof globalTh
   try {
     const response = await rawApiFetch({
       fetch,
-      path: target.type === 'list' && target.ownerSlug
-        ? `/users/${encodeURIComponent(target.ownerSlug)}/lists/${encodeURIComponent(target.id)}/report`
-        : `/${plural}/${encodeURIComponent(target.id)}/report`,
+      path:
+        target.type === 'list' && target.ownerSlug
+          ? `/users/${encodeURIComponent(target.ownerSlug)}/lists/${encodeURIComponent(target.id)}/report`
+          : `/${plural}/${encodeURIComponent(target.id)}/report`,
       init: {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

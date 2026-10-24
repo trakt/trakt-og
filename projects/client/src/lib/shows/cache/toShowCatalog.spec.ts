@@ -31,17 +31,19 @@ describe('toShowCatalog', () => {
     const catalog = toShowCatalog({
       id: 1,
       fetchedAt: 0,
-      body: [{
-        number: 1,
-        title: 'Season 1',
-        episodes: [
-          episode(1, 1, {
-            episode_type: 'series_premiere',
-            overview: 'Walt cooks.',
-            images: { screenshot: ['s.jpg'] },
-          }),
-        ],
-      }],
+      body: [
+        {
+          number: 1,
+          title: 'Season 1',
+          episodes: [
+            episode(1, 1, {
+              episode_type: 'series_premiere',
+              overview: 'Walt cooks.',
+              images: { screenshot: ['s.jpg'] },
+            }),
+          ],
+        },
+      ],
     });
 
     expect(catalog.seasons.at(0)?.episodes.at(0)).toEqual({

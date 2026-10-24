@@ -2,10 +2,12 @@ import { z } from 'zod/v4';
 import { api } from '../api/api.ts';
 import type { ApiGet } from './sliceSources.ts';
 
-const rowsSchema = z.array(z.object({
-  season: z.object({ ids: z.object({ trakt: z.number() }) }).nullish(),
-  episode: z.object({ ids: z.object({ trakt: z.number() }) }).nullish(),
-}));
+const rowsSchema = z.array(
+  z.object({
+    season: z.object({ ids: z.object({ trakt: z.number() }) }).nullish(),
+    episode: z.object({ ids: z.object({ trakt: z.number() }) }).nullish(),
+  }),
+);
 
 /** Fresh membership for a season or episode, including entries beyond the first page. */
 async function loadWatchlistIds(client: ReturnType<typeof api>, type: 'season' | 'episode') {

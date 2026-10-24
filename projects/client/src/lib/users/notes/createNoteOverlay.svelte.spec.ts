@@ -4,13 +4,17 @@ import { noteRowsSchema } from './noteRowsSchema.ts';
 import { toNote } from './toNote.ts';
 
 const preferences = { order: 'mdy', hour24: false, timeZone: 'UTC', weekStartDay: 0 } as const;
-const row = noteRowsSchema.parse([{
-  type: 'episode',
-  episode: { title: 'Pilot', ids: { trakt: 3 }, season: 1, number: 1 },
-  show: { title: 'Breaking Bad', ids: { trakt: 2, slug: 'breaking-bad' } },
-  attached_to: { type: 'history', watched_at: '2026-09-29T12:00:00Z' },
-  note: { id: 7, notes: 'Old text', privacy: 'friends', spoiler: true, updated_at: '2026-09-29T12:00:00Z' },
-}]).at(0);
+const row = noteRowsSchema
+  .parse([
+    {
+      type: 'episode',
+      episode: { title: 'Pilot', ids: { trakt: 3 }, season: 1, number: 1 },
+      show: { title: 'Breaking Bad', ids: { trakt: 2, slug: 'breaking-bad' } },
+      attached_to: { type: 'history', watched_at: '2026-09-29T12:00:00Z' },
+      note: { id: 7, notes: 'Old text', privacy: 'friends', spoiler: true, updated_at: '2026-09-29T12:00:00Z' },
+    },
+  ])
+  .at(0);
 if (!row) throw new Error('Missing fixture');
 const mapped = toNote(row, preferences);
 if (!mapped) throw new Error('Invalid fixture');
@@ -18,7 +22,7 @@ const note = mapped;
 const parameters = { note, datePreferences: preferences, now: '2026-09-30T12:00:00Z' };
 function deferred() {
   let respond: (response: Response) => void = () => {};
-  const response = new Promise<Response>((resolve) => respond = resolve);
+  const response = new Promise<Response>((resolve) => (respond = resolve));
   return { fetch: (() => response) as typeof fetch, respond };
 }
 

@@ -17,10 +17,12 @@ const credit = (id: number, year: number | undefined, votes = 0, episodeCount = 
 describe('toCareerEras', () => {
   it('should cover every five years from the first credit to the last, empty ones included', () => {
     const eras = toCareerEras({ credits: [credit(1, 1998), credit(2, 2011)] });
-    expect(eras.map(({ start, end }) => [start, end])).toEqual([[1995, 1999], [2000, 2004], [2005, 2009], [
-      2010,
-      2014,
-    ]]);
+    expect(eras.map(({ start, end }) => [start, end])).toEqual([
+      [1995, 1999],
+      [2000, 2004],
+      [2005, 2009],
+      [2010, 2014],
+    ]);
     expect(eras.map(({ credits }) => credits.length)).toEqual([1, 0, 0, 1]);
   });
 

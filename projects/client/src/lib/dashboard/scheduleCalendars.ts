@@ -6,12 +6,13 @@ import type { DashboardSettings } from './DashboardSettings.ts';
  * `calendar_movies`): all of both is the one Shows & Movies calendar, otherwise the shows' calendar and the movies'
  * side by side. None of either reads nothing. The first is the one the Calendar link opens.
  */
-export function scheduleCalendars(
-  { filter, movies }: Pick<DashboardSettings['schedule'], 'filter' | 'movies'>,
-): MyCalendar['slug'][] {
+export function scheduleCalendars({
+  filter,
+  movies,
+}: Pick<DashboardSettings['schedule'], 'filter' | 'movies'>): MyCalendar['slug'][] {
   const allShows = filter === 'shows-movies' || filter === 'shows';
   if (allShows && movies === 'all') return ['shows-movies'];
 
-  const shows = filter === 'none' ? [] : [allShows ? 'shows' as const : filter];
+  const shows = filter === 'none' ? [] : [allShows ? ('shows' as const) : filter];
   return [...shows, ...(movies === 'all' ? ['movies' as const] : [])];
 }

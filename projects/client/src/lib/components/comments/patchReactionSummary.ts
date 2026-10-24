@@ -2,7 +2,11 @@ import type { ReactionsSummaryResponse } from '@trakt/api';
 import type { ReactionType } from './ReactionType.ts';
 
 /** Replacing a choice moves its distribution count, while adding/removing also moves the total and likes. */
-export function patchReactionSummary({ summary, previous, next }: {
+export function patchReactionSummary({
+  summary,
+  previous,
+  next,
+}: {
   summary: ReactionsSummaryResponse;
   previous: ReactionType | undefined;
   next: ReactionType | undefined;

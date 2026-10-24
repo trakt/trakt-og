@@ -36,20 +36,17 @@ const pages = { 'x-pagination-page': '2', 'x-pagination-page-count': '3', 'x-pag
 const requests: URL[] = [];
 const server = setupServer(
   http.get(`${API}/shows/:id`, () => HttpResponse.json(show)),
-  http.get(
-    `${API}/shows/:id/seasons`,
-    () => HttpResponse.json([{ number: 1, ids: { trakt: 3950 }, first_aired: '2008-01-20T02:00:00.000Z' }]),
+  http.get(`${API}/shows/:id/seasons`, () =>
+    HttpResponse.json([{ number: 1, ids: { trakt: 3950 }, first_aired: '2008-01-20T02:00:00.000Z' }]),
   ),
   http.get(`${API}/shows/:id/seasons/:season/lists/:type/:sort`, () => HttpResponse.json([list], { headers: pages })),
-  http.get(
-    `${API}/shows/:id/listed`,
-    () =>
-      HttpResponse.json([
-        // The watchlist comes back without a name; it's left out, not a failed page.
-        { ...list, name: null, type: 'watchlist', ids: { trakt: 8, slug: 'watchlist' } },
-        { ...list, likes: 2, ids: { trakt: 9, slug: 'rewatch' } },
-        list,
-      ]),
+  http.get(`${API}/shows/:id/listed`, () =>
+    HttpResponse.json([
+      // The watchlist comes back without a name; it's left out, not a failed page.
+      { ...list, name: null, type: 'watchlist', ids: { trakt: 8, slug: 'watchlist' } },
+      { ...list, likes: 2, ids: { trakt: 9, slug: 'rewatch' } },
+      list,
+    ]),
   ),
   http.get(`${API}/people/:id`, () => HttpResponse.json(person)),
   http.get(`${API}/people/:id/lists/:type/:sort`, () => HttpResponse.json([])),
@@ -145,8 +142,8 @@ describe('loadItemLists', () => {
   });
 
   it("should redirect a person's other id to the slug's lists", async () => {
-    const failure = await load({ type: 'person', id: '297737' }, '/people/297737/lists').catch((error: unknown) =>
-      error
+    const failure = await load({ type: 'person', id: '297737' }, '/people/297737/lists').catch(
+      (error: unknown) => error,
     );
 
     expect(isRedirect(failure) && failure.location).toBe('/people/bryan-cranston/lists');

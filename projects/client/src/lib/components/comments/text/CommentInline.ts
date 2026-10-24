@@ -6,11 +6,11 @@ export type CommentInline =
   | { readonly type: 'code'; readonly text: string }
   /** An allowlisted URL. `video` is a YouTube id, which OG opened in a popup. */
   | {
-    readonly type: 'link';
-    readonly href: string;
-    readonly video?: string;
-    readonly children: readonly CommentInline[];
-  }
+      readonly type: 'link';
+      readonly href: string;
+      readonly video?: string;
+      readonly children: readonly CommentInline[];
+    }
   | { readonly type: 'mention'; readonly username: string }
   | { readonly type: 'emoji'; readonly emoji: string; readonly shortname: string }
   | { readonly type: 'spoiler'; readonly children: readonly CommentInline[] };

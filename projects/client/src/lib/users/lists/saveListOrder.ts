@@ -2,7 +2,11 @@ import { reorderApplied } from '../../lists/reorderApplied.ts';
 import { REORDER_FAILED } from '../../lists/reorderFailed.ts';
 
 /** The page patches its order before this write and restores it when this returns false. No media slice changes. */
-export async function saveListOrder({ rank, request, notify }: {
+export async function saveListOrder({
+  rank,
+  request,
+  notify,
+}: {
   rank: readonly number[];
   request: (path: string, body: unknown) => Promise<Response>;
   notify: { error: (message: string) => void };

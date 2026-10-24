@@ -18,8 +18,9 @@ export function rejectedIssues(report: BumpReport): ReadonlyArray<RejectedIssue>
       body: [
         `The weekly dependency bump (\`deps.yml\`) couldn't move \`${pin.key}\` from ${pin.version} to ${to}: install, lint, check, test or build failed with it applied, so it stays on its current pin.`,
         '',
-        'Acceptance: `' + pin.key +
-        "` is pinned to the newest release Bun allows, `bun run ci` is green, and any code the new version needs is changed in the same PR. If it can't move yet (an upstream package doesn't support it), add a hold with its reason in `scripts/deps/dependencyHolds.ts` instead.",
+        'Acceptance: `' +
+          pin.key +
+          "` is pinned to the newest release Bun allows, `bun run ci` is green, and any code the new version needs is changed in the same PR. If it can't move yet (an upstream package doesn't support it), add a hold with its reason in `scripts/deps/dependencyHolds.ts` instead.",
         '',
         '<details><summary>End of the failing log</summary>',
         '',

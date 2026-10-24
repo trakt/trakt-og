@@ -28,12 +28,14 @@ export function seasonRibbon(themes: readonly DiscoverTheme[], today: string): S
     if (number !== month) {
       return [{ id: theme.id, month: name, title: theme.title, progress: number < (month ?? 0) ? 1 : 0 }];
     }
-    return [{
-      id: theme.id,
-      month: name,
-      title: theme.title,
-      progress: (day ?? 0) / daysInMonth,
-      daysLeft: daysInMonth - (day ?? 0) + 1,
-    }];
+    return [
+      {
+        id: theme.id,
+        month: name,
+        title: theme.title,
+        progress: (day ?? 0) / daysInMonth,
+        daysLeft: daysInMonth - (day ?? 0) + 1,
+      },
+    ];
   });
 }

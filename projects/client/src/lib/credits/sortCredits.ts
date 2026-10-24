@@ -25,10 +25,14 @@ export function sortCredits(
   { by, flipped, characters }: { by: CreditSort; flipped: boolean; characters: boolean },
 ): readonly CreditPerson[] {
   const role = (person: CreditPerson) => (characters ? lastName(person.role) : person.role);
-  const sorted = by === 'billing' ? [...people] : people.toSorted((a, b) => {
-    if (by === 'name') return collator.compare(lastName(a.name), lastName(b.name)) || collator.compare(a.name, b.name);
-    if (by === 'role') return (a.role ? 0 : 1) - (b.role ? 0 : 1) || collator.compare(role(a), role(b));
-    return (b.episodeCount ?? 0) - (a.episodeCount ?? 0);
-  });
+  const sorted =
+    by === 'billing'
+      ? [...people]
+      : people.toSorted((a, b) => {
+          if (by === 'name')
+            return collator.compare(lastName(a.name), lastName(b.name)) || collator.compare(a.name, b.name);
+          if (by === 'role') return (a.role ? 0 : 1) - (b.role ? 0 : 1) || collator.compare(role(a), role(b));
+          return (b.episodeCount ?? 0) - (a.episodeCount ?? 0);
+        });
   return flipped ? sorted.toReversed() : sorted;
 }

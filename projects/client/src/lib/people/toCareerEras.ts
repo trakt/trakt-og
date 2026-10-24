@@ -34,7 +34,10 @@ export function toCareerEras({ credits, span = credits }: ToCareerErasParams): C
     const start = first + i * ERA_YEARS;
     const end = start + ERA_YEARS - 1;
     const inEra = credits.filter(({ year }) => year !== undefined && year >= start && year <= end);
-    const top = inEra.filter((credit) => spanned.has(credit)).toSorted((a, b) => creditFame(b) - creditFame(a)).at(0);
+    const top = inEra
+      .filter((credit) => spanned.has(credit))
+      .toSorted((a, b) => creditFame(b) - creditFame(a))
+      .at(0);
     return { start, end, credits: inEra, top };
   });
 }

@@ -61,12 +61,14 @@ describe('toWatchingNow', () => {
 
   describe('for a movie', () => {
     it('should link to the movie and default to 90 minutes', () => {
-      expect(toWatchingNow({
-        ...times,
-        action: 'scrobble',
-        type: 'movie',
-        movie: { title: 'TRON: Legacy', ids: { slug: 'tron-legacy-2010', trakt: 12601 } },
-      })).toEqual({
+      expect(
+        toWatchingNow({
+          ...times,
+          action: 'scrobble',
+          type: 'movie',
+          movie: { title: 'TRON: Legacy', ids: { slug: 'tron-legacy-2010', trakt: 12601 } },
+        }),
+      ).toEqual({
         action: 'scrobble',
         title: 'TRON: Legacy',
         episode: null,

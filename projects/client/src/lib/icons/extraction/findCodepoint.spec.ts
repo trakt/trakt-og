@@ -37,15 +37,21 @@ const ICON_FONTS = `
 describe('findCodepoint', () => {
   describe('for Font Awesome names', () => {
     it('should find the codepoint of a canonical name', () => {
-      expect(findCodepoint({ lookup: 'fa', name: 'x-twitter', stylesheet: FA_VARIABLES }))
-        .toEqual({ name: 'x-twitter', codepoint: 0xe61b });
+      expect(findCodepoint({ lookup: 'fa', name: 'x-twitter', stylesheet: FA_VARIABLES })).toEqual({
+        name: 'x-twitter',
+        codepoint: 0xe61b,
+      });
     });
 
     it('should resolve an alias to its canonical name', () => {
-      expect(findCodepoint({ lookup: 'fa', name: 'times', stylesheet: FA_VARIABLES }))
-        .toEqual({ name: 'xmark', codepoint: 0xf00d });
-      expect(findCodepoint({ lookup: 'fa', name: 'cog', stylesheet: FA_VARIABLES }))
-        .toEqual({ name: 'gear', codepoint: 0xf013 });
+      expect(findCodepoint({ lookup: 'fa', name: 'times', stylesheet: FA_VARIABLES })).toEqual({
+        name: 'xmark',
+        codepoint: 0xf00d,
+      });
+      expect(findCodepoint({ lookup: 'fa', name: 'cog', stylesheet: FA_VARIABLES })).toEqual({
+        name: 'gear',
+        codepoint: 0xf013,
+      });
     });
 
     it('should not match a kit icon', () => {
@@ -55,8 +61,10 @@ describe('findCodepoint', () => {
 
   describe('for Font Awesome Kit names', () => {
     it('should find the codepoint in the custom icons map', () => {
-      expect(findCodepoint({ lookup: 'kit', name: 'thin-play-clock', stylesheet: FA_VARIABLES }))
-        .toEqual({ name: 'thin-play-clock', codepoint: 0xe001 });
+      expect(findCodepoint({ lookup: 'kit', name: 'thin-play-clock', stylesheet: FA_VARIABLES })).toEqual({
+        name: 'thin-play-clock',
+        codepoint: 0xe001,
+      });
     });
 
     it('should not match a regular Font Awesome name', () => {
@@ -66,13 +74,17 @@ describe('findCodepoint', () => {
 
   describe('for the trakt and logos fonts', () => {
     it('should find a trakt icon by its class name', () => {
-      expect(findCodepoint({ lookup: 'trakt', name: 'check-thick', stylesheet: ICON_FONTS }))
-        .toEqual({ name: 'check-thick', codepoint: 0xe602 });
+      expect(findCodepoint({ lookup: 'trakt', name: 'check-thick', stylesheet: ICON_FONTS })).toEqual({
+        name: 'check-thick',
+        codepoint: 0xe602,
+      });
     });
 
     it('should find a logos icon, including underscores in its name', () => {
-      expect(findCodepoint({ lookup: 'logos', name: 'dts_x', stylesheet: ICON_FONTS }))
-        .toEqual({ name: 'dts_x', codepoint: 0xe60e });
+      expect(findCodepoint({ lookup: 'logos', name: 'dts_x', stylesheet: ICON_FONTS })).toEqual({
+        name: 'dts_x',
+        codepoint: 0xe60e,
+      });
     });
 
     it('should only match the family it was asked for', () => {

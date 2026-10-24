@@ -71,12 +71,14 @@ export function createListManager(source: () => Source, isBlocked: () => boolean
 
   async function wholeOrder() {
     const { base } = items();
-    order ??= (await fetchListItemRefs({
-      fetch: viewerFetch(),
-      base,
-      query: { types: [], genres: [] },
-      sort: { by: 'rank', how: 'asc' },
-    })).map(({ id }) => id);
+    order ??= (
+      await fetchListItemRefs({
+        fetch: viewerFetch(),
+        base,
+        query: { types: [], genres: [] },
+        sort: { by: 'rank', how: 'asc' },
+      })
+    ).map(({ id }) => id);
     return order;
   }
 
@@ -244,14 +246,15 @@ export function createListManager(source: () => Source, isBlocked: () => boolean
           sort,
         });
         if (
-          !await reorderListItems({
+          !(await reorderListItems({
             owner,
             listId,
             rank: refs.map(({ id }) => id),
             request: request('POST'),
             notify: toast,
-          })
-        ) return;
+          }))
+        )
+          return;
         managing = false;
         await invalidateAll();
       }),
@@ -266,7 +269,7 @@ export function createListManager(source: () => Source, isBlocked: () => boolean
           query,
           sort: { by: 'rank', how: 'asc' },
         });
-        if (!await removeListItems({ owner, listId, items: refs, request: request('POST'), notify: toast })) return;
+        if (!(await removeListItems({ owner, listId, items: refs, request: request('POST'), notify: toast }))) return;
         managing = false;
         toast.success(
           `Deleted ${refs.length.toLocaleString('en-US')} item${refs.length === 1 ? '' : 's'} from ${list.name}!`,
@@ -281,7 +284,7 @@ export function createListManager(source: () => Source, isBlocked: () => boolean
       const { owner, listId } = items();
       const result = await saveListItemNote({ owner, listId, id: card.key, notes, request: request('PUT') });
       if (result.ok) {
-        patched = cards.map((item) => item.key === card.key ? { ...item, notes: result.notes || undefined } : item);
+        patched = cards.map((item) => (item.key === card.key ? { ...item, notes: result.notes || undefined } : item));
         return { saved: true };
       }
       if ('limit' in result) return { saved: false, limit: result.limit };

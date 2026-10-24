@@ -26,13 +26,22 @@ describe('withPostedComments', () => {
   });
 
   it('should put posted comments on top of Recent', () => {
-    expect(shape(withPostedComments([tab('likes', 1), tab('recent', 2), tab('me', 3)], [comment(9)])))
-      .toEqual([['likes', [1]], ['recent', [9, 2]], ['me', [3]]]);
+    expect(shape(withPostedComments([tab('likes', 1), tab('recent', 2), tab('me', 3)], [comment(9)]))).toEqual([
+      ['likes', [1]],
+      ['recent', [9, 2]],
+      ['me', [3]],
+    ]);
   });
 
   it('should add Recent after Likes, or first without Likes', () => {
-    expect(shape(withPostedComments([tab('likes', 1), tab('me', 3)], [comment(9)])))
-      .toEqual([['likes', [1]], ['recent', [9]], ['me', [3]]]);
-    expect(shape(withPostedComments([tab('me', 3)], [comment(9)]))).toEqual([['recent', [9]], ['me', [3]]]);
+    expect(shape(withPostedComments([tab('likes', 1), tab('me', 3)], [comment(9)]))).toEqual([
+      ['likes', [1]],
+      ['recent', [9]],
+      ['me', [3]],
+    ]);
+    expect(shape(withPostedComments([tab('me', 3)], [comment(9)]))).toEqual([
+      ['recent', [9]],
+      ['me', [3]],
+    ]);
   });
 });

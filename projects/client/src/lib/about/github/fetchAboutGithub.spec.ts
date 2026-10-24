@@ -22,12 +22,14 @@ const responses: Record<string, unknown> = {
       issue(150, 'enhancement', '2026-10-20T10:00:00Z', '2026-10-21T10:00:00Z'),
     ],
   },
-  commits: [{
-    sha: 'edf4f41b0',
-    html_url: 'https://github.com/trakt/trakt-og/commit/edf4f41b0',
-    commit: { message: 'feat(media): trim logos', committer: { date: '2026-10-22T14:09:00Z' } },
-    author: null,
-  }],
+  commits: [
+    {
+      sha: 'edf4f41b0',
+      html_url: 'https://github.com/trakt/trakt-og/commit/edf4f41b0',
+      commit: { message: 'feat(media): trim logos', committer: { date: '2026-10-22T14:09:00Z' } },
+      author: null,
+    },
+  ],
 };
 
 const keyOf = (url: URL) => {
@@ -36,16 +38,19 @@ const keyOf = (url: URL) => {
 };
 
 const seen: Headers[] = [];
-const fakeFetch = (fail = new Set<string>()): typeof globalThis.fetch => (input, init) => {
-  seen.push(new Headers(init?.headers));
-  const key = keyOf(new URL(String(input)));
-  if (fail.has(key)) return Promise.resolve(new Response('rate limited', { status: 403 }));
-  // GitHub pages the one-a-page commit list, so the last page's number is the total.
-  const link = new URL(String(input)).searchParams.get('per_page') === '1'
-    ? { link: '<https://api.github.com/repositories/1/commits?per_page=1&page=321>; rel="last"' }
-    : undefined;
-  return Promise.resolve(Response.json(responses[key], { headers: link }));
-};
+const fakeFetch =
+  (fail = new Set<string>()): typeof globalThis.fetch =>
+  (input, init) => {
+    seen.push(new Headers(init?.headers));
+    const key = keyOf(new URL(String(input)));
+    if (fail.has(key)) return Promise.resolve(new Response('rate limited', { status: 403 }));
+    // GitHub pages the one-a-page commit list, so the last page's number is the total.
+    const link =
+      new URL(String(input)).searchParams.get('per_page') === '1'
+        ? { link: '<https://api.github.com/repositories/1/commits?per_page=1&page=321>; rel="last"' }
+        : undefined;
+    return Promise.resolve(Response.json(responses[key], { headers: link }));
+  };
 
 describe('fetchAboutGithub', () => {
   it('should read the stars, both issue lists with their totals and the latest commits', async () => {

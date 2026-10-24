@@ -3,14 +3,17 @@ import { watchingProgress } from './watchingProgress.ts';
 
 const endsAt = '2026-09-29T21:00:00.000Z';
 const at = (iso: string) => Date.parse(iso);
-const progress = (
-  { runtime = 60, now, action = 'scrobble', reducedMotion = false }: {
-    runtime?: number;
-    now: string;
-    action?: 'checkin' | 'scrobble';
-    reducedMotion?: boolean;
-  },
-) => watchingProgress({ endsAt, runtime, action, now: at(now), reducedMotion });
+const progress = ({
+  runtime = 60,
+  now,
+  action = 'scrobble',
+  reducedMotion = false,
+}: {
+  runtime?: number;
+  now: string;
+  action?: 'checkin' | 'scrobble';
+  reducedMotion?: boolean;
+}) => watchingProgress({ endsAt, runtime, action, now: at(now), reducedMotion });
 
 describe('watchingProgress', () => {
   it('should measure from runtime before the end', () => {

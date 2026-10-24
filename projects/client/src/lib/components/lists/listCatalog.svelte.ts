@@ -11,11 +11,13 @@ export const listCatalog = {
     const active = pending[user];
     if (active) return active;
     const before = counts[user];
-    const done = loadListCatalog(fetch).then((lists) => {
-      if (counts[user] === before) counts = { [user]: lists.length };
-    }).finally(() => {
-      pending = { ...pending, [user]: undefined };
-    });
+    const done = loadListCatalog(fetch)
+      .then((lists) => {
+        if (counts[user] === before) counts = { [user]: lists.length };
+      })
+      .finally(() => {
+        pending = { ...pending, [user]: undefined };
+      });
     pending = { ...pending, [user]: done };
     return done;
   },

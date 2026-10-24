@@ -29,7 +29,7 @@ export function personTags(person: PersonFacts, { today, order = 'mdy' }: Person
   const life = death
     ? [`Died ${formatDate(death, { format: 'll', timeZone: 'UTC', order })}`]
     : birthday && today
-    ? [`Age ${age(birthday, today)}`]
-    : [];
+      ? [`Age ${age(birthday, today)}`]
+      : [];
   return [...life, ...(knownFor ? [titleize(knownFor)] : [])];
 }

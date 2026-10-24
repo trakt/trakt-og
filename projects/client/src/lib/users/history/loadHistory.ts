@@ -76,17 +76,23 @@ const total = (headers: Headers) => positiveInt(headers.get('x-pagination-item-c
  * One page of history: the plays, or the Shows tab's shows. The unfiltered Shows tab is the watched list, which pages
  * by last watched; filtered, it groups the filtered plays by show, since the watched list takes no filters.
  */
-async function fetchPage(
-  { fetch, token, base, type, filters, current, limit }: {
-    fetch: typeof globalThis.fetch;
-    token: string | null;
-    base: string;
-    type: HistoryType;
-    filters: HistoryFilters;
-    current: number;
-    limit: number;
-  },
-): Promise<Fetched> {
+async function fetchPage({
+  fetch,
+  token,
+  base,
+  type,
+  filters,
+  current,
+  limit,
+}: {
+  fetch: typeof globalThis.fetch;
+  token: string | null;
+  base: string;
+  type: HistoryType;
+  filters: HistoryFilters;
+  current: number;
+  limit: number;
+}): Promise<Fetched> {
   const empty = { plays: [], shows: [], total: 0, page: extractPageMeta(new Headers(), current) };
   const invalid = (status: number) => ({ ...empty, status: status === 200 ? 502 : status });
 
@@ -160,7 +166,10 @@ export async function loadHistory({ fetch, locals, params, url, cookies, parent 
   const filters = historyFilters(url.searchParams, type, known?.datePreferences.timeZone ?? 'UTC');
 
   const request = { base, type, filters, current, limit };
-  const { frame: { stats, user, datePreferences }, result } = await readProfileTab({
+  const {
+    frame: { stats, user, datePreferences },
+    result,
+  } = await readProfileTab({
     fetch,
     token: locals.token,
     frame: known ?? layout,
@@ -189,9 +198,10 @@ export async function loadHistory({ fetch, locals, params, url, cookies, parent 
   if (result.status !== 200) error(502, 'Trakt is having trouble loading this history.');
 
   const screenshots = type === 'episodes' || (filters.item !== undefined && filters.item.type !== 'movie');
-  const cards = result.shows.length > 0
-    ? result.shows.map((row) => toWatchedShowCard(row, datePreferences))
-    : result.plays.map((row) => toHistoryCard(row, { screenshots, datePreferences }));
+  const cards =
+    result.shows.length > 0
+      ? result.shows.map((row) => toWatchedShowCard(row, datePreferences))
+      : result.plays.map((row) => toHistoryCard(row, { screenshots, datePreferences }));
 
   return {
     ...shell,

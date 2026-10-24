@@ -10,7 +10,6 @@ Prefer built-in browser features over libraries, as long as the result still loo
 | Share                      | Web Share API with a copy-link fallback                                                     |
 | Toasts                     | og's toast component                                                                        |
 | Icons                      | SVGs extracted from OG's fonts, through the icon component. No icon fonts or FA packages    |
-
 - Adding a dependency needs a justification in the PR: what the platform can't do.
 - Every dependency is on its latest release. Deno refuses versions under 24h old, which is fine; take the newest one it
   allows.

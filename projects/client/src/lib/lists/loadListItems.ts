@@ -29,9 +29,14 @@ type ItemsRequest = {
 export type ListItems = { status: number; rows: readonly ListItemRow[]; headers: Headers };
 
 /** A page of a list's items: `<base>/:types/:sort_by/:sort_how` with the genre filter and OG's page size. */
-export async function fetchListItems(
-  { fetch, token, base, query, sort, extended = 'full,images' }: ItemsRequest,
-): Promise<ListItems> {
+export async function fetchListItems({
+  fetch,
+  token,
+  base,
+  query,
+  sort,
+  extended = 'full,images',
+}: ItemsRequest): Promise<ListItems> {
   const types = query.types.length > 0 ? query.types.join(',') : 'all';
   const path = sort ? `/${types}/${sort.by}/${sort.how}` : query.types.length > 0 ? `/${types}` : '';
   const search = toListItemsSearch({ query, extended, page: query.page, limit: query.limit });
@@ -75,7 +80,10 @@ async function fetchListStats({ total, withItems, query, ...request }: StatsRequ
     });
   const results = await Promise.all(Array.from({ length: pages }, (_, i) => read(i + 1))).catch(() => null);
   if (!results || results.some(({ status }) => status !== 200)) return null;
-  return toListStats(results.flatMap(({ rows }) => rows), { withItems });
+  return toListStats(
+    results.flatMap(({ rows }) => rows),
+    { withItems },
+  );
 }
 
 type LoadListItemsParams = {
@@ -104,40 +112,55 @@ type LoadListItemsParams = {
  * the page shows, a page of cards in it, the pagination and the VIP cover. The first read is reused when it's already
  * in that sort and was allowed to be; a list only the viewer can see, or a sort about the viewer, needs the token.
  */
-export async function loadListItems(
-  {
-    fetch,
-    token,
-    base,
-    query,
-    first,
-    firstHasToken = false,
-    fallback,
-    viewerIsVip,
-    needsToken,
-    ownerIsVip,
-    viewerSignedIn,
-    datePreferences,
-  }: LoadListItemsParams,
-) {
+export async function loadListItems({
+  fetch,
+  token,
+  base,
+  query,
+  first,
+  firstHasToken = false,
+  fallback,
+  viewerIsVip,
+  needsToken,
+  ownerIsVip,
+  viewerSignedIn,
+  datePreferences,
+}: LoadListItemsParams) {
   const sort = resolveListSort({ query, fallback, vip: viewerIsVip });
-  const needsViewer = Boolean(token) &&
+  const needsViewer =
+    Boolean(token) &&
     (needsToken || VIEWER_SORTS.includes(sort.by) || Boolean(query.watchnow) || (query.hide?.length ?? 0) > 0);
   const used = usedListSort(first.headers);
-  const reuse = (!needsViewer || firstHasToken) && first.status === 200 && used.by === sort.by &&
-    used.how === sort.how;
+  const reuse = (!needsViewer || firstHasToken) && first.status === 200 && used.by === sort.by && used.how === sort.how;
   const viewerToken = needsViewer ? token : null;
-  const isFirstRankedPage = sort.by === 'rank' && sort.how === 'asc' && query.page === 1 &&
-    query.types.length === 0 && query.genres.length === 0 && !query.terms && !query.watchnow && !query.hide?.length;
-  const firstRanked = ownerIsVip && !isFirstRankedPage
-    ? fetchListItems({
-      fetch,
-      token: viewerToken,
-      base,
-      query: { ...query, types: [], genres: [], hide: [], terms: undefined, watchnow: undefined, page: 1, limit: 1 },
-      sort: { by: 'rank', how: 'asc' },
-    }).catch(() => null)
-    : null;
+  const isFirstRankedPage =
+    sort.by === 'rank' &&
+    sort.how === 'asc' &&
+    query.page === 1 &&
+    query.types.length === 0 &&
+    query.genres.length === 0 &&
+    !query.terms &&
+    !query.watchnow &&
+    !query.hide?.length;
+  const firstRanked =
+    ownerIsVip && !isFirstRankedPage
+      ? fetchListItems({
+          fetch,
+          token: viewerToken,
+          base,
+          query: {
+            ...query,
+            types: [],
+            genres: [],
+            hide: [],
+            terms: undefined,
+            watchnow: undefined,
+            page: 1,
+            limit: 1,
+          },
+          sort: { by: 'rank', how: 'asc' },
+        }).catch(() => null)
+      : null;
 
   const [fetched, ranked] = await Promise.all([
     reuse ? first : fetchListItems({ fetch, token: viewerToken, base, query, sort }),

@@ -3,7 +3,8 @@ import { parseIconSvg } from './parseIconSvg.ts';
 
 describe('parseIconSvg', () => {
   it('should read the viewBox and path data', () => {
-    const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">' +
+    const svg =
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">' +
       '<path fill="currentColor" d="M0 448L256 448Z"/></svg>\n';
 
     expect(parseIconSvg(svg)).toEqual({ viewBox: '0 0 320 512', pathData: 'M0 448L256 448Z' });

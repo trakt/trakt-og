@@ -34,14 +34,16 @@ const setup = (relation = empty) => {
 describe('changeRelationship', () => {
   it('should follow optimistically, then use the API approval instead of the privacy guess', async () => {
     const state = setup();
-    server.use(http.post(`${base}/users/leela/follow`, () => {
-      expect(state.overlay.state('leela', empty)).toMatchObject({
-        relation: { follow: 'following' },
-        followerDelta: 1,
-      });
-      expect(state.overlay.busy('leela')).toBe(true);
-      return HttpResponse.json({ approved_at: null, user: { username: 'leela' } }, { status: 201 });
-    }));
+    server.use(
+      http.post(`${base}/users/leela/follow`, () => {
+        expect(state.overlay.state('leela', empty)).toMatchObject({
+          relation: { follow: 'following' },
+          followerDelta: 1,
+        });
+        expect(state.overlay.busy('leela')).toBe(true);
+        return HttpResponse.json({ approved_at: null, user: { username: 'leela' } }, { status: 201 });
+      }),
+    );
     expect(await state.change('follow')).toBe(true);
     expect(state.overlay.state('leela', empty)).toMatchObject({ relation: { follow: 'pending' }, followerDelta: 0 });
     expect(state.overlay.busy('leela')).toBe(false);
@@ -50,9 +52,8 @@ describe('changeRelationship', () => {
   it('should replace a private request with Following when the API approves it', async () => {
     const state = setup();
     server.use(
-      http.post(
-        `${base}/users/leela/follow`,
-        () => HttpResponse.json({ approved_at: '2026-09-30T00:00:00Z', user: { username: 'leela' } }, { status: 201 }),
+      http.post(`${base}/users/leela/follow`, () =>
+        HttpResponse.json({ approved_at: '2026-09-30T00:00:00Z', user: { username: 'leela' } }, { status: 201 }),
       ),
     );
     await state.change('follow', true);
@@ -102,12 +103,10 @@ describe('changeRelationship', () => {
       const path = action === 'blockRequest' ? '/users/leela/block' : '/users/requests/42';
       const handle = action === 'deny' ? http.delete : http.post;
       server.use(
-        handle(
-          `${base}${path}`,
-          () =>
-            action === 'approve'
-              ? HttpResponse.json({ followed_at: '2026-09-30T00:00:00Z', user: { username: 'leela' } })
-              : new HttpResponse(null, { status: action === 'blockRequest' ? 201 : 204 }),
+        handle(`${base}${path}`, () =>
+          action === 'approve'
+            ? HttpResponse.json({ followed_at: '2026-09-30T00:00:00Z', user: { username: 'leela' } })
+            : new HttpResponse(null, { status: action === 'blockRequest' ? 201 : 204 }),
         ),
       );
       expect(await state.change(action)).toBe(true);
@@ -150,9 +149,8 @@ describe('changeRelationship', () => {
   it('should preserve previous successful patches when a subsequent write fails', async () => {
     const state = setup();
     server.use(
-      http.post(
-        `${base}/users/leela/follow`,
-        () => HttpResponse.json({ approved_at: 'now', user: { username: 'leela' } }),
+      http.post(`${base}/users/leela/follow`, () =>
+        HttpResponse.json({ approved_at: 'now', user: { username: 'leela' } }),
       ),
     );
     await state.change('follow');
@@ -162,10 +160,12 @@ describe('changeRelationship', () => {
   });
   it('should discard a late response after navigation or a viewer change resets the overlay', async () => {
     const state = setup();
-    server.use(http.post(`${base}/users/leela/follow`, () => {
-      state.overlay.clear();
-      return HttpResponse.json({ approved_at: 'now', user: { username: 'leela' } });
-    }));
+    server.use(
+      http.post(`${base}/users/leela/follow`, () => {
+        state.overlay.clear();
+        return HttpResponse.json({ approved_at: 'now', user: { username: 'leela' } });
+      }),
+    );
     expect(await state.change('follow')).toBe(false);
     expect(state.overlay.state('leela', empty).relation).toEqual(empty);
     expect(state.overlay.busy('leela')).toBe(false);

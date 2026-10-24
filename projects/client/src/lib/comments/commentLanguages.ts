@@ -18,4 +18,4 @@ export const commentLanguages = [
   { code: 'tr', label: 'Turkish' },
 ] as const;
 
-export type CommentLanguage = typeof commentLanguages[number]['code'];
+export type CommentLanguage = (typeof commentLanguages)[number]['code'];

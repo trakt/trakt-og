@@ -25,7 +25,7 @@ const RELATIVE = ['Today', 'Tomorrow', 'Wednesday', 'Thursday', 'Friday'];
 const day = (offset: number, items: readonly ScheduleItem[]): ScheduleDay => ({
   date: `2026-10-0${5 + offset}`,
   offset,
-  relative: offset < 0 ? 'Yesterday' : RELATIVE.at(offset) ?? '',
+  relative: offset < 0 ? 'Yesterday' : (RELATIVE.at(offset) ?? ''),
   short: `Oct ${5 + offset}`,
   items,
 });
@@ -109,12 +109,14 @@ describe('toScheduleLayout', () => {
 
   describe('a show with more than one episode a day', () => {
     const premiere = { label: 'Season Premiere', kind: 'season-premiere' } as const;
-    const layout = toScheduleLayout([day(0, [
-      episode('carrie', '1x01', '3:00 am', premiere),
-      episode('cia', '2x01', '4:00 am'),
-      episode('carrie', '1x02', '5:00 am'),
-      episode('carrie', '1x03', '6:00 am'),
-    ])]);
+    const layout = toScheduleLayout([
+      day(0, [
+        episode('carrie', '1x01', '3:00 am', premiere),
+        episode('cia', '2x01', '4:00 am'),
+        episode('carrie', '1x02', '5:00 am'),
+        episode('carrie', '1x03', '6:00 am'),
+      ]),
+    ]);
     const [carrie, cia] = layout?.spotlight.shown ?? [];
 
     it('should merge them into one row at the first time, with its tag', () => {

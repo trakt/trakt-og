@@ -9,13 +9,15 @@ const show = (id: number, slug: string, title: string, year: number) => ({
   genres: ['drama'],
 });
 
-const episode = (
-  id: number,
-  season: number,
-  number: number,
-  title: string,
-  type = 'standard',
-) => ({ ids: { trakt: id }, season, number, title, episode_type: type, runtime: 50, rating: 8.5 });
+const episode = (id: number, season: number, number: number, title: string, type = 'standard') => ({
+  ids: { trakt: id },
+  season,
+  number,
+  title,
+  episode_type: type,
+  runtime: 50,
+  rating: 8.5,
+});
 
 const at = (day: number, time: string) => `2026-09-${String(day).padStart(2, '0')}T${time}:00.000Z`;
 

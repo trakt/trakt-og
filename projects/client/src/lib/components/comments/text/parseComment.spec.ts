@@ -116,11 +116,10 @@ describe('util: parseComment', () => {
 
     it('should read triple emphasis as bold italics and nest emphasis', () => {
       expect(parseComment('***both*** **a _b_**')).toEqual([
-        paragraph(
-          { type: 'strong', children: [{ type: 'em', children: [text('both')] }] },
-          text(' '),
-          { type: 'strong', children: [text('a '), { type: 'em', children: [text('b')] }] },
-        ),
+        paragraph({ type: 'strong', children: [{ type: 'em', children: [text('both')] }] }, text(' '), {
+          type: 'strong',
+          children: [text('a '), { type: 'em', children: [text('b')] }],
+        }),
       ]);
     });
 

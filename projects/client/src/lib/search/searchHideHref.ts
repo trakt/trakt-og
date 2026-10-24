@@ -5,6 +5,6 @@ export function searchHideHref(url: URL, hide: readonly FadeHideOption[]): strin
   const search = new URLSearchParams(url.searchParams);
   search.delete('page');
   // Keep an empty hide= to override saved preferences in history/bookmarked URLs.
-  search.set('hide', hide.map((id) => id === 'watchlisted' ? 'watchlist' : id).join(','));
+  search.set('hide', hide.map((id) => (id === 'watchlisted' ? 'watchlist' : id)).join(','));
   return `${url.pathname}?${search}`;
 }

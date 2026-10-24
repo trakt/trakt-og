@@ -43,9 +43,8 @@ export function toGenreBar(row: WatchedGenreRow, { slug, startAt }: ToGenreBarOp
     const unique = row[key].ids.length;
     if (unique === 0) return [];
 
-    const plays = row[key].play_count > unique && key !== 'shows'
-      ? ` (${row[key].play_count.toLocaleString('en-US')})`
-      : '';
+    const plays =
+      row[key].play_count > unique && key !== 'shows' ? ` (${row[key].play_count.toLocaleString('en-US')})` : '';
     const query = new URLSearchParams({ genres: row.genre.slug, ...(startAt && { start_at: startAt }) });
     return [{ text: `${countLabel(unique, word)}${plays}`, href: `/users/${slug}/history/${key}?${query}` }];
   });

@@ -11,11 +11,14 @@ export function nearViewport(onNear: () => void): Attachment<HTMLElement> {
       return;
     }
 
-    const observer = new IntersectionObserver((entries) => {
-      if (!entries.some((entry) => entry.isIntersecting)) return;
-      observer.disconnect();
-      onNear();
-    }, { rootMargin: '0px 0px 20% 0px' });
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        observer.disconnect();
+        onNear();
+      },
+      { rootMargin: '0px 0px 20% 0px' },
+    );
     observer.observe(element);
     return () => observer.disconnect();
   };

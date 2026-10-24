@@ -2,13 +2,16 @@ import { describe, expect, it, vi } from 'vitest';
 import { createOverlay } from '../overlay/createOverlay.svelte.ts';
 import { removeOwnerItems } from './removeOwnerItems.ts';
 import { toListItemCard } from './toListItemCard.ts';
-const item = toListItemCard({
-  type: 'movie',
-  id: 100,
-  rank: 1,
-  listed_at: '2026-01-01',
-  movie: { title: 'Heat', ids: { trakt: 10, slug: 'heat' } },
-}, { sortBy: 'rank', datePreferences: { order: 'mdy', hour24: false, timeZone: 'UTC', weekStartDay: 0 } });
+const item = toListItemCard(
+  {
+    type: 'movie',
+    id: 100,
+    rank: 1,
+    listed_at: '2026-01-01',
+    movie: { title: 'Heat', ids: { trakt: 10, slug: 'heat' } },
+  },
+  { sortBy: 'rank', datePreferences: { order: 'mdy', hour24: false, timeZone: 'UTC', weekStartDay: 0 } },
+);
 const storage = {
   load: () => Promise.resolve([]),
   save: () => Promise.resolve(),
@@ -23,7 +26,13 @@ describe('removeOwnerItems', () => {
       () => ({
         movie: new Set([10, 11]),
         show: new Set([10]),
-        dates: { movie: new Map([[10, 'a'], [11, 'b']]), show: new Map([[10, 'c']]) },
+        dates: {
+          movie: new Map([
+            [10, 'a'],
+            [11, 'b'],
+          ]),
+          show: new Map([[10, 'c']]),
+        },
       }),
       { movie: new Set(), show: new Set() },
     );

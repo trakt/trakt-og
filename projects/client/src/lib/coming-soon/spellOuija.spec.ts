@@ -2,10 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { spellOuija, type SpiritReply } from './spellOuija.ts';
 
 const spell = (letters: string) =>
-  [...letters].reduce(
-    (state, letter) => spellOuija({ spelled: state.spelled, letter }),
-    { spelled: '', reply: null as SpiritReply | null },
-  );
+  [...letters].reduce((state, letter) => spellOuija({ spelled: state.spelled, letter }), {
+    spelled: '',
+    reply: null as SpiritReply | null,
+  });
 
 describe('spellOuija', () => {
   it('should answer a known word and clear the board', () => {
@@ -28,8 +28,8 @@ describe('spellOuija', () => {
   });
 
   it('should answer only in letters the board has', () => {
-    const answers = ['SPOILER', 'TRAKT', 'HELLO', 'BINGE', 'WHEN', 'BOO', 'OG'].map((word) =>
-      spell(word).reply?.answer
+    const answers = ['SPOILER', 'TRAKT', 'HELLO', 'BINGE', 'WHEN', 'BOO', 'OG'].map(
+      (word) => spell(word).reply?.answer,
     );
 
     answers.forEach((answer) => expect(answer).toMatch(/^[A-Z]+$/));

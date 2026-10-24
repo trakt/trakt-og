@@ -36,7 +36,10 @@ describe('groupLabel', () => {
 
   it('should count the episodes otherwise, and say nothing for one', () => {
     const items = run(2, 4, 6);
-    const days = [{ date: '2026-10-15', items }, { date: '2026-10-22', items: [episode(2, 7)] }];
+    const days = [
+      { date: '2026-10-15', items },
+      { date: '2026-10-22', items: [episode(2, 7)] },
+    ];
     expect(groupLabel({ group: { key: 'g', items }, days })).toBe('3 episodes');
     expect(groupLabel({ group: { key: 'g', items: [episode(2, 7)] }, days })).toBeUndefined();
   });

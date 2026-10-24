@@ -17,8 +17,7 @@ type PostCommentParams = {
 
 export type PostCommentResult =
   /** `comment` is null when the 201's body is off-contract: it posted, so the form still clears. */
-  | { readonly ok: true; readonly comment: CommentResponse | null }
-  | { readonly ok: false; readonly message: string };
+  { readonly ok: true; readonly comment: CommentResponse | null } | { readonly ok: false; readonly message: string };
 
 // `comments.js` `parseCommentError`.
 const RATE_LIMITED = 'ERROR 429: Whoa there, Lightning McQueen! Please try again in a few seconds.';

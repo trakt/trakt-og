@@ -31,11 +31,13 @@ function toRows(items: readonly ScheduleItem[]): ScheduleRow[] {
     const first = same.at(0);
     if (!first) return [];
 
-    return [{
-      ...first,
-      watchNow: same.find(({ watchNow }) => watchNow)?.watchNow,
-      episodes: same.flatMap(({ episode }) => (episode ? [episode] : [])),
-    }];
+    return [
+      {
+        ...first,
+        watchNow: same.find(({ watchNow }) => watchNow)?.watchNow,
+        episodes: same.flatMap(({ episode }) => (episode ? [episode] : [])),
+      },
+    ];
   });
 }
 
@@ -69,7 +71,8 @@ export function toScheduleLayout(days: readonly ScheduleDay[]): ScheduleLayout |
       nothing: nothingBefore(first.offset),
       ...capped(toRows(first.items), CARDS),
     },
-    week: later.slice(0, WEEK_DAYS)
+    week: later
+      .slice(0, WEEK_DAYS)
       .map(({ date, relative, short, items }) => ({ date, relative, short, ...capped(toRows(items), ROWS) })),
   };
 }

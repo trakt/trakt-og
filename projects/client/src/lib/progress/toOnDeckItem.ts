@@ -51,9 +51,13 @@ function toShowProgress({ aired, completed, stats }: Progress): ShowProgress {
 }
 
 /** Maps an up-next entry onto an on-deck card. A show with no next episode gets no card, as in OG. */
-export function toOnDeckItem(
-  { entry, lifetime, username, seasonPoster, ticks }: ToOnDeckItemParams,
-): OnDeckItem | undefined {
+export function toOnDeckItem({
+  entry,
+  lifetime,
+  username,
+  seasonPoster,
+  ticks,
+}: ToOnDeckItemParams): OnDeckItem | undefined {
   const { show, progress } = entry;
   const episode = progress.next_episode;
   if (!episode) return undefined;

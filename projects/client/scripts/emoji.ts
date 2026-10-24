@@ -23,9 +23,9 @@ const name = (shortname: string) => shortname.replace(/^:|:$/g, '');
 const lines = Object.values(entries)
   .filter((entry) => entry.diversity === null)
   .flatMap((entry) =>
-    [entry.shortname, ...entry.shortname_alternates].map((shortname) =>
-      `${name(shortname)} ${entry.code_points.fully_qualified}`
-    )
+    [entry.shortname, ...entry.shortname_alternates].map(
+      (shortname) => `${name(shortname)} ${entry.code_points.fully_qualified}`,
+    ),
   );
 
 await writeFile(target, `${lines.join('\n')}\n`);

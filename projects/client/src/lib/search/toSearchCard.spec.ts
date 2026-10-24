@@ -156,13 +156,11 @@ describe('toSearchCard', () => {
       });
     const still = 'https://media.trakt.tv/images/episodes/000/000/001/screenshots/thumb/s.jpg.webp';
 
-    it.each(
-      [
-        ['thumb', sized('thumbs', 'medium')],
-        ['banner', sized('banners', 'medium')],
-        ['logo', sized('fanarts', 'thumb')],
-      ] as const,
-    )('should let the %s name a show and keep its year as a tag', (imageType, image) => {
+    it.each([
+      ['thumb', sized('thumbs', 'medium')],
+      ['banner', sized('banners', 'medium')],
+      ['logo', sized('fanarts', 'thumb')],
+    ] as const)('should let the %s name a show and keep its year as a tag', (imageType, image) => {
       expect(toSearchCard(artShow, { ...all, imageType })).toMatchObject({
         image,
         hideTitle: true,
@@ -203,10 +201,13 @@ describe('toSearchCard', () => {
     });
 
     it('should use the episode screenshot, or the show fanart without one', () => {
-      expect(toSearchCard(episode(images, { screenshot }), { ...episodesTab, imageType: 'screenshot' }))
-        .toMatchObject({ image: still, smallTitle: { text: 'Breaking Bad', href: '/shows/breaking-bad' } });
-      expect(toSearchCard(episode(images), { ...episodesTab, imageType: 'screenshot' })?.image)
-        .toBe(sized('fanarts', 'thumb'));
+      expect(toSearchCard(episode(images, { screenshot }), { ...episodesTab, imageType: 'screenshot' })).toMatchObject({
+        image: still,
+        smallTitle: { text: 'Breaking Bad', href: '/shows/breaking-bad' },
+      });
+      expect(toSearchCard(episode(images), { ...episodesTab, imageType: 'screenshot' })?.image).toBe(
+        sized('fanarts', 'thumb'),
+      );
     });
 
     it('should draw the show art on an episode and drop the show name when the art has it', () => {
@@ -270,10 +271,12 @@ describe('toSearchListRow', () => {
       href: '/users/preethi/lists/based-on-a-book',
       name: 'Based on a Book',
       owner: { slug: 'preethi', name: 'preethi', href: '/users/preethi', avatar: undefined, vip: null },
-      posters: [{
-        title: 'Based on a Book',
-        image: 'https://media.trakt.tv/images/shows/000/001/390/posters/thumb/abc.jpg.webp',
-      }],
+      posters: [
+        {
+          title: 'Based on a Book',
+          image: 'https://media.trakt.tv/images/shows/000/001/390/posters/thumb/abc.jpg.webp',
+        },
+      ],
       itemCount: 610,
       likeCount: 311,
       commentCount: undefined,

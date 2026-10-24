@@ -1,9 +1,8 @@
 import { z } from 'zod/v4';
 
 /**
- * One list with `extended=images`, as `/lists/:id`, `/lists/trending` and `/search/list` send it. `@trakt/api` 0.6.0
- * only allows `extended=full` on these, so they go through `rawApiFetch` and are parsed with this, keeping what a
- * list tile shows.
+ * One list with `extended=images`, as `/lists/:id`, `/lists/trending` and `/search/list` send it, parsed to what a list
+ * tile shows. `@trakt/api` doesn't allow `extended=images` on `/search/list`, so that one goes through `rawApiFetch`.
  */
 export const listSchema = z.object({
   type: z.string().nullish(),

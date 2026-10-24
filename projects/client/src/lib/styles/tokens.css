@@ -1233,8 +1233,6 @@
   --transition-tooltip: 0.15s linear;
   --color-tooltip-muted: #aaa; /* .tooltip .collection-metadata */
   --color-tooltip-divider: #444; /* .tooltip-hr */
-  --tooltip-notable-max-height: 400px; /* .notable-tooltip .tooltip-inner */
-  --space-tooltip-notable: 8px;
   --space-tooltip-divider: 5px;
 
   /* Rating popovers (OG Bootstrap popover and summary rating trigger). */
@@ -1424,7 +1422,6 @@
   --color-certification-bg: rgb(0 0 0 / 0.38); /* dark glass, so the white text holds on bright fanart too */
   --color-certification-hover-bg: #fff; /* hovered, it fills white like OG's */
   --color-certification-hover-text: #111;
-  --color-summary-demo-art: #2a3036; /* the design route's stand-in for fanart behind the bar */
 
   /* An incoming follow request: a second glass deck under the site header, the header's glass and art tint with a
      green wash, so it reads as part of the header but apart from it. */

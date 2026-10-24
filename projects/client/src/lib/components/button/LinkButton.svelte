@@ -1,8 +1,9 @@
 <!--
-  A link that looks like og's standard button: `primary` is the red one, `outline` a light outline for a second action
-  on a dark panel, and `violet` the current Trakt brand violet, for links to Trakt's own services. `external` opens it in a new tab with an arrow after the label.
-    <LinkButton href={newBugUrl} external>Open a bug report</LinkButton>
-    <LinkButton href={docsUrl} variant="outline" external>Developer portal</LinkButton>
+  A link to another site that looks like og's standard button, opening in a new tab with an arrow after the label:
+  `primary` is the red one, `outline` a light outline for a second action on a dark panel, and `violet` the current
+  Trakt brand violet, for links to Trakt's own services.
+    <LinkButton href={newBugUrl}>Open a bug report</LinkButton>
+    <LinkButton href={docsUrl} variant="violet">Developer portal</LinkButton>
 -->
 <script lang="ts">
 import Icon from '$lib/icons/Icon.svelte';
@@ -12,24 +13,23 @@ import type { Snippet } from 'svelte';
 interface Props {
   href: string;
   variant?: 'primary' | 'outline' | 'violet';
-  external?: boolean;
   children: Snippet;
 }
 
-const { href, variant = 'primary', external: isExternal = false, children }: Props = $props();
+const { href, variant = 'primary', children }: Props = $props();
 </script>
 
-<!-- Callers pass resolved og routes or other sites' URLs, which resolve() can't type. -->
+<!-- Other sites' URLs, which resolve() can't type. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
 <a
   class={['link-button', variant]}
   {href}
-  target={isExternal ? '_blank' : undefined}
-  rel={isExternal ? 'noopener' : undefined}
+  target="_blank"
+  rel="noopener"
 >
   {@render children()}
-  {#if isExternal}<Icon svg={external} />{/if}
+  <Icon svg={external} />
 </a>
 
 <style>

@@ -85,7 +85,7 @@ const dayLabel = (day: string) => {
     </ul>
   {/each}
   {#if commits}
-    <p class="more"><LinkButton href={ogRepoUrls.commits} variant="outline" external>Full commit history on GitHub</LinkButton></p>
+    <p class="more"><LinkButton href={ogRepoUrls.commits} variant="outline">Full commit history on GitHub</LinkButton></p>
   {/if}
 </section>
 

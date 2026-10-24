@@ -14,7 +14,7 @@ import { traktUrls } from '$lib/traktUrls';
       conventions and rules. That's also why your history, ratings and lists stay in sync everywhere you use Trakt.
     </p>
   </div>
-  <LinkButton href={traktUrls.developer} variant="violet" external>Developer portal</LinkButton>
+  <LinkButton href={traktUrls.developer} variant="violet">Developer portal</LinkButton>
 </section>
 
 <style>

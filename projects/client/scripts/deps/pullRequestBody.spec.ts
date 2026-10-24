@@ -14,7 +14,6 @@ const MINOR_ONLY: BumpReport = {
   minor: { adopted: [upgrade('eslint', '10.8.1', '10.11.0')], rejected: [] },
   major: { adopted: [], rejected: [upgrade('msw', '2.15.0', '3.0.0')] },
   held: [{ key: 'typescript', current: '6.0.3', held: '7.0.2', reason: 'svelte-check needs 6' }],
-  allowScripts: [{ name: 'workerd', from: '1.20260926.1', to: '1.20261001.0' }],
   logs: { 'msw@3.0.0': 'error: msw 3 broke it' },
 };
 
@@ -31,15 +30,14 @@ describe('util: bumpTitle', () => {
 });
 
 describe('util: pullRequestBody', () => {
-  it('should list adopted, reverted, held and allowScripts changes', () => {
+  it('should list adopted, reverted and held changes', () => {
     const body = pullRequestBody(MINOR_ONLY);
 
     expect(body).toContain('# Minor and patch\n\n- `eslint` 10.8.1 → 10.11.0');
     expect(body).toContain('# Reverted\n\n- `msw` 2.15.0 → 3.0.0');
     expect(body).toContain('- `typescript` stays on 6.0.3 (7.0.2 is out): svelte-check needs 6');
-    expect(body).toContain('`workerd` moved from 1.20260926.1 to 1.20261001.0');
     expect(body).not.toContain('# Major');
-    expect(body).toContain('deno task client:land <pr>');
+    expect(body).toContain('bun run client:land <pr>');
     expect(body).toContain('No issue: dependency maintenance.');
   });
 

@@ -1,0 +1,26 @@
+{
+  "name": "og-workspace",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "projects/client"
+  ],
+  "scripts": {
+    "install:frozen": "bun install --frozen-lockfile",
+    "test": "cd projects/client && bun run test",
+    "client:dev": "cd projects/client && bun run dev",
+    "client:ci": "cd projects/client && bun run ci",
+    "client:check": "cd projects/client && bun run check",
+    "client:test": "cd projects/client && bun run test",
+    "client:build": "cd projects/client && bun run build",
+    "client:verify": "cd projects/client && bun run verify",
+    "client:land": "cd projects/client && bun run land",
+    "client:deploy": "cd projects/client && bun run deploy"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.6.2"
+  },
+  "trustedDependencies": [
+    "workerd"
+  ]
+}

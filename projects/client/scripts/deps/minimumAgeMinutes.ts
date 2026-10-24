@@ -1,10 +1,11 @@
-// Reads deno.json's `minimumDependencyAge`, so the bump job and `deno install` apply the same rule.
-// Only the minutes form is supported; og sets it that way so there's one number to read.
-export function minimumAgeMinutes(denoJson: { readonly minimumDependencyAge?: unknown }): number {
-  const value = denoJson.minimumDependencyAge;
-  const minutes = typeof value === 'string' && /^\d+$/.test(value) ? Number(value) : value;
-  if (typeof minutes !== 'number' || !Number.isInteger(minutes) || minutes < 0) {
-    throw new Error('deno.json needs `minimumDependencyAge` as a whole number of minutes, e.g. 1440 for 24h.');
+// Reads bunfig.toml's `minimumReleaseAge` (seconds), so the bump job and `bun install` apply the same rule.
+// Only the whole-seconds form is supported; og sets it that way so there's one number to read.
+const SETTING = /^[ \t]*minimumReleaseAge[ \t]*=[ \t]*([^#\s]+)[ \t]*(?:#.*)?$/m;
+
+export function minimumAgeMinutes(bunfigToml: string): number {
+  const value = SETTING.exec(bunfigToml)?.[1] ?? '';
+  if (!/^\d+$/.test(value)) {
+    throw new Error('bunfig.toml needs `minimumReleaseAge` as a whole number of seconds, e.g. 86400 for 24h.');
   }
-  return minutes;
+  return Number(value) / 60;
 }

@@ -1,5 +1,5 @@
 // opentype.js 2.x ships no type declarations, and @types/opentype.js describes 1.x. These cover the parts og uses.
-// og imports the ESM build by path because Deno resolves the package's CommonJS `main` and Vite its ESM `module`.
+// og imports the ESM build by path because Node resolves the package's CommonJS `main` and Vite its ESM `module`.
 declare module 'opentype.js/dist/opentype.mjs' {
   interface PathDataOptions {
     decimalPlaces?: number;

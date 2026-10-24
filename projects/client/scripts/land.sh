@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Rebase, verify and merge a public PR, then close the issues named in its body.
-# Run from the PR branch: deno task client:land <pr>.
+# Run from the PR branch: bun run client:land <pr>.
 set -euo pipefail
 
 [ "$#" = 1 ] || { echo 'usage: land <pr>' >&2; exit 1; }

@@ -1,8 +1,13 @@
 // Dependency bump. Moves every exact pin in package.json to the newest release
-// Deno allows, keeps the ones that pass `deno task ci`, and bisects out the ones that don't.
-// Usage: deno task bump [--dry-run] [--out <dir>]
+// Bun allows, keeps the ones that pass `bun run ci`, and bisects out the ones that don't.
+// Usage: bun run bump [--dry-run] [--out <dir>]
 // --dry-run only print what each pin would move to; touches nothing.
 // --out where to write title.txt, body.md and issues.json for review (default: a temp dir).
+import { spawn } from 'node:child_process';
+import { appendFile, mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import process from 'node:process';
 import { applyUpgrades } from './deps/applyUpgrades.ts';
 import { bisectUpgrades } from './deps/bisectUpgrades.ts';
 import type { BisectResult } from './deps/BisectResult.ts';
@@ -18,21 +23,22 @@ import type { Pin } from './deps/Pin.ts';
 import { pickTargets } from './deps/pickTargets.ts';
 import { pullRequestBody } from './deps/pullRequestBody.ts';
 import { rejectedIssues } from './deps/rejectedIssues.ts';
-import { syncAllowScripts } from './deps/syncAllowScripts.ts';
 import type { Targets } from './deps/Targets.ts';
 import type { Upgrade } from './deps/Upgrade.ts';
 
-const FILES = ['package.json', 'deno.json', 'deno.lock'] as const;
+const LOCKFILE = '../../bun.lock';
+const FILES = ['package.json', LOCKFILE] as const;
 type Snapshot = Readonly<Record<(typeof FILES)[number], string>>;
 
 const LOG_TAIL_LINES = 60;
 
-const dryRun = Deno.args.includes('--dry-run');
-const outFlag = Deno.args.indexOf('--out');
-const outArg = outFlag >= 0 ? Deno.args.at(outFlag + 1) : undefined;
+const args = process.argv.slice(2);
+const dryRun = args.includes('--dry-run');
+const outFlag = args.indexOf('--out');
+const outArg = outFlag >= 0 ? args.at(outFlag + 1) : undefined;
 
-const readJson = async <T>(path: string): Promise<T> => JSON.parse(await Deno.readTextFile(path));
-const writeJson = (path: string, value: unknown) => Deno.writeTextFile(path, `${JSON.stringify(value, null, 2)}\n`);
+const readJson = async <T>(path: string): Promise<T> => JSON.parse(await readFile(path, 'utf8'));
+const writeJson = (path: string, value: unknown) => writeFile(path, `${JSON.stringify(value, null, 2)}\n`);
 
 // Same registries as .npmrc.
 const registryUrl = (name: string) =>
@@ -45,28 +51,27 @@ const fetchPackument = async (name: string): Promise<Packument> => {
 };
 
 const snapshot = async (): Promise<Snapshot> => {
-  const [packageJson = '', denoJson = '', lock = ''] = await Promise.all(FILES.map((file) => Deno.readTextFile(file)));
-  return { 'package.json': packageJson, 'deno.json': denoJson, 'deno.lock': lock };
+  const [packageJson = '', lock = ''] = await Promise.all(FILES.map((file) => readFile(file, 'utf8')));
+  return { 'package.json': packageJson, [LOCKFILE]: lock };
 };
 
-const restore = (files: Snapshot) => Promise.all(FILES.map((file) => Deno.writeTextFile(file, files[file])));
+const restore = (files: Snapshot) => Promise.all(FILES.map((file) => writeFile(file, files[file])));
 
 // Collects stdout and stderr into one log in the order they arrive, so the tail of a failure shows the error
 // rather than whichever stream happened to be appended last.
 const run = async (command: ReadonlyArray<string>) => {
   const [program = '', ...rest] = command;
-  const child = new Deno.Command(program, {
-    args: rest,
-    env: { NO_COLOR: '1' },
-    stdout: 'piped',
-    stderr: 'piped',
-  }).spawn();
+  const child = spawn(program, rest, { env: { ...process.env, NO_COLOR: '1' }, stdio: ['ignore', 'pipe', 'pipe'] });
   const chunks: Array<string> = [`$ ${command.join(' ')}\n`];
-  const collect = async (stream: ReadableStream<Uint8Array>) => {
-    const decoder = new TextDecoder();
-    for await (const chunk of stream) chunks.push(decoder.decode(chunk, { stream: true }));
-  };
-  const [{ success }] = await Promise.all([child.status, collect(child.stdout), collect(child.stderr)]);
+  child.stdout.setEncoding('utf8').on('data', (chunk: string) => chunks.push(chunk));
+  child.stderr.setEncoding('utf8').on('data', (chunk: string) => chunks.push(chunk));
+  const success = await new Promise<boolean>((resolve) => {
+    child.on('error', (error) => {
+      chunks.push(`${error.message}\n`);
+      resolve(false);
+    });
+    child.on('close', (code) => resolve(code === 0));
+  });
   return { success, log: chunks.join('') };
 };
 
@@ -83,8 +88,7 @@ const tail = (log: string) => log.trimEnd().split('\n').slice(-LOG_TAIL_LINES).j
 
 const describe = (set: ReadonlyArray<Upgrade>) => set.map(({ pin, to }) => `${pin.key}@${to}`).join(', ');
 
-// Writes the set on top of the baseline, re-points allowScripts at the versions the lockfile now resolves, then runs
-// what CI runs. A passing probe becomes the new baseline; a failing one is rolled back.
+// Writes the set on top of the baseline, then runs what CI runs. A passing probe becomes the new baseline; a failing one is rolled back.
 const makeProbe = (initial: Snapshot, logs: Record<string, string>) => {
   const state = { baseline: initial };
 
@@ -93,18 +97,7 @@ const makeProbe = (initial: Snapshot, logs: Record<string, string>) => {
     await restore(state.baseline);
     await writeJson('package.json', applyUpgrades(JSON.parse(state.baseline['package.json']), set));
 
-    const locked = await run(['deno', 'install', '--lockfile-only']);
-    if (locked.success) {
-      const denoJson = JSON.parse(state.baseline['deno.json']);
-      const lock = await readJson<{ npm?: Record<string, unknown> }>('deno.lock');
-      const synced = syncAllowScripts({
-        allowScripts: denoJson.allowScripts ?? [],
-        lockedPackages: Object.keys(lock.npm ?? {}),
-      });
-      await writeJson('deno.json', { ...denoJson, allowScripts: synced.allowScripts });
-    }
-
-    const verified = locked.success ? await runAll([['deno', 'install'], ['deno', 'task', 'ci']]) : locked;
+    const verified = await runAll([['bun', 'install'], ['bun', 'run', 'ci']]);
 
     if (verified.success) {
       state.baseline = await snapshot();
@@ -124,22 +117,21 @@ const makeProbe = (initial: Snapshot, logs: Record<string, string>) => {
 
 const writeOutputs = async (report: BumpReport, out: string) => {
   const changed = report.minor.adopted.length + report.major.adopted.length > 0;
-  await Deno.mkdir(out, { recursive: true });
-  await Deno.writeTextFile(`${out}/title.txt`, `${bumpTitle(report)}\n`);
-  await Deno.writeTextFile(`${out}/body.md`, pullRequestBody(report));
+  await mkdir(out, { recursive: true });
+  await writeFile(`${out}/title.txt`, `${bumpTitle(report)}\n`);
+  await writeFile(`${out}/body.md`, pullRequestBody(report));
   await writeJson(`${out}/issues.json`, rejectedIssues(report));
 
-  const githubOutput = Deno.env.get('GITHUB_OUTPUT');
+  const githubOutput = process.env.GITHUB_OUTPUT;
   if (!githubOutput) return;
-  await Deno.writeTextFile(
+  await appendFile(
     githubOutput,
     [`changed=${changed}`, `majors=${report.major.adopted.length > 0}`, `title=${bumpTitle(report)}`, ''].join('\n'),
-    { append: true },
   );
 };
 
 const packageJson = await readJson<PackageJson>('package.json');
-const minimumAge = minimumAgeMinutes(await readJson('deno.json'));
+const minimumAge = minimumAgeMinutes(await readFile('../../bunfig.toml', 'utf8'));
 const pins = Object.entries({ ...packageJson.dependencies, ...packageJson.devDependencies })
   .flatMap(([key, spec]) => {
     const pin = parsePin(key, spec);
@@ -160,7 +152,7 @@ const targets: ReadonlyArray<{ pin: Pin; targets: Targets }> = await Promise.all
   })),
 );
 
-console.log(`Minimum release age: ${minimumAge} minutes (deno.json minimumDependencyAge)`);
+console.log(`Minimum release age: ${minimumAge} minutes (bunfig.toml minimumReleaseAge)`);
 console.table(
   Object.fromEntries(
     targets.map(({ pin, targets }) => [pin.key, {
@@ -180,7 +172,7 @@ const minorCandidates: ReadonlyArray<Upgrade> = targets.flatMap(({ pin, targets 
   targets.minor ? [{ pin, to: targets.minor }] : []
 );
 
-if (dryRun) Deno.exit(0);
+if (dryRun) process.exit(0);
 
 const original = await snapshot();
 const logs: Record<string, string> = {};
@@ -197,15 +189,10 @@ const major: BisectResult = await bisectUpgrades({ candidates: majorCandidates, 
 
 // Leave the adopted set on disk, whatever the last probe was.
 await restore(baseline());
-await run(['deno', 'install']);
+await run(['bun', 'install']);
 
-const allowScripts = syncAllowScripts({
-  allowScripts: JSON.parse(original['deno.json']).allowScripts ?? [],
-  lockedPackages: Object.keys(JSON.parse(baseline()['deno.lock']).npm ?? {}),
-}).moved;
-
-const report: BumpReport = { minor, major, held, allowScripts, logs };
-const out = outArg ?? await Deno.makeTempDir({ prefix: 'og-bump-' });
+const report: BumpReport = { minor, major, held, logs };
+const out = outArg ?? await mkdtemp(join(tmpdir(), 'og-bump-'));
 await writeOutputs(report, out);
 
 console.log(`\n${pullRequestBody(report)}`);

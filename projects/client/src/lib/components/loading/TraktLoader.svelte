@@ -1,15 +1,12 @@
 <!--
   The Trakt loading mark: red rises in a wave behind the white monogram until the disc is full, then drains, inside the
-  classic outer ring. Geometry comes from the round mark in `$lib/assets/trakt-wide-red-white.svg`. Reduced motion (or
-  `reducedMotion`) swaps the wave for a slow breathe of the full mark. static/loader.svg is the same mark for places
-  outside Svelte; keep the two in step.
+  classic outer ring. Geometry comes from the round mark in `$lib/assets/trakt-wide-red-white.svg`. Reduced motion
+  swaps the wave for a slow breathe of the full mark.
 -->
 <script lang="ts">
-const { size = 64, label = 'Loading', reducedMotion = false }: {
+const { size = 64, label = 'Loading' }: {
   size?: number;
   label?: string;
-  /** Force the reduced-motion look, whatever the visitor's setting. */
-  reducedMotion?: boolean;
 } = $props();
 
 // One clip per instance, so two loaders on a page never share an id.
@@ -23,7 +20,6 @@ const clip = `trakt-loader-${uid}`;
     height={size}
     viewBox="0 0 98.1 98.1"
     aria-hidden="true"
-    data-motion={reducedMotion ? 'reduce' : undefined}
     class={{ small: size < 24 }}
   >
     <defs>
@@ -101,15 +97,6 @@ svg {
 
   svg {
     animation: breathe 2.4s ease-in-out infinite;
-  }
-}
-
-[data-motion='reduce'] {
-  animation: breathe 2.4s ease-in-out infinite;
-
-  .wave,
-  .tide {
-    animation: none;
   }
 }
 

@@ -25,7 +25,6 @@ interface Props {
   vip?: boolean;
   following: readonly { slug: string; name: string; avatar?: string }[];
   initial?: ListDraft;
-  kind?: 'list' | 'watchlist' | 'favorites';
   editing?: boolean;
   title?: string;
   /** The list's first posters, for the header. A new list gets the striped placeholder. */
@@ -50,7 +49,6 @@ let {
   onsave,
   onclose,
   initial,
-  kind = 'list',
   editing = false,
   title,
   posters = [],
@@ -72,12 +70,9 @@ let draft = $state<ListDraft>(
     collaborators: [],
   },
 );
-const UPDATE_TITLES = { list: 'Update List', watchlist: 'Update Watchlist', favorites: 'Update Favorites' } as const;
-const heading = $derived(title ?? (editing ? UPDATE_TITLES[kind] : 'Add a list'));
+const heading = $derived(title ?? (editing ? 'Update List' : 'Add a list'));
 const headerTags = $derived<readonly CardTag[]>([
-  ...(kind === 'favorites' ? [{ text: 'Favorites', kind: 'favorite' } as const] : []),
-  ...(kind === 'watchlist' ? [{ text: 'Watchlist', kind: 'list' } as const] : []),
-  ...(kind === 'list' && !editing ? [{ text: 'New list', kind: 'generic' } as const] : []),
+  ...(!editing ? [{ text: 'New list', kind: 'generic' } as const] : []),
   ...(count !== undefined
     ? [{ text: `${count.toLocaleString('en-US')} ${count === 1 ? 'item' : 'items'}`, kind: 'generic' } as const]
     : []),
@@ -91,7 +86,7 @@ const options = $derived([{
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 <Dialog bind:open title={heading} size="md" variant="art" {onclose}>
   {#snippet header(titleId)}<DialogArtHeader id={titleId} title={heading} {posters} tags={headerTags} />{/snippet}
-  <DialogForm save={busy ? 'Saving…' : 'Save List'} {busy} disabled={max !== undefined || (kind === 'list' && !draft.name.trim())}
+  <DialogForm save={busy ? 'Saving…' : 'Save List'} {busy} disabled={max !== undefined || !draft.name.trim()}
     onsubmit={() => onsave(draft)} oncancel={() => (open = false)}>
     {#if max !== undefined}
       <DialogNotice role="alert">You've already created <strong>{max}</strong> lists.
@@ -99,14 +94,12 @@ const options = $derived([{
       </DialogNotice>
     {/if}
     {#if error}<p class="error" role="alert">{error}</p>{/if}
-    {#if kind === 'list'}
-      <div>
-        <FieldLabel text="Name" for="{id}-name" />
-        <input id="{id}-name" {@attach (input) => { if (fieldErrors.name?.length) input.focus(); }} aria-invalid={Boolean(fieldErrors.name)}
-          required maxlength="255" bind:value={draft.name} disabled={busy} />
-        {#if fieldErrors.name}<p class="error" role="alert">{fieldErrors.name.join(' ')}</p>{/if}
-      </div>
-    {/if}
+    <div>
+      <FieldLabel text="Name" for="{id}-name" />
+      <input id="{id}-name" {@attach (input) => { if (fieldErrors.name?.length) input.focus(); }} aria-invalid={Boolean(fieldErrors.name)}
+        required maxlength="255" bind:value={draft.name} disabled={busy} />
+      {#if fieldErrors.name}<p class="error" role="alert">{fieldErrors.name.join(' ')}</p>{/if}
+    </div>
     {#each Object.entries(fieldErrors).filter(([field]) => field !== 'name' && field !== 'collaborators') as [field, errors] (field)}<p class="error" role="alert">{field}: {errors.join(' ')}</p>{/each}
     <div>
       <FieldLabel text="Description" for="{id}-description" />
@@ -114,17 +107,15 @@ const options = $derived([{
         disabled={busy}></textarea>
     </div>
     <ListSettingsRow bind:privacy={draft.privacy} bind:allowComments={draft.allow_comments}
-      bind:displayNumbers={draft.display_numbers} readonly={kind !== 'list'} {shareLink} disabled={busy} />
+      bind:displayNumbers={draft.display_numbers} {shareLink} disabled={busy} />
     <ListSortField bind:by={draft.sort_by} bind:how={draft.sort_how} {vip} disabled={busy} />
-    {#if kind === 'list'}
-      <div class="collaborators">
-        <FieldLabel text="Collaborators" id="{id}-collaborators" />
-        <MultiSelect variant="list" bind:value={draft.collaborators} {options} label="Collaborators" placeholder="Search people you follow..."
-          disabled={busy || followingError} />
-        {#if followingError}<p class="error" role="status">Couldn't load collaborators. Close and reopen to retry.</p>{/if}
-        {#if fieldErrors.collaborators}<p class="error" role="alert">{fieldErrors.collaborators.join(' ')}</p>{/if}
-      </div>
-    {/if}
+    <div class="collaborators">
+      <FieldLabel text="Collaborators" id="{id}-collaborators" />
+      <MultiSelect variant="list" bind:value={draft.collaborators} {options} label="Collaborators" placeholder="Search people you follow..."
+        disabled={busy || followingError} />
+      {#if followingError}<p class="error" role="status">Couldn't load collaborators. Close and reopen to retry.</p>{/if}
+      {#if fieldErrors.collaborators}<p class="error" role="alert">{fieldErrors.collaborators.join(' ')}</p>{/if}
+    </div>
   </DialogForm>
 </Dialog>
 

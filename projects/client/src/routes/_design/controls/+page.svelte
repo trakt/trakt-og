@@ -58,7 +58,7 @@ function showOverlay() {
 
 <Specimen title="Media fade and hide" note="The menu fades or hides watched items; the poster fades as you pick.">
   <div class="media-filters">
-    <FadeHideMenu value={filters} options={fadeHideOptions} cookie="design-media" variant="default"
+    <FadeHideMenu value={filters} options={fadeHideOptions} cookie="design-media"
       onchange={(next) => (filters = next)} />
     <PosterCard title="Season 1" href="/shows/breaking-bad/seasons/1" faded={filters.fade.includes('watched')}
       subtitles={['7 episodes']} />

@@ -20,7 +20,6 @@ const colorGroups: Record<string, string[]> = {
     'brand-info',
     'brand-warning',
     'brand-danger',
-    'color-orange',
   ],
   Ratings: Array.from({ length: 10 }, (_, i) => `rating-${i + 1}`),
   'Episode types': [
@@ -50,7 +49,7 @@ const colorGroups: Record<string, string[]> = {
 
 const spaces = ['xs', 'sm', 'base', 'lg'];
 const radii = ['radius-tag', 'radius-object', 'radius-container', 'radius-round'];
-const shadows = ['shadow-dropdown', 'shadow-input-focus', 'shadow-soft'];
+const shadows = ['shadow-dropdown', 'shadow-input-focus'];
 
 let overlayType = $state<'movie' | 'show' | 'season' | 'episode'>('movie');
 let overlayId = $state(1);

@@ -60,12 +60,6 @@ export const designCatalog: readonly DesignGroup[] = [
         source: 'components/dialog',
       },
       {
-        slug: 'slider',
-        title: 'Fanart slider',
-        summary: "Discover's ranked slider with keyboard keys, and the bare one a showcase uses.",
-        source: 'components/slider',
-      },
-      {
         slug: 'rating-line',
         title: 'Rating lines',
         summary: 'The heart and label under a Social Feed poster, for every rating from 1 to 10.',
@@ -99,12 +93,6 @@ export const designCatalog: readonly DesignGroup[] = [
         title: 'Media stats',
         summary: "A title's rating chart, community tiles, second opinions and the rolling number.",
         source: 'stats',
-      },
-      {
-        slug: 'releases',
-        title: 'Release dates',
-        summary: "A movie's releases by country, the original country flagged.",
-        source: 'movies',
       },
     ],
   },
@@ -197,12 +185,6 @@ export const designCatalog: readonly DesignGroup[] = [
         title: 'Panels',
         summary: 'Every dashboard panel loaded, empty, loading and failed, then with saved settings.',
         source: 'components/dashboard',
-      },
-      {
-        slug: 'dashboard-actions',
-        title: 'Up Next cards',
-        summary: "An Up Next card's states: next episode, refreshing, returning and ended.",
-        source: 'components/media',
       },
     ],
   },

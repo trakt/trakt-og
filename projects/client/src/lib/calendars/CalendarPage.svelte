@@ -351,9 +351,9 @@ const title = $derived(`${data.target === 'my' ? 'My ' : ''}${data.calendar.labe
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
 {#snippet tools()}
-  <FadeHideMenu value={fadeHide} {options} cookie="calendars" variant="default"
+  <FadeHideMenu value={fadeHide} {options} cookie="calendars"
   onchange={(next) => (fadeHide = next)} />
-  <AdvancedFiltersToggle bind:open={panelOpen} bind:button={funnel} controls="{panelId}-filters" regular
+  <AdvancedFiltersToggle bind:open={panelOpen} bind:button={funnel} controls="{panelId}-filters"
   active={filterCount > 0} count={vip ? filterCount : 0} />
 {/snippet}
 

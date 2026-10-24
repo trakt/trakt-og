@@ -602,7 +602,7 @@ async function saveNotes(text: string) {
         } />
         <WatchNowFilter value={data.query.watchnow} {country} favorites={favoriteKeys} />
         <FadeHideMenu value={fadeHide} options={filterOptions.fade} hideOptions={filterOptions.hide}
-          cookie={data.kind === 'personal' || data.kind === 'official' ? 'list' : data.kind} variant="default" onchange={(next) => {
+          cookie={data.kind === 'personal' || data.kind === 'official' ? 'list' : data.kind} onchange={(next) => {
             const changed = next.hide.join(',') !== fadeHide.hide.join(',');
             fadeHide = next;
             const url = new URL(page.url);

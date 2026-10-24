@@ -29,9 +29,4 @@ describe('component: TraktLoader', () => {
     expect(body).toContain('>Loading<');
     expect(body).toMatch(/<svg[^>]*width="64"[^>]*height="64"/);
   });
-
-  it('should only force reduced motion when asked', () => {
-    expect(render(TraktLoader).body).not.toContain('data-motion');
-    expect(render(TraktLoader, { props: { reducedMotion: true } }).body).toContain('data-motion="reduce"');
-  });
 });

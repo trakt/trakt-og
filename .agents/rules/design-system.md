@@ -14,7 +14,7 @@
 Every OG icon comes from OG's own fonts, so it matches exactly. Never hand-draw one or substitute a similar icon.
 1. Find the icon's exact class in the visual reference: `fa-thin fa-gear` is `thin gear`, `trakt-icon-check-thick` is
    `trakt check-thick`, `logos-icon-dts_x` is `logos dts_x`. A bare `fa fa-x` (no style class) is `solid`.
-2. Run `cd projects/client && deno task icon <family> <name>`. It writes `src/lib/icons/<family>/<name>.svg`. Families: `solid`, `regular`,
+2. Run `cd projects/client && bun run icon <family> <name>`. It writes `src/lib/icons/<family>/<name>.svg`. Families: `solid`, `regular`,
    `light`, `thin`, `brands`, `kit`, `trakt`, `logos`. An alias is saved under its canonical name, and the task says so.
    Set `OG_ASSET_PATH` to a local directory containing the source fonts and stylesheets.
 3. Commit the SVG as the task wrote it. Don't edit or reformat it.

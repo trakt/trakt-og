@@ -34,7 +34,7 @@ const icons = [
 <main>
   <h1>Icons</h1>
   <p>
-    Extracted from OG's fonts with <code>deno task icon &lt;family&gt; &lt;name&gt;</code>. Each icon sits on the text
+    Extracted from OG's fonts with <code>bun run icon &lt;family&gt; &lt;name&gt;</code>. Each icon sits on the text
     baseline and takes its size and color from the text around it.
   </p>
 

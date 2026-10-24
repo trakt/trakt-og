@@ -12,7 +12,7 @@
       "name": "og",
       "version": "0.0.1",
       "dependencies": {
-        "@trakt/api": "npm:@jsr/trakt__api@0.6.0",
+        "@trakt/api": "npm:@jsr/trakt__api@0.7.14",
         "oidc-client-ts": "3.5.0",
         "zod": "3.25.76",
       },
@@ -351,7 +351,7 @@
 
     "@sveltejs/vite-plugin-svelte": ["@sveltejs/vite-plugin-svelte@7.3.1", "", { "dependencies": { "deepmerge": "^4.3.1", "magic-string": "^1.0.0", "obug": "^2.1.0", "vitefu": "^1.1.2" }, "peerDependencies": { "svelte": "^5.46.4", "vite": "^8.0.0-beta.7 || ^8.0.0" } }, "sha512-ZPsLN8B1e/En+Ak5s4V7srFDT532oS0qieLsQwu63NGKsS+iAjoO2Js1BochlHlglcU+Pt7WAO3C5Ee+4f6gVA=="],
 
-    "@trakt/api": ["@jsr/trakt__api@0.6.0", "https://npm.jsr.io/~/11/@jsr/trakt__api/0.6.0.tgz", { "dependencies": { "@anatine/zod-openapi": "^2.2.6", "@ts-rest/core": "^3.52.1", "zod": "^3.24.1" } }, "sha512-k8y6mLWJ6iC4XzAX+6RESMDPCeQW247oXegJVlrZWBeddD/iZrCkQdaDuUrwKexgUAESIeXwV0Tcw8fI3+bPOQ=="],
+    "@trakt/api": ["@jsr/trakt__api@0.7.14", "https://npm.jsr.io/~/11/@jsr/trakt__api/0.7.14.tgz", { "dependencies": { "@anatine/zod-openapi": "^2.2.6", "@ts-rest/core": "^3.52.1", "zod": "^3.24.1" } }, "sha512-r3pcCiOYNPrHqpIJh7YxEiVndv0Krbl23eLtI6ICmdpBFDK034IXrEW8LuyEGynO+9pwjTmuWcEoosqHM4e5WA=="],
 
     "@ts-rest/core": ["@ts-rest/core@3.52.1", "", { "peerDependencies": { "@types/node": "^18.18.7 || >=20.8.4", "zod": "^3.22.3" }, "optionalPeers": ["@types/node", "zod"] }, "sha512-tAjz7Kxq/grJodcTA1Anop4AVRDlD40fkksEV5Mmal88VoZeRKAG8oMHsDwdwPZz+B/zgnz0q2sF+cm5M7Bc7g=="],
 

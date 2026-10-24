@@ -156,6 +156,29 @@ describe('fetchRecommendations', () => {
     expect(recs).toMatchObject({ type: 'movie', items: [{ title: 'Soon' }] });
   });
 
+  it('should deal trending shows and movies alternately, without the token, while there are none yet', async () => {
+    server.use(
+      respond('/media/recommendations', []),
+      respond('/shows/trending', [{ show: media(1, 'Severance', '2022-02-18T00:00:00.000Z') }]),
+      respond('/movies/trending', [
+        { movie: media(3, 'Alien', '1979-05-25T00:00:00.000Z') },
+        { movie: media(4, 'Aliens', '1986-07-18T00:00:00.000Z') },
+      ]),
+    );
+
+    const recs = await load();
+    const trending = seen.slice(1).map((request) => new URL(request.url));
+
+    expect(trending.map(({ pathname }) => pathname).sort()).toEqual(['/movies/trending', '/shows/trending']);
+    for (const url of trending) {
+      expect(url.searchParams.get('extended')).toBe('full,images,colors');
+      expect(url.searchParams.get('limit')).toBe('50');
+    }
+    expect(seen.slice(1).every((request) => !request.headers.has('authorization'))).toBe(true);
+    expect(recs).toMatchObject({ type: 'media', fallback: true });
+    expect(recs.items?.map(({ title }) => title)).toEqual(['Severance', 'Alien', 'Aliens']);
+  });
+
   it('should come back without items when the request fails or the body is unreadable', async () => {
     server.use(http.get(`${BASE}/shows/recommendations`, () => new HttpResponse(null, { status: 500 })));
     expect(await load({ type: 'show' })).toEqual({ type: 'show', items: null });

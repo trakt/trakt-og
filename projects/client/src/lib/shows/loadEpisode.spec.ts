@@ -55,6 +55,11 @@ describe('loadEpisode', () => {
     const data = await loadEpisode(params());
     expect(seen.filter((request) => !isWatchNow(request))).toHaveLength(8);
     expect(seen.every((request) => !request.headers.has('authorization'))).toBe(true);
+    const people = seen.map(({ url }) => new URL(url)).filter(({ pathname }) => pathname.endsWith('/people'));
+    expect(people.map(({ pathname, searchParams }) => `${pathname} ${searchParams.get('extended')}`).sort()).toEqual([
+      '/shows/breaking-bad/seasons/1/episodes/1/people guest_stars,images',
+      '/shows/breaking-bad/seasons/1/people images',
+    ]);
     expect(data.episode.id).toBe(73482);
     expect(data.datePreferences.timeZone).toBe('UTC');
   });

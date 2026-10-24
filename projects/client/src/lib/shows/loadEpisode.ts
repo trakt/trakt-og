@@ -42,13 +42,17 @@ function body<T>(
   if (!parsed.success) error(502, `The Trakt API returned invalid ${label.toLowerCase()} data.`);
   return parsed.data;
 }
-async function parsed<T>(
-  response: Response,
+async function raw(fetch: typeof globalThis.fetch, path: string) {
+  const response = await rawApiFetch({ fetch, path });
+  return { status: response.status, body: response.ok ? await response.json().catch(() => null) : null };
+}
+function parsed<T>(
+  response: { status: number; body: unknown },
   schema: { safeParse: (value: unknown) => { success: boolean; data?: T } },
   label: string,
-): Promise<T> {
-  if (!response.ok) error(502, `The Trakt API could not load the ${label}.`);
-  const result = schema.safeParse(await response.json().catch(() => null));
+): T {
+  if (response.status < 200 || response.status >= 300) error(502, `The Trakt API could not load the ${label}.`);
+  const result = schema.safeParse(response.body);
   if (!result.success || result.data === undefined) error(502, `The Trakt API returned invalid ${label} data.`);
   return result.data;
 }
@@ -92,9 +96,9 @@ export async function loadEpisode({
     client.shows.summary({ params: { id }, query: { extended: 'full,images' } }),
     client.shows.episode.summary({ params, query: { extended: 'full,images' } }),
     client.shows.season.info({ params: { id, season }, query: { extended: 'full,images' } }),
-    rawApiFetch({ fetch, path: `/shows/${encodeURIComponent(id)}/seasons?extended=episodes` }),
-    rawApiFetch({ fetch, path: `${path}/episodes/${episode}/people?extended=guest_stars,images` }),
-    rawApiFetch({ fetch, path: `${path}/people?extended=images` }),
+    raw(fetch, `/shows/${encodeURIComponent(id)}/seasons?extended=episodes`),
+    raw(fetch, `${path}/episodes/${episode}/people?extended=guest_stars,images`),
+    client.shows.season.people({ params: { id: encodeURIComponent(id), season }, query: { extended: 'images' } }),
     client.shows.episode.ratings({ params, query: { extended: 'all' } }),
     client.shows.episode.stats({ params }),
     layoutRead,
@@ -105,11 +109,9 @@ export async function loadEpisode({
   if (id !== show.ids.slug || requestedSeason !== `${season}` || requestedEpisode !== `${episode}`) {
     redirect(301, `/shows/${show.ids.slug}/seasons/${season}/episodes/${episode}${url.search}`);
   }
-  const [seasons, people, regulars] = await Promise.all([
-    parsed(seasonsResponse, episodeSeasonsSchema, 'seasons'),
-    parsed(peopleResponse, episodePeopleSchema, 'episode cast'),
-    parsed(regularsResponse, seasonPeopleSchema, 'season cast'),
-  ]);
+  const seasons = parsed(seasonsResponse, episodeSeasonsSchema, 'seasons');
+  const people = parsed(peopleResponse, episodePeopleSchema, 'episode cast');
+  const regulars = parsed(regularsResponse, seasonPeopleSchema, 'season cast');
   const view = toEpisodeSummary({
     show,
     episode: info,

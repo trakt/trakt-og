@@ -2,7 +2,6 @@ import type { CommentResponse } from '@trakt/api';
 import { error } from '@sveltejs/kit';
 import { api } from '../../api/api.ts';
 import { extractPageMeta } from '../../api/extractPageMeta.ts';
-import { rawApiFetch } from '../../api/rawApiFetch.ts';
 import type { ProfileUser } from '../ProfileUser.ts';
 import { likedCommentRowsSchema } from './likedCommentRowsSchema.ts';
 import { toUserComment } from './toUserComment.ts';
@@ -62,16 +61,14 @@ async function fetchWritten(
 // API. It answers 500 without a signed-in viewer (its cache key reads `current_user.id`), so it always sends one.
 async function fetchLiked({ fetch, token, id, page, limit }: Request): Promise<Listing> {
   if (!token) return { status: 'empty' };
-  const query = new URLSearchParams({ extended: 'comments,full,images', page: String(page), limit: String(limit) });
-  const response = await rawApiFetch({
-    fetch,
-    token,
-    path: `/users/${encodeURIComponent(id)}/likes/comments?${query}`,
+  const response = await api({ fetch, token }).users.likes({
+    params: { id: encodeURIComponent(id), type: 'comments' },
+    query: { extended: 'comments,full,images', page, limit },
   });
   if (response.status === 401 || response.status === 403) return { status: 'empty' };
   if (response.status === 404) error(404, 'Page Not Found');
   if (response.status !== 200) error(502, 'Trakt is having trouble loading these liked comments.');
-  const rows = likedCommentRowsSchema.safeParse(await response.json().catch(() => null));
+  const rows = likedCommentRowsSchema.safeParse(response.body);
   if (!rows.success) error(502, 'Trakt returned invalid liked comments.');
   return { status: 'ok', rows: rows.data, headers: response.headers };
 }

@@ -94,8 +94,10 @@ async function fetchRecommendations(
 
 // Watch-now routes are public, so no token goes with it. A failure only costs the sidebar its tiles.
 const fetchSources = (fetch: typeof globalThis.fetch, country: string): Promise<Map<string, FilterSource>> =>
-  rawApiFetch({ fetch, path: `/watchnow/sources/${country}` })
-    .then(async (response) => (response.ok ? toFilterSources(await response.json(), country) : new Map()))
+  api({ fetch }).watchnow.sources.country({ params: { countryCode: country } })
+    .then((response) =>
+      response.status >= 200 && response.status < 300 ? toFilterSources(response.body, country) : new Map()
+    )
     .catch(() => new Map());
 
 // The chart's own pages, which don't line up with the API's.

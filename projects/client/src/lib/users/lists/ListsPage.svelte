@@ -133,13 +133,8 @@ async function moveRow(list: UserListRow, rank: number) {
   const element = rowsElement?.querySelector<HTMLElement>(`[data-list-key="${list.key}"]`);
   element?.scrollIntoView({ block: 'start', behavior: prefersReducedMotion.current ? 'instant' : 'smooth' });
   const ok = await saveListOrder({
+    fetch: viewerFetch(),
     rank: next.flatMap(({ id }) => id === null ? [] : [id]),
-    request: (path, body) =>
-      rawApiFetch({
-        fetch: viewerFetch(),
-        path,
-        init: { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) },
-      }),
     notify: toast,
   });
   if (!ok && source === data.lists) order = before;

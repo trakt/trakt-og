@@ -1,3 +1,4 @@
+import { api } from '../api/api.ts';
 import { rawApiFetch } from '../api/rawApiFetch.ts';
 import type { DashboardSettings } from './DashboardSettings.ts';
 import type { Recommendation } from './Recommendation.ts';
@@ -51,20 +52,20 @@ async function load({ fetch, token, settings, now = new Date() }: FetchRecommend
 }
 
 const TRENDING = {
-  media: ['/shows/trending', '/movies/trending'],
-  show: ['/shows/trending'],
-  movie: ['/movies/trending'],
+  media: ['shows', 'movies'],
+  show: ['shows'],
+  movie: ['movies'],
 } as const;
 
 // A new account gets no recommendations until it has history, so the panel deals trending titles meanwhile, shows
 // and movies alternately. Trending rows are recommendation rows without the sources.
 async function loadTrending({ fetch, settings, now = new Date() }: FetchRecommendationsParams) {
-  const search = new URLSearchParams({ extended: 'full,images,colors', limit: String(LIMIT) });
+  const client = api({ fetch });
   const lists = await Promise.all(
-    TRENDING[settings.type].map(async (path) => {
-      const response = await rawApiFetch({ fetch, path: `${path}?${search}` });
-      if (!response.ok) return [];
-      const parsed = recommendationsSchema.safeParse(await response.json());
+    TRENDING[settings.type].map(async (type) => {
+      const response = await client[type].trending({ query: { extended: 'full,images,colors', limit: LIMIT } });
+      if (response.status < 200 || response.status > 299) return [];
+      const parsed = recommendationsSchema.safeParse(response.body);
       return parsed.success ? parsed.data.flatMap((row) => toRecommendation(row, now) ?? []) : [];
     }),
   );

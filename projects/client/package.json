@@ -33,7 +33,7 @@
     "wrangler": "4.143.0"
   },
   "dependencies": {
-    "@trakt/api": "npm:@jsr/trakt__api@0.6.0",
+    "@trakt/api": "npm:@jsr/trakt__api@0.7.14",
     "oidc-client-ts": "3.5.0",
     "zod": "3.25.76"
   }

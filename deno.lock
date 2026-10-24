@@ -4,7 +4,7 @@
     "npm:@commitlint/cli@21.2.3": "21.2.3_@types+node@26.6.3_typescript@6.0.3",
     "npm:@commitlint/config-conventional@21.2.3": "21.2.3",
     "npm:@eslint/js@10.0.1": "10.0.1_eslint@10.8.1",
-    "npm:@jsr/trakt__api@0.6.0": "0.6.0_openapi3-ts@4.6.1",
+    "npm:@jsr/trakt__api@0.7.14": "0.7.14_openapi3-ts@4.6.2",
     "npm:@sveltejs/adapter-cloudflare@7.2.9": "7.2.9_@sveltejs+kit@2.70.3_wrangler@4.143.0_@sveltejs+vite-plugin-svelte@7.3.1_@types+node@26.6.3_svelte@5.57.1_typescript@6.0.3_vite@8.3.1",
     "npm:@sveltejs/kit@2.70.3": "2.70.3_@sveltejs+vite-plugin-svelte@7.3.1_svelte@5.57.1_typescript@6.0.3_vite@8.3.1_@types+node@26.6.3",
     "npm:@sveltejs/vite-plugin-svelte@7.3.1": "7.3.1_svelte@5.57.1_vite@8.3.1_@types+node@26.6.3",
@@ -24,7 +24,7 @@
     "npm:zod@3.25.76": "3.25.76"
   },
   "npm": {
-    "@anatine/zod-openapi@2.2.8_openapi3-ts@4.6.1_zod@3.25.76": {
+    "@anatine/zod-openapi@2.2.8_openapi3-ts@4.6.2_zod@3.25.76": {
       "integrity": "sha512-iyM8mB556KdiZ6a1GTZ67ACLnJakU1hrzzXoh7PLaReldAdMq88MlZn/Ir/U56/TBuQctBhh/4seo0b0B343uw==",
       "dependencies": [
         "openapi3-ts",
@@ -683,14 +683,14 @@
         "@jridgewell/sourcemap-codec"
       ]
     },
-    "@jsr/trakt__api@0.6.0_openapi3-ts@4.6.1": {
-      "integrity": "sha512-k8y6mLWJ6iC4XzAX+6RESMDPCeQW247oXegJVlrZWBeddD/iZrCkQdaDuUrwKexgUAESIeXwV0Tcw8fI3+bPOQ==",
+    "@jsr/trakt__api@0.7.14_openapi3-ts@4.6.2": {
+      "integrity": "sha512-r3pcCiOYNPrHqpIJh7YxEiVndv0Krbl23eLtI6ICmdpBFDK034IXrEW8LuyEGynO+9pwjTmuWcEoosqHM4e5WA==",
       "dependencies": [
         "@anatine/zod-openapi",
         "@ts-rest/core",
         "zod"
       ],
-      "tarball": "https://npm.jsr.io/~/11/@jsr/trakt__api/0.6.0.tgz"
+      "tarball": "https://npm.jsr.io/~/11/@jsr/trakt__api/0.7.14.tgz"
     },
     "@mswjs/interceptors@0.41.9": {
       "integrity": "sha512-VVPPgHyQ6ShqnrmDWuxjmUIsO9gWyOZFmuOfLd9LfBGQJwZfy0gvv9pbHSJuoFNIYC7ZDX9aoFwowjcdSC4E8w==",
@@ -1814,8 +1814,8 @@
         "jwt-decode"
       ]
     },
-    "openapi3-ts@4.6.1": {
-      "integrity": "sha512-XW9MOldkhoICNeXVzzmXzmOW5G73ppOEGmh7fLCqHjgfdEYCGGN+00MlVCeUZgovjjfC56j9tvtDt1zGabNjjA==",
+    "openapi3-ts@4.6.2": {
+      "integrity": "sha512-gyyil3DweqhXiEhTqtAs9wwRLfWHmetwhI4kmM5Rn0d6gtmK863Ki7qqbQnp9+Wwlqoe3B1LFWj7kMp5ctE4rQ==",
       "dependencies": [
         "yaml@2.9.1"
       ]
@@ -2437,7 +2437,7 @@
             "npm:@commitlint/cli@21.2.3",
             "npm:@commitlint/config-conventional@21.2.3",
             "npm:@eslint/js@10.0.1",
-            "npm:@jsr/trakt__api@0.6.0",
+            "npm:@jsr/trakt__api@0.7.14",
             "npm:@sveltejs/adapter-cloudflare@7.2.9",
             "npm:@sveltejs/kit@2.70.3",
             "npm:@sveltejs/vite-plugin-svelte@7.3.1",

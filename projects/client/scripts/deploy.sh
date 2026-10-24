@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Deploy origin/main to og.trakt.tv from a fresh temporary worktree, after running `deno task ci` on it.
+# Deploy origin/main to og.trakt.tv from a fresh temporary worktree, after running `bun run ci` on it.
 # Humans only, as a manual fallback: merges to main already deploy through GitHub Actions.
 set -euo pipefail
 
@@ -20,7 +20,7 @@ trap 'git -C "$root" worktree remove --force "$dir" >/dev/null 2>&1 || true' EXI
 git -C "$root" worktree add --quiet --detach "$dir" origin/main
 cp "$env_file" "$dir/projects/client/.env.production"
 cd "$dir"
-deno install --frozen
-deno task client:ci
+bun install --frozen-lockfile
+bun run client:ci
 cd projects/client
-deno run -A npm:wrangler deploy --message "main $(git rev-parse --short HEAD), deployed locally"
+bun x wrangler deploy --message "main $(git rev-parse --short HEAD), deployed locally"

@@ -12,11 +12,11 @@ export function pullRequestBody(report: BumpReport): string {
   const hasMajors = report.major.adopted.length > 0;
 
   return [
-    'Dependency bump from `deno task bump`. Every candidate was installed and verified with `deno task ci`. Candidates that broke were bisected out and stay on their current pin; file each proposed adoption as a trakt/og issue.',
+    'Dependency bump from `bun run bump`. Every candidate was installed and verified with `bun run ci`. Candidates that broke were bisected out and stay on their current pin; file each proposed adoption as a trakt/og issue.',
     '',
     hasMajors
-      ? 'This run includes major bumps. Keep the PR as a draft until a human has reviewed them, then ship with `deno task client:land <pr>`.'
-      : 'Minor and patch bumps only. Ship with `deno task client:land <pr>` after review.',
+      ? 'This run includes major bumps. Keep the PR as a draft until a human has reviewed them, then ship with `bun run client:land <pr>`.'
+      : 'Minor and patch bumps only. Ship with `bun run client:land <pr>` after review.',
     '',
     ...section('Minor and patch', report.minor.adopted.map(upgradeLine)),
     ...section('Major', report.major.adopted.map(upgradeLine)),
@@ -25,12 +25,6 @@ export function pullRequestBody(report: BumpReport): string {
       'Held',
       report.held.map(({ key, current, held, reason }) =>
         `- \`${key}\` stays on ${current} (${held} is out): ${reason}`
-      ),
-    ),
-    ...section(
-      'Install scripts',
-      report.allowScripts.map(({ name, from, to }) =>
-        `- \`allowScripts\` grant for \`${name}\` moved from ${from} to ${to} (same package, new version)`
       ),
     ),
     'No issue: dependency maintenance.',

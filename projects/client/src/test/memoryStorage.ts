@@ -1,9 +1,7 @@
 /**
  * Vitest setup: an in-memory `localStorage` and `sessionStorage` for every spec file.
  *
- * msw's cookie store reads `localStorage` when it loads. Under Deno that storage is one SQLite file, so spec files
- * running in parallel workers sometimes collide on it and fail with "database is locked". Each worker gets its own
- * Map instead.
+ * Node 24 has no `localStorage`, and msw's cookie store and the recent-searches specs read it.
  */
 class MemoryStorage implements Storage {
   #items = new Map<string, string>();

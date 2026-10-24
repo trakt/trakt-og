@@ -1,5 +1,8 @@
 // Builds og's emoji shortname table from the JoyPixels data OG shipped (emoji-toolkit 6.6, MIT for the JSON).
-// Usage: deno task emoji. Writes src/lib/components/comments/text/emojiShortnames.txt, one `name codepoints` per line.
+// Usage: bun run emoji. Writes src/lib/components/comments/text/emojiShortnames.txt, one `name codepoints` per line.
+
+import { readFile, writeFile } from 'node:fs/promises';
+import process from 'node:process';
 
 // Skin-tone variants (`:thumbsup_tone3:`) are left out: the renderer adds the tone modifier to the base emoji itself,
 // which keeps the table to about a third of JoyPixels' names.
@@ -10,11 +13,11 @@ type Entry = {
   code_points: { fully_qualified: string };
 };
 
-const railsRoot = Deno.env.get('OG_ASSET_PATH') ?? './assets';
+const railsRoot = process.env.OG_ASSET_PATH ?? './assets';
 const source = `${railsRoot}/emoji.json`;
 const target = 'src/lib/components/comments/text/emojiShortnames.txt';
 
-const entries: Record<string, Entry> = JSON.parse(await Deno.readTextFile(source));
+const entries: Record<string, Entry> = JSON.parse(await readFile(source, 'utf8'));
 const name = (shortname: string) => shortname.replace(/^:|:$/g, '');
 
 const lines = Object.values(entries)
@@ -25,5 +28,5 @@ const lines = Object.values(entries)
     )
   );
 
-await Deno.writeTextFile(target, `${lines.join('\n')}\n`);
+await writeFile(target, `${lines.join('\n')}\n`);
 console.log(`Wrote ${lines.length} shortnames to ${target}`);

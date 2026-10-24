@@ -1,0 +1,22 @@
+# From trakt-web. Node for vite, vitest and svelte-check, Bun + frozen install. Callers check out first (needed to find this action).
+name: Set Up the Couch aka Setup Bun
+description: Prepares a Bun environment with dependencies installed from the lockfile
+
+inputs:
+  bun-version:
+    description: Bun version to install
+    required: false
+    default: "1.4.4"
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v6
+      with:
+        node-version: "24"
+    - uses: oven-sh/setup-bun@v2
+      with:
+        bun-version: ${{ inputs.bun-version }}
+    - shell: bash
+      run: bun run install:frozen
+      working-directory: .

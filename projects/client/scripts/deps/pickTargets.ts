@@ -9,7 +9,7 @@ interface PickTargetsParams {
   readonly current: string;
   readonly packument: Packument;
   readonly now: Date;
-  // Same rule as deno.json's `minimumDependencyAge`: nothing younger is offered, so the pick always installs.
+  // Same rule as bunfig.toml's `minimumReleaseAge`: nothing younger is offered, so the pick always installs.
   readonly minimumAgeMinutes: number;
   readonly hold?: Hold;
 }

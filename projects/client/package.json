@@ -10,7 +10,17 @@
     "prepare": "svelte-kit sync || echo ''",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "test": "vitest run",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "format": "biome format --write . && bun run lint --fix",
+    "icon": "bun scripts/icon.ts",
+    "emoji": "bun scripts/emoji.ts",
+    "world-map": "bun scripts/worldMap.ts",
+    "check:scripts": "svelte-kit sync && tsc -p scripts/tsconfig.json",
+    "ci": "biome format . && bun run lint && bun run check && bun run check:scripts && bun run test && bun run build",
+    "bump": "bun scripts/bump.ts",
+    "verify": "bash scripts/verify.sh",
+    "land": "bash scripts/land.sh",
+    "deploy": "bash scripts/deploy.sh"
   },
   "devDependencies": {
     "@commitlint/cli": "21.2.3",
@@ -19,6 +29,7 @@
     "@sveltejs/adapter-cloudflare": "7.2.9",
     "@sveltejs/kit": "2.70.3",
     "@sveltejs/vite-plugin-svelte": "7.3.1",
+    "@types/node": "26.6.3",
     "eslint": "10.8.1",
     "eslint-plugin-svelte": "3.23.0",
     "globals": "17.11.0",

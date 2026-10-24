@@ -1,4 +1,4 @@
-// From trakt-web's projects/client/eslint.config.js. deno lint covers.ts; this adds.svelte.
+// From trakt-web's projects/client/eslint.config.js.
 import js from '@eslint/js';
 import svelte from 'eslint-plugin-svelte';
 import globals from 'globals';

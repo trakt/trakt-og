@@ -1,10 +1,13 @@
 // Builds the home page's dot map and the place names that turn a profile's free-text location into a country.
-// Usage: GEO_DATA_PATH=<dir> deno task world-map. The directory holds world-atlas 2.0.2's countries-50m.json (Natural
+// Usage: GEO_DATA_PATH=<dir> bun run world-map. The directory holds world-atlas 2.0.2's countries-50m.json (Natural
 // Earth, public domain) and GeoNames' countryInfo.txt and admin1CodesASCII.txt (CC BY 4.0, geonames.org).
 // Writes src/lib/home/live/worldDots.json and src/lib/home/live/placeCountries.json. No dependencies: it decodes the
 // TopoJSON, projects with the Natural Earth formula and tests points with ray casting itself.
 
-const source = Deno.env.get('GEO_DATA_PATH') ?? './assets';
+import { readFile, writeFile } from 'node:fs/promises';
+import process from 'node:process';
+
+const source = process.env.GEO_DATA_PATH ?? './assets';
 const target = 'src/lib/home/live';
 
 // A 1000 x 470 map with a dot every 7 units: about 2,600 on land.
@@ -75,7 +78,7 @@ const normalize = (text: string) =>
 const rows = (text: string) =>
   text.split('\n').filter((line) => line && !line.startsWith('#')).map((line) => line.split('\t'));
 
-const countryRows = rows(await Deno.readTextFile(`${source}/countryInfo.txt`));
+const countryRows = rows(await readFile(`${source}/countryInfo.txt`, 'utf8'));
 const isoByNumeric = new Map(countryRows.map(([iso2, , numeric]) => [String(Number(numeric)), iso2]));
 const regionNames = new Intl.DisplayNames(['en'], { type: 'region' });
 
@@ -95,7 +98,7 @@ const withoutPrefix = (name: string) =>
   normalize(name).replace(/^(land|state of|province of|provincia de|provincia di|estado de|region|county) /, '');
 
 // Regions come last so a country's own name wins a clash.
-rows(await Deno.readTextFile(`${source}/admin1CodesASCII.txt`)).forEach(([code, name, ascii]) => {
+rows(await readFile(`${source}/admin1CodesASCII.txt`, 'utf8')).forEach(([code, name, ascii]) => {
   const iso2 = code.split('.')[0];
   [name, ascii].forEach((each) => {
     add(each, iso2);
@@ -103,7 +106,7 @@ rows(await Deno.readTextFile(`${source}/admin1CodesASCII.txt`)).forEach(([code, 
   });
 });
 
-const topology: Topology = JSON.parse(await Deno.readTextFile(`${source}/countries-50m.json`));
+const topology: Topology = JSON.parse(await readFile(`${source}/countries-50m.json`, 'utf8'));
 const { scale, translate } = topology.transform;
 
 // Arcs are delta-encoded: each position is the running sum of the ones before it.
@@ -255,6 +258,6 @@ const worldDots = {
   dots: all.flatMap(({ column, row, iso2 }) => [column, row, codes.indexOf(iso2)]),
 };
 
-await Deno.writeTextFile(`${target}/worldDots.json`, `${JSON.stringify(worldDots, null, 2)}\n`);
-await Deno.writeTextFile(`${target}/placeCountries.json`, `${JSON.stringify(Object.fromEntries(places), null, 2)}\n`);
+await writeFile(`${target}/worldDots.json`, `${JSON.stringify(worldDots, null, 2)}\n`);
+await writeFile(`${target}/placeCountries.json`, `${JSON.stringify(Object.fromEntries(places), null, 2)}\n`);
 console.log(`Wrote ${all.length} dots in ${codes.length} countries and ${places.size} place names to ${target}`);

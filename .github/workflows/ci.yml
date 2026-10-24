@@ -23,18 +23,18 @@ jobs:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0 # the leak check reads origin/main
-      - uses: ./.github/actions/setup-deno
+      - uses: ./.github/actions/setup-bun
       - run: bash scripts/leak-check.sh
       - name: Checking the Ticket aka Require the Client ID
         run: '[ -n "$TRAKT_CLIENT_ID" ] || { echo "::error::Add the TRAKT_CLIENT_ID repo secret."; exit 1; }'
         env:
           TRAKT_CLIENT_ID: ${{ secrets.TRAKT_CLIENT_ID }}
-      - run: deno task ci
+      - run: bun run ci
         env:
           TRAKT_CLIENT_ID: ${{ secrets.TRAKT_CLIENT_ID }}
       - name: Now Playing aka Deploy to og.trakt.tv
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: deno run -A npm:wrangler deploy --message "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        run: bun x wrangler deploy --message "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -50,9 +50,9 @@ jobs:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0 # commitlint reads the PR's commit range
-      - uses: ./.github/actions/setup-deno
+      - uses: ./.github/actions/setup-bun
       - name: Checking In aka Commitlint
-        run: deno run -A npm:@commitlint/cli --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }}
+        run: bun x commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }}
       - name: No Weak Sauce aka Forbid Fixup Commits
         run: |
           if git log --format=%s ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }} | grep -E '^(fixup|squash|amend)! '; then

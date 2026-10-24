@@ -26,8 +26,8 @@ type Params = Omit<Parameters<typeof loadSubpageMedia>[0], 'suffix' | 'item'> & 
 // OG's `per_page`.
 const LIMIT = 30;
 
-// @trakt/api 0.6.0's list types don't match the worker's (which quietly serves personal lists for any it doesn't
-// know), so og calls the route raw and parses it.
+// The typed season and episode routes take numbers, but the page passes its URL segments through as they are, so the
+// lists read stays raw and is parsed here.
 const listsSchema = z.array(summaryListSchema);
 
 const itemPath = (item: ItemListsItem): string => {

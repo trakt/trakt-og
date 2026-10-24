@@ -1,5 +1,5 @@
 import { z } from 'zod/v4';
-import { rawApiFetch } from '../../../api/rawApiFetch.ts';
+import { api } from '../../../api/api.ts';
 import type { boxExtraLoader } from './boxExtraLoader.ts';
 
 const media = z.object({ title: z.string(), ids: z.object({ slug: z.string() }) });
@@ -10,9 +10,12 @@ const latestTenSchema = z.array(z.object({ type: z.string(), movie: media.nullis
  * carries its show too, so the row's `type` decides. `null` when there's none or the request fails.
  */
 export async function fetchLatestTen({ fetch, token, id }: Parameters<typeof boxExtraLoader>[0]) {
-  const response = await rawApiFetch({ fetch, token, path: `/users/${encodeURIComponent(id)}/ratings/all/10?limit=1` });
+  const response = await api({ fetch, token }).users.ratings.typedRating({
+    params: { id: encodeURIComponent(id), type: 'all', rating: '10' },
+    query: { limit: 1 },
+  });
   if (response.status !== 200) return null;
-  const rows = latestTenSchema.safeParse(await response.json().catch(() => null));
+  const rows = latestTenSchema.safeParse(response.body);
   const row = rows.success ? rows.data.at(0) : undefined;
   if (row?.type === 'movie' && row.movie) return { title: row.movie.title, href: `/movies/${row.movie.ids.slug}` };
   if (row?.type === 'show' && row.show) return { title: row.show.title, href: `/shows/${row.show.ids.slug}` };

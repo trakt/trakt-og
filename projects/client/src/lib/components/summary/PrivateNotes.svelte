@@ -21,9 +21,11 @@ interface Props {
   note: PrivateNote | null;
   signedIn: boolean;
   datePreferences: DatePreferences;
+  /** Where saves go: the viewer's own fetch. A demo passes a stub so nothing reaches the API. */
+  fetch?: typeof fetch;
 }
 
-const { item, note: loaded, signedIn, datePreferences }: Props = $props();
+const { item, note: loaded, signedIn, datePreferences, fetch: demoFetch }: Props = $props();
 
 // Follows the loader on navigation; a save overrides it until the next load.
 let note = $derived(loaded);
@@ -57,7 +59,7 @@ async function save(text: string) {
   saving = true;
   void refocus();
   const result = await saveNote({
-    fetch: viewerFetch(),
+    fetch: demoFetch ?? viewerFetch(),
     item,
     note: previous,
     text: trimmed,

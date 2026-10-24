@@ -1,5 +1,5 @@
 <script lang="ts">
-import DemoSection from '$lib/design/DemoSection.svelte';
+import Specimen from '$lib/design/Specimen.svelte';
 import EpisodeTypeBadge from '$lib/components/media/EpisodeTypeBadge.svelte';
 import NoteManage from '$lib/components/notes/NoteManage.svelte';
 import NotesDialog from '$lib/components/notes/NotesDialog.svelte';
@@ -9,6 +9,8 @@ import SectionToolbar from '$lib/components/toolbar/SectionToolbar.svelte';
 import { noteRowsSchema } from '$lib/users/notes/noteRowsSchema';
 import { toNote } from '$lib/users/notes/toNote';
 
+// Answers a note edit the way the API does, so saving stays on this page.
+const savedHere = () => Promise.resolve(new Response(null, { status: 204 }));
 let open = $state(false);
 let draft = $state('');
 const preferences = { order: 'mdy', hour24: false, timeZone: 'UTC', weekStartDay: 0 } as const;
@@ -71,14 +73,14 @@ const rows = noteRowsSchema.parse([
 ]);
 </script>
 
-<DemoSection title="Section toolbar" bleed note="The notes page's toolbar, with its filter and summary slots.">
+<Specimen title="Section toolbar" bleed note="The notes page's toolbar, with its filter and summary slots.">
   <SectionToolbar>
     {#snippet filters()}Note type filter{/snippet}
     {#snippet summary()}4 notes · Added Date{/snippet}
   </SectionToolbar>
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Note cards"
+<Specimen title="Note cards"
   note="A spoiler note, a long private one on a rating, a friends-only one on a play and a public one on a library item. Edit opens the notes dialog.">
   <div class="badge-example"><EpisodeTypeBadge kind="series-premiere" label="Series Premiere" /></div>
   {#each rows as row (row.note.id)}
@@ -91,12 +93,12 @@ const rows = noteRowsSchema.parse([
       </NoteCard>
     {/if}
   {/each}
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Private notes box"
+<Specimen title="Private notes box"
   note="Under a summary's overview, only when the title already has a note. Clicking it opens the notes dialog, which saves to the API when signed in. New notes start from a favorite, a drop or a list item instead.">
-  <PrivateNotes {item} {note} signedIn datePreferences={preferences} />
-</DemoSection>
+  <PrivateNotes {item} {note} signedIn datePreferences={preferences} fetch={savedHere} />
+</Specimen>
 
 <NotesDialog bind:open bind:draft {item} privacy="public" onsave={() => open = false} />
 

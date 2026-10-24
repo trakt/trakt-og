@@ -1,8 +1,22 @@
 import { z } from 'zod/v4';
-import { rawApiFetch } from '../../api/rawApiFetch.ts';
+import { api } from '../../api/api.ts';
 
 const failed = "Doh! You can't like this list.";
 const messageSchema = z.object({ message: z.string().optional() });
+
+function writeLike(fetch: typeof globalThis.fetch, { id, ownerSlug, liked }: {
+  id: number;
+  ownerSlug?: string;
+  liked: boolean;
+}) {
+  const client = api({ fetch });
+  if (ownerSlug) {
+    const params = { id: encodeURIComponent(ownerSlug), list_id: String(id) };
+    return liked ? client.users.lists.list.like({ params }) : client.users.lists.list.unlike({ params });
+  }
+  const params = { id: String(id) };
+  return liked ? client.lists.like({ params }) : client.lists.unlike({ params });
+}
 
 /** Liking changes list state, not media membership. The calling control owns the optimistic patch and rollback. */
 export async function changeListLike({
@@ -22,11 +36,11 @@ export async function changeListLike({
 }): Promise<boolean> {
   const rollback = patch();
   try {
-    const base = ownerSlug ? `/users/${encodeURIComponent(ownerSlug)}/lists/${id}` : `/lists/${id}`;
-    const response = await rawApiFetch({ fetch, path: `${base}/like`, init: { method: liked ? 'POST' : 'DELETE' } });
-    const text = await response.text();
-    const body = text.trim() ? messageSchema.parse(JSON.parse(text)) : null;
-    if (!response.ok) {
+    const response = await writeLike(fetch, { id, ownerSlug, liked });
+    const body = response.body === undefined || response.body instanceof Blob
+      ? null
+      : messageSchema.parse(response.body);
+    if (response.status < 200 || response.status >= 300) {
       rollback();
       notify(body?.message ?? failed);
       return false;

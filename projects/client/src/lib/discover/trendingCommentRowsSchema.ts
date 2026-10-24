@@ -34,7 +34,7 @@ export type TrendingCommentRow = z.infer<typeof row>;
 
 /**
  * `/comments/trending/all/all?extended=images`: each comment with its movie or show, and the episode under it.
- * `@trakt/api` 0.6.0 types the rows as bare comments, so they're parsed here. A malformed row is skipped.
+ * `@trakt/api` types the rows as bare comments, so they're parsed here. A malformed row is skipped.
  */
 export const trendingCommentRowsSchema = z.array(z.unknown()).transform((rows) =>
   rows.flatMap((value): TrendingCommentRow[] => {

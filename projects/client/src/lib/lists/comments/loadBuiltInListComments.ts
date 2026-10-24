@@ -1,5 +1,4 @@
 import { api } from '../../api/api.ts';
-import { rawApiFetch } from '../../api/rawApiFetch.ts';
 import { listItemsSchema } from '../../users/lists/listItemsSchema.ts';
 import { toBuiltInRow } from '../../users/lists/toBuiltInRow.ts';
 import type { ProfileUser } from '../../users/ProfileUser.ts';
@@ -20,10 +19,14 @@ type Params = {
 export async function loadBuiltInListComments({ fetch, parent, locals, params, url, kind }: Params) {
   const query = toListCommentsQuery(url.searchParams);
   const request = { params: { id: params.id, sort: query.sort }, query: { page: query.page, limit: query.limit } };
-  const itemsPath = `/users/${encodeURIComponent(params.id)}/${kind}/all/rank/asc?extended=images&limit=4`;
+  const readItems = (token: string | null) =>
+    api({ fetch, token }).users[kind].typedSorted({
+      params: { id: encodeURIComponent(params.id), type: 'all', sort_by: 'rank', sort_how: 'asc' },
+      query: { extended: 'images', limit: 4 },
+    });
   const [initial, itemsInitial, { profile }] = await Promise.all([
     api({ fetch }).users[kind].comments(request),
-    rawApiFetch({ fetch, path: itemsPath }),
+    readItems(null),
     parent(),
   ]);
   const name = kind === 'watchlist' ? 'Watchlist' : 'Favorites';
@@ -42,11 +45,13 @@ export async function loadBuiltInListComments({ fetch, parent, locals, params, u
   const [response, itemsResponse] = profile.isPrivate && locals.token
     ? await Promise.all([
       api({ fetch, token: locals.token }).users[kind].comments(request),
-      rawApiFetch({ fetch, token: locals.token, path: itemsPath }),
+      readItems(locals.token),
     ])
     : [initial, itemsInitial];
   const comments = readListComments({ response, query });
-  const items = itemsResponse.ok ? listItemsSchema.safeParse(await itemsResponse.json().catch(() => null)) : null;
+  const items = itemsResponse.status >= 200 && itemsResponse.status < 300
+    ? listItemsSchema.safeParse(itemsResponse.body)
+    : null;
   const posters = toBuiltInRow({ kind, profile, items: items?.success ? items.data : [], itemCount: 0 }).posters;
   return { sort: query.sort, list: target(comments.listId, posters.slice(0, 4)), ...comments };
 }

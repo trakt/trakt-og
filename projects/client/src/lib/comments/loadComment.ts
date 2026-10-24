@@ -1,6 +1,5 @@
 import { error, redirect } from '@sveltejs/kit';
 import { api } from '../api/api.ts';
-import { rawApiFetch } from '../api/rawApiFetch.ts';
 import { commentsClient } from '../components/comments/commentsClient.ts';
 import type { HeaderUser } from '../components/header/HeaderUser.ts';
 import { loadWatchNow } from '../components/watchnow/loadWatchNow.ts';
@@ -32,7 +31,7 @@ export async function loadComment({ fetch, parent, id }: Params) {
   const [summary, itemResponse, replies, { datePreferences, settings, user }] = await Promise.all([
     // A missing comment is a plain-text 404 under a JSON content type, which the typed client can't parse.
     client.comments.summary({ params: { id } }).catch(() => null),
-    rawApiFetch({ fetch, path: `/comments/${id}/item?extended=full,images` }),
+    client.comments.item({ params: { id }, query: { extended: 'full,images' } }),
     commentsClient(client).replies(Number(id)).catch(() => null),
     parent(),
   ]);
@@ -47,8 +46,10 @@ export async function loadComment({ fetch, parent, id }: Params) {
   if (comment.parent_id > 0) redirect(302, `/comments/${comment.parent_id}#comment-${comment.id}`);
 
   if (itemResponse.status === 404) notFound();
-  if (!itemResponse.ok) error(502, 'The Trakt API could not load what this comment is about.');
-  const body = subpageItemSchema.safeParse(await itemResponse.json().catch(() => null));
+  if (itemResponse.status < 200 || itemResponse.status >= 300) {
+    error(502, 'The Trakt API could not load what this comment is about.');
+  }
+  const body = subpageItemSchema.safeParse(itemResponse.body);
   if (!body.success) error(502, 'The Trakt API returned an invalid comment item.');
   if (replies === null) error(502, 'The Trakt API could not load the replies.');
 

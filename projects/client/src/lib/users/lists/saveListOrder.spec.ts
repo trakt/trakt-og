@@ -1,7 +1,7 @@
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { rawApiFetch } from '../../api/rawApiFetch.ts';
+import { authorizedFetch } from '../../api/authorizedFetch.ts';
 import { saveListOrder } from './saveListOrder.ts';
 const server = setupServer();
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
@@ -13,13 +13,7 @@ const save = () =>
   saveListOrder({
     rank: [3, 1, 2],
     notify,
-    request: (path, body) =>
-      rawApiFetch({
-        fetch,
-        token: 'viewer',
-        path,
-        init: { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) },
-      }),
+    fetch: authorizedFetch(fetch, 'viewer'),
   });
 describe('saveListOrder', () => {
   it('should save the complete numeric order on the viewer endpoint', async () => {

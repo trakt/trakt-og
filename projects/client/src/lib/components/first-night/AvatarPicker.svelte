@@ -4,7 +4,7 @@
 -->
 <script lang="ts">
 import { invalidateAll } from '$app/navigation';
-import { rawApiFetch } from '$lib/api/rawApiFetch';
+import { api } from '$lib/api/api';
 import { viewerFetch } from '$lib/auth/viewerFetch';
 import { toast } from '$lib/components/toast/toast.svelte';
 import { squareAvatar } from '$lib/firstNight/squareAvatar';
@@ -25,16 +25,8 @@ async function pick(event: Event) {
   try {
     const avatar = await squareAvatar(file);
     preview = avatar;
-    const response = await rawApiFetch({
-      fetch: viewerFetch(),
-      path: '/users/avatar',
-      init: {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user: { avatar } }),
-      },
-    });
-    if (!response.ok) throw new Error(String(response.status));
+    const response = await api({ fetch: viewerFetch() }).users.avatar({ body: { user: { avatar } } });
+    if (response.status < 200 || response.status >= 300) throw new Error(String(response.status));
     toast.success('Looking good. Your new photo is saved.');
     await invalidateAll();
   } catch {

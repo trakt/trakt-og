@@ -1,6 +1,5 @@
 import { error } from '@sveltejs/kit';
 import { api } from '../../api/api.ts';
-import { rawApiFetch } from '../../api/rawApiFetch.ts';
 import type { ProfileUser } from '../ProfileUser.ts';
 import { likedListsSchema } from './likedListsSchema.ts';
 import { listItemsSchema } from './listItemsSchema.ts';
@@ -59,10 +58,11 @@ async function fetchPersonal(fetch: typeof globalThis.fetch, id: string, token: 
 async function fetchCollaborations(fetch: typeof globalThis.fetch, id: string, token: string | null) {
   const response = await withViewer(
     token,
-    (viewer) => rawApiFetch({ fetch, token: viewer, path: `/users/${id}/lists/collaborations?extended=images` }),
+    (viewer) =>
+      api({ fetch, token: viewer }).users.lists.collaborations({ params: { id }, query: { extended: 'images' } }),
   );
   if (response.status !== 200) return { status: response.status, lists: [], likedAt: [] };
-  const rows = listRowsSchema.safeParse(await response.json().catch(() => null));
+  const rows = listRowsSchema.safeParse(response.body);
   if (!rows.success) error(502, 'Trakt returned an invalid lists response.');
   return { status: 200, lists: rows.data, likedAt: [] };
 }
@@ -76,19 +76,16 @@ async function fetchLiked(fetch: typeof globalThis.fetch, id: string, token: str
     withViewer(
       token,
       (viewer) =>
-        rawApiFetch({
-          fetch,
-          token: viewer,
-          path: `/users/${id}/likes/lists?extended=images&page=${n}&limit=${LIMIT}`,
+        api({ fetch, token: viewer }).users.likes({
+          params: { id, type: 'lists' },
+          query: { extended: 'images', page: n, limit: LIMIT },
         }),
     );
   const first = await page(1);
   if (first.status !== 200) return { status: first.status, lists: [], likedAt: [] };
   const pageCount = Number(first.headers.get('x-pagination-page-count')) || 1;
   const rest = await Promise.all(Array.from({ length: Math.min(pageCount, MAX_PAGES) - 1 }, (_, i) => page(i + 2)));
-  const bodies = await Promise.all(
-    [first, ...rest].map(async (response) => response.status === 200 ? await response.json().catch(() => null) : []),
-  );
+  const bodies = [first, ...rest].map((response) => response.status === 200 ? response.body : []);
   const likes = likedListsSchema.safeParse(bodies.flat());
   if (!likes.success) error(502, 'Trakt returned an invalid lists response.');
   const kept = likes.data.filter(({ list }) => (list.type === 'official') === official);
@@ -96,14 +93,22 @@ async function fetchLiked(fetch: typeof globalThis.fetch, id: string, token: str
 }
 
 /** The first five items and the total, for a watchlist or favorites row. Either failing leaves the row empty. */
-async function fetchBuiltIn(fetch: typeof globalThis.fetch, path: string, token: string | null) {
+async function fetchBuiltIn(
+  fetch: typeof globalThis.fetch,
+  { id, kind, type }: { id: string; kind: 'watchlist' | 'favorites'; type: string },
+  token: string | null,
+) {
   const response = await withViewer(
     token,
-    (viewer) => rawApiFetch({ fetch, token: viewer, path: `${path}/rank/asc?limit=5&extended=images` }),
+    (viewer) =>
+      api({ fetch, token: viewer }).users[kind].typedSorted({
+        params: { id, type, sort_by: 'rank', sort_how: 'asc' },
+        query: { limit: 5, extended: 'images' },
+      }),
   )
     .catch(() => null);
   if (response?.status !== 200) return { items: [], itemCount: 0 };
-  const items = listItemsSchema.safeParse(await response.json().catch(() => null));
+  const items = listItemsSchema.safeParse(response.body);
   return {
     items: items.success ? items.data : [],
     itemCount: Number(response.headers.get('x-pagination-item-count')) || 0,
@@ -124,8 +129,10 @@ export async function loadLists({ fetch, locals, params, url, parent, mode }: Pa
       : mode === 'collaborations'
       ? fetchCollaborations(fetch, id, token)
       : fetchLiked(fetch, id, token, mode === 'liked-official'),
-    mode === 'personal' ? fetchBuiltIn(fetch, `/users/${id}/watchlist/movie,show,season,episode`, token) : null,
-    mode === 'personal' ? fetchBuiltIn(fetch, `/users/${id}/favorites/movie,show`, token) : null,
+    mode === 'personal'
+      ? fetchBuiltIn(fetch, { id, kind: 'watchlist', type: 'movie,show,season,episode' }, token)
+      : null,
+    mode === 'personal' ? fetchBuiltIn(fetch, { id, kind: 'favorites', type: 'movie,show' }, token) : null,
     parent(),
   ]);
   const query = toListsQuery(url.searchParams, mode);

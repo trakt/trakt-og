@@ -1,4 +1,4 @@
-import { rawApiFetch } from '../api/rawApiFetch.ts';
+import { api } from '../api/api.ts';
 import { type FilterSource, toFilterSources } from '../components/filters/watchNowFilter.ts';
 import type { ViewerSettings } from '../settings/ViewerSettings.ts';
 import { watchNowCountry } from '../settings/watchNowCountry.ts';
@@ -11,10 +11,12 @@ export async function loadListFilterSources({ fetch, watchnow, settings }: {
 }) {
   if (!watchnow) return new Map<string, FilterSource>();
   const country = watchNowCountry(settings);
-  const response = await rawApiFetch({ fetch, path: `/watchnow/sources/${country}` }).catch(() => null);
-  if (!response?.ok) return new Map<string, FilterSource>();
+  const response = await api({ fetch }).watchnow.sources.country({ params: { countryCode: country } }).catch(() =>
+    null
+  );
+  if (!response || response.status < 200 || response.status >= 300) return new Map<string, FilterSource>();
   try {
-    return toFilterSources(await response.json(), country);
+    return toFilterSources(response.body, country);
   } catch {
     return new Map<string, FilterSource>();
   }

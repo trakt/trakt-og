@@ -1,6 +1,5 @@
 import { type Cookies, error } from '@sveltejs/kit';
 import { signInRedirect } from '../auth/signInRedirect.ts';
-import { rawApiFetch } from '../api/rawApiFetch.ts';
 import { hasAdvancedFilters, parseAdvancedFilters } from '../components/filters/advancedFilters.ts';
 import { advancedFiltersQuery } from '../components/filters/advancedFiltersQuery.ts';
 import { fromFilterDraft, toFilterDraft } from '../components/filters/filterDraft.ts';
@@ -82,9 +81,12 @@ export async function loadCalendar({
   const watchnow = calendarWatchNow(settings);
   const sources =
     filters.watchnow.length > 0
-      ? rawApiFetch({ fetch, path: `/watchnow/sources/${watchnow.country}` })
-          .then(async (response) =>
-            response.ok ? toFilterSources(await response.json(), watchnow.country) : new Map<string, FilterSource>(),
+      ? api({ fetch })
+          .watchnow.sources.country({ params: { countryCode: watchnow.country } })
+          .then((response) =>
+            response.status >= 200 && response.status < 300
+              ? toFilterSources(response.body, watchnow.country)
+              : new Map<string, FilterSource>(),
           )
           .catch(() => new Map<string, FilterSource>())
       : Promise.resolve(undefined);

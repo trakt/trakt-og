@@ -27,8 +27,9 @@ design system's living reference, so they change in the same PR as the component
 - **Build it from the shell**: each part is a `Specimen` card (`$lib/design/Specimen.svelte`), and each state inside it
   gets a `Variant` caption (Loaded, Empty, Loading, Failed...). Use `bleed` for components that bring their own page
   column. Notes say what to look for or try, in a sentence.
-- **Never touch real data**: demos run on fixtures and stub clients. Nothing in a demo writes to the API, even for a
-  signed-in viewer.
+- **Never touch real data**: demos run on fixtures and stub clients. The shell answers every write that leaves the site
+  itself (`$lib/design/guardWrites.ts`), so a signed-in viewer can click anything; don't add props to components just
+  to stop their writes.
 - **Check it**: screenshot the demo at 1440px in both themes before opening the PR, and include it with the OG
   screenshot.
 

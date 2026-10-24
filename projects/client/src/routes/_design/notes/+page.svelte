@@ -9,8 +9,6 @@ import SectionToolbar from '$lib/components/toolbar/SectionToolbar.svelte';
 import { noteRowsSchema } from '$lib/users/notes/noteRowsSchema';
 import { toNote } from '$lib/users/notes/toNote';
 
-// Answers a note edit the way the API does, so saving stays on this page.
-const savedHere = () => Promise.resolve(new Response(null, { status: 204 }));
 let open = $state(false);
 let draft = $state('');
 const preferences = { order: 'mdy', hour24: false, timeZone: 'UTC', weekStartDay: 0 } as const;
@@ -97,7 +95,7 @@ const rows = noteRowsSchema.parse([
 
 <Specimen title="Private notes box"
   note="Under a summary's overview, only when the title already has a note. Clicking it opens the notes dialog, which saves to the API when signed in. New notes start from a favorite, a drop or a list item instead.">
-  <PrivateNotes {item} {note} signedIn datePreferences={preferences} fetch={savedHere} />
+  <PrivateNotes {item} {note} signedIn datePreferences={preferences} />
 </Specimen>
 
 <NotesDialog bind:open bind:draft {item} privacy="public" onsave={() => open = false} />

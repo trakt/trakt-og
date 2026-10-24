@@ -12,6 +12,8 @@ import SectionList from '$lib/design/SectionList.svelte';
 import { type DesignPrefs, designPrefs } from '$lib/design/designPrefs';
 import { designToc } from '$lib/design/designToc.svelte';
 import { findDesignDemo } from '$lib/design/findDesignDemo';
+import { guardWrites } from '$lib/design/guardWrites';
+import { toast } from '$lib/components/toast/toast.svelte';
 import ThemeSwitch from '$lib/design/ThemeSwitch.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import angleLeft from '$lib/icons/light/angle-left.svg?raw';
@@ -29,6 +31,19 @@ function save(next: DesignPrefs) {
   picked = next;
   document.cookie = designPrefs.serialize(next);
 }
+
+// While a demo is open, saves stay on the page: nothing it does reaches the API.
+$effect(() => {
+  const real = window.fetch;
+  window.fetch = guardWrites({
+    fetch: real,
+    origin: location.origin,
+    onblock: () => toast.success('Demo: saved on this page only, not sent to Trakt.'),
+  });
+  return () => {
+    window.fetch = real;
+  };
+});
 
 $effect(() => {
   if (demo?.ownTheme) return;

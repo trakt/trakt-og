@@ -5,7 +5,7 @@
   network page's user cards in each follow state, watching now and checked in. The stat boxes have their own demo.
 -->
 <script lang="ts">
-import DemoSection from '$lib/design/DemoSection.svelte';
+import Specimen from '$lib/design/Specimen.svelte';
 import FavoriteCard from '$lib/components/users/FavoriteCard.svelte';
 import MostWatched from '$lib/components/users/MostWatched.svelte';
 import ProfileCharts from '$lib/components/users/ProfileCharts.svelte';
@@ -227,7 +227,7 @@ const liveCards = [
 ];
 </script>
 
-<DemoSection title="Profile frame" bleed
+<Specimen title="Profile frame" bleed
   note="Covers, labels, follow states, the request banner and the watching-now bar. Real profiles only show the states the viewer is actually in.">
   {#each states as { title, props } (title)}
     <h3 class="state">{title}</h3>
@@ -242,9 +242,9 @@ const liveCards = [
       relation={props.relation ?? null}
     />
   {/each}
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Favorite card">
+<Specimen title="Favorite card">
   <div class="favorite">
     <FavoriteCard
       favorite={{
@@ -259,22 +259,22 @@ const liveCards = [
       }}
     />
   </div>
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Welcome hero" bleed note="For a member who hasn't set a name yet.">
+<Specimen title="Welcome hero" bleed note="For a member who hasn't set a name yet.">
   <WelcomeHero displayName="leela" named={false} slug="leela" />
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Charts" bleed
+<Specimen title="Charts" bleed
   note="Genres and ratings; a generous rater, whose average past 9 puts the line's label before it; then no ratings at all.">
   <ProfileCharts {genres} {ratings} slug="leela" />
   <h3 class="state">A generous rater</h3>
   <ProfileCharts genres={genreBars(genreRows.slice(0, 4))} ratings={generous} slug="leela" />
   <h3 class="state">No ratings</h3>
   <ProfileCharts genres={genreBars(genreRows.slice(0, 4))} ratings={unrated} slug="leela" />
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Most watched" bleed
+<Specimen title="Most watched" bleed
   note="Your own profile on OG's defaults, then your saved sort and tab: shows on All Time by time watched.">
   <MostWatched
     {...mostWatched}
@@ -291,9 +291,9 @@ const liveCards = [
     hasnt={(rest) => `You haven't ${rest}`}
     datePreferences={{ order: 'mdy', hour24: false, timeZone: 'UTC', weekStartDay: 0 }}
   />
-</DemoSection>
+</Specimen>
 
-<DemoSection title="User cards"
+<Specimen title="User cards"
   note="The network page's cards: watching now, checked in, each follow state, then yourself or signed out.">
   <ul class="user-cards">
     {#each liveCards as card (card.key)}
@@ -306,7 +306,7 @@ const liveCards = [
       </li>
     {/each}
   </ul>
-</DemoSection>
+</Specimen>
 
 <style>
 .user-cards {
@@ -326,7 +326,7 @@ const liveCards = [
 
 .state {
   margin: 0;
-  padding: var(--gutter) var(--design-stage-padding) var(--space-lg-block);
+  padding: var(--gutter) var(--design-canvas-padding) var(--space-lg-block);
   color: var(--color-text-muted);
   font-size: var(--font-size-h5);
 }

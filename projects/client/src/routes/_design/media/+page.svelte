@@ -2,7 +2,7 @@
 import { PLACEHOLDER_AVATAR } from '$lib/users/placeholderAvatar';
 import defaultCover from '$lib/assets/profile-cover-default.jpg';
 import FrameGrid from '$lib/components/frame/FrameGrid.svelte';
-import DemoSection from '$lib/design/DemoSection.svelte';
+import Specimen from '$lib/design/Specimen.svelte';
 import FanartCard from '$lib/components/media/FanartCard.svelte';
 import FanartHeader from '$lib/components/media/FanartHeader.svelte';
 import ListRow from '$lib/components/media/ListRow.svelte';
@@ -72,7 +72,7 @@ const members = $derived([
 ]);
 </script>
 
-<DemoSection title="Fanart header" bleed
+<Specimen title="Fanart header" bleed
   note="A summary's header on the top trending show, then the slim one a subpage uses.">
   {#if featured}
     <FanartHeader image={featured.fanartFull}>
@@ -87,9 +87,9 @@ const members = $derived([
       <h2>Comments for {shows.at(1)?.title}</h2>
     </FanartHeader>
   </div>
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Search poster cards" note="Six per row, in the frame grid.">
+<Specimen title="Search poster cards" note="Six per row, in the frame grid.">
   <FrameGrid variant="poster">
     {#each shows.slice(0, 6) as show (show.id)}
       <FanartCard variant="poster" href={show.href} title={show.title} image={show.poster} hideTitle={show.poster !== undefined}
@@ -97,18 +97,18 @@ const members = $derived([
         icons={{ fill: quickIconFill({ state: {} }), rating: show.rating }} />
     {/each}
   </FrameGrid>
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Search user cards" note="Three per row; a VIP shows their cover.">
+<Specimen title="Search user cards" note="Three per row; a VIP shows their cover.">
   <FrameGrid variant="uniform">
     {#each members as member (member.name)}
       <FanartCard href="/_design/media" title={member.name} image={member.cover ?? defaultCover} avatar={member.avatar}
         tags={member.tags} />
     {/each}
   </FrameGrid>
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Every overlay slot"
+<Specimen title="Every overlay slot"
   note="Sample state in each quick icon, so every state shows without signing in.">
   <PosterGrid>
     {#each samples as sample, i (sample.label)}
@@ -137,9 +137,9 @@ const members = $derived([
       {/if}
     {/each}
   </PosterGrid>
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Live overlay" note="The signed-in viewer's own state for each trending show.">
+<Specimen title="Live overlay" note="The signed-in viewer's own state for each trending show.">
   <PosterGrid>
     {#each shows.slice(0, 12) as show (show.id)}
       {@const state = overlay.state('show', show.id)}
@@ -158,9 +158,9 @@ const members = $derived([
       />
     {/each}
   </PosterGrid>
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Screenshot cards" note="Four a row, for episodes.">
+<Specimen title="Screenshot cards" note="Four a row, for episodes.">
   <PosterGrid columns={4}>
     {#each shows.slice(0, 4) as show (show.id)}
       <PosterCard
@@ -174,9 +174,9 @@ const members = $derived([
       />
     {/each}
   </PosterGrid>
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Fanart cards" note="Flush, like the chart pages, with tags, a rating and a drop.">
+<Specimen title="Fanart cards" note="Flush, like the chart pages, with tags, a rating and a drop.">
   <PosterGrid columns={3} flush>
     {#each shows.slice(0, 6) as show, i (show.id)}
       <FanartCard
@@ -200,9 +200,9 @@ const members = $derived([
       />
     {/each}
   </PosterGrid>
-</DemoSection>
+</Specimen>
 
-<DemoSection title="List rows"
+<Specimen title="List rows"
   note="A list with a description, a private one, the watchlist, an official list and an empty one.">
   <ListRow
     href="/users/og_tester/lists/all-time-favorites"
@@ -292,7 +292,7 @@ const members = $derived([
     collaborators={[collaborator('OG Tester', 'og_tester')]}
     actions={{ report: {}, leave: {}, progressHref: 'https://app.trakt.tv/vip', shareUrl: 'https://og.trakt.tv/users/kendal_hagenes_1/lists/heist-night' }}
   />
-</DemoSection>
+</Specimen>
 
 <style>
 .year {

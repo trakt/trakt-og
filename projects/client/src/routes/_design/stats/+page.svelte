@@ -1,6 +1,6 @@
 <script lang="ts">
 import WatchedKeys from '$lib/components/dashboard/WatchedKeys.svelte';
-import DemoSection from '$lib/design/DemoSection.svelte';
+import Specimen from '$lib/design/Specimen.svelte';
 import { toExternalRatings } from '$lib/components/summary/toExternalRatings';
 import ProfileRatingsChart from '$lib/components/users/ProfileRatingsChart.svelte';
 import globe from '$lib/icons/regular/globe.svg?raw';
@@ -44,33 +44,33 @@ const sites = toSiteScores({
 });
 </script>
 
-<DemoSection title="Trakt ratings" note="The distribution of votes, with the keys under it.">
+<Specimen title="Trakt ratings" note="The distribution of votes, with the keys under it.">
   <StatsSection id="trakt" title="Trakt" icon={heart}>
     {#if ratings.chart}
       <div class="chart"><ProfileRatingsChart chart={ratings.chart} /></div>
       <WatchedKeys keys={ratings.keys} />
     {/if}
   </StatsSection>
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Community">
+<Specimen title="Community">
   <StatsSection id="community" title="Community" icon={userGroup}>
     <CommunityStats tiles={community} />
   </StatsSection>
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Second opinions" note="Every other site's score beside Trakt's.">
+<Specimen title="Second opinions" note="Every other site's score beside Trakt's.">
   <StatsSection id="second-opinions" title="Second Opinions" icon={globe}>
     <SiteScores trakt={{ percent: 71, votes: 17_976 }} {sites} />
   </StatsSection>
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Rolling number" note="Rolls up to its value as it comes into view.">
+<Specimen title="Rolling number" note="Rolls up to its value as it comes into view.">
   <p class="rolling">
     <RollingNumber value={12} /> people · <RollingNumber value={150_660} /> episodes ·
     <RollingNumber value={13_626} /> movies
   </p>
-</DemoSection>
+</Specimen>
 
 <style>
 .rolling {

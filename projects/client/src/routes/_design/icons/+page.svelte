@@ -1,5 +1,5 @@
 <script lang="ts">
-import DemoSection from '$lib/design/DemoSection.svelte';
+import Specimen from '$lib/design/Specimen.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import angleRight from '$lib/icons/light/angle-right.svg?raw';
 import checkThick from '$lib/icons/trakt/check-thick.svg?raw';
@@ -28,7 +28,7 @@ const icons = [
 ];
 </script>
 
-<DemoSection title="One icon per family"
+<Specimen title="One icon per family"
   note="Each icon sits on the text baseline and takes its size and color from the text around it.">
   <p>Extract one with <code>deno task icon &lt;family&gt; &lt;name&gt;</code>, as the design-system rules describe.</p>
   <!-- Focusable so keyboard users can scroll it sideways on narrow screens. -->
@@ -57,7 +57,7 @@ const icons = [
       </tbody>
     </table>
   </div>
-</DemoSection>
+</Specimen>
 
 <style>
 .table-scroll {

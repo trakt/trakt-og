@@ -9,7 +9,7 @@
 -->
 <script lang="ts">
 import { page } from '$app/state';
-import DemoSection from '$lib/design/DemoSection.svelte';
+import Specimen from '$lib/design/Specimen.svelte';
 import { progressFixture } from '$lib/users/progress/progressFixture';
 import ProgressList from '$lib/users/progress/ProgressList.svelte';
 import { isProgressType, type ProgressType } from '$lib/users/progress/progressTypes';
@@ -52,7 +52,7 @@ const data = $derived({
 
 <!-- The variants only change this page's query, so resolve() has nothing to add. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-<DemoSection title="Progress list" bleed
+<Specimen title="Progress list" bleed
   note="The list on sample shows, with each row's catalog so its up-next card shows at once. Signed in, the controls write to your account.">
   <nav class="variants" aria-label="Progress variants">
     {#each variants as variant (variant.label)}
@@ -62,14 +62,14 @@ const data = $derived({
     {/each}
   </nav>
   <ProgressList {data} {items} {now} />
-</DemoSection>
+</Specimen>
 
 <style>
 .variants {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-sm-inline);
-  padding: 0 var(--design-stage-padding) var(--gutter);
+  padding: 0 var(--design-canvas-padding) var(--gutter);
 
   & a {
     padding: var(--space-xs-block) var(--space-sm-inline);

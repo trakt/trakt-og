@@ -1,5 +1,5 @@
 <script lang="ts">
-import DemoSection from '$lib/design/DemoSection.svelte';
+import Specimen from '$lib/design/Specimen.svelte';
 import OnDeckCard from '$lib/components/media/OnDeckCard.svelte';
 import PosterGrid from '$lib/components/media/PosterGrid.svelte';
 import { toOnDeckItem } from '$lib/progress/toOnDeckItem';
@@ -10,7 +10,7 @@ const sample = entry ? toOnDeckItem({ entry, username: 'me' }) : undefined;
 let needsRefresh = $state(true);
 </script>
 
-<DemoSection title="Card states"
+<Specimen title="Card states"
   note="Next Episode (refresh it once), refreshing, a completed returning show and an ended show. The Next Episode cover works from the keyboard.">
   {#if sample}
     <div class="panel">
@@ -22,7 +22,7 @@ let needsRefresh = $state(true);
       </PosterGrid>
     </div>
   {/if}
-</DemoSection>
+</Specimen>
 
 <style>
 /* The dashboard panel's ground. */

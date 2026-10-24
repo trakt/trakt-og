@@ -6,7 +6,7 @@ import ReportDialog from '$lib/components/summary/ReportDialog.svelte';
 import SummaryPoster from '$lib/components/summary/SummaryPoster.svelte';
 import TitleTags from '$lib/components/summary/TitleTags.svelte';
 import ActivityTabs from '$lib/components/summary/ActivityTabs.svelte';
-import DemoSection from '$lib/design/DemoSection.svelte';
+import Specimen from '$lib/design/Specimen.svelte';
 import ActorsStrip from '$lib/components/summary/ActorsStrip.svelte';
 import CastCard from '$lib/components/summary/CastCard.svelte';
 import ViewToggle from '$lib/components/toolbar/ViewToggle.svelte';
@@ -166,7 +166,7 @@ const videos: readonly VideoCard[] = [
 ];
 </script>
 
-<DemoSection title="Poster column"
+<Specimen title="Poster column"
   note="A list's poster collage, the media tools under a summary poster, and the report dialog.">
   <div class="poster-demo">
     <SummaryPoster alt="List poster collage" posters={[{}, {}, {}, {}]} />
@@ -176,9 +176,9 @@ const videos: readonly VideoCard[] = [
   </div>
   <button type="button" onclick={() => { reporting = true; }}>Report Movie</button>
   <ReportDialog bind:open={reporting} target={reportTarget} />
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Title tags"
+<Specimen title="Title tags"
   note="The bar above a summary or subpage title, on dark art. The slash splits a show from its season.">
   <div class="title-tags-demo">
     <TitleTags links={[{ title: 'Spider-Man (MCU) Collection', href: '/lists/official/spider-man-mcu-collection' }]}
@@ -193,9 +193,9 @@ const videos: readonly VideoCard[] = [
       links={[{ title: 'Ted Lasso', href: '/shows/ted-lasso' }, { title: 'Season 1', href: '/shows/ted-lasso/seasons/1' }]}
       type={{ text: 'Season Finale', kind: 'season-finale' }} />
   </div>
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Action stack"
+<Specimen title="Action stack"
   note="Not added, each action is one outlined button with its + inside. Added, it fills and the + splits off, with quieter actions under •••. Every button is the same height.">
   <div class="actions-demo">
     <SummaryAction color="var(--brand-tertiary)" icon={check} text="Add to history">
@@ -219,9 +219,9 @@ const videos: readonly VideoCard[] = [
     </SummaryAction>
     <SummaryAction color="var(--brand-seventh)" icon={star} text="Add to favorites" />
   </div>
-</DemoSection>
+</Specimen>
 
-<DemoSection title="People"
+<Specimen title="People"
   note="One dropdown of the actor and crew groups, eight cards across that scroll sideways, and All People linking to the picked group. People without a headshot get a silhouette by gender. Local OG: /shows/breaking-bad.">
   <ActorsStrip groups={[{ id: 'season-regulars', label: 'Series Regulars', cast: regulars }]} {crew}
     creditsHref="/shows/demo/people" />
@@ -234,18 +234,18 @@ const videos: readonly VideoCard[] = [
       </li>
     {/each}
   </ul>
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Activity" note="Watching now and People You Follow, with one followed member watching live.">
+<Specimen title="Activity" note="Watching now and People You Follow, with one followed member watching live.">
   <ActivityTabs tabs={activity} />
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Videos"
+<Specimen title="Videos"
   note="It opens on the trailers, else the teasers, else All, where each card tags its type in the type's color. A plain click plays a video in the popup. OG had none; v3's Extras row is the model.">
   <VideosRail {videos} href="/shows/demo" />
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Comments and lists previews"
+<Specimen title="Comments and lists previews"
   note="What loads at the bottom of /movies/fight-club-1999 as it scrolls into view.">
   <CommentsPreview
     tabs={comments}
@@ -257,13 +257,13 @@ const videos: readonly VideoCard[] = [
   />
   <p>The comments subnav's Add comment: <AddCommentLink /></p>
   <ListsPreview {lists} count={342} href="/movies/heat-1995" />
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Related" bleed
+<Specimen title="Related" bleed
   note="Eighteen picks, so More opens a second row and a third. Two share Heat's people.">
   <RelatedItems title="Heat" source={relatedSource} load={() => Promise.resolve(related)} loadPeople={relatedPeople}
     datePreferences={page.data.datePreferences} />
-</DemoSection>
+</Specimen>
 
 <style>
 .people-demo {

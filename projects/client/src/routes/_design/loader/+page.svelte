@@ -5,7 +5,7 @@
 <script lang="ts">
 import Shimmer from '$lib/components/loading/Shimmer.svelte';
 import TraktLoader from '$lib/components/loading/TraktLoader.svelte';
-import DemoSection from '$lib/design/DemoSection.svelte';
+import Specimen from '$lib/design/Specimen.svelte';
 import type { Snippet } from 'svelte';
 
 const sizes = [16, 32, 64, 128];
@@ -33,22 +33,22 @@ const schemes = ['light', 'dark'] as const;
   <Shimmer inline="var(--home-live-shimmer-pill-width)" block="var(--home-live-shimmer-pill-height)" />
 {/snippet}
 
-<DemoSection title="Animated"
+<Specimen title="Animated"
   note="TraktLoader: red rises in a wave behind the monogram until the disc is full, then drains. Below 24px the surface rises flat.">
   {@render grounds('animated', animated)}
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Reduced motion" note="With reduced motion, or reducedMotion, the full mark breathes instead.">
+<Specimen title="Reduced motion" note="With reduced motion, or reducedMotion, the full mark breathes instead.">
   {@render grounds('reduced', reduced)}
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Static SVG" note="static/loader.svg as a plain img, for places outside Svelte.">
+<Specimen title="Static SVG" note="static/loader.svg as a plain img, for places outside Svelte.">
   {@render grounds('static', still)}
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Shimmer" note="Holds a flag's, a name's or a pill's place while it loads.">
+<Specimen title="Shimmer" note="Holds a flag's, a name's or a pill's place while it loads.">
   {@render grounds('shimmer', shimmer)}
-</DemoSection>
+</Specimen>
 
 <style>
 .grounds {

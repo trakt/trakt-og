@@ -18,7 +18,7 @@ import RangeSlider from '$lib/components/filters/RangeSlider.svelte';
 import { filterRanges } from '$lib/components/filters/filterRanges';
 import PillTabs from '$lib/components/tabs/PillTabs.svelte';
 import LinkButton from '$lib/components/button/LinkButton.svelte';
-import DemoSection from '$lib/design/DemoSection.svelte';
+import Specimen from '$lib/design/Specimen.svelte';
 
 let filters = $state<FadeHide>({ fade: [], hide: [] });
 let current = $state(1);
@@ -56,7 +56,7 @@ function showOverlay() {
 }
 </script>
 
-<DemoSection title="Media fade and hide" note="The menu fades or hides watched items; the poster fades as you pick.">
+<Specimen title="Media fade and hide" note="The menu fades or hides watched items; the poster fades as you pick.">
   <div class="media-filters">
     <FadeHideMenu value={filters} options={fadeHideOptions} cookie="design-media" variant="default"
       onchange={(next) => (filters = next)} />
@@ -65,17 +65,17 @@ function showOverlay() {
     <ActionButtons history={false} library={false} comment={false}
       progress={{ watched: 1, collected: 0, visible: 3, total: 3 }} />
   </div>
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Link buttons" note="Primary, external and outline, on the home page's ground.">
+<Specimen title="Link buttons" note="Primary, external and outline, on the home page's ground.">
   <div class="link-buttons" id="link-buttons">
     <LinkButton href="#link-buttons">Primary</LinkButton>
     <LinkButton href="https://github.com/trakt/trakt-og/issues/new?labels=bug" external>Open a bug report</LinkButton>
     <LinkButton href="https://developer.trakt.tv" variant="outline" external>Developer portal</LinkButton>
   </div>
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Pagination">
+<Specimen title="Pagination">
   <div class="knobs">
     <label>Page <input type="number" min="1" max={total} bind:value={current} /></label>
     <label>Pages <input type="number" min="1" bind:value={total} /></label>
@@ -83,17 +83,17 @@ function showOverlay() {
   <div id="pagination">
     <Pagination meta={{ current, total }} {href} />
   </div>
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Pill tabs">
+<Specimen title="Pill tabs">
   <div id="tabs">
     <PillTabs label="Comments" {tabs} bind:selected={tab}>
       {#snippet panel(id)}<p class="panel">Panel for <code>{id}</code></p>{/snippet}
     </PillTabs>
   </div>
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Filter controls" note="The search terms box, for a VIP and everyone else, and the funnel menu.">
+<Specimen title="Filter controls" note="The search terms box, for a VIP and everyone else, and the funnel menu.">
   <div class="filters" id="sortable">
     <TermsFilter bind:terms vip />
     <TermsFilter bind:terms vip={false} />
@@ -109,9 +109,9 @@ function showOverlay() {
     </FilterMenu>
     <p>{terms ? `"${terms}"` : 'no terms'}{movies ? '' : ', no movies'}</p>
   </div>
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Advanced filter controls"
+<Specimen title="Advanced filter controls"
   note="In a sidebar frame: the funnel toggle, a multi-select and range sliders.">
   <div class="frame advanced" id="advanced">
     <AdvancedFiltersToggle bind:open={funnelOpen} controls="advanced" active={genres.length > 0}
@@ -124,9 +124,9 @@ function showOverlay() {
     <RangeSlider labeled bind:value={imdb} scale={scales.imdb_ratings} label="IMDb rating"
       format={(v) => v.toFixed(1)} />
   </div>
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Rating meter"
+<Specimen title="Rating meter"
   note="Arrow keys preview a heart; Enter or Space saves it. The trash button removes the rating. A 10 brings out the Totally Ninja guy.">
   <div class="rating" id="rating">
     <RatingPopover label="Rate the demo item" value={rating} onrate={(n) => (rating = n)}>
@@ -138,23 +138,23 @@ function showOverlay() {
     </RatingPopover>
     <button type="button" onclick={() => ninja.show()}>Send the Totally Ninja guy</button>
   </div>
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Empty states" note="No data in a box, then no results in a frame.">
+<Specimen title="Empty states" note="No data in a box, then no results in a frame.">
   <div id="no-data">
     <NoData />
   </div>
   <div class="frame" id="no-results">
     <NoResults />
   </div>
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Loading states" note="The page loader over everything, and the bar along the top.">
+<Specimen title="Loading states" note="The page loader over everything, and the bar along the top.">
   <div class="knobs">
     <button type="button" onclick={showOverlay}>Show the page loader for 2s</button>
     <label class="check"><input type="checkbox" bind:checked={bar} /> Loading bar</label>
   </div>
-</DemoSection>
+</Specimen>
 
 <LoadingOverlay visible={overlay} />
 <LoadingBar visible={bar} />

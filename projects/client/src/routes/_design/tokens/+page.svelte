@@ -1,7 +1,7 @@
 <script lang="ts">
 import { resolve } from '$app/paths';
 import Container from '$lib/components/container/Container.svelte';
-import DemoSection from '$lib/design/DemoSection.svelte';
+import Specimen from '$lib/design/Specimen.svelte';
 import { overlay } from '$lib/overlay/overlay';
 
 const colorGroups: Record<string, string[]> = {
@@ -59,7 +59,7 @@ const overlayState = $derived(
 );
 </script>
 
-<DemoSection title="Type"
+<Specimen title="Type"
   note="Figtree everywhere (OG used Proxima Nova). Headings are 600 unless they have a bold part.">
   <h2 class="specimen">Heading 2, 24px with <b>bold</b> at 600</h2>
   <h3>Heading 3, 24px</h3>
@@ -72,9 +72,9 @@ const overlayState = $derived(
     and <small>small text</small>.
   </p>
   <p>A second paragraph shows the 10px paragraph margin.</p>
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Colors">
+<Specimen title="Colors">
   {#each Object.entries(colorGroups) as [group, names] (group)}
     <h3 class="group">{group}</h3>
     <ul class="swatches">
@@ -86,9 +86,9 @@ const overlayState = $derived(
       {/each}
     </ul>
   {/each}
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Spacing and radii">
+<Specimen title="Spacing and radii">
   <ul class="row">
     {#each spaces as size (size)}
       <li>
@@ -102,9 +102,9 @@ const overlayState = $derived(
       <li class="radius" style:border-radius="var(--{name})"><code>--{name}</code></li>
     {/each}
   </ul>
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Form controls" note="Base element styles, with no classes: OG's Bootstrap 3 inputs.">
+<Specimen title="Form controls" note="Base element styles, with no classes: OG's Bootstrap 3 inputs.">
   <form class="row" onsubmit={(e) => e.preventDefault()}>
     <label>Text <input type="text" placeholder="Search shows, movies, people" /></label>
     <label>Select <select><option>Trending</option><option>Popular</option></select></label>
@@ -112,9 +112,9 @@ const overlayState = $derived(
     <button type="button">Button</button>
   </form>
   <label class="textarea">Textarea <textarea rows="3"></textarea></label>
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Shadows and image ratios">
+<Specimen title="Shadows and image ratios">
   <ul class="row">
     {#each shadows as name (name)}
       <li class="shadow" style:box-shadow="var(--{name})"><code>--{name}</code></li>
@@ -124,16 +124,16 @@ const overlayState = $derived(
     <div class="poster"><code>--ratio-poster</code></div>
     <div class="fanart"><code>--ratio-fanart</code></div>
   </div>
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Page column" bleed
+<Specimen title="Page column" bleed
   note="Container: OG's page width, 740, 960 and 1160px from 768, 992 and 1200px wide viewports. Fold the nav to see it at full width.">
   <Container>
     <div class="column">Container</div>
   </Container>
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Overlay state"
+<Specimen title="Overlay state"
   note="The signed-in viewer's state for one item, from $lib/overlay/overlay. Signed out, every field is unknown.">
   <form class="row" onsubmit={(e) => e.preventDefault()}>
     <label>
@@ -148,7 +148,7 @@ const overlayState = $derived(
     <label>Trakt id <input type="number" min="1" bind:value={overlayId} /></label>
   </form>
   <pre aria-live="polite">{overlayState}</pre>
-</DemoSection>
+</Specimen>
 
 <style>
 .specimen {

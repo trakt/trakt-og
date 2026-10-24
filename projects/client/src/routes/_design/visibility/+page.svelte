@@ -1,5 +1,5 @@
 <script lang="ts">
-import DemoSection from '$lib/design/DemoSection.svelte';
+import Specimen from '$lib/design/Specimen.svelte';
 import VisibilityControl from '$lib/components/visibility/VisibilityControl.svelte';
 import PosterCard from '$lib/components/media/PosterCard.svelte';
 import FanartCard from '$lib/components/media/FanartCard.svelte';
@@ -19,7 +19,7 @@ const icons = $derived({
 });
 </script>
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-<DemoSection title="The controls"
+<Specimen title="The controls"
   note="Rewatch, drop, the Dropped pill's restore, and hide. Sign in to try the date picker and confirmations.">
   <div class="examples">
     <VisibilityControl {target} action="rewatch">
@@ -33,16 +33,16 @@ const icons = $derived({
       <Icon svg={ban} />
     </VisibilityControl>
   </div>
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Poster and fanart actions"
+<Specimen title="Poster and fanart actions"
   note="Hide from recommendations on a poster, and from the calendar on a fanart card.">
   <PosterGrid columns={6}>
     <PosterCard href="/shows/breaking-bad" title="Breaking Bad" image="/favicon.svg" {icons} />
     <FanartCard href="/shows/breaking-bad" title="Breaking Bad" image="/favicon.svg"
       icons={{ ...icons, hideSection: 'calendar' }} />
   </PosterGrid>
-</DemoSection>
+</Specimen>
 
 <style>
 .examples {

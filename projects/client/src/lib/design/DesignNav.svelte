@@ -1,10 +1,11 @@
 <!--
   The design shell's sidebar: every demo by group, a filter over them, the open demo's sections, and the theme. It
-  folds to a rail, remembered with the theme.
+  folds to a rail, remembered with the theme. On screens wide enough for the section list beside the demo
+  (SectionList), the sections leave the sidebar.
 -->
 <script lang="ts">
 import { resolve } from '$app/paths';
-import TraktMark from '$lib/components/brand/TraktMark.svelte';
+import logo from '$lib/assets/trakt-logo-red.png';
 import Icon from '$lib/icons/Icon.svelte';
 import search from '$lib/icons/light/magnifying-glass.svg?raw';
 import sidebar from '$lib/icons/regular/sidebar.svg?raw';
@@ -16,11 +17,12 @@ import ThemeSwitch from './ThemeSwitch.svelte';
 interface Props {
   current: string | undefined;
   sections: readonly DesignTocEntry[];
+  section: string | undefined;
   prefs: DesignPrefs;
   onchange: (prefs: DesignPrefs) => void;
 }
 
-const { current, sections, prefs, onchange }: Props = $props();
+const { current, sections, section, prefs, onchange }: Props = $props();
 const index = resolve('/_design');
 
 let query = $state('');
@@ -52,9 +54,7 @@ const groups = $derived.by(() => {
   <nav class="nav" id="design-nav" aria-label="Design system">
   <div class="top">
     <a class="home" href={index} aria-current={current ? undefined : 'page'}>
-      <svg viewBox="0 0 98.1 98.1" aria-hidden="true">
-        <TraktMark ink="#fff" face="var(--brand-primary)" />
-      </svg>
+      <img src={logo} alt="" width="26" height="26" />
       <span>og <b>design system</b></span>
     </a>
     <button type="button" class="fold" aria-expanded="true" aria-controls="design-nav"
@@ -81,8 +81,12 @@ const groups = $derived.by(() => {
               </a>
               {#if open && sections.length > 0}
                 <ul class="sections">
-                  {#each sections as section (section.id)}
-                    <li><a href="#{section.id}">{section.title}</a></li>
+                  {#each sections as entry (entry.id)}
+                    <li>
+                      <a href="#{entry.id}" aria-current={entry.id === section ? 'location' : undefined}>
+                        {entry.title}
+                      </a>
+                    </li>
                   {/each}
                 </ul>
               {/if}
@@ -155,11 +159,6 @@ button {
   font-size: var(--font-size-design-lead);
   text-decoration: none;
   white-space: nowrap;
-
-  & svg {
-    inline-size: 26px;
-    block-size: 26px;
-  }
 
   & b {
     font-weight: var(--font-weight-headings-light);
@@ -241,10 +240,19 @@ ul {
   margin-inline-start: var(--space-sm-inline);
   border-inline-start: 1px solid var(--color-design-nav-border);
 
+  /* The section list beside the demo takes over from here (the layout's breakpoint for it). */
+  @media (min-width: 1680px) {
+    display: none;
+  }
+
   & a {
     padding-block: var(--space-xs-inline);
     color: var(--color-design-nav-muted);
     font-size: var(--font-size-small);
+
+    &[aria-current='location'] {
+      color: var(--color-design-nav-active);
+    }
   }
 }
 

@@ -4016,12 +4016,20 @@
   --color-team-quick-on: var(--brand-success);
 }
 
-/* The design system shell at /_design: a dark nav like the site header beside the demos, in the picked theme. */
+/*
+ * The design system shell at /_design: a dark nav like the site header, then each demo's parts as cards on a quiet
+ * ground. A card's canvas is dotted so a component's own edges show against it. Everything but the nav follows the
+ * picked theme.
+ */
 :root {
   --design-nav-width: 240px;
   --design-rail-width: 48px;
-  --design-stage-padding: 32px;
-  --design-section-gap: 48px;
+  --design-toc-width: 200px;
+  --design-stage-padding: 20px;
+  --design-stage-gap: 24px;
+  --design-card-gap: 20px;
+  --design-canvas-padding: 24px;
+  --design-dot-spacing: 16px;
   --design-note-width: 72ch;
   --color-design-nav-bg: #111;
   --color-design-nav-text: #ccc;
@@ -4030,10 +4038,23 @@
   --color-design-nav-active: #fff;
   --color-design-nav-border: #262626;
   --color-design-nav-input: #1d1d1d;
-  --color-design-card-border: light-dark(#e5e5e5, #333);
-  --color-design-card-hover: light-dark(#f7f7f7, #262626);
-  --font-size-design-eyebrow: 12px;
+  --color-design-ground: light-dark(#f2f2f4, #0c0c0d);
+  --color-design-card: light-dark(#fff, #18181a);
+  --color-design-card-border: light-dark(#e3e3e7, #2b2b2f);
+  --color-design-card-hover: light-dark(#fafafb, #202023);
+  --color-design-canvas: light-dark(#fafafa, #141416);
+  --color-design-dot: light-dark(#e1e1e5, #26262a);
+  --color-design-muted: light-dark(#6e6e76, #9a9aa2);
+  --color-design-caption: light-dark(#8a8a92, #85858d);
+  --color-design-tool-on: light-dark(#1d1d1f, #f2f2f4);
+  --color-design-tool-on-text: light-dark(#fff, #111);
+  --font-size-design-title: 32px;
+  --font-size-design-card-title: 17px;
+  --font-size-design-eyebrow: 11px;
   --font-size-design-lead: 16px;
+  --font-size-design-caption: 11px;
+  --font-weight-design-title: 800;
+  --letter-spacing-design-title: -0.01em;
   --letter-spacing-design-eyebrow: 0.08em;
   --shadow-design-pill: 0 6px 24px rgb(0 0 0 / 0.45);
 }

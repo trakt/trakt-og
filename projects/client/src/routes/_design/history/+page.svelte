@@ -1,6 +1,6 @@
 <script lang="ts">
 import DayGroup from '$lib/components/history/DayGroup.svelte';
-import DemoSection from '$lib/design/DemoSection.svelte';
+import Specimen from '$lib/design/Specimen.svelte';
 import WatchPopover from '$lib/components/history/WatchPopover.svelte';
 import SummaryActionMenu from '$lib/components/summary/SummaryActionMenu.svelte';
 import Icon from '$lib/icons/Icon.svelte';
@@ -26,7 +26,7 @@ async function watchSeason(at: string | null) {
 }
 </script>
 
-<DemoSection title="Summary buttons"
+<Specimen title="Summary buttons"
   note="Not watched, watched and partly watched. Each opens the date, remove or remaining popover; poster icons share them.">
   {#each examples as example (example.mode)}
     <div class="example">
@@ -37,9 +37,9 @@ async function watchSeason(at: string | null) {
         summary={{ icon: summaryCheck, text: example.text, percent: 'percent' in example ? example.percent : undefined, detail: 'detail' in example ? example.detail : undefined }} />
     </div>
   {/each}
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Partly watched, with its menu" note="History, rewatch and drop under •••.">
+<Specimen title="Partly watched, with its menu" note="History, rewatch and drop under •••.">
   <div class="example">
     <WatchPopover label="50% watched" variant="summary" fill={0.5} plural datePreferences={dates}
       onopen={(force) => Promise.resolve(force ? 'date' : 'partial')} onwatch={() => {}}
@@ -57,18 +57,18 @@ async function watchSeason(at: string | null) {
       {/snippet}
     </WatchPopover>
   </div>
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Poster icon"
+<Specimen title="Poster icon"
   note="A season's icon: pick a date, then it asks before marking its 14 episodes watched. Past 300 episodes a whole show is refused.">
   <WatchPopover bind:this={poster} label="Add to watched history" datePreferences={dates}
     onopen={() => Promise.resolve('date')} onwatch={watchSeason} onremaining={() => Promise.resolve(false)}
     oninvalid={() => toast.error('Invalid date format, please use the date picker.')}>
     {#snippet trigger()}<Icon svg={check} />{/snippet}
   </WatchPopover>
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Day dividers"
+<Specimen title="Day dividers"
   note="History, library and ratings group cards under these. Click one to collapse its day.">
   <DayGroup weekday="Monday" date="October 5, 2026" runtime="24m">
     <p class="day-body">Two plays</p>
@@ -79,7 +79,7 @@ async function watchSeason(at: string | null) {
   <DayGroup date="September 2026">
     <p class="day-body">A month divider, without a weekday</p>
   </DayGroup>
-</DemoSection>
+</Specimen>
 
 <style>
 .example {

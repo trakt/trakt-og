@@ -4,7 +4,7 @@ import EmptyState from '$lib/components/empty/EmptyState.svelte';
 import listIcon from '$lib/icons/regular/list.svg?raw';
 import FollowingWatchingSection from '$lib/charts/FollowingWatchingSection.svelte';
 import WatchNowChips from '$lib/components/watchnow/WatchNowChips.svelte';
-import DemoSection from '$lib/design/DemoSection.svelte';
+import Specimen from '$lib/design/Specimen.svelte';
 import ListTransfer from '$lib/components/lists/ListTransfer.svelte';
 import clone from '$lib/icons/regular/clone.svg?raw';
 import fileExport from '$lib/icons/regular/file-export.svg?raw';
@@ -65,7 +65,7 @@ const following = [{ slug: 'teodoro_2', name: 'Elsy Murphy (@teodoro_2)' }];
 </script>
 <!-- The OG references are screenshots on og-shots, outside the app. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-<DemoSection title="List picker" note="The summary's list button, then each of the list dialogs it opens.">
+<Specimen title="List picker" note="The summary's list button, then each of the list dialogs it opens.">
   <p>
     Local OG references: <a href="https://og-shots.trakt.tv/135/2d64380a-rails-add.png">Add list</a>,
     <a href="https://og-shots.trakt.tv/135/68548be2-rails-edit.png">Edit list</a> and
@@ -80,13 +80,13 @@ const following = [{ slug: 'teodoro_2', name: 'Elsy Murphy (@teodoro_2)' }];
     {/each}
     <button type="button" onclick={() => builtInOpen = true}>Preview watchlist edit</button>
   </div>
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Official list header" bleed note="The cover over an official Trakt list.">
+<Specimen title="Official list header" bleed note="The cover over an official Trakt list.">
   <OfficialListHeader />
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Notes on posters"
+<Specimen title="Notes on posters"
   note="Short notes, notes at the 500-character limit that scroll, the add pill shown on hover, and the rating line.">
   <PosterGrid>
     <PosterCard href="/movies/heat-1995" title="Heat" rank={3}
@@ -100,9 +100,9 @@ const following = [{ slug: 'teodoro_2', name: 'Elsy Murphy (@teodoro_2)' }];
       {#snippet posterOverlay()}<NotesPill add svg={plus} label="Add Note" onclick={() => {}} />{/snippet}
     </PosterCard>
   </PosterGrid>
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Manage mode" bleed
+<Specimen title="Manage mode" bleed
   note="Rank inputs and the edit tiles on each poster, then the bar with copy, move, reset and delete.">
   <div class="padded">
     <PosterGrid>
@@ -133,9 +133,9 @@ const following = [{ slug: 'teodoro_2', name: 'Elsy Murphy (@teodoro_2)' }];
         svg={fileExport} managing move />
     {/snippet}
   </ListManageBar>
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Lists index reorder" note="The arrows and drag handle on a row of the owner's lists index.">
+<Specimen title="Lists index reorder" note="The arrows and drag handle on a row of the owner's lists index.">
   <ListRow href="/users/og_tester/lists/all-time-favorites" name="All-Time Favorites"
     owner={{ name: 'OG Tester', href: '/users/og_tester' }} posters={[{}, {}, {}, {}, {}]} itemCount={12}
     likeCount={3} likeTarget={{ id: 23, ownerSlug: 'og_tester', viewer: 'og_tester' }}>
@@ -144,10 +144,10 @@ const following = [{ slug: 'teodoro_2', name: 'Elsy Murphy (@teodoro_2)' }];
         onmove={(next) => rank = Math.max(1, Math.min(5, next))} ondrag={() => {}} />
     {/snippet}
   </ListRow>
-</DemoSection>
+</Specimen>
 
 {#snippet none()}{/snippet}
-<DemoSection title="List stats bar" bleed
+<Specimen title="List stats bar" bleed
   note="A signed-in viewer's bar on a made-up library: 2 of 10 watched and 5 collected, all of a 3-item list, still streaming, then signed out.">
   <SectionToolbar filters={none}>
     {#snippet stats()}
@@ -172,16 +172,16 @@ const following = [{ slug: 'teodoro_2', name: 'Elsy Murphy (@teodoro_2)' }];
       <ListStats itemCount={57} stats={{ count: 57, runtime: 6012 }} likeCount={3} />
     {/snippet}
   </SectionToolbar>
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Applied streaming filters" bleed>
+<Specimen title="Applied streaming filters" bleed>
   <WatchNowChips tiles={[
     { kind: 'bundle', id: 'subscriptions', name: 'Streaming Subscriptions', country: 'US' },
     { kind: 'service', id: 'netflix', source: { name: 'Netflix', color: '#e50914' } },
   ]} />
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Empty and compact"
+<Specimen title="Empty and compact"
   note="An item's lists page with nothing for the picked type, then the charts' People you follow in a sidebar, with nobody watching.">
   <EmptyState icon={listIcon} action={{ href: '/movies/holes-2003/lists/all', text: 'See all lists' }}>
     No official lists feature Holes.
@@ -190,7 +190,7 @@ const following = [{ slug: 'teodoro_2', name: 'Elsy Murphy (@teodoro_2)' }];
     <FollowingWatchingSection type="shows" open watching={() => Promise.resolve([])}
       datePreferences={{ order: 'ymd', hour24: false, timeZone: 'UTC', weekStartDay: 0 }} />
   </div>
-</DemoSection>
+</Specimen>
 
 <BuiltInListDialog bind:open={builtInOpen} kind="watchlist" count={12} vip busy={false} description={undefined}
   sortBy="rank" sortHow="asc" onsave={() => builtInOpen = false} />
@@ -215,7 +215,7 @@ const following = [{ slug: 'teodoro_2', name: 'Elsy Murphy (@teodoro_2)' }];
 }
 
 .padded {
-  padding-inline: var(--design-stage-padding);
+  padding-inline: var(--design-canvas-padding);
 }
 
 .buttons {

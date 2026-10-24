@@ -1,6 +1,6 @@
 <script lang="ts">
 import AboutIssues from '$lib/about/AboutIssues.svelte';
-import DemoSection from '$lib/design/DemoSection.svelte';
+import Specimen from '$lib/design/Specimen.svelte';
 
 const issue = (number: number, title: string, label: string | null, at: string) => ({ number, title, label, at });
 
@@ -29,14 +29,14 @@ const closed = {
 const none = { total: 0, issues: [] };
 </script>
 
-<DemoSection title="Issues, loaded, empty and loading"
+<Specimen title="Issues, loaded, empty and loading"
   note="Each column at the issues sidebar's width, on the page's own background, in the picked theme.">
   <div class="columns">
     <AboutIssues {open} {closed} loading={false} />
     <AboutIssues open={none} closed={none} loading={false} />
     <AboutIssues open={null} closed={null} loading />
   </div>
-</DemoSection>
+</Specimen>
 
 <style>
 .columns {

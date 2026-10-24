@@ -1,7 +1,7 @@
 <script lang="ts">
 import Dialog from '$lib/components/dialog/Dialog.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
-import DemoSection from '$lib/design/DemoSection.svelte';
+import Specimen from '$lib/design/Specimen.svelte';
 import { toast } from '$lib/components/toast/toast.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import WatchNow from '$lib/components/watchnow/WatchNow.svelte';
@@ -40,7 +40,7 @@ const watchNow: WatchNowButton = {
 };
 </script>
 
-<DemoSection title="Dropdown"
+<Specimen title="Dropdown"
   note="OG's Bootstrap dropdown on the Popover API, then the transparent one on discover's black titles column.">
   <Dropdown>
     {#snippet trigger()}{sort}{/snippet}
@@ -67,32 +67,32 @@ const watchNow: WatchNowButton = {
       </ul>
     </Dropdown>
   </div>
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Dialog" note="OG's modals on a native dialog element, at two sizes.">
+<Specimen title="Dialog" note="OG's modals on a native dialog element, at two sizes.">
   <div class="row">
     <button type="button" onclick={() => (reportOpen = true)}>Report item (500px)</button>
     <button type="button" onclick={() => (watchOpen = true)}>Watch now (360px, click outside closes)</button>
   </div>
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Watch Now"
+<Specimen title="Watch Now"
   note="The sidebar block under a summary poster. The button opens the where-to-watch modal on Fight Club's real offers.">
   <div class="sidebar-demo">
     <WatchNow button={watchNow} title="Fight Club" year={1999} />
   </div>
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Toast" note="Glass toasts, top right under where the header sits.">
+<Specimen title="Toast" note="Glass toasts, top right under where the header sits.">
   <div class="row">
     <button type="button" onclick={() => toast.success('Fight Club added to your watchlist.')}>Success</button>
     <button type="button" onclick={() => toast.error('This item was recently refreshed. Please try again later.')}>
       Error
     </button>
   </div>
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Tooltip" note="Hover or tab to a trigger. Esc hides it; touch never opens one.">
+<Specimen title="Tooltip" note="Hover or tab to a trigger. Esc hides it; touch never opens one.">
   <div class="row tooltips">
     {#each placements as placement (placement)}
       <Tooltip text="Tooltip on {placement}" {placement}>
@@ -120,7 +120,7 @@ const watchNow: WatchNowButton = {
       {/snippet}
     </Tooltip>
   </div>
-</DemoSection>
+</Specimen>
 
 <Dialog bind:open={reportOpen} title="Report item" size="md">
   <form method="dialog" class="form">

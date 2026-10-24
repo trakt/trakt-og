@@ -1,12 +1,14 @@
 <!--
-  The design system shell: the demo list beside the open demo, its title and summary from the catalog, in the theme
-  the switch picks. A demo that draws the site header runs full width, with a small pill back to the list.
+  The design system shell: the demo list, then the open demo's title and summary from the catalog over its cards, in
+  the theme the switch picks. Wide screens list the demo's sections beside it. A demo that draws the site header runs
+  full width, with a small pill back to the list.
 -->
 <script lang="ts">
 import { resolve } from '$app/paths';
 import { page } from '$app/state';
 import DesignIntro from '$lib/design/DesignIntro.svelte';
 import DesignNav from '$lib/design/DesignNav.svelte';
+import SectionList from '$lib/design/SectionList.svelte';
 import { type DesignPrefs, designPrefs } from '$lib/design/designPrefs';
 import { designToc } from '$lib/design/designToc.svelte';
 import { findDesignDemo } from '$lib/design/findDesignDemo';
@@ -49,15 +51,20 @@ $effect(() => {
   </nav>
 {:else}
   <div class={['shell', { collapsed: prefs.collapsed }]}>
-  <DesignNav current={demo?.slug} sections={toc.entries} {prefs} onchange={save} />
+  <DesignNav current={demo?.slug} sections={toc.entries} section={toc.current} {prefs} onchange={save} />
   <main id="content" tabindex="-1">
+      <div class="column">
+        {#if demo}
+          <DesignIntro tag={demo.group} title={demo.title}
+            facts={[`${toc.entries.length} sections`, `$lib/${demo.source}`]}>
+            {#snippet lead()}{demo.summary}{/snippet}
+          </DesignIntro>
+        {/if}
+        {@render children()}
+      </div>
       {#if demo}
-        <DesignIntro eyebrow={demo.group} title={demo.title}>
-          {#snippet lead()}{demo.summary}{/snippet}
-          Lives in <code>$lib/{demo.source}</code>
-        </DesignIntro>
+        <aside class="toc"><SectionList sections={toc.entries} current={toc.current} /></aside>
       {/if}
-      {@render children()}
     </main>
 </div>
 {/if}
@@ -74,11 +81,34 @@ $effect(() => {
 }
 
 main {
-  display: flow-root;
-  padding-block-end: calc(var(--design-section-gap) * 2);
-  background-color: var(--color-surface);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--design-stage-gap);
+  align-items: start;
+  padding: calc(var(--design-stage-gap) * 2) var(--design-stage-padding) calc(var(--design-stage-gap) * 4);
+  background-color: var(--color-design-ground);
   color: var(--color-text);
   outline: none;
+
+  /* Room for the section list beside the cards. DesignNav hides its own copy from here. */
+  @media (min-width: 1680px) {
+    grid-template-columns: minmax(0, 1fr) var(--design-toc-width);
+  }
+}
+
+.column {
+  display: grid;
+  gap: var(--design-stage-gap);
+  min-inline-size: 0;
+}
+
+.toc {
+  display: none;
+  block-size: 100%;
+
+  @media (min-width: 1680px) {
+    display: block;
+  }
 }
 
 /* Over a full-page demo: bottom right, clear of the page sidebars' footers and the toasts up top. */

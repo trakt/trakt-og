@@ -1,6 +1,6 @@
 <script lang="ts">
 import TraktMark from '$lib/components/brand/TraktMark.svelte';
-import DemoSection from '$lib/design/DemoSection.svelte';
+import Specimen from '$lib/design/Specimen.svelte';
 
 // Each way a page draws the mark today: ink alone, or ink on a face.
 const marks = [
@@ -11,7 +11,7 @@ const marks = [
 ];
 </script>
 
-<DemoSection title="Inks and faces">
+<Specimen title="Inks and faces">
   <p>
     <code>TraktMark</code> draws into a parent <code>&lt;svg viewBox="0 0 98.1 98.1"&gt;</code>. <code>ink</code>
     colors the mark; <code>face</code> fills the disc behind it. The gray tile shows a mark with no face.
@@ -25,7 +25,7 @@ const marks = [
       </li>
     {/each}
   </ul>
-</DemoSection>
+</Specimen>
 
 <style>
 ul {

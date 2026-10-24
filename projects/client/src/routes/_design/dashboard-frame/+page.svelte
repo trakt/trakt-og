@@ -4,7 +4,7 @@ import RecapRibbon from '$lib/components/dashboard/RecapRibbon.svelte';
 import StatsPanel from '$lib/components/dashboard/StatsPanel.svelte';
 import { toRecapRibbon } from '$lib/dashboard/toRecapRibbon';
 import DashboardInbox from '$lib/components/dashboard/DashboardInbox.svelte';
-import DemoSection from '$lib/design/DemoSection.svelte';
+import Specimen from '$lib/design/Specimen.svelte';
 import { dashboardFrameFixture as sample } from '$lib/dashboard/dashboardFrameFixture';
 import { toStatsPanel } from '$lib/dashboard/toStatsPanel';
 import { dayIn } from '$lib/utils/dayIn';
@@ -41,7 +41,7 @@ const watching: WatchingNow = {
 };
 </script>
 
-<DemoSection title="Greeting and recap ribbon" bleed
+<Specimen title="Greeting and recap ribbon" bleed
   note="A heavy user; stats without progress with the recaps still loading; a new member. Each greeting carries its stats panel.">
   {#each greetings as { id, panel, recaps } (id)}
     <div id="band-{id}">
@@ -51,23 +51,23 @@ const watching: WatchingNow = {
       <RecapRibbon {recaps} />
     </div>
   {/each}
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Recaps in January" bleed note="In January the strip shows last year under its Year in Review.">
+<Specimen title="Recaps in January" bleed note="In January the strip shows last year under its Year in Review.">
   <div id="january">
     <RecapRibbon recaps={january} />
   </div>
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Checked in" bleed note="The greeting while you're checked in to an episode.">
+<Specimen title="Checked in" bleed note="The greeting while you're checked in to an episode.">
   <div id="watching">
     <DashboardGreeting user={sample.user} memberSince="Aug 20, 2020 12:23 PM" {watching}>
       <StatsPanel panel={toStatsPanel(sample.stats)} slug="og_tester" />
     </DashboardGreeting>
   </div>
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Follow requests" bleed note="Two as boxes, then six folded into the summary line.">
+<Specimen title="Follow requests" bleed note="Two as boxes, then six folded into the summary line.">
   <DashboardInbox requests={sample.requests.slice(0, 2)} />
   <DashboardInbox requests={sample.requests} />
-</DemoSection>
+</Specimen>

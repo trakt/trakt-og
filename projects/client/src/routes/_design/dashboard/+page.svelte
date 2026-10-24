@@ -7,7 +7,7 @@ import SocialFeedPanel from '$lib/components/dashboard/SocialFeedPanel.svelte';
 import SchedulePanel from '$lib/components/dashboard/SchedulePanel.svelte';
 import UpNextPanel from '$lib/components/dashboard/UpNextPanel.svelte';
 import WatchlistPanel from '$lib/components/dashboard/WatchlistPanel.svelte';
-import DemoSection from '$lib/design/DemoSection.svelte';
+import Specimen from '$lib/design/Specimen.svelte';
 import type { OnDeckItem } from '$lib/components/media/OnDeckItem';
 import { dayIn } from '$lib/utils/dayIn';
 import { toCalendarItems } from '$lib/calendars/toCalendarItems';
@@ -221,7 +221,7 @@ const hiddenNames = Object.entries({ Watchlist: custom.hidden.watchlist, 'Social
   .flatMap(([name, hidden]) => (hidden ? [name] : []));
 </script>
 
-<DemoSection title="Up Next" bleed
+<Specimen title="Up Next" bleed
   note="A VIP, everyone else, empty, loading and failed. Hover a progress bar for its tooltip.">
   <UpNextPanel upNext={sample} username="me" isVip />
   <div class="gap"></div>
@@ -233,9 +233,9 @@ const hiddenNames = Object.entries({ Watchlist: custom.hidden.watchlist, 'Social
   <div class="gap"></div>
   <UpNextPanel upNext={failed} username="me" isVip />
   <div class="gap"></div>
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Upcoming Schedule" bleed
+<Specimen title="Upcoming Schedule" bleed
   note="A busy week with network links as a VIP sees them, a season dropping today, nothing on until the day after tomorrow, a quiet week, two days as everyone else sees them, then empty, loading and failed. Hover an entry for its poster.">
   <div id="schedule">
     <!-- The dropdowns reload the same sample, so the demo saves nothing. -->
@@ -266,9 +266,9 @@ const hiddenNames = Object.entries({ Watchlist: custom.hidden.watchlist, 'Social
     <SchedulePanel schedule={scheduleFailed} />
   </div>
   <div class="gap"></div>
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Watchlist" bleed
+<Specimen title="Watchlist" bleed
   note="Added Date, newest first, as a VIP sees it; Trakt Percentage for everyone else; then empty, loading and failed.">
   <div id="watchlist">
     <div id="watchlist-sample">
@@ -287,9 +287,9 @@ const hiddenNames = Object.entries({ Watchlist: custom.hidden.watchlist, 'Social
     <WatchlistPanel watchlist={watchlistFailed} username="me" isVip datePreferences={data.datePreferences} />
   </div>
   <div class="gap"></div>
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Last 30 Days" bleed
+<Specimen title="Last 30 Days" bleed
   note="Thirty days of plays and their genres, the genres alone as OG showed them without the chart, then loading and failed. With nothing watched it hides itself, as OG's did. Hover a day's bar for what was watched.">
   <div id="last-30-days">
     <div id="last-30-days-sample">
@@ -303,9 +303,9 @@ const hiddenNames = Object.entries({ Watchlist: custom.hidden.watchlist, 'Social
     <LastThirtyDaysPanel stats={lastMonthFailed} />
   </div>
   <div class="gap"></div>
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Recently Watched" bleed
+<Specimen title="Recently Watched" bleed
   note="A check-in with 30 minutes to go first, then empty, loading and failed.">
   <div id="recently-watched">
     <div id="recently-watched-sample">
@@ -321,9 +321,9 @@ const hiddenNames = Object.entries({ Watchlist: custom.hidden.watchlist, 'Social
     <RecentlyWatchedPanel plays={recentFailed} username="me" isVip datePreferences={data.datePreferences} />
   </div>
   <div class="gap"></div>
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Social Feed" bleed
+<Specimen title="Social Feed" bleed
   note="Nobody, one, three and seven members watching now (seven puts four behind the +4 tile), a quiet week, following nobody, then loading and failed.">
   <div id="social-feed">
     {#each [0, 1, 3, 7] as count (count)}
@@ -346,9 +346,9 @@ const hiddenNames = Object.entries({ Watchlist: custom.hidden.watchlist, 'Social
     <SocialFeedPanel feed={socialFailed} username="me" datePreferences={data.datePreferences} />
   </div>
   <div class="gap"></div>
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Recommendations" bleed
+<Specimen title="Recommendations" bleed
   note="Shows and movies together, picked from the dropdown; one title; nothing to recommend; then loading and failed.">
   <div id="recommendations">
     <div id="recommendations-sample">
@@ -366,9 +366,9 @@ const hiddenNames = Object.entries({ Watchlist: custom.hidden.watchlist, 'Social
     <RecommendationsPanel recommendations={recsFailed} type="media" isVip />
   </div>
   <div class="gap"></div>
-</DemoSection>
+</Specimen>
 
-<DemoSection title="With dashboard settings" bleed
+<Specimen title="With dashboard settings" bleed
   note="A VIP's saved settings: Up Next by completion % with only favorites and exact progress bars (an episode skipped halfway through each show), and the schedule's finales from yesterday.">
   <p class="hidden-note">The {hiddenNames.join(' and ')} panels are hidden, so they're left out.</p>
   <div id="settings-up-next">
@@ -387,7 +387,7 @@ const hiddenNames = Object.entries({ Watchlist: custom.hidden.watchlist, 'Social
   {/if}
   <div class="gap"></div>
   <RecentlyWatchedPanel plays={recentPlays} username="me" isVip datePreferences={data.datePreferences} />
-</DemoSection>
+</Specimen>
 
 <style>
 /* Room for the pill that hangs under each panel. */
@@ -397,7 +397,7 @@ const hiddenNames = Object.entries({ Watchlist: custom.hidden.watchlist, 'Social
 
 .hidden-note {
   margin: 0;
-  padding: 0 var(--design-stage-padding) var(--gutter);
+  padding: 0 var(--design-canvas-padding) var(--gutter);
   color: var(--color-text-muted);
 }
 </style>

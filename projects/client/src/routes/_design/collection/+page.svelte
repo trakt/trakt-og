@@ -1,5 +1,5 @@
 <script lang="ts">
-import DemoSection from '$lib/design/DemoSection.svelte';
+import Specimen from '$lib/design/Specimen.svelte';
 import WatchPopover from '$lib/components/history/WatchPopover.svelte';
 import CollectionLogos from '$lib/components/collection/CollectionLogos.svelte';
 import { collectionBadges } from '$lib/components/collection/collectionBadges';
@@ -30,7 +30,7 @@ const synced = [
   { label: 'Jellyfin', icon: librarySourceIcon(['jellyfin']) },
 ] as const;
 </script>
-<DemoSection title="Summary buttons"
+<Specimen title="Summary buttons"
   note="Not collected, collected and partly collected: date choices, optional metadata, removal and remaining episodes.">
   {#each examples as example (example.mode)}
     <div class="example">
@@ -41,9 +41,9 @@ const synced = [
       </WatchPopover>
     </div>
   {/each}
-</DemoSection>
+</Specimen>
 
-<DemoSection title="With metadata" note="The format and audio logos sit on the right; the tooltip spells them out.">
+<Specimen title="With metadata" note="The format and audio logos sit on the right; the tooltip spells them out.">
   {#each shelf as metadata, index (index)}
     {@const badges = collectionBadges(metadata)}
     {#snippet logos()}{#if badges}<CollectionLogos {badges} />{/if}{/snippet}
@@ -53,18 +53,18 @@ const synced = [
         oninvalid={() => {}} summary={{ icon: collection, text: 'In Library', detail: 'Oct 2, 2026', aside: logos, tooltip: Object.values(metadata).join(' · ') }} />
     </div>
   {/each}
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Poster icon">
+<Specimen title="Poster icon">
   <WatchPopover collection label="Add to library" datePreferences={dates} onopen={() => Promise.resolve('date')}
     onwatch={(at) => toast.success(`Collected: ${at}`)} onremaining={() => Promise.resolve(false)}
     oninvalid={() => toast.error('Choose a valid date.')}>
     {#snippet trigger()}<Icon svg={collection} />{/snippet}
     {#snippet metadata(done, saving)}<CollectionMetadataFields value={draft} {saving} onsave={(value) => { draft = value; done(); }} />{/snippet}
   </WatchPopover>
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Synced library"
+<Specimen title="Synced library"
   note="With adding off, an item not in the library gets a faded link to v3's sync settings. One in the library opens on removal and metadata, with no +, long press or Add remaining. Items synced from a media server show its icon.">
   <div class="example">
     <LibrarySyncLink variant="summary" />
@@ -89,7 +89,7 @@ const synced = [
       </WatchPopover>
     {/each}
   </div>
-</DemoSection>
+</Specimen>
 
 <style>
 .example + .example {

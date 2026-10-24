@@ -5,13 +5,13 @@
 <script lang="ts">
 import SeeMore from '$lib/components/see-more/SeeMore.svelte';
 import FanartSlider from '$lib/components/slider/FanartSlider.svelte';
-import DemoSection from '$lib/design/DemoSection.svelte';
+import Specimen from '$lib/design/Specimen.svelte';
 
 // No artwork: media.trakt.tv refuses a localhost referer, so the slides show the bare behind the shade.
 const fanarts = Array.from({ length: 10 }, () => undefined);
 </script>
 
-<DemoSection title="Ranked and bare" bleed>
+<Specimen title="Ranked and bare" bleed>
   <p class="note">
     OG's <code>.popular-items-wrapper</code>. The chevrons wrap around; with <code>ranks</code> the pills pick a slide,
     and with <code>keys</code> <kbd>p</kbd> or left and <kbd>n</kbd> or right step through it while focus is inside.
@@ -26,11 +26,11 @@ const fanarts = Array.from({ length: 10 }, () => undefined);
       {#snippet slide(index)}<p class="content">Slide {index + 1} of 4</p>{/snippet}
     </FanartSlider>
   </div>
-</DemoSection>
+</Specimen>
 
 <style>
 .note {
-  margin: 0 var(--design-stage-padding) var(--gutter);
+  margin: 0 var(--design-canvas-padding) var(--gutter);
 }
 
 .sliders {

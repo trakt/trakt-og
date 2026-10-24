@@ -3,14 +3,14 @@
   every box alone in each user's state and its empty states.
 -->
 <script lang="ts">
-import DemoSection from '$lib/design/DemoSection.svelte';
+import Specimen from '$lib/design/Specimen.svelte';
 import { profileBoxComponent } from '$lib/users/profile/boxes/profileBoxComponent';
 import ProfileBoxStrip from '$lib/users/profile/boxes/ProfileBoxStrip.svelte';
 
 const { data } = $props();
 </script>
 
-<DemoSection title="Each member's strip" bleed
+<Specimen title="Each member's strip" bleed
   note="Each member gets the four best-scoring boxes. Scores of 40 or more count; the floor fills the rest.">
   {#each data.strips as strip (strip.name)}
     <div class="strip-head">
@@ -21,9 +21,9 @@ const { data } = $props();
     </div>
     <ProfileBoxStrip boxes={strip.boxes} />
   {/each}
-</DemoSection>
+</Specimen>
 
-<DemoSection title="Each box" note="Every box alone, in each member's state, then your own empty one and nothing yet.">
+<Specimen title="Each box" note="Every box alone, in each member's state, then your own empty one and nothing yet.">
   {#each data.alone as box (box.key)}
     <h3>{box.key}</h3>
     <div class="variants">
@@ -38,11 +38,11 @@ const { data } = $props();
       {/each}
     </div>
   {/each}
-</DemoSection>
+</Specimen>
 
 <style>
 .strip-head {
-  padding: var(--gutter) var(--design-stage-padding) 0;
+  padding: var(--gutter) var(--design-canvas-padding) 0;
 
   & h3 {
     margin: 0;

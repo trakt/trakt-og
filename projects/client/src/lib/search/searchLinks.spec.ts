@@ -8,7 +8,7 @@ describe('searchLinks', () => {
   it('should group the text types under Trakt and the IDs under By ID, like the header search', () => {
     const groups = searchLinks(searchTypes[1], 'the office');
     expect(groups.map(({ label, links }) => [label, links.map((link) => link.label)])).toEqual([
-      ['Trakt', ['Shows & Movies', 'Shows', 'Movies', 'Episodes', 'People', 'Lists', 'Users']],
+      ['Trakt', ['Shows & Movies', 'Shows', 'Movies', 'People', 'Lists']],
       ['By ID', ['Trakt ID', 'IMDB ID', 'TMDB ID', 'TVDB ID']],
     ]);
   });
@@ -20,12 +20,12 @@ describe('searchLinks', () => {
   });
 
   it('should mark an ID type current in ID mode', () => {
-    const links = flat(searchLinks(searchTypes[8], 'tt1'));
+    const links = flat(searchLinks(searchTypes[6], 'tt1'));
     expect(links.filter((link) => link.current).map((link) => link.href)).toEqual(['/search/imdb?query=tt1']);
   });
 
   it('should preserve filters and the edited query while dropping the previous page', () => {
-    const links = flat(searchLinks(searchTypes[7], '2', new URLSearchParams('page=3&q=1&id_type=movie&limit=12')));
+    const links = flat(searchLinks(searchTypes[5], '2', new URLSearchParams('page=3&q=1&id_type=movie&limit=12')));
     expect(links.find((link) => link.label === 'IMDB ID')?.href).toBe('/search/imdb?id_type=movie&limit=12&query=2');
   });
 

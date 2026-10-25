@@ -1,17 +1,15 @@
 import { error, redirect } from '@sveltejs/kit';
 import { api } from '../api/api.ts';
 import { extractPageMeta } from '../api/extractPageMeta.ts';
-import { rawApiFetch } from '../api/rawApiFetch.ts';
 import type { DateOrder } from '../utils/formatDate.ts';
 import { findSearchType } from './findSearchType.ts';
+import { retiredSearchTypes } from './retiredSearchTypes.ts';
 import { isIdType } from './isIdType.ts';
 import { toSearchCard } from './toSearchCard.ts';
 import { toSearchImageType } from './toSearchImageType.ts';
 import { toSearchListRow } from './toSearchListRow.ts';
 import { searchRowsSchema } from './searchRowsSchema.ts';
 import { searchFilters } from './searchFilters.ts';
-import { searchUsersSchema } from './searchUsersSchema.ts';
-import { toSearchUserCard } from './toSearchUserCard.ts';
 import { positiveInt } from '../utils/positiveInt.ts';
 
 type LoadSearchParams = {
@@ -30,20 +28,25 @@ type LoadSearchParams = {
 // OG's `set_params`: 36 a page unless `limit` says otherwise.
 const PER_PAGE = 36;
 const EXTENDED = 'full,images';
-// Users come from API, where `full` brings the avatar and `vip` the cover.
-const USERS_EXTENDED = 'full,vip';
 
 // The tabs where a poster stands in for the title.
 const POSTER_TITLES = new Set(['', 'shows', 'movies']);
 // The tabs that hide the type tag.
-const NO_TYPE_TAG = new Set(['shows', 'movies', 'episodes', 'people']);
+const NO_TYPE_TAG = new Set(['shows', 'movies', 'people']);
 
-/** Public searches omit the viewer token; typed Hide requests need it. A single ID match redirects, like OG. */
+/**
+ * Public searches omit the viewer token; typed Hide requests need it. A single ID match redirects, like OG, and so
+ * does a retired tab, to Shows & Movies.
+ */
 export async function loadSearch({ fetch, token, cookies, parent, url, type: slug, id }: LoadSearchParams) {
+  const query = (id ?? url.searchParams.get('query') ?? url.searchParams.get('q') ?? '').trim();
+  if (slug && retiredSearchTypes.includes(slug)) {
+    redirect(301, query ? `/search?${new URLSearchParams({ query })}` : '/search');
+  }
+
   const type = findSearchType(slug);
   if (!type) error(404, 'Not Found');
 
-  const query = (id ?? url.searchParams.get('query') ?? url.searchParams.get('q') ?? '').trim();
   const page = positiveInt(url.searchParams.get('page'), 1);
   const limit = Math.min(positiveInt(url.searchParams.get('limit'), PER_PAGE), 50);
 
@@ -62,16 +65,6 @@ export async function loadSearch({ fetch, token, cookies, parent, url, type: slu
         query: { extended: EXTENDED, ...(kind ? { type: kind } : {}) },
       });
       return response.status === 200 ? { hits: response.body, headers: null } : 'failed';
-    }
-
-    if (type.slug === 'users') {
-      // Off the typed contract: API matches usernames that start with the query.
-      const params = new URLSearchParams({ query, page: String(page), limit: String(limit), extended: USERS_EXTENDED });
-      const response = await rawApiFetch({ fetch, path: `/search/user?${params}` });
-      if (response.status !== 200) return 'failed';
-      const users = searchUsersSchema.safeParse(await response.json().catch(() => null));
-      if (!users.success) error(502, 'The Trakt API returned invalid search results.');
-      return { hits: [], users: users.data, headers: response.headers };
     }
 
     if (!('text' in type)) return null;
@@ -121,10 +114,6 @@ export async function loadSearch({ fetch, token, cookies, parent, url, type: slu
     imageType,
     cards,
     lists: hits.map(toSearchListRow).filter((row) => row !== null),
-    // OG only listed public, active accounts (`User.not_private.alive`).
-    users: (result?.users ?? [])
-      .filter(({ user }) => !user.private && !user.deleted)
-      .map(({ user }) => toSearchUserCard(user)),
     page: pagination,
     /** The sidebar's own state, so SSR renders it as the viewer left it, like the calendar's. */
     sidebar: {

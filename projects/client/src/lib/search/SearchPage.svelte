@@ -1,15 +1,14 @@
 <!--
   The search results page in a SidebarFrame, like the charts': the type picker ("Search Results" over the type, its
   menu grouped like the header search) with the fade/hide tool, the count, the under-title, the small-screen search
-  field and the page pager in the sidebar, then the card grid in the viewer's search image type, list rows on the Lists
-  tab or avatar cards on the Users tab. The frame is dark in every theme, which covers OG's forced dark knight.
+  field and the page pager in the sidebar, then the card grid in the viewer's search image type, or list rows on the
+  Lists tab. The frame is dark in every theme, which covers OG's forced dark knight.
 -->
 <script lang="ts">
 import { page } from '$app/state';
 import { untrack } from 'svelte';
 import { goto } from '$app/navigation';
 import { resolve } from '$app/paths';
-import defaultCover from '$lib/assets/profile-cover-default.jpg';
 import FadeHideMenu from '$lib/components/filters/FadeHideMenu.svelte';
 import SearchField from '$lib/components/filters/SearchField.svelte';
 import { type FadeHide, matchesFadeHide } from '$lib/components/filters/fadeHide';
@@ -72,17 +71,15 @@ const paged = $derived(data.page.type === 'paginated' && data.page.total > 1);
 const META_TYPES: Readonly<Record<string, string>> = {
   shows: 'Show',
   movies: 'Movie',
-  episodes: 'Episode',
   people: 'Person',
   lists: 'List',
-  users: 'User',
 };
 const metaType = $derived(META_TYPES[data.slug]);
 const meta = $derived(
   metaType
     ? {
       title: `${metaType} search results for ${data.query}`,
-      description: `${metaType} search results for movies, TV shows, episodes, lists, and people.`,
+      description: `${metaType} search results for movies, TV shows, lists, and people.`,
     }
     : { title: `Search results for ${data.query}`, description: 'Search results for movies and TV shows.' },
 );
@@ -104,7 +101,7 @@ const cardVariant = $derived(
 const listViewer = $derived(page.data.user ? { slug: page.data.user.slug, isVip: page.data.user.isVip } : null);
 const own = createItemListActions({ viewer: () => listViewer, origin: () => page.url.origin });
 const listsShown = $derived(own.visible(data.lists));
-const hasResults = $derived(data.cards.length > 0 || data.lists.length > 0 || data.users.length > 0);
+const hasResults = $derived(data.cards.length > 0 || data.lists.length > 0);
 let fadeHide = $derived(data.filters.fadeHide);
 
 function save(next: FadeHide) {
@@ -173,15 +170,7 @@ function save(next: FadeHide) {
     {#if data.filters.visible}<RailGroup tools>{@render tools()}</RailGroup>{/if}
   {/snippet}
 
-  {#if data.users.length > 0}
-    <!-- OG hid the quick icons on user cards. -->
-    <FrameGrid variant="uniform">
-      {#each data.users as user (user.key)}
-        <FanartCard href={user.href} title={user.title} image={user.cover ?? defaultCover} avatar={user.avatar}
-          tags={user.tags} />
-      {/each}
-    </FrameGrid>
-  {:else if data.lists.length > 0}
+  {#if data.lists.length > 0}
     <div class="lists">
       {#each listsShown as list (list.key)}
         <ListRow {...list} mine={list.owner.slug === page.data.user?.slug} likeTarget={{ id: list.id, ownerSlug: list.kind === 'personal' ? list.owner.slug : undefined, viewer: page.data.user?.slug ?? null }}

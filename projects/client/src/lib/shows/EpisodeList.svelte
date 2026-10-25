@@ -2,7 +2,7 @@
   A show's episode list (OG's `#seasons-episodes-sortable` of `.row.fanarts`): "N Episodes" with the sort dropdown,
   then a row per episode. The framed fanart card with quick icons sits on the left; on the right "1x02 Title", tag
   pills for the air date (red), the runtime and the type (Season Premiere, in its own color), the overview cut to a few lines under Read More, and
-  the community stats as number-only count buttons along the card's foot.
+  the community stats as number-only count buttons along the card's foot, shimmering until the row's stats load.
 -->
 <script lang="ts">
 import EmptyState from '$lib/components/empty/EmptyState.svelte';
@@ -169,7 +169,8 @@ const metaTags = (row: EpisodeRow): readonly TagPill[] => [
             </div>
           {/if}
           <div class="stats">
-            <ItemStatIcons href={row.href} stats={stats.counts.get(row.id)} comments={row.comments} released={row.released} />
+            <ItemStatIcons href={row.href} stats={stats.counts.get(row.id)} comments={row.comments} released={row.released}
+              loading={!stats.counts.has(row.id)} />
           </div>
         </div>
       </article>

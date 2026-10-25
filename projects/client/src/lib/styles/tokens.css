@@ -348,6 +348,12 @@
   --transition-list-card-fan: 0.28s cubic-bezier(0.3, 0, 0.2, 1);
   --color-list-card-placeholder: light-dark(#e2e2e6, #2f2f2f);
   --color-list-card-placeholder-line: light-dark(rgb(0 0 0 / 0.05), rgb(255 255 255 / 0.04));
+  /* A row's shimmer while a summary's lists load */
+  --list-card-shimmer-title-width: 40%; /* the name */
+  --list-card-shimmer-owner-width: 120px; /* the owner's avatar and name */
+  --list-card-shimmer-line-width: 90%; /* the description's first line; the second is shorter */
+  --list-card-shimmer-short-width: 55%;
+  --list-card-shimmer-count-width: 72px; /* a count button */
   --font-size-list-card-empty: 12px;
   --font-size-list-card-empty-icon: 18px;
   /* Status chips after the name: a see-through tint of their color, the text lifted toward the theme's text. */
@@ -2050,6 +2056,8 @@
   --videos-visible-narrow: 2;
   --video-caption-gap: 8px; /* a video card's image to its title */
   --video-tag-inset: 8px; /* its type tag from the image's bottom-left corner */
+  --videos-shimmer-dropdown-width: 140px; /* the Type dropdown's place until the summary's videos load */
+  --videos-shimmer-title-width: 60%; /* a card's title */
   --cast-grid-min: 104px; /* the narrowest card in a cast & crew grid, so 1440px fits seven, like the summary */
   --cast-grid-row-gap: var(--gutter);
   --cast-heading-gap: 14px; /* a search result group's heading rule to its people */
@@ -2136,6 +2144,7 @@
   --episode-titles-gap: 4px; /* the title and its pills */
   --episode-meta-gap: 2px; /* a little more air above the pills */
   --item-stats-gap: 8px; /* between an episode's number-only count buttons */
+  --item-stats-shimmer-width: 64px; /* a count button's place until the episode's stats load */
   --episode-info-gap: 12px; /* the titles, the overview and the stats */
   --episode-overview-collapsed-height: 60px; /* three lines; a fourth still shows whole (Read More's 16px margin) */
   --episode-overview-shade-height: 40px;
@@ -2165,6 +2174,11 @@
   --activity-cell-height: 56px;
   --activity-cell-padding: 8px 12px 8px 14px;
   --activity-cell-gap: 10px;
+  /* A cell's shimmer until the panel loads */
+  --activity-shimmer-figure-width: 40px;
+  --activity-shimmer-figure-height: 24px; /* the figure's cap height */
+  --activity-shimmer-label-width: 70px;
+  --activity-shimmer-label-height: 25px; /* the label's two lines */
   /* Small tablets, under 880px of panel: the label under the figure */
   --activity-cell-gap-narrow: 8px;
   --activity-cell-padding-narrow: 8px 10px;
@@ -2399,6 +2413,13 @@
   --font-size-reaction-tile-emoji: 28px;
   --comment-thread-gap: 14px;
   --comment-main-padding-end: 6px;
+  /* A comment's shimmer while it loads: the summary's comments, or a thread's replies */
+  --comment-shimmer-name-width: 110px;
+  --comment-shimmer-date-width: 130px;
+  --comment-shimmer-bubble: 66px; /* two lines of text in the bubble's padding and border */
+  --comment-shimmer-bubble-nested: 40px; /* a reply's one line */
+  --comment-shimmer-action-width: 80px; /* React and Reply */
+  --comment-shimmer-dropdown-width: 130px; /* the Filter and Language dropdowns over the summary's comments */
   --opacity-comment-blocked: 0.3; /* a blocked member's collapsed card */
   --opacity-comment-blocked-hover: 0.6;
   --opacity-comment-parent: 0.4; /* a reply's collapsed parent */

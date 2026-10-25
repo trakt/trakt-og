@@ -195,7 +195,7 @@ const tooShort = (text: string) => text.split(/\s+/).filter(Boolean).length < 5;
 const REJECTED = { ok: false, message: 'Comment must be at least 5 words.' } as const;
 
 /**
- * Answers the card's browser calls from the fixtures, with a short wait so "loading replies" and the spinners show.
+ * Answers the card's browser calls from the fixtures, with a short wait so the reply shimmers and the spinners show.
  * Writes never leave the page: replies come back as the demo viewer, and edits echo what was sent.
  */
 export const client: CommentsClient = {

@@ -28,12 +28,15 @@ const ratingTarget = { type: 'episode', id: pilot.id, title: pilot.fullTitle } a
 </Specimen>
 
 <Specimen title="Community stat icons"
-  note="An episode row's counts. Zero counts drop out, and before an episode airs only its list count shows.">
+  note="An episode row's counts. Zero counts drop out, and before an episode airs only its list count shows. While the row's stats load, each count they bring shimmers.">
   <Variant label="Aired">
     <ItemStatIcons href={pilot.href} stats={pilot.stats} comments={pilot.comments} />
   </Variant>
   <Variant label="Not aired yet">
     <ItemStatIcons href={pilot.href} stats={pilot.stats} comments={pilot.comments} released={false} />
+  </Variant>
+  <Variant label="Loading">
+    <ItemStatIcons href={pilot.href} comments={pilot.comments} loading />
   </Variant>
 </Specimen>
 

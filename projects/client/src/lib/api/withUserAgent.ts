@@ -11,3 +11,9 @@ export function withUserAgent(request: Request): Request {
   headers.set('user-agent', USER_AGENT);
   return new Request(request, { headers });
 }
+
+/** `baseFetch`, naming og as its User-Agent: for server fetches that bypass SvelteKit's `handleFetch`. */
+export const fetchWithUserAgent =
+  (baseFetch: typeof fetch = globalThis.fetch): typeof fetch =>
+  (input, init) =>
+    baseFetch(withUserAgent(new Request(input, init)));

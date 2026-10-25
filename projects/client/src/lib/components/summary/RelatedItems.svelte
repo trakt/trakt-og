@@ -1,10 +1,11 @@
 <!--
   OG's related band under a summary: a dark full-width section, "If you like <Title>, check out...", whose picks load as
-  the band nears the viewport. RelatedPicks lays them out with what each shares with the title. The band keeps its height
-  while they load, and goes when nothing comes back.
+  the band nears the viewport. RelatedPicks lays them out with what each shares with the title. A row of shimmering
+  posters holds their place while they load, and the band goes when nothing comes back.
 -->
 <script lang="ts">
 import Container from '$lib/components/container/Container.svelte';
+import CardShimmerRow from '$lib/components/loading/CardShimmerRow.svelte';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
 import type { RelatedPerson } from '$lib/summary/RelatedPerson';
 import type { RelatedSource } from '$lib/summary/RelatedSource';
@@ -24,6 +25,8 @@ interface Props {
 
 const { title, source, load, loadPeople, datePreferences }: Props = $props();
 const id = $props.id();
+// RelatedPicks' posters a row.
+const PER_ROW = 6;
 
 let empty = $state(false);
 
@@ -39,6 +42,7 @@ const loadOrHide = async () => {
     <Container>
       <h2 id="{id}-heading">If you like <strong>{title}</strong>, check out...</h2>
       <LazySection load={loadOrHide}>
+        {#snippet pending()}<CardShimmerRow columns={PER_ROW} ratio="poster" />{/snippet}
         {#snippet children(cards)}
           <RelatedPicks {cards} {source} {title} {loadPeople} {datePreferences} />
         {/snippet}

@@ -12,6 +12,8 @@ import SummaryPoster from '$lib/components/summary/SummaryPoster.svelte';
 import SummaryTitle from '$lib/components/summary/SummaryTitle.svelte';
 import ActivityTabs from '$lib/components/summary/ActivityTabs.svelte';
 import Specimen from '$lib/design/Specimen.svelte';
+import Variant from '$lib/design/Variant.svelte';
+import SummarySectionShimmer from '$lib/components/loading/SummarySectionShimmer.svelte';
 import ActorsStrip from '$lib/components/summary/ActorsStrip.svelte';
 import CastCard from '$lib/components/summary/CastCard.svelte';
 import ViewToggle from '$lib/components/toolbar/ViewToggle.svelte';
@@ -218,35 +220,50 @@ const videos: readonly VideoCard[] = [
   </ul>
 </Specimen>
 
-<Specimen title="Activity" note="Watching now and People You Follow, with one followed member watching live.">
-  <ActivityTabs tabs={activity} />
+<Specimen title="Activity"
+  note="Watching now and People You Follow, with one followed member watching live. Signed in, shimmering cells hold its place while it loads.">
+  <Variant label="Loaded"><ActivityTabs tabs={activity} /></Variant>
+  <Variant label="Loading"><SummarySectionShimmer section="activity" /></Variant>
 </Specimen>
 
 <Specimen title="Videos"
   note="It opens on the trailers, else the teasers, else All, where each card tags its type in the type's color. A plain click plays a video in the popup. OG had none; v3's Extras row is the model.">
-  <VideosRail {videos} href="/shows/demo" />
+  <Variant label="Loaded"><VideosRail {videos} href="/shows/demo" /></Variant>
+  <Variant label="Loading"><SummarySectionShimmer section="videos" /></Variant>
 </Specimen>
 
 <Specimen title="Comments and lists previews"
-  note="What loads at the bottom of /movies/fight-club-1999 as it scrolls into view.">
-  <CommentsPreview
-    form={newCommentForm}
-    reload={() => Promise.resolve(comments)}
-    tabs={comments}
-    item={movie}
-    viewer={page.data.user ? { slug: page.data.user.slug } : null}
-    count={128}
-    href="/movies/heat-1995"
-    dateOptions={page.data.datePreferences}
-  />
-  <p>The comments subnav's Add comment: <AddCommentLink /></p>
-  <ListsPreview {lists} count={342} href="/movies/heat-1995" />
+  note="What loads at the bottom of /movies/fight-club-1999 as it scrolls into view, with shimmering comments and list rows in their places until it does.">
+  <Variant label="Loaded">
+    <CommentsPreview
+      form={newCommentForm}
+      reload={() => Promise.resolve(comments)}
+      tabs={comments}
+      item={movie}
+      viewer={page.data.user ? { slug: page.data.user.slug } : null}
+      count={128}
+      href="/movies/heat-1995"
+      dateOptions={page.data.datePreferences}
+    />
+    <p>The comments subnav's Add comment: <AddCommentLink /></p>
+    <ListsPreview {lists} count={342} href="/movies/heat-1995" />
+  </Variant>
+  <Variant label="Loading">
+    <SummarySectionShimmer section="comments" />
+    <SummarySectionShimmer section="lists" />
+  </Variant>
 </Specimen>
 
 <Specimen title="Related" bleed
-  note="Eighteen picks, so More opens a second row and a third. Two share Heat's people.">
-  <RelatedItems title="Heat" source={relatedSource} load={() => Promise.resolve(related)} loadPeople={relatedPeople}
-    datePreferences={page.data.datePreferences} />
+  note="Eighteen picks, so More opens a second row and a third. Two share Heat's people. A row of shimmering posters holds their place while they load.">
+  <Variant label="Loaded">
+    <RelatedItems title="Heat" source={relatedSource} load={() => Promise.resolve(related)} loadPeople={relatedPeople}
+      datePreferences={page.data.datePreferences} />
+  </Variant>
+  <Variant label="Loading">
+    <RelatedItems title="Heat" source={relatedSource} load={() => new Promise(() => {})} loadPeople={relatedPeople}
+      datePreferences={page.data.datePreferences} />
+  </Variant>
 </Specimen>
 
 <style>

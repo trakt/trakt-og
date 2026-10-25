@@ -98,7 +98,7 @@ const fanart = 'https://media.trakt.tv/images/shows/000/167/187/fanarts/full/88e
   </Specimen>
 
   <Specimen title="Featured review"
-    note="A review in a comment list: featured and wide. N replies opens the replies inline on a rail.">
+    note="A review in a comment list: featured and wide. N replies opens the replies inline on a rail, shimmering in their places while they load.">
     <CommentCard comment={review} item={movie} viewer={viewerFor(review)} {client}
       dateOptions={page.data.datePreferences} featured wide />
   </Specimen>

@@ -13,6 +13,7 @@ import CommentsPreview from '$lib/components/summary/CommentsPreview.svelte';
 import ExternalLinks from '$lib/components/summary/ExternalLinks.svelte';
 import MediaTools from '$lib/components/summary/MediaTools.svelte';
 import LazySection from '$lib/components/summary/LazySection.svelte';
+import SummarySectionShimmer from '$lib/components/loading/SummarySectionShimmer.svelte';
 import ListsPreview from '$lib/components/summary/ListsPreview.svelte';
 import RatingsStrip from '$lib/components/summary/RatingsStrip.svelte';
 import RelatedItems from '$lib/components/summary/RelatedItems.svelte';
@@ -119,6 +120,8 @@ const sections = $derived([
   <!-- Keyed on the item: moving to another movie or show keeps this page, so the lazy sections start over. -->
   {#key media.slug}
     <LazySection id="activity" load={() => lazy().activity(media)}>
+      <!-- Signed out, it shows only when someone's watching, so it seldom comes. -->
+      {#snippet pending()}{#if data.user}<SummarySectionShimmer section="activity" />{/if}{/snippet}
       {#snippet children(tabs)}<ActivityTabs {tabs} />{/snippet}
     </LazySection>
   {/key}
@@ -140,12 +143,14 @@ const sections = $derived([
   <SeasonsGrid showId={show.id} seasons={show.seasons} signedIn={data.signedIn} initialFilters={data.filters} datePreferences={data.datePreferences} />
   {#key media.slug}
     <LazySection id="videos" load={() => lazy().videos(media)}>
+      {#snippet pending()}<SummarySectionShimmer section="videos" />{/snippet}
       {#snippet children(videos)}<VideosRail {videos} href={show.href} />{/snippet}
     </LazySection>
   {/key}
   {#key media.slug}
     {#snippet newCommentForm()}<NewCommentForm item={{ type: 'show', id: show.id, title: show.title, airedEpisodes: show.airedEpisodes }} />{/snippet}
     <LazySection id="comments" load={() => lazy().comments(media)} eager={newComment.visible}>
+      {#snippet pending()}<SummarySectionShimmer section="comments" />{/snippet}
       {#snippet children(tabs)}
         <CommentsPreview form={newCommentForm} reload={(language) => lazy().comments(media, language)}
           {tabs}
@@ -160,6 +165,7 @@ const sections = $derived([
   {/key}
   {#key media.slug}
     <LazySection id="lists" load={() => lazy().lists(media)}>
+      {#snippet pending()}<SummarySectionShimmer section="lists" />{/snippet}
       {#snippet children(lists)}<ListsPreview {lists} count={show.listCount} href={show.href} />{/snippet}
     </LazySection>
   {/key}

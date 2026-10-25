@@ -5,7 +5,7 @@
   tools at its end, report and block hidden until the card is hovered or focused.
 
   The replies bar across the card's foot opens the replies on a band under it, on a rail, with the OP's replies on a
-  red stretch of it. Reply opens a reply box at the end of the thread, and a posted reply goes to the top of it. The pen swaps the text for an edit form, and the trash can asks
+  red stretch of it, shimmering in their places while they load. Reply opens a reply box at the end of the thread, and a posted reply goes to the top of it. The pen swaps the text for an edit form, and the trash can asks
   before deleting. The flag opens the report dialog, and the block icon asks before blocking the member's comments. A
   blocked member's card collapses to its faded name row until clicked, and their replies are dropped from the inline
   thread. Reactions share the viewer's choices and totals.
@@ -24,7 +24,6 @@ import { type Snippet, untrack } from 'svelte';
 import ReactionControl from '$lib/components/comments/ReactionControl.svelte';
 import { commentReactions } from '$lib/components/comments/commentReactions';
 import Icon from '$lib/icons/Icon.svelte';
-import arrowsRotate from '$lib/icons/solid/arrows-rotate.svg?raw';
 import eyeSlash from '$lib/icons/solid/eye-slash.svg?raw';
 import heart from '$lib/icons/solid/heart.svg?raw';
 import caretDown from '$lib/icons/solid/caret-down.svg?raw';
@@ -57,6 +56,7 @@ import { authorOf } from './authorOf.ts';
 import { blockedMembers } from './blockedMembers.svelte.ts';
 import { browserCommentsClient } from './browserCommentsClient.ts';
 import CommentAvatar from './CommentAvatar.svelte';
+import CommentShimmer from '../loading/CommentShimmer.svelte';
 import CommentCard from './CommentCard.svelte';
 import CommentGif from './CommentGif.svelte';
 import CommentComposer from './CommentComposer.svelte';
@@ -223,6 +223,9 @@ const thread = $derived([
   ...withoutBlocked(replies ?? [], prefs.blocked).filter(({ id }) => !posted.some((reply) => reply.id === id)),
 ]);
 const repliesId = $props.id();
+// The most reply shimmers an opening thread shows, however many replies are coming.
+const REPLY_SHIMMERS = 3;
+const replyShimmers = $derived(Array.from({ length: Math.min(comment.replies, REPLY_SHIMMERS) }, (_, i) => i));
 
 let replying = $state(false);
 // The comment's own page lists its replies open; "N replies" folds them away.
@@ -614,7 +617,7 @@ const vanish = (node: Element) => fade(node, { duration: prefersReducedMotion.cu
   </div>
 
   {#if threadOpen}
-    <div class="thread" id={repliesId}>
+    <div class="thread" id={repliesId} aria-busy={repliesOpen && !replies}>
       {#if repliesOpen}
         {#each thread as reply (reply.id)}
           <CommentCard
@@ -630,7 +633,7 @@ const vanish = (node: Element) => fade(node, { duration: prefersReducedMotion.cu
           />
         {/each}
         {#if !replies}
-          <p class="loading" role="status"><Icon svg={arrowsRotate} /> <span class="text">Loading replies</span></p>
+          {#each replyShimmers as slot (slot)}<CommentShimmer nested />{/each}
         {/if}
       {/if}
       {#if read && pageRepliesShown}{@render pageReplies?.()}{/if}
@@ -1078,34 +1081,11 @@ const vanish = (node: Element) => fade(node, { duration: prefersReducedMotion.cu
   }
 }
 
-.loading {
-  margin: 0;
-  color: var(--color-comment-muted);
-  font-size: var(--font-size-comment-meta);
-  font-weight: var(--font-weight-headings);
-
-  & :global(.icon) {
-    margin-inline-end: var(--comment-action-icon-gap);
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .loading :global(.icon) {
-    animation: spin 2s linear infinite;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .comment-wrapper,
   .tools,
   .chevron {
     transition: none;
-  }
-}
-
-@keyframes spin {
-  to {
-    rotate: 360deg;
   }
 }
 

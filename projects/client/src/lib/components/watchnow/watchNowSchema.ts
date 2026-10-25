@@ -57,8 +57,8 @@ export const watchNowOffersSchema = z.record(z.string(), countryOffersSchema);
 export const watchNowOrderSchema = rows(z.string());
 
 /**
- * `/watchnow/sources/:country`: one `{ [country]: sources }` object in an array. Sources also carry `amazon`,
- * `link_count` and `images.logo_colorized`, which og doesn't read.
+ * `/watchnow/sources/:country`: one `{ [country]: sources }` object in an array. Sources also carry `amazon` and
+ * `images.logo_colorized`, which og doesn't read.
  */
 export const watchNowSourcesSchema = z.array(
   z.record(
@@ -69,6 +69,7 @@ export const watchNowSourcesSchema = z.array(
         name: z.string(),
         free: z.boolean().nullish(),
         cinema: z.boolean().nullish(),
+        link_count: z.number().nullish(),
         color: z.string().nullish(),
         images: z.object({ logo: z.string().nullish(), channel: z.string().nullish() }).nullish(),
       }),

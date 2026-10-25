@@ -10,8 +10,10 @@ declare global {
   namespace App {
     // interface Error {}
     interface Locals {
-      /** The access token from the httpOnly auth cookie, set by hooks.server.ts. */
+      /** The access token from the httpOnly auth cookie, set by hooks.server.ts. Null once it has expired. */
       token: string | null;
+      /** The auth cookie held a token that has expired, which the browser renews. Set by hooks.server.ts. */
+      tokenExpired: boolean;
       /** One read of the viewer network lists shared by profile and network loaders in this request. */
       viewerLists?: ReturnType<typeof loadViewerLists>;
       /** The viewer's saved theme, set by the root layout's load and written onto `<html>` by hooks.server.ts. */

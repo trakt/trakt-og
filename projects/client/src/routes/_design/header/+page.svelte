@@ -25,6 +25,7 @@ const joinedAt = `${dayIn(new Date(Date.now() - 12 * 86_400_000).toISOString(), 
 const NEW_MEMBER = 'New member';
 const users: Record<string, HeaderUser | null> = {
   'Signed out': null,
+  'Renewing an expired token': null,
   'Signed in': { ...demoUser, isVip: false },
   'Signed in, VIP': { ...demoUser, isVip: true },
   [NEW_MEMBER]: {
@@ -53,6 +54,7 @@ let darkKnight = $state<DarkKnight>('false');
 const user = $derived(users[who] ?? null);
 const threeSeen = libraryStages.find(({ id }) => id === 'three') ?? libraryStages[0];
 seedOverlay(() => (who === NEW_MEMBER ? toDemoLibrary(threeSeen, []) : null));
+const renewing = $derived(who === 'Renewing an expired token');
 
 // The profile menu's "Dark Knight" item saves here instead of the API; each card's Light and Dark preview the themes.
 function save(body: SettingsBody) {
@@ -70,7 +72,7 @@ function save(body: SettingsBody) {
       bind:value={backdrop} />
   </div>
   <div class="site">
-    <Header {user} searchType={data.searchType} {darkKnight} {save} />
+    <Header {user} {renewing} searchType={data.searchType} {darkKnight} {save} />
     {#if art}
       <div class="backdrop" style:background-image="url('{art}')" {@attach headerArt(art)}></div>
     {:else}

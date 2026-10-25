@@ -38,7 +38,7 @@ const request = (userAgent?: string) =>
 const layout = (token: string | null = 'fake-token', searchType?: string, userAgent?: string, klipyKey?: string) =>
   load({
     fetch: globalThis.fetch,
-    locals: { token },
+    locals: { token, tokenExpired: false },
     cookies: { get: (name: string) => (name === 'search_type' ? searchType : undefined) },
     request: request(userAgent),
     platform: { env: { KLIPY_API_KEY: klipyKey } },
@@ -77,6 +77,7 @@ describe('root layout settings', () => {
   it('should render defaults without fetching when logged out', async () => {
     expect(await layout(null)).toEqual({
       hasSession: false,
+      tokenExpired: false,
       user: null,
       settings: null,
       datePreferences: { order: 'mdy', hour24: false, timeZone: 'UTC', weekStartDay: 0 },
@@ -84,6 +85,17 @@ describe('root layout settings', () => {
       platform: 'ios',
       phone: false,
     });
+    expect(seen).toHaveLength(0);
+  });
+
+  it('should keep the session for an expired token, leaving the user to load once the browser renews it', async () => {
+    const data = await load({
+      fetch: globalThis.fetch,
+      locals: { token: null, tokenExpired: true },
+      cookies: { get: (_name: string): string | undefined => undefined },
+      request: request(),
+    } as Parameters<typeof load>[0]);
+    expect(data).toEqual({ ...(await layout(null)), hasSession: true, tokenExpired: true });
     expect(seen).toHaveLength(0);
   });
 
@@ -147,7 +159,7 @@ describe('root layout settings', () => {
 describe('root layout theme', () => {
   // The theme the page's <html> renders with (hooks.server.ts writes it).
   const theme = async (token: string | null = 'fake-token') => {
-    const locals: App.Locals = { token };
+    const locals: App.Locals = { token, tokenExpired: false };
     const cookies = { get: (_name: string): string | undefined => undefined };
     await load({ fetch: globalThis.fetch, locals, cookies, request: request() } as Parameters<typeof load>[0]);
     return locals.theme;

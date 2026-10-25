@@ -15,16 +15,16 @@ function post(body: string) {
 }
 
 describe('POST /api/store-token', () => {
-  it('should set an httpOnly cookie that expires with the token', async () => {
+  it('should set a year-long httpOnly cookie holding the token and its expiry', async () => {
     const expiresAt = Date.now() + 60_000;
-    const { cookies, response } = post(JSON.stringify({ token: 'abc', expiresAt }));
+    const { cookies, response } = post(JSON.stringify({ token: 'abc', expiresAt, extra: 'dropped' }));
 
     expect((await response).status).toBe(204);
-    expect(cookies.set).toHaveBeenCalledWith(AUTH_COOKIE, 'abc', {
+    expect(cookies.set).toHaveBeenCalledWith(AUTH_COOKIE, JSON.stringify({ token: 'abc', expiresAt }), {
       path: '/',
       httpOnly: true,
       sameSite: 'lax',
-      expires: new Date(expiresAt),
+      maxAge: 60 * 60 * 24 * 365,
     });
   });
 

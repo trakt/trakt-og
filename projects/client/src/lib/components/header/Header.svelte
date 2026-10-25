@@ -1,6 +1,7 @@
 <!--
   The fixed top bar, on dark glass tinted by the page's backdrop (HeaderTint): the Trakt mark, the search icon and the
   main links on the left, and the account on the right: Get VIP and the profile menu, or one Sign In button.
+  While an expired session renews, it keeps the signed-in links and leaves the account empty until the user loads.
 -->
 <script lang="ts">
 import { invalidateAll } from '$app/navigation';
@@ -27,6 +28,8 @@ import { viewerFetch } from '../../auth/viewerFetch.ts';
 
 interface Props {
   user: HeaderUser | null;
+  /** The viewer's token expired and the browser is renewing it, so the bar stays signed in without a user yet. */
+  renewing?: boolean;
   /** The `search_type` cookie, so SSR renders the search type picker's label. */
   searchType?: string;
   /** The viewer's saved Dark Knight setting, which the profile menu's "Dark Knight" item toggles. */
@@ -41,14 +44,15 @@ const browserSave = (body: SettingsBody) =>
     body,
   });
 
-const { user, searchType, darkKnight: saved = 'false', save = browserSave }: Props = $props();
+const { user, renewing = false, searchType, darkKnight: saved = 'false', save = browserSave }: Props = $props();
 
+const signedIn = $derived(user !== null || renewing);
 const sections = $derived([
-  ...(user ? [{ title: 'Dashboard', href: '/dashboard' }] : []),
+  ...(signedIn ? [{ title: 'Dashboard', href: '/dashboard' }] : []),
   { title: 'Discover', href: '/discover' },
   { title: 'Shows', href: '/shows/trending' },
   { title: 'Movies', href: '/movies/trending' },
-  { title: 'Calendar', href: user ? '/calendars/my/shows-movies' : '/calendars/premieres' },
+  { title: 'Calendar', href: signedIn ? '/calendars/my/shows-movies' : '/calendars/premieres' },
 ]);
 
 const profileTabs = ['History', 'Progress', 'Watchlist', 'Library', 'Ratings', 'Lists', 'Comments', 'Notes', 'Network'];
@@ -143,7 +147,7 @@ async function toggleDarkKnight() {
           </ul>
         </HeaderMenu>
       </div>
-    {:else}
+    {:else if !renewing}
       <!-- One page signs in and signs up, so one button. -->
       <a class="sign-in" href="/auth/signin">Sign In</a>
     {/if}

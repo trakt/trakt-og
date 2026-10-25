@@ -2,7 +2,7 @@
   The dashboard's Upcoming Schedule panel, over the first five days from the start day with anything on the viewer's
   calendars. On top, the first of them as cards with medium posters (six, then "Show N more"); under it, the next four
   as columns of rows with small posters. Pass the unawaited `fetchSchedule` promise from the loader, so the page
-  streams in and this panel spins until it lands, and fails on its own if it doesn't. With `onpick`, Shows and
+  streams in and shimmering cards and rows hold their place until it lands, and it fails on its own if it doesn't. With `onpick`, Shows and
   Movies dropdowns under the title switch what it reads in place: the old days stay dimmed until the new ones land.
 -->
 <script lang="ts">
@@ -11,6 +11,7 @@ import NoData from '$lib/components/empty/NoData.svelte';
 import PanelPrompt from '$lib/components/first-night/PanelPrompt.svelte';
 import { panelQuotes } from '$lib/firstNight/panelQuotes';
 import calendarDays from '$lib/icons/regular/calendar-days.svg?raw';
+import Shimmer from '$lib/components/loading/Shimmer.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import WatchNowDialog from '$lib/components/watchnow/WatchNowDialog.svelte';
 import type { DashboardSettings } from '$lib/dashboard/DashboardSettings';
@@ -183,7 +184,47 @@ function watchNow(item: NonNullable<ScheduleItem['watchNow']>) {
         </div>
       {/if}
     </div>
+  {:else}
+    {@render shimmers()}
   {/if}
+{/snippet}
+
+<!-- The first day's cards and the week's columns of rows, shimmering in their places until the first schedule lands. -->
+{#snippet shimmers()}
+  {@const count = (n: number) => Array.from({ length: n }, (_, i) => i)}
+  <div class="schedule">
+    <div class="spotlight">
+      <h3><Shimmer inline="var(--schedule-shimmer-day-width)" block="var(--font-size-schedule-day)" /></h3>
+      <div class="cards">
+        {#each count(3) as card (card)}
+          <div class="card-shimmer">
+            <span class="poster-shimmer"><Shimmer inline="100%" block="100%" /></span>
+            <span class="lines">
+              <Shimmer inline="var(--schedule-shimmer-title-width)" block="var(--font-size-h4)" />
+              <Shimmer inline="var(--schedule-shimmer-line-width)" block="var(--font-size-schedule-row)" />
+              <Shimmer inline="var(--schedule-shimmer-short-width)" block="var(--font-size-schedule-row)" />
+            </span>
+          </div>
+        {/each}
+      </div>
+    </div>
+    <div class="week">
+      {#each count(4) as day (day)}
+        <div class="day">
+          <h3><Shimmer inline="var(--schedule-shimmer-day-width)" block="var(--font-size-schedule-day)" /></h3>
+          {#each count(2) as row (row)}
+            <div class="row-shimmer">
+              <span class="poster-shimmer"><Shimmer inline="100%" block="100%" /></span>
+              <span class="lines">
+                <Shimmer inline="var(--schedule-shimmer-line-width)" block="var(--font-size-base)" />
+                <Shimmer inline="var(--schedule-shimmer-short-width)" block="var(--font-size-schedule-row)" />
+              </span>
+            </div>
+          {/each}
+        </div>
+      {/each}
+    </div>
+  </div>
 {/snippet}
 
 {#if watching}
@@ -296,6 +337,43 @@ h3 {
   @container (width < 500px) {
     grid-template-columns: 1fr;
   }
+}
+
+/* A card's place: its poster and lines on the card's own surface. */
+.card-shimmer {
+  display: flex;
+  gap: var(--space-schedule-card-gap);
+  padding: var(--space-schedule-card-padding);
+  border-radius: var(--radius-schedule-card);
+  background-color: var(--color-surface);
+
+  & .poster-shimmer {
+    inline-size: var(--schedule-card-poster);
+  }
+}
+
+/* A day's row: its small poster and two lines, under the row's separator. */
+.row-shimmer {
+  display: grid;
+  grid-template-columns: var(--schedule-day-poster) minmax(0, 1fr);
+  gap: var(--space-schedule-row-gap);
+  align-items: start;
+  padding: var(--space-schedule-day-row) var(--space-schedule-row);
+  border-block-start: 1px solid var(--color-schedule-separator);
+}
+
+.poster-shimmer {
+  display: flex;
+  flex-shrink: 0;
+  aspect-ratio: var(--ratio-poster);
+}
+
+.lines {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: var(--space-schedule-shimmer-lines);
+  min-inline-size: 0;
 }
 
 /* Its rows stack poster beside text in a column this narrow. */

@@ -1,12 +1,13 @@
 <!--
   The dashboard's Recently Watched panel: the viewer's last nine plays as
   fanart cards, one row of three at first, with the less and more pill for up to three. Pass the unawaited
-  `fetchRecentlyWatched` promise from the loader, so the page streams in and this panel spins until it lands, and
+  `fetchRecentlyWatched` promise from the loader, so the page streams in and a row of shimmering cards holds its place until it lands, and
   fails on its own if it doesn't. A check-in still running reads as live, like the Social Feed's watching-now cards.
 -->
 <script lang="ts">
 import type { Snippet } from 'svelte';
 import { browser } from '$app/environment';
+import CardShimmerRow from '$lib/components/loading/CardShimmerRow.svelte';
 import NoData from '$lib/components/empty/NoData.svelte';
 import PanelPrompt from '$lib/components/first-night/PanelPrompt.svelte';
 import StarterPicks from '$lib/components/first-night/StarterPicks.svelte';
@@ -138,7 +139,7 @@ function changeRows(rows: number) {
   {@render panel(false, failed)}
 {/await}
 
-{#snippet pending()}{/snippet}
+{#snippet pending()}<CardShimmerRow columns={PER_ROW} phoneColumns={1} ratio="fanart" />{/snippet}
 
 {#snippet failed()}
   <div class="notice">
@@ -150,10 +151,6 @@ function changeRows(rows: number) {
 /* OG's `h2.section` kept 28px under it, and its `.row.fanarts` 30px after the cards' own 20px. */
 .body {
   padding-block: calc(var(--space-heading-section) - var(--gutter)) var(--space-fanarts-row-end);
-
-  &:empty {
-    padding-block: var(--space-heading-section) 0;
-  }
 }
 
 .play {

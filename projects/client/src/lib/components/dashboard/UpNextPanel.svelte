@@ -2,12 +2,13 @@
   The dashboard's Up Next panel: the next episode of up to 18
   shows the viewer is watching in their saved sort, one row of six at first, with the less and more pill for up to
   three. Pass the
-  unawaited `fetchUpNext` promise from the loader, so the page streams in and this panel spins until it lands, and
+  unawaited `fetchUpNext` promise from the loader, so the page streams in and a row of shimmering cards holds its place until it lands, and
   fails on its own if it doesn't.
 -->
 <script lang="ts">
 import type { Snippet } from 'svelte';
 import { browser } from '$app/environment';
+import CardShimmerRow from '$lib/components/loading/CardShimmerRow.svelte';
 import NoData from '$lib/components/empty/NoData.svelte';
 import PanelPrompt from '$lib/components/first-night/PanelPrompt.svelte';
 import StarterPicks from '$lib/components/first-night/StarterPicks.svelte';
@@ -112,7 +113,7 @@ const STREAMING = ' + streaming on your ';
   {@render panel(false, failed)}
 {/await}
 
-{#snippet pending()}{/snippet}
+{#snippet pending()}<CardShimmerRow columns={PER_ROW} ratio="poster" />{/snippet}
 
 {#snippet failed()}
   <div class="notice">

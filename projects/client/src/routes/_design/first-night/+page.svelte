@@ -63,7 +63,8 @@ const loading = new Promise<FirstNight>(() => {});
   </div>
 </Specimen>
 
-<Specimen title="While the charts load" bleed note="The wall holds its height until the posters land.">
+<Specimen title="While the charts load" bleed
+  note="The greeting and the imports show at once; shimmering chips and posters hold the picks' place.">
   <div class="site">
     <Header {user} searchType={data.searchType} />
     <FirstNightProgress slug={user.slug} watched={stage.watched} {taste} />

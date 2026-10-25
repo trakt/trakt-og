@@ -1,12 +1,13 @@
 <!--
   The dashboard's Last 30 Days panel: the keys with the time, episodes, movies and best week, the minutes-per-day
   chart under them, and the genre band. With nothing watched OG hid the chart, and the whole panel when the genres were
-  empty too. Pass the unawaited `fetchLastThirtyDays` promise from the loader, so the page streams in and this panel
-  spins until it lands, and fails on its own if it doesn't.
+  empty too. Pass the unawaited `fetchLastThirtyDays` promise from the loader, so the page streams in and shimmering
+  keys, chart and band hold their place until it lands, and it fails on its own if it doesn't.
 -->
 <script lang="ts">
 import type { Snippet } from 'svelte';
 import NoData from '$lib/components/empty/NoData.svelte';
+import Shimmer from '$lib/components/loading/Shimmer.svelte';
 import GenreBand from '$lib/components/users/GenreBand.svelte';
 import type { LastThirtyDays } from '$lib/dashboard/LastThirtyDays';
 import chartSimple from '$lib/icons/regular/chart-simple.svg?raw';
@@ -44,7 +45,24 @@ const { stats }: { stats: Promise<LastThirtyDays> } = $props();
   {@render panel(false, failed)}
 {/await}
 
-{#snippet pending()}{/snippet}
+{#snippet pending()}
+  <div class="shimmers">
+    <div class="block keys shimmer-keys">
+      {#each Array.from({ length: 4 }, (_, i) => i) as key (key)}
+        <Shimmer inline="100%" block="var(--minutes-shimmer-keys-height)" />
+      {/each}
+    </div>
+    <div class="block chart"><Shimmer inline="100%" block="var(--minutes-shimmer-chart-height)" /></div>
+    <div class="block band-shimmer">
+      <Shimmer inline="100%" block="var(--genre-band-height)" />
+      <div class="shimmer-keys genre-keys">
+        {#each Array.from({ length: 6 }, (_, i) => i) as key (key)}
+          <Shimmer inline="100%" block="var(--minutes-shimmer-genre-keys-height)" />
+        {/each}
+      </div>
+    </div>
+  </div>
+{/snippet}
 
 {#snippet failed()}
   <div class="notice">
@@ -55,8 +73,29 @@ const { stats }: { stats: Promise<LastThirtyDays> } = $props();
 <style>
 /* the panel fades in when its data lands, as OG's lazy panels did. */
 .charts {
-  padding-block-start: var(--gutter);
   animation: fade-in var(--transition-card) ease-out;
+}
+
+.charts,
+.shimmers {
+  padding-block-start: var(--gutter);
+}
+
+/* The keys' places, in the keys' own columns: four stats, then six genres under the band. */
+.shimmer-keys {
+  --key-columns: 4;
+  display: grid;
+  grid-template-columns: repeat(var(--key-columns), minmax(0, 1fr));
+  gap: var(--space-genre-keys-column);
+
+  &.genre-keys {
+    --key-columns: 6;
+  }
+}
+
+.band-shimmer {
+  display: grid;
+  gap: var(--space-genre-keys-row);
 }
 
 /* OG's `#charts-wrapper .row > div`. */

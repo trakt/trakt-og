@@ -1,6 +1,5 @@
 <!--
-  One dashboard panel: an h2 with its icon watermark and a
-  spinner while loading, the see-more link and the Customize gear on the right, a gray help line, then the content.
+  One dashboard panel: an h2 with its icon watermark, the see-more link and the Customize gear on the right, a gray help line, then the content.
   Set `--panel-bg` for the panel's background, and `--panel-padding-end` or `--panel-min-height` where OG's section
   had its own. The footer snippet goes after the content, outside the page column,
   which is where the less and more pill hangs.
@@ -15,6 +14,7 @@ interface Props {
   title: string;
   /** The heading's icon, as raw SVG. */
   icon: string;
+  /** Marks the panel busy for screen readers while its content shows shimmers. */
   loading?: boolean;
   seeMore?: { href: string; text: string };
   help?: Snippet;
@@ -32,7 +32,7 @@ const id = $props.id();
 
 <section class="dashboard-panel" aria-labelledby={id} aria-busy={loading}>
   <Container>
-    <PanelHeading {id} {title} {icon} {loading} {seeMore} {section} {aside} />
+    <PanelHeading {id} {title} {icon} {seeMore} {section} {aside} />
     {#if help}
       <PanelHelp>{@render help()}</PanelHelp>
     {/if}

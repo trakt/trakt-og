@@ -1,11 +1,14 @@
 <!--
   A new member's welcome wall, in place of the dashboard greeting. It opens with who they are (the avatar and display
   name to set), then importing from TV Time, IMDb or Letterboxd, then offers most watched and trending posters to mark seen in place. The progress toward the first ten
-  titles is FirstNightProgress, the bar that sticks above it.
+  titles is FirstNightProgress, the bar that sticks above it. The greeting and imports show at once; until the charts
+  stream in, shimmering chips and posters hold the picks' place.
 -->
 <script lang="ts">
 import Container from '$lib/components/container/Container.svelte';
 import PanelHeading from '$lib/components/dashboard/PanelHeading.svelte';
+import PickShimmer from '$lib/components/loading/PickShimmer.svelte';
+import Shimmer from '$lib/components/loading/Shimmer.svelte';
 import ToggleChips from '$lib/components/toggle-chips/ToggleChips.svelte';
 import circleCheck from '$lib/icons/regular/circle-check.svg?raw';
 import fileImport from '$lib/icons/regular/file-import.svg?raw';
@@ -30,31 +33,48 @@ const id = $props.id();
 const shownName = $derived(savedName.value?.split(' ').at(0) ?? firstName);
 const hasName = $derived(named || !!savedName.value);
 let tab = $state<FirstNightTab['key']>('shows');
+/** A tab's picks: two rows of the wall's six. */
+const SHOWN = 12;
 </script>
 
-{#await firstNight}
-  <section class="first-night loading" aria-label="Welcome to Trakt" aria-busy="true"></section>
-{:then night}
-  {@const current = night.tabs.find((each) => each.key === tab) ?? night.tabs.at(0)}
-  <section class="first-night" aria-labelledby={id}>
+<section class="first-night" aria-labelledby={id}>
+  {#await firstNight then night}
     {#if night.backdrop}<img class="backdrop" src={night.backdrop} alt="" />{/if}
-    <div class="glow"></div>
-    <Container>
-      <div class="wall">
-        <header class="intro">
-          <AvatarPicker src={avatarUrl} />
-          <div class="hello">
-            <p class="eyebrow">Tonight's premiere</p>
-            <h1 {id}>Welcome to Trakt{hasName ? `, ${shownName}` : ''}. <span>Let's fill your shelf.</span></h1>
-            {#if !hasName}<NamePrompt quiet onsaved={() => {}} />{/if}
-          </div>
-        </header>
-        <div class="segment">
-          <PanelHeading id="{id}-import" title="Import Your History" icon={fileImport} />
-          <ImportStrip />
+  {:catch}
+    <!-- Without the art, the wall's glow alone. -->
+  {/await}
+  <div class="glow"></div>
+  <Container>
+    <div class="wall">
+      <header class="intro">
+        <AvatarPicker src={avatarUrl} />
+        <div class="hello">
+          <p class="eyebrow">Tonight's premiere</p>
+          <h1 {id}>Welcome to Trakt{hasName ? `, ${shownName}` : ''}. <span>Let's fill your shelf.</span></h1>
+          {#if !hasName}<NamePrompt quiet onsaved={() => {}} />{/if}
         </div>
-        <div class="segment">
-          <PanelHeading id="{id}-seen" title="What Have You Seen?" icon={circleCheck} />
+      </header>
+      <div class="segment">
+        <PanelHeading id="{id}-import" title="Import Your History" icon={fileImport} />
+        <ImportStrip />
+      </div>
+      <div class="segment">
+        <PanelHeading id="{id}-seen" title="What Have You Seen?" icon={circleCheck} />
+        {#await firstNight}
+          <div class="pending" aria-busy="true">
+            <div class="chips">
+              {#each [1, 2, 3] as chip (chip)}
+                <Shimmer inline="var(--first-night-shimmer-chip-{chip})" block="var(--control-height)" />
+              {/each}
+            </div>
+            <div class="posters">
+              {#each { length: SHOWN } as _, i (i)}
+                <PickShimmer />
+              {/each}
+            </div>
+          </div>
+        {:then night}
+          {@const current = night.tabs.find((each) => each.key === tab) ?? night.tabs.at(0)}
           <ToggleChips label="Titles to pick from" options={night.tabs.map(({ key, label }) => ({ id: key, label }))}
             bind:selected={() => current?.key ?? tab, (key) => (tab = key as FirstNightTab['key'])} />
           {#if current}
@@ -64,13 +84,13 @@ let tab = $state<FirstNightTab['key']>('shows');
               {/each}
             </div>
           {/if}
-        </div>
+        {:catch}
+          <!-- The charts are public; if they fail, the imports are still there. -->
+        {/await}
       </div>
-    </Container>
-  </section>
-{:catch}
-  <!-- The charts are public; if they fail, the plain dashboard is still there. -->
-{/await}
+    </div>
+  </Container>
+</section>
 
 <style>
 /* Always over dark art, so the poster cards take their Dark Knight colors in either theme. */
@@ -80,10 +100,6 @@ let tab = $state<FirstNightTab['key']>('shows');
   overflow: hidden;
   background: var(--color-first-night-bg);
   color: var(--color-first-night-text);
-
-  &.loading {
-    min-block-size: 520px;
-  }
 }
 
 .backdrop {
@@ -127,9 +143,17 @@ let tab = $state<FirstNightTab['key']>('shows');
   }
 }
 
-.segment {
+.segment,
+.pending {
   display: grid;
   gap: 10px;
+}
+
+/* The tabs' place, each chip as wide as its label. */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-dropdown-row);
 }
 
 .eyebrow {

@@ -1,5 +1,6 @@
 <script lang="ts">
 import Container from '$lib/components/container/Container.svelte';
+import DialogArtHeader from '$lib/components/dialog/DialogArtHeader.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import FilterMenu from '$lib/components/filters/FilterMenu.svelte';
 import ReportDialog from '$lib/components/summary/ReportDialog.svelte';
@@ -28,6 +29,7 @@ let movies = $state(true);
 let shows = $state(true);
 let reportOpen = $state(false);
 let watchOpen = $state(false);
+const tasteTags = [{ text: '2 of 5 services' }, { text: '3 of 5 genres' }];
 // Lines break at \n, like OG's <br>.
 const tips = {
   plays: '12 plays\nLast watched Sep 29, 2026',
@@ -105,6 +107,20 @@ const tips = {
   </Variant>
 </Specimen>
 
+<Specimen title="Art header" row
+  note="Tune your picks' header at the art dialogs' width. While its art loads, the title and tags already show.">
+  <Variant label="Loaded">
+    <div class="art-header">
+      <DialogArtHeader id="art-header-loaded" title="Tune your picks" fanart={data.fanart} tags={tasteTags} />
+    </div>
+  </Variant>
+  <Variant label="Loading">
+    <div class="art-header">
+      <DialogArtHeader id="art-header-loading" title="Tune your picks" tags={tasteTags} loading />
+    </div>
+  </Variant>
+</Specimen>
+
 <Specimen title="Watch Now" bleed
   note="The block under a summary poster, at the sidebar's width. Its button opens the where-to-watch dialog.">
   <Container>
@@ -166,6 +182,14 @@ const tips = {
   fanart={data.fanart} />
 
 <style>
+/* The header's own width and corners, as the dialog around it gives them. */
+.art-header {
+  inline-size: var(--dialog-width-art-list);
+  max-inline-size: 100%;
+  overflow: hidden;
+  border-radius: var(--radius-dialog);
+}
+
 /* Triggers keep their own width in a Variant's column. */
 .start {
   justify-self: start;

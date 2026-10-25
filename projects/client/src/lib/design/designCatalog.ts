@@ -35,7 +35,7 @@ export const designCatalog: readonly DesignGroup[] = [
       {
         slug: 'loader',
         title: 'Loaders',
-        summary: 'The page loader over a list while it loads, and the shimmer bars on the home page.',
+        summary: "The page loader over a list, the shimmer bars on the home page and the dashboard's shimmer cards.",
         source: 'components/loading',
       },
     ],

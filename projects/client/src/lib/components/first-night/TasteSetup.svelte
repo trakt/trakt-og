@@ -1,7 +1,8 @@
 <!--
-  "Tune your picks", in the Watch Now popup's look: an art header, where the member watches as that popup's service
-  tiles (up to five), and up to five genres they love as icon tiles, like v3's genre picker. Save writes the watch-now favorites
-  and favorite genres to their Trakt settings, which v3 and the apps read too, then reloads the page data.
+  "Tune your picks", in the Watch Now popup's look: an art header (shimmering until its art lands), where the member
+  watches as that popup's service tiles (up to five), and up to five genres they love as icon tiles, like v3's genre
+  picker. Save writes the watch-now favorites and favorite genres to their Trakt settings, which v3 and the apps read
+  too, then reloads the page data.
 -->
 <script lang="ts">
 import { invalidateAll } from '$app/navigation';
@@ -97,9 +98,14 @@ async function save() {
 
 <Dialog bind:open title="Tune your picks" size="xxl" variant="art" lightDismiss>
   {#snippet header(id)}
-    {#await art then fanart}
-      <DialogArtHeader {id} title="Tune your picks" {fanart}
-        tags={[{ text: `${pickedHere} of ${SERVICE_LIMIT} services` }, { text: `${loved.size} of ${GENRE_LIMIT} genres` }]} />
+    {@const tags = [
+      { text: `${pickedHere} of ${SERVICE_LIMIT} services` },
+      { text: `${loved.size} of ${GENRE_LIMIT} genres` },
+    ]}
+    {#await art}
+      <DialogArtHeader {id} title="Tune your picks" {tags} loading />
+    {:then fanart}
+      <DialogArtHeader {id} title="Tune your picks" {fanart} {tags} />
     {/await}
   {/snippet}
   <!-- Focus starts on the popup itself, not on its first tile. -->

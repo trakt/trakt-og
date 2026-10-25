@@ -1,9 +1,11 @@
 <!--
   A few of the Trakt team, shuffled each visit, as avatars that follow on a tap. A small badge says so: a green plus
   to follow, then solid green with a tick and a green ring once followed; a second tap unfollows. A follow goes into
-  the overlay's network at once, so a credit counting follows ticks without a reload.
+  the overlay's network at once, so a credit counting follows ticks without a reload. Shimmering avatars hold their
+  place until the team loads.
 -->
 <script lang="ts">
+import Shimmer from '$lib/components/loading/Shimmer.svelte';
 import { toast } from '$lib/components/toast/toast.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import { fetchTeamToFollow } from '$lib/firstNight/teamToFollow';
@@ -50,7 +52,13 @@ async function toggle(slug: string, isPrivate: boolean) {
 }
 </script>
 
-{#await team then members}
+{#await team}
+  <div class="team" aria-busy="true">
+    {#each { length: count } as _, i (i)}
+      <Shimmer inline="var(--team-quick-avatar)" block="var(--team-quick-avatar)" round />
+    {/each}
+  </div>
+{:then members}
   <ul class="team" aria-label="The Trakt team">
     {#each members.slice(0, count) as member (member.slug)}
       {@const on = following(member.slug)}

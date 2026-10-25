@@ -3,7 +3,7 @@
   Type dropdown. The pick in the spotlight fills most of the row, and beside it six posters from the list, the
   spotlighted one ringed. Clicking a poster, or the arrows, moves the spotlight; the posters only page when the
   spotlight leaves them. Pass the unawaited `fetchRecommendations` promise from the loader, so the page streams in.
-  Until the first list lands, placeholders hold its size, and while another type loads the last list stays, dimmed, so
+  Until the first list lands, shimmering placeholders hold its size, and while another type loads the last list stays, dimmed, so
   the page never jumps. OG has no page for shows and movies together, so the mix links to both.
 -->
 <script lang="ts">
@@ -11,6 +11,7 @@ import { page } from '$app/state';
 import { SvelteSet } from 'svelte/reactivity';
 import Container from '$lib/components/container/Container.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
+import Shimmer from '$lib/components/loading/Shimmer.svelte';
 import NoData from '$lib/components/empty/NoData.svelte';
 import PanelPrompt from '$lib/components/first-night/PanelPrompt.svelte';
 import { panelQuotes } from '$lib/firstNight/panelQuotes';
@@ -167,11 +168,15 @@ const step = (count: number, by: -1 | 1) => (focus = (focus + by + count) % coun
   </div>
 {/snippet}
 
-<!-- The same boxes as a landed list, empty and inert, so nothing moves when it lands. -->
+<!-- The same boxes as a landed list, shimmering and inert, so nothing moves when it lands. -->
 {#snippet placeholders()}
   <div class="layout" inert aria-hidden="true">
-    <div class="stage"><div class="spotlight-placeholder"></div></div>
-    {@render posters([], 0, -1)}
+    <div class="stage"><div class="placeholder spotlight-placeholder"><Shimmer inline="100%" block="100%" /></div></div>
+    <div class="posters">
+      {#each Array.from({ length: perPage }, (_, i) => i) as slot (slot)}
+        <span class="placeholder poster-placeholder"><Shimmer inline="100%" block="100%" /></span>
+      {/each}
+    </div>
   </div>
 {/snippet}
 
@@ -206,7 +211,7 @@ const step = (count: number, by: -1 | 1) => (focus = (focus + by + count) % coun
 <div class="recommendations">
   <Container>
     <section aria-labelledby="recommendations-heading" aria-busy={loading} bind:clientWidth={width}>
-      <PanelHeading id="recommendations-heading" title="Recommendations" icon={option.icon} {loading} aside={links} />
+      <PanelHeading id="recommendations-heading" title="Recommendations" icon={option.icon} aside={links} />
       {#if onpick}
         <div class="bar">
           <Dropdown section="Type">
@@ -301,10 +306,20 @@ section {
   }
 }
 
+/* The shimmer fills its box, and the box's corners round it. */
+.placeholder {
+  display: flex;
+  overflow: hidden;
+}
+
 .spotlight-placeholder {
   min-block-size: var(--recommendations-spotlight-min-height);
   border-radius: var(--radius-recommendations-spotlight);
-  background: var(--color-recommendations-placeholder);
+}
+
+.poster-placeholder {
+  aspect-ratio: var(--ratio-poster);
+  border-radius: var(--radius-recommendations-poster);
 }
 
 .posters {

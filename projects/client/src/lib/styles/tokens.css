@@ -287,6 +287,14 @@
   --font-size-card-subtitle: 12px;
   --line-height-card-subtitle: 13px;
   --space-card-subtitle: 5px; /* above each line under the title */
+  /* A card's shimmer while its panel loads, as tall as the card it holds the place of */
+  --card-shimmer-bar: 40px; /* a fanart card's quick-icon bar */
+  --card-shimmer-bar-small: 35px; /* a poster card's */
+  --space-card-shimmer-bar: 2px; /* the art to its bar */
+  --space-card-shimmer-title: 11px; /* the bar to the title's letters */
+  --space-card-shimmer-titles-end: 5px; /* under the subtitle's letters */
+  --card-shimmer-title-width: 70%;
+  --card-shimmer-subtitle-width: 45%;
   --font-size-card-tag: 11px; /* tags above a title, rank pill */
   --radius-card-tag: var(--radius-tag); /* the calendar's Today tag */
   --space-card-tag-icon: 4px; /* a tag's heart to its number */
@@ -485,11 +493,11 @@
   /* Dashboard panels */
   --color-panel-gray: light-dark(#e5e5e5, #1d1d1d); /* #ondeck-wrapper */
   --color-watchlist-bg: light-dark(#e5e5e5, var(--dk-bg3)); /* body.dashboard #list-wrapper */
+  --watchlist-shimmer-sort-width: 160px; /* "Sorted by" and the sort's name, until the watchlist lands */
   /* dark-knight's `section > .container > .posters` and `#recently-watched-wrapper` quick-icon bars */
   --color-panel-quick-icons: light-dark(#1d1d1d, var(--dk-bg2));
   --color-help-text: light-dark(#777, #999);
   --font-size-help-text: 14px;
-  --space-heading-icon: 10px;
   /* A section heading's icon as a faint watermark, mostly in the margin left of the title (HeadingMark). */
   --font-size-heading-mark: 80px;
   --space-heading-mark-inline: -56px;
@@ -685,6 +693,12 @@
   --font-size-schedule-row: 13px;
   --space-schedule-watch-now-icon: 6px;
   --space-schedule-watch-now: 14px; /* above Watch Now */
+  /* Its shimmers until the first schedule lands */
+  --schedule-shimmer-day-width: 110px; /* a day's name and date */
+  --schedule-shimmer-title-width: 60%; /* a card's show */
+  --schedule-shimmer-line-width: 80%;
+  --schedule-shimmer-short-width: 45%;
+  --space-schedule-shimmer-lines: 8px;
 
   /* The dashboard's Last 30 Days: stacked bars in the genre tooltip's show and movie colors, week brackets over them,
      and genre-style keys over them. */
@@ -714,6 +728,9 @@
   --minutes-average-lift: 3px; /* the average's label, over its line */
   --space-minutes-keys: 32px; /* under the stat keys, so they don't run into the week totals */
   --space-minutes-genres: 48px; /* under the chart, before the genre band */
+  --minutes-shimmer-keys-height: 68px; /* a stat key's place until the month lands */
+  --minutes-shimmer-genre-keys-height: 86px; /* a genre key's, under the band's */
+  --minutes-shimmer-chart-height: 190px; /* the chart's, from the week totals to the day labels */
   --font-size-minutes-week: 11px;
   --font-size-minutes-label: 10px; /* hour lines, the average and the day labels */
   --minutes-bar-hit-height: 5px;
@@ -728,6 +745,7 @@
   --color-social-on-image: #fff;
   --space-social-band: 30px; /* above and below the Most Active band */
   --space-social-live-top: 12px; /* the dropdowns to the watching now cards (or the posters), over the grid's own gutter */
+  --social-shimmer-dropdown-width: 130px; /* a Period or View dropdown's place until the feed lands */
   --space-social-live-end: 12px; /* the watching now cards' last line to the posters' faces */
   --space-social-grid-end: 14px; /* the last posters' lines to the less and more pill */
   --social-face: 28px; /* who's on a grid poster */
@@ -3611,12 +3629,22 @@
   --about-day-first-space: 16px; /* the tagline to the first day */
   --font-size-about-commit-icon: 18px;
   --about-commit-tag-gap: 8px; /* the section tag before a commit's subject */
+  --about-commit-shimmer-long: 70%; /* a subject's place until GitHub answers; every other row is shorter */
+  --about-commit-shimmer-short: 45%;
+  --about-commit-shimmer-sha: 90px; /* the avatar and short sha */
   --about-change-gap: 12px;
   --about-change-padding: 6px;
   --about-panel-gap: 12px;
   --about-issue-padding: 10px;
   --about-issue-number: 40px; /* #1234 in the small mono face */
   --about-issue-number-nudge: 2px; /* onto the title's first line */
+  /* A panel's count and issues until GitHub answers */
+  --about-issue-shimmer-count: 52px;
+  --about-issue-shimmer-pill-height: calc(var(--font-size-search-pill) * var(--line-height-search-pill) + 2 * 3px);
+  --about-issue-shimmer-number: 34px; /* #1234 */
+  --about-issue-shimmer-title-short: 60%; /* a title's second line */
+  --about-issue-shimmer-label: 76px; /* its label pill */
+  --about-issue-shimmer-date: 48px; /* the day it opened or closed */
   --about-empty-top: 24px;
   --about-panel-inline: 22px;
   --about-panel-head-padding: 16px 16px 16px var(--about-panel-inline); /* the tag as far from the right as the top */
@@ -4053,6 +4081,11 @@
   --nudge-width: 340px;
   --nudge-shadow: 0 16px 40px rgb(0 0 0 / 0.5);
   --pick-shadow: 0 6px 16px rgb(0 0 0 / 0.45);
+  --pick-shimmer-gap: 8px; /* a pick's poster to its button, held until its chart lands */
+  /* The wall's chips until its charts land, each as wide as its label */
+  --first-night-shimmer-chip-1: 159px; /* Most watched shows */
+  --first-night-shimmer-chip-2: 164px; /* Most watched movies */
+  --first-night-shimmer-chip-3: 111px; /* Trending now */
   --import-tile-height: 64px;
   --import-logo-height: 28px;
   --color-import-tile: rgb(255 255 255 / 0.06);
@@ -4065,6 +4098,9 @@
   --team-follow-columns: 2;
   --team-follow-padding: 12px;
   --team-follow-avatar: 44px;
+  --team-follow-shimmer-name: 96px; /* a member's name until the team lands */
+  --team-follow-shimmer-place: 64px; /* ...and their city */
+  --team-follow-shimmer-button: 101px; /* their Follow button */
   --color-team-follow-bg: light-dark(rgb(0 0 0 / 0.04), rgb(255 255 255 / 0.05));
   --first-night-avatar: 96px;
   --first-night-avatar-badge: 30px;

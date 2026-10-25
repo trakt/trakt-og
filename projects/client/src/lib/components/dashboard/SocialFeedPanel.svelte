@@ -3,7 +3,8 @@
   then whoever's watching now as fanart cards, three across, and a poster grid of the rest of the period with the
   viewer's own quick icons, so each title shows where they stand and can be marked or listed from here. A Most Active
   panel follows with a band of who did the most. Pass the unawaited `fetchSocialFeed` promise from the loader: it
-  brings today, and the browser fetches the other periods when they're picked. After it renders, the browser asks
+  brings today, and the browser fetches the other periods when they're picked. Until a period lands, shimmering
+  cards hold its place. After it renders, the browser asks
   what the most recently active members are watching, every 2 minutes while the tab is visible.
 -->
 <script lang="ts">
@@ -12,6 +13,8 @@ import { browser } from '$app/environment';
 import { apiQueue } from '$lib/api/apiQueue';
 import { rawApiFetch } from '$lib/api/rawApiFetch';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
+import CardShimmerRow from '$lib/components/loading/CardShimmerRow.svelte';
+import Shimmer from '$lib/components/loading/Shimmer.svelte';
 import NoData from '$lib/components/empty/NoData.svelte';
 import PanelPrompt from '$lib/components/first-night/PanelPrompt.svelte';
 import TeamToFollow from '$lib/components/first-night/TeamToFollow.svelte';
@@ -304,6 +307,8 @@ const lead = $derived(period === 'today' ? 'today' : period === 'yesterday' ? 'y
               {/each}
             </PosterGrid>
           </div>
+        {:else}
+          <div class="grid"><CardShimmerRow columns={PER_ROW} ratio="poster" /></div>
         {/if}
       </div>
     {/snippet}
@@ -332,7 +337,15 @@ const lead = $derived(period === 'today' ? 'today' : period === 'yesterday' ? 'y
   {@render panel(false, broken)}
 {/await}
 
-{#snippet pending()}{/snippet}
+{#snippet pending()}
+  <div class="shimmers">
+    <div class="controls">
+      <Shimmer inline="var(--social-shimmer-dropdown-width)" block="var(--control-height)" />
+      <Shimmer inline="var(--social-shimmer-dropdown-width)" block="var(--control-height)" />
+    </div>
+    <div class="grid"><CardShimmerRow columns={PER_ROW} ratio="poster" /></div>
+  </div>
+{/snippet}
 
 {#snippet nobody()}
   <PanelPrompt quote={panelQuotes.socialFeed}
@@ -358,9 +371,13 @@ const lead = $derived(period === 'today' ? 'today' : period === 'yesterday' ? 'y
 
 /* the panel fades in when its data lands, as OG's lazy panels did. */
 .feed {
-  padding-block-start: var(--space-heading-dropdowns);
   container-type: inline-size;
   animation: fade-in var(--transition-card) ease-out;
+}
+
+.feed,
+.shimmers {
+  padding-block-start: var(--space-heading-dropdowns);
 }
 
 .controls {

@@ -2,12 +2,13 @@
   The sidebar beside What shipped: Coming Attractions (the newest open issues), titled like a trailer's green-band card,
   and Previously On (the latest closed), titled like a VCR rewinding,
   each with its count as a tag that links to the rest on GitHub, and every issue's label and the day it opened or
-  closed as tags. A panel with no issues says so, with a way to open the first one.
+  closed as tags. A panel with no issues says so, with a way to open the first one. Until GitHub answers, a shimmering
+  count and rows hold their place.
 -->
 <script lang="ts">
 import LinkButton from '$lib/components/button/LinkButton.svelte';
 import TagPills from '$lib/components/labels/TagPills.svelte';
-import Spinner from '$lib/components/loading/Spinner.svelte';
+import Shimmer from '$lib/components/loading/Shimmer.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import circleCheck from '$lib/icons/solid/circle-check.svg?raw';
 import openIcon from '$lib/icons/regular/circle-dot.svg?raw';
@@ -28,6 +29,8 @@ const { open, closed, loading }: Props = $props();
 
 /** Each panel lists this many; the count tag links to the rest on GitHub. */
 const SHOWN = 5;
+/** Rows held while GitHub answers. */
+const SHIMMERS = 3;
 
 const panels = $derived([
   {
@@ -73,7 +76,7 @@ const panels = $derived([
 <aside class="issues" aria-label="Issues on GitHub">
   {#each panels as panel (panel.id)}
     {@const issues = panel.list?.issues.slice(0, SHOWN).map((issue) => toAboutIssue(issue, panel.state)) ?? []}
-    <section class="panel" aria-labelledby={panel.id}>
+    <section class="panel" aria-labelledby={panel.id} aria-busy={!panel.list}>
       <div class={['head', panel.theme]}>
         <p class="fine">{panel.fine}</p>
         <h2 id={panel.id}>{#if panel.theme === 'vcr'}<span class="rewind" aria-hidden="true">◀◀</span>{/if}{panel.title}</h2>
@@ -89,7 +92,7 @@ const panels = $derived([
             }]}
           />
         {:else}
-          <Spinner />
+          <Shimmer inline="var(--about-issue-shimmer-count)" block="var(--about-issue-shimmer-pill-height)" />
         {/if}
       </div>
       {#if panel.list && issues.length === 0}
@@ -99,6 +102,24 @@ const panels = $derived([
           <p>{panel.empty.text}</p>
           <LinkButton href={panel.empty.action.href} variant="outline">{panel.empty.action.text}</LinkButton>
         </div>
+      {:else if !panel.list}
+        <ul aria-hidden="true">
+          {#each { length: SHIMMERS } as _, i (i)}
+            <li class="row">
+              <span class="number">
+                <Shimmer inline="var(--about-issue-shimmer-number)" block="var(--font-size-small)" />
+              </span>
+              <span class="lines">
+                <Shimmer inline="100%" block="var(--font-size-base)" />
+                <Shimmer inline="var(--about-issue-shimmer-title-short)" block="var(--font-size-base)" />
+              </span>
+              <span class="tags">
+                <Shimmer inline="var(--about-issue-shimmer-label)" block="var(--about-issue-shimmer-pill-height)" />
+                <Shimmer inline="var(--about-issue-shimmer-date)" block="var(--about-issue-shimmer-pill-height)" />
+              </span>
+            </li>
+          {/each}
+        </ul>
       {:else if issues.length > 0}
         <ul>
           {#each issues as issue (issue.number)}
@@ -154,7 +175,7 @@ const panels = $derived([
     font-size: var(--font-size-h4);
   }
 
-  & > :global(:is(.tag-pills, .spinner)) {
+  & > :global(:is(.tag-pills, .shimmer)) {
     grid-area: 2 / 2;
   }
 }
@@ -234,11 +255,15 @@ ul,
 }
 
 /* The number column fits a four-digit issue, right aligned so the titles start in one line. */
-li a {
+li a,
+.row {
   display: grid;
   grid-template-columns: var(--about-issue-number) minmax(0, 1fr);
   gap: var(--about-flow-gap) var(--about-change-gap);
   padding-block: var(--about-issue-padding);
+}
+
+li a {
   color: var(--color-home-soft);
 
   &:is(:hover, :focus-visible) {
@@ -269,6 +294,18 @@ li a {
 
 .tags {
   grid-column: 2;
+}
+
+/* A shimmering row's title as two lines, each as tall as its letters and centered in the line it holds. */
+.lines {
+  display: grid;
+  gap: calc(var(--font-size-base) * (var(--line-height-base) - 1));
+  padding-block: calc(var(--font-size-base) * (var(--line-height-base) - 1) / 2);
+}
+
+.row .tags {
+  display: flex;
+  gap: var(--search-pill-gap);
 }
 
 .empty {

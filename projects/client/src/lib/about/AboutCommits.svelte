@@ -1,7 +1,7 @@
 <!--
   The latest commits on main, straight from GitHub, under a running date header for each day: each one's type as a
   colored tile with its icon, the site section as a tag in the tile's color and the subject, who wrote it and a link to it. The full history is a
-  button away on GitHub.
+  button away on GitHub. Until GitHub answers, shimmering rows hold their place.
 -->
 <script lang="ts">
 import PanelHeading from '$lib/components/dashboard/PanelHeading.svelte';
@@ -9,6 +9,7 @@ import PanelHelp from '$lib/components/dashboard/PanelHelp.svelte';
 import LinkButton from '$lib/components/button/LinkButton.svelte';
 import TagPills from '$lib/components/labels/TagPills.svelte';
 import Icon from '$lib/icons/Icon.svelte';
+import Shimmer from '$lib/components/loading/Shimmer.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import github from '$lib/icons/brands/github.svg?raw';
 import { commitTypeTile } from './github/commitTypeTile.ts';
@@ -56,7 +57,7 @@ const dayLabel = (day: string) => {
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
 <section class="commits" aria-labelledby="about-commits" aria-busy={commits === null}>
-  <PanelHeading id="about-commits" title="Recently Landed" icon={github} loading={commits === null} seeMore={{ href: ogRepoUrls.commits, text: 'All commits' }} />
+  <PanelHeading id="about-commits" title="Recently Landed" icon={github} seeMore={{ href: ogRepoUrls.commits, text: 'All commits' }} />
   <PanelHelp>What's new in OG Redux, straight from the commit log.</PanelHelp>
   {#each days as group (group.day)}
     <h3 class="day">{dayLabel(group.day)}</h3>
@@ -84,7 +85,18 @@ const dayLabel = (day: string) => {
       {/each}
     </ul>
   {/each}
-  {#if commits}
+  {#if commits === null}
+    <ul class="shimmers">
+      {#each Array.from({ length: 5 }, (_, i) => i) as row (row)}
+        <li>
+          <Shimmer inline="var(--about-commit-tile)" block="var(--about-commit-tile)" />
+          <Shimmer inline={row % 2 ? 'var(--about-commit-shimmer-short)' : 'var(--about-commit-shimmer-long)'}
+            block="var(--font-size-base)" />
+          <Shimmer inline="var(--about-commit-shimmer-sha)" block="var(--font-size-small)" />
+        </li>
+      {/each}
+    </ul>
+  {:else}
     <p class="more"><LinkButton href={ogRepoUrls.commits} variant="outline">Full commit history on GitHub</LinkButton></p>
   {/if}
 </section>
@@ -127,6 +139,11 @@ const dayLabel = (day: string) => {
     block-size: 1px;
     background: var(--color-home-line);
   }
+}
+
+/* Rows stand off the tagline the way the first day does. */
+.shimmers {
+  margin-block-start: var(--about-day-first-space);
 }
 
 ul {

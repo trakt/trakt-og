@@ -1,12 +1,14 @@
 <!--
   The dashboard's Watchlist panel: the first 18 items of the viewer's
   watchlist in its own sort, one row of six at first, with the less and more pill for up to three. Pass the unawaited
-  `fetchWatchlist` promise from the loader, so the page streams in and this panel spins until it lands, and fails on
+  `fetchWatchlist` promise from the loader, so the page streams in and a row of shimmering cards holds its place until it lands, and fails on
   its own if it doesn't.
 -->
 <script lang="ts">
 import type { Snippet } from 'svelte';
 import { browser } from '$app/environment';
+import CardShimmerRow from '$lib/components/loading/CardShimmerRow.svelte';
+import Shimmer from '$lib/components/loading/Shimmer.svelte';
 import NoData from '$lib/components/empty/NoData.svelte';
 import PanelPrompt from '$lib/components/first-night/PanelPrompt.svelte';
 import StarterPicks from '$lib/components/first-night/StarterPicks.svelte';
@@ -60,11 +62,12 @@ const allText = (total: number) => `All ${total.toLocaleString('en-US')} ${total
   icon={listCheck}
   {loading}
   seeMore={list ? { href: `/users/${username}/watchlist`, text: allText(list.total) } : undefined}
-  help={list ? sorted : undefined}
+  help={list ? sorted : loading ? sorting : undefined}
   {footer}
 >
     {@render content()}
   </DashboardPanel>
+  {#snippet sorting()}<Shimmer inline="var(--watchlist-shimmer-sort-width)" block="var(--font-size-help-text)" />{/snippet}
   {#snippet sorted()}
     Sorted by {list?.sortName}<span class={['direction', list?.sortHow]}><Icon svg={arrow} /></span>
   {/snippet}
@@ -104,7 +107,9 @@ const allText = (total: number) => `All ${total.toLocaleString('en-US')} ${total
   {@render panel(false, failed)}
 {/await}
 
-{#snippet pending()}{/snippet}
+{#snippet pending()}
+  <div class="shimmers"><CardShimmerRow columns={PER_ROW} ratio="poster" /></div>
+{/snippet}
 
 {#snippet failed()}
   <div class="notice">
@@ -130,8 +135,12 @@ const allText = (total: number) => `All ${total.toLocaleString('en-US')} ${total
 
 /* the panel fades in when its data lands, as OG's lazy panels did. OG's `#list-items` kept no margin under
    the posters. */
-.cards {
+.cards,
+.shimmers {
   margin-block-end: calc(-1 * var(--gutter));
+}
+
+.cards {
   animation: fade-in var(--transition-card) ease-out;
 }
 

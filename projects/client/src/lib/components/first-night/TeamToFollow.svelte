@@ -1,14 +1,18 @@
 <!--
   An empty Social Feed's suggestion: eight of the Trakt team, shuffled each visit, two to a row with the profile's
   follow button at each one's right. Their follow state comes from the overlay's network slice, so a follow shows right away.
+  Until the team loads, shimmering rows hold their place.
 -->
 <script lang="ts">
+import Shimmer from '$lib/components/loading/Shimmer.svelte';
 import FollowButtons from '$lib/components/users/FollowButtons.svelte';
 import { fetchTeamToFollow } from '$lib/firstNight/teamToFollow';
 import { overlay } from '$lib/overlay/overlay';
 import type { ViewerRelation } from '$lib/users/ViewerRelation';
 
 const team = fetchTeamToFollow(fetch);
+/** As many as the team brings: four rows of two. */
+const SHOWN = 8;
 
 const relation = (slug: string): ViewerRelation => {
   const network = overlay.slices().network;
@@ -23,7 +27,22 @@ const relation = (slug: string): ViewerRelation => {
 
 <!-- Profiles are og routes, built from the member's slug. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-{#await team then members}
+{#await team}
+  <div class="team" aria-busy="true">
+    {#each { length: SHOWN } as _, i (i)}
+      <div class="member" aria-hidden="true">
+        <span class="who">
+          <Shimmer inline="var(--team-follow-avatar)" block="var(--team-follow-avatar)" round />
+          <span class="lines">
+            <Shimmer inline="var(--team-follow-shimmer-name)" block="var(--font-size-base)" />
+            <Shimmer inline="var(--team-follow-shimmer-place)" block="var(--font-size-small)" />
+          </span>
+        </span>
+        <Shimmer inline="var(--team-follow-shimmer-button)" block="var(--control-height)" />
+      </div>
+    {/each}
+  </div>
+{:then members}
   {#if members.length > 0}
     <ul class="team" aria-label="The Trakt team">
       {#each members as member (member.slug)}
@@ -83,6 +102,12 @@ const relation = (slug: string): ViewerRelation => {
   &:is(:hover, :focus-visible) .name {
     text-decoration: underline;
   }
+}
+
+/* A name and a city's place while the team loads. */
+.lines {
+  display: grid;
+  gap: var(--space-xs-inline);
 }
 
 .name {

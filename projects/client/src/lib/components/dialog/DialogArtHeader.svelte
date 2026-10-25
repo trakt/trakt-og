@@ -2,11 +2,13 @@
   The art header on top of the notes and list dialogs: the item's fanart, a strip of the list's posters, or a striped
   placeholder for a new list, under a dark glass shade, with card tags over the title and `children` under it (a
   report's permalink). `full` shows the whole fanart, uncropped, for a dialog about the art itself (Set as cover
-  image). Pass it the id a Dialog `header` snippet hands over. Goes with `<Dialog variant="art">`, whose glass close sits in its corner.
+  image). `loading` shimmers in the art's place while it's on its way, with the title already over it. Pass it the id a
+  Dialog `header` snippet hands over. Goes with `<Dialog variant="art">`, whose glass close sits in its corner.
     <DialogArtHeader {id} title="The Social Network" year={2010} fanart={url} tags={[{ text: 'Favorite', kind: 'favorite' }]} />
 -->
 <script lang="ts">
 import type { Snippet } from 'svelte';
+import Shimmer from '$lib/components/loading/Shimmer.svelte';
 import CardTag from '$lib/components/media/CardTag.svelte';
 import type { CardTag as Tag } from '$lib/components/media/CardTag';
 
@@ -20,14 +22,18 @@ interface Props {
   posters?: readonly string[];
   /** The whole fanart at its own shape, not a band of it. */
   full?: boolean;
+  /** The art is still loading. */
+  loading?: boolean;
   children?: Snippet;
 }
 
-const { id, title, year, tags = [], fanart, posters = [], full = false, children }: Props = $props();
+const { id, title, year, tags = [], fanart, posters = [], full = false, loading = false, children }: Props = $props();
 </script>
 
 <header class={['art-header', { full }]}>
-  {#if fanart}
+  {#if loading}
+    <span class="art waiting"><Shimmer inline="100%" block="100%" /></span>
+  {:else if fanart}
     <img class="art" src={fanart} alt="" />
   {:else if posters.length > 0}
     <div class="art posters">{#each posters as poster, i (i)}<img src={poster} alt="" />{/each}</div>
@@ -93,6 +99,15 @@ const { id, title, year, tags = [], fanart, posters = [], full = false, children
 
 .empty {
   background: var(--gradient-dialog-art-empty);
+}
+
+/* The shimmer runs edge to edge, square under the dialog's own corners. */
+.waiting {
+  display: flex;
+
+  & :global(.shimmer) {
+    border-radius: 0;
+  }
 }
 
 /* Clear of the glass close in the corner. */

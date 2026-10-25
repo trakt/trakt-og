@@ -15,6 +15,7 @@ import circleMinus from '$lib/icons/light/circle-minus.svg?raw';
 import historyIcon from '$lib/icons/light/clock-rotate-left.svg?raw';
 import WatchPopover from '$lib/components/history/WatchPopover.svelte';
 import { loadWatchEpisodes } from '$lib/components/history/loadWatchEpisodes';
+import { fetchLatestPlay } from '$lib/components/history/fetchLatestPlay';
 import { watchMedia } from '$lib/components/history/watchMedia';
 import { watchAction } from '$lib/components/history/watchAction';
 import type { HistoryPlay } from '$lib/components/history/HistoryPlay';
@@ -114,7 +115,19 @@ const request = (path: string, body?: unknown) =>
       ? undefined
       : { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) },
   });
-async function watch(watchedAt: string | null, force: boolean, onlyPlay?: HistoryPlay) {
+// History rows know their play. Elsewhere a movie or episode removes its most recent one.
+const removePlay = $derived(
+  play && onremove
+    ? play
+    : !onremove && (type === 'movie' || type === 'episode')
+    ? () => fetchLatestPlay({ target: { type, id }, request })
+    : undefined,
+);
+async function watch(
+  watchedAt: string | null,
+  force: boolean,
+  onlyPlay?: HistoryPlay | (() => Promise<HistoryPlay>),
+) {
   if (busy) return;
   busy = true;
   try {
@@ -129,7 +142,7 @@ async function watch(watchedAt: string | null, force: boolean, onlyPlay?: Histor
       episodes: () => loadWatchEpisodes({ target, fetch: viewerFetch() }),
       confirm: (count) => prompt?.confirm({ count, title: target.title }) ?? Promise.resolve(false),
     });
-    if (saved && watchedAt === null) onremove?.(onlyPlay);
+    if (saved && watchedAt === null) onremove?.(onlyPlay ? play : undefined);
     if (saved) onsave?.(watchedAt);
     if (saved) refreshSoon();
   } finally {
@@ -163,7 +176,7 @@ async function open(force: boolean): Promise<'date' | 'remove' | 'partial' | nul
   tooltip={onremove ? 'Remove from history' : variant === 'card' ? fill.titles.watched ?? 'Add to watched history' : undefined}
   summary={{ icon: check, text: percent ? rewatching ? 'rewatched' : 'watched' : label, percent, detail: started ? detail : undefined }}
   more={hasHistory || dropped ? more : undefined}
-  onremovePlay={play && onremove ? () => void watch(null, false, play) : undefined}
+  onremovePlay={removePlay ? () => void watch(null, false, removePlay) : undefined}
   onopen={open} onwatch={watch} onremaining={remaining} {oncheckin}
   oninvalid={() => toast.error('Invalid date format, please use the date picker.')}>
   {#snippet trigger()}

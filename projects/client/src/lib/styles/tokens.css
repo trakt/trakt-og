@@ -965,6 +965,12 @@
   --line-height-search-pill: 1.2;
   --search-poster-width: 40px;
   --search-id-menu-width: 140px; /* the ID lookup menu */
+  --search-shimmer-section: 110px; /* the starting list's label, while it loads */
+  --search-shimmer-title-long: 40%; /* a row's title; every other one is shorter */
+  --search-shimmer-title-short: 25%;
+  --search-shimmer-type: 46px; /* a row's type pill */
+  --search-shimmer-genres: 160px; /* and its genres */
+  --search-shimmer-pill: 20px; /* a pill's height */
   --search-kbd-size: 22px; /* a key cap: the field's "/" hint and the panel's key hints */
   --search-close-size: 30px;
   --space-search-panel-gap: 8px; /* between the bar and the panel */
@@ -1381,6 +1387,9 @@
     rgb(255 255 255 / 0.22) 50%,
     rgb(255 255 255 / 0.08) 75%
   ); /* over a cover or dark glass, so light on dark in both themes */
+  --option-shimmer-long: 70%; /* a picker option's name while the options load; the rows run long, mid, short */
+  --option-shimmer-mid: 55%;
+  --option-shimmer-short: 40%;
 
   /* VIP and Private labels. The VIP label is one round red pill: the logo and VIP (or Director), the OG or EP tag as a
      darker segment, and the years as a light gray segment (a black star and count), which reads on dark and light
@@ -2340,6 +2349,9 @@
   --gif-category-height: 64px;
   --gif-category-padding: 4px 8px;
   --gif-category-text-shadow: 0 1px 4px rgb(0 0 0 / 0.9);
+  --ratio-gif-shimmer-wide: 16 / 9; /* a GIF's place while the results load, in a mix of shapes */
+  --ratio-gif-shimmer-square: 1;
+  --ratio-gif-shimmer-tall: 3 / 4;
 
   /* Comment threads: the avatar column, the text bubble, the quiet actions and the rail replies hang off. */
   --comment-avatar-nested: 36px; /* replies, and the reply box on the rail */
@@ -2610,6 +2622,11 @@
   --watch-now-modal-tile-height: 56px;
   --watch-now-modal-tile-width-sm: 96px;
   --watch-now-modal-tile-height-sm: 48px;
+  --watch-now-stale-opacity: 0.5; /* the modal's tiles while another country's services load */
+  --watch-now-shimmer-label: 90px; /* a section label's place while the modal loads */
+  --watch-now-shimmer-term: 28px; /* a tile's Rent or Buy */
+  --watch-now-shimmer-amount: 40px; /* and its price */
+  --watch-now-shimmer-country: 170px; /* the footer's country picker */
   /* List picker and new-list modal (OG desktop popover/checkin modal values). */
   --list-border: 1px;
   --list-spinner-duration: 1s;
@@ -2898,6 +2915,7 @@
     linear-gradient(90deg, rgb(0 0 0 / 0.75), rgb(0 0 0 / 0.88) 35%, rgb(0 0 0 / 0.75));
   --opacity-trending-comments-backdrop: 0.4;
   --trending-comments-height: 360px;
+  --trending-comments-stale-opacity: 0.5; /* the old comment while another filter's load */
   --trending-comments-top: 30px; /* room above the heading, under the band's top edge */
   --trending-comments-bottom: 40px;
   --trending-comments-poster: 170px;
@@ -3828,6 +3846,10 @@
   --following-watching-avatar: 32px;
   --following-watching-gap: 12px; /* between the members */
   --following-watching-bar-gap: 5px; /* above and below a member's progress bar */
+  --following-watching-shimmer-show: 60%; /* a member's show while the first answer loads */
+  --following-watching-shimmer-title: 85%; /* and the episode */
+  --following-watching-shimmer-name: 70px;
+  --following-watching-shimmer-left: 40px; /* the time left */
 }
 
 /* Calendar sidebar and views: the heat-map mini month, the rail's week bars, today and pinned dates. */
@@ -3916,6 +3938,17 @@
   --filter-toggle-size: 28px;
   --filter-picker-width: 280px;
   --filter-picker-height: 360px;
+  --filter-option-shimmer-row: 34px; /* a row while the options load: the menu row's 7px around a 20px line */
+  --filter-option-shimmer-icon: 14px; /* its ⊕ and ⊖ */
+  --filter-option-shimmer-inset: calc(
+    (var(--filter-toggle-size) - var(--filter-option-shimmer-icon)) /
+    2
+  ); /* centered */
+  --filter-option-shimmer-gap: calc(
+    var(--filter-option-shimmer-inset) +
+    var(--space-xs-block) +
+    var(--space-xs-inline)
+  ); /* the name starts where a loaded one does */
 }
 
 /*

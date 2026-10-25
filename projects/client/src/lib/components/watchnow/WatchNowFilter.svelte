@@ -3,13 +3,14 @@
   search and your favorites and every service as checkable rows, each with its logo tile. Apply reloads with
   `watchnow=` (the slugs, comma separated), which the worker's `sources` reads, and the × drops them.
   `placeholder` is OG's All Types state: the icon only asks for a type first.
-  The services load on first open, from `/watchnow/sources/:country`.
+  The services load on first open, from `/watchnow/sources/:country`, with shimmering rows in their place until then.
     <WatchNowFilter value={filters.watchnow} {country} favorites={settings?.browsing?.watchnow?.favorites ?? []} />
 -->
 <script lang="ts">
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
 import FilterPopover from '$lib/components/filters/FilterPopover.svelte';
+import OptionRowShimmers from '$lib/components/loading/OptionRowShimmers.svelte';
 import { serviceLabel } from '$lib/components/filters/serviceLabel';
 import Icon from '$lib/icons/Icon.svelte';
 import play from '$lib/icons/regular/play.svg?raw';
@@ -35,6 +36,8 @@ let sources = $state<Map<string, Source> | null>(null);
 let picked = $state<string[]>([]);
 let query = $state('');
 
+// Enough to fill the list's height.
+const SHIMMER_ROWS = 6;
 const applied = $derived(value.split(',').map((slug) => slug.trim()).filter(Boolean));
 const favoriteSet = $derived(new Set(favoriteSlugs(favorites, country, country)));
 const matches = (name: string) => name.toLowerCase().includes(query.trim().toLowerCase());
@@ -79,7 +82,12 @@ function reload(slugs: readonly string[]) {
     <input type="search" placeholder="Netflix, Max…" aria-label="Search services" bind:value={query} />
   </label>
   <div class="options" role="group" aria-label="Streaming services" aria-busy={sources === null}>
-    {#if sources === null}<p class="loading">Loading services…</p>{/if}
+    {#if sources === null}
+      <ul>
+        <OptionRowShimmers rows={SHIMMER_ROWS} text="var(--font-size-menu)" inset="var(--space-service-row-padding)" gap="var(--space-service-row)"
+          before={[{ inline: 'var(--service-mini-width)', block: 'var(--service-mini-height)' }]} />
+      </ul>
+    {/if}
     {#each groups as group (group.title)}
       {#if group.options.length > 0}
         <p class="header">{group.title}</p>
@@ -107,6 +115,15 @@ function reload(slugs: readonly string[]) {
   margin: var(--space-menu) calc(var(--space-filter-popover) * -1 + var(--space-menu)) 0;
   scrollbar-width: thin;
   overflow-y: auto;
+
+  &[aria-busy='true'] {
+    overflow-y: hidden;
+  }
+
+  & ul {
+    margin: 0;
+    padding: 0;
+  }
 }
 
 .header {
@@ -117,12 +134,6 @@ function reload(slugs: readonly string[]) {
   font-weight: var(--font-weight-menu-header);
   letter-spacing: var(--letter-spacing-menu-header);
   text-transform: uppercase;
-}
-
-.loading {
-  margin: 0;
-  padding: var(--space-menu-row);
-  color: var(--color-control-muted);
 }
 
 /* A menu row with a hidden checkbox and the service's logo tile: bold red with the check on the right once picked. */

@@ -145,7 +145,7 @@ function showOverlay() {
 {/snippet}
 
 <Specimen title="Sidebar tools" bleed
-  note="A chart or calendar sidebar's eye and funnel, right of the page title, or stacked in the collapsed rail. The funnel (or the a key) opens the filters panel as a VIP sees it.">
+  note="A chart or calendar sidebar's eye and funnel, right of the page title, or stacked in the collapsed rail. The funnel (or the a key) opens the filters panel as a VIP sees it; a field's options shimmer until they load.">
   <div class="knob"><DemoToggle bind:checked={collapsed}>Collapsed rail</DemoToggle></div>
   <div class="frame">
     {#if collapsed}

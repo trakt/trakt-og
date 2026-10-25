@@ -98,7 +98,7 @@ const tips = {
 </Specimen>
 
 <Specimen title="Dialog" row
-  note="The art dialogs: the item's fanart under glass, with the form below. Report sends to the stubbed API; Where to watch loads Fight Club's real offers.">
+  note="The art dialogs: the item's fanart under glass, with the form below. Report sends to the stubbed API; Where to watch loads Fight Club's real offers, with shimmering tiles until they land.">
   <Variant label="md: Report">
     <DemoButton onclick={() => (reportOpen = true)}>Report Fight Club</DemoButton>
   </Variant>

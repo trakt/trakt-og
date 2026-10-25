@@ -1,10 +1,11 @@
 <!--
   The page loader as lists and progress pages show it, the shimmering bars that hold a number's or a name's place
-  on the home page, and the shimmering cards that hold a dashboard panel's place.
+  on the home page, the shimmering cards that hold a dashboard panel's place, and a picker's shimmering option rows.
 -->
 <script lang="ts">
 import LoadingOverlay from '$lib/components/loading/LoadingOverlay.svelte';
 import CardShimmerRow from '$lib/components/loading/CardShimmerRow.svelte';
+import OptionRowShimmers from '$lib/components/loading/OptionRowShimmers.svelte';
 import Shimmer from '$lib/components/loading/Shimmer.svelte';
 import Specimen from '$lib/design/Specimen.svelte';
 import Variant from '$lib/design/Variant.svelte';
@@ -43,11 +44,39 @@ import Variant from '$lib/design/Variant.svelte';
   </Variant>
 </Specimen>
 
+<Specimen title="Option row shimmers" row
+  note="OptionRowShimmers while a picker's options load, in the loaded rows' height so the list keeps its size.">
+  <Variant label="A filters panel field, as Genres loads">
+    <ul class="menu">
+      <OptionRowShimmers rows={4} text="var(--font-size-menu)" height="var(--filter-option-shimmer-row)"
+        inset="0 var(--filter-option-shimmer-inset)" gap="var(--filter-option-shimmer-gap)"
+        before={[{ inline: 'var(--filter-option-shimmer-icon)', block: 'var(--filter-option-shimmer-icon)', round: true }]}
+        after={{ inline: 'var(--filter-option-shimmer-icon)', block: 'var(--filter-option-shimmer-icon)', round: true }} />
+    </ul>
+  </Variant>
+  <Variant label="The streaming filter, as its services load">
+    <ul class="menu">
+      <OptionRowShimmers rows={4} text="var(--font-size-menu)" inset="var(--space-service-row-padding)"
+        gap="var(--space-service-row)"
+        before={[{ inline: 'var(--service-mini-width)', block: 'var(--service-mini-height)' }]} />
+    </ul>
+  </Variant>
+</Specimen>
+
 <style>
 /* Paint containment makes the overlay's fixed position fill this box instead of the window. */
 .viewport {
   contain: paint;
   aspect-ratio: var(--ratio-fanart);
+}
+
+.menu {
+  inline-size: var(--filter-picker-width);
+  margin: 0;
+  padding: var(--space-menu);
+  border: 1px solid var(--color-menu-border);
+  border-radius: var(--radius-menu);
+  background-color: var(--color-menu-bg);
 }
 
 .home {

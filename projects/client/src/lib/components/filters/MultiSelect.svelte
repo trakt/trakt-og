@@ -19,8 +19,6 @@ interface Props {
   placeholder: string;
   /** Names a picked value the options don't have (yet): they load when the panel first opens. */
   labelFor?: (value: string) => string;
-  /** The options are still loading. */
-  loading?: boolean;
   disabled?: boolean;
   variant?: 'list';
 }
@@ -31,7 +29,6 @@ let {
   label,
   placeholder,
   labelFor = (v: string) => v,
-  loading = false,
   disabled = false,
   variant,
 }: Props = $props();
@@ -162,9 +159,7 @@ const rows = $derived(groups.map((group, g) => {
       if (index !== undefined) highlight = index;
     }}
   >
-    {#if loading && flat.length === 0}
-      <li class="note" role="presentation">Loading...</li>
-    {:else if flat.length === 0}
+    {#if flat.length === 0}
       <li class="note" role="presentation">No results match "{search}"</li>
     {/if}
     {#each rows as group, g (g)}

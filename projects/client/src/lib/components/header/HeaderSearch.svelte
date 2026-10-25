@@ -9,7 +9,7 @@
   opens it.
   The type picks the form's `/search/<type>` action and is kept in the `search_type` cookie so SSR renders it.
   Before anything is typed, the rows are the type's starting list: the most searched shows and movies, the trending
-  lists, or this month's birthdays for People (none for the other types).
+  lists, or this month's birthdays for People (none for the other types), with shimmering rows until it lands.
   The viewer's recent searches go under the results, with Clear all on their heading.
 -->
 <script lang="ts">
@@ -28,6 +28,7 @@ import { recentSearchType } from './recentSearchType.ts';
 import type { SearchAutocompleteResult } from './searchAutocomplete.ts';
 import type { SearchTrending } from './searchTrending.ts';
 import TagPills from '$lib/components/labels/TagPills.svelte';
+import Shimmer from '$lib/components/loading/Shimmer.svelte';
 import SearchTermRow from './SearchTermRow.svelte';
 import RecentClearAll from './RecentClearAll.svelte';
 import { searchTypes } from './searchTypes.ts';
@@ -85,9 +86,13 @@ const idType = $derived(idTypes.find((option) => option.slug === type.slug));
 const action = $derived(type.slug ? `/search/${type.slug}` : '/search');
 const allHref = $derived(`${action}?${new URLSearchParams({ query })}`);
 const terms = $derived(recent?.terms ?? []);
-// Typed, the results; empty, the type's starting list, fetched once a type per visit.
-let trending = $state<Readonly<Record<string, SearchTrending>>>({});
+// Typed, the results; empty, the type's starting list, fetched once a type per visit (null while it loads).
+let trending = $state<Readonly<Record<string, SearchTrending | null>>>({});
+// The types searchTrending has a starting list for, which shimmer in its place while it loads.
+const STARTING_LISTS: ReadonlySet<string> = new Set(['', 'shows', 'movies', 'people', 'lists']);
+const SHIMMER_ROWS = 5;
 const typed = $derived(query.trim() !== '');
+const startingSoon = $derived(!typed && trending[type.slug] === null && STARTING_LISTS.has(type.slug));
 const rows = $derived<readonly SearchRow[]>(typed ? result.rows : (trending[type.slug]?.rows ?? []));
 const resultOptionCount = $derived(rows.length + (result.count ? 1 : 0));
 const options = $derived([
@@ -95,7 +100,7 @@ const options = $derived([
   ...(result.count ? [{ id: `${id}-option-all`, href: allHref }] : []),
   ...terms.map((_, index) => ({ id: `${id}-term-${index}`, href: '' })),
 ]);
-const expanded = $derived(active && options.length > 0);
+const expanded = $derived(active && (options.length > 0 || startingSoon));
 const activeId = $derived(expanded && highlight >= 0 ? options.at(highlight)?.id : undefined);
 
 let timer: ReturnType<typeof setTimeout> | undefined;
@@ -139,7 +144,7 @@ const viewerToday = () => dayIn(new Date(), page.data.datePreferences?.timeZone)
 
 const loadTrending = (picked: (typeof searchTypes)[number]) => {
   if (picked.slug in trending) return;
-  trending = { ...trending, [picked.slug]: { label: '', rows: [] } };
+  trending = { ...trending, [picked.slug]: null };
   void import('./searchTrending.ts')
     .then(({ searchTrending }) =>
       searchTrending({ type: picked, today: viewerToday(), order: page.data.datePreferences?.order })
@@ -384,8 +389,27 @@ afterNavigate(({ to }) => {
           </div>
         </div>
 
-      <ul id="{id}-results" role="listbox" aria-label="Search results" hidden={!expanded}
+      <ul id="{id}-results" role="listbox" aria-label="Search results" hidden={!expanded} aria-busy={startingSoon}
         onpointerleave={() => (highlight = -1)}>
+          {#if startingSoon}
+            <li role="presentation" class="section" aria-hidden="true"><Shimmer inline="var(--search-shimmer-section)"
+                block="var(--font-size-small)" /></li>
+            {#each { length: SHIMMER_ROWS } as _, row (row)}
+              <li role="presentation" class="result" aria-hidden="true">
+                <span class="row-shimmer">
+                  <span class="poster poster-shimmer"><Shimmer inline="100%" block="100%" /></span>
+                  <span class="info">
+                    <span><Shimmer inline={row % 2 ? 'var(--search-shimmer-title-short)' : 'var(--search-shimmer-title-long)'}
+                        block="var(--font-size-base)" /></span>
+                    <span class="pills-shimmer">
+                      <Shimmer inline="var(--search-shimmer-type)" block="var(--search-shimmer-pill)" />
+                      <Shimmer inline="var(--search-shimmer-genres)" block="var(--search-shimmer-pill)" />
+                    </span>
+                  </span>
+                </span>
+              </li>
+            {/each}
+          {/if}
           {#if rows.length}
             <li role="presentation" class="section">{typed ? 'Results' : trending[type.slug]?.label}</li>
           {/if}
@@ -819,7 +843,7 @@ input {
   background-color: var(--color-search-row-hover);
 }
 
-.result a {
+.result :is(a, .row-shimmer) {
   display: grid;
   grid-template-columns: var(--search-poster-width) 1fr;
   column-gap: var(--space-base-inline);
@@ -847,6 +871,17 @@ input {
     aspect-ratio: 1;
     border-radius: 50%;
   }
+}
+
+/* A poster's place while the starting list loads: the shimmer fills it instead of the gray. */
+.poster-shimmer {
+  display: flex;
+  background: none;
+}
+
+.pills-shimmer {
+  display: flex;
+  gap: var(--search-pill-gap);
 }
 
 .info {

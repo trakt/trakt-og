@@ -1,6 +1,7 @@
 <!--
   Discover's trending comments: one comment at a time over its title's fanart, which runs the full width behind the
-  page column. Under the heading, dropdowns pick the kind of comment and the type of title (fetched as they change).
+  page column. Under the heading, dropdowns pick the kind of comment and the type of title (fetched as they change,
+  the old comment dimmed until the new ones land).
   The title's poster card is on the left (an episode's card shows the episode with its show under it, as history
   does); on the right, the comment card itself in its spotlight style (the text large under a quote mark), so the tags,
   spoiler blur, reactions, replies, Read thread and tools work as on any comment (Reply is left to the comment's page).
@@ -120,7 +121,7 @@ async function filter(next: { kind?: typeof kind; media?: typeof media }) {
 
       {#if current}
         {@const viewer = overlay.state(current.item.type, current.item.id)}
-        <div class="slide" aria-live="polite">
+        <div class={['slide', { stale: loading }]} aria-live="polite">
           <div class="poster">
             <PosterCard
               {...current.item.episode
@@ -154,10 +155,10 @@ async function filter(next: { kind?: typeof kind; media?: typeof media }) {
           </div>
         </div>
       {:else}
-        <p class="empty">Nothing trending for these filters right now.</p>
+        <p class={['empty', { stale: loading }]}>Nothing trending for these filters right now.</p>
       {/if}
       {#if list.length > 1}
-        <div class="pager">
+        <div class={['pager', { stale: loading }]}>
           <ul class="people" aria-label="Commenters">
             {#each list as item, slot (item.comment.id)}
               {@const person = authorOf(item.comment.user)}
@@ -269,6 +270,10 @@ async function filter(next: { kind?: typeof kind; media?: typeof media }) {
 
 .quote {
   min-inline-size: 0;
+}
+
+.stale {
+  opacity: var(--trending-comments-stale-opacity);
 }
 
 .empty {
@@ -474,6 +479,12 @@ async function filter(next: { kind?: typeof kind; media?: typeof media }) {
 @media (prefers-reduced-motion: no-preference) {
   .backdrop {
     transition: opacity var(--transition-season-hero);
+  }
+
+  .slide,
+  .empty,
+  .pager {
+    transition: opacity var(--transition-card);
   }
 
   .people button {

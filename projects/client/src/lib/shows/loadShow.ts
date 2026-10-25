@@ -129,7 +129,7 @@ export async function loadShowData({ fetch, token, parent, id: requested, path =
   });
   return {
     raw: show,
-    relatedSource: toRelatedSource({ subgenres: show.subgenres, people }),
+    relatedSource: toRelatedSource({ subgenres: show.subgenres, genres: show.genres, people }),
     seasons: seasons ?? [],
     signedIn: user !== null,
     episodeTypeTags,

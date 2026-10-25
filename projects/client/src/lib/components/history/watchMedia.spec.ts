@@ -341,6 +341,38 @@ describe('watchMedia', () => {
       expect(params.notify.success).not.toHaveBeenCalled();
     },
   );
+  it('should look up the latest play first and remove only that one', async () => {
+    const params = await setup();
+    params.overlay.patch('watchedMovies', () => new Map([[1, [at, '2026-01-01T00:00:00Z']]]));
+    server.use(
+      http.post(`${API}/sync/history/remove`, async ({ request }) => {
+        expect(await request.json()).toEqual({ ids: [902] });
+        expect(params.overlay.state('movie', 1).plays).toBe(1);
+        return HttpResponse.json({ deleted: { movies: 1 }, message: 'Removed 1 play.' });
+      }),
+    );
+    const play = () => Promise.resolve({ id: 902, watchedAt: '2026-09-29T12:00:00Z' });
+    expect(await watchMedia({ ...params, watchedAt: null, play })).toBe(true);
+    expect(params.overlay.state('movie', 1)).toMatchObject({ watched: true, plays: 1 });
+    expect(params.notify.success).toHaveBeenCalledWith('Removed 1 play.');
+  });
+  it('should mark it unwatched when the latest play was the only one', async () => {
+    const params = await setup();
+    server.use(http.post(`${API}/sync/history/remove`, () => HttpResponse.json({ deleted: { movies: 1 } })));
+    const play = () => Promise.resolve({ id: 903, watchedAt: '2026-01-01T00:00:00Z' });
+    expect(await watchMedia({ ...params, watchedAt: null, play })).toBe(true);
+    expect(params.overlay.state('movie', 1)).toMatchObject({ watched: false, plays: 0 });
+  });
+  it('should write nothing and keep every play when the lookup fails', async () => {
+    const params = await setup();
+    const removed = vi.fn(() => HttpResponse.json({ deleted: { movies: 1 } }));
+    server.use(http.post(`${API}/sync/history/remove`, removed));
+    const play = () => Promise.reject(new Error('Play not found'));
+    expect(await watchMedia({ ...params, watchedAt: null, play })).toBe(false);
+    expect(removed).not.toHaveBeenCalled();
+    expect(params.overlay.state('movie', 1).plays).toBe(1);
+    expect(params.notify.error).toHaveBeenCalledOnce();
+  });
   it('should use the API message when it supplies one', async () => {
     const params = await setup();
     server.use(

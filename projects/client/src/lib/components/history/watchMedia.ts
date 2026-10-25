@@ -11,8 +11,8 @@ type Params = {
   /** null removes every play; the API resolves now/released/unknown using account preferences. */
   watchedAt: string | null;
   force?: boolean;
-  /** Remove this history row only; other plays stay watched. */
-  play?: HistoryPlay;
+  /** Remove this history row only; other plays stay watched. A lookup finds it first, where the page has no id. */
+  play?: HistoryPlay | (() => Promise<HistoryPlay>);
   overlay: Pick<ReturnType<typeof createOverlay>, 'patch'>;
   request: (path: string, body?: unknown) => Promise<Response>;
   episodes: () => Promise<readonly WatchEpisode[]>;
@@ -75,11 +75,12 @@ function withoutPlay(dates: readonly string[], at: string): string[] {
 
 /** Patches the shared history slice immediately before the write, and restores it on every failure. */
 export async function watchMedia(params: Params): Promise<boolean> {
-  const { target, watchedAt, force = false, play, overlay, request, notify, now = () => new Date() } = params;
+  const { target, watchedAt, force = false, overlay, request, notify, now = () => new Date() } = params;
   const remove = watchedAt === null;
   const only = target.type === 'season' ? target.onlyEpisodeIds : undefined;
   let rollback = () => {};
   try {
+    const play = typeof params.play === 'function' ? await params.play() : params.play;
     const episodes =
       target.type === 'episode'
         ? await episodeContext(params)

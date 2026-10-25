@@ -8,13 +8,15 @@
   fanart with the dashboard's pulsing tags and title at the top, the time left across from them, and the live
   progress bar along the bottom edge.
   `relation` is the viewer's follow state with this user; pass null for your own card or when signed out, which
-  leaves the buttons out. Buttons update the viewer's relationship immediately, with rollback on a failed write.
+  leaves the buttons out, and `pending` while it loads, which holds their place with a shimmer. Buttons update the
+  viewer's relationship immediately, with rollback on a failed write.
     <UserCard user={toProfileUser(row.user)} relation={relations[row.user.ids.slug]} />
 -->
 <script lang="ts">
 import defaultCover from '$lib/assets/profile-cover-default.jpg';
 import CommentTag from '$lib/components/comments/CommentTag.svelte';
 import VipLabel from '$lib/components/labels/VipLabel.svelte';
+import FollowButtonShimmer from '$lib/components/loading/FollowButtonShimmer.svelte';
 import CardTag from '$lib/components/media/CardTag.svelte';
 import UnderProgress from '$lib/components/media/UnderProgress.svelte';
 import Countdown from '$lib/components/status/Countdown.svelte';
@@ -33,6 +35,8 @@ import { imageUrl } from '$lib/utils/imageUrl';
 interface Props {
   user: ProfileUser;
   relation?: ViewerRelation | null;
+  /** The viewer's follow state is still loading. */
+  pending?: boolean;
   canFollow?: boolean;
   /** What they're watching now, with how far in. */
   watch?: LiveTile | null;
@@ -42,7 +46,8 @@ interface Props {
   since?: string | null;
 }
 
-const { user, relation = null, canFollow = true, watch = null, veteran = null, since = null }: Props = $props();
+const { user, relation = null, pending = false, canFollow = true, watch = null, veteran = null, since = null }: Props =
+  $props();
 const href = $derived(`/users/${user.slug}`);
 const media = $derived(watch?.watch ?? null);
 const tags = $derived(media ? liveTags(media) : []);
@@ -99,7 +104,9 @@ const sinceYear = $derived(since ? new Date(since).getUTCFullYear() : null);
     </div>
   </div>
 
-  {#if relation}
+  {#if pending}
+    <div class="buttons" aria-busy="true"><FollowButtonShimmer /></div>
+  {:else if relation}
     <div class="buttons"><FollowButtons slug={user.slug} isPrivate={user.isPrivate} {relation} {canFollow} /></div>
   {/if}
   <!-- Always there, chips or not, so every card in a row has the same shape. -->

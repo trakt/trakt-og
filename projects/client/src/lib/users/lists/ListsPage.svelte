@@ -248,14 +248,17 @@ const loadCollaborators = (row: UserListRow) => () => {
   fetchCollaborators({ fetch, listId: id }).then((found) => collaborators.set(id, found));
 };
 
-// Liked lists come without posters (see fetchListPosters): each row reads its own as it nears the viewport.
-const likedPosters = new SvelteMap<number, UserListRow['posters']>();
+// Liked lists come without posters (see fetchListPosters): each row reads its own as it nears the viewport, and its
+// fan shimmers until they land. Null while a read is in flight.
+const likedPosters = new SvelteMap<number, UserListRow['posters'] | null>();
 const loadPosters = (row: UserListRow) => {
   if (!liked || row.id === null || row.posters.length > 0 || likedPosters.has(row.id)) return;
   const id = row.id;
-  likedPosters.set(id, []);
+  likedPosters.set(id, null);
   void fetchListPosters({ fetch: globalThis.fetch, listId: id }).then((posters) => likedPosters.set(id, posters));
 };
+const postersLoading = (row: UserListRow) =>
+  liked && row.id !== null && row.itemCount > 0 && row.posters.length === 0 && !likedPosters.get(row.id);
 const withPosters = (row: UserListRow): UserListRow =>
   row.id !== null && (likedPosters.get(row.id)?.length ?? 0) > 0
     ? { ...row, posters: likedPosters.get(row.id) ?? [] }
@@ -390,6 +393,7 @@ const actions = (row: UserListRow) => {
   name={list.name}
   owner={list.owner}
   posters={list.posters}
+  postersLoading={postersLoading(list)}
   itemCount={list.itemCount}
   likeCount={list.likeCount}
   likeTarget={list.id === null ? undefined : { id: list.id, ownerSlug: list.kind === 'personal' ? list.owner.slug : undefined, viewer: data.user?.slug ?? null }}

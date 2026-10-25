@@ -227,7 +227,7 @@ const members = $derived([
 </Specimen>
 
 <Specimen title="List rows"
-  note="A list with a description, a private one, the watchlist, an official list and an empty one.">
+  note="A list with a description, a private one, the watchlist, an official list and an empty one, then a liked list whose posters are still loading.">
   <ListRow
     href="/users/og_tester/lists/all-time-favorites"
     name="All-Time Favorites"
@@ -315,5 +315,17 @@ const members = $derived([
     pills={['Following']}
     collaborators={[collaborator('OG Tester', 'og_tester')]}
     actions={{ report: {}, leave: {}, progressHref: 'https://app.trakt.tv/vip', shareUrl: 'https://og.trakt.tv/users/kendal_hagenes_1/lists/heist-night' }}
+  />
+  <p>Loading: a liked list, its posters shimmering until they're read (the liked lists come without them).</p>
+  <ListRow
+    href="/users/sean/lists/space-operas"
+    name="Space Operas"
+    owner={{ name: 'Sean', href: '/users/sean' }}
+    posters={[]}
+    postersLoading
+    itemCount={28}
+    likeCount={41}
+    likeTarget={{ id: 26, ownerSlug: 'sean', viewer: null }}
+    commentCount={3}
   />
 </Specimen>

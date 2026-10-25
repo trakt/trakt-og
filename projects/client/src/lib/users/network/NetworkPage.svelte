@@ -1,7 +1,8 @@
 <!--
   `/users/:id/network(/:type)` under the profile frame: the subnav with the list picker,
   the people count and the sort menu, then 54 user cards a page with pagination above and below. Each card fills in
-  its cover and whether they're watching now once it's on screen.
+  its cover and whether they're watching now once it's on screen, and shimmers in its follow buttons' place until the
+  viewer's follow states stream in.
 -->
 <script lang="ts">
 import { page } from '$app/state';
@@ -44,12 +45,12 @@ const relationOf = (relations: Readonly<Record<string, ViewerRelation>> | null, 
   <meta name="description" content="Check out {data.profile.firstName}'s network of friends and followers." />
 </svelte:head>
 
-{#snippet grid(relations: Readonly<Record<string, ViewerRelation>> | null)}
-  <ul class="cards">
+{#snippet grid(relations: Readonly<Record<string, ViewerRelation>> | null, pending = false)}
+  <ul class="cards" aria-busy={pending}>
     {#each data.users as user (user.slug)}
       <li>
         <NetworkUserCard {user} extra={data.extras[user.slug]} relation={relationOf(relations, user)}
-          canFollow={data.canFollow} />
+          pending={pending && user.slug !== data.viewerSlug} canFollow={data.canFollow} />
       </li>
     {/each}
   </ul>
@@ -86,7 +87,7 @@ const relationOf = (relations: Readonly<Record<string, ViewerRelation>> | null, 
       {#if data.page.type === 'paginated'}<Pagination meta={data.page} label="Network pages" />{/if}
       {#if data.relations}
         {#await data.relations}
-          {@render grid(null)}
+          {@render grid(null, true)}
         {:then relations}
           {@render grid(relations)}
         {:catch}

@@ -2,7 +2,8 @@
   The progress page's view: the subnav with the type dropdown, the summary strip, sort, view toggles and filters,
   then one row a show, or a poster grid when grid view is on. It sorts, filters, pages and totals `items` itself, so
   the same view renders live data (`ProgressPage.svelte`) and the design page's samples. `items` is null while your
-  progress is still loading, under the global Trakt loader. The grid view and simple bar toggles save to the viewer's watched progress settings,
+  progress loads, and `listed` while a `?list=`'s shows do; shimmering rows (or a row of poster cards in grid view)
+  hold their place meanwhile. The grid view and simple bar toggles save to the viewer's watched progress settings,
   which every tab reads, and grid view reloads the page, as OG did.
 -->
 <script lang="ts">
@@ -13,7 +14,9 @@ import Container from '$lib/components/container/Container.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import SortDirection from '$lib/components/dropdown/SortDirection.svelte';
 import NoData from '$lib/components/empty/NoData.svelte';
+import CardShimmerRow from '$lib/components/loading/CardShimmerRow.svelte';
 import LoadingOverlay from '$lib/components/loading/LoadingOverlay.svelte';
+import ProgressRowShimmer from '$lib/components/loading/ProgressRowShimmer.svelte';
 import FadeHideMenu from '$lib/components/filters/FadeHideMenu.svelte';
 import TermsFilter from '$lib/components/filters/TermsFilter.svelte';
 import type { HeaderUser } from '$lib/components/header/HeaderUser';
@@ -63,6 +66,8 @@ const { data, items, listed, loading = new Set(), onneed, now = new Date() }: Pr
 // OG's `per(50)`, 48 in grid view (eight rows of six).
 const PER_PAGE = 50;
 const GRID_PER_PAGE = 48;
+// Enough shimmering rows to fill the screen while your progress loads.
+const SHIMMER_ROWS = 5;
 
 const base = $derived(`/users/${data.profile.slug}/progress`);
 const title = $derived(`${data.profile.displayName}'s show ${data.type} progress`);
@@ -210,8 +215,8 @@ function changeHide(hide: ProgressHide[]) {
   </Container>
 </section>
 
-<!-- The global loader while your progress loads, and OG's `showLoading()` while grid view saves and the page reloads. -->
-<LoadingOverlay visible={shown === null || saving === 'grid_view'} />
+<!-- OG's `showLoading()` while grid view saves and the page reloads. -->
+<LoadingOverlay visible={saving === 'grid_view'} />
 
 <section class={['progress', data.type]} aria-label={title} aria-busy={shown === null}>
   <Container>
@@ -246,7 +251,13 @@ function changeHide(hide: ProgressHide[]) {
         {/each}
       {/if}
       {#if pageCount > 1}<Pagination {meta} label="Progress pages" />{/if}
-    {:else if shown !== null}
+    {:else if shown === null}
+      {#if data.grid}
+        <div class="grid"><CardShimmerRow columns={6} ratio="poster" /></div>
+      {:else}
+        {#each Array.from({ length: SHIMMER_ROWS }, (_, i) => i) as slot (slot)}<ProgressRowShimmer />{/each}
+      {/if}
+    {:else}
       <div class="empty">
         {#if listFilter}
           <NoData>Add some TV shows to your list and they'll start showing up here.</NoData>

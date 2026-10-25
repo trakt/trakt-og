@@ -3,7 +3,8 @@
   (leave it out, red, struck through), and clicking the name keeps it. Reset clears the field, long lists get a search,
   and the button reads "Genres: Drama, −Animation". Picking keeps the menu open.
     <IncludeExcludeSelect label="Genres" groups={[{ options }]} selection={{ include, exclude }} onchange={set} />
-  Empty, it reads "Genres: Any".
+  Empty, it reads "Genres: Any". While the options load, shimmering rows fill the list under any fixed ones (the
+  streaming bundles), and the search is already there.
 -->
 <script lang="ts">
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
@@ -17,6 +18,7 @@ import minusSolid from '$lib/icons/solid/circle-minus.svg?raw';
 import type { FilterOptionGroup } from './filterOptions.ts';
 import type { ListSelection } from './listSelection.ts';
 import SearchField from './SearchField.svelte';
+import OptionRowShimmers from '$lib/components/loading/OptionRowShimmers.svelte';
 
 /** A service's logo tile before its name; `heart` is All Favorites. */
 type OptionTile = {
@@ -72,6 +74,13 @@ const shown = $derived.by(() => {
     .filter((group) => group.options.length > 0);
 });
 const picked = $derived(selection.include.length + selection.exclude.length);
+// One more than the list's height holds, so it's full until they land.
+const SHIMMER_ROWS = 11;
+const toggleShimmer = {
+  inline: 'var(--filter-option-shimmer-icon)',
+  block: 'var(--filter-option-shimmer-icon)',
+  round: true,
+};
 
 function toggle(value: string, as: 'include' | 'exclude') {
   if (disabled) return;
@@ -97,14 +106,12 @@ function toggle(value: string, as: 'include' | 'exclude') {
       <button type="button" class="clear" disabled={disabled || picked === 0}
         onclick={() => onchange({ include: [], exclude: [] })}><Icon svg={xmark} />Clear</button>
     </div>
-    {#if count > 8}
+    {#if count > 8 || loading}
       <SearchField bind:value={query} label="Search {label.toLocaleLowerCase('en')}"
         placeholder={searchPlaceholder ?? `Search ${label.toLocaleLowerCase('en')}…`} />
     {/if}
-    <div class="scroller">
-    {#if loading && count === 0}
-      <p class="note">Loading...</p>
-    {:else if shown.length === 0}
+    <div class="scroller" aria-busy={loading}>
+    {#if shown.length === 0 && !loading}
       <p class="note">No {label.toLocaleLowerCase('en')} match "{query}"</p>
     {/if}
     {#each shown as group, g (g)}
@@ -131,6 +138,16 @@ function toggle(value: string, as: 'include' | 'exclude') {
         {/each}
       </ul>
     {/each}
+    {#if loading}
+      <ul class="rows">
+        <OptionRowShimmers rows={SHIMMER_ROWS} text="var(--font-size-menu)" height="var(--filter-option-shimmer-row)"
+          inset="0 var(--filter-option-shimmer-inset)" gap="var(--filter-option-shimmer-gap)"
+          before={tileFor
+          ? [toggleShimmer, { inline: 'var(--service-mini-width)', block: 'var(--service-mini-height)' }]
+          : [toggleShimmer]}
+          after={excludable ? toggleShimmer : undefined} />
+      </ul>
+    {/if}
     </div>
   </div>
   </Dropdown>
@@ -217,12 +234,16 @@ function toggle(value: string, as: 'include' | 'exclude') {
   }
 }
 
-/* Only the list scrolls, with room kept for its scrollbar so it never covers the ⊖ column. */
+/* Only the list scrolls, with room kept for its scrollbar so it never covers the ⊖ column. The shimmers don't. */
 .scroller {
   max-block-size: var(--filter-picker-height);
   overflow-y: auto;
   scrollbar-gutter: stable;
   scrollbar-width: thin;
+
+  &[aria-busy='true'] {
+    overflow-y: hidden;
+  }
 }
 
 .picker .rows li button::after {

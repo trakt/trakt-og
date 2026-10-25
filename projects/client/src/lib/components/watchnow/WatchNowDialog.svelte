@@ -3,7 +3,8 @@
   and its type over the title, "Your Favorites" and one section per offer type as a grid of service tiles with what
   each costs (the cheapest rent and buy in green), then a footer bar with the country picker and "Powered by
   JustWatch". It loads on first open, like OG did, and a new country only loads that country's service names: one
-  `/watchnow` call has every country's offers.
+  `/watchnow` call has every country's offers. Until there's something to show, shimmering sections of tiles hold
+  their place; tiles already showing dim while the rest loads.
 -->
 <script lang="ts">
 import type { Attachment } from 'svelte/attachments';
@@ -12,6 +13,7 @@ import Dialog from '$lib/components/dialog/Dialog.svelte';
 import DialogArtHeader from '$lib/components/dialog/DialogArtHeader.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import Icon from '$lib/icons/Icon.svelte';
+import Shimmer from '$lib/components/loading/Shimmer.svelte';
 import heart from '$lib/icons/solid/heart.svg?raw';
 import play from '$lib/icons/solid/play.svg?raw';
 import { fetchWatchNow } from './fetchWatchNow.ts';
@@ -116,6 +118,30 @@ const focusAboveFooter: Attachment<HTMLElement> = (footer) => {
 };
 </script>
 
+<!-- Two sections of tiles with their prices, one row each: extra tiles fall into a clipped row, whatever fits. -->
+{#snippet shimmers()}
+  {#each { length: 2 } as _, section (section)}
+    <div aria-hidden="true">
+      <div class="section-title"><span><Shimmer inline="var(--watch-now-shimmer-label)"
+            block="var(--font-size-watch-now-section)" /></span></div>
+      <div class="tiles shimmer-tiles">
+        {#each { length: 6 } as _, tile (tile)}
+          <div>
+            <Shimmer inline="100%" block="var(--service-height)" />
+            <span class="terms prices">
+              {#each { length: 2 } as _, line (line)}
+                <span><Shimmer inline="var(--watch-now-shimmer-term)" block="var(--font-size-watch-now-terms)" /></span>
+                <span class="amount"><Shimmer inline="var(--watch-now-shimmer-amount)"
+                    block="var(--font-size-watch-now-terms)" /></span>
+              {/each}
+            </span>
+          </div>
+        {/each}
+      </div>
+    </div>
+  {/each}
+{/snippet}
+
 {#snippet flag(src: string | null | undefined)}
   {#if src}<img class="flag" src={https(src)} alt="" />{/if}
 {/snippet}
@@ -125,7 +151,7 @@ const focusAboveFooter: Attachment<HTMLElement> = (footer) => {
     <DialogArtHeader {id} {title} {year} {fanart} {tags} />
   {/snippet}
 
-  <div class={['streaming-links', { loading }]} aria-busy={loading}>
+  <div class={['streaming-links', { stale: loading && sections.length > 0 }]} aria-busy={loading}>
     {#each sections as section (section.title)}
       <div>
         <h3 class="section-title">
@@ -154,7 +180,9 @@ const focusAboveFooter: Attachment<HTMLElement> = (footer) => {
         </div>
       </div>
     {:else}
-      {#if !loading}
+      {#if loading}
+        {@render shimmers()}
+      {:else}
         <p class="no-links">We couldn't find any watch now links for your country. Check back soon!</p>
       {/if}
     {/each}
@@ -181,6 +209,8 @@ const focusAboveFooter: Attachment<HTMLElement> = (footer) => {
           </ul>
         {/each}
       </Dropdown>
+    {:else if !loaded}
+      <Shimmer inline="var(--watch-now-shimmer-country)" block="var(--control-height)" />
     {/if}
     <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
     <a class="powered-by" href={poweredBy} target="_blank" rel="noopener">
@@ -205,8 +235,8 @@ const focusAboveFooter: Attachment<HTMLElement> = (footer) => {
     --tile-width: var(--watch-now-modal-tile-width-sm);
   }
 
-  &.loading {
-    opacity: 0.5;
+  &.stale {
+    opacity: var(--watch-now-stale-opacity);
   }
 
   @media (prefers-reduced-motion: no-preference) {
@@ -254,6 +284,14 @@ const focusAboveFooter: Attachment<HTMLElement> = (footer) => {
   gap: var(--watch-now-modal-columns-gap);
 }
 
+/* One row of tile shimmers; the ones that don't fit fall into rows of no height. */
+.shimmer-tiles {
+  grid-template-rows: auto;
+  grid-auto-rows: 0;
+  row-gap: 0;
+  overflow: hidden;
+}
+
 .terms {
   display: grid;
   margin: var(--space-watch-now-terms) 0 0;
@@ -278,6 +316,10 @@ const focusAboveFooter: Attachment<HTMLElement> = (footer) => {
   & dd {
     margin: 0;
     font-weight: var(--font-weight-headings-heavy);
+    text-align: end;
+  }
+
+  & .amount {
     text-align: end;
   }
 

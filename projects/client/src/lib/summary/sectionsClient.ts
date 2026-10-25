@@ -21,6 +21,8 @@ type Api = ReturnType<typeof api>;
 // OG's `.limit(3)` comments and `summary_lists(limit: 3)`. OG's `related(6)` shows first, and more opens six at a time.
 const PREVIEW_LIMIT = 3;
 const RELATED_LIMIT = 18;
+// Nothing related, popular titles in the first genre fill one row: six, and one more in case the title is among them.
+const POPULAR_LIMIT = 7;
 // The worker's page cap, so one call covers every followed member OG listed.
 const SOCIAL_LIMIT = 250;
 
@@ -55,7 +57,8 @@ export type SectionsClient = {
   comments: (media: SummaryMedia, language?: string | null) => Promise<readonly CommentTab[] | null>;
   /** The official lists, then the most popular personal ones; the lists page sorts and filters the rest. */
   lists: (media: SummaryMedia) => Promise<readonly SummaryList[] | null>;
-  related: (media: SummaryMedia) => Promise<readonly RelatedCard[] | null>;
+  /** Popular titles in `genre` when nothing is related, or `null` when there's neither. */
+  related: (media: SummaryMedia, genre?: string) => Promise<readonly RelatedCard[] | null>;
   /** A related card's billed cast and key crew, to match against the summary's. */
   relatedPeople: (card: RelatedCard) => Promise<readonly RelatedPerson[] | null>;
   /** Every video that plays in the popup, newest first. */
@@ -160,6 +163,26 @@ export function sectionsClient({
       : okBody(anonymous.shows.videos({ params: { id } }));
   };
 
+  const relatedOf = async (type: 'movie' | 'show', id: string, date: Date): Promise<readonly RelatedCard[]> => {
+    const query = { extended: 'full,images', limit: RELATED_LIMIT } as const;
+    if (type === 'movie') {
+      const movies = await okBody(anonymous.movies.related({ params: { id }, query }));
+      return (movies ?? []).map((item) => toRelatedCard({ type, item }, date));
+    }
+    const shows = await okBody(anonymous.shows.related({ params: { id }, query }));
+    return (shows ?? []).map((item) => toRelatedCard({ type, item }, date));
+  };
+
+  const popularIn = async (type: 'movie' | 'show', genres: string, date: Date): Promise<readonly RelatedCard[]> => {
+    const query = { extended: 'full,images', genres, limit: POPULAR_LIMIT } as const;
+    if (type === 'movie') {
+      const movies = await okBody(anonymous.movies.popular({ query }));
+      return (movies ?? []).map((item) => toRelatedCard({ type, item }, date));
+    }
+    const shows = await okBody(anonymous.shows.popular({ query }));
+    return (shows ?? []).map((item) => toRelatedCard({ type, item }, date));
+  };
+
   // The slugs the viewer follows, or `null` logged out or when the list doesn't load: nobody is picked out then.
   const following = async (): Promise<ReadonlySet<string> | null> => {
     if (!signedIn) return null;
@@ -246,16 +269,13 @@ export function sectionsClient({
       return nonEmpty([...(official ?? []), ...(popular ?? [])].map(toSummaryList));
     },
 
-    related: async (media) => {
+    related: async (media, genre) => {
       if (media.type === 'season' || media.type === 'episode') return null;
-      const query = { extended: 'full,images', limit: RELATED_LIMIT } as const;
       const date = now();
-      if (media.type === 'movie') {
-        const movies = await okBody(anonymous.movies.related({ params: { id: media.slug }, query }));
-        return nonEmpty((movies ?? []).map((item) => toRelatedCard({ type: 'movie', item }, date)));
-      }
-      const shows = await okBody(anonymous.shows.related({ params: { id: media.slug }, query }));
-      return nonEmpty((shows ?? []).map((item) => toRelatedCard({ type: 'show', item }, date)));
+      const related = await relatedOf(media.type, media.slug, date);
+      if (related.length > 0 || !genre) return nonEmpty(related);
+      const popular = await popularIn(media.type, genre, date);
+      return nonEmpty(popular.filter(({ id }) => id !== media.id).slice(0, POPULAR_LIMIT - 1));
     },
 
     relatedPeople: async (card) => {

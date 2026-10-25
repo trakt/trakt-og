@@ -166,6 +166,6 @@ const sections = $derived([
 </SummaryFrame>
 
 {#key media.slug}
-  <RelatedItems title={show.title} source={data.relatedSource} load={() => lazy().related(media)}
+  <RelatedItems title={show.title} source={data.relatedSource} load={() => lazy().related(media, data.relatedSource.genre)}
   loadPeople={(card) => lazy().relatedPeople(card)} datePreferences={data.datePreferences} />
 {/key}

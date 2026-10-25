@@ -217,6 +217,52 @@ describe('sectionsClient', () => {
     server.use(http.get(`${API}/movies/:id/related`, () => HttpResponse.json([])));
     expect(await client(false).related(movie)).toBeNull();
   });
+
+  describe('with nothing related', () => {
+    const row = (trakt: number) => ({ title: `Movie ${trakt}`, year: 2020, ids: { trakt, slug: `movie-${trakt}` } });
+    const popular = (rows: unknown[]) => {
+      server.use(
+        http.get(`${API}/movies/:id/related`, () => HttpResponse.json([])),
+        http.get(`${API}/movies/popular`, ({ request }) => {
+          seen.push(request);
+          return HttpResponse.json(rows);
+        }),
+      );
+    };
+
+    it('should fill one row with popular titles in its first genre, without the title itself', async () => {
+      popular([2, 1, 3, 4, 5, 6, 7].map(row));
+      const cards = await client(false).related(movie, 'action');
+      expect(cards?.map(({ id }) => id)).toEqual([2, 3, 4, 5, 6, 7]);
+      const params = new URL(seen.at(0)?.url ?? '').searchParams;
+      expect([params.get('genres'), params.get('limit'), params.get('extended')]).toEqual([
+        'action',
+        '7',
+        'full,images',
+      ]);
+    });
+
+    it('should keep six when the title is not among them', async () => {
+      popular([2, 3, 4, 5, 6, 7, 8].map(row));
+      expect((await client(false).related(movie, 'action'))?.map(({ id }) => id)).toEqual([2, 3, 4, 5, 6, 7]);
+    });
+
+    it('should come back null when the genre has nothing else', async () => {
+      popular([row(1)]);
+      expect(await client(false).related(movie, 'action')).toBeNull();
+    });
+
+    it('should come back null without asking for popular titles when the title has no genre', async () => {
+      popular([row(2)]);
+      expect(await client(false).related(movie)).toBeNull();
+      expect(paths()).toEqual([]);
+    });
+  });
+
+  it('should keep the related titles and skip popular ones when there are some', async () => {
+    await client(false).related(movie, 'action');
+    expect(paths()).toEqual(['/movies/deadpool-2016/related']);
+  });
   describe('seasons', () => {
     const season: SummaryMedia = {
       type: 'season',

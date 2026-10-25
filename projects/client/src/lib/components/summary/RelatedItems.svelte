@@ -1,6 +1,7 @@
 <!--
   OG's related band under a summary: a dark full-width section, "If you like <Title>, check out...", whose picks load as
-  the band nears the viewport. RelatedPicks lays them out with what each shares with the title.
+  the band nears the viewport. RelatedPicks lays them out with what each shares with the title. The band keeps its height
+  while they load, and goes when nothing comes back.
 -->
 <script lang="ts">
 import Container from '$lib/components/container/Container.svelte';
@@ -23,18 +24,28 @@ interface Props {
 
 const { title, source, load, loadPeople, datePreferences }: Props = $props();
 const id = $props.id();
+
+let empty = $state(false);
+
+const loadOrHide = async () => {
+  const cards = await load().catch(() => null);
+  empty = cards === null;
+  return cards;
+};
 </script>
 
-<section class="related" aria-labelledby="{id}-heading">
-  <Container>
-    <h2 id="{id}-heading">If you like <strong>{title}</strong>, check out...</h2>
-    <LazySection {load}>
-      {#snippet children(cards)}
-        <RelatedPicks {cards} {source} {title} {loadPeople} {datePreferences} />
-      {/snippet}
-    </LazySection>
-  </Container>
-</section>
+{#if !empty}
+  <section class="related" aria-labelledby="{id}-heading">
+    <Container>
+      <h2 id="{id}-heading">If you like <strong>{title}</strong>, check out...</h2>
+      <LazySection load={loadOrHide}>
+        {#snippet children(cards)}
+          <RelatedPicks {cards} {source} {title} {loadPeople} {datePreferences} />
+        {/snippet}
+      </LazySection>
+    </Container>
+  </section>
+{/if}
 
 <style>
 .related {

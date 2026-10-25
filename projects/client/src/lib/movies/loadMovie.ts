@@ -94,7 +94,7 @@ export async function loadMovie({ fetch, token, parent, id: requested }: LoadMov
 
   return {
     movie: view,
-    relatedSource: toRelatedSource({ subgenres: movie.subgenres, people }),
+    relatedSource: toRelatedSource({ subgenres: movie.subgenres, genres: movie.genres, people }),
     watchNow: watchnow.button,
     privateNotes: {
       item: { ...notable, title: movie.title, year: movie.year, fanart: view.fanart },

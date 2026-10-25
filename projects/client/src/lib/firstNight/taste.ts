@@ -1,4 +1,10 @@
 import { rawApiFetch } from '../api/rawApiFetch.ts';
+import {
+  type WatchNowCountry,
+  type WatchNowSources,
+  watchNowCountriesSchema,
+  watchNowSourcesSchema,
+} from '../components/watchnow/watchNowSchema.ts';
 
 /** A streaming service as the taste picker's tile shows it. */
 export type TasteService = {
@@ -10,14 +16,7 @@ export type TasteService = {
   readonly channel?: string;
 };
 
-type SourceRow = {
-  source: string;
-  name: string;
-  color?: string | null;
-  cinema?: boolean;
-  link_count?: number;
-  images?: { logo?: string | null; channel?: string | null } | null;
-};
+type SourceRow = NonNullable<WatchNowSources[number][string]>[number];
 
 /** Three rows of the popup's six, until the member searches. */
 export const SERVICES_SHOWN = 18;
@@ -92,23 +91,28 @@ const byRank = (a: SourceRow, b: SourceRow) => {
   return groupA - groupB || orderA - orderB;
 };
 
+/** The country's streaming services, popular subscriptions first. */
+export function toTasteServices(sources: WatchNowSources, country: string): TasteService[] {
+  return sources
+    .flatMap((byCountry) => byCountry[country] ?? [])
+    .filter(isService)
+    .toSorted(byRank)
+    .map(({ source, name, color, images }) => ({
+      slug: source,
+      name: name.trim(),
+      color: color ?? '#000',
+      ...(images?.logo && { logo: https(images.logo) }),
+      ...(images?.channel && { channel: https(images.channel) }),
+    }));
+}
+
 /** Every streaming service in the country, popular subscriptions first. Read without a token. */
 export async function fetchTasteServices(fetch: typeof globalThis.fetch, country: string): Promise<TasteService[]> {
   try {
     const response = await rawApiFetch({ fetch, path: `/watchnow/sources/${country}` });
     if (!response.ok) return [];
-    const body: Record<string, SourceRow[]>[] = await response.json();
-    return body
-      .flatMap((byCountry) => byCountry[country] ?? [])
-      .filter(isService)
-      .toSorted(byRank)
-      .map(({ source, name, color, images }) => ({
-        slug: source,
-        name: name.trim(),
-        color: color ?? '#000',
-        ...(images?.logo && { logo: https(images.logo) }),
-        ...(images?.channel && { channel: https(images.channel) }),
-      }));
+    const sources = watchNowSourcesSchema.safeParse(await response.json().catch(() => null));
+    return sources.success ? toTasteServices(sources.data, country) : [];
   } catch {
     return [];
   }
@@ -117,19 +121,24 @@ export async function fetchTasteServices(fetch: typeof globalThis.fetch, country
 /** A watch-now country for the picker: its code, name and flag. */
 export type TasteCountry = { readonly code: string; readonly name: string; readonly flag?: string };
 
+/** Watch-now countries for the picker, by name. */
+export function toTasteCountries(rows: readonly WatchNowCountry[]): TasteCountry[] {
+  return rows
+    .map(({ code, name, images }) => ({
+      code: code.toLowerCase(),
+      name,
+      ...(images?.flag && { flag: https(images.flag) }),
+    }))
+    .toSorted((a, b) => a.name.localeCompare(b.name));
+}
+
 /** Every watch-now country, by name. A failure leaves the picker on the member's own country alone. */
 export async function fetchTasteCountries(fetch: typeof globalThis.fetch): Promise<TasteCountry[]> {
   try {
     const response = await rawApiFetch({ fetch, path: '/watchnow/countries' });
     if (!response.ok) return [];
-    const rows: { code: string; name: string; images?: { flag?: string | null } | null }[] = await response.json();
-    return rows
-      .map(({ code, name, images }) => ({
-        code: code.toLowerCase(),
-        name,
-        ...(images?.flag && { flag: https(images.flag) }),
-      }))
-      .toSorted((a, b) => a.name.localeCompare(b.name));
+    const rows = watchNowCountriesSchema.safeParse(await response.json().catch(() => null));
+    return rows.success ? toTasteCountries(rows.data) : [];
   } catch {
     return [];
   }

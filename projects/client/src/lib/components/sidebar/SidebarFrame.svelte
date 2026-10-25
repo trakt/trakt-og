@@ -130,8 +130,12 @@ function onkeydown(event: KeyboardEvent) {
   position: relative;
   z-index: 2;
   min-inline-size: 0;
-  border-inline-end: 1px solid var(--color-frame-line);
+  border-inline-end: var(--sidebar-line-width) solid var(--color-frame-line);
   background-color: var(--color-sidebar-bg);
+
+  @media (min-width: 768px) {
+    overflow-x: clip;
+  }
 }
 
 .inner {
@@ -144,7 +148,13 @@ function onkeydown(event: KeyboardEvent) {
   @media (min-width: 768px) {
     position: sticky;
     inset-block-start: 0;
+    /* Opening, it sits at its final width so the column reveals it. Collapsing, the rail follows the column in. */
+    inline-size: calc(var(--sidebar-width) - var(--sidebar-line-width));
     block-size: 100vh;
+
+    .collapsed & {
+      inline-size: auto;
+    }
   }
 }
 

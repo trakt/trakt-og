@@ -422,9 +422,9 @@ afterNavigate(({ to }) => {
               onpointerenter={() => (highlight = index)}
             >
               <a href={row.href} tabindex="-1" onclick={() => record(row)}>
-                <span class={['poster', { avatar: row.avatar }]}>
+                <span class="poster">
                   {#if row.poster}
-                    <img src={row.poster} alt="" width="40" height={row.avatar ? 40 : 60} loading="lazy" />
+                    <img src={row.poster} alt="" width="40" height="60" loading="lazy" />
                   {/if}
                 </span>
                 <span class="info">
@@ -864,12 +864,6 @@ input {
     inline-size: 100%;
     block-size: 100%;
     object-fit: cover;
-  }
-
-  /* A user's avatar: square, and round (OG's .poster.square and [data-type="users"]). */
-  &.avatar {
-    aspect-ratio: 1;
-    border-radius: 50%;
   }
 }
 

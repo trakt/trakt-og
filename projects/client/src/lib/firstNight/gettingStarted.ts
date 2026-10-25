@@ -109,7 +109,7 @@ export function gettingStartedSteps({ slices, slug, named, marks }: StepsParams)
       text: 'Follow 3 people',
       done: slices.network.following.size >= 3,
       action: 'Find people',
-      href: '/search/users',
+      href: `/users/${slug}/network`,
     },
   ];
 }

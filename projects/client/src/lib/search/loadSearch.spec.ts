@@ -130,56 +130,14 @@ describe('loadSearch', () => {
 
   it('should show the empty state for a blank query without calling the API', async () => {
     expect((await search('/search?query=%20')).cards).toEqual([]);
-    expect((await search('/search/users?query=%20', { type: 'users' })).users).toEqual([]);
     expect(seen).toEqual([]);
   });
 
-  describe('for users', () => {
-    const user = (username: string, fields: object = {}) => ({
-      type: 'user',
-      score: 0,
-      user: { username, private: false, deleted: false, name: null, ids: { slug: username, trakt: 1 }, ...fields },
-    });
-
-    it('should ask API for public users with their avatars and covers and read its paging headers', async () => {
-      server.use(
-        http.get('https://apiz.trakt.tv/search/user', ({ request }) => {
-          seen.push(request);
-          return HttpResponse.json(
-            [
-              user('sean', { vip: true, name: 'Sean' }),
-              user('sean-gone', { deleted: true }),
-              user('sean-private', {
-                private: true,
-              }),
-            ],
-            { headers: { 'X-Pagination-Page': '2', 'X-Pagination-Page-Count': '4', 'X-Pagination-Item-Count': '140' } },
-          );
-        }),
-      );
-      const data = await search('/search/users?query=sean&page=2', { type: 'users' });
-
-      const url = new URL(seen.at(0)?.url ?? '');
-      expect(url.pathname).toBe('/search/user');
-      expect(Object.fromEntries(url.searchParams)).toEqual({
-        query: 'sean',
-        page: '2',
-        limit: '36',
-        extended: 'full,vip',
-      });
-      expect(data.users.map((card) => card.title)).toEqual(['Sean']);
-      expect(data.users.at(0)?.tags).toEqual([{ text: 'VIP' }]);
-      expect(data).toMatchObject({ cards: [], lists: [] });
-      expect(data.page).toEqual({ type: 'paginated', current: 2, total: 4 });
-    });
-
-    it('should reject a malformed users body and turn a failed search into a 502', async () => {
-      server.use(http.get('https://apiz.trakt.tv/search/user', () => HttpResponse.json([{ type: 'user' }])));
-      expect(await thrownBy(search('/search/users?query=sean', { type: 'users' }))).toBe(502);
-
-      server.use(http.get('https://apiz.trakt.tv/search/user', () => new HttpResponse(null, { status: 403 })));
-      expect(await thrownBy(search('/search/users?query=sean', { type: 'users' }))).toBe(502);
-    });
+  it('should send a retired tab to Shows & Movies with its query', async () => {
+    expect(await thrownBy(search('/search/episodes?query=pilot', { type: 'episodes' }))).toBe('/search?query=pilot');
+    expect(await thrownBy(search('/search/users/sean', { type: 'users', id: 'sean' }))).toBe('/search?query=sean');
+    expect(await thrownBy(search('/search/users', { type: 'users' }))).toBe('/search');
+    expect(seen).toEqual([]);
   });
 
   it('should redirect an ID with one match straight to it', async () => {

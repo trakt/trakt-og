@@ -2,11 +2,10 @@
   OG's fanart card: a 16:9 fanart with tags and the title over its bottom-left corner,
   then the full-size quick-icon bar. Charts and the dashboard lay these out in a PosterGrid. With a `logo`, the fanart
   dims behind it, like OG's `image_type: 'logo'` on the calendars. The `poster` variant is OG's `image_type: 'poster'`
-  with `search_mode` (the search grid): the same card at the poster ratio, with the small quick-icon bar. An `avatar`
-  is OG's user card on the Users search tab: the round avatar centered over the dimmed cover. `framed` rounds the card
-  like the actor photos and sets the quick-icon bar on a lighter panel inside a faint outline, so it reads as part of
-  the card on a dark page (the summary's Up Next and Recently Aired). A `titleLogo` takes the title's place under the
-  tags (the chart podium's #2 and #3).
+  with `search_mode` (the search grid): the same card at the poster ratio, with the small quick-icon bar. `framed`
+  rounds the card like the actor photos and sets the quick-icon bar on a lighter panel inside a faint outline, so it
+  reads as part of the card on a dark page (the summary's Up Next and Recently Aired). A `titleLogo` takes the title's
+  place under the tags (the chart podium's #2 and #3).
 -->
 <script lang="ts">
 import MediaSpoiler from '$lib/components/summary/MediaSpoiler.svelte';
@@ -44,8 +43,6 @@ interface Props {
   /** The title as artwork, in the title's place under the tags, its transparent margins trimmed when it's
    * same-origin (`proxiedLogoUrl`). Left out, the title shows. */
   titleLogo?: string;
-  /** A user's avatar, round over the dimmed image (OG's `.avatar-wrapper`). */
-  avatar?: string;
   /** Keep OG's logo-mode dimming when the API has no logo. */
   logoMode?: boolean;
   /** Thumb, banner and poster artwork put compact titles above the image. */
@@ -90,7 +87,6 @@ const {
   spoilerImage,
   logo,
   titleLogo,
-  avatar,
   logoMode = !!logo,
   worded = false,
   tags = [],
@@ -150,9 +146,6 @@ const restoreTarget = $derived(target?.type === 'show' ? { ...target, type: 'sho
       {/if}
       {#if logo}
         <img class="logo" src={logo} alt="" loading="lazy" decoding="async" />
-      {/if}
-      {#if avatar}
-        <span class="avatar-wrapper"><img class="avatar" src={avatar} alt="" loading="lazy" decoding="async" /></span>
       {/if}
       <span class="shadow-base"></span>
     </a>
@@ -271,23 +264,6 @@ const restoreTarget = $derived(target?.type === 'show' ? { ...target, type: 'sho
   margin-inline: auto;
   max-inline-size: 100%;
   object-fit: contain;
-}
-
-.avatar-wrapper {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  background-color: var(--color-fanart-avatar-shade);
-}
-
-.avatar {
-  inline-size: var(--fanart-avatar-size);
-  block-size: var(--fanart-avatar-size);
-  border: var(--fanart-avatar-border) solid var(--color-fanart-avatar-ring);
-  border-radius: 50%;
-  background-color: var(--color-fanart-avatar-ring);
-  object-fit: cover;
 }
 
 .shadow-base {

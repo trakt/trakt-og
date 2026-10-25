@@ -15,15 +15,15 @@ describe('searchFilters', () => {
 
   it('should offer partial options only on Shows and mixed searches', () => {
     expect(filters('shows').hideOptions.map(({ id }) => id)).toContain('collecting');
-    for (const slug of ['movies', 'episodes', 'imdb']) {
+    for (const slug of ['movies', 'imdb']) {
       expect(filters(slug).options.map(({ id }) => id)).not.toContain('watching');
       expect(filters(slug).options.map(({ id }) => id)).not.toContain('collecting');
     }
     expect(filters('imdb').hideOptions).toEqual([]);
   });
 
-  it('should hide the eye and ignore saved filters on People, Lists and Users', () => {
-    for (const slug of ['people', 'lists', 'users']) {
+  it('should hide the eye and ignore saved filters on People and Lists', () => {
+    for (const slug of ['people', 'lists']) {
       const result = filters(slug, 'hide=watched', { 'filter-fade-search': 'unwatched' });
       expect(result.visible).toBe(false);
       expect(result.fadeHide).toEqual({ fade: [], hide: [] });

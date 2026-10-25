@@ -8,11 +8,11 @@ type SearchFiltersParams = {
 
 /** one search preference, with Hide only on typed media searches. */
 export function searchFilters({ slug, search, cookies }: SearchFiltersParams) {
-  const visible = !['people', 'lists', 'users'].includes(slug);
+  const visible = !['people', 'lists'].includes(slug);
   const options = visible
     ? fadeHideOptions.filter((option) => ['', 'shows'].includes(slug) || !('showsOnly' in option))
     : [];
-  const hideOptions = ['shows', 'movies', 'episodes'].includes(slug) ? options : [];
+  const hideOptions = ['shows', 'movies'].includes(slug) ? options : [];
   // The API calls it watchlist; the shared eye menu and cookie call it watchlisted.
   const hide = (search.get('hide') ?? cookies.get('filter-hide-search') ?? '')
     .split(',')

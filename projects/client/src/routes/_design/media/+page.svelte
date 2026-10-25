@@ -1,6 +1,5 @@
 <script lang="ts">
 import { PLACEHOLDER_AVATAR } from '$lib/users/placeholderAvatar';
-import defaultCover from '$lib/assets/profile-cover-default.jpg';
 import FrameGrid from '$lib/components/frame/FrameGrid.svelte';
 import Specimen from '$lib/design/Specimen.svelte';
 import Variant from '$lib/design/Variant.svelte';
@@ -74,14 +73,6 @@ const samples: { label: string; state: OverlayState; userRating?: number; rank?:
 ];
 
 const featured = $derived(shows.at(0));
-
-// Fixture members for the Users search cards: OG's placeholder avatars, one on a VIP cover.
-const placeholder = (name: string) => `https://media.trakt.tv/hotlink-ok/placeholders/medium/${name}.png`;
-const members = $derived([
-  { name: 'Director', avatar: placeholder('zoidberg'), cover: shows.at(1)?.fanart, tags: [{ text: 'Director' }] },
-  { name: 'Executive Producer', avatar: placeholder('leela'), cover: undefined, tags: [{ text: 'VIP EP' }] },
-  { name: 'Member', avatar: placeholder('fry'), cover: undefined, tags: [] },
-]);
 </script>
 
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
@@ -117,15 +108,6 @@ const members = $derived([
         hideTitle={show.poster !== undefined} userRating={state.rating} dropped={state.dropped}
         tags={[{ text: 'Show' }, ...(show.year ? [{ text: String(show.year), kind: 'generic' as const }] : [])]}
         icons={mediaQuickIcons({ item: show, state, datePreferences: data.datePreferences })} />
-    {/each}
-  </FrameGrid>
-</Specimen>
-
-<Specimen title="Search user cards" note="Three per row; a VIP shows their cover.">
-  <FrameGrid variant="uniform">
-    {#each members as member (member.name)}
-      <FanartCard href="/_design/media" title={member.name} image={member.cover ?? defaultCover} avatar={member.avatar}
-        tags={member.tags} />
     {/each}
   </FrameGrid>
 </Specimen>

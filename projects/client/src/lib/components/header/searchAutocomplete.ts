@@ -1,11 +1,8 @@
 import type { SearchResultResponse } from '@trakt/api';
 import { api } from '../../api/api.ts';
-import { rawApiFetch } from '../../api/rawApiFetch.ts';
-import { searchUsersSchema } from '../../search/searchUsersSchema.ts';
 import type { DatePreferences } from '../../settings/DatePreferences.ts';
 import type { searchTypes } from './searchTypes.ts';
 import { type SearchRow, toSearchRow } from './toSearchRow.ts';
-import { toSearchUserRow } from './toSearchUserRow.ts';
 
 type SearchAutocompleteParams = {
   type: (typeof searchTypes)[number];
@@ -19,7 +16,7 @@ type SearchAutocompleteParams = {
 
 export type SearchAutocompleteResult = {
   readonly rows: ReadonlyArray<SearchRow>;
-  /** "View all **N** results". Null hides the row: ID lookups and Users have none. */
+  /** "View all **N** results". Null hides the row: ID lookups have none. */
   readonly count: string | null;
 };
 
@@ -30,11 +27,6 @@ const SHOWN = 5;
 const COUNT_LIMIT = 50;
 
 const EXTENDED = 'full,images';
-
-// A one-letter username prefix can keep API past the worker's 10s upstream limit (a 504), so Users waits for two.
-const USERS_MIN_LENGTH = 2;
-// Ask for a few more than we show: the API also returns deleted and private accounts, which OG never listed.
-const USERS_LIMIT = 10;
 
 const toRows = (
   hits: ReadonlyArray<SearchResultResponse>,
@@ -48,24 +40,6 @@ const toRows = (
 const toCount = (count: number) => (count >= COUNT_LIMIT ? `${COUNT_LIMIT}+` : count.toLocaleString('en-US'));
 
 const none: SearchAutocompleteResult = { rows: [], count: null };
-
-// OG matched public, active members by username prefix and drew no "View all" row for it.
-async function searchUsers({ query, fetch, signal }: Pick<SearchAutocompleteParams, 'query' | 'fetch' | 'signal'>) {
-  if (query.length < USERS_MIN_LENGTH) return none;
-
-  const params = new URLSearchParams({ query, limit: String(USERS_LIMIT), extended: 'full' });
-  const response = await rawApiFetch({ fetch, path: `/search/user?${params}`, init: { signal } });
-  if (response.status !== 200) return none;
-
-  const users = searchUsersSchema.safeParse(await response.json().catch(() => null));
-  if (!users.success) return none;
-
-  const rows = users.data
-    .filter(({ user }) => !user.private && !user.deleted)
-    .slice(0, SHOWN)
-    .map(({ user }) => toSearchUserRow(user));
-  return { rows, count: null };
-}
 
 /** The header dropdown's results for one type and query. */
 export async function searchAutocomplete({
@@ -87,8 +61,6 @@ export async function searchAutocomplete({
     });
     return response.status === 200 ? { rows: toRows(response.body, { dates, today }), count: null } : none;
   }
-
-  if (type.slug === 'users') return searchUsers({ query, fetch, signal });
 
   if (!('text' in type)) return none;
 

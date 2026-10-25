@@ -110,7 +110,7 @@ describe('searchTrending', () => {
   });
 
   it('should have none for the types the API keeps nothing for', async () => {
-    for (const slug of ['episodes', 'users', 'trakt', 'imdb']) {
+    for (const slug of ['trakt', 'imdb']) {
       expect((await searchTrending({ type: type(slug), today })).rows).toEqual([]);
     }
     expect(seen).toEqual([]);

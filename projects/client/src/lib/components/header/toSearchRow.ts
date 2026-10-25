@@ -26,8 +26,6 @@ export interface SearchRow {
   /** Separate pills after the genres: a list's size, a person's age and what they're known for. */
   readonly tags?: readonly string[];
   readonly poster?: string;
-  /** A user's avatar, which OG drew square and round (`.poster.square`, `[data-type="users"]`), not a poster. */
-  readonly avatar?: boolean;
 }
 
 const GENRE_LIMIT = 3;

@@ -8,6 +8,8 @@ type SyncSessionParams = {
   manager: UserManager;
   /** Whether the auth cookie reached the server for this page. */
   hasSession: boolean;
+  /** The cookie's token had expired for this page, so it needs the browser's user whatever that is. */
+  tokenExpired?: boolean;
   /** Re-runs the loaders once the cookie changed. `invalidateAll` in the app. */
   reload: () => Promise<void>;
   /** Raises `visibilitychange`. `document` in the app. */
@@ -24,6 +26,7 @@ type SyncSessionParams = {
 export function syncSession({
   manager,
   hasSession,
+  tokenExpired = false,
   reload,
   page = document,
   view = window,
@@ -61,7 +64,7 @@ export function syncSession({
     .then(async (user) => {
       // Renewing raises userLoaded, or removes the user on a refused grant, and both land in `store`.
       if (user?.expired) await renewAccessToken({ manager });
-      else if ((user !== null) !== hasSession) await store(user);
+      else if (tokenExpired || (user !== null) !== hasSession) await store(user);
     })
     .catch(() => {});
 

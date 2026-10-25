@@ -1,27 +1,28 @@
 import { AUTH_COOKIE } from '../../../lib/auth/authCookie.ts';
+import { storedTokenSchema } from '../../../lib/auth/storedTokenSchema.ts';
 import type { RequestHandler } from '@sveltejs/kit';
-import { z } from 'zod/v4';
 
-/** A non-empty token that hasn't expired by `now`. */
-const storedTokenSchema = (now: number) => z.object({ token: z.string().min(1), expiresAt: z.number().gt(now) });
+/** A year, so the cookie outlives the token and a returning viewer still renders signed in while it renews. */
+const MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
 
 /**
  * Sets the httpOnly cookie loaders read. The browser POSTs `{ token, expiresAt }` after login and every renewal.
- * Anything else, including `{ token: null }` on logout, clears it. SvelteKit's CSRF check rejects cross-site form posts.
+ * Anything else, including `{ token: null }` on logout or a token that has already expired, clears it.
+ * SvelteKit's CSRF check rejects cross-site form posts.
  */
 export const POST: RequestHandler = async ({ request, cookies }) => {
-  const stored = storedTokenSchema(Date.now()).safeParse(await request.json().catch(() => null)).data;
+  const stored = storedTokenSchema.safeParse(await request.json().catch(() => null)).data;
 
-  if (!stored) {
+  if (!stored || stored.expiresAt <= Date.now()) {
     cookies.delete(AUTH_COOKIE, { path: '/' });
     return new Response(null, { status: 204 });
   }
 
-  cookies.set(AUTH_COOKIE, stored.token, {
+  cookies.set(AUTH_COOKIE, JSON.stringify(stored), {
     path: '/',
     httpOnly: true,
     sameSite: 'lax',
-    expires: new Date(stored.expiresAt),
+    maxAge: MAX_AGE_SECONDS,
   });
   return new Response(null, { status: 204 });
 };

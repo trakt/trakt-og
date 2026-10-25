@@ -35,7 +35,12 @@ $effect(() => {
 
 onMount(() => {
   const manager = userManager();
-  const stopSession = syncSession({ manager, hasSession: data.hasSession, reload: invalidateAll });
+  const stopSession = syncSession({
+    manager,
+    hasSession: data.hasSession,
+    tokenExpired: data.tokenExpired,
+    reload: invalidateAll,
+  });
   const stopOverlay = startOverlay(manager);
   const stopReactions = startCommentReactions(manager);
 
@@ -52,7 +57,7 @@ onMount(() => {
 {:else}
   <MobileSplash platform={data.platform} phone={data.phone}>
   <a class="skip" href="#content">Skip to content</a>
-  <Header user={data.user} searchType={data.searchType} {darkKnight} />
+  <Header user={data.user} renewing={data.tokenExpired} searchType={data.searchType} {darkKnight} />
   <main id="content" tabindex="-1">
       {@render children()}
     </main>

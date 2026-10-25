@@ -92,6 +92,27 @@ describe('syncSession', () => {
     expect(reload).not.toHaveBeenCalled();
   });
 
+  it('should store a live user when the server saw an expired token', async () => {
+    const user = fakeUser('fresh', 3600);
+    const { manager } = fakeUserManager({ current: user });
+    const reload = vi.fn(() => Promise.resolve());
+
+    start({ manager, hasSession: true, tokenExpired: true, reload });
+
+    await vi.waitFor(() => expect(reload).toHaveBeenCalledTimes(1));
+    expect(posted).toEqual([{ token: 'fresh', expiresAt: (user.expires_at ?? 0) * 1000 }]);
+  });
+
+  it('should clear an expired token the browser no longer has a user for', async () => {
+    const { manager } = fakeUserManager({});
+    const reload = vi.fn(() => Promise.resolve());
+
+    start({ manager, hasSession: true, tokenExpired: true, reload });
+
+    await vi.waitFor(() => expect(reload).toHaveBeenCalledTimes(1));
+    expect(posted).toEqual([{ token: null, expiresAt: null }]);
+  });
+
   it('should renew an expired user', async () => {
     const fake = fakeUserManager({ current: fakeUser('old', -1) });
 

@@ -1,5 +1,6 @@
 import { rawApiFetch } from '../api/rawApiFetch.ts';
 import { imageUrl } from '../utils/imageUrl.ts';
+import { type StarterMedia, type StarterRow, starterRowsSchema } from './starterRowsSchema.ts';
 
 /** `watched/all` is the most watched of all time, the titles most people have seen. */
 export type StarterChart = 'popular' | 'trending' | 'anticipated' | 'watched/all';
@@ -7,20 +8,6 @@ export type StarterType = 'shows' | 'movies';
 
 /** The one thing a row of picks asks for: add to history, or to the watchlist. */
 export type PickAction = 'seen' | 'watchlist';
-
-type Media = {
-  title: string;
-  year?: number | null;
-  ids: { trakt: number; slug: string };
-  images?: { poster?: string[] | null; fanart?: string[] | null } | null;
-  rating?: number | null;
-  runtime?: number | null;
-  aired_episodes?: number | null;
-  first_aired?: string | null;
-  released?: string | null;
-};
-
-type Row = Media | { show: Media } | { movie: Media };
 
 /** A chart title as a poster card with quick icons, so a new member can mark it seen or add it right there. */
 export type StarterPick = {
@@ -39,13 +26,13 @@ export type StarterPick = {
 };
 
 // Popular rows are the bare title; the other charts wrap it with their counts.
-function unwrap(row: Row): Media {
+function unwrap(row: StarterRow): StarterMedia {
   if ('show' in row) return row.show;
   if ('movie' in row) return row.movie;
   return row;
 }
 
-export function toStarterPick(media: Media, type: 'show' | 'movie', now: Date): StarterPick {
+export function toStarterPick(media: StarterMedia, type: 'show' | 'movie', now: Date): StarterPick {
   const releaseDate = type === 'show' ? media.first_aired : media.released;
   return {
     key: `${type}:${media.ids.trakt}`,
@@ -83,8 +70,9 @@ export async function fetchStarterPicks({
   try {
     const response = await rawApiFetch({ fetch, path: `/${type}/${chart}?${search}` });
     if (!response.ok) return [];
-    const rows: Row[] = await response.json();
-    return rows.map((row) => toStarterPick(unwrap(row), type === 'shows' ? 'show' : 'movie', now));
+    const rows = starterRowsSchema.safeParse(await response.json().catch(() => null));
+    if (!rows.success) return [];
+    return rows.data.map((row) => toStarterPick(unwrap(row), type === 'shows' ? 'show' : 'movie', now));
   } catch {
     return [];
   }

@@ -1,5 +1,6 @@
 import { rawApiFetch } from '../api/rawApiFetch.ts';
 import { imageUrl } from '../utils/imageUrl.ts';
+import { fanartSchema } from './fanartSchema.ts';
 
 const cache = new Map<string, Promise<string | undefined>>();
 
@@ -10,7 +11,7 @@ export function titleFanart(type: 'shows' | 'movies', slug: string, fetch: typeo
   if (cached) return cached;
   const art = rawApiFetch({ fetch, path: `/${key}?extended=images` })
     .then((response) => (response.ok ? response.json() : null))
-    .then((media: { images?: { fanart?: string[] } } | null) => imageUrl(media?.images?.fanart?.at(0), 'full'))
+    .then((body: unknown) => imageUrl(fanartSchema.safeParse(body).data?.images?.fanart?.at(0), 'full'))
     .catch(() => undefined);
   cache.set(key, art);
   return art;

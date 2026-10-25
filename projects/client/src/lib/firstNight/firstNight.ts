@@ -2,6 +2,7 @@ import type { OverlaySlices } from '../overlay/OverlaySlices.ts';
 import type { UserStats } from '../stats/userStatsSchema.ts';
 import { rawApiFetch } from '../api/rawApiFetch.ts';
 import { imageUrl } from '../utils/imageUrl.ts';
+import { fanartSchema } from './fanartSchema.ts';
 import { fetchStarterPicks, interleave, type StarterPick } from './starterPicks.ts';
 
 /** Ten titles give Up Next, the calendar, stats and recommendations something to show. */
@@ -39,8 +40,8 @@ async function fetchBackdrop(fetch: typeof globalThis.fetch): Promise<string | u
   try {
     const response = await rawApiFetch({ fetch, path: '/shows/breaking-bad?extended=images' });
     if (!response.ok) return undefined;
-    const show: { images?: { fanart?: string[] } } = await response.json();
-    return imageUrl(show.images?.fanart?.at(0), 'full');
+    const show = fanartSchema.safeParse(await response.json().catch(() => null));
+    return imageUrl(show.data?.images?.fanart?.at(0), 'full');
   } catch {
     return undefined;
   }

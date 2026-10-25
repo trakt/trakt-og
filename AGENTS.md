@@ -23,6 +23,7 @@ Run these from the repository root:
 - Desktop first. Match the classic layout at 1440px; smaller screens down to tablets must be usable. Phones get the mobile splash instead.
 - Clone the UI, not the code. Rebuild with this app's components and CSS.
 - Follow `.agents/rules/design-system.md` and the matching rules in `.agents/rules/` before changing code.
+- Adding, changing or removing a shared component updates its demo at `/_design` in the same PR (`design-system.md`, Demos).
 - Follow the accessibility and testing rules in `.agents/rules/a11y.md` and `.agents/rules/testing.md`.
 - Merging to main deploys og.trakt.tv through GitHub Actions. Agents never run `client:deploy` or wrangler deploys.
 

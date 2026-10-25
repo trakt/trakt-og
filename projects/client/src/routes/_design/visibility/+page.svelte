@@ -1,60 +1,153 @@
 <script lang="ts">
-import Container from '$lib/components/container/Container.svelte';
-import VisibilityControl from '$lib/components/visibility/VisibilityControl.svelte';
-import PosterCard from '$lib/components/media/PosterCard.svelte';
+import { page } from '$app/state';
+import RecommendationSpotlight from '$lib/components/dashboard/RecommendationSpotlight.svelte';
+import FrameGrid from '$lib/components/frame/FrameGrid.svelte';
 import FanartCard from '$lib/components/media/FanartCard.svelte';
-import PosterGrid from '$lib/components/media/PosterGrid.svelte';
-import { quickIconFill } from '$lib/components/media/quickIconFill';
-import { overlay } from '$lib/overlay/overlay';
+import { mediaQuickIcons } from '$lib/components/media/mediaQuickIcons';
+import OnDeckCard from '$lib/components/media/OnDeckCard.svelte';
+import type { OnDeckItem } from '$lib/components/media/OnDeckItem';
+import PosterCard from '$lib/components/media/PosterCard.svelte';
+import WatchPopover from '$lib/components/history/WatchPopover.svelte';
+import SummaryActionMenu from '$lib/components/summary/SummaryActionMenu.svelte';
+import VisibilityControl from '$lib/components/visibility/VisibilityControl.svelte';
+import type { Recommendation } from '$lib/dashboard/Recommendation';
+import Specimen from '$lib/design/Specimen.svelte';
+import Variant from '$lib/design/Variant.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import backward from '$lib/icons/light/backward.svg?raw';
-import minus from '$lib/icons/light/circle-minus.svg?raw';
-import ban from '$lib/icons/regular/ban.svg?raw';
-const target = { type: 'show', id: 1388, title: 'Breaking Bad' } as const;
-const icons = $derived({
-  ratingTarget: target,
-  fill: quickIconFill({ state: overlay.state('show', target.id), airedEpisodes: 62 }),
-  hide: 'show',
-  hideSection: 'recommendations' as const,
-});
+import circleMinus from '$lib/icons/light/circle-minus.svg?raw';
+import historyIcon from '$lib/icons/light/clock-rotate-left.svg?raw';
+import check from '$lib/icons/trakt/check.svg?raw';
+import { overlay } from '$lib/overlay/overlay';
+import { formatRuntime } from '$lib/utils/formatRuntime';
+import { breakingBad, noWayHome } from '../summary/fixtures.ts';
+
+const dates = $derived(page.data.datePreferences);
+const show = {
+  type: 'show',
+  id: breakingBad.id,
+  title: breakingBad.title,
+  airedEpisodes: breakingBad.airedEpisodes,
+  runtime: breakingBad.runtime,
+  released: true,
+  rating: breakingBad.rating,
+} as const;
+const icons = $derived(mediaQuickIcons({ item: show, state: overlay.state('show', show.id), datePreferences: dates }));
+const upNext: OnDeckItem = {
+  showId: breakingBad.id,
+  showTitle: breakingBad.title,
+  showHref: breakingBad.href,
+  episodeId: 73483,
+  seasonNumber: 1,
+  episode: 2,
+  episodeHref: `${breakingBad.href}/seasons/1/episodes/2`,
+  episodeNumber: '1x02',
+  episodeTitle: "Cat's in the Bag...",
+  poster: breakingBad.posterThumb,
+  rating: 8.12,
+  runtime: breakingBad.runtime,
+  progressHref: '/users/me/progress',
+  progress: { aired: breakingBad.airedEpisodes, completed: 1, plays: 1 },
+  rewatching: false,
+};
+const recommendation: Recommendation = {
+  type: 'movie',
+  id: noWayHome.id,
+  path: `/movies/${noWayHome.id}`,
+  href: noWayHome.href,
+  title: noWayHome.title,
+  year: noWayHome.year,
+  overview: noWayHome.overview,
+  released: true,
+  rating: noWayHome.rating,
+  runtime: noWayHome.runtime,
+  certification: noWayHome.certification,
+  genres: ['Action', 'Adventure'],
+  poster: noWayHome.posterThumb,
+  fanart: noWayHome.fanart,
+  why: { titles: [], likes: [] },
+};
 </script>
-<svelte:head>
-  <title>Visibility controls · og design system</title>
-</svelte:head>
+
+{#snippet watchedDetail()}31/62 eps &mdash; 31 plays <em>({formatRuntime(31 * breakingBad.runtime)})</em>{/snippet}
+
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-<main tabindex="-1">
-  <Container>
-    <section>
-      <h1>Rewatch, drop and hide</h1>
-      <p>Sign in to try the date picker and confirmations. These controls share the history popover tokens.</p>
-      <div class="examples">
-        <VisibilityControl {target} action="rewatch">
-          <Icon svg={backward} />
-        </VisibilityControl>
-        <VisibilityControl {target} action="drop">
-          <Icon svg={minus} />
-        </VisibilityControl>
-        <VisibilityControl {target} action="restore" variant="pill">Dropped</VisibilityControl>
-        <VisibilityControl {target} action="hide" section="recommendations" variant="card">
-          <Icon svg={ban} />
-        </VisibilityControl>
-      </div>
-      <h2>Poster and fanart actions</h2>
-      <PosterGrid columns={6}>
-        <PosterCard href="/shows/breaking-bad" title="Breaking Bad" image="/favicon.svg" {icons} />
-        <FanartCard href="/shows/breaking-bad" title="Breaking Bad" image="/favicon.svg"
-          icons={{ ...icons, hideSection: 'calendar' }} />
-      </PosterGrid>
-    </section>
-  </Container>
-</main>
+{#snippet historyMenu()}
+  <SummaryActionMenu>
+    {#snippet children(close)}
+      <a href="/users/me/history/episodes?show={show.id}"><Icon svg={historyIcon} fixedWidth />View history</a>
+      <hr />
+      <VisibilityControl target={show} action="rewatch" variant="menu" onsaving={close}>
+        <Icon svg={backward} fixedWidth />Rewatch show
+      </VisibilityControl>
+      <VisibilityControl target={show} action="drop" variant="menu" onsaving={close}>
+        <Icon svg={circleMinus} fixedWidth />Drop show
+      </VisibilityControl>
+    {/snippet}
+  </SummaryActionMenu>
+{/snippet}
+
+<Specimen title="Dropped badge" row
+  note="A dropped show greys out under the badge, on posters and fanart alike. Click it to restore the show.">
+  <Variant label="Poster card">
+    <div class="poster">
+      <PosterCard href={breakingBad.href} title={breakingBad.title} image={breakingBad.posterThumb}
+        subtitles={[String(breakingBad.year)]} dropped {icons} />
+    </div>
+  </Variant>
+  <Variant label="Chart card">
+    <div class="fanart">
+      <FrameGrid variant="framed">
+        <FanartCard framed href={breakingBad.href} title={breakingBad.title} year={breakingBad.year}
+          image={breakingBad.fanartThumb} tags={[{ text: '868 watchers' }]} dropped
+          icons={{ ...icons, favorite: true }} />
+      </FrameGrid>
+    </div>
+  </Variant>
+</Specimen>
+
+<Specimen title="Not interested"
+  note="The recommendation spotlight's hide button, top right: it asks, then drops the pick from recommendations.">
+  <div class="spotlight">
+    <RecommendationSpotlight item={recommendation} index={0} total={20} mixed={false} isVip onstep={() => {}} />
+  </div>
+</Specimen>
+
+<Specimen title="••• menus" row
+  note="Rewatch and drop sit under •••: on an Up Next card's quick icons, and beside a show's history button once it has plays.">
+  <Variant label="Up Next card">
+    <div class="poster">
+      <OnDeckCard item={upNext} />
+    </div>
+  </Variant>
+  <Variant label="Show history button">
+    <div class="stack">
+      <WatchPopover label="50% watched" variant="summary" fill={0.5} selected plural datePreferences={dates}
+        onopen={(force) => Promise.resolve(force ? 'date' : 'partial')} onwatch={() => {}}
+        onremaining={() => Promise.resolve(false)} oninvalid={() => {}}
+        summary={{ icon: check, text: 'watched', percent: '50%', detail: watchedDetail }} more={historyMenu} />
+    </div>
+  </Variant>
+</Specimen>
+
 <style>
-section {
-  padding-block: calc(var(--header-height) + var(--gutter)) var(--gutter);
+/* One card at its grid width: a sixth of the page for a poster, a third for a fanart card. */
+.poster {
+  inline-size: calc(var(--container-lg) / 6 - var(--gutter));
 }
-.examples {
+
+.stack {
+  inline-size: var(--watch-date-width);
+}
+
+.fanart {
+  inline-size: calc(var(--container-lg) / 3);
+}
+
+/* The dashboard's spotlight column, beside the poster rail. */
+.spotlight {
   display: grid;
-  grid-template-columns: repeat(4, var(--action-icon-width));
-  gap: var(--space-xs-inline);
+  grid-template-columns: var(--recommendations-layout);
+  gap: var(--recommendations-layout-gap);
 }
 </style>

@@ -1,15 +1,15 @@
 <!--
   OG's funnel: slides the advanced filter panel
   out and back. Its caret points the way the panel will move, it turns red while filters are on, and `count` puts
-  OG's `.filter-counter` badge on it. `a` toggles it too, except while typing .
+  OG's `.filter-counter` badge on it. `a` toggles it too, except while typing. It sits in a sidebar's tool row,
+  beside the filter eye.
     <AdvancedFiltersToggle bind:open controls="chart-filters" active count={3} />
 -->
 <script lang="ts">
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import caretRight from '$lib/icons/solid/caret-right.svg?raw';
-import filtersIcon from '$lib/icons/solid/filters.svg?raw';
-import regularFilters from '$lib/icons/regular/filters.svg?raw';
+import filtersIcon from '$lib/icons/regular/filters.svg?raw';
 
 interface Props {
   open: boolean;
@@ -21,11 +21,9 @@ interface Props {
   count: number;
   /** Lets the page hand focus back here when the panel closes. */
   button?: HTMLButtonElement;
-  /** The regular-weight funnel of a sidebar's tool row, beside the regular eye. */
-  regular?: boolean;
 }
 
-let { open = $bindable(), controls, active, count, button = $bindable(), regular = false }: Props = $props();
+let { open = $bindable(), controls, active, count, button = $bindable() }: Props = $props();
 
 function onkeydown(event: KeyboardEvent) {
   if (event.key !== 'a' || event.altKey || event.ctrlKey || event.metaKey || event.defaultPrevented) return;
@@ -42,14 +40,14 @@ function onkeydown(event: KeyboardEvent) {
     <button
       bind:this={button}
       type="button"
-      class={['toggle', { active, open, regular }]}
+      class={['toggle', { active, open }]}
       aria-label={count > 0 ? `Advanced Filters (${count} on)` : 'Advanced Filters'}
       aria-expanded={open}
       aria-controls={controls}
       onclick={() => (open = !open)}
       {...tooltip}
     >
-      <span class="funnel"><Icon svg={regular ? regularFilters : filtersIcon} />{#if count > 0}<span class="badge" aria-hidden="true"
+      <span class="funnel"><Icon svg={filtersIcon} />{#if count > 0}<span class="badge" aria-hidden="true"
           >{count.toLocaleString('en-US')}</span>{/if}</span><span class="caret"><Icon svg={caretRight} /></span>
     </button>
   {/snippet}
@@ -65,33 +63,24 @@ function onkeydown(event: KeyboardEvent) {
   gap: var(--space-tool-caret);
   min-inline-size: var(--tool-size);
   min-block-size: var(--tool-size);
-  margin-inline-end: calc(-1 * var(--filter-toggle-overhang));
   padding: 0 var(--space-tool-inline);
   border: 0;
   border-radius: var(--radius-control);
   background: none;
-  color: var(--color-filter-icon-frame);
-  font-size: var(--font-size-filter-icon-frame);
+  color: var(--color-tool);
+  font-size: var(--font-size-tool);
   line-height: 1;
+
+  &:is(:hover, :focus-visible) {
+    color: var(--color-tool-hover);
+  }
 
   &:is(:hover, :focus-visible),
   &.open {
     background-color: var(--color-tool-hover-bg);
   }
 
-  /* Beside a section toolbar's regular eye: its color, size and hover, and no overhang. */
-  &.regular {
-    margin-inline-end: 0;
-    color: var(--color-tool);
-    font-size: var(--font-size-tool);
-
-    &:is(:hover, :focus-visible) {
-      color: var(--color-tool-hover);
-    }
-  }
-
-  &.active,
-  &.regular.active {
+  &.active {
     color: var(--brand-primary);
   }
 

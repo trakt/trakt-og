@@ -150,7 +150,7 @@ const count = $derived(data.total - (data.cards.length - cards.length));
     </span>
     <span class="icons">
       {#if data.query.by === 'added'}<DividersToggle bind:shown={dividers} />{/if}
-      <FadeHideMenu value={fadeHide} options={fadeOptions} cookie="ratings" hideOptions={[]} variant="default" onchange={(next) => (fadeHide = next)} />
+      <FadeHideMenu value={fadeHide} options={fadeOptions} cookie="ratings" hideOptions={[]} onchange={(next) => (fadeHide = next)} />
     </span>
   {/snippet}
 </SectionToolbar>

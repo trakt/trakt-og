@@ -1,17 +1,17 @@
 <script lang="ts">
 import type { ReactionType } from '$lib/components/comments/ReactionType';
 import { page } from '$app/state';
-import { PLACEHOLDER_AVATAR } from '$lib/users/placeholderAvatar';
 import CommentCard from '$lib/components/comments/CommentCard.svelte';
 import CommentTag from '$lib/components/comments/CommentTag.svelte';
 import AddCommentLink from '$lib/components/comments/AddCommentLink.svelte';
-import CommentComposer from '$lib/components/comments/CommentComposer.svelte';
-import { newComment } from '$lib/components/comments/newComment.svelte';
-import { toast } from '$lib/components/toast/toast.svelte';
+import NewCommentForm from '$lib/components/comments/NewCommentForm.svelte';
+import PosterCard from '$lib/components/media/PosterCard.svelte';
 import ReactionControl from '$lib/components/comments/ReactionControl.svelte';
 import type { CommentViewer } from '$lib/components/comments/CommentViewer';
 import CommentWithPoster from '$lib/components/comments/CommentWithPoster.svelte';
-import Container from '$lib/components/container/Container.svelte';
+import DemoChoice from '$lib/design/DemoChoice.svelte';
+import Specimen from '$lib/design/Specimen.svelte';
+import Variant from '$lib/design/Variant.svelte';
 import type { CommentResponse } from '@trakt/api';
 import checkThick from '$lib/icons/trakt/check-thick.svg?raw';
 import circleCheck from '$lib/icons/solid/circle-check.svg?raw';
@@ -41,6 +41,11 @@ import {
 // Signed out, the signed-in member (from the layout), or the author of every comment here, for edit and delete.
 type ViewAs = 'out' | 'member' | 'author';
 let viewAs = $state<ViewAs>('member');
+const viewers: readonly { value: ViewAs; label: string }[] = [
+  { value: 'out', label: 'Signed out' },
+  { value: 'member', label: 'Signed-in member' },
+  { value: 'author', label: 'The author' },
+];
 const viewerFor = (comment: CommentResponse): CommentViewer => {
   if (viewAs === 'out') return null;
   if (viewAs === 'author') return { slug: comment.user.ids.slug ?? '' };
@@ -48,169 +53,145 @@ const viewerFor = (comment: CommentResponse): CommentViewer => {
 };
 
 let reaction = $state<ReactionType>();
-
-// The new comment form's composer, posting nowhere: the reply API's answer stands in, so short text is turned down.
-// Add comment opens it, as on a summary page; Cancel and posting hide it again.
-$effect(() => newComment.mount());
-const post = (text: string) => client.reply(0, text);
-const posted = () => {
-  newComment.close();
-  toast.success('Posted, on this page only.');
-};
-const cancel = () => {
-  const opener = newComment.opener;
-  newComment.close();
-  opener?.focus();
-};
-
-let theme = $state(page.url.searchParams.get('theme') ?? 'light');
-$effect(() => {
-  document.documentElement.dataset.theme = theme;
-  return () => delete document.documentElement.dataset.theme;
-});
+const fanart = 'https://media.trakt.tv/images/shows/000/167/187/fanarts/full/88ea4a00c4.jpg.webp';
 </script>
 
-<svelte:head>
-  <title>Comment card · og design system</title>
-</svelte:head>
+<div class="cards">
+  <Specimen title="Viewer"
+    note="Who the cards below are shown to. Replying, editing, deleting, blocking and reporting all stay on this page.">
+    <DemoChoice label="View as" options={viewers} bind:value={viewAs} />
+  </Specimen>
 
-<main>
-  <section>
-    <Container>
-      <h1>Comment card</h1>
-      <p>
-        The comment card on made-up comments, one of them showing every formatting rule. "N replies" opens the
-        replies inline on a rail under the avatar. Replying, editing, deleting and blocking work on the page and never
-        reach the API. The reaction picker works for the signed-in viewer, and the report dialog sends for real.
-      </p>
-      <div class="controls">
-        <label>
-          Theme
-          <select bind:value={theme}>
-            <option value="light">Light (OG default)</option>
-            <option value="dark">Dark (dark knight)</option>
-          </select>
-        </label>
-        <label>
-          Viewer
-          <select bind:value={viewAs}>
-            <option value="out">Signed out</option>
-            <option value="member">Signed-in member</option>
-            <option value="author">The author</option>
-          </select>
-        </label>
-      </div>
+  <Specimen title="Comment tags"
+    note="Top right on a comment: Friend or Following, OP on a reply by the thread's author, the author's plays (solid once they've watched every episode) and rating, which join into one tag, Review, Spoilers, then Parent and Blocked.">
+    <div class="tag-demo">
+      <CommentTag svg={userGroup} tone="friend" tint>Friend</CommentTag>
+      <CommentTag svg={userIcon} tone="following" tint>Following</CommentTag>
+      <CommentTag svg={commentSolid} tone="op" tint solid>OP</CommentTag>
+      <CommentTag svg={checkThick} glyph tone="watched" tint>2 plays</CommentTag>
+      <CommentTag svg={checkThick} glyph tone="watched" tint>62% Watched</CommentTag>
+      <CommentTag svg={circleCheck} tone="watched" tint solid>100% Watched</CommentTag>
+      <CommentTag svg={heart} tone="rated" tint>8</CommentTag>
+      <CommentTag svg={star} tone="review" tint>Review</CommentTag>
+      <CommentTag svg={eyeSlash} tone="spoiler" tint>Spoilers</CommentTag>
+      <CommentTag tint>Parent</CommentTag>
+      <CommentTag tint>Blocked</CommentTag>
+    </div>
+  </Specimen>
 
-      <h2>Comment tags</h2>
-      <p>
-        Top right on a comment, like a list row's chips: Friend (you follow each other) or Following, OP on a reply by
-        the thread's author, the author's plays (solid once they've watched every episode) and rating, which join into one tag on a comment,
-        Review, Spoilers, then Parent and Blocked.
-      </p>
-      <div class="tag-demo">
-        <CommentTag svg={userGroup} tone="friend" tint>Friend</CommentTag>
-        <CommentTag svg={userIcon} tone="following" tint>Following</CommentTag>
-        <CommentTag svg={commentSolid} tone="op" tint solid>OP</CommentTag>
-        <CommentTag svg={checkThick} glyph tone="watched" tint>2 plays</CommentTag>
-        <CommentTag svg={checkThick} glyph tone="watched" tint>62% Watched</CommentTag>
-        <CommentTag svg={circleCheck} tone="watched" tint solid>100% Watched</CommentTag>
-        <CommentTag svg={heart} tone="rated" tint>8</CommentTag>
-        <CommentTag svg={star} tone="review" tint>Review</CommentTag>
-        <CommentTag svg={eyeSlash} tone="spoiler" tint>Spoilers</CommentTag>
-        <CommentTag tint>Parent</CommentTag>
-        <CommentTag tint>Blocked</CommentTag>
-      </div>
+  <Specimen title="Reaction picker"
+    note="Choose an emoji, replace it, or choose the selected one again to remove it. This one stays on the page.">
+    <div class="reaction-demo">
+      <ReactionControl value={reaction} onopen={() => Promise.resolve(true)}
+        onselect={(type) => (reaction = reaction === type ? undefined : type)} />
+    </div>
+  </Specimen>
 
-      <h2>Reaction picker</h2>
-      <p>Choose an emoji, replace it, or choose the selected one again to remove it. This example stays on this page.</p>
-      <div class="reaction-demo">
-        <ReactionControl value={reaction} onopen={() => Promise.resolve(true)}
-          onselect={(type) => (reaction = reaction === type ? undefined : type)} />
-      </div>
+  <Specimen title="New comment form"
+    note="A summary's form, for members who may comment: Add comment opens it with the field focused. The meter turns green at 5 words; Cancel asks first when there's text.">
+    {#if page.data.settings}
+      <p><AddCommentLink /></p>
+      <NewCommentForm item={movie} />
+    {:else}
+      <p>Sign in to see the form. Signed out, the page has no form and no Add comment button.</p>
+    {/if}
+  </Specimen>
 
-      <h2>The new comment form's composer</h2>
-      <p>
-        Hidden until Add comment opens it, focused. Select text and use the toolbar; the meter turns green at 5 words.
-        Cancel hides it again, asking first when there's text.
-      </p>
-      <div class="composer-demo">
-        <p><AddCommentLink /></p>
-        {#if newComment.visible}
-          <CommentComposer label="Your comment" placeholder="Add a comment as OG Viewer..." submit="Post"
-            posting="Posting your comment" avatar={PLACEHOLDER_AVATAR}
-            spoiler={false} confirmLeave gifs oncancel={cancel} save={post} onsaved={posted} />
-        {/if}
-      </div>
+  <Specimen title="Featured review"
+    note="A review in a comment list: featured and wide. N replies opens the replies inline on a rail.">
+    <CommentCard comment={review} item={movie} viewer={viewerFor(review)} {client}
+      dateOptions={page.data.datePreferences} featured wide />
+  </Specimen>
 
-      <h2>A review in a comment list: featured and wide</h2>
-      <CommentCard comment={review} item={movie} viewer={viewerFor(review)} {client}
-        dateOptions={page.data.datePreferences} featured wide />
+  <Specimen title="Formatting" note="Every formatting rule, and an edit more than a day after posting.">
+    <CommentCard comment={formatting} item={show} viewer={viewerFor(formatting)} {client}
+      dateOptions={page.data.datePreferences} wide />
+  </Specimen>
 
-      <h2>Formatting, and an edit more than a day after posting</h2>
-      <CommentCard comment={formatting} item={show} viewer={viewerFor(formatting)} {client}
-        dateOptions={page.data.datePreferences} wide />
-
-      <h2>Spoilers: the whole comment, then an inline spoiler</h2>
+  <Specimen title="Spoilers" note="Click a blurred spoiler to reveal it.">
+    <Variant label="Whole comment">
       <CommentCard comment={spoiler} item={episode} viewer={viewerFor(spoiler)} {client}
         dateOptions={page.data.datePreferences} featured wide />
+    </Variant>
+    <Variant label="Inline spoiler">
       <CommentCard comment={inline} item={episode} viewer={viewerFor(inline)} {client}
         dateOptions={page.data.datePreferences} wide />
+    </Variant>
+  </Specimen>
 
-      <h2>GIFs: on their own, and under text</h2>
+  <Specimen title="GIFs">
+    <Variant label="On its own">
       <CommentCard comment={gifOnly} item={episode} viewer={viewerFor(gifOnly)} {client}
         dateOptions={page.data.datePreferences} wide />
+    </Variant>
+    <Variant label="Under text">
       <CommentCard comment={gifWithText} item={episode} viewer={viewerFor(gifWithText)} {client}
         dateOptions={page.data.datePreferences} wide />
+    </Variant>
+  </Specimen>
 
-      <h2>Staff, and a deleted member</h2>
+  <Specimen title="Staff and deleted members">
+    <Variant label="Staff">
       <CommentCard comment={staff} item={episode} viewer={viewerFor(staff)} {client}
-        dateOptions={page.data.datePreferences} />
-      <CommentCard comment={deleted} item={show} viewer={viewerFor(deleted)} {client}
-        dateOptions={page.data.datePreferences} />
-
-      <h2>A reply out of its thread, with its parent</h2>
-      <CommentCard comment={reply} item={movie} parent={review} viewer={viewerFor(reply)} {client}
         dateOptions={page.data.datePreferences} wide />
+    </Variant>
+    <Variant label="Deleted member">
+      <CommentCard comment={deleted} item={show} viewer={viewerFor(deleted)} {client}
+        dateOptions={page.data.datePreferences} wide />
+    </Variant>
+  </Specimen>
 
-      <h2>On its own page: the root of its thread</h2>
-      <p>
-        The same comment as in a list, with the page's replies open on one rail under it. "N replies" folds them away,
-        and Reply opens the box at the end.
-      </p>
-      <CommentCard comment={review} item={movie} viewer={viewerFor(review)} {client}
-        dateOptions={page.data.datePreferences} wide read>
-        {#snippet replies()}
-          <div class="page-replies">
-            {#each reviewReplies as answer (answer.id)}
-              <CommentCard comment={answer} item={movie} viewer={viewerFor(answer)} {client}
-                dateOptions={page.data.datePreferences} opSlug={review.user.ids.slug ?? undefined} nested />
-            {/each}
-          </div>
-        {/snippet}
-      </CommentCard>
+  <Specimen title="Reply with its parent" note="A reply shown out of its thread.">
+    <CommentCard comment={reply} item={movie} parent={review} viewer={viewerFor(reply)} {client}
+      dateOptions={page.data.datePreferences} wide />
+  </Specimen>
 
-      <h2>Discover's Recent Comments: veiled, the author row pinned to the column's bottom</h2>
-      <div class="veiled">
-        <CommentCard comment={review} item={movie} viewer={viewerFor(review)} {client}
-          dateOptions={page.data.datePreferences} wide veiled hideInteractions />
+  <Specimen title="Thread root"
+    note="On its own page: the replies open on one rail under it. N replies folds them away, and Reply opens the box at the end.">
+    <CommentCard comment={review} item={movie} viewer={viewerFor(review)} {client}
+      dateOptions={page.data.datePreferences} wide read>
+      {#snippet replies()}
+        <div class="page-replies">
+          {#each reviewReplies as answer (answer.id)}
+            <CommentCard comment={answer} item={movie} viewer={viewerFor(answer)} {client}
+              dateOptions={page.data.datePreferences} opSlug={review.user.ids.slug ?? undefined} nested />
+          {/each}
+        </div>
+      {/snippet}
+    </CommentCard>
+  </Specimen>
+
+  <Specimen title="Spotlight" bleed
+    note="Discover's trending comments: one comment at a time beside its title's poster, the text large under a quote mark.">
+    <div class="spotlight">
+      <img class="backdrop" src={fanart} alt="" />
+      <div class="slide">
+        <PosterCard href="/movies/heat-1995" title="Heat" subtitles={['1995']} />
+        <div class="quote">
+          <CommentCard comment={review} item={movie} viewer={viewerFor(review)} {client}
+            dateOptions={page.data.datePreferences} spotlight />
+        </div>
       </div>
+    </div>
+  </Specimen>
 
-      <h2>Beside its poster, on a user's page</h2>
-      <CommentWithPoster poster={{ href: '/movies/heat-1995', title: movie.title }} inlineTitle={movie.title}>
-        <CommentCard comment={review} item={movie} viewer={viewerFor(review)} {client}
-          dateOptions={page.data.datePreferences} featured wide />
-      </CommentWithPoster>
-    </Container>
-  </section>
-</main>
+  <Specimen title="Beside its poster" note="On a user's comments page.">
+    <CommentWithPoster poster={{ href: '/movies/heat-1995', title: movie.title }} inlineTitle={movie.title}>
+      <CommentCard comment={review} item={movie} viewer={viewerFor(review)} {client}
+        dateOptions={page.data.datePreferences} featured wide />
+    </CommentWithPoster>
+  </Specimen>
+</div>
 
 <style>
-section {
-  padding-block: var(--gutter) calc(var(--gutter) * 2);
+.cards {
+  display: grid;
+  gap: var(--design-stage-gap);
+}
 
-  & :global(.comment-wrapper:not(.nested)) {
-    margin-block-end: var(--gutter);
-  }
+/* Space between the comment cards a section stacks. */
+.cards :global(.comment-wrapper:not(.nested)) {
+  margin-block-end: var(--gutter);
 }
 
 .page-replies {
@@ -225,33 +206,51 @@ section {
 }
 
 .reaction-demo {
-  margin-block-end: var(--gutter);
   color: var(--color-comment-muted);
   font-family: var(--font-headings);
   font-weight: var(--font-weight-headings);
   font-size: var(--font-size-comment-meta);
 }
 
-.composer-demo {
-  margin-block-end: var(--gutter);
-}
-
-/* Discover's comment column: the veil over a stand-in fanart, positioned for the author row. */
-.veiled {
+/* Discover's trending comments section: the title's fanart under its shade. */
+.spotlight {
   position: relative;
-  min-block-size: 400px;
-  background:
-    linear-gradient(var(--color-recent-comments-veil), var(--color-recent-comments-veil)),
-    linear-gradient(var(--color-slider-bg), var(--brand-primary));
+  isolation: isolate;
+  overflow: hidden;
+  color-scheme: dark;
+  padding: var(--trending-comments-top) var(--design-canvas-padding) var(--trending-comments-bottom);
+  background-color: var(--color-trending-comments-bg);
+  color: var(--color-discover-text);
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--trending-comments-shade);
+  }
 }
 
-.controls {
-  display: flex;
-  gap: var(--gutter);
+.backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  opacity: var(--opacity-trending-comments-backdrop);
 }
 
-label {
-  display: inline-grid;
-  gap: var(--space-sm-block);
+.slide {
+  display: grid;
+  grid-template-columns: var(--trending-comments-poster) minmax(0, 1fr);
+  gap: var(--trending-comments-gap);
+  align-items: center;
+  min-block-size: var(--trending-comments-height);
 }
+
+.quote {
+  min-inline-size: 0;
+}
+
 </style>

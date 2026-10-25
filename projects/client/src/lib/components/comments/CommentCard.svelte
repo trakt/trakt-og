@@ -116,11 +116,6 @@ interface Props {
   read?: boolean;
   /** On the comment's own page, the replies the page lists, on the card's rail above the reply box. */
   replies?: Snippet;
-  /**
-   * Discover's Recent Comments (OG's `#recent-comments .comment-outer-wrapper`): no bubble over the column's veil, the
-   * text in full, and the avatar and name row pinned to the bottom of the nearest positioned ancestor.
-   */
-  veiled?: boolean;
   /** Discover's Trending Comments: the text large, no bubble or Reply, and the replies on the comment's page. */
   spotlight?: boolean;
   /** Takes a posted reply where the page lists the thread itself. Left out, it goes into the card's inline thread. */
@@ -146,7 +141,6 @@ const {
   asParent = false,
   read = false,
   replies: pageReplies,
-  veiled = false,
   spotlight = false,
   onreply,
   ondelete,
@@ -168,8 +162,8 @@ const dates = $derived(commentDates({ createdAt: comment.created_at, updatedAt: 
 const blocks = $derived(parseComment(comment.comment));
 const manage = $derived(manageLinks({ comment, viewer: member }));
 const isReply = $derived(comment.parent_id > 0);
-// A thread's root: every comment but a reply in its thread, a reply's parent and Discover's veiled columns.
-const standalone = $derived(!nested && !asParent && !veiled);
+// A thread's root: every comment but a reply in its thread and a reply's parent.
+const standalone = $derived(!nested && !asParent);
 const isOp = $derived(opSlug !== undefined && author.slug === opSlug);
 // The comment a link pointed at (`#comment-ID`), washed blue and tagged, like the comment page's linked reply.
 const linked = $derived(page.url.hash === `#comment-${comment.id}`);
@@ -178,8 +172,6 @@ const relation = $derived(
   viewer && author.slug !== viewer.slug ? memberRelation(overlay.slices().network, author.slug) : undefined,
 );
 const rating = $derived(comment.user_stats.rating ?? comment.user_rating);
-// Discover's veiled columns keep it on the avatar's corner.
-const shownRating = $derived(veiled ? null : rating);
 const watched = $derived(
   viewer && author.slug && item ? watchedIndicator({ stats: comment.user_stats, slug: author.slug, item }) : undefined,
 );
@@ -372,7 +364,7 @@ const vanish = (node: Element) => fade(node, { duration: prefersReducedMotion.cu
 {/snippet}
 
 {#snippet avatar()}
-  <CommentAvatar src={author.avatar} rating={veiled ? rating : undefined} small={nested || asParent} />
+  <CommentAvatar src={author.avatar} small={nested || asParent} />
 {/snippet}
 
 <!-- Profile, history and comment hrefs point at og routes that resolve() only takes once they exist. -->
@@ -393,7 +385,6 @@ const vanish = (node: Element) => fade(node, { duration: prefersReducedMotion.cu
       linked,
       nested,
       read,
-      veiled,
       spotlight,
       reply: isReply,
       'has-thread': threadOpen,
@@ -467,8 +458,8 @@ const vanish = (node: Element) => fade(node, { duration: prefersReducedMotion.cu
         {#if linked}<CommentTag svg={linkIcon} tone="linked" tint>Linked</CommentTag>{/if}
         {#if isOp}<CommentTag svg={commentSolid} tone="op" tint solid>OP</CommentTag>{/if}
         <!-- Watched and rated join into one tag, a segment each. -->
-        {#if watched || shownRating}
-          <span class={['joined', { both: watched && shownRating }]}>
+        {#if watched || rating}
+          <span class={['joined', { both: watched && rating }]}>
             {#if watched}
               <span class="segment watched-segment">
                 <Tooltip text={watched.title}>
@@ -481,9 +472,9 @@ const vanish = (node: Element) => fade(node, { duration: prefersReducedMotion.cu
                 </Tooltip>
               </span>
             {/if}
-            {#if shownRating}
+            {#if rating}
               <span class="segment rated-segment">
-                <CommentTag svg={heart} tone="rated" tint><span class="visually-hidden">Rated </span>{shownRating}</CommentTag>
+                <CommentTag svg={heart} tone="rated" tint><span class="visually-hidden">Rated </span>{rating}</CommentTag>
               </span>
             {/if}
           </span>
@@ -973,8 +964,7 @@ const vanish = (node: Element) => fade(node, { duration: prefersReducedMotion.cu
 }
 
 /*
-  The stats bar: the React button and the reaction pill, Reply, the plays, and the tools at its end. Discover's veiled
-  columns keep the quiet text actions.
+  The stats bar: the React button and the reaction pill, Reply, the plays, and the tools at its end.
 */
 .under-comment {
   display: flex;
@@ -1153,61 +1143,6 @@ const vanish = (node: Element) => fade(node, { duration: prefersReducedMotion.cu
     color: var(--season-accent);
     font-size: var(--font-size-trending-comments-mark);
     line-height: 1;
-  }
-}
-
-/*
-  Discover's Recent Comments: the text in full over the column's veil, and the avatar and the name row pinned to the
-  bottom of the column. OG swapped the comment in after read more had run, so its text never collapsed.
-*/
-.veiled {
-  --comment-collapsed-height: none;
-  --comment-quote-bg: var(--color-recent-comments-quote-bg);
-  --comment-pre-bg: var(--color-recent-comments-quote-bg);
-  --bubble: transparent;
-  position: static;
-  display: block;
-
-  & > .rail {
-    position: absolute;
-    inset-block-end: var(--comment-padding);
-    inset-inline-start: var(--comment-padding);
-    z-index: 1;
-  }
-
-  & > .main > .above-comment {
-    position: absolute;
-    inset-block-end: 0;
-    inset-inline: 0;
-    min-block-size: calc(var(--avatar) + 2 * var(--comment-padding));
-    padding: var(--comment-padding);
-    padding-inline-start: calc(var(--comment-padding) + var(--avatar) + var(--gap));
-    /* Clear of the share button pinned at its end. */
-    padding-inline-end: calc(var(--comment-padding) + var(--comment-tool-size) + var(--comment-head-gap-inline));
-    background-color: var(--color-recent-comments-author-bg);
-  }
-
-  & > .main > .above-comment > .tags {
-    align-self: center;
-  }
-
-  & .bubble {
-    margin: 0;
-    padding: var(--recent-comments-comment-padding);
-    border-radius: 0;
-
-    @media (width < 768px) {
-      padding: var(--recent-comments-comment-padding-phone);
-    }
-  }
-
-  /* Only the share button, at the end of the name row. */
-  & > .main > .under-comment {
-    position: absolute;
-    inset-block-end: calc(var(--comment-padding) + (var(--avatar) - var(--comment-tool-size)) / 2);
-    inset-inline-end: var(--comment-padding);
-    z-index: 1;
-    padding: 0;
   }
 }
 

@@ -165,7 +165,7 @@ const flipped = $derived(data.sort.how === 'desc');
     </span>
     <span class="icons">
       {#if data.sort.by === 'added'}<DividersToggle bind:shown={dividers} />{/if}
-      <FadeHideMenu value={fadeHide} options={fadeOptions} cookie="library" hideOptions={[]} variant="default"
+      <FadeHideMenu value={fadeHide} options={fadeOptions} cookie="library" hideOptions={[]}
         onchange={(next) => (fadeHide = next)} />
     </span>
   {/snippet}

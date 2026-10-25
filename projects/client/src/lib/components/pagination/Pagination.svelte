@@ -1,7 +1,7 @@
 <!--
   OG's numbered pagination (Kaminari's `ul.pagination`): a previous arrow, the page window from `pageWindow`, and a
   next arrow. Pass a paginated `PageMeta` from `extractPageMeta`. It renders nothing for a single page, like Kaminari.
-  Links keep the current query string and swap `page`; pass `href` to build them another way. The dots between
+  Links keep the current query string and swap `page`. The dots between
   page numbers open a jump-to-page select (PageJump).
   OG kept the arrows as links on the first and last page; og renders them as disabled text instead.
   Each page is a rounded square that fills on hover, the current one red; the arrows are chevrons.
@@ -16,12 +16,12 @@ import { pageHref, pageWindow } from './pageWindow.ts';
 
 interface Props {
   meta: { readonly current: number; readonly total: number };
-  href?: (page: number) => string;
   /** Names the nav landmark. Give the top and bottom copies on one page the same label. */
   label?: string;
 }
 
-const { meta, href = (n) => pageHref(page.url, n), label = 'Pagination' }: Props = $props();
+const { meta, label = 'Pagination' }: Props = $props();
+const href = (n: number) => pageHref(page.url, n);
 const slots = $derived(pageWindow(meta.current, meta.total));
 </script>
 

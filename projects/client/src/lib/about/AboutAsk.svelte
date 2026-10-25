@@ -54,7 +54,7 @@ const CARDS = [
             <li>{item}</li>
           {/each}
         </ul>
-        <span class="go"><LinkButton href={card.href} external>{card.go}</LinkButton></span>
+        <span class="go"><LinkButton href={card.href}>{card.go}</LinkButton></span>
       </div>
     </section>
   {/each}

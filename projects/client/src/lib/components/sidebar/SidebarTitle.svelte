@@ -3,7 +3,7 @@
   page's tools (the fade/hide eye, the filter toggle) on the right, level with the title's name.
     <SidebarTitle>
       {#snippet heading()}<Dropdown variant="title" label="Pick a chart">…</Dropdown>{/snippet}
-      {#snippet tools()}<FadeHideMenu … /><AdvancedFiltersToggle … regular />{/snippet}
+      {#snippet tools()}<FadeHideMenu … /><AdvancedFiltersToggle … />{/snippet}
     </SidebarTitle>
 -->
 <script lang="ts">

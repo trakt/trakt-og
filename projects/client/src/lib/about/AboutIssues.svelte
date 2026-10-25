@@ -97,7 +97,7 @@ const panels = $derived([
           <span class="empty-icon"><Icon svg={panel.empty.icon} /></span>
           <h3>{panel.empty.title}</h3>
           <p>{panel.empty.text}</p>
-          <LinkButton href={panel.empty.action.href} variant="outline" external>{panel.empty.action.text}</LinkButton>
+          <LinkButton href={panel.empty.action.href} variant="outline">{panel.empty.action.text}</LinkButton>
         </div>
       {:else if issues.length > 0}
         <ul>

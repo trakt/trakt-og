@@ -3670,6 +3670,7 @@
   --color-tag-pill-light-text: light-dark(#fff, #111);
   --sidebar-width: 350px;
   --sidebar-rail-width: 62px;
+  --sidebar-line-width: 1px; /* its edge against the content */
   --sidebar-padding: 20px;
   --sidebar-padding-top: 12px; /* above the page title */
   --sidebar-gap: 14px; /* between the sidebar's blocks */

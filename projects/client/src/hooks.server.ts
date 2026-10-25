@@ -1,6 +1,7 @@
 import { isAdmin, isOpenPath } from './lib/auth/adminGate.ts';
 import { AUTH_COOKIE } from './lib/auth/authCookie.ts';
-import { type Handle, redirect } from '@sveltejs/kit';
+import { withUserAgent } from './lib/api/withUserAgent.ts';
+import { type Handle, type HandleFetch, redirect } from '@sveltejs/kit';
 
 /**
  * Loaders call `api({ fetch: event.fetch, token: locals.token })`. The server never refreshes: a 401 renders logged-out.
@@ -21,3 +22,6 @@ export const handle: Handle = async ({ event, resolve }) => {
     transformPageChunk: ({ html }) => html.replace('%og.theme%', event.locals.theme ?? 'dark'),
   });
 };
+
+/** Loaders' server fetches name og as their User-Agent (`withUserAgent`), so the API's firewall lets them through. */
+export const handleFetch: HandleFetch = ({ request, fetch }) => fetch(withUserAgent(request));

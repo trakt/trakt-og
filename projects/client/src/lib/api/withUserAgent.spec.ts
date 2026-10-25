@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { withUserAgent } from './withUserAgent.ts';
+import { fetchWithUserAgent, withUserAgent } from './withUserAgent.ts';
 
 const URL = 'https://apiz.trakt.tv/calendars/all/shows/premieres/2026-10-24/7';
 
@@ -19,5 +19,16 @@ describe('withUserAgent', () => {
     expect(named.method).toBe('POST');
     expect(named.url).toBe(URL);
     expect(named.headers.get('trakt-api-version')).toBe('2');
+  });
+
+  it('should name og on a wrapped fetch', async () => {
+    const seen: Request[] = [];
+    const base = (input: RequestInfo | URL) => {
+      seen.push(input as Request);
+      return Promise.resolve(new Response('{}'));
+    };
+    await fetchWithUserAgent(base as typeof fetch)(URL, { headers: { 'trakt-api-version': '2' } });
+    expect(seen[0]?.headers.get('user-agent')).toBe('og.trakt.tv');
+    expect(seen[0]?.headers.get('trakt-api-version')).toBe('2');
   });
 });

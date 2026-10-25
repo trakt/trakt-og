@@ -126,6 +126,10 @@ const states = [
   },
   { title: 'Follow permission disabled', props: { user: free, large: true, canFollow: false, relation: relation({}) } },
   {
+    title: 'Loading: the follow state still streaming in',
+    props: { user: free, large: true, relation: new Promise<ViewerRelation | null>(() => {}) },
+  },
+  {
     title: 'Incoming request from someone who does not follow you yet',
     props: { user: { ...free, slug: 'requester' }, relation: relation({ requestId: 2 }) },
   },
@@ -229,6 +233,12 @@ const cards = [
     canFollow: false,
   },
   { key: 'self', user: { ...free, slug: 'self', displayName: 'You (or signed out)' }, relation: null },
+  {
+    key: 'loading',
+    user: { ...free, slug: 'zoidberg', displayName: 'Loading: John Zoidberg', vip: null },
+    relation: null,
+    pending: true,
+  },
 ];
 const favorite = (
   id: number,
@@ -270,7 +280,7 @@ const liveCards = [
 </script>
 
 <Specimen title="Profile frame" bleed
-  note="Covers, labels, follow states, the request banner and the watching-now bar. Real profiles only show the states the viewer is actually in.">
+  note="Covers, labels, follow states (shimmering until they load), the request banner and the watching-now bar. Real profiles only show the states the viewer is actually in.">
   <div class="states">
     {#each states as { title, props } (title)}
       <Variant label={title}>
@@ -344,14 +354,15 @@ const liveCards = [
 </Specimen>
 
 <Specimen title="User cards"
-  note="The network page's cards: watching now, checked in, each follow state, a viewer who isn't allowed to follow, then yourself or signed out.">
+  note="The network page's cards: watching now, checked in, each follow state, a viewer who isn't allowed to follow, yourself or signed out, then a card whose follow state is still loading.">
   <ul class="user-cards">
     {#each liveCards as card (card.key)}
       <li><UserCard user={card.user} relation={card.relation} watch={card.watch} since="2014-03-02T10:00:00.000Z" /></li>
     {/each}
     {#each cards as card, i (card.key)}
       <li>
-        <UserCard user={card.user} relation={card.relation} canFollow={'canFollow' in card ? card.canFollow : true}
+        <UserCard user={card.user} relation={card.relation} pending={'pending' in card && card.pending}
+          canFollow={'canFollow' in card ? card.canFollow : true}
           veteran={i === 1 ? 'Legend' : i === 2 ? 'Veteran' : null}
           since="2012-06-11T10:00:00.000Z" />
       </li>

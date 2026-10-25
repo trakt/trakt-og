@@ -5,8 +5,8 @@
   like a comment's stats bar: the Like button ("123 likes") and the items and comments as buttons, then the viewer's
   tools. The watchlist and favorites wear a quiet tag of their own, and an owner the viewer follows a Friend or
   Following tag. Hovering the row washes it, edge to edge, and turns the name red; hovering the fan opens up the
-  poster under the pointer. It sizes itself to where it sits: a smaller fan in a
-  tablet column, the posters whole across the top in a narrow one.
+  poster under the pointer. While `postersLoading`, its slots shimmer instead of reading as an empty list. It sizes
+  itself to where it sits: a smaller fan in a tablet column, the posters whole across the top in a narrow one.
 -->
 <script lang="ts">
 import ReportDialog from '$lib/components/summary/ReportDialog.svelte';
@@ -20,6 +20,7 @@ import CommentText from '$lib/components/comments/CommentText.svelte';
 import { parseComment } from '$lib/components/comments/text/parseComment';
 import VipLabel from '$lib/components/labels/VipLabel.svelte';
 import ShareButton from '$lib/components/share/ShareButton.svelte';
+import Shimmer from '$lib/components/loading/Shimmer.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import userXmark from '$lib/icons/regular/user-xmark.svg?raw';
@@ -58,6 +59,8 @@ interface Props {
   owner: Owner;
   /** The list's first items, in list order. Only five show. The title is the poster's tooltip, where it's known. */
   posters: readonly { title?: string; image?: string }[];
+  /** The posters are still loading, so the slots shimmer. */
+  postersLoading?: boolean;
   itemCount: number;
   /** Left out for the watchlist and favorites, which can't be liked. */
   likeCount?: number;
@@ -88,6 +91,7 @@ const {
   name,
   owner,
   posters,
+  postersLoading = false,
   itemCount,
   likeCount,
   likeTarget,
@@ -171,6 +175,8 @@ const blocks = $derived(parseComment(description?.trim() ?? ''));
               <span class="slot" {...tooltip}>
                 {#if poster?.image}
                   <img class="poster" src={poster.image} alt="" loading="lazy" decoding="async" />
+                {:else if postersLoading}
+                  <span class="poster loading"><Shimmer inline="100%" block="100%" /></span>
                 {:else}
                   <span class={['poster', 'placeholder', { empty: !poster }]}></span>
                 {/if}
@@ -338,6 +344,16 @@ const blocks = $derived(parseComment(description?.trim() ?? ''));
 .placeholder {
   background-image: var(--image-placeholder-poster);
   background-size: cover;
+}
+
+/* A poster still loading: the shimmer fills its slot on the fan's own ground, square to the slivers. */
+.poster.loading {
+  display: flex;
+  background: none;
+
+  & :global(.shimmer) {
+    border-radius: 0;
+  }
 }
 
 /* Past the list's end, or the whole fan of an empty list: striped. */

@@ -2,7 +2,8 @@
   The progress page as its owner sees it, on sample shows: the view toggles, each row's status menu (rewatch and drop,
   restore on Dropped) and its Seasons toggle. `?view=grid` shows the poster grid, `?view=simple` the simple bars,
   `?type=rewatching` the Rewatching tab (Game of Thrones) and `?type=dropped` the Dropped tab (two of the sample
-  shows). `?list=1` filters to a list's shows and `?list=2` to an empty list, each after a short wait. Rows start with
+  shows). `?list=1` filters to a list's shows and `?list=2` to an empty list, each after a short wait, and
+  `?state=loading` holds the progress loading for good. Rows start with
   the up-next episode and estimated counts, as the page does; opening one's seasons reads its catalog after a short
   wait (Breaking Bad has unwatched episodes in the library, Severance a season announced).
 -->
@@ -34,7 +35,9 @@ const variants = [
   { label: 'Dropped', query: '?type=dropped' },
   { label: 'On a list', query: '?list=1' },
   { label: 'Empty list', query: '?list=2' },
+  { label: 'Loading', query: '?state=loading' },
 ];
+const pending = $derived(page.url.searchParams.get('state') === 'loading');
 
 // Like the page: up-next comes with the progress, and a row's catalog is read as its seasons open.
 const catalogs = new SvelteSet<number>();
@@ -85,7 +88,7 @@ const data = $derived({
 <!-- The variants only change this page's query, so resolve() has nothing to add. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 <Specimen title="Progress list" bleed
-  note="Open a row's seasons to see them load. The list variants show the loader, then the filtered rows or the empty list.">
+  note="Open a row's seasons to see them shimmer while they load. Loading holds the shimmering rows; the list variants show them, then the filtered rows or the empty list.">
   <nav class="variants" aria-label="Progress variants">
     {#each variants as variant (variant.label)}
       <a href="{page.url.pathname}{variant.query}" aria-current={page.url.search === variant.query ? 'page' : undefined}>
@@ -93,7 +96,7 @@ const data = $derived({
       </a>
     {/each}
   </nav>
-  <ProgressList {data} {items} {listed} {loading} onneed={need} {now} />
+  <ProgressList {data} items={pending ? null : items} {listed} {loading} onneed={need} {now} />
 </Specimen>
 
 <style>

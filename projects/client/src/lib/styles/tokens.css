@@ -440,6 +440,8 @@
   --font-size-list-stat-under: 11px;
   --color-list-stat-under: #666;
   --list-stat-under-offset: -15px;
+  --list-stat-shimmer-percent-width: 28px; /* a percentage's place until the list's stats land */
+  --list-stat-shimmer-runtime-width: 52px; /* the time to watch's, as wide as "2d 16h" */
   /* A list poster's notes: a glass pill centred over the bottom (the profile pills' glass), and a glass sheet that slides
      up the poster with the notes. Notes taller than the poster scroll, the bottom edge fading until the end. */
   --read-notes-pill-bottom: 10px;
@@ -1367,6 +1369,12 @@
     light-dark(rgb(0 0 0 / 0.06), rgb(255 255 255 / 0.08)) 75%
   );
   --shimmer-duration: 1.4s;
+  --shimmer-on-art: linear-gradient(
+    90deg,
+    rgb(255 255 255 / 0.08) 25%,
+    rgb(255 255 255 / 0.22) 50%,
+    rgb(255 255 255 / 0.08) 75%
+  ); /* over a cover or dark glass, so light on dark in both themes */
 
   /* VIP and Private labels. The VIP label is one round red pill: the logo and VIP (or Director), the OG or EP tag as a
      darker segment, and the years as a light gray segment (a black star and count), which reads on dark and light
@@ -1520,6 +1528,7 @@
   --profile-button-padding: var(--space-header-pill-inline);
   --profile-button-gap: 10px;
   --radius-profile-button: var(--radius-header-pill);
+  --follow-shimmer-width: 101px; /* the Follow button, its icon and word, until the viewer's follow state lands */
   --color-profile-button-border: rgb(255 255 255 / 0.3);
   --color-profile-button-border-hover: rgb(255 255 255 / 0.6);
   --color-profile-follow: var(--brand-success);
@@ -2991,6 +3000,13 @@
   --color-progress-collected: var(--brand-quaternary); /* the library quick icon's teal */
   --color-progress-episode-done: #1db75e;
 
+  /* Its shimmer rows until your progress lands */
+  --progress-shimmer-title-width: 40%;
+  --progress-shimmer-title-line: var(--control-height); /* the title's line, as tall as its status menu */
+  --progress-shimmer-percent-width: 52px; /* the bar's percent, as wide as "64%" */
+  --progress-shimmer-stat-width: 96px;
+  --progress-shimmer-toggle-width: 81px; /* Seasons and its caret */
+
   /* The status control after the title: a dropdown with a status dot */
   --progress-status-dot: 8px;
   --progress-status-ring: 1.5px; /* Not started's empty dot */
@@ -3028,6 +3044,8 @@
   --progress-season-stats-offset: 6px; /* the stats from the name */
   --progress-season-episodes-gap: 10px; /* the bar to the episode pills */
   --radius-progress-season-bar: 3px;
+  --progress-shimmer-season-name-width: 72px; /* an open row's seasons until its catalog is read */
+  --progress-shimmer-season-stats-width: 90px;
   --progress-section-notch: 3px; /* between seasons on the show's bar, on hover */
   --color-progress-section-dim: light-dark(rgb(255 255 255 / 0.55), rgb(29 29 29 / 0.6)); /* the other seasons */
   --color-progress-percent-done: light-dark(var(--brand-primary), #ff4f56); /* a finished season, the bars' red */

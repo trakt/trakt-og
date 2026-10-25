@@ -97,27 +97,6 @@ $effect(() => {
   });
 });
 
-// The Dropped tab: summaries for any dropped show the endpoint left out, read once.
-$effect(() => {
-  const dropped = slices.dropped;
-  if (data.type !== 'dropped' || !nitro || !dropped || droppedShows) return;
-  const listed = new Set(nitro.map(({ show }) => show.id));
-  if (![...dropped.keys()].some((id) => !listed.has(id))) return;
-  untrack(() => {
-    droppedShows = new Map();
-    void loadDroppedShows({
-      request: (page, limit) =>
-        client().users.hidden.dropped({ query: { page, limit, extended: 'full,images' } }).then((response) =>
-          response.status === 200
-            ? { ok: true as const, body: response.body, headers: response.headers }
-            : { ok: false as const, status: response.status }
-        ),
-    })
-      .then((shows) => (droppedShows = shows))
-      .catch(() => toast.error("Doh! We couldn't load your dropped shows."));
-  });
-});
-
 // `?list=`: the list's shows with their summaries, read once.
 let listShows = $state.raw<ReadonlyMap<number, CachedShow> | null>(null);
 const listed = $derived(listShows ? new Set(listShows.keys()) : null);
@@ -142,8 +121,34 @@ const progressHidden = $derived(slices.progressHidden);
 const hidden = $derived(slices.hidden);
 const collectedShows = $derived(slices.collectedShows);
 
+// The Dropped tab: summaries for any dropped show the endpoint left out, read once. Until they land the tab shimmers,
+// rather than reading empty for a moment; if the read fails, it shows the dropped shows it has.
+const droppedMissing = $derived.by(() => {
+  if (data.type !== 'dropped' || !nitro || !droppedSlice) return false;
+  const listed = new Set(nitro.map(({ show }) => show.id));
+  return [...droppedSlice.keys()].some((id) => !listed.has(id));
+});
+let readingDropped = false;
+$effect(() => {
+  if (!droppedMissing || droppedShows || readingDropped) return;
+  readingDropped = true;
+  void loadDroppedShows({
+    request: (page, limit) =>
+      client().users.hidden.dropped({ query: { page, limit, extended: 'full,images' } }).then((response) =>
+        response.status === 200
+          ? { ok: true as const, body: response.body, headers: response.headers }
+          : { ok: false as const, status: response.status }
+      ),
+  })
+    .then((shows) => (droppedShows = shows))
+    .catch(() => {
+      droppedShows = new Map();
+      toast.error("Doh! We couldn't load your dropped shows.");
+    });
+});
+
 const items = $derived(
-  nitro
+  nitro && !(droppedMissing && !droppedShows)
     ? toProgressItems({
       type: data.type,
       nitro,

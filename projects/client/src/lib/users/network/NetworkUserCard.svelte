@@ -24,10 +24,12 @@ interface Props {
   user: ProfileUser;
   extra?: NetworkExtra;
   relation?: ViewerRelation | null;
+  /** The viewer's follow state is still loading. */
+  pending?: boolean;
   canFollow?: boolean;
 }
 
-const { user, extra, relation = null, canFollow = true }: Props = $props();
+const { user, extra, relation = null, pending = false, canFollow = true }: Props = $props();
 
 /** A little under the poll's 2 minutes, so each tick asks again but a quick scroll back doesn't. */
 const RECHECK_MS = 110_000;
@@ -82,7 +84,8 @@ $effect(() => {
 </script>
 
 <div class="network-card" {@attach inViewport((inView) => (visible = inView))}>
-  <UserCard user={shown} veteran={extra?.veteran} since={extra?.since} {relation} {canFollow} {watch} />
+  <UserCard user={shown} veteran={extra?.veteran} since={extra?.since} {relation} {pending} {canFollow}
+    {watch} />
 </div>
 
 <style>

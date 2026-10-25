@@ -1,6 +1,7 @@
 <!--
   The profile header, shared by every /users/:id page: the cover, avatar, name with the VIP and Private labels, the
-  options menu, follow buttons (an incoming follow request gets its own bar across the top of the cover), a line of glass pills for private status, location and the year they joined, the
+  options menu, follow buttons (a shimmer holds their place until the viewer's follow state streams in; an incoming
+  follow request gets its own bar across the top of the cover), a line of glass pills for private status, location and the year they joined, the
   watching-now player and the section tabs. The name block is one left-aligned row: centered on the slim cover, and
   low on the tall one so the art shows. The profile page gets the tall cover when there's art to show (the owner's
   cover or what they're watching); every subpage, and a profile without art, gets the slim one on OG's damask. A
@@ -16,6 +17,7 @@ import privateCover from '$lib/assets/profile-cover-private.jpg';
 import Container from '$lib/components/container/Container.svelte';
 import { headerArt } from '$lib/components/header/headerArt';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
+import FollowButtonShimmer from '$lib/components/loading/FollowButtonShimmer.svelte';
 import ReportDialog from '$lib/components/summary/ReportDialog.svelte';
 import { toast } from '$lib/components/toast/toast.svelte';
 import VipLabel from '$lib/components/labels/VipLabel.svelte';
@@ -151,7 +153,9 @@ const change = (viewer: ViewerRelation, action: 'unfollow' | 'block' | 'unblock'
         </div>
 
         {#if showOthersControls && relation}
-          {#await relation then viewer}
+          {#await relation}
+            <div class="buttons" aria-busy="true"><FollowButtonShimmer /></div>
+          {:then viewer}
             {#if viewer}
               <div class="buttons">
                 <FollowButtons slug={user.slug} isPrivate={user.isPrivate} relation={viewer} {canFollow} />

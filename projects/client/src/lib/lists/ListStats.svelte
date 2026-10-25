@@ -3,7 +3,7 @@
   (purple watched, teal collected, blue for the rest) and the numbers stand alone, the words left to the tooltip:
   Watched and Collected percentages with "2/10 items" under them on hover (signed in, not on official lists), the
   time to watch, the items, the likes and the comments. The whole-list numbers come in `stats`, a promise when the
-  loader streams them; until then the bar shows the page's item count and 0%, as OG did before its script ran.
+  loader streams them; until then the bar shows the page's item count, with shimmers for the percentages and the time.
     <ListStats itemCount={57} stats={data.stats} progress likeCount={3} comments={{ count: 1, href }} />
 -->
 <script lang="ts">
@@ -16,6 +16,7 @@ import file from '$lib/icons/regular/file.svg?raw';
 import thumbsUp from '$lib/icons/regular/thumbs-up.svg?raw';
 import checkThick from '$lib/icons/trakt/check-thick.svg?raw';
 import collectionThick from '$lib/icons/trakt/collection-thick.svg?raw';
+import Shimmer from '$lib/components/loading/Shimmer.svelte';
 import { overlay } from '$lib/overlay/overlay';
 import { formatRuntime } from '$lib/utils/formatRuntime';
 import { listProgress, type ListProgressStat } from './listProgress.ts';
@@ -58,6 +59,13 @@ const number = (count: number) => count.toLocaleString('en-US');
   </Tooltip>
 {/snippet}
 
+<!-- A stat whose number is still counting: its icon, and a shimmer as wide as the number it holds the place of. -->
+{#snippet counting(svg: string, width: string, kind?: string)}
+  <span class={['stat', kind]}>
+    <span class="icon-slot"><Icon {svg} /></span><Shimmer inline={width} block="var(--font-size-stat-number)" />
+  </span>
+{/snippet}
+
 {#snippet count(label: string, svg: string, value: number, word: string, kind: string)}
   <Tooltip text={label}>
     {#snippet trigger(tooltip)}
@@ -73,51 +81,56 @@ const number = (count: number) => count.toLocaleString('en-US');
 {#snippet bar(resolved: ListStats | null | undefined)}
   {@const items = resolved?.items}
   {@const total = items?.length ?? itemCount}
-  <!-- Pending, the percentages read 0% like OG's before its script ran; a failed count drops them. -->
-  {#if progress && resolved !== null && (resolved === undefined || items)}
-    {@const { watched, collected } = listProgress(items ?? [], stateOf)}
-    {@render percentage('Watched', checkThick, watched, total, 'watched')}
-    {@render percentage('Collected', collectionThick, collected, total, 'collected')}
-  {/if}
-  {#if resolved && resolved.runtime > 0}
-    <Tooltip text="Time to watch">
-      {#snippet trigger(tooltip)}
-        <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-        <span class="stat" tabindex="0" {...tooltip}>
-          <span class="icon-slot"><Icon svg={clock} /></span><span class="hidden">Time to watch </span
-          ><strong>{formatRuntime(resolved.runtime)}</strong>
-        </span>
-      {/snippet}
-    </Tooltip>
-  {/if}
-  <!-- Like comes before the counts, as the list rows' button. -->
-  {#if likeCount !== undefined}
-    {#if likeTarget}<ListLikeButton {...likeTarget} count={likeCount} button />
-    {:else}{@render count('Likes', thumbsUp, likeCount, 'like', 'likes')}{/if}
-  {/if}
-  {@render count('Items', file, resolved?.count ?? itemCount, 'item', 'items')}
-  {#if comments}
-    <Tooltip text="Comments">
-      {#snippet trigger(tooltip)}
-        <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
-        <a class="stat" href={comments.href} {...tooltip}>
-          <span class="icon-slot"><Icon svg={comment} /></span><strong>{number(comments.count)}</strong><span class="hidden">
-            {plural(comments.count, 'comment')}</span>
-        </a>
-      {/snippet}
-    </Tooltip>
-  {/if}
+  <div class="list-stats" aria-busy={resolved === undefined}>
+    <!-- Pending, the percentages and the time shimmer; a failed count drops them. -->
+    {#if progress && resolved === undefined}
+      {@render counting(checkThick, 'var(--list-stat-shimmer-percent-width)', 'watched')}
+      {@render counting(collectionThick, 'var(--list-stat-shimmer-percent-width)', 'collected')}
+    {:else if progress && items}
+      {@const { watched, collected } = listProgress(items, stateOf)}
+      {@render percentage('Watched', checkThick, watched, total, 'watched')}
+      {@render percentage('Collected', collectionThick, collected, total, 'collected')}
+    {/if}
+    {#if resolved === undefined}
+      {@render counting(clock, 'var(--list-stat-shimmer-runtime-width)')}
+    {:else if resolved && resolved.runtime > 0}
+      <Tooltip text="Time to watch">
+        {#snippet trigger(tooltip)}
+          <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+          <span class="stat" tabindex="0" {...tooltip}>
+            <span class="icon-slot"><Icon svg={clock} /></span><span class="hidden">Time to watch </span
+            ><strong>{formatRuntime(resolved.runtime)}</strong>
+          </span>
+        {/snippet}
+      </Tooltip>
+    {/if}
+    <!-- Like comes before the counts, as the list rows' button. -->
+    {#if likeCount !== undefined}
+      {#if likeTarget}<ListLikeButton {...likeTarget} count={likeCount} button />
+      {:else}{@render count('Likes', thumbsUp, likeCount, 'like', 'likes')}{/if}
+    {/if}
+    {@render count('Items', file, resolved?.count ?? itemCount, 'item', 'items')}
+    {#if comments}
+      <Tooltip text="Comments">
+        {#snippet trigger(tooltip)}
+          <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
+          <a class="stat" href={comments.href} {...tooltip}>
+            <span class="icon-slot"><Icon svg={comment} /></span><strong>{number(comments.count)}</strong><span class="hidden">
+              {plural(comments.count, 'comment')}</span>
+          </a>
+        {/snippet}
+      </Tooltip>
+    {/if}
+  </div>
 {/snippet}
 
-<div class="list-stats">
-  {#await stats}
-    {@render bar(undefined)}
-  {:then resolved}
-    {@render bar(resolved)}
-  {:catch}
-    {@render bar(null)}
-  {/await}
-</div>
+{#await stats}
+  {@render bar(undefined)}
+{:then resolved}
+  {@render bar(resolved)}
+{:catch}
+  {@render bar(null)}
+{/await}
 
 <style>
 /* `.comment-wrapper.interactions` with `a.alt`. */

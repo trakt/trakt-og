@@ -3,13 +3,15 @@
   bar, the counts as stats, then Seasons beside a chip in the watched tag's colors linking the episode you last watched; then the up-next card,
   og's fanart card for the next episode with its quick icons, or the show's once every episode is done. The poster and
   the card are the same height, and the text about matches them. Seasons reads the show's catalog (`onneed`) and
-  opens the season list across the whole row, under the poster and the card (`ProgressSeasonGrid`); once read, the
+  opens the season list across the whole row, under the poster and the card (`ProgressSeasonGrid`), shimmering
+  seasons holding its place until the catalog lands; once read, the
   show's bar splits into its seasons on hover, each with a chart tip. A drop or restore
   fades the row out and moves the focus on.
 -->
 <script lang="ts">
 import { nearViewport } from '$lib/utils/nearViewport';
 import { SvelteSet } from 'svelte/reactivity';
+import Shimmer from '$lib/components/loading/Shimmer.svelte';
 import FanartCard from '$lib/components/media/FanartCard.svelte';
 import { quickIconFill } from '$lib/components/media/quickIconFill';
 import { removeCard } from '$lib/components/media/removeCard';
@@ -119,6 +121,25 @@ function toggleSeason(season: number) {
   {/each}
 {/snippet}
 
+<!-- The season list's band while the catalog is read: each season's toggle, name, stats, bar and percent. -->
+{#snippet seasonShimmers()}
+  <div class="season-shimmers">
+    {#each Array.from({ length: 3 }, (_, i) => i) as season (season)}
+      <div class="season-shimmer">
+        <span class="season-head">
+          <Shimmer inline="var(--progress-season-fold)" block="var(--progress-season-fold)" />
+          <Shimmer inline="var(--progress-shimmer-season-name-width)" block="var(--font-size-progress-season-name)" />
+          <Shimmer inline="var(--progress-shimmer-season-stats-width)" block="var(--font-size-progress-season-stat-number)" />
+        </span>
+        <span class="season-bar">
+          <Shimmer inline="100%" block="var(--progress-season-bar-height)" />
+          <Shimmer inline="var(--progress-season-percent)" block="var(--font-size-progress-season-percent)" />
+        </span>
+      </div>
+    {/each}
+  </div>
+{/snippet}
+
 <article bind:this={article} class="progress-row" aria-labelledby="progress-{row.id}"
   {@attach nearViewport(() => { if (findsNext) onneed?.(); })}
   out:removeCard|global={() => removedByAction}>
@@ -159,7 +180,6 @@ function toggleSeason(season: number) {
           {#if row.last.number}<b>{row.last.number}</b>{row.last.title ? ` ${row.last.title}` : ''}{/if}
           {row.last.relative ?? row.last.date}</a>
       {/if}
-      {#if open && loading}<span class="loading" role="status">Loading seasons…</span>{/if}
     </div>
   </div>
 
@@ -189,8 +209,12 @@ function toggleSeason(season: number) {
     {/if}
   </div>
 
-  <div class="seasons" id="progress-seasons-{row.id}" hidden={!open}>
-    {#if open && row.seasons}<ProgressSeasonGrid seasons={row.seasons} id={row.id} {expanded} ontoggle={toggleSeason} {simple} />{/if}
+  <div class="seasons" id="progress-seasons-{row.id}" hidden={!open} aria-busy={open && loading && !row.seasons}>
+    {#if open && row.seasons}
+      <ProgressSeasonGrid seasons={row.seasons} id={row.id} {expanded} ontoggle={toggleSeason} {simple} />
+    {:else if open && loading}
+      {@render seasonShimmers()}
+    {/if}
   </div>
 </article>
 
@@ -384,11 +408,6 @@ function toggleSeason(season: number) {
   }
 }
 
-.loading {
-  color: var(--color-text-muted);
-  font-style: italic;
-}
-
 .card {
   /* The card's icon bar matched the dark row, so it's lifted off it here. */
   --color-card-bg: var(--color-progress-card-bg);
@@ -460,6 +479,44 @@ function toggleSeason(season: number) {
   grid-column: 1 / -1;
   min-inline-size: 0;
   margin-block-start: var(--progress-strip-gap);
+}
+
+/* The season list's band and rows (`ProgressSeasonGrid`), shimmering at their heights. */
+.season-shimmers {
+  display: grid;
+  padding: var(--progress-band-padding);
+  border-radius: var(--radius-progress-band);
+  background: var(--color-progress-band);
+}
+
+.season-shimmer {
+  display: grid;
+  gap: var(--progress-season-head-gap);
+  padding-block: var(--progress-season-padding);
+
+  & + & {
+    border-block-start: 1px solid var(--color-progress-season-rule);
+  }
+}
+
+.season-head,
+.season-bar {
+  display: flex;
+  align-items: center;
+}
+
+.season-head {
+  gap: var(--progress-season-title-gap);
+  block-size: var(--progress-season-fold);
+}
+
+.season-bar {
+  gap: var(--progress-season-columns);
+  block-size: var(--font-size-progress-season-percent);
+
+  & > :global(:first-child) {
+    flex: 1;
+  }
 }
 
 @media (width < 1200px) {

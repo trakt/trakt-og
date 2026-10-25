@@ -4,6 +4,8 @@
 -->
 <script lang="ts">
 import MobileSplash from '$lib/components/mobile-splash/MobileSplash.svelte';
+import Specimen from '$lib/design/Specimen.svelte';
+import Variant from '$lib/design/Variant.svelte';
 
 const frames = [
   { label: 'Phone, iOS', platform: 'ios', preview: 'phone', width: 390, height: 664 },
@@ -13,54 +15,18 @@ const frames = [
 ] as const;
 </script>
 
-<svelte:head>
-  <title>Mobile splash · og design system</title>
-</svelte:head>
-
-<main>
-  <div class="intro">
-    <h1>Mobile splash</h1>
-    <p>
-      <code>MobileSplash</code> wraps the app. Below 768px wide, or on a phone held sideways, it shows instead. The
-      store follows the user agent.
-    </p>
-  </div>
-
-  <div class="frames">
-    {#each frames as frame (frame.label)}
-      <figure>
-        <figcaption>{frame.label}, {frame.width} × {frame.height}</figcaption>
-        <div class="frame" style:inline-size="{frame.width}px" style:block-size="{frame.height}px">
-          <MobileSplash platform={frame.platform} preview={frame.preview} />
-        </div>
-      </figure>
-    {/each}
-  </div>
-</main>
+<Specimen title="Frames" row
+  note="MobileSplash wraps the app. Below 768px wide, or on a phone held sideways, it shows instead. The store follows the user agent.">
+  {#each frames as frame (frame.label)}
+    <Variant label="{frame.label}, {frame.width} × {frame.height}">
+      <div class="frame" style:inline-size="{frame.width}px" style:block-size="{frame.height}px">
+        <MobileSplash platform={frame.platform} preview={frame.preview} />
+      </div>
+    </Variant>
+  {/each}
+</Specimen>
 
 <style>
-main {
-  padding: var(--gutter);
-  background: var(--color-page);
-  color: var(--color-splash-text);
-}
-
-.frames {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  gap: var(--gutter);
-}
-
-figure {
-  margin: 0;
-}
-
-figcaption {
-  margin-block-end: var(--space-sm-block);
-  color: var(--color-splash-muted);
-}
-
 .frame {
   max-inline-size: 100%;
   overflow: auto;

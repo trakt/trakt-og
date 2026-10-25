@@ -170,7 +170,7 @@ const country = $derived(watchNowCountry(data.settings));
       <DividersToggle bind:shown={dividers} />
       <WatchNowFilter value={data.filters.watchnow} {country}
         favorites={data.settings?.browsing?.watchnow?.favorites ?? []} placeholder={data.type === 'all'} />
-      <FadeHideMenu value={fadeHide} options={fadeOptions} cookie="history" hideOptions={[]} variant="default"
+      <FadeHideMenu value={fadeHide} options={fadeOptions} cookie="history" hideOptions={[]}
         onchange={(next) => (fadeHide = next)} />
     </span>
   {/snippet}

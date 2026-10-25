@@ -1,13 +1,11 @@
 <!--
   OG's filter eye (`#filter-fade-hide`): a dropdown behind an eye icon that turns red while any filter is on, with
   a red count badge. Fill it like a Dropdown: "Show All", then li.header groups of aria-pressed toggles.
-  `variant="frame"` is the solid white eye in a Frame's title.
 -->
 <script lang="ts">
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import Icon from '$lib/icons/Icon.svelte';
-import regularEye from '$lib/icons/regular/eye.svg?raw';
-import solidEye from '$lib/icons/solid/eye.svg?raw';
+import eye from '$lib/icons/regular/eye.svg?raw';
 import type { Snippet } from 'svelte';
 
 interface Props {
@@ -15,16 +13,15 @@ interface Props {
   active: boolean;
   /** The selected options, badged when above 0. */
   count?: number;
-  variant?: 'default' | 'frame';
   children: Snippet;
 }
 
-const { active, count = 0, variant = 'default', children }: Props = $props();
+const { active, count = 0, children }: Props = $props();
 </script>
 
-<span class={['filter-menu', variant, { active }]}>
+<span class={['filter-menu', { active }]}>
   <Dropdown variant="icon" label={count > 0 ? `Filters (${count} on)` : 'Filters'}>
-    {#snippet trigger()}<span class="eye"><Icon svg={variant === 'frame' ? solidEye : regularEye} />{#if count > 0}<span
+    {#snippet trigger()}<span class="eye"><Icon svg={eye} />{#if count > 0}<span
           class="badge"
           aria-hidden="true"
         >{count.toLocaleString('en-US')}</span>{/if}</span>{/snippet}
@@ -45,11 +42,6 @@ const { active, count = 0, variant = 'default', children }: Props = $props();
     color: var(--color-tool-hover);
   }
 
-  &.frame {
-    color: var(--color-filter-icon-frame);
-    font-size: var(--font-size-filter-icon-frame);
-  }
-
   &.active {
     color: var(--brand-primary);
     --caret-color: var(--brand-primary);
@@ -62,10 +54,6 @@ const { active, count = 0, variant = 'default', children }: Props = $props();
   font-size: var(--font-size-tool);
   line-height: 1;
   transition: color 0.5s;
-
-  .frame & {
-    font-size: inherit;
-  }
 }
 
 /* The count of filters that are on, over the eye's top-right. */

@@ -7,11 +7,13 @@ import SocialFeedPanel from '$lib/components/dashboard/SocialFeedPanel.svelte';
 import SchedulePanel from '$lib/components/dashboard/SchedulePanel.svelte';
 import UpNextPanel from '$lib/components/dashboard/UpNextPanel.svelte';
 import WatchlistPanel from '$lib/components/dashboard/WatchlistPanel.svelte';
-import Container from '$lib/components/container/Container.svelte';
+import Specimen from '$lib/design/Specimen.svelte';
+import Variant from '$lib/design/Variant.svelte';
 import type { OnDeckItem } from '$lib/components/media/OnDeckItem';
 import { dayIn } from '$lib/utils/dayIn';
 import { toCalendarItems } from '$lib/calendars/toCalendarItems';
 import type { DashboardRecommendations } from '$lib/dashboard/fetchRecommendations';
+import { fetchUpNext } from '$lib/dashboard/fetchUpNext';
 import type { DashboardWatchlist } from '$lib/dashboard/fetchWatchlist';
 import type { LastThirtyDays } from '$lib/dashboard/LastThirtyDays';
 import { lastThirtyDaysFixture } from '$lib/dashboard/lastThirtyDaysFixture';
@@ -29,24 +31,25 @@ import { upcomingDays } from '$lib/dashboard/upcomingDays';
 import { watchlistFixture } from '$lib/dashboard/watchlistFixture';
 import { listItemSorts } from '$lib/lists/listItemSorts';
 import { toListItemCard } from '$lib/lists/toListItemCard';
-import { toOnDeckItem } from '$lib/progress/toOnDeckItem';
-import { upNextFixture } from '$lib/progress/upNextFixture';
 import { dashboardPrefs } from '$lib/dashboard/dashboardPrefs';
 import { scheduleStart } from '$lib/dashboard/scheduleStart';
-import { sortUpNext } from '$lib/dashboard/sortUpNext';
 import type { DashboardSettings } from '$lib/dashboard/DashboardSettings';
 import { toDashboardSettings } from '$lib/dashboard/toDashboardSettings';
+import { caughtUp, finished, upNextClient } from './fixtures.ts';
 
 const { data } = $props();
 
-const samples: readonly OnDeckItem[] = upNextFixture.entries.flatMap((entry) => {
-  const lifetime = upNextFixture.lifetime.find(({ show }) => show.ids.trakt === entry.show.ids.trakt);
-  const item = toOnDeckItem({ entry, lifetime: lifetime?.progress, username: 'me' });
-  return item ? [item] : [];
-});
+// OG's defaults, which the page passes when the viewer never saved any.
+const defaults = toDashboardSettings({ settings: null });
 
 // Eight cards fill two rows, so the pill has somewhere to go.
-const sample = Promise.resolve(samples);
+const sample = fetchUpNext({ api: upNextClient, username: 'me', settings: defaults.upNext });
+// After a refresh, a card whose last aired episode was just watched: a show that ended, then one coming back.
+const caughtUpSample = sample.then(([first, ...rest]) => [
+  ...(first ? [finished(first, 'Ended')] : []),
+  caughtUp,
+  ...rest,
+]);
 const empty = Promise.resolve([]);
 const loading = new Promise<readonly OnDeckItem[]>(() => {});
 // Built in the browser only, so the server never sees an unhandled rejection.
@@ -75,15 +78,24 @@ function scheduleDays(isVip: boolean, { shift = 0, busy = false, drop = false, o
     country: 'us',
   });
 }
-// A busy week with network links as a VIP sees them; a season dropping today on top; then nothing on until the day
-// after tomorrow, a quiet week, and two days as everyone else sees them.
 const schedule = $derived(Promise.resolve(scheduleDays(true, { busy: true })));
 const scheduleDrop = $derived(Promise.resolve(scheduleDays(true, { busy: true, drop: true })));
 const scheduleLater = $derived(Promise.resolve(scheduleDays(true, { busy: true, shift: 2 })));
 const scheduleQuiet = $derived(Promise.resolve(scheduleDays(true, { only: ['Slow Horses', 'Scrubs'] })));
 const scheduleTwoDays = $derived(Promise.resolve(scheduleDays(false).slice(0, 2)));
+const scheduleEmpty = Promise.resolve([]);
 const scheduleLoading = new Promise<readonly ScheduleDay[]>(() => {});
 const scheduleFailed = browser ? Promise.reject(new Error('demo')) : scheduleLoading;
+const schedules = $derived([
+  { label: 'A busy week, as a VIP sees it', schedule },
+  { label: 'A season dropping today', schedule: scheduleDrop },
+  { label: 'Nothing on until the day after tomorrow', schedule: scheduleLater },
+  { label: 'A quiet week', schedule: scheduleQuiet },
+  { label: 'Two days, as everyone else sees them', schedule: scheduleTwoDays },
+  { label: 'Empty', schedule: scheduleEmpty },
+  { label: 'Loading', schedule: scheduleLoading },
+  { label: 'Failed', schedule: scheduleFailed },
+]);
 
 function watchlistSample(sortBy: string, sortHow: DashboardWatchlist['sortHow']): DashboardWatchlist {
   const { datePreferences } = data;
@@ -94,7 +106,6 @@ function watchlistSample(sortBy: string, sortHow: DashboardWatchlist['sortHow'])
     sortHow,
   };
 }
-// Added Date, newest first, as a VIP sees it; then Trakt Percentage for everyone else.
 const watchlist = $derived(Promise.resolve(watchlistSample('added', 'desc')));
 const watchlistRated = $derived(Promise.resolve(watchlistSample('percentage', 'asc')));
 const watchlistEmpty = Promise.resolve({ cards: [], total: 0, sortName: 'Rank', sortHow: 'asc' as const });
@@ -117,10 +128,9 @@ function lastThirtyDays(): LastThirtyDays {
   const { timeZone, weekStartDay } = data.datePreferences;
   const now = new Date();
   const rows = lastThirtyDaysFixture.rows(dayIn(now.toISOString(), timeZone));
-  const start = new Date(now.getTime() - 30 * 86_400_000).toISOString();
+  const start = new Date(now.getTime() - 30 * DAY).toISOString();
   return toLastThirtyDays({ ...rows, start, slug: 'me', now, timeZone, weekStartDay });
 }
-// Thirty days of plays and their genres; then the genres alone, which OG showed without the chart.
 const lastMonth = $derived(Promise.resolve(lastThirtyDays()));
 const genresOnly = $derived(lastMonth.then((stats) => ({ ...stats, chart: null, keys: [] })));
 const lastMonthLoading = new Promise<LastThirtyDays>(() => {});
@@ -151,32 +161,47 @@ const social = $derived(fetchSocialFeed({
   now: socialNow,
   datePreferences: data.datePreferences,
 }));
-// Nobody, one, three and seven members watching now; seven puts four behind the "+4 watching" tile.
+// Seven puts four behind the "+4 watching" tile.
 const watchingNow = (count: number) => () => Promise.resolve(socialFeedFixture.live(new Date()).slice(0, count));
 const socialEmpty = Promise.resolve<SocialFeed>({ follows: true, items: [], recent: [] });
 const socialNobody = Promise.resolve<SocialFeed>({ follows: false, items: [], recent: [] });
 const socialLoading = new Promise<SocialFeed>(() => {});
 const socialFailed = browser ? Promise.reject(new Error('demo')) : socialLoading;
+const socials = $derived([
+  { label: 'Nobody watching now', feed: social, live: 0 },
+  { label: 'One watching now', feed: social, live: 1 },
+  { label: 'Three watching now', feed: social, live: 3 },
+  { label: 'Seven watching now', feed: social, live: 7 },
+  { label: 'A quiet week', feed: socialEmpty, live: 0 },
+  { label: 'Following nobody', feed: socialNobody, live: 0 },
+  { label: 'Loading', feed: socialLoading, live: 0 },
+  { label: 'Failed', feed: socialFailed, live: 0 },
+]);
 
-// Shows and movies together, picked from the dropdown; then one title; then nothing to recommend.
 const recsFor = (type: DashboardSettings['recommendations']['type']) =>
   Promise.resolve<DashboardRecommendations>({
     type,
     items: type === 'media' ? recommendationsFixture : recommendationsFixture.filter((item) => item.type === type),
   });
-const recs = recsFor('media');
 const recsOne = Promise.resolve<DashboardRecommendations>({ type: 'show', items: recommendationsFixture.slice(0, 1) });
 const recsEmpty = Promise.resolve<DashboardRecommendations>({ type: 'movie', items: [] });
 const recsLoading = new Promise<DashboardRecommendations>(() => {});
 const recsFailed = browser ? Promise.reject(new Error('demo')) : recsLoading;
+const recommendations = [
+  { label: 'Shows and movies', recs: recsFor('media'), type: 'media', isVip: true },
+  { label: 'One title', recs: recsOne, type: 'show', isVip: true },
+  { label: 'Nothing to recommend', recs: recsEmpty, type: 'movie', isVip: false },
+  { label: 'Loading', recs: recsLoading, type: 'media', isVip: true },
+  { label: 'Failed', recs: recsFailed, type: 'media', isVip: true },
+] as const;
 
-// A VIP's saved settings: Up Next by completion with favorites only and exact bars, finales from yesterday, and the
-// Watchlist and Social Feed hidden. The fetchers apply the rest (worker sorts, season posters, the ignore switches).
+// A VIP's saved settings: Up Next by completion with favorites only, finales from yesterday, and the Watchlist and
+// Social Feed hidden. The fetchers apply the rest (worker sorts, season posters, the ignore switches).
 const custom = toDashboardSettings({
   settings: {
     user: { vip: true },
     browsing: {
-      progress: { on_deck: { sort: 'completed', sort_how: 'asc', simple_progress: false, only_favorites: true } },
+      progress: { on_deck: { sort: 'completed', sort_how: 'asc', only_favorites: true } },
       watchnow: { favorites: ['us-netflix', 'us-hulu', 'us-max'] },
     },
   },
@@ -188,24 +213,14 @@ const custom = toDashboardSettings({
     hide_network: true,
   },
 });
-
-// Each show's ticks, with an episode skipped halfway, as OG's exact bar shows a gap.
-const customUpNext = Promise.resolve(
-  sortUpNext({ entries: upNextFixture.entries, ...custom.upNext.sort }).flatMap((entry) => {
-    const { aired, completed } = entry.progress;
-    const skipped = Math.floor(completed / 2);
-    const ticks = Array.from({ length: aired }, (_, i) => i !== skipped && i <= completed);
-    const item = toOnDeckItem({ entry, username: 'me', ticks: entry.progress.reset_at ? undefined : ticks });
-    return item ? [item] : [];
-  }),
-);
+const customUpNext = fetchUpNext({ api: upNextClient, username: 'me', settings: custom.upNext });
 
 function customScheduleDays(): ScheduleDay[] {
   const { timeZone } = data.datePreferences;
   const today = dayIn(new Date().toISOString(), timeZone);
   const start = scheduleStart(today, custom.schedule.startDay);
   // The fixture's finales, moved so the first lands yesterday.
-  const rows = scheduleFixture.rows(dayIn(new Date(Date.now() - 4 * 86_400_000).toISOString(), timeZone))
+  const rows = scheduleFixture.rows(dayIn(new Date(Date.now() - 4 * DAY).toISOString(), timeZone))
     .filter(({ episode, movie }) => movie || episode?.episode_type?.endsWith('finale'));
   return toScheduleDays({
     days: upcomingDays({ items: toCalendarItems(rows), start, timeZone, count: 5 }),
@@ -219,213 +234,155 @@ function customScheduleDays(): ScheduleDay[] {
 const customSchedule = $derived(Promise.resolve(customScheduleDays()));
 const hiddenNames = Object.entries({ Watchlist: custom.hidden.watchlist, 'Social Feed': custom.hidden.socialFeed })
   .flatMap(([name, hidden]) => (hidden ? [name] : []));
-
-let theme = $state('light');
-$effect(() => {
-  document.documentElement.dataset.theme = theme;
-  return () => delete document.documentElement.dataset.theme;
-});
 </script>
 
-<svelte:head>
-  <title>Dashboard panels: og</title>
-</svelte:head>
-
-<main>
-  <section class="intro">
-    <Container>
-      <h1>Dashboard panels</h1>
-      <p>
-        The panels the dashboard frame (#144) mounts: Up Next, the Upcoming Schedule, the Watchlist, Last 30 Days,
-        Recently Watched, the Social Feed and the recommendations. Signed in, the first of each is yours; the rest use
-        sample titles with made-up members, progress, dates and plays. Hover a progress bar for its tooltip, a schedule
-        entry for its poster, or a day's bar for what was watched. Each panel's row count is kept in this browser.
-        With nothing watched in 30 days, Last 30 Days hides itself, as OG's did.
-      </p>
-      <label>
-        Theme
-        <select bind:value={theme}>
-          <option value="light">Light (OG default)</option>
-          <option value="dark">Dark (dark knight)</option>
-        </select>
-      </label>
-    </Container>
-  </section>
-
-  {#if data.viewer && data.upNext}
-    <UpNextPanel upNext={data.upNext} username={data.viewer.username} isVip={data.viewer.isVip}
-      settings={data.dashboard?.upNext} />
-    <div class="gap"></div>
-  {/if}
-  <UpNextPanel upNext={sample} username="me" isVip />
-  <div class="gap"></div>
-  <UpNextPanel upNext={sample} username="demo-non-vip" isVip={false} />
-  <div class="gap"></div>
-  <UpNextPanel upNext={empty} username="me" isVip />
-  <div class="gap"></div>
-  <UpNextPanel upNext={loading} username="me" isVip />
-  <div class="gap"></div>
-  <UpNextPanel upNext={failed} username="me" isVip />
-  <div class="gap"></div>
-
-  <div id="schedule">
-    {#if data.schedule}
-      <SchedulePanel schedule={data.schedule} filter={data.dashboard?.schedule.filter} />
-      <div class="gap"></div>
-    {/if}
-    <!-- The dropdowns reload the same sample, so the demo saves nothing. -->
-    <div id="schedule-sample"><SchedulePanel {schedule} onpick={() => schedule} /></div>
-    <div class="gap"></div>
-    <div id="schedule-drop"><SchedulePanel schedule={scheduleDrop} /></div>
-    <div class="gap"></div>
-    <div id="schedule-later"><SchedulePanel schedule={scheduleLater} /></div>
-    <div class="gap"></div>
-    <div id="schedule-quiet"><SchedulePanel schedule={scheduleQuiet} /></div>
-    <div class="gap"></div>
-    <SchedulePanel schedule={scheduleTwoDays} />
-    <div class="gap"></div>
-    <div id="schedule-empty"><SchedulePanel schedule={Promise.resolve([])} /></div>
-    <div class="gap"></div>
-    <SchedulePanel schedule={scheduleLoading} />
-    <div class="gap"></div>
-    <SchedulePanel schedule={scheduleFailed} />
+<Specimen title="Up Next" bleed
+  note="Hover a progress bar for its exact ticks; each show skipped an episode halfway. Signed in, mark an episode watched to see its card offer the next one.">
+  <div class="states">
+    <Variant label="A VIP">
+      <UpNextPanel upNext={sample} username="me" isVip settings={defaults.upNext} />
+    </Variant>
+    <Variant label="Last episodes watched: a show that ended, one coming back">
+      <UpNextPanel upNext={caughtUpSample} username="me" isVip settings={defaults.upNext} />
+    </Variant>
+    <Variant label="Everyone else">
+      <UpNextPanel upNext={sample} username="demo-non-vip" isVip={false} settings={defaults.upNext} />
+    </Variant>
+    <Variant label="Empty">
+      <UpNextPanel upNext={empty} username="me" isVip settings={defaults.upNext} />
+    </Variant>
+    <Variant label="Loading">
+      <UpNextPanel upNext={loading} username="me" isVip settings={defaults.upNext} />
+    </Variant>
+    <Variant label="Failed">
+      <UpNextPanel upNext={failed} username="me" isVip settings={defaults.upNext} />
+    </Variant>
   </div>
-  <div class="gap"></div>
+</Specimen>
 
-  <div id="watchlist">
-    {#if data.viewer && data.watchlist}
-      <WatchlistPanel watchlist={data.watchlist} username={data.viewer.username} isVip={data.viewer.isVip}
-        datePreferences={data.datePreferences} />
-      <div class="gap"></div>
-    {/if}
-    <div id="watchlist-sample">
-      <WatchlistPanel {watchlist} username="me" isVip datePreferences={data.datePreferences} />
-    </div>
-    <div class="gap"></div>
-    <WatchlistPanel watchlist={watchlistRated} username="demo-non-vip" isVip={false}
-      datePreferences={data.datePreferences} />
-    <div class="gap"></div>
-    <div id="watchlist-empty">
-      <WatchlistPanel watchlist={watchlistEmpty} username="me" isVip datePreferences={data.datePreferences} />
-    </div>
-    <div class="gap"></div>
-    <WatchlistPanel watchlist={watchlistLoading} username="me" isVip datePreferences={data.datePreferences} />
-    <div class="gap"></div>
-    <WatchlistPanel watchlist={watchlistFailed} username="me" isVip datePreferences={data.datePreferences} />
-  </div>
-  <div class="gap"></div>
-
-  <div id="last-30-days">
-    {#if data.lastThirtyDays}
-      <LastThirtyDaysPanel stats={data.lastThirtyDays} />
-      <div class="gap"></div>
-    {/if}
-    <div id="last-30-days-sample"><LastThirtyDaysPanel stats={lastMonth} /></div>
-    <div class="gap"></div>
-    <LastThirtyDaysPanel stats={genresOnly} />
-    <div class="gap"></div>
-    <LastThirtyDaysPanel stats={lastMonthLoading} />
-    <div class="gap"></div>
-    <LastThirtyDaysPanel stats={lastMonthFailed} />
-  </div>
-  <div class="gap"></div>
-
-  <div id="recently-watched">
-    {#if data.viewer && data.recentlyWatched}
-      <RecentlyWatchedPanel plays={data.recentlyWatched} username={data.viewer.username} isVip={data.viewer.isVip}
-        datePreferences={data.datePreferences} />
-      <div class="gap"></div>
-    {/if}
-    <div id="recently-watched-sample">
-      <RecentlyWatchedPanel plays={recentPlays} username="me" isVip datePreferences={data.datePreferences} />
-    </div>
-    <div class="gap"></div>
-    <div id="recently-watched-empty">
-      <RecentlyWatchedPanel plays={Promise.resolve([])} username="me" isVip datePreferences={data.datePreferences} />
-    </div>
-    <div class="gap"></div>
-    <RecentlyWatchedPanel plays={recentLoading} username="me" isVip datePreferences={data.datePreferences} />
-    <div class="gap"></div>
-    <RecentlyWatchedPanel plays={recentFailed} username="me" isVip datePreferences={data.datePreferences} />
-  </div>
-  <div class="gap"></div>
-
-  <div id="social-feed">
-    {#if data.socialFeed}
-      <SocialFeedPanel feed={data.socialFeed} username={data.viewer?.username ?? 'me'} datePreferences={data.datePreferences} />
-      <div class="gap"></div>
-    {/if}
-    {#each [0, 1, 3, 7] as count (count)}
-      <div id="social-feed-live-{count}"><SocialFeedPanel feed={social} watching={watchingNow(count)} rowsFor={socialRowsFor}
-        username="me" datePreferences={data.datePreferences} /></div>
-      <div class="gap"></div>
+<Specimen title="Upcoming Schedule" bleed
+  note="Hover an entry for its poster. The dropdowns reload the same sample, so nothing is saved.">
+  <div class="states">
+    {#each schedules as { label, schedule: days } (label)}
+      <Variant {label}>
+        <SchedulePanel schedule={days} filter={defaults.schedule.filter} movies={defaults.schedule.movies}
+          onpick={() => days} />
+      </Variant>
     {/each}
-    <div id="social-feed-empty"><SocialFeedPanel feed={socialEmpty} rowsFor={socialRowsFor} username="me" datePreferences={data.datePreferences} /></div>
-    <div class="gap"></div>
-    <div id="social-feed-nobody"><SocialFeedPanel feed={socialNobody} username="me" datePreferences={data.datePreferences} /></div>
-    <div class="gap"></div>
-    <SocialFeedPanel feed={socialLoading} username="me" datePreferences={data.datePreferences} />
-    <div class="gap"></div>
-    <SocialFeedPanel feed={socialFailed} username="me" datePreferences={data.datePreferences} />
   </div>
-  <div class="gap"></div>
+</Specimen>
 
-  <div id="recommendations">
-    {#if data.viewer && data.recommendations && data.dashboard}
-      <RecommendationsPanel recommendations={data.recommendations} type={data.dashboard.recommendations.type}
-        isVip={data.viewer.isVip} />
-      <div class="gap"></div>
-    {/if}
-    <div id="recommendations-sample">
-      <RecommendationsPanel recommendations={recs} type="media" isVip onpick={recsFor} />
-    </div>
-    <div class="gap"></div>
-    <RecommendationsPanel recommendations={recsOne} type="show" isVip />
-    <div class="gap"></div>
-    <div id="recommendations-empty">
-      <RecommendationsPanel recommendations={recsEmpty} type="movie" isVip={false} />
-    </div>
-    <div class="gap"></div>
-    <RecommendationsPanel recommendations={recsLoading} type="media" isVip />
-    <div class="gap"></div>
-    <RecommendationsPanel recommendations={recsFailed} type="media" isVip />
+<Specimen title="Watchlist" bleed note="The sort's name and direction come from the viewer's saved list sort.">
+  <div class="states">
+    <Variant label="Added Date, newest first, as a VIP sees it">
+      <WatchlistPanel {watchlist} username="me" isVip datePreferences={data.datePreferences} />
+    </Variant>
+    <Variant label="Trakt Percentage, as everyone else sees it">
+      <WatchlistPanel watchlist={watchlistRated} username="demo-non-vip" isVip={false}
+        datePreferences={data.datePreferences} />
+    </Variant>
+    <Variant label="Empty">
+      <WatchlistPanel watchlist={watchlistEmpty} username="me" isVip datePreferences={data.datePreferences} />
+    </Variant>
+    <Variant label="Loading">
+      <WatchlistPanel watchlist={watchlistLoading} username="me" isVip datePreferences={data.datePreferences} />
+    </Variant>
+    <Variant label="Failed">
+      <WatchlistPanel watchlist={watchlistFailed} username="me" isVip datePreferences={data.datePreferences} />
+    </Variant>
   </div>
-  <div class="gap"></div>
-  <section class="intro" id="settings">
-    <Container>
-      <h2>With dashboard settings</h2>
-      <p>
-        A VIP's saved settings, in fixtures: Up Next sorted by completion % with only favorites and exact progress bars
-        (an episode skipped halfway through each show), the schedule's finales from yesterday, and the
-        {hiddenNames.join(' and ')} panels hidden, so they're left out below.
-      </p>
-    </Container>
-  </section>
-  <div id="settings-up-next">
+</Specimen>
+
+<Specimen title="Last 30 Days" bleed
+  note="Hover a day's bar for what was watched. With nothing watched it hides itself, as OG's did.">
+  <div class="states">
+    <Variant label="Plays and genres">
+      <LastThirtyDaysPanel stats={lastMonth} />
+    </Variant>
+    <Variant label="Genres alone, as OG showed them without the chart">
+      <LastThirtyDaysPanel stats={genresOnly} />
+    </Variant>
+    <Variant label="Loading">
+      <LastThirtyDaysPanel stats={lastMonthLoading} />
+    </Variant>
+    <Variant label="Failed">
+      <LastThirtyDaysPanel stats={lastMonthFailed} />
+    </Variant>
+  </div>
+</Specimen>
+
+<Specimen title="Recently Watched" bleed
+  note="A check-in shows at its end time, so the first play is 30 minutes ahead.">
+  <div class="states">
+    <Variant label="With a check-in">
+      <RecentlyWatchedPanel plays={recentPlays} username="me" isVip datePreferences={data.datePreferences} />
+    </Variant>
+    <Variant label="Empty">
+      <RecentlyWatchedPanel plays={Promise.resolve([])} username="me" isVip datePreferences={data.datePreferences} />
+    </Variant>
+    <Variant label="Loading">
+      <RecentlyWatchedPanel plays={recentLoading} username="me" isVip datePreferences={data.datePreferences} />
+    </Variant>
+    <Variant label="Failed">
+      <RecentlyWatchedPanel plays={recentFailed} username="me" isVip datePreferences={data.datePreferences} />
+    </Variant>
+  </div>
+</Specimen>
+
+<Specimen title="Social Feed" bleed note="Seven watching puts four behind the +4 tile. Page back for earlier days.">
+  <div class="states">
+    {#each socials as { label, feed, live } (label)}
+      <Variant {label}>
+        <SocialFeedPanel {feed} watching={watchingNow(live)} rowsFor={socialRowsFor} username="me"
+          datePreferences={data.datePreferences} />
+      </Variant>
+    {/each}
+  </div>
+</Specimen>
+
+<Specimen title="Recommendations" bleed note="The Type dropdown switches between shows, movies or both.">
+  <div class="states">
+    {#each recommendations as { label, recs, type, isVip } (label)}
+      <Variant {label}>
+        <RecommendationsPanel recommendations={recs} {type} {isVip} onpick={recsFor} />
+      </Variant>
+    {/each}
+  </div>
+</Specimen>
+
+<Specimen title="With dashboard settings" bleed
+  note="A VIP's saved settings: Up Next by completion % with only favorites, and the schedule's finales from yesterday.">
+  <p class="hidden-note">The {hiddenNames.join(' and ')} panels are hidden, so they're left out.</p>
+  <div class="states">
     <UpNextPanel upNext={customUpNext} username="me" isVip settings={custom.upNext} />
+    <SchedulePanel schedule={customSchedule} filter={custom.schedule.filter} movies={custom.schedule.movies}
+      onpick={() => customSchedule} />
+    {#if !custom.hidden.watchlist}
+      <WatchlistPanel {watchlist} username="me" isVip datePreferences={data.datePreferences} />
+    {/if}
+    {#if !custom.hidden.socialFeed}
+      <SocialFeedPanel feed={social} watching={watchingNow(0)} rowsFor={socialRowsFor} username="me"
+        datePreferences={data.datePreferences} />
+    {/if}
+    <RecentlyWatchedPanel plays={recentPlays} username="me" isVip datePreferences={data.datePreferences} />
   </div>
-  <div class="gap"></div>
-  <div id="settings-schedule">
-    <SchedulePanel schedule={customSchedule} filter={custom.schedule.filter} />
-  </div>
-  {#if !custom.hidden.watchlist}
-    <WatchlistPanel {watchlist} username="me" isVip datePreferences={data.datePreferences} />
-  {/if}
-  {#if !custom.hidden.socialFeed}
-    <SocialFeedPanel feed={social} watching={watchingNow(0)} rowsFor={socialRowsFor} username="me" datePreferences={data.datePreferences} />
-  {/if}
-  <div class="gap"></div>
-  <RecentlyWatchedPanel plays={recentPlays} username="me" isVip datePreferences={data.datePreferences} />
-</main>
+</Specimen>
 
 <style>
-.intro {
-  padding-block-end: var(--gutter);
+/* Room for the pill that hangs under each panel, and captions lined up with the canvas. */
+.states {
+  display: grid;
+  gap: calc(var(--gutter) * 2);
+  padding-block: var(--gutter) calc(var(--gutter) * 2);
+
+  & :global(figcaption) {
+    padding-inline: var(--design-canvas-padding);
+  }
 }
 
-/* Room for the pill that hangs under each panel. */
-.gap {
-  block-size: calc(var(--gutter) * 2);
-  background-color: var(--color-surface);
+.hidden-note {
+  margin: 0;
+  padding: var(--gutter) var(--design-canvas-padding) 0;
+  color: var(--color-text-muted);
 }
 </style>

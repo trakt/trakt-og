@@ -13,12 +13,10 @@ interface Props {
   hideOptions?: readonly { id: Option; label: string }[];
   /** The cookie suffix: `shows`, `movies`, `calendars`, `search`. */
   cookie: string;
-  /** `default` is the thin eye in a section toolbar. */
-  variant?: 'default' | 'frame';
   onchange: (next: { fade: Option[]; hide: Option[] }) => void;
 }
 
-const { value, options, hideOptions = options, cookie, variant = 'frame', onchange }: Props = $props();
+const { value, options, hideOptions = options, cookie, onchange }: Props = $props();
 
 const count = $derived(value.fade.length + value.hide.length);
 
@@ -33,7 +31,7 @@ function save(next: { fade: Option[]; hide: Option[] }, clear = false) {
 }
 </script>
 
-<FilterMenu active={count > 0} {count} {variant}>
+<FilterMenu active={count > 0} {count}>
   <FadeHideItems {value} fadeOptions={options} {hideOptions} onchange={save}
     onreset={() => save({ fade: [], hide: [] }, true)} />
 </FilterMenu>

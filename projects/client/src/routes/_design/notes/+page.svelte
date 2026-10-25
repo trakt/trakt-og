@@ -1,9 +1,8 @@
 <script lang="ts">
-import Container from '$lib/components/container/Container.svelte';
-import EpisodeTypeBadge from '$lib/components/media/EpisodeTypeBadge.svelte';
+import Specimen from '$lib/design/Specimen.svelte';
 import NoteManage from '$lib/components/notes/NoteManage.svelte';
 import NotesDialog from '$lib/components/notes/NotesDialog.svelte';
-import NoteCard from '$lib/components/notes/NoteCard.svelte';
+import NoteRow from '$lib/components/notes/NoteRow.svelte';
 import PrivateNotes from '$lib/components/summary/PrivateNotes.svelte';
 import SectionToolbar from '$lib/components/toolbar/SectionToolbar.svelte';
 import { noteRowsSchema } from '$lib/users/notes/noteRowsSchema';
@@ -68,45 +67,54 @@ const rows = noteRowsSchema.parse([
       user: { username: 'og_tester', name: 'OG Tester', ids: { slug: 'og_tester' } },
     },
   },
+  {
+    type: 'episode',
+    show: { title: 'Andor', ids: { trakt: 2, slug: 'andor' } },
+    episode: { title: 'Kassa', season: 1, number: 1, ids: { trakt: 5 } },
+    attached_to: { type: 'episode' },
+    note: {
+      id: 5,
+      notes: 'Slow first hour, worth it.',
+      privacy: 'public',
+      updated_at: '2026-09-25T21:00:00Z',
+      user: { username: 'og_tester', name: 'OG Tester', ids: { slug: 'og_tester' } },
+    },
+  },
 ]);
 </script>
 
-<svelte:head>
-  <title>Notes design system - Trakt</title>
-</svelte:head>
-<section class="demo">
-  <Container>
-    <h1>Notes</h1>
-  </Container>
+<Specimen title="Section toolbar" bleed note="The notes page's toolbar, with its filter and summary slots.">
   <SectionToolbar>
     {#snippet filters()}Note type filter{/snippet}
-    {#snippet summary()}4 notes · Added Date{/snippet}
+    {#snippet summary()}5 notes · Added Date{/snippet}
   </SectionToolbar>
-  <Container>
-    <h2>Sample note cards</h2>
-    <div class="badge-example"><EpisodeTypeBadge kind="series-premiere" label="Series Premiere" /></div>
+</Specimen>
+
+<Specimen title="Note rows"
+  note="Each note beside its poster: a spoiler, a long private one on a rating, a friends-only one on a play, one on a library item and one on an episode. Edit opens the notes dialog.">
+  <div class="notes">
     {#each rows as row (row.note.id)}
       {@const note = toNote(row, preferences)}
-      {#if note}<NoteCard {note}>
-        {#snippet manage()}<NoteManage onedit={() => { draft = note.text; open = true; }} ondelete={() => {}} />{/snippet}
-      </NoteCard>{/if}
+      {#if note}
+        <NoteRow {note} datePreferences={preferences}>
+          {#snippet manage()}
+            <NoteManage onedit={() => { draft = note.text; open = true; }} ondelete={() => {}} />
+          {/snippet}
+        </NoteRow>
+      {/if}
     {/each}
-    <h2>Private notes box</h2>
-    <p>
-      Under a summary's overview, only when the title already has a note. Clicking it opens the notes modal, which saves
-      to the API when signed in. New notes start from a favorite, a drop or a list item instead.
-    </p>
-    <PrivateNotes {item} {note} signedIn datePreferences={preferences} />
-  </Container>
-</section>
+  </div>
+</Specimen>
+
+<Specimen title="Private notes box"
+  note="Under a summary's overview, only when the title already has a note. Clicking it opens the notes dialog. New notes start from a favorite, a drop or a list item instead.">
+  <PrivateNotes {item} {note} signedIn datePreferences={preferences} />
+</Specimen>
+
 <NotesDialog bind:open bind:draft {item} privacy="public" onsave={() => open = false} />
 
 <style>
-.badge-example {
-  position: relative;
-  block-size: var(--line-height-computed);
-}
-.demo {
-  padding-block: var(--header-height);
+.notes {
+  padding-block: var(--note-padding);
 }
 </style>

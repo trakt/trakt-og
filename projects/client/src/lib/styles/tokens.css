@@ -2552,6 +2552,12 @@
   --radius-comment-toolbar-button: var(--radius-object);
   --font-size-comment-toolbar: 14px;
   --comment-toolbar-separator-margin: 6px 4px;
+  --comment-composer-mode-padding: 0 8px; /* the Markdown switch at the toolbar's end */
+  --font-size-comment-composer-mode: 12px;
+  --color-comment-editor-spoiler-border: light-dark(#999, #777); /* a spoiler while it's written */
+  --color-comment-editor-spoiler-stripe: light-dark(rgb(0 0 0 / 10%), rgb(255 255 255 / 12%));
+  --comment-editor-spoiler-stripe: 4px;
+  --comment-editor-spoiler-padding: 0 3px;
   --comment-meter-gap: 8px;
   --comment-meter-ring: 22px;
   --comment-meter-ring-thickness: 3px;

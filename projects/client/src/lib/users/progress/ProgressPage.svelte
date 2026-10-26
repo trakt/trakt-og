@@ -5,7 +5,8 @@
   times come from the overlay's watches, which the whole app already loads. The whole list loads so the
   sorts, hide toggles, title search, list filter and totals all work in the browser. It's kept for 30 minutes, like
   v3, across tabs and pages, and read again once a watch, rewatch or drop changes the overlay. The overlay narrows it
-  to a tab (dropped, rewatching and hidden shows); the Dropped tab reads `/users/hidden/dropped` only for dropped
+  to a tab (dropped, rewatching and hidden shows), the endpoint's own reset dates standing in for rewatching until
+  that slice is in; the Dropped tab reads `/users/hidden/dropped` only for dropped
   shows the endpoint leaves out. Opening a row's seasons reads that show's catalog once (cached for 12 hours).
 -->
 <script lang="ts" module>
@@ -83,13 +84,14 @@ async function readProgress() {
 // request shares.
 if (browser && !fresh) void readProgress();
 
-// A watch, rewatch or drop saved anywhere patches these slices: read the progress again, once it's first in.
+// A watch, rewatch or drop saved anywhere patches these slices: read the progress again, once it's first in. A slice
+// arriving late isn't a change, and one that never arrives (its read failed) doesn't hold the others back.
 let seen: readonly unknown[] | null = null;
 $effect(() => {
   const marks = [slices.watchedShows, slices.rewatching, slices.dropped];
   untrack(() => {
-    if (nitro === null || marks.some((mark) => mark === undefined)) return;
-    const changed = seen !== null && marks.some((mark, index) => mark !== seen?.[index]);
+    if (nitro === null) return;
+    const changed = seen !== null && marks.some((mark, index) => seen?.[index] !== undefined && mark !== seen?.[index]);
     seen = marks;
     if (changed) void readProgress();
   });

@@ -77,4 +77,12 @@ describe('toNitroItem', () => {
   it('should never count more watched than aired', () => {
     expect(toNitroItem(row({ completed: 21 }), 0).completed).toBe(19);
   });
+
+  it('should keep the rewatch start date the worker sends', () => {
+    const resetAt = '2026-08-01T00:00:00.000Z';
+    expect(toNitroItem(row({ reset_at: resetAt } as unknown as Partial<UpNextResponse['progress']>), 0).resetAt).toBe(
+      resetAt,
+    );
+    expect(toNitroItem(row(), 0).resetAt).toBeUndefined();
+  });
 });

@@ -53,9 +53,13 @@ describe('quickIconFill', () => {
   });
 
   describe('titles', () => {
-    it("should total a movie's plays and runtime", () => {
-      expect(quickIconFill({ state: { plays: 3 }, runtime: 104 }).titles.watched).toBe('3 plays\n5h 12m');
-      expect(quickIconFill({ state: { plays: 1 } }).titles.watched).toBe('1 play');
+    it('should say when a movie was last watched, then its plays and their time', () => {
+      expect(
+        quickIconFill({ state: { plays: 3, lastWatchedAt: '2026-10-12T20:00:00.000Z' }, runtime: 104 }).titles.watched,
+      ).toBe('Last watched on Oct 12, 2026\n3 plays (5h 12m)');
+      expect(quickIconFill({ state: { plays: 1, lastWatchedAt: '1970-01-01T00:00:00.000Z' } }).titles.watched).toBe(
+        'Watched',
+      );
     });
 
     it("should floor a show's percentage and count what remains", () => {
@@ -115,7 +119,7 @@ describe('quickIconFill', () => {
         state: { favorited: true, favoritedAt: '2026-09-29T01:00:00Z' },
         datePreferences: { timeZone: 'America/Los_Angeles', order: 'dmy' },
       }).titles.favorited,
-    ).toBe('Favorited on\n28 Sep 2026 6:00 PM');
+    ).toBe('Favorited on 28 Sep 2026');
   });
 });
 
@@ -143,8 +147,12 @@ describe('rewatch progress', () => {
     it("should give a movie's plays and their time instead of progress", () => {
       const { tips } = quickIconFill({ state: { plays: 3 }, runtime: 104 });
       expect(tips.watched).toBeUndefined();
-      expect(tips.plays).toEqual({ count: 3, minutes: 312 });
-      expect(quickIconFill({ state: { plays: 1 } }).tips.plays).toEqual({ count: 1, minutes: undefined });
+      expect(tips.plays).toEqual({ count: 3, minutes: 312, at: undefined });
+      expect(quickIconFill({ state: { plays: 1, lastWatchedAt: '2026-10-12T20:00:00.000Z' } }).tips.plays).toEqual({
+        count: 1,
+        minutes: undefined,
+        at: 'Oct 12, 2026',
+      });
     });
 
     it("should give a show's progress as a run with its plays and their time", () => {
@@ -194,7 +202,12 @@ describe('rewatch progress', () => {
     });
 
     it('should leave both out for an item not watched or in the library', () => {
-      expect(quickIconFill({ state: {} }).tips).toEqual({ watched: undefined, plays: undefined, collected: undefined });
+      expect(quickIconFill({ state: {} }).tips).toEqual({
+        watched: undefined,
+        plays: undefined,
+        collected: undefined,
+        favorited: undefined,
+      });
     });
   });
 });

@@ -1,18 +1,24 @@
 <!--
-  A movie's or episode's watched tooltip: the play count in bold, "3 plays", over their total time in gray, like the
-  first two lines of a show's progress tooltip.
+  A movie's or episode's watched tooltip: when you last watched it, the date in bold, over the runtime in gray, or the
+  play count and their total time in italics after more than one play. Without a date it just says "Watched".
     <Tooltip content={tip}>{#snippet tip()}<PlaysTip plays={fill.tips.plays} />{/snippet}</Tooltip>
 -->
 <script lang="ts">
-import { formatRuntime } from '$lib/utils/formatRuntime';
+import { playsLines } from './playsLines.ts';
 import type { WatchedPlays } from './WatchedPlays.ts';
 
 const { plays }: { plays: WatchedPlays } = $props();
+
+const lines = $derived(playsLines(plays));
 </script>
 
 <span class="plays">
-  <span><b>{plays.count.toLocaleString('en-US')}</b> {plays.count === 1 ? 'play' : 'plays'}</span>
-  {#if plays.minutes}<span class="time">{formatRuntime(plays.minutes)}</span>{/if}
+  <span>{lines.at ? `${lines.lead} on ` : lines.lead}{#if lines.at}<b>{lines.at}</b>{/if}</span>
+  {#if lines.plays}
+    <span class="detail">{lines.time ? `${lines.plays} ` : lines.plays}{#if lines.time}<em>({lines.time})</em>{/if}</span>
+  {:else if lines.time}
+    <span class="detail">{lines.time}</span>
+  {/if}
 </span>
 
 <style>
@@ -24,7 +30,7 @@ const { plays }: { plays: WatchedPlays } = $props();
   }
 }
 
-.time {
+.detail {
   color: var(--color-tooltip-muted);
 }
 </style>

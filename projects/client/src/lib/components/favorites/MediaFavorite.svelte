@@ -18,7 +18,10 @@ import { viewerFetch } from '../../auth/viewerFetch.ts';
 interface Props {
   target: FavoriteTarget;
   /** `locked` is why favoriting is off ("Watch it first to favorite it"): render the trigger disabled with it as a tip. */
-  trigger: Snippet<[{ selected: boolean; date?: string; busy: boolean; locked?: string; toggle: () => void }]>;
+  /** `date` has the time, for the summary button; `day` is only the date, for a tooltip. */
+  trigger: Snippet<
+    [{ selected: boolean; date?: string; day?: string; busy: boolean; locked?: string; toggle: () => void }]
+  >;
 }
 const { target, trigger }: Props = $props();
 let busy = $state(false);
@@ -31,6 +34,9 @@ const membership = $derived(overlay.state(target.type, target.id));
 const locked = $derived(watchedFirst(membership, 'favorite'));
 const date = $derived(
   membership.favoritedAt ? formatDate(membership.favoritedAt, { ...page.data.datePreferences, time: true }) : undefined,
+);
+const day = $derived(
+  membership.favoritedAt ? formatDate(membership.favoritedAt, page.data.datePreferences) : undefined,
 );
 
 const request = (method: 'POST' | 'PUT') => (path: string, body?: unknown) =>
@@ -83,7 +89,7 @@ async function save(notes: string) {
 }
 </script>
 
-{@render trigger({ selected: Boolean(membership.favorited), date, busy, locked, toggle })}
+{@render trigger({ selected: Boolean(membership.favorited), date, day, busy, locked, toggle })}
 {#if promptTarget}
   <NotesDialog bind:open bind:draft item={promptTarget} favorite busy={saving}
   onsave={save} />

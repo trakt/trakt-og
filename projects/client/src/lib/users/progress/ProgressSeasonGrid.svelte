@@ -4,22 +4,36 @@
   Progress Bars). A season's toggle (`expanded`)
   shows its episodes under it, a numbered pill each. A pill is purple once watched, the library's teal while it's in
   your library but not watched, outlined and pulsing for up next, and dashed until it airs. Each links to its episode,
-  with a chart tooltip: the screenshot, the code and title, when it aired with its runtime and rating, then its status
-  lines. Spoiler settings hide an unwatched episode's screenshot and title there, as on the episode cards.
-    <ProgressSeasonGrid seasons={row.seasons} id={row.id} {expanded} ontoggle={toggleSeason} {simple} />
+  with a chart tooltip: the episode on top (its screenshot, with an Up next tag on it, its code and title, then tags for
+  its air date, runtime and rating), then yours under it: when you last watched it (`PlaysTip`), or when it was added
+  to your library with its format and audio (`LibraryTip`). The episode's section is shaded only when there's
+  something of yours under it. Spoiler settings hide an unwatched episode's screenshot and title there, as on the
+  episode cards.
+    <ProgressSeasonGrid seasons={row.seasons} id={row.id} {expanded} ontoggle={toggleSeason} {simple}
+      {datePreferences} />
 -->
 <script lang="ts">
 import { page } from '$app/state';
+import LibraryTip from '$lib/components/collection/LibraryTip.svelte';
+import TagPills from '$lib/components/labels/TagPills.svelte';
+import type { TagPill } from '$lib/components/labels/TagPill';
+import CardTag from '$lib/components/media/CardTag.svelte';
+import PlaysTip from '$lib/components/media/PlaysTip.svelte';
+import { quickIconFill } from '$lib/components/media/quickIconFill';
 import TickBar from '$lib/components/media/TickBar.svelte';
 import Stat from '$lib/components/stats/Stat.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import TooltipStat from '$lib/components/tooltip/TooltipStat.svelte';
+import TooltipHeader from '$lib/components/tooltip/TooltipHeader.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import calendar from '$lib/icons/regular/calendar-lines.svg?raw';
 import clock from '$lib/icons/regular/clock.svg?raw';
 import caretDown from '$lib/icons/solid/caret-down.svg?raw';
+import heart from '$lib/icons/solid/heart.svg?raw';
 import check from '$lib/icons/trakt/check-thick.svg?raw';
+import { overlay } from '$lib/overlay/overlay';
+import type { DatePreferences } from '$lib/settings/DatePreferences';
 import { mediaSpoilers } from '$lib/settings/mediaSpoilers';
+import { ratingPercent } from '$lib/utils/ratingPercent';
 import type { EpisodeSquare, ProgressSeason } from './toProgressSeasons.ts';
 
 interface Props {
@@ -31,9 +45,11 @@ interface Props {
   ontoggle: (season: number) => void;
   /** The Simple Progress Bars setting, as on the show's bar. */
   simple: boolean;
+  /** The library tooltip's added date. */
+  datePreferences: DatePreferences;
 }
 
-const { seasons, id, expanded, ontoggle, simple }: Props = $props();
+const { seasons, id, expanded, ontoggle, simple, datePreferences }: Props = $props();
 
 const spoilers = (square: EpisodeSquare) =>
   page.data.user
@@ -44,21 +60,56 @@ const spoilers = (square: EpisodeSquare) =>
     })
     : { screenshot: false, title: false };
 
-const tipLines = (square: EpisodeSquare) => [
-  ...(square.meta ? [{ ...square.meta, muted: true }] : []),
-  ...square.lines.map(({ text, detail, tone }) => ({ text, detail, color: `var(--color-progress-tip-${tone})` })),
+// The summary's rating heart: its color steps up from gray to red with the rating.
+const ratingTag = (rating: number): TagPill => {
+  const level = Math.min(Math.trunc(rating), 10);
+  return { text: `${ratingPercent(rating)}%`, icon: heart, ...(level > 0 ? { tint: `var(--rating-${level})` } : {}) };
+};
+
+/** The air date, runtime and rating, after an Up next tag when there's no screenshot to carry it. */
+const tags = (square: EpisodeSquare, art: boolean): readonly TagPill[] => [
+  ...(square.state === 'up-next' && !art ? [{ text: 'Up next', kind: 'primary' as const }] : []),
+  { text: square.airs },
+  ...(square.runtime ? [{ text: square.runtime }] : []),
+  ...(square.rating ? [ratingTag(square.rating)] : []),
 ];
+
+/** An unwatched episode in your library: the overlay's copy, as the quick icon's library tooltip reads it. */
+const library = (square: EpisodeSquare, season: number) =>
+  square.collected && square.id !== undefined
+    ? quickIconFill({
+      state: overlay.state('episode', square.id, { show: id, number: season, episode: square.number }),
+      datePreferences,
+    }).tips.collected
+    : undefined;
 </script>
 
-{#snippet tip(square: EpisodeSquare)}
+{#snippet episode(square: EpisodeSquare)}
   {@const hidden = spoilers(square)}
+  {@const art = Boolean(square.image && !hidden.screenshot)}
+  {@const title = hidden.title ? undefined : square.title}
+  <span class="episode">
+    {#if art}
+      <span class="art">
+        <img src={square.image} alt="" loading="lazy" />
+        {#if square.state === 'up-next'}<span class="up-next"><CardTag text="Up next" /></span>{/if}
+      </span>
+    {/if}
+    <span><span class="code">{title ? `${square.code} ` : square.code}</span>{#if title}<b>{title}</b>{/if}</span>
+    <TagPills tags={tags(square, art)} />
+  </span>
+{/snippet}
+
+{#snippet tip(square: EpisodeSquare, season: number)}
+  {@const copy = library(square, season)}
   <span class="tip">
-    {#if square.image && !hidden.screenshot}<img class="tip-image" src={square.image} alt="" loading="lazy" />{/if}
-    <span class="tip-head">
-      <span class="tip-code">{square.code}</span>
-      {#if square.title && !hidden.title}<b class="tip-title">{square.title}</b>{/if}
-    </span>
-    <TooltipStat lines={tipLines(square)} />
+    {#if square.plays || copy}
+      <TooltipHeader>{@render episode(square)}</TooltipHeader>
+    {:else}
+      {@render episode(square)}
+    {/if}
+    {#if square.plays}<span class="watched"><PlaysTip plays={square.plays} /></span>{/if}
+    {#if copy}<LibraryTip tip={copy} />{/if}
   </span>
 {/snippet}
 
@@ -101,7 +152,7 @@ const tipLines = (square: EpisodeSquare) => [
                 <a class={['square', square.state, { collected: square.collected }]} href={square.href}
                   aria-label={square.label} {...tooltip}>{square.number}</a>
               {/snippet}
-              {@render tip(square)}
+              {@render tip(square, season.number)}
             </Tooltip>
           </li>
         {/each}
@@ -321,30 +372,62 @@ ul {
   }
 }
 
-/* A screenshot over the code and title, then the shared tooltip lines, all on the stat's inset. */
+/* The episode, centered: its screenshot, its code and title on one line, then its tags. */
 .tip {
   display: grid;
   inline-size: var(--progress-tip-width);
-  text-align: start;
 }
 
-.tip-image {
-  inline-size: 100%;
-  aspect-ratio: var(--ratio-fanart);
-  margin-block-end: var(--progress-tip-image-gap);
-  border-radius: var(--radius-progress-tip-image);
-  object-fit: cover;
-}
-
-.tip-head {
+/* The tooltip is dark in both themes, so its tags take their dark colors. */
+.episode {
+  color-scheme: dark;
   display: grid;
+  justify-items: center;
+  gap: var(--progress-tip-gap);
   padding: var(--space-tooltip-rich);
-  padding-block-end: 0;
+  padding-block-end: var(--progress-tip-episode-end);
+
+  /* The screenshot sits as far from the top as from the sides. */
+  &:has(> .art) {
+    padding-block-start: var(--progress-tip-image-top);
+  }
+
+  & b {
+    font-weight: var(--font-weight-headings-heavy);
+  }
+
+  & :global(.tag-pills) {
+    justify-content: center;
+  }
 }
 
-.tip-code {
+/* The screenshot, with an Up next tag over its bottom-left corner like a fanart card's. */
+.art {
+  position: relative;
+  inline-size: 100%;
+
+  & img {
+    display: block;
+    inline-size: 100%;
+    aspect-ratio: var(--ratio-fanart);
+    border-radius: var(--radius-progress-tip-image);
+    object-fit: cover;
+  }
+}
+
+.up-next {
+  position: absolute;
+  inset-block-end: var(--progress-tip-tag-inset);
+  inset-inline-start: var(--progress-tip-tag-inset);
+  display: flex;
+}
+
+.code {
   color: var(--color-tooltip-muted);
-  font-size: var(--font-size-tooltip-label);
+}
+
+.watched {
+  padding: var(--space-tooltip-library);
 }
 
 @media (prefers-reduced-motion: reduce) {

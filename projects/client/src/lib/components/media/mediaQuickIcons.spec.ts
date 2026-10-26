@@ -4,9 +4,12 @@ import { mediaQuickIcons } from './mediaQuickIcons.ts';
 const movie = { type: 'movie' as const, id: 1, title: 'Heat', released: true, rating: 8.3, runtime: 170 };
 
 describe('util: mediaQuickIcons', () => {
-  it("should total a watched movie's play time in its tooltip", () => {
-    const icons = mediaQuickIcons({ item: movie, state: { watched: true, plays: 2 } });
-    expect(icons.fill.titles.watched).toBe('2 plays\n5h 40m');
+  it("should say when a watched movie was last watched, then total its plays' time", () => {
+    const icons = mediaQuickIcons({
+      item: movie,
+      state: { watched: true, plays: 2, lastWatchedAt: '2026-10-12T20:00:00.000Z' },
+    });
+    expect(icons.fill.titles.watched).toBe('Last watched on Oct 12, 2026\n2 plays (5h 40m)');
   });
 
   it('should target the item for rating and watching', () => {

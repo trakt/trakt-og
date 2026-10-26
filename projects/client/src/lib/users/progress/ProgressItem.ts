@@ -3,6 +3,7 @@ import type { CatalogEpisode } from '../../shows/cache/ShowCatalog.ts';
 
 /** One episode square under an open season. */
 export type ProgressEpisodeData = {
+  readonly id: number;
   readonly number: number;
   readonly title?: string;
   readonly done: boolean;

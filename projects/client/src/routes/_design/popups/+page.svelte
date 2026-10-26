@@ -7,6 +7,8 @@ import ReportDialog from '$lib/components/summary/ReportDialog.svelte';
 import { toast } from '$lib/components/toast/toast.svelte';
 import LibraryTip from '$lib/components/collection/LibraryTip.svelte';
 import PlaysTip from '$lib/components/media/PlaysTip.svelte';
+import FavoritedTip from '$lib/components/favorites/FavoritedTip.svelte';
+import TooltipHeader from '$lib/components/tooltip/TooltipHeader.svelte';
 import ProgressTip from '$lib/components/media/ProgressTip.svelte';
 import { progressTooltip } from '$lib/components/media/progressTooltip';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
@@ -167,7 +169,28 @@ const showLibrary = { episodes: { done: 27, aired: 32 }, sources: ['plex' as con
       {#snippet trigger(tooltip)}
         <DemoButton aria-label="Add to watched history" {...tooltip}><Icon svg={check} /></DemoButton>
       {/snippet}
-      <PlaysTip plays={{ count: 3, minutes: 390 }} />
+      <PlaysTip plays={{ count: 3, minutes: 390, at: 'Oct 12, 2026' }} />
+    </Tooltip>
+  </Variant>
+  <Variant label="Plays, an old import with no date">
+    <Tooltip placement="bottom">
+      {#snippet trigger(tooltip)}
+        <DemoButton aria-label="Add to watched history" {...tooltip}><Icon svg={check} /></DemoButton>
+      {/snippet}
+      <PlaysTip plays={{ count: 1, minutes: 130 }} />
+    </Tooltip>
+  </Variant>
+  <Variant label="Favorited, a quick icon">
+    <Tooltip placement="bottom">
+      {#snippet trigger(tooltip)}<DemoButton aria-label="Remove from favorites" {...tooltip}>Favorite</DemoButton>{/snippet}
+      <FavoritedTip date="Sep 28, 2026" />
+    </Tooltip>
+  </Variant>
+  <Variant label="Header, an episode over your plays">
+    <Tooltip placement="bottom">
+      {#snippet trigger(tooltip)}<DemoButton aria-label="1x01" {...tooltip}>1x01</DemoButton>{/snippet}
+      <TooltipHeader><span>1x01 <b>Pilot</b></span></TooltipHeader>
+      <PlaysTip plays={{ count: 1, minutes: 58, at: 'Jan 20, 2008' }} />
     </Tooltip>
   </Variant>
   <Variant label="Text, a certification">

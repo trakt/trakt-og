@@ -215,7 +215,8 @@ function toggleSeason(season: number) {
 
   <div class="seasons" id="progress-seasons-{row.id}" hidden={!open} aria-busy={open && loading && !row.seasons}>
     {#if open && row.seasons}
-      <ProgressSeasonGrid seasons={row.seasons} id={row.id} {expanded} ontoggle={toggleSeason} {simple} />
+      <ProgressSeasonGrid seasons={row.seasons} id={row.id} {expanded} ontoggle={toggleSeason} {simple}
+        {datePreferences} />
     {:else if open && loading}
       {@render seasonShimmers()}
     {/if}

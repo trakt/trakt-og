@@ -1,6 +1,6 @@
 <!--
   The library tooltip, centered. A movie or episode: "Added to Plex on Apr 19, 2013", or "Added to library on" when
-  no media server synced it, with the server (or library) and the date in bold. A show or season: the watched tooltip's progress, "84% in library" over
+  no media server synced it, with the server and the date in bold. A show or season: the watched tooltip's progress, "84% in library" over
   "27/32 eps — from Plex" and a green bar. Under either, its format and audio (`CollectionLogoRow`) in the footer.
     <Tooltip content={tip}>{#snippet tip()}<LibraryTip tip={fill.tips.collected} />{/snippet}</Tooltip>
 -->
@@ -36,8 +36,8 @@ const progress = $derived(
     <ProgressTip {progress} library footer={badges ? logos : undefined} />
   {:else}
     {#if tip.added !== undefined}
-      <span class="added">Added to <b>{source ?? 'library'}</b> {#if tip.added}on <b>{tip.added}</b>{:else}on an
-          unknown date{/if}</span>
+      <span class="added">Added to {#if source}<b>{source}</b>{:else}library{/if} {#if tip.added}on
+          <b>{tip.added}</b>{:else}on an unknown date{/if}</span>
     {/if}
     {#if badges}<TooltipFooter>{@render logos()}</TooltipFooter>{/if}
   {/if}

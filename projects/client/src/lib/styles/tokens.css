@@ -2295,16 +2295,45 @@
   --color-related-note: light-dark(#666, #a3a3a3);
   --font-size-related-note: var(--font-size-small);
 
-  /* Country release panels and notification tables. */
-  --color-data-panel-border: light-dark(#ddd, #444);
-  --color-data-panel-row-border: light-dark(#f0f0f0, #444);
-  --color-data-panel-bg: light-dark(#fff, var(--dk-bg2));
-  --color-data-panel-header-bg: light-dark(#f5f5f5, #333);
-  --color-data-panel-heading: light-dark(#333, #fff);
-  --color-data-panel-hover: light-dark(#fafafa, var(--dk-box-accent));
-  --data-panel-column-width: 150px;
-  --data-panel-flag-size: 20px;
-  --data-panel-label-padding: 3px 4px;
+  /* Movie release dates: the viewer's country as a dated track, then a box per country like Second Opinions. */
+  --country-flag-size: 20px;
+  --color-release-box: var(--color-stats-tile-bg);
+  --color-release-box-hover: var(--color-stats-tile-hover);
+  --radius-release-box: var(--radius-stats-tile);
+  --space-release-rows: var(--space-stats-site-rows); /* between the country boxes */
+  --space-release-cell: var(--space-stats-site-cell);
+  --space-release-box: 16px; /* inside the track's box */
+  --space-release-stack: 3px; /* between a date, its tags and its note */
+  --release-lane-min: 420px; /* a row's date lane, so a tablet scrolls it instead of crushing it */
+  --release-lane-height: 20px;
+  --release-lane-line: 2px;
+  --release-mark: 12px; /* a release's dot on its row */
+  --release-mark-ring: 2px; /* the box-colored ring that splits touching dots, and a limited run's hollow ring */
+  --release-mark-hover-scale: 1.35;
+  --release-mark-hit: 6px; /* past the dot on every side, for a 24px target */
+  --space-release-axis: 6px; /* between the Today tag and the month labels */
+  --release-axis-today: 22px; /* the Today tag's row over the month labels */
+  --space-release-legend: 14px;
+  --color-release-lane: light-dark(#e2e2e2, #333);
+  --color-release-lane-today: light-dark(rgb(0 0 0 / 0.35), rgb(255 255 255 / 0.5));
+  --color-release-premiere: light-dark(#8a5cd6, #b48cf2);
+  --color-release-theatrical: var(--brand-primary);
+  --color-release-digital: light-dark(#1a7fd4, #3ea6ff);
+  --color-release-physical: light-dark(#c77d12, #f0a83c);
+  --color-release-tv: var(--brand-success);
+  --color-release-unknown: light-dark(#999, #777);
+  --release-track-stop-min: 140px;
+  --release-track-dot: 12px;
+  --release-track-line: 2px;
+  --release-track-tick: 24px; /* the Today mark, down across the line */
+  --space-release-track-dot: 10px; /* between a stop's dot and its type */
+  --space-release-track-today: 30px; /* room above the line for the Today tag */
+  --color-release-track-line: light-dark(#ddd, #444);
+  --color-release-track-done: var(--brand-primary);
+  --color-release-today: var(--color-text);
+  --color-release-countdown: var(--color-stats-diff-up);
+  --color-release-detail: var(--color-genre-count);
+  --font-size-release-detail: var(--font-size-genre-key-count);
 
   /* Comment reaction picker. */
   --reaction-mobile-size: 11px;

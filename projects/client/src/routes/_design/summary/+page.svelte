@@ -17,6 +17,7 @@ import SummarySectionShimmer from '$lib/components/loading/SummarySectionShimmer
 import ActorsStrip from '$lib/components/summary/ActorsStrip.svelte';
 import CastCard from '$lib/components/summary/CastCard.svelte';
 import ViewToggle from '$lib/components/toolbar/ViewToggle.svelte';
+import CountryFlag from '$lib/components/table/CountryFlag.svelte';
 import CommentsPreview from '$lib/components/summary/CommentsPreview.svelte';
 import AddCommentLink from '$lib/components/comments/AddCommentLink.svelte';
 import NewCommentForm from '$lib/components/comments/NewCommentForm.svelte';
@@ -254,6 +255,23 @@ const videos: readonly VideoCard[] = [
   </Variant>
 </Specimen>
 
+<Specimen title="Country flags"
+  note="The flag before a country's name on release dates. Aruba has no flag file: alone it draws nothing, and with holdSpace it keeps an empty slot so names in a column line up.">
+  <Variant label="In a column">
+    <ul class="flag-demo">
+      {#each [{ code: 'us', name: 'United States' }, { code: 'aw', name: 'Aruba' }, { code: 'gb', name: 'United Kingdom' }] as { code, name } (code)}
+        <li><CountryFlag {code} holdSpace />{name}</li>
+      {/each}
+    </ul>
+  </Variant>
+  <Variant label="Alone">
+    <ul class="flag-demo">
+      <li><CountryFlag code="us" />United States</li>
+      <li><CountryFlag code="aw" />Aruba</li>
+    </ul>
+  </Variant>
+</Specimen>
+
 <Specimen title="Related" bleed
   note="Eighteen picks, so More opens a second row and a third. Two share Heat's people. A row of shimmering posters holds their place while they load.">
   <Variant label="Loaded">
@@ -278,6 +296,20 @@ const videos: readonly VideoCard[] = [
   &.list {
     grid-template-columns: repeat(var(--cast-list-columns), minmax(0, 1fr));
     gap: var(--cast-list-gap);
+  }
+}
+
+.flag-demo {
+  display: grid;
+  gap: var(--space-release-rows);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  & li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-release-cell);
   }
 }
 

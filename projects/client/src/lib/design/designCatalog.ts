@@ -79,7 +79,7 @@ export const designCatalog: readonly DesignGroup[] = [
         slug: 'summary',
         title: 'Summary sections',
         summary:
-          "A movie's summary top with its action stack, subpage and list titles, people, activity, videos, comments, lists and related titles.",
+          "A movie's summary top with its action stack, subpage and list titles, people, activity, videos, comments, lists, related titles and country flags.",
         source: 'components/summary',
       },
       {

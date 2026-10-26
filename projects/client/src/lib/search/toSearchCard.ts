@@ -39,7 +39,7 @@ const released = (date: string | null | undefined, now: Date) => (date ? new Dat
 const first = (paths: readonly string[] | null | undefined) => paths?.at(0);
 const generic = (text: string): CardTag => ({ text, kind: 'generic' });
 
-const toArt = (images: Images | null | undefined): SearchArt => ({
+const toArt = (images: Images | null | undefined): SearchCard['art'] => ({
   poster: imageUrl(first(images?.poster), 'thumb'),
   fanart: imageUrl(first(images?.fanart), 'thumb'),
   logo: imageUrl(first(images?.logo), 'medium'),
@@ -106,9 +106,10 @@ export function toSearchCard(hit: SearchHit, options: SearchCardOptions): Search
   if (!media || (hit.type !== 'movie' && hit.type !== 'show')) return null;
 
   const genres = (media.genres ?? []).slice(0, GENRES_SHOWN).map(genreLabel);
-  const details = hit.type === 'movie'
-    ? [media.runtime ? formatRuntime(media.runtime) : '', media.certification ?? '']
-    : [media.network ?? '', media.aired_episodes ? countLabel(media.aired_episodes, 'episode') : ''];
+  const details =
+    hit.type === 'movie'
+      ? [media.runtime ? formatRuntime(media.runtime) : '', media.certification ?? '']
+      : [media.network ?? '', media.aired_episodes ? countLabel(media.aired_episodes, 'episode') : ''];
   return {
     key: `${hit.type}-${media.ids.trakt}`,
     type: hit.type,

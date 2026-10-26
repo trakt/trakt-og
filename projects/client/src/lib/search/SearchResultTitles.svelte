@@ -26,7 +26,7 @@ const { card, spoiler, large = false }: Props = $props();
     <a class="small" href={card.smallTitle.href}>{card.smallTitle.text}</a>
   {/if}
   <h3>
-    {#if card.number}<a class="number" href={card.href}>{card.number}</a>{' '}{/if}<MediaSpoiler target={spoiler}
+    {#if card.number}<a class="number" href={card.href}>{card.number}&nbsp;</a>{/if}<MediaSpoiler target={spoiler}
       kind="title" inline><a href={card.href}>{card.title}</a></MediaSpoiler>{#if card.year}<span class="year"
       >{card.year}</span>{/if}
   </h3>
@@ -67,6 +67,7 @@ h3 {
   line-height: var(--search-title-line);
   -webkit-box-orient: vertical;
   -webkit-line-clamp: var(--search-title-lines);
+  line-clamp: var(--search-title-lines);
 
   & :global(.spoiler-content.inline) {
     display: inline;

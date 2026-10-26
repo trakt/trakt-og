@@ -29,7 +29,7 @@ const state = $derived.by((): OverlayState =>
       userRating={state.rating}
       icons={note.item.type === 'person' ? undefined : {
         listTarget: { type: note.item.type, id: note.item.id, title: note.item.title },
-        fill: quickIconFill({ state, airedEpisodes: note.item.airedEpisodes, datePreferences }),
+        fill: quickIconFill({ state, airedEpisodes: note.item.airedEpisodes, runtime: note.item.runtime, datePreferences }),
         rating: note.item.rating,
         watchNow: 'play',
         listLabel: ['movie', 'show'].includes(note.item.type) ? 'Add to watchlist' : 'Add to list',

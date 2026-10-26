@@ -56,6 +56,7 @@ describe('toListItemCard', () => {
       id: 2,
       href: '/movies/heat-1995',
       rank: 3,
+      runtime: 170,
       notes: 'Watch it :fire:',
       lines: [{ text: 'Dec 15, 1995', href: '/movies/heat-1995' }, { text: ' ' }],
     });

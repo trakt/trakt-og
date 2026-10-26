@@ -27,11 +27,13 @@ const target = (episode: CalendarGroupEpisode) => ({
   id: episode.id,
   title: `${title} ${episode.label}`,
   season: { show, number: episode.season, episode: episode.number },
+  runtime: episode.runtime,
   released,
 });
 const fill = (episode: CalendarGroupEpisode) =>
   quickIconFill({
     state: overlay.state('episode', episode.id, { show, number: episode.season, episode: episode.number }),
+    runtime: episode.runtime,
     datePreferences: page.data.datePreferences,
   });
 </script>

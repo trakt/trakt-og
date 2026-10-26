@@ -75,5 +75,7 @@ export function toRatingCard(row: Row, { type, by, datePreferences }: Options) {
     subtitles: [...(screenshots && show ? [{ text: show.title, href: showHref }] : []), ...(line ? [line] : [])],
     watchedAt: row.rated_at,
     runtime: 0,
+    /** A movie's or episode's minutes, so the watched tooltip can total the plays. `runtime` is the day's total. */
+    minutes: row.type === 'movie' || row.type === 'episode' ? (runtime ?? show?.runtime ?? undefined) : undefined,
   };
 }

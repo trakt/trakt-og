@@ -66,6 +66,13 @@ const icons = (card: RelatedCard) => {
   return {
     fill: quickIconFill({ state, airedEpisodes: card.airedEpisodes, runtime: card.runtime, datePreferences }),
     ratingTarget: { type: card.type, id: card.id, title: card.title },
+    watchTarget: {
+      type: card.type,
+      id: card.id,
+      title: card.title,
+      airedEpisodes: card.airedEpisodes,
+      runtime: card.type === 'movie' ? card.runtime : undefined,
+    },
     collectionTarget: { type: card.type, id: card.id, title: card.title, airedEpisodes: card.airedEpisodes },
     rating: card.rating,
     released: card.released,

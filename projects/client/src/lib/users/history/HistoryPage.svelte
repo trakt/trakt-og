@@ -90,7 +90,8 @@ const country = $derived(watchNowCountry(data.settings));
 
 {#snippet card(item: HistoryCard)}
   {@const state = overlay.state(item.type, item.id)}
-  {@const fill = quickIconFill({ state, airedEpisodes: item.airedEpisodes, datePreferences: data.datePreferences })}
+  {@const runtime = item.runtime || undefined}
+  {@const fill = quickIconFill({ state, airedEpisodes: item.airedEpisodes, runtime, datePreferences: data.datePreferences })}
   <PosterCard
   href={item.href}
   title={item.title}
@@ -104,7 +105,8 @@ const country = $derived(watchNowCountry(data.settings));
         fill,
         rating: item.rating,
         ratingTarget: { type: item.type, id: item.id, title: item.title },
-        watchTarget: { type: item.type, id: item.id, title: item.title, airedEpisodes: item.airedEpisodes, season: item.season },
+        watchTarget: { type: item.type, id: item.id, title: item.title, airedEpisodes: item.airedEpisodes, runtime,
+          season: item.season },
         historyPlay: data.isSelf && item.type !== 'show' ? { id: item.key, watchedAt: item.watchedAt } : undefined,
         onWatchRemove: data.isSelf && item.type !== 'show' ? (play) => remove(item, play) : undefined,
         watchNow: 'play',

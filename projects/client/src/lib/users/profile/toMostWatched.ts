@@ -29,6 +29,8 @@ export type MostWatchedCard = {
   readonly image?: string;
   readonly rating?: number;
   readonly airedEpisodes?: number;
+  /** A movie's minutes, so the watched tooltip can total the plays. */
+  readonly runtime?: number;
   /** OG's `humanize_minutes`: "1d 16h 32m". */
   readonly time: string;
   /** "19 plays". */
@@ -75,6 +77,7 @@ function toCard(type: MostWatchedType, { media, plays, minutes }: Tally): MostWa
     image: imageUrl(media.images?.poster?.at(0), 'thumb'),
     rating: media.rating ?? undefined,
     airedEpisodes: type === 'shows' ? (media.aired_episodes ?? undefined) : undefined,
+    runtime: type === 'movies' ? (media.runtime ?? undefined) : undefined,
     time: formatRuntime(minutes),
     plays: countLabel(plays, 'play'),
   };

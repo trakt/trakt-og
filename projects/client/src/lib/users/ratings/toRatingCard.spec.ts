@@ -37,6 +37,8 @@ describe('toRatingCard', () => {
       subtitles: ['Sep 29, 2026 3:00 PM'],
       href: '/movies/fight-club',
       image: 'https://media.trakt.tv/posters/thumb/f.jpg',
+      runtime: 0,
+      minutes: 139,
     });
   });
   it('should use episode stills only on Episodes, with the show line and summary premiere badge', () => {

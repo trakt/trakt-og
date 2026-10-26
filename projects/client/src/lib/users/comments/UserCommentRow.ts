@@ -12,6 +12,7 @@ export type UserCommentRow = {
   readonly comment: CommentResponse;
   readonly movie?: {
     readonly rating?: number | null;
+    readonly runtime?: number | null;
     readonly ids: { readonly trakt: number; readonly slug: string };
     readonly title: string;
     readonly year?: number | null;
@@ -19,6 +20,7 @@ export type UserCommentRow = {
   } | null;
   readonly show?: {
     readonly rating?: number | null;
+    readonly runtime?: number | null;
     readonly ids: { readonly trakt: number; readonly slug: string };
     readonly title: string;
     readonly year?: number | null;
@@ -36,6 +38,7 @@ export type UserCommentRow = {
   } | null;
   readonly episode?: {
     readonly rating?: number | null;
+    readonly runtime?: number | null;
     readonly ids: { readonly trakt: number };
     readonly season: number;
     readonly number: number;

@@ -189,7 +189,11 @@ function toggleSeason(season: number) {
       <FanartCard framed href={next.href} title={next.title} number={next.number} image={next.image}
         spoilerImage={next.spoilerImage} tags={next.tags}
         icons={{
-          fill: quickIconFill({ state: overlay.state('episode', next.target.id, next.target.season), datePreferences }),
+          fill: quickIconFill({
+            state: overlay.state('episode', next.target.id, next.target.season),
+            runtime: next.target.runtime,
+            datePreferences,
+          }),
           ratingTarget: { type: 'episode', id: next.target.id, title: next.target.title },
           watchTarget: next.target,
           collectionTarget: next.target,

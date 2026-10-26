@@ -29,6 +29,8 @@ export interface ListItemCard {
   /** The Trakt rating, 0 to 10. */
   readonly rating?: number;
   readonly airedEpisodes?: number;
+  /** A movie's or episode's minutes, so the watched tooltip can total the plays. */
+  readonly runtime?: number;
   readonly seasonOf?: SeasonOf;
   readonly episodeBadge?: ReturnType<typeof episodeBadge>;
   /** OG's two lines under the title, `under_title` and `under_title2`. A blank one is a non-breaking space. */
@@ -125,6 +127,7 @@ export function toListItemCard(row: ListItemRow, { sortBy, datePreferences, now 
         title: movie.title,
         image: imageUrl(movie.images?.poster?.at(0), 'thumb'),
         rating: rated(movie.rating, movie.released),
+        runtime: movie.runtime ?? undefined,
         noteTitle: { title: movie.title, year: movie.year ?? undefined, fanart: fanart(movie.images) },
         lines: lines({
           sorted: sorted(
@@ -206,6 +209,7 @@ export function toListItemCard(row: ListItemRow, { sortBy, datePreferences, now 
         number: episodeNumber(episode, show.genres),
         image: imageUrl(show.images?.poster?.at(0), 'thumb'),
         rating: rated(episode.rating, episode.first_aired),
+        runtime: episode.runtime ?? show.runtime ?? undefined,
         seasonOf: { show: show.ids.trakt, number: episode.season, episode: episode.number },
         noteTitle: {
           title: `${episodeNumber(episode, show.genres)} ${episode.title ?? ''}`.trim(),

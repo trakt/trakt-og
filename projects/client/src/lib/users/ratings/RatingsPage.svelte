@@ -97,14 +97,15 @@ const count = $derived(data.total - (data.cards.length - cards.length));
 
 {#snippet card(item: RatingCard)}
   {@const state = overlay.state(item.type, item.id, item.seasonOf)}
-  {@const fill = quickIconFill({ state, airedEpisodes: item.airedEpisodes, datePreferences: data.datePreferences })}
+  {@const fill = quickIconFill({ state, airedEpisodes: item.airedEpisodes, runtime: item.minutes,
+    datePreferences: data.datePreferences })}
   {@const rating = ownerRating(item)}
   <PosterCard href={item.href} title={item.title} number={item.number} image={item.image} variant={item.variant}
   episodeBadge={item.episodeBadge} subtitles={item.subtitles} userRating={state.rating}
   icons={{ fill, rating: item.rating,
       ratingTarget: { type: item.type, id: item.id, title: item.title },
       watchTarget: { type: item.type, id: item.id, title: item.title, airedEpisodes: item.airedEpisodes,
-        season: item.seasonOf },
+        runtime: item.minutes, season: item.seasonOf },
       listLabel: item.type === 'episode' || item.type === 'season' ? 'Add to list' : 'Add to watchlist' }}
   faded={fadeHide.fade.some((id) => matchesFadeHide(id, state, fill))}>
     {#if rating !== null}<a class="rating-link" href={item.href}><RatingLine {rating} /></a>{/if}

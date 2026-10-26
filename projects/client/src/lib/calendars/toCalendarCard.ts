@@ -27,6 +27,8 @@ export type CalendarCard = Omit<ComponentProps<typeof FanartCard>, 'icons'> & {
   time?: string;
   /** The tag pills under a card's titles, like search's: the certificate, runtime and network. */
   pills: TagPill[];
+  /** Minutes, so the watched tooltip can total the plays. */
+  runtime?: number;
   hideTarget?: { type: 'show'; id: number; title: string };
   overlay: { type: 'episode' | 'movie'; id: number };
   collectionContext?: { show: number; number: number; episode: number };
@@ -47,6 +49,7 @@ export function toCalendarCard(
   const released = new Date(item.at) <= now;
   if (item.type === 'movie') {
     const { movie } = item;
+    const runtime = movie.runtime ?? undefined;
     return {
       key: `movie-${movie.ids.trakt}`,
       overlay: { type: 'movie', id: movie.ids.trakt },
@@ -60,8 +63,9 @@ export function toCalendarCard(
       pills: mediaTags({
         type: 'movie',
         certification: movie.certification ?? undefined,
-        runtime: movie.runtime ?? undefined,
+        runtime,
       }),
+      runtime,
       ...toCalendarImage(item, clock.imageType ?? 'logo'),
     };
   }
@@ -69,6 +73,7 @@ export function toCalendarCard(
   const { show, episode } = item;
   const label = episodeType(episode);
   const time = airTime(item.at, clock);
+  const runtime = episode.runtime ?? show.runtime ?? undefined;
   const tags: Tag[] = [
     ...(label ? [label] : []),
     { text: time },
@@ -93,9 +98,10 @@ export function toCalendarCard(
     pills: mediaTags({
       type: 'show',
       certification: show.certification ?? undefined,
-      runtime: episode.runtime ?? show.runtime ?? undefined,
+      runtime,
       network: show.network ?? undefined,
     }),
+    runtime,
     ...toCalendarImage(item, clock.imageType ?? 'logo'),
     tags,
     episodeBadge: label ? { label: label.text, kind: label.kind } : undefined,

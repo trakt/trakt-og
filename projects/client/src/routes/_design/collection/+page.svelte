@@ -10,7 +10,6 @@ import type { CollectionMetadata } from '$lib/components/collection/CollectionMe
 import { collectionMetadataLabel } from '$lib/components/collection/collectionMetadataLabel';
 import type { LibrarySource } from '$lib/components/collection/LibrarySource';
 import { librarySourceIcon } from '$lib/components/collection/librarySourceIcon';
-import LibrarySyncLink from '$lib/components/collection/LibrarySyncLink.svelte';
 import MediaCollection from '$lib/components/collection/MediaCollection.svelte';
 import { toast } from '$lib/components/toast/toast.svelte';
 import Icon from '$lib/icons/Icon.svelte';
@@ -43,10 +42,7 @@ const removed = () => toast.success('Removed from library.');
 </script>
 
 <Specimen title="Summary button" row
-  note="Not in the library, it links out to v3's sync settings. In it, it opens on removal and metadata, with no + or add date. A synced item shows its server's icon.">
-  <Variant label="Not in library">
-    <div class="example"><LibrarySyncLink variant="summary" /></div>
-  </Variant>
+  note="Not in the library, there's no button: adding is off. In it, it opens on removal and metadata, with no + or add date. A synced item shows its server's icon.">
   {#each synced as { label, sources, metadata: saved } (label)}
     {@const source = librarySourceIcon(sources)}
     {@const badges = collectionBadges(saved)}
@@ -97,9 +93,8 @@ const removed = () => toast.success('Removed from library.');
 </Specimen>
 
 <Specimen title="Poster icons"
-  note="The same states in a card's quick-icon bar: the faded sync link, then by hand, Plex and Jellyfin.">
+  note="The same states in a card's quick-icon bar, which has no library icon for what isn't in it: by hand, Plex and Jellyfin.">
   <div class="posters">
-    <LibrarySyncLink />
     {#each synced.slice(0, 3) as { label, sources } (label)}
       {@const source = librarySourceIcon(sources)}
       <WatchPopover collection adding={false} label="In Library" fill={1} datePreferences={dates} tooltip={label}

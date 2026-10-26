@@ -2576,8 +2576,10 @@
   --color-subnav-text-bg: light-dark(#f3f3f3, #252525); /* .subnav-text, the library's description band */
   --font-size-subnav-text: 13px;
   --subnav-text-padding: 10px; /* .text's padding-top, then the paragraph's margin */
+  /* A card's content from its edges: tags, titles and pills on the art, and a calendar or search card's caption. */
+  --card-inset: 12px;
   /* An episode's type tag over its art. */
-  --episode-tag-inset: 8px; /* from the art's bottom-left corner */
+  --episode-tag-inset: var(--card-inset); /* from the art's bottom-left corner */
 
   /* Watch Now: the sidebar block, its phone button and the where-to-watch modal. */
   --color-watch-now-bg: #444;
@@ -3899,7 +3901,8 @@
   --radius-calendar-month-card: 7px;
   --calendar-card-gap: 14px; /* between the list's cards */
   --calendar-list-padding: 14px 16px 18px;
-  --calendar-caption-padding: 10px 12px;
+  --card-text-leading: 4px; /* the space a line's leading leaves above its letters, taken off a text edge's inset */
+  --calendar-caption-padding: calc(var(--card-inset) - var(--card-text-leading)) var(--card-inset) var(--card-inset);
   --calendar-caption-gap: 6px;
   /* One line of tag pills, kept when empty so cards line up. */
   --calendar-tags-height: calc(var(--font-size-search-pill) * var(--line-height-search-pill) + 2 * 3px);

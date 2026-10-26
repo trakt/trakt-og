@@ -282,7 +282,7 @@ const restoreTarget = $derived(target?.type === 'show' ? { ...target, type: 'sho
 .titles {
   position: absolute;
   inset-block-end: 10px;
-  inset-inline: 12px;
+  inset-inline: var(--card-inset);
 }
 
 .worded {

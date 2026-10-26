@@ -101,8 +101,8 @@ const watchedCount = $derived(watched.filter(Boolean).length);
 /* Frosted in the art's top-right corner; white while the popup is open. */
 .on-art {
   position: absolute;
-  inset-block-start: var(--space-sm-block);
-  inset-inline-end: var(--space-sm-block);
+  inset-block-start: var(--card-inset);
+  inset-inline-end: var(--card-inset);
   z-index: 2;
   padding: 4px 8px 4px 9px;
   border-color: rgb(255 255 255 / 0.18);

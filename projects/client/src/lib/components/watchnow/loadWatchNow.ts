@@ -1,5 +1,5 @@
 import type { ViewerSettings } from '../../settings/ViewerSettings.ts';
-import { fetchWatchNow } from './fetchWatchNow.ts';
+import { readWatchNow } from './readWatchNow.ts';
 import { offerSlugs, toSourceMap, toWatchNowButton } from './watchNow.ts';
 import { watchNowOffersSchema, watchNowOrderSchema, watchNowSourcesSchema } from './watchNowSchema.ts';
 
@@ -17,24 +17,26 @@ type LoadWatchNowParams = {
 /**
  * The sidebar Watch Now block for SSR: the item's offers in the viewer's country (with the JustWatch rank the
  * ratings strip shows), their ranking, and the country's service names and logos. The ranking comes without the
- * viewer's favorites, which go first from their settings instead.
+ * viewer's favorites, which go first from their settings instead. A client ID that may not call watch-now routes gets
+ * an `unavailable` block, without the S1E1 retry.
  */
 export async function loadWatchNow({ fetch, path, fallback, country, settings, isVip }: LoadWatchNowParams) {
   const load = (at: string) =>
     Promise.all([
-      fetchWatchNow({
+      readWatchNow({
         fetch,
         path: `${at}/watchnow/${country}?extended=streaming_ranks`,
         schema: watchNowOffersSchema,
       }),
-      fetchWatchNow({ fetch, path: `${at}/watchnow/favorites/${country}`, schema: watchNowOrderSchema }),
+      readWatchNow({ fetch, path: `${at}/watchnow/favorites/${country}`, schema: watchNowOrderSchema }),
     ]);
-  const sources = fetchWatchNow({ fetch, path: `/watchnow/sources/${country}`, schema: watchNowSourcesSchema });
+  const sources = readWatchNow({ fetch, path: `/watchnow/sources/${country}`, schema: watchNowSourcesSchema });
 
   let [watchnow, order] = await load(path);
-  const rank = watchnow?.[country]?.streaming_ranks ?? null;
+  const { unavailable } = watchnow;
+  const rank = watchnow.data?.[country]?.streaming_ranks ?? null;
   let at = path;
-  if (fallback && offerSlugs(watchnow?.[country]).length === 0) {
+  if (!unavailable && fallback && offerSlugs(watchnow.data?.[country]).length === 0) {
     at = fallback;
     [watchnow, order] = await load(fallback);
   }
@@ -42,15 +44,18 @@ export async function loadWatchNow({ fetch, path, fallback, country, settings, i
   const favorites = settings?.browsing?.watchnow;
   return {
     rank,
-    button: toWatchNowButton({
-      path: at,
-      offers: watchnow?.[country] ?? null,
-      order,
-      sources: toSourceMap(await sources, country),
-      country,
-      favorites: favorites?.favorites ?? [],
-      onlyFavorites: favorites?.only_favorites ?? false,
-      isVip,
-    }),
+    button: {
+      ...toWatchNowButton({
+        path: at,
+        offers: watchnow.data?.[country] ?? null,
+        order: order.data,
+        sources: toSourceMap((await sources).data, country),
+        country,
+        favorites: favorites?.favorites ?? [],
+        onlyFavorites: favorites?.only_favorites ?? false,
+        isVip,
+      }),
+      unavailable,
+    },
   };
 }

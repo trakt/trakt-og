@@ -8,6 +8,7 @@
       onchange={(filters) => goto(…)} onclose={close} />
 -->
 <script lang="ts">
+import { isStandardApi } from '$lib/api/isStandardApi';
 import { on } from 'svelte/events';
 import imdbLogo from '$lib/assets/sites/imdb-clean.png';
 import rtAudience from '$lib/assets/sites/rt/audience-upright.svg';
@@ -73,6 +74,8 @@ const ratingRows = {
 } as const;
 const isRating = (key: RangeFilterKey): key is keyof typeof ratingRows => Object.hasOwn(ratingRows, key);
 const ratings = $derived(config.ranges.filter(isRating));
+// Watch-now sources are Official-only, so a Standard app gets no Streaming filter.
+const streaming = $derived(config.watchnow && !isStandardApi());
 
 // The fields start from the URL's filters, and start over whenever those change.
 let draft = $derived<FilterDraft>(toFilterDraft(filters, config));
@@ -111,7 +114,7 @@ $effect(() => {
         if (requestedKey === requestKey) options = { ...options, [key]: [] };
       });
   }
-  if (config.watchnow) {
+  if (streaming) {
     fetchFilterBody(`/watchnow/sources/${country}`)
       .then((body) => {
         if (requestedKey === requestKey) loadedSources = toFilterSources(body, country);
@@ -169,7 +172,7 @@ function reset() {
         with VIP</a>
     {/if}
 
-    {#if config.watchnow}
+    {#if streaming}
       <IncludeExcludeSelect label="Streaming" groups={watchnowGroups} excludable={false} disabled={!vip}
         loading={!loadedSources} labelFor={sourceName} tileFor={serviceTile} searchPlaceholder="Netflix, Max…"
         selection={{ include: draft.watchnow, exclude: [] }}

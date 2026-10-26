@@ -4,6 +4,7 @@
   and only in their first 30 days. "Pick services" opens the taste picker in place.
 -->
 <script lang="ts">
+import { isStandardApi } from '$lib/api/isStandardApi';
 import { browser } from '$app/environment';
 import { isRecentMember } from '$lib/firstNight/gettingStarted';
 import { nextNudge, type Nudge, type NudgeCounts, nudgeCounts, nudgeMemory, welcomeBack } from '$lib/firstNight/nudges';
@@ -51,7 +52,7 @@ $effect(() => {
   const after = nudgeCounts(overlay.slices());
   if (!after) return;
   if (before) {
-    const nudge = nextNudge({ before, after, hasServices: taste.services.length > 0, slug });
+    const nudge = nextNudge({ before, after, hasServices: taste.services.length > 0 || isStandardApi(), slug });
     if (nudge) show(nudge);
   }
   before = after;

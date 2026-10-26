@@ -1,8 +1,10 @@
 import { readFileSync } from 'node:fs';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
+import { isHttpError } from '@sveltejs/kit';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
-import { handle } from './hooks.server.ts';
+import { handle, handleFetch } from './hooks.server.ts';
+import { isApiRateLimited } from './lib/api/isApiRateLimited.ts';
 import { load } from './routes/+layout.server.ts';
 
 const APP_HTML = readFileSync(new URL('./app.html', import.meta.url), 'utf8');
@@ -126,5 +128,44 @@ describe('hooks: auth cookie', () => {
     const data = await session(undefined);
     expect(data?.hasSession).toBe(false);
     expect(data?.tokenExpired).toBe(false);
+  });
+});
+
+describe('hooks: rate limits', () => {
+  type FetchEvent = Parameters<typeof handleFetch>[0];
+  const rateLimited = () => new HttpResponse('error code: 1015', { status: 429, headers: { 'retry-after': '299' } });
+  const serverFetch = async (input: RequestInfo | URL, init?: RequestInit) =>
+    handleFetch({
+      event: pageEvent(undefined),
+      request: new Request(input, init),
+      fetch: (...args: Parameters<typeof globalThis.fetch>) => globalThis.fetch(...args),
+    } as unknown as FetchEvent);
+
+  it('should throw a rate-limited API read with how long to wait', async () => {
+    server.use(http.get('https://apiz.trakt.tv/users/me', rateLimited));
+
+    const failure: unknown = await serverFetch('https://apiz.trakt.tv/users/me').catch((cause: unknown) => cause);
+
+    expect(isApiRateLimited(failure)).toBe(true);
+    expect(isHttpError(failure) && failure.body.message).toBe(
+      "Trakt's API is rate limiting your requests. Try again in 5 minutes.",
+    );
+  });
+
+  it('should hand back a rate-limited write, which its caller retries', async () => {
+    server.use(http.post('https://apiz.trakt.tv/sync/history', rateLimited));
+
+    expect((await serverFetch('https://apiz.trakt.tv/sync/history', { method: 'POST' })).status).toBe(429);
+  });
+
+  it('should keep the session signed in when the settings read is rate limited', async () => {
+    server.use(http.get('https://apiz.trakt.tv/users/settings', rateLimited));
+    const resolve: Handle['resolve'] = async (resolved) => {
+      const data = await load({ ...resolved, fetch: serverFetch } as Parameters<typeof load>[0]);
+      expect(data).toMatchObject({ hasSession: true, rateLimited: true, user: null });
+      return new Response();
+    };
+
+    await handle({ event: pageEvent(authCookie(Date.now() + 60_000)), resolve });
   });
 });

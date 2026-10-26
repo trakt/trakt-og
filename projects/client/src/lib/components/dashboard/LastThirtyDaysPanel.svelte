@@ -41,7 +41,12 @@ const { stats }: { stats: Promise<LastThirtyDays> } = $props();
     {/snippet}
     {@render panel(false, charts)}
   {/if}
-{:catch}
+{:catch error}
+  {#snippet failed()}
+    <div class="notice">
+      <LoadFailed what="Last 30 Days" {error} />
+    </div>
+  {/snippet}
   {@render panel(false, failed)}
 {/await}
 
@@ -62,12 +67,6 @@ const { stats }: { stats: Promise<LastThirtyDays> } = $props();
       </div>
     </div>
   </div>
-{/snippet}
-
-{#snippet failed()}
-  <div class="notice">
-  <LoadFailed what="Last 30 Days" />
-</div>
 {/snippet}
 
 <style>

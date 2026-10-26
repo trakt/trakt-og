@@ -13,6 +13,7 @@
     "lint": "eslint .",
     "format": "biome format --write . && bun run lint --fix",
     "icon": "bun scripts/icon.ts",
+    "setup": "bun scripts/setup.ts",
     "emoji": "bun scripts/emoji.ts",
     "world-map": "bun scripts/worldMap.ts",
     "check:scripts": "svelte-kit sync && tsc -p scripts/tsconfig.json",

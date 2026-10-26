@@ -1,6 +1,7 @@
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { isApiUnavailable } from '../api/isApiUnavailable.ts';
 import { fetchRecentMembers, fetchSocialFeed, fetchSocialItems } from './fetchSocialFeed.ts';
 import { socialFeedFixture } from './socialFeedFixture.ts';
 import { socialWindows } from './socialWindows.ts';
@@ -109,11 +110,19 @@ describe('fetchSocialFeed', () => {
   });
 
   it('should reject a failed or malformed feed, so the panel shows its own error', async () => {
-    server.use(http.get(FEED, () => new HttpResponse(null, { status: 403 })));
-    await expect(feed()).rejects.toThrow('403');
+    server.use(http.get(FEED, () => new HttpResponse(null, { status: 500 })));
+    await expect(feed()).rejects.toThrow('500');
 
     server.use(http.get(FEED, () => HttpResponse.json({ nope: true })));
     await expect(feed()).rejects.toThrow('invalid');
+  });
+
+  it('should reject as unavailable when the client ID may not call the feed', async () => {
+    server.use(http.get(FEED, () => new HttpResponse('Forbidden', { status: 403 })));
+
+    const failure: unknown = await feed().catch((cause: unknown) => cause);
+
+    expect(isApiUnavailable(failure)).toBe(true);
   });
 });
 

@@ -3,7 +3,14 @@ import type { ListDraft } from './ListDraft.ts';
 import { editableListSchema } from './editableListSchema.ts';
 import { ListWriteError } from './ListWriteError.ts';
 import { collaboratorsSchema } from '../../users/lists/collaboratorsSchema.ts';
-/** Metadata is saved once. A partial collaborator failure keeps its id for a safe retry. */
+import { isApiUnavailable } from '../../api/isApiUnavailable.ts';
+
+const COLLABORATORS_UNAVAILABLE = "Collaborators aren't available with this API key. Your list was saved.";
+
+/**
+ * Metadata is saved once. A partial collaborator failure keeps its id for a safe retry. A client ID that may not call
+ * the Official-only collaborator route saves without them, and only says so when some were picked.
+ */
 export async function saveList({
   request,
   draft,
@@ -23,6 +30,9 @@ export async function saveList({
   const list = editableListSchema.parse(await response.json());
   try {
     const read = await request(`/lists/${list.ids.trakt}/collaborators`, 'GET');
+    if (isApiUnavailable(read)) {
+      return { list, collaboratorError: collaborators.length > 0 ? COLLABORATORS_UNAVAILABLE : '' };
+    }
     if (!read.ok) throw await ListWriteError.from(read);
     const current = collaboratorsSchema.parse(await read.json()).map((user) => user.ids.slug ?? user.username);
     const changes = [

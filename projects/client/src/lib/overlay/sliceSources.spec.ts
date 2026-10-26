@@ -222,6 +222,42 @@ describe('sliceSources', () => {
     expect(data).not.toHaveProperty('person');
   });
 
+  describe('when the client ID may not call v3', () => {
+    const refused = () => new HttpResponse('Forbidden', { status: 403 });
+
+    it('should read the movie and show watchlist from v2', async () => {
+      server.use(
+        http.get(`${API}/v3/users/me/watchlist/minimal`, refused),
+        http.get(`${API}/sync/watchlist/movies`, () => HttpResponse.json([{ type: 'movie', movie: ids(1) }])),
+        http.get(`${API}/sync/watchlist/shows`, () => HttpResponse.json([{ type: 'show', show: ids(2) }])),
+        http.get(`${API}/sync/watchlist/seasons/rank/asc`, () => HttpResponse.json([{ season: ids(3) }])),
+        http.get(`${API}/sync/watchlist/episodes/rank/asc`, () => HttpResponse.json([{ episode: ids(5) }])),
+      );
+
+      expect(await sliceSources.watchlist.load(get)).toEqual({
+        movie: new Set([1]),
+        show: new Set([2]),
+        season: new Set([3]),
+        episode: new Set([5]),
+      });
+    });
+
+    it('should collect list membership from v2’s own and collaborative lists', async () => {
+      server.use(
+        http.get(`${API}/v3/users/me/lists`, refused),
+        http.get(`${API}/users/me/lists`, () => HttpResponse.json([{ ids: { trakt: 10 } }])),
+        http.get(`${API}/users/me/lists/collaborations`, () => HttpResponse.json([{ ids: { trakt: 11 } }])),
+        http.get(`${API}/lists/10/items`, () => HttpResponse.json([{ type: 'movie', movie: ids(1) }])),
+        http.get(`${API}/lists/11/items`, () => HttpResponse.json([{ type: 'show', show: ids(3) }])),
+      );
+
+      const data = await sliceSources.listed.load(get);
+
+      expect(data.movie).toEqual(new Set([1]));
+      expect(data.show).toEqual(new Set([3]));
+    });
+  });
+
   it('should throw when a slice request fails', async () => {
     server.use(http.get(`${API}/users/hidden/dropped`, () => HttpResponse.json({}, { status: 500 })));
 

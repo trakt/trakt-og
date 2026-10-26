@@ -24,6 +24,8 @@ import { untrack } from 'svelte';
 import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 import { api } from '$lib/api/api';
 import { apiQueue } from '$lib/api/apiQueue';
+import { apiRateLimited } from '$lib/api/apiRateLimited';
+import { isApiRateLimited } from '$lib/api/isApiRateLimited';
 import type { HeaderUser } from '$lib/components/header/HeaderUser';
 import { toast } from '$lib/components/toast/toast.svelte';
 import { loadListShows } from './loadListShows.ts';
@@ -56,7 +58,8 @@ const client = () => {
 const slices = $derived(overlay.slices());
 const fresh = untrack(() => cached?.slug === data.profile.slug && Date.now() - cached.at < FRESH_FOR);
 let nitro = $state.raw<readonly ProgressItem[] | null>(fresh ? cached?.items ?? null : null);
-let failed = $state(false);
+/** Why the last read failed while nothing was on screen, for LoadFailed. */
+let failure = $state<{ readonly error: unknown } | null>(null);
 let droppedShows = $state.raw<ReadonlyMap<number, CachedShow> | undefined>();
 const catalogs = new SvelteMap<number, ShowCatalog>();
 const loading = new SvelteSet<number>();
@@ -67,18 +70,23 @@ async function readProgress() {
   try {
     const items = await loadNitroProgress({
       request: (page, limit) =>
-        client().sync.progress.upNext.nitro({ query: { page, limit, intent: 'all' } }).then((response) =>
-          response.status === 200
+        client().sync.progress.upNext.nitro({ query: { page, limit, intent: 'all' } }).then((response) => {
+          if (response.status === 429) apiRateLimited(response.headers.get('retry-after'));
+          return response.status === 200
             ? { ok: true as const, body: response.body, headers: response.headers }
-            : { ok: false as const, status: response.status }
-        ),
+            : { ok: false as const, status: response.status };
+        }),
     });
     cached = { slug, items, at: Date.now() };
     nitro = items;
-    failed = false;
-  } catch {
-    toast.error('Doh! There was an error loading your progress.');
-    if (nitro === null) failed = true;
+    failure = null;
+  } catch (error) {
+    toast.error(
+      isApiRateLimited(error)
+        ? "Doh! Trakt's API is rate limiting your requests. Please try again later."
+        : 'Doh! There was an error loading your progress.',
+    );
+    if (nitro === null) failure = { error };
     nitro ??= [];
   }
 }
@@ -179,4 +187,5 @@ async function need(id: number) {
 }
 </script>
 
-<ProgressList {data} {items} {listed} {loading} onneed={need} onretry={failed ? readProgress : undefined} />
+<ProgressList {data} {items} {listed} {loading} onneed={need} onretry={failure ? readProgress : undefined}
+  error={failure?.error} />

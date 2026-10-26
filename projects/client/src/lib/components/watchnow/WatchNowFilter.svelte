@@ -4,9 +4,11 @@
   `watchnow=` (the slugs, comma separated), which the worker's `sources` reads, and the × drops them.
   `placeholder` is OG's All Types state: the icon only asks for a type first.
   The services load on first open, from `/watchnow/sources/:country`, with shimmering rows in their place until then.
+  That route is Official-only, so a Standard app (`isStandardApi`) gets no picker.
     <WatchNowFilter value={filters.watchnow} {country} favorites={settings?.browsing?.watchnow?.favorites ?? []} />
 -->
 <script lang="ts">
+import { isStandardApi } from '$lib/api/isStandardApi';
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
 import FilterPopover from '$lib/components/filters/FilterPopover.svelte';
@@ -72,6 +74,7 @@ function reload(slugs: readonly string[]) {
 }
 </script>
 
+{#if !isStandardApi()}
 <FilterPopover svg={play} label="Filter by streaming services" active={applied.length > 0} {placeholder}
   tooltip={placeholder ? 'Choose a type to filter by streaming services' : 'Filter by Streaming Services'}
   title="Available to watch on" help="Only display items available to watch on these streaming services."
@@ -108,6 +111,7 @@ function reload(slugs: readonly string[]) {
     {/each}
   </div>
 </FilterPopover>
+{/if}
 
 <style>
 .options {

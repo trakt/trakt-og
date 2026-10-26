@@ -90,7 +90,7 @@ const library = (_: string, id: number): OverlayState => ({ watched: id <= 2, co
 const everything = (): OverlayState => ({ watched: true, collected: true });
 const never = new Promise<null>(() => {});
 const likeTarget = { id: 23, ownerSlug: 'og_tester', viewer: 'og_viewer' };
-let mode = $state<'add' | 'edit'>('add');
+let mode = $state<'add' | 'edit' | 'unavailable'>('add');
 const initial = {
   name: 'Sci-Fi Club',
   description: 'Picks for the monthly club.',
@@ -116,7 +116,7 @@ const following = [{ slug: 'teodoro_2', name: 'Elsy Murphy (@teodoro_2)' }];
 <!-- The OG references are screenshots on og-shots, outside the app. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 <Specimen title="List picker"
-  note="The summary's list button, then the new list and edit list dialogs, and a watchlist's edit dialog.">
+  note="The summary's list button, then the new list and edit list dialogs, and a watchlist's edit dialog. Collaborator routes are Official-only, so another app's client ID edits without them.">
   <p>
     Local OG references: <a href="https://og-shots.trakt.tv/135/2d64380a-rails-add.png">Add list</a>,
     <a href="https://og-shots.trakt.tv/135/68548be2-rails-edit.png">Edit list</a> and
@@ -128,6 +128,7 @@ const following = [{ slug: 'teodoro_2', name: 'Elsy Murphy (@teodoro_2)' }];
   <div class="buttons">
     <DemoButton onclick={() => { mode = 'add'; open = true; }}>Preview add</DemoButton>
     <DemoButton onclick={() => { mode = 'edit'; open = true; }}>Preview edit</DemoButton>
+    <DemoButton onclick={() => { mode = 'unavailable'; open = true; }}>Preview edit, no collaborators</DemoButton>
     <DemoButton onclick={() => builtInOpen = true}>Preview watchlist edit</DemoButton>
   </div>
 </Specimen>
@@ -244,8 +245,10 @@ const following = [{ slug: 'teodoro_2', name: 'Elsy Murphy (@teodoro_2)' }];
   {#if mode === 'add'}
     <NewListDialog bind:open title="Add to new list" {following} onsave={() => open = false} />
   {:else}
-    <NewListDialog bind:open {following} {initial} editing count={12}
-  shareLink="https://trakt.tv/lists/share/sci-fi-club" onsave={() => open = false} />
+    <NewListDialog bind:open {following} initial={mode === 'unavailable' ? { ...initial, collaborators: [] } : initial}
+  editing count={12}
+  shareLink="https://trakt.tv/lists/share/sci-fi-club" collaboratorsUnavailable={mode === 'unavailable'}
+  onsave={() => open = false} />
   {/if}
 {/if}
 

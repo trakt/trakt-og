@@ -1,5 +1,6 @@
 import type { Cookies } from '@sveltejs/kit';
 import { api } from '../api/api.ts';
+import { isApiRateLimited } from '../api/isApiRateLimited.ts';
 import { toHeaderUser } from '../components/header/toHeaderUser.ts';
 import { isPhoneUserAgent } from '../components/mobile-splash/isPhoneUserAgent.ts';
 import { toMobilePlatform } from '../components/mobile-splash/toMobilePlatform.ts';
@@ -18,7 +19,8 @@ type Params = {
 
 /**
  * Pages inherit settings and datePreferences from this layout; server loaders can read them through parent().
- * The header uses the same response. Any failure renders logged-out; only the client renews the token.
+ * The header uses the same response. Any failure renders logged-out; only the client renews the token. A rate-limited
+ * read (`rateLimited`) keeps the session, so the header stays signed in without a user instead of offering Sign In.
  * An expired token still counts as a session: `tokenExpired` keeps the header signed in until the browser renews it.
  * It also sets `locals.theme`, the viewer's Dark Knight setting, which hooks.server.ts writes onto `<html>` so the
  * first paint is already in the right theme. Logged out is Dark Knight, og's default.
@@ -36,6 +38,7 @@ export async function loadViewerSession({ fetch, locals, cookies, request, platf
   const loggedOut = {
     hasSession,
     tokenExpired,
+    rateLimited: false,
     user: null,
     settings: null,
     datePreferences: toDatePreferences(null),
@@ -56,6 +59,7 @@ export async function loadViewerSession({ fetch, locals, cookies, request, platf
     const data = {
       hasSession,
       tokenExpired,
+      rateLimited: false,
       user: toHeaderUser(settings.user),
       settings,
       datePreferences: toDatePreferences(settings),
@@ -66,7 +70,7 @@ export async function loadViewerSession({ fetch, locals, cookies, request, platf
     };
     locals.theme = toTheme(toDarkKnight(settings));
     return data;
-  } catch {
-    return loggedOut;
+  } catch (cause) {
+    return isApiRateLimited(cause) ? { ...loggedOut, rateLimited: true } : loggedOut;
   }
 }

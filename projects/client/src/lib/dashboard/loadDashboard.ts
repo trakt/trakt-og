@@ -14,6 +14,7 @@ import { fetchRecapRibbon } from './fetchRecapRibbon.ts';
 import { fetchRecentlyWatched } from './fetchRecentlyWatched.ts';
 import { fetchRecommendations } from './fetchRecommendations.ts';
 import { fetchSchedule } from './fetchSchedule.ts';
+import { isStandardApi } from '../api/isStandardApi.ts';
 import { fetchSocialFeed } from './fetchSocialFeed.ts';
 import { fetchUpNext } from './fetchUpNext.ts';
 import { fetchWatchlist } from './fetchWatchlist.ts';
@@ -117,7 +118,8 @@ export async function loadDashboard({ fetch, panelFetch = fetch, locals, cookies
     recentlyWatched: unless(hidden.recentlyWatched, () =>
       fetchRecentlyWatched({ fetch: panelFetch, token, datePreferences: layout.datePreferences }),
     ),
-    socialFeed: unless(hidden.socialFeed, () =>
+    // Its feed is Official-only, so a Standard app never shows the panel.
+    socialFeed: unless(hidden.socialFeed || isStandardApi(), () =>
       fetchSocialFeed({
         fetch: panelFetch,
         token,

@@ -31,7 +31,7 @@ const status = $derived(statuses[key]);
 </script>
 
 <Specimen title="Error pages"
-  note="Pick an error: each has its own still, line and motion layer, which stops with reduced motion. The still fades in from 30% across with no seam; the 500 is falling code alone. Offline is a dialog over the page, held until the connection is back. The buttons do nothing here.">
+  note="Pick an error: each has its own still, line and motion layer, which stops with reduced motion. The still fades in from 30% across with no seam; the 500 is falling code alone. Offline is a dialog over the page, held until the connection is back. A 429 from the API rate limiting the viewer is Trakt API Error, its line swapped for how long to wait. The buttons do nothing here.">
   <DemoChoice label="Error" {options} bind:value={key} />
   <div class="frame">
     <ErrorScene

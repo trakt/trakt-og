@@ -3,6 +3,8 @@ import '$lib/styles/tokens.css';
 import '$lib/styles/base.css';
 import { invalidateAll } from '$app/navigation';
 import { page } from '$app/state';
+import { isStandardApi } from '$lib/api/isStandardApi';
+import { logHidden } from '$lib/api/logHidden';
 import { syncSession } from '$lib/auth/syncSession';
 import { userManager } from '$lib/auth/userManager';
 import CheckinDialog from '$lib/components/checkin/CheckinDialog.svelte';
@@ -52,6 +54,7 @@ $effect(() => {
 });
 
 onMount(() => {
+  if (isStandardApi()) logHidden('Where to Watch, streaming filters and services, the Social Feed and list collaborators');
   const stopSession = syncSession({
     manager: userManager(),
     hasSession: data.hasSession,
@@ -73,7 +76,7 @@ onMount(() => {
     {#if showApp}
       {#if !errored}
         <a class="skip" href="#content">Skip to content</a>
-        <Header user={data.user} renewing={data.tokenExpired} searchType={data.searchType} {darkKnight} />
+        <Header user={data.user} renewing={data.tokenExpired || data.rateLimited} searchType={data.searchType} {darkKnight} />
       {/if}
       <main id="content" tabindex="-1">
         {@render children()}

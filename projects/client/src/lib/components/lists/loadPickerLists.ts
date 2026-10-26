@@ -1,4 +1,5 @@
 import { z } from 'zod/v4';
+import { isApiUnavailable } from '../../api/isApiUnavailable.ts';
 import { rawApiFetch } from '../../api/rawApiFetch.ts';
 import type { ListTarget } from './ListTarget.ts';
 import { loadListCatalog } from './loadListCatalog.ts';
@@ -6,16 +7,8 @@ import { loadListCatalog } from './loadListCatalog.ts';
 // Built-in rows (watchlist, favorites) can come without a list id.
 const membershipSchema = z.array(z.object({ ids: z.object({ trakt: z.number().nullish() }), type: z.string() }));
 
-/**
- * Which of the viewer's lists hold this item. Seasons and episodes read list ids only: their watchlist state comes
- * from the overlay the page already loaded, so `watchlisted` is left out.
- */
-async function membership(fetch: typeof globalThis.fetch, target: ListTarget) {
-  if (target.type === 'season' || target.type === 'episode') {
-    const response = await rawApiFetch({ fetch, path: `/v3/${target.type}s/${target.id}/me/lists` });
-    if (!response.ok) throw new Error('List membership unavailable');
-    return { ids: new Set(z.array(z.number()).parse(await response.json())), watchlisted: undefined };
-  }
+/** The item's lists from v2's `/listed`, a page at a time. */
+async function listedMembership(fetch: typeof globalThis.fetch, target: ListTarget) {
   const ids = new Set<number>();
   let watchlisted = false;
   let page = 1;
@@ -34,6 +27,20 @@ async function membership(fetch: typeof globalThis.fetch, target: ListTarget) {
     page += 1;
   } while (page <= pages);
   return { ids, watchlisted };
+}
+
+/**
+ * Which of the viewer's lists hold this item. Seasons and episodes read list ids only: their watchlist state comes
+ * from the overlay the page already loaded, so `watchlisted` is left out. Their v3 read is Official-only, so other
+ * client IDs page v2's `/listed` instead.
+ */
+async function membership(fetch: typeof globalThis.fetch, target: ListTarget) {
+  if (target.type !== 'season' && target.type !== 'episode') return listedMembership(fetch, target);
+
+  const response = await rawApiFetch({ fetch, path: `/v3/${target.type}s/${target.id}/me/lists` });
+  if (isApiUnavailable(response)) return { ...(await listedMembership(fetch, target)), watchlisted: undefined };
+  if (!response.ok) throw new Error('List membership unavailable');
+  return { ids: new Set(z.array(z.number()).parse(await response.json())), watchlisted: undefined };
 }
 
 /** Fresh own and collaborative lists, and this item's membership, when the picker opens. */

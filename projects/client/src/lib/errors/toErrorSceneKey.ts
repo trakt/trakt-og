@@ -3,6 +3,8 @@ import type { ErrorSceneKey } from './ErrorSceneKey.ts';
 const BY_STATUS: Readonly<Record<number, ErrorSceneKey>> = {
   400: 'badLink',
   404: 'notFound',
+  // The API rate limiting the viewer: its message says how long to wait.
+  429: 'upstream',
   502: 'upstream',
   503: 'maintenance',
   504: 'timeout',

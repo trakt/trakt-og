@@ -6,6 +6,7 @@ import { loadFavoriteRows } from '../favorites/loadFavoriteRows.ts';
 import type { LastActivitiesResponse } from '@trakt/api';
 import type { OverlaySlices } from './OverlaySlices.ts';
 import { loadWatchlistExtras } from './loadWatchlistExtras.ts';
+import { isApiUnavailable } from '../api/isApiUnavailable.ts';
 import { z } from 'zod/v4';
 
 /** GETs an apiz path (`/sync/...`) with the user's token. */
@@ -75,6 +76,33 @@ function idsOfType(items: readonly TypedItem[], type: string): ReadonlySet<numbe
       .map(idOf)
       .filter((id) => id !== undefined),
   );
+}
+
+/** The movie and show watchlists from v2, for a client ID that may not call v3's minimal one. */
+async function watchlistMedia(get: ApiGet) {
+  const [movies, shows] = await Promise.all(
+    (['movies', 'shows'] as const).map((type) =>
+      getPages({ get, path: `/sync/watchlist/${type}?limit=${PAGE_LIMIT}`, schema: typedItemSchema }),
+    ),
+  );
+  return { movie: idsOfType(movies ?? [], 'movie'), show: idsOfType(shows ?? [], 'show') };
+}
+
+/** The viewer's own and collaborative list ids: v3 in one read, or v2's two for a client ID that may not call v3. */
+async function listIds(get: ApiGet): Promise<readonly number[]> {
+  const v3 = await get('/v3/users/me/lists');
+  if (!isApiUnavailable(v3)) {
+    if (!v3.ok) throw new Error(`/v3/users/me/lists returned ${v3.status}`);
+    return z
+      .array(z.object({ id: z.number() }))
+      .parse(await v3.json())
+      .map(({ id }) => id);
+  }
+
+  const [own, shared] = await Promise.all(
+    ['/users/me/lists', '/users/me/lists/collaborations'].map((path) => getJson({ get, path, schema: z.array(ids) })),
+  );
+  return [...(own?.body ?? []), ...(shared?.body ?? [])].map((list) => list.ids.trakt);
 }
 
 function byNumericKey<T>(record: Record<string, T>): ReadonlyMap<number, T> {
@@ -265,6 +293,7 @@ export const sliceSources: { [K in keyof OverlaySlices]: SliceSource<K> } = {
       )}|types-v2`,
     load: async (get) => {
       const [response, extras] = await Promise.all([get('/v3/users/me/watchlist/minimal'), loadWatchlistExtras(get)]);
+      if (isApiUnavailable(response)) return { ...(await watchlistMedia(get)), ...extras };
       if (!response.ok) throw new Error('Watchlist unavailable');
       const body = z.object({ movies: z.array(z.number()), shows: z.array(z.number()) }).parse(await response.json());
       return { movie: new Set(body.movies), show: new Set(body.shows), ...extras };
@@ -338,16 +367,10 @@ export const sliceSources: { [K in keyof OverlaySlices]: SliceSource<K> } = {
     activity: (a) => join(a.lists?.updated_at, a.collaborations?.updated_at),
     load: async (get) => {
       // Own and collaborative lists come back without items, so membership costs one request per list.
-      const { body: lists } = await getJson({
-        get,
-        path: '/v3/users/me/lists',
-        schema: z.array(z.object({ id: z.number() })),
-      });
+      const lists = await listIds(get);
       const items = (
         await Promise.all(
-          lists.map(({ id }) =>
-            getPages({ get, path: `/lists/${id}/items?limit=${PAGE_LIMIT}`, schema: typedItemSchema }),
-          ),
+          lists.map((id) => getPages({ get, path: `/lists/${id}/items?limit=${PAGE_LIMIT}`, schema: typedItemSchema })),
         )
       ).flat();
       return {

@@ -6,6 +6,7 @@
   left inside it so the copy reads. Everything over it is dark in both themes.
 -->
 <script lang="ts">
+import { isStandardApi } from '$lib/api/isStandardApi';
 import TagPills from '$lib/components/labels/TagPills.svelte';
 import VideoPopup from '$lib/components/dialog/VideoPopup.svelte';
 import { youtubeEmbedUrl } from '$lib/components/dialog/youtubeEmbedUrl';
@@ -61,7 +62,7 @@ const trailer = $derived(card.trailer && youtubeEmbedUrl(card.trailer) ? card.tr
         {#if card.overview}<p class="overview">{card.overview}</p>{/if}
         <div class="actions">
           <a class="button primary" href={card.href}>More info</a>
-          {#if card.released}
+          {#if card.released && !isStandardApi()}
             <button
               type="button"
               class="button accent"

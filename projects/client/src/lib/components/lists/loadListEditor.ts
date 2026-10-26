@@ -1,11 +1,16 @@
 import { api } from '../../api/api.ts';
+import { isApiUnavailable } from '../../api/isApiUnavailable.ts';
+import { isStandardApi } from '../../api/isStandardApi.ts';
 import { rawApiFetch } from '../../api/rawApiFetch.ts';
 import { collaboratorsSchema } from '../../users/lists/collaboratorsSchema.ts';
 import { editableListSchema } from './editableListSchema.ts';
 import { loadFollowerCandidates } from './loadFollowerCandidates.ts';
 import type { ListDraft } from './ListDraft.ts';
 
-/** Dialog interaction reads; never mix a failed collaborator read with an empty selection. */
+/**
+ * Dialog interaction reads; never mix a failed collaborator read with an empty selection. A client ID that may not
+ * call the Official-only collaborator route edits the list without them.
+ */
 export async function loadListEditor({ fetch, id }: { fetch: typeof globalThis.fetch; id: number | null }) {
   const client = api({ fetch });
   const [candidates, summary, current, personal] = await Promise.all([
@@ -16,10 +21,15 @@ export async function loadListEditor({ fetch, id }: { fetch: typeof globalThis.f
   ]);
   if (personal.status !== 200) throw new Error('Could not load your lists');
   const count = Number(personal.headers.get('x-pagination-item-count')) || personal.body.length;
-  if (id === null) return { candidates, count, initial: undefined, shareLink: undefined };
-  if (summary?.status !== 200 || current?.status !== 200) throw new Error('Could not load this list');
+  if (id === null) {
+    return { candidates, count, initial: undefined, shareLink: undefined, collaboratorsUnavailable: isStandardApi() };
+  }
+  const collaboratorsUnavailable = isApiUnavailable(current);
+  if (summary?.status !== 200 || (current?.status !== 200 && !collaboratorsUnavailable)) {
+    throw new Error('Could not load this list');
+  }
   const list = editableListSchema.parse(summary.body);
-  const collaborators = collaboratorsSchema.parse(await current.json());
+  const collaborators = collaboratorsUnavailable ? [] : collaboratorsSchema.parse(await current?.json());
   const selected = collaborators.map((user) => user.ids.slug ?? user.username);
   const known = new Set(candidates.map((user) => user.slug));
   const initial: ListDraft = {
@@ -35,6 +45,7 @@ export async function loadListEditor({ fetch, id }: { fetch: typeof globalThis.f
   return {
     count,
     initial,
+    collaboratorsUnavailable,
     // Only a list saved as Link has a share URL worth copying.
     shareLink: list.privacy === 'link' ? (list.share_link ?? undefined) : undefined,
     candidates: [

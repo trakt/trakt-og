@@ -12,6 +12,8 @@ import { resolve } from '$app/paths';
 import type { Snippet } from 'svelte';
 import { browser } from '$app/environment';
 import { apiQueue } from '$lib/api/apiQueue';
+import { isApiUnavailable } from '$lib/api/isApiUnavailable';
+import { logHidden } from '$lib/api/logHidden';
 import { rawApiFetch } from '$lib/api/rawApiFetch';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import LoadFailed from '$lib/components/empty/LoadFailed.svelte';
@@ -132,6 +134,13 @@ function changePages(pages: number) {
   saved = pages;
   savedRows.write(storageKey, pages);
 }
+
+// A client ID that may not call the feed gets no panel, and a note in the browser console.
+$effect(() => {
+  feed.catch((error: unknown) => {
+    if (isApiUnavailable(error)) logHidden('The Social Feed');
+  });
+});
 
 // After the feed lands: who's watching, now and every 2 minutes while visible, and a clock for the minutes left.
 $effect(() => {
@@ -342,8 +351,15 @@ const boardOf = (items: readonly SocialItem[] | undefined) =>
       </DashboardPanel>
     {/if}
   {/if}
-{:catch}
-  {@render panel(false, broken)}
+{:catch error}
+  {#if !isApiUnavailable(error)}
+    {#snippet broken()}
+      <div class="notice">
+        <LoadFailed what="Social Feed" {error} />
+      </div>
+    {/snippet}
+    {@render panel(false, broken)}
+  {/if}
 {/await}
 
 {#snippet pending()}
@@ -362,12 +378,6 @@ const boardOf = (items: readonly SocialItem[] | undefined) =>
   action={{ href: `${resolve('/about')}#about-team`, text: 'Meet the team' }}>
     {#snippet picks()}<TeamToFollow />{/snippet}
   </PanelPrompt>
-{/snippet}
-
-{#snippet broken()}
-  <div class="notice">
-  <LoadFailed what="Social Feed" />
-</div>
 {/snippet}
 
 <style>

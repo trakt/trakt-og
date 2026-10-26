@@ -35,6 +35,8 @@ interface Props {
   shareLink?: string;
   fieldErrors?: Readonly<Record<string, readonly string[]>>;
   followingError?: boolean;
+  /** The client ID may not call the collaborator routes, so the field is left out. */
+  collaboratorsUnavailable?: boolean;
   onsave: (draft: ListDraft) => void;
   onclose?: () => void;
 }
@@ -46,6 +48,7 @@ let {
   vip = false,
   following,
   followingError = false,
+  collaboratorsUnavailable = false,
   onsave,
   onclose,
   initial,
@@ -109,6 +112,7 @@ const options = $derived([{
     <ListSettingsRow bind:privacy={draft.privacy} bind:allowComments={draft.allow_comments}
       bind:displayNumbers={draft.display_numbers} {shareLink} disabled={busy} />
     <ListSortField bind:by={draft.sort_by} bind:how={draft.sort_how} {vip} disabled={busy} />
+    {#if !collaboratorsUnavailable}
     <div class="collaborators">
       <FieldLabel text="Collaborators" id="{id}-collaborators" />
       <MultiSelect variant="list" bind:value={draft.collaborators} {options} label="Collaborators" placeholder="Search people you follow..."
@@ -116,6 +120,7 @@ const options = $derived([{
       {#if followingError}<p class="error" role="status">Couldn't load collaborators. Close and reopen to retry.</p>{/if}
       {#if fieldErrors.collaborators}<p class="error" role="alert">{fieldErrors.collaborators.join(' ')}</p>{/if}
     </div>
+    {/if}
   </DialogForm>
 </Dialog>
 

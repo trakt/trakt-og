@@ -51,6 +51,35 @@ describe('saveNote', () => {
     expect(seen).toEqual([{ method: 'PUT', path: '/v3/users/me/notes/5', body: { type: 'note', notes: 'Changed' } }]);
   });
 
+  describe('when the client ID may not call v3', () => {
+    const refusedV3 = () =>
+      server.use(
+        http.all('https://apiz.trakt.tv/v3/users/me/notes/:id', () => new HttpResponse('Forbidden', { status: 403 })),
+        http.put('https://apiz.trakt.tv/notes/:id', async ({ request }) => {
+          await record(request);
+          return HttpResponse.json({ ...saved, notes: 'Changed' });
+        }),
+        http.delete('https://apiz.trakt.tv/notes/:id', async ({ request }) => {
+          await record(request);
+          return new HttpResponse(null, { status: 204 });
+        }),
+      );
+
+    it('should edit through v2', async () => {
+      refusedV3();
+      const result = await saveNote({ fetch, item: person, note: existing, text: 'Changed' });
+      expect(seen).toEqual([{ method: 'PUT', path: '/notes/5', body: { notes: 'Changed' } }]);
+      expect(result).toMatchObject({ ok: true, note: { id: 5, text: 'Changed' } });
+    });
+
+    it('should delete through v2', async () => {
+      refusedV3();
+      const result = await saveNote({ fetch, item: person, note: existing, text: '' });
+      expect(seen.map(({ method, path }) => `${method} ${path}`)).toEqual(['DELETE /notes/5']);
+      expect(result).toEqual({ ok: true, note: null });
+    });
+  });
+
   it('should delete an existing note saved blank', async () => {
     const result = await saveNote({ fetch, item: person, note: existing, text: '   ' });
     expect(seen.map(({ method, path }) => `${method} ${path}`)).toEqual(['DELETE /v3/users/me/notes/5']);

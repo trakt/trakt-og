@@ -28,7 +28,10 @@ import { viewerFetch } from '../../auth/viewerFetch.ts';
 
 interface Props {
   user: HeaderUser | null;
-  /** The viewer's token expired and the browser is renewing it, so the bar stays signed in without a user yet. */
+  /**
+   * The viewer has a session but no user yet, so the bar stays signed in: the browser is renewing an expired token, or
+   * the API rate limited the settings read.
+   */
   renewing?: boolean;
   /** The `search_type` cookie, so SSR renders the search type picker's label. */
   searchType?: string;

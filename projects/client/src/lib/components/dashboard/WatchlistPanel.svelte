@@ -107,18 +107,17 @@ const allText = (total: number) => `All ${total.toLocaleString('en-US')} ${total
 />
   {/snippet}
   {@render panel(false, cards, list, list.cards.length > 0 ? navigator : undefined)}
-{:catch}
+{:catch error}
+  {#snippet failed()}
+    <div class="notice">
+      <LoadFailed what="Watchlist" {error} />
+    </div>
+  {/snippet}
   {@render panel(false, failed)}
 {/await}
 
 {#snippet pending()}
   <div class="shimmers"><CardShimmerRow columns={PER_ROW} ratio="poster" /></div>
-{/snippet}
-
-{#snippet failed()}
-  <div class="notice">
-  <LoadFailed what="Watchlist" />
-</div>
 {/snippet}
 
 <style>

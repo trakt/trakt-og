@@ -46,7 +46,8 @@ describe('loadMovieReleases', () => {
     const data = await load();
     expect(requests).toHaveLength(2);
     expect(requests.every((request) => !request.headers.has('authorization'))).toBe(true);
-    expect(data.countries.at(0)?.rows.at(0)?.dateText).toBe('1999 Oct 15');
+    expect(data.releases.countries.at(0)?.dates.at(0)?.dateText).toBe('1999 Oct 15');
+    expect(data.releases.featured).toMatchObject({ code: 'us', tag: 'Original Country' });
     expect(data.movie.href).toBe('/movies/fight-club-1999');
   });
   it('should retain the releases subpage on a canonical slug redirect', async () => {
@@ -64,6 +65,6 @@ describe('loadMovieReleases', () => {
   });
   it('should expose an empty release list for the accessible empty state', async () => {
     server.use(http.get('https://apiz.trakt.tv/movies/:id/releases', () => HttpResponse.json([])));
-    expect((await load()).countries).toEqual([]);
+    expect((await load()).releases.countries).toEqual([]);
   });
 });

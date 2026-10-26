@@ -8,6 +8,7 @@ import { imageUrl } from '../utils/imageUrl.ts';
 import { toMovieLinks } from './toMovieLinks.ts';
 import { toMovieReleases } from './toMovieReleases.ts';
 import { watchNowCountry } from '../settings/watchNowCountry.ts';
+import { dayIn } from '../utils/dayIn.ts';
 
 /** Public release dates never send a viewer token. */
 export async function loadMovieReleases({
@@ -52,6 +53,12 @@ export async function loadMovieReleases({
       poster: imageUrl(movie.images?.poster?.at(0), 'medium'),
       links: toMovieLinks({ movie }),
     },
-    countries: toMovieReleases({ releases: releases.body, originalCountry: movie.country, datePreferences }),
+    releases: toMovieReleases({
+      releases: releases.body,
+      originalCountry: movie.country,
+      viewerCountry: user ? country : null,
+      today: dayIn(new Date(), datePreferences.timeZone),
+      datePreferences,
+    }),
   };
 }

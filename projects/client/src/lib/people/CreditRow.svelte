@@ -79,6 +79,7 @@ const tags = $derived<TagPill[]>([
 
   &.faded:not(:hover, :focus-within) {
     opacity: var(--opacity-faded);
+    --faded-art-filter: var(--filter-faded);
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -102,6 +103,8 @@ const tags = $derived<TagPill[]>([
     inline-size: 100%;
     block-size: 100%;
     object-fit: cover;
+    filter: var(--faded-art-filter, none);
+    transition: filter var(--transition-card);
   }
 }
 

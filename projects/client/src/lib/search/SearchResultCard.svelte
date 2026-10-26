@@ -62,6 +62,7 @@ const poster = $derived(artwork === 'poster');
 
   &.faded:not(:hover, :focus-within) {
     opacity: var(--opacity-faded);
+    --faded-art-filter: var(--filter-faded);
   }
 
   & > :global(.quick-icons) {

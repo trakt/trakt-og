@@ -23,9 +23,11 @@ interface Props {
   ratingTarget?: RatingTarget;
   /** Episodes display their parent show's dropped and rewatching badges on the season poster. */
   showTarget?: RatingTarget & { readonly type: 'show' };
+  /** The viewer's last watched episode ("3x02"), on a dropped show's stamp. */
+  lastSeen?: string;
 }
 
-const { image, alt, posters, ratingTarget, showTarget, episodeBadge }: Props = $props();
+const { image, alt, posters, ratingTarget, showTarget, episodeBadge, lastSeen }: Props = $props();
 const badgeTarget = $derived(showTarget ?? ratingTarget);
 const state = $derived(badgeTarget ? overlay.state(badgeTarget.type, badgeTarget.id) : undefined);
 </script>
@@ -45,7 +47,7 @@ const state = $derived(badgeTarget ? overlay.state(badgeTarget.type, badgeTarget
     </div>
   {/if}
   {#if state?.rewatching}<RewatchingBadge date={state.rewatchingAt ? formatDate(state.rewatchingAt, page.data.datePreferences) : undefined} />{/if}
-  {#if state?.dropped && badgeTarget?.type === 'show'}<DroppedBadge target={{ ...badgeTarget, type: 'show' }} date={state.droppedAt ? formatDate(state.droppedAt, page.data.datePreferences) : undefined} />{/if}
+  {#if state?.dropped && badgeTarget?.type === 'show'}<DroppedBadge target={{ ...badgeTarget, type: 'show' }} date={state.droppedAt ? formatDate(state.droppedAt, page.data.datePreferences) : undefined} episode={lastSeen} />{/if}
   {#if ratingTarget}
     {@const rating = overlay.state(ratingTarget.type, ratingTarget.id).rating}
     {#if rating}<CornerRating {rating} />{/if}
@@ -65,7 +67,7 @@ const state = $derived(badgeTarget ? overlay.state(badgeTarget.type, badgeTarget
   box-shadow: var(--shadow-summary-poster);
 
   &.dropped img {
-    filter: grayscale(1);
+    filter: var(--filter-dropped);
   }
   & :is(img, .placeholder) {
     display: block;

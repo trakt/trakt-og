@@ -1,5 +1,5 @@
 <!--
-  One show on the progress page, as a ledger row: the poster; the title, its status menu (`ProgressStatus`), the tick
+  One show on the progress page, as a ledger row: the poster, stamped on the Dropped tab; the title, its status menu (`ProgressStatus`), the tick
   bar, the counts as stats, then Seasons beside a chip in the watched tag's colors linking the episode you last watched; then the up-next card,
   og's fanart card for the next episode with its quick icons, or the show's once every episode is done. The poster and
   the card are the same height, and the text about matches them. Seasons reads the show's catalog (`onneed`) and
@@ -13,6 +13,7 @@ import { nearViewport } from '$lib/utils/nearViewport';
 import { SvelteSet } from 'svelte/reactivity';
 import Shimmer from '$lib/components/loading/Shimmer.svelte';
 import FanartCard from '$lib/components/media/FanartCard.svelte';
+import DroppedBadge from '$lib/components/media/DroppedBadge.svelte';
 import { quickIconFill } from '$lib/components/media/quickIconFill';
 import { removeCard } from '$lib/components/media/removeCard';
 import TickBar from '$lib/components/media/TickBar.svelte';
@@ -143,12 +144,13 @@ function toggleSeason(season: number) {
 <article bind:this={article} class="progress-row" aria-labelledby="progress-{row.id}"
   {@attach nearViewport(() => { if (findsNext) onneed?.(); })}
   out:removeCard|global={() => removedByAction}>
-  <a class="poster" href={row.href} tabindex="-1" aria-hidden="true">
+  <a class={['poster', { dropped: type === 'dropped' }]} href={row.href} tabindex="-1" aria-hidden="true">
     {#if row.poster}
       <img src={row.poster} alt="" loading="lazy" decoding="async" />
     {:else}
       <span class="placeholder"></span>
     {/if}
+    {#if type === 'dropped'}<DroppedBadge />{/if}
   </a>
 
   <div class="main-info">
@@ -233,6 +235,7 @@ function toggleSeason(season: number) {
 }
 
 .poster {
+  position: relative;
   display: block;
 
   & :is(img, .placeholder) {
@@ -241,6 +244,10 @@ function toggleSeason(season: number) {
     aspect-ratio: var(--ratio-poster);
     border-radius: var(--radius-object);
     object-fit: cover;
+  }
+
+  &.dropped img {
+    filter: var(--filter-dropped);
   }
 
   & .placeholder {

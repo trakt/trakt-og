@@ -1,25 +1,36 @@
 <!--
-  OG's dropped badge (`global.js:975-986`): a minus circle over a darkened poster or fanart. Put it inside the
-  positioned image box; the card greys its image out. Clicking the badge opens the shared restore confirmation.
+  The dropped stamp: a tilted "Dropped" rubber stamp with the drop date, over a poster or fanart the card fades toward
+  gray. Put it inside the positioned image box; it sizes itself by the box's shorter side. With a target, the stamp is
+  the button that opens the shared restore confirmation, and the art around it still clicks through to its link.
 -->
 <script lang="ts">
 import VisibilityControl from '$lib/components/visibility/VisibilityControl.svelte';
 import type { VisibilityTarget } from '$lib/components/visibility/VisibilityTarget';
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import circleMinus from '$lib/icons/regular/circle-minus.svg?raw';
-const { target, date }: { target?: VisibilityTarget; date?: string } = $props();
+
+interface Props {
+  target?: VisibilityTarget;
+  date?: string;
+  /** The last episode watched ("3x02"), on the summary poster. */
+  episode?: string;
+}
+
+const { target, date, episode }: Props = $props();
+const label = $derived(['Dropped', date && `on ${date}`, episode && `after ${episode}`].filter(Boolean).join(' '));
 </script>
+
+{#snippet stamp()}
+  <span class="stamp">
+    <span class="word">Dropped</span>
+    {#if date}<span class="line">{date}</span>{/if}
+    {#if episode}<span class="line">Last seen {episode}</span>{/if}
+  </span>
+{/snippet}
 
 <div class="dropped-badge">
   {#if target}
-    <VisibilityControl {target} action="restore" variant="badge" tooltip={date ? `Dropped on\n${date}` : 'Dropped'}><Icon svg={circleMinus} /></VisibilityControl>
+    <VisibilityControl {target} action="restore" variant="badge" tooltip="Restore this show">{@render stamp()}</VisibilityControl>
   {:else}
-  <Tooltip text={date ? `Dropped on\n${date}` : 'Dropped'} placement="bottom">
-    {#snippet trigger(tooltip)}
-      <span role="img" aria-label="Dropped" {...tooltip}><Icon svg={circleMinus} /></span>
-    {/snippet}
-  </Tooltip>
+    <span role="img" aria-label={label}>{@render stamp()}</span>
   {/if}
 </div>
 
@@ -29,25 +40,56 @@ const { target, date }: { target?: VisibilityTarget; date?: string } = $props();
   inset: 0;
   display: grid;
   place-items: center;
-  background: var(--gradient-dropped);
-  color: var(--color-dropped-badge);
-  font-size: var(--font-size-dropped-badge);
-  line-height: 1;
-  transition: color var(--transition-card);
+  container-type: size;
+  pointer-events: none;
 
-  &:hover {
-    color: var(--color-dropped-badge-hover);
+  & > :global(*) {
+    pointer-events: auto;
   }
 }
 
-@media (width < 768px) {
-  .dropped-badge {
-    font-size: var(--font-size-dropped-badge-small);
-  }
+.stamp {
+  display: grid;
+  justify-items: center;
+  gap: 0.15em;
+  padding: var(--dropped-stamp-padding);
+  border: var(--dropped-stamp-border) solid currentcolor;
+  border-radius: var(--radius-dropped-stamp);
+  background-color: var(--color-dropped-stamp-bg);
+  box-shadow:
+    inset 0 0 0 calc(var(--dropped-stamp-border) / 2) var(--color-dropped-stamp-bg),
+    inset 0 0 0 var(--dropped-stamp-border) currentcolor;
+  color: var(--color-dropped-stamp);
+  font-family: var(--font-headings);
+  font-size: var(--font-size-dropped-stamp);
+  font-weight: var(--font-weight-dropped-stamp);
+  line-height: 1;
+  white-space: nowrap;
+  transform: rotate(var(--dropped-stamp-tilt));
+  transition: background-color var(--transition-card), color var(--transition-card);
+}
+
+.dropped-badge :global(.visibility-trigger:is(:hover, :focus-visible) .stamp) {
+  background-color: var(--color-dropped-stamp-hover-bg);
+  color: var(--color-dropped-stamp-hover);
+  box-shadow:
+    inset 0 0 0 calc(var(--dropped-stamp-border) / 2) var(--color-dropped-stamp-hover-bg),
+    inset 0 0 0 var(--dropped-stamp-border) currentcolor;
+}
+
+.word {
+  padding-inline-start: var(--letter-spacing-dropped-stamp);
+  letter-spacing: var(--letter-spacing-dropped-stamp);
+  text-transform: uppercase;
+}
+
+.line {
+  font-size: var(--font-size-dropped-stamp-line);
+  font-variant-numeric: tabular-nums;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .dropped-badge {
+  .stamp {
     transition: none;
   }
 }

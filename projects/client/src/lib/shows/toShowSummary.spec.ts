@@ -184,6 +184,15 @@ describe('toShowSummary', () => {
     });
   });
 
+  it('should name the last episode watched for the dropped stamp', () => {
+    const watched = toShowSummary({ ...base, progress: { next: null, last: episode(3, 2, null) } });
+    const unwatched = toShowSummary({ ...base, progress: { next: episode(1, 1, null), last: null } });
+
+    expect(watched.lastSeen).toBe('3x02');
+    expect(unwatched.lastSeen).toBeUndefined();
+    expect(toShowSummary(base).lastSeen).toBeUndefined();
+  });
+
   it('should count seasons without the specials', () => {
     const summary = toShowSummary({ ...base, seasons: [season(0, []), season(1, []), season(2, [])] });
 

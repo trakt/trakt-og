@@ -297,7 +297,7 @@ const restoreTarget = $derived(target?.type === 'show' ? { ...target, type: 'sho
   }
 
   .dropped & .image {
-    filter: grayscale(1);
+    filter: var(--filter-dropped);
   }
 }
 

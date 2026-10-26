@@ -3,6 +3,7 @@ import { page } from '$app/state';
 import RecommendationSpotlight from '$lib/components/dashboard/RecommendationSpotlight.svelte';
 import FrameGrid from '$lib/components/frame/FrameGrid.svelte';
 import FanartCard from '$lib/components/media/FanartCard.svelte';
+import DroppedBadge from '$lib/components/media/DroppedBadge.svelte';
 import { mediaQuickIcons } from '$lib/components/media/mediaQuickIcons';
 import OnDeckCard from '$lib/components/media/OnDeckCard.svelte';
 import type { OnDeckItem } from '$lib/components/media/OnDeckItem';
@@ -32,6 +33,7 @@ const show = {
   released: true,
   rating: breakingBad.rating,
 } as const;
+const dropTarget = { type: 'show', id: breakingBad.id, title: breakingBad.title } as const;
 const icons = $derived(mediaQuickIcons({ item: show, state: overlay.state('show', show.id), datePreferences: dates }));
 const upNext: OnDeckItem = {
   showId: breakingBad.id,
@@ -87,8 +89,26 @@ const recommendation: Recommendation = {
   </SummaryActionMenu>
 {/snippet}
 
-<Specimen title="Dropped badge" row
-  note="A dropped show greys out under the badge, on posters and fanart alike. Click it to restore the show.">
+<Specimen title="Dropped stamp" row
+  note="A dropped show fades toward gray under a tilted Dropped stamp with the drop date, on posters and fanart alike. The stamp is the restore button; the art around it still opens the show. The summary poster adds the last episode you watched, and a progress row's poster takes the bare word, since its status already says when.">
+  <Variant label="Card, with the drop date">
+    <div class="poster stamp-box">
+      <img src={breakingBad.posterThumb} alt="" />
+      <DroppedBadge target={dropTarget} date="Jul 2, 2024" />
+    </div>
+  </Variant>
+  <Variant label="Summary poster">
+    <div class="poster stamp-box">
+      <img src={breakingBad.poster} alt="" />
+      <DroppedBadge target={dropTarget} date="Jul 2, 2024" episode="3x02" />
+    </div>
+  </Variant>
+  <Variant label="Progress row">
+    <div class="progress-poster stamp-box">
+      <img src={breakingBad.posterThumb} alt="" />
+      <DroppedBadge />
+    </div>
+  </Variant>
   <Variant label="Poster card">
     <div class="poster">
       <PosterCard href={breakingBad.href} title={breakingBad.title} image={breakingBad.posterThumb}
@@ -142,6 +162,24 @@ const recommendation: Recommendation = {
 
 .fanart {
   inline-size: calc(var(--container-lg) / 3);
+}
+
+/* The dropped stamp alone over its art, at a card's width (the summary sidebar's too) and a progress row's. */
+.stamp-box {
+  position: relative;
+
+  & img {
+    display: block;
+    inline-size: 100%;
+    aspect-ratio: var(--ratio-poster);
+    border-radius: var(--radius-object);
+    object-fit: cover;
+    filter: var(--filter-dropped);
+  }
+}
+
+.progress-poster {
+  inline-size: var(--progress-poster-width);
 }
 
 /* The dashboard's spotlight column, beside the poster rail. */

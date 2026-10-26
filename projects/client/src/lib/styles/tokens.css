@@ -488,11 +488,22 @@
   --color-badge-text: light-dark(#fff, #aaa);
   --color-badge-border: light-dark(#fff, #1d1d1d);
   --font-size-badge: 12px;
-  --color-dropped-badge: var(--gray-lightish);
-  --color-dropped-badge-hover: #fff;
   --gradient-dropped: radial-gradient(circle farthest-corner, rgb(0 0 0 / 0.5), rgb(0 0 0 / 0));
-  --font-size-dropped-badge: 40px;
-  --font-size-dropped-badge-small: 30px;
+  /* A dropped show's art, faded toward gray under its stamp. */
+  --filter-dropped: grayscale(0.85) contrast(0.9) brightness(0.85);
+  /* The dropped stamp: a tilted rubber stamp over the art, sized by the art's shorter side. */
+  --color-dropped-stamp: var(--brand-primary);
+  --color-dropped-stamp-bg: rgb(255 255 255 / 0.9);
+  --color-dropped-stamp-hover: #fff;
+  --color-dropped-stamp-hover-bg: var(--brand-primary);
+  --font-size-dropped-stamp: clamp(9px, 10cqmin, 24px);
+  --font-weight-dropped-stamp: 900;
+  --letter-spacing-dropped-stamp: 0.16em;
+  --dropped-stamp-tilt: -11deg;
+  --dropped-stamp-border: 0.15em; /* the outer ring; the inner ring sits half that inside */
+  --dropped-stamp-padding: 0.35em 0.5em 0.3em;
+  --radius-dropped-stamp: 0.25em;
+  --font-size-dropped-stamp-line: 0.6em; /* the date and Last seen lines, under the word */
 
   /* Dashboard panels */
   --color-panel-gray: light-dark(#e5e5e5, #1d1d1d); /* #ondeck-wrapper */

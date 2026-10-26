@@ -13,7 +13,7 @@ How an og page is built. The charts pages are the reference. Copy their shape.
 
 - Run the API calls and `await parent()` together (`Promise.all`), so there's no waterfall. `parent()` gives the layout's `user`, `settings` and `datePreferences`.
 - **Public endpoints go without the token:** `api({ fetch })`. apiz returns 401 to a stale cookie token even on a public route. Pass `token: locals.token` only on calls that are about the viewer.
-- Read pagination with `extractPageMeta`. A non-200 from apiz throws `error(502, …)`, and a 404 for a missing slug throws `error(404, …)`.
+- Read pagination with `extractPageMeta`. Guard required reads with `assertOk`: a 404 for a missing slug throws `error(404, …)`, the API's maintenance and timeouts throw 503 and 504, and any other non-200 throws `error(502, …)`. Each picks its own full-screen error page (`errors/errorScenes.ts`).
 - Off-contract responses (`rawApiFetch`, no contract, API) are parsed with zod at the loader. See `implementation.md` → API Responses.
 - Map rows with pure functions. Pass `now` and `datePreferences` in as arguments; don't read them inside. Anything formatted on the server uses `datePreferences.timeZone`, so SSR and hydration match.
 

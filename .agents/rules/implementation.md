@@ -21,7 +21,7 @@ Reach for these before writing your own:
 - **Query params:** `utils/positiveInt` (page and limit).
 - **Viewer settings:** `settings/watchNowCountry` (lowercase country, US default).
 - **Requests:** `auth/viewerFetch` (the browser's signed-in fetch), `api/okBody` (a 200's body or null),
-  `api/assertOk` (404/502 guard), `api/contractSchema` (zod 4 boundary over a `@trakt/api` contract).
+  `api/assertOk` (404, 503, 504 or 502 guard), `api/contractSchema` (zod 4 boundary over a `@trakt/api` contract).
 - **Dates:** `utils/dayIn` (`YYYY-MM-DD` in a zone), `utils/addDays` (UTC day math), `utils/unknownDate` and
   `utils/isUnknownDate` (OG's 1970 epoch for an unknown watch, collect or rating date).
 - **Labels:** `utils/seasonName` (Specials / Season N), `utils/capitalize`, `utils/countLabel` ("1,234 votes"),

@@ -5,6 +5,7 @@
   plain frames. Done saves the choice and reloads the dashboard, so the panels fill in with what was just tracked.
 -->
 <script lang="ts">
+import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import { invalidateAll } from '$app/navigation';
 import Container from '$lib/components/container/Container.svelte';
 import { dashboardPrefs } from '$lib/dashboard/dashboardPrefs';
@@ -93,7 +94,12 @@ async function close() {
               {/if}
             </span>
             {#if frame.unlock}
-              <span class={['unlock', { open: frame.filled }]} title={frame.unlock.text}>{frame.unlock.short}</span>
+              {@const unlock = frame.unlock}
+              <Tooltip text={unlock.text}>
+                {#snippet trigger(tooltip)}
+                  <span class={['unlock', { open: frame.filled }]} {...tooltip}>{unlock.short}</span>
+                {/snippet}
+              </Tooltip>
             {/if}
           </li>
         {/each}

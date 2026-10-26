@@ -3,6 +3,7 @@
   Reduced motion gets the still, and no pop.
 -->
 <script lang="ts">
+import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import xmark from '$lib/icons/solid/xmark.svg?raw';
 import type { GifEntry } from './GifEntry.ts';
@@ -17,9 +18,13 @@ const { gif, onremove }: { gif: GifEntry; onremove: () => void } = $props();
       {#if gif.still}<source media="(prefers-reduced-motion: reduce)" srcset={gif.still.url} />{/if}
       <img src={gif.preview.url} width={gif.preview.width} height={gif.preview.height} alt="The GIF you picked" />
     </picture>
-  <button type="button" class="remove" aria-label="Remove the GIF" title="Remove the GIF" onclick={onremove}>
-    <Icon svg={xmark} />
-  </button>
+  <Tooltip text="Remove the GIF">
+    {#snippet trigger(tooltip)}
+      <button type="button" class="remove" aria-label="Remove the GIF" onclick={onremove} {...tooltip}>
+        <Icon svg={xmark} />
+      </button>
+    {/snippet}
+  </Tooltip>
 </div>
 {/key}
 

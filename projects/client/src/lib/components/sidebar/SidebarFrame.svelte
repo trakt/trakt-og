@@ -15,6 +15,7 @@
   With `prevHref` or `nextHref`, `p` or left and `n` or right follow them, like OG's chart pages.
 -->
 <script lang="ts">
+import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import { goto } from '$app/navigation';
 import Icon from '$lib/icons/Icon.svelte';
 import sidebarIcon from '$lib/icons/regular/sidebar.svg?raw';
@@ -74,15 +75,23 @@ function onkeydown(event: KeyboardEvent) {
       {#if hidden}
         <div class="rail">
           {@render rail?.()}
-          <button type="button" class="show" title="Show sidebar ( [ )" onclick={toggle}>
-            <Icon svg={sidebarIcon} label="Show sidebar" />
-          </button>
+          <Tooltip text="Show sidebar ( [ )" placement="right">
+            {#snippet trigger(tooltip)}
+              <button type="button" class="show" onclick={toggle} {...tooltip}>
+                <Icon svg={sidebarIcon} label="Show sidebar" />
+              </button>
+            {/snippet}
+          </Tooltip>
         </div>
       {:else}
         <div class="scroll">{@render sidebar()}</div>
-        <button type="button" class="collapse" title="Collapse the sidebar ( [ )" onclick={toggle}>
-          <Icon svg={sidebarIcon} />Collapse
-        </button>
+        <Tooltip text="Collapse the sidebar ( [ )">
+          {#snippet trigger(tooltip)}
+            <button type="button" class="collapse" onclick={toggle} {...tooltip}>
+              <Icon svg={sidebarIcon} />Collapse
+            </button>
+          {/snippet}
+        </Tooltip>
       {/if}
     </div>
   </aside>

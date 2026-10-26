@@ -65,9 +65,11 @@ const dayLabel = (day: string) => {
       {#each group.commits as commit (commit.sha)}
         {@const tile = commitTypeTile(commit.type)}
         <li>
-          <span class="tile" style:--tile={tile.color} title={tile.label}>
-            <Icon svg={tile.icon} label={tile.label} />
-          </span>
+          <Tooltip text={tile.label}>
+            {#snippet trigger(tooltip)}
+              <span class="tile" style:--tile={tile.color} {...tooltip}><Icon svg={tile.icon} label={tile.label} /></span>
+            {/snippet}
+          </Tooltip>
           <p>
             <span class="section"><TagPills tags={[{ text: commit.section, tint: tile.color }]} /></span>{commit.subject}
           </p>
@@ -75,7 +77,9 @@ const dayLabel = (day: string) => {
             {#if commit.author}
               <Tooltip text={commit.author.login}>
                 {#snippet trigger(tooltip)}
-                  <img src={commit.author?.avatar} alt={commit.author?.login} {...tooltip} />
+                  <!-- Focusable, so the keyboard can show whose commit it is. -->
+                  <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+                  <img src={commit.author?.avatar} alt={commit.author?.login} tabindex="0" {...tooltip} />
                 {/snippet}
               </Tooltip>
             {/if}

@@ -4,6 +4,7 @@
     <WeekBars weeks={[{ start: '2026-10-04', count: 52, label: 'Oct 4 – 10' }]} marked="2026-10-04" onpick={jump} />
 -->
 <script lang="ts">
+import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 type Week = { readonly start: string; readonly count: number; readonly label: string };
 
 interface Props {
@@ -20,10 +21,15 @@ const max = $derived(Math.max(1, ...weeks.map(({ count }) => count)));
 <ul class="week-bars" aria-label="Weeks">
   {#each weeks as week (week.start)}
     <li>
-      <button type="button" class={{ marked: week.start === marked }} title="{week.label}: {week.count}"
-        aria-label="Jump to {week.label}, {week.count} {week.count === 1 ? 'item' : 'items'}"
-        style:--heat="calc(var(--mini-month-heat-max) * {week.count / max})" onclick={() => onpick(week.start)}
-      ></button>
+      <Tooltip text="{week.label}: {week.count}" placement="right">
+        {#snippet trigger(tooltip)}
+          <button type="button" class={{ marked: week.start === marked }}
+            aria-label="Jump to {week.label}, {week.count} {week.count === 1 ? 'item' : 'items'}"
+            style:--heat="calc(var(--mini-month-heat-max) * {week.count / max})" onclick={() => onpick(week.start)}
+            {...tooltip}
+          ></button>
+        {/snippet}
+      </Tooltip>
     </li>
   {/each}
 </ul>

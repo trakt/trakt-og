@@ -6,6 +6,7 @@
     <CalendarEpisodes group={entry.group} released={entry.released} onArt />
 -->
 <script lang="ts">
+import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import PromptPopover from '$lib/components/prompt/PromptPopover.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import clone from '$lib/icons/regular/clone.svg?raw';
@@ -32,14 +33,17 @@ const watched = $derived(
 const watchedCount = $derived(watched.filter(Boolean).length);
 </script>
 
-<button type="button" class={['episodes', { 'on-art': onArt, open }]} aria-expanded={open}
-  aria-controls="{uid}-episodes" popovertarget="{uid}-episodes" style:anchor-name="--episodes-{uid}"
-  title="{group.label}: {watchedCount} of {group.episodes.length} watched">
-  <Icon svg={clone} /><span class="long">{watchedCount > 0 ? `${watchedCount}/${group.episodes.length} watched` : `${group
-      .episodes.length} episodes`}</span><span class="short">{watchedCount > 0
-      ? `${watchedCount}/${group.episodes.length}`
-      : group.episodes.length}</span><Icon svg={chevron} />
-</button>
+<Tooltip text="{group.label}: {watchedCount} of {group.episodes.length} watched">
+  {#snippet trigger(tooltip)}
+    <button type="button" class={['episodes', { 'on-art': onArt, open }]} aria-expanded={open}
+      aria-controls="{uid}-episodes" popovertarget="{uid}-episodes" style:anchor-name="--episodes-{uid}" {...tooltip}>
+      <Icon svg={clone} /><span class="long">{watchedCount > 0 ? `${watchedCount}/${group.episodes.length} watched` : `${group
+          .episodes.length} episodes`}</span><span class="short">{watchedCount > 0
+          ? `${watchedCount}/${group.episodes.length}`
+          : group.episodes.length}</span><Icon svg={chevron} />
+    </button>
+  {/snippet}
+</Tooltip>
 {#if onArt}
   <span class="ticks" aria-hidden="true">{#each watched as done, i (i)}<i class:done></i>{/each}</span>
 {/if}

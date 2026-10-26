@@ -1,5 +1,6 @@
 <!-- "It came back from the archive!": a 1950s B-movie lobby card starring the Trakt mark as Frankenstein's monster. -->
 <script lang="ts">
+import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import { fitToParent } from './fitToParent.ts';
 import ReanimatedMonster from './ReanimatedMonster.svelte';
 </script>
@@ -25,7 +26,8 @@ import ReanimatedMonster from './ReanimatedMonster.svelte';
       <p class="billing">
         Starring <strong>your watch history</strong> · with <strong>every show you swore you'd finish</strong> · and
         <strong>the classic layout
-          <span class="vamp" title="I vant to suck your pixels.">revamped<span class="drip"></span></span></strong>
+          <Tooltip text="I vant to suck your pixels.">{#snippet trigger(tooltip)}<span class="vamp"
+              {...tooltip}>revamped<span class="drip"></span></span>{/snippet}</Tooltip></strong>
         as itself
       </p>
       <div class="footer">

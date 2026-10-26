@@ -7,6 +7,7 @@
   into one card when the viewer wants that.
 -->
 <script lang="ts">
+import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import { afterNavigate, goto } from '$app/navigation';
 import { page } from '$app/state';
 import CalendarFeed from '$lib/components/calendar/CalendarFeed.svelte';
@@ -444,9 +445,13 @@ const title = $derived(`${data.target === 'my' ? 'My ' : ''}${data.calendar.labe
 
   {#snippet rail()}
     <RailGroup>
-      <a class="today" href={href(data.target, data.calendar.slug)} title="Today, {todayLabel}">
-        <small>{monthName(data.today, 'short')}</small><b>{Number(data.today.slice(8))}</b>
-      </a>
+      <Tooltip text="Today, {todayLabel}" placement="right">
+        {#snippet trigger(tooltip)}
+          <a class="today" href={href(data.target, data.calendar.slug)} {...tooltip}>
+            <small>{monthName(data.today, 'short')}</small><b>{Number(data.today.slice(8))}</b>
+          </a>
+        {/snippet}
+      </Tooltip>
       <RailPager unit="month" label={monthName(data.window.start, 'short')}
         prevHref={href(data.target, data.calendar.slug, data.window.previous)}
         nextHref={href(data.target, data.calendar.slug, data.window.next)} />
@@ -454,8 +459,13 @@ const title = $derived(`${data.target === 'my' ? 'My ' : ''}${data.calendar.labe
     <RailGroup tools>{@render tools()}</RailGroup>
     <RailGroup>
       {#each views as view (view.value)}
-        <button type="button" class="rail-view" aria-pressed={display.view === view.value} title="{view.label} view"
-          onclick={() => setDisplay({ view: view.value })}><Icon svg={view.icon} label="{view.label} view" /></button>
+        <Tooltip text="{view.label} view" placement="right">
+          {#snippet trigger(tooltip)}
+            <button type="button" class="rail-view" aria-pressed={display.view === view.value}
+              onclick={() => setDisplay({ view: view.value })} {...tooltip}><Icon svg={view.icon} label="{view.label} view"
+              /></button>
+          {/snippet}
+        </Tooltip>
       {/each}
     </RailGroup>
     <RailGroup><WeekBars {weeks} marked={markedWeek} onpick={jump} /></RailGroup>

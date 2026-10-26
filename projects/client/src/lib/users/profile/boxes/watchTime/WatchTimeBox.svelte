@@ -1,5 +1,6 @@
 <!-- Watch Time: hours in the last 30 days, a bar per day with the busiest in full white, all time in the footer. -->
 <script lang="ts">
+import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import BoxChips from '$lib/components/users/profile-box/BoxChips.svelte';
 import BoxFigure from '$lib/components/users/profile-box/BoxFigure.svelte';
 import ProfileBox from '$lib/components/users/profile-box/ProfileBox.svelte';
@@ -17,7 +18,11 @@ const { view }: { view: WatchTimeView } = $props();
   <BoxFigure value={view.hours} label={[view.summary]} />
   <div class="bars" role="img" aria-label={view.chartLabel}>
     {#each view.days as day, i (i)}
-      <i class={{ peak: day.peak, zero: day.height === 0 }} style:--height="{day.height}%" title={day.title}></i>
+      <Tooltip toggles text={day.title}>
+        {#snippet trigger(tooltip)}
+          <i class={{ peak: day.peak, zero: day.height === 0 }} style:--height="{day.height}%" {...tooltip}></i>
+        {/snippet}
+      </Tooltip>
     {/each}
   </div>
 </ProfileBox>

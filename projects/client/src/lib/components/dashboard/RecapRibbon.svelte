@@ -8,6 +8,7 @@
   and leaves the page if they don't.
 -->
 <script lang="ts">
+import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import type { RecapMonth, RecapRibbon, RecapTag } from '$lib/dashboard/RecapRibbon';
 import Icon from '$lib/icons/Icon.svelte';
 import chartSimple from '$lib/icons/regular/chart-simple.svg?raw';
@@ -28,9 +29,15 @@ const leaves = (href: string) => href.startsWith('http');
 
 {#snippet label(tag: CellTag)}
   {#if tag.kind === 'year'}
-    <span class="tag" title={tag.title}><Icon svg={chartSimple} /><span class="word">{tag.title}</span></span>
+    <Tooltip text={tag.title}>
+      {#snippet trigger(tooltip)}
+        <span class="tag" {...tooltip}><Icon svg={chartSimple} /><span class="word">{tag.title}</span></span>
+      {/snippet}
+    </Tooltip>
   {:else if tag.kind === 'review'}
-    <span class="tag" title="Month in Review"><Icon svg={chartSimple} /></span>
+    <Tooltip text="Month in Review">
+      {#snippet trigger(tooltip)}<span class="tag" {...tooltip}><Icon svg={chartSimple} /></span>{/snippet}
+    </Tooltip>
   {:else}
     <span class="tag"><b>{tag.days}d</b><span class="word"> left</span></span>
   {/if}

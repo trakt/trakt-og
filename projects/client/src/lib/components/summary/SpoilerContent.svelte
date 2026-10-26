@@ -1,4 +1,5 @@
 <script lang="ts">
+import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import type { Snippet } from 'svelte';
 import type { Attachment } from 'svelte/attachments';
 const { hidden, inline = false, children }: { hidden: boolean; inline?: boolean; children: Snippet } = $props();
@@ -13,8 +14,13 @@ const focusRevealed: Attachment<HTMLElement> = (element) => {
   {@attach focusRevealed}>
   <svelte:element this={inline ? 'span' : 'div'} class={{ blurred }} inert={blurred}
     aria-hidden={blurred}>{@render children()}</svelte:element>
-  {#if blurred}<button type="button" aria-label="Click to reveal spoilers" title="Click to reveal"
-    onclick={()=>revealed=true}></button>
+  {#if blurred}
+    <Tooltip text="Click to reveal spoilers">
+      {#snippet trigger(tooltip)}
+        <button type="button" aria-label="Click to reveal spoilers" onclick={() => (revealed = true)} {...tooltip}
+        ></button>
+      {/snippet}
+    </Tooltip>
   {/if}
 </svelte:element>
 {:else}

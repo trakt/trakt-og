@@ -55,7 +55,9 @@ function onkeydown(event: KeyboardEvent) {
     <Icon svg={search} />
     <input type="search" aria-label="Search term" placeholder="Type a search term…" autocomplete="off"
       bind:value={draft} />
-    <kbd title="Press T to open this from anywhere on the page">T</kbd>
+    <Tooltip text="Press T to open this from anywhere on the page">
+      {#snippet trigger(tooltip)}<kbd {...tooltip}>T</kbd>{/snippet}
+    </Tooltip>
   </label>
 </FilterPopover>
 {:else}

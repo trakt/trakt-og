@@ -3,6 +3,7 @@
   history, or Add to Watchlist. The poster links to the title. A seen or watchlisted pick keeps its button lit.
 -->
 <script lang="ts">
+import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import posterPlaceholder from '$lib/assets/placeholders/poster.png';
 import WatchlistButton from '$lib/components/lists/WatchlistButton.svelte';
 import type { PickAction, StarterPick } from '$lib/firstNight/starterPicks';
@@ -25,9 +26,13 @@ $effect(() => {
 <!-- A pick links to its media page, a route resolve() can't type from a string. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 <div class="pick">
-  <a class="art" href={pick.href} title={pick.year ? `${pick.title} (${pick.year})` : pick.title}>
-    <img src={pick.image ?? posterPlaceholder} alt={pick.title} loading="lazy" />
-  </a>
+  <Tooltip text={pick.year ? `${pick.title} (${pick.year})` : pick.title}>
+    {#snippet trigger(tooltip)}
+      <a class="art" href={pick.href} {...tooltip}>
+        <img src={pick.image ?? posterPlaceholder} alt={pick.title} loading="lazy" />
+      </a>
+    {/snippet}
+  </Tooltip>
   <div class="action">
     {#if action === 'seen'}
       <SeenItButton target={{ ...target, airedEpisodes: pick.airedEpisodes, runtime: pick.runtime,

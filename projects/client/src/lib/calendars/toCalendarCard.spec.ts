@@ -58,6 +58,11 @@ describe('toCalendarCard', () => {
       expect(toCalendarCard(episode({}, { runtime: 60 }), UTC).pills).toEqual([{ segments: ['1h'] }, { text: 'FX' }]);
     });
 
+    it("should carry the episode's runtime, or else the show's, for the watched tooltip", () => {
+      expect(toCalendarCard(episode({ runtime: 58 }, { runtime: 60 }), UTC).runtime).toBe(58);
+      expect(toCalendarCard(episode({}, { runtime: 60 }), UTC).runtime).toBe(60);
+    });
+
     it("should use the viewer's zone and 24-hour clock", () => {
       const tags = toCalendarCard(episode(), { timeZone: 'America/New_York', hour24: true }).tags;
       expect(tags?.at(0)).toEqual({ text: '17:00' });
@@ -124,6 +129,7 @@ describe('toCalendarCard', () => {
       } as unknown as CalendarItem;
 
       expect(toCalendarCard(movie, UTC).pills).toEqual([{ text: 'R', kind: 'badge' }, { segments: ['1h 44m'] }]);
+      expect(toCalendarCard(movie, UTC).runtime).toBe(104);
     });
   });
 

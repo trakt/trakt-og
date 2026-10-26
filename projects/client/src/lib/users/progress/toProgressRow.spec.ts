@@ -97,6 +97,7 @@ describe('toProgressRow', () => {
           id: 139061,
           title: 'Game of Thrones 3x01',
           season: { show: 1390, number: 3, episode: 1 },
+          runtime: 55,
         },
       });
     });

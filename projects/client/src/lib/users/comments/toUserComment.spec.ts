@@ -9,6 +9,7 @@ const show = {
   ids: { trakt: 1, slug: 'andor' },
   genres: ['drama'],
   aired_episodes: 24,
+  runtime: 45,
   images: { poster: ['media.trakt.tv/images/shows/000/000/001/posters/medium/a.jpg.webp'] },
 };
 
@@ -35,6 +36,7 @@ describe('toUserComment', () => {
         image: 'https://media.trakt.tv/images/episodes/000/000/100/screenshots/thumb/b.jpg.webp',
         variant: 'screenshot',
         rating: 8.4,
+        runtime: 45,
         show: { text: 'Andor', href: '/shows/andor' },
         seasonOf: { show: 1, number: 2, episode: 1 },
       },

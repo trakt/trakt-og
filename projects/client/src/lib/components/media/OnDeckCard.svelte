@@ -45,6 +45,7 @@ const target = $derived({
   season: item.seasonNumber === undefined || item.episode === undefined
     ? undefined
     : { show: item.showId, number: item.seasonNumber, episode: item.episode },
+  runtime: item.runtime,
 });
 const showTarget = $derived({
   type: 'show' as const,
@@ -81,7 +82,7 @@ const tip = $derived(
     episodeBadge={item.complete ? undefined : item.episodeBadge}
     rewatching={item.rewatching}
     userRating={state.rating}
-    icons={{ listTarget: item.complete ? showTarget : target, watchTarget: item.complete ? showTarget : target, collectionTarget: item.complete ? showTarget : target, ratingTarget: item.complete ? showTarget : target, onWatchSave, fill: quickIconFill({ state }), rating: item.complete ? undefined : item.rating, listLabel: item.complete ? 'Add to watchlist' : 'Add to list', more }}
+    icons={{ listTarget: item.complete ? showTarget : target, watchTarget: item.complete ? showTarget : target, collectionTarget: item.complete ? showTarget : target, ratingTarget: item.complete ? showTarget : target, onWatchSave, fill: quickIconFill({ state, runtime: item.runtime }), rating: item.complete ? undefined : item.rating, listLabel: item.complete ? 'Add to watchlist' : 'Add to list', more }}
   >
     {#snippet progress()}
       <UnderProgress href={item.progressHref} percent={progressPercent(item.progress)} ticks={item.ticks} {tip} />

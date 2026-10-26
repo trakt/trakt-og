@@ -21,5 +21,7 @@ export type UserComment = {
     readonly seasonOf?: { readonly show: number; readonly number: number; readonly episode?: number };
     readonly rating?: number;
     readonly airedEpisodes?: number;
+    /** A movie's or episode's minutes, so the watched tooltip can total the plays. */
+    readonly runtime?: number;
   };
 };

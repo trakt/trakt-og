@@ -14,6 +14,7 @@ const media = z.object({
   season: z.number().nullish(),
   rating: z.number().nullish(),
   aired_episodes: z.number().nullish(),
+  runtime: z.number().nullish(),
   episode_type: z.string().nullish(),
   images: z
     .object({

@@ -85,7 +85,12 @@ describe('mapper: toMostWatched', () => {
         { id: 1, plays: '1 play' },
         { id: 3, plays: '1 play' },
       ]);
-      expect(allTime.at(0)).toMatchObject({ type: 'movie', href: '/movies/item-2', airedEpisodes: undefined });
+      expect(allTime.at(0)).toMatchObject({
+        type: 'movie',
+        href: '/movies/item-2',
+        airedEpisodes: undefined,
+        runtime: 100,
+      });
     });
   });
 

@@ -24,6 +24,7 @@ function commentPoster(row: UserCommentRow): Poster | undefined {
       image: thumb(movie.images?.poster?.at(0)),
       variant: 'poster',
       rating: movie.rating ?? undefined,
+      runtime: movie.runtime ?? undefined,
     };
   }
   if (row.type === 'show' && show) {
@@ -64,6 +65,7 @@ function commentPoster(row: UserCommentRow): Poster | undefined {
       show: { text: show.title, href: showHref(show) },
       seasonOf: { show: show.ids.trakt, number: episode.season, episode: episode.number },
       rating: episode.rating ?? undefined,
+      runtime: episode.runtime ?? show.runtime ?? undefined,
     };
   }
   // OG skipped comments on private lists.

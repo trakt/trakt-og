@@ -65,7 +65,7 @@ export function toSocialMedia(activity: SocialMedia): SocialItemMedia {
       id: ids.trakt,
       title: show.title,
       rating: rating ?? undefined,
-      runtime: runtime ?? undefined,
+      runtime: runtime ?? show.runtime ?? undefined,
       season: { show: show.ids.trakt, number: season, episode: number },
     },
     episode: { season, number, ...(title && { title }) },

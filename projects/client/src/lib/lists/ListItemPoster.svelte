@@ -35,7 +35,12 @@ interface Props {
 
 const { item, rank, datePreferences, removing, edit, oneditnotes, fade = [], framed = true }: Props = $props();
 const state = $derived(item.type === 'person' ? undefined : overlay.state(item.type, item.id, item.seasonOf));
-const fill = $derived(quickIconFill({ state: state ?? {}, airedEpisodes: item.airedEpisodes, datePreferences }));
+const fill = $derived(quickIconFill({
+  state: state ?? {},
+  airedEpisodes: item.airedEpisodes,
+  runtime: item.runtime,
+  datePreferences,
+}));
 </script>
 
 <PosterCard
@@ -57,7 +62,7 @@ const fill = $derived(quickIconFill({ state: state ?? {}, airedEpisodes: item.ai
       rating: item.rating,
       ratingTarget: { type: item.type, id: item.id, title: item.title },
       watchTarget: { type: item.type, id: item.id, title: item.title, airedEpisodes: item.airedEpisodes,
-        season: item.seasonOf },
+        runtime: item.runtime, season: item.seasonOf },
       watchNow: 'play',
       listLabel: item.type === 'movie' || item.type === 'show' ? 'Add to watchlist' : 'Add to list',
     }}

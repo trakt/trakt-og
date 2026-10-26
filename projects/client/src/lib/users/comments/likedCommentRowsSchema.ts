@@ -4,6 +4,7 @@ import { commentSchema as comment } from '../../components/comments/commentSchem
 import type { UserCommentRow } from './UserCommentRow.ts';
 
 const rating = z.number().nullish();
+const runtime = z.number().nullish();
 const posters = z.object({ poster: z.array(z.string()).nullish() }).nullish();
 const titled = {
   ids: z.object({ trakt: z.number(), slug: z.string() }),
@@ -15,11 +16,12 @@ const row = z.object({
   /** The commented item's class, lowercased: `movie`, `show`, `season`, `episode`, `list` or `officiallist`. */
   comment_type: z.string().nullish(),
   comment,
-  movie: z.object({ ...titled, rating, images: posters }).nullish(),
+  movie: z.object({ ...titled, rating, runtime, images: posters }).nullish(),
   show: z
     .object({
       ...titled,
       rating,
+      runtime,
       aired_episodes: z.number().nullish(),
       genres: z.array(z.string()).nullish(),
       images: posters,
@@ -43,6 +45,7 @@ const row = z.object({
       number_abs: z.number().nullish(),
       title: z.string().nullish(),
       rating,
+      runtime,
       images: z.object({ screenshot: z.array(z.string()).nullish() }).nullish(),
     })
     .nullish(),

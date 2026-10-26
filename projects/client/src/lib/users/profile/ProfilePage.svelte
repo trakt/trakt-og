@@ -62,6 +62,8 @@ const description = $derived(
       listTarget: { type: card.type, id: card.id, title: card.title },
       fill: quickIconFill({ state, datePreferences: data.datePreferences, runtime: card.runtime }),
       rating: card.rating,
+      ratingTarget: { type: card.type, id: card.id, title: card.title, season: card.season },
+      watchTarget: { type: card.type, id: card.id, title: card.title, runtime: card.runtime, season: card.season },
       watchNowTarget: { type: card.type, id: card.id, title: card.title, season: card.season },
       listLabel: card.type === 'episode' ? 'Add to list' : 'Add to watchlist',
     }}

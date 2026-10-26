@@ -42,6 +42,15 @@ describe('toNote', () => {
     ).toBe('Special 1 Extra');
   });
 
+  it("should carry a movie's runtime, and an episode's or else its show's, for the watched tooltip", () => {
+    const show = { title: 'Breaking Bad', ids: { trakt: 2, slug: 'breaking-bad' }, runtime: 47 };
+    const episode = { title: 'Pilot', season: 1, number: 1, ids: { trakt: 3 } };
+    expect(map({ ...row, movie: { ...movie, runtime: 139 } })?.item.runtime).toBe(139);
+    expect(map({ ...row, type: 'episode', show, episode })?.item.runtime).toBe(47);
+    expect(map({ ...row, type: 'episode', show, episode: { ...episode, runtime: 58 } })?.item.runtime).toBe(58);
+    expect(map({ ...row, type: 'show', show })?.item.runtime).toBeUndefined();
+  });
+
   it('should treat a user flagged deleted as a deleted author', () => {
     expect(map({ ...row, note: { ...note, user: { ...user, deleted: true } } })?.author).toMatchObject({
       name: 'Deleted User',

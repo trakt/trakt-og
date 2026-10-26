@@ -156,7 +156,7 @@ type Match = (typeof options)[number]['id'];
 function itemState(item: CalendarItem) {
   const card = cardOf.get(item) ?? toCalendarCard(item, clock);
   const state = overlay.state(card.overlay.type, card.overlay.id, card.collectionContext);
-  const fill = quickIconFill({ state, datePreferences: data.datePreferences });
+  const fill = quickIconFill({ state, runtime: card.runtime, datePreferences: data.datePreferences });
   const filterState = calendarFilterState(state, card.show ? overlay.state('show', card.show) : undefined);
   return { card, state, fill, matches: (id: Match) => matchesFadeHide(id, filterState, fill) };
 }
@@ -215,6 +215,7 @@ function cardIcons(entry: CalendarEntry): Omit<ComponentProps<typeof QuickIcons>
     };
   }
   return {
+    watchTarget: { ...entry.overlay, title: entry.title, season: entry.collectionContext, runtime: entry.runtime },
     collectionTarget: { ...entry.overlay, title: entry.title, season: entry.collectionContext },
     listTarget: { ...entry.overlay, title: entry.title },
     fill: entry.fill,

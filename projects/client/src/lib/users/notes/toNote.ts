@@ -46,6 +46,13 @@ function episodeBadge(item: NonNullable<Row['episode']>) {
   return { kind: key, label: labels[key] };
 }
 
+// A movie's or episode's minutes, so the watched tooltip can total the plays. An episode falls back to its show's.
+function runtimeOf(row: Row) {
+  if (row.type === 'movie') return row.movie?.runtime ?? undefined;
+  if (row.type === 'episode') return row.episode?.runtime ?? row.show?.runtime ?? undefined;
+  return undefined;
+}
+
 function itemDetails(row: Row) {
   const item = row[row.type];
   if (!item) return null;
@@ -59,6 +66,7 @@ function itemDetails(row: Row) {
     type: row.type,
     rating: item.rating ?? undefined,
     airedEpisodes: item.aired_episodes ?? undefined,
+    runtime: runtimeOf(row),
     episodeBadge: undefined,
     variant: row.type === 'episode' ? ('screenshot' as const) : ('poster' as const),
     seasonOf:

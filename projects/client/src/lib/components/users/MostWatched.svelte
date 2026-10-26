@@ -88,9 +88,20 @@ const seeMore = (type: MostWatchedType, tab: MostWatchedTab) =>
                   subtitles={[card.time, card.plays]}
                   userRating={state.rating}
                   icons={{
-                    fill: quickIconFill({ state, airedEpisodes: card.airedEpisodes, datePreferences }),
+                    fill: quickIconFill({
+                      state,
+                      airedEpisodes: card.airedEpisodes,
+                      runtime: card.runtime,
+                      datePreferences,
+                    }),
                     ratingTarget: { type: card.type, id: card.id, title: card.title },
-                    watchTarget: { type: card.type, id: card.id, title: card.title, airedEpisodes: card.airedEpisodes },
+                    watchTarget: {
+                      type: card.type,
+                      id: card.id,
+                      title: card.title,
+                      airedEpisodes: card.airedEpisodes,
+                      runtime: card.runtime,
+                    },
                     rating: card.rating,
                     watchNow: 'play',
                     listLabel: 'Add to watchlist',

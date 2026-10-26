@@ -17,6 +17,8 @@ export type CalendarGroupEpisode = {
   readonly title: string;
   readonly href: string;
   readonly rating?: number;
+  /** Minutes, so the watched tooltip can total the plays. */
+  readonly runtime?: number;
 };
 
 /** A card for every episode of one show on one day, with what its tray and its group actions need. */
@@ -97,6 +99,7 @@ export function toCalendarGroupCard({
         title: episode.title ?? '',
         href: `/shows/${show.ids.slug}/seasons/${episode.season}/episodes/${episode.number}`,
         rating: episode.rating ?? undefined,
+        runtime: episode.runtime ?? show.runtime ?? undefined,
       })),
     },
   };

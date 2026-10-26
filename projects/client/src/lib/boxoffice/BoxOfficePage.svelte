@@ -139,7 +139,7 @@ const runPill = (run: WeekInRelease) => ({
             </td>
             <td class="number share-cell"><span class="line">{percent(share(row.revenue))}</span></td>
             <td class="actions">
-              <QuickIcons row small fill={quickIconFill({ state, datePreferences: data.datePreferences })}
+              <QuickIcons row small fill={quickIconFill({ state, runtime: row.runtime, datePreferences: data.datePreferences })}
                 released favorite={false} rating={row.rating}
                 ratingTarget={{ type: 'movie', id: row.id, title: row.title }}
                 watchTarget={{ type: 'movie', id: row.id, title: row.title, runtime: row.runtime }} />

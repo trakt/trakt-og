@@ -78,6 +78,7 @@ function fromCatalog(params: ToProgressItemParams, catalog: ShowCatalog): Progre
         return {
           episode,
           runtime,
+          id: episode.id,
           number: episode.number,
           title: episode.title,
           done: dates.some((date) => !resetAt || date >= resetAt),

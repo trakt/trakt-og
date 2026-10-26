@@ -1,4 +1,5 @@
 import type { TickRun } from '../../components/media/TickRun.ts';
+import type { WatchedPlays } from '../../components/media/WatchedPlays.ts';
 import { tickRuns } from '../../components/media/tickRuns.ts';
 import { episodeNumber } from '../../components/media/episodeTags.ts';
 import type { DatePreferences } from '../../settings/DatePreferences.ts';
@@ -8,20 +9,14 @@ import { imageUrl } from '../../utils/imageUrl.ts';
 import type { ProgressSeasonData } from './ProgressItem.ts';
 import { seasonName } from '../../utils/seasonName.ts';
 import { isUnknownDate } from '../../utils/isUnknownDate.ts';
-import { ratingPercent } from '../../utils/ratingPercent.ts';
 
 export type EpisodeSquareState = 'watched' | 'not-watched' | 'up-next' | 'not-aired';
-
-/** A status line in a square's tooltip, after a dash in its meaning color, with its secondary stat in gray. */
-export type EpisodeTipLine = {
-  readonly text: string;
-  readonly detail?: string;
-  readonly tone: 'watched' | 'collected' | 'next' | 'time' | 'muted';
-};
 
 /** One numbered square in an open season's grid. */
 export type EpisodeSquare = {
   readonly number: number;
+  /** Aired episodes: the Trakt id, which finds the episode's library copy in the overlay. */
+  readonly id?: number;
   /** "3x01", which also keys the square. */
   readonly code: string;
   readonly title?: string;
@@ -33,9 +28,15 @@ export type EpisodeSquare = {
   readonly label: string;
   /** The tooltip's screenshot. */
   readonly image?: string;
-  /** "Sep 2, 2026" under the tooltip's title once it has aired, then its "52m, 81%" in gray. */
-  readonly meta?: { readonly text: string; readonly detail?: string };
-  readonly lines: readonly EpisodeTipLine[];
+  /** The tooltip's first tag: "Sep 2, 2026" once it has aired, "Airs Jan 14, 2027" or "Airs TBA" until then. */
+  readonly airs: string;
+  /** "52m", the tooltip's runtime tag. */
+  readonly runtime?: string;
+  /** The Trakt rating, 0 to 10, for the tooltip's heart tag. */
+  readonly rating?: number;
+  /** Your plays and the last one's date, for the tooltip's watched lines. A rewatch's episode not yet seen again
+   * keeps them. */
+  readonly plays?: WatchedPlays;
 };
 
 /** One season in an open progress row: its heading line, then a square an episode. */
@@ -78,6 +79,7 @@ type ToProgressSeasonsParams = {
 
 type Episode = {
   number: number;
+  id?: number;
   title?: string;
   firstAired?: string;
   runtime?: number;
@@ -97,7 +99,7 @@ function toSquare({
   showHref,
   datePreferences,
 }: Omit<ToProgressSeasonsParams, 'seasons'> & { season: number; episode: Episode }): EpisodeSquare {
-  const { number, title, firstAired, runtime, rating, aired, done, plays, at } = episode;
+  const { number, id, title, firstAired, runtime, rating, aired, done, plays, at } = episode;
   const state: EpisodeSquareState = !aired
     ? 'not-aired'
     : done
@@ -116,16 +118,11 @@ function toSquare({
     'up-next': 'up next',
     'not-aired': `airs ${airs}`,
   }[state];
-  const statusLine: EpisodeTipLine = {
-    watched: { text: plays > 1 ? `Watched ${plays} times` : 'Watched', tone: 'watched' } as const,
-    'not-watched': { text: 'Not watched', tone: 'muted' } as const,
-    'up-next': { text: 'Up next', tone: 'next' } as const,
-    'not-aired': { text: `Airs ${airs}`, tone: 'muted' } as const,
-  }[state];
   const episodeCode = episodeNumber({ season, number }, null);
 
   return {
     number,
+    id,
     code: episodeCode,
     title,
     href: `${showHref}/seasons/${season}/episodes/${number}`,
@@ -140,29 +137,10 @@ function toSquare({
       .filter(Boolean)
       .join(', '),
     image: imageUrl(episode.screenshot, 'thumb'),
-    meta: aired
-      ? {
-          text: airs,
-          detail:
-            [runtime ? formatRuntime(runtime) : undefined, rating !== undefined && `${ratingPercent(rating)}%`]
-              .filter(Boolean)
-              .join(', ') || undefined,
-        }
-      : undefined,
-    lines: [
-      statusLine,
-      // A rewatch's episode not yet seen again still shows when you last did, and how often before.
-      ...(doneAt
-        ? [
-            {
-              text: `Last watched ${doneAt}`,
-              ...(!done && plays > 0 ? { detail: `${plays} ${plays === 1 ? 'play' : 'plays'}` } : {}),
-              tone: 'time' as const,
-            },
-          ]
-        : []),
-      ...(collected ? [{ text: 'In your library', tone: 'collected' as const }] : []),
-    ],
+    airs: aired ? airs : `Airs ${airs}`,
+    runtime: runtime ? formatRuntime(runtime) : undefined,
+    rating,
+    plays: plays > 0 ? { count: plays, minutes: runtime ? plays * runtime : undefined, at: doneAt } : undefined,
   };
 }
 

@@ -18,6 +18,7 @@ const season = (
   minutesWatched: 0,
   minutesLeft: done.filter((watched) => !watched).length * 22,
   episodes: done.map((watched, index) => ({
+    id: number * 100 + index + 1,
     number: index + 1,
     title: `E${index + 1}`,
     done: watched,
@@ -130,19 +131,19 @@ describe('toProgressSeasons', () => {
       ]);
     });
 
-    it('should give each tooltip its air date, runtime and rating, then its plays and last watch', () => {
-      expect(squares.map(({ meta, lines }) => ({ meta, lines }))).toEqual([
+    it('should give each tooltip its air date, runtime and rating, then your plays and last watch', () => {
+      expect(squares.map(({ id, airs, runtime, rating, plays }) => ({ id, airs, runtime, rating, plays }))).toEqual([
         {
-          meta: { text: 'Sep 1, 2026', detail: '22m, 81%' },
-          lines: [
-            { text: 'Watched 3 times', tone: 'watched' },
-            { text: 'Last watched Sep 29, 2026', tone: 'time' },
-          ],
+          id: 101,
+          airs: 'Sep 1, 2026',
+          runtime: '22m',
+          rating: 8.1,
+          plays: { count: 3, minutes: 66, at: 'Sep 29, 2026' },
         },
-        { meta: { text: 'Sep 2, 2026', detail: '22m, 81%' }, lines: [{ text: 'Up next', tone: 'next' }] },
-        { meta: { text: 'Sep 3, 2026', detail: '22m, 81%' }, lines: [{ text: 'Not watched', tone: 'muted' }] },
-        { meta: undefined, lines: [{ text: 'Airs Jan 14, 2027', tone: 'muted' }] },
-        { meta: undefined, lines: [{ text: 'Airs TBA', tone: 'muted' }] },
+        { id: 102, airs: 'Sep 2, 2026', runtime: '22m', rating: 8.1, plays: undefined },
+        { id: 103, airs: 'Sep 3, 2026', runtime: '22m', rating: 8.1, plays: undefined },
+        { id: undefined, airs: 'Airs Jan 14, 2027', runtime: undefined, rating: undefined, plays: undefined },
+        { id: undefined, airs: 'Airs TBA', runtime: undefined, rating: undefined, plays: undefined },
       ]);
     });
 
@@ -157,10 +158,6 @@ describe('toProgressSeasons', () => {
 
       expect([watched?.collected, collected?.collected, neither?.collected]).toEqual([false, true, false]);
       expect(collected?.label).toBe('1x02 "E2", not watched, in your library, aired Sep 2, 2026');
-      expect(collected?.lines).toEqual([
-        { text: 'Not watched', tone: 'muted' },
-        { text: 'In your library', tone: 'collected' },
-      ]);
     });
   });
 });

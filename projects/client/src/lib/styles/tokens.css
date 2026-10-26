@@ -1319,7 +1319,7 @@
   --space-tooltip-library: 5px 6px; /* inside the box's padding, around the library card's "Added on" line */
   --space-tooltip-footer: 9px 14px; /* a tooltip's bottom section, edge to edge: a progress bar, the library's logos */
   --space-tooltip-footer-gap: 8px; /* between a rewatch's two bars, or a bar and the logos */
-  --color-tooltip-footer: #1e1e1e; /* a shade up from the box, under the divider */
+  --color-tooltip-footer: #1e1e1e; /* a shade up from the box, past the divider: its footer, or its header */
 
   /* Rating popovers (OG Bootstrap popover and summary rating trigger). */
   /* Poster rating lines. */
@@ -3152,10 +3152,15 @@
   --progress-cell-pulse-duration: 2.4s;
   --color-progress-cell-pulse: color-mix(in srgb, var(--brand-primary) 55%, transparent);
 
-  /* A square's chart tooltip: its screenshot, then status lines after a dash in their color */
-  --progress-tip-width: 200px;
-  --progress-tip-image-gap: 6px;
+  /* A square's tooltip: the episode (screenshot, code and title, tags), then your plays or library copy */
+  --progress-tip-width: 240px; /* room for the date, runtime and rating tags on one line */
+  --progress-tip-gap: 6px; /* between the screenshot, the title and the tags */
+  --progress-tip-episode-end: 5px; /* under the tags */
+  --progress-tip-image-top: 7px; /* over the screenshot: with the box's 3px, its 10px sides (8px and the 2px inset) */
+  --progress-tip-tag-inset: 6px; /* the Up next tag from the screenshot's bottom-left corner */
   --radius-progress-tip-image: var(--radius-object);
+
+  /* A season's chart tooltip on the show's bar: its lines' dashes */
   --color-progress-tip-watched: #b583cf; /* the watched purple, lifted for the black tooltip */
   --color-progress-tip-collected: var(--brand-quaternary);
   --color-progress-tip-next: var(--brand-primary);

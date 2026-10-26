@@ -7,6 +7,7 @@ import { countLabel } from '../../utils/countLabel.ts';
 import { formatDate, type FormatDateOptions } from '../../utils/formatDate.ts';
 import { formatRuntime } from '../../utils/formatRuntime.ts';
 import { isUnknownDate } from '../../utils/isUnknownDate.ts';
+import { playsLines } from './playsLines.ts';
 import type { WatchedPlays } from './WatchedPlays.ts';
 import type { WatchedProgress } from './WatchedProgress.ts';
 
@@ -25,7 +26,13 @@ export type QuickIconFill = {
    * The watched and library tooltips drawn out: a show's progress runs or a movie's plays, the library with its logos
    * and server.
    */
-  tips: Readonly<{ watched?: readonly WatchedProgress[]; plays?: WatchedPlays; collected?: LibraryTipData }>;
+  tips: Readonly<{
+    watched?: readonly WatchedProgress[];
+    plays?: WatchedPlays;
+    collected?: LibraryTipData;
+    /** When it was favorited, for its one-line tooltip. */
+    favorited?: string;
+  }>;
 };
 
 type QuickIconFillParams = {
@@ -86,7 +93,19 @@ function watchedTitle(params: QuickIconFillParams, includeZero = false): string 
       ...(remaining ? [`${remaining} remaining${runtime ? ` (${formatRuntime(remaining * runtime)})` : ''}`] : []),
     ].join('\n');
   }
-  return [countLabel(state.plays, 'play'), ...(runtime ? [formatRuntime(state.plays * runtime)] : [])].join('\n');
+  const { lead, at, plays, time } = playsLines(playsTip(params, state.plays));
+  const detail = plays ? `${plays}${time ? ` (${time})` : ''}` : time;
+  return [at ? `${lead} on ${at}` : lead, detail].filter(Boolean).join('\n');
+}
+
+/** A movie's or episode's plays, with the last one's date unless it's OG's unknown one. */
+function playsTip({ state, runtime, datePreferences }: QuickIconFillParams, count: number): WatchedPlays {
+  const last = state.lastWatchedAt;
+  return {
+    count,
+    minutes: runtime && count * runtime,
+    at: last && !isUnknownDate(last) ? formatDate(last, datePreferences) : undefined,
+  };
 }
 
 function collectedTitle({ state, airedEpisodes, season, datePreferences }: QuickIconFillParams) {
@@ -161,15 +180,13 @@ function listedTitle({ state }: QuickIconFillParams) {
 /** Maps a poster's overlay state onto the quick-icon bar. Unknown state renders idle. */
 export function quickIconFill(params: QuickIconFillParams): QuickIconFill {
   const { state, airedEpisodes } = params;
+  const favoritedAt =
+    state.favorited && state.favoritedAt ? formatDate(state.favoritedAt, params.datePreferences) : undefined;
   const titles: QuickIconFill['titles'] = {
     watched: watchedTitle(params),
     collected: collectedTitle(params),
     listed: listedTitle(params),
-    favorited: state.favorited
-      ? state.favoritedAt
-        ? `Favorited on\n${formatDate(state.favoritedAt, { ...params.datePreferences, time: true })}`
-        : 'Favorited'
-      : undefined,
+    favorited: state.favorited ? (favoritedAt ? `Favorited on ${favoritedAt}` : 'Favorited') : undefined,
   };
 
   return {
@@ -189,8 +206,9 @@ export function quickIconFill(params: QuickIconFillParams): QuickIconFill {
     titles,
     tips: {
       watched: watchedTips(params),
-      plays: state.plays ? { count: state.plays, minutes: params.runtime && state.plays * params.runtime } : undefined,
+      plays: state.plays ? playsTip(params, state.plays) : undefined,
       collected: collectedTip(params, state.collectedAt && formatDate(state.collectedAt, params.datePreferences)),
+      favorited: favoritedAt,
     },
   };
 }

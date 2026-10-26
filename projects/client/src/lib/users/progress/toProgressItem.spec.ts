@@ -97,6 +97,7 @@ describe('toProgressItem', () => {
         [2, 1, 0],
       ]);
       expect(item.detail?.seasons.at(0)?.episodes.at(0)).toEqual({
+        id: 11,
         number: 1,
         done: true,
         collected: false,

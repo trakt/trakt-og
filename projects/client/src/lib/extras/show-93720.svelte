@@ -10,6 +10,7 @@ import type { Attachment } from 'svelte/attachments';
 import { prefersReducedMotion } from 'svelte/motion';
 import { overlay } from '$lib/overlay/overlay';
 import type { ExtraProps } from './extras.ts';
+import { type Frame, jump, shakenFrames, tornFrames } from './glitchFrames.ts';
 import { type Line, terminalLines } from './show-93720.lines.ts';
 
 const { ondone, viewer, stop = false }: ExtraProps = $props();
@@ -30,44 +31,10 @@ const TEARS = Array.from({ length: 10 }, (_, index) => ({
   kind: ['red', 'cyan', 'light', 'dropout'][index % 4],
 }));
 
-type Frame = { offset: number; easing?: string; [property: string]: string | number | undefined };
-
-const jump = (index: number) => ({ offset: index / FRAMES, easing: 'steps(1)' });
-const fringe = (shift: number) =>
-  `drop-shadow(${shift}px 0 rgb(255 0 60 / 75%)) drop-shadow(${-shift}px 0 rgb(0 255 240 / 75%))`;
-
-// The page torn into one band of the window at a time, thrown sideways with red and cyan fringes, and now and then
-// whole again, so the tear reads as flicker.
-function tornFrames(element: Element): Frame[] {
-  const box = element.getBoundingClientRect();
-  const windowTop = Math.max(0, -box.top);
-  const frames = Array.from({ length: FRAMES }, (_, index) => {
-    const shift = (Math.random() - 0.5) * 90;
-    const top = windowTop + Math.random() * innerHeight * 0.7;
-    const band = 60 + Math.random() * innerHeight * 0.45;
-    const whole = index % 4 === 3;
-    return {
-      ...jump(index),
-      transform: `translateX(${shift}px) skewX(${(Math.random() - 0.5) * 6}deg)`,
-      clipPath: whole ? 'inset(0 0 0 0)' : `inset(${top}px 0 ${Math.max(0, box.height - top - band)}px 0)`,
-      filter: fringe(shift / 5),
-    };
-  });
-  return [...frames, { offset: 1, transform: 'none', clipPath: 'inset(0 0 0 0)', filter: 'none' }];
-}
-
-function shakenFrames(): Frame[] {
-  const frames = Array.from({ length: FRAMES }, (_, index) => {
-    const shift = (Math.random() - 0.5) * 40;
-    return { ...jump(index), transform: `translateX(${shift}px)`, filter: fringe(shift / 4) };
-  });
-  return [...frames, { offset: 1, transform: 'none', filter: 'none' }];
-}
-
 // A bar of bad signal, jumping to a new height on each frame, or gone.
 function barFrames(): Frame[] {
   const frames = Array.from({ length: FRAMES }, (_, index) => ({
-    ...jump(index),
+    ...jump(index, FRAMES),
     opacity: Math.random() < 0.65 ? 1 : 0,
     transform: `translateY(${Math.random() * innerHeight}px) scaleY(${0.5 + Math.random() * 2.5})`,
   }));
@@ -91,8 +58,8 @@ async function glitch() {
     if (animation) animations.push(animation);
   };
   const page = document.querySelector('main');
-  if (page) run(page, tornFrames(page));
-  run(document.querySelector('header.top-nav'), shakenFrames());
+  if (page) run(page, tornFrames(page, FRAMES));
+  run(document.querySelector('header.top-nav'), shakenFrames(FRAMES));
   run(root?.querySelector('.scanlines'), [{ offset: 0, opacity: 1 }, { offset: 0.92, opacity: 1 }, { offset: 1, opacity: 0 }]);
   for (const bar of root?.querySelectorAll('.tear') ?? []) run(bar, barFrames());
   await wait(GLITCH_MS);

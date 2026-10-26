@@ -5,6 +5,7 @@ import { gifArtContext } from '$lib/components/comments/gif/gifArtContext';
 import type { HeaderUser } from '$lib/components/header/HeaderUser';
 import { overlay } from '$lib/overlay/overlay';
 import FanartHeader from '$lib/components/media/FanartHeader.svelte';
+import PageExtras from '$lib/extras/PageExtras.svelte';
 import NewCommentForm from '$lib/components/comments/NewCommentForm.svelte';
 import ActionButtons from '$lib/components/summary/ActionButtons.svelte';
 import ActivityTabs from '$lib/components/summary/ActivityTabs.svelte';
@@ -87,6 +88,8 @@ const sections = $derived([
 
 <!-- Hrefs are built from API slugs, and resolve() only takes literal routes. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
+
+<PageExtras type="show" id={show.id} />
 
 <FanartHeader image={show.fanart} dropped={overlay.state('show', show.id).dropped}>
   <SummaryTitle title={show.title} year={show.year} certification={show.certification} />

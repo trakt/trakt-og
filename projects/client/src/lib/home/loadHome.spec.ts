@@ -1,6 +1,7 @@
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { createLiveNow } from '../charts/fetchLiveNow.ts';
 import type { HeaderUser } from '../components/header/HeaderUser.ts';
 import { createTtlCache } from '../utils/createTtlCache.ts';
 import { homeFanartTitles } from './homeFanartTitles.ts';
@@ -25,7 +26,12 @@ const trendingRow = (type: string, slug: string) => ({
 const seen: Request[] = [];
 const server = setupServer(
   http.get('https://apiz.trakt.tv/:type/trending', ({ params }) =>
-    HttpResponse.json([trendingRow(String(params.type), 'one'), trendingRow(String(params.type), 'two')]),
+    HttpResponse.json([trendingRow(String(params.type), 'one'), trendingRow(String(params.type), 'two')], {
+      headers: {
+        'X-Trending-User-Count': params.type === 'shows' ? '219022' : '26308',
+        'X-Pagination-Item-Count': '2',
+      },
+    }),
   ),
   http.get('https://apiz.trakt.tv/:type/:slug/watching', ({ params }) =>
     HttpResponse.json([{ username: `${params.type}-${params.slug}`, private: false, location: 'Brazil' }]),
@@ -48,6 +54,7 @@ const fresh = () => ({
   pool: freshPool(),
   trendingPool: createTtlCache<HomeTrending>({ ttlMs: 1000, retryMs: 100 }),
   livePool: createTtlCache<HomeLive>({ ttlMs: 1000, retryMs: 100 }),
+  liveNow: createLiveNow(),
 });
 const parent =
   (user: HeaderUser | null = null) =>
@@ -118,13 +125,13 @@ describe('loadHome', () => {
     ]);
   });
 
-  it('should stream who is watching the trending titles right now', async () => {
+  it("should stream Trending's whole count and where the trending titles' watchers are", async () => {
     const data = await loadHome({ fetch, now: 0, random: Math.random, parent: parent(), ...fresh() });
     const live = await data.live;
 
-    expect(live?.shows).toBe(2);
-    expect(live?.movies).toBe(2);
-    expect(live?.countries.map(({ code }) => code)).toEqual(['BR']);
+    expect(live?.shows).toBe(219_022);
+    expect(live?.movies).toBe(26_308);
+    expect(live?.countries.map(({ code, share }) => ({ code, share }))).toEqual([{ code: 'BR', share: 1 }]);
   });
 
   it('should leave the posters and the live count out when trending fails', async () => {
@@ -153,7 +160,7 @@ describe('loadHome', () => {
     // A second worker, with empty memory of its own.
     const second = await loadHome({ fetch, now: 0, random: Math.random, parent: parent(), cache, ...fresh() });
 
-    expect(shared).toBe(6);
+    expect(shared).toBe(8);
     expect(await second.live).toEqual(await first.live);
     expect(second.posters).toEqual(first.posters);
     expect(second.fanarts.map(({ key }) => key).toSorted()).toEqual(first.fanarts.map(({ key }) => key).toSorted());

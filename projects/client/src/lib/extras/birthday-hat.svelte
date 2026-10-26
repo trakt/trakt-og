@@ -2,10 +2,10 @@
   A party hat that drops onto a headshot on a person's birthday: it falls in tilted, lands on the top edge and wobbles
   still. It sits in its own layer just over the site header, so its peak can rise above the header bar, and follows
   `anchor` (the headshot) as the page scrolls. It's decorative; with reduced motion it's simply there.
-    <PartyHat anchor={headshot} />
+    <BirthdayHat anchor={headshot} />
 -->
 <script lang="ts">
-import hat from '$lib/assets/easter/party-hat.svg';
+import hat from './assets/birthday-hat.svg';
 import type { Attachment } from 'svelte/attachments';
 
 const { anchor }: { anchor: HTMLElement } = $props();
@@ -34,37 +34,46 @@ const follow: Attachment<HTMLElement> = () => {
 };
 </script>
 
-<div class="party-hat-layer" aria-hidden="true" {@attach follow}>
+<div class="layer" aria-hidden="true" {@attach follow}>
   {#if spot}
-    <img class="party-hat" src={hat} alt="" style:left="{spot.x}px" style:top="{spot.y}px" />
+    <img class="hat" src={hat} alt="" style:left="{spot.x}px" style:top="{spot.y}px" />
   {/if}
 </div>
 
 <style>
-.party-hat-layer {
+.layer {
+  --extra-size: 62px;
+  --extra-top: -62px; /* the brim on the headshot's top edge */
+  --extra-tilt: 12deg;
+  --extra-fall: -180px;
+  --extra-bounce: -14px;
+  --extra-duration: 1.1s;
+  --extra-delay: 0.35s;
+  --extra-shadow: 0 4px 6px rgb(0 0 0 / 0.45);
+
   position: fixed;
   inset: 0;
-  z-index: var(--z-party-hat);
+  z-index: calc(var(--z-header) + 1);
   overflow: hidden;
   pointer-events: none;
 }
 
-.party-hat {
+.hat {
   position: absolute;
-  inline-size: var(--party-hat-size);
-  margin-block-start: var(--party-hat-top);
+  inline-size: var(--extra-size);
+  margin-block-start: var(--extra-top);
   translate: -50% 0;
-  rotate: var(--party-hat-tilt);
+  rotate: var(--extra-tilt);
   transform-origin: 50% 100%;
-  filter: drop-shadow(var(--shadow-party-hat));
-  animation: drop var(--party-hat-duration) var(--party-hat-delay) both;
+  filter: drop-shadow(var(--extra-shadow));
+  animation: drop var(--extra-duration) var(--extra-delay) both;
 }
 
 /* Falls in from high and tilted, lands, bounces once and wobbles to rest at a jaunty angle. */
 @keyframes drop {
   0% {
     opacity: 0;
-    transform: translateY(var(--party-hat-fall)) rotate(-35deg);
+    transform: translateY(var(--extra-fall)) rotate(-35deg);
     animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45);
   }
   45% {
@@ -73,7 +82,7 @@ const follow: Attachment<HTMLElement> = () => {
     animation-timing-function: ease-out;
   }
   60% {
-    transform: translateY(var(--party-hat-bounce)) rotate(-10deg);
+    transform: translateY(var(--extra-bounce)) rotate(-10deg);
     animation-timing-function: ease-in;
   }
   72% {

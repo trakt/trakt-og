@@ -1353,17 +1353,6 @@
   --color-tab-picked-border: rgb(237 28 36 / 0.6);
   --color-tab-picked-text: light-dark(#b3161c, #fff);
   --color-rating-empty: light-dark(#ddd, #444);
-  /* The rating-10 easter egg: the Totally Ninja guy and his speech bubble */
-  --ninja-height: clamp(75px, 13vh, 120px);
-  --ninja-duration: 1.9s; /* 0.35s up, about a second of speech, 0.35s down; the keyframes are cut to this */
-  --ninja-bubble-gap: 12px; /* past the top of his head */
-  --ninja-bubble-padding: 8px 16px;
-  --radius-ninja-bubble: var(--radius-container);
-  --ninja-bubble-tail: 14px;
-  --font-size-ninja-bubble: 20px;
-  --color-ninja-bubble-bg: #fff;
-  --color-ninja-bubble-text: #111;
-  --shadow-ninja-bubble: 0 8px 24px rgb(0 0 0 / 0.35);
   --color-no-results-text: #555; /* on the dark charts frame in both themes */
   /* The empty states (see design-system.md): EmptyState's dashed outline and its line, its dark-frame and failed
      outlines; NoResults' button; EmptyNote's inline line and its action. */
@@ -2546,8 +2535,6 @@
   --z-toast: 30; /* under the header and its menus, which open over the toasts */
   --z-first-night-bar: 25; /* the welcome reel: over the page, under the toasts and the header */
   --z-summary-sidebar: 1; /* over the details' heading marks */
-  --z-party-hat: calc(var(--z-header) + 1); /* a birthday's party hat, its peak over the header bar */
-  --z-easter: 5000; /* the rating-10 Totally Ninja guy, over the header and dialogs, under the loaders */
   --z-loading: 99999;
   /* Notes: comment thread cards with coloured tags for what the note is attached to and the item type. */
   --color-note-tag-history: light-dark(#8e44ad, #b583cf); /* brand-tertiary, lifted for dark */
@@ -4062,26 +4049,10 @@
   --title-tags-highlight-gap: 6px; /* the sparkle to "70th birthday" */
   --title-tags-shine-duration: 1.2s;
   --title-tags-shine-delay: 1.4s; /* once the confetti is up */
-  --color-confetti-1: #ed1c24;
-  --color-confetti-2: #f5c451;
-  --color-confetti-3: #fff;
-  --color-confetti-4: #ff5a60;
   --birthday-age-gap: 5px;
   --birthday-roll-duration: 0.7s;
   --ease-birthday-roll: cubic-bezier(0.34, 1.56, 0.64, 1); /* a little past, then back */
   --birthday-flip-delay: 1s; /* the age rolls over as the confetti settles */
-  --party-hat-size: 62px;
-  --party-hat-top: -62px; /* the brim on the headshot's top edge */
-  --party-hat-tilt: 12deg;
-  --party-hat-fall: -180px;
-  --party-hat-bounce: -14px;
-  --party-hat-duration: 1.1s;
-  --party-hat-delay: 0.35s;
-  --shadow-party-hat: 0 4px 6px rgb(0 0 0 / 0.45);
-  --party-crasher-height: clamp(150px, 24vh, 240px);
-  --party-crasher-duration: 3.4s;
-  --color-party-crasher-from: #666;
-  --font-size-party-crasher-from: 12px;
 
   /* First night: the welcome wall, the empty panels' prompts and the getting-started checklist. The art behind
      them is always dark, so their text stays light in both themes. */

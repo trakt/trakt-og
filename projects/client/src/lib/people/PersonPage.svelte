@@ -42,9 +42,9 @@ import { ordinal } from '$lib/utils/ordinal';
 import Icon from '$lib/icons/Icon.svelte';
 import cake from '$lib/icons/solid/cake-candles.svg?raw';
 import sparkles from '$lib/icons/solid/sparkles.svg?raw';
-import { confettiBurst } from '$lib/components/easter/confettiBurst';
-import PartyHat from '$lib/components/easter/PartyHat.svelte';
-import PartyCrasher from './PartyCrasher.svelte';
+import BirthdayGuest from '$lib/extras/birthday-guest.svelte';
+import BirthdayHat from '$lib/extras/birthday-hat.svelte';
+import { birthdayBurst } from '$lib/extras/birthdayBurst';
 import { toAgeDigits } from './toAgeDigits.ts';
 import { formatDate } from '$lib/utils/formatDate';
 import CareerEras from './CareerEras.svelte';
@@ -294,7 +294,7 @@ function yearLine(credit: PersonCredit) {
 <FanartHeader image={person.fanart?.image} caption={fanartSource ? fanartTags : undefined} slim
   position="var(--person-fanart-position)"
   stats={person.listCount > 0 ? lists : undefined}>
-  <div {@attach birthday ? confettiBurst : undefined}>
+  <div {@attach birthday ? birthdayBurst : undefined}>
     <SummaryTitle title={person.name}
       highlight={birthday ? { text: `${ordinal(birthday.age)} Birthday`, svg: sparkles } : undefined} />
   </div>
@@ -303,9 +303,9 @@ function yearLine(credit: PersonCredit) {
 {#if birthday}
   <p class="visually-hidden" aria-live="polite">{announced}</p>
   <!-- Out here, not in the sidebar: the sticky sidebar's layer would keep the hat under the header. -->
-  {#if headshot}<PartyHat anchor={headshot} />{/if}
+  {#if headshot}<BirthdayHat anchor={headshot} />{/if}
   {#if surprise && crasher?.image}
-    <PartyCrasher image={crasher.image} name={firstName} from={crasher.characters.split(', ')[0] ?? crasher.title}
+    <BirthdayGuest image={crasher.image} name={firstName} from={crasher.characters.split(', ')[0] ?? crasher.title}
   ondone={() => (surprise = false)} />
   {/if}
 {/if}

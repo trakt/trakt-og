@@ -28,7 +28,7 @@ design system's living reference, so they change in the same PR as the component
   gets a `Variant` caption (Loaded, Empty, Loading, Failed...). Use `bleed` for components that bring their own page
   column. Notes say what to look for or try, in a sentence. A demo's own controls use `DemoButton` (an action),
   `DemoChoice` (pick one, like a viewer or a backdrop) and `DemoToggle` (on or off), never bare buttons, selects,
-  radios or checkboxes. Easter eggs stay hidden: don't demo or mention them.
+  radios or checkboxes. Page extras live in `src/lib/extras/`, outside the design system: no demos, no tokens.
 - **Never touch real data**: demos run on fixtures and stub clients. The shell answers every write that leaves the site
   itself (`$lib/design/guardWrites.ts`), so a signed-in viewer can click anything; don't add props to components just
   to stop their writes.

@@ -168,7 +168,7 @@ h1 {
   }
 }
 
-/* The easter egg: hover "revamped" and it bares its fangs and drips. */
+/* Hover "revamped" and it bares its fangs and drips. */
 .vamp {
   position: relative;
   display: inline-block;

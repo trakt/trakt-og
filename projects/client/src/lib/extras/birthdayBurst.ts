@@ -17,10 +17,10 @@ const PIECES = 160;
 const SECONDS = 3.2;
 const GRAVITY = 0.32;
 const DRAG = 0.985;
-// The colors, read off the tokens so the burst stays in the brand.
-const TOKENS = ['--color-confetti-1', '--color-confetti-2', '--color-confetti-3', '--color-confetti-4'];
+// Trakt red, the birthday gold, white and a lighter red.
+const COLORS = ['#ed1c24', '#f5c451', '#fff', '#ff5a60'];
 
-function pieces(origin: DOMRect, colors: readonly string[]): Piece[] {
+function pieces(origin: DOMRect): Piece[] {
   return Array.from({ length: PIECES }, () => {
     const angle = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI * 1.1;
     const speed = 6 + Math.random() * 9;
@@ -33,7 +33,7 @@ function pieces(origin: DOMRect, colors: readonly string[]): Piece[] {
       h: 8 + Math.random() * 8,
       turn: Math.random() * 6,
       spin: (Math.random() - 0.5) * 0.4,
-      color: colors[Math.floor(Math.random() * colors.length)] ?? '#fff',
+      color: COLORS[Math.floor(Math.random() * COLORS.length)] ?? '#fff',
     };
   });
 }
@@ -41,19 +41,17 @@ function pieces(origin: DOMRect, colors: readonly string[]): Piece[] {
 /**
  * One burst of confetti from the element it's attached to, over the whole window, then gone: the person page's
  * birthday. It never takes the pointer, and with reduced motion there's none.
- *   <h1 {@attach confettiBurst}>
+ *   <h1 {@attach birthdayBurst}>
  */
-export const confettiBurst: Attachment<HTMLElement> = (element) => {
+export const birthdayBurst: Attachment<HTMLElement> = (element) => {
   if (prefersReducedMotion.current) return;
 
-  const root = getComputedStyle(document.documentElement);
-  const colors = TOKENS.map((token) => root.getPropertyValue(token).trim()).filter(Boolean);
   const canvas = document.createElement('canvas');
   canvas.setAttribute('aria-hidden', 'true');
   Object.assign(canvas.style, {
     position: 'fixed',
     inset: '0',
-    zIndex: 'var(--z-easter)',
+    zIndex: 'calc(var(--z-loading) - 1)',
     pointerEvents: 'none',
     width: '100vw',
     height: '100vh',
@@ -65,7 +63,7 @@ export const confettiBurst: Attachment<HTMLElement> = (element) => {
   const context = canvas.getContext('2d');
   context?.scale(ratio, ratio);
 
-  const burst = pieces(element.getBoundingClientRect(), colors);
+  const burst = pieces(element.getBoundingClientRect());
   const start = performance.now();
   let frame = 0;
   const draw = (now: number) => {

@@ -6,11 +6,12 @@
   Movies dropdowns under the title switch what it reads in place: the old days stay dimmed until the new ones land.
 -->
 <script lang="ts">
+import { invalidateAll } from '$app/navigation';
+import { resolve } from '$app/paths';
+import LoadFailed from '$lib/components/empty/LoadFailed.svelte';
 import EmptyState from '$lib/components/empty/EmptyState.svelte';
-import NoData from '$lib/components/empty/NoData.svelte';
-import PanelPrompt from '$lib/components/first-night/PanelPrompt.svelte';
+import PanelPrompt from '$lib/components/empty/PanelPrompt.svelte';
 import { panelQuotes } from '$lib/firstNight/panelQuotes';
-import calendarDays from '$lib/icons/regular/calendar-days.svg?raw';
 import Shimmer from '$lib/components/loading/Shimmer.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import WatchNowDialog from '$lib/components/watchnow/WatchNowDialog.svelte';
@@ -80,6 +81,15 @@ function pick(next: Partial<Picks>) {
   picked = { ...picks, schedule: onpick(picks) };
 }
 
+// A pick's own request goes again; the dashboard's first schedule comes from its loader.
+async function retry() {
+  if (!picked || !onpick) {
+    await invalidateAll();
+    return;
+  }
+  picked = { ...picked, schedule: onpick(picked) };
+}
+
 let allCards = $state(false);
 
 let watching = $state<NonNullable<ScheduleItem['watchNow']>>();
@@ -140,18 +150,19 @@ function watchNow(item: NonNullable<ScheduleItem['watchNow']>) {
 {#snippet body()}
   {#if settled?.days === null}
     <div class="notice">
-  <NoData>The schedule didn't load. Refresh the page to try again.</NoData>
+  <LoadFailed what="Upcoming Schedule" onretry={retry} />
 </div>
   {:else if layout === null}
     {@const off = active.filter === 'none' && active.movies === 'none'}
     {#if off}
-      <div class="nothing">
-  <EmptyState icon={calendarDays}>Shows and Movies are both set to None.</EmptyState>
-</div>
+      <div class="notice">
+        <EmptyState action={{ onclick: () => pick({ filter: 'shows-movies', movies: 'all' }), text: 'Show shows and movies' }} />
+      </div>
     {:else}
       <PanelPrompt quote={panelQuotes.schedule} tall roomy
   --panel-prompt-offset="calc(var(--gutter) + var(--space-lg-block))"
-  text="Nothing on your schedule yet. Add shows you watch and new episodes land here the day they air." />
+  text="Add shows you watch. New episodes land here the day they air."
+  action={{ href: resolve('/shows/[chart=chart]', { chart: 'trending' }), text: 'Find a show' }} />
     {/if}
   {:else if layout}
     {@const { spotlight } = layout}
@@ -247,11 +258,6 @@ function watchNow(item: NonNullable<ScheduleItem['watchNow']>) {
 /* OG's alert sat in a row, which kept 20px above it. */
 .notice {
   padding-block-start: var(--gutter);
-  --color-no-data-bg: var(--color-schedule-no-data-bg);
-}
-
-.nothing {
-  margin: var(--gutter) 0 var(--space-schedule-heading);
 }
 
 .schedule {

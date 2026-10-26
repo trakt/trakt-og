@@ -21,6 +21,11 @@ describe('listHref', () => {
     ).toBe('/users/sean/lists/heist?watchnow=netflix');
   });
 
+  it('should drop every filter for Clear filters', () => {
+    const filtered = new URL('https://og.trakt.tv/users/sean/lists/heist?display=movie&terms=Heat&watchnow=netflix');
+    expect(listHref(filtered, { types: [], genres: [], terms: '', watchnow: '' })).toBe('/users/sean/lists/heist');
+  });
+
   it('should set a type list', () => {
     expect(listHref(new URL('https://og.trakt.tv/users/sean/lists/heist'), { types: ['movie', 'show'] })).toBe(
       '/users/sean/lists/heist?display=movie,show',

@@ -15,6 +15,7 @@
 <script lang="ts">
 import { afterNavigate } from '$app/navigation';
 import { page } from '$app/state';
+import EmptyNote from '$lib/components/empty/EmptyNote.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import { untrack } from 'svelte';
 import HeaderTint from '$lib/components/header/HeaderTint.svelte';
@@ -70,6 +71,8 @@ let active = $state(false);
 // On a results page the magnifier is the current section, solid red like the current nav link.
 const current = $derived(page.url.pathname === '/search' || page.url.pathname.startsWith('/search/'));
 let result = $state(empty);
+// The query `result` answers, so an answer to an older query doesn't say this one has no matches.
+let answered = $state('');
 let highlight = $state(-1);
 let input = $state<HTMLInputElement>();
 let toggle = $state<HTMLButtonElement>();
@@ -101,6 +104,9 @@ const options = $derived([
   ...terms.map((_, index) => ({ id: `${id}-term-${index}`, href: '' })),
 ]);
 const expanded = $derived(active && (options.length > 0 || startingSoon));
+const noMatches = $derived(
+  typed && answered === query.trim() && rows.length === 0 && !result.count,
+);
 const activeId = $derived(expanded && highlight >= 0 ? options.at(highlight)?.id : undefined);
 
 let timer: ReturnType<typeof setTimeout> | undefined;
@@ -111,6 +117,7 @@ const runSearch = () => {
   clearTimeout(timer);
   inflight?.abort();
   highlight = -1;
+  answered = '';
 
   const text = query.trim();
   if (!text) {
@@ -135,6 +142,7 @@ const runSearch = () => {
       .catch(() => null);
     if (!next || controller.signal.aborted) return;
     result = next;
+    answered = text;
     highlight = -1;
   }, DEBOUNCE_MS);
 };
@@ -308,6 +316,7 @@ afterNavigate(({ to }) => {
   typeSlug = next.slug;
   query = next.query;
   result = empty;
+  answered = '';
 });
 </script>
 
@@ -478,6 +487,10 @@ afterNavigate(({ to }) => {
             />
           {/each}
         </ul>
+
+      {#if noMatches}
+        <div class="no-matches" role="status"><EmptyNote>No matches for “{answered}”.</EmptyNote></div>
+      {/if}
 
       <p class="keys">
           <span><kbd>↑</kbd><kbd>↓</kbd> Move</span>
@@ -926,6 +939,10 @@ input {
 .in-type {
   margin-inline-start: var(--space-xs-inline);
   color: var(--color-search-in-type);
+}
+
+.no-matches {
+  padding-block-start: var(--search-panel-inset);
 }
 
 /* The keyboard hints along the bottom of the panel. */

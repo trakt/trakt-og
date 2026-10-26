@@ -4,7 +4,7 @@ import { page } from '$app/state';
 import Container from '$lib/components/container/Container.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import SortDirection from '$lib/components/dropdown/SortDirection.svelte';
-import NoData from '$lib/components/empty/NoData.svelte';
+import EmptyState from '$lib/components/empty/EmptyState.svelte';
 import { tick } from 'svelte';
 import { removeNote } from '$lib/components/notes/removeNote';
 import NoteManage from '$lib/components/notes/NoteManage.svelte';
@@ -147,7 +147,7 @@ const filterHref = (type: string) => {
         {/snippet}
       </NoteRow>
       </div>
-    {:else}<NoData />{/each}
+    {:else}<EmptyState />{/each}
     {#if data.page.type === 'paginated'}<Pagination meta={data.page} label="Notes pages" />{/if}
   </Container>
 </section>

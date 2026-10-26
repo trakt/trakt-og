@@ -5,7 +5,7 @@ import { page } from '$app/state';
 import Container from '$lib/components/container/Container.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import SortDirection from '$lib/components/dropdown/SortDirection.svelte';
-import NoData from '$lib/components/empty/NoData.svelte';
+import EmptyState from '$lib/components/empty/EmptyState.svelte';
 import DividersToggle from '$lib/components/filters/DividersToggle.svelte';
 import FadeHideMenu from '$lib/components/filters/FadeHideMenu.svelte';
 import { type FadeHide, fadeHideOptions, matchesFadeHide } from '$lib/components/filters/fadeHide';
@@ -21,6 +21,7 @@ import SubnavCount from '$lib/components/toolbar/SubnavCount.svelte';
 import file from '$lib/icons/regular/file.svg?raw';
 import { overlay } from '$lib/overlay/overlay';
 import type { ProfileUser } from '$lib/users/ProfileUser';
+import { findAction } from '$lib/users/findAction';
 import { toHistoryDays } from '$lib/users/history/toHistoryCard';
 import type { loadRatings } from '$lib/users/ratings/loadRatings';
 import type { RatingCard } from '$lib/users/ratings/RatingCard';
@@ -165,8 +166,12 @@ const count = $derived(data.total - (data.cards.length - cards.length));
         {@render grid(cards)}
       {/if}
       {#if data.page.type === 'paginated'}<Pagination meta={data.page} label="Ratings pages" />{/if}
+    {:else if data.query.rating !== 'all'}
+      <EmptyState action={{ href: href({ rating: 'all' }), text: 'Show all ratings' }} />
     {:else}
-      <div class="empty"><NoData /></div>
+      <div class="empty">
+        <EmptyState action={data.isSelf ? findAction(data.query.type) : undefined} />
+      </div>
     {/if}
   </Container>
 </section>

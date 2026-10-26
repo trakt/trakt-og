@@ -5,7 +5,7 @@
   24 hours, now and every 2 minutes while the tab is visible. Until the first answer, shimmering rows hold their place.
 -->
 <script lang="ts">
-import EmptyState from '$lib/components/empty/EmptyState.svelte';
+import EmptyNote from '$lib/components/empty/EmptyNote.svelte';
 import Shimmer from '$lib/components/loading/Shimmer.svelte';
 import { untrack } from 'svelte';
 import { apiQueue } from '$lib/api/apiQueue';
@@ -92,7 +92,7 @@ const noun = $derived(type === 'shows' ? 'show' : 'movie');
       {/each}
     </ul>
   {:else if tiles.length === 0}
-    <EmptyState compact>No one is watching a {noun} right now.</EmptyState>
+    <EmptyNote>No one you follow is watching a {noun}.</EmptyNote>
   {:else}
     <ul class="members">
       {#each tiles as { watch, progress, minutesLeft } (watch.member.key)}

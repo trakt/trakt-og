@@ -1,5 +1,5 @@
 <script lang="ts">
-import NoData from '$lib/components/empty/NoData.svelte';
+import EmptyState from '$lib/components/empty/EmptyState.svelte';
 import FanartHeader from '$lib/components/media/FanartHeader.svelte';
 import ExternalLinks from '$lib/components/summary/ExternalLinks.svelte';
 import MediaTools from '$lib/components/summary/MediaTools.svelte';
@@ -49,7 +49,7 @@ const movie = $derived(data.movie);
         </table>
       </DataPanel>
     {:else}
-      <NoData>No release dates yet.</NoData>
+      <EmptyState />
     {/each}
   {/snippet}
 </SummaryFrame>

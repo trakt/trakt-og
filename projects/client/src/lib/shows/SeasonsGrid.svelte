@@ -3,6 +3,7 @@
   dropdown and direction toggle, then five season posters a row with their episode counts and quick icons.
 -->
 <script lang="ts">
+import EmptyState from '$lib/components/empty/EmptyState.svelte';
 import FadeHideMenu from '$lib/components/filters/FadeHideMenu.svelte';
 import { type FadeHide, fadeHideOptions, matchesFadeHide } from '$lib/components/filters/fadeHide';
 import { lazyItemStats } from '$lib/shows/lazyItemStats.svelte';
@@ -12,6 +13,7 @@ import { quickIconFill } from '$lib/components/media/quickIconFill';
 import SortHeading from '$lib/components/summary/SortHeading.svelte';
 import { overlay } from '$lib/overlay/overlay';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
+import { expireHideCookie } from '$lib/components/filters/expireHideCookie';
 import { SEASON_SORTS, type SeasonCard, type SeasonSort, sortSeasons } from './toShowSummary.ts';
 
 interface Props {
@@ -50,6 +52,10 @@ const stats = lazyItemStats({
 const sorted = $derived(
   sortSeasons({ cards: cards.map(({ card }) => card), by: stats.by, flipped, stats: stats.counts }),
 );
+function clearHide() {
+  expireHideCookie('show');
+  filters = { ...filters, hide: [] };
+}
 </script>
 
 {#if seasons.length > 0}
@@ -57,6 +63,9 @@ const sorted = $derived(
   <SortHeading id="seasons" {count} noun="Season" sorts={SEASON_SORTS} bind:by bind:flipped loading={stats.loading}>
     {#snippet controls()}{#if signedIn}<FadeHideMenu value={filters} options={fadeHideOptions} cookie="show" onchange={(next) => (filters = next)} />{/if}{/snippet}
   </SortHeading>
+  {#if cards.length === 0}
+    <EmptyState action={{ text: 'Show hidden seasons', onclick: clearHide }} />
+  {:else}
   <PosterGrid columns={5}>
       {#each sorted as { id, number, rating, released, votes: _, airedEpisodes, episodes, ...card } (id)}
         {@const view = cards.find(({ card }) => card.id === id)}
@@ -77,5 +86,6 @@ const sorted = $derived(
         />
       {/each}
     </PosterGrid>
+  {/if}
 </section>
 {/if}

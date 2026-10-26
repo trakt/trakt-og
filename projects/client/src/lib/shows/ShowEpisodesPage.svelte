@@ -1,5 +1,6 @@
 <!-- `/shows/:id/seasons/all`: every episode of the show in air order, specials included. -->
 <script lang="ts">
+import EmptyState from '$lib/components/empty/EmptyState.svelte';
 import type { HeaderUser } from '$lib/components/header/HeaderUser';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
 import EpisodeList from './EpisodeList.svelte';
@@ -32,4 +33,5 @@ const sections = $derived([
   {#key data.show.id}
   <EpisodeList showId={data.show.id} signedIn={data.signedIn} initialFilters={data.filters} rows={episodes.rows} datePreferences={data.datePreferences} search vip={data.user?.isVip ?? false} initialTerms={data.terms} initialSort={data.sort} />
   {/key}
+  {#if episodes.rows.length === 0}<EmptyState />{/if}
 </ShowSubpage>

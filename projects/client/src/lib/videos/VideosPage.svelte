@@ -9,7 +9,7 @@ import { replaceState } from '$app/navigation';
 import { page } from '$app/state';
 import VideoPopup from '$lib/components/dialog/VideoPopup.svelte';
 import { videoLinkClicks } from '$lib/components/dialog/videoLinkClicks';
-import NoData from '$lib/components/empty/NoData.svelte';
+import EmptyState from '$lib/components/empty/EmptyState.svelte';
 import VideoFanartCard from '$lib/components/media/VideoFanartCard.svelte';
 import SubpageFrame from '$lib/components/summary/SubpageFrame.svelte';
 import SectionToolbar from '$lib/components/toolbar/SectionToolbar.svelte';
@@ -71,7 +71,7 @@ const playingTitle = $derived(data.videos.find((video) => video.href === playing
         {/each}
       </ul>
     {:else}
-      <NoData>No videos yet.</NoData>
+      <EmptyState />
     {/if}
   </div>
 </SubpageFrame>

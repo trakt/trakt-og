@@ -6,7 +6,7 @@
 -->
 <script lang="ts">
 import CalendarDayHeader from '$lib/components/calendar/CalendarDayHeader.svelte';
-import NoData from '$lib/components/empty/NoData.svelte';
+import EmptyState from '$lib/components/empty/EmptyState.svelte';
 import type QuickIcons from '$lib/components/media/QuickIcons.svelte';
 import type { ComponentProps } from 'svelte';
 import { agendaSlots } from './agendaSlots.ts';
@@ -31,7 +31,7 @@ const { days, today, artwork, mixed = false, cardIcons }: Props = $props();
     <section class="day" id="day-{day.date}" data-day={day.date}>
       <CalendarDayHeader date={day.date} today={day.date === today} past={day.date < today} />
       {#if day.entries.length === 0}
-        <div class="empty"><NoData>Nothing on this day.</NoData></div>
+        <div class="empty"><EmptyState title="Nothing on this day." /></div>
       {:else}
         {#each agendaSlots(day.entries) as slot, i (i)}
           <div class="slot">
@@ -53,7 +53,7 @@ const { days, today, artwork, mixed = false, cardIcons }: Props = $props();
 .empty {
   padding: var(--calendar-list-padding);
 
-  & :global(.no-data) {
+  & :global(.empty-state) {
     margin: 0;
     border-radius: var(--radius-calendar-card);
   }

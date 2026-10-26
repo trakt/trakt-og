@@ -10,6 +10,7 @@ import { viewerFetch } from '$lib/auth/viewerFetch';
 import Dialog from '$lib/components/dialog/Dialog.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import DialogArtHeader from '$lib/components/dialog/DialogArtHeader.svelte';
+import EmptyNote from '$lib/components/empty/EmptyNote.svelte';
 import { toast } from '$lib/components/toast/toast.svelte';
 import ServiceTile from '$lib/components/watchnow/ServiceTile.svelte';
 import {
@@ -26,7 +27,6 @@ import { titleFanart } from '$lib/firstNight/titleFanart';
 import Icon from '$lib/icons/Icon.svelte';
 import check from '$lib/icons/solid/check.svg?raw';
 import magnifyingGlass from '$lib/icons/regular/magnifying-glass.svg?raw';
-import tv from '$lib/icons/regular/tv-retro.svg?raw';
 import Shimmer from '$lib/components/loading/Shimmer.svelte';
 import { saveSettings } from '$lib/settings/saveSettings';
 import { settingsRequest } from '$lib/settings/settingsRequest';
@@ -137,16 +137,11 @@ async function save() {
           : list.slice(0, SERVICES_SHOWN)}
         <div class="tiles">
           {#if shown.length === 0}
-            <!-- A filter that matched nothing, or a country with no services at all. -->
             <div class="none" role="status">
-              <span class="none-icon" aria-hidden="true"><Icon svg={term ? magnifyingGlass : tv} /></span>
               {#if term}
-                <p class="none-title">No services match “{query.trim()}”</p>
-                <p class="none-text">Check the spelling, try part of the name, or pick another country.</p>
-                <CtaLink small onclick={() => (query = "")}>Clear filter</CtaLink>
+                <EmptyNote action={{ onclick: () => (query = ''), text: 'Clear' }}>No services match “{query.trim()}”.</EmptyNote>
               {:else}
-                <p class="none-title">No streaming services in {here?.name ?? place.toUpperCase()} yet</p>
-                <p class="none-text">Trakt doesn't list any services there. Pick another country from the menu below.</p>
+                <EmptyNote>No streaming services in {here?.name ?? place.toUpperCase()} yet. Try another country.</EmptyNote>
               {/if}
             </div>
           {/if}
@@ -264,44 +259,13 @@ async function save() {
   overflow-y: auto;
 }
 
-/* Nothing matched: a centered note filling the three rows, and a way back to every service. */
+/* Nothing matched: centered in the three rows. */
 .none {
   grid-column: 1 / -1;
   grid-row: 1 / span 3;
   display: grid;
   place-content: center;
-  justify-items: center;
-  gap: var(--space-xs-inline);
   text-align: center;
-
-  p {
-    margin: 0;
-  }
-}
-
-.none-icon {
-  display: grid;
-  place-items: center;
-  inline-size: var(--taste-none-icon);
-  block-size: var(--taste-none-icon);
-  margin-block-end: var(--space-xs-inline);
-  border-radius: 50%;
-  background: var(--color-taste-genre-bg);
-  color: var(--color-taste-genre-text);
-  font-size: var(--font-size-large);
-}
-
-.none-title {
-  font-weight: var(--font-weight-headings-heavy);
-}
-
-.none-text {
-  color: var(--color-text-muted);
-  font-size: var(--font-size-small);
-}
-
-.none :global(.cta) {
-  margin-block-start: var(--space-xs-inline);
 }
 
 /* The section title and the search share a line. */

@@ -39,7 +39,7 @@ import { favoriteSlugs } from '$lib/components/watchnow/watchNow';
 import { watchNowTiles } from '$lib/components/filters/watchNowFilter';
 import type { ViewerSettings } from '$lib/settings/ViewerSettings';
 import { listFilterOptions } from '$lib/lists/listFilterOptions';
-import NoData from '$lib/components/empty/NoData.svelte';
+import EmptyState from '$lib/components/empty/EmptyState.svelte';
 import type { HeaderUser } from '$lib/components/header/HeaderUser';
 import ListTransfer from '$lib/components/lists/ListTransfer.svelte';
 import clone from '$lib/icons/regular/clone.svg?raw';
@@ -207,6 +207,14 @@ const pageTitle = $derived(
     ? `${data.profile.displayName}'s ${data.kind}`
     : `${data.list?.name}, a list by ${data.profile.displayName}`,
 );
+const filtered = $derived(
+  data.query.types.length > 0 || data.query.genres.length > 0 || Boolean(data.query.terms) ||
+    Boolean(data.query.watchnow) || (data.query.hide?.length ?? 0) > 0,
+);
+const clearedHref = $derived(
+  listHref(page.url, { types: [], genres: [], terms: '', watchnow: '', hide: data.query.hide?.length ? [] : undefined }),
+);
+const ownList = $derived(data.kind !== 'official' && data.user?.slug === data.profile.slug);
 let editing = $state(false);
 let deleting = $state(false);
 let personalCount = $state<number>();
@@ -716,7 +724,13 @@ async function saveNotes(text: string) {
         {/snippet}
         {#if !(owner && managing) && data.page.type === 'paginated'}<Pagination meta={data.page} label="List pages" />{/if}
       {:else}
-        <div class="empty"><NoData /></div>
+        <div class="empty">
+          {#if filtered}
+            <EmptyState action={{ href: clearedHref, text: 'Clear filters' }} />
+          {:else}
+            <EmptyState action={ownList ? { href: resolve('/shows/[chart=chart]', { chart: 'trending' }), text: 'Find a show' } : undefined} />
+          {/if}
+        </div>
       {/if}
     </Container>
 </section>

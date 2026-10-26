@@ -12,6 +12,7 @@ import { page } from '$app/state';
 import AdvancedFiltersToggle from '$lib/components/filters/AdvancedFiltersToggle.svelte';
 import AppliedFiltersSection from '$lib/components/filters/AppliedFiltersSection.svelte';
 import FadeHideMenu from '$lib/components/filters/FadeHideMenu.svelte';
+import { expireHideCookie } from '$lib/components/filters/expireHideCookie';
 import FiltersPanel from '$lib/components/filters/FiltersPanel.svelte';
 import { type AdvancedFilters, advancedFiltersSearch } from '$lib/components/filters/advancedFilters';
 import { filterChips } from '$lib/components/filters/filterChips';
@@ -28,7 +29,8 @@ import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import FrameGrid from '$lib/components/frame/FrameGrid.svelte';
 import FanartCard from '$lib/components/media/FanartCard.svelte';
 import { mediaQuickIcons } from '$lib/components/media/mediaQuickIcons';
-import NoData from '$lib/components/empty/NoData.svelte';
+import LoadFailed from '$lib/components/empty/LoadFailed.svelte';
+import EmptyState from '$lib/components/empty/EmptyState.svelte';
 import NoResults from '$lib/components/empty/NoResults.svelte';
 import { pageHref } from '$lib/components/pagination/pageWindow';
 import CountPill from '$lib/components/sidebar/CountPill.svelte';
@@ -146,6 +148,11 @@ function save(next: FadeHide) {
   fadeHide = next;
   // The loader asks the API to drop these, so the page comes back full instead of short.
   if (reload) invalidateAll();
+}
+
+function clearHide() {
+  expireHideCookie(data.type);
+  save({ ...fadeHide, hide: [] });
 }
 
 // The advanced filters.
@@ -304,7 +311,7 @@ const period = $derived(advanced.config.period);
 
   {#if data.failed}
     <div class="no-results">
-      <NoData inFrame>Recommendations didn't load. Refresh the page to try again.</NoData>
+      <LoadFailed inFrame what={meta.title} />
     </div>
   {:else if entries.length > 0}
     {#if hero}
@@ -324,7 +331,13 @@ const period = $derived(advanced.config.period);
     {/if}
   {:else}
     <div class="no-results">
-      <NoResults />
+      {#if advanced.count > 0}
+        <NoResults action={{ href: page.url.pathname, text: 'Clear filters' }} />
+      {:else if menu && fadeHide.hide.length > 0}
+        <NoResults action={{ onclick: clearHide, text: `Show hidden ${noun}s` }} />
+      {:else}
+        <EmptyState inFrame />
+      {/if}
     </div>
   {/if}
 </SidebarFrame>
@@ -370,7 +383,7 @@ const period = $derived(advanced.config.period);
   inset-inline-start: var(--chart-rank-inset);
 }
 
-/* OG centred the droids in the frame from 1025px up. */
+/* OG centred the droids in the frame from 1025px up; the other empty states sit there too. */
 .no-results {
   display: grid;
   place-items: center;

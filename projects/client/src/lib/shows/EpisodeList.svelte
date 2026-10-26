@@ -23,9 +23,7 @@ import { overlay } from '$lib/overlay/overlay';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
 import ItemStatIcons from '$lib/components/media/ItemStatIcons.svelte';
 import { lazyItemStats } from '$lib/shows/lazyItemStats.svelte';
-import eyeSlash from '$lib/icons/solid/eye-slash.svg?raw';
-import magnifyingGlass from '$lib/icons/regular/magnifying-glass.svg?raw';
-import { countLabel } from '$lib/utils/countLabel';
+import { expireHideCookie } from '$lib/components/filters/expireHideCookie';
 import { EPISODE_SORTS, type EpisodeRow, type EpisodeSort, sortEpisodes } from './toShowEpisodes.ts';
 
 interface Props {
@@ -103,6 +101,11 @@ function saveFilters(next: FadeHide) {
   replaceState(`${page.url.pathname}?${search}${page.url.hash}`, page.state);
 }
 
+function clearHide() {
+  expireHideCookie('season');
+  saveFilters({ ...filters, hide: [] });
+}
+
 // The air date in red, the runtime, then the episode's type (Season Premiere) in its own color.
 const metaTags = (row: EpisodeRow): readonly TagPill[] => [
   row.aired ? { text: row.aired, kind: 'primary' } : { text: 'No air date' },
@@ -122,14 +125,9 @@ const metaTags = (row: EpisodeRow): readonly TagPill[] => [
     {#if filtered.length === 0}
       <div class="empty" role="status">
         {#if matching.length === 0}
-          <EmptyState icon={magnifyingGlass} action={{ text: 'Clear search', onclick: () => (terms = '') }}>
-            No episode titles or overviews mention “{terms.trim()}”.
-          </EmptyState>
+          <EmptyState action={{ text: 'Clear search', onclick: () => (terms = '') }} />
         {:else}
-          <EmptyState icon={eyeSlash}>
-            Your hide filters cover {terms.trim() ? `the ${countLabel(matching.length, 'episode')} matching “${terms.trim()}”` : `all ${countLabel(matching.length, 'episode')}`}.
-            Change them from the eye menu.
-          </EmptyState>
+          <EmptyState action={{ text: 'Show hidden episodes', onclick: clearHide }} />
         {/if}
       </div>
     {/if}

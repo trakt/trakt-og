@@ -8,6 +8,7 @@
       placeholder="Choose genres..." />
 -->
 <script lang="ts">
+import EmptyNote from '$lib/components/empty/EmptyNote.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import xmark from '$lib/icons/solid/xmark.svg?raw';
 import type { FilterOption, FilterOptionGroup } from './filterOptions.ts';
@@ -160,7 +161,9 @@ const rows = $derived(groups.map((group, g) => {
     }}
   >
     {#if flat.length === 0}
-      <li class="note" role="presentation">No results match "{search}"</li>
+      <li class="note" role="presentation">
+        <EmptyNote>{#if search.trim()}No {label.toLocaleLowerCase('en')} match “{search.trim()}”.{:else}No {label.toLocaleLowerCase('en')} to pick from.{/if}</EmptyNote>
+      </li>
     {/if}
     {#each rows as group, g (g)}
       {#if group.label}

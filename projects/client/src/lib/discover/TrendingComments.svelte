@@ -9,6 +9,7 @@
   fanart, episode and name, and the commenter), and arrows on the section's edges step through.
 -->
 <script lang="ts">
+import EmptyState from '$lib/components/empty/EmptyState.svelte';
 import { page } from '$app/state';
 import CommentCard from '$lib/components/comments/CommentCard.svelte';
 import { authorOf } from '$lib/components/comments/authorOf';
@@ -155,7 +156,11 @@ async function filter(next: { kind?: typeof kind; media?: typeof media }) {
           </div>
         </div>
       {:else}
-        <p class={['empty', { stale: loading }]}>Nothing trending for these filters right now.</p>
+        <div class={['empty', { stale: loading }]}>
+          <EmptyState action={kind === 'all' && media === 'all'
+            ? undefined
+            : { onclick: () => filter({ kind: 'all', media: 'all' }), text: 'Clear filters' }} />
+        </div>
       {/if}
       {#if list.length > 1}
         <div class={['pager', { stale: loading }]}>
@@ -280,8 +285,6 @@ async function filter(next: { kind?: typeof kind; media?: typeof media }) {
   display: grid;
   place-items: center;
   min-block-size: var(--trending-comments-height);
-  margin: 0;
-  color: var(--color-discover-muted);
 }
 
 /* The pager under the comment, centred in a glass pill so it reads as controls: one avatar per comment. */

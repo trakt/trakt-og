@@ -13,7 +13,8 @@ import { page } from '$app/state';
 import Container from '$lib/components/container/Container.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import SortDirection from '$lib/components/dropdown/SortDirection.svelte';
-import NoData from '$lib/components/empty/NoData.svelte';
+import LoadFailed from '$lib/components/empty/LoadFailed.svelte';
+import EmptyState from '$lib/components/empty/EmptyState.svelte';
 import CardShimmerRow from '$lib/components/loading/CardShimmerRow.svelte';
 import LoadingOverlay from '$lib/components/loading/LoadingOverlay.svelte';
 import ProgressRowShimmer from '$lib/components/loading/ProgressRowShimmer.svelte';
@@ -34,6 +35,7 @@ import grid2 from '$lib/icons/regular/grid-2.svg?raw';
 import { overlay } from '$lib/overlay/overlay';
 import { settingsRequest } from '$lib/settings/settingsRequest';
 import type { ProfileUser } from '$lib/users/ProfileUser';
+import { findAction } from '$lib/users/findAction';
 import { changeProgressView } from './changeProgressView.ts';
 import { filterProgress } from './filterProgress.ts';
 import type { loadProgress } from './loadProgress.ts';
@@ -47,6 +49,7 @@ import { sortProgress } from './sortProgress.ts';
 import { sumProgressTotals } from './sumProgressTotals.ts';
 import { toProgressRow } from './toProgressRow.ts';
 import { viewerFetch } from '../../auth/viewerFetch.ts';
+import { expireHideCookie } from '../../components/filters/expireHideCookie.ts';
 
 type Props = {
   data: Awaited<ReturnType<typeof loadProgress>> & { profile: ProfileUser; user: HeaderUser | null };
@@ -58,10 +61,12 @@ type Props = {
   loading?: ReadonlySet<number>;
   /** A row opened its seasons: read its show's catalog. */
   onneed?: (id: number) => void;
+  /** Your progress didn't load: Try again reads it again. */
+  onretry?: () => unknown;
   now?: Date;
 };
 
-const { data, items, listed, loading = new Set(), onneed, now = new Date() }: Props = $props();
+const { data, items, listed, loading = new Set(), onneed, onretry, now = new Date() }: Props = $props();
 
 // OG's `per(50)`, 48 in grid view (eight rows of six).
 const PER_PAGE = 50;
@@ -146,6 +151,15 @@ function changeHide(hide: ProgressHide[]) {
   if (!hide.includes('completed')) url.searchParams.delete('hide_completed');
   // The same page with other filters; resolve() only takes route ids.
   // eslint-disable-next-line svelte/no-navigation-without-resolve
+  void goto(url.pathname + url.search, { invalidateAll: true, noScroll: true });
+}
+
+// Drops the search, the list and the hide toggles, and the eye's saved hide cookie as its Show All does.
+function clearFilters() {
+  expireHideCookie('progress');
+  const url = new URL(page.url);
+  for (const key of ['page', 'terms', 'list', 'hide_completed']) url.searchParams.delete(key);
+  // eslint-disable-next-line svelte/no-navigation-without-resolve -- the same page without its filters
   void goto(url.pathname + url.search, { invalidateAll: true, noScroll: true });
 }
 </script>
@@ -257,13 +271,13 @@ function changeHide(hide: ProgressHide[]) {
       {:else}
         {#each Array.from({ length: SHIMMER_ROWS }, (_, i) => i) as slot (slot)}<ProgressRowShimmer />{/each}
       {/if}
+    {:else if onretry}
+      <div class="empty"><LoadFailed what="Progress" {onretry} /></div>
+    {:else if items && items.length > 0}
+      <EmptyState action={{ onclick: clearFilters, text: 'Clear filters' }} />
     {:else}
       <div class="empty">
-        {#if listFilter}
-          <NoData>Add some TV shows to your list and they'll start showing up here.</NoData>
-        {:else}
-          <NoData />
-        {/if}
+        <EmptyState action={data.type === 'watched' ? findAction('shows') : undefined} />
       </div>
     {/if}
   </Container>

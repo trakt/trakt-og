@@ -5,11 +5,12 @@
   fails on its own if it doesn't. A check-in still running reads as live, like the Social Feed's watching-now cards.
 -->
 <script lang="ts">
+import { resolve } from '$app/paths';
 import type { Snippet } from 'svelte';
 import { browser } from '$app/environment';
+import LoadFailed from '$lib/components/empty/LoadFailed.svelte';
+import PanelPrompt from '$lib/components/empty/PanelPrompt.svelte';
 import CardShimmerRow from '$lib/components/loading/CardShimmerRow.svelte';
-import NoData from '$lib/components/empty/NoData.svelte';
-import PanelPrompt from '$lib/components/first-night/PanelPrompt.svelte';
 import StarterPicks from '$lib/components/first-night/StarterPicks.svelte';
 import { panelQuotes } from '$lib/firstNight/panelQuotes';
 import FanartCard from '$lib/components/media/FanartCard.svelte';
@@ -34,9 +35,11 @@ interface Props {
   /** Only VIPs could change the rows in OG; everyone else was sent to the VIP page. */
   isVip: boolean;
   datePreferences: DatePreferences;
+  /** Welcome mode: an empty panel offers starter picks instead of a link. */
+  welcome?: boolean;
 }
 
-const { plays, username, isVip, datePreferences }: Props = $props();
+const { plays, username, isVip, datePreferences, welcome = false }: Props = $props();
 
 const PER_ROW = 3;
 const CLOCK_MS = 30_000;
@@ -111,8 +114,9 @@ function changeRows(rows: number) {
   {#snippet cards()}
     {#if items.length === 0}
       <PanelPrompt roomy --panel-prompt-offset="calc(var(--space-lg-block) + var(--space-fanarts-row-end))"
-  quote={panelQuotes.recentlyWatched}
-  text="Mark a few things you've watched. Your stats, recaps and recommendations follow.">
+  quote={panelQuotes.recentlyWatched} {welcome}
+  text="Mark what you've seen. Stats, recaps and picks follow."
+  action={{ href: resolve('/movies/[chart=chart]', { chart: 'popular' }), text: 'Find a movie' }}>
         {#snippet picks()}<StarterPicks chart="popular" type="movies" count={4} action="seen" />{/snippet}
       </PanelPrompt>
     {:else}
@@ -143,7 +147,7 @@ function changeRows(rows: number) {
 
 {#snippet failed()}
   <div class="notice">
-  <NoData>Recently Watched didn't load. Refresh the page to try again.</NoData>
+  <LoadFailed what="Recently Watched" />
 </div>
 {/snippet}
 

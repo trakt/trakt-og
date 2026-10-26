@@ -26,6 +26,7 @@ import MediaTools from '$lib/components/summary/MediaTools.svelte';
 import NameList from '$lib/components/summary/NameList.svelte';
 import Overview from '$lib/components/summary/Overview.svelte';
 import PrivateNotes from '$lib/components/summary/PrivateNotes.svelte';
+import EmptyState from '$lib/components/empty/EmptyState.svelte';
 import RatingsStrip from '$lib/components/summary/RatingsStrip.svelte';
 import SectionNav from '$lib/components/summary/SectionNav.svelte';
 import SummaryFrame from '$lib/components/summary/SummaryFrame.svelte';
@@ -137,6 +138,10 @@ const textLinks = $derived(person.links.filter(({ icon }) => !icon));
 const filtered = $derived(
   !query.movies || !query.shows || query.terms !== '' || query.fade.length > 0 || query.hide.length > 0,
 );
+function clearFilters() {
+  query = { ...query, terms: '', hide: [], movies: true, shows: true };
+  era = null;
+}
 // Their birthday: the gold tag, the party hat, the confetti, and after a long while in view, a Known For character.
 const birthday = $derived(data.birthday);
 const firstName = $derived(person.name.split(' ')[0] ?? person.name);
@@ -437,7 +442,11 @@ function yearLine(credit: PersonCredit) {
       </div>
     </div>
 
-    {#if years}
+    {#if !current}
+      <EmptyState />
+    {:else if shown.length === 0}
+      <EmptyState action={{ onclick: clearFilters, text: 'Clear filters' }} />
+    {:else if years}
       {#each years as group, i (`${group.year}-${i}`)}
         <section class={['year', view]} style:--era-accent={yearAccent(group.year)}
           aria-label={group.year ? String(group.year) : 'No release date'}>

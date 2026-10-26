@@ -12,6 +12,7 @@ import justwatchLogo from '$lib/assets/sites/justwatch-logo.svg';
 import Dialog from '$lib/components/dialog/Dialog.svelte';
 import DialogArtHeader from '$lib/components/dialog/DialogArtHeader.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
+import EmptyNote from '$lib/components/empty/EmptyNote.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import Shimmer from '$lib/components/loading/Shimmer.svelte';
 import heart from '$lib/icons/solid/heart.svg?raw';
@@ -183,7 +184,7 @@ const focusAboveFooter: Attachment<HTMLElement> = (footer) => {
       {#if loading}
         {@render shimmers()}
       {:else}
-        <p class="no-links">We couldn't find any watch now links for your country. Check back soon!</p>
+        <div class="no-links"><EmptyNote>No watch now links in {picked?.name ?? 'your country'} yet.</EmptyNote></div>
       {/if}
     {/each}
   </div>
@@ -339,9 +340,6 @@ const focusAboveFooter: Attachment<HTMLElement> = (footer) => {
 }
 
 .no-links {
-  margin: 0;
-  color: var(--color-control-muted);
-  font-style: italic;
   text-align: center;
 }
 

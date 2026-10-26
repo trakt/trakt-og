@@ -16,7 +16,7 @@ import { newComment } from '$lib/components/comments/newComment.svelte';
 import NewCommentForm from '$lib/components/comments/NewCommentForm.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import SortDirection from '$lib/components/dropdown/SortDirection.svelte';
-import NoData from '$lib/components/empty/NoData.svelte';
+import EmptyState from '$lib/components/empty/EmptyState.svelte';
 import Pagination from '$lib/components/pagination/Pagination.svelte';
 import SubpageFrame from '$lib/components/summary/SubpageFrame.svelte';
 import SectionToolbar from '$lib/components/toolbar/SectionToolbar.svelte';
@@ -103,8 +103,10 @@ const languageHref = (code: CommentLanguage) => href(data.sort.by, data.sort.how
 >
   <NewCommentForm item={data.media.item} />
   <div id="comments" class="comments">
-    {#if comments.length === 0}
-      <NoData>No comments yet. What do you think?</NoData>
+    {#if comments.length === 0 && (data.language.code === 'en' || data.language.code === 'all')}
+      <EmptyState />
+    {:else if comments.length === 0}
+      <EmptyState action={{ href: languageHref('en'), text: 'Show English comments' }} />
     {:else}
       {#if data.page}<Pagination meta={data.page} label="Comments pages" />{/if}
       {#each comments as comment (comment.id)}

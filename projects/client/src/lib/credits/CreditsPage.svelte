@@ -10,7 +10,7 @@ import { replaceState } from '$app/navigation';
 import { page } from '$app/state';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import SortDirection from '$lib/components/dropdown/SortDirection.svelte';
-import NoData from '$lib/components/empty/NoData.svelte';
+import EmptyState from '$lib/components/empty/EmptyState.svelte';
 import FilterPopover from '$lib/components/filters/FilterPopover.svelte';
 import CastCard from '$lib/components/summary/CastCard.svelte';
 import SectionHeading from '$lib/components/summary/SectionHeading.svelte';
@@ -177,7 +177,8 @@ const matches = $derived(results.reduce((total, group) => total + group.people.l
         </ul>
       </section>
     {:else}
-      {#if terms}<NoData>No one matches “{terms}”.</NoData>{/if}
+      {#if terms}<EmptyState action={{ onclick: () => setTerms(''), text: 'Clear search' }} />
+      {:else}<EmptyState />{/if}
     {/each}
   </div>
 </SubpageFrame>

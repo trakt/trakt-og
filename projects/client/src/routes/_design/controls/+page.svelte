@@ -1,11 +1,14 @@
 <script lang="ts">
+import { resolve } from '$app/paths';
 import { page } from '$app/state';
 import { ogRepoUrls } from '$lib/about/ogRepoUrls';
 import { chartFilters } from '$lib/charts/chartFilters';
 import LinkButton from '$lib/components/button/LinkButton.svelte';
 import Container from '$lib/components/container/Container.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
-import NoData from '$lib/components/empty/NoData.svelte';
+import EmptyNote from '$lib/components/empty/EmptyNote.svelte';
+import LoadFailed from '$lib/components/empty/LoadFailed.svelte';
+import EmptyState from '$lib/components/empty/EmptyState.svelte';
 import NoResults from '$lib/components/empty/NoResults.svelte';
 import AdvancedFiltersToggle from '$lib/components/filters/AdvancedFiltersToggle.svelte';
 import { type AdvancedFilters, emptyFilters } from '$lib/components/filters/advancedFilters';
@@ -283,25 +286,40 @@ function showOverlay() {
 </Specimen>
 
 <Specimen title="Empty states"
-  note="Each where its page puts it. A chart or search with nothing to show centers the droids in its frame.">
-  <Variant label="A list with nothing in it">
+  note="One part per reason a section is empty; see the design system rules. A dashboard panel's not started is its film prompt (the dashboard page shows each).">
+  <Variant label="Nothing there: someone else's, or none to show">
     <div class="ground surface">
-      <NoData />
+      <EmptyState />
     </div>
   </Variant>
-  <Variant label="A dashboard panel that failed">
+  <Variant label="Not started, off the dashboard: your own, with a way to start">
     <div class="ground surface">
-      <NoData>Up Next didn't load. Refresh the page to try again.</NoData>
+      <EmptyState action={{ href: resolve('/movies/[chart=chart]', { chart: 'trending' }), text: 'Find a movie' }} />
     </div>
   </Variant>
-  <Variant label="A chart that failed, in the frame">
-    <div class="ground frame-page">
-      <NoData inFrame>Recommendations didn't load. Refresh the page to try again.</NoData>
+  <Variant label="Didn't load">
+    <div class="ground surface">
+      <LoadFailed what="Up Next" onretry={() => new Promise((done) => setTimeout(done, 1500))} />
     </div>
   </Variant>
-  <Variant label="A chart or search with no results">
+  <Variant label="Didn't load, in a chart's frame">
     <div class="ground frame-page">
-      <NoResults />
+      <LoadFailed what="Trending" inFrame onretry={() => new Promise((done) => setTimeout(done, 1500))} />
+    </div>
+  </Variant>
+  <Variant label="Filtered out">
+    <div class="ground surface">
+      <EmptyState action={{ onclick: () => {}, text: 'Clear filters' }} />
+    </div>
+  </Variant>
+  <Variant label="Filtered out on the charts and search frames: OG's hooded figure">
+    <div class="ground frame-page">
+      <NoResults action={{ onclick: () => {}, text: 'Clear filters' }} />
+    </div>
+  </Variant>
+  <Variant label="Inline: a menu, picker or dialog">
+    <div class="ground surface">
+      <EmptyNote>No matching lists.</EmptyNote>
     </div>
   </Variant>
 </Specimen>

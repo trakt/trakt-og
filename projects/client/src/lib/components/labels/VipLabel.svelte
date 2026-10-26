@@ -33,13 +33,17 @@ const years = $derived(badge.kind === 'vip' ? badge.years : null);
   {#if badge.kind === 'vip' && badge.tag}
     {@const tag = badge.tag}
     <Tooltip text={tag.title}>
-      {#snippet trigger(tooltip)}<abbr class="tag" {...tooltip}>{tag.text}</abbr>{/snippet}
+      {#snippet trigger(tooltip)}
+        <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+        <abbr class="tag" tabindex="0" {...tooltip}>{tag.text}</abbr>
+      {/snippet}
     </Tooltip>
   {/if}
   {#if years}
     <Tooltip text="{years} years">
       {#snippet trigger(tooltip)}
-        <span class="years" {...tooltip}>
+        <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+        <span class="years" tabindex="0" {...tooltip}>
           <Icon svg={star} />{years}<span class="visually-hidden">&nbsp;years</span>
         </span>
       {/snippet}

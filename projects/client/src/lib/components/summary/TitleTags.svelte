@@ -56,7 +56,8 @@ const slashed = (i: number) => ({ 'before-slash': i < links.length - 1, 'after-s
     {#if scenes}
       <Tooltip text={scenes.hint}>
         {#snippet trigger(tooltip)}
-          <span class="part tag credits" {...tooltip}>Post Credits{#if scenes.count > 1}<span class="count"
+          <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+          <span class="part tag credits" tabindex="0" {...tooltip}>Post Credits{#if scenes.count > 1}<span class="count"
                 aria-hidden="true">×{scenes.count}</span><span class="visually-hidden">, {scenes.count} scenes</span
               >{/if}</span>
         {/snippet}

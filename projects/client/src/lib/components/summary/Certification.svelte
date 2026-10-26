@@ -13,7 +13,9 @@ const { certification }: { certification: string } = $props();
 
 <Tooltip text={certificationTip(certification)}>
   {#snippet trigger(tooltip)}
-    <span class="certification" {...tooltip}>{certification}</span>
+    <!-- Focusable, so the keyboard can show what the rating means. -->
+    <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+    <span class="certification" tabindex={certificationTip(certification) ? 0 : undefined} {...tooltip}>{certification}</span>
   {/snippet}
 </Tooltip>
 

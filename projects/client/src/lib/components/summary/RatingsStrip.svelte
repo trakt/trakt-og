@@ -70,7 +70,9 @@ const stats = $derived(stripStats(counts));
             <span class="number">{readableStat(stat.count)}</span>
           </a>
         {:else}
-          <span class="stat" {...tooltip}>
+          <!-- Focusable, so the keyboard can show the exact count a shortened one stands for. -->
+          <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+          <span class="stat" tabindex={readableStat(stat.count) === stat.detail ? undefined : 0} {...tooltip}>
             <span class="glyph" style:color="var(--color-strip-{stat.kind})"><Icon svg={icons[stat.kind]} /></span>
             <span class="number" aria-hidden="true">{readableStat(stat.count)}</span>
             <span class="visually-hidden">{stat.detail} {stat.label}</span>

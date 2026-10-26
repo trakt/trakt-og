@@ -1,7 +1,8 @@
 <!--
   A summary page's hidden extra, if it has one: typing its keys anywhere on the page, or clicking its small switch,
   loads and plays it. The switch joins something already on the page: the first segment of a bar (the tag bar over
-  the title), a row of a list (the sidebar's sections) or the last tile of the links out. It stays lit while it plays,
+  the title), a badge beside the certification, a row of a list (the sidebar's sections) or the last tile of the links
+  out. It stays lit while it plays,
   and a second click or Esc lets it play its way out; Esc stops the others at once. Keys stay quiet while you type in
   a field or hold a modifier, and pages without an extra render nothing. Mount it last on the page, so the switch is
   the last thing Tab reaches.
@@ -11,6 +12,7 @@ import { dev } from '$app/environment';
 import { type Component, untrack } from 'svelte';
 import type { Attachment } from 'svelte/attachments';
 import GlassAction from '$lib/components/glass-action/GlassAction.svelte';
+import Icon from '$lib/icons/Icon.svelte';
 import { type ExtraProps, extras } from './extras.ts';
 import { pageKey } from './pageKey.ts';
 import { typedSequence } from './typedSequence.ts';
@@ -98,10 +100,14 @@ function done() {
 // Without that on the page, there's none.
 const pin: Attachment<HTMLElement> = (node) => {
   const spot = extra && 'spot' in extra ? extra.spot : undefined;
-  const host = spot && document.querySelector('leads' in spot ? spot.leads : 'follows' in spot ? spot.follows : spot.ends);
+  const host =
+    spot &&
+    document.querySelector(
+      'leads' in spot ? spot.leads : 'follows' in spot ? spot.follows : 'beside' in spot ? spot.beside : spot.ends,
+    );
   if (!spot || !host) node.hidden = true;
   else if ('leads' in spot) host.prepend(node);
-  else if ('follows' in spot) host.after(node);
+  else if ('follows' in spot || 'beside' in spot) host.after(node);
   else host.append(node);
   return () => node.remove();
 };
@@ -109,7 +115,19 @@ const pin: Attachment<HTMLElement> = (node) => {
 
 <svelte:window {onkeydown} />
 
-{#if extra && 'spot' in extra && 'ends' in extra.spot}
+{#if extra && 'spot' in extra && 'beside' in extra.spot}
+  <button
+    class={['spot', 'badge', { on: Playing }]}
+    type="button"
+    aria-label={extra.spot.label}
+    aria-pressed={Boolean(Playing)}
+    style:--spot={extra.spot.color}
+    onclick={flick}
+    {@attach pin}
+  >
+    <Icon svg={extra.spot.icon} />
+  </button>
+{:else if extra && 'spot' in extra && 'ends' in extra.spot}
   {@const spot = extra.spot}
   <li style:--glass-action-ghost-hover-icon={spot.color} {@attach pin}>
     <GlassAction card glass ghost square icon={spot.icon} selected={Boolean(Playing)} aria-label={spot.label}
@@ -146,20 +164,6 @@ const pin: Attachment<HTMLElement> = (node) => {
 {/if}
 
 <style>
-.spot {
-  svg {
-    inline-size: 14px;
-    block-size: 14px;
-    filter: drop-shadow(0 0 2px var(--spot));
-  }
-
-  path {
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 1.3;
-  }
-}
-
 /* A segment of the bar like its other parts: a quiet icon that fills on hover, and lights up while it's on. */
 .segment {
   --spot-ink: #021216;
@@ -187,6 +191,59 @@ const pin: Attachment<HTMLElement> = (node) => {
     background-color: var(--spot);
     color: var(--spot-ink);
     box-shadow: inset 0 0 10px rgb(255 255 255 / 60%), 0 0 14px var(--spot);
+  }
+
+  svg {
+    inline-size: 14px;
+    block-size: 14px;
+    filter: drop-shadow(0 0 2px var(--spot));
+  }
+
+  path {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.3;
+  }
+}
+
+/* A badge the size of the certification it sits beside: at rest just its white icon, with no outline or fill (the
+   border stays, unseen, so the size holds); pointed at, the icon turns its color on a white fill; lit while on. Its box is a line of the certification's text, so the two match whatever the tokens say. */
+.badge {
+  display: inline-grid;
+  place-items: center;
+  box-sizing: content-box;
+  block-size: calc(var(--font-size-certification) * var(--line-height-base));
+  min-block-size: 0;
+  margin-inline-start: var(--space-certification);
+  padding: var(--space-certification-padding);
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  background: none;
+  color: var(--color-text-inverse);
+  font-size: var(--font-size-certification);
+  line-height: var(--line-height-base);
+  vertical-align: middle;
+
+  :global(svg) {
+    inline-size: 1.3em;
+    block-size: 1.3em;
+  }
+  cursor: pointer;
+  transition: background-color var(--transition-card), border-color var(--transition-card), box-shadow
+    var(--transition-card);
+
+  &:is(:hover, :focus-visible) {
+    border-color: var(--color-text-inverse);
+    background-color: var(--color-text-inverse);
+    color: var(--spot);
+    outline: none;
+  }
+
+  &.on {
+    border-color: var(--spot);
+    background-color: var(--spot);
+    color: var(--color-text-inverse);
+    box-shadow: 0 0 12px var(--spot);
   }
 }
 

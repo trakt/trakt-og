@@ -1,5 +1,6 @@
 import type { Component } from 'svelte';
 import skull from '$lib/icons/solid/skull.svg?raw';
+import spider from '$lib/icons/solid/spider.svg?raw';
 
 export type ExtraProps = {
   readonly ondone: () => void;
@@ -25,6 +26,12 @@ type Spot = {
   | {
       /** The list row it joins the list right after, found on the page by this selector. It shows the label. */
       readonly follows: string;
+    }
+  | {
+      /** The badge it sits right after, looking like it, found on the page by this selector. */
+      readonly beside: string;
+      /** The badge's icon, as `$lib/icons` gives it; the label names it for screen readers. */
+      readonly icon: string;
     }
   | {
       /** The list it joins as the last tile, like the summary's links out, found on the page by this selector. */
@@ -69,6 +76,10 @@ export const extras: Readonly<Record<string, Extra>> = {
   'movie:4633': {
     spot: { label: 'Something spooky', color: '#e9e2cf', ends: '.external-links', icon: skull },
     load: () => import('./movie-4633.svelte'),
+  },
+  'movie:205404': {
+    spot: { label: 'Something tingling', color: '#e8132b', beside: '.summary-title .certification', icon: spider },
+    load: () => import('./movie-205404.svelte'),
   },
   'show:4583': { keys: '4815162342', gap: 1500, load: () => import('./show-4583.svelte') },
   'show:93720': {

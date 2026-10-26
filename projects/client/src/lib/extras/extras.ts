@@ -34,6 +34,8 @@ type Extra = {
   | {
       /** What to type on the page, e.g. "42". */
       readonly keys: string;
+      /** How long a pause between keys can be, for a longer sequence; a second unless given. */
+      readonly gap?: number;
     }
   | {
       /** Any key like this wakes it, and it reads the keys typed after that itself. */
@@ -57,6 +59,7 @@ export const extras: Readonly<Record<string, Extra>> = {
     },
     load: () => import('./movie-12601.svelte'),
   },
+  'show:4583': { keys: '4815162342', gap: 1500, load: () => import('./show-4583.svelte') },
   'show:93720': {
     spot: { label: 'fsociety', color: '#e8343a', follows: 'nav[aria-label$=" sections"] > ul > li:first-child' },
     load: () => import('./show-93720.svelte'),

@@ -1,20 +1,25 @@
 <!--
-  A physical release's disc formats as the library's logos, at their sizes: Blu-ray runs wide. Each logo names its
-  format for screen readers.
-    <ReleaseFormats formats={[{ logo: 'bluray', label: 'Blu-ray' }, { logo: 'dvd', label: 'DVD' }]} />
+  A physical release's disc formats as the library's logos, spaced and sized like the library tooltip's footer row, then
+  any `tags` as its small boxed chips, centered for the release tooltip's footer. Each logo names its format for
+  screen readers.
+    <ReleaseFormats formats={[{ logo: 'bluray', label: 'Blu-ray' }, { logo: 'dvd', label: 'DVD' }]} tags={['Limited']} />
 -->
 <script lang="ts">
 import { collectionLogo } from '$lib/components/collection/collectionLogo';
 import Icon from '$lib/icons/Icon.svelte';
 
-const { formats }: { formats: readonly { readonly logo: string; readonly label: string }[] } = $props();
+const { formats, tags = [] }: {
+  formats: readonly { readonly logo: string; readonly label: string }[];
+  tags?: readonly string[];
+} = $props();
 </script>
 
 <span class="formats">
   {#each formats as format (format.logo)}
     {@const glyph = collectionLogo(format.logo)}
-    {#if glyph}<span class={['logo', glyph.size]}><Icon svg={glyph.svg} label={format.label} /></span>{/if}
+    {#if glyph}<Icon svg={glyph.svg} label={format.label} />{/if}
   {/each}
+  {#each tags as tag, i (i)}<span class="chip">{tag}</span>{/each}
 </span>
 
 <style>
@@ -22,20 +27,18 @@ const { formats }: { formats: readonly { readonly logo: string; readonly label: 
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--collection-logos-gap);
+  justify-content: center;
+  gap: var(--space-collection-row);
+  font-size: var(--font-size-collection-row-logo);
   line-height: 1;
 }
 
-.logo {
-  display: grid;
-  font-size: var(--font-size-collection-logos);
-
-  &.wide {
-    font-size: var(--font-size-collection-logos-wide);
-  }
-
-  &.small {
-    font-size: var(--font-size-collection-logos-small);
-  }
+.chip {
+  padding: var(--space-collection-chip);
+  border: 1px solid var(--color-collection-chip-border);
+  border-radius: var(--radius-collection-chip);
+  font-size: var(--font-size-collection-chip);
+  font-weight: var(--font-weight-headings-heavy);
+  line-height: var(--line-height-collection-chip);
 }
 </style>

@@ -1,14 +1,16 @@
 <!--
   The viewer's country (else the movie's original country) at the top of the release dates: its flag, name and tags,
-  then every release in order on one line, red up to today, with a Today mark and a countdown to the next one.
+  then every release in order on one line, red up to today, with a Today mark. Under each dot its type, then its date
+  and the countdown to the next one as tags; its dot's tooltip is the timeline rows' (`ReleaseTip`).
     <ReleaseTrack country={releases.featured} />
 -->
 <script lang="ts">
 import TagPills from '$lib/components/labels/TagPills.svelte';
 import type { TagPill } from '$lib/components/labels/TagPill';
 import CountryFlag from '$lib/components/table/CountryFlag.svelte';
-import ReleaseFormats from './ReleaseFormats.svelte';
-import { releasePills } from './releasePills.ts';
+import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
+import { releaseLabel } from './releaseLabel.ts';
+import ReleaseTip from './ReleaseTip.svelte';
 import type { ReleaseStop } from './toMovieReleases.ts';
 
 interface Props {
@@ -40,13 +42,15 @@ const tags: readonly TagPill[] = $derived([
   <ol>
     {#each country.stops as stop, i (i)}
       <li class={{ released: stop.released, done: country.stops.at(i + 1)?.released, today: stop.today }}>
-        <span class="dot" aria-hidden="true"></span>
+        <Tooltip toggles>
+          {#snippet trigger(tooltip)}
+            <button type="button" class="dot" aria-label={releaseLabel(stop)} {...tooltip}></button>
+          {/snippet}
+          <ReleaseTip release={stop} />
+        </Tooltip>
         {#if stop.today}<span class="today-label" aria-hidden="true"><TagPills tags={[{ text: 'Today', kind: 'light' }]} /></span>{/if}
         <span class="type">{stop.type}</span>
-        <time datetime={stop.date}>{stop.dateText}</time>
-        {#if releasePills(stop).length > 0}<TagPills tags={releasePills(stop)} />{/if}
-        {#if stop.formats.length > 0}<ReleaseFormats formats={stop.formats} />{/if}
-        {#if stop.countdown !== null}<TagPills tags={[countdown(stop.countdown)]} />{/if}
+        <time datetime={stop.date}><TagPills tags={[{ text: stop.dateText }, ...(stop.countdown === null ? [] : [countdown(stop.countdown)])]} /></time>
       </li>
     {/each}
   </ol>
@@ -134,9 +138,12 @@ li {
   box-sizing: border-box;
   inline-size: var(--release-track-dot);
   block-size: var(--release-track-dot);
+  min-block-size: 0;
+  padding: 0;
   border: var(--release-track-line) solid var(--color-release-track-done);
   border-radius: 50%;
   background: var(--color-release-box);
+  cursor: pointer;
 
   .released & {
     background: var(--color-release-track-done);
@@ -158,5 +165,4 @@ li {
 time {
   font-variant-numeric: tabular-nums;
 }
-
 </style>

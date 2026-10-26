@@ -1,15 +1,16 @@
 <!--
   A summary page's hidden extra, if it has one: typing its keys anywhere on the page, or clicking its small switch,
   loads and plays it. The switch joins something already on the page: the first segment of a bar (the tag bar over
-  the title) or a row of a list (the sidebar's sections). It stays lit while it plays, and a second click or
-  Esc lets it play its way out; Esc stops the others at once. Keys stay quiet
-  while you type in a field or hold a modifier, and pages without an extra render nothing. Mount it last on the page,
-  so the switch is the last thing Tab reaches.
+  the title), a row of a list (the sidebar's sections) or the last tile of the links out. It stays lit while it plays,
+  and a second click or Esc lets it play its way out; Esc stops the others at once. Keys stay quiet while you type in
+  a field or hold a modifier, and pages without an extra render nothing. Mount it last on the page, so the switch is
+  the last thing Tab reaches.
 -->
 <script lang="ts">
 import { dev } from '$app/environment';
 import { type Component, untrack } from 'svelte';
 import type { Attachment } from 'svelte/attachments';
+import GlassAction from '$lib/components/glass-action/GlassAction.svelte';
 import { type ExtraProps, extras } from './extras.ts';
 import { pageKey } from './pageKey.ts';
 import { typedSequence } from './typedSequence.ts';
@@ -97,17 +98,24 @@ function done() {
 // Without that on the page, there's none.
 const pin: Attachment<HTMLElement> = (node) => {
   const spot = extra && 'spot' in extra ? extra.spot : undefined;
-  const host = spot && document.querySelector('leads' in spot ? spot.leads : spot.follows);
+  const host = spot && document.querySelector('leads' in spot ? spot.leads : 'follows' in spot ? spot.follows : spot.ends);
   if (!spot || !host) node.hidden = true;
   else if ('leads' in spot) host.prepend(node);
-  else host.after(node);
+  else if ('follows' in spot) host.after(node);
+  else host.append(node);
   return () => node.remove();
 };
 </script>
 
 <svelte:window {onkeydown} />
 
-{#if extra && 'spot' in extra && 'follows' in extra.spot}
+{#if extra && 'spot' in extra && 'ends' in extra.spot}
+  {@const spot = extra.spot}
+  <li style:--glass-action-ghost-hover-icon={spot.color} {@attach pin}>
+    <GlassAction card glass ghost square icon={spot.icon} selected={Boolean(Playing)} aria-label={spot.label}
+      aria-pressed={Boolean(Playing)} onclick={flick} />
+  </li>
+{:else if extra && 'spot' in extra && 'follows' in extra.spot}
   <li class="row" {@attach pin}>
     <button
       class={['spot', { on: Playing }]}

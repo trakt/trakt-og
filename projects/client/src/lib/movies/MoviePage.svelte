@@ -15,6 +15,7 @@ import AdditionalStats from '$lib/components/summary/AdditionalStats.svelte';
 import ExternalLinks from '$lib/components/summary/ExternalLinks.svelte';
 import MediaTools from '$lib/components/summary/MediaTools.svelte';
 import ItemNav from '$lib/components/summary/ItemNav.svelte';
+import PageExtras from '$lib/extras/PageExtras.svelte';
 import LazySection from '$lib/components/summary/LazySection.svelte';
 import SummarySectionShimmer from '$lib/components/loading/SummarySectionShimmer.svelte';
 import ListsPreview from '$lib/components/summary/ListsPreview.svelte';
@@ -81,6 +82,8 @@ const textLinks = $derived(movie.links.filter(({ icon }) => !icon));
 
 <!-- Hrefs are built from API slugs, and resolve() only takes literal routes. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
+
+<PageExtras type="movie" id={movie.id} />
 
 <FanartHeader image={movie.fanart}>
   <SummaryTitle

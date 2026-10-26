@@ -12,6 +12,7 @@ import { startCommentReactions } from '$lib/components/comments/startCommentReac
 import Footer from '$lib/components/footer/Footer.svelte';
 import Header from '$lib/components/header/Header.svelte';
 import MobileSplash from '$lib/components/mobile-splash/MobileSplash.svelte';
+import { TOO_SMALL_FOR_OG } from '$lib/components/mobile-splash/tooSmallForOg';
 import Toaster from '$lib/components/toast/Toaster.svelte';
 import Nudges from '$lib/components/first-night/Nudges.svelte';
 import WatchNowHost from '$lib/components/watchnow/WatchNowHost.svelte';
@@ -19,6 +20,7 @@ import { startOverlay } from '$lib/overlay/startOverlay';
 import { toDarkKnight } from '$lib/settings/toDarkKnight';
 import { toTheme } from '$lib/settings/toTheme';
 import { onMount } from 'svelte';
+import { MediaQuery } from 'svelte/reactivity';
 
 let { children, data } = $props();
 
@@ -33,21 +35,30 @@ $effect(() => {
   if (!bare) document.documentElement.dataset.theme = theme;
 });
 
-onMount(() => {
+// Behind the mobile splash the app doesn't render or start at all: never on a phone (the server knows from its user
+// agent), and in a narrow window only once it's wide enough.
+const tooSmall = new MediaQuery(TOO_SMALL_FOR_OG, data.phone);
+const showApp = $derived(!bare && !tooSmall.current);
+let stopApp: (() => void) | undefined;
+
+$effect(() => {
+  if (!showApp || stopApp) return;
   const manager = userManager();
+  const stops = [startOverlay(manager), startCommentReactions(manager)];
+  stopApp = () => stops.forEach((stop) => stop());
+});
+
+onMount(() => {
   const stopSession = syncSession({
-    manager,
+    manager: userManager(),
     hasSession: data.hasSession,
     tokenExpired: data.tokenExpired,
     reload: invalidateAll,
   });
-  const stopOverlay = startOverlay(manager);
-  const stopReactions = startCommentReactions(manager);
 
   return () => {
     stopSession();
-    stopOverlay();
-    stopReactions();
+    stopApp?.();
   };
 });
 </script>
@@ -56,16 +67,18 @@ onMount(() => {
   {@render children()}
 {:else}
   <MobileSplash platform={data.platform} phone={data.phone}>
-  <a class="skip" href="#content">Skip to content</a>
-  <Header user={data.user} renewing={data.tokenExpired} searchType={data.searchType} {darkKnight} />
-  <main id="content" tabindex="-1">
-      {@render children()}
-    </main>
-  <Footer />
-</MobileSplash>
+    {#if showApp}
+      <a class="skip" href="#content">Skip to content</a>
+      <Header user={data.user} renewing={data.tokenExpired} searchType={data.searchType} {darkKnight} />
+      <main id="content" tabindex="-1">
+        {@render children()}
+      </main>
+      <Footer />
+    {/if}
+  </MobileSplash>
 {/if}
 <Toaster />
-{#if data.user && !bare}
+{#if data.user && showApp}
   <Nudges slug={data.user.slug} firstName={data.user.firstName} joinedAt={data.user.joinedAt} taste={{
     country: data.settings?.browsing?.watchnow?.country?.toLowerCase() || 'us',
     services: data.settings?.browsing?.watchnow?.favorites ?? [],

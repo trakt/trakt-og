@@ -2,8 +2,8 @@
   OG Redux is for tablets and computers. Below 768px wide, or on a phone held sideways, this hides the app and shows a
   splash instead, over an fsociety mask from Mr. Robot that glitches now and then: Trakt's own app and Mobile Web first,
   then other apps that sync with Trakt. A tablet held upright is asked to turn sideways, and a narrow desktop window to
-  get wider. CSS decides, so the first paint is already right. The server picks
-  the store from the user agent.
+  get wider. CSS decides, so the first paint is already right, and the layout doesn't render the app behind it. The
+  server picks the store from the user agent.
   `preview` forces the splash on for the design-system demo.
 -->
 <script lang="ts">
@@ -146,7 +146,8 @@ function typeOut(node: HTMLElement) {
 
 /*
  * Too small for OG: narrower than sm (768px), or a phone held sideways (its short height, on a touch screen, so a
- * desktop window with the dev tools docked below keeps OG).
+ * desktop window with the dev tools docked below keeps OG). The layout skips the app on the same query
+ * (TOO_SMALL_FOR_OG); this hides the server's copy until then.
  */
 @media (width < 768px) or ((pointer: coarse) and (height < 500px)) {
   .app {

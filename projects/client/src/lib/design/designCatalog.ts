@@ -108,8 +108,7 @@ export const designCatalog: readonly DesignGroup[] = [
       {
         slug: 'collection',
         title: 'Library',
-        summary:
-          'The library button with adding off: the sync link, Plex and Jellyfin items, format logos and metadata.',
+        summary: 'The library button with adding off: Plex and Jellyfin items, format logos and metadata.',
         source: 'components/collection',
       },
       {

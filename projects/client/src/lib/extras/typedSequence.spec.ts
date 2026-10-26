@@ -25,6 +25,11 @@ describe('util: typedSequence', () => {
     expect(typedSequence(two, '1', 300, '11').keys).toBe('11');
   });
 
+  it('should keep a slower sequence when given a longer gap', () => {
+    const one = typedSequence(start, '1', 100, '12', 3000);
+    expect(typedSequence(one, '2', 2500, '12', 3000).keys).toBe('12');
+  });
+
   it('should ignore named keys like Shift', () => {
     expect(typedSequence({ keys: '1', at: 100 }, 'Shift', 200, '12').keys).toBe('');
   });

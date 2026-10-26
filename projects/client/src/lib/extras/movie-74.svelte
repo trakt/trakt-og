@@ -118,7 +118,7 @@ const run: Attachment<HTMLElement> = (root) => {
 
   position: fixed;
   inset: 0;
-  z-index: var(--z-easter);
+  z-index: calc(var(--z-loading) - 1);
   overflow: hidden;
   pointer-events: none;
 }

@@ -1,24 +1,24 @@
 <!--
-  The rating-10 easter egg, mounted once in the root layout: the Totally Ninja guy rises from a random edge of the
-  screen, feet first on the edge, says "Totally Ninja!" for about a second, and slides back out. `ninja.show()`
+  The rating-10 extra, mounted once in the root layout: the Totally Ninja guy rises from a random edge of the
+  screen, feet first on the edge, says "Totally Ninja!" for about a second, and slides back out. `rating10.show()`
   starts him. He's decorative and never takes the pointer; the words reach screen readers through a live region.
 -->
 <script lang="ts">
-import guy from '$lib/assets/easter/totally-ninja.webp';
-import type { NinjaEdge } from './ninjaEntrance.ts';
-import { ninja } from './ninja.svelte.ts';
+import guy from './assets/rating-10.webp';
+import type { Edge } from './edgeEntrance.ts';
+import { rating10 } from './rating10.svelte.ts';
 
 // Turns the image so its bottom faces the edge he rises from.
-const turn: Record<NinjaEdge, string> = { bottom: '0deg', top: '180deg', left: '90deg', right: '-90deg' };
+const turn: Record<Edge, string> = { bottom: '0deg', top: '180deg', left: '90deg', right: '-90deg' };
 </script>
 
-<p class="visually-hidden" aria-live="polite">{ninja.current ? 'Totally Ninja!' : ''}</p>
-{#if ninja.current}
-  {@const { edge, along, id } = ninja.current}
+<p class="visually-hidden" aria-live="polite">{rating10.current ? 'Totally Ninja!' : ''}</p>
+{#if rating10.current}
+  {@const { edge, along, id } = rating10.current}
   {#key id}
     <div class={['stage', edge]} style:--along="{along}%" aria-hidden="true">
   <div class="anchor" style:rotate={turn[edge]}>
-    <img class="guy" src={guy} alt="" onanimationend={() => ninja.done(id)} />
+    <img class="guy" src={guy} alt="" onanimationend={() => rating10.done(id)} />
   </div>
   <p class="bubble">Totally Ninja!</p>
 </div>
@@ -27,9 +27,20 @@ const turn: Record<NinjaEdge, string> = { bottom: '0deg', top: '180deg', left: '
 
 <style>
 .stage {
+  --extra-height: clamp(75px, 13vh, 120px);
+  --extra-duration: 1.9s; /* 0.35s up, about a second of speech, 0.35s down; the keyframes are cut to this */
+  --extra-bubble-gap: 12px; /* past the top of his head */
+  --extra-bubble-padding: 8px 16px;
+  --extra-bubble-radius: var(--radius-container);
+  --extra-bubble-tail: 14px;
+  --extra-bubble-font-size: 20px;
+  --extra-bubble-bg: #fff;
+  --extra-bubble-text: #111;
+  --extra-bubble-shadow: 0 8px 24px rgb(0 0 0 / 0.35);
+
   position: fixed;
   inset: 0;
-  z-index: var(--z-easter);
+  z-index: calc(var(--z-loading) - 1);
   overflow: hidden;
   pointer-events: none;
 }
@@ -66,34 +77,34 @@ const turn: Record<NinjaEdge, string> = { bottom: '0deg', top: '180deg', left: '
   position: absolute;
   inset-block-end: 0;
   inset-inline-start: 0;
-  block-size: var(--ninja-height);
+  block-size: var(--extra-height);
   inline-size: auto;
   max-inline-size: none;
   translate: -50% 0;
-  animation: rise var(--ninja-duration) ease-in-out both;
+  animation: rise var(--extra-duration) ease-in-out both;
 }
 
 /* Over his head, which is toward the middle of the screen whichever edge he's on, upright either way. */
 .bubble {
   position: absolute;
   margin: 0;
-  padding: var(--ninja-bubble-padding);
-  border-radius: var(--radius-ninja-bubble);
-  background-color: var(--color-ninja-bubble-bg);
-  box-shadow: var(--shadow-ninja-bubble);
-  color: var(--color-ninja-bubble-text);
+  padding: var(--extra-bubble-padding);
+  border-radius: var(--extra-bubble-radius);
+  background-color: var(--extra-bubble-bg);
+  box-shadow: var(--extra-bubble-shadow);
+  color: var(--extra-bubble-text);
   font-family: var(--font-headings);
-  font-size: var(--font-size-ninja-bubble);
+  font-size: var(--extra-bubble-font-size);
   font-weight: var(--font-weight-headings-heavy);
   white-space: nowrap;
-  animation: speak var(--ninja-duration) ease-out both;
+  animation: speak var(--extra-duration) ease-out both;
 
   /* The tail: a turned square on the side facing his head. */
   &::after {
     content: '';
     position: absolute;
-    inline-size: var(--ninja-bubble-tail);
-    block-size: var(--ninja-bubble-tail);
+    inline-size: var(--extra-bubble-tail);
+    block-size: var(--extra-bubble-tail);
     background-color: inherit;
     rotate: 45deg;
   }
@@ -104,23 +115,23 @@ const turn: Record<NinjaEdge, string> = { bottom: '0deg', top: '180deg', left: '
     translate: -50% 0;
 
     &::after {
-      inset-inline-start: calc(50% - var(--ninja-bubble-tail) / 2);
+      inset-inline-start: calc(50% - var(--extra-bubble-tail) / 2);
     }
   }
 
   .bottom & {
-    inset-block-end: calc(var(--ninja-height) + var(--ninja-bubble-gap));
+    inset-block-end: calc(var(--extra-height) + var(--extra-bubble-gap));
 
     &::after {
-      inset-block-end: calc(var(--ninja-bubble-tail) / -2);
+      inset-block-end: calc(var(--extra-bubble-tail) / -2);
     }
   }
 
   .top & {
-    inset-block-start: calc(var(--ninja-height) + var(--ninja-bubble-gap));
+    inset-block-start: calc(var(--extra-height) + var(--extra-bubble-gap));
 
     &::after {
-      inset-block-start: calc(var(--ninja-bubble-tail) / -2);
+      inset-block-start: calc(var(--extra-bubble-tail) / -2);
     }
   }
 
@@ -130,23 +141,23 @@ const turn: Record<NinjaEdge, string> = { bottom: '0deg', top: '180deg', left: '
     translate: 0 -50%;
 
     &::after {
-      inset-block-start: calc(50% - var(--ninja-bubble-tail) / 2);
+      inset-block-start: calc(50% - var(--extra-bubble-tail) / 2);
     }
   }
 
   .left & {
-    inset-inline-start: calc(var(--ninja-height) + var(--ninja-bubble-gap));
+    inset-inline-start: calc(var(--extra-height) + var(--extra-bubble-gap));
 
     &::after {
-      inset-inline-start: calc(var(--ninja-bubble-tail) / -2);
+      inset-inline-start: calc(var(--extra-bubble-tail) / -2);
     }
   }
 
   .right & {
-    inset-inline-end: calc(var(--ninja-height) + var(--ninja-bubble-gap));
+    inset-inline-end: calc(var(--extra-height) + var(--extra-bubble-gap));
 
     &::after {
-      inset-inline-end: calc(var(--ninja-bubble-tail) / -2);
+      inset-inline-end: calc(var(--extra-bubble-tail) / -2);
     }
   }
 }

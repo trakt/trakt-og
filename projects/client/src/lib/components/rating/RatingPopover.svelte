@@ -3,7 +3,7 @@ import type { Snippet } from 'svelte';
 import RatingHearts from '$lib/components/rating/RatingHearts.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import { ratingPrompt } from '$lib/components/rating/ratingPrompt';
-import { ninja } from '$lib/components/easter/ninja.svelte';
+import { rating10 } from '$lib/extras/rating10.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import trash from '$lib/icons/regular/trash-xmark.svg?raw';
 
@@ -57,8 +57,7 @@ function rate(rating: number | null) {
   if (busy) return;
   popover?.hidePopover();
   onrate(rating);
-  // OG's label for a 10 is "Totally Ninja!", so a 10 brings out the guy who says it.
-  if (rating === 10) ninja.show();
+  if (rating === 10) rating10.show();
 }
 
 function toggle(event: ToggleEvent) {

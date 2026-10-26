@@ -1,11 +1,11 @@
 <!--
-  A birthday surprise: one of the person's Known For posters rises from a random edge of the screen, like the Totally
-  Ninja guy, with a bubble from the character ("Happy birthday, Bryan! Love, Walter White"), then ducks back out.
-  It's decorative and never takes the pointer; the words reach screen readers through a live region.
-    <PartyCrasher image={credit.image} name="Bryan" from="Walter White" ondone={…} />
+  A birthday surprise: one of the person's Known For posters rises from a random edge of the screen, like the
+  rating-10 extra, with a bubble from the character ("Happy birthday, Bryan! Love, Walter White"), then ducks back
+  out. It's decorative and never takes the pointer; the words reach screen readers through a live region.
+    <BirthdayGuest image={credit.image} name="Bryan" from="Walter White" ondone={…} />
 -->
 <script lang="ts">
-import { ninjaEntrance } from '$lib/components/easter/ninjaEntrance';
+import { edgeEntrance } from './edgeEntrance.ts';
 
 interface Props {
   image: string;
@@ -17,8 +17,8 @@ interface Props {
 }
 
 const { image, name, from, ondone }: Props = $props();
-// The crasher's edge: any but the top, where the poster would hang upside down over the header.
-const entrance = ninjaEntrance();
+// The guest's edge: any but the top, where the poster would hang upside down over the header.
+const entrance = edgeEntrance();
 const edge = entrance.edge === 'top' ? 'bottom' : entrance.edge;
 const along = entrance.along;
 const turn = { bottom: '0deg', left: '90deg', right: '-90deg' }[edge];
@@ -34,9 +34,21 @@ const turn = { bottom: '0deg', left: '90deg', right: '-90deg' }[edge];
 
 <style>
 .stage {
+  --extra-height: clamp(150px, 24vh, 240px);
+  --extra-duration: 3.4s;
+  --extra-bubble-gap: 12px;
+  --extra-bubble-padding: 8px 16px;
+  --extra-bubble-radius: var(--radius-container);
+  --extra-bubble-font-size: 20px;
+  --extra-bubble-bg: #fff;
+  --extra-bubble-text: #111;
+  --extra-bubble-shadow: 0 8px 24px rgb(0 0 0 / 0.35);
+  --extra-from-text: #666;
+  --extra-from-font-size: 12px;
+
   position: fixed;
   inset: 0;
-  z-index: var(--z-easter);
+  z-index: calc(var(--z-loading) - 1);
   overflow: hidden;
   pointer-events: none;
 }
@@ -66,52 +78,52 @@ const turn = { bottom: '0deg', left: '90deg', right: '-90deg' }[edge];
   position: absolute;
   inset-block-end: 0;
   inset-inline-start: 0;
-  block-size: var(--party-crasher-height);
+  block-size: var(--extra-height);
   inline-size: auto;
   max-inline-size: none;
   border-radius: var(--radius-card-framed);
-  box-shadow: var(--shadow-ninja-bubble);
+  box-shadow: var(--extra-bubble-shadow);
   translate: -50% 0;
   transform-origin: 50% 100%;
-  animation: crash var(--party-crasher-duration) ease-in-out both;
+  animation: crash var(--extra-duration) ease-in-out both;
 }
 
-/* The ninja's bubble, with who it's from under the words. */
+/* The rating-10 extra's bubble, with who it's from under the words. */
 .bubble {
   position: absolute;
   margin: 0;
-  padding: var(--ninja-bubble-padding);
-  border-radius: var(--radius-ninja-bubble);
-  background-color: var(--color-ninja-bubble-bg);
-  box-shadow: var(--shadow-ninja-bubble);
-  color: var(--color-ninja-bubble-text);
+  padding: var(--extra-bubble-padding);
+  border-radius: var(--extra-bubble-radius);
+  background-color: var(--extra-bubble-bg);
+  box-shadow: var(--extra-bubble-shadow);
+  color: var(--extra-bubble-text);
   font-family: var(--font-headings);
-  font-size: var(--font-size-ninja-bubble);
+  font-size: var(--extra-bubble-font-size);
   font-weight: var(--font-weight-headings-heavy);
   white-space: nowrap;
-  animation: speak var(--party-crasher-duration) ease-out both;
+  animation: speak var(--extra-duration) ease-out both;
 
   & small {
     display: block;
-    color: var(--color-party-crasher-from);
-    font-size: var(--font-size-party-crasher-from);
+    color: var(--extra-from-text);
+    font-size: var(--extra-from-font-size);
     font-weight: var(--font-weight-headings);
   }
 
   .bottom & {
-    inset-block-end: calc(var(--party-crasher-height) * 0.7 + var(--ninja-bubble-gap));
-    inset-inline-start: calc(var(--along) + var(--party-crasher-height) / 3);
+    inset-block-end: calc(var(--extra-height) * 0.7 + var(--extra-bubble-gap));
+    inset-inline-start: calc(var(--along) + var(--extra-height) / 3);
   }
 
   .left & {
     inset-block-start: var(--along);
-    inset-inline-start: calc(var(--party-crasher-height) * 0.7 + var(--ninja-bubble-gap));
+    inset-inline-start: calc(var(--extra-height) * 0.7 + var(--extra-bubble-gap));
     translate: 0 -50%;
   }
 
   .right & {
     inset-block-start: var(--along);
-    inset-inline-end: calc(var(--party-crasher-height) * 0.7 + var(--ninja-bubble-gap));
+    inset-inline-end: calc(var(--extra-height) * 0.7 + var(--extra-bubble-gap));
     translate: 0 -50%;
   }
 }

@@ -89,8 +89,6 @@ const sections = $derived([
 <!-- Hrefs are built from API slugs, and resolve() only takes literal routes. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
-<PageExtras type="show" id={show.id} />
-
 <FanartHeader image={show.fanart} dropped={overlay.state('show', show.id).dropped}>
   <SummaryTitle title={show.title} year={show.year} certification={show.certification} />
   {#snippet stats()}
@@ -178,3 +176,5 @@ const sections = $derived([
   <RelatedItems title={show.title} source={data.relatedSource} load={() => lazy().related(media, data.relatedSource.genre)}
   loadPeople={(card) => lazy().relatedPeople(card)} datePreferences={data.datePreferences} />
 {/key}
+
+<PageExtras type="show" id={show.id} />

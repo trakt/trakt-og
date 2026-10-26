@@ -83,8 +83,6 @@ const textLinks = $derived(movie.links.filter(({ icon }) => !icon));
 <!-- Hrefs are built from API slugs, and resolve() only takes literal routes. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
-<PageExtras type="movie" id={movie.id} />
-
 <FanartHeader image={movie.fanart}>
   <SummaryTitle
     title={movie.title}
@@ -218,3 +216,5 @@ const textLinks = $derived(movie.links.filter(({ icon }) => !icon));
   <RelatedItems title={movie.title} source={data.relatedSource} load={() => lazy().related(media, data.relatedSource.genre)}
   loadPeople={(card) => lazy().relatedPeople(card)} datePreferences={data.datePreferences} />
 {/key}
+
+<PageExtras type="movie" id={movie.id} />

@@ -1,7 +1,9 @@
 <!--
   og's standard button: `primary` is the red one, `outline` a light outline for a second action or a quiet one, and
-  `violet` the current Trakt brand violet, for links to Trakt's own services. With an `href` it's a link: another
-  site's opens in a new tab with an arrow after the label, og's own stays in the tab. With `onclick` and no `href`
+  `violet` the current Trakt brand violet, for links to Trakt's own services. `tinted` is a soft fill and edge in
+  `--link-button-tint` (the text color unless set), at regular weight, for quiet ways out on a colored ground like the
+  error pages. With an `href` it's a link: another site's opens in a new tab with an arrow after the label, unless
+  `arrow={false}` (a label that leads with its own icon), and og's own stays in the tab. With `onclick` and no `href`
   it's a button.
     <LinkButton href={newBugUrl}>Open a bug report</LinkButton>
     <LinkButton onclick={clear} variant="outline">Clear filters</LinkButton>
@@ -15,11 +17,12 @@ interface Props {
   href?: string;
   onclick?: () => void;
   disabled?: boolean;
-  variant?: 'primary' | 'outline' | 'violet';
+  variant?: 'primary' | 'outline' | 'violet' | 'tinted';
+  arrow?: boolean;
   children: Snippet;
 }
 
-const { href, onclick, disabled = false, variant = 'primary', children }: Props = $props();
+const { href, onclick, disabled = false, variant = 'primary', arrow = true, children }: Props = $props();
 const offsite = $derived(!!href && /^https?:\/\//.test(href));
 </script>
 
@@ -34,7 +37,7 @@ const offsite = $derived(!!href && /^https?:\/\//.test(href));
     rel={offsite ? 'noopener' : undefined}
   >
     {@render children()}
-    {#if offsite}<Icon svg={external} />{/if}
+    {#if offsite && arrow}<Icon svg={external} />{/if}
   </a>
 {:else}
   <button type="button" class={['link-button', variant]} {onclick} {disabled}>{@render children()}</button>
@@ -94,6 +97,22 @@ const offsite = $derived(!!href && /^https?:\/\//.test(href));
   &:is(:hover, :focus-visible) {
     background-color: var(--brand-primary-darken);
     color: var(--color-text-inverse);
+  }
+}
+
+.tinted {
+  font-weight: normal;
+  border: 1px solid color-mix(in srgb, var(--link-button-tint, currentColor) var(--link-button-tint-line), transparent);
+  background-color: color-mix(in srgb, var(--link-button-tint, currentColor) var(--link-button-tint-fill), transparent);
+  color: inherit;
+
+  &:is(:hover, :focus-visible) {
+    background-color: color-mix(
+      in srgb,
+      var(--link-button-tint, currentColor) var(--link-button-tint-fill-hover),
+      transparent
+    );
+    color: inherit;
   }
 }
 

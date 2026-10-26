@@ -3223,6 +3223,65 @@
   --font-size-splash-tag: 11px;
   --splash-tag-padding: 0 6px;
 
+  /*
+   * Error scene: og's full-screen error pages. Dark in both themes. The still starts 30% across and fades into the
+   * theme's tint over a long eased curve, so there's no seam; the copy sits on the tint.
+   */
+  --color-error-scene-text: #fff;
+  --color-error-scene-muted: rgb(255 255 255 / 0.72);
+  --color-error-scene-faint: rgb(255 255 255 / 0.45);
+  --color-error-scene-winterfell: #0b0f17;
+  --color-error-scene-winterfell-accent: #cfe1ff;
+  --color-error-scene-matrix: #030805;
+  --color-error-scene-matrix-accent: #3dff6e;
+  --color-error-scene-cardiff: #110806; /* Halt and Catch Fire */
+  --color-error-scene-cardiff-accent: #ff9a5c;
+  --color-error-scene-lumon: #061110; /* Severance */
+  --color-error-scene-lumon-accent: #8fe3d6;
+  --color-error-scene-endurance: #08090c; /* Interstellar */
+  --color-error-scene-endurance-accent: #ffdcaa;
+  --color-error-scene-elliott: #040917; /* E.T. */
+  --color-error-scene-elliott-accent: #ffc56b;
+  --error-scene-art-start: 30%;
+  --error-scene-fade-x: linear-gradient(
+    to right,
+    transparent 0%,
+    rgb(0 0 0 / 0.03) 6%,
+    rgb(0 0 0 / 0.1) 12%,
+    rgb(0 0 0 / 0.22) 18%,
+    rgb(0 0 0 / 0.38) 24%,
+    rgb(0 0 0 / 0.56) 31%,
+    rgb(0 0 0 / 0.74) 38%,
+    rgb(0 0 0 / 0.88) 46%,
+    rgb(0 0 0 / 0.97) 55%,
+    #000 64%
+  );
+  --error-scene-fade-y: linear-gradient(
+    to bottom,
+    rgb(0 0 0 / 0.7) 0%,
+    #000 18%,
+    #000 70%,
+    rgb(0 0 0 / 0.55) 88%,
+    rgb(0 0 0 / 0.25) 100%
+  );
+  --error-scene-padding-block: 48px;
+  --error-scene-padding-inline: 64px;
+  --error-scene-copy-width: 560px;
+  --error-scene-copy-share: 55%; /* of the screen, at most */
+  --error-scene-gap: 20px;
+  --font-size-error-scene-label: 13px;
+  --error-scene-label-tracking: 0.14em;
+  --font-size-error-scene-code: 136px;
+  --font-size-error-scene-code-word: 80px; /* "Offline" */
+  --error-scene-code-stroke: 2px;
+  --error-scene-code-tracking: -0.04em;
+  --font-size-error-scene-quote: 35px;
+  --line-height-error-scene-quote: 1.12;
+  --font-size-error-scene-body: 16px;
+  --error-scene-body-measure: 30em;
+  --error-scene-actions-gap: 10px;
+  --error-scene-home-mark-size: 18px; /* the white mark in the Home button */
+
   /* Coming-soon placeholder at `/`: "OG Reanimated", a B-movie lobby card. The monster's colors live in its SVG. */
   --reanimated-ink: #111;
   --reanimated-text: #fff;
@@ -3564,6 +3623,9 @@
   --link-button-gap: 8px;
   --link-button-inline: 16px;
   --link-button-duration: 0.2s;
+  --link-button-tint-fill: 14%; /* tinted: of the tint, over the ground */
+  --link-button-tint-fill-hover: 24%;
+  --link-button-tint-line: 45%;
   --color-link-button-line: light-dark(rgb(0 0 0 / 0.3), rgb(255 255 255 / 0.4));
   --color-link-button-hover: light-dark(rgb(0 0 0 / 0.06), rgb(255 255 255 / 0.12));
 }

@@ -1,0 +1,65 @@
+<!doctype html>
+<!--
+  The last resort, when the app itself can't render an error (the root layout failed). No app code or tokens reach it,
+  so its few values sit here: the 500 scene's ground, ink and green.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Server Error (%sveltekit.status%) - Trakt</title>
+    <style>
+      body {
+        display: grid;
+        place-content: center;
+        min-height: 100dvh;
+        margin: 0;
+        padding: 24px;
+        box-sizing: border-box;
+        background: #030805;
+        color: #fff;
+        color-scheme: dark;
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      }
+
+      main {
+        display: grid;
+        gap: 20px;
+        max-width: 560px;
+      }
+
+      h1 {
+        margin: 0;
+        color: #3dff6e;
+        font: 13px Menlo, Monaco, Consolas, monospace;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+
+      blockquote {
+        margin: 0;
+        font: italic 35px/1.12 Georgia, "Times New Roman", serif;
+      }
+
+      p {
+        margin: 0;
+        color: rgb(255 255 255 / 0.72);
+      }
+
+      a {
+        color: #fff;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Error %sveltekit.status% · Something broke</h1>
+      <blockquote>“Never send a human to do a machine's job.”</blockquote>
+      <p>Agent Smith, <cite>The Matrix</cite></p>
+      <p>
+        Something broke on our side and this page didn't load. <a href="">Try again</a>, or check
+        <a href="https://status.trakt.tv">status.trakt.tv</a>.
+      </p>
+    </main>
+  </body>
+</html>

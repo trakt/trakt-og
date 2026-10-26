@@ -6,9 +6,9 @@ import { findSearchType } from './findSearchType.ts';
 import { retiredSearchTypes } from './retiredSearchTypes.ts';
 import { isIdType } from './isIdType.ts';
 import { toSearchCard } from './toSearchCard.ts';
-import { toSearchImageType } from './toSearchImageType.ts';
 import { toSearchListRow } from './toSearchListRow.ts';
 import { searchRowsSchema } from './searchRowsSchema.ts';
+import { searchDisplay } from './searchDisplay.ts';
 import { searchFilters } from './searchFilters.ts';
 import { positiveInt } from '../utils/positiveInt.ts';
 
@@ -16,7 +16,7 @@ type LoadSearchParams = {
   fetch: typeof fetch;
   token?: string | null;
   cookies: { get: (name: string) => string | undefined };
-  /** The layout's viewer settings carry the search image type. */
+  /** The layout's viewer settings carry the profile's search image type, the Display's starting artwork. */
   parent: () => Promise<{ datePreferences: { order: DateOrder }; settings?: unknown }>;
   url: URL;
   /** The `/search/<type>` segment. Left out, it's Shows & Movies. */
@@ -29,8 +29,6 @@ type LoadSearchParams = {
 const PER_PAGE = 36;
 const EXTENDED = 'full,images';
 
-// The tabs where a poster stands in for the title.
-const POSTER_TITLES = new Set(['', 'shows', 'movies']);
 // The tabs that hide the type tag.
 const NO_TYPE_TAG = new Set(['shows', 'movies', 'people']);
 
@@ -89,12 +87,9 @@ export async function loadSearch({ fetch, token, cookies, parent, url, type: slu
   const parsed = searchRowsSchema.safeParse(result?.hits ?? []);
   if (!parsed.success) error(502, 'The Trakt API returned invalid search results.');
   const hits = parsed.data;
-  const imageType = toSearchImageType({ settings, slug: type.slug });
   const cardOptions = {
     typeTag: !NO_TYPE_TAG.has(type.slug),
-    posterTitles: POSTER_TITLES.has(type.slug),
     premiereTag: isIdType(type),
-    imageType,
     now: new Date(),
     order: datePreferences.order,
   };
@@ -106,19 +101,24 @@ export async function loadSearch({ fetch, token, cookies, parent, url, type: slu
 
   const headers = result?.headers;
   const pagination = headers ? extractPageMeta(headers, page) : { type: 'paginated' as const, current: 1, total: 1 };
+  // An ID lookup has no paging headers: its hits are all there is.
+  const count = positiveInt(headers?.get('x-pagination-item-count') ?? null, hits.length);
   return {
     filters,
     slug: type.slug,
     idMode: isIdType(type),
     query,
-    imageType,
+    display: searchDisplay({ cookies, settings }),
     cards,
     lists: hits.map(toSearchListRow).filter((row) => row !== null),
     page: pagination,
+    /** Every match across the pages, for the sidebar's count. */
+    count: query ? count : 0,
     /** The sidebar's own state, so SSR renders it as the viewer left it, like the calendar's. */
     sidebar: {
       collapsed: cookies.get('sidebar_collapsed') !== undefined,
       recent: cookies.get('sidebar_recent') !== 'closed',
+      display: cookies.get('sidebar_display') !== 'closed',
     },
   };
 }

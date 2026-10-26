@@ -100,18 +100,6 @@ const featured = $derived(shows.at(0));
   {/if}
 </Specimen>
 
-<Specimen title="Search poster cards" note="Six per row, in the frame grid, with the viewer's own quick icons.">
-  <FrameGrid variant="poster">
-    {#each shows.slice(0, 6) as show (show.id)}
-      {@const state = overlay.state('show', show.id)}
-      <FanartCard variant="poster" href={show.href} title={show.title} year={show.year} image={show.poster}
-        hideTitle={show.poster !== undefined} userRating={state.rating} dropped={state.dropped}
-        tags={[{ text: 'Show' }, ...(show.year ? [{ text: String(show.year), kind: 'generic' as const }] : [])]}
-        icons={mediaQuickIcons({ item: show, state, datePreferences: data.datePreferences })} />
-    {/each}
-  </FrameGrid>
-</Specimen>
-
 <Specimen title="Quick icon states"
   note="Sample states, so each one shows without signing in. Hover an icon for its tooltip.">
   <PosterGrid>

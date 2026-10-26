@@ -3,16 +3,13 @@ import { describe, expect, it } from 'vitest';
 import { toSearchCard } from './toSearchCard.ts';
 import { toSearchListRow } from './toSearchListRow.ts';
 
-const all = {
-  typeTag: true,
-  posterTitles: true,
-  imageType: 'poster',
-  now: new Date('2026-09-29T12:00:00Z'),
-  order: 'mdy',
-} as const;
-const episodesTab = { ...all, typeTag: false, posterTitles: false };
+const all = { typeTag: true, now: new Date('2026-09-29T12:00:00Z'), order: 'mdy' } as const;
+const oneType = { ...all, typeTag: false };
 
 const poster = ['media.trakt.tv/images/shows/000/001/390/posters/medium/abc.jpg.webp'];
+const art = (kind: string) => [`media.trakt.tv/images/shows/000/001/388/${kind}/medium/a.jpg.webp`];
+const sized = (kind: string, size: string) =>
+  `https://media.trakt.tv/images/shows/000/001/388/${kind}/${size}/a.jpg.webp`;
 
 const hit = (fields: object) => searchRowsSchema.parse([fields]).at(0) ?? { type: 'show' };
 
@@ -21,6 +18,9 @@ const show = hit({
   show: {
     title: 'Breaking Bad',
     year: 2008,
+    overview: 'A chemistry teacher turns to crime.',
+    genres: ['drama', 'crime', 'thriller'],
+    network: 'AMC',
     ids: { trakt: 1388, slug: 'breaking-bad' },
     images: { poster },
     rating: 8.9,
@@ -31,7 +31,7 @@ const show = hit({
 });
 
 describe('toSearchCard', () => {
-  it('should tag a show with its type and year and let the poster stand in for the title', () => {
+  it('should tag a show with its type, network and episodes under two of its genres', () => {
     expect(toSearchCard(show, all)).toEqual({
       key: 'show-1388',
       type: 'show',
@@ -39,11 +39,16 @@ describe('toSearchCard', () => {
       href: '/shows/breaking-bad',
       title: 'Breaking Bad',
       year: 2008,
-      image: 'https://media.trakt.tv/images/shows/000/001/390/posters/thumb/abc.jpg.webp',
-      logo: undefined,
-      logoMode: false,
-      tags: [{ text: 'Show' }, { text: '2008', kind: 'generic' }],
-      hideTitle: true,
+      overview: 'A chemistry teacher turns to crime.',
+      certification: undefined,
+      network: 'AMC',
+      genres: ['Drama', 'Crime'],
+      art: {
+        poster: 'https://media.trakt.tv/images/shows/000/001/390/posters/thumb/abc.jpg.webp',
+        fanart: undefined,
+        logo: undefined,
+      },
+      tags: [{ text: 'Show' }, { text: 'AMC', kind: 'generic' }, { text: '62 episodes', kind: 'generic' }],
       released: true,
       rating: 8.9,
       airedEpisodes: 62,
@@ -51,191 +56,109 @@ describe('toSearchCard', () => {
     });
   });
 
-  it('should keep the year in the title only, and show the title, when there is no poster', () => {
-    const movie = hit({
-      type: 'movie',
-      movie: {
-        title: 'Soon',
-        year: 2027,
-        ids: { trakt: 9, slug: 'soon' },
-        released: '2027-01-01',
-      },
+  it('should tag a movie with its runtime and certification, and leave out what it lacks', () => {
+    const movie = (fields: object) =>
+      hit({ type: 'movie', movie: { title: 'Soon', year: 2027, ids: { trakt: 9, slug: 'soon' }, ...fields } });
+    expect(toSearchCard(movie({ runtime: 176, certification: 'PG-13', released: '2027-01-01' }), all)).toMatchObject({
+      tags: [{ text: 'Movie' }, { text: '2h 56m', kind: 'generic' }, { text: 'PG-13', kind: 'generic' }],
+      released: false,
     });
-    expect(toSearchCard(movie, all)).toMatchObject({ tags: [{ text: 'Movie' }], hideTitle: false, released: false });
+    expect(toSearchCard(movie({}), all)?.tags).toEqual([{ text: 'Movie' }]);
   });
 
-  it('should keep the title on the tabs that show it and drop the type tag on single-type tabs', () => {
-    expect(toSearchCard(show, { ...all, typeTag: false, posterTitles: false })).toMatchObject({
-      tags: [{ text: '2008', kind: 'generic' }],
-      hideTitle: false,
-    });
+  it('should drop the type tag on single-type tabs', () => {
+    expect(toSearchCard(show, oneType)?.tags.map(({ text }) => text)).toEqual(['AMC', '62 episodes']);
   });
 
-  it('should title an episode with its number and date it in the show zone', () => {
-    const episode = hit({
-      type: 'episode',
-      show: show.show,
-      episode: {
-        title: 'Pilot',
-        season: 1,
-        number: 1,
-        ids: { trakt: 62085 },
-        first_aired: '2008-01-21T02:00:00.000Z',
-        rating: 8.2,
-      },
-    });
-    expect(toSearchCard(episode, episodesTab)).toMatchObject({
-      key: 'episode-62085',
-      season: { show: 1388, number: 1, episode: 1 },
-      href: '/shows/breaking-bad/seasons/1/episodes/1',
-      title: '1x01 Pilot',
-      smallTitle: undefined,
-      tags: [{ text: 'Jan 20, 2008' }],
-      hideTitle: false,
+  it('should carry every artwork, so the Display can switch without a reload', () => {
+    const images = { poster: art('posters'), fanart: art('fanarts'), logo: art('logos') };
+    expect(toSearchCard(hit({ type: 'show', show: { ...show.show, images } }), all)?.art).toEqual({
+      poster: sized('posters', 'thumb'),
+      fanart: sized('fanarts', 'thumb'),
+      logo: sized('logos', 'medium'),
     });
   });
 
-  it('should include premiere labels in ID mode', () => {
-    const episode = hit({ type: 'episode', show: show.show, episode: { ids: { trakt: 3 }, season: 1, number: 1 } });
-    expect(toSearchCard(episode, { ...all, premiereTag: true })?.episodeBadge).toEqual({
-      label: 'Series Premiere',
-      kind: 'series-premiere',
-    });
-  });
-
-  it('should map a person onto a headshot card', () => {
-    const person = hit({
-      type: 'person',
-      person: { name: 'Aaron Paul', ids: { trakt: 2, slug: 'aaron-paul' } },
-    });
-    expect(toSearchCard(person, all)).toMatchObject({
-      href: '/people/aaron-paul',
-      title: 'Aaron Paul',
-      image: undefined,
-      tags: [{ text: 'Person' }],
-    });
-  });
-
-  it('should tag a person with their age or when they died, and what they are known for', () => {
-    const person = (birthday: string, death: string | null) =>
-      hit({
-        type: 'person',
-        person: { name: 'P', ids: { trakt: 3, slug: 'p' }, birthday, death, known_for_department: 'acting' },
-      });
-
-    expect(toSearchCard(person('1979-08-27', null), all)?.tags).toEqual([
-      { text: 'Person' },
-      { text: 'Age 47', kind: 'generic' },
-      { text: 'Acting', kind: 'generic' },
-    ]);
-    expect(toSearchCard(person('1884-08-10', '1952-03-12'), episodesTab)?.tags).toEqual([
-      { text: 'Died Mar 12, 1952', kind: 'generic' },
-      { text: 'Acting', kind: 'generic' },
-    ]);
-  });
-
-  describe('for each image type', () => {
-    const art = (kind: string) => [`media.trakt.tv/images/shows/000/001/388/${kind}/medium/a.jpg.webp`];
-    const sized = (kind: string, size: string) =>
-      `https://media.trakt.tv/images/shows/000/001/388/${kind}/${size}/a.jpg.webp`;
-    const images = {
-      poster: art('posters'),
-      thumb: art('thumbs'),
-      fanart: art('fanarts'),
-      logo: art('logos'),
-      banner: art('banners'),
-    };
-    const artShow = hit({ type: 'show', show: { ...show.show, images } });
-    const bare = hit({ type: 'show', show: { ...show.show, images: { fanart: images.fanart } } });
+  describe('for episodes', () => {
     const screenshot = ['media.trakt.tv/images/episodes/000/000/001/screenshots/medium/s.jpg.webp'];
-    const episode = (showImages: object, episodeImages?: object) =>
+    const still = 'https://media.trakt.tv/images/episodes/000/000/001/screenshots/thumb/s.jpg.webp';
+    const images = { poster: art('posters'), fanart: art('fanarts'), logo: art('logos') };
+    const episode = (fields: object = {}) =>
       hit({
         type: 'episode',
-        show: { ...show.show, images: showImages },
-        episode: { title: 'Pilot', season: 1, number: 1, ids: { trakt: 1 }, images: episodeImages },
+        show: { ...show.show, images },
+        episode: {
+          title: 'Pilot',
+          season: 1,
+          number: 1,
+          ids: { trakt: 62085 },
+          first_aired: '2008-01-21T02:00:00.000Z',
+          rating: 8.2,
+          ...fields,
+        },
       });
-    const still = 'https://media.trakt.tv/images/episodes/000/000/001/screenshots/thumb/s.jpg.webp';
 
-    it.each([
-      ['thumb', sized('thumbs', 'medium')],
-      ['banner', sized('banners', 'medium')],
-      ['logo', sized('fanarts', 'thumb')],
-    ] as const)('should let the %s name a show and keep its year as a tag', (imageType, image) => {
-      expect(toSearchCard(artShow, { ...all, imageType })).toMatchObject({
-        image,
-        hideTitle: true,
-        tags: [{ text: 'Show' }, { text: '2008', kind: 'generic' }],
-      });
-    });
-
-    it.each(['screenshot', 'fanart'] as const)('should title a show over its %s', (imageType) => {
-      expect(toSearchCard(artShow, { ...all, imageType })).toMatchObject({
-        image: sized('fanarts', 'thumb'),
-        logoMode: false,
-        hideTitle: false,
-        tags: [{ text: 'Show' }],
-      });
-    });
-
-    it('should put the logo over the dimmed fanart, and keep it dimmed without one', () => {
-      expect(toSearchCard(artShow, { ...all, imageType: 'logo' })).toMatchObject({
-        logo: sized('logos', 'medium'),
-        logoMode: true,
-      });
-      expect(toSearchCard(bare, { ...all, imageType: 'logo' })).toMatchObject({
-        image: sized('fanarts', 'thumb'),
-        logoMode: true,
-        hideTitle: false,
-      });
-    });
-
-    it('should fall back from a missing thumb to the fanart, and show the title', () => {
-      expect(toSearchCard(bare, { ...all, imageType: 'thumb' })).toMatchObject({
-        image: sized('fanarts', 'thumb'),
-        hideTitle: false,
-      });
-    });
-
-    it('should leave a missing banner to the placeholder', () => {
-      expect(toSearchCard(bare, { ...all, imageType: 'banner' })).toMatchObject({ image: undefined, hideTitle: false });
-    });
-
-    it('should use the episode screenshot, or the show fanart without one', () => {
-      expect(toSearchCard(episode(images, { screenshot }), { ...episodesTab, imageType: 'screenshot' })).toMatchObject({
-        image: still,
+    it('should number an episode under its show and date it in the show zone', () => {
+      expect(toSearchCard(episode(), all)).toMatchObject({
+        key: 'episode-62085',
+        season: { show: 1388, number: 1, episode: 1 },
+        href: '/shows/breaking-bad/seasons/1/episodes/1',
+        number: '1x01',
+        title: 'Pilot',
         smallTitle: { text: 'Breaking Bad', href: '/shows/breaking-bad' },
-      });
-      expect(toSearchCard(episode(images), { ...episodesTab, imageType: 'screenshot' })?.image).toBe(
-        sized('fanarts', 'thumb'),
-      );
-    });
-
-    it('should draw the show art on an episode and drop the show name when the art has it', () => {
-      expect(toSearchCard(episode(images, { screenshot }), { ...episodesTab, imageType: 'fanart' })).toMatchObject({
-        image: sized('fanarts', 'thumb'),
-        smallTitle: { text: 'Breaking Bad' },
-      });
-      expect(toSearchCard(episode(images, { screenshot }), { ...episodesTab, imageType: 'banner' })).toMatchObject({
-        image: sized('banners', 'medium'),
-        smallTitle: undefined,
-        hideTitle: false,
+        tags: [{ text: 'Episode' }, { text: 'Jan 20, 2008', kind: 'generic' }],
       });
     });
 
-    it('should fall back from a missing show thumb to the episode screenshot', () => {
-      expect(toSearchCard(episode({}, { screenshot }), { ...episodesTab, imageType: 'thumb' })).toMatchObject({
-        image: still,
-        smallTitle: { text: 'Breaking Bad' },
+    it("should draw its screenshot as the fanart, with the show's fanart for spoilers", () => {
+      expect(toSearchCard(episode({ images: { screenshot } }), all)?.art).toEqual({
+        poster: sized('posters', 'thumb'),
+        fanart: still,
+        logo: sized('logos', 'medium'),
+        spoilerFanart: sized('fanarts', 'thumb'),
+      });
+      expect(toSearchCard(episode(), all)?.art).toMatchObject({
+        fanart: sized('fanarts', 'thumb'),
+        spoilerFanart: undefined,
       });
     });
 
-    it('should keep a headshot on a person', () => {
+    it('should mark a premiere in ID mode only', () => {
+      expect(toSearchCard(episode(), { ...all, premiereTag: true })?.episodeBadge).toEqual({
+        label: 'Series Premiere',
+        kind: 'series-premiere',
+      });
+      expect(toSearchCard(episode(), all)?.episodeBadge).toBeUndefined();
+    });
+  });
+
+  describe('for people', () => {
+    const person = (fields: object) =>
+      hit({ type: 'person', person: { name: 'Aaron Paul', ids: { trakt: 2, slug: 'aaron-paul' }, ...fields } });
+
+    it('should draw the headshot whatever the artwork', () => {
       const headshot = ['media.trakt.tv/images/people/000/000/002/headshots/medium/h.jpg.webp'];
-      const person = hit({ type: 'person', person: { name: 'Aaron Paul', ids: { trakt: 2 }, images: { headshot } } });
-      expect(toSearchCard(person, { ...all, imageType: 'logo' })).toMatchObject({
-        image: 'https://media.trakt.tv/images/people/000/000/002/headshots/thumb/h.jpg.webp',
-        logoMode: false,
+      const image = 'https://media.trakt.tv/images/people/000/000/002/headshots/thumb/h.jpg.webp';
+      expect(toSearchCard(person({ images: { headshot } }), all)).toMatchObject({
+        href: '/people/aaron-paul',
+        title: 'Aaron Paul',
+        art: { poster: image, fanart: image },
+        tags: [{ text: 'Person' }],
       });
+    });
+
+    it('should tag a person with their age or when they died, and what they are known for', () => {
+      const known = (birthday: string, death: string | null) =>
+        person({ birthday, death, known_for_department: 'acting' });
+      expect(toSearchCard(known('1979-08-27', null), all)?.tags).toEqual([
+        { text: 'Person' },
+        { text: 'Age 47', kind: 'generic' },
+        { text: 'Acting', kind: 'generic' },
+      ]);
+      expect(toSearchCard(known('1884-08-10', '1952-03-12'), oneType)?.tags).toEqual([
+        { text: 'Died Mar 12, 1952', kind: 'generic' },
+        { text: 'Acting', kind: 'generic' },
+      ]);
     });
   });
 

@@ -3,17 +3,13 @@
   a row, then three a row, four on the widest screens, each with OG's 1px separators on the right and bottom.
   OG switched columns at the 768, 992 and 1600px viewport breakpoints. Minus the 300px sidebar, that's a frame of
   468, 692 and 1300px, so the container queries use those.
-  The other variants are the search grids, none with wide cards. `poster` is
-  the default image type: two a row, then four, six from a 1200px viewport and twelve from 2000px. `uniform` is the
-  fanart columns, for the Users tab and the thumb, screenshot, fanart and logo image types. `banner` is one a row, two
-  from a 992px viewport and three from 1600px. `framed` is the charts' grid of framed cards, with the page's gutter
-  between and around them instead of separators: one a row, then two, three and four, each wide enough for its full
-  quick-icon bar.
+  `framed` is the charts' grid of framed cards, with the page's gutter between and around them instead of separators:
+  one a row, then two, three and four, each wide enough for its full quick-icon bar.
 -->
 <script lang="ts">
 import type { Snippet } from 'svelte';
 
-type Variant = 'fanart' | 'poster' | 'uniform' | 'banner' | 'framed';
+type Variant = 'fanart' | 'framed';
 
 const { children, variant = 'fanart' }: { children: Snippet; variant?: Variant } = $props();
 </script>
@@ -65,11 +61,6 @@ const { children, variant = 'fanart' }: { children: Snippet; variant?: Variant }
   }
 }
 
-/* OG's col-sm-6 col-md-4 col-xlg-3: the fanart columns, every card the same width. */
-.frame-grid.uniform {
-  --span-wide: var(--span);
-}
-
 .frame-grid.framed {
   --span: 12;
   --span-wide: var(--span);
@@ -96,48 +87,6 @@ const { children, variant = 'fanart' }: { children: Snippet; variant?: Variant }
 @container (width >= 1300px) {
   .frame-grid.framed {
     --span: 3;
-  }
-}
-
-/* OG's col-md-6 col-xlg-4, as frame widths. */
-.frame-grid.banner {
-  --span: 12;
-  --span-wide: var(--span);
-}
-
-@container (width >= 692px) {
-  .frame-grid.banner {
-    --span: 6;
-  }
-}
-
-@container (width >= 1300px) {
-  .frame-grid.banner {
-    --span: 4;
-  }
-}
-
-/* OG's col-xs-6 col-sm-3 col-md-3 col-lg-2 col-xlg-2 col-xxlg-1, as frame widths. */
-.frame-grid.poster {
-  --span: 6;
-  --span-wide: var(--span);
-}
-
-@container (width >= 468px) {
-  .frame-grid.poster {
-    --span: 3;
-  }
-}
-
-@container (width >= 900px) {
-  .frame-grid.poster {
-    --span: 2;
-  }
-}
-
-@container (width >= 1700px) {
-  .frame-grid.poster {
-    --span: 1;
   }
 }
 </style>

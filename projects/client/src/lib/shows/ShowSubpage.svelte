@@ -71,7 +71,7 @@ const ratingTarget = $derived({ type: 'show' as const, id: show.id, title: show.
   {/snippet}
 
   {#snippet sidebar()}
-    <SummaryPoster {ratingTarget} image={show.poster} alt={show.fullTitle} />
+    <SummaryPoster {ratingTarget} image={show.poster} alt={show.fullTitle} lastSeen={show.lastSeen} />
     <WatchNow button={watchNow} title={show.title} year={show.year} fanart={show.fanart} />
     <SectionNav {sections} label="{show.title} sections" />
     <ExternalLinks links={show.links} />

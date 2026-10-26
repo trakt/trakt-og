@@ -122,7 +122,7 @@ export const designCatalog: readonly DesignGroup[] = [
       {
         slug: 'visibility',
         title: 'Rewatch, drop and hide',
-        summary: 'The dropped badge, Not interested on recommendations, and rewatch and drop in the ••• menus.',
+        summary: 'The dropped stamp, Not interested on recommendations, and rewatch and drop in the ••• menus.',
         source: 'components/visibility',
       },
     ],

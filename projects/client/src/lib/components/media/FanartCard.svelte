@@ -248,7 +248,7 @@ const restoreTarget = $derived(target?.type === 'show' ? { ...target, type: 'sho
   }
 
   .dropped & {
-    filter: grayscale(1);
+    filter: var(--filter-dropped);
   }
 
   .logo-mode & {

@@ -31,8 +31,8 @@ interface ShowSummaryParams {
   people: ShowPeople | null;
   studios: readonly StudioResponse[];
   seasons: readonly SeasonWithEpisodes[];
-  /** The viewer's progress, when there is one: its next episode (null when they're caught up). */
-  progress: { next: EpisodeResponse | null } | null;
+  /** The viewer's progress, when there is one: its next episode (null when they're caught up) and the last one watched. */
+  progress: { next: EpisodeResponse | null; last?: EpisodeResponse | null } | null;
   signedIn: boolean;
   rank: StreamingRank | null;
   otherSiteRatings: boolean;
@@ -255,6 +255,8 @@ export function toShowSummary(params: ShowSummaryParams) {
       .filter(({ first_aired }) => first_aired && new Date(first_aired) <= params.now)
       .sort((a, b) => a.season - b.season || a.number - b.number)
       .map(({ ids }) => ids.trakt),
+    /** The viewer's last watched episode ("3x02"), for a dropped show's stamp. */
+    lastSeen: params.progress?.last ? episodeNumber(params.progress.last, show.genres) : undefined,
     commentCount: stats?.comments ?? show.comment_count ?? 0,
     listCount: stats?.lists ?? 0,
     facts: facts({ ...params, day, airs }),

@@ -102,7 +102,7 @@ const sections = $derived([
   {/snippet}
 
   {#snippet sidebar()}
-    <SummaryPoster {ratingTarget} image={show.poster} alt={show.fullTitle} />
+    <SummaryPoster {ratingTarget} image={show.poster} alt={show.fullTitle} lastSeen={show.lastSeen} />
     <WatchNow button={data.watchNow} title={show.title} year={show.year} fanart={show.fanart} />
     <SectionNav {sections} label="{show.title} sections" />
     <ExternalLinks links={show.links} />

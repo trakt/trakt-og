@@ -49,8 +49,30 @@ const droppedShow: CachedShow = {
 };
 
 describe('toProgressItems', () => {
-  it('should wait for the overlay to know your dropped, rewatching, hidden and watched shows', () => {
+  it('should wait for the overlay to know your dropped, hidden and watched shows', () => {
     expect(toProgressItems({ ...base, type: 'watched', slices: { rewatching: new Map() } })).toBeNull();
+  });
+
+  it('should take who you’re rewatching from the endpoint while the overlay doesn’t know', () => {
+    const { rewatching: _, ...rest } = slices;
+    const resetAt = '2026-08-01T00:00:00.000Z';
+    const items = toProgressItems({
+      ...base,
+      type: 'rewatching',
+      nitro: nitro.map((item) => (item.show.id === 1 ? { ...item, resetAt } : item)),
+      slices: rest,
+    });
+    expect(ids(items)).toEqual([1]);
+    expect(items?.at(0)?.resetAt).toBe(resetAt);
+  });
+
+  it('should trust the overlay over the endpoint once it knows, so a stopped rewatch drops off at once', () => {
+    const items = toProgressItems({
+      ...base,
+      type: 'rewatching',
+      nitro: nitro.map((item) => (item.show.id === 1 ? { ...item, resetAt: '2026-08-01T00:00:00.000Z' } : item)),
+    });
+    expect(ids(items)).toEqual([2]);
   });
 
   it('should list the endpoint’s shows on Watched, minus the dropped and hidden ones', () => {

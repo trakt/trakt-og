@@ -235,6 +235,13 @@ export const designCatalog: readonly DesignGroup[] = [
         summary: 'What phones, narrow windows and upright tablets get instead of the site.',
         source: 'components/mobile-splash',
       },
+      {
+        slug: 'error-pages',
+        title: 'Error pages',
+        summary:
+          'The full-screen pages for a missing page, a broken one, the Trakt API failing and losing the connection.',
+        source: 'components/error',
+      },
     ],
   },
 ];

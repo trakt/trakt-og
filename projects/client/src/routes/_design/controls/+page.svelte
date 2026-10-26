@@ -4,6 +4,8 @@ import { page } from '$app/state';
 import { ogRepoUrls } from '$lib/about/ogRepoUrls';
 import { chartFilters } from '$lib/charts/chartFilters';
 import LinkButton from '$lib/components/button/LinkButton.svelte';
+import Icon from '$lib/icons/Icon.svelte';
+import spaceStationMoon from '$lib/icons/solid/space-station-moon.svg?raw';
 import Container from '$lib/components/container/Container.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import EmptyNote from '$lib/components/empty/EmptyNote.svelte';
@@ -216,7 +218,7 @@ function showOverlay() {
   </div>
 </Specimen>
 
-<Specimen title="Link buttons" row note="Every one opens another site in a new tab, as the about page uses them.">
+<Specimen title="Link buttons" row note="Every one opens another site in a new tab, as the about page and the error pages use them.">
   <Variant label="Primary, an ask card">
     <div class="ground panel">
       <LinkButton href={ogRepoUrls.newBug}>Open a bug report</LinkButton>
@@ -230,6 +232,13 @@ function showOverlay() {
   <Variant label="Outline, the commits">
     <div class="ground home">
       <LinkButton href={ogRepoUrls.commits} variant="outline">Full commit history on GitHub</LinkButton>
+    </div>
+  </Variant>
+  <Variant label="Tinted, an error page">
+    <div class="ground error" style:--link-button-tint="var(--color-error-scene-matrix-accent)">
+      <LinkButton href={traktUrls.status} variant="tinted" arrow={false}>
+        <Icon svg={spaceStationMoon} /> Status
+      </LinkButton>
     </div>
   </Variant>
 </Specimen>
@@ -394,6 +403,11 @@ function showOverlay() {
 .home {
   background: var(--color-home-bg);
   color: var(--color-home-text);
+}
+
+.error {
+  background: var(--color-error-scene-matrix);
+  color: var(--color-error-scene-text);
 }
 
 .surface {

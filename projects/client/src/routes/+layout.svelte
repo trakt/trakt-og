@@ -15,6 +15,7 @@ import MobileSplash from '$lib/components/mobile-splash/MobileSplash.svelte';
 import { TOO_SMALL_FOR_OG } from '$lib/components/mobile-splash/tooSmallForOg';
 import Toaster from '$lib/components/toast/Toaster.svelte';
 import Nudges from '$lib/components/first-night/Nudges.svelte';
+import OfflineGuard from '$lib/errors/OfflineGuard.svelte';
 import WatchNowHost from '$lib/components/watchnow/WatchNowHost.svelte';
 import { startOverlay } from '$lib/overlay/startOverlay';
 import { toDarkKnight } from '$lib/settings/toDarkKnight';
@@ -26,6 +27,8 @@ let { children, data } = $props();
 
 // The coming-soon placeholder at `/` and the design-system demos draw their own page.
 const bare = $derived(page.route.id === '/' || page.route.id?.startsWith('/_design'));
+// An error page fills the screen on its own, without the header and footer.
+const errored = $derived(!!page.error);
 
 // The server renders the saved theme onto <html> (hooks.server.ts); this keeps it in step when the settings reload.
 // The demos pick their own theme.
@@ -68,16 +71,19 @@ onMount(() => {
 {:else}
   <MobileSplash platform={data.platform} phone={data.phone}>
     {#if showApp}
-      <a class="skip" href="#content">Skip to content</a>
-      <Header user={data.user} renewing={data.tokenExpired} searchType={data.searchType} {darkKnight} />
+      {#if !errored}
+        <a class="skip" href="#content">Skip to content</a>
+        <Header user={data.user} renewing={data.tokenExpired} searchType={data.searchType} {darkKnight} />
+      {/if}
       <main id="content" tabindex="-1">
         {@render children()}
       </main>
-      <Footer />
+      {#if !errored}<Footer />{/if}
     {/if}
   </MobileSplash>
 {/if}
 <Toaster />
+{#if showApp}<OfflineGuard />{/if}
 {#if data.user && showApp}
   <Nudges slug={data.user.slug} firstName={data.user.firstName} joinedAt={data.user.joinedAt} taste={{
     country: data.settings?.browsing?.watchnow?.country?.toLowerCase() || 'us',

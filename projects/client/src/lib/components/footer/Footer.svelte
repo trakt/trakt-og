@@ -19,7 +19,7 @@ import { traktUrls } from '$lib/traktUrls';
 const pages = [
   { title: 'Support', href: traktUrls.support },
   { title: 'VIP', href: traktUrls.vip },
-  { title: 'Developer', href: traktUrls.developer },
+  { title: 'Developer API', href: traktUrls.developer },
   { title: 'Terms', href: traktUrls.terms },
   { title: 'Privacy', href: traktUrls.privacy },
   { title: 'Branding', href: traktUrls.branding },

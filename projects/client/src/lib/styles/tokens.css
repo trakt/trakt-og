@@ -3534,7 +3534,6 @@
   --home-redux-gap: 0.18em;
   --shadow-home-wordmark: 0 8px 50px rgb(0 0 0 / 0.6);
   --shadow-home-mark: drop-shadow(0 8px 30px rgb(0 0 0 / 0.5));
-  --font-size-home-lede: 21px;
   --home-lede-width: 470px;
   --home-actions-gap: 12px;
   --home-button-inline: 22px;
@@ -3542,7 +3541,6 @@
   --color-home-button-line: light-dark(rgb(0 0 0 / 0.3), rgb(255 255 255 / 0.4));
   --color-home-button-hover: light-dark(rgb(0 0 0 / 0.06), rgb(255 255 255 / 0.12));
   --font-size-home-wordmark-tablet: 7.4cqi; /* under 1100px, beside the Live now box */
-  --font-size-home-lede-tablet: 18px;
   --home-hero-indent-small: 24px; /* extra, on the smallest tablet without the box */
   /* Motion: the mark rolls in, then G, Redux and the copy rise into place. Off under reduced motion. */
   --home-roll-duration: 1.5s;
@@ -3702,7 +3700,6 @@
   --font-size-about-title: 54px;
   --letter-spacing-about-title: -0.03em;
   --about-title-space: 14px;
-  --line-height-about-lede: 1.6;
   --about-lede-width: 580px;
   --about-link-underline: 3px;
   --about-stats-space: 22px;
@@ -3725,11 +3722,23 @@
 
   /* Trakt's brand violet: the new Trakt mark, the API banner and the mobile splash's Trakt app. */
   --brand-violet: oklch(49% 0.217 289);
-  --brand-violet-darken: oklch(43% 0.217 289); /* the violet button's hover */
-  --color-about-web-name: light-dark(oklch(49% 0.217 289), oklch(68% 0.17 289)); /* trakt-web's name, lifted on dark */
-  --about-name-mark: 1.1em; /* a project's mark beside its name in the lede */
-  --about-name-mark-gap: 0.3em;
-  --color-about-api-tint: oklch(49% 0.217 289 / 0.22);
+  --brand-violet-darken: oklch(43% 0.217 289); /* its hover */
+  /* The developer site's blueprint blue, from its mark's gradient: the API banner, its button and the API's link. */
+  --brand-developer: #0876ed;
+  --brand-developer-light: #14b2e9; /* the gradient's top, readable on dark */
+  --brand-developer-darken: #0663c7; /* the developer button's hover */
+
+  /* The about and home heroes' intros: the same type, and links that name what og is built from. */
+  --font-size-lede: var(--font-size-large);
+  --line-height-lede: 1.6;
+  --color-lede-link: var(--color-home-text);
+  --color-lede-web-name: light-dark(oklch(49% 0.217 289), oklch(68% 0.17 289)); /* trakt-web's name, lifted on dark */
+  --color-lede-api-name: light-dark(var(--brand-developer), var(--brand-developer-light));
+  --lede-name-mark: 1.1em; /* a project's mark beside its name */
+  --lede-name-mark-gap: 0.27em; /* in the mark's own size, so 0.3em of the text */
+  --lede-name-mark-align: -0.2em; /* centers the mark on the name's capitals */
+  --lede-link-underline: 3px;
+  --color-about-api-tint: rgb(8 118 237 / 0.22); /* --brand-developer, faded */
   --about-api-mark: 54px;
   --about-api-padding: 20px 24px;
   --about-api-gap: 18px;

@@ -29,7 +29,7 @@ export const designCatalog: readonly DesignGroup[] = [
       {
         slug: 'brand',
         title: 'Brand mark',
-        summary: "The classic Trakt mark as each page draws it, with that page's ink, face and ground.",
+        summary: "The classic Trakt mark on each page's ground, and the project links in the heroes' intros.",
         source: 'components/brand',
       },
       {

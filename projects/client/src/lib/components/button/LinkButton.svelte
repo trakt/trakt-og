@@ -1,6 +1,6 @@
 <!--
   og's standard button: `primary` is the red one, `outline` a light outline for a second action or a quiet one, and
-  `violet` the current Trakt brand violet, for links to Trakt's own services. `tinted` is a soft fill and edge in
+  `developer` the developer site's blueprint blue, for links to the Trakt API. `tinted` is a soft fill and edge in
   `--link-button-tint` (the text color unless set), at regular weight, for quiet ways out on a colored ground like the
   error pages. With an `href` it's a link: another site's opens in a new tab with an arrow after the label, unless
   `arrow={false}` (a label that leads with its own icon), and og's own stays in the tab. With `onclick` and no `href`
@@ -17,7 +17,7 @@ interface Props {
   href?: string;
   onclick?: () => void;
   disabled?: boolean;
-  variant?: 'primary' | 'outline' | 'violet' | 'tinted';
+  variant?: 'primary' | 'outline' | 'developer' | 'tinted';
   arrow?: boolean;
   children: Snippet;
 }
@@ -77,14 +77,14 @@ const offsite = $derived(!!href && /^https?:\/\//.test(href));
   }
 }
 
-.violet {
-  border: 1px solid var(--brand-violet);
-  background-color: var(--brand-violet);
+.developer {
+  border: 1px solid var(--brand-developer);
+  background-color: var(--brand-developer);
   color: var(--color-text-inverse);
 
   &:is(:hover, :focus-visible) {
-    border-color: var(--brand-violet-darken);
-    background-color: var(--brand-violet-darken);
+    border-color: var(--brand-developer-darken);
+    background-color: var(--brand-developer-darken);
     color: var(--color-text-inverse);
   }
 }

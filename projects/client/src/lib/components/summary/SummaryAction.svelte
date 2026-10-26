@@ -8,7 +8,8 @@
       {#snippet tiles()}<SummaryActionTile icon={plus} label="Add to library" onclick={add} />{/snippet}
     </SummaryAction>
   `href` makes it a link, `readonly` a plain box (a person's credit progress). `busy` is the spinner's label while
-  something saves. `aside` sits at the button's right edge (library format logos), and `tooltip` shows under it.
+  something saves. `footer` hangs under the button, joined to it, in the darker shade its tiles take (the library's
+  format and audio), and `tooltip` shows under it.
   `trailing` is an icon in the tile column, centered where other buttons' + sits, outlined or split off.
   The other props land on the button itself.
 -->
@@ -18,6 +19,7 @@ import type { HTMLAnchorAttributes, HTMLAttributes } from 'svelte/elements';
 import Icon from '$lib/icons/Icon.svelte';
 import Spinner from '$lib/components/loading/Spinner.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
+import type { TooltipContent } from '$lib/components/tooltip/TooltipContent';
 
 interface Props extends Omit<HTMLAttributes<HTMLElement>, 'title'>, Pick<HTMLAnchorAttributes, 'target' | 'rel'> {
   color: string;
@@ -37,9 +39,9 @@ interface Props extends Omit<HTMLAttributes<HTMLElement>, 'title'>, Pick<HTMLAnc
   locked?: boolean;
   element?: HTMLElement;
   tiles?: Snippet;
-  aside?: Snippet;
+  footer?: Snippet;
   trailing?: Snippet;
-  tooltip?: string;
+  tooltip?: TooltipContent;
 }
 
 let {
@@ -56,7 +58,7 @@ let {
   locked = false,
   element = $bindable(),
   tiles,
-  aside,
+  footer,
   trailing,
   tooltip,
   ...rest
@@ -66,7 +68,7 @@ const tag = $derived(href ? 'a' : readonly ? 'div' : 'button');
 </script>
 
 <div class={['summary-action', { selected, locked }]} style:--action-color={color}>
-  <Tooltip text={tooltip} placement="bottom">
+  <Tooltip content={tooltip} placement="bottom">
     {#snippet trigger(tip)}
       <svelte:element this={tag} bind:this={element} class="main" {href} type={tag === 'button' ? 'button' : undefined}
         disabled={tag === 'button' ? disabled : undefined} {...rest} {...tip}>
@@ -75,7 +77,6 @@ const tag = $derived(href ? 'a' : readonly ? 'div' : 'button');
           <span class="title">{#if percent}<b class="percent">{percent}</b>&nbsp;{/if}{text}</span>
           {#if typeof detail === 'string'}<span class="detail">{detail}</span>{:else if detail}<span class="detail">{@render detail()}</span>{/if}
         </span>
-        {#if aside}<span class="aside">{@render aside()}</span>{/if}
         {#if trailing}<span class="trailing">{@render trailing()}</span>{/if}
       </svelte:element>
     {/snippet}
@@ -83,6 +84,7 @@ const tag = $derived(href ? 'a' : readonly ? 'div' : 'button');
   {#if tiles}<div class="tiles">{@render tiles()}</div>{/if}
   {#if busy}<span class="busy"><Spinner label={busy} /></span>{/if}
 </div>
+{#if footer}<div class="footer" style:--action-color={color}>{@render footer()}</div>{/if}
 
 <style>
 .summary-action {
@@ -177,11 +179,17 @@ const tag = $derived(href ? 'a' : readonly ? 'div' : 'button');
   font-size: var(--summary-action-icon-size);
 }
 
-.aside {
-  display: grid;
-  place-items: center end;
-  flex-shrink: 0;
-  padding-inline: var(--summary-action-aside-gap);
+/* Under the button, edge to edge, its text lined up with the button's. It runs up behind the button's rounded bottom
+   corners, so they sit on the footer's shade instead of the page. */
+.footer {
+  margin-block-start: calc(-1 * var(--radius-summary-action));
+  padding-block: calc(var(--space-summary-action-footer-block) + var(--radius-summary-action))
+    var(--space-summary-action-footer-block);
+  padding-inline: var(--action-icon-width) var(--space-summary-action-footer-end);
+  border-end-start-radius: var(--radius-summary-action);
+  border-end-end-radius: var(--radius-summary-action);
+  background: color-mix(in srgb, var(--action-color) var(--summary-action-tile-shade), var(--color-summary-action-tile-shade));
+  color: var(--color-text-inverse);
 }
 
 .trailing {

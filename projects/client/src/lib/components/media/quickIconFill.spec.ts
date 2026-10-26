@@ -10,6 +10,7 @@ describe('quickIconFill', () => {
       favorited: false,
       rewatching: false,
       titles: {},
+      tips: {},
     });
   });
 
@@ -136,5 +137,64 @@ describe('rewatch progress', () => {
       '0% rewatched\n0/20 episodes\n0 plays\n20 remaining\n\n100% watched\n20/20 episodes\n25 plays',
     );
     expect(quickIconFill({ ...params, adjustRewatching: false }).watched).toBe(1);
+  });
+
+  describe('tips', () => {
+    it("should give a movie's plays and their time instead of progress", () => {
+      const { tips } = quickIconFill({ state: { plays: 3 }, runtime: 104 });
+      expect(tips.watched).toBeUndefined();
+      expect(tips.plays).toEqual({ count: 3, minutes: 312 });
+      expect(quickIconFill({ state: { plays: 1 } }).tips.plays).toEqual({ count: 1, minutes: undefined });
+    });
+
+    it("should give a show's progress as a run with its plays and their time", () => {
+      expect(
+        quickIconFill({ state: { watchedEpisodes: 12, watchedPlays: 14 }, airedEpisodes: 20, runtime: 40 }).tips
+          .watched,
+      ).toEqual([{ verb: 'watched', percent: 60, completed: 12, aired: 20, plays: 14, minutes: 560 }]);
+    });
+
+    it('should put a rewatch over the whole show', () => {
+      const tips = quickIconFill({
+        state: { rewatching: true, watchedEpisodes: 20, watchedPlays: 25, rewatchedEpisodes: 4, rewatchedPlays: 4 },
+        airedEpisodes: 20,
+      }).tips.watched;
+      expect(tips?.map(({ verb, percent }) => ({ verb, percent }))).toEqual([
+        { verb: 'rewatched', percent: 20 },
+        { verb: 'watched', percent: 100 },
+      ]);
+    });
+
+    it('should date a library movie with its metadata and server', () => {
+      const metadata = { media_type: 'bluray', resolution: 'uhd_4k' };
+      expect(
+        quickIconFill({
+          state: {
+            collected: true,
+            collectedAt: '2026-09-29T12:00:00.000Z',
+            collectionMetadata: metadata,
+            collectionSources: ['plex'],
+          },
+        }).tips.collected,
+      ).toEqual({ added: 'Sep 29, 2026', metadata, sources: ['plex'] });
+    });
+
+    it("should mark OG's unknown library date", () => {
+      expect(
+        quickIconFill({ state: { collected: true, collectedAt: '1970-01-01T00:00:00.000Z' } }).tips.collected?.added,
+      ).toBeNull();
+    });
+
+    it("should count a show's episodes in the library", () => {
+      expect(quickIconFill({ state: { collectedEpisodes: 6 }, airedEpisodes: 10 }).tips.collected).toEqual({
+        episodes: { done: 6, aired: 10 },
+        metadata: undefined,
+        sources: undefined,
+      });
+    });
+
+    it('should leave both out for an item not watched or in the library', () => {
+      expect(quickIconFill({ state: {} }).tips).toEqual({ watched: undefined, plays: undefined, collected: undefined });
+    });
   });
 });

@@ -63,7 +63,7 @@ const more = $derived<QuickIconMore[]>(
 );
 
 const title = $derived(item.episodeTitle ? `${item.episodeNumber} ${item.episodeTitle}` : item.episodeNumber);
-const lines = $derived(
+const tip = $derived(
   progressTooltip({ progress: item.progress, fullProgress: item.fullProgress, runtime: item.runtime }),
 );
 </script>
@@ -84,7 +84,7 @@ const lines = $derived(
     icons={{ listTarget: item.complete ? showTarget : target, watchTarget: item.complete ? showTarget : target, collectionTarget: item.complete ? showTarget : target, ratingTarget: item.complete ? showTarget : target, onWatchSave, fill: quickIconFill({ state }), rating: item.complete ? undefined : item.rating, listLabel: item.complete ? 'Add to watchlist' : 'Add to list', more }}
   >
     {#snippet progress()}
-      <UnderProgress href={item.progressHref} percent={progressPercent(item.progress)} ticks={item.ticks} {lines} />
+      <UnderProgress href={item.progressHref} percent={progressPercent(item.progress)} ticks={item.ticks} {tip} />
     {/snippet}
     {#snippet posterOverlay()}
       {#if refreshing || needsRefresh}<RefreshCover title={item.showTitle} {refreshing} onrefresh={onRefresh} />

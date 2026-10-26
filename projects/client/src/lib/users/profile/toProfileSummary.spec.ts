@@ -57,6 +57,7 @@ describe('toWatchedEpisode', () => {
       show: { text: 'Andor', href: '/shows/andor' },
       season: { show: 1, number: 2, episode: 1 },
       watchedDate: 'Sep 28, 2026 10:00 PM',
+      runtime: 45,
     });
   });
 });

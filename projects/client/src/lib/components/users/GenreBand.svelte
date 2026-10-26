@@ -5,6 +5,8 @@
   its numbers over the band. The band and that card are decoration: the key carries everything.
 -->
 <script lang="ts">
+import TooltipBox from '$lib/components/tooltip/TooltipBox.svelte';
+import TooltipStat from '$lib/components/tooltip/TooltipStat.svelte';
 import type { GenreBar } from '$lib/users/profile/toGenreBar';
 import { type BandWords, toGenreBand } from '$lib/users/profile/toGenreBand';
 
@@ -17,6 +19,14 @@ const band = $derived(toGenreBand(genres, words));
 let hot = $state<number | null>(null);
 let open = $state(false);
 const picked = $derived(hot === null ? null : (band.slices.at(hot) ?? band.other));
+const tipLines = $derived(
+  picked
+    ? [
+      ...picked.tip.lines.map(({ type, text }) => ({ text, color: `var(--color-genre-${type})` })),
+      { ...picked.tip.footer, muted: true },
+    ]
+    : [],
+);
 
 const pick = (i: number) => () => (hot = i);
 const unpick = () => (hot = null);
@@ -58,13 +68,8 @@ const toggle = () => (open = !open);
   </div>
 
   {#if picked}
-    <div class="tip" aria-hidden="true" style:--center="{picked.center}%">
-      <span class="tip-title">{picked.tip.title}</span>
-      <span class="tip-share">{picked.tip.share}</span>
-      {#each picked.tip.lines as line (line.type)}
-        <span class="tip-line" style:--dash="var(--color-genre-{line.type})">{line.text}</span>
-      {/each}
-      <span class="tip-footer">{picked.tip.footer}</span>
+    <div class="tip" aria-hidden="true" style:--center={picked.center}>
+      <TooltipBox><TooltipStat label={picked.tip.title} value={picked.tip.share} lines={tipLines} /></TooltipBox>
     </div>
   {/if}
 
@@ -127,6 +132,7 @@ const toggle = () => (open = !open);
 
 <style>
 .genre-band {
+  --tip-edge: calc(var(--tooltip-arrow) + 1px + var(--tooltip-offset));
   position: relative;
   container-type: inline-size;
 }
@@ -163,60 +169,20 @@ const toggle = () => (open = !open);
   }
 }
 
-/* Over the band, centered on the picked piece and kept inside the chart. */
+/* The tooltip over the band, centered on the picked piece but kept inside the chart, its arrow on the piece. */
 .tip {
+  --start: clamp(
+    0px,
+    calc(var(--center) * 1cqi - var(--genre-tip-width) / 2),
+    calc(100cqi - var(--genre-tip-width))
+  );
+  --tooltip-arrow-at: calc(var(--center) * 1cqi - var(--start));
   position: absolute;
   z-index: 1;
-  inset-block-end: calc(100% + var(--chart-tooltip-offset) / 2);
-  inset-inline-start: clamp(
-    0px,
-    calc(var(--center) - var(--genre-tip-width) / 2),
-    calc(100% - var(--genre-tip-width))
-  );
-  display: flex;
-  flex-direction: column;
+  inset-block-end: calc(100% + var(--tip-edge));
+  inset-inline-start: var(--start);
   inline-size: var(--genre-tip-width);
-  padding: var(--space-chart-tooltip);
-  border: 1px solid var(--color-chart-tooltip-border);
-  border-radius: var(--radius-chart-tooltip);
-  background: var(--color-chart-tooltip-bg);
-  color: var(--color-chart-tooltip-text);
-  font-size: var(--font-size-genre-key-count);
-  line-height: var(--line-height-tooltip);
   pointer-events: none;
-}
-
-.tip-title {
-  color: var(--color-chart-tooltip-muted);
-  font-family: var(--font-headings);
-  font-size: var(--font-size-genre-count);
-  font-weight: var(--font-weight-headings);
-  text-transform: uppercase;
-}
-
-.tip-share {
-  font-family: var(--font-headings);
-  font-size: var(--font-size-genre-share);
-  font-weight: var(--font-weight-headings-heavy);
-  line-height: var(--line-height-genre-share);
-}
-
-.tip-line {
-  display: flex;
-  align-items: center;
-  gap: var(--space-genre-key-top);
-
-  &::before {
-    content: '';
-    inline-size: var(--genre-tip-dash);
-    block-size: var(--genre-tip-dash-height);
-    background: var(--dash);
-  }
-}
-
-.tip-footer {
-  margin-block-start: var(--space-genre-tail-row);
-  color: var(--color-chart-tooltip-muted);
 }
 
 .keys {

@@ -1,5 +1,5 @@
 <script lang="ts">
-import CollectionLogos from '$lib/components/collection/CollectionLogos.svelte';
+import CollectionLogoRow from '$lib/components/collection/CollectionLogoRow.svelte';
 import type { CollectionBadges } from '$lib/components/collection/collectionBadges';
 import Specimen from '$lib/design/Specimen.svelte';
 import Variant from '$lib/design/Variant.svelte';
@@ -81,9 +81,9 @@ const shelf: readonly { label: string; badges: CollectionBadges }[] = [
 </Specimen>
 
 <Specimen title="Library logos" row
-  note="Logos reach the site through CollectionLogos, which gives each OG's size: Blu-ray runs wide, audio codecs small. The collection demo shows them on the library button.">
+  note="Logos reach the site through CollectionLogoRow, one row with the resolution, HDR and channels as tags. The collection demo shows it under the library button and in the library tooltip.">
   {#each shelf as item (item.label)}
-    <Variant label={item.label}><CollectionLogos badges={item.badges} /></Variant>
+    <Variant label={item.label}><CollectionLogoRow badges={item.badges} align="start" /></Variant>
   {/each}
 </Specimen>
 

@@ -65,7 +65,7 @@ let filters = $derived(initialFilters);
 const options = fadeHideOptions.filter((option) => !('showsOnly' in option));
 const view = (row: EpisodeRow) => {
   const state = overlay.state('episode', row.id, { show: showId, number: row.season, episode: row.episode });
-  const fill = quickIconFill({ state, datePreferences });
+  const fill = quickIconFill({ state, datePreferences, runtime: row.minutes });
   const matches = (id: (typeof options)[number]['id']) => matchesFadeHide(id, state, fill);
   return { state, fill, hidden: signedIn && filters.hide.some(matches), faded: signedIn && filters.fade.some(matches) };
 };
@@ -148,7 +148,7 @@ const metaTags = (row: EpisodeRow): readonly TagPill[] => [
           icons={{
             fill: item.fill,
             ratingTarget: { type: 'episode', id: row.id, title: row.title, season },
-            watchTarget: { type: 'episode', id: row.id, title: row.title, season },
+            watchTarget: { type: 'episode', id: row.id, title: row.title, season, runtime: row.minutes },
             collectionTarget: { type: 'episode', id: row.id, title: row.title, season },
             rating: row.rating,
             released: row.released,

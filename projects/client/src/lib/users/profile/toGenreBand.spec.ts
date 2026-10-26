@@ -53,7 +53,7 @@ describe('mapper: toGenreBand', () => {
           { type: 'shows', text: '12 shows' },
           { type: 'movies', text: '7 movies' },
         ],
-        footer: 'Animation, Horror, War, …',
+        footer: { text: 'Animation, Horror, War, …' },
       });
     });
 
@@ -77,10 +77,10 @@ describe('mapper: toGenreBand', () => {
         { type: 'shows', text: '240 shows' },
         { type: 'movies', text: '380 movies' },
       ],
-      footer: '620 titles · your top genre',
+      footer: { text: '620 titles', detail: 'your top genre' },
     });
     expect(second?.share).toBe('8.9%');
     expect(second?.tip.lines).toEqual([{ type: 'shows', text: '1 show' }]);
-    expect(second?.tip.footer).toBe('1 title · 18% of your top genre');
+    expect(second?.tip.footer).toEqual({ text: '1 title', detail: '18% of your top genre' });
   });
 });

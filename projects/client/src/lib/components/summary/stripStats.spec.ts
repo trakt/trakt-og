@@ -21,8 +21,8 @@ describe('stripStats', () => {
   it('should title the tooltip with the label and give the exact count', () => {
     const { community } = stripStats(counts);
 
-    expect(community.at(0)).toMatchObject({ title: 'Watchers', detail: '131,457' });
-    expect(community.at(3)).toMatchObject({ title: 'Lists', detail: '63,608', href: '/movies/x/lists' });
+    expect(community.at(0)).toMatchObject({ label: 'watchers', detail: '131,457' });
+    expect(community.at(3)).toMatchObject({ label: 'lists', detail: '63,608', href: '/movies/x/lists' });
   });
 
   it('should read singular labels', () => {
@@ -31,9 +31,9 @@ describe('stripStats', () => {
       { count: 1, label: 'watcher' },
     ]);
 
-    expect(community.map(({ kind, title }) => [kind, title])).toEqual([
-      ['watchers', 'Watcher'],
-      ['libraries', 'Library'],
+    expect(community.map(({ kind, label }) => [kind, label])).toEqual([
+      ['watchers', 'watcher'],
+      ['libraries', 'library'],
     ]);
   });
 

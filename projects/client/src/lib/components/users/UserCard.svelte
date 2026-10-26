@@ -83,7 +83,7 @@ const sinceYear = $derived(since ? new Date(since).getUTCFullYear() : null);
           live
           href={media.href}
           percent={watch.progress}
-          lines={[[{ text: `${watch.progress}% watched` }, { text: `${watch.minutesLeft}m left` }]]}
+          tip={`${watch.progress}% watched\n${watch.minutesLeft}m left`}
         />
       </div>
     {/if}

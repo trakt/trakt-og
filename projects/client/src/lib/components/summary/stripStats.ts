@@ -1,15 +1,12 @@
 import type { StripCount } from './StripCount.ts';
-import { capitalize } from '../../utils/capitalize.ts';
 
 /** Which icon and color a count takes on the ratings strip. */
 export type StripStatKind = 'watchers' | 'plays' | 'libraries' | 'lists' | 'comments' | 'favorited';
 
-/** A count as the strip shows it: an icon and the short number, with a two-line tooltip. */
+/** A count as the strip shows it: an icon and the short number, with the exact count in its tooltip. */
 export interface StripStat extends StripCount {
   readonly kind: StripStatKind;
-  /** The tooltip's bold line: OG's label under the number ("Watchers"). */
-  readonly title: string;
-  /** The tooltip's second line: the exact count ("131,457"). */
+  /** The tooltip's number: the exact count ("131,457"), before its label. */
   readonly detail: string;
 }
 
@@ -47,7 +44,6 @@ export function stripStats(counts: readonly StripCount[]): StripStats {
       (count): StripStat => ({
         ...count,
         kind: KINDS[count.label] ?? 'watchers',
-        title: capitalize(count.label),
         detail: count.count.toLocaleString('en-US'),
       }),
     );

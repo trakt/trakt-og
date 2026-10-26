@@ -13,6 +13,7 @@ import PromptDateForm from '$lib/components/prompt/PromptDateForm.svelte';
 import PromptPopover from '$lib/components/prompt/PromptPopover.svelte';
 import PromptRow from '$lib/components/prompt/PromptRow.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
+import type { TooltipContent } from '$lib/components/tooltip/TooltipContent';
 import SummaryAction from '$lib/components/summary/SummaryAction.svelte';
 import SummaryActionTile from '$lib/components/summary/SummaryActionTile.svelte';
 import Spinner from '$lib/components/loading/Spinner.svelte';
@@ -28,8 +29,8 @@ interface SummaryContent {
   text: string;
   percent?: string;
   detail?: Snippet | string;
-  aside?: Snippet;
-  tooltip?: string;
+  footer?: Snippet;
+  tooltip?: TooltipContent;
 }
 interface Props {
   label: string;
@@ -52,7 +53,7 @@ interface Props {
   /** Cards only: a "Watching now" choice that opens the check-in modal. */
   oncheckin?: () => void;
   onremovePlay?: () => void;
-  tooltip?: string;
+  tooltip?: TooltipContent;
   /** Why adding is off ("Not released yet"): the control stays, disabled, with this as its tooltip. */
   locked?: string;
   collection?: boolean;
@@ -253,7 +254,7 @@ function click() {
 {#if variant === 'summary' && summary}
   <div class="watch-control summary" style:anchor-name="--watch-{id}" aria-busy={busy}>
   <SummaryAction bind:element={button} color={collection ? 'var(--brand-quaternary)' : 'var(--brand-tertiary)'}
-    icon={summary.icon} text={summary.text} percent={summary.percent} detail={summary.detail} aside={summary.aside}
+    icon={summary.icon} text={summary.text} percent={summary.percent} detail={summary.detail} footer={summary.footer}
     tooltip={locked ?? summary.tooltip} locked={Boolean(locked)}
     {selected}
     busy={busy ? collection ? 'Saving collection' : 'Saving watched history' : undefined}
@@ -266,7 +267,7 @@ function click() {
 <div class={['watch-control', variant, { small, collection, selected, locked }]} style:--watch-fill={fill}
   style:--watch-color={collection ? 'var(--brand-quaternary)' : 'var(--brand-tertiary)'}
   style:anchor-name="--watch-{id}" aria-busy={busy}>
-  <Tooltip text={locked ?? tooltip} placement="bottom">
+  <Tooltip content={locked ?? tooltip} placement="bottom">
     {#snippet trigger(tip)}
       <button bind:this={button} type="button" class="watch-trigger" aria-label={label}
         aria-controls="watch-{id}" aria-haspopup="dialog" aria-expanded={expanded} aria-disabled={busy || Boolean(locked)}

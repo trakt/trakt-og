@@ -9,16 +9,15 @@ import { toast } from '$lib/components/toast/toast.svelte';
 import WatchPopover from '$lib/components/history/WatchPopover.svelte';
 import { loadWatchEpisodes } from '$lib/components/history/loadWatchEpisodes';
 import type { WatchTarget } from '$lib/components/history/WatchTarget';
-import CollectionLogos from '$lib/components/collection/CollectionLogos.svelte';
+import CollectionLogoRow from '$lib/components/collection/CollectionLogoRow.svelte';
+import LibraryTip from '$lib/components/collection/LibraryTip.svelte';
 import { collectionBadges } from '$lib/components/collection/collectionBadges';
 import CollectionMetadataFields from '$lib/components/collection/CollectionMetadataFields.svelte';
 import type { CollectionMetadata } from '$lib/components/collection/CollectionMetadata';
 import { collectMedia } from '$lib/components/collection/collectMedia';
-import { collectionMetadataLabel } from '$lib/components/collection/collectionMetadataLabel';
 import { LIBRARY_ADDING } from '$lib/components/collection/libraryAdding';
 import { librarySourceIcon } from '$lib/components/collection/librarySourceIcon';
 import { quickIconFill } from '$lib/components/media/quickIconFill';
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import collection from '$lib/icons/trakt/collection.svg?raw';
 import collectionThick from '$lib/icons/trakt/collection-thick.svg?raw';
@@ -57,7 +56,6 @@ const label = $derived(
   fill.collected > 0 ? plural ? `${Math.floor(fill.collected * 100)}% in library` : 'In Library' : 'Add to library',
 );
 const percent = $derived(plural && fill.collected > 0 ? `${Math.floor(fill.collected * 100)}%` : undefined);
-const metadataText = $derived(collectionMetadataLabel(viewerState.collectionMetadata));
 const collectedDate = $derived(
   viewerState.collectedAt?.startsWith('1970-01-01')
     ? 'Unknown date'
@@ -66,7 +64,6 @@ const collectedDate = $derived(
 const detail = $derived(plural ? `${viewerState.collectedEpisodes}/${target.airedEpisodes} episodes` : collectedDate);
 const badges = $derived(collectionBadges(viewerState.collectionMetadata));
 const source = $derived(librarySourceIcon(viewerState.collectionSources));
-const tooltipText = $derived([metadataText, source && `Synced from ${source.name}`].filter(Boolean).join('\n'));
 // With adding off, anything not in the library has no control, and signed out nothing is. A signed-in viewer's unknown
 // state keeps it, so cards don't shift while the overlay loads.
 const hidden = $derived(
@@ -124,25 +121,22 @@ async function open(force: boolean): Promise<'date' | 'remove' | 'partial' | nul
   {variant}
   {small} {busy} {plural}
   label={onremove ? 'Remove from library' : label} fill={onremove ? 1 : fill.collected} datePreferences={dates}
-  tooltip={onremove ? 'Remove from library' : variant === 'card' ? fill.titles.collected ?? 'Add to library' : undefined}
+  tooltip={variant === 'card' ? fill.tips.collected ? libraryTip : fill.titles.collected ?? (onremove ? 'Remove from library' : 'Add to library') : undefined}
   removeNote={source && `${plural ? 'They' : 'It'} may come back on the next ${source.name} sync.`}
   onopen={open} onwatch={collect} onremaining={() => Promise.resolve(false)}
   oninvalid={() => toast.error('Invalid date format, please use the date picker.')}
-  summary={{ icon: source?.svg ?? collection, text: percent ? 'in library' : label, percent, detail: fill.collected > 0 ? detail : undefined, aside: badges && fill.collected > 0 ? logos : undefined, tooltip: fill.collected > 0 ? tooltipText || undefined : undefined }}>
+  summary={{ icon: source?.svg ?? collection, text: percent ? 'in library' : label, percent, detail: fill.collected > 0 ? detail : undefined, footer: badges && fill.collected > 0 ? logos : undefined }}>
   {#snippet trigger()}<span class="trakt-glyph"><Icon svg={source?.svg ?? collectionThick} /></span>{/snippet}
   {#snippet metadata(done, saving)}
     <CollectionMetadataFields value={draft ?? {}} {saving} onsave={(value) => { draft = value; done(); if (saving) void collect(undefined); }} />
   {/snippet}
 </WatchPopover>
-{#snippet logos()}{#if badges}<CollectionLogos {badges} />{/if}{/snippet}
+{#snippet logos()}{#if badges}<CollectionLogoRow {badges} align="start" />{/if}{/snippet}
+{#snippet libraryTip()}{#if fill.tips.collected}<LibraryTip tip={fill.tips.collected} />{/if}{/snippet}
 {#if variant === 'summary' && plural && fill.collected > 0 && target.airedEpisodes}
-  <Tooltip text={fill.titles.collected} placement="bottom">
-    {#snippet trigger(tip)}
-      <a class="collection-progress" href={libraryHref} aria-label={fill.titles.collected} {...tip}>
-        {#each Array.from({ length: target.airedEpisodes ?? 0 }) as _, index (index)}<span class:done={index < (viewerState.collectedEpisodes ?? 0)}></span>{/each}
-      </a>
-    {/snippet}
-  </Tooltip>
+  <a class="collection-progress" href={libraryHref} aria-label={fill.titles.collected}>
+    {#each Array.from({ length: target.airedEpisodes ?? 0 }) as _, index (index)}<span class:done={index < (viewerState.collectedEpisodes ?? 0)}></span>{/each}
+  </a>
 {/if}
 {/if}
 

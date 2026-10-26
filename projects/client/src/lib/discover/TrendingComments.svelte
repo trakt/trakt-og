@@ -303,9 +303,9 @@ async function filter(next: { kind?: typeof kind; media?: typeof media }) {
 }
 
 .people {
-  /* The hover cards draw their own solid box and arrow over og's see-through tooltip. */
-  --opacity-tooltip: 1;
+  /* The hover cards draw their own menu-style box and arrow in place of the tooltip's dark one. */
   --color-tooltip-bg: transparent;
+  --color-tooltip-border: transparent;
   display: flex;
   gap: var(--trending-comments-people-gap);
   margin: 0;

@@ -15,10 +15,12 @@ export type ExternalRatingLogo =
 /** One entry in the ratings strip's "other sites" group: IMDb, TMDB, Rotten Tomatoes, Metacritic, JustWatch. */
 export interface ExternalRating {
   readonly logo: ExternalRatingLogo;
-  /** The site's name: the image's alt text and the tooltip's bold first line. */
+  /** The site's name: the image's alt text and its accessible name. */
   readonly title: string;
-  /** The tooltip's second line: the exact vote count, or what the number is. */
+  /** The tooltip: the exact vote count ("998,068 votes"), or what the number is ("Metascore"). */
   readonly detail: string;
+  /** The vote count behind the rating, for the sites that give one: the tooltip bolds it. */
+  readonly votes?: number;
   readonly href: string;
   readonly rating: string;
   /** The rating on one 100 point scale, so sites compare: IMDb's 6.8 is 68. JustWatch's rank has none. */

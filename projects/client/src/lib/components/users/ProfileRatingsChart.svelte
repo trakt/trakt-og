@@ -26,6 +26,15 @@ interface Props {
 const { chart, href, picked, onpick }: Props = $props();
 
 const name = (bar: ProfileRatingBar) => `${bar.rating} — ${bar.name}: ${countLabel(bar.count, chart.unit)}`;
+
+const stats = (bar: ProfileRatingBar) => [
+  {
+    label: `${bar.rating} ${bar.name}`,
+    value: bar.count.toLocaleString('en-US'),
+    unit: `${chart.unit}${bar.count === 1 ? '' : 's'}`,
+    lines: [{ text: `${bar.share} of all ${chart.unit}s`, color: `var(--rating-${bar.rating})` }],
+  },
+];
 </script>
 
 <!-- The ratings page isn't built yet, and resolve() only takes routes that exist. -->
@@ -50,7 +59,7 @@ const name = (bar: ProfileRatingBar) => `${bar.rating} — ${bar.name}: ${countL
       {#each chart.bars as bar (bar.rating)}
         <li class="column" style:--color="var(--rating-{bar.rating})">
           {#if bar.count > 0}
-            <Tooltip variant="chart">
+            <Tooltip toggles stats={stats(bar)}>
               {#snippet trigger(tooltip)}
                 {#if href}
                   <a class="bar-link" href={href(bar.rating)} aria-label={name(bar)} {...tooltip}>
@@ -67,12 +76,6 @@ const name = (bar: ProfileRatingBar) => `${bar.rating} — ${bar.name}: ${countL
                   >{@render barBody(bar)}</button>
                 {/if}
               {/snippet}
-              <span class="tip">
-                <span class="tip-title">{bar.rating} · {bar.name}</span>
-                <span class="tip-count">{bar.count.toLocaleString('en-US')}<span class="tip-unit"
-                  >{chart.unit}{bar.count === 1 ? '' : 's'}</span></span>
-                <span class="tip-line">{bar.share} of all {chart.unit}s</span>
-              </span>
             </Tooltip>
           {:else}
             <span class="count zero" aria-hidden="true">0</span>
@@ -100,8 +103,6 @@ const name = (bar: ProfileRatingBar) => `${bar.rating} — ${bar.name}: ${countL
   padding-block-start: var(--space-ratings-chart);
   font-family: var(--font-headings);
   font-weight: var(--font-weight-headings);
-  /* The tooltip sits over the bar's count, as close as the Last 30 Days chart's. */
-  --chart-tooltip-offset: var(--minutes-tooltip-offset);
 }
 
 .plot {
@@ -231,52 +232,6 @@ const name = (bar: ProfileRatingBar) => `${bar.rating} — ${bar.name}: ${countL
   margin-block-end: var(--minutes-stub);
   border-radius: 50%;
   background-color: var(--color-minutes-stub);
-}
-
-.tip,
-.tip-title,
-.tip-count {
-  display: block;
-}
-
-.tip {
-  text-align: start;
-}
-
-.tip-title {
-  color: var(--color-chart-tooltip-muted);
-  font-size: var(--font-size-genre-count);
-  text-transform: uppercase;
-}
-
-.tip-count {
-  font-size: var(--font-size-genre-share);
-  font-variant-numeric: tabular-nums;
-  font-weight: var(--font-weight-headings-heavy);
-  line-height: var(--line-height-genre-share);
-}
-
-.tip-unit {
-  margin-inline-start: var(--space-ratings-tip-unit);
-  color: var(--color-chart-tooltip-muted);
-  font-size: var(--font-size-genre-key-count);
-  font-weight: var(--font-weight-headings);
-}
-
-.tip-line {
-  display: flex;
-  align-items: center;
-  gap: var(--space-genre-key-top);
-  font-family: var(--font-body);
-  font-size: var(--font-size-genre-key-count);
-  font-weight: normal;
-
-  &::before {
-    content: '';
-    inline-size: var(--genre-tip-dash);
-    block-size: var(--genre-tip-dash-height);
-    background: var(--color);
-  }
 }
 
 .axis {

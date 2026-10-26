@@ -1,5 +1,5 @@
 <!--
-  OG's Bootstrap tooltip: a small black box with an arrow, on a `hint` popover anchored to its trigger.
+  og's tooltip: a `TooltipBox` (dark, a hairline border and an arrow) on a `hint` popover anchored to its trigger.
   The trigger snippet gets the props to spread onto the element the tooltip describes:
     <Tooltip text="Add to watched history" placement="bottom">
       {#snippet trigger(tooltip)}
@@ -7,17 +7,26 @@
       {/snippet}
     </Tooltip>
   It shows while the mouse is over the trigger (or the tooltip) and while the trigger has keyboard focus, and Esc,
-  blur or the mouse leaving hides it. Default tooltips never open on touch; chart tips also open and shut on a click
-  or tap.
-  `text` breaks lines at `\n`; pass `children` instead for markup. Left without either, no tooltip renders.
-  The trigger keeps its own accessible name: the tooltip only describes it (`aria-describedby`).
-  `variant="titled"` sets the first line bold and the rest muted, like the summary ratings strip's "Watchers" over
-  "131,457".
+  blur or the mouse leaving hides it. It never opens on touch, unless it `toggles`: a chart mark's tooltip also opens
+  and shuts on a click or tap. Near the edge of the screen it flips to the other side.
+  Three bodies, one of them per tooltip:
+  - `text`: centered and balanced, breaking lines at `\n`.
+  - `stats`: the charts' label, big value and dashed lines (`TooltipStat`), a divider between groups.
+  - `children`: anything else, like the library card. It's centered unless it aligns itself.
+  A component that takes a tooltip from its caller and hands it on passes `content`, which is any of the three.
+  Left without any, no tooltip renders. The trigger keeps its own accessible name: the tooltip only describes it
+  (`aria-describedby`).
 -->
 <script lang="ts">
 import type { Snippet } from 'svelte';
 import { type Attachment, createAttachmentKey } from 'svelte/attachments';
 import { anchorNames } from './anchorNames.ts';
+import type { StatTip } from './StatTip.ts';
+import type { TooltipContent } from './TooltipContent.ts';
+import { tooltipFlip } from './tooltipFlip.ts';
+import type { TooltipPlacement } from './TooltipPlacement.ts';
+import TooltipBox from './TooltipBox.svelte';
+import TooltipStat from './TooltipStat.svelte';
 import { type TooltipEvent, type TooltipState, tooltipState } from './tooltipState.ts';
 
 type TriggerProps = { 'aria-describedby'?: string; [key: symbol]: Attachment<HTMLElement> };
@@ -25,19 +34,23 @@ type TriggerProps = { 'aria-describedby'?: string; [key: symbol]: Attachment<HTM
 interface Props {
   trigger: Snippet<[TriggerProps]>;
   text?: string;
+  stats?: readonly StatTip[];
   children?: Snippet;
+  content?: TooltipContent;
   /** Which side of the trigger it shows on. Bootstrap's default is top. */
-  placement?: 'top' | 'bottom' | 'left' | 'right';
-  /** OG's two-line chart tooltip, without the standard arrow. `titled` bolds the first line of `text`. */
-  variant?: 'default' | 'chart' | 'titled';
+  placement?: TooltipPlacement;
+  /** A click or tap opens and shuts it too, for chart marks, which touch can't hover. */
+  toggles?: boolean;
 }
 
-const { trigger, text, children, placement = 'top', variant = 'default' }: Props = $props();
+const { trigger, text, stats, children, content, placement = 'top', toggles = false }: Props = $props();
 const id = $props.id();
 
 let status = $state<TooltipState>({ hovered: false, focused: false, pinned: false, dismissed: false, open: false });
 let anchor = $state<HTMLElement>();
 let tip = $state<HTMLElement>();
+let side = $state<TooltipPlacement>();
+const shown = $derived(side ?? placement);
 
 const send = (event: TooltipEvent) => (status = tooltipState(status, event));
 const inside = (element: Element | undefined, target: EventTarget | null) =>
@@ -67,7 +80,7 @@ const attach: Attachment<HTMLElement> = (node) => {
   };
 
   const click = () => {
-    if (variant === 'chart') send(status.open ? 'dismiss' : 'focus');
+    if (toggles) send(status.open ? 'dismiss' : 'focus');
   };
   node.addEventListener('click', click);
   node.addEventListener('pointerenter', enter);
@@ -87,15 +100,30 @@ const attach: Attachment<HTMLElement> = (node) => {
   };
 };
 
+const words = $derived(text ?? (typeof content === 'string' ? content : undefined));
+const groups = $derived(stats ?? (typeof content === 'object' ? content : undefined));
+const markup = $derived(children ?? (typeof content === 'function' ? content : undefined));
+
 const key = createAttachmentKey();
-const hasTip = $derived(Boolean(text) || Boolean(children));
+const hasTip = $derived(Boolean(words) || Boolean(groups?.length) || Boolean(markup));
 const triggerProps = $derived<TriggerProps>(hasTip ? { 'aria-describedby': `tooltip-${id}`, [key]: attach } : {});
 
+// It opens on its preferred side, then flips once if it runs off the screen there. Shut, it goes back.
 $effect(() => {
   if (!tip || !anchor) return;
   if (status.open === tip.matches(':popover-open')) return;
-  if (status.open) tip.showPopover({ source: anchor });
-  else tip.hidePopover();
+  if (!status.open) {
+    tip.hidePopover();
+    side = undefined;
+    return;
+  }
+  tip.showPopover({ source: anchor });
+  const flipped = tooltipFlip({
+    placement,
+    box: tip.getBoundingClientRect(),
+    viewport: { width: document.documentElement.clientWidth, height: document.documentElement.clientHeight },
+  });
+  if (flipped !== placement) side = flipped;
 });
 
 // `hint` popovers close on Esc by themselves. Browsers without `hint` treat it as `manual`, so listen too.
@@ -126,33 +154,32 @@ const leaveTip = (event: PointerEvent) => {
   <span
   bind:this={tip}
   id="tooltip-{id}"
-  class={['tooltip', placement, { chart: variant === 'chart' }]}
+  class={['tooltip', shown]}
   popover="hint"
   role="tooltip"
   style:position-anchor="--tooltip-{id}"
   ontoggle={closed}
   onpointerleave={leaveTip}
 >
-    {#if children}
-      <span class="inner">{@render children()}</span>
-    {:else if variant === 'titled'}
-      {@const [title, ...detail] = (text ?? '').split('\n')}
-      <span class="inner text"><b class="title">{title}</b>{#if detail.length > 0}<span class="detail">{
-            detail.join('\n')
-          }</span>{/if}</span>
-    {:else}
-      <span class="inner text">{text}</span>
-    {/if}
+    <TooltipBox side={shown}>
+      {#if markup}
+        {@render markup()}
+      {:else if groups?.length}
+        {#each groups as stat, i (i)}{#if i > 0}<span class="divider"></span>{/if}<TooltipStat {...stat} />{/each}
+      {:else}
+        <span class="text">{words}</span>
+      {/if}
+    </TooltipBox>
   </span>
 {/if}
 
 <style>
 /*
-  The popover box runs from the trigger's edge to the far side of the text, so the pointer can move onto the
-  tooltip without a gap closing it. The arrow sits in its padding, 3px off the trigger like Bootstrap's.
+  The popover runs from the trigger's edge to the far side of the box, so the pointer can move onto the tooltip
+  without a gap closing it. The box's arrow sits in that padding, 3px off the trigger like Bootstrap's.
 */
 .tooltip {
-  --edge: calc(var(--tooltip-arrow) + var(--tooltip-offset));
+  --edge: calc(var(--tooltip-arrow) + 1px + var(--tooltip-offset));
   position: fixed;
   inset: auto;
   inline-size: max-content;
@@ -161,18 +188,6 @@ const leaveTip = (event: PointerEvent) => {
   overflow: visible;
   border: 0;
   background: none;
-  color: var(--color-tooltip-text);
-  font-family: var(--font-body);
-  font-size: var(--font-size-small);
-  font-style: normal;
-  font-weight: normal;
-  line-height: var(--line-height-tooltip);
-  letter-spacing: normal;
-  text-align: center;
-  text-decoration: none;
-  text-shadow: none;
-  text-transform: none;
-  opacity: var(--opacity-tooltip);
   transition: opacity var(--transition-tooltip), display var(--transition-tooltip) allow-discrete,
     overlay var(--transition-tooltip) allow-discrete;
 
@@ -183,20 +198,6 @@ const leaveTip = (event: PointerEvent) => {
   &:not(:popover-open) {
     opacity: 0;
   }
-
-  &::before {
-    content: '';
-    position: absolute;
-    border: var(--tooltip-arrow) solid transparent;
-  }
-}
-
-.inner {
-  display: block;
-  max-inline-size: var(--tooltip-max-width);
-  padding: var(--space-tooltip);
-  border-radius: var(--radius-tooltip);
-  background-color: var(--color-tooltip-bg);
 }
 
 /* OG joined tooltip lines with <br>. */
@@ -204,78 +205,31 @@ const leaveTip = (event: PointerEvent) => {
   white-space: pre-line;
 }
 
-.title {
+/* OG's `.tooltip-hr`, between a rewatch and the whole show. */
+.divider {
   display: block;
-  font-weight: var(--font-weight-headings-heavy);
-}
-
-.detail {
-  display: block;
-  color: var(--color-tooltip-muted);
+  margin-block: var(--space-tooltip-divider);
+  border-block-start: 1px solid var(--color-tooltip-divider);
 }
 
 .top {
   position-area: block-start center;
   padding-block-end: var(--edge);
-
-  &::before {
-    inset-block-end: calc(var(--tooltip-offset) - var(--tooltip-arrow));
-    inset-inline-start: calc(50% - var(--tooltip-arrow));
-    border-block-start-color: var(--color-tooltip-bg);
-  }
 }
 
 .bottom {
   position-area: block-end center;
   padding-block-start: var(--edge);
-
-  &::before {
-    inset-block-start: calc(var(--tooltip-offset) - var(--tooltip-arrow));
-    inset-inline-start: calc(50% - var(--tooltip-arrow));
-    border-block-end-color: var(--color-tooltip-bg);
-  }
 }
 
 .left {
   position-area: center inline-start;
   padding-inline-end: var(--edge);
-
-  &::before {
-    inset-inline-end: calc(var(--tooltip-offset) - var(--tooltip-arrow));
-    inset-block-start: calc(50% - var(--tooltip-arrow));
-    border-inline-start-color: var(--color-tooltip-bg);
-  }
 }
 
 .right {
   position-area: center inline-end;
   padding-inline-start: var(--edge);
-
-  &::before {
-    inset-inline-start: calc(var(--tooltip-offset) - var(--tooltip-arrow));
-    inset-block-start: calc(50% - var(--tooltip-arrow));
-    border-inline-end-color: var(--color-tooltip-bg);
-  }
-}
-
-.chart {
-  --edge: var(--chart-tooltip-offset);
-  opacity: 1;
-  font-family: var(--font-headings);
-  font-weight: var(--font-weight-headings);
-  line-height: var(--line-height-base);
-  transition-duration: var(--transition-chart);
-
-  &::before {
-    display: none;
-  }
-  & .inner {
-    padding: var(--space-chart-tooltip);
-    border: 1px solid var(--color-chart-tooltip-border);
-    border-radius: var(--radius-chart-tooltip);
-    background: var(--color-chart-tooltip-bg);
-    color: var(--color-chart-tooltip-text);
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

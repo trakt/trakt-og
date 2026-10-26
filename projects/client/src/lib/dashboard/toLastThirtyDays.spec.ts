@@ -120,10 +120,10 @@ describe('mapper: toLastThirtyDays', () => {
     });
 
     expect(chart?.days.at(-1)?.lines).toEqual([
-      { type: 'episode', text: '2 episodes (3 plays) · 2h 15m' },
-      { type: 'movie', text: '1 movie · 2h' },
+      { type: 'episode', text: '2 episodes (3 plays)', detail: '2h 15m' },
+      { type: 'movie', text: '1 movie', detail: '2h' },
     ]);
-    expect(chart?.days.at(-11)?.lines).toEqual([{ type: 'episode', text: '1 episode · 45m' }]);
+    expect(chart?.days.at(-11)?.lines).toEqual([{ type: 'episode', text: '1 episode', detail: '45m' }]);
   });
 
   describe('for the weeks', () => {

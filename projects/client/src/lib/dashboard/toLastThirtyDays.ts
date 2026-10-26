@@ -68,12 +68,12 @@ function playCount(plays: readonly Play[], type: Play['type']) {
   return `${countLabel(items, type)}${plays.length > items ? ` (${countLabel(plays.length, 'play')})` : ''}`;
 }
 
-// A tooltip line, for a type played that day: "3 episodes (4 plays) · 1h 7m".
+// A tooltip line, for a type played that day: "3 episodes (4 plays)", then its "1h 7m".
 function dayLines(plays: readonly Play[]) {
   return (['episode', 'movie'] as const)
     .map((type) => ({ type, mine: ofType(plays, type) }))
     .filter(({ mine }) => mine.length > 0)
-    .map(({ type, mine }) => ({ type, text: `${playCount(mine, type)} · ${formatRuntime(minutesOf(mine))}` }));
+    .map(({ type, mine }) => ({ type, text: playCount(mine, type), detail: formatRuntime(minutesOf(mine)) }));
 }
 
 function axis(date: string, i: number): Pick<MinutesDay, 'axis' | 'mark'> {

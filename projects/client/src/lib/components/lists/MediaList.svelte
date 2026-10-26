@@ -18,6 +18,7 @@ import LoadingOverlay from '$lib/components/loading/LoadingOverlay.svelte';
 import NewListDialog from '$lib/components/lists/NewListDialog.svelte';
 import SearchField from '$lib/components/filters/SearchField.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
+import TooltipBox from '$lib/components/tooltip/TooltipBox.svelte';
 import SummaryAction from '$lib/components/summary/SummaryAction.svelte';
 import SummaryActionTile from '$lib/components/summary/SummaryActionTile.svelte';
 import type { ListTarget } from '$lib/components/lists/ListTarget';
@@ -377,7 +378,7 @@ async function save(draft: Parameters<typeof createList>[0]['draft'] & { collabo
       <div class="empty"><EmptyNote>No lists match “{terms.trim()}”.</EmptyNote></div>
     {/each}
   </div>
-  {#if countTip}<div class="count-tip" aria-hidden="true" style:top="{countTip.top}px"><span>{countTip.text}</span></div>{/if}
+  {#if countTip}<div class="count-tip" aria-hidden="true" style:top="{countTip.top}px"><TooltipBox side="left">{countTip.text}</TooltipBox></div>{/if}
   <footer><button type="button" class="new" onclick={openNew}><Icon svg={add} />New list</button></footer>
   {/if}
 </div>
@@ -673,32 +674,14 @@ li a {
     outline: none;
   }
 }
-/* The shared tooltip's left placement: a black box off the picker's edge, its arrow at the row. */
+/* The shared tooltip's left placement: the box off the picker's edge, its arrow at the row. */
 .count-tip {
   position: absolute;
   inset-inline-end: 100%;
+  inline-size: max-content;
   translate: 0 -50%;
-  padding-inline-end: calc(var(--tooltip-arrow) + var(--tooltip-offset));
-  color: var(--color-tooltip-text);
-  font-size: var(--font-size-small);
-  line-height: var(--line-height-tooltip);
-  white-space: nowrap;
-  opacity: var(--opacity-tooltip);
+  padding-inline-end: calc(var(--tooltip-arrow) + 1px + var(--tooltip-offset));
   pointer-events: none;
-  & span {
-    display: block;
-    padding: var(--space-tooltip);
-    border-radius: var(--radius-tooltip);
-    background-color: var(--color-tooltip-bg);
-  }
-  &::before {
-    content: '';
-    position: absolute;
-    inset-inline-end: calc(var(--tooltip-offset) - var(--tooltip-arrow));
-    inset-block-start: calc(50% - var(--tooltip-arrow));
-    border: var(--tooltip-arrow) solid transparent;
-    border-inline-start-color: var(--color-tooltip-bg);
-  }
 }
 .empty {
   padding: var(--space-menu-row);

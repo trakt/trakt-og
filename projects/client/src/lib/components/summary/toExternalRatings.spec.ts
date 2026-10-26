@@ -24,7 +24,7 @@ describe('toExternalRatings', () => {
     expect(result.map(({ logo, rating, title, detail }) => [logo, rating, title, detail])).toEqual([
       ['imdb', '8.8', 'IMDb', '2,567,341 votes'],
       ['tmdb', '84%', 'TMDB', '32,938 votes'],
-      ['tomatometer-fresh', '81%', 'Rotten Tomatoes', 'Tomatometer · Fresh'],
+      ['tomatometer-fresh', '81%', 'Rotten Tomatoes', 'Tomatometer, Fresh'],
       ['audience-upright', '96%', 'Rotten Tomatoes', 'Popcornmeter'],
       ['metacritic', '67', 'Metacritic', 'Metascore'],
       ['justwatch', '74', 'JustWatch', '30 Day Streaming Rank'],

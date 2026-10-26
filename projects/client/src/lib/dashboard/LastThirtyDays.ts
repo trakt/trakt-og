@@ -11,8 +11,8 @@ type WatchedKey = {
   readonly type?: PlayType;
 };
 
-/** A tooltip line, dashed in its type's color: "3 episodes (4 plays) · 1h 7m". */
-type MinutesLine = { readonly type: PlayType; readonly text: string };
+/** A tooltip line, dashed in its type's color: "3 episodes (4 plays)", then its "1h 7m". */
+type MinutesLine = { readonly type: PlayType; readonly text: string; readonly detail: string };
 
 /** A labelled line across the plot, "2h", at a height from 0 to 100. */
 type MinutesLevel = { readonly label: string; readonly height: number };

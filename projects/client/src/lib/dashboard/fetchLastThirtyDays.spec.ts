@@ -64,7 +64,7 @@ describe('fetchLastThirtyDays', () => {
     expect(historyUrl.searchParams.get('extended')).toBe('full');
     expect(seen.every((request) => request.headers.get('authorization') === 'Bearer abc')).toBe(true);
     expect(last.keys.at(0)?.share).toBe('1h 40m');
-    expect(last.chart?.days.at(-1)?.lines).toEqual([{ type: 'movie', text: '1 movie · 1h 40m' }]);
+    expect(last.chart?.days.at(-1)?.lines).toEqual([{ type: 'movie', text: '1 movie', detail: '1h 40m' }]);
     expect(last.genres.map(({ name }) => name)).toEqual(['Drama']);
   });
 

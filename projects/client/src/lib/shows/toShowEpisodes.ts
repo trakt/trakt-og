@@ -34,6 +34,8 @@ export type EpisodeRow = {
   /** "January 27, 2008 9:00 PM" in the page's zone, or undefined for "no air date". */
   aired?: string;
   runtime?: string;
+  /** The runtime in minutes, so the watched tooltip can total the plays. */
+  minutes?: number;
   overview: string | null;
   comments: number;
   rating: number;
@@ -125,6 +127,7 @@ export function toShowEpisodes({ show, seasons, signedIn, episodeTypeTags, dateP
         ? formatDate(episode.first_aired, { ...datePreferences, timeZone, format: 'LL', time: true })
         : undefined,
       runtime: runtime ? formatRuntime(runtime) : undefined,
+      minutes: runtime ?? undefined,
       overview: episode.overview ?? null,
       comments: episode.comment_count ?? 0,
       rating: episode.rating ?? 0,

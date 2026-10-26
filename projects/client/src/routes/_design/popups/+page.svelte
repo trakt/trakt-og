@@ -161,7 +161,7 @@ const showLibrary = { episodes: { done: 27, aired: 32 }, sources: ['plex' as con
 </Specimen>
 
 <Specimen title="Tooltip" row
-  note="Hover or tab to a trigger; Esc hides it and touch never opens one, except a chart's, which a click or tap toggles. Text centers and balances its lines; stats with lines, and the library card, align left. Near the screen's edge it flips side.">
+  note="Hover or tab to a trigger; Esc hides it and touch never opens one, except a chart's, which a click or tap toggles. Text centers and balances its lines; stats with lines, and the library card, align left. Near the screen's edge it flips side. A tooltip that only repeats its trigger's name isn't linked as its description, so screen readers say it once.">
   <Variant label="Plays, a movie's quick icon">
     <Tooltip placement="bottom">
       {#snippet trigger(tooltip)}

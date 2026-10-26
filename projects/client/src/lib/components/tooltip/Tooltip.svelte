@@ -15,12 +15,13 @@
   - `children`: anything else, like the library card. It's centered unless it aligns itself.
   A component that takes a tooltip from its caller and hands it on passes `content`, which is any of the three.
   Left without any, no tooltip renders. The trigger keeps its own accessible name: the tooltip only describes it
-  (`aria-describedby`).
+  (`aria-describedby`), and not even that when it just repeats the name ("Edit note" on an "Edit note" button).
 -->
 <script lang="ts">
 import type { Snippet } from 'svelte';
 import { type Attachment, createAttachmentKey } from 'svelte/attachments';
 import { anchorNames } from './anchorNames.ts';
+import { repeatsName } from './repeatsName.ts';
 import type { StatTip } from './StatTip.ts';
 import type { TooltipContent } from './TooltipContent.ts';
 import { tooltipFlip } from './tooltipFlip.ts';
@@ -50,6 +51,7 @@ let status = $state<TooltipState>({ hovered: false, focused: false, pinned: fals
 let anchor = $state<HTMLElement>();
 let tip = $state<HTMLElement>();
 let side = $state<TooltipPlacement>();
+let repeats = $state(false);
 const shown = $derived(side ?? placement);
 
 const send = (event: TooltipEvent) => (status = tooltipState(status, event));
@@ -106,7 +108,27 @@ const markup = $derived(children ?? (typeof content === 'function' ? content : u
 
 const key = createAttachmentKey();
 const hasTip = $derived(Boolean(words) || Boolean(groups?.length) || Boolean(markup));
-const triggerProps = $derived<TriggerProps>(hasTip ? { 'aria-describedby': `tooltip-${id}`, [key]: attach } : {});
+const triggerProps = $derived<TriggerProps>(
+  hasTip ? { 'aria-describedby': repeats ? undefined : `tooltip-${id}`, [key]: attach } : {},
+);
+
+// The trigger's name as a screen reader builds it: its label, else its text and its icons' and images' labels.
+const nameOf = (node: HTMLElement) =>
+  node.getAttribute('aria-label') ??
+  node.getAttribute('alt') ??
+  [
+    node.textContent ?? '',
+    ...[...node.querySelectorAll('[aria-label], img[alt]')].map(
+      (child) => child.getAttribute('aria-label') ?? child.getAttribute('alt') ?? '',
+    ),
+  ].join(' ');
+
+$effect(() => {
+  if (!anchor || !tip) return;
+  // Read so a new text checks again.
+  void words;
+  repeats = repeatsName(nameOf(anchor), tip.textContent ?? '');
+});
 
 // It opens on its preferred side, then flips once if it runs off the screen there. Shut, it goes back.
 $effect(() => {

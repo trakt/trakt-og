@@ -8,15 +8,17 @@
   what the most recently active members are watching, every 2 minutes while the tab is visible.
 -->
 <script lang="ts">
+import { resolve } from '$app/paths';
 import type { Snippet } from 'svelte';
 import { browser } from '$app/environment';
 import { apiQueue } from '$lib/api/apiQueue';
 import { rawApiFetch } from '$lib/api/rawApiFetch';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
+import LoadFailed from '$lib/components/empty/LoadFailed.svelte';
+import EmptyState from '$lib/components/empty/EmptyState.svelte';
+import PanelPrompt from '$lib/components/empty/PanelPrompt.svelte';
 import CardShimmerRow from '$lib/components/loading/CardShimmerRow.svelte';
 import Shimmer from '$lib/components/loading/Shimmer.svelte';
-import NoData from '$lib/components/empty/NoData.svelte';
-import PanelPrompt from '$lib/components/first-night/PanelPrompt.svelte';
 import TeamToFollow from '$lib/components/first-night/TeamToFollow.svelte';
 import { panelQuotes } from '$lib/firstNight/panelQuotes';
 import PosterCard from '$lib/components/media/PosterCard.svelte';
@@ -60,12 +62,20 @@ interface Props {
   watching?: (members: readonly SocialMember[]) => Promise<readonly LiveWatch[]>;
   /** The rows of a period past today. Defaults to asking the API with the viewer's token. */
   rowsFor?: (period: Exclude<SocialPeriod, 'today'>) => Promise<readonly SocialItem[]>;
+  /** Welcome mode: following nobody offers the team to follow instead of a link. */
+  welcome?: boolean;
 }
 
 const get: SocialGet = (path) => apiQueue.run(() => rawApiFetch({ fetch: viewerFetch(), path }));
 
-const { feed, datePreferences, username, watching = (members) => fetchWatching({ get, members }), rowsFor }: Props =
-  $props();
+const {
+  feed,
+  datePreferences,
+  username,
+  watching = (members) => fetchWatching({ get, members }),
+  rowsFor,
+  welcome = false,
+}: Props = $props();
 
 const PERIODS: Readonly<Record<SocialPeriod, string>> = { today: 'Today', yesterday: 'Yesterday', week: 'Week' };
 const VIEWS: Readonly<Record<SocialView, string>> = { title: 'Title', person: 'Person', time: 'Time' };
@@ -158,7 +168,6 @@ const boardOf = (items: readonly SocialItem[] | undefined) =>
     now,
     datePreferences,
   });
-const lead = $derived(period === 'today' ? 'today' : period === 'yesterday' ? 'yesterday' : 'this week');
 </script>
 
 <!-- Hrefs point at OG routes og hasn't built yet, and resolve() only takes routes that exist. -->
@@ -293,11 +302,11 @@ const lead = $derived(period === 'today' ? 'today' : period === 'yesterday' ? 'y
 
         {#if failed === period}
           <div class="notice">
-  <NoData>{PERIODS[period]} didn't load. Pick it again to retry.</NoData>
+  <LoadFailed what={PERIODS[period]} onretry={() => pick(period)} />
 </div>
         {:else if board && board.cards.length === 0}
           <div class="notice">
-  <NoData>Nobody you follow watched, rated or commented on anything {lead}.</NoData>
+  <EmptyState />
 </div>
         {:else if board}
           <div class="grid" bind:clientWidth={width}>
@@ -348,23 +357,20 @@ const lead = $derived(period === 'today' ? 'today' : period === 'yesterday' ? 'y
 {/snippet}
 
 {#snippet nobody()}
-  <PanelPrompt quote={panelQuotes.socialFeed}
-  text="Follow a few people and their watches, ratings and comments show up here. Start with the Trakt team.">
+  <PanelPrompt quote={panelQuotes.socialFeed} {welcome}
+  text="Follow people to see what they watch, rate and say."
+  action={{ href: `${resolve('/about')}#about-team`, text: 'Meet the team' }}>
     {#snippet picks()}<TeamToFollow />{/snippet}
   </PanelPrompt>
 {/snippet}
 
 {#snippet broken()}
   <div class="notice">
-  <NoData>The Social Feed didn't load. Refresh the page to try again.</NoData>
+  <LoadFailed what="Social Feed" />
 </div>
 {/snippet}
 
 <style>
-.body {
-  --color-no-data-bg: var(--color-social-feed-no-data-bg);
-}
-
 .notice {
   padding-block: var(--gutter);
 }

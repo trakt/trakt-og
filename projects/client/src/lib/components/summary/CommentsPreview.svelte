@@ -4,11 +4,12 @@
   the new comment form (`form`) under them while it's open, and up to three comments of the pick, reviews featured.
   With nothing to show in the first language (English), only the form renders, without the heading, so the page's
   Add Comment still opens it; a comment posted from it shows the section. Picks without comments are left out by the
-  caller. After picking another language with none, the controls stay so another can be picked. "Add comment" opens
-  the page's new comment form; what it posts goes on top of Recent, which it switches to.
+  caller. After picking another language with none, the controls stay over a no-results note so another can be
+  picked. "Add comment" opens the page's new comment form; what it posts goes on top of Recent, which it switches to.
   `cut:` "Likes 30 Days" and "Following" (no API sort or filter).
 -->
 <script lang="ts">
+import EmptyState from '$lib/components/empty/EmptyState.svelte';
 import AddCommentLink from '$lib/components/comments/AddCommentLink.svelte';
 import CommentCard from '$lib/components/comments/CommentCard.svelte';
 import { page } from '$app/state';
@@ -109,6 +110,8 @@ const current = $derived(tabs.find(({ id }) => id === picked) ?? tabs[0]);
     <div class="comment">
       <CommentCard {comment} {item} {viewer} {dateOptions} featured={comment.review} wide />
     </div>
+  {:else}
+    <EmptyState action={language === 'en' || language === 'all' ? undefined : { onclick: () => pickLanguage('en'), text: 'Show English comments' }} />
   {/each}
 </div>
 {:else}

@@ -1,23 +1,30 @@
 <!--
-  An empty dashboard panel's prompt: a film line over that film's fanart, what fills the panel, and one thing to do.
-  With `picks`, the quote stacks on the left and the picks fill the right, so the panel can be filled in place.
+  The "not started" empty state of a dashboard panel: a film line over that film's fanart, what fills the panel, and one
+  way to start. In welcome mode, `picks` replace the button: the quote stacks on the left and the picks fill the right,
+  so the panel can be filled in place. Outside the dashboard, "not started" is EmptyState with an action.
 -->
 <script lang="ts">
 import type { Snippet } from 'svelte';
+import CtaLink from '$lib/components/first-night/CtaLink.svelte';
 import { type PanelQuote, quoteFanart } from '$lib/firstNight/panelQuotes';
+import type { EmptyAction } from './EmptyAction.ts';
 
 interface Props {
   quote: PanelQuote;
   text: string;
-  actions?: Snippet;
+  /** The one way to start, for a member past welcome mode, or a panel without picks. */
+  action?: EmptyAction;
   picks?: Snippet;
+  /** Welcome mode: show the picks instead of the action. */
+  welcome?: boolean;
   /** A taller banner, for a panel with nothing beside it. */
   tall?: boolean;
   /** More room under it, for a panel with no footer below. */
   roomy?: boolean;
 }
 
-const { quote, text, actions, picks, tall = false, roomy = false }: Props = $props();
+const { quote, text, action, picks, welcome = false, tall = false, roomy = false }: Props = $props();
+const showPicks = $derived(welcome && !!picks);
 
 let art = $state<string>();
 $effect(() => {
@@ -32,7 +39,7 @@ $effect(() => {
 </script>
 
 <div class={['frame', { roomy }]}>
-  <div class={['panel-prompt', { stacked: !!picks, tall }]}>
+  <div class={['panel-prompt', { stacked: showPicks, tall }]}>
   <figure class="quote" style:--focus={quote.focus}>
     {#if art}<img src={art} alt="" loading="lazy" />{/if}
     <span class="veil"></span>
@@ -40,10 +47,15 @@ $effect(() => {
       <span class="film">{quote.film}</span>
       <q>{quote.quote}</q>
       <span class="text">{text}</span>
-      {#if actions}<span class="actions">{@render actions()}</span>{/if}
+      {#if action && !showPicks}
+        <span class="actions">
+          {#if 'href' in action}<CtaLink href={action.href} small>{action.text}</CtaLink>
+          {:else}<CtaLink onclick={action.onclick} small>{action.text}</CtaLink>{/if}
+        </span>
+      {/if}
     </figcaption>
   </figure>
-  {#if picks}
+  {#if showPicks && picks}
     <div class="picks">{@render picks()}</div>
   {/if}
   </div>

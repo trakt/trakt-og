@@ -1,6 +1,7 @@
 <!-- `/shows/:id/seasons`: the show's seasons grid under its facts, with "Original Air Date" the only order. -->
 <script lang="ts">
 import type { DatePreferences } from '$lib/settings/DatePreferences';
+import EmptyState from '$lib/components/empty/EmptyState.svelte';
 import { countLabel } from '$lib/utils/countLabel';
 import type { loadShow } from './loadShow.ts';
 import SeasonsGrid from './SeasonsGrid.svelte';
@@ -41,4 +42,5 @@ const sections = $derived([
 >
   <SeasonsGrid showId={show.id} seasons={show.seasons} signedIn={data.signedIn} initialFilters={data.filters}
     datePreferences={data.datePreferences} />
+  {#if show.seasons.length === 0}<EmptyState />{/if}
 </ShowSubpage>

@@ -6,7 +6,7 @@
 -->
 <script lang="ts">
 import type { Snippet } from 'svelte';
-import NoData from '$lib/components/empty/NoData.svelte';
+import LoadFailed from '$lib/components/empty/LoadFailed.svelte';
 import Shimmer from '$lib/components/loading/Shimmer.svelte';
 import GenreBand from '$lib/components/users/GenreBand.svelte';
 import type { LastThirtyDays } from '$lib/dashboard/LastThirtyDays';
@@ -66,7 +66,7 @@ const { stats }: { stats: Promise<LastThirtyDays> } = $props();
 
 {#snippet failed()}
   <div class="notice">
-  <NoData>The last 30 days didn't load. Refresh the page to try again.</NoData>
+  <LoadFailed what="Last 30 Days" />
 </div>
 {/snippet}
 

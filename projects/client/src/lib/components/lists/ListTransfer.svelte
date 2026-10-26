@@ -7,6 +7,7 @@ import { login } from '$lib/auth/login';
 import { rawApiFetch } from '$lib/api/rawApiFetch';
 import { overlay } from '$lib/overlay/overlay';
 import { toast } from '$lib/components/toast/toast.svelte';
+import EmptyNote from '$lib/components/empty/EmptyNote.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import { loadListCatalog } from '$lib/components/lists/loadListCatalog';
 import { sortPickerLists } from '$lib/components/lists/sortPickerLists';
@@ -245,6 +246,7 @@ function toggle(event: ToggleEvent) {
     {@render row(null, 'New List', 0, '', undefined, false)}
     {#if hasWatchlist}{@render row(null, 'Watchlist', watchlistCount, '', `/users/${page.data.user?.slug}/watchlist`, true)}{/if}
     {#each rows as list, i (list.id)}{@render row(list, list.name, list.count, list.privacy, `/lists/${list.id}`, false, i === 0)}{/each}
+    {#if searching && terms.trim() && rows.length === 0}<li class="divider note"><EmptyNote>No lists match “{terms.trim()}”.</EmptyNote></li>{/if}
   </ul>
 </div>
 {#snippet row(list: PickerList | null, name: string, total: number, privacy: string, href?: string, watchlist = false, divider = false)}
@@ -362,6 +364,9 @@ li.divider {
   margin-block-start: var(--list-transfer-divider-gap);
   padding-block-start: var(--list-transfer-divider-gap);
   border-block-start: var(--list-border) solid var(--color-menu-divider);
+}
+li.note {
+  padding-inline: var(--space-sm-inline);
 }
 li.pending {
   color: var(--brand-secondary);

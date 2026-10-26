@@ -6,11 +6,12 @@
   fails on its own if it doesn't.
 -->
 <script lang="ts">
+import { resolve } from '$app/paths';
 import type { Snippet } from 'svelte';
 import { browser } from '$app/environment';
+import LoadFailed from '$lib/components/empty/LoadFailed.svelte';
+import PanelPrompt from '$lib/components/empty/PanelPrompt.svelte';
 import CardShimmerRow from '$lib/components/loading/CardShimmerRow.svelte';
-import NoData from '$lib/components/empty/NoData.svelte';
-import PanelPrompt from '$lib/components/first-night/PanelPrompt.svelte';
 import StarterPicks from '$lib/components/first-night/StarterPicks.svelte';
 import { panelQuotes } from '$lib/firstNight/panelQuotes';
 import DashboardOnDeckCard from '$lib/components/dashboard/DashboardOnDeckCard.svelte';
@@ -35,9 +36,12 @@ interface Props {
   isVip: boolean;
   /** The sort and favorites-only count for the help line and the Progress link. Left out, OG's defaults. */
   settings?: DashboardSettings['upNext'];
+  /** Welcome mode: an empty panel offers starter picks instead of a link. */
+  welcome?: boolean;
 }
 
-const { upNext, username, isVip, settings = toDashboardSettings({ settings: null }).upNext }: Props = $props();
+const { upNext, username, isVip, settings = toDashboardSettings({ settings: null }).upNext, welcome = false }: Props =
+  $props();
 
 const PER_ROW = 6;
 // The grid's width, so a smaller tablet's four columns get whole rows.
@@ -85,8 +89,9 @@ const STREAMING = ' + streaming on your ';
   {@const rows = rowCount({ rows: saved, items: visible.length, perRow })}
   {#snippet cards()}
     {#if visible.length === 0}
-      <PanelPrompt quote={panelQuotes.upNext}
-  text="Add a show to your watchlist and its next episode is waiting here, every time you come back.">
+      <PanelPrompt quote={panelQuotes.upNext} {welcome}
+  text="Watchlist a show and its next episode waits here."
+  action={{ href: resolve('/shows/[chart=chart]', { chart: 'trending' }), text: 'Find a show' }}>
         {#snippet picks()}<StarterPicks chart="trending" type="shows" count={4} action="watchlist" />{/snippet}
       </PanelPrompt>
     {:else}
@@ -117,7 +122,7 @@ const STREAMING = ' + streaming on your ';
 
 {#snippet failed()}
   <div class="notice">
-  <NoData>Up Next didn't load. Refresh the page to try again.</NoData>
+  <LoadFailed what="Up Next" />
 </div>
 {/snippet}
 

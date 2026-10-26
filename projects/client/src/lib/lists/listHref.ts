@@ -3,6 +3,7 @@ import type { ListSort } from './resolveListSort.ts';
 
 type ListHrefChange = {
   readonly terms?: string;
+  readonly watchnow?: string;
   readonly hide?: readonly string[];
   readonly sort?: ListSort;
   readonly types?: readonly ListItemType[];
@@ -25,6 +26,10 @@ export function listHref(url: URL, change: ListHrefChange): string {
   if (change.terms !== undefined) {
     if (change.terms) query.set('terms', change.terms);
     else query.delete('terms');
+  }
+  if (change.watchnow !== undefined) {
+    if (change.watchnow) query.set('watchnow', change.watchnow);
+    else query.delete('watchnow');
   }
   if (change.types) setList(query, 'display', change.types);
   if (change.genres) setList(query, 'genres', change.genres);

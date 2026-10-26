@@ -56,6 +56,7 @@ const client = () => {
 const slices = $derived(overlay.slices());
 const fresh = untrack(() => cached?.slug === data.profile.slug && Date.now() - cached.at < FRESH_FOR);
 let nitro = $state.raw<readonly ProgressItem[] | null>(fresh ? cached?.items ?? null : null);
+let failed = $state(false);
 let droppedShows = $state.raw<ReadonlyMap<number, CachedShow> | undefined>();
 const catalogs = new SvelteMap<number, ShowCatalog>();
 const loading = new SvelteSet<number>();
@@ -74,8 +75,10 @@ async function readProgress() {
     });
     cached = { slug, items, at: Date.now() };
     nitro = items;
+    failed = false;
   } catch {
     toast.error('Doh! There was an error loading your progress.');
+    if (nitro === null) failed = true;
     nitro ??= [];
   }
 }
@@ -176,4 +179,4 @@ async function need(id: number) {
 }
 </script>
 
-<ProgressList {data} {items} {listed} {loading} onneed={need} />
+<ProgressList {data} {items} {listed} {loading} onneed={need} onretry={failed ? readProgress : undefined} />

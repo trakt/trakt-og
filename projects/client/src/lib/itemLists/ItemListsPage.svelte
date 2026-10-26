@@ -9,7 +9,6 @@ import ListEditor from '$lib/components/lists/ListEditor.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import SortDirection from '$lib/components/dropdown/SortDirection.svelte';
 import EmptyState from '$lib/components/empty/EmptyState.svelte';
-import listIcon from '$lib/icons/regular/list.svg?raw';
 import ListRow from '$lib/components/media/ListRow.svelte';
 import Pagination from '$lib/components/pagination/Pagination.svelte';
 import SubpageFrame from '$lib/components/summary/SubpageFrame.svelte';
@@ -34,15 +33,6 @@ const title = $derived(
 );
 const first = $derived(data.lists.at(0));
 const description = $derived(first ? [first.name, first.description].filter(Boolean).join(' - ') : title);
-// The empty state names what was filtered for, then offers every list.
-const emptyLine = $derived(
-  {
-    all: `No lists feature ${data.media.item.title} yet.`,
-    personal: `No personal lists feature ${data.media.item.title} yet.`,
-    official: `No official lists feature ${data.media.item.title}.`,
-    me: `None of your lists feature ${data.media.item.title} yet.`,
-  }[data.query.type],
-);
 const href = (next: Partial<ItemListQuery>) => itemListsHref(data.media.href, { ...data.query, ...next });
 // Me needs the viewer's lists, so it's only offered signed in.
 const types = $derived(
@@ -113,9 +103,8 @@ const lists = $derived(own.visible(data.lists));
   <!-- Each row brings OG's 20px above it, so rows straight under the subnav sit flush like OG's. -->
   <div id="lists" class={['lists', { flush: data.lists.length > 0 && !pages }]}>
     {#if data.lists.length === 0}
-      <EmptyState icon={listIcon} action={data.query.type === 'all' ? undefined : { href: href({ type: 'all' }), text: 'See all lists' }}>
-        {emptyLine}
-      </EmptyState>
+      {#if data.query.type === 'all'}<EmptyState />
+      {:else}<EmptyState action={{ href: href({ type: 'all' }), text: 'See all lists' }} />{/if}
     {:else}
       {#if pages}<div class="pages-top"><Pagination meta={pages} label="Lists pages" /></div>{/if}
       {#each lists as list (list.id)}

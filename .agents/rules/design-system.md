@@ -49,3 +49,24 @@ Every OG icon comes from OG's own fonts, so it matches exactly. Never hand-draw 
 
 When OG picks the icon at runtime (the `logos-icon-#{format}` formats, gender icons, social network brands), extract the
 whole set it can pick from, not just the one your test data shows.
+
+## Empty states
+
+Every empty state is `EmptyState`, from `$lib/components/empty/`: a dashed outline with OG's "Nothing to see here. Move
+along, move along." and at most one way out under it, as og's outline `LinkButton`. No second line of text. Never
+render a blank gap or ad-hoc empty markup.
+
+| Reason | When | Button |
+|---|---|---|
+| Not started | The viewer's own data has nothing yet (their watchlist, history). | Where they'd start: "Find a movie", "Find a show". On a dashboard panel, `PanelPrompt` instead: one `action`, or `picks` in welcome mode. |
+| Filtered out | A search, filter, period, list type or hide setting the viewer picked leaves nothing. | What clears it: "Clear filters", "Show hidden episodes", "See all lists". The dark charts and search frames use `NoResults`, OG's hooded figure, with the same button. |
+| Nothing there | There's none to show and the viewer can't change that. | None. |
+| Didn't load | The fetch failed. | `LoadFailed what="{Section heading}"`: the outline in warning orange, "{Section} didn't load." and Try again. |
+| Inline | Inside a menu, picker, popover, dialog or tooltip. | `EmptyNote`, one muted line; no outline. |
+
+- The button label says what it does on its own, since there's no line explaining it ("Show hidden episodes", not
+  "Show them").
+- Replace the line with `title` only where it would read wrong: a calendar's empty day, a search before typing,
+  LoadFailed.
+- Hiding a whole panel or section is fine only when its heading would be the only thing left and nothing above
+  promises it (a summary page's optional band).

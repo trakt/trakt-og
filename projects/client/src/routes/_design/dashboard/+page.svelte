@@ -173,7 +173,8 @@ const socials = $derived([
   { label: 'Three watching now', feed: social, live: 3 },
   { label: 'Seven watching now', feed: social, live: 7 },
   { label: 'A quiet week', feed: socialEmpty, live: 0 },
-  { label: 'Following nobody', feed: socialNobody, live: 0 },
+  { label: 'Following nobody: not started, with a way to start', feed: socialNobody, live: 0 },
+  { label: 'Following nobody in welcome mode: the team to follow', feed: socialNobody, live: 0, welcome: true },
   { label: 'Loading', feed: socialLoading, live: 0 },
   { label: 'Failed', feed: socialFailed, live: 0 },
 ]);
@@ -248,8 +249,11 @@ const hiddenNames = Object.entries({ Watchlist: custom.hidden.watchlist, 'Social
     <Variant label="Everyone else">
       <UpNextPanel upNext={sample} username="demo-non-vip" isVip={false} settings={defaults.upNext} />
     </Variant>
-    <Variant label="Empty">
+    <Variant label="Empty: not started, with a way to start">
       <UpNextPanel upNext={empty} username="me" isVip settings={defaults.upNext} />
+    </Variant>
+    <Variant label="Empty in welcome mode: starter picks instead">
+      <UpNextPanel upNext={empty} username="me" isVip settings={defaults.upNext} welcome />
     </Variant>
     <Variant label="Loading">
       <UpNextPanel upNext={loading} username="me" isVip settings={defaults.upNext} />
@@ -281,8 +285,11 @@ const hiddenNames = Object.entries({ Watchlist: custom.hidden.watchlist, 'Social
       <WatchlistPanel watchlist={watchlistRated} username="demo-non-vip" isVip={false}
         datePreferences={data.datePreferences} />
     </Variant>
-    <Variant label="Empty">
+    <Variant label="Empty: not started, with a way to start">
       <WatchlistPanel watchlist={watchlistEmpty} username="me" isVip datePreferences={data.datePreferences} />
+    </Variant>
+    <Variant label="Empty in welcome mode: starter picks instead">
+      <WatchlistPanel watchlist={watchlistEmpty} username="me" isVip datePreferences={data.datePreferences} welcome />
     </Variant>
     <Variant label="Loading">
       <WatchlistPanel watchlist={watchlistLoading} username="me" isVip datePreferences={data.datePreferences} />
@@ -317,8 +324,12 @@ const hiddenNames = Object.entries({ Watchlist: custom.hidden.watchlist, 'Social
     <Variant label="With a check-in">
       <RecentlyWatchedPanel plays={recentPlays} username="me" isVip datePreferences={data.datePreferences} />
     </Variant>
-    <Variant label="Empty">
+    <Variant label="Empty: not started, with a way to start">
       <RecentlyWatchedPanel plays={Promise.resolve([])} username="me" isVip datePreferences={data.datePreferences} />
+    </Variant>
+    <Variant label="Empty in welcome mode: starter picks instead">
+      <RecentlyWatchedPanel plays={Promise.resolve([])} username="me" isVip datePreferences={data.datePreferences}
+        welcome />
     </Variant>
     <Variant label="Loading">
       <RecentlyWatchedPanel plays={recentLoading} username="me" isVip datePreferences={data.datePreferences} />
@@ -331,10 +342,10 @@ const hiddenNames = Object.entries({ Watchlist: custom.hidden.watchlist, 'Social
 
 <Specimen title="Social Feed" bleed note="Seven watching puts four behind the +4 tile. Page back for earlier days.">
   <div class="states">
-    {#each socials as { label, feed, live } (label)}
+    {#each socials as { label, feed, live, welcome } (label)}
       <Variant {label}>
         <SocialFeedPanel {feed} watching={watchingNow(live)} rowsFor={socialRowsFor} username="me"
-          datePreferences={data.datePreferences} />
+          datePreferences={data.datePreferences} {welcome} />
       </Variant>
     {/each}
   </div>

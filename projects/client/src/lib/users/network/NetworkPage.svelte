@@ -9,7 +9,7 @@ import { page } from '$app/state';
 import Container from '$lib/components/container/Container.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import SortDirection from '$lib/components/dropdown/SortDirection.svelte';
-import NoData from '$lib/components/empty/NoData.svelte';
+import EmptyState from '$lib/components/empty/EmptyState.svelte';
 import Pagination from '$lib/components/pagination/Pagination.svelte';
 import SectionToolbar from '$lib/components/toolbar/SectionToolbar.svelte';
 import SubnavCount from '$lib/components/toolbar/SubnavCount.svelte';
@@ -98,7 +98,7 @@ const relationOf = (relations: Readonly<Record<string, ViewerRelation>> | null, 
       {/if}
       {#if data.page.type === 'paginated'}<Pagination meta={data.page} label="Network pages" />{/if}
     {:else}
-      <div class="empty"><NoData /></div>
+      <div class="empty"><EmptyState /></div>
     {/if}
   </Container>
 </section>

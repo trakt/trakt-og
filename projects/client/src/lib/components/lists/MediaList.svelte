@@ -13,6 +13,7 @@ import { type PickerSection, pickerSections } from '$lib/components/lists/picker
 import { toggleListItem } from '$lib/components/lists/toggleListItem';
 import { createList } from '$lib/components/lists/createList';
 import { loadFollowerCandidates } from '$lib/components/lists/loadFollowerCandidates';
+import EmptyNote from '$lib/components/empty/EmptyNote.svelte';
 import LoadingOverlay from '$lib/components/loading/LoadingOverlay.svelte';
 import NewListDialog from '$lib/components/lists/NewListDialog.svelte';
 import SearchField from '$lib/components/filters/SearchField.svelte';
@@ -373,7 +374,7 @@ async function save(draft: Parameters<typeof createList>[0]['draft'] & { collabo
         {/each}
       </ul>
     {:else}
-      <p class="empty">No matching lists.</p>
+      <div class="empty"><EmptyNote>No lists match “{terms.trim()}”.</EmptyNote></div>
     {/each}
   </div>
   {#if countTip}<div class="count-tip" aria-hidden="true" style:top="{countTip.top}px"><span>{countTip.text}</span></div>{/if}
@@ -700,11 +701,8 @@ li a {
   }
 }
 .empty {
-  margin: 0;
   padding: var(--space-menu-row);
   padding-block-start: var(--space-menu);
-  color: var(--color-menu-header);
-  font-style: italic;
   text-align: center;
 }
 footer {

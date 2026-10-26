@@ -5,7 +5,7 @@
 -->
 <script lang="ts">
 import DashboardPanel from '$lib/components/dashboard/DashboardPanel.svelte';
-import NoData from '$lib/components/empty/NoData.svelte';
+import EmptyState from '$lib/components/empty/EmptyState.svelte';
 import PosterCard from '$lib/components/media/PosterCard.svelte';
 import PosterGrid from '$lib/components/media/PosterGrid.svelte';
 import { quickIconFill } from '$lib/components/media/quickIconFill';
@@ -21,9 +21,9 @@ import type { DatePreferences } from '$lib/settings/DatePreferences';
 import UserCommentWithPoster from '$lib/users/comments/UserCommentWithPoster.svelte';
 import ProfileBoxStrip from '$lib/users/profile/boxes/ProfileBoxStrip.svelte';
 import type { ProfileUser } from '$lib/users/ProfileUser';
+import { findAction } from '$lib/users/findAction';
 import type { loadProfile } from './loadProfile.ts';
 import type { WatchedCard } from './toProfileSummary.ts';
-import { capitalize } from '../../utils/capitalize.ts';
 
 type Props = {
   data: Awaited<ReturnType<typeof loadProfile>> & {
@@ -40,10 +40,6 @@ const viewer = $derived(data.user ? { slug: data.user.slug } : null);
 const description = $derived(
   `${data.profile.firstName} is using Trakt to automatically track TV shows and movies they are watching, collecting, and rating.`,
 );
-
-// OG's `.user-first-name.titlecase`, which its JS swapped for "You" on your own profile (users.js:127-140).
-const hasnt = (rest: string) =>
-  data.isSelf ? `You haven't ${rest}` : `${capitalize(data.profile.firstName)} hasn't ${rest}`;
 </script>
 
 <svelte:head>
@@ -104,7 +100,9 @@ const hasnt = (rest: string) =>
         {#each row.cards as card (card.key)}{@render watched(card)}{/each}
       </PosterGrid>
     {:else}
-      <div class="empty"><NoData>{hasnt(`watched any ${row.type} yet.`)}</NoData></div>
+      <div class="empty">
+        <EmptyState action={data.isSelf ? findAction(row.type) : undefined} />
+      </div>
     {/if}
   </DashboardPanel>
 {/each}
@@ -117,7 +115,7 @@ const hasnt = (rest: string) =>
   <MostWatched
   {...data.mostWatched}
   slug={data.profile.slug}
-  {hasnt}
+  isSelf={data.isSelf}
   datePreferences={data.datePreferences}
 />
 {/if}
@@ -134,7 +132,7 @@ const hasnt = (rest: string) =>
       {/each}
     </div>
   {:else}
-    <div class="empty"><NoData>{hasnt('commented on anything yet.')}</NoData></div>
+    <div class="empty"><EmptyState /></div>
   {/if}
 </DashboardPanel>
 

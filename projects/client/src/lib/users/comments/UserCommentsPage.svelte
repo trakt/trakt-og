@@ -10,7 +10,7 @@ import Container from '$lib/components/container/Container.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import SortDirection from '$lib/components/dropdown/SortDirection.svelte';
 import type { HeaderUser } from '$lib/components/header/HeaderUser';
-import NoData from '$lib/components/empty/NoData.svelte';
+import EmptyState from '$lib/components/empty/EmptyState.svelte';
 import Pagination from '$lib/components/pagination/Pagination.svelte';
 import SectionToolbar from '$lib/components/toolbar/SectionToolbar.svelte';
 import SubnavCount from '$lib/components/toolbar/SubnavCount.svelte';
@@ -127,8 +127,12 @@ const current = (picked: boolean) => (picked ? 'page' : undefined);
       {#if data.page.type === 'paginated'}
         <div class="pagination"><Pagination meta={data.page} label="Comments pages" /></div>
       {/if}
+    {:else if data.liked}
+      <EmptyState />
+    {:else if data.commentType !== 'all'}
+      <EmptyState action={{ href: href({ type: data.type }), text: 'Clear filters' }} />
     {:else}
-      <NoData />
+      <EmptyState />
     {/if}
   </Container>
 </section>

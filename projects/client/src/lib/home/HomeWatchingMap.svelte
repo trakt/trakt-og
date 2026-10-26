@@ -8,6 +8,7 @@
 <script lang="ts">
 import PanelHeading from '$lib/components/dashboard/PanelHeading.svelte';
 import PanelHelp from '$lib/components/dashboard/PanelHelp.svelte';
+import EmptyNote from '$lib/components/empty/EmptyNote.svelte';
 import TagPills from '$lib/components/labels/TagPills.svelte';
 import Shimmer from '$lib/components/loading/Shimmer.svelte';
 import { flagCountries } from '$lib/components/table/flagCountries';
@@ -215,7 +216,7 @@ function showCountry(code: string) {
                 <b>{tip.country.top.title}{#if tip.country.top.year}<span class="year">{tip.country.top.year}</span>{/if}</b>
               </p>
             {:else}
-              <p class="tip-none">Nobody watching right now</p>
+              <div class="tip-none"><EmptyNote>No one is watching here right now.</EmptyNote></div>
             {/if}
           </div>
         {/if}
@@ -454,7 +455,6 @@ function showCountry(code: string) {
 .tip-none {
   padding: var(--home-map-tip-body-padding);
   font-size: var(--font-size-small);
-  color: var(--color-chart-tooltip-muted);
 }
 
 .shows {

@@ -12,11 +12,12 @@ import { goto } from '$app/navigation';
 import { resolve } from '$app/paths';
 import FadeHideMenu from '$lib/components/filters/FadeHideMenu.svelte';
 import SearchField from '$lib/components/filters/SearchField.svelte';
-import { type FadeHide, matchesFadeHide } from '$lib/components/filters/fadeHide';
+import { type FadeHide, type FadeHideOption, matchesFadeHide } from '$lib/components/filters/fadeHide';
 import { searchHideHref } from '$lib/search/searchHideHref';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import ListRow from '$lib/components/media/ListRow.svelte';
 import { mediaQuickIcons } from '$lib/components/media/mediaQuickIcons';
+import EmptyState from '$lib/components/empty/EmptyState.svelte';
 import NoResults from '$lib/components/empty/NoResults.svelte';
 import { pageHref } from '$lib/components/pagination/pageWindow';
 import PagePager from '$lib/components/sidebar/PagePager.svelte';
@@ -134,6 +135,31 @@ const listsShown = $derived(own.visible(data.lists));
 const hasResults = $derived(data.cards.length > 0 || data.lists.length > 0);
 let fadeHide = $derived(data.filters.fadeHide);
 
+// The cards the hide menu leaves, each with its overlay state, quick icons and whether it's faded.
+const shownCards = $derived(
+  data.cards.flatMap((card) => {
+    const state = card.type === 'person' ? undefined : overlay.state(card.type, card.id, card.season);
+    const icons = state && card.type !== 'person'
+      ? mediaQuickIcons({
+        item: { ...card, type: card.type, title: card.number ? `${card.number} ${card.title}` : card.title },
+        state,
+        datePreferences: data.datePreferences,
+      })
+      : undefined;
+    const matches = (id: FadeHideOption) => Boolean(state && icons && matchesFadeHide(id, state, icons.fill));
+    if (fadeHide.hide.some(matches)) return [];
+    return [{ card, state, icons, faded: fadeHide.fade.some(matches) }];
+  }),
+);
+const hiding = $derived(data.filters.visible && fadeHide.hide.length > 0);
+const clearHideHref = $derived(searchHideHref(page.url, []));
+// Shows or Movies alone can widen to both.
+const widerHref = $derived(
+  type && (data.slug === 'shows' || data.slug === 'movies')
+    ? searchLinks(type, data.query, page.url.searchParams).at(0)?.links.at(0)?.href
+    : undefined,
+);
+
 function save(next: FadeHide) {
   const reload = fadeHide.hide.join(',') !== next.hide.join(',');
   fadeHide = next;
@@ -236,37 +262,37 @@ function save(next: FadeHide) {
           actions={own.actions(list)} />
       {/each}
     </div>
-  {:else if data.cards.length > 0}
+  {:else if shownCards.length > 0}
     <div class="results">
       <div class={['results-body', display.view, artwork]}>
-        {#each data.cards as card (card.key)}
-          {@const state = card.type === 'person' ? undefined : overlay.state(card.type, card.id, card.season)}
-          {@const icons = state && card.type !== 'person'
-            ? mediaQuickIcons({
-              item: { ...card, type: card.type, title: card.number ? `${card.number} ${card.title}` : card.title },
-              state,
-              datePreferences: data.datePreferences,
-            })
-            : undefined}
-          {#if !state || !icons || !fadeHide.hide.some((id) => matchesFadeHide(id, state, icons.fill))}
-            {@const result = {
-              card,
-              artwork,
-              userRating: state?.rating,
-              dropped: state?.dropped,
-              faded: Boolean(state && icons && fadeHide.fade.some((id) => matchesFadeHide(id, state, icons.fill))),
-              icons: icons && { ...icons, listLabel: card.type === 'episode' ? 'Add to list' : undefined },
-            }}
-            {#if display.view === 'list'}<SearchResultRow {...result} />{:else}<SearchResultCard {...result} />{/if}
-          {/if}
+        {#each shownCards as { card, state, icons, faded } (card.key)}
+          {@const result = {
+            card,
+            artwork,
+            userRating: state?.rating,
+            dropped: state?.dropped,
+            faded,
+            icons: icons && { ...icons, listLabel: card.type === 'episode' ? 'Add to list' : undefined },
+          }}
+          {#if display.view === 'list'}<SearchResultRow {...result} />{:else}<SearchResultCard {...result} />{/if}
         {/each}
       </div>
     </div>
-  {/if}
-
-  {#if !hasResults}
+  {:else if hasResults}
     <div class="no-results">
-      <NoResults />
+      <NoResults action={{ href: clearHideHref, text: 'Show hidden results' }} />
+    </div>
+  {:else if !data.query}
+    <div class="prompt">
+      <EmptyState inFrame
+      title={data.idMode ? 'Enter an ID to look it up.' : 'Search for shows, movies, people and lists.'} />
+    </div>
+  {:else}
+    <div class="no-results">
+      <NoResults action={hiding
+        ? { href: clearHideHref, text: 'Show hidden results' } : widerHref
+          ? { href: widerHref, text: 'Search shows & movies' }
+          : undefined} />
     </div>
   {/if}
 </SidebarFrame>
@@ -366,6 +392,10 @@ function save(next: FadeHide) {
 /* The rows sit in from the frame's edges, like a page's sections. */
 .lists {
   padding: 0 var(--gutter) var(--gutter);
+}
+
+.prompt {
+  padding: var(--gutter);
 }
 
 .no-results {

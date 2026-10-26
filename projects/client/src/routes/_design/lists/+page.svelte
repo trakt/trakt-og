@@ -1,7 +1,6 @@
 <script lang="ts">
 import OfficialListHeader from '$lib/components/lists/OfficialListHeader.svelte';
 import EmptyState from '$lib/components/empty/EmptyState.svelte';
-import listIcon from '$lib/icons/regular/list.svg?raw';
 import WatchNowChips from '$lib/components/watchnow/WatchNowChips.svelte';
 import DemoButton from '$lib/design/DemoButton.svelte';
 import Specimen from '$lib/design/Specimen.svelte';
@@ -233,10 +232,8 @@ const following = [{ slug: 'teodoro_2', name: 'Elsy Murphy (@teodoro_2)' }];
 </Specimen>
 
 <Specimen title="Item's lists, empty"
-  note="A title's lists page with nothing for the picked type, and a link back to all lists.">
-  <EmptyState icon={listIcon} action={{ href: '/movies/holes-2003/lists/all', text: 'See all lists' }}>
-    No official lists feature Holes.
-  </EmptyState>
+  note="A title's lists page with nothing for the picked type is filtered out, with a link back to all lists.">
+  <EmptyState action={{ href: '/movies/holes-2003/lists/all', text: 'See all lists' }} />
 </Specimen>
 
 <NotesDialog bind:open={notesOpen} bind:draft={notesDraft} item={notesItem.noteTitle} privacy="public"

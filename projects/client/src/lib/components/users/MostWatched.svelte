@@ -9,13 +9,14 @@
 import Container from '$lib/components/container/Container.svelte';
 import PanelHeading from '$lib/components/dashboard/PanelHeading.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
-import NoData from '$lib/components/empty/NoData.svelte';
+import EmptyState from '$lib/components/empty/EmptyState.svelte';
 import PosterCard from '$lib/components/media/PosterCard.svelte';
 import { quickIconFill } from '$lib/components/media/quickIconFill';
 import cameraMovie from '$lib/icons/regular/camera-movie.svg?raw';
 import tvRetro from '$lib/icons/regular/tv-retro.svg?raw';
 import { overlay } from '$lib/overlay/overlay';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
+import { findAction } from '$lib/users/findAction';
 import type { MostWatched, MostWatchedTab, MostWatchedType } from '$lib/users/profile/toMostWatched';
 
 interface Props {
@@ -24,12 +25,12 @@ interface Props {
   slug: string;
   /** The Last 30 Days tab's first day, as the see-more link's `start_at`. */
   windowStart: string;
-  /** The empty tab's line, from the words after the name: "hasn't watched any shows during this time period." */
-  hasnt: (rest: string) => string;
+  /** Your own profile: an empty column links to where you'd start. */
+  isSelf?: boolean;
   datePreferences: DatePreferences;
 }
 
-const { shows, movies, slug, windowStart, hasnt, datePreferences }: Props = $props();
+const { shows, movies, slug, windowStart, isSelf = false, datePreferences }: Props = $props();
 
 const TABS = [{ id: 'lastMonth', label: 'Last 30 Days' }, { id: 'allTime', label: 'All Time' }] as const;
 
@@ -97,8 +98,12 @@ const seeMore = (type: MostWatchedType, tab: MostWatchedTab) =>
                 />
               {/each}
             </div>
+          {:else if period === 'lastMonth' && data[column.type].allTime.length > 0}
+            <EmptyState action={{ onclick: () => (picked[column.type] = 'allTime'), text: 'Show All Time' }} />
           {:else}
-            <div class="empty"><NoData>{hasnt(`watched any ${column.type} during this time period.`)}</NoData></div>
+            <div class="empty">
+              <EmptyState action={isSelf ? findAction(column.type) : undefined} />
+            </div>
           {/if}
         </section>
       {/each}

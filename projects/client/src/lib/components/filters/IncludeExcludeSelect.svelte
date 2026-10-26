@@ -8,6 +8,7 @@
 -->
 <script lang="ts">
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
+import EmptyNote from '$lib/components/empty/EmptyNote.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import heart from '$lib/icons/regular/heart.svg?raw';
 import xmark from '$lib/icons/regular/xmark.svg?raw';
@@ -112,7 +113,7 @@ function toggle(value: string, as: 'include' | 'exclude') {
     {/if}
     <div class="scroller" aria-busy={loading}>
     {#if shown.length === 0 && !loading}
-      <p class="note">No {label.toLocaleLowerCase('en')} match "{query}"</p>
+      <EmptyNote>{#if query.trim()}No {label.toLocaleLowerCase('en')} match “{query.trim()}”.{:else}No {label.toLocaleLowerCase('en')} to pick from.{/if}</EmptyNote>
     {/if}
     {#each shown as group, g (g)}
       {#if group.label}<p class="group">{group.label}</p>{/if}
@@ -285,8 +286,6 @@ function toggle(value: string, as: 'include' | 'exclude') {
   text-overflow: ellipsis;
 }
 
-.note,
-.group,
 .group {
   font-size: var(--font-size-menu-header);
   font-weight: var(--font-weight-menu-header);

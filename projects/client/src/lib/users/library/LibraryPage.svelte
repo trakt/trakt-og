@@ -11,7 +11,7 @@ import CollectionOverlay from '$lib/components/collection/CollectionOverlay.svel
 import Container from '$lib/components/container/Container.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import SortDirection from '$lib/components/dropdown/SortDirection.svelte';
-import NoData from '$lib/components/empty/NoData.svelte';
+import EmptyState from '$lib/components/empty/EmptyState.svelte';
 import DateRangeFilter from '$lib/components/filters/DateRangeFilter.svelte';
 import DividersToggle from '$lib/components/filters/DividersToggle.svelte';
 import FadeHideMenu from '$lib/components/filters/FadeHideMenu.svelte';
@@ -26,6 +26,7 @@ import SubnavCount from '$lib/components/toolbar/SubnavCount.svelte';
 import collection from '$lib/icons/trakt/collection-thick.svg?raw';
 import { overlay } from '$lib/overlay/overlay';
 import type { ProfileUser } from '$lib/users/ProfileUser';
+import { findAction } from '$lib/users/findAction';
 import { formatRuntime } from '$lib/utils/formatRuntime';
 import { historyTypes, isHistoryType } from '../history/historyTypes.ts';
 import { type LibrarySort, librarySorts, sortLabels, validSort } from './librarySort.ts';
@@ -49,6 +50,7 @@ const owner = $derived(data.isSelf ? 'Your' : `${data.profile.firstName}'s`);
 const noun = $derived(data.type === 'all' ? 'item' : data.type.replace(/s$/, ''));
 const base = $derived(`/users/${data.profile.slug}/library`);
 const screenshots = $derived(data.type === 'episodes');
+const filtered = $derived(data.source !== 'all' || Boolean(data.range.startAt || data.range.endAt));
 
 // OG's `library_user_path(type, sort_by, sort_how, link_params)`: the query string without the page. A sort the
 // new type doesn't have falls back to Added Date, and the default sort stays out of the path.
@@ -192,8 +194,12 @@ const flipped = $derived(data.sort.how === 'desc');
         {@render grid(cards)}
       {/if}
       {#if data.page.type === 'paginated'}<Pagination meta={data.page} label="Library pages" />{/if}
+    {:else if filtered}
+      <EmptyState action={{ href: page.url.pathname, text: 'Clear filters' }} />
     {:else}
-      <div class="empty"><NoData /></div>
+      <div class="empty">
+        <EmptyState action={data.isSelf ? findAction(data.type) : undefined} />
+      </div>
     {/if}
   </Container>
 </section>

@@ -1,35 +1,34 @@
 <!--
-  An empty state that reads as a gap, not a row: a dashed, rounded outline with a muted icon, one line, and an optional
-  way out: an item's lists page, the dashboard schedule, and (`compact`, a sidebar's size) the charts sidebar's "No one
-  is watching". OG's gray `NoData` box stays where OG had it.
-    <EmptyState icon={list} action={{ href: '/movies/holes-2003/lists/all', text: 'See all lists' }}>
-      No official lists feature Holes.
-    </EmptyState>
+  The empty state: a dashed, rounded outline that reads as a gap, not a row, with OG's "Nothing to see here. Move
+  along, move along." and at most one way out under it, as og's outline button: where to start, a Clear for what hid
+  it, or Try again. See `.agents/rules/design-system.md`.
+  `title` replaces the line where it would read wrong (LoadFailed's "Up Next didn't load.", a calendar's empty day);
+  `inFrame` is the version on the dark charts and search frames; `failed` is LoadFailed's warning outline, so use
+  LoadFailed instead of setting it.
+    <EmptyState action={{ href: resolve('/shows/[chart=chart]', { chart: 'trending' }), text: 'Find a show' }} />
 -->
 <script lang="ts">
-import Icon from '$lib/icons/Icon.svelte';
-import type { Snippet } from 'svelte';
+import LinkButton from '$lib/components/button/LinkButton.svelte';
+import type { EmptyAction } from './EmptyAction.ts';
 
 interface Props {
-  /** Raw SVG above the line. */
-  icon?: string;
-  /** A way out of the empty state: a link to a wider filter, or a button that clears one on the page. */
-  action?: { readonly href: string; readonly text: string } | { readonly onclick: () => void; readonly text: string };
-  /** Tighter and smaller, for a sidebar. */
-  compact?: boolean;
-  children: Snippet;
+  title?: string;
+  action?: EmptyAction;
+  inFrame?: boolean;
+  failed?: boolean;
 }
 
-const { icon, action, compact = false, children }: Props = $props();
+const { title = 'Nothing to see here. Move along, move along.', action, inFrame = false, failed = false }: Props =
+  $props();
 </script>
 
-<!-- The action's href comes in as a prop; resolve() only takes literal routes. -->
-<!-- eslint-disable svelte/no-navigation-without-resolve -->
-<div class={['empty-state', { compact }]}>
-  {#if icon}<span class="icon"><Icon svg={icon} /></span>{/if}
-  <p>{@render children()}</p>
-  {#if action && 'href' in action}<a href={action.href}>{action.text}</a>
-  {:else if action}<button type="button" onclick={action.onclick}>{action.text}</button>{/if}
+<div class={['empty-state', { 'in-frame': inFrame, failed }]}>
+  <p>{title}</p>
+  {#if action && 'href' in action}
+    <LinkButton href={action.href} variant="outline">{action.text}</LinkButton>
+  {:else if action}
+    <LinkButton onclick={action.onclick} disabled={action.busy} variant="outline">{action.text}</LinkButton>
+  {/if}
 </div>
 
 <style>
@@ -37,6 +36,7 @@ const { icon, action, compact = false, children }: Props = $props();
   display: grid;
   justify-items: center;
   gap: var(--empty-state-gap);
+  margin-block-end: var(--line-height-computed);
   padding: var(--empty-state-padding);
   border: 1px dashed var(--color-empty-state-border);
   border-radius: var(--radius-empty-state);
@@ -44,45 +44,21 @@ const { icon, action, compact = false, children }: Props = $props();
   font-family: var(--font-headings);
   text-align: center;
 
-  &.compact {
-    padding: var(--empty-state-padding-compact);
-    border-radius: var(--radius-control);
-
-    & p {
-      font-size: var(--font-size-control);
-    }
+  &.in-frame {
+    margin-block-end: 0;
+    border-color: var(--color-empty-state-frame-border);
+    color: var(--color-frame-muted);
   }
-}
 
-.icon {
-  display: inline-flex;
-  font-size: var(--font-size-empty-state-icon);
+  &.failed {
+    border-color: var(--color-empty-state-failed-border);
+  }
 }
 
 p {
   margin: 0;
   font-size: var(--font-size-empty-state);
+  font-style: italic;
   text-wrap: balance;
-}
-
-a,
-button {
-  color: var(--color-link);
-  font-weight: var(--font-weight-headings);
-
-  &:is(:hover, :focus-visible) {
-    text-decoration: underline;
-  }
-}
-
-/* The button reads as the link. */
-button {
-  min-block-size: 0;
-  padding: 0;
-  border: 0;
-  background: none;
-  font: inherit;
-  font-weight: var(--font-weight-headings);
-  cursor: pointer;
 }
 </style>

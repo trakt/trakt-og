@@ -11,7 +11,7 @@ import { page } from '$app/state';
 import Container from '$lib/components/container/Container.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import SortDirection from '$lib/components/dropdown/SortDirection.svelte';
-import NoData from '$lib/components/empty/NoData.svelte';
+import EmptyState from '$lib/components/empty/EmptyState.svelte';
 import DateRangeFilter from '$lib/components/filters/DateRangeFilter.svelte';
 import DividersToggle from '$lib/components/filters/DividersToggle.svelte';
 import FadeHideMenu from '$lib/components/filters/FadeHideMenu.svelte';
@@ -29,6 +29,7 @@ import check from '$lib/icons/trakt/check-thick.svg?raw';
 import { overlay } from '$lib/overlay/overlay';
 import type { ViewerSettings } from '$lib/settings/ViewerSettings';
 import type { ProfileUser } from '$lib/users/ProfileUser';
+import { findAction } from '$lib/users/findAction';
 import { formatRuntime } from '$lib/utils/formatRuntime';
 import { genresFor, historyTypes } from './historyTypes.ts';
 import type { loadHistory } from './loadHistory.ts';
@@ -61,6 +62,7 @@ const title = $derived(`${data.profile.displayName}'s ${metaType} watched histor
 const genres = $derived(genresFor(data.type));
 const base = $derived(`/users/${data.profile.slug}/history`);
 const plural = (count: number, word: string) => `${word}${count === 1 ? '' : 's'}`;
+const filtered = $derived(Object.keys(data.filters).length > 0);
 
 // OG's `link_params`: the query string without the page, and without the genre when the type changes.
 function href(type: string, changes: Record<string, string | null>) {
@@ -191,8 +193,12 @@ const country = $derived(watchNowCountry(data.settings));
         {@render grid(days.flatMap((day) => day.cards))}
       {/if}
       {#if data.page.type === 'paginated'}<Pagination meta={data.page} label="History pages" />{/if}
+    {:else if filtered}
+      <EmptyState action={{ href: page.url.pathname, text: 'Clear filters' }} />
     {:else}
-      <div class="empty"><NoData /></div>
+      <div class="empty">
+        <EmptyState action={data.isSelf ? findAction(data.type) : undefined} />
+      </div>
     {/if}
   </Container>
 </section>

@@ -7,13 +7,15 @@
   the page never jumps. OG has no page for shows and movies together, so the mix links to both.
 -->
 <script lang="ts">
+import { resolve } from '$app/paths';
 import { page } from '$app/state';
 import { SvelteSet } from 'svelte/reactivity';
 import Container from '$lib/components/container/Container.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
+import LoadFailed from '$lib/components/empty/LoadFailed.svelte';
+import EmptyState from '$lib/components/empty/EmptyState.svelte';
+import PanelPrompt from '$lib/components/empty/PanelPrompt.svelte';
 import Shimmer from '$lib/components/loading/Shimmer.svelte';
-import NoData from '$lib/components/empty/NoData.svelte';
-import PanelPrompt from '$lib/components/first-night/PanelPrompt.svelte';
 import { panelQuotes } from '$lib/firstNight/panelQuotes';
 import SeeMore from '$lib/components/see-more/SeeMore.svelte';
 import type { DashboardRecommendations } from '$lib/dashboard/fetchRecommendations';
@@ -188,14 +190,14 @@ const step = (count: number, by: -1 | 1) => (focus = (focus + by + count) % coun
   {#if !recs}
     {@render placeholders()}
   {:else if !items}
-    <NoData>Recommendations didn't load. Refresh the page to try again.</NoData>
+    <LoadFailed what="Recommendations" />
   {:else if !spotlight}
-    <NoData>Start watching some shows and movies to get recommendations!</NoData>
+    <EmptyState action={{ href: resolve('/movies/[chart=chart]', { chart: 'trending' }), text: 'Find a movie' }} />
   {:else}
     {#if recs.fallback}
       <div class="fallback">
   <PanelPrompt quote={panelQuotes.recommendations} tall
-    text="Rate 5 titles and your picks get personal. Until then, here's what everyone's watching." />
+    text="Rate 5 titles to make these yours. Until then, here's what's trending." />
 </div>
     {/if}
     <div class="layout">

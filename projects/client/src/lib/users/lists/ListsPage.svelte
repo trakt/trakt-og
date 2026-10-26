@@ -15,11 +15,12 @@ import { prefersReducedMotion } from 'svelte/motion';
 import { SvelteMap } from 'svelte/reactivity';
 import { slide } from 'svelte/transition';
 import { goto, invalidateAll, replaceState } from '$app/navigation';
+import { resolve } from '$app/paths';
 import { page } from '$app/state';
 import Container from '$lib/components/container/Container.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import SortDirection from '$lib/components/dropdown/SortDirection.svelte';
-import NoData from '$lib/components/empty/NoData.svelte';
+import EmptyState from '$lib/components/empty/EmptyState.svelte';
 import TermsFilter from '$lib/components/filters/TermsFilter.svelte';
 import type { HeaderUser } from '$lib/components/header/HeaderUser';
 import BuiltInListEditor from '$lib/components/lists/BuiltInListEditor.svelte';
@@ -212,6 +213,9 @@ async function removeList(row: UserListRow) {
 }
 const builtIns = $derived(data.builtIns.filter((row) => matchesListTerms(row, query.terms)));
 const sortName = $derived(sorts.find(({ id }) => id === query.sort)?.label);
+const searchedOut = $derived(
+  lists.length === 0 && builtIns.length === 0 && (allLists.length > 0 || data.builtIns.length > 0),
+);
 // OG's isotope moved rows over 0.4s and slid the watchlist and favorites rows up and down.
 const duration = $derived(prefersReducedMotion.current ? 0 : 400);
 
@@ -486,8 +490,12 @@ const actions = (row: UserListRow) => {
         </div>
       {/each}
     </div>
-    {#if !personal && data.lists.length === 0}
-      <div class="empty"><NoData /></div>
+    {#if searchedOut}
+      <EmptyState action={{ onclick: () => (query = { ...query, terms: '' }), text: 'Clear search' }} />
+    {:else if allLists.length === 0 && data.builtIns.length === 0}
+      <div class="empty">
+        <EmptyState action={liked && data.isSelf ? { href: resolve('/discover'), text: 'Find a list' } : undefined} />
+      </div>
     {/if}
   </Container>
 </section>

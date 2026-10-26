@@ -11,6 +11,7 @@ import { untrack } from 'svelte';
 import { nearViewport } from '../../../utils/nearViewport.ts';
 import Dialog from '../../dialog/Dialog.svelte';
 import DialogArtHeader from '../../dialog/DialogArtHeader.svelte';
+import EmptyNote from '../../empty/EmptyNote.svelte';
 import { gifArtContext } from './gifArtContext.ts';
 import SearchField from '../../filters/SearchField.svelte';
 import { fetchGifCategories } from './fetchGifCategories.ts';
@@ -161,12 +162,12 @@ function pick(gif: GifEntry) {
         </div>
       {/if}
       {#if failed}
-        <p class="note">GIFs couldn't be loaded. <button type="button" onclick={retry}>Try again</button></p>
+        <EmptyNote action={{ onclick: retry, text: 'Try again' }}>GIFs didn't load.</EmptyNote>
       {:else if gifs.length > 0 && hasNext}
         <!-- It fires once, so each page gets its own. -->
         {#key page}<div class="sentinel" {@attach nearViewport(() => void more())}></div>{/key}
       {:else if gifs.length === 0 && !loading}
-        <p class="note">No GIFs found.</p>
+        <EmptyNote>{query ? `No GIFs for “${query}”.` : 'No GIFs to show.'}</EmptyNote>
       {/if}
     </div>
   </div>
@@ -269,10 +270,5 @@ function pick(gif: GifEntry) {
 
 .sentinel {
   block-size: 1px;
-}
-
-.note {
-  margin: 0;
-  color: var(--color-comment-muted);
 }
 </style>

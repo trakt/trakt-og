@@ -14,7 +14,7 @@ import NewCommentForm from '$lib/components/comments/NewCommentForm.svelte';
 import { withoutBlocked } from '$lib/components/comments/withoutBlocked';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import SortDirection from '$lib/components/dropdown/SortDirection.svelte';
-import NoData from '$lib/components/empty/NoData.svelte';
+import EmptyState from '$lib/components/empty/EmptyState.svelte';
 import FanartHeader from '$lib/components/media/FanartHeader.svelte';
 import Pagination from '$lib/components/pagination/Pagination.svelte';
 import SectionNav from '$lib/components/summary/SectionNav.svelte';
@@ -110,7 +110,7 @@ const sortHref = (sort: string) => {
       {#each comments as comment (comment.id)}
         <div class="comment"><CommentCard {comment} {item} {viewer} dateOptions={data.datePreferences} featured={comment.review} wide /></div>
       {:else}
-        <NoData>No comments yet. What do you think?</NoData>
+        <EmptyState />
       {/each}
       {#if data.page.type === 'paginated'}<div class="pagination"><Pagination meta={data.page} label="Comments pages" /></div>{/if}
     </div>

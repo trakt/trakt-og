@@ -5,12 +5,13 @@
   its own if it doesn't.
 -->
 <script lang="ts">
+import { resolve } from '$app/paths';
 import type { Snippet } from 'svelte';
 import { browser } from '$app/environment';
+import LoadFailed from '$lib/components/empty/LoadFailed.svelte';
+import PanelPrompt from '$lib/components/empty/PanelPrompt.svelte';
 import CardShimmerRow from '$lib/components/loading/CardShimmerRow.svelte';
 import Shimmer from '$lib/components/loading/Shimmer.svelte';
-import NoData from '$lib/components/empty/NoData.svelte';
-import PanelPrompt from '$lib/components/first-night/PanelPrompt.svelte';
 import StarterPicks from '$lib/components/first-night/StarterPicks.svelte';
 import { panelQuotes } from '$lib/firstNight/panelQuotes';
 import PosterGrid from '$lib/components/media/PosterGrid.svelte';
@@ -34,9 +35,11 @@ interface Props {
   /** Only VIPs could change the rows in OG; everyone else was sent to the VIP page. */
   isVip: boolean;
   datePreferences: DatePreferences;
+  /** Welcome mode: an empty panel offers starter picks instead of a link. */
+  welcome?: boolean;
 }
 
-const { watchlist, username, isVip, datePreferences }: Props = $props();
+const { watchlist, username, isVip, datePreferences, welcome = false }: Props = $props();
 
 const PER_ROW = 6;
 // The grid's width, so a smaller tablet's four columns get whole rows.
@@ -79,8 +82,9 @@ const allText = (total: number) => `All ${total.toLocaleString('en-US')} ${total
   {@const rows = rowCount({ rows: saved, items: list.cards.length, perRow })}
   {#snippet cards()}
     {#if list.cards.length === 0}
-      <PanelPrompt roomy --panel-prompt-offset="var(--space-lg-block)" quote={panelQuotes.watchlist}
-  text="Save what you want to watch next. These are the most anticipated right now.">
+      <PanelPrompt roomy --panel-prompt-offset="var(--space-lg-block)" quote={panelQuotes.watchlist} {welcome}
+  text="Save what you want to watch next."
+  action={{ href: resolve('/movies/[chart=chart]', { chart: 'anticipated' }), text: 'See what\'s coming' }}>
         {#snippet picks()}<StarterPicks chart="anticipated" type="both" count={4} action="watchlist" />{/snippet}
       </PanelPrompt>
     {:else}
@@ -113,7 +117,7 @@ const allText = (total: number) => `All ${total.toLocaleString('en-US')} ${total
 
 {#snippet failed()}
   <div class="notice">
-  <NoData>The watchlist didn't load. Refresh the page to try again.</NoData>
+  <LoadFailed what="Watchlist" />
 </div>
 {/snippet}
 

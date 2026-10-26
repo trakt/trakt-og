@@ -676,7 +676,6 @@
 
   /* The dashboard's Upcoming Schedule: the first day as cards, then four day columns of rows. */
   --color-schedule-bg: light-dark(#eee, var(--dk-bg2));
-  --color-schedule-no-data-bg: light-dark(#fafafa, var(--color-no-data-bg));
   --color-schedule-separator: light-dark(#d9d9d9, #444);
   --color-schedule-muted: light-dark(#777, #999); /* the dates beside day names */
   --color-schedule-note: light-dark(var(--state-info-text), var(--brand-info)); /* "Nothing on today." */
@@ -753,7 +752,6 @@
 
   /* The dashboard's Social Feed: watching-now tiles, the Earlier timeline and the Comments column */
   --color-social-feed-bg: light-dark(var(--gray-lighter), var(--dk-bg2));
-  --color-social-feed-no-data-bg: light-dark(#fafafa, var(--color-no-data-bg));
   --color-social-live: light-dark(var(--brand-primary), #ff3b42);
   --color-social-live-glow: light-dark(rgb(237 28 36 / 0.45), rgb(255 59 66 / 0.5));
   --color-social-done: light-dark(var(--brand-success), #6cc96c);
@@ -1366,9 +1364,24 @@
   --color-ninja-bubble-bg: #fff;
   --color-ninja-bubble-text: #111;
   --shadow-ninja-bubble: 0 8px 24px rgb(0 0 0 / 0.35);
-  --color-no-data-bg: light-dark(#f0f0f0, #333);
-  --color-no-data-text: light-dark(#555, #ccc);
   --color-no-results-text: #555; /* on the dark charts frame in both themes */
+  /* The empty states (see design-system.md): EmptyState's dashed outline and its line, its dark-frame and failed
+     outlines; NoResults' button; EmptyNote's inline line and its action. */
+  --empty-state-padding: 28px 20px;
+  --empty-state-gap: 12px;
+  --empty-state-action-gap: 6px;
+  --radius-empty-state: var(--radius-list-card);
+  --color-empty-state-border: var(--color-list-card-border-hover);
+  --color-empty-state-frame-border: rgb(255 255 255 / 0.16); /* the charts and search frame is dark in both themes */
+  --color-empty-state-failed-border: var(--brand-warning);
+  --color-empty-state-text: var(--color-stat-noun);
+  --font-size-empty-state: 15px;
+  --no-results-gap: 6px;
+  --no-results-image-gap: 14px; /* under the full-size figure, on top of the gap */
+  --no-results-action-gap: 8px;
+  --color-no-results-action: #999;
+  --color-empty-note: var(--color-control-muted);
+  --font-size-empty-note: inherit;
   --color-frame: #1d1d1d; /* the charts and search frame, dark in both themes */
   --color-text-inverse: #fff; /* on red: the current page, the active tab, the loading states */
 
@@ -3821,15 +3834,6 @@
   --color-sidebar-rule: var(--color-frame-line);
   --color-sidebar-pill-bg: light-dark(#f2f2f2, #232323);
   --color-sidebar-pill-border: light-dark(#d6d6d6, #3b3b3b);
-  /* EmptyState: a dashed gap where a page's main list would be. */
-  --empty-state-padding: 32px 20px;
-  --empty-state-padding-compact: var(--space-base-block) var(--space-base-inline);
-  --empty-state-gap: 8px;
-  --radius-empty-state: var(--radius-list-card);
-  --color-empty-state-border: var(--color-list-card-border-hover);
-  --color-empty-state-text: var(--color-stat-noun);
-  --font-size-empty-state: 15px;
-  --font-size-empty-state-icon: 22px;
   --color-sidebar-pill-text: light-dark(#555, #b5b5b5);
   --color-sidebar-pill-set-bg: rgb(237 28 36 / 0.14); /* --brand-primary, faint */
   --color-sidebar-pill-set-border: rgb(237 28 36 / 0.6);
@@ -4241,7 +4245,6 @@
   --taste-tiles-column-gap: 14px;
   --taste-tiles-room: 8px; /* inside the scrolling tiles, so the ticks over their corners aren't clipped */
   --taste-country-menu-height: 320px;
-  --taste-none-icon: 40px;
   --team-quick-avatar: 40px;
   --team-quick-badge: 18px;
   --font-size-team-quick: 10px;

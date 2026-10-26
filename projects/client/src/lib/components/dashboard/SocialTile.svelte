@@ -37,7 +37,7 @@ const tags = $derived(liveTags(watch));
         live
         href={watch.href}
         percent={tile.progress}
-        lines={[[{ text: `${tile.progress}% watched` }, { text: `${tile.minutesLeft}m left` }]]}
+        tip={`${tile.progress}% watched\n${tile.minutesLeft}m left`}
       />
     {/snippet}
   </FanartCard>

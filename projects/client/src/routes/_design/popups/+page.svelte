@@ -5,6 +5,10 @@ import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import FilterMenu from '$lib/components/filters/FilterMenu.svelte';
 import ReportDialog from '$lib/components/summary/ReportDialog.svelte';
 import { toast } from '$lib/components/toast/toast.svelte';
+import LibraryTip from '$lib/components/collection/LibraryTip.svelte';
+import PlaysTip from '$lib/components/media/PlaysTip.svelte';
+import ProgressTip from '$lib/components/media/ProgressTip.svelte';
+import { progressTooltip } from '$lib/components/media/progressTooltip';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import WatchNow from '$lib/components/watchnow/WatchNow.svelte';
 import WatchNowDialog from '$lib/components/watchnow/WatchNowDialog.svelte';
@@ -13,7 +17,6 @@ import Specimen from '$lib/design/Specimen.svelte';
 import Variant from '$lib/design/Variant.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import ellipsis from '$lib/icons/regular/ellipsis.svg?raw';
-import flag from '$lib/icons/solid/flag.svg?raw';
 import check from '$lib/icons/trakt/check-thick.svg?raw';
 import { fightClub, reportTarget, watchNow } from './fixtures.ts';
 
@@ -32,10 +35,30 @@ let watchOpen = $state(false);
 const tasteTags = [{ text: '2 of 5 services' }, { text: '3 of 5 genres' }];
 // Lines break at \n, like OG's <br>.
 const tips = {
-  plays: '12 plays\nLast watched Sep 29, 2026',
-  rating: 'Trakt Rating\n12,345 votes',
-  chart: 'Monday, Sep 29\n2h 14m',
+  certification: 'Parents Strongly Cautioned\nAges 13+ Recommended',
+  era: '2008 to 2015: 23 credits, best known for Breaking Bad',
+  votes: '12,345 votes',
 };
+const rewatch = progressTooltip({
+  progress: { aired: 20, completed: 12, plays: 12, minutesWatched: 480, minutesLeft: 320 },
+  fullProgress: { aired: 20, completed: 20, plays: 32, minutesWatched: 1280, minutesLeft: 0 },
+});
+const day = [
+  {
+    label: 'Monday — Sep 29',
+    value: '2h 14m',
+    lines: [
+      { text: '3 episodes (4 plays)', detail: '1h 7m', color: 'var(--color-minutes-episode)' },
+      { text: '1 movie', detail: '1h 7m', color: 'var(--color-minutes-movie)' },
+    ],
+  },
+];
+const library = {
+  added: 'Mar 4, 2024',
+  metadata: { media_type: 'bluray', resolution: 'uhd_4k', hdr: 'hdr10', audio: 'dolby_atmos', audio_channels: '7.1' },
+  sources: ['plex' as const],
+};
+const showLibrary = { episodes: { done: 27, aired: 32 }, sources: ['plex' as const] };
 </script>
 
 <Specimen title="Dropdown" row
@@ -138,19 +161,23 @@ const tips = {
 </Specimen>
 
 <Specimen title="Tooltip" row
-  note="Hover or tab to a trigger; Esc hides it and touch never opens one. Chart tips also open on a click or tap.">
-  <Variant label="Bottom, a quick icon">
-    <Tooltip text={tips.plays} placement="bottom">
+  note="Hover or tab to a trigger; Esc hides it and touch never opens one, except a chart's, which a click or tap toggles. Text centers and balances its lines; stats with lines, and the library card, align left. Near the screen's edge it flips side.">
+  <Variant label="Plays, a movie's quick icon">
+    <Tooltip placement="bottom">
       {#snippet trigger(tooltip)}
         <DemoButton aria-label="Add to watched history" {...tooltip}><Icon svg={check} /></DemoButton>
       {/snippet}
+      <PlaysTip plays={{ count: 3, minutes: 390 }} />
     </Tooltip>
   </Variant>
-  <Variant label="Right, a summary tool">
-    <Tooltip text="Report" placement="right">
-      {#snippet trigger(tooltip)}
-        <DemoButton aria-label="Report" {...tooltip}><Icon svg={flag} /></DemoButton>
-      {/snippet}
+  <Variant label="Text, a certification">
+    <Tooltip text={tips.certification}>
+      {#snippet trigger(tooltip)}<span class="start site" {...tooltip}>PG-13</span>{/snippet}
+    </Tooltip>
+  </Variant>
+  <Variant label="Text that wraps, a career era">
+    <Tooltip text={tips.era} placement="right">
+      {#snippet trigger(tooltip)}<DemoButton {...tooltip}>2008</DemoButton>{/snippet}
     </Tooltip>
   </Variant>
   <Variant label="Left, a filter's site logo">
@@ -159,20 +186,32 @@ const tips = {
       Rotten Tomatoes<br /><em>Tomatometer</em>
     </Tooltip>
   </Variant>
-  <Variant label="Titled, the ratings strip">
-    <Tooltip text={tips.rating} variant="titled">
-      {#snippet trigger(tooltip)}<a class="start" href="#tooltip" {...tooltip}>86%</a>{/snippet}
+  <Variant label="Text, a rating's votes">
+    <Tooltip text={tips.votes}>
+      {#snippet trigger(tooltip)}<a class="start" href="#tooltip" {...tooltip}>79%</a>{/snippet}
+    </Tooltip>
+  </Variant>
+  <Variant label="Progress, a rewatch">
+    <Tooltip placement="bottom">
+      {#snippet trigger(tooltip)}<a class="start" href="#tooltip" {...tooltip}>60%</a>{/snippet}
+      <ProgressTip progress={rewatch} />
+    </Tooltip>
+  </Variant>
+  <Variant label="Library, with its logos and server">
+    <Tooltip placement="bottom">
+      {#snippet trigger(tooltip)}<DemoButton aria-label="In library" {...tooltip}>Library</DemoButton>{/snippet}
+      <LibraryTip tip={library} />
+    </Tooltip>
+  </Variant>
+  <Variant label="Library, a show's progress">
+    <Tooltip placement="bottom">
+      {#snippet trigger(tooltip)}<DemoButton aria-label="84% in library" {...tooltip}>Show</DemoButton>{/snippet}
+      <LibraryTip tip={showLibrary} />
     </Tooltip>
   </Variant>
   <Variant label="Chart, a day's bar">
-    <Tooltip variant="chart" text={tips.chart}>
+    <Tooltip toggles stats={day}>
       {#snippet trigger(tooltip)}<a class="bar" href="#tooltip" aria-label="Monday, Sep 29" {...tooltip}></a>{/snippet}
-    </Tooltip>
-  </Variant>
-  <Variant label="Long text">
-    <Tooltip
-      text="A longer tooltip wraps once it reaches OG's 400px limit, which Bootstrap's default of 200px was raised to for titles like these ones.">
-      {#snippet trigger(tooltip)}<DemoButton {...tooltip}>Long</DemoButton>{/snippet}
     </Tooltip>
   </Variant>
 </Specimen>

@@ -31,6 +31,7 @@ import ProgressSeasonGrid from './ProgressSeasonGrid.svelte';
 import ProgressStatus from './ProgressStatus.svelte';
 import type { ProgressType } from './progressTypes.ts';
 import type { ProgressRow } from './toProgressRow.ts';
+import type { ProgressSeason } from './toProgressSeasons.ts';
 
 interface Props {
   row: ProgressRow;
@@ -54,6 +55,20 @@ let article = $state<HTMLElement>();
 let removedByAction = false;
 
 const plural = (n: number, word: string) => `${word}${n === 1 ? '' : 's'}`;
+const tipColor = (tone: string) => `var(--color-progress-tip-${tone})`;
+const seasonStats = (season: ProgressSeason) => [
+  {
+    label: season.name,
+    value: `${season.percent}%`,
+    lines: [
+      { text: `${season.count} watched`, color: tipColor('watched') },
+      ...(season.timeLeft ? [{ text: `${season.timeLeft} left`, color: tipColor('time') }] : []),
+      ...(season.collected > 0 ? [{ text: `${season.collected} in your library`, color: tipColor('collected') }] : []),
+      ...(season.upNext ? [{ text: `Up next ${season.upNext}`, color: tipColor('next') }] : []),
+      ...(season.lastWatched ? [{ text: `Last watched ${season.lastWatched}`, color: tipColor('muted') }] : []),
+    ],
+  },
+];
 const count = (n: number) => n.toLocaleString('en-US');
 const showTarget = $derived({ type: 'show' as const, id: row.id, title: row.title, airedEpisodes: row.aired });
 const caughtUp = $derived(type === 'dropped' ? 'Dropped' : 'Caught up');
@@ -97,27 +112,10 @@ function toggleSeason(season: number) {
      carries the same numbers for the keyboard and screen readers. -->
 {#snippet sections()}
   {#each row.seasons?.filter(({ aired }) => aired > 0) ?? [] as season (season.number)}
-    <Tooltip variant="chart">
+    <Tooltip toggles stats={seasonStats(season)}>
       {#snippet trigger(tooltip)}
         <span class="section" style:flex-grow={season.aired} aria-hidden="true" {...tooltip}></span>
       {/snippet}
-      <span class="tip">
-        <span class="tip-label">{season.name}</span>
-        <span class="tip-big">{season.percent}%</span>
-        <span class="tip-line" style:--dash="var(--color-progress-tip-watched)">{season.count} watched</span>
-        {#if season.timeLeft}
-          <span class="tip-line" style:--dash="var(--color-progress-tip-time)">{season.timeLeft} left</span>
-        {/if}
-        {#if season.collected > 0}
-          <span class="tip-line" style:--dash="var(--color-progress-tip-collected)">{season.collected} in your library</span>
-        {/if}
-        {#if season.upNext}
-          <span class="tip-line" style:--dash="var(--color-progress-tip-next)">Up next {season.upNext}</span>
-        {/if}
-        {#if season.lastWatched}
-          <span class="tip-line" style:--dash="var(--color-progress-tip-muted)">Last watched {season.lastWatched}</span>
-        {/if}
-      </span>
     </Tooltip>
   {/each}
 {/snippet}
@@ -443,41 +441,6 @@ function toggleSeason(season: number) {
 
   &:not(:hover)::after {
     background: var(--color-progress-section-dim);
-  }
-}
-
-/* The chart tooltip's body, like the dashboard's genre and minutes tips. */
-.tip {
-  display: grid;
-  text-align: start;
-}
-
-.tip-label {
-  color: var(--color-chart-tooltip-muted);
-  font-size: var(--font-size-genre-count);
-  text-transform: uppercase;
-}
-
-.tip-big {
-  font-size: var(--font-size-genre-share);
-  font-weight: var(--font-weight-headings-heavy);
-  line-height: var(--line-height-genre-share);
-}
-
-.tip-line {
-  display: flex;
-  align-items: center;
-  gap: var(--space-genre-key-top);
-  font-family: var(--font-body);
-  font-size: var(--font-size-genre-key-count);
-  font-weight: normal;
-
-  &::before {
-    content: '';
-    flex: none;
-    inline-size: var(--genre-tip-dash);
-    block-size: var(--genre-tip-dash-height);
-    background: var(--dash);
   }
 }
 

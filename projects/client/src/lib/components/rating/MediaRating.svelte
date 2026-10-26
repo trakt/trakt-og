@@ -16,13 +16,15 @@ interface Props {
   target: RatingTarget;
   trigger: ComponentProps<typeof RatingPopover>['trigger'];
   variant?: ComponentProps<typeof RatingPopover>['variant'];
-  hint?: ComponentProps<typeof RatingPopover>['hint'];
 }
-const { target, trigger, variant, hint }: Props = $props();
+const { target, trigger, variant }: Props = $props();
 let busy = $state(false);
 const userState = $derived(overlay.state(target.type, target.id, target.season));
 const value = $derived(userState.rating ?? null);
 const locked = $derived(watchedFirst(userState, 'rate'));
+
+// The trigger's tooltip. Once rated, the rating already shows on the card or button, so it offers the change.
+const hint = (rating: number | null) => (rating ? 'Change your rating' : `Rate this ${target.type}`);
 
 async function open() {
   if ((await userManager().getUser())?.access_token) return true;

@@ -79,7 +79,7 @@ function changeRows(rows: number) {
   {@const checkin = toCheckin(play, now)}
   {#snippet checkinBar()}
     <UnderProgress live href={play.href} percent={checkin?.progress ?? 0}
-  lines={[[{ text: `${checkin?.progress ?? 0}% watched` }]]} />
+  tip={`${checkin?.progress ?? 0}% watched`} />
   {/snippet}
   <div class="play">
   <FanartCard

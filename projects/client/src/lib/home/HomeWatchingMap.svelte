@@ -349,10 +349,10 @@ function showCountry(code: string) {
   display: grid;
   inline-size: var(--home-map-tip-width);
   overflow: hidden;
-  border: 1px solid var(--color-chart-tooltip-border);
+  border: 1px solid var(--color-tooltip-border);
   border-radius: var(--radius-object);
-  background: var(--color-chart-tooltip-bg);
-  color: var(--color-chart-tooltip-text);
+  background: var(--color-tooltip-bg);
+  color: var(--color-tooltip-text);
   pointer-events: none;
   box-shadow: var(--shadow-dropdown);
 
@@ -401,7 +401,7 @@ function showCountry(code: string) {
   display: flex;
   gap: var(--space-xs-inline);
   align-items: baseline;
-  color: var(--color-chart-tooltip-muted);
+  color: var(--color-tooltip-muted);
 
   & b {
     font-family: var(--font-box-office-figures);
@@ -409,7 +409,7 @@ function showCountry(code: string) {
     font-stretch: condensed;
     font-variant-numeric: tabular-nums;
     line-height: var(--line-height-home-live);
-    color: var(--color-chart-tooltip-text);
+    color: var(--color-tooltip-text);
   }
 }
 
@@ -440,7 +440,7 @@ function showCountry(code: string) {
 
   & > span {
     font-size: var(--font-size-small);
-    color: var(--color-chart-tooltip-muted);
+    color: var(--color-tooltip-muted);
   }
 }
 

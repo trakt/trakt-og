@@ -1,10 +1,11 @@
 <!--
   OG's `#summary-ratings-wrapper`: the dark bar along the bottom of a summary's fanart, as one row of icons and numbers.
   The Trakt rating and the Rate button come first, then favorites, the other sites' ratings and All Stats. A summary passes only
-  its favorites; the rest of the community counts live on the stats page. A person's passes its list count. Each
-  number has a two-line tooltip: what it is, then its exact value. On a narrow screen the row starts beside the poster
-  and runs to the page edge, scrolling sideways only past that edge, never wrapping. Render it in FanartHeader's
-  `stats` slot.
+  its favorites; the rest of the community counts live on the stats page. A person's passes its list count. A
+  rating's tooltip is plain text: its votes, or what the other site's number is. A count has one only when the strip
+  shortens it ("131K"): its exact value and what it counts, "131,457 watchers". On a narrow screen the row starts
+  beside the poster and runs to the page edge, scrolling sideways only past that edge, never wrapping. Render it in
+  FanartHeader's `stats` slot.
   The Rate and All Stats buttons are glass actions like the dashboard's; Rate opens the shared rating popover, ten bars
   from gray to red, and takes the rating's color once rated.
 -->
@@ -14,13 +15,13 @@ import GlassAction from '$lib/components/glass-action/GlassAction.svelte';
 import MediaRating from '$lib/components/rating/MediaRating.svelte';
 import type { SpoilerTarget } from '$lib/settings/SpoilerTarget';
 import type { RatingTarget } from '$lib/components/rating/RatingTarget';
-import { RATING_LABELS } from '$lib/components/rating/ratingPrompt';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import heartOutline from '$lib/icons/regular/heart.svg?raw';
 import arrowRightLong from '$lib/icons/regular/arrow-right-long.svg?raw';
 import chartColumn from '$lib/icons/solid/chart-column.svg?raw';
 import heart from '$lib/icons/solid/heart.svg?raw';
+import { countLabel } from '$lib/utils/countLabel';
 import { readableStat } from '$lib/utils/readableStat';
 import type { ExternalRating } from './ExternalRating.ts';
 import { externalRatingLogos as logos } from './externalRatingLogos.ts';
@@ -32,7 +33,7 @@ import { ratingPercent } from '../../utils/ratingPercent.ts';
 interface Props {
   /** The Trakt rating, 0 to 10. Left out, the rating is hidden (OG hid it before release). */
   rating?: { readonly value: number; readonly votes: number; readonly href: string };
-  /** "movie", "show", "season", "episode": finishes "Rate this ...". Left out, there's no Rate button. */
+  /** "movie", "show", "season", "episode", as the rating target. Left out, there's no Rate button. */
   rateLabel?: string;
   ratingTarget?: RatingTarget & SpoilerTarget;
   external?: readonly ExternalRating[];
@@ -47,21 +48,19 @@ const { rating, rateLabel, ratingTarget, external = [], counts = [], statsHref }
 // OG truncated instead of rounding, so 79.9% reads 79%.
 const percent = $derived(rating ? ratingPercent(rating.value) : 0);
 const level = $derived(rating ? Math.min(Math.trunc(rating.value), 10) : 0);
-const votes = $derived(
-  rating ? `${rating.votes.toLocaleString('en-US')} ${rating.votes === 1 ? 'vote' : 'votes'}` : '',
-);
+const votes = $derived(rating ? countLabel(rating.votes, 'vote') : '');
 const stats = $derived(stripStats(counts));
-
-const rateHint = (value: number | null) =>
-  value ? `Your rating\n${value} · ${RATING_LABELS[value]}` : `Rate this ${rateLabel}\nWhat did you think?`;
 </script>
 
 <!-- Links go out to other sites or to subpages og hasn't built yet, and resolve() only takes routes that exist. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
+{#snippet voteCount(count: number)}<b>{count.toLocaleString('en-US')}</b> {count === 1 ? 'vote' : 'votes'}{/snippet}
+
 {#snippet count(stat: StripStat)}
+  {#snippet exact()}<b>{stat.detail}</b> {stat.label}{/snippet}
   <li>
-  <Tooltip text={`${stat.title}\n${stat.detail}`} variant="titled">
+  <Tooltip content={readableStat(stat.count) === stat.detail ? undefined : exact}>
       {#snippet trigger(tooltip)}
         <!-- Counts without a page of their own open the stats page, where they're broken down. -->
         {@const href = stat.href ?? rating?.href}
@@ -87,7 +86,7 @@ const rateHint = (value: number | null) =>
     {#if rating}
       <li>
         <MediaSpoiler target={ratingTarget} kind="rating">
-          <Tooltip text={`Trakt Rating\n${votes}`} variant="titled">
+          <Tooltip>
             {#snippet trigger(tooltip)}
               <a class="stat" href={rating.href} aria-label="Trakt Rating {percent}%, {votes}" {...tooltip}>
                 <span class="glyph heart" style:color={level > 0 ? `var(--rating-${level})` : undefined}>
@@ -96,13 +95,14 @@ const rateHint = (value: number | null) =>
                 <span class="number">{percent}%</span>
               </a>
             {/snippet}
+            {@render voteCount(rating.votes)}
           </Tooltip>
         </MediaSpoiler>
       </li>
     {/if}
     {#if rateLabel && ratingTarget}
       <li>
-        <MediaRating target={ratingTarget} variant="summary" hint={rateHint}>
+        <MediaRating target={ratingTarget} variant="summary">
           {#snippet trigger({ value })}
             <GlassAction presentational glass icon={value ? heart : heartOutline}
               color={value ? `var(--rating-${value})` : undefined}>{value ?? 'Rate'}</GlassAction>
@@ -125,11 +125,7 @@ const rateHint = (value: number | null) =>
                   <span class="number">{site.rating}</span>
                 </a>
               {/snippet}
-              <b class="tip-title">{site.title}</b>
-              <span class="tip-detail">
-                {#if site.change}<b class={['rank-change', site.change.trend]}>{site.change.text}</b>{/if}
-                {site.detail}
-              </span>
+              {#if site.votes === undefined}{site.detail}{:else}{@render voteCount(site.votes)}{/if}{#if site.change}<span class={['rank-change', site.change.trend]}>{site.change.text}</span>{/if}
             </Tooltip>
           </MediaSpoiler>
         </li>
@@ -252,34 +248,31 @@ li {
   border-color: var(--metascore);
 }
 
-/* The other sites' tooltips: the site in bold, then what the number is, with JustWatch's rank change leading it in
-   green when positive and red when negative. */
-.tip-title,
-.tip-detail {
-  display: block;
-}
-
-.tip-title {
-  font-weight: var(--font-weight-headings-heavy);
-}
-
-.tip-detail {
-  color: var(--color-tooltip-muted);
-}
-
+/* JustWatch's rank change on its tooltip's second line, in the stats page's diff pill: green when it climbed, red when
+   it fell. The tooltip is dark in both themes, so the pill takes the strip's colors for dark. */
 .rank-change {
+  display: block;
+  inline-size: fit-content;
+  min-inline-size: var(--stats-diff-min);
+  margin: var(--space-tooltip-pill) auto 0;
+  padding: var(--space-stats-diff);
+  border-radius: var(--radius-stats-diff);
+  background-color: color-mix(in srgb, var(--trend) var(--stats-diff-bg-mix), transparent);
+  color: var(--trend);
+  font-family: var(--font-headings);
   font-weight: var(--font-weight-headings-heavy);
+  font-variant-numeric: tabular-nums;
 
   &.up {
-    color: var(--color-strip-rank-up);
+    --trend: var(--color-strip-rank-up);
   }
 
   &.down {
-    color: var(--color-strip-rank-down);
+    --trend: var(--color-strip-rank-down);
   }
 
   &.flat {
-    color: var(--color-tooltip-text);
+    --trend: var(--color-tooltip-muted);
   }
 }
 

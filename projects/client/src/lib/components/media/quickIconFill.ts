@@ -1,10 +1,14 @@
 import { collectionMetadataLabel } from '../collection/collectionMetadataLabel.ts';
 import type { LibrarySource } from '../collection/LibrarySource.ts';
 import { librarySourceIcon } from '../collection/librarySourceIcon.ts';
+import type { LibraryTipData } from '../collection/LibraryTipData.ts';
 import type { OverlayState } from '../../overlay/createOverlay.svelte.ts';
 import { countLabel } from '../../utils/countLabel.ts';
 import { formatDate, type FormatDateOptions } from '../../utils/formatDate.ts';
 import { formatRuntime } from '../../utils/formatRuntime.ts';
+import { isUnknownDate } from '../../utils/isUnknownDate.ts';
+import type { WatchedPlays } from './WatchedPlays.ts';
+import type { WatchedProgress } from './WatchedProgress.ts';
 
 /** How each quick icon renders. `watched` and `collected` are 0 to 1: shows and seasons fill in proportion. */
 export type QuickIconFill = {
@@ -17,6 +21,11 @@ export type QuickIconFill = {
   sources?: readonly LibrarySource[];
   /** The done-state tooltips, one line per `\n`. Left out, the icon keeps its idle "Add to ..." tooltip. */
   titles: Partial<Record<'watched' | 'collected' | 'listed' | 'favorited', string>>;
+  /**
+   * The watched and library tooltips drawn out: a show's progress runs or a movie's plays, the library with its logos
+   * and server.
+   */
+  tips: Readonly<{ watched?: readonly WatchedProgress[]; plays?: WatchedPlays; collected?: LibraryTipData }>;
 };
 
 type QuickIconFillParams = {
@@ -98,6 +107,51 @@ function collectedTitle({ state, airedEpisodes, season, datePreferences }: Quick
   return progress && [progress, synced].filter(Boolean).join('\n');
 }
 
+function showRun(params: QuickIconFillParams, verb: WatchedProgress['verb'], includeZero = false) {
+  const { state, airedEpisodes: aired, runtime } = params;
+  const done = state.watchedEpisodes;
+  if (done === undefined || (!done && !includeZero) || !aired) return undefined;
+  const plays = state.watchedPlays;
+  return {
+    verb,
+    percent: Math.floor(Math.min(done / aired, 1) * 100),
+    completed: done,
+    aired,
+    plays,
+    minutes: runtime && plays !== undefined ? plays * runtime : undefined,
+  };
+}
+
+// A show's watched tooltip as progress runs, a rewatch over the whole show. A movie keeps its text tooltip.
+function watchedTips(params: QuickIconFillParams): readonly WatchedProgress[] | undefined {
+  const { state } = params;
+  if (state.plays) return undefined;
+  if (state.rewatching && state.rewatchedEpisodes !== undefined) {
+    const rewatch = showRun(
+      {
+        ...params,
+        state: { ...state, watchedEpisodes: state.rewatchedEpisodes, watchedPlays: state.rewatchedPlays },
+      },
+      'rewatched',
+      true,
+    );
+    const runs = [rewatch, showRun(params, 'watched')].filter((run) => run !== undefined);
+    return runs.length > 0 ? runs : undefined;
+  }
+  const run = showRun(params, 'watched');
+  return run && [run];
+}
+
+function collectedTip(
+  { state, airedEpisodes }: QuickIconFillParams,
+  added: string | undefined,
+): LibraryTipData | undefined {
+  const extras = { metadata: state.collectionMetadata, sources: state.collectionSources };
+  if (state.collectedAt) return { added: isUnknownDate(state.collectedAt) ? null : added, ...extras };
+  const done = state.collectedEpisodes;
+  return done && airedEpisodes ? { episodes: { done, aired: airedEpisodes }, ...extras } : undefined;
+}
+
 // OG: "Manage lists" once anything is in a personal list, else "Remove from watchlist".
 function listedTitle({ state }: QuickIconFillParams) {
   if (state.listed) return 'Manage lists';
@@ -133,5 +187,10 @@ export function quickIconFill(params: QuickIconFillParams): QuickIconFill {
     rewatching: Boolean(state.rewatching),
     sources: state.collectionSources,
     titles,
+    tips: {
+      watched: watchedTips(params),
+      plays: state.plays ? { count: state.plays, minutes: params.runtime && state.plays * params.runtime } : undefined,
+      collected: collectedTip(params, state.collectedAt && formatDate(state.collectedAt, params.datePreferences)),
+    },
   };
 }

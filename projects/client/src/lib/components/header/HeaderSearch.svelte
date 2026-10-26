@@ -17,6 +17,7 @@ import { afterNavigate } from '$app/navigation';
 import { page } from '$app/state';
 import EmptyNote from '$lib/components/empty/EmptyNote.svelte';
 import Icon from '$lib/icons/Icon.svelte';
+import TooltipBox from '$lib/components/tooltip/TooltipBox.svelte';
 import { untrack } from 'svelte';
 import HeaderTint from '$lib/components/header/HeaderTint.svelte';
 import clockRotateLeft from '$lib/icons/light/clock-rotate-left.svg?raw';
@@ -336,7 +337,7 @@ afterNavigate(({ to }) => {
     onclick={() => (active ? close(!query) : openSearch())}
   >
     <Icon svg={magnifyingGlass} />
-    <span class="tip" aria-hidden="true">Search <kbd>/</kbd></span>
+    <span class="tip" aria-hidden="true"><TooltipBox side="bottom">Search <kbd>/</kbd></TooltipBox></span>
   </button>
 
   <form {action} method="get">
@@ -540,22 +541,13 @@ afterNavigate(({ to }) => {
 /* "Search /" under the magnifier on hover, since the shortcut has no field to sit in any more. */
 .tip {
   position: absolute;
-  inset-block-start: calc(100% + var(--space-search-panel-gap));
+  inset-block-start: calc(100% + var(--tooltip-arrow) + 1px + var(--tooltip-offset));
   inset-inline-start: 50%;
   translate: -50% 0;
-  display: flex;
-  align-items: center;
-  gap: var(--space-xs-inline);
-  padding: var(--space-xs-inline) var(--space-sm-inline);
-  border-radius: var(--radius-search-kbd);
-  background: var(--color-search-tip-bg);
-  color: var(--color-header-text);
-  font-size: var(--font-size-small);
-  font-weight: var(--font-weight-headings-light);
-  white-space: nowrap;
+  inline-size: max-content;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.15s;
+  transition: opacity var(--transition-tooltip);
 
   .toggle:is(:hover, :focus-visible) & {
     opacity: 1;

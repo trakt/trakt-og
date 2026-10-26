@@ -12,6 +12,9 @@ import type { FavoriteTarget } from '$lib/favorites/FavoriteTarget';
 import MediaRating from '$lib/components/rating/MediaRating.svelte';
 import MediaCollection from '$lib/components/collection/MediaCollection.svelte';
 import { LIBRARY_ADDING } from '$lib/components/collection/libraryAdding';
+import LibraryTip from '$lib/components/collection/LibraryTip.svelte';
+import PlaysTip from '$lib/components/media/PlaysTip.svelte';
+import ProgressTip from '$lib/components/media/ProgressTip.svelte';
 import { librarySourceIcon } from '$lib/components/collection/librarySourceIcon';
 import MediaWatch from '$lib/components/history/MediaWatch.svelte';
 import type { HistoryPlay } from '$lib/components/history/HistoryPlay';
@@ -20,6 +23,7 @@ import type { RatingTarget } from '$lib/components/rating/RatingTarget';
 import MediaList from '$lib/components/lists/MediaList.svelte';
 import type { ListTarget } from '$lib/components/lists/ListTarget';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
+import type { TooltipContent } from '$lib/components/tooltip/TooltipContent';
 import Icon from '$lib/icons/Icon.svelte';
 import VisibilityControl from '$lib/components/visibility/VisibilityControl.svelte';
 import type { VisibilityTarget } from '$lib/components/visibility/VisibilityTarget';
@@ -148,8 +152,8 @@ const ratingLevel = $derived(rating === undefined ? 1 : Math.min(Math.max(Math.t
 </script>
 
 <!-- `label` names the action; `title` is the tooltip, which says what's done once it is. -->
-{#snippet action(kind: string, svg: string, label: string, amount: number, title = label, onclick?: () => void)}
-  <Tooltip text={title} placement="bottom">
+{#snippet action(kind: string, svg: string, label: string, amount: number, title: TooltipContent = label, onclick?: () => void)}
+  <Tooltip content={title} placement="bottom">
     {#snippet trigger(tooltip)}
       <button
         type="button"
@@ -166,6 +170,10 @@ const ratingLevel = $derived(rating === undefined ? 1 : Math.min(Math.max(Math.t
   </Tooltip>
 {/snippet}
 
+{#snippet libraryTip()}{#if fill.tips.collected}<LibraryTip tip={fill.tips.collected} />{/if}{/snippet}
+{#snippet watchedTip()}{#if fill.tips.watched}<ProgressTip progress={fill.tips.watched} />{:else if fill.tips.plays}<PlaysTip
+      plays={fill.tips.plays} />{/if}{/snippet}
+
 <div class={['quick-icons', { small, compact, row }]}>
   <div class="actions">
     <!-- A row draws the tools and the ••• as separate outlined groups; on a card they're one run of icons. -->
@@ -178,10 +186,10 @@ const ratingLevel = $derived(rating === undefined ? 1 : Math.min(Math.max(Math.t
       fill.rewatching ? backward : check,
       'Add to watched history',
       fill.watched,
-      fill.titles.watched,
+      fill.tips.watched || fill.tips.plays ? watchedTip : fill.titles.watched,
     )}
     {/if}
-    {#if libraryTarget}<MediaCollection target={libraryTarget} onremove={onCollectionRemove} onsave={onCollectionSave} {small} />{:else if LIBRARY_ADDING || fill.collected > 0}{@render action('collect', librarySourceIcon(fill.sources)?.svg ?? collection, 'Add to library', fill.collected, fill.titles.collected)}{/if}
+    {#if libraryTarget}<MediaCollection target={libraryTarget} onremove={onCollectionRemove} onsave={onCollectionSave} {small} />{:else if LIBRARY_ADDING || fill.collected > 0}{@render action('collect', librarySourceIcon(fill.sources)?.svg ?? collection, 'Add to library', fill.collected, fill.tips.collected ? libraryTip : fill.titles.collected)}{/if}
     {#if targetList}
       <MediaList target={targetList} {small} />
     {:else}

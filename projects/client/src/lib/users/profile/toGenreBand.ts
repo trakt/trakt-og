@@ -9,7 +9,8 @@ type GenreTip = {
   readonly title: string;
   readonly share: string;
   readonly lines: readonly { readonly type: 'shows' | 'movies'; readonly text: string }[];
-  readonly footer: string;
+  /** "620 titles", then its "18% of your top genre" in gray. */
+  readonly footer: { readonly text: string; readonly detail?: string };
 };
 
 type Piece = {
@@ -91,8 +92,10 @@ export function toGenreBand(genres: readonly GenreBar[], words: BandWords = GENR
         title: `#${i + 1} ${genre.name}`,
         share: formatShare(genre.percentage),
         lines: tipLines(genre),
-        footer:
-          i === 0 ? `${titles} · ${words.top}` : `${titles} · ${formatShare(genre.percentageRow)} of ${words.top}`,
+        footer: {
+          text: titles,
+          detail: i === 0 ? words.top : `${formatShare(genre.percentageRow)} of ${words.top}`,
+        },
       },
     };
   });
@@ -118,7 +121,7 @@ export function toGenreBand(genres: readonly GenreBar[], words: BandWords = GENR
         title: label,
         share: formatShare(share),
         lines: tipLines({ shows: sum(tail.map(({ shows }) => shows)), movies: sum(tail.map(({ movies }) => movies)) }),
-        footer: tail.length > 3 ? `${names}, …` : names,
+        footer: { text: tail.length > 3 ? `${names}, …` : names },
       },
       tail: tail.map((genre) => ({
         slug: genre.slug,

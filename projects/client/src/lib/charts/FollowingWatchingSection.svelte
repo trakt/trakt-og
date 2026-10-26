@@ -85,7 +85,7 @@ const tiles = $derived(live && followingWatching(live, type, now));
               <a class="title" href={watch.href}>{watch.title.name}</a>
             {/if}
             <UnderProgress live href={watch.href} percent={progress}
-              lines={[[{ text: `${progress}% watched` }, { text: `${minutesLeft}m left` }]]} />
+              tip={`${progress}% watched\n${minutesLeft}m left`} />
             <p class="who">
               {#if watch.member.href}<a href={watch.member.href}>{watch.member.name}</a>{:else}{watch.member.name}{/if}
               <span class="left"><Countdown startedAt={watch.startedAt} endsAt={watch.expiresAt} /></span>

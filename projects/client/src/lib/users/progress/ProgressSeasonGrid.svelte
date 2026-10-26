@@ -13,6 +13,7 @@ import { page } from '$app/state';
 import TickBar from '$lib/components/media/TickBar.svelte';
 import Stat from '$lib/components/stats/Stat.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
+import TooltipStat from '$lib/components/tooltip/TooltipStat.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import calendar from '$lib/icons/regular/calendar-lines.svg?raw';
 import clock from '$lib/icons/regular/clock.svg?raw';
@@ -42,18 +43,22 @@ const spoilers = (square: EpisodeSquare) =>
       watched: square.state === 'watched',
     })
     : { screenshot: false, title: false };
+
+const tipLines = (square: EpisodeSquare) => [
+  ...(square.meta ? [{ ...square.meta, muted: true }] : []),
+  ...square.lines.map(({ text, detail, tone }) => ({ text, detail, color: `var(--color-progress-tip-${tone})` })),
+];
 </script>
 
 {#snippet tip(square: EpisodeSquare)}
   {@const hidden = spoilers(square)}
   <span class="tip">
     {#if square.image && !hidden.screenshot}<img class="tip-image" src={square.image} alt="" loading="lazy" />{/if}
-    <span class="tip-code">{square.code}</span>
-    {#if square.title && !hidden.title}<span class="tip-title">{square.title}</span>{/if}
-    {#if square.meta}<span class="tip-meta">{square.meta}</span>{/if}
-    {#each square.lines as line (line.text)}
-      <span class="tip-line" style:--dash="var(--color-progress-tip-{line.tone})">{line.text}</span>
-    {/each}
+    <span class="tip-head">
+      <span class="tip-code">{square.code}</span>
+      {#if square.title && !hidden.title}<b class="tip-title">{square.title}</b>{/if}
+    </span>
+    <TooltipStat lines={tipLines(square)} />
   </span>
 {/snippet}
 
@@ -91,7 +96,7 @@ const spoilers = (square: EpisodeSquare) =>
       <ul class="squares" aria-label="{season.name} episodes">
         {#each season.squares as square (square.code)}
           <li>
-            <Tooltip variant="chart">
+            <Tooltip toggles>
               {#snippet trigger(tooltip)}
                 <a class={['square', square.state, { collected: square.collected }]} href={square.href}
                   aria-label={square.label} {...tooltip}>{square.number}</a>
@@ -316,7 +321,7 @@ ul {
   }
 }
 
-/* The chart tooltip's body, like the dashboard's minutes chart. */
+/* A screenshot over the code and title, then the shared tooltip lines, all on the stat's inset. */
 .tip {
   display: grid;
   inline-size: var(--progress-tip-width);
@@ -331,38 +336,15 @@ ul {
   object-fit: cover;
 }
 
+.tip-head {
+  display: grid;
+  padding: var(--space-tooltip-rich);
+  padding-block-end: 0;
+}
+
 .tip-code {
-  color: var(--color-chart-tooltip-muted);
-  font-size: var(--font-size-genre-count);
-}
-
-.tip-title {
-  font-weight: var(--font-weight-headings-heavy);
-  line-height: var(--line-height-headings);
-}
-
-.tip-meta {
-  color: var(--color-chart-tooltip-muted);
-  font-family: var(--font-body);
-  font-size: var(--font-size-genre-key-count);
-  font-weight: normal;
-}
-
-.tip-line {
-  display: flex;
-  align-items: center;
-  gap: var(--space-genre-key-top);
-  font-family: var(--font-body);
-  font-size: var(--font-size-genre-key-count);
-  font-weight: normal;
-
-  &::before {
-    content: '';
-    flex: none;
-    inline-size: var(--genre-tip-dash);
-    block-size: var(--genre-tip-dash-height);
-    background: var(--dash);
-  }
+  color: var(--color-tooltip-muted);
+  font-size: var(--font-size-tooltip-label);
 }
 
 @media (prefers-reduced-motion: reduce) {

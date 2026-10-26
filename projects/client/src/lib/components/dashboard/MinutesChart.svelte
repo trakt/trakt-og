@@ -13,7 +13,15 @@ import type { MinutesChartData, MinutesDay } from '$lib/dashboard/LastThirtyDays
 const { chart }: { chart: MinutesChartData } = $props();
 
 const name = (day: MinutesDay) =>
-  [`${day.label}: ${day.time} watched`, ...day.lines.map(({ text }) => text)].join(', ');
+  [`${day.label}: ${day.time} watched`, ...day.lines.map(({ text, detail }) => `${text}, ${detail}`)].join(', ');
+
+const stats = (day: MinutesDay) => [
+  {
+    label: day.label,
+    value: day.time,
+    lines: day.lines.map(({ type, text, detail }) => ({ text, detail, color: `var(--color-minutes-${type})` })),
+  },
+];
 </script>
 
 <!-- The history page is a route, but resolve() can't take its query string. -->
@@ -39,7 +47,7 @@ const name = (day: MinutesDay) =>
       {#each chart.days as day (day.date)}
         <li class={['column', { today: day.mark === 'today', marked: day.mark === 'month' || day.mark === 'today' }]}>
           {#if day.minutes > 0}
-            <Tooltip variant="chart">
+            <Tooltip toggles stats={stats(day)}>
               {#snippet trigger(tooltip)}
                 <a
                   class="bar-link"
@@ -52,13 +60,6 @@ const name = (day: MinutesDay) =>
                   {#if day.movies > 0}<span class="part movie" style:--part={day.movies / 100}></span>{/if}
                 </a>
               {/snippet}
-              <span class="tip">
-                <span class="tip-title">{day.label}</span>
-                <span class="tip-time">{day.time}</span>
-                {#each day.lines as line (line.type)}
-                  <span class="tip-line" style:--dash="var(--color-minutes-{line.type})">{line.text}</span>
-                {/each}
-              </span>
             </Tooltip>
           {:else}
             <span class="stub" aria-hidden="true"></span>
@@ -77,8 +78,6 @@ const name = (day: MinutesDay) =>
   padding-block-end: calc(var(--space-minutes-axis) + var(--font-size-minutes-label));
   font-family: var(--font-headings);
   font-weight: var(--font-weight-headings);
-  /* OG's tooltip sat closer to its bar than the ratings chart's. */
-  --chart-tooltip-offset: var(--minutes-tooltip-offset);
 }
 
 .weeks {
@@ -233,44 +232,6 @@ const name = (day: MinutesDay) =>
   margin-block-end: var(--minutes-stub);
   border-radius: 50%;
   background-color: var(--color-minutes-stub);
-}
-
-.tip,
-.tip-title,
-.tip-time {
-  display: block;
-}
-
-.tip {
-  text-align: start;
-}
-
-.tip-title {
-  color: var(--color-chart-tooltip-muted);
-  font-size: var(--font-size-genre-count);
-  text-transform: uppercase;
-}
-
-.tip-time {
-  font-size: var(--font-size-genre-share);
-  font-weight: var(--font-weight-headings-heavy);
-  line-height: var(--line-height-genre-share);
-}
-
-.tip-line {
-  display: flex;
-  align-items: center;
-  gap: var(--space-genre-key-top);
-  font-family: var(--font-body);
-  font-size: var(--font-size-genre-key-count);
-  font-weight: normal;
-
-  &::before {
-    content: '';
-    inline-size: var(--genre-tip-dash);
-    block-size: var(--genre-tip-dash-height);
-    background: var(--dash);
-  }
 }
 
 .axis-label {

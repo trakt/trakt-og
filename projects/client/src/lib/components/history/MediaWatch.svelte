@@ -21,7 +21,8 @@ import { watchAction } from '$lib/components/history/watchAction';
 import type { HistoryPlay } from '$lib/components/history/HistoryPlay';
 import type { WatchTarget } from '$lib/components/history/WatchTarget';
 import { quickIconFill } from '$lib/components/media/quickIconFill';
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
+import PlaysTip from '$lib/components/media/PlaysTip.svelte';
+import ProgressTip from '$lib/components/media/ProgressTip.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import check from '$lib/icons/trakt/check.svg?raw';
 import checkThick from '$lib/icons/trakt/check-thick.svg?raw';
@@ -173,7 +174,7 @@ async function open(force: boolean): Promise<'date' | 'remove' | 'partial' | nul
   {variant} {small} {busy} {plural} {locked}
   fill={onremove ? 1 : fill.watched} selected={Boolean(onremove) || started}
   datePreferences={dates}
-  tooltip={onremove ? 'Remove from history' : variant === 'card' ? fill.titles.watched ?? 'Add to watched history' : undefined}
+  tooltip={variant === 'card' ? fill.tips.watched || fill.tips.plays ? watchedTip : fill.titles.watched ?? (onremove ? 'Remove from history' : 'Add to watched history') : undefined}
   summary={{ icon: check, text: percent ? rewatching ? 'rewatched' : 'watched' : label, percent, detail: started ? detail : undefined }}
   more={hasHistory || dropped ? more : undefined}
   onremovePlay={removePlay ? () => void watch(null, false, removePlay) : undefined}
@@ -187,6 +188,8 @@ async function open(force: boolean): Promise<'date' | 'remove' | 'partial' | nul
   {#if plural}{completed}/{target.airedEpisodes} eps &mdash; {countLabel(plays ?? 0, 'play')}{#if target.runtime} <em>({formatRuntime((plays ?? 0) * target.runtime)})</em>{/if}
   {:else if viewerState.lastWatchedAt}{viewerState.lastWatchedAt.startsWith('1970-01-01') ? 'Unknown date' : formatDate(viewerState.lastWatchedAt, { ...dates, time: true })}{/if}
 {/snippet}
+{#snippet watchedTip()}{#if fill.tips.watched}<ProgressTip progress={fill.tips.watched} />{:else if fill.tips.plays}<PlaysTip
+      plays={fill.tips.plays} />{/if}{/snippet}
 {#snippet more()}
   <SummaryActionMenu>
     {#snippet children(close)}
@@ -210,13 +213,9 @@ async function open(force: boolean): Promise<'date' | 'remove' | 'partial' | nul
   </SummaryActionMenu>
 {/snippet}
 {#if variant === 'summary' && plural && started && target.airedEpisodes}
-  <Tooltip text={fill.titles.watched} placement="bottom">
-    {#snippet trigger(tip)}
-      <a class="watch-progress" href={historyHref} aria-label={fill.titles.watched} {...tip}>
-        {#each ticks as id, index (index)}<span class:done={id === undefined ? index < (completed ?? 0) : rewatching && viewerState.rewatchingAt ? (overlay.state('episode', id).lastWatchedAt ?? '') >= viewerState.rewatchingAt : overlay.state('episode', id).watched}></span>{/each}
-      </a>
-    {/snippet}
-  </Tooltip>
+  <a class="watch-progress" href={historyHref} aria-label={fill.titles.watched}>
+    {#each ticks as id, index (index)}<span class:done={id === undefined ? index < (completed ?? 0) : rewatching && viewerState.rewatchingAt ? (overlay.state('episode', id).lastWatchedAt ?? '') >= viewerState.rewatchingAt : overlay.state('episode', id).watched}></span>{/each}
+  </a>
 {/if}
 
 <style>

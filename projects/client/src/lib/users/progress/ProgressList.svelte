@@ -252,7 +252,7 @@ function clearFilters() {
                   watchNow: 'play',
                 }}>
                 {#snippet progress()}
-                  <UnderProgress href={row.href} percent={row.percent} lines={[[{ text: done }]]} />
+                  <UnderProgress href={row.href} percent={row.percent} tip={done} />
                 {/snippet}
               </PosterCard>
             {/each}

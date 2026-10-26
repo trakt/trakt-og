@@ -3,13 +3,13 @@ import { page } from '$app/state';
 import Specimen from '$lib/design/Specimen.svelte';
 import Variant from '$lib/design/Variant.svelte';
 import WatchPopover from '$lib/components/history/WatchPopover.svelte';
-import CollectionLogos from '$lib/components/collection/CollectionLogos.svelte';
+import CollectionLogoRow from '$lib/components/collection/CollectionLogoRow.svelte';
 import { collectionBadges } from '$lib/components/collection/collectionBadges';
 import CollectionMetadataFields from '$lib/components/collection/CollectionMetadataFields.svelte';
 import type { CollectionMetadata } from '$lib/components/collection/CollectionMetadata';
-import { collectionMetadataLabel } from '$lib/components/collection/collectionMetadataLabel';
 import type { LibrarySource } from '$lib/components/collection/LibrarySource';
 import { librarySourceIcon } from '$lib/components/collection/librarySourceIcon';
+import LibraryTip from '$lib/components/collection/LibraryTip.svelte';
 import MediaCollection from '$lib/components/collection/MediaCollection.svelte';
 import { toast } from '$lib/components/toast/toast.svelte';
 import Icon from '$lib/icons/Icon.svelte';
@@ -20,6 +20,7 @@ import { breakingBad, noWayHome } from '../summary/fixtures.ts';
 
 const dates = $derived(page.data.datePreferences);
 const collectedAt = $derived(formatDate('2026-10-02T20:15:00Z', { ...dates, time: true }));
+const added = $derived(formatDate('2026-10-02T20:15:00Z', dates));
 // Sample library items, the way MediaCollection draws each once it's in the library: synced or not, with metadata or not.
 const synced: { label: string; sources?: LibrarySource[]; metadata?: CollectionMetadata }[] = [
   { label: 'Added by hand' },
@@ -46,8 +47,7 @@ const removed = () => toast.success('Removed from library.');
   {#each synced as { label, sources, metadata: saved } (label)}
     {@const source = librarySourceIcon(sources)}
     {@const badges = collectionBadges(saved)}
-    {@const text = [collectionMetadataLabel(saved), source && `Synced from ${source.name}`].filter(Boolean).join('\n')}
-    {#snippet logos()}{#if badges}<CollectionLogos {badges} />{/if}{/snippet}
+    {#snippet logos()}{#if badges}<CollectionLogoRow {badges} align="start" />{/if}{/snippet}
     <Variant {label}>
       <div class="example">
         <WatchPopover collection adding={false} hasMetadata={Boolean(saved)} label="In Library" variant="summary"
@@ -58,8 +58,7 @@ const removed = () => toast.success('Removed from library.');
             icon: source?.svg ?? collection,
             text: 'In Library',
             detail: collectedAt,
-            aside: badges ? logos : undefined,
-            tooltip: text || undefined,
+            footer: badges ? logos : undefined,
           }}>
           {#snippet metadata(done, saving)}
             <CollectionMetadataFields value={drafts[label] ?? saved ?? {}} {saving}
@@ -93,11 +92,12 @@ const removed = () => toast.success('Removed from library.');
 </Specimen>
 
 <Specimen title="Poster icons"
-  note="The same states in a card's quick-icon bar, which has no library icon for what isn't in it: by hand, Plex and Jellyfin.">
+  note="The same states in a card's quick-icon bar, which has no library icon for what isn't in it: by hand, Plex, Jellyfin and Plex with metadata. Each tooltip is the library card: the date, its format logos and its server.">
   <div class="posters">
-    {#each synced.slice(0, 3) as { label, sources } (label)}
+    {#each synced as { label, sources, metadata: saved } (label)}
       {@const source = librarySourceIcon(sources)}
-      <WatchPopover collection adding={false} label="In Library" fill={1} datePreferences={dates} tooltip={label}
+      {#snippet tip()}<LibraryTip tip={{ added, metadata: saved, sources }} />{/snippet}
+      <WatchPopover collection adding={false} label="In Library" fill={1} datePreferences={dates} tooltip={tip}
         removeNote={source && `It may come back on the next ${source.name} sync.`}
         onopen={() => Promise.resolve('remove')} onwatch={removed} onremaining={() => Promise.resolve(false)}
         oninvalid={() => {}}>

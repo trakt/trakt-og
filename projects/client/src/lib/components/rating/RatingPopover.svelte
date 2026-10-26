@@ -16,7 +16,7 @@ interface Props {
   busy?: boolean;
   /** Why rating is off ("Watch it first to rate it"): the trigger stays, disabled, with this as its tooltip. */
   locked?: string;
-  /** The trigger's tooltip while rating is open: a bold first line, then a detail line, split at `\n`. */
+  /** The trigger's tooltip while rating is shut. */
   hint?: (value: number | null) => string;
   trigger: Snippet<[{ value: number | null; preview: number | null; busy: boolean }]>;
   variant?: 'summary' | 'card';
@@ -72,7 +72,7 @@ function toggle(event: ToggleEvent) {
 }
 </script>
 
-<Tooltip text={expanded ? undefined : tip} variant={locked ? 'default' : 'titled'}
+<Tooltip content={expanded ? undefined : tip}
   placement={variant === 'summary' ? 'top' : 'bottom'}>
   {#snippet trigger(tooltip)}
     <button

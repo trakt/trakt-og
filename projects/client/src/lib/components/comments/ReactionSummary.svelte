@@ -10,6 +10,7 @@
 -->
 <script lang="ts">
 import Icon from '$lib/icons/Icon.svelte';
+import TooltipBox from '$lib/components/tooltip/TooltipBox.svelte';
 import smile from '$lib/icons/solid/face-smile-plus.svg?raw';
 import ellipsis from '$lib/icons/regular/ellipsis.svg?raw';
 import xmark from '$lib/icons/regular/xmark.svg?raw';
@@ -120,7 +121,7 @@ async function choose(type: ReactionType) {
         {@const row = { zero: reaction.count === 0, yours: reaction.type === mine }}
         {#snippet line()}
           <span class="lead" aria-hidden="true">
-            <span class="big-emoji">{reaction.emoji}</span><span class="tip">{reaction.label}</span>
+            <span class="big-emoji">{reaction.emoji}</span><span class="tip"><TooltipBox side="left">{reaction.label}</TooltipBox></span>
           </span>
           <span class="share" aria-hidden="true"><span style:inline-size={share(reaction.count)}></span></span>
           <span class="count">{reaction.count.toLocaleString('en-US')}</span>
@@ -404,7 +405,7 @@ button.row {
   }
 }
 
-/* The emoji, with its name in the tooltips' black box to its left, pointing at it. */
+/* The emoji, with its name in the tooltip box to its left, pointing at it. */
 .lead {
   position: relative;
   display: inline-flex;
@@ -413,32 +414,16 @@ button.row {
 .tip {
   position: absolute;
   inset-block-start: 50%;
-  inset-inline-end: calc(100% + var(--tooltip-arrow) + var(--reaction-tip-gap) + var(--reaction-tip-inset));
+  inset-inline-end: calc(100% + var(--tooltip-arrow) + 1px + var(--reaction-tip-gap) + var(--reaction-tip-inset));
   z-index: 1;
-  padding: var(--space-tooltip);
-  border-radius: var(--radius-tooltip);
-  background-color: var(--color-tooltip-bg);
-  color: var(--color-tooltip-text);
-  font-size: var(--font-size-small);
-  font-weight: normal;
-  line-height: var(--line-height-tooltip);
-  white-space: nowrap;
+  inline-size: max-content;
   opacity: 0;
   pointer-events: none;
   translate: 0 -50%;
   transition: opacity var(--transition-tooltip);
 
-  &::after {
-    content: '';
-    position: absolute;
-    inset-block-start: calc(50% - var(--tooltip-arrow));
-    inset-inline-start: 100%;
-    border: var(--tooltip-arrow) solid transparent;
-    border-inline-start-color: var(--color-tooltip-bg);
-  }
-
   .row:is(:hover, :focus-visible) & {
-    opacity: var(--opacity-tooltip);
+    opacity: 1;
   }
 }
 

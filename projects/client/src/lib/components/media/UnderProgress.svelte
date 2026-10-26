@@ -7,7 +7,9 @@
 -->
 <script lang="ts">
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import type { ProgressTooltipLine } from './ProgressTooltipLine.ts';
+import ProgressTip from './ProgressTip.svelte';
+import type { WatchedProgress } from './WatchedProgress.ts';
+import { watchedProgressText } from './watchedProgressText.ts';
 
 interface Props {
   href: string;
@@ -15,21 +17,21 @@ interface Props {
   percent: number;
   /** Each aired episode, true when watched, for OG's exact bar (`.progress.ticks`). */
   ticks?: readonly boolean[];
-  /** Tooltip lines, in groups. A rewatch has a second group for the whole show, under a divider. */
-  lines: readonly (readonly ProgressTooltipLine[])[];
+  /** The tooltip: text for a live check-in, or `progressTooltip`'s runs (a rewatch has two, under a divider). */
+  tip: string | readonly WatchedProgress[];
   /** Being watched now: a knob at the end of the fill. */
   live?: boolean;
 }
 
-const { href, percent, ticks, lines, live = false }: Props = $props();
+const { href, percent, ticks, tip, live = false }: Props = $props();
 
-const spoken = ({ text, detail }: ProgressTooltipLine) => (detail ? `${text} (${detail})` : text);
-const label = $derived(lines.map((group) => group.map(spoken).join(', ')).join('; '));
+const label = $derived(typeof tip === 'string' ? tip.replaceAll('\n', ', ') : watchedProgressText(tip));
 </script>
 
 <!-- The progress page isn't built yet, and resolve() only takes routes that exist. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-<Tooltip placement="bottom">
+{#snippet progressTip()}{#if typeof tip !== 'string'}<ProgressTip progress={tip} bar={false} />{/if}{/snippet}
+<Tooltip content={typeof tip === 'string' ? tip : progressTip} placement="bottom">
   {#snippet trigger(tooltip)}
     <a class="under-progress" {href} aria-label={label} {...tooltip}>
       <span class={['track', { full: percent >= 100, ticks: Boolean(ticks) }]}>
@@ -44,14 +46,6 @@ const label = $derived(lines.map((group) => group.map(spoken).join(', ')).join('
       </span>
     </a>
   {/snippet}
-  {#each lines as group, i (i)}
-    {#if i > 0}<span class="divider"></span>{/if}
-    {#each group as line, j (j)}
-      <span class={['line', { muted: line.muted }]}>
-        {line.text}{#if line.detail}<em>{` (${line.detail})`}</em>{/if}
-      </span>
-    {/each}
-  {/each}
 </Tooltip>
 
 <style>
@@ -109,22 +103,6 @@ const label = $derived(lines.map((group) => group.map(spoken).join(', ')).join('
   box-shadow: var(--shadow-watching-knob);
   translate: -50% -50%;
   transition: inset-inline-start var(--transition-card);
-}
-
-.line {
-  display: block;
-}
-
-/* OG's `.collection-metadata` inside a tooltip. */
-.muted {
-  color: var(--color-tooltip-muted);
-}
-
-/* OG's `.tooltip-hr` between a rewatch and the whole show. */
-.divider {
-  display: block;
-  margin-block: var(--space-tooltip-divider);
-  border-block-end: 1px solid var(--color-tooltip-divider);
 }
 
 @media (prefers-reduced-motion: reduce) {

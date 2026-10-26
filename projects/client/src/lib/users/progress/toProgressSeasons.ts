@@ -12,9 +12,10 @@ import { ratingPercent } from '../../utils/ratingPercent.ts';
 
 export type EpisodeSquareState = 'watched' | 'not-watched' | 'up-next' | 'not-aired';
 
-/** A status line in a square's tooltip, after a dash in its meaning color. */
+/** A status line in a square's tooltip, after a dash in its meaning color, with its secondary stat in gray. */
 export type EpisodeTipLine = {
   readonly text: string;
+  readonly detail?: string;
   readonly tone: 'watched' | 'collected' | 'next' | 'time' | 'muted';
 };
 
@@ -32,8 +33,8 @@ export type EpisodeSquare = {
   readonly label: string;
   /** The tooltip's screenshot. */
   readonly image?: string;
-  /** "Sep 2, 2026 · 52m · 81%" under the tooltip's title, once it has aired. */
-  readonly meta?: string;
+  /** "Sep 2, 2026" under the tooltip's title once it has aired, then its "52m, 81%" in gray. */
+  readonly meta?: { readonly text: string; readonly detail?: string };
   readonly lines: readonly EpisodeTipLine[];
 };
 
@@ -140,9 +141,13 @@ function toSquare({
       .join(', '),
     image: imageUrl(episode.screenshot, 'thumb'),
     meta: aired
-      ? [airs, runtime ? formatRuntime(runtime) : undefined, rating !== undefined && `${ratingPercent(rating)}%`]
-          .filter(Boolean)
-          .join(' · ')
+      ? {
+          text: airs,
+          detail:
+            [runtime ? formatRuntime(runtime) : undefined, rating !== undefined && `${ratingPercent(rating)}%`]
+              .filter(Boolean)
+              .join(', ') || undefined,
+        }
       : undefined,
     lines: [
       statusLine,
@@ -150,7 +155,8 @@ function toSquare({
       ...(doneAt
         ? [
             {
-              text: `Last watched ${doneAt}${!done && plays > 0 ? ` · ${plays} ${plays === 1 ? 'play' : 'plays'}` : ''}`,
+              text: `Last watched ${doneAt}`,
+              ...(!done && plays > 0 ? { detail: `${plays} ${plays === 1 ? 'play' : 'plays'}` } : {}),
               tone: 'time' as const,
             },
           ]

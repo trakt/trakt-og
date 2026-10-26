@@ -23,13 +23,13 @@ const { upNext, next, aired, allHref, datePreferences }: Props = $props();
 const cards = $derived(next ? [next, ...aired] : aired);
 </script>
 
-{#snippet card({ id, rating, released, collectionContext, ...episode }: EpisodeCard)}
+{#snippet card({ id, rating, released, collectionContext, runtime, ...episode }: EpisodeCard)}
   {@const state = overlay.state('episode', id, collectionContext)}
   <FanartCard
   {...episode}
   framed
   userRating={state.rating}
-  icons={{ ratingTarget: { type: 'episode', id, title: episode.title, season: collectionContext }, watchTarget: { type: 'episode', id, title: episode.title, season: collectionContext }, collectionTarget: { type: 'episode', id, title: episode.title, season: collectionContext }, fill: quickIconFill({ state, datePreferences }), rating, released, listLabel: 'Add to list', watchNow: 'play' }}
+  icons={{ ratingTarget: { type: 'episode', id, title: episode.title, season: collectionContext }, watchTarget: { type: 'episode', id, title: episode.title, season: collectionContext, runtime }, collectionTarget: { type: 'episode', id, title: episode.title, season: collectionContext }, fill: quickIconFill({ state, datePreferences, runtime }), rating, released, listLabel: 'Add to list', watchNow: 'play' }}
 />
 {/snippet}
 

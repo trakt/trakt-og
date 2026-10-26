@@ -52,6 +52,8 @@ export type EpisodeCard = Omit<ComponentProps<typeof FanartCard>, 'icons'> & {
   id: number;
   rating: number;
   released: boolean;
+  /** Minutes, so the watched tooltip can total the plays. */
+  runtime?: number;
 };
 
 /** A poster in the seasons grid, with what its sorts need. */
@@ -212,6 +214,7 @@ export function toShowSummary(params: ShowSummaryParams) {
       tags,
       rating: episode.rating ?? 0,
       released: !!episode.first_aired && new Date(episode.first_aired) <= now,
+      runtime: episode.runtime ?? show.runtime ?? undefined,
     };
   };
   const recent = recentEpisodes(params);

@@ -748,7 +748,6 @@
   --font-size-minutes-week: 11px;
   --font-size-minutes-label: 10px; /* hour lines, the average and the day labels */
   --minutes-bar-hit-height: 5px;
-  --minutes-tooltip-offset: 10px; /* above the bar's top */
 
   /* The dashboard's Social Feed: watching-now tiles, the Earlier timeline and the Comments column */
   --color-social-feed-bg: light-dark(var(--gray-lighter), var(--dk-bg2));
@@ -999,7 +998,6 @@
   --color-search-chip-on-border: rgb(237 28 36 / 0.55);
   --color-search-chip-on-text: var(--color-text-inverse);
   --color-search-kbd-bg: light-dark(rgb(0 0 0 / 0.07), rgb(255 255 255 / 0.1));
-  --color-search-tip-bg: rgb(0 0 0 / 0.8); /* the search icon's "Search /" tooltip */
   --color-search-type: light-dark(var(--brand-primary), #ff5a5f); /* a result's type; lighter on dark for contrast */
   --color-tag-badge-line: light-dark(
     rgb(0 0 0 / 0.45),
@@ -1289,21 +1287,39 @@
   --blur-toast: var(--blur-header-glass);
   --shadow-toast: 0 12px 32px rgb(0 0 0 / 0.45);
 
-  /* Tooltips.
-     Dark knight never restyled them, so both themes share these. */
+  /* Tooltips: one dark box with a hairline border and an arrow, the same in both themes. Text centers; a stat with
+     lines, logos or a screenshot aligns to the start. */
   --tooltip-max-width: 400px;
   --line-height-tooltip: 1.4;
   --tooltip-arrow: 5px;
   --tooltip-offset: 3px; /* between the arrow's tip and the trigger */
-  --space-tooltip: 3px 8px;
+  --space-tooltip-block: 3px;
+  --space-tooltip-inline: 8px;
+  --space-tooltip: var(--space-tooltip-block) var(--space-tooltip-inline);
+  --space-tooltip-rich: 3px 2px; /* inside the box's own padding, around a stat or the library card */
   --radius-tooltip: var(--radius-object);
-  --color-tooltip-bg: #000;
+  --color-tooltip-bg: #141414; /* solid, so the arrow joins the border without a seam */
+  --color-tooltip-border: #272727; /* 8% white over the box: barely there */
   --color-tooltip-text: #fff;
-  --opacity-tooltip: 0.9;
   --transition-tooltip: 0.15s linear;
   --color-tooltip-muted: #aaa; /* .tooltip .collection-metadata */
-  --color-tooltip-divider: #444; /* .tooltip-hr */
-  --space-tooltip-divider: 5px;
+  --color-tooltip-divider: #333; /* between a stat's groups, and over the library card's sync line */
+  --space-tooltip-divider: 6px;
+  --space-tooltip-pill: 3px; /* above a pill on a tooltip's second line: JustWatch's rank change */
+  --tooltip-progress-min-width: 220px;
+  --color-tooltip-progress-track: #333; /* the summary progress bar's dark track */
+  --font-size-tooltip-label: 11px; /* a stat's small caps label: "Mon, Sep 29" */
+  --letter-spacing-tooltip-label: 0.04em;
+  --font-size-tooltip-value: 20px; /* a stat's value: "2h 14m" */
+  --line-height-tooltip-value: 1.15;
+  --space-tooltip-unit: 5px; /* between a value and its unit */
+  --tooltip-dash: 12px; /* a line's color dash */
+  --tooltip-dash-height: 2px;
+  --space-tooltip-dash: 6px;
+  --space-tooltip-library: 5px 6px; /* inside the box's padding, around the library card's "Added on" line */
+  --space-tooltip-footer: 9px 14px; /* a tooltip's bottom section, edge to edge: a progress bar, the library's logos */
+  --space-tooltip-footer-gap: 8px; /* between a rewatch's two bars, or a bar and the logos */
+  --color-tooltip-footer: #1e1e1e; /* a shade up from the box, under the divider */
 
   /* Rating popovers (OG Bootstrap popover and summary rating trigger). */
   /* Poster rating lines. */
@@ -1822,8 +1838,6 @@
   --genre-tail-column: 170px;
   --genre-mini-height: 4px;
   --genre-tip-width: 220px;
-  --genre-tip-dash: 12px;
-  --genre-tip-dash-height: 2px;
   --font-size-genre-share: 22px;
   --line-height-genre-share: 1.15;
   --font-size-genre-tail-share: 13px;
@@ -1833,13 +1847,6 @@
   --transition-chart: 0.5s;
   --color-chart-axis: light-dark(#ddd, #444);
   --color-chart-axis-label: light-dark(#aaa, #777);
-  --color-chart-tooltip-bg: rgb(0 0 0 / 0.9);
-  --color-chart-tooltip-border: #666;
-  --color-chart-tooltip-text: #fff;
-  --color-chart-tooltip-muted: #999;
-  --radius-chart-tooltip: var(--radius-object);
-  --space-chart-tooltip: 5px 8px;
-  --chart-tooltip-offset: 20px; /* above the bar's top */
   /* The profile's ratings chart: bars in their rating colors over dashed count lines and a dashed average line, in
      the Last 30 Days chart's style, with genre-style keys under it. */
   --color-ratings-count: var(--color-genre-label); /* over each bar */
@@ -1861,7 +1868,6 @@
   --space-ratings-axis: 8px; /* between the plot and the ratings under it */
   --space-ratings-keys: 30px; /* between the axis and the keys */
   --space-ratings-average-label: 6px; /* between the average line and its label */
-  --space-ratings-tip-unit: 4px; /* between the tooltip's count and "ratings" */
   --line-height-ratings-axis: 1.25;
 
   /* Calendars. Dark in both themes, like the frame. */
@@ -2121,7 +2127,8 @@
   --summary-action-tile-shade: 78%; /* an added button's tiles: its color, darkened */
   --color-summary-action-tile-shade: #000;
   --summary-action-hover: brightness(1.12); /* an added button, or its tiles, under the pointer */
-  --summary-action-aside-gap: 10px;
+  --space-summary-action-footer-block: 8px; /* the library button's format row, under it */
+  --space-summary-action-footer-end: 12px;
   --summary-action-icon-size: 26px;
   --summary-action-tile-icon-size: 18px;
   --summary-action-trailing-icon-size: 15px; /* an icon in the tile column, like external-link, under the + */
@@ -2531,7 +2538,6 @@
   --z-modal-backdrop: 1040;
   --z-modal: 1050;
   --z-popover: 1060;
-  --z-tooltip: 1070;
   --z-header: 1500;
   --z-toast: 30; /* under the header and its menus, which open over the toasts */
   --z-first-night-bar: 25; /* the welcome reel: over the page, under the toasts and the header */
@@ -2732,10 +2738,13 @@
   --font-size-collection-logo-small: 20px; /* digital, Dolby and DTS */
   --font-size-collection-tag: 14px;
   /* The same logos, small, at the summary library button's right edge. */
-  --collection-logos-gap: 6px;
-  --font-size-collection-logos: 16px;
-  --font-size-collection-logos-wide: 20px;
-  --font-size-collection-logos-small: 13px;
+  --space-collection-row: 6px 10px; /* a library item's format and audio row: the tooltip's and the button's footer */
+  --font-size-collection-row-logo: 13px;
+  --font-size-collection-chip: 10px; /* a resolution or channels tag beside the logos */
+  --line-height-collection-chip: 14px;
+  --space-collection-chip: 0 4px;
+  --radius-collection-chip: 3px;
+  --color-collection-chip-border: rgb(255 255 255 / 0.4); /* on the dark tooltip and the filled button */
 }
 
 /* The dark ground behind Discover's and Charts' fanart bands, in both themes, like the frame. */

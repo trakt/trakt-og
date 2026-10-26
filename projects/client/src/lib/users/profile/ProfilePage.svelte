@@ -60,7 +60,7 @@ const description = $derived(
   userRating={state.rating}
   icons={{
       listTarget: { type: card.type, id: card.id, title: card.title },
-      fill: quickIconFill({ state, datePreferences: data.datePreferences }),
+      fill: quickIconFill({ state, datePreferences: data.datePreferences, runtime: card.runtime }),
       rating: card.rating,
       watchNowTarget: { type: card.type, id: card.id, title: card.title, season: card.season },
       listLabel: card.type === 'episode' ? 'Add to list' : 'Add to watchlist',

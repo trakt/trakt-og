@@ -32,6 +32,8 @@ export type WatchedCard = {
   /** An episode's show, season and number, for its Watch Now. */
   readonly season?: { readonly show: number; readonly number: number; readonly episode: number };
   readonly watchedDate: string;
+  /** Minutes, so the watched tooltip can total the plays: the episode's, or its show's. */
+  readonly runtime?: number;
 };
 
 export type FavoriteCard = {
@@ -90,6 +92,7 @@ export function toWatchedEpisode(row: EpisodeRow, datePreferences: DatePreferenc
     show: { text: row.show.title, href: showHref(row.show) },
     season: { show: row.show.ids.trakt, number: row.episode.season, episode: row.episode.number },
     watchedDate: watchedDate(row.watched_at, datePreferences),
+    runtime: row.episode.runtime ?? row.show.runtime ?? undefined,
   };
 }
 
@@ -103,6 +106,7 @@ export function toWatchedMovie(row: MovieRow, datePreferences: DatePreferences):
     image: imageUrl(row.movie.images?.poster?.at(0), 'thumb'),
     rating: row.movie.rating ?? undefined,
     watchedDate: watchedDate(row.watched_at, datePreferences),
+    runtime: row.movie.runtime ?? undefined,
   };
 }
 

@@ -6,6 +6,7 @@
 -->
 <script lang="ts">
 import Icon from '$lib/icons/Icon.svelte';
+import TooltipBox from '$lib/components/tooltip/TooltipBox.svelte';
 import smile from '$lib/icons/solid/face-smile-plus.svg?raw';
 import xmark from '$lib/icons/regular/xmark.svg?raw';
 import GlassAction from '$lib/components/glass-action/GlassAction.svelte';
@@ -98,7 +99,7 @@ function choose(type: ReactionType) {
         onclick={() => choose(option.type)}
       >
         <span class="choice-emoji" aria-hidden="true">{option.emoji}</span>
-        <span class="tip" aria-hidden="true">{option.label}</span>
+        <span class="tip" aria-hidden="true"><TooltipBox>{option.label}</TooltipBox></span>
       </button>
     {/each}
   </div>
@@ -263,37 +264,22 @@ h4 {
 }
 
 /*
-  The tile's name, in the tooltips' black box over it. Its own rather than a Tooltip: a tooltip anchored inside this
-  anchored panel lands where the panel was before it moved into place.
+  The tile's name, in the tooltip box over it. Its own rather than a Tooltip: a tooltip anchored inside this anchored
+  panel lands where the panel was before it moved into place.
 */
 .tip {
   position: absolute;
-  inset-block-end: calc(100% + var(--tooltip-arrow) + var(--reaction-tip-gap));
+  inset-block-end: calc(100% + var(--tooltip-arrow) + 1px + var(--reaction-tip-gap));
   inset-inline-start: 50%;
   z-index: 1;
-  padding: var(--space-tooltip);
-  border-radius: var(--radius-tooltip);
-  background-color: var(--color-tooltip-bg);
-  color: var(--color-tooltip-text);
-  font-size: var(--font-size-small);
-  line-height: var(--line-height-tooltip);
-  white-space: nowrap;
+  inline-size: max-content;
   opacity: 0;
   pointer-events: none;
   translate: -50% 0;
   transition: opacity var(--transition-tooltip);
 
-  &::after {
-    content: '';
-    position: absolute;
-    inset-block-start: 100%;
-    inset-inline-start: calc(50% - var(--tooltip-arrow));
-    border: var(--tooltip-arrow) solid transparent;
-    border-block-start-color: var(--color-tooltip-bg);
-  }
-
   .choice:is(:hover, :focus-visible) > & {
-    opacity: var(--opacity-tooltip);
+    opacity: 1;
   }
 }
 

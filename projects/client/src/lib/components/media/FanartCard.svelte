@@ -190,6 +190,7 @@ const restoreTarget = $derived(target?.type === 'show' ? { ...target, type: 'sho
 
   &.faded:not(:hover, :focus-within) {
     opacity: var(--opacity-faded);
+    --faded-art-filter: var(--filter-faded);
   }
 }
 
@@ -233,6 +234,13 @@ const restoreTarget = $derived(target?.type === 'show' ? { ...target, type: 'sho
   display: block;
 }
 
+/* A faded card's art goes gray (`--faded-art-filter`), after a dropped one's own filter. */
+.image,
+.logo {
+  filter: var(--faded-art-filter, none);
+  transition: filter 0.5s;
+}
+
 .image {
   display: block;
   inline-size: 100%;
@@ -248,7 +256,7 @@ const restoreTarget = $derived(target?.type === 'show' ? { ...target, type: 'sho
   }
 
   .dropped & {
-    filter: var(--filter-dropped);
+    filter: var(--filter-dropped) var(--faded-art-filter,);
   }
 
   .logo-mode & {

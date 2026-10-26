@@ -1261,7 +1261,8 @@
 
   /* Sort and filter controls */
   --color-filter-icon: light-dark(var(--gray-dark), #fff);
-  --opacity-faded: 0.15; /* .grid-item.fade-*-on */
+  --opacity-faded: 0.25; /* .grid-item.fade-*-on, lighter than OG's 0.15 */
+  --filter-faded: grayscale(1); /* a faded item's artwork only, so its icons and tags keep the color that says why */
 
   /* Toasts: cards in the header's dark glass, stacked down from under its right edge. Dark on both themes, like the
      header. A line along the bottom drains with the auto-dismiss timer. */

@@ -187,6 +187,7 @@ const metaTags = (row: EpisodeRow): readonly TagPill[] => [
   transition: opacity var(--transition-card);
   &.faded:not(:hover, :focus-within) {
     opacity: var(--opacity-faded);
+    --faded-art-filter: var(--filter-faded);
   }
   @media (prefers-reduced-motion: reduce) {
     transition: none;

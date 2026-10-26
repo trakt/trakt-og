@@ -221,6 +221,7 @@ const restoreTarget = $derived(target?.type === 'show' ? { ...target, type: 'sho
   transition: opacity var(--transition-card);
   &.faded:not(:hover, :focus-within) {
     opacity: var(--opacity-faded);
+    --faded-art-filter: var(--filter-faded);
   }
   @media (prefers-reduced-motion: reduce) {
     transition: none;
@@ -276,6 +277,12 @@ const restoreTarget = $derived(target?.type === 'show' ? { ...target, type: 'sho
   border-block-end: none;
   background-color: var(--color-card-bg);
 
+  /* A faded card's art goes gray (`--faded-art-filter`), after a dropped one's own filter. */
+  & :is(.image, .logo) {
+    filter: var(--faded-art-filter, none);
+    transition: filter var(--transition-card);
+  }
+
   /* The ratio sits on the image, inside the border, like OG's 100%-wide <img>. */
   & .image {
     display: block;
@@ -297,7 +304,7 @@ const restoreTarget = $derived(target?.type === 'show' ? { ...target, type: 'sho
   }
 
   .dropped & .image {
-    filter: var(--filter-dropped);
+    filter: var(--filter-dropped) var(--faded-art-filter,);
   }
 }
 

@@ -71,6 +71,7 @@ const spoiler = $derived(icons.collectionTarget ?? icons.watchTarget ?? icons.ra
 
   &.faded:not(:hover, :focus-within) {
     opacity: var(--opacity-faded);
+    --faded-art-filter: var(--filter-faded);
   }
 
   /* A hairline between the caption and the bar, which is light like the card in the light theme. */

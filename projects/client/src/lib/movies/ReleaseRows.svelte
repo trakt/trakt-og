@@ -9,6 +9,7 @@
 import TagPills from '$lib/components/labels/TagPills.svelte';
 import CountryFlag from '$lib/components/table/CountryFlag.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
+import { releaseLabel } from './releaseLabel.ts';
 import ReleaseTip from './ReleaseTip.svelte';
 import type { ReleaseDate } from './toMovieReleases.ts';
 
@@ -28,7 +29,6 @@ interface Props {
 
 const { columns, ticks, today, countries }: Props = $props();
 const limited = $derived(countries.some(({ marks }) => marks.some(({ release }) => release.limited)));
-const name = ({ type, limited, dateText }: ReleaseDate) => `${type}${limited ? ' (limited)' : ''}, ${dateText}`;
 </script>
 
 <div class="scroll">
@@ -67,7 +67,7 @@ const name = ({ type, limited, dateText }: ReleaseDate) => `${type}${limited ? '
               <Tooltip toggles>
                 {#snippet trigger(tooltip)}
                   <button type="button" class={['mark', { limited: mark.release.limited }]} style:--at="{mark.at}%"
-                    style:--type="var(--color-release-{mark.column})" aria-label={name(mark.release)} {...tooltip}
+                    style:--type="var(--color-release-{mark.column})" aria-label={releaseLabel(mark.release)} {...tooltip}
                   ></button>
                 {/snippet}
                 <ReleaseTip release={mark.release} />

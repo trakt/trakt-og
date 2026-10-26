@@ -6,6 +6,7 @@
   in OG).
 -->
 <script lang="ts">
+import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import ChartPicker from '$lib/charts/ChartPicker.svelte';
 import TagPills from '$lib/components/labels/TagPills.svelte';
 import QuickIcons from '$lib/components/media/QuickIcons.svelte';
@@ -64,10 +65,13 @@ const runPill = (run: WeekInRelease) => ({
       <ul class="share" aria-label="Each film's share of the weekend">
         {#each data.rows as row, i (row.id)}
           <li style:flex-grow={row.revenue}>
-            <a href="#box-office-{i + 1}" style:background-image={row.poster ? `url('${row.poster}')` : undefined}
-              title="{row.title}: {percent(share(row.revenue))}"
-              aria-label="#{i + 1} {row.title}, {percent(share(row.revenue))}"
-            ><span aria-hidden="true">{share(row.revenue) >= 0.05 ? i + 1 : ''}</span></a>
+            <Tooltip text="{row.title}: {percent(share(row.revenue))}">
+              {#snippet trigger(tooltip)}
+                <a href="#box-office-{i + 1}" style:background-image={row.poster ? `url('${row.poster}')` : undefined}
+                  aria-label="#{i + 1} {row.title}, {percent(share(row.revenue))}" {...tooltip}
+                ><span aria-hidden="true">{share(row.revenue) >= 0.05 ? i + 1 : ''}</span></a>
+              {/snippet}
+            </Tooltip>
           </li>
         {/each}
       </ul>
@@ -94,9 +98,13 @@ const runPill = (run: WeekInRelease) => ({
 
   {#snippet rail()}
     <RailGroup>
-      <a class="rail-total" href="#box-office-1" title="The top 10's weekend gross">
-        <small>Top 10</small><b>{millions(data.total).replace('.0M', 'M')}</b>
-      </a>
+      <Tooltip text="The top 10's weekend gross" placement="right">
+        {#snippet trigger(tooltip)}
+          <a class="rail-total" href="#box-office-1" {...tooltip}>
+            <small>Top 10</small><b>{millions(data.total).replace('.0M', 'M')}</b>
+          </a>
+        {/snippet}
+      </Tooltip>
     </RailGroup>
   {/snippet}
 

@@ -1,5 +1,6 @@
 <!-- Ratings: the average, the spread from 1 to 10 with the most used score in full white, and the latest 10. -->
 <script lang="ts">
+import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import BoxChips from '$lib/components/users/profile-box/BoxChips.svelte';
 import BoxFigure from '$lib/components/users/profile-box/BoxFigure.svelte';
 import ProfileBox from '$lib/components/users/profile-box/ProfileBox.svelte';
@@ -12,7 +13,8 @@ const { view }: { view: RatingsView } = $props();
   <BoxChips chips={[{ text: 'Ratings' }, { text: view.total, alt: true }]} />
   <BoxFigure value={view.average} label={['average', 'out of 10']} />
   <div class="bars" role="img" aria-label={view.chartLabel}>
-    {#each view.bars as bar, i (i)}<i class={{ mode: bar.mode }} style:--height="{bar.height}%" title={bar.title}></i>{/each}
+    {#each view.bars as bar, i (i)}<Tooltip toggles text={bar.title}>{#snippet trigger(tooltip)}<i class={{ mode: bar.mode }}
+            style:--height="{bar.height}%" {...tooltip}></i>{/snippet}</Tooltip>{/each}
   </div>
   <div class="axis" aria-hidden="true">{#each view.bars as _, i (i)}<span>{i + 1}</span>{/each}</div>
   <p class="line">

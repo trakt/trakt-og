@@ -6,6 +6,7 @@
   theme, which covers OG's forced dark knight.
 -->
 <script lang="ts">
+import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import { page } from '$app/state';
 import { untrack } from 'svelte';
 import { goto } from '$app/navigation';
@@ -248,8 +249,13 @@ function save(next: FadeHide) {
     {#if data.cards.length > 0}
       <RailGroup>
         {#each views as view (view.value)}
-          <button type="button" class="rail-view" aria-pressed={display.view === view.value} title="{view.label} view"
-            onclick={() => setDisplay({ view: view.value })}><Icon svg={view.icon} label="{view.label} view" /></button>
+          <Tooltip text="{view.label} view" placement="right">
+            {#snippet trigger(tooltip)}
+              <button type="button" class="rail-view" aria-pressed={display.view === view.value}
+                onclick={() => setDisplay({ view: view.value })} {...tooltip}><Icon svg={view.icon}
+                  label="{view.label} view" /></button>
+            {/snippet}
+          </Tooltip>
         {/each}
       </RailGroup>
     {/if}

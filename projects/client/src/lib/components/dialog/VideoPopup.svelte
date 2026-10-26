@@ -7,6 +7,7 @@
   (`isPlainClick`) on a link `youtubeEmbedUrl` can embed, so a middle or modified click still opens YouTube.
 -->
 <script lang="ts">
+import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import { youtubeEmbedUrl } from './youtubeEmbedUrl.ts';
 
 interface Props {
@@ -37,9 +38,13 @@ const close = (event: MouseEvent & { currentTarget: HTMLButtonElement }) =>
 
 <dialog class="video-popup" aria-label={title} closedby="any" tabindex="-1" onclose={() => (url = undefined)}
   {@attach syncOpen}>
-  <button type="button" class="close" title="Close (Esc)" aria-label="Close" onclick={close}>
-    <span aria-hidden="true">×</span>
-  </button>
+  <Tooltip text="Close (Esc)" placement="bottom">
+    {#snippet trigger(tooltip)}
+      <button type="button" class="close" aria-label="Close" onclick={close} {...tooltip}>
+        <span aria-hidden="true">×</span>
+      </button>
+    {/snippet}
+  </Tooltip>
   {#if embed}
     <!-- YouTube refuses an embed with no referrer (its error 153), and the app sends none off-site: this sends it the
          origin only, never the page. -->

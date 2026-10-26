@@ -5,12 +5,15 @@
     <CoverPill title="Joined September 25, 2010"><Icon svg={calendar} />Joined <b>2010</b></CoverPill>
 -->
 <script lang="ts">
+import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import type { Snippet } from 'svelte';
 
 const { title, tone, children }: { title?: string; tone?: 'private'; children: Snippet } = $props();
 </script>
 
-<span class={['pill', tone]} {title}>{@render children()}</span>
+<Tooltip text={title}>
+  {#snippet trigger(tooltip)}<span class={['pill', tone]} {...tooltip}>{@render children()}</span>{/snippet}
+</Tooltip>
 
 <style>
 .pill {

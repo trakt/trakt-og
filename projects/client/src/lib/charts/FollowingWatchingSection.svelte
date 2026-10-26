@@ -2,11 +2,10 @@
   Trending's People you follow: who the viewer follows is watching this chart's type now. Each row is the member's
   avatar beside a condensed fanart title (the show small over the episode's number and title), the dashboard's red
   progress bar, then who on the left and the time left ticking down on the right. Like the Social Feed, the browser asks the members active in the last
-  24 hours, now and every 2 minutes while the tab is visible. Until the first answer, shimmering rows hold their place.
+  24 hours, now and every 2 minutes while the tab is visible. The section only shows while someone is watching: it
+  appears when a check finds someone and goes again when no one is left.
 -->
 <script lang="ts">
-import EmptyNote from '$lib/components/empty/EmptyNote.svelte';
-import Shimmer from '$lib/components/loading/Shimmer.svelte';
 import { untrack } from 'svelte';
 import { apiQueue } from '$lib/api/apiQueue';
 import { rawApiFetch } from '$lib/api/rawApiFetch';
@@ -46,7 +45,6 @@ function fromApi() {
 const { type, open, datePreferences, watching = fromApi }: Props = $props();
 
 const CLOCK_MS = 30_000;
-const SHIMMER_ROWS = 2;
 let live = $state<readonly LiveWatch[] | null>(null);
 let now = $state(new Date());
 
@@ -67,33 +65,13 @@ $effect(() => {
 });
 
 const tiles = $derived(live && followingWatching(live, type, now));
-const noun = $derived(type === 'shows' ? 'show' : 'movie');
 </script>
 
 <!-- Hrefs point at OG routes og hasn't built yet, and resolve() only takes routes that exist. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
-<SidebarSection id="following" title="People you follow" {open} remember>
-  {#if tiles === null}
-    <ul class="members" aria-busy="true">
-      {#each { length: SHIMMER_ROWS } as _, row (row)}
-        <li aria-hidden="true">
-          <Shimmer inline="var(--following-watching-avatar)" block="var(--following-watching-avatar)" round />
-          <div class="what">
-            <span class="show"><Shimmer inline="var(--following-watching-shimmer-show)" block="var(--font-size-small)" /></span>
-            <span class="title"><Shimmer inline="var(--following-watching-shimmer-title)" block="var(--font-size-base)" /></span>
-            <span class="bar-shimmer"><Shimmer inline="100%" block="var(--progress-under-height)" /></span>
-            <p class="who">
-              <span><Shimmer inline="var(--following-watching-shimmer-name)" block="var(--font-size-small)" /></span>
-              <span><Shimmer inline="var(--following-watching-shimmer-left)" block="var(--font-size-small)" /></span>
-            </p>
-          </div>
-        </li>
-      {/each}
-    </ul>
-  {:else if tiles.length === 0}
-    <EmptyNote>No one you follow is watching a {noun}.</EmptyNote>
-  {:else}
+{#if tiles?.length}
+  <SidebarSection id="following" title="People you follow" {open} remember>
     <ul class="members">
       {#each tiles as { watch, progress, minutesLeft } (watch.member.key)}
         <li>
@@ -116,8 +94,8 @@ const noun = $derived(type === 'shows' ? 'show' : 'movie');
         </li>
       {/each}
     </ul>
-  {/if}
-</SidebarSection>
+  </SidebarSection>
+{/if}
 
 <style>
 .members {
@@ -146,8 +124,7 @@ const noun = $derived(type === 'shows' ? 'show' : 'movie');
   display: grid;
   min-inline-size: 0;
 
-  & :global(.under-progress),
-  & .bar-shimmer {
+  & :global(.under-progress) {
     margin-block: var(--following-watching-bar-gap);
   }
 }
@@ -205,11 +182,6 @@ const noun = $derived(type === 'shows' ? 'show' : 'movie');
     }
   }
 }
-/* A row's bar while the first answer loads, as tall as the loaded one. */
-.bar-shimmer {
-  display: flex;
-}
-
 /* The dashboard tile's countdown: the card subtitle's gray, bold. */
 .left {
   flex: none;

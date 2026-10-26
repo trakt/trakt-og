@@ -3846,10 +3846,6 @@
   --following-watching-avatar: 32px;
   --following-watching-gap: 12px; /* between the members */
   --following-watching-bar-gap: 5px; /* above and below a member's progress bar */
-  --following-watching-shimmer-show: 60%; /* a member's show while the first answer loads */
-  --following-watching-shimmer-title: 85%; /* and the episode */
-  --following-watching-shimmer-name: 70px;
-  --following-watching-shimmer-left: 40px; /* the time left */
 }
 
 /* Calendar sidebar and views: the heat-map mini month, the rail's week bars, today and pinned dates. */

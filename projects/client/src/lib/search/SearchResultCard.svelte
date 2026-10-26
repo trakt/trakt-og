@@ -103,5 +103,6 @@ const poster = $derived(artwork === 'poster');
   line-height: var(--search-overview-line);
   -webkit-box-orient: vertical;
   -webkit-line-clamp: var(--search-overview-card-lines);
+  line-clamp: var(--search-overview-card-lines);
 }
 </style>

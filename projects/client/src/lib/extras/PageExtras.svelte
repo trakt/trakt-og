@@ -7,7 +7,8 @@
   so the switch is the last thing Tab reaches.
 -->
 <script lang="ts">
-import type { Component } from 'svelte';
+import { dev } from '$app/environment';
+import { type Component, untrack } from 'svelte';
 import type { Attachment } from 'svelte/attachments';
 import { type ExtraProps, extras } from './extras.ts';
 import { pageKey } from './pageKey.ts';
@@ -38,6 +39,11 @@ $effect(() => {
     typed = { keys: '', at: 0 };
     pending = '';
   };
+});
+
+// While developing, a page opened with #extra on its address plays its extra, so it can be tried with a click.
+$effect(() => {
+  if (dev && extra && location.hash === '#extra') untrack(play);
 });
 
 async function play() {
@@ -72,7 +78,7 @@ function onkeydown(event: KeyboardEvent) {
     play();
     return;
   }
-  typed = typedSequence(typed, key, event.timeStamp, extra.keys);
+  typed = typedSequence(typed, key, event.timeStamp, extra.keys, extra.gap);
   if (typed.keys !== extra.keys) return;
   typed = { keys: '', at: 0 };
   play();

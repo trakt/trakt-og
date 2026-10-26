@@ -1,7 +1,7 @@
 <!--
   The current Trakt logo mark, from Trakt's branding page: the stroked mark in white on a brand violet rounded square.
-  The about page's Trakt API banner uses it; og's own pages keep the classic red mark (TraktMark). `disc` is the
-  branding page's round version, for beside a name in running text.
+  The about page's Trakt API banner and the mobile splash's Trakt app use it; og's own pages keep the classic red mark
+  (TraktMark). `disc` is the branding page's round version, for beside a name in running text.
 -->
 <script lang="ts">
 const { label, disc = false }: { label?: string; disc?: boolean } = $props();

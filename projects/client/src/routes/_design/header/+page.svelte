@@ -1,7 +1,7 @@
 <script lang="ts">
 import avatar from '$lib/assets/trakt-logo-red.png';
 import mandalorian from '$lib/assets/welcome-mandalorian.jpg';
-import breakingBad from '$lib/assets/mobile-splash-fanart.jpg';
+import breakingBad from '$lib/assets/breaking-bad-fanart.jpg';
 import brooklyn from '$lib/assets/dashboard-welcome.jpg';
 import profileCover from '$lib/assets/profile-cover-default.jpg';
 import { headerArt } from '$lib/components/header/headerArt';

@@ -224,9 +224,9 @@ function showOverlay() {
       <LinkButton href={ogRepoUrls.newBug}>Open a bug report</LinkButton>
     </div>
   </Variant>
-  <Variant label="Violet, the API band">
+  <Variant label="Developer, the API band">
     <div class="ground panel">
-      <LinkButton href={traktUrls.developer} variant="violet">Developer portal</LinkButton>
+      <LinkButton href={traktUrls.developer} variant="developer">Developer portal</LinkButton>
     </div>
   </Variant>
   <Variant label="Outline, the commits">

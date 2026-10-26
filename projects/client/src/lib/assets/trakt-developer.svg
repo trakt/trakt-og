@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1512 1512">
+  <defs>
+    <linearGradient id="blueprint" x2="0" y2="1">
+      <stop stop-color="#14b2e9" />
+      <stop offset="1" stop-color="#0876ed" />
+    </linearGradient>
+    <clipPath id="disc">
+      <circle cx="756" cy="756" r="756" />
+    </clipPath>
+  </defs>
+  <g clip-path="url(#disc)">
+    <path fill="url(#blueprint)" d="M0 0h1512v1512H0z" />
+    <path
+      d="M189 0V1512M0 189H1512 M378 0V1512M0 378H1512 M567 0V1512M0 567H1512 M756 0V1512M0 756H1512 M945 0V1512M0 945H1512 M1134 0V1512M0 1134H1512 M1323 0V1512M0 1323H1512"
+      fill="none" stroke="#fff" stroke-width="3" stroke-opacity=".65" />
+    <g fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="9 9">
+      <circle cx="756" cy="756" r="567" />
+      <circle cx="189" cy="189" r="189" />
+      <circle cx="1323" cy="189" r="189" />
+      <circle cx="189" cy="1323" r="189" />
+      <circle cx="1323" cy="1323" r="189" />
+    </g>
+    <path stroke="#fff" stroke-width="5"
+      d="M166 189h46m-23-23v46M1300 189h46m-23-23v46M166 1323h46m-23-23v46M1300 1323h46m-23-23v46" />
+    <g transform="translate(317.52 317.52) scale(14.3764)" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><path d="M56.00 38.95A27.5 27.5 0 1 1 36.19 3.20" /><path d="M16.93 27.11L35.82 42.96M29.92 34.75L53.89 6.17M56.69 18.31L42.49 35.24M26.88 22.41L23.36 19.45" /></g>
+  </g>
+</svg>

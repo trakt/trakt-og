@@ -5,9 +5,8 @@
   glow.
 -->
 <script lang="ts">
-import TraktLogoMark from '$lib/components/brand/TraktLogoMark.svelte';
+import ProjectLink from '$lib/components/brand/ProjectLink.svelte';
 import TagPills from '$lib/components/labels/TagPills.svelte';
-import traktLogo from '$lib/assets/trakt-logo-red.png';
 import Shimmer from '$lib/components/loading/Shimmer.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import githubMark from '$lib/icons/brands/github.svg?raw';
@@ -18,7 +17,6 @@ import codeFork from '$lib/icons/regular/code-fork.svg?raw';
 import star from '$lib/icons/regular/star.svg?raw';
 import { prefersReducedMotion } from 'svelte/motion';
 import type { AboutGithub } from './github/fetchAboutGithub.ts';
-import { traktUrls } from '$lib/traktUrls';
 import { ogRepoUrls } from './ogRepoUrls.ts';
 import { playScene } from './playScene.ts';
 import type { AboutScene } from './scenes/AboutScene.ts';
@@ -130,11 +128,10 @@ async function copyCommands() {
       </p>
       <h1 id="about-title">OG Redux is <em>open source.</em></h1>
       <p class="lede">
-        <span class="name og"><img class="mark" src={traktLogo} alt="" /><b>OG Redux</b></span> is the next chapter of <b>Trakt OG</b>, the classic site longtime members
-        love, rebuilt for today's big screens. It's a fork of <a class="name web" href={traktUrls.webRepo}
-          target="_blank" rel="noopener"><span class="mark"><TraktLogoMark disc /></span><b>trakt-web</b></a>, the code
-        behind Trakt's v3 web app, and it runs entirely on the <b>public Trakt API</b>. Every line of it is on GitHub,
-        built in the open.
+        <ProjectLink kind="og">OG Redux</ProjectLink> is the next chapter of <b>Trakt OG</b>, the classic site longtime
+        members love, rebuilt for today's big screens. It's a fork of <ProjectLink kind="web">trakt-web</ProjectLink>,
+        the code behind Trakt's v3 web app, and it runs entirely on the <ProjectLink kind="api">Trakt API</ProjectLink>.
+        Every line of it is on <ProjectLink kind="github">GitHub</ProjectLink>, built in the open.
       </p>
       {#if loading}
         <span class="shimmers" aria-label="Loading the repo's numbers">
@@ -262,21 +259,12 @@ h1 {
 .lede {
   max-inline-size: var(--about-lede-width);
   margin: 0 0 var(--about-stats-space);
-  font-size: var(--font-size-large);
-  line-height: var(--line-height-about-lede);
+  font-size: var(--font-size-lede);
+  line-height: var(--line-height-lede);
   color: var(--color-home-soft);
 
-  & :is(b, a) {
-    color: var(--color-home-text);
-  }
-
-  & a {
-    text-decoration: underline;
-    text-underline-offset: var(--about-link-underline);
-
-    &:is(:hover, :focus-visible) {
-      color: var(--brand-primary);
-    }
+  & > b {
+    color: var(--color-lede-link);
   }
 }
 
@@ -284,38 +272,6 @@ h1 {
   display: flex;
   flex-wrap: wrap;
   gap: var(--tag-pill-large-gap);
-}
-
-/* The two projects named in the lede: each bold in its own brand color, after its logo (the header's red one for og). */
-.name {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--about-name-mark-gap);
-  vertical-align: bottom;
-
-  & .mark {
-    display: inline-block;
-    flex: none;
-    inline-size: var(--about-name-mark);
-    block-size: var(--about-name-mark);
-  }
-
-  &.og b {
-    color: var(--brand-primary);
-  }
-
-  &.web b {
-    color: var(--color-about-web-name);
-  }
-}
-
-.lede a.name {
-  text-decoration: none;
-
-  &:is(:hover, :focus-visible) b {
-    text-decoration: underline;
-    text-underline-offset: var(--about-link-underline);
-  }
 }
 
 .terminal {

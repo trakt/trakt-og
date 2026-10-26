@@ -1,12 +1,12 @@
-<!-- The "Built on the Trakt API" banner under the header, with the current Trakt mark as the branding page's violet disc and a link to the developer portal. -->
+<!-- The "Built on the Trakt API" banner under the header, with the developer site's round blueprint mark, its blue, and a link to the developer portal. -->
 <script lang="ts">
-import TraktLogoMark from '$lib/components/brand/TraktLogoMark.svelte';
+import traktDeveloper from '$lib/assets/trakt-developer.svg';
 import LinkButton from '$lib/components/button/LinkButton.svelte';
 import { traktUrls } from '$lib/traktUrls';
 </script>
 
 <section class="api" aria-labelledby="about-api">
-  <span class="mark"><TraktLogoMark disc /></span>
+  <img class="mark" src={traktDeveloper} alt="" />
   <div>
     <h2 id="about-api">Built on the Trakt API</h2>
     <p>
@@ -14,7 +14,7 @@ import { traktUrls } from '$lib/traktUrls';
       conventions and rules. That's also why your history, ratings and lists stay in sync everywhere you use Trakt.
     </p>
   </div>
-  <LinkButton href={traktUrls.developer} variant="violet">Developer portal</LinkButton>
+  <LinkButton href={traktUrls.developer} variant="developer">Developer portal</LinkButton>
 </section>
 
 <style>

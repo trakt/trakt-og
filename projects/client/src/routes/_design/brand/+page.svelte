@@ -1,6 +1,8 @@
 <script lang="ts">
+import ProjectLink from '$lib/components/brand/ProjectLink.svelte';
 import TraktMark from '$lib/components/brand/TraktMark.svelte';
 import Specimen from '$lib/design/Specimen.svelte';
+import Variant from '$lib/design/Variant.svelte';
 
 type Layer = { ink: string; face?: string; shift?: 'left' | 'right' };
 
@@ -73,7 +75,40 @@ const marks: readonly { page: string; props: string; ground: string; layers: rea
   </ul>
 </Specimen>
 
+<Specimen title="Project links"
+  note="The projects named in the home and about heroes' intros, on the heroes' dark ground. Hover a name: it underlines.">
+  <Variant label="Home hero">
+    <p class="lede">
+      A rebuild of classic Trakt for big screens. <b>OG Redux</b> is forked from
+      <ProjectLink kind="web">trakt-web</ProjectLink> and runs on the <ProjectLink kind="api">Trakt API</ProjectLink>.
+    </p>
+  </Variant>
+  <Variant label="About hero">
+    <p class="lede">
+      <ProjectLink kind="og">OG Redux</ProjectLink> is the next chapter of <b>Trakt OG</b>. It's a fork of
+      <ProjectLink kind="web">trakt-web</ProjectLink> and it runs entirely on the
+      <ProjectLink kind="api">Trakt API</ProjectLink>. Every line of it is on <ProjectLink kind="github">GitHub</ProjectLink>.
+    </p>
+  </Variant>
+</Specimen>
+
 <style>
+.lede {
+  color-scheme: dark;
+  max-inline-size: var(--about-lede-width);
+  margin: 0;
+  padding: var(--gutter);
+  border-radius: var(--radius-object);
+  background-color: var(--color-about-hero-bg);
+  font-size: var(--font-size-lede);
+  line-height: var(--line-height-lede);
+  color: var(--color-home-soft);
+
+  & b {
+    color: var(--color-lede-link);
+  }
+}
+
 ul {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));

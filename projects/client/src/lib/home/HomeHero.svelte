@@ -7,6 +7,7 @@
 -->
 <script lang="ts">
 import { resolve } from '$app/paths';
+import ProjectLink from '$lib/components/brand/ProjectLink.svelte';
 import TraktMark from '$lib/components/brand/TraktMark.svelte';
 import { headerArt } from '$lib/components/header/headerArt';
 import { SvelteSet } from 'svelte/reactivity';
@@ -69,7 +70,10 @@ $effect(() => {
         </span>
       </h1>
       <div class="lede">
-        <p>A rebuild of classic Trakt for big screens. Built on the Trakt API, and open source.</p>
+        <p>
+          A rebuild of classic Trakt for big screens. <b>OG Redux</b> is forked from
+          <ProjectLink kind="web">trakt-web</ProjectLink> and runs on the <ProjectLink kind="api">Trakt API</ProjectLink>.
+        </p>
         <div class="actions">
           {#if signedIn}
             <a class="button primary" href={resolve('/dashboard')}>Dashboard</a>
@@ -206,8 +210,13 @@ $effect(() => {
   & p {
     max-inline-size: var(--home-lede-width);
     margin: 0;
-    font-size: var(--font-size-home-lede);
+    font-size: var(--font-size-lede);
+    line-height: var(--line-height-lede);
     color: var(--color-home-soft);
+
+    & > b {
+      color: var(--color-lede-link);
+    }
   }
 }
 
@@ -339,14 +348,10 @@ $effect(() => {
   }
 }
 
-/* Smaller tablets: a smaller lockup and lede, so the Live now box keeps its place on the right. */
+/* Smaller tablets: a smaller lockup, so the Live now box keeps its place on the right. */
 @container (width < 1100px) {
   .name {
     font-size: var(--font-size-home-wordmark-tablet);
-  }
-
-  .lede p {
-    font-size: var(--font-size-home-lede-tablet);
   }
 }
 
@@ -361,13 +366,9 @@ $effect(() => {
     display: none;
   }
 
-  /* With the box gone, the lockup and lede take their full size again. */
+  /* With the box gone, the lockup takes its full size again. */
   .name {
     font-size: var(--font-size-home-wordmark);
-  }
-
-  .lede p {
-    font-size: var(--font-size-home-lede);
   }
 }
 </style>

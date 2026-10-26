@@ -3924,6 +3924,36 @@
   --color-calendar-slot-line: light-dark(rgb(0 0 0 / 0.18), rgb(255 255 255 / 0.16)); /* between air times */
 }
 
+/* Search results: the calendar's cards in the grid and its agenda rows in the list, with a description to tell
+   same-named titles apart. */
+:root {
+  --search-results-padding: var(--calendar-list-padding);
+  --search-card-gap: var(--calendar-card-gap);
+  --search-title-size: var(--calendar-title-size);
+  --search-title-line: var(--calendar-title-line);
+  --search-title-lines: 2; /* long titles wrap once, then end in an ellipsis */
+  --search-poster-pill-padding: 3px 6px; /* a poster card's pills, a step tighter so more share a line */
+  --font-size-search-poster-pill: 11px;
+  --search-year-size: 0.72em; /* Figtree's digits at this size stand as tall as the title's x-height */
+  --search-small-line: var(--calendar-show-line);
+  --search-overview-line: 19px;
+  --font-size-search-row-overview: var(--font-size-base);
+  --search-row-overview-line: 21px;
+  --search-overview-card-lines: 3; /* a card with no art */
+  --search-overview-row-lines: 2;
+  --search-overview-max-width: 75ch; /* a readable line in a wide row */
+  --search-row-padding: 14px 16px;
+  --search-row-title-size: var(--font-size-large);
+  --search-row-title-line: 1.3;
+  --search-row-text-gap: 7px; /* between a row's title, pills and description */
+  --search-row-gap: var(--calendar-agenda-gap);
+  --search-row-poster-width: 72px; /* 108px tall */
+  --search-row-fanart-width: 192px; /* 108px tall */
+  --radius-search-thumb: var(--radius-calendar-thumb);
+  --color-search-result-hover: var(--color-calendar-agenda-hover);
+  --color-search-overview: var(--color-frame-ink-muted);
+}
+
 /* Include and exclude pickers (v3's filters, og's colors): green keeps a value, red leaves it out. */
 :root {
   --color-filter-include: var(--brand-success);

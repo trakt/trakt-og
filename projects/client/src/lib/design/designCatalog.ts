@@ -220,7 +220,7 @@ export const designCatalog: readonly DesignGroup[] = [
       {
         slug: 'search',
         title: 'Search results',
-        summary: 'The real search page on a live search, in each image type a viewer can pick.',
+        summary: 'The real search page on a live search, in each view and artwork the sidebar offers.',
         source: 'search',
       },
       {

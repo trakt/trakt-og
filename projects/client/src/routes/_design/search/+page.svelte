@@ -1,33 +1,41 @@
 <!--
-  The search results in each image type a viewer can pick (poster, thumb, screenshot, fanart, logo or banner), as the
-  demo viewer sees them.
+  The search results in each Display choice a viewer can pick (the grid or the list, with posters, fanart, logos or no
+  art), as the demo viewer sees them.
 -->
 <script lang="ts">
 import { page } from '$app/state';
 import Header from '$lib/components/header/Header.svelte';
 import Specimen from '$lib/design/Specimen.svelte';
 import SearchPage from '$lib/search/SearchPage.svelte';
+import { SEARCH_ARTWORK } from '$lib/search/searchDisplay';
 
 const { data } = $props();
 
-const images = ['poster', 'thumb', 'screenshot', 'fanart', 'logo', 'banner'];
-const imageHref = (image: string) => {
+const choices = [
+  { name: 'view', label: 'View', values: ['grid', 'list'] },
+  { name: 'artwork', label: 'Artwork', values: SEARCH_ARTWORK },
+] as const;
+const choiceHref = (name: string, value: string) => {
   const url = new URL(page.url);
-  url.searchParams.set('image', image);
+  url.searchParams.set(name, value);
   return `${url.pathname}${url.search}`;
 };
-const current = $derived(page.url.searchParams.get('image') ?? 'poster');
 </script>
 
-<!-- The image links only change this page's query, so resolve() has nothing to add. -->
+<!-- The choice links only change this page's query, so resolve() has nothing to add. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 <Specimen title="Search results" bleed
-  note="The real search page on a live search. Pick the image type a viewer chose in their settings, or search for something else.">
-  <nav class="images" aria-label="Image type">
-    {#each images as image (image)}
-      <a href={imageHref(image)} aria-current={image === current ? 'page' : undefined}>{image}</a>
+  note="The real search page on a live search. Pick a view and artwork, as the sidebar's Display does, or search for something else.">
+  <div class="choices">
+    {#each choices as choice (choice.name)}
+      <nav class="images" aria-label={choice.label}>
+        {#each choice.values as value (value)}
+          <a href={choiceHref(choice.name, value)} aria-current={value === data.display[choice.name] ? 'page' : undefined}
+          >{value}</a>
+        {/each}
+      </nav>
     {/each}
-  </nav>
+  </div>
   <div class="site">
     <Header user={data.user} searchType={data.searchType} />
     <SearchPage {data} />
@@ -35,11 +43,16 @@ const current = $derived(page.url.searchParams.get('image') ?? 'poster');
 </Specimen>
 
 <style>
+.choices {
+  display: grid;
+  gap: var(--space-sm-block);
+  padding: var(--design-canvas-padding);
+}
+
 .images {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-sm-inline);
-  padding: var(--design-canvas-padding);
 
   & a {
     padding: var(--space-xs-block) var(--space-base-inline);

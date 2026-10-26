@@ -54,6 +54,7 @@ describe('loadSearch', () => {
     expect(seen.at(0)?.headers.get('authorization')).toBeNull();
     expect(data.query).toBe('breaking');
     expect(data.page).toEqual({ type: 'paginated', current: 2, total: 3 });
+    expect(data.count).toBe(80);
   });
 
   it('should cap public search limits at 50', async () => {
@@ -116,11 +117,10 @@ describe('loadSearch', () => {
     expect(await thrownBy(viewerSearch('viewer'))).toBe(502);
   });
 
-  it('should draw the cards in the viewer search image type, and posters signed out', async () => {
-    const settings = { browsing: { search: { image_type: 'banner' } } };
-    expect((await search('/search?query=breaking', { settings })).imageType).toBe('banner');
-    expect((await search('/search/people?query=aaron', { type: 'people', settings })).imageType).toBe('poster');
-    expect((await search('/search?query=breaking')).imageType).toBe('poster');
+  it("should start the Display on the profile's search image type, and posters signed out", async () => {
+    const settings = { browsing: { search: { image_type: 'logo' } } };
+    expect((await search('/search?query=breaking', { settings })).display).toEqual({ view: 'grid', artwork: 'logo' });
+    expect((await search('/search?query=breaking')).display).toEqual({ view: 'grid', artwork: 'poster' });
   });
 
   it('should take the query from the path', async () => {

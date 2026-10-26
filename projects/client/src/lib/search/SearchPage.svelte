@@ -1,8 +1,9 @@
 <!--
   The search results page in a SidebarFrame, like the charts': the type picker ("Search Results" over the type, its
   menu grouped like the header search) with the fade/hide tool, the count, the under-title, the small-screen search
-  field and the page pager in the sidebar, then the card grid in the viewer's search image type, or list rows on the
-  Lists tab. The frame is dark in every theme, which covers OG's forced dark knight.
+  field, the page pager, the recent searches and the Display choices (grid or list, and the artwork) in the sidebar,
+  then the results as the calendar's cards or agenda rows, or list rows on the Lists tab. The frame is dark in every
+  theme, which covers OG's forced dark knight.
 -->
 <script lang="ts">
 import { page } from '$app/state';
@@ -14,23 +15,36 @@ import SearchField from '$lib/components/filters/SearchField.svelte';
 import { type FadeHide, matchesFadeHide } from '$lib/components/filters/fadeHide';
 import { searchHideHref } from '$lib/search/searchHideHref';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
-import FrameGrid from '$lib/components/frame/FrameGrid.svelte';
-import FanartCard from '$lib/components/media/FanartCard.svelte';
 import ListRow from '$lib/components/media/ListRow.svelte';
 import { mediaQuickIcons } from '$lib/components/media/mediaQuickIcons';
 import NoResults from '$lib/components/empty/NoResults.svelte';
 import { pageHref } from '$lib/components/pagination/pageWindow';
 import PagePager from '$lib/components/sidebar/PagePager.svelte';
+import CountPill from '$lib/components/sidebar/CountPill.svelte';
+import IconSwitch from '$lib/components/sidebar/IconSwitch.svelte';
 import RailGroup from '$lib/components/sidebar/RailGroup.svelte';
 import RailPager from '$lib/components/sidebar/RailPager.svelte';
 import SidebarFrame from '$lib/components/sidebar/SidebarFrame.svelte';
+import SidebarSection from '$lib/components/sidebar/SidebarSection.svelte';
 import SidebarTitle from '$lib/components/sidebar/SidebarTitle.svelte';
 import { viewerRecentSearches } from '$lib/components/header/viewerRecentSearches';
+import Icon from '$lib/icons/Icon.svelte';
+import grid from '$lib/icons/regular/grid-2.svg?raw';
+import list from '$lib/icons/regular/list.svg?raw';
 import { overlay } from '$lib/overlay/overlay';
 import ListEditor from '$lib/components/lists/ListEditor.svelte';
 import { createItemListActions } from '$lib/itemLists/createItemListActions.svelte';
 import { findSearchType } from '$lib/search/findSearchType';
 import RecentSearchesSection from '$lib/search/RecentSearchesSection.svelte';
+import {
+  SEARCH_ARTWORK,
+  SEARCH_DISPLAY_COOKIES,
+  type SearchArtwork,
+  type SearchDisplay,
+  type SearchView,
+} from '$lib/search/searchDisplay';
+import SearchResultCard from '$lib/search/SearchResultCard.svelte';
+import SearchResultRow from '$lib/search/SearchResultRow.svelte';
 import { searchLinks } from '$lib/search/searchLinks';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
 import type { loadSearch } from '$lib/search/loadSearch';
@@ -90,13 +104,29 @@ const nextHref = $derived(
     ? pageHref(page.url, data.page.current + 1)
     : undefined,
 );
-// posters and banners get their own columns, the other image types the fanart ones.
-const gridVariant = $derived(
-  data.imageType === 'poster' || data.imageType === 'banner' ? data.imageType : 'uniform',
-);
-const cardVariant = $derived(
-  data.imageType === 'poster' || data.imageType === 'banner' ? data.imageType : 'fanart',
-);
+/* ---------- display ---------- */
+
+let display = $derived<SearchDisplay>(data.display);
+function setDisplay(patch: Partial<SearchDisplay>) {
+  display = { ...display, ...patch };
+  for (const key of Object.keys(patch) as (keyof SearchDisplay)[]) {
+    document.cookie = `${SEARCH_DISPLAY_COOKIES[key]}=${display[key]}; path=/; samesite=lax; max-age=31536000`;
+  }
+}
+const views: readonly { value: SearchView; label: string; icon: string }[] = [
+  { value: 'grid', label: 'Grid', icon: grid },
+  { value: 'list', label: 'List', icon: list },
+];
+// A person has only a headshot, so the People tab offers it or nothing.
+const people = $derived(data.slug === 'people');
+const artworkLabels = $derived<Record<SearchArtwork, string>>({
+  poster: people ? 'Headshot' : 'Poster',
+  fanart: 'Fanart',
+  logo: 'Logo',
+  none: 'None',
+});
+const artworkChoices = $derived<readonly SearchArtwork[]>(people ? ['poster', 'none'] : SEARCH_ARTWORK);
+const artwork = $derived(artworkChoices.includes(display.artwork) ? display.artwork : 'poster');
 // The Lists tab's row icons, with the owner's edit and delete, as on an item's lists page.
 const listViewer = $derived(page.data.user ? { slug: page.data.user.slug, isVip: page.data.user.isVip } : null);
 const own = createItemListActions({ viewer: () => listViewer, origin: () => page.url.origin });
@@ -153,6 +183,10 @@ function save(next: FadeHide) {
         placeholder="What are you looking for?" bind:value={terms} />
     </form>
 
+    {#if data.count > 0}
+      <div class="counts"><CountPill count={data.count} label="results" one="result" /></div>
+    {/if}
+
     {#if data.page.type === 'paginated' && paged}
       <PagePager current={data.page.current} total={data.page.total} href={(n) => pageHref(page.url, n)} />
     {/if}
@@ -161,6 +195,23 @@ function save(next: FadeHide) {
       <RecentSearchesSection terms={recent.terms} open={data.sidebar.recent} query={data.query} slug={data.slug}
         onremove={(term) => recent?.remove(term)} onclear={clearRecent} />
     {/if}
+
+    {#if data.cards.length > 0}
+      <SidebarSection id="display" title="Display" open={data.sidebar.display} remember>
+        <IconSwitch label="View" value={display.view} options={views} onchange={(view) => setDisplay({ view })} />
+        <Dropdown block section="Artwork">
+          {#snippet trigger()}{artworkLabels[artwork]}{/snippet}
+          <ul>
+            {#each artworkChoices as choice (choice)}
+              <li>
+                <button type="button" aria-current={artwork === choice} onclick={() => setDisplay({ artwork: choice })}
+                >{artworkLabels[choice]}</button>
+              </li>
+            {/each}
+          </ul>
+        </Dropdown>
+      </SidebarSection>
+    {/if}
   {/snippet}
 
   {#snippet rail()}
@@ -168,6 +219,14 @@ function save(next: FadeHide) {
       <RailGroup><RailPager unit="page" label="P{data.page.current}" {prevHref} {nextHref} /></RailGroup>
     {/if}
     {#if data.filters.visible}<RailGroup tools>{@render tools()}</RailGroup>{/if}
+    {#if data.cards.length > 0}
+      <RailGroup>
+        {#each views as view (view.value)}
+          <button type="button" class="rail-view" aria-pressed={display.view === view.value} title="{view.label} view"
+            onclick={() => setDisplay({ view: view.value })}><Icon svg={view.icon} label="{view.label} view" /></button>
+        {/each}
+      </RailGroup>
+    {/if}
   {/snippet}
 
   {#if data.lists.length > 0}
@@ -178,33 +237,31 @@ function save(next: FadeHide) {
       {/each}
     </div>
   {:else if data.cards.length > 0}
-    <FrameGrid variant={gridVariant}>
-      {#each data.cards as card (card.key)}
-        {@const state = card.type === 'person' ? undefined : overlay.state(card.type, card.id, card.season)}
-        {@const icons = state && card.type !== 'person'
-          ? mediaQuickIcons({ item: { ...card, type: card.type }, state, datePreferences: data.datePreferences })
-          : undefined}
-        {#if !state || !icons || !fadeHide.hide.some((id) => matchesFadeHide(id, state, icons.fill))}
-        <FanartCard
-          variant={cardVariant}
-          href={card.href}
-          title={card.title}
-          year={card.year}
-          smallTitle={card.smallTitle}
-          image={card.image}
-          logo={card.logo}
-          logoMode={card.logoMode}
-          tags={card.tags}
-          hideTitle={card.hideTitle}
-          episodeBadge={card.episodeBadge}
-          userRating={state?.rating}
-          dropped={state?.dropped}
-          faded={Boolean(state && icons && fadeHide.fade.some((id) => matchesFadeHide(id, state, icons.fill)))}
-          icons={icons && { ...icons, listLabel: card.type === 'episode' ? 'Add to list' : undefined }}
-        />
-        {/if}
-      {/each}
-    </FrameGrid>
+    <div class="results">
+      <div class={['results-body', display.view, artwork]}>
+        {#each data.cards as card (card.key)}
+          {@const state = card.type === 'person' ? undefined : overlay.state(card.type, card.id, card.season)}
+          {@const icons = state && card.type !== 'person'
+            ? mediaQuickIcons({
+              item: { ...card, type: card.type, title: card.number ? `${card.number} ${card.title}` : card.title },
+              state,
+              datePreferences: data.datePreferences,
+            })
+            : undefined}
+          {#if !state || !icons || !fadeHide.hide.some((id) => matchesFadeHide(id, state, icons.fill))}
+            {@const result = {
+              card,
+              artwork,
+              userRating: state?.rating,
+              dropped: state?.dropped,
+              faded: Boolean(state && icons && fadeHide.fade.some((id) => matchesFadeHide(id, state, icons.fill))),
+              icons: icons && { ...icons, listLabel: card.type === 'episode' ? 'Add to list' : undefined },
+            }}
+            {#if display.view === 'list'}<SearchResultRow {...result} />{:else}<SearchResultCard {...result} />{/if}
+          {/if}
+        {/each}
+      </div>
+    </div>
   {/if}
 
   {#if !hasResults}
@@ -218,6 +275,94 @@ function save(next: FadeHide) {
   onclose={own.closeEditor} />{/if}
 
 <style>
+.counts {
+  display: flex;
+}
+
+/* Measured for the grid's columns. */
+.results {
+  container-type: inline-size;
+}
+
+.results-body.grid {
+  display: grid;
+  grid-template-columns: repeat(var(--columns, 1), minmax(0, 1fr));
+  gap: var(--search-card-gap);
+  padding: var(--search-results-padding);
+}
+
+/* The calendar list's columns by width. */
+@container (width >= 468px) {
+  .results-body.grid {
+    --columns: 2;
+  }
+}
+
+@container (width >= 692px) {
+  .results-body.grid {
+    --columns: 3;
+  }
+}
+
+@container (width >= 1300px) {
+  .results-body.grid {
+    --columns: 4;
+  }
+}
+
+/* Posters, a column more at each width, wide enough for the full poster quick-icon bar. */
+.results-body.grid.poster {
+  --columns: 2;
+}
+
+@container (width >= 468px) {
+  .results-body.grid.poster {
+    --columns: 3;
+  }
+}
+
+@container (width >= 692px) {
+  .results-body.grid.poster {
+    --columns: 4;
+  }
+}
+
+@container (width >= 900px) {
+  .results-body.grid.poster {
+    --columns: 5;
+  }
+}
+
+@container (width >= 1300px) {
+  .results-body.grid.poster {
+    --columns: 6;
+  }
+}
+
+.rail-view {
+  display: grid;
+  place-items: center;
+  inline-size: var(--tool-size);
+  block-size: var(--control-height-small);
+  min-block-size: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: none;
+  color: var(--color-sidebar-pill-text);
+  cursor: pointer;
+
+  &:is(:hover, :focus-visible) {
+    background-color: var(--color-control-hover-bg);
+    color: var(--color-frame-ink);
+  }
+
+  &[aria-pressed='true'] {
+    background-color: var(--color-control-raised-bg);
+    color: var(--color-frame-ink);
+  }
+}
+
 /* The rows sit in from the frame's edges, like a page's sections. */
 .lists {
   padding: 0 var(--gutter) var(--gutter);

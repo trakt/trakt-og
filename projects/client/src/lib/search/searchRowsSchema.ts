@@ -6,14 +6,18 @@ const media = z.object({
   ids,
   title: z.string(),
   year: z.number().nullish(),
+  overview: z.string().nullish(),
+  genres: z.array(z.string()).nullish(),
+  certification: z.string().nullish(),
+  network: z.string().nullish(),
   rating: z.number().nullish(),
   runtime: z.number().nullish(),
   aired_episodes: z.number().nullish(),
   first_aired: z.string().nullish(),
   released: z.string().nullish(),
   airs: z.object({ timezone: z.string().nullish() }).nullish(),
-  // Every kind of art the search image type can pick (toSearchCard.ts).
-  images: z.object({ poster: art, thumb: art, fanart: art, logo: art, banner: art }).nullish(),
+  // Every kind of art the sidebar's Artwork can pick (toSearchCard.ts).
+  images: z.object({ poster: art, fanart: art, logo: art }).nullish(),
 });
 
 // Parse at the loader boundary, including API bodies, before the pure mappers see them.
@@ -27,6 +31,7 @@ export const searchRowsSchema = z.array(
       .object({
         ids,
         title: z.string().nullish(),
+        overview: z.string().nullish(),
         season: z.number(),
         number: z.number(),
         first_aired: z.string().nullish(),

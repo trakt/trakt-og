@@ -214,7 +214,7 @@ const ratingLevel = $derived(rating === undefined ? 1 : Math.min(Math.max(Math.t
     {/if}
     {#if watchNow && watchNowItem && !menuWatchNow}
       {@const item = watchNowItem}
-      {@render action('watch-now', watchNow === 'cinema' ? ticket : play, 'Watch now', 0, 'Watch now', () => openWatchNow(item))}
+      {@render action('watch-now', watchNow === 'cinema' ? ticket : play, 'Where to watch', 0, 'Where to watch', () => openWatchNow(item))}
     {/if}
     </div>
     {#if menuRows.length > 0}
@@ -230,7 +230,7 @@ const ratingLevel = $derived(rating === undefined ? 1 : Math.min(Math.max(Math.t
               {#if watchNowItem}
                 {@const item = watchNowItem}
                 <button type="button" aria-haspopup="dialog" onclick={() => { close(); openWatchNow(item); }}>
-                  <Icon svg={watchNow === 'cinema' ? ticket : play} fixedWidth />Watch now
+                  <Icon svg={watchNow === 'cinema' ? ticket : play} fixedWidth />Where to watch
                 </button>
               {/if}
             {:else}

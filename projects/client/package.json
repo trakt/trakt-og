@@ -44,6 +44,10 @@
     "wrangler": "4.143.0"
   },
   "dependencies": {
+    "@tiptap/core": "3.32.0",
+    "@tiptap/extensions": "3.32.0",
+    "@tiptap/pm": "3.32.0",
+    "@tiptap/starter-kit": "3.32.0",
     "@trakt/api": "npm:@jsr/trakt__api@0.7.14",
     "oidc-client-ts": "3.5.0",
     "zod": "3.25.76"

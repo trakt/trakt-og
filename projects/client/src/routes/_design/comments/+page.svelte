@@ -2,6 +2,7 @@
 import type { ReactionType } from '$lib/components/comments/ReactionType';
 import { page } from '$app/state';
 import CommentCard from '$lib/components/comments/CommentCard.svelte';
+import CommentComposer from '$lib/components/comments/CommentComposer.svelte';
 import CommentTag from '$lib/components/comments/CommentTag.svelte';
 import AddCommentLink from '$lib/components/comments/AddCommentLink.svelte';
 import NewCommentForm from '$lib/components/comments/NewCommentForm.svelte';
@@ -95,6 +96,20 @@ const fanart = 'https://media.trakt.tv/images/shows/000/167/187/fanarts/full/88e
     {:else}
       <p>Sign in to see the form. Signed out, the page has no form and no Add comment button.</p>
     {/if}
+  </Specimen>
+
+  <Specimen title="Comment composer"
+    note="The field shows the comment as it will look. Markdown, at the toolbar's end, swaps in the raw syntax and back; the browser remembers which you used last. The edit form opens on every formatting rule.">
+    <Variant label="New comment">
+      <CommentComposer label="Your comment" placeholder="Add a comment as Sean..." submit="Post"
+        posting="Posting your comment" spoiler={false} save={() => Promise.resolve({ ok: true, comment: null })}
+        onsaved={() => {}} />
+    </Variant>
+    <Variant label="Editing">
+      <CommentComposer text={formatting.comment} label="Your comment" placeholder="Edit your comment..." submit="Save"
+        posting="Saving your comment" minWords={0} oncancel={() => {}}
+        save={() => Promise.resolve({ ok: true, comment: null })} onsaved={() => {}} />
+    </Variant>
   </Specimen>
 
   <Specimen title="Featured review"

@@ -2,7 +2,7 @@
   The comment composer's formatting toolbar: bold, italic, strikethrough and highlight, then spoiler, list, quote and
   code, and the GIF picker when `ongif` is set. Each button says what it does in a tooltip under it. It's one tab
   stop, and the arrow keys, Home and End move along it. A mouse press keeps the focus and the selection in the
-  textarea, so the composer can format what's picked.
+  field, so the composer can format what's picked.
 -->
 <script lang="ts">
 import Icon from '$lib/icons/Icon.svelte';

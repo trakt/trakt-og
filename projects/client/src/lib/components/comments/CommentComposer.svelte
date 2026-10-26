@@ -3,6 +3,8 @@
   formatting toolbar, the word meter, the "Spoilers" switch, Cancel and the submit button under it. With `gifs`, the
   toolbar's GIF button opens the picker, and the picked GIF sits under the field until it posts or is taken off. A GIF
   alone is a comment.
+  The field is the rich editor, which shows the comment as it will look; the toolbar's Markdown button swaps it for the
+  raw comment syntax, and the browser remembers which the member last used.
   It opens focused with the cursor at the end. Cmd/Ctrl+Enter submits, and a failure toasts the API's message and
   refocuses the field. `confirmLeave` asks before leaving the page or cancelling with text that hasn't been posted.
     <CommentComposer label="Your reply" placeholder="Reply to Sean..." submit="Reply" posting="Posting your reply"
@@ -16,6 +18,8 @@ import { toast } from '../toast/toast.svelte.ts';
 import CommentAvatar from './CommentAvatar.svelte';
 import CommentSubmit from './CommentSubmit.svelte';
 import CommentToolbar from './CommentToolbar.svelte';
+import CommentEditor from './editor/CommentEditor.svelte';
+import { editorMode } from './editor/editorMode.ts';
 import { type CommentFormat, formatSelection } from './formatSelection.ts';
 import ComposerGif from './gif/ComposerGif.svelte';
 import type { GifEntry } from './gif/GifEntry.ts';
@@ -94,6 +98,9 @@ let posting = $state(false);
 let gif = $state<GifEntry | null>(null);
 let picking = $state(false);
 let textarea = $state<HTMLTextAreaElement>();
+let editor = $state<ReturnType<typeof CommentEditor>>();
+let form = $state<HTMLFormElement>();
+let mode = $state(editorMode.read());
 const words = $derived(wordCount(text));
 const describedBy = $derived(
   [rulesId ?? '', minWords > 0 && !gif ? `${id}-meter` : ''].filter(Boolean).join(' ') || undefined,
@@ -102,7 +109,13 @@ const describedBy = $derived(
 /** Moves the focus into the field, for "Add comment". */
 export function focus() {
   textarea?.focus({ preventScroll: true });
+  editor?.focus();
 }
+
+const refocus = () => {
+  textarea?.focus();
+  editor?.focus();
+};
 
 const focusAtEnd = (element: HTMLTextAreaElement) => {
   element.focus();
@@ -116,19 +129,25 @@ beforeNavigate((navigation) => {
   if (navigation.willUnload) return navigation.cancel();
   if (confirm(UNSAVED)) return;
   navigation.cancel();
-  textarea?.focus();
+  refocus();
 });
 
 // Text that hasn't been posted is only thrown away once the member says so.
 function cancel() {
   if (confirmLeave && (text.trim() || gif) && !confirm(DISCARD)) {
-    textarea?.focus();
+    refocus();
     return;
   }
   oncancel?.();
 }
 
+function toggleMode() {
+  mode = mode === 'rich' ? 'markdown' : 'rich';
+  editorMode.write(mode);
+}
+
 async function format(kind: CommentFormat) {
+  editor?.format(kind);
   if (!textarea) return;
   const next = formatSelection({ text, start: textarea.selectionStart, end: textarea.selectionEnd }, kind);
   text = next.text;
@@ -148,7 +167,7 @@ async function send(event: SubmitEvent) {
   posting = false;
   if (!result.ok) {
     toast.error(result.message);
-    textarea?.focus();
+    refocus();
     return;
   }
   if (picked) void shareGif({ slug: picked.slug, customerId: klipyCustomerId() });
@@ -156,21 +175,29 @@ async function send(event: SubmitEvent) {
 }
 </script>
 
-<form class={['composer', { small, 'with-avatar': avatar !== undefined }]} onsubmit={send}>
+<form class={['composer', { small, 'with-avatar': avatar !== undefined }]} bind:this={form} onsubmit={send}>
   {#if avatar !== undefined}<span class="avatar"><CommentAvatar src={avatar} {small} /></span>{/if}
   <div class="field">
-    <textarea
-      bind:this={textarea}
-      bind:value={text}
-      rows="1"
-      {placeholder}
-      aria-label={label}
-      aria-describedby={describedBy}
-      onkeydown={submitShortcut}
-      {@attach focusAtEnd}
-    ></textarea>
+    {#if mode === 'rich'}
+      <CommentEditor bind:this={editor} {text} {label} {placeholder} {describedBy} onchange={(next) => (text = next)}
+        onsubmit={() => form?.requestSubmit()} />
+    {:else}
+      <textarea
+        bind:this={textarea}
+        bind:value={text}
+        rows="1"
+        {placeholder}
+        aria-label={label}
+        aria-describedby={describedBy}
+        onkeydown={submitShortcut}
+        {@attach focusAtEnd}
+      ></textarea>
+    {/if}
     {#if gif}<ComposerGif {gif} onremove={() => (gif = null)} />{/if}
-    <div class="toolbar"><CommentToolbar onformat={format} ongif={gifs ? () => (picking = true) : undefined} /></div>
+    <div class="toolbar">
+      <CommentToolbar onformat={format} ongif={gifs ? () => (picking = true) : undefined} />
+      <button type="button" class="mode" aria-pressed={mode === 'markdown'} onclick={toggleMode}>Markdown</button>
+    </div>
     <!-- What the comment is on the left, what to do with it on the right. -->
     <div class="bar">
       <div class="settings">
@@ -248,7 +275,31 @@ textarea {
 }
 
 .toolbar {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--comment-toolbar-gap);
   padding: var(--comment-composer-toolbar-padding);
+}
+
+/* At the toolbar's far end, so the formatting buttons stay where they were. */
+.mode {
+  min-block-size: var(--comment-toolbar-button);
+  padding: var(--comment-composer-mode-padding);
+  border: 0;
+  border-radius: var(--radius-comment-toolbar-button);
+  background: none;
+  color: var(--color-comment-muted);
+  font-family: var(--font-headings);
+  font-size: var(--font-size-comment-composer-mode);
+  font-weight: var(--font-weight-headings-heavy);
+  cursor: pointer;
+  transition: background-color var(--transition-comment-quiet), color var(--transition-comment-quiet);
+
+  &:hover,
+  &[aria-pressed='true'] {
+    background-color: var(--color-comment-chip);
+    color: var(--color-text);
+  }
 }
 
 /* The bottom bar, a shade off the field, under a hairline. */
@@ -302,7 +353,8 @@ textarea {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .field {
+  .field,
+  .mode {
     transition: none;
   }
 }

@@ -1,17 +1,19 @@
 <!--
-  OG is for tablets and computers. Below 768px wide, or on a phone held sideways, this hides the app and shows a splash
-  instead: Trakt's own app and Mobile Web first, then other apps that sync with Trakt. A tablet held upright is asked
-  to turn sideways, and a narrow desktop window to get wider. CSS decides, so the first paint is already right; the server picks the store from the user agent.
+  OG Redux is for tablets and computers. Below 768px wide, or on a phone held sideways, this hides the app and shows a
+  splash instead, over an fsociety mask from Mr. Robot that glitches now and then: Trakt's own app and Mobile Web first,
+  then other apps that sync with Trakt. A tablet held upright is asked to turn sideways, and a narrow desktop window to
+  get wider. CSS decides, so the first paint is already right. The server picks
+  the store from the user agent.
   `preview` forces the splash on for the design-system demo.
 -->
 <script lang="ts">
 import type { Snippet } from 'svelte';
-import logo from '$lib/assets/trakt-wide-red-white.svg';
-import fanart from '$lib/assets/mobile-splash-fanart.jpg';
-import traktMark from '$lib/assets/apps/trakt.svg';
+import fanart from '$lib/assets/mobile-splash-fsociety.jpg';
 import traktTime from '$lib/assets/apps/trakt-time.svg';
 import showly from '$lib/assets/apps/showly.png';
 import rippple from '$lib/assets/apps/rippple.png';
+import TraktLogoMark from '$lib/components/brand/TraktLogoMark.svelte';
+import TraktMark from '$lib/components/brand/TraktMark.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import apple from '$lib/icons/brands/apple.svg?raw';
 import googlePlay from '$lib/icons/brands/google-play.svg?raw';
@@ -34,6 +36,27 @@ const links = $derived(toSplashLinks(platform));
 const storeIcon = $derived(platform === 'ios' ? apple : googlePlay);
 const appIcons = { 'trakt-time': traktTime, showly, rippple };
 const headingId = $props.id();
+const GREETING = 'hello, friend.';
+const TYPE_DELAY_MS = 600;
+const TYPE_STEP_MS = 100;
+let typed = $state(0);
+
+/*
+ * Types the greeting a letter at a time. Timers rather than one CSS animation per letter, which Safari left half typed.
+ * Hidden (OG fits) or with reduced motion, it's all there at once.
+ */
+function typeOut(node: HTMLElement) {
+  if (!node.getClientRects().length || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    typed = GREETING.length;
+    return;
+  }
+
+  let timer = setTimeout(function next() {
+    typed += 1;
+    if (typed < GREETING.length) timer = setTimeout(next, TYPE_STEP_MS);
+  }, TYPE_DELAY_MS);
+  return () => clearTimeout(timer);
+}
 </script>
 
 {#if children}
@@ -50,24 +73,28 @@ const headingId = $props.id();
   aria-labelledby={headingId}
 >
   <div class="hero">
-    <img class="logo" src={logo} alt="Trakt" width="289" height="98" loading="lazy" />
+    <div class="fanart" aria-hidden="true"></div>
     <div class="message">
+      <p class="greeting">
+        <span class="visually-hidden">{GREETING}</span>
+        <span class="typed" aria-hidden="true" {@attach typeOut}>{GREETING.slice(0, typed)}</span>
+      </p>
       <h1 id={headingId}>
-        <span class="phone">OG is made for bigger screens.</span>
+        <span class="phone">{@render ogRedux()} is made for bigger screens.</span>
         <span class="tablet">Turn your tablet sideways.</span>
-        <span class="window">OG needs a wider window.</span>
+        <span class="window">{@render ogRedux()} needs a wider window.</span>
       </h1>
       <p>
         <span class="phone">Open it on a tablet or computer. On your phone, try one of these.</span>
-        <span class="tablet">OG needs a little more width. Rotate and it opens right here.</span>
-        <span class="window">Make it wider and OG opens right here. Or try one of these.</span>
+        <span class="tablet">OG Redux needs a little more width. Rotate and it opens right here.</span>
+        <span class="window">Make it wider and OG Redux opens right here. Or try one of these.</span>
       </p>
     </div>
   </div>
 
   <div class="trakt">
     <p class="brand">
-      <img src={traktMark} alt="" width="40" height="40" loading="lazy" />
+      <span class="trakt-mark"><TraktLogoMark disc /></span>
       <span><strong>Trakt</strong> Same account, made for any screen</span>
     </p>
     <div class="actions">
@@ -93,6 +120,15 @@ const headingId = $props.id();
     </ul>
   </div>
 </section>
+
+<!-- The home page's lockup: the red mark stands in for the O. -->
+{#snippet ogRedux()}
+  <span class="visually-hidden">OG Redux</span>
+  <span class="og-redux" aria-hidden="true">
+    <svg class="mark" viewBox="0 0 98.1 98.1"><TraktMark ink="var(--brand-primary)" /></svg><span class="g">G</span>
+    Redux
+  </span>
+{/snippet}
 
 <style>
 .app {
@@ -210,9 +246,8 @@ const headingId = $props.id();
   flex: 1 0 var(--splash-hero-min);
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-end;
   padding-block: var(--splash-hero-padding-block);
-  background: var(--splash-fanart) var(--splash-fanart-position) / cover no-repeat;
 
   &::before {
     content: '';
@@ -223,10 +258,105 @@ const headingId = $props.id();
   }
 }
 
-.logo {
-  align-self: flex-start;
-  block-size: var(--splash-logo-height);
-  inline-size: auto;
+/*
+ * The fanart, with two tinted copies on top that flash in as red and cyan bands for a moment each cycle, like the
+ * show's title cards. Only their opacity and transform change, so a glitch costs no repaint.
+ */
+.fanart {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  overflow: hidden;
+  background: var(--splash-fanart) var(--splash-fanart-position) / cover no-repeat;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: inherit;
+    background-blend-mode: multiply;
+    mix-blend-mode: screen;
+    opacity: 0;
+    animation: glitch var(--splash-glitch-cycle) steps(1) infinite;
+  }
+
+  &::before {
+    background-color: var(--color-splash-glitch-red);
+    clip-path: var(--splash-glitch-bands-red);
+  }
+
+  &::after {
+    background-color: var(--color-splash-glitch-cyan);
+    clip-path: var(--splash-glitch-bands-cyan);
+    animation-delay: var(--splash-glitch-lag);
+  }
+}
+
+@keyframes glitch {
+  0%,
+  88%,
+  93% {
+    opacity: 0;
+    transform: none;
+  }
+
+  89% {
+    opacity: var(--splash-glitch-opacity);
+    transform: translate(calc(-1 * var(--splash-glitch-shift)), 0);
+  }
+
+  90% {
+    opacity: var(--splash-glitch-opacity);
+    transform: translate(var(--splash-glitch-shift), var(--splash-glitch-drop));
+  }
+
+  91% {
+    opacity: var(--splash-glitch-opacity);
+    transform: translate(calc(-0.5 * var(--splash-glitch-shift)), calc(-1 * var(--splash-glitch-drop)));
+  }
+
+  92% {
+    opacity: var(--splash-glitch-fade);
+    transform: translate(calc(0.3 * var(--splash-glitch-shift)), calc(2 * var(--splash-glitch-drop)));
+  }
+}
+
+/* "hello, friend." types itself once (typeOut), then the cursor keeps blinking. */
+.greeting {
+  margin: 0;
+  color: var(--color-splash-lede);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-splash-greeting);
+}
+
+.typed {
+  white-space: pre;
+
+  &::after {
+    content: '';
+    display: inline-block;
+    inline-size: var(--splash-cursor-width);
+    block-size: var(--splash-cursor-height);
+    vertical-align: var(--splash-cursor-baseline);
+    background: var(--brand-primary);
+    animation: blink var(--splash-cursor-blink) steps(1) infinite;
+  }
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fanart::before,
+  .fanart::after,
+  .typed::after,
+  .og-redux {
+    animation: none;
+  }
 }
 
 .message {
@@ -247,7 +377,41 @@ h1 {
   text-wrap: balance;
 }
 
-.message p {
+/* The home page's lockup at headline size, jolted along with the glitch. */
+.og-redux {
+  display: inline-block;
+  white-space: nowrap;
+  animation: glitch-lockup var(--splash-glitch-cycle) steps(1) infinite;
+}
+
+.mark {
+  inline-size: var(--home-mark-size);
+  block-size: var(--home-mark-size);
+  margin-inline-end: var(--home-mark-gap);
+  vertical-align: var(--splash-og-mark-baseline);
+}
+
+.g {
+  color: var(--brand-primary);
+}
+
+@keyframes glitch-lockup {
+  0%,
+  88%,
+  92% {
+    transform: none;
+  }
+
+  89% {
+    transform: translateX(calc(-0.5 * var(--splash-glitch-shift)));
+  }
+
+  90% {
+    transform: translateX(calc(0.3 * var(--splash-glitch-shift)));
+  }
+}
+
+.message p:not(.greeting) {
   max-inline-size: var(--splash-lede-measure);
   margin: 0;
   color: var(--color-splash-lede);
@@ -272,11 +436,6 @@ h1 {
   color: var(--color-splash-muted);
   font-size: var(--font-size-small);
 
-  img {
-    inline-size: var(--splash-mark-size);
-    block-size: var(--splash-mark-size);
-  }
-
   strong {
     display: block;
     color: var(--color-splash-text);
@@ -284,6 +443,12 @@ h1 {
     font-size: var(--font-size-splash-brand);
     font-weight: var(--font-weight-headings);
   }
+}
+
+.trakt-mark {
+  flex-shrink: 0;
+  inline-size: var(--splash-mark-size);
+  block-size: var(--splash-mark-size);
 }
 
 .actions {
@@ -312,10 +477,10 @@ h1 {
   }
 }
 
-/* OG's primary red one step darker, so the white label reads at this size. */
+/* Trakt's violet, like the Trakt app it opens. */
 .store {
-  border-color: var(--color-btn-primary-border);
-  background: var(--brand-primary-darken);
+  border-color: var(--brand-violet);
+  background: var(--brand-violet);
 }
 
 .apps {

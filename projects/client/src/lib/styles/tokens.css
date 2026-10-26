@@ -3045,7 +3045,7 @@
   --poster-label-padding: 3px 5px;
   --font-size-poster-label: 11px;
 
-  /* Mobile splash: shown in place of OG on touch screens too small for it. Dark in both themes, over fanart. */
+  /* Mobile splash: shown in place of OG on touch screens too small for it. Dark in both themes, over fsociety fanart. */
   --color-splash-bg: #000;
   --color-splash-text: #fff;
   --color-splash-lede: #ddd; /* the line under the title, on the fanart */
@@ -3063,12 +3063,55 @@
     rgb(0 0 0 / 0.55) 70%,
     #000 100%
   );
-  --splash-fanart-position: 60% top; /* keeps the faces in frame from phone to tablet */
+  --splash-fanart-position: 55% 20%; /* keeps the mask in frame from phone to tablet */
+  /* The glitch: tinted bands of the fanart jump sideways for a third of a second each cycle */
+  --splash-glitch-cycle: 7s;
+  --splash-glitch-shift: 6px;
+  --splash-glitch-drop: 4px;
+  --splash-glitch-opacity: 0.9;
+  --splash-glitch-fade: 0.6;
+  --splash-glitch-lag: 0.04s; /* the cyan copy trails the red */
+  --color-splash-glitch-red: #f00;
+  --color-splash-glitch-cyan: #0ff;
+  --splash-glitch-bands-red: polygon(
+    0 18%,
+    100% 18%,
+    100% 26%,
+    0 26%,
+    0 47%,
+    100% 47%,
+    100% 52%,
+    0 52%,
+    0 71%,
+    100% 71%,
+    100% 74%,
+    0 74%
+  );
+  --splash-glitch-bands-cyan: polygon(
+    0 9%,
+    100% 9%,
+    100% 13%,
+    0 13%,
+    0 36%,
+    100% 36%,
+    100% 44%,
+    0 44%,
+    0 62%,
+    100% 62%,
+    100% 65%,
+    0 65%
+  );
+  /* "hello, friend.", typed above the title */
+  --font-size-splash-greeting: 13px;
+  --splash-cursor-width: 0.6em;
+  --splash-cursor-height: 1.1em;
+  --splash-cursor-baseline: -0.2em;
+  --splash-cursor-blink: 1.1s;
+  --splash-og-mark-baseline: -0.04em; /* the mark's O overshoots the baseline like a drawn one */
   --splash-gutter: 16px;
   --splash-content-width: 560px; /* the column on a tablet held upright */
   --splash-hero-min: 260px;
   --splash-hero-padding-block: 12px 22px;
-  --splash-logo-height: 28px;
   --splash-message-gap: 10px;
   --font-size-splash-title: 32px;
   --font-size-splash-lede: 16px;
@@ -3495,7 +3538,7 @@
   --color-about-scene-cyan: #6ff3ff;
   --color-about-scene-ink: #0b0b0b;
 
-  /* The Trakt API banner, with the new Trakt mark in brand violet. */
+  /* Trakt's brand violet: the new Trakt mark, the API banner and the mobile splash's Trakt app. */
   --brand-violet: oklch(49% 0.217 289);
   --brand-violet-darken: oklch(43% 0.217 289); /* the violet button's hover */
   --color-about-web-name: light-dark(oklch(49% 0.217 289), oklch(68% 0.17 289)); /* trakt-web's name, lifted on dark */

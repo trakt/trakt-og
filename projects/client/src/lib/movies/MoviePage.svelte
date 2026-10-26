@@ -217,4 +217,4 @@ const textLinks = $derived(movie.links.filter(({ icon }) => !icon));
   loadPeople={(card) => lazy().relatedPeople(card)} datePreferences={data.datePreferences} />
 {/key}
 
-<PageExtras type="movie" id={movie.id} />
+<PageExtras type="movie" id={movie.id} viewer={data.user?.slug} />

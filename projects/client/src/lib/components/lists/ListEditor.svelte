@@ -108,6 +108,7 @@ async function save(draft: ListDraft) {
 {#if loaded}
   <NewListDialog bind:open initial={loaded.initial} editing={savedId !== undefined} following={loaded.candidates}
   {posters} {count} shareLink={loaded.shareLink} vip={page.data.user?.isVip} {max} {busy} {error} fieldErrors={fields}
+  collaboratorsUnavailable={loaded.collaboratorsUnavailable}
   onsave={save}
   onclose={close} />
 {:else}

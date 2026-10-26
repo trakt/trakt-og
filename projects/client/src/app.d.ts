@@ -8,7 +8,13 @@ declare global {
   const TRAKT_CLIENT_ID: string;
 
   namespace App {
-    // interface Error {}
+    interface Error {
+      message: string;
+      /** The client ID may not call this route: see `lib/api/apiUnavailable.ts`. */
+      unavailable?: boolean;
+      /** The API answered with a 429: see `lib/api/apiRateLimited.ts`. */
+      rateLimited?: boolean;
+    }
     interface Locals {
       /** The access token from the httpOnly auth cookie, set by hooks.server.ts. Null once it has expired. */
       token: string | null;

@@ -78,6 +78,7 @@ describe('root layout settings', () => {
     expect(await layout(null)).toEqual({
       hasSession: false,
       tokenExpired: false,
+      rateLimited: false,
       user: null,
       settings: null,
       datePreferences: { order: 'mdy', hour24: false, timeZone: 'UTC', weekStartDay: 0 },

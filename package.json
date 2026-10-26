@@ -8,6 +8,7 @@
   "scripts": {
     "install:frozen": "bun install --frozen-lockfile",
     "test": "cd projects/client && bun run test",
+    "client:setup": "cd projects/client && bun run setup",
     "client:dev": "cd projects/client && bun run dev",
     "client:ci": "cd projects/client && bun run ci",
     "client:check": "cd projects/client && bun run check",

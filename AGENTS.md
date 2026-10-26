@@ -7,6 +7,7 @@ The app lives in `projects/client/`. Shared code and design rules live in `.agen
 
 Run these from the repository root:
 - `bun run install:frozen`: install pinned dependencies from the lockfile.
+- `bun run client:setup <client id>`: write the local settings for a Standard Trakt app.
 - `bun run client:dev`: start the dev server.
 - `bun run client:ci`: formatting, lint, types, tests and production build.
 - `bun run client:check`: type checks.

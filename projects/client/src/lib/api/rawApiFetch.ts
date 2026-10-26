@@ -1,4 +1,5 @@
 import type { ApiParams } from './api.ts';
+import { apiAccessFetch } from './apiAccessFetch.ts';
 import { apiEnvironment } from './apiEnvironment.ts';
 import { authorizedFetch } from './authorizedFetch.ts';
 
@@ -20,5 +21,5 @@ export function rawApiFetch({
   headers.set('trakt-api-key', TRAKT_CLIENT_ID);
   headers.set('trakt-api-version', '2');
 
-  return authorizedFetch(fetch, token)(`${environment}${path}`, { ...init, headers });
+  return authorizedFetch(apiAccessFetch({ fetch, environment }), token)(`${environment}${path}`, { ...init, headers });
 }

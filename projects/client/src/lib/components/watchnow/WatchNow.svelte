@@ -1,9 +1,12 @@
 <!--
   Where to watch, under a summary's sidebar poster : two service tiles, favorites
   first, over a "Where to Watch / 6 services" button that opens the where-to-watch modal. `phone` is the action-stack
-  version OG showed under 768px instead: the button with the tiles on its right.
+  version OG showed under 768px instead: the button with the tiles on its right. A client ID that may not call
+  watch-now routes gets no block, and a note in the browser console.
 -->
 <script lang="ts">
+import { isStandardApi } from '$lib/api/isStandardApi';
+import { logHidden } from '$lib/api/logHidden';
 import Icon from '$lib/icons/Icon.svelte';
 import play from '$lib/icons/solid/play.svg?raw';
 import ticket from '$lib/icons/solid/ticket.svg?raw';
@@ -24,6 +27,11 @@ interface Props {
 const { button, title, year, fanart, phone = false }: Props = $props();
 let open = $state(false);
 
+// A Standard app already heard it from the root layout.
+$effect(() => {
+  if (button.unavailable && !isStandardApi()) logHidden('Where to Watch');
+});
+
 const services = $derived(button.count - button.favorites);
 const noun = $derived(button.cinemaOnly ? 'cinema' : phone ? 'streaming service' : 'service');
 const under = $derived(
@@ -36,7 +44,7 @@ const under = $derived(
 );
 </script>
 
-{#if !button.hidden}
+{#if !button.hidden && !button.unavailable}
   <div class={['watch-now', { phone }]}>
     {#if button.tiles.length > 0}
       <div class="tiles">

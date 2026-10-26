@@ -41,7 +41,7 @@ const COMMANDS = [
   `git clone ${ogRepoUrls.clone}`,
   'cd trakt-og',
   'bun run install:frozen',
-  'echo "TRAKT_CLIENT_ID=[your api key]" \\\n  > projects/client/.env.development',
+  'bun run client:setup [your client id]',
   'bun run client:dev',
 ];
 

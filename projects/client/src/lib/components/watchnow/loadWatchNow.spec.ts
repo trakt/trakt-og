@@ -34,6 +34,27 @@ describe('loadWatchNow', () => {
     expect(button.tiles.map(({ name }) => name)).toEqual(['Netflix']);
   });
 
+  it('should mark the block unavailable, without the S1E1 retry, when the client ID may not call watch-now', async () => {
+    const paths: string[] = [];
+    const refused = ((url: string) => {
+      paths.push(new URL(url).pathname);
+      return Promise.resolve(new Response('Forbidden', { status: 403 }));
+    }) as typeof globalThis.fetch;
+
+    const { rank, button } = await loadWatchNow({
+      fetch: refused,
+      path: '/shows/x',
+      fallback: '/shows/x/seasons/1/episodes/1',
+      country: 'us',
+      settings: null,
+      isVip: false,
+    });
+
+    expect(rank).toBeNull();
+    expect(button).toMatchObject({ path: '/shows/x', count: 0, unavailable: true });
+    expect(paths.filter((path) => path.includes('/episodes/'))).toEqual([]);
+  });
+
   it('should show no offers when the responses are malformed', async () => {
     const malformed = ((url: string) => {
       const { pathname } = new URL(url);
@@ -53,6 +74,13 @@ describe('loadWatchNow', () => {
       isVip: false,
     });
     expect(rank).toBeNull();
-    expect(button).toMatchObject({ path: '/movies/x', count: 0, tiles: [], cinemaOnly: false, hidden: false });
+    expect(button).toMatchObject({
+      path: '/movies/x',
+      count: 0,
+      tiles: [],
+      cinemaOnly: false,
+      hidden: false,
+      unavailable: false,
+    });
   });
 });

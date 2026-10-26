@@ -1,4 +1,5 @@
 import { z } from 'zod/v4';
+import { isApiUnavailable } from '../api/isApiUnavailable.ts';
 import { rawApiFetch } from '../api/rawApiFetch.ts';
 import { noteRowsSchema } from '../users/notes/noteRowsSchema.ts';
 import type { NotableItem } from './NotableItem.ts';
@@ -30,8 +31,27 @@ async function personNote(fetch: typeof globalThis.fetch, token: string, id: num
   return note ? { id: note.id, text: note.notes ?? '', updatedAt: note.updated_at } : null;
 }
 
-async function mediaNote(fetch: typeof globalThis.fetch, token: string, { type, slug }: LoadPrivateNoteParams['item']) {
-  const response = await rawApiFetch({ fetch, token, path: `/v3/users/me/notes/${type}/${encodeURIComponent(slug)}` });
+/** v2 lists every note of a type, so this finds the one on the item itself, not on a play, rating or favorite. */
+async function listedMediaNote(
+  fetch: typeof globalThis.fetch,
+  token: string,
+  { type, id }: LoadPrivateNoteParams['item'],
+) {
+  const response = await rawApiFetch({ fetch, token, path: `/users/me/notes/${type}s?limit=all` });
+  const note = noteRowsSchema
+    .safeParse(await json(response))
+    .data?.find((row) => row.attached_to.type === type && row[type]?.ids.trakt === id)?.note;
+  return note ? { id: note.id, text: note.notes ?? '', updatedAt: note.updated_at } : null;
+}
+
+async function mediaNote(fetch: typeof globalThis.fetch, token: string, item: LoadPrivateNoteParams['item']) {
+  const response = await rawApiFetch({
+    fetch,
+    token,
+    path: `/v3/users/me/notes/${item.type}/${encodeURIComponent(item.slug)}`,
+  });
+  // v3 is Official-only. Other client IDs read v2's listing instead.
+  if (isApiUnavailable(response)) return listedMediaNote(fetch, token, item);
   const note = v3NotesSchema.safeParse(await json(response)).data?.find((row) => row.type === 'note');
   return note ? { id: note.id, text: note.notes ?? '', updatedAt: note.updated_at ?? null } : null;
 }

@@ -1,4 +1,5 @@
 <script lang="ts">
+import { isStandardApi } from '$lib/api/isStandardApi';
 import { page } from '$app/state';
 import { tick } from 'svelte';
 import { rawApiFetch } from '$lib/api/rawApiFetch';
@@ -408,7 +409,7 @@ async function save(draft: Parameters<typeof createList>[0]['draft'] & { collabo
 {/snippet}
 {#if loadingMounted}<LoadingOverlay visible={loadingNew} />{/if}
 {#if newList}<NewListDialog title="Add to new list" bind:open={newList} {busy} error={createError} {max}
-  vip={page.data.user?.isVip} {following} {followingError}
+  vip={page.data.user?.isVip} {following} {followingError} collaboratorsUnavailable={isStandardApi()}
   onclose={async () => { await tick(); triggerButton?.focus({ preventScroll: true }); }}
   onsave={save} />{/if}
 <style>

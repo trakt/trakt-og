@@ -66,6 +66,13 @@ describe('loadListEditor', () => {
     );
     expect((await loadListEditor({ fetch, id: 12 })).shareLink).toBeUndefined();
   });
+  it('should edit without collaborators when the client ID may not call their route', async () => {
+    fixture();
+    server.use(http.get(`${base}/lists/12/collaborators`, () => new HttpResponse('Forbidden', { status: 403 })));
+    const result = await loadListEditor({ fetch, id: 12 });
+    expect(result.collaboratorsUnavailable).toBe(true);
+    expect(result.initial?.collaborators).toEqual([]);
+  });
   it('should reject a failed collaborator read rather than silently clearing collaborators', async () => {
     fixture();
     server.use(http.get(`${base}/lists/12/collaborators`, () => new HttpResponse(null, { status: 503 })));

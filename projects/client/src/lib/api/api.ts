@@ -1,4 +1,5 @@
 import { traktApi } from '@trakt/api';
+import { apiAccessFetch } from './apiAccessFetch.ts';
 import { type ApiEnvironment, apiEnvironment } from './apiEnvironment.ts';
 import { authorizedFetch } from './authorizedFetch.ts';
 import { plainTextErrorFetch } from './plainTextErrorFetch.ts';
@@ -43,7 +44,7 @@ export function api({ fetch = globalThis.fetch, token, environment = apiEnvironm
     traktApi({
       apiKey: TRAKT_CLIENT_ID,
       environment,
-      fetch: plainTextErrorFetch(authorizedFetch(fetch, token)),
+      fetch: plainTextErrorFetch(authorizedFetch(apiAccessFetch({ fetch, environment }), token)),
     }),
   );
 }

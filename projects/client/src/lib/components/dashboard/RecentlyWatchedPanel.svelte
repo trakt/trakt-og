@@ -139,17 +139,16 @@ function changeRows(rows: number) {
 />
   {/snippet}
   {@render panel(false, cards, items.length > 0 ? navigator : undefined)}
-{:catch}
+{:catch error}
+  {#snippet failed()}
+    <div class="notice">
+      <LoadFailed what="Recently Watched" {error} />
+    </div>
+  {/snippet}
   {@render panel(false, failed)}
 {/await}
 
 {#snippet pending()}<CardShimmerRow columns={PER_ROW} phoneColumns={1} ratio="fanart" />{/snippet}
-
-{#snippet failed()}
-  <div class="notice">
-  <LoadFailed what="Recently Watched" />
-</div>
-{/snippet}
 
 <style>
 /* OG's `h2.section` kept 28px under it, and its `.row.fanarts` 30px after the cards' own 20px. */

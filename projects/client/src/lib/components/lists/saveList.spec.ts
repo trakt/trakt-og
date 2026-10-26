@@ -49,6 +49,26 @@ describe('saveList', () => {
     expect(result.list.ids.trakt).toBe(12);
     expect(result.collaboratorError).toContain('Your list was saved');
   });
+  describe('when the client ID may not call the collaborator routes', () => {
+    const refused = () =>
+      vi
+        .fn()
+        .mockResolvedValueOnce(Response.json(list))
+        .mockResolvedValue(new Response('Forbidden', { status: 403 }));
+
+    it('should save without collaborators and no error when none were picked', async () => {
+      const request = refused();
+      const result = await saveList({ draft: { ...draft, collaborators: [] }, id: 12, request });
+      expect(result.collaboratorError).toBe('');
+      expect(request).toHaveBeenCalledTimes(2);
+    });
+
+    it('should say collaborators are unavailable when some were picked', async () => {
+      const result = await saveList({ draft, id: 12, request: refused() });
+      expect(result.list.ids.trakt).toBe(12);
+      expect(result.collaboratorError).toBe("Collaborators aren't available with this API key. Your list was saved.");
+    });
+  });
   it('should preserve list-limit and field-validation failures', async () => {
     await expect(
       saveList({

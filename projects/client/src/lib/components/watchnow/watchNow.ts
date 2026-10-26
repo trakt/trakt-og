@@ -37,6 +37,8 @@ export type WatchNowButton = {
   country: string;
   /** Their favorite services as API stores them (`us-netflix`), for the modal's "Your Favorites". */
   favoriteKeys: readonly string[];
+  /** The client ID may not call watch-now routes: the block says so in place of the button. */
+  unavailable?: boolean;
 };
 
 /** What an offer costs under its tile: Rent and Buy amounts, or a short note ("Included", "with subscription"). */

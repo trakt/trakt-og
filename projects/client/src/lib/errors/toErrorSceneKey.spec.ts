@@ -5,6 +5,7 @@ describe('errors: toErrorSceneKey', () => {
   it.each([
     [400, 'badLink'],
     [404, 'notFound'],
+    [429, 'upstream'],
     [500, 'broken'],
     [502, 'upstream'],
     [503, 'maintenance'],

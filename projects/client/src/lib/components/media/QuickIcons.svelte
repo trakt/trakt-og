@@ -3,6 +3,7 @@
   the Trakt rating on the right. Watch, rating and favorites use shared browser controls.
 -->
 <script lang="ts">
+import { isStandardApi } from '$lib/api/isStandardApi';
 import { openWatchNow } from '$lib/components/watchnow/watchNowLauncher.svelte';
 import { watchNowPath } from '$lib/components/watchnow/watchNowPath';
 import MediaSpoiler from '$lib/components/summary/MediaSpoiler.svelte';
@@ -128,6 +129,8 @@ const menuWatchNow = $derived(more.some((row) => row.kind === 'watch-now'));
 const promptRows = $derived(more.filter((row) => row.kind !== 'watch-now'));
 const menuRows = $derived(more.filter((row) => row.kind !== 'watch-now' || watchNowItem));
 const watchNowItem = $derived.by(() => {
+  // A Standard app may not call watch-now routes.
+  if (isStandardApi()) return undefined;
   for (const candidate of [watchNowTarget, watchTarget, collectionTarget, ratingTarget, listTarget, hideTarget]) {
     const path = candidate && watchNowPath(candidate);
     if (candidate && path) return { path, title: candidate.title, fanart: watchNowArt };

@@ -63,10 +63,12 @@ type Props = {
   onneed?: (id: number) => void;
   /** Your progress didn't load: Try again reads it again. */
   onretry?: () => unknown;
+  /** Why the read failed, when `onretry` is set. */
+  error?: unknown;
   now?: Date;
 };
 
-const { data, items, listed, loading = new Set(), onneed, onretry, now = new Date() }: Props = $props();
+const { data, items, listed, loading = new Set(), onneed, onretry, error, now = new Date() }: Props = $props();
 
 // OG's `per(50)`, 48 in grid view (eight rows of six).
 const PER_PAGE = 50;
@@ -272,7 +274,7 @@ function clearFilters() {
         {#each Array.from({ length: SHIMMER_ROWS }, (_, i) => i) as slot (slot)}<ProgressRowShimmer />{/each}
       {/if}
     {:else if onretry}
-      <div class="empty"><LoadFailed what="Progress" {onretry} /></div>
+      <div class="empty"><LoadFailed what="Progress" {onretry} {error} /></div>
     {:else if items && items.length > 0}
       <EmptyState action={{ onclick: clearFilters, text: 'Clear filters' }} />
     {:else}

@@ -1,4 +1,6 @@
 import { z } from 'zod/v4';
+import { apiUnavailable } from '../api/apiUnavailable.ts';
+import { isApiUnavailable } from '../api/isApiUnavailable.ts';
 import { rawApiFetch } from '../api/rawApiFetch.ts';
 import type { DatePreferences } from '../settings/DatePreferences.ts';
 import { socialActivitySchema } from './socialActivitySchema.ts';
@@ -43,6 +45,7 @@ async function fetchPage(get: SocialGet, window: SocialWindow, page: number, dat
     extended: 'full,images',
   });
   const response = await get(`/v3/users/me/following/activities?${search}`);
+  if (isApiUnavailable(response)) apiUnavailable();
   if (response.status !== 200) throw new Error(`The Social Feed failed with ${response.status}`);
 
   const rows = rowsSchema.safeParse(await response.json().catch(() => null));

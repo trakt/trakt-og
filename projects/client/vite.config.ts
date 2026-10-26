@@ -10,6 +10,10 @@ export default defineConfig(({ mode }) => ({
     // Inlined at build time, like trakt-web. Dev reads `.env.development`, builds and deploys read `.env.production`.
     TRAKT_CLIENT_ID: JSON.stringify(loadEnv(mode, process.cwd(), 'TRAKT_').TRAKT_CLIENT_ID ?? ''),
   },
+  optimizeDeps: {
+    // Found late, Vite reloads the page mid sign-in and its API reads go out again.
+    include: ['@trakt/api'],
+  },
   plugins: [
     {
       name: 'zod-openapi-shim',

@@ -5,6 +5,7 @@
   labelled glass actions: Add to Watchlist, Watch Now and Why this?, with the Trakt rating at the end.
 -->
 <script lang="ts">
+import { isStandardApi } from '$lib/api/isStandardApi';
 import { page } from '$app/state';
 import TagPills from '$lib/components/labels/TagPills.svelte';
 import { mediaTags } from '$lib/components/labels/mediaTags';
@@ -74,6 +75,10 @@ async function openWatchNow() {
       settings,
       isVip,
     });
+    if (button.unavailable) {
+      toast.error("Where to Watch isn't available with this API key.");
+      return;
+    }
     if (button.count === 0 || button.hidden) {
       toast.error(`${item.title} isn't streaming anywhere in your country yet.`);
       return;
@@ -127,7 +132,7 @@ async function openWatchNow() {
     {#if item.overview}<p class="overview">{item.overview}</p>{/if}
     <div class="actions">
       <WatchlistButton {target} />
-      {#if item.released}
+      {#if item.released && !isStandardApi()}
         <GlassAction icon={play} aria-haspopup="dialog" busy={loadingWatchNow ? 'Loading where to watch' : undefined}
           onclick={openWatchNow}>Watch now</GlassAction>
       {/if}

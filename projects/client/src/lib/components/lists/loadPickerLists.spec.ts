@@ -91,6 +91,24 @@ describe('loadPickerLists', () => {
       expect(result.lists.find(({ id }) => id === 12)?.selected).toBe(true);
     },
   );
+  it('should read a season’s lists from v2 when the client ID may not call v3', async () => {
+    fixture();
+    server.use(
+      http.get('https://apiz.trakt.tv/v3/seasons/:id/me/lists', () => new HttpResponse('Forbidden', { status: 403 })),
+      http.get('https://apiz.trakt.tv/seasons/9/listed', () =>
+        HttpResponse.json([
+          { type: 'personal', ids: { trakt: 6 } },
+          { type: 'watchlist', ids: { trakt: null } },
+        ]),
+      ),
+    );
+
+    const result = await loadPickerLists({ fetch, target: { type: 'season', id: 9, title: 'Season 1' } });
+
+    expect(result.lists.filter((row) => row.selected).map((row) => row.id)).toEqual([6]);
+    expect(result.watchlisted).toBeUndefined();
+  });
+
   it('should fail when the lists do not load instead of silently offering an empty picker', async () => {
     server.use(
       http.get('https://apiz.trakt.tv/users/me/lists', () => new HttpResponse(null, { status: 500 })),

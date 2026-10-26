@@ -6,6 +6,10 @@ describe('apiEnvironment', () => {
     expect(apiEnvironment()).toBe('https://apiz.trakt.tv');
   });
 
+  it('should resolve api for Standard apps', () => {
+    expect(apiEnvironment('standard')).toBe('https://api.trakt.tv');
+  });
+
   it('should resolve the local worker', () => {
     expect(apiEnvironment('local')).toBe('http://localhost:8787');
   });

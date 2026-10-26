@@ -62,6 +62,28 @@ describe('loadPrivateNote', () => {
     ).toBeNull();
   });
 
+  it('should read v2’s listing when the client ID may not call v3, skipping notes on plays', async () => {
+    server.use(
+      http.get(
+        'https://apiz.trakt.tv/v3/users/me/notes/:type/:slug',
+        () => new HttpResponse('Forbidden', { status: 403 }),
+      ),
+      http.get('https://apiz.trakt.tv/users/me/notes/movies', ({ request }) => {
+        seen.push(request);
+        const row = (type: string, id: number, notes: string) => ({
+          type: 'movie',
+          movie: { ids: { trakt: 1, slug: 'x' } },
+          attached_to: { type },
+          note: { id, notes, privacy: 'private', updated_at: '2026-09-27T10:00:00.000Z' },
+        });
+        return HttpResponse.json([row('history', 10, 'On a play'), row('movie', 11, 'On the movie')]);
+      }),
+    );
+    const note = await loadPrivateNote({ fetch, token: 'viewer', item: { type: 'movie', id: 1, slug: 'x' } });
+    expect(seen.at(0)?.url).toContain('/users/me/notes/movies?limit=all');
+    expect(note).toEqual({ id: 11, text: 'On the movie', updatedAt: '2026-09-27T10:00:00.000Z' });
+  });
+
   it('should return null when the read fails', async () => {
     server.use(
       http.get('https://apiz.trakt.tv/v3/users/me/notes/:type/:slug', () => new HttpResponse(null, { status: 401 })),

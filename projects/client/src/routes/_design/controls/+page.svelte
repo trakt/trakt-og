@@ -311,6 +311,12 @@ function showOverlay() {
       <LoadFailed what="Up Next" onretry={() => new Promise((done) => setTimeout(done, 1500))} />
     </div>
   </Variant>
+  <Variant label="Didn't load, rate limited: the API answered 429">
+    <div class="ground surface">
+      <LoadFailed what="Up Next" error={{ message: 'Rate limited', rateLimited: true }}
+        onretry={() => new Promise((done) => setTimeout(done, 1500))} />
+    </div>
+  </Variant>
   <Variant label="Didn't load, in a chart's frame">
     <div class="ground frame-page">
       <LoadFailed what="Trending" inFrame onretry={() => new Promise((done) => setTimeout(done, 1500))} />

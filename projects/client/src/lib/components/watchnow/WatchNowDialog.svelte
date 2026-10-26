@@ -18,6 +18,7 @@ import Shimmer from '$lib/components/loading/Shimmer.svelte';
 import heart from '$lib/icons/solid/heart.svg?raw';
 import play from '$lib/icons/solid/play.svg?raw';
 import { fetchWatchNow } from './fetchWatchNow.ts';
+import { readWatchNow } from './readWatchNow.ts';
 import { fetchWatchNowShared } from './fetchWatchNowShared.ts';
 import ServiceTile from './ServiceTile.svelte';
 import {
@@ -55,6 +56,8 @@ let countries = $state<WatchNowCountry[]>([]);
 let justwatch = $state<Record<string, string | null | undefined>>({});
 let sources = $state<Record<string, Map<string, Source>>>({});
 let loaded = $state(false);
+/** The client ID may not call watch-now routes. */
+let unavailable = $state(false);
 
 // An episode's JustWatch page is its season's, like OG.
 const justwatchPath = $derived(button.path.replace(/\/episodes\/\d+$/, ''));
@@ -65,11 +68,12 @@ const tags = $derived([
 
 async function loadItem() {
   const [all, list, links] = await Promise.all([
-    fetchWatchNow({ path: `${button.path}/watchnow`, schema: watchNowOffersSchema }),
+    readWatchNow({ path: `${button.path}/watchnow`, schema: watchNowOffersSchema }),
     fetchWatchNowShared({ path: '/watchnow/countries', schema: watchNowCountriesSchema }),
     fetchWatchNow({ path: `${justwatchPath}/watchnow/justwatch_links`, schema: justWatchLinksSchema }),
   ]);
-  offers = all;
+  offers = all.data;
+  unavailable = all.unavailable;
   countries = list ?? [];
   justwatch = links ?? {};
   loaded = true;
@@ -184,7 +188,13 @@ const focusAboveFooter: Attachment<HTMLElement> = (footer) => {
       {#if loading}
         {@render shimmers()}
       {:else}
-        <div class="no-links"><EmptyNote>No watch now links in {picked?.name ?? 'your country'} yet.</EmptyNote></div>
+        <div class="no-links">
+          {#if unavailable}
+            <EmptyNote>Where to Watch isn't available with this API key.</EmptyNote>
+          {:else}
+            <EmptyNote>No watch now links in {picked?.name ?? 'your country'} yet.</EmptyNote>
+          {/if}
+        </div>
       {/if}
     {/each}
   </div>

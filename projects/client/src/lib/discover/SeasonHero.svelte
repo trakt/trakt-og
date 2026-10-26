@@ -9,6 +9,7 @@
   through.
 -->
 <script lang="ts">
+import { isStandardApi } from '$lib/api/isStandardApi';
 import { mediaTags } from '$lib/components/labels/mediaTags';
 import TagPills from '$lib/components/labels/TagPills.svelte';
 import TrimmedLogo from '$lib/components/media/TrimmedLogo.svelte';
@@ -180,7 +181,7 @@ const controls: Attachment<HTMLElement> = (node) => {
         <p class="overview">{current.overview ?? ''}</p>
         <div class="actions">
           <a class="button primary" href={current.href}>More info</a>
-          {#if current.released}
+          {#if current.released && !isStandardApi()}
             {@const pick = current}
             <button
               type="button"

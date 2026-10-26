@@ -24,6 +24,8 @@ OG Redux signs in with Trakt in the browser (OAuth with PKCE), so it only needs 
    - `http://localhost:5174`
 4. Save it and copy its **Client ID**.
 
+A new app is a Standard app. The setup below is ready for one, and doesn't need Developer Premium. See [Standard and Premium apps](#standard-and-premium-apps) for the parts of the site it can't load.
+
 ## 2. Get the code running
 
 1. **Clone the repository**
@@ -39,17 +41,13 @@ OG Redux signs in with Trakt in the browser (OAuth with PKCE), so it only needs 
    bun run install:frozen
    ```
 
-3. **Set your client ID.** Create `projects/client/.env.development` with your app's Client ID:
+3. **Set up your local settings** with your app's Client ID. This works the same in every shell, Windows included:
 
    ```sh
-   echo "TRAKT_CLIENT_ID=<your client id>" > projects/client/.env.development
+   bun run client:setup <your client id>
    ```
 
-   Then copy the local Worker settings, which open every page and leave the optional keys empty:
-
-   ```sh
-   cp projects/client/.dev.vars.example projects/client/.dev.vars
-   ```
+   It creates `projects/client/.env.development` from `.env.example`, which points og at `api.trakt.tv` for a Standard app (`PUBLIC_TRAKT_API=standard`), and adds your client ID. Run it again to change the ID. It also copies `.dev.vars.example` to `.dev.vars`, which opens every page locally and leaves the optional keys empty. With a Premium app, you can set `PUBLIC_TRAKT_API=production` in `.env.development` to use `apiz.trakt.tv`.
 
 4. **Start the dev server**
 
@@ -61,16 +59,30 @@ OG Redux signs in with Trakt in the browser (OAuth with PKCE), so it only needs 
 
 ## Environment variables
 
-| Variable           | Where                              | Needed                      | What it does                                                                                                               |
-| ------------------ | ---------------------------------- | --------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `TRAKT_CLIENT_ID`  | `projects/client/.env.development` | Yes                         | Your Trakt app's client ID. It's inlined into the bundle at build time, like trakt-web. A shell export overrides the file. |
-| `TRAKT_CLIENT_ID`  | `projects/client/.env.production`  | For local production builds | The og.trakt.tv app's ID, used by `client:build` and the manual `client:deploy`.                                           |
-| `PUBLIC_TRAKT_API` | Shell or `.env.development`        | No                          | `production` (the default) talks to `https://apiz.trakt.tv`. `local` talks to a local API at `http://localhost:8787`.      |
-| `OG_ADMIN_GATE`    | `projects/client/.dev.vars`        | Set by the example          | `off` opens every page locally. Deployed, og.trakt.tv is admin-only until launch.                                          |
-| `KLIPY_API_KEY`    | `projects/client/.dev.vars`        | No                          | Turns on the GIF picker in comment composers.                                                                              |
-| `GITHUB_TOKEN`     | `projects/client/.dev.vars`        | No                          | A read-only GitHub token for the about page's GitHub reads, for the higher rate limit.                                     |
+| Variable           | Where                              | Needed                      | What it does                                                                                                                                                                                                                                        |
+| ------------------ | ---------------------------------- | --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `TRAKT_CLIENT_ID`  | `projects/client/.env.development` | Yes                         | Your Trakt app's client ID. It's inlined into the bundle at build time, like trakt-web. A shell export overrides the file.                                                                                                                          |
+| `TRAKT_CLIENT_ID`  | `projects/client/.env.production`  | For local production builds | The og.trakt.tv app's ID, used by `client:build` and the manual `client:deploy`.                                                                                                                                                                    |
+| `PUBLIC_TRAKT_API` | Shell or `.env.development`        | Set by the example          | `standard`, the example's, talks to `https://api.trakt.tv`, for Standard apps. `production`, the default when unset and og.trakt.tv's, talks to `https://apiz.trakt.tv`, for Premium apps. `local` talks to a local API at `http://localhost:8787`. |
+| `OG_ADMIN_GATE`    | `projects/client/.dev.vars`        | Set by the example          | `off` opens every page locally. Deployed, og.trakt.tv is admin-only until launch.                                                                                                                                                                   |
+| `KLIPY_API_KEY`    | `projects/client/.dev.vars`        | No                          | Turns on the GIF picker in comment composers.                                                                                                                                                                                                       |
+| `GITHUB_TOKEN`     | `projects/client/.dev.vars`        | No                          | A read-only GitHub token for the about page's GitHub reads, for the higher rate limit.                                                                                                                                                              |
 
 `.env.development`, `.env.production` and `.dev.vars` are gitignored. `.dev.vars` is only read locally; deploys read Worker secrets instead.
+
+## Standard and Premium apps
+
+The Trakt API serves Standard apps on `https://api.trakt.tv` and Premium apps on `https://apiz.trakt.tv`. `.env.example` sets `PUBLIC_TRAKT_API=standard` for a Standard app. In dev, og logs a hint when apiz refuses your client ID.
+
+Some routes are only open to Trakt's own apps, so neither a Standard nor a Premium app can load them. og hides what's built on them and says so once in the browser console. The rest of the page works:
+- Where to Watch, under the poster, and the Watch now buttons that open it.
+- Streaming service filters, and the streaming services in Tune your picks.
+- The dashboard's Social Feed.
+- List collaborators, in the list editor.
+
+Private Notes, watchlist buttons, "on a list" badges and the list picker for seasons and episodes fall back to reads every app may make.
+
+Standard apps also get lower rate limits. When the API rate limits you, the page or section says so and offers Try again, and you stay signed in.
 
 ## Everyday commands
 
@@ -78,6 +90,7 @@ Run these from the repository root.
 
 | Command                      | What it does                                                                 |
 | ---------------------------- | ---------------------------------------------------------------------------- |
+| `bun run client:setup <id>`  | Writes the local settings for your Trakt app's client ID.                    |
 | `bun run client:dev`         | Starts the dev server on port 5173.                                          |
 | `bun run client:check`       | Type checks.                                                                 |
 | `bun run client:test`        | Runs the tests.                                                              |

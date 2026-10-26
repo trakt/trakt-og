@@ -114,17 +114,16 @@ const STREAMING = ' + streaming on your ';
 />
   {/snippet}
   {@render panel(false, cards, navigator)}
-{:catch}
+{:catch error}
+  {#snippet failed()}
+    <div class="notice">
+      <LoadFailed what="Up Next" {error} />
+    </div>
+  {/snippet}
   {@render panel(false, failed)}
 {/await}
 
 {#snippet pending()}<CardShimmerRow columns={PER_ROW} ratio="poster" />{/snippet}
-
-{#snippet failed()}
-  <div class="notice">
-  <LoadFailed what="Up Next" />
-</div>
-{/snippet}
 
 <style>
 /* OG's alert sat in the posters row, which kept 20px above it. */

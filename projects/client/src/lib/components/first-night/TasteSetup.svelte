@@ -2,9 +2,10 @@
   "Tune your picks", in the Watch Now popup's look: an art header (shimmering until its art lands), where the member
   watches as that popup's service tiles (up to five), and up to five genres they love as icon tiles, like v3's genre
   picker. Save writes the watch-now favorites and favorite genres to their Trakt settings, which v3 and the apps read
-  too, then reloads the page data.
+  too, then reloads the page data. A Standard app (`isStandardApi`) gets the genres only.
 -->
 <script lang="ts">
+import { isStandardApi } from '$lib/api/isStandardApi';
 import { invalidateAll } from '$app/navigation';
 import { viewerFetch } from '$lib/auth/viewerFetch';
 import Dialog from '$lib/components/dialog/Dialog.svelte';
@@ -44,6 +45,8 @@ interface Props {
 }
 
 let { open = $bindable(), country, services, genres }: Props = $props();
+// Watch-now sources are Official-only, so a Standard app picks genres alone.
+const streaming = !isStandardApi();
 
 let picked = $state(new Set<string>());
 let loved = $state(new Set<string>());
@@ -62,7 +65,7 @@ $effect(() => {
 });
 
 // A new country loads its own services; picks are kept per country, as settings key them.
-const all = $derived(open && place ? fetchTasteServices(fetch, place) : Promise.resolve([]));
+const all = $derived(open && place && streaming ? fetchTasteServices(fetch, place) : Promise.resolve([]));
 const here = $derived(countries.find(({ code }) => code === place));
 const pickedHere = $derived([...picked].filter((key) => key.startsWith(`${place}-`)).length);
 const art = $derived(open ? titleFanart('shows', 'mr-robot') : Promise.resolve(undefined));
@@ -99,7 +102,7 @@ async function save() {
 <Dialog bind:open title="Tune your picks" size="xxl" variant="art" lightDismiss>
   {#snippet header(id)}
     {@const tags = [
-      { text: `${pickedHere} of ${SERVICE_LIMIT} services` },
+      ...(streaming ? [{ text: `${pickedHere} of ${SERVICE_LIMIT} services` }] : []),
       { text: `${loved.size} of ${GENRE_LIMIT} genres` },
     ]}
     {#await art}
@@ -111,6 +114,7 @@ async function save() {
   <!-- Focus starts on the popup itself, not on its first tile. -->
   <!-- svelte-ignore a11y_autofocus -->
   <div class="taste" tabindex="-1" autofocus>
+    {#if streaming}
     <section aria-labelledby="taste-services">
       <div class="services-head">
         <h3 id="taste-services" class="section-title">
@@ -158,6 +162,7 @@ async function save() {
         </div>
       {/await}
     </section>
+    {/if}
     <section aria-labelledby="taste-genres">
       <h3 id="taste-genres" class="section-title">
         What do you love? <span class="count">{loved.size}/{GENRE_LIMIT}</span>

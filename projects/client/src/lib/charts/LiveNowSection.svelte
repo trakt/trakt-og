@@ -6,6 +6,7 @@
 import SidebarSection from '$lib/components/sidebar/SidebarSection.svelte';
 import TagPills from '$lib/components/labels/TagPills.svelte';
 import StatusDot from '$lib/components/status/StatusDot.svelte';
+import { compactCount } from '$lib/utils/compactCount';
 import type { LiveNow } from './fetchLiveNow';
 import type { MediaType } from './loadChart';
 
@@ -19,7 +20,6 @@ const { live, type, open }: Props = $props();
 
 const TYPES: readonly MediaType[] = ['shows', 'movies'];
 const count = (n: number) => n.toLocaleString('en-US');
-const compact = new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 });
 const watchers = $derived(live[type]);
 </script>
 
@@ -38,7 +38,7 @@ const watchers = $derived(live[type]);
   <p class="key">
     {#each TYPES as each (each)}
       <a href="/{each}/trending" aria-current={each === type ? 'page' : undefined}>
-        <TagPills tags={[{ lead: compact.format(live[each]), text: each, kind: each === type ? 'primary' : undefined }]} />
+        <TagPills tags={[{ lead: compactCount(live[each]), text: each, kind: each === type ? 'primary' : undefined }]} />
       </a>
     {/each}
   </p>

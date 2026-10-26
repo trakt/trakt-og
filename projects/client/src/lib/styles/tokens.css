@@ -3616,8 +3616,8 @@
   ); /* the light that sweeps across the gray dots until the count arrives */
   --home-map-shimmer-ms: 2200; /* one sweep, west to east */
   --home-map-shimmer-band: 0.18; /* the light's half-width, as a share of the map */
-  --home-map-scale-gap: 5px; /* a key dot to its count */
-  --home-map-key-gap: 12px;
+  --home-map-scale-gap: 3px; /* between the key's shades */
+  --home-map-key-gap: 8px; /* Fewer and More to the shades */
   --home-map-key-top: 14px; /* under the map */
   --home-map-key-dot: 8px;
   --font-size-home-map-scale: 12px;

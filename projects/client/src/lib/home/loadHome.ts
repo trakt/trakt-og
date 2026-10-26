@@ -1,3 +1,4 @@
+import { fetchLiveNow, type LiveNow } from '../charts/fetchLiveNow.ts';
 import type { HeaderUser } from '../components/header/HeaderUser.ts';
 import { createTtlCache } from '../utils/createTtlCache.ts';
 import { type KeyedCache, sharedCache } from '../utils/sharedCache.ts';
@@ -45,11 +46,14 @@ interface LoadHomeParams {
   pool?: typeof fanartPool;
   trendingPool?: typeof trendingCache;
   livePool?: typeof liveCache;
+  /** Trending's Live now, shared with the trending pages; tests pass a fresh one. */
+  liveNow?: (fetch: typeof globalThis.fetch) => Promise<LiveNow | null>;
 }
 
 /**
  * `/home`: the hero's fanart, shuffled, trending shows and movies, and whether the viewer is signed in. Who is
- * watching right now streams in after, since it reads every trending title's watchers. Nothing failing is an error.
+ * watching right now streams in after, since it reads every trending title's watchers and Trending's whole count.
+ * Nothing failing is an error.
  */
 export async function loadHome({
   fetch,
@@ -60,6 +64,7 @@ export async function loadHome({
   pool = fanartPool,
   trendingPool = trendingCache,
   livePool = liveCache,
+  liveNow = fetchLiveNow,
   cache,
   origin = 'https://og.trakt.tv',
 }: LoadHomeParams) {
@@ -84,7 +89,7 @@ export async function loadHome({
       ...shared,
       key: `${origin}/_cache/home/live`,
       parse: (value) => homeLiveSchema.safeParse(value).data ?? null,
-      load: () => fetchHomeLive(liveFetch, trending),
+      load: () => fetchHomeLive({ fetch: liveFetch, trending, liveNow }),
     });
 
   const [fanarts, trending, { user }] = await Promise.all([

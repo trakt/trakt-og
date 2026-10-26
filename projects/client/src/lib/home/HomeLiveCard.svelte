@@ -1,5 +1,5 @@
 <!--
-  The hero's Live now box: how many people are watching the trending titles right now, then shows against movies as a
+  The hero's Live now box: how many people are watching right now, Trending's own count, then shows against movies as a
   bar and a pill for each that links to its trending chart, as on Trending's Live now. When the page refreshes the numbers, they roll to the new ones.
   Until the first count arrives, shimmering bars hold the count's, its caption's, the bar's and the pills' places,
   each where its letters will be.
@@ -9,6 +9,7 @@ import { resolve } from '$app/paths';
 import TagPills from '$lib/components/labels/TagPills.svelte';
 import Shimmer from '$lib/components/loading/Shimmer.svelte';
 import StatusDot from '$lib/components/status/StatusDot.svelte';
+import { compactCount } from '$lib/utils/compactCount';
 import { cubicOut } from 'svelte/easing';
 import { prefersReducedMotion, Tween } from 'svelte/motion';
 import type { HomeLive } from './live/toHomeLive.ts';
@@ -33,7 +34,9 @@ $effect(() => {
   void movies.set(live.movies, roll);
 });
 
-const count = (n: number) => Math.round(n).toLocaleString('en-US');
+// Whole thousands (245K), short enough to keep the caption on the figures' line.
+const short = new Intl.NumberFormat('en-US', { notation: 'compact' });
+const count = (n: number) => short.format(Math.round(n));
 </script>
 
 <section class="live" aria-labelledby="home-live-title" aria-busy={!live}>
@@ -48,10 +51,10 @@ const count = (n: number) => Math.round(n).toLocaleString('en-US');
     </div>
     <p class="key">
       <a href={resolve('/shows/[chart=chart]', { chart: 'trending' })}>
-        <TagPills tags={[{ lead: count(shows.current), text: 'shows', kind: 'primary' }]} />
+        <TagPills tags={[{ lead: compactCount(Math.round(shows.current)), text: 'shows', kind: 'primary' }]} />
       </a>
       <a href={resolve('/movies/[chart=chart]', { chart: 'trending' })}>
-        <TagPills tags={[{ lead: count(movies.current), text: 'movies' }]} />
+        <TagPills tags={[{ lead: compactCount(Math.round(movies.current)), text: 'movies' }]} />
       </a>
     </p>
   {:else}

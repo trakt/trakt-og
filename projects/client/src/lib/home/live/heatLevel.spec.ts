@@ -6,7 +6,9 @@ describe('heatLevel', () => {
     expect(heatLevel(0)).toBe(0);
   });
 
-  it('should step up at 1, 5, 20, 60 and 150 watching', () => {
-    expect([1, 4, 5, 19, 20, 59, 60, 149, 150, 900].map(heatLevel)).toEqual([1, 1, 2, 2, 3, 3, 4, 4, 5, 5]);
+  it('should step up at any share, then 0.15%, 0.6%, 2% and 5%', () => {
+    expect([0.0003, 0.0014, 0.0015, 0.0059, 0.006, 0.019, 0.02, 0.049, 0.05, 0.22].map(heatLevel)).toEqual([
+      1, 1, 2, 2, 3, 3, 4, 4, 5, 5,
+    ]);
   });
 });

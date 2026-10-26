@@ -1,9 +1,10 @@
 <!--
-  The band under the hero: a dot map of the world where each country's dots darken with how many people there are
-  watching the trending titles right now, and beside it the countries with the most, each with its flag. Hovering a
-  country, on the map or in the list, lights its dots and its row and shows a card with its count, rank, shows against
-  movies and what most people there are watching. A key to the shades sits under the map. Until the count arrives
-  a light sweeps across the gray dots and shimmering rows hold the countries' places.
+  The band under the hero: a dot map of the world where each country's dots darken with its share of the people
+  watching the trending titles right now, and beside it the countries with the most, each with its flag and share.
+  Hovering a country, on the map or in the list, lights its dots and its row and shows a card with its share, rank,
+  shows against movies and what most people there are watching; a country with only a few people shows just its
+  share. A key from fewer to more sits under the map. Until the count arrives a light sweeps across the gray dots and
+  shimmering rows hold the countries' places.
 -->
 <script lang="ts">
 import PanelHeading from '$lib/components/dashboard/PanelHeading.svelte';
@@ -16,7 +17,8 @@ import globe from '$lib/icons/solid/globe.svg?raw';
 import type { Attachment } from 'svelte/attachments';
 import { prefersReducedMotion } from 'svelte/motion';
 import { heatLevel } from './live/heatLevel.ts';
-import type { HomeLive, HomeLiveCountry } from './live/toHomeLive.ts';
+import { sharePercent } from './live/sharePercent.ts';
+import type { HomeLive } from './live/toHomeLive.ts';
 import { type MapDot, toMapDots, type WorldDots } from './live/toMapDots.ts';
 import worldDots from './live/worldDots.json' with { type: 'json' };
 
@@ -28,25 +30,23 @@ const { live }: Props = $props();
 const RANKED = 8;
 /** Over the top part of the map the card opens below the pointer, so it stays clear of the heading. */
 const FLIP_AT = 0.4;
-/** The key's shades and the fewest watchers each starts at, as `heatLevel` steps them. */
-const KEY = [
-  { level: 1, label: '1+' },
-  { level: 2, label: '5+' },
-  { level: 3, label: '20+' },
-  { level: 4, label: '60+' },
-  { level: 5, label: '150+' },
-] as const;
+/** The key's shades, as `heatLevel` steps them. */
+const KEY = [1, 2, 3, 4, 5] as const;
 const world: WorldDots = worldDots;
 const map = toMapDots(world);
 const flags: ReadonlySet<string> = new Set(flagCountries);
 const regionNames = new Intl.DisplayNames(['en'], { type: 'region' });
 const count = (n: number) => n.toLocaleString('en-US');
 const flagOf = (code: string) => (flags.has(code.toLowerCase()) ? `/flags/${code.toLowerCase()}.svg` : undefined);
-const total = (country: HomeLiveCountry) => country.shows + country.movies;
 
 const byCode = $derived(new Map((live?.countries ?? []).map((country, i) => [country.code, { country, rank: i + 1 }])));
-const ranked = $derived((live?.countries ?? []).slice(0, RANKED));
-const most = $derived(Math.max(1, ...ranked.map(total)));
+// Countries with only a few people come last and leave out what they watch, so the list stops before them.
+const ranked = $derived(
+  (live?.countries ?? [])
+    .flatMap(({ watching, ...country }) => (watching ? [{ ...country, shows: watching.shows }] : []))
+    .slice(0, RANKED),
+);
+const most = $derived(ranked.at(0)?.share ?? 1);
 
 let hovered = $state<{ code: string; x: number; y: number } | null>(null);
 let box = $state<HTMLElement>();
@@ -56,9 +56,11 @@ const hoveredCode = $derived(hovered?.code);
 const tip = $derived.by(() => {
   if (!hovered) return null;
   const found = byCode.get(hovered.code);
+  const shows = found?.country.watching && Math.round(found.country.watching.shows * 100);
   return {
     name: found?.country.name ?? regionNames.of(hovered.code) ?? hovered.code,
     flag: flagOf(hovered.code),
+    split: shows === undefined ? undefined : { shows, movies: 100 - shows },
     ...found,
   };
 });
@@ -91,7 +93,7 @@ const draw: Attachment<HTMLCanvasElement> = (canvas) => {
   // Index 0 is a country nobody watches in; read once per paint, so a theme switch still shows mid-sweep.
   const shades = () => [
     color('--color-home-map-dot'),
-    ...KEY.map(({ level }) => color(`--color-home-map-heat-${level}`)),
+    ...KEY.map((level) => color(`--color-home-map-heat-${level}`)),
   ];
   const tones = () => ({ hover: color('--color-home-map-hover'), shimmer: color('--color-home-map-shimmer') });
   const sweepMs = Number(style.getPropertyValue('--home-map-shimmer-ms'));
@@ -115,7 +117,7 @@ const draw: Attachment<HTMLCanvasElement> = (canvas) => {
     context.clearRect(0, 0, canvas.width, canvas.height);
     map.dots.forEach((dot: MapDot) => {
       const here = counts.get(dot.code)?.country;
-      context.fillStyle = lit === dot.code ? hover : shade[here ? heatLevel(total(here)) : 0] ?? '';
+      context.fillStyle = lit === dot.code ? hover : shade[here ? heatLevel(here.share) : 0] ?? '';
       dotAt(dot);
       const away = light === undefined ? band : Math.abs(dot.x - light);
       if (away >= band) return;
@@ -201,30 +203,41 @@ function showCountry(code: string) {
             </p>
             {#if tip.country}
               <div class="tip-body">
-                <p class="tip-count"><b>{count(total(tip.country))}</b> watching now</p>
-                <div class="tip-split">
-                  <span class="shows" style:flex-grow={tip.country.shows}></span>
-                  <span class="movies" style:flex-grow={tip.country.movies}></span>
-                </div>
-                <p class="tip-type">
-                  <TagPills tags={[{ lead: count(tip.country.shows), text: 'shows', kind: 'primary' }]} />
-                  <TagPills tags={[{ lead: count(tip.country.movies), text: 'movies' }]} />
-                </p>
+                <p class="tip-count"><b>{sharePercent(tip.country.share)}</b> of everyone watching</p>
+                {#if tip.split}
+                  <div class="tip-split">
+                    <span class="shows" style:flex-grow={tip.split.shows}></span>
+                    <span class="movies" style:flex-grow={tip.split.movies}></span>
+                  </div>
+                  <p class="tip-type">
+                    <TagPills tags={[{ lead: `${tip.split.shows}%`, text: 'shows', kind: 'primary' }]} />
+                    <TagPills tags={[{ lead: `${tip.split.movies}%`, text: 'movies' }]} />
+                  </p>
+                {:else}
+                  <EmptyNote>Just a few people here.</EmptyNote>
+                {/if}
               </div>
-              <p class="tip-top">
-                <span>Most watched {tip.country.top.type === 'shows' ? 'show' : 'movie'}</span>
-                <b>{tip.country.top.title}{#if tip.country.top.year}<span class="year">{tip.country.top.year}</span>{/if}</b>
-              </p>
+              {#if tip.country.watching}
+                {@const { top } = tip.country.watching}
+                <p class="tip-top">
+                  <span>Most watched {top.type === 'shows' ? 'show' : 'movie'}</span>
+                  <b>{top.title}{#if top.year}<span class="year">{top.year}</span>{/if}</b>
+                </p>
+              {/if}
             {:else}
               <div class="tip-none"><EmptyNote>No one is watching here right now.</EmptyNote></div>
             {/if}
           </div>
         {/if}
       </div>
-      <p class="key" aria-label="Shades by people watching now">
-        {#each KEY as { level, label } (level)}
-          <span><i style:background="var(--color-home-map-heat-{level})"></i>{label}</span>
-        {/each}
+      <p class="key" aria-label="Shades from fewer to more people watching now">
+        Fewer
+        <span>
+          {#each KEY as level (level)}
+            <i style:background="var(--color-home-map-heat-{level})"></i>
+          {/each}
+        </span>
+        More
       </p>
     </div>
 
@@ -239,10 +252,10 @@ function showCountry(code: string) {
               onpointerleave={() => (hovered = null)}
             >
               <span class="name">{#if flag}<img class="flag" src={flag} alt="" />{/if}{country.name}</span>
-              <span class="number">{count(total(country))}</span>
+              <span class="number">{sharePercent(country.share)}</span>
               <span class="bar" aria-hidden="true">
-                <span class="shows" style:inline-size="{(country.shows / most) * 100}%"></span>
-                <span class="movies" style:inline-size="{(country.movies / most) * 100}%"></span>
+                <span class="shows" style:inline-size="{((country.share * country.shows) / most) * 100}%"></span>
+                <span class="movies" style:inline-size="{((country.share * (1 - country.shows)) / most) * 100}%"></span>
               </span>
             </li>
           {/each}

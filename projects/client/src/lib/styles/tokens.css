@@ -3901,11 +3901,14 @@
   --calendar-list-padding: 14px 16px 18px;
   --calendar-caption-padding: 10px 12px;
   --calendar-caption-gap: 6px;
-  --calendar-tags-height: 20px; /* one line of card tags, kept when empty so cards line up */
+  /* One line of tag pills, kept when empty so cards line up. */
+  --calendar-tags-height: calc(var(--font-size-search-pill) * var(--line-height-search-pill) + 2 * 3px);
+  --calendar-network-min-width: 48px; /* a network pill shortens to this before it wraps out of sight */
   --calendar-art-tag-inset: var(--episode-tag-inset); /* an episode's types from the art's bottom-left corner */
   --calendar-show-line: 18px; /* an episode's show, small, over its title */
   --calendar-title-line: 21px;
-  --calendar-titles-height: calc(var(--calendar-show-line) + var(--calendar-title-line));
+  /* An episode's show and title, or a movie's title on two lines. */
+  --calendar-titles-height: calc(2 * var(--calendar-title-line));
   --calendar-narrow-bar-height: 28px; /* the quick-icon bar on a poster or a month's day */
   --calendar-month-gap: 8px; /* between a month's days, and a day's cards */
   --calendar-month-cell-padding: 6px;

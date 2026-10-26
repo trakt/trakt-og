@@ -1,9 +1,9 @@
 <!--
   A calendar entry's titles: an episode names its show in a small gray line, then its number in bold and its title at
-  full size; a movie is only its title. Each line is one line long and ends in an ellipsis. `align` sets where they sit
-  in the space they're given: at the bottom on a card, so a movie's title shares a line with the episode titles beside
-  it, or centered in an agenda row. `after` follows the title on its line: the agenda's episodes pill.
-    <CalendarEntryTitles {entry} spoiler={icons.collectionTarget} align="end" />
+  full size; a movie is only its title. Each line is one line long and ends in an ellipsis; `wrap` lets a movie's title
+  run to two. `align` sets where they sit in the space they're given: at the top on a card, or centered in an agenda
+  row. `after` follows the title on its line: the agenda's episodes pill.
+    <CalendarEntryTitles {entry} spoiler={icons.collectionTarget} align="start" wrap />
 -->
 <script lang="ts">
 import MediaSpoiler from '$lib/components/summary/MediaSpoiler.svelte';
@@ -13,11 +13,12 @@ import type { CalendarEntry } from './CalendarEntry.ts';
 interface Props {
   entry: CalendarEntry;
   spoiler: ComponentProps<typeof MediaSpoiler>['target'];
-  align?: 'end' | 'center';
+  align?: 'start' | 'center';
+  wrap?: boolean;
   after?: Snippet;
 }
 
-const { entry, spoiler, align = 'end', after }: Props = $props();
+const { entry, spoiler, align = 'start', wrap = false, after }: Props = $props();
 </script>
 
 <!-- Hrefs point at OG routes og hasn't built yet, and resolve() only takes routes that exist. -->
@@ -27,7 +28,7 @@ const { entry, spoiler, align = 'end', after }: Props = $props();
   {#if entry.smallTitle}
     <a class="show" href={entry.smallTitle.href}>{entry.smallTitle.text}</a>
   {/if}
-  <h3 class={{ movie: !entry.smallTitle }}>
+  <h3 class={{ movie: !entry.smallTitle, wrap: wrap && !entry.smallTitle }}>
     <span class="text">{#if entry.number}<a class="number" href={entry.href}>{entry.number}&nbsp;</a>{/if}<MediaSpoiler
         target={spoiler} kind="title" inline><a href={entry.href}>{entry.title}</a></MediaSpoiler></span>{@render
       after?.()}
@@ -40,8 +41,8 @@ const { entry, spoiler, align = 'end', after }: Props = $props();
   flex-direction: column;
   min-inline-size: 0;
 
-  &.end {
-    justify-content: flex-end;
+  &.start {
+    justify-content: flex-start;
   }
 
   &.center {
@@ -93,6 +94,14 @@ h3 {
   & :global(.spoiler-content.inline) {
     display: inline;
   }
+}
+
+.wrap .text {
+  display: -webkit-box;
+  white-space: normal;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
 }
 
 .number {

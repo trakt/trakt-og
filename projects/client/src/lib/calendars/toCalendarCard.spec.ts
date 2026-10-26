@@ -49,6 +49,15 @@ describe('toCalendarCard', () => {
       });
     });
 
+    it("should pill the show's certificate, the episode's runtime and the network", () => {
+      expect(toCalendarCard(episode({ runtime: 58 }, { certification: 'TV-MA', runtime: 60 }), UTC).pills).toEqual([
+        { text: 'TV-MA', kind: 'badge' },
+        { segments: ['58m'] },
+        { text: 'FX' },
+      ]);
+      expect(toCalendarCard(episode({}, { runtime: 60 }), UTC).pills).toEqual([{ segments: ['1h'] }, { text: 'FX' }]);
+    });
+
     it("should use the viewer's zone and 24-hour clock", () => {
       const tags = toCalendarCard(episode(), { timeZone: 'America/New_York', hour24: true }).tags;
       expect(tags?.at(0)).toEqual({ text: '17:00' });
@@ -97,7 +106,24 @@ describe('toCalendarCard', () => {
         tagline: undefined,
         rating: undefined,
         released: true,
+        pills: [],
       });
+    });
+
+    it("should pill a movie's certificate and runtime", () => {
+      const movie = {
+        type: 'movie',
+        at: '2026-09-30',
+        movie: {
+          title: 'Naza',
+          ids: { trakt: 5, slug: 'naza-2026' },
+          certification: 'R',
+          runtime: 104,
+          images: { fanart: [], logo: [] },
+        },
+      } as unknown as CalendarItem;
+
+      expect(toCalendarCard(movie, UTC).pills).toEqual([{ text: 'R', kind: 'badge' }, { segments: ['1h 44m'] }]);
     });
   });
 

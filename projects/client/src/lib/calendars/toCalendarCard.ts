@@ -2,6 +2,8 @@ import type { ComponentProps } from 'svelte';
 import type PosterCard from '../components/media/PosterCard.svelte';
 import type FanartCard from '../components/media/FanartCard.svelte';
 import { episodeNumber, episodeType } from '../components/media/episodeTags.ts';
+import { mediaTags } from '../components/labels/mediaTags.ts';
+import type { TagPill } from '../components/labels/TagPill.ts';
 import { airTime } from './airTime.ts';
 import type { DatePreferences } from '../settings/DatePreferences.ts';
 import { toCalendarImage } from './toCalendarImage.ts';
@@ -23,6 +25,8 @@ export type CalendarCard = Omit<ComponentProps<typeof FanartCard>, 'icons'> & {
   fanart?: string;
   /** An episode's air time in the viewer's clock. Movies have none: a release date has no time. */
   time?: string;
+  /** The tag pills under a card's titles, like search's: the certificate, runtime and network. */
+  pills: TagPill[];
   hideTarget?: { type: 'show'; id: number; title: string };
   overlay: { type: 'episode' | 'movie'; id: number };
   collectionContext?: { show: number; number: number; episode: number };
@@ -53,6 +57,11 @@ export function toCalendarCard(
       rating: movie.rating ?? undefined,
       released,
       tagline: movie.tagline ?? undefined,
+      pills: mediaTags({
+        type: 'movie',
+        certification: movie.certification ?? undefined,
+        runtime: movie.runtime ?? undefined,
+      }),
       ...toCalendarImage(item, clock.imageType ?? 'logo'),
     };
   }
@@ -81,6 +90,12 @@ export function toCalendarCard(
     released,
     schedule: `${time}${show.network ? ` on ${show.network}` : ''}`,
     time,
+    pills: mediaTags({
+      type: 'show',
+      certification: show.certification ?? undefined,
+      runtime: episode.runtime ?? show.runtime ?? undefined,
+      network: show.network ?? undefined,
+    }),
     ...toCalendarImage(item, clock.imageType ?? 'logo'),
     tags,
     episodeBadge: label ? { label: label.text, kind: label.kind } : undefined,

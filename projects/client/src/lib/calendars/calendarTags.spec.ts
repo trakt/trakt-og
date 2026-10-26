@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { calendarTags } from './calendarTags.ts';
+import { calendarArtTags, calendarTags } from './calendarTags.ts';
 
 const premiere = { text: 'Season Premiere', kind: 'season-premiere' as const };
 const time = { text: '9:00 pm' };
@@ -39,5 +39,19 @@ describe('calendarTags', () => {
     it('should leave a movie untagged on a movies-only calendar', () => {
       expect(calendarTags({ entry: movie, mixed: false })).toEqual({ types: [], line: [] });
     });
+  });
+});
+
+describe('calendarArtTags', () => {
+  it("should put an episode's types and air time over the art, leaving the network out", () => {
+    expect(calendarArtTags({ entry: episode, mixed: false })).toEqual([premiere, time]);
+  });
+
+  it('should tag a movie in red on a calendar that mixes in shows', () => {
+    expect(calendarArtTags({ entry: movie, mixed: true })).toEqual([{ text: 'Movie' }]);
+  });
+
+  it('should leave a movie untagged on a movies-only calendar', () => {
+    expect(calendarArtTags({ entry: movie, mixed: false })).toEqual([]);
   });
 });

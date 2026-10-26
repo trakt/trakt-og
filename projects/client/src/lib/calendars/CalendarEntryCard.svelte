@@ -1,13 +1,15 @@
 <!--
   One calendar card, the same in the list and the month whatever the artwork: the art (none for Text), a caption with
-  the card tags and the titles, then og's full quick-icon bar across the bottom. The caption's lines have fixed
-  heights, so cards in a row line up whether or not they have a show line. An episode's types (a premiere, a finale)
-  sit over the art's bottom-left corner, so the caption keeps one line of tags: the time and network, the network
-  cut short on a narrow card. With no art, the types lead that line. The logo sits in the middle of the art. A grouped card has its episodes pill in the art's top-right corner
-  (at the end of the tag line for Text), with a tick per episode along the art's bottom edge.
+  the titles and then a line of tag pills like search's (the certificate, runtime and network), then og's full
+  quick-icon bar across the bottom. The caption's lines have fixed heights, so cards in a row line up whether or not
+  they have a show line; a movie's title can take both. The red tags sit over the art's bottom-left corner: an
+  episode's types (a premiere, a finale) and air time, or Movie on a calendar that mixes in shows. With no art, they
+  lead the pill line. The logo sits in the middle of the art. A grouped card has its episodes pill in the art's
+  top-right corner (at the end of the pill line for Text), with a tick per episode along the art's bottom edge.
     <CalendarEntryCard {entry} icons={cardIcons(entry)} artwork="logo" mixed />
 -->
 <script lang="ts">
+import TagPills from '$lib/components/labels/TagPills.svelte';
 import FanartCard from '$lib/components/media/FanartCard.svelte';
 import CardTag from '$lib/components/media/CardTag.svelte';
 import QuickIcons from '$lib/components/media/QuickIcons.svelte';
@@ -16,7 +18,7 @@ import type { CalendarArtwork } from './calendarDisplay.ts';
 import type { CalendarEntry } from './CalendarEntry.ts';
 import CalendarEntryTitles from './CalendarEntryTitles.svelte';
 import CalendarEpisodes from './CalendarEpisodes.svelte';
-import { calendarTags } from './calendarTags.ts';
+import { calendarArtTags } from './calendarTags.ts';
 
 interface Props {
   entry: CalendarEntry;
@@ -29,7 +31,7 @@ interface Props {
 const { entry, icons, artwork, mixed = false }: Props = $props();
 
 const group = $derived('group' in entry ? entry.group : undefined);
-const tags = $derived(calendarTags({ entry, mixed }));
+const artTags = $derived(calendarArtTags({ entry, mixed }));
 const spoiler = $derived(icons.collectionTarget ?? icons.watchTarget ?? icons.ratingTarget);
 </script>
 
@@ -38,18 +40,18 @@ const spoiler = $derived(icons.collectionTarget ?? icons.watchTarget ?? icons.ra
     <FanartCard {...entry} faded={false} titles={false} iconBar={false} episodeBadge={undefined}
       userRating={entry.state.rating} {icons}>
       {#snippet fanartOverlay()}
-        {#if tags.types.length > 0}<p class="types">{#each tags.types as tag (tag.text)}<CardTag {...tag} />{/each}</p>{/if}
+        {#if artTags.length > 0}<p class="types">{#each artTags as tag (tag.text)}<CardTag {...tag} />{/each}</p>{/if}
         {#if group}<CalendarEpisodes {group} released={entry.released} onArt />{/if}
       {/snippet}
     </FanartCard>
   {/if}
   <div class="caption">
+    <div class="titles"><CalendarEntryTitles {entry} {spoiler} wrap /></div>
     <p class="tags">
-      {#if artwork === 'none'}{#each tags.types as tag (tag.text)}<CardTag {...tag} />{/each}{/if}
-      {#each tags.line as tag (tag.text)}<CardTag {...tag} />{/each}
+      {#if artwork === 'none'}{#each artTags as tag (tag.text)}<CardTag {...tag} />{/each}{/if}
+      <TagPills tags={entry.pills} />
       {#if group && artwork === 'none'}<span class="end"><CalendarEpisodes {group} released={entry.released} /></span>{/if}
     </p>
-    <div class="titles"><CalendarEntryTitles {entry} {spoiler} /></div>
   </div>
   <QuickIcons {...icons} small={artwork === 'poster'} watchNowArt={entry.fanart} />
 </article>
@@ -95,11 +97,20 @@ const spoiler = $derived(icons.collectionTarget ?? icons.watchTarget ?? icons.ra
   padding: var(--calendar-caption-padding);
 }
 
-/* One line of tags, kept when empty so cards line up. The network gives way first, ending in an ellipsis. */
+/* A poster card is narrow, so its pills are a step tighter, like search's. */
+.poster .caption {
+  --search-pill-padding: var(--search-poster-pill-padding);
+  --font-size-search-pill: var(--font-size-search-poster-pill);
+}
+
+/*
+ * One line of tags, kept when empty so cards line up. Pills that don't fit wrap out of sight; the last, the network,
+ * shortens to an ellipsis first while a few letters still fit.
+ */
 .tags {
   display: flex;
   align-items: center;
-  gap: var(--space-xs-inline);
+  gap: var(--search-pill-gap);
   block-size: var(--calendar-tags-height);
   margin: 0;
   overflow: hidden;
@@ -108,10 +119,17 @@ const spoiler = $derived(icons.collectionTarget ?? icons.watchTarget ?? icons.ra
     flex: none;
   }
 
-  & :global(.card-tag.generic) {
-    display: block;
-    flex: 0 1 auto;
+  & :global(.tag-pills) {
+    flex: 1;
+    align-self: start;
     min-inline-size: 0;
+    block-size: var(--calendar-tags-height);
+    overflow: hidden;
+  }
+
+  & :global(.tag-pills .pill:last-child:not(.segments)) {
+    flex: 1 1 var(--calendar-network-min-width);
+    max-inline-size: max-content;
     overflow: hidden;
     text-overflow: ellipsis;
   }

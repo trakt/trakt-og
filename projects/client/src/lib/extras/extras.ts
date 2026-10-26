@@ -6,17 +6,26 @@ export type ExtraProps = {
   readonly woke?: string;
   /** Set when the viewer switches a lasting extra off: it plays its way out, then calls `ondone`. */
   readonly stop?: boolean;
+  /** The signed-in viewer's username, for an extra that talks to them. */
+  readonly viewer?: string;
 };
 
 /** A small switch hidden on the page: one click starts the extra, the next ends it. */
 type Spot = {
-  /** A line drawing on a 16 by 16 grid, stroked in `color`. */
-  readonly path: string;
   readonly label: string;
   readonly color: string;
-  /** The bar it joins as the first segment, found on the page by this selector. */
-  readonly leads: string;
-};
+} & (
+  | {
+      /** The bar it joins as the first segment, found on the page by this selector. It shows only the drawing. */
+      readonly leads: string;
+      /** A line drawing on a 16 by 16 grid, stroked in `color`. */
+      readonly path: string;
+    }
+  | {
+      /** The list row it joins the list right after, found on the page by this selector. It shows the label. */
+      readonly follows: string;
+    }
+);
 
 type Extra = {
   /** Loaded on the first match, so pages pay nothing for it. */
@@ -47,5 +56,9 @@ export const extras: Readonly<Record<string, Extra>> = {
       leads: '.summary-title .title-tags',
     },
     load: () => import('./movie-12601.svelte'),
+  },
+  'show:93720': {
+    spot: { label: 'fsociety', color: '#e8343a', follows: 'nav[aria-label$=" sections"] > ul > li:first-child' },
+    load: () => import('./show-93720.svelte'),
   },
 };

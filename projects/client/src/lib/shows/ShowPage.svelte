@@ -177,4 +177,4 @@ const sections = $derived([
   loadPeople={(card) => lazy().relatedPeople(card)} datePreferences={data.datePreferences} />
 {/key}
 
-<PageExtras type="show" id={show.id} />
+<PageExtras type="show" id={show.id} viewer={data.user?.slug} />

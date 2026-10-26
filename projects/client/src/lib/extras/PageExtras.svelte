@@ -1,7 +1,8 @@
 <!--
   A summary page's hidden extra, if it has one: typing its keys anywhere on the page, or clicking its small switch,
-  the first segment of a bar the extra names (the tag bar over the title), loads and plays it. The switch stays lit
-  while it plays, and a second click or Esc lets it play its way out; Esc stops the others at once. Keys stay quiet
+  loads and plays it. The switch joins something already on the page: the first segment of a bar (the tag bar over
+  the title) or a row of a list (the sidebar's sections). It stays lit while it plays, and a second click or
+  Esc lets it play its way out; Esc stops the others at once. Keys stay quiet
   while you type in a field or hold a modifier, and pages without an extra render nothing. Mount it last on the page,
   so the switch is the last thing Tab reaches.
 -->
@@ -15,9 +16,11 @@ import { typedSequence } from './typedSequence.ts';
 interface Props {
   type: 'movie' | 'show';
   id: number;
+  /** The signed-in viewer's username, handed to the extra. */
+  viewer?: string;
 }
 
-const { type, id }: Props = $props();
+const { type, id, viewer }: Props = $props();
 const extra = $derived(extras[`${type}:${id}`]);
 let typed = { keys: '', at: 0 };
 let loading = false;
@@ -84,20 +87,35 @@ function done() {
   stopping = false;
 }
 
-// The switch joins its bar as the first segment, like a subpage's label. Without the bar on the page, there's none.
-const pin: Attachment<HTMLElement> = (button) => {
-  const bar = extra && 'spot' in extra ? document.querySelector(extra.spot.leads) : null;
-  if (bar) bar.prepend(button);
-  else button.hidden = true;
-  return () => button.remove();
+// The switch joins its bar as the first segment, like a subpage's label, or its list as a row after the one it names.
+// Without that on the page, there's none.
+const pin: Attachment<HTMLElement> = (node) => {
+  const spot = extra && 'spot' in extra ? extra.spot : undefined;
+  const host = spot && document.querySelector('leads' in spot ? spot.leads : spot.follows);
+  if (!spot || !host) node.hidden = true;
+  else if ('leads' in spot) host.prepend(node);
+  else host.after(node);
+  return () => node.remove();
 };
 </script>
 
 <svelte:window {onkeydown} />
 
-{#if extra && 'spot' in extra}
+{#if extra && 'spot' in extra && 'follows' in extra.spot}
+  <li class="row" {@attach pin}>
+    <button
+      class={['spot', { on: Playing }]}
+      type="button"
+      aria-pressed={Boolean(Playing)}
+      style:--spot={extra.spot.color}
+      onclick={flick}
+    >
+      {extra.spot.label}
+    </button>
+  </li>
+{:else if extra && 'spot' in extra && 'leads' in extra.spot}
   <button
-    class={['spot', { on: Playing }]}
+    class={['spot', 'segment', { on: Playing }]}
     type="button"
     aria-label={extra.spot.label}
     aria-pressed={Boolean(Playing)}
@@ -110,12 +128,26 @@ const pin: Attachment<HTMLElement> = (button) => {
 {/if}
 
 {#if Playing}
-  <Playing {woke} stop={stopping} ondone={done} />
+  <Playing {woke} {viewer} stop={stopping} ondone={done} />
 {/if}
 
 <style>
-/* A segment of the bar like its other parts: a quiet icon that fills on hover, and lights up while it's on. */
 .spot {
+  svg {
+    inline-size: 14px;
+    block-size: 14px;
+    filter: drop-shadow(0 0 2px var(--spot));
+  }
+
+  path {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.3;
+  }
+}
+
+/* A segment of the bar like its other parts: a quiet icon that fills on hover, and lights up while it's on. */
+.segment {
   --spot-ink: #021216;
   display: inline-flex;
   align-items: center;
@@ -142,17 +174,40 @@ const pin: Attachment<HTMLElement> = (button) => {
     color: var(--spot-ink);
     box-shadow: inset 0 0 10px rgb(255 255 255 / 60%), 0 0 14px var(--spot);
   }
+}
 
-  svg {
-    inline-size: 14px;
-    block-size: 14px;
-    filter: drop-shadow(0 0 2px var(--spot));
-  }
+/* A row of the list like its other sections: gray capitals, turning to the hover color, and its own color while on. */
+.row {
+  border-block-end: 1px solid var(--color-summary-separator);
 
-  path {
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 1.3;
+  .spot {
+    display: block;
+    inline-size: 100%;
+    padding-block: 7px;
+    padding-inline: 0;
+    border: 0;
+    background: none;
+    color: var(--color-summary-label);
+    font-family: var(--font-headings);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-headings);
+    text-align: start;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: color var(--transition-card);
+
+    &:is(:hover, :focus-visible) {
+      color: var(--color-summary-hover);
+    }
+
+    &.on {
+      color: var(--spot);
+    }
+
+    &:focus-visible {
+      outline: 1px solid var(--spot);
+      outline-offset: 2px;
+    }
   }
 }
 </style>

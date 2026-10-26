@@ -204,6 +204,12 @@ async function send(event: SubmitEvent) {
   }
 }
 
+/* Over the thread's rail, like a reply's avatar. */
+.avatar {
+  position: relative;
+  z-index: 1;
+}
+
 .field {
   min-inline-size: 0;
   border: 1px solid var(--color-comment-field-border);

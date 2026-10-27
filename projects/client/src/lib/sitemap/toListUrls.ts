@@ -16,8 +16,12 @@ type List = {
   };
 };
 
+// Official lists, by Trakt id, whose slug the API resolves to a personal list, so their page answers 404.
+const SLUG_COLLISIONS: ReadonlySet<number> = new Set([37675689]);
+
 // A private owner's profile is locked and kept out of search, and a deleted owner's is gone.
-const isIndexable = ({ privacy, user }: List) => privacy === 'public' && !user.private && !user.deleted;
+const isIndexable = ({ privacy, user, ids }: List) =>
+  privacy === 'public' && !user.private && !user.deleted && !SLUG_COLLISIONS.has(ids.trakt);
 
 /** List pages, the first of each list in the order given, dated by the list's `updated_at`. */
 export function toListUrls(lists: readonly List[]): SitemapUrl[] {

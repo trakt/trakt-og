@@ -1,3 +1,4 @@
+import { isRedirect } from '@sveltejs/kit';
 import { http, HttpResponse, type HttpResponseResolver } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
@@ -73,17 +74,25 @@ afterAll(() => server.close());
 type LoadOptions = {
   kind?: 'watchlist' | 'favorites';
   query?: string;
+  type?: string;
   token?: string | null;
   viewer?: { slug: string; isVip: boolean };
   profile?: ReturnType<typeof profileOf>;
 };
 
-const load = ({ kind = 'watchlist', query = '', token = null, viewer, profile = profileOf() }: LoadOptions = {}) =>
+const load = ({
+  kind = 'watchlist',
+  query = '',
+  type,
+  token = null,
+  viewer,
+  profile = profileOf(),
+}: LoadOptions = {}) =>
   loadBuiltInList({
     fetch,
     locals: { token },
-    params: { id: 'sean' },
-    url: new URL(`https://og.trakt.tv/users/sean/${kind}${query}`),
+    params: { id: 'sean', type },
+    url: new URL(`https://og.trakt.tv/users/sean/${kind}${type ? `/${type}` : ''}${query}`),
     parent: () =>
       Promise.resolve({
         profile,
@@ -154,6 +163,11 @@ describe('loadBuiltInList', () => {
     expect(authorized).toEqual(
       expect.arrayContaining(['/users/sean/watchlist', '/users/sean/watchlist/comments/newest']),
     );
+  });
+
+  it("should 301 OG's dropped type segment to the list, keeping the query", async () => {
+    const thrown = await load({ kind: 'favorites', type: 'movies', query: '?page=2' }).catch((error: unknown) => error);
+    expect(isRedirect(thrown) && thrown.location).toBe('/users/sean/favorites?page=2');
   });
 
   it('should skip the list on a locked profile', async () => {

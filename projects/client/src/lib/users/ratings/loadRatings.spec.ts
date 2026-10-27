@@ -1,3 +1,4 @@
+import { isRedirect } from '@sveltejs/kit';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
@@ -56,8 +57,14 @@ describe('loadRatings', () => {
     expect(result.days).toEqual([]);
   });
   it('should omit the worker-rejected all stars segment for seasons', async () => {
-    await load('seasons/all');
+    await load('seasons/all/added/desc');
     expect(new URL(seen.at(0)?.url ?? '').pathname).toBe('/users/tester/ratings/seasons');
+  });
+  it('should 301 an unknown or default segment to the spelling its links use, keeping the query', async () => {
+    const unknown = await load('movies/zzqx', '?page=2').catch((error: unknown) => error);
+    expect(isRedirect(unknown) && unknown.location).toBe('/users/tester/ratings/movies?page=2');
+    const spelledOut = await load('all/all/added/asc').catch((error: unknown) => error);
+    expect(isRedirect(spelledOut) && spelledOut.location).toBe('/users/tester/ratings');
   });
   it('should read a private profile the viewer may see with the token, once', async () => {
     server.use(

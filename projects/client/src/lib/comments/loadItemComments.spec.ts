@@ -1,4 +1,4 @@
-import { isHttpError } from '@sveltejs/kit';
+import { isHttpError, isRedirect } from '@sveltejs/kit';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
@@ -78,6 +78,24 @@ describe('loadItemComments', () => {
     const read = requests.findLast(({ pathname }) => pathname.includes('/comments/'));
     expect(read?.searchParams.has('language')).toBe(false);
     expect(data.language.code).toBe('all');
+  });
+
+  it('should 301 an unknown or cut sort to the default, keeping the query', async () => {
+    const season = { type: 'season', id: 'breaking-bad', season: '1' } as const;
+    const failure = await load(season, '/shows/breaking-bad/seasons/1/comments/likes30?page=2', 'likes30').catch(
+      (error: unknown) => error,
+    );
+
+    expect(isRedirect(failure) && failure.location).toBe('/shows/breaking-bad/seasons/1/comments?page=2');
+  });
+
+  it('should 301 the spelled-out default sort away', async () => {
+    const season = { type: 'season', id: 'breaking-bad', season: '1' } as const;
+    const failure = await load(season, '/shows/breaking-bad/seasons/1/comments/likes', 'likes').catch(
+      (error: unknown) => error,
+    );
+
+    expect(isRedirect(failure) && failure.location).toBe('/shows/breaking-bad/seasons/1/comments');
   });
 
   it('should answer a missing item with a 404', async () => {

@@ -7,6 +7,7 @@ import type { SubpageItem } from '../subpage/SubpageItem.ts';
 import { commentLanguage } from './commentLanguage.ts';
 import { type ItemCommentSort, itemCommentSort } from './itemCommentSort.ts';
 import { positiveInt } from '../utils/positiveInt.ts';
+import { canonicalRedirect } from '../routing/canonicalRedirect.ts';
 
 type Params = Omit<Parameters<typeof loadSubpageMedia>[0], 'suffix'> & {
   url: URL;
@@ -62,7 +63,8 @@ async function readComments({
 
 /**
  * `/movies/:id/comments(/:sort_by)`, `/shows/:id/comments(/:sort_by)` and the season and episode ones: 100 comments a page under the subpage frame, in English unless `?language=` picks another (or
- * `all`). The read is public, so blocked members aren't filtered yet.
+ * `all`). The read is public, so blocked members aren't filtered yet. An unknown or default sort segment 301s to the
+ * page's own spelling.
  */
 export async function loadItemComments({ fetch, parent, item, url, sortBy }: Params) {
   const sort = itemCommentSort(sortBy, url.searchParams.get('sort_how'));
@@ -72,5 +74,11 @@ export async function loadItemComments({ fetch, parent, item, url, sortBy }: Par
     loadSubpageMedia({ fetch, parent, item, suffix: 'comments' }),
     readComments({ fetch, item, sort, page, language: language.api }),
   ]);
+  const base = `${subpage.media.href}/comments`;
+  canonicalRedirect({
+    requested: sortBy === undefined ? base : `${base}/${sortBy}`,
+    canonical: sort.by === 'likes' ? base : `${base}/${sort.by}`,
+    url,
+  });
   return { ...subpage, ...comments, sort, language };
 }

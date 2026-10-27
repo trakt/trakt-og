@@ -61,8 +61,9 @@ afterEach(() => {
 });
 afterAll(() => server.close());
 
-const load = (item: ItemListsItem, path: string, type?: string, sortBy?: string, token: string | null = null) =>
-  loadItemLists({
+const load = (item: ItemListsItem, path: string, type?: string, sortBy?: string, token: string | null = null) => {
+  const [, , sortHow] = new URL(path, 'http://og.test').pathname.split('/lists/').at(1)?.split('/') ?? [];
+  return loadItemLists({
     fetch: globalThis.fetch,
     parent: () =>
       Promise.resolve({
@@ -74,8 +75,16 @@ const load = (item: ItemListsItem, path: string, type?: string, sortBy?: string,
     url: new URL(path, 'http://og.test'),
     type,
     sortBy,
+    sortHow,
     token,
   });
+};
+
+const redirectOf = (promise: Promise<unknown>) =>
+  promise.then(
+    () => null,
+    (thrown: unknown) => (isRedirect(thrown) ? thrown.location : thrown),
+  );
 
 describe('loadItemLists', () => {
   it("should read the viewer's own personal lists for Me, most liked first, as one page", async () => {
@@ -147,6 +156,39 @@ describe('loadItemLists', () => {
     );
 
     expect(isRedirect(failure) && failure.location).toBe('/people/bryan-cranston/lists');
+  });
+
+  describe('for segments the page never links to', () => {
+    it('should 301 an unknown type and sort to All Lists by Popularity', async () => {
+      const path = '/shows/breaking-bad/seasons/1/lists/bogus/zzz?page=2';
+      const item = { type: 'season', id: 'breaking-bad', season: '1' } as const;
+
+      expect(await redirectOf(load(item, path, 'bogus', 'zzz'))).toBe('/shows/breaking-bad/seasons/1/lists/all?page=2');
+    });
+
+    it("should 301 OG's ignored direction away", async () => {
+      const item = { type: 'person', id: 'bryan-cranston' } as const;
+      const path = '/people/bryan-cranston/lists/official/likes/desc';
+
+      expect(await redirectOf(load(item, path, 'official', 'likes'))).toBe(
+        '/people/bryan-cranston/lists/official/likes',
+      );
+    });
+
+    it('should 301 the spelled-out default away', async () => {
+      const item = { type: 'person', id: 'bryan-cranston' } as const;
+      const path = '/people/bryan-cranston/lists/personal/popularity';
+
+      expect(await redirectOf(load(item, path, 'personal', 'popularity'))).toBe('/people/bryan-cranston/lists');
+    });
+
+    it('should render the spelling its own links use', async () => {
+      const item = { type: 'person', id: 'bryan-cranston' } as const;
+
+      expect(
+        await redirectOf(load(item, '/people/bryan-cranston/lists/official/likes', 'official', 'likes')),
+      ).toBeNull();
+    });
   });
 
   it('should answer a missing item with a 404', async () => {

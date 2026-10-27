@@ -2,6 +2,7 @@
   og's error page: full screen, outside the shell, dressed as the show or movie for its kind of error (errorScenes).
   Try again reruns the page's loads, so a fix shows the page in place. Losing the connection is OfflineGuard's. A 429
   from the API rate limiting the viewer is Trakt API Error, with the wait in its body.
+  Every error page keeps its status and stays out of search (noindex).
 -->
 <script lang="ts">
 import SeoHead from '$lib/seo/SeoHead.svelte';

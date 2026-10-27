@@ -3,8 +3,7 @@ import { type KeyedCache, sharedCache } from '../utils/sharedCache.ts';
 import type { AboutMember } from './AboutMember.ts';
 import { aboutTeamSchema } from './aboutTeamSchema.ts';
 import { fetchAboutTeam } from './fetchAboutTeam.ts';
-import { aboutGithubSchema } from './github/aboutGithubSchema.ts';
-import { type AboutGithub, fetchAboutGithub } from './github/fetchAboutGithub.ts';
+import { loadAboutGithub } from './github/loadAboutGithub.ts';
 import { pickAboutTeam } from './pickAboutTeam.ts';
 
 const MINUTE_MS = 60 * 1000;
@@ -14,10 +13,6 @@ const HOUR_MS = 60 * MINUTE_MS;
 // them twice a day and a worker holds its copy for an hour.
 const TEAM_SECONDS = 12 * 60 * 60;
 const teamCache = createTtlCache<AboutMember[]>({ ttlMs: HOUR_MS, retryMs: 5 * MINUTE_MS });
-// GitHub allows an address 60 reads an hour without a token, so the repo's numbers, issues and commits are read once
-// per data center every 10 minutes and shared by all its workers, which each hold a copy for a minute more.
-const GITHUB_SECONDS = 10 * 60;
-const githubCache = createTtlCache<AboutGithub>({ ttlMs: MINUTE_MS, retryMs: MINUTE_MS });
 
 interface LoadAboutParams {
   fetch: typeof globalThis.fetch;
@@ -32,9 +27,8 @@ interface LoadAboutParams {
   liveFetch?: typeof globalThis.fetch;
   /** The `GITHUB_TOKEN` Worker secret, for GitHub's higher rate limit. */
   githubToken?: string;
-  /** Tests pass fresh caches; the page shares one of each per worker. */
+  /** Tests pass a fresh cache; the page shares one per worker. */
   pool?: typeof teamCache;
-  githubPool?: typeof githubCache;
 }
 
 /**
@@ -50,7 +44,6 @@ export async function loadAbout({
   liveFetch = fetch,
   githubToken,
   pool = teamCache,
-  githubPool = githubCache,
 }: LoadAboutParams) {
   const readTeam = () =>
     sharedCache({
@@ -61,19 +54,8 @@ export async function loadAbout({
       load: () => fetchAboutTeam(fetch),
     });
 
-  const readGithub = () =>
-    sharedCache({
-      cache,
-      ttlSeconds: GITHUB_SECONDS,
-      key: `${origin}/_cache/about/github`,
-      parse: (value) => aboutGithubSchema.safeParse(value).data ?? null,
-      load: () => fetchAboutGithub({ fetch: liveFetch, token: githubToken }),
-    });
-  // Streamed, so a cache miss never holds up the page; null when GitHub can't be read and nothing's cached.
-  const github = githubPool({ now, load: readGithub }).catch((reason: unknown) => {
-    console.warn('about: GitHub could not be read', reason);
-    return null;
-  });
+  // Streamed, so a cache miss never holds up the page.
+  const github = loadAboutGithub({ fetch: liveFetch, now, cache, origin, token: githubToken });
 
   const team = await pool({ now, load: readTeam }).catch((): AboutMember[] => []);
 

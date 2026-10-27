@@ -10,17 +10,13 @@ import TagPills from '$lib/components/labels/TagPills.svelte';
 import Shimmer from '$lib/components/loading/Shimmer.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import githubMark from '$lib/icons/brands/github.svg?raw';
-import circleCheck from '$lib/icons/regular/circle-check.svg?raw';
-import circleDot from '$lib/icons/regular/circle-dot.svg?raw';
-import codeCommit from '$lib/icons/regular/code-commit.svg?raw';
-import codeFork from '$lib/icons/regular/code-fork.svg?raw';
-import star from '$lib/icons/regular/star.svg?raw';
 import { prefersReducedMotion } from 'svelte/motion';
 import type { AboutGithub } from './github/fetchAboutGithub.ts';
 import { ogRepoUrls } from './ogRepoUrls.ts';
 import { playScene } from './playScene.ts';
 import type { AboutScene } from './scenes/AboutScene.ts';
 import { aboutScenes } from './scenes/aboutScenes.ts';
+import { toAboutCounts } from './toAboutCounts.ts';
 
 interface Props {
   /** The repo's GitHub numbers, null until they load in the browser. */
@@ -53,54 +49,7 @@ const pickScene = () => {
   scene = aboutScenes[Math.floor(Math.random() * aboutScenes.length)] ?? null;
 };
 
-// GitHub's own colors for each count, each linking to that list on GitHub.
-const counts = $derived([
-  ...(github?.stars != null
-    ? [{
-      icon: star,
-      tint: 'var(--color-github-star)',
-      href: ogRepoUrls.stargazers,
-      lead: github.stars.toLocaleString(),
-      text: github.stars === 1 ? 'star' : 'stars',
-    }]
-    : []),
-  ...(github?.forks != null
-    ? [{
-      icon: codeFork,
-      tint: 'var(--color-github-forks)',
-      href: ogRepoUrls.forks,
-      lead: github.forks.toLocaleString(),
-      text: github.forks === 1 ? 'fork' : 'forks',
-    }]
-    : []),
-  ...(github?.commitCount
-    ? [{
-      icon: codeCommit,
-      tint: 'var(--color-github-commits)',
-      href: ogRepoUrls.commits,
-      lead: github.commitCount.toLocaleString(),
-      text: github.commitCount === 1 ? 'commit' : 'commits',
-    }]
-    : []),
-  ...(github?.open
-    ? [{
-      icon: circleDot,
-      tint: 'var(--color-github-open)',
-      href: ogRepoUrls.openIssues,
-      lead: github.open.total.toLocaleString(),
-      text: github.open.total === 1 ? 'open issue' : 'open issues',
-    }]
-    : []),
-  ...(github?.closed
-    ? [{
-      icon: circleCheck,
-      tint: 'var(--color-github-closed)',
-      href: ogRepoUrls.closedIssues,
-      lead: github.closed.total.toLocaleString(),
-      text: github.closed.total === 1 ? 'closed issue' : 'closed issues',
-    }]
-    : []),
-]);
+const counts = $derived(toAboutCounts(github));
 
 async function copyCommands() {
   await navigator.clipboard.writeText(COMMANDS.join('\n')).catch(() => undefined);

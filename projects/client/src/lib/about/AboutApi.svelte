@@ -2,6 +2,8 @@
 <script lang="ts">
 import traktDeveloper from '$lib/assets/trakt-developer.svg';
 import LinkButton from '$lib/components/button/LinkButton.svelte';
+import Icon from '$lib/icons/Icon.svelte';
+import code from '$lib/icons/solid/code.svg?raw';
 import { traktUrls } from '$lib/traktUrls';
 </script>
 
@@ -14,7 +16,9 @@ import { traktUrls } from '$lib/traktUrls';
       conventions and rules. That's also why your history, ratings and lists stay in sync everywhere you use Trakt.
     </p>
   </div>
-  <LinkButton href={traktUrls.developer} variant="developer">Developer portal</LinkButton>
+  <LinkButton href={traktUrls.developer} variant="developer" arrow={false}>
+    <Icon svg={code} /> Developer portal
+  </LinkButton>
 </section>
 
 <style>

@@ -17,13 +17,15 @@ const paletteOf = (canvas: HTMLCanvasElement): AboutScenePalette => {
   return {
     red: read('--color-about-scene-red'),
     cyan: read('--color-about-scene-cyan'),
+    green: read('--color-about-scene-green'),
+    white: read('--color-about-scene-white'),
     ink: read('--color-about-scene-ink'),
   };
 };
 
 /**
- * Attachment: plays an about scene on a canvas at the canvas's own size, starting over when it resizes. It only draws
- * while the canvas is on screen and the tab is showing.
+ * Attachment: plays an about or help scene on a canvas at the canvas's own size, starting over when it resizes. It
+ * only draws while the canvas is on screen and the tab is showing.
  */
 export function playScene({ scene, lines, still }: PlaySceneParams): Attachment<HTMLCanvasElement> {
   return (canvas) => {

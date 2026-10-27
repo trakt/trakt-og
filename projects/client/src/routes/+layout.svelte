@@ -1,6 +1,8 @@
 <script lang="ts">
+import '$lib/styles/fonts.css';
 import '$lib/styles/tokens.css';
 import '$lib/styles/base.css';
+import figtreeLatin from '$lib/assets/fonts/figtree-latin.woff2';
 import { invalidateAll } from '$app/navigation';
 import { page } from '$app/state';
 import { isStandardApi } from '$lib/api/isStandardApi';
@@ -69,6 +71,11 @@ onMount(() => {
   };
 });
 </script>
+
+<svelte:head>
+  <!-- Every page sets Latin text in Figtree first, so fetch it with the page instead of after the CSS. -->
+  <link rel="preload" href={figtreeLatin} as="font" type="font/woff2" crossorigin="anonymous" />
+</svelte:head>
 
 {#if bare}
   {@render children()}

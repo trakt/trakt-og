@@ -1,6 +1,5 @@
 // FIXME(zod-4): see noteRowsSchema.ts. og has one zod, the one @trakt/api depends on.
 import { z } from 'zod/v4';
-import type { ListFilterKey } from './advancedFilters.ts';
 
 /** One choice in a filter's list. `tag` is the small right-hand label OG's Chosen lists showed (a country, "Free"). */
 export type FilterOption = {
@@ -13,7 +12,7 @@ export type FilterOption = {
 /** A labelled run of options: watch now's "Bundles" and "Streaming Services". */
 export type FilterOptionGroup = { readonly label?: string; readonly options: readonly FilterOption[] };
 
-// Networks come from the API (`X-Runtime`), so the body is parsed here.
+// Networks come from the API as you search them (`searchNetworks`), so the body is parsed here.
 const networks = z.array(z.object({ name: z.string(), country: z.string().nullish() }));
 
 /**
@@ -43,18 +42,3 @@ export const statusOptions: readonly FilterOption[] = [
   'canceled',
   'ended',
 ].map((value) => ({ value, label: value.replace(/\b\w/g, (letter) => letter.toUpperCase()) }));
-
-/** The lists og loads from the API. The rest ship with it. */
-export type FetchedFilterKey = Exclude<
-  ListFilterKey,
-  'status' | 'episode_types' | 'certifications' | 'genres' | 'languages' | 'countries'
->;
-
-/** Where each fetched list's options come from. */
-export const optionPaths: Record<FetchedFilterKey, (type: 'shows' | 'movies') => string> = {
-  networks: () => '/networks',
-};
-
-export const optionMappers: Record<FetchedFilterKey, (body: unknown) => FilterOption[]> = {
-  networks: toNetworkOptions,
-};

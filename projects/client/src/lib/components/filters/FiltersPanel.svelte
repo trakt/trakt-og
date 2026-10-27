@@ -2,7 +2,8 @@
   The slide-in filter panel of a SidebarFrame page: og's whole advanced set with nothing to apply. Every change
   filters the page straight away (typing and sliders after a short pause): streaming services, terms, then each list as
   a full-width field that keeps (⊕) and leaves out (⊖) values, then the runtime and the site ratings. Reset and Close
-  sit at the top. The lists load from the API the first time it opens; Esc closes it.
+  sit at the top. The lists ship with og and networks are searched as you type; the streaming services load the first
+  time it opens. Esc closes it.
     <FiltersPanel id="calendar-filters" {open} {config} {filters} {country} {favorites} {sources}
       onchange={(filters) => goto(…)} onclose={close} />
 -->
@@ -20,12 +21,13 @@ import xmark from '$lib/icons/regular/xmark.svg?raw';
 import type { AdvancedFiltersConfig } from './AdvancedFiltersConfig.ts';
 import { type AdvancedFilters, emptyFilters, type ListFilterKey, type RangeFilterKey } from './advancedFilters.ts';
 import { fetchFilterBody } from './fetchFilterBody.ts';
-import { fetchListOptions } from './fetchListOptions.ts';
+import { listOptions } from './listOptions.ts';
 import { type FilterDraft, fromFilterDraft, toFilterDraft } from './filterDraft.ts';
-import type { FilterOption } from './filterOptions.ts';
+import type { FilterOptionGroup } from './filterOptions.ts';
 import { filterValueLabel } from './filterTags.ts';
 import IncludeExcludeSelect from './IncludeExcludeSelect.svelte';
 import SearchField from './SearchField.svelte';
+import { searchNetworks } from './searchNetworks.ts';
 import { type ListSelection, listSelection, toListFilter } from './listSelection.ts';
 import RangeSlider from './RangeSlider.svelte';
 import { type FilterSource, toFilterSources, watchNowOptions } from './watchNowFilter.ts';
@@ -89,36 +91,26 @@ const setList = (key: ListFilterKey, selection: ListSelection) =>
 const setRange = (key: RangeFilterKey, range: readonly [number, number]) =>
   apply({ ...draft, ranges: { ...draft.ranges, [key]: range } }, 400);
 
-// The lists load once, the first time the panel opens.
-let options = $state<Partial<Record<ListFilterKey, FilterOption[]>>>({});
+// Every list but networks ships with og. Networks are too many to load whole, so they're searched.
+const listGroups = (key: ListFilterKey): FilterOptionGroup[] =>
+  key === 'networks' ? [] : [{ options: listOptions(key, config) }];
+
+// The streaming services load once per country, the first time the panel opens.
 let loadedSources = $state<ReadonlyMap<string, FilterSource>>();
-let requestedKey = '';
+let requestedCountry: string | undefined;
 
 $effect(() => {
-  if (!open) return;
-  const requestKey = JSON.stringify([config.type, config.optionTypes, config.lists, config.watchnow, country]);
-  if (requestedKey === requestKey) return;
-  requestedKey = requestKey;
-  options = {};
+  if (!open || !streaming || requestedCountry === country) return;
+  const requested = country;
+  requestedCountry = requested;
   loadedSources = undefined;
-  for (const key of config.lists) {
-    fetchListOptions(key, config)
-      .then((list) => {
-        if (requestedKey === requestKey) options = { ...options, [key]: list };
-      })
-      .catch(() => {
-        if (requestedKey === requestKey) options = { ...options, [key]: [] };
-      });
-  }
-  if (streaming) {
-    fetchFilterBody(`/watchnow/sources/${country}`)
-      .then((body) => {
-        if (requestedKey === requestKey) loadedSources = toFilterSources(body, country);
-      })
-      .catch(() => {
-        if (requestedKey === requestKey) loadedSources = new Map();
-      });
-  }
+  fetchFilterBody(`/watchnow/sources/${requested}`)
+    .then((body) => {
+      if (requestedCountry === requested) loadedSources = toFilterSources(body, requested);
+    })
+    .catch(() => {
+      if (requestedCountry === requested) loadedSources = new Map();
+    });
 });
 
 const watchnowGroups = $derived(
@@ -173,7 +165,8 @@ function reset() {
     {/if}
 
     {#each config.lists as key (key)}
-      <IncludeExcludeSelect label={lists[key]} groups={[{ options: options[key] ?? [] }]} loading={!options[key]}
+      {@const searched = key === 'networks'}
+      <IncludeExcludeSelect label={lists[key]} groups={listGroups(key)} search={searched ? searchNetworks : undefined}
         labelFor={(value) => filterValueLabel(key, value)} selection={listSelection(draft[key])}
         onchange={(selection) => setList(key, selection)} />
     {/each}

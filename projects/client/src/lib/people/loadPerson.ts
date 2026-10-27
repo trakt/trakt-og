@@ -1,5 +1,6 @@
-import { error, redirect } from '@sveltejs/kit';
+import { redirect } from '@sveltejs/kit';
 import { api } from '../api/api.ts';
+import { assertOk } from '../api/assertOk.ts';
 import { rawApiFetch } from '../api/rawApiFetch.ts';
 import type { HeaderUser } from '../components/header/HeaderUser.ts';
 import { loadPrivateNote } from '../notes/loadPrivateNote.ts';
@@ -60,8 +61,7 @@ export async function loadPerson({ fetch, token, parent, id: requested, search }
   extras.catch(() => {});
 
   const [summary, { settings, user, datePreferences }] = await Promise.all([summaryRead, layout]);
-  if (summary.status === 404) error(404, 'Person not found');
-  if (summary.status !== 200) error(502, 'The Trakt API could not load this person.');
+  assertOk(summary, 'Person');
 
   const person = summary.body;
   if (requested !== person.ids.slug) {

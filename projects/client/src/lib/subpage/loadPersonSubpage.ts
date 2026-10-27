@@ -1,5 +1,6 @@
-import { error, redirect } from '@sveltejs/kit';
+import { redirect } from '@sveltejs/kit';
 import { api } from '../api/api.ts';
+import { assertOk } from '../api/assertOk.ts';
 import type { loadSubpageMedia } from './loadSubpageMedia.ts';
 import { toPersonSubpageMedia } from './toPersonSubpageMedia.ts';
 
@@ -14,8 +15,7 @@ export async function loadPersonSubpage({ fetch, parent, id, suffix }: Params) {
     api({ fetch }).people.summary({ params: { id }, query: { extended: 'full,images' } }),
     parent(),
   ]);
-  if (summary.status === 404) error(404, 'Person not found');
-  if (summary.status !== 200) error(502, 'The Trakt API could not load this person.');
+  assertOk(summary, 'Person');
 
   const media = toPersonSubpageMedia(summary.body);
   if (summary.body.ids.slug !== id) redirect(301, `${media.href}/${suffix}`);

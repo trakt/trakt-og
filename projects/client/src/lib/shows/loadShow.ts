@@ -2,8 +2,9 @@ import { episodeResponseSchema, peopleResponseSchema, seasonResponseSchema } fro
 import type { EpisodeResponse, PeopleResponse, SeasonsResponse } from '@trakt/api';
 import { readFadeHide } from '../components/filters/readFadeHide.ts';
 import type { Cookies } from '@sveltejs/kit';
-import { error, redirect } from '@sveltejs/kit';
+import { redirect } from '@sveltejs/kit';
 import { api } from '../api/api.ts';
+import { assertOk } from '../api/assertOk.ts';
 import { rawApiFetch } from '../api/rawApiFetch.ts';
 import type { HeaderUser } from '../components/header/HeaderUser.ts';
 import { loadWatchNow } from '../components/watchnow/loadWatchNow.ts';
@@ -99,8 +100,7 @@ export async function loadShowData({ fetch, token, parent, id: requested, path =
   extras.catch(() => {});
 
   const [summary, { settings, user, datePreferences }] = await Promise.all([summaryRead, layout]);
-  if (summary.status === 404) error(404, 'Show not found');
-  if (summary.status !== 200) error(502, 'The Trakt API could not load this show.');
+  assertOk(summary, 'Show');
 
   const show = summary.body;
   if (requested !== show.ids.slug) redirect(301, `/shows/${show.ids.slug}${path}`);

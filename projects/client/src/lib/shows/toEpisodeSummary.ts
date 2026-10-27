@@ -36,7 +36,6 @@ interface Params {
   stats: EpisodeStatsResponse;
   datePreferences: DatePreferences;
   now: Date;
-  isVip: boolean;
   episodeTypeTags: boolean;
   otherSiteRatings: boolean;
 }
@@ -52,8 +51,7 @@ export function toEpisodeSummary(params: Params) {
   const number = episodeNumber(episode, show.genres);
   const title = episode.title || `Episode ${episode.number}`;
   const fullTitle = `${show.title} ${number} ${title}`;
-  const popular = (key: string, value: string) =>
-    params.isVip ? `/shows/popular?${key}=${encodeURIComponent(value)}` : undefined;
+  const popular = (key: string, value: string) => `/shows/popular?${key}=${encodeURIComponent(value)}`;
   const seasonNumber = seasonName(episode.season);
   return {
     id: episode.ids.trakt,

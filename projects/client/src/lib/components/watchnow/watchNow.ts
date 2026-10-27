@@ -31,7 +31,7 @@ export type WatchNowButton = {
   favorites: number;
   /** Only cinemas sell it: "Buy Tickets" and "N cinemas". */
   cinemaOnly: boolean;
-  /** A VIP who only wants their favorites, and none of them has it. */
+  /** The viewer only wants their favorites, and none of them has it. */
   hidden: boolean;
   /** The viewer's watch-now country, where the modal opens. */
   country: string;
@@ -98,12 +98,11 @@ type WatchNowButtonParams = {
   /** The viewer's `browsing.watchnow` settings, if signed in. */
   favorites: readonly string[];
   onlyFavorites: boolean;
-  isVip: boolean;
 };
 
 /** The sidebar block: two tiles, favorites first, and the count under the button. */
 export function toWatchNowButton(params: WatchNowButtonParams): WatchNowButton {
-  const { path, offers, order, sources, country, favorites, onlyFavorites, isVip } = params;
+  const { path, offers, order, sources, country, favorites, onlyFavorites } = params;
   const slugs = offerSlugs(offers);
   const liked = favoriteSlugs(favorites, country, country).filter((slug) => slugs.includes(slug));
   const ranked =
@@ -121,7 +120,7 @@ export function toWatchNowButton(params: WatchNowButtonParams): WatchNowButton {
     count: slugs.length,
     favorites: liked.length,
     cinemaOnly,
-    hidden: isVip && onlyFavorites && liked.length === 0,
+    hidden: onlyFavorites && liked.length === 0,
     country,
     favoriteKeys: favorites,
   };

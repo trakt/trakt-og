@@ -239,7 +239,7 @@ const following = [{ slug: 'teodoro_2', name: 'Elsy Murphy (@teodoro_2)' }];
 
 <NotesDialog bind:open={notesOpen} bind:draft={notesDraft} item={notesItem.noteTitle} privacy="public"
   onsave={() => notesOpen = false} />
-<BuiltInListDialog bind:open={builtInOpen} kind="watchlist" count={12} vip busy={false} description={undefined}
+<BuiltInListDialog bind:open={builtInOpen} kind="watchlist" count={12} busy={false} description={undefined}
   sortBy="rank" sortHow="asc" onsave={() => builtInOpen = false} />
 {#if open}
   {#if mode === 'add'}

@@ -26,20 +26,17 @@ import arrow from '$lib/icons/trakt/arrow-right.svg?raw';
 import ListItemPoster from '$lib/lists/ListItemPoster.svelte';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
 import DashboardPanel from './DashboardPanel.svelte';
-import { traktUrls } from '$lib/traktUrls';
 
 interface Props {
   watchlist: Promise<DashboardWatchlist>;
   /** The viewer's slug, for the watchlist link and the saved row count. */
   username: string;
-  /** Only VIPs could change the rows in OG; everyone else was sent to the VIP page. */
-  isVip: boolean;
   datePreferences: DatePreferences;
   /** Welcome mode: an empty panel offers starter picks instead of a link. */
   welcome?: boolean;
 }
 
-const { watchlist, username, isVip, datePreferences, welcome = false }: Props = $props();
+const { watchlist, username, datePreferences, welcome = false }: Props = $props();
 
 const PER_ROW = 6;
 // The grid's width, so a smaller tablet's four columns get whole rows.
@@ -103,7 +100,6 @@ const allText = (total: number) => `All ${total.toLocaleString('en-US')} ${total
   rows={rows.rows}
   maxRows={rows.maxRows}
   onchange={changeRows}
-  upsellHref={isVip ? undefined : traktUrls.vip}
 />
   {/snippet}
   {@render panel(false, cards, list, list.cards.length > 0 ? navigator : undefined)}

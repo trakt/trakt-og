@@ -32,7 +32,6 @@ const base = {
   otherSiteRatings: true,
   actorSpoilers: true,
   episodeTypeTags: true,
-  isVip: false,
   datePreferences: { order: 'mdy', hour24: false, timeZone: 'UTC', weekStartDay: 0 },
   now: new Date('2026-09-29T12:00:00Z'),
 } as const;
@@ -118,7 +117,10 @@ describe('toShowSummary', () => {
         datePreferences: { ...base.datePreferences, timeZone: 'Europe/London' },
       });
 
-      expect(facts.airs).toEqual({ when: 'Monday at 2:00 AM', network: { name: 'AMC', href: undefined } });
+      expect(facts.airs).toEqual({
+        when: 'Monday at 2:00 AM',
+        network: { name: 'AMC', href: '/shows/popular?networks=AMC' },
+      });
       expect(facts.status).toBeUndefined();
       expect(facts.network).toBeUndefined();
     });

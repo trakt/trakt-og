@@ -16,15 +16,14 @@ const list = (extra: Partial<SummaryList> = {}): SummaryList => ({
 const origin = 'https://og.trakt.tv';
 
 describe('itemListRowActions', () => {
-  it('should give a signed-out viewer progress behind the VIP page and share', () => {
+  it('should give a signed-out viewer only share', () => {
     expect(itemListRowActions({ list: list(), viewer: null, origin })).toEqual({
-      progressHref: 'https://app.trakt.tv/vip',
       shareUrl: 'https://og.trakt.tv/users/sean/lists/heist-night',
     });
   });
 
-  it("should give the owner report, edit and delete, and a VIP the list's progress", () => {
-    expect(itemListRowActions({ list: list(), viewer: { slug: 'sean', isVip: true }, origin })).toEqual({
+  it("should give the owner report, edit and delete, and the list's progress", () => {
+    expect(itemListRowActions({ list: list(), viewer: { slug: 'sean' }, origin })).toEqual({
       report: {},
       edit: {},
       delete: {},
@@ -38,7 +37,7 @@ describe('itemListRowActions', () => {
       shareUrl: 'https://og.trakt.tv/lists/x',
     });
     expect(
-      itemListRowActions({ list: list({ kind: 'watchlist' }), viewer: { slug: 'sean', isVip: false }, origin }),
+      itemListRowActions({ list: list({ kind: 'watchlist' }), viewer: { slug: 'sean' }, origin }),
     ).not.toHaveProperty('delete');
   });
 });

@@ -11,7 +11,6 @@ type LoadWatchNowParams = {
   fallback?: string;
   country: string;
   settings: ViewerSettings | null;
-  isVip: boolean;
 };
 
 /**
@@ -20,7 +19,7 @@ type LoadWatchNowParams = {
  * viewer's favorites, which go first from their settings instead. A client ID that may not call watch-now routes gets
  * an `unavailable` block, without the S1E1 retry.
  */
-export async function loadWatchNow({ fetch, path, fallback, country, settings, isVip }: LoadWatchNowParams) {
+export async function loadWatchNow({ fetch, path, fallback, country, settings }: LoadWatchNowParams) {
   const load = (at: string) =>
     Promise.all([
       readWatchNow({
@@ -53,7 +52,6 @@ export async function loadWatchNow({ fetch, path, fallback, country, settings, i
         country,
         favorites: favorites?.favorites ?? [],
         onlyFavorites: favorites?.only_favorites ?? false,
-        isVip,
       }),
       unavailable,
     },

@@ -218,7 +218,7 @@ function clearFilters() {
         {@render viewToggle('Grid View', grid2, 'grid_view', gridOn)}
         {@render viewToggle('Simple Progress Bars', barsProgress, 'simple_progress', simple)}
       {/if}
-      <TermsFilter vip={data.user?.isVip ?? false} bind:terms={() => data.terms, (terms) => goto(withTerms(terms))} />
+      <TermsFilter bind:terms={() => data.terms, (terms) => goto(withTerms(terms))} />
       <FadeHideMenu value={{ fade: [], hide: data.hide }} options={[]} hideOptions={hideOptionsFor(data.type)}
         cookie="progress" onchange={(next) => changeHide(next.hide)} />
     </span>

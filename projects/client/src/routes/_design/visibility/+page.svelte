@@ -129,7 +129,7 @@ const recommendation: Recommendation = {
 <Specimen title="Not interested"
   note="The recommendation spotlight's hide button, top right: it asks, then drops the pick from recommendations.">
   <div class="spotlight">
-    <RecommendationSpotlight item={recommendation} index={0} total={20} mixed={false} isVip onstep={() => {}} />
+    <RecommendationSpotlight item={recommendation} index={0} total={20} mixed={false} onstep={() => {}} />
   </div>
 </Specimen>
 

@@ -29,8 +29,6 @@ export const CALENDAR_ARTWORK = [
 
 type CalendarDisplayParams = {
   cookies: { readonly get: (name: string) => string | undefined };
-  /** OG kept artwork choices for VIPs and accounts from before September 11, 2024; everyone else gets logos. */
-  imagesAllowed: boolean;
 };
 
 const isView = (value: string | undefined): value is CalendarView =>
@@ -40,14 +38,13 @@ const isArtwork = (value: string | undefined): value is CalendarArtwork =>
   CALENDAR_ARTWORK.some((artwork) => artwork === value);
 
 /** The viewer's display choices from their cookies: the month, posters and grouped episodes by default. */
-export function calendarDisplay({ cookies, imagesAllowed }: CalendarDisplayParams): CalendarDisplay {
+export function calendarDisplay({ cookies }: CalendarDisplayParams): CalendarDisplay {
   const view = cookies.get(CALENDAR_DISPLAY_COOKIES.view);
   const artwork = cookies.get(CALENDAR_DISPLAY_COOKIES.artwork);
   const episodes = cookies.get(CALENDAR_DISPLAY_COOKIES.episodes);
-  const picked = isArtwork(artwork) ? artwork : 'poster';
   return {
     view: isView(view) ? view : 'month',
-    artwork: imagesAllowed ? picked : 'logo',
+    artwork: isArtwork(artwork) ? artwork : 'poster',
     episodes: isEpisodes(episodes) ? episodes : 'grouped',
   };
 }

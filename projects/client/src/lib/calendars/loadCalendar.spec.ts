@@ -329,7 +329,7 @@ describe('loadCalendar', () => {
       calendar: { period: 'month', image_type: 'none' },
     });
     expect(data.window.dates).toHaveLength(30);
-    expect(data.display.artwork).toBe('logo');
+    expect(data.display.artwork).toBe('poster');
   });
 
   describe('for All calendars', () => {

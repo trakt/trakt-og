@@ -111,7 +111,7 @@ const options = $derived([{
     </div>
     <ListSettingsRow bind:privacy={draft.privacy} bind:allowComments={draft.allow_comments}
       bind:displayNumbers={draft.display_numbers} {shareLink} disabled={busy} />
-    <ListSortField bind:by={draft.sort_by} bind:how={draft.sort_how} {vip} disabled={busy} />
+    <ListSortField bind:by={draft.sort_by} bind:how={draft.sort_how} disabled={busy} />
     {#if !collaboratorsUnavailable}
     <div class="collaborators">
       <FieldLabel text="Collaborators" id="{id}-collaborators" />

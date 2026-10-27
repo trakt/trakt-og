@@ -37,7 +37,6 @@ export async function loadMovieReleases({
     path: `/movies/${movie.ids.slug}`,
     country,
     settings,
-    isVip: user?.isVip ?? false,
   });
   return {
     watchNow: watchNow.button,

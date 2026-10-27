@@ -17,7 +17,7 @@ interface Props {
   controls: string;
   /** Filters are on: the funnel turns red. */
   active: boolean;
-  /** Applied filters, badged when above 0. OG counted the sidebar's tags, which only VIPs got. */
+  /** Applied filters, badged when above 0. OG counted the sidebar's tags. */
   count: number;
   /** Lets the page hand focus back here when the panel closes. */
   button?: HTMLButtonElement;

@@ -46,7 +46,7 @@ function serviceOption(value: string, name: string) {
 type WatchNowOptionsParams = {
   sources: ReadonlyMap<string, FilterSource>;
   country: string;
-  /** The viewer's favorite services here, as bare slugs. Only VIPs got the favorites group. */
+  /** The viewer's favorite services here, as bare slugs. */
   favorites: readonly string[];
 };
 

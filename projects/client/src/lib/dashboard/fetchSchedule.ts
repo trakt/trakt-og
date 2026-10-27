@@ -29,7 +29,6 @@ type FetchScheduleParams = {
   /** The layout's `/users/settings`, for "hide specials" and the watch-now country. */
   settings: ViewerSettings | null;
   datePreferences: Pick<DatePreferences, 'timeZone' | 'hour24' | 'order'>;
-  isVip: boolean;
   /** The viewer's schedule settings. Left out, OG's defaults. */
   schedule?: DashboardSettings['schedule'];
   now?: Date;
@@ -81,7 +80,6 @@ export async function fetchSchedule({
   token,
   settings,
   datePreferences,
-  isVip,
   schedule = toDashboardSettings({ settings: null }).schedule,
   now = new Date(),
 }: FetchScheduleParams): Promise<readonly ScheduleDay[]> {
@@ -115,5 +113,5 @@ export async function fetchSchedule({
     schedule.poster === 'season' ? seasonPosters(fetch, spotlight) : undefined,
   ]);
 
-  return toScheduleDays({ days, today, datePreferences, isVip, offers, country, seasonPoster });
+  return toScheduleDays({ days, today, datePreferences, offers, country, seasonPoster });
 }

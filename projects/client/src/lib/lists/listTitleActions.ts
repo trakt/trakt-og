@@ -1,5 +1,4 @@
 import type { ListView } from './toListView.ts';
-import { traktUrls } from '../traktUrls.ts';
 
 /** An icon in the title row. Left without `onclick`, it renders as OG's but is marked unavailable until wired. */
 type TitleAction = { readonly onclick?: () => void };
@@ -12,14 +11,14 @@ export interface ListTitleActions {
   readonly leave?: TitleAction;
   /** Owner or collaborator: "Manage". */
   readonly manage?: TitleAction;
-  /** Left out on official lists. */
+  /** Signed in, off official lists. */
   readonly progressHref?: string;
   readonly shareUrl: string;
 }
 
 type ListTitleActionsParams = {
   list: Pick<ListView, 'id' | 'kind' | 'ownerSlug' | 'href'>;
-  viewer: { readonly slug: string; readonly isVip: boolean } | null;
+  viewer: { readonly slug: string } | null;
   isCollaborator: boolean;
   /** og's origin, for the share URL. */
   origin: string;
@@ -34,7 +33,6 @@ type ListTitleActionsParams = {
 export function listTitleActions({ list, viewer, isCollaborator, origin }: ListTitleActionsParams): ListTitleActions {
   const owner = list.kind !== 'official' && viewer?.slug === list.ownerSlug;
   const collaborator = list.kind !== 'official' && !owner && isCollaborator;
-  const progressHref = viewer?.isVip && list.id > 0 ? `/users/${viewer.slug}/progress?list=${list.id}` : traktUrls.vip;
 
   return {
     ...(viewer && { report: {} }),
@@ -42,7 +40,9 @@ export function listTitleActions({ list, viewer, isCollaborator, origin }: ListT
     ...(owner && list.kind === 'personal' && { delete: {} }),
     ...(collaborator && { leave: {} }),
     ...((owner || collaborator) && { manage: {} }),
-    ...(list.kind !== 'official' && { progressHref }),
+    ...(viewer &&
+      list.kind !== 'official' &&
+      list.id > 0 && { progressHref: `/users/${viewer.slug}/progress?list=${list.id}` }),
     shareUrl: `${origin}${list.href}`,
   };
 }

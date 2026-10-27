@@ -37,7 +37,6 @@ const params = {
   token: 'abc',
   settings: null,
   datePreferences: { timeZone: 'UTC', hour24: false, order: 'mdy' as const },
-  isVip: false,
   now: NOW,
 };
 const calendarRequests = () => seen.filter(({ pathname }) => pathname.startsWith('/calendars/'));

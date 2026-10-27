@@ -15,7 +15,6 @@ const base = {
   days,
   today: TODAY,
   datePreferences: { timeZone: 'UTC', hour24: false, order: 'mdy' as const },
-  isVip: false,
   offers: scheduleFixture.offers,
   country: 'us',
 };
@@ -68,7 +67,6 @@ describe('toScheduleDays', () => {
 
     it('should give the air time on the network', () => {
       expect(item('Severance')).toMatchObject({ time: '2:00 pm', network: { name: 'Apple TV' } });
-      expect(item('Severance')?.network?.href).toBeUndefined();
     });
 
     it('should use the 24-hour clock with that setting', () => {
@@ -77,8 +75,8 @@ describe('toScheduleDays', () => {
       expect(today?.items.at(2)?.time).toBe('14:00');
     });
 
-    it('should link the network to its popular shows for VIPs', () => {
-      const [today] = toScheduleDays({ ...base, isVip: true });
+    it('should link the network to its popular shows', () => {
+      const [today] = toScheduleDays(base);
 
       expect(today?.items.at(0)?.network?.href).toBe('/shows/popular?networks=Prime%20Video');
     });
@@ -90,7 +88,7 @@ describe('toScheduleDays', () => {
           row.show?.network === 'Apple TV' ? { ...row, show: { ...row.show, network: 'Apple TV+' } } : row,
         );
       const plusDays = upcomingDays({ items: toCalendarItems(rows), start: TODAY, timeZone: 'UTC', count: 5 });
-      const [today] = toScheduleDays({ ...base, days: plusDays, isVip: true });
+      const [today] = toScheduleDays({ ...base, days: plusDays });
       const severance = today?.items.find((entry) => entry.title === 'Severance');
 
       expect(severance?.network?.href).toBe('/shows/popular?networks=Apple%20TV-plus');

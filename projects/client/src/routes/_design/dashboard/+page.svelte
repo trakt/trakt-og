@@ -57,7 +57,7 @@ const failed = browser ? Promise.reject(new Error('demo')) : loading;
 
 const DAY = 86_400_000;
 
-function scheduleDays(isVip: boolean, { shift = 0, busy = false, drop = false, only }: {
+function scheduleDays({ shift = 0, busy = false, drop = false, only }: {
   /** Days to move the fixture later by. */
   shift?: number;
   busy?: boolean;
@@ -73,25 +73,24 @@ function scheduleDays(isVip: boolean, { shift = 0, busy = false, drop = false, o
     days: upcomingDays({ items: toCalendarItems(rows), start: today, timeZone, count: 5 }),
     today,
     datePreferences: data.datePreferences,
-    isVip,
     offers: scheduleFixture.offers,
     country: 'us',
   });
 }
-const schedule = $derived(Promise.resolve(scheduleDays(true, { busy: true })));
-const scheduleDrop = $derived(Promise.resolve(scheduleDays(true, { busy: true, drop: true })));
-const scheduleLater = $derived(Promise.resolve(scheduleDays(true, { busy: true, shift: 2 })));
-const scheduleQuiet = $derived(Promise.resolve(scheduleDays(true, { only: ['Slow Horses', 'Scrubs'] })));
-const scheduleTwoDays = $derived(Promise.resolve(scheduleDays(false).slice(0, 2)));
+const schedule = $derived(Promise.resolve(scheduleDays({ busy: true })));
+const scheduleDrop = $derived(Promise.resolve(scheduleDays({ busy: true, drop: true })));
+const scheduleLater = $derived(Promise.resolve(scheduleDays({ busy: true, shift: 2 })));
+const scheduleQuiet = $derived(Promise.resolve(scheduleDays({ only: ['Slow Horses', 'Scrubs'] })));
+const scheduleTwoDays = $derived(Promise.resolve(scheduleDays().slice(0, 2)));
 const scheduleEmpty = Promise.resolve([]);
 const scheduleLoading = new Promise<readonly ScheduleDay[]>(() => {});
 const scheduleFailed = browser ? Promise.reject(new Error('demo')) : scheduleLoading;
 const schedules = $derived([
-  { label: 'A busy week, as a VIP sees it', schedule },
+  { label: 'A busy week', schedule },
   { label: 'A season dropping today', schedule: scheduleDrop },
   { label: 'Nothing on until the day after tomorrow', schedule: scheduleLater },
   { label: 'A quiet week', schedule: scheduleQuiet },
-  { label: 'Two days, as everyone else sees them', schedule: scheduleTwoDays },
+  { label: 'Two days', schedule: scheduleTwoDays },
   { label: 'Empty', schedule: scheduleEmpty },
   { label: 'Loading', schedule: scheduleLoading },
   { label: 'Failed', schedule: scheduleFailed },
@@ -189,11 +188,11 @@ const recsEmpty = Promise.resolve<DashboardRecommendations>({ type: 'movie', ite
 const recsLoading = new Promise<DashboardRecommendations>(() => {});
 const recsFailed = browser ? Promise.reject(new Error('demo')) : recsLoading;
 const recommendations = [
-  { label: 'Shows and movies', recs: recsFor('media'), type: 'media', isVip: true },
-  { label: 'One title', recs: recsOne, type: 'show', isVip: true },
-  { label: 'Nothing to recommend', recs: recsEmpty, type: 'movie', isVip: false },
-  { label: 'Loading', recs: recsLoading, type: 'media', isVip: true },
-  { label: 'Failed', recs: recsFailed, type: 'media', isVip: true },
+  { label: 'Shows and movies', recs: recsFor('media'), type: 'media' },
+  { label: 'One title', recs: recsOne, type: 'show' },
+  { label: 'Nothing to recommend', recs: recsEmpty, type: 'movie' },
+  { label: 'Loading', recs: recsLoading, type: 'media' },
+  { label: 'Failed', recs: recsFailed, type: 'media' },
 ] as const;
 
 // A VIP's saved settings: Up Next by completion with favorites only, finales from yesterday, and the Watchlist and
@@ -227,7 +226,6 @@ function customScheduleDays(): ScheduleDay[] {
     days: upcomingDays({ items: toCalendarItems(rows), start, timeZone, count: 5 }),
     today,
     datePreferences: data.datePreferences,
-    isVip: true,
     offers: scheduleFixture.offers,
     country: 'us',
   });
@@ -240,26 +238,23 @@ const hiddenNames = Object.entries({ Watchlist: custom.hidden.watchlist, 'Social
 <Specimen title="Up Next" bleed
   note="Hover a progress bar for its exact ticks; each show skipped an episode halfway. Signed in, mark an episode watched to see its card offer the next one.">
   <div class="states">
-    <Variant label="A VIP">
-      <UpNextPanel upNext={sample} username="me" isVip settings={defaults.upNext} />
+    <Variant label="Shows to watch next">
+      <UpNextPanel upNext={sample} username="me" settings={defaults.upNext} />
     </Variant>
     <Variant label="Last episodes watched: a show that ended, one coming back">
-      <UpNextPanel upNext={caughtUpSample} username="me" isVip settings={defaults.upNext} />
-    </Variant>
-    <Variant label="Everyone else">
-      <UpNextPanel upNext={sample} username="demo-non-vip" isVip={false} settings={defaults.upNext} />
+      <UpNextPanel upNext={caughtUpSample} username="me" settings={defaults.upNext} />
     </Variant>
     <Variant label="Empty: not started, with a way to start">
-      <UpNextPanel upNext={empty} username="me" isVip settings={defaults.upNext} />
+      <UpNextPanel upNext={empty} username="me" settings={defaults.upNext} />
     </Variant>
     <Variant label="Empty in welcome mode: starter picks instead">
-      <UpNextPanel upNext={empty} username="me" isVip settings={defaults.upNext} welcome />
+      <UpNextPanel upNext={empty} username="me" settings={defaults.upNext} welcome />
     </Variant>
     <Variant label="Loading">
-      <UpNextPanel upNext={loading} username="me" isVip settings={defaults.upNext} />
+      <UpNextPanel upNext={loading} username="me" settings={defaults.upNext} />
     </Variant>
     <Variant label="Failed">
-      <UpNextPanel upNext={failed} username="me" isVip settings={defaults.upNext} />
+      <UpNextPanel upNext={failed} username="me" settings={defaults.upNext} />
     </Variant>
   </div>
 </Specimen>
@@ -278,24 +273,24 @@ const hiddenNames = Object.entries({ Watchlist: custom.hidden.watchlist, 'Social
 
 <Specimen title="Watchlist" bleed note="The sort's name and direction come from the viewer's saved list sort.">
   <div class="states">
-    <Variant label="Added Date, newest first, as a VIP sees it">
-      <WatchlistPanel {watchlist} username="me" isVip datePreferences={data.datePreferences} />
+    <Variant label="Added Date, newest first">
+      <WatchlistPanel {watchlist} username="me" datePreferences={data.datePreferences} />
     </Variant>
-    <Variant label="Trakt Percentage, as everyone else sees it">
-      <WatchlistPanel watchlist={watchlistRated} username="demo-non-vip" isVip={false}
+    <Variant label="Trakt Percentage">
+      <WatchlistPanel watchlist={watchlistRated} username="me"
         datePreferences={data.datePreferences} />
     </Variant>
     <Variant label="Empty: not started, with a way to start">
-      <WatchlistPanel watchlist={watchlistEmpty} username="me" isVip datePreferences={data.datePreferences} />
+      <WatchlistPanel watchlist={watchlistEmpty} username="me" datePreferences={data.datePreferences} />
     </Variant>
     <Variant label="Empty in welcome mode: starter picks instead">
-      <WatchlistPanel watchlist={watchlistEmpty} username="me" isVip datePreferences={data.datePreferences} welcome />
+      <WatchlistPanel watchlist={watchlistEmpty} username="me" datePreferences={data.datePreferences} welcome />
     </Variant>
     <Variant label="Loading">
-      <WatchlistPanel watchlist={watchlistLoading} username="me" isVip datePreferences={data.datePreferences} />
+      <WatchlistPanel watchlist={watchlistLoading} username="me" datePreferences={data.datePreferences} />
     </Variant>
     <Variant label="Failed">
-      <WatchlistPanel watchlist={watchlistFailed} username="me" isVip datePreferences={data.datePreferences} />
+      <WatchlistPanel watchlist={watchlistFailed} username="me" datePreferences={data.datePreferences} />
     </Variant>
   </div>
 </Specimen>
@@ -322,20 +317,20 @@ const hiddenNames = Object.entries({ Watchlist: custom.hidden.watchlist, 'Social
   note="A check-in shows at its end time, so the first play is 30 minutes ahead.">
   <div class="states">
     <Variant label="With a check-in">
-      <RecentlyWatchedPanel plays={recentPlays} username="me" isVip datePreferences={data.datePreferences} />
+      <RecentlyWatchedPanel plays={recentPlays} username="me" datePreferences={data.datePreferences} />
     </Variant>
     <Variant label="Empty: not started, with a way to start">
-      <RecentlyWatchedPanel plays={Promise.resolve([])} username="me" isVip datePreferences={data.datePreferences} />
+      <RecentlyWatchedPanel plays={Promise.resolve([])} username="me" datePreferences={data.datePreferences} />
     </Variant>
     <Variant label="Empty in welcome mode: starter picks instead">
-      <RecentlyWatchedPanel plays={Promise.resolve([])} username="me" isVip datePreferences={data.datePreferences}
+      <RecentlyWatchedPanel plays={Promise.resolve([])} username="me" datePreferences={data.datePreferences}
         welcome />
     </Variant>
     <Variant label="Loading">
-      <RecentlyWatchedPanel plays={recentLoading} username="me" isVip datePreferences={data.datePreferences} />
+      <RecentlyWatchedPanel plays={recentLoading} username="me" datePreferences={data.datePreferences} />
     </Variant>
     <Variant label="Failed">
-      <RecentlyWatchedPanel plays={recentFailed} username="me" isVip datePreferences={data.datePreferences} />
+      <RecentlyWatchedPanel plays={recentFailed} username="me" datePreferences={data.datePreferences} />
     </Variant>
   </div>
 </Specimen>
@@ -353,9 +348,9 @@ const hiddenNames = Object.entries({ Watchlist: custom.hidden.watchlist, 'Social
 
 <Specimen title="Recommendations" bleed note="The Type dropdown switches between shows, movies or both.">
   <div class="states">
-    {#each recommendations as { label, recs, type, isVip } (label)}
+    {#each recommendations as { label, recs, type } (label)}
       <Variant {label}>
-        <RecommendationsPanel recommendations={recs} {type} {isVip} onpick={recsFor} />
+        <RecommendationsPanel recommendations={recs} {type} onpick={recsFor} />
       </Variant>
     {/each}
   </div>
@@ -365,17 +360,17 @@ const hiddenNames = Object.entries({ Watchlist: custom.hidden.watchlist, 'Social
   note="A VIP's saved settings: Up Next by completion % with only favorites, and the schedule's finales from yesterday.">
   <p class="hidden-note">The {hiddenNames.join(' and ')} panels are hidden, so they're left out.</p>
   <div class="states">
-    <UpNextPanel upNext={customUpNext} username="me" isVip settings={custom.upNext} />
+    <UpNextPanel upNext={customUpNext} username="me" settings={custom.upNext} />
     <SchedulePanel schedule={customSchedule} filter={custom.schedule.filter} movies={custom.schedule.movies}
       onpick={() => customSchedule} />
     {#if !custom.hidden.watchlist}
-      <WatchlistPanel {watchlist} username="me" isVip datePreferences={data.datePreferences} />
+      <WatchlistPanel {watchlist} username="me" datePreferences={data.datePreferences} />
     {/if}
     {#if !custom.hidden.socialFeed}
       <SocialFeedPanel feed={social} watching={watchingNow(0)} rowsFor={socialRowsFor} username="me"
         datePreferences={data.datePreferences} />
     {/if}
-    <RecentlyWatchedPanel plays={recentPlays} username="me" isVip datePreferences={data.datePreferences} />
+    <RecentlyWatchedPanel plays={recentPlays} username="me" datePreferences={data.datePreferences} />
   </div>
 </Specimen>
 

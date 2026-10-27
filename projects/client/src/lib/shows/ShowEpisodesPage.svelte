@@ -31,7 +31,7 @@ const sections = $derived([
   next={episodes.next}
 >
   {#key data.show.id}
-  <EpisodeList showId={data.show.id} signedIn={data.signedIn} initialFilters={data.filters} rows={episodes.rows} datePreferences={data.datePreferences} search vip={data.user?.isVip ?? false} initialTerms={data.terms} initialSort={data.sort} />
+  <EpisodeList showId={data.show.id} signedIn={data.signedIn} initialFilters={data.filters} rows={episodes.rows} datePreferences={data.datePreferences} search initialTerms={data.terms} initialSort={data.sort} />
   {/key}
   {#if episodes.rows.length === 0}<EmptyState />{/if}
 </ShowSubpage>

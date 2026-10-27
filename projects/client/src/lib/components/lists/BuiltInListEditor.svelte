@@ -2,7 +2,7 @@
   Edits the signed-in owner's watchlist or favorites from anywhere: the Trakt loader while their default sort loads,
   then the dialog, then the save. Mount it to start; it calls `onclose` when the dialog shuts or the read fails, and
   `onsaved` with what was saved.
-    {#if editing}<BuiltInListEditor kind="favorites" vip onclose={() => (editing = false)} />{/if}
+    {#if editing}<BuiltInListEditor kind="favorites" onclose={() => (editing = false)} />{/if}
 -->
 <script lang="ts">
 import { rawApiFetch } from '$lib/api/rawApiFetch';
@@ -18,7 +18,6 @@ type Saved = { description?: string; sort_by: string; sort_how: string };
 
 interface Props {
   kind: BuiltInListKind;
-  vip: boolean;
   /** The description, when the page knows it; left out, the dialog keeps the saved one unless it's edited. */
   description?: string;
   posters?: readonly string[];
@@ -31,7 +30,7 @@ interface Props {
   onsaved?: (saved: Saved) => void;
 }
 
-const { kind, vip, description, posters, count, privacy, allowComments, displayNumbers, onclose, onsaved }: Props =
+const { kind, description, posters, count, privacy, allowComments, displayNumbers, onclose, onsaved }: Props =
   $props();
 const request = (path: string, init?: Parameters<typeof rawApiFetch>[0]['init']) =>
   rawApiFetch({ fetch: viewerFetch(), path, init });
@@ -69,7 +68,7 @@ async function save(body: Saved) {
 </script>
 
 {#if defaults}
-  <BuiltInListDialog bind:open {kind} {vip} {busy} {description} {posters} {count} {privacy} {allowComments}
+  <BuiltInListDialog bind:open {kind} {busy} {description} {posters} {count} {privacy} {allowComments}
   {displayNumbers} sortBy={defaults.by}
   sortHow={defaults.how} onsave={save} onclose={onclose} />
 {:else}

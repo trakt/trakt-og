@@ -1,7 +1,7 @@
 <!--
-  A SidebarFrame sidebar's Applied Filters: a folding section of removable chips with Clear all on the right. Only
-  VIPs can remove chips, as OG kept filtering for VIPs. Its open state shares the `sidebar_filters` cookie on every page.
-    <AppliedFiltersSection {chips} open={data.sidebar.filters} {vip} clearHref={page.url.pathname} onremove={remove} />
+  A SidebarFrame sidebar's Applied Filters: a folding section of removable chips with Clear all on the right. Its open
+  state shares the `sidebar_filters` cookie on every page.
+    <AppliedFiltersSection {chips} open={data.sidebar.filters} clearHref={page.url.pathname} onremove={remove} />
 -->
 <script lang="ts">
 import SidebarSection from '$lib/components/sidebar/SidebarSection.svelte';
@@ -11,13 +11,12 @@ import type { FilterTag } from './filterTags.ts';
 interface Props {
   chips: readonly FilterTag[];
   open: boolean;
-  vip: boolean;
   /** The page without any filters. */
   clearHref: string;
   onremove: (id: string) => void;
 }
 
-const { chips, open, vip, clearHref, onremove }: Props = $props();
+const { chips, open, clearHref, onremove }: Props = $props();
 </script>
 
 <!-- The page builds the href from its own path, so resolve() has nothing to add. -->
@@ -25,7 +24,7 @@ const { chips, open, vip, clearHref, onremove }: Props = $props();
 
 <SidebarSection id="filters" title="Applied Filters" {open} remember>
   {#snippet action()}<a class="clear" href={clearHref}>Clear all</a>{/snippet}
-  <FilterChips {chips} {onremove} disabled={!vip} />
+  <FilterChips {chips} {onremove} />
 </SidebarSection>
 
 <style>

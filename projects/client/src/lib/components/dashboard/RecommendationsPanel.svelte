@@ -34,12 +34,11 @@ interface Props {
   recommendations: Promise<DashboardRecommendations>;
   /** The saved pick, for the dropdown while the first list streams in. */
   type: RecommendationType;
-  isVip: boolean;
   /** Saves the pick and loads its list. Left out, the dropdown is hidden. */
   onpick?: (type: RecommendationType) => Promise<DashboardRecommendations>;
 }
 
-const { recommendations, type, isVip, onpick }: Props = $props();
+const { recommendations, type, onpick }: Props = $props();
 
 const TYPES = [
   { id: 'media', label: 'Shows & Movies', icon: thumbsUp },
@@ -203,7 +202,7 @@ const step = (count: number, by: -1 | 1) => (focus = (focus + by + count) % coun
     <div class="layout">
       <div class="stage">
         <RecommendationSpotlight item={spotlight} index={at} total={items.length} mixed={recs.type === 'media'}
-          {isVip} onstep={(by) => step(items.length, by)} />
+          onstep={(by) => step(items.length, by)} />
       </div>
       {@render posters(items, start, at)}
     </div>

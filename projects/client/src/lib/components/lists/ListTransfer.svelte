@@ -24,7 +24,6 @@ import dot from '$lib/icons/trakt/dot.svg?raw';
 import friends from '$lib/icons/trakt/friends.svg?raw';
 import arrow from '$lib/icons/solid/angle-right.svg?raw';
 import spinner from '$lib/icons/solid/arrows-rotate.svg?raw';
-import { traktUrls } from '$lib/traktUrls';
 import { GENERIC_ERROR } from '../../utils/genericError.ts';
 import { viewerFetch } from '../../auth/viewerFetch.ts';
 
@@ -93,10 +92,6 @@ async function open() {
   if (busy || otherBusy) return;
   if (!page.data.user) {
     await login();
-    return;
-  }
-  if (!page.data.user.isVip) {
-    globalThis.open(traktUrls.vip, '_blank', 'noopener');
     return;
   }
   busy = true;
@@ -223,7 +218,7 @@ function toggle(event: ToggleEvent) {
   else triggerButton?.focus({ preventScroll: true });
 }
 </script>
-<!-- Canonical list and VIP URLs are shared by personal, official and built-in lists. -->
+<!-- Canonical list URLs are shared by personal, official and built-in lists. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 <span class="control" class:managing style:anchor-name="--transfer-{id}">
   <Tooltip text="{label} items into another list">

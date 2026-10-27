@@ -34,8 +34,6 @@ interface MovieSummaryParams {
   rank: StreamingRank | null;
   /** The viewer's "other site ratings" setting; on when logged out. */
   otherSiteRatings: boolean;
-  /** VIPs get the country, language, genre and studio facts as filter links. */
-  isVip: boolean;
   now: Date;
 }
 
@@ -59,7 +57,7 @@ function neighbours({ collection, movie }: Pick<MovieSummaryParams, 'collection'
 
 /** Everything the movie summary shows, from the loader's API responses. Dates stay ISO; the page formats them. */
 export function toMovieSummary(params: MovieSummaryParams) {
-  const { movie, stats, releases, collection, now, isVip } = params;
+  const { movie, stats, releases, collection, now } = params;
   const slug = movie.ids.slug;
   const href = `/movies/${slug}`;
   const released = movie.released ?? undefined;
@@ -111,20 +109,20 @@ export function toMovieSummary(params: MovieSummaryParams) {
       country: movie.country
         ? {
             name: countryName(movie.country),
-            href: isVip ? popular('countries', movie.country) : undefined,
+            href: popular('countries', movie.country),
           }
         : undefined,
       languages: (movie.languages ?? []).map((code) => ({
         name: languageName(code),
-        href: isVip ? popular('languages', code) : undefined,
+        href: popular('languages', code),
       })),
       studios: params.studios.map(({ name, ids }) => ({
         name,
-        href: isVip ? popular('studio_ids', ids.trakt) : undefined,
+        href: popular('studio_ids', ids.trakt),
       })),
       genres: (movie.genres ?? []).map((genre) => ({
         name: genreLabel(genre),
-        href: isVip ? popular('genres', genre) : undefined,
+        href: popular('genres', genre),
       })),
       originalTitle:
         movie.original_title && movie.original_title.toLowerCase() !== movie.title.toLowerCase()

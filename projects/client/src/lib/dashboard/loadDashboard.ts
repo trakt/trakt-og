@@ -97,7 +97,6 @@ export async function loadDashboard({ fetch, panelFetch = fetch, locals, cookies
         token,
         settings: layout.settings,
         datePreferences: layout.datePreferences,
-        isVip: !!user.vip,
         schedule: dashboard.schedule,
         now,
       }),

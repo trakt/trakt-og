@@ -5,7 +5,7 @@ const cookies = (values: Record<string, string>) => ({ get: (name: string) => va
 
 describe('calendarDisplay', () => {
   it('should default to the month, posters and grouped episodes', () => {
-    expect(calendarDisplay({ cookies: cookies({}), imagesAllowed: true })).toEqual({
+    expect(calendarDisplay({ cookies: cookies({}) })).toEqual({
       view: 'month',
       artwork: 'poster',
       episodes: 'grouped',
@@ -14,13 +14,13 @@ describe('calendarDisplay', () => {
 
   it("should take the viewer's picks from the cookies and ignore anything else", () => {
     const picked = cookies({ calendar_view: 'list', calendar_artwork: 'screenshot', calendar_episodes: 'each' });
-    expect(calendarDisplay({ cookies: picked, imagesAllowed: true })).toEqual({
+    expect(calendarDisplay({ cookies: picked })).toEqual({
       view: 'list',
       artwork: 'screenshot',
       episodes: 'each',
     });
     const junk = cookies({ calendar_view: 'week', calendar_artwork: 'banner', calendar_episodes: 'x' });
-    expect(calendarDisplay({ cookies: junk, imagesAllowed: true })).toEqual({
+    expect(calendarDisplay({ cookies: junk })).toEqual({
       view: 'month',
       artwork: 'poster',
       episodes: 'grouped',
@@ -29,12 +29,6 @@ describe('calendarDisplay', () => {
 
   it('should take the agenda view from the cookie', () => {
     const picked = cookies({ calendar_view: 'agenda' });
-    expect(calendarDisplay({ cookies: picked, imagesAllowed: true }).view).toBe('agenda');
-  });
-
-  it('should keep logos for accounts without artwork choices', () => {
-    expect(calendarDisplay({ cookies: cookies({}), imagesAllowed: false }).artwork).toBe('logo');
-    const picked = cookies({ calendar_artwork: 'poster' });
-    expect(calendarDisplay({ cookies: picked, imagesAllowed: false }).artwork).toBe('logo');
+    expect(calendarDisplay({ cookies: picked }).view).toBe('agenda');
   });
 });

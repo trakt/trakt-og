@@ -141,7 +141,6 @@ export async function loadSubpageMedia({ fetch, parent, item, suffix, neighbours
         ...target,
         country: watchNowCountry(settings),
         settings,
-        isVip: user?.isVip ?? false,
       })
     : null;
   const collection = 'collection' in read ? read.collection : undefined;

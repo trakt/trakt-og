@@ -72,7 +72,6 @@ export async function loadOfficialList({ fetch, locals, params, url, parent, coo
       query,
       first: anonymousItems,
       fallback: list.sort,
-      viewerIsVip: user?.isVip ?? false,
       needsToken: false,
       ownerIsVip: false,
       // Official lists have no Watched/Collected percentages or library ids in their stats.

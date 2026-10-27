@@ -2,9 +2,8 @@
   The slide-in filter panel of a SidebarFrame page: og's whole advanced set with nothing to apply. Every change
   filters the page straight away (typing and sliders after a short pause): streaming services, terms, then each list as
   a full-width field that keeps (⊕) and leaves out (⊖) values, then the runtime and the site ratings. Reset and Close
-  sit at the top. OG kept filtering for VIPs, so everyone else sees the fields locked under the VIP link. The lists load
-  from the API the first time it opens; Esc closes it.
-    <FiltersPanel id="calendar-filters" {open} {config} {filters} {vip} {country} {favorites} {sources}
+  sit at the top. The lists load from the API the first time it opens; Esc closes it.
+    <FiltersPanel id="calendar-filters" {open} {config} {filters} {country} {favorites} {sources}
       onchange={(filters) => goto(…)} onclose={close} />
 -->
 <script lang="ts">
@@ -18,7 +17,6 @@ import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import resetIcon from '$lib/icons/regular/arrow-rotate-left.svg?raw';
 import xmark from '$lib/icons/regular/xmark.svg?raw';
-import { traktUrls } from '$lib/traktUrls';
 import type { AdvancedFiltersConfig } from './AdvancedFiltersConfig.ts';
 import { type AdvancedFilters, emptyFilters, type ListFilterKey, type RangeFilterKey } from './advancedFilters.ts';
 import { fetchFilterBody } from './fetchFilterBody.ts';
@@ -38,7 +36,6 @@ interface Props {
   config: AdvancedFiltersConfig;
   /** The filters in the URL. */
   filters: AdvancedFilters;
-  vip: boolean;
   /** The viewer's watch-now country and favorite services there (bare slugs). */
   country: string;
   favorites: readonly string[];
@@ -49,7 +46,7 @@ interface Props {
   onclose: () => void;
 }
 
-const { id, open, config, filters, vip, country, favorites, sources, onchange, onclose }: Props = $props();
+const { id, open, config, filters, country, favorites, sources, onchange, onclose }: Props = $props();
 
 const lists = {
   genres: 'Genres',
@@ -83,7 +80,6 @@ let timer: ReturnType<typeof setTimeout> | undefined;
 
 function apply(next: FilterDraft, wait = 0) {
   draft = next;
-  if (!vip) return;
   clearTimeout(timer);
   timer = setTimeout(() => onchange(fromFilterDraft(next, config)), wait);
 }
@@ -126,7 +122,7 @@ $effect(() => {
 });
 
 const watchnowGroups = $derived(
-  watchNowOptions({ sources: loadedSources ?? new Map(), country, favorites: vip ? favorites : [] }),
+  watchNowOptions({ sources: loadedSources ?? new Map(), country, favorites }),
 );
 // The watch-now filter's tiles: each service's logo on its color and a heart for favorites. Bundles go without.
 function serviceTile(slug: string) {
@@ -155,25 +151,17 @@ function reset() {
 }
 </script>
 
-<!-- The VIP page is an OG route og hasn't built yet, and resolve() only takes routes that exist. -->
-<!-- eslint-disable svelte/no-navigation-without-resolve -->
-
 <section {id} class={['filters-panel', { open }]} aria-labelledby="{id}-title" inert={!open} bind:this={panel}
   {@attach (node) => on(node, 'keydown', onkeydown)}>
   <div class="inner">
     <div class="header">
       <h2 id="{id}-title">Filters</h2>
-      <button type="button" class="panel-button" onclick={reset} disabled={!vip}><Icon svg={resetIcon} />Reset</button>
+      <button type="button" class="panel-button" onclick={reset}><Icon svg={resetIcon} />Reset</button>
       <button type="button" class="panel-button" onclick={onclose}><Icon svg={xmark} />Close</button>
     </div>
 
-    {#if !vip}
-      <a class="unlock" href={traktUrls.vip} target="_blank" rel="noopener">Filters are a VIP feature. Unlock them
-        with VIP</a>
-    {/if}
-
     {#if streaming}
-      <IncludeExcludeSelect label="Streaming" groups={watchnowGroups} excludable={false} disabled={!vip}
+      <IncludeExcludeSelect label="Streaming" groups={watchnowGroups} excludable={false}
         loading={!loadedSources} labelFor={sourceName} tileFor={serviceTile} searchPlaceholder="Netflix, Max…"
         selection={{ include: draft.watchnow, exclude: [] }}
         onchange={({ include }) => apply({ ...draft, watchnow: include })} />
@@ -181,12 +169,12 @@ function reset() {
 
     {#if config.query}
       <SearchField label="Filter by titles and descriptions" placeholder="Filter by titles and descriptions…"
-        disabled={!vip} bind:value={() => draft.query, (query) => apply({ ...draft, query }, 400)} />
+        bind:value={() => draft.query, (query) => apply({ ...draft, query }, 400)} />
     {/if}
 
     {#each config.lists as key (key)}
       <IncludeExcludeSelect label={lists[key]} groups={[{ options: options[key] ?? [] }]} loading={!options[key]}
-        disabled={!vip} labelFor={(value) => filterValueLabel(key, value)} selection={listSelection(draft[key])}
+        labelFor={(value) => filterValueLabel(key, value)} selection={listSelection(draft[key])}
         onchange={(selection) => setList(key, selection)} />
     {/each}
 
@@ -311,20 +299,6 @@ function reset() {
   &:disabled {
     cursor: default;
     opacity: 0.4;
-  }
-}
-
-.unlock {
-  padding: var(--space-sm-inline);
-  border: 1px solid var(--color-sidebar-pill-set-border);
-  border-radius: var(--radius-control);
-  background-color: var(--color-sidebar-pill-set-bg);
-  color: var(--color-sidebar-pill-set-text);
-  font-size: var(--font-size-small);
-  text-decoration: none;
-
-  &:is(:hover, :focus-visible) {
-    color: var(--color-frame-ink);
   }
 }
 

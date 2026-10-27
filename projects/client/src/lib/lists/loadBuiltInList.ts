@@ -112,7 +112,6 @@ export async function loadBuiltInList({ fetch, locals, params, url, parent, cook
       first,
       firstHasToken: viewerFirst,
       fallback,
-      viewerIsVip: user?.isVip ?? false,
       needsToken: viewerFirst,
       ownerIsVip: Boolean(profile.vip),
       viewerSignedIn: user !== null,

@@ -62,7 +62,6 @@ import deleteIcon from '$lib/icons/regular/trash-xmark.svg?raw';
 import flag from '$lib/icons/regular/flag.svg?raw';
 import move from '$lib/icons/regular/up-down-left-right.svg?raw';
 import pencil from '$lib/icons/regular/pen.svg?raw';
-import trakt from '$lib/icons/trakt/trakt.svg?raw';
 import type { ProfileUser } from '$lib/users/ProfileUser';
 import { createListManager } from '$lib/lists/createListManager.svelte';
 import { listGenreOptions } from '$lib/lists/listGenreOptions';
@@ -183,7 +182,7 @@ const genreLabel = $derived(
       .join(', ')
     : 'All',
 );
-const sorts = $derived(visibleListSorts({ types: data.query.types, vip, signedIn: data.user !== null }));
+const sorts = $derived(visibleListSorts({ types: data.query.types, signedIn: data.user !== null }));
 const groups = $derived(
   (['main', 'site', 'votes', 'mine'] as const)
     .map((group) => ({ group, sorts: sorts.filter((sort) => sort.group === group) }))
@@ -193,7 +192,7 @@ const actions = $derived(
   data.list
     ? listTitleActions({
       list: data.list,
-      viewer: data.user ? { slug: data.user.slug, isVip: data.user.isVip } : null,
+      viewer: data.user ? { slug: data.user.slug } : null,
       isCollaborator: data.isCollaborator && !left,
       origin: page.url.origin,
     })
@@ -588,10 +587,6 @@ async function saveNotes(text: string) {
               {#each items as sort (sort.by)}
                 <li><a href={listHref(page.url, { sort: { by: sort.by, how: listSortHow(sort.by) } })}
                   aria-current={sort.by === data.sort.by ? 'page' : undefined}>{sort.label}</a></li>
-                {#if sort.by === 'percentage' && !vip}
-                  <li><a href={traktUrls.vip} target="_blank" rel="noopener" class="vip-only"><b class="vip-mark"><Icon svg={trakt} /> VIP</b> unlocks
-                    IMDB,<br />TMDB, Rotten Tomatoes,<br />and Metacritic sorting</a></li>
-                {/if}
               {/each}
             </ul>
           {/each}
@@ -604,7 +599,7 @@ async function saveNotes(text: string) {
           } />
       </span>
       <span class="filter-icons">
-        <TermsFilter vip={vip} bind:terms={
+        <TermsFilter bind:terms={
           () => data.query.terms ?? '',
           (terms) => goto(listHref(page.url, { terms }))
         } />
@@ -736,7 +731,7 @@ async function saveNotes(text: string) {
 </section>
 
   {#if ownerKind && owner}
-    {#if editing}<BuiltInListEditor kind={ownerKind} posters={listPosters} count={data.list?.itemCount} {vip}
+    {#if editing}<BuiltInListEditor kind={ownerKind} posters={listPosters} count={data.list?.itemCount}
   privacy={data.list ? listPrivacy(data.list) : undefined} allowComments={data.list?.allowComments}
   displayNumbers={data.list?.displayNumbers}
   description={savedDescription} onclose={() => (editing = false)}
@@ -774,30 +769,6 @@ async function saveNotes(text: string) {
 .limit-10 {
   max-block-size: var(--dropdown-limit-10-height);
   overflow-y: auto;
-}
-
-/* `.dropdown-menu a.vip-only`. */
-.vip-only {
-  padding-block: var(--vip-sort-padding-block);
-  background-color: var(--state-danger-bg);
-  color: var(--state-danger-text);
-  font-size: var(--font-size-vip-sort);
-  white-space: normal;
-  transition: all 0.5s;
-
-  &:is(:hover, :focus-visible) {
-    background-color: var(--brand-primary);
-    color: var(--color-text-inverse);
-
-    & .vip-mark {
-      color: inherit;
-    }
-  }
-}
-
-.vip-mark {
-  color: var(--brand-primary);
-  transition: color 0.5s;
 }
 
 .title-row {
@@ -1029,9 +1000,7 @@ h2 {
 
 @media (prefers-reduced-motion: reduce) {
   .manage :global(svg),
-  .report,
-  .vip-only,
-  .vip-mark {
+  .report {
     transition: none;
   }
 }

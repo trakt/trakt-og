@@ -46,7 +46,6 @@ const base: Parameters<typeof toSeasonSummary>[0] = {
     ],
     guest_stars: [],
   },
-  isVip: false,
   actorSpoilers: true,
   episodeTypeTags: true,
   datePreferences: { order: 'dmy', hour24: true, timeZone: 'America/Los_Angeles', weekStartDay: 1 },
@@ -95,7 +94,6 @@ describe('toSeasonSummary', () => {
       ...base,
       actorSpoilers: false,
       episodeTypeTags: false,
-      isVip: true,
       season: { ...base.season, total_runtime: 120 },
     });
     expect(view.cast.at(0)?.episodes).toBe('');

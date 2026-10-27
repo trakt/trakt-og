@@ -82,7 +82,6 @@ export async function loadList({ fetch, locals, params, url, parent, cookies }: 
       query,
       first: unchanged ? anonymousItems : { ...anonymousItems, status: 0 },
       fallback: list.sort,
-      viewerIsVip: user?.isVip ?? false,
       // The owner reads their own items with the token too: the worker's cache would hide what they just changed.
       needsToken: viewerSummary?.status === 200 || isSelf,
       ownerIsVip: Boolean(profile.vip),

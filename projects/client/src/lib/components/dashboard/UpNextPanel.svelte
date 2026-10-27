@@ -26,21 +26,18 @@ import { toDashboardSettings } from '$lib/dashboard/toDashboardSettings';
 import forward from '$lib/icons/regular/forward.svg?raw';
 import { overlay } from '$lib/overlay/overlay';
 import DashboardPanel from '$lib/components/dashboard/DashboardPanel.svelte';
-import { traktUrls } from '$lib/traktUrls';
 
 interface Props {
   upNext: Promise<readonly OnDeckItem[]>;
   /** The viewer's slug, for the progress link and the saved row count. */
   username: string;
-  /** Only VIPs could change the rows in OG; everyone else was sent to the VIP page. */
-  isVip: boolean;
   /** The sort and favorites-only count for the help line and the Progress link. Left out, OG's defaults. */
   settings?: DashboardSettings['upNext'];
   /** Welcome mode: an empty panel offers starter picks instead of a link. */
   welcome?: boolean;
 }
 
-const { upNext, username, isVip, settings = toDashboardSettings({ settings: null }).upNext, welcome = false }: Props =
+const { upNext, username, settings = toDashboardSettings({ settings: null }).upNext, welcome = false }: Props =
   $props();
 
 const PER_ROW = 6;
@@ -110,7 +107,6 @@ const STREAMING = ' + streaming on your ';
   rows={rows.rows}
   maxRows={rows.maxRows}
   onchange={changeRows}
-  upsellHref={isVip ? undefined : traktUrls.vip}
 />
   {/snippet}
   {@render panel(false, cards, navigator)}

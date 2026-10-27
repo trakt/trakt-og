@@ -299,7 +299,7 @@ function click() {
         oncancel={async () => { other = false; await tick(); firstChoice()?.focus(); }} />
     {:else}
       {#if oncheckin && !collection}
-        <PromptRow svg={play} detail="Check in" aria-haspopup="dialog" onclick={() => { popover?.hidePopover(); oncheckin(); }}>Watching now</PromptRow>
+        <PromptRow svg={play} aria-haspopup="dialog" onclick={() => { popover?.hidePopover(); oncheckin(); }}>Watching now</PromptRow>
       {/if}
       <PromptRow svg={check} onclick={() => choose('now')}>{collection ? 'Right now' : 'Just finished'}</PromptRow>
       <PromptRow svg={calendar} onclick={() => choose('released')}>Release date</PromptRow>

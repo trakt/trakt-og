@@ -5,7 +5,6 @@ import type { CheckinTarget } from './CheckinTarget.ts';
 
 type Params = {
   target: CheckinTarget;
-  message: string;
   /** Authenticated. A body makes it a POST. */
   request: (path: string, body?: unknown) => Promise<Response>;
   notify: { success: (message: string) => void; error: (message: string) => void };
@@ -37,13 +36,13 @@ async function conflict({ request, now = () => new Date() }: Params, response: R
 }
 
 /**
- * `POST /checkin` (API). Sharing flags are left out: the X, Mastodon and Tumblr integrations are gone.
- * Resolves true when the check-in started.
+ * `POST /checkin` (API). The message and sharing flags are left out: the X, Mastodon and Tumblr integrations that
+ * posted them are gone. Resolves true when the check-in started.
  */
 export async function checkinMedia(params: Params): Promise<boolean> {
-  const { target, message, request, notify } = params;
+  const { target, request, notify } = params;
   try {
-    const response = await request('/checkin', { [target.type]: { ids: { trakt: target.id } }, message });
+    const response = await request('/checkin', { [target.type]: { ids: { trakt: target.id } } });
     if (response.ok) {
       notify.success(`You checked in to ${target.fullTitle}.`);
       return true;

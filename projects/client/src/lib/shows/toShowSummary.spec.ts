@@ -186,6 +186,17 @@ describe('toShowSummary', () => {
     });
   });
 
+  it('should check in to the next episode to watch once it has aired', () => {
+    const next = (firstAired: string | null) =>
+      toShowSummary({ ...base, progress: { next: episode(2, 5, firstAired), last: null } }).checkin;
+
+    expect(next('2026-09-01T01:00:00Z')).toEqual({ type: 'episode', id: 205 });
+    expect(next('2026-10-01T01:00:00Z')).toBeUndefined();
+    expect(next(null)).toBeUndefined();
+    expect(toShowSummary({ ...base, progress: { next: null, last: null } }).checkin).toBeUndefined();
+    expect(toShowSummary(base).checkin).toBeUndefined();
+  });
+
   it('should name the last episode watched for the dropped stamp', () => {
     const watched = toShowSummary({ ...base, progress: { next: null, last: episode(3, 2, null) } });
     const unwatched = toShowSummary({ ...base, progress: { next: episode(1, 1, null), last: null } });

@@ -20,7 +20,7 @@ describe('loadCheckinTarget', () => {
         expect(new URL(request.url).searchParams.get('type')).toBe('movie');
         return HttpResponse.json([
           {
-            movie: { title: 'Fight Club', year: 1999, images: { fanart: images('fanarts'), logo: images('logos') } },
+            movie: { title: 'Fight Club', year: 1999, images: { fanart: images('fanarts') } },
           },
         ]);
       }),
@@ -31,7 +31,6 @@ describe('loadCheckinTarget', () => {
       id: 432,
       fullTitle: 'Fight Club (1999)',
       topTitle: 'Fight Club',
-      logo: 'https://media.trakt.tv/images/logos/medium/a.jpg.webp',
       fanart: 'https://media.trakt.tv/images/fanarts/full/a.jpg.webp',
     });
   });
@@ -59,7 +58,6 @@ describe('loadCheckinTarget', () => {
       id: 73482,
       fullTitle: 'Breaking Bad 1x01 "Pilot"',
       topTitle: 'Breaking Bad',
-      logo: undefined,
       fanart: 'https://media.trakt.tv/images/fanarts/full/a.jpg.webp',
       episode: {
         number: '1x01',

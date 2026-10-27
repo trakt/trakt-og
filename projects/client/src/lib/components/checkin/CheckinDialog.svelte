@@ -1,39 +1,56 @@
 <!--
-  OG's check-in modal: the logo or title, the episode screenshot (or movie fanart),
-  a message prefilled from the viewer's sharing text, and Check In. The page behind blurs to the item's fanart. The X,
-  Mastodon and Tumblr toggles are cut: those integrations are gone. Mounted once in the root layout; open it with
-  `checkin.open` from `./checkin.svelte.ts`.
+  The check-in modal, in the art dialogs' look: the whole episode screenshot (or the movie's fanart), like the cover
+  image dialog, with "Check In" and the air date over the title, then Cancel and Check In. The page behind blurs to
+  the item's fanart, like OG. It opens on the dialog
+  itself, so no ring lands on a button. An episode heads with its show, its number and
+  title under it. An unwatched episode keeps the viewer's spoiler settings: the show's fanart for a hidden screenshot,
+  a blurred title until clicked. OG's message is cut: only the gone X, Mastodon and Tumblr posts used it. Mounted once
+  in the root layout; open it with `checkin.open` from `./checkin.svelte.ts`.
 -->
 <script lang="ts">
 import { page } from '$app/state';
 import { invalidateAll } from '$app/navigation';
 import { rawApiFetch } from '$lib/api/rawApiFetch';
 import Dialog from '$lib/components/dialog/Dialog.svelte';
-import CardTag from '$lib/components/media/CardTag.svelte';
-import Spinner from '$lib/components/loading/Spinner.svelte';
+import DialogArtHeader from '$lib/components/dialog/DialogArtHeader.svelte';
+import DialogForm from '$lib/components/dialog/DialogForm.svelte';
+import type { CardTag } from '$lib/components/media/CardTag';
+import MediaSpoiler from '$lib/components/summary/MediaSpoiler.svelte';
 import { toast } from '$lib/components/toast/toast.svelte';
 import { checkin } from '$lib/components/checkin/checkin.svelte';
 import { checkinMedia } from '$lib/components/checkin/checkinMedia';
+import { overlay } from '$lib/overlay/overlay';
+import { mediaSpoilers } from '$lib/settings/mediaSpoilers';
+import trakt from '$lib/icons/trakt/trakt-v2.svg?raw';
 import { formatDate } from '$lib/utils/formatDate';
 import { viewerFetch } from '../../auth/viewerFetch.ts';
 
 const target = $derived(checkin.target);
-const shot = $derived(target?.episode ? target.episode.screenshot : target?.fanart);
-let message = $state('');
 let busy = $state(false);
 
-// Each opening starts from the template again, like OG.
 $effect.pre(() => {
-  if (!target) return;
-  message = (page.data.settings?.sharing_text?.watching ?? '').replace('[item]', target.fullTitle);
-  busy = false;
+  if (target) busy = false;
 });
 
-// The form mounts after the dialog opened, where `autofocus` no longer applies. Leave focus alone if the viewer moved it.
-const focusIfIdle = (field: HTMLTextAreaElement) => {
-  const active = document.activeElement;
-  if (!active || active === document.body || active instanceof HTMLDialogElement) field.focus();
-};
+const hideScreenshot = $derived(
+  target?.type === 'episode' && page.data.user
+    ? mediaSpoilers({
+      spoilers: page.data.settings?.browsing?.spoilers,
+      type: 'episode',
+      watched: overlay.state('episode', target.id).watched,
+    }).screenshot
+    : false,
+);
+const art = $derived(target?.episode && !hideScreenshot ? target.episode.screenshot ?? target.fanart : target?.fanart);
+const tags = $derived<readonly CardTag[]>([
+  { text: 'Check In', icon: trakt, kind: 'primary' },
+  ...(target?.episode?.firstAired
+    ? [{
+      text: formatDate(target.episode.firstAired, { ...page.data.datePreferences, format: 'll', time: true }),
+      color: 'var(--color-dialog-art-media-tag)',
+    }]
+    : []),
+]);
 
 const request = (path: string, body?: unknown) =>
   rawApiFetch({
@@ -44,162 +61,46 @@ const request = (path: string, body?: unknown) =>
       : { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) },
   });
 
-async function submit(event: SubmitEvent) {
-  event.preventDefault();
+async function submit() {
   if (!target || busy) return;
   busy = true;
-  const started = await checkinMedia({ target, message, request, notify: toast });
-  // OG left the spinner up for a second before closing, success or not.
-  setTimeout(() => checkin.close(), 1000);
+  const started = await checkinMedia({ target, request, notify: toast });
+  checkin.close();
   // The profile's watching-now bar is server-rendered.
   if (started && page.route.id?.startsWith('/users/')) void invalidateAll();
 }
 </script>
 
-<Dialog open={target !== null || checkin.loading} title="Check in" backdrop={target?.fanart}
+<Dialog open={target !== null || checkin.loading} title="Check in" size="md" variant="art" backdrop={target?.fanart}
   onclose={() => checkin.close()}>
   {#snippet header(id)}
-    <h2 {id} class={['heading', { logo: target?.logo }]}>
-      {#if target?.logo}<img src={target.logo} alt={target.topTitle} />{:else}{target?.topTitle ?? 'Check in'}{/if}
-    </h2>
+    <DialogArtHeader {id} title={target?.topTitle ?? 'Check in'} fanart={art} loading={!target} {tags} full>
+      {#if target?.episode}
+        <p class="episode">
+          <span class="number">{target.episode.number}</span>
+          {#if target.episode.title}
+            <MediaSpoiler target={{ type: 'episode', id: target.id }} kind="title" inline>{target.episode.title}</MediaSpoiler>
+          {/if}
+        </p>
+      {/if}
+    </DialogArtHeader>
   {/snippet}
   {#if target}
-    <form onsubmit={submit} aria-busy={busy}>
-      {#if target.episode && !shot}<p class="episode">{target.episode.number} {target.episode.title}</p>{/if}
-      {#if shot}
-        <div class="fanart">
-          <img src={shot} alt="" />
-          <span class="shadow-base"></span>
-          {#if target.episode}
-            <div class="titles">
-              {#if target.episode.firstAired}
-                <p class="tag"><CardTag text={formatDate(target.episode.firstAired, { ...page.data.datePreferences, format: 'll', time: true })} /></p>
-              {/if}
-              <p class="title"><span class="number">{target.episode.number}</span> {target.episode.title}</p>
-            </div>
-          {/if}
-        </div>
-      {/if}
-      <textarea bind:value={message} aria-label="Check in message" placeholder="Write a check in message..." rows="3" {@attach focusIfIdle}></textarea>
-      <button type="submit" class="submit" aria-disabled={busy}>
-        {#if busy}<Spinner label="Checking in" />{:else}Check In{/if}
-      </button>
-    </form>
-  {:else}
-    <p class="loading" aria-busy="true"><Spinner label="Loading check in" /></p>
+    <DialogForm save={busy ? 'Checking in...' : 'Check In'} verb="check in" {busy} onsubmit={submit}
+      oncancel={() => checkin.close()} />
   {/if}
 </Dialog>
 
 <style>
-.heading {
-  margin: var(--checkin-heading-top) var(--space-dialog-wide-inline) 0;
-  font-family: var(--font-headings);
-  font-size: var(--font-size-checkin-heading);
-  font-weight: var(--font-weight-headings);
-  line-height: var(--line-height-headings);
-
-  &.logo {
-    margin-block-start: var(--space-panel);
-    min-block-size: var(--checkin-logo-height);
-  }
-
-  & img {
-    display: block;
-    inline-size: 100%;
-  }
-}
-
-.loading {
-  display: grid;
-  place-items: center;
-  margin: 0;
-  padding: var(--space-dialog-inline) var(--space-dialog-wide-inline);
-  font-size: var(--font-size-checkin-heading);
-}
-
-form {
-  padding: 0 var(--space-dialog-wide-inline) var(--space-dialog-inline);
-}
-
 .episode {
-  margin: var(--space-panel) 0 0;
-  font-size: var(--font-size-checkin-episode);
-  text-align: center;
-}
-
-.fanart {
-  position: relative;
-  margin: var(--space-panel) calc(-1 * var(--space-dialog-wide-inline)) 0;
-  overflow: hidden;
-  border-block: 1px solid var(--color-checkin-fanart-border);
-  background-color: var(--color-card-bg);
-
-  & img {
-    display: block;
-    inline-size: 100%;
-    aspect-ratio: var(--ratio-fanart);
-    object-fit: cover;
-  }
-}
-
-.shadow-base {
-  position: absolute;
-  inset-inline: 0;
-  inset-block-end: 0;
-  block-size: var(--checkin-shadow-height);
-  background: var(--gradient-shadow-base);
-}
-
-.titles {
-  position: absolute;
-  inset-block-end: 10px;
-  inset-inline: 12px;
-  color: var(--color-card-text);
+  margin: calc(var(--checkin-episode-gap) - var(--dialog-art-header-gap)) 0 0;
   font-family: var(--font-headings);
-  line-height: var(--line-height-headings);
-}
-
-.tag {
-  margin: 0 0 5px;
-}
-
-.title {
-  margin: 0;
-  font-size: var(--font-size-fanart-title);
+  font-size: var(--font-size-checkin-episode);
   font-weight: var(--font-weight-headings);
   text-shadow: var(--text-shadow-headings);
 }
 
 .number {
   font-weight: var(--font-weight-headings-heavy);
-}
-
-textarea {
-  display: block;
-  inline-size: 100%;
-  margin-block-start: var(--gutter);
-  padding: var(--checkin-message-padding);
-  font-size: var(--font-size-checkin-message);
-  resize: vertical;
-}
-
-.submit {
-  display: grid;
-  place-items: center;
-  inline-size: 100%;
-  margin-block-start: var(--gutter);
-  padding: var(--space-lg-block) var(--space-lg-inline);
-  border-color: var(--color-btn-primary-border);
-  border-radius: var(--radius-checkin-submit);
-  background-color: var(--brand-primary);
-  color: var(--color-text-inverse);
-  font-family: var(--font-headings);
-  font-size: var(--font-size-dialog-submit);
-  font-weight: var(--font-weight-headings-heavy);
-  text-transform: uppercase;
-
-  &:is(:hover, :focus-visible) {
-    background-color: var(--brand-primary-darken);
-  }
 }
 </style>

@@ -304,6 +304,7 @@
   --quick-icons-row-rating-padding: 10px;
   --quick-icon-trakt-shift: 0.085em; /* Trakt-font glyphs (check, library, list) sit this far above center */
   --font-size-quick-icon-favorite: 0.85em; /* the solid star, down to the other glyphs' height */
+  --font-size-quick-icon-rewatching: 0.8em; /* the solid backward arrows, down to the other glyphs' weight */
   --font-size-rating: 20px;
   --font-size-rating-small: 14px;
   --font-size-rating-heart: 16px;
@@ -482,10 +483,10 @@
 
   /* Poster badges: rewatching and dropped */
   --badge-size: 30px;
-  --color-badge-bg: light-dark(#aaa, #333);
-  --color-badge-text: light-dark(#fff, #aaa);
   --color-badge-border: light-dark(#fff, #1d1d1d);
   --font-size-badge: 12px;
+  --color-rewatching-badge-bg: var(--brand-tertiary); /* the watch quick icon's purple */
+  --color-rewatching-badge-text: #fff;
   --gradient-dropped: radial-gradient(circle farthest-corner, rgb(0 0 0 / 0.5), rgb(0 0 0 / 0));
   /* A dropped show's art, faded toward gray under its stamp. */
   --filter-dropped: grayscale(0.85) contrast(0.9) brightness(0.85);
@@ -1028,7 +1029,6 @@
   --space-dialog-wide-inline: 30px; /* item modals: the fanart title band and the notes form */
   --notes-textarea-height: 130px; /* the notes modal's five rows */
   --notes-textarea-padding: 10px 30px 10px 10px; /* room for the counter, like OG's emoji button */
-  --font-size-dialog-submit: 16px; /* .checkin-modal .btn-primary */
   --font-size-dialog-title: 13px;
   /* Art dialogs (notes, the list editor): an art header under dark glass with card tags and the title, a glass close,
      the toolbar's outlined fields, red-wash choice chips and a footer bar with the save shortcut, Cancel and Save. */
@@ -1121,15 +1121,8 @@
   --lightbox-close-overhang: 6px; /* how far past the video's right edge the button reaches */
 
   /* Check-in modal */
-  --font-size-checkin-heading: 26px; /* .checkin-modal h1 */
-  --font-size-checkin-episode: 16px; /* .checkin-modal h2: an episode without a screenshot */
-  --checkin-heading-top: 10px;
-  --checkin-logo-height: 116px; /* h1.logo min-height */
-  --checkin-shadow-height: 100px; /* .shadow-base over the screenshot */
-  --color-checkin-fanart-border: light-dark(#ddd, #444); /* .screenshot .fanart, $dk-separator-color */
-  --radius-checkin-submit: var(--radius-object);
-  --font-size-checkin-message: 16px; /* .form-signin .form-control */
-  --checkin-message-padding: 10px;
+  --font-size-checkin-episode: 16px; /* an episode's number and title, under its show in the art header */
+  --checkin-episode-gap: 0px; /* from the show's title, in place of the header's own gap */
 
   /* Dropdowns */
   --dropdown-min-width: 160px;
@@ -1183,7 +1176,6 @@
   --space-menu-offset: 4px; /* below the trigger; above a first header */
   --space-menu-icon: 6px; /* a row's icon to its label */
   --header-menu-gap: 10px; /* a header menu below its trigger, with room for its arrow */
-  --header-menu-arrow: 10px; /* the arrow's square, before it turns */
   --header-signpost: 18px; /* the help menu's trigger */
   --header-help-icon-width: 1.25em; /* a fixed-width icon's, like fa-fw */
   --space-menu-header: 10px 10px 4px;
@@ -2610,6 +2602,7 @@
   --history-count-gap: 15px;
   --history-icon-gap: var(--space-tools);
   --history-pagination-end: 6px;
+  --history-item-title-max: 400px; /* a filtered item's title in the Title dropdown, cut short past it */
   --dropdown-limit-10-height: 250px; /* .dropdown-menu.limit-10: ten rows */
   --line-height-dropdown-value: 1.3; /* a full-width trigger's value, tall enough for descenders */
   --list-sort-hint-gap: 8px;
@@ -2619,7 +2612,6 @@
   --font-size-date-range-button: 20px;
   --font-size-date-range-chip: 12px;
   --watchnow-filter-list-height: 240px;
-  --font-size-modal-lead: 16px; /* .checkin-modal h2 */
   --color-subnav-text-bg: light-dark(#f3f3f3, #252525); /* .subnav-text, the library's description band */
   --font-size-subnav-text: 13px;
   --subnav-text-padding: 10px; /* .text's padding-top, then the paragraph's margin */
@@ -2628,7 +2620,7 @@
   /* An episode's type tag over its art. */
   --episode-tag-inset: var(--card-inset); /* from the art's bottom-left corner */
 
-  /* Watch Now: the sidebar block, its phone button and the where-to-watch modal. */
+  /* Watch Now: the sidebar block, its phone button and the Watch Now modal. */
   --color-watch-now-bg: #444;
   --color-watch-now-under: #ccc;
   --color-watch-now-tiles-bg: light-dark(#222, #333);
@@ -3864,7 +3856,6 @@
   --calendar-title-line: 21px;
   /* An episode's show and title, or a movie's title on two lines. */
   --calendar-titles-height: calc(2 * var(--calendar-title-line));
-  --calendar-narrow-bar-height: 28px; /* the quick-icon bar on a poster or a month's day */
   --calendar-month-gap: 8px; /* between a month's days, and a day's cards */
   --calendar-month-cell-padding: 6px;
   --radius-calendar-day: 10px;

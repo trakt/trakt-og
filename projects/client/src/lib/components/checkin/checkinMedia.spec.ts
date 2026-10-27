@@ -22,7 +22,6 @@ function setup() {
     });
   return {
     target,
-    message: "I'm watching Fight Club (1999)",
     request,
     notify,
     now: () => new Date('2026-09-29T12:00:00Z'),
@@ -30,7 +29,7 @@ function setup() {
 }
 
 describe('checkinMedia', () => {
-  it('should post the item and message without sharing flags', async () => {
+  it('should post only the item, without a message or sharing flags', async () => {
     let body: unknown;
     server.use(
       http.post(`${API}/checkin`, async ({ request }) => {
@@ -41,7 +40,7 @@ describe('checkinMedia', () => {
     const params = setup();
 
     expect(await checkinMedia(params)).toBe(true);
-    expect(body).toEqual({ movie: { ids: { trakt: 432 } }, message: "I'm watching Fight Club (1999)" });
+    expect(body).toEqual({ movie: { ids: { trakt: 432 } } });
     expect(params.notify.success).toHaveBeenCalledWith('You checked in to Fight Club (1999).');
   });
 

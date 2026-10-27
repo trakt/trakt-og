@@ -184,6 +184,10 @@ const days = $derived(
 // An episode's ••• drops its show; a movie has nothing to drop, so no •••.
 const dropMenu = (entry: CalendarEntry) =>
   entry.hideTarget ? [{ kind: 'drop' as const, target: entry.hideTarget }] : [];
+// A month's day and a poster are short on room for full-size quick icons: Watch Now moves into the •••.
+const watchNowInMenu = $derived(display.view === 'month' || (display.view !== 'agenda' && display.artwork === 'poster'));
+const moreMenu = (entry: CalendarEntry) =>
+  watchNowInMenu ? [{ kind: 'watch-now' as const }, ...dropMenu(entry)] : dropMenu(entry);
 
 function cardIcons(entry: CalendarEntry): Omit<ComponentProps<typeof QuickIcons>, 'small'> {
   if ('group' in entry) {
@@ -209,7 +213,7 @@ function cardIcons(entry: CalendarEntry): Omit<ComponentProps<typeof QuickIcons>
       watchNow: 'play',
       hideTarget: entry.hideTarget,
       hideSection: 'calendar',
-      more: dropMenu(entry),
+      more: moreMenu(entry),
     };
   }
   return {
@@ -223,7 +227,7 @@ function cardIcons(entry: CalendarEntry): Omit<ComponentProps<typeof QuickIcons>
     listLabel: entry.episode ? 'Add to list' : undefined,
     hideTarget: entry.hideTarget,
     hideSection: 'calendar',
-    more: dropMenu(entry),
+    more: moreMenu(entry),
   };
 }
 

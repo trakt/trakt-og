@@ -26,9 +26,11 @@ interface Props {
   artwork: CalendarArtwork;
   /** Shows and movies on one calendar: a movie gets a Movie tag. */
   mixed?: boolean;
+  /** A poster card's quick-icon bar whatever the artwork: a month's narrow days. A poster always has it. */
+  small?: boolean;
 }
 
-const { entry, icons, artwork, mixed = false }: Props = $props();
+const { entry, icons, artwork, mixed = false, small = false }: Props = $props();
 
 const group = $derived('group' in entry ? entry.group : undefined);
 const artTags = $derived(calendarArtTags({ entry, mixed }));
@@ -53,7 +55,7 @@ const spoiler = $derived(icons.collectionTarget ?? icons.watchTarget ?? icons.ra
       {#if group && artwork === 'none'}<span class="end"><CalendarEpisodes {group} released={entry.released} /></span>{/if}
     </p>
   </div>
-  <QuickIcons {...icons} small={artwork === 'poster'} watchNowArt={entry.fanart} />
+  <QuickIcons {...icons} small={small || artwork === 'poster'} watchNowArt={entry.fanart} />
 </article>
 
 <style>
@@ -157,56 +159,5 @@ const spoiler = $derived(icons.collectionTarget ?? icons.watchTarget ?? icons.ra
 .titles {
   display: grid;
   block-size: var(--calendar-titles-height);
-}
-
-/* Narrow cards (a month's day, a poster) keep every quick icon, just smaller and in a shorter bar. */
-@container (width < 300px) {
-  .calendar-entry.calendar-entry :global(.quick-icons) {
-    --bar: var(--calendar-narrow-bar-height);
-    --watch-card-height: var(--calendar-narrow-bar-height);
-    --watch-card-small-height: var(--calendar-narrow-bar-height);
-    --list-card-height: var(--calendar-narrow-bar-height);
-    --list-card-small-height: var(--calendar-narrow-bar-height);
-    --action-width: 26px;
-    --watch-card-width: 26px;
-    --watch-card-small-width: 26px;
-    --list-card-width: 26px;
-    --list-card-small-width: 26px;
-    --font-size-quick-icon: 16px;
-    --font-size-quick-icon-small: 15px;
-    --font-size-rating: 14px;
-    --font-size-rating-small: 13px;
-    --font-size-rating-heart: 13px;
-  }
-}
-
-@container (width < 190px) {
-  .calendar-entry.calendar-entry :global(.quick-icons) {
-    --action-width: 21px;
-    --watch-card-width: 21px;
-    --watch-card-small-width: 21px;
-    --list-card-width: 21px;
-    --list-card-small-width: 21px;
-    --font-size-quick-icon: 13px;
-    --font-size-quick-icon-small: 13px;
-    --font-size-rating: 12px;
-    --font-size-rating-small: 12px;
-    --font-size-rating-heart: 11px;
-  }
-}
-
-@container (width < 172px) {
-  .calendar-entry.calendar-entry :global(.quick-icons) {
-    --action-width: 19px;
-    --watch-card-width: 19px;
-    --watch-card-small-width: 19px;
-    --list-card-width: 19px;
-    --list-card-small-width: 19px;
-    --font-size-quick-icon: 12px;
-    --font-size-quick-icon-small: 12px;
-    --font-size-rating: 11px;
-    --font-size-rating-small: 11px;
-    --font-size-rating-heart: 10px;
-  }
 }
 </style>

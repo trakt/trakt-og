@@ -6,7 +6,7 @@
     <SummaryActionMenu>
       {#snippet children(close)}
         <a href="/users/me/history">View history</a>
-        <VisibilityControl {target} action="drop" variant="menu" onsaving={close}>Drop show</VisibilityControl>
+        <VisibilityControl {target} action="drop" variant="menu" onsaving={close}>Drop</VisibilityControl>
       {/snippet}
     </SummaryActionMenu>
 -->

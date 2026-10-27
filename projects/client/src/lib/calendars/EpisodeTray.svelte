@@ -1,6 +1,7 @@
 <!--
   The episodes of a grouped calendar card, in the popup its badge opens: each row has its number, its title (kept hidden like
-  any unwatched title when spoilers are off) and the episode's own watch, library and list icons.
+  any unwatched title when spoilers are off) and the episode's own watch, library and list icons, as an agenda row's
+  outlined tools.
     <EpisodeTray id="tray" show={1} title="The Diplomat" episodes={card.group.episodes} released />
 -->
 <script lang="ts">
@@ -47,7 +48,7 @@ const fill = (episode: CalendarGroupEpisode) =>
     <li>
       <a class="number" href={episode.href}>{episode.label}</a>
       <a class="title" href={episode.href}><MediaSpoiler target={item} kind="title" inline>{episode.title || 'TBA'}</MediaSpoiler></a>
-      <QuickIcons small fill={fill(episode)} watchTarget={item} collectionTarget={item} listTarget={item}
+      <QuickIcons row small fill={fill(episode)} watchTarget={item} collectionTarget={item} listTarget={item}
         listLabel="Add to list" {released} />
     </li>
   {/each}
@@ -55,6 +56,8 @@ const fill = (episode: CalendarGroupEpisode) =>
 
 <style>
 .episode-tray {
+  display: grid;
+  gap: var(--space-menu);
   max-block-size: var(--episode-tray-height);
   margin: 0;
   padding: 0;
@@ -73,10 +76,6 @@ li {
 
   &:hover {
     background-color: var(--color-menu-row-hover);
-  }
-
-  & :global(.quick-icons) {
-    background: none;
   }
 }
 

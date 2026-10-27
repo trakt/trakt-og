@@ -12,6 +12,7 @@ import PromptDateForm from '$lib/components/prompt/PromptDateForm.svelte';
 import PromptPopover from '$lib/components/prompt/PromptPopover.svelte';
 import PromptRow from '$lib/components/prompt/PromptRow.svelte';
 import backward from '$lib/icons/light/backward.svg?raw';
+import arrowRotateLeft from '$lib/icons/regular/arrow-rotate-left.svg?raw';
 import ban from '$lib/icons/regular/ban.svg?raw';
 import circleMinus from '$lib/icons/regular/circle-minus.svg?raw';
 import clock from '$lib/icons/regular/clock.svg?raw';
@@ -26,7 +27,7 @@ import { viewerFetch } from '../../auth/viewerFetch.ts';
 
 interface Props {
   target: VisibilityTarget;
-  action: 'rewatch' | 'drop' | 'restore' | 'hide';
+  action: 'rewatch' | 'unrewatch' | 'drop' | 'restore' | 'hide';
   section?: 'calendar' | 'recommendations' | 'progress_watched' | 'progress_collected';
   /** Left out, only for `headless`, which draws no button. */
   variant?: 'badge' | 'menu';
@@ -85,7 +86,9 @@ const title = $derived(
     : action === 'drop'
     ? 'When did you drop this?'
     : action === 'restore'
-    ? 'Restore this show?'
+    ? 'Undrop this show?'
+    : action === 'unrewatch'
+    ? 'Stop rewatching this show?'
     : `Hide this ${target.type}?`,
 );
 const label = $derived(
@@ -95,7 +98,9 @@ const label = $derived(
       : action === 'drop'
       ? 'Drop this show'
       : action === 'restore'
-      ? 'Restore this show'
+      ? 'Undrop this show'
+      : action === 'unrewatch'
+      ? 'Stop rewatching this show'
       : `Hide this ${target.type}`),
 );
 const instant = $derived(watchDateInstant(value, dates.timeZone));
@@ -124,7 +129,15 @@ function toggle(event: ToggleEvent) {
 const firstChoice = () => popover?.querySelector<HTMLElement>('.body button');
 // The rewatch's purple, red to drop, gray to hide or restore.
 const tone = $derived(action === 'rewatch' ? 'watched' : action === 'drop' ? 'danger' : 'neutral');
-const actionIcon = $derived(action === 'rewatch' ? backward : action === 'hide' ? ban : circleMinus);
+const actionIcon = $derived(
+  action === 'rewatch'
+    ? backward
+    : action === 'hide'
+    ? ban
+    : action === 'restore' || action === 'unrewatch'
+    ? arrowRotateLeft
+    : circleMinus,
+);
 function otherDate() {
   const now = new Date();
   maximum = watchDateInput(now, dates.timeZone);
@@ -150,11 +163,13 @@ async function save(at?: string) {
       at,
       overlay,
       notify: toast,
-      request: (path, body) =>
+      request: (path, body, method) =>
         rawApiFetch({
           path,
           fetch: viewerFetch(),
-          init: { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) },
+          init: method === 'DELETE'
+            ? { method }
+            : { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) },
         }),
     });
     onsaving?.(saving);
@@ -210,7 +225,11 @@ function submit(event: SubmitEvent) {
     <PromptRow svg={actionIcon} danger={action === 'drop'} onclick={() => save()}>Right now</PromptRow>
     <PromptRow svg={clock} onclick={otherDate}>Other date…</PromptRow>
   {:else}
-    <PromptRow svg={actionIcon} onclick={() => save()}>{action === 'restore' ? 'Yes, restore it!' : 'Yes, hide it!'}</PromptRow>
+    <PromptRow svg={actionIcon} onclick={() => save()}>{action === 'restore'
+      ? 'Yes, undrop it!'
+      : action === 'unrewatch'
+      ? 'Yes, stop rewatching!'
+      : 'Yes, hide it!'}</PromptRow>
     <PromptRow svg={xmark} onclick={() => popover?.hidePopover()}>No</PromptRow>
   {/if}
 </PromptPopover>

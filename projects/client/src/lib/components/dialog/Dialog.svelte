@@ -1,7 +1,7 @@
 <!--
   OG's modal: a rounded panel centered over a dimmed page, with a title bar and a close button in the corner.
   A native modal <dialog>: it moves focus to the first control inside (or the one marked `autofocus`), keeps
-  focus inside while open, closes on Esc and hands focus back to whatever opened it. The page behind doesn't scroll
+  focus inside while open, fades out on Esc and hands focus back to whatever opened it. The page behind doesn't scroll
   while it's open, so menus anchored inside it stay put.
     <Dialog bind:open title="Watch now" lightDismiss>...</Dialog>
   `lightDismiss` also closes it on a backdrop click, like OG's Watch Now modal. Form dialogs stay open.
@@ -12,7 +12,7 @@
 <script lang="ts">
 import Icon from '$lib/icons/Icon.svelte';
 import deleteThick from '$lib/icons/trakt/delete-thick.svg?raw';
-import type { Snippet } from 'svelte';
+import { type Snippet, tick, untrack } from 'svelte';
 
 interface Props {
   open: boolean;
@@ -53,24 +53,54 @@ let {
   variant,
 }: Props = $props();
 const id = $props.id();
+let dialog = $state<HTMLDialogElement>();
 let close = $state<HTMLButtonElement>();
+let closing = $state(false);
+let pressedBackdrop = false;
+
+// Fades out the way it faded in, then closes. Reduced motion has no transition to wait for.
+async function dismiss() {
+  if (!dialog?.open || closing) return;
+  closing = true;
+  await tick();
+  await Promise.allSettled(dialog.getAnimations().map(({ finished }) => finished));
+  closing = false;
+  dialog.close();
+}
 
 // Reads `open`, so it re-runs whenever the prop changes.
 // A dialog with no controls yet (Watch Now while it loads) would land on Close, so it takes focus itself instead.
-const syncOpen = (dialog: HTMLDialogElement) => {
-  if (open && !dialog.open) {
-    dialog.showModal();
-    if (document.activeElement === close) dialog.focus();
+const syncOpen = (node: HTMLDialogElement) => {
+  if (open && !node.open) {
+    node.showModal();
+    if (document.activeElement === close) node.focus();
   }
-  if (!open && dialog.open) dialog.close();
+  if (!open && node.open) untrack(() => void dismiss());
+};
+
+// Safari has no `closedby`, so a backdrop click is caught here: the press and the release both land on the
+// <dialog> itself, outside its panel and footer, so a drag out of a field doesn't close it.
+const onpointerdown = (event: PointerEvent) => (pressedBackdrop = event.target === dialog);
+const onclick = (event: MouseEvent) => {
+  if (lightDismiss && pressedBackdrop && event.target === dialog) void dismiss();
+};
+
+// Esc fades out too. Browsers don't let a page cancel repeated Esc presses, which then close at once.
+const oncancel = (event: Event) => {
+  if (!event.cancelable) return;
+  event.preventDefault();
+  void dismiss();
 };
 </script>
 
 <dialog
-  class={['dialog', size, variant, { 'image-backdrop': backdrop }]}
+  bind:this={dialog}
+  class={['dialog', size, variant, { 'image-backdrop': backdrop, closing }]}
   aria-labelledby="{id}-title"
   tabindex="-1"
-  closedby={lightDismiss ? 'any' : 'closerequest'}
+  {onpointerdown}
+  {onclick}
+  {oncancel}
   onclose={() => { open = false; onclose?.(); }}
   {@attach syncOpen}
 >
@@ -194,6 +224,11 @@ const syncOpen = (dialog: HTMLDialogElement) => {
       opacity: 0;
     }
   }
+}
+
+.dialog.closing,
+.dialog.closing::backdrop {
+  opacity: 0;
 }
 
 .title {

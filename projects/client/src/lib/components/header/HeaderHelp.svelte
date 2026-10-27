@@ -64,11 +64,6 @@ const sections = $derived([
 </div>
 
 <style>
-/* The menu's arrow points at the middle of the trigger. */
-.help {
-  --header-menu-arrow-end: calc(var(--header-pill-height) / 2);
-}
-
 /* A loose pill like the magnifier, lit while its menu is open. */
 .help :global(.trigger) {
   justify-content: center;

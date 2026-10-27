@@ -91,9 +91,7 @@ export async function fetchSchedule({
 
   const client = api({ fetch, token }).calendars;
   const load = async (range: { start_date: string; days: number }) => {
-    const calendars = await Promise.all(
-      slugs.map((slug) => fetchCalendar({ client, target: 'my', slug, range, signedIn: true })),
-    );
+    const calendars = await Promise.all(slugs.map((slug) => fetchCalendar({ client, target: 'my', slug, range })));
     if (calendars.includes('signed-out')) throw new Error('The schedule needs a fresh sign-in');
     return calendars.flatMap((items) => (items === 'signed-out' ? [] : items));
   };

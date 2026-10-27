@@ -342,32 +342,19 @@ describe('loadCalendar', () => {
       expect(shownKeys(data)).toEqual(['m7']);
     });
 
-    it('should render All Shows logged-out, short feed and all, for a token that stopped working', async () => {
-      server.use(
-        http.get(`${API}/users/hidden/calendar`, () => workerUnauthorized()),
-        http.get(`${API}/calendars/releases/hot/:start/:days`, ({ request }) => {
-          seen.push(request);
-          return HttpResponse.json([airing(2, 1)]);
-        }),
-      );
-      const data = await load({ target: 'all', slug: 'shows', stale: true });
+    it('should render an All calendar logged-out for a token that stopped working', async () => {
+      server.use(http.get(`${API}/users/hidden/calendar`, () => workerUnauthorized()));
+      const data = await load({ target: 'all', slug: 'movies', stale: true });
 
-      expect(requestTo('/calendars/all/shows/')).toBeUndefined();
-      expect(requestTo('/calendars/releases/hot/')?.headers.get('authorization')).toBeNull();
-      expect(shownKeys(data)).toEqual(['2s1']);
+      expect(requestTo('/calendars/all/movies/')?.headers.get('authorization')).toBeNull();
+      expect(shownKeys(data)).toEqual(['m7', 'm8']);
     });
 
     it('should skip the hidden items when signed out', async () => {
-      server.use(
-        http.get(`${API}/calendars/releases/hot/:start/:days`, ({ request }) => {
-          seen.push(request);
-          return HttpResponse.json([airing(2, 1)]);
-        }),
-      );
-      const data = await load({ target: 'all', slug: 'shows', token: null });
+      const data = await load({ target: 'all', slug: 'movies', token: null });
 
       expect(requestTo('/users/hidden/calendar')).toBeUndefined();
-      expect(shownKeys(data)).toEqual(['2s1']);
+      expect(shownKeys(data)).toEqual(['m7', 'm8']);
     });
   });
 });

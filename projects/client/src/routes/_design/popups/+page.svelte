@@ -26,7 +26,7 @@ const { data } = $props();
 const report = $derived({ ...reportTarget, fanart: data.fanart });
 
 const sorts = ['Watched Date', 'Title', 'Released', 'Runtime'];
-const calendars = { my: ['Shows & Movies', 'Shows', 'Movies'], all: ['Shows & Movies', 'Shows', 'Movies'] };
+const calendars = { my: ['Shows & Movies', 'Shows', 'Movies'], all: ['Premieres', 'New Shows', 'Finales', 'Movies'] };
 
 let sort = $state('Watched Date');
 let calendar = $state({ group: 'my', name: 'Shows & Movies' });
@@ -123,12 +123,12 @@ const showLibrary = { episodes: { done: 27, aired: 32 }, sources: ['plex' as con
 </Specimen>
 
 <Specimen title="Dialog" row
-  note="The art dialogs: the item's fanart under glass, with the form below. Report sends to the stubbed API; Where to watch loads Fight Club's real offers, with shimmering tiles until they land.">
+  note="The art dialogs: the item's fanart under glass, with the form below. Report sends to the stubbed API; Watch Now loads Fight Club's real offers, with shimmering tiles until they land.">
   <Variant label="md: Report">
     <DemoButton onclick={() => (reportOpen = true)}>Report Fight Club</DemoButton>
   </Variant>
-  <Variant label="xl, click outside closes: Where to watch">
-    <DemoButton onclick={() => (watchOpen = true)}>Where to watch Fight Club</DemoButton>
+  <Variant label="xl, click outside closes: Watch Now">
+    <DemoButton onclick={() => (watchOpen = true)}>Watch Fight Club now</DemoButton>
   </Variant>
 </Specimen>
 
@@ -147,7 +147,7 @@ const showLibrary = { episodes: { done: 27, aired: 32 }, sources: ['plex' as con
 </Specimen>
 
 <Specimen title="Watch Now" bleed
-  note="The block under a summary poster, at the sidebar's width. Its button opens the where-to-watch dialog.">
+  note="The block under a summary poster, at the sidebar's width. Its button opens the Watch Now dialog.">
   <Container>
     <div class="summary-sidebar">
       <WatchNow button={watchNow} title={fightClub.title} year={fightClub.year} fanart={data.fanart} />

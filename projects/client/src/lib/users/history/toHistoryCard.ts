@@ -43,11 +43,10 @@ export type HistoryDay<Card = HistoryCard> = {
   readonly cards: readonly Card[];
 };
 
-// OG's UNKNOWN_WATCHED_DATE.
-
 const showHref = (slug: string) => `/shows/${slug}`;
+// OG's UNKNOWN_WATCHED_DATE: the epoch would read "Dec 31, 1969" west of UTC.
 const watchedDate = (at: string, datePreferences: DatePreferences) =>
-  formatDate(at, { ...datePreferences, time: true });
+  isUnknownDate(at) ? 'Unknown date' : formatDate(at, { ...datePreferences, time: true });
 
 /**
  * A play as a card. `screenshots` is OG's episode layout, for the Episodes tab and one show, season or episode: the

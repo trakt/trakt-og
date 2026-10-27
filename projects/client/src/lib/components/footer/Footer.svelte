@@ -12,7 +12,7 @@ import github from '$lib/icons/brands/github.svg?raw';
 import googlePlay from '$lib/icons/brands/google-play.svg?raw';
 import mastodon from '$lib/icons/brands/mastodon.svg?raw';
 import redditAlien from '$lib/icons/brands/reddit-alien.svg?raw';
-import xTwitter from '$lib/icons/brands/x-twitter.svg?raw';
+import twitter from '$lib/icons/brands/twitter.svg?raw';
 import youtube from '$lib/icons/brands/youtube.svg?raw';
 import spaceStationMoon from '$lib/icons/solid/space-station-moon.svg?raw';
 import { resolve } from '$app/paths';
@@ -30,10 +30,10 @@ const social = [
   { title: 'Trakt for iOS', href: traktUrls.appStore, icon: apple },
   { title: 'Trakt for Android', href: traktUrls.googlePlay, icon: googlePlay, color: 'var(--color-site-google-play)' },
   { title: 'Reddit', href: traktUrls.reddit, icon: redditAlien, color: 'var(--color-site-reddit)' },
+  { title: 'YouTube', href: traktUrls.youtube, icon: youtube, color: 'var(--color-site-youtube)' },
   // `me` lets Mastodon verify og as Trakt's own site.
   { title: 'Mastodon', href: traktUrls.mastodon, icon: mastodon, color: 'var(--color-site-mastodon)', rel: 'me noopener' },
-  { title: 'X', href: traktUrls.twitter, icon: xTwitter },
-  { title: 'YouTube', href: traktUrls.youtube, icon: youtube, color: 'var(--color-site-youtube)' },
+  { title: 'Twitter', href: traktUrls.twitter, icon: twitter, color: 'var(--color-site-twitter)' },
   { title: 'GitHub', href: traktUrls.github, icon: github },
   { title: 'Status', href: traktUrls.status, icon: spaceStationMoon, color: 'var(--color-site-status)' },
 ];
@@ -128,7 +128,9 @@ nav ul {
   }
 }
 
+/* Bare logos until the pointer brings the ghost square's fill. */
 .social {
+  --color-glass-action-ghost-bg: transparent;
   flex-wrap: nowrap;
   gap: var(--footer-social-gap);
 }

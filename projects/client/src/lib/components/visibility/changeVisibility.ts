@@ -5,11 +5,11 @@ import { GENERIC_ERROR } from '../../utils/genericError.ts';
 
 type Params = {
   target: VisibilityTarget;
-  action: 'rewatch' | 'drop' | 'restore' | 'hide';
+  action: 'rewatch' | 'unrewatch' | 'drop' | 'restore' | 'hide';
   section?: 'calendar' | 'recommendations' | 'progress_watched' | 'progress_collected';
   at?: string;
   overlay: Pick<ReturnType<typeof createOverlay>, 'patch'>;
-  request: (path: string, body: unknown) => Promise<Response>;
+  request: (path: string, body: unknown, method: 'POST' | 'DELETE') => Promise<Response>;
   notify: { success: (message: string) => void; error: (message: string) => void };
   now?: () => Date;
 };
@@ -49,39 +49,43 @@ export async function changeVisibility({
   const rollbacks =
     action === 'rewatch'
       ? [patchDates('rewatching'), patchDates('dropped', true)]
-      : action === 'hide' && target.season
-        ? []
-        : action === 'hide'
-          ? [
-              overlay.patch(
-                'hidden',
-                (hidden) =>
-                  new Map(hidden).set(
-                    section ?? '',
-                    new Set([...(hidden.get(section ?? '') ?? []), `${target.type}:${target.id}`]),
-                  ),
-                new Map(),
-              ),
-            ]
-          : [patchDates('dropped', action === 'restore')];
+      : action === 'unrewatch'
+        ? [patchDates('rewatching', true)]
+        : action === 'hide' && target.season
+          ? []
+          : action === 'hide'
+            ? [
+                overlay.patch(
+                  'hidden',
+                  (hidden) =>
+                    new Map(hidden).set(
+                      section ?? '',
+                      new Set([...(hidden.get(section ?? '') ?? []), `${target.type}:${target.id}`]),
+                    ),
+                  new Map(),
+                ),
+              ]
+            : [patchDates('dropped', action === 'restore')];
+  // Undoing a rewatch deletes the reset, so the plays before it count again.
   const path =
-    action === 'rewatch'
+    action === 'rewatch' || action === 'unrewatch'
       ? `/shows/${target.id}/progress/watched/reset`
       : `/users/hidden/${action === 'hide' ? section : 'dropped'}${action === 'restore' ? '/remove' : ''}`;
   const stamp = action === 'restore' ? {} : { hidden_at: date };
   const body =
     action === 'rewatch'
       ? { reset_at: date }
-      : target.season
-        ? { shows: [{ ids: { trakt: target.season.show }, seasons: [{ number: target.season.number, ...stamp }] }] }
-        : { [`${target.type}s`]: [{ ids: { trakt: target.id }, ...stamp }] };
+      : action === 'unrewatch'
+        ? undefined
+        : target.season
+          ? { shows: [{ ids: { trakt: target.season.show }, seasons: [{ number: target.season.number, ...stamp }] }] }
+          : { [`${target.type}s`]: [{ ids: { trakt: target.id }, ...stamp }] };
   try {
-    const response = await request(path, body);
+    const response = await request(path, body, action === 'unrewatch' ? 'DELETE' : 'POST');
     if (!response.ok) throw new Error(String(response.status));
-    const json: unknown = await response.json();
-    if (action === 'rewatch') resetSchema.parse(json);
-    else {
-      const result = resultSchema.parse(json);
+    if (action === 'rewatch') resetSchema.parse(await response.json());
+    else if (action !== 'unrewatch') {
+      const result = resultSchema.parse(await response.json());
       if (Object.values(result.not_found ?? {}).some((items) => items.length > 0)) throw new Error('Item not found');
       const counts = action === 'restore' ? result.deleted : result.added;
       if (!counts?.[`${target.type}s`]) throw new Error('Item was not updated');
@@ -94,11 +98,13 @@ export async function changeVisibility({
   notify.success(
     action === 'rewatch'
       ? `You reset the watched progress for ${target.title}.`
-      : action === 'restore'
-        ? `You restored ${target.title}.`
-        : action === 'drop'
-          ? `You dropped ${target.title}.`
-          : `You hid ${target.title}.`,
+      : action === 'unrewatch'
+        ? `You stopped rewatching ${target.title}.`
+        : action === 'restore'
+          ? `You undropped ${target.title}.`
+          : action === 'drop'
+            ? `You dropped ${target.title}.`
+            : `You hid ${target.title}.`,
   );
   return true;
 }

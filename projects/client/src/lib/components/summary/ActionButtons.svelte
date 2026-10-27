@@ -1,5 +1,5 @@
 <!--
-  The button stack to the right of a summary's overview: check in, history, library, watchlist, favorites, comment,
+  The button stack to the right of a summary's overview: check in (a show's to its next episode), history, library, watchlist, favorites, comment,
   each a `SummaryAction`. History, library, lists and favorites use shared optimistic controls; the rest stay idle.
   The phone Watch Now button sits above them (`WatchNow` with `phone`).
 -->
@@ -29,7 +29,7 @@ import list from '$lib/icons/trakt/list.svg?raw';
 import trakt from '$lib/icons/trakt/trakt-v2.svg?raw';
 
 interface Props {
-  /** Movies and episodes. */
+  /** Movies and episodes. A show passes its next episode to watch. */
   checkin?: Pick<CheckinTarget, 'type' | 'id'>;
   /** Movies and shows. */
   favorites?: boolean;

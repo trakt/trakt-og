@@ -123,7 +123,7 @@ const country = $derived(watchNowCountry(data.settings));
 <SectionToolbar>
   {#snippet filters()}
     <Dropdown section={data.itemTitle ? 'Title' : 'Media'}>
-      {#snippet trigger()}{data.itemTitle ?? historyTypes[data.type]}{/snippet}
+      {#snippet trigger()}{#if data.itemTitle}<span class="item-title">{data.itemTitle}</span>{:else}{historyTypes[data.type]}{/if}{/snippet}
       <ul>
         {#each Object.entries(historyTypes) as [type, label] (type)}
           <li><a href={href(type, { genres: null })} aria-current={data.type === type ? 'page' : undefined}>{label}</a></li>
@@ -204,6 +204,18 @@ const country = $derived(watchNowCountry(data.settings));
 </section>
 
 <style>
+/* An episode's full title can run the toolbar onto two lines: cut it short with an ellipsis. */
+.item-title {
+  display: inline-block;
+  max-inline-size: var(--history-item-title-max);
+  overflow: hidden;
+  /* Room for descenders at the hidden overflow. */
+  line-height: var(--line-height-dropdown-value);
+  text-overflow: ellipsis;
+  vertical-align: bottom;
+  white-space: nowrap;
+}
+
 .sort {
   display: flex;
   align-items: center;

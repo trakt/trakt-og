@@ -28,7 +28,7 @@ const label = $derived(['Dropped', date && `on ${date}`, episode && `after ${epi
 
 <div class="dropped-badge">
   {#if target}
-    <VisibilityControl {target} action="restore" variant="badge" tooltip="Restore this show">{@render stamp()}</VisibilityControl>
+    <VisibilityControl {target} action="restore" variant="badge" tooltip="Undrop this show">{@render stamp()}</VisibilityControl>
   {:else}
     <span role="img" aria-label={label}>{@render stamp()}</span>
   {/if}

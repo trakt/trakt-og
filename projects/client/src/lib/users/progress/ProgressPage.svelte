@@ -1,7 +1,7 @@
 <!--
   `/users/:id/progress(/:type)(/:sort_by/:sort_how)`, your own progress. Every show you've started comes from the
-  endpoint v3's progress page reads, `/sync/progress/up_next_nitro` (`loadNitroProgress`, 100 a page, about five
-  requests for 440 shows), with its poster, aired count and next and last episodes; the watched counts, plays and
+  endpoint v3's progress page reads, `/sync/progress/up_next_nitro` (`loadNitroProgress`, its `all` and `completed`
+  intents together, 100 a page), with its poster, aired count and next and last episodes; the watched counts, plays and
   times come from the overlay's watches, which the whole app already loads. The whole list loads so the
   sorts, hide toggles, title search, list filter and totals all work in the browser. It's kept for 30 minutes, like
   v3, across tabs and pages, and read again once a watch, rewatch or drop changes the overlay. The overlay narrows it
@@ -68,8 +68,8 @@ async function readProgress() {
   const slug = data.profile.slug;
   try {
     const items = await loadNitroProgress({
-      request: (page, limit) =>
-        client().sync.progress.upNext.nitro({ query: { page, limit, intent: 'all' } }).then((response) => {
+      request: (intent, page, limit) =>
+        client().sync.progress.upNext.nitro({ query: { page, limit, intent } }).then((response) => {
           if (response.status === 429) apiRateLimited(response.headers.get('retry-after'));
           return response.status === 200
             ? { ok: true as const, body: response.body, headers: response.headers }

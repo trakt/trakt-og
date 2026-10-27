@@ -7,6 +7,7 @@ import profileCover from '$lib/assets/profile-cover-default.jpg';
 import { headerArt } from '$lib/components/header/headerArt';
 import Footer from '$lib/components/footer/Footer.svelte';
 import Header from '$lib/components/header/Header.svelte';
+import Signpost from '$lib/components/signpost/Signpost.svelte';
 import DemoChoice from '$lib/design/DemoChoice.svelte';
 import Specimen from '$lib/design/Specimen.svelte';
 import type { HeaderUser } from '$lib/components/header/HeaderUser';
@@ -65,7 +66,7 @@ function save(body: SettingsBody) {
 </script>
 
 <Specimen title="Top bar" bleed
-  note="Pick a viewer and the art behind the bar, which tints its glass. Click the magnifier or press / to search (shimmering rows hold the starting list's place while it loads), and hover the profile button for its menu.">
+  note="Pick a viewer and the art behind the bar, which tints its glass. Click the magnifier or press / to search (shimmering rows hold the starting list's place while it loads), and hover the signpost or the profile button for their menus, each with an arrow up at its trigger.">
   <div class="knobs">
     <DemoChoice label="Viewer" options={Object.keys(users).map((value) => ({ value, label: value }))} bind:value={who} />
     <DemoChoice label="Backdrop" options={Object.keys(BACKDROPS).map((value) => ({ value, label: value }))}
@@ -81,6 +82,11 @@ function save(body: SettingsBody) {
   </div>
 </Specimen>
 
+<Specimen title="Signpost"
+  note="og's help mark, 1em square in the text's color: the help menu's trigger and the help page's title.">
+  <p class="marks"><Signpost /> <Signpost /> <Signpost /></p>
+</Specimen>
+
 <Specimen title="Footer" bleed note="The same on every page, under the content.">
   <Footer />
 </Specimen>
@@ -90,6 +96,26 @@ function save(body: SettingsBody) {
   display: grid;
   gap: var(--space-base-inline);
   padding: var(--design-canvas-padding);
+}
+
+/* The mark at the help menu's size, then the help page title's, then twice that. */
+.marks {
+  display: flex;
+  align-items: center;
+  gap: var(--gutter);
+  margin: 0;
+
+  & :global(.signpost:nth-child(1)) {
+    font-size: var(--header-signpost);
+  }
+
+  & :global(.signpost:nth-child(2)) {
+    font-size: var(--font-size-base);
+  }
+
+  & :global(.signpost:nth-child(3)) {
+    font-size: calc(var(--header-signpost) * 2);
+  }
 }
 
 /* The bar is fixed to this frame instead of the window, so it sits over the art as it does on a page. */

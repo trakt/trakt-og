@@ -3,7 +3,8 @@
   bordered, rows that soften on hover). Like OG it opens on mouse hover. Click, tap, Enter and Space open it too
   (show, not toggle, so the click after a hover doesn't shut it), and Esc, a click outside or the mouse leaving
   closes it (Popover API). The menu hangs from the trigger's end edge, or its start edge when there's no room
-  (the profile menu), and the header styles the trigger's open look.
+  (the profile menu), and the header styles the trigger's open look. An arrow on its top edge points up at the
+  trigger: the caller sets `--header-menu-arrow-end` to half the trigger's width.
   Rows are ul > li > a (or button), with <hr> as the divider. `aria-current` marks the page you're on in bold
   white on red.
 -->
@@ -45,7 +46,7 @@ afterNavigate(() => menu?.hidePopover());
   <button type="button" class="trigger" popovertarget="menu-{id}" popovertargetaction="show"
     aria-label={label}>{@render trigger()}</button>
   <div bind:this={menu} id="menu-{id}" class="menu" popover="auto" style:position-anchor="--menu-{id}">
-    {@render children()}
+    <div class="rows">{@render children()}</div>
   </div>
 </div>
 
@@ -59,7 +60,7 @@ afterNavigate(() => menu?.hidePopover());
     position: absolute;
     inset-block-start: 100%;
     inset-inline: 0;
-    block-size: var(--space-menu-offset);
+    block-size: var(--header-menu-gap);
   }
 }
 
@@ -83,10 +84,9 @@ afterNavigate(() => menu?.hidePopover());
   inset: auto;
   inline-size: max-content;
   min-inline-size: anchor-size(inline);
-  max-block-size: calc(100dvh - var(--header-height));
-  overflow-y: auto;
-  margin: var(--space-menu-offset) 0 0;
-  padding: var(--space-menu);
+  overflow: visible;
+  margin: var(--header-menu-gap) 0 0;
+  padding: 0;
   border: 1px solid var(--color-menu-border);
   border-radius: var(--radius-menu);
   background-color: var(--color-menu-bg);
@@ -96,6 +96,30 @@ afterNavigate(() => menu?.hidePopover());
   font-weight: normal;
   text-align: start;
   box-shadow: var(--shadow-menu);
+
+  /* The arrow: a square turned on its corner, its top two edges bordered, centered over the trigger. */
+  &::before {
+    content: '';
+    position: absolute;
+    inset-block-start: calc(var(--header-menu-arrow) / -2);
+    inset-inline-end: calc(var(--header-menu-arrow-end) - var(--header-menu-arrow) / 2);
+    inline-size: var(--header-menu-arrow);
+    block-size: var(--header-menu-arrow);
+    border-block-start: 1px solid var(--color-menu-border);
+    border-inline-start: 1px solid var(--color-menu-border);
+    background-color: var(--color-menu-bg);
+    rotate: 45deg;
+  }
+}
+
+/* The rows scroll inside the menu, so the arrow outside it isn't clipped. Positioned, so they paint over its lower
+   half. */
+.rows {
+  position: relative;
+  max-block-size: calc(100dvh - var(--header-height) - var(--header-menu-gap));
+  overflow-y: auto;
+  padding: var(--space-menu);
+  border-radius: inherit;
 }
 
 .menu :global {

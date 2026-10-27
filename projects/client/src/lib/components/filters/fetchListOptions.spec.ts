@@ -78,6 +78,8 @@ const showGenres = [
   'western',
 ];
 
+const mixed = config('shows', ['shows', 'movies']);
+
 describe('fetchListOptions', () => {
   describe('for certifications', () => {
     it("should list the movies' US ratings in order", async () => {
@@ -148,5 +150,54 @@ describe('fetchListOptions', () => {
       await fetchListOptions('genres', config('shows', ['shows', 'movies']));
       expect(fetchFilterBody).not.toHaveBeenCalled();
     });
+  });
+
+  describe('for countries', () => {
+    it('should name each country as members see it today', async () => {
+      const options = await fetchListOptions('countries', config('movies'));
+      expect(options).toContainEqual({ value: 'us', label: 'United States' });
+      expect(options).toContainEqual({ value: 'gb', label: 'United Kingdom' });
+      expect(options).toContainEqual({ value: 'tr', label: 'Turkey' });
+    });
+
+    it('should list only the countries each media type has titles in', async () => {
+      const movies = values(await fetchListOptions('countries', config('movies')));
+      const shows = values(await fetchListOptions('countries', config('shows')));
+      expect(movies).toHaveLength(232);
+      expect(shows).toHaveLength(158);
+      expect(movies).toContain('as');
+      expect(shows).not.toContain('as');
+    });
+
+    it('should keep the alphabetical order', async () => {
+      expect(values(await fetchListOptions('countries', config('shows'))).slice(0, 3)).toEqual(['af', 'al', 'dz']);
+    });
+
+    it('should merge both lists once on a mixed calendar', async () => {
+      expect(await fetchListOptions('countries', mixed)).toHaveLength(232);
+    });
+  });
+
+  describe('for languages', () => {
+    it('should list only the languages each media type has titles in', async () => {
+      const movies = values(await fetchListOptions('languages', config('movies')));
+      const shows = values(await fetchListOptions('languages', config('shows')));
+      expect(movies).toHaveLength(170);
+      expect(shows).toHaveLength(115);
+      expect(shows).toContain('kv');
+      expect(movies).not.toContain('kv');
+    });
+
+    it('should merge both lists once on a mixed calendar', async () => {
+      const options = await fetchListOptions('languages', mixed);
+      expect(options).toHaveLength(172);
+      expect(options).toContainEqual({ value: 'ja', label: 'Japanese' });
+    });
+  });
+
+  it('should not ask the API', async () => {
+    await fetchListOptions('countries', mixed);
+    await fetchListOptions('languages', mixed);
+    expect(fetchFilterBody).not.toHaveBeenCalled();
   });
 });

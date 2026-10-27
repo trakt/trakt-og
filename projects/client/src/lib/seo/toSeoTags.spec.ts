@@ -50,4 +50,14 @@ describe('seo: toSeoTags', () => {
     expect(toSeoTags({ canonicalPath: '/' }).og.url).toBe('https://og.trakt.tv/');
     expect(toTags({}, { ...movie, status: 404 }).canonical).toBeNull();
   });
+
+  it('should fall back to the default share image, with its size', () => {
+    expect(toSeoTags({ image: null }).image).toEqual({
+      url: 'https://og.trakt.tv/og-share.jpg',
+      alt: 'Trakt OG Redux: classic Trakt, rebuilt for big screens.',
+      width: 1200,
+      height: 630,
+    });
+    expect(toSeoTags({ image: 'https://media.trakt.tv/x.jpg' }).image).not.toHaveProperty('width');
+  });
 });

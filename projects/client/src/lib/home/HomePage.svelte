@@ -2,7 +2,6 @@
 <script lang="ts">
 import SeoHead from '$lib/seo/SeoHead.svelte';
 import { invalidate } from '$app/navigation';
-import { page } from '$app/state';
 import { untrack } from 'svelte';
 import HomeHero from './HomeHero.svelte';
 import HomeTrending from './HomeTrending.svelte';
@@ -45,14 +44,12 @@ $effect(() => {
 });
 </script>
 
+<!-- `/home` is the same page, so search engines list it once, at `/`. -->
 <SeoHead
   title="Classic Trakt, rebuilt for big screens"
   description="Trakt OG Redux: a rebuild of classic Trakt for desktops and tablets. Built on the Trakt API, and open source."
+  canonicalPath="/"
 />
-<svelte:head>
-  <!-- `/home` is the same page, so search engines list it once, at `/`. -->
-  <link rel="canonical" href="{page.url.origin}/" />
-</svelte:head>
 
 <div class="home">
   <HomeHero {fanarts} signedIn={data.signedIn} {live} showLive={!failed} />

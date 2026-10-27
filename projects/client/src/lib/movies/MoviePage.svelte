@@ -108,7 +108,7 @@ const textLinks = $derived(movie.links.filter(({ icon }) => !icon));
     <SummaryPoster {ratingTarget} image={movie.poster} alt={movie.fullTitle} />
     <WatchNow button={data.watchNow} title={movie.title} year={movie.year} fanart={movie.fanart} />
     <SectionNav {sections} label="{movie.title} sections" />
-    <ExternalLinks links={movie.links} />
+    <ExternalLinks links={movie.links} share={{ href: movie.href, title: movie.fullTitle }} />
   {/snippet}
 
   {#snippet details()}

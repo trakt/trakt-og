@@ -84,7 +84,7 @@ const sections = $derived([
     <a class="poster-link" href={episode.seasonHref} aria-label="Back to {episode.seasonTitle}"><SummaryPoster showTarget={{type:'show',id:episode.showId,title:episode.showTitle}} image={episode.poster} alt="{episode.showTitle}: {episode.seasonTitle}" {ratingTarget} /></a>
     <WatchNow button={data.watchNow} title={episode.fullTitle} year={episode.year} fanart={episode.fanart} />
     <SectionNav {sections} label="{safeTitle} sections" />
-    <ExternalLinks links={episode.links} />
+    <ExternalLinks links={episode.links} share={{ href: episode.href, title: safeTitle }} />
   {/snippet}
   {#snippet tools()}<MediaTools target={{...ratingTarget,href:episode.href,fanart:episode.fanart}} />{/snippet}
   {#snippet details()}

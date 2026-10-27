@@ -1,3 +1,4 @@
+import type { detectCrawler } from './lib/crawl/detectCrawler.ts';
 import type { Theme } from './lib/settings/Theme.ts';
 import type { loadViewerLists } from './lib/users/loadViewerLists.ts';
 
@@ -20,6 +21,8 @@ declare global {
       token: string | null;
       /** The auth cookie held a token that has expired, which the browser renews. Set by hooks.server.ts. */
       tokenExpired: boolean;
+      /** A verified search engine crawler, or any crawler or link-preview bot. Set by hooks.server.ts. */
+      crawler: ReturnType<typeof detectCrawler>;
       /** One read of the viewer network lists shared by profile and network loaders in this request. */
       viewerLists?: ReturnType<typeof loadViewerLists>;
       /** The viewer's saved theme, set by the root layout's load and written onto `<html>` by hooks.server.ts. */

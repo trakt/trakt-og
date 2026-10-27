@@ -2581,6 +2581,7 @@
   --z-first-night-bar: 25; /* the welcome reel: over the page, under the toasts and the header */
   --z-summary-sidebar: 1; /* over the details' heading marks */
   --z-loading: 99999;
+  --z-mobile-splash: 100000; /* over the whole app, its loader and the pages' extras included */
   /* Notes: comment thread cards with coloured tags for what the note is attached to and the item type. */
   --color-note-tag-history: light-dark(#8e44ad, #b583cf); /* brand-tertiary, lifted for dark */
   --color-note-tag-collection: light-dark(#0f7d67, #3cc4a4); /* brand-quaternary, deepened for small text on white */

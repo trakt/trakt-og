@@ -10,7 +10,9 @@ import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import apple from '$lib/icons/brands/apple.svg?raw';
 import github from '$lib/icons/brands/github.svg?raw';
 import googlePlay from '$lib/icons/brands/google-play.svg?raw';
+import mastodon from '$lib/icons/brands/mastodon.svg?raw';
 import redditAlien from '$lib/icons/brands/reddit-alien.svg?raw';
+import xTwitter from '$lib/icons/brands/x-twitter.svg?raw';
 import youtube from '$lib/icons/brands/youtube.svg?raw';
 import spaceStationMoon from '$lib/icons/solid/space-station-moon.svg?raw';
 import { resolve } from '$app/paths';
@@ -28,6 +30,9 @@ const social = [
   { title: 'Trakt for iOS', href: traktUrls.appStore, icon: apple },
   { title: 'Trakt for Android', href: traktUrls.googlePlay, icon: googlePlay, color: 'var(--color-site-google-play)' },
   { title: 'Reddit', href: traktUrls.reddit, icon: redditAlien, color: 'var(--color-site-reddit)' },
+  // `me` lets Mastodon verify og as Trakt's own site.
+  { title: 'Mastodon', href: traktUrls.mastodon, icon: mastodon, color: 'var(--color-site-mastodon)', rel: 'me noopener' },
+  { title: 'X', href: traktUrls.twitter, icon: xTwitter },
   { title: 'YouTube', href: traktUrls.youtube, icon: youtube, color: 'var(--color-site-youtube)' },
   { title: 'GitHub', href: traktUrls.github, icon: github },
   { title: 'Status', href: traktUrls.status, icon: spaceStationMoon, color: 'var(--color-site-status)' },
@@ -54,7 +59,7 @@ const social = [
         <li style:--glass-action-ghost-hover-icon={link.color}>
           <Tooltip text={link.title}>
             {#snippet trigger(tooltip)}
-              <GlassAction card ghost square icon={link.icon} href={link.href} target="_blank" rel="noopener"
+              <GlassAction card ghost square icon={link.icon} href={link.href} target="_blank" rel={link.rel ?? 'noopener'}
                 aria-label={link.title} {...tooltip} />
             {/snippet}
           </Tooltip>

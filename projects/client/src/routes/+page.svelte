@@ -1,7 +1,7 @@
 <script lang="ts">
-import ComingSoonPage from '$lib/coming-soon/ComingSoonPage.svelte';
+import HomePage from '$lib/home/HomePage.svelte';
 
 const { data } = $props();
 </script>
 
-<ComingSoonPage teaser={data.teaser} />
+<HomePage {data} />

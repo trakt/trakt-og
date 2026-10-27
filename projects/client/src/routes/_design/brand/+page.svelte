@@ -4,56 +4,15 @@ import TraktMark from '$lib/components/brand/TraktMark.svelte';
 import Specimen from '$lib/design/Specimen.svelte';
 import Variant from '$lib/design/Variant.svelte';
 
-type Layer = { ink: string; face?: string; shift?: 'left' | 'right' };
-
-// Every page that draws the mark, with the props it passes and the ground it sits on there.
-const marks: readonly { page: string; props: string; ground: string; layers: readonly Layer[] }[] = [
-  {
-    page: 'Home hero',
-    props: 'ink="var(--brand-primary)"',
-    ground: 'home',
-    layers: [{ ink: 'var(--brand-primary)' }],
-  },
-  { page: 'Footer', props: 'ink="currentColor"', ground: 'footer', layers: [{ ink: 'currentColor' }] },
-  {
-    page: 'Séance seal',
-    props: 'face="#fff" ink="#ed1c24"',
-    ground: 'seance',
-    layers: [{ face: '#fff', ink: '#ed1c24' }],
-  },
-  {
-    page: 'Séance ghost',
-    props: 'ink="var(--seance-ghost-face)"',
-    ground: 'seance-ghost',
-    layers: [{ ink: 'var(--seance-ghost-face)' }],
-  },
-  {
-    page: 'VHS',
-    props: 'ink="var(--vhs-text)" over red and blue ghosts',
-    ground: 'vhs',
-    layers: [
-      { ink: 'var(--brand-primary)', shift: 'left' },
-      { ink: 'var(--brand-secondary)', shift: 'right' },
-      { ink: 'var(--vhs-text)' },
-    ],
-  },
-  {
-    page: 'Tabloid',
-    props: 'face="#ddd" ink="#ed1c24"',
-    ground: 'tabloid',
-    layers: [{ face: '#ddd', ink: '#ed1c24' }],
-  },
-  {
-    page: 'Reanimated',
-    props: 'face="#c8eadf" ink="#0f5e4e"',
-    ground: 'reanimated',
-    layers: [{ face: '#c8eadf', ink: '#0f5e4e' }],
-  },
+// Every page that draws the mark, with the ink it passes and the ground it sits on there.
+const marks: readonly { page: string; ink: string; ground: string }[] = [
+  { page: 'Home hero', ink: 'var(--brand-primary)', ground: 'home' },
+  { page: 'Footer', ink: 'currentColor', ground: 'footer' },
 ];
 </script>
 
-<Specimen title="Inks and faces"
-  note="Each tile is one page's mark on that page's ground. ink colors the mark; face fills the disc behind it.">
+<Specimen title="Inks"
+  note="Each tile is one page's mark on that page's ground. ink colors the mark.">
   <p>
     <code>TraktMark</code> draws into a parent <code>&lt;svg viewBox="0 0 98.1 98.1"&gt;</code>, so a page can scale
     and recolor it.
@@ -62,14 +21,10 @@ const marks: readonly { page: string; props: string; ground: string; layers: rea
     {#each marks as mark (mark.page)}
       <li>
         <span class={['ground', mark.ground]}>
-          {#each mark.layers as layer, index (index)}
-            <svg class={['layer', layer.shift, { ghost: !!layer.shift }]} viewBox="0 0 98.1 98.1" aria-hidden="true">
-              <TraktMark ink={layer.ink} face={layer.face} />
-            </svg>
-          {/each}
+          <svg class="layer" viewBox="0 0 98.1 98.1" aria-hidden="true"><TraktMark ink={mark.ink} /></svg>
         </span>
         <b>{mark.page}</b>
-        <code>{mark.props}</code>
+        <code>ink="{mark.ink}"</code>
       </li>
     {/each}
   </ul>
@@ -132,26 +87,12 @@ li {
   inline-size: 100%;
   aspect-ratio: 1;
   border-radius: var(--radius-object);
-  isolation: isolate;
 }
 
 .layer {
   grid-area: 1 / 1;
   inline-size: 96px;
   block-size: 96px;
-}
-
-.ghost {
-  mix-blend-mode: screen;
-  opacity: 0.9;
-}
-
-.left {
-  transform: translateX(calc(-1 * var(--vhs-ghost-offset)));
-}
-
-.right {
-  transform: translateX(var(--vhs-ghost-offset));
 }
 
 .home {
@@ -168,26 +109,6 @@ li {
     block-size: var(--footer-mark-size);
     opacity: var(--opacity-footer-mark);
   }
-}
-
-.seance {
-  background-color: var(--seance-table);
-}
-
-.seance-ghost {
-  background-color: var(--seance-ghost);
-}
-
-.vhs {
-  background: var(--vhs-screen);
-}
-
-.tabloid {
-  background: var(--tabloid-desk);
-}
-
-.reanimated {
-  background-color: var(--brand-quaternary);
 }
 
 code {

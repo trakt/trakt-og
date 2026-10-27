@@ -1,6 +1,7 @@
-<!-- `/home`: the OG Redux landing page, dark in both themes. Later it moves to `/`. -->
+<!-- `/` signed out, and `/home`: the OG Redux landing page, dark in both themes. -->
 <script lang="ts">
 import { invalidate } from '$app/navigation';
+import { page } from '$app/state';
 import { untrack } from 'svelte';
 import HomeHero from './HomeHero.svelte';
 import HomeTrending from './HomeTrending.svelte';
@@ -49,6 +50,8 @@ $effect(() => {
     name="description"
     content="Trakt OG Redux: a rebuild of classic Trakt for desktops and tablets. Built on the Trakt API, and open source."
   />
+  <!-- `/home` is the same page, so search engines list it once, at `/`. -->
+  <link rel="canonical" href="{page.url.origin}/" />
 </svelte:head>
 
 <div class="home">

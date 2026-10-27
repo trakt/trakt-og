@@ -10,6 +10,7 @@ import {
   optionPaths,
   statusOptions,
 } from './filterOptions.ts';
+import { genreOptions } from './genreOptions.ts';
 import { mergeFilterOptions } from './mergeFilterOptions.ts';
 
 /** The per-type lists og ships with, so the panel asks the API for none of them. */
@@ -17,14 +18,16 @@ const bundledOptions: Record<
   Exclude<ListFilterKey, FetchedFilterKey | 'status' | 'episode_types'>,
   Readonly<Record<'shows' | 'movies', readonly FilterOption[]>>
 > = {
+  genres: genreOptions,
   certifications: certificationOptions,
 };
 
 const isFetched = (key: ListFilterKey): key is FetchedFilterKey => Object.hasOwn(optionPaths, key);
 
 /**
- * A list filter's choices: statuses and episode types are fixed, certifications ship per media type and the rest
- * come from the API, merged across the page's media types (the mixed calendar offers both shows' and movies' genres).
+ * A list filter's choices: statuses and episode types are fixed, genres and certifications ship per media type and
+ * the rest come from the API, merged across the page's media types (the mixed calendar offers both shows' and movies'
+ * genres).
  */
 export function fetchListOptions(key: ListFilterKey, config: AdvancedFiltersConfig): Promise<FilterOption[]> {
   if (key === 'status') return Promise.resolve([...statusOptions]);

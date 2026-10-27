@@ -9,6 +9,75 @@ const config = (type: 'shows' | 'movies', optionTypes?: readonly ('shows' | 'mov
   ({ type, ...(optionTypes && { optionTypes }) }) as AdvancedFiltersConfig;
 const labels = (options: readonly { label: string }[]) => options.map(({ label }) => label);
 
+const values = (options: readonly { value: string }[]) => options.map(({ value }) => value);
+
+const movieGenres = [
+  'action',
+  'adventure',
+  'animation',
+  'anime',
+  'comedy',
+  'crime',
+  'documentary',
+  'donghua',
+  'drama',
+  'family',
+  'fantasy',
+  'history',
+  'holiday',
+  'horror',
+  'music',
+  'musical',
+  'mystery',
+  'romance',
+  'science-fiction',
+  'short',
+  'sporting-event',
+  'superhero',
+  'suspense',
+  'thriller',
+  'war',
+  'western',
+];
+const showGenres = [
+  'action',
+  'adventure',
+  'animation',
+  'anime',
+  'biography',
+  'children',
+  'comedy',
+  'crime',
+  'documentary',
+  'donghua',
+  'drama',
+  'family',
+  'fantasy',
+  'game-show',
+  'history',
+  'holiday',
+  'home-and-garden',
+  'horror',
+  'mini-series',
+  'music',
+  'musical',
+  'mystery',
+  'news',
+  'reality',
+  'romance',
+  'science-fiction',
+  'short',
+  'soap',
+  'special-interest',
+  'sporting-event',
+  'superhero',
+  'suspense',
+  'talk-show',
+  'thriller',
+  'war',
+  'western',
+];
+
 describe('fetchListOptions', () => {
   describe('for certifications', () => {
     it("should list the movies' US ratings in order", async () => {
@@ -52,6 +121,31 @@ describe('fetchListOptions', () => {
 
     it('should not ask the API', async () => {
       await fetchListOptions('certifications', config('shows', ['shows', 'movies']));
+      expect(fetchFilterBody).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('for genres', () => {
+    it("should list the movies' genres alphabetically", async () => {
+      expect(values(await fetchListOptions('genres', config('movies')))).toEqual(movieGenres);
+    });
+
+    it("should list the shows' genres alphabetically", async () => {
+      expect(values(await fetchListOptions('genres', config('shows')))).toEqual(showGenres);
+    });
+
+    it("should keep the API's labels", async () => {
+      const options = await fetchListOptions('genres', config('shows'));
+      expect(options).toContainEqual({ value: 'science-fiction', label: 'Science Fiction' });
+      expect(options).toContainEqual({ value: 'home-and-garden', label: 'Home And Garden' });
+    });
+
+    it('should merge both lists once on a mixed calendar', async () => {
+      expect(values(await fetchListOptions('genres', config('shows', ['shows', 'movies'])))).toEqual(showGenres);
+    });
+
+    it('should not ask the API', async () => {
+      await fetchListOptions('genres', config('shows', ['shows', 'movies']));
       expect(fetchFilterBody).not.toHaveBeenCalled();
     });
   });

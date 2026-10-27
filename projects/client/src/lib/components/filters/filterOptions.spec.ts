@@ -1,11 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { toCodedOptions, toGenreOptions, toNetworkOptions } from './filterOptions.ts';
+import { toCodedOptions, toNetworkOptions } from './filterOptions.ts';
 
 describe('util: filterOptions', () => {
-  it('should map genres, languages and countries', () => {
-    expect(toGenreOptions([{ name: 'Science Fiction', slug: 'science-fiction' }])).toEqual([
-      { value: 'science-fiction', label: 'Science Fiction' },
-    ]);
+  it('should map languages and countries', () => {
     expect(toCodedOptions([{ name: 'Japanese', code: 'ja' }])).toEqual([{ value: 'ja', label: 'Japanese' }]);
   });
 
@@ -24,6 +21,6 @@ describe('util: filterOptions', () => {
   });
 
   it('should throw on a body of the wrong shape', () => {
-    expect(() => toGenreOptions({ genres: [] })).toThrow();
+    expect(() => toCodedOptions({ countries: [] })).toThrow();
   });
 });

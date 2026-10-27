@@ -20,7 +20,7 @@ const pageEvent = (cookie: string | undefined) =>
   ({
     cookies: { get: (name: string) => (name === 'og-auth' ? cookie : undefined) },
     locals: {},
-    platform: { env: { OG_ADMIN_GATE: 'off' } },
+    platform: { env: {} },
     url: new URL('https://og.trakt.tv/shows/trending'),
     request: new Request('https://og.trakt.tv/shows/trending'),
   }) as unknown as Handle['event'];

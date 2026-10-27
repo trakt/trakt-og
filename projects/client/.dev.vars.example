@@ -1,6 +1,4 @@
 # Copy to .dev.vars for local dev and preview. .dev.vars is gitignored; deploys read Worker secrets instead.
-# Opens every page locally. Deployed, og.trakt.tv stays admin-only until launch.
-OG_ADMIN_GATE=off
 # Klipy's API key, for the GIF picker in comment composers. Empty leaves the picker off.
 KLIPY_API_KEY=
 # A read-only GitHub token for the about page's GitHub reads, for the higher rate limit. Empty reads without one.

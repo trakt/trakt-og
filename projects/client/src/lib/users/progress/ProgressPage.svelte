@@ -47,7 +47,6 @@ type Props = {
 
 const { data }: Props = $props();
 
-const now = Date.now();
 const fetch = () => viewerFetch();
 /** The typed client, its requests through the shared queue. */
 const client = () => {
@@ -158,6 +157,7 @@ $effect(() => {
     });
 });
 
+// The clock is read on each rebuild, not once as the page opens, so an episode that aired since counts as aired.
 const items = $derived(
   nitro && !(droppedMissing && !droppedShows)
     ? toProgressItems({
@@ -168,7 +168,7 @@ const items = $derived(
       slices: { watchedShows, rewatching, dropped: droppedSlice, progressHidden, hidden, collectedShows },
       catalogs,
       options: data.options,
-      now,
+      now: Date.now(),
     })
     : null,
 );

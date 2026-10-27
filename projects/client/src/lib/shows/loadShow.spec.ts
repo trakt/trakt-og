@@ -1,3 +1,4 @@
+import { isHttpError } from '@sveltejs/kit';
 import { describe, expect, it } from 'vitest';
 import { loadShowData } from './loadShow.ts';
 
@@ -58,5 +59,15 @@ describe('loadShowData', () => {
     );
     expect(data.seasons).toEqual([]);
     expect(data.summary.guestStars).toEqual([]);
+  });
+  it('should answer a missing show with a 404', async () => {
+    const missing: typeof fetch = () => Promise.resolve(new Response(null, { status: 404 }));
+    const thrown = await loadShowData({ ...params([season]), fetch: missing }).catch((error: unknown) => error);
+    expect(isHttpError(thrown) && thrown.status).toBe(404);
+  });
+  it('should answer an API in maintenance with a 503', async () => {
+    const down: typeof fetch = () => Promise.resolve(new Response(null, { status: 503 }));
+    const thrown = await loadShowData({ ...params([season]), fetch: down }).catch((error: unknown) => error);
+    expect(isHttpError(thrown) && thrown.status).toBe(503);
   });
 });

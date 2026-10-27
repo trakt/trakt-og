@@ -1181,6 +1181,11 @@
   --letter-spacing-menu-header: 0.09em;
   --font-weight-menu-header: 600;
   --space-menu-offset: 4px; /* below the trigger; above a first header */
+  --space-menu-icon: 6px; /* a row's icon to its label */
+  --header-menu-gap: 10px; /* a header menu below its trigger, with room for its arrow */
+  --header-menu-arrow: 10px; /* the arrow's square, before it turns */
+  --header-signpost: 18px; /* the help menu's trigger */
+  --header-help-icon-width: 1.25em; /* a fixed-width icon's, like fa-fw */
   --space-menu-header: 10px 10px 4px;
   --color-menu-bg: light-dark(#fff, #262626);
   --color-menu-border: light-dark(#e3e3e3, #3a3a3a);
@@ -3727,6 +3732,8 @@
   /* The scenes behind the header, drawn on a canvas from these. */
   --color-about-scene-red: #ed1c24;
   --color-about-scene-cyan: #6ff3ff;
+  --color-about-scene-green: #6ec882; /* mission control's consoles */
+  --color-about-scene-white: #fff;
   --color-about-scene-ink: #0b0b0b;
 
   /* Trakt's brand violet: the new Trakt mark, the API banner and the mobile splash's Trakt app. */
@@ -3854,6 +3861,13 @@
   --about-empty-width: 240px;
   --about-empty-glyph: 22px;
   --color-about-issue-closed: light-dark(#8250df, #a371f7);
+}
+
+/* Help: /help, the about page's header and cards with a banner each for Trakt support and the community. */
+:root {
+  --help-banner-tint: 22%; /* of its color, fading from the left like the API banner */
+  --help-reddit-glyph: 30px;
+  --help-actions-gap: 10px;
 }
 
 /* Box Office: the weekend's chart as a table in the dark frame, and its sidebar summary. */

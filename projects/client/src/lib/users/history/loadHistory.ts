@@ -1,5 +1,6 @@
 import type { UserStats } from '../../stats/userStatsSchema.ts';
-import { error, redirect } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
+import { canonicalRedirect } from '../../routing/canonicalRedirect.ts';
 import { signInRedirect } from '../../auth/signInRedirect.ts';
 import { extractPageMeta } from '../../api/extractPageMeta.ts';
 import type { PageMeta } from '../../api/PageMeta.ts';
@@ -154,7 +155,11 @@ export async function loadHistory({ fetch, locals, params, url, cookies, parent 
   const type: HistoryType = params.type && isHistoryType(params.type) ? params.type : 'all';
   const base = `/users/${encodeURIComponent(params.id)}`;
   // OG's sort segments (`/history/movies/plays/asc`). The API only serves Watched Date, so they drop.
-  if (params.sort) redirect(302, `${base}/history${type === 'all' ? '' : `/${type}`}${url.search}`);
+  canonicalRedirect({
+    requested: [`${base}/history`, params.type, params.sort].filter(Boolean).join('/'),
+    canonical: `${base}/history${type === 'all' ? '' : `/${type}`}`,
+    url,
+  });
 
   const current = positiveInt(url.searchParams.get('page'), 1);
   const limit = Math.min(positiveInt(url.searchParams.get('limit'), PER_PAGE), MAX_LIMIT);

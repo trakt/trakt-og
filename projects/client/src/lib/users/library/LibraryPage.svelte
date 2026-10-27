@@ -30,6 +30,7 @@ import type { ProfileUser } from '$lib/users/ProfileUser';
 import { findAction } from '$lib/users/findAction';
 import { formatRuntime } from '$lib/utils/formatRuntime';
 import { historyTypes, isHistoryType } from '../history/historyTypes.ts';
+import { libraryPath } from './libraryPath.ts';
 import { type LibrarySort, librarySorts, sortLabels, validSort } from './librarySort.ts';
 import { librarySources } from './librarySources.ts';
 import type { loadLibrary } from './loadLibrary.ts';
@@ -58,12 +59,7 @@ const filtered = $derived(data.source !== 'all' || Boolean(data.range.startAt ||
 function href(type: string, sort: LibrarySort) {
   const query = new SvelteURLSearchParams(page.url.searchParams);
   query.delete('page');
-  const kept = isHistoryType(type) && validSort(type, sort.by) ? sort : undefined;
-  const path = kept && (kept.by !== 'added' || kept.how !== 'asc')
-    ? `/${type}/${kept.by}/${kept.how}`
-    : type === 'all'
-    ? ''
-    : `/${type}`;
+  const path = isHistoryType(type) ? libraryPath(type, validSort(type, sort.by) ? sort : { by: 'added', how: 'asc' }) : '';
   return `${base}${path}${query.size ? `?${query}` : ''}`;
 }
 

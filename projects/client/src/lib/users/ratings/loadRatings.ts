@@ -8,6 +8,8 @@ import type { ProfileUser } from '../ProfileUser.ts';
 import { readProfileTab } from '../readProfileTab.ts';
 import { toHistoryDays } from '../history/toHistoryCard.ts';
 import { ratingQuery } from './ratingQuery.ts';
+import { ratingsPath } from './ratingsPath.ts';
+import { canonicalRedirect } from '../../routing/canonicalRedirect.ts';
 import { ratingRowsSchema } from './ratingRowsSchema.ts';
 import { sortRatings } from './sortRatings.ts';
 import { toRatingCard } from './toRatingCard.ts';
@@ -74,7 +76,8 @@ async function read({
 
 /**
  * One read per `readProfileTab`: a public profile's ratings go without the token alongside the frame's load, and a
- * private profile the viewer may see is read with it. SSR never refreshes.
+ * private profile the viewer may see is read with it. SSR never refreshes. An unknown or default segment 301s to the
+ * page's own spelling.
  */
 export async function loadRatings({ fetch, locals, params, url, cookies, parent }: Params) {
   const query = ratingQuery(params.type ? `${params.type}/${params.filters ?? ''}` : params.filters);
@@ -90,6 +93,12 @@ export async function loadRatings({ fetch, locals, params, url, cookies, parent 
     frame: parent(),
     read: (credentials) =>
       read({ ...request, ...credentials }).catch(() => ({ status: 502, body: null, headers: new Headers() })),
+  });
+  const base = `/users/${encodeURIComponent(params.id)}/ratings`;
+  canonicalRedirect({
+    requested: [base, params.type, params.filters].filter(Boolean).join('/'),
+    canonical: `${base}${ratingsPath(query)}`,
+    url,
   });
   const shell = {
     query,

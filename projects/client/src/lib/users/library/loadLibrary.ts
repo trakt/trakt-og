@@ -12,6 +12,8 @@ import { readProfileTab } from '../readProfileTab.ts';
 import { withShowPosters } from '../withShowPosters.ts';
 import { libraryRowsSchema, libraryShowsSchema } from './libraryRowsSchema.ts';
 import { apiSortHow, type LibrarySort, librarySort } from './librarySort.ts';
+import { libraryPath } from './libraryPath.ts';
+import { canonicalRedirect } from '../../routing/canonicalRedirect.ts';
 import { isLibrarySourceFilter, type LibrarySourceFilter, librarySources } from './librarySources.ts';
 import { type LibraryCard, toLibraryCard, toLibraryShowCard } from './toLibraryCard.ts';
 import { positiveInt } from '../../utils/positiveInt.ts';
@@ -81,7 +83,7 @@ async function fetchPage({
  * `/users/:id/library(/:type)(/:sort_by/:sort_how)`: owned items newest first, under
  * day dividers on Added Date. One read per `readProfileTab`: a public profile's goes without the token alongside the
  * frame's load, and a private profile the viewer may see is read with it (the worker shows a private library to its
- * owner only).
+ * owner only). An unknown or default type or sort segment 301s to the page's own spelling.
  */
 export async function loadLibrary({ fetch, locals, params, url, cookies, parent }: Params) {
   const type: HistoryType = params.type && isHistoryType(params.type) ? params.type : 'all';
@@ -109,6 +111,11 @@ export async function loadLibrary({ fetch, locals, params, url, cookies, parent 
     token: locals.token,
     frame: known ?? layout,
     read: ({ fetch, token }) => fetchPage({ ...request, fetch, token }),
+  });
+  canonicalRedirect({
+    requested: [`${base}/library`, params.type, params.sort].filter(Boolean).join('/'),
+    canonical: `${base}/library${libraryPath(type, sort)}`,
+    url,
   });
 
   const shell = {

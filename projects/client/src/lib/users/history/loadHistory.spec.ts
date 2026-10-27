@@ -91,9 +91,9 @@ describe('loadHistory', () => {
     expect(result.page).toEqual({ type: 'paginated', current: 1, total: 1 });
   });
 
-  it('should drop OG sort segments', async () => {
+  it('should drop OG sort segments for good', async () => {
     await expect(load({ type: 'movies', sort: 'plays/asc', query: '?genres=drama' })).rejects.toMatchObject({
-      status: 302,
+      status: 301,
       location: '/users/tester/history/movies?genres=drama',
     });
   });

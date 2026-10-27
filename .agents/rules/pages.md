@@ -8,12 +8,14 @@ How an og page is built. The charts pages are the reference. Copy their shape.
 - The route files stay one-liners. `+page.server.ts` calls the loader, and `+page.svelte` renders `<XPage {data} />`.
 - A path param with a fixed set of values gets a matcher in `src/params/` (see `chart.ts`). A matched param outranks a plain `[slug]`, so `shows/[chart=chart]` and `shows/[slug]` can sit side by side. Don't use a catch-all like `[type=media]/…`, because it loses to static segments.
 - A bare section URL that OG redirects gets a `+server.ts` with `GET` → `redirect(302, …)`.
+- A redirect that looks its item up first (`lists/redirectToList`) is a `+page.server.ts` load instead, so a missing item renders og's 404 page. A `+server.ts` error only gets the bare `error.html`.
 
 ## Loaders
 
 - Run the API calls and `await parent()` together (`Promise.all`), so there's no waterfall. `parent()` gives the layout's `user`, `settings` and `datePreferences`.
 - **Public endpoints go without the token:** `api({ fetch })`. apiz returns 401 to a stale cookie token even on a public route. Pass `token: locals.token` only on calls that are about the viewer.
 - Read pagination with `extractPageMeta`. Guard required reads with `assertOk`: a 404 for a missing slug throws `error(404, …)`, the API's maintenance and timeouts throw 503 and 504, and any other non-200 throws `error(502, …)`. Each picks its own full-screen error page (`errors/errorScenes.ts`).
+- A missing item is never a 200. Its loader throws `error(404)` (410 only when the API marks the item deleted, like a deleted account), and redirects happen in `load`, never on the client. Optional segments with a fixed set of values (sorts, types) go through `routing/canonicalRedirect`: an unknown, cut or spelled-out default value 301s to the spelling the page's own links use.
 - Off-contract responses (`rawApiFetch`, no contract, API) are parsed with zod at the loader. See `implementation.md` → API Responses.
 - Map rows with pure functions. Pass `now` and `datePreferences` in as arguments; don't read them inside. Anything formatted on the server uses `datePreferences.timeZone`, so SSR and hydration match.
 

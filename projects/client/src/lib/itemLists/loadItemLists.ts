@@ -7,7 +7,8 @@ import { loadSubpageMedia } from '../subpage/loadSubpageMedia.ts';
 import type { SubpageItem } from '../subpage/SubpageItem.ts';
 import { summaryListSchema } from '../summary/summaryListSchema.ts';
 import { type SummaryList, toSummaryList } from '../summary/toSummaryList.ts';
-import { type ItemListQuery, itemListQuery, itemListSorts, itemListTypes } from './itemListQuery.ts';
+import { type ItemListQuery, itemListQuery, itemListSorts, itemListTypes, itemListsHref } from './itemListQuery.ts';
+import { canonicalRedirect } from '../routing/canonicalRedirect.ts';
 import { sortOwnLists } from './sortOwnLists.ts';
 
 /** The item a lists page is under: a media subpage item, or a person. */
@@ -19,6 +20,8 @@ type Params = Omit<Parameters<typeof loadSubpageMedia>[0], 'suffix' | 'item'> & 
   /** The optional `/:type` and `/:sort_by` segments. */
   type: string | undefined;
   sortBy: string | undefined;
+  /** OG's trailing `/:sort_how`: the API has no direction, so it 301s away. */
+  sortHow: string | undefined;
   /** The viewer's, for the Me type. */
   token: string | null;
 };
@@ -82,8 +85,9 @@ async function readLists(fetch: typeof globalThis.fetch, item: ItemListsItem, qu
 
 /**
  * `/movies/:id/lists(/:type)(/:sort_by)`, the show, season, episode and person ones: 30 public lists a page under the subpage frame. The worker leaves out clones.
+ * An unknown, default or ignored segment 301s to the page's own spelling.
  */
-export async function loadItemLists({ fetch, parent, item, url, type, sortBy, token }: Params) {
+export async function loadItemLists({ fetch, parent, item, url, type, sortBy, sortHow, token }: Params) {
   const query = itemListQuery(type, sortBy);
   const page = Math.max(1, Number.parseInt(url.searchParams.get('page') ?? '', 10) || 1);
   const [subpage, lists] = await Promise.all([
@@ -92,5 +96,10 @@ export async function loadItemLists({ fetch, parent, item, url, type, sortBy, to
       : loadSubpageMedia({ fetch, parent, item, suffix: 'lists' }),
     query.type === 'me' ? readOwnLists(fetch, item, query, token) : readLists(fetch, item, query, page),
   ]);
+  canonicalRedirect({
+    requested: [`${subpage.media.href}/lists`, type, sortBy, sortHow].filter(Boolean).join('/'),
+    canonical: itemListsHref(subpage.media.href, query),
+    url,
+  });
   return { ...subpage, ...lists, kind: item.type, query };
 }

@@ -10,12 +10,14 @@ import { fetchListItems, loadListItems, urlListSort, usedListSort } from './load
 import type { ListSort } from './resolveListSort.ts';
 import { type BuiltInListKind, toBuiltInListView } from './toBuiltInListView.ts';
 import { toListQuery } from './toListQuery.ts';
+import { canonicalRedirect } from '../routing/canonicalRedirect.ts';
 
 type Params = {
   cookies?: { get: (name: string) => string | undefined };
   fetch: typeof globalThis.fetch;
   locals: { token: string | null };
-  params: { id: string };
+  /** OG's `/:type` segment, which it dropped for HTML: it 301s to the bare list, which opens on All Types. */
+  params: { id: string; type?: string };
   url: URL;
   parent: () => Promise<{
     profile: ProfileUser;
@@ -76,6 +78,7 @@ export async function loadBuiltInList({ fetch, locals, params, url, parent, cook
     fetchListComments({ fetch, token: null, id: params.id, kind }),
     parent(),
   ]);
+  canonicalRedirect({ requested: params.type === undefined ? base : `${base}/${params.type}`, canonical: base, url });
   const fadeHide = readListFilters({
     search: url.searchParams,
     cookies,

@@ -1,3 +1,4 @@
+import { isRedirect } from '@sveltejs/kit';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
@@ -92,13 +93,23 @@ describe('loadLibrary', () => {
   });
 
   it('should read the Shows tab without a sort, with posters from the show summary', async () => {
-    const result = await load({ type: 'shows', sort: 'title/desc' });
+    const result = await load({ type: 'shows', sort: 'added/desc' });
     expect(requested()).toEqual(['/users/tester/collection/shows?extended=full%2Cimages&page=1&limit=60']);
     expect(result.sort).toEqual({ by: 'added', how: 'desc' });
     expect(result.cards[0]).toMatchObject({
       subtitles: ['1 episode', 'Sep 29, 2026 12:23 PM'],
       image: 'https://media.trakt.tv/posters/thumb/bb.jpg.webp',
     });
+  });
+
+  it('should 301 a sort the type lacks to the type, keeping the query', async () => {
+    const thrown = await load({ type: 'shows', sort: 'title', query: '?source=plex' }).catch((error: unknown) => error);
+    expect(isRedirect(thrown) && thrown.location).toBe('/users/tester/library/shows?source=plex');
+  });
+
+  it('should 301 the spelled-out All Types away', async () => {
+    const thrown = await load({ type: 'all' }).catch((error: unknown) => error);
+    expect(isRedirect(thrown) && thrown.location).toBe('/users/tester/library');
   });
 
   describe('privacy', () => {

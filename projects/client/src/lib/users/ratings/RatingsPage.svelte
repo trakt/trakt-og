@@ -27,6 +27,7 @@ import { toHistoryDays } from '$lib/users/history/toHistoryCard';
 import type { loadRatings } from '$lib/users/ratings/loadRatings';
 import type { RatingCard } from '$lib/users/ratings/RatingCard';
 import { ratingQuery } from '$lib/users/ratings/ratingQuery';
+import { ratingsPath } from '$lib/users/ratings/ratingsPath';
 import { ratingSorts } from '$lib/users/ratings/ratingSorts';
 import { ratingTypes } from '$lib/users/ratings/ratingTypes';
 import { capitalize } from '../../utils/capitalize.ts';
@@ -57,15 +58,7 @@ function href(next: Partial<ReturnType<typeof ratingQuery>>) {
   );
   const search = new SvelteURLSearchParams(page.url.searchParams);
   search.delete('page');
-  const sorted = query.by !== 'added' || query.how !== 'asc';
-  const path = sorted
-    ? `/${query.type}/${query.rating}/${query.by}/${query.how}`
-    : query.rating !== 'all'
-    ? `/${query.type}/${query.rating}`
-    : query.type === 'all'
-    ? ''
-    : `/${query.type}`;
-  return `/users/${data.profile.slug}/ratings${path}${search.size ? `?${search}` : ''}`;
+  return `/users/${data.profile.slug}/ratings${ratingsPath(query)}${search.size ? `?${search}` : ''}`;
 }
 
 // The profile owner's caption is separate from the viewer's corner badge. Reuse the rating widget's optimistic

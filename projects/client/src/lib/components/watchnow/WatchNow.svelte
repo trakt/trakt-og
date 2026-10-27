@@ -1,6 +1,6 @@
 <!--
-  Where to watch, under a summary's sidebar poster : two service tiles, favorites
-  first, over a "Where to Watch / 6 services" button that opens the where-to-watch modal. `phone` is the action-stack
+  Watch Now, under a summary's sidebar poster : two service tiles, favorites
+  first, over a "Watch Now / 6 services" button that opens the Watch Now modal. `phone` is the action-stack
   version OG showed under 768px instead: the button with the tiles on its right. A client ID that may not call
   watch-now routes gets no block, and a note in the browser console.
 -->
@@ -29,7 +29,7 @@ let open = $state(false);
 
 // A Standard app already heard it from the root layout.
 $effect(() => {
-  if (button.unavailable && !isStandardApi()) logHidden('Where to Watch');
+  if (button.unavailable && !isStandardApi()) logHidden('Watch Now');
 });
 
 const services = $derived(button.count - button.favorites);
@@ -56,7 +56,7 @@ const under = $derived(
     <button type="button" class="open" aria-haspopup="dialog" onclick={() => (open = true)}>
       <span class="icon"><Icon svg={button.cinemaOnly ? ticket : play} fixedWidth /></span>
       <span class="text">
-        <span class="main-info">{button.cinemaOnly ? 'Buy Tickets' : 'Where to Watch'}</span>
+        <span class="main-info">{button.cinemaOnly ? 'Buy Tickets' : 'Watch Now'}</span>
         <span class="under-info">{under}</span>
       </span>
     </button>

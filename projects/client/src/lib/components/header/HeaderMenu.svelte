@@ -3,8 +3,7 @@
   bordered, rows that soften on hover). Like OG it opens on mouse hover. Click, tap, Enter and Space open it too
   (show, not toggle, so the click after a hover doesn't shut it), and Esc, a click outside or the mouse leaving
   closes it (Popover API). The menu hangs from the trigger's end edge, or its start edge when there's no room
-  (the profile menu), and the header styles the trigger's open look. An arrow on its top edge points up at the
-  trigger: the caller sets `--header-menu-arrow-end` to half the trigger's width.
+  (the profile menu), and the header styles the trigger's open look.
   Rows are ul > li > a (or button), with <hr> as the divider. `aria-current` marks the page you're on in bold
   white on red.
 -->
@@ -96,26 +95,10 @@ afterNavigate(() => menu?.hidePopover());
   font-weight: normal;
   text-align: start;
   box-shadow: var(--shadow-menu);
-
-  /* The arrow: a square turned on its corner, its top two edges bordered, centered over the trigger. */
-  &::before {
-    content: '';
-    position: absolute;
-    inset-block-start: calc(var(--header-menu-arrow) / -2);
-    inset-inline-end: calc(var(--header-menu-arrow-end) - var(--header-menu-arrow) / 2);
-    inline-size: var(--header-menu-arrow);
-    block-size: var(--header-menu-arrow);
-    border-block-start: 1px solid var(--color-menu-border);
-    border-inline-start: 1px solid var(--color-menu-border);
-    background-color: var(--color-menu-bg);
-    rotate: 45deg;
-  }
 }
 
-/* The rows scroll inside the menu, so the arrow outside it isn't clipped. Positioned, so they paint over its lower
-   half. */
+/* The rows scroll inside the menu, under the header. */
 .rows {
-  position: relative;
   max-block-size: calc(100dvh - var(--header-height) - var(--header-menu-gap));
   overflow-y: auto;
   padding: var(--space-menu);

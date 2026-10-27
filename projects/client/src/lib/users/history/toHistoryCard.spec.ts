@@ -54,6 +54,10 @@ describe('toHistoryCard', () => {
       show: { text: 'Breaking Bad', href: '/shows/breaking-bad' },
     });
   });
+
+  it('should say Unknown date for a 1970 play instead of the epoch in the viewer zone', () => {
+    expect(cards[3]?.watchedDate).toBe('Unknown date');
+  });
 });
 
 describe('toHistoryDays', () => {

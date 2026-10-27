@@ -126,6 +126,11 @@ function recentEpisodes({ seasons, progress, now }: Pick<ShowSummaryParams, 'sea
   };
 }
 
+function nextToWatch(next: EpisodeResponse | null | undefined, now: Date) {
+  if (!next?.first_aired || new Date(next.first_aired) > now) return undefined;
+  return { type: 'episode' as const, id: next.ids.trakt };
+}
+
 type Facts = Pick<ShowSummaryParams, 'show' | 'studios' | 'people' | 'now'> & {
   /** Formats a date the way this page does: the viewer's zone when signed in, else the show's. */
   day: (date: string) => string;
@@ -258,6 +263,8 @@ export function toShowSummary(params: ShowSummaryParams) {
       .map(({ ids }) => ids.trakt),
     /** The viewer's last watched episode ("3x02"), for a dropped show's stamp. */
     lastSeen: params.progress?.last ? episodeNumber(params.progress.last, show.genres) : undefined,
+    /** The viewer's next episode to watch once it has aired, for the Check In button. */
+    checkin: nextToWatch(params.progress?.next, params.now),
     commentCount: stats?.comments ?? show.comment_count ?? 0,
     listCount: stats?.lists ?? 0,
     facts: facts({ ...params, day, airs }),

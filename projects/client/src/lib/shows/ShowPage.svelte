@@ -114,7 +114,7 @@ const sections = $derived([
 
   {#snippet actions()}
     <WatchNow button={data.watchNow} title={show.title} year={show.year} fanart={show.fanart} phone />
-    <ActionButtons listTarget={ratingTarget} favorites favoriteTarget={{ ...ratingTarget, title: show.title, year: show.year, fanart: show.fanart }} historyTarget={{ ...ratingTarget, airedEpisodes: show.airedEpisodes, runtime: show.runtime, episodeIds: show.episodeIds }} />
+    <ActionButtons checkin={show.checkin} listTarget={ratingTarget} favorites favoriteTarget={{ ...ratingTarget, title: show.title, year: show.year, fanart: show.fanart }} historyTarget={{ ...ratingTarget, airedEpisodes: show.airedEpisodes, runtime: show.runtime, episodeIds: show.episodeIds }} />
   {/snippet}
 
   <!-- Keyed on the item: moving to another movie or show keeps this page, so the lazy sections start over. -->

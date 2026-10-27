@@ -69,8 +69,13 @@ interface Props {
   faded?: boolean;
   /** Other copies of a successfully removed item can leave with the same transition. */
   removing?: () => boolean;
-  /** A rewatching badge on the top-left corner, where OG's progress pages put one. */
+  /**
+   * A rewatching badge on the top-left corner, where OG's progress pages put one. Its tooltip's date is
+   * `rewatchingSince`, else the overlay's for the card's show or season.
+   */
   rewatching?: boolean;
+  /** "Oct 27, 2026": a caller that already knows the date. It shows the badge too. */
+  rewatchingSince?: string;
   /** Rounded, with the quick-icon bar on its own panel inside a faint outline. On unless set to false. */
   framed?: boolean;
   /** Left out, the card has no quick-icon bar. */
@@ -106,6 +111,7 @@ const {
   faded = false,
   removing = () => false,
   rewatching = false,
+  rewatchingSince,
   icons,
   progress,
   children,
@@ -153,8 +159,9 @@ const restoreTarget = $derived(target?.type === 'show' ? { ...target, type: 'sho
   {#if rank !== undefined}
     <RankPill {rank} />
   {/if}
-  {#if rewatching || state?.rewatching}
-    <RewatchingBadge date={state?.rewatchingAt ? formatDate(state.rewatchingAt, page.data.datePreferences) : undefined} />
+  {#if rewatching || rewatchingSince || state?.rewatching}
+    <RewatchingBadge date={rewatchingSince ??
+      (state?.rewatchingAt ? formatDate(state.rewatchingAt, page.data.datePreferences) : undefined)} />
   {/if}
   <!-- The title link below is the one in the tab order; this is the same link for the mouse. Without titles, it's the
        only link, so it takes the title as its name. -->

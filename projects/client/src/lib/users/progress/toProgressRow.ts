@@ -71,9 +71,9 @@ export type ProgressRow = {
     readonly relative?: string;
     readonly date: string;
   };
-  /** "December 1, 2025" on the Dropped tab. */
+  /** "Dec 1, 2025" on the Dropped tab. */
   readonly droppedOn?: string;
-  /** "July 2, 2024" while the show is being rewatched. */
+  /** "Jul 2, 2024" while the show is being rewatched. */
   readonly rewatchingSince?: string;
   /** Once the catalog is in: the season lines, and the next episode unless everything's done (Watched only). */
   readonly seasons?: readonly ProgressSeason[];
@@ -173,8 +173,8 @@ export function toProgressRow(params: ToProgressRowParams): ProgressRow {
     watchedTime: runtime(item.minutesWatched, item.exact),
     leftTime: runtime(item.minutesLeft, item.exact),
     last: toLast(params, href),
-    droppedOn: item.droppedAt ? formatDate(item.droppedAt, { ...datePreferences, format: 'LL' }) : undefined,
-    rewatchingSince: item.resetAt ? formatDate(item.resetAt, { ...datePreferences, format: 'LL' }) : undefined,
+    droppedOn: item.droppedAt ? formatDate(item.droppedAt, { ...datePreferences, format: 'll' }) : undefined,
+    rewatchingSince: item.resetAt ? formatDate(item.resetAt, { ...datePreferences, format: 'll' }) : undefined,
     seasons:
       detail &&
       toProgressSeasons({

@@ -80,10 +80,10 @@ const recommendation: Recommendation = {
       <a href="/users/me/history/episodes?show={show.id}"><Icon svg={historyIcon} fixedWidth />View history</a>
       <hr />
       <VisibilityControl target={show} action="rewatch" variant="menu" onsaving={close}>
-        <Icon svg={backward} fixedWidth />Rewatch show
+        <Icon svg={backward} fixedWidth />Rewatch
       </VisibilityControl>
       <VisibilityControl target={show} action="drop" variant="menu" onsaving={close}>
-        <Icon svg={circleMinus} fixedWidth />Drop show
+        <Icon svg={circleMinus} fixedWidth />Drop
       </VisibilityControl>
     {/snippet}
   </SummaryActionMenu>

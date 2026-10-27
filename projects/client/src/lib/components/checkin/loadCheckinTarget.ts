@@ -6,7 +6,6 @@ import type { CheckinTarget } from './CheckinTarget.ts';
 const images = z
   .object({
     fanart: z.array(z.string()).nullish(),
-    logo: z.array(z.string()).nullish(),
     screenshot: z.array(z.string()).nullish(),
   })
   .nullish();
@@ -36,7 +35,6 @@ function toCheckinTarget(type: CheckinTarget['type'], id: number, row: Row): Che
     type,
     id,
     topTitle: item.title,
-    logo: imageUrl(item.images?.logo?.at(0), 'medium'),
     fanart: imageUrl(item.images?.fanart?.at(0), 'full'),
   };
   if (type === 'movie') return { ...base, fullTitle: item.year ? `${item.title} (${item.year})` : item.title };

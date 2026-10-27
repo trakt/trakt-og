@@ -74,6 +74,11 @@ const mood = $derived(shelves.find(({ id }) => id === picked) ?? shelves.at(0));
 <style>
 .moods {
   background: none;
+
+  /* The page's 60px bottom padding is the whole gap under the shelf: no grid margin on top of it. */
+  & :global(.poster-grid-frame) {
+    margin-block-end: 0;
+  }
 }
 
 .controls {

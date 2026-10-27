@@ -50,12 +50,18 @@ const shows = $derived(
 );
 
 // Sample states for each card, so every quick-icon state shows without signing in.
-const samples: { label: string; state: OverlayState; userRating?: number; rank?: number }[] = [
+const samples: {
+  label: string;
+  state: OverlayState;
+  userRating?: number;
+  rank?: number;
+  rewatchingSince?: string;
+}[] = [
   { label: 'Idle', state: {}, rank: 1 },
   { label: 'Watched', state: { watched: true, watchedEpisodes: 99 }, rank: 2 },
   { label: 'Half watched', state: { watched: true, watchedEpisodes: 1, collected: true, collectedEpisodes: 1 } },
   { label: 'Listed and rated', state: { watchlisted: true }, userRating: 8 },
-  { label: 'Rewatching', state: { watched: true, watchedEpisodes: 99, rewatching: true }, userRating: 10 },
+  { label: 'Rewatching', state: { watched: true, watchedEpisodes: 99, rewatching: true }, rewatchingSince: 'Oct 27, 2026', userRating: 10 },
   {
     label: 'Everything',
     state: {
@@ -116,6 +122,7 @@ const featured = $derived(shows.at(0));
             userRating={sample.userRating}
             dropped={sample.state.dropped}
             rewatching={sample.state.rewatching}
+            rewatchingSince={sample.rewatchingSince}
             icons={{
               fill: quickIconFill({
                 state: sample.state,

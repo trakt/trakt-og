@@ -193,6 +193,14 @@ const videos: readonly VideoCard[] = [
   </SummaryFrame>
 </Specimen>
 
+<Specimen title="Show check in"
+  note="A show's Check In goes to the viewer's next episode to watch, once it has aired. It comes from the progress the page already loads.">
+  <div class="poster-demo">
+    <ActionButtons checkin={{ type: 'episode', id: pilot.id }} history={false} library={false}
+      list={false} comment={false} />
+  </div>
+</Specimen>
+
 <Specimen title="Subpage title" bleed
   note="An episode's Stats page: the page label leads the tag bar, a slash splits the show from its season, then the episode type.">
   <FanartHeader image={pilot.screenshot} slim>
@@ -316,7 +324,7 @@ const videos: readonly VideoCard[] = [
   }
 }
 
-/* The summary sidebar's width. */
+/* The summary sidebar's width, which the action stack matches. */
 .poster-demo {
   inline-size: calc(var(--summary-offset) - var(--gutter));
 }

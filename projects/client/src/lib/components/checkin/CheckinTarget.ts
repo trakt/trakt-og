@@ -4,9 +4,8 @@ export interface CheckinTarget {
   readonly id: number;
   /** API's full title: "Fight Club (1999)", `Breaking Bad 1x01 "Pilot"`. Fills `[item]` and the toasts. */
   readonly fullTitle: string;
-  /** The movie or show title, the heading when there's no logo. */
+  /** The movie or show title, the dialog's heading. */
   readonly topTitle: string;
-  readonly logo?: string;
   readonly fanart?: string;
   readonly episode?: {
     /** "1x01" */

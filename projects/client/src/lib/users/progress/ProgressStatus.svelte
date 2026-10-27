@@ -1,14 +1,19 @@
 <!--
   The status control after a progress row's title, drawn like the app's dropdowns: a dot in the status color and
   where you are with the show (Not started, Watching, Rewatching since…, Caught up, Dropped…). Its menu lists the status, picked,
-  then the row's show actions: Rewatch and Drop, or Restore on Dropped. Those rows are the shared visibility controls, so each still asks for its date, and the
-  menu stays open until it saves. `onremove` gets a drop or restore as it starts saving, since those take the
-  row off the tab.
+  with its dot, then the row's show actions with their icons: Rewatch (Start over again and Undo rewatching while
+  rewatching) and Drop, or Undrop on Dropped. Those rows are the shared visibility controls, so each still asks for its date or a yes, and the
+  menu stays open until it saves. `onremove` gets a drop, restore or undone rewatch (on Rewatching) as it starts
+  saving, since those take the row off the tab.
     <ProgressStatus {row} type="watched" onremove={remove} />
 -->
 <script lang="ts">
 import Caret from '$lib/components/dropdown/Caret.svelte';
 import VisibilityControl from '$lib/components/visibility/VisibilityControl.svelte';
+import Icon from '$lib/icons/Icon.svelte';
+import arrowRotateLeft from '$lib/icons/light/arrow-rotate-left.svg?raw';
+import backward from '$lib/icons/light/backward.svg?raw';
+import circleMinus from '$lib/icons/light/circle-minus.svg?raw';
 import checkThick from '$lib/icons/trakt/check-thick.svg?url';
 import type { ProgressType } from './progressTypes.ts';
 import type { ProgressRow } from './toProgressRow.ts';
@@ -54,21 +59,40 @@ function toggle(event: ToggleEvent & { currentTarget: HTMLElement }) {
   <div bind:this={menu} id="progress-status-{id}" class="menu" popover="auto"
     style:position-anchor="--progress-status-{id}" style:--check={`url("${checkThick}")`} ontoggle={toggle}>
     <ul>
-      <li class="header" role="presentation">Status</li>
-      <li><span class="row current" aria-current="true">{status.text}</span></li>
+      <li>
+        <span class={['row', 'current', status.tone]} aria-current="true">
+          <span class="label"><span class="dot" aria-hidden="true"></span>{status.text}</span>
+        </span>
+      </li>
       {#if type === 'dropped'}
         <li>
-          <VisibilityControl {target} action="restore" variant="menu" onsaving={removing}>Restore</VisibilityControl>
+          <VisibilityControl {target} action="restore" variant="menu" onsaving={removing}>
+            <span class="label"><Icon svg={arrowRotateLeft} fixedWidth />Undrop</span>
+          </VisibilityControl>
         </li>
       {:else}
         {#if status.tone !== 'not-started'}
           <li>
             <VisibilityControl {target} action="rewatch" variant="menu" onsaving={close}>
-              {row.rewatchingSince ? 'Start over again' : 'Rewatch'}
+              <span class="label"><Icon svg={backward} fixedWidth />{row.rewatchingSince
+                ? 'Start over again'
+                : 'Rewatch'}</span>
             </VisibilityControl>
           </li>
         {/if}
-        <li><VisibilityControl {target} action="drop" variant="menu" onsaving={removing}>Drop</VisibilityControl></li>
+        {#if row.rewatchingSince}
+          <li>
+            <VisibilityControl {target} action="unrewatch" variant="menu"
+              onsaving={type === 'rewatching' ? removing : close}>
+              <span class="label"><Icon svg={arrowRotateLeft} fixedWidth />Undo rewatching</span>
+            </VisibilityControl>
+          </li>
+        {/if}
+        <li>
+          <VisibilityControl {target} action="drop" variant="menu" onsaving={removing}>
+            <span class="label"><Icon svg={circleMinus} fixedWidth />Drop</span>
+          </VisibilityControl>
+        </li>
       {/if}
     </ul>
   </div>
@@ -111,27 +135,28 @@ function toggle(event: ToggleEvent & { currentTarget: HTMLElement }) {
     outline-offset: 1px;
   }
 
-  &.watching {
-    --dot: var(--color-progress-episode-done);
-  }
+}
 
-  &.rewatching {
-    --dot: var(--color-progress-watched);
-  }
+.watching {
+  --dot: var(--color-progress-episode-done);
+}
 
-  &.done {
-    --dot: var(--color-text-muted);
-  }
+.rewatching {
+  --dot: var(--color-progress-watched);
+}
 
-  &.dropped {
-    --dot: var(--brand-primary);
-  }
+.done {
+  --dot: var(--color-text-muted);
+}
 
-  /* Nothing watched yet: an empty ring. */
-  &.not-started .dot {
-    background: none;
-    box-shadow: inset 0 0 0 var(--progress-status-ring) var(--color-text-muted);
-  }
+.dropped {
+  --dot: var(--brand-primary);
+}
+
+/* Nothing watched yet: an empty ring. */
+.not-started .dot {
+  background: none;
+  box-shadow: inset 0 0 0 var(--progress-status-ring) var(--color-text-muted);
 }
 
 .dot {
@@ -167,13 +192,16 @@ ul {
   list-style: none;
 }
 
-.header {
-  padding: var(--space-menu-header);
-  color: var(--color-menu-header);
-  font-size: var(--font-size-menu-header);
-  font-weight: var(--font-weight-menu-header);
-  letter-spacing: var(--letter-spacing-menu-header);
-  text-transform: uppercase;
+/* A row's icon, or the picked status's dot, before its label. */
+.label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-menu-icon);
+}
+
+/* The dot centered in an icon's fixed width, so every label lines up. */
+.label .dot {
+  margin-inline: calc((1.25em - var(--progress-status-dot)) / 2);
 }
 
 /* The picked row and the visibility controls, as the dropdown's rows. */

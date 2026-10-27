@@ -41,10 +41,13 @@ async function setup(unknown = false) {
     overlay,
     notify: { success: vi.fn(), error: vi.fn() },
     now: () => new Date(AT),
-    request: (path: string, body: unknown) =>
+    request: (path: string, body: unknown, method: 'POST' | 'DELETE') =>
       rawApiFetch({
         path,
-        init: { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) },
+        init:
+          method === 'DELETE'
+            ? { method }
+            : { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) },
       }),
   };
 }
@@ -69,6 +72,23 @@ describe('changeVisibility', () => {
     );
     expect(await changeVisibility({ ...params, action: 'rewatch' })).toBe(true);
     expect(params.overlay.state('show', 2)).toMatchObject({ dropped: true, rewatching: true });
+  });
+  it('should undo a rewatch so the plays before it count again', async () => {
+    const params = await setup();
+    server.use(
+      http.delete(`${API}/shows/2/progress/watched/reset`, () => {
+        expect(params.overlay.state('show', 2)).toMatchObject({ dropped: true, rewatching: false });
+        return new HttpResponse(null, { status: 204 });
+      }),
+    );
+    expect(await changeVisibility({ ...params, target: { ...target, id: 2 }, action: 'unrewatch' })).toBe(true);
+    expect(params.notify.success).toHaveBeenCalledWith('You stopped rewatching Breaking Bad.');
+  });
+  it('should keep the rewatch when undoing it fails', async () => {
+    const params = await setup();
+    server.use(http.delete(`${API}/shows/2/progress/watched/reset`, () => new HttpResponse(null, { status: 500 })));
+    expect(await changeVisibility({ ...params, target: { ...target, id: 2 }, action: 'unrewatch' })).toBe(false);
+    expect(params.overlay.state('show', 2).rewatching).toBe(true);
   });
   it.each(['drop', 'restore'] as const)('should %s a show with the expected API body', async (action) => {
     const params = await setup();

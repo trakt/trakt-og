@@ -1,5 +1,5 @@
 <!--
-  The where-to-watch modal in the notes and list dialogs' look: the item's fanart under dark glass with "Where to Watch"
+  The Watch Now modal in the notes and list dialogs' look: the item's fanart under dark glass with "Watch Now"
   and its type over the title, "Your Favorites" and one section per offer type as a grid of service tiles with what
   each costs (the cheapest rent and buy in green), then a footer bar with the country picker and "Powered by
   JustWatch". It loads on first open, like OG did, and a new country only loads that country's service names: one
@@ -62,7 +62,7 @@ let unavailable = $state(false);
 // An episode's JustWatch page is its season's, like OG.
 const justwatchPath = $derived(button.path.replace(/\/episodes\/\d+$/, ''));
 const tags = $derived([
-  { text: 'Where to Watch', icon: play },
+  { text: 'Watch Now', icon: play },
   { text: button.path.startsWith('/movies/') ? 'Movie' : 'Show', color: 'var(--color-dialog-art-media-tag)' },
 ]);
 
@@ -114,12 +114,11 @@ const poweredBy = $derived.by(() => {
   return link ? https(link) : `https://www.justwatch.com/${country === 'gb' ? 'uk' : country}`;
 });
 
-// While the tiles load, the browser's first focus lands in the footer (Powered by JustWatch): start on the dialog.
-const focusAboveFooter: Attachment<HTMLElement> = (footer) => {
+// Opening starts on the dialog itself, not a ringed first tile (or Powered by JustWatch while tiles load): Tab
+// reaches the tiles from there.
+const focusDialog: Attachment<HTMLElement> = (footer) => {
   if (!open) return;
-  queueMicrotask(() => {
-    if (footer.contains(document.activeElement)) footer.closest('dialog')?.focus();
-  });
+  queueMicrotask(() => footer.closest('dialog')?.focus());
 };
 </script>
 
@@ -151,7 +150,7 @@ const focusAboveFooter: Attachment<HTMLElement> = (footer) => {
   {#if src}<img class="flag" src={https(src)} alt="" />{/if}
 {/snippet}
 
-<Dialog bind:open title="Where to watch {title}" size="xl" variant="art" lightDismiss>
+<Dialog bind:open title="Watch Now: {title}" size="xl" variant="art" lightDismiss>
   {#snippet header(id)}
     <DialogArtHeader {id} {title} {year} {fanart} {tags} />
   {/snippet}
@@ -190,7 +189,7 @@ const focusAboveFooter: Attachment<HTMLElement> = (footer) => {
       {:else}
         <div class="no-links">
           {#if unavailable}
-            <EmptyNote>Where to Watch isn't available with this API key.</EmptyNote>
+            <EmptyNote>Watch Now isn't available with this API key.</EmptyNote>
           {:else}
             <EmptyNote>No watch now links in {picked?.name ?? 'your country'} yet.</EmptyNote>
           {/if}
@@ -199,7 +198,7 @@ const focusAboveFooter: Attachment<HTMLElement> = (footer) => {
     {/each}
   </div>
 
-  <footer class="footer" {@attach focusAboveFooter}>
+  <footer class="footer" {@attach focusDialog}>
     {#if countries.length > 0}
       <Dropdown label="Country: {picked?.name ?? country.toUpperCase()}">
         {#snippet trigger()}

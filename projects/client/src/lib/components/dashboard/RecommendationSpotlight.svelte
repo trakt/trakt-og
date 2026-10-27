@@ -74,7 +74,7 @@ async function openWatchNow() {
       settings,
     });
     if (button.unavailable) {
-      toast.error("Where to Watch isn't available with this API key.");
+      toast.error("Watch Now isn't available with this API key.");
       return;
     }
     if (button.count === 0 || button.hidden) {
@@ -84,7 +84,7 @@ async function openWatchNow() {
     watchNow = button;
     watchNowOpen = true;
   } catch {
-    toast.error("Couldn't load where to watch. Please try again.");
+    toast.error("Couldn't load Watch Now. Please try again.");
   } finally {
     loadingWatchNow = false;
   }
@@ -131,7 +131,7 @@ async function openWatchNow() {
     <div class="actions">
       <WatchlistButton {target} />
       {#if item.released && !isStandardApi()}
-        <GlassAction icon={play} aria-haspopup="dialog" busy={loadingWatchNow ? 'Loading where to watch' : undefined}
+        <GlassAction icon={play} aria-haspopup="dialog" busy={loadingWatchNow ? 'Loading Watch Now' : undefined}
           onclick={openWatchNow}>Watch now</GlassAction>
       {/if}
       <RecommendationWhy why={item.why} title={item.title} poster={item.poster} />

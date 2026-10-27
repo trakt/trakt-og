@@ -11,6 +11,7 @@ import { toast } from '$lib/components/toast/toast.svelte';
 import VisibilityControl from '$lib/components/visibility/VisibilityControl.svelte';
 import SummaryActionMenu from '$lib/components/summary/SummaryActionMenu.svelte';
 import lightBackward from '$lib/icons/light/backward.svg?raw';
+import arrowRotateLeft from '$lib/icons/light/arrow-rotate-left.svg?raw';
 import circleMinus from '$lib/icons/light/circle-minus.svg?raw';
 import historyIcon from '$lib/icons/light/clock-rotate-left.svg?raw';
 import WatchPopover from '$lib/components/history/WatchPopover.svelte';
@@ -175,7 +176,7 @@ async function open(force: boolean): Promise<'date' | 'remove' | 'partial' | nul
   fill={onremove ? 1 : fill.watched} selected={Boolean(onremove) || started}
   datePreferences={dates}
   tooltip={variant === 'card' ? fill.tips.watched || fill.tips.plays ? watchedTip : fill.titles.watched ?? (onremove ? 'Remove from history' : 'Add to watched history') : undefined}
-  summary={{ icon: check, text: percent ? rewatching ? 'rewatched' : 'watched' : label, percent, detail: started ? detail : undefined }}
+  summary={{ icon: viewerState.rewatching ? lightBackward : check, text: percent ? rewatching ? 'rewatched' : 'watched' : label, percent, detail: started ? detail : undefined }}
   more={hasHistory || dropped ? more : undefined}
   onremovePlay={removePlay ? () => void watch(null, false, removePlay) : undefined}
   onopen={open} onwatch={watch} onremaining={remaining} {oncheckin}
@@ -195,18 +196,22 @@ async function open(force: boolean): Promise<'date' | 'remove' | 'partial' | nul
     {#snippet children(close)}
       {#if hasHistory}<a href={historyHref}><Icon svg={historyIcon} fixedWidth />View history</a>{/if}
       {#if (showActions || dropped) && hasHistory}<hr />{/if}
-      {#if showActions}
+      {#if showActions && viewerState.rewatching}
+        <VisibilityControl target={{ ...target, type: 'show' }} action="unrewatch" variant="menu" onsaving={close}>
+          <Icon svg={arrowRotateLeft} fixedWidth />Undo rewatching
+        </VisibilityControl>
+      {:else if showActions}
         <VisibilityControl target={{ ...target, type: 'show' }} action="rewatch" variant="menu" onsaving={close}>
-          <Icon svg={lightBackward} fixedWidth />Rewatch show
+          <Icon svg={lightBackward} fixedWidth />Rewatch
         </VisibilityControl>
       {/if}
       {#if dropped}
         <VisibilityControl target={{ ...target, type: 'show' }} action="restore" variant="menu" onsaving={close}>
-          <Icon svg={circleMinus} fixedWidth />Restore show{#if viewerState.droppedAt}<em>, dropped {formatDate(viewerState.droppedAt, dates)}</em>{/if}
+          <Icon svg={arrowRotateLeft} fixedWidth />Undrop
         </VisibilityControl>
       {:else if showActions}
         <VisibilityControl target={{ ...target, type: 'show' }} action="drop" variant="menu" onsaving={close}>
-          <Icon svg={circleMinus} fixedWidth />Drop show
+          <Icon svg={circleMinus} fixedWidth />Drop
         </VisibilityControl>
       {/if}
     {/snippet}

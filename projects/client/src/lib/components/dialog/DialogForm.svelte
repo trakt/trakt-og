@@ -1,6 +1,6 @@
 <!--
   An art dialog's form: its fields in a column, then a footer bar with the save shortcut hint, Cancel and the red
-  Save. Cmd or Ctrl+Enter anywhere in it saves. `onsubmit` only runs when it isn't busy or disabled. `verb` names
+  Save. With no fields (check in), it's the footer bar alone. Cmd or Ctrl+Enter anywhere in it saves. `onsubmit` only runs when it isn't busy or disabled. `verb` names
   the shortcut's action ("to send"), and `hint` takes the shortcut's place to say why Save is off.
     <DialogForm save="Save Note" {busy} onsubmit={() => onsave(draft)} oncancel={() => (open = false)}>...</DialogForm>
 -->
@@ -21,7 +21,7 @@ interface Props {
   hint?: string;
   onsubmit: () => void;
   oncancel: () => void;
-  children: Snippet;
+  children?: Snippet;
 }
 
 const { save, busy = false, disabled = false, verb = 'save', hint, onsubmit, oncancel, children }: Props = $props();
@@ -41,7 +41,7 @@ const showModifier = (kbd: HTMLElement) => {
     if (!busy && !disabled) onsubmit();
   }}
 >
-  <div class="fields">{@render children()}</div>
+  {#if children}<div class="fields">{@render children()}</div>{/if}
   <footer>
     {#if hint}
       <span id="{id}-hint" class="hint">{hint}</span>
@@ -65,10 +65,13 @@ footer {
   display: flex;
   align-items: center;
   gap: var(--dialog-art-footer-gap);
-  margin-block-start: var(--dialog-art-body-top);
   padding: var(--dialog-art-footer-padding);
   border-block-start: 1px solid var(--color-dialog-art-border);
   background-color: var(--color-dialog-art-footer-bg);
+}
+
+.fields + footer {
+  margin-block-start: var(--dialog-art-body-top);
 }
 
 .hint {

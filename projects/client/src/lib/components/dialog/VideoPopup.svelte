@@ -34,10 +34,18 @@ const syncOpen = (dialog: HTMLDialogElement) => {
 // Closes the dialog itself, so focus goes back even when the caller unmounts the popup once `url` clears.
 const close = (event: MouseEvent & { currentTarget: HTMLButtonElement }) =>
   event.currentTarget.closest('dialog')?.close();
+
+// Safari has no `closedby`, so a backdrop click is caught here: the press and the release both land on the
+// <dialog> itself, outside the player and the ×.
+let pressedBackdrop = false;
+const onpointerdown = (event: PointerEvent) => (pressedBackdrop = event.target === event.currentTarget);
+const onclick = (event: MouseEvent & { currentTarget: HTMLDialogElement }) => {
+  if (pressedBackdrop && event.target === event.currentTarget) event.currentTarget.close();
+};
 </script>
 
-<dialog class="video-popup" aria-label={title} closedby="any" tabindex="-1" onclose={() => (url = undefined)}
-  {@attach syncOpen}>
+<dialog class="video-popup" aria-label={title} tabindex="-1" {onpointerdown} {onclick}
+  onclose={() => (url = undefined)} {@attach syncOpen}>
   <Tooltip text="Close (Esc)" placement="bottom">
     {#snippet trigger(tooltip)}
       <button type="button" class="close" aria-label="Close" onclick={close} {...tooltip}>

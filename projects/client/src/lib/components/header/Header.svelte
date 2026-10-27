@@ -60,7 +60,7 @@ const sections = $derived([
   { title: 'Calendar', href: signedIn ? '/calendars/my/shows-movies' : '/calendars/premieres' },
 ]);
 
-const profileTabs = ['History', 'Progress', 'Watchlist', 'Library', 'Ratings', 'Lists', 'Comments', 'Notes', 'Network'];
+const profileTabs = ['History', 'Progress', 'Library', 'Ratings', 'Lists', 'Watchlist', 'Comments', 'Notes', 'Network'];
 const profileLinks = $derived(
   user
     ? [
@@ -266,11 +266,6 @@ async function toggleDarkKnight() {
   &:is(:hover, :focus-visible) {
     background-color: var(--brand-primary-darken);
   }
-}
-
-/* The menu's arrow points at the middle of the avatar. */
-.profile {
-  --header-menu-arrow-end: calc(var(--header-avatar-size) / 2);
 }
 
 .profile :global(.trigger) {

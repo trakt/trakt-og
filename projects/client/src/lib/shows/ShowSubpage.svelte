@@ -79,7 +79,7 @@ const ratingTarget = $derived({ type: 'show' as const, id: show.id, title: show.
 
   {#snippet actions()}
     <WatchNow button={watchNow} title={show.title} year={show.year} fanart={show.fanart} phone />
-    <ActionButtons favorites favoriteTarget={{ ...ratingTarget, title: show.title, year: show.year, fanart: show.fanart }} historyTarget={{ ...ratingTarget, airedEpisodes: show.airedEpisodes, runtime: show.runtime, episodeIds: show.episodeIds }} />
+    <ActionButtons checkin={show.checkin} favorites favoriteTarget={{ ...ratingTarget, title: show.title, year: show.year, fanart: show.fanart }} historyTarget={{ ...ratingTarget, airedEpisodes: show.airedEpisodes, runtime: show.runtime, episodeIds: show.episodeIds }} />
   {/snippet}
 
   {@render children()}

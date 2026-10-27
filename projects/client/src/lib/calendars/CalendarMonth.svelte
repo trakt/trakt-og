@@ -85,7 +85,7 @@ const longDate = (date: string) =>
               {#if cell.date === today}<span class="tag">Today</span>{/if}
             </h2>
             <div class="cards">
-              {#each entries as entry (entry.key)}<CalendarEntryCard {entry} icons={cardIcons(entry)} {artwork} {mixed} />{/each}
+              {#each entries as entry (entry.key)}<CalendarEntryCard {entry} icons={cardIcons(entry)} {artwork} {mixed} small />{/each}
             </div>
           </section>
         {:else}

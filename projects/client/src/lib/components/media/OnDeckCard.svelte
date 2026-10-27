@@ -5,7 +5,10 @@
   Dashboard callbacks refresh the card after saves.
 -->
 <script lang="ts">
+import { page } from '$app/state';
+import { overlay } from '$lib/overlay/overlay';
 import type { OverlayState } from '$lib/overlay/createOverlay.svelte';
+import { formatDate } from '$lib/utils/formatDate';
 import type { OnDeckItem } from '$lib/components/media/OnDeckItem';
 import PosterCard from '$lib/components/media/PosterCard.svelte';
 import RefreshCover from '$lib/components/media/RefreshCover.svelte';
@@ -63,6 +66,8 @@ const more = $derived<QuickIconMore[]>(
   ],
 );
 
+// The card's own state is the episode's; the rewatch date is the show's, from the overlay's cached slice.
+const rewatchingAt = $derived(overlay.state('show', item.showId).rewatchingAt);
 const title = $derived(item.episodeTitle ? `${item.episodeNumber} ${item.episodeTitle}` : item.episodeNumber);
 const tip = $derived(
   progressTooltip({ progress: item.progress, fullProgress: item.fullProgress, runtime: item.runtime }),
@@ -81,6 +86,7 @@ const tip = $derived(
     image={item.poster}
     episodeBadge={item.complete ? undefined : item.episodeBadge}
     rewatching={item.rewatching}
+    rewatchingSince={rewatchingAt ? formatDate(rewatchingAt, page.data.datePreferences) : undefined}
     userRating={state.rating}
     icons={{ listTarget: item.complete ? showTarget : target, watchTarget: item.complete ? showTarget : target, collectionTarget: item.complete ? showTarget : target, ratingTarget: item.complete ? showTarget : target, onWatchSave, fill: quickIconFill({ state, runtime: item.runtime }), rating: item.complete ? undefined : item.rating, listLabel: item.complete ? 'Add to watchlist' : 'Add to list', more }}
   >

@@ -182,7 +182,7 @@ function clearFilters() {
 
 <SectionToolbar>
   {#snippet filters()}
-    <Dropdown section="Shows">
+    <Dropdown section="Status">
       {#snippet trigger()}{progressTypes[data.type].label}{/snippet}
       <ul>
         {#each types as type (type)}
@@ -242,7 +242,7 @@ function clearFilters() {
             {#each rows as row (row.id)}
               {@const state = overlay.state('show', row.id)}
               {@const done = `${row.percent}% watched`}
-              <PosterCard href={row.href} title={row.title} image={row.poster} rewatching={Boolean(row.rewatchingSince)}
+              <PosterCard href={row.href} title={row.title} image={row.poster} rewatchingSince={row.rewatchingSince}
                 userRating={state.rating}
                 subtitles={[row.percent === 100 ? `${done}!` : done]}
                 icons={{

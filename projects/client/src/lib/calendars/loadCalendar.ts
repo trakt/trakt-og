@@ -92,12 +92,10 @@ export async function loadCalendar({
       : Promise.resolve(undefined);
   // Watch now is viewer-specific (country/favorites); other public filters carry no token.
   const calendarToken = target === 'my' || filters.watchnow.length > 0 ? token : null;
-  // A token that stopped working loads no settings, so the page renders logged-out (All Shows' short feed included).
-  const signedIn = token !== null && settings !== null;
   const fetchItems = (filterQuery: Readonly<Record<string, string>>, token: string | null) =>
     Promise.all(
       ranges.map(async (range) => {
-        const request = { target, slug: calendar.slug, range, signedIn, filters: filterQuery };
+        const request = { target, slug: calendar.slug, range, filters: filterQuery };
         const response = await fetchCalendar({ client: api({ fetch, token }).calendars, ...request });
         return response === 'signed-out' && target === 'all'
           ? fetchCalendar({ ...request, client: api({ fetch }).calendars })

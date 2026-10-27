@@ -66,7 +66,7 @@ function save(body: SettingsBody) {
 </script>
 
 <Specimen title="Top bar" bleed
-  note="Pick a viewer and the art behind the bar, which tints its glass. Click the magnifier or press / to search (shimmering rows hold the starting list's place while it loads), and hover the signpost or the profile button for their menus, each with an arrow up at its trigger.">
+  note="Pick a viewer and the art behind the bar, which tints its glass. Click the magnifier or press / to search (shimmering rows hold the starting list's place while it loads), and hover the signpost or the profile button for their menus.">
   <div class="knobs">
     <DemoChoice label="Viewer" options={Object.keys(users).map((value) => ({ value, label: value }))} bind:value={who} />
     <DemoChoice label="Backdrop" options={Object.keys(BACKDROPS).map((value) => ({ value, label: value }))}

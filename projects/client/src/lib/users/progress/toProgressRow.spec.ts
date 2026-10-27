@@ -128,12 +128,12 @@ describe('toProgressRow', () => {
   });
 
   it('should mark a rewatch with its start date', () => {
-    expect(collapsed('Game of Thrones').rewatchingSince).toBe('July 2, 2026');
+    expect(collapsed('Game of Thrones').rewatchingSince).toBe('Jul 2, 2026');
   });
 
   it('should say when you dropped the show, only on the Dropped tab', () => {
     // In the viewer's time zone, like OG's `allow_conversion`.
-    expect(row(progressFixture.dropped(false), 'Severance').droppedOn).toBe('April 17, 2025');
+    expect(row(progressFixture.dropped(false), 'Severance').droppedOn).toBe('Apr 17, 2025');
     expect(collapsed('Severance').droppedOn).toBeUndefined();
   });
 

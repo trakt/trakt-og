@@ -11,12 +11,10 @@ type FetchCalendarParams = {
   target: 'all' | 'my';
   slug: PublicCalendar['slug'] | MyCalendar['slug'];
   range: { start_date: string; days: number };
-  /** Only picks the feed for All Shows. */
-  signedIn: boolean;
   filters?: Readonly<Record<string, string>>;
 };
 
-function request({ client, target, slug, range, signedIn, filters }: FetchCalendarParams) {
+function request({ client, target, slug, range, filters }: FetchCalendarParams) {
   const query = { extended: 'full,images' as const, ...filters };
   const params = { target, ...range };
 
@@ -24,12 +22,7 @@ function request({ client, target, slug, range, signedIn, filters }: FetchCalend
     case 'shows-movies':
       return client.media({ params, query });
     case 'shows':
-      // Logged out, OG kept All Shows short by listing only the shows in user 1's library
-      // og's stand-in is the curated hot feed, which drops the daily talk, news and
-      // soap episodes the same way.
-      return target === 'all' && !signedIn
-        ? client.releasesHot({ params: range, query: { ...query, type: 'show' } })
-        : client.shows({ params, query });
+      return client.shows({ params, query });
     case 'premieres':
       return client.seasonPremieres({ params, query });
     case 'new-shows':

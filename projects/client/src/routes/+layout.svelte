@@ -55,7 +55,7 @@ $effect(() => {
 });
 
 onMount(() => {
-  if (isStandardApi()) logHidden('Where to Watch, streaming filters and services, the Social Feed and list collaborators');
+  if (isStandardApi()) logHidden('Watch Now, streaming filters and services, the Social Feed and list collaborators');
   const stopSession = syncSession({
     manager: userManager(),
     hasSession: data.hasSession,

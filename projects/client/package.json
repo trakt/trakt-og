@@ -16,6 +16,7 @@
     "setup": "bun scripts/setup.ts",
     "emoji": "bun scripts/emoji.ts",
     "world-map": "bun scripts/worldMap.ts",
+    "seo:check": "bun scripts/seo-check.ts",
     "check:scripts": "svelte-kit sync && tsc -p scripts/tsconfig.json",
     "ci": "biome format . && bun run lint && bun run check && bun run check:scripts && bun run test && bun run build",
     "bump": "bun scripts/bump.ts",

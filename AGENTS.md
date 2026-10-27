@@ -15,6 +15,7 @@ Run these from the repository root:
 - `bun run client:build`: production build.
 - `bun run client:verify [pr]`: CI, supply chain, commit and leak checks.
 - `bun run client:land <pr>`: rebase, verify and land a PR, then close its issues.
+- `bun run client:seo-check [url]`: check what crawlers and link previews see (defaults to the local dev server).
 - `bun run client:deploy`: manual redeploy of main from your machine. Merges to main deploy automatically.
 
 ## Hard rules

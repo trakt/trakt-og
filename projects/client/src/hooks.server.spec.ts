@@ -131,6 +131,43 @@ describe('hooks: auth cookie', () => {
   });
 });
 
+describe('hooks: crawl headers', () => {
+  const crawl = async ({ href, userAgent, cookie }: { href: string; userAgent: string; cookie?: string }) => {
+    const request = new Request(href, { headers: { 'user-agent': userAgent } });
+    const event = { ...pageEvent(cookie), url: new URL(href), request };
+    const resolve: Handle['resolve'] = async () =>
+      new Response('<html></html>', { headers: { 'content-type': 'text/html' } });
+    const response = await handle({ event, resolve });
+    return { locals: event.locals, headers: response.headers };
+  };
+
+  it('should flag a link-preview bot and keep its signed-out page for two minutes', async () => {
+    const { locals, headers } = await crawl({
+      href: 'https://og.trakt.tv/movies/tron-1982',
+      userAgent: 'Discordbot/2.0',
+    });
+    expect(locals.crawler).toEqual({ verified: false, bot: true });
+    expect(headers.get('cache-control')).toBe('private, max-age=120');
+    expect(headers.get('vary')).toBe('Cookie');
+    expect(headers.get('x-robots-tag')).toBeNull();
+  });
+
+  it('should never store a page rendered for a session', async () => {
+    const cookie = authCookie(Date.now() + 60_000);
+    const { headers } = await crawl({
+      href: 'https://og.trakt.tv/movies/tron-1982',
+      userAgent: 'Discordbot/2.0',
+      cookie,
+    });
+    expect(headers.get('cache-control')).toBe('no-store');
+  });
+
+  it('should keep a preview host out of the index', async () => {
+    const { headers } = await crawl({ href: 'http://localhost:5173/movies/tron-1982', userAgent: 'Googlebot/2.1' });
+    expect(headers.get('x-robots-tag')).toBe('noindex');
+  });
+});
+
 describe('hooks: rate limits', () => {
   type FetchEvent = Parameters<typeof handleFetch>[0];
   const rateLimited = () => new HttpResponse('error code: 1015', { status: 429, headers: { 'retry-after': '299' } });

@@ -5,6 +5,9 @@ import { isStandardApi } from './lib/api/isStandardApi.ts';
 import { rateLimitPause } from './lib/api/rateLimitPause.ts';
 import { withUserAgent } from './lib/api/withUserAgent.ts';
 import { readAuthCookie } from './lib/auth/readAuthCookie.ts';
+import { detectCrawler } from './lib/crawl/detectCrawler.ts';
+import { verifiedBotCategory } from './lib/crawl/verifiedBotCategory.ts';
+import { withCrawlHeaders } from './lib/crawl/withCrawlHeaders.ts';
 import type { Handle, HandleFetch } from '@sveltejs/kit';
 
 /**
@@ -15,17 +18,29 @@ import type { Handle, HandleFetch } from '@sveltejs/kit';
  * `locals.theme` before the page renders, so the first paint needs no script. Anyone else gets Dark Knight, og's default.
  * Links preload their page's data on hover, or on tap for a Standard app, whose lower rate limit a sweep across links
  * would spend.
+ * `locals.crawler` says whether a search engine or link-preview bot asked, and `withCrawlHeaders` sets the page's
+ * cache and robots headers from it and the session.
  */
-export const handle: Handle = ({ event, resolve }) => {
+export const handle: Handle = async ({ event, resolve }) => {
   const { token, tokenExpired } = readAuthCookie({ value: event.cookies.get(AUTH_COOKIE), now: Date.now() });
   event.locals.token = token;
   event.locals.tokenExpired = tokenExpired;
+  event.locals.crawler = detectCrawler({
+    userAgent: event.request.headers.get('user-agent'),
+    verifiedBotCategory: verifiedBotCategory(event.request),
+  });
 
-  return resolve(event, {
+  const response = await resolve(event, {
     transformPageChunk: ({ html }) =>
       html
         .replace('%og.theme%', event.locals.theme ?? 'dark')
         .replace('%og.preload%', isStandardApi() ? 'tap' : 'hover'),
+  });
+  return withCrawlHeaders({
+    response,
+    url: event.url,
+    hasSession: token !== null || tokenExpired,
+    crawler: event.locals.crawler,
   });
 };
 

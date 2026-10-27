@@ -1,4 +1,4 @@
-import { isRedirect } from '@sveltejs/kit';
+import { isHttpError, isRedirect } from '@sveltejs/kit';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
@@ -55,6 +55,12 @@ const redirectOf = (promise: Promise<unknown>) =>
     (thrown: unknown) => (isRedirect(thrown) ? thrown.location : thrown),
   );
 
+const statusOf = (promise: Promise<unknown>) =>
+  promise.then(
+    () => 200,
+    (thrown: unknown) => (isHttpError(thrown) ? thrown.status : thrown),
+  );
+
 describe('users/[id] layout', () => {
   describe('for a token that stopped working', () => {
     it("should render another member's profile logged-out", async () => {
@@ -68,6 +74,20 @@ describe('users/[id] layout', () => {
 
     it('should send /users/me to sign in', async () => {
       expect(await redirectOf(layout('me', 'stale'))).toBe('/auth/signin?redirect_to=%2Fusers%2Fme%2Fwatchlist');
+    });
+  });
+
+  describe('for a profile that is not there', () => {
+    it('should answer a missing member with a 404', async () => {
+      server.use(http.get(`${API}/users/:id`, () => new HttpResponse(null, { status: 404 })));
+
+      expect(await statusOf(layout('nobody', null))).toBe(404);
+    });
+
+    it('should answer a deleted account with a 410', async () => {
+      server.use(http.get(`${API}/users/:id`, () => HttpResponse.json({ ...PROFILE, deleted: true })));
+
+      expect(await statusOf(layout('justin', null))).toBe(410);
     });
   });
 

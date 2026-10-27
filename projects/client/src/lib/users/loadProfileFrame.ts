@@ -46,7 +46,9 @@ export async function loadProfileFrame({ fetch, locals, params, parent, url, isD
   const stale = viewerFrame.profile.status === 401 && locals.token !== null;
   if (stale && params.id === 'me') signInRedirect(url);
   const { profile, stats, watching } = stale ? await readFrame(api({ fetch }), params.id) : viewerFrame;
-  if (profile.status === 404 || (profile.status === 200 && profile.body.deleted)) error(404, 'Page Not Found');
+  if (profile.status === 404) error(404, 'Page Not Found');
+  // The API marks a deleted account, so it's gone for good rather than missing.
+  if (profile.status === 200 && profile.body.deleted) error(410, 'Page Not Found');
   if (profile.status !== 200) error(502, 'Trakt is having trouble loading this profile.');
 
   const parsed = profileResponseSchema.safeParse(profile.body);

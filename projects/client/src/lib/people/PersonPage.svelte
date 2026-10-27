@@ -3,6 +3,7 @@
   as rows or posters under their years. The sidebar's career chart narrows the credits to five years.
 -->
 <script lang="ts">
+import SeoHead from '$lib/seo/SeoHead.svelte';
 import { afterNavigate, replaceState } from '$app/navigation';
 import { tick } from 'svelte';
 import { page } from '$app/state';
@@ -244,10 +245,7 @@ function yearLine(credit: PersonCredit) {
 }
 </script>
 
-<svelte:head>
-  <title>{person.name} - Trakt</title>
-  {#if person.biography}<meta name="description" content={person.biography} />{/if}
-</svelte:head>
+<SeoHead title={person.name} description={person.biography} />
 
 {#snippet card(credit: PersonCredit, faded: boolean)}
   {@const state = overlay.state(credit.type, credit.id)}

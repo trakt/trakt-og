@@ -1,5 +1,6 @@
 <!-- `/` signed out, and `/home`: the OG Redux landing page, dark in both themes. -->
 <script lang="ts">
+import SeoHead from '$lib/seo/SeoHead.svelte';
 import { invalidate } from '$app/navigation';
 import { page } from '$app/state';
 import { untrack } from 'svelte';
@@ -44,12 +45,11 @@ $effect(() => {
 });
 </script>
 
+<SeoHead
+  title="Classic Trakt, rebuilt for big screens"
+  description="Trakt OG Redux: a rebuild of classic Trakt for desktops and tablets. Built on the Trakt API, and open source."
+/>
 <svelte:head>
-  <title>OG Redux - Trakt</title>
-  <meta
-    name="description"
-    content="Trakt OG Redux: a rebuild of classic Trakt for desktops and tablets. Built on the Trakt API, and open source."
-  />
   <!-- `/home` is the same page, so search engines list it once, at `/`. -->
   <link rel="canonical" href="{page.url.origin}/" />
 </svelte:head>

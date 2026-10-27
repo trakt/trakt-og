@@ -1,4 +1,5 @@
 <script lang="ts">
+import SeoHead from '$lib/seo/SeoHead.svelte';
 import Container from '$lib/components/container/Container.svelte';
 import { page } from '$app/state';
 import { login } from '$lib/auth/login';
@@ -9,9 +10,7 @@ import { onMount } from 'svelte';
 onMount(() => login(returnPath(page.url.searchParams.get('redirect_to'))));
 </script>
 
-<svelte:head>
-  <title>Sign in - Trakt</title>
-</svelte:head>
+<SeoHead title="Sign in" />
 
 <section>
   <Container>

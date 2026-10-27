@@ -3,6 +3,7 @@
   the theme the switch picks. Wide screens list the demo's sections beside it.
 -->
 <script lang="ts">
+import SeoHead from '$lib/seo/SeoHead.svelte';
 import { page } from '$app/state';
 import DesignIntro from '$lib/design/DesignIntro.svelte';
 import DesignNav from '$lib/design/DesignNav.svelte';
@@ -46,9 +47,7 @@ $effect(() => {
 });
 </script>
 
-<svelte:head>
-  <title>{demo ? `${demo.title} · ` : ''}og design system</title>
-</svelte:head>
+<SeoHead title="{demo ? `${demo.title} · ` : ''}og design system" />
 
 <div class={['shell', { collapsed: prefs.collapsed }]}>
   <DesignNav current={demo?.slug} sections={toc.entries} section={toc.current} {prefs} onchange={save} />

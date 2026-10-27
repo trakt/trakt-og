@@ -1,5 +1,6 @@
 <!-- The show summary (`/shows/:id`): the media frame filled with one show, its recent episodes and its seasons. -->
 <script lang="ts">
+import SeoHead from '$lib/seo/SeoHead.svelte';
 import { newComment } from '$lib/components/comments/newComment.svelte';
 import { gifArtContext } from '$lib/components/comments/gif/gifArtContext';
 import type { HeaderUser } from '$lib/components/header/HeaderUser';
@@ -81,10 +82,7 @@ const sections = $derived([
 ]);
 </script>
 
-<svelte:head>
-  <title>{show.fullTitle} - Trakt</title>
-  {#if show.overview}<meta name="description" content={show.overview} />{/if}
-</svelte:head>
+<SeoHead title={show.fullTitle} description={show.overview} />
 
 <!-- Hrefs are built from API slugs, and resolve() only takes literal routes. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->

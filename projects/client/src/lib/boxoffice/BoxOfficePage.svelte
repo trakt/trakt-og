@@ -6,6 +6,7 @@
   in OG).
 -->
 <script lang="ts">
+import SeoHead from '$lib/seo/SeoHead.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import ChartPicker from '$lib/charts/ChartPicker.svelte';
 import TagPills from '$lib/components/labels/TagPills.svelte';
@@ -39,10 +40,7 @@ const runPill = (run: WeekInRelease) => ({
 });
 </script>
 
-<svelte:head>
-  <title>Weekend Box Office - Trakt</title>
-  <meta name="description" content={data.description} />
-</svelte:head>
+<SeoHead title="Weekend Box Office" description={data.description} />
 
 <!-- Film links point at OG routes, and the share strip at rows on this page; resolve() has nothing to add. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->

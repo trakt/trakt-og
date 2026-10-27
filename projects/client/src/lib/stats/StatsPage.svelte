@@ -1,4 +1,5 @@
 <script lang="ts">
+import SeoHead from '$lib/seo/SeoHead.svelte';
 import WatchedKeys from '$lib/components/dashboard/WatchedKeys.svelte';
 import SubpageFrame from '$lib/components/summary/SubpageFrame.svelte';
 import ProfileRatingsChart from '$lib/components/users/ProfileRatingsChart.svelte';
@@ -20,13 +21,7 @@ const sections = $derived([
 ]);
 </script>
 
-<svelte:head>
-  <title>{title} - Trakt</title>
-  <meta name="description" content={title} />
-  <meta property="og:title" content={title} />
-  <meta property="og:description" content={title} />
-  {#if data.media.poster}<meta property="og:image" content={data.media.poster} />{/if}
-</svelte:head>
+<SeoHead {title} description={title} image={data.media.poster} />
 
 <SubpageFrame {...data} strip={view.strip} label="Stats" {sections}>
   <div class="stats">

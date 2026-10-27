@@ -1,4 +1,5 @@
 <script lang="ts">
+import SeoHead from '$lib/seo/SeoHead.svelte';
 import { newComment } from '$lib/components/comments/newComment.svelte';
 import { gifArtContext } from '$lib/components/comments/gif/gifArtContext';
 import FanartHeader from '$lib/components/media/FanartHeader.svelte';
@@ -68,16 +69,12 @@ const sections = $derived([
 ]);
 </script>
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-<svelte:head>
-  <title>{safeTitle} - Trakt</title>
-  <meta name="description"
-    content={!spoilers.overview && episode.overview || `Season ${episode.season}, Episode ${media.episode}`} />
-  <meta property="og:type" content="video.episode" />
-  <meta property="og:title" content={safeTitle} />
-  <meta property="og:description" content={!spoilers.overview && episode.overview || safeTitle} />
-  <meta property="og:image" content={spoilers.screenshot ? episode.fanart : episode.screenshot ?? episode.fanart} />
-  <meta property="video:series" content={`https://og.trakt.tv${episode.showHref}`} />
-</svelte:head>
+<SeoHead
+  title={safeTitle}
+  description={!spoilers.overview && episode.overview || `Season ${episode.season}, Episode ${media.episode}`}
+  image={spoilers.screenshot ? episode.fanart : episode.screenshot ?? episode.fanart}
+  type="video.episode"
+/>
 <FanartHeader dropped={overlay.state('show',episode.showId).dropped} image={episode.fanart}
   screenshot={spoilers.screenshot ? undefined : episode.screenshot} subnav>
   <EpisodeTitle target={ratingTarget} links={episode.parents} number={episode.number} title={episode.title} year={episode.year} certification={episode.certification} type={episode.type} credits={episode.postCredits} />

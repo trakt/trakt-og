@@ -1,4 +1,5 @@
 <script lang="ts">
+import SeoHead from '$lib/seo/SeoHead.svelte';
 import EmptyState from '$lib/components/empty/EmptyState.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import FanartHeader from '$lib/components/media/FanartHeader.svelte';
@@ -36,10 +37,10 @@ const clear = () => {
 
 <!-- The movie link is the canonical API slug. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-<svelte:head>
-  <title>Release dates for {movie.fullTitle} - Trakt</title>
-  <meta name="description" content={movie.overview ?? `Release dates for ${movie.fullTitle}.`} />
-</svelte:head>
+<SeoHead
+  title="Release dates for {movie.fullTitle}"
+  description={movie.overview ?? `Release dates for ${movie.fullTitle}.`}
+/>
 
 {#snippet subnav()}
   <SectionToolbar inSummary>

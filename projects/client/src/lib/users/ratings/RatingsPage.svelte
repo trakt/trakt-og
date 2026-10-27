@@ -1,4 +1,5 @@
 <script lang="ts">
+import SeoHead from '$lib/seo/SeoHead.svelte';
 import { SvelteURLSearchParams } from 'svelte/reactivity';
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
@@ -90,10 +91,7 @@ const count = $derived(data.total - (data.cards.length - cards.length));
 
 <!-- Canonical profile links retain the query string and OG's path sort segments. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-<svelte:head>
-  <title>{title} - Trakt</title>
-  <meta name="description" content="Check out what {data.profile.firstName} has been rating recently." />
-</svelte:head>
+<SeoHead {title} description="Check out what {data.profile.firstName} has been rating recently." />
 
 {#snippet card(item: RatingCard)}
   {@const state = overlay.state(item.type, item.id, item.seasonOf)}

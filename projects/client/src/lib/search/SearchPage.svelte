@@ -6,6 +6,7 @@
   theme, which covers OG's forced dark knight.
 -->
 <script lang="ts">
+import SeoHead from '$lib/seo/SeoHead.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import { page } from '$app/state';
 import { untrack } from 'svelte';
@@ -171,10 +172,7 @@ function save(next: FadeHide) {
 }
 </script>
 
-<svelte:head>
-  <title>{meta.title.trim()} - Trakt</title>
-  <meta name="description" content={meta.description} />
-</svelte:head>
+<SeoHead title={meta.title} description={meta.description} />
 
 <!-- The v3 link is another site, which resolve() doesn't cover. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->

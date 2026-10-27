@@ -4,6 +4,7 @@
   shows and movies, and the newest comments.
 -->
 <script lang="ts">
+import SeoHead from '$lib/seo/SeoHead.svelte';
 import DashboardPanel from '$lib/components/dashboard/DashboardPanel.svelte';
 import EmptyState from '$lib/components/empty/EmptyState.svelte';
 import PosterCard from '$lib/components/media/PosterCard.svelte';
@@ -42,10 +43,7 @@ const description = $derived(
 );
 </script>
 
-<svelte:head>
-  <title>{data.profile.displayName}'s profile - Trakt</title>
-  <meta name="description" content={description} />
-</svelte:head>
+<SeoHead title="{data.profile.displayName}'s profile" {description} />
 
 {#snippet watched(card: WatchedCard)}
   {@const state = overlay.state(card.type, card.id)}

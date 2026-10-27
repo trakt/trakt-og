@@ -1,4 +1,5 @@
 <script lang="ts">
+import SeoHead from '$lib/seo/SeoHead.svelte';
 import { newComment } from '$lib/components/comments/newComment.svelte';
 import { gifArtContext } from '$lib/components/comments/gif/gifArtContext';
 import MediaSpoiler from '$lib/components/summary/MediaSpoiler.svelte';
@@ -71,10 +72,7 @@ const sections = $derived([
 </script>
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
-<svelte:head>
-  <title>{season.fullTitle} - Trakt</title>
-  <meta name="description" content={season.overview ?? season.fullTitle} />
-</svelte:head>
+<SeoHead title={season.fullTitle} description={season.overview ?? season.fullTitle} />
 
 <FanartHeader image={season.fanart} subnav>
   <SummaryTitle title={season.title} year={season.years} certification={season.certification} links={season.parents} />

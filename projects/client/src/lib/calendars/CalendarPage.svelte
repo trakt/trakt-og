@@ -7,6 +7,7 @@
   into one card when the viewer wants that.
 -->
 <script lang="ts">
+import SeoHead from '$lib/seo/SeoHead.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import { afterNavigate, goto } from '$app/navigation';
 import { page } from '$app/state';
@@ -337,13 +338,10 @@ const feedUrl = $derived(data.target === 'my' ? data.feedUrls[data.calendar.slug
 const title = $derived(`${data.target === 'my' ? 'My ' : ''}${data.calendar.label} Calendar · ${monthLabel}`);
 </script>
 
-<svelte:head>
-  <title>{title} - Trakt</title>
-  <meta
-    name="description"
-    content="{episodeCount} episodes and {movieCount} movies on the {data.calendar.label} calendar in {monthLabel}."
-  />
-</svelte:head>
+<SeoHead
+  {title}
+  description="{episodeCount} episodes and {movieCount} movies on the {data.calendar.label} calendar in {monthLabel}."
+/>
 
 <!-- The hrefs keep the current path and query, so resolve() has nothing to add. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->

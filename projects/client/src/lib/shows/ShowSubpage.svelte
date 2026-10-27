@@ -4,6 +4,7 @@
   facts and action buttons, then `children` underneath.
 -->
 <script lang="ts">
+import SeoHead from '$lib/seo/SeoHead.svelte';
 import FanartHeader from '$lib/components/media/FanartHeader.svelte';
 import ActionButtons from '$lib/components/summary/ActionButtons.svelte';
 import ExternalLinks from '$lib/components/summary/ExternalLinks.svelte';
@@ -40,10 +41,7 @@ const { show, watchNow, privateNotes, heading, years, seasonLinks, sections, pre
 const ratingTarget = $derived({ type: 'show' as const, id: show.id, title: show.fullTitle });
 </script>
 
-<svelte:head>
-  <title>{show.fullTitle}: {heading} - Trakt</title>
-  <meta name="description" content={show.overview ?? show.fullTitle} />
-</svelte:head>
+<SeoHead title="{show.fullTitle}: {heading}" description={show.overview ?? show.fullTitle} />
 
 <FanartHeader image={show.fanart} subnav>
   <SummaryTitle

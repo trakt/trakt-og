@@ -5,6 +5,7 @@
   grid, and the choice goes into the query string.
 -->
 <script lang="ts">
+import SeoHead from '$lib/seo/SeoHead.svelte';
 import ReportDialog from '$lib/components/summary/ReportDialog.svelte';
 import type { ReportTarget } from '$lib/components/summary/ReportTarget';
 import { leaveList } from '$lib/components/lists/leaveList';
@@ -384,10 +385,7 @@ const actions = (row: UserListRow) => {
 
 <!-- Tab and list URLs keep the canonical profile slug; list pages are OG routes og hasn't built yet. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-<svelte:head>
-  <title>{title} - Trakt</title>
-  <meta name="description" content="Check out {data.profile.firstName}'s watchlist and personal lists." />
-</svelte:head>
+<SeoHead {title} description="Check out {data.profile.firstName}'s watchlist and personal lists." />
 
 {#snippet row(list: UserListRow, rank: number | undefined)}
   <ListRow

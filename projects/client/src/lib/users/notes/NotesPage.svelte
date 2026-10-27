@@ -1,4 +1,5 @@
 <script lang="ts">
+import SeoHead from '$lib/seo/SeoHead.svelte';
 import { SvelteURLSearchParams } from 'svelte/reactivity';
 import { page } from '$app/state';
 import Container from '$lib/components/container/Container.svelte';
@@ -101,10 +102,7 @@ const filterHref = (type: string) => {
 
 <!-- Filter URLs keep the canonical profile slug and the current page size. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-<svelte:head>
-  <title>{title} - Trakt</title>
-  <meta name="description" content="Check out {data.profile.firstName}'s recent notes." />
-</svelte:head>
+<SeoHead {title} description="Check out {data.profile.firstName}'s recent notes." />
 
 <SectionToolbar>
   {#snippet filters()}

@@ -87,16 +87,17 @@ Standard apps also get lower rate limits. When the API rate limits you, the page
 
 Run these from the repository root.
 
-| Command                      | What it does                                                                 |
-| ---------------------------- | ---------------------------------------------------------------------------- |
-| `bun run client:setup <id>`  | Writes the local settings for your Trakt app's client ID.                    |
-| `bun run client:dev`         | Starts the dev server on port 5173.                                          |
-| `bun run client:check`       | Type checks.                                                                 |
-| `bun run client:test`        | Runs the tests.                                                              |
-| `bun run client:build`       | Builds for production.                                                       |
-| `bun run client:ci`          | Formatting, lint, types, tests and the production build: everything CI runs. |
-| `bun run client:verify [pr]` | CI plus the supply chain, commit and leak checks.                            |
-| `bun run client:land <pr>`   | Rebases, verifies and lands a PR, then closes its issues.                    |
+| Command                          | What it does                                                                 |
+| -------------------------------- | ---------------------------------------------------------------------------- |
+| `bun run client:setup <id>`      | Writes the local settings for your Trakt app's client ID.                    |
+| `bun run client:dev`             | Starts the dev server on port 5173.                                          |
+| `bun run client:check`           | Type checks.                                                                 |
+| `bun run client:test`            | Runs the tests.                                                              |
+| `bun run client:build`           | Builds for production.                                                       |
+| `bun run client:ci`              | Formatting, lint, types, tests and the production build: everything CI runs. |
+| `bun run client:verify [pr]`     | CI plus the supply chain, commit and leak checks.                            |
+| `bun run client:land <pr>`       | Rebases, verifies and lands a PR, then closes its issues.                    |
+| `bun run client:seo-check [url]` | Checks what crawlers and link previews see, against the dev server or a URL. |
 
 To try the production build locally, run `bun run preview` in `projects/client/`. It builds, then serves the Cloudflare Worker with `wrangler dev`.
 

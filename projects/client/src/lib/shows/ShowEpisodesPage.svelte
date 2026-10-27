@@ -21,7 +21,12 @@ const sections = $derived([
 ]);
 </script>
 
-<SeoHead {...toSubpageSeo({ title: data.show.fullTitle, subpage: 'Episodes', image: data.show.fanart ?? data.show.poster })} />
+<SeoHead {...toSubpageSeo({
+    title: data.show.fullTitle,
+    href: data.show.href,
+    subpage: 'Episodes',
+    image: data.show.fanart ?? data.show.poster,
+  })} />
 <ShowSubpage
   watchNow={data.watchNow}
   privateNotes={data.privateNotes}

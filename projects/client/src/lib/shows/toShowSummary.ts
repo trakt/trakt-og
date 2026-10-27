@@ -238,6 +238,8 @@ export function toShowSummary(params: ShowSummaryParams) {
     year: show.year ?? null,
     fullTitle: show.year ? `${show.title} (${show.year})` : show.title,
     certification: show.certification ?? null,
+    /** API's ISO timestamp, for structured data. */
+    firstAired: show.first_aired ?? null,
     fanart: imageUrl(show.images?.fanart?.at(0), 'full'),
     poster: imageUrl(show.images?.poster?.at(0), 'medium'),
     rating: aired ? { value: show.rating ?? 0, votes: show.votes ?? 0, href: `${href}/stats` } : undefined,

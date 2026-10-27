@@ -1,3 +1,5 @@
+import { toBreadcrumbJsonLd } from '../jsonLd/toBreadcrumbJsonLd.ts';
+import { toTitleCrumbs } from '../jsonLd/toTitleCrumbs.ts';
 import type { SeoMeta } from '../SeoMeta.ts';
 
 const LINES = {
@@ -11,18 +13,25 @@ const LINES = {
   Episodes: (title: string) => `Every episode of ${title}, season by season.`,
 } as const;
 
-export type Subpage = keyof typeof LINES;
-
 type Params = {
   /** The title's own name: "Inception (2010)", `Severance 1x02 "Half Loop"`, "Adam Scott". */
   title: string;
-  subpage: Subpage;
+  /** The title's own page. */
+  href: string;
+  /** The tag bar's way up to the title: a season's show, an episode's show and season. */
+  parents?: readonly { readonly title: string; readonly href?: string }[];
+  subpage: keyof typeof LINES;
   /** The parent's fanart, else its poster. */
   image?: string;
 };
 
-/** A title's subpage: "Inception (2010): People", a fixed line and the title's own art. */
-export function toSubpageSeo({ title, subpage, image }: Params): SeoMeta {
-  const heading = `${title}: ${subpage}`;
-  return { title: heading, description: LINES[subpage](title), image, imageAlt: title };
+/** A title's subpage: "Inception (2010): People", a fixed line, the title's own art and the trail down to it. */
+export function toSubpageSeo({ title, href, parents, subpage, image }: Params): SeoMeta {
+  return {
+    title: `${title}: ${subpage}`,
+    description: LINES[subpage](title),
+    image,
+    imageAlt: title,
+    jsonLd: [toBreadcrumbJsonLd([...toTitleCrumbs({ title, href, parents }), { name: subpage }])],
+  };
 }

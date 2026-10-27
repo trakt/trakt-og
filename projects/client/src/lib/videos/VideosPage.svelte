@@ -41,7 +41,13 @@ const playingTitle = $derived(data.videos.find((video) => video.href === playing
 </script>
 
 <SeoHead
-  {...toSubpageSeo({ title: data.media.item.title, subpage: 'Videos', image: data.media.fanart ?? data.media.poster })}
+  {...toSubpageSeo({
+    title: data.media.item.title,
+    href: data.media.href,
+    parents: data.media.parents,
+    subpage: 'Videos',
+    image: data.media.fanart ?? data.media.poster,
+  })}
 />
 
 {#snippet subnav()}

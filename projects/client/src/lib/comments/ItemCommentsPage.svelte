@@ -46,7 +46,13 @@ const languageHref = (code: CommentLanguage) => href(data.sort.by, data.sort.how
 <!-- The item links are the canonical API slugs. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 <SeoHead
-  {...toSubpageSeo({ title: data.media.item.title, subpage: 'Comments', image: data.media.fanart ?? data.media.poster })}
+  {...toSubpageSeo({
+    title: data.media.item.title,
+    href: data.media.href,
+    parents: data.media.parents,
+    subpage: 'Comments',
+    image: data.media.fanart ?? data.media.poster,
+  })}
 />
 
 {#snippet sortLabel(by: ItemCommentSortBy)}{itemCommentSorts[by].label}{/snippet}

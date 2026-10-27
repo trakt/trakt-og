@@ -1,11 +1,12 @@
 <!--
-  The one head every page renders: its title, description, robots, canonical URL, Open Graph and Twitter tags. Robots come from
-  the route (`toRobots.ts`), so a page only says when its own content isn't public. The site-wide tags
-  (`og:site_name`, `og:locale`, `twitter:site`, `twitter:card`) live in app.html.
+  The one head every page renders: its title, description, robots, canonical URL, Open Graph and Twitter tags, and
+  its structured data. Robots come from the route (`toRobots.ts`), so a page only says when its own content isn't
+  public. The site-wide tags (`og:site_name`, `og:locale`, `twitter:site`, `twitter:card`) live in app.html.
 -->
 <script lang="ts">
 import { page } from '$app/state';
 import type { SeoMeta } from './SeoMeta.ts';
+import { toJsonLdScript } from './toJsonLdScript.ts';
 import { toSeoTags } from './toSeoTags.ts';
 
 const meta: SeoMeta = $props();
@@ -31,4 +32,8 @@ const tags = $derived(toSeoTags(meta, { url: page.url, routeId: page.route.id, s
   <meta property="og:image:alt" content={tags.image.alt} />
   <meta name="twitter:image" content={tags.image.url} />
   <meta name="twitter:image:alt" content={tags.image.alt} />
+  {#each meta.jsonLd ?? [] as data, i (i)}
+    <!-- eslint-disable-next-line svelte/no-at-html-tags -- toJsonLdScript escapes everything that could end the tag. -->
+    {@html toJsonLdScript(data)}
+  {/each}
 </svelte:head>

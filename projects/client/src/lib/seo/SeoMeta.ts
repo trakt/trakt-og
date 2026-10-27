@@ -1,3 +1,4 @@
+import type { JsonLd } from './jsonLd/JsonLd.ts';
 import type { SeoType } from './SeoType.ts';
 
 /** What a page says about itself in search results and link previews. The shared head fills in the rest. */
@@ -15,4 +16,6 @@ export interface SeoMeta {
   readonly canonicalPath?: string;
   /** The content isn't public even though its route is: a private profile or list, a comment that isn't a review. */
   readonly noindex?: boolean;
+  /** Structured data, one `application/ld+json` script each. */
+  readonly jsonLd?: readonly JsonLd[];
 }

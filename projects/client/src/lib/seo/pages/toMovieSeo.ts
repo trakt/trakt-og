@@ -1,9 +1,11 @@
-import type { toMovieSummary } from '../../movies/toMovieSummary.ts';
+import { toBreadcrumbJsonLd } from '../jsonLd/toBreadcrumbJsonLd.ts';
+import { toMovieJsonLd } from '../jsonLd/toMovieJsonLd.ts';
+import { toTitleCrumbs } from '../jsonLd/toTitleCrumbs.ts';
 import type { SeoMeta } from '../SeoMeta.ts';
 
-type Movie = Pick<ReturnType<typeof toMovieSummary>, 'fullTitle' | 'overview' | 'fanart' | 'poster'>;
+type Movie = Parameters<typeof toMovieJsonLd>[0] & { readonly fullTitle: string };
 
-/** `/movies/:id`: "Inception (2010)", its overview and its fanart, else its poster. */
+/** `/movies/:id`: "Inception (2010)", its overview and its fanart, else its poster, with its structured data. */
 export function toMovieSeo(movie: Movie): SeoMeta {
   return {
     title: movie.fullTitle,
@@ -11,5 +13,6 @@ export function toMovieSeo(movie: Movie): SeoMeta {
     image: movie.fanart ?? movie.poster,
     imageAlt: movie.fullTitle,
     type: 'video.movie',
+    jsonLd: [toMovieJsonLd(movie), toBreadcrumbJsonLd(toTitleCrumbs({ title: movie.fullTitle, href: movie.href }))],
   };
 }

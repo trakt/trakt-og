@@ -87,7 +87,13 @@ const matches = $derived(results.reduce((total, group) => total + group.people.l
 </script>
 
 <SeoHead
-  {...toSubpageSeo({ title: data.media.item.title, subpage: 'People', image: data.media.fanart ?? data.media.poster })}
+  {...toSubpageSeo({
+    title: data.media.item.title,
+    href: data.media.href,
+    parents: data.media.parents,
+    subpage: 'People',
+    image: data.media.fanart ?? data.media.poster,
+  })}
 />
 
 {#snippet subnav()}

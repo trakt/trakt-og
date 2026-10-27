@@ -1,6 +1,8 @@
 <!-- `/` signed out, and `/home`: the OG Redux landing page, dark in both themes. -->
 <script lang="ts">
 import SeoHead from '$lib/seo/SeoHead.svelte';
+import { toOrganizationJsonLd } from '$lib/seo/jsonLd/toOrganizationJsonLd';
+import { toWebSiteJsonLd } from '$lib/seo/jsonLd/toWebSiteJsonLd';
 import { invalidate } from '$app/navigation';
 import { untrack } from 'svelte';
 import HomeHero from './HomeHero.svelte';
@@ -49,6 +51,7 @@ $effect(() => {
   title="Classic Trakt, rebuilt for big screens"
   description="Trakt OG Redux: a rebuild of classic Trakt for desktops and tablets. Built on the Trakt API, and open source."
   canonicalPath="/"
+  jsonLd={[toOrganizationJsonLd(), toWebSiteJsonLd()]}
 />
 
 <div class="home">

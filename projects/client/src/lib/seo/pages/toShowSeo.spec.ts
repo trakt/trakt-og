@@ -2,15 +2,23 @@ import { describe, expect, it } from 'vitest';
 import { toShowSeo } from './toShowSeo.ts';
 
 const show = {
+  title: 'Severance',
   fullTitle: 'Severance (2022)',
+  href: '/shows/severance',
   overview: 'Mark leads a team of office workers.',
   fanart: 'https://media.trakt.tv/images/shows/fanarts/full/a.jpg.webp',
   poster: 'https://media.trakt.tv/images/shows/posters/medium/b.jpg.webp',
+  certification: 'TV-MA',
+  rating: undefined,
+  links: [],
+  firstAired: '2022-02-18T02:00:00.000Z',
+  airedEpisodes: 19,
+  facts: { genres: [] },
 };
 
 describe('seo: toShowSeo', () => {
   it('should title the show with its year and describe it with its overview and fanart', () => {
-    expect(toShowSeo(show)).toEqual({
+    expect(toShowSeo(show)).toMatchObject({
       title: 'Severance (2022)',
       description: 'Mark leads a team of office workers.',
       image: show.fanart,
@@ -28,5 +36,12 @@ describe('seo: toShowSeo', () => {
   it('should fall back to the poster, then the default image, without fanart', () => {
     expect(toShowSeo({ ...show, fanart: undefined }).image).toBe(show.poster);
     expect(toShowSeo({ ...show, fanart: undefined, poster: undefined }).image).toBeUndefined();
+  });
+
+  it('should add the TVSeries and its trail from Shows', () => {
+    const [data, trail] = toShowSeo(show).jsonLd ?? [];
+
+    expect(data).toMatchObject({ '@type': 'TVSeries', name: 'Severance', startDate: '2022-02-18' });
+    expect(trail).toMatchObject({ itemListElement: [{ name: 'Shows' }, { name: 'Severance (2022)' }] });
   });
 });

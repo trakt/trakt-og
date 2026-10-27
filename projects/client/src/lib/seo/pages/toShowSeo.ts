@@ -1,9 +1,11 @@
-import type { toShowSummary } from '../../shows/toShowSummary.ts';
+import { toBreadcrumbJsonLd } from '../jsonLd/toBreadcrumbJsonLd.ts';
+import { toShowJsonLd } from '../jsonLd/toShowJsonLd.ts';
+import { toTitleCrumbs } from '../jsonLd/toTitleCrumbs.ts';
 import type { SeoMeta } from '../SeoMeta.ts';
 
-type Show = Pick<ReturnType<typeof toShowSummary>, 'fullTitle' | 'overview' | 'fanart' | 'poster'>;
+type Show = Parameters<typeof toShowJsonLd>[0] & { readonly fullTitle: string };
 
-/** `/shows/:id`: "Severance (2022)", its overview and its fanart, else its poster. */
+/** `/shows/:id`: "Severance (2022)", its overview and its fanart, else its poster, with its structured data. */
 export function toShowSeo(show: Show): SeoMeta {
   return {
     title: show.fullTitle,
@@ -12,5 +14,6 @@ export function toShowSeo(show: Show): SeoMeta {
     image: show.fanart ?? show.poster,
     imageAlt: show.fullTitle,
     type: 'video.tv_show',
+    jsonLd: [toShowJsonLd(show), toBreadcrumbJsonLd(toTitleCrumbs({ title: show.fullTitle, href: show.href }))],
   };
 }

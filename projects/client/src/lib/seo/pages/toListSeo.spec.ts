@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { toListSeo } from './toListSeo.ts';
 
-const list = { name: 'Best of 2024', description: 'My favorites.', itemCount: 12 };
+const list = {
+  name: 'Best of 2024',
+  description: 'My favorites.',
+  path: '/lists/official/best-of-2024',
+  itemCount: 12,
+};
 
 describe('seo: toListSeo', () => {
   it('should title an official list by its name', () => {
@@ -10,6 +15,7 @@ describe('seo: toListSeo', () => {
       description: 'My favorites.',
       image: 'https://media.trakt.tv/a.jpg',
       imageAlt: 'Best of 2024',
+      jsonLd: [],
     });
   });
 
@@ -25,5 +31,18 @@ describe('seo: toListSeo', () => {
 
   it('should leave the image to the default without items', () => {
     expect(toListSeo({ ...list, itemCount: 0 }).image).toBeUndefined();
+  });
+
+  it('should add an ItemList of the items it is given', () => {
+    const seo = toListSeo({ ...list, owner: 'Justin', items: ['/movies/dune-part-two-2024'] });
+
+    expect(seo.jsonLd).toMatchObject([
+      {
+        '@type': 'ItemList',
+        name: 'Best of 2024 by Justin',
+        numberOfItems: 12,
+        itemListElement: [{ position: 1, url: 'https://og.trakt.tv/movies/dune-part-two-2024' }],
+      },
+    ]);
   });
 });

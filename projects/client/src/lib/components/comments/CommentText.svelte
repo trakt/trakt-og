@@ -31,7 +31,7 @@ const openVideo = (link: Extract<CommentInline, { type: 'link' }>) => (event: Mo
 {#snippet inlines(nodes: readonly CommentInline[])}
   <!-- The branches run on with no whitespace between tags, so none creeps in between the pieces. -->
   {#each nodes as node, i (i)}{#if node.type === 'text'}{node.text}{:else if node.type === 'break'}<br />{:else if node.type === 'strong'}<strong>{@render inlines(node.children)}</strong>{:else if node.type === 'em'}<em>{@render inlines(node.children)}</em>{:else if node.type === 'del'}<del>{@render inlines(node.children)}</del>{:else if node.type === 'mark'}<mark>{@render inlines(node.children)}</mark>{:else if node.type === 'code'}<code>{node.text}</code>{:else if node.type === 'link'}<a
-  class="comment-link" href={node.href} target="_blank" rel="noopener noreferrer ugc"
+  class="comment-link" href={node.href} target="_blank" rel="ugc nofollow noopener noreferrer"
   onclick={openVideo(node)}>{@render inlines(node.children)}</a>{:else if node.type === 'mention'}<a
   class="comment-link" href="/users/{node.username}">@{node.username}</a>{:else if node.type === 'emoji'}<Tooltip
   text={node.shortname}>{#snippet trigger(tooltip)}<span class="emoji" {...tooltip}>{node.emoji}</span>{/snippet}</Tooltip>{:else if node.type === 'spoiler'}<InlineSpoiler>{@render inlines(node.children)}</InlineSpoiler>{/if}{/each}

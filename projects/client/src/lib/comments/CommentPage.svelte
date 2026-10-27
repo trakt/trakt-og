@@ -56,7 +56,7 @@ const title = $derived(`${media.item.title} ${type.toLowerCase()} by ${author.na
 <!-- Hrefs are built from API slugs, and resolve() only takes literal routes. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
-<SeoHead {title} description={comment.comment} image={media.poster} />
+<SeoHead {title} description={comment.comment} image={media.poster} noindex={!comment.review} />
 
 <FanartHeader image={media.fanart} slim>
   <SubpageTitle

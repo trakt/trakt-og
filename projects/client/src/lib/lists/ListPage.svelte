@@ -510,7 +510,13 @@ async function saveNotes(text: string) {
 
 <!-- Filter and item URLs point at og pages by their OG paths, which resolve() only takes once they exist. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-{#if data.list}<SeoHead title={pageTitle} description={data.list.description} />{/if}
+{#if data.list}
+  <SeoHead
+    title={pageTitle}
+    description={data.list.description}
+    noindex={!data.list.isPublic || ('profile' in data && data.profile.isPrivate)}
+  />
+{/if}
 
 {#if editing && data.kind === 'personal' && data.list}<ListEditor id={data.list.id} posters={listPosters}
   count={data.list.itemCount}

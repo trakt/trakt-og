@@ -11,4 +11,6 @@ export interface SeoMeta {
   /** Describes `image`; the page title when left out. */
   readonly imageAlt?: string;
   readonly type?: SeoType;
+  /** The content isn't public even though its route is: a private profile or list, a comment that isn't a review. */
+  readonly noindex?: boolean;
 }

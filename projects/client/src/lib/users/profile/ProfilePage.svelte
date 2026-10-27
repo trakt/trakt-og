@@ -43,7 +43,7 @@ const description = $derived(
 );
 </script>
 
-<SeoHead title="{data.profile.displayName}'s profile" {description} />
+<SeoHead title="{data.profile.displayName}'s profile" {description} noindex={data.profile.isPrivate} />
 
 {#snippet watched(card: WatchedCard)}
   {@const state = overlay.state(card.type, card.id)}

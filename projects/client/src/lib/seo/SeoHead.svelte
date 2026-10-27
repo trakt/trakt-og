@@ -1,18 +1,21 @@
 <!--
-  The one head every page renders: its title, description, Open Graph and Twitter tags. The site-wide tags
+  The one head every page renders: its title, description, robots, Open Graph and Twitter tags. Robots come from
+  the route (`toRobots.ts`), so a page only says when its own content isn't public. The site-wide tags
   (`og:site_name`, `og:locale`, `twitter:site`, `twitter:card`) live in app.html.
 -->
 <script lang="ts">
+import { page } from '$app/state';
 import type { SeoMeta } from './SeoMeta.ts';
 import { toSeoTags } from './toSeoTags.ts';
 
 const meta: SeoMeta = $props();
-const tags = $derived(toSeoTags(meta));
+const tags = $derived(toSeoTags(meta, { routeId: page.route.id, status: page.status }));
 </script>
 
 <svelte:head>
   <title>{tags.title}</title>
   <meta name="description" content={tags.description} />
+  <meta name="robots" content={tags.robots} />
   <meta property="og:type" content={tags.og.type} />
   <meta property="og:title" content={tags.og.title} />
   <meta property="og:description" content={tags.og.description} />

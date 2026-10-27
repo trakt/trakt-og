@@ -30,10 +30,7 @@ const listCover = $derived(typeof page.data.listCover === 'string' ? page.data.l
 const tabs = $derived(profileTabs({ slug: data.profile.slug, pathname: page.url.pathname, isSelf: data.isSelf }));
 </script>
 
-{#if data.profile.isLocked}<SeoHead title="{data.profile.displayName}'s profile" />{/if}
-<svelte:head>
-  {#if data.profile.isLocked}<meta name="robots" content="noindex, nofollow, noarchive" />{/if}
-</svelte:head>
+{#if data.profile.isLocked}<SeoHead title="{data.profile.displayName}'s profile" noindex />{/if}
 
 {#if !listComments || data.profile.isLocked}
 <ProfileFrame

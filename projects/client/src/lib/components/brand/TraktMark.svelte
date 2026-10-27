@@ -2,20 +2,16 @@
 
 <!--
   The classic Trakt mark (the paths of trakt-wide-red-white.svg), drawn into a parent <svg> in a 98.1-unit box so any
-  page can recolor it: the home page's red O, and each coming-soon design. `face` fills the disc behind the mark; leave it out for the mark alone.
+  page can recolor it, like the home page's red O.
 -->
 <script lang="ts">
 interface Props {
   ink: string;
-  face?: string;
 }
 
-const { ink, face }: Props = $props();
+const { ink }: Props = $props();
 </script>
 
-{#if face}
-  <circle cx="49.05" cy="49.05" r="49.1" style:fill={face} />
-{/if}
 <g style:fill={ink}>
   <path d="M20,75.8c7.2,7.8,17.6,12.8,29.1,12.8c5.9,0,11.5-1.3,16.5-3.6L38.2,57.6L20,75.8z" />
   <path

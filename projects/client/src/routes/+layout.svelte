@@ -27,8 +27,8 @@ import { MediaQuery } from 'svelte/reactivity';
 
 let { children, data } = $props();
 
-// The coming-soon placeholder at `/` and the design-system demos draw their own page.
-const bare = $derived(page.route.id === '/' || page.route.id?.startsWith('/_design'));
+// The design-system demos draw their own page.
+const bare = $derived(page.route.id?.startsWith('/_design'));
 // An error page fills the screen on its own, without the header and footer.
 const errored = $derived(!!page.error);
 

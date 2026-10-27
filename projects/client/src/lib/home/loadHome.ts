@@ -51,7 +51,7 @@ interface LoadHomeParams {
 }
 
 /**
- * `/home`: the hero's fanart, shuffled, trending shows and movies, and whether the viewer is signed in. Who is
+ * `/` and `/home`: the hero's fanart, shuffled, trending shows and movies, and whether the viewer is signed in. Who is
  * watching right now streams in after, since it reads every trending title's watchers and Trending's whole count.
  * Nothing failing is an error.
  */

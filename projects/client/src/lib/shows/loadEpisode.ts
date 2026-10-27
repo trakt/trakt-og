@@ -78,7 +78,6 @@ export async function loadEpisode({
       path: `${path}/episodes/${episode}`,
       country: watchNowCountry(layout.settings),
       settings: layout.settings,
-      isVip: layout.user?.isVip ?? false,
     }),
   );
   const [
@@ -123,7 +122,6 @@ export async function loadEpisode({
     stats: body(statsResponse, episodeStatsResponseSchema, 'Stats'),
     datePreferences: layout.datePreferences,
     now: new Date(),
-    isVip: layout.user?.isVip ?? false,
     episodeTypeTags: !layout.settings?.browsing?.hide_episode_type_tags,
     otherSiteRatings: layout.settings?.browsing?.other_site_ratings ?? true,
   });

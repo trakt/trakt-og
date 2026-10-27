@@ -15,7 +15,6 @@ const base = {
   collection: null,
   rank: null,
   otherSiteRatings: true,
-  isVip: false,
   now: new Date('2026-09-29T00:00:00Z'),
 };
 
@@ -105,15 +104,13 @@ describe('toMovieSummary', () => {
     ]);
   });
 
-  it('should link country, languages and genres for VIPs only', () => {
-    const vip = { ...base, movie: movie('x', 1, { country: 'us', languages: ['en'], genres: ['science-fiction'] }) };
+  it('should link country, languages and genres to the filtered chart', () => {
+    const params = { ...base, movie: movie('x', 1, { country: 'us', languages: ['en'], genres: ['science-fiction'] }) };
+    const { facts } = toMovieSummary(params);
 
-    expect(toMovieSummary(vip).facts.genres).toEqual([{ name: 'Science Fiction', href: undefined }]);
-    expect(toMovieSummary({ ...vip, isVip: true }).facts.country).toEqual({
-      name: 'United States',
-      href: '/movies/popular?countries=us',
-    });
-    expect(toMovieSummary({ ...vip, isVip: true }).facts.languages.at(0)?.name).toBe('English');
+    expect(facts.genres).toEqual([{ name: 'Science Fiction', href: '/movies/popular?genres=science-fiction' }]);
+    expect(facts.country).toEqual({ name: 'United States', href: '/movies/popular?countries=us' });
+    expect(facts.languages.at(0)).toEqual({ name: 'English', href: '/movies/popular?languages=en' });
   });
 
   it('should drop other sites when the viewer turned them off', () => {

@@ -41,7 +41,7 @@ const types = $derived(
 const sorts = Object.keys(itemListSorts) as ItemListSortBy[];
 // Pagination renders nothing for one page.
 const pages = $derived(data.page && data.page.total > 1 ? data.page : null);
-const viewer = $derived(data.user ? { slug: data.user.slug, isVip: data.user.isVip } : null);
+const viewer = $derived(data.user ? { slug: data.user.slug } : null);
 
 // The row icons, with the owner's edit and delete, as on their own lists page.
 const own = createItemListActions({ viewer: () => viewer, origin: () => page.url.origin });

@@ -97,7 +97,6 @@ type LoadListItemsParams = {
   firstHasToken?: boolean;
   /** The list's own default sort. */
   fallback: ListSort;
-  viewerIsVip: boolean;
   /** Only the viewer's token reads this list's items. */
   needsToken: boolean;
   /** A VIP owner's list puts its first ranked item on the profile cover. */
@@ -120,13 +119,12 @@ export async function loadListItems({
   first,
   firstHasToken = false,
   fallback,
-  viewerIsVip,
   needsToken,
   ownerIsVip,
   viewerSignedIn,
   datePreferences,
 }: LoadListItemsParams) {
-  const sort = resolveListSort({ query, fallback, vip: viewerIsVip });
+  const sort = resolveListSort({ query, fallback });
   const needsViewer =
     Boolean(token) &&
     (needsToken || VIEWER_SORTS.includes(sort.by) || Boolean(query.watchnow) || (query.hide?.length ?? 0) > 0);

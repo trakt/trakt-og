@@ -10,8 +10,6 @@ export type ListItemSort = {
   readonly by: string;
   readonly label: string;
   readonly group: ListSortGroup;
-  /** VIP only in OG: hidden from everyone else, and falls back to Rank in the URL. */
-  readonly vip?: true;
   /** The types it applies to. Left out, every type. Hidden when none of the chosen types match. */
   readonly types?: readonly ListItemType[];
   /** Starts newest or highest first: dates, scores, votes and popularity. The rest start first to last, A to Z. */
@@ -33,13 +31,12 @@ export const listItemSorts: readonly ListItemSort[] = [
   { by: 'popularity', label: 'Popularity', group: 'main', descending: true },
   { by: 'random', label: 'Random', group: 'main' },
   { by: 'percentage', label: 'Trakt Percentage', group: 'site', descending: true },
-  { by: 'imdb_rating', label: 'IMDB Rating', group: 'site', vip: true, types: ratedTypes, descending: true },
-  { by: 'tmdb_rating', label: 'TMDB User Score', group: 'site', vip: true, types: ratedTypes, descending: true },
+  { by: 'imdb_rating', label: 'IMDB Rating', group: 'site', types: ratedTypes, descending: true },
+  { by: 'tmdb_rating', label: 'TMDB User Score', group: 'site', types: ratedTypes, descending: true },
   {
     by: 'rt_tomatometer',
     label: 'RT Tomatometer',
     group: 'site',
-    vip: true,
     types: ['movie', 'show'],
     descending: true,
   },
@@ -47,14 +44,13 @@ export const listItemSorts: readonly ListItemSort[] = [
     by: 'rt_audience',
     label: 'RT Audience Score',
     group: 'site',
-    vip: true,
     types: ['movie', 'show'],
     descending: true,
   },
-  { by: 'metascore', label: 'Metascore', group: 'site', vip: true, types: ['movie'], descending: true },
+  { by: 'metascore', label: 'Metascore', group: 'site', types: ['movie'], descending: true },
   { by: 'votes', label: 'Trakt Votes', group: 'votes', descending: true },
-  { by: 'imdb_votes', label: 'IMDB Votes', group: 'votes', vip: true, types: ratedTypes, descending: true },
-  { by: 'tmdb_votes', label: 'TMDB Votes', group: 'votes', vip: true, types: ratedTypes, descending: true },
+  { by: 'imdb_votes', label: 'IMDB Votes', group: 'votes', types: ratedTypes, descending: true },
+  { by: 'tmdb_votes', label: 'TMDB Votes', group: 'votes', types: ratedTypes, descending: true },
   { by: 'my_rating', label: 'My Rating', group: 'mine', descending: true },
   { by: 'watched', label: 'Watched Date', group: 'mine', descending: true },
   { by: 'collected', label: 'Collected Date', group: 'mine', descending: true },

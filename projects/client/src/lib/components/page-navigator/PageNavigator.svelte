@@ -3,7 +3,7 @@
   over the panel's bottom edge, centered, so put it last in a `position: relative` panel. `dark` is OG's
   `.page-navigator.dark` for a panel that's dark in both themes, and `--page-navigator-offset` moves it down from the
   content. With `edge` it's centered on the bottom edge of that panel instead, half on each side. "less" hides at one row and
-  "more" at the last, and the pill hides when there's only one row to show. Non-VIPs get links to the VIP page instead.
+  "more" at the last, and the pill hides when there's only one row to show.
 -->
 <script lang="ts">
 import Icon from '$lib/icons/Icon.svelte';
@@ -14,8 +14,6 @@ interface Props {
   rows: number;
   maxRows: number;
   onchange: (rows: number) => void;
-  /** Left out, the buttons change the rows. Set, they're links there instead, like OG's VIP redirect. */
-  upsellHref?: string;
   /** What the rows belong to, for screen readers: "Up Next". */
   label: string;
   /** The dark glass with white text, on a dark panel in either theme. */
@@ -24,21 +22,13 @@ interface Props {
   edge?: boolean;
 }
 
-const { rows, maxRows, onchange, upsellHref, label, dark = false, edge = false }: Props = $props();
+const { rows, maxRows, onchange, label, dark = false, edge = false }: Props = $props();
 </script>
 
-<!-- The VIP pages aren't built yet, and resolve() only takes routes that exist. -->
-<!-- eslint-disable svelte/no-navigation-without-resolve -->
-
 {#snippet control(kind: 'less' | 'more', svg: string, next: number)}
-  {#if upsellHref}
-    <a class="control" href={upsellHref} target="_blank" rel="noopener"
-  aria-label="Show {kind} {label} with VIP"><Icon {svg} />{kind}</a>
-  {:else}
-    <button type="button" class="control" aria-label="Show {kind} {label}" onclick={() => onchange(next)}>
-      <Icon {svg} />{kind}
-    </button>
-  {/if}
+  <button type="button" class="control" aria-label="Show {kind} {label}" onclick={() => onchange(next)}>
+    <Icon {svg} />{kind}
+  </button>
 {/snippet}
 
 {#if maxRows > 1}

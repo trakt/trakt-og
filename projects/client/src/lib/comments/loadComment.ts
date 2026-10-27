@@ -62,7 +62,6 @@ export async function loadComment({ fetch, parent, id }: Params) {
         ...target,
         country: watchNowCountry(settings),
         settings,
-        isVip: user?.isVip ?? false,
       })
     : null;
   const media = toSubpageMedia({ body: body.data, justwatch: watchNow?.rank?.link });

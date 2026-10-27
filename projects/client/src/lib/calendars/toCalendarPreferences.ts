@@ -1,7 +1,6 @@
 import { z } from 'zod/v4';
 
 const schema = z.object({
-  user: z.object({ vip: z.boolean().nullish(), joined_at: z.iso.datetime().nullish() }).nullish(),
   browsing: z
     .object({
       calendar: z
@@ -36,18 +35,15 @@ const schema = z.object({
     .nullish(),
 });
 
-/** API settings are shared by the layout. Preserve OG's VIP or pre-September-11-2024 image entitlement. */
+/** The viewer's calendar settings, which the layout shares. */
 export function toCalendarPreferences(settings: unknown) {
   const parsed = schema.safeParse(settings);
-  const user = parsed.success ? parsed.data.user : null;
   const calendar = parsed.success ? parsed.data.browsing?.calendar : null;
-  const imagesAllowed = user?.vip === true || (user?.joined_at?.slice(0, 10) ?? '9999') < '2024-09-11';
   return {
     period: calendar?.period ?? 'week',
     layout: calendar?.layout ?? 'list',
     startDay: calendar?.start_day ?? 'today',
-    imageType: imagesAllowed ? (calendar?.image_type ?? 'logo') : 'logo',
+    imageType: calendar?.image_type ?? 'logo',
     hideSpecials: calendar?.hide_specials === true,
-    imagesAllowed,
   };
 }

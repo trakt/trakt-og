@@ -16,8 +16,6 @@ type ToScheduleDaysParams = {
   /** `YYYY-MM-DD` in the viewer's zone. */
   today: string;
   datePreferences: Pick<DatePreferences, 'timeZone' | 'hour24' | 'order'>;
-  /** OG linked the network to its popular shows for VIPs only. */
-  isVip: boolean;
   /** Each item's offers in the viewer's country, by `scheduleWatchNowPath`. A missing one gets no Watch Now. */
   offers: ReadonlyMap<string, Offers>;
   /** The viewer's watch-now country, where the modal opens. */
@@ -56,7 +54,6 @@ function watchNow(item: CalendarItem, { offers, country }: Context) {
     country,
     favorites: [],
     onlyFavorites: false,
-    isVip: false,
   });
   if (button.count === 0) return undefined;
 
@@ -102,7 +99,7 @@ function toItem(item: CalendarItem, context: Context): ScheduleItem {
     network: show.network
       ? {
           name: show.network,
-          href: context.isVip ? `/shows/popular?networks=${encodeURIComponent(networkSlug(show.network))}` : undefined,
+          href: `/shows/popular?networks=${encodeURIComponent(networkSlug(show.network))}`,
         }
       : undefined,
     watchNow: watchNow(item, context),

@@ -8,7 +8,7 @@ import type { SummaryList } from '../summary/toSummaryList.ts';
 import { type ActionList, itemListRowActions } from './itemListRowActions.ts';
 import { viewerFetch } from '../auth/viewerFetch.ts';
 
-type Viewer = { readonly slug: string; readonly isVip: boolean } | null;
+type Viewer = { readonly slug: string } | null;
 type ActionRow = ActionList & Pick<SummaryList, 'posters' | 'itemCount'>;
 type Editor = { readonly id: number; readonly posters: readonly string[]; readonly count: number };
 

@@ -26,7 +26,6 @@ interface Params {
   people: z.infer<typeof seasonPeopleSchema>;
   /** From the season's Watch Now rank. */
   justwatch?: string | null;
-  isVip: boolean;
   actorSpoilers: boolean;
   episodeTypeTags: boolean;
   datePreferences: DatePreferences;
@@ -53,8 +52,7 @@ export function toSeasonSummary(params: Params) {
   // An unaired season shows no rating and only its list count, whatever the viewer's early-ratings setting.
   const premiered = !!first && new Date(first) <= now;
   const network = season.network ?? show.network;
-  const popular = (key: string, value: string) =>
-    params.isVip ? `/shows/popular?${key}=${encodeURIComponent(value)}` : undefined;
+  const popular = (key: string, value: string) => `/shows/popular?${key}=${encodeURIComponent(value)}`;
   const networkLink = network ? { name: network, href: popular('networks', networkSlug(network)) } : undefined;
   const aired = episodes.filter(({ first_aired }) => first_aired && new Date(first_aired) <= now);
   const total = season.total_runtime ?? aired.reduce((sum, episode) => sum + (episode.runtime ?? show.runtime ?? 0), 0);

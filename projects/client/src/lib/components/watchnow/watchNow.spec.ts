@@ -50,7 +50,6 @@ const button = (overrides: Partial<Parameters<typeof toWatchNowButton>[0]> = {})
     country: 'us',
     favorites: [],
     onlyFavorites: false,
-    isVip: false,
     ...overrides,
   });
 
@@ -82,10 +81,10 @@ describe('toWatchNowButton', () => {
     expect(button({ offers: offers({ cinema: ['amc_theatres'], free: ['youtube'] }) }).cinemaOnly).toBe(false);
   });
 
-  it('hides for a VIP who only wants favorites when none has it', () => {
-    expect(button({ isVip: true, onlyFavorites: true }).hidden).toBe(true);
-    expect(button({ isVip: true, onlyFavorites: true, favorites: ['us-netflix'] }).hidden).toBe(false);
-    expect(button({ onlyFavorites: true }).hidden).toBe(false);
+  it('hides for a viewer who only wants favorites when none has it', () => {
+    expect(button({ onlyFavorites: true }).hidden).toBe(true);
+    expect(button({ onlyFavorites: true, favorites: ['us-netflix'] }).hidden).toBe(false);
+    expect(button({ favorites: [] }).hidden).toBe(false);
   });
 
   it('has nothing to show with no offers', () => {

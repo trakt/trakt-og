@@ -30,7 +30,6 @@ type Data = Awaited<ReturnType<typeof loadDashboard>> & {
 const { data }: { data: Data } = $props();
 const panel = $derived(toStatsPanel(data.stats));
 const username = $derived(data.profile.slug);
-const isVip = $derived(!!data.profile.vip);
 // While the welcome wall shows, empty panels offer starter picks to fill them in place.
 const welcome = $derived(!!data.firstNight);
 
@@ -42,7 +41,6 @@ function loadSchedule({ filter, movies }: Pick<DashboardSettings['schedule'], 'f
     token: null,
     settings: data.settings,
     datePreferences: data.datePreferences,
-    isVip,
     schedule: { ...data.dashboard.schedule, filter, movies },
   });
 }
@@ -83,7 +81,7 @@ function loadRecommendations(type: DashboardSettings['recommendations']['type'])
 <DashboardInbox requests={data.requests} />
 <!-- A panel the viewer hid comes back null. -->
 {#if data.upNext}
-  <UpNextPanel upNext={data.upNext} {username} {isVip} settings={data.dashboard.upNext} {welcome} />
+  <UpNextPanel upNext={data.upNext} {username} settings={data.dashboard.upNext} {welcome} />
 {/if}
 {#if data.schedule}
   <SchedulePanel schedule={data.schedule} filter={data.dashboard.schedule.filter}
@@ -91,19 +89,19 @@ function loadRecommendations(type: DashboardSettings['recommendations']['type'])
   onpick={loadSchedule} />
 {/if}
 {#if data.watchlist}
-  <WatchlistPanel watchlist={data.watchlist} {username} {isVip} datePreferences={data.datePreferences} {welcome} />
+  <WatchlistPanel watchlist={data.watchlist} {username} datePreferences={data.datePreferences} {welcome} />
 {/if}
 {#if data.lastThirtyDays}
   <LastThirtyDaysPanel stats={data.lastThirtyDays} />
 {/if}
 {#if data.recentlyWatched}
-  <RecentlyWatchedPanel plays={data.recentlyWatched} {username} {isVip} datePreferences={data.datePreferences}
+  <RecentlyWatchedPanel plays={data.recentlyWatched} {username} datePreferences={data.datePreferences}
   {welcome} />
 {/if}
 {#if data.socialFeed}
   <SocialFeedPanel feed={data.socialFeed} {username} datePreferences={data.datePreferences} {welcome} />
 {/if}
 {#if data.recommendations}
-  <RecommendationsPanel recommendations={data.recommendations} type={data.dashboard.recommendations.type} {isVip}
+  <RecommendationsPanel recommendations={data.recommendations} type={data.dashboard.recommendations.type}
   onpick={loadRecommendations} />
 {/if}

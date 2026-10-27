@@ -120,16 +120,16 @@ describe('loadBuiltInList', () => {
     expect(seen.find(({ url }) => url.pathname.endsWith('/comments/newest'))?.url.searchParams.get('limit')).toBe('1');
   });
 
-  it('should send the type and genre filters and fall back to rank for a VIP sort', async () => {
+  it('should send the type and genre filters and keep a site rating sort', async () => {
     const result = await load({ kind: 'favorites', query: '?sort=imdb_rating,desc&display=movie&genres=drama' });
     if (!result.list) throw new Error('no list');
     expect(result.list.name).toBe('Favorites');
-    expect(result.sort).toEqual({ by: 'rank', how: 'desc' });
+    expect(result.sort).toEqual({ by: 'imdb_rating', how: 'desc' });
     const paths = itemPaths();
     expect(paths).toContain('/users/sean/favorites/movie/imdb_rating/desc');
-    expect(paths).toContain('/users/sean/favorites/movie/rank/desc');
-    const ranked = seen.find(({ url }) => url.pathname === '/users/sean/favorites/movie/rank/desc');
-    expect(ranked?.url.searchParams.get('genres')).toBe('drama');
+    expect(paths).not.toContain('/users/sean/favorites/movie/rank/desc');
+    const sorted = seen.find(({ url }) => url.pathname === '/users/sean/favorites/movie/imdb_rating/desc');
+    expect(sorted?.url.searchParams.get('genres')).toBe('drama');
   });
 
   it("should read the owner's own public favorites with the token, past the worker's cache", async () => {

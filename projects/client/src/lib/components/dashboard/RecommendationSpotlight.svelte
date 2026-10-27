@@ -35,11 +35,10 @@ interface Props {
   total: number;
   /** Shows and movies together: the type leads the pills. */
   mixed: boolean;
-  isVip: boolean;
   onstep: (by: -1 | 1) => void;
 }
 
-const { item, index, total, mixed, isVip, onstep }: Props = $props();
+const { item, index, total, mixed, onstep }: Props = $props();
 
 const target = $derived({ type: item.type, id: item.id, title: item.title });
 const ratingLevel = $derived(Math.min(Math.max(Math.trunc(item.rating ?? 1), 1), 10));
@@ -73,7 +72,6 @@ async function openWatchNow() {
       fallback: item.type === 'show' ? `${item.path}/seasons/1/episodes/1` : undefined,
       country,
       settings,
-      isVip,
     });
     if (button.unavailable) {
       toast.error("Where to Watch isn't available with this API key.");

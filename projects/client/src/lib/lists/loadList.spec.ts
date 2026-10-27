@@ -136,16 +136,15 @@ describe('loadList', () => {
     );
   });
 
-  it('should fall back to rank for a VIP sort and send the filters', async () => {
+  it('should keep a site rating sort and send the filters', async () => {
     const result = await load({ query: '?sort=imdb_rating,asc&display=movie&genres=drama' });
     if (!result.list) throw new Error('no list');
-    expect(result.sort).toEqual({ by: 'rank', how: 'asc' });
+    expect(result.sort).toEqual({ by: 'imdb_rating', how: 'asc' });
     const items = seen.filter(({ url }) => url.pathname.includes('/items/movie/'));
-    expect(items.map(({ url }) => url.pathname)).toEqual([
-      '/users/sean/lists/heist-night/items/movie/imdb_rating/asc',
-      '/users/sean/lists/heist-night/items/movie/rank/asc',
-    ]);
-    expect(items.at(1)?.url.searchParams.get('genres')).toBe('drama');
+    expect(new Set(items.map(({ url }) => url.pathname))).toEqual(
+      new Set(['/users/sean/lists/heist-night/items/movie/imdb_rating/asc']),
+    );
+    expect(items.at(-1)?.url.searchParams.get('genres')).toBe('drama');
   });
 
   it('should read a private list with the token', async () => {

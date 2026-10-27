@@ -89,8 +89,7 @@ const cards = $derived(
 );
 let media = $state('All');
 
-let vipTerms = $state('');
-let memberTerms = $state('');
+let soloTerms = $state('');
 
 // A person's credits menu: fade and hide, then the types.
 type CreditOption = (typeof creditHideOptions)[number]['id'];
@@ -138,7 +137,7 @@ function showOverlay() {
 {/snippet}
 {#snippet filterIcons()}
   <span class="filter-icons">
-  <TermsFilter vip bind:terms />
+  <TermsFilter bind:terms />
   <FadeHideMenu value={fadeHide} options={fadeHideOptions} cookie="design-list"
     onchange={(next) => (fadeHide = next)} />
 </span>
@@ -150,7 +149,7 @@ function showOverlay() {
 {/snippet}
 
 <Specimen title="Sidebar tools" bleed
-  note="A chart or calendar sidebar's eye and funnel, right of the page title, or stacked in the collapsed rail. The funnel (or the a key) opens the filters panel as a VIP sees it; a field's options shimmer until they load.">
+  note="A chart or calendar sidebar's eye and funnel, right of the page title, or stacked in the collapsed rail. The funnel (or the a key) opens the filters panel; a field's options shimmer until they load.">
   <div class="knob"><DemoToggle bind:checked={collapsed}>Collapsed rail</DemoToggle></div>
   <div class="frame">
     {#if collapsed}
@@ -159,7 +158,7 @@ function showOverlay() {
       <div class="sidebar"><div class="tools">{@render tools()}</div></div>
     {/if}
     {#if panelOpen}
-      <FiltersPanel id="{panelId}-filters" open={panelOpen} {config} {filters} vip country="us" favorites={[]}
+      <FiltersPanel id="{panelId}-filters" open={panelOpen} {config} {filters} country="us" favorites={[]}
         onchange={(next) => (filters = next)} onclose={closePanel} />
     {/if}
   </div>
@@ -180,17 +179,10 @@ function showOverlay() {
   </section>
 </Specimen>
 
-<Specimen title="Terms filter" row note="VIPs search as they type. Everyone else gets the VIP pitch in its place.">
-  <Variant label="VIP">
-    <div class="toolbar">
-      <TermsFilter vip bind:terms={vipTerms} />
-    </div>
-  </Variant>
-  <Variant label="Everyone else">
-    <div class="toolbar">
-      <TermsFilter vip={false} bind:terms={memberTerms} />
-    </div>
-  </Variant>
+<Specimen title="Terms filter" note="Opens a small panel; Apply or Enter filters to the term, and T opens it from anywhere.">
+  <div class="toolbar">
+    <TermsFilter bind:terms={soloTerms} />
+  </div>
 </Specimen>
 
 <Specimen title="Credits filter menu"

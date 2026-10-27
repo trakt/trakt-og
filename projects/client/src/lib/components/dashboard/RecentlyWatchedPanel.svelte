@@ -26,20 +26,17 @@ import clockRotateLeft from '$lib/icons/regular/clock-rotate-left.svg?raw';
 import { overlay } from '$lib/overlay/overlay';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
 import DashboardPanel from './DashboardPanel.svelte';
-import { traktUrls } from '$lib/traktUrls';
 
 interface Props {
   plays: Promise<readonly RecentPlay[]>;
   /** The viewer's slug, for the history link and the saved row count. */
   username: string;
-  /** Only VIPs could change the rows in OG; everyone else was sent to the VIP page. */
-  isVip: boolean;
   datePreferences: DatePreferences;
   /** Welcome mode: an empty panel offers starter picks instead of a link. */
   welcome?: boolean;
 }
 
-const { plays, username, isVip, datePreferences, welcome = false }: Props = $props();
+const { plays, username, datePreferences, welcome = false }: Props = $props();
 
 const PER_ROW = 3;
 const CLOCK_MS = 30_000;
@@ -135,7 +132,6 @@ function changeRows(rows: number) {
   rows={rows.rows}
   maxRows={rows.maxRows}
   onchange={changeRows}
-  upsellHref={isVip ? undefined : traktUrls.vip}
 />
   {/snippet}
   {@render panel(false, cards, items.length > 0 ? navigator : undefined)}

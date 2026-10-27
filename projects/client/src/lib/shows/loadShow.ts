@@ -75,14 +75,13 @@ export async function loadShowData({ fetch, token, parent, id: requested, path =
     okBody(client.shows.studios({ params: { id } })),
     // ponytail: every episode of every season in one response (~1KB each). Split per season if long runners get slow.
     raw(fetch, `/shows/${id}/seasons?extended=full,images,episodes`, seasonsBody),
-    layout.then(({ settings, user }) =>
+    layout.then(({ settings }) =>
       loadWatchNow({
         fetch,
         path: `/shows/${id}`,
         fallback: `/shows/${id}/seasons/1/episodes/1`,
         country: watchNowCountry(settings),
         settings,
-        isVip: user?.isVip ?? false,
       }),
     ),
     // A stale token gets a 401 here, and the page renders Next Episode like a logged-out visit.
@@ -123,7 +122,6 @@ export async function loadShowData({ fetch, token, parent, id: requested, path =
     otherSiteRatings: settings?.browsing?.other_site_ratings ?? true,
     actorSpoilers: settings?.browsing?.spoilers?.actors !== 'hide',
     episodeTypeTags,
-    isVip: user?.isVip ?? false,
     datePreferences,
     now: new Date(),
   });

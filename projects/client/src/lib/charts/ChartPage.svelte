@@ -156,7 +156,6 @@ function clearHide() {
 }
 
 // The advanced filters.
-const vip = $derived(data.user?.isVip ?? false);
 const advanced = $derived.by(() => {
   const config = chartFilters({ type: data.type, chart: data.chart, period: data.period, now: new Date() });
   // Only what this chart's panel offers counts, and a range at its ends is no filter.
@@ -204,7 +203,7 @@ const period = $derived(advanced.config.period);
 </svelte:head>
 
 {#snippet filtersPanel()}
-  <FiltersPanel id="{panelId}-filters" open={panelOpen} config={advanced.config} filters={data.filters} {vip}
+  <FiltersPanel id="{panelId}-filters" open={panelOpen} config={advanced.config} filters={data.filters}
   country={data.watchNowCountry} favorites={data.watchNowFavorites} sources={data.filterSources}
   onchange={applyFilters} onclose={closePanel} />
 {/snippet}
@@ -217,7 +216,7 @@ const period = $derived(advanced.config.period);
     <FadeHideMenu value={fadeHide} {options} cookie={data.type} onchange={save} />
   {/if}
   <AdvancedFiltersToggle bind:open={panelOpen} bind:button={funnel} controls="{panelId}-filters"
-  active={advanced.count > 0} count={vip ? advanced.count : 0} />
+  active={advanced.count > 0} count={advanced.count} />
 {/snippet}
 
 {#snippet fanart(entry: Entry, large = false)}
@@ -290,7 +289,7 @@ const period = $derived(advanced.config.period);
     {/if}
 
     {#if advanced.count > 0}
-      <AppliedFiltersSection chips={advanced.chips} open={data.sidebar.filters} {vip} clearHref={page.url.pathname}
+      <AppliedFiltersSection chips={advanced.chips} open={data.sidebar.filters} clearHref={page.url.pathname}
         onremove={removeChip} />
     {/if}
 

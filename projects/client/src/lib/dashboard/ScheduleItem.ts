@@ -17,7 +17,7 @@ export type ScheduleItem = {
   readonly label?: ComponentProps<typeof EpisodeTypeBadge>;
   /** "10:00 pm", or "22:00" with the 24-hour setting. Episodes only. */
   readonly time?: string;
-  /** VIPs get it as a link to the network's popular shows. */
+  /** A link to the network's popular shows. */
   readonly network?: { readonly name: string; readonly href?: string };
   /** A movie's line under its title. */
   readonly tagline?: string;

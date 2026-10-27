@@ -109,9 +109,9 @@ describe('loadOfficialList', () => {
     expect(cover?.url.searchParams.has('hide')).toBe(false);
   });
 
-  it('should apply the VIP sort gate', async () => {
+  it('should keep a site rating sort', async () => {
     const result = await load('?sort=imdb_rating,desc');
-    expect(result.sort).toEqual({ by: 'rank', how: 'desc' });
+    expect(result.sort).toEqual({ by: 'imdb_rating', how: 'desc' });
   });
 
   it('should keep the public items when a viewer sort rejects a stale token', async () => {

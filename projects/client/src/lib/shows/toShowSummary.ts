@@ -40,8 +40,6 @@ interface ShowSummaryParams {
   actorSpoilers: boolean;
   /** Off when the viewer hides episode type tags ("Season Premiere"). */
   episodeTypeTags: boolean;
-  /** VIPs get the network, country, language, genre and studio facts as filter links. */
-  isVip: boolean;
   datePreferences: DatePreferences;
   now: Date;
 }
@@ -128,7 +126,7 @@ function recentEpisodes({ seasons, progress, now }: Pick<ShowSummaryParams, 'sea
   };
 }
 
-type Facts = Pick<ShowSummaryParams, 'show' | 'studios' | 'people' | 'isVip' | 'now'> & {
+type Facts = Pick<ShowSummaryParams, 'show' | 'studios' | 'people' | 'now'> & {
   /** Formats a date the way this page does: the viewer's zone when signed in, else the show's. */
   day: (date: string) => string;
   airs: (date: string) => string;
@@ -136,10 +134,10 @@ type Facts = Pick<ShowSummaryParams, 'show' | 'studios' | 'people' | 'isVip' | '
 
 // upcoming shows get Status and Premieres, airing ones Airs, the rest their status
 // with the last air date and the network. Then Premiered and the shared facts.
-function facts({ show, studios, people, isVip, now, day, airs }: Facts) {
+function facts({ show, studios, people, now, day, airs }: Facts) {
   const upcoming = !!show.first_aired && new Date(show.first_aired) > now;
   const network = show.network
-    ? { name: show.network, href: isVip ? popular('networks', networkSlug(show.network)) : undefined }
+    ? { name: show.network, href: popular('networks', networkSlug(show.network)) }
     : undefined;
   const slot = airsAt(show.airs, now);
   const airing =
@@ -164,17 +162,15 @@ function facts({ show, studios, people, isVip, now, day, airs }: Facts) {
         }
       : undefined,
     creators: (people?.crew?.['created by'] ?? []).map(person),
-    country: show.country
-      ? { name: countryName(show.country), href: isVip ? popular('countries', show.country) : undefined }
-      : undefined,
+    country: show.country ? { name: countryName(show.country), href: popular('countries', show.country) } : undefined,
     languages: (show.languages ?? []).map((code) => ({
       name: languageName(code),
-      href: isVip ? popular('languages', code) : undefined,
+      href: popular('languages', code),
     })),
-    studios: studios.map(({ name, ids }) => ({ name, href: isVip ? popular('studio_ids', ids.trakt) : undefined })),
+    studios: studios.map(({ name, ids }) => ({ name, href: popular('studio_ids', ids.trakt) })),
     genres: (show.genres ?? []).map((genre) => ({
       name: genreLabel(genre),
-      href: isVip ? popular('genres', genre) : undefined,
+      href: popular('genres', genre),
     })),
     originalTitle:
       show.original_title && show.original_title.toLowerCase() !== show.title.toLowerCase()

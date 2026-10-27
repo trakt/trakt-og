@@ -1,6 +1,6 @@
 <!--
   An Upcoming Schedule entry's tags, the calendar's: the premiere or finale in its episode type's color, the air time
-  in red, and the network in gray (a link to its popular shows for VIPs). Nothing for a movie.
+  in red, and the network in gray (a link to its popular shows). Nothing for a movie.
 -->
 <script lang="ts">
 import CardTag from '$lib/components/media/CardTag.svelte';

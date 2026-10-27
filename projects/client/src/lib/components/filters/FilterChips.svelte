@@ -16,11 +16,9 @@ import type { FilterTag, TagSite } from './filterTags.ts';
 interface Props {
   chips: readonly FilterTag[];
   onremove: (id: string) => void;
-  /** Removing does nothing for viewers who can't filter (OG kept filters for VIPs). */
-  disabled?: boolean;
 }
 
-const { chips, onremove, disabled = false }: Props = $props();
+const { chips, onremove }: Props = $props();
 
 const sites: Record<TagSite, { logo: string; name: string }> = {
   trakt: { logo: traktLogo, name: 'Trakt' },
@@ -36,7 +34,7 @@ const sites: Record<TagSite, { logo: string; name: string }> = {
       {#if chip.site}<img class={{ dark: chip.site === 'imdb' }} src={sites[chip.site].logo} alt="" />{/if}
       <span class="label">{filterTagLabel(chip.id)}</span>
       {#if chip.without}<span class="visually-hidden">without</span>{/if}<span class="text">{chip.text}</span>
-      <button type="button" aria-label="Remove {chip.without ? 'without ' : ''}{chip.text}" {disabled}
+      <button type="button" aria-label="Remove {chip.without ? 'without ' : ''}{chip.text}"
         onclick={() => onremove(chip.id)}><Icon svg={xmark} /></button>
     </li>
   {/each}
@@ -111,14 +109,9 @@ button {
   font-size: var(--font-size-caret);
   cursor: pointer;
 
-  &:is(:hover, :focus-visible):not(:disabled) {
+  &:is(:hover, :focus-visible) {
     background-color: var(--color-sidebar-pill-set-border);
     color: var(--color-frame-ink);
-  }
-
-  &:disabled {
-    cursor: default;
-    opacity: 0.5;
   }
 }
 

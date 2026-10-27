@@ -14,7 +14,7 @@ type LoadMovieParams = {
   fetch: typeof fetch;
   /** Only for the viewer's private note. */
   token: string | null;
-  /** The layout's data, for the viewer's watch-now country, rating settings, VIP state and note dates. */
+  /** The layout's data, for the viewer's watch-now country, rating settings and note dates. */
   parent: () => Promise<{ settings: ViewerSettings | null; user: HeaderUser | null; datePreferences: DatePreferences }>;
   id: string;
 };
@@ -46,13 +46,12 @@ export async function loadMovie({ fetch, token, parent, id: requested }: LoadMov
     okBody(client.movies.people({ params: { id }, query: { extended: 'images' } })),
     okBody(client.movies.studios({ params: { id } })),
     okBody(client.movies.releases({ params: { id } })),
-    layout.then(({ settings, user }) =>
+    layout.then(({ settings }) =>
       loadWatchNow({
         fetch,
         path: `/movies/${id}`,
         country: watchNowCountry(settings),
         settings,
-        isVip: user?.isVip ?? false,
       }),
     ),
     collection,
@@ -88,7 +87,6 @@ export async function loadMovie({ fetch, token, parent, id: requested }: LoadMov
     collection: official,
     rank: watchnow.rank,
     otherSiteRatings: settings?.browsing?.other_site_ratings ?? true,
-    isVip: user?.isVip ?? false,
     now: new Date(),
   });
 

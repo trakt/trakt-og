@@ -422,7 +422,7 @@ function yearLine(credit: PersonCredit) {
         </span>
         <span class="filter-icons">
           <ViewToggle bind:view />
-          <TermsFilter bind:terms={query.terms} vip={data.user?.isVip ?? false} />
+          <TermsFilter bind:terms={query.terms} />
           <FilterMenu active={filtered} count={query.fade.length + query.hide.length + Number(!query.movies) + Number(!query.shows)}>
             <FadeHideItems value={query} fadeOptions={data.user ? fadeHideOptions : []} hideOptions={data.user ? creditHideOptions : creditHideOptions.filter(({ id }) => ['released', 'unreleased', 'noreleasedate', 'self'].includes(id))}
               onchange={(next) => (query = { ...query, fade: next.fade.filter((id): id is (typeof fadeHideOptions)[number]['id'] => fadeHideOptions.some((option) => option.id === id)), hide: next.hide })}

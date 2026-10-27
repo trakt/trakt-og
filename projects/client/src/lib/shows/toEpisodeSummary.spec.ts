@@ -39,7 +39,6 @@ const base: Parameters<typeof toEpisodeSummary>[0] = {
   stats: { watchers: 10, plays: 20, collectors: 2, comments: 3, lists: 4, votes: 1600 },
   datePreferences: { order: 'dmy', hour24: true, timeZone: 'America/Los_Angeles', weekStartDay: 1 },
   now: new Date('2026-01-01T00:00:00Z'),
-  isVip: false,
   episodeTypeTags: true,
   otherSiteRatings: true,
 };

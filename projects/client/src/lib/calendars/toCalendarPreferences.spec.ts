@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { toCalendarPreferences } from './toCalendarPreferences.ts';
 
-const settings = (user: unknown, calendar: unknown) => ({ user, browsing: { calendar } });
+const settings = (calendar: unknown) => ({ browsing: { calendar } });
 
 describe('toCalendarPreferences', () => {
   it('should use defaults for signed-out, missing or invalid settings', () => {
@@ -11,27 +11,23 @@ describe('toCalendarPreferences', () => {
       startDay: 'today',
       imageType: 'logo',
       hideSpecials: false,
-      imagesAllowed: false,
     };
     expect(toCalendarPreferences(null)).toEqual(defaults);
     expect(toCalendarPreferences({})).toEqual(defaults);
     expect(
-      toCalendarPreferences(settings({}, { period: 'year', start_day: 'bogus', layout: 'tiles', image_type: 'x' })),
+      toCalendarPreferences(settings({ period: 'year', start_day: 'bogus', layout: 'tiles', image_type: 'x' })),
     ).toEqual(defaults);
   });
-  it('should honor every valid setting for VIPs', () => {
+  it('should honor every valid setting', () => {
     expect(
       toCalendarPreferences(
-        settings(
-          { vip: true },
-          {
-            period: 'month',
-            layout: 'grid',
-            start_day: 'monday',
-            image_type: 'none',
-            hide_specials: true,
-          },
-        ),
+        settings({
+          period: 'month',
+          layout: 'grid',
+          start_day: 'monday',
+          image_type: 'none',
+          hide_specials: true,
+        }),
       ),
     ).toEqual({
       period: 'month',
@@ -39,17 +35,6 @@ describe('toCalendarPreferences', () => {
       startDay: 'monday',
       imageType: 'none',
       hideSpecials: true,
-      imagesAllowed: true,
     });
-  });
-  it('should preserve image choices only for VIPs or grandfathered accounts', () => {
-    const calendar = { image_type: 'poster' };
-    expect(toCalendarPreferences(settings({ vip: false, joined_at: '2024-09-10T23:59:59Z' }, calendar)).imageType).toBe(
-      'poster',
-    );
-    expect(toCalendarPreferences(settings({ vip: false, joined_at: '2024-09-11T00:00:00Z' }, calendar)).imageType).toBe(
-      'logo',
-    );
-    expect(toCalendarPreferences(settings({}, calendar)).imageType).toBe('logo');
   });
 });

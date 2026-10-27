@@ -27,7 +27,6 @@ describe('loadWatchNow', () => {
       fallback: '/shows/x/seasons/1/episodes/1',
       country: 'us',
       settings: null,
-      isVip: false,
     });
     expect(rank).toMatchObject({ rank: 5 });
     expect(button).toMatchObject({ path: '/shows/x/seasons/1/episodes/1', count: 1 });
@@ -47,7 +46,6 @@ describe('loadWatchNow', () => {
       fallback: '/shows/x/seasons/1/episodes/1',
       country: 'us',
       settings: null,
-      isVip: false,
     });
 
     expect(rank).toBeNull();
@@ -71,7 +69,6 @@ describe('loadWatchNow', () => {
       path: '/movies/x',
       country: 'us',
       settings: null,
-      isVip: false,
     });
     expect(rank).toBeNull();
     expect(button).toMatchObject({

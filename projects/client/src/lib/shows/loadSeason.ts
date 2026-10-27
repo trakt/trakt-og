@@ -38,7 +38,6 @@ export async function loadSeason({ fetch, parent, id, season: requestedSeason, u
       fallback: `${seasonPath}/episodes/1`,
       country: watchNowCountry(layout.settings),
       settings: layout.settings,
-      isVip: layout.user?.isVip ?? false,
     }),
   );
   const [
@@ -90,7 +89,6 @@ export async function loadSeason({ fetch, parent, id, season: requestedSeason, u
     stats: statsResponse.body,
     people: people.data,
     justwatch: watchNow.rank?.link,
-    isVip: layout.user?.isVip ?? false,
     actorSpoilers: layout.settings?.browsing?.spoilers?.actors !== 'hide',
     episodeTypeTags: !layout.settings?.browsing?.hide_episode_type_tags,
     datePreferences: layout.datePreferences,

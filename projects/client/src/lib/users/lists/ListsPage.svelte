@@ -272,9 +272,9 @@ const nearRow = (row: UserListRow) => () => {
   loadPosters(row);
 };
 
-const viewer = $derived(data.user ? { slug: data.user.slug, isVip: data.user.isVip } : null);
+const viewer = $derived(data.user ? { slug: data.user.slug } : null);
 async function progress(row: UserListRow) {
-  if (!data.user?.isVip) return;
+  if (!data.user) return;
   const source = data;
   try {
     const id = await resolveRowListId({ fetch: viewerFetch(), row });
@@ -462,7 +462,7 @@ const actions = (row: UserListRow) => {
         descending={sorts.find(({ id }) => id === query.sort)?.descending} bind:flipped={query.reversed} />{/if}
     </span>
     <span class="tools" inert={reordering}>
-      <TermsFilter bind:terms={query.terms} vip={(data.user?.isVip ?? false) && !reordering} />
+      <TermsFilter bind:terms={query.terms} disabled={reordering} />
     </span>
   {/snippet}
 </SectionToolbar>
@@ -471,7 +471,7 @@ const actions = (row: UserListRow) => {
   onclose={() => { editor = undefined; }} />{/if}
 {#if builtInEditor}<BuiltInListEditor kind={builtInEditor.kind} posters={builtInEditor.posters}
   count={builtInEditor.count}
-  vip={data.user?.isVip ?? false} privacy={data.profile.isPrivate ? 'private' : 'public'}
+  privacy={data.profile.isPrivate ? 'private' : 'public'}
   onclose={() => (builtInEditor = undefined)} />{/if}
 
 <section class="lists" aria-labelledby="lists-heading" {@attach shortcut}>

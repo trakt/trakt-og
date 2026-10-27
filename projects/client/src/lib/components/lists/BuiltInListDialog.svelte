@@ -17,7 +17,6 @@ import type { CardTag } from '$lib/components/media/CardTag';
 interface Props {
   open: boolean;
   kind: 'watchlist' | 'favorites';
-  vip: boolean;
   busy: boolean;
   description: string | undefined;
   sortBy: string;
@@ -36,7 +35,6 @@ interface Props {
 let {
   open = $bindable(),
   kind,
-  vip,
   busy,
   description,
   sortBy,
@@ -81,6 +79,6 @@ const tags = $derived<readonly CardTag[]>([
       <textarea id="{id}-description" rows="3" bind:value={text} oninput={() => (touched = true)} disabled={busy}></textarea>
     </div>
     <ListSettingsRow readonly {privacy} {allowComments} {displayNumbers} />
-    <ListSortField bind:by bind:how {vip} disabled={busy} />
+    <ListSortField bind:by bind:how disabled={busy} />
   </DialogForm>
 </Dialog>

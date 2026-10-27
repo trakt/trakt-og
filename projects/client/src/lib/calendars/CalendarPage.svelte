@@ -71,7 +71,6 @@ type Props = {
 
 const { data }: Props = $props();
 
-const vip = $derived(data.user?.isVip ?? false);
 const WEEKDAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 const weekStart = $derived(Math.max(0, WEEKDAYS.indexOf(data.preferences.startDay)));
 
@@ -100,9 +99,6 @@ const artworkLabels: Record<CalendarArtwork, string> = {
   thumb: 'Thumb',
   banner: 'Banner',
 };
-const artworkChoices = $derived<readonly CalendarArtwork[]>(
-  data.preferences.imagesAllowed ? CALENDAR_ARTWORK : ['logo'],
-);
 
 /* ---------- filters ---------- */
 
@@ -356,7 +352,7 @@ const title = $derived(`${data.target === 'my' ? 'My ' : ''}${data.calendar.labe
   <FadeHideMenu value={fadeHide} {options} cookie="calendars"
   onchange={(next) => (fadeHide = next)} />
   <AdvancedFiltersToggle bind:open={panelOpen} bind:button={funnel} controls="{panelId}-filters"
-  active={filterCount > 0} count={vip ? filterCount : 0} />
+  active={filterCount > 0} count={filterCount} />
 {/snippet}
 
 <SidebarFrame label="Calendar" collapsed={data.sidebar.collapsed} {panelOpen}>
@@ -403,7 +399,7 @@ const title = $derived(`${data.target === 'my' ? 'My ' : ''}${data.calendar.labe
     </div>
 
     {#if filterCount > 0}
-      <AppliedFiltersSection {chips} open={data.sidebar.filters} {vip} clearHref={page.url.pathname}
+      <AppliedFiltersSection {chips} open={data.sidebar.filters} clearHref={page.url.pathname}
         onremove={removeChip} />
     {/if}
 
@@ -412,7 +408,7 @@ const title = $derived(`${data.target === 'my' ? 'My ' : ''}${data.calendar.labe
       <Dropdown block section="Artwork">
         {#snippet trigger()}{artworkLabels[display.artwork]}{/snippet}
         <ul>
-          {#each artworkChoices as artwork (artwork)}
+          {#each CALENDAR_ARTWORK as artwork (artwork)}
             <li>
               <button type="button" aria-current={display.artwork === artwork} onclick={() => setDisplay({ artwork })}
               >{artworkLabels[artwork]}</button>
@@ -472,7 +468,7 @@ const title = $derived(`${data.target === 'my' ? 'My ' : ''}${data.calendar.labe
   {/snippet}
 
   {#snippet panel()}
-    <FiltersPanel id="{panelId}-filters" open={panelOpen} config={data.filterConfig} filters={data.filters} {vip}
+    <FiltersPanel id="{panelId}-filters" open={panelOpen} config={data.filterConfig} filters={data.filters}
       country={data.watchNowCountry} favorites={data.watchNowFavorites} sources={data.filterSources}
       onchange={applyFilters} onclose={closePanel} />
   {/snippet}

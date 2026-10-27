@@ -130,7 +130,7 @@ const artworkLabels = $derived<Record<SearchArtwork, string>>({
 const artworkChoices = $derived<readonly SearchArtwork[]>(people ? ['poster', 'none'] : SEARCH_ARTWORK);
 const artwork = $derived(artworkChoices.includes(display.artwork) ? display.artwork : 'poster');
 // The Lists tab's row icons, with the owner's edit and delete, as on an item's lists page.
-const listViewer = $derived(page.data.user ? { slug: page.data.user.slug, isVip: page.data.user.isVip } : null);
+const listViewer = $derived(page.data.user ? { slug: page.data.user.slug } : null);
 const own = createItemListActions({ viewer: () => listViewer, origin: () => page.url.origin });
 const listsShown = $derived(own.visible(data.lists));
 const hasResults = $derived(data.cards.length > 0 || data.lists.length > 0);

@@ -473,8 +473,6 @@
   --mask-read-notes-fade: linear-gradient(to bottom, #000 calc(100% - 34px), transparent);
   --color-read-notes-scrollbar: rgb(255 255 255 / 0.3);
   --transition-read-notes: 0.26s ease;
-  --font-size-vip-sort: 12px; /* .dropdown-menu a.vip-only */
-  --vip-sort-padding-block: 7px;
   --fanart-header-height: 500px;
   --fanart-header-height-slim: 150px;
 

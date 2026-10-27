@@ -3,10 +3,12 @@
   fanart (poster, section nav, links), and the content column holds `details` (stats, overview, videos) beside
   `actions` (the button stack), then `children` full width underneath (actors, comments, lists). A `subnav` (the
   seasons' SeasonLinks) runs full width above it all, and the sidebar rises past it.
-  Phones drop the sidebar like OG did, so put anything they still need into `details`.
+  Phones drop the sidebar like OG did, so put anything they still need into `details`. A visit through a member's
+  shared link credits them (`ShareArrival`).
 -->
 <script lang="ts">
 import Container from '$lib/components/container/Container.svelte';
+import ShareArrival from '$lib/share/ShareArrival.svelte';
 import type { Snippet } from 'svelte';
 
 interface Props {
@@ -46,6 +48,7 @@ const { label, subnav, sidebar, details, actions, children, tools, posterOverlap
     </div>
   </Container>
 </section>
+<ShareArrival />
 
 <style>
 /*

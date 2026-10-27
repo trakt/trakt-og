@@ -55,6 +55,7 @@ import NotesDialog from '$lib/components/notes/NotesDialog.svelte';
 import Pagination from '$lib/components/pagination/Pagination.svelte';
 import ReadMore from '$lib/components/readmore/ReadMore.svelte';
 import ShareButton from '$lib/components/share/ShareButton.svelte';
+import ShareArrival from '$lib/share/ShareArrival.svelte';
 import CollaboratorsChip from '$lib/components/lists/CollaboratorsChip.svelte';
 import SectionToolbar from '$lib/components/toolbar/SectionToolbar.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
@@ -769,6 +770,7 @@ async function saveNotes(text: string) {
     </NotesDialog>
   {/if}
 {/if}
+<ShareArrival />
 
 <style>
 .filter-icons {

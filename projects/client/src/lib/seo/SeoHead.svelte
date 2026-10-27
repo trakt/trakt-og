@@ -23,10 +23,12 @@ const tags = $derived(toSeoTags(meta, { url: page.url, routeId: page.route.id, s
   <meta property="og:url" content={tags.og.url} />
   <meta name="twitter:title" content={tags.og.title} />
   <meta name="twitter:description" content={tags.og.description} />
-  {#if tags.image}
-    <meta property="og:image" content={tags.image.url} />
-    <meta property="og:image:alt" content={tags.image.alt} />
-    <meta name="twitter:image" content={tags.image.url} />
-    <meta name="twitter:image:alt" content={tags.image.alt} />
+  <meta property="og:image" content={tags.image.url} />
+  {#if 'width' in tags.image}
+    <meta property="og:image:width" content={String(tags.image.width)} />
+    <meta property="og:image:height" content={String(tags.image.height)} />
   {/if}
+  <meta property="og:image:alt" content={tags.image.alt} />
+  <meta name="twitter:image" content={tags.image.url} />
+  <meta name="twitter:image:alt" content={tags.image.alt} />
 </svelte:head>

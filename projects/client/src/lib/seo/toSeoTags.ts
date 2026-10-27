@@ -23,6 +23,6 @@ export function toSeoTags(meta: SeoMeta, page: PageContext) {
     /** An error page has no URL of its own to point at. */
     canonical: page.status < 400 ? canonical : null,
     og: { title, description, type: meta.type ?? 'website', url: canonical },
-    image: meta.image ? { url: toShareImageUrl(meta.image), alt: meta.imageAlt ?? title } : null,
+    image: meta.image ? { url: toShareImageUrl(meta.image), alt: meta.imageAlt ?? title } : SEO_DEFAULTS.image,
   };
 }

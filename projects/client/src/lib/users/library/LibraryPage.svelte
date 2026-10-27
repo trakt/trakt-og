@@ -4,6 +4,7 @@
   poster cards, under day dividers on Added Date. The owner's cards carry the metadata overlay.
 -->
 <script lang="ts">
+import SeoHead from '$lib/seo/SeoHead.svelte';
 import { SvelteURLSearchParams } from 'svelte/reactivity';
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
@@ -83,10 +84,7 @@ const flipped = $derived(data.sort.how === 'desc');
 
 <!-- Filter URLs keep the canonical profile slug and the query string. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-<svelte:head>
-  <title>{title} - Trakt</title>
-  <meta name="description" content="Check out what {data.profile.firstName} has added to their library recently." />
-</svelte:head>
+<SeoHead {title} description="Check out what {data.profile.firstName} has added to their library recently." />
 
 {#snippet card(item: LibraryCard)}
   {@const state = overlay.state(item.type, item.id)}

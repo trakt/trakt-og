@@ -6,6 +6,7 @@
   type, name, character or job, and shows the matches under each group's heading with its count.
 -->
 <script lang="ts">
+import SeoHead from '$lib/seo/SeoHead.svelte';
 import { replaceState } from '$app/navigation';
 import { page } from '$app/state';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
@@ -85,13 +86,7 @@ const results = $derived(
 const matches = $derived(results.reduce((total, group) => total + group.people.length, 0));
 </script>
 
-<svelte:head>
-  <title>{title} - Trakt</title>
-  <meta name="description" content={title} />
-  <meta property="og:title" content={title} />
-  <meta property="og:description" content={title} />
-  {#if data.media.poster}<meta property="og:image" content={data.media.poster} />{/if}
-</svelte:head>
+<SeoHead {title} description={title} image={data.media.poster} />
 
 {#snippet subnav()}
   <SectionToolbar inSummary>

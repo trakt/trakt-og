@@ -3,6 +3,7 @@
   comments a page. "Add comment" opens the new comment form on a list that takes comments.
 -->
 <script lang="ts">
+import SeoHead from '$lib/seo/SeoHead.svelte';
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
 import { SvelteURLSearchParams } from 'svelte/reactivity';
@@ -61,10 +62,10 @@ const sortHref = (sort: string) => {
 
 <!-- List URLs are the canonical API slugs. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-<svelte:head>
-  <title>All comments for {data.list.fullTitle} - Trakt</title>
-  <meta name="description" content={data.list.description ?? `Read comments about ${data.list.fullTitle}.`} />
-</svelte:head>
+<SeoHead
+  title="All comments for {data.list.fullTitle}"
+  description={data.list.description ?? `Read comments about ${data.list.fullTitle}.`}
+/>
 
 <FanartHeader slim>
   <SubpageTitle label="Comments" title={data.list.title} href={data.list.href} />

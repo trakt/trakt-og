@@ -4,6 +4,7 @@
   pagination above and below, or OG's empty notice. The 30-day sorts and the direction arrow have no API.
 -->
 <script lang="ts">
+import SeoHead from '$lib/seo/SeoHead.svelte';
 import { page } from '$app/state';
 import ListEditor from '$lib/components/lists/ListEditor.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
@@ -48,13 +49,7 @@ const own = createItemListActions({ viewer: () => viewer, origin: () => page.url
 const lists = $derived(own.visible(data.lists));
 </script>
 
-<svelte:head>
-  <title>{title} - Trakt</title>
-  <meta name="description" content={description} />
-  <meta property="og:title" content={title} />
-  <meta property="og:description" content={description} />
-  {#if data.media.poster}<meta property="og:image" content={data.media.poster} />{/if}
-</svelte:head>
+<SeoHead {title} {description} image={data.media.poster} />
 
 <!-- The item links are the canonical API slugs. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->

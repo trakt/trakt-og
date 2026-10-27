@@ -1,4 +1,5 @@
 <script lang="ts">
+import SeoHead from '$lib/seo/SeoHead.svelte';
 import Container from '$lib/components/container/Container.svelte';
 import { logout } from '$lib/auth/logout';
 import { onMount } from 'svelte';
@@ -7,9 +8,7 @@ import { onMount } from 'svelte';
 onMount(logout);
 </script>
 
-<svelte:head>
-  <title>Sign out - Trakt</title>
-</svelte:head>
+<SeoHead title="Sign out" />
 
 <section>
   <Container>

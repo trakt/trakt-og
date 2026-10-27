@@ -6,6 +6,7 @@
   locked-comments notice have no API. "Add comment" opens the new comment form, and what it posts goes on top.
 -->
 <script lang="ts">
+import SeoHead from '$lib/seo/SeoHead.svelte';
 import { gifArtContext } from '$lib/components/comments/gif/gifArtContext';
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
@@ -44,13 +45,7 @@ const languageHref = (code: CommentLanguage) => href(data.sort.by, data.sort.how
 
 <!-- The item links are the canonical API slugs. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-<svelte:head>
-  <title>{title} - Trakt</title>
-  <meta name="description" content={title} />
-  <meta property="og:title" content={title} />
-  <meta property="og:description" content={title} />
-  {#if data.media.poster}<meta property="og:image" content={data.media.poster} />{/if}
-</svelte:head>
+<SeoHead {title} description={title} image={data.media.poster} />
 
 {#snippet sortLabel(by: ItemCommentSortBy)}{itemCommentSorts[by].label}{/snippet}
 

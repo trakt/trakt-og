@@ -4,6 +4,7 @@
   one grid with the dividers off.
 -->
 <script lang="ts">
+import SeoHead from '$lib/seo/SeoHead.svelte';
 import type { HistoryPlay } from '$lib/components/history/HistoryPlay';
 import { removeHistoryCards } from '$lib/users/history/removeHistoryCards';
 import { SvelteURLSearchParams } from 'svelte/reactivity';
@@ -83,10 +84,7 @@ const country = $derived(watchNowCountry(data.settings));
 
 <!-- Filter URLs keep the canonical profile slug and the query string. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-<svelte:head>
-  <title>{title} - Trakt</title>
-  <meta name="description" content="Check out what {data.profile.firstName} has been watching recently." />
-</svelte:head>
+<SeoHead {title} description="Check out what {data.profile.firstName} has been watching recently." />
 
 {#snippet card(item: HistoryCard)}
   {@const state = overlay.state(item.type, item.id)}

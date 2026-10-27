@@ -7,6 +7,7 @@
   which every tab reads, and grid view reloads the page, as OG did.
 -->
 <script lang="ts">
+import SeoHead from '$lib/seo/SeoHead.svelte';
 import { SvelteURLSearchParams } from 'svelte/reactivity';
 import { goto, invalidateAll } from '$app/navigation';
 import { page } from '$app/state';
@@ -168,10 +169,7 @@ function clearFilters() {
 
 <!-- Filter URLs keep the canonical profile slug and the query string. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-<svelte:head>
-  <title>{title} - Trakt</title>
-  <meta name="description" content="Check out {data.profile.firstName}'s show {data.type} progress." />
-</svelte:head>
+<SeoHead {title} description="Check out {data.profile.firstName}'s show {data.type} progress." />
 
 {#snippet viewToggle(label: string, svg: string, view: 'simple_progress' | 'grid_view', on: boolean)}
   <Tooltip text={label}>

@@ -5,6 +5,7 @@
   viewer's follow states stream in.
 -->
 <script lang="ts">
+import SeoHead from '$lib/seo/SeoHead.svelte';
 import { page } from '$app/state';
 import Container from '$lib/components/container/Container.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
@@ -40,10 +41,7 @@ const relationOf = (relations: Readonly<Record<string, ViewerRelation>> | null, 
 
 <!-- List URLs keep the canonical profile slug. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-<svelte:head>
-  <title>{title} - Trakt</title>
-  <meta name="description" content="Check out {data.profile.firstName}'s network of friends and followers." />
-</svelte:head>
+<SeoHead {title} description="Check out {data.profile.firstName}'s network of friends and followers." />
 
 {#snippet grid(relations: Readonly<Record<string, ViewerRelation>> | null, pending = false)}
   <ul class="cards" aria-busy={pending}>

@@ -5,6 +5,7 @@
   popup; a middle click or modified click still opens YouTube.
 -->
 <script lang="ts">
+import SeoHead from '$lib/seo/SeoHead.svelte';
 import { replaceState } from '$app/navigation';
 import { page } from '$app/state';
 import VideoPopup from '$lib/components/dialog/VideoPopup.svelte';
@@ -39,13 +40,7 @@ let playing = $state<string>();
 const playingTitle = $derived(data.videos.find((video) => video.href === playing)?.title);
 </script>
 
-<svelte:head>
-  <title>{title} - Trakt</title>
-  <meta name="description" content={title} />
-  <meta property="og:title" content={title} />
-  <meta property="og:description" content={title} />
-  {#if data.media.poster}<meta property="og:image" content={data.media.poster} />{/if}
-</svelte:head>
+<SeoHead {title} description={title} image={data.media.poster} />
 
 {#snippet subnav()}
   <SectionToolbar inSummary>

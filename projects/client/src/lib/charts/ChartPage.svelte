@@ -7,6 +7,7 @@
   `/shows/[chart]` and `/movies/[chart]` render it; Box Office has its own page.
 -->
 <script lang="ts">
+import SeoHead from '$lib/seo/SeoHead.svelte';
 import { goto, invalidateAll } from '$app/navigation';
 import { page } from '$app/state';
 import AdvancedFiltersToggle from '$lib/components/filters/AdvancedFiltersToggle.svelte';
@@ -197,10 +198,7 @@ const periodHref = (period: string) =>
 const period = $derived(advanced.config.period);
 </script>
 
-<svelte:head>
-  <title>{meta.title} - Trakt</title>
-  <meta name="description" content={meta.description} />
-</svelte:head>
+<SeoHead title={meta.title} description={meta.description} />
 
 {#snippet filtersPanel()}
   <FiltersPanel id="{panelId}-filters" open={panelOpen} config={advanced.config} filters={data.filters}

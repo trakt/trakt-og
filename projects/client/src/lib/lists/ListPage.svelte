@@ -4,6 +4,7 @@
   poster grid between two paginations. The stats bar sits before the sort; the filter icons follow it. Watchlist, favorites and official lists render here too.
 -->
 <script lang="ts">
+import SeoHead from '$lib/seo/SeoHead.svelte';
 import { rawApiFetch } from '$lib/api/rawApiFetch';
 import BuiltInListEditor from '$lib/components/lists/BuiltInListEditor.svelte';
 import { overlay } from '$lib/overlay/overlay';
@@ -509,12 +510,7 @@ async function saveNotes(text: string) {
 
 <!-- Filter and item URLs point at og pages by their OG paths, which resolve() only takes once they exist. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-<svelte:head>
-  {#if data.list}
-    <title>{pageTitle} - Trakt</title>
-    {#if data.list.description}<meta name="description" content={data.list.description} />{/if}
-  {/if}
-</svelte:head>
+{#if data.list}<SeoHead title={pageTitle} description={data.list.description} />{/if}
 
 {#if editing && data.kind === 'personal' && data.list}<ListEditor id={data.list.id} posters={listPosters}
   count={data.list.itemCount}

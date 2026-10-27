@@ -1,4 +1,5 @@
 <script lang="ts">
+import SeoHead from '$lib/seo/SeoHead.svelte';
 import Container from '$lib/components/container/Container.svelte';
 import { callbackReturnPath } from '$lib/auth/callbackReturnPath';
 import { storeToken } from '$lib/auth/storeToken';
@@ -16,9 +17,7 @@ onMount(async () => {
 });
 </script>
 
-<svelte:head>
-  <title>Signing in - Trakt</title>
-</svelte:head>
+<SeoHead title="Signing in" />
 
 <section>
   <Container>

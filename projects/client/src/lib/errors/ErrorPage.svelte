@@ -4,6 +4,7 @@
   from the API rate limiting the viewer is Trakt API Error, with the wait in its body.
 -->
 <script lang="ts">
+import SeoHead from '$lib/seo/SeoHead.svelte';
 import { invalidateAll } from '$app/navigation';
 import { page } from '$app/state';
 import ErrorScene from '$lib/components/error/ErrorScene.svelte';
@@ -16,9 +17,7 @@ const scene = $derived(errorScenes[toErrorSceneKey(page.status)]);
 const body = $derived(page.error?.rateLimited ? page.error.message : scene.body);
 </script>
 
-<svelte:head>
-  <title>{scene.title} ({page.status}) - Trakt</title>
-</svelte:head>
+<SeoHead title="{scene.title} ({page.status})" />
 
 <ErrorScene theme={scene.theme} code={String(page.status)} label="Error {page.status} · {scene.name}" {body}>
   {#snippet actions()}<ErrorActions kind={scene.actions} onretry={invalidateAll} />{/snippet}

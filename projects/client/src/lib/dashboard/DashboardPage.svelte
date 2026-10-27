@@ -1,4 +1,5 @@
 <script lang="ts">
+import SeoHead from '$lib/seo/SeoHead.svelte';
 import DashboardGreeting from '$lib/components/dashboard/DashboardGreeting.svelte';
 import FirstNightHero from '$lib/components/first-night/FirstNightHero.svelte';
 import FirstNightProgress from '$lib/components/first-night/FirstNightProgress.svelte';
@@ -56,11 +57,7 @@ function loadRecommendations(type: DashboardSettings['recommendations']['type'])
 }
 </script>
 
-<svelte:head>
-  <title>Dashboard - Trakt</title>
-  <meta name="description"
-    content="Your Trakt dashboard: watching statistics, follow requests and what to watch next." />
-</svelte:head>
+<SeoHead title="Dashboard" description="Your Trakt dashboard: watching statistics, follow requests and what to watch next." />
 
 {#if data.firstNight}
   <FirstNightProgress slug={username}

@@ -5,6 +5,7 @@
   posted here goes on top of the replies, and deleting the comment itself goes on to the item's comments.
 -->
 <script lang="ts">
+import SeoHead from '$lib/seo/SeoHead.svelte';
 import { gifArtContext } from '$lib/components/comments/gif/gifArtContext';
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
@@ -55,15 +56,7 @@ const title = $derived(`${media.item.title} ${type.toLowerCase()} by ${author.na
 <!-- Hrefs are built from API slugs, and resolve() only takes literal routes. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
-<svelte:head>
-  <title>{title} - Trakt</title>
-  <meta name="description" content={comment.comment} />
-  <meta property="og:title" content={title} />
-  <meta property="og:description" content={comment.comment} />
-  <meta property="og:type" content="article" />
-  <meta property="og:url" content={new URL(`/comments/${comment.id}`, page.url.origin).href} />
-  {#if media.poster}<meta property="og:image" content={media.poster} />{/if}
-</svelte:head>
+<SeoHead {title} description={comment.comment} image={media.poster} />
 
 <FanartHeader image={media.fanart} slim>
   <SubpageTitle

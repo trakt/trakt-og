@@ -1,6 +1,7 @@
 <!--
   The fixed top bar, on dark glass tinted by the page's backdrop (HeaderTint): the Trakt mark, the search icon and the
-  main links on the left, and the account on the right: Get VIP and the profile menu, or one Sign In button.
+  main links on the left, and on the right the help menu and the account: Get VIP and the profile menu, or one Sign
+  In button.
   While an expired session renews, it keeps the signed-in links and leaves the account empty until the user loads.
 -->
 <script lang="ts">
@@ -18,6 +19,7 @@ import { showsDark } from '$lib/settings/showsDark';
 import type { SettingsBody } from '$lib/settings/SettingsBody';
 import { traktUrls } from '$lib/traktUrls';
 import { MediaQuery } from 'svelte/reactivity';
+import HeaderHelp from './HeaderHelp.svelte';
 import HeaderMenu from './HeaderMenu.svelte';
 import GettingStarted from '$lib/components/first-night/GettingStarted.svelte';
 import HeaderSearch from './HeaderSearch.svelte';
@@ -118,6 +120,7 @@ async function toggleDarkKnight() {
   </div>
 
   <div class="user">
+    <HeaderHelp />
     {#if user}
       <GettingStarted slug={user.slug} named={user.named} joinedAt={user.joinedAt} />
       {#if !user.isVip}
@@ -263,6 +266,11 @@ async function toggleDarkKnight() {
   &:is(:hover, :focus-visible) {
     background-color: var(--brand-primary-darken);
   }
+}
+
+/* The menu's arrow points at the middle of the avatar. */
+.profile {
+  --header-menu-arrow-end: calc(var(--header-avatar-size) / 2);
 }
 
 .profile :global(.trigger) {

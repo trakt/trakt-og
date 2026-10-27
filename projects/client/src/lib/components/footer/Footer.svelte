@@ -17,7 +17,6 @@ import { resolve } from '$app/paths';
 import { traktUrls } from '$lib/traktUrls';
 
 const pages = [
-  { title: 'Support', href: traktUrls.support },
   { title: 'VIP', href: traktUrls.vip },
   { title: 'Developer API', href: traktUrls.developer },
   { title: 'Terms', href: traktUrls.terms },
@@ -35,8 +34,8 @@ const social = [
 ];
 </script>
 
-<!-- Every link but About leaves og (v3 web, the app stores, community sites), so each opens in a new tab. resolve()
-     only takes og's own routes. -->
+<!-- Every link but About and Help leaves og (v3 web, the app stores, community sites), so each opens in a new tab.
+     resolve() only takes og's own routes. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
 <footer>
@@ -44,6 +43,7 @@ const social = [
     <nav aria-label="Footer">
       <ul>
         <li><a href={resolve('/about')}>About</a></li>
+        <li><a href={resolve('/help')}>Help</a></li>
         {#each pages as link (link.title)}
           <li><a href={link.href} target="_blank" rel="noopener">{link.title}</a></li>
         {/each}

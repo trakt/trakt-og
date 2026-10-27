@@ -5,6 +5,8 @@
 -->
 <script lang="ts">
 import SeoHead from '$lib/seo/SeoHead.svelte';
+import { toProfileSeo } from '$lib/seo/pages/toProfileSeo';
+import type { UserStats } from '$lib/stats/userStatsSchema';
 import DashboardPanel from '$lib/components/dashboard/DashboardPanel.svelte';
 import EmptyState from '$lib/components/empty/EmptyState.svelte';
 import PosterCard from '$lib/components/media/PosterCard.svelte';
@@ -29,6 +31,7 @@ import type { WatchedCard } from './toProfileSummary.ts';
 type Props = {
   data: Awaited<ReturnType<typeof loadProfile>> & {
     profile: ProfileUser;
+    stats: UserStats | null;
     isSelf: boolean;
     user: { readonly slug: string } | null;
     datePreferences: DatePreferences;
@@ -38,12 +41,9 @@ type Props = {
 const { data }: Props = $props();
 const user = $derived(`/users/${data.profile.slug}`);
 const viewer = $derived(data.user ? { slug: data.user.slug } : null);
-const description = $derived(
-  `${data.profile.firstName} is using Trakt to automatically track TV shows and movies they are watching, collecting, and rating.`,
-);
 </script>
 
-<SeoHead title="{data.profile.displayName}'s profile" {description} noindex={data.profile.isPrivate} />
+<SeoHead {...toProfileSeo({ profile: data.profile, stats: data.stats })} noindex={data.profile.isPrivate} />
 
 {#snippet watched(card: WatchedCard)}
   {@const state = overlay.state(card.type, card.id)}

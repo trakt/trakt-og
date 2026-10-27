@@ -5,6 +5,7 @@
 -->
 <script lang="ts">
 import SeoHead from '$lib/seo/SeoHead.svelte';
+import { toSubpageSeo } from '$lib/seo/pages/toSubpageSeo';
 import { page } from '$app/state';
 import ListEditor from '$lib/components/lists/ListEditor.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
@@ -28,12 +29,6 @@ import type { loadItemLists } from './loadItemLists.ts';
 
 const { data }: { data: Awaited<ReturnType<typeof loadItemLists>> } = $props();
 const typeLabel = $derived(itemListTypes[data.query.type].label);
-// OG's `humanize`: "Personal lists featuring Fight Club (1999)".
-const title = $derived(
-  `${typeLabel.charAt(0)}${typeLabel.slice(1).toLowerCase()} featuring ${data.media.item.title}`,
-);
-const first = $derived(data.lists.at(0));
-const description = $derived(first ? [first.name, first.description].filter(Boolean).join(' - ') : title);
 const href = (next: Partial<ItemListQuery>) => itemListsHref(data.media.href, { ...data.query, ...next });
 // Me needs the viewer's lists, so it's only offered signed in.
 const types = $derived(
@@ -49,7 +44,9 @@ const own = createItemListActions({ viewer: () => viewer, origin: () => page.url
 const lists = $derived(own.visible(data.lists));
 </script>
 
-<SeoHead {title} {description} image={data.media.poster} />
+<SeoHead
+  {...toSubpageSeo({ title: data.media.item.title, subpage: 'Lists', image: data.media.fanart ?? data.media.poster })}
+/>
 
 <!-- The item links are the canonical API slugs. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->

@@ -1,5 +1,7 @@
 <!-- `/shows/:id/seasons`: the show's seasons grid under its facts, with "Original Air Date" the only order. -->
 <script lang="ts">
+import SeoHead from '$lib/seo/SeoHead.svelte';
+import { toSubpageSeo } from '$lib/seo/pages/toSubpageSeo';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
 import EmptyState from '$lib/components/empty/EmptyState.svelte';
 import { countLabel } from '$lib/utils/countLabel';
@@ -29,6 +31,7 @@ const sections = $derived([
 ]);
 </script>
 
+<SeoHead {...toSubpageSeo({ title: show.fullTitle, subpage: 'Seasons', image: show.fanart ?? show.poster })} />
 <ShowSubpage
   watchNow={data.watchNow}
   privateNotes={data.privateNotes}

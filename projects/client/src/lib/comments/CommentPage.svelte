@@ -6,6 +6,7 @@
 -->
 <script lang="ts">
 import SeoHead from '$lib/seo/SeoHead.svelte';
+import { toCommentSeo } from '$lib/seo/pages/toCommentSeo';
 import { gifArtContext } from '$lib/components/comments/gif/gifArtContext';
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
@@ -50,13 +51,15 @@ const sections = $derived([
   { label: `${comment.replies} ${repliesWord(comment.replies)}`, href: '#replies' },
   { label: 'All Comments', href: commentsHref },
 ]);
-const title = $derived(`${media.item.title} ${type.toLowerCase()} by ${author.name}`);
 </script>
 
 <!-- Hrefs are built from API slugs, and resolve() only takes literal routes. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
-<SeoHead {title} description={comment.comment} image={media.poster} noindex={!comment.review} />
+<SeoHead
+  {...toCommentSeo({ comment, author: author.name, title: media.item.title, poster: media.poster })}
+  noindex={!comment.review}
+/>
 
 <FanartHeader image={media.fanart} slim>
   <SubpageTitle

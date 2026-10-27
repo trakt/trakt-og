@@ -40,7 +40,10 @@ const runPill = (run: WeekInRelease) => ({
 });
 </script>
 
-<SeoHead title="Weekend Box Office" description={data.description} />
+<SeoHead
+  title="Weekend Box Office"
+  description={data.description || "The top 10 movies at the US box office this weekend, with what each grossed."}
+/>
 
 <!-- Film links point at OG routes, and the share strip at rows on this page; resolve() has nothing to add. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->

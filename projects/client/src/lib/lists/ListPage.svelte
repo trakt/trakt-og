@@ -5,6 +5,8 @@
 -->
 <script lang="ts">
 import SeoHead from '$lib/seo/SeoHead.svelte';
+import { toListSeo } from '$lib/seo/pages/toListSeo';
+import { imageUrl } from '$lib/utils/imageUrl';
 import { rawApiFetch } from '$lib/api/rawApiFetch';
 import BuiltInListEditor from '$lib/components/lists/BuiltInListEditor.svelte';
 import { overlay } from '$lib/overlay/overlay';
@@ -512,8 +514,13 @@ async function saveNotes(text: string) {
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 {#if data.list}
   <SeoHead
-    title={pageTitle}
-    description={data.list.description}
+    {...toListSeo({
+      name: data.kind === 'personal' || data.kind === 'official' ? data.list.name : pageTitle,
+      owner: data.kind === 'personal' ? data.profile.displayName : undefined,
+      description: data.list.description,
+      itemCount: data.list.itemCount,
+      image: imageUrl(data.cards.at(0)?.noteTitle?.fanart, 'full'),
+    })}
     noindex={!data.list.isPublic || ('profile' in data && data.profile.isPrivate)}
   />
 {/if}

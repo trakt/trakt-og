@@ -1,5 +1,6 @@
 <script lang="ts">
 import SeoHead from '$lib/seo/SeoHead.svelte';
+import { toEpisodeSeo } from '$lib/seo/pages/toEpisodeSeo';
 import { newComment } from '$lib/components/comments/newComment.svelte';
 import { gifArtContext } from '$lib/components/comments/gif/gifArtContext';
 import FanartHeader from '$lib/components/media/FanartHeader.svelte';
@@ -69,12 +70,7 @@ const sections = $derived([
 ]);
 </script>
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-<SeoHead
-  title={safeTitle}
-  description={!spoilers.overview && episode.overview || `Season ${episode.season}, Episode ${media.episode}`}
-  image={spoilers.screenshot ? episode.fanart : episode.screenshot ?? episode.fanart}
-  type="video.episode"
-/>
+<SeoHead {...toEpisodeSeo({ episode, spoilers })} />
 <FanartHeader dropped={overlay.state('show',episode.showId).dropped} image={episode.fanart}
   screenshot={spoilers.screenshot ? undefined : episode.screenshot} subnav>
   <EpisodeTitle target={ratingTarget} links={episode.parents} number={episode.number} title={episode.title} year={episode.year} certification={episode.certification} type={episode.type} credits={episode.postCredits} />

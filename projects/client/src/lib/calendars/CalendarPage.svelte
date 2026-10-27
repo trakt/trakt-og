@@ -340,7 +340,7 @@ const title = $derived(`${data.target === 'my' ? 'My ' : ''}${data.calendar.labe
 
 <SeoHead
   {title}
-  description="{episodeCount} episodes and {movieCount} movies on the {data.calendar.label} calendar in {monthLabel}."
+  description="What's on the {data.calendar.label} calendar in {monthLabel}, day by day, on Trakt."
 />
 
 <!-- The hrefs keep the current path and query, so resolve() has nothing to add. -->

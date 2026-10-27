@@ -1,5 +1,7 @@
 <!-- `/shows/:id/seasons/all`: every episode of the show in air order, specials included. -->
 <script lang="ts">
+import SeoHead from '$lib/seo/SeoHead.svelte';
+import { toSubpageSeo } from '$lib/seo/pages/toSubpageSeo';
 import EmptyState from '$lib/components/empty/EmptyState.svelte';
 import type { HeaderUser } from '$lib/components/header/HeaderUser';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
@@ -19,6 +21,7 @@ const sections = $derived([
 ]);
 </script>
 
+<SeoHead {...toSubpageSeo({ title: data.show.fullTitle, subpage: 'Episodes', image: data.show.fanart ?? data.show.poster })} />
 <ShowSubpage
   watchNow={data.watchNow}
   privateNotes={data.privateNotes}

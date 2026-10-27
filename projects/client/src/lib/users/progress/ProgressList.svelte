@@ -66,10 +66,11 @@ type Props = {
   onretry?: () => unknown;
   /** Why the read failed, when `onretry` is set. */
   error?: unknown;
+  /** A fixed clock for samples. Otherwise each rebuild of the rows reads the time, so a fresh mark isn't ahead. */
   now?: Date;
 };
 
-const { data, items, listed, loading = new Set(), onneed, onretry, error, now = new Date() }: Props = $props();
+const { data, items, listed, loading = new Set(), onneed, onretry, error, now }: Props = $props();
 
 // OG's `per(50)`, 48 in grid view (eight rows of six).
 const PER_PAGE = 50;
@@ -97,7 +98,7 @@ const pageCount = $derived(Math.max(Math.ceil((shown?.length ?? 0) / limit), 1))
 const current = $derived(Math.min(data.page, pageCount));
 const onPage = $derived(shown?.slice((current - 1) * limit, current * limit) ?? []);
 const rows = $derived(
-  onPage.map((item) => toProgressRow({ item, datePreferences: data.datePreferences, now })),
+  onPage.map((item) => toProgressRow({ item, datePreferences: data.datePreferences, now: now ?? new Date() })),
 );
 const totals = $derived(shown ? sumProgressTotals(shown) : null);
 const meta = $derived({ type: 'paginated' as const, current, total: pageCount });

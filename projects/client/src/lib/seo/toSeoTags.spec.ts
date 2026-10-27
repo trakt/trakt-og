@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { SeoMeta } from './SeoMeta.ts';
 import { toSeoTags as toTags } from './toSeoTags.ts';
 
-const movie = { routeId: '/movies/[id]', status: 200 };
+const movie = { url: new URL('https://og.example/movies/inception-2010?sort=x'), routeId: '/movies/[id]', status: 200 };
 const toSeoTags = (meta: SeoMeta) => toTags(meta, movie);
 
 describe('seo: toSeoTags', () => {
@@ -17,7 +17,12 @@ describe('seo: toSeoTags', () => {
     const tags = toSeoTags({});
 
     expect(tags.title).toBe('Trakt OG Redux');
-    expect(tags.og).toEqual({ title: 'Trakt OG Redux', description: tags.description, type: 'website' });
+    expect(tags.og).toEqual({
+      title: 'Trakt OG Redux',
+      description: tags.description,
+      type: 'website',
+      url: 'https://og.trakt.tv/movies/inception-2010',
+    });
     expect(tags.description).toMatch(/^Trakt OG Redux: classic Trakt/);
   });
 
@@ -37,6 +42,12 @@ describe('seo: toSeoTags', () => {
     expect(toSeoTags({}).robots).toBe('index, follow, max-image-preview:large');
     expect(toSeoTags({ noindex: true }).robots).toBe('noindex, follow');
     expect(toTags({}, { ...movie, status: 404 }).robots).toBe('noindex, follow');
-    expect(toTags({}, { routeId: '/dashboard', status: 200 }).robots).toBe('noindex, follow');
+    expect(toTags({}, { ...movie, routeId: '/dashboard' }).robots).toBe('noindex, follow');
+  });
+
+  it('should link the canonical URL, and leave it out on an error page', () => {
+    expect(toSeoTags({}).canonical).toBe('https://og.trakt.tv/movies/inception-2010');
+    expect(toSeoTags({ canonicalPath: '/' }).og.url).toBe('https://og.trakt.tv/');
+    expect(toTags({}, { ...movie, status: 404 }).canonical).toBeNull();
   });
 });

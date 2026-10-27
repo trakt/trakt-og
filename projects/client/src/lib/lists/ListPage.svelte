@@ -253,6 +253,11 @@ async function removeList() {
     await goto(resolve('/users/[id]/lists', { id: data.list.ownerSlug }));
   }
 }
+// Official lists and public personal lists are in search; the watchlist and favorites follow their route's robots.
+const indexed = $derived(
+  !!data.list?.isPublic && !('profile' in data && data.profile.isPrivate) && data.kind !== 'watchlist' &&
+    data.kind !== 'favorites',
+);
 const ownerKind = $derived(data.kind === 'watchlist' || data.kind === 'favorites' ? data.kind : null);
 const owner = $derived(ownerKind !== null && data.user?.slug === data.list?.ownerSlug);
 // Outgoing posters must not read a derived after its owning effect has been destroyed.
@@ -518,10 +523,12 @@ async function saveNotes(text: string) {
       name: data.kind === 'personal' || data.kind === 'official' ? data.list.name : pageTitle,
       owner: data.kind === 'personal' ? data.profile.displayName : undefined,
       description: data.list.description,
+      path: data.list.href,
       itemCount: data.list.itemCount,
       image: imageUrl(data.cards.at(0)?.noteTitle?.fanart, 'full'),
+      items: indexed && data.query.page === 1 ? data.cards.map(({ href }) => href) : undefined,
     })}
-    noindex={!data.list.isPublic || ('profile' in data && data.profile.isPrivate)}
+    noindex={!indexed}
   />
 {/if}
 

@@ -74,6 +74,8 @@ export function toEpisodeSummary(params: Params) {
       ...(season.title && season.title !== seasonNumber ? [{ title: season.title, href: seasonHref }] : []),
     ],
     year: episode.first_aired ? new Date(episode.first_aired).getUTCFullYear() : undefined,
+    /** API's ISO timestamp, for structured data. */
+    firstAired: episode.first_aired ?? null,
     certification: show.certification,
     type: params.episodeTypeTags ? episodeType(episode) : undefined,
     fanart: imageUrl(show.images?.fanart?.at(0), 'full'),

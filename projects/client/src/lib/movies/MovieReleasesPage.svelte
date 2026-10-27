@@ -38,7 +38,12 @@ const clear = () => {
 
 <!-- The movie link is the canonical API slug. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-<SeoHead {...toSubpageSeo({ title: movie.fullTitle, subpage: 'Release Dates', image: movie.fanart ?? movie.poster })} />
+<SeoHead {...toSubpageSeo({
+    title: movie.fullTitle,
+    href: movie.href,
+    subpage: 'Release Dates',
+    image: movie.fanart ?? movie.poster,
+  })} />
 
 {#snippet subnav()}
   <SectionToolbar inSummary>

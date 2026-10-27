@@ -22,7 +22,13 @@ const sections = $derived([
 </script>
 
 <SeoHead
-  {...toSubpageSeo({ title: data.media.item.title, subpage: 'Stats', image: data.media.fanart ?? data.media.poster })}
+  {...toSubpageSeo({
+    title: data.media.item.title,
+    href: data.media.href,
+    parents: data.media.parents,
+    subpage: 'Stats',
+    image: data.media.fanart ?? data.media.poster,
+  })}
 />
 
 <SubpageFrame {...data} strip={view.strip} label="Stats" {sections}>

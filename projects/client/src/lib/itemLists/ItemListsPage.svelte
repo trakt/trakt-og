@@ -45,7 +45,13 @@ const lists = $derived(own.visible(data.lists));
 </script>
 
 <SeoHead
-  {...toSubpageSeo({ title: data.media.item.title, subpage: 'Lists', image: data.media.fanart ?? data.media.poster })}
+  {...toSubpageSeo({
+    title: data.media.item.title,
+    href: data.media.href,
+    parents: data.media.parents,
+    subpage: 'Lists',
+    image: data.media.fanart ?? data.media.poster,
+  })}
 />
 
 <!-- The item links are the canonical API slugs. -->

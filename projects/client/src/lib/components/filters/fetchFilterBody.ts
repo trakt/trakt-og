@@ -1,6 +1,6 @@
 import { rawApiFetch } from '../../api/rawApiFetch.ts';
 
-// One request per list a page load: the network list alone is ~400KB, and reopening the panel shouldn't refetch it.
+// One request per list a page load: reopening the panel shouldn't refetch them.
 const cache = new Map<string, Promise<unknown>>();
 
 /**

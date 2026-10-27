@@ -5,6 +5,9 @@
     <IncludeExcludeSelect label="Genres" groups={[{ options }]} selection={{ include, exclude }} onchange={set} />
   Empty, it reads "Genres: Any". While the options load, shimmering rows fill the list under any fixed ones (the
   streaming bundles), and the search is already there.
+  A list too long to load whole takes `search` instead of groups: the menu lists the picks until two letters are typed,
+  then what the search finds, with shimmers while it looks.
+    <IncludeExcludeSelect label="Networks" groups={[]} search={searchNetworks} selection={…} onchange={set} />
 -->
 <script lang="ts">
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
@@ -16,7 +19,7 @@ import plusIcon from '$lib/icons/regular/circle-plus.svg?raw';
 import minusIcon from '$lib/icons/regular/circle-minus.svg?raw';
 import plusSolid from '$lib/icons/solid/circle-plus.svg?raw';
 import minusSolid from '$lib/icons/solid/circle-minus.svg?raw';
-import type { FilterOptionGroup } from './filterOptions.ts';
+import type { FilterOption, FilterOptionGroup } from './filterOptions.ts';
 import type { ListSelection } from './listSelection.ts';
 import SearchField from './SearchField.svelte';
 import OptionRowShimmers from '$lib/components/loading/OptionRowShimmers.svelte';
@@ -44,6 +47,8 @@ interface Props {
   /** The streaming field's logo tiles. */
   tileFor?: (value: string) => OptionTile | undefined;
   searchPlaceholder?: string;
+  /** Finds the options matching what's typed, for a list too long to load whole. */
+  search?: (query: string, signal: AbortSignal) => Promise<FilterOption[]>;
   onchange: (selection: ListSelection) => void;
 }
 
@@ -57,6 +62,7 @@ const {
   labelFor = (value: string) => value,
   tileFor,
   searchPlaceholder,
+  search,
   onchange,
 }: Props = $props();
 
@@ -64,13 +70,44 @@ let query = $state('');
 const byValue = $derived(new Map(groups.flatMap((group) => group.options).map((option) => [option.value, option])));
 const name = (value: string) => byValue.get(value)?.label ?? labelFor(value);
 const count = $derived(groups.reduce((sum, group) => sum + group.options.length, 0));
-const shown = $derived.by(() => {
-  const term = query.trim().toLocaleLowerCase('en');
-  if (!term) return groups;
+
+// A searched list asks once typing pauses, and drops an answer that a newer term overtook.
+const SEARCH_MIN = 2;
+const SEARCH_WAIT = 250;
+const term = $derived(query.trim());
+let found = $state<{ term: string; options: FilterOption[] }>();
+$effect(() => {
+  if (!search || term.length < SEARCH_MIN) return;
+  const controller = new AbortController();
+  const timer = setTimeout(() => {
+    search(term, controller.signal)
+      .then((options) => (found = { term, options }))
+      .catch(() => {
+        if (!controller.signal.aborted) found = { term, options: [] };
+      });
+  }, SEARCH_WAIT);
+  return () => {
+    clearTimeout(timer);
+    controller.abort();
+  };
+});
+const typing = $derived(!!search && term.length >= SEARCH_MIN);
+const searching = $derived(typing && found?.term !== term);
+const picks = $derived<FilterOption[]>(
+  [...selection.include, ...selection.exclude].map((value) => ({ value, label: name(value) })),
+);
+
+const shown = $derived.by((): readonly FilterOptionGroup[] => {
+  if (search) {
+    if (!typing) return picks.length > 0 ? [{ options: picks }] : [];
+    return searching || !found?.options.length ? [] : [{ options: found.options }];
+  }
+  const needle = term.toLocaleLowerCase('en');
+  if (!needle) return groups;
   return groups
     .map((group) => ({
       ...group,
-      options: group.options.filter((option) => option.label.toLocaleLowerCase('en').includes(term)),
+      options: group.options.filter((option) => option.label.toLocaleLowerCase('en').includes(needle)),
     }))
     .filter((group) => group.options.length > 0);
 });
@@ -107,13 +144,14 @@ function toggle(value: string, as: 'include' | 'exclude') {
       <button type="button" class="clear" disabled={disabled || picked === 0}
         onclick={() => onchange({ include: [], exclude: [] })}><Icon svg={xmark} />Clear</button>
     </div>
-    {#if count > 8 || loading}
+    {#if count > 8 || loading || search}
       <SearchField bind:value={query} label="Search {label.toLocaleLowerCase('en')}"
         placeholder={searchPlaceholder ?? `Search ${label.toLocaleLowerCase('en')}…`} />
     {/if}
-    <div class="scroller" aria-busy={loading}>
-    {#if shown.length === 0 && !loading}
-      <EmptyNote>{#if query.trim()}No {label.toLocaleLowerCase('en')} match “{query.trim()}”.{:else}No {label.toLocaleLowerCase('en')} to pick from.{/if}</EmptyNote>
+    <div class="scroller" aria-busy={loading || searching}>
+    {#if shown.length === 0 && !loading && !searching}
+      <EmptyNote>{#if search && !typing}Type a few letters to search {label.toLocaleLowerCase('en')}.{:else if
+        term}No {label.toLocaleLowerCase('en')} match “{term}”.{:else}No {label.toLocaleLowerCase('en')} to pick from.{/if}</EmptyNote>
     {/if}
     {#each shown as group, g (g)}
       {#if group.label}<p class="group">{group.label}</p>{/if}
@@ -139,7 +177,7 @@ function toggle(value: string, as: 'include' | 'exclude') {
         {/each}
       </ul>
     {/each}
-    {#if loading}
+    {#if loading || searching}
       <ul class="rows">
         <OptionRowShimmers rows={SHIMMER_ROWS} text="var(--font-size-menu)" height="var(--filter-option-shimmer-row)"
           inset="0 var(--filter-option-shimmer-inset)" gap="var(--filter-option-shimmer-gap)"

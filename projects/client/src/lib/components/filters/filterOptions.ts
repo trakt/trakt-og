@@ -13,13 +13,9 @@ export type FilterOption = {
 /** A labelled run of options: watch now's "Bundles" and "Streaming Services". */
 export type FilterOptionGroup = { readonly label?: string; readonly options: readonly FilterOption[] };
 
-// Genres, languages, countries and networks come from the API (`X-Runtime`), so each body is parsed here.
-const named = z.array(z.object({ name: z.string(), slug: z.string() }));
+// Languages, countries and networks come from the API (`X-Runtime`), so each body is parsed here.
 const coded = z.array(z.object({ name: z.string(), code: z.string() }));
 const networks = z.array(z.object({ name: z.string(), country: z.string().nullish() }));
-
-export const toGenreOptions = (body: unknown): FilterOption[] =>
-  named.parse(body).map(({ name, slug }) => ({ value: slug, label: name }));
 
 export const toCodedOptions = (body: unknown): FilterOption[] =>
   coded.parse(body).map(({ name, code }) => ({ value: code, label: name }));
@@ -53,18 +49,16 @@ export const statusOptions: readonly FilterOption[] = [
 ].map((value) => ({ value, label: value.replace(/\b\w/g, (letter) => letter.toUpperCase()) }));
 
 /** The lists og loads from the API. The rest ship with it. */
-export type FetchedFilterKey = Exclude<ListFilterKey, 'status' | 'episode_types' | 'certifications'>;
+export type FetchedFilterKey = Exclude<ListFilterKey, 'status' | 'episode_types' | 'certifications' | 'genres'>;
 
 /** Where each fetched list's options come from. */
 export const optionPaths: Record<FetchedFilterKey, (type: 'shows' | 'movies') => string> = {
-  genres: (type) => `/genres/${type}`,
   languages: (type) => `/languages/${type}`,
   countries: (type) => `/countries/${type}`,
   networks: () => '/networks',
 };
 
 export const optionMappers: Record<FetchedFilterKey, (body: unknown) => FilterOption[]> = {
-  genres: toGenreOptions,
   languages: toCodedOptions,
   countries: toCodedOptions,
   networks: toNetworkOptions,

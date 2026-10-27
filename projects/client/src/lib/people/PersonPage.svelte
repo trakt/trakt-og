@@ -4,6 +4,7 @@
 -->
 <script lang="ts">
 import SeoHead from '$lib/seo/SeoHead.svelte';
+import { toPersonSeo } from '$lib/seo/pages/toPersonSeo';
 import { afterNavigate, replaceState } from '$app/navigation';
 import { tick } from 'svelte';
 import { page } from '$app/state';
@@ -245,7 +246,7 @@ function yearLine(credit: PersonCredit) {
 }
 </script>
 
-<SeoHead title={person.name} description={person.biography} />
+<SeoHead {...toPersonSeo(person)} />
 
 {#snippet card(credit: PersonCredit, faded: boolean)}
   {@const state = overlay.state(credit.type, credit.id)}

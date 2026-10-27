@@ -1,6 +1,7 @@
 <!-- The movie summary (`/movies/:id`): the media frame filled with one movie. -->
 <script lang="ts">
 import SeoHead from '$lib/seo/SeoHead.svelte';
+import { toMovieSeo } from '$lib/seo/pages/toMovieSeo';
 import { newComment } from '$lib/components/comments/newComment.svelte';
 import { gifArtContext } from '$lib/components/comments/gif/gifArtContext';
 import MediaSpoiler from '$lib/components/summary/MediaSpoiler.svelte';
@@ -76,7 +77,7 @@ const sections = $derived([
 const textLinks = $derived(movie.links.filter(({ icon }) => !icon));
 </script>
 
-<SeoHead title={movie.fullTitle} description={movie.overview} />
+<SeoHead {...toMovieSeo(movie)} />
 
 <!-- Hrefs are built from API slugs, and resolve() only takes literal routes. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->

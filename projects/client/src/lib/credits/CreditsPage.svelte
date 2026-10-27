@@ -7,6 +7,7 @@
 -->
 <script lang="ts">
 import SeoHead from '$lib/seo/SeoHead.svelte';
+import { toSubpageSeo } from '$lib/seo/pages/toSubpageSeo';
 import { replaceState } from '$app/navigation';
 import { page } from '$app/state';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
@@ -29,7 +30,6 @@ import { readPeopleGroup } from './readPeopleGroup.ts';
 import { type CreditSort, sortCredits } from './sortCredits.ts';
 
 const { data }: { data: Awaited<ReturnType<typeof loadCredits>> } = $props();
-const title = $derived(`People for ${data.media.item.title}`);
 const kinds = $derived(
   [
     { kind: 'Actors' as const, groups: data.credits.actors },
@@ -86,7 +86,9 @@ const results = $derived(
 const matches = $derived(results.reduce((total, group) => total + group.people.length, 0));
 </script>
 
-<SeoHead {title} description={title} image={data.media.poster} />
+<SeoHead
+  {...toSubpageSeo({ title: data.media.item.title, subpage: 'People', image: data.media.fanart ?? data.media.poster })}
+/>
 
 {#snippet subnav()}
   <SectionToolbar inSummary>

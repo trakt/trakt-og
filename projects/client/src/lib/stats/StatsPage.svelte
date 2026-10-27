@@ -1,5 +1,6 @@
 <script lang="ts">
 import SeoHead from '$lib/seo/SeoHead.svelte';
+import { toSubpageSeo } from '$lib/seo/pages/toSubpageSeo';
 import WatchedKeys from '$lib/components/dashboard/WatchedKeys.svelte';
 import SubpageFrame from '$lib/components/summary/SubpageFrame.svelte';
 import ProfileRatingsChart from '$lib/components/users/ProfileRatingsChart.svelte';
@@ -12,7 +13,6 @@ import SiteScores from './SiteScores.svelte';
 import StatsSection from './StatsSection.svelte';
 
 const { data }: { data: Awaited<ReturnType<typeof loadStats>> } = $props();
-const title = $derived(`Stats for ${data.media.item.title}`);
 const view = $derived(data.stats);
 const sections = $derived([
   { label: 'Trakt', href: '#trakt' },
@@ -21,7 +21,9 @@ const sections = $derived([
 ]);
 </script>
 
-<SeoHead {title} description={title} image={data.media.poster} />
+<SeoHead
+  {...toSubpageSeo({ title: data.media.item.title, subpage: 'Stats', image: data.media.fanart ?? data.media.poster })}
+/>
 
 <SubpageFrame {...data} strip={view.strip} label="Stats" {sections}>
   <div class="stats">

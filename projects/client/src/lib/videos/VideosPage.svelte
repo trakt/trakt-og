@@ -6,6 +6,7 @@
 -->
 <script lang="ts">
 import SeoHead from '$lib/seo/SeoHead.svelte';
+import { toSubpageSeo } from '$lib/seo/pages/toSubpageSeo';
 import { replaceState } from '$app/navigation';
 import { page } from '$app/state';
 import VideoPopup from '$lib/components/dialog/VideoPopup.svelte';
@@ -21,7 +22,6 @@ import VideoTypeDropdown from './VideoTypeDropdown.svelte';
 import { readVideoTab, videosHref, type VideoTabId } from './videoTypes.ts';
 
 const { data }: { data: Awaited<ReturnType<typeof loadVideos>> } = $props();
-const title = $derived(`Videos for ${data.media.item.title}`);
 const tabs = $derived(toVideoTabs(data.videos));
 
 // A new item starts on the type its link names, else its first; picking one writes it back to the URL.
@@ -40,7 +40,9 @@ let playing = $state<string>();
 const playingTitle = $derived(data.videos.find((video) => video.href === playing)?.title);
 </script>
 
-<SeoHead {title} description={title} image={data.media.poster} />
+<SeoHead
+  {...toSubpageSeo({ title: data.media.item.title, subpage: 'Videos', image: data.media.fanart ?? data.media.poster })}
+/>
 
 {#snippet subnav()}
   <SectionToolbar inSummary>

@@ -7,6 +7,7 @@
 -->
 <script lang="ts">
 import SeoHead from '$lib/seo/SeoHead.svelte';
+import { toSubpageSeo } from '$lib/seo/pages/toSubpageSeo';
 import { gifArtContext } from '$lib/components/comments/gif/gifArtContext';
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
@@ -28,7 +29,6 @@ import { itemCommentsHref, type ItemCommentSortBy, itemCommentSorts } from './it
 import type { loadItemComments } from './loadItemComments.ts';
 
 const { data }: { data: Awaited<ReturnType<typeof loadItemComments>> } = $props();
-const title = $derived(`All comments for ${data.media.item.title}`);
 // The GIF picker's header, in every comment box on the page.
 gifArtContext.set(() => data.media.fanart);
 const viewer = $derived(data.user ? { slug: data.user.slug } : null);
@@ -45,7 +45,9 @@ const languageHref = (code: CommentLanguage) => href(data.sort.by, data.sort.how
 
 <!-- The item links are the canonical API slugs. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-<SeoHead {title} description={title} image={data.media.poster} />
+<SeoHead
+  {...toSubpageSeo({ title: data.media.item.title, subpage: 'Comments', image: data.media.fanart ?? data.media.poster })}
+/>
 
 {#snippet sortLabel(by: ItemCommentSortBy)}{itemCommentSorts[by].label}{/snippet}
 

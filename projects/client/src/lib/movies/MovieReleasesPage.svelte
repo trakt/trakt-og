@@ -1,5 +1,6 @@
 <script lang="ts">
 import SeoHead from '$lib/seo/SeoHead.svelte';
+import { toSubpageSeo } from '$lib/seo/pages/toSubpageSeo';
 import EmptyState from '$lib/components/empty/EmptyState.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import FanartHeader from '$lib/components/media/FanartHeader.svelte';
@@ -37,10 +38,7 @@ const clear = () => {
 
 <!-- The movie link is the canonical API slug. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-<SeoHead
-  title="Release dates for {movie.fullTitle}"
-  description={movie.overview ?? `Release dates for ${movie.fullTitle}.`}
-/>
+<SeoHead {...toSubpageSeo({ title: movie.fullTitle, subpage: 'Release Dates', image: movie.fanart ?? movie.poster })} />
 
 {#snippet subnav()}
   <SectionToolbar inSummary>

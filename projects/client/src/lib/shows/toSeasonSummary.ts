@@ -72,6 +72,8 @@ export function toSeasonSummary(params: Params) {
     certification: show.certification,
     fanart: imageUrl(show.images?.fanart?.at(0), 'full'),
     poster: imageUrl(season.images?.poster?.at(0) ?? show.images?.poster?.at(0), 'medium'),
+    /** The season's own poster, without the show's as a fallback: link previews fall back to the show's fanart. */
+    seasonPoster: imageUrl(season.images?.poster?.at(0), 'medium'),
     overview: season.overview || show.overview,
     rating: premiered
       ? {

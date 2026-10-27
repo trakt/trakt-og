@@ -16,6 +16,7 @@ function readList(fetch: typeof globalThis.fetch, id: string, token: string | nu
 /**
  * `/lists/:id`, `/watchlist/:id` and `/officiallist/:id`: a 301 to the list's own page.
  * A list the viewer can't see is a 404. The public read goes first; the token only for a list it didn't find.
+ * It's a page load, not a `+server.ts`, so a missing list renders og's 404 page instead of the bare fallback.
  */
 export async function redirectToList({ fetch, locals, params }: RedirectToListParams): Promise<never> {
   const anonymous = await readList(fetch, params.id, null);

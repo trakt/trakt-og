@@ -90,7 +90,7 @@ const sections = $derived([
     <a class="poster-link" href={season.showHref} aria-label="Back to {season.showTitle}"><SummaryPoster {ratingTarget} image={season.poster} alt={season.fullTitle} /></a>
     <WatchNow button={data.watchNow} title={season.fullTitle} fanart={season.fanart} />
     <SectionNav {sections} label="{season.fullTitle} sections" />
-    <ExternalLinks links={season.links} />
+    <ExternalLinks links={season.links} share={{ href: season.href, title: season.fullTitle }} />
   {/snippet}
   {#snippet details()}
     <WatchNow button={data.watchNow} title={season.fullTitle} fanart={season.fanart} phone />

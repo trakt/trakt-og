@@ -330,7 +330,7 @@ function yearLine(credit: PersonCredit) {
       <CareerEras {eras} bind:selected={era} name={eraName} onpick={showCredits}
         watched={data.user ? watchedCredit : undefined} />
     {/if}
-    <ExternalLinks links={person.links} />
+    <ExternalLinks links={person.links} share={{ href: person.href, title: person.name }} />
   {/snippet}
 
   {#snippet details()}

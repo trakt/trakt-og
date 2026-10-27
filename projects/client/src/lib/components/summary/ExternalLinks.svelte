@@ -1,19 +1,27 @@
 <!--
   The sidebar's links out: logos four across, each named by a tooltip, that only get the outlined button's fill under
   the pointer, where a branded logo turns its site's color. A site without a logo comes last, as text. Every link
-  opens a new tab.
+  opens a new tab. With `share`, the page's share tile ends the links.
 -->
 <script lang="ts">
+import { page } from '$app/state';
+import ShareButton from '$lib/components/share/ShareButton.svelte';
 import GlassAction from '$lib/components/glass-action/GlassAction.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import type { ExternalLink } from './ExternalLink.ts';
 import { withSiteLogos } from './withSiteLogos.ts';
 
-const { links }: { links: readonly ExternalLink[] } = $props();
+interface Props {
+  links: readonly ExternalLink[];
+  /** The item this page is about: its path and full title. */
+  share?: { href: string; title: string };
+}
+
+const { links, share }: Props = $props();
 const buttons = $derived(withSiteLogos(links));
 </script>
 
-{#if buttons.length > 0}
+{#if buttons.length > 0 || share}
   <ul class="external-links">
     {#each buttons as link (link.href)}
       <li style:--glass-action-ghost-hover-icon={link.color}>
@@ -27,6 +35,9 @@ const buttons = $derived(withSiteLogos(links));
         </Tooltip>
       </li>
     {/each}
+    {#if share}
+      <li><ShareButton tile url={new URL(share.href, page.url.origin).href} title={share.title} /></li>
+    {/if}
   </ul>
 {/if}
 

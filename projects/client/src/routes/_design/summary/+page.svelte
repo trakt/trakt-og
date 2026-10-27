@@ -3,6 +3,7 @@
 import { page } from '$app/state';
 import FanartHeader from '$lib/components/media/FanartHeader.svelte';
 import ActionButtons from '$lib/components/summary/ActionButtons.svelte';
+import ExternalLinks from '$lib/components/summary/ExternalLinks.svelte';
 import MediaTools from '$lib/components/summary/MediaTools.svelte';
 import Overview from '$lib/components/summary/Overview.svelte';
 import RatingsStrip from '$lib/components/summary/RatingsStrip.svelte';
@@ -162,7 +163,7 @@ const videos: readonly VideoCard[] = [
 
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 <Specimen title="Summary top" bleed
-  note="A movie's page as it opens: the title tags and ratings strip on the art, the poster rising into it, the overview and the action stack. Each action works for a signed-in viewer.">
+  note="A movie's page as it opens: the title tags and ratings strip on the art, the poster rising into it, the links out ending in the share tile, the overview and the action stack. Each action works for a signed-in viewer, and a signed-in viewer's shared link carries their share code.">
   <FanartHeader image={noWayHome.fanart}>
     <SummaryTitle title={noWayHome.title} year={noWayHome.year} certification={noWayHome.certification}
       links={[noWayHome.collection]} credits={noWayHome.credits} />
@@ -178,6 +179,8 @@ const videos: readonly VideoCard[] = [
     {/snippet}
     {#snippet sidebar()}
       <SummaryPoster {ratingTarget} image={noWayHome.poster} alt={noWayHome.fullTitle} />
+      <ExternalLinks links={[{ label: 'IMDB', href: 'https://www.imdb.com/title/tt10872600' }, { label: 'TMDB', href: noWayHome.tmdb }]}
+        share={{ href: noWayHome.href, title: noWayHome.fullTitle }} />
     {/snippet}
     {#snippet details()}
       <Overview tagline={noWayHome.tagline} overview={noWayHome.overview} />

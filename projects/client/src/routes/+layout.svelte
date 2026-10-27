@@ -40,14 +40,15 @@ $effect(() => {
   if (!bare) document.documentElement.dataset.theme = theme;
 });
 
-// Behind the mobile splash the app doesn't render or start at all: never on a phone (the server knows from its user
-// agent), and in a narrow window only once it's wide enough.
+// Every user agent gets the whole page, so a search engine's phone crawler indexes it. Under the mobile splash it's
+// inert and the app's background work doesn't start: never on a phone (the server knows from its user agent, so
+// hydration agrees with the server's HTML), and in a narrow window only once it's wide enough.
 const tooSmall = new MediaQuery(TOO_SMALL_FOR_OG, data.phone);
-const showApp = $derived(!bare && !tooSmall.current);
+const awake = $derived(!bare && !tooSmall.current);
 let stopApp: (() => void) | undefined;
 
 $effect(() => {
-  if (!showApp || stopApp) return;
+  if (!awake || stopApp) return;
   const manager = userManager();
   const stops = [startOverlay(manager), startCommentReactions(manager)];
   stopApp = () => stops.forEach((stop) => stop());
@@ -72,22 +73,20 @@ onMount(() => {
 {#if bare}
   {@render children()}
 {:else}
-  <MobileSplash platform={data.platform} phone={data.phone}>
-    {#if showApp}
-      {#if !errored}
-        <a class="skip" href="#content">Skip to content</a>
-        <Header user={data.user} renewing={data.tokenExpired || data.rateLimited} searchType={data.searchType} {darkKnight} />
-      {/if}
-      <main id="content" tabindex="-1">
-        {@render children()}
-      </main>
-      {#if !errored}<Footer />{/if}
+  <MobileSplash platform={data.platform} phone={data.phone} covering={tooSmall.current}>
+    {#if !errored}
+      <a class="skip" href="#content">Skip to content</a>
+      <Header user={data.user} renewing={data.tokenExpired || data.rateLimited} searchType={data.searchType} {darkKnight} />
     {/if}
+    <main id="content" tabindex="-1">
+      {@render children()}
+    </main>
+    {#if !errored}<Footer />{/if}
   </MobileSplash>
 {/if}
 <Toaster />
-{#if showApp}<OfflineGuard />{/if}
-{#if data.user && showApp}
+{#if awake}<OfflineGuard />{/if}
+{#if data.user && awake}
   <Nudges slug={data.user.slug} firstName={data.user.firstName} joinedAt={data.user.joinedAt} taste={{
     country: data.settings?.browsing?.watchnow?.country?.toLowerCase() || 'us',
     services: data.settings?.browsing?.watchnow?.favorites ?? [],

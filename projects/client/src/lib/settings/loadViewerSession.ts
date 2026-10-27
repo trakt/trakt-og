@@ -24,7 +24,8 @@ type Params = {
  * An expired token still counts as a session: `tokenExpired` keeps the header signed in until the browser renews it.
  * It also sets `locals.theme`, the viewer's Dark Knight setting, which hooks.server.ts writes onto `<html>` so the
  * first paint is already in the right theme. Logged out is Dark Knight, og's default.
- * `platform` picks the store the mobile splash links, and `phone` keeps its phone wording in a browser's device mode.
+ * `platform` picks the store the mobile splash links. `phone` keeps its phone wording in a browser's device mode, and
+ * renders the page under it inert from the first paint.
  * `gifs` says the Worker has a Klipy key, so comment composers get the GIF picker.
  */
 export async function loadViewerSession({ fetch, locals, cookies, request, platform: worker }: Params) {

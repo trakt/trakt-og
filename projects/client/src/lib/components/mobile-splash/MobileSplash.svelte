@@ -1,9 +1,10 @@
 <!--
-  OG Redux is for tablets and computers. Below 768px wide, or on a phone held sideways, this hides the app and shows a
-  splash instead, over an fsociety mask from Mr. Robot that glitches now and then: Trakt's own app and Mobile Web first,
-  then other apps that sync with Trakt. A tablet held upright is asked to turn sideways, and a narrow desktop window to
-  get wider. CSS decides, so the first paint is already right, and the layout doesn't render the app behind it. The
-  server picks the store from the user agent.
+  OG Redux is for tablets and computers. Below 768px wide, or on a phone held sideways, this covers the app with a
+  splash, over an fsociety mask from Mr. Robot that glitches now and then: Trakt's own app and Mobile Web first, then
+  other apps that sync with Trakt. A tablet held upright is asked to turn sideways, and a narrow desktop window to get
+  wider. CSS decides, so the first paint is already right. The app still renders under it for every user agent, so a
+  search engine's phone crawler indexes the real page; `covering` makes it inert while the splash is up. The server
+  picks the store from the user agent.
   `preview` forces the splash on for the design-system demo.
 -->
 <script lang="ts">
@@ -26,12 +27,14 @@ interface Props {
   platform: MobilePlatform;
   /** A phone's user agent: phone wording even with a mouse, as in a browser's device mode. */
   phone?: boolean;
-  /** The app, shown everywhere the splash isn't. */
+  /** The app, under the splash. */
   children?: Snippet;
+  /** The splash is up: keyboard focus and assistive tech can't reach the app under it. */
+  covering?: boolean;
   preview?: 'phone' | 'tablet' | 'window';
 }
 
-const { platform, phone = false, children, preview }: Props = $props();
+const { platform, phone = false, children, covering = false, preview }: Props = $props();
 const links = $derived(toSplashLinks(platform));
 const storeIcon = $derived(platform === 'ios' ? apple : googlePlay);
 const appIcons = { 'trakt-time': traktTime, showly, rippple };
@@ -60,7 +63,7 @@ function typeOut(node: HTMLElement) {
 </script>
 
 {#if children}
-  <div class="app">{@render children()}</div>
+  <div class="app" inert={covering}>{@render children()}</div>
 {/if}
 
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
@@ -146,12 +149,19 @@ function typeOut(node: HTMLElement) {
 
 /*
  * Too small for OG: narrower than sm (768px), or a phone held sideways (its short height, on a touch screen, so a
- * desktop window with the dev tools docked below keeps OG). The layout skips the app on the same query
- * (TOO_SMALL_FOR_OG); this hides the server's copy until then.
+ * desktop window with the dev tools docked below keeps OG). The layout makes the app inert on the same query
+ * (TOO_SMALL_FOR_OG).
  */
 @media (width < 768px) or ((pointer: coarse) and (height < 500px)) {
+  /*
+   * The page under the splash is boxed to the screen and clipped, fixed header included. Wider than the screen, it
+   * would widen a phone's layout viewport and push the splash off its right edge.
+   */
   .app {
-    display: none;
+    display: block;
+    block-size: 100dvh;
+    overflow: clip;
+    contain: paint;
   }
 
   .splash {
@@ -159,12 +169,14 @@ function typeOut(node: HTMLElement) {
   }
 
   /*
-   * The splash covers the screen and scrolls itself when it's taller (a phone held sideways), with its scrollbar
-   * hidden. The page under it can't scroll, so a desktop set to always show scrollbars draws no empty tracks.
+   * The splash covers the screen, over the app's header and a page's extras, and scrolls itself when it's taller (a
+   * phone held sideways), with its scrollbar hidden. The page under it can't scroll, so a desktop set to always show
+   * scrollbars draws no empty tracks.
    */
   .splash:not(.preview) {
     position: fixed;
     inset: 0;
+    z-index: var(--z-mobile-splash);
     overflow: hidden auto;
     overscroll-behavior: contain;
     scrollbar-width: none;

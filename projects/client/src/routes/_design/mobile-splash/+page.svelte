@@ -16,7 +16,7 @@ const frames = [
 </script>
 
 <Specimen title="Frames" row
-  note="MobileSplash wraps the app. Below 768px wide, or on a phone held sideways, it shows instead. The store follows the user agent. Watch for the red and cyan glitch every 7 seconds; it and the typing stop with reduced motion.">
+  note="MobileSplash wraps the app. Below 768px wide, or on a phone held sideways, it covers the app, which still renders under it, inert. The store follows the user agent. Watch for the red and cyan glitch every 7 seconds; it and the typing stop with reduced motion.">
   {#each frames as frame (frame.label)}
     <Variant label="{frame.label}, {frame.width} × {frame.height}">
       <div class="frame" style:inline-size="{frame.width}px" style:block-size="{frame.height}px">

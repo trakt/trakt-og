@@ -33,7 +33,7 @@ describe('CommentText', () => {
     const markup = clean(html('@sean trakt.tv [spoiler]x[/spoiler]'));
 
     expect(markup).toContain('href="/users/sean"');
-    expect(markup).toContain('href="http://trakt.tv/" target="_blank" rel="noopener noreferrer ugc"');
+    expect(markup).toContain('href="http://trakt.tv/" target="_blank" rel="ugc nofollow noopener noreferrer"');
     expect(markup).toContain('Click to reveal spoilers');
   });
 

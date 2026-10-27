@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { OverlaySlices } from '../../overlay/OverlaySlices.ts';
 import type { CachedShow } from '../../shows/cache/CachedShow.ts';
 import type { ShowCatalog } from '../../shows/cache/ShowCatalog.ts';
+import { filterProgress } from './filterProgress.ts';
 import { progressItemFixture } from './progressItemFixture.ts';
 import { toProgressItems } from './toProgressItems.ts';
 
@@ -100,6 +101,19 @@ describe('toProgressItems', () => {
       minutesLeft: 240,
       lastAt: '2026-01-03T00:00:00Z',
     });
+  });
+
+  it('should keep a show the endpoint files as completed unfinished when an aired episode is unwatched', () => {
+    const filed = (aired: number) =>
+      toProgressItems({
+        ...base,
+        type: 'watched',
+        nitro: nitro.map((item) => (item.show.id === 1 ? { ...item, aired, completed: aired } : item)),
+      }) ?? [];
+    const unfinished = filed(3);
+    expect(unfinished.at(0)).toMatchObject({ aired: 3, completed: 2 });
+    expect(ids(filterProgress(unfinished, { hide: ['completed'] }))).toEqual([1, 2]);
+    expect(ids(filterProgress(filed(2), { hide: ['completed'] }))).toEqual([2]);
   });
 
   it('should keep only the shows you’re rewatching on Rewatching, with the reset date', () => {

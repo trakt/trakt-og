@@ -34,6 +34,12 @@ describe('mapper: toListUrls', () => {
     expect(toListUrls(lists).map(({ path }) => path)).toEqual(['/users/sean/lists/list-5']);
   });
 
+  it('should leave out an official list whose slug opens a personal list instead', () => {
+    const official = list(37675689, { type: 'official', user: { ...user, username: 'Trakt', ids: { slug: null } } });
+
+    expect(toListUrls([official, list(5)]).map(({ path }) => path)).toEqual(['/users/sean/lists/list-5']);
+  });
+
   it('should keep the first of each list, in order', () => {
     expect(toListUrls([list(1), list(2), list(1)]).map(({ path }) => path)).toEqual([
       '/users/sean/lists/list-1',

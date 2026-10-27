@@ -162,9 +162,7 @@ export const SEO_EXPECTATIONS = {
   artHost: 'media.trakt.tv',
   robots: { index: INDEX, noindex: NOINDEX },
   /** Sitemap URLs with an open og bug, by path: they show as known instead of failing the run. */
-  knownIssues: {
-    '/lists/official/1001-movies-you-must-see-before-you-die': '#240',
-  } as Readonly<Record<string, string>>,
+  knownIssues: {} as Readonly<Record<string, string>>,
   /** JSON-LD types every indexable page carries. Organization and WebSite are on the home page only. */
   jsonLd: [] as readonly string[],
   userAgents: {

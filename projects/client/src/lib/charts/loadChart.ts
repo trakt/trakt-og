@@ -7,6 +7,7 @@ import { rawApiFetch } from '../api/rawApiFetch.ts';
 import type { DateOrder } from '../utils/formatDate.ts';
 import { parseAdvancedFilters } from '../components/filters/advancedFilters.ts';
 import { advancedFiltersQuery } from '../components/filters/advancedFiltersQuery.ts';
+import { recommendationIgnores } from '../dashboard/fetchRecommendations.ts';
 import { type FilterSource, toFilterSources } from '../components/filters/watchNowFilter.ts';
 import { type FadeHide, parseFadeHide } from '../components/filters/fadeHide.ts';
 import { favoriteSlugs } from '../components/watchnow/watchNow.ts';
@@ -75,7 +76,7 @@ async function fetchPopular(client: Client, type: MediaType, query: Query): Prom
 const recommendationRowsSchema = z.array(chartRowSchema);
 
 // `@trakt/api` has no contract for the worker's `/shows|movies/recommendations`, so the body is parsed here. There's
-// no paging, so the paging headers are dropped. The API hides watched items by default.
+// no paging, so the paging headers are dropped.
 async function fetchRecommendations(
   fetch: typeof globalThis.fetch,
   token: string,
@@ -83,7 +84,12 @@ async function fetchRecommendations(
   filters: Record<string, string>,
 ): Promise<Rows | 'signed-out' | 'failed'> {
   const limit = firstPage(chartPageSize('recommendations'));
-  const search = new URLSearchParams({ extended: 'full,images', limit: `${limit}`, ...filters });
+  const search = new URLSearchParams({
+    extended: 'full,images',
+    limit: `${limit}`,
+    ...recommendationIgnores,
+    ...filters,
+  });
   const response = await rawApiFetch({ fetch, token, path: `/${type}/recommendations?${search}` });
   if (response.status === 401) return 'signed-out';
   if (!response.ok) return 'failed';

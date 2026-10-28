@@ -26,7 +26,6 @@ export type DashboardSettings = {
   };
   readonly recommendations: {
     readonly type: DashboardPrefs['recommendations_type'];
-    readonly ignoreCollected: boolean;
   };
   /** The panels the viewer hid. Suggested People is cut, so it has no switch here. */
   readonly hidden: {

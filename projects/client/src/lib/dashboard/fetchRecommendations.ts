@@ -9,7 +9,7 @@ type FetchRecommendationsParams = {
   fetch: typeof globalThis.fetch;
   /** Null in the browser, where `authenticatedFetch` sends it. */
   token: string | null;
-  /** The Type pick and the ignore-library switch. */
+  /** The Type pick. */
   settings: DashboardSettings['recommendations'];
   now?: Date;
 };
@@ -31,20 +31,21 @@ const PATHS = {
   movie: '/movies/recommendations',
 } as const;
 
-// Always without what's fully watched, started or already on the watchlist; the library only with the setting.
-function query({ ignoreCollected }: DashboardSettings['recommendations']) {
-  return new URLSearchParams({
-    extended: 'full,images,colors',
-    limit: String(LIMIT),
-    ignore_watched: 'true',
-    hide_watching: 'true',
-    ignore_watchlisted: 'true',
-    ...(ignoreCollected && { ignore_collected: 'true' }),
-  });
-}
+/**
+ * Without what's fully watched, started, already on the watchlist or in the library. The recommendations pages send
+ * it too, so the More links open on the same titles.
+ */
+export const recommendationIgnores = {
+  ignore_watched: 'true',
+  hide_watching: 'true',
+  ignore_watchlisted: 'true',
+  ignore_collected: 'true',
+} as const;
+
+const QUERY = new URLSearchParams({ extended: 'full,images,colors', limit: String(LIMIT), ...recommendationIgnores });
 
 async function load({ fetch, token, settings, now = new Date() }: FetchRecommendationsParams) {
-  const response = await rawApiFetch({ fetch, token, path: `${PATHS[settings.type]}?${query(settings)}` });
+  const response = await rawApiFetch({ fetch, token, path: `${PATHS[settings.type]}?${QUERY}` });
   if (!response.ok) return null;
 
   const parsed = recommendationsSchema.safeParse(await response.json());
@@ -78,7 +79,7 @@ async function loadTrending({ fetch, settings, now = new Date() }: FetchRecommen
 /**
  * The viewer's recommendations, as v3 loads them: shows and movies together from `/media/recommendations`, or one
  * type from its own route, each with the sources that led to it. They're calculated daily and leave out what the
- * viewer has watched or started, what's on their watchlist and, with that setting, what's in their library.
+ * viewer has watched or started, what's on their watchlist and what's in their library.
  */
 export async function fetchRecommendations(params: FetchRecommendationsParams): Promise<DashboardRecommendations> {
   const items = await load(params).catch(() => null);

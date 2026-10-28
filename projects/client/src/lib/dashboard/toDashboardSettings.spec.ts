@@ -17,7 +17,7 @@ describe('toDashboardSettings', () => {
         poster: 'show',
       },
       schedule: { filter: 'shows-movies', movies: 'all', startDay: 'today', poster: 'show' },
-      recommendations: { type: 'media', ignoreCollected: false },
+      recommendations: { type: 'media' },
       hidden: {
         upNext: false,
         schedule: false,
@@ -37,7 +37,6 @@ describe('toDashboardSettings', () => {
           on_deck: { sort: 'completed', sort_how: 'desc', refresh: true, simple_progress: true, only_favorites: true },
         },
         watchnow: { favorites: ['us-netflix', 'us-hulu', 'us-max'] },
-        recommendations: { ignore_collected: true },
       },
     };
 
@@ -50,7 +49,7 @@ describe('toDashboardSettings', () => {
       refresh: true,
       poster: 'show',
     });
-    expect(recommendations).toEqual({ type: 'media', ignoreCollected: true });
+    expect(recommendations).toEqual({ type: 'media' });
   });
 
   it("should read the form's activity default and an unknown sort as Activity Date", () => {

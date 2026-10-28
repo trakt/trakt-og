@@ -30,12 +30,6 @@ const schema = z.object({
         .object({ favorites: z.array(z.string()).nullish().catch(null) })
         .nullish()
         .catch(null),
-      recommendations: z
-        .object({
-          ignore_collected: z.boolean().nullish().catch(null),
-        })
-        .nullish()
-        .catch(null),
     })
     .nullish()
     .catch(null),
@@ -87,10 +81,7 @@ export function toDashboardSettings({
       startDay: prefs.upcoming_start_day,
       poster: prefs.upcoming_poster,
     },
-    recommendations: {
-      type: prefs.recommendations_type,
-      ignoreCollected: browsing?.recommendations?.ignore_collected === true,
-    },
+    recommendations: { type: prefs.recommendations_type },
     hidden: {
       upNext: prefs.hide_on_deck,
       schedule: vipHidden(prefs.hide_upcoming),

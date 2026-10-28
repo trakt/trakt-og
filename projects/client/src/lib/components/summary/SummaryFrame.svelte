@@ -2,7 +2,8 @@
   OG's `#info-wrapper`: the white section under a summary's fanart. A sticky sidebar on the left rises into the
   fanart (poster, section nav, links), and the content column holds `details` (stats, overview, videos) beside
   `actions` (the button stack), then `children` full width underneath (actors, comments, lists). A `subnav` (the
-  seasons' SeasonLinks) runs full width above it all, and the sidebar rises past it.
+  seasons' SeasonLinks) runs full width above it all, and the sidebar rises past it. A sidebar taller than the window
+  scrolls with the page until its last tool shows, then sticks by its bottom edge, so every item stays reachable.
   Phones drop the sidebar like OG did, so put anything they still need into `details`. A visit through a member's
   shared link credits them (`ShareArrival`).
 -->
@@ -28,13 +29,15 @@ interface Props {
 }
 
 const { label, subnav, sidebar, details, actions, children, tools, posterOverlap, fullWidth = false }: Props = $props();
+let sidebarHeight = $state<number>();
 </script>
 
 <section class={['summary-frame', { 'with-subnav': subnav }]} style:--summary-poster-overlap={posterOverlap}>
   {@render subnav?.()}
   <Container>
     <div class="columns">
-      <aside class="sidebar" aria-label={label}>{@render sidebar()}{@render tools?.()}</aside>
+      <aside class="sidebar" aria-label={label} bind:offsetHeight={sidebarHeight}
+        style:--summary-sidebar-height={sidebarHeight === undefined ? undefined : `${sidebarHeight}px`}>{@render sidebar()}{@render tools?.()}</aside>
       <div class="info" id="overview">
         <div class={["top", { "full-width": fullWidth }]}>
           <div class="details">{@render details()}</div>
@@ -73,7 +76,10 @@ const { label, subnav, sidebar, details, actions, children, tools, posterOverlap
 
 .sidebar {
   position: sticky;
-  inset-block-start: calc(var(--summary-sticky-gap) + var(--header-height));
+  inset-block-start: min(
+    calc(var(--summary-sticky-gap) + var(--header-height)),
+    calc(100vh - var(--summary-sidebar-height, 0px) - var(--summary-sticky-gap))
+  );
   /* Above the details column, whose headings' faint marks reach into the margin it fills. */
   z-index: var(--z-summary-sidebar);
   align-self: start;

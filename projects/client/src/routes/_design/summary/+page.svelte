@@ -163,7 +163,7 @@ const videos: readonly VideoCard[] = [
 
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 <Specimen title="Summary top" bleed
-  note="A movie's page as it opens: the title tags and ratings strip on the art, the poster rising into it, the links out ending in the share tile, the overview and the action stack. Each action works for a signed-in viewer, and a signed-in viewer's shared link carries their share code.">
+  note="A movie's page as it opens: the title tags and ratings strip on the art, the poster rising into it, the links out ending in the share tile, the overview and the action stack. In a window shorter than the sidebar, it scrolls with the page until its last tool shows, then stays put. Each action works for a signed-in viewer, and a signed-in viewer's shared link carries their share code.">
   <FanartHeader image={noWayHome.fanart}>
     <SummaryTitle title={noWayHome.title} year={noWayHome.year} certification={noWayHome.certification}
       links={[noWayHome.collection]} credits={noWayHome.credits} />

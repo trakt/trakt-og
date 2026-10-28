@@ -177,7 +177,7 @@ export function toListItemCard(row: ListItemRow, { sortBy, datePreferences, now 
         id: season.ids.trakt,
         href,
         title,
-        image: imageUrl((season.images?.poster ?? show.images?.poster)?.at(0), 'thumb'),
+        image: imageUrl(season.images?.poster?.at(0) ?? show.images?.poster?.at(0), 'thumb'),
         rating: rated(season.rating, season.first_aired),
         airedEpisodes: season.aired_episodes ?? undefined,
         seasonOf: { show: show.ids.trakt, number: season.number },

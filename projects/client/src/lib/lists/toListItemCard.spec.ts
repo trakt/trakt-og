@@ -86,6 +86,14 @@ describe('toListItemCard', () => {
     });
   });
 
+  it('should fall back to the show poster for a season without one', () => {
+    const [bare] = listItemRowsSchema.parse([
+      { type: 'season', show, season: { number: 9, ids: { trakt: 6 }, images: { poster: [] } }, ...listed },
+    ]) as ListItemRow[];
+
+    expect(card(bare, 'rank').image).toContain('/shows/1/posters/');
+  });
+
   it('should number an episode, badge a premiere and show the added date', () => {
     expect(card(episodeRow, 'added')).toMatchObject({
       number: '1x01',

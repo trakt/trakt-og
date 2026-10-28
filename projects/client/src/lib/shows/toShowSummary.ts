@@ -226,7 +226,7 @@ export function toShowSummary(params: ShowSummaryParams) {
     href: `${href}/seasons/${season.number}`,
     title: season.title ?? seasonName(season.number),
     fullTitle: `${show.title} ${season.title ?? `Season ${season.number}`}`,
-    image: imageUrl(season.images?.poster?.at(0), 'thumb'),
+    image: imageUrl(season.images?.poster?.at(0) ?? show.images?.poster?.at(0), 'thumb'),
     episodes: countLabel(season.episode_count ?? 0, 'episode'),
     rating: season.rating ?? 0,
     released: !!season.first_aired && new Date(season.first_aired) <= now,

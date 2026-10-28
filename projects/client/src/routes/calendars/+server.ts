@@ -1,6 +1,6 @@
 import { redirect } from '@sveltejs/kit';
+import { calendarHome } from '$lib/calendars/calendarHome';
 
-/** `/calendars`: My Shows & Movies signed in, All Premieres signed out (OG opened All Shows). */
 export function GET({ locals }) {
-  redirect(302, locals.token ? '/calendars/my/shows-movies' : '/calendars/premieres');
+  redirect(302, calendarHome(!!locals.token));
 }

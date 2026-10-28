@@ -8,6 +8,7 @@
 import { invalidateAll } from '$app/navigation';
 import { page } from '$app/state';
 import logo from '$lib/assets/trakt-logo-red.png';
+import { calendarHome } from '$lib/calendars/calendarHome';
 import Icon from '$lib/icons/Icon.svelte';
 import rocket from '$lib/icons/solid/rocket.svg?raw';
 import { toast } from '$lib/components/toast/toast.svelte';
@@ -58,7 +59,7 @@ const sections = $derived([
   { title: 'Discover', href: '/discover' },
   { title: 'Shows', href: '/shows/trending' },
   { title: 'Movies', href: '/movies/trending' },
-  { title: 'Calendar', href: signedIn ? '/calendars/my/shows-movies' : '/calendars/premieres' },
+  { title: 'Calendar', href: calendarHome(signedIn) },
 ]);
 
 const profileTabs = ['History', 'Progress', 'Library', 'Ratings', 'Lists', 'Watchlist', 'Comments', 'Notes', 'Network'];

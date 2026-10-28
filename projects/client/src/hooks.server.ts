@@ -17,7 +17,7 @@ import type { Handle, HandleFetch } from '@sveltejs/kit';
  * The page's `<html data-theme>` is the viewer's Dark Knight setting, which the root layout's load puts in
  * `locals.theme` before the page renders, so the first paint needs no script. Anyone else gets Dark Knight, og's default.
  * Links preload their page's data on hover, or on tap for a Standard app, whose lower rate limit a sweep across links
- * would spend.
+ * would spend. Their page's code, which costs no API calls, loads as they scroll into view (`app.html`).
  * `locals.crawler` says whether a search engine or link-preview bot asked, and `withCrawlHeaders` sets the page's
  * cache and robots headers from it and the session.
  */

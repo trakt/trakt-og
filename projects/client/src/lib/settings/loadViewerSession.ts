@@ -5,6 +5,8 @@ import { isAuthStepRoute } from '../auth/isAuthStepRoute.ts';
 import { toHeaderUser } from '../components/header/toHeaderUser.ts';
 import { isPhoneUserAgent } from '../components/mobile-splash/isPhoneUserAgent.ts';
 import { toMobilePlatform } from '../components/mobile-splash/toMobilePlatform.ts';
+import { keptSettingsFetch, type ResponseCache } from './keptSettingsFetch.ts';
+import { SETTINGS_REVISION_COOKIE } from './settingsRevisionCookie.ts';
 import { toDarkKnight } from './toDarkKnight.ts';
 import { toDatePreferences } from './toDatePreferences.ts';
 import { toTheme } from './toTheme.ts';
@@ -15,6 +17,8 @@ type Params = {
   locals: App.Locals;
   cookies: Pick<Cookies, 'get'>;
   request: Request;
+  /** A client navigation or reload, which may use the kept settings. A full page load reads them fresh. */
+  isDataRequest?: boolean;
   route: { id: string | null };
   platform?: App.Platform;
   untrack: <T>(fn: () => T) => T;
@@ -33,8 +37,19 @@ type Params = {
  * `gifs` says the Worker has a Klipy key, so comment composers get the GIF picker.
  * It reads the route untracked, so a client navigation keeps this result and every child loader that calls `parent()`,
  * like the profile frame. Only an auth step tracks it, so leaving one loads the settings.
+ * The server still reruns it for every child that calls `parent()`, so the settings are kept for a few minutes
+ * (`keptSettingsFetch`). A save in og changes the revision cookie (`markSettingsChanged`), which starts a new copy.
  */
-export async function loadViewerSession({ fetch, locals, cookies, request, route, platform: worker, untrack }: Params) {
+export async function loadViewerSession({
+  fetch,
+  locals,
+  cookies,
+  request,
+  isDataRequest = false,
+  route,
+  platform: worker,
+  untrack,
+}: Params) {
   const { token, tokenExpired } = locals;
   const hasSession = token !== null || tokenExpired;
   // The header search's type picker.
@@ -57,7 +72,17 @@ export async function loadViewerSession({ fetch, locals, cookies, request, route
   if (token === null || authStep) return loggedOut;
 
   try {
-    const response = await api({ fetch, token }).users.settings({
+    const settingsFetch = keptSettingsFetch({
+      fetch,
+      // The adapter types the cache with the Worker's own Response, which TypeScript can't match to the DOM's; at
+      // runtime they're one class.
+      cache: worker?.caches?.default as unknown as ResponseCache | undefined,
+      origin: new URL(request.url).origin,
+      token,
+      revision: cookies.get(SETTINGS_REVISION_COOKIE) ?? '',
+      fresh: !isDataRequest,
+    });
+    const response = await api({ fetch: settingsFetch, token }).users.settings({
       // @trakt/api 0.6.0 only types browsing, but API also supports sharing.
       query: { extended: 'browsing,sharing' as 'browsing' },
     });

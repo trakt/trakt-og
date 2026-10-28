@@ -19,7 +19,8 @@
 
 Reach for these before writing your own:
 - **Query params:** `utils/positiveInt` (page and limit).
-- **Viewer settings:** `settings/watchNowCountry` (lowercase country, US default).
+- **Viewer settings:** `settings/watchNowCountry` (lowercase country, US default), `settings/markSettingsChanged`
+  after any browser write that changes `/users/settings`, so the root layout stops using its kept copy.
 - **Requests:** `auth/viewerFetch` (the browser's signed-in fetch), `api/okBody` (a 200's body or null),
   `api/assertOk` (404, 503, 504 or 502 guard), `api/contractSchema` (zod 4 boundary over a `@trakt/api` contract).
 - **Dates:** `utils/dayIn` (`YYYY-MM-DD` in a zone), `utils/addDays` (UTC day math), `utils/unknownDate` and

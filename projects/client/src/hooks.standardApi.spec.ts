@@ -18,6 +18,10 @@ const server = setupServer(
     sent.push(new URL(request.url).pathname);
     return HttpResponse.json([]);
   }),
+  http.get(`${API}/movies/trending`, ({ request }) => {
+    sent.push(new URL(request.url).pathname);
+    return HttpResponse.json([], { headers: { 'cache-control': 'public, max-age=600' } });
+  }),
 );
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 afterEach(() => {
@@ -27,9 +31,9 @@ afterEach(() => {
 afterAll(() => server.close());
 
 type FetchEvent = Parameters<typeof handleFetch>[0];
-const serverFetch = async (url: string) =>
+const serverFetch = async (url: string, event: object = {}) =>
   handleFetch({
-    event: {},
+    event,
     request: new Request(url),
     fetch: (...args: Parameters<typeof globalThis.fetch>) => globalThis.fetch(...args),
   } as unknown as FetchEvent);
@@ -42,6 +46,26 @@ describe('hooks: a Standard app after a 429', () => {
 
     expect(isApiRateLimited(failure)).toBe(true);
     expect(sent).toEqual(['/users/me']);
+  });
+
+  it('should still answer a read the data center keeps', async () => {
+    const kept = new Map<string, Response>();
+    const cache = {
+      match: (key: string) => Promise.resolve(kept.get(key)?.clone()),
+      put: (key: string, response: Response) => Promise.resolve(void kept.set(key, response)),
+    };
+    const writes: Promise<unknown>[] = [];
+    const event = {
+      locals: { token: null, tokenExpired: false },
+      platform: { caches: { default: cache }, ctx: { waitUntil: (write: Promise<unknown>) => writes.push(write) } },
+      url: new URL('https://og.trakt.tv/movies/trending'),
+    };
+    await serverFetch(`${API}/movies/trending`, event);
+    await Promise.all(writes);
+    await serverFetch(`${API}/users/me`).catch(() => null);
+
+    expect((await serverFetch(`${API}/movies/trending`, event)).status).toBe(200);
+    expect(sent).toEqual(['/movies/trending', '/users/me']);
   });
 
   it('should send reads again once Retry-After runs out', async () => {

@@ -216,6 +216,80 @@ describe('root layout settings', () => {
   });
 });
 
+describe('root layout kept settings', () => {
+  const entries = new Map<string, Response>();
+  const cache = {
+    match: (key: string) => Promise.resolve(entries.get(key)?.clone()),
+    put: (key: string, response: Response) => Promise.resolve(void entries.set(key, response)),
+    delete: (key: string) => Promise.resolve(entries.delete(key)),
+  };
+  afterEach(() => entries.clear());
+
+  // One server run of the root layout: a full page load, or the data request of a client navigation or reload.
+  const visit = ({ dataRequest = true, revision = '', token = 'fake-token' } = {}) =>
+    load({
+      fetch: globalThis.fetch,
+      locals: { token, tokenExpired: false },
+      cookies: { get: (name: string) => (name === 'og-settings' ? revision : undefined) },
+      request: request(),
+      isDataRequest: dataRequest,
+      route: { id: '/' },
+      platform: { env: {}, caches: { default: cache } },
+      untrack,
+    } as unknown as Parameters<typeof load>[0]);
+
+  it('should read the settings once across a page load and its client navigations', async () => {
+    await visit({ dataRequest: false });
+    const navigations = await Promise.all([visit(), visit(), visit(), visit(), visit()]);
+
+    expect(seen).toHaveLength(1);
+    navigations.forEach((data) => expect(data.settings).toEqual(SETTINGS));
+  });
+
+  it('should read fresh on every full page load', async () => {
+    await visit({ dataRequest: false });
+    await visit({ dataRequest: false });
+
+    expect(seen).toHaveLength(2);
+  });
+
+  it('should read fresh once og saves a setting, then keep the new copy', async () => {
+    await visit({ dataRequest: false });
+    await visit();
+    const darkKnight = { ...SETTINGS, browsing: { ...SETTINGS.browsing, dark_knight: 'false' } };
+    server.use(
+      http.get('https://apiz.trakt.tv/users/settings', ({ request }) => {
+        seen.push(request);
+        return HttpResponse.json(darkKnight);
+      }),
+    );
+
+    const saved = await visit({ revision: 'saved' });
+    await visit({ revision: 'saved' });
+
+    expect(saved.settings).toEqual(darkKnight);
+    expect(seen).toHaveLength(2);
+  });
+
+  it('should read again for a renewed token', async () => {
+    await visit({ dataRequest: false });
+    await visit({ token: 'renewed-token' });
+
+    expect(seen.map((request) => request.headers.get('authorization'))).toEqual([
+      'Bearer fake-token',
+      'Bearer renewed-token',
+    ]);
+  });
+
+  it('should render a refused token logged out on a full page load and stop keeping its settings', async () => {
+    await visit({ dataRequest: false });
+    server.use(http.get('https://apiz.trakt.tv/users/settings', () => new HttpResponse(null, { status: 401 })));
+
+    expect(await visit({ dataRequest: false })).toEqual({ ...(await layout(null)), hasSession: true });
+    expect(await visit()).toEqual({ ...(await layout(null)), hasSession: true });
+  });
+});
+
 describe('root layout theme', () => {
   // The theme the page's <html> renders with (hooks.server.ts writes it).
   const theme = async (token: string | null = 'fake-token') => {

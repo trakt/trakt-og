@@ -53,6 +53,16 @@ describe('loadChart recommendations', () => {
     expect(data.page).toEqual({ type: 'infinite', current: 1 });
   });
 
+  it("should leave out what the dashboard's recommendations leave out", async () => {
+    await recommendations('fake-token');
+
+    const query = new URL(seen.at(0)?.url ?? '').searchParams;
+    expect(query.get('ignore_watched')).toBe('true');
+    expect(query.get('hide_watching')).toBe('true');
+    expect(query.get('ignore_watchlisted')).toBe('true');
+    expect(query.get('ignore_collected')).toBe('true');
+  });
+
   it("should send only the filters OG's recommendations offered", async () => {
     await loadChart({
       fetch: globalThis.fetch,

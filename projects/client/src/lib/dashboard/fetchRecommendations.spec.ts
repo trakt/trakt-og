@@ -8,10 +8,7 @@ const BASE = 'https://apiz.trakt.tv';
 const now = new Date('2026-10-14T12:00:00Z');
 const seen: Request[] = [];
 const server = setupServer();
-const settings: DashboardSettings['recommendations'] = {
-  type: 'media',
-  ignoreCollected: false,
-};
+const settings: DashboardSettings['recommendations'] = { type: 'media' };
 
 const media = (id: number, title: string, released: string) => ({
   title,
@@ -95,7 +92,7 @@ describe('fetchRecommendations', () => {
     expect(url.searchParams.get('ignore_watched')).toBe('true');
     expect(url.searchParams.get('hide_watching')).toBe('true');
     expect(url.searchParams.get('ignore_watchlisted')).toBe('true');
-    expect(url.searchParams.has('ignore_collected')).toBe(false);
+    expect(url.searchParams.get('ignore_collected')).toBe('true');
     expect(seen.at(0)?.headers.get('authorization')).toBe('Bearer abc');
     expect(recs.type).toBe('media');
     expect(recs.items?.map(({ type, href, released }) => ({ type, href, released }))).toEqual([
@@ -146,13 +143,11 @@ describe('fetchRecommendations', () => {
     ]);
   });
 
-  it("should load one type from its own route with the viewer's library switch", async () => {
+  it('should load one type from its own route', async () => {
     server.use(respond('/movies/recommendations', [rows[1]]));
 
-    const recs = await load({ type: 'movie', ignoreCollected: true });
-    const url = new URL(seen.at(0)?.url ?? '');
+    const recs = await load({ type: 'movie' });
 
-    expect(url.searchParams.get('ignore_collected')).toBe('true');
     expect(recs).toMatchObject({ type: 'movie', items: [{ title: 'Soon' }] });
   });
 

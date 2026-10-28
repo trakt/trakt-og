@@ -290,13 +290,13 @@ describe('loadCalendar', () => {
     });
 
     it('should send a signed-out viewer to sign in without calling the API', async () => {
-      expect(await redirectOf(load({ token: null }))).toBe('/auth/signin?redirect_to=%2Fcalendars%2Fmy%2Fshows-movies');
+      expect(await redirectOf(load({ token: null }))).toBe('/signin?redirect_to=%2Fcalendars%2Fmy%2Fshows-movies');
       expect(seen).toHaveLength(0);
     });
 
     it('should bring the query string back from sign in', async () => {
       expect(await redirectOf(load({ token: null, search: '?genres=drama' }))).toBe(
-        '/auth/signin?redirect_to=%2Fcalendars%2Fmy%2Fshows-movies%3Fgenres%3Ddrama',
+        '/signin?redirect_to=%2Fcalendars%2Fmy%2Fshows-movies%3Fgenres%3Ddrama',
       );
     });
 
@@ -305,7 +305,7 @@ describe('loadCalendar', () => {
         http.get(`${API}/calendars/my/media/:start/:days`, () => workerUnauthorized()),
         http.get(`${API}/users/hidden/calendar`, () => workerUnauthorized()),
       );
-      expect(await redirectOf(load({ stale: true }))).toBe('/auth/signin?redirect_to=%2Fcalendars%2Fmy%2Fshows-movies');
+      expect(await redirectOf(load({ stale: true }))).toBe('/signin?redirect_to=%2Fcalendars%2Fmy%2Fshows-movies');
     });
 
     it('should 404 a calendar OG never had', async () => {
@@ -317,7 +317,7 @@ describe('loadCalendar', () => {
   it('should redirect when either monthly chunk reports an expired viewer token', async () => {
     server.use(http.get(`${API}/calendars/my/media/2026-08-17/16`, () => new HttpResponse(null, { status: 401 })));
     expect(await redirectOf(load({ start: '2026-08-12', calendar: { period: 'month' } }))).toBe(
-      '/auth/signin?redirect_to=%2Fcalendars%2Fmy%2Fshows-movies',
+      '/signin?redirect_to=%2Fcalendars%2Fmy%2Fshows-movies',
     );
   });
 

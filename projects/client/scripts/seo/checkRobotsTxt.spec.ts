@@ -13,7 +13,9 @@ User-agent: *
 Disallow: /api/
 Disallow: /_design
 Disallow: /callback
-Disallow: /auth/
+Disallow: /signin
+Disallow: /signout
+Disallow: /login
 Disallow: /logout
 Disallow: /dashboard
 Disallow: /*?*genres=

@@ -7,6 +7,9 @@ import { invalidateAll } from '$app/navigation';
 import { page } from '$app/state';
 import { isStandardApi } from '$lib/api/isStandardApi';
 import { logHidden } from '$lib/api/logHidden';
+import { AUTH_SCENES } from '$lib/auth/authScenes';
+import { authStep } from '$lib/auth/authStep.svelte';
+import { isAuthStepRoute } from '$lib/auth/isAuthStepRoute';
 import { syncSession } from '$lib/auth/syncSession';
 import { userManager } from '$lib/auth/userManager';
 import CheckinDialog from '$lib/components/checkin/CheckinDialog.svelte';
@@ -17,6 +20,7 @@ import Footer from '$lib/components/footer/Footer.svelte';
 import Header from '$lib/components/header/Header.svelte';
 import MobileSplash from '$lib/components/mobile-splash/MobileSplash.svelte';
 import { TOO_SMALL_FOR_OG } from '$lib/components/mobile-splash/tooSmallForOg';
+import HyperspaceLoader from '$lib/components/loading/HyperspaceLoader.svelte';
 import Toaster from '$lib/components/toast/Toaster.svelte';
 import Nudges from '$lib/components/first-night/Nudges.svelte';
 import OfflineGuard from '$lib/errors/OfflineGuard.svelte';
@@ -29,8 +33,8 @@ import { MediaQuery } from 'svelte/reactivity';
 
 let { children, data } = $props();
 
-// The design-system demos draw their own page.
-const bare = $derived(page.route.id?.startsWith('/_design'));
+// The design-system demos draw their own page, and the sign-in and sign-out steps show og's loader alone.
+const bare = $derived(page.route.id?.startsWith('/_design') || isAuthStepRoute(page.route.id));
 // An error page fills the screen on its own, without the header and footer.
 const errored = $derived(!!page.error);
 
@@ -72,6 +76,8 @@ onMount(() => {
 });
 </script>
 
+<svelte:window onpageshow={(event) => event.persisted && authStep.clear()} />
+
 <svelte:head>
   <!-- Every page sets Latin text in Figtree first, so fetch it with the page instead of after the CSS. -->
   <link rel="preload" href={figtreeLatin} as="font" type="font/woff2" crossorigin="anonymous" />
@@ -90,6 +96,9 @@ onMount(() => {
     </main>
     {#if !errored}<Footer />{/if}
   </MobileSplash>
+{/if}
+{#if authStep.current}
+  <HyperspaceLoader {...AUTH_SCENES[authStep.current]} reverse={authStep.current === 'signOut'} />
 {/if}
 <Toaster />
 {#if awake}<OfflineGuard />{/if}

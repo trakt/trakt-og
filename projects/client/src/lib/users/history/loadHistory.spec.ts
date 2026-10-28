@@ -101,7 +101,7 @@ describe('loadHistory', () => {
   it('should send signed-out visitors past page 1 to sign in', async () => {
     await expect(load({ query: '?page=2', signedIn: false })).rejects.toMatchObject({
       status: 302,
-      location: '/auth/signin?redirect_to=%2Fusers%2Ftester%2Fhistory%3Fpage%3D2',
+      location: '/signin?redirect_to=%2Fusers%2Ftester%2Fhistory%3Fpage%3D2',
     });
   });
 

@@ -1,8 +1,12 @@
 <!--
-  The page loader as lists and progress pages show it, the shimmering bars that hold a number's or a name's place
-  on the home page, the shimmering cards that hold a dashboard panel's place, and a picker's shimmering option rows.
+  The page loader as lists and progress pages show it, the starfield while og signs in or out, the shimmering bars
+  that hold a number's or a name's place on the home page, the shimmering cards that hold a dashboard panel's place,
+  and a picker's shimmering option rows.
 -->
 <script lang="ts">
+import { AUTH_FAILURE_MESSAGE } from '$lib/auth/authFailure';
+import { AUTH_SCENES } from '$lib/auth/authScenes';
+import HyperspaceLoader from '$lib/components/loading/HyperspaceLoader.svelte';
 import LoadingOverlay from '$lib/components/loading/LoadingOverlay.svelte';
 import CardShimmerRow from '$lib/components/loading/CardShimmerRow.svelte';
 import OptionRowShimmers from '$lib/components/loading/OptionRowShimmers.svelte';
@@ -16,6 +20,23 @@ import Variant from '$lib/design/Variant.svelte';
   <div class="viewport">
     <LoadingOverlay visible />
   </div>
+</Specimen>
+
+<Specimen title="Sign-in loader"
+  note="HyperspaceLoader on /signin, /callback and /signout, and over the page when Sign In or Sign Out is clicked, with a Han Solo line for each step. Stars stream out from behind the mark as it signs in and fall back into it as it signs out, easing up to a slow cruise. When a step fails, its notice sits under the line. With the OS set to reduce motion, the stars hold still.">
+  <Variant label="Signing in">
+    <div class="viewport"><HyperspaceLoader {...AUTH_SCENES.signIn} /></div>
+  </Variant>
+  <Variant label="Signing out">
+    <div class="viewport"><HyperspaceLoader {...AUTH_SCENES.signOut} reverse /></div>
+  </Variant>
+  <Variant label="Rate limited on the way back">
+    <div class="viewport">
+      <HyperspaceLoader {...AUTH_SCENES.return}>
+        <p class="notice">{AUTH_FAILURE_MESSAGE.return.rateLimited} Trying again in 24s.</p>
+      </HyperspaceLoader>
+    </div>
+  </Variant>
 </Specimen>
 
 <Specimen title="Shimmer" row note="Holds a flag's, a name's or a pill's place on the home page while it loads.">
@@ -77,6 +98,10 @@ import Variant from '$lib/design/Variant.svelte';
   border: 1px solid var(--color-menu-border);
   border-radius: var(--radius-menu);
   background-color: var(--color-menu-bg);
+}
+
+.notice {
+  margin: 0;
 }
 
 .home {

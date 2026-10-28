@@ -1396,6 +1396,20 @@
   ); /* the disc before it fills */
   --color-loader-stripe: #fff; /* the monogram */
 
+  /* Hyperspace: the starfield behind the Trakt mark while og signs in or out (HyperspaceLoader) */
+  --color-hyperspace-bg: #000;
+  --color-hyperspace-star: #fff;
+  --color-hyperspace-star-accent: #ff5a60; /* a few stars, brand red lifted for the dark */
+  --color-hyperspace-glow: rgb(0 0 0 / 0.9); /* clears the stars behind the mark */
+  --hyperspace-glow-clear: 70px;
+  --hyperspace-glow-fade: 240px;
+  --color-hyperspace-credit: rgb(255 255 255 / 0.6); /* the quote's speaker and source */
+  --space-hyperspace-message: 16px;
+  --space-hyperspace-credit: 2px;
+  --space-hyperspace-notice: 20px;
+  --hyperspace-text-width: 360px;
+  --transition-hyperspace-arrive: 0.3s;
+
   /* Shimmer: a bar standing in for numbers and names while they load */
   --shimmer: linear-gradient(
     90deg,

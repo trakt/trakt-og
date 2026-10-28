@@ -27,6 +27,7 @@ import HeaderTint from './HeaderTint.svelte';
 import type { HeaderUser } from './HeaderUser.ts';
 import { reviewLinks } from './reviewLinks.ts';
 import { viewerFetch } from '../../auth/viewerFetch.ts';
+import { authStep } from '../../auth/authStep.svelte.ts';
 
 interface Props {
   user: HeaderUser | null;
@@ -149,13 +150,13 @@ async function toggleDarkKnight() {
           <ul>
             {#if user.isVip}<li><a href={traktUrls.vip} target="_blank" rel="noopener">Manage VIP</a></li>{/if}
             <li><a href={traktUrls.settings} target="_blank" rel="noopener">Settings</a></li>
-            <li><a href="/logout">Sign Out</a></li>
+            <li><a href="/signout" onclick={authStep.signOut}>Sign Out</a></li>
           </ul>
         </HeaderMenu>
       </div>
     {:else if !renewing}
       <!-- One page signs in and signs up, so one button. -->
-      <a class="sign-in" href="/auth/signin">Sign In</a>
+      <a class="sign-in" href="/signin" onclick={authStep.signIn}>Sign In</a>
     {/if}
   </div>
 </header>

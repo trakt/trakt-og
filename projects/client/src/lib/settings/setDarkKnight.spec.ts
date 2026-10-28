@@ -30,7 +30,7 @@ const passthrough: typeof fetch = (...args) => globalThis.fetch(...args);
 
 function viewerSave(body: SettingsBody) {
   const { manager } = fakeUserManager({ current: fakeUser('viewer-token', 3600) });
-  const request = settingsRequest(authenticatedFetch({ manager, baseFetch: passthrough }));
+  const request = settingsRequest(authenticatedFetch({ manager, baseFetch: passthrough }), () => {});
   return saveSettings({ request, body });
 }
 

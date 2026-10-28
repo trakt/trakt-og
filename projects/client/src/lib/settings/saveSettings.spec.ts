@@ -1,6 +1,6 @@
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { authenticatedFetch } from '../auth/authenticatedFetch.ts';
 import { fakeUser } from '../auth/fakeUser.ts';
 import { fakeUserManager } from '../auth/fakeUserManager.ts';
@@ -17,11 +17,13 @@ const record = async (request: Request) => {
     bearer: request.headers.get('authorization'),
   });
 };
+const changed = vi.fn<() => void>();
 const server = setupServer();
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 afterEach(() => {
   server.resetHandlers();
   seen.length = 0;
+  changed.mockClear();
 });
 afterAll(() => server.close());
 
@@ -30,7 +32,7 @@ const passthrough: typeof fetch = (...args) => globalThis.fetch(...args);
 
 function viewer(signinSilent?: () => Promise<ReturnType<typeof fakeUser> | null>) {
   const { manager } = fakeUserManager({ current: fakeUser('viewer-token', 3600), signinSilent });
-  return settingsRequest(authenticatedFetch({ manager, baseFetch: passthrough }));
+  return settingsRequest(authenticatedFetch({ manager, baseFetch: passthrough }), changed);
 }
 
 const body = { browsing: { dark_knight: 'true' } };
@@ -46,6 +48,7 @@ describe('saveSettings', () => {
 
     expect(await saveSettings({ request: viewer(), body })).toEqual({ saved: true, errors: [] });
     expect(seen).toEqual([{ path: '/users/settings', method: 'PUT', body, bearer: 'Bearer viewer-token' }]);
+    expect(changed).toHaveBeenCalledTimes(1);
   });
 
   it("should show API's validation message", async () => {
@@ -90,5 +93,6 @@ describe('saveSettings', () => {
 
     server.use(http.put(`${API}/users/settings`, () => HttpResponse.error()));
     expect(await saveSettings({ request: viewer(), body })).toEqual(generic);
+    expect(changed).not.toHaveBeenCalled();
   });
 });

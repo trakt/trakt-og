@@ -10,6 +10,7 @@ import { toast } from '$lib/components/toast/toast.svelte';
 import { squareAvatar } from '$lib/firstNight/squareAvatar';
 import Icon from '$lib/icons/Icon.svelte';
 import camera from '$lib/icons/solid/camera.svg?raw';
+import { markSettingsChanged } from '$lib/settings/markSettingsChanged';
 
 const { src }: { src: string } = $props();
 const id = $props.id();
@@ -27,6 +28,7 @@ async function pick(event: Event) {
     preview = avatar;
     const response = await api({ fetch: viewerFetch() }).users.avatar({ body: { user: { avatar } } });
     if (response.status < 200 || response.status >= 300) throw new Error(String(response.status));
+    markSettingsChanged();
     toast.success('Looking good. Your new photo is saved.');
     await invalidateAll();
   } catch {

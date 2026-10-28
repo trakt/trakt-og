@@ -6,6 +6,7 @@ import FilterMenu from '$lib/components/filters/FilterMenu.svelte';
 import ReportDialog from '$lib/components/summary/ReportDialog.svelte';
 import { toast } from '$lib/components/toast/toast.svelte';
 import LibraryTip from '$lib/components/collection/LibraryTip.svelte';
+import ListedTip from '$lib/components/lists/ListedTip.svelte';
 import PlaysTip from '$lib/components/media/PlaysTip.svelte';
 import FavoritedTip from '$lib/components/favorites/FavoritedTip.svelte';
 import TooltipHeader from '$lib/components/tooltip/TooltipHeader.svelte';
@@ -61,6 +62,15 @@ const library = {
   sources: ['plex' as const],
 };
 const showLibrary = { episodes: { done: 27, aired: 32 }, sources: ['plex' as const] };
+const listedOn = [
+  { id: 1, name: 'Sci-Fi Faves', collaboration: false },
+  { id: 2, name: '2026 Rewatch', collaboration: false },
+  { id: 3, name: 'Movie Night with Sam', collaboration: true },
+  { id: 4, name: 'Best of the 90s', collaboration: false },
+  { id: 5, name: 'Comfort Watches', collaboration: false },
+  { id: 6, name: 'Mind Benders', collaboration: false },
+  { id: 7, name: 'Oscar Night Picks', collaboration: false },
+];
 </script>
 
 <Specimen title="Dropdown" row
@@ -230,6 +240,18 @@ const showLibrary = { episodes: { done: 27, aired: 32 }, sources: ['plex' as con
     <Tooltip placement="bottom">
       {#snippet trigger(tooltip)}<DemoButton aria-label="84% in library" {...tooltip}>Show</DemoButton>{/snippet}
       <LibraryTip tip={showLibrary} />
+    </Tooltip>
+  </Variant>
+  <Variant label="Lists, a list button">
+    <Tooltip placement="bottom">
+      {#snippet trigger(tooltip)}<DemoButton aria-label="Manage lists" {...tooltip}>3 lists</DemoButton>{/snippet}
+      <ListedTip user="sean" watchlisted lists={listedOn.slice(0, 2)} />
+    </Tooltip>
+  </Variant>
+  <Variant label="Lists, more than six">
+    <Tooltip placement="bottom">
+      {#snippet trigger(tooltip)}<DemoButton aria-label="Manage lists" {...tooltip}>8 lists</DemoButton>{/snippet}
+      <ListedTip user="sean" watchlisted lists={listedOn} />
     </Tooltip>
   </Variant>
   <Variant label="Chart, a day's bar">

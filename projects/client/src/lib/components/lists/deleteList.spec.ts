@@ -1,45 +1,43 @@
 import { describe, expect, it, vi } from 'vitest';
+import { emptyListMembership } from '../../overlay/listMembership.ts';
 import { deleteList } from './deleteList.ts';
-const catalog = [
-  { id: 12, name: 'Delete', count: 1, display_order: 0, type: 'standard', owner_id: 1 },
-  {
-    id: 13,
-    name: 'Keep',
-    count: 1,
-    display_order: 1,
-    type: 'collaborative',
-    owner_id: 2,
-  },
-];
+
+const membership = {
+  ...emptyListMembership(),
+  movie: new Map([
+    [98, [12]],
+    [99, [12, 13]],
+  ]),
+  lists: new Map([
+    [12, { id: 12, name: 'Delete', collaboration: false }],
+    [13, { id: 13, name: 'Keep', collaboration: true }],
+  ]),
+};
+
 describe('deleteList', () => {
-  it('should keep membership from remaining collaborative lists and roll back a failed delete', async () => {
+  it('should drop the list from every item without reading the other lists', async () => {
+    const patch = vi.fn((_name, update) => {
+      const next = update(membership);
+      expect(next.movie).toEqual(new Map([[99, [13]]]));
+      expect([...next.lists.keys()]).toEqual([13]);
+      return vi.fn();
+    });
+    const request = vi.fn(() => Promise.resolve(new Response(null, { status: 204 })));
+    const notify = { success: vi.fn(), error: vi.fn() };
+    expect(await deleteList({ id: 12, request, overlay: { patch }, remove: () => vi.fn(), notify })).toBe(true);
+    expect(patch).toHaveBeenCalledOnce();
+    expect(request).toHaveBeenCalledExactlyOnceWith('/users/me/lists/12', 'DELETE');
+  });
+
+  it('should roll back a failed delete', async () => {
     const rollback = vi.fn();
     const restore = vi.fn();
-    const patch = vi.fn((_name, update) => {
-      expect(update({}).movie.has(99)).toBe(true);
-      return rollback;
-    });
-    const request = vi.fn((path, method) => {
-      if (path === '/v3/users/me/lists') return Promise.resolve(Response.json(catalog));
-      if (method === 'DELETE') return Promise.resolve(new Response(null, { status: 500 }));
-      expect(path).toBe('/lists/13/items?limit=250&page=1');
-      return Promise.resolve(Response.json([{ type: 'movie', movie: { ids: { trakt: 99 } } }]));
-    });
+    const patch = vi.fn(() => rollback);
+    const request = vi.fn(() => Promise.resolve(new Response(null, { status: 500 })));
     const notify = { success: vi.fn(), error: vi.fn() };
     expect(await deleteList({ id: 12, request, overlay: { patch }, remove: () => restore, notify })).toBe(false);
     expect(rollback).toHaveBeenCalledOnce();
     expect(restore).toHaveBeenCalledOnce();
     expect(notify.error).toHaveBeenCalledOnce();
-  });
-  it('should allow deletion when auxiliary membership is unavailable', async () => {
-    const patch = vi.fn();
-    const restore = vi.fn();
-    const notify = { success: vi.fn(), error: vi.fn() };
-    const request = vi.fn((_path, method) =>
-      Promise.resolve(new Response(null, { status: method === 'DELETE' ? 204 : 503 })),
-    );
-    expect(await deleteList({ id: 12, request, overlay: { patch }, remove: () => restore, notify })).toBe(true);
-    expect(patch).not.toHaveBeenCalled();
-    expect(restore).not.toHaveBeenCalled();
   });
 });

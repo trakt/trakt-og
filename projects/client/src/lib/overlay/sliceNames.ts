@@ -16,5 +16,5 @@ export const SLICE_NAMES: readonly SliceName[] = [
   'hidden',
   'likedLists',
   'network',
-  'listed',
+  'listMembership',
 ];

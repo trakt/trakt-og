@@ -35,6 +35,6 @@ export async function checkActivities({ get, known, isCurrent, onSlice }: CheckA
     );
 
   // A failed slice keeps its previous copy, or stays unknown. Lists cost a request each, so they go last.
-  await fetchAll(stale.filter((name) => name !== 'listed'));
-  await fetchAll(stale.filter((name) => name === 'listed'));
+  await fetchAll(stale.filter((name) => name !== 'listMembership'));
+  await fetchAll(stale.filter((name) => name === 'listMembership'));
 }

@@ -1,5 +1,6 @@
 import type { CollectedItem } from './CollectedItem.ts';
 import type { HiddenProgress } from './HiddenProgress.ts';
+import type { ListLabel } from './ListLabel.ts';
 import type { LibrarySource } from '../components/collection/LibrarySource.ts';
 
 type Ids = ReadonlySet<number>;
@@ -40,6 +41,8 @@ export type OverlaySlices = {
   likedLists: Ids;
   /** The slugs of the members the user follows and of those who follow them; both ways is a friend. */
   network: Readonly<Record<'following' | 'followers', ReadonlySet<string>>>;
-  /** Ids in any of the user's own or collaborative lists. */
-  listed: Readonly<Record<'movie' | 'show' | 'season' | 'episode', Ids>>;
+  /** Item id to the ids of the user's own or collaborative lists holding it, and every one of those lists. */
+  listMembership: Readonly<Record<'movie' | 'show' | 'season' | 'episode', ById<readonly number[]>>> & {
+    readonly lists: ById<ListLabel>;
+  };
 };

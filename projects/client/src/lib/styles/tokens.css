@@ -302,7 +302,7 @@
   --font-size-quick-icon-busy-small: 13px;
   --quick-icons-row-cell: 32px; /* a list row's icon square, inside its group's 1px border: a 34px control */
   --quick-icons-row-rating-padding: 10px;
-  --quick-icon-trakt-shift: 0.085em; /* Trakt-font glyphs (check, library, list) sit this far above center */
+  --quick-icon-trakt-shift: 0.085em; /* Trakt-font glyphs (check, library) sit this far above center */
   --font-size-quick-icon-favorite: 0.85em; /* the solid star, down to the other glyphs' height */
   --font-size-quick-icon-rewatching: 0.8em; /* the solid backward arrows, down to the other glyphs' weight */
   --font-size-rating: 20px;
@@ -1315,6 +1315,7 @@
   --space-tooltip-footer: 9px 14px; /* a tooltip's bottom section, edge to edge: a progress bar, the library's logos */
   --space-tooltip-footer-gap: 8px; /* between a rewatch's two bars, or a bar and the logos */
   --color-tooltip-footer: #1e1e1e; /* a shade up from the box, past the divider: its footer, or its header */
+  --space-tooltip-list-row: 2px;
 
   /* Rating popovers (OG Bootstrap popover and summary rating trigger). */
   /* Poster rating lines. */
@@ -2689,6 +2690,7 @@
   --list-picker-width: var(--prompt-width);
   --list-picker-scroll-height: 320px;
   --space-list-picker-link: 8px; /* either side of a row's open link */
+  --space-list-picker-row: 4px 10px; /* a row's toggle, tighter than a menu's */
   --space-list-picker-search: 10px 10px 0; /* around the filter field; the first group's header spaces it from the rows */
   --space-list-picker-footer: 10px; /* around New list */
   --list-picker-search-ring: 3px;

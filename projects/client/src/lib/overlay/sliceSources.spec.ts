@@ -203,7 +203,12 @@ describe('sliceSources', () => {
 
   it('should collect list membership across every list', async () => {
     server.use(
-      http.get(`${API}/v3/users/me/lists`, () => HttpResponse.json([{ id: 10 }, { id: 11 }])),
+      http.get(`${API}/v3/users/me/lists`, () =>
+        HttpResponse.json([
+          { id: 10, name: 'Faves', count: 1, display_order: 0, type: 'standard', owner_id: 1 },
+          { id: 11, name: 'Shared', count: 2, display_order: 0, type: 'collaborative', owner_id: 2 },
+        ]),
+      ),
       http.get(`${API}/lists/10/items`, () =>
         HttpResponse.json([{ type: 'movie', movie: ids(1), id: 10, listed_at: '2026-09-29T12:00:00Z' }]),
       ),
@@ -211,14 +216,21 @@ describe('sliceSources', () => {
         HttpResponse.json([
           { type: 'person', person: ids(2) },
           { type: 'show', show: ids(3) },
+          { type: 'movie', movie: ids(1) },
         ]),
       ),
     );
 
-    const data = await sliceSources.listed.load(get);
+    const data = await sliceSources.listMembership.load(get);
 
-    expect(data.movie).toEqual(new Set([1]));
-    expect(data.show).toEqual(new Set([3]));
+    expect(data.movie).toEqual(new Map([[1, [10, 11]]]));
+    expect(data.show).toEqual(new Map([[3, [11]]]));
+    expect(data.lists).toEqual(
+      new Map([
+        [10, { id: 10, name: 'Faves', collaboration: false }],
+        [11, { id: 11, name: 'Shared', collaboration: true }],
+      ]),
+    );
     expect(data).not.toHaveProperty('person');
   });
 
@@ -245,16 +257,19 @@ describe('sliceSources', () => {
     it('should collect list membership from v2’s own and collaborative lists', async () => {
       server.use(
         http.get(`${API}/v3/users/me/lists`, refused),
-        http.get(`${API}/users/me/lists`, () => HttpResponse.json([{ ids: { trakt: 10 } }])),
-        http.get(`${API}/users/me/lists/collaborations`, () => HttpResponse.json([{ ids: { trakt: 11 } }])),
+        http.get(`${API}/users/me/lists`, () => HttpResponse.json([{ ids: { trakt: 10 }, name: 'Faves' }])),
+        http.get(`${API}/users/me/lists/collaborations`, () =>
+          HttpResponse.json([{ ids: { trakt: 11 }, name: 'Shared' }]),
+        ),
         http.get(`${API}/lists/10/items`, () => HttpResponse.json([{ type: 'movie', movie: ids(1) }])),
         http.get(`${API}/lists/11/items`, () => HttpResponse.json([{ type: 'show', show: ids(3) }])),
       );
 
-      const data = await sliceSources.listed.load(get);
+      const data = await sliceSources.listMembership.load(get);
 
-      expect(data.movie).toEqual(new Set([1]));
-      expect(data.show).toEqual(new Set([3]));
+      expect(data.movie).toEqual(new Map([[1, [10]]]));
+      expect(data.show).toEqual(new Map([[3, [11]]]));
+      expect(data.lists.get(11)).toEqual({ id: 11, name: 'Shared', collaboration: true });
     });
   });
 
@@ -270,7 +285,7 @@ describe('sliceSources', () => {
       ['watchedShows', `${API}/sync/watched/shows`, [{ show: 1 }]],
       ['ratings', `${API}/sync/ratings`, [{ type: 'movie', movie: ids(1) }]],
       ['likedLists', `${API}/users/me/likes/lists`, [{ list: { ids: {} } }]],
-      ['listed', `${API}/v3/users/me/lists`, { id: 10 }],
+      ['listMembership', `${API}/v3/users/me/lists`, { id: 10 }],
     ] as const)('should throw for %s like a failed request', async (name, url, body) => {
       server.use(http.get(url, () => HttpResponse.json(body)));
 

@@ -213,6 +213,20 @@ describe('toShowSummary', () => {
     expect(summary.seasons.map(({ title }) => title)).toEqual(['Specials', 'Season 1', 'Season 2']);
   });
 
+  it('should fall back to the show poster for a season without one', () => {
+    const images = (poster: string[]) => ({ images: { poster } }) as Partial<SeasonWithEpisodes>;
+    const summary = toShowSummary({
+      ...base,
+      show: show({ images: { poster: ['media.trakt.tv/images/shows/1/posters/medium/show.jpg.webp'] } } as never),
+      seasons: [
+        season(1, [], images(['media.trakt.tv/images/seasons/1/posters/medium/s1.jpg.webp'])),
+        season(2, [], images([])),
+      ],
+    });
+
+    expect(summary.seasons.map(({ image }) => image?.split('/').at(-1))).toEqual(['s1.jpg.webp', 'show.jpg.webp']);
+  });
+
   it('should hide actor episode counts for viewers who hide actor spoilers', () => {
     const member = {
       characters: ['Walter White'],

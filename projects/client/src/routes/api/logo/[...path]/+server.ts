@@ -1,14 +1,9 @@
 import { error, type RequestHandler } from '@sveltejs/kit';
+import type { ResponseCache } from '../../../../lib/api/ResponseCache.ts';
 import { LOGO_PATH } from '../../../../lib/utils/logoPath.ts';
 
 const MEDIA = 'https://media.trakt.tv/images';
 const YEAR = 60 * 60 * 24 * 365;
-
-/** The two methods used from Cloudflare's `Cache`. */
-interface ResponseCache {
-  match(key: string): Promise<Response | undefined>;
-  put(key: string, response: Response): Promise<void>;
-}
 
 /**
  * A show or movie logo from media.trakt.tv, served from og's own origin so the page can read its pixels and trim its
@@ -19,8 +14,6 @@ export const GET: RequestHandler = async ({ params, url, platform, fetch }) => {
   const path = params.path ?? '';
   if (!LOGO_PATH.test(path)) error(404);
 
-  // The adapter types the cache with the Worker's own Response, which TypeScript can't match to the DOM's; at runtime
-  // they're one class.
   const cache = platform?.caches?.default as unknown as ResponseCache | undefined;
   const hit = await cache?.match(url.href).catch(() => undefined);
   if (hit) return hit;

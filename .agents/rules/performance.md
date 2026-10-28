@@ -30,6 +30,7 @@ Smooth means the same page with less work. Every rule here came from a counted w
 ## Navigation
 
 - **Link to a page route, never to a redirect.** The client router only knows page routes, so a link to a `+server.ts` redirect is a full document reload plus a hop. Build the final URL (`lists/listPath.ts`, the viewer's own slug instead of `/users/me`). (`header/Header.svelte`, `discover/toListCard.ts`)
+- **The root layout's load tracks nothing that changes between pages.** A layout that reads `route`, `url` or a param reruns on every client navigation that changes it, and so does every layout under it that calls `parent()`: a profile tab change re-sent the whole profile frame. Read such values in `untrack`. (`settings/loadViewerSession.ts`)
 - **A parent layout runs whenever a child calls `parent()`**, even when the client then discards its result. Expensive extras a layout streams should start lazily on data requests (`isDataRequest`) with `utils/lazy`. (`users/loadProfileFrame.ts`)
 
 ## Requests

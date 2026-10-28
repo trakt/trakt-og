@@ -24,6 +24,7 @@ const pageEvent = (cookie: string | undefined) =>
     url: new URL('https://og.trakt.tv/shows/trending'),
     route: { id: '/shows/[chart=chart]/[[period]]' },
     request: new Request('https://og.trakt.tv/shows/trending'),
+    untrack: <T>(fn: () => T) => fn(),
   }) as unknown as Handle['event'];
 
 const layoutLoad = (event: Handle['event']) =>

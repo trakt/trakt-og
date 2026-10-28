@@ -1388,6 +1388,13 @@
   --color-frame: #1d1d1d; /* the charts and search frame, dark in both themes */
   --color-text-inverse: #fff; /* on red: the current page, the active tab, the loading states */
 
+  /* Navigation progress: the red line across the top of the window while the next page loads (NavigationProgress) */
+  --color-navigation-progress: var(--brand-primary);
+  --navigation-progress-height: 3px;
+  --navigation-progress-delay: 150ms; /* a quicker page never shows it */
+  --transition-navigation-progress-appear: 0.2s ease-out;
+  --transition-navigation-progress-crawl: 12s cubic-bezier(0.1, 0.7, 0.2, 1); /* fast at first, then barely moving */
+
   /* Loader: the liquid-fill Trakt mark (TraktLoader) */
   --color-loader-brand: var(--brand-primary); /* the ring and the rising fill */
   --color-loader-empty: light-dark(
@@ -2587,6 +2594,7 @@
   --z-modal: 1050;
   --z-popover: 1060;
   --z-header: 1500;
+  --z-navigation-progress: calc(var(--z-header) + 1); /* along the header's top edge */
   --z-toast: 30; /* under the header and its menus, which open over the toasts */
   --z-first-night-bar: 25; /* the welcome reel: over the page, under the toasts and the header */
   --z-summary-sidebar: 1; /* over the details' heading marks */

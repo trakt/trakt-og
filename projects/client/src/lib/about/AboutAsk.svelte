@@ -1,10 +1,9 @@
 <!--
-  Report a bug and Request a feature, side by side: what to include, then a link to a new GitHub issue with its label
+  Bugs and Feature Requests, side by side: what to include, then a link to a new GitHub issue with its label
   already set.
 -->
 <script lang="ts">
 import LinkButton from '$lib/components/button/LinkButton.svelte';
-import TagPills from '$lib/components/labels/TagPills.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import bug from '$lib/icons/solid/bug.svg?raw';
 import lightbulb from '$lib/icons/solid/lightbulb.svg?raw';
@@ -13,8 +12,7 @@ import { ogRepoUrls } from './ogRepoUrls.ts';
 const CARDS = [
   {
     id: 'about-bug',
-    title: 'Report a bug',
-    tag: { text: 'Bug', kind: 'primary' },
+    title: 'Bugs',
     icon: bug,
     text: "Does something look wrong or not work how you expect? Open a bug on GitHub and we'll take a look.",
     include: [
@@ -23,12 +21,11 @@ const CARDS = [
       'A screenshot, plus your browser and screen size',
     ],
     href: ogRepoUrls.newBug,
-    go: 'Open a bug report',
+    go: 'Report a bug',
   },
   {
     id: 'about-feature',
-    title: 'Request a feature',
-    tag: { text: 'Feature', color: 'var(--brand-secondary)' },
+    title: 'Feature Requests',
     icon: lightbulb,
     text: "Missing something from classic Trakt, or have a new idea? Suggest it on GitHub and we'll start researching.",
     include: [
@@ -46,7 +43,7 @@ const CARDS = [
   {#each CARDS as card (card.id)}
     <section class="card" aria-labelledby={card.id}>
       <span class="icon"><Icon svg={card.icon} /></span>
-      <h2 id={card.id}>{card.title} <TagPills tags={[card.tag]} /></h2>
+      <h2 id={card.id}>{card.title}</h2>
       <p>{card.text}</p>
       <div>
         <ul>
@@ -101,9 +98,6 @@ const CARDS = [
 }
 
 h2 {
-  display: flex;
-  align-items: center;
-  gap: var(--about-repo-gap);
   margin: 0;
   font-size: var(--font-size-h4);
 }

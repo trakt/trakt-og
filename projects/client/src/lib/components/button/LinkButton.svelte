@@ -5,7 +5,7 @@
   error pages. With an `href` it's a link: another site's opens in a new tab with an arrow after the label, unless
   `arrow={false}` (a label that leads with its own icon), and og's own stays in the tab. With `onclick` and no `href`
   it's a button.
-    <LinkButton href={newBugUrl}>Open a bug report</LinkButton>
+    <LinkButton href={newBugUrl}>Report a bug</LinkButton>
     <LinkButton onclick={clear} variant="outline">Clear filters</LinkButton>
 -->
 <script lang="ts">

@@ -11,6 +11,7 @@ export const ogRepoUrls = {
   newBug: `${repo}/issues/new?labels=bug`,
   newFeature: `${repo}/issues/new?labels=enhancement`,
   openIssues: `${repo}/issues`,
+  discussions: `${repo}/discussions`,
   closedIssues: `${repo}/issues?q=is%3Aissue+is%3Aclosed`,
   commits: `${repo}/commits/main`,
   readme: `${repo}/blob/main/README.md`,

@@ -1178,6 +1178,7 @@
   --header-menu-gap: 10px; /* a header menu below its trigger, with room for its arrow */
   --header-signpost: 18px; /* the help menu's trigger */
   --header-help-icon-width: 1.25em; /* a fixed-width icon's, like fa-fw */
+  --header-help-icon-small: 0.85; /* a wide glyph's scale, like the help menu's speech bubbles */
   --space-menu-header: 10px 10px 4px;
   --color-menu-bg: light-dark(#fff, #262626);
   --color-menu-border: light-dark(#e3e3e3, #3a3a3a);
@@ -1784,6 +1785,7 @@
   --color-site-instagram: #e4405f;
   --color-site-google-play: #01d277;
   --color-site-reddit: #ff4500;
+  --color-site-github: #24292f; /* its mark's near-black */
   --color-site-mastodon: #6364ff;
   --color-site-youtube: #f00;
   --color-site-status: #3fb950; /* all systems go */
@@ -3680,10 +3682,11 @@
   --color-about-issue-closed: light-dark(#8250df, #a371f7);
 }
 
-/* Help: /help, the about page's header and cards with a banner each for Trakt support and the community. */
+/* Help: /help, the about page's header and cards with a banner each for GitHub Discussions, Trakt support and the
+   community. */
 :root {
   --help-banner-tint: 22%; /* of its color, fading from the left like the API banner */
-  --help-reddit-glyph: 30px;
+  --help-mark-glyph: 30px; /* a brand's glyph on its round mark */
   --help-actions-gap: 10px;
 }
 

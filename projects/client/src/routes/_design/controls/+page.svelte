@@ -213,7 +213,7 @@ function showOverlay() {
 <Specimen title="Link buttons" row note="Every one opens another site in a new tab, as the about page and the error pages use them.">
   <Variant label="Primary, an ask card">
     <div class="ground panel">
-      <LinkButton href={ogRepoUrls.newBug}>Open a bug report</LinkButton>
+      <LinkButton href={ogRepoUrls.newBug}>Report a bug</LinkButton>
     </div>
   </Variant>
   <Variant label="Developer, the API band">

@@ -11,6 +11,7 @@ import DialogNotice from '$lib/components/dialog/DialogNotice.svelte';
 import type { CardTag } from '$lib/components/media/CardTag';
 import { toast } from '$lib/components/toast/toast.svelte';
 import image from '$lib/icons/regular/image.svg?raw';
+import { markSettingsChanged } from '$lib/settings/markSettingsChanged';
 import { type CoverType, setCoverImage } from './coverImage.ts';
 import { viewerFetch } from '../../auth/viewerFetch.ts';
 
@@ -52,6 +53,7 @@ async function submit() {
     toast.error(result.message);
     return;
   }
+  markSettingsChanged();
   open = false;
   onset();
   toast.success(result.message);

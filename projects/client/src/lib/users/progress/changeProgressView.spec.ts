@@ -17,7 +17,10 @@ function setup() {
     shown,
     params: {
       apply: (on: boolean) => shown.push(on),
-      request: settingsRequest((...args) => globalThis.fetch(...args)),
+      request: settingsRequest(
+        (...args) => globalThis.fetch(...args),
+        () => {},
+      ),
       notify: { error: vi.fn() },
     },
   };

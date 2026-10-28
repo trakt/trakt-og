@@ -1,6 +1,6 @@
 <!--
   The header's help menu, a signpost beside the account, signed in or out. Under an OG Redux heading, og's own
-  rows: a bug report with the page's link filled in, and a feature request, both on GitHub. Under Trakt Account, the
+  rows: a bug report with the page's link filled in, a feature request and Discussions, all on GitHub. Under Trakt Account, the
   help center, email support and the status page. Under Community, r/trakt. Last, on its own, /help, which explains
   the difference: GitHub is public, Trakt support is private.
 -->
@@ -13,6 +13,7 @@ import { newBugUrl } from '$lib/help/newBugUrl';
 import Icon from '$lib/icons/Icon.svelte';
 import redditAlien from '$lib/icons/brands/reddit-alien.svg?raw';
 import bug from '$lib/icons/solid/bug.svg?raw';
+import comments from '$lib/icons/solid/comments.svg?raw';
 import envelope from '$lib/icons/solid/envelope.svg?raw';
 import lifeRing from '$lib/icons/solid/life-ring.svg?raw';
 import lightbulb from '$lib/icons/solid/lightbulb.svg?raw';
@@ -23,6 +24,7 @@ import HeaderMenu from './HeaderMenu.svelte';
 const og = $derived([
   { title: 'Report a bug', icon: bug, href: newBugUrl(page.url.href) },
   { title: 'Suggest a feature', icon: lightbulb, href: ogRepoUrls.newFeature },
+  { title: 'Discussions', icon: comments, href: ogRepoUrls.discussions, small: true },
 ]);
 
 const trakt = [
@@ -51,7 +53,7 @@ const sections = $derived([
       <ul>
         {#each section.links as link (link.title)}
           <li>
-            <a href={link.href} target="_blank" rel="noopener"><Icon svg={link.icon} fixedWidth /> {link.title}</a>
+            <a href={link.href} target="_blank" rel="noopener" class={{ small: 'small' in link }}><Icon svg={link.icon} fixedWidth /> {link.title}</a>
           </li>
         {/each}
       </ul>
@@ -110,6 +112,11 @@ const sections = $derived([
   display: grid;
   place-items: center;
   inline-size: var(--header-help-icon-width);
+}
+
+/* A glyph wider than the rest, scaled down so it reads the same size; its label stays lined up. */
+.small :global(.icon) {
+  scale: var(--header-help-icon-small);
 }
 
 /* The icon close to its label, not pushed apart like a check. */

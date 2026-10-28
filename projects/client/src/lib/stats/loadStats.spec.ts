@@ -74,6 +74,21 @@ describe('loadStats', () => {
     expect(ratingRequest.searchParams.get('extended')).toBe(item.type === 'season' ? null : 'all');
   });
 
+  it('should ask for Watch Now while the show is still loading', async () => {
+    const watchNow = Promise.withResolvers<void>();
+    server.use(
+      http.get(`${API}/shows/:id`, async () => {
+        await watchNow.promise;
+        return HttpResponse.json(show);
+      }),
+      http.get(`${API}/shows/:id/watchnow/:country`, () => {
+        watchNow.resolve();
+        return new HttpResponse(null, { status: 404 });
+      }),
+    );
+    expect((await load({ type: 'show', id: 'breaking-bad' })).media.href).toBe('/shows/breaking-bad');
+  });
+
   it('should preserve the stats suffix on canonical redirects', async () => {
     const result = await failure(load({ type: 'show', id: '1388' }));
     expect(isRedirect(result) && result.location).toBe('/shows/breaking-bad/stats');

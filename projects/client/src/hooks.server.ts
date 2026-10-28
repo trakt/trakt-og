@@ -1,6 +1,8 @@
 import { AUTH_COOKIE } from './lib/auth/authCookie.ts';
 import { apiEnvironment } from './lib/api/apiEnvironment.ts';
 import { apiRateLimited } from './lib/api/apiRateLimited.ts';
+import { cachedApiRead } from './lib/api/cachedApiRead.ts';
+import type { ResponseCache } from './lib/api/ResponseCache.ts';
 import { isStandardApi } from './lib/api/isStandardApi.ts';
 import { rateLimitPause } from './lib/api/rateLimitPause.ts';
 import { withUserAgent } from './lib/api/withUserAgent.ts';
@@ -44,14 +46,7 @@ export const handle: Handle = async ({ event, resolve }) => {
   });
 };
 
-/**
- * Loaders' server fetches name og as their User-Agent (`withUserAgent`), so the API's firewall lets them through. An API
- * read the API rate limits throws `apiRateLimited`: a required read renders the error page with Try again, and a
- * streamed section's LoadFailed says why. A Standard app then holds its reads until `Retry-After` runs out
- * (`rateLimitPause`), without sending them.
- */
-export const handleFetch: HandleFetch = async ({ request, fetch }) => {
-  const read = request.method === 'GET' && request.url.startsWith(apiEnvironment());
+async function send(request: Request, fetch: typeof globalThis.fetch, read: boolean): Promise<Response> {
   const standard = isStandardApi();
   const left = rateLimitPause.remaining();
   if (read && standard && left > 0) apiRateLimited(String(left));
@@ -63,4 +58,27 @@ export const handleFetch: HandleFetch = async ({ request, fetch }) => {
     apiRateLimited(retryAfter);
   }
   return response;
+}
+
+/**
+ * Loaders' server fetches name og as their User-Agent (`withUserAgent`), so the API's firewall lets them through. An API
+ * read the API rate limits throws `apiRateLimited`: a required read renders the error page with Try again, and a
+ * streamed section's LoadFailed says why. A Standard app then holds its reads until `Retry-After` runs out
+ * (`rateLimitPause`), without sending them. Public reads without a token go through the data center's cache
+ * (`cachedApiRead`), which can answer them even while the reads are held.
+ */
+export const handleFetch: HandleFetch = ({ event, request, fetch }) => {
+  const read = request.method === 'GET' && request.url.startsWith(apiEnvironment());
+  const { platform, locals, url } = event;
+  const cache = platform?.caches?.default as unknown as ResponseCache | undefined;
+  if (!read || !cache) return send(request, fetch, read);
+
+  return cachedApiRead({
+    request,
+    cache,
+    origin: url.origin,
+    signedIn: locals.token !== null || locals.tokenExpired,
+    load: () => send(request, fetch, read),
+    waitUntil: (promise) => platform?.ctx.waitUntil(promise),
+  });
 };

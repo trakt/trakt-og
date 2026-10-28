@@ -208,3 +208,73 @@ describe('hooks: rate limits', () => {
     await handle({ event: pageEvent(authCookie(Date.now() + 60_000)), resolve });
   });
 });
+
+describe('hooks: shared API reads', () => {
+  type FetchEvent = Parameters<typeof handleFetch>[0];
+
+  /** Page events in one data center, sharing its cache. */
+  function dataCenter() {
+    const kept = new Map<string, Response>();
+    const writes: Promise<unknown>[] = [];
+    const cache = {
+      match: (key: string) => Promise.resolve(kept.get(key)?.clone()),
+      put: (key: string, response: Response) => Promise.resolve(void kept.set(key, response)),
+    };
+    const platform = {
+      env: {},
+      caches: { default: cache },
+      ctx: { waitUntil: (write: Promise<unknown>) => writes.push(write) },
+    };
+    const event = (token: string | null) => ({
+      locals: { token, tokenExpired: false },
+      platform,
+      url: new URL('https://og.trakt.tv/movies/trending'),
+    });
+    return { event, writes };
+  }
+
+  const serverFetch = async (event: unknown, url: string, init?: RequestInit) =>
+    handleFetch({
+      event,
+      request: new Request(url, init),
+      fetch: (...args: Parameters<typeof globalThis.fetch>) => globalThis.fetch(...args),
+    } as unknown as FetchEvent);
+
+  const trending = () => {
+    const sent: (string | null)[] = [];
+    server.use(
+      http.get('https://apiz.trakt.tv/movies/trending', ({ request }) => {
+        sent.push(request.headers.get('authorization'));
+        return HttpResponse.json([{ title: 'Tron' }], {
+          headers: { 'cache-control': 'public, max-age=600', 'x-pagination-item-count': '158' },
+        });
+      }),
+    );
+    return sent;
+  };
+
+  it('should read a public API route once for every viewer in the data center', async () => {
+    const sent = trending();
+    const { event, writes } = dataCenter();
+
+    await serverFetch(event(null), 'https://apiz.trakt.tv/movies/trending');
+    await Promise.all(writes);
+    const hit = await serverFetch(event('viewer-token'), 'https://apiz.trakt.tv/movies/trending');
+
+    expect(sent).toHaveLength(1);
+    expect(hit.headers.get('x-pagination-item-count')).toBe('158');
+  });
+
+  it("should send a read with the viewer's token to the API every time", async () => {
+    const sent = trending();
+    const { event, writes } = dataCenter();
+    const signed = { headers: { authorization: 'Bearer viewer-token' } };
+
+    await serverFetch(event('viewer-token'), 'https://apiz.trakt.tv/movies/trending', signed);
+    await Promise.all(writes);
+    await serverFetch(event('viewer-token'), 'https://apiz.trakt.tv/movies/trending', signed);
+
+    expect(sent).toEqual(['Bearer viewer-token', 'Bearer viewer-token']);
+    expect(writes).toHaveLength(0);
+  });
+});

@@ -1,12 +1,12 @@
 <!--
   A card's place while its panel loads: the art at a poster's or a fanart's ratio with the quick-icon bar under it,
-  then a poster's title and subtitle lines. A fanart card's titles sit on its art, so it has none. Hidden from screen
-  readers, so the panel around it says it's busy.
+  then a poster's title and its `subtitles` lines (one by default). A fanart card's titles sit on its art, so it has
+  none. Hidden from screen readers, so the panel around it says it's busy.
 -->
 <script lang="ts">
 import Shimmer from './Shimmer.svelte';
 
-const { ratio }: { ratio: 'poster' | 'fanart' } = $props();
+const { ratio, subtitles = 1 }: { ratio: 'poster' | 'fanart'; subtitles?: number } = $props();
 </script>
 
 <div class="card-shimmer" aria-hidden="true">
@@ -15,7 +15,9 @@ const { ratio }: { ratio: 'poster' | 'fanart' } = $props();
   {#if ratio === 'poster'}
     <span class="titles">
       <Shimmer inline="var(--card-shimmer-title-width)" block="var(--font-size-card-title)" />
-      <Shimmer inline="var(--card-shimmer-subtitle-width)" block="var(--font-size-card-subtitle)" />
+      {#each Array.from({ length: subtitles }, (_, i) => i) as line (line)}
+        <Shimmer inline="var(--card-shimmer-subtitle-width)" block="var(--font-size-card-subtitle)" />
+      {/each}
     </span>
   {/if}
 </div>

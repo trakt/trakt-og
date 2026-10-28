@@ -1,5 +1,4 @@
 import { rawApiFetch } from '../../api/rawApiFetch.ts';
-import { fetchWatchedGenres } from './fetchWatchedGenres.ts';
 import { watchedItemsSchema } from './watchedItemsSchema.ts';
 
 type Params = {
@@ -34,14 +33,10 @@ async function readWatched({ fetch, token, id }: Params, type: 'shows' | 'movies
 }
 
 /**
- * What the profile's charts and Most Watched columns need beyond the stats and the 30-day history: the watched
- * genres (API), and the whole watched lists, since the worker only orders them by last watched.
+ * The whole watched shows and movies lists, for the profile's boxes and its Most Watched All Time ranks. The worker
+ * only orders them by last watched, so every page is read: the profile's slowest read.
  */
-export async function fetchProfileCharts(params: Params) {
-  const [genres, shows, movies] = await Promise.all([
-    fetchWatchedGenres(params),
-    readWatched(params, 'shows'),
-    readWatched(params, 'movies'),
-  ]);
-  return { genres, shows, movies };
+export async function fetchWatchedLists(params: Params) {
+  const [shows, movies] = await Promise.all([readWatched(params, 'shows'), readWatched(params, 'movies')]);
+  return { shows, movies };
 }

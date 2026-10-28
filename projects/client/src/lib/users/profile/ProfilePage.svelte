@@ -1,7 +1,7 @@
 <!--
   The profile page under the frame: the stat boxes, or the welcome hero on your own empty
   profile, then favorites (only when there are some), the recently watched episodes and movies, the genre and ratings charts, the most watched
-  shows and movies, and the newest comments.
+  shows and movies, and the newest comments. The boxes and Most Watched stream in, holding their places with shimmers.
 -->
 <script lang="ts">
 import SeoHead from '$lib/seo/SeoHead.svelte';
@@ -9,6 +9,9 @@ import { toProfileSeo } from '$lib/seo/pages/toProfileSeo';
 import type { UserStats } from '$lib/stats/userStatsSchema';
 import DashboardPanel from '$lib/components/dashboard/DashboardPanel.svelte';
 import EmptyState from '$lib/components/empty/EmptyState.svelte';
+import LoadFailed from '$lib/components/empty/LoadFailed.svelte';
+import ProfileSectionShimmer from '$lib/components/loading/ProfileSectionShimmer.svelte';
+import Container from '$lib/components/container/Container.svelte';
 import PosterCard from '$lib/components/media/PosterCard.svelte';
 import PosterGrid from '$lib/components/media/PosterGrid.svelte';
 import { quickIconFill } from '$lib/components/media/quickIconFill';
@@ -69,8 +72,18 @@ const viewer = $derived(data.user ? { slug: data.user.slug } : null);
 {/snippet}
 
 
+{#snippet failed(what: string, error: unknown)}
+  <Container><div class="failed"><LoadFailed {what} {error} /></div></Container>
+{/snippet}
+
 {#if data.boxes}
-  <ProfileBoxStrip boxes={data.boxes} />
+  {#await data.boxes}
+    <ProfileSectionShimmer section="boxes" />
+  {:then boxes}
+    <ProfileBoxStrip {boxes} />
+  {:catch error}
+    {@render failed('Stats', error)}
+  {/await}
 {:else if data.welcome}
   <WelcomeHero displayName={data.profile.displayName} named={data.profile.displayName !== data.profile.username}
   slug={data.profile.slug} />
@@ -112,12 +125,18 @@ const viewer = $derived(data.user ? { slug: data.user.slug } : null);
 {/if}
 
 {#if data.mostWatched}
-  <MostWatched
-  {...data.mostWatched}
-  slug={data.profile.slug}
-  isSelf={data.isSelf}
-  datePreferences={data.datePreferences}
-/>
+  {#await data.mostWatched}
+    <ProfileSectionShimmer section="most-watched" />
+  {:then mostWatched}
+    <MostWatched
+    {...mostWatched}
+    slug={data.profile.slug}
+    isSelf={data.isSelf}
+    datePreferences={data.datePreferences}
+  />
+  {:catch error}
+    {@render failed('Most Watched', error)}
+  {/await}
 {/if}
 
 <DashboardPanel
@@ -171,5 +190,9 @@ const viewer = $derived(data.user ? { slug: data.user.slug } : null);
 
 .empty {
   margin-block-start: var(--gutter);
+}
+
+.failed {
+  padding-block: var(--gutter);
 }
 </style>

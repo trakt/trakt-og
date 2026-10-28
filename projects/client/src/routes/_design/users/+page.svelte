@@ -13,6 +13,7 @@ import star from '$lib/icons/regular/star.svg?raw';
 import FavoriteCard from '$lib/components/users/FavoriteCard.svelte';
 import MostWatched from '$lib/components/users/MostWatched.svelte';
 import ProfileCharts from '$lib/components/users/ProfileCharts.svelte';
+import ProfileSectionShimmer from '$lib/components/loading/ProfileSectionShimmer.svelte';
 import ProfileFrame from '$lib/components/users/ProfileFrame.svelte';
 import UserCard from '$lib/components/users/UserCard.svelte';
 import WelcomeHero from '$lib/components/users/WelcomeHero.svelte';
@@ -330,7 +331,7 @@ const liveCards = [
 </Specimen>
 
 <Specimen title="Most watched" bleed
-  note="Your own profile on OG's defaults, then your saved sort and tab: shows on All Time by time watched.">
+  note="Your own profile on OG's defaults, then your saved sort and tab: shows on All Time by time watched. It streams in after the rest of the page, so it loads as ProfileSectionShimmer, in the loaded columns' size.">
   <div class="states">
     <Variant label="OG's defaults">
       <MostWatched
@@ -347,6 +348,9 @@ const liveCards = [
         windowStart="2026-08-30T00:00:00.000Z"
         datePreferences={{ order: 'mdy', hour24: false, timeZone: 'UTC', weekStartDay: 0 }}
       />
+    </Variant>
+    <Variant label="Loading">
+      <ProfileSectionShimmer section="most-watched" />
     </Variant>
   </div>
 </Specimen>

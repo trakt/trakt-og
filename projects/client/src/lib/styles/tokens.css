@@ -1705,6 +1705,10 @@
   --profile-box-poster-height: 60px;
   --profile-box-poster-overlap: -14px;
   --profile-box-poster-tilt: 6deg;
+  --profile-box-shimmer-tag-width: 70px; /* a box's chip, its title and its subtitle while the strip streams in */
+  --profile-box-shimmer-tag-height: 18px;
+  --profile-box-shimmer-title-width: 60%;
+  --profile-box-shimmer-subtitle-width: 40%;
   --radius-profile-box-mark: 2px;
   --font-size-profile-figure: 44px;
   --font-weight-profile-figure: 800;
@@ -1889,6 +1893,7 @@
   --space-ratings-keys: 30px; /* between the axis and the keys */
   --space-ratings-average-label: 6px; /* between the average line and its label */
   --line-height-ratings-axis: 1.25;
+  --most-watched-shimmer-dropdown-width: 165px; /* a column's Period dropdown while Most Watched streams in */
 
   /* Calendars. Dark in both themes, like the frame. */
   --color-frame-muted: #999; /* "Nothing on this day." */

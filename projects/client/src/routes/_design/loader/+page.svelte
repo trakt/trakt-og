@@ -66,7 +66,7 @@ let leaving = $state(true);
 </Specimen>
 
 <Specimen title="Card shimmer"
-  note="CardShimmerRow while a dashboard panel streams in: one row of the panel's cards, posters with their titles or fanart with the art's own. Narrow the window and it stays one row.">
+  note="CardShimmerRow while a dashboard panel streams in: one row of the panel's cards, posters with their titles or fanart with the art's own. Narrow the window and it stays one row. A poster's CardShimmer takes as many subtitle lines as its cards (Most Watched's two, on the users demo).">
   <Variant label="Posters, as Up Next, Watchlist and the Social Feed load">
     <CardShimmerRow columns={6} ratio="poster" />
   </Variant>

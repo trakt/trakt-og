@@ -28,7 +28,7 @@ import WatchNowHost from '$lib/components/watchnow/WatchNowHost.svelte';
 import { startOverlay } from '$lib/overlay/startOverlay';
 import { toDarkKnight } from '$lib/settings/toDarkKnight';
 import { toTheme } from '$lib/settings/toTheme';
-import { onMount } from 'svelte';
+import { onMount, untrack } from 'svelte';
 import { MediaQuery } from 'svelte/reactivity';
 
 let { children, data } = $props();
@@ -49,7 +49,8 @@ $effect(() => {
 // Every user agent gets the whole page, so a search engine's phone crawler indexes it. Under the mobile splash it's
 // inert and the app's background work doesn't start: never on a phone (the server knows from its user agent, so
 // hydration agrees with the server's HTML), and in a narrow window only once it's wide enough.
-const tooSmall = new MediaQuery(TOO_SMALL_FOR_OG, data.phone);
+// A visit keeps its user agent, so reading `phone` once is enough.
+const tooSmall = new MediaQuery(TOO_SMALL_FOR_OG, untrack(() => data.phone));
 const awake = $derived(!bare && !tooSmall.current);
 let stopApp: (() => void) | undefined;
 

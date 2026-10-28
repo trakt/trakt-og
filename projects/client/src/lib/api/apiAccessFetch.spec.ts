@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { apiAccessFetch } from './apiAccessFetch.ts';
 import { apiEnvironment } from './apiEnvironment.ts';
 import { rateLimitPause } from './rateLimitPause.ts';
@@ -10,6 +10,7 @@ const answer = (status: number) => vi.fn(() => Promise.resolve(new Response(null
 
 afterEach(() => {
   vi.restoreAllMocks();
+  vi.unstubAllEnvs();
 });
 
 describe('apiAccessFetch', () => {
@@ -63,6 +64,11 @@ describe('apiAccessFetch', () => {
   describe('on production', () => {
     const production = apiEnvironment('production');
 
+    // The hint is off under Vitest, where specs fake 403s on purpose.
+    beforeEach(() => {
+      vi.stubEnv('MODE', 'development');
+    });
+
     it('should send Official-only routes, for the API to answer', async () => {
       const fetch = answer(200);
 
@@ -91,5 +97,16 @@ describe('apiAccessFetch', () => {
 
       expect(warn).not.toHaveBeenCalled();
     });
+  });
+
+  it('should not hint under Vitest, where specs fake 403s on purpose', async () => {
+    vi.resetModules();
+    const { apiAccessFetch: fresh } = await import('./apiAccessFetch.ts');
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const production = apiEnvironment('production');
+
+    await fresh({ fetch: answer(403), environment: production })(`${production}/movies/x`);
+
+    expect(warn).not.toHaveBeenCalled();
   });
 });

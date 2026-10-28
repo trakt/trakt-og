@@ -53,6 +53,11 @@ describe('loadShowData', () => {
     expect(data.seasons.at(0)?.episodes?.at(0)?.ids.trakt).toBe(101);
     expect(data.summary.guestStars.at(0)?.name).toBe('Guest');
   });
+  it('should keep the seasons when an announced season has no air date yet', async () => {
+    const data = await loadShowData(params([season, { number: 2, ids: { trakt: 12 }, first_aired: null }]));
+    expect(data.summary.seasons.map(({ number }) => number)).toEqual([1, 2]);
+    expect(data.summary.seasonCount).toBe(2);
+  });
   it('should discard invalid optional extended bodies instead of trusting their shapes', async () => {
     const data = await loadShowData(
       params([{ ...season, episodes: [{ ids: { trakt: 'bad' } }] }], { guest_stars: 'bad' }),

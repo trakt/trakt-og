@@ -1,11 +1,4 @@
-import type {
-  EpisodeResponse,
-  EpisodeStatsResponse,
-  PeopleResponse,
-  RatingsResponse,
-  SeasonsResponse,
-  ShowResponse,
-} from '@trakt/api';
+import type { EpisodeResponse, EpisodeStatsResponse, PeopleResponse, RatingsResponse, ShowResponse } from '@trakt/api';
 import type { z } from 'zod/v4';
 import { episodeNumber, episodeType } from '../components/media/episodeTags.ts';
 import { countryName, languageName } from '../components/summary/names.ts';
@@ -20,6 +13,7 @@ import { imageUrl } from '../utils/imageUrl.ts';
 import { episodeNeighbours } from './episodeNeighbours.ts';
 import type { episodeSeasonsSchema } from './episodeSeasonsSchema.ts';
 import type { seasonPeopleSchema } from './seasonPeopleSchema.ts';
+import type { Season } from './seasonSchema.ts';
 import { toCrewGroups } from '../components/summary/toCrewGroups.ts';
 import { seasonName } from '../utils/seasonName.ts';
 import { genreLabel } from '../utils/genreLabel.ts';
@@ -27,7 +21,7 @@ import { toEpisodeLinks } from './toEpisodeLinks.ts';
 
 interface Params {
   show: ShowResponse;
-  season: SeasonsResponse[number];
+  season: Season;
   episode: EpisodeResponse;
   seasons: z.infer<typeof episodeSeasonsSchema>;
   people: PeopleResponse;

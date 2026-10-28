@@ -4,7 +4,6 @@ import {
   episodeResponseSchema,
   episodeStatsResponseSchema,
   ratingsResponseSchema,
-  seasonResponseSchema,
   showResponseSchema,
 } from '@trakt/api';
 import { api } from '../api/api.ts';
@@ -16,6 +15,7 @@ import type { ViewerSettings } from '../settings/ViewerSettings.ts';
 import { episodePeopleSchema } from './episodePeopleSchema.ts';
 import { episodeSeasonsSchema } from './episodeSeasonsSchema.ts';
 import { seasonPeopleSchema } from './seasonPeopleSchema.ts';
+import { seasonSchema } from './seasonSchema.ts';
 import { toEpisodeSummary } from './toEpisodeSummary.ts';
 import { watchNowCountry } from '../settings/watchNowCountry.ts';
 
@@ -114,7 +114,7 @@ export async function loadEpisode({
   const view = toEpisodeSummary({
     show,
     episode: info,
-    season: body(seasonResponse, seasonResponseSchema, 'Season'),
+    season: body(seasonResponse, seasonSchema, 'Season'),
     seasons,
     people,
     regulars,

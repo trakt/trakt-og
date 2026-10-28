@@ -24,6 +24,7 @@ import type { WatchTarget } from '$lib/components/history/WatchTarget';
 import type { RatingTarget } from '$lib/components/rating/RatingTarget';
 import MediaList from '$lib/components/lists/MediaList.svelte';
 import type { ListTarget } from '$lib/components/lists/ListTarget';
+import { QUICK_ADD } from '$lib/settings/quickAdd';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import type { TooltipContent } from '$lib/components/tooltip/TooltipContent';
 import Icon from '$lib/icons/Icon.svelte';
@@ -88,7 +89,7 @@ interface Props {
   hideSection?: 'calendar' | 'recommendations' | 'progress_watched' | 'progress_collected' | 'dropped';
   /** The ••• menu's rows, after the other icons. Left out or empty, no •••. */
   more?: readonly QuickIconMore[];
-  /** "Add to watchlist" on movies and shows; "Add to list" on seasons and episodes. */
+  /** "Add to watchlist" on movies and shows; "Add to list" on seasons and episodes. Only shown with `QUICK_ADD` on. */
   listLabel?: string;
 }
 
@@ -198,7 +199,7 @@ const ratingLevel = $derived(rating === undefined ? 1 : Math.min(Math.max(Math.t
     {#if targetList}
       <MediaList target={targetList} {small} />
     {:else}
-      {@render action('list', list, listLabel, fill.listed ? 1 : 0, fill.titles.listed)}
+      {@render action('list', list, QUICK_ADD ? listLabel : 'Add to list', fill.listed ? 1 : 0, fill.titles.listed)}
     {/if}
     {#if favorite}
       {#if target}

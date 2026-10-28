@@ -22,6 +22,7 @@ import { watchAction } from '$lib/components/history/watchAction';
 import type { HistoryPlay } from '$lib/components/history/HistoryPlay';
 import type { WatchTarget } from '$lib/components/history/WatchTarget';
 import { quickIconFill } from '$lib/components/media/quickIconFill';
+import { QUICK_ADD } from '$lib/settings/quickAdd';
 import PlaysTip from '$lib/components/media/PlaysTip.svelte';
 import ProgressTip from '$lib/components/media/ProgressTip.svelte';
 import Icon from '$lib/icons/Icon.svelte';
@@ -74,7 +75,7 @@ const ticks = $derived(
     (_, index) => target.episodeIds?.length === target.airedEpisodes ? target.episodeIds?.at(index) : undefined,
   ),
 );
-const defaultAt = $derived(page.data.settings?.browsing?.watch_popup_action);
+const defaultAt = $derived(QUICK_ADD ? page.data.settings?.browsing?.watch_popup_action : undefined);
 const { type, id } = $derived(target);
 const oncheckin = $derived(
   variant === 'card' && (type === 'movie' || type === 'episode') && target.released !== false &&

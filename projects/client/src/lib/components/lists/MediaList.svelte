@@ -8,6 +8,7 @@ import { login } from '$lib/auth/login';
 import { overlay } from '$lib/overlay/overlay';
 import { toast } from '$lib/components/toast/toast.svelte';
 import { listCatalog } from '$lib/components/lists/listCatalog.svelte';
+import { QUICK_ADD } from '$lib/settings/quickAdd';
 import { syncPickerOverlay } from '$lib/components/lists/syncPickerOverlay';
 import { loadPickerLists } from '$lib/components/lists/loadPickerLists';
 import { type PickerSection, pickerSections } from '$lib/components/lists/pickerSections';
@@ -81,8 +82,10 @@ const shown = $derived(
 const count = $derived(lists.filter((list) => list.selected).length);
 const watchlistCount = $derived(overlay.watchlistCount());
 const watchlistMode = $derived(
-  (loaded ? lists.length : listCatalog.count(page.data.user?.slug ?? '') ?? 0) === 0 ||
-    page.data.settings?.browsing?.list_popup_action === 'watchlist',
+  QUICK_ADD && (
+    (loaded ? lists.length : listCatalog.count(page.data.user?.slug ?? '') ?? 0) === 0 ||
+    page.data.settings?.browsing?.list_popup_action === 'watchlist'
+  ),
 );
 const label = $derived(selected ? 'Listed On' : watchlistMode ? 'Add to watchlist' : 'Add to list');
 const subtitle = $derived(
@@ -164,7 +167,7 @@ async function open(force = false) {
       return;
     }
     await load();
-    if (!force && lists.length === 0) {
+    if (QUICK_ADD && !force && lists.length === 0) {
       await toggleWatchlist();
       return;
     }

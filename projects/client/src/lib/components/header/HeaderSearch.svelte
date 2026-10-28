@@ -649,14 +649,15 @@ kbd {
   }
 }
 
-/* The field: a glass pill with a red ring, since it always has focus while it's showing. */
+/* The field: a glass pill with a red ring, since it always has focus while it's showing. Its start padding centers
+   the 1em magnifier in a pill-wide slot, so it lands where the closed one sits. */
 .field {
   display: flex;
   align-items: center;
-  gap: var(--space-sm-inline);
+  gap: var(--space-base-inline);
   block-size: var(--header-control-height);
   margin-block-end: var(--search-panel-inset);
-  padding-inline: var(--space-base-inline) var(--space-xs-inline);
+  padding-inline: calc((var(--header-pill-height) - 1em) / 2) var(--space-xs-inline);
   border-radius: var(--radius-header-control);
   background: var(--color-header-pill);
   box-shadow: 0 0 0 2px var(--brand-primary), 0 0 0 5px var(--color-search-ring);

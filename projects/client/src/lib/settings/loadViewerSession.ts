@@ -17,6 +17,7 @@ type Params = {
   request: Request;
   route: { id: string | null };
   platform?: App.Platform;
+  untrack: <T>(fn: () => T) => T;
 };
 
 /**
@@ -30,8 +31,10 @@ type Params = {
  * `platform` picks the store the mobile splash links. `phone` keeps its phone wording in a browser's device mode, and
  * renders the page under it inert from the first paint.
  * `gifs` says the Worker has a Klipy key, so comment composers get the GIF picker.
+ * It reads the route untracked, so a client navigation keeps this result and every child loader that calls `parent()`,
+ * like the profile frame. Only an auth step tracks it, so leaving one loads the settings.
  */
-export async function loadViewerSession({ fetch, locals, cookies, request, route, platform: worker }: Params) {
+export async function loadViewerSession({ fetch, locals, cookies, request, route, platform: worker, untrack }: Params) {
   const { token, tokenExpired } = locals;
   const hasSession = token !== null || tokenExpired;
   // The header search's type picker.
@@ -50,7 +53,8 @@ export async function loadViewerSession({ fetch, locals, cookies, request, route
     platform,
     phone,
   };
-  if (token === null || isAuthStepRoute(route.id)) return loggedOut;
+  const authStep = untrack(() => isAuthStepRoute(route.id)) && isAuthStepRoute(route.id);
+  if (token === null || authStep) return loggedOut;
 
   try {
     const response = await api({ fetch, token }).users.settings({

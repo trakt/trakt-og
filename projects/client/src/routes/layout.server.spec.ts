@@ -35,6 +35,8 @@ afterAll(() => server.close());
 const request = (userAgent?: string) =>
   new Request('https://og.test/', { headers: userAgent ? { 'user-agent': userAgent } : {} });
 
+const untrack = <T>(fn: () => T) => fn();
+
 const layout = (
   token: string | null = 'fake-token',
   searchType?: string,
@@ -49,7 +51,35 @@ const layout = (
     request: request(userAgent),
     route: { id: routeId },
     platform: { env: { KLIPY_API_KEY: klipyKey } },
+    untrack,
   } as Parameters<typeof load>[0]);
+
+/** Whether the load read `route.id` outside `untrack`, which reruns it on every client navigation to another route. */
+const tracksRoute = async (routeId: string) => {
+  let tracking = true;
+  let tracked = false;
+  await load({
+    fetch: globalThis.fetch,
+    locals: { token: 'fake-token', tokenExpired: false },
+    cookies: { get: (_name: string): string | undefined => undefined },
+    request: request(),
+    route: {
+      get id() {
+        tracked ||= tracking;
+        return routeId;
+      },
+    },
+    untrack: <T>(fn: () => T) => {
+      tracking = false;
+      try {
+        return fn();
+      } finally {
+        tracking = true;
+      }
+    },
+  } as Parameters<typeof load>[0]);
+  return tracked;
+};
 
 describe('root layout settings', () => {
   it('should load extended settings once and share them with the header and date helpers', async () => {
@@ -105,6 +135,17 @@ describe('root layout settings', () => {
     },
   );
 
+  it.each(['/', '/users/[id]', '/users/[id]/history/[[type=historyType]]/[...sort]'])(
+    'should not rerun when a client navigation leaves %s, so child frames keep their data',
+    async (routeId) => {
+      expect(await tracksRoute(routeId)).toBe(false);
+    },
+  );
+
+  it.each(['/signin', '/callback', '/signout'])('should rerun when a client navigation leaves %s', async (routeId) => {
+    expect(await tracksRoute(routeId)).toBe(true);
+  });
+
   it('should keep the session for an expired token, leaving the user to load once the browser renews it', async () => {
     const data = await load({
       fetch: globalThis.fetch,
@@ -112,6 +153,7 @@ describe('root layout settings', () => {
       cookies: { get: (_name: string): string | undefined => undefined },
       request: request(),
       route: { id: '/' },
+      untrack,
     } as Parameters<typeof load>[0]);
     expect(data).toEqual({ ...(await layout(null)), hasSession: true, tokenExpired: true });
     expect(seen).toHaveLength(0);
@@ -179,9 +221,14 @@ describe('root layout theme', () => {
   const theme = async (token: string | null = 'fake-token') => {
     const locals: App.Locals = { token, tokenExpired: false, crawler: { verified: false, bot: false } };
     const cookies = { get: (_name: string): string | undefined => undefined };
-    await load({ fetch: globalThis.fetch, locals, cookies, request: request(), route: { id: '/' } } as Parameters<
-      typeof load
-    >[0]);
+    await load({
+      fetch: globalThis.fetch,
+      locals,
+      cookies,
+      request: request(),
+      route: { id: '/' },
+      untrack,
+    } as Parameters<typeof load>[0]);
     return locals.theme;
   };
   const darkKnight = (value: unknown) =>

@@ -49,6 +49,39 @@ describe('authenticatedFetch', () => {
     expect(baseFetch).toHaveBeenCalledTimes(1);
   });
 
+  it('should not renew again for a fresh token the API refused right after renewing', async () => {
+    const fake = fakeUserManager({
+      current: fakeUser('spent', 3600),
+      signinSilent: () => Promise.resolve(fakeUser('renewed', 3600)),
+    });
+    const baseFetch = vi.fn<typeof fetch>(() => Promise.resolve(new Response(null, { status: 401 })));
+    const fetchAsViewer = authenticatedFetch({ manager: fake.manager, baseFetch });
+
+    await fetchAsViewer('https://apiz.trakt.tv/x');
+    fake.getUser.mockResolvedValue(fakeUser('renewed', 3600));
+    const response = await fetchAsViewer('https://apiz.trakt.tv/x');
+
+    expect(response.status).toBe(401);
+    expect(fake.signinSilent).toHaveBeenCalledTimes(1);
+    expect(baseFetch).toHaveBeenCalledTimes(3);
+  });
+
+  it('should renew a refused token again once it has expired', async () => {
+    const fake = fakeUserManager({
+      current: fakeUser('spent', 3600),
+      signinSilent: () => Promise.resolve(fakeUser('renewed', 3600)),
+    });
+    const baseFetch = vi.fn<typeof fetch>(() => Promise.resolve(new Response(null, { status: 401 })));
+    const fetchAsViewer = authenticatedFetch({ manager: fake.manager, baseFetch });
+
+    await fetchAsViewer('https://apiz.trakt.tv/x');
+    fake.getUser.mockResolvedValue(fakeUser('renewed', 0));
+    fake.signinSilent.mockResolvedValue(fakeUser('next', 3600));
+    await fetchAsViewer('https://apiz.trakt.tv/x');
+
+    expect(fake.signinSilent).toHaveBeenCalledTimes(2);
+  });
+
   it('should not renew for a request without a bearer', async () => {
     const fake = fakeUserManager({});
     const baseFetch = vi.fn<typeof fetch>(() => Promise.resolve(new Response(null, { status: 401 })));

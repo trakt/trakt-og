@@ -7,6 +7,7 @@
 -->
 <script lang="ts">
 import { resolve } from '$app/paths';
+import { authStep } from '$lib/auth/authStep.svelte';
 import ProjectLink from '$lib/components/brand/ProjectLink.svelte';
 import TraktMark from '$lib/components/brand/TraktMark.svelte';
 import { headerArt } from '$lib/components/header/headerArt';
@@ -78,9 +79,9 @@ $effect(() => {
           {#if signedIn}
             <a class="button primary" href={resolve('/dashboard')}>Dashboard</a>
           {:else}
-            <a class="button primary" href={resolve('/auth/signin')}>Sign In</a>
+            <a class="button primary" href={resolve('/signin')} onclick={authStep.signIn}>Sign In</a>
             <!-- Trakt's sign-in page also creates accounts. -->
-            <a class="button" href={resolve('/auth/signin')}>Join Trakt</a>
+            <a class="button" href={resolve('/signin')} onclick={authStep.signIn}>Join Trakt</a>
           {/if}
         </div>
       </div>

@@ -2,7 +2,7 @@ import { SITE_ORIGIN } from '../seo/siteOrigin.ts';
 import { CRAWL_BLOCKED_PARAMS } from './crawlBlockedParams.ts';
 
 /** The API proxies, the design system, the sign-in flow and the signed-in dashboard. */
-const DISALLOWED_PATHS = ['/api/', '/_design', '/callback', '/auth/', '/logout', '/dashboard'];
+const DISALLOWED_PATHS = ['/api/', '/_design', '/callback', '/signin', '/signout', '/login', '/logout', '/dashboard'];
 
 /**
  * og's robots.txt. Production allows everything but `DISALLOWED_PATHS` and UI-state permutations; any other host

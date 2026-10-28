@@ -22,6 +22,7 @@ const pageEvent = (cookie: string | undefined) =>
     locals: {},
     platform: { env: {} },
     url: new URL('https://og.trakt.tv/shows/trending'),
+    route: { id: '/shows/[chart=chart]/[[period]]' },
     request: new Request('https://og.trakt.tv/shows/trending'),
   }) as unknown as Handle['event'];
 

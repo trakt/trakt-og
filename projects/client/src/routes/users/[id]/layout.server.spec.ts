@@ -73,7 +73,7 @@ describe('users/[id] layout', () => {
     });
 
     it('should send /users/me to sign in', async () => {
-      expect(await redirectOf(layout('me', 'stale'))).toBe('/auth/signin?redirect_to=%2Fusers%2Fme%2Fwatchlist');
+      expect(await redirectOf(layout('me', 'stale'))).toBe('/signin?redirect_to=%2Fusers%2Fme%2Fwatchlist');
     });
   });
 

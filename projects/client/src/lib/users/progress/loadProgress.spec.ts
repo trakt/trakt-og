@@ -48,7 +48,7 @@ describe('loadProgress', () => {
   it('should send a signed-out viewer to sign in and back', async () => {
     await expect(load({ token: null, query: '?page=2' })).rejects.toMatchObject({
       status: 302,
-      location: '/auth/signin?redirect_to=%2Fusers%2Ftester%2Fprogress%3Fpage%3D2',
+      location: '/signin?redirect_to=%2Fusers%2Ftester%2Fprogress%3Fpage%3D2',
     });
   });
 

@@ -6,13 +6,15 @@ describe('util: buildRobotsTxt', () => {
     const lines = buildRobotsTxt({ production: true }).split('\n');
 
     it('should allow everything but the private paths', () => {
-      expect(lines.slice(0, 8)).toEqual([
+      expect(lines.slice(0, 10)).toEqual([
         'User-agent: *',
         'Allow: /',
         'Disallow: /api/',
         'Disallow: /_design',
         'Disallow: /callback',
-        'Disallow: /auth/',
+        'Disallow: /signin',
+        'Disallow: /signout',
+        'Disallow: /login',
         'Disallow: /logout',
         'Disallow: /dashboard',
       ]);

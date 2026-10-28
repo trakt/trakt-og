@@ -9,7 +9,7 @@ describe('auth: signInRedirect', () => {
     } catch (error) {
       if (!isRedirect(error)) throw error;
       expect(error.status).toBe(302);
-      expect(error.location).toBe('/auth/signin?redirect_to=%2Fshows%2Frecommendations%3Fpage%3D2');
+      expect(error.location).toBe('/signin?redirect_to=%2Fshows%2Frecommendations%3Fpage%3D2');
       return;
     }
     throw new Error('did not redirect');

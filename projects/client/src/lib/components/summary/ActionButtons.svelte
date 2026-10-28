@@ -5,6 +5,7 @@
 -->
 <script lang="ts">
 import { page } from '$app/state';
+import { authStep } from '$lib/auth/authStep.svelte';
 import { signInHref } from '$lib/auth/signInHref';
 import { checkin as checkinModal } from '$lib/components/checkin/checkin.svelte';
 import type { CheckinTarget } from '$lib/components/checkin/CheckinTarget';
@@ -132,7 +133,7 @@ const percentOf = (count: number) => `${progress?.visible ? Math.trunc(count / p
         aria-busy={opening} onclick={() => openCheckin(checkin)} />
     {:else if kind === 'comment'}
       {#if !page.data.settings}
-        <SummaryAction {color} {icon} text={label} href={signIn} />
+        <SummaryAction {color} {icon} text={label} href={signIn} onclick={authStep.signIn} />
       {:else if page.data.settings.permissions?.commenting}
         <SummaryAction {color} {icon} text={label} aria-controls="new-comment" aria-expanded={newComment.visible}
           onclick={(event) => newComment.open(event.currentTarget)} />

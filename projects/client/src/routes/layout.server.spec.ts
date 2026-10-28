@@ -35,12 +35,19 @@ afterAll(() => server.close());
 const request = (userAgent?: string) =>
   new Request('https://og.test/', { headers: userAgent ? { 'user-agent': userAgent } : {} });
 
-const layout = (token: string | null = 'fake-token', searchType?: string, userAgent?: string, klipyKey?: string) =>
+const layout = (
+  token: string | null = 'fake-token',
+  searchType?: string,
+  userAgent?: string,
+  klipyKey?: string,
+  routeId = '/',
+) =>
   load({
     fetch: globalThis.fetch,
     locals: { token, tokenExpired: false },
     cookies: { get: (name: string) => (name === 'search_type' ? searchType : undefined) },
     request: request(userAgent),
+    route: { id: routeId },
     platform: { env: { KLIPY_API_KEY: klipyKey } },
   } as Parameters<typeof load>[0]);
 
@@ -89,12 +96,22 @@ describe('root layout settings', () => {
     expect(seen).toHaveLength(0);
   });
 
+  it.each(['/signin', '/callback', '/signout'])(
+    'should skip the settings on %s, which draws no header',
+    async (routeId) => {
+      const data = await layout('fake-token', undefined, undefined, undefined, routeId);
+      expect(data).toEqual({ ...(await layout(null)), hasSession: true });
+      expect(seen).toHaveLength(0);
+    },
+  );
+
   it('should keep the session for an expired token, leaving the user to load once the browser renews it', async () => {
     const data = await load({
       fetch: globalThis.fetch,
       locals: { token: null, tokenExpired: true },
       cookies: { get: (_name: string): string | undefined => undefined },
       request: request(),
+      route: { id: '/' },
     } as Parameters<typeof load>[0]);
     expect(data).toEqual({ ...(await layout(null)), hasSession: true, tokenExpired: true });
     expect(seen).toHaveLength(0);
@@ -162,7 +179,9 @@ describe('root layout theme', () => {
   const theme = async (token: string | null = 'fake-token') => {
     const locals: App.Locals = { token, tokenExpired: false, crawler: { verified: false, bot: false } };
     const cookies = { get: (_name: string): string | undefined => undefined };
-    await load({ fetch: globalThis.fetch, locals, cookies, request: request() } as Parameters<typeof load>[0]);
+    await load({ fetch: globalThis.fetch, locals, cookies, request: request(), route: { id: '/' } } as Parameters<
+      typeof load
+    >[0]);
     return locals.theme;
   };
   const darkKnight = (value: unknown) =>

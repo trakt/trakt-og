@@ -37,6 +37,7 @@ Smooth means the same page with less work. Every rule here came from a counted w
 
 - **Share item-independent reads** between dialog instances with a promise per path, and never keep a failed one. (`watchnow/fetchWatchNowShared.ts`)
 - **Start independent reads together.** A read that doesn't depend on a write starts with it, not after it. (`favorites/MediaFavorite.svelte`)
+- **A read that needs only the layout starts on `parent()`**, not after the page's own reads. A loader starts what doesn't need the layout before it awaits `parent()`, and chains what needs only the layout on `parent().then`. A read by the requested id is dropped when a non-canonical id redirects; catch it so a failed page read doesn't leave it unhandled. Item subpages' Watch Now also waited on the item's reads; starting it on the layout cut their API time by about 80ms logged out. (`subpage/loadSubpageMedia.ts`, `discover/loadDiscover.ts`)
 - **Stream the slow read, not the page.** A loader returns a section that waits on a slow read as a promise, and the page holds its place with a shimmer at its loaded size; fast reads stay awaited, so the server HTML keeps them. The profile's whole watched lists took 0.6 to 1s; streaming the boxes and Most Watched that need them cut its first byte from about 1.1s to 0.2s. Catch a streamed read that a cancelled or failed load can strand, or it's an unhandled rejection. (`users/profile/loadProfile.ts`)
 
 ## Bundle

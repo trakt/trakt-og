@@ -1,12 +1,13 @@
 <!--
-  The profile's stat boxes: four made-up users and the strip the picker gives each, with every box's score, then
-  every box alone in each user's state and its empty states.
+  The profile's stat boxes: four made-up users and the strip the picker gives each, with every box's score, its
+  loading strip, then every box alone in each user's state and its empty states.
 -->
 <script lang="ts">
 import Specimen from '$lib/design/Specimen.svelte';
 import Variant from '$lib/design/Variant.svelte';
 import { profileBoxComponent } from '$lib/users/profile/boxes/profileBoxComponent';
 import ProfileBoxStrip from '$lib/users/profile/boxes/ProfileBoxStrip.svelte';
+import ProfileSectionShimmer from '$lib/components/loading/ProfileSectionShimmer.svelte';
 
 const { data } = $props();
 </script>
@@ -22,6 +23,11 @@ const { data } = $props();
     </div>
     <ProfileBoxStrip boxes={strip.boxes} />
   {/each}
+</Specimen>
+
+<Specimen title="Loading" bleed
+  note="The strip streams in after the rest of the profile, so ProfileSectionShimmer holds its place: four boxes at the strip's height, a chip and two lines each.">
+  <ProfileSectionShimmer section="boxes" />
 </Specimen>
 
 <Specimen title="Each box" note="Every box alone, in each member's state, then your own empty one and nothing yet.">

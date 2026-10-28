@@ -11,10 +11,12 @@ import { readProfileTab } from '../readProfileTab.ts';
 import { withShowPosters } from '../withShowPosters.ts';
 import { boxExtraLoader } from './boxes/boxExtraLoader.ts';
 import type { BoxFrame } from './boxes/BoxFrame.ts';
+import type { BoxInput } from './boxes/BoxInput.ts';
 import { boxMath } from './boxes/boxMath.ts';
 import { profileBoxes } from './boxes/profileBoxes.ts';
 import { toProfileBoxes } from './boxes/toProfileBoxes.ts';
-import { fetchProfileCharts } from './fetchProfileCharts.ts';
+import { fetchWatchedGenres } from './fetchWatchedGenres.ts';
+import { fetchWatchedLists } from './fetchWatchedLists.ts';
 import { toGenreBar } from './toGenreBar.ts';
 import { toMostWatched } from './toMostWatched.ts';
 import type { WatchedItemRow } from './watchedItemsSchema.ts';
@@ -67,30 +69,35 @@ async function fetchSections(
   const client = api({ fetch, token });
   const history = { params: { id }, query: { extended: 'full,images' } } as const;
 
-  const [episodes, movies, favorites, watchlist, comments, recent, charts] = await Promise.all([
+  // Only the boxes and Most Watched read these, and the page streams both, so the slowest reads never hold it up.
+  const streamed = {
+    watchlist: client.users.watchlist.all({
+      params: { id, sort: 'rank' },
+      query: { extended: 'full,images', limit: 3 },
+    }),
+    recent: fetchRecentHistory({ client, id, now }),
+    watched: fetchWatchedLists({ fetch, token, id }),
+  };
+  // A failure shows where the page awaits it. A read the frame cancels, or one a failed section strands, has nobody
+  // waiting on it.
+  for (const read of Object.values(streamed)) read.catch(() => undefined);
+
+  const [episodes, movies, favorites, comments, genres] = await Promise.all([
     client.users.history.episodes({ ...history, query: { ...history.query, limit: 4 } }),
     client.users.history.movies({ ...history, query: { ...history.query, limit: 6 } }),
     fetchFavorites(client, id, favoritesSort),
-    client.users.watchlist.all({ params: { id, sort: 'rank' }, query: { extended: 'full,images', limit: 3 } }),
     // Newest first, the one order the worker has: OG's Recent tab.
     client.users.comments({
       params: { id, comment_type: 'all', type: 'all' },
       query: { extended: 'full,images', limit: 3 },
     }),
-    fetchRecentHistory({ client, id, now }),
-    fetchProfileCharts({ fetch, token, id }),
+    fetchWatchedGenres({ fetch, token, id }),
   ]);
 
-  return {
-    episodes,
-    movies,
-    favorites,
-    watchlist,
-    comments,
-    recent,
-    charts,
-  };
+  return { episodes, movies, favorites, comments, genres, streamed };
 }
+
+type Streamed = Awaited<ReturnType<typeof fetchSections>>['streamed'];
 
 /**
  * The profile page under the frame: the stat boxes or the welcome hero, favorites, the
@@ -99,6 +106,9 @@ async function fetchSections(
  * the viewer may see is read with it. On your own profile your saved favorites sort, most watched sorts and default
  * tabs apply; favorites in a saved order are read again with your token, since the sort may be about you (Watched or
  * Collected Date).
+ *
+ * The boxes and Most Watched stream: they need the whole watched lists, which take several times as long as every
+ * other section. The frame already says whether the strip shows, so its place is held from the first paint.
  */
 export async function loadProfile({ fetch, locals, params, parent, now = new Date() }: Params) {
   // The boxes' extra requests start as soon as the frame says which ones could pay off, alongside the sections.
@@ -146,40 +156,24 @@ export async function loadProfile({ fetch, locals, params, parent, now = new Dat
   const favoritesRead = ownFavorites?.status === 200 ? ownFavorites : sections.favorites;
   const favorites = favoritesRead.status === 200 ? favoritesRead.body : [];
   const comments: readonly UserCommentRow[] = sections.comments.status === 200 ? sections.comments.body : [];
-  const watchlist = sections.watchlist.status === 200 ? sections.watchlist : null;
-
-  const [profileBoxes, topShows] = await Promise.all([
-    boxes
-      ? toProfileBoxes(
-          {
-            ...boxes.frame,
-            today: boxMath.utcDay(now),
-            latest: { episode: episodes.at(0), movie: movies.at(0) },
-            recent: sections.recent,
-            watchlist: {
-              count: Number(watchlist?.headers.get('x-pagination-item-count')) || 0,
-              rows: watchlist?.body ?? [],
-            },
-            watched: { shows: sections.charts.shows, movies: sections.charts.movies },
-            genres: sections.charts.genres,
-          },
-          boxes.extras,
-        )
-      : null,
-    withTopShowPosters(fetch, sections.charts.shows, prefs?.most_watched_shows),
-  ]);
 
   return {
-    boxes: profileBoxes,
+    boxes: boxes
+      ? streamBoxes(boxes, sections.streamed, {
+          today: boxMath.utcDay(now),
+          latest: { episode: episodes.at(0), movie: movies.at(0) },
+          genres: sections.genres,
+        })
+      : null,
     welcome: isSelf && stats !== null && !hasActivity(stats),
     favorites: favorites.map(toFavoriteCard),
     episodes: episodes.map((row) => toWatchedEpisode(row, datePreferences)),
     movies: movies.map((row) => toWatchedMovie(row, datePreferences)),
     // OG hid the whole charts section, ratings too, when there were no genres (`users.js:383-386`).
     charts:
-      sections.charts.genres.length > 0
+      sections.genres.length > 0
         ? {
-            genres: sections.charts.genres.map((row) => toGenreBar(row, { slug: profile.slug })),
+            genres: sections.genres.map((row) => toGenreBar(row, { slug: profile.slug })),
             ratings: toProfileRatings({
               distribution: stats?.ratings.distribution,
               types: stats
@@ -193,21 +187,52 @@ export async function loadProfile({ fetch, locals, params, parent, now = new Dat
             }),
           }
         : null,
-    mostWatched: {
-      shows: toMostWatched('shows', {
-        history: sections.recent.episodes,
-        watched: topShows,
-        prefs: prefs?.most_watched_shows,
-      }),
-      movies: toMostWatched('movies', {
-        history: sections.recent.movies,
-        watched: sections.charts.movies,
-        prefs: prefs?.most_watched_movies,
-      }),
-      // OG's first tab, `start_at` in its see-more link.
-      windowStart: sections.recent.start,
-    },
+    mostWatched: streamMostWatched(fetch, sections.streamed, prefs),
     comments: comments.flatMap((row) => toUserComment(row) ?? []),
+  };
+}
+
+async function streamBoxes(
+  { frame, extras }: Boxes,
+  streamed: Streamed,
+  loaded: Pick<BoxInput, 'today' | 'latest' | 'genres'>,
+) {
+  const [watchlist, recent, watched] = await Promise.all([streamed.watchlist, streamed.recent, streamed.watched]);
+  const listed = watchlist.status === 200 ? watchlist : null;
+  return toProfileBoxes(
+    {
+      ...frame,
+      ...loaded,
+      recent,
+      watchlist: {
+        count: Number(listed?.headers.get('x-pagination-item-count')) || 0,
+        rows: listed?.body ?? [],
+      },
+      watched,
+    },
+    extras,
+  );
+}
+
+async function streamMostWatched(
+  fetch: typeof globalThis.fetch,
+  streamed: Streamed,
+  prefs: ReturnType<typeof profilePrefs>,
+) {
+  const [recent, watched] = await Promise.all([streamed.recent, streamed.watched]);
+  return {
+    shows: toMostWatched('shows', {
+      history: recent.episodes,
+      watched: await withTopShowPosters(fetch, watched.shows, prefs?.most_watched_shows),
+      prefs: prefs?.most_watched_shows,
+    }),
+    movies: toMostWatched('movies', {
+      history: recent.movies,
+      watched: watched.movies,
+      prefs: prefs?.most_watched_movies,
+    }),
+    // OG's first tab, `start_at` in its see-more link.
+    windowStart: recent.start,
   };
 }
 

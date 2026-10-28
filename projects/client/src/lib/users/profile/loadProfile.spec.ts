@@ -72,15 +72,15 @@ const watchedMovie = (id: number, plays: number) => ({
   movie: { title: `Movie ${id}`, ids: { trakt: id, slug: `movie-${id}` }, runtime: 100 },
 });
 
-const load = (
-  options: {
-    stats?: UserStatsResponse | null;
-    isSelf?: boolean;
-    isPrivate?: boolean;
-    isLocked?: boolean;
-    settings?: ViewerSettings | null;
-  } = {},
-) =>
+type Options = {
+  stats?: UserStatsResponse | null;
+  isSelf?: boolean;
+  isPrivate?: boolean;
+  isLocked?: boolean;
+  settings?: ViewerSettings | null;
+};
+
+const loadPage = (options: Options = {}) =>
   loadProfile({
     fetch: (...args) => globalThis.fetch(...args),
     locals: { token: 'viewer-token' },
@@ -95,6 +95,12 @@ const load = (
         settings: options.settings ?? null,
       }),
   });
+
+/** The page with its streamed sections landed. */
+const load = async (options: Options = {}) => {
+  const data = await loadPage(options);
+  return { ...data, boxes: await data.boxes, mostWatched: await data.mostWatched };
+};
 
 describe('loadProfile', () => {
   it('should read public sections without the token and sum every page of the last 30 days', async () => {
@@ -293,6 +299,41 @@ describe('loadProfile', () => {
     it('should read your favorites once when you kept the random order', async () => {
       await load({ isSelf: true, settings: { browsing: {} } as unknown as ViewerSettings });
       expect(favoriteReads()).toHaveLength(1);
+    });
+  });
+
+  describe('streaming', () => {
+    const watchedMovies = 'https://apiz.trakt.tv/users/tester/watched/movies';
+
+    it('should return the page before the watched lists land, then stream the boxes and most watched', async () => {
+      const { promise: released, resolve: release } = Promise.withResolvers<void>();
+      server.use(
+        http.get(watchedMovies, async () => {
+          await released;
+          return HttpResponse.json([watchedMovie(1, 2)]);
+        }),
+      );
+      const data = await loadPage();
+      const landed = { boxes: false, mostWatched: false };
+      void data.boxes?.then(() => (landed.boxes = true));
+      void data.mostWatched?.then(() => (landed.mostWatched = true));
+      await new Promise((resolve) => setTimeout(resolve, 20));
+
+      expect(data.comments).toEqual([]);
+      expect(landed).toEqual({ boxes: false, mostWatched: false });
+
+      release();
+      expect((await data.mostWatched)?.movies.allTime.map(({ id }) => id)).toEqual([1]);
+      expect(await data.boxes).toHaveLength(4);
+    });
+
+    it('should fail only the streamed sections when the watched lists fail', async () => {
+      server.use(http.get(watchedMovies, () => HttpResponse.error()));
+      const data = await loadPage();
+
+      expect(data.welcome).toBe(false);
+      await expect(data.boxes).rejects.toThrow();
+      await expect(data.mostWatched).rejects.toThrow();
     });
   });
 

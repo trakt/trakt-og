@@ -70,8 +70,8 @@ describe('staleSlices', () => {
       [{ episodes: { watchlisted_at: T1 } }, ['watchlist']],
       [{ movies: { favorited_at: T1 } }, ['favorites']],
       [{ shows: { dropped_at: T1 } }, ['dropped']],
-      [{ lists: { updated_at: T1 } }, ['listed']],
-      [{ collaborations: { updated_at: T1 } }, ['listed']],
+      [{ lists: { updated_at: T1 } }, ['listMembership']],
+      [{ collaborations: { updated_at: T1 } }, ['listMembership']],
     ];
 
     cases.forEach(([moved, expected]) => expect(staleSlices(upToDate(), activities(moved))).toEqual(expected));

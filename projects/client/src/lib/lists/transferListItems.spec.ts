@@ -96,7 +96,7 @@ describe('transferListItems', () => {
       '/users/collaborator/lists/2/items/reorder',
       '/users/friend/lists/1/items/remove',
     ]);
-    expect(overlay.patch).toHaveBeenCalledWith('listed', expect.any(Function), expect.any(Object));
+    expect(overlay.patch).toHaveBeenCalledWith('listMembership', expect.any(Function), expect.any(Object));
     expect(rollback).not.toHaveBeenCalled();
   });
   it('should reject repeated source media before any write', async () => {

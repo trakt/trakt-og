@@ -1,6 +1,7 @@
 import { z } from 'zod/v4';
 import { createList } from '../components/lists/createList.ts';
 import type { createOverlay } from '../overlay/createOverlay.svelte.ts';
+import { emptyListMembership, withListItems } from '../overlay/listMembership.ts';
 import type { ListItemRef } from './fetchListItemRefs.ts';
 import { listWriteError } from './listWriteError.ts';
 import { removeOwnerItems } from './removeOwnerItems.ts';
@@ -135,15 +136,15 @@ async function addItems({
         { movie: new Set(), show: new Set() },
       )
     : overlay.patch(
-        'listed',
-        (data) => ({
-          ...data,
-          movie: update(data.movie, 'movie'),
-          show: update(data.show, 'show'),
-          season: update(data.season, 'season'),
-          episode: update(data.episode, 'episode'),
-        }),
-        { movie: new Set(), show: new Set(), season: new Set(), episode: new Set() },
+        'listMembership',
+        (data) =>
+          withListItems(data, {
+            // A list the slice doesn't know yet is the copy just created, so it's the viewer's own.
+            list: { id: target.id, name: target.name, collaboration: false },
+            items: items.map(({ type, trakt }) => ({ type, id: trakt })),
+            add: true,
+          }),
+        emptyListMembership(),
       );
   try {
     const body: Record<string, { ids: { trakt: number } }[]> = {};

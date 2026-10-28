@@ -70,7 +70,9 @@ const library = [
   http.get(`${API}/users/me/likes/lists`, () => HttpResponse.json([{ liked_at: T0, list: ids(60) }])),
   http.get(`${API}/users/me/following`, () => HttpResponse.json([])),
   http.get(`${API}/users/me/followers`, () => HttpResponse.json([])),
-  http.get(`${API}/v3/users/me/lists`, () => HttpResponse.json([{ id: 50 }])),
+  http.get(`${API}/v3/users/me/lists`, () =>
+    HttpResponse.json([{ id: 50, name: 'Faves', count: 1, display_order: 0, type: 'standard', owner_id: 1 }]),
+  ),
   http.get(`${API}/lists/50/items`, () =>
     HttpResponse.json([{ type: 'movie', movie: ids(1), id: 10, listed_at: '2026-09-29T12:00:00Z' }]),
   ),
@@ -133,6 +135,7 @@ describe('createOverlay', () => {
     expect(overlay.state('movie', 1)).toEqual({
       rating: 9,
       listed: true,
+      lists: [{ id: 50, name: 'Faves', collaboration: false }],
       watchlisted: false,
       favorited: true,
       favoritedAt: '2026-09-29T12:00:00Z',
@@ -190,7 +193,7 @@ describe('createOverlay', () => {
       const { overlay } = setup();
       await overlay.start('sean');
 
-      expect(overlay.state('season', 11)).toEqual({ rating: null, listed: false, watchlisted: false });
+      expect(overlay.state('season', 11)).toEqual({ rating: null, listed: false, lists: [], watchlisted: false });
     });
   });
 

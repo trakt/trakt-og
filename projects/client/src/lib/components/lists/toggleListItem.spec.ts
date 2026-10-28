@@ -3,6 +3,7 @@ import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { rawApiFetch } from '../../api/rawApiFetch.ts';
 import { createOverlay } from '../../overlay/createOverlay.svelte.ts';
+import { emptyListMembership } from '../../overlay/listMembership.ts';
 import { toggleListItem } from './toggleListItem.ts';
 import type { ListTarget } from './ListTarget.ts';
 const server = setupServer();
@@ -38,6 +39,10 @@ describe('toggleListItem', () => {
   );
   it('should write collaborative list items through their owner and preserve membership in another list', async () => {
     const params = setup();
+    params.overlay.patch('listMembership', (data) => data, {
+      ...emptyListMembership(),
+      season: new Map([[1, [12, 13]]]),
+    });
     server.use(
       http.post('https://apiz.trakt.tv/users/friend/lists/12/items/remove', () => {
         expect(params.overlay.state('season', 1).listed).toBe(true);
@@ -48,11 +53,11 @@ describe('toggleListItem', () => {
       await toggleListItem({
         ...params,
         target: { ...params.target, type: 'season' },
-        list: { id: 12, owner: 'friend' },
+        list: { id: 12, owner: 'friend', name: 'Shared', collaboration: true },
         remove: true,
-        stillListed: true,
       }),
     ).toBe(true);
+    expect(params.overlay.state('season', 1).listed).toBe(true);
   });
   it.each([401, 420, 429, 500])('should roll back rejected %s writes and silence only 429 toasts', async (status) => {
     const params = setup();
@@ -76,7 +81,29 @@ describe('toggleListItem', () => {
         HttpResponse.json({ deleted: { movies: 1 } }),
       ),
     );
-    expect(await toggleListItem({ ...params, list: { id: 2, owner: 'me' }, remove: true })).toBe(true);
+    params.overlay.patch('listMembership', (data) => data, { ...emptyListMembership(), movie: new Map([[1, [2]]]) });
+    expect(
+      await toggleListItem({
+        ...params,
+        list: { id: 2, owner: 'me', name: 'Faves', collaboration: false },
+        remove: true,
+      }),
+    ).toBe(true);
     expect(params.overlay.state('movie', 1).listed).toBe(false);
+  });
+
+  it('should name a list the slice does not know yet once the item is added to it', async () => {
+    const params = setup();
+    server.use(
+      http.post('https://apiz.trakt.tv/users/me/lists/3/items', () => HttpResponse.json({ added: { movies: 1 } })),
+    );
+    expect(
+      await toggleListItem({
+        ...params,
+        list: { id: 3, owner: 'me', name: 'New', collaboration: false },
+        remove: false,
+      }),
+    ).toBe(true);
+    expect(params.overlay.state('movie', 1).lists).toEqual([{ id: 3, name: 'New', collaboration: false }]);
   });
 });

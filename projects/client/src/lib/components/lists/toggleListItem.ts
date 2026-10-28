@@ -1,13 +1,13 @@
 import { z } from 'zod/v4';
 import type { createOverlay } from '../../overlay/createOverlay.svelte.ts';
+import type { ListLabel } from '../../overlay/ListLabel.ts';
+import { emptyListMembership, withListItems } from '../../overlay/listMembership.ts';
 import type { ListTarget } from './ListTarget.ts';
 
 type Params = {
   target: ListTarget;
-  list: { id: number; owner: string } | null;
+  list: (ListLabel & { owner: string }) | null;
   remove: boolean;
-  /** Whether another personal list still contains the item after this write. */
-  stillListed?: boolean;
   overlay: Pick<ReturnType<typeof createOverlay>, 'patch'>;
   request: (path: string, body: unknown) => Promise<Response>;
   notify: { success: (message: string) => void; error: (message: string) => void };
@@ -15,7 +15,7 @@ type Params = {
 const resultSchema = z.object({ not_found: z.record(z.string(), z.array(z.unknown())).optional() });
 
 /** Update every occurrence of this item, and restore its previous overlay when the write fails. */
-export async function toggleListItem({ target, list, remove, stillListed = false, overlay, request, notify }: Params) {
+export async function toggleListItem({ target, list, remove, overlay, request, notify }: Params) {
   const update = (ids: ReadonlySet<number>, selected: boolean) => {
     const next = new Set(ids);
     if (selected) next.add(target.id);
@@ -24,9 +24,9 @@ export async function toggleListItem({ target, list, remove, stillListed = false
   };
   const rollback = list
     ? overlay.patch(
-        'listed',
-        (data) => ({ ...data, [target.type]: update(data[target.type], !remove || stillListed) }),
-        { movie: new Set(), show: new Set(), season: new Set(), episode: new Set() },
+        'listMembership',
+        (data) => withListItems(data, { list, items: [target], add: !remove }),
+        emptyListMembership(),
       )
     : overlay.patch(
         'watchlist',

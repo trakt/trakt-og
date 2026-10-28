@@ -37,7 +37,7 @@ import star from '$lib/icons/solid/star.svg?raw';
 import ticket from '$lib/icons/solid/ticket.svg?raw';
 import check from '$lib/icons/trakt/check-thick.svg?raw';
 import collection from '$lib/icons/trakt/collection-thick.svg?raw';
-import list from '$lib/icons/trakt/list-thick.svg?raw';
+import list from '$lib/icons/regular/list.svg?raw';
 import type { QuickIconFill } from './quickIconFill.ts';
 import type { QuickIconMore } from './QuickIconMore.ts';
 import SummaryActionMenu from '$lib/components/summary/SummaryActionMenu.svelte';
@@ -355,7 +355,7 @@ const ratingLevel = $derived(rating === undefined ? 1 : Math.min(Math.max(Math.t
     }
   }
 
-  &:is(.watch:not(.rewatching), .collect, .list) :global(.icon) {
+  &:is(.watch:not(.rewatching), .collect) :global(.icon) {
     --icon-shift: var(--quick-icon-trakt-shift);
   }
 

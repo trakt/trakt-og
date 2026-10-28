@@ -8,6 +8,9 @@ import type { OverlaySlices } from './OverlaySlices.ts';
 import { loadWatchlistExtras } from './loadWatchlistExtras.ts';
 import { isApiUnavailable } from '../api/isApiUnavailable.ts';
 import { z } from 'zod/v4';
+import { pickerCatalogSchema } from '../components/lists/pickerCatalogSchema.ts';
+import type { ListLabel } from './ListLabel.ts';
+import { toListMembership } from './listMembership.ts';
 
 /** GETs an apiz path (`/sync/...`) with the user's token. */
 export type ApiGet = (path: string) => Promise<Response>;
@@ -88,21 +91,27 @@ async function watchlistMedia(get: ApiGet) {
   return { movie: idsOfType(movies ?? [], 'movie'), show: idsOfType(shows ?? [], 'show') };
 }
 
-/** The viewer's own and collaborative list ids: v3 in one read, or v2's two for a client ID that may not call v3. */
-async function listIds(get: ApiGet): Promise<readonly number[]> {
+/** The viewer's own and collaborative lists: v3 in one read, or v2's two for a client ID that may not call v3. */
+async function listLabels(get: ApiGet): Promise<ListLabel[]> {
   const v3 = await get('/v3/users/me/lists');
   if (!isApiUnavailable(v3)) {
     if (!v3.ok) throw new Error(`/v3/users/me/lists returned ${v3.status}`);
-    return z
-      .array(z.object({ id: z.number() }))
+    return pickerCatalogSchema
       .parse(await v3.json())
-      .map(({ id }) => id);
+      .map(({ id, name, type }) => ({ id, name, collaboration: type === 'collaborative' }));
   }
 
-  const [own, shared] = await Promise.all(
-    ['/users/me/lists', '/users/me/lists/collaborations'].map((path) => getJson({ get, path, schema: z.array(ids) })),
-  );
-  return [...(own?.body ?? []), ...(shared?.body ?? [])].map((list) => list.ids.trakt);
+  const schema = z.array(ids.extend({ name: z.string() }));
+  const [own, shared] = await Promise.all([
+    getJson({ get, path: '/users/me/lists', schema }),
+    getJson({ get, path: '/users/me/lists/collaborations', schema }),
+  ]);
+  const label = (collaboration: boolean) => (list: z.infer<typeof schema>[number]) => ({
+    id: list.ids.trakt,
+    name: list.name,
+    collaboration,
+  });
+  return [...own.body.map(label(false)), ...shared.body.map(label(true))];
 }
 
 function byNumericKey<T>(record: Record<string, T>): ReadonlyMap<number, T> {
@@ -363,22 +372,27 @@ export const sliceSources: { [K in keyof OverlaySlices]: SliceSource<K> } = {
       return { following, followers };
     },
   },
-  listed: {
+  listMembership: {
     activity: (a) => join(a.lists?.updated_at, a.collaborations?.updated_at),
     load: async (get) => {
       // Own and collaborative lists come back without items, so membership costs one request per list.
-      const lists = await listIds(get);
-      const items = (
+      const lists = await listLabels(get);
+      return toListMembership(
         await Promise.all(
-          lists.map((id) => getPages({ get, path: `/lists/${id}/items?limit=${PAGE_LIMIT}`, schema: typedItemSchema })),
-        )
-      ).flat();
-      return {
-        movie: idsOfType(items, 'movie'),
-        show: idsOfType(items, 'show'),
-        season: idsOfType(items, 'season'),
-        episode: idsOfType(items, 'episode'),
-      };
+          lists.map(async (list) => {
+            const rows = await getPages({
+              get,
+              path: `/lists/${list.id}/items?limit=${PAGE_LIMIT}`,
+              schema: typedItemSchema,
+            });
+            const items = rows.flatMap((item) => {
+              const id = idOf(item);
+              return id === undefined ? [] : [{ type: item.type, id }];
+            });
+            return { ...list, items };
+          }),
+        ),
+      );
     },
   },
 };

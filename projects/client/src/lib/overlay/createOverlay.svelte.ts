@@ -4,6 +4,8 @@ import type { CollectionMetadata } from '../components/collection/CollectionMeta
 import { collectedCounts } from './collectedCounts.ts';
 import { collectedSources } from './collectedSources.ts';
 import type { LibrarySource } from '../components/collection/LibrarySource.ts';
+import type { ListLabel } from './ListLabel.ts';
+import { listsOf } from './listMembership.ts';
 import type { OverlaySlices } from './OverlaySlices.ts';
 import type { OverlayStorage, SliceName, SliceRecord } from './overlayStorage.ts';
 import type { ApiGet } from './sliceSources.ts';
@@ -36,6 +38,8 @@ export type OverlayState = {
   rating?: number | null;
   watchlisted?: boolean;
   listed?: boolean;
+  /** The named own and collaborative lists holding it, while `listed` is known. */
+  lists?: readonly ListLabel[];
   favorited?: boolean;
   favoritedAt?: string;
   dropped?: boolean;
@@ -115,7 +119,9 @@ function stateOf(slices: Partial<OverlaySlices>, type: MediaType, id: number, se
   if (type === 'person') return {};
   const watchlisted = slices.watchlist?.[type]?.has(id);
   const rating = slices.ratings && (slices.ratings[type].get(id) ?? null);
-  const listed = slices.listed?.[type].has(id);
+  const membership = slices.listMembership;
+  const listed = membership?.[type].has(id);
+  const lists = membership && listsOf(membership, type, id);
   if (type === 'episode') {
     // With its season it's one lookup; without, find the season that has it.
     const dates =
@@ -131,6 +137,7 @@ function stateOf(slices: Partial<OverlaySlices>, type: MediaType, id: number, se
     return {
       rating,
       listed,
+      lists,
       watchlisted,
       ...watchDetails(dates),
       collected:
@@ -152,7 +159,7 @@ function stateOf(slices: Partial<OverlaySlices>, type: MediaType, id: number, se
     };
   }
   if (type === 'season') {
-    if (!season) return { rating, listed, watchlisted };
+    if (!season) return { rating, listed, lists, watchlisted };
     const count = (shows: OverlaySlices['watchedShows' | 'collectedShows'] | undefined) =>
       shows && (shows.get(season.show)?.get(season.number)?.size ?? 0);
     const resetAt = slices.rewatching instanceof Map ? slices.rewatching.get(season.show) : undefined;
@@ -164,6 +171,7 @@ function stateOf(slices: Partial<OverlaySlices>, type: MediaType, id: number, se
     return {
       rating,
       listed,
+      lists,
       watchlisted,
       rewatchingAt: resetAt || undefined,
       rewatchedEpisodes: rewatched?.filter((dates) => dates.length > 0).length,
@@ -180,6 +188,7 @@ function stateOf(slices: Partial<OverlaySlices>, type: MediaType, id: number, se
   const common = {
     rating,
     listed,
+    lists,
     watchlisted: slices.watchlist?.[type].has(id),
     favorited: slices.favorites?.[type].has(id),
     favoritedAt: slices.favorites?.dates?.[type].get(id),

@@ -19,15 +19,18 @@ import EmptyNote from '$lib/components/empty/EmptyNote.svelte';
 import LoadingOverlay from '$lib/components/loading/LoadingOverlay.svelte';
 import NewListDialog from '$lib/components/lists/NewListDialog.svelte';
 import SearchField from '$lib/components/filters/SearchField.svelte';
+import LinkButton from '$lib/components/button/LinkButton.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import TooltipBox from '$lib/components/tooltip/TooltipBox.svelte';
+import ListedTip from '$lib/components/lists/ListedTip.svelte';
 import SummaryAction from '$lib/components/summary/SummaryAction.svelte';
 import SummaryActionTile from '$lib/components/summary/SummaryActionTile.svelte';
 import type { ListTarget } from '$lib/components/lists/ListTarget';
 import type { PickerList } from '$lib/components/lists/PickerList';
 import Icon from '$lib/icons/Icon.svelte';
 import listIcon from '$lib/icons/trakt/list.svg?raw';
-import listThick from '$lib/icons/trakt/list-thick.svg?raw';
+import listCheck from '$lib/icons/regular/list-check.svg?raw';
+import listRegular from '$lib/icons/regular/list.svg?raw';
 import plus from '$lib/icons/light/circle-plus.svg?raw';
 import add from '$lib/icons/trakt/add-thick.svg?raw';
 import close from '$lib/icons/regular/xmark.svg?raw';
@@ -88,17 +91,14 @@ const watchlistMode = $derived(
   ),
 );
 const label = $derived(selected ? 'Listed On' : watchlistMode ? 'Add to watchlist' : 'Add to list');
+const listedOn = $derived(viewerState.lists ?? []);
 const subtitle = $derived(
-  loaded
-    ? [watchlisted ? 'Watchlist' : '', count ? `${count} ${count === 1 ? 'list' : 'lists'}` : ''].filter(Boolean).join(
-      ' + ',
-    )
-    : viewerState.watchlisted
-    ? 'Watchlist'
-    : viewerState.listed
-    ? 'Personal lists'
-    : '',
+  [
+    viewerState.watchlisted ? 'Watchlist' : '',
+    listedOn.length ? `${listedOn.length} ${listedOn.length === 1 ? 'list' : 'lists'}` : '',
+  ].filter(Boolean).join(' + '),
 );
+const tip = $derived(selected ? listedTip : label);
 const listLimit = $derived(page.data.settings?.limits?.list);
 const max = $derived(
   serverLimit ??
@@ -150,7 +150,7 @@ async function load() {
   watchlisted = result.watchlisted ?? Boolean(viewerState.watchlisted);
   sections = pickerSections(lists, watchlisted);
   loaded = true;
-  syncPickerOverlay({ overlay, target, listed: lists.some((list) => list.selected), watchlisted });
+  syncPickerOverlay({ overlay, target, lists, watchlisted });
 }
 async function open(force = false) {
   if (busy) return;
@@ -201,7 +201,6 @@ async function toggleRow(list?: PickerList) {
       target,
       list,
       remove: list.selected,
-      stillListed: lists.some((row) => row.selected),
       overlay,
       request,
       notify: toast,
@@ -320,7 +319,8 @@ async function save(draft: Parameters<typeof createList>[0]['draft'] & { collabo
 <div class={['list-control', variant, { small, selected, expanded }]} style:anchor-name="--list-{id}">
   {#if variant === 'summary'}
     <SummaryAction bind:element={triggerButton} color="var(--brand-secondary)" icon={listIcon} text={label}
-      detail={subtitle || undefined} {selected} busy={busy ? 'Saving lists' : undefined} aria-haspopup="dialog"
+      detail={subtitle || undefined} {selected} busy={busy ? 'Saving lists' : undefined} tooltip={selected ? tip : undefined}
+      aria-haspopup="dialog"
       aria-expanded={expanded} aria-controls="list-{id}" aria-keyshortcuts="ArrowDown" disabled={busy}
       onpointerdown={pressStart} onpointerup={pressEnd} onpointerleave={pressEnd} onpointercancel={pressEnd}
       oncontextmenu={(event) => event.preventDefault()} onkeydown={pickerKey} onclick={click}>
@@ -330,14 +330,14 @@ async function save(draft: Parameters<typeof createList>[0]['draft'] & { collabo
       {/snippet}
     </SummaryAction>
   {:else}
-    <Tooltip text={selected ? 'Manage lists' : label} placement="bottom">
+    <Tooltip content={tip} placement="bottom">
       {#snippet trigger(tooltip)}
         <button bind:this={triggerButton} type="button" class="trigger" aria-label={selected ? 'Manage lists' : label}
           aria-haspopup="dialog" aria-expanded={expanded} aria-controls="list-{id}" aria-busy={busy} disabled={busy}
           aria-keyshortcuts="ArrowDown" onpointerdown={pressStart} onpointerup={pressEnd} onpointerleave={pressEnd}
           onpointercancel={pressEnd} oncontextmenu={(event) => event.preventDefault()} onkeydown={pickerKey}
           onclick={click} {...tooltip}>
-          <Icon svg={listThick} fixedWidth />
+          <Icon svg={listRegular} fixedWidth />
           {#if busy}<span class="spinner"><Icon svg={spinner} /></span>{/if}
         </button>
       {/snippet}
@@ -383,9 +383,11 @@ async function save(draft: Parameters<typeof createList>[0]['draft'] & { collabo
     {/each}
   </div>
   {#if countTip}<div class="count-tip" aria-hidden="true" style:top="{countTip.top}px"><TooltipBox side="left">{countTip.text}</TooltipBox></div>{/if}
-  <footer><button type="button" class="new" onclick={openNew}><Icon svg={add} />New list</button></footer>
+  <footer><LinkButton onclick={openNew} variant="outline"><Icon svg={add} />New list</LinkButton></footer>
   {/if}
 </div>
+{#snippet listedTip()}<ListedTip user={page.data.user?.slug ?? 'me'} watchlisted={Boolean(viewerState.watchlisted)}
+  lists={listedOn} />{/snippet}
 {#snippet row(list: PickerList | null, name: string, active: boolean, total: number, privacy: string, href: string, limit?: number)}
   {@const maxed = limit !== undefined && total >= limit && !active}
   {@const pending = pendingRow === (list?.id ?? 0)}
@@ -402,7 +404,7 @@ async function save(draft: Parameters<typeof createList>[0]['draft'] & { collabo
     onfocusout={() => placeCount(null)}>
     <button type="button" class="row" aria-pressed={active} aria-describedby="list-{id}-count-{list?.id ?? 0}"
       disabled={busy || maxed} onclick={() => toggleRow(list ?? undefined)}>
-      <Icon svg={pending ? spinner : list?.collaboration ? friends : kind?.svg ?? listThick} fixedWidth />
+      <Icon svg={pending ? spinner : !list ? listCheck : list.collaboration ? friends : kind?.svg ?? listRegular} fixedWidth />
       <span class="name">{name}</span>
     </button>
     <span class="described" id="list-{id}-count-{list?.id ?? 0}">{items}</span>
@@ -447,9 +449,6 @@ async function save(draft: Parameters<typeof createList>[0]['draft'] & { collabo
 }
 .card.small .trigger {
   font-size: var(--font-size-quick-icon-small);
-}
-.card .trigger > :global(.icon) {
-  --icon-shift: var(--quick-icon-trakt-shift);
 }
 .card.selected,
 .card:has(.trigger:is(:hover, :focus-visible)) {
@@ -616,7 +615,7 @@ li {
   gap: var(--space-prompt-row-icon);
   min-inline-size: 0;
   min-block-size: 0;
-  padding: var(--space-menu-row);
+  padding: var(--space-list-picker-row);
   border: 0;
   background: none;
   color: inherit;
@@ -693,41 +692,15 @@ li a {
   text-align: center;
 }
 footer {
+  display: grid;
   padding: var(--space-list-picker-footer);
   border-block-start: 1px solid var(--color-menu-divider);
-}
-.new {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-control-caret);
-  inline-size: 100%;
-  min-block-size: var(--control-height);
-  padding: 0 var(--space-control-inline);
-  border: 1px solid var(--color-control-border);
-  border-radius: var(--radius-control);
-  background-color: var(--color-control-raised-bg);
-  color: var(--color-control-text);
-  font-family: var(--font-headings);
-  font-size: var(--font-size-control);
-  font-weight: var(--font-weight-control);
-  transition: background-color 0.2s, border-color 0.2s;
-  & :global(.icon) {
-    color: var(--color-action-add);
-    font-size: var(--font-size-tool-icon-small);
-  }
-  &:is(:hover, :focus-visible) {
-    border-color: var(--color-action-add);
-    background-color: var(--color-control-raised-hover-bg);
-    outline: none;
-  }
 }
 @media (prefers-reduced-motion: reduce) {
   .spinner :global(.icon),
   .pending .row > :global(.icon) {
     animation: none;
   }
-  .new,
   .search {
     transition: none;
   }

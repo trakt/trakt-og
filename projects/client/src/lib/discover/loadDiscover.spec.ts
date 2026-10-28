@@ -121,8 +121,14 @@ afterEach(() => {
 afterAll(() => server.close());
 
 const datePreferences = { order: 'mdy', hour24: false, timeZone: 'America/New_York', weekStartDay: 1 } as const;
-const load = (now = '2026-10-07T16:00:00Z') =>
+const loadPage = (now = '2026-10-07T16:00:00Z') =>
   loadDiscover({ fetch: globalThis.fetch, parent: () => Promise.resolve({ datePreferences }), now: new Date(now) });
+
+/** The page with its streamed sections landed. */
+const load = async (now?: string) => {
+  const data = await loadPage(now);
+  return { ...data, lists: await data.lists, comments: await data.comments, premieres: await data.premieres };
+};
 
 describe('loadDiscover', () => {
   it("should pick the theme for the viewer's day and mark its month on the ribbon", async () => {
@@ -231,6 +237,35 @@ describe('loadDiscover', () => {
     await load();
 
     expect(seen.every((request) => request.headers.get('authorization') === null)).toBe(true);
+  });
+
+  it('should return the page before the premieres, lists and comments land, then stream them', async () => {
+    const { promise: released, resolve: release } = Promise.withResolvers<void>();
+    const held = (path: string) =>
+      http.get(`https://apiz.trakt.tv${path}`, async () => {
+        await released;
+        return HttpResponse.json([]);
+      });
+    server.use(
+      held('/calendars/releases/hot/premieres/:start/:days'),
+      held('/search/list'),
+      held('/comments/trending/all/all'),
+    );
+    const data = await loadPage();
+    const landed = { premieres: false, lists: false, comments: false };
+    void data.premieres.then(() => (landed.premieres = true));
+    void data.lists.then(() => (landed.lists = true));
+    void data.comments.then(() => (landed.comments = true));
+    await new Promise((resolve) => setTimeout(resolve, 20));
+
+    expect(data.picks.length).toBeGreaterThan(0);
+    expect(data.essentials).toHaveLength(8);
+    expect(landed).toEqual({ premieres: false, lists: false, comments: false });
+
+    release();
+    expect(await data.premieres).toEqual([]);
+    expect(await data.lists).toEqual([]);
+    expect(await data.comments).toEqual([]);
   });
 
   it('should hide only what fails', async () => {

@@ -2,11 +2,15 @@
   `/discover`, Seasons & Moods: a page that changes with the calendar. The season hero comes from the month map, with
   the year's themes edge to edge under it, then the mood shelves, upcoming premieres on their own band, the essential
   lists as a full-width accordion, the month's lists, and trending comments over full-width fanart at the foot. The
-  whole page takes the season's accent.
+  whole page takes the season's accent. The premieres, the month's lists and the comments stream in, holding their
+  places with shimmers.
 -->
 <script lang="ts">
+import type { Snippet } from 'svelte';
 import SeoHead from '$lib/seo/SeoHead.svelte';
 import Container from '$lib/components/container/Container.svelte';
+import LoadFailed from '$lib/components/empty/LoadFailed.svelte';
+import DiscoverSectionShimmer from '$lib/components/loading/DiscoverSectionShimmer.svelte';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
 import DiscoverLists from './DiscoverLists.svelte';
 import EssentialLists from './EssentialLists.svelte';
@@ -27,6 +31,16 @@ const { data }: Props = $props();
   description="This month's picks on Trakt, shelves for every mood, upcoming premieres, trending comments and the lists the Trakt community is liking."
 />
 
+{#snippet band(section: Snippet)}
+  <div class="band">
+    <Container>
+      <div class="body">{@render section()}</div>
+    </Container>
+  </div>
+{/snippet}
+
+{#snippet premieresShimmer()}<DiscoverSectionShimmer section="premieres" />{/snippet}
+
 <div class={['discover', { 'no-hero': data.picks.length === 0 }]}
   style:--season-accent="var(--color-season-{data.theme.id})">
   <h1 class="visually-hidden">Discover</h1>
@@ -43,22 +57,40 @@ const { data }: Props = $props();
       <MoodShelves moods={data.moods} datePreferences={data.datePreferences} />
     </div>
   </Container>
-  {#if data.premieres.length > 0}
-    <div class="band">
-      <Container>
-        <div class="body">
-          <UpcomingPremieres premieres={data.premieres} today={data.today} datePreferences={data.datePreferences} />
-        </div>
-      </Container>
-    </div>
-  {/if}
+  {#await data.premieres}
+    {@render band(premieresShimmer)}
+  {:then premieres}
+    {#if premieres.length > 0}
+      {#snippet loaded()}
+        <UpcomingPremieres {premieres} today={data.today} datePreferences={data.datePreferences} />
+      {/snippet}
+      {@render band(loaded)}
+    {/if}
+  {:catch error}
+    {#snippet failed()}<LoadFailed what="Upcoming Premieres" {error} />{/snippet}
+    {@render band(failed)}
+  {/await}
   <EssentialLists lists={data.essentials} />
   <Container>
     <div class="body">
-      <DiscoverLists lists={data.lists} season={data.theme.title} />
+      {#await data.lists}
+        <DiscoverSectionShimmer section="lists" title="{data.theme.title} Lists" />
+      {:then lists}
+        <DiscoverLists {lists} season={data.theme.title} />
+      {:catch error}
+        <LoadFailed what="{data.theme.title} Lists" {error} />
+      {/await}
     </div>
   </Container>
-  <TrendingComments items={data.comments} datePreferences={data.datePreferences} />
+  {#await data.comments}
+    <DiscoverSectionShimmer section="comments" />
+  {:then comments}
+    <TrendingComments items={comments} datePreferences={data.datePreferences} />
+  {:catch error}
+    <Container>
+      <div class="body"><LoadFailed what="Trending Comments" {error} /></div>
+    </Container>
+  {/await}
 </div>
 
 <style>

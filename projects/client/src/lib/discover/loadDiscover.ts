@@ -184,6 +184,9 @@ async function premieres(
  * the themed reads wait for the layout data. Everything is public and goes without the viewer's token. Each body but the
  * premieres' is parsed here: the themed charts and the list search have no `@trakt/api` contract with their filters or
  * images, so they go through `rawApiFetch`. Any call failing only hides its part.
+ *
+ * The premieres, the month's lists and the trending comments stream: they sit below the fold, and their reads are the
+ * page's slowest. The hero, the mood shelves and the essentials stay awaited, so the server HTML keeps them.
  */
 export async function loadDiscover({ fetch, parent, now = new Date() }: LoadDiscoverParams) {
   // The moods, essentials and comments don't depend on the day, so they start before the layout's settings call ends.
@@ -192,19 +195,19 @@ export async function loadDiscover({ fetch, parent, now = new Date() }: LoadDisc
     Promise.all(DISCOVER_MOODS.map((mood) => moodShelf(fetch, mood, 'movie', now))),
     Promise.all(DISCOVER_MOODS.map((mood) => moodShelf(fetch, mood, 'show', now))),
     essentials(fetch),
-    fetchTrendingComments({ fetch, kind: 'all', media: 'all', now }),
   ]);
+  const comments = fetchTrendingComments({ fetch, kind: 'all', media: 'all', now });
+  // A load that fails before the page awaits it leaves nobody waiting on it.
+  comments.catch(() => undefined);
   const { datePreferences } = await parent();
   const today = dayIn(now, datePreferences.timeZone);
   const theme = themeFor(DISCOVER_THEMES, today);
   if (!theme) error(500, 'The month map has no theme for today.');
 
-  const [picks, lists, upcoming, [movieMoods, showMoods, staples, comments]] = await Promise.all([
-    seasonPicks(fetch, theme, now),
-    themeLists(fetch, theme),
-    premieres(fetch, { today, now, timeZone: datePreferences.timeZone }),
-    timeless,
-  ]);
+  const lists = themeLists(fetch, theme);
+  const upcoming = premieres(fetch, { today, now, timeZone: datePreferences.timeZone });
+  for (const read of [lists, upcoming]) read.catch(() => undefined);
+  const [picks, [movieMoods, showMoods, staples]] = await Promise.all([seasonPicks(fetch, theme, now), timeless]);
   // Each type's moods, the season's first; moods with nothing for the type are left out.
   const shelves = (type: MediaType, moods: readonly MoodShelf[]): MoodShelf[] =>
     [

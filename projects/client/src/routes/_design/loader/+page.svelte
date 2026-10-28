@@ -1,7 +1,7 @@
 <!--
   The page loader as lists and progress pages show it, the line along the top while the next page loads, the starfield while og signs in or out, the shimmering bars
   that hold a number's or a name's place on the home page, the shimmering cards that hold a dashboard panel's place,
-  and a picker's shimmering option rows.
+  Discover's streamed sections, and a picker's shimmering option rows.
 -->
 <script lang="ts">
 import { AUTH_FAILURE_MESSAGE } from '$lib/auth/authFailure';
@@ -10,6 +10,8 @@ import HyperspaceLoader from '$lib/components/loading/HyperspaceLoader.svelte';
 import LoadingOverlay from '$lib/components/loading/LoadingOverlay.svelte';
 import NavigationProgress from '$lib/components/loading/NavigationProgress.svelte';
 import CardShimmerRow from '$lib/components/loading/CardShimmerRow.svelte';
+import DiscoverSectionShimmer from '$lib/components/loading/DiscoverSectionShimmer.svelte';
+import Container from '$lib/components/container/Container.svelte';
 import OptionRowShimmers from '$lib/components/loading/OptionRowShimmers.svelte';
 import Shimmer from '$lib/components/loading/Shimmer.svelte';
 import DemoToggle from '$lib/design/DemoToggle.svelte';
@@ -75,6 +77,25 @@ let leaving = $state(true);
   </Variant>
 </Specimen>
 
+<Specimen title="Discover section shimmers" bleed
+  note="DiscoverSectionShimmer while Discover's slowest sections stream in after the rest of the page, each at its loaded size: the premieres on their band, the month's lists, and the trending comments' black band.">
+  <div class="discover">
+    <Variant label="Upcoming Premieres">
+      <div class="band">
+        <Container><div class="discover-body"><DiscoverSectionShimmer section="premieres" /></div></Container>
+      </div>
+    </Variant>
+    <Variant label="The month's lists">
+      <Container>
+        <div class="discover-body"><DiscoverSectionShimmer section="lists" title="31 Nights of Horror Lists" /></div>
+      </Container>
+    </Variant>
+    <Variant label="Trending Comments">
+      <DiscoverSectionShimmer section="comments" />
+    </Variant>
+  </div>
+</Specimen>
+
 <Specimen title="Option row shimmers" row
   note="OptionRowShimmers while a picker's options load, in the loaded rows' height so the list keeps its size.">
   <Variant label="A filters panel field, as Genres loads">
@@ -95,6 +116,20 @@ let leaving = $state(true);
 </Specimen>
 
 <style>
+/* DiscoverPage's colors and its sections' padding. */
+.discover {
+  background-color: var(--color-discover-bg);
+  color: var(--color-discover-text);
+}
+
+.band {
+  background-color: var(--color-discover-band-bg);
+}
+
+.discover-body {
+  padding-block: var(--discover-padding-block);
+}
+
 /* Paint containment makes the overlay's fixed position fill this box instead of the window. */
 .viewport {
   contain: paint;

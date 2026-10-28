@@ -2830,6 +2830,7 @@
   --discover-padding-block: 22px 60px;
   --discover-section-gap: 40px;
   --discover-heading-margin: 14px;
+  --discover-shimmer-chip-width: 120px; /* a section's toggle while premieres or the month's lists stream in */
   --season-hero-gap: 24px;
   --season-hero-copy-width: 560px;
   --season-hero-copy-gap: 12px;
@@ -2936,6 +2937,10 @@
   --list-tile-by-gap: 6px;
   --list-tile-avatar: 40px;
   --list-tile-head-gap: 2px 12px;
+  --list-tile-shimmer-pill-width: 110px; /* a tile's rank and likes while the month's lists stream in */
+  --list-tile-shimmer-pill-height: 18px;
+  --list-tile-shimmer-name-width: 70%;
+  --list-tile-shimmer-by-width: 45%;
   /* The essential lists' accordion: OG's Featured Lists art in tall slices, one open, and the green label. */
   --essential-height: 500px;
   --essential-gap: 4px;
@@ -3024,6 +3029,8 @@
   --font-size-trending-comments-peek-title: 16px;
   --trending-comments-peek-avatar: 34px;
   --trending-comments-people-gap: 6px;
+  --trending-comments-shimmer-line-gap: 14px; /* the quote's lines while the comments stream in */
+  --trending-comments-shimmer-short-width: 60%; /* its last line */
   /* The toggle buttons: moods, the Movies/Shows switch and the premiere filters. */
   --toggle-chip-gap: 8px;
   --toggle-chip-swatch-size: 8px; /* a chip's key to something drawn in its color, like the related fingerprints */

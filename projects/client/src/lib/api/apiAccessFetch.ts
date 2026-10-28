@@ -47,7 +47,9 @@ export function apiAccessFetch({ fetch, environment }: ApiAccessFetchParams): ty
 
     const response = await fetch(input, init);
     if (pausing && response.status === 429) rateLimitPause.start(response.headers.get('retry-after'));
-    if (dev && production && response.status === 403 && !officialOnly) hintStandard();
+    // Specs fake 403s on purpose, so the hint is for a real dev server only.
+    const hinting = dev && import.meta.env.MODE !== 'test';
+    if (hinting && production && response.status === 403 && !officialOnly) hintStandard();
     return response;
   };
 }

@@ -50,6 +50,20 @@ describe('loadMovieReleases', () => {
     expect(data.releases.featured).toMatchObject({ code: 'us', tag: 'Original Country' });
     expect(data.movie.href).toBe('/movies/fight-club-1999');
   });
+  it('should ask for Watch Now while the movie is still loading', async () => {
+    const watchNow = Promise.withResolvers<void>();
+    server.use(
+      http.get('https://apiz.trakt.tv/movies/:id', async () => {
+        await watchNow.promise;
+        return HttpResponse.json(movie);
+      }),
+      http.get('https://apiz.trakt.tv/movies/:id/watchnow/:country', () => {
+        watchNow.resolve();
+        return new HttpResponse(null, { status: 404 });
+      }),
+    );
+    expect((await load()).movie.href).toBe('/movies/fight-club-1999');
+  });
   it('should retain the releases subpage on a canonical slug redirect', async () => {
     const thrown = await failure(load('1'));
     expect(isRedirect(thrown) && thrown.location).toBe('/movies/fight-club-1999/releases');

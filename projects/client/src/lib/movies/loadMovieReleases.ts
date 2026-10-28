@@ -21,10 +21,17 @@ export async function loadMovieReleases({
   id: string;
 }) {
   const client = api({ fetch });
+  const layout = parent();
+  // Like the summary's: Watch Now goes by the requested id alongside the movie's reads, and a non-canonical id
+  // redirects before it's used. The catch only stops a failed movie read leaving it unhandled.
+  const watchNowRead = layout.then(({ settings }) =>
+    loadWatchNow({ fetch, path: `/movies/${id}`, country: watchNowCountry(settings), settings }),
+  );
+  watchNowRead.catch(() => {});
   const [summary, releases, { datePreferences, settings, user }] = await Promise.all([
     client.movies.summary({ params: { id }, query: { extended: 'full,images' } }),
     client.movies.releases({ params: { id } }),
-    parent(),
+    layout,
   ]);
   if (summary.status === 404) error(404, 'Movie not found');
   if (summary.status !== 200) error(502, 'The Trakt API could not load this movie.');
@@ -32,12 +39,7 @@ export async function loadMovieReleases({
   if (id !== movie.ids.slug) redirect(301, `/movies/${movie.ids.slug}/releases`);
   if (releases.status !== 200) error(502, 'The Trakt API could not load these release dates.');
   const country = watchNowCountry(settings);
-  const watchNow = await loadWatchNow({
-    fetch,
-    path: `/movies/${movie.ids.slug}`,
-    country,
-    settings,
-  });
+  const watchNow = await watchNowRead;
   return {
     watchNow: watchNow.button,
     movie: {

@@ -9,7 +9,7 @@ import { episodeNeighbours } from '../shows/episodeNeighbours.ts';
 import { episodeSeasonsSchema } from '../shows/episodeSeasonsSchema.ts';
 import { seasonNeighbours } from '../shows/seasonNeighbours.ts';
 import type { SubpageItem } from './SubpageItem.ts';
-import { subpageWatchNowPath } from './subpageWatchNowPath.ts';
+import { subpageApiPath } from './subpageApiPath.ts';
 import { readSubpageRatings } from './readSubpageRatings.ts';
 import { subpageParents } from './subpageParents.ts';
 import { toSubpageStrip } from './toSubpageStrip.ts';
@@ -115,6 +115,14 @@ async function readItem(fetch: typeof globalThis.fetch, item: SubpageItem, neigh
   };
 }
 
+/** Watch Now's paths by the requested item, as `subpageWatchNowPath` gives them by its canonical one. */
+function requestedWatchNowPath(item: SubpageItem): { readonly path: string; readonly fallback?: string } {
+  const path = subpageApiPath(item);
+  if (item.type === 'show') return { path, fallback: `${path}/seasons/1/episodes/1` };
+  if (item.type === 'season') return { path, fallback: `${path}/episodes/1` };
+  return { path };
+}
+
 const requestedHref = (item: SubpageItem) => {
   if (item.type === 'movie') return `/movies/${item.id}`;
   if (item.type === 'show') return `/shows/${item.id}`;
@@ -128,23 +136,28 @@ const requestedHref = (item: SubpageItem) => {
  * viewer's token. Run it beside the subpage's own reads.
  */
 export async function loadSubpageMedia({ fetch, parent, item, suffix, neighbours = true, ratings = false }: Params) {
+  const layoutRead = parent();
+  // Watch Now goes by the requested item once the layout has the viewer's country, alongside the item's reads, not
+  // after them. A non-canonical URL redirects and drops it; the catch only stops a failed item read leaving it
+  // unhandled.
+  const watchNowRead = layoutRead.then(({ settings }) =>
+    loadWatchNow({
+      fetch,
+      ...requestedWatchNowPath(item),
+      country: watchNowCountry(settings),
+      settings,
+    }),
+  );
+  watchNowRead.catch(() => {});
   const [read, layout, reads] = await Promise.all([
     readItem(fetch, item, neighbours),
-    parent(),
+    layoutRead,
     ratings ? readSubpageRatings(fetch, item) : null,
   ]);
   const { user, settings, datePreferences } = layout;
-  const target = subpageWatchNowPath(read.body);
-  const watchNow = target
-    ? await loadWatchNow({
-        fetch,
-        ...target,
-        country: watchNowCountry(settings),
-        settings,
-      })
-    : null;
+  const watchNow = await watchNowRead;
   const collection = 'collection' in read ? read.collection : undefined;
-  const media = toSubpageMedia({ body: read.body, justwatch: watchNow?.rank?.link, collection });
+  const media = toSubpageMedia({ body: read.body, justwatch: watchNow.rank?.link, collection });
   if (!media) error(404, 'Not found');
   if (media.href !== requestedHref(item)) redirect(301, `${media.href}/${suffix}`);
 
@@ -153,7 +166,7 @@ export async function loadSubpageMedia({ fetch, parent, item, suffix, neighbours
     ? toSubpageStrip({
         media,
         reads,
-        rank: watchNow?.rank ?? null,
+        rank: watchNow.rank,
         otherSiteRatings: settings?.browsing?.other_site_ratings ?? true,
         now: new Date(),
       })
@@ -165,8 +178,8 @@ export async function loadSubpageMedia({ fetch, parent, item, suffix, neighbours
     media: { ...media, parents: subpageParents({ type: media.item.type, parents: media.parents, suffix }) },
     previous: 'previous' in read ? sibling(read.previous) : undefined,
     next: 'next' in read ? sibling(read.next) : undefined,
-    watchNow: watchNow?.button ?? null,
-    streamingRank: watchNow?.rank ?? null,
+    watchNow: watchNow.button,
+    streamingRank: watchNow.rank,
     user,
     settings,
     datePreferences,

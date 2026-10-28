@@ -17,6 +17,7 @@ import MediaWatch from '$lib/components/history/MediaWatch.svelte';
 import type { WatchTarget } from '$lib/components/history/WatchTarget';
 import MediaList from '$lib/components/lists/MediaList.svelte';
 import type { ListTarget } from '$lib/components/lists/ListTarget';
+import { QUICK_ADD } from '$lib/settings/quickAdd';
 import SummaryAction from '$lib/components/summary/SummaryAction.svelte';
 import SummaryActionTile from '$lib/components/summary/SummaryActionTile.svelte';
 import circlePlus from '$lib/icons/light/circle-plus.svg?raw';
@@ -89,7 +90,13 @@ const buttons = $derived(
       side: 'Pick a library date',
     },
     listable &&
-    { kind: 'list', icon: list, label: 'Add to watchlist', color: 'var(--brand-secondary)', side: 'Pick a list' },
+    {
+      kind: 'list',
+      icon: list,
+      label: QUICK_ADD ? 'Add to watchlist' : 'Add to list',
+      color: 'var(--brand-secondary)',
+      side: 'Pick a list',
+    },
     favorites && { kind: 'favorites', icon: star, label: 'Add to favorites', color: 'var(--brand-seventh)' },
     commentable && { kind: 'comment', icon: comment, label: 'Add comment', color: 'var(--brand-sixth)' },
   ].filter((button) => button !== false),

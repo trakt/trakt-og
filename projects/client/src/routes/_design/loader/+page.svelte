@@ -1,5 +1,5 @@
 <!--
-  The page loader as lists and progress pages show it, the starfield while og signs in or out, the shimmering bars
+  The page loader as lists and progress pages show it, the line along the top while the next page loads, the starfield while og signs in or out, the shimmering bars
   that hold a number's or a name's place on the home page, the shimmering cards that hold a dashboard panel's place,
   and a picker's shimmering option rows.
 -->
@@ -8,11 +8,15 @@ import { AUTH_FAILURE_MESSAGE } from '$lib/auth/authFailure';
 import { AUTH_SCENES } from '$lib/auth/authScenes';
 import HyperspaceLoader from '$lib/components/loading/HyperspaceLoader.svelte';
 import LoadingOverlay from '$lib/components/loading/LoadingOverlay.svelte';
+import NavigationProgress from '$lib/components/loading/NavigationProgress.svelte';
 import CardShimmerRow from '$lib/components/loading/CardShimmerRow.svelte';
 import OptionRowShimmers from '$lib/components/loading/OptionRowShimmers.svelte';
 import Shimmer from '$lib/components/loading/Shimmer.svelte';
+import DemoToggle from '$lib/design/DemoToggle.svelte';
 import Specimen from '$lib/design/Specimen.svelte';
 import Variant from '$lib/design/Variant.svelte';
+
+let leaving = $state(true);
 </script>
 
 <Specimen title="Page loader" bleed
@@ -20,6 +24,12 @@ import Variant from '$lib/design/Variant.svelte';
   <div class="viewport">
     <LoadingOverlay visible />
   </div>
+</Specimen>
+
+<Specimen title="Navigation progress" bleed
+  note="NavigationProgress along the top of the window, over the header, while the next page's data loads. It waits 150ms, so a quick page never shows it, then creeps toward the end. Turn Loading off and it runs to the end and fades; turn it on and it waits again. With the OS set to reduce motion, it fades in at full width and holds still.">
+  <div class="knob"><DemoToggle bind:checked={leaving}>Loading</DemoToggle></div>
+  <div class="viewport header"><NavigationProgress active={leaving} /></div>
 </Specimen>
 
 <Specimen title="Sign-in loader"
@@ -89,6 +99,17 @@ import Variant from '$lib/design/Variant.svelte';
 .viewport {
   contain: paint;
   aspect-ratio: var(--ratio-fanart);
+}
+
+/* As tall and as dark as the header, which the line runs along on the site. */
+.header {
+  aspect-ratio: auto;
+  block-size: var(--header-height);
+  background-color: var(--color-frame);
+}
+
+.knob {
+  padding: var(--design-canvas-padding);
 }
 
 .menu {

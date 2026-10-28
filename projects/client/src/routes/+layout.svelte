@@ -4,7 +4,7 @@ import '$lib/styles/tokens.css';
 import '$lib/styles/base.css';
 import figtreeLatin from '$lib/assets/fonts/figtree-latin.woff2';
 import { invalidateAll } from '$app/navigation';
-import { page } from '$app/state';
+import { navigating, page } from '$app/state';
 import { isStandardApi } from '$lib/api/isStandardApi';
 import { logHidden } from '$lib/api/logHidden';
 import { AUTH_SCENES } from '$lib/auth/authScenes';
@@ -21,6 +21,7 @@ import Header from '$lib/components/header/Header.svelte';
 import MobileSplash from '$lib/components/mobile-splash/MobileSplash.svelte';
 import { TOO_SMALL_FOR_OG } from '$lib/components/mobile-splash/tooSmallForOg';
 import HyperspaceLoader from '$lib/components/loading/HyperspaceLoader.svelte';
+import NavigationProgress from '$lib/components/loading/NavigationProgress.svelte';
 import Toaster from '$lib/components/toast/Toaster.svelte';
 import Nudges from '$lib/components/first-night/Nudges.svelte';
 import OfflineGuard from '$lib/errors/OfflineGuard.svelte';
@@ -37,6 +38,8 @@ let { children, data } = $props();
 const bare = $derived(page.route.id?.startsWith('/_design') || isAuthStepRoute(page.route.id));
 // An error page fills the screen on its own, without the header and footer.
 const errored = $derived(!!page.error);
+// The next page's data is loading, while this one stays up.
+const leaving = $derived(navigating.to !== null);
 
 // The server renders the saved theme onto <html> (hooks.server.ts); this keeps it in step when the settings reload.
 // The demos pick their own theme.
@@ -88,11 +91,12 @@ onMount(() => {
   {@render children()}
 {:else}
   <MobileSplash platform={data.platform} phone={data.phone} covering={tooSmall.current}>
+    <NavigationProgress active={leaving} />
     {#if !errored}
       <a class="skip" href="#content">Skip to content</a>
       <Header user={data.user} renewing={data.tokenExpired || data.rateLimited} searchType={data.searchType} {darkKnight} />
     {/if}
-    <main id="content" tabindex="-1">
+    <main id="content" tabindex="-1" aria-busy={leaving || undefined}>
       {@render children()}
     </main>
     {#if !errored}<Footer />{/if}

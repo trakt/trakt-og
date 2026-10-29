@@ -81,11 +81,12 @@ describe('loadLibrary', () => {
     expect(result.source).toBe(filter ? source : 'all');
   });
 
-  it('should group Added Date by day on All Types and show the owner their metadata', async () => {
-    const result = await load({ isSelf: true });
-    expect(requested()).toEqual([
-      '/users/tester/collection/media?extended=full%2Cimages&page=1&limit=60&sort_by=added&sort_how=desc',
-    ]);
+  it('should group Added Date by day on All Types and show the owner their metadata, read with their token', async () => {
+    const result = await load({ isSelf: true, token: 'viewer-token' });
+    const media = '/users/tester/collection/media?extended=full%2Cimages&page=1&limit=60&sort_by=added&sort_how=desc';
+    // The anonymous read that starts alongside the frame is cancelled once the frame says it's your own.
+    expect(requested()).toEqual([media, media]);
+    expect(seen.at(-1)?.headers.get('authorization')).toBe('Bearer viewer-token');
     expect(result.days).toHaveLength(1);
     expect(result.cards[0]?.badges).toEqual({
       video: { logo: { name: 'dvd', label: 'DVD' }, threeD: false, resolution: undefined, hdr: undefined },

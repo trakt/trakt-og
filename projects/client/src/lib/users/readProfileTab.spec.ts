@@ -5,6 +5,7 @@ const frameOf = (profile: { isPrivate: boolean; isLocked: boolean }) => ({ profi
 const PUBLIC = frameOf({ isPrivate: false, isLocked: false });
 const VISIBLE = frameOf({ isPrivate: true, isLocked: false });
 const LOCKED = frameOf({ isPrivate: true, isLocked: true });
+const OWN = { ...PUBLIC, isSelf: true };
 
 type Read = { token: string | null; framed: boolean };
 
@@ -71,6 +72,12 @@ describe('util: readProfileTab', () => {
       expect(signals.at(0)?.aborted).toBe(true);
     });
 
+    it('should drop the anonymous read of your own public profile and use the token, so it is never a kept copy', async () => {
+      const { reads, read } = tab();
+      expect((await readProfileTab({ fetch, token: 'abc', frame: later(OWN), read })).result).toBe('abc');
+      expect(reads.map(({ token }) => token)).toEqual([null, 'abc']);
+    });
+
     it('should fail with the anonymous read when a public profile uses it', async () => {
       const read = () => Promise.reject(new Error('down'));
       await expect(readProfileTab({ fetch, token: null, frame: later(PUBLIC), read })).rejects.toThrow('down');
@@ -97,6 +104,12 @@ describe('util: readProfileTab', () => {
       const { reads, read } = tab();
       expect((await readProfileTab({ fetch, token: 'abc', frame: LOCKED, read })).result).toBeNull();
       expect(reads).toEqual([]);
+    });
+
+    it('should read your own public profile with the token', async () => {
+      const { reads, read } = tab();
+      expect((await readProfileTab({ fetch, token: 'abc', frame: OWN, read })).result).toBe('abc');
+      expect(reads.map(({ token }) => token)).toEqual(['abc']);
     });
   });
 });

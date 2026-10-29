@@ -81,8 +81,8 @@ async function fetchPage({
 
 /**
  * `/users/:id/library(/:type)(/:sort_by/:sort_how)`: owned items newest first, under
- * day dividers on Added Date. One read per `readProfileTab`: a public profile's goes without the token alongside the
- * frame's load, and a private profile the viewer may see is read with it (the worker shows a private library to its
+ * day dividers on Added Date. One read per `readProfileTab`: someone else's public profile goes without the token
+ * alongside the frame's load, and your own, or a private profile the viewer may see, is read with it (the worker shows a private library to its
  * owner only). An unknown or default type or sort segment 301s to the page's own spelling.
  */
 export async function loadLibrary({ fetch, locals, params, url, cookies, parent }: Params) {

@@ -4,7 +4,6 @@ import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import type { ViewerSettings } from '../../settings/ViewerSettings.ts';
 import { toProfileUser } from '../toProfileUser.ts';
-import { workerUnauthorized } from '../../api/workerUnauthorized.ts';
 import { loadProfile } from './loadProfile.ts';
 
 const profile = toProfileUser({ username: 'tester', name: 'Tester', private: false, ids: { slug: 'tester' } });
@@ -243,7 +242,7 @@ describe('loadProfile', () => {
       movie: { title: `Movie ${id}`, year: 2020, ids: { trakt: id, slug: `movie-${id}` } },
     });
 
-    it('should read your favorites again in your saved order, with your token', async () => {
+    it('should read your favorites in your saved order, with your token', async () => {
       server.use(
         http.get(/^https:\/\/apiz\.trakt\.tv\/users\/tester\/favorites\//, ({ request }) => {
           seen.push(request);
@@ -253,6 +252,7 @@ describe('loadProfile', () => {
       );
       const data = await load({ isSelf: true, settings });
 
+      // The anonymous read that starts alongside the frame is cancelled once the frame says it's your own.
       expect(favoriteReads().map((request) => new URL(request.url).pathname)).toEqual([
         '/users/tester/favorites/movie,show/random/asc',
         '/users/tester/favorites/movie,show/watched/desc',
@@ -261,15 +261,11 @@ describe('loadProfile', () => {
       expect(data.favorites.map(({ id }) => id)).toEqual([2]);
     });
 
-    it('should keep the random favorites when the saved order fails', async () => {
-      server.use(
-        http.get(/^https:\/\/apiz\.trakt\.tv\/users\/tester\/favorites\//, ({ request }) => {
-          seen.push(request);
-          if (new URL(request.url).pathname.endsWith('/watched/desc')) return workerUnauthorized();
-          return HttpResponse.json([favorite(1)]);
-        }),
-      );
-      expect((await load({ isSelf: true, settings })).favorites.map(({ id }) => id)).toEqual([1]);
+    it('should read the rest of your own public profile with your token too, so a watch just saved shows', async () => {
+      await load({ isSelf: true, settings });
+      const recent = seen.filter((request) => new URL(request.url).pathname.startsWith('/users/tester/history/'));
+      expect(recent.length).toBeGreaterThan(0);
+      expect(recent.at(-1)?.headers.get('authorization')).toBe('Bearer viewer-token');
     });
 
     it('should apply your most watched sorts and default tabs', async () => {
@@ -296,9 +292,12 @@ describe('loadProfile', () => {
       ]);
     });
 
-    it('should read your favorites once when you kept the random order', async () => {
+    it('should read your favorites once with your token when you kept the random order', async () => {
       await load({ isSelf: true, settings: { browsing: {} } as unknown as ViewerSettings });
-      expect(favoriteReads()).toHaveLength(1);
+      const tokened = favoriteReads().filter((request) => request.headers.has('authorization'));
+      expect(tokened.map((request) => new URL(request.url).pathname)).toEqual([
+        '/users/tester/favorites/movie,show/random/asc',
+      ]);
     });
   });
 

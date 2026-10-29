@@ -148,8 +148,8 @@ async function fetchPage({
 
 /**
  * `/users/:id/history(/:type)`: newest plays first, as poster cards under day dividers.
- * One read per `readProfileTab`: a public profile's goes without the token alongside the frame's load, and a private
- * profile the viewer may see is read with it.
+ * One read per `readProfileTab`: someone else's public profile goes without the token alongside the frame's load, and
+ * your own, or a private profile the viewer may see, is read with it, so a play you just saved shows.
  */
 export async function loadHistory({ fetch, locals, params, url, cookies, parent }: Params) {
   const type: HistoryType = params.type && isHistoryType(params.type) ? params.type : 'all';

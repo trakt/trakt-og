@@ -12,7 +12,8 @@ const KEYS: Record<ReturnType<typeof literalProgressSort>['by'], Key> = {
   episodes: ({ aired, completed }) => Math.max(aired - completed, 0),
   time: ({ minutesLeft }) => minutesLeft,
   plays: ({ plays }) => plays,
-  released: ({ show }) => date(show.lastAired),
+  // Up next's air date; a show with nothing left to watch falls back to its latest episode.
+  released: ({ next, show }) => date(next?.firstAired ?? show.lastAired),
   premiered: ({ show }) => date(show.firstAired),
   title: ({ show }) => show.title.toLocaleLowerCase(),
   // The API has no popularity rank, so votes stand in, as on the dashboard (`sortUpNext.ts`).

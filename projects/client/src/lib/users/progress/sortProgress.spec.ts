@@ -24,6 +24,17 @@ describe('sortProgress', () => {
     expect(ids(sortProgress(items, { by: 'episodes', how: 'asc' }))).toEqual([1, 3, 2]);
   });
 
+  it("should sort Release Date by up next's air date, else the show's latest episode", () => {
+    const episode = (firstAired: string) => ({ id: 1, season: 1, number: 1, firstAired });
+    const released = [
+      progressItemFixture(1, { next: episode('2020-01-01'), show: { lastAired: '2026-06-01' } }),
+      progressItemFixture(2, { next: episode('2024-01-01'), show: { lastAired: '2024-02-01' } }),
+      progressItemFixture(3, { show: { lastAired: '2022-01-01' } }),
+    ];
+    expect(ids(sortProgress(released, { by: 'released', how: 'asc' }))).toEqual([2, 3, 1]);
+    expect(ids(sortProgress(released, { by: 'released', how: 'desc' }))).toEqual([1, 3, 2]);
+  });
+
   it('should break ties on the higher show id', () => {
     expect(ids(sortProgress(items, { by: 'popularity', how: 'asc' }))).toEqual([3, 2, 1]);
   });

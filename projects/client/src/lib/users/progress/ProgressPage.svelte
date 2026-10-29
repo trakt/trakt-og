@@ -62,10 +62,13 @@ let failure = $state<{ readonly error: unknown } | null>(null);
 let droppedShows = $state.raw<ReadonlyMap<number, CachedShow> | undefined>();
 const catalogs = new SvelteMap<number, ShowCatalog>();
 const loading = new SvelteSet<number>();
+/** Reads in flight. */
+let reads = $state(0);
 
 /** Every page. A failure keeps what's on screen. */
 async function readProgress() {
   const slug = data.profile.slug;
+  reads += 1;
   try {
     const items = await loadNitroProgress({
       request: (intent, page, limit) =>
@@ -87,6 +90,8 @@ async function readProgress() {
     );
     if (nitro === null) failure = { error };
     nitro ??= [];
+  } finally {
+    reads -= 1;
   }
 }
 
@@ -187,5 +192,5 @@ async function need(id: number) {
 }
 </script>
 
-<ProgressList {data} {items} {listed} {loading} onneed={need} onretry={failure ? readProgress : undefined}
+<ProgressList {data} {items} {listed} {loading} reloading={reads > 0} onneed={need} onretry={failure ? readProgress : undefined}
   error={failure?.error} />

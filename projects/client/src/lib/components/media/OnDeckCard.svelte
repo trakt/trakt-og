@@ -2,7 +2,7 @@
   OG's on-deck card: a show's next episode as a poster card with the progress bar under its quick icons, the episode
   as the title, then the show's title. The dashboard's Up Next panel and the progress page's grid view both use it.
   The quick icons' ••• holds Watch Now, and for a show still in progress Rewatch and Drop through the shared prompts.
-  Dashboard callbacks refresh the card after saves.
+  Dashboard callbacks refresh the card after saves. While `loading`, the Trakt loader covers the poster.
 -->
 <script lang="ts">
 import { page } from '$app/state';
@@ -12,6 +12,7 @@ import { formatDate } from '$lib/utils/formatDate';
 import type { OnDeckItem } from '$lib/components/media/OnDeckItem';
 import PosterCard from '$lib/components/media/PosterCard.svelte';
 import RefreshCover from '$lib/components/media/RefreshCover.svelte';
+import TraktLoader from '$lib/components/loading/TraktLoader.svelte';
 import { progressPercent } from '$lib/components/media/progressPercent';
 import { progressTooltip } from '$lib/components/media/progressTooltip';
 import { quickIconFill } from '$lib/components/media/quickIconFill';
@@ -27,6 +28,8 @@ interface Props {
   onRefresh?: () => void;
   needsRefresh?: boolean;
   refreshing?: boolean;
+  /** The next episode is on its way: an opaque cover with the loader over the poster. */
+  loading?: boolean;
   /** PosterCard's `framed`: rounded, with the quick icons on their own panel. On unless set to false. */
   framed?: boolean;
 }
@@ -39,6 +42,7 @@ const {
   onRefresh,
   needsRefresh = false,
   refreshing = false,
+  loading = false,
   framed = true,
 }: Props = $props();
 const target = $derived({
@@ -77,7 +81,7 @@ const tip = $derived(
 <!-- Hrefs point at OG routes og hasn't built yet, and resolve() only takes routes that exist. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
-<div class="on-deck-card" aria-busy={refreshing}>
+<div class="on-deck-card" aria-busy={refreshing || loading}>
   <PosterCard
     {framed}
     href={item.complete ? item.showHref : item.episodeHref}
@@ -94,7 +98,8 @@ const tip = $derived(
       <UnderProgress href={item.progressHref} percent={progressPercent(item.progress)} ticks={item.ticks} {tip} />
     {/snippet}
     {#snippet posterOverlay()}
-      {#if refreshing || needsRefresh}<RefreshCover title={item.showTitle} {refreshing} onrefresh={onRefresh} />
+      {#if loading}<div class="loading"><TraktLoader size={48} label="Loading {item.showTitle}'s next episode" /></div>
+      {:else if refreshing || needsRefresh}<RefreshCover title={item.showTitle} {refreshing} onrefresh={onRefresh} />
       {:else if item.complete && item.completionLabel}<div class="completion">{item.completionLabel}</div>{/if}
     {/snippet}
     {#if item.complete}<div class="show-line"><b>100% watched!</b></div>{:else}
@@ -104,6 +109,14 @@ const tip = $derived(
 </div>
 
 <style>
+.loading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: var(--on-deck-loading-bg);
+}
+
 .completion {
   position: absolute;
   inset-inline-start: var(--space-lg-inline);

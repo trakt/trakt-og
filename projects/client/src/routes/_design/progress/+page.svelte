@@ -5,12 +5,15 @@
   shows). `?list=1` filters to a list's shows and `?list=2` to an empty list, each after a short wait, and
   `?state=loading` holds the progress loading for good. Rows start with
   the up-next episode and estimated counts, as the page does; opening one's seasons reads its catalog after a short
-  wait (Breaking Bad has unwatched episodes in the library, Severance a season announced).
+  wait (Breaking Bad has unwatched episodes in the library, Severance a season announced). In the grid, marking a card's
+  episode watched covers its poster with the loader while the progress is read again, after a short wait.
 -->
 <script lang="ts">
 import { page } from '$app/state';
+import { untrack } from 'svelte';
 import { SvelteSet } from 'svelte/reactivity';
 import Specimen from '$lib/design/Specimen.svelte';
+import { overlay } from '$lib/overlay/overlay';
 import { progressFixture } from '$lib/users/progress/progressFixture';
 import ProgressList from '$lib/users/progress/ProgressList.svelte';
 import { isProgressType, type ProgressType } from '$lib/users/progress/progressTypes';
@@ -50,6 +53,20 @@ function need(id: number) {
     catalogs.add(id);
   }, WAIT);
 }
+// Like the page: a watch reads the progress again, here a short wait that leaves the samples as they are.
+const watchedShows = $derived(overlay.slices().watchedShows);
+let reloading = $state(false);
+let seen: unknown;
+$effect(() => {
+  const marks = watchedShows;
+  untrack(() => {
+    const changed = seen !== undefined && marks !== seen;
+    seen = marks;
+    if (!changed) return;
+    reloading = true;
+    setTimeout(() => (reloading = false), WAIT);
+  });
+});
 const exact = $derived(progressFixture[type](true));
 const items = $derived(
   progressFixture[type](false).map((item) => {
@@ -96,7 +113,7 @@ const data = $derived({
       </a>
     {/each}
   </nav>
-  <ProgressList {data} items={pending ? null : items} {listed} {loading} onneed={need} {now} />
+  <ProgressList {data} items={pending ? null : items} {listed} {loading} {reloading} onneed={need} {now} />
 </Specimen>
 
 <style>

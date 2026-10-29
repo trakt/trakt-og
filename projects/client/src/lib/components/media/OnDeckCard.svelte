@@ -95,7 +95,7 @@ const tip = $derived(
     {/snippet}
     {#snippet posterOverlay()}
       {#if refreshing || needsRefresh}<RefreshCover title={item.showTitle} {refreshing} onrefresh={onRefresh} />
-      {:else if item.complete}<div class="completion">{item.completionLabel}</div>{/if}
+      {:else if item.complete && item.completionLabel}<div class="completion">{item.completionLabel}</div>{/if}
     {/snippet}
     {#if item.complete}<div class="show-line"><b>100% watched!</b></div>{:else}
     <div class="show-line"><a class="show-link" href={item.showHref}>{item.showTitle}</a></div>

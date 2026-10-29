@@ -1,6 +1,6 @@
 <!--
   The progress page's view: the subnav with the type dropdown, the summary strip, sort, view toggles and filters,
-  then one row a show, or a poster grid when grid view is on. It sorts, filters, pages and totals `items` itself, so
+  then one row a show, or each show's next episode as a poster card when grid view is on. It sorts, filters, pages and totals `items` itself, so
   the same view renders live data (`ProgressPage.svelte`) and the design page's samples. `items` is null while your
   progress loads, and `listed` while a `?list=`'s shows do; shimmering rows (or a row of poster cards in grid view)
   hold their place meanwhile. The grid view and simple bar toggles save to the viewer's watched progress settings,
@@ -22,6 +22,7 @@ import ProgressRowShimmer from '$lib/components/loading/ProgressRowShimmer.svelt
 import FadeHideMenu from '$lib/components/filters/FadeHideMenu.svelte';
 import TermsFilter from '$lib/components/filters/TermsFilter.svelte';
 import type { HeaderUser } from '$lib/components/header/HeaderUser';
+import OnDeckCard from '$lib/components/media/OnDeckCard.svelte';
 import PosterCard from '$lib/components/media/PosterCard.svelte';
 import PosterGrid from '$lib/components/media/PosterGrid.svelte';
 import { quickIconFill } from '$lib/components/media/quickIconFill';
@@ -37,6 +38,7 @@ import { overlay } from '$lib/overlay/overlay';
 import { settingsRequest } from '$lib/settings/settingsRequest';
 import type { ProfileUser } from '$lib/users/ProfileUser';
 import { findAction } from '$lib/users/findAction';
+import { nearViewport } from '$lib/utils/nearViewport';
 import { changeProgressView } from './changeProgressView.ts';
 import { filterProgress } from './filterProgress.ts';
 import type { loadProgress } from './loadProgress.ts';
@@ -48,6 +50,7 @@ import ProgressSummary from './ProgressSummary.svelte';
 import { isProgressType, type ProgressType, progressTypes } from './progressTypes.ts';
 import { sortProgress } from './sortProgress.ts';
 import { sumProgressTotals } from './sumProgressTotals.ts';
+import { toProgressCard } from './toProgressCard.ts';
 import { toProgressRow } from './toProgressRow.ts';
 import { viewerFetch } from '../../auth/viewerFetch.ts';
 import { expireHideCookie } from '../../components/filters/expireHideCookie.ts';
@@ -99,6 +102,12 @@ const current = $derived(Math.min(data.page, pageCount));
 const onPage = $derived(shown?.slice((current - 1) * limit, current * limit) ?? []);
 const rows = $derived(
   onPage.map((item) => toProgressRow({ item, datePreferences: data.datePreferences, now: now ?? new Date() })),
+);
+// Grid view's cards, by row.
+const cards = $derived(
+  data.grid
+    ? onPage.map((item) => toProgressCard({ item, username: data.profile.slug, simple, now: now ?? new Date() }))
+    : [],
 );
 const totals = $derived(shown ? sumProgressTotals(shown) : null);
 const meta = $derived({ type: 'paginated' as const, current, total: pageCount });
@@ -240,22 +249,30 @@ function clearFilters() {
       {#if data.grid}
         <div class="grid">
           <PosterGrid columns={6}>
-            {#each rows as row (row.id)}
-              {@const state = overlay.state('show', row.id)}
-              {@const done = `${row.percent}% watched`}
-              <PosterCard href={row.href} title={row.title} image={row.poster} rewatchingSince={row.rewatchingSince}
-                userRating={state.rating}
-                subtitles={[row.percent === 100 ? `${done}!` : done]}
-                icons={{
-                  fill: quickIconFill({ state, airedEpisodes: row.aired, datePreferences: data.datePreferences }),
-                  ratingTarget: { type: 'show', id: row.id, title: row.title },
-                  watchTarget: { type: 'show', id: row.id, title: row.title, airedEpisodes: row.aired },
-                  watchNow: 'play',
-                }}>
-                {#snippet progress()}
-                  <UnderProgress href={row.href} percent={row.percent} tip={done} />
-                {/snippet}
-              </PosterCard>
+            {#each rows as row, index (row.id)}
+              {@const card = cards[index]}
+              {#if card}
+                <OnDeckCard item={card}
+                  state={card.complete ? overlay.state('show', card.showId) : overlay.state('episode', card.episodeId)} />
+              {:else}
+                {@const state = overlay.state('show', row.id)}
+                {@const done = `${row.percent}% watched`}
+                <!-- Episodes left but no next one yet: the show until its catalog names it. -->
+                <div {@attach nearViewport(() => onneed?.(row.id))}>
+                  <PosterCard href={row.href} title={row.title} image={row.poster}
+                    rewatchingSince={row.rewatchingSince} userRating={state.rating} subtitles={[done]}
+                    icons={{
+                      fill: quickIconFill({ state, airedEpisodes: row.aired, datePreferences: data.datePreferences }),
+                      ratingTarget: { type: 'show', id: row.id, title: row.title },
+                      watchTarget: { type: 'show', id: row.id, title: row.title, airedEpisodes: row.aired },
+                      watchNow: 'play',
+                    }}>
+                    {#snippet progress()}
+                      <UnderProgress href={row.href} percent={row.percent} tip={done} />
+                    {/snippet}
+                  </PosterCard>
+                </div>
+              {/if}
             {/each}
           </PosterGrid>
         </div>

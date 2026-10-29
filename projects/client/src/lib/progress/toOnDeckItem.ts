@@ -19,7 +19,7 @@ const BADGE_KINDS: ReadonlySet<string> = new Set<BadgeKind>([
 ]);
 const isBadgeKind = (kind: string): kind is BadgeKind => BADGE_KINDS.has(kind);
 
-function toEpisodeBadge(episode: NonNullable<UpNextEntry['progress']['next_episode']>): OnDeckItem['episodeBadge'] {
+export function toEpisodeBadge(episode: Parameters<typeof episodeType>[0]): OnDeckItem['episodeBadge'] {
   const type = episodeType(episode);
   if (!type || !isBadgeKind(type.kind)) return undefined;
 

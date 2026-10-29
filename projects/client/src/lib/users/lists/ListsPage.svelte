@@ -1,6 +1,6 @@
 <!--
   `/users/:id/lists`, `/users/:id/lists/collaborations` and the liked lists (`/liked`, `/liked/official`) under the
-  profile frame: the subnav with OG's lists menu (the user's lists, then Reactions), the owner's add and reorder buttons, the count, sort, direction and search, then the watchlist and
+  profile frame: the subnav with OG's lists menu (the user's lists, then Liked), the owner's add and reorder buttons, the count, sort, direction and search, then the watchlist and
   favorites rows over a rule and every list as a list row. Sorting and searching run in the browser, like OG's isotope
   grid, and the choice goes into the query string.
 -->
@@ -418,8 +418,8 @@ const actions = (row: UserListRow) => {
 
 <SectionToolbar>
   {#snippet filters()}
-    <!-- OG's lists menu: the user's own lists, then Reactions, the lists they've liked. -->
-    <Dropdown section={liked ? 'Reactions' : 'Lists'}>
+    <!-- OG's lists menu: the user's own lists, then Liked (OG's Reactions), the lists they've liked. -->
+    <Dropdown section={liked ? 'Liked' : 'Lists'}>
       {#snippet trigger()}{{ personal: 'Personal', collaborations: 'Collaborations', liked: 'Personal', 'liked-official': 'Official' }[data.mode]}{/snippet}
       <ul>
         <li class="header" role="presentation">Lists</li>
@@ -428,7 +428,7 @@ const actions = (row: UserListRow) => {
       </ul>
       <hr />
       <ul>
-        <li class="header" role="presentation">Reactions</li>
+        <li class="header" role="presentation">Liked</li>
         <li><a href="{base}/liked" aria-label="Liked personal lists" aria-current={data.mode === 'liked' ? 'page' : undefined}>Personal</a></li>
         <li><a href="{base}/liked/official" aria-label="Liked official lists" aria-current={data.mode === 'liked-official' ? 'page' : undefined}>Official</a></li>
       </ul>

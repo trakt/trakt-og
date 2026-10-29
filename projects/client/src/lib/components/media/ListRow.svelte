@@ -35,7 +35,7 @@ import lock from '$lib/icons/regular/lock.svg?raw';
 import pencil from '$lib/icons/regular/pen.svg?raw';
 import user from '$lib/icons/regular/user.svg?raw';
 import heart from '$lib/icons/solid/heart.svg?raw';
-import watchlistIcon from '$lib/icons/trakt/list-thick.svg?raw';
+import bookmark from '$lib/icons/solid/bookmark.svg?raw';
 import userGroup from '$lib/icons/regular/user-group.svg?raw';
 import voteYes from '$lib/icons/regular/thumbs-up.svg?raw';
 import link from '$lib/icons/solid/link.svg?raw';
@@ -112,7 +112,7 @@ const CHIPS: Record<string, { color: string; svg: string }> = {
   'Official List': { color: 'var(--color-list-chip-official)', svg: traktIcon },
   Following: { color: 'var(--color-list-chip-following)', svg: userGroup },
 };
-const BUILT_IN = { watchlist: { text: 'Watchlist', svg: watchlistIcon }, favorites: { text: 'Favorites', svg: heart } };
+const BUILT_IN = { watchlist: { text: 'Watchlist', svg: bookmark }, favorites: { text: 'Favorites', svg: heart } };
 const builtIn = $derived(kind === 'watchlist' || kind === 'favorites' ? BUILT_IN[kind] : undefined);
 // Friend or Following, from the viewer's network, as on comments; never on the viewer's own lists.
 const relation = $derived(

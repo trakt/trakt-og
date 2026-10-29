@@ -1,7 +1,7 @@
 <!--
   A labelled button on dark glass, for actions over artwork like the dashboard recommendation's. With `color` it's
   tinted in that action's color and turns solid once `selected`; without one it's plain black.
-    <GlassAction icon={listThick} color="var(--brand-secondary)" selected={watchlisted} onclick={toggle}>
+    <GlassAction icon={bookmark} color="var(--brand-secondary)" selected={watchlisted} onclick={toggle}>
       Add to Watchlist
     </GlassAction>
   Anything else (`aria-*`, `popovertarget`, a `style` with an `anchor-name`) goes on the button. `glass` swaps the

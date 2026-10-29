@@ -37,7 +37,7 @@ import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import barsProgress from '$lib/icons/regular/bars-progress.svg?raw';
 import grid2 from '$lib/icons/regular/grid-2.svg?raw';
-import listThick from '$lib/icons/trakt/list-thick.svg?raw';
+import bookmark from '$lib/icons/solid/bookmark.svg?raw';
 import { overlay } from '$lib/overlay/overlay';
 import { settingsRequest } from '$lib/settings/settingsRequest';
 import type { ProfileUser } from '$lib/users/ProfileUser';
@@ -269,7 +269,7 @@ function clearFilters() {
         {@render viewToggle('Grid View', grid2, 'grid_view', gridOn)}
         {@render viewToggle('Simple Progress Bars', barsProgress, 'simple_progress', simple)}
         {#if watchlistToggle}
-          {@render viewToggle('Include Watchlisted', listThick, 'include_watchlisted', watchlisted)}
+          {@render viewToggle('Include Watchlisted', bookmark, 'include_watchlisted', watchlisted)}
         {/if}
       {/if}
       <TermsFilter bind:terms={() => data.terms, (terms) => goto(withTerms(terms))} />

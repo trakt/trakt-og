@@ -69,7 +69,7 @@ type Props = {
   loading?: ReadonlySet<number>;
   /** Your progress is being read again, after a watch or another change. */
   reloading?: boolean;
-  /** A row opened its seasons: read its show's catalog. */
+  /** A row opened its seasons, or a next episode was watched: read its show's catalog, which finds the next one. */
   onneed?: (id: number) => void;
   /** Your progress didn't load: Try again reads it again. */
   onretry?: () => unknown;
@@ -283,7 +283,10 @@ function clearFilters() {
                 <div {@attach fadeOnChange(cardKey(card))}>
                   <OnDeckCard item={card} loading={waiting.get(card.showId) === cardKey(card)}
                     state={card.complete ? overlay.state('show', card.showId) : overlay.state('episode', card.episodeId)}
-                    onWatchSave={() => waiting.set(card.showId, cardKey(card))} />
+                    onWatchSave={() => {
+                      waiting.set(card.showId, cardKey(card));
+                      onneed?.(card.showId);
+                    }} />
                 </div>
               {:else}
                 {@const state = overlay.state('show', row.id)}

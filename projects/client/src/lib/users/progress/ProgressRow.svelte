@@ -38,7 +38,7 @@ interface Props {
   type: ProgressType;
   simple: boolean;
   datePreferences: DatePreferences;
-  /** The row's seasons opened: read the show's catalog. */
+  /** The row's seasons opened, or its next episode was watched: read the show's catalog. */
   onneed?: () => void;
   /** The catalog read is in flight. */
   loading?: boolean;
@@ -200,6 +200,7 @@ function toggleSeason(season: number) {
           rating: next.rating,
           released: next.released,
           listLabel: 'Add to list',
+          onWatchSave: () => onneed?.(),
         }} />
     {:else}
       <FanartCard framed href={row.href} title={row.status ?? row.title} image={row.fanart}

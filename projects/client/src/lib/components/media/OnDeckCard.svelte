@@ -28,7 +28,7 @@ interface Props {
   onRefresh?: () => void;
   needsRefresh?: boolean;
   refreshing?: boolean;
-  /** The next episode is on its way: an opaque cover with the loader over the poster. */
+  /** The next episode is on its way: a shade with the loader over the poster. */
   loading?: boolean;
   /** PosterCard's `framed`: rounded, with the quick icons on their own panel. On unless set to false. */
   framed?: boolean;
@@ -114,7 +114,7 @@ const tip = $derived(
   inset: 0;
   display: grid;
   place-items: center;
-  background: var(--on-deck-loading-bg);
+  background: var(--on-deck-refresh-loading);
 }
 
 .completion {

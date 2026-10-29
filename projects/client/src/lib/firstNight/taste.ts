@@ -175,8 +175,5 @@ export const tasteGenres = [
 /** v3 keeps a member to five favorite genres. */
 export const GENRE_LIMIT = 5;
 
-/** ...and five favorite streaming services. */
-export const SERVICE_LIMIT = 5;
-
 /** `us-netflix`: how settings key a favorite service, by country. */
 export const serviceKey = (country: string, slug: string) => `${country}-${slug}`;

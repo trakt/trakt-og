@@ -3,8 +3,9 @@
   then one row a show, or each show's next episode as a poster card when grid view is on. It sorts, filters, pages and totals `items` itself, so
   the same view renders live data (`ProgressPage.svelte`) and the design page's samples. `items` is null while your
   progress loads, and `listed` while a `?list=`'s shows do; shimmering rows (or a row of poster cards in grid view)
-  hold their place meanwhile. The grid view and simple bar toggles save to the viewer's watched progress settings,
-  which every tab reads, and grid view reloads the page, as OG did.
+  hold their place meanwhile. The grid view, simple bar and Include Watchlisted toggles save to the viewer's watched
+  progress settings, which every tab reads, and grid view reloads the page, as OG did. Include Watchlisted, on Watching
+  only, keeps the watchlisted shows you haven't started; off, the default, drops them.
 -->
 <script lang="ts">
 import SeoHead from '$lib/seo/SeoHead.svelte';
@@ -36,13 +37,14 @@ import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import barsProgress from '$lib/icons/regular/bars-progress.svg?raw';
 import grid2 from '$lib/icons/regular/grid-2.svg?raw';
+import listThick from '$lib/icons/trakt/list-thick.svg?raw';
 import { overlay } from '$lib/overlay/overlay';
 import { settingsRequest } from '$lib/settings/settingsRequest';
 import type { ProfileUser } from '$lib/users/ProfileUser';
 import { findAction } from '$lib/users/findAction';
 import { fadeOnChange } from '$lib/utils/fadeOnChange';
 import { nearViewport } from '$lib/utils/nearViewport';
-import { changeProgressView } from './changeProgressView.ts';
+import { changeProgressView, type ProgressView } from './changeProgressView.ts';
 import { filterProgress } from './filterProgress.ts';
 import { keepOrder } from './keepOrder.ts';
 import type { loadProgress } from './loadProgress.ts';
@@ -91,12 +93,22 @@ const base = $derived(`/users/${data.profile.slug}/progress`);
 const title = $derived(`${data.profile.displayName}'s show ${data.type} progress`);
 const types = Object.keys(progressTypes).filter(isProgressType);
 const listFilter = $derived(data.list !== undefined);
+// A list shows every show on it, whatever you've played, like OG.
+const watchlistToggle = $derived(data.type === 'watched' && !listFilter);
+// Shows the new state as it saves, like the view toggles below.
+let watchlisted = $derived(data.includeWatchlisted);
+const hideUnstarted = $derived(watchlistToggle && !watchlisted);
 const seed = Math.floor(Math.random() * 2 ** 31);
 
 const sorted = $derived(
   items && (!listFilter || listed)
     ? sortProgress(
-      filterProgress(items, { hide: data.hide, terms: data.terms, listed: listed ?? undefined }),
+      filterProgress(items, {
+        hide: data.hide,
+        terms: data.terms,
+        listed: listed ?? undefined,
+        hideUnstarted,
+      }),
       data.sort,
       seed,
     )
@@ -107,7 +119,7 @@ const sorted = $derived(
 let kept: { view: string; ids: readonly number[] } | null = null;
 const shown = $derived.by(() => {
   if (!sorted) return sorted;
-  const view = [data.type, data.sort.by, data.sort.how, data.hide.join(), data.terms, data.list].join('|');
+  const view = [data.type, data.sort.by, data.sort.how, data.hide.join(), hideUnstarted, data.terms, data.list].join('|');
   const ordered = kept?.view === view ? keepOrder(sorted, kept.ids) : sorted;
   kept = { view, ids: ordered.map(({ show }) => show.id) };
   return ordered;
@@ -143,20 +155,23 @@ const meta = $derived({ type: 'paginated' as const, current, total: pageCount })
 // The toggles show the new state as they save; grid view then reloads the page for its layout and page size.
 let simple = $derived(data.simple);
 let gridOn = $derived(data.grid);
-let saving = $state<'simple_progress' | 'grid_view' | null>(null);
+let saving = $state<ProgressView | null>(null);
 
-async function toggleView(view: 'simple_progress' | 'grid_view') {
+const viewOn = (view: ProgressView) =>
+  view === 'grid_view' ? gridOn : view === 'simple_progress' ? simple : watchlisted;
+
+async function toggleView(view: ProgressView) {
   if (saving) return;
   saving = view;
   try {
-    const on = view === 'grid_view' ? !gridOn : !simple;
     const saved = await changeProgressView({
       view,
       settings: 'watched',
-      on,
+      on: !viewOn(view),
       apply: (value) => {
         if (view === 'grid_view') gridOn = value;
-        else simple = value;
+        else if (view === 'simple_progress') simple = value;
+        else watchlisted = value;
       },
       request: settingsRequest(viewerFetch()),
       notify: toast,
@@ -209,7 +224,7 @@ function clearFilters() {
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 <SeoHead {title} description="Check out {data.profile.firstName}'s show {data.type} progress." />
 
-{#snippet viewToggle(label: string, svg: string, view: 'simple_progress' | 'grid_view', on: boolean)}
+{#snippet viewToggle(label: string, svg: string, view: ProgressView, on: boolean)}
   <Tooltip text={label}>
     {#snippet trigger(tooltip)}
       <button type="button" class={['view-toggle', { selected: on }]} aria-label={label} aria-pressed={on}
@@ -253,6 +268,9 @@ function clearFilters() {
       {#if data.user}
         {@render viewToggle('Grid View', grid2, 'grid_view', gridOn)}
         {@render viewToggle('Simple Progress Bars', barsProgress, 'simple_progress', simple)}
+        {#if watchlistToggle}
+          {@render viewToggle('Include Watchlisted', listThick, 'include_watchlisted', watchlisted)}
+        {/if}
       {/if}
       <TermsFilter bind:terms={() => data.terms, (terms) => goto(withTerms(terms))} />
       <FadeHideMenu value={{ fade: [], hide: data.hide }} options={[]} hideOptions={hideOptionsFor(data.type)}
@@ -325,7 +343,7 @@ function clearFilters() {
       {/if}
     {:else if onretry}
       <div class="empty"><LoadFailed what="Progress" {onretry} {error} /></div>
-    {:else if items && items.length > 0}
+    {:else if items?.some(({ plays }) => !hideUnstarted || plays > 0)}
       <EmptyState action={{ onclick: clearFilters, text: 'Clear filters' }} />
     {:else}
       <div class="empty">

@@ -30,6 +30,7 @@ describe('changeProgressView', () => {
   it.each([
     ['simple_progress', 'watched', true],
     ['grid_view', 'collected', false],
+    ['include_watchlisted', 'watched', true],
   ] as const)('should save %s for %s progress', async (view, settings, on) => {
     const { shown, params } = setup();
     server.use(

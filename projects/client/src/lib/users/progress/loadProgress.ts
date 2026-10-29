@@ -28,7 +28,7 @@ type Params = {
  * `/users/:id/progress(/:type)(/:sort_by/:sort_how)`: your own progress only. Someone else's goes to their profile,
  * and a signed-out viewer (or a token that stopped working) signs in and comes back. The rows load in the browser
  * from `/sync/progress/up_next_nitro` (`ProgressPage.svelte`), so this only reads the URL, the hide cookie and your
- * watched progress settings: sort, view, and the specials and next-episode choices the season lists use.
+ * watched progress settings: sort, view, Include Watchlisted, and the specials and next-episode choices the season lists use.
  */
 export async function loadProgress({ locals, params, url, cookies, parent }: Params) {
   if (!locals.token) signInRedirect(url);
@@ -51,6 +51,7 @@ export async function loadProgress({ locals, params, url, cookies, parent }: Par
     hide: readProgressHide({ cookie: cookies.get('filter-hide-progress'), search: url.searchParams, type }),
     grid: Boolean(saved?.grid_view),
     simple: Boolean(saved?.simple_progress),
+    includeWatchlisted: Boolean(saved?.include_watchlisted),
     terms: url.searchParams.get('terms')?.trim() ?? '',
     list: list > 0 ? list : undefined,
     page: positiveInt(url.searchParams.get('page'), 1),

@@ -92,7 +92,7 @@ const library = (square: EpisodeSquare, season: number) =>
     {#if art}
       <span class="art">
         <img src={square.image} alt="" loading="lazy" />
-        {#if square.state === 'up-next'}<span class="up-next"><CardTag text="Up next" /></span>{/if}
+        {#if square.state === 'up-next'}<span class="next-tag"><CardTag text="Up next" /></span>{/if}
       </span>
     {/if}
     <span><span class="code">{title ? `${square.code} ` : square.code}</span>{#if title}<b>{title}</b>{/if}</span>
@@ -415,7 +415,7 @@ ul {
   }
 }
 
-.up-next {
+.next-tag {
   position: absolute;
   inset-block-end: var(--progress-tip-tag-inset);
   inset-inline-start: var(--progress-tip-tag-inset);

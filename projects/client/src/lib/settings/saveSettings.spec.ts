@@ -73,15 +73,40 @@ describe('saveSettings', () => {
       }),
     );
 
-    const result = await saveSettings({
-      request: viewer(() => Promise.resolve(fakeUser('renewed-token', 3600))),
-      body,
-    });
+    const result = await saveSettings({ request: viewer(() => Promise.resolve(null)), body });
 
-    expect(bearers).toEqual(['Bearer viewer-token', 'Bearer renewed-token']);
+    expect(bearers).toEqual(['Bearer viewer-token']);
     expect(result).toEqual({
       saved: false,
       errors: ['Your session has expired. Sign in again to save your settings.'],
+    });
+  });
+
+  describe('for a client ID the API refuses even with a renewed token', () => {
+    const refuse = () => server.use(http.put(`${API}/users/settings`, () => new HttpResponse(null, { status: 401 })));
+    const renewing = () => viewer(() => Promise.resolve(fakeUser('renewed-token', 3600)));
+
+    it('should keep a display setting in this browser instead', async () => {
+      const jar = { cookie: '' };
+      vi.stubGlobal('document', jar);
+      vi.stubGlobal('location', { protocol: 'http:' });
+      vi.spyOn(console, 'info').mockImplementation(() => {});
+      refuse();
+
+      expect(await saveSettings({ request: renewing(), body })).toEqual({ saved: true, errors: [] });
+      expect(jar.cookie).toContain(`og-local-settings=${encodeURIComponent(JSON.stringify(body))};`);
+      expect(changed).toHaveBeenCalledTimes(1);
+      vi.unstubAllGlobals();
+    });
+
+    it('should still refuse a profile change', async () => {
+      refuse();
+
+      expect(await saveSettings({ request: renewing(), body: { user: { name: 'Sean' } } })).toEqual({
+        saved: false,
+        errors: ['Your session has expired. Sign in again to save your settings.'],
+      });
+      expect(changed).not.toHaveBeenCalled();
     });
   });
 

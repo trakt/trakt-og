@@ -8,7 +8,8 @@
 -->
 <script lang="ts">
 import SeoHead from '$lib/seo/SeoHead.svelte';
-import { SvelteURLSearchParams } from 'svelte/reactivity';
+import { untrack } from 'svelte';
+import { SvelteMap, SvelteURLSearchParams } from 'svelte/reactivity';
 import { goto, invalidateAll } from '$app/navigation';
 import { page } from '$app/state';
 import Container from '$lib/components/container/Container.svelte';
@@ -23,6 +24,7 @@ import FadeHideMenu from '$lib/components/filters/FadeHideMenu.svelte';
 import TermsFilter from '$lib/components/filters/TermsFilter.svelte';
 import type { HeaderUser } from '$lib/components/header/HeaderUser';
 import OnDeckCard from '$lib/components/media/OnDeckCard.svelte';
+import type { OnDeckItem } from '$lib/components/media/OnDeckItem';
 import PosterCard from '$lib/components/media/PosterCard.svelte';
 import PosterGrid from '$lib/components/media/PosterGrid.svelte';
 import { quickIconFill } from '$lib/components/media/quickIconFill';
@@ -65,6 +67,8 @@ type Props = {
   listed?: ReadonlySet<number> | null;
   /** Shows whose catalog is being read. */
   loading?: ReadonlySet<number>;
+  /** Your progress is being read again, after a watch or another change. */
+  reloading?: boolean;
   /** A row opened its seasons: read its show's catalog. */
   onneed?: (id: number) => void;
   /** Your progress didn't load: Try again reads it again. */
@@ -75,7 +79,7 @@ type Props = {
   now?: Date;
 };
 
-const { data, items, listed, loading = new Set(), onneed, onretry, error, now }: Props = $props();
+const { data, items, listed, loading = new Set(), reloading = false, onneed, onretry, error, now }: Props = $props();
 
 // OG's `per(50)`, 48 in grid view (eight rows of six).
 const PER_PAGE = 50;
@@ -121,6 +125,18 @@ const cards = $derived(
     ? onPage.map((item) => toProgressCard({ item, username: data.profile.slug, simple, now: now ?? new Date() }))
     : [],
 );
+// Grid cards saved from, by show, with what they showed. Each holds its loader until it moves on, or the progress
+// read ends without moving it.
+const waiting = new SvelteMap<number, string>();
+const cardKey = (card: OnDeckItem) => (card.complete ? 'complete' : String(card.episodeId));
+let wasReloading = false;
+$effect(() => {
+  const active = reloading;
+  untrack(() => {
+    if (wasReloading && !active) waiting.clear();
+    wasReloading = active;
+  });
+});
 const totals = $derived(shown ? sumProgressTotals(shown) : null);
 const meta = $derived({ type: 'paginated' as const, current, total: pageCount });
 
@@ -264,9 +280,10 @@ function clearFilters() {
             {#each rows as row, index (row.id)}
               {@const card = cards[index]}
               {#if card}
-                <div {@attach fadeOnChange(card.complete ? 'complete' : card.episodeId)}>
-                  <OnDeckCard item={card}
-                    state={card.complete ? overlay.state('show', card.showId) : overlay.state('episode', card.episodeId)} />
+                <div {@attach fadeOnChange(cardKey(card))}>
+                  <OnDeckCard item={card} loading={waiting.get(card.showId) === cardKey(card)}
+                    state={card.complete ? overlay.state('show', card.showId) : overlay.state('episode', card.episodeId)}
+                    onWatchSave={() => waiting.set(card.showId, cardKey(card))} />
                 </div>
               {:else}
                 {@const state = overlay.state('show', row.id)}

@@ -10,6 +10,7 @@
   /* Dashboard next-episode refresh cover (OG users progress overlay). */
   --on-deck-refresh-gradient: linear-gradient(to bottom, transparent 25%, rgb(0 0 0 / 90%) 100%);
   --on-deck-refresh-loading: rgb(0 0 0 / 85%);
+  --on-deck-loading-bg: #1d1d1d; /* opaque over the poster while the next episode loads */
   --on-deck-refresh-size: 13px;
   --on-deck-completion-size: 11px;
   --on-deck-completion-padding: 3px 5px;

@@ -30,6 +30,7 @@ const load = ({
   cookie,
 }: Options = {}) =>
   loadProgress({
+    fetch: () => Promise.resolve(Response.json({}, { status: 404 })),
     locals: { token },
     params: { id: 'tester', type, sort },
     url: new URL(`https://og.trakt.tv/users/tester/progress${query}`),
@@ -83,6 +84,11 @@ describe('loadProgress', () => {
     expect(await load({ query: '?list=morbus/watchlist' })).toMatchObject({ list: '/users/morbus/watchlist' });
     expect(await load({ query: '?list=sean-2/favorites' })).toMatchObject({ list: '/users/sean-2/favorites' });
     expect(await load({ query: '?list=morbus/ratings' })).toMatchObject({ list: undefined });
+  });
+
+  it("should stream the list's row only with a list, and leave it out when the list can't be read", async () => {
+    expect((await load()).listRow).toBeUndefined();
+    await expect((await load({ query: '?list=42' })).listRow).resolves.toBeNull();
   });
 
   it("should take the tab's saved sort, views and sources", async () => {

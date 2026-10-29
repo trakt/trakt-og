@@ -112,19 +112,27 @@ $effect(() => {
   });
 });
 
-// `?list=`: the list's shows with their summaries, read once.
+// `?list=`: the list's shows with their summaries, read once. Leaving the list, or moving to another, drops them, and
+// a read that lands after it left is ignored.
 let listShows = $state.raw<ReadonlyMap<number, CachedShow> | null>(null);
 const listed = $derived(listShows ? new Set(listShows.keys()) : null);
 $effect(() => {
   const base = data.list;
-  if (base === undefined) return;
   listShows = null;
+  if (base === undefined) return;
+  let current = true;
   void loadListShows({ fetch: fetch(), base })
-    .then((shows) => (listShows = shows))
+    .then((shows) => {
+      if (current) listShows = shows;
+    })
     .catch(() => {
+      if (!current) return;
       listShows = new Map();
       toast.error("Doh! We couldn't load that list.");
     });
+  return () => {
+    current = false;
+  };
 });
 
 // One derived per slice the list reads. `slices()` is a new object on any overlay change, but an untouched slice

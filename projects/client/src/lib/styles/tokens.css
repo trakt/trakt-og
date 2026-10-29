@@ -2645,6 +2645,20 @@
   --color-subnav-text-bg: light-dark(#f3f3f3, #252525); /* .subnav-text, the library's description band */
   --font-size-subnav-text: 13px;
   --subnav-text-padding: 10px; /* .text's padding-top, then the paragraph's margin */
+  /* Progress narrowed to a list: the band under the subnav naming it, a list row's fan, name and owner, smaller. */
+  --progress-list-band-padding: 20px;
+  --progress-list-close-size: 32px; /* the round X, like the check-in's cancel */
+  --line-height-progress-list-name: 1.2;
+  --color-progress-list-close-border: light-dark(rgb(0 0 0 / 0.15), rgb(255 255 255 / 0.22));
+  --color-progress-list-close-bg: light-dark(rgb(255 255 255 / 0.6), rgb(0 0 0 / 0.25));
+  --color-progress-list-close-hover: light-dark(#fff, rgb(255 255 255 / 0.1));
+  --progress-list-poster-width: 50px;
+  --progress-list-poster-height: 75px;
+  /* As wide as the rows' posters below, so it lines up with their column; five posters fan across it. */
+  --progress-list-fan-width: var(--progress-poster-width);
+  --progress-list-fan-width-tablet: var(--progress-poster-width-tablet);
+  --progress-list-shimmer-name-width: 180px;
+  --progress-list-shimmer-owner-width: 120px;
   /* A card's content from its edges: tags, titles and pills on the art, and a calendar or search card's caption. */
   --card-inset: 12px;
   /* An episode's type tag over its art. */

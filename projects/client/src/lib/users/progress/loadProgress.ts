@@ -5,23 +5,15 @@ import type { DatePreferences } from '../../settings/DatePreferences.ts';
 import type { ViewerSettings } from '../../settings/ViewerSettings.ts';
 import type { ProfileUser } from '../ProfileUser.ts';
 import type { ProgressOptions } from './ProgressOptions.ts';
+import { loadProgressListRow } from './loadProgressListRow.ts';
 import { readProgressHide } from './progressHide.ts';
+import { readProgressList } from './readProgressList.ts';
 import { progressSort } from './progressSort.ts';
 import { isProgressType, type ProgressType } from './progressTypes.ts';
 import { positiveInt } from '../../utils/positiveInt.ts';
 
-/**
- * `?list=` as the API base its items read from: a list id (`/lists/:id/items`), or `<user>/watchlist` and
- * `<user>/favorites`, which that read refuses (`/users/:user/watchlist`).
- */
-function listItemsBase(value: string | null): string | undefined {
-  const builtIn = value?.match(/^([\w-]+)\/(watchlist|favorites)$/);
-  if (builtIn) return `/users/${builtIn[1]}/${builtIn[2]}`;
-  const id = Number.parseInt(value ?? '', 10);
-  return id > 0 ? `/lists/${id}/items` : undefined;
-}
-
 type Params = {
+  fetch: typeof globalThis.fetch;
   locals: { token: string | null };
   params: { id: string; type?: string; sort?: string };
   url: URL;
@@ -40,8 +32,9 @@ type Params = {
  * and a signed-out viewer (or a token that stopped working) signs in and comes back. The rows load in the browser
  * from `/sync/progress/up_next_nitro` (`ProgressPage.svelte`), so this only reads the URL, the hide cookie and your
  * watched progress settings: sort, view, Include Watchlisted, and the specials and next-episode choices the season lists use.
+ * With `?list=`, the list streams in for the band naming it above the rows.
  */
-export async function loadProgress({ locals, params, url, cookies, parent }: Params) {
+export async function loadProgress({ fetch, locals, params, url, cookies, parent }: Params) {
   if (!locals.token) signInRedirect(url);
 
   const type: ProgressType = params.type && isProgressType(params.type) ? params.type : 'watched';
@@ -54,6 +47,7 @@ export async function loadProgress({ locals, params, url, cookies, parent }: Par
     includeSpecials: Boolean(saved?.include_specials),
     useLastActivity: Boolean(saved?.use_last_activity),
   };
+  const list = readProgressList(url.searchParams.get('list'));
 
   return {
     type,
@@ -63,7 +57,8 @@ export async function loadProgress({ locals, params, url, cookies, parent }: Par
     simple: Boolean(saved?.simple_progress),
     includeWatchlisted: Boolean(saved?.include_watchlisted),
     terms: url.searchParams.get('terms')?.trim() ?? '',
-    list: listItemsBase(url.searchParams.get('list')),
+    list: list?.base,
+    listRow: list ? loadProgressListRow({ fetch, token: locals.token, list, profile }).catch(() => null) : undefined,
     page: positiveInt(url.searchParams.get('page'), 1),
     options,
     datePreferences,

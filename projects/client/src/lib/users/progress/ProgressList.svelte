@@ -5,7 +5,8 @@
   progress loads, and `listed` while a `?list=`'s shows do; shimmering rows (or a row of poster cards in grid view)
   hold their place meanwhile. The grid view, simple bar and Include Watchlisted toggles save to the viewer's watched
   progress settings, which every tab reads, and grid view reloads the page, as OG did. Include Watchlisted, on Watching
-  only, keeps the watchlisted shows you haven't started; off, the default, drops them.
+  only, keeps the watchlisted shows you haven't started; off, the default, drops them. A `?list=` puts a band naming the
+  list between the subnav and the rows.
 -->
 <script lang="ts">
 import SeoHead from '$lib/seo/SeoHead.svelte';
@@ -50,6 +51,7 @@ import { keepOrder } from './keepOrder.ts';
 import type { loadProgress } from './loadProgress.ts';
 import { hideOptionsFor, type ProgressHide } from './progressHide.ts';
 import type { ProgressItem } from './ProgressItem.ts';
+import ProgressListBand from './ProgressListBand.svelte';
 import ProgressRow from './ProgressRow.svelte';
 import { literalProgressSort, type ProgressSort, progressSortLabel, progressSorts } from './progressSort.ts';
 import ProgressSummary from './ProgressSummary.svelte';
@@ -285,6 +287,8 @@ function clearFilters() {
   </Container>
 </section>
 
+{#if data.listRow}<ProgressListBand row={data.listRow} />{/if}
+
 <!-- OG's `showLoading()` while grid view saves and the page reloads. -->
 <LoadingOverlay visible={saving === 'grid_view'} />
 
@@ -344,7 +348,7 @@ function clearFilters() {
     {:else if onretry}
       <div class="empty"><LoadFailed what="Progress" {onretry} {error} /></div>
     {:else if items?.some(({ plays }) => !hideUnstarted || plays > 0)}
-      <EmptyState action={{ onclick: clearFilters, text: 'Clear filters' }} />
+      <div class="empty"><EmptyState action={{ onclick: clearFilters, text: 'Clear filters' }} /></div>
     {:else}
       <div class="empty">
         <EmptyState action={data.type === 'watched' ? findAction('shows') : undefined} />

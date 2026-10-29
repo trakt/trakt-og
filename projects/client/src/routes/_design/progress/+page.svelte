@@ -3,8 +3,9 @@
   restore on Dropped) and its Seasons toggle. `?view=grid` shows the grid of next episodes, `?view=simple` the simple
   bars, `?watchlisted=1` turns Include Watchlisted on (Murderbot, not started, joins the list), `?type=rewatching` the
   Rewatching tab (Game of Thrones) and `?type=dropped` the Dropped tab (two of the sample shows). `?list=1` filters to a
-  list's shows and `?list=2` to an empty list, each after a short wait, and `?state=loading` holds the progress loading
-  for good. Rows start with the up-next episode and estimated counts, as the page does; opening one's seasons reads its
+  list's shows, `?list=2` to an empty list and `?list=3` to someone else's watchlist, each after a short wait, with the
+  list's band shimmering above the rows until the list streams in, and `?state=loading` holds the progress loading for
+  good. Rows start with the up-next episode and estimated counts, as the page does; opening one's seasons reads its
   catalog after a short wait (Breaking Bad has unwatched episodes in the library, Severance a season announced). In the
   grid, marking a card's episode watched covers its poster with the loader while the progress is read again, after a
   short wait.
@@ -17,7 +18,9 @@ import Specimen from '$lib/design/Specimen.svelte';
 import { overlay } from '$lib/overlay/overlay';
 import { progressFixture } from '$lib/users/progress/progressFixture';
 import ProgressList from '$lib/users/progress/ProgressList.svelte';
+import type { ProgressListRow } from '$lib/users/progress/loadProgressListRow';
 import { isProgressType, type ProgressType } from '$lib/users/progress/progressTypes';
+import { PLACEHOLDER_AVATAR } from '$lib/users/placeholderAvatar';
 import { toProfileUser } from '$lib/users/toProfileUser';
 
 const datePreferences = { order: 'mdy', hour24: false, timeZone: 'America/Los_Angeles', weekStartDay: 0 } as const;
@@ -27,7 +30,9 @@ const profile = toProfileUser({ username: 'demo', name: 'Demo User', private: fa
 const WAIT = 900;
 const view = $derived(page.url.searchParams.get('view'));
 const listId = $derived(Number.parseInt(page.url.searchParams.get('list') ?? '', 10) || undefined);
-const list = $derived(listId === undefined ? undefined : `/lists/${listId}/items`);
+const list = $derived(
+  listId === undefined ? undefined : listId === 3 ? '/users/morbus/watchlist' : `/lists/${listId}/items`,
+);
 const type = $derived.by<ProgressType>(() => {
   const value = page.url.searchParams.get('type') ?? '';
   return isProgressType(value) ? value : 'watched';
@@ -41,6 +46,7 @@ const variants = [
   { label: 'Dropped', query: '?type=dropped' },
   { label: 'On a list', query: '?list=1' },
   { label: 'Empty list', query: '?list=2' },
+  { label: "Someone's watchlist", query: '?list=3' },
   { label: 'Loading', query: '?state=loading' },
 ];
 const pending = $derived(page.url.searchParams.get('state') === 'loading');
@@ -80,15 +86,31 @@ const items = $derived(
   }),
 );
 
-// `?list=1` holds Breaking Bad and Severance, `?list=2` nothing.
+// `?list=1` holds Breaking Bad and Severance, `?list=2` nothing, `?list=3` (the watchlist) every sample show.
 let listed = $state<ReadonlySet<number> | null>(null);
 $effect(() => {
   const id = listId;
   listed = null;
   if (id === undefined) return;
-  const timer = setTimeout(() => (listed = new Set(id === 1 ? [1388, 60300] : [])), WAIT);
+  const ids = id === 3 ? progressFixture.watched(false).map(({ show }) => show.id) : id === 1 ? [1388, 60300] : [];
+  const timer = setTimeout(() => (listed = new Set(ids)), WAIT);
   return () => clearTimeout(timer);
 });
+// The list band's list, streamed in after a short wait like the page's; the watchlist is someone else's.
+const owner = (slug: string, name: string) => ({ slug, name, href: `/users/${slug}`, avatar: PLACEHOLDER_AVATAR, vip: null });
+function sampleRow(id: number): ProgressListRow {
+  const posters = progressFixture.watched(false)
+    .filter(({ show }) => id !== 2 && (id === 3 || [1388, 60300].includes(show.id)))
+    .map(({ show }) => ({ title: show.title, image: show.poster }));
+  if (id === 3) return { href: '/users/morbus/watchlist', name: 'Watchlist', owner: owner('morbus', 'Morbus Iff'), posters };
+  const slug = id === 1 ? 'prestige-tv' : 'someday';
+  return { href: `/users/demo/lists/${slug}`, name: id === 1 ? 'Prestige TV' : 'Someday', owner: owner('demo', 'Demo User'), posters };
+}
+const listRow = $derived(
+  listId === undefined
+    ? undefined
+    : new Promise<ProgressListRow | null>((resolve) => setTimeout(() => resolve(sampleRow(listId)), WAIT)),
+);
 const data = $derived({
   type,
   sort: { by: 'added', how: 'asc' as const, supported: true },
@@ -98,6 +120,7 @@ const data = $derived({
   includeWatchlisted: page.url.searchParams.has('watchlisted'),
   terms: '',
   list,
+  listRow,
   page: 1,
   options: { includeSpecials: false, useLastActivity: false },
   datePreferences,
@@ -109,7 +132,7 @@ const data = $derived({
 <!-- The variants only change this page's query, so resolve() has nothing to add. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 <Specimen title="Progress list" bleed
-  note="Open a row's seasons to see them shimmer while they load. Loading holds the shimmering rows; the list variants show them, then the filtered rows or the empty list.">
+  note="Open a row's seasons to see them shimmer while they load. Loading holds the shimmering rows; the list variants show them under the band naming the list, then the filtered rows or the empty list.">
   <nav class="variants" aria-label="Progress variants">
     {#each variants as variant (variant.label)}
       <a href="{page.url.pathname}{variant.query}" aria-current={page.url.search === variant.query ? 'page' : undefined}>

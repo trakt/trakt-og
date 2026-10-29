@@ -96,7 +96,7 @@ const countRuns = (completed: number, aired: number) =>
   ]);
 
 /** The API's episode fields that `episodeType` and `episodeNumber` read. */
-const tagged = (episode: CatalogEpisode) => ({
+export const tagged = (episode: CatalogEpisode) => ({
   season: episode.season,
   number: episode.number,
   episode_type: episode.type,

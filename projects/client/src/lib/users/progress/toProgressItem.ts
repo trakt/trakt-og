@@ -1,6 +1,7 @@
 import type { CollectedItem } from '../../overlay/CollectedItem.ts';
 import type { CachedShow } from '../../shows/cache/CachedShow.ts';
 import type { CatalogEpisode, ShowCatalog } from '../../shows/cache/ShowCatalog.ts';
+import { episodeRuntime } from './episodeRuntime.ts';
 import { nextEpisode } from './nextEpisode.ts';
 import type { ProgressEpisodeData, ProgressItem, ProgressSeasonData } from './ProgressItem.ts';
 
@@ -33,7 +34,7 @@ const sum = (values: readonly number[]) => values.reduce((total, value) => total
 function fromSummary(params: ToProgressItemParams): ProgressItem {
   const { show, watched, resetAt, droppedAt } = params;
   const aired = show.airedEpisodes ?? 0;
-  const runtime = show.runtime ?? 0;
+  const runtime = episodeRuntime(show);
   const regular = <T>(seasons: Seasons<T> | undefined) =>
     [...(seasons ?? new Map<number, ReadonlyMap<number, T>>())]
       .filter(([number]) => number > 0)
@@ -50,8 +51,8 @@ function fromSummary(params: ToProgressItemParams): ProgressItem {
     aired,
     completed,
     plays,
-    minutesWatched: plays * runtime,
-    minutesLeft: (aired - completed) * runtime,
+    minutesWatched: Math.round(plays * runtime),
+    minutesLeft: Math.round((aired - completed) * runtime),
     exact: false,
     lastAt,
     resetAt,

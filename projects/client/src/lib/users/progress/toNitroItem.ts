@@ -1,6 +1,7 @@
 import type { UpNextResponse } from '@trakt/api';
 import type { UpNextEntry } from '../../progress/UpNextEntry.ts';
 import type { CatalogEpisode } from '../../shows/cache/ShowCatalog.ts';
+import { episodeRuntime } from './episodeRuntime.ts';
 import type { ProgressItem } from './ProgressItem.ts';
 import { toProgressShow } from './toProgressShow.ts';
 
@@ -31,7 +32,7 @@ function toEpisode(episode: Episode | null): CatalogEpisode | undefined {
 export function toNitroItem(item: UpNextEntry, fetchedAt: number): ProgressItem {
   const show = toProgressShow(item.show, fetchedAt);
   const { aired, completed, stats } = item.progress;
-  const runtime = show.runtime ?? 0;
+  const runtime = episodeRuntime(show);
   const plays = stats?.play_count ?? completed;
 
   return {
@@ -39,8 +40,8 @@ export function toNitroItem(item: UpNextEntry, fetchedAt: number): ProgressItem 
     aired,
     completed: Math.min(completed, aired),
     plays,
-    minutesWatched: stats?.minutes_watched ?? plays * runtime,
-    minutesLeft: stats?.minutes_left ?? Math.max(aired - completed, 0) * runtime,
+    minutesWatched: stats?.minutes_watched ?? Math.round(plays * runtime),
+    minutesLeft: stats?.minutes_left ?? Math.round(Math.max(aired - completed, 0) * runtime),
     exact: stats?.minutes_left !== undefined && stats.minutes_left !== null,
     lastAt: item.progress.last_watched_at ?? undefined,
     next: toEpisode(item.progress.next_episode),

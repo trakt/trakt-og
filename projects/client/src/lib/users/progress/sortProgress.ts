@@ -1,3 +1,4 @@
+import { episodeRuntime } from './episodeRuntime.ts';
 import type { ProgressItem } from './ProgressItem.ts';
 import { literalProgressSort, type ProgressSort } from './progressSort.ts';
 
@@ -18,7 +19,7 @@ const KEYS: Record<ReturnType<typeof literalProgressSort>['by'], Key> = {
   title: ({ show }) => show.title.toLocaleLowerCase(),
   // The API has no popularity rank, so votes stand in, as on the dashboard (`sortUpNext.ts`).
   popularity: ({ show }) => show.votes ?? 0,
-  runtime: ({ show }) => show.runtime ?? 0,
+  runtime: ({ show }) => episodeRuntime(show),
   'total-runtime': ({ show, aired }) => show.totalRuntime ?? (show.runtime ?? 0) * aired,
   // Replaced by `random` below.
   random: () => 0,

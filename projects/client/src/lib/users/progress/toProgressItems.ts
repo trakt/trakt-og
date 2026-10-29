@@ -30,7 +30,7 @@ const dateOf = (values: Dates, id: number) => (values instanceof Map ? values.ge
  * A tab's shows, unsorted and unfiltered.
  * Watched is the endpoint's shows minus the dropped and hidden ones; Rewatching keeps the ones you're rewatching;
  * Dropped keeps the dropped ones, counting any the endpoint left out from the overlay and their summary. Watched for a
- * list (`?list=`) is every show on it, like OG, whatever your account holds: unstarted, dropped or hidden ones too.
+ * list (`?list=`) is every show on it but the dropped ones, which stay on Dropped: unstarted or hidden ones too.
  *
  * The counts, plays and times come from the overlay's watches (`/sync/watched/shows`, already loaded app-wide), never
  * the endpoint's `completed`, which can count more episodes than were ever watched. Before a show's seasons open, the
@@ -57,14 +57,14 @@ export function toProgressItems({
   const wholeList = type === 'watched' ? listShows : undefined;
   const resetOf = (id: number, base?: ProgressItem) => (rewatching ? dateOf(rewatching, id) : base?.resetAt);
   const keep = ({ show: { id }, resetAt }: ProgressItem) => {
-    if (wholeList) return wholeList.has(id);
+    if (wholeList) return wholeList.has(id) && !dropped.has(id);
     if (type === 'dropped') return dropped.has(id);
     if (dropped.has(id) || isHidden(id)) return false;
     return type === 'watched' || (rewatching ? rewatching.has(id) : Boolean(resetAt));
   };
   const listed = new Set(nitro.map(({ show }) => show.id));
   const missing = wholeList
-    ? [...wholeList.values()].filter(({ id }) => !listed.has(id))
+    ? [...wholeList.values()].filter(({ id }) => !listed.has(id) && !dropped.has(id))
     : type === 'dropped'
       ? [...(droppedShows?.values() ?? [])].filter(({ id }) => dropped.has(id) && !listed.has(id))
       : [];

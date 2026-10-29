@@ -80,11 +80,16 @@ describe('toProgressItems', () => {
     expect(ids(toProgressItems({ ...base, type: 'watched' }))).toEqual([1, 2]);
   });
 
-  it('should list every show on a list on Watched, unstarted, dropped and hidden ones too', () => {
-    const listShows = new Map([1, 3, 4, 6].map((id) => [id, { ...droppedShow, id, slug: `show-${id}` }]));
+  it('should list every show on a list on Watched but the dropped ones, unstarted and hidden ones too', () => {
+    const listShows = new Map([1, 3, 4, 6, 7].map((id) => [id, { ...droppedShow, id, slug: `show-${id}` }]));
     const items = toProgressItems({ ...base, type: 'watched', listShows });
-    expect(ids(items)).toEqual([1, 3, 4, 6]);
-    expect(items?.find(({ show }) => show.id === 6)).toMatchObject({ completed: 0, plays: 0 });
+    expect(ids(items)).toEqual([1, 4, 7]);
+    expect(items?.find(({ show }) => show.id === 7)).toMatchObject({ completed: 0, plays: 0 });
+  });
+
+  it('should keep a list’s dropped shows on Dropped', () => {
+    const listShows = new Map([1, 3].map((id) => [id, { ...droppedShow, id }]));
+    expect(ids(toProgressItems({ ...base, type: 'dropped', listShows }))).toEqual([3]);
   });
 
   it('should keep filtering Rewatching by its own rule with a list', () => {

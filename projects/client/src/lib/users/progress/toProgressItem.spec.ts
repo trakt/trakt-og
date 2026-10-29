@@ -75,6 +75,12 @@ describe('toProgressItem', () => {
       expect(item).toMatchObject({ completed: 1, plays: 3, resetAt: '2026-02-02T12:00:00Z' });
     });
 
+    it('should estimate from the total runtime for a show without a runtime', () => {
+      const item = toProgressItem({ ...base, show: { ...show, runtime: 0, totalRuntime: 51, airedEpisodes: 6 } });
+
+      expect(item).toMatchObject({ aired: 6, completed: 0, minutesLeft: 51, exact: false });
+    });
+
     it('should never count more done than aired', () => {
       expect(toProgressItem({ ...base, show: { ...show, airedEpisodes: 1 }, watched }).completed).toBe(1);
     });

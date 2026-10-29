@@ -1,6 +1,6 @@
 import type { OverlaySlices } from '../../overlay/OverlaySlices.ts';
 import type { CachedShow } from '../../shows/cache/CachedShow.ts';
-import type { ShowCatalog } from '../../shows/cache/ShowCatalog.ts';
+import type { CatalogEpisode, ShowCatalog } from '../../shows/cache/ShowCatalog.ts';
 import type { ProgressItem } from './ProgressItem.ts';
 import type { ProgressOptions } from './ProgressOptions.ts';
 import type { ProgressType } from './progressTypes.ts';
@@ -19,6 +19,9 @@ type ToProgressItemsParams = {
   options: ProgressOptions;
   now: number;
 };
+
+const same = (local: CatalogEpisode | undefined, endpoint: CatalogEpisode | undefined) =>
+  local && local.id === endpoint?.id ? endpoint : local;
 
 type Dates = ReadonlySet<number> | ReadonlyMap<number, string> | undefined;
 const dateOf = (values: Dates, id: number) => (values instanceof Map ? values.get(id) || undefined : undefined);
@@ -83,7 +86,16 @@ export function toProgressItems({
       now,
     });
     // The endpoint's next and last episodes stay; its watched counts don't (see the doc above).
-    return base ? { ...item, show: base.show, next: base.next, last: base.last } : item;
+    if (!base) return item;
+    // Once the catalog is in, the next and last episodes follow your watches at once, without waiting on the endpoint.
+    // The endpoint's copy of the same episode carries its screenshot.
+    const local = item.detail;
+    return {
+      ...item,
+      show: base.show,
+      next: local ? same(local.next, base.next) : base.next,
+      last: local ? same(local.last, base.last) : base.last,
+    };
   };
 
   return [...nitro.filter(keep).map((item) => counted(item.show, item)), ...missing.map((show) => counted(show))];

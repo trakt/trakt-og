@@ -151,4 +151,39 @@ describe('toProgressItems', () => {
     expect(items?.at(0)).toMatchObject({ aired: 1, completed: 1, plays: 2, exact: true });
     expect(items?.at(0)?.detail?.seasons.map(({ number }) => number)).toEqual([1]);
   });
+
+  describe('for the next episode once the catalog is in', () => {
+    const aired = '2026-01-01T00:00:00.000Z';
+    const catalog: ShowCatalog = {
+      id: 1,
+      fetchedAt: 0,
+      seasons: [
+        {
+          number: 1,
+          episodes: [11, 12, 13, 14].map((id) => ({ id, season: 1, number: id - 10, firstAired: aired })),
+        },
+      ],
+    };
+    const withNext = (id: number) =>
+      nitro.map((item) =>
+        item.show.id === 1 ? { ...item, next: { id, season: 1, number: id - 10, screenshot: 'shot.jpg' } } : item,
+      );
+    const next = (id: number) =>
+      toProgressItems({
+        ...base,
+        type: 'watched',
+        nitro: withNext(id),
+        catalogs: new Map([[1, catalog]]),
+        now: Date.now(),
+      })?.at(0)?.next;
+
+    it('should follow your watches without waiting on the endpoint', () => {
+      expect(next(12)).toMatchObject({ id: 13, number: 3 });
+      expect(next(12)?.screenshot).toBeUndefined();
+    });
+
+    it('should keep the endpoint’s copy of the same episode, with its screenshot', () => {
+      expect(next(13)).toMatchObject({ id: 13, screenshot: 'shot.jpg' });
+    });
+  });
 });

@@ -22,7 +22,7 @@ let { id, label, value = $bindable(), field = $bindable(), max, saveLabel, onsub
 </script>
 
 <form class="date-form" {onsubmit} novalidate>
-  <input bind:this={field} bind:value {id} type="datetime-local" aria-label={label} required {max} step="900" />
+  <input bind:this={field} bind:value {id} type="datetime-local" aria-label={label} required {max} />
   <div class="actions">
     <button type="button" class="back" onclick={oncancel}>Back</button>
     <button type="submit" class="save" aria-label={saveLabel}>Save</button>

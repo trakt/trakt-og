@@ -186,7 +186,7 @@ function choose(at: string | null) {
 function otherDate() {
   const now = new Date();
   maximum = watchDateInput(now, datePreferences.timeZone);
-  value = watchDateInput(new Date(Math.floor(now.getTime() / 900_000) * 900_000), datePreferences.timeZone);
+  value = maximum;
   other = true;
 }
 $effect(() => {

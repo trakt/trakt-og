@@ -141,7 +141,7 @@ const actionIcon = $derived(
 function otherDate() {
   const now = new Date();
   maximum = watchDateInput(now, dates.timeZone);
-  value = watchDateInput(new Date(Math.floor(now.getTime() / 900_000) * 900_000), dates.timeZone);
+  value = maximum;
   other = true;
 }
 $effect(() => {

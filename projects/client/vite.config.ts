@@ -1,11 +1,19 @@
 import adapter from '@sveltejs/adapter-cloudflare';
 import { sveltekit } from '@sveltejs/kit/vite';
+import { Features } from 'lightningcss';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { loadEnv } from 'vite';
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig(({ mode }) => ({
+  css: {
+    lightningcss: {
+      // Its light-dark() fallback swaps in variables that each token resolves once on :root, so a band forced to
+      // `color-scheme: dark` kept the light theme's colors in production.
+      exclude: Features.LightDark,
+    },
+  },
   define: {
     // Inlined at build time, like trakt-web. Dev reads `.env.development`, builds and deploys read `.env.production`.
     TRAKT_CLIENT_ID: JSON.stringify(loadEnv(mode, process.cwd(), 'TRAKT_').TRAKT_CLIENT_ID ?? ''),

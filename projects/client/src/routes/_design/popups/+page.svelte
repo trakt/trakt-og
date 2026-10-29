@@ -35,7 +35,7 @@ let movies = $state(true);
 let shows = $state(true);
 let reportOpen = $state(false);
 let watchOpen = $state(false);
-const tasteTags = [{ text: '2 of 5 services' }, { text: '3 of 5 genres' }];
+const tasteTags = [{ text: '7 services' }, { text: '3 of 5 genres' }];
 // Lines break at \n, like OG's <br>.
 const tips = {
   certification: 'Parents Strongly Cautioned\nAges 13+ Recommended',

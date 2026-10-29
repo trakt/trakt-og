@@ -1,7 +1,7 @@
 <!--
   "Tune your picks", in the Watch Now popup's look: an art header (shimmering until its art lands), where the member
-  watches as that popup's service tiles (up to five), and up to five genres they love as icon tiles, like v3's genre
-  picker. Save writes the watch-now favorites and favorite genres to their Trakt settings, which v3 and the apps read
+  watches as that popup's service tiles (as many as they like), and up to five genres they love as icon tiles, like
+  v3's genre picker. Save writes the watch-now favorites and favorite genres to their Trakt settings, which v3 and the apps read
   too, then reloads the page data. A Standard app (`isStandardApi`) gets the genres only.
 -->
 <script lang="ts">
@@ -18,7 +18,6 @@ import {
   fetchTasteCountries,
   fetchTasteServices,
   GENRE_LIMIT,
-  SERVICE_LIMIT,
   serviceKey,
   SERVICES_SHOWN,
   type TasteCountry,
@@ -31,6 +30,7 @@ import magnifyingGlass from '$lib/icons/regular/magnifying-glass.svg?raw';
 import Shimmer from '$lib/components/loading/Shimmer.svelte';
 import { saveSettings } from '$lib/settings/saveSettings';
 import { settingsRequest } from '$lib/settings/settingsRequest';
+import { countLabel } from '$lib/utils/countLabel';
 import CtaLink from './CtaLink.svelte';
 import { genreIcons } from './genreIcons.ts';
 
@@ -59,7 +59,7 @@ $effect(() => {
   if (!open) return;
   place = country;
   query = '';
-  picked = new Set(services.slice(0, SERVICE_LIMIT));
+  picked = new Set(services);
   if (countries.length === 0) void fetchTasteCountries(fetch).then((list) => (countries = list));
   loved = new Set(genres.slice(0, GENRE_LIMIT));
 });
@@ -70,7 +70,6 @@ const here = $derived(countries.find(({ code }) => code === place));
 const pickedHere = $derived([...picked].filter((key) => key.startsWith(`${place}-`)).length);
 const art = $derived(open ? titleFanart('shows', 'mr-robot') : Promise.resolve(undefined));
 const full = $derived(loved.size >= GENRE_LIMIT);
-const servicesFull = $derived(pickedHere >= SERVICE_LIMIT);
 
 const toggle = (set: Set<string>, key: string) => {
   // eslint-disable-next-line svelte/prefer-svelte-reactivity -- a fresh copy assigned to $state, never mutated after
@@ -102,7 +101,7 @@ async function save() {
 <Dialog bind:open title="Tune your picks" size="xxl" variant="art" lightDismiss>
   {#snippet header(id)}
     {@const tags = [
-      ...(streaming ? [{ text: `${pickedHere} of ${SERVICE_LIMIT} services` }] : []),
+      ...(streaming ? [{ text: countLabel(pickedHere, 'service') }] : []),
       { text: `${loved.size} of ${GENRE_LIMIT} genres` },
     ]}
     {#await art}
@@ -118,7 +117,7 @@ async function save() {
     <section aria-labelledby="taste-services">
       <div class="services-head">
         <h3 id="taste-services" class="section-title">
-          Where do you watch? <span class="count">{pickedHere}/{SERVICE_LIMIT}</span>
+          Where do you watch? <span class="count">{pickedHere}</span>
         </h3>
         <label class="filter">
           <span class="glass" aria-hidden="true"><Icon svg={magnifyingGlass} /></span>
@@ -152,11 +151,8 @@ async function save() {
           {#each shown as service (service.slug)}
             {@const key = serviceKey(place, service.slug)}
             {@const on = picked.has(key)}
-            <span class={['service', { off: !on && servicesFull }]}>
-              <ServiceTile link={{ ...service, href: '' }} pressed={on}
-                onclick={() => {
-                  if (on || !servicesFull) picked = toggle(picked, key);
-                }} />
+            <span class="service">
+              <ServiceTile link={{ ...service, href: '' }} pressed={on} onclick={() => (picked = toggle(picked, key))} />
             </span>
           {/each}
         </div>
@@ -336,12 +332,6 @@ async function save() {
     background: var(--brand-primary);
     color: var(--color-text-inverse);
     font-size: var(--font-size-taste-genre-tick);
-  }
-
-  /* Five picked: the rest wait until one comes off. */
-  &.off {
-    opacity: 0.4;
-    pointer-events: none;
   }
 }
 

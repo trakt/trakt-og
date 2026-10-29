@@ -101,6 +101,7 @@ describe('loadProgress', () => {
       sort: { by: 'title', how: 'desc' },
       grid: true,
       simple: true,
+      includeWatchlisted: true,
       options: { includeSpecials: true, useLastActivity: true },
     });
   });
@@ -111,6 +112,7 @@ describe('loadProgress', () => {
       sort: { by: 'added', how: 'asc' },
       page: 1,
       list: undefined,
+      includeWatchlisted: false,
     });
   });
 });

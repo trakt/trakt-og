@@ -17,6 +17,12 @@ describe('filterProgress', () => {
     expect(ids(filterProgress(items, { hide: ['rewatching'] }))).toEqual([1, 2]);
   });
 
+  it('should drop shows with no plays only while Include Watchlisted is off', () => {
+    const unstarted = progressItemFixture(4, { completed: 0, plays: 0, minutesWatched: 0 });
+    expect(ids(filterProgress([...items, unstarted], { hide: [], hideUnstarted: true }))).toEqual([1, 2, 3]);
+    expect(ids(filterProgress([...items, unstarted], { hide: [] }))).toEqual([1, 2, 3, 4]);
+  });
+
   it('should match the title search anywhere in the title, ignoring case', () => {
     expect(ids(filterProgress(items, { hide: [], terms: ' bad ' }))).toEqual([1]);
   });

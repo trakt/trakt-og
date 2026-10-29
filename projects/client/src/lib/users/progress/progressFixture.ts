@@ -77,6 +77,17 @@ const samples: readonly Sample[] = [
     seasons: [Array(9).fill(true), Array(10).fill(true)],
     announced: [0, 0, 3],
   },
+  // On the watchlist, not started: Include Watchlisted keeps it.
+  {
+    id: 245000,
+    slug: 'murderbot',
+    title: 'Murderbot',
+    year: 2025,
+    status: 'returning series',
+    genres: ['science-fiction'],
+    runtime: 25,
+    seasons: [Array(10).fill(false)],
+  },
 ];
 
 const ANNOUNCED = '2027-01-14T20:00:00.000Z';
@@ -186,7 +197,7 @@ function toItem(sample: Sample, { expanded, dropped: onDropped }: Options): Prog
 
 /**
  * Sample progress for the specs and the design page: each tab's items, collapsed (summary counts) or expanded (with
- * the show's catalog). Game of Thrones is being rewatched; two shows are dropped.
+ * the show's catalog). Game of Thrones is being rewatched; two shows are dropped; Murderbot isn't started.
  */
 export const progressFixture = {
   now: NOW,

@@ -1,9 +1,11 @@
 import { saveSettings } from '../../settings/saveSettings.ts';
 import type { SettingsRequest } from '../../settings/saveSettings.ts';
 
+/** Simple Progress Bars, Grid View or Include Watchlisted. */
+export type ProgressView = 'simple_progress' | 'grid_view' | 'include_watchlisted';
+
 type ChangeProgressViewParams = {
-  /** Simple Progress Bars or Grid View. */
-  view: 'simple_progress' | 'grid_view';
+  view: ProgressView;
   /** The settings group the tab reads: `watched` (Watched and Dropped) or `collected` (Library). */
   settings: 'watched' | 'collected';
   /** The toggle's new state. */

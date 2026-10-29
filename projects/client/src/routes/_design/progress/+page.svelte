@@ -1,12 +1,13 @@
 <!--
   The progress page as its owner sees it, on sample shows: the view toggles, each row's status menu (rewatch and drop,
-  restore on Dropped) and its Seasons toggle. `?view=grid` shows the grid of next episodes, `?view=simple` the simple bars,
-  `?type=rewatching` the Rewatching tab (Game of Thrones) and `?type=dropped` the Dropped tab (two of the sample
-  shows). `?list=1` filters to a list's shows and `?list=2` to an empty list, each after a short wait, and
-  `?state=loading` holds the progress loading for good. Rows start with
-  the up-next episode and estimated counts, as the page does; opening one's seasons reads its catalog after a short
-  wait (Breaking Bad has unwatched episodes in the library, Severance a season announced). In the grid, marking a card's
-  episode watched covers its poster with the loader while the progress is read again, after a short wait.
+  restore on Dropped) and its Seasons toggle. `?view=grid` shows the grid of next episodes, `?view=simple` the simple
+  bars, `?watchlisted=1` turns Include Watchlisted on (Murderbot, not started, joins the list), `?type=rewatching` the
+  Rewatching tab (Game of Thrones) and `?type=dropped` the Dropped tab (two of the sample shows). `?list=1` filters to a
+  list's shows and `?list=2` to an empty list, each after a short wait, and `?state=loading` holds the progress loading
+  for good. Rows start with the up-next episode and estimated counts, as the page does; opening one's seasons reads its
+  catalog after a short wait (Breaking Bad has unwatched episodes in the library, Severance a season announced). In the
+  grid, marking a card's episode watched covers its poster with the loader while the progress is read again, after a
+  short wait.
 -->
 <script lang="ts">
 import { page } from '$app/state';
@@ -34,6 +35,7 @@ const variants = [
   { label: 'List', query: '' },
   { label: 'Grid', query: '?view=grid' },
   { label: 'Simple', query: '?view=simple' },
+  { label: 'Include Watchlisted', query: '?watchlisted=1' },
   { label: 'Rewatching', query: '?type=rewatching' },
   { label: 'Dropped', query: '?type=dropped' },
   { label: 'On a list', query: '?list=1' },
@@ -92,6 +94,7 @@ const data = $derived({
   hide: [],
   grid: view === 'grid',
   simple: view === 'simple',
+  includeWatchlisted: page.url.searchParams.has('watchlisted'),
   terms: '',
   list,
   page: 1,

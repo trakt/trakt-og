@@ -73,10 +73,16 @@ describe('loadProgress', () => {
       sort: { by: 'completed', how: 'desc', supported: true },
       page: 3,
       terms: 'bad',
-      list: 42,
+      list: '/lists/42/items',
       // Hiding Rewatching would empty the Rewatching tab.
       hide: ['ended', 'completed'],
     });
+  });
+
+  it('should read a watchlist or favorites list by its owner, which `/lists/:id/items` refuses', async () => {
+    expect(await load({ query: '?list=morbus/watchlist' })).toMatchObject({ list: '/users/morbus/watchlist' });
+    expect(await load({ query: '?list=sean-2/favorites' })).toMatchObject({ list: '/users/sean-2/favorites' });
+    expect(await load({ query: '?list=morbus/ratings' })).toMatchObject({ list: undefined });
   });
 
   it("should take the tab's saved sort, views and sources", async () => {

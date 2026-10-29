@@ -39,7 +39,7 @@ describe('listRowActions', () => {
     expect(actions.progressHref).toBe('/users/owner/progress?list=42');
   });
 
-  it('should not let the owner delete the watchlist, and resolve a built-in progress id on click', () => {
+  it('should not let the owner delete the watchlist, and link its progress by owner', () => {
     const watchlist = row({ key: 'watchlist', id: null, kind: 'watchlist', href: '/users/owner/watchlist' });
     const actions = listRowActions({
       row: watchlist,
@@ -47,7 +47,8 @@ describe('listRowActions', () => {
       isCollaborator: false,
       origin,
     });
-    expect(icons(actions)).toEqual(['edit', 'progress', 'report', 'shareUrl']);
+    expect(icons(actions)).toEqual(['edit', 'progressHref', 'report', 'shareUrl']);
+    expect(actions.progressHref).toBe('/users/owner/progress?list=owner/watchlist');
   });
 
   it('should let a collaborator stop collaborating, but not the owner', () => {
@@ -63,14 +64,14 @@ describe('listRowActions', () => {
     ).toBeUndefined();
   });
 
-  it("should resolve a built-in row's progress on click for any signed-in viewer", () => {
+  it("should link a built-in row's progress for any signed-in viewer", () => {
     const builtIn = row({ id: null, kind: 'favorites' });
     expect(listRowActions({ row: builtIn, viewer: null, isCollaborator: false, origin })).not.toHaveProperty(
-      'progress',
+      'progressHref',
     );
     expect(
-      listRowActions({ row: builtIn, viewer: { slug: 'friend' }, isCollaborator: false, origin }).progress,
-    ).toEqual({});
+      listRowActions({ row: builtIn, viewer: { slug: 'friend' }, isCollaborator: false, origin }).progressHref,
+    ).toBe('/users/friend/progress?list=owner/favorites');
   });
 
   it('should leave progress off official lists', () => {

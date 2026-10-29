@@ -12,12 +12,13 @@ const MAX_PAGES = 20;
  */
 export async function loadListShows({
   fetch,
-  list,
+  base,
   now = Date.now,
 }: {
   /** `authenticatedFetch`: a private list only reads with the viewer's token. */
   fetch: typeof globalThis.fetch;
-  list: number;
+  /** Where the list's items read from: `/lists/:id/items`, or `/users/:id/watchlist` and `/users/:id/favorites`. */
+  base: string;
   now?: () => number;
 }): Promise<ReadonlyMap<number, CachedShow>> {
   const shows = new Map<number, CachedShow>();
@@ -25,7 +26,7 @@ export async function loadListShows({
     const { status, rows } = await fetchListItems({
       fetch,
       token: null,
-      base: `/lists/${list}/items`,
+      base,
       query: { types: ['show'], genres: [], page, limit: PAGE },
       sort: { by: 'rank', how: 'asc' },
     });

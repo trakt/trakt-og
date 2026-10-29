@@ -1,4 +1,5 @@
 import type { ListRowActions } from '../components/media/ListRowActions.ts';
+import { listProgressHref } from '../lists/listProgressHref.ts';
 import type { SummaryList } from '../summary/toSummaryList.ts';
 
 /** What the icons read off a row: a summary's, a lists page's or a search result's. */
@@ -20,12 +21,15 @@ type Params = {
  */
 export function itemListRowActions({ list, viewer, origin }: Params): ListRowActions {
   const owner = viewer !== null && viewer.slug === list.owner.slug;
+  const progressHref = viewer
+    ? listProgressHref({ list: { ...list, ownerSlug: list.owner.slug }, viewerSlug: viewer.slug })
+    : undefined;
 
   return {
     ...(viewer && { report: {} }),
     ...(owner && list.kind !== 'official' && { edit: {} }),
     ...(owner && list.kind === 'personal' && { delete: {} }),
-    ...(viewer && list.kind !== 'official' && { progressHref: `/users/${viewer.slug}/progress?list=${list.id}` }),
+    ...(progressHref && { progressHref }),
     shareUrl: `${origin}${list.href}`,
   };
 }

@@ -39,15 +39,15 @@ describe('listTitleActions', () => {
     ]);
   });
 
-  it('should avoid a progress query with a missing built-in id', () => {
+  it("should link a watchlist's progress by its owner, with or without its id", () => {
     expect(
       listTitleActions({
         list: { ...list, kind: 'watchlist', id: 0 },
-        viewer: { slug: 'sean' },
+        viewer: { slug: 'kim' },
         isCollaborator: false,
         origin,
       }).progressHref,
-    ).toBeUndefined();
+    ).toBe('/users/kim/progress?list=sean/watchlist');
   });
 
   it('should give a watchlist owner edit and manage, but no delete', () => {

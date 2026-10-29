@@ -232,7 +232,6 @@ const blocks = $derived(parseComment(description?.trim() ?? ''));
             {#if actions.edit}{@render action('Edit', pencil, 'edit', actions.edit)}{/if}
             {#if actions.delete?.onclick}<span class="delete" style:--confirm-icon-size="var(--font-size-list-row-action)"><ManageConfirm name="delete" svg={deleteIcon} label="Delete" yes="Yes, delete it!" warning={actions.delete.warning} disabled={actions.delete.busy} onconfirm={actions.delete.onclick}>Delete this list?</ManageConfirm></span>{:else if actions.delete}{@render action('Delete', deleteIcon, 'delete', actions.delete)}{/if}
             {#if actions.leave}{@render action('Stop collaborating on this list', userXmark, 'leave', actions.leave)}{/if}
-            {#if actions.progress}{@render action('View watched progress', barsProgress, 'progress', actions.progress)}{/if}
             {#if actions.progressHref}
               <Tooltip text="View watched progress">
                 {#snippet trigger(tooltip)}

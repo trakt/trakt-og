@@ -16,8 +16,6 @@ export interface ListRowActions {
   readonly leave?: ListRowAction;
   /** Where "View watched progress" goes. Left out on official lists. */
   readonly progressHref?: string;
-  /** Built-in ids can be resolved on click. */
-  readonly progress?: ListRowAction;
   /** The absolute URL the share icon shares. */
   readonly shareUrl?: string;
 }

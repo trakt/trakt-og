@@ -26,7 +26,8 @@ const profile = toProfileUser({ username: 'demo', name: 'Demo User', private: fa
 
 const WAIT = 900;
 const view = $derived(page.url.searchParams.get('view'));
-const list = $derived(Number.parseInt(page.url.searchParams.get('list') ?? '', 10) || undefined);
+const listId = $derived(Number.parseInt(page.url.searchParams.get('list') ?? '', 10) || undefined);
+const list = $derived(listId === undefined ? undefined : `/lists/${listId}/items`);
 const type = $derived.by<ProgressType>(() => {
   const value = page.url.searchParams.get('type') ?? '';
   return isProgressType(value) ? value : 'watched';
@@ -82,7 +83,7 @@ const items = $derived(
 // `?list=1` holds Breaking Bad and Severance, `?list=2` nothing.
 let listed = $state<ReadonlySet<number> | null>(null);
 $effect(() => {
-  const id = list;
+  const id = listId;
   listed = null;
   if (id === undefined) return;
   const timer = setTimeout(() => (listed = new Set(id === 1 ? [1388, 60300] : [])), WAIT);

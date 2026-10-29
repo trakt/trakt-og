@@ -10,6 +10,12 @@ type AuthenticatedFetchParams = {
 // refresh at auth.trakt.tv, so a route that keeps refusing gets its 401 until the token expires.
 const refusedWhenFresh = new WeakMap<UserManager, Set<string>>();
 
+// The 401s a renewed token that hasn't expired got: the API refusing the route itself, not a spent session.
+const freshRefusals = new WeakSet<Response>();
+
+/** Whether `response` is a 401 the API gave a fresh token, so signing in again wouldn't help. */
+export const isRefusedWhenFresh = (response: Response) => freshRefusals.has(response);
+
 function refusedTokens(manager: UserManager): Set<string> {
   const known = refusedWhenFresh.get(manager);
   if (known) return known;
@@ -38,13 +44,19 @@ export function authenticatedFetch({ manager, baseFetch = globalThis.fetch }: Au
     if (response.status !== 401 || !token) return response;
 
     const refused = refusedTokens(manager);
-    if (refused.has(token) && !user?.expired) return response;
+    if (refused.has(token) && !user?.expired) {
+      freshRefusals.add(response);
+      return response;
+    }
 
     const renewed = (await renewAccessToken({ manager, rejectedToken: token }))?.access_token;
     if (!renewed || renewed === token) return response;
 
     const retried = await send(renewed);
-    if (retried.status === 401) refused.add(renewed);
+    if (retried.status === 401) {
+      refused.add(renewed);
+      freshRefusals.add(retried);
+    }
     return retried;
   };
 }

@@ -81,6 +81,8 @@ Some routes are only open to Trakt's own apps, so neither a Standard nor a Premi
 
 Private Notes, watchlist buttons, "on a list" badges and the list picker for seasons and episodes fall back to reads every app may make.
 
+Only Trakt's own apps may save settings. On your app, display settings like Dark Knight and the progress page's view toggles are kept in your browser instead, until you sign out. Your Trakt account doesn't change.
+
 Standard apps also get lower rate limits. When the API rate limits you, the page or section says so and offers Try again, and you stay signed in.
 
 ## Everyday commands

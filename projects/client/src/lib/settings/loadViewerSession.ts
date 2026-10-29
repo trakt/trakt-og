@@ -6,6 +6,7 @@ import { toHeaderUser } from '../components/header/toHeaderUser.ts';
 import { isPhoneUserAgent } from '../components/mobile-splash/isPhoneUserAgent.ts';
 import { toMobilePlatform } from '../components/mobile-splash/toMobilePlatform.ts';
 import { keptSettingsFetch, type ResponseCache } from './keptSettingsFetch.ts';
+import { localSettings } from './localSettings.ts';
 import { SETTINGS_REVISION_COOKIE } from './settingsRevisionCookie.ts';
 import { toDarkKnight } from './toDarkKnight.ts';
 import { toDatePreferences } from './toDatePreferences.ts';
@@ -88,7 +89,8 @@ export async function loadViewerSession({
     });
     if (response.status !== 200) return loggedOut;
 
-    const settings: ViewerSettings = response.body;
+    // The settings a client ID the API won't let save kept in this browser instead (`localSettings`) count too.
+    const settings: ViewerSettings = localSettings.apply(response.body, cookies.get(localSettings.COOKIE));
     const data = {
       hasSession,
       tokenExpired,

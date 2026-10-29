@@ -10,7 +10,7 @@ import GlassAction from '$lib/components/glass-action/GlassAction.svelte';
 import type { ListTarget } from '$lib/components/lists/ListTarget';
 import { toggleListItem } from '$lib/components/lists/toggleListItem';
 import { toast } from '$lib/components/toast/toast.svelte';
-import listThick from '$lib/icons/trakt/list-thick.svg?raw';
+import bookmark from '$lib/icons/solid/bookmark.svg?raw';
 import { overlay } from '$lib/overlay/overlay';
 import { viewerFetch } from '../../auth/viewerFetch.ts';
 
@@ -40,7 +40,7 @@ async function toggle() {
 }
 </script>
 
-<GlassAction icon={listThick} color="var(--brand-secondary)" selected={watchlisted}
+<GlassAction icon={bookmark} color="var(--brand-secondary)" selected={watchlisted}
   busy={busy ? 'Saving watchlist' : undefined} aria-pressed={watchlisted} onclick={toggle}>
   {watchlisted ? 'On Watchlist' : 'Add to Watchlist'}
 </GlassAction>

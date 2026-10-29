@@ -24,7 +24,7 @@ import googlePlay from '$lib/icons/brands/google-play.svg?raw';
 import check from '$lib/icons/solid/check.svg?raw';
 import heart from '$lib/icons/solid/heart.svg?raw';
 import checkThick from '$lib/icons/trakt/check-thick.svg?raw';
-import listThick from '$lib/icons/trakt/list-thick.svg?raw';
+import bookmark from '$lib/icons/solid/bookmark.svg?raw';
 import plex from '$lib/icons/trakt/plex.svg?raw';
 import { overlay } from '$lib/overlay/overlay';
 import { traktUrls } from '$lib/traktUrls';
@@ -69,7 +69,7 @@ const wallGone = $derived(browser && wallClosed.value(dashboardPrefs.load(slug).
 /** Each credit's button in its action's color: watched purple, watchlist blue, ratings red. */
 const tints: Partial<Record<StartStep['key'], { color: string; icon: string }>> = {
   pilot: { color: 'var(--brand-tertiary)', icon: checkThick },
-  watchlist: { color: 'var(--brand-secondary)', icon: listThick },
+  watchlist: { color: 'var(--brand-secondary)', icon: bookmark },
   ratings: { color: 'var(--brand-primary)', icon: heart },
 };
 </script>

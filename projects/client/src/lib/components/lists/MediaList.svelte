@@ -29,7 +29,7 @@ import type { ListTarget } from '$lib/components/lists/ListTarget';
 import type { PickerList } from '$lib/components/lists/PickerList';
 import Icon from '$lib/icons/Icon.svelte';
 import listIcon from '$lib/icons/trakt/list.svg?raw';
-import listCheck from '$lib/icons/regular/list-check.svg?raw';
+import bookmark from '$lib/icons/solid/bookmark.svg?raw';
 import listRegular from '$lib/icons/regular/list.svg?raw';
 import plus from '$lib/icons/light/circle-plus.svg?raw';
 import add from '$lib/icons/trakt/add-thick.svg?raw';
@@ -404,7 +404,7 @@ async function save(draft: Parameters<typeof createList>[0]['draft'] & { collabo
     onfocusout={() => placeCount(null)}>
     <button type="button" class="row" aria-pressed={active} aria-describedby="list-{id}-count-{list?.id ?? 0}"
       disabled={busy || maxed} onclick={() => toggleRow(list ?? undefined)}>
-      <Icon svg={pending ? spinner : !list ? listCheck : list.collaboration ? friends : kind?.svg ?? listRegular} fixedWidth />
+      <Icon svg={pending ? spinner : !list ? bookmark : list.collaboration ? friends : kind?.svg ?? listRegular} fixedWidth />
       <span class="name">{name}</span>
     </button>
     <span class="described" id="list-{id}-count-{list?.id ?? 0}">{items}</span>

@@ -102,10 +102,9 @@ type Streamed = Awaited<ReturnType<typeof fetchSections>>['streamed'];
 /**
  * The profile page under the frame: the stat boxes or the welcome hero, favorites, the
  * recently watched rows, the genre and ratings charts, the most watched columns and the newest comments, read once per
- * `readProfileTab`: a public profile's sections go without the token alongside the frame's load, and a private profile
- * the viewer may see is read with it. On your own profile your saved favorites sort, most watched sorts and default
- * tabs apply; favorites in a saved order are read again with your token, since the sort may be about you (Watched or
- * Collected Date).
+ * `readProfileTab`: someone else's public profile goes without the token alongside the frame's load, and your own, or a
+ * private profile you may see, is read with it. On your own profile your saved favorites sort, most watched sorts and
+ * default tabs apply.
  *
  * The boxes and Most Watched stream: they need the whole watched lists, which take several times as long as every
  * other section. The frame already says whether the strip shows, so its place is held from the first paint.
@@ -114,15 +113,7 @@ export async function loadProfile({ fetch, locals, params, parent, now = new Dat
   // The boxes' extra requests start as soon as the frame says which ones could pay off, alongside the sections.
   const frame = parent();
   const token = locals.token;
-  // Your own favorites in a saved order only need the frame, so they don't wait for the sections.
-  const ownFavoritesRead = frame.then(({ profile, isSelf, settings }) => {
-    const sort = favoritesSortOf({ isSelf, settings });
-    const saved = sort.sort_by !== RANDOM.sort_by || sort.sort_how !== RANDOM.sort_how;
-    return saved && !profile.isLocked && !profile.isPrivate && token
-      ? fetchFavorites(api({ fetch, token }), params.id, sort)
-      : null;
-  });
-  const [tab, boxes, ownFavorites] = await Promise.all([
+  const [tab, boxes] = await Promise.all([
     readProfileTab({
       fetch,
       token,
@@ -131,7 +122,6 @@ export async function loadProfile({ fetch, locals, params, parent, now = new Dat
         fetchSections({ fetch, token }, params.id, now, token && known ? favoritesSortOf(known) : RANDOM),
     }),
     frame.then((data) => startBoxes(data, { fetch, token, id: params.id })),
-    ownFavoritesRead,
   ]);
   const { profile, stats, isSelf, datePreferences, settings } = tab.frame;
   const sections = tab.result;
@@ -152,9 +142,7 @@ export async function loadProfile({ fetch, locals, params, parent, now = new Dat
   const prefs = profilePrefs({ isSelf, settings });
   const episodes = sections.episodes.status === 200 ? sections.episodes.body : [];
   const movies = sections.movies.status === 200 ? sections.movies.body : [];
-  // A saved order the worker refused, or a stale token, keeps the random ones.
-  const favoritesRead = ownFavorites?.status === 200 ? ownFavorites : sections.favorites;
-  const favorites = favoritesRead.status === 200 ? favoritesRead.body : [];
+  const favorites = sections.favorites.status === 200 ? sections.favorites.body : [];
   const comments: readonly UserCommentRow[] = sections.comments.status === 200 ? sections.comments.body : [];
 
   return {

@@ -75,8 +75,8 @@ async function read({
 }
 
 /**
- * One read per `readProfileTab`: a public profile's ratings go without the token alongside the frame's load, and a
- * private profile the viewer may see is read with it. SSR never refreshes. An unknown or default segment 301s to the
+ * One read per `readProfileTab`: someone else's public ratings go without the token alongside the frame's load, and
+ * your own, or a private profile the viewer may see, are read with it. SSR never refreshes. An unknown or default segment 301s to the
  * page's own spelling.
  */
 export async function loadRatings({ fetch, locals, params, url, cookies, parent }: Params) {

@@ -38,9 +38,11 @@ import { overlay } from '$lib/overlay/overlay';
 import { settingsRequest } from '$lib/settings/settingsRequest';
 import type { ProfileUser } from '$lib/users/ProfileUser';
 import { findAction } from '$lib/users/findAction';
+import { fadeOnChange } from '$lib/utils/fadeOnChange';
 import { nearViewport } from '$lib/utils/nearViewport';
 import { changeProgressView } from './changeProgressView.ts';
 import { filterProgress } from './filterProgress.ts';
+import { keepOrder } from './keepOrder.ts';
 import type { loadProgress } from './loadProgress.ts';
 import { hideOptionsFor, type ProgressHide } from './progressHide.ts';
 import type { ProgressItem } from './ProgressItem.ts';
@@ -87,7 +89,7 @@ const types = Object.keys(progressTypes).filter(isProgressType);
 const listFilter = $derived(data.list !== undefined);
 const seed = Math.floor(Math.random() * 2 ** 31);
 
-const shown = $derived(
+const sorted = $derived(
   items && (!listFilter || listed)
     ? sortProgress(
       filterProgress(items, { hide: data.hide, terms: data.terms, listed: listed ?? undefined }),
@@ -96,6 +98,16 @@ const shown = $derived(
     )
     : null,
 );
+// Grid view keeps each card in place when a watch reloads the progress, so it moves on to its next episode where it
+// is. Another sort, filter or tab orders afresh.
+let kept: { view: string; ids: readonly number[] } | null = null;
+const shown = $derived.by(() => {
+  if (!sorted || !data.grid) return sorted;
+  const view = [data.type, data.sort.by, data.sort.how, data.hide.join(), data.terms, data.list].join('|');
+  const ordered = kept?.view === view ? keepOrder(sorted, kept.ids) : sorted;
+  kept = { view, ids: ordered.map(({ show }) => show.id) };
+  return ordered;
+});
 const limit = $derived(data.grid ? GRID_PER_PAGE : PER_PAGE);
 const pageCount = $derived(Math.max(Math.ceil((shown?.length ?? 0) / limit), 1));
 const current = $derived(Math.min(data.page, pageCount));
@@ -252,8 +264,10 @@ function clearFilters() {
             {#each rows as row, index (row.id)}
               {@const card = cards[index]}
               {#if card}
-                <OnDeckCard item={card}
-                  state={card.complete ? overlay.state('show', card.showId) : overlay.state('episode', card.episodeId)} />
+                <div {@attach fadeOnChange(card.complete ? 'complete' : card.episodeId)}>
+                  <OnDeckCard item={card}
+                    state={card.complete ? overlay.state('show', card.showId) : overlay.state('episode', card.episodeId)} />
+                </div>
               {:else}
                 {@const state = overlay.state('show', row.id)}
                 {@const done = `${row.percent}% watched`}

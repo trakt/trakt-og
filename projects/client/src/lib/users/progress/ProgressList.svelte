@@ -102,11 +102,11 @@ const sorted = $derived(
     )
     : null,
 );
-// Grid view keeps each card in place when a watch reloads the progress, so it moves on to its next episode where it
-// is. Another sort, filter or tab orders afresh.
+// Each show keeps its place when a watch reloads the progress, so its card or row moves on to the next episode where
+// it is. Another sort, filter or tab orders afresh.
 let kept: { view: string; ids: readonly number[] } | null = null;
 const shown = $derived.by(() => {
-  if (!sorted || !data.grid) return sorted;
+  if (!sorted) return sorted;
   const view = [data.type, data.sort.by, data.sort.how, data.hide.join(), data.terms, data.list].join('|');
   const ordered = kept?.view === view ? keepOrder(sorted, kept.ids) : sorted;
   kept = { view, ids: ordered.map(({ show }) => show.id) };

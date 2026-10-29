@@ -10,6 +10,17 @@ import { progressSort } from './progressSort.ts';
 import { isProgressType, type ProgressType } from './progressTypes.ts';
 import { positiveInt } from '../../utils/positiveInt.ts';
 
+/**
+ * `?list=` as the API base its items read from: a list id (`/lists/:id/items`), or `<user>/watchlist` and
+ * `<user>/favorites`, which that read refuses (`/users/:user/watchlist`).
+ */
+function listItemsBase(value: string | null): string | undefined {
+  const builtIn = value?.match(/^([\w-]+)\/(watchlist|favorites)$/);
+  if (builtIn) return `/users/${builtIn[1]}/${builtIn[2]}`;
+  const id = Number.parseInt(value ?? '', 10);
+  return id > 0 ? `/lists/${id}/items` : undefined;
+}
+
 type Params = {
   locals: { token: string | null };
   params: { id: string; type?: string; sort?: string };
@@ -43,7 +54,6 @@ export async function loadProgress({ locals, params, url, cookies, parent }: Par
     includeSpecials: Boolean(saved?.include_specials),
     useLastActivity: Boolean(saved?.use_last_activity),
   };
-  const list = Number.parseInt(url.searchParams.get('list') ?? '', 10);
 
   return {
     type,
@@ -53,7 +63,7 @@ export async function loadProgress({ locals, params, url, cookies, parent }: Par
     simple: Boolean(saved?.simple_progress),
     includeWatchlisted: Boolean(saved?.include_watchlisted),
     terms: url.searchParams.get('terms')?.trim() ?? '',
-    list: list > 0 ? list : undefined,
+    list: listItemsBase(url.searchParams.get('list')),
     page: positiveInt(url.searchParams.get('page'), 1),
     options,
     datePreferences,

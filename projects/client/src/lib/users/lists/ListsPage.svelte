@@ -15,7 +15,7 @@ import { flip } from 'svelte/animate';
 import { prefersReducedMotion } from 'svelte/motion';
 import { SvelteMap } from 'svelte/reactivity';
 import { slide } from 'svelte/transition';
-import { goto, invalidateAll, replaceState } from '$app/navigation';
+import { invalidateAll, replaceState } from '$app/navigation';
 import { resolve } from '$app/paths';
 import { page } from '$app/state';
 import Container from '$lib/components/container/Container.svelte';
@@ -274,18 +274,6 @@ const nearRow = (row: UserListRow) => () => {
 };
 
 const viewer = $derived(data.user ? { slug: data.user.slug } : null);
-async function progress(row: UserListRow) {
-  if (!data.user) return;
-  const source = data;
-  try {
-    const id = await resolveRowListId({ fetch: viewerFetch(), row });
-    if (data !== source) return;
-    // eslint-disable-next-line svelte/no-navigation-without-resolve -- canonical OG progress URL with its list query
-    await goto(`/users/${data.user.slug}/progress?list=${id}`);
-  } catch {
-    if (data === source) toast.error('Doh! We could not open list progress. Please try again.');
-  }
-}
 async function report(row: UserListRow) {
   const source = data;
   try {
@@ -356,13 +344,6 @@ const actions = (row: UserListRow) => {
         warning: limit !== undefined && data.lists.length > limit
           ? `You're over the ${limit} list limit. You won't be able to re-create this list if you delete it.`
           : "This can't be undone!",
-      },
-    }),
-    ...(result.progress && {
-      progress: {
-        onclick: () => {
-          void progress(row);
-        },
       },
     }),
     ...(result.report && {

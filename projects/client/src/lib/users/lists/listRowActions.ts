@@ -1,4 +1,5 @@
 import type { ListRowActions } from '../../components/media/ListRowActions.ts';
+import { listProgressHref } from '../../lists/listProgressHref.ts';
 import type { UserListRow } from './UserListRow.ts';
 
 type ListRowActionsParams = {
@@ -14,23 +15,20 @@ type ListRowActionsParams = {
 /**
  * Which icons a list row shows the viewer: the report flag and progress (not on official lists) when signed in, the
  * owner's edit and (personal lists only) delete, a collaborator's "Stop collaborating", and share. The lists page
- * wires the clicks: edit opens the list editor, or the watchlist or favorites editor on theirs. The watchlist and
- * favorites resolve their numeric list id from their comments on click.
+ * wires the clicks: edit opens the list editor, or the watchlist or favorites editor on theirs.
  */
 export function listRowActions({ row, viewer, isCollaborator, origin }: ListRowActionsParams): ListRowActions {
   const owner = viewer?.slug === row.owner.slug;
+  const progressHref = viewer
+    ? listProgressHref({ list: { ...row, ownerSlug: row.owner.slug }, viewerSlug: viewer.slug })
+    : undefined;
 
   return {
     ...(viewer && { report: {} }),
     ...(owner && row.kind !== 'official' && { edit: {} }),
     ...(owner && row.kind === 'personal' && { delete: {} }),
     ...(!owner && isCollaborator && { leave: {} }),
-    ...(viewer && row.kind !== 'official' && progressAction(row, viewer.slug)),
+    ...(progressHref && { progressHref }),
     shareUrl: `${origin}${row.href}`,
   };
-}
-
-/** A row with its list id links to progress; the watchlist and favorites resolve theirs on click. */
-function progressAction(row: UserListRow, slug: string) {
-  return row.id === null ? { progress: {} } : { progressHref: `/users/${slug}/progress?list=${row.id}` };
 }

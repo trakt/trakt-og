@@ -1,3 +1,4 @@
+import { listProgressHref } from './listProgressHref.ts';
 import type { ListView } from './toListView.ts';
 
 /** An icon in the title row. Left without `onclick`, it renders as OG's but is marked unavailable until wired. */
@@ -33,6 +34,7 @@ type ListTitleActionsParams = {
 export function listTitleActions({ list, viewer, isCollaborator, origin }: ListTitleActionsParams): ListTitleActions {
   const owner = list.kind !== 'official' && viewer?.slug === list.ownerSlug;
   const collaborator = list.kind !== 'official' && !owner && isCollaborator;
+  const progressHref = viewer ? listProgressHref({ list, viewerSlug: viewer.slug }) : undefined;
 
   return {
     ...(viewer && { report: {} }),
@@ -40,9 +42,7 @@ export function listTitleActions({ list, viewer, isCollaborator, origin }: ListT
     ...(owner && list.kind === 'personal' && { delete: {} }),
     ...(collaborator && { leave: {} }),
     ...((owner || collaborator) && { manage: {} }),
-    ...(viewer &&
-      list.kind !== 'official' &&
-      list.id > 0 && { progressHref: `/users/${viewer.slug}/progress?list=${list.id}` }),
+    ...(progressHref && { progressHref }),
     shareUrl: `${origin}${list.href}`,
   };
 }

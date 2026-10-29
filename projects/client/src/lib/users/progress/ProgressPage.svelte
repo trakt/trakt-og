@@ -116,10 +116,10 @@ $effect(() => {
 let listShows = $state.raw<ReadonlyMap<number, CachedShow> | null>(null);
 const listed = $derived(listShows ? new Set(listShows.keys()) : null);
 $effect(() => {
-  const list = data.list;
-  if (list === undefined) return;
+  const base = data.list;
+  if (base === undefined) return;
   listShows = null;
-  void loadListShows({ fetch: fetch(), list })
+  void loadListShows({ fetch: fetch(), base })
     .then((shows) => (listShows = shows))
     .catch(() => {
       listShows = new Map();

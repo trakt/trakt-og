@@ -26,6 +26,13 @@ describe('filterProgress', () => {
     expect(ids(filterProgress([...items, caughtUp], { hide: ['completed'] }))).toEqual([2, 3, 4]);
   });
 
+  it('should keep shows already on screen past the HIDE toggles, but not the search', () => {
+    const onScreen = new Set([1, 4]);
+    expect(ids(filterProgress([...items, caughtUp], { hide: ['completed'], onScreen }))).toEqual([1, 2, 3, 4]);
+    expect(ids(filterProgress([...items, caughtUp], { hide: ['latest-watched'], onScreen }))).toEqual([1, 2, 3, 4]);
+    expect(ids(filterProgress(items, { hide: ['completed'], terms: 'wire', onScreen }))).toEqual([3]);
+  });
+
   it('should drop shows with no plays only while Include Watchlisted is off', () => {
     const unstarted = progressItemFixture(4, { completed: 0, plays: 0, minutesWatched: 0 });
     expect(ids(filterProgress([...items, unstarted], { hide: [], hideUnstarted: true }))).toEqual([1, 2, 3]);

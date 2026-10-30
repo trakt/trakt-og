@@ -12,6 +12,11 @@ type FilterProgressParams = {
    * the ones you've started, and those are the only unstarted ones it lists.
    */
   hideUnstarted?: boolean;
+  /**
+   * Shows already on screen in this view. The HIDE toggles pass them, so a show you complete stays put with its show
+   * card, to rate it, until the view changes or the page reloads.
+   */
+  onScreen?: ReadonlySet<number>;
 };
 
 const ENDED = new Set(['ended', 'canceled']);
@@ -31,12 +36,12 @@ const HIDES: Record<ProgressHide, (item: ProgressItem) => boolean> = {
 /** The HIDE toggles, Include Watchlisted, the title search and the list filter, applied in the browser. */
 export function filterProgress(
   items: readonly ProgressItem[],
-  { hide, terms, listed, hideUnstarted }: FilterProgressParams,
+  { hide, terms, listed, hideUnstarted, onScreen }: FilterProgressParams,
 ): readonly ProgressItem[] {
   const needle = terms?.trim().toLocaleLowerCase();
   return items.filter(
     (item) =>
-      !hide.some((id) => HIDES[id](item)) &&
+      (onScreen?.has(item.show.id) || !hide.some((id) => HIDES[id](item))) &&
       !(hideUnstarted && item.plays === 0) &&
       (!needle || item.show.title.toLocaleLowerCase().includes(needle)) &&
       (!listed || listed.has(item.show.id)),

@@ -102,6 +102,13 @@ let watchlisted = $derived(data.includeWatchlisted);
 const hideUnstarted = $derived(watchlistToggle && !watchlisted);
 const seed = Math.floor(Math.random() * 2 ** 31);
 
+// Each show keeps its place when a watch reloads the progress, so its card or row moves on to the next episode where
+// it is. One you complete stays too, past Hide Completed, with its show card to rate it. Another sort, filter or tab
+// orders afresh.
+let kept = null as { view: string; ids: readonly number[] } | null;
+const view = $derived(
+  [data.type, data.sort.by, data.sort.how, data.hide.join(), hideUnstarted, data.terms, data.list].join('|'),
+);
 const sorted = $derived(
   items && (!listFilter || listed)
     ? sortProgress(
@@ -110,18 +117,15 @@ const sorted = $derived(
         terms: data.terms,
         listed: listed ?? undefined,
         hideUnstarted,
+        onScreen: kept?.view === view ? new Set(kept.ids) : undefined,
       }),
       data.sort,
       seed,
     )
     : null,
 );
-// Each show keeps its place when a watch reloads the progress, so its card or row moves on to the next episode where
-// it is. Another sort, filter or tab orders afresh.
-let kept: { view: string; ids: readonly number[] } | null = null;
 const shown = $derived.by(() => {
   if (!sorted) return sorted;
-  const view = [data.type, data.sort.by, data.sort.how, data.hide.join(), hideUnstarted, data.terms, data.list].join('|');
   const ordered = kept?.view === view ? keepOrder(sorted, kept.ids) : sorted;
   kept = { view, ids: ordered.map(({ show }) => show.id) };
   return ordered;

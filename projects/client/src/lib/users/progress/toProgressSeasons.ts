@@ -168,7 +168,7 @@ export function toProgressSeasons(params: ToProgressSeasonsParams): readonly Pro
       href: `${params.showHref}/seasons/${season.number}`,
       percent: season.aired === 0 ? 0 : Math.floor((season.completed / season.aired) * 100),
       complete: season.aired > 0 && left <= 0,
-      count: `${season.completed}/${season.aired}`,
+      count: `${season.completed} / ${season.aired}`,
       done: season.completed,
       aired: season.aired,
       timeLeft: left > 0 ? formatRuntime(season.minutesLeft) : undefined,

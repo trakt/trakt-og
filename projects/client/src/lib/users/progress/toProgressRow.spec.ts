@@ -69,9 +69,9 @@ describe('toProgressRow', () => {
       expect(
         seasons?.map(({ name, href, percent, count, announced }) => [name, href, percent, count, announced]),
       ).toEqual([
-        ['Season 1', '/shows/severance/seasons/1', 100, '9/9', undefined],
-        ['Season 2', '/shows/severance/seasons/2', 100, '10/10', undefined],
-        ['Season 3', '/shows/severance/seasons/3', 0, '0/0', 3],
+        ['Season 1', '/shows/severance/seasons/1', 100, '9 / 9', undefined],
+        ['Season 2', '/shows/severance/seasons/2', 100, '10 / 10', undefined],
+        ['Season 3', '/shows/severance/seasons/3', 0, '0 / 0', 3],
       ]);
       expect(seasons?.at(2)?.squares.at(0)).toMatchObject({
         code: '3x01',

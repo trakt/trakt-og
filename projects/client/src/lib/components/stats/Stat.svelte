@@ -28,7 +28,7 @@ const { svg, value, noun, label, under, tone = 'count', bare = false }: Props = 
   <!-- A focus stop so the tooltip shows from the keyboard too. -->
   <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
   <span class={['stat', tone]} tabindex={label ? 0 : undefined} {...props}>
-    <span class="icon-slot"><Icon {svg} /></span><span><strong>{value}</strong> {#if bare}<span class="visually-hidden">{noun}</span>{:else}{noun}{/if}</span>
+    <span class="icon-slot"><Icon {svg} /></span><span><strong>{value}</strong> <span class={['noun', { 'visually-hidden': bare }]}>{noun}</span></span>
   </span>
 {/snippet}
 

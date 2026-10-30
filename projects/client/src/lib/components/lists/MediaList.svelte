@@ -27,17 +27,14 @@ import SummaryAction from '$lib/components/summary/SummaryAction.svelte';
 import SummaryActionTile from '$lib/components/summary/SummaryActionTile.svelte';
 import type { ListTarget } from '$lib/components/lists/ListTarget';
 import type { PickerList } from '$lib/components/lists/PickerList';
+import { listRowIcon } from '$lib/components/lists/listRowIcon';
 import Icon from '$lib/icons/Icon.svelte';
 import listIcon from '$lib/icons/trakt/list.svg?raw';
-import bookmark from '$lib/icons/solid/bookmark.svg?raw';
 import listRegular from '$lib/icons/regular/list.svg?raw';
 import plus from '$lib/icons/light/circle-plus.svg?raw';
 import add from '$lib/icons/trakt/add-thick.svg?raw';
 import close from '$lib/icons/regular/xmark.svg?raw';
 import search from '$lib/icons/regular/magnifying-glass.svg?raw';
-import friends from '$lib/icons/trakt/friends-thick.svg?raw';
-import lock from '$lib/icons/solid/lock-keyhole.svg?raw';
-import link from '$lib/icons/solid/link.svg?raw';
 import arrow from '$lib/icons/light/angle-right.svg?raw';
 import spinner from '$lib/icons/solid/arrows-rotate.svg?raw';
 import { viewerFetch } from '../../auth/viewerFetch.ts';
@@ -68,11 +65,6 @@ let following = $state<{ slug: string; name: string; avatar?: string }[]>([]);
 let followingError = $state(false);
 const viewerState = $derived(overlay.state(target.type, target.id));
 const selected = $derived(Boolean(viewerState.watchlisted || viewerState.listed));
-const PRIVACY: Record<string, { svg: string; size?: 'people' | 'link' }> = {
-  private: { svg: lock },
-  link: { svg: link, size: 'link' },
-  friends: { svg: friends, size: 'people' },
-};
 const byId = $derived(new Map(lists.map((list) => [list.id, list])));
 const matches = (name: string) =>
   !searching || name.toLocaleLowerCase('en-US').includes(terms.toLocaleLowerCase('en-US'));
@@ -372,9 +364,9 @@ async function save(draft: Parameters<typeof createList>[0]['draft'] & { collabo
         {#each section.ids as rowId (rowId)}
           {@const list = byId.get(rowId)}
           {#if rowId === 0}
-            {@render row(null, 'Watchlist', watchlisted, watchlistCount, '', `/users/${page.data.user?.slug ?? 'me'}/watchlist`, page.data.settings?.limits?.watchlist?.item_count)}
+            {@render row(null, 'Watchlist', watchlisted, watchlistCount, `/users/${page.data.user?.slug ?? 'me'}/watchlist`, page.data.settings?.limits?.watchlist?.item_count)}
           {:else if list}
-            {@render row(list, list.name, list.selected, list.count, list.privacy, `/lists/${list.id}`, listLimit?.item_count)}
+            {@render row(list, list.name, list.selected, list.count, `/lists/${list.id}`, listLimit?.item_count)}
           {/if}
         {/each}
       </ul>
@@ -388,15 +380,14 @@ async function save(draft: Parameters<typeof createList>[0]['draft'] & { collabo
 </div>
 {#snippet listedTip()}<ListedTip user={page.data.user?.slug ?? 'me'} watchlisted={Boolean(viewerState.watchlisted)}
   lists={listedOn} />{/snippet}
-{#snippet row(list: PickerList | null, name: string, active: boolean, total: number, privacy: string, href: string, limit?: number)}
+{#snippet row(list: PickerList | null, name: string, active: boolean, total: number, href: string, limit?: number)}
   {@const maxed = limit !== undefined && total >= limit && !active}
   {@const pending = pendingRow === (list?.id ?? 0)}
-  {@const kind = PRIVACY[privacy]}
-  {@const size = list?.collaboration ? 'people' : kind?.size}
+  {@const icon = listRowIcon(list)}
   {@const items = `${total.toLocaleString('en-US')} ${total === 1 ? 'item' : 'items'}`}
   <!-- OG's item count tooltip, on the left (global.js, lists.js): the picker's `countTip`. The hidden copy describes
        the row's toggle for screen readers. -->
-  <li class={[size, { active, maxed, pending }]}>
+  <li class={[icon.size, { active, maxed, pending }]}>
   <div class="line" role="presentation" data-count={items}
     onpointerenter={(event) => event.pointerType !== 'touch' && placeCount(event.currentTarget)}
     onpointerleave={() => placeCount(null)}
@@ -404,7 +395,7 @@ async function save(draft: Parameters<typeof createList>[0]['draft'] & { collabo
     onfocusout={() => placeCount(null)}>
     <button type="button" class="row" aria-pressed={active} aria-describedby="list-{id}-count-{list?.id ?? 0}"
       disabled={busy || maxed} onclick={() => toggleRow(list ?? undefined)}>
-      <Icon svg={pending ? spinner : !list ? bookmark : list.collaboration ? friends : kind?.svg ?? listRegular} fixedWidth />
+      <Icon svg={pending ? spinner : icon.svg} fixedWidth />
       <span class="name">{name}</span>
     </button>
     <span class="described" id="list-{id}-count-{list?.id ?? 0}">{items}</span>

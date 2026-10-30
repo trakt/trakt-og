@@ -156,7 +156,7 @@ const following = [{ slug: 'teodoro_2', name: 'Elsy Murphy (@teodoro_2)' }];
 </Specimen>
 
 <Specimen title="Manage mode" bleed
-  note="Rank inputs and the edit tiles on each poster, then the bar with copy, move, reset and delete.">
+  note="Rank inputs and the edit tiles on each poster, then what the title row shows in place of its icons: the count, reset, copy, move and delete.">
   <div class="padded managing">
     <PosterGrid>
       {#each managed as item (item.key)}
@@ -164,16 +164,17 @@ const following = [{ slug: 'teodoro_2', name: 'Elsy Murphy (@teodoro_2)' }];
       {/each}
     </PosterGrid>
   </div>
+  <div class="padded">
   <ListManageBar count={12} busy={false} onreset={() => {}} ondelete={() => {}}>
     {#snippet transfers()}
       <ListTransfer source={{ ...transferSource, kind: 'personal', name: 'All-Time Favorites' }}
-        query={{ types: [], genres: [], page: 1, limit: 120 }} sort={{ by: 'rank', how: 'asc' }} count={12} svg={clone}
-        managing />
+        query={{ types: [], genres: [], page: 1, limit: 120 }} sort={{ by: 'rank', how: 'asc' }} count={12} svg={clone} />
       <ListTransfer source={{ ...transferSource, kind: 'personal', name: 'All-Time Favorites' }}
         query={{ types: [], genres: [], page: 1, limit: 120 }} sort={{ by: 'rank', how: 'asc' }} count={12}
-        svg={fileExport} managing move />
+        svg={fileExport} move />
     {/snippet}
   </ListManageBar>
+  </div>
 </Specimen>
 
 <Specimen title="Lists index reorder" note="The arrows and drag handle on a row of the owner's lists index.">

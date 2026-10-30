@@ -71,7 +71,7 @@ const recommendation: Recommendation = {
 };
 </script>
 
-{#snippet watchedDetail()}31/62 eps &mdash; 31 plays <em>({formatRuntime(31 * breakingBad.runtime)})</em>{/snippet}
+{#snippet watchedDetail()}31 / 62 eps &mdash; 31 plays <em>({formatRuntime(31 * breakingBad.runtime)})</em>{/snippet}
 
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 {#snippet historyMenu()}

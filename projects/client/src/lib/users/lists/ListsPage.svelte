@@ -38,6 +38,7 @@ import Icon from '$lib/icons/Icon.svelte';
 import addCircle from '$lib/icons/regular/circle-plus.svg?raw';
 import listIcon from '$lib/icons/regular/list.svg?raw';
 import move from '$lib/icons/regular/up-down-left-right.svg?raw';
+import check from '$lib/icons/solid/check.svg?raw';
 import type { ProfileUser } from '$lib/users/ProfileUser';
 import { nearViewport } from '$lib/utils/nearViewport';
 import type { Collaborator } from './Collaborator.ts';
@@ -418,7 +419,7 @@ const actions = (row: UserListRow) => {
       <!-- Add list is wired by. -->
       <span class="owner-tools">
         <button bind:this={addButton} type="button" class="tool add" disabled={busy || reordering || deleting !== null} onclick={() => { editor = { id: null }; }}><Icon svg={addCircle} /><span>Add list</span></button>
-        <button type="button" class="tool reorder" class:active={reordering} aria-pressed={reordering} aria-keyshortcuts="r" disabled={!canReorder || busy || Boolean(dragging)} onclick={toggleReorder}><Icon svg={move} /><span>Reorder</span></button>
+        <button type="button" class="tool reorder" class:active={reordering} aria-pressed={reordering} aria-keyshortcuts="r" disabled={!canReorder || busy || Boolean(dragging)} onclick={toggleReorder}><Icon svg={reordering ? check : move} /><span>{reordering ? 'Done' : 'Reorder'}</span></button>
       </span>
     {/if}
   {/snippet}
@@ -547,15 +548,15 @@ const actions = (row: UserListRow) => {
   }
 }
 
-/* On: the pill tabs' picked red wash, like Manage on a list. */
+/* On, it reads Done in green, like Manage on a list. */
 .reorder.active {
-  border-color: var(--color-mode-on-border);
-  background-color: var(--color-mode-on-bg);
-  color: var(--color-mode-on-text);
+  border-color: var(--color-mode-done-border);
+  background-color: var(--color-mode-done-bg);
+  color: var(--color-mode-done-text);
 
   &:hover:not(:disabled) {
-    border-color: var(--color-mode-on-border);
-    background-color: var(--color-mode-on-bg-hover);
+    border-color: var(--color-mode-done);
+    background-color: var(--color-mode-done-bg-hover);
   }
 }
 .reorder:focus-visible {

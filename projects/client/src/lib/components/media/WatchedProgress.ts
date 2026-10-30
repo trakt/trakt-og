@@ -1,6 +1,6 @@
 /**
- * A show's progress, for its tooltip: "3% watched", then "1/32 eps — 1 play (49m)" over a bar. The library tooltip
- * uses it too, "84% in library" over "27/32 eps".
+ * A show's progress, for its tooltip: "3% watched", then "1 / 32 eps — 1 play (49m)" over a bar. The library tooltip
+ * uses it too, "84% in library" over "27 / 32 eps".
  */
 export type WatchedProgress = Readonly<{
   verb: 'watched' | 'rewatched' | 'in library';
@@ -12,6 +12,6 @@ export type WatchedProgress = Readonly<{
   plays?: number;
   /** The plays' total time, when the runtime is known. */
   minutes?: number;
-  /** The library's media servers, "Plex": "27/32 eps — from Plex". */
+  /** The library's media servers, "Plex": "27 / 32 eps — from Plex". */
   from?: string;
 }>;

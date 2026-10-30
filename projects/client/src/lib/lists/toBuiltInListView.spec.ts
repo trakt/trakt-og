@@ -11,6 +11,7 @@ describe('toBuiltInListView', () => {
       id: 2106,
       slug: 'watchlist',
       name: 'Watchlist',
+      description: 'Movies, shows, seasons, and episodes I plan to watch.',
       href: '/users/sean/watchlist',
       kind: 'watchlist',
       ownerSlug: 'sean',
@@ -36,6 +37,7 @@ describe('toBuiltInListView', () => {
     expect(list).toMatchObject({
       id: 0,
       name: 'Favorites',
+      description: 'My favorite shows and movies.',
       href: '/users/sean/favorites',
       isPublic: false,
       displayNumbers: true,

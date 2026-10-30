@@ -1,7 +1,7 @@
 <!--
   The library tooltip, centered. A movie or episode: "Added to Plex on Apr 19, 2013", or "Added to library on" when
   no media server synced it, with the server and the date in bold. A show or season: the watched tooltip's progress, "84% in library" over
-  "27/32 eps — from Plex" and a green bar. Under either, its format and audio (`CollectionLogoRow`) in the footer.
+  "27 / 32 eps — from Plex" and a green bar. Under either, its format and audio (`CollectionLogoRow`) in the footer.
     <Tooltip content={tip}>{#snippet tip()}<LibraryTip tip={fill.tips.collected} />{/snippet}</Tooltip>
 -->
 <script lang="ts">

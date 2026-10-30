@@ -20,7 +20,7 @@ const run = (progress: ShowProgress, verb: WatchedProgress['verb'], runtime: num
 });
 
 /**
- * The on-deck progress bar's tooltip (`dashboard.js:7-55`): "86% watched" over "133/154 eps — 203 plays (3d 2h 56m)".
+ * The on-deck progress bar's tooltip (`dashboard.js:7-55`): "86% watched" over "133 / 154 eps — 203 plays (3d 2h 56m)".
  * A rewatch gets a second run with the whole show's progress, under a divider.
  */
 export function progressTooltip({

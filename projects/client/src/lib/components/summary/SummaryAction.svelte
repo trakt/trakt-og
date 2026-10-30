@@ -4,7 +4,7 @@
   fills with its color and the tiles split off beside it. Every button is the same height.
     <SummaryAction color="var(--brand-quaternary)" icon={collection} percent="95%" text="in library" selected
       onclick={open}>
-      {#snippet detail()}177/186 episodes{/snippet}
+      {#snippet detail()}177 / 186 episodes{/snippet}
       {#snippet tiles()}<SummaryActionTile icon={plus} label="Add to library" onclick={add} />{/snippet}
     </SummaryAction>
   `href` makes it a link, `readonly` a plain box (a person's credit progress). `busy` is the spinner's label while

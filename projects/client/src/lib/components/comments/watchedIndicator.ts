@@ -6,7 +6,7 @@ export type WatchedIndicator = {
   readonly count: string;
   /** "Watched", "play" or "plays". */
   readonly label: string;
-  /** The tooltip on shows and seasons: "5/62 episodes", then "9 plays". */
+  /** The tooltip on shows and seasons: "5 / 62 episodes", then "9 plays". */
   readonly title?: string;
   readonly href: string;
   /** Every aired episode of the show or season: the tag turns solid. */
@@ -36,7 +36,7 @@ export function watchedIndicator({
   if (item.type !== 'show' && item.type !== 'season') return plays;
 
   const aired = item.airedEpisodes ?? 0;
-  const title = `${stats.completed_count}/${aired} ${plural(aired, 'episode')}\n${plays.count} ${plays.label}`;
+  const title = `${stats.completed_count} / ${aired} ${plural(aired, 'episode')}\n${plays.count} ${plays.label}`;
   const percentage = aired > 0 ? Math.min(Math.floor((stats.completed_count / aired) * 100), 100) : 0;
   if (percentage <= 0) return { ...plays, title };
   const watched = { count: `${percentage}%`, label: 'Watched', title, href };

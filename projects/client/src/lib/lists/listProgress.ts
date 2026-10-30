@@ -3,7 +3,7 @@ import type { ListStatsItem } from './toListStats.ts';
 
 type StateOf = (type: ListStatsItem['type'], id: number, season?: SeasonOf) => OverlayState;
 
-/** One of the stats bar's percentages: "20%" over "2/10 items". */
+/** One of the stats bar's percentages: "20%" over "2 / 10 items". */
 export interface ListProgressStat {
   readonly count: number;
   /** Rounded down, like OG's `parseInt(p * 100)`. */

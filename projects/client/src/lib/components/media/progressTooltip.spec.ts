@@ -7,7 +7,7 @@ describe('progressTooltip', () => {
     const progress = { aired: 154, completed: 133, plays: 203, minutesWatched: 4496, minutesLeft: 523 };
 
     expect(watchedProgressText(progressTooltip({ progress, runtime: 25 }))).toBe(
-      '86% watched, 133/154 eps — 203 plays (3d 2h 56m)',
+      '86% watched, 133 / 154 eps — 203 plays (3d 2h 56m)',
     );
   });
 
@@ -32,6 +32,6 @@ describe('progressTooltip', () => {
   it('should group thousands', () => {
     const progress = { aired: 2000, completed: 1500, plays: 1500, minutesWatched: 1, minutesLeft: 1 };
 
-    expect(watchedProgressText(progressTooltip({ progress }))).toContain('1,500/2,000 eps — 1,500 plays');
+    expect(watchedProgressText(progressTooltip({ progress }))).toContain('1,500 / 2,000 eps — 1,500 plays');
   });
 });

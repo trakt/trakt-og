@@ -1,7 +1,7 @@
 <!--
   One stat the way the toolbars draw them: an icon in its meaning color, the number in white and the word in gray.
-  With a `label` it's a focus stop with that tooltip; with `under` a smaller line shows under it on hover and focus
-  (the progress strip's "133/154 episodes"). `tone` picks the icon color: `watched` purple, `collected` the library's
+  With a `label` it's a focus stop with that tooltip; `under` adds a gray second line to the tooltip (the progress strip's
+  "133 / 154 episodes"). `tone` picks the icon color: `watched` purple, `collected` the library's
   teal, `done` green, and `count` (the default) blue for counts and times.
     <Stat svg={clock} value="4d 9h" noun="left" label="Time left to watch" />
 -->
@@ -23,16 +23,19 @@ const { svg, value, noun, label, under, tone = 'count' }: Props = $props();
 </script>
 
 {#snippet body(props: Record<string | symbol, unknown> = {})}
-  <!-- A focus stop so the tooltip and the line under it show from the keyboard too. -->
+  <!-- A focus stop so the tooltip shows from the keyboard too. -->
   <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
   <span class={['stat', tone]} tabindex={label ? 0 : undefined} {...props}>
-    <span class="icon-slot"><Icon {svg} /></span><span class="text"><strong>{value}</strong> {noun}{#if under}<span
-          class="under"
-        >{under}</span>{/if}</span>
+    <span class="icon-slot"><Icon {svg} /></span><span><strong>{value}</strong> {noun}</span>
   </span>
 {/snippet}
 
-{#if label}
+{#if label && under}
+  <Tooltip>
+    {#snippet trigger(tooltip)}{@render body(tooltip)}{/snippet}
+    <span class="tip">{label}<span class="detail">{under}</span></span>
+  </Tooltip>
+{:else if label}
   <Tooltip text={label}>
     {#snippet trigger(tooltip)}{@render body(tooltip)}{/snippet}
   </Tooltip>
@@ -76,28 +79,12 @@ strong {
   }
 }
 
-.text {
-  position: relative;
-  display: inline-block;
+/* The tooltip with `under`: the label over it in gray, like the watched tooltips. */
+.tip {
+  display: grid;
 }
 
-.under {
-  position: absolute;
-  inset-block-end: var(--list-stat-under-offset);
-  inset-inline-start: 0;
-  color: var(--color-list-stat-under);
-  font-size: var(--font-size-list-stat-under);
-  opacity: 0;
-  transition: opacity 0.5s;
-
-  .stat:is(:hover, :focus-visible) & {
-    opacity: 1;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .under {
-    transition: none;
-  }
+.detail {
+  color: var(--color-tooltip-muted);
 }
 </style>

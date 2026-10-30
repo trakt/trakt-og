@@ -61,7 +61,7 @@ const collectedDate = $derived(
     ? 'Unknown date'
     : viewerState.collectedAt && formatDate(viewerState.collectedAt, { ...dates, time: true }),
 );
-const detail = $derived(plural ? `${viewerState.collectedEpisodes}/${target.airedEpisodes} episodes` : collectedDate);
+const detail = $derived(plural ? `${viewerState.collectedEpisodes} / ${target.airedEpisodes} episodes` : collectedDate);
 const badges = $derived(collectionBadges(viewerState.collectionMetadata));
 const source = $derived(librarySourceIcon(viewerState.collectionSources));
 // With adding off, anything not in the library has no control, and signed out nothing is. A signed-in viewer's unknown

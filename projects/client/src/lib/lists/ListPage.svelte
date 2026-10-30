@@ -1,6 +1,7 @@
 <!--
   A list page under the profile frame: the subnav with the type and genre dropdowns, the sort
-  and its direction, the title row with the list's pills and the viewer's icons, the description band, then the ranked
+  and its direction, the title row with the list's pills and the viewer's icons (in manage mode, the whole-selection
+  actions), the description band, then the ranked
   poster grid between two paginations. The stats bar sits before the sort; the filter icons follow it. Watchlist, favorites and official lists render here too.
 -->
 <script lang="ts">
@@ -67,6 +68,7 @@ import barsProgress from '$lib/icons/regular/bars-progress.svg?raw';
 import deleteIcon from '$lib/icons/regular/trash-xmark.svg?raw';
 import flag from '$lib/icons/regular/flag.svg?raw';
 import move from '$lib/icons/regular/up-down-left-right.svg?raw';
+import check from '$lib/icons/solid/check.svg?raw';
 import pencil from '$lib/icons/regular/pen.svg?raw';
 import type { ProfileUser } from '$lib/users/ProfileUser';
 import { createListManager } from '$lib/lists/createListManager.svelte';
@@ -282,7 +284,7 @@ let allItems = $state<readonly ListItemCard[] | null>(null);
 let selectedKeys = $state<readonly number[] | null>(null);
 let removedKeys = $state<readonly number[]>([]);
 let savedDescription = $state<string | undefined>();
-const description = $derived(parseComment(savedDescription ?? data.list?.description ?? ''));
+const description = $derived(parseComment(savedDescription || data.list?.description || ''));
 let notesItem = $state<ListItemCard | null>(null);
 let notesOpen = $state(false);
 let notesDraft = $state('');
@@ -326,6 +328,8 @@ async function toggleManage() {
     ownerManaging = false;
     return;
   }
+  // The mode opens at once, its writes held while the whole list loads.
+  ownerManaging = true;
   ownerBusy = true;
   const source = data;
   try {
@@ -339,8 +343,8 @@ async function toggleManage() {
     if (selection.some((row) => !items.some((item) => item.key === row.id))) throw new Error('List changed');
     allItems = items;
     selectedKeys = selection.map((row) => row.id);
-    ownerManaging = true;
   } catch {
+    if (source === data) ownerManaging = false;
     toast.error("Doh! We couldn't load the complete list. Please try again.");
   } finally {
     if (source === data) ownerBusy = false;
@@ -468,6 +472,20 @@ afterNavigate(() => {
   ownerManaging = false;
 });
 const managing = $derived(owner ? ownerManaging : canManage && manager.managing);
+// The items stat's count, which counts the filtered items: the total header doesn't apply the hide filters.
+let filteredCount = $state<number>();
+$effect(() => {
+  const source = data;
+  filteredCount = undefined;
+  if (!source.list) return;
+  void Promise.resolve(source.stats).then((stats) => {
+    if (data === source) filteredCount = stats?.count;
+  }).catch(() => {});
+});
+// The owner's count is the loaded selection's; until it loads, the filtered count.
+const manageCount = $derived(
+  owner && selectedKeys ? ownerCards.length : filteredCount ?? (data.list ? data.total : 0),
+);
 const displayCards = $derived(owner ? ownerCards : manager.cards);
 const writing = $derived((owner ? ownerBusy : manager.busy) || transferBusy);
 // OG dragged only a ranked list that fits one page, and offered "Change position" in the other sorts.
@@ -553,7 +571,7 @@ async function saveNotes(text: string) {
   {#snippet action(label: string, svg: string, kind: string, text?: string, onclick?: () => void)}
     <Tooltip text={label}>
       {#snippet trigger(tooltip)}
-        <button type="button" class={['action', kind]} aria-label={text ? undefined : label} aria-disabled={!onclick || ownerBusy} aria-pressed={kind === 'manage' && onclick ? ownerManaging : undefined}
+        <button type="button" class={['action', kind, { active: kind === 'manage' && ownerManaging }]} aria-label={text ? undefined : label} aria-disabled={!onclick || ownerBusy} aria-pressed={kind === 'manage' && onclick ? ownerManaging : undefined}
           onclick={() => { if (!ownerBusy) onclick?.(); }} {...tooltip}>
           <Icon {svg} />{#if text}<span class="action-text">{text}</span>{/if}
         </button>
@@ -643,7 +661,7 @@ async function saveNotes(text: string) {
     {/snippet}
   </SectionToolbar>
 
-  <section class="title-row" aria-labelledby="list-title">
+  <section class={['title-row', { managing }]} aria-labelledby="list-title">
   <Container>
     <div class="title-bar">
         <h2 id="list-title">
@@ -660,26 +678,25 @@ async function saveNotes(text: string) {
           {/if}
         </h2>
         {#if actions}
-          <!-- The writes are phase 2: report and share, edit and delete, manage, copy. -->
+          <!-- Managing, the whole-selection actions take the icons' place, and Manage, last so it stays put, reads Done. -->
           <div class="actions">
+            {#if managing}
+              <ListManageBar count={manageCount} busy={writing}
+                onreset={owner ? resetOrder : manager.resetRanks}
+                ondelete={owner ? () => void removeItems(ownerCards) : manager.deleteAll}>
+                {#snippet transfers()}
+                  <ListTransfer source={list} query={data.query} sort={data.sort} count={manageCount} svg={clone} busy={writing} onbusychange={(busy) => transferBusy = busy} />
+                  <ListTransfer source={list} query={data.query} sort={data.sort} count={manageCount} svg={fileExport} busy={writing} onbusychange={(busy) => transferBusy = busy} move />
+                {/snippet}
+              </ListManageBar>
+            {:else}
             {#if actions.report}{@render action('Report List', flag, 'report', undefined, () => { reportOpen = true; })}{/if}
             {#if actions.edit && data.kind !== 'personal'}{@render action('Edit', pencil, 'edit', undefined, owner ? editBuiltIn : undefined)}{:else if actions.edit}<Tooltip text="Edit">{#snippet trigger(tooltip)}<button type="button" class="action edit" aria-label="Edit" {...tooltip} onclick={() => { editing = true; }}><Icon svg={pencil} /></button>{/snippet}</Tooltip>{/if}
             {#if actions.delete}<span class="delete" style:--confirm-icon-size="var(--font-size-list-row-action)"><ManageConfirm name="delete" svg={deleteIcon} label="Delete" yes="Yes, delete it!" warning={deleteWarning} disabled={deleting} onconfirm={removeList}>Delete this list?</ManageConfirm></span>{/if}
             <span class="share"><ShareButton url={actions.shareUrl} title={list.name} large={false} /></span>
             {#if actions.leave}{@render action('Stop collaborating on this list', userXmark, 'leave', 'Leave', leave)}{/if}
-            {#if actions.manage && canManage}
-              <Tooltip text="Reorder, copy, move and delete">
-                {#snippet trigger(tooltip)}
-                  <button type="button" class={['action', 'manage', { active: managing }]} aria-pressed={managing}
-                    aria-keyshortcuts="m" {...tooltip} onclick={() => manager.managing = !manager.managing}><Icon
-                      svg={move}
-                    /><span class="action-text">Manage</span></button>
-                {/snippet}
-              </Tooltip>
-            {:else if actions.manage}
-              {@render action('Reorder, copy, move and delete', move, 'manage', 'Manage', owner ? toggleManage : undefined)}
             {/if}
-            {#if actions.progressHref}
+            {#if actions.progressHref && !managing}
               <Tooltip text="View watched progress">
                 {#snippet trigger(tooltip)}
                   <a class="action progress" href={actions.progressHref} {...externalLink(actions.progressHref)} {...tooltip}><Icon svg={barsProgress} /><span
@@ -688,22 +705,25 @@ async function saveNotes(text: string) {
                 {/snippet}
               </Tooltip>
             {/if}
+            {#if actions.manage && canManage}
+              <Tooltip text={managing ? 'Stop managing' : 'Reorder, copy, move and delete'}>
+                {#snippet trigger(tooltip)}
+                  <button type="button" class={['action', 'manage', { active: managing }]} aria-pressed={managing}
+                    aria-keyshortcuts="m" {...tooltip} onclick={() => manager.managing = !manager.managing}><Icon
+                      svg={managing ? check : move}
+                    /><span class="action-text">{managing ? 'Done' : 'Manage'}</span></button>
+                {/snippet}
+              </Tooltip>
+            {:else if actions.manage}
+              {@render action(ownerManaging ? 'Stop managing' : 'Reorder, copy, move and delete', ownerManaging ? check : move, 'manage',
+                ownerManaging ? 'Done' : 'Manage', owner ? toggleManage : undefined)}
+            {/if}
           </div>
         {/if}
       </div>
   </Container>
 </section>
 
-  {#if managing}
-    <ListManageBar count={owner ? ownerCards.length : data.total} busy={writing}
-  onreset={owner ? resetOrder : manager.resetRanks}
-  ondelete={owner ? () => void removeItems(ownerCards) : manager.deleteAll}>
-      {#snippet transfers()}
-        <ListTransfer source={list} query={data.query} sort={data.sort} count={owner ? ownerCards.length : data.total} svg={clone} busy={writing} onbusychange={(busy) => transferBusy = busy} managing />
-        <ListTransfer source={list} query={data.query} sort={data.sort} count={owner ? ownerCards.length : data.total} svg={fileExport} busy={writing} onbusychange={(busy) => transferBusy = busy} move managing />
-      {/snippet}
-    </ListManageBar>
-  {/if}
   <WatchNowChips {tiles} />
 
   {#if description.length > 0}
@@ -803,6 +823,12 @@ async function saveNotes(text: string) {
 .title-row {
   padding: var(--list-title-padding);
   background-color: var(--color-surface);
+  transition: background-color var(--transition-list-card);
+
+  /* A green wash while managing, Done's, so the swapped-in actions read as a mode. */
+  &.managing {
+    background-color: var(--color-list-manage-row-bg);
+  }
 }
 
 .title-bar {
@@ -878,7 +904,8 @@ h2 {
   text-decoration: none;
   transition: opacity 0.5s, background-color var(--transition-comment-quiet);
 
-  &:hover:not([aria-disabled='true']) {
+  /* Lit Done keeps its own green. */
+  &:hover:not([aria-disabled='true'], .active) {
     background-color: var(--color-comment-chip);
   }
 
@@ -905,7 +932,7 @@ h2 {
 
     transition: background-color 0.2s, border-color 0.2s;
 
-    &:is(:hover, :focus-visible) {
+    &:is(:hover, :focus-visible):not(.active) {
       border-color: var(--color-control-border-hover);
       background-color: var(--color-control-hover-bg);
       color: var(--color-control-text);
@@ -957,14 +984,17 @@ h2 {
   color: var(--color-action-share);
 }
 
+/* The list row's description text: its size, its softer color and its unboxed quotes. */
 .description {
   --read-more-shade: var(--color-subnav-text-bg);
+  --comment-quote-bg: transparent;
   background-color: var(--color-subnav-text-bg);
-  font-size: var(--font-size-subnav-text);
+  color: var(--color-list-card-description);
+  font-size: var(--font-size-base);
 }
 
 .description-text {
-  padding-block: var(--subnav-text-padding);
+  padding-block: var(--list-description-padding);
 }
 
 .items {
@@ -984,16 +1014,16 @@ h2 {
 .manage {
   cursor: pointer;
 
-  /* On: the pill tabs' picked red wash, like Reorder on the lists page. */
+  /* On, it reads Done in green: away from Delete's red, the way out of the mode. */
   &.active {
-    border-color: var(--color-mode-on-border);
-    background-color: var(--color-mode-on-bg);
-    color: var(--color-mode-on-text);
+    border-color: var(--color-mode-done-border);
+    background-color: var(--color-mode-done-bg);
+    color: var(--color-mode-done-text);
 
     &:is(:hover, :focus-visible) {
-      border-color: var(--color-mode-on-border);
-      background-color: var(--color-mode-on-bg-hover);
-      color: var(--color-mode-on-text);
+      border-color: var(--color-mode-done);
+      background-color: var(--color-mode-done-bg-hover);
+      color: var(--color-mode-done-text);
     }
   }
 }
@@ -1009,6 +1039,11 @@ h2 {
 
 .drop-target {
   outline: var(--list-reorder-rank-border) solid var(--brand-primary);
+}
+
+/* With no pagination above them, the first posters sit 30px under the band. */
+.grid:first-child {
+  padding-block-start: var(--list-grid-offset);
 }
 
 .grid [data-list-item] {
@@ -1029,6 +1064,7 @@ h2 {
 
 @media (prefers-reduced-motion: reduce) {
   .manage :global(svg),
+  .title-row,
   .report {
     transition: none;
   }

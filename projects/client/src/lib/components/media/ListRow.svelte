@@ -291,6 +291,7 @@ const blocks = $derived(parseComment(description?.trim() ?? ''));
 
 /* The reorder controls cover it, so a click while reordering doesn't open the list. */
 .fan-frame {
+  --rank-anchor-width: var(--poster-width);
   position: relative;
   align-self: start;
 }
@@ -363,12 +364,12 @@ const blocks = $derived(parseComment(description?.trim() ?? ''));
     var(--color-list-card-placeholder);
 }
 
-/* The rank pill centres over the first, whole poster. */
+/* The rank pill, and the reorder controls' editable one, centre over the first, whole poster. */
 .rank-anchor {
   position: absolute;
   inset-block-start: 0;
   inset-inline-start: 0;
-  inline-size: var(--poster-width);
+  inline-size: var(--rank-anchor-width);
 }
 
 .no-items {
@@ -658,8 +659,8 @@ h3 {
     aspect-ratio: var(--ratio-poster);
   }
 
-  .rank-anchor {
-    inline-size: calc((100% - 4 * var(--list-card-poster-gap-narrow)) / 5);
+  .fan-frame {
+    --rank-anchor-width: calc((100% - 4 * var(--list-card-poster-gap-narrow)) / 5);
   }
 }
 

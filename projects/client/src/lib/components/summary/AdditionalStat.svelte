@@ -22,16 +22,6 @@ const { label, phoneOnly = false, children }: Props = $props();
 li {
   display: inline-block;
   margin: 0 var(--gutter) 2px 0;
-
-  & :global(a) {
-    color: var(--color-summary-hover);
-    text-decoration: none;
-    transition: color var(--transition-card);
-
-    &:is(:hover, :focus-visible) {
-      color: var(--color-link);
-    }
-  }
 }
 
 .label {

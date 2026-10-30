@@ -38,7 +38,7 @@ design system's living reference, so they change in the same PR as the component
 ## Icons
 
 Every OG icon comes from OG's own fonts, so it matches exactly. Never hand-draw one or substitute a similar icon.
-1. Find the icon's exact class in the visual reference: `fa-thin fa-gear` is `thin gear`, `trakt-icon-check-thick` is
+1. Find the icon's exact class in OG's markup: `fa-thin fa-gear` is `thin gear`, `trakt-icon-check-thick` is
    `trakt check-thick`, `logos-icon-dts_x` is `logos dts_x`. A bare `fa fa-x` (no style class) is `solid`.
 2. Run `cd projects/client && bun run icon <family> <name>`. It writes `src/lib/icons/<family>/<name>.svg`. Families: `solid`, `regular`,
    `light`, `thin`, `brands`, `kit`, `trakt`, `logos`. An alias is saved under its canonical name, and the task says so.

@@ -124,12 +124,27 @@ describe('root layout settings', () => {
     expect(data.datePreferences.timeZone).toBe('America/Chicago');
   });
 
+  it("should read the member's own header links from their cookie", async () => {
+    const cookie = JSON.stringify({ og_tester: ['watchlist', 'movies-boxoffice'], someone_else: ['discover'] });
+    const data = await load({
+      fetch: globalThis.fetch,
+      locals: { token: 'fake-token', tokenExpired: false },
+      cookies: { get: (name: string) => (name === 'og-header' ? cookie : undefined) },
+      request: request(),
+      route: { id: '/' },
+      untrack,
+    } as Parameters<typeof load>[0]);
+    expect(data.headerLinks).toEqual(['watchlist', 'movies-boxoffice']);
+    expect((await layout()).headerLinks).toBeNull();
+  });
+
   it('should render defaults without fetching when logged out', async () => {
     expect(await layout(null)).toEqual({
       hasSession: false,
       tokenExpired: false,
       rateLimited: false,
       user: null,
+      headerLinks: null,
       settings: null,
       datePreferences: { order: 'mdy', hour24: false, timeZone: 'UTC', weekStartDay: 0 },
       searchType: '',

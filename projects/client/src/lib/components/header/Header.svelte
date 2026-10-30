@@ -3,12 +3,14 @@
   main links on the left, and on the right the help menu and the account: Get VIP and the profile menu, or one Sign
   In button.
   While an expired session renews, it keeps the signed-in links and leaves the account empty until the user loads.
+  A member picks their own links: Customize Header in the profile menu, or the pencil that shows when the mouse rests
+  on the links, turns the bar into an editor (HeaderLinks),
+  with Reset (back to the default links) and a green Done, list management's, in place of the account. Each change saves to this browser (headerLinkPrefs).
 -->
 <script lang="ts">
-import { invalidateAll } from '$app/navigation';
+import { afterNavigate, invalidateAll } from '$app/navigation';
 import { page } from '$app/state';
 import logo from '$lib/assets/trakt-logo-red.png';
-import { calendarHome } from '$lib/calendars/calendarHome';
 import Icon from '$lib/icons/Icon.svelte';
 import arrowRightFromBracket from '$lib/icons/solid/arrow-right-from-bracket.svg?raw';
 import barsProgress from '$lib/icons/solid/bars-progress.svg?raw';
@@ -23,6 +25,9 @@ import heart from '$lib/icons/solid/heart.svg?raw';
 import list from '$lib/icons/solid/list.svg?raw';
 import memo from '$lib/icons/solid/memo.svg?raw';
 import moon from '$lib/icons/solid/moon.svg?raw';
+import pen from '$lib/icons/solid/pen.svg?raw';
+import resetIcon from '$lib/icons/regular/arrow-rotate-left.svg?raw';
+import check from '$lib/icons/solid/check.svg?raw';
 import rocket from '$lib/icons/solid/rocket.svg?raw';
 import collection from '$lib/icons/trakt/collection-thick.svg?raw';
 import userGroup from '$lib/icons/solid/user-group.svg?raw';
@@ -36,6 +41,9 @@ import type { SettingsBody } from '$lib/settings/SettingsBody';
 import { traktUrls } from '$lib/traktUrls';
 import { MediaQuery } from 'svelte/reactivity';
 import HeaderHelp from './HeaderHelp.svelte';
+import { headerLinkChoices } from './headerLinkChoices.ts';
+import { headerLinkPrefs } from './headerLinkPrefs.ts';
+import HeaderLinks from './HeaderLinks.svelte';
 import HeaderMenu from './HeaderMenu.svelte';
 import GettingStarted from '$lib/components/first-night/GettingStarted.svelte';
 import HeaderSearch from './HeaderSearch.svelte';
@@ -58,6 +66,8 @@ interface Props {
   darkKnight?: DarkKnight;
   /** Saves the toggled setting. The demo route passes one that doesn't touch the API. */
   save?: (body: SettingsBody) => Promise<SaveSettingsResult>;
+  /** The member's own bar from the og-header cookie, in order. Null keeps the default links. */
+  links?: readonly string[] | null;
 }
 
 const browserSave = (body: SettingsBody) =>
@@ -66,16 +76,29 @@ const browserSave = (body: SettingsBody) =>
     body,
   });
 
-const { user, renewing = false, searchType, darkKnight: saved = 'false', save = browserSave }: Props = $props();
+const {
+  user,
+  renewing = false,
+  searchType,
+  darkKnight: saved = 'false',
+  save = browserSave,
+  links: savedLinks = null,
+}: Props = $props();
 
 const signedIn = $derived(user !== null || renewing);
-const sections = $derived([
-  ...(signedIn ? [{ title: 'Dashboard', href: '/dashboard' }] : []),
-  { title: 'Discover', href: '/discover' },
-  { title: 'Shows', href: '/shows/trending' },
-  { title: 'Movies', href: '/movies/trending' },
-  { title: 'Calendar', href: calendarHome(signedIn) },
-]);
+const choices = $derived(headerLinkChoices({ slug: user?.slug ?? null, signedIn }));
+// What the bar shows now: the saved links until an edit changes them. A link that isn't on offer (Dashboard while
+// signed out, or one og no longer has) drops out.
+let linkIds = $derived(savedLinks ?? headerLinkPrefs.DEFAULTS);
+const links = $derived(linkIds.flatMap((id) => choices.filter((choice) => choice.id === id)));
+let editing = $state(false);
+
+function changeLinks(ids: readonly string[]) {
+  linkIds = ids;
+  if (user) headerLinkPrefs.save(user.slug, ids);
+}
+
+afterNavigate(() => (editing = false));
 
 const profileTabs = [
   { title: 'History', icon: clockRotateLeft },
@@ -106,9 +129,6 @@ const reviews = $derived(
     : [],
 );
 
-// OG marks a nav link selected when the first path segment matches (`/shows/popular` selects Shows).
-const section = $derived(page.url.pathname.split('/')[1]);
-const current = (href: string) => (href.split('/')[1] === section ? 'true' : undefined);
 // A profile menu row is the page you're on when the path is its own or under it (`/watchlist/movies`). The profile
 // row matches only itself, or it would claim every tab.
 const here = (href: string, exact: boolean) => {
@@ -139,7 +159,7 @@ async function toggleDarkKnight() {
 <!-- Links point at OG routes og hasn't built yet, and resolve() only takes routes that exist. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
-<header class="top-nav">
+<header class={['top-nav', { editing }]}>
   <HeaderTint />
   <a class="logo" href="/"><img src={logo} alt="Trakt" width="34" height="34" /></a>
 
@@ -147,13 +167,17 @@ async function toggleDarkKnight() {
   <div class="sections">
     <HeaderSearch savedType={searchType} viewer={user?.slug ?? null} />
 
-    <nav class="links" aria-label="Main">
-      {#each sections as link (link.href)}
-        <a href={link.href} aria-current={current(link.href)}>{link.title}</a>
-      {/each}
-    </nav>
+    <HeaderLinks {links} {choices} {editing} onchange={changeLinks}
+      oncustomize={user ? () => (editing = true) : undefined} name={user?.firstName} />
   </div>
 
+  {#if editing}
+    <div class="user">
+      <button type="button" class="reset" onclick={() => changeLinks(headerLinkPrefs.DEFAULTS)}
+        ><Icon svg={resetIcon} />Reset</button>
+      <button type="button" class="done" onclick={() => (editing = false)}><Icon svg={check} />Done</button>
+    </div>
+  {:else}
   <div class="user">
     <HeaderHelp />
     {#if user}
@@ -193,6 +217,9 @@ async function toggleDarkKnight() {
                 <Icon svg={moon} fixedWidth /> Dark Knight
               </button>
             </li>
+            <li>
+              <button type="button" onclick={() => (editing = true)}><Icon svg={pen} fixedWidth /> Customize Header</button>
+            </li>
             <li><a href={traktUrls.settings} target="_blank" rel="noopener"><Icon svg={gear} fixedWidth /> Settings</a></li>
           </ul>
           <hr />
@@ -208,6 +235,7 @@ async function toggleDarkKnight() {
       <a class="sign-in" href="/signin" onclick={authStep.signIn}>Sign In</a>
     {/if}
   </div>
+  {/if}
 </header>
 
 <style>
@@ -229,6 +257,17 @@ async function toggleDarkKnight() {
   color: var(--color-header-text);
   font-family: var(--font-headings);
   font-weight: var(--font-weight-headings);
+
+  /* Editing, the bar grows to fit the chips' rows, over the top of the page, on the less see-through glass. Everything
+     hangs from the top with the pill-tall rows centered where the bar's one row is, so the mark, the search and the
+     buttons stay put; one row of chips is the bar's own height. */
+  &.editing {
+    align-items: start;
+    block-size: auto;
+    min-block-size: var(--header-height);
+    padding-block: var(--space-header-editing);
+    background: var(--color-header-panel);
+  }
 }
 
 .logo {
@@ -241,36 +280,16 @@ async function toggleDarkKnight() {
   display: flex;
   align-items: center;
   gap: var(--gap-header-links);
+  min-inline-size: 0;
+
+  .editing & {
+    align-items: start;
+  }
 }
 
-/* Main nav: loose pills. Hover gives a soft glass pill, and the current section is solid red. */
-.links {
-  display: flex;
-  gap: var(--gap-header-links);
-  font-size: var(--font-size-header-link);
-
-  & > a {
-    display: flex;
-    align-items: center;
-    block-size: var(--header-pill-height);
-    padding-inline: var(--space-header-pill-inline);
-    border-radius: var(--radius-header-pill);
-    color: var(--color-header-muted);
-    text-decoration: none;
-    white-space: nowrap;
-    transition: background-color 0.2s, color 0.2s;
-
-    &:hover {
-      background-color: var(--color-header-pill);
-      color: var(--color-header-text);
-    }
-
-    &[aria-current] {
-      background-color: var(--brand-primary);
-      color: var(--color-text-inverse);
-      box-shadow: var(--shadow-header-current);
-    }
-  }
+/* Editing, Reset and Done sit as far apart as the bar's edge is from them, like the chips. */
+.editing .user {
+  gap: var(--space-header-editing);
 }
 
 /* The account, pushed to the far end. */
@@ -305,6 +324,39 @@ async function toggleDarkKnight() {
   &:is(:hover, :focus-visible) {
     background-color: var(--brand-violet-darken);
     color: var(--color-text-inverse);
+  }
+}
+
+/* Editing: Reset, an outlined button like the filters panel's, and Done in list management's green, pill tall so they
+   line up with the chips. */
+.reset,
+.done {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs-inline);
+  block-size: var(--header-pill-height);
+  min-block-size: 0;
+  padding-inline: var(--space-header-pill-inline);
+  border: 1px solid var(--color-header-chip-edge);
+  border-radius: var(--radius-header-pill);
+  background-color: var(--color-header-chip-bg);
+  color: var(--color-header-text);
+  font: inherit;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.reset:is(:hover, :focus-visible) {
+  background-color: var(--color-header-pill);
+}
+
+.done {
+  border-color: var(--color-mode-done-border);
+  background-color: var(--color-mode-done-bg);
+
+  &:is(:hover, :focus-visible) {
+    border-color: var(--color-mode-done);
+    background-color: var(--color-mode-done-bg-hover);
   }
 }
 
@@ -351,17 +403,11 @@ async function toggleDarkKnight() {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .links > a,
   .get-vip,
-  .sign-in {
+  .sign-in,
+  .reset,
+  .done {
     transition: none;
-  }
-}
-
-/* Tablets: tighter link pills, so every link still fits down to 768px, where phones get the splash instead. */
-@media (width <= 1200px) {
-  .links > a {
-    padding-inline: var(--space-sm-inline);
   }
 }
 </style>

@@ -2,6 +2,7 @@ import type { Cookies } from '@sveltejs/kit';
 import { api } from '../api/api.ts';
 import { isApiRateLimited } from '../api/isApiRateLimited.ts';
 import { isAuthStepRoute } from '../auth/isAuthStepRoute.ts';
+import { headerLinkPrefs } from '../components/header/headerLinkPrefs.ts';
 import { toHeaderUser } from '../components/header/toHeaderUser.ts';
 import { isPhoneUserAgent } from '../components/mobile-splash/isPhoneUserAgent.ts';
 import { toMobilePlatform } from '../components/mobile-splash/toMobilePlatform.ts';
@@ -28,7 +29,7 @@ type Params = {
 
 /**
  * Pages inherit settings and datePreferences from this layout; server loaders can read them through parent().
- * The header uses the same response. The sign-in and sign-out steps draw no header, so they skip it. Any failure
+ * The header uses the same response, with the member's own links from the og-header cookie. The sign-in and sign-out steps draw no header, so they skip it. Any failure
  * renders logged-out; only the client renews the token. A rate-limited read (`rateLimited`) keeps the session, so the
  * header stays signed in without a user instead of offering Sign In.
  * An expired token still counts as a session: `tokenExpired` keeps the header signed in until the browser renews it.
@@ -65,6 +66,7 @@ export async function loadViewerSession({
     tokenExpired,
     rateLimited: false,
     user: null,
+    headerLinks: null,
     settings: null,
     datePreferences: toDatePreferences(null, browserZone),
     searchType,
@@ -93,11 +95,13 @@ export async function loadViewerSession({
 
     // The settings a client ID the API won't let save kept in this browser instead (`localSettings`) count too.
     const settings: ViewerSettings = localSettings.apply(response.body, cookies.get(localSettings.COOKIE));
+    const user = toHeaderUser(settings.user);
     const data = {
       hasSession,
       tokenExpired,
       rateLimited: false,
-      user: toHeaderUser(settings.user),
+      user,
+      headerLinks: headerLinkPrefs.read(cookies.get(headerLinkPrefs.COOKIE), user.slug),
       settings,
       datePreferences: toDatePreferences(settings, browserZone),
       searchType,

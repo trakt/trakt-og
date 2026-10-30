@@ -162,9 +162,10 @@ function toggleSeason(season: number) {
       label={`${row.title}: ${row.percent}% watched`} overlay={row.seasons ? sections : undefined} />
 
     <p class="stats">
-      <Stat svg={check} tone="watched" value="{count(row.completed)}/{count(row.aired)}" noun="watched"
+      <Stat svg={check} tone="watched" value="{count(row.completed)} / {count(row.aired)}" noun="watched"
         label="Episodes watched" />
-      <Stat svg={play} value={count(row.plays)} noun={plural(row.plays, 'play')} label="Plays, rewatches included" />
+      <Stat svg={play} value={count(row.plays)} noun={plural(row.plays, 'play')} label="Plays"
+        under="Rewatches included" />
       <Stat svg={history} value={row.watchedTime} noun="watched" label="Time watched" />
       {#if row.left > 0}
         <Stat svg={hourglass} value={row.leftTime} noun="left"
@@ -509,6 +510,16 @@ function toggleSeason(season: number) {
 
   .poster {
     display: none;
+  }
+
+  /* The stats keep their icons and leave their words to the tooltips and screen readers, so the four fit one line. */
+  .stats :global(.noun) {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 }
 

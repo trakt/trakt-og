@@ -1,5 +1,4 @@
 import type { EpisodeStatsResponse, RatingsResponse } from '@trakt/api';
-import type { z } from 'zod/v4';
 import type { StreamingRank } from '../components/summary/toExternalRatings.ts';
 import { toSubpageStrip } from '../subpage/toSubpageStrip.ts';
 import type { SubpageMedia } from '../subpage/toSubpageMedia.ts';
@@ -7,7 +6,7 @@ import { RATING_LABELS } from '../components/rating/ratingPrompt.ts';
 import { type ProfileRatings, toProfileRatings } from '../users/profile/toProfileRatings.ts';
 import { countLabel } from '../utils/countLabel.ts';
 import { toCommunityStats } from './toCommunityStats.ts';
-import type { letterboxdSchema } from './letterboxdSchema.ts';
+import type { ExtraRating } from './extraRatingsSchema.ts';
 import { toSiteScores } from './toSiteScores.ts';
 import { ratingPercent } from '../utils/ratingPercent.ts';
 
@@ -15,14 +14,14 @@ type Params = {
   media: SubpageMedia;
   ratings: RatingsResponse;
   /** Movies only. */
-  letterboxd?: Letterboxd | null;
+  letterboxd?: ExtraRating | null;
+  /** Anime only. */
+  mal?: ExtraRating | null;
   stats: EpisodeStatsResponse & { favorited?: number };
   rank: StreamingRank | null;
   otherSiteRatings: boolean;
   now: Date;
 };
-
-type Letterboxd = NonNullable<z.infer<typeof letterboxdSchema>['letterboxd']>;
 
 /** "Good" and up: where the Liked it key starts counting. */
 const LIKED_FROM = 7;
@@ -76,7 +75,7 @@ function ratingKeys({ chart, votes, watchers, percent, level }: KeysParams) {
  * The four stats pages: the ratings strip with only the ratings and favorites, then the Trakt votes chart, the
  * community counts the strip used to carry and the other sites' scores beside Trakt's.
  */
-export function toMediaStats({ media, ratings, letterboxd, stats, rank, otherSiteRatings, now }: Params) {
+export function toMediaStats({ media, ratings, letterboxd, mal, stats, rank, otherSiteRatings, now }: Params) {
   // Before release the page shows no ratings and only the list count, whatever the early-ratings setting.
   const released = !!media.released && new Date(media.released) <= now;
   const trakt = released ? (ratings.trakt ?? ratings) : {};
@@ -90,7 +89,7 @@ export function toMediaStats({ media, ratings, letterboxd, stats, rank, otherSit
   const chart = toProfileRatings({ distribution: trakt.distribution ?? undefined, unit: 'vote' }).chart;
   const strip = toSubpageStrip({
     media,
-    reads: { ratings, stats, letterboxd: letterboxd ?? null },
+    reads: { ratings, stats, letterboxd: letterboxd ?? null, mal: mal ?? null },
     rank,
     otherSiteRatings,
     now,

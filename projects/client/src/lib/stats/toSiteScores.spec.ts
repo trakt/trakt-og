@@ -35,6 +35,13 @@ describe('toSiteScores', () => {
     });
   });
 
+  it('should color MyAnimeList in its own brand', () => {
+    const withMal = toExternalRatings({
+      ratings: { mal: { rating: 8.77, votes: 1, link: 'https://myanimelist.net/anime/199' } },
+    });
+    expect(toSiteScores({ external: withMal, trakt: 87 }).at(0)).toMatchObject({ brand: 'mal', score: 88 });
+  });
+
   it('should mark a site above Trakt with a plus and name the gap in words', () => {
     const [imdb] = toSiteScores({ external, trakt: 67 });
     expect(imdb?.diff).toEqual({ text: '+1', trend: 'up', label: '1 point above Trakt' });

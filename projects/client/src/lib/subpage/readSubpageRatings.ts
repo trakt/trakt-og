@@ -2,7 +2,7 @@ import { error } from '@sveltejs/kit';
 import { ratingsResponseSchema } from '@trakt/api';
 import { api } from '../api/api.ts';
 import { contractSchema } from '../api/contractSchema.ts';
-import { letterboxdSchema } from '../stats/letterboxdSchema.ts';
+import { extraRatingsSchema } from '../stats/extraRatingsSchema.ts';
 import { mediaStatsSchema } from '../stats/mediaStatsSchema.ts';
 import type { SubpageItem } from './SubpageItem.ts';
 
@@ -48,7 +48,7 @@ async function read(fetch: typeof globalThis.fetch, item: SubpageItem) {
 }
 
 /**
- * An item's public ratings (other sites included, Letterboxd for movies) and community counts, for the ratings strip
+ * An item's public ratings (other sites included, Letterboxd for movies and MyAnimeList for anime) and community counts, for the ratings strip
  * every item subpage carries and the stats page's sections. Null when either read fails or doesn't parse, so a
  * subpage can go without its strip.
  */
@@ -57,6 +57,7 @@ export async function readSubpageRatings(fetch: typeof globalThis.fetch, item: S
   const ratings = parsed(reads.ratings, ratingsResponseSchema);
   const stats = parsed(reads.stats, mediaStatsSchema);
   if (!ratings || !stats) return null;
-  const letterboxd = item.type === 'movie' ? letterboxdSchema.safeParse(reads.ratings.body).data?.letterboxd : null;
-  return { ratings, stats, letterboxd };
+  const extra = extraRatingsSchema.safeParse(reads.ratings.body).data;
+  const letterboxd = item.type === 'movie' ? extra?.letterboxd : null;
+  return { ratings, stats, letterboxd, mal: extra?.mal };
 }

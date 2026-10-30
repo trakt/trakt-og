@@ -1,6 +1,7 @@
 import imdb from '$lib/assets/sites/imdb-solid.svg';
 import justwatch from '$lib/assets/sites/justwatch-yellow.svg';
 import letterboxd from '$lib/assets/sites/letterboxd.svg';
+import mal from '$lib/assets/sites/mal.svg';
 import metacritic from '$lib/assets/sites/metacritic.png';
 import audienceCertified from '$lib/assets/sites/rt/audience-certified.svg';
 import audienceSpilled from '$lib/assets/sites/rt/audience-spilled.svg';
@@ -15,6 +16,7 @@ import type { ExternalRatingLogo } from './ExternalRating.ts';
 export const externalRatingLogos: Readonly<Record<ExternalRatingLogo, string>> = {
   imdb,
   letterboxd,
+  mal,
   tmdb,
   'tomatometer-certified': tomatometerCertified,
   'tomatometer-fresh': tomatometerFresh,

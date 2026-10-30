@@ -15,7 +15,7 @@ vi.mock('$app/state', () => ({
     get data() {
       return {
         user: viewer.signedIn ? { slug: 'fixture' } : null,
-        settings: { browsing: { spoilers: { episodes: viewer.mode, ratings: 'hide' } } },
+        settings: { browsing: { spoilers: { episodes: viewer.mode } } },
       };
     },
   },
@@ -25,7 +25,7 @@ vi.mock('$lib/overlay/overlay', () => ({
 }));
 
 const content = createRawSnippet(() => ({ render: () => '<span>Episode spoiler</span>' }));
-const html = (kind: 'title' | 'overview' | 'rating') =>
+const html = (kind: 'title' | 'overview') =>
   render(MediaSpoiler, {
     props: { target: { type: 'episode', id: 1 }, kind, inline: true, children: content },
   }).body;
@@ -47,11 +47,10 @@ describe('MediaSpoiler', () => {
     expect(html('title')).not.toContain('Click to reveal spoilers');
     expect(html('title')).not.toContain('aria-hidden="true"');
   });
-  it('should leave titles visible in overview-only mode while protecting ratings', () => {
+  it('should leave titles visible in overview-only mode', () => {
     viewer.mode = 'hide_overviews';
     expect(html('title')).not.toContain('Click to reveal spoilers');
     expect(html('overview')).toContain('Click to reveal spoilers');
-    expect(html('rating')).toContain('Click to reveal spoilers');
   });
   it('should show anonymous content regardless of leftover preferences', () => {
     viewer.signedIn = false;

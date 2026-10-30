@@ -1,9 +1,12 @@
 # From trakt-web. Exact pins, trustedDependencies drift, frozen install, provenance, dependency review.
 name: VIP Bouncer aka Supply Chain
 
-# Checks run locally by default; this workflow is manual.
 on:
-  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches: [main]
+  push:
+    branches: [main]
 
 permissions:
   contents: read
@@ -68,14 +71,17 @@ jobs:
         run: |
           set -euo pipefail
           git fetch origin "${{ github.event.pull_request.base.ref }}" --depth=1
-          # A base branch without a root package.json (the Bun switch) counts as an empty allowlist.
-          BEFORE=$( (git show "origin/${{ github.event.pull_request.base.ref }}":package.json 2>/dev/null || echo '{}') | jq '.trustedDependencies // [] | length')
-          AFTER=$(jq '.trustedDependencies // [] | length' ../../package.json)
-          if [ "$AFTER" -gt "$BEFORE" ]; then
+          # Any entry that isn't on the base's list needs review, not just a longer list. A non-array value counts as a
+          # change too, and a base without a root package.json counts as an empty list.
+          SCRIPTS='[(.trustedDependencies // []) | if type == "array" then .[] | tostring else "non-array: " + tojson end]'
+          BEFORE=$( (git show "origin/${{ github.event.pull_request.base.ref }}":package.json 2>/dev/null || echo '{}') | jq -c "$SCRIPTS")
+          AFTER=$(jq -c "$SCRIPTS" ../../package.json)
+          ADDED=$(jq -rn --argjson a "$AFTER" --argjson b "$BEFORE" '$a - $b | join(", ")')
+          if [ -n "$ADDED" ]; then
             if gh pr view "$PR_NUMBER" --repo trakt/trakt-og --json labels -q '.labels[].name' | grep -qx 'allowlist-change'; then
-              echo "trustedDependencies grew from $BEFORE to $AFTER - label present, allowed."
+              echo "trustedDependencies gained $ADDED - label present, allowed."
             else
-              echo "::error::trustedDependencies grew from $BEFORE to $AFTER without 'allowlist-change' label."
+              echo "::error::trustedDependencies gained $ADDED without the 'allowlist-change' label."
               echo "Add the 'allowlist-change' label after manual review of every new entry."
               exit 1
             fi

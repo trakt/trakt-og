@@ -62,7 +62,7 @@ A new app is a Standard app. The setup below is ready for one, and doesn't need 
 | Variable           | Where                              | Needed                      | What it does                                                                                                                                                                                                                                        |
 | ------------------ | ---------------------------------- | --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `TRAKT_CLIENT_ID`  | `projects/client/.env.development` | Yes                         | Your Trakt app's client ID. It's inlined into the bundle at build time, like trakt-web. A shell export overrides the file.                                                                                                                          |
-| `TRAKT_CLIENT_ID`  | `projects/client/.env.production`  | For local production builds | The og.trakt.tv app's ID, used by `client:build` and the manual `client:deploy`.                                                                                                                                                                    |
+| `TRAKT_CLIENT_ID`  | `projects/client/.env.production`  | For local production builds | The og.trakt.tv app's ID, used by `client:build`.                                                                                                                                                                                                   |
 | `PUBLIC_TRAKT_API` | Shell or `.env.development`        | Set by the example          | `standard`, the example's, talks to `https://api.trakt.tv`, for Standard apps. `production`, the default when unset and og.trakt.tv's, talks to `https://apiz.trakt.tv`, for Premium apps. `local` talks to a local API at `http://localhost:8787`. |
 | `KLIPY_API_KEY`    | `projects/client/.dev.vars`        | No                          | Turns on the GIF picker in comment composers.                                                                                                                                                                                                       |
 | `GITHUB_TOKEN`     | `projects/client/.dev.vars`        | No                          | A read-only GitHub token for the about page's GitHub reads, for the higher rate limit.                                                                                                                                                              |
@@ -97,12 +97,10 @@ Run these from the repository root.
 | `bun run client:test`            | Runs the tests.                                                              |
 | `bun run client:build`           | Builds for production.                                                       |
 | `bun run client:ci`              | Formatting, lint, types, tests and the production build: everything CI runs. |
-| `bun run client:verify [pr]`     | CI plus the supply chain, commit and leak checks.                            |
-| `bun run client:land <pr>`       | Rebases, verifies and lands a PR, then closes its issues.                    |
 | `bun run client:seo-check [url]` | Checks what crawlers and link previews see, against the dev server or a URL. |
 
 To try the production build locally, run `bun run preview` in `projects/client/`. It builds, then serves the Cloudflare Worker with `wrangler dev`.
 
 ## Deploys
 
-Every merge to main deploys og.trakt.tv through GitHub Actions, built with the `TRAKT_CLIENT_ID` repo secret. PRs land through `bun run client:land <pr>`, never straight to main. `bun run client:deploy` is a manual redeploy of main for maintainers.
+Every merge to main deploys og.trakt.tv through GitHub Actions, built with the `TRAKT_CLIENT_ID` repo secret. Nothing goes straight to main: a ready PR runs the checks and rebase-merges automatically once they pass. To redeploy main, maintainers use "Run workflow" on the CI workflow from main.

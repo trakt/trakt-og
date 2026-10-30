@@ -5,7 +5,7 @@
 - Vitest. Specs are colocated next to their source as `*.spec.ts`.
 - Test pure functions and data mappers first: business logic and transformations.
 - Test behavior, not implementation. Verify what the code does, not how.
-- Mock HTTP with MSW once API calls exist. Never hit apiz from a test.
+- Mock HTTP with MSW. Never hit apiz from a test.
 - Run one file while iterating: `bun run test src/lib/foo.spec.ts`. Open a draft PR early, run `bun run ci` while working, and pass it before landing.
 
 ## Describe / It conventions
@@ -17,4 +17,4 @@
 
 ## Visual checks
 
-- Compare pages and components against visual references with screenshots at 1440px. See `clone-the-ui.md`.
+- Compare pages and components against the OG page, or the mock for a feature OG never had, with screenshots at 1440px.

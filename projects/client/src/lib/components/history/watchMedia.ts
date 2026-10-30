@@ -5,6 +5,8 @@ import type { HistoryPlay } from './HistoryPlay.ts';
 import type { WatchTarget } from './WatchTarget.ts';
 import { GENERIC_ERROR } from '../../utils/genericError.ts';
 import { UNKNOWN_DATE } from '../../utils/unknownDate.ts';
+import { countLabel } from '../../utils/countLabel.ts';
+import { backToBack } from './backToBack.ts';
 
 type Params = {
   target: WatchTarget;
@@ -19,6 +21,8 @@ type Params = {
   notify: { success: (message: string) => void; error: (message: string) => void };
   /** Asks before marking more than one episode of a show or season watched. Resolves whether to go ahead. */
   confirm?: (count: number) => Promise<boolean>;
+  /** An episode's "Up to here": the earlier unwatched episodes and this one, oldest first, added in one request. */
+  upTo?: () => Promise<readonly WatchEpisode[]>;
   now?: () => Date;
 };
 
@@ -83,7 +87,7 @@ export async function watchMedia(params: Params): Promise<boolean> {
     const play = typeof params.play === 'function' ? await params.play() : params.play;
     const episodes =
       target.type === 'episode'
-        ? await episodeContext(params)
+        ? await (params.upTo?.() ?? episodeContext(params))
         : target.type === 'movie' || (remove && !only)
           ? []
           : (await params.episodes()).filter((episode) =>
@@ -91,6 +95,12 @@ export async function watchMedia(params: Params): Promise<boolean> {
             );
     if (!remove && target.type !== 'movie' && episodes.length === 0) {
       notify.error('Doh! No aired episodes were found to watch.');
+      return false;
+    }
+    if (params.upTo && episodes.length > BULK_WATCH_LIMIT) {
+      notify.error(
+        `That's ${episodes.length.toLocaleString('en-US')} episodes. Mark them watched one season at a time.`,
+      );
       return false;
     }
     if (!remove && (target.type === 'show' || target.type === 'season') && episodes.length > 1) {
@@ -108,6 +118,11 @@ export async function watchMedia(params: Params): Promise<boolean> {
         : watchedAt && !['now', 'released'].includes(watchedAt)
           ? watchedAt
           : now().toISOString();
+    // One sitting: "Just finished" or a picked time ends with this episode, the earlier ones before it.
+    const stacked =
+      params.upTo && watchedAt !== null && !['released', 'unknown'].includes(watchedAt)
+        ? backToBack({ count: episodes.length, end: at, runtime: target.runtime })
+        : undefined;
     rollback =
       target.type === 'movie'
         ? overlay.patch(
@@ -139,7 +154,7 @@ export async function watchMedia(params: Params): Promise<boolean> {
                 after.set(target.season.show, seasons);
                 return after;
               }
-              for (const episode of episodes) {
+              for (const [index, episode] of episodes.entries()) {
                 const seasons = new Map(after.get(episode.show));
                 const values = new Map(seasons.get(episode.season));
                 if (remove && play) {
@@ -147,7 +162,7 @@ export async function watchMedia(params: Params): Promise<boolean> {
                   if (dates.length > 0) values.set(episode.id, dates);
                   else values.delete(episode.id);
                 } else if (remove) values.delete(episode.id);
-                else values.set(episode.id, [at, ...(values.get(episode.id) ?? [])]);
+                else values.set(episode.id, [stacked?.at(index) ?? at, ...(values.get(episode.id) ?? [])]);
                 seasons.set(episode.season, values);
                 after.set(episode.show, seasons);
               }
@@ -161,9 +176,9 @@ export async function watchMedia(params: Params): Promise<boolean> {
         : target.type === 'movie' || (remove && !only)
           ? { [`${target.type}s`]: [{ ids: { trakt: target.id }, ...(remove ? {} : { watched_at: watchedAt }) }] }
           : {
-              episodes: episodes.map(({ id }) => ({
+              episodes: episodes.map(({ id }, index) => ({
                 ids: { trakt: id },
-                ...(remove ? {} : { watched_at: watchedAt }),
+                ...(remove ? {} : { watched_at: stacked?.at(index) ?? watchedAt }),
               })),
             };
     const response = await request(`/sync/history${remove ? '/remove' : ''}`, items);
@@ -179,7 +194,9 @@ export async function watchMedia(params: Params): Promise<boolean> {
           ? play
             ? `You removed this play of ${target.title}.`
             : `You removed all plays of ${target.title}.`
-          : `You watched ${target.title}.`),
+          : params.upTo
+            ? `You watched ${countLabel(episodes.length, 'episode')} up to ${target.title}.`
+            : `You watched ${target.title}.`),
     );
     return true;
   } catch (error) {

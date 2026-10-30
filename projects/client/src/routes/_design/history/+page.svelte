@@ -9,7 +9,7 @@ import { quickIconFill } from '$lib/components/media/quickIconFill';
 import Specimen from '$lib/design/Specimen.svelte';
 import Variant from '$lib/design/Variant.svelte';
 import { overlay } from '$lib/overlay/overlay';
-import { breakingBad, noWayHome, pilot, seasonOne } from '../summary/fixtures.ts';
+import { breakingBad, noWayHome, pilot, seasonOne, seasonOneEpisodes } from '../summary/fixtures.ts';
 
 const dates = $derived(page.data.datePreferences);
 const movie = { type: 'movie', id: noWayHome.id, title: noWayHome.fullTitle, runtime: noWayHome.runtime } as const;
@@ -28,6 +28,12 @@ const season = {
   airedEpisodes: seasonOne.airedEpisodes,
 } as const;
 const episode = { type: 'episode', id: pilot.id, title: pilot.fullTitle, season: pilot.season } as const;
+const cancerMan = seasonOneEpisodes[3];
+// The pilot watched, so "Up to here" adds 1x02 to 1x04 and skips one.
+const upTo = {
+  episodes: [2, 3, 4].map((number) => ({ season: 1, number })),
+  skipped: 1,
+};
 </script>
 
 {#snippet historyCard(subtitle: string)}
@@ -57,7 +63,7 @@ const episode = { type: 'episode', id: pilot.id, title: pilot.fullTitle, season:
 {/snippet}
 
 <Specimen title="Summary buttons" row
-  note="The history button in a summary's action stack, with the viewer's own plays. Add a play to see its date, a show's episode bar and the ••• menu.">
+  note="The history button in a summary's action stack, with the viewer's own plays. Add a play to see its date, a show's episode bar and the ••• menu. An episode with unwatched ones before it gets an “Include N unwatched episodes before it” checkbox above the dates; ticked, it adds them back to back in one go.">
   <Variant label="Movie">
     <div class="stack">
       <MediaWatch target={{ ...movie, released: true }} variant="summary" />
@@ -68,6 +74,14 @@ const episode = { type: 'episode', id: pilot.id, title: pilot.fullTitle, season:
       <MediaWatch target={{ ...show, released: true }} variant="summary" />
     </div>
   </Variant>
+  {#if cancerMan}
+    <Variant label="Episode, up to here">
+      <div class="stack">
+        <MediaWatch target={{ type: 'episode', id: cancerMan.id, title: `${breakingBad.title} ${cancerMan.number}`,
+          season: cancerMan.season, runtime: pilot.runtime, released: true }} variant="summary" sampleUpTo={upTo} />
+      </div>
+    </Variant>
+  {/if}
 </Specimen>
 
 <Specimen title="Poster icons"

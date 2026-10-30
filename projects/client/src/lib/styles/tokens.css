@@ -1091,6 +1091,7 @@
   --color-dialog-art-alert-bg: rgb(240 173 78 / 0.1);
   --color-dialog-art-alert-text: light-dark(#8a5a00, #ffd27a);
   --dialog-art-alert-padding: 10px 12px;
+  --font-size-dialog-notice: 13px; /* a step over small, so a warning reads at a glance */
   --color-dialog-art-danger-border: rgb(237 28 36 / 0.45); /* --brand-primary */
   --color-dialog-art-danger-bg: rgb(237 28 36 / 0.1);
   --color-dialog-art-danger-text: light-dark(#a94442, #ffb3b5);
@@ -1188,6 +1189,7 @@
   --color-menu-header: light-dark(#777, #8c8c8c);
   --color-menu-tag-bg: light-dark(#e5e5e5, #444); /* a row's gray count or code, like the advanced filters' country */
   --color-menu-tag: light-dark(#666, #aaa);
+  --space-menu-tag: 1px 4px;
   --shadow-menu: 0 12px 32px light-dark(rgb(0 0 0 / 0.14), rgb(0 0 0 / 0.55));
 
   /* The shared prompt (`PromptPopover`): the menu's surface under a title bar tinted in the action's color */

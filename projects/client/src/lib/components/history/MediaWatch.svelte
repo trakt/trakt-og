@@ -16,6 +16,9 @@ import circleMinus from '$lib/icons/light/circle-minus.svg?raw';
 import historyIcon from '$lib/icons/light/clock-rotate-left.svg?raw';
 import WatchPopover from '$lib/components/history/WatchPopover.svelte';
 import { loadWatchEpisodes } from '$lib/components/history/loadWatchEpisodes';
+import { loadUpTo, upToEpisodes } from '$lib/components/history/loadUpTo';
+import type { UpTo } from '$lib/components/history/episodesUpTo';
+import { episodeNumber } from '$lib/components/media/episodeTags';
 import { fetchLatestPlay } from '$lib/components/history/fetchLatestPlay';
 import { watchMedia } from '$lib/components/history/watchMedia';
 import { watchAction } from '$lib/components/history/watchAction';
@@ -41,10 +44,13 @@ interface Props {
   play?: HistoryPlay;
   onremove?: (play?: HistoryPlay) => void;
   onsave?: (watchedAt: string | null) => void;
+  /** Sample data for the design demo: what "Up to here" adds, in place of the viewer's progress. */
+  sampleUpTo?: UpTo;
 }
-const { target, variant = 'card', small = false, play, onremove, onsave }: Props = $props();
+const { target, variant = 'card', small = false, play, onremove, onsave, sampleUpTo }: Props = $props();
 let busy = $state(false);
 let prompt = $state<WatchPopover>();
+let upTo = $state<UpTo>();
 // A grouped calendar card counts just its own episodes.
 const viewerState = $derived(
   target.onlyEpisodeIds && target.season
@@ -126,11 +132,24 @@ const removePlay = $derived(
     ? () => fetchLatestPlay({ target: { type, id }, request })
     : undefined,
 );
+const upToSummary = $derived.by(() => {
+  const first = upTo?.episodes.at(0);
+  const last = upTo?.episodes.at(-1);
+  if (!upTo || !first || !last) return undefined;
+  return {
+    count: upTo.episodes.length,
+    range: `${episodeNumber(first, undefined)} to ${episodeNumber(last, undefined)}`,
+    skipped: upTo.skipped,
+  };
+});
 async function watch(
   watchedAt: string | null,
   force: boolean,
   onlyPlay?: HistoryPlay | (() => Promise<HistoryPlay>),
+  many = false,
 ) {
+  const show = target.season?.show;
+  const episodes = upTo?.episodes;
   if (busy) return;
   busy = true;
   try {
@@ -144,6 +163,7 @@ async function watch(
       notify: toast,
       episodes: () => loadWatchEpisodes({ target, fetch: viewerFetch() }),
       confirm: (count) => prompt?.confirm({ count, title: target.title }) ?? Promise.resolve(false),
+      upTo: many && show !== undefined && episodes ? () => upToEpisodes({ show, episodes }) : undefined,
     });
     if (saved && watchedAt === null) onremove?.(onlyPlay ? play : undefined);
     if (saved) onsave?.(watchedAt);
@@ -157,12 +177,24 @@ async function remaining() {
   await watch(defaultAt ?? 'now', false);
   return true;
 }
+// Asked fresh each time the prompt opens, so a write since the last open counts. The switch shows once it's in.
+function checkUpTo() {
+  upTo = sampleUpTo;
+  if (sampleUpTo) return;
+  const episode = target.season?.episode;
+  if (target.type !== 'episode' || onremove || episode === undefined || !target.season) return;
+  const { show, number: season } = target.season;
+  loadUpTo({ episode: { show, season, number: episode }, fetch: viewerFetch() })
+    .then((found) => (upTo = found))
+    .catch(() => (upTo = undefined));
+}
 async function open(force: boolean): Promise<'date' | 'remove' | 'partial' | null> {
   if (!(await userManager().getUser())?.access_token) {
     await login();
     return null;
   }
   const action = watchAction({ fill: onremove ? 1 : fill.watched, force, defaultAt });
+  if (action === 'date' || action === 'remove') checkUpTo();
   if (action === 'date' || action === 'remove' || action === 'partial') return action;
   await watch(action, false);
   return null;
@@ -180,7 +212,8 @@ async function open(force: boolean): Promise<'date' | 'remove' | 'partial' | nul
   summary={{ icon: viewerState.rewatching ? lightBackward : check, text: percent ? rewatching ? 'rewatched' : 'watched' : label, percent, detail: started ? detail : undefined }}
   more={hasHistory || dropped ? more : undefined}
   onremovePlay={removePlay ? () => void watch(null, false, removePlay) : undefined}
-  onopen={open} onwatch={watch} onremaining={remaining} {oncheckin}
+  onopen={open} onwatch={(at, force, many) => watch(at, force, undefined, many)} upTo={upToSummary}
+  onremaining={remaining} {oncheckin}
   oninvalid={() => toast.error('Invalid date format, please use the date picker.')}>
   {#snippet trigger()}
     {#if viewerState.rewatching}<Icon svg={backward} />{:else}<span class="trakt-glyph"><Icon svg={checkThick} /></span>{/if}

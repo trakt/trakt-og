@@ -1,6 +1,6 @@
 <!--
   `/users/:id/library(/:type)(/:sort_by/:sort_how)` under the profile frame: the subnav
-  with the type dropdown, date range, counter, sort and filter icons, the description band, then the owned items as
+  with the type dropdown, date range, counter, sort and filter icons, then the owned items as
   poster cards, under day dividers on Added Date. The owner's cards carry the metadata overlay.
 -->
 <script lang="ts">
@@ -48,7 +48,6 @@ function remove(item: LibraryCard) {
 }
 const metaType = $derived(data.type === 'all' ? 'show and movie' : data.type.replace(/s$/, ''));
 const title = $derived(`${data.profile.displayName}'s ${metaType} library`);
-const owner = $derived(data.isSelf ? 'Your' : `${data.profile.firstName}'s`);
 const noun = $derived(data.type === 'all' ? 'item' : data.type.replace(/s$/, ''));
 const base = $derived(`/users/${data.profile.slug}/library`);
 const screenshots = $derived(data.type === 'episodes');
@@ -169,12 +168,6 @@ const flipped = $derived(data.sort.how === 'desc');
   {/snippet}
 </SectionToolbar>
 
-<section class="description" aria-label="About this library">
-  <Container>
-    <p>{owner} {metaType} library — <em>All owned items including Blu-rays, DVDs, and digital downloads.</em></p>
-  </Container>
-</section>
-
 <section class="library" aria-label={title}>
   <Container>
     {#if cards.length > 0}
@@ -209,16 +202,6 @@ const flipped = $derived(data.sort.how === 'desc');
 
 .icons {
   gap: var(--history-icon-gap);
-}
-
-.description {
-  background-color: var(--color-subnav-text-bg);
-  font-size: var(--font-size-subnav-text);
-
-  & p {
-    margin: 0;
-    padding-block: var(--subnav-text-padding);
-  }
 }
 
 .library {

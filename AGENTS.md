@@ -27,8 +27,8 @@ Run these from `projects/client/`:
 
 ## Hard rules
 
-- Never push to main. PRs merge through GitHub, which rebase-merges a ready PR automatically once its checks pass.
-  Keep a PR as a draft until the work is done and reviewed: marking it ready ships it.
+- Agents open draft PRs and get them reviewed and green; Sean or Justin marks them ready and merges. Agents never merge,
+  mark PRs ready, or push to main.
 - Use the latest stable dependencies, pinned to exact versions. Review and validate upgrades.
 - Desktop first. Match the classic layout at 1440px; smaller screens down to tablets must be usable. Phones get the mobile splash instead.
 - Pages OG had stay faithful to OG. A feature OG never had builds on OG's look with existing tokens and components,
@@ -44,7 +44,7 @@ Run these from `projects/client/`:
 - The board is [trakt/trakt-og's issues](https://github.com/trakt/trakt-og/issues). Use GitHub's standard labels (`bug`, `enhancement`, `documentation`, etc.) plus `allowlist-change`.
 - Assignment is ownership: take the issue you are handed with `gh issue edit N --repo trakt/trakt-og --add-assignee @me`. Without a specific issue, take the oldest open issue with no assignee. Never pick an assigned issue. One agent, one issue; when agents share a GitHub login, the person or orchestrator starting them hands each its own issue.
 - Work in a worktree off `origin/main`. Open a draft PR early with `Closes #N` in its body. Keep PR titles, bodies, commits and comments public-safe; never include private implementation details or local paths.
-- Build per `AGENTS.md` and `.agents/rules/`, run `bun run client:ci` while working, then mark the PR ready once it's reviewed. GitHub runs the checks (CI, commits, supply chain and the leak check), rebase-merges it, and `Closes #N` closes the issue on merge. For a PR without an issue (a process change, a revert), use a `No issue: <why>` line in the PR body.
+- Build per `AGENTS.md` and `.agents/rules/`, run `bun run client:ci` while working, then get the PR reviewed and its checks green (CI, commits, supply chain and the leak check). Sean or Justin merges it, and `Closes #N` closes the issue on merge. For a PR without an issue (a process change, a revert), use a `No issue: <why>` line in the PR body.
 - For a bug, reproduce it first, write a failing spec, fix the root cause and keep the spec.
 - Split an issue that mixes a bug and a feature into one issue each.
 - A bad deploy is fixed by a revert PR, which merges like any other.

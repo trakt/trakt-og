@@ -37,7 +37,7 @@ describe('util: pullRequestBody', () => {
     expect(body).toContain('# Reverted\n\n- `msw` 2.15.0 → 3.0.0');
     expect(body).toContain('- `typescript` stays on 6.0.3 (7.0.2 is out): svelte-check needs 6');
     expect(body).not.toContain('# Major');
-    expect(body).toContain('Mark the PR ready after review.');
+    expect(body).toContain('A human merges it after review.');
     expect(body).toContain('No issue: dependency maintenance.');
   });
 

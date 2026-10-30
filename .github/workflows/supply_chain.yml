@@ -3,7 +3,6 @@ name: VIP Bouncer aka Supply Chain
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
     branches: [main]
   push:
     branches: [main]
@@ -14,7 +13,6 @@ permissions:
 
 jobs:
   hardened-audit:
-    if: github.event.pull_request.draft != true
     name: Velvet Rope aka Hardened Audit
     runs-on: ubuntu-latest
     defaults:
@@ -105,7 +103,7 @@ jobs:
 
   dependency-review:
     # Dependency review runs when this workflow handles a pull request.
-    if: github.event_name == 'pull_request' && github.event.pull_request.draft != true && !github.event.repository.private
+    if: github.event_name == 'pull_request' && !github.event.repository.private
     name: Guest List aka Dependency Review
     runs-on: ubuntu-latest
     defaults:

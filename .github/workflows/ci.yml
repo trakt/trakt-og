@@ -1,12 +1,11 @@
 name: Scrobble aka CI
 
-# A ready PR runs the checks and rebase-merges once they pass. Every push to main runs CI again and deploys
-# og.trakt.tv, like trakt-web. "Run workflow" from main redeploys it.
+# Every PR push against main runs the checks, drafts included; Sean or Justin merges. Every push to main, including a
+# merge from the GitHub UI, runs CI again and deploys og.trakt.tv, like trakt-web. "Run workflow" from main redeploys it.
 on:
   push:
     branches: [main]
   pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
     branches: [main]
   workflow_dispatch:
 
@@ -16,7 +15,6 @@ permissions:
 
 jobs:
   ci:
-    if: github.event.pull_request.draft != true
     name: Totally Ninja aka CI
     runs-on: ubuntu-latest
     defaults:
@@ -52,7 +50,7 @@ jobs:
 
   commits:
     name: Check-in History aka Commits
-    if: github.event_name == 'pull_request' && github.event.pull_request.draft != true
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -67,27 +65,6 @@ jobs:
       - name: No Weak Sauce aka Forbid Fixup Commits
         run: |
           if git log --format=%s ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }} | grep -E '^(fixup|squash|amend)! '; then
-            echo "::error::Fold fixup commits in before marking the PR ready."
+            echo "::error::Fold fixup commits in before merging."
             exit 1
           fi
-
-  merge:
-    # Forks can't read the App secrets; a maintainer merges those by hand. The App token matters: a merge made with
-    # GITHUB_TOKEN doesn't trigger the push to main, so nothing would deploy. Waiting on CI and Commits keeps a broken PR
-    # from merging even before branch protection requires them; branch protection adds Supply Chain.
-    if: github.event_name == 'pull_request' && github.event.pull_request.draft != true && github.event.pull_request.head.repo.full_name == github.repository
-    needs: [ci, commits]
-    name: Binge Mode aka Enable Auto-merge
-    runs-on: ubuntu-latest
-    steps:
-      - name: Borrowing the Login aka GitHub App Token
-        uses: actions/create-github-app-token@v3
-        id: app-token
-        with:
-          app-id: ${{ secrets.GH_APP_ID }}
-          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
-      - name: Queue It Up aka Auto-merge
-        run: gh pr merge "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --rebase --auto
-        env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}

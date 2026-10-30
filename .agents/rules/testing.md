@@ -6,7 +6,7 @@
 - Test pure functions and data mappers first: business logic and transformations.
 - Test behavior, not implementation. Verify what the code does, not how.
 - Mock HTTP with MSW. Never hit apiz from a test.
-- Run one file while iterating: `bun run test src/lib/foo.spec.ts`. Open a draft PR early, run `bun run ci` while working, and pass it before marking the PR ready.
+- Run one file while iterating: `bun run test src/lib/foo.spec.ts`. Open a draft PR early, run `bun run ci` while working, and pass it before asking for review.
 
 ## Describe / It conventions
 

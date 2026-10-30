@@ -99,8 +99,8 @@ describe('root layout settings', () => {
       joinedAt: null,
       named: true,
     });
-    expect(data.datePreferences).toEqual({ order: 'ydm', hour24: true, timeZone: 'Asia/Tokyo', weekStartDay: 1 });
-    expect(formatDate('2026-09-29T23:30:00Z', { ...data.datePreferences, time: true })).toBe('2026 30 Sep 08:30');
+    expect(data.datePreferences).toEqual({ order: 'ydm', hour24: true, timeZone: 'UTC', weekStartDay: 1 });
+    expect(formatDate('2026-09-29T23:30:00Z', { ...data.datePreferences, time: true })).toBe('2026 29 Sep 23:30');
   });
 
   it('should preserve optional email and birthday when the API includes them', async () => {
@@ -109,6 +109,18 @@ describe('root layout settings', () => {
     const data = await layout();
     expect(data.settings?.user.email).toBe(user.email);
     expect(data.settings?.user.dob).toBe(user.dob);
+  });
+
+  it("should date in the browser's zone from its cookie, not the account's", async () => {
+    const data = await load({
+      fetch: globalThis.fetch,
+      locals: { token: 'fake-token', tokenExpired: false },
+      cookies: { get: (name: string) => (name === 'og-time-zone' ? 'America/Chicago' : undefined) },
+      request: request(),
+      route: { id: '/' },
+      untrack,
+    } as Parameters<typeof load>[0]);
+    expect(data.datePreferences.timeZone).toBe('America/Chicago');
   });
 
   it('should render defaults without fetching when logged out', async () => {

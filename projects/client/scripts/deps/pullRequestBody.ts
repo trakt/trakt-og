@@ -28,7 +28,6 @@ export function pullRequestBody(report: BumpReport): string {
           ({ key, current, held, reason }) => `- \`${key}\` stays on ${current} (${held} is out): ${reason}`,
         ),
       ),
-      'No issue: dependency maintenance.',
     ]
       .join('\n')
       .trimEnd() + '\n'

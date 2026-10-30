@@ -3,7 +3,7 @@
 - Pages use design system tokens (CSS custom properties) and existing components only.
 - A new color, spacing, radius, shadow or font size becomes a token first. No inline magic numbers.
 - A component a page needs that doesn't exist yet gets built as a design system component in the same PR, with its
-  demo (see Demos below) and its OG screenshot in the PR.
+  demo (see Demos below) and the OG screenshot, or the mock for a feature OG never had, in the PR.
 - Styles are component-scoped. No global class soup, and no utility framework.
 - Layout uses grid and flex, with container queries so a component adapts to where it's placed. Use logical properties
   and native CSS nesting.
@@ -33,7 +33,7 @@ design system's living reference, so they change in the same PR as the component
   itself (`$lib/design/guardWrites.ts`), so a signed-in viewer can click anything; don't add props to components just
   to stop their writes.
 - **Check it**: screenshot the demo at 1440px in both themes before opening the PR, and include it with the OG
-  screenshot.
+  screenshot, or the mock for a feature OG never had.
 
 ## Icons
 

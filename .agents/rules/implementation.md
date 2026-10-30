@@ -10,10 +10,9 @@
 
 ## When Establishing New Patterns
 
-- When you establish a new pattern that diverges from or extends existing conventions, note it so documentation can be
-  updated.
+- When a new pattern diverges from or extends existing conventions, including a refactor of shared logic, note it so
+  documentation can be updated.
 - If you find yourself writing a helper used in 2+ places, consider whether it belongs in `lib/utils/`.
-- If you refactor shared logic, document the new pattern.
 
 ## Shared Helpers
 
@@ -38,6 +37,8 @@ Reach for these before writing your own:
 - **Anything else is parsed with zod at the boundary** (the loader, or the browser call site): every `rawApiFetch` body, every route `@trakt/api` has no contract for (including all `/v3/*`), and every response whose shape differs from the contract. Use `import { z } from 'zod/v4'`, map the parsed data with a pure function, and never cast a body with `as T` or `as Promise<T>`. `src/lib/users/notes/noteRowsSchema.ts` is the reference.
 - og has exactly one zod, the one `@trakt/api` depends on. Never add another (see the FIXME in `noteRowsSchema.ts`).
 - If a contract is wrong, document the response mismatch and validate the fields this app needs at the boundary.
+
+## Naming
 
 - **PascalCase**: component names, interfaces, type aliases
 - **camelCase**: variables, functions, methods

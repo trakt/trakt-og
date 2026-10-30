@@ -1,9 +1,9 @@
 import { youtubeId } from '../../dialog/youtubeId.ts';
+import { TRAKT_HOSTS } from './ogPath.ts';
 
-// The hosts OG turned into links. Everything else stays text.
+// The hosts OG turned into links, plus Trakt's newer sites. Everything else stays text.
 const SAFE_HOSTS: ReadonlySet<string> = new Set([
-  'trakt.tv',
-  'www.trakt.tv',
+  ...TRAKT_HOSTS,
   'support.trakt.tv',
   'blog.trakt.tv',
   'forums.trakt.tv',

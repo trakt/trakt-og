@@ -32,7 +32,7 @@ Run these from `projects/client/`:
 - Use the latest stable dependencies, pinned to exact versions. Review and validate upgrades.
 - Desktop first. Match the classic layout at 1440px; smaller screens down to tablets must be usable. Phones get the mobile splash instead.
 - Pages OG had stay faithful to OG. A feature OG never had builds on OG's look with existing tokens and components,
-  from a mock: ask for one, and dev.design makes it when the work is delegated.
+  from a mock: ask for one, and a designer makes it when the work is delegated.
 - Follow `.agents/rules/design-system.md` and the matching rules in `.agents/rules/` before changing code.
 - Adding, changing or removing a shared component updates its demo at `/_design` in the same PR (`design-system.md`, Demos).
 - Follow the accessibility and testing rules in `.agents/rules/a11y.md` and `.agents/rules/testing.md`.

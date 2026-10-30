@@ -16,8 +16,8 @@ export function pullRequestBody(report: BumpReport): string {
       'Dependency bump from `bun run bump`. Every candidate was installed and verified with `bun run ci`. Candidates that broke were bisected out and stay on their current pin; file each proposed adoption as a trakt/trakt-og issue.',
       '',
       hasMajors
-        ? 'This run includes major bumps. Keep the PR as a draft until a human has reviewed them, then ship with `bun run client:land <pr>`.'
-        : 'Minor and patch bumps only. Ship with `bun run client:land <pr>` after review.',
+        ? 'This run includes major bumps. Keep the PR as a draft until a human has reviewed them, then mark it ready.'
+        : 'Minor and patch bumps only. Mark the PR ready after review.',
       '',
       ...section('Minor and patch', report.minor.adopted.map(upgradeLine)),
       ...section('Major', report.major.adopted.map(upgradeLine)),

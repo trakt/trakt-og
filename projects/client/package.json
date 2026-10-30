@@ -19,10 +19,7 @@
     "seo:check": "bun scripts/seo-check.ts",
     "check:scripts": "svelte-kit sync && tsc -p scripts/tsconfig.json",
     "ci": "biome format . && bun run lint && bun run check && bun run check:scripts && bun run test && bun run build",
-    "bump": "bun scripts/bump.ts",
-    "verify": "bash scripts/verify.sh",
-    "land": "bash scripts/land.sh",
-    "deploy": "bash scripts/deploy.sh"
+    "bump": "bun scripts/bump.ts"
   },
   "devDependencies": {
     "@commitlint/cli": "21.2.3",

@@ -158,6 +158,30 @@ const featured = $derived(shows.at(0));
   </PosterGrid>
 </Specimen>
 
+<Specimen title="Narrow column"
+  note="A show page's seasons in a 540px column, as a small tablet lays out its main column: three a row, not two.">
+  <div class="narrow-column">
+    <PosterGrid columns={5} narrowColumns={3}>
+      {#each shows.slice(0, 5) as show (show.id)}
+        <PosterCard href={show.href} title={show.title} image={show.poster}
+          subtitles={show.year ? [String(show.year)] : []} />
+      {/each}
+    </PosterGrid>
+  </div>
+</Specimen>
+
+<Specimen title="One row on a tablet"
+  note="A person's Known For in the same 540px column: the five cards keep to one row of three, the rest hidden.">
+  <div class="narrow-column">
+    <PosterGrid columns={5} narrowColumns={3} oneRow>
+      {#each shows.slice(0, 5) as show (show.id)}
+        <PosterCard href={show.href} title={show.title} image={show.poster}
+          subtitles={show.year ? [String(show.year)] : []} />
+      {/each}
+    </PosterGrid>
+  </div>
+</Specimen>
+
 <Specimen title="Screenshot cards" note="Four a row for episodes, as history and ratings show them.">
   <PosterGrid columns={4}>
     {#each seasonOneEpisodes as episode (episode.id)}
@@ -306,3 +330,9 @@ const featured = $derived(shows.at(0));
     commentCount={3}
   />
 </Specimen>
+
+<style>
+.narrow-column {
+  max-inline-size: 540px;
+}
+</style>

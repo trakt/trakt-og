@@ -192,6 +192,8 @@ const metaTags = (row: EpisodeRow): readonly TagPill[] => [
   }
   display: grid;
   grid-template-columns: calc((100% + var(--gutter)) * 4 / 12 - var(--gutter)) minmax(0, 1fr);
+  /* The card keeps its own height when a long overview makes the row taller. */
+  align-items: start;
   column-gap: var(--gutter);
   margin-block-start: var(--gutter);
 
@@ -250,6 +252,27 @@ h3 {
 /* Level with the card's foot; a longer, opened overview pushes it down. */
 .stats {
   margin-block-start: auto;
+}
+
+/* On a tablet the counts drop their button outlines for the toolbar stats' plain look, so they keep to one line. */
+@media (width < 992px) {
+  .info .stats {
+    --item-stats-gap: var(--item-stats-flat-gap);
+
+    & :global(.count) {
+      gap: var(--item-stats-flat-icon-gap);
+      block-size: auto;
+      padding-inline: 0;
+      border-color: transparent;
+      background: none;
+    }
+
+    & :global(a.count:is(:hover, :focus-visible)) {
+      border-color: transparent;
+      background: none;
+      color: var(--brand-primary);
+    }
+  }
 }
 
 /* A few lines, under a short fade in the page's color. */

@@ -269,13 +269,13 @@ function yearLine(credit: PersonCredit) {
   icons={cardIcons(credit, state)} />
 {/snippet}
 
-{#snippet credits(list: readonly PersonCredit[], columns: number)}
+{#snippet credits(list: readonly PersonCredit[], columns: number, narrowColumns: number)}
   {#if view === 'list'}
     <div class="rows">
       {#each list as credit (`${credit.type}-${credit.id}`)}{@render row(credit)}{/each}
     </div>
   {:else}
-    <PosterGrid {columns}>
+    <PosterGrid {columns} {narrowColumns}>
       {#each list as credit (`${credit.type}-${credit.id}`)}{@render card(credit, true)}{/each}
     </PosterGrid>
   {/if}
@@ -380,7 +380,7 @@ function yearLine(credit: PersonCredit) {
   {#if person.knownFor.length > 0}
     <section class="known-for" id="known-for" aria-labelledby="known-for-heading">
       <h2 id="known-for-heading"><strong>Known</strong> For</h2>
-      <PosterGrid columns={5}>
+      <PosterGrid columns={5} narrowColumns={3} oneRow>
         {#each person.knownFor as credit (`${credit.type}-${credit.id}`)}{@render card(credit, false)}{/each}
       </PosterGrid>
     </section>
@@ -454,7 +454,7 @@ function yearLine(credit: PersonCredit) {
             <span class="count">{countLabel(group.credits.length, 'credit')}</span>
           </p>
           {#if view === 'list'}
-            {@render credits(group.credits, 4)}
+            {@render credits(group.credits, 4, 2)}
           {:else}
             <div class="year-posters">
               {#each group.credits as credit (`${credit.type}-${credit.id}`)}{@render card(credit, true)}{/each}
@@ -463,7 +463,7 @@ function yearLine(credit: PersonCredit) {
         </section>
       {/each}
     {:else}
-      {@render credits(shown, 5)}
+      {@render credits(shown, 5, 3)}
     {/if}
   </section>
 </SummaryFrame>
@@ -477,16 +477,17 @@ function yearLine(credit: PersonCredit) {
   margin-block-start: var(--gutter);
 }
 
-/* The grid's columns by width, as PosterGrid drops them: the year takes one poster's slot. */
+/* The grid's columns by width, as PosterGrid drops them: the year takes one poster's slot. Set on the years, since
+   a container query can't restyle the container it measures. */
 @container (width < 940px) {
-  .credits {
+  .year {
     --year-slots: 4;
     --year-posters: 3;
   }
 }
 
 @container (width < 720px) {
-  .credits {
+  .year {
     --year-slots: 3;
     --year-posters: 2;
   }

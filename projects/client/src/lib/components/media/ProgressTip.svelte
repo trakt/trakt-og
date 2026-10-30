@@ -1,7 +1,7 @@
 <!--
   A show's progress tooltip, in the summary watched button's words: "3% watched" over "1 / 32 eps — 1 play (49m)", with
-  the summary's progress bar in the tooltip's footer. A rewatch shows its own run over the whole show's, under a
-  divider, and a bar for each. Leave the bar off (`bar={false}`) when the tooltip is for a progress bar already.
+  the summary's progress bar in the tooltip's footer. A rewatch shows its own run over the whole show's, each with its
+  bar in a footer band under it. Leave the bar off (`bar={false}`) when the tooltip is for a progress bar already.
   `library` colors the bar like the summary's library one, and `footer` adds to the footer under it (the library's
   format and audio).
     <Tooltip content={tip}>{#snippet tip()}<ProgressTip progress={fill.tips.watched} />{/snippet}</Tooltip>
@@ -21,7 +21,10 @@ interface Props {
 }
 
 const { progress, bar = true, library = false, footer }: Props = $props();
+const last = $derived(progress.at(-1));
 </script>
+
+{#snippet meter(percent: number)}<span class={['bar', { library }]} style:--percent="{percent}%"></span>{/snippet}
 
 <span class={['progress-tip', { barred: bar }]}>
   {#each progress as run (run.verb)}
@@ -30,13 +33,11 @@ const { progress, bar = true, library = false, footer }: Props = $props();
       <span class="detail">{watchedProgressDetail(run)} {#if run.plays !== undefined && run.minutes}<em
           >({formatRuntime(run.minutes)})</em>{/if}</span>
     </span>
+    {#if bar && run !== last}<TooltipFooter between>{@render meter(run.percent)}</TooltipFooter>{/if}
   {/each}
   {#if bar || footer}
     <TooltipFooter>
-      {#if bar}
-        {#each progress as run (run.verb)}<span class={['bar', { library }]} style:--percent="{run.percent}%"
-          ></span>{/each}
-      {/if}
+      {#if bar && last}{@render meter(last.percent)}{/if}
       {@render footer?.()}
     </TooltipFooter>
   {/if}
@@ -71,11 +72,12 @@ const { progress, bar = true, library = false, footer }: Props = $props();
   color: var(--color-tooltip-muted);
 }
 
-/* The summary watched button's bar: its height, corners and purple, on its dark track. The library's is green. */
+/* The summary watched button's purple on its dark track, shaped like the monthly stats tooltip's bar. The library's is
+   green. */
 .bar {
   --fill: var(--brand-tertiary);
-  block-size: var(--watch-progress-height);
-  border-radius: var(--radius-watch-progress);
+  block-size: var(--tooltip-progress-height);
+  border-radius: var(--tooltip-progress-height);
   background: linear-gradient(
     to right,
     var(--fill) var(--percent),

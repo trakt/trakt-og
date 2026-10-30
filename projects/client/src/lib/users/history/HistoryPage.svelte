@@ -1,13 +1,14 @@
 <!--
-  `/users/:id/history(/:type)` under the profile frame: the subnav with the type, genre
+  `/users/:id/history(/:type)(/:sort_by/:sort_how)` under the profile frame: the subnav with the type, genre
   and date filters, the counter, sort and filter icons, then every play as a poster card under day dividers, or in
-  one grid with the dividers off.
+  one grid with the dividers off. Shows, and Movies on any sort but Watched Date, chart one card a title instead.
 -->
 <script lang="ts">
 import SeoHead from '$lib/seo/SeoHead.svelte';
 import type { HistoryPlay } from '$lib/components/history/HistoryPlay';
 import { removeHistoryCards } from '$lib/users/history/removeHistoryCards';
 import { SvelteURLSearchParams } from 'svelte/reactivity';
+import { goto } from '$app/navigation';
 import { page } from '$app/state';
 import Container from '$lib/components/container/Container.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
@@ -32,7 +33,16 @@ import type { ViewerSettings } from '$lib/settings/ViewerSettings';
 import type { ProfileUser } from '$lib/users/ProfileUser';
 import { findAction } from '$lib/users/findAction';
 import { formatRuntime } from '$lib/utils/formatRuntime';
-import { genresFor, historyTypes } from './historyTypes.ts';
+import {
+  defaultHistorySort,
+  flippable,
+  type HistorySort,
+  historyPath,
+  historySortLabels,
+  historySorts,
+  validHistorySort,
+} from './historySort.ts';
+import { genresFor, historyTypes, isHistoryType } from './historyTypes.ts';
 import type { loadHistory } from './loadHistory.ts';
 import type { HistoryCard } from './toHistoryCard.ts';
 import { watchNowCountry } from '../../settings/watchNowCountry.ts';
@@ -65,16 +75,24 @@ const base = $derived(`/users/${data.profile.slug}/history`);
 const plural = (count: number, word: string) => `${word}${count === 1 ? '' : 's'}`;
 const filtered = $derived(Object.keys(data.filters).length > 0);
 
-// OG's `link_params`: the query string without the page, and without the genre when the type changes.
-function href(type: string, changes: Record<string, string | null>) {
+// OG's `history_user_path(type, sort_by, sort_how, link_params)`: the query string without the page, and without
+// the genre when the type changes. A sort the new type doesn't have falls back to Watched Date.
+function href(type: string, changes: Record<string, string | null>, sort: HistorySort = data.sort) {
   const query = new SvelteURLSearchParams(page.url.searchParams);
   query.delete('page');
   for (const [key, value] of Object.entries(changes)) {
     if (value === null) query.delete(key);
     else query.set(key, value);
   }
-  return `${base}${type === 'all' ? '' : `/${type}`}${query.size ? `?${query}` : ''}`;
+  const path = isHistoryType(type) ? historyPath(type, validHistorySort(type, sort.by) ? sort : defaultHistorySort) : '';
+  return `${base}${path}${query.size ? `?${query}` : ''}`;
 }
+
+// One item's plays run newest first only.
+const sorts = $derived(data.filters.item ? historySorts.all : historySorts[data.type]);
+const flipped = $derived(data.sort.how === 'desc');
+// OG only divides Watched Date by day.
+const dividing = $derived(data.sort.by === 'added');
 
 let dividers = $derived(data.dividers);
 let fadeHide = $derived<FadeHide>(data.fadeHide);
@@ -97,7 +115,7 @@ const country = $derived(watchNowCountry(data.settings));
   image={item.image}
   variant={item.variant}
   episodeBadge={item.episodeBadge}
-  subtitles={item.show ? [item.show, item.watchedDate] : [item.watchedDate]}
+  subtitles={item.subtitles ?? (item.show ? [item.show, item.watchedDate] : [item.watchedDate])}
   userRating={state.rating}
   icons={{
         fill,
@@ -105,8 +123,8 @@ const country = $derived(watchNowCountry(data.settings));
         ratingTarget: { type: item.type, id: item.id, title: item.title },
         watchTarget: { type: item.type, id: item.id, title: item.title, airedEpisodes: item.airedEpisodes, runtime,
           season: item.season },
-        historyPlay: data.isSelf && item.type !== 'show' ? { id: item.key, watchedAt: item.watchedAt } : undefined,
-        onWatchRemove: data.isSelf && item.type !== 'show' ? (play) => remove(item, play) : undefined,
+        historyPlay: data.isSelf && !data.charted ? { id: item.key, watchedAt: item.watchedAt } : undefined,
+        onWatchRemove: data.isSelf && !data.charted ? (play) => remove(item, play) : undefined,
         watchNow: 'play',
         listLabel: item.type === 'episode' ? 'Add to list' : 'Add to watchlist',
       }}
@@ -163,13 +181,22 @@ const country = $derived(watchNowCountry(data.settings));
   {#snippet summary()}
     <span class="sort">
       <Dropdown joined section="Sort">
-        {#snippet trigger()}Watched Date{/snippet}
-        <ul><li><a href={page.url.pathname + page.url.search} aria-current="page">Watched Date</a></li></ul>
+        {#snippet trigger()}{historySortLabels[data.sort.by]}{/snippet}
+        <ul>
+          {#each sorts as by (by)}
+            <li><a href={href(data.type, {}, { by, how: 'asc' })}
+              aria-current={data.sort.by === by ? 'page' : undefined}>{historySortLabels[by]}</a></li>
+          {/each}
+        </ul>
       </Dropdown>
-      <SortDirection joined descending disabled />
+      <!-- Every sort but Title runs newest, most or longest first; Watched Date can't flip. -->
+      <SortDirection joined descending={data.sort.by !== 'title'} disabled={!flippable(data.sort)} bind:flipped={
+        () => flipped,
+        (next) => goto(href(data.type, {}, { by: data.sort.by, how: next ? 'desc' : 'asc' }))
+      } />
     </span>
     <span class="icons">
-      <DividersToggle bind:shown={dividers} />
+      {#if dividing}<DividersToggle bind:shown={dividers} />{/if}
       <WatchNowFilter value={data.filters.watchnow} {country}
         favorites={data.settings?.browsing?.watchnow?.favorites ?? []} placeholder={data.type === 'all'} />
       <FadeHideMenu value={fadeHide} options={fadeOptions} cookie="history" hideOptions={[]}
@@ -182,7 +209,7 @@ const country = $derived(watchNowCountry(data.settings));
   <Container>
     {#if days.length > 0}
       {#if data.page.type === 'paginated'}<Pagination meta={data.page} label="History pages" />{/if}
-      {#if dividers}
+      {#if dividers && dividing}
         {#each days as day (day.key)}
           <DayGroup weekday={day.weekday} date={day.date}
             runtime={data.type === 'shows' ? undefined : formatRuntime(day.runtime)}>

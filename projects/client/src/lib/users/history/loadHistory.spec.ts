@@ -91,11 +91,48 @@ describe('loadHistory', () => {
     expect(result.page).toEqual({ type: 'paginated', current: 1, total: 1 });
   });
 
-  it('should drop OG sort segments for good', async () => {
-    await expect(load({ type: 'movies', sort: 'plays/asc', query: '?genres=drama' })).rejects.toMatchObject({
+  it("should keep OG's sort segments, and 301 an unknown or default one to the page's own spelling", async () => {
+    await expect(load({ type: 'movies', sort: 'popularity/asc', query: '?genres=drama' })).rejects.toMatchObject({
       status: 301,
       location: '/users/tester/history/movies?genres=drama',
     });
+    await expect(load({ type: 'shows', sort: 'added/desc' })).rejects.toMatchObject({
+      status: 301,
+      location: '/users/tester/history/shows',
+    });
+    await expect(load({ type: 'episodes', sort: 'plays/asc', query: '?movie=1' })).rejects.toMatchObject({
+      status: 301,
+      location: '/users/tester/history/episodes?movie=1',
+    });
+  });
+
+  it('should sort the whole watched list here on any sort but Watched Date', async () => {
+    const movie = (trakt: number, title: string, plays: number) => ({
+      plays,
+      last_watched_at: play.watched_at,
+      movie: { title, ids: { trakt, slug: title.toLowerCase() }, runtime: 100 },
+    });
+    server.use(
+      http.get('https://apiz.trakt.tv/users/tester/watched/movies', ({ request }) => {
+        seen.push(request);
+        const first = new URL(request.url).searchParams.get('page') === '1';
+        return HttpResponse.json(first ? [movie(1, 'Heat', 2)] : [movie(2, 'Ronin', 5)], { headers: pages });
+      }),
+    );
+    const result = await load({ type: 'movies', sort: 'time/asc' });
+    expect(requested()).toEqual([
+      '/users/tester/watched/movies?extended=full%2Cimages&page=1&limit=250',
+      '/users/tester/watched/movies?extended=full%2Cimages&page=2&limit=250',
+    ]);
+    expect(result).toMatchObject({
+      sort: { by: 'time', how: 'asc' },
+      charted: true,
+      counts: { unique: { count: 61, noun: 'movie' } },
+    });
+    expect(result.days.flatMap((day) => day.cards).map(({ title, subtitles }) => ({ title, subtitles }))).toEqual([
+      { title: 'Ronin', subtitles: ['8h 20m', '5 plays'] },
+      { title: 'Heat', subtitles: ['3h 20m', '2 plays'] },
+    ]);
   });
 
   it('should send signed-out visitors past page 1 to sign in', async () => {

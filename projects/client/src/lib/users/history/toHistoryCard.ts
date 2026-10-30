@@ -5,7 +5,11 @@ import { formatDate } from '../../utils/formatDate.ts';
 import { imageUrl } from '../../utils/imageUrl.ts';
 import { episodeBadge, type WatchedCard } from '../profile/toProfileSummary.ts';
 import type { HistoryItem } from './historyFilters.ts';
-import type { HistoryRow, WatchedShowRow } from './historyRowsSchema.ts';
+import type { HistoryRow } from './historyRowsSchema.ts';
+import type { ChartRow } from './historyCharts.ts';
+import type { HistorySortBy } from './historySort.ts';
+import { formatRuntime } from '../../utils/formatRuntime.ts';
+import { countLabel } from '../../utils/countLabel.ts';
 import { seasonName } from '../../utils/seasonName.ts';
 import { isUnknownDate } from '../../utils/isUnknownDate.ts';
 
@@ -30,6 +34,8 @@ export type HistoryCard = {
   readonly watchedDate: string;
   /** Minutes, for the day's total. */
   readonly runtime: number;
+  /** A charted card's lines under the title, in place of the date. */
+  readonly subtitles?: readonly string[];
 };
 
 /** A day divider and the cards under it . */
@@ -94,38 +100,69 @@ export function toHistoryCard(
   };
 }
 
-/** A Shows tab card: the show, last watched under the title. */
-export function toWatchedShowCard(row: WatchedShowRow, datePreferences: DatePreferences): HistoryCard {
+const plays = (count: number) => countLabel(count, 'play');
+
+/** OG's lines under a charted card's title for each sort. */
+function chartLines(row: ChartRow, by: HistorySortBy, datePreferences: DatePreferences): string[] {
+  const item = 'movie' in row ? row.movie : row.show;
+  switch (by) {
+    case 'added':
+      return [watchedDate(row.last_watched_at, datePreferences)];
+    case 'released': {
+      // A movie's is a bare date, so it's formatted in UTC to keep the day.
+      const date =
+        'movie' in row
+          ? row.movie.released && formatDate(row.movie.released, { ...datePreferences, timeZone: 'UTC' })
+          : row.show.first_aired && formatDate(row.show.first_aired, { ...datePreferences, time: true });
+      return [...(date ? [date] : []), plays(row.plays)];
+    }
+    case 'runtime':
+      return [formatRuntime(item.runtime), plays(row.plays)];
+    case 'plays':
+    case 'time':
+      return [formatRuntime(row.minutes), plays(row.plays)];
+    case 'title':
+      return [plays(row.plays)];
+    case 'percentage':
+    case 'votes':
+      return [countLabel(item.votes ?? 0, 'vote')];
+  }
+}
+
+/** A show or movie in charts mode, with the sort's lines under the title. */
+export function toChartCard(row: ChartRow, by: HistorySortBy, datePreferences: DatePreferences): HistoryCard {
+  const common = {
+    variant: 'poster',
+    watchedAt: row.last_watched_at,
+    watchedDate: watchedDate(row.last_watched_at, datePreferences),
+    subtitles: chartLines(row, by, datePreferences),
+    runtime: 0,
+  } as const;
+  if ('movie' in row) {
+    const { movie } = row;
+    return {
+      ...common,
+      key: movie.ids.trakt,
+      type: 'movie',
+      id: movie.ids.trakt,
+      href: `/movies/${movie.ids.slug}`,
+      title: movie.title,
+      image: imageUrl(movie.images?.poster?.at(0), 'thumb'),
+      rating: movie.rating ?? undefined,
+    };
+  }
   const { show } = row;
   return {
+    ...common,
     key: show.ids.trakt,
     type: 'show',
     id: show.ids.trakt,
     href: showHref(show.ids.slug),
     title: show.title,
     image: imageUrl(show.images?.poster?.at(0), 'thumb'),
-    variant: 'poster',
     rating: show.rating ?? undefined,
     airedEpisodes: show.aired_episodes ?? undefined,
-    watchedAt: row.last_watched_at,
-    watchedDate: watchedDate(row.last_watched_at, datePreferences),
-    runtime: 0,
   };
-}
-
-/**
- * The Shows tab from filtered plays: each show once, at its newest play, in the order they came (newest first).
- * OG's "charts mode".
- */
-export function toShowsFromPlays(rows: readonly HistoryRow[]): WatchedShowRow[] {
-  const seen = new Map<number, WatchedShowRow>();
-  for (const row of rows) {
-    if (!('show' in row)) continue;
-    const found = seen.get(row.show.ids.trakt);
-    if (found) seen.set(row.show.ids.trakt, { ...found, plays: found.plays + 1 });
-    else seen.set(row.show.ids.trakt, { plays: 1, last_watched_at: row.watched_at, show: row.show });
-  }
-  return [...seen.values()];
 }
 
 /** Cards grouped under one divider a day, in the viewer's zone, with the day's runtime. */

@@ -168,8 +168,8 @@ function toggleSeason(season: number) {
         under="Rewatches included" />
       <Stat svg={history} value={row.watchedTime} noun="watched" label="Time watched" />
       {#if row.left > 0}
-        <Stat svg={hourglass} value={row.leftTime} noun="left"
-          label="{count(row.left)} {plural(row.left, 'episode')} left to watch" />
+        <Stat svg={hourglass} value={row.leftTime} noun="left" label="Left to watch"
+          aside="({count(row.left)} {plural(row.left, 'ep')})" />
       {/if}
     </p>
 

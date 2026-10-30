@@ -11,7 +11,7 @@ export type HistoryCounts = {
 type Stats = Pick<UserStatsResponse, 'movies' | 'episodes'>;
 
 /**
- * The subnav counter on the Watched Date sort: the Shows tab counts shows, and a
+ * The subnav counter: a chart counts its shows or movies, and a
  * single item, date range or genre shows plays only. Otherwise the unique count comes from the stats, and All Types
  * takes its plays from there too. `total` is the page's item count.
  */
@@ -20,13 +20,17 @@ export function historyCounts({
   filters,
   stats,
   total,
+  charted = false,
 }: {
   type: HistoryType;
   filters: HistoryFilters;
   stats: Stats | null;
   total: number;
+  /** One card a show or movie, `total` of them. */
+  charted?: boolean;
 }): HistoryCounts {
   if (type === 'shows') return { unique: { count: total, noun: 'show' } };
+  if (charted && type === 'movies') return { unique: { count: total, noun: 'movie' } };
   if (filters.item || filters.startAt || filters.endAt || filters.genre || !stats) return { plays: total };
   if (type === 'all') {
     return {

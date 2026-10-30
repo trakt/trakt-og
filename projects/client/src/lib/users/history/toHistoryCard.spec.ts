@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { historyRowsSchema } from './historyRowsSchema.ts';
-import { historyItemTitle, toHistoryCard, toHistoryDays, toShowsFromPlays } from './toHistoryCard.ts';
+import { toChartsFromPlays } from './historyCharts.ts';
+import { historyItemTitle, toChartCard, toHistoryCard, toHistoryDays } from './toHistoryCard.ts';
 
 const datePreferences = { order: 'mdy', hour24: false, timeZone: 'America/Los_Angeles', weekStartDay: 0 } as const;
 const show = {
@@ -72,11 +73,27 @@ describe('toHistoryDays', () => {
   });
 });
 
-describe('toShowsFromPlays', () => {
-  it('should keep each show once, at its newest play, counting plays', () => {
-    expect(toShowsFromPlays(rows)).toEqual([
-      expect.objectContaining({ plays: 3, last_watched_at: '2026-09-29T05:23:00.000Z' }),
-    ]);
+describe('toChartCard', () => {
+  const [film, show] = toChartsFromPlays(rows);
+  const lines = (by: Parameters<typeof toChartCard>[1]) => toChartCard(show!, by, datePreferences).subtitles;
+
+  it("should put OG's lines for each sort under the title", () => {
+    expect(lines('added')).toEqual(['Sep 28, 2026 10:23 PM']);
+    expect(lines('plays')).toEqual(['2h 43m', '3 plays']);
+    expect(lines('time')).toEqual(['2h 43m', '3 plays']);
+    expect(lines('runtime')).toEqual(['47m', '3 plays']);
+    expect(lines('title')).toEqual(['3 plays']);
+    expect(lines('votes')).toEqual(['0 votes']);
+    expect(lines('released')).toEqual(['3 plays']);
+  });
+
+  it('should chart a movie on its poster', () => {
+    expect(toChartCard(film!, 'title', datePreferences)).toMatchObject({
+      key: 1,
+      type: 'movie',
+      href: '/movies/fight-club-1999',
+      subtitles: ['1 play'],
+    });
   });
 });
 

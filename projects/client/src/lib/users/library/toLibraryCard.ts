@@ -14,7 +14,7 @@ import { countLabel } from '../../utils/countLabel.ts';
 type Link = { readonly text: string; readonly href: string };
 
 /** One poster card in the library grid. */
-export type LibraryCard = Omit<HistoryCard, 'watchedDate' | 'show'> & {
+export type LibraryCard = Omit<HistoryCard, 'watchedDate' | 'show' | 'subtitles'> & {
   /** The lines under the title. */
   readonly subtitles: readonly (string | Link)[];
   /** The owner's metadata overlay. Left out for other viewers. */

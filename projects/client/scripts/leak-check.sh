@@ -58,7 +58,7 @@ for commit in commits:
 
 if sys.argv[1]:
     body = subprocess.check_output([
-        'gh', 'pr', 'view', sys.argv[1], '--repo', 'trakt/og', '--json', 'body', '--jq', '.body'
+        'gh', 'pr', 'view', sys.argv[1], '--repo', 'trakt/trakt-og', '--json', 'body', '--jq', '.body'
     ], text=True)
     scan(f'pr/{sys.argv[1]}', body)
 

@@ -13,7 +13,7 @@ export function pullRequestBody(report: BumpReport): string {
 
   return (
     [
-      'Dependency bump from `bun run bump`. Every candidate was installed and verified with `bun run ci`. Candidates that broke were bisected out and stay on their current pin; file each proposed adoption as a trakt/og issue.',
+      'Dependency bump from `bun run bump`. Every candidate was installed and verified with `bun run ci`. Candidates that broke were bisected out and stay on their current pin; file each proposed adoption as a trakt/trakt-og issue.',
       '',
       hasMajors
         ? 'This run includes major bumps. Keep the PR as a draft until a human has reviewed them, then ship with `bun run client:land <pr>`.'

@@ -28,7 +28,7 @@ after=$(jq -c "$scripts" "$root/package.json")
 added=$(jq -rn --argjson a "$after" --argjson b "$before" '$a - $b | join(", ")')
 if [ -n "$added" ]; then
   [ -n "$pr" ] || fail "trustedDependencies gained $added. Pass the PR number, and label the PR allowlist-change after review."
-  gh pr view "$pr" --repo trakt/og --json labels -q '.labels[].name' | grep -qx 'allowlist-change' \
+  gh pr view "$pr" --repo trakt/trakt-og --json labels -q '.labels[].name' | grep -qx 'allowlist-change' \
     || fail "trustedDependencies gained $added without the allowlist-change label on PR #$pr."
 fi
 

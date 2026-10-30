@@ -72,7 +72,7 @@ jobs:
           BEFORE=$( (git show "origin/${{ github.event.pull_request.base.ref }}":package.json 2>/dev/null || echo '{}') | jq '.trustedDependencies // [] | length')
           AFTER=$(jq '.trustedDependencies // [] | length' ../../package.json)
           if [ "$AFTER" -gt "$BEFORE" ]; then
-            if gh pr view "$PR_NUMBER" --repo trakt/og --json labels -q '.labels[].name' | grep -qx 'allowlist-change'; then
+            if gh pr view "$PR_NUMBER" --repo trakt/trakt-og --json labels -q '.labels[].name' | grep -qx 'allowlist-change'; then
               echo "trustedDependencies grew from $BEFORE to $AFTER - label present, allowed."
             else
               echo "::error::trustedDependencies grew from $BEFORE to $AFTER without 'allowlist-change' label."

@@ -1,5 +1,6 @@
 import type { RatingsResponse } from '@trakt/api';
 import type { ExternalRating } from './ExternalRating.ts';
+import type { ExtraRating } from '../../stats/extraRatingsSchema.ts';
 import { capitalize } from '../../utils/capitalize.ts';
 
 /** The JustWatch 30-day rank from `/watchnow/:country?extended=streaming_ranks`. */
@@ -9,11 +10,9 @@ export interface StreamingRank {
   readonly link?: string | null;
 }
 
-/** Letterboxd's rating, 0 to 5: movies only, in the movie ratings contract. */
-type Letterboxd = { rating?: number | null; link?: string | null; votes?: number | null };
-
 interface ExternalRatingsParams {
-  ratings: (RatingsResponse & { letterboxd?: Letterboxd | null }) | null;
+  /** With Letterboxd's rating, 0 to 5, on movies, and MyAnimeList's, 0 to 10, on anime. */
+  ratings: (RatingsResponse & { letterboxd?: ExtraRating | null; mal?: ExtraRating | null }) | null;
   rank?: StreamingRank | null;
 }
 
@@ -46,13 +45,14 @@ function rankChange(delta?: number | null): ExternalRating['change'] {
 const votes = (count?: number | null) => `${(count ?? 0).toLocaleString('en-US')} ${count === 1 ? 'vote' : 'votes'}`;
 
 /**
- * OG's `_ratings_stats` "other sites" group, in OG's order, with Letterboxd after IMDb on movies. Each shows only with a score above zero and a link.
+ * OG's `_ratings_stats` "other sites" group, in OG's order, with Letterboxd and MyAnimeList after IMDb. Each shows only with a score above zero and a link.
  * The strip shows only the number; the tooltip names the site and gives the exact vote count, or says what the number
  * is where the API has no count (Rotten Tomatoes, Metacritic, JustWatch).
  */
 export function toExternalRatings({ ratings, rank }: ExternalRatingsParams): ExternalRating[] {
-  const { imdb, tmdb, rotten_tomatoes: rt, metascore, letterboxd } = ratings ?? {};
+  const { imdb, tmdb, rotten_tomatoes: rt, metascore, letterboxd, mal } = ratings ?? {};
   const stars = Number((letterboxd?.rating ?? 0).toFixed(1));
+  const malRating = Number((mal?.rating ?? 0).toFixed(1));
   const tomatometer = rt ? tomatometerLogo(rt) : 'fresh';
 
   const entries: (ExternalRating | false)[] = [
@@ -75,6 +75,16 @@ export function toExternalRatings({ ratings, rank }: ExternalRatingsParams): Ext
         href: letterboxd.link,
         rating: stars.toFixed(1),
         score: Math.round(stars * 20),
+      },
+    malRating > 0 &&
+      !!mal?.link && {
+        logo: 'mal',
+        title: 'MyAnimeList',
+        detail: votes(mal.votes),
+        votes: mal.votes ?? 0,
+        href: mal.link,
+        rating: malRating.toFixed(1),
+        score: Math.round(malRating * 10),
       },
     (tmdb?.rating ?? 0) > 0 &&
       !!tmdb?.link && {

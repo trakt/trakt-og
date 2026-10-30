@@ -43,6 +43,25 @@ const sites = toSiteScores({
   }),
   trakt: 71,
 });
+const animeSites = toSiteScores({
+  external: toExternalRatings({
+    ratings: {
+      imdb: { rating: 8.6, votes: 953_366, link: 'https://www.imdb.com/title/tt0245429' },
+      tmdb: { rating: 8.5, votes: 19_134, link: 'https://www.themoviedb.org/movie/129' },
+      rotten_tomatoes: {
+        rating: 96,
+        state: 'certified',
+        user_rating: 96,
+        user_state: 'upright',
+        link: 'https://www.rottentomatoes.com/m/spirited_away',
+      },
+      metascore: { rating: 96, link: 'https://www.imdb.com/title/tt0245429/criticreviews' },
+      letterboxd: { rating: 4.45, votes: 3_177_150, link: 'https://letterboxd.com/film/spirited-away' },
+      mal: { rating: 8.77, votes: 1_398_228, link: 'https://myanimelist.net/anime/199' },
+    },
+  }),
+  trakt: 87,
+});
 </script>
 
 {#snippet column(content: Snippet)}
@@ -72,6 +91,12 @@ const sites = toSiteScores({
 </StatsSection>
 {/snippet}
 
+{#snippet animeOpinions()}
+  <StatsSection id="anime-second-opinions" title="Second Opinions" icon={globe}>
+  <SiteScores trakt={{ percent: 87, votes: 33_661 }} sites={animeSites} />
+</StatsSection>
+{/snippet}
+
 <Specimen title="Trakt ratings" bleed
   note="The page opens on the vote chart with its keys under it; its heading is only for screen readers.">
   {@render column(trakt)}
@@ -83,6 +108,10 @@ const sites = toSiteScores({
 
 <Specimen title="Second opinions" bleed note="Every other site's score beside Trakt's.">
   {@render column(secondOpinions)}
+</Specimen>
+
+<Specimen title="Second opinions, anime" bleed note="Anime add MyAnimeList after IMDb and Letterboxd.">
+  {@render column(animeOpinions)}
 </Specimen>
 
 <style>

@@ -17,6 +17,7 @@ const reads = {
   },
   stats: { watchers: 1, plays: 1, collectors: 1, comments: 1, lists: 1, votes: 100, favorited: 6 },
   letterboxd: { rating: 4.3, votes: 1, link: 'https://letterboxd.com/film/fight-club' },
+  mal: null,
 };
 const params = { media, reads, rank: null, otherSiteRatings: true, now: new Date('2026-10-15T00:00:00Z') };
 
@@ -29,6 +30,12 @@ describe('toSubpageStrip', () => {
       counts: [{ count: 6, label: 'favorited' }],
     });
     expect(strip?.external.map(({ title }) => title)).toEqual(['IMDb', 'Letterboxd']);
+  });
+
+  it('should carry MyAnimeList for anime', () => {
+    const mal = { rating: 8.77, votes: 1, link: 'https://myanimelist.net/anime/199' };
+    const strip = toSubpageStrip({ ...params, reads: { ...reads, mal } });
+    expect(strip?.external.map(({ title }) => title)).toEqual(['IMDb', 'Letterboxd', 'MyAnimeList']);
   });
 
   it('should hide the rating, other sites and favorites before release', () => {

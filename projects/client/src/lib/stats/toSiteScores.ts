@@ -1,11 +1,12 @@
 import type { ExternalRating, ExternalRatingLogo } from '../components/summary/ExternalRating.ts';
 
 /** Whose primary color a site's bar takes. */
-type SiteBrand = 'imdb' | 'letterboxd' | 'tmdb' | 'rotten-tomatoes' | 'metacritic';
+type SiteBrand = 'imdb' | 'letterboxd' | 'mal' | 'tmdb' | 'rotten-tomatoes' | 'metacritic';
 
 const BRANDS: Readonly<Partial<Record<ExternalRatingLogo, SiteBrand>>> = {
   imdb: 'imdb',
   letterboxd: 'letterboxd',
+  mal: 'mal',
   tmdb: 'tmdb',
   'tomatometer-certified': 'rotten-tomatoes',
   'tomatometer-fresh': 'rotten-tomatoes',

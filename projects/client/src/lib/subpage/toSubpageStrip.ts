@@ -18,7 +18,7 @@ type Params = {
 export function toSubpageStrip({ media, reads, rank, otherSiteRatings, now }: Params) {
   const type = media.item.type;
   if (type === 'list') return undefined;
-  const { ratings, stats, letterboxd } = reads;
+  const { ratings, stats, letterboxd, mal } = reads;
   const released = !!media.released && new Date(media.released) <= now;
   const trakt = ratings.trakt ?? ratings;
   const favorites = type === 'movie' || type === 'show';
@@ -28,7 +28,7 @@ export function toSubpageStrip({ media, reads, rank, otherSiteRatings, now }: Pa
     ratingTarget: { type, id: media.item.id, title: media.item.title, season: media.spoilerTarget?.season },
     external:
       otherSiteRatings && released && type !== 'season'
-        ? toExternalRatings({ ratings: { ...ratings, letterboxd }, rank })
+        ? toExternalRatings({ ratings: { ...ratings, letterboxd, mal }, rank })
         : [],
     counts: favorites && released ? [{ count: stats.favorited ?? 0, label: 'favorited' }] : [],
   };

@@ -52,6 +52,31 @@ describe('toExternalRatings', () => {
     expect(logos({ rating: 4, link: null })).toEqual([]);
   });
 
+  it('should put MyAnimeList after IMDb and Letterboxd, on the 10 point scale', () => {
+    const result = toExternalRatings({
+      ratings: {
+        ...ratings,
+        letterboxd: { rating: 4.45, votes: 1, link: 'https://letterboxd.com/film/spirited-away' },
+        mal: { rating: 8.77, votes: 1_398_228, link: 'https://myanimelist.net/anime/199' },
+      },
+    });
+    expect(result.map(({ logo }) => logo).slice(0, 4)).toEqual(['imdb', 'letterboxd', 'mal', 'tmdb']);
+    expect(result.at(2)).toMatchObject({
+      title: 'MyAnimeList',
+      rating: '8.8',
+      score: 88,
+      detail: '1,398,228 votes',
+      href: 'https://myanimelist.net/anime/199',
+    });
+  });
+
+  it('should skip MyAnimeList without a score or a link', () => {
+    const logos = (mal: { rating: number | null; link: string | null }) =>
+      toExternalRatings({ ratings: { mal } }).map(({ logo }) => logo);
+    expect(logos({ rating: null, link: 'x' })).toEqual([]);
+    expect(logos({ rating: 8, link: null })).toEqual([]);
+  });
+
   it('should skip sites without a score or a link', () => {
     const result = toExternalRatings({
       ratings: { imdb: { rating: 0, votes: 0, link: 'x' }, tmdb: { rating: 7, votes: 1, link: null } },

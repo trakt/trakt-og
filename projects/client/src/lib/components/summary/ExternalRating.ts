@@ -2,6 +2,7 @@
 export type ExternalRatingLogo =
   | 'imdb'
   | 'letterboxd'
+  | 'mal'
   | 'tmdb'
   | 'tomatometer-certified'
   | 'tomatometer-fresh'
@@ -12,7 +13,7 @@ export type ExternalRatingLogo =
   | 'metacritic'
   | 'justwatch';
 
-/** One entry in the ratings strip's "other sites" group: IMDb, TMDB, Rotten Tomatoes, Metacritic, JustWatch. */
+/** One entry in the ratings strip's "other sites" group: IMDb, Letterboxd, MyAnimeList, TMDB, Rotten Tomatoes, Metacritic, JustWatch. */
 export interface ExternalRating {
   readonly logo: ExternalRatingLogo;
   /** The site's name: the image's alt text and its accessible name. */

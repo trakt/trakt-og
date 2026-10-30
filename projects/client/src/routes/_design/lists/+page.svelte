@@ -7,6 +7,7 @@ import Specimen from '$lib/design/Specimen.svelte';
 import Variant from '$lib/design/Variant.svelte';
 import ListTransfer from '$lib/components/lists/ListTransfer.svelte';
 import clone from '$lib/icons/regular/clone.svg?raw';
+import file from '$lib/icons/regular/file.svg?raw';
 import fileExport from '$lib/icons/regular/file-export.svg?raw';
 import { toBuiltInListView } from '$lib/lists/toBuiltInListView';
 import MediaList from '$lib/components/lists/MediaList.svelte';
@@ -212,6 +213,14 @@ const following = [{ slug: 'teodoro_2', name: 'Elsy Murphy (@teodoro_2)' }];
       <SectionToolbar filters={none}>
         {#snippet stats()}
           <ListStats itemCount={1_523} stats={never} progress stateOf={library} likeCount={3} {likeTarget} />
+        {/snippet}
+      </SectionToolbar>
+    </Variant>
+    <Variant label="Folded behind a chip under 992px wide (resize to see it)">
+      <SectionToolbar filters={none} statsChip={{ svg: file, value: '10', label: 'Items' }}>
+        {#snippet stats()}
+          <ListStats itemCount={10} stats={{ count: 10, runtime: 3844, items }} progress stateOf={library} likeCount={0}
+            {likeTarget} comments={{ count: 0, href: '/users/og_tester/lists/heist-night/comments' }} />
         {/snippet}
       </SectionToolbar>
     </Variant>

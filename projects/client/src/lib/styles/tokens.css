@@ -2206,6 +2206,8 @@
   --episode-titles-gap: 4px; /* the title and its pills */
   --episode-meta-gap: 2px; /* a little more air above the pills */
   --item-stats-gap: 8px; /* between an episode's number-only count buttons */
+  --item-stats-flat-gap: 10px; /* between them on a tablet, flat and on one line */
+  --item-stats-flat-icon-gap: 4px; /* a flat count's icon and number */
   --item-stats-shimmer-width: 64px; /* a count button's place until the episode's stats load */
   --episode-info-gap: 12px; /* the titles, the overview and the stats */
   --episode-overview-collapsed-height: 60px; /* three lines; a fourth still shows whole (Read More's 16px margin) */
@@ -2639,6 +2641,7 @@
   --color-toolbar-bg: light-dark(#fafafa, #161616);
   --toolbar-padding: 15px;
   --toolbar-gap: 15px;
+  --toolbar-stats-menu-padding: 12px 14px;
   /* History and library subnav. */
   --history-count-gap: 15px;
   --history-icon-gap: var(--space-tools);

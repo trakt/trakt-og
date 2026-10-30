@@ -5,7 +5,7 @@
   without that thread, so the band never changes height. On phones, three fanart cards without threads, like OG's.
 -->
 <script lang="ts">
-import { SvelteMap } from 'svelte/reactivity';
+import { MediaQuery, SvelteMap } from 'svelte/reactivity';
 import FanartCard from '$lib/components/media/FanartCard.svelte';
 import PosterCard from '$lib/components/media/PosterCard.svelte';
 import PosterGrid from '$lib/components/media/PosterGrid.svelte';
@@ -29,13 +29,17 @@ interface Props {
   datePreferences: DatePreferences;
 }
 
-/** OG's `related(6)`: one row, and more opens the next, up to all the client loads. */
+/** OG's `related(6)`: one row, and more opens the next, up to all the client loads. A tablet's rows are four. */
 const PER_ROW = 6;
+const TABLET_PER_ROW = 4;
 const PHONE_CARDS = 3;
 
 const { cards, source, title, loadPeople, datePreferences }: Props = $props();
 
 let rows = $state(1);
+// Only the navigator's row count needs it: the cards past a tablet's rows hide in CSS, so the first paint is right.
+const tablet = new MediaQuery('(width < 992px)', false);
+const perRow = $derived(tablet.current ? TABLET_PER_ROW : PER_ROW);
 let filter = $state('');
 // A card's entry goes in empty as its people are asked for, so each is asked once.
 const people = new SvelteMap<number, readonly RelatedPerson[]>();
@@ -90,25 +94,27 @@ const icons = (card: RelatedCard) => {
     </div>
   {/if}
   <PosterGrid columns={PER_ROW}>
-    {#each shown as pick (pick.card.id)}
+    {#each shown as pick, index (pick.card.id)}
       {@const card = pick.card}
-      <PosterCard
-        href={card.href}
-        title={card.title}
-        fullTitle={card.year ? `${card.title} (${card.year})` : card.title}
-        image={card.poster}
-        userRating={overlay.state(card.type, card.id).rating}
-        dropped={overlay.state(card.type, card.id).dropped}
-        faded={filter !== '' && !pick.threads.includes(filter)}
-        icons={icons(card)}
-      >
-        {#if hasThreads}
-          <RelatedFingerprint {pick} threads={band.threads} {title} filter={filter || undefined} />
-        {/if}
-      </PosterCard>
+      <div class={['pick', { 'past-tablet': index >= rows * TABLET_PER_ROW }]}>
+        <PosterCard
+          href={card.href}
+          title={card.title}
+          fullTitle={card.year ? `${card.title} (${card.year})` : card.title}
+          image={card.poster}
+          userRating={overlay.state(card.type, card.id).rating}
+          dropped={overlay.state(card.type, card.id).dropped}
+          faded={filter !== '' && !pick.threads.includes(filter)}
+          icons={icons(card)}
+        >
+          {#if hasThreads}
+            <RelatedFingerprint {pick} threads={band.threads} {title} filter={filter || undefined} />
+          {/if}
+        </PosterCard>
+      </div>
     {/each}
   </PosterGrid>
-  <PageNavigator edge label="titles like {title}" {rows} maxRows={Math.ceil(cards.length / PER_ROW)}
+  <PageNavigator edge label="titles like {title}" {rows} maxRows={Math.ceil(cards.length / perRow)}
     onchange={(next) => (rows = next)} />
 </div>
 <div class="fanarts">
@@ -131,6 +137,17 @@ const icons = (card: RelatedCard) => {
 <style>
 .threads {
   margin-block-end: var(--space-related-threads);
+}
+
+/* Each card stays the grid's own item. A tablet's rows are four, so the cards past them wait for the next row. */
+.pick {
+  display: contents;
+}
+
+@media (width < 992px) {
+  .past-tablet {
+    display: none;
+  }
 }
 
 /* OG's `.hidden-xs` posters and `.visible-xs` fanarts. */

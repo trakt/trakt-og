@@ -39,6 +39,8 @@ import Icon from '$lib/icons/Icon.svelte';
 import barsProgress from '$lib/icons/regular/bars-progress.svg?raw';
 import grid2 from '$lib/icons/regular/grid-2.svg?raw';
 import bookmark from '$lib/icons/solid/bookmark.svg?raw';
+import checkThick from '$lib/icons/trakt/check-thick.svg?raw';
+import file from '$lib/icons/regular/file.svg?raw';
 import { overlay } from '$lib/overlay/overlay';
 import { settingsRequest } from '$lib/settings/settingsRequest';
 import type { ProfileUser } from '$lib/users/ProfileUser';
@@ -156,6 +158,11 @@ $effect(() => {
   });
 });
 const totals = $derived(shown ? sumProgressTotals(shown) : null);
+const statsChip = $derived(
+  totals
+    ? { svg: checkThick, value: `${totals.percent}%`, label: 'Watched', tone: 'watched' as const }
+    : { svg: file, value: (shown?.length ?? 0).toLocaleString('en-US'), label: 'Shows' },
+);
 const meta = $derived({ type: 'paginated' as const, current, total: pageCount });
 
 // The toggles show the new state as they save; grid view then reloads the page for its layout and page size.
@@ -239,7 +246,7 @@ function clearFilters() {
   </Tooltip>
 {/snippet}
 
-<SectionToolbar>
+<SectionToolbar {statsChip}>
   {#snippet filters()}
     <Dropdown section="Status">
       {#snippet trigger()}{progressTypes[data.type].label}{/snippet}

@@ -49,6 +49,7 @@ import { expireHideCookie } from '$lib/components/filters/expireHideCookie';
 import type { HeaderUser } from '$lib/components/header/HeaderUser';
 import ListTransfer from '$lib/components/lists/ListTransfer.svelte';
 import clone from '$lib/icons/regular/clone.svg?raw';
+import file from '$lib/icons/regular/file.svg?raw';
 import fileExport from '$lib/icons/regular/file-export.svg?raw';
 import ListItemEdit from '$lib/components/lists/ListItemEdit.svelte';
 import OfficialListHeader from '$lib/components/lists/OfficialListHeader.svelte';
@@ -283,6 +284,7 @@ let ownerBusy = $state(false);
 let allItems = $state<readonly ListItemCard[] | null>(null);
 let selectedKeys = $state<readonly number[] | null>(null);
 let removedKeys = $state<readonly number[]>([]);
+const itemTotal = $derived(data.list ? (owner ? Math.max(0, data.total - removedKeys.length) : data.total) : 0);
 let savedDescription = $state<string | undefined>();
 const description = $derived(parseComment(savedDescription || data.list?.description || ''));
 let notesItem = $state<ListItemCard | null>(null);
@@ -585,7 +587,7 @@ async function saveNotes(text: string) {
 
   {#if data.kind === 'official'}<OfficialListHeader image={data.listCover} />{/if}
 
-  <SectionToolbar>
+  <SectionToolbar statsChip={{ svg: file, value: itemTotal.toLocaleString('en-US'), label: 'Items' }}>
     {#snippet filters()}
       <Dropdown section="Media">
         {#snippet trigger()}{typeLabel}{/snippet}
@@ -612,7 +614,7 @@ async function saveNotes(text: string) {
     {/snippet}
     {#snippet stats()}
       <ListStats
-        itemCount={owner ? Math.max(0, data.total - removedKeys.length) : data.total}
+        itemCount={itemTotal}
         stats={data.stats}
         progress={data.user !== null && list.kind !== 'official'}
         likeTarget={{ id: list.id, ownerSlug: list.kind === 'personal' ? list.ownerSlug : undefined, viewer: data.user?.slug ?? null }}

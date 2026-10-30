@@ -1,6 +1,7 @@
 <!--
   A show's seasons (OG's `h2#seasons` and `.season-posters`): "N Seasons" (specials don't count) with the sort
-  dropdown and direction toggle, then five season posters a row with their episode counts and quick icons.
+  dropdown and direction toggle, then five season posters a row (three in a small tablet's narrow column) with their episode counts and quick
+  icons.
 -->
 <script lang="ts">
 import EmptyState from '$lib/components/empty/EmptyState.svelte';
@@ -66,7 +67,7 @@ function clearHide() {
   {#if cards.length === 0}
     <EmptyState action={{ text: 'Show hidden seasons', onclick: clearHide }} />
   {:else}
-  <PosterGrid columns={5}>
+  <PosterGrid columns={5} narrowColumns={3}>
       {#each sorted as { id, number, rating, released, votes: _, airedEpisodes, episodes, ...card } (id)}
         {@const view = cards.find(({ card }) => card.id === id)}
         {@const state = view?.state ?? {}}

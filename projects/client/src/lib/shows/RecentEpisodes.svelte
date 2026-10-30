@@ -1,7 +1,7 @@
 <!--
   A show summary's recent episodes : "Up Next" or "Next Episode" over the
-  first card, "Recently Aired" with "All Episodes" over the rest, three fanart cards a row. Nothing renders without
-  episodes.
+  first card, "Recently Aired" with "All Episodes" over the rest, three fanart cards a row. A small tablet's narrow
+  column keeps two a row with the headings on one line, and drops the rest. Nothing renders without episodes.
 -->
 <script lang="ts">
 import FanartCard from '$lib/components/media/FanartCard.svelte';
@@ -84,18 +84,41 @@ h2 {
   margin-block: var(--gutter);
 }
 
-/* OG's col-sm-6: two a row, and the headings stack. */
+/* OG's col-sm-6: two a row, the headings still over their cards. Only the first row shows, so it never wraps. */
 @container (width < 720px) {
-  .headings {
-    display: block;
-  }
-
+  .headings,
   .cards {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .aired {
+    grid-column: span 2;
+
+    .with-next & {
+      grid-column: span 1;
+    }
+  }
+
+  /* Beside Up Next, "All Episodes" keeps only its arrow on screen. */
+  .with-next .aired :global(.see-more .text) {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .cards > :nth-child(n + 3) {
+    display: none;
   }
 }
 
 @container (width < 480px) {
+  .headings {
+    display: block;
+  }
+
   .cards {
     grid-template-columns: minmax(0, 1fr);
   }

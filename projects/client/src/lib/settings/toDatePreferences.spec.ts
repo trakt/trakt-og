@@ -25,8 +25,8 @@ describe('toDatePreferences', () => {
     },
   );
 
-  it('should fall back for an unknown date order or time zone', () => {
-    expect(toDatePreferences({ account: { ...ACCOUNT, date_format: 'unknown', timezone: 'unknown' } })).toEqual({
+  it('should fall back for an unknown date order', () => {
+    expect(toDatePreferences({ account: { ...ACCOUNT, date_format: 'unknown' } })).toEqual({
       order: 'mdy',
       hour24: true,
       timeZone: 'UTC',
@@ -34,16 +34,21 @@ describe('toDatePreferences', () => {
     });
   });
 
+  it("should use the browser's zone over the account's", () => {
+    expect(toDatePreferences({ account: ACCOUNT }, 'America/Chicago').timeZone).toBe('America/Chicago');
+    expect(toDatePreferences(null, 'America/Chicago').timeZone).toBe('America/Chicago');
+  });
+
   it('should feed the viewer zone, date order and 24-hour preference into date formatting', () => {
     const settings = { account: ACCOUNT, browsing: { week_start_day: '1' } };
-    const preferences = toDatePreferences(settings);
+    const preferences = toDatePreferences(settings, 'Asia/Tokyo');
     expect(formatDate('2026-09-29T23:30:00Z', { ...preferences, time: true })).toBe('30 Sep 2026 08:30');
     expect(settings).toEqual({ account: ACCOUNT, browsing: { week_start_day: '1' } });
   });
 
   it('should honor 12-hour time without changing another viewer preferences', () => {
     const first = toDatePreferences({ account: ACCOUNT });
-    const second = toDatePreferences({ account: { ...ACCOUNT, time_24hr: false } });
+    const second = toDatePreferences({ account: { ...ACCOUNT, time_24hr: false } }, 'Asia/Tokyo');
     expect(formatDate('2026-09-29T23:30:00Z', { ...second, time: true })).toBe('30 Sep 2026 8:30 AM');
     expect(first.hour24).toBe(true);
   });

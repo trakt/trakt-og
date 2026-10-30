@@ -5,6 +5,7 @@ import { isAuthStepRoute } from '../auth/isAuthStepRoute.ts';
 import { toHeaderUser } from '../components/header/toHeaderUser.ts';
 import { isPhoneUserAgent } from '../components/mobile-splash/isPhoneUserAgent.ts';
 import { toMobilePlatform } from '../components/mobile-splash/toMobilePlatform.ts';
+import { browserTimeZone } from './browserTimeZone.ts';
 import { keptSettingsFetch, type ResponseCache } from './keptSettingsFetch.ts';
 import { localSettings } from './localSettings.ts';
 import { SETTINGS_REVISION_COOKIE } from './settingsRevisionCookie.ts';
@@ -58,13 +59,14 @@ export async function loadViewerSession({
   const userAgent = request.headers.get('user-agent');
   const platform = toMobilePlatform(userAgent);
   const phone = isPhoneUserAgent(userAgent);
+  const browserZone = browserTimeZone.read(cookies.get(browserTimeZone.COOKIE));
   const loggedOut = {
     hasSession,
     tokenExpired,
     rateLimited: false,
     user: null,
     settings: null,
-    datePreferences: toDatePreferences(null),
+    datePreferences: toDatePreferences(null, browserZone),
     searchType,
     platform,
     phone,
@@ -97,7 +99,7 @@ export async function loadViewerSession({
       rateLimited: false,
       user: toHeaderUser(settings.user),
       settings,
-      datePreferences: toDatePreferences(settings),
+      datePreferences: toDatePreferences(settings, browserZone),
       searchType,
       platform,
       phone,

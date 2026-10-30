@@ -27,6 +27,7 @@ import Nudges from '$lib/components/first-night/Nudges.svelte';
 import OfflineGuard from '$lib/errors/OfflineGuard.svelte';
 import WatchNowHost from '$lib/components/watchnow/WatchNowHost.svelte';
 import { startOverlay } from '$lib/overlay/startOverlay';
+import { browserTimeZone } from '$lib/settings/browserTimeZone';
 import { toDarkKnight } from '$lib/settings/toDarkKnight';
 import { toTheme } from '$lib/settings/toTheme';
 import { onMount, untrack } from 'svelte';
@@ -65,6 +66,9 @@ $effect(() => {
 });
 
 onMount(() => {
+  // The server only knows the browser's zone from its cookie, so a first visit, or one from a new zone, reloads the
+  // data once to redo its dates.
+  if (browserTimeZone.save() !== data.datePreferences.timeZone) void invalidateAll();
   if (isStandardApi()) logHidden('Watch Now, streaming filters and services, the Social Feed and list collaborators');
   const stopSession = syncSession({
     manager: userManager(),

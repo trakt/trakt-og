@@ -616,6 +616,14 @@
   --color-dashboard-recaps-muted: var(--color-discover-muted);
   --color-dashboard-recaps-text: var(--color-discover-text);
   --opacity-dashboard-recaps-future: var(--opacity-season-ribbon-past);
+  /* A month's hover card: its plays split into episodes and movies. */
+  --dashboard-recaps-tip-width: 220px;
+  --dashboard-recaps-tip-gap: 6px;
+  --dashboard-recaps-tip-top: 3px 6px 6px; /* the name and split bar, inset to line up with the footer's rows */
+  --dashboard-recaps-tip-meter: 6px; /* the split bar's height */
+  --dashboard-recaps-tip-stripe: 2px; /* the movie stripes' width, and the gap before them */
+  --dashboard-recaps-tip-stripe-tint: 85%; /* the month's accent in a movie stripe, the rest white */
+  --dashboard-recaps-tip-shimmer: 120px; /* a row's shimmer while the split loads */
   /* Follow requests: boxes three across, or a summary line with an avatar stack from four requests up. */
   --dashboard-inbox-bottom: 30px;
   --dashboard-inbox-heading-gap: 14px;

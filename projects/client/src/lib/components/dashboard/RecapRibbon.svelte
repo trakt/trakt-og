@@ -3,21 +3,56 @@
   front, then the twelve months in Discover's month colors. Each month's top bar fills as it goes by, and a plays bar
   rises against the busiest month. Tags beside the month name mark the Year to Date, the latest Month in Review (an
   icon) and this month's days left. Months gone by open their Month in Review on v3, this month opens the history, and
-  months to come dim. In January it's last year, all twelve months gone by under its Year in Review. A hovered month lifts, tints and fills its bars. Below 992px the twelve months fold into two rows
+  months to come dim. In January it's last year, all twelve months gone by under its Year in Review. A hovered month lifts, tints and fills its bars, and a hovered or focused month or year opens a `RecapSplitTip` of its plays in episodes and movies, which `split` loads the first time. Below 992px the twelve months fold into two rows
   and the year leaves. Pass the unawaited promise from the loader: the strip holds its height until the counts land,
   and leaves the page if they don't.
 -->
 <script lang="ts">
+import { SvelteMap } from 'svelte/reactivity';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import type { RecapMonth, RecapRibbon, RecapTag } from '$lib/dashboard/RecapRibbon';
+import type { RecapMonth, RecapRibbon, RecapSpan, RecapTag } from '$lib/dashboard/RecapRibbon';
+import type { RecapSplit, RecapSplitState } from '$lib/dashboard/RecapSplit';
 import Icon from '$lib/icons/Icon.svelte';
 import chartSimple from '$lib/icons/regular/chart-simple.svg?raw';
 import { readableStat } from '$lib/utils/readableStat';
+import RecapSplitTip from './RecapSplitTip.svelte';
 
 type CellTag = RecapTag | { readonly kind: 'year'; readonly title: string };
 
-const { recaps }: { recaps: Promise<RecapRibbon> } = $props();
+interface Props {
+  recaps: Promise<RecapRibbon>;
+  /** Loads a month's (or the year's) split for its hover card, the first time it's hovered or focused. */
+  split: (span: RecapSpan) => Promise<RecapSplit>;
+}
+
+const { recaps, split }: Props = $props();
 const leaves = (href: string) => href.startsWith('http');
+
+const splits = new SvelteMap<string, RecapSplitState>();
+const keyOf = (span: RecapSpan) => `${span.start}/${span.end}`;
+const nothing = { plays: 0, titles: 0 };
+
+// A month with no plays has nothing to split, so it skips the request.
+function load(span: RecapSpan | null, plays: number) {
+  if (!span) return;
+  const key = keyOf(span);
+  const status = splits.get(key)?.status;
+  if (status === 'loading' || status === 'loaded') return;
+  if (!plays) {
+    splits.set(key, { status: 'loaded', split: { episodes: nothing, movies: nothing } });
+    return;
+  }
+  splits.set(key, { status: 'loading' });
+  split(span).then(
+    (loaded) => splits.set(key, { status: 'loaded', split: loaded }),
+    () => splits.set(key, { status: 'failed' }),
+  );
+}
+
+// Not on a tap, which follows the link and never shows the card.
+const hover = (span: RecapSpan | null, plays: number) => (event: PointerEvent) => {
+  if (event.pointerType !== 'touch') load(span, plays);
+};
 </script>
 
 {#snippet cell({ month, caption, tag }: Pick<RecapMonth, 'month' | 'caption'> & { tag: CellTag | null })}
@@ -27,20 +62,20 @@ const leaves = (href: string) => href.startsWith('http');
   <span class="plays"><span></span></span>
 {/snippet}
 
+<!-- The tags carry no tooltips of their own: the cell's hover card names what a click opens. -->
 {#snippet label(tag: CellTag)}
   {#if tag.kind === 'year'}
-    <Tooltip text={tag.title}>
-      {#snippet trigger(tooltip)}
-        <span class="tag" {...tooltip}><Icon svg={chartSimple} /><span class="word">{tag.title}</span></span>
-      {/snippet}
-    </Tooltip>
+    <span class="tag"><Icon svg={chartSimple} /><span class="word">{tag.title}</span></span>
   {:else if tag.kind === 'review'}
-    <Tooltip text="Month in Review">
-      {#snippet trigger(tooltip)}<span class="tag" {...tooltip}><Icon svg={chartSimple} /></span>{/snippet}
-    </Tooltip>
+    <span class="tag"><Icon svg={chartSimple} /></span>
   {:else}
     <span class="tag"><b>{tag.days}d</b><span class="word"> left</span></span>
   {/if}
+{/snippet}
+
+{#snippet card(heading: string, plays: number, span: RecapSpan)}
+  <RecapSplitTip {heading} {plays} state={splits.get(keyOf(span)) ?? { status: 'loading' }}
+    onretry={() => load(span, plays)} />
 {/snippet}
 
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
@@ -50,14 +85,20 @@ const leaves = (href: string) => href.startsWith('http');
   <nav class="ribbon loaded" aria-label="Your {ribbon.year} recaps">
   <ol>
       <li class="year" style:--progress="1" style:--share="0">
-        <a href={ribbon.href} target="_blank" rel="noopener"
-          aria-label="{ribbon.year} {ribbon.title}: {ribbon.plays.toLocaleString('en-US')} plays">
-          {@render cell({
-            month: String(ribbon.year),
-            caption: `${readableStat(ribbon.plays)} ${ribbon.plays === 1 ? 'play' : 'plays'}`,
-            tag: { kind: 'year', title: ribbon.title },
-          })}
-        </a>
+        {#snippet yearCard()}{#if ribbon.span}{@render card(ribbon.heading, ribbon.plays, ribbon.span)}{/if}{/snippet}
+        <Tooltip placement="bottom" content={ribbon.span ? yearCard : undefined}>
+          {#snippet trigger(tooltip)}
+            <a href={ribbon.href} target="_blank" rel="noopener" {...tooltip}
+              aria-label="{ribbon.year} {ribbon.title}: {ribbon.plays.toLocaleString('en-US')} plays"
+              onpointerenter={hover(ribbon.span, ribbon.plays)} onfocusin={() => load(ribbon.span, ribbon.plays)}>
+              {@render cell({
+                month: String(ribbon.year),
+                caption: `${readableStat(ribbon.plays)} ${ribbon.plays === 1 ? 'play' : 'plays'}`,
+                tag: { kind: 'year', title: ribbon.title },
+              })}
+            </a>
+          {/snippet}
+        </Tooltip>
       </li>
       {#each ribbon.months as month (month.number)}
         <li
@@ -68,8 +109,16 @@ const leaves = (href: string) => href.startsWith('http');
           aria-current={month.state === 'current' ? 'date' : undefined}
         >
           {#if month.href}
-            <a href={month.href} aria-label={month.label} target={leaves(month.href) ? '_blank' : undefined}
-              rel={leaves(month.href) ? 'noopener' : undefined}>{@render cell(month)}</a>
+            {@const { href, span } = month}
+            {@const plays = month.plays ?? 0}
+            {#snippet monthCard()}{#if span}{@render card(month.heading, plays, span)}{/if}{/snippet}
+            <Tooltip placement="bottom" content={span ? monthCard : undefined}>
+              {#snippet trigger(tooltip)}
+                <a {href} aria-label={month.label} target={leaves(href) ? '_blank' : undefined}
+                  rel={leaves(href) ? 'noopener' : undefined} {...tooltip}
+                  onpointerenter={hover(span, plays)} onfocusin={() => load(span, plays)}>{@render cell(month)}</a>
+              {/snippet}
+            </Tooltip>
           {:else}
             <span class="cell" aria-hidden="true">{@render cell({ ...month, tag: null })}</span><span class="sr">{month.label}</span>
           {/if}

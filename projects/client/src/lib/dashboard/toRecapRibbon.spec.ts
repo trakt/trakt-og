@@ -1,10 +1,19 @@
 import { describe, expect, it } from 'vitest';
+import { recapWindows } from './recapWindows.ts';
 import { toRecapRibbon } from './toRecapRibbon.ts';
 
 const plays = [1900, 1400, 2200, 1700, 1500, 2000, 2600, 2300, 1834, 312];
+// Noon UTC on `today`, with the history windows the counts came from.
+const ribbonOn = (today: string, counts: readonly number[]) =>
+  toRecapRibbon({
+    today,
+    plays: counts,
+    spans: recapWindows({ now: new Date(`${today}T12:00:00Z`), timeZone: 'UTC' }),
+    slug: 'justin',
+  });
 
 describe('toRecapRibbon', () => {
-  const ribbon = toRecapRibbon({ today: '2026-10-13', plays, slug: 'justin' });
+  const ribbon = ribbonOn('2026-10-13', plays);
 
   it('should total the year and open its Year in Review', () => {
     expect(ribbon).toMatchObject({
@@ -12,6 +21,13 @@ describe('toRecapRibbon', () => {
       title: 'Year to Date',
       plays: 17_746,
       href: 'https://app.trakt.tv/users/justin/year/2026',
+    });
+  });
+
+  it("should title the year's hover card and span its history from January to now", () => {
+    expect(ribbon).toMatchObject({
+      heading: '2026 Year to Date',
+      span: { start: '2026-01-01T00:00:00.000Z', end: '2026-10-13T12:00:00.000Z' },
     });
   });
 
@@ -42,6 +58,8 @@ describe('toRecapRibbon', () => {
         tag: null,
         label: 'January 2026: 1,900 plays',
         href: 'https://app.trakt.tv/users/justin/mir/2026/1',
+        heading: 'January 2026',
+        span: { start: '2026-01-01T00:00:00.000Z', end: '2026-02-01T00:00:00.000Z' },
       });
     });
 
@@ -70,6 +88,8 @@ describe('toRecapRibbon', () => {
         tag: { kind: 'left', days: 19 },
         label: 'October 2026 so far: 312 plays, 19 days left',
         href: '/users/justin/history',
+        heading: 'October 2026 so far',
+        span: { start: '2026-10-01T00:00:00.000Z', end: '2026-10-13T12:00:00.000Z' },
       });
     });
   });
@@ -84,13 +104,14 @@ describe('toRecapRibbon', () => {
         tag: null,
         label: 'November 2026',
         href: null,
+        span: null,
       });
     });
   });
 
   describe('in January', () => {
     const lastYear = [1900, 1400, 2200, 1700, 1500, 2000, 2600, 2300, 1834, 1200, 1500, 2100];
-    const january = toRecapRibbon({ today: '2027-01-05', plays: lastYear, slug: 'justin' });
+    const january = ribbonOn('2027-01-05', lastYear);
 
     it('should show last year under its Year in Review', () => {
       expect(january).toMatchObject({
@@ -117,7 +138,7 @@ describe('toRecapRibbon', () => {
     });
 
     it('should go back to this year in February', () => {
-      const february = toRecapRibbon({ today: '2027-02-01', plays: [1200, 40], slug: 'justin' });
+      const february = ribbonOn('2027-02-01', [1200, 40]);
       expect(february).toMatchObject({ year: 2027, title: 'Year to Date' });
       expect(february.months.at(0)?.tag).toEqual({ kind: 'review' });
       expect(february.months.at(1)?.state).toBe('current');
@@ -125,18 +146,18 @@ describe('toRecapRibbon', () => {
   });
 
   it('should read "Year in Review" from December 18th', () => {
-    const december = toRecapRibbon({ today: '2026-12-18', plays: Array(12).fill(1), slug: 'justin' });
+    const december = ribbonOn('2026-12-18', Array(12).fill(1));
     expect(december.title).toBe('Year in Review');
   });
 
   it('should say "1 play" for a single play', () => {
-    const quiet = toRecapRibbon({ today: '2026-03-02', plays: [1, 0, 0], slug: 'justin' });
+    const quiet = ribbonOn('2026-03-02', [1, 0, 0]);
     expect(quiet.months.at(0)?.caption).toBe('1 play');
     expect(quiet.months.at(1)?.share).toBe(0);
   });
 
   it('should leave every bar empty when nothing was watched', () => {
-    const empty = toRecapRibbon({ today: '2026-03-02', plays: [0, 0, 0], slug: 'justin' });
+    const empty = ribbonOn('2026-03-02', [0, 0, 0]);
     expect(empty.months.every(({ share }) => share === 0)).toBe(true);
   });
 });

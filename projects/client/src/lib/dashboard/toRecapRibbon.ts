@@ -2,13 +2,15 @@ import { DISCOVER_THEMES } from '../discover/discoverThemes.ts';
 import { seasonRibbon } from '../discover/seasonRibbon.ts';
 import { traktUrls } from '../traktUrls.ts';
 import { readableStat } from '../utils/readableStat.ts';
-import type { RecapMonth, RecapRibbon } from './RecapRibbon.ts';
+import type { RecapMonth, RecapRibbon, RecapSpan } from './RecapRibbon.ts';
 
 type ToRecapRibbonParams = {
   /** `YYYY-MM-DD` in the viewer's zone. */
   today: string;
   /** Plays per month from January, through this month; in January, all twelve of last year's. */
   plays: readonly number[];
+  /** The history window each count in `plays` came from. */
+  spans: readonly RecapSpan[];
   slug: string;
 };
 
@@ -23,7 +25,7 @@ const monthName = (year: number, month: number) =>
  * month counts down its days. In January it's last year, every month gone by and December the latest review, under
  * last year's Year in Review, as OG's dashboard opened it in January.
  */
-export function toRecapRibbon({ today, plays, slug }: ToRecapRibbonParams): RecapRibbon {
+export function toRecapRibbon({ today, plays, spans, slug }: ToRecapRibbonParams): RecapRibbon {
   const [thisYear = 0, month = 1, day = 1] = today.split('-').map(Number);
   const reviewing = month === 1;
   const year = reviewing ? thisYear - 1 : thisYear;
@@ -35,6 +37,7 @@ export function toRecapRibbon({ today, plays, slug }: ToRecapRibbonParams): Reca
     const number = index + 1;
     const count = plays.at(index) ?? null;
     const name = `${monthName(year, number)} ${year}`;
+    const span = spans.at(index) ?? null;
     const base = {
       number,
       month: season.month,
@@ -45,7 +48,16 @@ export function toRecapRibbon({ today, plays, slug }: ToRecapRibbonParams): Reca
     };
 
     if (number > current || count === null) {
-      return { ...base, state: 'future', caption: '', tag: null, label: name, href: null };
+      return {
+        ...base,
+        state: 'future',
+        caption: '',
+        tag: null,
+        label: name,
+        href: null,
+        heading: name,
+        span: null,
+      };
     }
     if (number === current) {
       const days = season.daysLeft ?? 0;
@@ -56,6 +68,8 @@ export function toRecapRibbon({ today, plays, slug }: ToRecapRibbonParams): Reca
         tag: { kind: 'left', days },
         label: `${name} so far: ${playCount(count, exact)}, ${days} ${days === 1 ? 'day' : 'days'} left`,
         href: `/users/${encodeURIComponent(slug)}/history`,
+        heading: `${name} so far`,
+        span,
       };
     }
     const latest = number === current - 1;
@@ -66,14 +80,21 @@ export function toRecapRibbon({ today, plays, slug }: ToRecapRibbonParams): Reca
       tag: latest ? { kind: 'review' } : null,
       label: `${name}: ${playCount(count, exact)}${latest ? ', Month in Review' : ''}`,
       href: traktUrls.monthInReview(slug, year, number),
+      heading: name,
+      span,
     };
   });
 
+  const title = reviewing || (month === 12 && day >= 18) ? 'Year in Review' : 'Year to Date';
+  const first = spans.at(0);
+  const last = spans.at(-1);
   return {
     year,
-    title: reviewing || (month === 12 && day >= 18) ? 'Year in Review' : 'Year to Date',
+    title,
     plays: plays.reduce((sum, n) => sum + n, 0),
     href: traktUrls.yearInReview(slug, year),
+    heading: `${year} ${title}`,
+    span: first && last ? { start: first.start, end: last.end } : null,
     months,
   };
 }

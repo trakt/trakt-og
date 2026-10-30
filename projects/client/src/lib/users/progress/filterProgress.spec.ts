@@ -5,6 +5,10 @@ import { progressItemFixture } from './progressItemFixture.ts';
 const done = progressItemFixture(1, { completed: 10, show: { title: 'Breaking Bad', status: 'ended' } });
 const airing = progressItemFixture(2, { show: { title: 'Severance', status: 'returning series' } });
 const rewatch = progressItemFixture(3, { resetAt: '2026-01-01', show: { title: 'The Wire', status: 'canceled' } });
+const caughtUp = progressItemFixture(4, {
+  latestWatched: true,
+  show: { title: 'WWE Raw', status: 'returning series' },
+});
 const items = [done, airing, rewatch];
 const ids = (filtered: readonly { show: { id: number } }[]) => filtered.map(({ show }) => show.id);
 
@@ -15,6 +19,11 @@ describe('filterProgress', () => {
     expect(ids(filterProgress(items, { hide: ['ended'] }))).toEqual([2]);
     expect(ids(filterProgress(items, { hide: ['airing'] }))).toEqual([1, 3]);
     expect(ids(filterProgress(items, { hide: ['rewatching'] }))).toEqual([1, 2]);
+  });
+
+  it('should hide shows with the newest episode watched, and completed ones, with Latest Episode Watched', () => {
+    expect(ids(filterProgress([...items, caughtUp], { hide: ['latest-watched'] }))).toEqual([2, 3]);
+    expect(ids(filterProgress([...items, caughtUp], { hide: ['completed'] }))).toEqual([2, 3, 4]);
   });
 
   it('should drop shows with no plays only while Include Watchlisted is off', () => {

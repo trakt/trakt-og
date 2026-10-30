@@ -1,9 +1,10 @@
 import type { ProgressType } from './progressTypes.ts';
 
-/** OG's HIDE toggles under the progress eye (`filterProgress` applies them). */
+/** OG's HIDE toggles under the progress eye, plus Latest Episode Watched (`filterProgress` applies them). */
 export const progressHideOptions = [
   { id: 'completed', label: 'Completed' },
   { id: 'not-completed', label: 'Not Completed' },
+  { id: 'latest-watched', label: 'Latest Episode Watched' },
   { id: 'ended', label: 'Ended / Canceled' },
   { id: 'airing', label: 'Currently Airing' },
   { id: 'rewatching', label: 'Rewatching' },

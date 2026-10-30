@@ -65,5 +65,7 @@ export type ProgressItem = {
   readonly last?: CatalogEpisode;
   readonly resetAt?: string;
   readonly droppedAt?: string;
+  /** The endpoint files it as completed: its newest aired episode is watched, even with earlier ones unwatched. */
+  readonly latestWatched?: boolean;
   readonly detail?: ProgressDetail;
 };

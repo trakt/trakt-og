@@ -26,9 +26,9 @@ const LIMIT = 100;
  * Every show you've started, with its progress, from the endpoint v3's progress page reads
  * (`/sync/progress/up_next_nitro`). `intent=all` leaves out every show the server files as completed, so `completed`
  * loads beside it: Hide Completed needs those shows, and the server files a show as completed once its newest episode
- * is watched, even with an earlier one unwatched (`toProgressItems` recounts it). Each intent's first page says how
- * many there are, then the rest load together. A failed page fails the whole read, so the page never shows half your
- * shows as all of them.
+ * is watched, even with an earlier one unwatched (`toProgressItems` recounts it, and `latestWatched` keeps the filing
+ * for Hide Latest Episode Watched). Each intent's first page says how many there are, then the rest load together. A
+ * failed page fails the whole read, so the page never shows half your shows as all of them.
  */
 export async function loadNitroProgress({
   request,
@@ -44,18 +44,16 @@ export async function loadNitroProgress({
     const first = await read(intent, 1);
     const pages = Number(first.headers.get('x-pagination-page-count') ?? 1) || 1;
     const rest = await Promise.all(Array.from({ length: pages - 1 }, (_, index) => read(intent, index + 2)));
-    return [first, ...rest];
+    return [first, ...rest].flatMap(({ body }) => body.map((row) => ({ row, latestWatched: intent === 'completed' })));
   };
-  const responses = (await Promise.all(INTENTS.map(readIntent))).flat();
+  const rows = (await Promise.all(INTENTS.map(readIntent))).flat();
   const fetchedAt = now();
   const seen = new Set<number>();
 
   // A show that moves between pages, or finishes, while they load would come back twice.
-  return responses
-    .flatMap(({ body }) => body)
-    .flatMap((row) => {
-      if (seen.has(row.show.ids.trakt)) return [];
-      seen.add(row.show.ids.trakt);
-      return [toNitroItem(row, fetchedAt)];
-    });
+  return rows.flatMap(({ row, latestWatched }) => {
+    if (seen.has(row.show.ids.trakt)) return [];
+    seen.add(row.show.ids.trakt);
+    return [{ ...toNitroItem(row, fetchedAt), latestWatched }];
+  });
 }

@@ -12,7 +12,7 @@ lock="$(git rev-parse --git-common-dir)/og-land.lock"
 mkdir "$lock" 2>/dev/null || fail "another land is running on this machine ($lock). Wait for it, or remove the lock if it's stale."
 trap 'rmdir "$lock"' EXIT
 
-meta=$(gh pr view "$pr" --repo trakt/og --json state,isDraft,headRefName,labels,body)
+meta=$(gh pr view "$pr" --repo trakt/trakt-og --json state,isDraft,headRefName,labels,body)
 [ "$(jq -r .state <<<"$meta")" = OPEN ] || fail "PR #$pr isn't open"
 branch=$(jq -r .headRefName <<<"$meta")
 # The branch name comes from GitHub, so it must be a plain branch name and can't look like an option.
@@ -33,7 +33,7 @@ print(" ".join(map(str, issues)))
 ')
 # Refuse a missing issue before any rebase, push or merge.
 for issue in $issues; do
-  gh issue view "$issue" --repo trakt/og --json state -q .state >/dev/null
+  gh issue view "$issue" --repo trakt/trakt-og --json state -q .state >/dev/null
 done
 
 git fetch --quiet origin main "$branch"
@@ -51,13 +51,13 @@ sha=$(git rev-parse HEAD)
 git fetch --quiet origin main
 git merge-base --is-ancestor origin/main "$sha" || fail "main moved while verifying. Run land again."
 
-[ "$(jq -r .isDraft <<<"$meta")" = true ] && gh pr ready "$pr" --repo trakt/og
-gh pr merge "$pr" --repo trakt/og --rebase --match-head-commit "$sha"
+[ "$(jq -r .isDraft <<<"$meta")" = true ] && gh pr ready "$pr" --repo trakt/trakt-og
+gh pr merge "$pr" --repo trakt/trakt-og --rebase --match-head-commit "$sha"
 echo "land: merged PR #$pr at $(git rev-parse --short "$sha")"
 
 for issue in $issues; do
-  if [ "$(gh issue view "$issue" --repo trakt/og --json state -q .state)" = OPEN ]; then
-    gh issue close "$issue" --repo trakt/og --comment "Closed by https://github.com/trakt/og/pull/$pr after local verification."
+  if [ "$(gh issue view "$issue" --repo trakt/trakt-og --json state -q .state)" = OPEN ]; then
+    gh issue close "$issue" --repo trakt/trakt-og --comment "Closed by https://github.com/trakt/trakt-og/pull/$pr after local verification."
   fi
 done
 echo "land: done. GitHub Actions deploys main to og.trakt.tv."

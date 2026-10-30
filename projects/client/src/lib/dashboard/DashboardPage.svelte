@@ -13,8 +13,11 @@ import RecentlyWatchedPanel from '$lib/components/dashboard/RecentlyWatchedPanel
 import LastThirtyDaysPanel from '$lib/components/dashboard/LastThirtyDaysPanel.svelte';
 import RecommendationsPanel from '$lib/components/dashboard/RecommendationsPanel.svelte';
 import SocialFeedPanel from '$lib/components/dashboard/SocialFeedPanel.svelte';
+import { api } from '$lib/api/api';
 import type { DashboardSettings } from '$lib/dashboard/DashboardSettings';
+import type { RecapSpan } from '$lib/dashboard/RecapRibbon';
 import { dashboardPrefs } from '$lib/dashboard/dashboardPrefs';
+import { fetchRecapSplit } from '$lib/dashboard/fetchRecapSplit';
 import { fetchRecommendations } from '$lib/dashboard/fetchRecommendations';
 import { fetchSchedule } from '$lib/dashboard/fetchSchedule';
 import { toStatsPanel } from '$lib/dashboard/toStatsPanel';
@@ -46,6 +49,9 @@ function loadSchedule({ filter, movies }: Pick<DashboardSettings['schedule'], 'f
   });
 }
 
+// A recap month's hover card splits its plays from the browser, the first time it opens.
+const loadRecapSplit = (span: RecapSpan) => fetchRecapSplit({ client: api({ fetch: viewerFetch() }), span });
+
 // The recommendations' Type dropdown works the same way.
 function loadRecommendations(type: DashboardSettings['recommendations']['type']) {
   dashboardPrefs.save(username, { ...dashboardPrefs.load(username), recommendations_type: type });
@@ -73,7 +79,7 @@ function loadRecommendations(type: DashboardSettings['recommendations']['type'])
   <DashboardGreeting user={data.profile} memberSince={data.memberSince} watching={data.watching}>
   <StatsPanel {panel} slug={username} fresh={data.stats.movies.plays + data.stats.episodes.plays === 0} />
 </DashboardGreeting>
-  {#if data.recaps}<RecapRibbon recaps={data.recaps} />{/if}
+  {#if data.recaps}<RecapRibbon recaps={data.recaps} split={loadRecapSplit} />{/if}
 {/if}
 <DashboardInbox requests={data.requests} />
 <!-- A panel the viewer hid comes back null. -->

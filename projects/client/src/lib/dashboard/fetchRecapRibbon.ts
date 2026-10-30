@@ -23,13 +23,14 @@ export async function fetchRecapRibbon({
   timeZone,
   now = new Date(),
 }: FetchRecapRibbonParams): Promise<RecapRibbon> {
+  const windows = recapWindows({ now, timeZone });
   const responses = await Promise.all(
-    recapWindows({ now, timeZone }).map(({ start, end }) =>
+    windows.map(({ start, end }) =>
       client.users.history.all({ params: { id: 'me' }, query: { start_at: start, end_at: end, limit: 1 } }),
     ),
   );
   if (responses.some(({ status }) => status !== 200)) throw new Error('A month of history did not load');
 
   const plays = responses.map(({ headers }) => Number(headers.get('x-pagination-item-count')) || 0);
-  return toRecapRibbon({ today: dayIn(now.toISOString(), timeZone), plays, slug });
+  return toRecapRibbon({ today: dayIn(now.toISOString(), timeZone), plays, spans: windows, slug });
 }

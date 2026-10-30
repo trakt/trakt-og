@@ -1,3 +1,6 @@
+/** UTC instants bounding a month's (or the year's) history, as the plays were counted. */
+export type RecapSpan = { readonly start: string; readonly end: string };
+
 export type RecapTag = { readonly kind: 'review' } | { readonly kind: 'left'; readonly days: number };
 
 export type RecapMonth = {
@@ -22,6 +25,10 @@ export type RecapMonth = {
   readonly label: string;
   /** Month in Review for months gone by, the history for this one, nothing for those to come. */
   readonly href: string | null;
+  /** The hover card's title: "October 2026 so far". */
+  readonly heading: string;
+  /** The history window its plays came from, for the card's split; null for months to come. */
+  readonly span: RecapSpan | null;
 };
 
 export type RecapRibbon = {
@@ -30,5 +37,7 @@ export type RecapRibbon = {
   readonly title: string;
   readonly plays: number;
   readonly href: string;
+  readonly heading: string;
+  readonly span: RecapSpan | null;
   readonly months: readonly RecapMonth[];
 };

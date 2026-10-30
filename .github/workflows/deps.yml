@@ -2,7 +2,7 @@ name: New Season aka Dependency Bump
 
 # Weekly, and by hand from "Run workflow". `bun run bump` moves every pin it can, keeps what passes `bun run ci`, and
 # writes the PR and the follow-up issues. The PR opens as a draft and goes back to draft on every update, so a human
-# reviews each set of pins before marking it ready, which merges it.
+# reviews each set of pins before merging it.
 on:
   schedule:
     - cron: '0 18 * * 0' # Sundays, 18:00 UTC

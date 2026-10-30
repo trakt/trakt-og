@@ -103,4 +103,4 @@ To try the production build locally, run `bun run preview` in `projects/client/`
 
 ## Deploys
 
-Every merge to main deploys og.trakt.tv through GitHub Actions, built with the `TRAKT_CLIENT_ID` repo secret. Nothing goes straight to main: a ready PR runs the checks and rebase-merges automatically once they pass. To redeploy main, maintainers use "Run workflow" on the CI workflow from main.
+Every merge to main deploys og.trakt.tv through GitHub Actions, built with the `TRAKT_CLIENT_ID` repo secret. Nothing goes straight to main: PRs run the checks, and a maintainer merges them. To redeploy main, maintainers use "Run workflow" on the CI workflow from main.

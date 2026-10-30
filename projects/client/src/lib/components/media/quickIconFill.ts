@@ -53,13 +53,13 @@ const fraction = (done: number | undefined, total: number | undefined, whole: bo
   return whole ? 1 : 0;
 };
 
-// OG's show and season tooltips (`global.js:830-892`): "60% watched", "12/20 episodes", "8 remaining".
+// OG's show and season tooltips (`global.js:830-892`): "60% watched", "12 / 20 episodes", "8 remaining".
 function progressTitle(done: number | undefined, aired: number | undefined, verb: string, includeZero = false) {
   if (done === undefined || (!done && !includeZero) || !aired) return undefined;
   const left = aired - done;
   return [
     `${Math.floor(Math.min(done / aired, 1) * 100)}% ${verb}`,
-    `${done}/${countLabel(aired, 'episode')}`,
+    `${done} / ${countLabel(aired, 'episode')}`,
     ...(left > 0 ? [`${left.toLocaleString('en-US')} remaining`] : []),
   ].join('\n');
 }

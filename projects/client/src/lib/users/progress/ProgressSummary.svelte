@@ -1,6 +1,6 @@
 <!--
   The summary strip on the right of the progress subnav, each icon in its meaning color with the number in white and
-  the word in gray: the percent watched with "133/154 episodes" under it on hover and the time left with its episode
+  the word in gray: the percent watched with "133 / 154 episodes" under it on hover and the time left with its episode
   count, then the show count. Until the rows are computed the strip keeps to the show count. The
   time left reads "~" while it's an estimate from show runtimes.
 -->
@@ -27,7 +27,7 @@ const plural = (n: number, word: string) => `${word}${n === 1 ? '' : 's'}`;
 <div class="progress-summary">
   {#if totals}
           <Stat label="Watched" svg={check} tone="watched" value="{totals.percent}%" noun="watched"
-        under="{number(totals.completed)}/{number(totals.aired)} {plural(totals.aired, 'episode')}" />
+        under="{number(totals.completed)} / {number(totals.aired)} {plural(totals.aired, 'episode')}" />
       <Stat label="Time left to watch" svg={clock} value="{totals.exact ? '' : '~'}{formatRuntime(totals.minutesLeft)}"
         noun="left" under="{number(totals.left)} {plural(totals.left, 'episode')}" />
   {/if}

@@ -2,15 +2,26 @@
   The glass strip of edit icons across the bottom of a list poster (manage mode) or a lists-page tile (reorder): round
   icon buttons on the notes sheet's glass. Buttons spread evenly across a poster; `centered` keeps them together on a
   wide tile. A button with the `edge` class (Move first on the first item) dims, and `drag` takes the grab cursor.
+  It slides up from behind the poster's bottom edge as the mode starts and back down as it ends.
     <EditStrip><button type="button" aria-label="Move first">...</button></EditStrip>
 -->
 <script lang="ts">
 import type { Snippet } from 'svelte';
+import { prefersReducedMotion } from 'svelte/motion';
+import { cubicOut } from 'svelte/easing';
 
 const { centered = false, children }: { centered?: boolean; children: Snippet } = $props();
+
+// Moving up its own height, clipped where it's still below the poster, so it rises from behind the poster's edge
+// instead of over the quick icons under it.
+const rise = (_node: Element) => ({
+  duration: prefersReducedMotion.current ? 0 : 200,
+  easing: cubicOut,
+  css: (_: number, u: number) => `transform: translateY(${u * 100}%); clip-path: inset(0 0 ${u * 100}% 0);`,
+});
 </script>
 
-<div class={['edit-strip', { centered }]}>{@render children()}</div>
+<div class={['edit-strip', { centered }]} transition:rise>{@render children()}</div>
 
 <style>
 .edit-strip {

@@ -30,7 +30,7 @@ describe('util: watchedIndicator', () => {
     expect(watchedIndicator({ stats: stats(70, 31), slug: 'sean', item })).toEqual({
       count: '50%',
       label: 'Watched',
-      title: '31/62 episodes\n70 plays',
+      title: '31 / 62 episodes\n70 plays',
       href: '/users/sean/history?show=3',
     });
     expect(watchedIndicator({ stats: stats(70, 80), slug: 'sean', item })).toMatchObject({
@@ -45,7 +45,7 @@ describe('util: watchedIndicator', () => {
       {
         count: '2',
         label: 'plays',
-        title: '0/7 episodes\n2 plays',
+        title: '0 / 7 episodes\n2 plays',
       },
     );
     expect(watchedIndicator({ stats: stats(2, 2), slug: 'sean', item: season })?.label).toBe('plays');

@@ -404,20 +404,21 @@
   --list-reorder-drag-opacity: 0.5;
 
   /* List page manage mode */
-  --list-manage-padding: 12px 0;
-  --space-list-manage-actions: 8px;
-  --color-list-manage-button-border: rgb(255 255 255 / 0.45); /* outline buttons on the blue band */
-  --color-list-manage-button-hover: rgb(255 255 255 / 0.15);
-  /* A mode button that's on (Manage on a list, Reorder on the lists page): the pill tabs' picked red wash. */
-  --color-mode-on-bg: var(--color-tab-picked-bg);
-  --color-mode-on-bg-hover: var(--color-tab-picked-bg-hover);
-  --color-mode-on-border: var(--color-tab-picked-border);
-  --color-mode-on-text: var(--color-tab-picked-text);
-  --color-list-manage-divider: rgb(255 255 255 / 0.3); /* between the band's groups: ranks, copy and move, delete */
-  --list-manage-divider-height: 24px;
-  --color-list-manage-delete: var(--brand-primary);
-  --color-list-manage-delete-hover: var(--brand-primary-darken);
-  --font-size-list-manage: 16px;
+  --space-list-manage-actions: var(--space-list-title-actions); /* the manage icons, spaced as the title's own */
+  /* "N selected": a pill in the items stat's blue. */
+  --list-manage-count-height: var(--comment-tool-size);
+  --space-list-manage-count: 10px;
+  --color-list-manage-count-bg: color-mix(in srgb, var(--color-stat-count) 22%, transparent);
+  --color-list-manage-count-border: color-mix(in srgb, var(--color-stat-count) 55%, transparent);
+  --color-list-manage-count-text: light-dark(#0b4f75, #fff);
+  /* Done, a mode button that's on (Manage on a list, Reorder on the lists page), in the episode grid's watched
+     green, and the list title row's matching wash. */
+  --color-mode-done: var(--color-progress-episode-done);
+  --color-mode-done-border: color-mix(in srgb, var(--color-mode-done) 60%, transparent);
+  --color-mode-done-bg: color-mix(in srgb, var(--color-mode-done) 16%, transparent);
+  --color-mode-done-bg-hover: color-mix(in srgb, var(--color-mode-done) 26%, transparent);
+  --color-mode-done-text: light-dark(#13803f, #fff);
+  --color-list-manage-row-bg: color-mix(in srgb, var(--color-mode-done) 12%, var(--color-surface));
   /* The poster's manage icons: one glass strip across the bottom, the notes sheet's glass. */
   --list-edit-bar-height: 36px;
   --list-edit-bar-padding: 4px;
@@ -438,11 +439,10 @@
   --list-title-padding: 4px 0 6px; /* .subnav-wrapper.list-title-wrapper */
   --list-title-heading-margin: 10px 0; /* .subnav-wrapper .left h2 */
   --list-title-pill-gap: 5px;
+  --list-grid-offset: 10px; /* on top of the poster grid's 20px: 30px from the band above to the first posters */
+  --list-description-padding: 14px 16px; /* the title row's: its 4px 0 6px padding plus the heading's 10px margins */
   --space-list-title-actions: var(--space-stat); /* between a list title's icons and buttons, as on a list row */
   /* The stats bar */
-  --font-size-list-stat-under: 11px;
-  --color-list-stat-under: #666;
-  --list-stat-under-offset: -15px;
   --list-stat-shimmer-percent-width: 28px; /* a percentage's place until the list's stats land */
   --list-stat-shimmer-runtime-width: 52px; /* the time to watch's, as wide as "2d 16h" */
   /* A list poster's notes: a glass pill centred over the bottom (the profile pills' glass), and a glass sheet that slides
@@ -1128,8 +1128,6 @@
   /* Dropdowns */
   --dropdown-min-width: 160px;
   --font-size-sort-direction: 21px; /* h2 .sort-wrapper .icon */
-  /* Dark mode drops the border: the popover arrows have none, so a gray outline looked detached from them. */
-  --color-dropdown-border: light-dark(rgb(0 0 0 / 0.15), transparent);
   --color-dropdown-text: light-dark(#333, #ccc);
   --color-dropdown-hover-text: light-dark(#262626, #ccc);
   --color-dropdown-hover-bg: light-dark(#f5f5f5, #222);
@@ -1325,8 +1323,6 @@
   --space-card-rating-top: 5px;
   --line-height-card-rating: 13px;
 
-  --radius-rating-popover: var(--radius-container);
-  --rating-arrow-size: 10px;
   --rating-popover-gap: 10px;
   --rating-popover-border-width: 1px;
   --rating-popover-body-block: 9px;
@@ -1334,8 +1330,6 @@
   --rating-prompt-inline: 8px;
   --rating-focus-width: 2px;
   --rating-busy-opacity: 0.65;
-  --color-rating-prompt: light-dark(#f7f7f7, #333);
-  --shadow-rating-popover: 0 5px 10px rgb(0 0 0 / 20%);
   /* The rating popover: PromptPopover's look, its title bar tinted in the rating being pointed at, over OG's hearts. */
   --rating-popover-width: 275px;
   --rating-meter-arrow: 12px;
@@ -2728,14 +2722,8 @@
   /* List picker and new-list modal (OG desktop popover/checkin modal values). */
   --list-border: 1px;
   --list-spinner-duration: 1s;
-  /* Copy and move list destinations (OG copy-list popover). */
-  --list-transfer-width: 300px;
-  --list-transfer-gap: 10px;
-  --list-transfer-header-line: 18px;
-  --list-transfer-divider-gap: 7px;
-  --list-transfer-list-padding: 5px;
 
-  /* The list picker: the shared prompt's surface, tinted in the card's list blue. */
+  /* The list picker and the copy and move pickers: the shared prompt's surface, tinted in the card's list blue. */
   --list-picker-width: var(--prompt-width);
   --list-picker-scroll-height: 320px;
   --space-list-picker-link: 8px; /* either side of a row's open link */
@@ -2749,14 +2737,6 @@
   --list-picker-link-scale: 0.85;
   --color-list-picker-tone: var(--brand-fifth);
   --color-list-picker-on: var(--brand-secondary); /* a picked row's icon and name, and the filter tool when it's on */
-  --list-header-block: 8px;
-  --list-row-size: 13px;
-  --list-row-gap: 2px;
-  --list-row-icon: 13px;
-  --list-scroll-height: 200px;
-  --list-privacy-size: 10px;
-  --list-privacy-inline: 4px;
-  --list-link-opacity: 0.2;
   --list-card-height: 40px;
   --list-card-width: 35px;
   --list-card-small-height: 34px;

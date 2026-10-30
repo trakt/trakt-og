@@ -1,8 +1,12 @@
 <!--
   A list position, centred over the top edge of the nearest positioned ancestor like OG's `.rank-wrapper`, drawn as a
-  dark glass pill: a list item's poster, a list row's poster fan.
+  dark glass pill: a list item's poster, a list row's poster fan. It fades in and out when its card toggles it (manage
+  and reorder modes swap it for the editable one), not when the card itself comes or goes.
 -->
 <script lang="ts">
+import { prefersReducedMotion } from 'svelte/motion';
+import { fade } from 'svelte/transition';
+
 interface Props {
   rank: number;
 }
@@ -10,7 +14,7 @@ interface Props {
 const { rank }: Props = $props();
 </script>
 
-<p class="rank">{rank}</p>
+<p class="rank" transition:fade={{ duration: prefersReducedMotion.current ? 0 : 200 }}>{rank}</p>
 
 <style>
 .rank {

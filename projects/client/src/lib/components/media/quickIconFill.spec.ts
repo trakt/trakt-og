@@ -67,13 +67,13 @@ describe('quickIconFill', () => {
         state: { watchedEpisodes: 12, collectedEpisodes: 20 },
         airedEpisodes: 20,
       });
-      expect(titles.watched).toBe('60% watched\n12/20 episodes\n8 remaining');
-      expect(titles.collected).toBe('100% in library\n20/20 episodes');
+      expect(titles.watched).toBe('60% watched\n12 / 20 episodes\n8 remaining');
+      expect(titles.collected).toBe('100% in library\n20 / 20 episodes');
     });
 
     it('should say collected for a season', () => {
       const fill = quickIconFill({ state: { collectedEpisodes: 1 }, airedEpisodes: 3, season: true });
-      expect(fill.titles.collected).toBe('33% collected\n1/3 episodes\n2 remaining');
+      expect(fill.titles.collected).toBe('33% collected\n1 / 3 episodes\n2 remaining');
     });
 
     it('should date a collected movie', () => {
@@ -91,7 +91,7 @@ describe('quickIconFill', () => {
       });
       expect(movie.titles.collected).toBe('Added to library on\nSep 29, 2026\nSynced from Plex');
       expect(movie.sources).toEqual(['plex']);
-      expect(show.titles.collected).toBe('100% in library\n3/3 episodes\nSynced from Plex and Jellyfin');
+      expect(show.titles.collected).toBe('100% in library\n3 / 3 episodes\nSynced from Plex and Jellyfin');
     });
 
     it('should honor the viewer date order and zone in the collection tooltip', () => {
@@ -138,7 +138,7 @@ describe('rewatch progress', () => {
     };
     expect(quickIconFill(params).watched).toBe(0);
     expect(quickIconFill(params).titles.watched).toBe(
-      '0% rewatched\n0/20 episodes\n0 plays\n20 remaining\n\n100% watched\n20/20 episodes\n25 plays',
+      '0% rewatched\n0 / 20 episodes\n0 plays\n20 remaining\n\n100% watched\n20 / 20 episodes\n25 plays',
     );
     expect(quickIconFill({ ...params, adjustRewatching: false }).watched).toBe(1);
   });

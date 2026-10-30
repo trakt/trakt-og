@@ -1,17 +1,19 @@
 <!--
   The stats bar on the right of a list page's subnav, each count with a tooltip. The icons carry their meaning color
   (purple watched, teal collected, blue for the rest) and the numbers stand alone, the words left to the tooltip:
-  Watched and Collected percentages with "2/10 items" under them on hover (signed in, not on official lists), the
-  time to watch, the items, the likes and the comments. The whole-list numbers come in `stats`, a promise when the
-  loader streams them; until then the bar shows the page's item count, with shimmers for the percentages and the time.
+  Watched and Collected percentages with "2 / 10 items" in gray in their tooltips (signed in, not on official lists), the
+  time to watch, then the Like button, the items and the comments button, as on a list row but with only its number.
+  The whole-list numbers come in `stats`, a promise when the loader streams them; until then the bar shows the page's
+  item count, with shimmers for the percentages and the time.
     <ListStats itemCount={57} stats={data.stats} progress likeCount={3} comments={{ count: 1, href }} />
 -->
 <script lang="ts">
+import ListCount from '$lib/components/lists/ListCount.svelte';
 import ListLikeButton from '$lib/components/lists/ListLikeButton.svelte';
+import { stripStatIcons } from '$lib/components/summary/stripStatIcons';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import clock from '$lib/icons/regular/clock.svg?raw';
-import comment from '$lib/icons/regular/comment.svg?raw';
 import file from '$lib/icons/regular/file.svg?raw';
 import thumbsUp from '$lib/icons/regular/thumbs-up.svg?raw';
 import checkThick from '$lib/icons/trakt/check-thick.svg?raw';
@@ -46,16 +48,15 @@ const number = (count: number) => count.toLocaleString('en-US');
 </script>
 
 {#snippet percentage(label: string, svg: string, value: ListProgressStat, total: number, kind: string)}
-  <Tooltip text={label}>
+  <Tooltip>
     {#snippet trigger(tooltip)}
-      <!-- A focus stop so the tooltip and the count under it show from the keyboard too. -->
+      <!-- A focus stop so the tooltip shows from the keyboard too. -->
       <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
       <span class={['stat', kind]} tabindex="0" {...tooltip}>
-        <span class="icon-slot"><Icon {svg} /></span><span class="text-wrapper"><span class="hidden">{label} </span
-          ><strong>{value.percent}%</strong><span class="under-count">{value.count}<span class="slash">/</span>{number(total)}
-            {plural(total, 'item')}</span></span>
+        <span class="icon-slot"><Icon {svg} /></span><span class="hidden">{label} </span><strong>{value.percent}%</strong>
       </span>
     {/snippet}
+    <span class="tip">{label}<span class="detail">{value.count} / {number(total)} {plural(total, 'item')}</span></span>
   </Tooltip>
 {/snippet}
 
@@ -110,17 +111,9 @@ const number = (count: number) => count.toLocaleString('en-US');
       {:else}{@render count('Likes', thumbsUp, likeCount, 'like', 'likes')}{/if}
     {/if}
     {@render count('Items', file, resolved?.count ?? itemCount, 'item', 'items')}
-    {#if comments}
-      <Tooltip text="Comments">
-        {#snippet trigger(tooltip)}
-          <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
-          <a class="stat" href={comments.href} {...tooltip}>
-            <span class="icon-slot"><Icon svg={comment} /></span><strong>{number(comments.count)}</strong><span class="hidden">
-              {plural(comments.count, 'comment')}</span>
-          </a>
-        {/snippet}
-      </Tooltip>
-    {/if}
+    <!-- Comments, like Like, as the list rows' button: it opens the comments page. -->
+    {#if comments}<span class="comments"><ListCount svg={stripStatIcons.comments} iconColor="var(--color-stat-comments)"
+      value={comments.count} word="comment" href={comments.href} /></span>{/if}
   </div>
 {/snippet}
 
@@ -165,10 +158,6 @@ strong {
   font-weight: var(--font-weight-headings-heavy);
 }
 
-a.stat:is(:hover, :focus-visible) strong {
-  color: var(--color-stat-count);
-}
-
 .icon-slot {
   display: inline-flex;
   margin-inline-end: var(--space-stat);
@@ -185,31 +174,17 @@ a.stat:is(:hover, :focus-visible) strong {
   }
 }
 
-.text-wrapper {
-  display: inline-block;
-  position: relative;
+/* The tooltip: the stat's name over its count in gray, like the watched tooltips. */
+.tip {
+  display: grid;
 }
 
-.under-count {
-  position: absolute;
-  inset-block-end: var(--list-stat-under-offset);
-  inset-inline-start: 0;
-  color: var(--color-list-stat-under);
-  font-size: var(--font-size-list-stat-under);
-  text-transform: none;
-  opacity: 0;
-  transition: opacity 0.5s;
-
-  .stat:is(:hover, :focus-visible) & {
-    opacity: 1;
-  }
-}
-
-.slash {
-  margin-inline: 2px;
+.detail {
+  color: var(--color-tooltip-muted);
 }
 
 /* OG showed only the numbers; the words stay for screen readers. */
+.comments :global(.count-text),
 .hidden {
   position: absolute;
   inline-size: 1px;
@@ -217,11 +192,5 @@ a.stat:is(:hover, :focus-visible) strong {
   overflow: hidden;
   clip-path: inset(50%);
   white-space: nowrap;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .under-count {
-    transition: none;
-  }
 }
 </style>

@@ -26,7 +26,7 @@ describe('toBuiltInRow', () => {
     ]);
   });
 
-  it('should name the row, link it and leave out likes, comments and the description', () => {
+  it("should name the row, link it and leave out likes and comments, with OG's default description", () => {
     const row = toBuiltInRow({ kind: 'favorites', profile, itemCount: 51, items: [] });
     expect(row).toMatchObject({
       key: 'favorites',
@@ -37,7 +37,11 @@ describe('toBuiltInRow', () => {
       owner: { slug: 'tester', name: 'Tester', href: '/users/tester' },
       itemCount: 51,
     });
-    expect([row.likeCount, row.commentCount, row.description]).toEqual([undefined, undefined, undefined]);
+    expect([row.likeCount, row.commentCount, row.description]).toEqual([
+      undefined,
+      undefined,
+      'My favorite shows and movies.',
+    ]);
     expect(toBuiltInRow({ kind: 'watchlist', profile, itemCount: 0, items: [] }).name).toBe('Watchlist');
   });
 });

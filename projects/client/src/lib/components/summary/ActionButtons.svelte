@@ -109,7 +109,7 @@ const percentOf = (count: number) => `${progress?.visible ? Math.trunc(count / p
   {#if progress}
     {#each [['watch', check, progress.watched, 'watched', 'var(--brand-tertiary)'], ['collect', collection, progress.collected, 'in library', 'var(--brand-quaternary)']] as const as [kind, icon, count, label, color] (kind)}
       <SummaryAction readonly {color} {icon} percent={percentOf(count)} text={label} selected={count > 0}
-        detail="{count}/{progress.total} {progress.total === 1 ? 'item' : 'items'}" />
+        detail="{count} / {progress.total} {progress.total === 1 ? 'item' : 'items'}" />
     {/each}
   {/if}
   {#each buttons as { kind, icon, label, color, side } (kind)}

@@ -1,6 +1,7 @@
 <!--
-  The lists page's reorder controls on a list tile: the editable rank pill, and drag, move first, up, down and last in
-  the glass edit strip across the tile's bottom.
+  The lists page's reorder controls on a list tile: the editable rank pill, over the first poster where the rank pill
+  sits (the tile's `--rank-anchor-width`), and drag, move first, up, down and last in the glass edit strip across the
+  tile's bottom.
 -->
 <script lang="ts">
 import EditStrip from '$lib/components/lists/EditStrip.svelte';
@@ -22,7 +23,7 @@ interface Props {
 }
 const { name, rank, total, busy = false, onmove, ondrag }: Props = $props();
 </script>
-<RankInput {name} {rank} {busy} {onmove} />
+<span class="rank-anchor"><RankInput {name} {rank} {busy} {onmove} /></span>
 <div class="controls">
   <EditStrip centered>
     <Tooltip text="Drag to reorder">
@@ -49,6 +50,13 @@ const { name, rank, total, busy = false, onmove, ondrag }: Props = $props();
   </Tooltip>
 {/snippet}
 <style>
+.rank-anchor {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  inline-size: var(--rank-anchor-width, 100%);
+}
+
 /* Covers the tile, so a click while reordering doesn't open the list. */
 .controls {
   position: absolute;

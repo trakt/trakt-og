@@ -7,7 +7,7 @@ import type { TooltipLine } from './TooltipLine.ts';
 export type StatTip = Readonly<{
   label?: string;
   value?: string;
-  /** Gray after the value: "12/20 episodes", "ratings". */
+  /** Gray after the value: "12 / 20 episodes", "ratings". */
   unit?: string;
   /** A bold line in place of a value, like an episode's title. */
   title?: string;

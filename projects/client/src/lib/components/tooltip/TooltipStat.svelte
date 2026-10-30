@@ -19,7 +19,7 @@ const { label, value, unit, title, lines = [], children }: StatTip & { children?
   {#if value}<span class="value">{value}{#if unit}<span class="unit">{unit}</span>{/if}</span>{/if}
   {#each lines as line, i (i)}
     <span class={['line', { dash: Boolean(line.color), muted: line.muted }]} style:--dash={line.color}><span
-      >{line.text}{#if line.detail} <em class="detail">{line.detail}</em>{/if}</span></span>
+      >{line.text} {#if line.detail}<em class="detail">{line.detail}</em>{/if}</span></span>
   {/each}
   {@render children?.()}
 </span>

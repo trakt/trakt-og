@@ -220,7 +220,7 @@ async function open(force: boolean): Promise<'date' | 'remove' | 'partial' | nul
   {/snippet}
 </WatchPopover>
 {#snippet detail()}
-  {#if plural}{completed}/{target.airedEpisodes} eps &mdash; {countLabel(plays ?? 0, 'play')}{#if target.runtime} <em>({formatRuntime((plays ?? 0) * target.runtime)})</em>{/if}
+  {#if plural}{completed} / {target.airedEpisodes} eps &mdash; {countLabel(plays ?? 0, 'play')} {#if target.runtime}<em>({formatRuntime((plays ?? 0) * target.runtime)})</em>{/if}
   {:else if viewerState.lastWatchedAt}{viewerState.lastWatchedAt.startsWith('1970-01-01') ? 'Unknown date' : formatDate(viewerState.lastWatchedAt, { ...dates, time: true })}{/if}
 {/snippet}
 {#snippet watchedTip()}{#if fill.tips.watched}<ProgressTip progress={fill.tips.watched} />{:else if fill.tips.plays}<PlaysTip

@@ -4,6 +4,12 @@ import type { ListView } from './toListView.ts';
 
 export type BuiltInListKind = 'watchlist' | 'favorites';
 
+/** OG's descriptions for a watchlist or favorites left blank. The API never returns either list's own. */
+export const builtInListDescriptions: Readonly<Record<BuiltInListKind, string>> = {
+  watchlist: 'Movies, shows, seasons, and episodes I plan to watch.',
+  favorites: 'My favorite shows and movies.',
+};
+
 type BuiltInListViewParams = {
   kind: BuiltInListKind;
   profile: Pick<ProfileUser, 'slug' | 'isPrivate'>;
@@ -19,7 +25,7 @@ type BuiltInListViewParams = {
 
 /**
  * The watchlist or favorites as a list page's list. The API has no read for either
- * list object, so og supplies its classic names, no likes, the watchlist unranked and favorites ranked. Comments are on
+ * list object, so og supplies its classic names and descriptions, no likes, the watchlist unranked and favorites ranked. Comments are on
  * when the list has any, since OG only linked them when they were allowed.
  */
 export function toBuiltInListView({
@@ -34,6 +40,7 @@ export function toBuiltInListView({
     id: id ?? 0,
     slug: kind,
     name: kind === 'watchlist' ? 'Watchlist' : 'Favorites',
+    description: builtInListDescriptions[kind],
     href: `/users/${profile.slug}/${kind}`,
     kind,
     ownerSlug: profile.slug,

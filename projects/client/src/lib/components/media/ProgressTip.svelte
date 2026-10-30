@@ -1,5 +1,5 @@
 <!--
-  A show's progress tooltip, in the summary watched button's words: "3% watched" over "1/32 eps — 1 play (49m)", with
+  A show's progress tooltip, in the summary watched button's words: "3% watched" over "1 / 32 eps — 1 play (49m)", with
   the summary's progress bar in the tooltip's footer. A rewatch shows its own run over the whole show's, under a
   divider, and a bar for each. Leave the bar off (`bar={false}`) when the tooltip is for a progress bar already.
   `library` colors the bar like the summary's library one, and `footer` adds to the footer under it (the library's
@@ -27,7 +27,7 @@ const { progress, bar = true, library = false, footer }: Props = $props();
   {#each progress as run (run.verb)}
     <span class="run">
       <span><b>{run.percent}%</b> {run.verb}</span>
-      <span class="detail">{watchedProgressDetail(run)}{#if run.plays !== undefined && run.minutes} <em
+      <span class="detail">{watchedProgressDetail(run)} {#if run.plays !== undefined && run.minutes}<em
           >({formatRuntime(run.minutes)})</em>{/if}</span>
     </span>
   {/each}

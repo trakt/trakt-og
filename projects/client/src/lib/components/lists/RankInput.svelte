@@ -1,10 +1,13 @@
 <!--
   OG's editable rank pill in reorder and manage modes (`editRank` in `lists.js`): it shows the rank over the top edge
   of the nearest positioned ancestor, like RankPill. Focusing it selects the number; Enter or blur moves the item
-  there, and Escape backs out. `focus()` lets a "Change position" icon start the edit.
+  there, and Escape backs out. `focus()` lets a "Change position" icon start the edit. It fades in and out with the
+  mode, crossing the rank pill it stands in for.
     <RankInput name="Heat" rank={3} onmove={(rank) => move(item, rank)} />
 -->
 <script lang="ts">
+import { prefersReducedMotion } from 'svelte/motion';
+import { fade } from 'svelte/transition';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 
 interface Props {
@@ -39,6 +42,7 @@ const begin = (event: FocusEvent) => {
   {#snippet trigger(tooltip)}
     <input bind:this={input} class="rank" type="text" inputmode="numeric" aria-label="Position of {name}"
       value={editing ? draft : rank} disabled={busy} {...tooltip} onfocus={begin}
+      transition:fade={{ duration: prefersReducedMotion.current ? 0 : 200 }}
       oninput={(event) => draft = event.currentTarget.value} onblur={commit}
       onkeydown={(event) => {
         if (event.key === 'Enter') { event.preventDefault(); commit(); input?.blur(); }

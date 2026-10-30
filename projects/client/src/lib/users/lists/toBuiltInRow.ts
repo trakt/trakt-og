@@ -1,4 +1,5 @@
 import type { z } from 'zod/v4';
+import { builtInListDescriptions } from '../../lists/toBuiltInListView.ts';
 import { imageUrl } from '../../utils/imageUrl.ts';
 import type { ProfileUser } from '../ProfileUser.ts';
 import type { listItemsSchema } from './listItemsSchema.ts';
@@ -29,7 +30,8 @@ const art = (media: { images?: { poster?: readonly string[] | null } | null } | 
 
 /**
  * The watchlist or favorites row at the top of `/users/:id/lists`. Neither can be
- * liked, and the API has no read for their description or whether comments are on, so both are left out.
+ * liked, and the API has no read for their description or whether comments are on: the row takes OG's default
+ * description and leaves comments out.
  */
 export function toBuiltInRow({ kind, profile, items, itemCount }: BuiltInRowParams): UserListRow {
   const href = `/users/${profile.slug}`;
@@ -42,6 +44,7 @@ export function toBuiltInRow({ kind, profile, items, itemCount }: BuiltInRowPara
     owner: { slug: profile.slug, name: profile.displayName, href, avatar: profile.avatarUrl, vip: profile.vip },
     posters: items.slice(0, 5).map(poster),
     itemCount,
+    description: builtInListDescriptions[kind],
     pills: [],
     shareLink: false,
     isPublic: false,

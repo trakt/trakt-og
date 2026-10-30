@@ -8,8 +8,12 @@ import { rawApiFetch } from '$lib/api/rawApiFetch';
 import { overlay } from '$lib/overlay/overlay';
 import { toast } from '$lib/components/toast/toast.svelte';
 import EmptyNote from '$lib/components/empty/EmptyNote.svelte';
+import LinkButton from '$lib/components/button/LinkButton.svelte';
+import SearchField from '$lib/components/filters/SearchField.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
+import { listRowIcon } from '$lib/components/lists/listRowIcon';
 import { loadListCatalog } from '$lib/components/lists/loadListCatalog';
+import { pickerSections } from '$lib/components/lists/pickerSections';
 import { sortPickerLists } from '$lib/components/lists/sortPickerLists';
 import type { PickerList } from '$lib/components/lists/PickerList';
 import { fetchListItemRefs } from '$lib/lists/fetchListItemRefs';
@@ -18,11 +22,10 @@ import type { ListView } from '$lib/lists/toListView';
 import type { ListQuery } from '$lib/lists/ListQuery';
 import type { ListSort } from '$lib/lists/resolveListSort';
 import Icon from '$lib/icons/Icon.svelte';
-import close from '$lib/icons/trakt/delete-thick.svg?raw';
-import search from '$lib/icons/solid/magnifying-glass.svg?raw';
-import dot from '$lib/icons/trakt/dot.svg?raw';
-import friends from '$lib/icons/trakt/friends.svg?raw';
-import arrow from '$lib/icons/solid/angle-right.svg?raw';
+import add from '$lib/icons/trakt/add-thick.svg?raw';
+import close from '$lib/icons/regular/xmark.svg?raw';
+import search from '$lib/icons/regular/magnifying-glass.svg?raw';
+import arrow from '$lib/icons/light/angle-right.svg?raw';
 import spinner from '$lib/icons/solid/arrows-rotate.svg?raw';
 import { GENERIC_ERROR } from '../../utils/genericError.ts';
 import { viewerFetch } from '../../auth/viewerFetch.ts';
@@ -35,7 +38,6 @@ interface Props {
   move?: boolean;
   svg: string;
   busy?: boolean;
-  managing?: boolean;
   onbusychange?: (busy: boolean) => void;
 }
 const {
@@ -46,7 +48,6 @@ const {
   move = false,
   svg,
   busy: otherBusy = false,
-  managing = false,
   onbusychange = () => {},
 }: Props = $props();
 const id = $props.id();
@@ -67,6 +68,13 @@ const rows = $derived(sortPickerLists(lists.filter((list) => list.id !== source.
 const listLimit = $derived(page.data.settings?.limits?.list);
 const watchLimit = $derived(page.data.settings?.limits?.watchlist?.item_count);
 const hasWatchlist = $derived(!(source.kind === 'watchlist' && source.ownerSlug === page.data.user?.slug));
+const byId = $derived(new Map(rows.map((list) => [list.id, list])));
+// The poster picker's groups, with nothing listed yet: the watchlist (0) and own lists, then collaborations.
+const sections = $derived(
+  pickerSections(rows, false)
+    .map((section) => ({ ...section, ids: hasWatchlist ? section.ids : section.ids.filter(Boolean) }))
+    .filter(({ ids }) => ids.length),
+);
 $effect(() => {
   void source.id;
   created = null;
@@ -220,12 +228,12 @@ function toggle(event: ToggleEvent) {
 </script>
 <!-- Canonical list URLs are shared by personal, official and built-in lists. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-<span class="control" class:managing style:anchor-name="--transfer-{id}">
+<span class="control" style:anchor-name="--transfer-{id}">
   <Tooltip text="{label} items into another list">
     {#snippet trigger(tooltip)}
       <button bind:this={triggerButton} type="button" class="trigger" aria-label="{label} items into another list" disabled={busy || otherBusy} aria-busy={busy}
         aria-haspopup="dialog" aria-expanded={expanded} aria-controls="transfer-{id}" {...tooltip} onclick={open}>
-        <Icon {svg} /><span class="text">{label}</span>
+        <Icon {svg} />
       </button>
     {/snippet}
   </Tooltip>
@@ -233,197 +241,286 @@ function toggle(event: ToggleEvent) {
 <div bind:this={popover} id="transfer-{id}" class="picker" popover="auto" role="dialog"
   aria-label="{label} items into a list"
   aria-busy={busy} style:position-anchor="--transfer-{id}" ontoggle={toggle}>
-  <header><span>{label} <b>{count.toLocaleString('en-US')}</b> {count === 1 ? 'item' : 'items'} into...</span>
-    <div class="tools"><button aria-label="Filter by title" aria-pressed={searching} onclick={searchToggle}><Icon svg={search} /></button><button aria-label="Close list picker" onclick={() => popover?.hidePopover()}><Icon svg={close} /></button></div>
+  <header class="head">
+    <div class="title">
+      <h3>{label} items</h3>
+      <p><b>{count.toLocaleString('en-US')}</b> {count === 1 ? 'item' : 'items'} into a list</p>
+    </div>
+    <button type="button" class="tool" aria-label="Filter lists" aria-pressed={searching} onclick={searchToggle}><Icon
+        svg={search} /></button>
+    <button type="button" class="tool" aria-label="Close list picker" onclick={() => popover?.hidePopover()}><Icon
+        svg={close} /></button>
   </header>
-  {#if searching}<div class="search"><input bind:this={input} aria-label="Search lists" placeholder="Search term..." bind:value={terms} /></div>{/if}
-  <ul>
-    {@render row(null, 'New List', 0, '', undefined, false)}
-    {#if hasWatchlist}{@render row(null, 'Watchlist', watchlistCount, '', `/users/${page.data.user?.slug}/watchlist`, true)}{/if}
-    {#each rows as list, i (list.id)}{@render row(list, list.name, list.count, list.privacy, `/lists/${list.id}`, false, i === 0)}{/each}
-    {#if searching && terms.trim() && rows.length === 0}<li class="divider note"><EmptyNote>No lists match “{terms.trim()}”.</EmptyNote></li>{/if}
-  </ul>
+  <div class={['search', { open: searching }]} inert={!searching}>
+    <div class="search-clip">
+      <div class="search-field">
+        <SearchField bind:element={input} bind:value={terms} label="Filter lists" placeholder="Filter lists" />
+      </div>
+    </div>
+  </div>
+  <div class="scroll">
+    {#each sections as section (section.key)}
+      <h4 id="transfer-{id}-{section.key}">{section.title}</h4>
+      <ul aria-labelledby="transfer-{id}-{section.key}">
+        {#each section.ids as rowId (rowId)}
+          {@const list = byId.get(rowId)}
+          {#if rowId === 0}
+            {@render row(null, 'Watchlist', watchlistCount, `/users/${page.data.user?.slug}/watchlist`)}
+          {:else if list}
+            {@render row(list, list.name, list.count, `/lists/${list.id}`)}
+          {/if}
+        {/each}
+      </ul>
+    {/each}
+    {#if searching && terms.trim() && rows.length === 0}<div class="empty"><EmptyNote>No lists match “{terms.trim()}”.</EmptyNote></div>{/if}
+  </div>
+  <footer class={{ pending: pending === 0, error: failed === 0 }}><LinkButton onclick={() => transfer(null, false)}
+      disabled={busy || otherBusy} variant="outline"><Icon svg={pending === 0 ? spinner : add} />New list</LinkButton></footer>
 </div>
-{#snippet row(list: PickerList | null, name: string, total: number, privacy: string, href?: string, watchlist = false, divider = false)}
-  {@const rowId = watchlist ? -1 : list?.id ?? 0}
-  {@const limit = watchlist ? watchLimit : list ? listLimit?.item_count : undefined}
-  <li class:divider class:maxed={limit !== undefined && total >= limit} class:pending={pending === rowId}
-  class:error={failed === rowId}
-  title={href ? `${total.toLocaleString('en-US')} ${total === 1 ? 'item' : 'items'}` : undefined}>
-    <button type="button" class="row" disabled={busy || otherBusy} onclick={() => transfer(list, watchlist)}>
-      <Icon svg={pending === rowId ? spinner : list?.collaboration ? friends : dot} />
-      <span>{name}{#if privacy && privacy !== 'public'}<span class="privacy">{privacy}</span>{/if}</span>
+{#snippet row(list: PickerList | null, name: string, total: number, href: string)}
+  {@const rowId = list?.id ?? -1}
+  {@const limit = list ? listLimit?.item_count : watchLimit}
+  {@const icon = listRowIcon(list)}
+  <li class={[icon.size, { maxed: limit !== undefined && total >= limit, pending: pending === rowId, error: failed === rowId }]}
+    title="{total.toLocaleString('en-US')} {total === 1 ? 'item' : 'items'}">
+    <button type="button" class="row" disabled={busy || otherBusy} onclick={() => transfer(list, !list)}>
+      <Icon svg={pending === rowId ? spinner : icon.svg} fixedWidth />
+      <span class="name">{name}</span>
     </button>
-    {#if href}<a {href} target="_blank" rel="noopener" aria-label="View {name}"><Icon svg={arrow} /></a>{/if}
+    <a {href} target="_blank" rel="noopener" aria-label="View {name}"><Icon svg={arrow} /></a>
   </li>
 {/snippet}
 <style>
 .control {
   display: inline-flex;
 }
-/* An outline button that matches the toolbar's controls, in the title row and the manage band alike. */
+/* An icon in a rounded box that fills on hover, like the list title's edit and share icons. */
 .trigger {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-control-caret);
-  min-block-size: var(--control-height);
-  padding: 0 var(--space-control-inline);
-  border: 1px solid var(--transfer-border, var(--color-control-border));
-  border-radius: var(--radius-control);
+  display: inline-grid;
+  place-items: center;
+  inline-size: var(--comment-tool-size);
+  block-size: var(--comment-tool-size);
+  min-block-size: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-comment-tool);
   background: none;
-  color: var(--transfer-text, var(--color-control-text));
-  font-size: var(--font-size-tool-icon-small);
+  color: var(--color-control-text);
+  font-size: var(--font-size-list-row-action);
   line-height: 1;
-  transition: background-color 0.2s, border-color 0.2s;
+  transition: background-color var(--transition-comment-quiet);
 
   &:is(:hover, :focus-visible):not(:disabled) {
-    border-color: var(--transfer-hover-border, var(--color-control-border-hover));
-    background-color: var(--transfer-hover-bg, var(--color-control-hover-bg));
+    background-color: var(--color-comment-chip);
   }
-}
-.text {
-  font-family: var(--font-headings);
-  font-size: var(--font-size-control);
-  font-weight: var(--font-weight-control);
 }
 button:focus-visible,
 a:focus-visible {
   outline: var(--list-border) solid var(--color-input-border-focus);
   outline-offset: var(--list-border);
 }
+/* The poster list picker's surface (MediaList): its tinted title bar with the filter and close tools, the filter that
+   grows in, groups of menu rows and a New list footer. */
 .picker {
+  --tone: var(--color-list-picker-tone);
   position: fixed;
   inset: auto;
   position-area: bottom;
   position-try-fallbacks: flip-block, flip-inline;
-  inline-size: var(--list-transfer-width);
+  inline-size: var(--list-picker-width);
   max-inline-size: calc(100vw - var(--gutter));
-  margin: var(--list-transfer-gap) 0 0;
+  margin: var(--space-menu-offset) 0;
   padding: 0;
   overflow: visible;
-  border: var(--list-border) solid var(--color-dropdown-border);
-  border-radius: var(--radius-rating-popover);
-  background: var(--color-box);
-  color: var(--color-text);
-  box-shadow: var(--shadow-rating-popover);
-  font: var(--list-row-size) / var(--line-height-base) var(--font-body);
+  border: 1px solid var(--color-menu-border);
+  border-radius: var(--radius-menu);
+  background-color: var(--color-menu-bg);
+  color: var(--color-dropdown-menu-text);
+  box-shadow: var(--shadow-menu);
+  font: var(--font-size-menu) / var(--line-height-base) var(--font-body);
+  text-align: start;
 }
-.picker::before {
-  content: '';
-  position: absolute;
-  inset-block-end: 100%;
-  inset-inline-start: calc(50% - var(--rating-arrow-size));
-  border: var(--rating-arrow-size) solid transparent;
-  border-block-end-color: var(--color-rating-prompt);
-}
-header {
+.head {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: var(--list-header-block) var(--rating-popover-body-inline);
-  background: var(--color-rating-prompt);
-  border-block-end: var(--list-border) solid var(--color-menu-divider);
-  border-radius: var(--radius-rating-popover) var(--radius-rating-popover) 0 0;
-  font: var(--font-size-base) / var(--list-transfer-header-line) var(--font-headings);
+  gap: var(--space-prompt-head-gap);
+  padding: var(--space-prompt-head);
+  border-block-end: 1px solid color-mix(in srgb, var(--tone) var(--prompt-tint-border), var(--color-menu-border));
+  border-radius: calc(var(--radius-menu) - 1px) calc(var(--radius-menu) - 1px) 0 0;
+  background: color-mix(in srgb, var(--tone) var(--prompt-tint), var(--color-menu-bg));
 }
-.tools {
-  display: flex;
-  gap: var(--space-xs-inline);
+.title {
+  flex: 1;
+  min-inline-size: 0;
+  & h3 {
+    margin: 0;
+    color: var(--color-prompt-title);
+    font-family: var(--font-headings);
+    font-size: var(--font-size-prompt-title);
+    font-weight: var(--font-weight-headings-heavy);
+    line-height: var(--line-height-prompt-title);
+  }
+  & p {
+    margin: 0;
+    color: var(--color-menu-header);
+    font-size: var(--font-size-small);
+  }
+  & b {
+    color: var(--color-prompt-title);
+    font-variant-numeric: tabular-nums;
+  }
 }
-.tools button {
-  border: 0;
-  padding: 0;
+.tool {
+  flex: none;
+  display: grid;
+  place-items: center;
+  inline-size: var(--prompt-close-size);
+  block-size: var(--prompt-close-size);
   min-block-size: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-menu-row);
   background: none;
-  color: var(--color-text-muted);
-  line-height: 1;
+  color: var(--color-menu-header);
+  font-size: var(--font-size-prompt-close);
+  &:is(:hover, :focus-visible, [aria-pressed='true']) {
+    background-color: var(--color-menu-row-hover);
+    color: var(--color-menu-row-hover-text);
+    outline: none;
+  }
+  &[aria-pressed='true'] {
+    color: var(--color-list-picker-on);
+  }
 }
-.tools button[aria-pressed='true'] {
-  color: var(--brand-primary);
+.search {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition: grid-template-rows var(--transition-list-picker-search), opacity var(--transition-list-picker-search);
+  &.open {
+    grid-template-rows: 1fr;
+    opacity: 1;
+  }
+}
+.search-clip {
+  min-block-size: 0;
+  overflow: hidden;
+}
+.search-field {
+  padding: var(--space-list-picker-search);
+  & :global(input:focus) {
+    border-color: var(--color-list-picker-on);
+    box-shadow: 0 0 0 var(--list-picker-search-ring) var(--color-list-picker-search-ring);
+  }
+}
+.scroll {
+  max-block-size: var(--list-picker-scroll-height);
+  padding: 0 var(--space-menu) var(--space-menu);
+  overflow: hidden auto;
+  overscroll-behavior: contain;
+}
+h4 {
+  margin: 0;
+  padding: var(--space-menu-header);
+  color: var(--color-menu-header);
+  font-size: var(--font-size-menu-header);
+  font-weight: var(--font-weight-menu-header);
+  letter-spacing: var(--letter-spacing-menu-header);
+  text-transform: uppercase;
 }
 ul {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
   margin: 0;
-  padding: var(--rating-popover-body-block) 0 calc(var(--rating-popover-body-block) +
-    var(--list-transfer-list-padding));
-  max-block-size: var(--list-scroll-height);
-  overflow-y: auto;
-  overscroll-behavior: contain;
+  padding: 0;
   list-style: none;
 }
 li {
   display: flex;
   align-items: center;
-  margin-block-start: var(--list-row-gap);
-}
-li.divider {
-  margin-block-start: var(--list-transfer-divider-gap);
-  padding-block-start: var(--list-transfer-divider-gap);
-  border-block-start: var(--list-border) solid var(--color-menu-divider);
-}
-li.note {
-  padding-inline: var(--space-sm-inline);
-}
-li.pending {
-  color: var(--brand-secondary);
-}
-li.error {
-  color: var(--brand-danger);
-}
-li.maxed .row {
-  text-decoration: line-through;
+  min-inline-size: 0;
+  border-radius: var(--radius-menu-row);
+  &:has(:is(.row, a):is(:hover, :focus-visible)) {
+    background-color: var(--color-menu-row-hover);
+    color: var(--color-menu-row-hover-text);
+  }
 }
 .row {
   display: flex;
-  align-items: center;
   flex: 1;
-  gap: var(--space-xs-inline);
-  padding: 0 0 0 var(--space-sm-inline);
-  border: 0;
+  align-items: center;
+  gap: var(--space-prompt-row-icon);
+  min-inline-size: 0;
   min-block-size: 0;
+  padding: var(--space-list-picker-row);
+  border: 0;
   background: none;
   color: inherit;
-  text-align: start;
   font: inherit;
+  text-align: start;
+  &:focus-visible {
+    outline: none;
+  }
+  & > :global(.icon) {
+    flex: none;
+    color: var(--color-menu-header);
+    font-size: var(--font-size-prompt-row-icon);
+  }
 }
-.row > :global(.icon) {
-  flex: 0 0 var(--list-row-icon);
+/* Scaled, not resized, so the names stay lined up. */
+li.people .row > :global(.icon) {
+  scale: var(--list-picker-people-scale);
 }
-.privacy {
-  display: inline-block;
-  margin-inline-start: var(--space-xs-inline);
-  padding: var(--space-xs-block) var(--list-privacy-inline);
-  background: var(--color-text-muted);
-  color: var(--color-text-inverse);
-  border-radius: var(--radius-sm);
-  font: var(--list-privacy-size) / var(--line-height-base) var(--font-headings);
-  text-transform: uppercase;
+li.link .row > :global(.icon) {
+  scale: var(--list-picker-link-scale);
+}
+.name {
+  flex: 1;
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+li.maxed .name {
+  text-decoration: line-through;
+}
+li.pending .row,
+li.pending .row > :global(.icon) {
+  color: var(--color-list-picker-on);
+}
+li.error .row,
+li.error .row > :global(.icon) {
+  color: var(--brand-danger);
 }
 li a {
-  padding-inline: var(--space-base-inline);
-  opacity: var(--list-link-opacity);
-  color: inherit;
-}
-li a:is(:hover, :focus-visible) {
-  opacity: 1;
-}
-.search {
-  padding: var(--space-sm-inline);
-  background: var(--color-rating-prompt);
-}
-.search input {
-  inline-size: 100%;
-}
-@media (width < 992px) {
-  .control:not(.managing) .text {
-    display: none;
+  display: grid;
+  flex: none;
+  place-items: center;
+  align-self: stretch;
+  padding-inline: var(--space-list-picker-link);
+  border-radius: var(--radius-menu-row);
+  color: var(--color-menu-header);
+  font-size: var(--font-size-menu-check);
+  &:is(:hover, :focus-visible) {
+    color: var(--color-menu-row-hover-text);
+    outline: none;
   }
 }
-@media (width < 768px) {
-  .managing .text {
-    display: none;
+.empty {
+  padding: var(--space-menu-row);
+  padding-block-start: var(--space-menu);
+  text-align: center;
+}
+footer {
+  display: grid;
+  padding: var(--space-list-picker-footer);
+  border-block-start: 1px solid var(--color-menu-divider);
+  &.error :global(.link-button) {
+    color: var(--brand-danger);
   }
 }
-.pending :global(.icon) {
+li.pending .row > :global(.icon),
+footer.pending :global(.icon) {
   animation: spin var(--list-spinner-duration) linear infinite;
 }
 @keyframes spin {
@@ -432,8 +529,12 @@ li a:is(:hover, :focus-visible) {
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .pending :global(.icon) {
+  li.pending .row > :global(.icon),
+  footer.pending :global(.icon) {
     animation: none;
+  }
+  .search {
+    transition: none;
   }
 }
 </style>

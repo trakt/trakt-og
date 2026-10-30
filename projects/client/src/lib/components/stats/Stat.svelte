@@ -3,7 +3,8 @@
   With a `label` it's a focus stop with that tooltip; `under` adds a gray second line to the tooltip (the progress strip's
   "133 / 154 episodes"). `tone` picks the icon color: `watched` purple, `collected` the library's
   teal, `done` green, and `count` (the default) blue for counts and times. `bare` leaves the word to the tooltip and
-  screen readers, for toolbars, where room is short; rows keep their words.
+  screen readers, for toolbars, where room is short; rows keep their words. `aside` follows the number in the same
+  white, like the progress rows' "14h 44m (20 eps) left".
     <Stat svg={hourglass} value="4d 9h" noun="left" label="Time left to watch" bare />
 -->
 <script lang="ts">
@@ -17,18 +18,19 @@ interface Props {
   /** The tooltip. Left out, the stat is plain text with no focus stop. */
   label?: string;
   under?: string;
+  aside?: string;
   tone?: 'count' | 'watched' | 'collected' | 'done';
   bare?: boolean;
 }
 
-const { svg, value, noun, label, under, tone = 'count', bare = false }: Props = $props();
+const { svg, value, noun, label, under, aside, tone = 'count', bare = false }: Props = $props();
 </script>
 
 {#snippet body(props: Record<string | symbol, unknown> = {})}
   <!-- A focus stop so the tooltip shows from the keyboard too. -->
   <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
   <span class={['stat', tone]} tabindex={label ? 0 : undefined} {...props}>
-    <span class="icon-slot"><Icon {svg} /></span><span><strong>{value}</strong> <span class={['noun', { 'visually-hidden': bare }]}>{noun}</span></span>
+    <span class="icon-slot"><Icon {svg} /></span><span><strong>{value}{#if aside}{` ${aside}`}{/if}</strong> <span class={['noun', { 'visually-hidden': bare }]}>{noun}</span></span>
   </span>
 {/snippet}
 

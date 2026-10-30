@@ -130,7 +130,10 @@ const library = (square: EpisodeSquare, season: number) =>
         <span class="stats">
           {#if season.announced === undefined}
             <Stat svg={check} tone="watched" value={season.count} noun="watched" />
-            {#if season.timeLeft}<Stat svg={hourglass} value={season.timeLeft} noun="left" />{/if}
+            {#if season.timeLeft}
+              {@const left = season.aired - season.done}
+              <Stat svg={hourglass} value={season.timeLeft} noun="left" aside="({left} {left === 1 ? 'ep' : 'eps'})" />
+            {/if}
           {:else}
             <Stat svg={calendar} value={String(season.announced)} noun="announced" />
           {/if}

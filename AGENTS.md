@@ -24,7 +24,8 @@ Run these from `projects/client/`:
   and body for the upgrade.
 - `bun run lint` and `bun run format`: ESLint, and Biome formatting with lint fixes.
 - `bun run icon <family> <name>`: extract one OG icon into `src/lib/icons/`.
-- `bun run emoji` and `bun run world-map`: rebuild the emoji shortname table and the home page's world map data.
+- `bun run emoji`: rebuild the emoji shortname table.
+- `GEO_DATA_PATH=<dir> bun run world-map`: rebuild the home page's world map data from the source files in `<dir>`.
 
 ## Hard rules
 
@@ -43,7 +44,7 @@ Run these from `projects/client/`:
 - The board is [trakt/trakt-og's issues](https://github.com/trakt/trakt-og/issues). Use GitHub's standard labels (`bug`, `enhancement`, `documentation`, etc.) plus `allowlist-change`.
 - Assignment is ownership: take the issue you are handed with `gh issue edit N --repo trakt/trakt-og --add-assignee @me`. Without a specific issue, take the oldest open issue with no assignee. Never pick an assigned issue. One agent, one issue; when agents share a GitHub login, the person or orchestrator starting them hands each its own issue.
 - Work in a worktree off `origin/main`. Open a draft PR early with `Closes #N` in its body. Keep PR titles, bodies, commits and comments public-safe; never include private implementation details or local paths.
-- Build per `AGENTS.md` and `.agents/rules/`, run `bun run client:ci` while working, then ship with `bun run client:land <pr>`: rebase, verify (including the leak check), merge the verified commit and close the issue. For a process change without an issue, use a `No issue: <why>` line in the PR body.
+- Build per `AGENTS.md` and `.agents/rules/`, run `bun run client:ci` while working, then ship with `bun run client:land <pr>`: rebase, verify (including the leak check), merge the verified commit and close the issue. For a PR without an issue (a process change, a revert), use a `No issue: <why>` line in the PR body.
 - For a bug, reproduce it first, write a failing spec, fix the root cause and keep the spec.
 - Split an issue that mixes a bug and a feature into one issue each.
 - A bad deploy is fixed by a revert PR, landed with `bun run client:land <pr>`.

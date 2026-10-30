@@ -86,6 +86,7 @@ jobs:
           fi
 
       - name: Rewatch From the Lockfile aka Frozen Install
+        working-directory: . # install:frozen is a root script
         run: bun run install:frozen
 
       - name: Check the Credits aka Audit Signatures

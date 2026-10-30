@@ -410,7 +410,7 @@ function clearFilters() {
 }
 
 .empty {
-  padding-block-start: var(--line-height-computed);
+  padding-block-start: var(--empty-state-above);
 }
 
 /* On a phone OG moved the strip to its own band under the subnav (`.list-stats-wrapper.visible-xs-block`). */

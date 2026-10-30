@@ -184,7 +184,7 @@ const count = $derived(data.total - (data.cards.length - cards.length));
   }
 }
 .empty {
-  padding-block-start: var(--line-height-computed);
+  padding-block-start: var(--empty-state-above);
 }
 .rating-link {
   display: block;

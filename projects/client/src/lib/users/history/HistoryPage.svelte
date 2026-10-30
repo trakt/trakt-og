@@ -248,7 +248,7 @@ const country = $derived(watchNowCountry(data.settings));
 }
 
 .empty {
-  padding-block-start: var(--line-height-computed);
+  padding-block-start: var(--empty-state-above);
 }
 
 @media (width < 768px) {

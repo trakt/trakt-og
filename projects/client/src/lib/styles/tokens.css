@@ -2347,7 +2347,7 @@
   --color-release-physical: light-dark(#c77d12, #f0a83c);
   --color-release-tv: var(--brand-success);
   --color-release-unknown: light-dark(#999, #777);
-  --release-track-stop-min: 140px;
+  --release-track-stop-min: 120px; /* the widest stop, a date pill, is about 105px; 7 stops fit a desktop column */
   --release-track-dot: 12px;
   --release-track-line: 2px;
   --release-track-tick: 24px; /* the Today mark, down across the line */

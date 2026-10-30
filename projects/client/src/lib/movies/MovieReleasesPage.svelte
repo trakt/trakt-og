@@ -131,8 +131,10 @@ const clear = () => {
 </SummaryFrame>
 
 <style>
+/* `minmax(0, 1fr)` holds the track and the rows to the column, so they scroll instead of running past it. */
 .releases {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--gutter);
   margin-block-end: var(--gutter);
 }

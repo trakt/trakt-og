@@ -29,6 +29,8 @@ interface Props {
 
 const { columns, ticks, today, countries }: Props = $props();
 const limited = $derived(countries.some(({ marks }) => marks.some(({ release }) => release.limited)));
+/** Past this percent a centered label would run off the lane, so it ends on its date instead. */
+const END_LABEL_AT = 97;
 </script>
 
 <div class="scroll">
@@ -42,11 +44,12 @@ const limited = $derived(countries.some(({ marks }) => marks.some(({ release }) 
       </span>
       <span class="scale">
         <span class="today-row">
-          {#if today !== null}<span class="at" style:--at="{today}%"><TagPills tags={[{ text: 'Today', kind: 'light' }]} /></span
+          {#if today !== null}<span class={['at', { end: today > END_LABEL_AT }]} style:--at="{today}%"><TagPills tags={[{ text: 'Today', kind: 'light' }]} /></span
             >{/if}
         </span>
         <span class="tick-row">
-          {#each ticks as tick (tick.at)}<span class="at tick" style:--at="{tick.at}%">{tick.label}</span>{/each}
+          {#each ticks as tick (tick.at)}<span class={['at', 'tick', { end: tick.at > END_LABEL_AT }]}
+              style:--at="{tick.at}%">{tick.label}</span>{/each}
         </span>
       </span>
     </div>
@@ -161,6 +164,10 @@ ol {
   inset-inline-start: var(--at);
   translate: -50% 0;
   white-space: nowrap;
+
+  &.end {
+    translate: -100% 0;
+  }
 }
 
 .today-row {

@@ -200,6 +200,24 @@ describe('loadList', () => {
     expect(result.cards.at(0)?.title).toBe('Heat');
   });
 
+  it('should render a list empty when its hide filters break the read', async () => {
+    server.use(
+      http.get(`${API}/users/sean/lists/:list/items*`, ({ request }) => {
+        if (request.headers.get('authorization')) return new HttpResponse(null, { status: 500 });
+        return HttpResponse.json([movie(1, 'Heat')], { headers: pageHeaders('added', 'desc') });
+      }),
+    );
+    const result = await load({ query: '?hide=collected', token: 'abc' });
+    if (!result.list) throw new Error('no list');
+    expect(result.hideFailed).toBe(true);
+    expect(result.cards).toEqual([]);
+  });
+
+  it('should still fail the page when an unfiltered read breaks', async () => {
+    server.use(http.get(`${API}/users/sean/lists/:list/items*`, () => new HttpResponse(null, { status: 500 })));
+    await expect(load({ token: 'abc' })).rejects.toMatchObject({ status: 502 });
+  });
+
   it('should 404 a list the viewer cannot see', async () => {
     privacy = 'private';
     await expect(load()).rejects.toMatchObject({ status: 404 });

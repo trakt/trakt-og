@@ -167,7 +167,9 @@ export async function loadListItems({
   // A stale token keeps the anonymous answer: the server never refreshes, the browser does.
   const items = fetched.status === 401 && first.status === 200 ? first : fetched;
   if ([403, 404].includes(items.status)) error(404, 'Page Not Found');
-  if (items.status !== 200) error(502, 'Trakt is having trouble loading this list.');
+  // Hides are saved in a cookie, so failing the page would fail every visit: it renders empty, with a way to clear them.
+  const hideFailed = items.status !== 200 && (query.hide?.length ?? 0) > 0;
+  if (items.status !== 200 && !hideFailed) error(502, 'Trakt is having trouble loading this list.');
 
   const cards: ListItemCard[] = items.rows.map((row) => toListItemCard(row, { sortBy: sort.by, datePreferences }));
   const page: PageMeta = listPageMeta({
@@ -191,6 +193,8 @@ export async function loadListItems({
     total,
     /** The stats bar's whole-list numbers, streamed when they take more reads. */
     stats,
+    /** The hide filters broke the read, so the list shows a Clear filters way out instead of its items. */
+    hideFailed,
     /** Read by the profile frame (`routes/users/[id]/+layout.svelte`). */
     listCover: ownerIsVip ? listCoverOf(ranked ? ranked.rows.at(0) : items.rows.at(0)) : undefined,
   };

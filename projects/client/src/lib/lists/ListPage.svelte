@@ -43,6 +43,8 @@ import { watchNowTiles } from '$lib/components/filters/watchNowFilter';
 import type { ViewerSettings } from '$lib/settings/ViewerSettings';
 import { listFilterOptions } from '$lib/lists/listFilterOptions';
 import EmptyState from '$lib/components/empty/EmptyState.svelte';
+import LoadFailed from '$lib/components/empty/LoadFailed.svelte';
+import { expireHideCookie } from '$lib/components/filters/expireHideCookie';
 import type { HeaderUser } from '$lib/components/header/HeaderUser';
 import ListTransfer from '$lib/components/lists/ListTransfer.svelte';
 import clone from '$lib/icons/regular/clone.svg?raw';
@@ -105,6 +107,13 @@ const groupHeaders: Readonly<Record<ListSortGroup, string | undefined>> = {
 };
 
 let fadeHide = $derived(data.fadeHide);
+const filterCookie = $derived(data.kind === 'personal' || data.kind === 'official' ? 'list' : data.kind);
+
+function clearHide() {
+  expireHideCookie(filterCookie);
+  // eslint-disable-next-line svelte/no-navigation-without-resolve -- the same list, without its hide filters
+  void goto(listHref(page.url, { hide: [] }));
+}
 const filterOptions = $derived(
   listFilterOptions({
     kind: data.kind,
@@ -622,7 +631,7 @@ async function saveNotes(text: string) {
         } />
         <WatchNowFilter value={data.query.watchnow} {country} favorites={favoriteKeys} />
         <FadeHideMenu value={fadeHide} options={filterOptions.fade} hideOptions={filterOptions.hide}
-          cookie={data.kind === 'personal' || data.kind === 'official' ? 'list' : data.kind} onchange={(next) => {
+          cookie={filterCookie} onchange={(next) => {
             const changed = next.hide.join(',') !== fadeHide.hide.join(',');
             fadeHide = next;
             const url = new URL(page.url);
@@ -737,7 +746,9 @@ async function saveNotes(text: string) {
         {#if !(owner && managing) && data.page.type === 'paginated'}<Pagination meta={data.page} label="List pages" />{/if}
       {:else}
         <div class="empty">
-          {#if filtered}
+          {#if data.hideFailed}
+            <LoadFailed what="This list with these filters" action={{ onclick: clearHide, text: 'Clear filters' }} />
+          {:else if filtered}
             <EmptyState action={{ href: clearedHref, text: 'Clear filters' }} />
           {:else}
             <EmptyState action={ownList ? { href: resolve('/shows/[chart=chart]', { chart: 'trending' }), text: 'Find a show' } : undefined} />

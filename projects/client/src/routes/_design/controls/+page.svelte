@@ -309,6 +309,11 @@ function showOverlay() {
         onretry={() => new Promise((done) => setTimeout(done, 1500))} />
     </div>
   </Variant>
+  <Variant label="Didn't load, with a way out: a list whose saved filters break its read">
+    <div class="ground surface">
+      <LoadFailed what="This list with these filters" action={{ onclick: () => {}, text: 'Clear filters' }} />
+    </div>
+  </Variant>
   <Variant label="Didn't load, in a chart's frame">
     <div class="ground frame-page">
       <LoadFailed what="Trending" inFrame onretry={() => new Promise((done) => setTimeout(done, 1500))} />

@@ -25,7 +25,7 @@ const { tone = 'warning', role, children }: Props = $props();
   border-radius: var(--radius-control);
   background-color: var(--notice-bg);
   color: var(--notice-text);
-  font-size: var(--font-size-small);
+  font-size: var(--font-size-dialog-notice);
   line-height: var(--line-height-base);
 
   & :global(a) {

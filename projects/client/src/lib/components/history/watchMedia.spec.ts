@@ -385,6 +385,65 @@ describe('watchMedia', () => {
     );
     expect(params.notify.success).toHaveBeenCalledWith('Play removed.');
   });
+  describe('for an episode up to here', () => {
+    const target = {
+      type: 'episode',
+      id: 22,
+      title: 'Episode 2',
+      runtime: 22,
+      season: { show: 5, number: 2, episode: 2 },
+    } satisfies WatchTarget;
+    const upTo = [
+      { id: 11, show: 5, season: 1, number: 2, completed: false },
+      { id: 21, show: 5, season: 2, number: 1, completed: false },
+      { id: 22, show: 5, season: 2, number: 2, completed: false },
+    ];
+    it('should add them back to back in one request, ending now', async () => {
+      const params = await setup();
+      const written = vi.fn(async ({ request }: { request: Request }) => {
+        expect(await request.json()).toEqual({
+          episodes: [
+            { ids: { trakt: 11 }, watched_at: '2026-09-29T11:16:00.000Z' },
+            { ids: { trakt: 21 }, watched_at: '2026-09-29T11:38:00.000Z' },
+            { ids: { trakt: 22 }, watched_at: at },
+          ],
+        });
+        return HttpResponse.json({ added: { episodes: 3 } }, { status: 201 });
+      });
+      server.use(http.post(`${API}/sync/history`, written));
+      expect(await watchMedia({ ...params, target, upTo: () => Promise.resolve(upTo) })).toBe(true);
+      expect(written).toHaveBeenCalledOnce();
+      expect(params.overlay.state('episode', 11, { show: 5, number: 1 }).watched).toBe(true);
+      expect(params.overlay.state('episode', 22, { show: 5, number: 2 }).lastWatchedAt).toBe(at);
+      expect(params.notify.success).toHaveBeenCalledWith('You watched 3 episodes up to Episode 2.');
+    });
+    it.each(['released', 'unknown'])('should give every episode the same %s choice', async (watchedAt) => {
+      const params = await setup();
+      server.use(
+        http.post(`${API}/sync/history`, async ({ request }) => {
+          const body = (await request.json()) as { episodes: { watched_at: string }[] };
+          expect(body.episodes.map((episode) => episode.watched_at)).toEqual([watchedAt, watchedAt, watchedAt]);
+          return HttpResponse.json({ added: { episodes: 3 } }, { status: 201 });
+        }),
+      );
+      expect(await watchMedia({ ...params, target, watchedAt, upTo: () => Promise.resolve(upTo) })).toBe(true);
+    });
+    it('should refuse past the bulk limit without writing', async () => {
+      const params = await setup();
+      const written = vi.fn(() => HttpResponse.json({}));
+      server.use(http.post(`${API}/sync/history`, written));
+      const many = Array.from({ length: BULK_WATCH_LIMIT + 1 }, (_, index) => ({
+        id: 1000 + index,
+        show: 5,
+        season: 1,
+        number: index + 1,
+        completed: false,
+      }));
+      expect(await watchMedia({ ...params, target, upTo: () => Promise.resolve(many) })).toBe(false);
+      expect(written).not.toHaveBeenCalled();
+      expect(params.notify.error).toHaveBeenCalledOnce();
+    });
+  });
   it('should roll back and toast a rate-limited removal', async () => {
     const params = await setup();
     server.use(http.post(`${API}/sync/history/remove`, () => new HttpResponse(null, { status: 429 })));

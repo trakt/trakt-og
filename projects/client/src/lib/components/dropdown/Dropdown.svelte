@@ -327,7 +327,7 @@ const closeOnPick = (event: MouseEvent & { currentTarget: HTMLElement }) => {
 :is(.menu, .trigger) :global(.tag) {
   flex: none;
   margin-inline-start: auto;
-  padding: 1px 4px;
+  padding: var(--space-menu-tag);
   border-radius: var(--radius-tag);
   background-color: var(--color-menu-tag-bg);
   color: var(--color-menu-tag);

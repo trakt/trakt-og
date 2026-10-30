@@ -12,6 +12,8 @@ import check from '$lib/icons/trakt/check-thick.svg?raw';
 import PromptDateForm from '$lib/components/prompt/PromptDateForm.svelte';
 import PromptPopover from '$lib/components/prompt/PromptPopover.svelte';
 import PromptRow from '$lib/components/prompt/PromptRow.svelte';
+import PromptCheckRow from '$lib/components/prompt/PromptCheckRow.svelte';
+import DialogNotice from '$lib/components/dialog/DialogNotice.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import type { TooltipContent } from '$lib/components/tooltip/TooltipContent';
 import SummaryAction from '$lib/components/summary/SummaryAction.svelte';
@@ -47,7 +49,9 @@ interface Props {
   /** Summary only: a `SummaryActionMenu` under the +. */
   more?: Snippet;
   onopen: (force: boolean) => Promise<Mode | null>;
-  onwatch: (at: string | null, force: boolean) => void;
+  onwatch: (at: string | null, force: boolean, upTo: boolean) => void;
+  /** An episode with unwatched ones before it: the "Up to here" side of the switch, which adds them all. */
+  upTo?: { count: number; range: string; skipped: number };
   onremaining: () => Promise<boolean>;
   oninvalid: () => void;
   /** Cards only: a "Watching now" choice that opens the check-in modal. */
@@ -78,6 +82,7 @@ const {
   more,
   onopen,
   onwatch,
+  upTo,
   onremaining,
   oninvalid,
   oncheckin,
@@ -101,6 +106,7 @@ let editingMetadata = $state(false);
 let savingMetadata = $state(false);
 let force = $state(false);
 let other = $state(false);
+let including = $state(false);
 let value = $state('');
 let maximum = $state('');
 let returnTo = $state<HTMLElement>();
@@ -109,13 +115,17 @@ let pressed = false;
 // A bulk watch asks here before writing (`confirm`), in the same prompt as the dates.
 let confirmation = $state<{ question: string; episodes: string; name: string } | null>(null);
 let answer: ((yes: boolean) => void) | undefined;
+const offerUpTo = $derived(Boolean(upTo) && !collection && mode === 'date' && !confirmation && !editingMetadata);
+const many = $derived(offerUpTo && including);
+// `upTo.count` ends with the picked episode itself.
+const earlier = $derived((upTo?.count ?? 1) - 1);
 const title = $derived(
   confirmation
     ? confirmation.question
     : editingMetadata
     ? 'Any optional metadata?'
     : mode === 'date'
-    ? collection ? 'When did you add this to library?' : 'When did you watch this?'
+    ? collection ? 'When did you add this to library?' : many ? 'When did you watch these?' : 'When did you watch this?'
     : mode === 'remove'
     ? collection ? 'Remove from library?' : 'Remove from history?'
     : 'What would you like to do?',
@@ -137,6 +147,7 @@ async function open(add: boolean) {
   mode = next;
   force = add;
   other = false;
+  including = false;
   editingMetadata = false;
   savingMetadata = false;
   returnTo = add && side ? side : button;
@@ -181,7 +192,7 @@ const firstChoice = () => popover?.querySelector<HTMLElement>('.body :is(button,
 function choose(at: string | null) {
   if (busy) return;
   popover?.hidePopover();
-  onwatch(at, force);
+  onwatch(at, force, many);
 }
 function otherDate() {
   const now = new Date();
@@ -292,17 +303,26 @@ function click() {
   {:else if editingMetadata && metadata}
     {@render metadata(finishMetadata, savingMetadata)}
   {:else if mode === 'date'}
+    {#if offerUpTo}
+      <!-- The notice sits under the box, so ticking it doesn't move the box away from the pointer. -->
+      <PromptCheckRow bind:checked={including}>Include <strong>{earlier.toLocaleString('en-US')}</strong> unwatched
+        {earlier === 1 ? 'episode' : 'episodes'} before it</PromptCheckRow>
+      {#if many}
+        <div class="up-to-notice"><DialogNotice>Adds <strong>{countLabel(upTo?.count ?? 0, 'episode')}</strong>: {upTo?.range}.{#if upTo?.skipped}<br />{countLabel(upTo.skipped, 'watched episode')} {upTo.skipped === 1 ? 'is' : 'are'} skipped.{/if}</DialogNotice></div>
+      {/if}
+      <hr />
+    {/if}
     {#if other}
       <PromptDateForm id="watch-date-{id}" label="{collection ? 'Collected' : 'Watched'} date and time" bind:value
         bind:field max={maximum}
         saveLabel={collection ? 'Save collected date' : 'Save watched date'} onsubmit={submit}
         oncancel={async () => { other = false; await tick(); firstChoice()?.focus(); }} />
     {:else}
-      {#if oncheckin && !collection}
+      {#if oncheckin && !collection && !many}
         <PromptRow svg={play} aria-haspopup="dialog" onclick={() => { popover?.hidePopover(); oncheckin(); }}>Watching now</PromptRow>
       {/if}
       <PromptRow svg={check} onclick={() => choose('now')}>{collection ? 'Right now' : 'Just finished'}</PromptRow>
-      <PromptRow svg={calendar} onclick={() => choose('released')}>Release date</PromptRow>
+      <PromptRow svg={calendar} onclick={() => choose('released')}>{many ? 'Release dates' : 'Release date'}</PromptRow>
       <PromptRow svg={question} onclick={() => choose('unknown')}>Unknown date</PromptRow>
       <hr />
       <PromptRow svg={clock} onclick={otherDate}>Other date…</PromptRow>
@@ -333,6 +353,9 @@ function click() {
 </PromptPopover>
 
 <style>
+.up-to-notice {
+  margin-block: var(--space-menu);
+}
 .watch-control {
   position: relative;
   color: var(--watch-color, var(--brand-tertiary));

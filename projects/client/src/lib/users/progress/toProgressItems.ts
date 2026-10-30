@@ -93,6 +93,7 @@ export function toProgressItems({
     return {
       ...item,
       show: base.show,
+      latestWatched: base.latestWatched,
       next: local ? same(local.next, base.next) : base.next,
       last: local ? same(local.last, base.last) : base.last,
     };

@@ -121,6 +121,17 @@ describe('toProgressItems', () => {
     expect(ids(filterProgress(filed(2), { hide: ['completed'] }))).toEqual([2]);
   });
 
+  it('should keep the endpoint’s latest watched mark over the recount, for Hide Latest Episode Watched', () => {
+    const items =
+      toProgressItems({
+        ...base,
+        type: 'watched',
+        nitro: nitro.map((item) => (item.show.id === 1 ? { ...item, latestWatched: true } : item)),
+      }) ?? [];
+    expect(items.at(0)).toMatchObject({ completed: 2, latestWatched: true });
+    expect(ids(filterProgress(items, { hide: ['latest-watched'] }))).toEqual([2]);
+  });
+
   it('should keep only the shows you’re rewatching on Rewatching, with the reset date', () => {
     const items = toProgressItems({ ...base, type: 'rewatching' });
     expect(ids(items)).toEqual([2]);

@@ -53,6 +53,7 @@ describe('loadNitroProgress', () => {
       ]),
     );
     expect(items.map(({ show }) => show.id)).toEqual([1, 2, 3, 4]);
+    expect(items.map(({ latestWatched }) => latestWatched)).toEqual([false, false, true, true]);
   });
 
   it('should keep the first copy of a show that moved between pages', async () => {
@@ -66,7 +67,9 @@ describe('loadNitroProgress', () => {
   it('should keep one copy of a show that finished while the intents loaded', async () => {
     const request = vi.fn((intent: NitroIntent) => Promise.resolve(intent === 'all' ? page([1, 2], 1) : page([2], 1)));
 
-    expect((await loadNitroProgress({ request })).map(({ show }) => show.id)).toEqual([1, 2]);
+    const items = await loadNitroProgress({ request });
+    expect(items.map(({ show }) => show.id)).toEqual([1, 2]);
+    expect(items.at(1)?.latestWatched).toBe(false);
   });
 
   it('should fail when a page does', async () => {

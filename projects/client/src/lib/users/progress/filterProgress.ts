@@ -16,9 +16,13 @@ type FilterProgressParams = {
 
 const ENDED = new Set(['ended', 'canceled']);
 
+const isCompleted = ({ aired, completed }: ProgressItem) => aired > 0 && completed >= aired;
+
 const HIDES: Record<ProgressHide, (item: ProgressItem) => boolean> = {
-  completed: ({ aired, completed }) => aired > 0 && completed >= aired,
+  completed: isCompleted,
   'not-completed': ({ aired, completed }) => completed < aired,
+  // Long runners followed from the newest episode on: back once a newer one airs and the endpoint refiles them.
+  'latest-watched': (item) => Boolean(item.latestWatched) || isCompleted(item),
   ended: ({ show }) => ENDED.has(show.status ?? ''),
   airing: ({ show }) => show.status === 'returning series',
   rewatching: ({ resetAt }) => Boolean(resetAt),

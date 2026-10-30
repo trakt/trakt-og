@@ -20,7 +20,7 @@ import TickBar from '$lib/components/media/TickBar.svelte';
 import Stat from '$lib/components/stats/Stat.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import Icon from '$lib/icons/Icon.svelte';
-import clock from '$lib/icons/regular/clock.svg?raw';
+import hourglass from '$lib/icons/regular/hourglass-half.svg?raw';
 import history from '$lib/icons/regular/clock-rotate-left.svg?raw';
 import play from '$lib/icons/regular/play.svg?raw';
 import caretDown from '$lib/icons/solid/caret-down.svg?raw';
@@ -167,7 +167,7 @@ function toggleSeason(season: number) {
       <Stat svg={play} value={count(row.plays)} noun={plural(row.plays, 'play')} label="Plays, rewatches included" />
       <Stat svg={history} value={row.watchedTime} noun="watched" label="Time watched" />
       {#if row.left > 0}
-        <Stat svg={clock} value={row.leftTime} noun="left"
+        <Stat svg={hourglass} value={row.leftTime} noun="left"
           label="{count(row.left)} {plural(row.left, 'episode')} left to watch" />
       {/if}
     </p>

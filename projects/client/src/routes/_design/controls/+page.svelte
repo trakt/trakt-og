@@ -32,10 +32,12 @@ import { RATING_LABELS } from '$lib/components/rating/ratingPrompt';
 import { watchedFirst } from '$lib/components/rating/watchedFirst';
 import RailGroup from '$lib/components/sidebar/RailGroup.svelte';
 import SectionToolbar from '$lib/components/toolbar/SectionToolbar.svelte';
+import SubnavCount from '$lib/components/toolbar/SubnavCount.svelte';
 import DemoButton from '$lib/design/DemoButton.svelte';
 import DemoToggle from '$lib/design/DemoToggle.svelte';
 import Specimen from '$lib/design/Specimen.svelte';
 import Variant from '$lib/design/Variant.svelte';
+import file from '$lib/icons/regular/file.svg?raw';
 import heartOutline from '$lib/icons/regular/heart.svg?raw';
 import heart from '$lib/icons/solid/heart.svg?raw';
 import { creditHideOptions } from '$lib/people/creditHideOptions';
@@ -135,6 +137,9 @@ function showOverlay() {
     </ul>
   </Dropdown>
 {/snippet}
+{#snippet toolbarStats()}
+  <SubnavCount svg={file} count={cards.length} noun="show" tooltip="Shows" />
+{/snippet}
 {#snippet filterIcons()}
   <span class="filter-icons">
   <TermsFilter bind:terms />
@@ -165,8 +170,8 @@ function showOverlay() {
 </Specimen>
 
 <Specimen title="Toolbar filters" bleed
-  note="A list toolbar's terms box and eye over its grid. Watched starts faded; try Hide, or type part of a title.">
-  <SectionToolbar filters={mediaFilter} summary={filterIcons} />
+  note="A list toolbar's terms box and eye over its grid, with its count in the middle: the icon and number only, the noun in its tooltip. Watched starts faded; try Hide, or type part of a title.">
+  <SectionToolbar filters={mediaFilter} stats={toolbarStats} summary={filterIcons} />
   <section class="grid">
     <Container>
       <PosterGrid columns={6}>

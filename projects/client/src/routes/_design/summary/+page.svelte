@@ -57,6 +57,8 @@ const crew = [
   { id: 'writing', label: 'Writing', cast: [person('Theo Marsh', 'Writer, Story', 'male', '12 episodes')] },
 ];
 const ratingTarget = { type: 'movie', id: noWayHome.id, title: noWayHome.fullTitle } as const;
+const biography =
+  'Avery Stone is an actor known for [*Spider-Man: No Way Home*](https://app.trakt.tv/movies/spider-man-no-way-home-2021) and [*Breaking Bad*](https://app.trakt.tv/shows/breaking-bad). An early role was a guest spot on [M*A*S*H](https://app.trakt.tv/shows/m-a-s-h).';
 
 const AVATAR = 'https://media.trakt.tv/hotlink-ok/placeholders/medium/zoidberg.png';
 const watcher = (i: number) => ({
@@ -191,6 +193,11 @@ const videos: readonly VideoCard[] = [
         historyTarget={{ ...ratingTarget, runtime: noWayHome.runtime, released: true }} />
     {/snippet}
   </SummaryFrame>
+</Specimen>
+
+<Specimen title="Biography"
+  note="A person's biography links the movies and shows the API marked in it to their summary pages, in the site's red link color. Classic OG showed plain text here.">
+  <Overview overview={biography} />
 </Specimen>
 
 <Specimen title="Show check in"

@@ -1,9 +1,10 @@
 <!--
   A summary's tagline and overview. An overview taller than 300px collapses under a fade with a "Read more..."
-  toggle, like OG's readmore plugin.
+  toggle, like OG's readmore plugin. The API's title links in a biography become links to their summary pages.
 -->
 <script lang="ts">
 import type { Attachment } from 'svelte/attachments';
+import { toOverviewParts } from './titleLinks.ts';
 
 interface Props {
   tagline?: string | null;
@@ -23,6 +24,9 @@ const measure: Attachment<HTMLElement> = (element) => {
 };
 </script>
 
+<!-- The title links are already site paths, so resolve() has nothing to add. -->
+<!-- eslint-disable svelte/no-navigation-without-resolve -->
+
 {#if tagline}
   <p class="tagline">{tagline}</p>
 {/if}
@@ -32,7 +36,8 @@ const measure: Attachment<HTMLElement> = (element) => {
   class={['overview', { collapsed: !expanded, collapsible, compact }]}
   {@attach measure}
 >
-    {overview}
+    {#each toOverviewParts(overview) as part, i (i)}{#if typeof part === 'string'}{part}{:else}<a href={part.href}
+    >{part.text}</a>{/if}{/each}
   </div>
   {#if collapsible}
     <button type="button" class="toggle" aria-controls={id} aria-expanded={expanded}
@@ -70,7 +75,6 @@ const measure: Attachment<HTMLElement> = (element) => {
     background: linear-gradient(transparent, var(--color-overview-shade));
   }
 }
-
 .toggle {
   min-block-size: 0;
   display: block;

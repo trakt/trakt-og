@@ -1,12 +1,12 @@
 const MAX_LENGTH = 160;
 
 /**
- * A description fit for a meta tag: Markdown links keep their text, bare URLs, HTML tags and Markdown emphasis go,
+ * A description fit for a meta tag: Markdown links keep their text (without the API's `[*Title*]` italics), bare URLs, HTML tags and Markdown emphasis go,
  * whitespace collapses, and anything over 160 characters is cut at a word with an ellipsis.
  */
 export function toSeoDescription(text: string | null | undefined): string {
   const plain = (text ?? '')
-    .replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/!?\[(\*?)([^\]]*)\1\]\([^)]*\)/g, '$2')
     .replace(/<[^>]*>/g, ' ')
     .replace(/https?:\/\/\S+/g, ' ')
     .replace(/\*\*|__|~~|`/g, '')

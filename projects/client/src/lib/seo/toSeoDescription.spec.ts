@@ -16,6 +16,14 @@ describe('seo: toSeoDescription', () => {
     );
   });
 
+  it('should drop the italics around a linked title, but keep a title holding a star', () => {
+    expect(
+      toSeoDescription(
+        'In [*Wicked*](https://app.trakt.tv/movies/wicked-2024) and [M*A*S*H](https://app.trakt.tv/shows/m-a-s-h).',
+      ),
+    ).toBe('In Wicked and M*A*S*H.');
+  });
+
   it('should drop bare URLs, HTML tags and Markdown emphasis', () => {
     expect(toSeoDescription('# Hi\n**Bold** <b>tag</b> `code` see https://example.com/x now')).toBe(
       'Hi Bold tag code see now',

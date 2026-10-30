@@ -26,7 +26,7 @@ import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import TooltipHeader from '$lib/components/tooltip/TooltipHeader.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import calendar from '$lib/icons/regular/calendar-lines.svg?raw';
-import clock from '$lib/icons/regular/clock.svg?raw';
+import hourglass from '$lib/icons/regular/hourglass-half.svg?raw';
 import caretDown from '$lib/icons/solid/caret-down.svg?raw';
 import heart from '$lib/icons/solid/heart.svg?raw';
 import check from '$lib/icons/trakt/check-thick.svg?raw';
@@ -130,7 +130,7 @@ const library = (square: EpisodeSquare, season: number) =>
         <span class="stats">
           {#if season.announced === undefined}
             <Stat svg={check} tone="watched" value={season.count} noun="watched" />
-            {#if season.timeLeft}<Stat svg={clock} value={season.timeLeft} noun="left" />{/if}
+            {#if season.timeLeft}<Stat svg={hourglass} value={season.timeLeft} noun="left" />{/if}
           {:else}
             <Stat svg={calendar} value={String(season.announced)} noun="announced" />
           {/if}

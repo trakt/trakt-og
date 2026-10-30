@@ -2,8 +2,9 @@
   One stat the way the toolbars draw them: an icon in its meaning color, the number in white and the word in gray.
   With a `label` it's a focus stop with that tooltip; `under` adds a gray second line to the tooltip (the progress strip's
   "133 / 154 episodes"). `tone` picks the icon color: `watched` purple, `collected` the library's
-  teal, `done` green, and `count` (the default) blue for counts and times.
-    <Stat svg={clock} value="4d 9h" noun="left" label="Time left to watch" />
+  teal, `done` green, and `count` (the default) blue for counts and times. `bare` leaves the word to the tooltip and
+  screen readers, for toolbars, where room is short; rows keep their words.
+    <Stat svg={hourglass} value="4d 9h" noun="left" label="Time left to watch" bare />
 -->
 <script lang="ts">
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
@@ -17,16 +18,17 @@ interface Props {
   label?: string;
   under?: string;
   tone?: 'count' | 'watched' | 'collected' | 'done';
+  bare?: boolean;
 }
 
-const { svg, value, noun, label, under, tone = 'count' }: Props = $props();
+const { svg, value, noun, label, under, tone = 'count', bare = false }: Props = $props();
 </script>
 
 {#snippet body(props: Record<string | symbol, unknown> = {})}
   <!-- A focus stop so the tooltip shows from the keyboard too. -->
   <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
   <span class={['stat', tone]} tabindex={label ? 0 : undefined} {...props}>
-    <span class="icon-slot"><Icon {svg} /></span><span><strong>{value}</strong> {noun}</span>
+    <span class="icon-slot"><Icon {svg} /></span><span><strong>{value}</strong> {#if bare}<span class="visually-hidden">{noun}</span>{:else}{noun}{/if}</span>
   </span>
 {/snippet}
 

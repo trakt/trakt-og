@@ -10,10 +10,8 @@
   from gray to red, and takes the rating's color once rated.
 -->
 <script lang="ts">
-import MediaSpoiler from '$lib/components/summary/MediaSpoiler.svelte';
 import GlassAction from '$lib/components/glass-action/GlassAction.svelte';
 import MediaRating from '$lib/components/rating/MediaRating.svelte';
-import type { SpoilerTarget } from '$lib/settings/SpoilerTarget';
 import type { RatingTarget } from '$lib/components/rating/RatingTarget';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import Icon from '$lib/icons/Icon.svelte';
@@ -35,7 +33,7 @@ interface Props {
   rating?: { readonly value: number; readonly votes: number; readonly href: string };
   /** "movie", "show", "season", "episode", as the rating target. Left out, there's no Rate button. */
   rateLabel?: string;
-  ratingTarget?: RatingTarget & SpoilerTarget;
+  ratingTarget?: RatingTarget;
   external?: readonly ExternalRating[];
   /** Zero counts are dropped. */
   counts?: readonly StripCount[];
@@ -87,19 +85,17 @@ const stats = $derived(stripStats(counts));
   <ul>
     {#if rating}
       <li>
-        <MediaSpoiler target={ratingTarget} kind="rating">
-          <Tooltip>
-            {#snippet trigger(tooltip)}
-              <a class="stat" href={rating.href} aria-label="Trakt Rating {percent}%, {votes}" {...tooltip}>
-                <span class="glyph heart" style:color={level > 0 ? `var(--rating-${level})` : undefined}>
-                  <Icon svg={heart} />
-                </span>
-                <span class="number">{percent}%</span>
-              </a>
-            {/snippet}
-            {@render voteCount(rating.votes)}
-          </Tooltip>
-        </MediaSpoiler>
+        <Tooltip>
+          {#snippet trigger(tooltip)}
+            <a class="stat" href={rating.href} aria-label="Trakt Rating {percent}%, {votes}" {...tooltip}>
+              <span class="glyph heart" style:color={level > 0 ? `var(--rating-${level})` : undefined}>
+                <Icon svg={heart} />
+              </span>
+              <span class="number">{percent}%</span>
+            </a>
+          {/snippet}
+          {@render voteCount(rating.votes)}
+        </Tooltip>
       </li>
     {/if}
     {#if rateLabel && ratingTarget}
@@ -117,19 +113,17 @@ const stats = $derived(stripStats(counts));
       <li class="divider" aria-hidden="true"></li>
       {#each external as site (site.logo)}
         <li class={site.metascore}>
-          <MediaSpoiler target={ratingTarget} kind="rating">
-            <Tooltip>
-              {#snippet trigger(tooltip)}
-                <a class="stat" href={site.href} target="_blank" rel="noopener"
-                  aria-label="{site.title} {site.rating}, {site.change ? `${site.change.text} ` : ''}{site.detail}"
-                  {...tooltip}>
-                  <img class={['logo', site.logo]} src={logos[site.logo]} alt="" />
-                  <span class="number">{site.rating}</span>
-                </a>
-              {/snippet}
-              {#if site.votes === undefined}{site.detail}{:else}{@render voteCount(site.votes)}{/if}{#if site.change}<span class={['rank-change', site.change.trend]}>{site.change.text}</span>{/if}
-            </Tooltip>
-          </MediaSpoiler>
+          <Tooltip>
+            {#snippet trigger(tooltip)}
+              <a class="stat" href={site.href} target="_blank" rel="noopener"
+                aria-label="{site.title} {site.rating}, {site.change ? `${site.change.text} ` : ''}{site.detail}"
+                {...tooltip}>
+                <img class={['logo', site.logo]} src={logos[site.logo]} alt="" />
+                <span class="number">{site.rating}</span>
+              </a>
+            {/snippet}
+            {#if site.votes === undefined}{site.detail}{:else}{@render voteCount(site.votes)}{/if}{#if site.change}<span class={['rank-change', site.change.trend]}>{site.change.text}</span>{/if}
+          </Tooltip>
         </li>
       {/each}
     {/if}

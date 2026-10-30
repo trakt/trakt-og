@@ -6,7 +6,6 @@
 import { isStandardApi } from '$lib/api/isStandardApi';
 import { openWatchNow } from '$lib/components/watchnow/watchNowLauncher.svelte';
 import { watchNowPath } from '$lib/components/watchnow/watchNowPath';
-import MediaSpoiler from '$lib/components/summary/MediaSpoiler.svelte';
 import Spinner from '$lib/components/loading/Spinner.svelte';
 import MediaFavorite from '$lib/components/favorites/MediaFavorite.svelte';
 import type { FavoriteTarget } from '$lib/favorites/FavoriteTarget';
@@ -258,7 +257,6 @@ const ratingLevel = $derived(rating === undefined ? 1 : Math.min(Math.max(Math.t
     {/if}
   </div>
   {#if rating !== undefined && released !== false}
-    <MediaSpoiler target={watchTarget ?? collectionTarget ?? ratingTarget} kind="rating">
     {#if ratingTarget}
       <MediaRating target={ratingTarget}>
         {#snippet trigger()}
@@ -268,7 +266,6 @@ const ratingLevel = $derived(rating === undefined ? 1 : Math.min(Math.max(Math.t
     {:else}
       <p class="percentage"><span class="heart" style:color="var(--rating-{ratingLevel})"><Icon svg={heart} /></span><span class="value">{ratingPercent(rating)}%</span></p>
     {/if}
-    </MediaSpoiler>
   {/if}
 </div>
 

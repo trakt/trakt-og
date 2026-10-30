@@ -40,12 +40,9 @@ const ratingTarget = { type: 'episode', id: pilot.id, title: pilot.fullTitle } a
   </Variant>
 </Specimen>
 
-<Specimen title="Spoilers" note="A hidden overview, then inline spoilers on a title and a rating.">
+<Specimen title="Spoilers" note="A hidden overview, then an inline spoiler on a title. Ratings always show.">
   <SpoilerContent hidden={true}>
     <Overview overview="An unexpected visitor forces everyone to rethink their plans." />
   </SpoilerContent>
   <h3><strong>1x01</strong> <SpoilerContent hidden inline>Pilot</SpoilerContent></h3>
-  <SpoilerContent hidden inline>
-    <a href="/shows/breaking-bad/seasons/1/episodes/1/stats">82% · 1,600 votes</a>
-  </SpoilerContent>
 </Specimen>

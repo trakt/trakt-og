@@ -19,10 +19,10 @@ interface Props {
   /** Names the dialog. Only shown when there's no `header`. */
   title: string;
   /**
-   * 360px like OG's check-in modal, 440px like its notes modal, 500px, 600px like `.wider`, 690px like Watch Now, or
-   * 820px, one more column of Watch Now's tiles.
+   * 360px like OG's check-in modal, 440px like its notes modal, 500px, 600px like `.wider`, 690px like Watch Now,
+   * 820px, one more column of Watch Now's tiles, or 1060px, the header link picker's six columns.
    */
-  size?: 'sm' | 'notes' | 'md' | 'lg' | 'xl' | 'xxl';
+  size?: 'sm' | 'notes' | 'md' | 'lg' | 'xl' | 'xxl' | 'xxxl';
   lightDismiss?: boolean;
   /**
    * `art` is the notes, list and report dialogs' look: a thin border, a glass close over a DialogArtHeader, and the
@@ -175,6 +175,10 @@ const oncancel = (event: Event) => {
 
   &.xxl {
     inline-size: var(--dialog-width-xxl);
+  }
+
+  &.xxxl {
+    inline-size: var(--dialog-width-xxxl);
   }
 
   &.art.notes {

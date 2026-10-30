@@ -98,7 +98,8 @@ onMount(() => {
     <NavigationProgress active={leaving} />
     {#if !errored}
       <a class="skip" href="#content">Skip to content</a>
-      <Header user={data.user} renewing={data.tokenExpired || data.rateLimited} searchType={data.searchType} {darkKnight} />
+      <Header user={data.user} renewing={data.tokenExpired || data.rateLimited} searchType={data.searchType} {darkKnight}
+        links={data.headerLinks} />
     {/if}
     <main id="content" tabindex="-1" aria-busy={leaving || undefined}>
       {@render children()}

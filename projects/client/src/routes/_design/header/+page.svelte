@@ -49,7 +49,26 @@ const BACKDROPS: Record<string, string | undefined> = {
   'Red profile cover': profileCover,
 };
 
+// A member's own bar, as the og-header cookie keeps it. Many folds the links that don't fit into More.
+const LINKS: Record<string, readonly string[] | null> = {
+  Default: null,
+  Customized: ['dashboard', 'progress', 'watchlist', 'shows', 'movies', 'movies-boxoffice', 'calendar'],
+  Many: [
+    'dashboard',
+    'discover',
+    'shows',
+    'movies',
+    'calendar',
+    'progress',
+    'watchlist',
+    'history',
+    'lists',
+    'movies-boxoffice',
+  ],
+};
+
 let who = $state('Signed out');
+let bar = $state('Default');
 let backdrop = $state('Dark art');
 const art = $derived(BACKDROPS[backdrop]);
 let darkKnight = $state<DarkKnight>('false');
@@ -67,14 +86,15 @@ function save(body: SettingsBody) {
 </script>
 
 <Specimen title="Top bar" bleed
-  note="Pick a viewer and the art behind the bar, which tints its glass. Click the magnifier or press / to search (shimmering rows hold the starting list's place while it loads), and hover the signpost or the profile button for their menus.">
+  note="Pick a viewer and the art behind the bar, which tints its glass. Click the magnifier or press / to search (shimmering rows hold the starting list's place while it loads), and hover the signpost or the profile button for their menus. Signed in, rest the mouse on the links until the pencil shows, or choose Customize Header in the profile menu: drag a link's grip or use its arrow keys, trash links, and add pages, charts and calendars from Add Link's popup. Narrow the window with Many to see links fold into More.">
   <div class="knobs">
     <DemoChoice label="Viewer" options={Object.keys(users).map((value) => ({ value, label: value }))} bind:value={who} />
     <DemoChoice label="Backdrop" options={Object.keys(BACKDROPS).map((value) => ({ value, label: value }))}
       bind:value={backdrop} />
+    <DemoChoice label="Links" options={Object.keys(LINKS).map((value) => ({ value, label: value }))} bind:value={bar} />
   </div>
   <div class="site">
-    <Header {user} {renewing} searchType={data.searchType} {darkKnight} {save} />
+    <Header {user} {renewing} searchType={data.searchType} {darkKnight} {save} links={LINKS[bar] ?? null} />
     {#if art}
       <div class="backdrop" style:background-image="url('{art}')" {@attach headerArt(art)}></div>
     {:else}

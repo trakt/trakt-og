@@ -961,6 +961,31 @@
   --header-control-height: 40px;
   --header-avatar-size: 36px;
   --font-size-header-link: 14px;
+  --header-links-focus-room: 4px; /* around the clipped row of links, so focus rings stay whole */
+
+  /* Header edit mode: each link a chip with a grip and a trash can, then Add Link and its picker */
+  /* The bar's edge to a pill-tall row, which is also the gap between the chips and between Reset and Done */
+  --space-header-editing: calc((var(--header-height) - var(--header-pill-height)) / 2);
+  --space-header-chip: 4px; /* a chip's ends and its buttons to the title */
+  --header-chip-button: 26px;
+  --header-chip-grip: 14px; /* narrower than the trash can's round button, so the dots sit close to the title */
+  --color-header-chip-lifted: rgb(48 48 48 / 0.95); /* the chip under the pointer while it's dragged */
+  --shadow-header-chip-lifted: 0 8px 20px rgb(0 0 0 / 0.45);
+  --font-size-header-chip-icon: 13px;
+  --color-header-chip-bg: rgb(255 255 255 / 0.05);
+  --color-header-chip-edge: rgb(255 255 255 / 0.28);
+  --color-header-chip-current: rgb(237 28 36 / 0.35); /* --brand-primary, faint: the page you're on */
+  --color-header-add: rgb(237 28 36 / 0.16);
+  --color-header-add-hover: rgb(237 28 36 / 0.4);
+  --opacity-header-dragging: 0.4;
+  --header-customize-size: 30px; /* the pencil after the links */
+  /* The link picker popup: Tune your picks' tiles as rows, a column per group */
+  --header-picker-gap: 14px;
+  --header-picker-title-gap: 10px; /* a column's title to its first tile */
+  --header-picker-row-gap: 5px;
+  --header-picker-row-padding: 8px;
+  --font-size-header-picker-choice: 13px;
+  --font-size-header-picker-check: 11px;
 
   /* Header search: an icon in the bar, and a glass panel with the field and the autocomplete under it */
   --search-panel-width: 820px;
@@ -1034,6 +1059,7 @@
   --dialog-width-lg: 600px; /* .wider */
   --dialog-width-xl: 690px; /* #watch-now-modal */
   --dialog-width-xxl: 820px; /* one more column of Watch Now's tiles */
+  --dialog-width-xxxl: 1060px; /* the header link picker's six columns */
   --dialog-width-notes: 440px; /* #notable-modal, #list-notes-modal */
   --space-dialog-wide-inline: 30px; /* item modals: the fanart title band and the notes form */
   --notes-textarea-height: 130px; /* the notes modal's five rows */

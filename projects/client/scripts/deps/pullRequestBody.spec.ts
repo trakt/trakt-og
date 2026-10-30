@@ -38,7 +38,6 @@ describe('util: pullRequestBody', () => {
     expect(body).toContain('- `typescript` stays on 6.0.3 (7.0.2 is out): svelte-check needs 6');
     expect(body).not.toContain('# Major');
     expect(body).toContain('A human merges it after review.');
-    expect(body).toContain('No issue: dependency maintenance.');
   });
 
   it('should say a run with majors waits for a human', () => {

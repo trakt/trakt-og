@@ -28,7 +28,7 @@ jobs:
         with:
           fetch-depth: 0 # the leak check reads origin/main
       - uses: ./.github/actions/setup-bun
-      - run: bash scripts/leak-check.sh $PR_NUMBER
+      - run: bash scripts/leak-check.sh "$PR_NUMBER"
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}

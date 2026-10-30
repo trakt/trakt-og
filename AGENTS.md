@@ -18,7 +18,8 @@ Run these from the repository root:
 
 Run these from `projects/client/`:
 - `bun run bump [--dry-run]`: move every pin to its newest release, keep the ones that pass CI, and write the PR title
-  and body for the upgrade.
+  and body for the upgrade. The Dependency Bump workflow runs it weekly, and by hand from "Run workflow", and opens the
+  result as a draft PR.
 - `bun run lint` and `bun run format`: ESLint, and Biome formatting with lint fixes.
 - `bun run icon <family> <name>`: extract one OG icon into `src/lib/icons/`.
 - `bun run emoji`: rebuild the emoji shortname table.

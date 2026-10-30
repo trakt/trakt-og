@@ -17,6 +17,7 @@ export function toHeaderUser(user: SettingsUser): HeaderUser {
   return {
     slug: user.ids.slug,
     firstName: displayName.split(' ')[0] ?? displayName,
+    displayName,
     avatarUrl: user.images.avatar.full,
     isVip: user.vip,
     joinedAt: user.joined_at ?? null,

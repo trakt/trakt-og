@@ -49,7 +49,15 @@ const load = (token: string | null = 'token', cookies: Record<string, string> = 
     cookies: { get: (key) => cookies[key] },
     parent: () =>
       Promise.resolve({
-        user: { slug: 'tester', firstName: 'OG', avatarUrl: 'avatar', isVip: true, joinedAt: null, named: true },
+        user: {
+          slug: 'tester',
+          firstName: 'OG',
+          displayName: 'OG',
+          avatarUrl: 'avatar',
+          isVip: true,
+          joinedAt: null,
+          named: true,
+        },
         settings: settings as never,
         datePreferences,
       }),

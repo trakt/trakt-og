@@ -96,7 +96,9 @@ const load = ({
     parent: () =>
       Promise.resolve({
         profile,
-        user: viewer ? { firstName: 'X', avatarUrl: '', joinedAt: null, named: true, ...viewer } : null,
+        user: viewer
+          ? { firstName: 'X', displayName: 'X', avatarUrl: '', joinedAt: null, named: true, ...viewer }
+          : null,
         datePreferences,
       }),
     kind,

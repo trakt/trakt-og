@@ -4,8 +4,9 @@
   (show, not toggle, so the click after a hover doesn't shut it), and Esc, a click outside or the mouse leaving
   closes it (Popover API). The menu hangs from the trigger's end edge, or its start edge when there's no room
   (the profile menu), and the header styles the trigger's open look.
-  Rows are ul > li > a (or button), with <hr> as the divider. `aria-current` marks the page you're on in bold
-  white on red.
+  Rows are ul > li > a (or button), each led by a fixed-width icon, with <hr> as the divider and a `.heading` paragraph
+  over a section. `aria-current` marks the page you're on in bold white on red, and a `.small` row scales down a glyph
+  wider than the rest (`.large` scales up a slimmer one).
 -->
 <script lang="ts">
 import { afterNavigate } from '$app/navigation';
@@ -115,8 +116,8 @@ afterNavigate(() => menu?.hidePopover());
   & :is(a, button) {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: var(--space-menu-check);
+    justify-content: start;
+    gap: var(--space-menu-icon);
     inline-size: 100%;
     min-block-size: 0;
     padding: var(--space-menu-row);
@@ -149,6 +150,28 @@ afterNavigate(() => menu?.hidePopover());
     margin: var(--space-menu) calc(var(--space-menu) * -1);
     border: 0;
     border-block-start: 1px solid var(--color-menu-border);
+  }
+
+  & .heading {
+    margin: 0;
+    padding: var(--space-menu-header);
+    color: var(--color-menu-header);
+    font-size: var(--font-size-menu-header);
+    font-weight: var(--font-weight-menu-header);
+    letter-spacing: var(--letter-spacing-menu-header);
+    text-transform: uppercase;
+
+    &:first-child {
+      padding-block-start: var(--space-menu-offset);
+    }
+  }
+
+  & .small .icon {
+    scale: var(--header-help-icon-small);
+  }
+
+  & .large .icon {
+    scale: var(--header-menu-icon-large);
   }
 }
 </style>

@@ -1186,6 +1186,7 @@
   --header-signpost: 18px; /* the help menu's trigger */
   --header-help-icon-width: 1.25em; /* a fixed-width icon's, like fa-fw */
   --header-help-icon-small: 0.85; /* a wide glyph's scale, like the help menu's speech bubbles */
+  --header-menu-icon-large: 1.15; /* a slim glyph's scale, like the profile menu's library */
   --space-menu-header: 10px 10px 4px;
   --color-menu-bg: light-dark(#fff, #262626);
   --color-menu-border: light-dark(#e3e3e3, #3a3a3a);

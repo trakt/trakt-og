@@ -69,7 +69,15 @@ const load = (query = '', slug = 'collection', signedIn = false) =>
     parent: () =>
       Promise.resolve({
         user: signedIn
-          ? { slug: 'kim', firstName: 'Kim', isVip: false, avatarUrl: '', joinedAt: null, named: true }
+          ? {
+              slug: 'kim',
+              firstName: 'Kim',
+              displayName: 'Kim',
+              isVip: false,
+              avatarUrl: '',
+              joinedAt: null,
+              named: true,
+            }
           : null,
         datePreferences: { order: 'mdy', hour24: false, timeZone: 'UTC', weekStartDay: 0 },
       }),

@@ -1,0 +1,72 @@
+name: New Season aka Dependency Bump
+
+# Weekly, and by hand from "Run workflow". `bun run bump` moves every pin it can, keeps what passes `bun run ci`, and
+# writes the PR and the follow-up issues. The PR opens as a draft and goes back to draft on every update, so a human
+# reviews each set of pins before marking it ready, which merges it.
+on:
+  schedule:
+    - cron: '0 18 * * 0' # Sundays, 18:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bump:
+    name: Fresh Episodes aka Bump Pins
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    concurrency:
+      group: deps
+      cancel-in-progress: true
+    defaults:
+      run:
+        working-directory: projects/client
+    steps:
+      # The App token, not GITHUB_TOKEN, so the PR it opens runs the PR checks.
+      - name: Borrowing the Login aka GitHub App Token
+        uses: actions/create-github-app-token@v3
+        id: app-token
+        with:
+          app-id: ${{ secrets.GH_APP_ID }}
+          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
+          permission-issues: write
+      - uses: actions/checkout@v7
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+      - uses: ./.github/actions/setup-bun
+      - name: Checking the Releases aka Bump
+        id: bump
+        run: bun run bump --out "$RUNNER_TEMP/bump"
+      - name: Pressing Play aka Open the PR
+        if: steps.bump.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v8
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          branch: chore/deps
+          delete-branch: true
+          base: main
+          commit-message: ${{ steps.bump.outputs.title }}
+          title: ${{ steps.bump.outputs.title }}
+          body-path: ${{ runner.temp }}/bump/body.md
+          draft: always-true
+      # One open issue per rejected package: a later run updates it instead of opening another.
+      - name: Taking Notes aka File the Rejected Bumps
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          set -euo pipefail
+          open=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --limit 500 --json number,title)
+          jq -c '.[]' "$RUNNER_TEMP/bump/issues.json" | while read -r issue; do
+            prefix=$(jq -r .titlePrefix <<<"$issue")
+            title=$(jq -r .title <<<"$issue")
+            jq -r .body <<<"$issue" > "$RUNNER_TEMP/issue.md"
+            number=$(jq -r --arg prefix "$prefix" 'first(.[] | select(.title | startswith($prefix)) | .number) // empty' <<<"$open")
+            if [ -n "$number" ]; then
+              gh issue edit "$number" --repo "$GITHUB_REPOSITORY" --title "$title" --body-file "$RUNNER_TEMP/issue.md"
+            else
+              gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body-file "$RUNNER_TEMP/issue.md"
+            fi
+          done

@@ -216,7 +216,7 @@ async function open(force: boolean): Promise<'date' | 'remove' | 'partial' | nul
   onremaining={remaining} {oncheckin}
   oninvalid={() => toast.error('Invalid date format, please use the date picker.')}>
   {#snippet trigger()}
-    {#if viewerState.rewatching}<Icon svg={backward} />{:else}<span class="trakt-glyph"><Icon svg={checkThick} /></span>{/if}
+    {#if viewerState.rewatching}<span class="rewatching-glyph"><Icon svg={backward} /></span>{:else}<span class="trakt-glyph"><Icon svg={checkThick} /></span>{/if}
   {/snippet}
 </WatchPopover>
 {#snippet detail()}
@@ -262,6 +262,15 @@ async function open(force: boolean): Promise<'date' | 'remove' | 'partial' | nul
 .trakt-glyph {
   display: contents;
   --icon-shift: var(--quick-icon-trakt-shift);
+}
+/* The solid backward arrows, sized and nudged like the signed-out quick icon's. */
+.rewatching-glyph {
+  display: contents;
+  font-size: var(--font-size-quick-icon-rewatching);
+
+  & :global(.icon) {
+    inset-inline-start: var(--quick-icon-rewatching-shift);
+  }
 }
 .watch-progress {
   display: flex;

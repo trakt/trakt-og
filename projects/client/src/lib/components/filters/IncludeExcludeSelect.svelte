@@ -11,7 +11,7 @@
 -->
 <script lang="ts">
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
-import EmptyNote from '$lib/components/empty/EmptyNote.svelte';
+import EmptyState from '$lib/components/empty/EmptyState.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import heart from '$lib/icons/regular/heart.svg?raw';
 import xmark from '$lib/icons/regular/xmark.svg?raw';
@@ -150,8 +150,11 @@ function toggle(value: string, as: 'include' | 'exclude') {
     {/if}
     <div class="scroller" aria-busy={loading || searching}>
     {#if shown.length === 0 && !loading && !searching}
-      <EmptyNote>{#if search && !typing}Type a few letters to search {label.toLocaleLowerCase('en')}.{:else if
-        term}No {label.toLocaleLowerCase('en')} match “{term}”.{:else}No {label.toLocaleLowerCase('en')} to pick from.{/if}</EmptyNote>
+      <EmptyState title={search && !typing
+        ? `Type a few letters to search ${label.toLocaleLowerCase('en')}.`
+        : term
+        ? `No ${label.toLocaleLowerCase('en')} match “${term}”.`
+        : `No ${label.toLocaleLowerCase('en')} to pick from.`} />
     {/if}
     {#each shown as group, g (g)}
       {#if group.label}<p class="group">{group.label}</p>{/if}
@@ -283,6 +286,11 @@ function toggle(value: string, as: 'include' | 'exclude') {
   &[aria-busy='true'] {
     overflow-y: hidden;
   }
+}
+
+.picker .scroller :global(.empty-state) {
+  margin-block-end: 0;
+  padding: var(--filter-picker-empty-padding);
 }
 
 .picker .rows li button::after {

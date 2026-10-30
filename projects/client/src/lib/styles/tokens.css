@@ -304,7 +304,8 @@
   --quick-icons-row-rating-padding: 10px;
   --quick-icon-trakt-shift: 0.085em; /* Trakt-font glyphs (check, library) sit this far above center */
   --font-size-quick-icon-favorite: 0.85em; /* the solid star, down to the other glyphs' height */
-  --font-size-quick-icon-rewatching: 0.8em; /* the solid backward arrows, down to the other glyphs' weight */
+  --font-size-quick-icon-rewatching: 0.85em; /* the solid backward arrows, down to the other glyphs' weight */
+  --quick-icon-rewatching-shift: -1px; /* the arrows' points pull the eye right of center */
   --font-size-rating: 20px;
   --font-size-rating-small: 14px;
   --font-size-rating-heart: 16px;
@@ -1308,10 +1309,11 @@
   --color-tooltip-text: #fff;
   --transition-tooltip: 0.15s linear;
   --color-tooltip-muted: #aaa; /* .tooltip .collection-metadata */
-  --color-tooltip-divider: #333; /* between a stat's groups, and over the library card's sync line */
+  --color-tooltip-divider: var(--color-tooltip-border); /* between groups, and over the library card's sync line */
   --space-tooltip-divider: 6px;
   --space-tooltip-pill: 3px; /* above a pill on a tooltip's second line: JustWatch's rank change */
   --tooltip-progress-min-width: 220px;
+  --tooltip-progress-height: var(--dashboard-recaps-tip-meter); /* as tall as the monthly stats tooltip's bar */
   --color-tooltip-progress-track: #333; /* the summary progress bar's dark track */
   --font-size-tooltip-label: 11px; /* a stat's small caps label: "Mon, Sep 29" */
   --letter-spacing-tooltip-label: 0.04em;
@@ -3956,6 +3958,7 @@
   --filter-toggle-size: 28px;
   --filter-picker-width: 280px;
   --filter-picker-height: 360px;
+  --filter-picker-empty-padding: 12px;
   --filter-option-shimmer-row: 34px; /* a row while the options load: the menu row's 7px around a 20px line */
   --filter-option-shimmer-icon: 14px; /* its ⊕ and ⊖ */
   --filter-option-shimmer-inset: calc(

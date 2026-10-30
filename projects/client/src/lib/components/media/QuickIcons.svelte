@@ -380,6 +380,7 @@ const ratingLevel = $derived(rating === undefined ? 1 : Math.min(Math.max(Math.t
 
 .rewatching :global(.icon) {
   font-size: var(--font-size-quick-icon-rewatching);
+  inset-inline-start: var(--quick-icon-rewatching-shift);
 }
 
 .collect {

@@ -62,7 +62,7 @@ render a blank gap or ad-hoc empty markup.
 | Filtered out | A search, filter, period, list type or hide setting the viewer picked leaves nothing. | What clears it: "Clear filters", "Show hidden episodes", "See all lists". The dark charts and search frames use `NoResults`, OG's hooded figure, with the same button. |
 | Nothing there | There's none to show and the viewer can't change that. | None. |
 | Didn't load | The fetch failed. | `LoadFailed what="{Section heading}"`: the outline in warning orange, "{Section} didn't load." and Try again. |
-| Inline | Inside a menu, picker, popover, dialog or tooltip. | `EmptyNote`, one muted line; no outline. |
+| Inline | Inside a menu, picker, popover, dialog or tooltip. | `EmptyNote`, one muted line; no outline. The advanced filters' option pickers are the exception: `EmptyState` with a `title` saying what's missing. |
 
 - The button label says what it does on its own, since there's no line explaining it ("Show hidden episodes", not
   "Show them").

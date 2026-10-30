@@ -1,7 +1,8 @@
 <!--
   The progress page as its owner sees it, on sample shows: the view toggles, each row's status menu (rewatch and drop,
   restore on Dropped) and its Seasons toggle. `?view=grid` shows the grid of next episodes, `?view=simple` the simple
-  bars, `?watchlisted=1` turns Include Watchlisted on (Murderbot, not started, joins the list), `?type=rewatching` the
+  bars, `?hide=completed` hides completed shows (Finish Breaking Bad completes it, and it stays with its show card
+  until the page reloads), `?watchlisted=1` turns Include Watchlisted on (Murderbot, not started, joins the list), `?type=rewatching` the
   Rewatching tab (Game of Thrones) and `?type=dropped` the Dropped tab (two of the sample shows). `?list=1` filters to a
   list's shows, `?list=2` to an empty list and `?list=3` to someone else's watchlist, each after a short wait, with the
   list's band shimmering above the rows until the list streams in, and `?state=loading` holds the progress loading for
@@ -41,6 +42,8 @@ const variants = [
   { label: 'List', query: '' },
   { label: 'Grid', query: '?view=grid' },
   { label: 'Simple', query: '?view=simple' },
+  { label: 'Hide Completed', query: '?hide=completed' },
+  { label: 'Hide Completed grid', query: '?hide=completed&view=grid' },
   { label: 'Include Watchlisted', query: '?watchlisted=1' },
   { label: 'Rewatching', query: '?type=rewatching' },
   { label: 'Dropped', query: '?type=dropped' },
@@ -49,6 +52,7 @@ const variants = [
   { label: "Someone's watchlist", query: '?list=3' },
   { label: 'Loading', query: '?state=loading' },
 ];
+const hideCompleted = $derived(page.url.searchParams.get('hide') === 'completed');
 const pending = $derived(page.url.searchParams.get('state') === 'loading');
 
 // Like the page: up-next comes with the progress, and a row's catalog is read as its seasons open.
@@ -76,11 +80,21 @@ $effect(() => {
     setTimeout(() => (reloading = false), WAIT);
   });
 });
+// Hide Completed's Finish button: watches a sample's last episodes, as marking them would.
+const finished = new SvelteSet<number>();
+function finish(id: number) {
+  finished.add(id);
+  reloading = true;
+  setTimeout(() => (reloading = false), WAIT);
+}
 const exact = $derived(progressFixture[type](true));
 const items = $derived(
   progressFixture[type](false).map((item) => {
     const full = exact.find(({ show }) => show.id === item.show.id);
     if (!full) return item;
+    if (finished.has(item.show.id)) {
+      return { ...item, completed: item.aired, minutesLeft: 0, next: undefined, detail: undefined };
+    }
     if (catalogs.has(item.show.id)) return full;
     return { ...item, next: full.next ?? full.detail?.next, last: full.last ?? full.detail?.last };
   }),
@@ -114,7 +128,7 @@ const listRow = $derived(
 const data = $derived({
   type,
   sort: { by: 'added', how: 'asc' as const, supported: true },
-  hide: [],
+  hide: hideCompleted ? ['completed' as const] : [],
   grid: view === 'grid',
   simple: view === 'simple',
   includeWatchlisted: page.url.searchParams.has('watchlisted'),
@@ -140,25 +154,34 @@ const data = $derived({
       </a>
     {/each}
   </nav>
+  {#if hideCompleted}
+    <p class="finish">
+      <button type="button" disabled={finished.has(1388)} onclick={() => finish(1388)}>Finish Breaking Bad</button>
+    </p>
+  {/if}
   <ProgressList {data} items={pending ? null : items} {listed} {loading} {reloading} onneed={need} {now} />
 </Specimen>
 
 <style>
-.variants {
+.variants,
+.finish {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-sm-inline);
   padding: 0 var(--design-canvas-padding) var(--gutter);
 
-  & a {
+  & :is(a, button) {
     padding: var(--space-xs-block) var(--space-base-inline);
+    border: 0;
     border-radius: var(--radius-round);
+    background: none;
     box-shadow: inset 0 0 0 1px var(--color-link-button-line);
     color: inherit;
     font-family: var(--font-headings);
     font-size: var(--font-size-small);
     font-weight: var(--font-weight-headings);
     text-decoration: none;
+    cursor: pointer;
 
     &:hover {
       background-color: var(--color-link-button-hover);
@@ -169,6 +192,15 @@ const data = $derived({
       box-shadow: none;
       color: var(--color-text-inverse);
     }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
   }
+}
+
+.finish {
+  margin: 0;
 }
 </style>

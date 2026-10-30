@@ -14,6 +14,7 @@ describe('toHeaderUser', () => {
     expect(toHeaderUser(user)).toEqual({
       slug: 'sean',
       firstName: 'Sean',
+      displayName: 'Sean Rudford',
       avatarUrl: user.images.avatar.full,
       isVip: true,
       joinedAt: null,

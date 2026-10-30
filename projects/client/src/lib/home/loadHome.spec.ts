@@ -102,7 +102,15 @@ describe('loadHome', () => {
       fetch,
       now: 0,
       random: Math.random,
-      parent: parent({ slug: 'sean', firstName: 'Sean', avatarUrl: '', isVip: true, joinedAt: null, named: true }),
+      parent: parent({
+        slug: 'sean',
+        firstName: 'Sean',
+        displayName: 'Sean',
+        avatarUrl: '',
+        isVip: true,
+        joinedAt: null,
+        named: true,
+      }),
       ...fresh(),
     });
     expect(data.signedIn).toBe(true);

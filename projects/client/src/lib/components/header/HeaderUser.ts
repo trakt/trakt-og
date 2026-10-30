@@ -3,6 +3,8 @@ export interface HeaderUser {
   readonly slug: string;
   /** OG shows the first name only. */
   readonly firstName: string;
+  /** The full display name, or the username when there's none: the profile menu's first heading. */
+  readonly displayName: string;
   readonly avatarUrl: string;
   readonly isVip: boolean;
   /** When the account was made, for the getting-started pill's first 30 days. */

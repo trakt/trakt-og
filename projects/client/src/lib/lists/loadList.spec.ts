@@ -106,7 +106,9 @@ const load = (
       Promise.resolve({
         profile,
         isSelf: false,
-        user: options.viewer ? { firstName: 'X', avatarUrl: '', joinedAt: null, named: true, ...options.viewer } : null,
+        user: options.viewer
+          ? { firstName: 'X', displayName: 'X', avatarUrl: '', joinedAt: null, named: true, ...options.viewer }
+          : null,
         datePreferences,
       }),
   });

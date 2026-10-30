@@ -20,7 +20,7 @@ import { seedOverlay } from '../first-night/seedOverlay.svelte.ts';
 
 const { data } = $props();
 
-const demoUser = { slug: 'og_red', firstName: 'OG', avatarUrl: avatar, joinedAt: '2020-08-20T19:23:00Z', named: true };
+const demoUser = { slug: 'og_red', firstName: 'OG', displayName: 'OG Red', avatarUrl: avatar, joinedAt: '2020-08-20T19:23:00Z', named: true };
 // Joined twelve days ago, so the Getting started pill shows.
 const joinedAt = `${dayIn(new Date(Date.now() - 12 * 86_400_000).toISOString(), 'UTC')}T20:41:00Z`;
 const NEW_MEMBER = 'New member';
@@ -32,6 +32,7 @@ const users: Record<string, HeaderUser | null> = {
   [NEW_MEMBER]: {
     slug: 'reel_rookie',
     firstName: 'reel_rookie',
+    displayName: 'reel_rookie',
     avatarUrl: PLACEHOLDER_AVATAR,
     joinedAt,
     named: false,

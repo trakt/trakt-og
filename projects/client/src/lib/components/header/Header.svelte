@@ -10,7 +10,22 @@ import { page } from '$app/state';
 import logo from '$lib/assets/trakt-logo-red.png';
 import { calendarHome } from '$lib/calendars/calendarHome';
 import Icon from '$lib/icons/Icon.svelte';
+import arrowRightFromBracket from '$lib/icons/solid/arrow-right-from-bracket.svg?raw';
+import barsProgress from '$lib/icons/solid/bars-progress.svg?raw';
+import bookmark from '$lib/icons/solid/bookmark.svg?raw';
+import calendarDays from '$lib/icons/solid/calendar-days.svg?raw';
+import chartColumn from '$lib/icons/solid/chart-column.svg?raw';
+import circleUser from '$lib/icons/solid/circle-user.svg?raw';
+import clockRotateLeft from '$lib/icons/solid/clock-rotate-left.svg?raw';
+import comments from '$lib/icons/solid/comments.svg?raw';
+import gear from '$lib/icons/solid/gear.svg?raw';
+import heart from '$lib/icons/solid/heart.svg?raw';
+import list from '$lib/icons/solid/list.svg?raw';
+import memo from '$lib/icons/solid/memo.svg?raw';
+import moon from '$lib/icons/solid/moon.svg?raw';
 import rocket from '$lib/icons/solid/rocket.svg?raw';
+import collection from '$lib/icons/trakt/collection-thick.svg?raw';
+import userGroup from '$lib/icons/solid/user-group.svg?raw';
 import { toast } from '$lib/components/toast/toast.svelte';
 import type { DarkKnight } from '$lib/settings/DarkKnight';
 import { saveSettings, type SaveSettingsResult } from '$lib/settings/saveSettings';
@@ -62,16 +77,34 @@ const sections = $derived([
   { title: 'Calendar', href: calendarHome(signedIn) },
 ]);
 
-const profileTabs = ['History', 'Progress', 'Library', 'Ratings', 'Lists', 'Watchlist', 'Comments', 'Notes', 'Network'];
+const profileTabs = [
+  { title: 'History', icon: clockRotateLeft },
+  { title: 'Progress', icon: barsProgress },
+  { title: 'Library', icon: collection, large: true },
+  { title: 'Ratings', icon: heart },
+  { title: 'Lists', icon: list },
+  { title: 'Watchlist', icon: bookmark },
+  { title: 'Comments', icon: comments, small: true },
+  { title: 'Notes', icon: memo },
+  { title: 'Network', icon: userGroup, small: true },
+];
 const profileLinks = $derived(
   user
     ? [
-      { title: 'Profile', href: `/users/${user.slug}` },
-      ...profileTabs.map((title) => ({ title, href: `/users/${user.slug}/${title.toLowerCase()}` })),
+      { title: 'Profile', icon: circleUser, href: `/users/${user.slug}` },
+      ...profileTabs.map((tab) => ({ ...tab, href: `/users/${user.slug}/${tab.title.toLowerCase()}` })),
     ]
     : [],
 );
-const reviews = $derived(user ? reviewLinks({ slug: user.slug, now: new Date() }) : []);
+// reviewLinks lists the year, then the month.
+const reviews = $derived(
+  user
+    ? reviewLinks({ slug: user.slug, now: new Date() }).map((link, index) => ({
+      ...link,
+      icon: index === 0 ? chartColumn : calendarDays,
+    }))
+    : [],
+);
 
 // OG marks a nav link selected when the first path segment matches (`/shows/popular` selects Shows).
 const section = $derived(page.url.pathname.split('/')[1]);
@@ -131,27 +164,42 @@ async function toggleDarkKnight() {
       <div class={['profile', { vip: user.isVip }]}>
         <HeaderMenu label="{user.firstName}'s menu">
           {#snippet trigger()}<img class="avatar" src={user.avatarUrl} alt="" width="36" height="36" />{/snippet}
+          <p class="heading">{user.displayName}</p>
           <ul>
             {#each profileLinks as link, index (link.href)}
-              <li><a href={link.href} aria-current={here(link.href, index === 0)}>{link.title}</a></li>
+              <li>
+                <a href={link.href} aria-current={here(link.href, index === 0)}
+                  class={{ small: 'small' in link, large: 'large' in link }}>
+                  <Icon svg={link.icon} fixedWidth /> {link.title}
+                </a>
+              </li>
             {/each}
           </ul>
           <hr />
+          <p class="heading">Stats</p>
           <ul>
             {#each reviews as link (link.href)}
-              <li><a href={link.href} target="_blank" rel="noopener">{link.title}</a></li>
+              <li><a href={link.href} target="_blank" rel="noopener"><Icon svg={link.icon} fixedWidth /> {link.title}</a></li>
             {/each}
+          </ul>
+          <hr />
+          <p class="heading">Trakt Account</p>
+          <ul>
+            {#if user.isVip}
+              <li><a href={traktUrls.vip} target="_blank" rel="noopener"><Icon svg={rocket} fixedWidth /> Manage VIP</a></li>
+            {/if}
             <li>
               <button type="button" class="dark-knight" role="switch" aria-checked={dark} onclick={toggleDarkKnight}>
-                Dark Knight
+                <Icon svg={moon} fixedWidth /> Dark Knight
               </button>
             </li>
+            <li><a href={traktUrls.settings} target="_blank" rel="noopener"><Icon svg={gear} fixedWidth /> Settings</a></li>
           </ul>
           <hr />
           <ul>
-            {#if user.isVip}<li><a href={traktUrls.vip} target="_blank" rel="noopener">Manage VIP</a></li>{/if}
-            <li><a href={traktUrls.settings} target="_blank" rel="noopener">Settings</a></li>
-            <li><a href="/signout" onclick={authStep.signOut}>Sign Out</a></li>
+            <li>
+              <a href="/signout" onclick={authStep.signOut}><Icon svg={arrowRightFromBracket} fixedWidth /> Sign Out</a>
+            </li>
           </ul>
         </HeaderMenu>
       </div>

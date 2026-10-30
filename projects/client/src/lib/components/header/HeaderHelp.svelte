@@ -88,21 +88,6 @@ const sections = $derived([
   color: var(--color-header-text);
 }
 
-/* The dropdowns' section heading. */
-.heading {
-  margin: 0;
-  padding: var(--space-menu-header);
-  color: var(--color-menu-header);
-  font-size: var(--font-size-menu-header);
-  font-weight: var(--font-weight-menu-header);
-  letter-spacing: var(--letter-spacing-menu-header);
-  text-transform: uppercase;
-
-  &:first-child {
-    padding-block-start: var(--space-menu-offset);
-  }
-}
-
 .help :global(.signpost) {
   font-size: var(--header-signpost);
 }
@@ -112,16 +97,5 @@ const sections = $derived([
   display: grid;
   place-items: center;
   inline-size: var(--header-help-icon-width);
-}
-
-/* A glyph wider than the rest, scaled down so it reads the same size; its label stays lined up. */
-.small :global(.icon) {
-  scale: var(--header-help-icon-small);
-}
-
-/* The icon close to its label, not pushed apart like a check. */
-.help :global(.menu a) {
-  justify-content: start;
-  gap: var(--space-menu-icon);
 }
 </style>

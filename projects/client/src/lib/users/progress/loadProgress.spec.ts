@@ -5,7 +5,15 @@ import { loadProgress } from './loadProgress.ts';
 
 const profile = toProfileUser({ username: 'tester', name: 'Tester', private: false, ids: { slug: 'tester' } });
 const datePreferences = { order: 'mdy', hour24: false, timeZone: 'America/Los_Angeles', weekStartDay: 0 } as const;
-const viewer = { slug: 'tester', firstName: 'Tester', avatarUrl: '', isVip: false, joinedAt: null, named: true };
+const viewer = {
+  slug: 'tester',
+  firstName: 'Tester',
+  displayName: 'Tester',
+  avatarUrl: '',
+  isVip: false,
+  joinedAt: null,
+  named: true,
+};
 
 const settings = (progress: Record<string, unknown>) => ({ browsing: { progress } }) as unknown as ViewerSettings;
 

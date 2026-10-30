@@ -94,6 +94,7 @@ describe('root layout settings', () => {
     expect(data.user).toEqual({
       slug: 'og_tester',
       firstName: 'OG',
+      displayName: 'OG Tester',
       isVip: true,
       avatarUrl: SETTINGS.user.images.avatar.full,
       joinedAt: null,

@@ -232,6 +232,6 @@ const flipped = $derived(data.sort.how === 'desc');
 }
 
 .empty {
-  padding-block-start: var(--line-height-computed);
+  padding-block-start: var(--empty-state-above);
 }
 </style>

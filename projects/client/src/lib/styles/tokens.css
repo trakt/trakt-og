@@ -1371,6 +1371,9 @@
   /* The empty states (see design-system.md): EmptyState's dashed outline and its line, its dark-frame and failed
      outlines; NoResults' button; EmptyNote's inline line and its action. */
   --empty-state-padding: 28px 20px;
+  /* Above an empty state that opens a profile page's section: its own margin under it plus the section's foot, so
+     the space is even above and below. */
+  --empty-state-above: calc(var(--line-height-computed) + var(--space-panel));
   --empty-state-gap: 12px;
   --empty-state-action-gap: 6px;
   --radius-empty-state: var(--radius-list-card);

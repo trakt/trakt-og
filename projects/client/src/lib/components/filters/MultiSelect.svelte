@@ -3,7 +3,8 @@
   searchable list that drops under it, grouped, with small tags on the right ("US", "Free"). A combobox with
   `aria-activedescendant`: typing filters (anywhere in the name), arrows move, Enter picks or unpicks, Esc closes,
   and Backspace in an empty field drops the last chip. Picked options stay in the list, greyed, like Chosen's. The
-  placeholder only shows while nothing is picked, also like Chosen's.
+  placeholder only shows while nothing is picked, also like Chosen's. The list floats in the top layer, so in a dialog
+  (the list editor's collaborators) it opens over the dialog instead of making it scroll.
     <MultiSelect bind:value={genres} options={[{ options: genreOptions }]} label="Genres"
       placeholder="Choose genres..." />
 -->
@@ -11,6 +12,7 @@
 import EmptyNote from '$lib/components/empty/EmptyNote.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import xmark from '$lib/icons/solid/xmark.svg?raw';
+import { menuPlacement } from '$lib/components/dropdown/menuPlacement';
 import type { FilterOption, FilterOptionGroup } from './filterOptions.ts';
 
 interface Props {
@@ -106,6 +108,42 @@ const optionAt = (event: Event) => {
   return index === undefined || index === null ? undefined : Number(index);
 };
 
+// The list is a popover in the top layer, pinned under the measured field (above it when only that fits), so in a
+// dialog it floats over the dialog instead of making it scroll. It follows the field as anything scrolls.
+let field = $state<HTMLElement>();
+let pinned = $state<{ top: number; left: number; width: number }>();
+const place = () => {
+  if (!field || !list) return;
+  const box = field.getBoundingClientRect();
+  const spot = menuPlacement({
+    trigger: box,
+    menu: { width: box.width, height: list.offsetHeight },
+    viewport: { width: innerWidth, height: innerHeight },
+    offset: parseFloat(getComputedStyle(list).getPropertyValue('--multi-select-drop-offset')) || 0,
+  });
+  pinned = { ...spot, width: box.width };
+};
+$effect(() => {
+  if (!list) return;
+  if (!open) {
+    if (list.matches(':popover-open')) list.hidePopover();
+    return;
+  }
+  if (!list.matches(':popover-open')) list.showPopover();
+  place();
+  addEventListener('scroll', place, { capture: true, passive: true });
+  addEventListener('resize', place);
+  return () => {
+    removeEventListener('scroll', place, { capture: true });
+    removeEventListener('resize', place);
+  };
+});
+// Its height changes as typing filters it, so it's placed again for the new size.
+$effect(() => {
+  void flat.length;
+  if (open) requestAnimationFrame(place);
+});
+
 const rows = $derived(groups.map((group, g) => {
   const start = groups.slice(0, g).reduce((count, other) => count + other.options.length, 0);
   return { label: group.label, rows: group.options.map((option, index) => ({ option, index: start + index })) };
@@ -116,7 +154,7 @@ const rows = $derived(groups.map((group, g) => {
   <!-- A click anywhere in the field lands in the search box, like Chosen's. -->
   <!-- svelte-ignore a11y_click_events_have_key_events -->
   <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <div class="field" onclick={() => input?.focus()}>
+  <div class="field" bind:this={field} onclick={() => input?.focus()}>
     {#each chips as chip (chip.value)}
       <span class="chip">{#if chip.avatar}<img class="chip-avatar" src={chip.avatar} alt="" />{/if}{chip.label}<button type="button" class="remove" aria-label="Remove {chip.label}"
           onclick={(event) => {
@@ -151,7 +189,10 @@ const rows = $derived(groups.map((group, g) => {
     aria-label={label}
     aria-multiselectable="true"
     tabindex="-1"
-    hidden={!open}
+    popover="manual"
+    style:--drop-top={pinned ? `${pinned.top}px` : undefined}
+    style:--drop-left={pinned ? `${pinned.left}px` : undefined}
+    style:--drop-width={pinned ? `${pinned.width}px` : undefined}
     bind:this={list}
     onpointerdown={(event) => event.preventDefault()}
     onclick={(event) => toggle(flat.at(optionAt(event) ?? -1))}
@@ -258,7 +299,7 @@ const rows = $derived(groups.map((group, g) => {
   }
 }
 .list .drop {
-  margin-block-start: var(--space-menu-offset);
+  --multi-select-drop-offset: var(--space-menu-offset);
   padding: var(--space-menu);
   border: 1px solid var(--color-menu-border);
   border-radius: var(--radius-menu);
@@ -375,25 +416,23 @@ const rows = $derived(groups.map((group, g) => {
   }
 }
 
+/* A popover pinned under the field (see `place`), clear of the field's focus ring, which draws outside it. */
 .drop {
-  position: absolute;
-  inset-block-start: 100%;
-  inset-inline: 0;
-  z-index: 2;
-  /* Clear of the field's focus ring, which draws outside it. */
-  margin-block-start: var(--focus-ring-width);
+  --multi-select-drop-offset: var(--focus-ring-width);
+  position: fixed;
+  inset: auto;
+  inset-block-start: var(--drop-top);
+  inset-inline-start: var(--drop-left);
+  inline-size: var(--drop-width);
   max-block-size: 240px;
-  margin-inline: 0;
-  margin-block-end: 0;
+  margin: 0;
   padding: 0;
   overflow-y: auto;
+  border: 0;
   background-color: var(--color-filter-control-bg);
   color: var(--color-filter-control-text);
+  font-size: var(--font-size-filter-control);
   list-style: none;
-
-  &[hidden] {
-    display: none;
-  }
 }
 
 li {

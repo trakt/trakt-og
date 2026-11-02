@@ -17,6 +17,7 @@ import { type ChartAlias, chartAliases, type ChartName, isChartAlias, isPeriodCh
 import { type ChartPeriod, chartPeriod } from './chartPeriod.ts';
 import { fetchLiveNow } from './fetchLiveNow.ts';
 import { fetchSmartLists } from '../lists/smart/fetchSmartLists.ts';
+import { sumTrendingWatchers } from './sumTrendingWatchers.ts';
 import { chartPageCount } from './chartPageCount.ts';
 import { type ChartPageRequest, chartPageRequests } from './chartPageRequests.ts';
 import { type ChartPageSize, chartPageSize } from './chartPageSize.ts';
@@ -201,26 +202,35 @@ export async function loadChart({
   // Filtered, the sidebar counts "120 of 735 shows", so the chart's unfiltered size comes along: one row, public.
   const filtered = Object.keys(filterQuery).length > 0;
   const layout = parent();
-  const [fetched, { datePreferences, settings }, filterSources, unfiltered, live, smartLists] = await Promise.all([
-    chart === 'recommendations'
-      ? token
-        ? fetchRecommendations(fetch, token, type, filterQuery).catch(() => 'failed' as const)
-        : signInRedirect(url)
-      : token && viewer
-        ? viewerRows(chart)
-        : publicRows(chart),
-    layout,
-    // The sidebar shows watch-now filters as service tiles, so it needs the country's services.
-    filters.watchnow.length > 0
-      ? layout.then(({ settings }) => fetchSources(fetch, watchNowCountry(settings)))
-      : undefined,
-    chart !== 'recommendations' && filtered
-      ? fetchRows(api({ fetch }), type, chart, period, { extended: 'full,images', page: 1, limit: 1 })
-      : undefined,
-    chart === 'trending' ? fetchLiveNow(fetch) : null,
-    // The sidebar's Smart Lists, where classic Trakt listed saved filters.
-    token ? fetchSmartLists({ fetch, token, user: 'me' }) : null,
-  ]);
+  // Filtered trending's Live now counts only the titles left: the filtered chart read whole, the way the page reads it.
+  const filteredWatchers = () =>
+    sumTrendingWatchers({
+      client: api({ fetch, token: token && viewer ? token : null }),
+      type,
+      filters: { ...filterQuery, ...(token && viewer ? ignore : {}) },
+    }).catch(() => null);
+  const [fetched, { datePreferences, settings }, filterSources, unfiltered, live, liveFiltered, smartLists] =
+    await Promise.all([
+      chart === 'recommendations'
+        ? token
+          ? fetchRecommendations(fetch, token, type, filterQuery).catch(() => 'failed' as const)
+          : signInRedirect(url)
+        : token && viewer
+          ? viewerRows(chart)
+          : publicRows(chart),
+      layout,
+      // The sidebar shows watch-now filters as service tiles, so it needs the country's services.
+      filters.watchnow.length > 0
+        ? layout.then(({ settings }) => fetchSources(fetch, watchNowCountry(settings)))
+        : undefined,
+      chart !== 'recommendations' && filtered
+        ? fetchRows(api({ fetch }), type, chart, period, { extended: 'full,images', page: 1, limit: 1 })
+        : undefined,
+      chart === 'trending' ? fetchLiveNow(fetch) : null,
+      chart === 'trending' && filtered ? filteredWatchers() : null,
+      // The sidebar's Smart Lists, where classic Trakt listed saved filters.
+      token ? fetchSmartLists({ fetch, token, user: 'me' }) : null,
+    ]);
   if (fetched === 'signed-out') signInRedirect(url);
   // Recommendations that didn't load keep the sidebar working and say so where the cards go.
   const failed = fetched === 'failed';
@@ -257,6 +267,8 @@ export async function loadChart({
     watcherCount: positiveInt(headers.get('x-trending-user-count'), 0),
     /** Trending's Live now: shows against movies. Null on the other charts or when either didn't load. */
     live,
+    /** Filtered trending: everyone watching the titles the filters leave. Null unfiltered or when it didn't load. */
+    liveFiltered,
     /** The viewer's smart lists. Null signed out or when they didn't load. */
     smartLists,
     /** The sidebar's own state, so SSR renders it as the viewer left it, like the calendar's. */

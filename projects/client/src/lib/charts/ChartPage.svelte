@@ -389,8 +389,9 @@ async function saveChanges() {
         <CountPill count={data.cards.length} label={data.type} one={noun} />
       {:else}
         {#if data.chart === 'trending'}
-          <!-- The API's own count only sums the page's rows; Live now reads the whole chart. -->
-          <CountPill count={data.live?.[data.type] ?? data.watcherCount} label="watchers" one="watcher" />
+          <!-- The API's own count only sums the page's rows; Live now reads the whole chart, filtered or not. -->
+          <CountPill count={data.liveFiltered ?? data.live?.[data.type] ?? data.watcherCount}
+            total={data.liveFiltered !== null ? data.live?.[data.type] : undefined} label="watchers" one="watcher" />
         {/if}
         <CountPill count={data.itemCount} total={data.totalCount} label={data.type} one={noun} />
       {/if}
@@ -449,16 +450,17 @@ async function saveChanges() {
       </AppliedFiltersSection>
     {/if}
 
-    {#if smartLists.length > 0}
-      <SmartListsSection lists={smartLists} current={current?.slug} chartPath={page.url.pathname}
-        manageHref="/users/{owner}/smart-lists" open={data.sidebar.smart} />
-    {/if}
-
     {#if data.live}
-      <LiveNowSection live={data.live} type={data.type} open={data.sidebar.live} />
+      <LiveNowSection live={data.live} type={data.type} filtered={data.liveFiltered} open={data.sidebar.live} />
     {/if}
     {#if data.chart === 'trending' && data.user}
       <FollowingWatchingSection type={data.type} open={data.sidebar.following} datePreferences={data.datePreferences} />
+    {/if}
+
+    <!-- The viewer's smart lists come last, after the chart's own sections. -->
+    {#if smartLists.length > 0}
+      <SmartListsSection lists={smartLists} current={current?.slug} chartPath={page.url.pathname}
+        manageHref="/users/{owner}/smart-lists" open={data.sidebar.smart} />
     {/if}
   {/snippet}
 

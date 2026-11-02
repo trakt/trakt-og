@@ -18,6 +18,17 @@ const labels: Readonly<Record<string, string>> = {
   letterboxd_ratings: 'Letterboxd',
   mal_ratings: 'MyAnimeList',
   parental: 'Parental Guide',
+  // Smart list filters the chart panel has no control for, in a smart list's recipe.
+  statuses: 'Status',
+  subgenres: 'Subgenres',
+  keywords: 'Keywords',
+  studios: 'Studios',
+  people: 'People',
+  metascores: 'Metascore',
+  votes: 'Trakt votes',
+  imdb_votes: 'IMDb votes',
+  released_within_days: 'Released',
+  hide: 'Hide',
 };
 
 /** What a filter chip filters, from its `filterTags` id ("genres" is Genres, "runtimes" is Runtime). */

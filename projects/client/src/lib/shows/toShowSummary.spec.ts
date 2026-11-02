@@ -135,6 +135,17 @@ describe('toShowSummary', () => {
       expect(facts.premieres?.date).toBe('January 9, 2027');
       expect(facts.premiered).toBeUndefined();
     });
+
+    it('should name how a finished show ends its story', () => {
+      const ending = (value: string | null | undefined) =>
+        toShowSummary({ ...base, show: { ...base.show, ending: value } }).facts.ending;
+
+      expect(ending('open')).toBe('Unresolved');
+      expect(ending('concluded')).toBe('Completed');
+      expect(ending('unclear')).toBeUndefined();
+      expect(ending(null)).toBeUndefined();
+      expect(ending(undefined)).toBeUndefined();
+    });
   });
 
   describe('recent episodes', () => {

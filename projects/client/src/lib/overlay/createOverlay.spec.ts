@@ -174,6 +174,22 @@ describe('createOverlay', () => {
     expect(overlay.state('episode', 102, { show: 2, number: 1, episode: 2 }).collected).toBe(false);
   });
 
+  it("should count a show's special plays without adding them to its progress", async () => {
+    server.use(
+      http.get(`${API}/sync/watched/shows`, () =>
+        HttpResponse.json({ '2': { '10|0': { '100': ['2017-03-08'] }, '11|1': { '101': ['2014-06-14'] } } }),
+      ),
+    );
+    const { overlay } = setup();
+    await overlay.start('sean');
+
+    expect(overlay.state('show', 2)).toMatchObject({
+      watchedEpisodes: 1,
+      watchedPlays: 2,
+      lastWatchedAt: '2017-03-08',
+    });
+  });
+
   describe('for seasons', () => {
     it('should count one season of its show, specials included', async () => {
       const { overlay } = setup();

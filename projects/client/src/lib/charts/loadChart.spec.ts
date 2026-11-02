@@ -63,7 +63,7 @@ describe('loadChart recommendations', () => {
     expect(query.get('ignore_collected')).toBe('true');
   });
 
-  it("should send only the filters OG's recommendations offered", async () => {
+  it('should send the same filters as the other charts', async () => {
     await loadChart({
       fetch: globalThis.fetch,
       token: 'fake-token',
@@ -77,7 +77,7 @@ describe('loadChart recommendations', () => {
     const query = new URL(seen.at(0)?.url ?? '').searchParams;
     expect(query.get('genres')).toBe('drama');
     expect(query.get('ratings')).toBe('70-100');
-    expect(query.has('certifications')).toBe(false);
+    expect(query.get('certifications')).toBe('tv-ma');
   });
 
   it('should load the recommendations without failing', async () => {

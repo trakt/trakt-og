@@ -25,14 +25,6 @@ describe('util: advancedFiltersQuery', () => {
     });
   });
 
-  it('should keep only the picked filters', () => {
-    expect(advancedFiltersQuery(filters, { genres: true, years: true })).toEqual({
-      genres: 'drama,comedy',
-      genres_operator: 'and',
-      years: '2000-2010',
-    });
-  });
-
   it('should leave out the excluded values of a mixed list with a dash', () => {
     const mixed = { ...emptyFilters, genres: { values: ['drama'], mode: 'any' as const, excluded: ['crime'] } };
     expect(advancedFiltersQuery(mixed)).toEqual({ genres: 'drama,-crime' });
@@ -49,11 +41,6 @@ describe('util: advancedFiltersQuery', () => {
       parental_alcohol: '0-0',
       parental_frightening: '0-3',
     });
-  });
-
-  it('should leave the parental guide out unless it is picked', () => {
-    const parental = { ...emptyFilters, parental: { violence: 1 } as const };
-    expect(advancedFiltersQuery(parental, { genres: true })).toEqual({});
   });
 
   it('should send the TMDB, Letterboxd and MyAnimeList ratings', () => {

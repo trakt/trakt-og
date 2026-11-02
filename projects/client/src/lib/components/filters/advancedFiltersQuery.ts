@@ -23,17 +23,12 @@ const rangeParams: Record<RangeFilterKey, string> = {
   mal_ratings: 'mal_ratings',
 };
 
-type Picked = { readonly [key: string]: boolean | undefined };
-
 /**
  * The query the chart endpoints take for these filters. The API excludes with a `-` prefix like OG, but spells
- * "all" as `genres_operator=and` instead of OG's `+`. `only` keeps a subset: recommendations offered OG only
- * watch now, genres, years and the Trakt rating.
+ * "all" as `genres_operator=and` instead of OG's `+`.
  */
-export function advancedFiltersQuery(filters: AdvancedFilters, only?: Picked): Record<string, string> {
-  const keep = (key: string) => !only || only[key] === true;
-
-  const lists = (Object.keys(listParams) as (keyof typeof listParams)[]).filter(keep).flatMap((key) => {
+export function advancedFiltersQuery(filters: AdvancedFilters): Record<string, string> {
+  const lists = (Object.keys(listParams) as (keyof typeof listParams)[]).flatMap((key) => {
     const { values, mode, excluded = [] } = filters[key];
     if (values.length === 0) return [];
     const list: [string, string] = [
@@ -44,14 +39,13 @@ export function advancedFiltersQuery(filters: AdvancedFilters, only?: Picked): R
     ];
     return key === 'genres' && mode === 'all' ? [list, ['genres_operator', 'and'] as [string, string]] : [list];
   });
-  const ranges = (Object.keys(rangeParams) as RangeFilterKey[]).filter(keep).flatMap((key) => {
+  const ranges = (Object.keys(rangeParams) as RangeFilterKey[]).flatMap((key) => {
     const range = filters[key];
     return range ? [[rangeParams[key], `${range[0]}-${range[1]}`] as [string, string]] : [];
   });
-  const watchnow: [string, string][] =
-    keep('watchnow') && filters.watchnow.length > 0 ? [['watchnow', filters.watchnow.join(',')]] : [];
+  const watchnow: [string, string][] = filters.watchnow.length > 0 ? [['watchnow', filters.watchnow.join(',')]] : [];
 
-  const parental = keep('parental') ? parentalGuideParams(filters.parental) : [];
+  const parental = parentalGuideParams(filters.parental);
 
   return Object.fromEntries([...watchnow, ...lists, ...ranges, ...parental]);
 }

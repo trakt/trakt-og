@@ -26,7 +26,6 @@ describe('mapper: fromSavedFilter', () => {
     ['a search', { path: '/search/shows', query: 'query=lost' }],
     ["OG's network ids", { path: '/shows/trending', query: 'network_ids=16' }],
     ['the terms search', { path: '/shows/popular', query: 'query=dragon' }],
-    ['a filter recommendations never offered', { path: '/shows/recommendations', query: 'runtimes=20-60' }],
   ])('should leave out %s', (_, saved) => {
     expect(fromSavedFilter({ name: 'x', ...saved }, now)).toBeNull();
   });

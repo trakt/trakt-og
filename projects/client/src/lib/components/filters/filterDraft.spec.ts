@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { chartFilters } from '../../charts/chartFilters.ts';
+import type { AdvancedFiltersConfig } from './AdvancedFiltersConfig.ts';
 import { emptyFilters } from './advancedFilters.ts';
 import { fromFilterDraft, toFilterDraft } from './filterDraft.ts';
 
 const now = new Date('2026-09-29T12:00:00Z');
 const trending = chartFilters({ type: 'shows', chart: 'trending', period: 'weekly', now });
-const recommendations = chartFilters({ type: 'shows', chart: 'recommendations', period: 'weekly', now });
+const narrow: AdvancedFiltersConfig = { ...trending, lists: ['genres'], ranges: ['years', 'ratings'], parental: false };
 
 describe('util: filterDraft', () => {
   it('should start every slider at its ends when that range is off', () => {
@@ -31,7 +32,7 @@ describe('util: filterDraft', () => {
       certifications: { values: ['tv-ma'], mode: 'any' as const },
       runtimes: [30, 60] as const,
     };
-    const applied = fromFilterDraft(toFilterDraft(filters, recommendations), recommendations);
+    const applied = fromFilterDraft(toFilterDraft(filters, narrow), narrow);
     expect(applied.genres.values).toEqual(['drama']);
     expect(applied.certifications.values).toEqual([]);
     expect(applied.runtimes).toBeNull();
@@ -42,8 +43,6 @@ describe('util: filterDraft', () => {
   it('should apply the parental guide only where the panel has it', () => {
     const filters = { ...emptyFilters, parental: { violence: 1 } as const };
     expect(fromFilterDraft(toFilterDraft(filters, trending), trending).parental).toEqual(filters.parental);
-    expect(fromFilterDraft(toFilterDraft(filters, recommendations), recommendations).parental).toEqual(
-      emptyFilters.parental,
-    );
+    expect(fromFilterDraft(toFilterDraft(filters, narrow), narrow).parental).toEqual(emptyFilters.parental);
   });
 });

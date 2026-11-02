@@ -14,6 +14,7 @@ import MediaList from '$lib/components/lists/MediaList.svelte';
 import BuiltInListDialog from '$lib/components/lists/BuiltInListDialog.svelte';
 import NewListDialog from '$lib/components/lists/NewListDialog.svelte';
 import SmartListDialog from '$lib/components/lists/SmartListDialog.svelte';
+import ListNotice from '$lib/components/lists/ListNotice.svelte';
 import ListItemEdit from '$lib/components/lists/ListItemEdit.svelte';
 import ListReorderControls from '$lib/components/lists/ListReorderControls.svelte';
 import RankInput from '$lib/components/lists/RankInput.svelte';
@@ -94,6 +95,7 @@ const never = new Promise<null>(() => {});
 const likeTarget = { id: 23, ownerSlug: 'og_tester', viewer: 'og_viewer' };
 let mode = $state<'add' | 'edit' | 'unavailable'>('add');
 let smartOpen = $state(false);
+let noticeBusy = $state(false);
 let smartMode = $state<'save' | 'limit' | 'edit'>('save');
 const smartChips = [
   { id: 'genres', values: [{ text: 'Drama', without: false }, { text: 'Animation', without: true }] },
@@ -148,6 +150,21 @@ const following = [{ slug: 'teodoro_2', name: 'Elsy Murphy (@teodoro_2)' }];
     <DemoButton onclick={() => { smartMode = 'save'; smartOpen = true; }}>Preview save</DemoButton>
     <DemoButton onclick={() => { smartMode = 'limit'; smartOpen = true; }}>Preview save at the limit</DemoButton>
     <DemoButton onclick={() => { smartMode = 'edit'; smartOpen = true; }}>Preview edit</DemoButton>
+  </div>
+</Specimen>
+
+<Specimen title="List notice"
+  note="A one-off offer over a lists page or a list. Try the action: it shows Working… while busy.">
+  <div class="states">
+    <Variant label="Classic saved filters, on the viewer's own Smart lists">
+      <div class="padded">
+        <ListNotice action="Bring back 2" busy={noticeBusy} onaction={() => (noticeBusy = !noticeBusy)}
+          ondismiss={() => {}}>
+          You had <strong>3</strong> saved filters on classic Trakt. 2 can come back as smart lists. The rest use a chart
+          or filter smart lists don't have.
+        </ListNotice>
+      </div>
+    </Variant>
   </div>
 </Specimen>
 

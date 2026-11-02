@@ -64,6 +64,8 @@ import { smartListSourceLabel } from '$lib/lists/smart/smartListSourceLabel';
 import { smartListChartHref } from '$lib/lists/smart/smartListChartHref';
 import { fetchSmartListPreview } from './fetchSmartListPreview.ts';
 import { toSmartListRow } from './toSmartListRow.ts';
+import ListNotice from '$lib/components/lists/ListNotice.svelte';
+import { SAVED_FILTERS_COOKIE } from '$lib/lists/smart/SAVED_FILTERS_COOKIE';
 
 type Props = {
   data: Awaited<ReturnType<typeof loadLists>> & { profile: ProfileUser; isSelf: boolean; user: HeaderUser | null };
@@ -271,6 +273,36 @@ async function removeSmart(row: UserListRow) {
   }
   toast.success('You deleted the smart list.');
   await invalidateAll();
+}
+
+// Bringing back classic saved filters: made one at a time, stopping at the smart list limit, then the page reloads.
+let savedHidden = $state(false);
+async function importSaved() {
+  const offer = data.savedFilters;
+  if (!offer || smartBusy) return;
+  smartBusy = true;
+  const results = await offer.lists.reduce<Promise<Awaited<ReturnType<typeof saveSmartList>>[]>>(
+    async (done, write) => {
+      const previous = await done;
+      if (previous.at(-1)?.ok === false) return previous;
+      return [...previous, await saveSmartList({ request: smartRequest, write })];
+    },
+    Promise.resolve([]),
+  );
+  smartBusy = false;
+  const made = results.filter((result) => result.ok).length;
+  const last = results.at(-1);
+  if (made > 0) toast.success(`You brought back ${made} saved ${made === 1 ? 'filter' : 'filters'} as smart lists.`);
+  if (last && !last.ok) {
+    toast.error(last.reason === 'limit'
+      ? "You've reached your smart list limit, so the rest stayed behind."
+      : "Doh! We couldn't bring back every saved filter. Please try again.");
+  }
+  await invalidateAll();
+}
+function dismissSaved() {
+  savedHidden = true;
+  document.cookie = `${SAVED_FILTERS_COOKIE}=dismissed; path=/; max-age=31536000; samesite=lax`;
 }
 
 // A smart list's count and first posters, read as its row nears the viewport: the API works them out on read. Null
@@ -558,6 +590,17 @@ const actions = (row: UserListRow) => {
 <section class="lists" aria-labelledby="lists-heading" {@attach shortcut}>
   <Container>
     <h2 id="lists-heading" class="visually-hidden">{title}</h2>
+    {#if smart && data.isSelf && data.savedFilters && !savedHidden}
+      {@const offer = data.savedFilters}
+      <ListNotice action="Bring back {offer.lists.length}" busy={smartBusy} onaction={importSaved}
+        ondismiss={dismissSaved}>
+        You had <strong>{offer.lists.length + offer.skipped}</strong> saved
+        {offer.lists.length + offer.skipped === 1 ? 'filter' : 'filters'} on classic Trakt.
+        {offer.skipped > 0
+          ? `${offer.lists.length} can come back as smart lists. The rest use a chart or filter smart lists don't have.`
+          : 'They can come back as smart lists.'}
+      </ListNotice>
+    {/if}
     {#if personal && !reordering && data.builtIns.length > 0}
       {#each builtIns as list (list.key)}
         <div transition:slide={{ duration }}>{@render row(list, undefined)}</div>

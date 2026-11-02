@@ -10,12 +10,14 @@ export interface ListRowActions {
   readonly report?: ListRowAction;
   /** The owner's pencil. */
   readonly edit?: ListRowAction;
-  /** The owner's delete icon, on personal lists only. */
-  readonly delete?: ListRowAction;
+  /** The owner's delete icon, on personal lists only. `question` asks something other than "Delete this list?". */
+  readonly delete?: ListRowAction & { readonly question?: string };
   /** "Stop collaborating on this list", for a collaborator. */
   readonly leave?: ListRowAction;
   /** Where "View watched progress" goes. Left out on official lists. */
   readonly progressHref?: string;
+  /** A smart list's chart, with its filters on: an "Open on Popular" pill beside the item count. */
+  readonly chart?: { readonly href: string; readonly label: string };
   /** The absolute URL the share icon shares. */
   readonly shareUrl?: string;
 }

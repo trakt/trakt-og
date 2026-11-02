@@ -28,6 +28,15 @@ describe('listRowActions', () => {
     });
   });
 
+  it("should give a smart list's owner edit, delete and share, and no report or progress", () => {
+    const smart = row({ kind: 'smart', id: null, href: '/users/owner/smart-lists/hbo' });
+    const actions = listRowActions({ row: smart, viewer: { slug: 'owner' }, isCollaborator: false, origin });
+    expect(icons(actions)).toEqual(['delete', 'edit', 'shareUrl']);
+    expect(icons(listRowActions({ row: smart, viewer: { slug: 'other' }, isCollaborator: false, origin }))).toEqual([
+      'shareUrl',
+    ]);
+  });
+
   it('should give the owner edit and delete, and their own progress page', () => {
     const actions = listRowActions({
       row: row(),

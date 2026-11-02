@@ -1,11 +1,17 @@
+import type { SmartList } from '../../lists/smart/SmartList.ts';
 import type { VipBadge } from '../VipBadge.ts';
 
 /** One row on a lists index, before the viewer's icons are worked out. */
 export interface UserListRow {
   readonly key: string;
-  /** The list's trakt id. Null for the watchlist and favorites, which the API doesn't serve as list objects. */
+  /**
+   * The list's trakt id. Null for the watchlist and favorites, which the API doesn't serve as list objects, and for
+   * smart lists, whose ids aren't list ids.
+   */
   readonly id: number | null;
-  readonly kind: 'personal' | 'official' | 'watchlist' | 'favorites';
+  readonly kind: 'personal' | 'official' | 'watchlist' | 'favorites' | 'smart';
+  /** A smart list's definition: what its edit and delete change, and where its posters come from. */
+  readonly smart?: SmartList;
   readonly href: string;
   readonly name: string;
   readonly owner: {

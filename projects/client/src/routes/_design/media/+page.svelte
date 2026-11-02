@@ -228,7 +228,7 @@ const featured = $derived(shows.at(0));
 </Specimen>
 
 <Specimen title="List rows"
-  note="A list with a description, a private one, the watchlist, an official list and an empty one, then a liked list whose posters are still loading.">
+  note="A list with a description, a private one, the watchlist, an official list and an empty one, then a liked list whose posters are still loading, and two smart lists.">
   <ListRow
     href="/users/og_tester/lists/all-time-favorites"
     name="All-Time Favorites"
@@ -328,6 +328,26 @@ const featured = $derived(shows.at(0));
     likeCount={41}
     likeTarget={{ id: 26, ownerSlug: 'sean', viewer: null }}
     commentCount={3}
+  />
+  <p>Smart lists: the owner's, with its Smart tag, where it fills from and the funnel to its chart, then one still reading its count and posters.</p>
+  <ListRow
+    href="/users/og_tester/smart-lists/hbo-dramas"
+    name="HBO Dramas"
+    owner={{ name: 'OG Tester', href: '/users/og_tester' }}
+    posters={shows.slice(0, 5).map(({ title, poster }) => ({ title, image: poster }))}
+    itemCount={58}
+    pills={['Smart']}
+    description="Fills itself from Trending shows."
+    actions={{ edit: {}, delete: {}, chart: { href: '/shows/trending?networks=HBO', label: 'Open on Trending' }, shareUrl: 'https://og.trakt.tv/users/og_tester/smart-lists/hbo-dramas' }}
+  />
+  <ListRow
+    href="/users/og_tester/smart-lists/short-comedies"
+    name="Short Comedies"
+    owner={{ name: 'OG Tester', href: '/users/og_tester' }}
+    posters={[]}
+    postersLoading
+    pills={['Smart', 'Private']}
+    description="Fills itself from Popular movies."
   />
 </Specimen>
 

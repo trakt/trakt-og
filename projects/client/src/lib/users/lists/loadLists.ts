@@ -8,6 +8,8 @@ import { fetchBuiltInItems } from './fetchBuiltInItems.ts';
 import { toBuiltInRow } from './toBuiltInRow.ts';
 import { toListsQuery } from './toListsQuery.ts';
 import { toUserListRow } from './toUserListRow.ts';
+import { toSmartList } from '../../lists/smart/toSmartList.ts';
+import { toSmartListRow } from './toSmartListRow.ts';
 import type { UserListRow } from './UserListRow.ts';
 import { withViewer } from './withViewer.ts';
 
@@ -79,20 +81,32 @@ async function fetchLiked(fetch: typeof globalThis.fetch, id: string, token: str
   return { status: 200, lists: kept.map(({ list }) => list), likedAt: kept.map(({ liked_at }) => liked_at) };
 }
 
+// Smart lists come whole, newest first. The owner's token shows their private and friends-only ones.
+async function fetchSmart(fetch: typeof globalThis.fetch, id: string, token: string | null) {
+  const response = await withViewer(token, (viewer) =>
+    api({ fetch, token: viewer }).users.smartLists.personal({ params: { id } }),
+  );
+  return { status: response.status, smart: response.status === 200 ? response.body.map(toSmartList) : [] };
+}
+
+const fetchLists = (fetch: typeof globalThis.fetch, id: string, token: string | null, mode: ListsMode) => {
+  if (mode === 'personal') return fetchPersonal(fetch, id, token);
+  if (mode === 'smart') return fetchSmart(fetch, id, token).then((result) => ({ ...result, lists: [], likedAt: [] }));
+  if (mode === 'collaborations') return fetchCollaborations(fetch, id, token);
+  return fetchLiked(fetch, id, token, mode === 'liked-official');
+};
+
 /**
- * `/users/:id/lists`, `/users/:id/lists/collaborations`, `/users/:id/lists/liked` and `/users/:id/lists/liked/official`.
- * Personal lists come in the owner's rank order after the watchlist and favorites rows; collaborations and liked lists
- * are other people's lists, with no built-in rows. Sorting and searching happen in the browser over every row, like OG.
+ * `/users/:id/lists`, `/users/:id/smart-lists`, `/users/:id/lists/collaborations`, `/users/:id/lists/liked` and
+ * `/users/:id/lists/liked/official`. Personal lists come in the owner's rank order after the watchlist and favorites
+ * rows; smart lists newest first; collaborations and liked lists are other people's lists, with no built-in rows.
+ * Sorting and searching happen in the browser over every row, like OG.
  */
 export async function loadLists({ fetch, locals, params, url, parent, mode }: Params) {
   const id = encodeURIComponent(params.id);
   const token = locals.token;
   const [result, watchlist, favorites, { profile }] = await Promise.all([
-    mode === 'personal'
-      ? fetchPersonal(fetch, id, token)
-      : mode === 'collaborations'
-        ? fetchCollaborations(fetch, id, token)
-        : fetchLiked(fetch, id, token, mode === 'liked-official'),
+    fetchLists(fetch, id, token, mode),
     mode === 'personal'
       ? fetchBuiltInItems(fetch, { id, kind: 'watchlist', type: 'movie,show,season,episode' }, token)
       : null,
@@ -113,7 +127,10 @@ export async function loadLists({ fetch, locals, params, url, parent, mode }: Pa
     query,
     builtIns,
     listsComplete: 'complete' in result && result.complete === true,
-    // Liked lists carry when they were liked, in the same order; the rest have none.
-    lists: result.lists.map((list, i) => ({ ...toUserListRow(list, i + 1), likedAt: result.likedAt.at(i) })),
+    lists:
+      'smart' in result
+        ? result.smart.map((list, i) => toSmartListRow({ list, profile, rank: i + 1 }))
+        : // Liked lists carry when they were liked, in the same order; the rest have none.
+          result.lists.map((list, i) => ({ ...toUserListRow(list, i + 1), likedAt: result.likedAt.at(i) })),
   };
 }

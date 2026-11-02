@@ -14,7 +14,7 @@ const TABS = [
   { label: 'Progress', segment: 'progress', also: [] },
   { label: 'Library', segment: 'library', also: [] },
   { label: 'Ratings', segment: 'ratings', also: [] },
-  { label: 'Lists', segment: 'lists', also: ['watchlist', 'favorites', 'recommendations'] },
+  { label: 'Lists', segment: 'lists', also: ['watchlist', 'favorites', 'recommendations', 'smart-lists'] },
   { label: 'Comments', segment: 'comments', also: [] },
   { label: 'Notes', segment: 'notes', also: [] },
   { label: 'Network', segment: 'network', also: [] },

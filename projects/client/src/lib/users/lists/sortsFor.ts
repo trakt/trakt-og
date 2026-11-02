@@ -6,10 +6,12 @@ const shared = [updated, title, likes, comments, items, random] as const;
 
 /**
  * The sort menu for a lists index, its default first. Rank is the owner's order, so only their personal lists have it;
- * Liked Date leads on liked lists and is only there.
+ * Liked Date leads on liked lists and is only there. Smart lists have no likes or comments, and their counts load as
+ * their rows scroll in.
  */
 export function sortsFor(mode: ListsMode) {
   if (mode === 'personal') return [rank, ...shared] as const;
+  if (mode === 'smart') return [updated, title, random] as const;
   if (mode === 'collaborations') return shared;
   return [liked, ...shared] as const;
 }

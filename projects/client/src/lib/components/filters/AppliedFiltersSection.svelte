@@ -1,14 +1,18 @@
 <!--
   A SidebarFrame sidebar's Applied Filters: a folding section of removable chips, its title counting them so a folded
-  one still says how many are on, with Clear on the right in the filter panel's Clear look at the sidebar's small
-  size. Its open
-  state shares the `sidebar_filters` cookie on every page.
+  one still says how many are on, with Clear on the right as a reset icon that fills on hover. Its open state shares
+  the `sidebar_filters` cookie on every page. With `onsave`, a Save button before Clear keeps the filters as a smart
+  list, where classic Trakt had Save Filters; `children` goes over the chips (the open smart list), and `tools` sits
+  beside Clear (its delete). A `ManageConfirm` named `delete` there gets Clear's look.
     <AppliedFiltersSection {chips} open={data.sidebar.filters} clearHref={page.url.pathname} onremove={remove} />
 -->
 <script lang="ts">
+import type { Snippet } from 'svelte';
 import SidebarSection from '$lib/components/sidebar/SidebarSection.svelte';
+import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import resetIcon from '$lib/icons/regular/arrow-rotate-left.svg?raw';
+import sparkles from '$lib/icons/solid/sparkles.svg?raw';
 import { countLabel } from '$lib/utils/countLabel';
 import FilterChips from './FilterChips.svelte';
 import type { FilterTag } from './filterTags.ts';
@@ -19,45 +23,117 @@ interface Props {
   /** The page without any filters. */
   clearHref: string;
   onremove: (id: string) => void;
+  onsave?: () => void;
+  children?: Snippet;
+  /** Icons before Clear. */
+  tools?: Snippet;
 }
 
-const { chips, open, clearHref, onremove }: Props = $props();
+const { chips, open, clearHref, onremove, onsave, children, tools }: Props = $props();
 </script>
 
 <!-- The page builds the href from its own path, so resolve() has nothing to add. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
 <SidebarSection id="filters" title={countLabel(chips.length, 'Applied Filter')} {open} remember>
-  {#snippet action()}<a class="clear" href={clearHref}><Icon svg={resetIcon} />Clear</a>{/snippet}
-  <FilterChips {chips} {onremove} />
+  {#snippet action()}
+    <span class="actions">
+      {#if onsave}
+        <Tooltip text="Save as a smart list">
+          {#snippet trigger(tooltip)}
+            <button type="button" class="save" onclick={onsave} {...tooltip}><Icon svg={sparkles} />Save</button>
+          {/snippet}
+        </Tooltip>
+      {/if}
+      <span class="tools">
+        {@render tools?.()}
+        {#if chips.length > 0}
+          <Tooltip text="Clear filters">
+            {#snippet trigger(tooltip)}
+              <a class="clear" href={clearHref} aria-label="Clear filters" {...tooltip}><Icon svg={resetIcon} /></a>
+            {/snippet}
+          </Tooltip>
+        {/if}
+      </span>
+    </span>
+  {/snippet}
+  {@render children?.()}
+  {#if chips.length > 0}<FilterChips {chips} {onremove} />{/if}
 </SidebarSection>
 
 <style>
-/* The filter panel's Clear and Close: an outline on the raised control fill, its icon muted. */
-.clear {
+.actions {
   display: inline-flex;
   align-items: center;
-  justify-self: start;
+  gap: var(--space-base-block);
+}
+
+/* Clear and the page's icons, close together like a comment's tools. */
+.tools {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--comment-tools-gap);
+
+  &:empty {
+    display: none;
+  }
+}
+
+/*
+  Save's height, with no fill until hover, like the list page's icons. Separate selectors, not one list, so the delete
+  keeps the specificity that beats ManageConfirm's own reset.
+*/
+.clear,
+.tools :global(.confirm.delete > button) {
+  display: inline-grid;
+  place-items: center;
+  inline-size: var(--control-height-mini);
+  block-size: var(--control-height-mini);
+  border-radius: var(--radius-comment-tool);
+  color: var(--color-control-muted);
+  font-size: var(--font-size-small);
+  cursor: pointer;
+  transition: background-color var(--transition-comment-quiet), color var(--transition-comment-quiet);
+}
+
+.clear:is(:hover, :focus-visible) {
+  background-color: var(--color-comment-chip);
+  color: var(--color-control-text);
+}
+
+/* The delete stays a list row's red. */
+.tools :global(.confirm.delete > button) {
+  color: var(--color-list-delete);
+}
+
+.tools :global(.confirm.delete > button:is(:hover, :focus-visible, [aria-expanded='true'])) {
+  background-color: var(--color-comment-chip);
+}
+
+/* A list's Done: green tint, green outline. */
+.save {
+  display: inline-flex;
+  align-items: center;
   gap: var(--space-xs-inline);
   min-block-size: var(--control-height-mini);
   padding: 0 var(--space-base-block);
-  border: 1px solid var(--color-control-border);
+  border: 1px solid var(--color-mode-done-border);
   border-radius: var(--radius-control);
-  background-color: var(--color-control-raised-bg);
-  color: var(--color-control-text);
+  background-color: var(--color-mode-done-bg);
+  color: var(--color-mode-done-text);
   font-family: var(--font-headings);
   font-size: var(--font-size-small);
-  font-weight: var(--font-weight-control);
-  text-decoration: none;
+  font-weight: var(--font-weight-headings-heavy);
+  cursor: pointer;
   transition: background-color 0.2s, border-color 0.2s;
 
   & :global(.icon) {
-    color: var(--color-control-muted);
+    color: inherit;
   }
 
   &:is(:hover, :focus-visible) {
-    border-color: var(--color-control-border-hover);
-    background-color: var(--color-control-raised-hover-bg);
+    border-color: var(--color-mode-done-border);
+    background-color: var(--color-mode-done-bg-hover);
   }
 }
 </style>

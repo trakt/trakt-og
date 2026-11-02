@@ -1257,6 +1257,7 @@
   --filter-popover-width: 300px; /* the title search and streaming filter panels */
   --space-filter-popover: 12px;
   --space-filter-popover-apply: 16px;
+  --font-size-filters-panel-close: 17px; /* the X's glyph runs small next to Clear's arrow */
   --space-filter-popover-field-icon: 34px; /* a search field's start, past its icon */
   --font-size-filter-popover-title: 11px;
   --space-filter-popover-title: 4px;
@@ -1289,6 +1290,19 @@
   --color-action-share: var(--brand-secondary);
   --color-action-add-fill: #38a038; /* a filled green add button */
   --color-action-add-fill-hover: #2f8a2f;
+
+  /*
+    The open smart list's changes, over a chart's Applied Filters: a faded blue info box, Save in a list's Done green
+    and Save as new in the box's blue, tinted the same way.
+  */
+  --color-smart-status-bg: color-mix(in srgb, var(--brand-secondary) 10%, transparent);
+  --color-smart-status-border: color-mix(in srgb, var(--brand-secondary) 40%, transparent);
+  --color-smart-status-text: light-dark(#0a6d96, #a9e1f7);
+  --color-smart-save-as-bg: color-mix(in srgb, var(--brand-secondary) 16%, transparent);
+  --color-smart-save-as-bg-hover: color-mix(in srgb, var(--brand-secondary) 26%, transparent);
+  --color-smart-save-as-border: color-mix(in srgb, var(--brand-secondary) 60%, transparent);
+  --color-smart-save-as-text: light-dark(#0a6d96, #fff);
+  --smart-status-padding: var(--space-sm-inline);
 
   /* Sort and filter controls */
   --color-filter-icon: light-dark(var(--gray-dark), #fff);

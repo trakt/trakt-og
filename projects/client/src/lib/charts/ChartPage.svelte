@@ -53,6 +53,27 @@ import { proxiedLogoUrl } from '$lib/utils/proxiedLogoUrl';
 import type { HeaderUser } from '$lib/components/header/HeaderUser';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
 import type { loadChart } from '$lib/charts/loadChart';
+import SmartListsSection from '$lib/charts/SmartListsSection.svelte';
+import SmartListStatus from '$lib/charts/SmartListStatus.svelte';
+import { isStandardApi } from '$lib/api/isStandardApi';
+import { rawApiFetch } from '$lib/api/rawApiFetch';
+import { viewerFetch } from '$lib/auth/viewerFetch';
+import ManageConfirm from '$lib/components/comments/ManageConfirm.svelte';
+import SmartListDialog from '$lib/components/lists/SmartListDialog.svelte';
+import deleteIcon from '$lib/icons/regular/trash-xmark.svg?raw';
+import { deleteSmartList } from '$lib/lists/smart/deleteSmartList';
+import { toast } from '$lib/components/toast/toast.svelte';
+import { emptyFilters } from '$lib/components/filters/advancedFilters';
+import { fromSmartListFilters } from '$lib/lists/smart/fromSmartListFilters';
+import { isSmartListChart } from '$lib/lists/smart/isSmartListChart';
+import { saveSmartList } from '$lib/lists/smart/saveSmartList';
+import { SMART_LIST_PARAM } from '$lib/lists/smart/SMART_LIST_PARAM';
+import type { SmartList, SmartListPrivacy } from '$lib/lists/smart/SmartList';
+import { uniqueBy } from '$lib/utils/uniqueBy';
+import { smartListChartHref } from '$lib/lists/smart/smartListChartHref';
+import { smartListPath } from '$lib/lists/smart/smartListPath';
+import { smartListSourceLabel } from '$lib/lists/smart/smartListSourceLabel';
+import { toSmartListFilters } from '$lib/lists/smart/toSmartListFilters';
 
 type Props = {
   data: Awaited<ReturnType<typeof loadChart>> & {
@@ -167,7 +188,7 @@ const advanced = $derived.by(() => {
     country: data.watchNowCountry,
     favorites: data.watchNowFavorites,
   });
-  return { config, chips, count: chips.length };
+  return { config, filters, chips, count: chips.length };
 });
 let panelOpen = $state(false);
 let funnel = $state<HTMLButtonElement>();
@@ -178,9 +199,40 @@ function closePanel() {
   funnel?.focus();
 }
 
+// The viewer's smart lists for this type, each linking to the chart that shows it or else to its own page.
+const owner = $derived(data.user?.slug ?? 'me');
+// What this page saved and deleted. The API's cache can answer the read right after a write with the lists from
+// before it, so the page's own saves come first and stand in, and its deletes stay out, until a fresh read agrees.
+let saved = $state.raw<readonly SmartList[]>([]);
+let deleted = $state.raw<readonly string[]>([]);
+const remember = (list: SmartList) => {
+  saved = [list, ...saved.filter(({ slug }) => slug !== list.slug)];
+};
+const smartLists = $derived(
+  uniqueBy([...saved, ...(data.smartLists ?? [])], ({ slug }) => slug)
+    .filter(({ slug }) => !deleted.includes(slug))
+    .filter(({ mediaType }) => mediaType === data.type || mediaType === 'media')
+    .map((list) => ({ ...list, href: smartListChartHref({ list, now: new Date() }) ?? smartListPath(owner, list.slug) })),
+);
+// The smart list this chart was opened from, while it's this chart's: its filters are the starting point.
+const currentSlug = $derived(page.url.searchParams.get(SMART_LIST_PARAM) ?? undefined);
+const current = $derived(
+  smartLists.find(({ slug, href }) => slug === currentSlug && href.startsWith(`${page.url.pathname}?`)),
+);
+const smartKey = (filters: AdvancedFilters) => JSON.stringify(toSmartListFilters(filters));
+const changed = $derived(
+  current !== undefined &&
+    smartKey(advanced.filters) !== smartKey(fromSmartListFilters(current.filters) ?? emptyFilters),
+);
+// Saving needs an Official app, so a Standard app's og leaves it out.
+const savable = $derived(data.user !== null && isSmartListChart(data.chart) && !isStandardApi());
+
 // The panel filters as you go, back on the first page, so the history keeps one entry per visit, not one per click.
+// The open smart list's slug stays along, so its row stays current and changes can be saved back to it.
 function search(filters: AdvancedFilters) {
-  const query = advancedFiltersSearch(filters);
+  const query = [advancedFiltersSearch(filters), current ? `${SMART_LIST_PARAM}=${encodeURIComponent(current.slug)}` : '']
+    .filter(Boolean)
+    .join('&');
   return `${page.url.pathname}${query ? `?${query}` : ''}`;
 }
 function applyFilters(filters: AdvancedFilters) {
@@ -196,6 +248,95 @@ function removeChip(id: string) {
 const periodHref = (period: string) =>
   `/${data.type}/${data.chart}/${period}${pageHref(page.url, 1).slice(page.url.pathname.length)}`;
 const period = $derived(advanced.config.period);
+
+// Save as a smart list: the dialog names it, then the chart reopens as that list.
+let dialogOpen = $state(false);
+let saving = $state(false);
+let atLimit = $state(false);
+let saveError = $state('');
+const request = (path: string, method: string, body?: unknown) =>
+  rawApiFetch({
+    fetch: viewerFetch(),
+    path,
+    init: {
+      method,
+      ...(body !== undefined && { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }),
+    },
+  });
+
+function openSave() {
+  saveError = '';
+  dialogOpen = true;
+}
+
+async function create({ name, privacy }: { name: string; privacy: SmartListPrivacy }) {
+  if (!isSmartListChart(data.chart) || saving) return;
+  saving = true;
+  saveError = '';
+  const write = {
+    name,
+    privacy,
+    source: data.chart,
+    mediaType: data.type,
+    filters: toSmartListFilters(advanced.filters),
+  };
+  const result = await saveSmartList({ request, write });
+  saving = false;
+  if (!result.ok) {
+    atLimit = result.reason === 'limit';
+    if (!atLimit) saveError = "Doh! We couldn't save this smart list. Please try again.";
+    return;
+  }
+  remember({ ...write, id: result.id ?? 0, slug: result.slug, updatedAt: new Date().toISOString(), posters: [] });
+  dialogOpen = false;
+  toast.success(`You saved ${name}.`);
+  const query = [advancedFiltersSearch(advanced.filters), `${SMART_LIST_PARAM}=${encodeURIComponent(result.slug)}`];
+  // eslint-disable-next-line svelte/no-navigation-without-resolve -- the same chart and filters, now a smart list
+  await goto(`${page.url.pathname}?${query.filter(Boolean).join('&')}`, { noScroll: true, keepFocus: true });
+}
+
+// Deleting the open smart list keeps its filters on the chart, unsaved, so they can be saved again.
+async function deleteCurrent() {
+  if (!current || saving) return;
+  const list = current;
+  saving = true;
+  const ok = await deleteSmartList({ request, slug: list.slug });
+  saving = false;
+  if (!ok) {
+    toast.error("Doh! We couldn't delete this smart list. Please try again.");
+    return;
+  }
+  deleted = [...deleted, list.slug];
+  saved = saved.filter(({ slug }) => slug !== list.slug);
+  toast.success(`You deleted ${list.name}.`);
+  // eslint-disable-next-line svelte/no-navigation-without-resolve -- the same chart and filters, no longer a smart list
+  await goto(search(advanced.filters), { noScroll: true, keepFocus: true, replaceState: true });
+}
+
+async function saveChanges() {
+  if (!current || saving) return;
+  const list = current;
+  const filters = toSmartListFilters(advanced.filters);
+  saving = true;
+  const result = await saveSmartList({ request, slug: list.slug, write: { filters } });
+  saving = false;
+  if (!result.ok) {
+    toast.error("Doh! We couldn't save your changes. Please try again.");
+    return;
+  }
+  const { id, slug, name, privacy, source, mediaType, posters } = list;
+  remember({ id, slug, name, privacy, source, mediaType, posters, filters, updatedAt: new Date().toISOString() });
+  toast.success(`You saved ${list.name}.`);
+  // The open list's link moves to its new filters.
+  const query = [advancedFiltersSearch(advanced.filters), `${SMART_LIST_PARAM}=${encodeURIComponent(list.slug)}`];
+  // eslint-disable-next-line svelte/no-navigation-without-resolve -- the same chart and filters, saved
+  await goto(`${page.url.pathname}?${query.filter(Boolean).join('&')}`, {
+    noScroll: true,
+    keepFocus: true,
+    replaceState: true,
+    invalidateAll: true,
+  });
+}
 </script>
 
 <SeoHead title={meta.title} description={meta.description} />
@@ -203,7 +344,7 @@ const period = $derived(advanced.config.period);
 {#snippet filtersPanel()}
   <FiltersPanel id="{panelId}-filters" open={panelOpen} config={advanced.config} filters={data.filters}
   country={data.watchNowCountry} favorites={data.watchNowFavorites} sources={data.filterSources}
-  onchange={applyFilters} onclose={closePanel} />
+  onchange={applyFilters} onclose={closePanel} onsave={savable && !current && advanced.count > 0 ? openSave : undefined} />
 {/snippet}
 
 <!-- The picker's hrefs come built by chartLinks, query included, so resolve() has nothing to add. -->
@@ -227,6 +368,12 @@ const period = $derived(advanced.config.period);
     {/snippet}
   </FanartCard>
 {/snippet}
+
+{#if dialogOpen && isSmartListChart(data.chart)}
+  <SmartListDialog bind:open={dialogOpen} source={smartListSourceLabel(data.chart, data.type)} chips={advanced.chips}
+    fanart={data.cards.at(0)?.fanart} busy={saving} {atLimit} vip={data.user?.isVip} error={saveError}
+    onsave={create} />
+{/if}
 
 <SidebarFrame label="{title} charts" collapsed={data.sidebar.collapsed} {prevHref} {nextHref}
   panel={filtersPanel} {panelOpen}>
@@ -286,9 +433,25 @@ const period = $derived(advanced.config.period);
       </Dropdown>
     {/if}
 
-    {#if advanced.count > 0}
+    {#if advanced.count > 0 || current}
       <AppliedFiltersSection chips={advanced.chips} open={data.sidebar.filters} clearHref={page.url.pathname}
-        onremove={removeChip} />
+        onremove={removeChip} onsave={savable && !current && advanced.count > 0 ? openSave : undefined}>
+        {#snippet tools()}
+          {#if current && savable}
+            <ManageConfirm name="delete" svg={deleteIcon} label="Delete this smart list" yes="Yes, delete it!"
+              warning="This can't be undone!" busy={saving} onconfirm={deleteCurrent}>Delete this smart list?</ManageConfirm>
+          {/if}
+        {/snippet}
+        {#if current}
+          <SmartListStatus name={current.name} href={smartListPath(owner, current.slug)} {changed}
+            undoHref={current.href} busy={saving} onsavechanges={saveChanges} onsaveas={openSave} />
+        {/if}
+      </AppliedFiltersSection>
+    {/if}
+
+    {#if smartLists.length > 0}
+      <SmartListsSection lists={smartLists} current={current?.slug} chartPath={page.url.pathname}
+        manageHref="/users/{owner}/smart-lists" open={data.sidebar.smart} />
     {/if}
 
     {#if data.live}

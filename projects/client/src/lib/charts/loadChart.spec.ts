@@ -157,7 +157,7 @@ describe('loadChart hide menu', () => {
       chart: 'trending',
     });
 
-    expect(data.sidebar).toEqual({ collapsed: true, filters: true, live: true, following: true });
+    expect(data.sidebar).toEqual({ collapsed: true, filters: true, live: true, following: true, smart: true });
   });
 
   it('should keep the public request when the API has nothing to drop', async () => {

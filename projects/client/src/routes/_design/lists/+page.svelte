@@ -13,6 +13,7 @@ import { toBuiltInListView } from '$lib/lists/toBuiltInListView';
 import MediaList from '$lib/components/lists/MediaList.svelte';
 import BuiltInListDialog from '$lib/components/lists/BuiltInListDialog.svelte';
 import NewListDialog from '$lib/components/lists/NewListDialog.svelte';
+import SmartListDialog from '$lib/components/lists/SmartListDialog.svelte';
 import ListItemEdit from '$lib/components/lists/ListItemEdit.svelte';
 import ListReorderControls from '$lib/components/lists/ListReorderControls.svelte';
 import RankInput from '$lib/components/lists/RankInput.svelte';
@@ -92,6 +93,13 @@ const everything = (): OverlayState => ({ watched: true, collected: true });
 const never = new Promise<null>(() => {});
 const likeTarget = { id: 23, ownerSlug: 'og_tester', viewer: 'og_viewer' };
 let mode = $state<'add' | 'edit' | 'unavailable'>('add');
+let smartOpen = $state(false);
+let smartMode = $state<'save' | 'limit' | 'edit'>('save');
+const smartChips = [
+  { id: 'genres', values: [{ text: 'Drama', without: false }, { text: 'Animation', without: true }] },
+  { id: 'networks', values: [{ text: 'HBO', without: false }] },
+  { id: 'ratings', values: [{ text: '75 - 100%', without: false }], site: 'trakt' as const },
+];
 const initial = {
   name: 'Sci-Fi Club',
   description: 'Picks for the monthly club.',
@@ -131,6 +139,15 @@ const following = [{ slug: 'teodoro_2', name: 'Elsy Murphy (@teodoro_2)' }];
     <DemoButton onclick={() => { mode = 'edit'; open = true; }}>Preview edit</DemoButton>
     <DemoButton onclick={() => { mode = 'unavailable'; open = true; }}>Preview edit, no collaborators</DemoButton>
     <DemoButton onclick={() => builtInOpen = true}>Preview watchlist edit</DemoButton>
+  </div>
+</Specimen>
+
+<Specimen title="Smart list editor"
+  note="Save on a chart's Applied Filters or Filters panel keeps the filters as a smart list: a name, who sees it, and the filters it saves. At the limit, Save is off. Editing from the Lists page changes only the name and privacy.">
+  <div class="buttons">
+    <DemoButton onclick={() => { smartMode = 'save'; smartOpen = true; }}>Preview save</DemoButton>
+    <DemoButton onclick={() => { smartMode = 'limit'; smartOpen = true; }}>Preview save at the limit</DemoButton>
+    <DemoButton onclick={() => { smartMode = 'edit'; smartOpen = true; }}>Preview edit</DemoButton>
   </div>
 </Specimen>
 
@@ -251,6 +268,12 @@ const following = [{ slug: 'teodoro_2', name: 'Elsy Murphy (@teodoro_2)' }];
   onsave={() => notesOpen = false} />
 <BuiltInListDialog bind:open={builtInOpen} kind="watchlist" count={12} busy={false} description={undefined}
   sortBy="rank" sortHow="asc" onsave={() => builtInOpen = false} />
+{#if smartOpen}
+  <SmartListDialog bind:open={smartOpen} editing={smartMode === 'edit'} source="Trending shows" chips={smartChips}
+    fanart={cover} atLimit={smartMode === 'limit'}
+    initial={smartMode === 'edit' ? { name: 'HBO Dramas', privacy: 'public' } : undefined}
+    onsave={() => (smartOpen = false)} />
+{/if}
 {#if open}
   {#if mode === 'add'}
     <NewListDialog bind:open title="Add to new list" {following} onsave={() => open = false} />

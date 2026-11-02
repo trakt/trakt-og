@@ -1,6 +1,7 @@
 <!--
   Trending's Live now: everyone watching this chart's type, then a bar of shows against movies over a tag for each,
-  linking to its chart. This chart's share and tag are red.
+  linking to its chart. This chart's share and tag are red. Filtered, it counts only the titles the filters leave,
+  and the bar is their share of everyone watching this type; the tags still link to each whole chart.
 -->
 <script lang="ts">
 import SidebarSection from '$lib/components/sidebar/SidebarSection.svelte';
@@ -13,14 +14,27 @@ import type { MediaType } from './loadChart';
 interface Props {
   live: LiveNow;
   type: MediaType;
+  /** Everyone watching the filtered chart's titles. Left out unfiltered. */
+  filtered?: number | null;
   open: boolean;
 }
 
-const { live, type, open }: Props = $props();
+const { live, type, filtered, open }: Props = $props();
 
 const TYPES: readonly MediaType[] = ['shows', 'movies'];
 const count = (n: number) => n.toLocaleString('en-US');
-const watchers = $derived(live[type]);
+const narrowed = $derived(typeof filtered === 'number');
+const watchers = $derived(filtered ?? live[type]);
+// Filtered, the bar is these titles against the rest of the type. Live now is kept for a few minutes, so the
+// filtered count can run past it; the rest never goes below nothing.
+const bar = $derived(
+  narrowed
+    ? [
+        { key: 'filtered', share: watchers, current: true },
+        { key: 'rest', share: Math.max(live[type] - watchers, 0), current: false },
+      ]
+    : TYPES.map((each) => ({ key: each, share: live[each], current: each === type })),
+);
 </script>
 
 <!-- Trending's other type is a built route with no params, so resolve() has nothing to add. -->
@@ -28,10 +42,10 @@ const watchers = $derived(live[type]);
 
 <SidebarSection id="live" title="Live now" {open} remember>
   <div class="meter">
-    <p class="total"><StatusDot kind="live" /><b>{count(watchers)}</b> watching {type} now</p>
+    <p class="total"><StatusDot kind="live" /><b>{count(watchers)}</b> watching {narrowed ? 'these ' : ''}{type} now</p>
     <div class="split" aria-hidden="true">
-      {#each TYPES as each (each)}
-        <span class={{ current: each === type }} style:flex-grow={live[each]}></span>
+      {#each bar as part (part.key)}
+        <span class={{ current: part.current }} style:flex-grow={part.share}></span>
       {/each}
     </div>
   </div>

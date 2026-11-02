@@ -38,6 +38,7 @@ export type ProgressUpNext = {
     readonly season: { readonly show: number; readonly number: number; readonly episode: number };
     /** Minutes, the show's when the episode has none, so the watched tooltip can total the plays. */
     readonly runtime?: number;
+    readonly rewatchNext?: boolean;
   };
 };
 
@@ -125,6 +126,7 @@ function toUpNext({ item, now }: ToProgressRowParams): ProgressUpNext | undefine
       title: `${show.title} ${number}`,
       season: { show: show.id, number: episode.season, episode: episode.number },
       runtime: episode.runtime ?? show.runtime,
+      rewatchNext: item.resetAt !== undefined,
     },
   };
 }

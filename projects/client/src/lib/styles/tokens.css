@@ -371,6 +371,7 @@
   --color-list-chip-following: var(--brand-sixth);
   --color-list-chip-collaborators: var(--brand-seventh);
   --color-list-chip-smart: var(--brand-tertiary); /* a smart list, which fills itself from its filters */
+  --list-notice-text-basis: 20rem; /* a list notice's text, before its buttons wrap under it */
   --list-card-avatar-size: 22px;
   --color-list-card-description: light-dark(#555, #c2c2c2);
   --color-list-card-like: var(--brand-secondary);

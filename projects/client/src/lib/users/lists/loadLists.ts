@@ -10,6 +10,9 @@ import { toListsQuery } from './toListsQuery.ts';
 import { toUserListRow } from './toUserListRow.ts';
 import { toSmartList } from '../../lists/smart/toSmartList.ts';
 import { toSmartListRow } from './toSmartListRow.ts';
+import { fetchSavedFilters } from '../../lists/smart/fetchSavedFilters.ts';
+import { SAVED_FILTERS_COOKIE } from '../../lists/smart/SAVED_FILTERS_COOKIE.ts';
+import { savedFilterImport } from '../../lists/smart/savedFilterImport.ts';
 import type { UserListRow } from './UserListRow.ts';
 import { withViewer } from './withViewer.ts';
 
@@ -18,7 +21,8 @@ type Params = {
   locals: { token: string | null };
   params: { id: string };
   url: URL;
-  parent: () => Promise<{ profile: ProfileUser }>;
+  cookies?: { get: (name: string) => string | undefined };
+  parent: () => Promise<{ profile: ProfileUser; isSelf?: boolean }>;
   mode: ListsMode;
 };
 
@@ -86,12 +90,16 @@ async function fetchSmart(fetch: typeof globalThis.fetch, id: string, token: str
   const response = await withViewer(token, (viewer) =>
     api({ fetch, token: viewer }).users.smartLists.personal({ params: { id } }),
   );
-  return { status: response.status, smart: response.status === 200 ? response.body.map(toSmartList) : [] };
+  return { status: response.status, lists: response.status === 200 ? response.body.map(toSmartList) : [] };
 }
 
-const fetchLists = (fetch: typeof globalThis.fetch, id: string, token: string | null, mode: ListsMode) => {
+const fetchLists = (
+  fetch: typeof globalThis.fetch,
+  id: string,
+  token: string | null,
+  mode: Exclude<ListsMode, 'smart'>,
+) => {
   if (mode === 'personal') return fetchPersonal(fetch, id, token);
-  if (mode === 'smart') return fetchSmart(fetch, id, token).then((result) => ({ ...result, lists: [], likedAt: [] }));
   if (mode === 'collaborations') return fetchCollaborations(fetch, id, token);
   return fetchLiked(fetch, id, token, mode === 'liked-official');
 };
@@ -102,21 +110,26 @@ const fetchLists = (fetch: typeof globalThis.fetch, id: string, token: string | 
  * rows; smart lists newest first; collaborations and liked lists are other people's lists, with no built-in rows.
  * Sorting and searching happen in the browser over every row, like OG.
  */
-export async function loadLists({ fetch, locals, params, url, parent, mode }: Params) {
+export async function loadLists({ fetch, locals, params, url, cookies, parent, mode }: Params) {
   const id = encodeURIComponent(params.id);
   const token = locals.token;
-  const [result, watchlist, favorites, { profile }] = await Promise.all([
-    fetchLists(fetch, id, token, mode),
+  // On their own smart lists, the viewer's classic saved filters, to offer bringing them back, until they say no.
+  const offerSaved = mode === 'smart' && token !== null && cookies?.get(SAVED_FILTERS_COOKIE) !== 'dismissed';
+  const [result, smart, watchlist, favorites, { profile }, saved] = await Promise.all([
+    mode === 'smart' ? null : fetchLists(fetch, id, token, mode),
+    mode === 'smart' ? fetchSmart(fetch, id, token) : null,
     mode === 'personal'
       ? fetchBuiltInItems(fetch, { id, kind: 'watchlist', type: 'movie,show,season,episode' }, token)
       : null,
     mode === 'personal' ? fetchBuiltInItems(fetch, { id, kind: 'favorites', type: 'movie,show' }, token) : null,
     parent(),
+    offerSaved && token ? parent().then(({ isSelf }) => (isSelf ? fetchSavedFilters({ fetch, token }) : [])) : [],
   ]);
   const query = toListsQuery(url.searchParams, mode);
-  if (profile.isLocked) return { mode, query, builtIns: [], lists: [], listsComplete: false };
-  if (result.status === 404) error(404, 'Page Not Found');
-  if (result.status !== 200) error(502, 'Trakt is having trouble loading these lists.');
+  if (profile.isLocked) return { mode, query, builtIns: [], lists: [], listsComplete: false, savedFilters: null };
+  const status = result?.status ?? smart?.status;
+  if (status === 404) error(404, 'Page Not Found');
+  if (status !== 200) error(502, 'Trakt is having trouble loading these lists.');
 
   const builtIns: UserListRow[] = [
     ...(watchlist ? [toBuiltInRow({ kind: 'watchlist', profile, ...watchlist })] : []),
@@ -126,11 +139,12 @@ export async function loadLists({ fetch, locals, params, url, parent, mode }: Pa
     mode,
     query,
     builtIns,
-    listsComplete: 'complete' in result && result.complete === true,
-    lists:
-      'smart' in result
-        ? result.smart.map((list, i) => toSmartListRow({ list, profile, rank: i + 1 }))
-        : // Liked lists carry when they were liked, in the same order; the rest have none.
-          result.lists.map((list, i) => ({ ...toUserListRow(list, i + 1), likedAt: result.likedAt.at(i) })),
+    listsComplete: result !== null && 'complete' in result && result.complete === true,
+    savedFilters:
+      smart && saved.length > 0 ? savedFilterImport({ saved, existing: smart.lists, now: new Date() }) : null,
+    lists: smart
+      ? smart.lists.map((list, i) => toSmartListRow({ list, profile, rank: i + 1 }))
+      : // Liked lists carry when they were liked, in the same order; the rest have none.
+        (result?.lists ?? []).map((list, i) => ({ ...toUserListRow(list, i + 1), likedAt: result?.likedAt.at(i) })),
   };
 }

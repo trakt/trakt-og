@@ -1,8 +1,9 @@
 <!--
-  `/users/:id/lists`, `/users/:id/lists/collaborations` and the liked lists (`/liked`, `/liked/official`) under the
-  profile frame: the subnav with OG's lists menu (the user's lists, then Liked), the owner's add and reorder buttons, the count, sort, direction and search, then the watchlist and
+  `/users/:id/lists`, `/users/:id/smart-lists`, `/users/:id/lists/collaborations` and the liked lists (`/liked`,
+  `/liked/official`) under the profile frame: the subnav with OG's lists menu (the user's lists, then Liked), the owner's add and reorder buttons, the count, sort, direction and search, then the watchlist and
   favorites rows over a rule and every list as a list row. Sorting and searching run in the browser, like OG's isotope
-  grid, and the choice goes into the query string.
+  grid, and the choice goes into the query string. Smart lists wear a Smart tag, load their count and posters as they
+  scroll in, and edit only their name and privacy here.
 -->
 <script lang="ts">
 import SeoHead from '$lib/seo/SeoHead.svelte';
@@ -55,6 +56,14 @@ import { moveList } from '$lib/users/lists/moveList';
 import { saveListOrder } from '$lib/users/lists/saveListOrder';
 import { visibleLists } from './visibleLists.ts';
 import { viewerFetch } from '../../auth/viewerFetch.ts';
+import SmartListDialog from '$lib/components/lists/SmartListDialog.svelte';
+import { deleteSmartList } from '$lib/lists/smart/deleteSmartList';
+import { saveSmartList } from '$lib/lists/smart/saveSmartList';
+import type { SmartList, SmartListPrivacy } from '$lib/lists/smart/SmartList';
+import { smartListSourceLabel } from '$lib/lists/smart/smartListSourceLabel';
+import { smartListChartHref } from '$lib/lists/smart/smartListChartHref';
+import { fetchSmartListPreview } from './fetchSmartListPreview.ts';
+import { toSmartListRow } from './toSmartListRow.ts';
 
 type Props = {
   data: Awaited<ReturnType<typeof loadLists>> & { profile: ProfileUser; isSelf: boolean; user: HeaderUser | null };
@@ -63,8 +72,10 @@ type Props = {
 const { data }: Props = $props();
 const personal = $derived(data.mode === 'personal');
 const liked = $derived(data.mode === 'liked' || data.mode === 'liked-official');
+const smart = $derived(data.mode === 'smart');
 const MODE_NAMES = {
   personal: 'personal lists',
+  smart: 'smart lists',
   collaborations: 'collaborations',
   liked: 'liked lists',
   'liked-official': 'liked official lists',
@@ -88,10 +99,17 @@ let addButton = $state<HTMLButtonElement>();
 const left = new SvelteMap<number, boolean>();
 let reportTarget = $state<ReportTarget | null>(null);
 let reportOpen = $state(false);
+// A smart list renamed here: the API's cache can answer the reload with the old name, so the edit stands in.
+const smartEdits = new SvelteMap<string, SmartList>();
+const withSmartEdit = (row: UserListRow) => {
+  const edit = smartEdits.get(row.key);
+  return edit ? toSmartListRow({ list: edit, profile: data.profile, rank: row.rank }) : row;
+};
 const allLists = $derived(
   (order ?? data.lists).filter((row) =>
-    !removed.includes(row.id ?? -1) && (personal || !data.isSelf || row.id === null || !left.get(row.id))
-  ),
+    !removed.includes(row.id ?? -1) && !removedKeys.includes(row.key) &&
+    (personal || !data.isSelf || row.id === null || !left.get(row.id))
+  ).map(withSmartEdit),
 );
 const canReorder = $derived(data.isSelf && personal && Boolean(data.user) && data.listsComplete);
 const lists = $derived(reordering ? allLists : visibleLists(allLists, query, shuffled));
@@ -188,6 +206,7 @@ let editor = $state<{ id: number | null; posters?: readonly string[]; count?: nu
 // The watchlist or favorites row's editor, which edits only the description and default sort.
 let builtInEditor = $state<{ kind: 'watchlist' | 'favorites'; posters: readonly string[]; count: number }>();
 let removed = $state<readonly number[]>([]);
+let removedKeys = $state<readonly string[]>([]);
 let deleting = $state<number | null>(null);
 const limit = $derived(page.data.settings?.limits?.list?.count);
 async function removeList(row: UserListRow) {
@@ -213,6 +232,63 @@ async function removeList(row: UserListRow) {
     addButton?.focus({ preventScroll: true });
   }
 }
+// A smart list's editor changes its name and privacy; its filters change on the chart that shows it.
+let smartEditor = $state<SmartList>();
+let smartBusy = $state(false);
+const smartRequest = (path: string, method: string, body?: unknown) =>
+  rawApiFetch({
+    fetch: viewerFetch(),
+    path,
+    init: {
+      method,
+      ...(body !== undefined && { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }),
+    },
+  });
+async function saveSmart(list: SmartList, change: { name: string; privacy: SmartListPrivacy }) {
+  if (smartBusy) return;
+  smartBusy = true;
+  const result = await saveSmartList({ request: smartRequest, slug: list.slug, write: change });
+  smartBusy = false;
+  if (!result.ok) {
+    toast.error("Doh! We couldn't save this smart list. Please try again.");
+    return;
+  }
+  smartEditor = undefined;
+  smartEdits.set(`smart-${list.id}`, { ...list, ...change, updatedAt: new Date().toISOString() });
+  toast.success(`You saved ${change.name}.`);
+  await invalidateAll();
+}
+async function removeSmart(row: UserListRow) {
+  if (!row.smart || smartBusy) return;
+  smartBusy = true;
+  removedKeys = [...removedKeys, row.key];
+  const ok = await deleteSmartList({ request: smartRequest, slug: row.smart.slug });
+  smartBusy = false;
+  if (!ok) {
+    removedKeys = removedKeys.filter((key) => key !== row.key);
+    toast.error("Doh! We couldn't delete this smart list. Please try again.");
+    return;
+  }
+  toast.success('You deleted the smart list.');
+  await invalidateAll();
+}
+
+// A smart list's count and first posters, read as its row nears the viewport: the API works them out on read. Null
+// while the read is in flight; a failed read keeps the placeholders and no count. The owner's own read goes with their
+// token, for their private lists.
+type SmartPreview = { readonly posters: UserListRow['posters']; readonly itemCount?: number };
+const smartPreviews = new SvelteMap<string, SmartPreview | null>();
+const loadSmartPreview = (row: UserListRow) => {
+  if (!row.smart || smartPreviews.has(row.key)) return;
+  const key = row.key;
+  smartPreviews.set(key, null);
+  const fetch = data.isSelf && data.user ? viewerFetch() : globalThis.fetch;
+  void fetchSmartListPreview({ fetch, slug: row.smart.slug }).then((preview) =>
+    smartPreviews.set(key, preview ?? { posters: [] })
+  );
+};
+const smartPreview = (row: UserListRow) => (row.smart ? smartPreviews.get(row.key) : undefined);
+
 const builtIns = $derived(data.builtIns.filter((row) => matchesListTerms(row, query.terms)));
 const sortName = $derived(sorts.find(({ id }) => id === query.sort)?.label);
 const searchedOut = $derived(
@@ -272,6 +348,7 @@ const withPosters = (row: UserListRow): UserListRow =>
 const nearRow = (row: UserListRow) => () => {
   loadCollaborators(row)();
   loadPosters(row);
+  loadSmartPreview(row);
 };
 
 const viewer = $derived(data.user ? { slug: data.user.slug } : null);
@@ -324,6 +401,23 @@ const actions = (row: UserListRow) => {
     isCollaborator: isCollaborator && !left.get(row.id ?? 0),
     origin: page.url.origin,
   });
+  if (row.smart) {
+    const list = row.smart;
+    const chartHref = smartListChartHref({ list, now: new Date() });
+    return {
+      ...result,
+      ...(chartHref && { chart: { href: chartHref, label: `Open on ${smartListSourceLabel(list.source)}` } }),
+      ...(result.edit && { edit: { onclick: () => (smartEditor = list) } }),
+      ...(result.delete && {
+        delete: {
+          onclick: () => removeSmart(row),
+          busy: smartBusy,
+          warning: "This can't be undone!",
+          question: 'Delete this smart list?',
+        },
+      }),
+    };
+  }
   return {
     ...result,
     ...(result.edit && {
@@ -371,14 +465,14 @@ const actions = (row: UserListRow) => {
 
 {#snippet row(list: UserListRow, rank: number | undefined)}
   <ListRow
-  kind={list.kind}
+  kind={list.kind === 'smart' ? 'personal' : list.kind}
   mine={!data.isSelf && list.owner.slug === data.user?.slug}
   href={list.href}
   name={list.name}
   owner={list.owner}
-  posters={list.posters}
-  postersLoading={postersLoading(list)}
-  itemCount={list.itemCount}
+  posters={smartPreview(list)?.posters ?? list.posters}
+  postersLoading={postersLoading(list) || (list.kind === 'smart' && !smartPreview(list))}
+  itemCount={list.kind === 'smart' ? smartPreview(list)?.itemCount : list.itemCount}
   likeCount={list.likeCount}
   likeTarget={list.id === null ? undefined : { id: list.id, ownerSlug: list.kind === 'personal' ? list.owner.slug : undefined, viewer: data.user?.slug ?? null }}
   commentCount={list.commentCount}
@@ -402,10 +496,11 @@ const actions = (row: UserListRow) => {
   {#snippet filters()}
     <!-- OG's lists menu: the user's own lists, then Liked (OG's Reactions), the lists they've liked. -->
     <Dropdown section={liked ? 'Liked' : 'Lists'}>
-      {#snippet trigger()}{{ personal: 'Personal', collaborations: 'Collaborations', liked: 'Personal', 'liked-official': 'Official' }[data.mode]}{/snippet}
+      {#snippet trigger()}{{ personal: 'Personal', smart: 'Smart', collaborations: 'Collaborations', liked: 'Personal', 'liked-official': 'Official' }[data.mode]}{/snippet}
       <ul>
         <li class="header" role="presentation">Lists</li>
         <li><a href={base} aria-current={personal ? 'page' : undefined}>Personal</a></li>
+        <li><a href="/users/{data.profile.slug}/smart-lists" aria-label="Smart lists" aria-current={smart ? 'page' : undefined}>Smart</a></li>
         <li><a href="{base}/collaborations" aria-current={data.mode === 'collaborations' ? 'page' : undefined}>Collaborations</a></li>
       </ul>
       <hr />
@@ -449,6 +544,12 @@ const actions = (row: UserListRow) => {
 
 {#if editor}<ListEditor id={editor.id} posters={editor.posters} count={editor.count}
   onclose={() => { editor = undefined; }} />{/if}
+{#if smartEditor}
+  {@const list = smartEditor}
+  <SmartListDialog open editing initial={{ name: list.name, privacy: list.privacy }}
+    source={smartListSourceLabel(list.source, list.mediaType)} chips={[]} busy={smartBusy}
+    onsave={(change) => saveSmart(list, change)} onclose={() => (smartEditor = undefined)} />
+{/if}
 {#if builtInEditor}<BuiltInListEditor kind={builtInEditor.kind} posters={builtInEditor.posters}
   count={builtInEditor.count}
   privacy={data.profile.isPrivate ? 'private' : 'public'}
@@ -474,7 +575,11 @@ const actions = (row: UserListRow) => {
       <EmptyState action={{ onclick: () => (query = { ...query, terms: '' }), text: 'Clear search' }} />
     {:else if allLists.length === 0 && data.builtIns.length === 0}
       <div class="empty">
-        <EmptyState action={liked && data.isSelf ? { href: resolve('/discover'), text: 'Find a list' } : undefined} />
+        <EmptyState action={liked && data.isSelf
+          ? { href: resolve('/discover'), text: 'Find a list' }
+          : smart && data.isSelf
+            ? { href: resolve('/shows/[chart=chart]/[[period]]', { chart: 'trending' }), text: 'Find a show' }
+            : undefined} />
       </div>
     {/if}
   </Container>

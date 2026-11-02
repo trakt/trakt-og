@@ -39,6 +39,8 @@ import bookmark from '$lib/icons/solid/bookmark.svg?raw';
 import userGroup from '$lib/icons/regular/user-group.svg?raw';
 import voteYes from '$lib/icons/regular/thumbs-up.svg?raw';
 import link from '$lib/icons/solid/link.svg?raw';
+import sparkles from '$lib/icons/solid/sparkles.svg?raw';
+import filtersIcon from '$lib/icons/regular/filters.svg?raw';
 import traktIcon from '$lib/icons/trakt/trakt-v2.svg?raw';
 import ogLogo from '$lib/assets/trakt-logo-red.png';
 import type { VipBadge } from '$lib/users/VipBadge';
@@ -61,13 +63,14 @@ interface Props {
   posters: readonly { title?: string; image?: string }[];
   /** The posters are still loading, so the slots shimmer. */
   postersLoading?: boolean;
-  itemCount: number;
+  /** Left out while unknown: a smart list's count comes with its posters. */
+  itemCount?: number;
   /** Left out for the watchlist and favorites, which can't be liked. */
   likeCount?: number;
   likeTarget?: { readonly id: number; readonly ownerSlug?: string; readonly viewer: string | null };
   /** Left out when comments are off. */
   commentCount?: number;
-  /** Status chips across from the name, after the collaborators: "Private", "Official List", "Following". */
+  /** Status chips across from the name, after the collaborators: "Private", "Official List", "Following", "Smart". */
   pills?: readonly string[];
   /** The blue "Link" chip, on a list shared by link. */
   shareLink?: boolean;
@@ -110,6 +113,7 @@ const FAN_SIZE = 5;
 const CHIPS: Record<string, { color: string; svg: string }> = {
   Private: { color: 'var(--color-list-chip-private)', svg: lock },
   'Official List': { color: 'var(--color-list-chip-official)', svg: traktIcon },
+  Smart: { color: 'var(--color-list-chip-smart)', svg: sparkles },
   Following: { color: 'var(--color-list-chip-following)', svg: userGroup },
 };
 const BUILT_IN = { watchlist: { text: 'Watchlist', svg: bookmark }, favorites: { text: 'Favorites', svg: heart } };
@@ -223,14 +227,16 @@ const blocks = $derived(parseComment(description?.trim() ?? ''));
             {#if likeTarget}<ListLikeButton {...likeTarget} count={likeCount} button />
             {:else}<ListCount svg={voteYes} value={likeCount} word="like" />{/if}
           {/if}
-          <ListCount svg={document} value={itemCount} word="item" {href} />
+          {#if itemCount !== undefined}<ListCount svg={document} value={itemCount} word="item" {href} />{/if}
+          {#if actions?.chart}<ListCount svg={filtersIcon} iconColor="var(--color-list-open-chart)"
+              label={actions.chart.label} href={actions.chart.href} />{/if}
           {#if commentCount !== undefined}<ListCount svg={stripStatIcons.comments} iconColor="var(--color-stat-comments)" value={commentCount} word="comment" href="{href}/comments" />{/if}
         </div>
         {#if actions}
           <div class="tools">
             {#if actions.report}{@render action('Report List', flag, 'report', actions.report.onclick ? actions.report : { onclick: likeTarget?.viewer ? () => { reportMounted = true; reportOpen = true; } : undefined })}{/if}
             {#if actions.edit}{@render action('Edit', pencil, 'edit', actions.edit)}{/if}
-            {#if actions.delete?.onclick}<span class="delete" style:--confirm-icon-size="var(--font-size-list-row-action)"><ManageConfirm name="delete" svg={deleteIcon} label="Delete" yes="Yes, delete it!" warning={actions.delete.warning} disabled={actions.delete.busy} onconfirm={actions.delete.onclick}>Delete this list?</ManageConfirm></span>{:else if actions.delete}{@render action('Delete', deleteIcon, 'delete', actions.delete)}{/if}
+            {#if actions.delete?.onclick}<span class="delete" style:--confirm-icon-size="var(--font-size-list-row-action)"><ManageConfirm name="delete" svg={deleteIcon} label="Delete" yes="Yes, delete it!" warning={actions.delete.warning} disabled={actions.delete.busy} onconfirm={actions.delete.onclick}>{actions.delete.question ?? 'Delete this list?'}</ManageConfirm></span>{:else if actions.delete}{@render action('Delete', deleteIcon, 'delete', actions.delete)}{/if}
             {#if actions.leave}{@render action('Stop collaborating on this list', userXmark, 'leave', actions.leave)}{/if}
             {#if actions.progressHref}
               <Tooltip text="View watched progress">

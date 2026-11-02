@@ -370,6 +370,7 @@
   --color-list-chip-mine: var(--brand-success);
   --color-list-chip-following: var(--brand-sixth);
   --color-list-chip-collaborators: var(--brand-seventh);
+  --color-list-chip-smart: var(--brand-tertiary); /* a smart list, which fills itself from its filters */
   --list-card-avatar-size: 22px;
   --color-list-card-description: light-dark(#555, #c2c2c2);
   --color-list-card-like: var(--brand-secondary);
@@ -379,6 +380,7 @@
   --color-list-edit: var(--color-action-edit);
   --color-list-delete: var(--color-action-delete);
   --color-list-progress: light-dark(#555, #eee);
+  --color-list-open-chart: var(--color-list-chip-smart); /* a smart list row's Open on its chart: the Smart tag's */
   --font-size-list-row-action: var(--font-size-stat-icon); /* the row's action icons, level with its count icons */
   --font-size-list-row-leave: 15px;
   /* A list page's Leave button: a red outline, its text a softer red that reads in both themes. */

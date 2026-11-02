@@ -8,6 +8,10 @@ describe('util: sortsFor', () => {
     expect(ids('personal')).toEqual(['rank', 'updated', 'title', 'likes', 'comments', 'items', 'random']);
   });
 
+  it('should give smart lists only the sorts they have data for, newest first', () => {
+    expect(ids('smart')).toEqual(['updated', 'title', 'random']);
+  });
+
   it('should drop rank and liked date from collaborations', () => {
     expect(ids('collaborations')).toEqual(['updated', 'title', 'likes', 'comments', 'items', 'random']);
   });

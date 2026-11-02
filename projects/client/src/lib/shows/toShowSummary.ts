@@ -89,6 +89,8 @@ export function airsAt(airs: ShowResponse['airs'], now: Date): string | undefine
   }
 }
 
+const ENDINGS: Record<string, string> = { open: 'Unresolved', concluded: 'Completed' };
+
 const popular = (param: string, value: string | number) => `/shows/popular?${param}=${encodeURIComponent(value)}`;
 const person = (member: { person: { name: string; ids: { slug: string } } }): NamedLink => ({
   name: member.person.name,
@@ -155,6 +157,8 @@ function facts({ show, studios, people, now, day, airs }: Facts) {
 
   return {
     status: airing ? undefined : status,
+    /** The story's ending, which the API only gives ended and canceled shows. */
+    ending: show.ending ? ENDINGS[show.ending] : undefined,
     premieres: upcoming && show.first_aired ? { date: day(show.first_aired), network } : undefined,
     airs: airing && slot ? { when: airs(slot), network } : undefined,
     network: !upcoming && !airing ? network : undefined,

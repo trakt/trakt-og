@@ -30,6 +30,9 @@ const textLinks = $derived(show.links.filter(({ icon }) => !icon));
   {#if facts.status}
     <AdditionalStat label={facts.status.label}>{facts.status.value}</AdditionalStat>
   {/if}
+  {#if facts.ending}
+    <AdditionalStat label="Ending">{facts.ending}</AdditionalStat>
+  {/if}
   {#if facts.premieres}
     <AdditionalStat label="Premieres">{facts.premieres.date} {@render network(facts.premieres.network)}</AdditionalStat>
   {/if}

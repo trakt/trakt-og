@@ -14,14 +14,12 @@ const periodOptions = [
   { value: 'all', label: 'All Time' },
 ];
 
-/** Recommendations kept only watch now, genres, years and the Trakt rating. */
-export const recommendationFilters = { watchnow: true, genres: true, years: true, ratings: true } as const;
-
 type ChartFiltersParams = { type: MediaType; chart: ChartName; period: ChartPeriod; now: Date };
 
 /**
  * The advanced filter panel for one chart. Filter Terms, Studios, Metacritic and the vote sliders are cut. Letterboxd
- * only rates movies.
+ * only rates movies. Recommendations take the same filters as the other charts, though OG offered only a few: the API
+ * narrows the viewer's top picks with them, so a narrow mix can come back short.
  */
 export function chartFilters({ type, chart, period, now }: ChartFiltersParams): AdvancedFiltersConfig {
   const scales = filterRanges({ now, upcoming: chart === 'anticipated' });
@@ -31,8 +29,6 @@ export function chartFilters({ type, chart, period, now }: ChartFiltersParams): 
     scales,
     ...(isPeriodChart(chart) && { period: { value: period, options: periodOptions } }),
   };
-  if (chart === 'recommendations') return { ...base, lists: ['genres'], ranges: ['years', 'ratings'] };
-
   const lists: ListFilterKey[] =
     type === 'shows'
       ? ['genres', 'certifications', 'languages', 'countries', 'networks', 'status']

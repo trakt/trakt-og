@@ -16,6 +16,12 @@ describe('util: smartListChartHref', () => {
     );
   });
 
+  it("should open recommendations with the other charts' filters", () => {
+    expect(smartListChartHref({ list: { ...list, source: 'recommendations' }, now })).toBe(
+      '/shows/recommendations?genres=drama,-animation&networks=HBO&ratings=75-100&smart=hbo-dramas-1a2b',
+    );
+  });
+
   it('should open an unfiltered list on the bare chart', () => {
     expect(smartListChartHref({ list: { ...list, filters: {} }, now })).toBe('/shows/trending?smart=hbo-dramas-1a2b');
   });
@@ -25,7 +31,6 @@ describe('util: smartListChartHref', () => {
     ['both media types', { mediaType: 'media' as const }],
     ['a filter only the list page can show', { filters: { keywords: ['heist'] } }],
     ['a filter this chart has no control for', { mediaType: 'movies' as const, filters: { networks: ['HBO'] } }],
-    ['a filter recommendations never offered', { source: 'recommendations' as const, filters: { runtimes: [20, 60] } }],
   ])('should give null for %s', (_, change) => {
     expect(smartListChartHref({ list: { ...list, ...change }, now })).toBeNull();
   });

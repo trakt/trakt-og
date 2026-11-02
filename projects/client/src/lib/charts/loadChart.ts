@@ -12,7 +12,6 @@ import { type FilterSource, toFilterSources } from '../components/filters/watchN
 import { type FadeHide, parseFadeHide } from '../components/filters/fadeHide.ts';
 import { favoriteSlugs } from '../components/watchnow/watchNow.ts';
 import type { ViewerSettings } from '../settings/ViewerSettings.ts';
-import { recommendationFilters } from './chartFilters.ts';
 import { type ChartAlias, chartAliases, type ChartName, isChartAlias, isPeriodChart } from './chartNames.ts';
 import { type ChartPeriod, chartPeriod } from './chartPeriod.ts';
 import { fetchLiveNow } from './fetchLiveNow.ts';
@@ -182,7 +181,7 @@ export async function loadChart({
   };
   // The advanced filters go to the API as they are in the URL, so SSR renders the filtered chart.
   const filters = parseAdvancedFilters(url.searchParams);
-  const filterQuery = advancedFiltersQuery(filters, chart === 'recommendations' ? recommendationFilters : undefined);
+  const filterQuery = advancedFiltersQuery(filters);
   const query = { extended: 'full,images' as const, ...filterQuery };
   const ignore = {
     ...(fadeHide.hide.includes('watched') && { ignore_watched: true as const }),

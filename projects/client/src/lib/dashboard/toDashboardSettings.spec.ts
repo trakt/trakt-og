@@ -13,6 +13,7 @@ describe('toDashboardSettings', () => {
         sort: { by: 'added', how: 'asc', title: 'Activity Date' },
         favorites: 0,
         simpleProgress: false,
+        includeWatchlisted: false,
         refresh: false,
         poster: 'show',
       },
@@ -35,6 +36,7 @@ describe('toDashboardSettings', () => {
       browsing: {
         progress: {
           on_deck: { sort: 'completed', sort_how: 'desc', refresh: true, simple_progress: true, only_favorites: true },
+          watched: { include_watchlisted: true },
         },
         watchnow: { favorites: ['us-netflix', 'us-hulu', 'us-max'] },
       },
@@ -46,6 +48,7 @@ describe('toDashboardSettings', () => {
       sort: { by: 'completed', how: 'desc', title: 'Completion %' },
       favorites: 3,
       simpleProgress: true,
+      includeWatchlisted: true,
       refresh: true,
       poster: 'show',
     });

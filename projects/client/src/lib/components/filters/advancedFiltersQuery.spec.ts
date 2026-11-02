@@ -41,4 +41,32 @@ describe('util: advancedFiltersQuery', () => {
   it('should send nothing for no filters', () => {
     expect(advancedFiltersQuery(emptyFilters)).toEqual({});
   });
+
+  it('should send the parental guide as ranges from None', () => {
+    const parental = { ...emptyFilters, parental: { violence: 1, alcohol: 0, frightening: 3 } as const };
+    expect(advancedFiltersQuery(parental)).toEqual({
+      parental_violence: '0-1',
+      parental_alcohol: '0-0',
+      parental_frightening: '0-3',
+    });
+  });
+
+  it('should leave the parental guide out unless it is picked', () => {
+    const parental = { ...emptyFilters, parental: { violence: 1 } as const };
+    expect(advancedFiltersQuery(parental, { genres: true })).toEqual({});
+  });
+
+  it('should send the TMDB, Letterboxd and MyAnimeList ratings', () => {
+    const ratings = {
+      ...emptyFilters,
+      tmdb_ratings: [7.5, 10] as const,
+      letterboxd_ratings: [3.5, 5] as const,
+      mal_ratings: [8, 10] as const,
+    };
+    expect(advancedFiltersQuery(ratings)).toEqual({
+      tmdb_ratings: '7.5-10',
+      letterboxd_ratings: '3.5-5',
+      mal_ratings: '8-10',
+    });
+  });
 });

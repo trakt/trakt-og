@@ -12,6 +12,8 @@ export type AdvancedFiltersConfig = {
   readonly watchnow: boolean;
   /** The list filters, in panel order. */
   readonly lists: readonly ListFilterKey[];
+  /** IMDb's parental guide, under the sliders. */
+  readonly parental?: boolean;
   /** The sliders, in panel order. The rating ones sit under "Site Ratings". */
   readonly ranges: readonly RangeFilterKey[];
   readonly scales: Readonly<Record<RangeFilterKey, RangeScale>>;

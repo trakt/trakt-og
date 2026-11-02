@@ -10,24 +10,26 @@ const filters = {
   genres: { values: ['drama'], mode: 'any' as const, excluded: ['crime'] },
   certifications: { values: ['tv-ma'], mode: 'none' as const },
   runtimes: [20, 90] as const,
+  parental: { nudity: 0, violence: 2 } as const,
 };
 
 describe('withoutFilterTag', () => {
-  it('should drop each tag the sidebar shows', () => {
+  it('should drop each tag the sidebar shows, and only that one', () => {
     for (const tag of filterTags(filters)) {
-      expect(filterTags(withoutFilterTag(filters, tag.id)).map(({ id }) => id)).not.toContain(tag.id);
+      const ids = filterTags(withoutFilterTag(filters, tag.id)).map(({ id }) => id);
+      expect(ids).toEqual(filterTags(filters).flatMap(({ id }) => (id === tag.id ? [] : [id])));
     }
   });
 
-  it('should keep the rest of a mixed list', () => {
-    expect(withoutFilterTag(filters, 'genres--crime').genres).toEqual({ values: ['drama'], mode: 'any' });
-    expect(withoutFilterTag(filters, 'genres-drama').genres).toEqual({ values: ['crime'], mode: 'none' });
-    expect(withoutFilterTag(filters, 'certifications-tv-ma').certifications).toEqual({ values: [], mode: 'any' });
-  });
-
-  it('should drop a service, the terms and a range', () => {
-    expect(withoutFilterTag(filters, 'watchnow-netflix').watchnow).toEqual(['hulu']);
+  it('should clear a whole filter', () => {
+    expect(withoutFilterTag(filters, 'genres').genres).toEqual(emptyFilters.genres);
+    expect(withoutFilterTag(filters, 'watchnow').watchnow).toEqual([]);
     expect(withoutFilterTag(filters, 'query').query).toBe('');
     expect(withoutFilterTag(filters, 'runtimes').runtimes).toBeNull();
+    expect(withoutFilterTag(filters, 'parental').parental).toEqual({});
+  });
+
+  it('should leave the filters alone for an unknown tag', () => {
+    expect(withoutFilterTag(filters, 'bogus')).toBe(filters);
   });
 });

@@ -1,7 +1,8 @@
 <!--
   The slide-in filter panel of a SidebarFrame page: og's whole advanced set with nothing to apply. Every change
   filters the page straight away (typing and sliders after a short pause): streaming services, terms, then each list as
-  a full-width field that keeps (⊕) and leaves out (⊖) values, then the runtime and the site ratings. Reset and Close
+  a full-width field that keeps (⊕) and leaves out (⊖) values, then the runtime, the site ratings and the parental
+  guide. Clear and Close
   sit at the top. The lists ship with og and networks are searched as you type; the streaming services load the first
   time it opens. Esc closes it.
     <FiltersPanel id="calendar-filters" {open} {config} {filters} {country} {favorites} {sources}
@@ -11,6 +12,9 @@
 import { isStandardApi } from '$lib/api/isStandardApi';
 import { on } from 'svelte/events';
 import imdbLogo from '$lib/assets/sites/imdb-clean.png';
+import letterboxdLogo from '$lib/assets/sites/letterboxd.svg';
+import malLogo from '$lib/assets/sites/mal.svg';
+import tmdbLogo from '$lib/assets/sites/tmdb.svg';
 import rtAudience from '$lib/assets/sites/rt/audience-upright.svg';
 import rtFresh from '$lib/assets/sites/rt/tomatometer-fresh.svg';
 import traktLogo from '$lib/assets/sites/trakt.png';
@@ -26,10 +30,12 @@ import { type FilterDraft, fromFilterDraft, toFilterDraft } from './filterDraft.
 import type { FilterOptionGroup } from './filterOptions.ts';
 import { filterValueLabel } from './filterTags.ts';
 import IncludeExcludeSelect from './IncludeExcludeSelect.svelte';
+import ParentalGuideFilter from './ParentalGuideFilter.svelte';
 import SearchField from './SearchField.svelte';
 import { searchNetworks } from './searchNetworks.ts';
 import { type ListSelection, listSelection, toListFilter } from './listSelection.ts';
 import RangeSlider from './RangeSlider.svelte';
+import { scaleMax, scaleMin } from './rangeScale.ts';
 import { type FilterSource, toFilterSources, watchNowOptions } from './watchNowFilter.ts';
 
 interface Props {
@@ -63,6 +69,7 @@ const lists = {
 const ratingRows = {
   ratings: { site: 'Trakt', logo: traktLogo, format: (v: number) => `${v}%` },
   imdb_ratings: { site: 'IMDb', logo: imdbLogo, format: (v: number) => v.toFixed(1) },
+  tmdb_ratings: { site: 'TMDB', logo: tmdbLogo, format: (v: number) => v.toFixed(1) },
   rt_meters: { site: 'Rotten Tomatoes', metric: 'Tomatometer', logo: rtFresh, format: (v: number) => `${v}%` },
   rt_user_meters: {
     site: 'Rotten Tomatoes',
@@ -70,6 +77,8 @@ const ratingRows = {
     logo: rtAudience,
     format: (v: number) => `${v}%`,
   },
+  letterboxd_ratings: { site: 'Letterboxd', logo: letterboxdLogo, format: (v: number) => v.toFixed(1) },
+  mal_ratings: { site: 'MyAnimeList', logo: malLogo, format: (v: number) => v.toFixed(1) },
 } as const;
 const isRating = (key: RangeFilterKey): key is keyof typeof ratingRows => Object.hasOwn(ratingRows, key);
 const ratings = $derived(config.ranges.filter(isRating));
@@ -88,6 +97,11 @@ function apply(next: FilterDraft, wait = 0) {
 
 const setList = (key: ListFilterKey, selection: ListSelection) =>
   apply({ ...draft, [key]: toListFilter(selection, draft[key].mode) });
+// Narrowed: its sentence takes a set field's label color.
+const narrowed = (key: RangeFilterKey) => {
+  const [min, max] = draft.ranges[key];
+  return min !== scaleMin(config.scales[key]) || max !== scaleMax(config.scales[key]);
+};
 const setRange = (key: RangeFilterKey, range: readonly [number, number]) =>
   apply({ ...draft, ranges: { ...draft.ranges, [key]: range } }, 400);
 
@@ -148,7 +162,7 @@ function reset() {
   <div class="inner">
     <div class="header">
       <h2 id="{id}-title">Filters</h2>
-      <button type="button" class="panel-button" onclick={reset}><Icon svg={resetIcon} />Reset</button>
+      <button type="button" class="panel-button" onclick={reset}><Icon svg={resetIcon} />Clear</button>
       <button type="button" class="panel-button" onclick={onclose}><Icon svg={xmark} />Close</button>
     </div>
 
@@ -173,14 +187,14 @@ function reset() {
 
     {#if config.ranges.includes('years')}
       {@const [min, max] = draft.ranges.years}
-      <p class="label">Released in <b>{min}</b> to <b>{max}</b></p>
+      <p class={['label', { set: narrowed('years') }]}>Released in <b>{min}</b> to <b>{max}</b></p>
       <RangeSlider scale={config.scales.years} label="Released"
         bind:value={() => draft.ranges.years, (range) => setRange('years', range)} />
     {/if}
 
     {#if config.ranges.includes('runtimes')}
       {@const [min, max] = draft.ranges.runtimes}
-      <p class="label">Runtime of <b>{min}</b> to <b>{max}</b> minutes</p>
+      <p class={['label', { set: narrowed('runtimes') }]}>Runtime of <b>{min}</b> to <b>{max}</b> minutes</p>
       <RangeSlider scale={config.scales.runtimes} label="Runtime"
         bind:value={() => draft.ranges.runtimes, (range) => setRange('runtimes', range)} />
     {/if}
@@ -200,6 +214,10 @@ function reset() {
             format={row.format} bind:value={() => draft.ranges[key], (range) => setRange(key, range)} />
         </div>
       {/each}
+    {/if}
+
+    {#if config.parental}
+      <ParentalGuideFilter value={draft.parental} onchange={(parental) => apply({ ...draft, parental })} />
     {/if}
   </div>
 </section>
@@ -306,13 +324,16 @@ function reset() {
   & b {
     color: var(--color-frame-ink);
   }
+
+  &.set {
+    color: var(--color-sidebar-pill-set-text);
+  }
 }
 
 .rating {
   display: grid;
   grid-template-columns: var(--filter-site-width) minmax(0, 1fr);
   align-items: center;
-  margin-inline-end: var(--filter-rating-inset-end);
   column-gap: var(--filter-rating-site-gap);
 
   & img {

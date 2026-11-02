@@ -15,8 +15,21 @@ export function toFilterDraft(filters: AdvancedFilters, config: AdvancedFiltersC
       return [key, filters[key] ?? [scaleMin(scale), scaleMax(scale)]];
     }),
   ) as FilterDraft['ranges'];
-  const { watchnow, genres, certifications, languages, countries, networks, status, episode_types, query } = filters;
-  return { watchnow, genres, certifications, languages, countries, networks, status, episode_types, query, ranges };
+  const { watchnow, genres, certifications, languages, countries, networks, status, episode_types, query, parental } =
+    filters;
+  return {
+    watchnow,
+    genres,
+    certifications,
+    languages,
+    countries,
+    networks,
+    status,
+    episode_types,
+    query,
+    parental,
+    ranges,
+  };
 }
 
 /**
@@ -36,6 +49,7 @@ export function fromFilterDraft(draft: FilterDraft, config: AdvancedFiltersConfi
     ...emptyFilters,
     ...(config.query && { query: draft.query.trim() }),
     ...(config.watchnow && { watchnow: draft.watchnow }),
+    ...(config.parental && { parental: draft.parental }),
     ...lists,
     ...ranges,
   };

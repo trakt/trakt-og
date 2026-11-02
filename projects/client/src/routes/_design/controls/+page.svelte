@@ -19,7 +19,13 @@ import FadeHideMenu from '$lib/components/filters/FadeHideMenu.svelte';
 import { type FadeHide, type FadeHideOption, fadeHideOptions, matchesFadeHide } from '$lib/components/filters/fadeHide';
 import { filterChips } from '$lib/components/filters/filterChips';
 import FilterMenu from '$lib/components/filters/FilterMenu.svelte';
+import FilterChips from '$lib/components/filters/FilterChips.svelte';
 import FiltersPanel from '$lib/components/filters/FiltersPanel.svelte';
+import { filterTags } from '$lib/components/filters/filterTags';
+import ParentalGuideFilter from '$lib/components/filters/ParentalGuideFilter.svelte';
+import type { ParentalLimits } from '$lib/components/filters/parentalGuide';
+import { parentalPresets } from '$lib/components/filters/parentalPreset';
+import { withoutFilterTag } from '$lib/components/filters/withoutFilterTag';
 import TermsFilter from '$lib/components/filters/TermsFilter.svelte';
 import GlassAction from '$lib/components/glass-action/GlassAction.svelte';
 import LoadingOverlay from '$lib/components/loading/LoadingOverlay.svelte';
@@ -72,6 +78,22 @@ function closePanel() {
   panelOpen = false;
   funnel?.focus();
 }
+
+// The parental guide as the panel shows it: off, on a preset and on a custom mix.
+let parentalOff = $state<ParentalLimits>({});
+let parentalKids = $state<ParentalLimits>(parentalPresets.kids);
+let parentalCustom = $state<ParentalLimits>({ nudity: 0, violence: 2, frightening: 3 });
+
+// Applied filters as the sidebar lists them, every kind of chip once.
+let chipFilters = $state<AdvancedFilters>({
+  ...emptyFilters,
+  genres: { values: ['drama', 'comedy'], mode: 'any', excluded: ['crime'] },
+  certifications: { values: ['tv-ma'], mode: 'none' },
+  imdb_ratings: [7, 10],
+  letterboxd_ratings: [3.5, 5],
+  mal_ratings: [8, 10],
+  parental: { nudity: 0, violence: 1 },
+});
 
 // The toolbar over a grid: terms and the eye fade or hide cards by the viewer's state.
 let terms = $state('');
@@ -166,6 +188,28 @@ function showOverlay() {
       <FiltersPanel id="{panelId}-filters" open={panelOpen} {config} {filters} country="us" favorites={[]}
         onchange={(next) => (filters = next)} onclose={closePanel} />
     {/if}
+  </div>
+</Specimen>
+
+<Specimen title="Parental guide" row
+  note="The filters panel's last section, on its background and at its width. A cell sets the most a row allows, and pressing it again clears the row. Kids and Teens fill every row, and editing a row turns the preset off.">
+  <Variant label="Off">
+    <div class="filter-panel"><ParentalGuideFilter value={parentalOff} onchange={(next) => (parentalOff = next)} /></div>
+  </Variant>
+  <Variant label="Kids">
+    <div class="filter-panel"><ParentalGuideFilter value={parentalKids} onchange={(next) => (parentalKids = next)} /></div>
+  </Variant>
+  <Variant label="Custom">
+    <div class="filter-panel">
+      <ParentalGuideFilter value={parentalCustom} onchange={(next) => (parentalCustom = next)} />
+    </div>
+  </Variant>
+</Specimen>
+
+<Specimen title="Applied filter chips"
+  note="A chart or calendar sidebar's Applied Filters, one chip per filter: values comma-separated with left-out ones struck through, a chip that only leaves values out in grey, a rating range led by its site's logo. Long lists end in an ellipsis; hover for the whole list. Remove one to see the rest stay.">
+  <div class="chip-sidebar">
+    <FilterChips chips={filterTags(chipFilters)} onremove={(id) => (chipFilters = withoutFilterTag(chipFilters, id))} />
   </div>
 </Specimen>
 
@@ -348,6 +392,19 @@ function showOverlay() {
 <LoadingOverlay visible={overlayVisible} />
 
 <style>
+.filter-panel {
+  inline-size: var(--sidebar-panel-width);
+  padding: var(--sidebar-padding);
+  background-color: var(--color-filter-panel-bg);
+  color: var(--color-frame-ink);
+}
+
+.chip-sidebar {
+  inline-size: var(--sidebar-width);
+  padding: var(--sidebar-padding);
+  background-color: var(--color-sidebar-bg);
+}
+
 .knob {
   padding: var(--design-canvas-padding);
 }

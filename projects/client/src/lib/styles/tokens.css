@@ -222,6 +222,7 @@
 
   /* Control heights: line-height + vertical padding x2 + 2px border */
   --control-height-small: 30px;
+  --control-height-mini: 24px; /* a sidebar section's action (Clear) and the parental guide presets */
   --control-height: 34px;
   --control-height-large: 46px;
 
@@ -2037,25 +2038,37 @@
   --color-filter-option-highlight-text: #fff;
   --color-filter-option-tag-bg: #444;
   --color-filter-option-tag: #aaa;
-  --slider-height: 15px;
-  --radius-slider: 4px;
-  --radius-slider-connect: 2px;
-  --color-slider-track: light-dark(#e2e2e2, #2d2d2d);
-  --color-slider-connect: light-dark(#cfcfcf, #444);
-  --shadow-slider-connect: inset 0 0 3px rgb(51 51 51 / 0.45);
-  --color-slider-handle: light-dark(#888, #666);
-  --radius-slider-handle: 3px;
-  --slider-handle-width: 14px;
-  --slider-handle-height: 22px;
-  --slider-handle-top: -4px;
-  --slider-handle-offset: -7px; /* noUiSlider hangs a handle this far left of its value */
-  --slider-label-width: 31px;
-  --slider-label-height: 20px;
-  --slider-label-top: -3px;
-  --font-size-slider-label: 10px;
+  /* The range sliders: a slim track with grey knobs and bar while untouched, red once the range is set, like a field's
+     "Any" and its red "filter on" look. Released and Runtime take round knobs; the site ratings take mini-button knobs
+     that carry their value. */
+  --slider-height: 6px;
+  --radius-slider: 3px;
+  --color-slider-track: light-dark(#e6e6e6, #2d2d2d);
+  --color-slider-connect: light-dark(#c4c4c4, #4a4a4a);
+  --color-slider-connect-set: var(--color-sidebar-pill-set-border);
+  --color-slider-handle: var(--color-control-raised-bg);
+  --color-slider-handle-hover: var(--color-control-raised-hover-bg);
+  --color-slider-handle-border: var(--color-control-border-hover);
+  --color-slider-handle-text: var(--color-control-text);
+  --color-slider-grip: var(--color-control-muted);
+  --color-slider-handle-set: var(--color-sidebar-pill-set-bg); /* over the panel, as a set field's fill */
+  --color-slider-handle-set-border: var(--color-sidebar-pill-set-border);
+  --color-slider-handle-set-hover: var(--brand-primary);
+  --color-slider-handle-set-text: var(--color-control-text);
+  --color-slider-grip-set: var(--color-sidebar-pill-set-text);
+  --shadow-slider-handle: 0 1px 3px rgb(0 0 0 / 0.4);
+  --slider-knob-size: 18px;
+  --slider-grip-width: 7px; /* the three bars on a round knob */
+  --slider-grip-height: 7px;
+  --slider-label-width: 40px; /* fits "100%" */
+  --slider-label-height: 22px;
+  --font-size-slider-label: 11px;
   --filter-site-width: 20px;
   --filter-rating-site-gap: 15px;
-  --filter-rating-inset-end: 15px;
+  --parental-category-width: 84px; /* the parental guide's row names, "Frightening" the widest */
+  --parental-cell-height: 22px;
+  --space-parental-cell: 4px;
+  --radius-parental-cell: 3px;
   --color-filter-tag-bg: #3d3d3d;
   --color-bundle-any: #5b982a; /* .btn-any */
   --color-bundle-free: #1952a7; /* .btn-free */

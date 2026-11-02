@@ -1,4 +1,5 @@
 import type { AdvancedFilters, ListFilterKey, RangeFilterKey } from './advancedFilters.ts';
+import { parentalGuideParams } from './parentalGuide.ts';
 
 /** The API's name for each list filter. */
 const listParams: Record<Exclude<ListFilterKey, 'episode_types'>, string> = {
@@ -15,8 +16,11 @@ const rangeParams: Record<RangeFilterKey, string> = {
   runtimes: 'runtimes',
   ratings: 'ratings',
   imdb_ratings: 'imdb_ratings',
+  tmdb_ratings: 'tmdb_ratings',
   rt_meters: 'rt_meters',
   rt_user_meters: 'rt_user_meters',
+  letterboxd_ratings: 'letterboxd_ratings',
+  mal_ratings: 'mal_ratings',
 };
 
 type Picked = { readonly [key: string]: boolean | undefined };
@@ -47,5 +51,7 @@ export function advancedFiltersQuery(filters: AdvancedFilters, only?: Picked): R
   const watchnow: [string, string][] =
     keep('watchnow') && filters.watchnow.length > 0 ? [['watchnow', filters.watchnow.join(',')]] : [];
 
-  return Object.fromEntries([...watchnow, ...lists, ...ranges]);
+  const parental = keep('parental') ? parentalGuideParams(filters.parental) : [];
+
+  return Object.fromEntries([...watchnow, ...lists, ...ranges, ...parental]);
 }

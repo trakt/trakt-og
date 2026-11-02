@@ -78,4 +78,31 @@ describe('util: advancedFiltersSearch', () => {
   it('should be empty with nothing filtered', () => {
     expect(advancedFiltersSearch(emptyFilters)).toBe('');
   });
+
+  it('should round-trip the Letterboxd and MyAnimeList ratings with one decimal', () => {
+    const query = 'letterboxd_ratings=3.5-5.0&mal_ratings=8.0-10.0';
+    expect(parse(query).letterboxd_ratings).toEqual([3.5, 5]);
+    expect(advancedFiltersSearch(parse(query))).toBe(query);
+  });
+});
+
+describe('util: parseAdvancedFilters for the parental guide', () => {
+  it('should read each category as the most it allows', () => {
+    expect(parse('parental_nudity=0-0&parental_violence=0-1&parental_alcohol=0-3').parental).toEqual({
+      nudity: 0,
+      violence: 1,
+      alcohol: 3,
+    });
+  });
+
+  it('should drop a floor and anything malformed', () => {
+    const parental = parse('parental_nudity=1-2&parental_profanity=0-9&parental_alcohol=x');
+    expect(parental.parental).toEqual({});
+    expect(hasAdvancedFilters(parental)).toBe(false);
+  });
+
+  it('should round-trip through the URL after the ranges', () => {
+    const query = 'years=1990-2000&parental_nudity=0-0&parental_frightening=0-3';
+    expect(advancedFiltersSearch(parse(query))).toBe(query);
+  });
 });

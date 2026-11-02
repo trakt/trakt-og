@@ -12,15 +12,13 @@ const labels: Readonly<Record<string, string>> = {
   runtimes: 'Runtime',
   ratings: 'Trakt',
   imdb_ratings: 'IMDb',
+  tmdb_ratings: 'TMDB',
   rt_meters: 'Tomatometer',
   rt_user_meters: 'Audience',
+  letterboxd_ratings: 'Letterboxd',
+  mal_ratings: 'MyAnimeList',
+  parental: 'Parental Guide',
 };
 
-/** What a filter chip filters, from its `filterTags` id ("genres-drama" is Genres, "runtimes" is Runtime). */
-export function filterTagLabel(id: string): string {
-  const key = Object.keys(labels)
-    .filter((name) => id === name || id.startsWith(`${name}-`))
-    .toSorted((a, b) => b.length - a.length)
-    .at(0);
-  return key ? (labels[key] ?? '') : '';
-}
+/** What a filter chip filters, from its `filterTags` id ("genres" is Genres, "runtimes" is Runtime). */
+export const filterTagLabel = (id: string): string => labels[id] ?? '';

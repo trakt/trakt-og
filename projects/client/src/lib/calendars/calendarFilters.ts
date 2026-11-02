@@ -1,7 +1,10 @@
 import type { AdvancedFiltersConfig } from '../components/filters/AdvancedFiltersConfig.ts';
 import { filterRanges } from '../components/filters/filterRanges.ts';
 
-/** calendars reuse the chart panel, with local terms/types and no release-year or status filter. */
+/**
+ * calendars reuse the chart panel, with local terms/types and no release-year or status filter. Rotten Tomatoes and
+ * Letterboxd only show where movies do.
+ */
 export function calendarFilters({ slug, now }: { slug: string; now: Date }): AdvancedFiltersConfig {
   const movie = ['movies', 'streaming', 'dvd'].includes(slug);
   const mixed = slug === 'shows-movies';
@@ -21,8 +24,12 @@ export function calendarFilters({ slug, now }: { slug: string; now: Date }): Adv
       'runtimes',
       'ratings',
       'imdb_ratings',
+      'tmdb_ratings',
       ...(movie || mixed ? (['rt_meters', 'rt_user_meters'] as const) : []),
+      ...(movie || mixed ? (['letterboxd_ratings'] as const) : []),
+      'mal_ratings',
     ],
     scales: filterRanges({ now }),
+    parental: true,
   };
 }

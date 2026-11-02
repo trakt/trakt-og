@@ -25,6 +25,8 @@ describe('util: buildRobotsTxt', () => {
         expect.arrayContaining([
           'Disallow: /*?*genres=',
           'Disallow: /*?*rt_user_meters=',
+          'Disallow: /*?*mal_ratings=',
+          'Disallow: /*?*parental_violence=',
           'Disallow: /*?*watchnow=',
           'Disallow: /*?*sort=',
           'Disallow: /*?*sort_how=',

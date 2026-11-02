@@ -1,7 +1,8 @@
 import { listFilterKeys, rangeFilterKeys } from '../components/filters/advancedFilters.ts';
+import { parentalParams } from '../components/filters/parentalGuide.ts';
 
 /** The advanced filters, Watch Now, and a comment page's language. */
-const FILTERS = [...listFilterKeys, ...rangeFilterKeys, 'watchnow', 'language'];
+const FILTERS = [...listFilterKeys, ...rangeFilterKeys, ...parentalParams, 'watchnow', 'language'];
 
 const SORTS = ['sort', 'sort_by', 'sort_how'];
 

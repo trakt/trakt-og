@@ -1,15 +1,28 @@
 import type { AdvancedFilters, ListFilterKey, RangeFilterKey } from './advancedFilters.ts';
 import { listFilterKeys } from './advancedFilters.ts';
 import { genreLabel } from '../../utils/genreLabel.ts';
+import {
+  type ParentalLimits,
+  parentalCategories,
+  parentalCategoryLabels,
+  parentalLimitLabel,
+} from './parentalGuide.ts';
+import { parentalPreset } from './parentalPreset.ts';
 
 /** The rating site whose logo leads a range tag. */
-export type TagSite = 'trakt' | 'imdb' | 'rt' | 'rt-audience';
+export type TagSite = 'trakt' | 'imdb' | 'tmdb' | 'rt' | 'rt-audience' | 'letterboxd' | 'mal';
 
-export type FilterTag = {
-  readonly id: string;
+export type FilterTagValue = {
   readonly text: string;
-  /** Excluded with "none": OG struck these through. */
+  /** Left out: struck through, as in the panel's fields. */
   readonly without: boolean;
+};
+
+/** One applied filter, as the sidebar shows it: its values in the panel field's order, kept before left out. */
+export type FilterTag = {
+  /** The filter's key: `query`, `watchnow`, a list or range key, or `parental`. */
+  readonly id: string;
+  readonly values: readonly FilterTagValue[];
   readonly site?: TagSite;
 };
 
@@ -56,31 +69,46 @@ const ranges: readonly { key: RangeFilterKey; site?: TagSite; suffix: string; de
   { key: 'runtimes', suffix: ' mins' },
   { key: 'ratings', site: 'trakt', suffix: '%' },
   { key: 'imdb_ratings', site: 'imdb', suffix: '', decimals: 1 },
+  { key: 'tmdb_ratings', site: 'tmdb', suffix: '', decimals: 1 },
   { key: 'rt_meters', site: 'rt', suffix: '%' },
   { key: 'rt_user_meters', site: 'rt-audience', suffix: '%' },
+  { key: 'letterboxd_ratings', site: 'letterboxd', suffix: '', decimals: 1 },
+  { key: 'mal_ratings', site: 'mal', suffix: '', decimals: 1 },
 ];
 
-/** The sidebar's applied-filter tags in OG's order. Watch now shows as service tiles instead. */
+const presetNames = { kids: 'Kids', teens: 'Teens' } as const;
+
+const kept = (text: string): FilterTagValue => ({ text, without: false });
+
+// A preset reads as its name ("Kids"), and a custom mix as each limited category ("Violence up to Mild").
+function parentalValues(limits: ParentalLimits): FilterTagValue[] {
+  const preset = parentalPreset(limits);
+  if (preset === 'any') return [];
+  if (preset) return [kept(presetNames[preset])];
+  return parentalCategories.flatMap((category) => {
+    const level = limits[category];
+    return level === undefined ? [] : [kept(`${parentalCategoryLabels[category]} ${parentalLimitLabel(level)}`)];
+  });
+}
+
+/** The sidebar's applied filters in OG's order, one tag each. Watch now's tag comes from `filterChips`. */
 export function filterTags(filters: AdvancedFilters): FilterTag[] {
-  const lists = listFilterKeys.flatMap((key) => [
-    ...filters[key].values.map((value) => ({
-      id: `${key}-${value}`,
-      text: filterValueLabel(key, value),
-      without: filters[key].mode === 'none',
-    })),
-    ...(filters[key].excluded ?? []).map((value) => ({
-      id: `${key}--${value}`,
-      text: filterValueLabel(key, value),
-      without: true,
-    })),
-  ]);
+  const lists = listFilterKeys.flatMap((key) => {
+    const { values, mode, excluded = [] } = filters[key];
+    const tagValues = [
+      ...values.map((value) => ({ text: filterValueLabel(key, value), without: mode === 'none' })),
+      ...excluded.map((value) => ({ text: filterValueLabel(key, value), without: true })),
+    ];
+    return tagValues.length > 0 ? [{ id: key, values: tagValues }] : [];
+  });
   const bounds = ranges.flatMap(({ key, site, suffix, decimals }) => {
     const range = filters[key];
     if (!range) return [];
     const [min, max] = range.map((value) => (decimals ? value.toFixed(decimals) : `${value}`));
-    return [{ id: key, text: `${min} - ${max}${suffix}`, without: false, ...(site && { site }) }];
+    return [{ id: key, values: [kept(`${min} - ${max}${suffix}`)], ...(site && { site }) }];
   });
+  const parental = parentalValues(filters.parental);
 
-  const terms: FilterTag[] = filters.query ? [{ id: 'query', text: filters.query, without: false }] : [];
-  return [...terms, ...lists, ...bounds];
+  const terms: FilterTag[] = filters.query ? [{ id: 'query', values: [kept(filters.query)] }] : [];
+  return [...terms, ...lists, ...bounds, ...(parental.length > 0 ? [{ id: 'parental', values: parental }] : [])];
 }

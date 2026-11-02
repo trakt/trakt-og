@@ -20,8 +20,8 @@ export const recommendationFilters = { watchnow: true, genres: true, years: true
 type ChartFiltersParams = { type: MediaType; chart: ChartName; period: ChartPeriod; now: Date };
 
 /**
- * The advanced filter panel for one chart. Filter Terms, Studios, TMDB, Metacritic and the vote sliders
- * are cut: the API has no filter for them.
+ * The advanced filter panel for one chart. Filter Terms, Studios, Metacritic and the vote sliders are cut. Letterboxd
+ * only rates movies.
  */
 export function chartFilters({ type, chart, period, now }: ChartFiltersParams): AdvancedFiltersConfig {
   const scales = filterRanges({ now, upcoming: chart === 'anticipated' });
@@ -37,6 +37,16 @@ export function chartFilters({ type, chart, period, now }: ChartFiltersParams): 
     type === 'shows'
       ? ['genres', 'certifications', 'languages', 'countries', 'networks', 'status']
       : ['genres', 'certifications', 'languages', 'countries'];
-  const ranges: RangeFilterKey[] = ['years', 'runtimes', 'ratings', 'imdb_ratings', 'rt_meters', 'rt_user_meters'];
-  return { ...base, lists, ranges };
+  const ranges: RangeFilterKey[] = [
+    'years',
+    'runtimes',
+    'ratings',
+    'imdb_ratings',
+    'tmdb_ratings',
+    'rt_meters',
+    'rt_user_meters',
+    ...(type === 'movies' ? (['letterboxd_ratings'] as const) : []),
+    'mal_ratings',
+  ];
+  return { ...base, lists, ranges, parental: true };
 }

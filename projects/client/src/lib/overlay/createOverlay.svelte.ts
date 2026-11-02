@@ -223,9 +223,7 @@ function stateOf(slices: Partial<OverlaySlices>, type: MediaType, id: number, se
     ),
     ...watchDetails(
       slices.watchedShows &&
-        [...(slices.watchedShows.get(id) ?? [])]
-          .filter(([number]) => number > 0)
-          .flatMap(([, episodes]) => [...episodes.values()].flat()),
+        [...(slices.watchedShows.get(id)?.values() ?? [])].flatMap((episodes) => [...episodes.values()].flat()),
     ),
     dropped: slices.dropped?.has(id),
     rewatching: slices.rewatching?.has(id),

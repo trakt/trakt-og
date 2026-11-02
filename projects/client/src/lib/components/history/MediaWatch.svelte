@@ -193,7 +193,7 @@ async function open(force: boolean): Promise<'date' | 'remove' | 'partial' | nul
     await login();
     return null;
   }
-  const action = watchAction({ fill: onremove ? 1 : fill.watched, force, defaultAt });
+  const action = watchAction({ fill: onremove ? 1 : fill.watched, force, defaultAt, rewatchNext: target.rewatchNext });
   if (action === 'date' || action === 'remove') checkUpTo();
   if (action === 'date' || action === 'remove' || action === 'partial') return action;
   await watch(action, false);

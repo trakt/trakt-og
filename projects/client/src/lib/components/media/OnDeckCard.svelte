@@ -53,6 +53,7 @@ const target = $derived({
     ? undefined
     : { show: item.showId, number: item.seasonNumber, episode: item.episode },
   runtime: item.runtime,
+  rewatchNext: item.rewatching,
 });
 const showTarget = $derived({
   type: 'show' as const,

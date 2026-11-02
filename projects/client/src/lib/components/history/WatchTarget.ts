@@ -14,4 +14,6 @@ export type WatchTarget = RatingTarget & {
    * episodes from the same day.
    */
   onlyEpisodeIds?: readonly number[];
+  /** The up next episode of a show being rewatched: a click adds a play even though it has older ones. */
+  rewatchNext?: boolean;
 };

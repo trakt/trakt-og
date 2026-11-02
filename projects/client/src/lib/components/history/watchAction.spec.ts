@@ -12,6 +12,12 @@ describe('watchAction', () => {
     expect(watchAction({ fill: 0.5, force: false, defaultAt: 'now' })).toBe('partial');
     expect(watchAction({ fill: 1, force: false, defaultAt: 'now' })).toBe('remove');
   });
+  it.each([
+    ['now', 'now'],
+    [undefined, 'date'],
+  ] as const)('should add to a rewatch next episode played before the rewatch (%s)', (defaultAt, action) => {
+    expect(watchAction({ fill: 1, force: false, defaultAt, rewatchNext: true })).toBe(action);
+  });
   it.each([0, 0.5, 1])('should always ask when adding an additional play (%s)', (fill) => {
     expect(watchAction({ fill, force: true, defaultAt: 'now' })).toBe('date');
   });

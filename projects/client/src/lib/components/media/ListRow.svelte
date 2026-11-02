@@ -12,6 +12,7 @@
 import ReportDialog from '$lib/components/summary/ReportDialog.svelte';
 import ListCount from '$lib/components/lists/ListCount.svelte';
 import ListLikeButton from '$lib/components/lists/ListLikeButton.svelte';
+import ListTag from '$lib/components/lists/ListTag.svelte';
 import type { Snippet } from 'svelte';
 import CommentTag from '$lib/components/comments/CommentTag.svelte';
 import { memberRelation } from '$lib/components/comments/memberRelation';
@@ -31,17 +32,11 @@ import deleteIcon from '$lib/icons/regular/trash-xmark.svg?raw';
 import document from '$lib/icons/regular/file.svg?raw';
 import flag from '$lib/icons/regular/flag.svg?raw';
 import listIcon from '$lib/icons/regular/list.svg?raw';
-import lock from '$lib/icons/regular/lock.svg?raw';
 import pencil from '$lib/icons/regular/pen.svg?raw';
-import user from '$lib/icons/regular/user.svg?raw';
 import heart from '$lib/icons/solid/heart.svg?raw';
 import bookmark from '$lib/icons/solid/bookmark.svg?raw';
-import userGroup from '$lib/icons/regular/user-group.svg?raw';
 import voteYes from '$lib/icons/regular/thumbs-up.svg?raw';
-import link from '$lib/icons/solid/link.svg?raw';
-import sparkles from '$lib/icons/solid/sparkles.svg?raw';
 import filtersIcon from '$lib/icons/regular/filters.svg?raw';
-import traktIcon from '$lib/icons/trakt/trakt-v2.svg?raw';
 import ogLogo from '$lib/assets/trakt-logo-red.png';
 import type { VipBadge } from '$lib/users/VipBadge';
 import type { ListKind } from '$lib/lists/toListRow';
@@ -110,12 +105,6 @@ const {
 }: Props = $props();
 
 const FAN_SIZE = 5;
-const CHIPS: Record<string, { color: string; svg: string }> = {
-  Private: { color: 'var(--color-list-chip-private)', svg: lock },
-  'Official List': { color: 'var(--color-list-chip-official)', svg: traktIcon },
-  Smart: { color: 'var(--color-list-chip-smart)', svg: sparkles },
-  Following: { color: 'var(--color-list-chip-following)', svg: userGroup },
-};
 const BUILT_IN = { watchlist: { text: 'Watchlist', svg: bookmark }, favorites: { text: 'Favorites', svg: heart } };
 const builtIn = $derived(kind === 'watchlist' || kind === 'favorites' ? BUILT_IN[kind] : undefined);
 // Friend or Following, from the viewer's network, as on comments; never on the viewer's own lists.
@@ -157,12 +146,6 @@ const blocks = $derived(parseComment(description?.trim() ?? ''));
   </Tooltip>
 {/snippet}
 
-{#snippet chip(text: string, color: string, svg: string, tip?: string)}
-  <Tooltip text={tip}>
-    {#snippet trigger(tooltip)}<CommentTag {svg} {color} tint {...tooltip}>{text}</CommentTag>{/snippet}
-  </Tooltip>
-{/snippet}
-
 {#if reportMounted && likeTarget && actions?.report && !actions.report.onclick}<ReportDialog bind:open={reportOpen}
   target={{ type: 'list', id: likeTarget.id, ownerSlug: likeTarget.ownerSlug, title: name, href,
     posters: posters.flatMap(({ image }) => (image ? [image] : [])).slice(0, 5) }} />{/if}
@@ -197,18 +180,14 @@ const blocks = $derived(parseComment(description?.trim() ?? ''));
         <a class="name-link" {href}><h3>{name}</h3></a>
         {#if relation || builtIn || mine || pills.length > 0 || shareLink || collaborators.length > 0}
           <span class="chips">
-            {#if relation}
-              <CommentTag svg={relation === 'friend' ? userGroup : user} tone={relation} tint>
-                {relation === 'friend' ? 'Friend' : 'Following'}
-              </CommentTag>
-            {/if}
+            {#if relation}<ListTag {relation} />{/if}
             {#if builtIn}<CommentTag svg={builtIn.svg} tint>{builtIn.text}</CommentTag>{/if}
-            {#if mine}{@render chip('Me', 'var(--color-list-chip-mine)', user, 'Your list')}{/if}
+            {#if mine}<ListTag tag="Me" />{/if}
             {#if collaborators.length > 0}
               <CollaboratorsChip {collaborators} list={{ name, poster: posters.at(0)?.image }} {owner} />
             {/if}
-            {#each pills as pill (pill)}{@render chip(pill, CHIPS[pill]?.color ?? 'var(--color-list-chip-following)', CHIPS[pill]?.svg ?? listIcon)}{/each}
-            {#if shareLink}{@render chip('Link', 'var(--color-list-chip-link)', link, 'Anyone with this link can view the list')}{/if}
+            {#each pills as pill (pill)}<ListTag tag={pill} />{/each}
+            {#if shareLink}<ListTag tag="Link" />{/if}
           </span>
         {/if}
       </div>

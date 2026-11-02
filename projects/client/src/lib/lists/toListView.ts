@@ -13,7 +13,7 @@ export interface ListView {
   readonly href: string;
   readonly kind: ListKind;
   readonly ownerSlug: string;
-  /** "Private" or "Following", and "Smart" once it's been turned into a smart list. */
+  /** "Official List" on Trakt's own; else "Private" or "Following", after "Smart" once it's become a smart list. */
   readonly pills: readonly string[];
   /** For the owner: the app that kept it updated stopped syncing it, so it could become a smart list. */
   readonly staleOrigin?: { readonly name: string };
@@ -67,7 +67,7 @@ export function toListView(list: ListSource): ListView {
     href: listPath(list),
     kind: official ? 'official' : 'personal',
     ownerSlug,
-    pills: [...(list.converted_to ? ['Smart'] : []), ...privacyPills(list.privacy)],
+    pills: official ? ['Official List'] : [...(list.converted_to ? ['Smart'] : []), ...privacyPills(list.privacy)],
     ...(list.stale_origin && !list.converted_to && { staleOrigin: { name: list.stale_origin.name } }),
     shareLink: list.privacy === 'link',
     isPublic: list.privacy === 'public',

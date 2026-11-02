@@ -377,7 +377,6 @@
   --color-list-card-like: var(--brand-secondary);
 
   /* List row pills and icons */
-  --color-list-pill-link: var(--brand-secondary);
   --color-list-edit: var(--color-action-edit);
   --color-list-delete: var(--color-action-delete);
   --color-list-progress: light-dark(#555, #eee);
@@ -443,7 +442,7 @@
   /* List page */
   --list-title-padding: 4px 0 6px; /* .subnav-wrapper.list-title-wrapper */
   --list-title-heading-margin: 10px 0; /* .subnav-wrapper .left h2 */
-  --list-title-pill-gap: 5px;
+  --list-title-pill-gap: var(--comment-tags-gap); /* the tags beside a list's title, spaced like a list row's */
   --list-grid-offset: 10px; /* on top of the poster grid's 20px: 30px from the band above to the first posters */
   --list-description-padding: 14px 16px; /* the title row's: its 4px 0 6px padding plus the heading's 10px margins */
   --space-list-title-actions: var(--space-stat); /* between a list title's icons and buttons, as on a list row */

@@ -15,6 +15,7 @@ import BuiltInListDialog from '$lib/components/lists/BuiltInListDialog.svelte';
 import NewListDialog from '$lib/components/lists/NewListDialog.svelte';
 import SmartListDialog from '$lib/components/lists/SmartListDialog.svelte';
 import ListNotice from '$lib/components/lists/ListNotice.svelte';
+import ListTag from '$lib/components/lists/ListTag.svelte';
 import ListItemEdit from '$lib/components/lists/ListItemEdit.svelte';
 import ListReorderControls from '$lib/components/lists/ListReorderControls.svelte';
 import RankInput from '$lib/components/lists/RankInput.svelte';
@@ -153,6 +154,14 @@ const following = [{ slug: 'teodoro_2', name: 'Elsy Murphy (@teodoro_2)' }];
   </div>
 </Specimen>
 
+<Specimen title="List tags"
+  note="How the viewer knows the owner (Friend, Following), then the list's status, tinted in its color: on a list row across from its name, and on a list page beside its title. Link and Me explain themselves in a tooltip.">
+  <div class="buttons">
+    <ListTag relation="friend" /><ListTag relation="following" />
+    {#each ['Private', 'Following', 'Official List', 'Smart', 'Link', 'Me'] as tag (tag)}<ListTag {tag} />{/each}
+  </div>
+</Specimen>
+
 <Specimen title="List notice"
   note="A one-off offer over a lists page or a list. Try the action: it shows Working… while busy.">
   <div class="states">
@@ -176,7 +185,9 @@ const following = [{ slug: 'teodoro_2', name: 'Elsy Murphy (@teodoro_2)' }];
   </div>
 </Specimen>
 
-<Specimen title="Official list header" bleed note="The cover over an official Trakt list, on its first item's fanart.">
+<Specimen title="Official list header" bleed
+  note="The cover over an official Trakt list, on its first item's fanart: Trakt with its Official label, then Worldwide and Joined 2010 like a profile's pills. The title row below carries the Official List tag.">
+
   <OfficialListHeader image={cover} />
 </Specimen>
 

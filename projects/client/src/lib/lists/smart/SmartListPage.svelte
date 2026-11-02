@@ -18,6 +18,10 @@ import SectionToolbar from '$lib/components/toolbar/SectionToolbar.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import file from '$lib/icons/regular/file.svg?raw';
 import filtersIcon from '$lib/icons/regular/filters.svg?raw';
+import ListTag from '$lib/components/lists/ListTag.svelte';
+import { memberRelation } from '$lib/components/comments/memberRelation';
+import { overlay } from '$lib/overlay/overlay';
+import type { ProfileUser } from '$lib/users/ProfileUser';
 import ListItemPoster from '$lib/lists/ListItemPoster.svelte';
 import { listHref } from '$lib/lists/listHref';
 import { listSortHow } from '$lib/lists/listItemSorts';
@@ -26,11 +30,13 @@ import { smartListSorts } from './smartListSorts.ts';
 import { smartListSourceLabel } from './smartListSourceLabel.ts';
 import type { loadSmartList } from './loadSmartList.ts';
 
-type Props = { data: Awaited<ReturnType<typeof loadSmartList>> };
+type Props = { data: Awaited<ReturnType<typeof loadSmartList>> & { profile: ProfileUser } };
 
 const { data }: Props = $props();
 const list = $derived(data.smart);
 const source = $derived(smartListSourceLabel(list.source, list.mediaType));
+// Friend or Following, from the viewer's network, as on the list's row.
+const relation = $derived(memberRelation(overlay.slices().network, data.profile.slug));
 const pills = $derived(['Smart', ...(list.privacy === 'private' ? ['Private'] : list.privacy === 'friends' ? ['Following'] : [])]);
 // Recommendations come in their own order only.
 const sorts = $derived(list.source === 'recommendations' ? smartListSorts.slice(0, 1) : smartListSorts);
@@ -71,7 +77,8 @@ const reverseHow = (by: string, flipped: boolean) => {
     <div class="title-bar">
       <h2 id="smart-list-title">
         {list.name}
-        {#each pills as pill (pill)}<span class={['pill', { smart: pill === 'Smart' }]}>{pill}</span>{/each}
+        {#if relation}<span class="tag"><ListTag {relation} /></span>{/if}
+        {#each pills as pill (pill)}<span class="tag"><ListTag tag={pill} /></span>{/each}
       </h2>
       <div class="actions">
         {#if data.chartHref}
@@ -139,19 +146,11 @@ h2 {
   font-weight: var(--font-weight-headings);
 }
 
-.pill {
+/* The tags, as on a list row, after the name. */
+.tag {
+  display: inline-flex;
   margin-inline-start: var(--list-title-pill-gap);
-  padding: 1px 4px;
-  border-radius: 2px;
-  background-color: var(--color-pill);
-  color: var(--color-card-text);
-  font-size: var(--font-size-card-tag);
-  text-transform: uppercase;
   vertical-align: middle;
-
-  &.smart {
-    background-color: var(--color-list-chip-smart);
-  }
 }
 
 .actions {

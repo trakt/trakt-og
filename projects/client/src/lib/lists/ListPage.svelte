@@ -18,7 +18,9 @@ import { rerankListCards } from '$lib/lists/rerankListCards';
 import { removeOwnerItems } from '$lib/lists/removeOwnerItems';
 import { writeOwnerList } from '$lib/lists/writeOwnerList';
 import { toListItemCard } from '$lib/lists/toListItemCard';
-import { afterNavigate, goto, replaceState } from '$app/navigation';
+import { afterNavigate, goto, invalidateAll, replaceState } from '$app/navigation';
+import ListNotice from '$lib/components/lists/ListNotice.svelte';
+import { convertToSmartList } from '$lib/lists/smart/convertToSmartList';
 import ReportDialog from '$lib/components/summary/ReportDialog.svelte';
 import { leaveList } from '$lib/components/lists/leaveList';
 import { resolve } from '$app/paths';
@@ -265,6 +267,36 @@ async function removeList() {
     void overlay.refresh();
     await goto(resolve('/users/[id]/lists', { id: data.list.ownerSlug }));
   }
+}
+// The owner's list an app stopped syncing: offer to let it fill itself from the API's ready-made setup. It keeps its
+// address, name and privacy.
+const smartDraft = $derived('smartDraft' in data ? data.smartDraft : null);
+let converting = $state(false);
+async function convertList() {
+  const list = data.list;
+  if (!list || !smartDraft || converting) return;
+  converting = true;
+  const outcome = await convertToSmartList({
+    request: (path, method, body) =>
+      rawApiFetch({
+        fetch: viewerFetch(),
+        path,
+        init: { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) },
+      }),
+    list: list.slug,
+    name: list.name,
+    privacy: list.isPublic ? 'public' : list.pills.includes('Following') ? 'friends' : 'private',
+    draft: smartDraft,
+  });
+  converting = false;
+  if (outcome === 'converted') {
+    toast.success(`${list.name} now fills itself as a smart list.`);
+    await invalidateAll();
+    return;
+  }
+  toast.error(outcome === 'limit'
+    ? "You've reached your smart list limit, so this list stays as it is."
+    : "Doh! We couldn't change this list. Please try again.");
 }
 // Official lists and public personal lists are in search; the watchlist and favorites follow their route's robots.
 const indexed = $derived(
@@ -668,7 +700,7 @@ async function saveNotes(text: string) {
     <div class="title-bar">
         <h2 id="list-title">
           <a class="list-title" href={list.href}>{list.name}</a>
-          {#each list.pills as pill (pill)}<span class="pill">{pill}</span>{/each}
+          {#each list.pills as pill (pill)}<span class={['pill', { smart: pill === 'Smart' }]}>{pill}</span>{/each}
           {#if list.shareLink}
             <Tooltip text="Anyone with this link can view the list">
               {#snippet trigger(tooltip)}<span class="pill share-link" {...tooltip}>Link</span>{/snippet}
@@ -725,6 +757,15 @@ async function saveNotes(text: string) {
       </div>
   </Container>
 </section>
+
+  {#if smartDraft && list.staleOrigin}
+    <Container>
+      <ListNotice action="Make it a smart list" busy={converting} onaction={convertList}>
+        Synced from <strong>{list.staleOrigin.name}</strong>, which no longer updates Trakt lists. As a smart list it
+        keeps {Math.round(smartDraft.confidence * 100)}% of its titles today and adds new ones that match on its own.
+      </ListNotice>
+    </Container>
+  {/if}
 
   <WatchNowChips {tiles} />
 
@@ -872,6 +913,10 @@ h2 {
 
 .share-link {
   background-color: var(--color-list-pill-link);
+}
+
+.pill.smart {
+  background-color: var(--color-list-chip-smart);
 }
 
 /* The collaborators chip, as on a list row, after the name. */

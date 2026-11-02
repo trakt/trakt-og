@@ -21,3 +21,9 @@ export interface SmartList {
 
 /** What a smart list is made from, and what an update may change. */
 export type SmartListWrite = Pick<SmartList, 'name' | 'privacy' | 'source' | 'mediaType' | 'filters'>;
+
+/** The API's ready-made smart list setup for a list an app stopped syncing. */
+export type SmartListDraft = Pick<SmartList, 'source' | 'mediaType' | 'filters'> & {
+  /** The share of the list's titles today that the setup keeps, 0 to 1. */
+  readonly confidence: number;
+};

@@ -18,6 +18,8 @@ export type ListRowSource = {
   readonly comment_count?: number | null;
   readonly likes?: number | null;
   readonly ids: { readonly trakt: number; readonly slug?: string | null };
+  /** Set once the owner turned it into a smart list. */
+  readonly converted_to?: object | null;
   readonly user: {
     readonly username: string;
     readonly name?: string | null;
@@ -67,12 +69,13 @@ function kindOf(type: string | null | undefined): ListKind {
 }
 
 // official lists get their pill, otherwise Private (a link list is private too)
-// or Following for friends-only.
+// or Following for friends-only, after Smart on a list turned into a smart list.
 function pills(list: ListRowSource, kind: ListKind): readonly string[] {
   if (kind === 'official') return ['Official List'];
-  if (list.privacy === 'private' || list.privacy === 'link') return ['Private'];
-  if (list.privacy === 'friends') return ['Following'];
-  return [];
+  const smart = list.converted_to ? ['Smart'] : [];
+  if (list.privacy === 'private' || list.privacy === 'link') return [...smart, 'Private'];
+  if (list.privacy === 'friends') return [...smart, 'Following'];
+  return smart;
 }
 
 function href(list: ListRowSource, kind: ListKind): string {

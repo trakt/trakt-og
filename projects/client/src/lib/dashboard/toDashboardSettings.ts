@@ -23,6 +23,10 @@ const schema = z.object({
             })
             .nullish()
             .catch(null),
+          watched: z
+            .object({ include_watchlisted: z.boolean().nullish().catch(null) })
+            .nullish()
+            .catch(null),
         })
         .nullish()
         .catch(null),
@@ -72,6 +76,7 @@ export function toDashboardSettings({
       sort: upNextSort(onDeck?.sort, onDeck?.sort_how),
       favorites,
       simpleProgress: onDeck?.simple_progress === true,
+      includeWatchlisted: browsing?.progress?.watched?.include_watchlisted === true,
       refresh: onDeck?.refresh === true,
       poster: prefs.on_deck_poster,
     },

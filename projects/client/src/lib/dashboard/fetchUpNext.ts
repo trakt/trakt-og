@@ -27,21 +27,31 @@ type Query = { sort_by: string; sort_how: 'asc' | 'desc'; limit: number; watchno
 const LIMIT = 18;
 /**
  * The sorts og applies itself read the worker's default page instead, so the order is exact for anyone with up to 100
- * shows in progress.
+ * shows in progress. Leaving the unstarted shows out reads it too, so they don't eat into the 18.
  */
 const SORTED_LIMIT = 100;
 
 const flip = (how: 'asc' | 'desc') => (how === 'asc' ? 'desc' : 'asc');
 
-function request({ sort, favorites }: DashboardSettings['upNext']): { query: Query; sorted: boolean } {
+/**
+ * A watchlisted show you haven't started: the endpoint lists them beside the ones you have, and those are the only
+ * unstarted ones it lists. A rewatch counts only its current run, so one just restarted stays.
+ */
+const isUnstarted = ({ progress }: UpNextEntry) => !progress.reset_at && progress.completed === 0;
+
+function request({ sort, favorites, includeWatchlisted }: DashboardSettings['upNext']): {
+  query: Query;
+  sorted: boolean;
+} {
   const option = upNextSorts.find(({ by }) => by === sort.by);
   const worker = option && 'worker' in option ? option.worker : undefined;
   const order = worker
     ? { sort_by: worker.by, sort_how: worker.invert ? flip(sort.how) : sort.how }
     : { sort_by: 'default', sort_how: 'desc' as const };
+  const limit = worker && includeWatchlisted ? LIMIT : SORTED_LIMIT;
 
   return {
-    query: { ...order, limit: worker ? LIMIT : SORTED_LIMIT, ...(favorites > 0 && { watchnow: 'favorites' as const }) },
+    query: { ...order, limit, ...(favorites > 0 && { watchnow: 'favorites' as const }) },
     sorted: !worker,
   };
 }
@@ -71,7 +81,8 @@ export async function fetchUpNextTicks(client: Client, entry: UpNextEntry): Prom
 
 /**
  * The viewer's Up Next cards in their saved sort. The endpoint always answers for the token's owner. With
- * "only favorites", only shows streaming on their favorite services. A rewatch needs the whole show's progress too,
+ * "only favorites", only shows streaming on their favorite services. Unstarted watchlisted shows only with Progress's
+ * Include Watchlisted on. A rewatch needs the whole show's progress too,
  * which each rewatched show fetches on its own. OG's exact progress bars need each show's progress, and the season
  * poster setting each show's seasons; those requests run only with those settings.
  */
@@ -82,7 +93,9 @@ export async function fetchUpNext({
   fetch = globalThis.fetch,
 }: FetchUpNextParams): Promise<readonly OnDeckItem[]> {
   const { query, sorted } = request(settings);
-  const fetched = (await upNext(client, query)).filter((entry) => entry.progress.next_episode);
+  const fetched = (await upNext(client, query)).filter(
+    (entry) => entry.progress.next_episode && (settings.includeWatchlisted || !isUnstarted(entry)),
+  );
   const entries = (sorted ? sortUpNext({ entries: fetched, ...settings.sort }) : fetched).slice(0, LIMIT);
   const episodes = entries.flatMap(({ show, progress }) =>
     progress.next_episode ? [{ showId: show.ids.trakt, season: progress.next_episode.season }] : [],

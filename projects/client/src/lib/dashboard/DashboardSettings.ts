@@ -14,6 +14,8 @@ export type DashboardSettings = {
     /** With "only favorites", how many favorite services the viewer has; 0 when it's off or they have none. */
     readonly favorites: number;
     readonly simpleProgress: boolean;
+    /** Progress's Include Watchlisted: off, the watchlisted shows you haven't started stay out. */
+    readonly includeWatchlisted: boolean;
     /** 's auto refresh, for the dashboard actions. */
     readonly refresh: boolean;
     readonly poster: DashboardPrefs['on_deck_poster'];

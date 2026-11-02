@@ -14,6 +14,7 @@ const seen: URL[] = [];
 const server = setupServer();
 const defaults = toDashboardSettings({ settings: null }).upNext;
 const simple: DashboardSettings['upNext'] = { ...defaults, simpleProgress: true };
+const withWatchlisted: DashboardSettings['upNext'] = { ...simple, includeWatchlisted: true };
 // Looked up per call: MSW swaps the global fetch once it listens.
 const fetch = (...args: Parameters<typeof globalThis.fetch>) => globalThis.fetch(...args);
 
@@ -66,16 +67,43 @@ const upNextCalls = () => seen.filter(({ pathname }) => pathname === '/sync/prog
 const progressCalls = () => seen.filter(({ pathname }) => pathname.endsWith('/progress/watched'));
 
 describe('fetchUpNext', () => {
-  it('should ask for 18 shows in the default sort', async () => {
+  it('should ask for 18 shows in the default sort with Include Watchlisted on', async () => {
     server.use(answer(), showProgress);
 
-    const items = await fetchUpNext({ api: api({ token: 'abc' }), username: 'sean', settings: simple });
+    const items = await fetchUpNext({ api: api({ token: 'abc' }), username: 'sean', settings: withWatchlisted });
 
     expect(items.map(({ showTitle }) => showTitle)).toEqual(upNextFixture.entries.map(({ show }) => show.title));
     expect(seen.at(0)?.searchParams.get('limit')).toBe('18');
     expect(seen.at(0)?.searchParams.get('sort_by')).toBe('default');
     expect(seen.at(0)?.searchParams.get('sort_how')).toBe('desc');
     expect(seen.at(0)?.searchParams.get('intent')).toBe('all');
+  });
+
+  it('should leave unstarted watchlisted shows out of a bigger page with Include Watchlisted off', async () => {
+    server.use(answer(), showProgress);
+
+    const items = await fetchUpNext({ api: api({ token: 'abc' }), username: 'sean', settings: simple });
+
+    expect(items.map(({ showTitle }) => showTitle)).toEqual(
+      upNextFixture.entries.map(({ show }) => show.title).filter((title) => title !== 'The Wire'),
+    );
+    expect(seen.at(0)?.searchParams.get('limit')).toBe('100');
+    expect(seen.at(0)?.searchParams.get('sort_by')).toBe('default');
+  });
+
+  it('should keep a rewatch with nothing watched in its new run', async () => {
+    const restarted = upNextFixture.entries.map((entry) =>
+      entry.show.title === 'Lost' ? { ...entry, progress: { ...entry.progress, completed: 0 } } : entry,
+    );
+    server.use(
+      http.get(UP_NEXT, () => HttpResponse.json(restarted)),
+      showProgress,
+    );
+
+    const items = await fetchUpNext({ api: api({ token: 'abc' }), username: 'sean', settings: simple });
+
+    expect(items.some(({ showTitle }) => showTitle === 'Lost')).toBe(true);
+    expect(items.some(({ showTitle }) => showTitle === 'The Wire')).toBe(false);
   });
 
   it("should fetch the whole show's progress for each rewatch, and nothing else", async () => {
@@ -136,7 +164,7 @@ describe('fetchUpNext', () => {
       return await fetchUpNext({
         api: api({ token: 'abc' }),
         username: 'sean',
-        settings: { ...simple, sort, favorites },
+        settings: { ...withWatchlisted, sort, favorites },
       });
     };
 

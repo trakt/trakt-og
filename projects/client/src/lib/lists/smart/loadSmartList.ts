@@ -9,7 +9,6 @@ import type { ViewerSettings } from '../../settings/ViewerSettings.ts';
 import { watchNowCountry } from '../../settings/watchNowCountry.ts';
 import type { ProfileUser } from '../../users/ProfileUser.ts';
 import { withViewer } from '../../users/lists/withViewer.ts';
-import { positiveInt } from '../../utils/positiveInt.ts';
 import { fetchListSummary } from '../fetchListSummary.ts';
 import { listItemRowsSchema } from '../listItemRowsSchema.ts';
 import { listSortHow } from '../listItemSorts.ts';
@@ -90,7 +89,6 @@ export async function loadSmartList({ fetch, locals, params, url, parent }: Para
     sort,
     cards: items.rows.map((row) => toListItemCard(row, { sortBy: sort.by, datePreferences })),
     page: extractPageMeta(items.headers, query.page),
-    total: positiveInt(items.headers.get('x-pagination-item-count'), items.rows.length),
     recipe: smartListRecipe({ filters: list.filters, country: watchNowCountry(settings ?? null) }),
     chartHref: smartListChartHref({ list, now: new Date() }),
     datePreferences,

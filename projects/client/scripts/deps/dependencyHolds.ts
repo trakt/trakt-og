@@ -7,4 +7,8 @@ export const dependencyHolds: Readonly<Record<string, Hold>> = {
     below: '7.0.0',
     reason: 'svelte-check and typescript-eslint need TypeScript 6 until they support 7',
   },
+  zod: {
+    below: '4.0.0',
+    reason: '@trakt/api depends on zod 3; og keeps that one zod until @trakt/api moves to 4',
+  },
 };

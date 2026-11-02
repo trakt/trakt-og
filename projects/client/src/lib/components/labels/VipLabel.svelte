@@ -1,5 +1,6 @@
 <!--
-  The VIP label: one round red pill with the Trakt logo and "VIP" (or "Director" for staff), the OG or EP tag as a
+  The VIP label: one round red pill with the Trakt logo and "VIP" (or "Director" for staff, or "Official" for Trakt's
+  own account on an official list), the OG or EP tag as a
   darker red segment, and past one year a light gray segment with a black star and the year count. It sits after a name.
   The default size goes in headings; `pill`, `small` and `quiet` are the small size for comment headers, cards, list
   rows and promotional lines, and only change the spacing around it. The tag and the years show tooltips on top. They
@@ -25,11 +26,12 @@ interface Props {
 }
 
 const { badge, pill = false, small = false, quiet = false }: Props = $props();
+const LABELS: Record<VipBadge['kind'], string> = { vip: 'VIP', director: 'Director', official: 'Official' };
 const years = $derived(badge.kind === 'vip' ? badge.years : null);
 </script>
 
 <span class={['label-vip', { compact: pill || small || quiet, pill, quiet }]}>
-  <span class="name"><span class="mark"><Icon svg={trakt} /></span>{badge.kind === 'director' ? 'Director' : 'VIP'}</span>
+  <span class="name"><span class="mark"><Icon svg={trakt} /></span>{LABELS[badge.kind]}</span>
   {#if badge.kind === 'vip' && badge.tag}
     {@const tag = badge.tag}
     <Tooltip text={tag.title}>

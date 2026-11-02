@@ -18,6 +18,10 @@ const list = {
 };
 
 describe('toListView', () => {
+  it('should tag an official list as one, beside its title', () => {
+    expect(toListView({ ...list, type: 'official', privacy: 'public' }).pills).toEqual(['Official List']);
+  });
+
   it("should offer the owner's list an app stopped syncing as a smart list", () => {
     const stale = toListView({ ...list, stale_origin: { name: 'Sonarr', url: null } });
     expect(stale.staleOrigin).toEqual({ name: 'Sonarr' });

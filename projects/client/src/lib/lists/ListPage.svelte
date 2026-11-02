@@ -20,6 +20,8 @@ import { writeOwnerList } from '$lib/lists/writeOwnerList';
 import { toListItemCard } from '$lib/lists/toListItemCard';
 import { afterNavigate, goto, invalidateAll, replaceState } from '$app/navigation';
 import ListNotice from '$lib/components/lists/ListNotice.svelte';
+import ListTag from '$lib/components/lists/ListTag.svelte';
+import { memberRelation } from '$lib/components/comments/memberRelation';
 import { convertToSmartList } from '$lib/lists/smart/convertToSmartList';
 import ReportDialog from '$lib/components/summary/ReportDialog.svelte';
 import { leaveList } from '$lib/components/lists/leaveList';
@@ -268,6 +270,11 @@ async function removeList() {
     await goto(resolve('/users/[id]/lists', { id: data.list.ownerSlug }));
   }
 }
+// Friend or Following, from the viewer's network, as on the list's row; never on Trakt's own lists or the viewer's.
+const relation = $derived(
+  data.kind === 'official' ? undefined : memberRelation(overlay.slices().network, data.list?.ownerSlug),
+);
+
 // The owner's list an app stopped syncing: offer to let it fill itself from the API's ready-made setup. It keeps its
 // address, name and privacy.
 const smartDraft = $derived('smartDraft' in data ? data.smartDraft : null);
@@ -700,12 +707,9 @@ async function saveNotes(text: string) {
     <div class="title-bar">
         <h2 id="list-title">
           <a class="list-title" href={list.href}>{list.name}</a>
-          {#each list.pills as pill (pill)}<span class={['pill', { smart: pill === 'Smart' }]}>{pill}</span>{/each}
-          {#if list.shareLink}
-            <Tooltip text="Anyone with this link can view the list">
-              {#snippet trigger(tooltip)}<span class="pill share-link" {...tooltip}>Link</span>{/snippet}
-            </Tooltip>
-          {/if}
+          {#if relation}<span class="tag"><ListTag {relation} /></span>{/if}
+          {#each list.pills as pill (pill)}<span class="tag"><ListTag tag={pill} /></span>{/each}
+          {#if list.shareLink}<span class="tag"><ListTag tag="Link" /></span>{/if}
           {#if collaborators.length > 0}
             <span class="title-chip"><CollaboratorsChip {collaborators}
               list={{ name: list.name, poster: data.cards.at(0)?.image }} owner={listOwner} /></span>
@@ -900,26 +904,8 @@ h2 {
   }
 }
 
-.pill {
-  margin-inline-start: var(--list-title-pill-gap);
-  padding: 1px 4px;
-  border-radius: 2px;
-  background-color: var(--color-pill);
-  color: var(--color-card-text);
-  font-size: var(--font-size-card-tag);
-  text-transform: uppercase;
-  vertical-align: middle;
-}
-
-.share-link {
-  background-color: var(--color-list-pill-link);
-}
-
-.pill.smart {
-  background-color: var(--color-list-chip-smart);
-}
-
-/* The collaborators chip, as on a list row, after the name. */
+/* The tags and the collaborators chip, as on a list row, after the name. */
+.tag,
 .title-chip {
   display: inline-flex;
   margin-inline-start: var(--list-title-pill-gap);

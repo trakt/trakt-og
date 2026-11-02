@@ -1,6 +1,8 @@
 <!--
   An official list's cover, built like a profile's slim one: the list's art under the site header (which takes its tint),
-  the Trakt logo as the avatar, "Trakt" in the profile name's size, and an "Official List" glass pill under it.
+  the Trakt logo as the avatar, "Trakt" in the profile name's size with an Official label where a profile shows its
+  VIP one, and a profile's glass pills under it: Worldwide for
+  where, and Joined 2010, the year Trakt started. The list's title row says it's official.
 -->
 <script lang="ts">
 import defaultCover from '$lib/assets/profile-cover-default.jpg';
@@ -8,8 +10,10 @@ import logo from '$lib/assets/trakt-logo-red.png';
 import Container from '$lib/components/container/Container.svelte';
 import { headerArt } from '$lib/components/header/headerArt';
 import CoverPill from '$lib/components/users/CoverPill.svelte';
+import VipLabel from '$lib/components/labels/VipLabel.svelte';
 import Icon from '$lib/icons/Icon.svelte';
-import traktIcon from '$lib/icons/trakt/trakt-v2.svg?raw';
+import calendar from '$lib/icons/regular/calendar-lines.svg?raw';
+import locationPin from '$lib/icons/solid/location-pin.svg?raw';
 
 const { image }: { image?: string } = $props();
 const cover = $derived(image ?? defaultCover);
@@ -23,8 +27,11 @@ const cover = $derived(image ?? defaultCover);
       <div class="about">
         <img class="avatar" src={logo} alt="" width="72" height="72" />
         <div class="identity">
-          <h1>Trakt</h1>
-          <div class="pills"><CoverPill><Icon svg={traktIcon} />Official List</CoverPill></div>
+          <h1>Trakt <VipLabel badge={{ kind: 'official' }} /></h1>
+          <div class="pills">
+            <CoverPill><Icon svg={locationPin} /><b>Worldwide</b></CoverPill>
+            <CoverPill><Icon svg={calendar} />Joined <b>2010</b></CoverPill>
+          </div>
         </div>
       </div>
     </Container>
@@ -81,7 +88,11 @@ const cover = $derived(image ?? defaultCover);
   min-inline-size: 0;
 }
 
+/* The profile's name line: the label centred after the name. */
 h1 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   margin: 0;
   font-size: var(--font-size-profile-name);
   font-weight: var(--font-weight-headings);

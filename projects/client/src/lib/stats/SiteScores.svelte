@@ -39,7 +39,7 @@ const { trakt, sites }: Props = $props();
     </li>
     {#each sites as site, i (site.logo)}
       <li style:grid-row={i + 2}>
-        <a class={['row', site.metascore]} href={site.href} target="_blank" rel="noopener"
+        <a class="row" href={site.href} target="_blank" rel="noopener"
           style:--brand="var(--color-site-{site.brand})">
           <span class="site">
             <span class="logo-cell"><img class={['logo', site.logo]} src={externalRatingLogos[site.logo]} alt="" /></span>
@@ -127,11 +127,6 @@ li {
 
   &.imdb {
     block-size: auto;
-  }
-
-  &.metacritic {
-    border: var(--strip-metascore-ring) solid var(--metascore, var(--color-metascore-none));
-    border-radius: 50%;
   }
 }
 
@@ -228,19 +223,6 @@ li {
   &.flat {
     --trend: var(--color-stats-diff-flat);
   }
-}
-
-/* OG's metascore_class: 70 and up green, 40 and up yellow, red below. */
-.high {
-  --metascore: var(--color-metascore-high);
-}
-
-.medium {
-  --metascore: var(--color-metascore-medium);
-}
-
-.low {
-  --metascore: var(--color-metascore-low);
 }
 
 @media (prefers-reduced-motion: reduce) {

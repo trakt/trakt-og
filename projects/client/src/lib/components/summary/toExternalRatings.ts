@@ -30,12 +30,6 @@ function audienceLogo({ user_state }: RottenTomatoes) {
   return 'upright';
 }
 
-function metascoreBand(score: number) {
-  if (score >= 70) return 'high';
-  if (score >= 40) return 'medium';
-  return 'low';
-}
-
 function rankChange(delta?: number | null): ExternalRating['change'] {
   if (typeof delta !== 'number') return undefined;
   if (delta === 0) return { text: '0', trend: 'flat' };
@@ -47,10 +41,11 @@ const votes = (count?: number | null) => `${(count ?? 0).toLocaleString('en-US')
 /**
  * OG's `_ratings_stats` "other sites" group, in OG's order, with Letterboxd and MyAnimeList after IMDb. Each shows only with a score above zero and a link.
  * The strip shows only the number; the tooltip names the site and gives the exact vote count, or says what the number
- * is where the API has no count (Rotten Tomatoes, Metacritic, JustWatch).
+ * is where the API has no count (Rotten Tomatoes, JustWatch). Metacritic is left out: its scores are no longer synced on
+ * Trakt.
  */
 export function toExternalRatings({ ratings, rank }: ExternalRatingsParams): ExternalRating[] {
-  const { imdb, tmdb, rotten_tomatoes: rt, metascore, letterboxd, mal } = ratings ?? {};
+  const { imdb, tmdb, rotten_tomatoes: rt, letterboxd, mal } = ratings ?? {};
   const stars = Number((letterboxd?.rating ?? 0).toFixed(1));
   const malRating = Number((mal?.rating ?? 0).toFixed(1));
   const tomatometer = rt ? tomatometerLogo(rt) : 'fresh';
@@ -113,16 +108,6 @@ export function toExternalRatings({ ratings, rank }: ExternalRatingsParams): Ext
         href: rt.link,
         rating: `${rt.user_rating}%`,
         score: rt.user_rating ?? 0,
-      },
-    (metascore?.rating ?? 0) > 0 &&
-      !!metascore?.link && {
-        logo: 'metacritic',
-        title: 'Metacritic',
-        detail: 'Metascore',
-        href: metascore.link,
-        rating: String(metascore.rating),
-        score: metascore.rating ?? 0,
-        metascore: metascoreBand(metascore.rating ?? 0),
       },
     !!rank?.rank &&
       !!rank.link && {

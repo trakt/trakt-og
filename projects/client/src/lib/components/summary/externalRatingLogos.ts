@@ -2,7 +2,6 @@ import imdb from '$lib/assets/sites/imdb-solid.svg';
 import justwatch from '$lib/assets/sites/justwatch-yellow.svg';
 import letterboxd from '$lib/assets/sites/letterboxd.svg';
 import mal from '$lib/assets/sites/mal.svg';
-import metacritic from '$lib/assets/sites/metacritic.png';
 import audienceCertified from '$lib/assets/sites/rt/audience-certified.svg';
 import audienceSpilled from '$lib/assets/sites/rt/audience-spilled.svg';
 import audienceUpright from '$lib/assets/sites/rt/audience-upright.svg';
@@ -24,6 +23,5 @@ export const externalRatingLogos: Readonly<Record<ExternalRatingLogo, string>> =
   'audience-certified': audienceCertified,
   'audience-spilled': audienceSpilled,
   'audience-upright': audienceUpright,
-  metacritic,
   justwatch,
 };

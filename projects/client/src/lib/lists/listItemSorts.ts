@@ -47,7 +47,6 @@ export const listItemSorts: readonly ListItemSort[] = [
     types: ['movie', 'show'],
     descending: true,
   },
-  { by: 'metascore', label: 'Metascore', group: 'site', types: ['movie'], descending: true },
   { by: 'votes', label: 'Trakt Votes', group: 'votes', descending: true },
   { by: 'imdb_votes', label: 'IMDB Votes', group: 'votes', types: ratedTypes, descending: true },
   { by: 'tmdb_votes', label: 'TMDB Votes', group: 'votes', types: ratedTypes, descending: true },

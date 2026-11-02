@@ -7,7 +7,6 @@ const external = toExternalRatings({
     imdb: { rating: 6.8, votes: 1, link: 'https://www.imdb.com/title/tt1104001' },
     tmdb: { rating: 6.5, votes: 1, link: 'https://www.themoviedb.org/movie/20526' },
     rotten_tomatoes: { rating: 51, state: 'rotten', user_rating: 71, user_state: 'upright', link: 'https://rt' },
-    metascore: { rating: 49, link: 'https://mc' },
   },
   rank: { rank: 6211, delta: 4, link: 'https://jw' },
 });
@@ -21,7 +20,6 @@ describe('toSiteScores', () => {
       ['tmdb', 65, '−6', 'down'],
       ['rotten-tomatoes', 51, '−20', 'down'],
       ['rotten-tomatoes', 71, '0', 'flat'],
-      ['metacritic', 49, '−22', 'down'],
     ]);
   });
 

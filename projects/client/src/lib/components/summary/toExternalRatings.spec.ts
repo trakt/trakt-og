@@ -4,7 +4,6 @@ import { toExternalRatings } from './toExternalRatings.ts';
 const ratings = {
   imdb: { rating: 8.84, votes: 2_567_341, link: 'https://www.imdb.com/title/tt0137523' },
   tmdb: { rating: 8.437, votes: 32_938, link: 'https://www.themoviedb.org/movie/550' },
-  metascore: { rating: 67, link: 'https://www.imdb.com/title/tt0137523/criticreviews' },
   rotten_tomatoes: {
     rating: 81,
     state: 'fresh',
@@ -26,12 +25,11 @@ describe('toExternalRatings', () => {
       ['tmdb', '84%', 'TMDB', '32,938 votes'],
       ['tomatometer-fresh', '81%', 'Rotten Tomatoes', 'Tomatometer, Fresh'],
       ['audience-upright', '96%', 'Rotten Tomatoes', 'Popcornmeter'],
-      ['metacritic', '67', 'Metacritic', 'Metascore'],
       ['justwatch', '74', 'JustWatch', '30 Day Streaming Rank'],
     ]);
     expect(result.at(-1)?.change).toEqual({ text: '+15', trend: 'up' });
     expect(result.at(0)?.href).toBe('https://www.imdb.com/title/tt0137523/ratings');
-    expect(result.map(({ score }) => score)).toEqual([88, 84, 81, 96, 67, undefined]);
+    expect(result.map(({ score }) => score)).toEqual([88, 84, 81, 96, undefined]);
   });
 
   it('should put Letterboxd after IMDb, its five stars scaled to 100', () => {
@@ -97,11 +95,8 @@ describe('toExternalRatings', () => {
     expect(logos('rotten', 60, '')).toEqual(['tomatometer-fresh', 'audience-upright']);
   });
 
-  it('should band the metascore', () => {
-    const band = (rating: number) =>
-      toExternalRatings({ ratings: { metascore: { rating, link: 'x' } } }).at(0)?.metascore;
-
-    expect([band(70), band(40), band(39)]).toEqual(['high', 'medium', 'low']);
+  it('should leave Metacritic out, since its scores are no longer synced', () => {
+    expect(toExternalRatings({ ratings: { metascore: { rating: 67, link: 'x' } } })).toEqual([]);
   });
 
   it('should sign the rank change and mark which way it went', () => {

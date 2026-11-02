@@ -1838,7 +1838,6 @@
   --color-site-mal: #2e51a2;
   --color-site-tmdb: #01b4e4;
   --color-site-rotten-tomatoes: #fa320a;
-  --color-site-metacritic: #ffcc34;
   --color-site-tvdb: #6cd591;
   --color-site-fanart: #20b6e1;
   --color-site-justwatch: #fbd446;
@@ -2064,10 +2063,6 @@
   /* Summary pages: the movie, show, season, episode and person frame */
   --color-person-fanart-character: var(--brand-primary); /* the character in the person fanart's tag bar */
   --fanart-caption-max-width: 50%; /* the person page's fanart tag bar, at the title block's bottom right */
-  --color-metascore-high: #6c3;
-  --color-metascore-medium: #fc3;
-  --color-metascore-low: #f00;
-  --color-metascore-none: #999;
   /* The ratings strip: one row of icons and numbers on the fanart, so its colors hold in both themes. */
   --strip-gap: 16px;
   --strip-item-gap: 6px;
@@ -2079,7 +2074,6 @@
   --font-size-strip-icon: 17px;
   --strip-logo-size: 20px;
   --strip-imdb-height: 16px; /* IMDb's badge is wide, so it's sized by height */
-  --strip-metascore-ring: 2px;
   --color-strip-divider: var(--color-surface); /* the page right under the strip, as if the bar were cut through */
   --color-strip-hover: rgb(255 255 255 / 0.1);
   /* Each Trakt count's icon, in its action's color, lifted for the dark strip. */

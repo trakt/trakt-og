@@ -112,7 +112,7 @@ const stats = $derived(stripStats(counts));
     {#if external.length > 0}
       <li class="divider" aria-hidden="true"></li>
       {#each external as site (site.logo)}
-        <li class={site.metascore}>
+        <li>
           <Tooltip>
             {#snippet trigger(tooltip)}
               <a class="stat" href={site.href} target="_blank" rel="noopener"
@@ -220,28 +220,6 @@ li {
     inline-size: auto;
     block-size: var(--strip-imdb-height);
   }
-
-  &.metacritic {
-    border: var(--strip-metascore-ring) solid var(--color-metascore-none);
-    border-radius: 50%;
-  }
-}
-
-/* OG's metascore_class: 70 and up green, 40 and up yellow, red below. */
-.high {
-  --metascore: var(--color-metascore-high);
-}
-
-.medium {
-  --metascore: var(--color-metascore-medium);
-}
-
-.low {
-  --metascore: var(--color-metascore-low);
-}
-
-:is(.high, .medium, .low) .logo {
-  border-color: var(--metascore);
 }
 
 /* JustWatch's rank change on its tooltip's second line, in the stats page's diff pill: green when it climbed, red when

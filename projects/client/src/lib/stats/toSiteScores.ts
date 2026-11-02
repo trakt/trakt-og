@@ -1,7 +1,7 @@
 import type { ExternalRating, ExternalRatingLogo } from '../components/summary/ExternalRating.ts';
 
 /** Whose primary color a site's bar takes. */
-type SiteBrand = 'imdb' | 'letterboxd' | 'mal' | 'tmdb' | 'rotten-tomatoes' | 'metacritic';
+type SiteBrand = 'imdb' | 'letterboxd' | 'mal' | 'tmdb' | 'rotten-tomatoes';
 
 const BRANDS: Readonly<Partial<Record<ExternalRatingLogo, SiteBrand>>> = {
   imdb: 'imdb',
@@ -14,7 +14,6 @@ const BRANDS: Readonly<Partial<Record<ExternalRatingLogo, SiteBrand>>> = {
   'audience-certified': 'rotten-tomatoes',
   'audience-spilled': 'rotten-tomatoes',
   'audience-upright': 'rotten-tomatoes',
-  metacritic: 'metacritic',
 };
 
 function diffOf(score: number, trakt: number) {

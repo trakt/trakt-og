@@ -38,7 +38,6 @@ export const noWayHome = {
         user_state: 'upright',
         link: 'https://www.rottentomatoes.com/m/spider_man_no_way_home',
       },
-      metascore: { rating: 71, link: 'https://www.imdb.com/title/tt10872600/criticreviews' },
       letterboxd: { rating: 3.83, votes: 3_058_598, link: 'https://letterboxd.com/film/spider-man-no-way-home' },
     },
   }),

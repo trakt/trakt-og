@@ -3,7 +3,7 @@
   one struck through, a chip that only leaves values out grey), a rating range led by its site's logo in place of
   its name. Values that
   don't fit end in an ellipsis, with the whole list in the chip's title. A sidebar's Applied Filters section shows them
-  under its heading.
+  under its heading. Without `onremove` they're read only, the way the smart list dialog lists what it saves.
     <FilterChips chips={filterChips(…)} onremove={(id) => apply(withoutFilterTag(filters, id))} />
 -->
 <script lang="ts">
@@ -21,7 +21,7 @@ import type { FilterTag, TagSite } from './filterTags.ts';
 
 interface Props {
   chips: readonly FilterTag[];
-  onremove: (id: string) => void;
+  onremove?: (id: string) => void;
 }
 
 const { chips, onremove }: Props = $props();
@@ -48,7 +48,9 @@ const sites: Record<TagSite, { logo: string; name: string }> = {
       <span class={chip.site ? 'visually-hidden' : 'label'}>{label}:</span>
       <span class="text">{#each chip.values as value, i (value.text)}{i > 0 ? ', ' : ''}{#if value.without}<span
             class="visually-hidden">without </span><s>{value.text}</s>{:else}{value.text}{/if}{/each}</span>
-      <button type="button" aria-label="Remove {label} filter" onclick={() => onremove(chip.id)}><Icon svg={xmark} /></button>
+      {#if onremove}
+        <button type="button" aria-label="Remove {label} filter" onclick={() => onremove(chip.id)}><Icon svg={xmark} /></button>
+      {/if}
     </li>
   {/each}
 </ul>
@@ -70,6 +72,10 @@ li {
   max-inline-size: 100%;
   block-size: var(--sidebar-pill-height);
   padding-inline: var(--space-sm-inline) var(--space-xs-block);
+
+  &:not(:has(button)) {
+    padding-inline-end: var(--space-sm-inline);
+  }
   border: 1px solid var(--color-sidebar-pill-set-border);
   border-radius: var(--radius-control);
   background-color: var(--color-sidebar-pill-set-bg);

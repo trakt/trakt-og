@@ -2,9 +2,9 @@
   The slide-in filter panel of a SidebarFrame page: og's whole advanced set with nothing to apply. Every change
   filters the page straight away (typing and sliders after a short pause): streaming services, terms, then each list as
   a full-width field that keeps (⊕) and leaves out (⊖) values, then the runtime, the site ratings and the parental
-  guide. Clear and Close
-  sit at the top. The lists ship with og and networks are searched as you type; the streaming services load the first
-  time it opens. Esc closes it.
+  guide. Clear and Close sit at the top as icons, after Save when the page can keep the filters as a smart list. The
+  lists ship with og and networks are searched as you type; the streaming services load the first time it opens. Esc
+  closes it.
     <FiltersPanel id="calendar-filters" {open} {config} {filters} {country} {favorites} {sources}
       onchange={(filters) => goto(…)} onclose={close} />
 -->
@@ -22,6 +22,7 @@ import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import resetIcon from '$lib/icons/regular/arrow-rotate-left.svg?raw';
 import xmark from '$lib/icons/regular/xmark.svg?raw';
+import sparkles from '$lib/icons/solid/sparkles.svg?raw';
 import type { AdvancedFiltersConfig } from './AdvancedFiltersConfig.ts';
 import { type AdvancedFilters, emptyFilters, type ListFilterKey, type RangeFilterKey } from './advancedFilters.ts';
 import { fetchFilterBody } from './fetchFilterBody.ts';
@@ -52,9 +53,11 @@ interface Props {
   onchange: (filters: AdvancedFilters) => void;
   /** Close and Esc: the page closes the panel and puts focus back on the funnel. */
   onclose: () => void;
+  /** A Save button before Reset, which keeps the filters as a smart list. */
+  onsave?: () => void;
 }
 
-const { id, open, config, filters, country, favorites, sources, onchange, onclose }: Props = $props();
+const { id, open, config, filters, country, favorites, sources, onchange, onclose, onsave }: Props = $props();
 
 const lists = {
   genres: 'Genres',
@@ -162,8 +165,24 @@ function reset() {
   <div class="inner">
     <div class="header">
       <h2 id="{id}-title">Filters</h2>
-      <button type="button" class="panel-button" onclick={reset}><Icon svg={resetIcon} />Clear</button>
-      <button type="button" class="panel-button" onclick={onclose}><Icon svg={xmark} />Close</button>
+      {#if onsave}
+        <button type="button" class="save" aria-label="Save as a smart list" onclick={onsave}
+          ><Icon svg={sparkles} />Save</button>
+      {/if}
+      <span class="tools">
+        <Tooltip text="Clear filters">
+          {#snippet trigger(tooltip)}
+            <button type="button" class="icon-button" aria-label="Clear filters" onclick={reset} {...tooltip}
+              ><Icon svg={resetIcon} /></button>
+          {/snippet}
+        </Tooltip>
+        <Tooltip text="Close">
+          {#snippet trigger(tooltip)}
+            <button type="button" class="icon-button close" aria-label="Close" onclick={onclose} {...tooltip}
+              ><Icon svg={xmark} /></button>
+          {/snippet}
+        </Tooltip>
+      </span>
     </div>
 
     {#if streaming}
@@ -281,35 +300,62 @@ function reset() {
   }
 }
 
-/* The prompt popups' Back button: an outline on the raised control fill. */
-.panel-button {
+/* Clear and Close, close together like a comment's tools. */
+.tools {
+  display: flex;
+  gap: var(--comment-tools-gap);
+}
+
+/* Save's height, with no fill until hover, like the list page's icons. */
+.icon-button {
+  display: inline-grid;
+  place-items: center;
+  inline-size: var(--control-height-small);
+  block-size: var(--control-height-small);
+  min-block-size: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-comment-tool);
+  background: none;
+  color: var(--color-control-muted);
+  font-size: var(--font-size-control);
+  cursor: pointer;
+  transition: background-color var(--transition-comment-quiet), color var(--transition-comment-quiet);
+
+  &:is(:hover, :focus-visible) {
+    background-color: var(--color-comment-chip);
+    color: var(--color-control-text);
+  }
+
+  &.close {
+    font-size: var(--font-size-filters-panel-close);
+  }
+}
+
+/* A list's Done: green tint, green outline. */
+.save {
   display: inline-flex;
   align-items: center;
   gap: var(--space-base-block);
   min-block-size: var(--control-height-small);
   padding: 0 var(--space-sm-inline);
-  border: 1px solid var(--color-control-border);
+  border: 1px solid var(--color-mode-done-border);
   border-radius: var(--radius-control);
-  background-color: var(--color-control-raised-bg);
-  color: var(--color-control-text);
+  background-color: var(--color-mode-done-bg);
+  color: var(--color-mode-done-text);
   font-family: var(--font-headings);
   font-size: var(--font-size-control);
-  font-weight: var(--font-weight-control);
+  font-weight: var(--font-weight-headings-heavy);
   cursor: pointer;
   transition: background-color 0.2s, border-color 0.2s;
 
   & :global(.icon) {
-    color: var(--color-control-muted);
+    color: inherit;
   }
 
   &:is(:hover, :focus-visible):not(:disabled) {
-    border-color: var(--color-control-border-hover);
-    background-color: var(--color-control-raised-hover-bg);
-  }
-
-  &:disabled {
-    cursor: default;
-    opacity: 0.4;
+    border-color: var(--color-mode-done-border);
+    background-color: var(--color-mode-done-bg-hover);
   }
 }
 

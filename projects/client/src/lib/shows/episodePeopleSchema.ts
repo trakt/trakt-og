@@ -1,5 +1,5 @@
 import { peopleResponseSchema } from '@trakt/api';
 import { contractSchema } from '../api/contractSchema.ts';
 
-/** Episode people use the normal cast/crew shape; cast is the episode's guest stars. */
+/** With `extended=guest_stars`, cast is the season's regulars and guest_stars the episode's own actors. */
 export const episodePeopleSchema = contractSchema(peopleResponseSchema);

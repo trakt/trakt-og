@@ -12,7 +12,6 @@ import { formatRuntime } from '../utils/formatRuntime.ts';
 import { imageUrl } from '../utils/imageUrl.ts';
 import { episodeNeighbours } from './episodeNeighbours.ts';
 import type { episodeSeasonsSchema } from './episodeSeasonsSchema.ts';
-import type { seasonPeopleSchema } from './seasonPeopleSchema.ts';
 import type { Season } from './seasonSchema.ts';
 import { toCrewGroups } from '../components/summary/toCrewGroups.ts';
 import { seasonName } from '../utils/seasonName.ts';
@@ -25,7 +24,6 @@ interface Params {
   episode: EpisodeResponse;
   seasons: z.infer<typeof episodeSeasonsSchema>;
   people: PeopleResponse;
-  regulars: z.infer<typeof seasonPeopleSchema>;
   ratings: RatingsResponse;
   stats: EpisodeStatsResponse;
   datePreferences: DatePreferences;
@@ -111,8 +109,8 @@ export function toEpisodeSummary(params: Params) {
       duringCredits: episode.during_credits,
       afterCredits: episode.after_credits,
     },
-    cast: toCastMembers(params.regulars.cast, false),
-    guestStars: toCastMembers(params.people.cast, false),
+    cast: toCastMembers(params.people.cast, false),
+    guestStars: toCastMembers(params.people.guest_stars, false),
     crew: toCrewGroups(params.people.crew, false),
     episodeLinks: (params.seasons.find(({ number }) => number === episode.season)?.episodes ?? [])
       .toSorted((a, b) => a.number - b.number)

@@ -34,7 +34,6 @@ const base: Parameters<typeof toEpisodeSummary>[0] = {
     { number: 1, episodes: [episode, { season: 1, number: 1, title: 'Pilot', ids: { trakt: 101 } }] },
   ],
   people: { cast: [], crew: { directing: [member], writing: [{ ...member, jobs: ['Writer', 'Story'] }] } },
-  regulars: { cast: [], guest_stars: [] },
   ratings: { rating: 8.2, votes: 1600 },
   stats: { watchers: 10, plays: 20, collectors: 2, comments: 3, lists: 4, votes: 1600 },
   datePreferences: { order: 'dmy', hour24: true, timeZone: 'America/Los_Angeles', weekStartDay: 1 },
@@ -87,6 +86,19 @@ describe('toEpisodeSummary', () => {
     expect(view.type).toBeUndefined();
     expect(view.facts.aired?.label).toBe('Airs');
   });
+  it("should list the season's regulars apart from the episode's own guest stars", () => {
+    const actor = (name: string) => ({
+      person: { name, ids: { trakt: 1, slug: name } },
+      character: 'Self',
+      characters: ['Self'],
+    });
+    const view = toEpisodeSummary({
+      ...base,
+      people: { ...base.people, cast: [actor('host')], guest_stars: [actor('guest')] },
+    });
+    expect(view.cast.map(({ name }) => name)).toEqual(['host']);
+    expect(view.guestStars.map(({ name }) => name)).toEqual(['guest']);
+  });
   it('should omit actor episode counts and duplicate original titles', () => {
     const cast = {
       person: { name: 'Actor', ids: { trakt: 1, slug: 'actor' } },
@@ -96,8 +108,7 @@ describe('toEpisodeSummary', () => {
     };
     const view = toEpisodeSummary({
       ...base,
-      regulars: { cast: [cast] },
-      people: { cast: [cast] },
+      people: { cast: [cast], guest_stars: [cast] },
       episode: { ...episode, original_title: 'Second' },
     });
     expect(view.cast.at(0)?.episodes).toBeFalsy();

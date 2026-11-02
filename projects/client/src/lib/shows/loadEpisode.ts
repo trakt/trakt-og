@@ -14,7 +14,6 @@ import type { DatePreferences } from '../settings/DatePreferences.ts';
 import type { ViewerSettings } from '../settings/ViewerSettings.ts';
 import { episodePeopleSchema } from './episodePeopleSchema.ts';
 import { episodeSeasonsSchema } from './episodeSeasonsSchema.ts';
-import { seasonPeopleSchema } from './seasonPeopleSchema.ts';
 import { seasonSchema } from './seasonSchema.ts';
 import { toEpisodeSummary } from './toEpisodeSummary.ts';
 import { watchNowCountry } from '../settings/watchNowCountry.ts';
@@ -86,7 +85,6 @@ export async function loadEpisode({
     seasonResponse,
     seasonsResponse,
     peopleResponse,
-    regularsResponse,
     ratingsResponse,
     statsResponse,
     layout,
@@ -97,7 +95,6 @@ export async function loadEpisode({
     client.shows.season.info({ params: { id, season }, query: { extended: 'full,images' } }),
     raw(fetch, `/shows/${encodeURIComponent(id)}/seasons?extended=episodes`),
     raw(fetch, `${path}/episodes/${episode}/people?extended=guest_stars,images`),
-    client.shows.season.people({ params: { id: encodeURIComponent(id), season }, query: { extended: 'images' } }),
     client.shows.episode.ratings({ params, query: { extended: 'all' } }),
     client.shows.episode.stats({ params }),
     layoutRead,
@@ -110,14 +107,12 @@ export async function loadEpisode({
   }
   const seasons = parsed(seasonsResponse, episodeSeasonsSchema, 'seasons');
   const people = parsed(peopleResponse, episodePeopleSchema, 'episode cast');
-  const regulars = parsed(regularsResponse, seasonPeopleSchema, 'season cast');
   const view = toEpisodeSummary({
     show,
     episode: info,
     season: body(seasonResponse, seasonSchema, 'Season'),
     seasons,
     people,
-    regulars,
     ratings: body(ratingsResponse, ratingsResponseSchema, 'Ratings'),
     stats: body(statsResponse, episodeStatsResponseSchema, 'Stats'),
     datePreferences: layout.datePreferences,

@@ -21,6 +21,8 @@ import { toListItemCard } from '$lib/lists/toListItemCard';
 import { afterNavigate, goto, invalidateAll, replaceState } from '$app/navigation';
 import ListNotice from '$lib/components/lists/ListNotice.svelte';
 import ListTag from '$lib/components/lists/ListTag.svelte';
+import ListTitleRow from '$lib/components/lists/ListTitleRow.svelte';
+import { listSortGroups } from '$lib/lists/listSortGroups';
 import { memberRelation } from '$lib/components/comments/memberRelation';
 import { convertToSmartList } from '$lib/lists/smart/convertToSmartList';
 import ReportDialog from '$lib/components/summary/ReportDialog.svelte';
@@ -82,7 +84,7 @@ import { listHref } from '$lib/lists/listHref';
 import ListItemPoster from '$lib/lists/ListItemPoster.svelte';
 import { listPrivacy } from '$lib/lists/listPrivacy';
 import ListManageBar from '$lib/lists/ListManageBar.svelte';
-import { type ListSortGroup, listSortHow, reverseHow } from '$lib/lists/listItemSorts';
+import { listSortHow, reverseHow } from '$lib/lists/listItemSorts';
 import { listTitleActions } from '$lib/lists/listTitleActions';
 import ListStats from '$lib/lists/ListStats.svelte';
 import { listTypeOptions } from '$lib/lists/listTypeOptions';
@@ -106,12 +108,6 @@ type Props = {
 };
 
 const { data }: Props = $props();
-const groupHeaders: Readonly<Record<ListSortGroup, string | undefined>> = {
-  main: undefined,
-  site: 'Site Ratings',
-  votes: 'Votes',
-  mine: 'Your data',
-};
 
 let fadeHide = $derived(data.fadeHide);
 const filterCookie = $derived(data.kind === 'personal' || data.kind === 'official' ? 'list' : data.kind);
@@ -203,11 +199,7 @@ const genreLabel = $derived(
     : 'All',
 );
 const sorts = $derived(visibleListSorts({ types: data.query.types, signedIn: data.user !== null }));
-const groups = $derived(
-  (['main', 'site', 'votes', 'mine'] as const)
-    .map((group) => ({ group, sorts: sorts.filter((sort) => sort.group === group) }))
-    .filter((group) => group.sorts.length > 0),
-);
+const groups = $derived(listSortGroups(sorts));
 const actions = $derived(
   data.list
     ? listTitleActions({
@@ -665,10 +657,10 @@ async function saveNotes(text: string) {
       <span class="sort">
         <Dropdown joined section="Sort">
           {#snippet trigger()}{sorts.find(({ by }) => by === data.sort.by)?.label ?? 'Rank'}{/snippet}
-          {#each groups as { group, sorts: items }, i (group)}
+          {#each groups as { group, header, sorts: items }, i (group)}
             {#if i > 0}<hr />{/if}
             <ul>
-              {#if groupHeaders[group]}<li class="header" role="presentation">{groupHeaders[group]}</li>{/if}
+              {#if header}<li class="header" role="presentation">{header}</li>{/if}
               {#each items as sort (sort.by)}
                 <li><a href={listHref(page.url, { sort: { by: sort.by, how: listSortHow(sort.by) } })}
                   aria-current={sort.by === data.sort.by ? 'page' : undefined}>{sort.label}</a></li>
@@ -702,22 +694,20 @@ async function saveNotes(text: string) {
     {/snippet}
   </SectionToolbar>
 
-  <section class={['title-row', { managing }]} aria-labelledby="list-title">
-  <Container>
-    <div class="title-bar">
-        <h2 id="list-title">
-          <a class="list-title" href={list.href}>{list.name}</a>
-          {#if relation}<span class="tag"><ListTag {relation} /></span>{/if}
-          {#each list.pills as pill (pill)}<span class="tag"><ListTag tag={pill} /></span>{/each}
-          {#if list.shareLink}<span class="tag"><ListTag tag="Link" /></span>{/if}
-          {#if collaborators.length > 0}
-            <span class="title-chip"><CollaboratorsChip {collaborators}
-              list={{ name: list.name, poster: data.cards.at(0)?.image }} owner={listOwner} /></span>
-          {/if}
-        </h2>
-        {#if actions}
+  {#snippet titleTags()}
+    {#if relation}<span class="tag"><ListTag {relation} /></span>{/if}
+    {#each list.pills as pill (pill)}<span class="tag"><ListTag tag={pill} /></span>{/each}
+    {#if list.shareLink}<span class="tag"><ListTag tag="Link" /></span>{/if}
+    {#if collaborators.length > 0}
+      <span class="title-chip"><CollaboratorsChip {collaborators}
+        list={{ name: list.name, poster: data.cards.at(0)?.image }} owner={listOwner} /></span>
+    {/if}
+  {/snippet}
+  <ListTitleRow id="list-title" name={list.name} href={list.href} {managing} ruled={description.length === 0} tags={titleTags}
+    actions={actions ? titleActions : undefined} />
+  {#snippet titleActions()}
           <!-- Managing, the whole-selection actions take the icons' place, and Manage, last so it stays put, reads Done. -->
-          <div class="actions">
+          {#if actions}
             {#if managing}
               <ListManageBar count={manageCount} busy={writing}
                 onreset={owner ? resetOrder : manager.resetRanks}
@@ -756,11 +746,8 @@ async function saveNotes(text: string) {
               {@render action(ownerManaging ? 'Stop managing' : 'Reorder, copy, move and delete', ownerManaging ? check : move, 'manage',
                 ownerManaging ? 'Done' : 'Manage', owner ? toggleManage : undefined)}
             {/if}
-          </div>
-        {/if}
-      </div>
-  </Container>
-</section>
+          {/if}
+  {/snippet}
 
   {#if smartDraft && list.staleOrigin}
     <Container>
@@ -867,156 +854,6 @@ async function saveNotes(text: string) {
   overflow-y: auto;
 }
 
-.title-row {
-  padding: var(--list-title-padding);
-  background-color: var(--color-surface);
-  transition: background-color var(--transition-list-card);
-
-  /* A green wash while managing, Done's, so the swapped-in actions read as a mode. */
-  &.managing {
-    background-color: var(--color-list-manage-row-bg);
-  }
-}
-
-.title-bar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  column-gap: var(--gutter);
-}
-
-h2 {
-  flex: 1 1 auto;
-  min-inline-size: 0;
-  margin: var(--list-title-heading-margin);
-  font-family: var(--font-headings);
-  font-size: var(--font-size-h4);
-  font-weight: var(--font-weight-headings);
-}
-
-.list-title {
-  color: inherit;
-  text-decoration: none;
-
-  &:is(:hover, :focus-visible) {
-    color: var(--color-link);
-  }
-}
-
-/* The tags and the collaborators chip, as on a list row, after the name. */
-.tag,
-.title-chip {
-  display: inline-flex;
-  margin-inline-start: var(--list-title-pill-gap);
-  vertical-align: middle;
-}
-
-.actions {
-  display: flex;
-  align-items: center;
-  gap: var(--space-list-title-actions);
-}
-
-/* The icons as on a list row: each in a rounded box that fills on hover, like a comment's tools. */
-.action,
-.delete :global(.confirm > button),
-.share :global(button) {
-  display: inline-grid;
-  place-items: center;
-  inline-size: var(--comment-tool-size);
-  block-size: var(--comment-tool-size);
-  min-block-size: 0;
-  padding: 0;
-  border: 0;
-  border-radius: var(--radius-comment-tool);
-  background: none;
-  color: inherit;
-  font-size: var(--font-size-list-row-action);
-  line-height: 1;
-  text-decoration: none;
-  transition: opacity 0.5s, background-color var(--transition-comment-quiet);
-
-  /* Lit Done keeps its own green. */
-  &:hover:not([aria-disabled='true'], .active) {
-    background-color: var(--color-comment-chip);
-  }
-
-  &[aria-disabled='true'] {
-    cursor: default;
-  }
-}
-
-.action {
-  color: var(--color-stat-noun);
-
-  /* Manage and Progress: outline buttons that match the toolbar's controls. */
-  &:has(.action-text) {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-control-caret);
-    inline-size: auto;
-    min-block-size: var(--control-height);
-    padding: 0 var(--space-control-inline);
-    border: 1px solid var(--color-control-border);
-    border-radius: var(--radius-control);
-    color: var(--color-control-text);
-    font-size: var(--font-size-tool-icon-small);
-
-    transition: background-color 0.2s, border-color 0.2s;
-
-    &:is(:hover, :focus-visible):not(.active) {
-      border-color: var(--color-control-border-hover);
-      background-color: var(--color-control-hover-bg);
-      color: var(--color-control-text);
-    }
-  }
-}
-
-.action-text {
-  font-family: var(--font-headings);
-  font-size: var(--font-size-control);
-  font-weight: var(--font-weight-control);
-}
-
-/* OG faded the flag in while the pointer was over the title row. */
-.report {
-  opacity: 0;
-
-  .title-row:hover &,
-  &:focus-visible {
-    opacity: 1;
-  }
-}
-
-.edit {
-  color: var(--color-list-edit);
-}
-
-.delete {
-  color: var(--color-list-delete);
-}
-
-/* An outline button like Manage, in red: it takes the viewer off the list. */
-.action.leave {
-  border-color: var(--color-list-leave-border);
-  color: var(--color-list-leave-text);
-
-  &:is(:hover, :focus-visible) {
-    border-color: var(--color-list-delete);
-    background-color: var(--color-list-leave-hover-bg);
-    color: var(--color-list-leave-text);
-  }
-
-  & > :first-child {
-    color: var(--color-list-delete);
-  }
-}
-
-.share {
-  color: var(--color-action-share);
-}
-
 /* The list row's description text: its size, its softer color and its unboxed quotes. */
 .description {
   --read-more-shade: var(--color-subnav-text-bg);
@@ -1042,23 +879,6 @@ h2 {
 
 .empty {
   padding-block-start: var(--line-height-computed);
-}
-
-.manage {
-  cursor: pointer;
-
-  /* On, it reads Done in green: away from Delete's red, the way out of the mode. */
-  &.active {
-    border-color: var(--color-mode-done-border);
-    background-color: var(--color-mode-done-bg);
-    color: var(--color-mode-done-text);
-
-    &:is(:hover, :focus-visible) {
-      border-color: var(--color-mode-done);
-      background-color: var(--color-mode-done-bg-hover);
-      color: var(--color-mode-done-text);
-    }
-  }
 }
 
 /* #sortable-grid.sortable: the quick icons dim while the edit icons are up. */
@@ -1088,18 +908,4 @@ h2 {
   text-align: center;
 }
 
-/* OG kept only the icons on tablets and phones. */
-@media (width < 992px) {
-  .action-text {
-    display: none;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .manage :global(svg),
-  .title-row,
-  .report {
-    transition: none;
-  }
-}
 </style>

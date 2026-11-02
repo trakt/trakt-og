@@ -165,6 +165,14 @@ const following = [{ slug: 'teodoro_2', name: 'Elsy Murphy (@teodoro_2)' }];
         </ListNotice>
       </div>
     </Variant>
+    <Variant label="A list an app stopped syncing, on its own page: no way to say no, it stays until converted">
+      <div class="padded">
+        <ListNotice action="Make it a smart list" onaction={() => {}}>
+          Synced from <strong>Sonarr</strong>, which no longer updates Trakt lists. As a smart list it keeps 92% of its
+          titles today and adds new ones that match on its own.
+        </ListNotice>
+      </div>
+    </Variant>
   </div>
 </Specimen>
 

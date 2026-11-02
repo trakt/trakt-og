@@ -18,6 +18,21 @@ const list = {
 };
 
 describe('toListView', () => {
+  it("should offer the owner's list an app stopped syncing as a smart list", () => {
+    const stale = toListView({ ...list, stale_origin: { name: 'Sonarr', url: null } });
+    expect(stale.staleOrigin).toEqual({ name: 'Sonarr' });
+  });
+
+  it('should tag a list turned into a smart list, and offer it no more', () => {
+    const converted = toListView({
+      ...list,
+      stale_origin: { name: 'Sonarr', url: null },
+      converted_to: { ids: { trakt: 9, slug: 'heist-night-9' } },
+    });
+    expect(converted.pills).toEqual(['Smart', 'Private']);
+    expect(converted.staleOrigin).toBeUndefined();
+  });
+
   it('should map a link list as private with the link pill', () => {
     expect(toListView(list)).toEqual({
       id: 44,

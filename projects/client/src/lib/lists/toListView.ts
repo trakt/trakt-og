@@ -13,8 +13,10 @@ export interface ListView {
   readonly href: string;
   readonly kind: ListKind;
   readonly ownerSlug: string;
-  /** "Private" or "Following". */
+  /** "Private" or "Following", and "Smart" once it's been turned into a smart list. */
   readonly pills: readonly string[];
+  /** For the owner: the app that kept it updated stopped syncing it, so it could become a smart list. */
+  readonly staleOrigin?: { readonly name: string };
   /** Shared by link: the blue "Link" pill. */
   readonly shareLink: boolean;
   readonly isPublic: boolean;
@@ -42,10 +44,12 @@ type ListSource = Pick<
   | 'comment_count'
   | 'likes'
   | 'ids'
+  | 'stale_origin'
+  | 'converted_to'
 > & { readonly user: { readonly username: string; readonly ids: { readonly slug?: string | null } } };
 
 // a link list is private too, and friends-only reads "Following".
-function pills(privacy: string): readonly string[] {
+function privacyPills(privacy: string): readonly string[] {
   if (privacy === 'private' || privacy === 'link') return ['Private'];
   if (privacy === 'friends') return ['Following'];
   return [];
@@ -63,7 +67,8 @@ export function toListView(list: ListSource): ListView {
     href: listPath(list),
     kind: official ? 'official' : 'personal',
     ownerSlug,
-    pills: pills(list.privacy),
+    pills: [...(list.converted_to ? ['Smart'] : []), ...privacyPills(list.privacy)],
+    ...(list.stale_origin && !list.converted_to && { staleOrigin: { name: list.stale_origin.name } }),
     shareLink: list.privacy === 'link',
     isPublic: list.privacy === 'public',
     displayNumbers: list.display_numbers,

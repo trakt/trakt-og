@@ -17,6 +17,14 @@ const list = (extra: Partial<ListRowSource> = {}): ListRowSource => ({
 });
 
 describe('toListRow', () => {
+  it('should tag a list turned into a smart list before its privacy', () => {
+    expect(toListRow(list({ converted_to: { ids: { trakt: 9, slug: 'x' } } })).pills).toEqual(['Smart']);
+    expect(toListRow(list({ privacy: 'private', converted_to: { ids: { trakt: 9, slug: 'x' } } })).pills).toEqual([
+      'Smart',
+      'Private',
+    ]);
+  });
+
   it('should map a personal list under its owner with five posters', () => {
     expect(toListRow(list())).toEqual({
       key: 'list-7',

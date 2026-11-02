@@ -11,6 +11,7 @@ import type { ProfileUser } from '../users/ProfileUser.ts';
 import { fetchListItems, loadListItems, urlListSort } from './loadListItems.ts';
 import { toListQuery } from './toListQuery.ts';
 import { toListView } from './toListView.ts';
+import { fetchSmartListDraft } from './smart/fetchSmartListDraft.ts';
 
 type Params = {
   cookies?: { get: (name: string) => string | undefined };
@@ -74,7 +75,7 @@ export async function loadList({ fetch, locals, params, url, parent, cookies }: 
   // OG took an id or an old slug too; og keeps one URL per list.
   if (params.list !== list.slug) redirect(301, `${list.href}${url.search}`);
 
-  const [items, collaborators, filterSources] = await Promise.all([
+  const [items, collaborators, filterSources, smartDraft] = await Promise.all([
     loadListItems({
       fetch,
       token,
@@ -90,6 +91,8 @@ export async function loadList({ fetch, locals, params, url, parent, cookies }: 
     }),
     fetchCollaborators({ fetch, listId: list.id, token: list.isPublic ? null : token }),
     loadListFilterSources({ fetch, watchnow: query.watchnow, settings }),
+    // The owner's list an app stopped syncing can fill itself instead: the API's ready-made setup for it.
+    list.staleOrigin && isSelf && token ? fetchSmartListDraft({ fetch, token, list: list.slug }) : null,
   ]);
 
   return {
@@ -98,6 +101,7 @@ export async function loadList({ fetch, locals, params, url, parent, cookies }: 
     ...items,
     filterSources,
     collaborators,
+    smartDraft,
     isCollaborator: !isSelf && collaborators.some(({ slug }) => slug === user?.slug),
   };
 }

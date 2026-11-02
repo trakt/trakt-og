@@ -12,17 +12,15 @@ type FilterChipsParams = {
 };
 
 /**
- * A sidebar's Applied Filters, as chips: the watch-now bundles and services first (a service by its name), then every
- * other filter. Their count is how many filters are on.
+ * A sidebar's Applied Filters, as chips, one per filter: watch now first (its bundles and services by name), then
+ * every other filter. Their count is how many filters are on.
  */
 export function filterChips({ filters, sources, country, favorites }: FilterChipsParams): FilterTag[] {
   const tiles = watchNowTiles({ watchnow: filters.watchnow, sources, country, favorites });
-  return [
-    ...tiles.map((tile) => ({
-      id: `watchnow-${tile.id}`,
-      text: tile.kind === 'bundle' ? tile.name : tile.source.name,
-      without: false,
-    })),
-    ...filterTags(filters),
-  ];
+  // The chip's label already says Streaming, so a bundle drops it: "Streaming Free" is Free.
+  const values = tiles.map((tile) => ({
+    text: tile.kind === 'bundle' ? tile.name.replace(/^Streaming /, '') : tile.source.name,
+    without: false,
+  }));
+  return [...(values.length > 0 ? [{ id: 'watchnow', values }] : []), ...filterTags(filters)];
 }

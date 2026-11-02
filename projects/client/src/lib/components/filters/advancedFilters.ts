@@ -1,8 +1,18 @@
+import {
+  isParentalLevel,
+  type ParentalLimits,
+  parentalCategories,
+  parentalGuideParams,
+  parentalParam,
+} from './parentalGuide.ts';
+
 /**
  * OG's advanced filters as they live in the URL: `advanced_filters.js` wrote them and
  * read them back. List filters keep OG's prefixes: `+` on every value means "all"
  * (genres only), `-` means "none". Ranges are `min-max`. og also mixes the two in one list, as the API allows:
  * `genres=drama,-crime` keeps drama and leaves out crime, so the `-` values go to `excluded`.
+ *
+ * The parental guide is og's own (`parentalGuide.ts`), in the API's params.
  *
  * og names two params differently: `networks` carries names instead of OG's `network_ids`, because the API filters
  * networks by name, and `status` stays OG's name for the API's `statuses`.
@@ -30,10 +40,24 @@ export const listFilterKeys = [
 ] as const;
 export type ListFilterKey = (typeof listFilterKeys)[number];
 
-export const rangeFilterKeys = ['years', 'runtimes', 'ratings', 'imdb_ratings', 'rt_meters', 'rt_user_meters'] as const;
+export const rangeFilterKeys = [
+  'years',
+  'runtimes',
+  'ratings',
+  'imdb_ratings',
+  'tmdb_ratings',
+  'rt_meters',
+  'rt_user_meters',
+  'letterboxd_ratings',
+  'mal_ratings',
+] as const;
 export type RangeFilterKey = (typeof rangeFilterKeys)[number];
 
-export type AdvancedFilters = { readonly watchnow: readonly string[]; readonly query: string } & {
+export type AdvancedFilters = {
+  readonly watchnow: readonly string[];
+  readonly query: string;
+  readonly parental: ParentalLimits;
+} & {
   readonly [key in ListFilterKey]: ListFilter;
 } & { readonly [key in RangeFilterKey]: Range | null };
 
@@ -42,6 +66,7 @@ const noList: ListFilter = { values: [], mode: 'any' };
 export const emptyFilters: AdvancedFilters = {
   watchnow: [],
   query: '',
+  parental: {},
   ...(Object.fromEntries(listFilterKeys.map((key) => [key, noList])) as { [key in ListFilterKey]: ListFilter }),
   ...(Object.fromEntries(rangeFilterKeys.map((key) => [key, null])) as { [key in RangeFilterKey]: null }),
 };
@@ -83,12 +108,24 @@ function parseRange(param: string | null): Range | null {
   return min <= max ? [min, max] : [max, min];
 }
 
+// Only a limit from None: the panel can't show a floor, so `parental_violence=2-3` is dropped like a malformed one.
+const parseParental = (search: URLSearchParams): ParentalLimits =>
+  Object.fromEntries(
+    parentalCategories.flatMap((category) => {
+      const range = parseRange(search.get(parentalParam(category)));
+      const level = range?.[1];
+      if (range?.[0] !== 0 || level === undefined || !isParentalLevel(level)) return [];
+      return [[category, level] as const];
+    }),
+  );
+
 /** The filters in a chart URL's query. Anything malformed is dropped, so the chart renders unfiltered. */
 export function parseAdvancedFilters(search: URLSearchParams): AdvancedFilters {
   const query = search.get('query')?.trim() ?? '';
   return {
     query: query === '*' ? '' : query,
     watchnow: [...new Set(split(search.get('watchnow')).map((value) => value.trim().toLowerCase()))],
+    parental: parseParental(search),
     ...(Object.fromEntries(listFilterKeys.map((key) => [key, parseList(search.get(key))])) as {
       [key in ListFilterKey]: ListFilter;
     }),
@@ -105,7 +142,10 @@ const prefix = { any: '', all: '+', none: '-' } as const;
 const encodeList = (values: readonly string[], mode: ListMode) =>
   values.map((value) => prefix[mode] + encodeURIComponent(value)).join(',');
 
-const formatNumber = (value: number, key: RangeFilterKey) => (key === 'imdb_ratings' ? value.toFixed(1) : `${value}`);
+const decimalKeys: readonly RangeFilterKey[] = ['imdb_ratings', 'tmdb_ratings', 'letterboxd_ratings', 'mal_ratings'];
+
+const formatNumber = (value: number, key: RangeFilterKey) =>
+  decimalKeys.includes(key) ? value.toFixed(1) : `${value}`;
 
 /** The query string for these filters (no `?`), in OG's param order. Empty when nothing is filtered. */
 export function advancedFiltersSearch(filters: AdvancedFilters): string {
@@ -121,7 +161,8 @@ export function advancedFiltersSearch(filters: AdvancedFilters): string {
   const watchnow = filters.watchnow.length > 0 ? [['watchnow', encodeList(filters.watchnow, 'any')]] : [];
 
   const terms = filters.query ? [['query', encodeURIComponent(filters.query)]] : [];
-  return [...terms, ...watchnow, ...lists, ...ranges].map(([key, value]) => `${key}=${value}`).join('&');
+  const parental = parentalGuideParams(filters.parental);
+  return [...terms, ...watchnow, ...lists, ...ranges, ...parental].map(([key, value]) => `${key}=${value}`).join('&');
 }
 
 /** Something is filtered. OG's `@advanced_filters_on`, plus watch now. */

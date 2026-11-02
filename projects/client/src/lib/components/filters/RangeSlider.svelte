@@ -1,8 +1,9 @@
 <!--
-  OG's two-handle noUiSlider (the advanced filters' years, runtime and rating sliders): a dark track, a lighter
-  bar between the handles, and grey handles. `labeled` handles are wider and carry their value, like the rating
-  sliders. Each handle is a `role="slider"`: arrows step, Page Up and Down take ten steps, Home and End jump to the
-  ends. Dragging a handle or pressing the track moves the nearest one.
+  The advanced filters' two-handle slider (years, runtime and the site ratings): a slim track whose knobs and bar are
+  grey until the range is narrowed, then red, like a field's "Any" and its "filter on" look. Plain knobs are round
+  with a grip; `labeled` ones are mini buttons that carry their value, like the rating sliders. The knobs sit inside
+  the track's ends. Each one is a `role="slider"`: arrows step, Page Up and Down take ten steps, Home and End jump to
+  the ends. Dragging a knob or pressing the track moves the nearest one.
     <RangeSlider bind:value scale={filterRanges({ now }).years} label="Released" />
 -->
 <script lang="ts">
@@ -23,10 +24,11 @@ let track = $state<HTMLElement>();
 const min = $derived(scaleMin(scale));
 const max = $derived(scaleMax(scale));
 const percents = $derived(value.map((v) => toPercent(v, scale)) as [number, number]);
+const set = $derived(value[0] !== min || value[1] !== max);
 
 const round = (v: number) => Number(v.toFixed(`${scale.step}`.split('.').at(1)?.length ?? 0));
 
-function set(index: 0 | 1, next: number) {
+function move(index: 0 | 1, next: number) {
   const bounded = index === 0 ? Math.min(Math.max(next, min), value[1]) : Math.max(Math.min(next, max), value[0]);
   const v = round(bounded);
   if (v === value[index]) return;
@@ -48,7 +50,7 @@ function onkeydown(event: KeyboardEvent, index: 0 | 1) {
   const next = moves[event.key];
   if (next === undefined) return;
   event.preventDefault();
-  set(index, next);
+  move(index, next);
 }
 
 const percentAt = (clientX: number) => {
@@ -71,18 +73,18 @@ function ontrackdown(event: PointerEvent) {
   // The nearer handle, or the one on the side of the press when both sit together.
   const index = Math.abs(next - value[0]) < Math.abs(next - value[1]) || next < value[0] ? 0 : 1;
   startDrag(event, index);
-  set(index, next);
+  move(index, next);
 }
 
 function onpointermove(event: PointerEvent) {
   if (dragging === null) return;
-  set(dragging, fromPercent(percentAt(event.clientX), scale));
+  move(dragging, fromPercent(percentAt(event.clientX), scale));
 }
 
 const stop = () => (dragging = null);
 </script>
 
-<div class={['slider', { labeled, dragging: dragging !== null }]}>
+<div class={['slider', { labeled, set, dragging: dragging !== null }]}>
   <div
     class="track"
     bind:this={track}
@@ -115,8 +117,19 @@ const stop = () => (dragging = null);
 </div>
 
 <style>
+/* The track keeps half a knob free at each end, so a knob at 0% or 100% stays inside the column. */
 .slider {
+  --inset: calc(var(--slider-knob-size) / 2);
+
+  padding-block: calc((var(--slider-knob-size) - var(--slider-height)) / 2);
+  padding-inline: var(--inset);
   touch-action: none;
+
+  &.labeled {
+    --inset: calc(var(--slider-label-width) / 2);
+
+    padding-block: calc((var(--slider-label-height) - var(--slider-height)) / 2);
+  }
 }
 
 .track {
@@ -127,40 +140,85 @@ const stop = () => (dragging = null);
   cursor: pointer;
 }
 
+/* A round knob's grip: three thin bars. */
+.slider:not(.labeled) .handle::before {
+  content: '';
+  inline-size: var(--slider-grip-width);
+  block-size: var(--slider-grip-height);
+  background: repeating-linear-gradient(to right, var(--grip) 0 1px, transparent 1px 3px);
+}
+
 .connect {
   position: absolute;
   inset-block: 0;
-  border-radius: var(--radius-slider-connect);
+  border-radius: var(--radius-slider);
   background-color: var(--color-slider-connect);
-  box-shadow: var(--shadow-slider-connect);
+
+  .set & {
+    background-color: var(--color-slider-connect-set);
+  }
 }
 
-/* noUiSlider hangs each handle 7px left of its value, so the upper rating handle sticks out past the track. */
 .handle {
+  --grip: var(--color-slider-grip);
+
   position: absolute;
-  inset-block-start: var(--slider-handle-top);
-  margin-inline-start: var(--slider-handle-offset);
-  inline-size: var(--slider-handle-width);
-  block-size: var(--slider-handle-height);
-  border-radius: var(--radius-slider-handle);
+  inset-block-start: 50%;
+  display: grid;
+  place-items: center;
+  inline-size: var(--slider-knob-size);
+  block-size: var(--slider-knob-size);
+  border: 1px solid var(--color-slider-handle-border);
+  border-radius: 50%;
   background-color: var(--color-slider-handle);
+  box-shadow: var(--shadow-slider-handle);
+  color: var(--color-slider-handle-text);
+  translate: -50% -50%;
   cursor: grab;
 
+  &:hover {
+    background-color: var(--color-slider-handle-hover);
+  }
+
+  /* The set field's faint red, laid over the panel so the track doesn't show through. */
+  .set & {
+    --grip: var(--color-slider-grip-set);
+
+    border-color: var(--color-slider-handle-set-border);
+    background-color: var(--color-filter-panel-bg);
+    background-image: linear-gradient(var(--color-slider-handle-set) 0 0);
+    color: var(--color-slider-handle-set-text);
+  }
+
+  .set &:hover {
+    border-color: var(--color-slider-handle-set-hover);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-input-border-focus);
+    outline-offset: 2px;
+  }
+
   .labeled & {
-    inset-block-start: var(--slider-label-top);
     inline-size: var(--slider-label-width);
     block-size: var(--slider-label-height);
-    color: var(--color-filter-control-text);
+    border-radius: var(--radius-control);
     font-family: var(--font-headings);
     font-size: var(--font-size-slider-label);
     font-weight: var(--font-weight-headings);
-    line-height: var(--slider-label-height);
-    text-align: center;
+    font-variant-numeric: tabular-nums;
     white-space: nowrap;
   }
 
   .dragging & {
     cursor: grabbing;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .connect,
+  .handle {
+    transition: background-color 0.2s, border-color 0.2s;
   }
 }
 </style>

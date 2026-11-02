@@ -1,12 +1,18 @@
 <!--
-  The filters on, as removable chips: red-tinted, a left-out value struck through, a rating range led by its site's
-  logo, a service by its name. A sidebar's Applied Filters section shows them under its heading.
-    <FilterChips chips={[...filterTags(filters), ...services]} onremove={(id) => apply(withoutFilterTag(filters, id))} />
+  The filters on, one removable chip each: red-tinted, its values comma-separated like the panel's field (a left-out
+  one struck through, a chip that only leaves values out grey), a rating range led by its site's logo in place of
+  its name. Values that
+  don't fit end in an ellipsis, with the whole list in the chip's title. A sidebar's Applied Filters section shows them
+  under its heading.
+    <FilterChips chips={filterChips(…)} onremove={(id) => apply(withoutFilterTag(filters, id))} />
 -->
 <script lang="ts">
 import Icon from '$lib/icons/Icon.svelte';
 import xmark from '$lib/icons/solid/xmark.svg?raw';
 import imdbLogo from '$lib/assets/sites/imdb-clean.png';
+import letterboxdLogo from '$lib/assets/sites/letterboxd.svg';
+import malLogo from '$lib/assets/sites/mal.svg';
+import tmdbLogo from '$lib/assets/sites/tmdb.svg';
 import rtAudience from '$lib/assets/sites/rt/audience-upright.svg';
 import rtFresh from '$lib/assets/sites/rt/tomatometer-fresh.svg';
 import traktLogo from '$lib/assets/sites/trakt.png';
@@ -20,22 +26,29 @@ interface Props {
 
 const { chips, onremove }: Props = $props();
 
+const plain = (chip: FilterTag) =>
+  chip.values.map(({ text, without }) => (without ? `without ${text}` : text)).join(', ');
+
 const sites: Record<TagSite, { logo: string; name: string }> = {
   trakt: { logo: traktLogo, name: 'Trakt' },
   imdb: { logo: imdbLogo, name: 'IMDb' },
+  tmdb: { logo: tmdbLogo, name: 'TMDB' },
   rt: { logo: rtFresh, name: 'Rotten Tomatoes' },
   'rt-audience': { logo: rtAudience, name: 'Rotten Tomatoes Audience' },
+  letterboxd: { logo: letterboxdLogo, name: 'Letterboxd' },
+  mal: { logo: malLogo, name: 'MyAnimeList' },
 };
 </script>
 
 <ul class="filter-chips">
   {#each chips as chip (chip.id)}
-    <li class={{ without: chip.without }}>
+    {@const label = filterTagLabel(chip.id)}
+    <li class={{ without: chip.values.every((value) => value.without) }} title="{label}: {plain(chip)}">
       {#if chip.site}<img class={{ dark: chip.site === 'imdb' }} src={sites[chip.site].logo} alt="" />{/if}
-      <span class="label">{filterTagLabel(chip.id)}</span>
-      {#if chip.without}<span class="visually-hidden">without</span>{/if}<span class="text">{chip.text}</span>
-      <button type="button" aria-label="Remove {chip.without ? 'without ' : ''}{chip.text}"
-        onclick={() => onremove(chip.id)}><Icon svg={xmark} /></button>
+      <span class={chip.site ? 'visually-hidden' : 'label'}>{label}:</span>
+      <span class="text">{#each chip.values as value, i (value.text)}{i > 0 ? ', ' : ''}{#if value.without}<span
+            class="visually-hidden">without </span><s>{value.text}</s>{:else}{value.text}{/if}{/each}</span>
+      <button type="button" aria-label="Remove {label} filter" onclick={() => onremove(chip.id)}><Icon svg={xmark} /></button>
     </li>
   {/each}
 </ul>
@@ -66,11 +79,6 @@ li {
   &.without {
     border-color: var(--color-sidebar-pill-border);
     background-color: var(--color-sidebar-pill-bg);
-
-    & .text {
-      color: var(--color-sidebar-pill-set-text);
-      text-decoration: line-through;
-    }
   }
 }
 
@@ -90,13 +98,19 @@ img {
 }
 
 .text {
+  min-inline-size: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+s {
+  color: var(--color-sidebar-pill-set-text);
+}
+
 button {
   display: grid;
+  flex: none;
   place-items: center;
   inline-size: var(--filter-chip-remove);
   block-size: var(--filter-chip-remove);

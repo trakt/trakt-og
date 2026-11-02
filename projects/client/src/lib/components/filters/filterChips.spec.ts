@@ -14,9 +14,14 @@ describe('util: filterChips', () => {
     });
 
     expect(chips).toEqual([
-      { id: 'watchnow-free', text: 'Streaming Free', without: false },
-      { id: 'watchnow-netflix', text: 'Netflix', without: false },
-      { id: 'genres-drama', text: 'Drama', without: false },
+      {
+        id: 'watchnow',
+        values: [
+          { text: 'Free', without: false },
+          { text: 'Netflix', without: false },
+        ],
+      },
+      { id: 'genres', values: [{ text: 'Drama', without: false }] },
     ]);
   });
 
@@ -28,7 +33,7 @@ describe('util: filterChips', () => {
       favorites: ['netflix'],
     });
 
-    expect(chips.map(({ text }) => text)).toEqual(['Netflix']);
+    expect(chips.flatMap(({ values }) => values.map(({ text }) => text))).toEqual(['Netflix']);
   });
 
   it('should have no chips with no filters on', () => {

@@ -41,7 +41,10 @@ export function filterRanges({ now, upcoming = false }: FilterRangesParams): Rec
     },
     ratings: linearScale(0, 100),
     imdb_ratings: linearScale(0, 10, 0.1),
+    tmdb_ratings: linearScale(0, 10, 0.1),
     rt_meters: linearScale(0, 100),
     rt_user_meters: linearScale(0, 100),
+    letterboxd_ratings: linearScale(0, 5, 0.1),
+    mal_ratings: linearScale(0, 10, 0.1),
   };
 }

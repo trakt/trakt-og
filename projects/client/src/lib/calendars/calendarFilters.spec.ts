@@ -5,12 +5,12 @@ import { fromFilterDraft, toFilterDraft } from '../components/filters/filterDraf
 const now = new Date('2026-09-30T12:00:00Z');
 
 describe('calendarFilters', () => {
-  it('should offer episode types and networks on every show calendar without RT ratings', () => {
+  it('should offer episode types and networks on every show calendar without RT or Letterboxd ratings', () => {
     for (const slug of ['shows', 'premieres', 'new-shows', 'finales']) {
       const config = calendarFilters({ slug, now });
       expect(config.lists).toContain('episode_types');
       expect(config.lists).toContain('networks');
-      expect(config.ranges).toEqual(['runtimes', 'ratings', 'imdb_ratings']);
+      expect(config.ranges).toEqual(['runtimes', 'ratings', 'imdb_ratings', 'tmdb_ratings', 'mal_ratings']);
       expect(config.query).toBe(true);
     }
   });
@@ -21,6 +21,7 @@ describe('calendarFilters', () => {
       expect(config.lists).not.toContain('episode_types');
       expect(config.lists).not.toContain('networks');
       expect(config.ranges).toContain('rt_user_meters');
+      expect(config.ranges).toContain('letterboxd_ratings');
     }
   });
   it('should combine both types and preserve local controls when applying the mixed calendar', () => {

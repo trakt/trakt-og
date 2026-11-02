@@ -38,4 +38,12 @@ describe('util: filterDraft', () => {
     expect(applied.query).toBe('');
     expect(applied.episode_types.values).toEqual([]);
   });
+
+  it('should apply the parental guide only where the panel has it', () => {
+    const filters = { ...emptyFilters, parental: { violence: 1 } as const };
+    expect(fromFilterDraft(toFilterDraft(filters, trending), trending).parental).toEqual(filters.parental);
+    expect(fromFilterDraft(toFilterDraft(filters, recommendations), recommendations).parental).toEqual(
+      emptyFilters.parental,
+    );
+  });
 });

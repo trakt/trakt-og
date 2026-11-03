@@ -8,6 +8,7 @@
   what the most recently active members are watching, every 2 minutes while the tab is visible.
 -->
 <script lang="ts">
+import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
 import { resolve } from '$app/paths';
 import type { Snippet } from 'svelte';
 import { browser } from '$app/environment';
@@ -277,7 +278,7 @@ const boardOf = (items: readonly SocialItem[] | undefined) =>
     {@const pages = rowCount({ rows: saved, items: board?.cards.length ?? 0, perRow: perPage, maxRows: MAX_PAGES })}
     {@const shown = GRIDS[view]}
     {#snippet body()}
-      <div class="feed">
+      <div class="feed" {@attach trackDrilldowns({ source: 'social-feed' })}>
         <div class="controls">
           <Dropdown section="Period">
             {#snippet trigger()}{PERIODS[period]}{/snippet}

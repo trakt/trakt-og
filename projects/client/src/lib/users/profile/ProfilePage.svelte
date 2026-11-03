@@ -4,6 +4,7 @@
   shows and movies, and the newest comments. The boxes and Most Watched stream in, holding their places with shimmers.
 -->
 <script lang="ts">
+import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
 import SeoHead from '$lib/seo/SeoHead.svelte';
 import { toProfileSeo } from '$lib/seo/pages/toProfileSeo';
 import type { UserStats } from '$lib/stats/userStatsSchema';
@@ -96,8 +97,9 @@ const viewer = $derived(data.user ? { slug: data.user.slug } : null);
   title="Favorites"
   icon={star}
   seeMore={{ href: `${user}/favorites`, text: 'All Favorites' }}
+  drilldown={{ source: 'favorites' }}
 >
-  <div class="favorites">
+  <div class="favorites" {@attach trackDrilldowns({ source: 'favorites' })}>
       {#each data.favorites as favorite (`${favorite.type}-${favorite.id}`)}<FavoriteCard {favorite} />{/each}
     </div>
 </DashboardPanel>
@@ -107,11 +109,18 @@ const viewer = $derived(data.user ? { slug: data.user.slug } : null);
   { type: 'episodes', title: 'Recently Watched Episodes', cards: data.episodes, columns: 4 },
   { type: 'movies', title: 'Recently Watched Movies', cards: data.movies, columns: 6 },
 ] as row (row.type)}
-  <DashboardPanel title={row.title} icon={clock} seeMore={{ href: `${user}/history/${row.type}`, text: 'See More' }}>
+  <DashboardPanel
+    title={row.title}
+    icon={clock}
+    seeMore={{ href: `${user}/history/${row.type}`, text: 'See More' }}
+    drilldown={{ source: 'recently-watched' }}
+  >
     {#if row.cards.length > 0}
-      <PosterGrid columns={row.columns}>
-        {#each row.cards as card (card.key)}{@render watched(card)}{/each}
-      </PosterGrid>
+      <div class="watched" {@attach trackDrilldowns({ source: 'watch-history' })}>
+        <PosterGrid columns={row.columns}>
+          {#each row.cards as card (card.key)}{@render watched(card)}{/each}
+        </PosterGrid>
+      </div>
     {:else}
       <div class="empty">
         <EmptyState action={data.isSelf ? findAction(row.type) : undefined} />
@@ -143,9 +152,10 @@ const viewer = $derived(data.user ? { slug: data.user.slug } : null);
   title="Comments"
   icon={comments}
   seeMore={{ href: `${user}/comments/all/all/added`, text: 'All Comments' }}
+  drilldown={{ source: 'activity' }}
 >
   {#if data.comments.length > 0}
-    <div class="comments">
+    <div class="comments" {@attach trackDrilldowns({ source: 'activity' })}>
       {#each data.comments as row (row.comment.id)}
         <div class="comment"><UserCommentWithPoster {row} {viewer} datePreferences={data.datePreferences} /></div>
       {/each}
@@ -190,6 +200,10 @@ const viewer = $derived(data.user ? { slug: data.user.slug } : null);
 
 .empty {
   margin-block-start: var(--gutter);
+}
+
+.watched {
+  display: contents;
 }
 
 .failed {

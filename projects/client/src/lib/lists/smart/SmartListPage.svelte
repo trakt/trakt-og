@@ -5,6 +5,7 @@
   posters between two paginations. It fills itself, so there's nothing to manage.
 -->
 <script lang="ts">
+import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
 import { goto, invalidateAll } from '$app/navigation';
 import { resolve } from '$app/paths';
 import { page } from '$app/state';
@@ -170,7 +171,7 @@ async function remove() {
   </Container>
 </section>
 
-<section class="items" aria-label="{list.name} items">
+<section class="items" aria-label="{list.name} items" {@attach trackDrilldowns({ source: 'smart-list' })}>
   <Container>
     {#if data.cards.length > 0}
       {#if data.page.type === 'paginated'}<Pagination meta={data.page} label="List pages" />{/if}

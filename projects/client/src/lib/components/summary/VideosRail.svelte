@@ -37,7 +37,7 @@ const play = (url: string) => {
 {#if current}
   <div class="videos">
   <SectionHeading title="Videos"
-    more={{ href: videosHref(href, current === fallback ? undefined : current.id), text: 'All Videos' }} />
+    more={{ href: videosHref(href, current === fallback ? undefined : current.id), text: 'All Videos', drilldown: 'videos' }} />
   <div class="controls">
     <VideoTypeDropdown {tabs} {current} onpick={(id) => (picked = id)} />
   </div>

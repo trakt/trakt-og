@@ -75,7 +75,7 @@ const current = $derived(tabs.find(({ id }) => id === picked) ?? tabs[0]);
 <!-- Nothing to show until another language is picked: only the form. -->
 {#if current || reloaded}
 <div class="summary-comments">
-  <SectionHeading title="Comments" more={{ href: `${href}/comments`, text: `All ${countLabel(count, 'Comment')}` }} />
+  <SectionHeading title="Comments" more={{ href: `${href}/comments`, text: `All ${countLabel(count, 'Comment')}`, drilldown: 'comments' }} />
   <div class="controls">
     {#if current}
       <Dropdown section="Filter">

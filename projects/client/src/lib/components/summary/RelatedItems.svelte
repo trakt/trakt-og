@@ -4,6 +4,7 @@
   posters holds their place while they load, and the band goes when nothing comes back.
 -->
 <script lang="ts">
+import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
 import Container from '$lib/components/container/Container.svelte';
 import CardShimmerRow from '$lib/components/loading/CardShimmerRow.svelte';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
@@ -38,7 +39,7 @@ const loadOrHide = async () => {
 </script>
 
 {#if !empty}
-  <section class="related" aria-labelledby="{id}-heading">
+  <section class="related" aria-labelledby="{id}-heading" {@attach trackDrilldowns({ source: 'related' })}>
     <Container>
       <h2 id="{id}-heading">If you like <strong>{title}</strong>, check out...</h2>
       <LazySection load={loadOrHide}>

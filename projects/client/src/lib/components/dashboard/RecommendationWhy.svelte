@@ -5,6 +5,7 @@
   button at all.
 -->
 <script lang="ts">
+import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
 import CommentTag from '$lib/components/comments/CommentTag.svelte';
 import GlassAction from '$lib/components/glass-action/GlassAction.svelte';
 import TagPills from '$lib/components/labels/TagPills.svelte';
@@ -80,7 +81,7 @@ function toggled(event: ToggleEvent) {
         /></button>
     </header>
     {#if why.titles.length > 0}
-      <ul>
+      <ul {@attach trackDrilldowns({ source: 'recommendation-source' })}>
         {#each why.titles as source (`${source.type}:${source.id}`)}{@render reason(source)}{/each}
       </ul>
     {/if}

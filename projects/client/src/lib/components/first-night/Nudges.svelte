@@ -4,6 +4,8 @@
   and only in their first 30 days. "Pick services" opens the taste picker in place.
 -->
 <script lang="ts">
+import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
+import { useTrack } from '$lib/analytics/useTrack';
 import { isStandardApi } from '$lib/api/isStandardApi';
 import { browser } from '$app/environment';
 import { isRecentMember } from '$lib/firstNight/gettingStarted';
@@ -58,6 +60,12 @@ $effect(() => {
   before = after;
 });
 
+const { track: trackDismiss } = useTrack(AnalyticsEvent.BannerDismiss);
+function dismiss() {
+  if (current) trackDismiss({ id: 'first-night-nudge', value: current.key });
+  current = null;
+}
+
 function act() {
   if (!current?.action.href) {
     tasteWanted = true;
@@ -70,7 +78,7 @@ function act() {
 {#if current}
   <aside class="nudge" aria-live="polite" aria-label="Next step">
   <button type="button" class="close" aria-label="Dismiss"
-    onclick={() => (current = null)}><Icon svg={xmark} /></button>
+    onclick={dismiss}><Icon svg={xmark} /></button>
   <p class="when">{current.when}</p>
   <p class="title">{current.title}</p>
   <p class="text">{current.text}</p>

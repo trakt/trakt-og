@@ -6,6 +6,7 @@
 <script lang="ts">
 import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
 import { useTrack } from '$lib/analytics/useTrack';
+import { trackUpsellImpression } from '$lib/analytics/trackUpsellImpression';
 import TraktMark from '$lib/components/brand/TraktMark.svelte';
 import GlassAction from '$lib/components/glass-action/GlassAction.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
@@ -28,7 +29,12 @@ const trackSocial = (target: string | undefined) => {
 };
 
 const pages = [
-  { title: 'VIP', href: traktUrls.vipFor('footer'), onclick: () => trackVipUpsell({ source: 'footer' }) },
+  {
+    title: 'VIP',
+    href: traktUrls.vipFor('footer'),
+    onclick: () => trackVipUpsell({ source: 'footer' }),
+    impression: trackUpsellImpression('footer'),
+  },
   { title: 'Developer API', href: traktUrls.developer },
   { title: 'Terms', href: traktUrls.terms },
   { title: 'Privacy', href: traktUrls.privacy },
@@ -65,7 +71,7 @@ const social = [
         <li><a href={resolve('/about')}>About</a></li>
         <li><a href={resolve('/help')}>Help</a></li>
         {#each pages as link (link.title)}
-          <li><a href={link.href} target="_blank" rel="noopener" onclick={link.onclick}>{link.title}</a></li>
+          <li><a href={link.href} target="_blank" rel="noopener" onclick={link.onclick} {@attach link.impression}>{link.title}</a></li>
         {/each}
       </ul>
     </nav>

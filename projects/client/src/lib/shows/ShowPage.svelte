@@ -60,25 +60,25 @@ const sections = $derived([
   { label: 'Activity', href: '#activity' },
   { label: 'Recent Episodes', href: '#recent-episodes' },
   ...(show.cast.length > 0 || show.guestStars.length > 0
-    ? [{ label: 'People', href: '#people', more: { href: `${show.href}/people`, text: 'All people' } }]
+    ? [{ label: 'People', href: '#people', more: { href: `${show.href}/people`, text: 'All people', drilldown: 'social' } }]
     : []),
   ...(show.seasonCount > 0
     ? [{
       label: countLabel(show.seasonCount, 'Season'),
       href: '#seasons',
-      more: { href: allEpisodes, text: 'All episodes' },
+      more: { href: allEpisodes, text: 'All episodes', drilldown: 'seasons' },
     }]
     : []),
-  { label: 'Videos', href: '#videos', more: { href: `${show.href}/videos`, text: 'All videos' } },
+  { label: 'Videos', href: '#videos', more: { href: `${show.href}/videos`, text: 'All videos', drilldown: 'videos' } },
   {
     label: countLabel(show.commentCount, 'Comment'),
     href: '#comments',
-    more: { href: `${show.href}/comments`, text: 'All comments' },
+    more: { href: `${show.href}/comments`, text: 'All comments', drilldown: 'comments' },
   },
   {
     label: countLabel(show.listCount, 'List'),
     href: '#lists',
-    more: { href: `${show.href}/lists`, text: 'All lists' },
+    more: { href: `${show.href}/lists`, text: 'All lists', drilldown: 'popular-lists' },
   },
 ]);
 </script>

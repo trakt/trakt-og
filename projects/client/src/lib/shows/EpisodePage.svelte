@@ -54,18 +54,18 @@ const sections = $derived([
   { label: 'Stats', href: `${episode.href}/stats`, page: true },
   { label: 'Activity', href: '#activity' },
   ...(episode.cast.length + episode.guestStars.length > 0
-    ? [{ label: 'People', href: '#people', more: { href: `${episode.href}/people`, text: 'All people' } }]
+    ? [{ label: 'People', href: '#people', more: { href: `${episode.href}/people`, text: 'All people', drilldown: 'social' } }]
     : []),
-  { label: 'Videos', href: '#videos', more: { href: `${episode.href}/videos`, text: 'All videos' } },
+  { label: 'Videos', href: '#videos', more: { href: `${episode.href}/videos`, text: 'All videos', drilldown: 'videos' } },
   {
     label: countLabel(episode.commentCount, 'Comment'),
     href: '#comments',
-    more: { href: `${episode.href}/comments`, text: 'All comments' },
+    more: { href: `${episode.href}/comments`, text: 'All comments', drilldown: 'comments' },
   },
   {
     label: countLabel(episode.listCount, 'List'),
     href: '#lists',
-    more: { href: `${episode.href}/lists`, text: 'All lists' },
+    more: { href: `${episode.href}/lists`, text: 'All lists', drilldown: 'popular-lists' },
   },
 ]);
 </script>
@@ -76,10 +76,11 @@ const sections = $derived([
   <EpisodeTitle target={ratingTarget} links={episode.parents} number={episode.number} title={episode.title} year={episode.year} certification={episode.certification} type={episode.type} credits={episode.postCredits} />
   {#snippet stats()}<RatingsStrip rating={episode.rating} external={episode.external} rateLabel="episode" {ratingTarget}
     statsHref="{episode.href}/stats" />{/snippet}
-  {#snippet edges()}<ItemNav previous={episode.previous} next={episode.next} up={episode.seasonHref} />{/snippet}
+  {#snippet edges()}<ItemNav previous={episode.previous} next={episode.next} up={episode.seasonHref}
+    source="season-episode-list" />{/snippet}
 </FanartHeader>
 <SummaryFrame label={safeTitle}>
-  {#snippet subnav()}<SeasonLinks label="Episode" links={episode.episodeLinks} />{/snippet}
+  {#snippet subnav()}<SeasonLinks label="Episode" links={episode.episodeLinks} source="season-episode-list" />{/snippet}
   {#snippet sidebar()}
     <a class="poster-link" href={episode.seasonHref} aria-label="Back to {episode.seasonTitle}"><SummaryPoster showTarget={{type:'show',id:episode.showId,title:episode.showTitle}} image={episode.poster} alt="{episode.showTitle}: {episode.seasonTitle}" {ratingTarget} /></a>
     <WatchNow button={data.watchNow} title={episode.fullTitle} year={episode.year} fanart={episode.fanart} />

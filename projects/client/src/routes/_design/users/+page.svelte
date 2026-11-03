@@ -304,7 +304,7 @@ const liveCards = [
 <Specimen title="Favorites" bleed
   note="The profile's Favorites panel, only when there are some, with up to three cards.">
   <DashboardPanel --panel-bg="var(--color-favorites-bg)" title="Favorites" icon={star}
-    seeMore={{ href: '/users/leela/favorites', text: 'All Favorites' }}>
+    seeMore={{ href: '/users/leela/favorites', text: 'All Favorites' }} drilldown={{ source: 'favorites' }}>
     <div class="favorites">
       {#each favorites as favorite (favorite.id)}<FavoriteCard {favorite} />{/each}
     </div>

@@ -55,19 +55,19 @@ const sections = $derived([
   { label: 'Stats', href: `${season.href}/stats`, page: true },
   { label: 'Activity', href: '#activity' },
   ...(season.cast.length + season.guestStars.length > 0
-    ? [{ label: 'People', href: '#people', more: { href: `${season.href}/people`, text: 'All people' } }]
+    ? [{ label: 'People', href: '#people', more: { href: `${season.href}/people`, text: 'All people', drilldown: 'social' } }]
     : []),
   { label: countLabel(season.episodes.length, 'Episode'), href: '#episodes' },
-  { label: 'Videos', href: '#videos', more: { href: `${season.href}/videos`, text: 'All videos' } },
+  { label: 'Videos', href: '#videos', more: { href: `${season.href}/videos`, text: 'All videos', drilldown: 'videos' } },
   {
     label: countLabel(season.commentCount, 'Comment'),
     href: '#comments',
-    more: { href: `${season.href}/comments`, text: 'All comments' },
+    more: { href: `${season.href}/comments`, text: 'All comments', drilldown: 'comments' },
   },
   {
     label: countLabel(season.listCount, 'List'),
     href: '#lists',
-    more: { href: `${season.href}/lists`, text: 'All lists' },
+    more: { href: `${season.href}/lists`, text: 'All lists', drilldown: 'popular-lists' },
   },
 ]);
 </script>
@@ -79,13 +79,13 @@ const sections = $derived([
   <SummaryTitle title={season.title} year={season.years} certification={season.certification} links={season.parents} />
   {#snippet stats()}<RatingsStrip rating={season.rating} rateLabel="season" {ratingTarget}
     statsHref="{season.href}/stats" />{/snippet}
-  {#snippet edges()}<ItemNav previous={season.previous} next={season.next} up={season.showHref} />{/snippet}
+  {#snippet edges()}<ItemNav previous={season.previous} next={season.next} up={season.showHref} source="seasons" />{/snippet}
 </FanartHeader>
 <SummaryFrame label={season.fullTitle}>
   {#snippet tools()}
     <MediaTools target={{ type: 'season', id: season.id, title: season.fullTitle, href: season.href, fanart: season.fanart }} />
   {/snippet}
-  {#snippet subnav()}<SeasonLinks label="Season" links={season.seasonLinks} />{/snippet}
+  {#snippet subnav()}<SeasonLinks label="Season" links={season.seasonLinks} source="seasons" />{/snippet}
   {#snippet sidebar()}
     <a class="poster-link" href={season.showHref} aria-label="Back to {season.showTitle}"><SummaryPoster {ratingTarget} image={season.poster} alt={season.fullTitle} /></a>
     <WatchNow button={data.watchNow} title={season.fullTitle} fanart={season.fanart} />

@@ -4,6 +4,8 @@
   on the smallest. The title shows as the poster's tooltip.
 -->
 <script lang="ts">
+import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
+import { trackSectionDrilldown } from '$lib/analytics/trackSectionDrilldown';
 import posterPlaceholder from '$lib/assets/placeholders/poster.png';
 import PanelHeading from '$lib/components/dashboard/PanelHeading.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
@@ -29,14 +31,15 @@ const SECTIONS = [
 <div class="frame">
   <div class="trending">
     {#each SECTIONS as { type, title } (type)}
-      <section aria-labelledby="home-trending-{type}">
+      <section aria-labelledby="home-trending-{type}"
+        {@attach trackSectionDrilldown({ source: 'trending', type: type === 'shows' ? 'show' : 'movie' }, `/${type}/trending`)}>
         <PanelHeading
           id="home-trending-{type}"
           {title}
           icon={fire}
           seeMore={{ href: `/${type}/trending`, text: 'View all' }}
         />
-        <ul class="posters">
+        <ul class="posters" {@attach trackDrilldowns({ source: 'trending' })}>
           {#each posters[type] as poster (poster.key)}
             <li>
               <Tooltip text={poster.year ? `${poster.title} (${poster.year})` : poster.title}>

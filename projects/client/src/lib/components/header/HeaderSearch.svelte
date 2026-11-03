@@ -14,6 +14,7 @@
 -->
 <script lang="ts">
 import { afterNavigate } from '$app/navigation';
+import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
 import { page } from '$app/state';
 import EmptyNote from '$lib/components/empty/EmptyNote.svelte';
 import Icon from '$lib/icons/Icon.svelte';
@@ -400,7 +401,8 @@ afterNavigate(({ to }) => {
         </div>
 
       <ul id="{id}-results" role="listbox" aria-label="Search results" hidden={!expanded} aria-busy={startingSoon}
-        onpointerleave={() => (highlight = -1)}>
+        onpointerleave={() => (highlight = -1)}
+        {@attach trackDrilldowns(typed ? { source: 'search', positions: ':scope > li' } : { source: 'search-trending' })}>
           {#if startingSoon}
             <li role="presentation" class="section" aria-hidden="true"><Shimmer inline="var(--search-shimmer-section)"
                 block="var(--font-size-small)" /></li>

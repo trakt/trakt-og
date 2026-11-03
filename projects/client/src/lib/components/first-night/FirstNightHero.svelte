@@ -5,6 +5,10 @@
   stream in, shimmering chips and posters hold the picks' place.
 -->
 <script lang="ts">
+import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
+import { useTrack } from '$lib/analytics/useTrack';
+import { nearViewport } from '$lib/utils/nearViewport';
+import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
 import Container from '$lib/components/container/Container.svelte';
 import PanelHeading from '$lib/components/dashboard/PanelHeading.svelte';
 import PickShimmer from '$lib/components/loading/PickShimmer.svelte';
@@ -35,9 +39,11 @@ const hasName = $derived(named || !!savedName.value);
 let tab = $state<FirstNightTab['key']>('shows');
 /** A tab's picks: two rows of the wall's six. */
 const SHOWN = 12;
+const { track: trackOnboarding } = useTrack(AnalyticsEvent.OnboardingStep);
 </script>
 
-<section class="first-night" aria-labelledby={id}>
+<section class="first-night" aria-labelledby={id}
+  {@attach nearViewport(() => trackOnboarding({ step: 'intro', action: 'view' }))}>
   {#await firstNight then night}
     {#if night.backdrop}<img class="backdrop" src={night.backdrop} alt="" />{/if}
   {:catch}
@@ -78,7 +84,7 @@ const SHOWN = 12;
           <ToggleChips label="Titles to pick from" options={night.tabs.map(({ key, label }) => ({ id: key, label }))}
             bind:selected={() => current?.key ?? tab, (key) => (tab = key as FirstNightTab['key'])} />
           {#if current}
-            <div class="posters">
+            <div class="posters" {@attach trackDrilldowns({ source: 'first-night' })}>
               {#each current.picks as pick (pick.key)}
                 <PickPoster {pick} action="seen" />
               {/each}

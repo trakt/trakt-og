@@ -5,6 +5,8 @@
   poster grid between two paginations. The stats bar sits before the sort; the filter icons follow it. Watchlist, favorites and official lists render here too.
 -->
 <script lang="ts">
+import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
+import { trackUpsellImpression } from '$lib/analytics/trackUpsellImpression';
 import SeoHead from '$lib/seo/SeoHead.svelte';
 import { toListSeo } from '$lib/seo/pages/toListSeo';
 import { imageUrl } from '$lib/utils/imageUrl';
@@ -305,6 +307,7 @@ const indexed = $derived(
     data.kind !== 'favorites',
 );
 const ownerKind = $derived(data.kind === 'watchlist' || data.kind === 'favorites' ? data.kind : null);
+const itemsSource = $derived(ownerKind ?? 'user-list');
 const owner = $derived(ownerKind !== null && data.user?.slug === data.list?.ownerSlug);
 // Outgoing posters must not read a derived after its owning effect has been destroyed.
 let removingFromOwner = false;
@@ -783,7 +786,8 @@ async function saveNotes(text: string) {
 </section>
   {/if}
 
-  <section class={['items', { managing }]} aria-label="{list.name} items" aria-busy={writing} {@attach shortcut}>
+  <section class={['items', { managing }]} aria-label="{list.name} items" aria-busy={writing} {@attach shortcut}
+    {@attach trackDrilldowns({ source: itemsSource })}>
   <Container>
       {#if displayCards.length > 0}
         {#if !(owner && managing) && data.page.type === 'paginated'}<Pagination meta={data.page} label="List pages" />{/if}
@@ -840,7 +844,7 @@ async function saveNotes(text: string) {
   tags={noteCard.noteTitle.show ? [{ text: noteCard.noteTitle.show, kind: 'generic' }] : []}
   privacy={data.list ? listPrivacy(data.list) : undefined} item={noteCard.noteTitle} onsave={saveNotes}>
       {#if noteLimit !== null}
-        <p class="notes-limit" role="alert">You've already added <strong>{noteLimit}</strong> notes.
+        <p class="notes-limit" role="alert" {@attach trackUpsellImpression('lists')}>You've already added <strong>{noteLimit}</strong> notes.
           {#if !vip}Upgrade to <a href={traktUrls.vipFor('lists')} target="_blank" rel="noopener">VIP</a> to add unlimited notes.{/if}</p>
       {/if}
     </NotesDialog>

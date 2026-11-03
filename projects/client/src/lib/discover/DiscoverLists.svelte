@@ -6,6 +6,7 @@
   (Like, items, comments), the comments left out when they'd wrap to a second row.
 -->
 <script lang="ts">
+import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
 import { page } from '$app/state';
 import type { Attachment } from 'svelte/attachments';
 import PanelHeading from '$lib/components/dashboard/PanelHeading.svelte';
@@ -83,7 +84,8 @@ const oneRow: Attachment<HTMLElement> = (node) => {
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
 {#if lists.length > 0}
-  <section id="lists" class="lists" aria-labelledby="theme-lists-heading">
+  <section id="lists" class="lists" aria-labelledby="theme-lists-heading"
+    {@attach trackDrilldowns({ source: 'season-lists' })}>
   <PanelHeading id="theme-lists-heading" title="{season} Lists" icon={listIcon} />
   <div class="controls">
     <ToggleChips label="Sort lists" options={themeListSorts} bind:selected={sort} />

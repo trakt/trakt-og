@@ -4,9 +4,11 @@
   column keeps two a row with the headings on one line, and drops the rest. Nothing renders without episodes.
 -->
 <script lang="ts">
+import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
 import FanartCard from '$lib/components/media/FanartCard.svelte';
 import { quickIconFill } from '$lib/components/media/quickIconFill';
 import SeeMore from '$lib/components/see-more/SeeMore.svelte';
+import { trackSectionDrilldown } from '$lib/analytics/trackSectionDrilldown';
 import { overlay } from '$lib/overlay/overlay';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
 import type { EpisodeCard } from './toShowSummary.ts';
@@ -38,13 +40,13 @@ const cards = $derived(next ? [next, ...aired] : aired);
   <div class={['headings', { 'with-next': next }]}>
       {#if next}<h2 class="next">{upNext ? 'Up Next' : 'Next Episode'}</h2>{/if}
       {#if aired.length > 0}
-        <div class="aired">
+        <div class="aired" {@attach trackSectionDrilldown({ source: 'seasons' })}>
           <h2>Recently Aired</h2>
           <SeeMore href={allHref} text="All Episodes" />
         </div>
       {/if}
     </div>
-  <div class="cards">
+  <div class="cards" {@attach trackDrilldowns({ source: 'season-episode-list' })}>
       {#each cards as episode (episode.id)}
         <div>{@render card(episode)}</div>
       {/each}

@@ -9,6 +9,7 @@
   through.
 -->
 <script lang="ts">
+import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
 import { isStandardApi } from '$lib/api/isStandardApi';
 import { mediaTags } from '$lib/components/labels/mediaTags';
 import TagPills from '$lib/components/labels/TagPills.svelte';
@@ -148,6 +149,7 @@ const controls: Attachment<HTMLElement> = (node) => {
   aria-roledescription="carousel"
   aria-labelledby="season-title"
   {@attach controls}
+  {@attach trackDrilldowns({ source: 'season-picks' })}
 >
     {#each slides as slide, slot (slide.key)}
       {#if shown.has(slot)}

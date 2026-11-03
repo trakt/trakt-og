@@ -4,6 +4,7 @@
   icons.
 -->
 <script lang="ts">
+import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
 import EmptyState from '$lib/components/empty/EmptyState.svelte';
 import FadeHideMenu from '$lib/components/filters/FadeHideMenu.svelte';
 import { type FadeHide, fadeHideOptions, matchesFadeHide } from '$lib/components/filters/fadeHide';
@@ -60,7 +61,7 @@ function clearHide() {
 </script>
 
 {#if seasons.length > 0}
-  <section class="seasons" aria-labelledby="seasons">
+  <section class="seasons" aria-labelledby="seasons" {@attach trackDrilldowns({ source: 'seasons' })}>
   <SortHeading id="seasons" {count} noun="Season" sorts={SEASON_SORTS} bind:by bind:flipped loading={stats.loading}>
     {#snippet controls()}{#if signedIn}<FadeHideMenu value={filters} options={fadeHideOptions} cookie="show" onchange={(next) => (filters = next)} />{/if}{/snippet}
   </SortHeading>

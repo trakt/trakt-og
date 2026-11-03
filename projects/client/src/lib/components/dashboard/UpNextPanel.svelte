@@ -7,6 +7,7 @@
 -->
 <script lang="ts">
 import { resolve } from '$app/paths';
+import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
 import type { Snippet } from 'svelte';
 import { browser } from '$app/environment';
 import LoadFailed from '$lib/components/empty/LoadFailed.svelte';
@@ -69,6 +70,7 @@ const STREAMING = ' + streaming on your ';
   icon={forward}
   {loading}
   seeMore={{ href: progressHref, text: 'Progress' }}
+  drilldown={{ source: 'up-next' }}
   {footer}
 >
     {#snippet help()}
@@ -92,7 +94,7 @@ const STREAMING = ' + streaming on your ';
         {#snippet picks()}<StarterPicks chart="trending" type="shows" count={4} action="watchlist" />{/snippet}
       </PanelPrompt>
     {:else}
-      <div class="cards" bind:clientWidth={width}>
+      <div class="cards" bind:clientWidth={width} {@attach trackDrilldowns({ source: 'continue-watching' })}>
   <PosterGrid columns={PER_ROW}>
           {#each visible.slice(0, rows.rows * perRow) as item (item.showId)}
             <DashboardOnDeckCard initial={item} {username} {settings} />

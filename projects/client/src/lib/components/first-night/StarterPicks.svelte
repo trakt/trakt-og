@@ -3,6 +3,7 @@
   deals shows and movies alternately. Shimmering picks hold the row until the chart lands; nothing renders if it fails.
 -->
 <script lang="ts">
+import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
 import {
   fetchStarterPicks,
   interleave,
@@ -45,7 +46,7 @@ const picks = $derived(load());
   </div>
 {:then list}
   {#if list.length > 0}
-    <div class="frame">
+    <div class="frame" {@attach trackDrilldowns({ source: 'first-night' })}>
       <div class="grid" style:--columns={columns}>
         {#each list as pick (pick.key)}
           <PickPoster {pick} {action} />

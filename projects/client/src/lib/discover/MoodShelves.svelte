@@ -5,6 +5,8 @@
   type doesn't have falls back to the season's.
 -->
 <script lang="ts">
+import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
+import { trackSectionDrilldown } from '$lib/analytics/trackSectionDrilldown';
 import PanelHeading from '$lib/components/dashboard/PanelHeading.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import PosterCard from '$lib/components/media/PosterCard.svelte';
@@ -30,7 +32,9 @@ const mood = $derived(shelves.find(({ id }) => id === picked) ?? shelves.at(0));
 </script>
 
 {#if moods.movie.length > 0 || moods.show.length > 0}
-  <section id="moods" class="moods" aria-labelledby="moods-heading">
+  <section id="moods" class="moods" aria-labelledby="moods-heading"
+    {@attach trackDrilldowns({ source: 'mood-shelves' })}
+    {@attach mood && trackSectionDrilldown({ source: 'mood-shelves', type }, mood.more)}>
     <PanelHeading
       id="moods-heading"
       title="What are you in the mood for?"

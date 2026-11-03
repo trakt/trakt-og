@@ -75,6 +75,7 @@ import { smartListChartHref } from '$lib/lists/smart/smartListChartHref';
 import { smartListPath } from '$lib/lists/smart/smartListPath';
 import { smartListSourceLabel } from '$lib/lists/smart/smartListSourceLabel';
 import { toSmartListFilters } from '$lib/lists/smart/toSmartListFilters';
+import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
 
 type Props = {
   data: Awaited<ReturnType<typeof loadChart>> & {
@@ -88,6 +89,9 @@ const { data }: Props = $props();
 const noun = $derived(data.type === 'shows' ? 'show' : 'movie');
 const title = $derived(data.type === 'shows' ? 'Shows' : 'Movies');
 const periodText = $derived(chartPeriodText(data.period));
+// Web's names where it has the chart. The library chart isn't web's `library`, a member's own collection.
+const CHART_SOURCES: Partial<Record<string, string>> = { recommendations: 'recommended', library: 'library-chart' };
+const source = $derived(CHART_SOURCES[data.chart] ?? data.chart);
 
 // The `meta(...)` call in each action.
 const meta = $derived(
@@ -479,21 +483,23 @@ async function saveChanges() {
       <LoadFailed inFrame what={meta.title} />
     </div>
   {:else if entries.length > 0}
-    {#if hero}
-      <ChartHero card={hero.card} rank={hero.rank} live={data.chart === 'trending'} icons={hero.icons} />
-    {/if}
-    {#if pair.length > 0}
-      <div class="pair-frame" data-sveltekit-preload-data="tap">
-        <div class="pair">
-          {#each pair as entry (entry.card.id)}{@render fanart(entry, true)}{/each}
+    <div class="chart" {@attach trackDrilldowns({ source })}>
+      {#if hero}
+        <ChartHero card={hero.card} rank={hero.rank} live={data.chart === 'trending'} icons={hero.icons} />
+      {/if}
+      {#if pair.length > 0}
+        <div class="pair-frame" data-sveltekit-preload-data="tap">
+          <div class="pair">
+            {#each pair as entry (entry.card.id)}{@render fanart(entry, true)}{/each}
+          </div>
         </div>
-      </div>
-    {/if}
-    {#if grid.length > 0}
-      <FrameGrid variant="framed">
-        {#each grid as entry (entry.card.id)}{@render fanart(entry)}{/each}
-      </FrameGrid>
-    {/if}
+      {/if}
+      {#if grid.length > 0}
+        <FrameGrid variant="framed">
+          {#each grid as entry (entry.card.id)}{@render fanart(entry)}{/each}
+        </FrameGrid>
+      {/if}
+    </div>
   {:else}
     <div class="no-results">
       {#if advanced.count > 0}
@@ -508,6 +514,10 @@ async function saveChanges() {
 </SidebarFrame>
 
 <style>
+.chart {
+  display: contents;
+}
+
 .counts {
   display: flex;
   flex-wrap: wrap;

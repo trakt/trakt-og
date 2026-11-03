@@ -6,6 +6,7 @@
 <script lang="ts">
 import SeoHead from '$lib/seo/SeoHead.svelte';
 import { toSubpageSeo } from '$lib/seo/pages/toSubpageSeo';
+import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
 import { page } from '$app/state';
 import ListEditor from '$lib/components/lists/ListEditor.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
@@ -99,7 +100,8 @@ const lists = $derived(own.visible(data.lists));
   {subnav}
 >
   <!-- Each row brings OG's 20px above it, so rows straight under the subnav sit flush like OG's. -->
-  <div id="lists" class={['lists', { flush: data.lists.length > 0 && !pages }]}>
+  <div id="lists" class={['lists', { flush: data.lists.length > 0 && !pages }]}
+    {@attach trackDrilldowns({ source: 'popular-lists' })}>
     {#if data.lists.length === 0}
       {#if data.query.type === 'all'}<EmptyState />
       {:else}<EmptyState action={{ href: href({ type: 'all' }), text: 'See all lists' }} />{/if}

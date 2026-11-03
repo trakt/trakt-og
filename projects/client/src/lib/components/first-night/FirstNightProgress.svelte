@@ -5,6 +5,8 @@
   plain frames. Done saves the choice and reloads the dashboard, so the panels fill in with what was just tracked.
 -->
 <script lang="ts">
+import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
+import { useTrack } from '$lib/analytics/useTrack';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import { invalidateAll } from '$app/navigation';
 import Container from '$lib/components/container/Container.svelte';
@@ -58,7 +60,13 @@ const line = $derived(
 const RADIUS = 20;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
+const { track: trackOnboarding } = useTrack(AnalyticsEvent.OnboardingStep);
+$effect(() => {
+  if (done) trackOnboarding({ step: 'outro', action: 'view' });
+});
+
 async function close() {
+  trackOnboarding({ step: 'outro', action: done ? 'complete' : 'skip' });
   dashboardPrefs.save(slug, { ...dashboardPrefs.load(slug), hide_first_night: true });
   wallClosed.set(true);
   await invalidateAll();

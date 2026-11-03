@@ -6,6 +6,8 @@
   Below tablet width the third poster hides, and on phones the columns stack.
 -->
 <script lang="ts">
+import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
+import { trackSectionDrilldown } from '$lib/analytics/trackSectionDrilldown';
 import Container from '$lib/components/container/Container.svelte';
 import PanelHeading from '$lib/components/dashboard/PanelHeading.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
@@ -35,8 +37,8 @@ const { shows, movies, slug, windowStart, isSelf = false, datePreferences }: Pro
 const TABS = [{ id: 'lastMonth', label: 'Last 30 Days' }, { id: 'allTime', label: 'All Time' }] as const;
 
 const columns = [
-  { type: 'shows', title: 'Most Watched Shows', icon: tvRetro },
-  { type: 'movies', title: 'Most Watched Movies', icon: cameraMovie },
+  { type: 'shows', mode: 'show', title: 'Most Watched Shows', icon: tvRetro },
+  { type: 'movies', mode: 'movie', title: 'Most Watched Movies', icon: cameraMovie },
 ] as const;
 
 const data = $derived({ shows, movies });
@@ -57,12 +59,17 @@ const seeMore = (type: MostWatchedType, tab: MostWatchedTab) =>
         {@const headingId = `most-watched-${column.type}`}
         {@const period = selected(column.type)}
         {@const cards = data[column.type][period]}
-        <section class="column" aria-labelledby={headingId}>
+        {@const href = seeMore(column.type, period)}
+        <section
+          class="column"
+          aria-labelledby={headingId}
+          {@attach trackSectionDrilldown({ source: 'most-watched', type: column.mode }, href)}
+        >
           <PanelHeading
             id={headingId}
             title={column.title}
             icon={column.icon}
-            seeMore={{ href: seeMore(column.type, period), text: 'See more' }}
+            seeMore={{ href, text: 'See more' }}
           />
           <div class="controls">
             <Dropdown section="Period">
@@ -78,7 +85,7 @@ const seeMore = (type: MostWatchedType, tab: MostWatchedTab) =>
             </Dropdown>
           </div>
           {#if cards.length > 0}
-            <div class="posters">
+            <div class="posters" {@attach trackDrilldowns({ source: 'most-watched' })}>
               {#each cards as card (card.id)}
                 {@const state = overlay.state(card.type, card.id)}
                 <PosterCard

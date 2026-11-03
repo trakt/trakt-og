@@ -1,4 +1,5 @@
 <script lang="ts">
+import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
 import SeoHead from '$lib/seo/SeoHead.svelte';
 import { SvelteURLSearchParams } from 'svelte/reactivity';
 import { goto } from '$app/navigation';
@@ -148,7 +149,7 @@ const count = $derived(data.total - (data.cards.length - cards.length));
   {/snippet}
 </SectionToolbar>
 
-<section class="ratings" aria-label={title}>
+<section class="ratings" aria-label={title} {@attach trackDrilldowns({ source: 'ratings' })}>
   <Container>
     {#if cards.length > 0}
       {#if data.page.type === 'paginated'}<Pagination meta={data.page} label="Ratings pages" />{/if}

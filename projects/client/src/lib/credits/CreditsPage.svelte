@@ -8,6 +8,7 @@
 <script lang="ts">
 import SeoHead from '$lib/seo/SeoHead.svelte';
 import { toSubpageSeo } from '$lib/seo/pages/toSubpageSeo';
+import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
 import { replaceState } from '$app/navigation';
 import { page } from '$app/state';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
@@ -159,7 +160,7 @@ const matches = $derived(results.reduce((total, group) => total + group.people.l
   sections={[{ label: 'People', href: '#people' }]}
   {subnav}
 >
-  <div id="people" class="people">
+  <div id="people" class="people" {@attach trackDrilldowns({ source: 'credits' })}>
     {#each results as group (group.key)}
       <section aria-label="{group.kind}: {group.label}">
         {#if terms}

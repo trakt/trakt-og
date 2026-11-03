@@ -11,6 +11,7 @@
 import { afterNavigate, invalidateAll } from '$app/navigation';
 import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
 import { useTrack } from '$lib/analytics/useTrack';
+import { trackUpsellImpression } from '$lib/analytics/trackUpsellImpression';
 import { page } from '$app/state';
 import logo from '$lib/assets/trakt-logo-red.png';
 import Icon from '$lib/icons/Icon.svelte';
@@ -188,7 +189,7 @@ async function toggleDarkKnight() {
       <GettingStarted slug={user.slug} named={user.named} joinedAt={user.joinedAt} />
       {#if !user.isVip}
         <a class="get-vip" href={traktUrls.vipFor('navbar')} target="_blank" rel="noopener"
-          onclick={() => trackVipUpsell({ source: 'navbar' })}><Icon svg={rocket} /> Get VIP</a>
+          onclick={() => trackVipUpsell({ source: 'navbar' })} {@attach trackUpsellImpression('navbar')}><Icon svg={rocket} /> Get VIP</a>
       {/if}
       <div class={['profile', { vip: user.isVip }]}>
         <HeaderMenu label="{user.firstName}'s menu">

@@ -9,6 +9,7 @@
   fanart, episode and name, and the commenter), and arrows on the section's edges step through.
 -->
 <script lang="ts">
+import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
 import EmptyState from '$lib/components/empty/EmptyState.svelte';
 import { page } from '$app/state';
 import CommentCard from '$lib/components/comments/CommentCard.svelte';
@@ -75,6 +76,7 @@ async function filter(next: { kind?: typeof kind; media?: typeof media }) {
   aria-labelledby="comments-heading"
   aria-roledescription="carousel"
   aria-busy={loading}
+  {@attach trackDrilldowns({ source: 'trending-comments' })}
 >
     {#each list as item, slot (item.comment.id)}
       {#if item.item.fanart}

@@ -17,6 +17,7 @@ import { fetchWatching, type LiveWatch } from '$lib/dashboard/fetchWatching';
 import { pollWatching } from '$lib/dashboard/pollWatching';
 import type { SocialMember } from '$lib/dashboard/toSocialItem';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
+import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
 import { followingWatching } from './followingWatching';
 import type { MediaType } from './loadChart';
 import { viewerFetch } from '../auth/viewerFetch.ts';
@@ -72,7 +73,7 @@ const tiles = $derived(live && followingWatching(live, type, now));
 
 {#if tiles?.length}
   <SidebarSection id="following" title="People you follow" {open} remember>
-    <ul class="members">
+    <ul class="members" {@attach trackDrilldowns({ source: 'following-watching' })}>
       {#each tiles as { watch, progress, minutesLeft } (watch.member.key)}
         <li>
           <img class="avatar" src={watch.member.avatar} alt="" loading="lazy" decoding="async" />

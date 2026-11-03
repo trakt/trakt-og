@@ -2,6 +2,7 @@
   The four boxes under a profile's frame, picked by the loader. Four across, two from tablet width, one on phones.
 -->
 <script lang="ts">
+import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
 import Container from '$lib/components/container/Container.svelte';
 import { profileBoxComponent } from './profileBoxComponent.ts';
 import type { toProfileBoxes } from './toProfileBoxes.ts';
@@ -11,7 +12,7 @@ const { boxes }: { boxes: Awaited<ReturnType<typeof toProfileBoxes>> } = $props(
 
 <section class="boxes" aria-label="Stats">
   <Container>
-    <div class="grid">
+    <div class="grid" {@attach trackDrilldowns({ source: 'profile-stats' })}>
       {#each boxes as box (box.key)}
         {@const Box = profileBoxComponent(box.key)}
         {#if Box}<Box view={box.view} />{/if}

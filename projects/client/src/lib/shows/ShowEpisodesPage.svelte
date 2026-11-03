@@ -33,7 +33,7 @@ const sections = $derived([
   show={data.show}
   heading="All Episodes"
   years={episodes.years}
-  seasonLinks={{ label: 'Season', links: episodes.seasonLinks }}
+  seasonLinks={{ label: 'Season', links: episodes.seasonLinks, source: 'seasons' }}
   {sections}
   previous={episodes.previous}
   next={episodes.next}

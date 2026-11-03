@@ -53,7 +53,7 @@ const ratingTarget = $derived({ type: 'show' as const, id: show.id, title: show.
       statsHref="{show.href}/stats" />
   {/snippet}
   {#snippet edges()}
-    <ItemNav {previous} {next} up={show.href} />
+    <ItemNav {previous} {next} up={show.href} source="seasons" />
   {/snippet}
 </FanartHeader>
 

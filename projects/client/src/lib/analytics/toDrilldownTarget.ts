@@ -7,13 +7,17 @@ const SITE = 'https://og.trakt.tv';
 
 const SUMMARY: ReadonlyArray<{ type: SummaryType; path: RegExp }> = [
   { type: 'episode', path: /^\/shows\/[^/]+\/seasons\/[^/]+\/episodes\/[^/]+$/ },
-  { type: 'season', path: /^\/shows\/[^/]+\/seasons\/[^/]+$/ },
+  { type: 'season', path: /^\/shows\/[^/]+\/seasons\/(?!all$)[^/]+$/ },
   { type: 'movie', path: /^\/movies\/[^/]+$/ },
   { type: 'show', path: /^\/shows\/[^/]+$/ },
   { type: 'person', path: /^\/people\/[^/]+$/ },
 ];
 
-const LIST = [/^\/users\/[^/]+\/lists\/[^/]+$/, /^\/lists\/official\/[^/]+$/, /^\/lists\/\d+$/];
+const LIST = [
+  /^\/users\/[^/]+\/(smart-)?lists\/(?!collaborations$|liked$)[^/]+$/,
+  /^\/lists\/official\/[^/]+$/,
+  /^\/lists\/\d+$/,
+];
 
 // `/movies/trending` and `/movies/boxoffice` are shaped like a movie's page.
 const isChartPage = (path: string) => {

@@ -22,6 +22,7 @@ import type { SmartListPrivacy } from '$lib/lists/smart/SmartList';
 import { traktUrls } from '$lib/traktUrls';
 import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
 import { useTrack } from '$lib/analytics/useTrack';
+import { trackUpsellImpression } from '$lib/analytics/trackUpsellImpression';
 
 interface Props {
   open: boolean;
@@ -84,7 +85,7 @@ const { track: trackVipUpsell } = useTrack(AnalyticsEvent.VipUpsell);
     {#if atLimit && !editing}
       <DialogNotice role="alert">You've reached your smart list limit.
         {#if !vip}<a href={traktUrls.vipFor('smart-list')} target="_blank" rel="noopener"
-          onclick={() => trackVipUpsell({ source: 'smart-list' })}>Upgrade to VIP</a> to save more.{/if}
+          onclick={() => trackVipUpsell({ source: 'smart-list' })} {@attach trackUpsellImpression('smart-list')}>Upgrade to VIP</a> to save more.{/if}
       </DialogNotice>
     {/if}
     {#if error}<DialogNotice tone="danger" role="alert">{error}</DialogNotice>{/if}

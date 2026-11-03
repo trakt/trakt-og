@@ -10,6 +10,7 @@
   list between the subnav and the rows.
 -->
 <script lang="ts">
+import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
 import SeoHead from '$lib/seo/SeoHead.svelte';
 import { untrack } from 'svelte';
 import { SvelteMap, SvelteURLSearchParams } from 'svelte/reactivity';
@@ -318,7 +319,8 @@ function clearFilters() {
 <!-- OG's `showLoading()` while grid view saves and the page reloads. -->
 <LoadingOverlay visible={saving === 'grid_view'} />
 
-<section class={['progress', data.type]} aria-label={title} aria-busy={shown === null}>
+<section class={['progress', data.type]} aria-label={title} aria-busy={shown === null}
+  {@attach trackDrilldowns({ source: 'progress' })}>
   <Container>
     {#if shown !== null && rows.length > 0}
       {#if pageCount > 1}<Pagination {meta} label="Progress pages" />{/if}

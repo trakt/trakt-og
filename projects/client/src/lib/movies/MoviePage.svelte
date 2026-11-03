@@ -60,18 +60,18 @@ const sections = $derived([
   { label: 'Stats', href: `${movie.href}/stats`, page: true },
   { label: 'Activity', href: '#activity' },
   ...(movie.cast.length > 0
-    ? [{ label: 'People', href: '#people', more: { href: `${movie.href}/people`, text: 'All people' } }]
+    ? [{ label: 'People', href: '#people', more: { href: `${movie.href}/people`, text: 'All people', drilldown: 'social' } }]
     : []),
-  { label: 'Videos', href: '#videos', more: { href: `${movie.href}/videos`, text: 'All videos' } },
+  { label: 'Videos', href: '#videos', more: { href: `${movie.href}/videos`, text: 'All videos', drilldown: 'videos' } },
   {
     label: countLabel(movie.commentCount, 'Comment'),
     href: '#comments',
-    more: { href: `${movie.href}/comments`, text: 'All comments' },
+    more: { href: `${movie.href}/comments`, text: 'All comments', drilldown: 'comments' },
   },
   {
     label: countLabel(movie.listCount, 'List'),
     href: '#lists',
-    more: { href: `${movie.href}/lists`, text: 'All lists' },
+    more: { href: `${movie.href}/lists`, text: 'All lists', drilldown: 'popular-lists' },
   },
 ]);
 const textLinks = $derived(movie.links.filter(({ icon }) => !icon));
@@ -95,7 +95,8 @@ const textLinks = $derived(movie.links.filter(({ icon }) => !icon));
       statsHref="{movie.href}/stats" />
   {/snippet}
   {#snippet edges()}
-    <ItemNav previous={movie.collection?.previous} next={movie.collection?.next} up={movie.collection?.href} />
+    <ItemNav previous={movie.collection?.previous} next={movie.collection?.next} up={movie.collection?.href}
+      source="collection" />
   {/snippet}
 </FanartHeader>
 

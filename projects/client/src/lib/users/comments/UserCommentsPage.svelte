@@ -4,6 +4,7 @@
   a page beside their posters.
 -->
 <script lang="ts">
+import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
 import SeoHead from '$lib/seo/SeoHead.svelte';
 import { SvelteURLSearchParams } from 'svelte/reactivity';
 import { page } from '$app/state';
@@ -108,7 +109,7 @@ const current = (picked: boolean) => (picked ? 'page' : undefined);
   {/snippet}
 </SectionToolbar>
 
-<section class="comments" aria-label={title}>
+<section class="comments" aria-label={title} {@attach trackDrilldowns({ source: 'activity' })}>
   <Container>
     {#if data.entries.length > 0}
       {#if data.page.type === 'paginated'}

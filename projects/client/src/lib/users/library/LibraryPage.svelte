@@ -4,6 +4,7 @@
   poster cards, under day dividers on Added Date. The owner's cards carry the metadata overlay.
 -->
 <script lang="ts">
+import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
 import SeoHead from '$lib/seo/SeoHead.svelte';
 import { SvelteURLSearchParams } from 'svelte/reactivity';
 import { goto } from '$app/navigation';
@@ -168,7 +169,7 @@ const flipped = $derived(data.sort.how === 'desc');
   {/snippet}
 </SectionToolbar>
 
-<section class="library" aria-label={title}>
+<section class="library" aria-label={title} {@attach trackDrilldowns({ source: 'library' })}>
   <Container>
     {#if cards.length > 0}
       {#if data.page.type === 'paginated'}<Pagination meta={data.page} label="Library pages" />{/if}

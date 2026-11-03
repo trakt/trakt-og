@@ -18,6 +18,7 @@ import type { CardTag } from '$lib/components/media/CardTag';
 import { traktUrls } from '$lib/traktUrls';
 import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
 import { useTrack } from '$lib/analytics/useTrack';
+import { trackUpsellImpression } from '$lib/analytics/trackUpsellImpression';
 
 interface Props {
   open: boolean;
@@ -98,7 +99,7 @@ const { track: trackVipUpsell } = useTrack(AnalyticsEvent.VipUpsell);
     {#if max !== undefined}
       <DialogNotice role="alert">You've already created <strong>{max}</strong> lists.
         {#if !vip}<a href={traktUrls.vipFor('lists')} target="_blank" rel="noopener"
-          onclick={() => trackVipUpsell({ source: 'lists' })}>Upgrade to VIP</a> to create unlimited lists.{/if}
+          onclick={() => trackVipUpsell({ source: 'lists' })} {@attach trackUpsellImpression('lists')}>Upgrade to VIP</a> to create unlimited lists.{/if}
       </DialogNotice>
     {/if}
     {#if error}<p class="error" role="alert">{error}</p>{/if}

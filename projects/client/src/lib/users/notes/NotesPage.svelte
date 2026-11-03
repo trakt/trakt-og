@@ -1,4 +1,5 @@
 <script lang="ts">
+import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
 import SeoHead from '$lib/seo/SeoHead.svelte';
 import { SvelteURLSearchParams } from 'svelte/reactivity';
 import { page } from '$app/state';
@@ -132,7 +133,8 @@ const filterHref = (type: string) => {
     </span>
   {/snippet}
 </SectionToolbar>
-<section class="notes" aria-label={title} bind:this={section} tabindex="-1">
+<section class="notes" aria-label={title} bind:this={section} tabindex="-1"
+  {@attach trackDrilldowns({ source: 'notes' })}>
   <Container>
     {#if data.page.type === 'paginated'}<Pagination meta={data.page} label="Notes pages" />{/if}
     {#each notes as note (note.id)}

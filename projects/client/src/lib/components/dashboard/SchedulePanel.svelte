@@ -8,6 +8,7 @@
 <script lang="ts">
 import { invalidateAll } from '$app/navigation';
 import { resolve } from '$app/paths';
+import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
 import LoadFailed from '$lib/components/empty/LoadFailed.svelte';
 import EmptyState from '$lib/components/empty/EmptyState.svelte';
 import PanelPrompt from '$lib/components/empty/PanelPrompt.svelte';
@@ -112,6 +113,7 @@ function watchNow(item: NonNullable<ScheduleItem['watchNow']>) {
   icon={calendarLines}
   {loading}
   seeMore={{ href: `/calendars/my/${calendar}`, text: 'Calendar' }}
+  drilldown={{ source: 'calendar' }}
 >
   {#if onpick}
     <div class="picks">
@@ -167,7 +169,7 @@ function watchNow(item: NonNullable<ScheduleItem['watchNow']>) {
   {:else if layout}
     {@const { spotlight } = layout}
     {@const cards = allCards ? [...spotlight.shown, ...spotlight.more] : spotlight.shown}
-    <div class="schedule" class:stale={loading}>
+    <div class="schedule" class:stale={loading} {@attach trackDrilldowns({ source: 'calendar' })}>
       <div class="spotlight">
         <h3>
           {spotlight.heading} {@render date(spotlight.short)}{#if spotlight.nothing}<span class="note"

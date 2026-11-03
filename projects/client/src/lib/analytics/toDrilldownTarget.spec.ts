@@ -15,22 +15,27 @@ describe('util: toDrilldownTarget', () => {
     expect(toDrilldownTarget(href)).toEqual({ event: 'summary', type });
   });
 
-  it.each(['/users/sean/lists/favorites-2026', '/lists/official/star-wars', '/lists/12345'])(
-    'should open %s as a list',
-    (href) => {
-      expect(toDrilldownTarget(href)).toEqual({ event: 'list' });
-    },
-  );
+  it.each([
+    '/users/sean/lists/favorites-2026',
+    '/users/sean/smart-lists/90s-thrillers',
+    '/lists/official/star-wars',
+    '/lists/12345',
+  ])('should open %s as a list', (href) => {
+    expect(toDrilldownTarget(href)).toEqual({ event: 'list' });
+  });
 
   it.each([
     '/movies/trending',
     '/shows/popular/weekly',
     '/movies/boxoffice',
+    '/shows/severance/seasons/all',
     '/shows/watched',
     '/movies/dune-part-two-2024/comments',
     '/shows/severance/seasons/2/episodes/3/stats',
     '/users/sean',
     '/users/sean/lists',
+    '/users/sean/lists/collaborations',
+    '/users/sean/lists/liked',
     '/',
     'https://www.imdb.com/title/tt15239678',
     'https://app.trakt.tv/movies/dune-part-two-2024',

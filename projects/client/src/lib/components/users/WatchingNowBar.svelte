@@ -9,6 +9,7 @@
   column. Put it inside a positioned cover.
 -->
 <script lang="ts">
+import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
 import { rawApiFetch } from '$lib/api/rawApiFetch';
 import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
 import { useTrack } from '$lib/analytics/useTrack';
@@ -70,7 +71,8 @@ async function cancel() {
 
 <!-- Links point at media and profile pages other issues build; resolve() only takes routes that exist. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-<div class={['watching-now', { cancelled, gone: progress.gone }]} inert={cancelled || progress.gone}>
+<div class={['watching-now', { cancelled, gone: progress.gone }]} inert={cancelled || progress.gone}
+  {@attach trackDrilldowns({ source: 'watching-now' })}>
   <div class={['bar', { done: progress.finished }]} style:--progress="{progress.percent}%">
     <Container>
       <div class="row">

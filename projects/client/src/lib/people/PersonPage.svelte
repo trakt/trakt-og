@@ -5,6 +5,7 @@
 <script lang="ts">
 import SeoHead from '$lib/seo/SeoHead.svelte';
 import { toPersonSeo } from '$lib/seo/pages/toPersonSeo';
+import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
 import { afterNavigate, replaceState } from '$app/navigation';
 import { tick } from 'svelte';
 import { page } from '$app/state';
@@ -378,7 +379,8 @@ function yearLine(credit: PersonCredit) {
   {/snippet}
 
   {#if person.knownFor.length > 0}
-    <section class="known-for" id="known-for" aria-labelledby="known-for-heading">
+    <section class="known-for" id="known-for" aria-labelledby="known-for-heading"
+      {@attach trackDrilldowns({ source: 'known-for' })}>
       <h2 id="known-for-heading"><strong>Known</strong> For</h2>
       <PosterGrid columns={5} narrowColumns={3} oneRow>
         {#each person.knownFor as credit (`${credit.type}-${credit.id}`)}{@render card(credit, false)}{/each}
@@ -386,7 +388,8 @@ function yearLine(credit: PersonCredit) {
     </section>
   {/if}
 
-  <section class="credits" id="credits" aria-labelledby="credits-heading">
+  <section class="credits" id="credits" aria-labelledby="credits-heading"
+    {@attach trackDrilldowns({ source: 'credits' })}>
     <h2 id="credits-heading"><strong>Credits</strong></h2>
     <div class="toolbar">
       {#if current}

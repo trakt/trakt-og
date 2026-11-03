@@ -9,6 +9,7 @@ import type { Snippet } from 'svelte';
 import Container from '$lib/components/container/Container.svelte';
 import PanelHeading from './PanelHeading.svelte';
 import PanelHelp from './PanelHelp.svelte';
+import { trackSectionDrilldown } from '$lib/analytics/trackSectionDrilldown';
 
 interface Props {
   title: string;
@@ -17,6 +18,8 @@ interface Props {
   /** Marks the panel busy for screen readers while its content shows shimmers. */
   loading?: boolean;
   seeMore?: { href: string; text: string };
+  /** trakt-web's section-title drilldown, sent when the see-more link is clicked. */
+  drilldown?: Parameters<typeof trackSectionDrilldown>[0];
   help?: Snippet;
   /** OG's `h2.section` heading (PanelHeading). */
   section?: boolean;
@@ -26,11 +29,16 @@ interface Props {
   footer?: Snippet;
 }
 
-const { title, icon, loading = false, seeMore, help, section, aside, children, footer }: Props = $props();
+const { title, icon, loading = false, seeMore, drilldown, help, section, aside, children, footer }: Props = $props();
 const id = $props.id();
 </script>
 
-<section class="dashboard-panel" aria-labelledby={id} aria-busy={loading}>
+<section
+  class="dashboard-panel"
+  aria-labelledby={id}
+  aria-busy={loading}
+  {@attach seeMore && drilldown && trackSectionDrilldown(drilldown, seeMore.href)}
+>
   <Container>
     <PanelHeading {id} {title} {icon} {seeMore} {section} {aside} />
     {#if help}

@@ -6,11 +6,13 @@
 <script lang="ts">
 import type { Snippet } from 'svelte';
 import SeeMore from '$lib/components/see-more/SeeMore.svelte';
+import { trackSectionDrilldown } from '$lib/analytics/trackSectionDrilldown';
 
 interface Props {
   title: string;
   id?: string;
-  more?: { readonly href: string; readonly text: string };
+  /** `drilldown` is trakt-web's id for the section, sent when the link is followed. */
+  more?: { readonly href: string; readonly text: string; readonly drilldown?: string };
   /** Links before the see-more one, like the comments' "Add comment". */
   actions?: Snippet;
   ruled?: boolean;
@@ -22,7 +24,7 @@ const { title, id, more, actions, ruled = false }: Props = $props();
 <div class={['heading', { ruled }]}>
   <h2 {id}>{title}</h2>
   {#if actions}<span class="actions">{@render actions()}</span>{/if}
-  {#if more}<span class="more"><SeeMore href={more.href} text={more.text} /></span>{/if}
+  {#if more}<span class="more" {@attach more.drilldown ? trackSectionDrilldown({ source: more.drilldown }) : undefined}><SeeMore href={more.href} text={more.text} /></span>{/if}
 </div>
 
 <style>

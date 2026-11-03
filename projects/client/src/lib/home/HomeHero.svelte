@@ -6,6 +6,7 @@
   or rotates.
 -->
 <script lang="ts">
+import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
 import { resolve } from '$app/paths';
 import { authStep } from '$lib/auth/authStep.svelte';
 import ProjectLink from '$lib/components/brand/ProjectLink.svelte';
@@ -92,7 +93,7 @@ $effect(() => {
   </div>
 
   {#if current}
-    <div class="credit">
+    <div class="credit" {@attach trackDrilldowns({ source: 'home-hero' })}>
       <span class="label">Now showing</span>
       <a href={current.href}>{current.title}</a>
       {#if fanarts.length > 1}

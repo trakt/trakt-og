@@ -6,6 +6,7 @@
 -->
 <script lang="ts">
 import { resolve } from '$app/paths';
+import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
 import type { Snippet } from 'svelte';
 import { browser } from '$app/environment';
 import LoadFailed from '$lib/components/empty/LoadFailed.svelte';
@@ -62,6 +63,7 @@ const allText = (total: number) => `All ${total.toLocaleString('en-US')} ${total
   icon={bookmark}
   {loading}
   seeMore={list ? { href: `/users/${username}/watchlist`, text: allText(list.total) } : undefined}
+  drilldown={{ source: 'watchlist' }}
   help={list ? sorted : loading ? sorting : undefined}
   {footer}
 >
@@ -85,7 +87,7 @@ const allText = (total: number) => `All ${total.toLocaleString('en-US')} ${total
         {#snippet picks()}<StarterPicks chart="anticipated" type="both" count={4} action="watchlist" />{/snippet}
       </PanelPrompt>
     {:else}
-      <div class="cards" bind:clientWidth={width}>
+      <div class="cards" bind:clientWidth={width} {@attach trackDrilldowns({ source: 'watchlist' })}>
   <PosterGrid columns={PER_ROW}>
           {#each list.cards.slice(0, rows.rows * perRow) as item (item.key)}
             <ListItemPoster {item} {datePreferences} />

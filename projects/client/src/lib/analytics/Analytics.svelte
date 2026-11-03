@@ -17,7 +17,12 @@ if (browser) {
     isReporting: isReportingEnabled({ origin: location.origin, dev }),
     enrich: () => getUserAnalyticsData(user),
   });
-  const uninstall = analytics.install(engine);
+  // The design demos render real components; clicking around them isn't product use.
+  const uninstall = analytics.install({
+    record: (key, data) => {
+      if (!page.route.id?.startsWith('/_design')) engine.record(key, data);
+    },
+  });
 
   onDestroy(() => {
     uninstall();

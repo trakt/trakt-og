@@ -5,6 +5,7 @@
   the community stats as number-only count buttons along the card's foot, shimmering until the row's stats load.
 -->
 <script lang="ts">
+import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
 import EmptyState from '$lib/components/empty/EmptyState.svelte';
 import MediaSpoiler from '$lib/components/summary/MediaSpoiler.svelte';
 import FadeHideMenu from '$lib/components/filters/FadeHideMenu.svelte';
@@ -116,7 +117,7 @@ const metaTags = (row: EpisodeRow): readonly TagPill[] => [
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
 {#if rows.length > 0}
-  <section class="episodes" aria-labelledby="episodes">
+  <section class="episodes" aria-labelledby="episodes" {@attach trackDrilldowns({ source: 'season-episode-list' })}>
     <SortHeading id="episodes" count={filtered.length} noun="Episode" {sorts} bind:by bind:flipped loading={stats.loading}>
       {#snippet controls()}{#if search}<TermsFilter bind:terms help="Only display episodes with a title or overview matching your search term." />{/if}{#if signedIn}<FadeHideMenu value={filters} {options} cookie="season" onchange={saveFilters} />{/if}{/snippet}
     </SortHeading>

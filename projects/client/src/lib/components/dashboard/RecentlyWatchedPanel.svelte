@@ -6,6 +6,7 @@
 -->
 <script lang="ts">
 import { resolve } from '$app/paths';
+import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
 import type { Snippet } from 'svelte';
 import { browser } from '$app/environment';
 import LoadFailed from '$lib/components/empty/LoadFailed.svelte';
@@ -65,6 +66,7 @@ function changeRows(rows: number) {
   section
   {loading}
   seeMore={{ href: `/users/${username}/history`, text: 'History' }}
+  drilldown={{ source: 'recently-watched' }}
   {footer}
 >
   <div class="body">{@render content()}</div>
@@ -117,7 +119,7 @@ function changeRows(rows: number) {
         {#snippet picks()}<StarterPicks chart="popular" type="movies" count={4} action="seen" />{/snippet}
       </PanelPrompt>
     {:else}
-      <div class="cards">
+      <div class="cards" {@attach trackDrilldowns({ source: 'watch-history' })}>
   <PosterGrid columns={PER_ROW} phoneColumns={1}>
           {#each items.slice(0, rows.rows * PER_ROW) as play (play.key)}
             {@render card(play)}

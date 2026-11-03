@@ -4,6 +4,7 @@
   one grid with the dividers off. Shows, and Movies on any sort but Watched Date, chart one card a title instead.
 -->
 <script lang="ts">
+import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
 import SeoHead from '$lib/seo/SeoHead.svelte';
 import type { HistoryPlay } from '$lib/components/history/HistoryPlay';
 import { removeHistoryCards } from '$lib/users/history/removeHistoryCards';
@@ -205,7 +206,7 @@ const country = $derived(watchNowCountry(data.settings));
   {/snippet}
 </SectionToolbar>
 
-<section class="history" aria-label={title}>
+<section class="history" aria-label={title} {@attach trackDrilldowns({ source: 'watch-history' })}>
   <Container>
     {#if days.length > 0}
       {#if data.page.type === 'paginated'}<Pagination meta={data.page} label="History pages" />{/if}

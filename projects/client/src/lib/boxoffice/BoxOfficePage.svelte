@@ -7,6 +7,7 @@
 -->
 <script lang="ts">
 import SeoHead from '$lib/seo/SeoHead.svelte';
+import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import ChartPicker from '$lib/charts/ChartPicker.svelte';
 import TagPills from '$lib/components/labels/TagPills.svelte';
@@ -80,7 +81,7 @@ const runPill = (run: WeekInRelease) => ({
 
     {#if data.opening.films.length > 0}
       <SidebarSection id="opening" title="Opening Friday {data.opening.friday}" open={data.sidebar.opening} remember>
-        <ul class="opening">
+        <ul class="opening" {@attach trackDrilldowns({ source: 'box-office-opening' })}>
           {#each data.opening.films as film (film.id)}
             <li>
               <a href={film.href}>
@@ -109,7 +110,7 @@ const runPill = (run: WeekInRelease) => ({
     </RailGroup>
   {/snippet}
 
-  <div class="box-office">
+  <div class="box-office" {@attach trackDrilldowns({ source: 'box-office' })}>
     <header class="mast">
       <p class="eyebrow">Weekend box office</p>
       <h2>{data.weekend.label}</h2>

@@ -8,6 +8,7 @@
 -->
 <script lang="ts">
 import SeoHead from '$lib/seo/SeoHead.svelte';
+import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import { afterNavigate, goto } from '$app/navigation';
 import { page } from '$app/state';
@@ -481,7 +482,8 @@ const title = $derived(`${data.target === 'my' ? 'My ' : ''}${data.calendar.labe
       onchange={applyFilters} onclose={closePanel} />
   {/snippet}
 
-  <div class="calendar" {@attach followScroll}>
+  <div class="calendar" {@attach followScroll}
+    {@attach trackDrilldowns({ source: data.target === 'my' ? 'calendar' : 'releases' })}>
     {#if display.view === 'month'}
       <CalendarMonth {month} {days} today={data.today} artwork={display.artwork} {weekStart} {mixed} {cardIcons} />
     {:else if display.view === 'agenda'}

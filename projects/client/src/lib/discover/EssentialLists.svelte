@@ -7,6 +7,7 @@
   nothing slides. The slice's link is a layer under the open text, so the count buttons can sit over it.
 -->
 <script lang="ts">
+import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
 import { page } from '$app/state';
 import ListCount from '$lib/components/lists/ListCount.svelte';
 import ListLikeButton from '$lib/components/lists/ListLikeButton.svelte';
@@ -33,7 +34,8 @@ const count = (n: number) => n.toLocaleString('en-US');
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
 {#if lists.length > 0}
-  <section id="essentials" class="essentials" aria-labelledby="essentials-heading">
+  <section id="essentials" class="essentials" aria-labelledby="essentials-heading"
+    {@attach trackDrilldowns({ source: 'essential-lists' })}>
   <h2 id="essentials-heading" class="visually-hidden">Essential Lists</h2>
   <ul onpointerleave={() => clearTimeout(timer)}>
       {#each lists as list, index (list.id)}

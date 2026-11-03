@@ -6,6 +6,7 @@
 -->
 <script lang="ts">
 import { goto } from '$app/navigation';
+import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
 import { swipeDirection } from './swipeDirection.ts';
 import Icon from '$lib/icons/Icon.svelte';
 import angleLeft from '$lib/icons/regular/angle-left.svg?raw';
@@ -21,9 +22,11 @@ interface Props {
   previous?: Link;
   next?: Link;
   up?: string;
+  /** trakt-web's drilldown source for following an arrow, like `season-episode-list` between episodes. */
+  source?: string;
 }
 
-const { previous, next, up }: Props = $props();
+const { previous, next, up, source }: Props = $props();
 
 function onkeydown(event: KeyboardEvent) {
   if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
@@ -72,12 +75,14 @@ function ontouchend(event: TouchEvent) {
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
 {#if previous}
-  <a class="item-nav previous" href={previous.href} rel="prev" aria-label={previous.label}>
+  <a class="item-nav previous" href={previous.href} rel="prev" aria-label={previous.label}
+    {@attach source ? trackDrilldowns({ source }) : undefined}>
   <span class="arrow"><Icon svg={angleLeft} /></span>
 </a>
 {/if}
 {#if next}
-  <a class="item-nav next" href={next.href} rel="next" aria-label={next.label}>
+  <a class="item-nav next" href={next.href} rel="next" aria-label={next.label}
+    {@attach source ? trackDrilldowns({ source }) : undefined}>
   <span class="arrow"><Icon svg={angleRight} /></span>
 </a>
 {/if}

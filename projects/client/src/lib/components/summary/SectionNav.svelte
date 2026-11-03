@@ -13,13 +13,15 @@ import SeeMore from '$lib/components/see-more/SeeMore.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import arrowRightLong from '$lib/icons/regular/arrow-right-long.svg?raw';
 import { isPlainClick } from '$lib/utils/isPlainClick';
+import { trackSectionDrilldown } from '$lib/analytics/trackSectionDrilldown';
 import { prefersReducedMotion } from 'svelte/motion';
 
 interface Section {
   readonly label: string;
   /** Usually an anchor on the page, like `#people`. */
   readonly href: string;
-  readonly more?: { readonly href: string; readonly text: string };
+  /** `drilldown` is trakt-web's id for the section, sent when the link is followed. */
+  readonly more?: { readonly href: string; readonly text: string; readonly drilldown?: string };
   /** A link to another page instead of an anchor: the arrow sits inside it. */
   readonly page?: boolean;
 }
@@ -116,7 +118,8 @@ const track: Attachment<HTMLElement> = () => {
             onclick={(event) => jump(event, section.href)}>{section.label}</a>
         {/if}
         {#if section.more}
-          <span class="more"><SeeMore href={section.more.href} text={section.more.text} iconOnly /></span>
+          <span class="more" {@attach section.more.drilldown ? trackSectionDrilldown({ source: section.more.drilldown }) : undefined}
+            ><SeeMore href={section.more.href} text={section.more.text} iconOnly /></span>
         {/if}
       </li>
     {/each}

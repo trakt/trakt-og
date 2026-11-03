@@ -5,6 +5,7 @@
   the picked group. Pointing at one headshot dims the rest. Empty groups aren't offered.
 -->
 <script lang="ts">
+import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import { peopleGroupHref } from '$lib/credits/peopleGroupHref';
 import CastCard from './CastCard.svelte';
@@ -40,10 +41,11 @@ const current = $derived(tabs.find(({ key }) => key === picked) ?? tabs[0]);
 </script>
 
 {#if current}
-  <div class="actors" id="people">
+  <div class="actors" id="people" {@attach trackDrilldowns({ source: 'credits' })}>
   <SectionHeading title="People" more={{
     href: peopleGroupHref(creditsHref, { kind: current.kind, id: current.id, first: current.key === tabs[0]?.key }),
     text: 'All People',
+    drilldown: 'social',
   }} />
   <div class="controls">
     <Dropdown section={current.kind}>

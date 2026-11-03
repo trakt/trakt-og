@@ -9,6 +9,7 @@
 <script lang="ts">
 import { resolve } from '$app/paths';
 import { page } from '$app/state';
+import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
 import { SvelteSet } from 'svelte/reactivity';
 import Container from '$lib/components/container/Container.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
@@ -26,6 +27,7 @@ import thumbsUp from '$lib/icons/regular/thumbs-up.svg?raw';
 import tvRetro from '$lib/icons/regular/tv-retro.svg?raw';
 import { overlay } from '$lib/overlay/overlay';
 import PanelHeading from './PanelHeading.svelte';
+import { trackSectionDrilldown } from '$lib/analytics/trackSectionDrilldown';
 import RecommendationSpotlight from './RecommendationSpotlight.svelte';
 
 type RecommendationType = DashboardSettings['recommendations']['type'];
@@ -143,7 +145,11 @@ const step = (count: number, by: -1 | 1) => (focus = (focus + by + count) % coun
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
 {#snippet links()}
-  <span class="links">{#each LINKS[current] as link (link.href)}<SeeMore {...link} />{/each}</span>
+  <span
+    class="links"
+    {@attach trackSectionDrilldown({ source: 'recommended', type: 'show' }, '/shows/recommendations')}
+    {@attach trackSectionDrilldown({ source: 'recommended', type: 'movie' }, '/movies/recommendations')}
+  >{#each LINKS[current] as link (link.href)}<SeeMore {...link} />{/each}</span>
 {/snippet}
 
 {#snippet poster(item: Recommendation, index: number, spotlit: boolean)}
@@ -228,7 +234,8 @@ const step = (count: number, by: -1 | 1) => (focus = (focus + by + count) % coun
           </Dropdown>
         </div>
       {/if}
-      <div class={['body', { stale: loading && landed }]} inert={loading && landed !== null}>
+      <div class={['body', { stale: loading && landed }]} inert={loading && landed !== null}
+        {@attach trackDrilldowns({ source: 'recommended' })}>
         {@render body(historyKnown ? landed : null)}
       </div>
     </section>

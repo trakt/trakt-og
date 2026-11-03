@@ -7,6 +7,8 @@
   color), the lists it's on and the network, and og's quick-action bar.
 -->
 <script lang="ts">
+import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
+import { trackSectionDrilldown } from '$lib/analytics/trackSectionDrilldown';
 import PanelHeading from '$lib/components/dashboard/PanelHeading.svelte';
 import FanartCard from '$lib/components/media/FanartCard.svelte';
 import { quickIconFill } from '$lib/components/media/quickIconFill';
@@ -55,7 +57,8 @@ function soon(days: number) {
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
 {#if groups.length > 0}
-  <section id="premieres" class="premieres" aria-labelledby="premieres-heading">
+  <section id="premieres" class="premieres" aria-labelledby="premieres-heading"
+    {@attach trackSectionDrilldown({ source: 'upcoming-premieres' }, '/calendars/premieres')}>
   <PanelHeading
     id="premieres-heading"
     title="Upcoming Premieres"
@@ -69,7 +72,7 @@ function soon(days: number) {
       bind:selected
     />
   </div>
-  <ul class="grid" data-sveltekit-preload-data="tap">
+  <ul class="grid" data-sveltekit-preload-data="tap" {@attach trackDrilldowns({ source: 'upcoming-premieres' })}>
       {#each shown as premiere (premiere.key)}
         {@const viewer = overlay.state('show', premiere.id)}
         {@const days = daysAway(premiere.day)}

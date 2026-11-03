@@ -6,6 +6,7 @@
   scroll in, and edit only their name and privacy here.
 -->
 <script lang="ts">
+import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
 import SeoHead from '$lib/seo/SeoHead.svelte';
 import ReportDialog from '$lib/components/summary/ReportDialog.svelte';
 import type { ReportTarget } from '$lib/components/summary/ReportTarget';
@@ -587,7 +588,12 @@ const actions = (row: UserListRow) => {
   privacy={data.profile.isPrivate ? 'private' : 'public'}
   onclose={() => (builtInEditor = undefined)} />{/if}
 
-<section class="lists" aria-labelledby="lists-heading" {@attach shortcut}>
+<section
+  class="lists"
+  aria-labelledby="lists-heading"
+  {@attach shortcut}
+  {@attach trackDrilldowns({ source: smart ? 'smart-lists' : 'personal-lists' })}
+>
   <Container>
     <h2 id="lists-heading" class="visually-hidden">{title}</h2>
     {#if smart && data.isSelf && data.savedFilters && !savedHidden}

@@ -25,7 +25,7 @@ const sections = $derived([
     ? [{
       label: countLabel(show.seasonCount, 'Season'),
       href: '#seasons',
-      more: { href: `${show.href}/seasons/all`, text: 'All episodes' },
+      more: { href: `${show.href}/seasons/all`, text: 'All episodes', drilldown: 'seasons' },
     }]
     : []),
 ]);

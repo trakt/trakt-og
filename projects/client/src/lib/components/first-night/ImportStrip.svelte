@@ -3,6 +3,9 @@
   new tab. The welcome wall leads with it, since an import fills an account faster than anything else.
 -->
 <script lang="ts">
+import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
+import { useTrack } from '$lib/analytics/useTrack';
+import { nearViewport } from '$lib/utils/nearViewport';
 import imdb from '$lib/assets/sites/imdb-solid.svg';
 import letterboxd from '$lib/assets/sites/letterboxd.svg';
 import { traktUrls } from '$lib/traktUrls';
@@ -12,13 +15,16 @@ const sources = [
   { id: 'imdb', name: 'IMDb', note: 'Ratings and watchlist', logo: imdb },
   { id: 'letterboxd', name: 'Letterboxd', note: 'Films, ratings and watchlist', logo: letterboxd },
 ] as const;
+
+const { track: trackOnboarding } = useTrack(AnalyticsEvent.OnboardingStep);
 </script>
 
 <!-- Each tile opens an import page on trakt.tv, outside this app. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-<div class="import">
+<div class="import" {@attach nearViewport(() => trackOnboarding({ step: 'import', action: 'view' }))}>
   {#each sources as source (source.id)}
-    <a class="tile" href={traktUrls.importFrom(source.id)} target="_blank" rel="noopener">
+    <a class="tile" href={traktUrls.importFrom(source.id)} target="_blank" rel="noopener"
+      onclick={() => trackOnboarding({ step: 'import', action: 'complete' })}>
       {#if 'logo' in source}
         <img class={['logo', source.id]} src={source.logo} alt="" />
       {:else}

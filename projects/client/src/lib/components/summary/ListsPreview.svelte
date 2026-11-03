@@ -4,6 +4,7 @@
 -->
 <script lang="ts">
 import { page } from '$app/state';
+import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
 import ListEditor from '$lib/components/lists/ListEditor.svelte';
 import ListRow from '$lib/components/media/ListRow.svelte';
 import { createItemListActions } from '$lib/itemLists/createItemListActions.svelte';
@@ -26,8 +27,9 @@ const own = createItemListActions({ viewer: () => viewer, origin: () => page.url
 const shown = $derived(own.visible(lists));
 </script>
 
-<div class="summary-lists">
-  <SectionHeading title="Popular Lists" more={{ href: `${href}/lists`, text: `All ${countLabel(count, 'List')}` }} />
+<div class="summary-lists" {@attach trackDrilldowns({ source: 'popular-lists' })}>
+  <SectionHeading title="Popular Lists"
+    more={{ href: `${href}/lists`, text: `All ${countLabel(count, 'List')}`, drilldown: 'popular-lists' }} />
   {#each shown as list (list.id)}
     <ListRow {...list} mine={list.owner.slug === page.data.user?.slug} likeTarget={{ id: list.id, ownerSlug: list.kind === 'personal' ? list.owner.slug : undefined, viewer: page.data.user?.slug ?? null }}
       actions={own.actions(list)} />

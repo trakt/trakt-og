@@ -5,6 +5,7 @@
 -->
 <script lang="ts">
 import type { Attachment } from 'svelte/attachments';
+import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
 import Container from '$lib/components/container/Container.svelte';
 
 interface Link {
@@ -13,7 +14,14 @@ interface Link {
   readonly selected?: boolean;
 }
 
-const { label, links }: { label: string; links: readonly Link[] } = $props();
+interface Props {
+  label: string;
+  links: readonly Link[];
+  /** trakt-web's drilldown source for the links: `seasons`, or `season-episode-list` for a season's episodes. */
+  source?: string;
+}
+
+const { label, links, source }: Props = $props();
 const revealSelected: Attachment<HTMLUListElement> = (element) => {
   const selected = links.findIndex((link) => link.selected);
   const item = element.children.item(selected);
@@ -28,7 +36,7 @@ const revealSelected: Attachment<HTMLUListElement> = (element) => {
   <Container>
     <div class="inner">
       <span class="label" aria-hidden="true">{label}</span>
-      <ul {@attach revealSelected}>
+      <ul {@attach revealSelected} {@attach source ? trackDrilldowns({ source }) : undefined}>
         {#each links as link (link.href)}
           <li>
             <a href={link.href} class={{ selected: link.selected }} aria-current={link.selected ? 'page' : undefined}

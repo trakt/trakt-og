@@ -9,6 +9,7 @@
 import SeoHead from '$lib/seo/SeoHead.svelte';
 import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
 import { useTrack } from '$lib/analytics/useTrack';
+import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import { page } from '$app/state';
 import { untrack } from 'svelte';
@@ -271,14 +272,14 @@ function save(next: FadeHide) {
   {/snippet}
 
   {#if data.lists.length > 0}
-    <div class="lists">
+    <div class="lists" {@attach trackDrilldowns({ source: 'search', positions: ':scope > *' })}>
       {#each listsShown as list (list.key)}
         <ListRow {...list} mine={list.owner.slug === page.data.user?.slug} likeTarget={{ id: list.id, ownerSlug: list.kind === 'personal' ? list.owner.slug : undefined, viewer: page.data.user?.slug ?? null }}
           actions={own.actions(list)} />
       {/each}
     </div>
   {:else if shownCards.length > 0}
-    <div class="results">
+    <div class="results" {@attach trackDrilldowns({ source: 'search', positions: ':scope > .results-body > *' })}>
       <div class={['results-body', display.view, artwork]}>
         {#each shownCards as { card, state, icons, faded } (card.key)}
           {@const result = {

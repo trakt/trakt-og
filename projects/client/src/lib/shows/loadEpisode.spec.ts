@@ -43,6 +43,7 @@ const params = () => ({
   season: '1',
   episode: '1',
   url: new URL('https://og.trakt.tv/shows/breaking-bad/seasons/1/episodes/1?foo=bar'),
+  token: null,
   parent: () =>
     Promise.resolve({
       user: null,
@@ -61,6 +62,45 @@ describe('loadEpisode', () => {
     ]);
     expect(data.episode.id).toBe(73482);
     expect(data.datePreferences.timeZone).toBe('UTC');
+  });
+  it("should read the viewer's own note on the episode with their token, and only that read", async () => {
+    server.use(
+      http.get(`${API}/users/me/notes/episodes`, ({ request }) => {
+        seen.push(request);
+        return HttpResponse.json([
+          {
+            type: 'episode',
+            episode: { ids: { trakt: 73482 } },
+            attached_to: { type: 'episode' },
+            note: { id: 5, notes: 'Slow start', privacy: 'private', updated_at: '2026-09-25T21:00:00.000Z' },
+          },
+        ]);
+      }),
+    );
+    const viewer = {
+      slug: 'viewer',
+      firstName: 'Viewer',
+      displayName: 'Viewer',
+      avatarUrl: '',
+      isVip: false,
+      joinedAt: null,
+      named: false,
+    };
+    const signedIn = params();
+    const data = await loadEpisode({
+      ...signedIn,
+      token: 'viewer',
+      parent: () => signedIn.parent().then((layout) => ({ ...layout, user: viewer })),
+    });
+    const authorized = seen.filter((request) => request.headers.has('authorization'));
+    expect(authorized.map(({ url }) => new URL(url).pathname)).toEqual(['/users/me/notes/episodes']);
+    expect(data.privateNotes.note).toEqual({
+      id: 5,
+      text: 'Slow start',
+      createdAt: null,
+      updatedAt: '2026-09-25T21:00:00.000Z',
+    });
+    expect(data.privateNotes.item).toMatchObject({ type: 'episode', id: 73482 });
   });
   it("should build the episode strip from the seasons read, without loading the season's episodes", async () => {
     const data = await loadEpisode(params());

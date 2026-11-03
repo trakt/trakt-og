@@ -3,8 +3,13 @@ import Specimen from '$lib/design/Specimen.svelte';
 import NoteManage from '$lib/components/notes/NoteManage.svelte';
 import NotesDialog from '$lib/components/notes/NotesDialog.svelte';
 import NoteRow from '$lib/components/notes/NoteRow.svelte';
+import NoteStamp from '$lib/components/notes/NoteStamp.svelte';
 import PrivateNotes from '$lib/components/summary/PrivateNotes.svelte';
 import SectionToolbar from '$lib/components/toolbar/SectionToolbar.svelte';
+import clock from '$lib/icons/regular/clock.svg?raw';
+import heart from '$lib/icons/solid/heart.svg?raw';
+import check from '$lib/icons/trakt/check-thick.svg?raw';
+import collection from '$lib/icons/trakt/collection-thick.svg?raw';
 import { noteRowsSchema } from '$lib/users/notes/noteRowsSchema';
 import { toNote } from '$lib/users/notes/toNote';
 
@@ -15,6 +20,7 @@ const item = { type: 'movie', id: 1, slug: 'fight-club-1999', title: 'Fight Club
 const note = {
   id: 1,
   text: 'Watched this on a flight.\nDeserves a proper rewatch.',
+  createdAt: '2026-09-20T12:00:00Z',
   updatedAt: '2026-09-29T12:00:00Z',
 };
 const rows = noteRowsSchema.parse([
@@ -106,9 +112,23 @@ const rows = noteRowsSchema.parse([
   </div>
 </Specimen>
 
+<Specimen title="Note stamps"
+  note="The dated box under a note, in its tone: a note card's watch, collect or rate date, and the summary box's Added or Updated.">
+  <div class="stamps">
+    <NoteStamp svg={check} glyph label="Watched" date="Sep 27, 2026 8:15 PM" tone="var(--color-note-tag-history)" />
+    <NoteStamp svg={collection} glyph label="Collected" date="Sep 26, 2026 8:20 AM"
+      tone="var(--color-note-tag-collection)" />
+    <NoteStamp svg={heart} label="Rated 7" date="Sep 28, 2026 12:00 PM" tone="var(--color-note-tag-rating)" />
+    <NoteStamp svg={clock} label="Updated" date="Sep 29, 2026" tone="var(--color-note-tag-date)"
+      line="var(--color-comment-bubble-border)" />
+  </div>
+</Specimen>
+
 <Specimen title="Private notes box"
-  note="Under a summary's overview, only when the title already has a note. Clicking it opens the notes dialog. New notes start from a favorite, a drop or a list item instead.">
+  note="Under a movie, show, season, episode or person overview, only when it already has a note: the text with read more, then the Added or Updated stamp and the edit and delete icons under it. Edit opens the notes dialog. New notes start from a favorite, a drop or a list item instead.">
   <PrivateNotes {item} {note} signedIn datePreferences={preferences} />
+  <PrivateNotes {item} note={{ ...note, id: 2, text: 'A long note with paragraphs.\n\n'.repeat(20), updatedAt: note.createdAt }} signedIn
+    datePreferences={preferences} />
 </Specimen>
 
 <NotesDialog bind:open bind:draft {item} privacy="public" onsave={() => open = false} />
@@ -116,5 +136,11 @@ const rows = noteRowsSchema.parse([
 <style>
 .notes {
   padding-block: var(--note-padding);
+}
+
+.stamps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--comment-stats-gap);
 }
 </style>

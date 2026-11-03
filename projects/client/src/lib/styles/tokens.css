@@ -2128,8 +2128,7 @@
   --color-summary-hover: light-dark(#000, #fff);
   --color-summary-alt: #999; /* "(62 episodes)" after a stat */
   --color-summary-separator: light-dark(#cacaca, #444);
-  --color-summary-tile-bg: light-dark(#eee, #333); /* external links and the notes tiles */
-  --color-summary-tile-text: light-dark(#666, #ccc);
+  --color-summary-tile-bg: light-dark(#eee, #333); /* external links */
   --color-summary-tile-hover-bg: light-dark(#666, #555);
   --color-summary-poster-border: light-dark(#fff, #000);
   --shadow-summary-poster: 0 0 20px light-dark(#666, #000);
@@ -2199,8 +2198,6 @@
   --video-icon-width: 34px;
   --font-size-video-icon: 22px;
   --font-size-video-scene: 11px; /* "DURING" above "Credits" */
-  --color-note-updated: #666; /* "— updated Sep 29, 2026" after "Private Notes" */
-  --notes-summary-padding: 8px 10px;
   --notes-summary-bottom: 20px;
   --action-height: 54px;
   --action-icon-width: 50px;
@@ -2678,6 +2675,7 @@
   --color-note-tag-collection: light-dark(#0f7d67, #3cc4a4); /* brand-quaternary, deepened for small text on white */
   --color-note-tag-rating: light-dark(#b70a0a, #f0605d); /* rating-10 */
   --color-note-tag-media: light-dark(#2b678f, #6fa8d6); /* brand-fifth */
+  --color-note-tag-date: var(--color-comment-muted); /* the summary box's Added or Updated stamp */
   --color-note-media: light-dark(#2b678f, #555); /* the notes dialog's type pill */
   --color-note-inline-title: light-dark(#e1e1e1, #333);
   --note-padding: 20px;

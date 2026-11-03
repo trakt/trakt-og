@@ -10,6 +10,7 @@ import { api } from '../api/api.ts';
 import { contractSchema } from '../api/contractSchema.ts';
 import { rawApiFetch } from '../api/rawApiFetch.ts';
 import type { HeaderUser } from '../components/header/HeaderUser.ts';
+import { loadPrivateNote } from '../notes/loadPrivateNote.ts';
 import type { DatePreferences } from '../settings/DatePreferences.ts';
 import type { ViewerSettings } from '../settings/ViewerSettings.ts';
 import { episodePeopleSchema } from './episodePeopleSchema.ts';
@@ -24,6 +25,7 @@ interface Params {
   season: string;
   episode: string;
   url: URL;
+  token: string | null;
   parent: () => Promise<{ user: HeaderUser | null; settings: ViewerSettings | null; datePreferences: DatePreferences }>;
 }
 function number(value: string, label: string) {
@@ -56,7 +58,7 @@ function parsed<T>(
   return result.data;
 }
 
-/** All public reads and the parent start together, without the viewer's cookie token. */
+/** All public reads and the parent start together, without the viewer's cookie token. Only the private note uses it. */
 export async function loadEpisode({
   fetch,
   parent,
@@ -64,6 +66,7 @@ export async function loadEpisode({
   season: requestedSeason,
   episode: requestedEpisode,
   url,
+  token,
 }: Params) {
   const season = number(requestedSeason, 'Season');
   const episode = number(requestedEpisode, 'Episode');
@@ -79,6 +82,15 @@ export async function loadEpisode({
       settings: layout.settings,
     }),
   );
+  const episodeRead = client.shows.episode.summary({ params, query: { extended: 'full,images' } });
+  // A malformed summary fails the page below with its own error, so the note read only steps aside.
+  const noteRead = Promise.all([episodeRead, layoutRead])
+    .then(([summary, { user }]) =>
+      summary.status === 200
+        ? loadPrivateNote({ fetch, token: user ? token : null, item: { type: 'episode', id: summary.body.ids.trakt } })
+        : null,
+    )
+    .catch(() => null);
   const [
     showResponse,
     episodeResponse,
@@ -89,9 +101,10 @@ export async function loadEpisode({
     statsResponse,
     layout,
     watchNow,
+    note,
   ] = await Promise.all([
     client.shows.summary({ params: { id }, query: { extended: 'full,images' } }),
-    client.shows.episode.summary({ params, query: { extended: 'full,images' } }),
+    episodeRead,
     client.shows.season.info({ params: { id, season }, query: { extended: 'full,images' } }),
     raw(fetch, `/shows/${encodeURIComponent(id)}/seasons?extended=episodes`),
     raw(fetch, `${path}/episodes/${episode}/people?extended=guest_stars,images`),
@@ -99,6 +112,7 @@ export async function loadEpisode({
     client.shows.episode.stats({ params }),
     layoutRead,
     watchNowRead,
+    noteRead,
   ]);
   const show = body(showResponse, showResponseSchema, 'Show');
   const info = body(episodeResponse, episodeResponseSchema, 'Episode');
@@ -123,6 +137,12 @@ export async function loadEpisode({
   return {
     episode: view,
     watchNow: watchNow.button,
+    privateNotes: {
+      item: { type: 'episode', id: view.id, title: view.fullTitle, year: view.year, fanart: view.fanart } as const,
+      note,
+      signedIn: layout.user !== null,
+      datePreferences: layout.datePreferences,
+    },
     user: layout.user,
     datePreferences: layout.datePreferences,
   };

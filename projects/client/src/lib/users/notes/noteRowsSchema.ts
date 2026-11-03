@@ -59,6 +59,7 @@ export const noteRowsSchema = z.array(
       notes: z.string().nullish(),
       privacy: z.enum(['public', 'friends', 'private']),
       spoiler: z.boolean().nullish(),
+      created_at: z.iso.datetime({ offset: true }).nullish(),
       updated_at: z.iso.datetime({ offset: true }),
       user: user.nullish(),
     }),

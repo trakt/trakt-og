@@ -19,6 +19,7 @@ import LazySection from '$lib/components/summary/LazySection.svelte';
 import ListsPreview from '$lib/components/summary/ListsPreview.svelte';
 import NameList from '$lib/components/summary/NameList.svelte';
 import Overview from '$lib/components/summary/Overview.svelte';
+import PrivateNotes from '$lib/components/summary/PrivateNotes.svelte';
 import RatingsStrip from '$lib/components/summary/RatingsStrip.svelte';
 import SeasonLinks from '$lib/components/summary/SeasonLinks.svelte';
 import SectionNav from '$lib/components/summary/SectionNav.svelte';
@@ -105,6 +106,7 @@ const sections = $derived([
       <AdditionalStat label="Links" phoneOnly><NameList names={season.links.filter(({ icon }) => !icon).map(({ label, href }) => ({ name: label, href }))} /></AdditionalStat>
     </AdditionalStats>
     <MediaSpoiler target={ratingTarget} kind="overview"><Overview overview={season.overview} /></MediaSpoiler>
+    <PrivateNotes {...data.privateNotes} />
   {/snippet}
   {#snippet actions()}<ActionButtons listTarget={ratingTarget} historyTarget={{ ...ratingTarget, season: { show: season.showId, number: season.number }, airedEpisodes: season.airedEpisodes, episodeIds: season.episodeIds, runtime: season.runtime }} />{/snippet}
   {#key season.href}

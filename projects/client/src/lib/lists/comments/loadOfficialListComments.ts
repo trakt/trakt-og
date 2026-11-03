@@ -1,6 +1,6 @@
 import { error, redirect } from '@sveltejs/kit';
 import { api } from '../../api/api.ts';
-import { fetchListSummary } from '../fetchListSummary.ts';
+import { fetchOfficialListSummary } from '../fetchOfficialListSummary.ts';
 import { readListComments } from './readListComments.ts';
 import { toListCommentsQuery } from './toListCommentsQuery.ts';
 import { toListCommentsTarget } from './toListCommentsTarget.ts';
@@ -17,10 +17,7 @@ type Params = {
  */
 export async function loadOfficialListComments({ fetch, params, url }: Params) {
   const query = toListCommentsQuery(url.searchParams);
-  const client = api({ fetch });
-  const found = await fetchListSummary(() =>
-    client.lists.summary({ params: { id: params.slug }, query: { extended: 'images' } }),
-  );
+  const found = await fetchOfficialListSummary({ fetch, id: params.slug, query: { extended: 'images' } });
   if (!found || [204, 401, 403, 404].includes(found.status)) error(404, 'Page Not Found');
   if (found.status !== 200) error(502, 'Trakt is having trouble loading this list.');
   // OG finds only official lists here (`OfficialList.friendly.find`).

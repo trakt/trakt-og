@@ -173,7 +173,7 @@ const listedOn = [
 </Specimen>
 
 <Specimen title="Tooltip" row
-  note="Hover or tab to a trigger; Esc hides it and touch never opens one, except a chart's, which a click or tap toggles. Text centers and balances its lines; stats with lines, and the library card, align left. Near the screen's edge it flips side. A tooltip that only repeats its trigger's name isn't linked as its description, so screen readers say it once.">
+  note="Hover or tab to a trigger; Esc hides it and touch never opens one, except a chart's, which a click or tap toggles. Text centers and balances its lines; stats with lines, and the library card, align left. Near the screen's edge it flips side. A tooltip that only repeats its trigger's name isn't linked as its description, so screen readers say it once. A summary button's tooltip spans the whole button, right under it (Favorites).">
   <Variant label="Plays, a movie's quick icon">
     <Tooltip placement="bottom">
       {#snippet trigger(tooltip)}
@@ -194,6 +194,12 @@ const listedOn = [
     <Tooltip placement="bottom">
       {#snippet trigger(tooltip)}<DemoButton aria-label="Remove from favorites" {...tooltip}>Favorite</DemoButton>{/snippet}
       <FavoritedTip date="Sep 28, 2026" />
+    </Tooltip>
+  </Variant>
+  <Variant label="Favorited, with a note">
+    <Tooltip placement="bottom">
+      {#snippet trigger(tooltip)}<DemoButton aria-label="Remove from favorites" {...tooltip}>Favorite</DemoButton>{/snippet}
+      <FavoritedTip date="Sep 28, 2026" note="My go to 4K HDR demo for the home theater. The race scene is amazing!" />
     </Tooltip>
   </Variant>
   <Variant label="Header, an episode over your plays">

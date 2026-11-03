@@ -465,9 +465,8 @@
   --color-read-notes-pill-hover: rgb(18 18 18 / 0.75);
   --color-read-notes-border: var(--color-profile-pill-border);
   --read-notes-sheet-padding: 12px;
-  --read-notes-edit-size: 26px; /* the editors' pencil in the sheet's corner */
-  --read-notes-edit-margin: 0 0 4px 8px; /* inside the note's scroll box, which clips anything past its edge */
-  --font-size-read-notes-edit: 12px;
+  --read-notes-bar-min: 34px; /* the editors' note bar, where a card has no quick icons to cover */
+  --color-read-notes-bar: rgb(14 14 14 / 0.9); /* over the quick icons, which mustn't show through */
   --blur-read-notes-sheet: var(--blur-header-glass);
   --color-read-notes-sheet: rgb(14 14 14 / 0.66);
   --color-read-notes-text: #fff;
@@ -2217,6 +2216,7 @@
   --summary-action-hover: brightness(1.12); /* an added button, or its tiles, under the pointer */
   --space-summary-action-footer-block: 8px; /* the library button's format row, under it */
   --space-summary-action-footer-end: 12px;
+  --space-summary-action-text-end: 12px; /* keeps a cut-off line's ellipsis off the button's edge */
   --summary-action-icon-size: 26px;
   --summary-action-tile-icon-size: 18px;
   --summary-action-trailing-icon-size: 15px; /* an icon in the tile column, like external-link, under the + */

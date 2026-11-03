@@ -134,7 +134,7 @@ const following = [{ slug: 'teodoro_2', name: 'Elsy Murphy (@teodoro_2)' }];
 <!-- The OG references are screenshots on og-shots, outside the app. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 <Specimen title="List picker"
-  note="The summary's list button, then the new list and edit list dialogs, and a watchlist's edit dialog. Collaborator routes are Official-only, so another app's client ID edits without them.">
+  note="The summary's list button (once listed, it reads On 3 lists over the names on one line, lists them in a tooltip on its left only when they don't fit, and its pencil tile manages them; both tooltips hide while the picker is open), then the new list and edit list dialogs, and a watchlist's edit dialog. Collaborator routes are Official-only, so another app's client ID edits without them.">
   <p>
     Local OG references: <a href="https://og-shots.trakt.tv/135/2d64380a-rails-add.png">Add list</a>,
     <a href="https://og-shots.trakt.tv/135/68548be2-rails-edit.png">Edit list</a> and
@@ -227,11 +227,11 @@ const following = [{ slug: 'teodoro_2', name: 'Elsy Murphy (@teodoro_2)' }];
 </Specimen>
 
 <Specimen title="Notes on posters"
-  note="The owner sees an edit button on notes and an Add Note pill when hovering a poster without notes. Long notes scroll.">
+  note="The owner's open notes bring a bar over the quick icons with manage mode's round edit and delete icons (delete asks first), and an Add Note pill shows when hovering a poster without notes. Long notes scroll.">
   <Variant label="Owner">
     <PosterGrid>
       {#each [heat, alien, aliens] as item (item.key)}
-        <ListItemPoster {item} rank={item.rank} {datePreferences} oneditnotes={editNotes} />
+        <ListItemPoster {item} rank={item.rank} {datePreferences} oneditnotes={editNotes} ondeletenotes={() => {}} />
       {/each}
     </PosterGrid>
   </Variant>

@@ -97,7 +97,7 @@ const rows = noteRowsSchema.parse([
 </Specimen>
 
 <Specimen title="Note rows"
-  note="Each note beside its poster: a spoiler, a long private one on a rating, a friends-only one on a play, one on a library item and one on an episode. Edit opens the notes dialog.">
+  note="Each note beside its poster: a spoiler, a long private one on a rating, a friends-only one on a play, one on a library item and one on an episode. Edit opens the notes dialog, with its delete icon at the start of the footer.">
   <div class="notes">
     {#each rows as row (row.note.id)}
       {@const note = toNote(row, preferences)}
@@ -131,7 +131,7 @@ const rows = noteRowsSchema.parse([
     datePreferences={preferences} />
 </Specimen>
 
-<NotesDialog bind:open bind:draft {item} privacy="public" onsave={() => open = false} />
+<NotesDialog bind:open bind:draft {item} privacy="public" onsave={() => open = false} ondelete={() => open = false} />
 
 <style>
 .notes {

@@ -1,6 +1,7 @@
 import type { CollectedItem } from './CollectedItem.ts';
 import { collectedDetails } from './collectedDetails.ts';
 import type { CollectionMetadata } from '../components/collection/CollectionMetadata.ts';
+import type { FavoriteNote } from '../favorites/FavoriteNote.ts';
 import { collectedCounts } from './collectedCounts.ts';
 import { collectedSources } from './collectedSources.ts';
 import type { LibrarySource } from '../components/collection/LibrarySource.ts';
@@ -42,6 +43,7 @@ export type OverlayState = {
   lists?: readonly ListLabel[];
   favorited?: boolean;
   favoritedAt?: string;
+  favoriteNote?: FavoriteNote;
   dropped?: boolean;
   rewatching?: boolean;
   rewatchingAt?: string;
@@ -192,6 +194,7 @@ function stateOf(slices: Partial<OverlaySlices>, type: MediaType, id: number, se
     watchlisted: slices.watchlist?.[type].has(id),
     favorited: slices.favorites?.[type].has(id),
     favoritedAt: slices.favorites?.dates?.[type].get(id),
+    favoriteNote: slices.favorites?.notes?.[type].get(id),
   };
 
   if (type === 'movie') {

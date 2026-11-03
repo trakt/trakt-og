@@ -106,7 +106,7 @@ async function save(text: string) {
 {/if}
 
 {#if signedIn}
-  <NotesDialog bind:open bind:draft {item} privacy="private" onsave={save} />
+  <NotesDialog bind:open bind:draft {item} privacy="private" onsave={save} ondelete={note ? () => save('') : undefined} />
 {/if}
 
 <style>

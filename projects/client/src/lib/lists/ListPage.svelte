@@ -448,9 +448,9 @@ function editNotes(item: ListItemCard) {
   notesDraft = item.notes ?? '';
   notesOpen = true;
 }
-async function saveOwnerNotes(notes: string) {
-  if (!owner || !ownerKind || !notesItem || ownerBusy || transferBusy) return;
-  const item = notesItem;
+// Optimistic, put back if the write fails. Resolves whether it saved, or undefined when the page moved on.
+async function writeOwnerNotes(item: ListItemCard, notes: string) {
+  if (!owner || !ownerKind || ownerBusy || transferBusy) return false;
   const source = data;
   const before = savedNotes;
   savedNotes = { ...savedNotes, [item.key]: notes.trim() };
@@ -461,13 +461,26 @@ async function saveOwnerNotes(notes: string) {
     request,
     notify: toast,
   });
-  if (source !== data) return;
+  if (source !== data) return undefined;
   if (!ok) savedNotes = before;
-  else {
-    notesOpen = false;
-    toast.success('Notes saved!');
-  }
   ownerBusy = false;
+  return ok;
+}
+async function saveOwnerNotes(notes: string) {
+  if (!notesItem || !(await writeOwnerNotes(notesItem, notes))) return;
+  notesOpen = false;
+  toast.success('Notes saved!');
+}
+function deleteNotes(item: ListItemCard) {
+  if (owner) void writeOwnerNotes(item, '');
+  else void manager.saveNote(item, '');
+}
+// The notes dialog's delete, for the item it's open on.
+function deleteOpenNotes(item: ListItemCard | null) {
+  if (!item) return;
+  notesOpen = false;
+  noteOpen = false;
+  deleteNotes(item);
 }
 function dragItem(item: ListItemCard, event: PointerEvent) {
   if (ownerBusy || event.button !== 0 || !(event.currentTarget instanceof HTMLElement)) return;
@@ -799,7 +812,8 @@ async function saveNotes(text: string) {
                 <ListItemPoster {item} rank={list.displayNumbers && !managing ? item.rank : undefined}
                   removing={() => removingFromOwner ? removedKeys.includes(item.key) : manager.isRemoved(item.key)} datePreferences={data.datePreferences}
                   edit={managing ? edit : undefined} fade={fadeHide.fade}
-                  oneditnotes={owner || canManage ? (card) => owner ? editNotes(card) : openNotes(card) : undefined} />
+                  oneditnotes={owner || canManage ? (card) => owner ? editNotes(card) : openNotes(card) : undefined}
+                  ondeletenotes={owner || canManage ? deleteNotes : undefined} />
               </div>
             {/each}
           </PosterGrid>
@@ -836,13 +850,15 @@ async function saveNotes(text: string) {
     {#if notesItem}
       <NotesDialog bind:open={notesOpen} bind:draft={notesDraft} favorite={ownerKind === 'favorites'} busy={ownerBusy}
   tags={ownerKind === 'watchlist' && notesItem.noteTitle.show ? [{ text: notesItem.noteTitle.show, kind: 'generic' }] : []}
-  privacy={data.list ? listPrivacy(data.list) : undefined} item={notesItem.noteTitle} onsave={saveOwnerNotes} />
+  privacy={data.list ? listPrivacy(data.list) : undefined} item={notesItem.noteTitle} onsave={saveOwnerNotes}
+  ondelete={notesItem.notes ? () => deleteOpenNotes(notesItem) : undefined} />
     {/if}
   {/if}
   {#if !owner && noteCard}
     <NotesDialog bind:open={noteOpen} bind:draft={noteDraft} busy={noteSaving} disabled={noteLimit !== null}
   tags={noteCard.noteTitle.show ? [{ text: noteCard.noteTitle.show, kind: 'generic' }] : []}
-  privacy={data.list ? listPrivacy(data.list) : undefined} item={noteCard.noteTitle} onsave={saveNotes}>
+  privacy={data.list ? listPrivacy(data.list) : undefined} item={noteCard.noteTitle} onsave={saveNotes}
+  ondelete={noteCard.notes ? () => deleteOpenNotes(noteCard) : undefined}>
       {#if noteLimit !== null}
         <p class="notes-limit" role="alert" {@attach trackUpsellImpression('lists')}>You've already added <strong>{noteLimit}</strong> notes.
           {#if !vip}Upgrade to <a href={traktUrls.vipFor('lists')} target="_blank" rel="noopener">VIP</a> to add unlimited notes.{/if}</p>

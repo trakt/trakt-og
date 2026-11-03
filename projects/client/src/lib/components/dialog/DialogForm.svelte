@@ -1,7 +1,8 @@
 <!--
   An art dialog's form: its fields in a column, then a footer bar with the save shortcut hint, Cancel and the red
   Save. With no fields (check in), it's the footer bar alone. Cmd or Ctrl+Enter anywhere in it saves. `onsubmit` only runs when it isn't busy or disabled. `verb` names
-  the shortcut's action ("to send"), and `hint` takes the shortcut's place to say why Save is off.
+  the shortcut's action ("to send"), and `hint` takes the shortcut's place to say why Save is off. `start` leads the
+  footer, like the notes dialog's delete icon.
     <DialogForm save="Save Note" {busy} onsubmit={() => onsave(draft)} oncancel={() => (open = false)}>...</DialogForm>
 -->
 <script lang="ts">
@@ -21,10 +22,12 @@ interface Props {
   hint?: string;
   onsubmit: () => void;
   oncancel: () => void;
+  start?: Snippet;
   children?: Snippet;
 }
 
-const { save, busy = false, disabled = false, verb = 'save', hint, onsubmit, oncancel, children }: Props = $props();
+const { save, busy = false, disabled = false, verb = 'save', hint, onsubmit, oncancel, start, children }: Props =
+  $props();
 const id = $props.id();
 // The server can't tell the platform, so the hint starts as Ctrl and the browser corrects it.
 const showModifier = (kbd: HTMLElement) => {
@@ -43,6 +46,7 @@ const showModifier = (kbd: HTMLElement) => {
 >
   {#if children}<div class="fields">{@render children()}</div>{/if}
   <footer>
+    {@render start?.()}
     {#if hint}
       <span id="{id}-hint" class="hint">{hint}</span>
     {:else}

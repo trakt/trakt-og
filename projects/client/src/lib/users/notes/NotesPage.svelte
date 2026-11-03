@@ -153,7 +153,8 @@ const filterHref = (type: string) => {
 </section>
 {#if editing && data.isSelf}
   <NotesDialog bind:open bind:draft item={editing.item} privacy={editing.privacy}
-  onsave={(text) => { if (editing) void save(editing, text); }} />
+  onsave={(text) => { if (editing) void save(editing, text); }}
+  ondelete={() => { if (editing) void save(editing, ''); }} />
 {/if}
 
 <style>

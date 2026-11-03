@@ -6,6 +6,12 @@ import { mediaQuickIcons } from '$lib/components/media/mediaQuickIcons';
 import PosterGrid from '$lib/components/media/PosterGrid.svelte';
 import { quickIconFill } from '$lib/components/media/quickIconFill';
 import ActionButtons from '$lib/components/summary/ActionButtons.svelte';
+import FavoriteNoteTip from '$lib/components/favorites/FavoriteNoteTip.svelte';
+import SummaryAction from '$lib/components/summary/SummaryAction.svelte';
+import SummaryActionTile from '$lib/components/summary/SummaryActionTile.svelte';
+import memo from '$lib/icons/regular/memo.svg?raw';
+import filledMemo from '$lib/icons/solid/memo.svg?raw';
+import filledStar from '$lib/icons/solid/star.svg?raw';
 import Specimen from '$lib/design/Specimen.svelte';
 import Variant from '$lib/design/Variant.svelte';
 import type { FavoriteTarget } from '$lib/favorites/FavoriteTarget';
@@ -33,18 +39,35 @@ const charts = [
 ] as const;
 const watchedAt = $derived(formatDate('2026-10-05T20:15:00Z', { ...dates, time: true }));
 const episode = { type: 'episode', id: pilot.id, title: pilot.title, season: pilot.season } as const;
+const favoriteNote = 'First (?) Disney 4K Blu-ray with changing aspect ratio for the IMAX scenes.';
 </script>
 
+{#snippet noteTip()}<FavoriteNoteTip note={favoriteNote} />{/snippet}
+{#snippet noted()}<SummaryActionTile icon={filledMemo} label="Edit note" aria-haspopup="dialog" />{/snippet}
+{#snippet unnoted()}<SummaryActionTile icon={memo} label="Add note" aria-haspopup="dialog" />{/snippet}
+
 <Specimen title="Summary actions"
-  note="Add to favorites in a movie's action stack, which turns gold with the date once added.">
+  note="Add to favorites in a movie's action stack, which turns gold with the date once added. Removing it asks first.">
   <div class="actions">
     <ActionButtons listTarget={ratingTarget} checkin={{ type: 'movie', id: noWayHome.id }} favorites
       favoriteTarget={movieFavorite} historyTarget={{ ...ratingTarget, runtime: noWayHome.runtime, released: true }} />
   </div>
 </Specimen>
 
+<Specimen title="Favorite note"
+  note="Hover a Favorited button for its note, off the button's left side. The note tile adds or edits it in the notes dialog, where a delete icon asks first.">
+  <div class="actions">
+    <SummaryAction color="var(--brand-seventh)" icon={filledStar} text="Favorited on" detail={watchedAt} selected
+      tooltip={noteTip} tooltipPlacement="left" tiles={noted} />
+  </div>
+  <div class="actions">
+    <SummaryAction color="var(--brand-seventh)" icon={filledStar} text="Favorited on" detail={watchedAt} selected
+      tiles={unnoted} />
+  </div>
+</Specimen>
+
 <Specimen title="Card stars"
-  note="Charts and Recently Watched add a star to the quick icons. It shares the summary's state, and an episode's star favorites its show.">
+  note="Charts and Recently Watched add a star to the quick icons. It shares the summary's state, and an episode's star favorites its show. Removing it asks first, like the summary button, and its tooltip shows the note.">
   <Variant label="Chart cards">
     <FrameGrid variant="framed">
       {#each charts as item (item.id)}

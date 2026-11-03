@@ -1,7 +1,7 @@
 <!--
   A side tile in a `SummaryAction`'s `tiles` (the +), with its tooltip on the right saying what it does.
     <SummaryActionTile icon={plus} label="Add another play" onclick={add} />
-  The other props land on the button.
+  The other props land on the button. `hint={false}` holds the tooltip back while what the tile opens is showing.
 -->
 <script lang="ts">
 import type { HTMLButtonAttributes } from 'svelte/elements';
@@ -12,13 +12,14 @@ interface Props extends Omit<HTMLButtonAttributes, 'type'> {
   icon: string;
   /** Names the tile and is its tooltip. */
   label: string;
+  hint?: boolean;
   element?: HTMLButtonElement;
 }
 
-let { icon, label, element = $bindable(), ...rest }: Props = $props();
+let { icon, label, hint = true, element = $bindable(), ...rest }: Props = $props();
 </script>
 
-<Tooltip text={label} placement="right">
+<Tooltip text={hint ? label : undefined} placement="right">
   {#snippet trigger(tip)}
     <button bind:this={element} type="button" class="tile" aria-label={label} {...rest} {...tip}><Icon svg={icon} /></button>
   {/snippet}

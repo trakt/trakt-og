@@ -139,6 +139,7 @@ describe('createOverlay', () => {
       watchlisted: false,
       favorited: true,
       favoritedAt: '2026-09-29T12:00:00Z',
+      favoriteNote: { id: 10, text: '' },
       plays: 2,
       watchedPlays: 2,
       lastWatchedAt: '2026-01-02',

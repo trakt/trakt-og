@@ -30,8 +30,10 @@ export type QuickIconFill = {
     watched?: readonly WatchedProgress[];
     plays?: WatchedPlays;
     collected?: LibraryTipData;
-    /** When it was favorited, for its one-line tooltip. */
+    /** When it was favorited, for its tooltip's first line. */
     favorited?: string;
+    /** The favorite's note, under that line. */
+    favoriteNote?: string;
   }>;
 };
 
@@ -209,6 +211,7 @@ export function quickIconFill(params: QuickIconFillParams): QuickIconFill {
       plays: state.plays ? playsTip(params, state.plays) : undefined,
       collected: collectedTip(params, state.collectedAt && formatDate(state.collectedAt, params.datePreferences)),
       favorited: favoritedAt,
+      favoriteNote: (state.favorited && state.favoriteNote?.text) || undefined,
     },
   };
 }

@@ -309,8 +309,8 @@ export const sliceSources: { [K in keyof OverlaySlices]: SliceSource<K> } = {
     },
   },
   favorites: {
-    // Force old id-only caches to refetch once for the dates.
-    activity: (a) => `${join(a.favorites?.updated_at, a.movies?.favorited_at, a.shows?.favorited_at)}|dates-v1`,
+    // Bumped to refetch older caches once, for the dates and then the notes.
+    activity: (a) => `${join(a.favorites?.updated_at, a.movies?.favorited_at, a.shows?.favorited_at)}|notes-v1`,
     load: async (get) => {
       const items = await loadFavoriteRows(get);
       const dates = (type: 'movie' | 'show') =>
@@ -321,10 +321,19 @@ export const sliceSources: { [K in keyof OverlaySlices]: SliceSource<K> } = {
             return [[id, item.listed_at] as const];
           }),
         );
+      const notes = (type: 'movie' | 'show') =>
+        new Map(
+          items.flatMap((item) => {
+            if (item.type !== type) return [];
+            const id = item.type === 'movie' ? item.movie.ids.trakt : item.show.ids.trakt;
+            return [[id, { id: item.id, text: item.notes ?? '' }] as const];
+          }),
+        );
       return {
         movie: idsOfType(items, 'movie'),
         show: idsOfType(items, 'show'),
         dates: { movie: dates('movie'), show: dates('show') },
+        notes: { movie: notes('movie'), show: notes('show') },
       };
     },
   },

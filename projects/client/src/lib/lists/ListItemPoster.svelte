@@ -1,7 +1,8 @@
 <!--
   One list item as a poster card: the poster, the
   quick icons, the title and OG's two sort-dependent lines, and the owner's notes over the poster. With `oneditnotes`, a
-  poster without notes shows an Add Note pill on hover, and open notes carry an edit button. The list page and the dashboard's Watchlist panel both render
+  poster without notes shows an Add Note pill on hover, and open notes bring a note bar with edit and delete
+  (`ondeletenotes`). The list page and the dashboard's Watchlist panel both render
   these.
 -->
 <script lang="ts">
@@ -29,11 +30,14 @@ interface Props {
   edit?: Snippet<[ListItemCard]>;
   /** Someone who can edit the list: a poster without notes offers to add some, and open notes to edit them. */
   oneditnotes?: (item: ListItemCard) => void;
+  /** With `oneditnotes`: the note bar's delete, after it asks. */
+  ondeletenotes?: (item: ListItemCard) => void;
   /** PosterCard's `framed`: rounded, with the quick icons on their own panel. On unless set to false. */
   framed?: boolean;
 }
 
-const { item, rank, datePreferences, removing, edit, oneditnotes, fade = [], framed = true }: Props = $props();
+const { item, rank, datePreferences, removing, edit, oneditnotes, ondeletenotes, fade = [], framed = true }: Props =
+  $props();
 const state = $derived(item.type === 'person' ? undefined : overlay.state(item.type, item.id, item.seasonOf));
 const fill = $derived(quickIconFill({
   state: state ?? {},
@@ -68,7 +72,8 @@ const fill = $derived(quickIconFill({
     }}
 >
   {#snippet posterOverlay()}
-    {#if edit}{@render edit(item)}{:else if item.notes}<ReadNotes notes={item.notes} onedit={oneditnotes && (() => oneditnotes(item))} />{:else if oneditnotes}<div
+    {#if edit}{@render edit(item)}{:else if item.notes}<ReadNotes notes={item.notes} onedit={oneditnotes && (() => oneditnotes(item))}
+      ondelete={ondeletenotes && (() => ondeletenotes(item))} />{:else if oneditnotes}<div
         class="add-notes"
       ><NotesPill add svg={plus} label="Add Note" aria-label="Add Note to {item.title}" onclick={() => oneditnotes(item)} /></div>{/if}
   {/snippet}

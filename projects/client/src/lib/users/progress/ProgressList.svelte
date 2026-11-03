@@ -65,6 +65,7 @@ import { sortProgress } from './sortProgress.ts';
 import { sumProgressTotals } from './sumProgressTotals.ts';
 import { toProgressCard } from './toProgressCard.ts';
 import { toProgressRow } from './toProgressRow.ts';
+import { ticksGuessed } from './ticksGuessed.ts';
 import { viewerFetch } from '../../auth/viewerFetch.ts';
 import { expireHideCookie } from '../../components/filters/expireHideCookie.ts';
 
@@ -78,8 +79,11 @@ type Props = {
   loading?: ReadonlySet<number>;
   /** Your progress is being read again, after a watch or another change. */
   reloading?: boolean;
-  /** A row opened its seasons, or a next episode was watched: read its show's catalog, which finds the next one. */
-  onneed?: (id: number) => void;
+  /**
+   * A row opened its seasons, or a next episode was watched: read its show's catalog, which finds the next one.
+   * `quiet` when it's only for a detailed bar's ticks, so a failed read doesn't toast.
+   */
+  onneed?: (id: number, quiet?: boolean) => void;
   /** Your progress didn't load: Try again reads it again. */
   onretry?: () => unknown;
   /** Why the read failed, when `onretry` is set. */
@@ -330,7 +334,8 @@ function clearFilters() {
             {#each rows as row, index (row.id)}
               {@const card = cards[index]}
               {#if card}
-                <div {@attach fadeOnChange(cardKey(card))}>
+                <div {@attach fadeOnChange(cardKey(card))}
+                  {@attach !simple && ticksGuessed(row) ? nearViewport(() => onneed?.(row.id, true)) : undefined}>
                   <OnDeckCard item={card} loading={waiting.get(card.showId) === cardKey(card)}
                     state={card.complete ? overlay.state('show', card.showId) : overlay.state('episode', card.episodeId)}
                     onWatchSave={() => {
@@ -363,7 +368,7 @@ function clearFilters() {
       {:else}
         {#each rows as row (row.id)}
           <ProgressRow {row} type={data.type} {simple} datePreferences={data.datePreferences}
-            loading={loading.has(row.id)} onneed={() => onneed?.(row.id)} />
+            loading={loading.has(row.id)} onneed={(quiet) => onneed?.(row.id, quiet)} />
         {/each}
       {/if}
       {#if pageCount > 1}<Pagination {meta} label="Progress pages" />{/if}

@@ -7,7 +7,8 @@
   v3, across tabs and pages, and read again once a watch, rewatch or drop changes the overlay. The overlay narrows it
   to a tab (dropped, rewatching and hidden shows), the endpoint's own reset dates standing in for rewatching until
   that slice is in; the Dropped tab reads `/users/hidden/dropped` only for dropped
-  shows the endpoint leaves out. Opening a row's seasons reads that show's catalog once (cached for 12 hours).
+  shows the endpoint leaves out. Opening a row's seasons reads that show's catalog once (cached for 12 hours); with
+  Simple Progress Bars off, a part-watched show reads it as its row nears the screen, to place each episode's tick.
 -->
 <script lang="ts" module>
 import type { ProgressItem } from './ProgressItem.ts';
@@ -186,14 +187,14 @@ const items = $derived(
     : null,
 );
 
-/** Reads a row's catalog once, as its seasons open. */
-async function need(id: number) {
+/** Reads a row's catalog once, as its seasons open or, for detailed bars, as it nears the screen (`quiet`). */
+async function need(id: number, quiet = false) {
   if (catalogs.has(id) || loading.has(id)) return;
   loading.add(id);
   try {
     catalogs.set(id, await loadShowCatalog({ id, store: showCache.catalogs, get: showCache.get }));
   } catch {
-    toast.error("Doh! We couldn't load this show's seasons.");
+    if (!quiet) toast.error("Doh! We couldn't load this show's seasons.");
   } finally {
     loading.delete(id);
   }

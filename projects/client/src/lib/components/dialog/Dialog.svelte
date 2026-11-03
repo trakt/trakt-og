@@ -2,7 +2,7 @@
   OG's modal: a rounded panel centered over a dimmed page, with a title bar and a close button in the corner.
   A native modal <dialog>: it moves focus to the first control inside (or the one marked `autofocus`), keeps
   focus inside while open, fades out on Esc and hands focus back to whatever opened it. The page behind doesn't scroll
-  while it's open, so menus anchored inside it stay put.
+  while it's open, so menus anchored inside it stay put; it's pinned in place (`pinPage`) so Safari anchors them right.
     <Dialog bind:open title="Watch now" lightDismiss>...</Dialog>
   `lightDismiss` also closes it on a backdrop click, like OG's Watch Now modal. Form dialogs stay open.
   `backdrop` blurs an image (the item's fanart) over a black backdrop, like OG's check-in modal.
@@ -11,6 +11,7 @@
 -->
 <script lang="ts">
 import Icon from '$lib/icons/Icon.svelte';
+import { pinPage } from './pinPage.ts';
 import deleteThick from '$lib/icons/trakt/delete-thick.svg?raw';
 import { type Snippet, tick, untrack } from 'svelte';
 
@@ -57,6 +58,11 @@ let dialog = $state<HTMLDialogElement>();
 let close = $state<HTMLButtonElement>();
 let closing = $state(false);
 let pressedBackdrop = false;
+let unpin: (() => void) | undefined;
+const release = () => {
+  unpin?.();
+  unpin = undefined;
+};
 
 // Fades out the way it faded in, then closes. Reduced motion has no transition to wait for.
 async function dismiss() {
@@ -73,9 +79,11 @@ async function dismiss() {
 const syncOpen = (node: HTMLDialogElement) => {
   if (open && !node.open) {
     node.showModal();
+    unpin ??= pinPage();
     if (document.activeElement === close) node.focus();
   }
   if (!open && node.open) untrack(() => void dismiss());
+  return release;
 };
 
 // Safari has no `closedby`, so a backdrop click is caught here: the press and the release both land on the
@@ -101,7 +109,7 @@ const oncancel = (event: Event) => {
   {onpointerdown}
   {onclick}
   {oncancel}
-  onclose={() => { open = false; onclose?.(); }}
+  onclose={() => { release(); open = false; onclose?.(); }}
   {@attach syncOpen}
 >
   {#if backdrop}<div class="backdrop-image" style:background-image={`url("${backdrop}")`}></div>{/if}

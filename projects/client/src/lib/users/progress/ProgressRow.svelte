@@ -32,14 +32,18 @@ import ProgressStatus from './ProgressStatus.svelte';
 import type { ProgressType } from './progressTypes.ts';
 import type { ProgressRow } from './toProgressRow.ts';
 import type { ProgressSeason } from './toProgressSeasons.ts';
+import { ticksGuessed } from './ticksGuessed.ts';
 
 interface Props {
   row: ProgressRow;
   type: ProgressType;
   simple: boolean;
   datePreferences: DatePreferences;
-  /** The row's seasons opened, or its next episode was watched: read the show's catalog. */
-  onneed?: () => void;
+  /**
+   * The row's seasons opened, or its next episode was watched: read the show's catalog. `quiet` when it's only for
+   * the detailed ticks, so a failed read doesn't toast.
+   */
+  onneed?: (quiet?: boolean) => void;
   /** The catalog read is in flight. */
   loading?: boolean;
 }
@@ -75,6 +79,8 @@ const caughtUp = $derived(type === 'dropped' ? 'Dropped' : 'Caught up');
 // Episodes left but no next one: the endpoint sends none for a show you haven't started (or a list's show it left out),
 // so the row reads its catalog as it nears the screen, and the card isn't "Caught up" meanwhile.
 const findsNext = $derived(type !== 'dropped' && !row.upNext && row.left > 0);
+// Detailed bars place each episode's tick, which only the catalog knows once watches skip around.
+const findsTicks = $derived(!simple && ticksGuessed(row));
 
 /** Drop, hide and restore: the focus moves to the next row's title before this one fades out. */
 function remove(saved: Promise<boolean>) {
@@ -140,7 +146,7 @@ function toggleSeason(season: number) {
 {/snippet}
 
 <article bind:this={article} class="progress-row" aria-labelledby="progress-{row.id}"
-  {@attach nearViewport(() => { if (findsNext) onneed?.(); })}
+  {@attach findsNext || findsTicks ? nearViewport(() => onneed?.(!findsNext)) : undefined}
   out:removeCard|global={() => removedByAction}>
   <a class={['poster', { dropped: type === 'dropped' }]} href={row.href} tabindex="-1" aria-hidden="true">
     {#if row.poster}

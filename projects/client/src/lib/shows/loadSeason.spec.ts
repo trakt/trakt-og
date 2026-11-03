@@ -36,6 +36,7 @@ const params = () => ({
   id: 'breaking-bad',
   season: '1',
   url: new URL('https://og.trakt.tv/shows/breaking-bad/seasons/1?sort=votes,desc&terms=pilot'),
+  token: null,
   parent: () =>
     Promise.resolve({
       user: null,

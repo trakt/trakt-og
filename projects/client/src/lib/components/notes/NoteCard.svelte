@@ -9,9 +9,9 @@ import type { Snippet } from 'svelte';
 import CommentAvatar from '$lib/components/comments/CommentAvatar.svelte';
 import CommentTag from '$lib/components/comments/CommentTag.svelte';
 import VipLabel from '$lib/components/labels/VipLabel.svelte';
+import NoteStamp from '$lib/components/notes/NoteStamp.svelte';
 import NoteText from '$lib/components/notes/NoteText.svelte';
 import PrivacyTag from '$lib/components/notes/PrivacyTag.svelte';
-import Icon from '$lib/icons/Icon.svelte';
 import cameraMovie from '$lib/icons/regular/camera-movie.svg?raw';
 import tvRetro from '$lib/icons/regular/tv-retro.svg?raw';
 import eyeSlash from '$lib/icons/solid/eye-slash.svg?raw';
@@ -25,6 +25,11 @@ import { capitalize } from '../../utils/capitalize.ts';
 const { note, manage }: { note: NoteView; manage?: Snippet } = $props();
 
 const activityIcons = { history: check, collection, rating: heart };
+const activityTones = {
+  history: 'var(--color-note-tag-history)',
+  collection: 'var(--color-note-tag-collection)',
+  rating: 'var(--color-note-tag-rating)',
+};
 const mediaIcons = { movie: cameraMovie, show: tvRetro, season: tvRetro, episode: tvRetro, person: user };
 const mediaLabel = $derived(capitalize(note.item.type));
 // "Watched", "Collected" or "Rated 9", bold before the date.
@@ -78,10 +83,8 @@ const activityLabel = $derived.by(() => {
     {#if note.activity || manage}
       <footer class="under-note">
         {#if note.activity}
-          <span class={['activity', note.activity.type]}>
-            <span class={{ glyph: note.activity.type !== 'rating' }}><Icon svg={activityIcons[note.activity.type]} /></span>
-            <strong>{activityLabel}</strong>{#if note.activity.date}<span class="date">{note.activity.date}</span>{/if}
-          </span>
+          <NoteStamp svg={activityIcons[note.activity.type]} glyph={note.activity.type !== 'rating'} label={activityLabel}
+            date={note.activity.date ?? undefined} tone={activityTones[note.activity.type]} />
         {/if}
         {#if manage}<div class="tools">{@render manage()}</div>{/if}
       </footer>
@@ -184,49 +187,6 @@ const activityLabel = $derived.by(() => {
   font-size: var(--font-size-comment-meta);
   font-weight: var(--font-weight-headings);
   line-height: var(--line-height-base);
-}
-
-/* The watch, collect or rate date in a box the footer buttons' size, washed in the attachment's colour. */
-.activity {
-  --tone: var(--color-note-tag-history);
-  box-sizing: border-box;
-  display: inline-flex;
-  align-items: center;
-  gap: var(--note-activity-gap);
-  min-block-size: var(--control-height);
-  padding-inline: var(--glass-action-padding-card);
-  border: 1px solid color-mix(in srgb, var(--tone) var(--list-card-chip-line), transparent);
-  border-radius: var(--radius-control);
-  background-color: color-mix(in srgb, var(--tone) var(--list-card-chip-tint), transparent);
-  color: color-mix(in srgb, var(--tone), var(--color-list-card-chip-lift) var(--list-card-chip-lift));
-  font-family: var(--font-body);
-  font-size: var(--font-size-glass-action);
-  font-weight: normal;
-  white-space: nowrap;
-
-  & :global(.icon) {
-    flex: none;
-    color: var(--tone);
-  }
-
-  & strong {
-    font-family: var(--font-headings);
-    font-weight: var(--font-weight-headings-heavy);
-  }
-
-  &.collection {
-    --tone: var(--color-note-tag-collection);
-  }
-
-  &.rating {
-    --tone: var(--color-note-tag-rating);
-  }
-}
-
-/* The Trakt-font check and library icons sit high. */
-.glyph {
-  display: inline-flex;
-  --icon-shift: var(--quick-icon-trakt-shift);
 }
 
 @media (prefers-reduced-motion: reduce) {

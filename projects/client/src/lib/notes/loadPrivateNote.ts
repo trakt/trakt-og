@@ -16,6 +16,7 @@ const v3NotesSchema = z.array(
   z.object({
     id: z.number(),
     notes: z.string().nullish(),
+    created_at: z.string().nullish(),
     updated_at: z.string().nullish(),
     type: z.string(),
   }),
@@ -28,7 +29,9 @@ async function personNote(fetch: typeof globalThis.fetch, token: string, id: num
   // v3 only serves movies and shows. For people, API's listing returns every person note in one call.
   const response = await rawApiFetch({ fetch, token, path: '/users/me/notes/people?limit=all' });
   const note = noteRowsSchema.safeParse(await json(response)).data?.find((row) => row.person?.ids.trakt === id)?.note;
-  return note ? { id: note.id, text: note.notes ?? '', updatedAt: note.updated_at } : null;
+  return note
+    ? { id: note.id, text: note.notes ?? '', createdAt: note.created_at ?? null, updatedAt: note.updated_at }
+    : null;
 }
 
 /** v2 lists every note of a type, so this finds the one on the item itself, not on a play, rating or favorite. */
@@ -41,10 +44,14 @@ async function listedMediaNote(
   const note = noteRowsSchema
     .safeParse(await json(response))
     .data?.find((row) => row.attached_to.type === type && row[type]?.ids.trakt === id)?.note;
-  return note ? { id: note.id, text: note.notes ?? '', updatedAt: note.updated_at } : null;
+  return note
+    ? { id: note.id, text: note.notes ?? '', createdAt: note.created_at ?? null, updatedAt: note.updated_at }
+    : null;
 }
 
 async function mediaNote(fetch: typeof globalThis.fetch, token: string, item: LoadPrivateNoteParams['item']) {
+  // v3 only serves movies and shows, by slug.
+  if (!item.slug) return listedMediaNote(fetch, token, item);
   const response = await rawApiFetch({
     fetch,
     token,
@@ -53,7 +60,14 @@ async function mediaNote(fetch: typeof globalThis.fetch, token: string, item: Lo
   // v3 is Official-only. Other client IDs read v2's listing instead.
   if (isApiUnavailable(response)) return listedMediaNote(fetch, token, item);
   const note = v3NotesSchema.safeParse(await json(response)).data?.find((row) => row.type === 'note');
-  return note ? { id: note.id, text: note.notes ?? '', updatedAt: note.updated_at ?? null } : null;
+  return note
+    ? {
+        id: note.id,
+        text: note.notes ?? '',
+        createdAt: note.created_at ?? null,
+        updatedAt: note.updated_at ?? null,
+      }
+    : null;
 }
 
 /**

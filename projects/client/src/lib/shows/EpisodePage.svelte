@@ -19,6 +19,7 @@ import ListsPreview from '$lib/components/summary/ListsPreview.svelte';
 import MediaTools from '$lib/components/summary/MediaTools.svelte';
 import NameList from '$lib/components/summary/NameList.svelte';
 import Overview from '$lib/components/summary/Overview.svelte';
+import PrivateNotes from '$lib/components/summary/PrivateNotes.svelte';
 import RatingsStrip from '$lib/components/summary/RatingsStrip.svelte';
 import SeasonLinks from '$lib/components/summary/SeasonLinks.svelte';
 import SectionNav from '$lib/components/summary/SectionNav.svelte';
@@ -102,6 +103,7 @@ const sections = $derived([
       <AdditionalStat label="Links" phoneOnly><NameList names={episode.links.filter(({icon})=>!icon).map(({label,href})=>({name:label,href}))} /></AdditionalStat>
     </AdditionalStats>
     {#key episode.id}<MediaSpoiler target={ratingTarget} kind="overview"><Overview overview={episode.overview} /></MediaSpoiler>{/key}
+    <PrivateNotes {...data.privateNotes} />
   {/snippet}
   {#snippet actions()}<ActionButtons checkin={episode.aired ? ratingTarget : undefined} listTarget={ratingTarget} historyTarget={{...ratingTarget,runtime:episode.runtime,released:episode.aired,season:{show:episode.showId,number:episode.season,episode:episode.episodeNumber}}} />{/snippet}
   {#key episode.href}

@@ -30,7 +30,7 @@ afterEach(() => {
 });
 afterAll(() => server.close());
 
-const existing = { id: 5, text: 'Old', updatedAt: null };
+const existing = { id: 5, text: 'Old', createdAt: null, updatedAt: null };
 const person = { type: 'person', id: 2 } as const;
 
 describe('saveNote', () => {
@@ -43,7 +43,10 @@ describe('saveNote', () => {
         body: { person: { ids: { trakt: 2 } }, notes: 'New note' },
       },
     ]);
-    expect(result).toEqual({ ok: true, note: { id: 5, text: 'Saved text', updatedAt: '2026-09-29T12:00:00.000Z' } });
+    expect(result).toEqual({
+      ok: true,
+      note: { id: 5, text: 'Saved text', createdAt: null, updatedAt: '2026-09-29T12:00:00.000Z' },
+    });
   });
 
   it('should update an existing note by id', async () => {

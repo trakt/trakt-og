@@ -22,6 +22,7 @@ type SaveNoteResult =
 const writtenNote = z.object({
   id: z.number().int().positive(),
   notes: z.string().nullish(),
+  created_at: z.iso.datetime({ offset: true }).nullish(),
   updated_at: z.iso.datetime({ offset: true }).nullish(),
 });
 
@@ -81,7 +82,12 @@ export async function saveNote({ fetch, item, note, text }: SaveNoteParams): Pro
     if (!parsed.success) return { ok: false, message: GENERIC_ERROR };
     return {
       ok: true,
-      note: { id: parsed.data.id, text: parsed.data.notes ?? '', updatedAt: parsed.data.updated_at ?? null },
+      note: {
+        id: parsed.data.id,
+        text: parsed.data.notes ?? '',
+        createdAt: parsed.data.created_at ?? null,
+        updatedAt: parsed.data.updated_at ?? null,
+      },
     };
   } catch {
     return { ok: false, message: GENERIC_ERROR };

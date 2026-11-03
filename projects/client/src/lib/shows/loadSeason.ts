@@ -5,6 +5,7 @@ import { error, redirect } from '@sveltejs/kit';
 import { api } from '../api/api.ts';
 import { rawApiFetch } from '../api/rawApiFetch.ts';
 import type { HeaderUser } from '../components/header/HeaderUser.ts';
+import { loadPrivateNote } from '../notes/loadPrivateNote.ts';
 import type { DatePreferences } from '../settings/DatePreferences.ts';
 import type { ViewerSettings } from '../settings/ViewerSettings.ts';
 import { seasonPeopleSchema } from './seasonPeopleSchema.ts';
@@ -18,11 +19,15 @@ interface Params {
   season: string;
   url: URL;
   cookies?: Cookies;
+  token: string | null;
   parent: () => Promise<{ user: HeaderUser | null; settings: ViewerSettings | null; datePreferences: DatePreferences }>;
 }
 
-/** Public season reads never carry the cookie token. The layout data and all reads start together. */
-export async function loadSeason({ fetch, parent, id, season: requestedSeason, url, cookies }: Params) {
+/**
+ * Public season reads never carry the cookie token; only the private note does. The layout data and all reads start
+ * together.
+ */
+export async function loadSeason({ fetch, parent, id, season: requestedSeason, url, cookies, token }: Params) {
   if (!/^\d+$/.test(requestedSeason)) error(404, 'Season not found');
   const season = Number(requestedSeason);
   if (!Number.isSafeInteger(season)) error(404, 'Season not found');
@@ -40,6 +45,15 @@ export async function loadSeason({ fetch, parent, id, season: requestedSeason, u
       settings: layout.settings,
     }),
   );
+  const seasonRead = client.shows.season.info({ params, query: { extended: 'full,images' } });
+  // A malformed summary fails the page below with its own error, so the note read only steps aside.
+  const noteRead = Promise.all([seasonRead, layoutRead])
+    .then(([summary, { user }]) =>
+      summary.status === 200
+        ? loadPrivateNote({ fetch, token: user ? token : null, item: { type: 'season', id: summary.body.ids.trakt } })
+        : null,
+    )
+    .catch(() => null);
   const [
     showResponse,
     seasonResponse,
@@ -50,9 +64,10 @@ export async function loadSeason({ fetch, parent, id, season: requestedSeason, u
     peopleResponse,
     layout,
     watchNow,
+    note,
   ] = await Promise.all([
     client.shows.summary({ params: { id }, query: { extended: 'full,images' } }),
-    client.shows.season.info({ params, query: { extended: 'full,images' } }),
+    seasonRead,
     client.shows.season.episodes({ params, query: { extended: 'full,images' } }),
     client.shows.seasons({ params: { id }, query: {} }),
     client.shows.season.ratings({ params, query: {} }),
@@ -63,6 +78,7 @@ export async function loadSeason({ fetch, parent, id, season: requestedSeason, u
     }),
     layoutRead,
     watchNowRead,
+    noteRead,
   ]);
   assertOk(showResponse, 'Show');
   // A season the show doesn't have answers an empty 204, not a 404.
@@ -97,6 +113,12 @@ export async function loadSeason({ fetch, parent, id, season: requestedSeason, u
   return {
     season: view,
     watchNow: watchNow.button,
+    privateNotes: {
+      item: { type: 'season', id: view.id, title: view.fullTitle, fanart: view.fanart } as const,
+      note,
+      signedIn: layout.user !== null,
+      datePreferences: layout.datePreferences,
+    },
     user: layout.user,
     datePreferences: layout.datePreferences,
     filters: readFadeHide({ cookies, search: url.searchParams, scope: 'season' }),

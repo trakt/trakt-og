@@ -51,6 +51,7 @@ export function createNoteOverlay() {
         note: {
           id: previous.id,
           text: previous.text,
+          createdAt: null,
           updatedAt: previous.updatedAt,
         },
         text: trimmed,

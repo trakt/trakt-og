@@ -47,13 +47,18 @@ describe('loadPrivateNote', () => {
     });
     expect(new URL(seen.at(0)?.url ?? '').pathname).toBe('/v3/users/me/notes/show/the-boys-2019');
     expect(seen.at(0)?.headers.get('authorization')).toBe('Bearer viewer');
-    expect(note).toEqual({ id: 8, text: 'Rewatch it', updatedAt: '2026-09-29T12:00:00.000Z' });
+    expect(note).toEqual({ id: 8, text: 'Rewatch it', createdAt: null, updatedAt: '2026-09-29T12:00:00.000Z' });
   });
 
   it('should find a person note in the listing', async () => {
     const note = await loadPrivateNote({ fetch, token: 'viewer', item: { type: 'person', id: 2, slug: 'someone' } });
     expect(seen.at(0)?.url).toContain('/users/me/notes/people?limit=all');
-    expect(note).toEqual({ id: 9, text: 'Great in everything', updatedAt: '2026-09-28T10:00:00.000Z' });
+    expect(note).toEqual({
+      id: 9,
+      text: 'Great in everything',
+      createdAt: null,
+      updatedAt: '2026-09-28T10:00:00.000Z',
+    });
   });
 
   it('should return null for a person without a note', async () => {
@@ -81,7 +86,41 @@ describe('loadPrivateNote', () => {
     );
     const note = await loadPrivateNote({ fetch, token: 'viewer', item: { type: 'movie', id: 1, slug: 'x' } });
     expect(seen.at(0)?.url).toContain('/users/me/notes/movies?limit=all');
-    expect(note).toEqual({ id: 11, text: 'On the movie', updatedAt: '2026-09-27T10:00:00.000Z' });
+    expect(note).toEqual({ id: 11, text: 'On the movie', createdAt: null, updatedAt: '2026-09-27T10:00:00.000Z' });
+  });
+
+  it('should read an episode or season note from its listing, without v3', async () => {
+    server.use(
+      http.get('https://apiz.trakt.tv/users/me/notes/:type', ({ request, params }) => {
+        seen.push(request);
+        const type = params.type === 'episodes' ? 'episode' : 'season';
+        return HttpResponse.json([
+          {
+            type,
+            [type]: { ids: { trakt: 73482 } },
+            attached_to: { type },
+            note: {
+              id: 12,
+              notes: `On the ${type}`,
+              privacy: 'private',
+              created_at: '2026-09-20T10:00:00.000Z',
+              updated_at: '2026-09-26T10:00:00.000Z',
+            },
+          },
+        ]);
+      }),
+    );
+    for (const type of ['episode', 'season'] as const) {
+      seen.length = 0;
+      const note = await loadPrivateNote({ fetch, token: 'viewer', item: { type, id: 73482 } });
+      expect(seen.map(({ url }) => new URL(url).pathname)).toEqual([`/users/me/notes/${type}s`]);
+      expect(note).toEqual({
+        id: 12,
+        text: `On the ${type}`,
+        createdAt: '2026-09-20T10:00:00.000Z',
+        updatedAt: '2026-09-26T10:00:00.000Z',
+      });
+    }
   });
 
   it('should return null when the read fails', async () => {

@@ -4,6 +4,7 @@ import '$lib/styles/tokens.css';
 import '$lib/styles/base.css';
 import figtreeLatin from '$lib/assets/fonts/figtree-latin.woff2';
 import { invalidateAll } from '$app/navigation';
+import Analytics from '$lib/analytics/Analytics.svelte';
 import { navigating, page } from '$app/state';
 import { isStandardApi } from '$lib/api/isStandardApi';
 import { logHidden } from '$lib/api/logHidden';
@@ -85,6 +86,7 @@ onMount(() => {
 </script>
 
 <svelte:window onpageshow={(event) => event.persisted && authStep.clear()} />
+<Analytics user={data.user} />
 
 <svelte:head>
   <!-- Every page sets Latin text in Figtree first, so fetch it with the page instead of after the CSS. -->

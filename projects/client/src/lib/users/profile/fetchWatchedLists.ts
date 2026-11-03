@@ -5,18 +5,24 @@ type Params = {
   fetch: typeof fetch;
   token?: string | null;
   id: string;
+  /** The shows' watched episodes too (`extended=progress`), which the worker pages 100 at a time. */
+  progress?: boolean;
 };
 
-// The worker's MAX_LIMIT.
+// The worker's MAX_LIMIT, and its limit for shows with their episodes.
 const PAGE_SIZE = 250;
-// ponytail: 8 pages is 2,000 shows or movies (a 1,787-movie account measured 8 pages of about 520 KB, 0.5s each, the
-// seven after the first in parallel). Past that, All Time ranks the 2,000 most recently watched; page further if
-// the worker ever gets a sort.
-const MAX_PAGES = 8;
+const PROGRESS_PAGE_SIZE = 100;
+// ponytail: 2,000 shows or movies (a 1,787-movie account measured 8 pages of about 520 KB, 0.5s each, the seven after
+// the first in parallel). Past that, All Time ranks the 2,000 most recently watched; page further if the worker ever
+// gets a sort.
+const MAX_ITEMS = 2000;
 
-async function readWatched({ fetch, token, id }: Params, type: 'shows' | 'movies') {
+async function readWatched({ fetch, token, id, progress = false }: Params, type: 'shows' | 'movies') {
+  const seasons = progress && type === 'shows';
+  const limit = seasons ? PROGRESS_PAGE_SIZE : PAGE_SIZE;
   const page = async (n: number) => {
-    const query = new URLSearchParams({ extended: 'full', limit: String(PAGE_SIZE), page: String(n) });
+    const extended = seasons ? 'full,progress' : 'full';
+    const query = new URLSearchParams({ extended, limit: String(limit), page: String(n) });
     const response = await rawApiFetch({
       fetch,
       token,
@@ -28,7 +34,9 @@ async function readWatched({ fetch, token, id }: Params, type: 'shows' | 'movies
   };
 
   const first = await page(1);
-  const rest = await Promise.all(Array.from({ length: Math.min(first.count, MAX_PAGES) - 1 }, (_, i) => page(i + 2)));
+  const rest = await Promise.all(
+    Array.from({ length: Math.min(first.count, MAX_ITEMS / limit) - 1 }, (_, i) => page(i + 2)),
+  );
   return [first, ...rest].flatMap(({ rows }) => rows);
 }
 

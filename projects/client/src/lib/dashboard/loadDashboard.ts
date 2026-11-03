@@ -7,7 +7,9 @@ import { toProfileUser } from '../users/toProfileUser.ts';
 import { toWatchingNow } from '../users/toWatchingNow.ts';
 import { formatDate } from '../utils/formatDate.ts';
 import { dashboardPrefs } from './dashboardPrefs.ts';
-import { userStatsSchema } from '../stats/userStatsSchema.ts';
+import { apiUserStats } from '../stats/apiUserStats.ts';
+import { fetchComputedStats } from '../stats/fetchComputedStats.ts';
+import { fetchStatsCounts } from '../stats/fetchStatsCounts.ts';
 import { dashboardProfileSchema } from './dashboardProfileSchema.ts';
 import { fetchLastThirtyDays } from './fetchLastThirtyDays.ts';
 import { fetchRecapRibbon } from './fetchRecapRibbon.ts';
@@ -33,6 +35,21 @@ type Params = {
   now?: Date;
 };
 
+/**
+ * Your stats when the API keeps none for you: the counts are quick reads, awaited for the welcome wall, and the rest
+ * streams, since it reads your whole watched lists. Counts that fail leave the greeting without its panel.
+ */
+type OwnStatsParams = { fetch: typeof globalThis.fetch; panelFetch: typeof globalThis.fetch; token: string };
+
+async function readOwnStats({ fetch, panelFetch, token }: OwnStatsParams) {
+  const counts = await fetchStatsCounts({ fetch, token, id: 'me' }).catch(() => null);
+  if (!counts) return { panel: null, watched: null };
+  return {
+    panel: fetchComputedStats({ fetch: panelFetch, token, id: 'me', isSelf: true, counts: Promise.resolve(counts) }),
+    watched: counts.watched.movies + counts.watched.shows,
+  };
+}
+
 // A hidden panel isn't fetched at all, and the page leaves it out.
 const unless = <T>(hidden: boolean, load: () => Promise<T>) => (hidden ? null : load());
 
@@ -53,31 +70,32 @@ export async function loadDashboard({ fetch, panelFetch = fetch, locals, cookies
   ]);
   // A stale cookie renders logged-out. The browser owns renewal; no isolate refreshes the token.
   if ([profile, stats, watching, requests].some(({ status }) => status === 401) || !layout.user) redirect(302, '/');
-  if (
-    profile.status !== 200 ||
-    stats.status !== 200 ||
-    requests.status !== 200 ||
-    ![200, 204].includes(watching.status)
-  )
+  if (profile.status !== 200 || requests.status !== 200 || ![200, 204].includes(watching.status))
     error(502, 'Trakt is having trouble loading your dashboard.');
   const parsedProfile = dashboardProfileSchema.safeParse(profile.body);
   const parsedRequests = followRequestsSchema.safeParse(requests.body);
-  const parsedStats = userStatsSchema.safeParse(stats.body);
-  if (!parsedProfile.success || !parsedRequests.success || !parsedStats.success) {
+  if (!parsedProfile.success || !parsedRequests.success) {
     error(502, 'Trakt returned an invalid dashboard response.');
   }
   const user = toProfileUser(parsedProfile.data);
   const prefs = dashboardPrefs.read(cookies.get(dashboardPrefs.COOKIE), user.slug);
   const dashboard = toDashboardSettings({ settings: layout.settings, prefs });
   const { hidden } = dashboard;
-  const welcome = isNewAccount(parsedStats.data) && !prefs.hide_first_night;
+  const known = apiUserStats(stats);
+  const { panel, watched } = known
+    ? { panel: known, watched: known.movies.watched + known.shows.watched }
+    : await readOwnStats({ fetch, panelFetch, token });
+  const welcome = watched !== null && isNewAccount(watched) && !prefs.hide_first_night;
   const panelClient = api({ fetch: panelFetch, token });
   // The Social Feed skips its request at zero: the stats strip's read has the count.
-  const following = Promise.resolve(parsedStats.data.network.following);
+  const following = Promise.resolve(known?.network?.following ?? null);
   return {
     profile: user,
     memberSince: formatDate(parsedProfile.data.joined_at, { ...layout.datePreferences, time: true }),
-    stats: parsedStats.data,
+    /** The API's stats, or og's own count of them streaming in. Null when even the counts failed. */
+    stats: panel,
+    /** Movies and shows watched, for the welcome wall. */
+    watched: watched ?? 0,
     watching: watching.status === 200 ? toWatchingNow(watching.body) : null,
     requests: parsedRequests.data
       .toSorted((a, b) => Date.parse(b.requested_at) - Date.parse(a.requested_at))

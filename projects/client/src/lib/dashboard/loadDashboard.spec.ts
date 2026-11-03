@@ -156,4 +156,53 @@ describe('loadDashboard', () => {
     expect(upNext.at(0)?.searchParams.get('sort_by')).toBe('title');
     expect(upNext.at(0)?.searchParams.get('sort_how')).toBe('desc');
   });
+
+  describe('without stats from the API', () => {
+    const watchedMovies = http.get(`${API}/users/me/watched/movies`, () =>
+      HttpResponse.json(
+        [
+          {
+            plays: 2,
+            last_watched_at: '2026-09-01T00:00:00Z',
+            movie: { title: 'M', ids: { trakt: 1, slug: 'm' }, runtime: 100 },
+          },
+        ],
+        { headers: { 'X-Pagination-Item-Count': '12' } },
+      ),
+    );
+
+    it.each([
+      ['an empty 204', () => new HttpResponse(null, { status: 204 })],
+      ['a 404', () => new HttpResponse(null, { status: 404 })],
+      ['all zeros', () => HttpResponse.json({ ...dashboardFrameFixture.newStats, ...zeroed })],
+    ])('should count them itself after %s, streaming the panel', async (_, stats) => {
+      server.use(http.get(`${API}/users/me/stats`, stats), watchedMovies);
+      const data = await load();
+      await Promise.all(panels(data));
+
+      expect(data.stats).toBeInstanceOf(Promise);
+      expect((await data.stats)?.movies).toMatchObject({ watched: 12, plays: 2, minutes: 200 });
+      expect(data.watched).toBe(12);
+      expect(data.firstNight).toBeNull();
+    });
+
+    it('should go without the panel, not fail the page, when the counts fail', async () => {
+      server.use(
+        http.get(`${API}/users/me/stats`, () => new HttpResponse(null, { status: 204 })),
+        http.get(`${API}/users/me/lists`, () => new HttpResponse(null, { status: 503 })),
+      );
+      const data = await load();
+      await Promise.all(panels(data));
+
+      expect(data.stats).toBeNull();
+    });
+  });
 });
+
+const zeroed = {
+  shows: { watched: 0, collected: 0, ratings: 0, comments: 0 },
+  episodes: { plays: 0, watched: 0, minutes: 0, collected: 0, ratings: 0, comments: 0 },
+  progress: { finished: 0, started: 0, dropped: 0 },
+  total_minutes: 0,
+  total_plays: 0,
+};

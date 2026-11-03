@@ -35,7 +35,6 @@ type Data = Awaited<ReturnType<typeof loadDashboard>> & {
 };
 
 const { data }: { data: Data } = $props();
-const panel = $derived(toStatsPanel(data.stats));
 const username = $derived(data.profile.slug);
 // While the welcome wall shows, empty panels offer starter picks to fill them in place.
 const welcome = $derived(!!data.firstNight);
@@ -73,7 +72,7 @@ function loadRecommendations(type: DashboardSettings['recommendations']['type'])
 
 {#if data.firstNight}
   <FirstNightProgress slug={username}
-  watched={data.stats.movies.watched + data.stats.shows.watched}
+  watched={data.watched}
   taste={{
       country: data.settings?.browsing?.watchnow?.country?.toLowerCase() || 'us',
       services: data.settings?.browsing?.watchnow?.favorites ?? [],
@@ -83,7 +82,16 @@ function loadRecommendations(type: DashboardSettings['recommendations']['type'])
   named={!!data.settings?.user.name?.trim()} avatarUrl={data.profile.avatarUrl} />
 {:else}
   <DashboardGreeting user={data.profile} memberSince={data.memberSince} watching={data.watching}>
-  <StatsPanel {panel} slug={username} fresh={data.stats.movies.plays + data.stats.episodes.plays === 0} />
+  {#if data.stats}
+    <!-- The API's stats render at once; og's own count streams in. -->
+    {#await data.stats}
+      <StatsPanel panel={null} slug={username} />
+    {:then stats}
+      <StatsPanel panel={toStatsPanel(stats)} slug={username} fresh={stats.movies.plays + stats.episodes.plays === 0} />
+    {:catch}
+      <!-- Without its stats the greeting goes without the panel. -->
+    {/await}
+  {/if}
 </DashboardGreeting>
   {#if data.recaps}<RecapRibbon recaps={data.recaps} split={loadRecapSplit} />{/if}
 {/if}

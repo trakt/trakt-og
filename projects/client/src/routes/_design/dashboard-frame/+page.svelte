@@ -162,6 +162,13 @@ const inboxes = [
   </DashboardGreeting>
 </Specimen>
 
+<Specimen title="Counting stats" bleed
+  note="For an account the API keeps no stats for, og counts them itself and the panel streams in. Its labels hold their places until then.">
+  <DashboardGreeting user={sample.user} {memberSince} watching={null}>
+    <StatsPanel panel={null} slug={sample.user.slug} />
+  </DashboardGreeting>
+</Specimen>
+
 <Specimen title="Follow requests" bleed note="Approve, Deny and Block answer on this page only. Review opens the six.">
   <div class="states">
     {#each inboxes as { label, requests } (label)}

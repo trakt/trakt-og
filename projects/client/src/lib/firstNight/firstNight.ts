@@ -1,5 +1,4 @@
 import type { OverlaySlices } from '../overlay/OverlaySlices.ts';
-import type { UserStats } from '../stats/userStatsSchema.ts';
 import { rawApiFetch } from '../api/rawApiFetch.ts';
 import { imageUrl } from '../utils/imageUrl.ts';
 import { fanartSchema } from './fanartSchema.ts';
@@ -32,8 +31,8 @@ export type FirstNight = {
 const PER_TAB = 12;
 
 /** An account that has watched fewer titles than the goal still gets the welcome wall. */
-export const isNewAccount = (stats: Pick<UserStats, 'movies' | 'shows'>) =>
-  stats.movies.watched + stats.shows.watched < FIRST_NIGHT_GOAL;
+/** `watched`: movies and shows watched. */
+export const isNewAccount = (watched: number) => watched < FIRST_NIGHT_GOAL;
 
 /** The wall sits over Breaking Bad's fanart. Without it, the wall's glow alone. */
 async function fetchBackdrop(fetch: typeof globalThis.fetch): Promise<string | undefined> {

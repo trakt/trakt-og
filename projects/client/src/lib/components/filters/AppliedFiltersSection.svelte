@@ -2,8 +2,8 @@
   A SidebarFrame sidebar's Applied Filters: a folding section of removable chips, its title counting them so a folded
   one still says how many are on, with Clear on the right as a reset icon that fills on hover. Its open state shares
   the `sidebar_filters` cookie on every page. With `onsave`, a Save button before Clear keeps the filters as a smart
-  list, where classic Trakt had Save Filters; `children` goes over the chips (the open smart list), and `tools` sits
-  beside Clear (its delete). A `ManageConfirm` named `delete` there gets Clear's look.
+  list, where classic Trakt had Save Filters, or with `saveAs="filters"` as a calendar's saved filter; `children` goes
+  over the chips (the open smart list), and `tools` sits beside Clear (its delete). A `ManageConfirm` named `delete` there gets Clear's look.
     <AppliedFiltersSection {chips} open={data.sidebar.filters} clearHref={page.url.pathname} onremove={remove} />
 -->
 <script lang="ts">
@@ -12,10 +12,10 @@ import SidebarSection from '$lib/components/sidebar/SidebarSection.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import resetIcon from '$lib/icons/regular/arrow-rotate-left.svg?raw';
-import sparkles from '$lib/icons/solid/sparkles.svg?raw';
 import { countLabel } from '$lib/utils/countLabel';
 import FilterChips from './FilterChips.svelte';
 import type { FilterTag } from './filterTags.ts';
+import { SAVE_TARGETS, type SaveTarget } from './saveTargets.ts';
 import { trackFiltersReset } from './trackFiltersReset.ts';
 
 interface Props {
@@ -25,12 +25,14 @@ interface Props {
   clearHref: string;
   onremove: (id: string) => void;
   onsave?: () => void;
+  saveAs?: SaveTarget;
   children?: Snippet;
   /** Icons before Clear. */
   tools?: Snippet;
 }
 
-const { chips, open, clearHref, onremove, onsave, children, tools }: Props = $props();
+const { chips, open, clearHref, onremove, onsave, saveAs = 'smart-list', children, tools }: Props = $props();
+const save = $derived(SAVE_TARGETS[saveAs]);
 </script>
 
 <!-- The page builds the href from its own path, so resolve() has nothing to add. -->
@@ -40,9 +42,9 @@ const { chips, open, clearHref, onremove, onsave, children, tools }: Props = $pr
   {#snippet action()}
     <span class="actions">
       {#if onsave}
-        <Tooltip text="Save as a smart list">
+        <Tooltip text={save.label}>
           {#snippet trigger(tooltip)}
-            <button type="button" class="save" onclick={onsave} {...tooltip}><Icon svg={sparkles} />Save</button>
+            <button type="button" class="save" onclick={onsave} {...tooltip}><Icon svg={save.svg} />Save</button>
           {/snippet}
         </Tooltip>
       {/if}

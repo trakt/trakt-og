@@ -2,7 +2,7 @@
   The slide-in filter panel of a SidebarFrame page: og's whole advanced set with nothing to apply. Every change
   filters the page straight away (typing and sliders after a short pause): streaming services, terms, then each list as
   a full-width field that keeps (⊕) and leaves out (⊖) values, then the runtime, the site ratings and the parental
-  guide. Clear and Close sit at the top as icons, after Save when the page can keep the filters as a smart list. The
+  guide. Clear and Close sit at the top as icons, after Save when the page can keep the filters (a chart's smart list, a calendar's saved filter). The
   lists ship with og and networks are searched as you type; the streaming services load the first time it opens. Esc
   closes it.
     <FiltersPanel id="calendar-filters" {open} {config} {filters} {country} {favorites} {sources}
@@ -22,7 +22,6 @@ import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import resetIcon from '$lib/icons/regular/arrow-rotate-left.svg?raw';
 import xmark from '$lib/icons/regular/xmark.svg?raw';
-import sparkles from '$lib/icons/solid/sparkles.svg?raw';
 import type { AdvancedFiltersConfig } from './AdvancedFiltersConfig.ts';
 import { type AdvancedFilters, emptyFilters, type ListFilterKey, type RangeFilterKey } from './advancedFilters.ts';
 import { fetchFilterBody } from './fetchFilterBody.ts';
@@ -40,6 +39,7 @@ import { scaleMax, scaleMin } from './rangeScale.ts';
 import { filterChanges } from './filterChanges.ts';
 import { trackFilterChanges } from './trackFilterChanges.ts';
 import { trackFiltersReset } from './trackFiltersReset.ts';
+import { SAVE_TARGETS, type SaveTarget } from './saveTargets.ts';
 import { type FilterSource, toFilterSources, watchNowOptions } from './watchNowFilter.ts';
 
 interface Props {
@@ -56,11 +56,25 @@ interface Props {
   onchange: (filters: AdvancedFilters) => void;
   /** Close and Esc: the page closes the panel and puts focus back on the funnel. */
   onclose: () => void;
-  /** A Save button before Reset, which keeps the filters as a smart list. */
+  /** A Save button before Reset, which keeps the filters as a smart list or, with `saveAs`, a saved filter. */
   onsave?: () => void;
+  saveAs?: SaveTarget;
 }
 
-const { id, open, config, filters, country, favorites, sources, onchange, onclose, onsave }: Props = $props();
+const {
+  id,
+  open,
+  config,
+  filters,
+  country,
+  favorites,
+  sources,
+  onchange,
+  onclose,
+  onsave,
+  saveAs = 'smart-list',
+}: Props = $props();
+const save = $derived(SAVE_TARGETS[saveAs]);
 
 const lists = {
   genres: 'Genres',
@@ -176,8 +190,8 @@ function reset() {
     <div class="header">
       <h2 id="{id}-title">Filters</h2>
       {#if onsave}
-        <button type="button" class="save" aria-label="Save as a smart list" onclick={onsave}
-          ><Icon svg={sparkles} />Save</button>
+        <button type="button" class="save" aria-label={save.label} onclick={onsave}
+          ><Icon svg={save.svg} />Save</button>
       {/if}
       <span class="tools">
         <Tooltip text="Clear filters">

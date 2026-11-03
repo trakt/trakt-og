@@ -2,9 +2,9 @@
   The calendars (`/calendars/[calendar]/[[start]]` and `/calendars/my/[calendar]/[[start]]`): a month of one calendar in
   a SidebarFrame. The sidebar holds every control, so the content is only the month: the calendar picker with the
   fade/hide and filter tools, the counts, the month pager over a heat-map mini month that follows the scroll, the
-  applied filters, the display choices and the iCal feed. The month shows as a grid of weeks, a list of days or an
-  agenda of rows by air time, without the shows the viewer dropped, and with a show's episodes from one day grouped
-  into one card when the viewer wants that.
+  applied filters with their Save, the display choices, the iCal feed and the viewer's saved filters. The month shows
+  as a grid of weeks, a list of days or an agenda of rows by air time, without the shows the viewer dropped, and with a
+  show's episodes from one day grouped into one card when the viewer wants that.
 -->
 <script lang="ts">
 import SeoHead from '$lib/seo/SeoHead.svelte';
@@ -23,7 +23,12 @@ import AdvancedFiltersToggle from '$lib/components/filters/AdvancedFiltersToggle
 import { type AdvancedFilters, advancedFiltersSearch } from '$lib/components/filters/advancedFilters';
 import FadeHideMenu from '$lib/components/filters/FadeHideMenu.svelte';
 import { type FadeHide, fadeHideOptions, matchesFadeHide } from '$lib/components/filters/fadeHide';
+import SmartListStatus from '$lib/charts/SmartListStatus.svelte';
+import ManageConfirm from '$lib/components/comments/ManageConfirm.svelte';
 import AppliedFiltersSection from '$lib/components/filters/AppliedFiltersSection.svelte';
+import SaveFiltersDialog from '$lib/components/filters/SaveFiltersDialog.svelte';
+import SavedFiltersSection from '$lib/components/filters/SavedFiltersSection.svelte';
+import { toast } from '$lib/components/toast/toast.svelte';
 import { filterChips } from '$lib/components/filters/filterChips';
 import { withoutFilterTag } from '$lib/components/filters/withoutFilterTag';
 import { trackFilterChanges } from '$lib/components/filters/trackFilterChanges';
@@ -40,11 +45,13 @@ import SidebarSection from '$lib/components/sidebar/SidebarSection.svelte';
 import SidebarTitle from '$lib/components/sidebar/SidebarTitle.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import calendarDays from '$lib/icons/regular/calendar-days.svg?raw';
+import deleteIcon from '$lib/icons/regular/trash-xmark.svg?raw';
 import grid from '$lib/icons/regular/grid-2.svg?raw';
 import list from '$lib/icons/regular/list.svg?raw';
 import { overlay } from '$lib/overlay/overlay';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
-import { type ComponentProps, tick } from 'svelte';
+import { type ComponentProps, onMount, tick } from 'svelte';
+import { on } from 'svelte/events';
 import type { CalendarItem } from './calendarDays.ts';
 import {
   CALENDAR_ARTWORK,
@@ -64,6 +71,19 @@ import type { loadCalendar } from './loadCalendar.ts';
 import { MY_CALENDARS } from './myCalendars.ts';
 import { nearbyMonths } from './nearbyMonths.ts';
 import { PUBLIC_CALENDARS } from './publicCalendars.ts';
+import {
+  type SavedCalendarFilter,
+  savedCalendarFilterHref,
+  savedCalendarFilterLabel,
+  savedCalendarFilterPath,
+  readSavedCalendarFilters,
+  SAVED_CALENDAR_FILTERS_KEY,
+  SAVED_FILTER_PARAM,
+  savedCalendarFilterId,
+  withoutSavedCalendarFilter,
+  withSavedCalendarFilter,
+  writeSavedCalendarFilters,
+} from './savedCalendarFilters.ts';
 import { toCalendarCard } from './toCalendarCard.ts';
 import { toCalendarGroupCard } from './toCalendarGroupCard.ts';
 import { visibleCalendarDays } from './visibleCalendarDays.ts';
@@ -117,8 +137,11 @@ let panelOpen = $state(false);
 let funnel = $state<HTMLButtonElement>();
 const panelId = $props.id();
 
+// The open saved filter's id stays along, so its row stays current and changes can be saved back to it.
 function search(filters: AdvancedFilters) {
-  const query = advancedFiltersSearch(filters);
+  const query = [advancedFiltersSearch(filters), current ? `${SAVED_FILTER_PARAM}=${savedCalendarFilterId(current.name)}` : '']
+    .filter(Boolean)
+    .join('&');
   return `${page.url.pathname}${query ? `?${query}` : ''}`;
 }
 // The panel filters as you go, so the history keeps one entry per visit, not one per click.
@@ -135,6 +158,86 @@ function removeChip(id: string) {
   trackFilterChanges(data.filters, next);
   // eslint-disable-next-line svelte/no-navigation-without-resolve -- the same calendar and month, new filters
   goto(search(next), { noScroll: true, keepFocus: true });
+}
+
+/* ---------- saved filters ---------- */
+
+// Kept in the browser's storage: the API has nowhere for them, and smart lists can't fill from a calendar. They show
+// once the page runs, and follow saves and deletes from the viewer's other tabs.
+const storage = () => localStorage;
+let savedFilters = $state.raw<readonly SavedCalendarFilter[]>([]);
+onMount(() => {
+  savedFilters = readSavedCalendarFilters(storage);
+  return on(window, 'storage', ({ key }) => {
+    if (key === SAVED_CALENDAR_FILTERS_KEY || key === null) savedFilters = readSavedCalendarFilters(storage);
+  });
+});
+const here = $derived(savedCalendarFilterPath({ target: data.target, slug: data.calendar.slug }));
+const hereQuery = $derived(advancedFiltersSearch(data.filters));
+// The saved filter this calendar was opened from, while it's this calendar's: its filters are the starting point.
+const currentId = $derived(page.url.searchParams.get(SAVED_FILTER_PARAM));
+const current = $derived(
+  savedFilters.find((filter) => filter.path === here && savedCalendarFilterId(filter.name) === currentId),
+);
+const changed = $derived(current !== undefined && current.query !== hereQuery);
+const savedLinks = $derived(savedFilters.map((filter) => ({
+  name: filter.name,
+  href: savedCalendarFilterHref(filter),
+  tag: savedCalendarFilterLabel(filter.path),
+  here: filter.path === here,
+  current: filter === current,
+})));
+let saveOpen = $state(false);
+let saveError = $state('');
+
+function keep(next: readonly SavedCalendarFilter[]) {
+  if (!writeSavedCalendarFilters(storage, next)) return false;
+  savedFilters = next;
+  return true;
+}
+function openSave() {
+  saveError = '';
+  saveOpen = true;
+}
+const BLOCKED = "Doh! This browser won't let us save filters. Please check it allows site data.";
+
+// The same month, its filters and which saved filter is open.
+function stay(query: string, filter?: SavedCalendarFilter) {
+  const id = filter ? `${SAVED_FILTER_PARAM}=${savedCalendarFilterId(filter.name)}` : '';
+  const search = [query, id].filter(Boolean).join('&');
+  return `${page.url.pathname}${search ? `?${search}` : ''}`;
+}
+// Save, and Save as new: the dialog names it, then the calendar reopens as that saved filter.
+function saveFilters(name: string) {
+  const filter = { name, path: here, query: hereQuery };
+  if (!keep(withSavedCalendarFilter(savedFilters, filter))) {
+    saveError = BLOCKED;
+    return;
+  }
+  saveOpen = false;
+  toast.success(`You saved ${name}.`);
+  // eslint-disable-next-line svelte/no-navigation-without-resolve -- the same calendar and filters, now saved
+  goto(stay(hereQuery, filter), { noScroll: true, keepFocus: true, replaceState: true });
+}
+function saveChanges() {
+  if (!current) return;
+  if (!keep(withSavedCalendarFilter(savedFilters, { ...current, query: hereQuery }))) {
+    toast.error(BLOCKED);
+    return;
+  }
+  toast.success(`You saved ${current.name}.`);
+}
+// Deleting the open saved filter keeps its filters on the calendar, unsaved, so they can be saved again.
+function deleteCurrent() {
+  if (!current) return;
+  const { name } = current;
+  if (!keep(withoutSavedCalendarFilter(savedFilters, name))) {
+    toast.error("Doh! We couldn't delete this saved filter.");
+    return;
+  }
+  toast.success(`You deleted ${name}.`);
+  // eslint-disable-next-line svelte/no-navigation-without-resolve -- the same calendar and filters, no longer saved
+  goto(stay(hereQuery), { noScroll: true, keepFocus: true, replaceState: true });
 }
 
 // OG's calendars leave out the partial options.
@@ -363,6 +466,11 @@ const title = $derived(`${data.target === 'my' ? 'My ' : ''}${data.calendar.labe
   active={filterCount > 0} count={filterCount} />
 {/snippet}
 
+{#if saveOpen}
+  <SaveFiltersDialog bind:open={saveOpen} page={savedCalendarFilterLabel(here) ?? data.calendar.label} {chips}
+    fanart={entries.at(0)?.fanart} error={saveError} onsave={saveFilters} />
+{/if}
+
 <SidebarFrame label="Calendar" collapsed={data.sidebar.collapsed} {panelOpen}>
   {#snippet sidebar()}
     <SidebarTitle {tools}>
@@ -406,9 +514,20 @@ const title = $derived(`${data.target === 'my' ? 'My ' : ''}${data.calendar.labe
         {weekStart} onpick={jump} />
     </div>
 
-    {#if filterCount > 0}
+    {#if filterCount > 0 || current}
       <AppliedFiltersSection {chips} open={data.sidebar.filters} clearHref={page.url.pathname}
-        onremove={removeChip} />
+        onremove={removeChip} onsave={current ? undefined : openSave} saveAs="filters">
+        {#snippet tools()}
+          {#if current}
+            <ManageConfirm name="delete" svg={deleteIcon} label="Delete this saved filter" yes="Yes, delete it!"
+              onconfirm={deleteCurrent}>Delete this saved filter?</ManageConfirm>
+          {/if}
+        {/snippet}
+        {#if current}
+          <SmartListStatus kind="filters" name={current.name} {changed} undoHref={stay(current.query, current)}
+            onsavechanges={saveChanges} onsaveas={openSave} />
+        {/if}
+      </AppliedFiltersSection>
     {/if}
 
     <SidebarSection id="display" title="Display" open={data.sidebar.display} remember>
@@ -445,6 +564,11 @@ const title = $derived(`${data.target === 'my' ? 'My ' : ''}${data.calendar.labe
         <CalendarFeed url={feedUrl} mode={FEED_MODES[kind]} />
       </SidebarSection>
     {/if}
+
+    <!-- Last, as on OG. -->
+    {#if savedLinks.length > 0}
+      <SavedFiltersSection filters={savedLinks} open={data.sidebar.saved} />
+    {/if}
   {/snippet}
 
   {#snippet rail()}
@@ -479,7 +603,8 @@ const title = $derived(`${data.target === 'my' ? 'My ' : ''}${data.calendar.labe
   {#snippet panel()}
     <FiltersPanel id="{panelId}-filters" open={panelOpen} config={data.filterConfig} filters={data.filters}
       country={data.watchNowCountry} favorites={data.watchNowFavorites} sources={data.filterSources}
-      onchange={applyFilters} onclose={closePanel} />
+      onchange={applyFilters} onclose={closePanel} onsave={filterCount > 0 && !current ? openSave : undefined}
+      saveAs="filters" />
   {/snippet}
 
   <div class="calendar" {@attach followScroll}

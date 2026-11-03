@@ -70,7 +70,7 @@ const PRIVACY = $derived<readonly { value: SmartListPrivacy; label: string; svg:
   ...(initial?.privacy === 'friends' ? [{ value: 'friends' as const, label: 'Following', svg: friends }] : []),
   { value: 'public', label: 'Public', svg: globe },
 ]);
-const heading = $derived(editing ? 'Update Smart List' : 'Save as a smart list');
+const heading = $derived(editing ? 'Update Smart List' : 'Save filters as a smart list');
 const tags = $derived<readonly CardTag[]>([{ text: source, icon: sparkles, color: 'var(--color-list-chip-smart)' }]);
 
 const { track: trackVipUpsell } = useTrack(AnalyticsEvent.VipUpsell);
@@ -80,7 +80,7 @@ const { track: trackVipUpsell } = useTrack(AnalyticsEvent.VipUpsell);
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 <Dialog bind:open title={heading} size="md" variant="art" {onclose}>
   {#snippet header(titleId)}<DialogArtHeader id={titleId} title={heading} {fanart} {tags} />{/snippet}
-  <DialogForm save={busy ? 'Saving…' : 'Save Smart List'} {busy} disabled={(atLimit && !editing) || !name.trim()}
+  <DialogForm save={busy ? 'Saving…' : 'Save'} {busy} disabled={(atLimit && !editing) || !name.trim()}
     onsubmit={() => onsave({ name: name.trim(), privacy })} oncancel={() => (open = false)}>
     {#if atLimit && !editing}
       <DialogNotice role="alert">You've reached your smart list limit.

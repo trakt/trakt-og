@@ -1,6 +1,7 @@
 <!--
   A folding block of a SidebarFrame's sidebar: a small caps title with a chevron right after it, an optional action at
-  the far right (Clear all), then the content. The open state is kept for a year in a `sidebar_<id>` cookie when the
+  the far right (Clear all), then the content. The action's icons stand out of the title's line instead of growing it,
+  so a folded section is as tall as any other. The open state is kept for a year in a `sidebar_<id>` cookie when the
   page passes `remember`, so SSR renders it the same.
     <SidebarSection id="display" title="Display" open={data.sections.display} remember>…</SidebarSection>
 -->
@@ -38,7 +39,7 @@ function toggle() {
       <h2 id="{uid}-title">{title}</h2>
       <Icon svg={chevron} />
     </button>
-    {@render action?.()}
+    {#if action}<div class="action">{@render action()}</div>{/if}
   </div>
   <div id="{uid}-body" class="body" hidden={!expanded}>
     {@render children()}
@@ -88,6 +89,13 @@ function toggle() {
   &:is(:hover, :focus-visible) {
     color: var(--color-frame-ink);
   }
+}
+
+/* No height of its own: its icons centre on the title's line and spill into the space around it. */
+.action {
+  display: flex;
+  align-items: center;
+  block-size: 0;
 }
 
 h2 {

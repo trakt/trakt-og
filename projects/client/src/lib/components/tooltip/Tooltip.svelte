@@ -14,6 +14,8 @@
   - `stats`: the charts' label, big value and dashed lines (`TooltipStat`), a divider between groups.
   - `children`: anything else, like the library card. It's centered unless it aligns itself.
   A component that takes a tooltip from its caller and hands it on passes `content`, which is any of the three.
+  `under` lines it up with another anchor instead of the trigger, at that anchor's full width: a summary button's
+  tooltip sits right under the whole button, its side tiles included.
   Left without any, no tooltip renders. The trigger keeps its own accessible name: the tooltip only describes it
   (`aria-describedby`), and not even that when it just repeats the name ("Edit note" on an "Edit note" button).
 -->
@@ -42,9 +44,11 @@ interface Props {
   placement?: TooltipPlacement;
   /** A click or tap opens and shuts it too, for chart marks, which touch can't hover. */
   toggles?: boolean;
+  /** The anchor name it lines up with, at its full width, in place of the trigger's. */
+  under?: string;
 }
 
-const { trigger, text, stats, children, content, placement = 'top', toggles = false }: Props = $props();
+const { trigger, text, stats, children, content, placement = 'top', toggles = false, under }: Props = $props();
 const id = $props.id();
 
 let status = $state<TooltipState>({ hovered: false, focused: false, pinned: false, dismissed: false, open: false });
@@ -130,6 +134,11 @@ $effect(() => {
   repeats = repeatsName(nameOf(anchor), tip.textContent ?? '');
 });
 
+// Held back (a picker showing the same thing), it forgets its hover and focus, so it starts fresh when it's back.
+$effect(() => {
+  if (!hasTip) status = { hovered: false, focused: false, pinned: false, dismissed: false, open: false };
+});
+
 // It opens on its preferred side, then flips once if it runs off the screen there. Shut, it goes back.
 $effect(() => {
   if (!tip || !anchor) return;
@@ -176,10 +185,10 @@ const leaveTip = (event: PointerEvent) => {
   <span
   bind:this={tip}
   id="tooltip-{id}"
-  class={['tooltip', shown]}
+  class={['tooltip', shown, { under }]}
   popover="hint"
   role="tooltip"
-  style:position-anchor="--tooltip-{id}"
+  style:position-anchor={under ?? `--tooltip-${id}`}
   ontoggle={closed}
   onpointerleave={leaveTip}
 >
@@ -219,6 +228,15 @@ const leaveTip = (event: PointerEvent) => {
 
   &:not(:popover-open) {
     opacity: 0;
+  }
+}
+
+/* As wide as what it's under, the box filling it. */
+.under {
+  inline-size: anchor-size(inline);
+
+  & > :global(.tooltip-box) {
+    max-inline-size: none;
   }
 }
 

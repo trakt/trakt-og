@@ -9,6 +9,7 @@ import { watchedFirst } from '$lib/components/rating/watchedFirst';
 import { toast } from '$lib/components/toast/toast.svelte';
 import type { FavoriteTarget } from '$lib/favorites/FavoriteTarget';
 import { loadFavoriteTarget } from '$lib/favorites/loadFavoriteTarget';
+import { patchFavoriteNote } from '$lib/favorites/patchFavoriteNote';
 import { saveFavoriteNote } from '$lib/favorites/saveFavoriteNote';
 import { toggleFavorite } from '$lib/favorites/toggleFavorite';
 import { overlay } from '$lib/overlay/overlay';
@@ -18,9 +19,26 @@ import { viewerFetch } from '../../auth/viewerFetch.ts';
 interface Props {
   target: FavoriteTarget;
   /** `locked` is why favoriting is off ("Watch it first to favorite it"): render the trigger disabled with it as a tip. */
-  /** `date` has the time, for the summary button; `day` is only the date, for a tooltip. */
+  /**
+   * `date` has the time, for the summary button; `day` is only the date, for a tooltip. `notable` once the favorite's
+   * note can be read and saved, `note` is its text when it has one, and `editNote` opens it in the notes dialog,
+   * which deletes it too.
+   */
   trigger: Snippet<
-    [{ selected: boolean; date?: string; day?: string; busy: boolean; locked?: string; toggle: () => void }]
+    [
+      {
+        selected: boolean;
+        date?: string;
+        day?: string;
+        busy: boolean;
+        locked?: string;
+        toggle: () => void;
+        notable: boolean;
+        note?: string;
+        noteBusy: boolean;
+        editNote: () => void;
+      },
+    ]
   >;
 }
 const { target, trigger }: Props = $props();
@@ -82,19 +100,57 @@ async function toggle() {
 
 async function save(notes: string) {
   if (saving || noteId === null) return;
+  const id = noteId;
   saving = true;
   try {
-    if (await saveFavoriteNote({ id: noteId, notes, previous: saved, request: request('PUT'), notify: toast })) {
+    if (await saveFavoriteNote({ id, notes, previous: saved, request: request('PUT'), notify: toast })) {
       open = false;
+      patchFavoriteNote(overlay, target, { id, text: notes.trim() });
     }
+  } finally {
+    saving = false;
+  }
+}
+
+async function editNote() {
+  const note = membership.favoriteNote;
+  if (!note || saving || busy) return;
+  promptTarget = await loadFavoriteTarget(target);
+  noteId = note.id;
+  draft = note.text;
+  saved = note.text;
+  open = true;
+}
+
+// Clears the text and keeps the favorite, putting the note back if the API fails.
+async function deleteNote() {
+  const note = membership.favoriteNote;
+  if (!note?.text || saving || busy) return;
+  open = false;
+  saving = true;
+  const rollback = patchFavoriteNote(overlay, target, { ...note, text: '' });
+  try {
+    const quiet = { success: () => {}, error: toast.error };
+    if (!(await saveFavoriteNote({ id: note.id, notes: '', previous: note.text, request: request('PUT'), notify: quiet }))) rollback();
   } finally {
     saving = false;
   }
 }
 </script>
 
-{@render trigger({ selected: Boolean(membership.favorited), date, day, busy, locked, toggle })}
+{@render trigger({
+  selected: Boolean(membership.favorited),
+  date,
+  day,
+  busy,
+  locked,
+  toggle,
+  notable: membership.favoriteNote !== undefined,
+  note: membership.favoriteNote?.text || undefined,
+  noteBusy: saving,
+  editNote,
+})}
 {#if promptTarget}
-  <NotesDialog bind:open bind:draft item={promptTarget} favorite busy={saving}
-  onsave={save} />
+  <NotesDialog bind:open bind:draft item={promptTarget} favorite busy={saving} onsave={save}
+    ondelete={membership.favoriteNote?.text ? deleteNote : undefined} />
 {/if}

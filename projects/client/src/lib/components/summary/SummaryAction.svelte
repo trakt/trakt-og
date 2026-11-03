@@ -9,12 +9,14 @@
     </SummaryAction>
   `href` makes it a link, `readonly` a plain box (a person's credit progress). `busy` is the spinner's label while
   something saves. `footer` hangs under the button, joined to it, in the darker shade its tiles take (the library's
-  format and audio), and `tooltip` shows under it.
+  format and audio), and `tooltip` shows right under it, the button's full width with its tiles, or off its left edge
+  with `tooltipPlacement` `left` or `right`. `clippedTooltip` only shows while the detail line is cut off: the whole of it.
   `trailing` is an icon in the tile column, centered where other buttons' + sits, outlined or split off.
   The other props land on the button itself.
 -->
 <script lang="ts">
 import type { Snippet } from 'svelte';
+import type { Attachment } from 'svelte/attachments';
 import type { HTMLAnchorAttributes, HTMLAttributes } from 'svelte/elements';
 import Icon from '$lib/icons/Icon.svelte';
 import Spinner from '$lib/components/loading/Spinner.svelte';
@@ -42,6 +44,8 @@ interface Props extends Omit<HTMLAttributes<HTMLElement>, 'title'>, Pick<HTMLAnc
   footer?: Snippet;
   trailing?: Snippet;
   tooltip?: TooltipContent;
+  clippedTooltip?: TooltipContent;
+  tooltipPlacement?: 'bottom' | 'left' | 'right';
 }
 
 let {
@@ -61,21 +65,37 @@ let {
   footer,
   trailing,
   tooltip,
+  clippedTooltip,
+  tooltipPlacement = 'bottom',
   ...rest
 }: Props = $props();
 
 const tag = $derived(href ? 'a' : readonly ? 'div' : 'button');
+const id = $props.id();
+let clipped = $state(false);
+
+// Reads `detail`, so new text measures again.
+const measure: Attachment<HTMLElement> = (node) => {
+  void detail;
+  const check = () => (clipped = node.scrollWidth > node.clientWidth);
+  check();
+  const observer = new ResizeObserver(check);
+  observer.observe(node);
+  return () => observer.disconnect();
+};
 </script>
 
-<div class={['summary-action', { selected, locked }]} style:--action-color={color}>
-  <Tooltip content={tooltip} placement="bottom">
+<div class={['summary-action', { selected, locked }]} style:--action-color={color}
+  style:anchor-name="--summary-action-{id}">
+  <Tooltip content={tooltip ?? (clipped ? clippedTooltip : undefined)} placement={tooltipPlacement}
+    under={tooltipPlacement === 'bottom' ? `--summary-action-${id}` : undefined}>
     {#snippet trigger(tip)}
       <svelte:element this={tag} bind:this={element} class="main" {href} type={tag === 'button' ? 'button' : undefined}
         disabled={tag === 'button' ? disabled : undefined} {...rest} {...tip}>
         <span class="icon"><Icon svg={icon} /></span>
         <span class="text">
           <span class="title">{#if percent}<b class="percent">{percent}</b>&nbsp;{/if}{text}</span>
-          {#if typeof detail === 'string'}<span class="detail">{detail}</span>{:else if detail}<span class="detail">{@render detail()}</span>{/if}
+          {#if typeof detail === 'string'}<span class="detail" {@attach clippedTooltip ? measure : undefined}>{detail}</span>{:else if detail}<span class="detail" {@attach clippedTooltip ? measure : undefined}>{@render detail()}</span>{/if}
         </span>
         {#if trailing}<span class="trailing">{@render trailing()}</span>{/if}
       </svelte:element>
@@ -204,6 +224,7 @@ const tag = $derived(href ? 'a' : readonly ? 'div' : 'button');
 .text {
   flex: 1;
   min-inline-size: 0;
+  padding-inline-end: var(--space-summary-action-text-end);
   font-family: var(--font-headings);
 }
 

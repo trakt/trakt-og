@@ -29,8 +29,9 @@ import type { ListTarget } from '$lib/components/lists/ListTarget';
 import type { PickerList } from '$lib/components/lists/PickerList';
 import { listRowIcon } from '$lib/components/lists/listRowIcon';
 import Icon from '$lib/icons/Icon.svelte';
-import listIcon from '$lib/icons/trakt/list.svg?raw';
+import listLight from '$lib/icons/light/list.svg?raw';
 import listRegular from '$lib/icons/regular/list.svg?raw';
+import pen from '$lib/icons/regular/pen.svg?raw';
 import plus from '$lib/icons/light/circle-plus.svg?raw';
 import add from '$lib/icons/trakt/add-thick.svg?raw';
 import close from '$lib/icons/regular/xmark.svg?raw';
@@ -82,13 +83,18 @@ const watchlistMode = $derived(
     page.data.settings?.browsing?.list_popup_action === 'watchlist'
   ),
 );
-const label = $derived(selected ? 'Listed On' : watchlistMode ? 'Add to watchlist' : 'Add to list');
 const listedOn = $derived(viewerState.lists ?? []);
+const listedCount = $derived((viewerState.watchlisted ? 1 : 0) + listedOn.length);
+const label = $derived(
+  selected
+    ? listedCount ? `On ${listedCount} ${listedCount === 1 ? 'list' : 'lists'}` : 'Listed On'
+    : watchlistMode ? 'Add to watchlist' : 'Add to list',
+);
 const subtitle = $derived(
   [
     viewerState.watchlisted ? 'Watchlist' : '',
-    listedOn.length ? `${listedOn.length} ${listedOn.length === 1 ? 'list' : 'lists'}` : '',
-  ].filter(Boolean).join(' + '),
+    ...listedOn.map((list) => list.name),
+  ].filter(Boolean).join(', '),
 );
 const tip = $derived(selected ? listedTip : label);
 const listLimit = $derived(page.data.settings?.limits?.list);
@@ -228,7 +234,9 @@ function toggle(event: ToggleEvent) {
     triggerButton?.focus({ preventScroll: true });
     if (changed) {
       changed = false;
-      void overlay.refresh();
+      // A fresh read can lag the writes just made, so the picker's own state goes back over it.
+      const picked = { lists, watchlisted };
+      void overlay.refresh().then(() => syncPickerOverlay({ overlay, target, ...picked }));
     }
   }
 }
@@ -310,14 +318,18 @@ async function save(draft: Parameters<typeof createList>[0]['draft'] & { collabo
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 <div class={['list-control', variant, { small, selected, expanded }]} style:anchor-name="--list-{id}">
   {#if variant === 'summary'}
-    <SummaryAction bind:element={triggerButton} color="var(--brand-secondary)" icon={listIcon} text={label}
-      detail={subtitle || undefined} {selected} busy={busy ? 'Saving lists' : undefined} tooltip={selected ? tip : undefined}
+    <!-- The names only get a tooltip when they don't fit, and the picker shows them while it's open, so neither
+         tooltip does then. -->
+    <SummaryAction bind:element={triggerButton} color="var(--brand-secondary)" icon={selected ? listRegular : listLight}
+      text={label} detail={subtitle || undefined} {selected} busy={busy ? 'Saving lists' : undefined}
+      clippedTooltip={selected && !expanded ? namesTip : undefined} tooltipPlacement="left"
       aria-haspopup="dialog"
       aria-expanded={expanded} aria-controls="list-{id}" aria-keyshortcuts="ArrowDown" disabled={busy}
       onpointerdown={pressStart} onpointerup={pressEnd} onpointerleave={pressEnd} onpointercancel={pressEnd}
       oncontextmenu={(event) => event.preventDefault()} onkeydown={pickerKey} onclick={click}>
       {#snippet tiles()}
-        <SummaryActionTile icon={plus} label={selected ? 'Manage lists' : 'Pick a list'} aria-haspopup="dialog"
+        <SummaryActionTile icon={selected ? pen : plus} label={selected ? 'Manage lists' : 'Pick a list'} hint={!expanded}
+          aria-haspopup="dialog"
           aria-controls="list-{id}" disabled={busy} onclick={() => open(true)} />
       {/snippet}
     </SummaryAction>
@@ -378,6 +390,8 @@ async function save(draft: Parameters<typeof createList>[0]['draft'] & { collabo
   <footer><LinkButton onclick={openNew} variant="outline"><Icon svg={add} />New list</LinkButton></footer>
   {/if}
 </div>
+{#snippet namesTip()}<ListedTip user={page.data.user?.slug ?? 'me'} watchlisted={Boolean(viewerState.watchlisted)}
+  lists={listedOn} bare />{/snippet}
 {#snippet listedTip()}<ListedTip user={page.data.user?.slug ?? 'me'} watchlisted={Boolean(viewerState.watchlisted)}
   lists={listedOn} />{/snippet}
 {#snippet row(list: PickerList | null, name: string, active: boolean, total: number, href: string, limit?: number)}

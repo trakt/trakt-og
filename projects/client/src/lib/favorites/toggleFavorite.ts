@@ -4,6 +4,7 @@ import { useTrack } from '$lib/analytics/useTrack';
 import type { createOverlay } from '../overlay/createOverlay.svelte.ts';
 import type { FavoriteTarget } from './FavoriteTarget.ts';
 import { loadFavoriteRows } from './loadFavoriteRows.ts';
+import { patchFavoriteNote } from './patchFavoriteNote.ts';
 
 type Params = {
   target: FavoriteTarget;
@@ -30,9 +31,11 @@ export async function toggleFavorite({ target, remove, overlay, request, notify,
     (favorites) => {
       const ids = new Set(favorites[target.type]);
       const dates = new Map(favorites.dates?.[target.type]);
+      const notes = new Map(favorites.notes?.[target.type]);
       if (remove) {
         ids.delete(target.id);
         dates.delete(target.id);
+        notes.delete(target.id);
       } else {
         ids.add(target.id);
         dates.set(target.id, date);
@@ -41,6 +44,7 @@ export async function toggleFavorite({ target, remove, overlay, request, notify,
         ...favorites,
         [target.type]: ids,
         dates: { movie: new Map(), show: new Map(), ...favorites.dates, [target.type]: dates },
+        notes: { movie: new Map(), show: new Map(), ...favorites.notes, [target.type]: notes },
       };
     },
     { movie: new Set(), show: new Set() },
@@ -92,6 +96,7 @@ export async function toggleFavorite({ target, remove, overlay, request, notify,
         },
       }));
     }
+    patchFavoriteNote(overlay, target, { id: row.id, text: row.notes ?? '' });
     return { id: row.id, notes: row.notes ?? '' };
   } catch {
     notify.error('Your favorite was saved, but we could not open its notes. Try editing them from your favorites.');

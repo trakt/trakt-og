@@ -2,6 +2,7 @@ import type { CollectedItem } from './CollectedItem.ts';
 import type { HiddenProgress } from './HiddenProgress.ts';
 import type { ListLabel } from './ListLabel.ts';
 import type { LibrarySource } from '../components/collection/LibrarySource.ts';
+import type { FavoriteNote } from '../favorites/FavoriteNote.ts';
 
 type Ids = ReadonlySet<number>;
 type ById<T> = ReadonlyMap<number, T>;
@@ -30,6 +31,8 @@ export type OverlaySlices = {
   favorites: Readonly<Record<'movie' | 'show', Ids>> & {
     /** Optional for older cached records. */
     readonly dates?: Readonly<Record<'movie' | 'show', ById<string>>>;
+    /** Each favorite's list-item id, which its note is saved by, and the note. Optional for older cached records. */
+    readonly notes?: Readonly<Record<'movie' | 'show', ById<FavoriteNote>>>;
   };
   /** Show ids. */
   dropped: Ids | ById<string>;

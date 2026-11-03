@@ -121,6 +121,14 @@ describe('quickIconFill', () => {
       }).titles.favorited,
     ).toBe('Favorited on 28 Sep 2026');
   });
+  it("should put a favorite's note in its tooltip", () => {
+    const note = { id: 7, text: 'The race scene is amazing!' };
+    expect(quickIconFill({ state: { favorited: true, favoriteNote: note } }).tips.favoriteNote).toBe(note.text);
+    expect(
+      quickIconFill({ state: { favorited: true, favoriteNote: { id: 7, text: '' } } }).tips.favoriteNote,
+    ).toBeUndefined();
+    expect(quickIconFill({ state: { favorited: false, favoriteNote: note } }).tips.favoriteNote).toBeUndefined();
+  });
 });
 
 describe('rewatch progress', () => {

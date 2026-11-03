@@ -3,7 +3,8 @@
   type, then any `tags` a caller adds, like a list's show) over the title, then a 500-character note field with who
   can read it and a meter of the characters left, and Cancel and Save. Cmd/Ctrl+Enter saves too. OG's privacy and
   spoiler toggles only showed for history, library and rating notes, which this doesn't take yet. Saving blank text
-  deletes the note. `children` sits above the field, like the notes limit.
+  deletes the note. `children` sits above the field, like the notes limit. With `ondelete`, a delete icon leads the
+  footer and asks first, in the red prompt.
 -->
 <script lang="ts">
 import type { Snippet } from 'svelte';
@@ -12,8 +13,10 @@ import Dialog from '$lib/components/dialog/Dialog.svelte';
 import DialogArtHeader from '$lib/components/dialog/DialogArtHeader.svelte';
 import DialogForm from '$lib/components/dialog/DialogForm.svelte';
 import FieldLabel from '$lib/components/dialog/FieldLabel.svelte';
+import ManageConfirm from '$lib/components/comments/ManageConfirm.svelte';
 import type { CardTag } from '$lib/components/media/CardTag';
 import PrivacyTag from '$lib/components/notes/PrivacyTag.svelte';
+import deleteIcon from '$lib/icons/regular/trash-xmark.svg?raw';
 import type { NotableItem } from '$lib/notes/NotableItem';
 import type { Privacy } from '$lib/notes/Privacy';
 
@@ -23,6 +26,8 @@ interface Props {
   /** Left without a type, there's no type tag. */
   item: Pick<NotableItem, 'title' | 'year' | 'fanart'> & { readonly type?: NotableItem['type'] };
   onsave: (text: string) => void;
+  /** Deletes an existing note. */
+  ondelete?: () => void;
   /** A favorite's note: a Favorite tag, and the favorites prompt in the empty field. */
   favorite?: boolean;
   /** Tags after the item's own: a list item's show, "Dropped". */
@@ -40,6 +45,7 @@ let {
   draft = $bindable(),
   item,
   onsave,
+  ondelete,
   favorite = false,
   tags = [],
   privacy,
@@ -77,6 +83,14 @@ const caretToEnd = (textarea: HTMLTextAreaElement) => {
 
   <DialogForm save={busy ? 'Saving...' : 'Save Note'} {busy} {disabled} onsubmit={() => onsave(draft)}
     oncancel={() => (open = false)}>
+    {#snippet start()}
+      {#if ondelete}
+        <span class="delete-note">
+          <ManageConfirm name="delete" svg={deleteIcon} label="Delete note" yes="Yes, delete it!" {busy}
+            onconfirm={ondelete}>Delete your note?</ManageConfirm>
+        </span>
+      {/if}
+    {/snippet}
     {@render children?.()}
     <div>
       <FieldLabel text="Note" for="{id}-note">{#snippet aside()}{#if privacy}<PrivacyTag {privacy} />{/if}{/snippet}</FieldLabel>
@@ -92,3 +106,27 @@ const caretToEnd = (textarea: HTMLTextAreaElement) => {
     </div>
   </DialogForm>
 </Dialog>
+
+<style>
+/* A note card's delete icon. */
+.delete-note :global(.confirm.delete > button) {
+  display: inline-grid;
+  place-items: center;
+  inline-size: var(--comment-tool-size);
+  block-size: var(--comment-tool-size);
+  border-radius: var(--radius-comment-tool);
+  color: var(--color-comment-delete);
+  font-size: var(--font-size-comment-tool);
+  transition: background-color var(--transition-comment-quiet);
+
+  &:hover {
+    background-color: var(--color-comment-chip);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .delete-note :global(.confirm.delete > button) {
+    transition: none;
+  }
+}
+</style>

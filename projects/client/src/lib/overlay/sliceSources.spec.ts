@@ -197,6 +197,7 @@ describe('sliceSources', () => {
       movie: new Set(),
       show: new Set([5]),
       dates: { movie: new Map(), show: new Map([[5, '2026-09-29T12:00:00Z']]) },
+      notes: { movie: new Map(), show: new Map([[5, { id: 50, text: '' }]]) },
     });
     expect(await sliceSources.rewatching.load(get)).toEqual(new Map([[6, '2026-09-29T12:00:00Z']]));
   });

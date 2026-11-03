@@ -14,6 +14,7 @@ import MediaCollection from '$lib/components/collection/MediaCollection.svelte';
 import { LIBRARY_ADDING } from '$lib/components/collection/libraryAdding';
 import LibraryTip from '$lib/components/collection/LibraryTip.svelte';
 import FavoritedTip from '$lib/components/favorites/FavoritedTip.svelte';
+import FavoriteRemovePrompt from '$lib/components/favorites/FavoriteRemovePrompt.svelte';
 import PlaysTip from '$lib/components/media/PlaysTip.svelte';
 import ProgressTip from '$lib/components/media/ProgressTip.svelte';
 import { librarySourceIcon } from '$lib/components/collection/librarySourceIcon';
@@ -119,6 +120,10 @@ const {
 }: Props = $props();
 
 let moreButton = $state<HTMLButtonElement>();
+// Unfavoriting a card asks first, like the summary button: the favorite's note goes with it.
+let favoriteButton = $state<HTMLButtonElement>();
+let favoritePrompt = $state<HTMLDivElement>();
+let favoriteAsking = $state(false);
 // The drop prompt sits by the ••• itself: a visible anchor, so no browser hides the prompt for want of one. It's
 // on the button's fill layer, as the tooltip names the button.
 const uid = $props.id();
@@ -175,7 +180,7 @@ const ratingLevel = $derived(rating === undefined ? 1 : Math.min(Math.max(Math.t
 {/snippet}
 
 {#snippet libraryTip()}{#if fill.tips.collected}<LibraryTip tip={fill.tips.collected} />{/if}{/snippet}
-{#snippet favoritedTip()}{#if fill.tips.favorited}<FavoritedTip date={fill.tips.favorited} />{/if}{/snippet}
+{#snippet favoritedTip()}<FavoritedTip date={fill.tips.favorited} note={fill.tips.favoriteNote} />{/snippet}
 {#snippet watchedTip()}{#if fill.tips.watched}<ProgressTip progress={fill.tips.watched} />{:else if fill.tips.plays}<PlaysTip
       plays={fill.tips.plays} />{/if}{/snippet}
 
@@ -203,19 +208,21 @@ const ratingLevel = $derived(rating === undefined ? 1 : Math.min(Math.max(Math.t
     {#if favorite}
       {#if target}
         <MediaFavorite {target}>
-          {#snippet trigger({ selected, day, busy, locked, toggle })}
-            {#snippet favoritedOn()}{#if day}<FavoritedTip date={day} />{/if}{/snippet}
-            <Tooltip content={locked ?? (selected ? day ? favoritedOn : 'Favorited' : 'Add to favorites')} placement="bottom">
+          {#snippet trigger({ selected, day, busy, locked, toggle, note })}
+            {#snippet favoritedOn()}<FavoritedTip date={day} {note} />{/snippet}
+            <Tooltip content={locked ?? (selected ? day || note ? favoritedOn : 'Favorited' : 'Add to favorites')} placement="bottom">
               {#snippet trigger(tooltip)}
-                <button type="button" class={['action', 'favorite', { selected, locked }]} style:--fill={selected ? 1 : 0} aria-label={selected ? 'Remove from favorites' : 'Add to favorites'} aria-pressed={selected} aria-busy={busy} aria-disabled={busy || Boolean(locked)} onclick={toggle} {...tooltip}>
+                <button bind:this={favoriteButton} type="button" class={['action', 'favorite', { selected, locked }]} style:--fill={selected ? 1 : 0} aria-label={selected ? 'Remove from favorites' : 'Add to favorites'} aria-pressed={selected} aria-haspopup={selected ? 'dialog' : undefined} aria-controls={selected ? `favorite-${uid}` : undefined} aria-expanded={selected ? favoriteAsking : undefined} aria-busy={busy} aria-disabled={busy || Boolean(locked)} onclick={() => (selected && !busy ? favoritePrompt?.showPopover() : toggle())} {...tooltip}>
                   <span class="base"></span>{#if busy}<Spinner label="Saving favorite" />{:else}<Icon svg={star} />{/if}
                 </button>
               {/snippet}
             </Tooltip>
+            <FavoriteRemovePrompt id="favorite-{uid}" anchor={favoriteButton} {note} onremove={toggle}
+              bind:element={favoritePrompt} bind:asking={favoriteAsking} />
           {/snippet}
         </MediaFavorite>
       {:else}
-        {@render action('favorite', star, 'Add to favorites', fill.favorited ? 1 : 0, fill.tips.favorited ? favoritedTip : fill.titles.favorited)}
+        {@render action('favorite', star, 'Add to favorites', fill.favorited ? 1 : 0, fill.tips.favorited || fill.tips.favoriteNote ? favoritedTip : fill.titles.favorited)}
       {/if}
     {/if}
     {#if watchNow && watchNowItem && !menuWatchNow}

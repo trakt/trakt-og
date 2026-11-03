@@ -1,6 +1,7 @@
 <!--
   The button stack to the right of a summary's overview: check in (a show's to its next episode), history, library, watchlist, favorites, comment,
   each a `SummaryAction`. History, library, lists and favorites use shared optimistic controls; the rest stay idle.
+  Removing a favorite asks first (`SummaryFavorite`).
   The phone Watch Now button sits above them (`WatchNow` with `phone`).
 -->
 <script lang="ts">
@@ -10,7 +11,7 @@ import { signInHref } from '$lib/auth/signInHref';
 import { checkin as checkinModal } from '$lib/components/checkin/checkin.svelte';
 import type { CheckinTarget } from '$lib/components/checkin/CheckinTarget';
 import { newComment } from '$lib/components/comments/newComment.svelte';
-import MediaFavorite from '$lib/components/favorites/MediaFavorite.svelte';
+import SummaryFavorite from '$lib/components/favorites/SummaryFavorite.svelte';
 import type { FavoriteTarget } from '$lib/favorites/FavoriteTarget';
 import MediaCollection from '$lib/components/collection/MediaCollection.svelte';
 import { LIBRARY_ADDING } from '$lib/components/collection/libraryAdding';
@@ -23,11 +24,10 @@ import SummaryAction from '$lib/components/summary/SummaryAction.svelte';
 import SummaryActionTile from '$lib/components/summary/SummaryActionTile.svelte';
 import circlePlus from '$lib/icons/light/circle-plus.svg?raw';
 import star from '$lib/icons/thin/star.svg?raw';
-import filledStar from '$lib/icons/solid/star.svg?raw';
 import check from '$lib/icons/trakt/check.svg?raw';
 import collection from '$lib/icons/trakt/collection.svg?raw';
 import comment from '$lib/icons/trakt/comment.svg?raw';
-import list from '$lib/icons/trakt/list.svg?raw';
+import list from '$lib/icons/light/list.svg?raw';
 import trakt from '$lib/icons/trakt/trakt-v2.svg?raw';
 
 interface Props {
@@ -120,14 +120,7 @@ const percentOf = (count: number) => `${progress?.visible ? Math.trunc(count / p
     {:else if kind === 'list' && listTarget}
       <MediaList target={listTarget} variant="summary" />
     {:else if kind === 'favorites' && favoriteTarget}
-      <MediaFavorite target={favoriteTarget}>
-        {#snippet trigger({ selected, date, busy, locked, toggle })}
-          <SummaryAction {color} icon={selected ? filledStar : icon} text={selected ? date ? 'Favorited on' : 'Favorited' : label}
-            detail={selected ? date : undefined} {selected} busy={busy ? 'Saving favorite' : undefined} aria-pressed={selected}
-            aria-label={selected ? 'Remove from favorites' : label} aria-busy={busy} aria-disabled={busy || Boolean(locked)}
-            locked={Boolean(locked)} tooltip={locked} onclick={toggle} />
-        {/snippet}
-      </MediaFavorite>
+      <SummaryFavorite target={favoriteTarget} {color} {icon} {label} />
     {:else if kind === 'checkin' && checkin}
       <SummaryAction {color} {icon} text={label} selected busy={opening ? 'Opening check in' : undefined} aria-haspopup="dialog"
         aria-busy={opening} onclick={() => openCheckin(checkin)} />

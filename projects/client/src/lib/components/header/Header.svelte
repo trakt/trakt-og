@@ -9,6 +9,8 @@
 -->
 <script lang="ts">
 import { afterNavigate, invalidateAll } from '$app/navigation';
+import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
+import { useTrack } from '$lib/analytics/useTrack';
 import { page } from '$app/state';
 import logo from '$lib/assets/trakt-logo-red.png';
 import Icon from '$lib/icons/Icon.svelte';
@@ -69,6 +71,8 @@ interface Props {
   /** The member's own bar from the og-header cookie, in order. Null keeps the default links. */
   links?: readonly string[] | null;
 }
+
+const { track: trackVipUpsell } = useTrack(AnalyticsEvent.VipUpsell);
 
 const browserSave = (body: SettingsBody) =>
   saveSettings({
@@ -183,7 +187,8 @@ async function toggleDarkKnight() {
     {#if user}
       <GettingStarted slug={user.slug} named={user.named} joinedAt={user.joinedAt} />
       {#if !user.isVip}
-        <a class="get-vip" href={traktUrls.vip} target="_blank" rel="noopener"><Icon svg={rocket} /> Get VIP</a>
+        <a class="get-vip" href={traktUrls.vipFor('navbar')} target="_blank" rel="noopener"
+          onclick={() => trackVipUpsell({ source: 'navbar' })}><Icon svg={rocket} /> Get VIP</a>
       {/if}
       <div class={['profile', { vip: user.isVip }]}>
         <HeaderMenu label="{user.firstName}'s menu">
@@ -210,7 +215,7 @@ async function toggleDarkKnight() {
           <p class="heading">Trakt Account</p>
           <ul>
             {#if user.isVip}
-              <li><a href={traktUrls.vip} target="_blank" rel="noopener"><Icon svg={rocket} fixedWidth /> Manage VIP</a></li>
+              <li><a href={traktUrls.vipFor('profile-settings-manage')} target="_blank" rel="noopener"><Icon svg={rocket} fixedWidth /> Manage VIP</a></li>
             {/if}
             <li>
               <button type="button" class="dark-knight" role="switch" aria-checked={dark} onclick={toggleDarkKnight}>
@@ -232,7 +237,7 @@ async function toggleDarkKnight() {
       </div>
     {:else if !renewing}
       <!-- One page signs in and signs up, so one button. -->
-      <a class="sign-in" href="/signin" onclick={authStep.signIn}>Sign In</a>
+      <a class="sign-in" href="/signin" onclick={authStep.signIn('navbar')}>Sign In</a>
     {/if}
   </div>
   {/if}

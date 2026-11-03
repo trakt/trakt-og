@@ -1,3 +1,5 @@
+import { AnalyticsEvent } from '../../analytics/AnalyticsEvent.ts';
+import { useTrack } from '../../analytics/useTrack.ts';
 import { saveSettings } from '../../settings/saveSettings.ts';
 import type { SettingsRequest } from '../../settings/saveSettings.ts';
 
@@ -15,6 +17,8 @@ type ChangeProgressViewParams = {
   request: SettingsRequest;
   notify: { error: (message: string) => void };
 };
+
+const { track: trackSettings } = useTrack(AnalyticsEvent.Settings);
 
 /**
  * OG's view toggles in the progress subnav: each saves to the viewer's own
@@ -34,7 +38,10 @@ export async function changeProgressView({
     request,
     body: { browsing: { progress: { [settings]: { [view]: on } } } },
   });
-  if (result.saved) return true;
+  if (result.saved) {
+    trackSettings({ settings: 'progress_view' });
+    return true;
+  }
 
   apply(!on);
   result.errors.forEach((message) => notify.error(message));

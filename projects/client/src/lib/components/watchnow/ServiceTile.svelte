@@ -9,6 +9,8 @@
 -->
 <script lang="ts">
 import type { Snippet } from 'svelte';
+import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
+import { useTrack } from '$lib/analytics/useTrack';
 import Icon from '$lib/icons/Icon.svelte';
 import check from '$lib/icons/solid/check.svg?raw';
 import type { ServiceLink } from './watchNow.ts';
@@ -26,6 +28,7 @@ interface Props {
 }
 
 const { link, uhd = false, country, pressed = false, onclick, children }: Props = $props();
+const { track } = useTrack(AnalyticsEvent.StreamOn);
 </script>
 
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
@@ -50,16 +53,15 @@ const { link, uhd = false, country, pressed = false, onclick, children }: Props 
   {onclick}>
     {@render body()}
   </button>
-{:else}
-  <svelte:element
-  this={link.href ? 'a' : 'span'}
-  class={['service', { 'has-country': country }]}
-  href={link.href || undefined}
-  target={link.href ? '_blank' : undefined}
-  rel={link.href ? 'nofollow noopener' : undefined}
->
+{:else if link.href}
+  <a class={['service', { 'has-country': country }]} href={link.href} target="_blank" rel="nofollow noopener"
+    onclick={() => track({ source: link.slug })}>
     {@render body()}
-  </svelte:element>
+  </a>
+{:else}
+  <span class={['service', { 'has-country': country }]}>
+    {@render body()}
+  </span>
 {/if}
 
 <style>

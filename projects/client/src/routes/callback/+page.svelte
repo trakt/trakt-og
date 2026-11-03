@@ -1,11 +1,24 @@
 <script lang="ts">
 import SeoHead from '$lib/seo/SeoHead.svelte';
+import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
+import { useTrack } from '$lib/analytics/useTrack';
 import AuthStepScreen from '$lib/auth/AuthStepScreen.svelte';
 import { isDeclinedSignIn } from '$lib/auth/authFailure';
 import { callbackReturnPath } from '$lib/auth/callbackReturnPath';
 import { login } from '$lib/auth/login';
 import { storeToken } from '$lib/auth/storeToken';
+import { toLoginFailureCode } from '$lib/auth/toLoginFailureCode';
 import { userManager } from '$lib/auth/userManager';
+import type { User } from 'oidc-client-ts';
+
+const { track: trackLoginComplete } = useTrack(AnalyticsEvent.LoginComplete);
+const { track: trackLoginFailed } = useTrack(AnalyticsEvent.LoginFailed);
+
+async function storeSession(user: User) {
+  const response = await storeToken(user).catch(() => null);
+  if (response?.ok) return trackLoginComplete();
+  trackLoginFailed({ error: 'session_not_stored' });
+}
 
 // A declined sign in goes back signed out. Any other failure retries from the start, since the code is spent and its
 // return path went with it.
@@ -13,10 +26,11 @@ async function finish() {
   const user = await userManager()
     .signinCallback()
     .catch((error: unknown) => {
+      trackLoginFailed({ error: toLoginFailureCode(error) });
       if (isDeclinedSignIn(error)) return undefined;
       throw error;
     });
-  if (user) await storeToken(user).catch(() => {});
+  if (user) await storeSession(user);
 
   // replace, not goto: the ?code= URL must not stay in history, and a full load renders the signed-in SSR.
   // Signing in from the header or the home page lands on the dashboard, where a new member's welcome wall is.
@@ -27,4 +41,4 @@ async function finish() {
 
 <SeoHead title="Signing in" />
 
-<AuthStepScreen scene="return" run={finish} retry={() => login('/')} />
+<AuthStepScreen scene="return" run={finish} retry={() => login('redirect', '/')} />

@@ -1,17 +1,24 @@
 <!--
   Credits a member's shared link: when a signed-in viewer arrives on a page with `?share=<code>`, the visit is recorded
   for the sharer. A signed-out visitor isn't counted, but the code stays in the URL, so signing in from here still
-  credits it. Renders nothing; mount it once on each page a member can share.
+  credits it. Every arrival is tracked as web's `share.arrival`, once per page. Renders nothing; mount it once on each
+  page a member can share.
 -->
 <script lang="ts">
 import { afterNavigate } from '$app/navigation';
 import { page } from '$app/state';
+import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
+import { useTrack } from '$lib/analytics/useTrack';
 import { viewerFetch } from '$lib/auth/viewerFetch';
-import { recordShareClick } from './recordShareClick.ts';
-import { toShareClick } from './toShareClick.ts';
+import { recordShareArrival } from './recordShareClick.ts';
+import { SHARE_PARAM } from './shareParam.ts';
+import { toShareArrivalType } from './toShareArrivalType.ts';
 
-afterNavigate(({ to }) => {
-  const click = to && page.data.user ? toShareClick(to.url) : null;
-  if (click) void recordShareClick({ fetch: viewerFetch(), click });
+const { track } = useTrack(AnalyticsEvent.ShareArrival);
+
+afterNavigate(async ({ from, to }) => {
+  if (!to?.url.searchParams.has(SHARE_PARAM) || from?.url.pathname === to.url.pathname) return;
+  const outcome = await recordShareArrival({ fetch: page.data.user ? viewerFetch() : null, url: to.url });
+  track({ type: toShareArrivalType(to.route.id), outcome });
 });
 </script>

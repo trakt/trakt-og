@@ -21,11 +21,13 @@ interface Props {
   menuLabel: string;
   prevHref?: string;
   nextHref?: string;
+  /** A click on back or forward. */
+  onstep?: (rel: 'prev' | 'next') => void;
   /** The menu's rows. */
   children: Snippet;
 }
 
-const { unit, label, menuLabel, prevHref, nextHref, children }: Props = $props();
+const { unit, label, menuLabel, prevHref, nextHref, onstep, children }: Props = $props();
 const name = (word: string) => `${word} ${unit}`;
 </script>
 
@@ -36,7 +38,7 @@ const name = (word: string) => `${word} ${unit}`;
   {@const text = name(rel === 'prev' ? 'Previous' : 'Next')}
   {@const icon = rel === 'prev' ? angleLeft : angleRight}
   {#if href}
-    <a class="step" {href} {rel}><Icon svg={icon} label={text} /></a>
+    <a class="step" {href} {rel} onclick={() => onstep?.(rel)}><Icon svg={icon} label={text} /></a>
   {:else}
     <span class="step" aria-disabled="true"><Icon svg={icon} label={text} /></span>
   {/if}

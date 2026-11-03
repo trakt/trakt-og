@@ -37,6 +37,9 @@ import { searchNetworks } from './searchNetworks.ts';
 import { type ListSelection, listSelection, toListFilter } from './listSelection.ts';
 import RangeSlider from './RangeSlider.svelte';
 import { scaleMax, scaleMin } from './rangeScale.ts';
+import { filterChanges } from './filterChanges.ts';
+import { trackFilterChanges } from './trackFilterChanges.ts';
+import { trackFiltersReset } from './trackFiltersReset.ts';
 import { type FilterSource, toFilterSources, watchNowOptions } from './watchNowFilter.ts';
 
 interface Props {
@@ -92,10 +95,15 @@ const streaming = $derived(config.watchnow && !isStandardApi());
 let draft = $derived<FilterDraft>(toFilterDraft(filters, config));
 let timer: ReturnType<typeof setTimeout> | undefined;
 
-function apply(next: FilterDraft, wait = 0) {
+// Clear counts as one reset of them all, not a reset of each.
+function apply(next: FilterDraft, wait = 0, track = trackFilterChanges) {
   draft = next;
   clearTimeout(timer);
-  timer = setTimeout(() => onchange(fromFilterDraft(next, config)), wait);
+  timer = setTimeout(() => {
+    const applied = fromFilterDraft(next, config);
+    track(filters, applied);
+    onchange(applied);
+  }, wait);
 }
 
 const setList = (key: ListFilterKey, selection: ListSelection) =>
@@ -156,7 +164,9 @@ function onkeydown(event: KeyboardEvent) {
 }
 
 function reset() {
-  apply(toFilterDraft(emptyFilters, config));
+  apply(toFilterDraft(emptyFilters, config), 0, (before, after) => {
+    if (filterChanges(before, after).length > 0) trackFiltersReset();
+  });
 }
 </script>
 

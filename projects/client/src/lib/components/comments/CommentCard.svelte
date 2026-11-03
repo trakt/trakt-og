@@ -19,6 +19,8 @@
 -->
 <script lang="ts">
 import { page } from '$app/state';
+import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
+import { useTrack } from '$lib/analytics/useTrack';
 import { fade } from 'svelte/transition';
 import { type Snippet, untrack } from 'svelte';
 import ReactionControl from '$lib/components/comments/ReactionControl.svelte';
@@ -74,10 +76,13 @@ import ManageConfirm from '$lib/components/comments/ManageConfirm.svelte';
 import { manageLinks } from './manageLinks.ts';
 import ReactionSummary from './ReactionSummary.svelte';
 import { gifQueryOf } from './gif/gifQueryOf.ts';
+import type { GifEntry } from './gif/GifEntry.ts';
 import { memberRelation } from './memberRelation.ts';
 import { onceInView } from './onceInView.ts';
 import { reactionSummary } from './reactionSummary.ts';
 import { spoilerRevealed } from './spoilerRevealed.ts';
+import { setInlineSpoilerReveal } from './InlineSpoiler.svelte';
+import { toCommentContentType } from './toCommentContentType.ts';
 import { parseComment } from './text/parseComment.ts';
 import { watchedIndicator } from './watchedIndicator.ts';
 import { withoutBlocked } from './withoutBlocked.ts';
@@ -188,6 +193,12 @@ const viewerState = $derived.by(() => {
   return overlay.state(item.type, item.id);
 });
 let clicked = $state(false);
+const trackReveal = () => useTrack(AnalyticsEvent.SpoilerReveal).track({ type: 'comment' });
+const reveal = () => {
+  clicked = true;
+  trackReveal();
+};
+setInlineSpoilerReveal(trackReveal);
 const blurred = $derived(
   (comment.spoiler || inheritSpoiler || prefs.hideSpoilers) && !clicked && !spoilerRevealed(item, viewerState),
 );
@@ -240,6 +251,18 @@ let deleted = $state(false);
 let reporting = $state(false);
 
 const api = () => client ?? browserCommentsClient();
+const { track: trackComment } = useTrack(AnalyticsEvent.AddComment);
+
+const sendReply = (text: string, gif: GifEntry | null) => {
+  trackComment({ action: 'reply', type: toCommentContentType(text, gif !== null) });
+  return api().reply(threadId, text, gif);
+};
+
+// Editing leaves the comment's GIF as it is.
+const sendEdit = (text: string, spoiler: boolean) => {
+  trackComment({ action: 'edit', type: toCommentContentType(text, Boolean(comment.gif)) });
+  return api().edit(comment.id, { comment: text, spoiler });
+};
 
 // From the picker or the summary's breakdown: the same reaction again takes it back.
 const react = (type: ReactionType) =>
@@ -331,6 +354,7 @@ const remove = async () => {
   deleted = true;
   next?.setAttribute('tabindex', '-1');
   next?.focus({ preventScroll: true });
+  useTrack(AnalyticsEvent.DeleteComment).track();
   const result = await api().remove(comment.id);
   if (!result.ok) {
     deleted = false;
@@ -505,7 +529,7 @@ const vanish = (node: Element) => fade(node, { duration: prefersReducedMotion.cu
           spoiler={isReply ? undefined : comment.spoiler}
           minWords={comment.review ? 0 : undefined}
           oncancel={closeEdit}
-          save={(text, spoiler) => api().edit(comment.id, { comment: text, spoiler })}
+          save={sendEdit}
           onsaved={edited}
         />
       {:else}
@@ -525,10 +549,10 @@ const vanish = (node: Element) => fade(node, { duration: prefersReducedMotion.cu
               {#if spotlight}
                 <!-- The spotlight's blurred text is its own reveal, without the button. -->
                 <button type="button" class="reveal-text" aria-label="Spoilers, click to reveal"
-                  onclick={() => (clicked = true)}></button>
+                  onclick={reveal}></button>
               {:else}
                 <div class="reveal">
-                  <GlassAction card glass icon={eyeSlash} onclick={() => (clicked = true)}>Reveal Spoilers</GlassAction>
+                  <GlassAction card glass icon={eyeSlash} onclick={reveal}>Reveal Spoilers</GlassAction>
                 </div>
               {/if}
             </div>
@@ -649,7 +673,7 @@ const vanish = (node: Element) => fade(node, { duration: prefersReducedMotion.cu
           oncancel={closeReply}
           gifs={page.data.gifs}
           gifQuery={gifQueryOf(item)}
-          save={(text, _spoiler, gif) => api().reply(threadId, text, gif)}
+          save={(text, _spoiler, gif) => sendReply(text, gif)}
           onsaved={replied}
         />
       {/if}

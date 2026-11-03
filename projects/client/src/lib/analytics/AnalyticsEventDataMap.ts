@@ -14,7 +14,8 @@ type SearchMode = 'media' | 'people' | MediaType | 'lists';
 type SearchResultPosition = '1-3' | '4-10' | '11+';
 type RecommendationMode = 'smart' | 'classic';
 type RelatedMode = 'personal' | 'standard';
-type LoginSource = 'landing-login' | 'landing-get-started' | 'navbar' | 'redirect';
+// og adds `gate`: a signed-out member trying a member action, such as rating.
+type LoginSource = 'landing-login' | 'landing-get-started' | 'navbar' | 'redirect' | 'gate';
 type GifPickerSource = 'comment' | 'review';
 type ReportableType = 'comment' | 'movie' | 'show' | 'season' | 'episode' | 'person' | 'list' | 'user';
 type ReportError = 'already-reported' | 'rate-limited' | 'unknown';

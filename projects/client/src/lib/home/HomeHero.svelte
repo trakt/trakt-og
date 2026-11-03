@@ -79,9 +79,9 @@ $effect(() => {
           {#if signedIn}
             <a class="button primary" href={resolve('/dashboard')}>Dashboard</a>
           {:else}
-            <a class="button primary" href={resolve('/signin')} onclick={authStep.signIn}>Sign In</a>
+            <a class="button primary" href={resolve('/signin')} onclick={authStep.signIn('landing-login')}>Sign In</a>
             <!-- Trakt's sign-in page also creates accounts. -->
-            <a class="button" href={resolve('/signin')} onclick={authStep.signIn}>Join Trakt</a>
+            <a class="button" href={resolve('/signin')} onclick={authStep.signIn('landing-get-started')}>Join Trakt</a>
           {/if}
         </div>
       </div>

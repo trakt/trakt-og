@@ -10,6 +10,8 @@
 -->
 <script lang="ts">
 import { rawApiFetch } from '$lib/api/rawApiFetch';
+import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
+import { useTrack } from '$lib/analytics/useTrack';
 import { toast } from '$lib/components/toast/toast.svelte';
 import Container from '$lib/components/container/Container.svelte';
 import StatusDot from '$lib/components/status/StatusDot.svelte';
@@ -47,8 +49,9 @@ const cancellable = $derived(owner === 'self' && watching.action === 'checkin');
 let cancelled = $state(false);
 let cancelling = false;
 async function cancel() {
-  if (cancelling) return;
+  if (cancelling || watching.action !== 'checkin') return;
   cancelling = true;
+  useTrack(AnalyticsEvent.CheckIn).track({ type: watching.episode ? 'episode' : 'movie', action: 'stop' });
   const response = await rawApiFetch({
     fetch: viewerFetch(),
     path: '/checkin',

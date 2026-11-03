@@ -190,7 +190,7 @@ function checkUpTo() {
 }
 async function open(force: boolean): Promise<'date' | 'remove' | 'partial' | null> {
   if (!(await userManager().getUser())?.access_token) {
-    await login();
+    await login('gate');
     return null;
   }
   const action = watchAction({ fill: onremove ? 1 : fill.watched, force, defaultAt, rewatchNext: target.rewatchNext });

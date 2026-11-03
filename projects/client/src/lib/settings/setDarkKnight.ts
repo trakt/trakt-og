@@ -1,3 +1,5 @@
+import { AnalyticsEvent } from '../analytics/AnalyticsEvent.ts';
+import { useTrack } from '../analytics/useTrack.ts';
 import type { DarkKnight } from './DarkKnight.ts';
 import type { SaveSettingsResult } from './saveSettings.ts';
 import type { SettingsBody } from './SettingsBody.ts';
@@ -15,6 +17,9 @@ type SetDarkKnightParams = {
   readonly root: Pick<HTMLElement, 'dataset'>;
 };
 
+const { track: trackTheme } = useTrack(AnalyticsEvent.Theme);
+const { track: trackSettings } = useTrack(AnalyticsEvent.Settings);
+
 /**
  * Switches Dark Knight the way OG did (settings.js:529-544, global.js:4011-4017): the page changes at once, then the
  * setting saves in the background. A failed save puts the old theme back and says why; OG ignored the failure.
@@ -22,10 +27,13 @@ type SetDarkKnightParams = {
  */
 export async function setDarkKnight({ value, save, reload, notify, root }: SetDarkKnightParams): Promise<boolean> {
   const before = root.dataset.theme;
-  root.dataset.theme = toTheme(value);
+  const theme = toTheme(value);
+  trackTheme({ theme });
+  root.dataset.theme = theme;
 
   const result = await save({ browsing: { dark_knight: value } });
   if (result.saved) {
+    trackSettings({ settings: 'theme' });
     await reload();
     return true;
   }

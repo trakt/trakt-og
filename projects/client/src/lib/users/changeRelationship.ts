@@ -1,4 +1,6 @@
 import { z } from 'zod/v4';
+import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
+import { useTrack } from '$lib/analytics/useTrack';
 import type { createRelationshipOverlay } from './createRelationshipOverlay.svelte.ts';
 import type { ViewerRelation } from './ViewerRelation.ts';
 
@@ -14,6 +16,18 @@ type Params = {
 };
 const followResult = z.object({ approved_at: z.string().nullable(), user: z.object({ username: z.string() }) });
 const approvalResult = z.object({ followed_at: z.string(), user: z.object({ username: z.string() }) });
+
+// trakt-web leaves approving and denying a follow request untracked; blocking the requester is a block.
+function track(action: Action, previous: ViewerRelation['follow']) {
+  if (action === 'follow') return useTrack(AnalyticsEvent.Follow).track({ action: 'follow' });
+  if (action === 'unfollow') {
+    return useTrack(AnalyticsEvent.Follow).track({
+      action: previous === 'pending' ? 'cancel-follow-request' : 'unfollow',
+    });
+  }
+  if (action === 'block' || action === 'blockRequest') return useTrack(AnalyticsEvent.Block).track({ action: 'block' });
+  if (action === 'unblock') useTrack(AnalyticsEvent.Block).track({ action: 'unblock' });
+}
 
 /** The patch and its authenticated write stay together; every failure restores all affected controls and counts. */
 export async function changeRelationship({ slug, isPrivate, relation, action, overlay, request, notify }: Params) {
@@ -54,6 +68,7 @@ export async function changeRelationship({ slug, isPrivate, relation, action, ov
       ? `/users/requests/${current.requestId}`
       : `/users/${encodeURIComponent(slug)}/${action === 'follow' || action === 'unfollow' ? 'follow' : 'block'}`;
   const method = ['unfollow', 'unblock', 'deny'].includes(action) ? 'DELETE' : 'POST';
+  track(action, current.follow);
   overlay.start(slug);
   const rollback = overlay.patch(slug, next);
   try {

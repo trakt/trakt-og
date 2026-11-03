@@ -123,6 +123,7 @@ describe('writeMediaTool', () => {
     respond(409, { message: 'You already have a pending report for this item.' });
     expect(await writeMediaTool({ fetch, action: report })).toEqual({
       ok: false,
+      status: 409,
       message: 'You already have a pending report for this item.',
     });
   });

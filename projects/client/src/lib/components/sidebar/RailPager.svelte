@@ -14,18 +14,20 @@ interface Props {
   label: string;
   prevHref?: string;
   nextHref?: string;
+  /** A click on back or forward. */
+  onstep?: (rel: 'prev' | 'next') => void;
 }
 
-const { unit, label, prevHref, nextHref }: Props = $props();
+const { unit, label, prevHref, nextHref, onstep }: Props = $props();
 </script>
 
 <!-- The hrefs keep the current path and query, so resolve() has nothing to add. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
 <div class="rail-pager">
-  {#if prevHref}<a href={prevHref} rel="prev"><Icon svg={angleLeft} label="Previous {unit}" /></a>{/if}
+  {#if prevHref}<a href={prevHref} rel="prev" onclick={() => onstep?.('prev')}><Icon svg={angleLeft} label="Previous {unit}" /></a>{/if}
   <span>{label}</span>
-  {#if nextHref}<a href={nextHref} rel="next"><Icon svg={angleRight} label="Next {unit}" /></a>{/if}
+  {#if nextHref}<a href={nextHref} rel="next" onclick={() => onstep?.('next')}><Icon svg={angleRight} label="Next {unit}" /></a>{/if}
 </div>
 
 <style>

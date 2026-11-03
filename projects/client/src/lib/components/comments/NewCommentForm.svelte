@@ -10,6 +10,8 @@
 -->
 <script lang="ts">
 import { page } from '$app/state';
+import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
+import { useTrack } from '$lib/analytics/useTrack';
 import type { CommentResponse } from '@trakt/api';
 import { tick } from 'svelte';
 import type { ViewerSettings } from '$lib/settings/ViewerSettings';
@@ -23,6 +25,7 @@ import { focusComment } from './focusComment.ts';
 import type { GifEntry } from './gif/GifEntry.ts';
 import { newComment } from './newComment.svelte.ts';
 import { postComment } from './postComment.ts';
+import { toCommentContentType } from './toCommentContentType.ts';
 import { prefersReducedMotion } from 'svelte/motion';
 import { viewerFetch } from '../../auth/viewerFetch.ts';
 
@@ -53,8 +56,10 @@ $effect(() => {
 const withAvatar = (comment: CommentResponse): CommentResponse =>
   comment.user.images || !settings ? comment : { ...comment, user: { ...comment.user, images: settings.user.images } };
 
-const save = (text: string, spoiler: boolean, gif: GifEntry | null) =>
-  postComment({ fetch: viewerFetch(), item, comment: text, spoiler, gif });
+const save = (text: string, spoiler: boolean, gif: GifEntry | null) => {
+  useTrack(AnalyticsEvent.AddComment).track({ action: 'post', type: toCommentContentType(text, gif !== null) });
+  return postComment({ fetch: viewerFetch(), item, comment: text, spoiler, gif });
+};
 
 // The focus goes back to the "Add comment" button that opened the form.
 function cancel() {

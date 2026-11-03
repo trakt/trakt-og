@@ -147,7 +147,7 @@ async function load() {
 async function open(force = false) {
   if (busy) return;
   if (!(await userManager().getUser())?.access_token) {
-    await login();
+    await login('gate');
     return;
   }
   busy = true;

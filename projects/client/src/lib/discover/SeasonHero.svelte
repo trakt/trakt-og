@@ -19,6 +19,7 @@ import { watchNowPath } from '$lib/components/watchnow/watchNowPath';
 import { openWatchNow } from '$lib/components/watchnow/watchNowLauncher.svelte';
 import { isPlainClick } from '$lib/utils/isPlainClick';
 import { proxiedLogoUrl } from '$lib/utils/proxiedLogoUrl';
+import { trackTrailer } from '$lib/videos/trackVideo';
 import Icon from '$lib/icons/Icon.svelte';
 import youtube from '$lib/icons/brands/youtube.svg?raw';
 import angleLeft from '$lib/icons/light/angle-left.svg?raw';
@@ -206,6 +207,7 @@ const controls: Attachment<HTMLElement> = (node) => {
                 if (!isPlainClick(event)) return;
                 event.preventDefault();
                 video = current.trailer;
+                trackTrailer(current.href);
               }}
             ><Icon svg={youtube} /> Trailer</a>
           {/if}

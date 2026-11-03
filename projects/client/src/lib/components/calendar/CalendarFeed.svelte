@@ -2,9 +2,11 @@
   The calendar sidebar's iCal Feed section body: "Add to calendar app" opens the feed in the viewer's calendar app
   (webcal://), "Copy iCal link" copies it. Feeds are a VIP feature of the My calendars, so the page only shows the
   section when there's one.
-    <CalendarFeed url={feedUrl} />
+    <CalendarFeed url={feedUrl} mode="show" />
 -->
 <script lang="ts">
+import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
+import { useTrack } from '$lib/analytics/useTrack';
 import { toast } from '$lib/components/toast/toast.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import calendarPlus from '$lib/icons/regular/calendar-plus.svg?raw';
@@ -13,12 +15,16 @@ import check from '$lib/icons/solid/check.svg?raw';
 
 interface Props {
   url: string;
+  /** What the calendar lists, as trakt-web's feed menu counts it. */
+  mode: 'movie' | 'show' | 'media';
 }
 
-const { url }: Props = $props();
+const { url, mode }: Props = $props();
 let copied = $state(false);
+const { track } = useTrack(AnalyticsEvent.CalendarFeed);
 
 function copy() {
+  track({ action: 'copy', mode });
   navigator.clipboard.writeText(url).then(
     () => {
       copied = true;
@@ -32,7 +38,8 @@ function copy() {
 <!-- The feed is an external API subscription. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
-<a class="button" href={url.replace(/^https:/, 'webcal:')}><Icon svg={calendarPlus} />Add to calendar app</a>
+<a class="button" href={url.replace(/^https:/, 'webcal:')} onclick={() => track({ action: 'subscribe', mode })}
+  ><Icon svg={calendarPlus} />Add to calendar app</a>
 <button type="button" class={['button', { copied }]} onclick={copy}>
   <Icon svg={copied ? check : copyIcon} />{copied ? 'Copied' : 'Copy iCal link'}
 </button>

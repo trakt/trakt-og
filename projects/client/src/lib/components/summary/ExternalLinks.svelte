@@ -5,10 +5,13 @@
 -->
 <script lang="ts">
 import { page } from '$app/state';
+import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
+import { useTrack } from '$lib/analytics/useTrack';
 import ShareButton from '$lib/components/share/ShareButton.svelte';
 import GlassAction from '$lib/components/glass-action/GlassAction.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import type { ExternalLink } from './ExternalLink.ts';
+import { toLinkTracking, toShareTracking } from './linkTracking.ts';
 import { withSiteLogos } from './withSiteLogos.ts';
 
 interface Props {
@@ -19,6 +22,12 @@ interface Props {
 
 const { links, share }: Props = $props();
 const buttons = $derived(withSiteLogos(links));
+const person = $derived(page.route.id?.startsWith('/people/') ?? false);
+const { track } = useTrack(AnalyticsEvent.Link);
+const trackLink = (label: string) => {
+  const tracking = toLinkTracking(label, person);
+  if (tracking) track(tracking);
+};
 </script>
 
 {#if buttons.length > 0 || share}
@@ -28,6 +37,7 @@ const buttons = $derived(withSiteLogos(links));
         <Tooltip text={link.title ?? (link.icon ? link.label : undefined)}>
           {#snippet trigger(tooltip)}
             <GlassAction card glass ghost square={!!link.icon} icon={link.icon} href={link.href} target="_blank" rel="noopener"
+              onclick={() => trackLink(link.label)}
               aria-label={link.icon ? link.label : undefined} {...tooltip}>
               {#if !link.icon}{link.label}{/if}
             </GlassAction>
@@ -36,7 +46,8 @@ const buttons = $derived(withSiteLogos(links));
       </li>
     {/each}
     {#if share}
-      <li><ShareButton tile url={new URL(share.href, page.url.origin).href} title={share.title} /></li>
+      <li><ShareButton tile url={new URL(share.href, page.url.origin).href} title={share.title}
+        tracking={toShareTracking(share.href)} /></li>
     {/if}
   </ul>
 {/if}

@@ -17,10 +17,7 @@ const RECOMMENDATIONS_PREFIX = 'recommendations';
 const INSIGHTS_PREFIX = 'insights';
 const RECAP_PREFIX = 'recap';
 
-function buildEventKey<T extends string, K extends string>(
-  prefix: T,
-  action: K,
-): `${T}.${K}` {
+function buildEventKey<T extends string, K extends string>(prefix: T, action: K): `${T}.${K}` {
   return `${prefix}.${action}`;
 }
 

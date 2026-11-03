@@ -19,6 +19,7 @@ import { countLabel } from '$lib/utils/countLabel';
 import type { loadVideos } from './loadVideos.ts';
 import { defaultVideoTab, toVideoTabs } from './toVideoCards.ts';
 import VideoTypeDropdown from './VideoTypeDropdown.svelte';
+import { trackExtras } from './trackVideo.ts';
 import { readVideoTab, videosHref, type VideoTabId } from './videoTypes.ts';
 
 const { data }: { data: Awaited<ReturnType<typeof loadVideos>> } = $props();
@@ -38,6 +39,12 @@ function pick(id: VideoTabId) {
 
 let playing = $state<string>();
 const playingTitle = $derived(data.videos.find((video) => video.href === playing)?.title);
+
+const play = (url: string) => {
+  playing = url;
+  const type = data.videos.find((video) => video.href === url)?.type;
+  if (type) trackExtras(data.media.href, type);
+};
 </script>
 
 <SeoHead
@@ -66,7 +73,7 @@ const playingTitle = $derived(data.videos.find((video) => video.href === playing
   sections={[{ label: countLabel(data.videos.length, 'Video'), href: '#videos' }]}
   {subnav}
 >
-  <div id="videos" class="videos" {@attach videoLinkClicks((url) => (playing = url))}>
+  <div id="videos" class="videos" {@attach videoLinkClicks(play)}>
     {#if current}
       <ul class="grid">
         {#each current.videos as video (video.href)}

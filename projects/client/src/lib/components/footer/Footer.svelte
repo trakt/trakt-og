@@ -4,6 +4,8 @@
   theme, like the header.
 -->
 <script lang="ts">
+import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
+import { useTrack } from '$lib/analytics/useTrack';
 import TraktMark from '$lib/components/brand/TraktMark.svelte';
 import GlassAction from '$lib/components/glass-action/GlassAction.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
@@ -18,8 +20,15 @@ import spaceStationMoon from '$lib/icons/solid/space-station-moon.svg?raw';
 import { resolve } from '$app/paths';
 import { traktUrls } from '$lib/traktUrls';
 
+const { track: trackVipUpsell } = useTrack(AnalyticsEvent.VipUpsell);
+const { track: trackLink } = useTrack(AnalyticsEvent.Link);
+// Only the links web's footer has too carry its `action.link` target.
+const trackSocial = (target: string | undefined) => {
+  if (target) trackLink({ source: 'footer', target });
+};
+
 const pages = [
-  { title: 'VIP', href: traktUrls.vip },
+  { title: 'VIP', href: traktUrls.vipFor('footer'), onclick: () => trackVipUpsell({ source: 'footer' }) },
   { title: 'Developer API', href: traktUrls.developer },
   { title: 'Terms', href: traktUrls.terms },
   { title: 'Privacy', href: traktUrls.privacy },
@@ -27,15 +36,21 @@ const pages = [
 ];
 
 const social = [
-  { title: 'Trakt for iOS', href: traktUrls.appStore, icon: apple },
-  { title: 'Trakt for Android', href: traktUrls.googlePlay, icon: googlePlay, color: 'var(--color-site-google-play)' },
-  { title: 'Reddit', href: traktUrls.reddit, icon: redditAlien, color: 'var(--color-site-reddit)' },
-  { title: 'YouTube', href: traktUrls.youtube, icon: youtube, color: 'var(--color-site-youtube)' },
+  { title: 'Trakt for iOS', href: traktUrls.appStore, icon: apple, target: 'ios-app' },
+  {
+    title: 'Trakt for Android',
+    href: traktUrls.googlePlay,
+    icon: googlePlay,
+    color: 'var(--color-site-google-play)',
+    target: 'android-app',
+  },
+  { title: 'Reddit', href: traktUrls.reddit, icon: redditAlien, color: 'var(--color-site-reddit)', target: 'reddit' },
+  { title: 'YouTube', href: traktUrls.youtube, icon: youtube, color: 'var(--color-site-youtube)', target: 'youtube' },
   // `me` lets Mastodon verify og as Trakt's own site.
   { title: 'Mastodon', href: traktUrls.mastodon, icon: mastodon, color: 'var(--color-site-mastodon)', rel: 'me noopener' },
   { title: 'Twitter', href: traktUrls.twitter, icon: twitter, color: 'var(--color-site-twitter)' },
-  { title: 'GitHub', href: traktUrls.github, icon: github },
-  { title: 'Status', href: traktUrls.status, icon: spaceStationMoon, color: 'var(--color-site-status)' },
+  { title: 'GitHub', href: traktUrls.github, icon: github, target: 'github-web' },
+  { title: 'Status', href: traktUrls.status, icon: spaceStationMoon, color: 'var(--color-site-status)', target: 'status' },
 ];
 </script>
 
@@ -50,7 +65,7 @@ const social = [
         <li><a href={resolve('/about')}>About</a></li>
         <li><a href={resolve('/help')}>Help</a></li>
         {#each pages as link (link.title)}
-          <li><a href={link.href} target="_blank" rel="noopener">{link.title}</a></li>
+          <li><a href={link.href} target="_blank" rel="noopener" onclick={link.onclick}>{link.title}</a></li>
         {/each}
       </ul>
     </nav>
@@ -60,6 +75,7 @@ const social = [
           <Tooltip text={link.title}>
             {#snippet trigger(tooltip)}
               <GlassAction card ghost square icon={link.icon} href={link.href} target="_blank" rel={link.rel ?? 'noopener'}
+                onclick={() => trackSocial(link.target)}
                 aria-label={link.title} {...tooltip} />
             {/snippet}
           </Tooltip>

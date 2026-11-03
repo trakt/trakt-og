@@ -7,6 +7,8 @@
 -->
 <script lang="ts">
 import SeoHead from '$lib/seo/SeoHead.svelte';
+import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
+import { useTrack } from '$lib/analytics/useTrack';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import { page } from '$app/state';
 import { untrack } from 'svelte';
@@ -49,6 +51,7 @@ import {
 import SearchResultCard from '$lib/search/SearchResultCard.svelte';
 import SearchResultRow from '$lib/search/SearchResultRow.svelte';
 import { searchLinks } from '$lib/search/searchLinks';
+import { toSearchMode } from '$lib/search/toSearchMode';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
 import type { loadSearch } from '$lib/search/loadSearch';
 
@@ -65,10 +68,18 @@ let recent = $state.raw<ReturnType<typeof viewerRecentSearches>>();
 $effect(() => {
   recent = viewer ? viewerRecentSearches(viewer) : undefined;
 });
+// One action.search per distinct search, so paging, filtering or signing in doesn't count it again.
+const { track: trackSearch } = useTrack(AnalyticsEvent.Search);
+let tracked: string | undefined;
 $effect(() => {
   const store = recent;
   const search = { query: data.query, type: data.slug };
   untrack(() => store?.record(search));
+
+  const key = `${search.type}:${search.query.toLowerCase()}`;
+  if (!search.query || key === tracked) return;
+  tracked = key;
+  trackSearch({ mode: toSearchMode(search.type) });
 });
 let field = $state<HTMLFormElement>();
 // Clear all takes the section with it, so focus goes to the search field instead of the page.

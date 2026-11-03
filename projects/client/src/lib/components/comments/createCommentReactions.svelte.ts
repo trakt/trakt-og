@@ -1,6 +1,8 @@
 import type { ReactionsSummaryResponse } from '@trakt/api';
 import { SvelteMap } from 'svelte/reactivity';
 import { z } from 'zod/v4';
+import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
+import { useTrack } from '$lib/analytics/useTrack';
 import { loadCommentReactions } from './loadCommentReactions.ts';
 import { patchReactionSummary } from './patchReactionSummary.ts';
 import { GENERIC_ERROR } from '../../utils/genericError.ts';
@@ -120,6 +122,7 @@ export function createCommentReactions({
     if (current !== generation) return false;
     const previous = choices.get(id);
     const next = previous === type ? undefined : type;
+    useTrack(AnalyticsEvent.React).track({ action: next ? 'add' : 'remove', type: 'comment' });
     const rollback = patch(id, next);
     let message = GENERIC_ERROR;
     try {

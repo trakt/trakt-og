@@ -1,4 +1,6 @@
 import { z } from 'zod/v4';
+import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
+import { useTrack } from '$lib/analytics/useTrack';
 import type { createOverlay } from '../overlay/createOverlay.svelte.ts';
 import type { FavoriteTarget } from './FavoriteTarget.ts';
 import { loadFavoriteRows } from './loadFavoriteRows.ts';
@@ -18,6 +20,7 @@ const resultSchema = z.object({
   not_found: z.record(z.string(), z.array(z.unknown())).optional(),
 });
 const errorSchema = z.object({ message: z.string().optional() });
+const { track } = useTrack(AnalyticsEvent.Favorite);
 
 /** Optimistic membership; failure to read the note id never undoes a successful favorite. */
 export async function toggleFavorite({ target, remove, overlay, request, notify, now = () => new Date() }: Params) {
@@ -43,6 +46,7 @@ export async function toggleFavorite({ target, remove, overlay, request, notify,
     { movie: new Set(), show: new Set() },
   );
 
+  track({ action: remove ? 'remove' : 'add' });
   try {
     const response = await request(`/sync/favorites${remove ? '/remove' : ''}`, {
       [`${target.type}s`]: [{ ids: { trakt: target.id } }],

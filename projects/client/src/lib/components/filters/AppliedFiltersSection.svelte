@@ -16,6 +16,7 @@ import sparkles from '$lib/icons/solid/sparkles.svg?raw';
 import { countLabel } from '$lib/utils/countLabel';
 import FilterChips from './FilterChips.svelte';
 import type { FilterTag } from './filterTags.ts';
+import { trackFiltersReset } from './trackFiltersReset.ts';
 
 interface Props {
   chips: readonly FilterTag[];
@@ -50,7 +51,7 @@ const { chips, open, clearHref, onremove, onsave, children, tools }: Props = $pr
         {#if chips.length > 0}
           <Tooltip text="Clear filters">
             {#snippet trigger(tooltip)}
-              <a class="clear" href={clearHref} aria-label="Clear filters" {...tooltip}><Icon svg={resetIcon} /></a>
+              <a class="clear" href={clearHref} aria-label="Clear filters" onclick={trackFiltersReset} {...tooltip}><Icon svg={resetIcon} /></a>
             {/snippet}
           </Tooltip>
         {/if}

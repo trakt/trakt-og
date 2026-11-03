@@ -19,6 +19,7 @@ import { type AdvancedFilters, advancedFiltersSearch } from '$lib/components/fil
 import { filterChips } from '$lib/components/filters/filterChips';
 import { fromFilterDraft, toFilterDraft } from '$lib/components/filters/filterDraft';
 import { withoutFilterTag } from '$lib/components/filters/withoutFilterTag';
+import { trackFilterChanges } from '$lib/components/filters/trackFilterChanges';
 import {
   apiHideOptions,
   type FadeHide,
@@ -240,8 +241,10 @@ function applyFilters(filters: AdvancedFilters) {
   goto(search(filters), { noScroll: true, keepFocus: true, replaceState: true });
 }
 function removeChip(id: string) {
+  const next = withoutFilterTag(data.filters, id);
+  trackFilterChanges(data.filters, next);
   // eslint-disable-next-line svelte/no-navigation-without-resolve -- the same chart and period, new filters
-  goto(search(withoutFilterTag(data.filters, id)), { noScroll: true, keepFocus: true });
+  goto(search(next), { noScroll: true, keepFocus: true });
 }
 
 // The period charts' Time Period, which OG kept in the filter panel: the same chart and filters on the first page.

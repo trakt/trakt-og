@@ -1,7 +1,9 @@
 import { z } from 'zod/v4';
+import { useTrack } from '$lib/analytics/useTrack';
 import { isApiUnavailable } from '../api/isApiUnavailable.ts';
 import { rawApiFetch } from '../api/rawApiFetch.ts';
 import type { NotableItem } from './NotableItem.ts';
+import { noteEvent } from './noteEvent.ts';
 import type { PrivateNote } from './PrivateNote.ts';
 import { GENERIC_ERROR } from '../utils/genericError.ts';
 
@@ -53,6 +55,8 @@ async function changeNote(fetch: typeof globalThis.fetch, note: PrivateNote, not
 export async function saveNote({ fetch, item, note, text }: SaveNoteParams): Promise<SaveNoteResult> {
   const notes = text.trim();
   if (!notes && !note) return { ok: true, note: null };
+  const event = noteEvent(note !== null, notes);
+  if (event) useTrack(event).track({ type: 'note' });
   try {
     const response = note
       ? await changeNote(fetch, note, notes)

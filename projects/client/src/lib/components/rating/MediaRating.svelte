@@ -28,7 +28,7 @@ const hint = (rating: number | null) => (rating ? 'Change your rating' : `Rate t
 
 async function open() {
   if ((await userManager().getUser())?.access_token) return true;
-  await login();
+  await login('gate');
   return false;
 }
 

@@ -2,7 +2,7 @@
 // page they're on, and the root layout renders it. Start it from clicks only: this module is shared by every request
 // on the server.
 import type { AuthScene } from './authScenes.ts';
-import { login } from './login.ts';
+import { type LoginSource, login } from './login.ts';
 import { logout } from './logout.ts';
 import { opensElsewhere } from './opensElsewhere.ts';
 import { returnPath } from './returnPath.ts';
@@ -27,8 +27,8 @@ export const authStep = {
     return current;
   },
   /** A link to `/signin`: straight to auth.trakt.tv, coming back to its `redirect_to` as that page would. */
-  signIn(event: LinkClick): void {
-    follow(event, 'signIn', (url) => login(returnPath(url.searchParams.get('redirect_to'))));
+  signIn(source: LoginSource): (event: LinkClick) => void {
+    return (event) => follow(event, 'signIn', (url) => login(source, returnPath(url.searchParams.get('redirect_to'))));
   },
   /** The link to `/signout`: signs out from this page. */
   signOut(event: LinkClick): void {

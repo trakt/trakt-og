@@ -3,6 +3,8 @@ const v3 = 'https://app.trakt.tv';
 /** Links that leave og: v3 web pages og doesn't clone, plus app stores, community and status. Open them in a new tab. */
 export const traktUrls = {
   vip: `${v3}/vip`,
+  /** The VIP page credited to an upsell, so web's `vip-view` and `vip-upgrade` name where the visit came from. */
+  vipFor: (source: string) => `${v3}/vip?${new URLSearchParams({ source })}`,
   settings: `${v3}/settings`,
   syncSettings: `${v3}/settings/sync` /* connect Plex or Jellyfin */,
   importData: `${v3}/settings/data` /* TV Time, IMDb, Letterboxd and other imports */,

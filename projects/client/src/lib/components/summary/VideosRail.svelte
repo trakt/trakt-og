@@ -9,6 +9,7 @@ import { videoLinkClicks } from '$lib/components/dialog/videoLinkClicks';
 import VideoFanartCard from '$lib/components/media/VideoFanartCard.svelte';
 import { defaultVideoTab, toVideoTabs, type VideoCard } from '$lib/videos/toVideoCards';
 import VideoTypeDropdown from '$lib/videos/VideoTypeDropdown.svelte';
+import { trackExtras } from '$lib/videos/trackVideo';
 import { videosHref, type VideoTabId } from '$lib/videos/videoTypes';
 import SectionHeading from './SectionHeading.svelte';
 
@@ -25,6 +26,12 @@ let picked = $state<VideoTabId>();
 const current = $derived(tabs.find(({ id }) => id === picked) ?? fallback);
 let playing = $state<string>();
 const playingTitle = $derived(videos.find((video) => video.href === playing)?.title);
+
+const play = (url: string) => {
+  playing = url;
+  const type = videos.find((video) => video.href === url)?.type;
+  if (type) trackExtras(href, type);
+};
 </script>
 
 {#if current}
@@ -34,7 +41,7 @@ const playingTitle = $derived(videos.find((video) => video.href === playing)?.ti
   <div class="controls">
     <VideoTypeDropdown {tabs} {current} onpick={(id) => (picked = id)} />
   </div>
-  <ul class="row" {@attach videoLinkClicks((url) => (playing = url))}>
+  <ul class="row" {@attach videoLinkClicks(play)}>
       {#each current.videos as video (video.href)}
         <li>
           <VideoFanartCard {video} tagged={current.id === 'all'} />

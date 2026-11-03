@@ -99,7 +99,7 @@ async function collect(collectedAt: string | null | undefined, force = false) {
 }
 async function open(force: boolean): Promise<'date' | 'remove' | 'partial' | null> {
   if (!(await userManager().getUser())?.access_token) {
-    await login();
+    await login('gate');
     return null;
   }
   draft = viewerState.collectionMetadata;

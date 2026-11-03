@@ -1,4 +1,6 @@
 import { z } from 'zod/v4';
+import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
+import { useTrack } from '$lib/analytics/useTrack';
 import { api } from '../../api/api.ts';
 
 const failed = "Doh! You can't like this list.";
@@ -41,6 +43,7 @@ export async function changeListLike({
   patch: () => () => void;
   notify: (message: string) => void;
 }): Promise<boolean> {
+  useTrack(AnalyticsEvent.ListLike).track({ action: liked ? 'like' : 'unlike' });
   const rollback = patch();
   try {
     const response = await writeLike(fetch, { id, ownerSlug, liked });

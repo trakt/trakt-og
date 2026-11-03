@@ -131,7 +131,8 @@ async function remove() {
               warning="This can't be undone!" disabled={busy} onconfirm={remove}>Delete this smart list?</ManageConfirm>
           </span>
         {/if}
-        <span class="share"><ShareButton url={page.url.href} title={list.name} large={false} /></span>
+        <span class="share"><ShareButton url={page.url.href} title={list.name} large={false}
+          tracking={{ source: 'user-list' }} /></span>
         {#if data.chartHref}
           {@const label = `Open on ${smartListSourceLabel(list.source)}`}
           <a class="action open" href={data.chartHref} aria-label={label}><Icon svg={filtersIcon} /><span

@@ -1,4 +1,6 @@
 import { z } from 'zod/v4';
+import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
+import { useTrack } from '$lib/analytics/useTrack';
 import type { createOverlay } from '../../overlay/createOverlay.svelte.ts';
 import type { RatingTarget } from './RatingTarget.ts';
 import { UNKNOWN_DATE } from '../../utils/unknownDate.ts';
@@ -13,6 +15,8 @@ type Params = {
   notify: { success: (message: string) => void; error: (message: string) => void };
   now?: () => Date;
 };
+
+const { track } = useTrack(AnalyticsEvent.Rate);
 
 const syncResult = z.object({
   not_found: z.record(z.string(), z.array(z.unknown())).optional(),
@@ -79,6 +83,8 @@ async function autoWatch({ target, watchAfterRating, overlay, request, notify, n
  */
 export async function rateMedia(params: Params): Promise<boolean> {
   const { target, rating, overlay, request, notify } = params;
+  const previous = overlay.state(target.type, target.id).rating ?? null;
+  track(rating === null ? { action: 'removed' } : { action: previous === null ? 'added' : 'changed', rating });
   const rollback = overlay.patch(
     'ratings',
     (ratings) => {

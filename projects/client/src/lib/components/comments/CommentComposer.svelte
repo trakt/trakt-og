@@ -14,6 +14,8 @@
 import { beforeNavigate } from '$app/navigation';
 import type { CommentResponse } from '@trakt/api';
 import { tick } from 'svelte';
+import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
+import { useTrack } from '$lib/analytics/useTrack';
 import { toast } from '../toast/toast.svelte.ts';
 import CommentAvatar from './CommentAvatar.svelte';
 import CommentSubmit from './CommentSubmit.svelte';
@@ -141,6 +143,11 @@ function cancel() {
   oncancel?.();
 }
 
+function openGifs() {
+  useTrack(AnalyticsEvent.GifPicker).track({ action: 'open', source: 'comment' });
+  picking = true;
+}
+
 function toggleMode() {
   mode = mode === 'rich' ? 'markdown' : 'rich';
   editorMode.write(mode);
@@ -195,7 +202,7 @@ async function send(event: SubmitEvent) {
     {/if}
     {#if gif}<ComposerGif {gif} onremove={() => (gif = null)} />{/if}
     <div class="toolbar">
-      <CommentToolbar onformat={format} ongif={gifs ? () => (picking = true) : undefined} />
+      <CommentToolbar onformat={format} ongif={gifs ? openGifs : undefined} />
       <button type="button" class="mode" aria-pressed={mode === 'markdown'} onclick={toggleMode}>Markdown</button>
     </div>
     <!-- What the comment is on the left, what to do with it on the right. -->

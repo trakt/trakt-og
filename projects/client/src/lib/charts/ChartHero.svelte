@@ -16,6 +16,7 @@ import { openWatchNow } from '$lib/components/watchnow/watchNowLauncher.svelte';
 import { watchNowPath } from '$lib/components/watchnow/watchNowPath';
 import { isPlainClick } from '$lib/utils/isPlainClick';
 import { proxiedLogoUrl } from '$lib/utils/proxiedLogoUrl';
+import { trackTrailer } from '$lib/videos/trackVideo';
 import Icon from '$lib/icons/Icon.svelte';
 import youtube from '$lib/icons/brands/youtube.svg?raw';
 import play from '$lib/icons/solid/play.svg?raw';
@@ -86,6 +87,7 @@ const trailer = $derived(card.trailer && youtubeEmbedUrl(card.trailer) ? card.tr
                 if (!isPlainClick(event)) return;
                 event.preventDefault();
                 video = trailer;
+                trackTrailer(card.href);
               }}
             ><Icon svg={youtube} /> Trailer</a>
           {/if}

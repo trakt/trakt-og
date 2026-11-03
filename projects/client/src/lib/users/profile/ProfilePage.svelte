@@ -80,7 +80,7 @@ const viewer = $derived(data.user ? { slug: data.user.slug } : null);
   {#await data.boxes}
     <ProfileSectionShimmer section="boxes" />
   {:then boxes}
-    <ProfileBoxStrip {boxes} />
+    {#if boxes}<ProfileBoxStrip {boxes} />{/if}
   {:catch error}
     {@render failed('Stats', error)}
   {/await}

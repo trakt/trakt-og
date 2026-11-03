@@ -3,7 +3,7 @@ import { api } from '../api/api.ts';
 import { signInRedirect } from '../auth/signInRedirect.ts';
 import { loadViewerLists } from './loadViewerLists.ts';
 import { lazy } from '../utils/lazy.ts';
-import { userStatsSchema } from '../stats/userStatsSchema.ts';
+import { apiUserStats } from '../stats/apiUserStats.ts';
 import { profileResponseSchema } from './profileResponseSchema.ts';
 import { toViewerRelation } from './toViewerRelation.ts';
 import { toProfileUser } from './toProfileUser.ts';
@@ -67,13 +67,11 @@ export async function loadProfileFrame({ fetch, locals, params, parent, url, isD
   // render always streams them, so it starts them now.
   const readLists = () => (isDataRequest ? lazy(() => loadViewerLists({ client })) : loadViewerLists({ client }));
   const viewerLists = viewer && !isSelf ? (locals.viewerLists ??= readLists()) : null;
-  const parsedStats = stats?.status === 200 ? userStatsSchema.safeParse(stats.body) : null;
-  const userStats = parsedStats?.success ? parsedStats.data : null;
 
   return {
     profile: user,
-    /** The profile page's stat boxes and charts read it too. */
-    stats: userStats,
+    /** The profile page's stat boxes and charts read it too. Null when the API keeps none: the page counts its own. */
+    stats: apiUserStats(stats),
     watching: watching?.status === 200 ? toWatchingNow(watching.body) : null,
     isSelf,
     signedIn: viewer !== null,

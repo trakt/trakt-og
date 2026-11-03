@@ -1,7 +1,7 @@
 <!--
   A setting the dialog shows but can't change, in a dropdown's place: its label, then its value with an icon in a
   dashed box with no caret, so it reads as fixed. The watchlist and favorites show their privacy, comments and rank
-  numbers this way.
+  numbers this way, and a saved calendar filter its privacy.
     <SettingValue label="Comments" svg={ban} value="Off" />
 -->
 <script lang="ts">

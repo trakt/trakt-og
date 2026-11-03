@@ -68,6 +68,7 @@ const panelId = $props.id();
 const config = chartFilters({ type: 'shows', chart: 'trending', period: 'weekly', now: new Date() });
 let collapsed = $state(false);
 let savable = $state(true);
+let calendarSave = $state(false);
 let panelOpen = $state(false);
 let funnel = $state<HTMLButtonElement>();
 let filters = $state<AdvancedFilters>(emptyFilters);
@@ -177,10 +178,11 @@ function showOverlay() {
 {/snippet}
 
 <Specimen title="Sidebar tools" bleed
-  note="A chart or calendar sidebar's eye and funnel, right of the page title, or stacked in the collapsed rail. The funnel (or the a key) opens the filters panel; the streaming services shimmer until they load, and Networks searches as you type. On a chart a smart list can come from, a signed-in member also gets Save before Reset.">
+  note="A chart or calendar sidebar's eye and funnel, right of the page title, or stacked in the collapsed rail. The funnel (or the a key) opens the filters panel; the streaming services shimmer until they load, and Networks searches as you type. On a chart a smart list can come from, a signed-in member also gets Save before Reset; a calendar's Save keeps them as a saved filter.">
   <div class="knob">
     <DemoToggle bind:checked={collapsed}>Collapsed rail</DemoToggle>
-    <DemoToggle bind:checked={savable}>Save as a smart list</DemoToggle>
+    <DemoToggle bind:checked={savable}>Save</DemoToggle>
+    <DemoToggle bind:checked={calendarSave}>On a calendar</DemoToggle>
   </div>
   <div class="frame">
     {#if collapsed}
@@ -190,7 +192,8 @@ function showOverlay() {
     {/if}
     {#if panelOpen}
       <FiltersPanel id="{panelId}-filters" open={panelOpen} {config} {filters} country="us" favorites={[]}
-        onchange={(next) => (filters = next)} onclose={closePanel} onsave={savable ? () => {} : undefined} />
+        onchange={(next) => (filters = next)} onclose={closePanel} onsave={savable ? () => {} : undefined}
+        saveAs={calendarSave ? 'filters' : 'smart-list'} />
     {/if}
   </div>
 </Specimen>

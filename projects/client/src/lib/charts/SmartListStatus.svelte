@@ -1,6 +1,7 @@
 <!--
   Over the Applied Filters chips while a chart shows one of the viewer's smart lists: its name after the smart list
-  sparkles, linking to the list. Once the filters move away from the list's, a faded blue info box under it says so, with Save
+  sparkles, linking to the list. With `kind="filters"` it's a calendar's open saved filter, after its thumbtack, with no
+  page to link to. Once the filters move away from the list's, a faded blue info box under it says so, with Save
   (a list's Done green), Save as new (the box's blue) and Undo (back to the list's own filters, a plain outline).
 -->
 <script lang="ts">
@@ -8,12 +9,13 @@ import Icon from '$lib/icons/Icon.svelte';
 import resetIcon from '$lib/icons/regular/arrow-rotate-left.svg?raw';
 import clone from '$lib/icons/regular/clone.svg?raw';
 import check from '$lib/icons/solid/check.svg?raw';
-import sparkles from '$lib/icons/solid/sparkles.svg?raw';
+import { SAVE_TARGETS, type SaveTarget } from '$lib/components/filters/saveTargets';
 
 interface Props {
   name: string;
+  kind?: SaveTarget;
   /** The list's own page. */
-  href: string;
+  href?: string;
   changed: boolean;
   /** The chart with the list's own filters. */
   undoHref: string;
@@ -22,17 +24,22 @@ interface Props {
   onsaveas: () => void;
 }
 
-const { name, href, changed, undoHref, busy = false, onsavechanges, onsaveas }: Props = $props();
+const { name, kind = 'smart-list', href, changed, undoHref, busy = false, onsavechanges, onsaveas }: Props = $props();
+const target = $derived(SAVE_TARGETS[kind]);
 </script>
 
 <!-- Both hrefs come built. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
 <div class="smart-status">
-  <a class="name" {href}><Icon svg={sparkles} /><span>{name}</span></a>
+  {#if href}
+    <a class="name" {href}><Icon svg={target.svg} /><span>{name}</span></a>
+  {:else}
+    <p class="name"><Icon svg={target.svg} /><span>{name}</span></p>
+  {/if}
   {#if changed}
     <div class="changes" role="status">
-      <p>Your filters changed since you saved this smart list.</p>
+      <p>Your filters changed since you saved this {target.noun}.</p>
       <div class="buttons">
         <button type="button" class="action save" disabled={busy} onclick={onsavechanges}><Icon svg={check} />Save</button>
         <button type="button" class="action save-as" disabled={busy} onclick={onsaveas}><Icon svg={clone} />Save as new</button>
@@ -69,7 +76,9 @@ const { name, href, changed, undoHref, busy = false, onsavechanges, onsaveas }: 
     color: var(--brand-primary);
   }
 
-  &:is(:hover, :focus-visible) span {
+  margin: 0;
+
+  &:is(a):is(:hover, :focus-visible) span {
     text-decoration: underline;
   }
 }

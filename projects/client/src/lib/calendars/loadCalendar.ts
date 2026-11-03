@@ -149,6 +149,7 @@ export async function loadCalendar({
       filters: cookies.get('sidebar_filters') !== 'closed',
       display: cookies.get('sidebar_display') !== 'closed',
       feed: cookies.get('sidebar_feed') !== 'closed',
+      saved: cookies.get('sidebar_saved') !== 'closed',
     },
     feedUrls: calendarFeedUrls(settings),
   };

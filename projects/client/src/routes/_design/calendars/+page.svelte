@@ -10,7 +10,7 @@ const { data } = $props();
 </script>
 
 <Specimen title="My Shows & Movies" bleed
-  note="The real calendar page on a sample of the public feed. Its filters, layouts and dates work; ?vip=false shows it as everyone else sees it.">
+  note="The real calendar page on a sample of the public feed. Its filters, layouts and dates work; ?vip=false shows it as everyone else sees it. Saved Filters, last in the sidebar, are this browser's own, the same as on the calendars: Save one (with a filter on) to see it; open it to change or delete it from Applied Filters.">
   <div class="site">
     <Header user={data.user} searchType={data.searchType} />
     <CalendarPage {data} />

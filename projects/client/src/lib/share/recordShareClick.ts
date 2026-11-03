@@ -1,6 +1,7 @@
 import { z } from 'zod/v4';
 import { rawApiFetch } from '../api/rawApiFetch.ts';
 import type { ShareClick } from './ShareClick.ts';
+import { toShareClick } from './toShareClick.ts';
 
 type RecordShareClickParams = {
   /** `viewerFetch()` in the browser: the click is the signed-in viewer's. */
@@ -29,4 +30,22 @@ export async function recordShareClick({ fetch, click }: RecordShareClickParams)
   } catch {
     return null;
   }
+}
+
+/** `share.arrival`'s outcome, as trakt-web words it. */
+export type ShareArrivalOutcome = ShareClickOutcome | 'uncredited' | 'anonymous' | 'failed';
+
+type ShareArrivalParams = {
+  /** `viewerFetch()` for a signed-in viewer, null for a signed-out one. */
+  fetch: typeof globalThis.fetch | null;
+  /** The page a shared link opened, `?share=` and all. */
+  url: URL;
+};
+
+/** Records a visit through a shared link when it can credit the sharer, and says how it went. */
+export async function recordShareArrival({ fetch, url }: ShareArrivalParams): Promise<ShareArrivalOutcome> {
+  const click = toShareClick(url);
+  if (!click) return 'uncredited';
+  if (!fetch) return 'anonymous';
+  return (await recordShareClick({ fetch, click })) ?? 'failed';
 }

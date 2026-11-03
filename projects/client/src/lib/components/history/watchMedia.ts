@@ -1,4 +1,6 @@
 import { z } from 'zod/v4';
+import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
+import { useTrack } from '$lib/analytics/useTrack';
 import type { createOverlay } from '../../overlay/createOverlay.svelte.ts';
 import type { WatchEpisode } from './WatchEpisode.ts';
 import type { HistoryPlay } from './HistoryPlay.ts';
@@ -181,6 +183,8 @@ export async function watchMedia(params: Params): Promise<boolean> {
                 ...(remove ? {} : { watched_at: stacked?.at(index) ?? watchedAt }),
               })),
             };
+    if (remove && play) useTrack(AnalyticsEvent.RemoveFromHistory).track();
+    else useTrack(AnalyticsEvent.MarkAsWatched).track({ action: remove ? 'remove' : 'add' });
     const response = await request(`/sync/history${remove ? '/remove' : ''}`, items);
     if (!response.ok) throw new Error(String(response.status));
     const result = resultSchema.parse(await response.json());

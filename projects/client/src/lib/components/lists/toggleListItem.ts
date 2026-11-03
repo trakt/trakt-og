@@ -1,4 +1,6 @@
 import { z } from 'zod/v4';
+import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
+import { useTrack } from '$lib/analytics/useTrack';
 import type { createOverlay } from '../../overlay/createOverlay.svelte.ts';
 import type { ListLabel } from '../../overlay/ListLabel.ts';
 import { emptyListMembership, withListItems } from '../../overlay/listMembership.ts';
@@ -13,6 +15,8 @@ type Params = {
   notify: { success: (message: string) => void; error: (message: string) => void };
 };
 const resultSchema = z.object({ not_found: z.record(z.string(), z.array(z.unknown())).optional() });
+const { track: trackWatchlist } = useTrack(AnalyticsEvent.Watchlist);
+const { track: trackList } = useTrack(AnalyticsEvent.List);
 
 /** Update every occurrence of this item, and restore its previous overlay when the write fails. */
 export async function toggleListItem({ target, list, remove, overlay, request, notify }: Params) {
@@ -33,6 +37,9 @@ export async function toggleListItem({ target, list, remove, overlay, request, n
         (data) => ({ ...data, [target.type]: update(data[target.type] ?? new Set(), !remove) }),
         { movie: new Set(), show: new Set() },
       );
+  const action = remove ? 'remove' : 'add';
+  if (list) trackList({ action });
+  else if (target.type !== 'episode') trackWatchlist({ action });
   const path = list ? `/users/${encodeURIComponent(list.owner)}/lists/${list.id}/items` : '/sync/watchlist';
   try {
     const response = await request(`${path}${remove ? '/remove' : ''}`, {

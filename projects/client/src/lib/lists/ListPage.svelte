@@ -29,6 +29,8 @@ import ReportDialog from '$lib/components/summary/ReportDialog.svelte';
 import { leaveList } from '$lib/components/lists/leaveList';
 import { resolve } from '$app/paths';
 import { page } from '$app/state';
+import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
+import { useTrack } from '$lib/analytics/useTrack';
 import { untrack } from 'svelte';
 import { flip } from 'svelte/animate';
 import { prefersReducedMotion } from 'svelte/motion';
@@ -552,6 +554,8 @@ const shortcut = () => {
   return () => window.removeEventListener('keydown', keydown);
 };
 
+const { track: trackSort } = useTrack(AnalyticsEvent.ListSort);
+
 let noteCard = $state<ListItemCard | null>(null);
 let noteOpen = $state(false);
 let noteDraft = $state('');
@@ -570,6 +574,7 @@ async function saveNotes(text: string) {
     const result = await manager.saveNote(noteCard, text);
     if (result.saved) noteOpen = false;
     noteLimit = result.limit ?? null;
+    if (noteLimit !== null && !vip) useTrack(AnalyticsEvent.VipGate).track({ feature: 'notes' });
   } finally {
     noteSaving = false;
   }
@@ -663,6 +668,7 @@ async function saveNotes(text: string) {
               {#if header}<li class="header" role="presentation">{header}</li>{/if}
               {#each items as sort (sort.by)}
                 <li><a href={listHref(page.url, { sort: { by: sort.by, how: listSortHow(sort.by) } })}
+                  onclick={() => trackSort({ sortBy: sort.by, sortHow: listSortHow(sort.by) })}
                   aria-current={sort.by === data.sort.by ? 'page' : undefined}>{sort.label}</a></li>
               {/each}
             </ul>
@@ -672,7 +678,11 @@ async function saveNotes(text: string) {
         <SortDirection joined descending={listSortHow(data.sort.by) === 'desc'} disabled={data.sort.by === 'random'}
           bind:flipped={
             () => data.sort.how !== listSortHow(data.sort.by),
-            (next) => goto(listHref(page.url, { sort: { by: data.sort.by, how: reverseHow(data.sort.by, next) } }))
+            (next) => {
+              const how = reverseHow(data.sort.by, next);
+              trackSort({ sortBy: data.sort.by, sortHow: how });
+              void goto(listHref(page.url, { sort: { by: data.sort.by, how } }));
+            }
           } />
       </span>
       <span class="filter-icons">
@@ -721,7 +731,8 @@ async function saveNotes(text: string) {
             {#if actions.report}{@render action('Report List', flag, 'report', undefined, () => { reportOpen = true; })}{/if}
             {#if actions.edit && data.kind !== 'personal'}{@render action('Edit', pencil, 'edit', undefined, owner ? editBuiltIn : undefined)}{:else if actions.edit}<Tooltip text="Edit">{#snippet trigger(tooltip)}<button type="button" class="action edit" aria-label="Edit" {...tooltip} onclick={() => { editing = true; }}><Icon svg={pencil} /></button>{/snippet}</Tooltip>{/if}
             {#if actions.delete}<span class="delete" style:--confirm-icon-size="var(--font-size-list-row-action)"><ManageConfirm name="delete" svg={deleteIcon} label="Delete" yes="Yes, delete it!" warning={deleteWarning} disabled={deleting} onconfirm={removeList}>Delete this list?</ManageConfirm></span>{/if}
-            <span class="share"><ShareButton url={actions.shareUrl} title={list.name} large={false} /></span>
+            <span class="share"><ShareButton url={actions.shareUrl} title={list.name} large={false}
+              tracking={{ source: 'user-list' }} /></span>
             {#if actions.leave}{@render action('Stop collaborating on this list', userXmark, 'leave', 'Leave', leave)}{/if}
             {/if}
             {#if actions.progressHref && !managing}
@@ -830,7 +841,7 @@ async function saveNotes(text: string) {
   privacy={data.list ? listPrivacy(data.list) : undefined} item={noteCard.noteTitle} onsave={saveNotes}>
       {#if noteLimit !== null}
         <p class="notes-limit" role="alert">You've already added <strong>{noteLimit}</strong> notes.
-          {#if !vip}Upgrade to <a href={traktUrls.vip} target="_blank" rel="noopener">VIP</a> to add unlimited notes.{/if}</p>
+          {#if !vip}Upgrade to <a href={traktUrls.vipFor('lists')} target="_blank" rel="noopener">VIP</a> to add unlimited notes.{/if}</p>
       {/if}
     </NotesDialog>
   {/if}

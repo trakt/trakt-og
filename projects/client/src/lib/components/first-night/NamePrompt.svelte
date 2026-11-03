@@ -4,6 +4,8 @@
 -->
 <script lang="ts">
 import { invalidateAll } from '$app/navigation';
+import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
+import { useTrack } from '$lib/analytics/useTrack';
 import { viewerFetch } from '$lib/auth/viewerFetch';
 import { toast } from '$lib/components/toast/toast.svelte';
 import { savedName } from '$lib/firstNight/savedName.svelte';
@@ -18,6 +20,7 @@ const { quiet = false, onsaved }: { quiet?: boolean; onsaved?: (name: string) =>
 const id = $props.id();
 let name = $state('');
 let busy = $state(false);
+const { track: trackSettings } = useTrack(AnalyticsEvent.Settings);
 
 async function save(event: SubmitEvent) {
   event.preventDefault();
@@ -33,6 +36,7 @@ async function save(event: SubmitEvent) {
     toast.error(result.errors.at(0) ?? "Your name didn't save. Try again.");
     return;
   }
+  trackSettings({ settings: 'profile' });
   toast.success(`Nice to meet you, ${trimmed.split(' ')[0]}.`);
   savedName.set(trimmed);
   if (onsaved) onsaved(trimmed);

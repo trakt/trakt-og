@@ -195,6 +195,7 @@ function removeSource({
       overlay,
       request: (path, init) => request(path, JSON.parse(String(init.body))),
       notify,
+      tracked: false,
     });
   }
   return removeListItems({ owner: source.ownerSlug, listId: source.id, items, request, notify });

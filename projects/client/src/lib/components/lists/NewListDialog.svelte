@@ -16,6 +16,8 @@ import ListSettingsRow from '$lib/components/lists/ListSettingsRow.svelte';
 import ListSortField from '$lib/components/lists/ListSortField.svelte';
 import type { CardTag } from '$lib/components/media/CardTag';
 import { traktUrls } from '$lib/traktUrls';
+import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
+import { useTrack } from '$lib/analytics/useTrack';
 
 interface Props {
   open: boolean;
@@ -83,6 +85,8 @@ const headerTags = $derived<readonly CardTag[]>([
 const options = $derived([{
   options: following.map((user) => ({ value: user.slug, label: user.name, avatar: user.avatar })),
 }]);
+
+const { track: trackVipUpsell } = useTrack(AnalyticsEvent.VipUpsell);
 </script>
 
 <!-- VIP destination is an external Trakt account page. -->
@@ -93,7 +97,8 @@ const options = $derived([{
     onsubmit={() => onsave(draft)} oncancel={() => (open = false)}>
     {#if max !== undefined}
       <DialogNotice role="alert">You've already created <strong>{max}</strong> lists.
-        {#if !vip}<a href={traktUrls.vip} target="_blank" rel="noopener">Upgrade to VIP</a> to create unlimited lists.{/if}
+        {#if !vip}<a href={traktUrls.vipFor('lists')} target="_blank" rel="noopener"
+          onclick={() => trackVipUpsell({ source: 'lists' })}>Upgrade to VIP</a> to create unlimited lists.{/if}
       </DialogNotice>
     {/if}
     {#if error}<p class="error" role="alert">{error}</p>{/if}

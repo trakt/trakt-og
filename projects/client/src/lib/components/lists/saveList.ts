@@ -1,10 +1,13 @@
 import { z } from 'zod/v4';
+import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
+import { useTrack } from '$lib/analytics/useTrack';
 import type { ListDraft } from './ListDraft.ts';
 import { editableListSchema } from './editableListSchema.ts';
 import { ListWriteError } from './ListWriteError.ts';
 import { collaboratorsSchema } from '../../users/lists/collaboratorsSchema.ts';
 import { isApiUnavailable } from '../../api/isApiUnavailable.ts';
 
+const { track: trackCollaborator } = useTrack(AnalyticsEvent.ListCollaborator);
 const COLLABORATORS_UNAVAILABLE = "Collaborators aren't available with this API key. Your list was saved.";
 
 /**
@@ -21,6 +24,7 @@ export async function saveList({
   id?: number;
 }) {
   const { collaborators, name, privacy, ...preferences } = draft;
+  useTrack(id === undefined ? AnalyticsEvent.ListCreate : AnalyticsEvent.ListEdit).track();
   const response = await request(
     `/users/me/lists${id === undefined ? '' : `/${id}`}`,
     id === undefined ? 'POST' : 'PUT',
@@ -42,7 +46,9 @@ export async function saveList({
     // Remove first, so replacing someone at the ten-person limit works.
     for (const { slug, method } of changes) {
       const result = await request(`/lists/${list.ids.trakt}/collaborators/${encodeURIComponent(slug)}`, method);
+      if (result.status === 420 && method === 'POST') trackCollaborator({ action: 'limit-reached' });
       if (!result.ok) throw await ListWriteError.from(result);
+      trackCollaborator({ action: method === 'POST' ? 'add' : 'remove' });
       if (result.status !== 204) z.object({}).parse(await result.json());
     }
     return { list, collaboratorError: '' };

@@ -1,7 +1,7 @@
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
-import { recordShareClick } from './recordShareClick.ts';
+import { recordShareArrival, recordShareClick } from './recordShareClick.ts';
 
 const CLICK = 'https://apiz.trakt.tv/v3/shares/click';
 const click = { code: 'Ab12Cd34Ef56', url: 'https://og.trakt.tv/movies/tron-1982?share=Ab12Cd34Ef56' };
@@ -51,5 +51,33 @@ describe('request: recordShareClick', () => {
       server.use(http.post(CLICK, () => HttpResponse.error()));
       expect(await recordShareClick({ fetch, click })).toBeNull();
     });
+  });
+});
+
+describe('request: recordShareArrival', () => {
+  const url = new URL(click.url);
+
+  it('should pass on the recorded outcome for a signed-in visitor', async () => {
+    answer(() => HttpResponse.json({ outcome: 'duplicate' }));
+    expect(await recordShareArrival({ fetch, url })).toBe('duplicate');
+    expect(sent).toEqual([click]);
+  });
+
+  it('should not credit a malformed code', async () => {
+    const malformed = new URL('https://og.trakt.tv/movies/tron-1982?share=nope');
+    const empty = new URL('https://og.trakt.tv/movies/tron-1982?share=');
+    expect(await recordShareArrival({ fetch, url: malformed })).toBe('uncredited');
+    expect(await recordShareArrival({ fetch, url: empty })).toBe('uncredited');
+    expect(sent).toEqual([]);
+  });
+
+  it('should not record a signed-out visit', async () => {
+    expect(await recordShareArrival({ fetch: null, url })).toBe('anonymous');
+    expect(sent).toEqual([]);
+  });
+
+  it('should report a failed request', async () => {
+    answer(() => new HttpResponse(null, { status: 500 }));
+    expect(await recordShareArrival({ fetch, url })).toBe('failed');
   });
 });

@@ -226,7 +226,8 @@ const blocks = $derived(parseComment(description?.trim() ?? ''));
                 {/snippet}
               </Tooltip>
             {/if}
-            {#if actions.shareUrl}<span class="share"><ShareButton url={actions.shareUrl} title={name} large={false} /></span>{/if}
+            {#if actions.shareUrl}<span class="share"><ShareButton url={actions.shareUrl} title={name} large={false}
+              tracking={{ source: 'user-list' }} /></span>{/if}
           </div>
         {/if}
       </footer>

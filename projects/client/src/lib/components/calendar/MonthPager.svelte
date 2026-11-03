@@ -5,6 +5,7 @@
 -->
 <script lang="ts">
 import SidebarPager from '$lib/components/sidebar/SidebarPager.svelte';
+import { trackCalendarPeriod } from './trackCalendarPeriod.ts';
 
 type Month = { readonly label: string; readonly href: string; readonly current: boolean; readonly note?: string };
 
@@ -19,22 +20,31 @@ interface Props {
 }
 
 const { label, prevHref, nextHref, todayHref, todayLabel, years }: Props = $props();
+
+// Picking a month is a step back or forward from the one showing, as trakt-web counts a jump.
+const listed = $derived(years.flatMap((year) => year.months));
+const shown = $derived(listed.findIndex((month) => month.current));
+function pick(month: Month) {
+  const index = listed.indexOf(month);
+  if (index !== shown) trackCalendarPeriod(index < shown ? 'prev' : 'next');
+}
 </script>
 
 <!-- The hrefs keep the current path and query, so resolve() has nothing to add. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
-<SidebarPager unit="month" {label} menuLabel="Pick a month" {prevHref} {nextHref}>
+<SidebarPager unit="month" {label} menuLabel="Pick a month" {prevHref} {nextHref} onstep={trackCalendarPeriod}>
   <ul>
-    <li><a href={todayHref}><span class="label">Today<span class="pill today">{todayLabel}</span></span></a></li>
+    <li><a href={todayHref} onclick={() => trackCalendarPeriod('reset')}><span class="label">Today<span
+      class="pill today">{todayLabel}</span></span></a></li>
   </ul>
   {#each years as { year, months } (year)}
     <hr />
     <ul>
       <li class="header">{year}</li>
       {#each months as month (month.href)}
-        <li><a href={month.href} aria-current={month.current ? 'page' : undefined}><span class="label"
-            >{month.label}{#if month.note}<span class="pill">{month.note}</span>{/if}</span></a></li>
+        <li><a href={month.href} aria-current={month.current ? 'page' : undefined} onclick={() => pick(month)}
+            ><span class="label">{month.label}{#if month.note}<span class="pill">{month.note}</span>{/if}</span></a></li>
       {/each}
     </ul>
   {/each}

@@ -39,6 +39,7 @@ export async function writeMediaTool({ fetch, action }: { fetch: typeof globalTh
     if (!response.ok) {
       return {
         ok: false,
+        status: response.status,
         message: body?.message ?? (response.status === 403 ? 'This action requires VIP membership.' : failed),
       };
     }

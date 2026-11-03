@@ -2,8 +2,17 @@
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import type { Snippet } from 'svelte';
 import type { Attachment } from 'svelte/attachments';
-const { hidden, inline = false, children }: { hidden: boolean; inline?: boolean; children: Snippet } = $props();
+const { hidden, inline = false, onreveal, children }: {
+  hidden: boolean;
+  inline?: boolean;
+  onreveal?: () => void;
+  children: Snippet;
+} = $props();
 let revealed = $state(false);
+const reveal = () => {
+  revealed = true;
+  onreveal?.();
+};
 const blurred = $derived(hidden && !revealed);
 const focusRevealed: Attachment<HTMLElement> = (element) => {
   if (revealed) element.focus({ preventScroll: true });
@@ -17,7 +26,7 @@ const focusRevealed: Attachment<HTMLElement> = (element) => {
   {#if blurred}
     <Tooltip text="Click to reveal spoilers">
       {#snippet trigger(tooltip)}
-        <button type="button" aria-label="Click to reveal spoilers" onclick={() => (revealed = true)} {...tooltip}
+        <button type="button" aria-label="Click to reveal spoilers" onclick={reveal} {...tooltip}
         ></button>
       {/snippet}
     </Tooltip>

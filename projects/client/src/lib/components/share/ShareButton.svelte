@@ -6,6 +6,8 @@
 <script lang="ts">
 import type { ComponentProps } from 'svelte';
 import { page } from '$app/state';
+import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
+import { useTrack } from '$lib/analytics/useTrack';
 import GlassAction from '$lib/components/glass-action/GlassAction.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import arrowUpFromBracket from '$lib/icons/regular/arrow-up-from-bracket.svg?raw';
@@ -22,9 +24,12 @@ interface Props {
   tile?: boolean;
   /** Where the tooltip shows. */
   placement?: ComponentProps<typeof Tooltip>['placement'];
+  /** Web's `action.share` source, sent on each click of the share icon. */
+  tracking?: { source: string; type?: string };
 }
 
-const { url, title, large = true, tile = false, placement }: Props = $props();
+const { url, title, large = true, tile = false, placement, tracking }: Props = $props();
+const { track } = useTrack(AnalyticsEvent.Share);
 
 // The server can't know, so it renders the copy tooltip and the browser corrects it.
 let canShare = $state(false);
@@ -35,6 +40,7 @@ const detectShare = () => {
 const link = $derived(toShareUrl({ url, shareCode: page.data.settings?.account?.share_code }));
 
 const share = async () => {
+  if (tracking) track(tracking);
   if (!canShare) return copyLink(link);
   // A dismissed share sheet rejects with AbortError; there's nothing to tell the user.
   await navigator.share({ title, url: link }).catch((error: unknown) => {

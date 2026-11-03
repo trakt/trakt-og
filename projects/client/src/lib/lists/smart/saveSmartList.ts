@@ -1,4 +1,6 @@
 import { z } from 'zod/v4';
+import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
+import { useTrack } from '$lib/analytics/useTrack';
 import type { SmartListWrite } from './SmartList.ts';
 
 type Params = {
@@ -28,6 +30,7 @@ const toBody = ({ name, privacy, source, mediaType, filters }: Partial<SmartList
  */
 export async function saveSmartList({ request, slug, write }: Params): Promise<SaveSmartListResult> {
   const path = slug ? `/users/me/smart-lists/${encodeURIComponent(slug)}` : '/users/me/smart-lists';
+  useTrack(slug ? AnalyticsEvent.SmartListUpdate : AnalyticsEvent.SmartListCreate).track();
   const response = await request(path, slug ? 'PUT' : 'POST', toBody(write)).catch(() => null);
   if (response?.status === 420) return { ok: false, reason: 'limit' };
   if (!response?.ok) return { ok: false, reason: 'failed' };

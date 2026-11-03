@@ -8,6 +8,8 @@
 -->
 <script lang="ts">
 import { untrack } from 'svelte';
+import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
+import { useTrack } from '$lib/analytics/useTrack';
 import { nearViewport } from '../../../utils/nearViewport.ts';
 import Dialog from '../../dialog/Dialog.svelte';
 import DialogArtHeader from '../../dialog/DialogArtHeader.svelte';
@@ -109,7 +111,15 @@ function retry() {
   void more();
 }
 
+const { track } = useTrack(AnalyticsEvent.GifPicker);
+
+function pickCategory(query: string) {
+  track({ action: 'category', source: 'comment' });
+  search = query;
+}
+
 function pick(gif: GifEntry) {
+  track({ action: 'select', source: 'comment' });
   open = false;
   onselect(gif);
 }
@@ -135,7 +145,7 @@ function pick(gif: GifEntry) {
     {:else if !term && categories?.length}
       <div class="categories">
         {#each categories as category (category.query)}
-          <button type="button" class="category" onclick={() => (search = category.query)}>
+          <button type="button" class="category" onclick={() => pickCategory(category.query)}>
             <img src={category.previewUrl} alt="" loading="lazy" decoding="async" />
             <span>{category.title}</span>
           </button>

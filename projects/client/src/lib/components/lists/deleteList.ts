@@ -1,3 +1,5 @@
+import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
+import { useTrack } from '$lib/analytics/useTrack';
 import type { createOverlay } from '../../overlay/createOverlay.svelte.ts';
 import { withoutList } from '../../overlay/listMembership.ts';
 /** Remove the row and patch membership together; a failed DELETE restores both. */
@@ -14,6 +16,7 @@ export async function deleteList({
   remove: () => () => void;
   notify: { error: (message: string) => void; success: (message: string) => void };
 }) {
+  useTrack(AnalyticsEvent.ListDelete).track();
   const rollback = overlay.patch('listMembership', (data) => withoutList(data, id));
   const restore = remove();
   try {

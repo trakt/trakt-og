@@ -2,6 +2,15 @@
   An inline `[spoiler]` span (`global.js:5332-5343`): blurred on its own until clicked, even in a comment that's
   already readable. Until then it's one button, and what it hides is out of reach of the keyboard and screen readers.
 -->
+<script lang="ts" module>
+import { getContext, setContext } from 'svelte';
+
+const REVEAL = Symbol('inline-spoiler-reveal');
+
+/** Called on each inline spoiler revealed under the calling component: comments track theirs, notes don't. */
+export const setInlineSpoilerReveal = (onreveal: () => void) => setContext(REVEAL, onreveal);
+</script>
+
 <script lang="ts">
 import type { Snippet } from 'svelte';
 import Tooltip from '../tooltip/Tooltip.svelte';
@@ -13,10 +22,12 @@ interface Props {
 const { children }: Props = $props();
 
 let revealed = $state(false);
+const onreveal = getContext<(() => void) | undefined>(REVEAL);
 
 const reveal = (event: Event) => {
   event.preventDefault();
   revealed = true;
+  onreveal?.();
 };
 const onkeydown = (event: KeyboardEvent) => {
   if (event.key === 'Enter' || event.key === ' ') reveal(event);

@@ -22,7 +22,7 @@ export const checkin = {
   },
   /** Logged out, it sends the viewer to sign in instead, like OG. */
   async open(item: Pick<CheckinTarget, 'type' | 'id'>): Promise<void> {
-    if (!(await userManager().getUser())?.access_token) return login();
+    if (!(await userManager().getUser())?.access_token) return login('gate');
     const attempt = ++opening;
     loading = true;
     const loaded = await loadCheckinTarget({ ...item, fetch: (path) => rawApiFetch({ path }) }).catch(() => null);

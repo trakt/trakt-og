@@ -14,6 +14,7 @@ import { page } from '$app/state';
 import CalendarFeed from '$lib/components/calendar/CalendarFeed.svelte';
 import MiniMonth from '$lib/components/calendar/MiniMonth.svelte';
 import MonthPager from '$lib/components/calendar/MonthPager.svelte';
+import { trackCalendarPeriod } from '$lib/components/calendar/trackCalendarPeriod';
 import WeekBars from '$lib/components/calendar/WeekBars.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import FiltersPanel from '$lib/components/filters/FiltersPanel.svelte';
@@ -24,6 +25,7 @@ import { type FadeHide, fadeHideOptions, matchesFadeHide } from '$lib/components
 import AppliedFiltersSection from '$lib/components/filters/AppliedFiltersSection.svelte';
 import { filterChips } from '$lib/components/filters/filterChips';
 import { withoutFilterTag } from '$lib/components/filters/withoutFilterTag';
+import { trackFilterChanges } from '$lib/components/filters/trackFilterChanges';
 import type { HeaderUser } from '$lib/components/header/HeaderUser';
 import { episodeBatchState } from '$lib/components/history/episodeBatchState';
 import type QuickIcons from '$lib/components/media/QuickIcons.svelte';
@@ -128,8 +130,10 @@ function closePanel() {
   funnel?.focus();
 }
 function removeChip(id: string) {
+  const next = withoutFilterTag(data.filters, id);
+  trackFilterChanges(data.filters, next);
   // eslint-disable-next-line svelte/no-navigation-without-resolve -- the same calendar and month, new filters
-  goto(search(withoutFilterTag(data.filters, id)), { noScroll: true, keepFocus: true });
+  goto(search(next), { noScroll: true, keepFocus: true });
 }
 
 // OG's calendars leave out the partial options.
@@ -241,6 +245,7 @@ const episodeCount = $derived(
   entries.reduce((sum, entry) => sum + ('group' in entry ? entry.group.episodes.length : entry.episode ? 1 : 0), 0),
 );
 const mixed = $derived(kind === 'both');
+const FEED_MODES = { both: 'media', movies: 'movie', shows: 'show' } as const;
 const movieCount = $derived(entries.filter((entry) => !('group' in entry) && !entry.episode).length);
 const heat = $derived(new Map(days.map((day) => [day.date, day.entries.length])));
 
@@ -436,7 +441,7 @@ const title = $derived(`${data.target === 'my' ? 'My ' : ''}${data.calendar.labe
     <!-- Only a VIP's own (My) calendars have a feed; the rest of the time the section isn't there. -->
     {#if feedUrl}
       <SidebarSection id="feed" title="iCal Feed" open={data.sidebar.feed} remember>
-        <CalendarFeed url={feedUrl} />
+        <CalendarFeed url={feedUrl} mode={FEED_MODES[kind]} />
       </SidebarSection>
     {/if}
   {/snippet}
@@ -445,14 +450,15 @@ const title = $derived(`${data.target === 'my' ? 'My ' : ''}${data.calendar.labe
     <RailGroup>
       <Tooltip text="Today, {todayLabel}" placement="right">
         {#snippet trigger(tooltip)}
-          <a class="today" href={href(data.target, data.calendar.slug)} {...tooltip}>
+          <a class="today" href={href(data.target, data.calendar.slug)} onclick={() => trackCalendarPeriod('reset')}
+            {...tooltip}>
             <small>{monthName(data.today, 'short')}</small><b>{Number(data.today.slice(8))}</b>
           </a>
         {/snippet}
       </Tooltip>
       <RailPager unit="month" label={monthName(data.window.start, 'short')}
         prevHref={href(data.target, data.calendar.slug, data.window.previous)}
-        nextHref={href(data.target, data.calendar.slug, data.window.next)} />
+        nextHref={href(data.target, data.calendar.slug, data.window.next)} onstep={trackCalendarPeriod} />
     </RailGroup>
     <RailGroup tools>{@render tools()}</RailGroup>
     <RailGroup>

@@ -71,7 +71,7 @@ const send = (request: Request, action: 'approve' | 'deny' | 'blockRequest') =>
   });
 async function approveAll() {
   if (approving) return;
-  if (!(await userManager().getUser())?.access_token) return login();
+  if (!(await userManager().getUser())?.access_token) return login('gate');
   const queue = pending;
   approving = { done: 0, total: queue.length };
   for (const request of queue) {
@@ -89,7 +89,7 @@ async function approveAll() {
   if (pending.length === 0) heading?.focus();
 }
 async function decide(request: Request, action: 'approve' | 'deny' | 'blockRequest') {
-  if (!(await userManager().getUser())?.access_token) return login();
+  if (!(await userManager().getUser())?.access_token) return login('gate');
   await send(request, action);
 }
 </script>

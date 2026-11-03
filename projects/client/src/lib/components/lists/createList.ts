@@ -1,4 +1,6 @@
 import { z } from 'zod/v4';
+import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
+import { useTrack } from '$lib/analytics/useTrack';
 
 const listSchema = z.object({
   ids: z.object({ trakt: z.number() }),
@@ -22,6 +24,7 @@ export async function createList({
     sort_how: string;
   };
 }) {
+  useTrack(AnalyticsEvent.ListCreate).track();
   const response = await request('/users/me/lists', {
     ...draft,
     name: draft.name.trim(),

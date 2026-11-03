@@ -28,7 +28,7 @@ const request = (path: string, body: unknown) =>
 async function toggle() {
   if (busy) return;
   if (!(await userManager().getUser())?.access_token) {
-    await login();
+    await login('gate');
     return;
   }
   busy = true;

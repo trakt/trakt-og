@@ -1,16 +1,22 @@
 import { z } from 'zod/v4';
+import { useTrack } from '$lib/analytics/useTrack';
+import { noteEvent } from '../notes/noteEvent.ts';
 import { GENERIC_ERROR } from '../utils/genericError.ts';
 
 type Params = {
   id: number;
   notes: string;
+  /** The note before this save, which decides between adding, editing and deleting it. */
+  previous?: string;
   request: (path: string, body: unknown) => Promise<Response>;
   notify: { success: (message: string) => void; error: (message: string) => void };
 };
 const errorSchema = z.object({ message: z.string().optional() });
 
 /** API returns 204; keep the dialog and draft available if saving fails. */
-export async function saveFavoriteNote({ id, notes, request, notify }: Params): Promise<boolean> {
+export async function saveFavoriteNote({ id, notes, previous = '', request, notify }: Params): Promise<boolean> {
+  const event = noteEvent(previous.trim() !== '', notes);
+  if (event) useTrack(event).track({ type: 'favorites' });
   try {
     const response = await request(`/sync/favorites/${id}`, { notes: notes.trim() });
     if (response.status === 204) {

@@ -1,4 +1,7 @@
 <script lang="ts">
+import { page } from '$app/state';
+import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
+import { useTrack } from '$lib/analytics/useTrack';
 import SeoHead from '$lib/seo/SeoHead.svelte';
 import DashboardGreeting from '$lib/components/dashboard/DashboardGreeting.svelte';
 import FirstNightHero from '$lib/components/first-night/FirstNightHero.svelte';
@@ -52,8 +55,11 @@ function loadSchedule({ filter, movies }: Pick<DashboardSettings['schedule'], 'f
 // A recap month's hover card splits its plays from the browser, the first time it opens.
 const loadRecapSplit = (span: RecapSpan) => fetchRecapSplit({ client: api({ fetch: viewerFetch() }), span });
 
+const { track: trackDiscoverMode } = useTrack(AnalyticsEvent.DiscoverMode);
+
 // The recommendations' Type dropdown works the same way.
 function loadRecommendations(type: DashboardSettings['recommendations']['type']) {
+  trackDiscoverMode({ mode: type, source: page.route.id ?? 'unknown' });
   dashboardPrefs.save(username, { ...dashboardPrefs.load(username), recommendations_type: type });
   return fetchRecommendations({
     fetch: viewerFetch(),

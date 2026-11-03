@@ -1,4 +1,6 @@
 import { z } from 'zod/v4';
+import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
+import { useTrack } from '$lib/analytics/useTrack';
 import { countLabel } from '../../utils/countLabel.ts';
 import { episodeNumber } from '../media/episodeTags.ts';
 import type { CheckinTarget } from './CheckinTarget.ts';
@@ -11,6 +13,7 @@ type Params = {
   now?: () => Date;
 };
 
+const { track } = useTrack(AnalyticsEvent.CheckIn);
 const conflictSchema = z.object({ expires_at: z.string() });
 const watchingSchema = z.object({
   movie: z.object({ title: z.string(), year: z.number().nullish() }).nullish(),
@@ -41,6 +44,7 @@ async function conflict({ request, now = () => new Date() }: Params, response: R
  */
 export async function checkinMedia(params: Params): Promise<boolean> {
   const { target, request, notify } = params;
+  track({ type: target.type, action: 'start' });
   try {
     const response = await request('/checkin', { [target.type]: { ids: { trakt: target.id } } });
     if (response.ok) {

@@ -1,7 +1,12 @@
+import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
+import { useTrack } from '$lib/analytics/useTrack';
 import type { createOverlay } from '../overlay/createOverlay.svelte.ts';
 import type { BuiltInListKind } from './toBuiltInListView.ts';
 import type { ListItemCard } from './toListItemCard.ts';
 import { writeOwnerList } from './writeOwnerList.ts';
+
+const { track: trackWatchlist } = useTrack(AnalyticsEvent.Watchlist);
+const { track: trackFavorite } = useTrack(AnalyticsEvent.Favorite);
 
 /** Bulk removal patches membership once; both page cards and the shared overlay roll back on failure. */
 export async function removeOwnerItems({
@@ -10,12 +15,15 @@ export async function removeOwnerItems({
   overlay,
   request,
   notify,
+  tracked = true,
 }: {
   kind: BuiltInListKind;
   items: readonly Pick<ListItemCard, 'type' | 'id'>[];
   overlay: Pick<ReturnType<typeof createOverlay>, 'patch'>;
   request: (path: string, init: RequestInit) => Promise<Response>;
   notify: { error: (message: string) => void };
+  /** False when the removal is the second half of a Move, which counts once as its add. */
+  tracked?: boolean;
 }) {
   const targets = items.flatMap((item) => (item.type === 'person' ? [] : [{ type: item.type, id: item.id }]));
   const subtract = (ids: ReadonlySet<number> | undefined, type: string) =>
@@ -54,6 +62,7 @@ export async function removeOwnerItems({
           }),
           { movie: new Set(), show: new Set() },
         );
+  if (tracked) (kind === 'watchlist' ? trackWatchlist : trackFavorite)({ action: 'remove' });
   const ok = await writeOwnerList({ kind, change: { type: 'remove', items: targets }, request, notify });
   if (!ok) rollback();
   return ok;

@@ -4,6 +4,8 @@ import { resolve } from '$app/paths';
 import { page } from '$app/state';
 import { tick } from 'svelte';
 import { login } from '$lib/auth/login';
+import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
+import { useTrack } from '$lib/analytics/useTrack';
 import { rawApiFetch } from '$lib/api/rawApiFetch';
 import { overlay } from '$lib/overlay/overlay';
 import { toast } from '$lib/components/toast/toast.svelte';
@@ -99,7 +101,7 @@ const read = (target: NonNullable<Parameters<typeof transferListItems>[0]['desti
 async function open() {
   if (busy || otherBusy) return;
   if (!page.data.user) {
-    await login();
+    await login('gate');
     return;
   }
   busy = true;
@@ -162,6 +164,10 @@ async function transfer(list: PickerList | null, watchlist = false) {
       toast.error(`A new list can only have ${limit.toLocaleString('en-US')} items.`);
       failed = row;
       return;
+    }
+    if (items.some((item) => item.type !== 'person')) {
+      if (watchlist) useTrack(AnalyticsEvent.Watchlist).track({ action: 'add' });
+      else useTrack(AnalyticsEvent.List).track({ action: 'add' });
     }
     const result = await transferListItems({
       source: selectedSource,

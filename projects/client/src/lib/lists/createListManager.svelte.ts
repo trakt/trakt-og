@@ -18,6 +18,8 @@ import type { ListItemCard } from './toListItemCard.ts';
 import type { ListView } from './toListView.ts';
 import { GENERIC_ERROR } from '../utils/genericError.ts';
 import { viewerFetch } from '../auth/viewerFetch.ts';
+import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
+import { useTrack } from '$lib/analytics/useTrack';
 
 type Source = {
   list: Pick<ListView, 'id' | 'slug' | 'ownerSlug' | 'name' | 'href'> | null;
@@ -25,6 +27,8 @@ type Source = {
   sort: ListSort;
   query: ListQuery;
 };
+
+const { track: trackList } = useTrack(AnalyticsEvent.List);
 
 const request = (method: 'POST' | 'PUT') => (path: string, body: unknown) =>
   rawApiFetch({
@@ -209,6 +213,7 @@ export function createListManager(source: () => Source, isBlocked: () => boolean
         const { owner, listId } = items();
         removed.add(card.key);
         patched = cards.filter(({ key }) => key !== card.key);
+        trackList({ action: 'remove' });
         const ok = await removeListItems({
           owner,
           listId,
@@ -269,6 +274,7 @@ export function createListManager(source: () => Source, isBlocked: () => boolean
           query,
           sort: { by: 'rank', how: 'asc' },
         });
+        trackList({ action: 'remove' });
         if (!(await removeListItems({ owner, listId, items: refs, request: request('POST'), notify: toast }))) return;
         managing = false;
         toast.success(

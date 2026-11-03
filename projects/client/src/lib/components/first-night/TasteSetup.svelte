@@ -5,6 +5,8 @@
   too, then reloads the page data. A Standard app (`isStandardApi`) gets the genres only.
 -->
 <script lang="ts">
+import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
+import { useTrack } from '$lib/analytics/useTrack';
 import { isStandardApi } from '$lib/api/isStandardApi';
 import { invalidateAll } from '$app/navigation';
 import { viewerFetch } from '$lib/auth/viewerFetch';
@@ -47,6 +49,7 @@ interface Props {
 let { open = $bindable(), country, services, genres }: Props = $props();
 // Watch-now sources are Official-only, so a Standard app picks genres alone.
 const streaming = !isStandardApi();
+const { track: trackSettings } = useTrack(AnalyticsEvent.Settings);
 
 let picked = $state(new Set<string>());
 let loved = $state(new Set<string>());
@@ -92,6 +95,7 @@ async function save() {
     toast.error(result.errors.at(0) ?? "Your picks didn't save. Try again.");
     return;
   }
+  trackSettings({ settings: 'genres' });
   toast.success('Saved to your Trakt settings. Watch Now and your picks follow them.');
   open = false;
   await invalidateAll();

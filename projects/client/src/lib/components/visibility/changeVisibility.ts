@@ -1,4 +1,6 @@
 import { z } from 'zod/v4';
+import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
+import { useTrack } from '$lib/analytics/useTrack';
 import type { createOverlay } from '../../overlay/createOverlay.svelte.ts';
 import type { VisibilityTarget } from './VisibilityTarget.ts';
 import { GENERIC_ERROR } from '../../utils/genericError.ts';
@@ -19,6 +21,16 @@ const resultSchema = z.object({
   not_found: z.record(z.string(), z.array(z.unknown())).optional(),
 });
 const resetSchema = z.object({ reset_at: z.iso.datetime({ offset: true }) });
+
+/** Web's events for these actions; other hidden sections have none. */
+function trackVisibility({ target, action, section }: Pick<Params, 'target' | 'action' | 'section'>) {
+  const type = target.type === 'movie' ? 'movie' : 'show';
+  if (action === 'drop') useTrack(AnalyticsEvent.Drop).track({ type });
+  else if (action === 'restore') useTrack(AnalyticsEvent.Restore).track();
+  else if (action === 'rewatch') useTrack(AnalyticsEvent.Rewatching).track({ action: 'start' });
+  else if (action === 'unrewatch') useTrack(AnalyticsEvent.Rewatching).track({ action: 'stop' });
+  else if (section === 'recommendations') useTrack(AnalyticsEvent.HideRecommendation).track({ type });
+}
 
 /** Apply each write immediately across cards and summaries; undo all patches on any rejected response. */
 export async function changeVisibility({
@@ -80,6 +92,7 @@ export async function changeVisibility({
         : target.season
           ? { shows: [{ ids: { trakt: target.season.show }, seasons: [{ number: target.season.number, ...stamp }] }] }
           : { [`${target.type}s`]: [{ ids: { trakt: target.id }, ...stamp }] };
+  trackVisibility({ target, action, section });
   try {
     const response = await request(path, body, action === 'unrewatch' ? 'DELETE' : 'POST');
     if (!response.ok) throw new Error(String(response.status));

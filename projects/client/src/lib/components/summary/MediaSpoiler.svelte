@@ -1,5 +1,7 @@
 <script lang="ts">
 import { page } from '$app/state';
+import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
+import { useTrack } from '$lib/analytics/useTrack';
 import { overlay } from '$lib/overlay/overlay';
 import { mediaSpoilers } from '$lib/settings/mediaSpoilers';
 import type { SpoilerTarget } from '$lib/settings/SpoilerTarget';
@@ -21,8 +23,14 @@ const hidden = $derived(
     })[kind]
     : false,
 );
+// trakt-web leaves season reveals untracked.
+const onreveal = $derived.by(() => {
+  const type = target?.type;
+  if (type !== 'movie' && type !== 'show' && type !== 'episode') return undefined;
+  return () => useTrack(AnalyticsEvent.SpoilerReveal).track({ type });
+});
 </script>
 
 {#key `${page.data.user?.slug}:${target?.type}:${target?.id}:${kind}`}
-  <SpoilerContent {hidden} {inline}>{@render children()}</SpoilerContent>
+  <SpoilerContent {hidden} {inline} {onreveal}>{@render children()}</SpoilerContent>
 {/key}

@@ -106,7 +106,7 @@ const label = $derived(
 const instant = $derived(watchDateInstant(value, dates.timeZone));
 async function open() {
   if (busy) return;
-  if (!(await userManager().getUser())?.access_token) return login();
+  if (!(await userManager().getUser())?.access_token) return login('gate');
   if (action === 'rewatch' && !page.data.user?.isVip) {
     globalThis.open(traktUrls.vip, '_blank', 'noopener');
     return;

@@ -28,6 +28,7 @@ let busy = $state(false);
 let saving = $state(false);
 let open = $state(false);
 let draft = $state('');
+let saved = '';
 let noteId = $state<number | null>(null);
 let promptTarget = $state<FavoriteTarget | null>(null);
 const membership = $derived(overlay.state(target.type, target.id));
@@ -53,7 +54,7 @@ const request = (method: 'POST' | 'PUT') => (path: string, body?: unknown) =>
 async function toggle() {
   if (busy || saving || locked) return;
   if (!await userManager().getUser()) {
-    await login();
+    await login('gate');
     return;
   }
   busy = true;
@@ -71,6 +72,7 @@ async function toggle() {
       promptTarget = await loading;
       noteId = note.id;
       draft = note.notes;
+      saved = note.notes;
       open = true;
     }
   } finally {
@@ -82,7 +84,9 @@ async function save(notes: string) {
   if (saving || noteId === null) return;
   saving = true;
   try {
-    if (await saveFavoriteNote({ id: noteId, notes, request: request('PUT'), notify: toast })) open = false;
+    if (await saveFavoriteNote({ id: noteId, notes, previous: saved, request: request('PUT'), notify: toast })) {
+      open = false;
+    }
   } finally {
     saving = false;
   }

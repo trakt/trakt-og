@@ -4,7 +4,8 @@
   the same view renders live data (`ProgressPage.svelte`) and the design page's samples. `items` is null while your
   progress loads, and `listed` while a `?list=`'s shows do; shimmering rows (or a row of poster cards in grid view)
   hold their place meanwhile. The grid view, simple bar and Include Watchlisted toggles save to the viewer's watched
-  progress settings, which every tab reads, and grid view reloads the page, as OG did. Include Watchlisted, on Watching
+  progress settings, which every tab reads, and grid view reloads the page, as OG did. The sort you pick saves there too,
+  so a tab without a sort in its URL opens on it. Include Watchlisted, on Watching
   only, keeps the watchlisted shows you haven't started; off, the default, drops them. A `?list=` puts a band naming the
   list between the subnav and the rows.
 -->
@@ -57,6 +58,7 @@ import ProgressListBand from './ProgressListBand.svelte';
 import ProgressRow from './ProgressRow.svelte';
 import { literalProgressSort, type ProgressSort, progressSortLabel, progressSorts } from './progressSort.ts';
 import ProgressSummary from './ProgressSummary.svelte';
+import { saveProgressSort } from './saveProgressSort.ts';
 import { isProgressType, type ProgressType, progressTypes } from './progressTypes.ts';
 import { sortProgress } from './sortProgress.ts';
 import { sumProgressTotals } from './sumProgressTotals.ts';
@@ -196,6 +198,19 @@ async function toggleView(view: ProgressView) {
   }
 }
 
+// The sort you pick becomes your saved one, so each tab opens on it until you pick another.
+function rememberSort(sort: Pick<ProgressSort, 'by' | 'how'>) {
+  if (!data.user || (sort.by === data.sort.by && sort.how === data.sort.how)) return;
+  void saveProgressSort({ sort, request: settingsRequest(viewerFetch()), notify: toast });
+}
+
+function flipSort(descending: boolean) {
+  const sort = { by: data.sort.by, how: descending ? ('desc' as const) : ('asc' as const) };
+  rememberSort(sort);
+  // eslint-disable-next-line svelte/no-navigation-without-resolve -- the same page in the other direction
+  return goto(href(data.type, sort));
+}
+
 // OG's `link_params`: the query string without the page. A new type drops the sort, like OG's type links.
 function href(type: ProgressType, sort?: Pick<ProgressSort, 'by' | 'how'>) {
   const query = new SvelteURLSearchParams(page.url.searchParams);
@@ -267,14 +282,14 @@ function clearFilters() {
         {#snippet trigger()}{#if data.sort.supported}{progressSortLabel(data.sort.by)}{:else}{progressSortLabel(data.sort.by)} <em>(unsupported)</em>{/if}{/snippet}
         <ul>
           {#each Object.keys(progressSorts) as by (by)}
-            <li><a href={href(data.type, { by, how: 'asc' })}
+            <li><a href={href(data.type, { by, how: 'asc' })} onclick={() => rememberSort({ by, how: 'asc' })}
               aria-current={data.sort.by === by ? 'page' : undefined}>{progressSortLabel(by)}</a></li>
           {/each}
         </ul>
       </Dropdown>
       <SortDirection joined descending={literalProgressSort({ by: data.sort.by, how: 'asc' }).how === 'desc'} bind:flipped={
         () => data.sort.how === 'desc',
-        (next) => goto(href(data.type, { by: data.sort.by, how: next ? 'desc' : 'asc' }))
+        flipSort
       } />
     </span>
     <span class="icons">

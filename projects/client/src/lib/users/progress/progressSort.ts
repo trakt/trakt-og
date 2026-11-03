@@ -45,7 +45,7 @@ const DESCENDING: ReadonlySet<ProgressSortBy> = new Set([
   'total-runtime',
 ]);
 
-const isSortBy = (value: string): value is ProgressSortBy => Object.hasOwn(progressSorts, value);
+export const isSortBy = (value: string): value is ProgressSortBy => Object.hasOwn(progressSorts, value);
 
 export type ProgressSort = {
   /** A listed sort, or an old name OG still took. */

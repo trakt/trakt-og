@@ -1,19 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { isNewAccount, trackedTitles } from './firstNight.ts';
 
-const stats = (movies: number, shows: number) =>
-  ({
-    movies: { watched: movies },
-    shows: { watched: shows },
-  }) as Parameters<typeof isNewAccount>[0];
-
 describe('isNewAccount', () => {
   it('should count an account with fewer than ten titles watched as new', () => {
-    expect(isNewAccount(stats(4, 5))).toBe(true);
+    expect(isNewAccount(9)).toBe(true);
   });
 
   it('should not count an account with ten or more', () => {
-    expect(isNewAccount(stats(4, 6))).toBe(false);
+    expect(isNewAccount(10)).toBe(false);
   });
 });
 

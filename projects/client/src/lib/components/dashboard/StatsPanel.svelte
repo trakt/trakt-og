@@ -3,9 +3,11 @@
   plays, then Shows Finished with its meter, then Watched Shows and Watched Movies, each a condensed figure over a line
   of the toolbars' stats (plays first), linked where OG's dashboard band linked them. Each label has a heading's faint
   watermark icon, clipped by its cell. All Time's label and figure open All Time Stats on v3. Four across, two by two in a narrow column.
+  Without a `panel` yet (og counting the stats itself), the four labels hold their places over shimmers.
 -->
 <script lang="ts">
 import HeadingMark from '$lib/components/heading/HeadingMark.svelte';
+import Shimmer from '$lib/components/loading/Shimmer.svelte';
 import Stat from '$lib/components/stats/Stat.svelte';
 import type { PanelCount, PanelTime, StatsPanel } from '$lib/dashboard/StatsPanel';
 import ban from '$lib/icons/regular/ban.svg?raw';
@@ -19,8 +21,14 @@ import check from '$lib/icons/trakt/check-thick.svg?raw';
 import { traktUrls } from '$lib/traktUrls';
 
 /** `fresh`: nothing watched yet, so each cell names its first milestone in place of its zero counts. */
-const { panel, slug, fresh = false }: { panel: StatsPanel; slug: string; fresh?: boolean } = $props();
+const { panel, slug, fresh = false }: { panel: StatsPanel | null; slug: string; fresh?: boolean } = $props();
 const user = $derived(`/users/${encodeURIComponent(slug)}`);
+const loading = [
+  { svg: clock, label: 'All Time' },
+  { svg: listCheck, label: 'Shows Finished' },
+  { svg: tvRetro, label: 'Watched Shows' },
+  { svg: cameraMovie, label: 'Watched Movies' },
+];
 </script>
 
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
@@ -35,6 +43,17 @@ const user = $derived(`/users/${encodeURIComponent(slug)}`);
 {/snippet}
 
 <div class="stats">
+  {#if !panel}
+    <div class="panel" role="group" aria-label="Your Trakt in numbers" aria-busy="true">
+      {#each loading as { svg, label } (label)}
+        <div class="cell">
+          <p class="label"><HeadingMark {svg} />{label}</p>
+          <div class="figure"><Shimmer inline="2.2em" block="1cap" /></div>
+          <p class="counts"><Shimmer inline="7em" block="1lh" /></p>
+        </div>
+      {/each}
+    </div>
+  {:else}
   <div class={["panel", { unfinished: !panel.finished }]} role="group" aria-label="Your Trakt in numbers">
     <div class="cell">
       <p class="label">
@@ -86,6 +105,7 @@ const user = $derived(`/users/${encodeURIComponent(slug)}`);
       </p>{/if}
     </div>
   </div>
+  {/if}
 </div>
 
 <style>

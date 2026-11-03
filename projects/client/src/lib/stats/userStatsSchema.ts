@@ -4,8 +4,12 @@ import { z } from 'zod/v4';
 const count = z.number().int();
 const watched = { plays: count, watched: count, minutes: count, collected: count, ratings: count, comments: count };
 
-/** `/users/:id/stats` as og reads it. `progress` and `lists` are null when the API didn't send them. */
-export type UserStats = Omit<UserStatsResponse, 'progress' | 'lists'> & {
+/**
+ * `/users/:id/stats` as og reads it. `progress` and `lists` are null when the API didn't send them, and `network` when
+ * og counted the stats itself (`computeUserStats`).
+ */
+export type UserStats = Omit<UserStatsResponse, 'progress' | 'lists' | 'network'> & {
+  readonly network: UserStatsResponse['network'] | null;
   readonly progress: UserStatsResponse['progress'] | null;
   readonly lists: number | null;
 };

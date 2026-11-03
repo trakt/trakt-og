@@ -3,10 +3,9 @@ import { error, redirect } from '@sveltejs/kit';
 import { readListFilters } from './readListFilters.ts';
 import { loadListFilterSources } from './loadListFilterSources.ts';
 import type { ViewerSettings } from '../settings/ViewerSettings.ts';
-import { api } from '../api/api.ts';
 import type { HeaderUser } from '../components/header/HeaderUser.ts';
 import type { DatePreferences } from '../settings/DatePreferences.ts';
-import { fetchListSummary } from './fetchListSummary.ts';
+import { fetchOfficialListSummary } from './fetchOfficialListSummary.ts';
 import { fetchListItems, loadListItems, urlListSort } from './loadListItems.ts';
 import { listCoverOf } from './listCoverOf.ts';
 import { toListQuery } from './toListQuery.ts';
@@ -25,10 +24,6 @@ type Params = {
   }>;
 };
 
-function fetchSummary(fetch: typeof globalThis.fetch, id: string) {
-  return fetchListSummary(() => api({ fetch }).lists.summary({ params: { id } }));
-}
-
 /** official lists use the public list endpoints and a random, unfiltered item's fanart, without a profile. */
 export async function loadOfficialList({ fetch, locals, params, url, parent, cookies }: Params) {
   const urlQuery = toListQuery(url.searchParams);
@@ -41,7 +36,7 @@ export async function loadOfficialList({ fetch, locals, params, url, parent, coo
   });
   const query = { ...urlQuery, hide: fadeHide.hide };
   const [summary, { user, datePreferences, settings }] = await Promise.all([
-    fetchSummary(fetch, params.slug),
+    fetchOfficialListSummary({ fetch, id: params.slug }),
     parent(),
   ]);
   if (!summary || [204, 401, 403, 404].includes(summary.status)) error(404, 'Page Not Found');

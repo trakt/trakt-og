@@ -145,8 +145,26 @@ describe('loadOfficialList', () => {
 
   it('should 404 missing and non-official lists', async () => {
     await expect(load('', 'missing')).rejects.toMatchObject({ status: 404 });
-    server.use(http.get(`${root}/lists/:id`, () => HttpResponse.json({ ...summary, type: 'personal' })));
+    server.use(
+      http.get(`${root}/lists/:id`, () => HttpResponse.json({ ...summary, type: 'personal' })),
+      http.get(`${root}/search/list`, () => HttpResponse.json([])),
+    );
     await expect(load()).rejects.toMatchObject({ status: 404 });
+  });
+
+  it('should open an official list whose slug the API resolves to a personal list', async () => {
+    const personal = { ...summary, type: 'personal', ids: { trakt: 7, slug: 'collection' } };
+    server.use(
+      http.get(`${root}/lists/:id`, ({ request, params }) => {
+        record(request);
+        return HttpResponse.json(params.id === '44' ? summary : personal);
+      }),
+      http.get(`${root}/search/list`, () => HttpResponse.json([{ type: 'list', score: 1, list: summary }])),
+    );
+    const result = await load();
+    expect(result.list.href).toBe('/lists/official/collection');
+    const items = seen.filter(({ url }) => url.pathname.includes('/items'));
+    expect(items.every(({ url }) => url.pathname.startsWith('/lists/44/'))).toBe(true);
   });
 
   it('should redirect an id to the canonical slug and preserve filters', async () => {

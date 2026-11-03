@@ -85,6 +85,7 @@ describe('loadOfficialListComments', () => {
   });
   it('should 404 a missing list and a list that is not official', async () => {
     await expect(load('nope')).rejects.toMatchObject({ status: 404 });
+    server.use(http.get(`${API}/search/list`, () => HttpResponse.json([])));
     await expect(load('someones-list')).rejects.toMatchObject({ status: 404 });
   });
   it("should 404, not throw, on the comments read's plain-text 403", async () => {

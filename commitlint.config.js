@@ -13,6 +13,7 @@ export default {
       [
         // infrastructure
         'agents',
+        'analytics',
         'api',
         'auth',
         'ci',

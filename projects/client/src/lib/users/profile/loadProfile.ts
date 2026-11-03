@@ -1,3 +1,6 @@
+import { fetchComputedStats } from '../../stats/fetchComputedStats.ts';
+import { fetchStatsCounts } from '../../stats/fetchStatsCounts.ts';
+import type { StatsCounts } from '../../stats/StatsCounts.ts';
 import type { UserStats } from '../../stats/userStatsSchema.ts';
 import { api } from '../../api/api.ts';
 import type { DatePreferences } from '../../settings/DatePreferences.ts';
@@ -6,6 +9,7 @@ import type { ViewerSettings } from '../../settings/ViewerSettings.ts';
 import { toUserComment } from '../comments/toUserComment.ts';
 import type { UserCommentRow } from '../comments/UserCommentRow.ts';
 import { fetchRecentHistory } from '../fetchRecentHistory.ts';
+import { profileAccess } from '../profileAccess.ts';
 import type { ProfileUser } from '../ProfileUser.ts';
 import { readProfileTab } from '../readProfileTab.ts';
 import { withShowPosters } from '../withShowPosters.ts';
@@ -61,7 +65,7 @@ const favoritesSortOf = (frame: Pick<Frame, 'isSelf' | 'settings'>): FavoritesSo
   profilePrefs(frame)?.favorites ?? RANDOM;
 
 async function fetchSections(
-  { fetch, token }: { fetch: typeof globalThis.fetch; token?: string | null },
+  { fetch, token, progress = false }: { fetch: typeof globalThis.fetch; token?: string | null; progress?: boolean },
   id: string,
   now: Date,
   favoritesSort: FavoritesSort = RANDOM,
@@ -76,7 +80,7 @@ async function fetchSections(
       query: { extended: 'full,images', limit: 3 },
     }),
     recent: fetchRecentHistory({ client, id, now }),
-    watched: fetchWatchedLists({ fetch, token, id }),
+    watched: fetchWatchedLists({ fetch, token, id, progress }),
   };
   // A failure shows where the page awaits it. A read the frame cancels, or one a failed section strands, has nobody
   // waiting on it.
@@ -113,15 +117,22 @@ export async function loadProfile({ fetch, locals, params, parent, now = new Dat
   // The boxes' extra requests start as soon as the frame says which ones could pay off, alongside the sections.
   const frame = parent();
   const token = locals.token;
-  const [tab, boxes] = await Promise.all([
+  const [tab, apiBoxes, counts] = await Promise.all([
     readProfileTab({
       fetch,
       token,
       frame,
       read: ({ fetch, token, frame: known }) =>
-        fetchSections({ fetch, token }, params.id, now, token && known ? favoritesSortOf(known) : RANDOM),
+        fetchSections(
+          // Your own stats counted here need your shows' episodes.
+          { fetch, token, progress: !!known?.isSelf && known.stats === null },
+          params.id,
+          now,
+          token && known ? favoritesSortOf(known) : RANDOM,
+        ),
     }),
     frame.then((data) => startBoxes(data, { fetch, token, id: params.id })),
+    frame.then((data) => readCounts(data, { fetch, token })),
   ]);
   const { profile, stats, isSelf, datePreferences, settings } = tab.frame;
   const sections = tab.result;
@@ -144,16 +155,34 @@ export async function loadProfile({ fetch, locals, params, parent, now = new Dat
   const movies = sections.movies.status === 200 ? sections.movies.body : [];
   const favorites = sections.favorites.status === 200 ? sections.favorites.body : [];
   const comments: readonly UserCommentRow[] = sections.comments.status === 200 ? sections.comments.body : [];
+  const loaded = {
+    today: boxMath.utcDay(now),
+    latest: { episode: episodes.at(0), movie: movies.at(0) },
+    genres: sections.genres,
+  };
+  // Without the API's stats, a profile with any history counts its own for the boxes.
+  const active = stats ? hasActivity(stats) : episodes.length + movies.length > 0;
+  const computed =
+    !stats && counts && active
+      ? fetchComputedStats({
+          fetch,
+          token: statsToken(tab.frame, token),
+          id: profile.slug,
+          isSelf,
+          counts: Promise.resolve(counts),
+          watched: sections.streamed.watched,
+        })
+      : null;
+  const ratings = stats?.ratings ?? counts?.ratings;
 
   return {
-    boxes: boxes
-      ? streamBoxes(boxes, sections.streamed, {
-          today: boxMath.utcDay(now),
-          latest: { episode: episodes.at(0), movie: movies.at(0) },
-          genres: sections.genres,
-        })
-      : null,
-    welcome: isSelf && stats !== null && !hasActivity(stats),
+    boxes: apiBoxes
+      ? streamBoxes(apiBoxes, sections.streamed, loaded)
+      : (computed?.then((computedStats) => {
+          const boxes = startBoxes({ profile, stats: computedStats, isSelf }, { fetch, token, id: params.id });
+          return boxes ? streamBoxes(boxes, sections.streamed, loaded) : null;
+        }) ?? null),
+    welcome: isSelf && !active,
     favorites: favorites.map(toFavoriteCard),
     episodes: episodes.map((row) => toWatchedEpisode(row, datePreferences)),
     movies: movies.map((row) => toWatchedMovie(row, datePreferences)),
@@ -163,7 +192,7 @@ export async function loadProfile({ fetch, locals, params, parent, now = new Dat
         ? {
             genres: sections.genres.map((row) => toGenreBar(row, { slug: profile.slug })),
             ratings: toProfileRatings({
-              distribution: stats?.ratings.distribution,
+              distribution: ratings?.distribution,
               types: stats
                 ? {
                     movies: stats.movies.ratings,
@@ -171,7 +200,7 @@ export async function loadProfile({ fetch, locals, params, parent, now = new Dat
                     seasons: stats.seasons.ratings,
                     episodes: stats.episodes.ratings,
                   }
-                : undefined,
+                : counts?.ratings,
             }),
           }
         : null,
@@ -245,12 +274,28 @@ const hasActivity = (stats: UserStats) =>
 
 type Boxes = { readonly frame: BoxFrame; readonly extras: ReturnType<typeof boxExtraLoader> };
 
+/** Your own profile, or a private one you may see, reads its counts with your token. */
+const statsToken = ({ profile, isSelf }: Pick<Frame, 'profile' | 'isSelf'>, token: string | null) =>
+  isSelf || profileAccess(profile) === 'viewer' ? token : null;
+
+/**
+ * The counts the API would have sent, for a profile it keeps no stats for: read alongside the sections for the ratings
+ * chart, and the boxes' stats then add the watched lists to them. Counts that fail leave both out.
+ */
+function readCounts(
+  frame: Frame,
+  { fetch, token }: { fetch: typeof globalThis.fetch; token: string | null },
+): Promise<StatsCounts | null> | null {
+  if (frame.stats || frame.profile.isLocked) return null;
+  return fetchStatsCounts({ fetch, token: statsToken(frame, token), id: frame.profile.slug }).catch(() => null);
+}
+
 /**
  * When the profile shows the strip (visible, with stats and some activity), starts every extra request a box could
  * use. A private profile's go with the viewer's token.
  */
 function startBoxes(
-  { profile, stats, isSelf }: Frame,
+  { profile, stats, isSelf }: Pick<Frame, 'profile' | 'stats' | 'isSelf'>,
   { token, ...context }: { fetch: typeof fetch; token: string | null; id: string },
 ): Boxes | null {
   if (profile.isLocked || !stats || !hasActivity(stats)) return null;

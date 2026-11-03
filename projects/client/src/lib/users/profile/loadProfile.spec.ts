@@ -340,4 +340,42 @@ describe('loadProfile', () => {
     expect(await load({ isPrivate: true, isLocked: true })).toMatchObject({ charts: null, mostWatched: null });
     expect(seen.every((request) => !request.headers.has('authorization'))).toBe(true);
   });
+
+  describe('without stats from the API', () => {
+    const counted = (path: string, count: number, rows: unknown[] = []) =>
+      http.get(`https://apiz.trakt.tv/users/tester/${path}`, ({ request }) => {
+        seen.push(request);
+        return HttpResponse.json(rows, { headers: { 'X-Pagination-Item-Count': String(count) } });
+      });
+
+    it('should count them itself for the boxes and the ratings chart', async () => {
+      server.use(
+        http.get('https://apiz.trakt.tv/users/tester/watched/genres', () => HttpResponse.json([genre])),
+        counted('history/movies', 1, [movie(9, 100)]),
+        counted('watched/movies', 1, [watchedMovie(9, 2)]),
+        counted('ratings/all/8', 3),
+      );
+      const data = await load({ stats: null });
+
+      expect(data.boxes?.find((box) => box.key === 'watch-time')?.view).toMatchObject({
+        allTime: { episodes: '0 eps', movies: '1 movie' },
+      });
+      expect(data.charts?.ratings).toMatchObject({ count: '3', average: '8.00' });
+      expect(data.welcome).toBe(false);
+    });
+
+    it("should show your own empty profile's welcome hero, and no boxes for anyone else's", async () => {
+      expect(await load({ stats: null, isSelf: true })).toMatchObject({ boxes: null, welcome: true });
+      expect(await load({ stats: null })).toMatchObject({ boxes: null, welcome: false });
+    });
+
+    it('should leave the boxes out when the counts fail', async () => {
+      server.use(
+        counted('history/movies', 1, [movie(9, 100)]),
+        http.get('https://apiz.trakt.tv/users/tester/lists', () => new HttpResponse(null, { status: 503 })),
+      );
+
+      expect((await load({ stats: null })).boxes).toBeNull();
+    });
+  });
 });

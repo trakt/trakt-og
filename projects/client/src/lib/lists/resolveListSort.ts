@@ -1,4 +1,4 @@
-import { listItemSorts } from './listItemSorts.ts';
+import { canonicalSortBy, listItemSorts } from './listItemSorts.ts';
 import type { ListQuery, SortHow } from './ListQuery.ts';
 
 export type ListSort = { readonly by: string; readonly how: SortHow };
@@ -14,7 +14,7 @@ type ResolveListSortParams = {
  */
 export function resolveListSort({ query, fallback }: ResolveListSortParams): ListSort {
   const how = query.sortHow ?? fallback.how;
-  const sort = listItemSorts.find(({ by }) => by === (query.sortBy ?? fallback.by));
+  const sort = listItemSorts.find(({ by }) => by === canonicalSortBy(query.sortBy ?? fallback.by));
   if (!sort) return { by: 'rank', how };
   return { by: sort.by, how };
 }

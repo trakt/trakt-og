@@ -81,7 +81,7 @@ function sortLine(sortBy: string, facts: Facts, href: string, datePreferences: D
     case 'votes':
       return facts.rating === undefined ? undefined : { rating: facts.rating, votes: facts.votes ?? 0, href };
     default:
-      // The external ratings aren't on list items. "Your data" lines come from the viewer's overlay (ListItemPoster).
+      // The external ratings aren't on list items. "My Data" lines come from the viewer's overlay (ListItemPoster).
       return undefined;
   }
 }

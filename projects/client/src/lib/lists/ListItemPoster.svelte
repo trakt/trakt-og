@@ -94,8 +94,13 @@ const siteTarget = $derived.by((): ExternalRatingsTarget | undefined => {
         class="add-notes"
       ><NotesPill add svg={plus} label="Add Note" aria-label="Add Note to {item.title}" onclick={() => oneditnotes(item)} /></div>{/if}
   {/snippet}
-  {#if myRating}<a class="rating-link" href={item.href}><RatingLine rating={myRating} /></a>{:else if siteTarget && sortBy}<a
-      class="rating-link" href={item.href}><ExternalSortLine target={siteTarget} {sortBy} /></a>{/if}
+  {#if myRating}
+    <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- the card's own resolved link, as its title's -->
+    <a class="rating-link" href={item.href}><RatingLine rating={myRating} /></a>
+  {:else if siteTarget && sortBy}
+    <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- the card's own resolved link, as its title's -->
+    <a class="rating-link" href={item.href}><ExternalSortLine target={siteTarget} {sortBy} /></a>
+  {/if}
 </PosterCard>
 
 <style>

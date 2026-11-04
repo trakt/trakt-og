@@ -1,4 +1,5 @@
 import type { ListResponse } from '@trakt/api';
+import { canonicalSortBy } from './listItemSorts.ts';
 import { listPath } from './listPath.ts';
 import type { ListKind } from './listTypeOptions.ts';
 import type { ListSort } from './resolveListSort.ts';
@@ -76,6 +77,6 @@ export function toListView(list: ListSource): ListView {
     itemCount: list.item_count,
     likeCount: list.likes,
     commentCount: list.comment_count,
-    sort: { by: list.sort_by, how: list.sort_how === 'desc' ? 'desc' : 'asc' },
+    sort: { by: canonicalSortBy(list.sort_by), how: list.sort_how === 'desc' ? 'desc' : 'asc' },
   };
 }

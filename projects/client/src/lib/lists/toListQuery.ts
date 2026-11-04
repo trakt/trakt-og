@@ -1,4 +1,4 @@
-import { listItemSorts, type ListItemType } from './listItemSorts.ts';
+import { canonicalSortBy, listItemSorts, type ListItemType } from './listItemSorts.ts';
 import { readListFilters } from './readListFilters.ts';
 import type { ListQuery } from './ListQuery.ts';
 import { positiveInt } from '../utils/positiveInt.ts';
@@ -22,7 +22,7 @@ const isItemType = (value: string): value is ListItemType => ITEM_TYPES.some((ty
  */
 export function toListQuery(search: URLSearchParams): ListQuery {
   const [by = '', how = ''] = (search.get('sort') ?? '').split(',');
-  const sortBy = listItemSorts.find((sort) => sort.by === by)?.by;
+  const sortBy = listItemSorts.find((sort) => sort.by === canonicalSortBy(by))?.by;
   const sortHow = how === 'desc' || how === 'asc' ? how : undefined;
 
   return {

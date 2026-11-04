@@ -39,7 +39,8 @@ import type { ProfileUser } from '$lib/users/ProfileUser';
 import ListItemPoster from '$lib/lists/ListItemPoster.svelte';
 import { listHref } from '$lib/lists/listHref';
 import { listSortHow, reverseHow } from '$lib/lists/listItemSorts';
-import { listSortGroups } from '$lib/lists/listSortGroups';
+import ListSortMenu from '$lib/lists/ListSortMenu.svelte';
+import ListSortLabel from '$lib/lists/ListSortLabel.svelte';
 import SeoHead from '$lib/seo/SeoHead.svelte';
 import { smartListSorts } from './smartListSorts.ts';
 import { smartListSourceLabel } from './smartListSourceLabel.ts';
@@ -142,17 +143,9 @@ async function remove() {
         {/if}
         <span class="sort">
           <Dropdown joined section="Sort">
-            {#snippet trigger()}{sorts.find(({ by }) => by === data.sort.by)?.label ?? 'Rank'}{/snippet}
-            {#each listSortGroups(sorts) as { group, header, sorts: items }, i (group)}
-              {#if i > 0}<hr />{/if}
-              <ul>
-                {#if header}<li class="header" role="presentation">{header}</li>{/if}
-                {#each items as sort (sort.by)}
-                  <li><a href={listHref(page.url, { sort: { by: sort.by, how: listSortHow(sort.by) } })}
-                    aria-current={sort.by === data.sort.by ? 'page' : undefined}>{sort.label}</a></li>
-                {/each}
-              </ul>
-            {/each}
+            {#snippet trigger()}<ListSortLabel sort={sorts.find(({ by }) => by === data.sort.by)} />{/snippet}
+            <ListSortMenu {sorts} current={data.sort.by}
+              href={(sort) => listHref(page.url, { sort: { by: sort.by, how: listSortHow(sort.by) } })} />
           </Dropdown>
           <SortDirection joined descending={listSortHow(data.sort.by) === 'desc'} disabled={data.sort.by === 'random'}
             bind:flipped={

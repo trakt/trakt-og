@@ -1,4 +1,4 @@
-import { listItemSorts } from '../lists/listItemSorts.ts';
+import { canonicalSortBy, listItemSorts } from '../lists/listItemSorts.ts';
 import type { SortHow } from '../lists/ListQuery.ts';
 import { fetchListItems, usedListSort } from '../lists/loadListItems.ts';
 import { type ListItemCard, toListItemCard } from '../lists/toListItemCard.ts';
@@ -47,7 +47,7 @@ export async function fetchWatchlist({
   return {
     cards,
     total: Number(items.headers.get('x-pagination-item-count')) || cards.length,
-    sortName: listItemSorts.find(({ by }) => by === sortBy)?.label ?? 'Rank',
+    sortName: listItemSorts.find(({ by }) => by === canonicalSortBy(sortBy))?.label ?? 'Rank',
     sortHow: used.how === 'desc' ? 'desc' : 'asc',
   };
 }

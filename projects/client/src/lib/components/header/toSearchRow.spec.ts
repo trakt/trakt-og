@@ -120,6 +120,17 @@ describe('toSearchRow', () => {
     });
   });
 
+  it('should leave out the Trakt owner the popular lists give an official list', () => {
+    const list = {
+      name: 'Harry Potter Collection',
+      type: 'official',
+      ids: { trakt: 7, slug: 'harry-potter-collection' },
+      user: { username: 'Trakt' },
+    };
+
+    expect(toSearchRow(hit({ type: 'list', list }))?.tag).toBeUndefined();
+  });
+
   it("should tag a personal list with its owner's username", () => {
     const list = {
       name: 'Popular Horror',

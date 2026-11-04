@@ -4,7 +4,8 @@ import { rawApiFetch } from '../../api/rawApiFetch.ts';
 import { peopleThisMonthSchema } from './peopleThisMonthSchema.ts';
 import type { searchTypes } from './searchTypes.ts';
 import { toBirthdayRows } from './toBirthdayRows.ts';
-import { type SearchRow, toSearchRow } from './toSearchRow.ts';
+import type { SearchTrendingSection } from './SearchTrendingSection.ts';
+import { toSearchRow } from './toSearchRow.ts';
 
 type SearchTrendingParams = {
   type: (typeof searchTypes)[number];
@@ -15,8 +16,8 @@ type SearchTrendingParams = {
   signal?: AbortSignal;
 };
 
-/** A titled list of rows for the dropdown before anything is typed. */
-export type SearchTrending = { readonly label: string; readonly rows: readonly SearchRow[] };
+/** The dropdown's sections before anything is typed. Lists has two, side by side; the other types one, or none. */
+export type SearchTrending = { readonly sections: readonly SearchTrendingSection[] };
 
 // The API keeps what's searched most for shows and movies only: "people" comes back as shows, and a combined type as
 // just its first. Shows & Movies asks for both and merges them by search count, like v3.
@@ -62,11 +63,35 @@ async function mostSearched(
     .slice(0, SHOWN);
 }
 
-// Lists have their own trending chart: the lists people are liking and commenting on now.
-async function trendingLists(client: ReturnType<typeof api>, signal?: AbortSignal) {
-  const response = await client.lists.trending({ query: { limit: SHOWN, extended: 'full' }, fetchOptions: { signal } });
+// Lists show the most popular personal and official lists side by side, each with a link to browse them all on the
+// search page.
+const LIST_SECTIONS = [
+  { type: 'personal', label: 'Popular Lists', more: { href: '/search/lists?type=personal', label: 'popular lists' } },
+  {
+    type: 'official',
+    label: 'Popular Official Lists',
+    more: { href: '/search/lists?type=official', label: 'official lists' },
+  },
+] as const;
+
+async function popularLists(client: ReturnType<typeof api>, type: 'personal' | 'official', signal?: AbortSignal) {
+  const response = await client.lists.popularByType({
+    params: { type },
+    query: { limit: SHOWN, extended: 'full' },
+    fetchOptions: { signal },
+  });
   if (response.status !== 200) return failed();
   return response.body.map(({ list }) => toSearchRow({ type: 'list', score: 0, list })).filter((row) => row !== null);
+}
+
+// A section that fails is left out, so the other takes the width; only both failing asks again next time.
+async function listSections(client: ReturnType<typeof api>, signal?: AbortSignal) {
+  const settled = await Promise.allSettled(LIST_SECTIONS.map(({ type }) => popularLists(client, type, signal)));
+  const sections = LIST_SECTIONS.flatMap(({ label, more }, index) => {
+    const found = settled.at(index);
+    return found?.status === 'fulfilled' && found.value.length > 0 ? [{ label, more, rows: found.value }] : [];
+  });
+  return sections.length > 0 ? sections : failed();
 }
 
 // The API keeps no trending people, so People shows this month's birthdays, like v3's search.
@@ -78,8 +103,8 @@ async function birthdays({ fetch, signal, today, order }: Omit<SearchTrendingPar
 }
 
 /**
- * What the header dropdown lists for a type before anything is typed: the most searched shows and movies, the trending
- * lists, or this month's birthdays for People. The other types have nothing.
+ * What the header dropdown lists for a type before anything is typed: the most searched shows and movies, the popular
+ * personal and official lists, or this month's birthdays for People. The other types have nothing.
  */
 export async function searchTrending({
   type,
@@ -90,10 +115,10 @@ export async function searchTrending({
 }: SearchTrendingParams): Promise<SearchTrending> {
   const client = api({ fetch });
   const kinds = KINDS[type.slug];
-  if (kinds) return { label: 'Most Searched', rows: await mostSearched(client, kinds, signal) };
-  if (type.slug === 'lists') return { label: 'Trending Lists', rows: await trendingLists(client, signal) };
+  if (kinds) return { sections: [{ label: 'Most Searched', rows: await mostSearched(client, kinds, signal) }] };
+  if (type.slug === 'lists') return { sections: await listSections(client, signal) };
   if (type.slug === 'people') {
-    return { label: 'Birthdays This Month', rows: await birthdays({ fetch, signal, today, order }) };
+    return { sections: [{ label: 'Birthdays This Month', rows: await birthdays({ fetch, signal, today, order }) }] };
   }
-  return { label: '', rows: [] };
+  return { sections: [] };
 }

@@ -7,6 +7,7 @@
 <script lang="ts">
 import { isStandardApi } from '$lib/api/isStandardApi';
 import { page } from '$app/state';
+import type { ComponentProps } from 'svelte';
 import TagPills from '$lib/components/labels/TagPills.svelte';
 import { mediaTags } from '$lib/components/labels/mediaTags';
 import GlassAction from '$lib/components/glass-action/GlassAction.svelte';
@@ -36,9 +37,13 @@ interface Props {
   /** Shows and movies together: the type leads the pills. */
   mixed: boolean;
   onstep: (by: -1 | 1) => void;
+  /** Whether "Why this?" can load the reasons a Smart pick comes without. */
+  reasons?: boolean;
+  /** Demos pass sample reasons. */
+  loadReasons?: ComponentProps<typeof RecommendationWhy>['loadReasons'];
 }
 
-const { item, index, total, mixed, onstep }: Props = $props();
+const { item, index, total, mixed, onstep, reasons = false, loadReasons }: Props = $props();
 
 const target = $derived({ type: item.type, id: item.id, title: item.title });
 const ratingLevel = $derived(Math.min(Math.max(Math.trunc(item.rating ?? 1), 1), 10));
@@ -134,7 +139,8 @@ async function openWatchNow() {
         <GlassAction icon={play} aria-haspopup="dialog" busy={loadingWatchNow ? 'Loading Watch Now' : undefined}
           onclick={openWatchNow}>Watch now</GlassAction>
       {/if}
-      <RecommendationWhy why={item.why} title={item.title} poster={item.poster} />
+      <RecommendationWhy why={item.why} type={item.type} pick={item.id} title={item.title} poster={item.poster}
+        {reasons} {loadReasons} />
       {#if item.released && item.rating !== undefined}
         <span class="rating">
           <MediaRating {target}>

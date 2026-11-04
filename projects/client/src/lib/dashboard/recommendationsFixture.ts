@@ -1,4 +1,4 @@
-import type { Recommendation, RecommendationSource } from './Recommendation.ts';
+import type { Recommendation, RecommendationPerson, RecommendationSource } from './Recommendation.ts';
 
 type Sample = readonly [
   type: Recommendation['type'],
@@ -30,12 +30,30 @@ const wire = source('show', 1395, 'the-wire', 'The Wire');
 const heat = source('movie', 16, 'heat-1995', 'Heat');
 const alien = source('movie', 432, 'alien-1979', 'Alien');
 
+// Breaking Bad's creator, behind more titles than the stack shows.
+const gilligan: RecommendationPerson = {
+  id: 9486,
+  href: '/people/vince-gilligan',
+  name: 'Vince Gilligan',
+  line: "Created 4 titles you've watched",
+  titles: [
+    { key: 'show:59660', title: 'Better Call Saul' },
+    { key: 'movie:446505', title: 'El Camino: A Breaking Bad Movie' },
+    { key: 'show:4589', title: 'The X-Files' },
+  ],
+  more: 1,
+};
+
 // The Last of Us shows a title both watched (rated 10) and loved, as one row.
 const why: Record<number, Recommendation['why']> = {
-  1388: { titles: [wire({ watched: true, stars: 9 })], likes: ['Crime drama', 'Neo-western'] },
-  158947: { titles: [alien({ loved: true })], likes: ['Workplace thriller'] },
-  120: { titles: [heat({ watched: true, stars: 9 })], likes: [] },
-  1: { titles: [], likes: ['Heist', 'Mind-bender', 'Sci-fi action'] },
+  1388: {
+    titles: [wire({ watched: true, stars: 9 })],
+    likes: ['Crime drama', 'Neo-western'],
+    people: [gilligan],
+  },
+  158947: { titles: [alien({ loved: true })], likes: ['Workplace thriller'], people: [] },
+  120: { titles: [heat({ watched: true, stars: 9 })], likes: [], people: [] },
+  1: { titles: [], likes: ['Heist', 'Mind-bender', 'Sci-fi action'], people: [] },
   154997: {
     titles: [
       tng({ watched: true, loved: true, stars: 10 }),
@@ -43,6 +61,7 @@ const why: Record<number, Recommendation['why']> = {
       alien({ loved: true }),
     ],
     likes: ['Post-apocalyptic'],
+    people: [],
   },
 };
 
@@ -62,7 +81,7 @@ const card = ([type, id, slug, title, year, rating, colors]: Sample): Recommenda
   genres: ['Drama', 'Thriller'],
   network: type === 'show' ? 'HBO' : undefined,
   colors,
-  why: why[id] ?? { titles: [], likes: [] },
+  why: why[id] ?? { titles: [], likes: [], people: [] },
 });
 
 // Public titles in a mixed, score-like order, with made-up ratings. No artwork, like local OG: the poster colors fill in.

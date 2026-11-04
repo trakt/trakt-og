@@ -9,6 +9,7 @@ import { overlay } from '$lib/overlay/overlay';
 import { toast } from '$lib/components/toast/toast.svelte';
 import { listCatalog } from '$lib/components/lists/listCatalog.svelte';
 import { QUICK_ADD } from '$lib/settings/quickAdd';
+import { longPress } from '$lib/utils/longPress';
 import { syncPickerOverlay } from '$lib/components/lists/syncPickerOverlay';
 import { loadPickerLists } from '$lib/components/lists/loadPickerLists';
 import { type PickerSection, pickerSections } from '$lib/components/lists/pickerSections';
@@ -102,28 +103,13 @@ const max = $derived(
   serverLimit ??
     (listLimit && lists.filter((list) => !list.collaboration).length >= listLimit.count ? listLimit.count : undefined),
 );
-// Holding the button for half a second opens the picker right away; the click that ends the press is then ignored.
-const LONG_PRESS = 500;
-let pressTimer: ReturnType<typeof setTimeout> | undefined;
-let longPressed = false;
 let changed = false;
-const pressStart = (event: PointerEvent) => {
-  if (event.button !== 0) return;
-  longPressed = false;
-  clearTimeout(pressTimer);
-  pressTimer = setTimeout(() => {
-    longPressed = true;
-    void open(true);
-  }, LONG_PRESS);
-};
-const pressEnd = () => clearTimeout(pressTimer);
-const click = () => {
-  if (longPressed) {
-    longPressed = false;
-    return;
-  }
-  void open();
-};
+const press = longPress({
+  expanded: () => expanded,
+  popover: () => popover,
+  onhold: () => void open(true),
+  onclick: () => void open(),
+});
 const pickerKey = (event: KeyboardEvent) => {
   if (event.key !== 'ArrowDown') return;
   event.preventDefault();
@@ -325,8 +311,8 @@ async function save(draft: Parameters<typeof createList>[0]['draft'] & { collabo
       clippedTooltip={selected && !expanded ? namesTip : undefined} tooltipPlacement="left"
       aria-haspopup="dialog"
       aria-expanded={expanded} aria-controls="list-{id}" aria-keyshortcuts="ArrowDown" disabled={busy}
-      onpointerdown={pressStart} onpointerup={pressEnd} onpointerleave={pressEnd} onpointercancel={pressEnd}
-      oncontextmenu={(event) => event.preventDefault()} onkeydown={pickerKey} onclick={click}>
+      onpointerdown={press.down} onpointerup={press.release} onpointerleave={press.release}
+      onpointercancel={press.release} oncontextmenu={(event) => event.preventDefault()} onkeydown={pickerKey} onclick={press.click}>
       {#snippet tiles()}
         <SummaryActionTile icon={selected ? pen : plus} label={selected ? 'Manage lists' : 'Pick a list'} hint={!expanded}
           aria-haspopup="dialog"
@@ -338,9 +324,9 @@ async function save(draft: Parameters<typeof createList>[0]['draft'] & { collabo
       {#snippet trigger(tooltip)}
         <button bind:this={triggerButton} type="button" class="trigger" aria-label={selected ? 'Manage lists' : label}
           aria-haspopup="dialog" aria-expanded={expanded} aria-controls="list-{id}" aria-busy={busy} disabled={busy}
-          aria-keyshortcuts="ArrowDown" onpointerdown={pressStart} onpointerup={pressEnd} onpointerleave={pressEnd}
-          onpointercancel={pressEnd} oncontextmenu={(event) => event.preventDefault()} onkeydown={pickerKey}
-          onclick={click} {...tooltip}>
+          aria-keyshortcuts="ArrowDown" onpointerdown={press.down} onpointerup={press.release}
+          onpointerleave={press.release} onpointercancel={press.release}
+          oncontextmenu={(event) => event.preventDefault()} onkeydown={pickerKey} onclick={press.click} {...tooltip}>
           <Icon svg={listRegular} fixedWidth />
           {#if busy}<span class="spinner"><Icon svg={spinner} /></span>{/if}
         </button>

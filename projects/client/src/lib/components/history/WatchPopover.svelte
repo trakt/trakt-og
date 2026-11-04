@@ -23,6 +23,7 @@ import type { DatePreferences } from '$lib/settings/DatePreferences';
 import { watchDateInput } from '$lib/components/history/watchDateInput';
 import { watchDateInstant } from '$lib/components/history/watchDateInstant';
 import { countLabel } from '$lib/utils/countLabel';
+import { longPress } from '$lib/utils/longPress';
 
 type Mode = 'date' | 'remove' | 'partial';
 /** What a summary button shows (`SummaryAction`'s icon, text, percent and detail). */
@@ -110,8 +111,6 @@ let including = $state(false);
 let value = $state('');
 let maximum = $state('');
 let returnTo = $state<HTMLElement>();
-let press: ReturnType<typeof setTimeout> | undefined;
-let pressed = false;
 // A bulk watch asks here before writing (`confirm`), in the same prompt as the dates.
 let confirmation = $state<{ question: string; episodes: string; name: string } | null>(null);
 let answer: ((yes: boolean) => void) | undefined;
@@ -234,25 +233,13 @@ async function finishMetadata() {
     firstChoice()?.focus();
   }
 }
-function release() {
-  clearTimeout(press);
-}
-function pointerdown(event: PointerEvent) {
-  if (event.button !== 0 || !adding) return;
-  pressed = false;
-  press = setTimeout(() => {
-    pressed = true;
-    void open(true);
-  }, 500);
-}
-function click() {
-  release();
-  if (pressed) {
-    pressed = false;
-    return;
-  }
-  void open(false);
-}
+const press = longPress({
+  expanded: () => expanded,
+  popover: () => popover,
+  holds: () => adding,
+  onhold: () => void open(true),
+  onclick: () => void open(false),
+});
 </script>
 
 {#snippet tiles()}
@@ -270,9 +257,8 @@ function click() {
     {selected}
     busy={busy ? collection ? 'Saving collection' : 'Saving watched history' : undefined}
     aria-label={label} aria-controls="watch-{id}" aria-haspopup="dialog" aria-expanded={expanded}
-    aria-disabled={busy || Boolean(locked)} onclick={click} onpointerdown={pointerdown} onpointerup={release}
-    onpointercancel={release}
-    onpointerleave={release} tiles={adding || more ? tiles : undefined} />
+    aria-disabled={busy || Boolean(locked)} onclick={press.click} onpointerdown={press.down} onpointerup={press.release}
+    onpointercancel={press.release} onpointerleave={press.release} tiles={adding || more ? tiles : undefined} />
 </div>
 {:else}
 <div class={['watch-control', variant, { small, collection, selected, locked }]} style:--watch-fill={fill}
@@ -282,7 +268,8 @@ function click() {
     {#snippet trigger(tip)}
       <button bind:this={button} type="button" class="watch-trigger" aria-label={label}
         aria-controls="watch-{id}" aria-haspopup="dialog" aria-expanded={expanded} aria-disabled={busy || Boolean(locked)}
-        onclick={click} onpointerdown={pointerdown} onpointerup={release} onpointercancel={release} onpointerleave={release} {...tip}>
+        onclick={press.click} onpointerdown={press.down} onpointerup={press.release} onpointercancel={press.release}
+        onpointerleave={press.release} {...tip}>
         <span class="base"></span>{@render content?.()}
       </button>
     {/snippet}

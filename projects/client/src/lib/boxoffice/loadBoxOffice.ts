@@ -4,6 +4,7 @@ import { chartPeriod } from '../charts/chartPeriod.ts';
 import { boxOfficeWeekend } from './boxOfficeWeekend.ts';
 import { toBoxOfficeRow } from './toBoxOfficeRow.ts';
 import { toOpeningRow } from './toOpeningRow.ts';
+import { totalGross } from './totalGross.ts';
 import { dayIn } from '../utils/dayIn.ts';
 
 // The IMDb weekend box office list the chart is built
@@ -32,15 +33,17 @@ type LoadBoxOfficeParams = {
 /**
  * Loads the weekend box office: the top 10 with their gross and run, the weekend it covers, the list's description
  * for the under-title, and the films opening on the coming Friday for the sidebar. All public, so they go without the token.
- * There's no paging. A movies calendar that fails only costs the sidebar its openers.
+ * There's no paging. A movies calendar that fails only costs the sidebar its openers, and list items that fail only
+ * cost the table its total gross.
  */
 export async function loadBoxOffice({ fetch, cookies, parent, now = new Date() }: LoadBoxOfficeParams) {
   const client = api({ fetch });
   const layout = parent();
   const today = layout.then(({ datePreferences }) => dayIn(now, datePreferences.timeZone));
-  const [response, list, date, opening] = await Promise.all([
+  const [response, list, items, date, opening] = await Promise.all([
     client.movies.boxoffice({ query: { extended: 'full,images' } }),
     client.lists.summary({ params: { id: BOX_OFFICE_LIST_ID } }),
+    client.lists.items.movie({ params: { id: BOX_OFFICE_LIST_ID }, query: {} }),
     today,
     today.then((start) =>
       client.calendars.movies({
@@ -52,7 +55,13 @@ export async function loadBoxOffice({ fetch, cookies, parent, now = new Date() }
   if (response.status !== 200) error(502, 'The Trakt API could not load the box office.');
 
   const weekend = boxOfficeWeekend(date);
-  const rows = response.body.map((row) => toBoxOfficeRow(row, weekend.friday));
+  const totals = new Map(
+    (items.status === 200 ? items.body : []).flatMap(({ movie, notes }) => {
+      const gross = totalGross(notes);
+      return gross === null ? [] : [[movie.ids.trakt, gross] as const];
+    }),
+  );
+  const rows = response.body.map((row) => toBoxOfficeRow(row, weekend.friday, totals));
   return {
     type: 'movies' as const,
     chart: 'boxoffice' as const,

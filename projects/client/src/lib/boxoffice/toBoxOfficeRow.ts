@@ -15,14 +15,20 @@ export type BoxOfficeRow = {
   readonly run: WeekInRelease | null;
   /** The weekend gross, in dollars. */
   readonly revenue: number;
+  /** The total US gross so far, in dollars, or null when the list doesn't have it. */
+  readonly totalGross: number | null;
   readonly rating?: number;
   readonly runtime?: number;
 };
 
-/** Maps a `/movies/boxoffice` row onto the chart's row, its run counted from the weekend's `friday`. */
+/**
+ * Maps a `/movies/boxoffice` row onto the chart's row, its run counted from the weekend's `friday` and its total gross
+ * looked up in `totals` by the film's Trakt id.
+ */
 export function toBoxOfficeRow(
   { revenue, movie }: { revenue?: number | null; movie: MovieResponse },
   friday: string,
+  totals: ReadonlyMap<number, number> = new Map(),
 ): BoxOfficeRow {
   return {
     id: movie.ids.trakt,
@@ -33,6 +39,7 @@ export function toBoxOfficeRow(
     tags: movieTags(movie),
     run: weekInRelease(movie.released, friday),
     revenue: revenue ?? 0,
+    totalGross: totals.get(movie.ids.trakt) ?? null,
     rating: movie.rating ?? undefined,
     runtime: movie.runtime ?? undefined,
   };

@@ -30,6 +30,7 @@ import NotesDialog from '$lib/components/notes/NotesDialog.svelte';
 import PosterGrid from '$lib/components/media/PosterGrid.svelte';
 import SectionToolbar from '$lib/components/toolbar/SectionToolbar.svelte';
 import ListItemPoster from '$lib/lists/ListItemPoster.svelte';
+import { listItemSorts } from '$lib/lists/listItemSorts';
 import ListManageBar from '$lib/lists/ListManageBar.svelte';
 import ListStats from '$lib/lists/ListStats.svelte';
 import type { ListItemCard } from '$lib/lists/toListItemCard';
@@ -242,6 +243,19 @@ const following = [{ slug: 'teodoro_2', name: 'Elsy Murphy (@teodoro_2)' }];
       {/each}
     </PosterGrid>
   </Variant>
+</Specimen>
+
+<Specimen title="Sorted by your data"
+  note="Watched Date, Collected Date, Plays and My Rating write the line under the title from the signed-in viewer's own history, collection and ratings. A poster without any stays blank, and signed out every line is blank.">
+  {#each listItemSorts.filter(({ group }) => group === 'mine') as { by: sortBy, label } (sortBy)}
+    <Variant {label}>
+      <PosterGrid>
+        {#each [heat, alien, aliens] as item (item.key)}
+          <ListItemPoster {item} {sortBy} rank={item.rank} {datePreferences} />
+        {/each}
+      </PosterGrid>
+    </Variant>
+  {/each}
 </Specimen>
 
 <Specimen title="Manage mode" bleed

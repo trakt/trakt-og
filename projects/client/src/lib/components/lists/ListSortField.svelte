@@ -21,7 +21,7 @@ let { by = $bindable(), how = $bindable(), disabled = false }: Props = $props();
 const id = $props.id();
 const groups = $derived(
   (['main', 'site', 'votes', 'mine'] as const)
-    .map((group) => ({ group, items: listItemSorts.filter((sort) => sort.group === group) }))
+    .map((group) => ({ group, items: listItemSorts.filter((sort) => sort.group === group && !sort.browseOnly) }))
     .filter(({ items }) => items.length > 0),
 );
 const hint = $derived(sortDirectionHint(by, how));

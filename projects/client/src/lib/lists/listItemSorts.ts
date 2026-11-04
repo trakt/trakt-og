@@ -14,6 +14,8 @@ export type ListItemSort = {
   readonly types?: readonly ListItemType[];
   /** Starts newest or highest first: dates, scores, votes and popularity. The rest start first to last, A to Z. */
   readonly descending?: true;
+  /** The sort menu only: the API can't save it as a list's default sort. */
+  readonly browseOnly?: true;
 };
 
 const ratedTypes: readonly ListItemType[] = ['movie', 'show', 'episode'];
@@ -52,6 +54,7 @@ export const listItemSorts: readonly ListItemSort[] = [
   { by: 'imdb_votes', label: 'IMDB Votes', group: 'votes', types: ratedTypes, descending: true },
   { by: 'tmdb_votes', label: 'TMDB Votes', group: 'votes', types: ratedTypes, descending: true },
   { by: 'my_rating', label: 'My Rating', group: 'mine', descending: true },
+  { by: 'plays', label: 'Plays', group: 'mine', descending: true, browseOnly: true },
   { by: 'watched', label: 'Watched Date', group: 'mine', descending: true },
   { by: 'collected', label: 'Collected Date', group: 'mine', descending: true },
 ];

@@ -8,9 +8,9 @@ const DEFAULT_QUERY = 'star wars';
 
 /**
  * The search results in each Display choice, without signing in: the real loader and page on a public search, with
- * `?view=` and `?artwork=` standing in for the viewer's Display cookies. `?type=` picks the tab (shows, movies,
- * people...). Left out, it's Shows & Movies. The demo viewer stands in for the layout's, so the header and the page
- * agree.
+ * `?view=` and `?artwork=` standing in for the viewer's Display cookies. `?tab=` picks the tab (shows, movies,
+ * people...). Left out, it's Shows & Movies. `?tab=lists&q=` browses the popular lists, and `?type=` is the Lists tab's
+ * own list type, as on the page. The demo viewer stands in for the layout's, so the header and the page agree.
  */
 export function load({ fetch, url: requested, cookies }) {
   const url = new URL(requested);
@@ -25,7 +25,7 @@ export function load({ fetch, url: requested, cookies }) {
     fetch,
     cookies,
     url,
-    type: url.searchParams.get('type') ?? undefined,
+    type: url.searchParams.get('tab') ?? undefined,
     parent: () => Promise.resolve({ datePreferences }),
   }).then((search) => ({ ...search, display, datePreferences, user: demoViewer }));
 }

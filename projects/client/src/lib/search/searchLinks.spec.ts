@@ -24,6 +24,11 @@ describe('searchLinks', () => {
     expect(links.filter((link) => link.current).map((link) => link.href)).toEqual(['/search/imdb?query=tt1']);
   });
 
+  it("should drop the Lists tab's list type", () => {
+    const links = flat(searchLinks(searchTypes[4], '', new URLSearchParams('type=official')));
+    expect(links.find((link) => link.label === 'Shows')?.href).toBe('/search/shows');
+  });
+
   it('should preserve filters and the edited query while dropping the previous page', () => {
     const links = flat(searchLinks(searchTypes[5], '2', new URLSearchParams('page=3&q=1&id_type=movie&limit=12')));
     expect(links.find((link) => link.label === 'IMDB ID')?.href).toBe('/search/imdb?id_type=movie&limit=12&query=2');

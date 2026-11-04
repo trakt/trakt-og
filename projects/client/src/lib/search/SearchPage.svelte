@@ -2,8 +2,9 @@
   The search results page in a SidebarFrame, like the charts': the type picker ("Search Results" over the type, its
   menu grouped like the header search) with the fade/hide tool, the count, the under-title, the small-screen search
   field, the page pager, the recent searches and the Display choices (grid or list, and the artwork) in the sidebar,
-  then the results as the calendar's cards or agenda rows, or list rows on the Lists tab. The frame is dark in every
-  theme, which covers OG's forced dark knight.
+  then the results as the calendar's cards or agenda rows, or list rows on the Lists tab. An empty Lists search
+  browses the popular lists instead, with a Type menu (all, personal or official) under the pager. The frame is dark
+  in every theme, which covers OG's forced dark knight.
 -->
 <script lang="ts">
 import SeoHead from '$lib/seo/SeoHead.svelte';
@@ -52,6 +53,8 @@ import {
 import SearchResultCard from '$lib/search/SearchResultCard.svelte';
 import SearchResultRow from '$lib/search/SearchResultRow.svelte';
 import { searchLinks } from '$lib/search/searchLinks';
+import { searchListTypes } from '$lib/search/searchListTypes';
+import { searchListTypeHref } from '$lib/search/searchListTypeHref';
 import { toSearchMode } from '$lib/search/toSearchMode';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
 import type { loadSearch } from '$lib/search/loadSearch';
@@ -104,8 +107,12 @@ const META_TYPES: Readonly<Record<string, string>> = {
   lists: 'List',
 };
 const metaType = $derived(META_TYPES[data.slug]);
+// An empty Lists search browses the popular lists of one type, picked in the sidebar.
+const listType = $derived(searchListTypes.find((option) => option.value === data.listType));
 const meta = $derived(
-  metaType
+  listType
+    ? { title: listType.title, description: `The most liked and discussed ${listType.label.toLowerCase()} on Trakt.` }
+    : metaType
     ? {
       title: `${metaType} search results for ${data.query}`,
       description: `${metaType} search results for movies, TV shows, lists, and people.`,
@@ -214,18 +221,31 @@ function save(next: FadeHide) {
       {/snippet}
     </SidebarTitle>
 
+    {#if data.count > 0}
+      <div class="counts"><CountPill count={data.count} label={listType ? 'lists' : 'results'}
+          one={listType ? 'list' : 'result'} /></div>
+    {/if}
+
     <!-- The current query, ready to change: Enter searches again, and the picker's links carry what's typed. -->
     <form bind:this={field} action={page.url.pathname} method="get" role="search">
       <SearchField name="query" label={data.idMode ? 'Search ID' : 'Search terms'}
         placeholder="What are you looking for?" bind:value={terms} />
     </form>
 
-    {#if data.count > 0}
-      <div class="counts"><CountPill count={data.count} label="results" one="result" /></div>
-    {/if}
-
     {#if data.page.type === 'paginated' && paged}
       <PagePager current={data.page.current} total={data.page.total} href={(n) => pageHref(page.url, n)} />
+    {/if}
+
+    {#if listType}
+      <Dropdown block section="Type">
+        {#snippet trigger()}{listType.label}{/snippet}
+        <ul>
+          {#each searchListTypes as option (option.value)}
+            <li><a href={searchListTypeHref(page.url, option.value)}
+              aria-current={option.value === listType.value ? 'page' : undefined}>{option.label}</a></li>
+          {/each}
+        </ul>
+      </Dropdown>
     {/if}
 
     {#if recent}

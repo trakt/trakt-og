@@ -11,6 +11,8 @@ import { searchRowsSchema } from './searchRowsSchema.ts';
 import { searchDisplay } from './searchDisplay.ts';
 import { searchFilters } from './searchFilters.ts';
 import { positiveInt } from '../utils/positiveInt.ts';
+import { searchListType } from './searchListType.ts';
+import type { SearchListType } from './searchListTypes.ts';
 
 type LoadSearchParams = {
   fetch: typeof fetch;
@@ -51,8 +53,23 @@ export async function loadSearch({ fetch, token, cookies, parent, url, type: slu
   const filters = searchFilters({ slug: type.slug, search: url.searchParams, cookies });
   const hide = filters.fadeHide.hide.map((id) => (id === 'watchlisted' ? 'watchlist' : id)).join(',');
 
+  // OG listed everything by rank for a blank query. The worker wants one, so only Lists has something to show: the
+  // popular lists of the picked type, all of them for official.
+  const listType = type.slug === 'lists' && !query ? searchListType(url.searchParams.get('type')) : undefined;
+
+  const browseLists = async (browsed: SearchListType) => {
+    const client = api({ fetch });
+    const listQuery = { page, limit, extended: 'full' } as const;
+    const response =
+      browsed === 'all'
+        ? await client.lists.popular({ query: listQuery })
+        : await client.lists.popularByType({ params: { type: browsed }, query: listQuery });
+    if (response.status !== 200) return 'failed';
+    return { hits: response.body.map(({ list }) => ({ type: 'list', list })), headers: response.headers };
+  };
+
   const search = async () => {
-    // OG listed everything by rank for a blank query. The worker wants one, so that's the empty state.
+    if (listType) return browseLists(listType);
     if (!query) return null;
 
     if ('idType' in type) {
@@ -112,8 +129,10 @@ export async function loadSearch({ fetch, token, cookies, parent, url, type: slu
     cards,
     lists: hits.map(toSearchListRow).filter((row) => row !== null),
     page: pagination,
-    /** Every match across the pages, for the sidebar's count. */
-    count: query ? count : 0,
+    /** Every match across the pages, or every list an empty Lists search browses, for the sidebar's count. */
+    count: query || listType ? count : 0,
+    /** The list type an empty Lists search browses. Any other search has none. */
+    listType,
     /** The sidebar's own state, so SSR renders it as the viewer left it, like the calendar's. */
     sidebar: {
       collapsed: cookies.get('sidebar_collapsed') !== undefined,

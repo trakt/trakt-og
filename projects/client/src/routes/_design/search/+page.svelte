@@ -20,13 +20,27 @@ const choiceHref = (name: string, value: string) => {
   url.searchParams.set(name, value);
   return `${url.pathname}${url.search}`;
 };
+// A search on Shows & Movies, one on Lists, and an empty Lists search, which browses the popular lists.
+const searches = [
+  { label: 'star wars', tab: '', query: 'star wars' },
+  { label: 'lists: star wars', tab: 'lists', query: 'star wars' },
+  { label: 'lists: empty', tab: 'lists', query: '' },
+] as const;
+const searchHref = (tab: string, query: string) =>
+  `${page.url.pathname}?${new URLSearchParams({ ...(tab ? { tab } : {}), q: query })}`;
 </script>
 
 <!-- The choice links only change this page's query, so resolve() has nothing to add. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 <Specimen title="Search results" bleed
-  note="The real search page on a live search. Pick a view and artwork, as the sidebar's Display does, or search for something else.">
+  note="The real search page on a live search. Pick a view and artwork, as the sidebar's Display does, or search for something else. An empty Lists search browses the popular lists: pick All, Personal or Official from the sidebar's Type menu.">
   <div class="choices">
+    <nav class="images" aria-label="Search">
+      {#each searches as search (search.label)}
+        <a href={searchHref(search.tab, search.query)}
+          aria-current={search.tab === data.slug && search.query === data.query ? 'page' : undefined}>{search.label}</a>
+      {/each}
+    </nav>
     {#each choices as choice (choice.name)}
       <nav class="images" aria-label={choice.label}>
         {#each choice.values as value (value)}

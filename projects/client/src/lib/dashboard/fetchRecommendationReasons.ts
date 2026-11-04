@@ -11,7 +11,7 @@ type FetchRecommendationReasonsParams = {
 
 /**
  * Why one Smart pick was made, loaded when its "Why this?" opens: the list leaves reasons out to stay fast. VIPs get
- * the titles and subgenres behind it, everyone else none. Null when the request fails.
+ * the titles, people and subgenres behind it, everyone else none. Null when the request fails.
  */
 export async function fetchRecommendationReasons({
   fetch,
@@ -22,5 +22,5 @@ export async function fetchRecommendationReasons({
   if (!response.ok) return null;
 
   const parsed = recommendationReasonsSchema.safeParse(await response.json());
-  return parsed.success ? toRecommendationWhy(parsed.data.sources) : null;
+  return parsed.success ? toRecommendationWhy(parsed.data) : null;
 }

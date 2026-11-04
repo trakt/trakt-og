@@ -1,9 +1,24 @@
 import type { z } from 'zod/v4';
+import { countLabel } from '../utils/countLabel.ts';
 import { imageUrl } from '../utils/imageUrl.ts';
-import type { Recommendation, RecommendationSource } from './Recommendation.ts';
+import type { Recommendation, RecommendationPerson, RecommendationSource } from './Recommendation.ts';
+import type { recommendationPersonSchema } from './recommendationPersonSchema.ts';
 import type { recommendationSourceSchema } from './recommendationSourceSchema.ts';
 
 type Source = z.infer<typeof recommendationSourceSchema>;
+type Person = z.infer<typeof recommendationPersonSchema>;
+
+/** The posters the stack shows before "+N". */
+const STACK = 3;
+
+// trakt-web's role lines, as "Directed 5 titles you've watched".
+const LEADS = {
+  directing: 'Directed',
+  directingActing: 'Directed and acted in',
+  making: 'Created',
+  makingActing: 'Created and acted in',
+  acting: 'Acted in',
+} as const;
 
 const pathOf = (type: 'show' | 'movie', ids: { trakt: number; slug?: string | null }) =>
   `/${type}s/${ids.slug ?? ids.trakt}`;
@@ -46,10 +61,47 @@ function merged(titles: readonly RecommendationSource[]): RecommendationSource[]
   return [...byTitle.values()];
 }
 
-/** The titles and subgenres behind a pick, as "Why this?" groups them. */
-export function toRecommendationWhy(sources: readonly Source[]): Recommendation['why'] {
+function leadOf(roles: Person['watched_roles']): string {
+  const acted = roles.includes('acting');
+  if (roles.includes('directing')) return acted ? LEADS.directingActing : LEADS.directing;
+  if (roles.includes('making')) return acted ? LEADS.makingActing : LEADS.making;
+  return LEADS.acting;
+}
+
+function toPerson({ person, role, watched_roles, watched_count, titles }: Person): RecommendationPerson {
+  const shown = titles.slice(0, STACK).flatMap(({ show, movie }) => {
+    const media = show ?? movie;
+    if (!media) return [];
+    return [
+      {
+        key: `${show ? 'show' : 'movie'}:${media.ids.trakt}`,
+        title: media.title,
+        poster: imageUrl(media.images?.poster?.at(0), 'thumb'),
+      },
+    ];
+  });
+  const roles = watched_roles.length > 0 ? watched_roles : [role];
+
+  return {
+    id: person.ids.trakt,
+    href: `/people/${person.ids.slug ?? person.ids.trakt}`,
+    name: person.name,
+    headshot: imageUrl(person.images?.headshot?.at(0), 'thumb'),
+    line: `${leadOf(roles)} ${countLabel(watched_count, 'title')} you've watched`,
+    titles: shown,
+    more: Math.max(watched_count - shown.length, 0),
+  };
+}
+
+type Reasons = {
+  readonly sources: readonly Source[];
+  readonly people?: readonly Person[] | null;
+};
+
+/** The titles, people and subgenres behind a pick, as "Why this?" groups them. */
+export function toRecommendationWhy({ sources, people }: Reasons): Recommendation['why'] {
   const titles = sources.filter((source) => source.type !== 'subgenre').flatMap((source) => toSource(source) ?? []);
   const likes = sources.flatMap((source) => source.subgenres?.map(({ name }) => name) ?? []);
 
-  return { titles: merged(titles), likes: [...new Set(likes)] };
+  return { titles: merged(titles), likes: [...new Set(likes)], people: (people ?? []).map(toPerson) };
 }

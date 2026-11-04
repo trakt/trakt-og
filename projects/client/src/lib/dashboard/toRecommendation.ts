@@ -40,6 +40,6 @@ export function toRecommendation(row: Row, now: Date): Recommendation | null {
     poster: imageUrl(media.images?.poster?.at(0), 'medium'),
     fanart: imageUrl(media.images?.fanart?.at(0), 'medium'),
     colors: toColors(media.colors?.poster),
-    why: toRecommendationWhy(row.sources ?? []),
+    why: toRecommendationWhy({ sources: row.sources ?? [] }),
   };
 }

@@ -854,6 +854,12 @@
   --space-why-likes: 10px;
   --why-header-poster: 44px;
   --why-row-poster: 32px;
+  --why-row-pull: 8px; /* a person row's padding, outside its section's so the headshot lines up with the heading */
+  --why-person-headshot: 36px;
+  --why-stack-poster: 22px;
+  --why-stack-overlap: 7px;
+  --why-stack-ring: 2px;
+  --space-why-people-end: 12px; /* You keep watching's end, when You like follows */
   --why-close: 28px;
   --why-close-pull: 6px; /* the close, nearer the panel's corner than the header's padding */
   --why-arrow: 14px;

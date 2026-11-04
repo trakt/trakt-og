@@ -1,7 +1,9 @@
 <!--
   "Why this?" beside a recommendation's actions, and the panel it opens above it, its arrow pointing back at the button.
   The panel leads with the recommendation's poster and title, lists each title behind it with a chip saying how
-  (the comments' tags: Watched joined with the viewer's rating, Loved, or both on one row), then the subgenres the viewer likes.
+  (the comments' tags: Watched joined with the viewer's rating, Loved, or both on one row), then under "You keep
+  watching" the people behind several titles the viewer watched, each with a stack of those posters, then the
+  subgenres the viewer likes.
   Classic picks bring their sources. Smart picks come without, so with `reasons` the panel loads them on its first open,
   shimmering until they land. Without either there's no button at all.
 -->
@@ -15,7 +17,7 @@ import GlassAction from '$lib/components/glass-action/GlassAction.svelte';
 import TagPills from '$lib/components/labels/TagPills.svelte';
 import Shimmer from '$lib/components/loading/Shimmer.svelte';
 import { fetchRecommendationReasons } from '$lib/dashboard/fetchRecommendationReasons';
-import type { Recommendation, RecommendationSource } from '$lib/dashboard/Recommendation';
+import type { Recommendation, RecommendationPerson, RecommendationSource } from '$lib/dashboard/Recommendation';
 import Icon from '$lib/icons/Icon.svelte';
 import xmark from '$lib/icons/regular/xmark.svg?raw';
 import heart from '$lib/icons/solid/heart.svg?raw';
@@ -42,7 +44,9 @@ interface Props {
 
 const { why, type, pick, title, poster, reasons = false, loadReasons = fromApi }: Props = $props();
 const id = $props.id();
-const has = (shown: Why) => shown.titles.length > 0 || shown.likes.length > 0;
+const has = (shown: Why) => shown.titles.length > 0 || shown.people.length > 0 || shown.likes.length > 0;
+// trakt-web's reasons: people first, as they lead its drawer.
+const reasonOf = (shown: Why) => (shown.people.length > 0 ? 'people' : has(shown) ? 'titles' : 'empty');
 const inline = $derived(has(why));
 let panel = $state<HTMLDivElement>();
 /** Undefined until loaded, null when the load failed. */
@@ -67,7 +71,7 @@ function load() {
 async function opening(event: ToggleEvent) {
   if (event.newState !== 'open') return;
   const result = inline ? why : await (loading ?? load());
-  if (result) track({ reason: has(result) ? 'titles' : 'empty' });
+  if (result) track({ reason: reasonOf(result) });
 }
 
 // Focus moves into the panel when it opens, onto its close button.
@@ -106,6 +110,20 @@ function toggled(event: ToggleEvent) {
 </li>
 {/snippet}
 
+{#snippet person(person: RecommendationPerson)}
+  <a class="person" href={person.href}>
+    <span class="headshot">{#if person.headshot}<img src={person.headshot} alt="" loading="lazy"
+          decoding="async" />{/if}</span>
+    <span class="name"><span class="title">{person.name}</span><small>{person.line}</small></span>
+    <span class="stack" aria-hidden="true">
+      {#each person.titles as title (title.key)}
+        <span class="thumb">{#if title.poster}<img src={title.poster} alt="" loading="lazy" decoding="async" />{/if}</span>
+      {/each}
+      {#if person.more > 0}<span class="more">+{person.more}</span>{/if}
+    </span>
+  </a>
+{/snippet}
+
 {#snippet pending()}
   <li class="row">
     <span class="thumb"></span>
@@ -141,6 +159,12 @@ function toggled(event: ToggleEvent) {
       <ul {@attach trackDrilldowns({ source: 'recommendation-source' })}>
         {#each shown.titles as source (`${source.type}:${source.id}`)}{@render reason(source)}{/each}
       </ul>
+    {/if}
+    {#if shown && shown.people.length > 0}
+      <div class="people" {@attach trackDrilldowns({ source: 'recommendation-source' })}>
+        <span>You keep watching</span>
+        {#each shown.people as one (one.id)}{@render person(one)}{/each}
+      </div>
     {/if}
     {#if shown && shown.likes.length > 0}
       <div class="likes">
@@ -340,6 +364,7 @@ li a {
   }
 }
 
+.people,
 .likes {
   display: grid;
   gap: var(--space-why-likes);
@@ -358,6 +383,72 @@ li a {
   margin: 0;
   padding: var(--why-foot-padding);
   color: var(--color-why-faint);
+}
+
+/* Closer to You like below it, which brings its own top padding. */
+.people:has(+ .likes) {
+  padding-block-end: var(--space-why-people-end);
+}
+
+.person {
+  display: grid;
+  grid-template-columns: var(--why-person-headshot) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-why-row);
+  margin-inline: calc(-1 * var(--why-row-pull));
+  padding: var(--why-row-padding);
+  border-radius: var(--radius-control);
+  color: inherit;
+  text-decoration: none;
+
+  &:is(:hover, :focus) {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  &:is(:hover, :focus-visible) {
+    background: var(--color-why-more-hover);
+  }
+}
+
+.headshot {
+  position: relative;
+  display: block;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--color-recommendations-placeholder);
+
+  & img {
+    position: absolute;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+  }
+}
+
+/* Their titles' posters, overlapping, each ringed in the panel's color. */
+.stack {
+  display: flex;
+  align-items: center;
+
+  & .thumb {
+    inline-size: var(--why-stack-poster);
+    box-shadow: 0 0 0 var(--why-stack-ring) var(--color-why-panel-bg);
+  }
+
+  & .thumb + .thumb {
+    margin-inline-start: calc(-1 * var(--why-stack-overlap));
+  }
+}
+
+.more {
+  margin-inline-start: var(--why-chips-gap);
+  color: var(--color-why-faint);
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-headings);
+  font-variant-numeric: tabular-nums;
 }
 
 .foot {

@@ -12,6 +12,20 @@ export type RecommendationSource = {
   readonly loved: boolean;
 };
 
+/** Someone behind several titles the viewer watched, as "You keep watching" shows them. */
+export type RecommendationPerson = {
+  readonly id: number;
+  readonly href: string;
+  readonly name: string;
+  readonly headshot?: string;
+  /** What they did across the viewer's titles: "Directed 5 titles you've watched". */
+  readonly line: string;
+  /** The first few of those titles, for the poster stack. */
+  readonly titles: readonly { readonly key: string; readonly title: string; readonly poster?: string }[];
+  /** How many more of them the stack leaves out. */
+  readonly more: number;
+};
+
 /** One dashboard recommendation: the spotlight's details and why it was picked, grouped like v3's "Why this?". */
 export type Recommendation = {
   readonly type: 'show' | 'movie';
@@ -40,5 +54,7 @@ export type Recommendation = {
     readonly titles: readonly RecommendationSource[];
     /** Each source's subgenre names, deduplicated. */
     readonly likes: readonly string[];
+    /** The people behind it, from a Smart pick's reasons. */
+    readonly people: readonly RecommendationPerson[];
   };
 };

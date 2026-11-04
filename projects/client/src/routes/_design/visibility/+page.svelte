@@ -67,7 +67,7 @@ const recommendation: Recommendation = {
   genres: ['Action', 'Adventure'],
   poster: noWayHome.posterThumb,
   fanart: noWayHome.fanart,
-  why: { titles: [], likes: [] },
+  why: { titles: [], likes: [], people: [] },
 };
 </script>
 

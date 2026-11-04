@@ -202,7 +202,8 @@ const reasonsAfter = (result: (typeof recommendationsFixture)[number]['why'] | n
   new Promise<typeof result>((done) => setTimeout(() => done(result), 1200));
 const smartReasons = [
   { label: 'Loads its reasons', load: reasonsAfter(smartPick?.why ?? null) },
-  { label: 'No reasons', load: reasonsAfter({ titles: [], likes: [] }) },
+  { label: 'Only a person', load: reasonsAfter({ titles: [], likes: [], people: smartPick?.why.people ?? [] }) },
+  { label: 'No reasons', load: reasonsAfter({ titles: [], likes: [], people: [] }) },
   { label: 'Failed', load: reasonsAfter(null) },
 ] as const;
 
@@ -369,11 +370,11 @@ const hiddenNames = Object.entries({ Watchlist: custom.hidden.watchlist, 'Social
 
 {#if smartPick}
   <Specimen title="Why this? on a Smart pick"
-    note="Open Why this?: the reasons shimmer for a moment, then land. A failed load retries on the next open.">
+    note="Open Why this?: the reasons shimmer for a moment, then land, with the people behind the pick under You keep watching. A failed load retries on the next open.">
     <div class="why-states">
       {#each smartReasons as { label, load } (label)}
         <Variant {label}>
-          <RecommendationSpotlight item={{ ...smartPick, why: { titles: [], likes: [] } }} index={0} total={20}
+          <RecommendationSpotlight item={{ ...smartPick, why: { titles: [], likes: [], people: [] } }} index={0} total={20}
             mixed={false} onstep={() => {}} reasons loadReasons={load} />
         </Variant>
       {/each}

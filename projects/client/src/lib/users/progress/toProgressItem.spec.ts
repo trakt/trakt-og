@@ -84,6 +84,25 @@ describe('toProgressItem', () => {
     it('should never count more done than aired', () => {
       expect(toProgressItem({ ...base, show: { ...show, airedEpisodes: 1 }, watched }).completed).toBe(1);
     });
+
+    it('should leave hidden seasons out of the counts, like the catalog does', () => {
+      const withSeason2 = new Map([...watched, [2, new Map([[21, ['2026-03-01T00:00:00Z']]])]]);
+      const item = toProgressItem({
+        ...base,
+        show: { ...show, airedEpisodes: 3 },
+        watched: withSeason2,
+        hiddenSeasons: new Set([2]),
+      });
+
+      expect(item).toMatchObject({
+        aired: 3,
+        completed: 2,
+        plays: 3,
+        minutesWatched: 90,
+        minutesLeft: 30,
+        lastAt: '2026-02-03T00:00:00Z',
+      });
+    });
   });
 
   describe('from the catalog', () => {

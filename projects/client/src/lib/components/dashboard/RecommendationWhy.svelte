@@ -1,14 +1,20 @@
 <!--
   "Why this?" beside a recommendation's actions, and the panel it opens above it, its arrow pointing back at the button.
   The panel leads with the recommendation's poster and title, lists each title behind it with a chip saying how
-  (the comments' tags: Watched joined with the viewer's rating, Loved, or both on one row), then the subgenres the viewer likes. Without any sources there's no
-  button at all.
+  (the comments' tags: Watched joined with the viewer's rating, Loved, or both on one row), then the subgenres the viewer likes.
+  Classic picks bring their sources. Smart picks come without, so with `reasons` the panel loads them on its first open,
+  shimmering until they land. Without either there's no button at all.
 -->
 <script lang="ts">
+import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
 import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
+import { useTrack } from '$lib/analytics/useTrack';
+import { viewerFetch } from '$lib/auth/viewerFetch';
 import CommentTag from '$lib/components/comments/CommentTag.svelte';
 import GlassAction from '$lib/components/glass-action/GlassAction.svelte';
 import TagPills from '$lib/components/labels/TagPills.svelte';
+import Shimmer from '$lib/components/loading/Shimmer.svelte';
+import { fetchRecommendationReasons } from '$lib/dashboard/fetchRecommendationReasons';
 import type { Recommendation, RecommendationSource } from '$lib/dashboard/Recommendation';
 import Icon from '$lib/icons/Icon.svelte';
 import xmark from '$lib/icons/regular/xmark.svg?raw';
@@ -16,16 +22,53 @@ import heart from '$lib/icons/solid/heart.svg?raw';
 import checkThick from '$lib/icons/trakt/check-thick.svg?raw';
 import sparkles from '$lib/icons/solid/sparkles.svg?raw';
 
+type Why = Recommendation['why'];
+type LoadReasons = (pick: { type: Recommendation['type']; id: number }) => Promise<Why | null>;
+
+const fromApi: LoadReasons = ({ type, id }) => fetchRecommendationReasons({ fetch: viewerFetch(), type, id });
+
 interface Props {
-  why: Recommendation['why'];
+  why: Why;
+  type: Recommendation['type'];
+  /** The pick's Trakt id, to load its reasons. */
+  pick: number;
   title: string;
   poster?: string;
+  /** Without inline sources, whether the panel can load them: a VIP's Smart pick, not a trending stand-in. */
+  reasons?: boolean;
+  /** Demos pass sample reasons. */
+  loadReasons?: LoadReasons;
 }
 
-const { why, title, poster }: Props = $props();
+const { why, type, pick, title, poster, reasons = false, loadReasons = fromApi }: Props = $props();
 const id = $props.id();
-const any = $derived(why.titles.length > 0 || why.likes.length > 0);
+const has = (shown: Why) => shown.titles.length > 0 || shown.likes.length > 0;
+const inline = $derived(has(why));
 let panel = $state<HTMLDivElement>();
+/** Undefined until loaded, null when the load failed. */
+let loaded = $state<Why | null>();
+const shown = $derived(inline ? why : loaded);
+// Not state: only the next open reads it. A failed load is dropped, so opening again retries.
+let loading: Promise<Why | null> | undefined;
+const { track } = useTrack(AnalyticsEvent.RecommendationWhy);
+
+function load() {
+  loaded = undefined;
+  loading = loadReasons({ type, id: pick })
+    .catch(() => null)
+    .then((result) => {
+      loaded = result;
+      if (!result) loading = undefined;
+      return result;
+    });
+  return loading;
+}
+
+async function opening(event: ToggleEvent) {
+  if (event.newState !== 'open') return;
+  const result = inline ? why : await (loading ?? load());
+  if (result) track({ reason: has(result) ? 'titles' : 'empty' });
+}
 
 // Focus moves into the panel when it opens, onto its close button.
 function toggled(event: ToggleEvent) {
@@ -63,13 +106,20 @@ function toggled(event: ToggleEvent) {
 </li>
 {/snippet}
 
-{#if any}
+{#snippet pending()}
+  <li class="row">
+    <span class="thumb"></span>
+    <span class="name"><Shimmer inline="60%" block="var(--font-size-menu)" /></span>
+  </li>
+{/snippet}
+
+{#if inline || reasons}
   <GlassAction icon={sparkles} color="var(--color-why-button)" popovertarget="why-{id}" style="anchor-name: --why-{id}"
   aria-haspopup="dialog">
     Why this?
   </GlassAction>
   <div bind:this={panel} id="why-{id}" class="panel" popover="auto" role="dialog" aria-labelledby="why-{id}-title"
-  style:position-anchor="--why-{id}" ontoggle={toggled}>
+  style:position-anchor="--why-{id}" onbeforetoggle={opening} ontoggle={toggled}>
     <header>
       <span class="poster">{#if poster}<img src={poster} alt="" decoding="async" />{/if}</span>
       <div>
@@ -80,15 +130,22 @@ function toggled(event: ToggleEvent) {
           svg={xmark}
         /></button>
     </header>
-    {#if why.titles.length > 0}
+    {#if shown === undefined}
+      <ul aria-busy="true" aria-label="Loading why we picked it">{@render pending()}{@render pending()}</ul>
+    {:else if shown === null}
+      <p class="note" role="status">Couldn't load why we picked this. Please try again.</p>
+    {:else if !has(shown)}
+      <p class="note" role="status">No reasons for this pick yet.</p>
+    {/if}
+    {#if shown && shown.titles.length > 0}
       <ul {@attach trackDrilldowns({ source: 'recommendation-source' })}>
-        {#each why.titles as source (`${source.type}:${source.id}`)}{@render reason(source)}{/each}
+        {#each shown.titles as source (`${source.type}:${source.id}`)}{@render reason(source)}{/each}
       </ul>
     {/if}
-    {#if why.likes.length > 0}
+    {#if shown && shown.likes.length > 0}
       <div class="likes">
         <span>You like</span>
-        <TagPills tags={why.likes.map((text) => ({ text }))} />
+        <TagPills tags={shown.likes.map((text) => ({ text }))} />
       </div>
     {/if}
     <p class="foot">Picked daily from what you watch, love and like.</p>
@@ -216,12 +273,16 @@ ul {
   list-style: none;
 }
 
-li a {
+li a,
+.row {
   display: grid;
   grid-template-columns: var(--why-row-poster) minmax(0, 1fr) auto;
   align-items: center;
   gap: var(--space-why-row);
   padding: var(--why-row-padding);
+}
+
+li a {
   border-radius: var(--radius-control);
   color: inherit;
   text-decoration: none;
@@ -291,6 +352,12 @@ li a {
     letter-spacing: var(--letter-spacing-recommendations-side-head);
     text-transform: uppercase;
   }
+}
+
+.note {
+  margin: 0;
+  padding: var(--why-foot-padding);
+  color: var(--color-why-faint);
 }
 
 .foot {

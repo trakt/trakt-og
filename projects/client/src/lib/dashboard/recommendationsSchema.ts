@@ -1,4 +1,5 @@
 import { z } from 'zod/v4';
+import { recommendationSourceSchema } from './recommendationSourceSchema.ts';
 
 const images = z
   .object({
@@ -27,27 +28,16 @@ const media = z.object({
   colors: z.object({ poster: z.array(z.string()).nullish() }).nullish(),
 });
 
-const sourceMedia = z.object({ title: z.string(), year: z.number().nullish(), ids, images });
-
-const source = z.object({
-  type: z.enum(['activity', 'favorite', 'subgenre']),
-  stars: z.number().nullish(),
-  show: sourceMedia.optional(),
-  movie: sourceMedia.optional(),
-  subgenres: z.array(z.object({ name: z.string(), slug: z.string() })).nullish(),
-});
-
 /** One row of `/media/recommendations`, `/shows/recommendations` or `/movies/recommendations`: the title and why. */
 const row = z.object({
   show: media.optional(),
   movie: media.optional(),
   score: z.coerce.number().nullish(),
-  sources: z.array(source).nullish(),
+  sources: z.array(recommendationSourceSchema).nullish(),
 });
 
 /**
- * The recommendations v3 shows, which @trakt/api 0.6.0 has no contract for. Each `sources` entry is what led to the
- * pick: a title the viewer watched (`activity`, with their rating as `stars`) or loved (`favorite`), or the
- * subgenres they like.
+ * The recommendations v3 shows, which @trakt/api 0.6.0 has no contract for. Classic picks carry their `sources`;
+ * Smart picks come with none, and `fetchRecommendationReasons` loads them for one pick.
  */
 export const recommendationsSchema = z.array(row);

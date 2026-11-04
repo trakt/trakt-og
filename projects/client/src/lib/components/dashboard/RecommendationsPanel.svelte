@@ -9,6 +9,7 @@
 <script lang="ts">
 import { resolve } from '$app/paths';
 import { page } from '$app/state';
+import { isStandardApi } from '$lib/api/isStandardApi';
 import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
 import { SvelteSet } from 'svelte/reactivity';
 import Container from '$lib/components/container/Container.svelte';
@@ -71,6 +72,8 @@ let width = $state(0);
 // Unmeasured on the server, the desktop page.
 const perPage = $derived(width > 0 && width < SMALL_TABLET ? TABLET_PAGE : PAGE);
 let historyLate = $state(false);
+// Smart picks come without reasons. Only VIPs get any, and the route is Official-only.
+const reasons = $derived(Boolean(page.data.user?.isVip) && !isStandardApi());
 // Until the viewer's watch history is in, the placeholders stay, so the filter can't swap the spotlight under them.
 // Signed out there's none to wait for, and after a few seconds the list shows unfiltered rather than not at all.
 const historyKnown = $derived(
@@ -208,7 +211,7 @@ const step = (count: number, by: -1 | 1) => (focus = (focus + by + count) % coun
     <div class="layout">
       <div class="stage">
         <RecommendationSpotlight item={spotlight} index={at} total={items.length} mixed={recs.type === 'media'}
-          onstep={(by) => step(items.length, by)} />
+          onstep={(by) => step(items.length, by)} reasons={reasons && !recs.fallback} />
       </div>
       {@render posters(items, start, at)}
     </div>

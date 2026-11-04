@@ -2,6 +2,7 @@
 import { browser } from '$app/environment';
 import LastThirtyDaysPanel from '$lib/components/dashboard/LastThirtyDaysPanel.svelte';
 import RecentlyWatchedPanel from '$lib/components/dashboard/RecentlyWatchedPanel.svelte';
+import RecommendationSpotlight from '$lib/components/dashboard/RecommendationSpotlight.svelte';
 import RecommendationsPanel from '$lib/components/dashboard/RecommendationsPanel.svelte';
 import SocialFeedPanel from '$lib/components/dashboard/SocialFeedPanel.svelte';
 import SchedulePanel from '$lib/components/dashboard/SchedulePanel.svelte';
@@ -195,6 +196,16 @@ const recommendations = [
   { label: 'Failed', recs: recsFailed, type: 'media' },
 ] as const;
 
+// Smart picks come without reasons, so Why this? loads them on its first open.
+const smartPick = recommendationsFixture.at(0);
+const reasonsAfter = (result: (typeof recommendationsFixture)[number]['why'] | null) => () =>
+  new Promise<typeof result>((done) => setTimeout(() => done(result), 1200));
+const smartReasons = [
+  { label: 'Loads its reasons', load: reasonsAfter(smartPick?.why ?? null) },
+  { label: 'No reasons', load: reasonsAfter({ titles: [], likes: [] }) },
+  { label: 'Failed', load: reasonsAfter(null) },
+] as const;
+
 // A VIP's saved settings: Up Next by completion with favorites only, finales from yesterday, and the Watchlist and
 // Social Feed hidden. The fetchers apply the rest (worker sorts, season posters, the ignore switches).
 const custom = toDashboardSettings({
@@ -356,6 +367,20 @@ const hiddenNames = Object.entries({ Watchlist: custom.hidden.watchlist, 'Social
   </div>
 </Specimen>
 
+{#if smartPick}
+  <Specimen title="Why this? on a Smart pick"
+    note="Open Why this?: the reasons shimmer for a moment, then land. A failed load retries on the next open.">
+    <div class="why-states">
+      {#each smartReasons as { label, load } (label)}
+        <Variant {label}>
+          <RecommendationSpotlight item={{ ...smartPick, why: { titles: [], likes: [] } }} index={0} total={20}
+            mixed={false} onstep={() => {}} reasons loadReasons={load} />
+        </Variant>
+      {/each}
+    </div>
+  </Specimen>
+{/if}
+
 <Specimen title="With dashboard settings" bleed
   note="A VIP's saved settings: Up Next by completion % with only favorites, and the schedule's finales from yesterday.">
   <p class="hidden-note">The {hiddenNames.join(' and ')} panels are hidden, so they're left out.</p>
@@ -375,6 +400,17 @@ const hiddenNames = Object.entries({ Watchlist: custom.hidden.watchlist, 'Social
 </Specimen>
 
 <style>
+/* At the spotlight's width on the dashboard, one state under another. */
+.why-states {
+  display: grid;
+  grid-template-columns: var(--recommendations-layout);
+  gap: calc(var(--gutter) * 2) var(--recommendations-layout-gap);
+
+  & > :global(figure) {
+    grid-column: 1;
+  }
+}
+
 /* Room for the pill that hangs under each panel, and captions lined up with the canvas. */
 .states {
   display: grid;

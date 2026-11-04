@@ -18,6 +18,9 @@ import { goto, invalidateAll } from '$app/navigation';
 import { page } from '$app/state';
 import Container from '$lib/components/container/Container.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
+import SortLabel from '$lib/components/sort/SortLabel.svelte';
+import SortMenu from '$lib/components/sort/SortMenu.svelte';
+import { withTraktSorts } from '$lib/components/sort/sortMenu';
 import SortDirection from '$lib/components/dropdown/SortDirection.svelte';
 import LoadFailed from '$lib/components/empty/LoadFailed.svelte';
 import EmptyState from '$lib/components/empty/EmptyState.svelte';
@@ -103,6 +106,7 @@ const SHIMMER_ROWS = 5;
 const base = $derived(`/users/${data.profile.slug}/progress`);
 const title = $derived(`${data.profile.displayName}'s show ${data.type} progress`);
 const types = Object.keys(progressTypes).filter(isProgressType);
+const menuSorts = withTraktSorts(Object.keys(progressSorts).map((by) => ({ by, label: progressSortLabel(by) })));
 const listFilter = $derived(data.list !== undefined);
 // A list shows every show on it, whatever you've played, like OG.
 const watchlistToggle = $derived(data.type === 'watched' && !listFilter);
@@ -284,13 +288,10 @@ function clearFilters() {
   {#snippet summary()}
     <span class="sort">
       <Dropdown joined section="Sort">
-        {#snippet trigger()}{#if data.sort.supported}{progressSortLabel(data.sort.by)}{:else}{progressSortLabel(data.sort.by)} <em>(unsupported)</em>{/if}{/snippet}
-        <ul>
-          {#each Object.keys(progressSorts) as by (by)}
-            <li><a href={href(data.type, { by, how: 'asc' })} onclick={() => rememberSort({ by, how: 'asc' })}
-              aria-current={data.sort.by === by ? 'page' : undefined}>{progressSortLabel(by)}</a></li>
-          {/each}
-        </ul>
+        {#snippet trigger()}<SortLabel sort={menuSorts.find(({ by }) => by === data.sort.by)}
+            fallback={progressSortLabel(data.sort.by)} />{#if !data.sort.supported} <em>(unsupported)</em>{/if}{/snippet}
+        <SortMenu sorts={menuSorts} current={data.sort.by} href={({ by }) => href(data.type, { by, how: 'asc' })}
+          onpick={({ by }) => rememberSort({ by, how: 'asc' })} />
       </Dropdown>
       <SortDirection joined descending={literalProgressSort({ by: data.sort.by, how: 'asc' }).how === 'desc'} bind:flipped={
         () => data.sort.how === 'desc',

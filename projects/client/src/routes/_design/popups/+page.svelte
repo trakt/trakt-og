@@ -2,6 +2,9 @@
 import Container from '$lib/components/container/Container.svelte';
 import DialogArtHeader from '$lib/components/dialog/DialogArtHeader.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
+import SortLabel from '$lib/components/sort/SortLabel.svelte';
+import SortMenu from '$lib/components/sort/SortMenu.svelte';
+import { withTraktSorts } from '$lib/components/sort/sortMenu';
 import FilterMenu from '$lib/components/filters/FilterMenu.svelte';
 import ReportDialog from '$lib/components/summary/ReportDialog.svelte';
 import { toast } from '$lib/components/toast/toast.svelte';
@@ -30,6 +33,14 @@ const sorts = ['Watched Date', 'Title', 'Released', 'Runtime'];
 const calendars = { my: ['Shows & Movies', 'Shows', 'Movies'], all: ['Premieres', 'New Shows', 'Finales', 'Movies'] };
 
 let sort = $state('Watched Date');
+const historyMenu = withTraktSorts([
+  { by: 'added', label: 'Watched Date' },
+  { by: 'plays', label: 'Plays' },
+  { by: 'title', label: 'Title' },
+  { by: 'percentage', label: 'Percentage' },
+  { by: 'votes', label: 'Votes' },
+]);
+let historySort = $state('votes');
 let calendar = $state({ group: 'my', name: 'Shows & Movies' });
 let movies = $state(true);
 let shows = $state(true);
@@ -86,6 +97,14 @@ const listedOn = [
             </li>
           {/each}
         </ul>
+      </Dropdown>
+    </div>
+  </Variant>
+  <Variant label="Sort menu, Trakt's sorts in a flyout, as History, Library, Ratings, Progress and credits use">
+    <div class="toolbar">
+      <Dropdown joined section="Sort">
+        {#snippet trigger()}<SortLabel sort={historyMenu.find(({ by }) => by === historySort)} />{/snippet}
+        <SortMenu sorts={historyMenu} current={historySort} onpick={({ by }) => (historySort = by)} />
       </Dropdown>
     </div>
   </Variant>

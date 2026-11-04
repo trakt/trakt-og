@@ -41,7 +41,7 @@ describe('toLibraryCard', () => {
     expect(card.badges).toBeUndefined();
     expect(card.subtitles).toEqual(['Oct 15, 1999']);
     expect(toLibraryCard(movie, { ...options, sortBy: 'runtime' }).subtitles).toEqual(['2h 19m']);
-    expect(toLibraryCard(movie, { ...options, sortBy: 'popularity' }).subtitles).toEqual(['51,327 votes']);
+    expect(toLibraryCard(movie, { ...options, sortBy: 'votes' }).subtitles).toEqual(['51,327 votes']);
     expect(toLibraryCard(movie, { ...options, sortBy: 'title' }).subtitles).toEqual([]);
   });
 

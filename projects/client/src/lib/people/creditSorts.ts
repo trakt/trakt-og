@@ -1,13 +1,12 @@
 import type { PersonCredit } from './PersonCredit.ts';
 
 /**
- * The credits sort menu, each with its natural direction. The API has no popularity
- * rank, so Popularity sorts by votes, as the worker's own popularity sorts do.
+ * The credits sort menu, each with its natural direction. OG's Popularity sorted by the same vote count as Votes, so
+ * it's left out and an old link reads as Votes (`toCreditsQuery`).
  */
 export const creditSorts = [
   { id: 'released', label: 'Released', key: 'released', descending: true },
   { id: 'title', label: 'Title', key: 'title', descending: false },
-  { id: 'popularity', label: 'Popularity', key: 'votes', descending: true },
   { id: 'percentage', label: 'Percentage', key: 'percentage', descending: true },
   { id: 'votes', label: 'Votes', key: 'votes', descending: true },
   { id: 'runtime', label: 'Runtime', key: 'runtime', descending: true },

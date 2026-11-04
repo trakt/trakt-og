@@ -58,7 +58,6 @@ function sortLine(
       return released;
     case 'runtime':
       return formatRuntime(runtime);
-    case 'popularity':
     case 'percentage':
     case 'votes':
       return votes(count);

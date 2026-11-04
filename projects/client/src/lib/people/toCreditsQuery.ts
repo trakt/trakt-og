@@ -16,7 +16,7 @@ export function toCreditsQuery(search: URLSearchParams): CreditsQuery {
       const option = creditHideOptions.find((option) => option.id === id);
       return option ? [option.id] : [];
     }),
-    sort: creditSorts.find(({ id }) => id === by)?.id ?? 'released',
+    sort: creditSorts.find(({ id }) => id === (by === 'popularity' ? 'votes' : by))?.id ?? 'released',
     reversed: how === 'desc',
     terms: search.get('terms') ?? '',
     movies: !display || display.includes('movie'),

@@ -8,6 +8,10 @@ describe('librarySort', () => {
     expect(librarySort('shows', 'title/asc')).toEqual({ by: 'added', how: 'asc' });
     expect(librarySort('all', undefined)).toEqual({ by: 'added', how: 'asc' });
   });
+
+  it('should read an old Popularity link as Votes, which sorts the same way', () => {
+    expect(librarySort('movies', 'popularity/asc')).toEqual({ by: 'votes', how: 'asc' });
+  });
 });
 
 describe('apiSortHow', () => {

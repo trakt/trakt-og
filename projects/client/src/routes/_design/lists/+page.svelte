@@ -32,8 +32,8 @@ import SectionToolbar from '$lib/components/toolbar/SectionToolbar.svelte';
 import ListItemPoster from '$lib/lists/ListItemPoster.svelte';
 import { listItemSorts } from '$lib/lists/listItemSorts';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
-import ListSortLabel from '$lib/lists/ListSortLabel.svelte';
-import ListSortMenu from '$lib/lists/ListSortMenu.svelte';
+import SortLabel from '$lib/components/sort/SortLabel.svelte';
+import SortMenu from '$lib/components/sort/SortMenu.svelte';
 import ListManageBar from '$lib/lists/ListManageBar.svelte';
 import ListStats from '$lib/lists/ListStats.svelte';
 import type { ListItemCard } from '$lib/lists/toListItemCard';
@@ -254,8 +254,8 @@ const following = [{ slug: 'teodoro_2', name: 'Elsy Murphy (@teodoro_2)' }];
 <Specimen title="Sort menu"
   note="The everyday sorts, then a row per site and one for My Data that open their sorts beside them: on hover, on a tap, or with Enter or the right arrow (the left arrow comes back). The row holding the picked sort turns red, and the trigger shows a site's sort as its logo and short name.">
   <Dropdown joined section="Sort">
-    {#snippet trigger()}<ListSortLabel sort={listItemSorts.find(({ by }) => by === demoSort)} />{/snippet}
-    <ListSortMenu sorts={listItemSorts} current={demoSort} onpick={(sort) => (demoSort = sort.by)} />
+    {#snippet trigger()}<SortLabel sort={listItemSorts.find(({ by }) => by === demoSort)} />{/snippet}
+    <SortMenu sorts={listItemSorts} current={demoSort} onpick={(sort) => (demoSort = sort.by)} />
   </Dropdown>
 </Specimen>
 

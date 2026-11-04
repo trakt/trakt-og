@@ -12,7 +12,7 @@ describe('visibleListSorts', () => {
   });
 
   it('should show every sort to a signed-in viewer on all types', () => {
-    expect(bys({ types: [], signedIn: true })).toHaveLength(19);
+    expect(bys({ types: [], signedIn: true })).toHaveLength(20);
   });
 
   it('should hide sorts that do not apply to the chosen types', () => {

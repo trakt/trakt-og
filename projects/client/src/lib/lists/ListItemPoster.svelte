@@ -16,9 +16,13 @@ import { overlay } from '$lib/overlay/overlay';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
 import type { Snippet } from 'svelte';
 import type { ListItemCard } from './toListItemCard.ts';
+import RatingLine from '$lib/components/rating/RatingLine.svelte';
+import { linesBeforeRating, viewerSortLine, withViewerLine } from './viewerSort.ts';
 
 interface Props {
   item: ListItemCard;
+  /** The list's sort. One about the viewer (watched, collected, plays, their rating) writes its line from their data. */
+  sortBy?: string;
   /** Shown when the list displays its numbers. */
   rank?: number;
   /** Page-local eye-menu fade choices; dashboard cards default to none. */
@@ -36,7 +40,7 @@ interface Props {
   framed?: boolean;
 }
 
-const { item, rank, datePreferences, removing, edit, oneditnotes, ondeletenotes, fade = [], framed = true }: Props =
+const { item, sortBy, rank, datePreferences, removing, edit, oneditnotes, ondeletenotes, fade = [], framed = true }: Props =
   $props();
 const state = $derived(item.type === 'person' ? undefined : overlay.state(item.type, item.id, item.seasonOf));
 const fill = $derived(quickIconFill({
@@ -45,6 +49,8 @@ const fill = $derived(quickIconFill({
   runtime: item.runtime,
   datePreferences,
 }));
+const viewerLine = $derived(sortBy && state ? viewerSortLine(sortBy, state, datePreferences) : undefined);
+const myRating = $derived(sortBy === 'my_rating' ? (state?.rating ?? undefined) : undefined);
 </script>
 
 <PosterCard
@@ -54,7 +60,7 @@ const fill = $derived(quickIconFill({
   number={item.number}
   image={item.image}
   episodeBadge={item.episodeBadge}
-  subtitles={item.lines}
+  subtitles={myRating ? linesBeforeRating(item) : viewerLine ? withViewerLine(item, viewerLine) : item.lines}
   faded={fade.some((option) => matchesListFade({ option, notes: item.notes, state: state ?? {}, fill }))}
   userRating={state?.rating}
   {rank}
@@ -77,9 +83,20 @@ const fill = $derived(quickIconFill({
         class="add-notes"
       ><NotesPill add svg={plus} label="Add Note" aria-label="Add Note to {item.title}" onclick={() => oneditnotes(item)} /></div>{/if}
   {/snippet}
+  {#if myRating}<a class="rating-link" href={item.href}><RatingLine rating={myRating} /></a>{/if}
 </PosterCard>
 
 <style>
+.rating-link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+.rating-link:is(:hover, :focus-visible) {
+  text-decoration: underline;
+}
+
 /* Shows while the poster is hovered or the pill has keyboard focus; touch screens add notes in manage mode. */
 .add-notes {
   position: absolute;

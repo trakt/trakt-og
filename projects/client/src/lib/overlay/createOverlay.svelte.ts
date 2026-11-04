@@ -31,6 +31,8 @@ export type OverlayState = {
   /** Movies and episodes with their show/season/number supplied, or an optimistic episode id. */
   collectionMetadata?: CollectionMetadata;
   collectedAt?: string;
+  /** Shows and seasons: their most recently collected episode's date. */
+  lastCollectedAt?: string;
   /** The media servers it was synced from. Shows and seasons: every source across their episodes. */
   collectionSources?: readonly LibrarySource[];
   /** Shows only: unique non-special episodes. */
@@ -73,6 +75,12 @@ const watchDetails = (dates: readonly string[] | undefined) => ({
   watchedPlays: dates?.length,
   lastWatchedAt: dates?.reduce((latest, date) => (date > latest ? date : latest), '') || undefined,
 });
+
+const latestCollected = (items: Iterable<CollectedItem> | undefined) =>
+  [...(items ?? [])].reduce<string>((latest, item) => {
+    const at = collectedDetails(item).collectedAt ?? '';
+    return at > latest ? at : latest;
+  }, '') || undefined;
 
 const nonEmpty = <T>(list: readonly T[] | undefined) => (list?.length ? list : undefined);
 
@@ -180,6 +188,7 @@ function stateOf(slices: Partial<OverlaySlices>, type: MediaType, id: number, se
       rewatchedPlays: rewatched?.reduce((sum, dates) => sum + dates.length, 0),
       ...progress(count(slices.watchedShows), count(slices.collectedShows)),
       collectionSources: collectedSources(slices.syncedEpisodes?.get(season.show)?.get(season.number)?.values() ?? []),
+      lastCollectedAt: latestCollected(slices.collectedShows?.get(season.show)?.get(season.number)?.values()),
       ...watchDetails(
         slices.watchedShows && [...(slices.watchedShows.get(season.show)?.get(season.number)?.values() ?? [])].flat(),
       ),
@@ -220,6 +229,9 @@ function stateOf(slices: Partial<OverlaySlices>, type: MediaType, id: number, se
     ...progress(
       slices.watchedShows && countEpisodes(slices.watchedShows.get(id)),
       slices.collectedShows && countEpisodes(slices.collectedShows.get(id)),
+    ),
+    lastCollectedAt: latestCollected(
+      [...(slices.collectedShows?.get(id)?.values() ?? [])].flatMap((episodes) => [...episodes.values()]),
     ),
     collectionSources: collectedSources(
       [...(slices.syncedEpisodes?.get(id)?.values() ?? [])].flatMap((episodes) => [...episodes.values()]),

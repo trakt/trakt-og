@@ -97,6 +97,8 @@ import type { loadOfficialList } from '$lib/lists/loadOfficialList';
 import type { loadList } from '$lib/lists/loadList';
 import type { ListItemCard } from '$lib/lists/toListItemCard';
 import { visibleListSorts } from '$lib/lists/visibleListSorts';
+import { sortCardsByViewer, viewerSortReady, viewerSortValue } from '$lib/lists/viewerSort';
+import CardShimmerRow from '$lib/components/loading/CardShimmerRow.svelte';
 import { externalLink } from '$lib/externalLink';
 import { traktUrls } from '$lib/traktUrls';
 import { watchNowCountry } from '../settings/watchNowCountry.ts';
@@ -332,13 +334,25 @@ let savedNotes = $state<Readonly<Record<number, string>>>({});
 const listPosters = $derived(
   (data.list ? data.cards : []).slice(0, 5).flatMap((card) => (card.image ? [card.image] : [])),
 );
+// Watched, Collected and Plays: the loader sent the whole list, ordered here once the viewer's overlay has loaded. The
+// order is taken once, so watching a poster doesn't move it out from under the viewer.
+const browserSortReady = $derived(!(data.list && data.sortInBrowser) || viewerSortReady(data.sort.by, overlay.slices()));
+const viewerValue = (by: string) => (card: ListItemCard) =>
+  card.type === 'person' ? undefined : viewerSortValue(by, overlay.state(card.type, card.id, card.seasonOf));
+const pageCards = $derived.by(() => {
+  if (!data.list) return [];
+  if (!data.sortInBrowser) return data.cards;
+  if (!browserSortReady) return [];
+  const { cards, sort, query: { page, limit } } = data;
+  return untrack(() => sortCardsByViewer(cards, sort, viewerValue(sort.by))).slice((page - 1) * limit, page * limit);
+});
 const ownerCards = $derived(
   (ownerManaging && allItems && selectedKeys
     ? selectedKeys.flatMap((key) => {
       const item = allItems?.find((row) => row.key === key);
       return item ? [item] : [];
     })
-    : (data.list ? data.cards : []).map((item) => allItems?.find((row) => row.key === item.key) ?? item))
+    : pageCards.map((item) => allItems?.find((row) => row.key === item.key) ?? item))
     .filter((item) => !removedKeys.includes(item.key))
     .map((item) => item.key in savedNotes ? { ...item, notes: savedNotes[item.key] || undefined } : item),
 );
@@ -380,7 +394,10 @@ async function toggleManage() {
     const items = complete.map((row) => toListItemCard(row, options));
     if (selection.some((row) => !items.some((item) => item.key === row.id))) throw new Error('List changed');
     allItems = items;
-    selectedKeys = selection.map((row) => row.id);
+    const selected = selection.flatMap((row) => items.filter((item) => item.key === row.id));
+    selectedKeys = (data.sortInBrowser ? sortCardsByViewer(selected, data.sort, viewerValue(data.sort.by)) : selected).map(
+      (item) => item.key,
+    );
   } catch {
     if (source === data) ownerManaging = false;
     toast.error("Doh! We couldn't load the complete list. Please try again.");
@@ -511,7 +528,7 @@ const manager = createListManager(
   () =>
     data.list === null
       ? { list: null, cards: [], sort: { by: 'rank', how: 'asc' }, query: data.query }
-      : { list: data.list, cards: data.cards, sort: data.sort, query: data.query },
+      : { list: data.list, cards: pageCards, sort: data.sort, query: data.query },
   () => transferBusy,
 );
 $effect(() => {
@@ -799,17 +816,19 @@ async function saveNotes(text: string) {
 </section>
   {/if}
 
-  <section class={['items', { managing }]} aria-label="{list.name} items" aria-busy={writing} {@attach shortcut}
+  <section class={['items', { managing }]} aria-label="{list.name} items" aria-busy={writing || !browserSortReady} {@attach shortcut}
     {@attach trackDrilldowns({ source: itemsSource })}>
   <Container>
-      {#if displayCards.length > 0}
+      {#if !browserSortReady}
+        <CardShimmerRow columns={6} ratio="poster" />
+      {:else if displayCards.length > 0}
         {#if !(owner && managing) && data.page.type === 'paginated'}<Pagination meta={data.page} label="List pages" />{/if}
         <div class="grid" {@attach manager.dragEvents}>
           <PosterGrid>
             {#each displayCards as item (item.key)}
               <div data-list-item={item.key} class={{ dragging: manager.dragging?.key === item.key,
                 'drop-target': manager.dragging && manager.dropRank === item.rank }} animate:flip={{ duration }}>
-                <ListItemPoster {item} rank={list.displayNumbers && !managing ? item.rank : undefined}
+                <ListItemPoster {item} sortBy={data.sort.by} rank={list.displayNumbers && !managing ? item.rank : undefined}
                   removing={() => removingFromOwner ? removedKeys.includes(item.key) : manager.isRemoved(item.key)} datePreferences={data.datePreferences}
                   edit={managing ? edit : undefined} fade={fadeHide.fade}
                   oneditnotes={owner || canManage ? (card) => owner ? editNotes(card) : openNotes(card) : undefined}

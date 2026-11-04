@@ -10,9 +10,10 @@ import { type ListSort, resolveListSort } from './resolveListSort.ts';
 import { type ListItemCard, toListItemCard } from './toListItemCard.ts';
 import { toListItemsSearch } from './toListItemsSearch.ts';
 import { type ListStats, toListStats } from './toListStats.ts';
+import { isBrowserSort } from './viewerSort.ts';
 
-// Sorts about the viewer: the worker needs their token to order by them.
-const VIEWER_SORTS = ['my_rating', 'watched', 'collected'];
+// Sorts about the viewer the worker orders, so it needs their token. The rest are ordered in the browser.
+const VIEWER_SORTS = ['my_rating'];
 
 type ItemsRequest = {
   fetch: typeof globalThis.fetch;
@@ -60,6 +61,23 @@ export function urlListSort(query: ListQuery): ListSort | undefined {
 // The worker's largest page, and enough of them for a VIP's 5,000-item watchlist (`TRAKT_WATCHLIST_ITEM_LIMIT_VIP`).
 const STATS_PAGE = 250;
 const MAX_STATS_PAGES = 20;
+const RANKED: ListSort = { by: 'rank', how: 'asc' };
+
+/**
+ * Every item that matches the filters, in rank order, for a sort the browser orders: the worker's first page says how
+ * many more to read at once. Past the stats bar's cap, the rest are left off.
+ */
+async function fetchWholeList({ query, ...request }: Omit<ItemsRequest, 'sort'>): Promise<ListItems> {
+  const read = (page: number) =>
+    fetchListItems({ ...request, query: { ...query, page, limit: STATS_PAGE }, sort: RANKED });
+  const first = await read(1);
+  const total = Number(first.headers.get('x-pagination-item-count')) || first.rows.length;
+  const pages = Math.min(Math.ceil(total / STATS_PAGE), MAX_STATS_PAGES);
+  if (first.status !== 200 || pages <= 1) return first;
+  const rest = await Promise.all(Array.from({ length: pages - 1 }, (_, i) => read(i + 2)));
+  const failed = rest.find(({ status }) => status !== 200);
+  return failed ?? { ...first, rows: [...first.rows, ...rest.flatMap(({ rows }) => rows)] };
+}
 
 type StatsRequest = Omit<ItemsRequest, 'sort' | 'extended'> & { total: number; withItems: boolean };
 
@@ -75,7 +93,7 @@ async function fetchListStats({ total, withItems, query, ...request }: StatsRequ
     fetchListItems({
       ...request,
       query: { ...query, page, limit: STATS_PAGE },
-      sort: { by: 'rank', how: 'asc' },
+      sort: RANKED,
       extended: 'full',
     });
   const results = await Promise.all(Array.from({ length: pages }, (_, i) => read(i + 1))).catch(() => null);
@@ -125,6 +143,8 @@ export async function loadListItems({
   datePreferences,
 }: LoadListItemsParams) {
   const sort = resolveListSort({ query, fallback });
+  // The worker answers these in rank order, so the page gets the whole list and the browser orders it.
+  const sortInBrowser = Boolean(token) && isBrowserSort(sort.by);
   const needsViewer =
     Boolean(token) &&
     (needsToken || VIEWER_SORTS.includes(sort.by) || Boolean(query.watchnow) || (query.hide?.length ?? 0) > 0);
@@ -161,26 +181,28 @@ export async function loadListItems({
       : null;
 
   const [fetched, ranked] = await Promise.all([
-    reuse ? first : fetchListItems({ fetch, token: viewerToken, base, query, sort }),
+    sortInBrowser
+      ? fetchWholeList({ fetch, token: viewerToken, base, query })
+      : reuse
+        ? first
+        : fetchListItems({ fetch, token: viewerToken, base, query, sort }),
     firstRanked,
   ]);
   // A stale token keeps the anonymous answer: the server never refreshes, the browser does.
   const items = fetched.status === 401 && first.status === 200 ? first : fetched;
+  const wholeList = sortInBrowser && items === fetched;
   if ([403, 404].includes(items.status)) error(404, 'Page Not Found');
   // Hides are saved in a cookie, so failing the page would fail every visit: it renders empty, with a way to clear them.
   const hideFailed = items.status !== 200 && (query.hide?.length ?? 0) > 0;
   if (items.status !== 200 && !hideFailed) error(502, 'Trakt is having trouble loading this list.');
 
   const cards: ListItemCard[] = items.rows.map((row) => toListItemCard(row, { sortBy: sort.by, datePreferences }));
-  const page: PageMeta = listPageMeta({
-    headers: items.headers,
-    current: query.page,
-    limit: query.limit,
-    received: items.rows.length,
-  });
-  const total = Number(items.headers.get('x-pagination-item-count')) || cards.length;
+  const page: PageMeta = wholeList
+    ? { type: 'paginated', current: query.page, total: Math.max(1, Math.ceil(cards.length / query.limit)) }
+    : listPageMeta({ headers: items.headers, current: query.page, limit: query.limit, received: items.rows.length });
+  const total = wholeList ? cards.length : Number(items.headers.get('x-pagination-item-count')) || cards.length;
   // Most lists fit on their first page, so the stats come from it and render with the page. Longer ones stream in.
-  const complete = query.page === 1 && (items.rows.length < query.limit || items.rows.length >= total);
+  const complete = wholeList || (query.page === 1 && (items.rows.length < query.limit || items.rows.length >= total));
   const withItems = viewerSignedIn;
   const stats: ListStats | Promise<ListStats | null> = complete
     ? toListStats(items.rows, { withItems })
@@ -188,6 +210,8 @@ export async function loadListItems({
 
   return {
     sort,
+    /** `cards` is the whole list in rank order, for the page to sort by the viewer's overlay and cut to its page. */
+    sortInBrowser: wholeList,
     cards,
     page,
     total,

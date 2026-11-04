@@ -297,6 +297,46 @@ describe('loadList', () => {
     expect(await result.stats).toBeNull();
   });
 
+  // The worker answers Watched Date in rank order: #408.
+  it('should send the whole list in rank order for a sort the browser orders', async () => {
+    server.use(
+      http.get(`${API}/users/sean/lists/heist-night/items*`, ({ request }) => {
+        const url = new URL(request.url);
+        record(request);
+        const page = Number(url.searchParams.get('page'));
+        const limit = Number(url.searchParams.get('limit'));
+        const first = (page - 1) * limit + 1;
+        const rows = Array.from({ length: Math.max(0, Math.min(limit, 300 - first + 1)) }, (_, i) =>
+          movie(first + i, `Movie ${first + i}`),
+        );
+        return HttpResponse.json(rows, {
+          headers: { ...pageHeaders('watched', 'desc'), 'X-Pagination-Item-Count': '300' },
+        });
+      }),
+    );
+    const result = await loaded({
+      query: '?sort=watched,desc&page=2',
+      token: 'abc',
+      viewer: { slug: 'kim', isVip: false },
+    });
+    expect(result.sort).toEqual({ by: 'watched', how: 'desc' });
+    expect(result.sortInBrowser).toBe(true);
+    expect(result.cards.map(({ rank }) => rank)).toEqual(Array.from({ length: 300 }, (_, i) => i + 1));
+    expect(result.page).toEqual({ type: 'paginated', current: 2, total: 3 });
+    expect(result.total).toBe(300);
+    expect(await result.stats).toMatchObject({ count: 300 });
+    const whole = seen.filter(
+      ({ url }) => url.searchParams.get('limit') === '250' && url.pathname.endsWith('/rank/asc'),
+    );
+    expect(whole.map(({ url }) => url.searchParams.get('page'))).toEqual(['1', '2']);
+  });
+
+  it('should leave a sort the browser orders to the worker when signed out', async () => {
+    const result = await loaded({ query: '?sort=watched,desc' });
+    expect(result.sortInBrowser).toBe(false);
+    expect(result.cards).toHaveLength(2);
+  });
+
   it('should redirect an id to the list slug', async () => {
     await expect(load({ list: '44', query: '?sort=title,asc' })).rejects.toMatchObject({
       status: 301,

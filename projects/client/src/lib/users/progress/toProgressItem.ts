@@ -30,21 +30,21 @@ const latest = (dates: readonly string[]) =>
 const collectedAt = (item: CollectedItem | undefined) => (typeof item === 'string' ? item : item?.at);
 const sum = (values: readonly number[]) => values.reduce((total, value) => total + value, 0);
 
-/** Without a catalog: the summary's aired count against the overlay's episodes, specials left out like the count. */
+/**
+ * Without a catalog: the summary's aired count against the overlay's episodes, specials left out like the count, and
+ * hidden seasons left out like the catalog's.
+ */
 function fromSummary(params: ToProgressItemParams): ProgressItem {
-  const { show, watched, resetAt, droppedAt } = params;
+  const { show, watched, resetAt, droppedAt, hiddenSeasons } = params;
   const aired = show.airedEpisodes ?? 0;
   const runtime = episodeRuntime(show);
-  const regular = <T>(seasons: Seasons<T> | undefined) =>
-    [...(seasons ?? new Map<number, ReadonlyMap<number, T>>())]
-      .filter(([number]) => number > 0)
-      .flatMap(([, episodes]) => [...episodes.values()]);
+  const visible = [...(watched ?? [])].filter(([number]) => !hiddenSeasons?.has(number));
 
-  const watches = regular(watched);
+  const watches = visible.filter(([number]) => number > 0).flatMap(([, episodes]) => [...episodes.values()]);
   const plays = sum(watches.map((dates) => dates.length));
   const done = watches.filter((dates) => dates.some((date) => !resetAt || date >= resetAt)).length;
   const completed = Math.min(done, aired);
-  const lastAt = latest([...(watched?.values() ?? [])].flatMap((episodes) => [...episodes.values()].flat()));
+  const lastAt = latest(visible.flatMap(([, episodes]) => [...episodes.values()].flat()));
 
   return {
     show,

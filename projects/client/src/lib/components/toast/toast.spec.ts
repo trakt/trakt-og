@@ -12,6 +12,14 @@ describe('store: toast', () => {
     ]);
   });
 
+  it('should keep a toast action for its button', () => {
+    const run = () => {};
+    toast.success('You hid Season 3 of Dexter.', { label: 'Undo', run });
+
+    expect(toast.list[0]).toMatchObject({ message: 'You hid Season 3 of Dexter.', action: { label: 'Undo', run } });
+    toast.dismiss(toast.list[0]?.id ?? -1);
+  });
+
   it('should dismiss only the toast it is given', () => {
     const [newest, oldest] = toast.list;
     toast.dismiss(newest?.id ?? -1);

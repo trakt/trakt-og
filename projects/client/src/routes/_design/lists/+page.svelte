@@ -31,6 +31,9 @@ import PosterGrid from '$lib/components/media/PosterGrid.svelte';
 import SectionToolbar from '$lib/components/toolbar/SectionToolbar.svelte';
 import ListItemPoster from '$lib/lists/ListItemPoster.svelte';
 import { listItemSorts } from '$lib/lists/listItemSorts';
+import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
+import ListSortLabel from '$lib/lists/ListSortLabel.svelte';
+import ListSortMenu from '$lib/lists/ListSortMenu.svelte';
 import ListManageBar from '$lib/lists/ListManageBar.svelte';
 import ListStats from '$lib/lists/ListStats.svelte';
 import type { ListItemCard } from '$lib/lists/toListItemCard';
@@ -68,6 +71,8 @@ const heat = card(3, 'Heat', 'heat-1995', {
 });
 const alien = card(4, 'Alien', 'alien-1979', { notes: longNotes });
 const aliens = card(5, 'Aliens', 'aliens-1986');
+// The site sorts read the real movies' scores, so these carry their real Trakt ids.
+const scored = [heat, alien, aliens].map((item, i) => ({ ...item, id: [789, 295, 553][i] ?? item.id }));
 
 let notesOpen = $state(false);
 let notesDraft = $state('');
@@ -84,6 +89,7 @@ const move = (item: ListItemCard, next: number) => (ranks[item.key] = clamp(next
 const managed = $derived([heat, alien].map((item) => ({ ...item, rank: ranks[item.key] ?? item.rank })));
 
 let open = $state(false);
+let demoSort = $state('imdb_votes');
 let builtInOpen = $state(false);
 let rank = $state(2);
 const transferSource = toBuiltInListView({
@@ -245,8 +251,29 @@ const following = [{ slug: 'teodoro_2', name: 'Elsy Murphy (@teodoro_2)' }];
   </Variant>
 </Specimen>
 
-<Specimen title="Sorted by your data"
-  note="Watched Date, Collected Date, Plays and My Rating write the line under the title from the signed-in viewer's own history, collection and ratings. A poster without any stays blank, and signed out every line is blank.">
+<Specimen title="Sort menu"
+  note="The everyday sorts, then a row per site and one for My Data that open their sorts beside them: on hover, on a tap, or with Enter or the right arrow (the left arrow comes back). The row holding the picked sort turns red, and the trigger shows a site's sort as its logo and short name.">
+  <Dropdown joined section="Sort">
+    {#snippet trigger()}<ListSortLabel sort={listItemSorts.find(({ by }) => by === demoSort)} />{/snippet}
+    <ListSortMenu sorts={listItemSorts} current={demoSort} onpick={(sort) => (demoSort = sort.by)} />
+  </Dropdown>
+</Specimen>
+
+<Specimen title="Sorted by a site"
+  note="An IMDb, TMDB, Rotten Tomatoes or Metacritic sort writes the line under the title like the Trakt rating line, with the site's logo for the heart: the score, then its votes where the site gives any. Each poster reads its scores as it nears the screen, shimmering until then, and stays blank without one.">
+  {#each listItemSorts.filter(({ site, by }) => site && site !== 'trakt' && !by.endsWith('_votes')) as { by: sortBy, label } (sortBy)}
+    <Variant {label}>
+      <PosterGrid>
+        {#each scored as item (item.key)}
+          <ListItemPoster {item} {sortBy} rank={item.rank} {datePreferences} />
+        {/each}
+      </PosterGrid>
+    </Variant>
+  {/each}
+</Specimen>
+
+<Specimen title="Sorted by My Data"
+  note="My Rating, My Plays, My Watched Date and My Library Date write the line under the title from the signed-in viewer's own history, collection and ratings. A poster without any stays blank, and signed out every line is blank.">
   {#each listItemSorts.filter(({ group }) => group === 'mine') as { by: sortBy, label } (sortBy)}
     <Variant {label}>
       <PosterGrid>

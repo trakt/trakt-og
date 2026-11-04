@@ -11,7 +11,7 @@
 <script lang="ts">
 import { isStandardApi } from '$lib/api/isStandardApi';
 import { on } from 'svelte/events';
-import imdbLogo from '$lib/assets/sites/imdb-clean.png';
+import imdbLogo from '$lib/assets/sites/imdb-solid.svg';
 import letterboxdLogo from '$lib/assets/sites/letterboxd.svg';
 import malLogo from '$lib/assets/sites/mal.svg';
 import tmdbLogo from '$lib/assets/sites/tmdb.svg';
@@ -249,7 +249,7 @@ function reset() {
         {@const metric = 'metric' in row ? row.metric : undefined}
         <div class="rating">
           <Tooltip placement="left">
-            {#snippet trigger(tooltip)}<span class={['site', { dark: row.logo === imdbLogo }]} {...tooltip}><img src={row.logo} alt=""
+            {#snippet trigger(tooltip)}<span class="site" {...tooltip}><img src={row.logo} alt=""
               /></span>{/snippet}
             {row.site}{#if metric}<br /><em class="metric">{metric}</em>{/if}
           </Tooltip>
@@ -414,11 +414,5 @@ function reset() {
 
 .metric {
   color: var(--color-tooltip-muted);
-}
-
-/* IMDb's logo is white artwork, so it keeps a dark backing on a light panel, like IMDb's own badge. */
-.site.dark img {
-  border-radius: var(--radius-site-logo-backing);
-  background-color: var(--color-site-logo-backing);
 }
 </style>

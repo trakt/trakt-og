@@ -7,7 +7,7 @@ type VisibleListSortsParams = {
 };
 
 /**
- * The sort menu the viewer sees: sorts that don't apply to any chosen type left out, and "Your data" only when
+ * The sort menu the viewer sees: sorts that don't apply to any chosen type left out, and "My Data" only when
  * signed in.
  */
 export function visibleListSorts({ types, signedIn }: VisibleListSortsParams): readonly ListItemSort[] {

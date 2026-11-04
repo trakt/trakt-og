@@ -9,7 +9,7 @@
 <script lang="ts">
 import Icon from '$lib/icons/Icon.svelte';
 import xmark from '$lib/icons/solid/xmark.svg?raw';
-import imdbLogo from '$lib/assets/sites/imdb-clean.png';
+import imdbLogo from '$lib/assets/sites/imdb-solid.svg';
 import letterboxdLogo from '$lib/assets/sites/letterboxd.svg';
 import malLogo from '$lib/assets/sites/mal.svg';
 import tmdbLogo from '$lib/assets/sites/tmdb.svg';
@@ -44,7 +44,7 @@ const sites: Record<TagSite, { logo: string; name: string }> = {
   {#each chips as chip (chip.id)}
     {@const label = filterTagLabel(chip.id)}
     <li class={{ without: chip.values.every((value) => value.without) }} title="{label}: {plain(chip)}">
-      {#if chip.site}<img class={{ dark: chip.site === 'imdb' }} src={sites[chip.site].logo} alt="" />{/if}
+      {#if chip.site}<img src={sites[chip.site].logo} alt="" />{/if}
       <span class={chip.site ? 'visually-hidden' : 'label'}>{label}:</span>
       <span class="text">{#each chip.values as value, i (value.text)}{i > 0 ? ', ' : ''}{#if value.without}<span
             class="visually-hidden">without </span><s>{value.text}</s>{:else}{value.text}{/if}{/each}</span>
@@ -133,11 +133,5 @@ button {
     background-color: var(--color-sidebar-pill-set-border);
     color: var(--color-frame-ink);
   }
-}
-
-/* IMDb's logo is white artwork, so it keeps a dark backing on a light chip, like IMDb's own badge. */
-img.dark {
-  border-radius: var(--radius-site-logo-backing);
-  background-color: var(--color-site-logo-backing);
 }
 </style>

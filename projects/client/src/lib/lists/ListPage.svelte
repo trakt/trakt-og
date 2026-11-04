@@ -24,7 +24,8 @@ import { afterNavigate, goto, invalidateAll, replaceState } from '$app/navigatio
 import ListNotice from '$lib/components/lists/ListNotice.svelte';
 import ListTag from '$lib/components/lists/ListTag.svelte';
 import ListTitleRow from '$lib/components/lists/ListTitleRow.svelte';
-import { listSortGroups } from '$lib/lists/listSortGroups';
+import ListSortMenu from '$lib/lists/ListSortMenu.svelte';
+import ListSortLabel from '$lib/lists/ListSortLabel.svelte';
 import { memberRelation } from '$lib/components/comments/memberRelation';
 import { convertToSmartList } from '$lib/lists/smart/convertToSmartList';
 import ReportDialog from '$lib/components/summary/ReportDialog.svelte';
@@ -205,7 +206,6 @@ const genreLabel = $derived(
     : 'All',
 );
 const sorts = $derived(visibleListSorts({ types: data.query.types, signedIn: data.user !== null }));
-const groups = $derived(listSortGroups(sorts));
 const actions = $derived(
   data.list
     ? listTitleActions({
@@ -694,18 +694,10 @@ async function saveNotes(text: string) {
     {#snippet summary()}
       <span class="sort">
         <Dropdown joined section="Sort">
-          {#snippet trigger()}{sorts.find(({ by }) => by === data.sort.by)?.label ?? 'Rank'}{/snippet}
-          {#each groups as { group, header, sorts: items }, i (group)}
-            {#if i > 0}<hr />{/if}
-            <ul>
-              {#if header}<li class="header" role="presentation">{header}</li>{/if}
-              {#each items as sort (sort.by)}
-                <li><a href={listHref(page.url, { sort: { by: sort.by, how: listSortHow(sort.by) } })}
-                  onclick={() => trackSort({ sortBy: sort.by, sortHow: listSortHow(sort.by) })}
-                  aria-current={sort.by === data.sort.by ? 'page' : undefined}>{sort.label}</a></li>
-              {/each}
-            </ul>
-          {/each}
+          {#snippet trigger()}<ListSortLabel sort={sorts.find(({ by }) => by === data.sort.by)} />{/snippet}
+          <ListSortMenu {sorts} current={data.sort.by}
+            href={(sort) => listHref(page.url, { sort: { by: sort.by, how: listSortHow(sort.by) } })}
+            onpick={(sort) => trackSort({ sortBy: sort.by, sortHow: listSortHow(sort.by) })} />
         </Dropdown>
         <!-- Flipped is away from the sort's own direction; Random has none. -->
         <SortDirection joined descending={listSortHow(data.sort.by) === 'desc'} disabled={data.sort.by === 'random'}

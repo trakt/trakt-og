@@ -1,7 +1,7 @@
 <!--
   The profile frame in every state, on sample data: covers, labels, follow states, the request banner, the lock screen
-  and the watching-now bar. Real profiles only show the states the signed-in viewer is actually in. Under it, the
-  favorites panel, the welcome hero, the charts, the most watched columns (OG's defaults, then a saved sort and tab),
+  and the watching-now bar. Real profiles only show the states the signed-in viewer is actually in. Under it, the taste
+  match pill at each level, with its breakdown dialog, the favorites panel, the welcome hero, the charts, the most watched columns (OG's defaults, then a saved sort and tab),
   and the network page's user cards in each follow state, watching now and checked in. The stat boxes have their own
   demo.
 -->
@@ -14,12 +14,16 @@ import FavoriteCard from '$lib/components/users/FavoriteCard.svelte';
 import MostWatched from '$lib/components/users/MostWatched.svelte';
 import ProfileCharts from '$lib/components/users/ProfileCharts.svelte';
 import ProfileSectionShimmer from '$lib/components/loading/ProfileSectionShimmer.svelte';
+import MatchBadge from '$lib/components/users/MatchBadge.svelte';
+import MatchPill from '$lib/components/users/MatchPill.svelte';
 import ProfileFrame from '$lib/components/users/ProfileFrame.svelte';
 import UserCard from '$lib/components/users/UserCard.svelte';
 import WelcomeHero from '$lib/components/users/WelcomeHero.svelte';
 import { liveTiles } from '$lib/dashboard/liveTiles';
 import { socialFeedFixture } from '$lib/dashboard/socialFeedFixture';
 import { profileTabs } from '$lib/users/profileTabs';
+import { toUserMatch } from '$lib/users/match/toUserMatch';
+import type { UserMatch } from '$lib/users/match/UserMatch';
 import type { FavoriteCard as Favorite } from '$lib/users/profile/toProfileSummary';
 import { toGenreBar } from '$lib/users/profile/toGenreBar';
 import { toProfileRatings } from '$lib/users/profile/toProfileRatings';
@@ -77,6 +81,25 @@ const scrobbling: WatchingNow = {
   runtime: 89,
 };
 
+// A taste match at `score`, sharing the three sample favorites and a few sub-genres, one of them rare.
+const sampleMatch = (score: number): UserMatch | null =>
+  toUserMatch({
+    score,
+    breakdown: { subgenres: Math.max(0, score - 8), favorites: Math.round(score / 2) },
+    shared: {
+      subgenres: [
+        { name: 'anthropomorphism', slug: 'anthropomorphism', rarity: 0.62 },
+        { name: 'space opera', slug: 'space-opera', rarity: 0.3 },
+        { name: 'time travel', slug: 'time-travel', rarity: 0.2 },
+        { name: 'cyborg', slug: 'cyborg' },
+        { name: 'magic', slug: 'magic', rarity: 0.1 },
+        { name: 'hero', slug: 'hero', rarity: 0.05 },
+      ].slice(0, Math.ceil(score / 16)),
+      favorites: { movies: score >= 45 ? [4, 5, 6, 7, 8, 9] : [], shows: score >= 25 ? [1, 2, 3] : [] },
+    },
+  });
+const matchScores = [94, 81, 62, 47, 31, 12];
+
 const relation = (value: Partial<ViewerRelation>) =>
   Promise.resolve({ follow: 'none', followsYou: false, blocked: false, requestId: null, ...value } as const);
 
@@ -88,6 +111,15 @@ const states = [
   {
     title: 'Tall cover, their request, following each other',
     props: { user: vip, large: true, relation: relation({ follow: 'following', followsYou: true, requestId: 1 }) },
+  },
+  {
+    title: 'Tall cover, your taste match streamed in',
+    props: {
+      user: free,
+      large: true,
+      relation: relation({ follow: 'following' }),
+      match: Promise.resolve(sampleMatch(62)),
+    },
   },
   {
     title: 'Tall cover, someone else scrobbling a movie',
@@ -257,6 +289,27 @@ const favorite = (
   gradient,
   notes: null,
 });
+const movie = (id: number, title: string, slug: string, year: number, gradient: readonly [string, string]): Favorite => ({
+  ...favorite(id, title, slug, year, gradient),
+  type: 'movie',
+  href: `/movies/${slug}`,
+  typeLabel: 'Movie',
+});
+// The taste match dialog's shared favorites: the sample shows and six movies, taking turns like the real list.
+const sharedFavorites = (match: UserMatch) => {
+  const shows = favorites.filter(({ id }) => match.sharedFavorites.shows.includes(id));
+  const movies = [
+    movie(4, 'Alien', 'alien-1979', 1979, ['#3E5C4A', '#0F1A14']),
+    movie(5, 'Heat', 'heat-1995', 1995, ['#4A6FA5', '#1C2A44']),
+    movie(6, 'Tron', 'tron-1982', 1982, ['#2BB3EE', '#0B2A44']),
+    movie(7, 'Arrival', 'arrival-2016', 2016, ['#8A94A6', '#2B3140']),
+    movie(8, 'Jaws', 'jaws-1975', 1975, ['#1F6FA8', '#0B2338']),
+    movie(9, 'Up', 'up-2009', 2009, ['#F2A65A', '#B5482B']),
+  ].filter(({ id }) => match.sharedFavorites.movies.includes(id));
+  return Array.from({ length: Math.max(shows.length, movies.length) }, (_, n) => [shows[n], movies[n]])
+    .flat()
+    .filter((card): card is Favorite => card !== undefined);
+};
 const favorites = [
   { ...favorite(1, 'The Boys', 'the-boys-2019', 2019, ['#FBB91E', '#A74B2B']), notes: 'Rewatch every year.' },
   favorite(2, 'Futurama', 'futurama', 1999, ['#4FA3D1', '#2B3F7A']),
@@ -294,9 +347,32 @@ const liveCards = [
           signedIn={props.signedIn ?? true}
           canFollow={props.canFollow ?? true}
           relation={props.relation ?? null}
+          match={props.match ?? null}
           coverUrl={props.coverUrl}
         />
       </Variant>
+    {/each}
+  </div>
+</Specimen>
+
+<Specimen title="Taste match" bleed
+  note="The cover's match pill at each of v3's six levels, on the cover's glass, its level in a slashed segment of the level's color. Click one for its breakdown: you VS them over the same pill, large. Soulmates' hearts and Co-stars' stars fall through the header, and hold still (hidden) with reduced motion on. The pill hides for yourself, signed out, a Standard app, a private profile you can't see, or too little history to compare.">
+  <div class="match-pills">
+    {#each matchScores as score (score)}
+      {@const match = sampleMatch(score)}
+      {#if match}
+        <Variant label={match.level.label}>
+          <MatchPill {match} owner={vip} loadFavorites={() => Promise.resolve(sharedFavorites(match))} />
+        </Variant>
+      {/if}
+    {/each}
+  </div>
+  <div class="match-pills">
+    {#each matchScores as score (score)}
+      {@const match = sampleMatch(score)}
+      {#if match}
+        <Variant label="{match.level.label}, large"><MatchBadge {match} large /></Variant>
+      {/if}
     {/each}
   </div>
 </Specimen>
@@ -380,6 +456,15 @@ const liveCards = [
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+/* The cover's dark glass, behind the match pills. */
+.match-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gutter);
+  padding: var(--gutter) var(--design-canvas-padding);
+  background: var(--gradient-profile-shadow), var(--color-profile-boxes-bg);
 }
 
 /* ProfilePage's favorites row. */

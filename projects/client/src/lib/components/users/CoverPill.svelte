@@ -22,7 +22,8 @@ const { title, tone, children }: { title?: string; tone?: 'private'; children: S
   gap: var(--space-xs-inline);
   block-size: var(--profile-pill-height);
   padding-inline: var(--profile-pill-padding);
-  border: 1px solid var(--color-profile-pill-border);
+  /* The cover's glass buttons' ring, like the options button beside the name. */
+  border: 1px solid var(--color-profile-button-border);
   border-radius: calc(var(--profile-pill-height) / 2);
   background-color: var(--color-profile-pill-bg);
   backdrop-filter: var(--blur-profile-pill);

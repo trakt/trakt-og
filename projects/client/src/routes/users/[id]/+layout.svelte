@@ -41,6 +41,7 @@ const tabs = $derived(profileTabs({ slug: data.profile.slug, pathname: page.url.
   isSelf={data.isSelf}
   signedIn={data.signedIn}
   relation={data.relation}
+  match={data.match}
   canFollow={data.settings?.permissions?.following !== false}
   coverUrl={listCover}
 />

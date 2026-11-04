@@ -1709,6 +1709,115 @@
     linear-gradient(rgb(0 0 0 / 0.5), rgb(0 0 0 / 0) 30%, rgb(0 0 0 / 0) 50%, rgb(0 0 0 / 0.85));
   --gradient-profile-shadow: linear-gradient(to right, rgb(0 0 0 / 0.8), rgb(0 0 0 / 0));
 
+  /* Taste match: the cover's match pill and its breakdown dialog. Each of v3's six levels has a color, an end color
+     for its gradients, a text color that reads on the dialog in both themes, and a tag color white reads on. The pill
+     is on the dark cover, so it lifts the level's color toward white instead. */
+  --color-match-soulmates: #ff4d7d;
+  --color-match-soulmates-end: #ffb347;
+  --color-match-soulmates-text: light-dark(#c2185b, #ffc2d4);
+  --color-match-soulmates-tag: #d6336c;
+  --color-match-co-stars: #f5b301;
+  --color-match-co-stars-end: #ff7a00;
+  --color-match-co-stars-text: light-dark(#8a5d00, #ffd76a);
+  --color-match-co-stars-tag: #c77c00;
+  --color-match-crossover: #a55eea;
+  --color-match-crossover-end: #4b7bec;
+  --color-match-crossover-text: light-dark(#7b2fbf, #d7bdf8);
+  --color-match-crossover-tag: #8e44ad;
+  --color-match-spin-off: #1abc9c;
+  --color-match-spin-off-end: #0e8a74;
+  --color-match-spin-off-text: light-dark(#0b7a63, #93f0dc);
+  --color-match-spin-off-tag: #138a7a;
+  --color-match-cameo: #2bb3ee;
+  --color-match-cameo-end: #0175a5;
+  --color-match-cameo-text: light-dark(#0175a5, #a8e2fa);
+  --color-match-cameo-tag: #0175a5;
+  --color-match-different-universe: #8a94a6;
+  --color-match-different-universe-end: #3b4252;
+  --color-match-different-universe-text: light-dark(#4b5263, #c9cfdb);
+  --color-match-different-universe-tag: #4b5263;
+  --match-pill-border-mix: 60%; /* the level's color in the pill's border */
+  --match-pill-glow-mix: 45%; /* and in its hover glow */
+  --match-pill-label-mix: 45%; /* the level's name: its color lifted toward white */
+  --match-pill-segment-mix: 28%; /* the level's color behind its name, the pill's end segment */
+  --match-pill-score-gap: 0.25em; /* between the score and "match" */
+  --match-pill-slant: var(--title-tags-slant); /* the slash before the level, like the title tag bar's */
+  --match-level-pill-slant: 13px; /* the large pill's, to its height */
+  --match-pill-slash: 0.6px; /* half the slash's width: a hair under the title tag bar's */
+  --shadow-match-pill-hover: 0 4px 14px; /* the profile buttons' glow, in the level's color */
+  --match-pill-starfield:
+    radial-gradient(1px 1px at 12% 30%, #fff, transparent),
+    radial-gradient(1px 1px at 40% 75%, rgb(255 255 255 / 0.7), transparent),
+    radial-gradient(1px 1px at 68% 25%, rgb(255 255 255 / 0.6), transparent),
+    radial-gradient(1px 1px at 88% 70%, #fff, transparent);
+  --duration-match-heartbeat: 1.6s;
+  --scale-match-heartbeat: 1.25;
+  --match-header-tint-mix: 45%; /* the level's color at the middle of the header art */
+  --match-header-tint-reach: 65%; /* where it fades out */
+  --match-header-min-height: 230px;
+  --match-header-padding: 28px var(--dialog-art-inline) 24px;
+  --match-header-gap: 18px; /* from the face-off to the pill */
+  --color-match-track: light-dark(rgb(0 0 0 / 0.08), rgb(255 255 255 / 0.1));
+  /* The arcade "VS" between the avatars, in the box office figures' condensed face and the level's colors: lit toward
+     white at the top, its end color darkened at the bottom, a darker outline and a glow. */
+  --match-vs-light-mix: 30%;
+  --match-vs-dark-mix: 55%;
+  --match-vs-stroke-mix: 35%;
+  --match-vs-glow-mix: 55%;
+  --color-match-vs-light: #fff;
+  --color-match-vs-dark: #000;
+  --shadow-match-vs-drop: 2px 2px 0 #000;
+  --shadow-match-vs-glow: 0 0 10px;
+  --font-size-match-vs: 44px;
+  --letter-spacing-match-vs: 0.02em;
+  --skew-match-vs: -10deg;
+  --opacity-match-stage-dimmed: 0.15; /* the face-off, while something plays over the header */
+  --match-vs-drop: 10px; /* its letters sit high; down to the avatars' middle */
+  --duration-match-vs-charge: 2s; /* grows while held under the pointer */
+  --scale-match-vs-charge: 1.3;
+  --duration-match-vs-blow: 0.35s;
+  --scale-match-vs-blow: 2;
+  --delay-match-stage-dim: 0.4s; /* after the VS has blown apart */
+  --font-size-match-level: 16px; /* the dialog's large match pill */
+  --match-level-pill-height: 38px; /* the cover pill, larger */
+  --match-level-pill-padding: 16px;
+  --match-avatar-size: 84px;
+  --match-avatar-size-narrow: 60px;
+  --match-avatar-border: 3px;
+  --shadow-match-avatar-glow: 0 0 16px; /* Soulmates' avatars, in the level's color */
+  /* Soulmates' hearts and Co-stars' stars, falling through the header. */
+  --font-size-match-fall: 14px;
+  --opacity-match-fall: 0.35;
+  --match-fall-start: -24px;
+  --match-fall-distance: 260px;
+  --match-fall-turn: 20deg;
+  --match-section-gap: 28px;
+  --match-poster-lift: -4px; /* a shared favorite under the pointer */
+  --scale-match-poster: 1.03;
+  --transition-match-poster: 0.2s;
+  --match-bar-height: 6px;
+  --font-size-match-part: 13px; /* a section heading's percent, at the end of its meter */
+  --match-topic-gap: 6px;
+  --match-topic-padding: 5px 12px;
+  --radius-match-topic: var(--radius-round);
+  --font-size-match-topic: 13px;
+  --match-topic-tint-mix: 12%; /* the level's color behind a strong topic */
+  --match-topic-border-mix: 40%; /* and in its border */
+  --match-topic-top-mix: 24%; /* behind the most telling ones */
+  --match-topic-glow-mix: 35%; /* and in their glow */
+  --shadow-match-topic-top: 0 0 12px;
+  --color-match-topic-light-bg: light-dark(rgb(0 0 0 / 0.05), rgb(255 255 255 / 0.06)); /* the rest */
+  --match-posters: 6; /* one row of shared favorites */
+  --text-shadow-match-glow: 0 0 10px; /* Co-stars' name, in the level's color */
+  --color-match-space: #0a0d16; /* Different universe's header: night sky over the art */
+  --match-band-starfield:
+    radial-gradient(1px 1px at 8% 30%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 22% 70%, rgb(255 255 255 / 0.7), transparent),
+    radial-gradient(1px 1px at 38% 20%, rgb(255 255 255 / 0.5), transparent),
+    radial-gradient(1px 1px at 55% 60%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 72% 35%, rgb(255 255 255 / 0.6), transparent),
+    radial-gradient(1px 1px at 90% 75%, #fff, transparent);
+
   /* Profile summary: the stat boxes, favorites and welcome hero on /users/:id */
   --profile-box-height: 200px;
   --profile-box-padding: 20px;

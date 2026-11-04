@@ -3,6 +3,8 @@ import { api } from '../api/api.ts';
 import { signInRedirect } from '../auth/signInRedirect.ts';
 import { loadViewerLists } from './loadViewerLists.ts';
 import { lazy } from '../utils/lazy.ts';
+import type { KeyedCache } from '../utils/sharedCache.ts';
+import { fetchUserMatch } from './match/fetchUserMatch.ts';
 import { apiUserStats } from '../stats/apiUserStats.ts';
 import { profileResponseSchema } from './profileResponseSchema.ts';
 import { toViewerRelation } from './toViewerRelation.ts';
@@ -17,6 +19,7 @@ type Params = {
   parent: () => Promise<{ user: HeaderUser | null }>;
   url: URL;
   isDataRequest?: boolean;
+  platform?: App.Platform;
 };
 
 /** The profile, its stats and the frame's watching-now bar. Neither of the last two is worth failing the page over. */
@@ -33,7 +36,15 @@ async function readFrame(client: ReturnType<typeof api>, id: string) {
  * The profile frame every `/users/:id/*` page shares. Subpage loaders `await parent()` and skip their own requests when
  * `profile.isLocked`: a private profile the viewer can't see renders the frame only, on every subpage.
  */
-export async function loadProfileFrame({ fetch, locals, params, parent, url, isDataRequest = false }: Params) {
+export async function loadProfileFrame({
+  fetch,
+  locals,
+  params,
+  parent,
+  url,
+  isDataRequest = false,
+  platform,
+}: Params) {
   if (params.id === 'me' && !locals.token) {
     signInRedirect(url);
   }
@@ -67,6 +78,9 @@ export async function loadProfileFrame({ fetch, locals, params, parent, url, isD
   // render always streams them, so it starts them now.
   const readLists = () => (isDataRequest ? lazy(() => loadViewerLists({ client })) : loadViewerLists({ client }));
   const viewerLists = viewer && !isSelf ? (locals.viewerLists ??= readLists()) : null;
+  const token = locals.token;
+  const cache = platform?.caches?.default as unknown as KeyedCache | undefined;
+  const { origin } = url;
 
   return {
     profile: user,
@@ -78,5 +92,10 @@ export async function loadProfileFrame({ fetch, locals, params, parent, url, isD
     // Streamed: the page renders without waiting for the viewer's five network lists. Lazy, so a tab switch that
     // discards this layout result never reads them.
     relation: viewerLists ? lazy(async () => toViewerRelation(user.slug, await viewerLists)) : null,
+    // Streamed and lazy like the relation: the cover's taste match pill, someone else's visible profile only.
+    match:
+      viewer && !isSelf && token && !user.isLocked && !stale
+        ? lazy(() => fetchUserMatch({ fetch, token, slug: user.slug, cache, origin }))
+        : null,
   };
 }

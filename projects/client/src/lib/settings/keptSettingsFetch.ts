@@ -1,3 +1,5 @@
+import { sha256 } from '../utils/sha256.ts';
+
 /** The three methods used from Cloudflare's `Cache`, so the browser's and the Worker's types both fit. */
 export interface ResponseCache {
   match(key: string): Promise<Response | undefined>;
@@ -23,11 +25,6 @@ interface KeptSettingsFetchParams {
   revision: string;
   /** Skip the kept copy and replace it: a full page load. */
   fresh: boolean;
-}
-
-async function sha256(text: string) {
-  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
-  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0')).join('');
 }
 
 /**

@@ -184,10 +184,14 @@ const listedOn = [
   </Container>
 </Specimen>
 
-<Specimen title="Toast" note="Glass toasts, top right under where the header sits.">
+<Specimen title="Toast" note="Glass toasts, top right under where the header sits. With action adds an Undo button that closes the toast and runs.">
   <div class="buttons">
     <DemoButton onclick={() => toast.success('Fight Club added to your watchlist.')}>Success</DemoButton>
     <DemoButton onclick={() => toast.error('This item was recently refreshed. Please try again later.')}>Error</DemoButton>
+    <DemoButton onclick={() => toast.success('You hid Season 3 of Dexter.', {
+      label: 'Undo',
+      run: () => toast.success('Season 3 of Dexter is back on your progress.'),
+    })}>With action</DemoButton>
   </div>
 </Specimen>
 

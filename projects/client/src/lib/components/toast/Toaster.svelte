@@ -2,7 +2,8 @@
   Toasts: dark glass cards stacked down from under the header's right edge, newest on top. Show one with
   `toast.success(message)` or `toast.error(message)` from `./toast.svelte.ts`. Each goes after 5s, and a line along its
   bottom drains to show it. Hovering or focusing one holds it, and it goes 1s after the pointer or focus leaves.
-  Errors announce assertively, successes politely.
+  Errors announce assertively, successes politely. A toast can carry one action, `toast.success(message, { label: 'Undo',
+  run })`, a text button before the close that closes it and runs.
 -->
 <script lang="ts">
 import Icon from '$lib/icons/Icon.svelte';
@@ -61,7 +62,7 @@ const autoDismiss = (id: number) => (node: HTMLElement) => {
 </script>
 
 <div class="toaster">
-  {#each toast.list as { id, type, message } (id)}
+  {#each toast.list as { id, type, message, action } (id)}
     <div
       class={['toast', type]}
       role={type === 'error' ? 'alert' : 'status'}
@@ -73,6 +74,12 @@ const autoDismiss = (id: number) => (node: HTMLElement) => {
     >
       <span class="icon"><Icon svg={icons[type]} /></span>
       <p class="message">{message}</p>
+      {#if action}
+        <button type="button" class="action" onclick={() => {
+          toast.dismiss(id);
+          action.run();
+        }}>{action.label}</button>
+      {/if}
       <button type="button" class="close" aria-label="Close" onclick={() => toast.dismiss(id)}>
         <Icon svg={xmark} />
       </button>
@@ -109,6 +116,10 @@ const autoDismiss = (id: number) => (node: HTMLElement) => {
   color: var(--color-toast-text);
   font-size: var(--font-size-toast);
 
+  &:has(.action) {
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
+  }
+
   &.success {
     --color-toast-type: var(--color-toast-success);
   }
@@ -128,6 +139,23 @@ const autoDismiss = (id: number) => (node: HTMLElement) => {
 .message {
   margin: 0;
   overflow-wrap: anywhere;
+}
+
+/* "Undo": a text button in the link red, lifted for the glass. */
+.action {
+  min-block-size: 0;
+  block-size: var(--toast-close-size);
+  padding-inline: var(--toast-action-padding);
+  border: 0;
+  border-radius: var(--radius-toast-close);
+  background: none;
+  color: var(--color-toast-action);
+  font-size: var(--font-size-toast);
+  font-weight: var(--font-weight-headings-heavy);
+
+  &:is(:hover, :focus-visible) {
+    background-color: var(--color-toast-close-hover);
+  }
 }
 
 .close {

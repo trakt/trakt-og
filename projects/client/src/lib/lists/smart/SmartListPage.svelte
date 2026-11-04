@@ -39,8 +39,8 @@ import type { ProfileUser } from '$lib/users/ProfileUser';
 import ListItemPoster from '$lib/lists/ListItemPoster.svelte';
 import { listHref } from '$lib/lists/listHref';
 import { listSortHow, reverseHow } from '$lib/lists/listItemSorts';
-import ListSortMenu from '$lib/lists/ListSortMenu.svelte';
-import ListSortLabel from '$lib/lists/ListSortLabel.svelte';
+import SortMenu from '$lib/components/sort/SortMenu.svelte';
+import SortLabel from '$lib/components/sort/SortLabel.svelte';
 import SeoHead from '$lib/seo/SeoHead.svelte';
 import { smartListSorts } from './smartListSorts.ts';
 import { smartListSourceLabel } from './smartListSourceLabel.ts';
@@ -143,8 +143,8 @@ async function remove() {
         {/if}
         <span class="sort">
           <Dropdown joined section="Sort">
-            {#snippet trigger()}<ListSortLabel sort={sorts.find(({ by }) => by === data.sort.by)} />{/snippet}
-            <ListSortMenu {sorts} current={data.sort.by}
+            {#snippet trigger()}<SortLabel sort={sorts.find(({ by }) => by === data.sort.by)} />{/snippet}
+            <SortMenu {sorts} current={data.sort.by}
               href={(sort) => listHref(page.url, { sort: { by: sort.by, how: listSortHow(sort.by) } })} />
           </Dropdown>
           <SortDirection joined descending={listSortHow(data.sort.by) === 'desc'} disabled={data.sort.by === 'random'}

@@ -54,12 +54,8 @@ describe('visibleCredits', () => {
     expect(titles(visibleCredits(credits, { ...query, sort: 'title' }))).toEqual(['Argo', 'Breaking Bad', 'Drive']);
   });
 
-  it('should sort popularity by votes', () => {
-    expect(titles(visibleCredits(credits, { ...query, sort: 'popularity' }))).toEqual([
-      'Breaking Bad',
-      'Drive',
-      'Argo',
-    ]);
+  it('should sort votes most first', () => {
+    expect(titles(visibleCredits(credits, { ...query, sort: 'votes' }))).toEqual(['Breaking Bad', 'Drive', 'Argo']);
   });
 
   it('should match terms against the title or a character', () => {

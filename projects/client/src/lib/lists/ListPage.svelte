@@ -24,8 +24,8 @@ import { afterNavigate, goto, invalidateAll, replaceState } from '$app/navigatio
 import ListNotice from '$lib/components/lists/ListNotice.svelte';
 import ListTag from '$lib/components/lists/ListTag.svelte';
 import ListTitleRow from '$lib/components/lists/ListTitleRow.svelte';
-import ListSortMenu from '$lib/lists/ListSortMenu.svelte';
-import ListSortLabel from '$lib/lists/ListSortLabel.svelte';
+import SortMenu from '$lib/components/sort/SortMenu.svelte';
+import SortLabel from '$lib/components/sort/SortLabel.svelte';
 import { memberRelation } from '$lib/components/comments/memberRelation';
 import { convertToSmartList } from '$lib/lists/smart/convertToSmartList';
 import ReportDialog from '$lib/components/summary/ReportDialog.svelte';
@@ -694,8 +694,8 @@ async function saveNotes(text: string) {
     {#snippet summary()}
       <span class="sort">
         <Dropdown joined section="Sort">
-          {#snippet trigger()}<ListSortLabel sort={sorts.find(({ by }) => by === data.sort.by)} />{/snippet}
-          <ListSortMenu {sorts} current={data.sort.by}
+          {#snippet trigger()}<SortLabel sort={sorts.find(({ by }) => by === data.sort.by)} />{/snippet}
+          <SortMenu {sorts} current={data.sort.by}
             href={(sort) => listHref(page.url, { sort: { by: sort.by, how: listSortHow(sort.by) } })}
             onpick={(sort) => trackSort({ sortBy: sort.by, sortHow: listSortHow(sort.by) })} />
         </Dropdown>

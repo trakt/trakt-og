@@ -1,12 +1,11 @@
 import type { HistoryType } from '../history/historyTypes.ts';
 
-/** OG's library sort labels. */
+/** OG's library sort labels, less Popularity, which sorts by the same vote count as Votes. */
 export const sortLabels = {
   added: 'Added Date',
   title: 'Title',
   released: 'Release Date',
   runtime: 'Runtime',
-  popularity: 'Popularity',
   percentage: 'Percentage',
   votes: 'Votes',
 } as const;
@@ -16,13 +15,14 @@ export type LibrarySortBy = keyof typeof sortLabels;
 /** Each type's sorts that the API serves. Shows take none but Added Date. */
 export const librarySorts: Readonly<Record<HistoryType, readonly LibrarySortBy[]>> = {
   all: ['added'],
-  movies: ['added', 'title', 'released', 'runtime', 'popularity', 'percentage', 'votes'],
+  movies: ['added', 'title', 'released', 'runtime', 'percentage', 'votes'],
   shows: ['added'],
   episodes: ['added', 'title', 'released', 'percentage', 'votes'],
 };
 
-/** `by` when `type` has that sort. */
-export const validSort = (type: HistoryType, by: string) => librarySorts[type].find((sort) => sort === by);
+/** `by` when `type` has that sort. An old Popularity link reads as Votes. */
+export const validSort = (type: HistoryType, by: string) =>
+  librarySorts[type].find((sort) => sort === (by === 'popularity' ? 'votes' : by));
 
 export type LibrarySort = {
   readonly by: LibrarySortBy;

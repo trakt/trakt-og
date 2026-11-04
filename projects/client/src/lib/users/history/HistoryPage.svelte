@@ -13,6 +13,9 @@ import { goto } from '$app/navigation';
 import { page } from '$app/state';
 import Container from '$lib/components/container/Container.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
+import SortLabel from '$lib/components/sort/SortLabel.svelte';
+import SortMenu from '$lib/components/sort/SortMenu.svelte';
+import { withTraktSorts } from '$lib/components/sort/sortMenu';
 import SortDirection from '$lib/components/dropdown/SortDirection.svelte';
 import EmptyState from '$lib/components/empty/EmptyState.svelte';
 import DateRangeFilter from '$lib/components/filters/DateRangeFilter.svelte';
@@ -91,6 +94,7 @@ function href(type: string, changes: Record<string, string | null>, sort: Histor
 
 // One item's plays run newest first only.
 const sorts = $derived(data.filters.item ? historySorts.all : historySorts[data.type]);
+const menuSorts = $derived(withTraktSorts(sorts.map((by) => ({ by, label: historySortLabels[by] }))));
 const flipped = $derived(data.sort.how === 'desc');
 // OG only divides Watched Date by day.
 const dividing = $derived(data.sort.by === 'added');
@@ -182,13 +186,9 @@ const country = $derived(watchNowCountry(data.settings));
   {#snippet summary()}
     <span class="sort">
       <Dropdown joined section="Sort">
-        {#snippet trigger()}{historySortLabels[data.sort.by]}{/snippet}
-        <ul>
-          {#each sorts as by (by)}
-            <li><a href={href(data.type, {}, { by, how: 'asc' })}
-              aria-current={data.sort.by === by ? 'page' : undefined}>{historySortLabels[by]}</a></li>
-          {/each}
-        </ul>
+        {#snippet trigger()}<SortLabel sort={menuSorts.find(({ by }) => by === data.sort.by)}
+            fallback={historySortLabels[data.sort.by]} />{/snippet}
+        <SortMenu sorts={menuSorts} current={data.sort.by} href={({ by }) => href(data.type, {}, { by, how: 'asc' })} />
       </Dropdown>
       <!-- Every sort but Title runs newest, most or longest first; Watched Date can't flip. -->
       <SortDirection joined descending={data.sort.by !== 'title'} disabled={!flippable(data.sort)} bind:flipped={

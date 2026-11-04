@@ -1,3 +1,4 @@
+import type { SortSite } from '../components/sort/sortMenu.ts';
 import type { SortHow } from './ListQuery.ts';
 
 /** A list type in OG's type dropdown and in the API's type path segment. */
@@ -5,9 +6,6 @@ export type ListItemType = 'movie' | 'show' | 'season' | 'episode' | 'person';
 
 /** The list dialogs' sort field group. `site` and `votes` get a header over them, `mine` is signed-in only. */
 export type ListSortGroup = 'main' | 'site' | 'votes' | 'mine';
-
-/** The site a rating or votes sort reads, which groups it in the list page's sort menu. */
-export type ListSortSite = 'trakt' | 'imdb' | 'tmdb' | 'rt' | 'metacritic';
 
 export type ListItemSort = {
   readonly by: string;
@@ -19,7 +17,7 @@ export type ListItemSort = {
   readonly descending?: true;
   /** The sort menu only: the API can't save it as a list's default sort. */
   readonly browseOnly?: true;
-  readonly site?: ListSortSite;
+  readonly site?: SortSite;
   /** Its name under its site or group in the sort menu, without the site ("Votes" for IMDB Votes). */
   readonly short?: string;
 };

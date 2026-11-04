@@ -9,8 +9,8 @@ import FieldLabel from '$lib/components/dialog/FieldLabel.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
 import SortDirection from '$lib/components/dropdown/SortDirection.svelte';
 import { listItemSorts, listSortHow, reverseHow } from '$lib/lists/listItemSorts';
-import ListSortMenu from '$lib/lists/ListSortMenu.svelte';
-import ListSortLabel from '$lib/lists/ListSortLabel.svelte';
+import SortMenu from '$lib/components/sort/SortMenu.svelte';
+import SortLabel from '$lib/components/sort/SortLabel.svelte';
 import { sortDirectionHint } from '$lib/lists/sortDirectionHint';
 
 interface Props {
@@ -30,8 +30,8 @@ const hint = $derived(sortDirectionHint(by, how));
   <FieldLabel text="Default sorting" id="{id}-label" />
   <span class="sort">
     <Dropdown joined block>
-      {#snippet trigger()}<ListSortLabel sort={listItemSorts.find((sort) => sort.by === by)} />{#if hint}<span class="hint">{hint}</span>{/if}{/snippet}
-      <ListSortMenu {sorts} current={by} onpick={(sort) => {
+      {#snippet trigger()}<SortLabel sort={listItemSorts.find((sort) => sort.by === by)} />{#if hint}<span class="hint">{hint}</span>{/if}{/snippet}
+      <SortMenu {sorts} current={by} onpick={(sort) => {
         by = sort.by;
         how = listSortHow(sort.by);
       }} />

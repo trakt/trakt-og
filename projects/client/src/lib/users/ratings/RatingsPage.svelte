@@ -6,6 +6,9 @@ import { goto } from '$app/navigation';
 import { page } from '$app/state';
 import Container from '$lib/components/container/Container.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
+import SortLabel from '$lib/components/sort/SortLabel.svelte';
+import SortMenu from '$lib/components/sort/SortMenu.svelte';
+import { withTraktSorts } from '$lib/components/sort/sortMenu';
 import SortDirection from '$lib/components/dropdown/SortDirection.svelte';
 import EmptyState from '$lib/components/empty/EmptyState.svelte';
 import DividersToggle from '$lib/components/filters/DividersToggle.svelte';
@@ -45,7 +48,7 @@ const fadeOptions = $derived(
   fadeHideOptions.filter((option) => ['all', 'shows', 'seasons'].includes(data.query.type) || !('showsOnly' in option)),
 );
 const sorts = $derived(ratingSorts[data.query.type]);
-const sortLabel = $derived(Object.entries(sorts).find(([by]) => by === data.query.by)?.at(1));
+const menuSorts = $derived(withTraktSorts(Object.entries(sorts).map(([by, label]) => ({ by, label }))));
 const flipped = $derived(data.query.how === 'desc');
 
 function href(next: Partial<ReturnType<typeof ratingQuery>>) {
@@ -133,10 +136,9 @@ const count = $derived(data.total - (data.cards.length - cards.length));
   {#snippet summary()}
     <span class="sort">
       <Dropdown joined section="Sort">
-        {#snippet trigger()}{sortLabel}{/snippet}
-        <ul>{#each Object.entries(sorts) as [by, label] (by)}
-          <li><a href={href({ by: ratingQuery(`${data.query.type}/all/${by}`).by, how: 'asc' })} aria-current={data.query.by === by ? 'page' : undefined}>{label}</a></li>
-        {/each}</ul>
+        {#snippet trigger()}<SortLabel sort={menuSorts.find(({ by }) => by === data.query.by)} />{/snippet}
+        <SortMenu sorts={menuSorts} current={data.query.by}
+          href={({ by }) => href({ by: ratingQuery(`${data.query.type}/all/${by}`).by, how: 'asc' })} />
       </Dropdown>
       <!-- Every sort but Title runs newest, highest or longest first. -->
       <SortDirection joined descending={data.query.by !== 'title'}

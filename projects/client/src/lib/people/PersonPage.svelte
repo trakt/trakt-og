@@ -11,6 +11,9 @@ import { tick } from 'svelte';
 import { page } from '$app/state';
 import type { HeaderUser } from '$lib/components/header/HeaderUser';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
+import SortLabel from '$lib/components/sort/SortLabel.svelte';
+import SortMenu from '$lib/components/sort/SortMenu.svelte';
+import { withTraktSorts } from '$lib/components/sort/sortMenu';
 import SortDirection from '$lib/components/dropdown/SortDirection.svelte';
 import FanartHeader from '$lib/components/media/FanartHeader.svelte';
 import PosterCard from '$lib/components/media/PosterCard.svelte';
@@ -122,7 +125,7 @@ function yearAccent(year: number | undefined) {
 // Acting credits are named by the character, crew credits by the title.
 const eraName = (credit: PersonCredit) =>
   tab === 'acting' && credit.characters ? credit.characters.split(', ')[0] ?? credit.title : credit.title;
-const sortName = $derived(creditSorts.find(({ id }) => id === query.sort)?.label);
+const menuSorts = withTraktSorts(creditSorts.map((sort) => ({ ...sort, by: sort.id })));
 // The fanart's source as a tag bar: the department, then the title, its year and who they played, tinted.
 const fanartSource = $derived.by(() => {
   const source = person.fanart?.caption;
@@ -409,15 +412,9 @@ function yearLine(credit: PersonCredit) {
       <div class="controls">
         <span class="sort">
           <Dropdown joined section="Sort">
-            {#snippet trigger()}{sortName}{/snippet}
-            <ul>
-              {#each creditSorts as sort (sort.id)}
-                <li>
-                  <button type="button" aria-current={sort.id === query.sort}
-                    onclick={() => (query = { ...query, sort: sort.id, reversed: false })}>{sort.label}</button>
-                </li>
-              {/each}
-            </ul>
+            {#snippet trigger()}<SortLabel sort={menuSorts.find(({ by }) => by === query.sort)} />{/snippet}
+            <SortMenu sorts={menuSorts} current={query.sort}
+              onpick={(sort) => (query = { ...query, sort: sort.id, reversed: false })} />
           </Dropdown>
           <SortDirection joined descending={creditSorts.find(({ id }) => id === query.sort)?.descending}
             bind:flipped={query.reversed} />

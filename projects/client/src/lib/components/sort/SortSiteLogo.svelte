@@ -9,26 +9,29 @@ import metacritic from '$lib/assets/sites/metacritic.png';
 import tomatometer from '$lib/assets/sites/rt/tomatometer-fresh.svg';
 import tmdb from '$lib/assets/sites/tmdb.svg';
 import trakt from '$lib/assets/sites/trakt.png';
-import type { ListSortSite } from './listItemSorts.ts';
+import type { SortSite } from './sortMenu.ts';
 
-const LOGOS: Readonly<Record<ListSortSite, string>> = { trakt, imdb, tmdb, rt: tomatometer, metacritic };
+const LOGOS: Readonly<Record<SortSite, string>> = { trakt, imdb, tmdb, rt: tomatometer, metacritic };
 
-const { site, alt = '' }: { site: ListSortSite; alt?: string } = $props();
+const { site, alt = '' }: { site: SortSite; alt?: string } = $props();
 </script>
 
 <span class="site-logo"><img class={site} src={LOGOS[site]} {alt} /></span>
 
 <style>
+/* A square every logo fits inside, centred on the name's capitals rather than its x-height. */
 .site-logo {
-  display: inline-flex;
+  display: inline-block;
   flex: none;
-  align-items: center;
   inline-size: var(--menu-site-logo-width);
-  vertical-align: middle;
+  block-size: var(--menu-site-logo-width);
+  vertical-align: calc((1cap - var(--menu-site-logo-width)) / 2);
 
   & img {
+    display: block;
     inline-size: 100%;
-    block-size: auto;
+    block-size: 100%;
+    object-fit: contain;
   }
 }
 

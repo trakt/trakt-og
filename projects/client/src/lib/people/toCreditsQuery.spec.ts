@@ -26,6 +26,10 @@ describe('toCreditsQuery', () => {
     expect(parse('?sort=rank,asc').sort).toBe('released');
   });
 
+  it('should read an old Popularity link as Votes, which sorts the same way', () => {
+    expect(parse('?sort=popularity,asc').sort).toBe('votes');
+  });
+
   it('should read the displayed types and the terms', () => {
     expect(parse('?display=movie&terms=walter')).toMatchObject({ movies: true, shows: false, terms: 'walter' });
   });

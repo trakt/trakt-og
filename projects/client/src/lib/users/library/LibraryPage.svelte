@@ -12,6 +12,9 @@ import { page } from '$app/state';
 import CollectionOverlay from '$lib/components/collection/CollectionOverlay.svelte';
 import Container from '$lib/components/container/Container.svelte';
 import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
+import SortLabel from '$lib/components/sort/SortLabel.svelte';
+import SortMenu from '$lib/components/sort/SortMenu.svelte';
+import { withTraktSorts } from '$lib/components/sort/sortMenu';
 import SortDirection from '$lib/components/dropdown/SortDirection.svelte';
 import EmptyState from '$lib/components/empty/EmptyState.svelte';
 import DateRangeFilter from '$lib/components/filters/DateRangeFilter.svelte';
@@ -52,6 +55,7 @@ const title = $derived(`${data.profile.displayName}'s ${metaType} library`);
 const noun = $derived(data.type === 'all' ? 'item' : data.type.replace(/s$/, ''));
 const base = $derived(`/users/${data.profile.slug}/library`);
 const screenshots = $derived(data.type === 'episodes');
+const menuSorts = $derived(withTraktSorts(librarySorts[data.type].map((by) => ({ by, label: sortLabels[by] }))));
 const filtered = $derived(data.source !== 'all' || Boolean(data.range.startAt || data.range.endAt));
 
 // OG's `library_user_path(type, sort_by, sort_how, link_params)`: the query string without the page. A sort the
@@ -147,13 +151,9 @@ const flipped = $derived(data.sort.how === 'desc');
   {#snippet summary()}
     <span class="sort">
       <Dropdown joined section="Sort">
-        {#snippet trigger()}{sortLabels[data.sort.by]}{/snippet}
-        <ul>
-          {#each librarySorts[data.type] as by (by)}
-            <li><a href={href(data.type, { by, how: 'asc' })}
-              aria-current={data.sort.by === by ? 'page' : undefined}>{sortLabels[by]}</a></li>
-          {/each}
-        </ul>
+        {#snippet trigger()}<SortLabel sort={menuSorts.find(({ by }) => by === data.sort.by)}
+            fallback={sortLabels[data.sort.by]} />{/snippet}
+        <SortMenu sorts={menuSorts} current={data.sort.by} href={({ by }) => href(data.type, { by, how: 'asc' })} />
       </Dropdown>
       <!-- Every sort but Title runs newest, highest or longest first; the Shows route takes no sort at all. -->
       <SortDirection joined descending={data.sort.by !== 'title'} disabled={data.type === 'shows'} bind:flipped={

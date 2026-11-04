@@ -133,6 +133,57 @@ describe('loadSearch', () => {
     expect(seen).toEqual([]);
   });
 
+  describe('for an empty Lists search', () => {
+    const LIST = {
+      name: 'Harry Potter Collection',
+      type: 'official',
+      ids: { trakt: 7, slug: 'harry-potter-collection' },
+      item_count: 8,
+      likes: 1183,
+      user: { username: 'Trakt', ids: { slug: null } },
+    };
+    const popular = ({ request }: { request: Request }) => {
+      seen.push(request);
+      return HttpResponse.json([{ like_count: 1183, comment_count: 0, list: LIST }], {
+        headers: { 'X-Pagination-Page': '1', 'X-Pagination-Page-Count': '390', 'X-Pagination-Item-Count': '14029' },
+      });
+    };
+    const lists = (path: string) => {
+      server.use(
+        http.get('https://apiz.trakt.tv/lists/popular', popular),
+        http.get('https://apiz.trakt.tv/lists/popular/:type', popular),
+      );
+      return search(path, { type: 'lists' });
+    };
+
+    it('should browse the popular lists of the picked type without the viewer token', async () => {
+      const data = await lists('/search/lists?type=official&page=2');
+
+      const url = new URL(seen.at(0)?.url ?? '');
+      expect(url.pathname).toBe('/lists/popular/official');
+      expect(Object.fromEntries(url.searchParams)).toMatchObject({ page: '2', limit: '36' });
+      expect(data.listType).toBe('official');
+      expect(data.count).toBe(14029);
+      expect(data.lists.map((list) => list.name)).toEqual(['Harry Potter Collection']);
+    });
+
+    it('should browse every type when the type is missing or unknown', async () => {
+      expect((await lists('/search/lists?type=watchlists')).listType).toBe('all');
+      expect(new URL(seen.at(0)?.url ?? '').pathname).toBe('/lists/popular');
+    });
+
+    it('should search as before once there is a query, ignoring the type', async () => {
+      const data = await lists('/search/lists?query=potter&type=official');
+      expect(new URL(seen.at(0)?.url ?? '').pathname).toBe('/search/list');
+      expect(data.listType).toBeUndefined();
+    });
+
+    it('should turn a failed browse into a 502', async () => {
+      server.use(http.get('https://apiz.trakt.tv/lists/popular/:type', () => new HttpResponse(null, { status: 500 })));
+      expect(await thrownBy(search('/search/lists?type=personal', { type: 'lists' }))).toBe(502);
+    });
+  });
+
   it('should send a retired tab to Shows & Movies with its query', async () => {
     expect(await thrownBy(search('/search/episodes?query=pilot', { type: 'episodes' }))).toBe('/search?query=pilot');
     expect(await thrownBy(search('/search/users/sean', { type: 'users', id: 'sean' }))).toBe('/search?query=sean');

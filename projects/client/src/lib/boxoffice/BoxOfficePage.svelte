@@ -2,8 +2,8 @@
   The weekend box office (`/movies/boxoffice`) in a SidebarFrame, like the charts: the chart picker and the list's
   description, This Weekend (the top 10's total, #1's share, the openers and a strip of each film's share) and the
   films opening on Friday in the sidebar. The content is the chart as a table: rank, poster, title with its pills,
-  its run, the weekend gross against #1's, its share, and the list row's quick icons with the rating (no favorite, as
-  in OG).
+  its run, the weekend gross against #1's, the total gross so far, its share, and the list row's quick icons with the
+  rating (no favorite, as in OG).
 -->
 <script lang="ts">
 import SeoHead from '$lib/seo/SeoHead.svelte';
@@ -19,6 +19,7 @@ import SidebarSection from '$lib/components/sidebar/SidebarSection.svelte';
 import SidebarTitle from '$lib/components/sidebar/SidebarTitle.svelte';
 import type { HeaderUser } from '$lib/components/header/HeaderUser';
 import { overlay } from '$lib/overlay/overlay';
+import { readableStat } from '$lib/utils/readableStat';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
 import type { loadBoxOffice } from './loadBoxOffice.ts';
 import type { WeekInRelease } from './weekInRelease.ts';
@@ -34,6 +35,7 @@ const share = (revenue: number) => (data.total ? revenue / data.total : 0);
 const percent = (fraction: number) => `${(fraction * 100).toFixed(1)}%`;
 const dollars = (amount: number) => `$${amount.toLocaleString('en-US')}`;
 const millions = (amount: number) => `$${(amount / 1_000_000).toFixed(1)}M`;
+const hasTotals = $derived(data.rows.some((row) => row.totalGross !== null));
 const openers = $derived(data.rows.filter((row) => row.run?.kind === 'opening').length);
 const runPill = (run: WeekInRelease) => ({
   text: run.label,
@@ -123,7 +125,8 @@ const runPill = (run: WeekInRelease) => ({
           <td></td>
           <th scope="col">Film</th>
           <th scope="col">Run</th>
-          <th scope="col" class="number">Weekend gross</th>
+          <th scope="col" class="number">Weekend</th>
+          {#if hasTotals}<th scope="col" class="number">Total</th>{/if}
           <th scope="col" class="number">Share</th>
           <th scope="col"><span class="visually-hidden">Actions</span></th>
         </tr>
@@ -147,6 +150,11 @@ const runPill = (run: WeekInRelease) => ({
               <b class="line">{dollars(row.revenue)}</b>
               <span class="bar" style:--share="{top ? (row.revenue / top) * 100 : 0}%"></span>
             </td>
+            {#if hasTotals}
+              <td class="number total-cell">
+                <span class="line">{#if row.totalGross !== null}${readableStat(row.totalGross).toUpperCase()}{/if}</span>
+              </td>
+            {/if}
             <td class="number share-cell"><span class="line">{percent(share(row.revenue))}</span></td>
             <td class="actions">
               <QuickIcons row small fill={quickIconFill({ state, runtime: row.runtime, datePreferences: data.datePreferences })}
@@ -514,7 +522,8 @@ td.film {
   }
 }
 
-.share-cell {
+/* The total so far and the share: quieter figures beside the weekend's. */
+:is(.total-cell, .share-cell) {
   color: var(--color-sidebar-pill-text);
   font-size: var(--font-size-box-office-share);
 }

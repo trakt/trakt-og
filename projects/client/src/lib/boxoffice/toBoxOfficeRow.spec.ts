@@ -25,6 +25,7 @@ describe('mapper: toBoxOfficeRow', () => {
       tags: [{ text: 'R', kind: 'badge' }, { text: '1h 54m' }, { text: 'Thriller' }, { text: 'Science Fiction' }],
       run: { kind: 'opening', label: 'Opening' },
       revenue: 33000000,
+      totalGross: null,
       rating: 7,
       runtime: 114,
     });
@@ -34,5 +35,13 @@ describe('mapper: toBoxOfficeRow', () => {
     const bare = { ...movie, certification: null, runtime: 60, genres: [] } as unknown as MovieResponse;
 
     expect(toBoxOfficeRow({ movie: bare }, '2026-10-02')).toMatchObject({ tags: [{ text: '1h' }], revenue: 0 });
+  });
+
+  it('should take its total gross from the list', () => {
+    const totals = new Map([[1043653, 245_300_000]]);
+
+    expect(toBoxOfficeRow({ revenue: 33000000, movie }, '2026-10-02', totals)).toMatchObject({
+      totalGross: 245_300_000,
+    });
   });
 });

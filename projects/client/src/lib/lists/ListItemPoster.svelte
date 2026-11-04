@@ -17,6 +17,10 @@ import type { DatePreferences } from '$lib/settings/DatePreferences';
 import type { Snippet } from 'svelte';
 import type { ListItemCard } from './toListItemCard.ts';
 import RatingLine from '$lib/components/rating/RatingLine.svelte';
+import ExternalSortLine from './ExternalSortLine.svelte';
+import { isExternalSort } from './externalSortLine.ts';
+import type { ExternalRatingsTarget } from './fetchExternalRatings.ts';
+import { listItemSorts } from './listItemSorts.ts';
 import { linesBeforeRating, viewerSortLine, withViewerLine } from './viewerSort.ts';
 
 interface Props {
@@ -51,6 +55,13 @@ const fill = $derived(quickIconFill({
 }));
 const viewerLine = $derived(sortBy && state ? viewerSortLine(sortBy, state, datePreferences) : undefined);
 const myRating = $derived(sortBy === 'my_rating' ? (state?.rating ?? undefined) : undefined);
+// A site sort's line, for the types the sort applies to: no season or person has other sites' ratings.
+const siteTarget = $derived.by((): ExternalRatingsTarget | undefined => {
+  if (!sortBy || !isExternalSort(sortBy)) return undefined;
+  if (!listItemSorts.find(({ by }) => by === sortBy)?.types?.includes(item.type)) return undefined;
+  if (item.type === 'episode') return { type: 'episode', id: item.id, seasonOf: item.seasonOf };
+  return item.type === 'movie' || item.type === 'show' ? { type: item.type, id: item.id } : undefined;
+});
 </script>
 
 <PosterCard
@@ -60,7 +71,7 @@ const myRating = $derived(sortBy === 'my_rating' ? (state?.rating ?? undefined) 
   number={item.number}
   image={item.image}
   episodeBadge={item.episodeBadge}
-  subtitles={myRating ? linesBeforeRating(item) : viewerLine ? withViewerLine(item, viewerLine) : item.lines}
+  subtitles={myRating || siteTarget ? linesBeforeRating(item) : viewerLine ? withViewerLine(item, viewerLine) : item.lines}
   faded={fade.some((option) => matchesListFade({ option, notes: item.notes, state: state ?? {}, fill }))}
   userRating={state?.rating}
   {rank}
@@ -83,7 +94,8 @@ const myRating = $derived(sortBy === 'my_rating' ? (state?.rating ?? undefined) 
         class="add-notes"
       ><NotesPill add svg={plus} label="Add Note" aria-label="Add Note to {item.title}" onclick={() => oneditnotes(item)} /></div>{/if}
   {/snippet}
-  {#if myRating}<a class="rating-link" href={item.href}><RatingLine rating={myRating} /></a>{/if}
+  {#if myRating}<a class="rating-link" href={item.href}><RatingLine rating={myRating} /></a>{:else if siteTarget && sortBy}<a
+      class="rating-link" href={item.href}><ExternalSortLine target={siteTarget} {sortBy} /></a>{/if}
 </PosterCard>
 
 <style>

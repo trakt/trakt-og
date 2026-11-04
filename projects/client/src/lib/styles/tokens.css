@@ -1381,6 +1381,7 @@
   /* Poster rating lines. */
   --space-card-rating-top: 5px;
   --line-height-card-rating: 13px;
+  --card-metascore-ring: 1px;
 
   --rating-popover-gap: 10px;
   --rating-popover-border-width: 1px;

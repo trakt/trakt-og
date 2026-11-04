@@ -8,8 +8,9 @@
   to the magnifier, and a click outside (on the dimmed page) closes it, keeping what was typed. A bare `/` anywhere else
   opens it.
   The type picks the form's `/search/<type>` action and is kept in the `search_type` cookie so SSR renders it.
-  Before anything is typed, the rows are the type's starting list: the most searched shows and movies, the trending
-  lists, or this month's birthdays for People (none for the other types), with shimmering rows until it lands.
+  Before anything is typed, the rows are the type's starting list: the most searched shows and movies, the popular
+  personal and official lists side by side (each with a View all link to the search page, and ← → between them), or
+  this month's birthdays for People (none for the other types), with shimmering rows until it lands.
   The viewer's recent searches go under the results, with Clear all on their heading.
 -->
 <script lang="ts">
@@ -30,6 +31,8 @@ import { isSearchShortcut } from './isSearchShortcut.ts';
 import { recentSearchType } from './recentSearchType.ts';
 import type { SearchAutocompleteResult } from './searchAutocomplete.ts';
 import type { SearchTrending } from './searchTrending.ts';
+import type { SearchTrendingSection } from './SearchTrendingSection.ts';
+import { columnJump } from './columnJump.ts';
 import TagPills from '$lib/components/labels/TagPills.svelte';
 import Shimmer from '$lib/components/loading/Shimmer.svelte';
 import SearchTermRow from './SearchTermRow.svelte';
@@ -98,16 +101,33 @@ const STARTING_LISTS: ReadonlySet<string> = new Set(['', 'shows', 'movies', 'peo
 const SHIMMER_ROWS = 5;
 const typed = $derived(query.trim() !== '');
 const startingSoon = $derived(!typed && trending[type.slug] === null && STARTING_LISTS.has(type.slug));
-const rows = $derived<readonly SearchRow[]>(typed ? result.rows : (trending[type.slug]?.rows ?? []));
-const resultOptionCount = $derived(rows.length + (result.count ? 1 : 0));
-const options = $derived([
-  ...rows.map((row, index) => ({ id: `${id}-option-${index}`, href: row.href })),
+const sections = $derived<readonly SearchTrendingSection[]>(
+  typed
+    ? result.rows.length > 0 ? [{ label: 'Results', rows: result.rows }] : []
+    : (trending[type.slug]?.sections ?? []),
+);
+// Lists' two starting sections sit side by side, and so do their shimmers.
+const split = $derived(!typed && (startingSoon ? type.slug === 'lists' : sections.length > 1));
+// Each section's options: its rows, then its View all.
+const sectionOptions = $derived(
+  sections.map((section) => [
+    ...section.rows.map((row) => ({ href: row.href, row })),
+    ...(section.more ? [{ href: section.more.href, row: undefined }] : []),
+  ]),
+);
+const sectionStarts = $derived(
+  sectionOptions.map((_, index) => sectionOptions.slice(0, index).reduce((sum, list) => sum + list.length, 0)),
+);
+const rowOptions = $derived(sectionOptions.flat().map((option, index) => ({ ...option, id: `${id}-option-${index}` })));
+const resultOptionCount = $derived(rowOptions.length + (result.count ? 1 : 0));
+const options = $derived<readonly { id: string; href: string; row?: SearchRow }[]>([
+  ...rowOptions,
   ...(result.count ? [{ id: `${id}-option-all`, href: allHref }] : []),
   ...terms.map((_, index) => ({ id: `${id}-term-${index}`, href: '' })),
 ]);
 const expanded = $derived(active && (options.length > 0 || startingSoon));
 const noMatches = $derived(
-  typed && answered === query.trim() && rows.length === 0 && !result.count,
+  typed && answered === query.trim() && result.rows.length === 0 && !result.count,
 );
 const activeId = $derived(expanded && highlight >= 0 ? options.at(highlight)?.id : undefined);
 
@@ -210,24 +230,37 @@ const moveHighlight = (step: 1 | -1) => {
 };
 
 // Cmd or Ctrl+Enter opens a new tab. Otherwise click the row's own link, so SvelteKit's router handles it.
-const openOption = (option: { id: string; href: string }, newTab: boolean) => {
+const openOption = (option: { id: string; href: string; row?: SearchRow }, newTab: boolean) => {
   if (!option.href) {
     document.getElementById(option.id)?.querySelector('button')?.click();
     return;
   }
   if (newTab) {
-    const row = rows.at(highlight);
-    if (row && highlight < rows.length) record(row);
+    if (option.row) record(option.row);
     window.open(option.href, '_blank', 'noopener');
     return;
   }
   document.getElementById(option.id)?.querySelector('a')?.click();
 };
 
+// Side by side, ← and → cross to the other column. The field is empty then, so there's no caret for them to move.
+const jumpColumn = (step: 1 | -1) => {
+  if (!expanded) return false;
+  const next = columnJump({ columns: sectionOptions.map((list) => list.length), highlight, step });
+  if (next === null) return false;
+  highlight = next;
+  return true;
+};
+
 const onkeydown = (event: KeyboardEvent) => {
   if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
     event.preventDefault();
     moveHighlight(event.key === 'ArrowDown' ? 1 : -1);
+    return;
+  }
+
+  if (split && (event.key === 'ArrowRight' || event.key === 'ArrowLeft')) {
+    if (jumpColumn(event.key === 'ArrowRight' ? 1 : -1)) event.preventDefault();
     return;
   }
 
@@ -401,13 +434,14 @@ afterNavigate(({ to }) => {
         </div>
 
       <ul id="{id}-results" role="listbox" aria-label="Search results" hidden={!expanded} aria-busy={startingSoon}
-        onpointerleave={() => (highlight = -1)}
+        class={{ split }} onpointerleave={() => (highlight = -1)}
         {@attach trackDrilldowns(typed ? { source: 'search', positions: ':scope > li' } : { source: 'search-trending' })}>
           {#if startingSoon}
-            <li role="presentation" class="section" aria-hidden="true"><Shimmer inline="var(--search-shimmer-section)"
-                block="var(--font-size-small)" /></li>
+            {#each { length: split ? 2 : 1 } as _, column (column)}
+            <li role="presentation" class={['section', split && `column-${column + 1}`]} aria-hidden="true"><Shimmer
+                inline="var(--search-shimmer-section)" block="var(--font-size-small)" /></li>
             {#each { length: SHIMMER_ROWS } as _, row (row)}
-              <li role="presentation" class="result" aria-hidden="true">
+              <li role="presentation" class={['result', split && `column-${column + 1}`]} aria-hidden="true">
                 <span class="row-shimmer">
                   <span class="poster poster-shimmer"><Shimmer inline="100%" block="100%" /></span>
                   <span class="info">
@@ -421,16 +455,19 @@ afterNavigate(({ to }) => {
                 </span>
               </li>
             {/each}
+            {/each}
           {/if}
-          {#if rows.length}
-            <li role="presentation" class="section">{typed ? 'Results' : trending[type.slug]?.label}</li>
-          {/if}
-          {#each rows as row, index (row.key)}
+          {#each sections as section, sectionIndex (section.label)}
+          {@const column = split && `column-${sectionIndex + 1}`}
+          {@const start = sectionStarts.at(sectionIndex) ?? 0}
+          <li role="presentation" class={['section', column]}>{section.label}</li>
+          {#each section.rows as row, rowIndex (row.key)}
+            {@const index = start + rowIndex}
             <li
               id="{id}-option-{index}"
               role="option"
               aria-selected={highlight === index}
-              class={['result', { selected: highlight === index }]}
+              class={['result', column, { selected: highlight === index }]}
               onpointerenter={() => (highlight = index)}
             >
               <a href={row.href} tabindex="-1" onclick={() => record(row)}>
@@ -452,8 +489,24 @@ afterNavigate(({ to }) => {
               </a>
             </li>
           {/each}
+          {#if section.more}
+            {@const index = start + section.rows.length}
+            <li
+              id="{id}-option-{index}"
+              role="option"
+              aria-selected={highlight === index}
+              class={['all-results', column, { selected: highlight === index }]}
+              onpointerenter={() => (highlight = index)}
+            >
+              <a href={section.more.href} tabindex="-1">
+                <span class="term-icon"><Icon svg={arrowTurnDownLeft} /></span>
+                <span>View all <strong>{section.more.label}</strong></span>
+              </a>
+            </li>
+          {/if}
+          {/each}
           {#if result.count}
-            {@const index = rows.length}
+            {@const index = rowOptions.length}
             <li
               id="{id}-option-all"
               role="option"
@@ -497,6 +550,7 @@ afterNavigate(({ to }) => {
 
       <p class="keys">
           <span><kbd>↑</kbd><kbd>↓</kbd> Move</span>
+          {#if split}<span><kbd>←</kbd><kbd>→</kbd> Column</span>{/if}
           <span><kbd>↵</kbd> Open</span>
           <span><kbd>{modifier}</kbd><kbd>↵</kbd> New tab</span>
           {#if terms.length}<span><kbd>Del</kbd> Remove recent</span>{/if}
@@ -831,6 +885,26 @@ input {
   letter-spacing: 0.1em;
   text-transform: uppercase;
   margin-block-start: var(--space-search-section);
+}
+
+/* Lists' starting sections sit side by side, filling the rows from the top; recent searches span both under them. */
+.split:not([hidden]) {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-flow: row dense;
+  column-gap: var(--space-lg-inline);
+
+  & > :global(li) {
+    grid-column: 1 / -1;
+  }
+
+  & > .column-1 {
+    grid-column: 1;
+  }
+
+  & > .column-2 {
+    grid-column: 2;
+  }
 }
 
 /* Recent's heading carries Clear All at its far end. */

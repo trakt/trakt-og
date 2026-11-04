@@ -1,7 +1,7 @@
 <!--
   The profile header, shared by every /users/:id page: the cover, avatar, name with the VIP and Private labels, the
   options menu, follow buttons (a shimmer holds their place until the viewer's follow state streams in; an incoming
-  follow request gets its own bar across the top of the cover), a line of glass pills for private status, location and the year they joined, the
+  follow request gets its own bar across the top of the cover), a line of glass pills for private status, location, the year they joined and the viewer's taste match, the
   watching-now player and the section tabs. The name block is one left-aligned row: centered on the slim cover, and
   low on the tall one so the art shows. The profile page gets the tall cover when there's art to show (the owner's
   cover or what they're watching); every subpage, and a profile without art, gets the slim one on OG's damask. A
@@ -29,6 +29,7 @@ import flag from '$lib/icons/regular/flag.svg?raw';
 import skull from '$lib/icons/solid/skull.svg?raw';
 import userXmark from '$lib/icons/regular/user-xmark.svg?raw';
 import type { ProfileTab } from '$lib/users/profileTabs';
+import type { UserMatch } from '$lib/users/match/UserMatch';
 import type { ProfileUser } from '$lib/users/ProfileUser';
 import type { ViewerRelation } from '$lib/users/ViewerRelation';
 import type { WatchingNow } from '$lib/users/WatchingNow';
@@ -52,9 +53,22 @@ interface Props {
   relation: Promise<ViewerRelation | null> | null;
   /** A page's own cover over the owner's, like a VIP owner's list. Watching now still wins. */
   coverUrl?: string;
+  /** The viewer's taste match with the owner, streamed in after the page. Null when there's none to show. */
+  match?: Promise<UserMatch | null> | null;
 }
 
-const { user, watching, tabs, large = false, isSelf, signedIn, relation, canFollow = true, coverUrl }: Props = $props();
+const {
+  user,
+  watching,
+  tabs,
+  large = false,
+  isSelf,
+  signedIn,
+  relation,
+  canFollow = true,
+  coverUrl,
+  match = null,
+}: Props = $props();
 
 const relationships = getContext<ReturnType<typeof createRelationshipOverlay>>('user-relationships') ??
   createRelationshipOverlay();
@@ -148,7 +162,7 @@ const change = (viewer: ViewerRelation, action: 'unfollow' | 'block' | 'unblock'
           </h1>
 
           {#if !user.isLocked}
-            <ProfilePills {user} />
+            <ProfilePills {user} {match} />
           {/if}
         </div>
 

@@ -91,6 +91,43 @@ describe('users/[id] layout', () => {
     });
   });
 
+  describe('for the taste match', () => {
+    // A client navigation, so the viewer's network lists wait until something reads them.
+    const signedIn = (id: string, viewer: string) =>
+      load({
+        fetch: (...args: Parameters<typeof fetch>) => globalThis.fetch(...args),
+        locals: { token: 'fresh' },
+        params: { id },
+        parent: () => Promise.resolve({ user: { slug: viewer } }),
+        url: new URL(`https://og.test/users/${id}`),
+        isDataRequest: true,
+      } as unknown as Parameters<typeof load>[0]);
+
+    it("should stream the viewer's match on someone else's profile", async () => {
+      server.use(
+        http.get(`${API}/v3/users/:id/match`, () =>
+          HttpResponse.json({
+            score: 50,
+            breakdown: { subgenres: 50, favorites: 0 },
+            shared: { subgenres: [{ name: 'heist', slug: 'heist' }], favorites: { movies: [], shows: [] } },
+          }),
+        ),
+      );
+
+      const data = await signedIn('justin', 'sean');
+
+      expect((await data.match)?.level.key).toBe('spin-off');
+    });
+
+    it('should have none on your own profile', async () => {
+      expect((await signedIn('justin', 'justin')).match).toBeNull();
+    });
+
+    it('should have none signed out', async () => {
+      expect((await layout('justin', null)).match).toBeNull();
+    });
+  });
+
   it('should read the profile once with a working token', async () => {
     const data = await layout('justin', 'fresh');
 

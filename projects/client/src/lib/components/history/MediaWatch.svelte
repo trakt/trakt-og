@@ -27,6 +27,7 @@ import type { WatchTarget } from '$lib/components/history/WatchTarget';
 import { quickIconFill } from '$lib/components/media/quickIconFill';
 import { QUICK_ADD } from '$lib/settings/quickAdd';
 import PlaysTip from '$lib/components/media/PlaysTip.svelte';
+import { playsHistoryHref } from '$lib/components/media/playsHistoryHref';
 import ProgressTip from '$lib/components/media/ProgressTip.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import check from '$lib/icons/trakt/check.svg?raw';
@@ -223,8 +224,8 @@ async function open(force: boolean): Promise<'date' | 'remove' | 'partial' | nul
   {#if plural}{completed} / {target.airedEpisodes} eps &mdash; {countLabel(plays ?? 0, 'play')} {#if target.runtime}<em>({formatRuntime((plays ?? 0) * target.runtime)})</em>{/if}
   {:else if viewerState.lastWatchedAt}{viewerState.lastWatchedAt.startsWith('1970-01-01') ? 'Unknown date' : formatDate(viewerState.lastWatchedAt, { ...dates, time: true })}{/if}
 {/snippet}
-{#snippet watchedTip()}{#if fill.tips.watched}<ProgressTip progress={fill.tips.watched} />{:else if fill.tips.plays}<PlaysTip
-      plays={fill.tips.plays} />{/if}{/snippet}
+{#snippet watchedTip()}{@const href = playsHistoryHref(page.data.user?.slug, target)}{#if fill.tips.watched}<ProgressTip
+      progress={fill.tips.watched} {href} />{:else if fill.tips.plays}<PlaysTip plays={fill.tips.plays} {href} />{/if}{/snippet}
 {#snippet more()}
   <SummaryActionMenu>
     {#snippet children(close)}

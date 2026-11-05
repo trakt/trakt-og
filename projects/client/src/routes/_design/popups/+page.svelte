@@ -196,13 +196,13 @@ const listedOn = [
 </Specimen>
 
 <Specimen title="Tooltip" row
-  note="Hover or tab to a trigger; Esc hides it and touch never opens one, except a chart's, which a click or tap toggles. Text centers and balances its lines; stats with lines, and the library card, align left. Near the screen's edge it flips side. A tooltip that only repeats its trigger's name isn't linked as its description, so screen readers say it once. A summary button's tooltip spans the whole button, right under it (Favorites).">
-  <Variant label="Plays, a movie's quick icon">
+  note="Hover or tab to a trigger; Esc hides it and touch never opens one, except a chart's, which a click or tap toggles. Text centers and balances its lines; stats with lines, and the library card, align left. Near the screen's edge it flips side. A tooltip that only repeats its trigger's name isn't linked as its description, so screen readers say it once. A summary button's tooltip spans the whole button, right under it (Favorites). A watched tooltip's play count links to your history of that title, for the pointer only, like the list tooltip's names.">
+  <Variant label="Plays, a movie's quick icon, the count linked to your history">
     <Tooltip placement="bottom">
       {#snippet trigger(tooltip)}
         <DemoButton aria-label="Add to watched history" {...tooltip}><Icon svg={check} /></DemoButton>
       {/snippet}
-      <PlaysTip plays={{ count: 3, minutes: 390, at: 'Oct 12, 2026' }} />
+      <PlaysTip plays={{ count: 3, minutes: 390, at: 'Oct 12, 2026' }} href="#tooltip" />
     </Tooltip>
   </Variant>
   <Variant label="Plays, an old import with no date">
@@ -253,10 +253,10 @@ const listedOn = [
       {#snippet trigger(tooltip)}<a class="start" href="#tooltip" {...tooltip}>79%</a>{/snippet}
     </Tooltip>
   </Variant>
-  <Variant label="Progress, a rewatch">
+  <Variant label="Progress, a rewatch, each count linked to your history">
     <Tooltip placement="bottom">
       {#snippet trigger(tooltip)}<a class="start" href="#tooltip" {...tooltip}>60%</a>{/snippet}
-      <ProgressTip progress={rewatch} />
+      <ProgressTip progress={rewatch} href="#tooltip" />
     </Tooltip>
   </Variant>
   <Variant label="Library, with its logos and server">

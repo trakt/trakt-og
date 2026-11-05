@@ -5,24 +5,24 @@
     <SmartListDialog bind:open source="Trending shows" {chips} onsave={({ name, privacy }) => save(name, privacy)} />
 -->
 <script lang="ts">
-import Dialog from '$lib/components/dialog/Dialog.svelte';
-import ChoiceDropdown from '$lib/components/dialog/ChoiceDropdown.svelte';
-import DialogArtHeader from '$lib/components/dialog/DialogArtHeader.svelte';
-import DialogForm from '$lib/components/dialog/DialogForm.svelte';
-import DialogNotice from '$lib/components/dialog/DialogNotice.svelte';
-import FieldLabel from '$lib/components/dialog/FieldLabel.svelte';
-import FilterChips from '$lib/components/filters/FilterChips.svelte';
-import type { FilterTag } from '$lib/components/filters/filterTags';
-import type { CardTag } from '$lib/components/media/CardTag';
-import globe from '$lib/icons/solid/globe.svg?raw';
-import lockKeyhole from '$lib/icons/solid/lock-keyhole.svg?raw';
-import friends from '$lib/icons/trakt/friends-thick.svg?raw';
-import sparkles from '$lib/icons/solid/sparkles.svg?raw';
-import type { SmartListPrivacy } from '$lib/lists/smart/SmartList';
-import { traktUrls } from '$lib/traktUrls';
-import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
-import { useTrack } from '$lib/analytics/useTrack';
-import { trackUpsellImpression } from '$lib/analytics/trackUpsellImpression';
+import Dialog from '#lib/components/dialog/Dialog.svelte';
+import ChoiceDropdown from '#lib/components/dialog/ChoiceDropdown.svelte';
+import DialogArtHeader from '#lib/components/dialog/DialogArtHeader.svelte';
+import DialogForm from '#lib/components/dialog/DialogForm.svelte';
+import DialogNotice from '#lib/components/dialog/DialogNotice.svelte';
+import FieldLabel from '#lib/components/dialog/FieldLabel.svelte';
+import FilterChips from '#lib/components/filters/FilterChips.svelte';
+import type { FilterTag } from '#lib/components/filters/filterTags.ts';
+import type { CardTag } from '#lib/components/media/CardTag.ts';
+import globe from '#lib/icons/solid/globe.svg?raw';
+import lockKeyhole from '#lib/icons/solid/lock-keyhole.svg?raw';
+import friends from '#lib/icons/trakt/friends-thick.svg?raw';
+import sparkles from '#lib/icons/solid/sparkles.svg?raw';
+import type { SmartListPrivacy } from '#lib/lists/smart/SmartList.ts';
+import { traktUrls } from '#lib/traktUrls.ts';
+import { AnalyticsEvent } from '#lib/analytics/AnalyticsEvent.ts';
+import { useTrack } from '#lib/analytics/useTrack.ts';
+import { trackUpsellImpression } from '#lib/analytics/trackUpsellImpression.ts';
 
 interface Props {
   open: boolean;

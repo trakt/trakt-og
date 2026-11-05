@@ -6,20 +6,20 @@
   left inside it so the copy reads. Everything over it is dark in both themes.
 -->
 <script lang="ts">
-import { isStandardApi } from '$lib/api/isStandardApi';
-import TagPills from '$lib/components/labels/TagPills.svelte';
-import VideoPopup from '$lib/components/dialog/VideoPopup.svelte';
-import { youtubeEmbedUrl } from '$lib/components/dialog/youtubeEmbedUrl';
-import QuickIcons from '$lib/components/media/QuickIcons.svelte';
-import TrimmedLogo from '$lib/components/media/TrimmedLogo.svelte';
-import { openWatchNow } from '$lib/components/watchnow/watchNowLauncher.svelte';
-import { watchNowPath } from '$lib/components/watchnow/watchNowPath';
-import { isPlainClick } from '$lib/utils/isPlainClick';
-import { proxiedLogoUrl } from '$lib/utils/proxiedLogoUrl';
-import { trackTrailer } from '$lib/videos/trackVideo';
-import Icon from '$lib/icons/Icon.svelte';
-import youtube from '$lib/icons/brands/youtube.svg?raw';
-import play from '$lib/icons/solid/play.svg?raw';
+import { isStandardApi } from '#lib/api/isStandardApi.ts';
+import TagPills from '#lib/components/labels/TagPills.svelte';
+import VideoPopup from '#lib/components/dialog/VideoPopup.svelte';
+import { youtubeEmbedUrl } from '#lib/components/dialog/youtubeEmbedUrl.ts';
+import QuickIcons from '#lib/components/media/QuickIcons.svelte';
+import TrimmedLogo from '#lib/components/media/TrimmedLogo.svelte';
+import { openWatchNow } from '#lib/components/watchnow/watchNowLauncher.svelte.ts';
+import { watchNowPath } from '#lib/components/watchnow/watchNowPath.ts';
+import { isPlainClick } from '#lib/utils/isPlainClick.ts';
+import { proxiedLogoUrl } from '#lib/utils/proxiedLogoUrl.ts';
+import { trackTrailer } from '#lib/videos/trackVideo.ts';
+import Icon from '#lib/icons/Icon.svelte';
+import youtube from '#lib/icons/brands/youtube.svg?raw';
+import play from '#lib/icons/solid/play.svg?raw';
 import type { ComponentProps } from 'svelte';
 import ChartRank from './ChartRank.svelte';
 import { chartHeroTags } from './chartHeroTags.ts';

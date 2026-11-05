@@ -1,5 +1,5 @@
 import { z } from 'zod/v4';
-import { useTrack } from '$lib/analytics/useTrack';
+import { useTrack } from '#lib/analytics/useTrack.ts';
 import { isApiUnavailable } from '../api/isApiUnavailable.ts';
 import { rawApiFetch } from '../api/rawApiFetch.ts';
 import type { NotableItem } from './NotableItem.ts';

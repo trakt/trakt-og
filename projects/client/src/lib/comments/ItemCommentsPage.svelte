@@ -6,23 +6,23 @@
   locked-comments notice have no API. "Add comment" opens the new comment form, and what it posts goes on top.
 -->
 <script lang="ts">
-import SeoHead from '$lib/seo/SeoHead.svelte';
-import { toSubpageSeo } from '$lib/seo/pages/toSubpageSeo';
-import { gifArtContext } from '$lib/components/comments/gif/gifArtContext';
+import SeoHead from '#lib/seo/SeoHead.svelte';
+import { toSubpageSeo } from '#lib/seo/pages/toSubpageSeo.ts';
+import { gifArtContext } from '#lib/components/comments/gif/gifArtContext.ts';
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
-import AddCommentLink from '$lib/components/comments/AddCommentLink.svelte';
-import CommentCard from '$lib/components/comments/CommentCard.svelte';
-import { commentSettings } from '$lib/components/comments/commentSettings';
-import { newComment } from '$lib/components/comments/newComment.svelte';
-import NewCommentForm from '$lib/components/comments/NewCommentForm.svelte';
-import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
-import SortDirection from '$lib/components/dropdown/SortDirection.svelte';
-import EmptyState from '$lib/components/empty/EmptyState.svelte';
-import Pagination from '$lib/components/pagination/Pagination.svelte';
-import SubpageFrame from '$lib/components/summary/SubpageFrame.svelte';
-import SectionToolbar from '$lib/components/toolbar/SectionToolbar.svelte';
-import { withoutBlocked } from '$lib/components/comments/withoutBlocked';
+import AddCommentLink from '#lib/components/comments/AddCommentLink.svelte';
+import CommentCard from '#lib/components/comments/CommentCard.svelte';
+import { commentSettings } from '#lib/components/comments/commentSettings.ts';
+import { newComment } from '#lib/components/comments/newComment.svelte.ts';
+import NewCommentForm from '#lib/components/comments/NewCommentForm.svelte';
+import Dropdown from '#lib/components/dropdown/Dropdown.svelte';
+import SortDirection from '#lib/components/dropdown/SortDirection.svelte';
+import EmptyState from '#lib/components/empty/EmptyState.svelte';
+import Pagination from '#lib/components/pagination/Pagination.svelte';
+import SubpageFrame from '#lib/components/summary/SubpageFrame.svelte';
+import SectionToolbar from '#lib/components/toolbar/SectionToolbar.svelte';
+import { withoutBlocked } from '#lib/components/comments/withoutBlocked.ts';
 import { commentLanguage } from './commentLanguage.ts';
 import { type CommentLanguage, commentLanguages } from './commentLanguages.ts';
 import { itemCommentsHref, type ItemCommentSortBy, itemCommentSorts } from './itemCommentSort.ts';

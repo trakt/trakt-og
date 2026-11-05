@@ -5,23 +5,23 @@
   posted here goes on top of the replies, and deleting the comment itself goes on to the item's comments.
 -->
 <script lang="ts">
-import SeoHead from '$lib/seo/SeoHead.svelte';
-import { toCommentSeo } from '$lib/seo/pages/toCommentSeo';
-import { gifArtContext } from '$lib/components/comments/gif/gifArtContext';
+import SeoHead from '#lib/seo/SeoHead.svelte';
+import { toCommentSeo } from '#lib/seo/pages/toCommentSeo.ts';
+import { gifArtContext } from '#lib/components/comments/gif/gifArtContext.ts';
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
 import type { CommentResponse } from '@trakt/api';
-import CommentCard from '$lib/components/comments/CommentCard.svelte';
-import { authorOf } from '$lib/components/comments/authorOf';
-import { commentSettings } from '$lib/components/comments/commentSettings';
-import { withoutBlocked } from '$lib/components/comments/withoutBlocked';
-import FanartHeader from '$lib/components/media/FanartHeader.svelte';
-import ExternalLinks from '$lib/components/summary/ExternalLinks.svelte';
-import SectionNav from '$lib/components/summary/SectionNav.svelte';
-import SubpageTitle from '$lib/components/summary/SubpageTitle.svelte';
-import SummaryFrame from '$lib/components/summary/SummaryFrame.svelte';
-import SummaryPoster from '$lib/components/summary/SummaryPoster.svelte';
-import WatchNow from '$lib/components/watchnow/WatchNow.svelte';
+import CommentCard from '#lib/components/comments/CommentCard.svelte';
+import { authorOf } from '#lib/components/comments/authorOf.ts';
+import { commentSettings } from '#lib/components/comments/commentSettings.ts';
+import { withoutBlocked } from '#lib/components/comments/withoutBlocked.ts';
+import FanartHeader from '#lib/components/media/FanartHeader.svelte';
+import ExternalLinks from '#lib/components/summary/ExternalLinks.svelte';
+import SectionNav from '#lib/components/summary/SectionNav.svelte';
+import SubpageTitle from '#lib/components/summary/SubpageTitle.svelte';
+import SummaryFrame from '#lib/components/summary/SummaryFrame.svelte';
+import SummaryPoster from '#lib/components/summary/SummaryPoster.svelte';
+import WatchNow from '#lib/components/watchnow/WatchNow.svelte';
 import type { loadComment } from './loadComment.ts';
 
 const { data }: { data: Awaited<ReturnType<typeof loadComment>> } = $props();

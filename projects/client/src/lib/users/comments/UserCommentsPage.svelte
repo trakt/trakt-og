@@ -4,21 +4,21 @@
   a page beside their posters.
 -->
 <script lang="ts">
-import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
-import SeoHead from '$lib/seo/SeoHead.svelte';
+import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
+import SeoHead from '#lib/seo/SeoHead.svelte';
 import { SvelteURLSearchParams } from 'svelte/reactivity';
 import { page } from '$app/state';
-import Container from '$lib/components/container/Container.svelte';
-import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
-import SortDirection from '$lib/components/dropdown/SortDirection.svelte';
-import type { HeaderUser } from '$lib/components/header/HeaderUser';
-import EmptyState from '$lib/components/empty/EmptyState.svelte';
-import Pagination from '$lib/components/pagination/Pagination.svelte';
-import SectionToolbar from '$lib/components/toolbar/SectionToolbar.svelte';
-import SubnavCount from '$lib/components/toolbar/SubnavCount.svelte';
-import commentIcon from '$lib/icons/regular/comment.svg?raw';
-import type { DatePreferences } from '$lib/settings/DatePreferences';
-import type { ProfileUser } from '$lib/users/ProfileUser';
+import Container from '#lib/components/container/Container.svelte';
+import Dropdown from '#lib/components/dropdown/Dropdown.svelte';
+import SortDirection from '#lib/components/dropdown/SortDirection.svelte';
+import type { HeaderUser } from '#lib/components/header/HeaderUser.ts';
+import EmptyState from '#lib/components/empty/EmptyState.svelte';
+import Pagination from '#lib/components/pagination/Pagination.svelte';
+import SectionToolbar from '#lib/components/toolbar/SectionToolbar.svelte';
+import SubnavCount from '#lib/components/toolbar/SubnavCount.svelte';
+import commentIcon from '#lib/icons/regular/comment.svg?raw';
+import type { DatePreferences } from '#lib/settings/DatePreferences.ts';
+import type { ProfileUser } from '#lib/users/ProfileUser.ts';
 import type { loadUserComments } from './loadUserComments.ts';
 import { userCommentMediaTypes } from './userCommentMediaTypes.ts';
 import { userCommentTypes } from './userCommentTypes.ts';
@@ -46,7 +46,7 @@ function segments({ liked = false, commentType = 'all', type = 'all' }) {
 
 // OG's `link_params`: the query string without the page.
 function href(filters: { liked?: boolean; commentType?: string; type?: string }) {
-  const query = new SvelteURLSearchParams(page.url.searchParams);
+  const query = new SvelteURLSearchParams(page.url.search);
   query.delete('page');
   const path = [`/users/${data.profile.slug}/comments`, ...segments(filters)].join('/');
   return `${path}${query.size ? `?${query}` : ''}`;

@@ -1,4 +1,4 @@
-import { SITE_ORIGIN } from '$lib/seo/siteOrigin';
+import { SITE_ORIGIN } from '#lib/seo/siteOrigin.ts';
 
 type ReportingEnvironment = {
   origin: string;

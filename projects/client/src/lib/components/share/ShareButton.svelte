@@ -6,12 +6,12 @@
 <script lang="ts">
 import type { ComponentProps } from 'svelte';
 import { page } from '$app/state';
-import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
-import { useTrack } from '$lib/analytics/useTrack';
-import GlassAction from '$lib/components/glass-action/GlassAction.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import arrowUpFromBracket from '$lib/icons/regular/arrow-up-from-bracket.svg?raw';
-import { toShareUrl } from '$lib/share/toShareUrl';
+import { AnalyticsEvent } from '#lib/analytics/AnalyticsEvent.ts';
+import { useTrack } from '#lib/analytics/useTrack.ts';
+import GlassAction from '#lib/components/glass-action/GlassAction.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import arrowUpFromBracket from '#lib/icons/regular/arrow-up-from-bracket.svg?raw';
+import { toShareUrl } from '#lib/share/toShareUrl.ts';
 import Tooltip from '../tooltip/Tooltip.svelte';
 import { copyLink } from './copyLink.ts';
 

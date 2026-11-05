@@ -5,10 +5,10 @@
   `title` replaces the line where it would read wrong (LoadFailed's "Up Next didn't load.", a calendar's empty day);
   `inFrame` is the version on the dark charts and search frames; `failed` is LoadFailed's warning outline, so use
   LoadFailed instead of setting it.
-    <EmptyState action={{ href: resolve('/shows/[chart=chart]', { chart: 'trending' }), text: 'Find a show' }} />
+    <EmptyState action={{ href: resolve('/shows/[chart=chart]/[[period]]', { chart: 'trending' }), text: 'Find a show' }} />
 -->
 <script lang="ts">
-import LinkButton from '$lib/components/button/LinkButton.svelte';
+import LinkButton from '#lib/components/button/LinkButton.svelte';
 import type { EmptyAction } from './EmptyAction.ts';
 
 interface Props {

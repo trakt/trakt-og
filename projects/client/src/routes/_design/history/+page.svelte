@@ -1,16 +1,16 @@
 <script lang="ts">
 import { page } from '$app/state';
-import FilterBand from '$lib/components/filters/FilterBand.svelte';
-import DayGroup from '$lib/components/history/DayGroup.svelte';
-import MediaWatch from '$lib/components/history/MediaWatch.svelte';
-import { mediaQuickIcons } from '$lib/components/media/mediaQuickIcons';
-import PosterCard from '$lib/components/media/PosterCard.svelte';
-import PosterGrid from '$lib/components/media/PosterGrid.svelte';
-import { quickIconFill } from '$lib/components/media/quickIconFill';
-import Specimen from '$lib/design/Specimen.svelte';
-import Variant from '$lib/design/Variant.svelte';
-import { overlay } from '$lib/overlay/overlay';
-import HistoryItemBand from '$lib/users/history/HistoryItemBand.svelte';
+import FilterBand from '#lib/components/filters/FilterBand.svelte';
+import DayGroup from '#lib/components/history/DayGroup.svelte';
+import MediaWatch from '#lib/components/history/MediaWatch.svelte';
+import { mediaQuickIcons } from '#lib/components/media/mediaQuickIcons.ts';
+import PosterCard from '#lib/components/media/PosterCard.svelte';
+import PosterGrid from '#lib/components/media/PosterGrid.svelte';
+import { quickIconFill } from '#lib/components/media/quickIconFill.ts';
+import Specimen from '#lib/design/Specimen.svelte';
+import Variant from '#lib/design/Variant.svelte';
+import { overlay } from '#lib/overlay/overlay.ts';
+import HistoryItemBand from '#lib/users/history/HistoryItemBand.svelte';
 import { breakingBad, noWayHome, pilot, seasonOne, seasonOneEpisodes } from '../summary/fixtures.ts';
 
 const dates = $derived(page.data.datePreferences);

@@ -5,9 +5,9 @@
   whole page takes the season's accent.
 -->
 <script lang="ts">
-import SeoHead from '$lib/seo/SeoHead.svelte';
-import Container from '$lib/components/container/Container.svelte';
-import type { DatePreferences } from '$lib/settings/DatePreferences';
+import SeoHead from '#lib/seo/SeoHead.svelte';
+import Container from '#lib/components/container/Container.svelte';
+import type { DatePreferences } from '#lib/settings/DatePreferences.ts';
 import DiscoverLists from './DiscoverLists.svelte';
 import EssentialLists from './EssentialLists.svelte';
 import type { loadDiscover } from './loadDiscover.ts';

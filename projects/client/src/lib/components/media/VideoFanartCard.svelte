@@ -5,8 +5,8 @@
     <VideoFanartCard {video} tagged />
 -->
 <script lang="ts">
-import type { VideoCard } from '$lib/videos/toVideoCards';
-import { videoTabSlug, videoTypes } from '$lib/videos/videoTypes';
+import type { VideoCard } from '#lib/videos/toVideoCards.ts';
+import { videoTabSlug, videoTypes } from '#lib/videos/videoTypes.ts';
 import CardTag from './CardTag.svelte';
 import FanartCard from './FanartCard.svelte';
 

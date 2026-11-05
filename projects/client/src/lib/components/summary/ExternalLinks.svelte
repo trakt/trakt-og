@@ -5,11 +5,11 @@
 -->
 <script lang="ts">
 import { page } from '$app/state';
-import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
-import { useTrack } from '$lib/analytics/useTrack';
-import ShareButton from '$lib/components/share/ShareButton.svelte';
-import GlassAction from '$lib/components/glass-action/GlassAction.svelte';
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
+import { AnalyticsEvent } from '#lib/analytics/AnalyticsEvent.ts';
+import { useTrack } from '#lib/analytics/useTrack.ts';
+import ShareButton from '#lib/components/share/ShareButton.svelte';
+import GlassAction from '#lib/components/glass-action/GlassAction.svelte';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
 import type { ExternalLink } from './ExternalLink.ts';
 import { toLinkTracking, toShareTracking } from './linkTracking.ts';
 import { withSiteLogos } from './withSiteLogos.ts';

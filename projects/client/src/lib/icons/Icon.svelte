@@ -1,7 +1,7 @@
 <!--
   An OG icon, extracted from OG's fonts by `bun run icon <family> <name>`.
   Import the SVG raw so only the icons a page uses get bundled:
-    import gear from '$lib/icons/thin/gear.svg?raw';
+    import gear from '#lib/icons/thin/gear.svg?raw';
     <Icon svg={gear} />
   It sits on the text baseline like OG's icon fonts did, and takes its size from font-size and its color from `color`.
 -->

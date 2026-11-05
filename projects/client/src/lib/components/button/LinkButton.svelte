@@ -9,8 +9,8 @@
     <LinkButton onclick={clear} variant="outline">Clear filters</LinkButton>
 -->
 <script lang="ts">
-import Icon from '$lib/icons/Icon.svelte';
-import external from '$lib/icons/light/arrow-up-right-from-square.svg?raw';
+import Icon from '#lib/icons/Icon.svelte';
+import external from '#lib/icons/light/arrow-up-right-from-square.svg?raw';
 import type { Snippet } from 'svelte';
 
 interface Props {

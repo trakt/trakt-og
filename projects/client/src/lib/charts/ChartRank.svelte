@@ -4,7 +4,7 @@
     <ChartRank rank={1} live size="hero" />
 -->
 <script lang="ts">
-import StatusDot from '$lib/components/status/StatusDot.svelte';
+import StatusDot from '#lib/components/status/StatusDot.svelte';
 
 interface Props {
   rank: number;

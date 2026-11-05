@@ -1,6 +1,6 @@
 import type { Component } from 'svelte';
-import skull from '$lib/icons/solid/skull.svg?raw';
-import spider from '$lib/icons/solid/spider.svg?raw';
+import skull from '#lib/icons/solid/skull.svg?raw';
+import spider from '#lib/icons/solid/spider.svg?raw';
 
 export type ExtraProps = {
   readonly ondone: () => void;
@@ -30,13 +30,13 @@ type Spot = {
   | {
       /** The badge it sits right after, looking like it, found on the page by this selector. */
       readonly beside: string;
-      /** The badge's icon, as `$lib/icons` gives it; the label names it for screen readers. */
+      /** The badge's icon, as `#lib/icons` gives it; the label names it for screen readers. */
       readonly icon: string;
     }
   | {
       /** The list it joins as the last tile, like the summary's links out, found on the page by this selector. */
       readonly ends: string;
-      /** The tile's icon, as `$lib/icons` gives it; the label names it for screen readers. */
+      /** The tile's icon, as `#lib/icons` gives it; the label names it for screen readers. */
       readonly icon: string;
     }
 );

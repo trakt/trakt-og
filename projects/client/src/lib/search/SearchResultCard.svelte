@@ -6,10 +6,10 @@
     <SearchResultCard {card} artwork="poster" {icons} userRating={state.rating} />
 -->
 <script lang="ts">
-import TagPills from '$lib/components/labels/TagPills.svelte';
-import FanartCard from '$lib/components/media/FanartCard.svelte';
-import MediaSpoiler from '$lib/components/summary/MediaSpoiler.svelte';
-import QuickIcons from '$lib/components/media/QuickIcons.svelte';
+import TagPills from '#lib/components/labels/TagPills.svelte';
+import FanartCard from '#lib/components/media/FanartCard.svelte';
+import MediaSpoiler from '#lib/components/summary/MediaSpoiler.svelte';
+import QuickIcons from '#lib/components/media/QuickIcons.svelte';
 import type { ComponentProps } from 'svelte';
 import type { SearchArtwork } from './searchDisplay.ts';
 import type { SearchCard } from './SearchCard.ts';

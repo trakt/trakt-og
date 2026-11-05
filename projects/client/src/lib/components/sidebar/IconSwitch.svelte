@@ -4,7 +4,7 @@
     <IconSwitch label="View" value="list" options={[{ value: 'list', label: 'List', icon: grid }]} onchange={pick} />
 -->
 <script lang="ts" generics="Value extends string">
-import Icon from '$lib/icons/Icon.svelte';
+import Icon from '#lib/icons/Icon.svelte';
 
 interface Props {
   label: string;

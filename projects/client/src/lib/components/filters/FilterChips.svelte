@@ -7,15 +7,15 @@
     <FilterChips chips={filterChips(…)} onremove={(id) => apply(withoutFilterTag(filters, id))} />
 -->
 <script lang="ts">
-import Icon from '$lib/icons/Icon.svelte';
-import xmark from '$lib/icons/solid/xmark.svg?raw';
-import imdbLogo from '$lib/assets/sites/imdb-solid.svg';
-import letterboxdLogo from '$lib/assets/sites/letterboxd.svg';
-import malLogo from '$lib/assets/sites/mal.svg';
-import tmdbLogo from '$lib/assets/sites/tmdb.svg';
-import rtAudience from '$lib/assets/sites/rt/audience-upright.svg';
-import rtFresh from '$lib/assets/sites/rt/tomatometer-fresh.svg';
-import traktLogo from '$lib/assets/sites/trakt.png';
+import Icon from '#lib/icons/Icon.svelte';
+import xmark from '#lib/icons/solid/xmark.svg?raw';
+import imdbLogo from '#lib/assets/sites/imdb-solid.svg';
+import letterboxdLogo from '#lib/assets/sites/letterboxd.svg';
+import malLogo from '#lib/assets/sites/mal.svg';
+import tmdbLogo from '#lib/assets/sites/tmdb.svg';
+import rtAudience from '#lib/assets/sites/rt/audience-upright.svg';
+import rtFresh from '#lib/assets/sites/rt/tomatometer-fresh.svg';
+import traktLogo from '#lib/assets/sites/trakt.png';
 import { filterTagLabel } from './filterTagLabel.ts';
 import type { FilterTag, TagSite } from './filterTags.ts';
 

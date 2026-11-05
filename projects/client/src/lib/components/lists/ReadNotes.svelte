@@ -11,11 +11,11 @@
 -->
 <script lang="ts">
 import type { Attachment } from 'svelte/attachments';
-import CommentText from '$lib/components/comments/CommentText.svelte';
-import NoteManage from '$lib/components/notes/NoteManage.svelte';
-import { parseComment } from '$lib/components/comments/text/parseComment';
-import { type TooltipEvent, type TooltipState, tooltipState } from '$lib/components/tooltip/tooltipState';
-import memo from '$lib/icons/solid/memo.svg?raw';
+import CommentText from '#lib/components/comments/CommentText.svelte';
+import NoteManage from '#lib/components/notes/NoteManage.svelte';
+import { parseComment } from '#lib/components/comments/text/parseComment.ts';
+import { type TooltipEvent, type TooltipState, tooltipState } from '#lib/components/tooltip/tooltipState.ts';
+import memo from '#lib/icons/solid/memo.svg?raw';
 import NotesPill from './NotesPill.svelte';
 import { scrollsBelow } from './scrollsBelow.ts';
 

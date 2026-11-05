@@ -6,20 +6,20 @@
 -->
 <script lang="ts">
 import type { Snippet } from 'svelte';
-import CommentAvatar from '$lib/components/comments/CommentAvatar.svelte';
-import CommentTag from '$lib/components/comments/CommentTag.svelte';
-import VipLabel from '$lib/components/labels/VipLabel.svelte';
-import NoteStamp from '$lib/components/notes/NoteStamp.svelte';
-import NoteText from '$lib/components/notes/NoteText.svelte';
-import PrivacyTag from '$lib/components/notes/PrivacyTag.svelte';
-import cameraMovie from '$lib/icons/regular/camera-movie.svg?raw';
-import tvRetro from '$lib/icons/regular/tv-retro.svg?raw';
-import eyeSlash from '$lib/icons/solid/eye-slash.svg?raw';
-import heart from '$lib/icons/solid/heart.svg?raw';
-import check from '$lib/icons/trakt/check-thick.svg?raw';
-import collection from '$lib/icons/trakt/collection-thick.svg?raw';
-import user from '$lib/icons/trakt/user.svg?raw';
-import type { NoteView } from '$lib/users/notes/NoteView';
+import CommentAvatar from '#lib/components/comments/CommentAvatar.svelte';
+import CommentTag from '#lib/components/comments/CommentTag.svelte';
+import VipLabel from '#lib/components/labels/VipLabel.svelte';
+import NoteStamp from '#lib/components/notes/NoteStamp.svelte';
+import NoteText from '#lib/components/notes/NoteText.svelte';
+import PrivacyTag from '#lib/components/notes/PrivacyTag.svelte';
+import cameraMovie from '#lib/icons/regular/camera-movie.svg?raw';
+import tvRetro from '#lib/icons/regular/tv-retro.svg?raw';
+import eyeSlash from '#lib/icons/solid/eye-slash.svg?raw';
+import heart from '#lib/icons/solid/heart.svg?raw';
+import check from '#lib/icons/trakt/check-thick.svg?raw';
+import collection from '#lib/icons/trakt/collection-thick.svg?raw';
+import user from '#lib/icons/trakt/user.svg?raw';
+import type { NoteView } from '#lib/users/notes/NoteView.ts';
 import { capitalize } from '../../utils/capitalize.ts';
 
 const { note, manage }: { note: NoteView; manage?: Snippet } = $props();

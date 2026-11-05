@@ -1,5 +1,5 @@
 import { redirect } from '@sveltejs/kit';
-import { calendarHome } from '$lib/calendars/calendarHome';
+import { calendarHome } from '#lib/calendars/calendarHome.ts';
 
 export function GET({ locals }) {
   redirect(302, calendarHome(!!locals.token));

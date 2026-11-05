@@ -5,9 +5,9 @@
     <RelatedFingerprint {pick} {threads} title="Breaking Bad" filter="outlaw" />
 -->
 <script lang="ts">
-import type { RelatedPick } from '$lib/summary/RelatedPick';
-import type { RelatedThread } from '$lib/summary/RelatedThread';
-import { relatedPickNote } from '$lib/summary/relatedPickNote';
+import type { RelatedPick } from '#lib/summary/RelatedPick.ts';
+import type { RelatedThread } from '#lib/summary/RelatedThread.ts';
+import { relatedPickNote } from '#lib/summary/relatedPickNote.ts';
 
 interface Props {
   pick: RelatedPick;

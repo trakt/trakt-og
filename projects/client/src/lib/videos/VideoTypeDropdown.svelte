@@ -3,7 +3,7 @@
     <VideoTypeDropdown {tabs} {current} onpick={(id) => (picked = id)} />
 -->
 <script lang="ts">
-import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
+import Dropdown from '#lib/components/dropdown/Dropdown.svelte';
 import type { VideoTab } from './toVideoCards.ts';
 import type { VideoTabId } from './videoTypes.ts';
 

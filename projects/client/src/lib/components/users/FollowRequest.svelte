@@ -6,18 +6,18 @@
 -->
 <script lang="ts">
 import { getContext } from 'svelte';
-import Container from '$lib/components/container/Container.svelte';
-import HeaderTint from '$lib/components/header/HeaderTint.svelte';
-import { toast } from '$lib/components/toast/toast.svelte';
-import { changeRelationship } from '$lib/users/changeRelationship';
-import { createRelationshipOverlay } from '$lib/users/createRelationshipOverlay.svelte';
-import { relationshipRequest } from '$lib/users/relationshipRequest';
-import type { ViewerRelation } from '$lib/users/ViewerRelation';
-import Icon from '$lib/icons/Icon.svelte';
-import ban from '$lib/icons/regular/ban.svg?raw';
-import userPlus from '$lib/icons/regular/user-plus.svg?raw';
-import check from '$lib/icons/solid/check.svg?raw';
-import xmark from '$lib/icons/solid/xmark.svg?raw';
+import Container from '#lib/components/container/Container.svelte';
+import HeaderTint from '#lib/components/header/HeaderTint.svelte';
+import { toast } from '#lib/components/toast/toast.svelte.ts';
+import { changeRelationship } from '#lib/users/changeRelationship.ts';
+import { createRelationshipOverlay } from '#lib/users/createRelationshipOverlay.svelte.ts';
+import { relationshipRequest } from '#lib/users/relationshipRequest.ts';
+import type { ViewerRelation } from '#lib/users/ViewerRelation.ts';
+import Icon from '#lib/icons/Icon.svelte';
+import ban from '#lib/icons/regular/ban.svg?raw';
+import userPlus from '#lib/icons/regular/user-plus.svg?raw';
+import check from '#lib/icons/solid/check.svg?raw';
+import xmark from '#lib/icons/solid/xmark.svg?raw';
 import RequestButton from './RequestButton.svelte';
 
 const { firstName, slug, isPrivate, relation }: {

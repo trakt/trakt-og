@@ -6,8 +6,8 @@
 -->
 <script lang="ts" generics="T extends string | boolean">
 import type { Snippet } from 'svelte';
-import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
-import Icon from '$lib/icons/Icon.svelte';
+import Dropdown from '#lib/components/dropdown/Dropdown.svelte';
+import Icon from '#lib/icons/Icon.svelte';
 import FieldLabel from './FieldLabel.svelte';
 
 interface Props {

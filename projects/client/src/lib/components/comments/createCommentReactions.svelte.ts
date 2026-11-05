@@ -1,8 +1,8 @@
 import type { ReactionsSummaryResponse } from '@trakt/api';
 import { SvelteMap } from 'svelte/reactivity';
 import { z } from 'zod/v4';
-import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
-import { useTrack } from '$lib/analytics/useTrack';
+import { AnalyticsEvent } from '#lib/analytics/AnalyticsEvent.ts';
+import { useTrack } from '#lib/analytics/useTrack.ts';
 import { loadCommentReactions } from './loadCommentReactions.ts';
 import { patchReactionSummary } from './patchReactionSummary.ts';
 import { GENERIC_ERROR } from '../../utils/genericError.ts';

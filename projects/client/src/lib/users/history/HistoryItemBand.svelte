@@ -5,7 +5,7 @@
   with its year in gray, and a round X back to all of the history.
 -->
 <script lang="ts">
-import FilterBand from '$lib/components/filters/FilterBand.svelte';
+import FilterBand from '#lib/components/filters/FilterBand.svelte';
 import type { HistoryItem } from './historyFilters.ts';
 import type { HistoryItemBand } from './historyItemBand.ts';
 

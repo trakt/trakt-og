@@ -9,26 +9,26 @@
 <script lang="ts">
 import { resolve } from '$app/paths';
 import { page } from '$app/state';
-import { isStandardApi } from '$lib/api/isStandardApi';
-import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
+import { isStandardApi } from '#lib/api/isStandardApi.ts';
+import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
 import { SvelteSet } from 'svelte/reactivity';
-import Container from '$lib/components/container/Container.svelte';
-import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
-import LoadFailed from '$lib/components/empty/LoadFailed.svelte';
-import EmptyState from '$lib/components/empty/EmptyState.svelte';
-import PanelPrompt from '$lib/components/empty/PanelPrompt.svelte';
-import Shimmer from '$lib/components/loading/Shimmer.svelte';
-import { panelQuotes } from '$lib/firstNight/panelQuotes';
-import SeeMore from '$lib/components/see-more/SeeMore.svelte';
-import type { DashboardRecommendations } from '$lib/dashboard/fetchRecommendations';
-import type { Recommendation } from '$lib/dashboard/Recommendation';
-import type { DashboardSettings } from '$lib/dashboard/DashboardSettings';
-import cameraMovie from '$lib/icons/regular/camera-movie.svg?raw';
-import thumbsUp from '$lib/icons/regular/thumbs-up.svg?raw';
-import tvRetro from '$lib/icons/regular/tv-retro.svg?raw';
-import { overlay } from '$lib/overlay/overlay';
+import Container from '#lib/components/container/Container.svelte';
+import Dropdown from '#lib/components/dropdown/Dropdown.svelte';
+import LoadFailed from '#lib/components/empty/LoadFailed.svelte';
+import EmptyState from '#lib/components/empty/EmptyState.svelte';
+import PanelPrompt from '#lib/components/empty/PanelPrompt.svelte';
+import Shimmer from '#lib/components/loading/Shimmer.svelte';
+import { panelQuotes } from '#lib/firstNight/panelQuotes.ts';
+import SeeMore from '#lib/components/see-more/SeeMore.svelte';
+import type { DashboardRecommendations } from '#lib/dashboard/fetchRecommendations.ts';
+import type { Recommendation } from '#lib/dashboard/Recommendation.ts';
+import type { DashboardSettings } from '#lib/dashboard/DashboardSettings.ts';
+import cameraMovie from '#lib/icons/regular/camera-movie.svg?raw';
+import thumbsUp from '#lib/icons/regular/thumbs-up.svg?raw';
+import tvRetro from '#lib/icons/regular/tv-retro.svg?raw';
+import { overlay } from '#lib/overlay/overlay.ts';
 import PanelHeading from './PanelHeading.svelte';
-import { trackSectionDrilldown } from '$lib/analytics/trackSectionDrilldown';
+import { trackSectionDrilldown } from '#lib/analytics/trackSectionDrilldown.ts';
 import RecommendationSpotlight from './RecommendationSpotlight.svelte';
 
 type RecommendationType = DashboardSettings['recommendations']['type'];
@@ -200,7 +200,7 @@ const step = (count: number, by: -1 | 1) => (focus = (focus + by + count) % coun
   {:else if !items}
     <LoadFailed what="Recommendations" />
   {:else if !spotlight}
-    <EmptyState action={{ href: resolve('/movies/[chart=chart]', { chart: 'trending' }), text: 'Find a movie' }} />
+    <EmptyState action={{ href: resolve('/movies/[chart=chart]/[[period]]', { chart: 'trending' }), text: 'Find a movie' }} />
   {:else}
     {#if recs.fallback}
       <div class="fallback">

@@ -19,7 +19,7 @@ interface LoadAboutParams {
   now: number;
   /** `Math.random`, for each visit's shuffle of the team's favorites. */
   random: () => number;
-  /** The data center's cache, `platform.caches.default`; without one each worker reads the team itself. */
+  /** The data center's cache, `edgeCache()`; without one each worker reads the team itself. */
   cache?: KeyedCache;
   /** The request's origin, which the shared cache's keys live under. */
   origin?: string;

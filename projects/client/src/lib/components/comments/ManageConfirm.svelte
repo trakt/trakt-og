@@ -8,10 +8,10 @@
 -->
 <script lang="ts">
 import type { ComponentProps, Snippet } from 'svelte';
-import PromptPopover from '$lib/components/prompt/PromptPopover.svelte';
-import PromptRow from '$lib/components/prompt/PromptRow.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import xmark from '$lib/icons/regular/xmark.svg?raw';
+import PromptPopover from '#lib/components/prompt/PromptPopover.svelte';
+import PromptRow from '#lib/components/prompt/PromptRow.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import xmark from '#lib/icons/regular/xmark.svg?raw';
 import Tooltip from '../tooltip/Tooltip.svelte';
 
 interface Props {

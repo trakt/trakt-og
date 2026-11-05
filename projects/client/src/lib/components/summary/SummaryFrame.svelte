@@ -8,8 +8,8 @@
   shared link credits them (`ShareArrival`).
 -->
 <script lang="ts">
-import Container from '$lib/components/container/Container.svelte';
-import ShareArrival from '$lib/share/ShareArrival.svelte';
+import Container from '#lib/components/container/Container.svelte';
+import ShareArrival from '#lib/share/ShareArrival.svelte';
 import type { Snippet } from 'svelte';
 
 interface Props {

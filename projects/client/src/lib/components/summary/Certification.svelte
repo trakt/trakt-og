@@ -5,7 +5,7 @@
     <Certification certification="TV-MA" />
 -->
 <script lang="ts">
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
 import { certificationTip } from './certificationTip.ts';
 
 const { certification }: { certification: string } = $props();

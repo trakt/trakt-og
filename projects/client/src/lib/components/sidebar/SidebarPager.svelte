@@ -6,10 +6,10 @@
     </SidebarPager>
 -->
 <script lang="ts">
-import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import angleLeft from '$lib/icons/light/angle-left.svg?raw';
-import angleRight from '$lib/icons/light/angle-right.svg?raw';
+import Dropdown from '#lib/components/dropdown/Dropdown.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import angleLeft from '#lib/icons/light/angle-left.svg?raw';
+import angleRight from '#lib/icons/light/angle-right.svg?raw';
 import type { Snippet } from 'svelte';
 
 interface Props {

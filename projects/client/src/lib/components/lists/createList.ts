@@ -1,6 +1,6 @@
 import { z } from 'zod/v4';
-import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
-import { useTrack } from '$lib/analytics/useTrack';
+import { AnalyticsEvent } from '#lib/analytics/AnalyticsEvent.ts';
+import { useTrack } from '#lib/analytics/useTrack.ts';
 
 const listSchema = z.object({
   ids: z.object({ trakt: z.number() }),

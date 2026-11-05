@@ -6,29 +6,29 @@
 -->
 <script lang="ts">
 import { page } from '$app/state';
-import { authStep } from '$lib/auth/authStep.svelte';
-import { signInHref } from '$lib/auth/signInHref';
-import { checkin as checkinModal } from '$lib/components/checkin/checkin.svelte';
-import type { CheckinTarget } from '$lib/components/checkin/CheckinTarget';
-import { newComment } from '$lib/components/comments/newComment.svelte';
-import SummaryFavorite from '$lib/components/favorites/SummaryFavorite.svelte';
-import type { FavoriteTarget } from '$lib/favorites/FavoriteTarget';
-import MediaCollection from '$lib/components/collection/MediaCollection.svelte';
-import { LIBRARY_ADDING } from '$lib/components/collection/libraryAdding';
-import MediaWatch from '$lib/components/history/MediaWatch.svelte';
-import type { WatchTarget } from '$lib/components/history/WatchTarget';
-import MediaList from '$lib/components/lists/MediaList.svelte';
-import type { ListTarget } from '$lib/components/lists/ListTarget';
-import { QUICK_ADD } from '$lib/settings/quickAdd';
-import SummaryAction from '$lib/components/summary/SummaryAction.svelte';
-import SummaryActionTile from '$lib/components/summary/SummaryActionTile.svelte';
-import circlePlus from '$lib/icons/light/circle-plus.svg?raw';
-import star from '$lib/icons/thin/star.svg?raw';
-import check from '$lib/icons/trakt/check.svg?raw';
-import collection from '$lib/icons/trakt/collection.svg?raw';
-import comment from '$lib/icons/trakt/comment.svg?raw';
-import list from '$lib/icons/light/list.svg?raw';
-import trakt from '$lib/icons/trakt/trakt-v2.svg?raw';
+import { authStep } from '#lib/auth/authStep.svelte.ts';
+import { signInHref } from '#lib/auth/signInHref.ts';
+import { checkin as checkinModal } from '#lib/components/checkin/checkin.svelte.ts';
+import type { CheckinTarget } from '#lib/components/checkin/CheckinTarget.ts';
+import { newComment } from '#lib/components/comments/newComment.svelte.ts';
+import SummaryFavorite from '#lib/components/favorites/SummaryFavorite.svelte';
+import type { FavoriteTarget } from '#lib/favorites/FavoriteTarget.ts';
+import MediaCollection from '#lib/components/collection/MediaCollection.svelte';
+import { LIBRARY_ADDING } from '#lib/components/collection/libraryAdding.ts';
+import MediaWatch from '#lib/components/history/MediaWatch.svelte';
+import type { WatchTarget } from '#lib/components/history/WatchTarget.ts';
+import MediaList from '#lib/components/lists/MediaList.svelte';
+import type { ListTarget } from '#lib/components/lists/ListTarget.ts';
+import { QUICK_ADD } from '#lib/settings/quickAdd.ts';
+import SummaryAction from '#lib/components/summary/SummaryAction.svelte';
+import SummaryActionTile from '#lib/components/summary/SummaryActionTile.svelte';
+import circlePlus from '#lib/icons/light/circle-plus.svg?raw';
+import star from '#lib/icons/thin/star.svg?raw';
+import check from '#lib/icons/trakt/check.svg?raw';
+import collection from '#lib/icons/trakt/collection.svg?raw';
+import comment from '#lib/icons/trakt/comment.svg?raw';
+import list from '#lib/icons/light/list.svg?raw';
+import trakt from '#lib/icons/trakt/trakt-v2.svg?raw';
 
 interface Props {
   /** Movies and episodes. A show passes its next episode to watch. */

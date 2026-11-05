@@ -9,7 +9,7 @@
 -->
 <script lang="ts">
 import type { Snippet } from 'svelte';
-import Container from '$lib/components/container/Container.svelte';
+import Container from '#lib/components/container/Container.svelte';
 
 interface Props {
   /** The heading's id, for the section's label. */

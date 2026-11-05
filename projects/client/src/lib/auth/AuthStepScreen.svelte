@@ -5,8 +5,8 @@
     <AuthStepScreen scene="signOut" run={logout} />
 -->
 <script lang="ts">
-import LinkButton from '$lib/components/button/LinkButton.svelte';
-import HyperspaceLoader from '$lib/components/loading/HyperspaceLoader.svelte';
+import LinkButton from '#lib/components/button/LinkButton.svelte';
+import HyperspaceLoader from '#lib/components/loading/HyperspaceLoader.svelte';
 import { onMount } from 'svelte';
 import { AUTH_FAILURE_MESSAGE, type AuthFailure, toAuthFailure } from './authFailure.ts';
 import { AUTH_SCENES, type AuthScene } from './authScenes.ts';

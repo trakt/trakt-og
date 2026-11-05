@@ -6,7 +6,7 @@
     <CalendarEntryTitles {entry} spoiler={icons.collectionTarget} align="start" wrap />
 -->
 <script lang="ts">
-import MediaSpoiler from '$lib/components/summary/MediaSpoiler.svelte';
+import MediaSpoiler from '#lib/components/summary/MediaSpoiler.svelte';
 import type { ComponentProps, Snippet } from 'svelte';
 import type { CalendarEntry } from './CalendarEntry.ts';
 

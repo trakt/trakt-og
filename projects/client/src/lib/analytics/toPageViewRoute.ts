@@ -1,4 +1,4 @@
-import { isAuthStepRoute } from '$lib/auth/isAuthStepRoute';
+import { isAuthStepRoute } from '#lib/auth/isAuthStepRoute.ts';
 
 // The SvelteKit template, never a pathname: HAL cannot tell a template from a
 // real path, so a pathname would store user slugs. Sign-in hops and the design

@@ -1,6 +1,6 @@
-import { calendarHome } from '$lib/calendars/calendarHome';
-import { MY_CALENDARS } from '$lib/calendars/myCalendars';
-import { PUBLIC_CALENDARS } from '$lib/calendars/publicCalendars';
+import { calendarHome } from '#lib/calendars/calendarHome.ts';
+import { MY_CALENDARS } from '#lib/calendars/myCalendars.ts';
+import { PUBLIC_CALENDARS } from '#lib/calendars/publicCalendars.ts';
 import type { HeaderLink, HeaderLinkGroup } from './HeaderLink.ts';
 
 type HeaderLinkChoicesParams = {

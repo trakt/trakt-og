@@ -3,17 +3,17 @@
   the theme the switch picks. Wide screens list the demo's sections beside it.
 -->
 <script lang="ts">
-import SeoHead from '$lib/seo/SeoHead.svelte';
+import SeoHead from '#lib/seo/SeoHead.svelte';
 import { page } from '$app/state';
-import DesignIntro from '$lib/design/DesignIntro.svelte';
-import DesignNav from '$lib/design/DesignNav.svelte';
-import SectionList from '$lib/design/SectionList.svelte';
-import { type DesignPrefs, designPrefs } from '$lib/design/designPrefs';
-import { designToc } from '$lib/design/designToc.svelte';
-import { findDesignDemo } from '$lib/design/findDesignDemo';
-import { guardWrites } from '$lib/design/guardWrites';
-import { toast } from '$lib/components/toast/toast.svelte';
-import { countLabel } from '$lib/utils/countLabel';
+import DesignIntro from '#lib/design/DesignIntro.svelte';
+import DesignNav from '#lib/design/DesignNav.svelte';
+import SectionList from '#lib/design/SectionList.svelte';
+import { type DesignPrefs, designPrefs } from '#lib/design/designPrefs.ts';
+import { designToc } from '#lib/design/designToc.svelte.ts';
+import { findDesignDemo } from '#lib/design/findDesignDemo.ts';
+import { guardWrites } from '#lib/design/guardWrites.ts';
+import { toast } from '#lib/components/toast/toast.svelte.ts';
+import { countLabel } from '#lib/utils/countLabel.ts';
 
 const { children, data } = $props();
 
@@ -55,7 +55,7 @@ $effect(() => {
     <div class="column">
       {#if demo}
         <DesignIntro tag={demo.group} title={demo.title}
-          facts={[countLabel(toc.entries.length, 'section'), `$lib/${demo.source}`]}>
+          facts={[countLabel(toc.entries.length, 'section'), `#lib/${demo.source}`]}>
           {#snippet lead()}{demo.summary}{/snippet}
         </DesignIntro>
       {/if}

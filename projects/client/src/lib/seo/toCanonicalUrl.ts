@@ -1,8 +1,9 @@
 import { positiveInt } from '../utils/positiveInt.ts';
 import { SITE_ORIGIN } from './siteOrigin.ts';
+import type { ReadonlyURL } from '$app/state';
 
 type Params = {
-  url: URL;
+  url: ReadonlyURL;
   /** Another path that shows the same page: `/home` is `/`. */
   path?: string;
 };

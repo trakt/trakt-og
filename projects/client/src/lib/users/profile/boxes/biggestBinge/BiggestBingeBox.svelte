@@ -1,9 +1,9 @@
 <!-- Biggest Binge: the most episodes of one show in one day this month, one pip per episode. -->
 <script lang="ts">
-import BoxChips from '$lib/components/users/profile-box/BoxChips.svelte';
-import BoxFigure from '$lib/components/users/profile-box/BoxFigure.svelte';
-import BoxTitle from '$lib/components/users/profile-box/BoxTitle.svelte';
-import ProfileBox from '$lib/components/users/profile-box/ProfileBox.svelte';
+import BoxChips from '#lib/components/users/profile-box/BoxChips.svelte';
+import BoxFigure from '#lib/components/users/profile-box/BoxFigure.svelte';
+import BoxTitle from '#lib/components/users/profile-box/BoxTitle.svelte';
+import ProfileBox from '#lib/components/users/profile-box/ProfileBox.svelte';
 import type { BiggestBingeView } from './BiggestBingeView.ts';
 
 const { view }: { view: BiggestBingeView } = $props();

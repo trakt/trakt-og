@@ -6,21 +6,21 @@
   rating (no favorite, as in OG).
 -->
 <script lang="ts">
-import SeoHead from '$lib/seo/SeoHead.svelte';
-import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import ChartPicker from '$lib/charts/ChartPicker.svelte';
-import TagPills from '$lib/components/labels/TagPills.svelte';
-import QuickIcons from '$lib/components/media/QuickIcons.svelte';
-import { quickIconFill } from '$lib/components/media/quickIconFill';
-import RailGroup from '$lib/components/sidebar/RailGroup.svelte';
-import SidebarFrame from '$lib/components/sidebar/SidebarFrame.svelte';
-import SidebarSection from '$lib/components/sidebar/SidebarSection.svelte';
-import SidebarTitle from '$lib/components/sidebar/SidebarTitle.svelte';
-import type { HeaderUser } from '$lib/components/header/HeaderUser';
-import { overlay } from '$lib/overlay/overlay';
-import { readableStat } from '$lib/utils/readableStat';
-import type { DatePreferences } from '$lib/settings/DatePreferences';
+import SeoHead from '#lib/seo/SeoHead.svelte';
+import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import ChartPicker from '#lib/charts/ChartPicker.svelte';
+import TagPills from '#lib/components/labels/TagPills.svelte';
+import QuickIcons from '#lib/components/media/QuickIcons.svelte';
+import { quickIconFill } from '#lib/components/media/quickIconFill.ts';
+import RailGroup from '#lib/components/sidebar/RailGroup.svelte';
+import SidebarFrame from '#lib/components/sidebar/SidebarFrame.svelte';
+import SidebarSection from '#lib/components/sidebar/SidebarSection.svelte';
+import SidebarTitle from '#lib/components/sidebar/SidebarTitle.svelte';
+import type { HeaderUser } from '#lib/components/header/HeaderUser.ts';
+import { overlay } from '#lib/overlay/overlay.ts';
+import { readableStat } from '#lib/utils/readableStat.ts';
+import type { DatePreferences } from '#lib/settings/DatePreferences.ts';
 import type { loadBoxOffice } from './loadBoxOffice.ts';
 import type { WeekInRelease } from './weekInRelease.ts';
 

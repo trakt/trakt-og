@@ -1,6 +1,6 @@
 import { z } from 'zod/v4';
-import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
-import { useTrack } from '$lib/analytics/useTrack';
+import { AnalyticsEvent } from '#lib/analytics/AnalyticsEvent.ts';
+import { useTrack } from '#lib/analytics/useTrack.ts';
 import type { ListDraft } from './ListDraft.ts';
 import { editableListSchema } from './editableListSchema.ts';
 import { ListWriteError } from './ListWriteError.ts';

@@ -4,8 +4,8 @@
   semantics, so a comment can't add to the page's outline.
 -->
 <script lang="ts">
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import { isPlainClick } from '$lib/utils/isPlainClick';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import { isPlainClick } from '#lib/utils/isPlainClick.ts';
 import type { CommentBlock } from './text/CommentBlock.ts';
 import type { CommentInline } from './text/CommentInline.ts';
 import { safeLink } from './text/safeLink.ts';

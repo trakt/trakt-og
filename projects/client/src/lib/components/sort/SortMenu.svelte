@@ -8,7 +8,7 @@
     </Dropdown>
 -->
 <script lang="ts" generics="T extends MenuSort">
-import DropdownFlyout from '$lib/components/dropdown/DropdownFlyout.svelte';
+import DropdownFlyout from '#lib/components/dropdown/DropdownFlyout.svelte';
 import { flyoutHolds, type MenuSort, sortMenu } from './sortMenu.ts';
 import SortSiteLogo from './SortSiteLogo.svelte';
 

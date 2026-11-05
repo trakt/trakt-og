@@ -5,7 +5,7 @@
     <SettingValue label="Comments" svg={ban} value="Off" />
 -->
 <script lang="ts">
-import Icon from '$lib/icons/Icon.svelte';
+import Icon from '#lib/icons/Icon.svelte';
 import FieldLabel from './FieldLabel.svelte';
 
 const { label, value, svg }: { label: string; value: string; svg?: string } = $props();

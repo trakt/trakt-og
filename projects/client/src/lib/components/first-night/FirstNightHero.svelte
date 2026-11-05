@@ -5,22 +5,22 @@
   stream in, shimmering chips and posters hold the picks' place.
 -->
 <script lang="ts">
-import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
-import { useTrack } from '$lib/analytics/useTrack';
-import { nearViewport } from '$lib/utils/nearViewport';
-import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
-import Container from '$lib/components/container/Container.svelte';
-import PanelHeading from '$lib/components/dashboard/PanelHeading.svelte';
-import PickShimmer from '$lib/components/loading/PickShimmer.svelte';
-import Shimmer from '$lib/components/loading/Shimmer.svelte';
-import ToggleChips from '$lib/components/toggle-chips/ToggleChips.svelte';
-import circleCheck from '$lib/icons/regular/circle-check.svg?raw';
-import fileImport from '$lib/icons/regular/file-import.svg?raw';
-import type { FirstNight, FirstNightTab } from '$lib/firstNight/firstNight';
+import { AnalyticsEvent } from '#lib/analytics/AnalyticsEvent.ts';
+import { useTrack } from '#lib/analytics/useTrack.ts';
+import { nearViewport } from '#lib/utils/nearViewport.ts';
+import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
+import Container from '#lib/components/container/Container.svelte';
+import PanelHeading from '#lib/components/dashboard/PanelHeading.svelte';
+import PickShimmer from '#lib/components/loading/PickShimmer.svelte';
+import Shimmer from '#lib/components/loading/Shimmer.svelte';
+import ToggleChips from '#lib/components/toggle-chips/ToggleChips.svelte';
+import circleCheck from '#lib/icons/regular/circle-check.svg?raw';
+import fileImport from '#lib/icons/regular/file-import.svg?raw';
+import type { FirstNight, FirstNightTab } from '#lib/firstNight/firstNight.ts';
 import AvatarPicker from './AvatarPicker.svelte';
 import ImportStrip from './ImportStrip.svelte';
 import NamePrompt from './NamePrompt.svelte';
-import { savedName } from '$lib/firstNight/savedName.svelte';
+import { savedName } from '#lib/firstNight/savedName.svelte.ts';
 import PickPoster from './PickPoster.svelte';
 
 interface Props {

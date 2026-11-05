@@ -4,13 +4,13 @@
   posters holds their place while they load, and the band goes when nothing comes back.
 -->
 <script lang="ts">
-import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
-import Container from '$lib/components/container/Container.svelte';
-import CardShimmerRow from '$lib/components/loading/CardShimmerRow.svelte';
-import type { DatePreferences } from '$lib/settings/DatePreferences';
-import type { RelatedPerson } from '$lib/summary/RelatedPerson';
-import type { RelatedSource } from '$lib/summary/RelatedSource';
-import type { RelatedCard } from '$lib/summary/toRelatedCard';
+import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
+import Container from '#lib/components/container/Container.svelte';
+import CardShimmerRow from '#lib/components/loading/CardShimmerRow.svelte';
+import type { DatePreferences } from '#lib/settings/DatePreferences.ts';
+import type { RelatedPerson } from '#lib/summary/RelatedPerson.ts';
+import type { RelatedSource } from '#lib/summary/RelatedSource.ts';
+import type { RelatedCard } from '#lib/summary/toRelatedCard.ts';
 import LazySection from './LazySection.svelte';
 import RelatedPicks from './RelatedPicks.svelte';
 

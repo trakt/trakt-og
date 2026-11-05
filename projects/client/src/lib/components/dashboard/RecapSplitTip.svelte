@@ -6,13 +6,13 @@
     <RecapSplitTip heading="October 2026 so far" plays={52} state={…} onretry={…} />
 -->
 <script lang="ts">
-import EmptyNote from '$lib/components/empty/EmptyNote.svelte';
-import Shimmer from '$lib/components/loading/Shimmer.svelte';
-import TooltipFooter from '$lib/components/tooltip/TooltipFooter.svelte';
-import type { RecapSplitState, RecapTally } from '$lib/dashboard/RecapSplit';
-import Icon from '$lib/icons/Icon.svelte';
-import cameraMovie from '$lib/icons/regular/camera-movie.svg?raw';
-import tvRetro from '$lib/icons/regular/tv-retro.svg?raw';
+import EmptyNote from '#lib/components/empty/EmptyNote.svelte';
+import Shimmer from '#lib/components/loading/Shimmer.svelte';
+import TooltipFooter from '#lib/components/tooltip/TooltipFooter.svelte';
+import type { RecapSplitState, RecapTally } from '#lib/dashboard/RecapSplit.ts';
+import Icon from '#lib/icons/Icon.svelte';
+import cameraMovie from '#lib/icons/regular/camera-movie.svg?raw';
+import tvRetro from '#lib/icons/regular/tv-retro.svg?raw';
 
 interface Props {
   heading: string;

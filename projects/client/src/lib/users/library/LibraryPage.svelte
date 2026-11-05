@@ -4,41 +4,41 @@
   poster cards, under day dividers on Added Date. The owner's cards carry the metadata overlay.
 -->
 <script lang="ts">
-import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
-import SeoHead from '$lib/seo/SeoHead.svelte';
+import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
+import SeoHead from '#lib/seo/SeoHead.svelte';
 import { SvelteURLSearchParams } from 'svelte/reactivity';
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
-import CollectionOverlay from '$lib/components/collection/CollectionOverlay.svelte';
-import Container from '$lib/components/container/Container.svelte';
-import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
-import SortLabel from '$lib/components/sort/SortLabel.svelte';
-import SortMenu from '$lib/components/sort/SortMenu.svelte';
-import { withTraktSorts } from '$lib/components/sort/sortMenu';
-import SortDirection from '$lib/components/dropdown/SortDirection.svelte';
-import EmptyState from '$lib/components/empty/EmptyState.svelte';
-import DateRangeFilter from '$lib/components/filters/DateRangeFilter.svelte';
-import DividersToggle from '$lib/components/filters/DividersToggle.svelte';
-import FadeHideMenu from '$lib/components/filters/FadeHideMenu.svelte';
-import { type FadeHide, fadeHideOptions, matchesFadeHide } from '$lib/components/filters/fadeHide';
-import DayGroup from '$lib/components/history/DayGroup.svelte';
-import PosterCard from '$lib/components/media/PosterCard.svelte';
-import PosterGrid from '$lib/components/media/PosterGrid.svelte';
-import { quickIconFill } from '$lib/components/media/quickIconFill';
-import Pagination from '$lib/components/pagination/Pagination.svelte';
-import SectionToolbar from '$lib/components/toolbar/SectionToolbar.svelte';
-import SubnavCount from '$lib/components/toolbar/SubnavCount.svelte';
-import collection from '$lib/icons/trakt/collection-thick.svg?raw';
-import { overlay } from '$lib/overlay/overlay';
-import type { ProfileUser } from '$lib/users/ProfileUser';
-import { findAction } from '$lib/users/findAction';
-import { formatRuntime } from '$lib/utils/formatRuntime';
+import CollectionOverlay from '#lib/components/collection/CollectionOverlay.svelte';
+import Container from '#lib/components/container/Container.svelte';
+import Dropdown from '#lib/components/dropdown/Dropdown.svelte';
+import SortLabel from '#lib/components/sort/SortLabel.svelte';
+import SortMenu from '#lib/components/sort/SortMenu.svelte';
+import { withTraktSorts } from '#lib/components/sort/sortMenu.ts';
+import SortDirection from '#lib/components/dropdown/SortDirection.svelte';
+import EmptyState from '#lib/components/empty/EmptyState.svelte';
+import DateRangeFilter from '#lib/components/filters/DateRangeFilter.svelte';
+import DividersToggle from '#lib/components/filters/DividersToggle.svelte';
+import FadeHideMenu from '#lib/components/filters/FadeHideMenu.svelte';
+import { type FadeHide, fadeHideOptions, matchesFadeHide } from '#lib/components/filters/fadeHide.ts';
+import DayGroup from '#lib/components/history/DayGroup.svelte';
+import PosterCard from '#lib/components/media/PosterCard.svelte';
+import PosterGrid from '#lib/components/media/PosterGrid.svelte';
+import { quickIconFill } from '#lib/components/media/quickIconFill.ts';
+import Pagination from '#lib/components/pagination/Pagination.svelte';
+import SectionToolbar from '#lib/components/toolbar/SectionToolbar.svelte';
+import SubnavCount from '#lib/components/toolbar/SubnavCount.svelte';
+import collection from '#lib/icons/trakt/collection-thick.svg?raw';
+import { overlay } from '#lib/overlay/overlay.ts';
+import type { ProfileUser } from '#lib/users/ProfileUser.ts';
+import { findAction } from '#lib/users/findAction.ts';
+import { formatRuntime } from '#lib/utils/formatRuntime.ts';
 import { historyTypes, isHistoryType } from '../history/historyTypes.ts';
 import { libraryPath } from './libraryPath.ts';
 import { type LibrarySort, librarySorts, sortLabels, validSort } from './librarySort.ts';
 import { librarySources } from './librarySources.ts';
 import type { loadLibrary } from './loadLibrary.ts';
-import { toHistoryDays } from '$lib/users/history/toHistoryCard';
+import { toHistoryDays } from '#lib/users/history/toHistoryCard.ts';
 import type { LibraryCard } from './toLibraryCard.ts';
 import { capitalize } from '../../utils/capitalize.ts';
 
@@ -61,7 +61,7 @@ const filtered = $derived(data.source !== 'all' || Boolean(data.range.startAt ||
 // OG's `library_user_path(type, sort_by, sort_how, link_params)`: the query string without the page. A sort the
 // new type doesn't have falls back to Added Date, and the default sort stays out of the path.
 function href(type: string, sort: LibrarySort) {
-  const query = new SvelteURLSearchParams(page.url.searchParams);
+  const query = new SvelteURLSearchParams(page.url.search);
   query.delete('page');
   const path = isHistoryType(type) ? libraryPath(type, validSort(type, sort.by) ? sort : { by: 'added', how: 'asc' }) : '';
   return `${base}${path}${query.size ? `?${query}` : ''}`;
@@ -69,7 +69,7 @@ function href(type: string, sort: LibrarySort) {
 
 // The same path with only the source changed, back on page one.
 function sourceHref(source: string) {
-  const query = new SvelteURLSearchParams(page.url.searchParams);
+  const query = new SvelteURLSearchParams(page.url.search);
   query.delete('page');
   if (source === 'all') query.delete('source');
   else query.set('source', source);

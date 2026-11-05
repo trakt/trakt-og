@@ -4,9 +4,9 @@
   inside a positioned box: it covers the whole of it.
 -->
 <script lang="ts">
-import Spinner from '$lib/components/loading/Spinner.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import arrowRight from '$lib/icons/solid/arrow-right-long.svg?raw';
+import Spinner from '#lib/components/loading/Spinner.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import arrowRight from '#lib/icons/solid/arrow-right-long.svg?raw';
 
 interface Props {
   /** What's reloading, for the spinner's label. */

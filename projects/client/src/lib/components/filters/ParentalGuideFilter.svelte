@@ -6,7 +6,7 @@
     <ParentalGuideFilter value={draft.parental} onchange={(parental) => apply({ ...draft, parental })} />
 -->
 <script lang="ts">
-import ToggleChips from '$lib/components/toggle-chips/ToggleChips.svelte';
+import ToggleChips from '#lib/components/toggle-chips/ToggleChips.svelte';
 import {
   type ParentalCategory,
   type ParentalLevel,

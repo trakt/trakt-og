@@ -5,8 +5,8 @@
     <NoResults action={{ href: chartUrl, text: 'Clear filters' }} />
 -->
 <script lang="ts">
-import hooded from '$lib/assets/no-results-hooded.png';
-import LinkButton from '$lib/components/button/LinkButton.svelte';
+import hooded from '#lib/assets/no-results-hooded.png';
+import LinkButton from '#lib/components/button/LinkButton.svelte';
 import type { EmptyAction } from './EmptyAction.ts';
 
 const { action }: { action?: EmptyAction } = $props();

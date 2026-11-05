@@ -4,13 +4,13 @@
   "All Videos" opens the videos page on the picked type. The thumbnails only load as they scroll into view.
 -->
 <script lang="ts">
-import VideoPopup from '$lib/components/dialog/VideoPopup.svelte';
-import { videoLinkClicks } from '$lib/components/dialog/videoLinkClicks';
-import VideoFanartCard from '$lib/components/media/VideoFanartCard.svelte';
-import { defaultVideoTab, toVideoTabs, type VideoCard } from '$lib/videos/toVideoCards';
-import VideoTypeDropdown from '$lib/videos/VideoTypeDropdown.svelte';
-import { trackExtras } from '$lib/videos/trackVideo';
-import { videosHref, type VideoTabId } from '$lib/videos/videoTypes';
+import VideoPopup from '#lib/components/dialog/VideoPopup.svelte';
+import { videoLinkClicks } from '#lib/components/dialog/videoLinkClicks.ts';
+import VideoFanartCard from '#lib/components/media/VideoFanartCard.svelte';
+import { defaultVideoTab, toVideoTabs, type VideoCard } from '#lib/videos/toVideoCards.ts';
+import VideoTypeDropdown from '#lib/videos/VideoTypeDropdown.svelte';
+import { trackExtras } from '#lib/videos/trackVideo.ts';
+import { videosHref, type VideoTabId } from '#lib/videos/videoTypes.ts';
 import SectionHeading from './SectionHeading.svelte';
 
 interface Props {

@@ -10,19 +10,19 @@
     <IncludeExcludeSelect label="Networks" groups={[]} search={searchNetworks} selection={…} onchange={set} />
 -->
 <script lang="ts">
-import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
-import EmptyState from '$lib/components/empty/EmptyState.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import heart from '$lib/icons/regular/heart.svg?raw';
-import xmark from '$lib/icons/regular/xmark.svg?raw';
-import plusIcon from '$lib/icons/regular/circle-plus.svg?raw';
-import minusIcon from '$lib/icons/regular/circle-minus.svg?raw';
-import plusSolid from '$lib/icons/solid/circle-plus.svg?raw';
-import minusSolid from '$lib/icons/solid/circle-minus.svg?raw';
+import Dropdown from '#lib/components/dropdown/Dropdown.svelte';
+import EmptyState from '#lib/components/empty/EmptyState.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import heart from '#lib/icons/regular/heart.svg?raw';
+import xmark from '#lib/icons/regular/xmark.svg?raw';
+import plusIcon from '#lib/icons/regular/circle-plus.svg?raw';
+import minusIcon from '#lib/icons/regular/circle-minus.svg?raw';
+import plusSolid from '#lib/icons/solid/circle-plus.svg?raw';
+import minusSolid from '#lib/icons/solid/circle-minus.svg?raw';
 import type { FilterOption, FilterOptionGroup } from './filterOptions.ts';
 import type { ListSelection } from './listSelection.ts';
 import SearchField from './SearchField.svelte';
-import OptionRowShimmers from '$lib/components/loading/OptionRowShimmers.svelte';
+import OptionRowShimmers from '#lib/components/loading/OptionRowShimmers.svelte';
 
 /** A service's logo tile before its name; `heart` is All Favorites. */
 type OptionTile = {

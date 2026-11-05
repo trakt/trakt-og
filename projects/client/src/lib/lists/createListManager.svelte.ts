@@ -18,8 +18,8 @@ import type { ListItemCard } from './toListItemCard.ts';
 import type { ListView } from './toListView.ts';
 import { GENERIC_ERROR } from '../utils/genericError.ts';
 import { viewerFetch } from '../auth/viewerFetch.ts';
-import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
-import { useTrack } from '$lib/analytics/useTrack';
+import { AnalyticsEvent } from '#lib/analytics/AnalyticsEvent.ts';
+import { useTrack } from '#lib/analytics/useTrack.ts';
 
 type Source = {
   list: Pick<ListView, 'id' | 'slug' | 'ownerSlug' | 'name' | 'href'> | null;

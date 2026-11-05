@@ -1,10 +1,10 @@
 <!-- `/shows/:id/seasons/all`: every episode of the show in air order, specials included. -->
 <script lang="ts">
-import SeoHead from '$lib/seo/SeoHead.svelte';
-import { toSubpageSeo } from '$lib/seo/pages/toSubpageSeo';
-import EmptyState from '$lib/components/empty/EmptyState.svelte';
-import type { HeaderUser } from '$lib/components/header/HeaderUser';
-import type { DatePreferences } from '$lib/settings/DatePreferences';
+import SeoHead from '#lib/seo/SeoHead.svelte';
+import { toSubpageSeo } from '#lib/seo/pages/toSubpageSeo.ts';
+import EmptyState from '#lib/components/empty/EmptyState.svelte';
+import type { HeaderUser } from '#lib/components/header/HeaderUser.ts';
+import type { DatePreferences } from '#lib/settings/DatePreferences.ts';
 import EpisodeList from './EpisodeList.svelte';
 import type { loadShowEpisodes } from './loadShow.ts';
 import ShowSubpage from './ShowSubpage.svelte';

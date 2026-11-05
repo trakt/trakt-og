@@ -4,19 +4,19 @@
   pagination above and below, or OG's empty notice. The 30-day sorts and the direction arrow have no API.
 -->
 <script lang="ts">
-import SeoHead from '$lib/seo/SeoHead.svelte';
-import { toSubpageSeo } from '$lib/seo/pages/toSubpageSeo';
-import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
+import SeoHead from '#lib/seo/SeoHead.svelte';
+import { toSubpageSeo } from '#lib/seo/pages/toSubpageSeo.ts';
+import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
 import { page } from '$app/state';
-import ListEditor from '$lib/components/lists/ListEditor.svelte';
-import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
-import SortDirection from '$lib/components/dropdown/SortDirection.svelte';
-import EmptyState from '$lib/components/empty/EmptyState.svelte';
-import ListRow from '$lib/components/media/ListRow.svelte';
-import Pagination from '$lib/components/pagination/Pagination.svelte';
-import SubpageFrame from '$lib/components/summary/SubpageFrame.svelte';
-import SectionToolbar from '$lib/components/toolbar/SectionToolbar.svelte';
-import { countLabel } from '$lib/utils/countLabel';
+import ListEditor from '#lib/components/lists/ListEditor.svelte';
+import Dropdown from '#lib/components/dropdown/Dropdown.svelte';
+import SortDirection from '#lib/components/dropdown/SortDirection.svelte';
+import EmptyState from '#lib/components/empty/EmptyState.svelte';
+import ListRow from '#lib/components/media/ListRow.svelte';
+import Pagination from '#lib/components/pagination/Pagination.svelte';
+import SubpageFrame from '#lib/components/summary/SubpageFrame.svelte';
+import SectionToolbar from '#lib/components/toolbar/SectionToolbar.svelte';
+import { countLabel } from '#lib/utils/countLabel.ts';
 import {
   type ItemListQuery,
   itemListsHref,

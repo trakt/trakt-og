@@ -1,12 +1,12 @@
 <script lang="ts">
 import type { Snippet } from 'svelte';
-import PosterCard from '$lib/components/media/PosterCard.svelte';
-import { quickIconFill } from '$lib/components/media/quickIconFill';
-import NoteCard from '$lib/components/notes/NoteCard.svelte';
-import type { DatePreferences } from '$lib/settings/DatePreferences';
-import type { NoteView } from '$lib/users/notes/NoteView';
-import type { OverlayState } from '$lib/overlay/createOverlay.svelte';
-import { overlay } from '$lib/overlay/overlay';
+import PosterCard from '#lib/components/media/PosterCard.svelte';
+import { quickIconFill } from '#lib/components/media/quickIconFill.ts';
+import NoteCard from '#lib/components/notes/NoteCard.svelte';
+import type { DatePreferences } from '#lib/settings/DatePreferences.ts';
+import type { NoteView } from '#lib/users/notes/NoteView.ts';
+import type { OverlayState } from '#lib/overlay/createOverlay.svelte.ts';
+import { overlay } from '#lib/overlay/overlay.ts';
 
 const { note, datePreferences, manage }: { note: NoteView; datePreferences: DatePreferences; manage?: Snippet } =
   $props();

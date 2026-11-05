@@ -5,9 +5,9 @@
     <CalendarAgendaRow {entry} icons={cardIcons(entry)} artwork="fanart" mixed />
 -->
 <script lang="ts">
-import CardTag from '$lib/components/media/CardTag.svelte';
-import FanartCard from '$lib/components/media/FanartCard.svelte';
-import QuickIcons from '$lib/components/media/QuickIcons.svelte';
+import CardTag from '#lib/components/media/CardTag.svelte';
+import FanartCard from '#lib/components/media/FanartCard.svelte';
+import QuickIcons from '#lib/components/media/QuickIcons.svelte';
 import type { ComponentProps } from 'svelte';
 import type { CalendarArtwork } from './calendarDisplay.ts';
 import type { CalendarEntry } from './CalendarEntry.ts';

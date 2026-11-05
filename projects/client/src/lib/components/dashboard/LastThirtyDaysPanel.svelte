@@ -6,11 +6,11 @@
 -->
 <script lang="ts">
 import type { Snippet } from 'svelte';
-import LoadFailed from '$lib/components/empty/LoadFailed.svelte';
-import Shimmer from '$lib/components/loading/Shimmer.svelte';
-import GenreBand from '$lib/components/users/GenreBand.svelte';
-import type { LastThirtyDays } from '$lib/dashboard/LastThirtyDays';
-import chartSimple from '$lib/icons/regular/chart-simple.svg?raw';
+import LoadFailed from '#lib/components/empty/LoadFailed.svelte';
+import Shimmer from '#lib/components/loading/Shimmer.svelte';
+import GenreBand from '#lib/components/users/GenreBand.svelte';
+import type { LastThirtyDays } from '#lib/dashboard/LastThirtyDays.ts';
+import chartSimple from '#lib/icons/regular/chart-simple.svg?raw';
 import DashboardPanel from './DashboardPanel.svelte';
 import MinutesChart from './MinutesChart.svelte';
 import WatchedKeys from './WatchedKeys.svelte';

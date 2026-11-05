@@ -12,10 +12,10 @@
     <SectionToolbar statsChip={{ svg: check, value: '53%', label: 'Watched', tone: 'watched' }} …>
 -->
 <script lang="ts">
-import Container from '$lib/components/container/Container.svelte';
-import Caret from '$lib/components/dropdown/Caret.svelte';
-import { menuPlacement } from '$lib/components/dropdown/menuPlacement';
-import Icon from '$lib/icons/Icon.svelte';
+import Container from '#lib/components/container/Container.svelte';
+import Caret from '#lib/components/dropdown/Caret.svelte';
+import { menuPlacement } from '#lib/components/dropdown/menuPlacement.ts';
+import Icon from '#lib/icons/Icon.svelte';
 import type { Snippet } from 'svelte';
 import type { Attachment } from 'svelte/attachments';
 

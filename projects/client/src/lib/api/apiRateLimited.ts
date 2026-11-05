@@ -13,8 +13,5 @@ function wait(retryAfter: string | null) {
  * browser, where `isApiRateLimited` reads it for `LoadFailed` and the error page.
  */
 export function apiRateLimited(retryAfter: string | null): never {
-  error(429, {
-    message: `Trakt's API is rate limiting your requests. Try again ${wait(retryAfter)}.`,
-    rateLimited: true,
-  });
+  error(429, `Trakt's API is rate limiting your requests. Try again ${wait(retryAfter)}.`, { rateLimited: true });
 }

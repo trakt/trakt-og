@@ -1,5 +1,5 @@
 import { z } from 'zod/v4';
-import { uniqueBy } from '$lib/utils/uniqueBy';
+import { uniqueBy } from '#lib/utils/uniqueBy.ts';
 
 /** The bar before a member changes it: OG's main links. */
 const DEFAULTS: readonly string[] = ['dashboard', 'discover', 'shows', 'movies', 'calendar'];

@@ -10,17 +10,17 @@
   from gray to red, and takes the rating's color once rated.
 -->
 <script lang="ts">
-import GlassAction from '$lib/components/glass-action/GlassAction.svelte';
-import MediaRating from '$lib/components/rating/MediaRating.svelte';
-import type { RatingTarget } from '$lib/components/rating/RatingTarget';
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import heartOutline from '$lib/icons/regular/heart.svg?raw';
-import arrowRightLong from '$lib/icons/regular/arrow-right-long.svg?raw';
-import chartColumn from '$lib/icons/solid/chart-column.svg?raw';
-import heart from '$lib/icons/solid/heart.svg?raw';
-import { countLabel } from '$lib/utils/countLabel';
-import { readableStat } from '$lib/utils/readableStat';
+import GlassAction from '#lib/components/glass-action/GlassAction.svelte';
+import MediaRating from '#lib/components/rating/MediaRating.svelte';
+import type { RatingTarget } from '#lib/components/rating/RatingTarget.ts';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import heartOutline from '#lib/icons/regular/heart.svg?raw';
+import arrowRightLong from '#lib/icons/regular/arrow-right-long.svg?raw';
+import chartColumn from '#lib/icons/solid/chart-column.svg?raw';
+import heart from '#lib/icons/solid/heart.svg?raw';
+import { countLabel } from '#lib/utils/countLabel.ts';
+import { readableStat } from '#lib/utils/readableStat.ts';
 import type { ExternalRating } from './ExternalRating.ts';
 import { externalRatingLogos as logos } from './externalRatingLogos.ts';
 import type { StripCount } from './StripCount.ts';

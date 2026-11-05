@@ -3,12 +3,12 @@
   new tab. The welcome wall leads with it, since an import fills an account faster than anything else.
 -->
 <script lang="ts">
-import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
-import { useTrack } from '$lib/analytics/useTrack';
-import { nearViewport } from '$lib/utils/nearViewport';
-import imdb from '$lib/assets/sites/imdb-solid.svg';
-import letterboxd from '$lib/assets/sites/letterboxd.svg';
-import { traktUrls } from '$lib/traktUrls';
+import { AnalyticsEvent } from '#lib/analytics/AnalyticsEvent.ts';
+import { useTrack } from '#lib/analytics/useTrack.ts';
+import { nearViewport } from '#lib/utils/nearViewport.ts';
+import imdb from '#lib/assets/sites/imdb-solid.svg';
+import letterboxd from '#lib/assets/sites/letterboxd.svg';
+import { traktUrls } from '#lib/traktUrls.ts';
 
 const sources = [
   { id: 'tvtime', name: 'TV Time', note: 'Shows, movies and progress' },

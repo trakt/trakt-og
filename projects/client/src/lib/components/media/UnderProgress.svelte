@@ -6,7 +6,7 @@
   scrubber. The link's name carries every tooltip line, so nothing lives only in the tooltip.
 -->
 <script lang="ts">
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
 import ProgressTip from './ProgressTip.svelte';
 import type { WatchedProgress } from './WatchedProgress.ts';
 import { watchedProgressText } from './watchedProgressText.ts';

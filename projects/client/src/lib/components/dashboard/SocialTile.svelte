@@ -6,12 +6,12 @@
   title.
 -->
 <script lang="ts">
-import FanartCard from '$lib/components/media/FanartCard.svelte';
-import UnderProgress from '$lib/components/media/UnderProgress.svelte';
-import Countdown from '$lib/components/status/Countdown.svelte';
-import { liveTags } from '$lib/dashboard/liveTags';
-import type { LiveTile } from '$lib/dashboard/liveTiles';
-import { imageUrl } from '$lib/utils/imageUrl';
+import FanartCard from '#lib/components/media/FanartCard.svelte';
+import UnderProgress from '#lib/components/media/UnderProgress.svelte';
+import Countdown from '#lib/components/status/Countdown.svelte';
+import { liveTags } from '#lib/dashboard/liveTags.ts';
+import type { LiveTile } from '#lib/dashboard/liveTiles.ts';
+import { imageUrl } from '#lib/utils/imageUrl.ts';
 
 const { tile }: { tile: LiveTile } = $props();
 

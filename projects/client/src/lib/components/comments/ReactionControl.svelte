@@ -5,12 +5,12 @@
   named in a tooltip of its own, the viewer's ringed in blue), and a line on taking it back. Native popovers provide Escape and light dismiss.
 -->
 <script lang="ts">
-import Icon from '$lib/icons/Icon.svelte';
-import TooltipBox from '$lib/components/tooltip/TooltipBox.svelte';
-import smile from '$lib/icons/solid/face-smile-plus.svg?raw';
-import xmark from '$lib/icons/regular/xmark.svg?raw';
-import GlassAction from '$lib/components/glass-action/GlassAction.svelte';
-import { reactionOptions } from '$lib/components/comments/reactionOptions';
+import Icon from '#lib/icons/Icon.svelte';
+import TooltipBox from '#lib/components/tooltip/TooltipBox.svelte';
+import smile from '#lib/icons/solid/face-smile-plus.svg?raw';
+import xmark from '#lib/icons/regular/xmark.svg?raw';
+import GlassAction from '#lib/components/glass-action/GlassAction.svelte';
+import { reactionOptions } from '#lib/components/comments/reactionOptions.ts';
 import type { ReactionType } from './ReactionType.ts';
 
 interface Props {

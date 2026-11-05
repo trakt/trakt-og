@@ -7,12 +7,12 @@
   saved.
 -->
 <script lang="ts">
-import CtaLink from '$lib/components/first-night/CtaLink.svelte';
-import Dialog from '$lib/components/dialog/Dialog.svelte';
-import DialogArtHeader from '$lib/components/dialog/DialogArtHeader.svelte';
-import { titleFanart } from '$lib/firstNight/titleFanart';
-import Icon from '$lib/icons/Icon.svelte';
-import check from '$lib/icons/solid/check.svg?raw';
+import CtaLink from '#lib/components/first-night/CtaLink.svelte';
+import Dialog from '#lib/components/dialog/Dialog.svelte';
+import DialogArtHeader from '#lib/components/dialog/DialogArtHeader.svelte';
+import { titleFanart } from '#lib/firstNight/titleFanart.ts';
+import Icon from '#lib/icons/Icon.svelte';
+import check from '#lib/icons/solid/check.svg?raw';
 import type { HeaderLink, HeaderLinkGroup } from './HeaderLink.ts';
 import { headerLinkPrefs } from './headerLinkPrefs.ts';
 

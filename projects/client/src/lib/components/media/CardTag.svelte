@@ -4,8 +4,8 @@
     <CardTag text="Season Finale" kind="season-finale" />
 -->
 <script lang="ts">
-import StatusDot from '$lib/components/status/StatusDot.svelte';
-import Icon from '$lib/icons/Icon.svelte';
+import StatusDot from '#lib/components/status/StatusDot.svelte';
+import Icon from '#lib/icons/Icon.svelte';
 import type { CardTag } from './CardTag.ts';
 
 const { text, icon, color, live = false, href, kind = 'primary' }: CardTag = $props();

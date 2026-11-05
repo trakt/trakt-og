@@ -4,14 +4,14 @@
   "123 likes", solid blue once liked. Its word is a `.count-text`, like ListCount's, so a tight row can hide both.
 -->
 <script lang="ts">
-import { changeListLike } from '$lib/components/lists/changeListLike';
-import GlassAction from '$lib/components/glass-action/GlassAction.svelte';
-import { toast } from '$lib/components/toast/toast.svelte';
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import { overlay } from '$lib/overlay/overlay';
-import voteYes from '$lib/icons/regular/thumbs-up.svg?raw';
-import voteYesThick from '$lib/icons/solid/thumbs-up.svg?raw';
+import { changeListLike } from '#lib/components/lists/changeListLike.ts';
+import GlassAction from '#lib/components/glass-action/GlassAction.svelte';
+import { toast } from '#lib/components/toast/toast.svelte.ts';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import { overlay } from '#lib/overlay/overlay.ts';
+import voteYes from '#lib/icons/regular/thumbs-up.svg?raw';
+import voteYesThick from '#lib/icons/solid/thumbs-up.svg?raw';
 import { viewerFetch } from '../../auth/viewerFetch.ts';
 
 interface Props {

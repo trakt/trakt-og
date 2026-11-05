@@ -1,10 +1,10 @@
 <!-- The owner's edit and delete icons on a note card, drawn like the comment card's manage icons. -->
 <script lang="ts">
-import ManageConfirm from '$lib/components/comments/ManageConfirm.svelte';
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import pencil from '$lib/icons/regular/pen.svg?raw';
-import deleteIcon from '$lib/icons/regular/trash-xmark.svg?raw';
+import ManageConfirm from '#lib/components/comments/ManageConfirm.svelte';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import pencil from '#lib/icons/regular/pen.svg?raw';
+import deleteIcon from '#lib/icons/regular/trash-xmark.svg?raw';
 
 const { onedit, ondelete, busy = false }: {
   onedit: () => void;

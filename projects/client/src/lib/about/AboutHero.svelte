@@ -5,11 +5,11 @@
   glow.
 -->
 <script lang="ts">
-import ProjectLink from '$lib/components/brand/ProjectLink.svelte';
-import TagPills from '$lib/components/labels/TagPills.svelte';
-import Shimmer from '$lib/components/loading/Shimmer.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import githubMark from '$lib/icons/brands/github.svg?raw';
+import ProjectLink from '#lib/components/brand/ProjectLink.svelte';
+import TagPills from '#lib/components/labels/TagPills.svelte';
+import Shimmer from '#lib/components/loading/Shimmer.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import githubMark from '#lib/icons/brands/github.svg?raw';
 import { prefersReducedMotion } from 'svelte/motion';
 import type { AboutGithub } from './github/fetchAboutGithub.ts';
 import { ogRepoUrls } from './ogRepoUrls.ts';

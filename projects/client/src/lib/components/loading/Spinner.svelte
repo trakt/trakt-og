@@ -3,8 +3,8 @@
   color from the text around it. Reduced motion keeps the icon still.
 -->
 <script lang="ts">
-import Icon from '$lib/icons/Icon.svelte';
-import arrowsRotate from '$lib/icons/solid/arrows-rotate.svg?raw';
+import Icon from '#lib/icons/Icon.svelte';
+import arrowsRotate from '#lib/icons/solid/arrows-rotate.svg?raw';
 
 const { label = 'Loading' }: { label?: string } = $props();
 </script>

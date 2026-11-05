@@ -3,12 +3,12 @@
   history, or Add to Watchlist. The poster links to the title. A seen or watchlisted pick keeps its button lit.
 -->
 <script lang="ts">
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import posterPlaceholder from '$lib/assets/placeholders/poster.png';
-import WatchlistButton from '$lib/components/lists/WatchlistButton.svelte';
-import type { PickAction, StarterPick } from '$lib/firstNight/starterPicks';
-import { trackedPosters } from '$lib/firstNight/trackedPosters.svelte';
-import { overlay } from '$lib/overlay/overlay';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import posterPlaceholder from '#lib/assets/placeholders/poster.png';
+import WatchlistButton from '#lib/components/lists/WatchlistButton.svelte';
+import type { PickAction, StarterPick } from '#lib/firstNight/starterPicks.ts';
+import { trackedPosters } from '#lib/firstNight/trackedPosters.svelte.ts';
+import { overlay } from '#lib/overlay/overlay.ts';
 import SeenItButton from './SeenItButton.svelte';
 
 const { pick, action }: { pick: StarterPick; action: PickAction } = $props();

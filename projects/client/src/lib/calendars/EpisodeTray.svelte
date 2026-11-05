@@ -5,11 +5,11 @@
     <EpisodeTray id="tray" show={1} title="The Diplomat" episodes={card.group.episodes} released />
 -->
 <script lang="ts">
-import QuickIcons from '$lib/components/media/QuickIcons.svelte';
-import { quickIconFill } from '$lib/components/media/quickIconFill';
-import MediaSpoiler from '$lib/components/summary/MediaSpoiler.svelte';
+import QuickIcons from '#lib/components/media/QuickIcons.svelte';
+import { quickIconFill } from '#lib/components/media/quickIconFill.ts';
+import MediaSpoiler from '#lib/components/summary/MediaSpoiler.svelte';
 import { page } from '$app/state';
-import { overlay } from '$lib/overlay/overlay';
+import { overlay } from '#lib/overlay/overlay.ts';
 import type { CalendarGroupEpisode } from './toCalendarGroupCard.ts';
 
 interface Props {

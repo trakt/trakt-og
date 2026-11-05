@@ -1,4 +1,4 @@
-import { browser } from '$app/environment';
+import { browser } from '$app/env';
 import { createRecentSearches } from './createRecentSearches.svelte.ts';
 
 const stores = new Map<string, ReturnType<typeof createRecentSearches>>();

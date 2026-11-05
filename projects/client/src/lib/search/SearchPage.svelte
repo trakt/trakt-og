@@ -7,57 +7,56 @@
   in every theme, which covers OG's forced dark knight.
 -->
 <script lang="ts">
-import SeoHead from '$lib/seo/SeoHead.svelte';
-import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
-import { useTrack } from '$lib/analytics/useTrack';
-import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
+import SeoHead from '#lib/seo/SeoHead.svelte';
+import { AnalyticsEvent } from '#lib/analytics/AnalyticsEvent.ts';
+import { useTrack } from '#lib/analytics/useTrack.ts';
+import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
 import { page } from '$app/state';
 import { untrack } from 'svelte';
 import { goto } from '$app/navigation';
-import { resolve } from '$app/paths';
-import FadeHideMenu from '$lib/components/filters/FadeHideMenu.svelte';
-import SearchField from '$lib/components/filters/SearchField.svelte';
-import { type FadeHide, type FadeHideOption, matchesFadeHide } from '$lib/components/filters/fadeHide';
-import { searchHideHref } from '$lib/search/searchHideHref';
-import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
-import ListRow from '$lib/components/media/ListRow.svelte';
-import { mediaQuickIcons } from '$lib/components/media/mediaQuickIcons';
-import EmptyState from '$lib/components/empty/EmptyState.svelte';
-import NoResults from '$lib/components/empty/NoResults.svelte';
-import { pageHref } from '$lib/components/pagination/pageWindow';
-import PagePager from '$lib/components/sidebar/PagePager.svelte';
-import CountPill from '$lib/components/sidebar/CountPill.svelte';
-import IconSwitch from '$lib/components/sidebar/IconSwitch.svelte';
-import RailGroup from '$lib/components/sidebar/RailGroup.svelte';
-import RailPager from '$lib/components/sidebar/RailPager.svelte';
-import SidebarFrame from '$lib/components/sidebar/SidebarFrame.svelte';
-import SidebarSection from '$lib/components/sidebar/SidebarSection.svelte';
-import SidebarTitle from '$lib/components/sidebar/SidebarTitle.svelte';
-import { viewerRecentSearches } from '$lib/components/header/viewerRecentSearches';
-import Icon from '$lib/icons/Icon.svelte';
-import grid from '$lib/icons/regular/grid-2.svg?raw';
-import list from '$lib/icons/regular/list.svg?raw';
-import { overlay } from '$lib/overlay/overlay';
-import ListEditor from '$lib/components/lists/ListEditor.svelte';
-import { createItemListActions } from '$lib/itemLists/createItemListActions.svelte';
-import { findSearchType } from '$lib/search/findSearchType';
-import RecentSearchesSection from '$lib/search/RecentSearchesSection.svelte';
+import FadeHideMenu from '#lib/components/filters/FadeHideMenu.svelte';
+import SearchField from '#lib/components/filters/SearchField.svelte';
+import { type FadeHide, type FadeHideOption, matchesFadeHide } from '#lib/components/filters/fadeHide.ts';
+import { searchHideHref } from '#lib/search/searchHideHref.ts';
+import Dropdown from '#lib/components/dropdown/Dropdown.svelte';
+import ListRow from '#lib/components/media/ListRow.svelte';
+import { mediaQuickIcons } from '#lib/components/media/mediaQuickIcons.ts';
+import EmptyState from '#lib/components/empty/EmptyState.svelte';
+import NoResults from '#lib/components/empty/NoResults.svelte';
+import { pageHref } from '#lib/components/pagination/pageWindow.ts';
+import PagePager from '#lib/components/sidebar/PagePager.svelte';
+import CountPill from '#lib/components/sidebar/CountPill.svelte';
+import IconSwitch from '#lib/components/sidebar/IconSwitch.svelte';
+import RailGroup from '#lib/components/sidebar/RailGroup.svelte';
+import RailPager from '#lib/components/sidebar/RailPager.svelte';
+import SidebarFrame from '#lib/components/sidebar/SidebarFrame.svelte';
+import SidebarSection from '#lib/components/sidebar/SidebarSection.svelte';
+import SidebarTitle from '#lib/components/sidebar/SidebarTitle.svelte';
+import { viewerRecentSearches } from '#lib/components/header/viewerRecentSearches.ts';
+import Icon from '#lib/icons/Icon.svelte';
+import grid from '#lib/icons/regular/grid-2.svg?raw';
+import list from '#lib/icons/regular/list.svg?raw';
+import { overlay } from '#lib/overlay/overlay.ts';
+import ListEditor from '#lib/components/lists/ListEditor.svelte';
+import { createItemListActions } from '#lib/itemLists/createItemListActions.svelte.ts';
+import { findSearchType } from '#lib/search/findSearchType.ts';
+import RecentSearchesSection from '#lib/search/RecentSearchesSection.svelte';
 import {
   SEARCH_ARTWORK,
   SEARCH_DISPLAY_COOKIES,
   type SearchArtwork,
   type SearchDisplay,
   type SearchView,
-} from '$lib/search/searchDisplay';
-import SearchResultCard from '$lib/search/SearchResultCard.svelte';
-import SearchResultRow from '$lib/search/SearchResultRow.svelte';
-import { searchLinks } from '$lib/search/searchLinks';
-import { searchListTypes } from '$lib/search/searchListTypes';
-import { searchListTypeHref } from '$lib/search/searchListTypeHref';
-import { toSearchMode } from '$lib/search/toSearchMode';
-import type { DatePreferences } from '$lib/settings/DatePreferences';
-import type { loadSearch } from '$lib/search/loadSearch';
+} from '#lib/search/searchDisplay.ts';
+import SearchResultCard from '#lib/search/SearchResultCard.svelte';
+import SearchResultRow from '#lib/search/SearchResultRow.svelte';
+import { searchLinks } from '#lib/search/searchLinks.ts';
+import { searchListTypes } from '#lib/search/searchListTypes.ts';
+import { searchListTypeHref } from '#lib/search/searchListTypeHref.ts';
+import { toSearchMode } from '#lib/search/toSearchMode.ts';
+import type { DatePreferences } from '#lib/settings/DatePreferences.ts';
+import type { loadSearch } from '#lib/search/loadSearch.ts';
 
 type Props = {
   data: Awaited<ReturnType<typeof loadSearch>> & { datePreferences: DatePreferences };
@@ -186,7 +185,8 @@ function save(next: FadeHide) {
   fadeHide = next;
   if (reload) {
     // The URL is built from the current route and preserves the user's query.
-    goto(resolve(searchHideHref(page.url, next.hide) as `/search${string}`), { keepFocus: true, noScroll: true });
+    // eslint-disable-next-line svelte/no-navigation-without-resolve -- the same page with new search filters
+    goto(searchHideHref(page.url, next.hide), { reset: false });
   }
 }
 </script>

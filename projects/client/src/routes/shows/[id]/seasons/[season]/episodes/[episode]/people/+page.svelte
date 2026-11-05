@@ -1,5 +1,5 @@
 <script lang="ts">
-import CreditsPage from '$lib/credits/CreditsPage.svelte';
+import CreditsPage from '#lib/credits/CreditsPage.svelte';
 
 const { data } = $props();
 </script>

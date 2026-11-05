@@ -5,18 +5,18 @@
   viewer's follow states stream in.
 -->
 <script lang="ts">
-import SeoHead from '$lib/seo/SeoHead.svelte';
+import SeoHead from '#lib/seo/SeoHead.svelte';
 import { page } from '$app/state';
-import Container from '$lib/components/container/Container.svelte';
-import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
-import SortDirection from '$lib/components/dropdown/SortDirection.svelte';
-import EmptyState from '$lib/components/empty/EmptyState.svelte';
-import Pagination from '$lib/components/pagination/Pagination.svelte';
-import SectionToolbar from '$lib/components/toolbar/SectionToolbar.svelte';
-import SubnavCount from '$lib/components/toolbar/SubnavCount.svelte';
-import userIcon from '$lib/icons/regular/user.svg?raw';
-import type { ProfileUser } from '$lib/users/ProfileUser';
-import type { ViewerRelation } from '$lib/users/ViewerRelation';
+import Container from '#lib/components/container/Container.svelte';
+import Dropdown from '#lib/components/dropdown/Dropdown.svelte';
+import SortDirection from '#lib/components/dropdown/SortDirection.svelte';
+import EmptyState from '#lib/components/empty/EmptyState.svelte';
+import Pagination from '#lib/components/pagination/Pagination.svelte';
+import SectionToolbar from '#lib/components/toolbar/SectionToolbar.svelte';
+import SubnavCount from '#lib/components/toolbar/SubnavCount.svelte';
+import userIcon from '#lib/icons/regular/user.svg?raw';
+import type { ProfileUser } from '#lib/users/ProfileUser.ts';
+import type { ViewerRelation } from '#lib/users/ViewerRelation.ts';
 import type { loadNetwork } from './loadNetwork.ts';
 import NetworkUserCard from './NetworkUserCard.svelte';
 import { type NetworkType, networkTypes } from './networkTypes.ts';

@@ -5,15 +5,15 @@
   goes to the viewer's smart lists.
 -->
 <script lang="ts">
-import TagPills from '$lib/components/labels/TagPills.svelte';
-import SidebarSection from '$lib/components/sidebar/SidebarSection.svelte';
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import gear from '$lib/icons/regular/gear.svg?raw';
-import lock from '$lib/icons/regular/lock.svg?raw';
-import sparkles from '$lib/icons/solid/sparkles.svg?raw';
-import type { SmartList } from '$lib/lists/smart/SmartList';
-import { smartListSourceLabel } from '$lib/lists/smart/smartListSourceLabel';
+import TagPills from '#lib/components/labels/TagPills.svelte';
+import SidebarSection from '#lib/components/sidebar/SidebarSection.svelte';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import gear from '#lib/icons/regular/gear.svg?raw';
+import lock from '#lib/icons/regular/lock.svg?raw';
+import sparkles from '#lib/icons/solid/sparkles.svg?raw';
+import type { SmartList } from '#lib/lists/smart/SmartList.ts';
+import { smartListSourceLabel } from '#lib/lists/smart/smartListSourceLabel.ts';
 
 interface Props {
   lists: readonly (SmartList & { href: string })[];

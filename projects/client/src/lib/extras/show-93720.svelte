@@ -8,7 +8,7 @@
 import { untrack } from 'svelte';
 import type { Attachment } from 'svelte/attachments';
 import { prefersReducedMotion } from 'svelte/motion';
-import { overlay } from '$lib/overlay/overlay';
+import { overlay } from '#lib/overlay/overlay.ts';
 import type { ExtraProps } from './extras.ts';
 import { type Frame, jump, shakenFrames, tornFrames } from './glitchFrames.ts';
 import { type Line, terminalLines } from './show-93720.lines.ts';

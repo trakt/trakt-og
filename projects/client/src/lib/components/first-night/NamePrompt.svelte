@@ -4,13 +4,13 @@
 -->
 <script lang="ts">
 import { invalidateAll } from '$app/navigation';
-import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
-import { useTrack } from '$lib/analytics/useTrack';
-import { viewerFetch } from '$lib/auth/viewerFetch';
-import { toast } from '$lib/components/toast/toast.svelte';
-import { savedName } from '$lib/firstNight/savedName.svelte';
-import { saveSettings } from '$lib/settings/saveSettings';
-import { settingsRequest } from '$lib/settings/settingsRequest';
+import { AnalyticsEvent } from '#lib/analytics/AnalyticsEvent.ts';
+import { useTrack } from '#lib/analytics/useTrack.ts';
+import { viewerFetch } from '#lib/auth/viewerFetch.ts';
+import { toast } from '#lib/components/toast/toast.svelte.ts';
+import { savedName } from '#lib/firstNight/savedName.svelte.ts';
+import { saveSettings } from '#lib/settings/saveSettings.ts';
+import { settingsRequest } from '#lib/settings/settingsRequest.ts';
 
 /** `quiet`: the label is for screen readers only, where a row already says what this is. */
 /**

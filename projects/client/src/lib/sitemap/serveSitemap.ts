@@ -12,7 +12,7 @@ const urlsSchema = z.array(z.object({ path: z.string(), lastmod: z.string().opti
 type ServeSitemapParams = {
   /** The request's URL: its origin names the cache key, and its host decides `noindex`. */
   url: URL;
-  /** The data center's cache, `platform.caches.default`. Without one each request reads the API. */
+  /** The data center's cache, `edgeCache()`. Without one each request reads the API. */
   cache: KeyedCache | undefined;
   /** The file's name, which keys its cache entry: `movies` for `/sitemap/movies.xml`. */
   name: string;

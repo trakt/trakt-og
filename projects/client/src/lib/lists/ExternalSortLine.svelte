@@ -4,9 +4,9 @@
   then, and stays blank when the site has no score for it.
 -->
 <script lang="ts">
-import Shimmer from '$lib/components/loading/Shimmer.svelte';
-import { externalRatingLogos } from '$lib/components/summary/externalRatingLogos';
-import { nearViewport } from '$lib/utils/nearViewport';
+import Shimmer from '#lib/components/loading/Shimmer.svelte';
+import { externalRatingLogos } from '#lib/components/summary/externalRatingLogos.ts';
+import { nearViewport } from '#lib/utils/nearViewport.ts';
 import { toExternalSortLine } from './externalSortLine.ts';
 import { type ExternalRatingsTarget, fetchExternalRatings } from './fetchExternalRatings.ts';
 

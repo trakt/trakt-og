@@ -8,9 +8,9 @@
 -->
 <script lang="ts">
 import { page } from '$app/state';
-import Icon from '$lib/icons/Icon.svelte';
-import arrowLeft from '$lib/icons/regular/chevron-left.svg?raw';
-import arrowRight from '$lib/icons/regular/chevron-right.svg?raw';
+import Icon from '#lib/icons/Icon.svelte';
+import arrowLeft from '#lib/icons/regular/chevron-left.svg?raw';
+import arrowRight from '#lib/icons/regular/chevron-right.svg?raw';
 import PageJump from './PageJump.svelte';
 import { pageHref, pageWindow } from './pageWindow.ts';
 

@@ -3,10 +3,10 @@
   already set.
 -->
 <script lang="ts">
-import LinkButton from '$lib/components/button/LinkButton.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import bug from '$lib/icons/solid/bug.svg?raw';
-import lightbulb from '$lib/icons/solid/lightbulb.svg?raw';
+import LinkButton from '#lib/components/button/LinkButton.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import bug from '#lib/icons/solid/bug.svg?raw';
+import lightbulb from '#lib/icons/solid/lightbulb.svg?raw';
 import { ogRepoUrls } from './ogRepoUrls.ts';
 
 const CARDS = [

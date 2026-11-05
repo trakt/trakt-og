@@ -2,16 +2,20 @@ import { readFileSync } from 'node:fs';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { isHttpError } from '@sveltejs/kit';
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { handle, handleFetch } from './hooks.server.ts';
 import { isApiRateLimited } from './lib/api/isApiRateLimited.ts';
 import { load } from './routes/+layout.server.ts';
+import { waited } from './test/cloudflareWorkers.ts';
 
 const APP_HTML = readFileSync(new URL('./app.html', import.meta.url), 'utf8');
 
 const server = setupServer();
 beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
-afterEach(() => server.resetHandlers());
+afterEach(() => {
+  server.resetHandlers();
+  vi.unstubAllGlobals();
+});
 afterAll(() => server.close());
 
 type Handle = Parameters<typeof handle>[0];
@@ -20,7 +24,6 @@ const pageEvent = (cookie: string | undefined) =>
   ({
     cookies: { get: (name: string) => (name === 'og-auth' ? cookie : undefined) },
     locals: {},
-    platform: { env: {} },
     url: new URL('https://og.trakt.tv/shows/trending'),
     route: { id: '/shows/[chart=chart]/[[period]]' },
     request: new Request('https://og.trakt.tv/shows/trending'),
@@ -215,22 +218,17 @@ describe('hooks: shared API reads', () => {
   /** Page events in one data center, sharing its cache. */
   function dataCenter() {
     const kept = new Map<string, Response>();
-    const writes: Promise<unknown>[] = [];
+    waited.length = 0;
     const cache = {
       match: (key: string) => Promise.resolve(kept.get(key)?.clone()),
       put: (key: string, response: Response) => Promise.resolve(void kept.set(key, response)),
     };
-    const platform = {
-      env: {},
-      caches: { default: cache },
-      ctx: { waitUntil: (write: Promise<unknown>) => writes.push(write) },
-    };
+    vi.stubGlobal('caches', { default: cache });
     const event = (token: string | null) => ({
       locals: { token, tokenExpired: false },
-      platform,
       url: new URL('https://og.trakt.tv/movies/trending'),
     });
-    return { event, writes };
+    return { event, writes: waited };
   }
 
   const serverFetch = async (event: unknown, url: string, init?: RequestInit) =>

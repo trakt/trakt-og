@@ -4,13 +4,13 @@
   With no ratings, OG kept the heading and a zero help line and hid the chart; og does the same.
 -->
 <script lang="ts">
-import Container from '$lib/components/container/Container.svelte';
-import HeadingMark from '$lib/components/heading/HeadingMark.svelte';
-import heart from '$lib/icons/regular/heart.svg?raw';
-import masksTheater from '$lib/icons/regular/masks-theater.svg?raw';
-import type { GenreBar } from '$lib/users/profile/toGenreBar';
-import type { ProfileRatings } from '$lib/users/profile/toProfileRatings';
-import WatchedKeys from '$lib/components/dashboard/WatchedKeys.svelte';
+import Container from '#lib/components/container/Container.svelte';
+import HeadingMark from '#lib/components/heading/HeadingMark.svelte';
+import heart from '#lib/icons/regular/heart.svg?raw';
+import masksTheater from '#lib/icons/regular/masks-theater.svg?raw';
+import type { GenreBar } from '#lib/users/profile/toGenreBar.ts';
+import type { ProfileRatings } from '#lib/users/profile/toProfileRatings.ts';
+import WatchedKeys from '#lib/components/dashboard/WatchedKeys.svelte';
 import GenreBand from './GenreBand.svelte';
 import ProfileRatingsChart from './ProfileRatingsChart.svelte';
 

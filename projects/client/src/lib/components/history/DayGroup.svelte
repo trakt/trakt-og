@@ -5,9 +5,9 @@
     <DayGroup weekday="Tuesday" date="September 29, 2026" runtime="2h 19m">...cards...</DayGroup>
 -->
 <script lang="ts">
-import HeadingMark from '$lib/components/heading/HeadingMark.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import clock from '$lib/icons/regular/clock.svg?raw';
+import HeadingMark from '#lib/components/heading/HeadingMark.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import clock from '#lib/icons/regular/clock.svg?raw';
 import type { Snippet } from 'svelte';
 
 interface Props {

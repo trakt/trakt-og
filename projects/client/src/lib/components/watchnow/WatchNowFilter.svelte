@@ -8,17 +8,17 @@
     <WatchNowFilter value={filters.watchnow} {country} favorites={settings?.browsing?.watchnow?.favorites ?? []} />
 -->
 <script lang="ts">
-import { isStandardApi } from '$lib/api/isStandardApi';
+import { isStandardApi } from '#lib/api/isStandardApi.ts';
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
-import FilterPopover from '$lib/components/filters/FilterPopover.svelte';
-import OptionRowShimmers from '$lib/components/loading/OptionRowShimmers.svelte';
-import { serviceLabel } from '$lib/components/filters/serviceLabel';
-import Icon from '$lib/icons/Icon.svelte';
-import play from '$lib/icons/regular/play.svg?raw';
-import heart from '$lib/icons/regular/heart.svg?raw';
-import search from '$lib/icons/regular/magnifying-glass.svg?raw';
-import check from '$lib/icons/trakt/check-thick.svg?raw';
+import FilterPopover from '#lib/components/filters/FilterPopover.svelte';
+import OptionRowShimmers from '#lib/components/loading/OptionRowShimmers.svelte';
+import { serviceLabel } from '#lib/components/filters/serviceLabel.ts';
+import Icon from '#lib/icons/Icon.svelte';
+import play from '#lib/icons/regular/play.svg?raw';
+import heart from '#lib/icons/regular/heart.svg?raw';
+import search from '#lib/icons/regular/magnifying-glass.svg?raw';
+import check from '#lib/icons/trakt/check-thick.svg?raw';
 import { api } from '../../api/api.ts';
 import { favoriteSlugs, type Source, toSourceMap } from './watchNow.ts';
 import { okBody } from '../../api/okBody.ts';
@@ -65,10 +65,11 @@ async function prepare() {
 }
 
 function reload(slugs: readonly string[]) {
-  const url = new URL(page.url);
+  const url = new URL(page.url.href);
   url.searchParams.delete('page');
   if (slugs.length > 0) url.searchParams.set('watchnow', slugs.join(','));
   else url.searchParams.delete('watchnow');
+   
   // eslint-disable-next-line svelte/no-navigation-without-resolve -- the current page with a new query string
   void goto(url);
 }

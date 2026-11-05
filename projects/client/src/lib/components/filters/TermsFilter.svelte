@@ -4,10 +4,10 @@
     <TermsFilter bind:terms />
 -->
 <script lang="ts">
-import FilterPopover from '$lib/components/filters/FilterPopover.svelte';
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import search from '$lib/icons/regular/magnifying-glass.svg?raw';
+import FilterPopover from '#lib/components/filters/FilterPopover.svelte';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import search from '#lib/icons/regular/magnifying-glass.svg?raw';
 
 interface Props {
   terms: string;

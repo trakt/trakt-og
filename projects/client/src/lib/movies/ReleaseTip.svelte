@@ -5,7 +5,7 @@
     <Tooltip toggles>{#snippet trigger(tooltip)}…{/snippet}<ReleaseTip {release} /></Tooltip>
 -->
 <script lang="ts">
-import TooltipFooter from '$lib/components/tooltip/TooltipFooter.svelte';
+import TooltipFooter from '#lib/components/tooltip/TooltipFooter.svelte';
 import ReleaseFormats from './ReleaseFormats.svelte';
 import { releasePills } from './releasePills.ts';
 import type { ReleaseDate } from './toMovieReleases.ts';

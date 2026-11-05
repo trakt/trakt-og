@@ -4,7 +4,7 @@
   for components that bring their own page column. The section list links to it and follows it as it scrolls by.
 -->
 <script lang="ts">
-import { parameterize } from '$lib/utils/parameterize';
+import { parameterize } from '#lib/utils/parameterize.ts';
 import type { Snippet } from 'svelte';
 import { designToc } from './designToc.svelte.ts';
 

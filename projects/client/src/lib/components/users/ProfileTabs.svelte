@@ -3,9 +3,9 @@
   current one solid red, lined up with the page column. It sits in the flow at the foot of the profile cover.
 -->
 <script lang="ts">
-import Container from '$lib/components/container/Container.svelte';
-import HeaderTint from '$lib/components/header/HeaderTint.svelte';
-import type { ProfileTab } from '$lib/users/profileTabs';
+import Container from '#lib/components/container/Container.svelte';
+import HeaderTint from '#lib/components/header/HeaderTint.svelte';
+import type { ProfileTab } from '#lib/users/profileTabs.ts';
 
 const { tabs }: { tabs: readonly ProfileTab[] } = $props();
 </script>

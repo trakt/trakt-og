@@ -5,15 +5,15 @@
     <SaveFiltersDialog bind:open page="Premieres" {chips} onsave={(name) => save(name)} />
 -->
 <script lang="ts">
-import Dialog from '$lib/components/dialog/Dialog.svelte';
-import DialogArtHeader from '$lib/components/dialog/DialogArtHeader.svelte';
-import DialogForm from '$lib/components/dialog/DialogForm.svelte';
-import DialogNotice from '$lib/components/dialog/DialogNotice.svelte';
-import FieldLabel from '$lib/components/dialog/FieldLabel.svelte';
-import SettingValue from '$lib/components/dialog/SettingValue.svelte';
-import type { CardTag } from '$lib/components/media/CardTag';
-import calendarDays from '$lib/icons/solid/calendar-days.svg?raw';
-import lockKeyhole from '$lib/icons/solid/lock-keyhole.svg?raw';
+import Dialog from '#lib/components/dialog/Dialog.svelte';
+import DialogArtHeader from '#lib/components/dialog/DialogArtHeader.svelte';
+import DialogForm from '#lib/components/dialog/DialogForm.svelte';
+import DialogNotice from '#lib/components/dialog/DialogNotice.svelte';
+import FieldLabel from '#lib/components/dialog/FieldLabel.svelte';
+import SettingValue from '#lib/components/dialog/SettingValue.svelte';
+import type { CardTag } from '#lib/components/media/CardTag.ts';
+import calendarDays from '#lib/icons/solid/calendar-days.svg?raw';
+import lockKeyhole from '#lib/icons/solid/lock-keyhole.svg?raw';
 import FilterChips from './FilterChips.svelte';
 import type { FilterTag } from './filterTags.ts';
 

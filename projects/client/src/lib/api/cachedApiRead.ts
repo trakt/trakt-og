@@ -5,7 +5,7 @@ import type { ResponseCache } from './ResponseCache.ts';
 type CachedApiReadParams = {
   /** A GET to the API. */
   request: Request;
-  /** The data center's cache, `platform.caches.default`. */
+  /** The data center's cache, `edgeCache()`. */
   cache: ResponseCache;
   /** og's origin, which the cache's keys live under. */
   origin: string;

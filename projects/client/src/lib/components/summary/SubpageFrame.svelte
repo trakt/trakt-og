@@ -8,12 +8,12 @@
 -->
 <script lang="ts">
 import { page } from '$app/state';
-import { overlay } from '$lib/overlay/overlay';
-import { mediaSpoilers } from '$lib/settings/mediaSpoilers';
-import FanartHeader from '$lib/components/media/FanartHeader.svelte';
-import WatchNow from '$lib/components/watchnow/WatchNow.svelte';
-import type { WatchNowButton } from '$lib/components/watchnow/watchNow';
-import type { SubpageFrameMedia } from '$lib/subpage/SubpageFrameMedia';
+import { overlay } from '#lib/overlay/overlay.ts';
+import { mediaSpoilers } from '#lib/settings/mediaSpoilers.ts';
+import FanartHeader from '#lib/components/media/FanartHeader.svelte';
+import WatchNow from '#lib/components/watchnow/WatchNow.svelte';
+import type { WatchNowButton } from '#lib/components/watchnow/watchNow.ts';
+import type { SubpageFrameMedia } from '#lib/subpage/SubpageFrameMedia.ts';
 import type { ComponentProps, Snippet } from 'svelte';
 import ExternalLinks from './ExternalLinks.svelte';
 import RatingsStrip from './RatingsStrip.svelte';

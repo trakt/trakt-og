@@ -6,7 +6,7 @@ How an og page is built. The charts pages are the reference. Copy their shape.
 
 - Feature code lives in `src/lib/<area>/`: the loader (`load<Page>.ts`), pure mappers from API rows to view models (`to<Thing>.ts`, each with a spec), and the page component (`<Page>Page.svelte`).
 - The route files stay one-liners. `+page.server.ts` calls the loader, and `+page.svelte` renders `<XPage {data} />`.
-- A path param with a fixed set of values gets a matcher in `src/params/` (see `chart.ts`). A matched param outranks a plain `[slug]`, so `shows/[chart=chart]` and `shows/[slug]` can sit side by side. Don't use a catch-all like `[type=media]/…`, because it loses to static segments.
+- A path param with a fixed set of values gets a matcher in `src/params.ts` (see `matchChart`). A matched param outranks a plain `[slug]`, so `shows/[chart=chart]` and `shows/[slug]` can sit side by side. Don't use a catch-all like `[type=media]/…`, because it loses to static segments.
 - A bare section URL that OG redirects gets a `+server.ts` with `GET` → `redirect(302, …)`.
 - A redirect that looks its item up first (`lists/redirectToList`) is a `+page.server.ts` load instead, so a missing item renders og's 404 page. A `+server.ts` error only gets the bare `error.html`.
 

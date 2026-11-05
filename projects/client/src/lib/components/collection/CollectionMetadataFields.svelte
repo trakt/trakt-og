@@ -1,6 +1,6 @@
 <script lang="ts">
-import type { CollectionMetadata } from '$lib/components/collection/CollectionMetadata';
-import { collectionFields } from '$lib/components/collection/collectionFields';
+import type { CollectionMetadata } from '#lib/components/collection/CollectionMetadata.ts';
+import { collectionFields } from '#lib/components/collection/collectionFields.ts';
 interface Props {
   value: CollectionMetadata;
   onsave: (metadata: CollectionMetadata) => void;

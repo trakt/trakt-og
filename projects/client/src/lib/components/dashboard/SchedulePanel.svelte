@@ -8,20 +8,20 @@
 <script lang="ts">
 import { invalidateAll } from '$app/navigation';
 import { resolve } from '$app/paths';
-import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
-import LoadFailed from '$lib/components/empty/LoadFailed.svelte';
-import EmptyState from '$lib/components/empty/EmptyState.svelte';
-import PanelPrompt from '$lib/components/empty/PanelPrompt.svelte';
-import { panelQuotes } from '$lib/firstNight/panelQuotes';
-import Shimmer from '$lib/components/loading/Shimmer.svelte';
-import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
-import WatchNowDialog from '$lib/components/watchnow/WatchNowDialog.svelte';
-import type { DashboardSettings } from '$lib/dashboard/DashboardSettings';
-import type { ScheduleDay } from '$lib/dashboard/ScheduleDay';
-import type { ScheduleItem } from '$lib/dashboard/ScheduleItem';
-import { scheduleCalendars } from '$lib/dashboard/scheduleCalendars';
-import { toScheduleLayout } from '$lib/dashboard/toScheduleLayout';
-import calendarLines from '$lib/icons/regular/calendar-lines.svg?raw';
+import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
+import LoadFailed from '#lib/components/empty/LoadFailed.svelte';
+import EmptyState from '#lib/components/empty/EmptyState.svelte';
+import PanelPrompt from '#lib/components/empty/PanelPrompt.svelte';
+import { panelQuotes } from '#lib/firstNight/panelQuotes.ts';
+import Shimmer from '#lib/components/loading/Shimmer.svelte';
+import Dropdown from '#lib/components/dropdown/Dropdown.svelte';
+import WatchNowDialog from '#lib/components/watchnow/WatchNowDialog.svelte';
+import type { DashboardSettings } from '#lib/dashboard/DashboardSettings.ts';
+import type { ScheduleDay } from '#lib/dashboard/ScheduleDay.ts';
+import type { ScheduleItem } from '#lib/dashboard/ScheduleItem.ts';
+import { scheduleCalendars } from '#lib/dashboard/scheduleCalendars.ts';
+import { toScheduleLayout } from '#lib/dashboard/toScheduleLayout.ts';
+import calendarLines from '#lib/icons/regular/calendar-lines.svg?raw';
 import DashboardPanel from './DashboardPanel.svelte';
 import ScheduleCard from './ScheduleCard.svelte';
 import ScheduleRows from './ScheduleRows.svelte';
@@ -164,7 +164,7 @@ function watchNow(item: NonNullable<ScheduleItem['watchNow']>) {
       <PanelPrompt quote={panelQuotes.schedule} tall roomy
   --panel-prompt-offset="calc(var(--gutter) + var(--space-lg-block))"
   text="Add shows you watch. New episodes land here the day they air."
-  action={{ href: resolve('/shows/[chart=chart]', { chart: 'trending' }), text: 'Find a show' }} />
+  action={{ href: resolve('/shows/[chart=chart]/[[period]]', { chart: 'trending' }), text: 'Find a show' }} />
     {/if}
   {:else if layout}
     {@const { spotlight } = layout}

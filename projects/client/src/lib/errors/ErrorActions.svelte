@@ -3,8 +3,8 @@
   mark, now the scene has no logo of its own), try again, or, held offline, try again or stay on the page.
 -->
 <script lang="ts">
-import TraktMark from '$lib/components/brand/TraktMark.svelte';
-import LinkButton from '$lib/components/button/LinkButton.svelte';
+import TraktMark from '#lib/components/brand/TraktMark.svelte';
+import LinkButton from '#lib/components/button/LinkButton.svelte';
 import type { errorScenes } from './errorScenes.ts';
 
 interface Props {

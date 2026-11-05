@@ -4,10 +4,10 @@
 -->
 <script lang="ts">
 import { page } from '$app/state';
-import Header from '$lib/components/header/Header.svelte';
-import Specimen from '$lib/design/Specimen.svelte';
-import SearchPage from '$lib/search/SearchPage.svelte';
-import { SEARCH_ARTWORK } from '$lib/search/searchDisplay';
+import Header from '#lib/components/header/Header.svelte';
+import Specimen from '#lib/design/Specimen.svelte';
+import SearchPage from '#lib/search/SearchPage.svelte';
+import { SEARCH_ARTWORK } from '#lib/search/searchDisplay.ts';
 
 const { data } = $props();
 
@@ -16,7 +16,7 @@ const choices = [
   { name: 'artwork', label: 'Artwork', values: SEARCH_ARTWORK },
 ] as const;
 const choiceHref = (name: string, value: string) => {
-  const url = new URL(page.url);
+  const url = new URL(page.url.href);
   url.searchParams.set(name, value);
   return `${url.pathname}${url.search}`;
 };

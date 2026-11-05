@@ -10,19 +10,19 @@
 <script lang="ts">
 import { page } from '$app/state';
 import { invalidateAll } from '$app/navigation';
-import { rawApiFetch } from '$lib/api/rawApiFetch';
-import Dialog from '$lib/components/dialog/Dialog.svelte';
-import DialogArtHeader from '$lib/components/dialog/DialogArtHeader.svelte';
-import DialogForm from '$lib/components/dialog/DialogForm.svelte';
-import type { CardTag } from '$lib/components/media/CardTag';
-import MediaSpoiler from '$lib/components/summary/MediaSpoiler.svelte';
-import { toast } from '$lib/components/toast/toast.svelte';
-import { checkin } from '$lib/components/checkin/checkin.svelte';
-import { checkinMedia } from '$lib/components/checkin/checkinMedia';
-import { overlay } from '$lib/overlay/overlay';
-import { mediaSpoilers } from '$lib/settings/mediaSpoilers';
-import trakt from '$lib/icons/trakt/trakt-v2.svg?raw';
-import { formatDate } from '$lib/utils/formatDate';
+import { rawApiFetch } from '#lib/api/rawApiFetch.ts';
+import Dialog from '#lib/components/dialog/Dialog.svelte';
+import DialogArtHeader from '#lib/components/dialog/DialogArtHeader.svelte';
+import DialogForm from '#lib/components/dialog/DialogForm.svelte';
+import type { CardTag } from '#lib/components/media/CardTag.ts';
+import MediaSpoiler from '#lib/components/summary/MediaSpoiler.svelte';
+import { toast } from '#lib/components/toast/toast.svelte.ts';
+import { checkin } from '#lib/components/checkin/checkin.svelte.ts';
+import { checkinMedia } from '#lib/components/checkin/checkinMedia.ts';
+import { overlay } from '#lib/overlay/overlay.ts';
+import { mediaSpoilers } from '#lib/settings/mediaSpoilers.ts';
+import trakt from '#lib/icons/trakt/trakt-v2.svg?raw';
+import { formatDate } from '#lib/utils/formatDate.ts';
 import { viewerFetch } from '../../auth/viewerFetch.ts';
 
 const target = $derived(checkin.target);

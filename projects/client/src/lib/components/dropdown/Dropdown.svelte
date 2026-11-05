@@ -26,7 +26,7 @@
   menu there once the page has scrolled.
 -->
 <script lang="ts">
-import checkThick from '$lib/icons/trakt/check-thick.svg?url';
+import checkThick from '#lib/icons/trakt/check-thick.svg?url';
 import type { Snippet } from 'svelte';
 import type { Attachment } from 'svelte/attachments';
 import Caret from './Caret.svelte';

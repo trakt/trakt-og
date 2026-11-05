@@ -1,8 +1,8 @@
 <!-- On Repeat: the most rewatched title over its fanart, with a giant multiplier. -->
 <script lang="ts">
-import BoxChips from '$lib/components/users/profile-box/BoxChips.svelte';
-import BoxTitle from '$lib/components/users/profile-box/BoxTitle.svelte';
-import ProfileBox from '$lib/components/users/profile-box/ProfileBox.svelte';
+import BoxChips from '#lib/components/users/profile-box/BoxChips.svelte';
+import BoxTitle from '#lib/components/users/profile-box/BoxTitle.svelte';
+import ProfileBox from '#lib/components/users/profile-box/ProfileBox.svelte';
 import type { OnRepeatView } from './OnRepeatView.ts';
 
 const { view }: { view: OnRepeatView } = $props();

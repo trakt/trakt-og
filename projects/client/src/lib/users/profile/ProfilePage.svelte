@@ -4,31 +4,31 @@
   shows and movies, and the newest comments. The boxes and Most Watched stream in, holding their places with shimmers.
 -->
 <script lang="ts">
-import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
-import SeoHead from '$lib/seo/SeoHead.svelte';
-import { toProfileSeo } from '$lib/seo/pages/toProfileSeo';
-import type { UserStats } from '$lib/stats/userStatsSchema';
-import DashboardPanel from '$lib/components/dashboard/DashboardPanel.svelte';
-import EmptyState from '$lib/components/empty/EmptyState.svelte';
-import LoadFailed from '$lib/components/empty/LoadFailed.svelte';
-import ProfileSectionShimmer from '$lib/components/loading/ProfileSectionShimmer.svelte';
-import Container from '$lib/components/container/Container.svelte';
-import PosterCard from '$lib/components/media/PosterCard.svelte';
-import PosterGrid from '$lib/components/media/PosterGrid.svelte';
-import { quickIconFill } from '$lib/components/media/quickIconFill';
-import FavoriteCard from '$lib/components/users/FavoriteCard.svelte';
-import MostWatched from '$lib/components/users/MostWatched.svelte';
-import ProfileCharts from '$lib/components/users/ProfileCharts.svelte';
-import WelcomeHero from '$lib/components/users/WelcomeHero.svelte';
-import clock from '$lib/icons/regular/clock.svg?raw';
-import comments from '$lib/icons/regular/comments.svg?raw';
-import star from '$lib/icons/regular/star.svg?raw';
-import { overlay } from '$lib/overlay/overlay';
-import type { DatePreferences } from '$lib/settings/DatePreferences';
-import UserCommentWithPoster from '$lib/users/comments/UserCommentWithPoster.svelte';
-import ProfileBoxStrip from '$lib/users/profile/boxes/ProfileBoxStrip.svelte';
-import type { ProfileUser } from '$lib/users/ProfileUser';
-import { findAction } from '$lib/users/findAction';
+import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
+import SeoHead from '#lib/seo/SeoHead.svelte';
+import { toProfileSeo } from '#lib/seo/pages/toProfileSeo.ts';
+import type { UserStats } from '#lib/stats/userStatsSchema.ts';
+import DashboardPanel from '#lib/components/dashboard/DashboardPanel.svelte';
+import EmptyState from '#lib/components/empty/EmptyState.svelte';
+import LoadFailed from '#lib/components/empty/LoadFailed.svelte';
+import ProfileSectionShimmer from '#lib/components/loading/ProfileSectionShimmer.svelte';
+import Container from '#lib/components/container/Container.svelte';
+import PosterCard from '#lib/components/media/PosterCard.svelte';
+import PosterGrid from '#lib/components/media/PosterGrid.svelte';
+import { quickIconFill } from '#lib/components/media/quickIconFill.ts';
+import FavoriteCard from '#lib/components/users/FavoriteCard.svelte';
+import MostWatched from '#lib/components/users/MostWatched.svelte';
+import ProfileCharts from '#lib/components/users/ProfileCharts.svelte';
+import WelcomeHero from '#lib/components/users/WelcomeHero.svelte';
+import clock from '#lib/icons/regular/clock.svg?raw';
+import comments from '#lib/icons/regular/comments.svg?raw';
+import star from '#lib/icons/regular/star.svg?raw';
+import { overlay } from '#lib/overlay/overlay.ts';
+import type { DatePreferences } from '#lib/settings/DatePreferences.ts';
+import UserCommentWithPoster from '#lib/users/comments/UserCommentWithPoster.svelte';
+import ProfileBoxStrip from '#lib/users/profile/boxes/ProfileBoxStrip.svelte';
+import type { ProfileUser } from '#lib/users/ProfileUser.ts';
+import { findAction } from '#lib/users/findAction.ts';
 import type { loadProfile } from './loadProfile.ts';
 import type { WatchedCard } from './toProfileSummary.ts';
 

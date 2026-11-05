@@ -6,30 +6,30 @@
   demo.
 -->
 <script lang="ts">
-import DashboardPanel from '$lib/components/dashboard/DashboardPanel.svelte';
-import Specimen from '$lib/design/Specimen.svelte';
-import Variant from '$lib/design/Variant.svelte';
-import star from '$lib/icons/regular/star.svg?raw';
-import FavoriteCard from '$lib/components/users/FavoriteCard.svelte';
-import MostWatched from '$lib/components/users/MostWatched.svelte';
-import ProfileCharts from '$lib/components/users/ProfileCharts.svelte';
-import ProfileSectionShimmer from '$lib/components/loading/ProfileSectionShimmer.svelte';
-import MatchBadge from '$lib/components/users/MatchBadge.svelte';
-import MatchPill from '$lib/components/users/MatchPill.svelte';
-import ProfileFrame from '$lib/components/users/ProfileFrame.svelte';
-import UserCard from '$lib/components/users/UserCard.svelte';
-import WelcomeHero from '$lib/components/users/WelcomeHero.svelte';
-import { liveTiles } from '$lib/dashboard/liveTiles';
-import { socialFeedFixture } from '$lib/dashboard/socialFeedFixture';
-import { profileTabs } from '$lib/users/profileTabs';
-import { toUserMatch } from '$lib/users/match/toUserMatch';
-import type { UserMatch } from '$lib/users/match/UserMatch';
-import type { FavoriteCard as Favorite } from '$lib/users/profile/toProfileSummary';
-import { toGenreBar } from '$lib/users/profile/toGenreBar';
-import { toProfileRatings } from '$lib/users/profile/toProfileRatings';
-import type { ProfileUser } from '$lib/users/ProfileUser';
-import type { ViewerRelation } from '$lib/users/ViewerRelation';
-import type { WatchingNow } from '$lib/users/WatchingNow';
+import DashboardPanel from '#lib/components/dashboard/DashboardPanel.svelte';
+import Specimen from '#lib/design/Specimen.svelte';
+import Variant from '#lib/design/Variant.svelte';
+import star from '#lib/icons/regular/star.svg?raw';
+import FavoriteCard from '#lib/components/users/FavoriteCard.svelte';
+import MostWatched from '#lib/components/users/MostWatched.svelte';
+import ProfileCharts from '#lib/components/users/ProfileCharts.svelte';
+import ProfileSectionShimmer from '#lib/components/loading/ProfileSectionShimmer.svelte';
+import MatchBadge from '#lib/components/users/MatchBadge.svelte';
+import MatchPill from '#lib/components/users/MatchPill.svelte';
+import ProfileFrame from '#lib/components/users/ProfileFrame.svelte';
+import UserCard from '#lib/components/users/UserCard.svelte';
+import WelcomeHero from '#lib/components/users/WelcomeHero.svelte';
+import { liveTiles } from '#lib/dashboard/liveTiles.ts';
+import { socialFeedFixture } from '#lib/dashboard/socialFeedFixture.ts';
+import { profileTabs } from '#lib/users/profileTabs.ts';
+import { toUserMatch } from '#lib/users/match/toUserMatch.ts';
+import type { UserMatch } from '#lib/users/match/UserMatch.ts';
+import type { FavoriteCard as Favorite } from '#lib/users/profile/toProfileSummary.ts';
+import { toGenreBar } from '#lib/users/profile/toGenreBar.ts';
+import { toProfileRatings } from '#lib/users/profile/toProfileRatings.ts';
+import type { ProfileUser } from '#lib/users/ProfileUser.ts';
+import type { ViewerRelation } from '#lib/users/ViewerRelation.ts';
+import type { WatchingNow } from '#lib/users/WatchingNow.ts';
 
 const vip: ProfileUser = {
   slug: 'leela',

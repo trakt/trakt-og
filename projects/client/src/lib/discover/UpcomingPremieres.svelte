@@ -7,19 +7,19 @@
   color), the lists it's on and the network, and og's quick-action bar.
 -->
 <script lang="ts">
-import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
-import { trackSectionDrilldown } from '$lib/analytics/trackSectionDrilldown';
-import PanelHeading from '$lib/components/dashboard/PanelHeading.svelte';
-import FanartCard from '$lib/components/media/FanartCard.svelte';
-import { quickIconFill } from '$lib/components/media/quickIconFill';
-import Icon from '$lib/icons/Icon.svelte';
-import tvRetro from '$lib/icons/regular/tv-retro.svg?raw';
-import fire from '$lib/icons/solid/fire.svg?raw';
-import { overlay } from '$lib/overlay/overlay';
-import type { DatePreferences } from '$lib/settings/DatePreferences';
-import { countLabel } from '$lib/utils/countLabel';
+import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
+import { trackSectionDrilldown } from '#lib/analytics/trackSectionDrilldown.ts';
+import PanelHeading from '#lib/components/dashboard/PanelHeading.svelte';
+import FanartCard from '#lib/components/media/FanartCard.svelte';
+import { quickIconFill } from '#lib/components/media/quickIconFill.ts';
+import Icon from '#lib/icons/Icon.svelte';
+import tvRetro from '#lib/icons/regular/tv-retro.svg?raw';
+import fire from '#lib/icons/solid/fire.svg?raw';
+import { overlay } from '#lib/overlay/overlay.ts';
+import type { DatePreferences } from '#lib/settings/DatePreferences.ts';
+import { countLabel } from '#lib/utils/countLabel.ts';
 import type { Premiere } from './toPremieres.ts';
-import ToggleChips from '$lib/components/toggle-chips/ToggleChips.svelte';
+import ToggleChips from '#lib/components/toggle-chips/ToggleChips.svelte';
 
 interface Props {
   premieres: readonly Premiere[];

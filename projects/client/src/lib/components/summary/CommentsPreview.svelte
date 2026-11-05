@@ -9,23 +9,23 @@
   `cut:` "Likes 30 Days" and "Following" (no API sort or filter).
 -->
 <script lang="ts">
-import EmptyState from '$lib/components/empty/EmptyState.svelte';
-import AddCommentLink from '$lib/components/comments/AddCommentLink.svelte';
-import CommentCard from '$lib/components/comments/CommentCard.svelte';
+import EmptyState from '#lib/components/empty/EmptyState.svelte';
+import AddCommentLink from '#lib/components/comments/AddCommentLink.svelte';
+import CommentCard from '#lib/components/comments/CommentCard.svelte';
 import { page } from '$app/state';
-import { commentSettings } from '$lib/components/comments/commentSettings';
-import { newComment } from '$lib/components/comments/newComment.svelte';
-import type { CommentItem } from '$lib/components/comments/CommentItem';
+import { commentSettings } from '#lib/components/comments/commentSettings.ts';
+import { newComment } from '#lib/components/comments/newComment.svelte.ts';
+import type { CommentItem } from '#lib/components/comments/CommentItem.ts';
 import type { Snippet } from 'svelte';
-import type { CommentViewer } from '$lib/components/comments/CommentViewer';
-import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
-import type { CommentTab } from '$lib/summary/sectionsClient';
-import type { FormatDateOptions } from '$lib/utils/formatDate';
-import { countLabel } from '$lib/utils/countLabel';
-import { commentLanguage } from '$lib/comments/commentLanguage';
-import { type CommentLanguage, commentLanguages } from '$lib/comments/commentLanguages';
+import type { CommentViewer } from '#lib/components/comments/CommentViewer.ts';
+import Dropdown from '#lib/components/dropdown/Dropdown.svelte';
+import type { CommentTab } from '#lib/summary/sectionsClient.ts';
+import type { FormatDateOptions } from '#lib/utils/formatDate.ts';
+import { countLabel } from '#lib/utils/countLabel.ts';
+import { commentLanguage } from '#lib/comments/commentLanguage.ts';
+import { type CommentLanguage, commentLanguages } from '#lib/comments/commentLanguages.ts';
 import SectionHeading from './SectionHeading.svelte';
-import { withoutBlocked } from '$lib/components/comments/withoutBlocked';
+import { withoutBlocked } from '#lib/components/comments/withoutBlocked.ts';
 import { withPostedComments } from './withPostedComments.ts';
 
 interface Props {

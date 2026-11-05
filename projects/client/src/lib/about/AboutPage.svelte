@@ -4,7 +4,7 @@
   for 10 minutes.
 -->
 <script lang="ts">
-import SeoHead from '$lib/seo/SeoHead.svelte';
+import SeoHead from '#lib/seo/SeoHead.svelte';
 import AboutApi from './AboutApi.svelte';
 import AboutAsk from './AboutAsk.svelte';
 import AboutCommits from './AboutCommits.svelte';

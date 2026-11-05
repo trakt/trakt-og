@@ -3,8 +3,8 @@
   the whole comment as a spoiler, so it's blurred until clicked.
 -->
 <script lang="ts">
-import Icon from '$lib/icons/Icon.svelte';
-import eyeSlash from '$lib/icons/solid/eye-slash.svg?raw';
+import Icon from '#lib/icons/Icon.svelte';
+import eyeSlash from '#lib/icons/solid/eye-slash.svg?raw';
 
 let { spoiler = $bindable(false) }: { spoiler?: boolean } = $props();
 </script>

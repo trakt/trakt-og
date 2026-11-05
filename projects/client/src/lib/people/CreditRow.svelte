@@ -4,11 +4,11 @@
     <CreditRow {credit} episodes="62 episodes" userRating={8} icons={…} />
 -->
 <script lang="ts">
-import posterPlaceholder from '$lib/assets/placeholders/poster.png';
-import TagPills from '$lib/components/labels/TagPills.svelte';
-import type { TagPill } from '$lib/components/labels/TagPill';
-import CornerRating from '$lib/components/media/CornerRating.svelte';
-import QuickIcons from '$lib/components/media/QuickIcons.svelte';
+import posterPlaceholder from '#lib/assets/placeholders/poster.png';
+import TagPills from '#lib/components/labels/TagPills.svelte';
+import type { TagPill } from '#lib/components/labels/TagPill.ts';
+import CornerRating from '#lib/components/media/CornerRating.svelte';
+import QuickIcons from '#lib/components/media/QuickIcons.svelte';
 import type { ComponentProps } from 'svelte';
 import type { PersonCredit } from './PersonCredit.ts';
 

@@ -5,8 +5,8 @@
 -->
 <script lang="ts">
 import type { Attachment } from 'svelte/attachments';
-import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
-import Container from '$lib/components/container/Container.svelte';
+import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
+import Container from '#lib/components/container/Container.svelte';
 
 interface Link {
   readonly text: string;

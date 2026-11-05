@@ -6,8 +6,8 @@
     <SearchTermRow icon={clock} query="tron" type="Shows & Movies" href="/search?query=tron" onremove={remove} />
 -->
 <script lang="ts">
-import Icon from '$lib/icons/Icon.svelte';
-import xmark from '$lib/icons/light/xmark.svg?raw';
+import Icon from '#lib/icons/Icon.svelte';
+import xmark from '#lib/icons/light/xmark.svg?raw';
 import type { HTMLLiAttributes } from 'svelte/elements';
 
 interface Props extends HTMLLiAttributes {

@@ -41,6 +41,7 @@ export default defineConfig(({ mode }) => ({
     }),
   ],
   test: {
+    alias: { 'cloudflare:workers': fileURLToPath(new URL('./src/test/cloudflareWorkers.ts', import.meta.url)) },
     include: ['src/**/*.spec.ts', 'scripts/**/*.spec.ts'],
     passWithNoTests: true,
     setupFiles: ['src/test/memoryStorage.ts'],

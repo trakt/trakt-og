@@ -1,10 +1,12 @@
 import type { RequestEvent } from '@sveltejs/kit';
 import { describe, expect, it, vi } from 'vitest';
+import { env } from '../../../../test/cloudflareWorkers.ts';
 import { GET, POST } from './+server.ts';
 
 type Call = { path: string; search?: string; key?: string; body?: string };
 
 function call(method: 'GET' | 'POST', { path, search = '', key = 'secret', body }: Call) {
+  env.KLIPY_API_KEY = key;
   const fetch = vi.fn((_url: string, _init?: RequestInit) => Promise.resolve(Response.json({ ok: true })));
   const request = new Request(`https://og.test/api/klipy/${path}${search}`, {
     method,
@@ -14,7 +16,6 @@ function call(method: 'GET' | 'POST', { path, search = '', key = 'secret', body 
     params: { path },
     url: new URL(request.url),
     request,
-    platform: { env: { KLIPY_API_KEY: key } },
     fetch,
   } as unknown as RequestEvent;
   return { fetch, response: (method === 'POST' ? POST : GET)(event) as Promise<Response> };

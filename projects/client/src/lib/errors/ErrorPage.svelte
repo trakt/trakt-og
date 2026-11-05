@@ -5,10 +5,10 @@
   Every error page keeps its status and stays out of search (noindex).
 -->
 <script lang="ts">
-import SeoHead from '$lib/seo/SeoHead.svelte';
+import SeoHead from '#lib/seo/SeoHead.svelte';
 import { invalidateAll } from '$app/navigation';
 import { page } from '$app/state';
-import ErrorScene from '$lib/components/error/ErrorScene.svelte';
+import ErrorScene from '#lib/components/error/ErrorScene.svelte';
 import ErrorActions from './ErrorActions.svelte';
 import { errorScenes } from './errorScenes.ts';
 import { toErrorSceneKey } from './toErrorSceneKey.ts';

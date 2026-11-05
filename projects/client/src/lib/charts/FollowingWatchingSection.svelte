@@ -7,17 +7,17 @@
 -->
 <script lang="ts">
 import { untrack } from 'svelte';
-import { apiQueue } from '$lib/api/apiQueue';
-import { rawApiFetch } from '$lib/api/rawApiFetch';
-import UnderProgress from '$lib/components/media/UnderProgress.svelte';
-import Countdown from '$lib/components/status/Countdown.svelte';
-import SidebarSection from '$lib/components/sidebar/SidebarSection.svelte';
-import { fetchRecentMembers, type SocialGet } from '$lib/dashboard/fetchSocialFeed';
-import { fetchWatching, type LiveWatch } from '$lib/dashboard/fetchWatching';
-import { pollWatching } from '$lib/dashboard/pollWatching';
-import type { SocialMember } from '$lib/dashboard/toSocialItem';
-import type { DatePreferences } from '$lib/settings/DatePreferences';
-import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
+import { apiQueue } from '#lib/api/apiQueue.ts';
+import { rawApiFetch } from '#lib/api/rawApiFetch.ts';
+import UnderProgress from '#lib/components/media/UnderProgress.svelte';
+import Countdown from '#lib/components/status/Countdown.svelte';
+import SidebarSection from '#lib/components/sidebar/SidebarSection.svelte';
+import { fetchRecentMembers, type SocialGet } from '#lib/dashboard/fetchSocialFeed.ts';
+import { fetchWatching, type LiveWatch } from '#lib/dashboard/fetchWatching.ts';
+import { pollWatching } from '#lib/dashboard/pollWatching.ts';
+import type { SocialMember } from '#lib/dashboard/toSocialItem.ts';
+import type { DatePreferences } from '#lib/settings/DatePreferences.ts';
+import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
 import { followingWatching } from './followingWatching';
 import type { MediaType } from './loadChart';
 import { viewerFetch } from '../auth/viewerFetch.ts';

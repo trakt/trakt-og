@@ -1,11 +1,11 @@
 <script lang="ts">
 import type { Snippet } from 'svelte';
-import RatingHearts from '$lib/components/rating/RatingHearts.svelte';
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import { ratingPrompt } from '$lib/components/rating/ratingPrompt';
-import { rating10 } from '$lib/extras/rating10.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import trash from '$lib/icons/regular/trash-xmark.svg?raw';
+import RatingHearts from '#lib/components/rating/RatingHearts.svelte';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import { ratingPrompt } from '#lib/components/rating/ratingPrompt.ts';
+import { rating10 } from '#lib/extras/rating10.svelte.ts';
+import Icon from '#lib/icons/Icon.svelte';
+import trash from '#lib/icons/regular/trash-xmark.svg?raw';
 
 interface Props {
   label: string;

@@ -12,11 +12,11 @@
 -->
 <script lang="ts">
 import type { Snippet } from 'svelte';
-import Container from '$lib/components/container/Container.svelte';
-import Shimmer from '$lib/components/loading/Shimmer.svelte';
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import deleteThick from '$lib/icons/trakt/delete-thick.svg?raw';
+import Container from '#lib/components/container/Container.svelte';
+import Shimmer from '#lib/components/loading/Shimmer.svelte';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import deleteThick from '#lib/icons/trakt/delete-thick.svg?raw';
 
 type Title = { readonly text: string; readonly href: string; readonly year?: string };
 

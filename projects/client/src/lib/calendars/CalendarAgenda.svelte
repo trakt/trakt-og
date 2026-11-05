@@ -5,9 +5,9 @@
     <CalendarAgenda {days} today={data.today} artwork="fanart" {cardIcons} />
 -->
 <script lang="ts">
-import CalendarDayHeader from '$lib/components/calendar/CalendarDayHeader.svelte';
-import EmptyState from '$lib/components/empty/EmptyState.svelte';
-import type QuickIcons from '$lib/components/media/QuickIcons.svelte';
+import CalendarDayHeader from '#lib/components/calendar/CalendarDayHeader.svelte';
+import EmptyState from '#lib/components/empty/EmptyState.svelte';
+import type QuickIcons from '#lib/components/media/QuickIcons.svelte';
 import type { ComponentProps } from 'svelte';
 import { agendaSlots } from './agendaSlots.ts';
 import CalendarAgendaRow from './CalendarAgendaRow.svelte';

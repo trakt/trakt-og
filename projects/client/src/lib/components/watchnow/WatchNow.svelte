@@ -5,12 +5,12 @@
   watch-now routes gets no block, and a note in the browser console.
 -->
 <script lang="ts">
-import { isStandardApi } from '$lib/api/isStandardApi';
-import { logHidden } from '$lib/api/logHidden';
-import Icon from '$lib/icons/Icon.svelte';
-import play from '$lib/icons/solid/play.svg?raw';
-import ticket from '$lib/icons/solid/ticket.svg?raw';
-import { countLabel } from '$lib/utils/countLabel';
+import { isStandardApi } from '#lib/api/isStandardApi.ts';
+import { logHidden } from '#lib/api/logHidden.ts';
+import Icon from '#lib/icons/Icon.svelte';
+import play from '#lib/icons/solid/play.svg?raw';
+import ticket from '#lib/icons/solid/ticket.svg?raw';
+import { countLabel } from '#lib/utils/countLabel.ts';
 import ServiceTile from './ServiceTile.svelte';
 import type { WatchNowButton } from './watchNow.ts';
 import WatchNowDialog from './WatchNowDialog.svelte';

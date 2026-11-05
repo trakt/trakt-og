@@ -5,26 +5,26 @@
   labelled glass actions: Add to Watchlist, Watch Now and Why this?, with the Trakt rating at the end.
 -->
 <script lang="ts">
-import { isStandardApi } from '$lib/api/isStandardApi';
+import { isStandardApi } from '#lib/api/isStandardApi.ts';
 import { page } from '$app/state';
 import type { ComponentProps } from 'svelte';
-import TagPills from '$lib/components/labels/TagPills.svelte';
-import { mediaTags } from '$lib/components/labels/mediaTags';
-import GlassAction from '$lib/components/glass-action/GlassAction.svelte';
-import WatchlistButton from '$lib/components/lists/WatchlistButton.svelte';
-import MediaRating from '$lib/components/rating/MediaRating.svelte';
-import { toast } from '$lib/components/toast/toast.svelte';
-import VisibilityControl from '$lib/components/visibility/VisibilityControl.svelte';
-import { loadWatchNow } from '$lib/components/watchnow/loadWatchNow';
-import type { WatchNowButton } from '$lib/components/watchnow/watchNow';
-import WatchNowDialog from '$lib/components/watchnow/WatchNowDialog.svelte';
-import type { Recommendation } from '$lib/dashboard/Recommendation';
-import Icon from '$lib/icons/Icon.svelte';
-import ban from '$lib/icons/regular/ban.svg?raw';
-import chevronLeft from '$lib/icons/regular/chevron-left.svg?raw';
-import chevronRight from '$lib/icons/regular/chevron-right.svg?raw';
-import heart from '$lib/icons/solid/heart.svg?raw';
-import play from '$lib/icons/solid/play.svg?raw';
+import TagPills from '#lib/components/labels/TagPills.svelte';
+import { mediaTags } from '#lib/components/labels/mediaTags.ts';
+import GlassAction from '#lib/components/glass-action/GlassAction.svelte';
+import WatchlistButton from '#lib/components/lists/WatchlistButton.svelte';
+import MediaRating from '#lib/components/rating/MediaRating.svelte';
+import { toast } from '#lib/components/toast/toast.svelte.ts';
+import VisibilityControl from '#lib/components/visibility/VisibilityControl.svelte';
+import { loadWatchNow } from '#lib/components/watchnow/loadWatchNow.ts';
+import type { WatchNowButton } from '#lib/components/watchnow/watchNow.ts';
+import WatchNowDialog from '#lib/components/watchnow/WatchNowDialog.svelte';
+import type { Recommendation } from '#lib/dashboard/Recommendation.ts';
+import Icon from '#lib/icons/Icon.svelte';
+import ban from '#lib/icons/regular/ban.svg?raw';
+import chevronLeft from '#lib/icons/regular/chevron-left.svg?raw';
+import chevronRight from '#lib/icons/regular/chevron-right.svg?raw';
+import heart from '#lib/icons/solid/heart.svg?raw';
+import play from '#lib/icons/solid/play.svg?raw';
 import RecommendationWhy from './RecommendationWhy.svelte';
 import { watchNowCountry } from '../../settings/watchNowCountry.ts';
 import { ratingPercent } from '../../utils/ratingPercent.ts';

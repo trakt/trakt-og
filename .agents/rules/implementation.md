@@ -50,8 +50,8 @@ Reach for these before writing your own:
 ## Module Imports
 
 - **No barrel files.** Do not create `index.ts` files whose only job is to re-export from siblings. Import directly from
-  the file that owns the symbol (e.g. `$lib/features/intl-overlay/withBulkIntlOverlay.ts`, not
-  `$lib/features/intl-overlay/index.ts`). Reasons:
+  the file that owns the symbol (e.g. `#lib/features/intl-overlay/withBulkIntlOverlay.ts`, not
+  `#lib/features/intl-overlay/index.ts`). Reasons:
   - Tree-shaking and IDE jump-to-definition both work better against the real file.
   - Barrels create circular-import risk when sibling modules import each other through the barrel.
   - Renames and deletions are easier to grep when every importer references the concrete path.

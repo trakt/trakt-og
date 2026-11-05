@@ -8,8 +8,8 @@
 -->
 <script lang="ts">
 import { untrack } from 'svelte';
-import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
-import { useTrack } from '$lib/analytics/useTrack';
+import { AnalyticsEvent } from '#lib/analytics/AnalyticsEvent.ts';
+import { useTrack } from '#lib/analytics/useTrack.ts';
 import { nearViewport } from '../../../utils/nearViewport.ts';
 import Dialog from '../../dialog/Dialog.svelte';
 import DialogArtHeader from '../../dialog/DialogArtHeader.svelte';

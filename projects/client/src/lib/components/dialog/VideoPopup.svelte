@@ -7,7 +7,7 @@
   (`isPlainClick`) on a link `youtubeEmbedUrl` can embed, so a middle or modified click still opens YouTube.
 -->
 <script lang="ts">
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
 import { youtubeEmbedUrl } from './youtubeEmbedUrl.ts';
 
 interface Props {

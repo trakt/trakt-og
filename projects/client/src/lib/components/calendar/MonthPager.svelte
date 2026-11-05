@@ -4,7 +4,7 @@
     <MonthPager label="October 2026" {prevHref} {nextHref} {todayHref} {years} />
 -->
 <script lang="ts">
-import SidebarPager from '$lib/components/sidebar/SidebarPager.svelte';
+import SidebarPager from '#lib/components/sidebar/SidebarPager.svelte';
 import { trackCalendarPeriod } from './trackCalendarPeriod.ts';
 
 type Month = { readonly label: string; readonly href: string; readonly current: boolean; readonly note?: string };

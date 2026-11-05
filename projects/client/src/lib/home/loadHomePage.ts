@@ -1,10 +1,10 @@
 import type { ServerLoadEvent } from '@sveltejs/kit';
 import { fetchWithUserAgent } from '../api/withUserAgent.ts';
 import type { HeaderUser } from '../components/header/HeaderUser.ts';
-import type { KeyedCache } from '../utils/sharedCache.ts';
+import { edgeCache } from '../utils/edgeCache.ts';
 import { loadHome } from './loadHome.ts';
 
-type HomePageEvent = Pick<ServerLoadEvent, 'depends' | 'fetch' | 'platform' | 'url'> & {
+type HomePageEvent = Pick<ServerLoadEvent, 'depends' | 'fetch' | 'url'> & {
   parent: () => Promise<{ user: HeaderUser | null }>;
 };
 
@@ -16,9 +16,7 @@ export function loadHomePage(event: HomePageEvent) {
     liveFetch: fetchWithUserAgent(),
     now: Date.now(),
     random: Math.random,
-    // The adapter types the cache with the Worker's own Response, which TypeScript can't match to the DOM's; at
-    // runtime they're one class.
-    cache: event.platform?.caches?.default as unknown as KeyedCache | undefined,
+    cache: edgeCache(),
     origin: event.url.origin,
   });
 }

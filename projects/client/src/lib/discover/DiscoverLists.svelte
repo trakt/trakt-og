@@ -6,20 +6,20 @@
   (Like, items, comments), the comments left out when they'd wrap to a second row.
 -->
 <script lang="ts">
-import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
+import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
 import { page } from '$app/state';
 import type { Attachment } from 'svelte/attachments';
-import PanelHeading from '$lib/components/dashboard/PanelHeading.svelte';
-import VipLabel from '$lib/components/labels/VipLabel.svelte';
-import ListCount from '$lib/components/lists/ListCount.svelte';
-import ListLikeButton from '$lib/components/lists/ListLikeButton.svelte';
-import listIcon from '$lib/icons/regular/list.svg?raw';
-import { stripStatIcons } from '$lib/components/summary/stripStatIcons';
-import file from '$lib/icons/regular/file.svg?raw';
+import PanelHeading from '#lib/components/dashboard/PanelHeading.svelte';
+import VipLabel from '#lib/components/labels/VipLabel.svelte';
+import ListCount from '#lib/components/lists/ListCount.svelte';
+import ListLikeButton from '#lib/components/lists/ListLikeButton.svelte';
+import listIcon from '#lib/icons/regular/list.svg?raw';
+import { stripStatIcons } from '#lib/components/summary/stripStatIcons.ts';
+import file from '#lib/icons/regular/file.svg?raw';
 import { sortThemeLists } from './sortThemeLists.ts';
 import type { ThemeList } from './ThemeList.ts';
 import { themeListSorts } from './themeListSorts.ts';
-import ToggleChips from '$lib/components/toggle-chips/ToggleChips.svelte';
+import ToggleChips from '#lib/components/toggle-chips/ToggleChips.svelte';
 
 interface Props {
   lists: readonly ThemeList[];

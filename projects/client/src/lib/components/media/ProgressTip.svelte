@@ -9,9 +9,9 @@
 -->
 <script lang="ts">
 import type { Snippet } from 'svelte';
-import TooltipFooter from '$lib/components/tooltip/TooltipFooter.svelte';
-import { countLabel } from '$lib/utils/countLabel';
-import { formatRuntime } from '$lib/utils/formatRuntime';
+import TooltipFooter from '#lib/components/tooltip/TooltipFooter.svelte';
+import { countLabel } from '#lib/utils/countLabel.ts';
+import { formatRuntime } from '#lib/utils/formatRuntime.ts';
 import type { WatchedProgress } from './WatchedProgress.ts';
 import { watchedProgressDetail } from './watchedProgressDetail.ts';
 

@@ -1,6 +1,6 @@
 import { z } from 'zod/v4';
-import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
-import { useTrack } from '$lib/analytics/useTrack';
+import { AnalyticsEvent } from '#lib/analytics/AnalyticsEvent.ts';
+import { useTrack } from '#lib/analytics/useTrack.ts';
 import type { createOverlay } from '../../overlay/createOverlay.svelte.ts';
 import type { RatingTarget } from './RatingTarget.ts';
 import { UNKNOWN_DATE } from '../../utils/unknownDate.ts';

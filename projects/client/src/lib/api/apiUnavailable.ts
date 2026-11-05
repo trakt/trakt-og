@@ -5,5 +5,5 @@ import { error } from '@sveltejs/kit';
  * survives SvelteKit's streaming to the browser, where `isApiUnavailable` reads it for `LoadFailed`.
  */
 export function apiUnavailable(): never {
-  error(403, { message: 'Not available with this API key', unavailable: true });
+  error(403, 'Not available with this API key', { unavailable: true });
 }

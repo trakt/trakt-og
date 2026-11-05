@@ -1,4 +1,4 @@
-import { match as isChart } from '../../params/chart.ts';
+import { matchChart as isChart } from '../../params.ts';
 
 type SummaryType = 'movie' | 'show' | 'season' | 'episode' | 'person';
 type DrilldownTarget = { event: 'summary'; type: SummaryType } | { event: 'list' };

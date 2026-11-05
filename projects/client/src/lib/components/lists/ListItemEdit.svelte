@@ -6,15 +6,15 @@
       ondrag={startDrag} onchangerank={focusRank} onremove={remove} onnotes={openNotes} />
 -->
 <script lang="ts">
-import EditStrip from '$lib/components/lists/EditStrip.svelte';
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import drag from '$lib/icons/solid/arrows-up-down-left-right.svg?raw';
-import first from '$lib/icons/solid/angles-up.svg?raw';
-import last from '$lib/icons/solid/angles-down.svg?raw';
-import listOl from '$lib/icons/solid/list-ol.svg?raw';
-import memo from '$lib/icons/solid/memo.svg?raw';
-import trashXmark from '$lib/icons/regular/trash-xmark.svg?raw';
+import EditStrip from '#lib/components/lists/EditStrip.svelte';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import drag from '#lib/icons/solid/arrows-up-down-left-right.svg?raw';
+import first from '#lib/icons/solid/angles-up.svg?raw';
+import last from '#lib/icons/solid/angles-down.svg?raw';
+import listOl from '#lib/icons/solid/list-ol.svg?raw';
+import memo from '#lib/icons/solid/memo.svg?raw';
+import trashXmark from '#lib/icons/regular/trash-xmark.svg?raw';
 
 interface Props {
   name: string;

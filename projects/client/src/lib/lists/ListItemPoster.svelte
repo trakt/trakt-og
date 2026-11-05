@@ -6,17 +6,17 @@
   these.
 -->
 <script lang="ts">
-import { matchesListFade } from '$lib/lists/matchesListFade';
-import NotesPill from '$lib/components/lists/NotesPill.svelte';
-import ReadNotes from '$lib/components/lists/ReadNotes.svelte';
-import PosterCard from '$lib/components/media/PosterCard.svelte';
-import { quickIconFill } from '$lib/components/media/quickIconFill';
-import plus from '$lib/icons/solid/plus.svg?raw';
-import { overlay } from '$lib/overlay/overlay';
-import type { DatePreferences } from '$lib/settings/DatePreferences';
+import { matchesListFade } from '#lib/lists/matchesListFade.ts';
+import NotesPill from '#lib/components/lists/NotesPill.svelte';
+import ReadNotes from '#lib/components/lists/ReadNotes.svelte';
+import PosterCard from '#lib/components/media/PosterCard.svelte';
+import { quickIconFill } from '#lib/components/media/quickIconFill.ts';
+import plus from '#lib/icons/solid/plus.svg?raw';
+import { overlay } from '#lib/overlay/overlay.ts';
+import type { DatePreferences } from '#lib/settings/DatePreferences.ts';
 import type { Snippet } from 'svelte';
 import type { ListItemCard } from './toListItemCard.ts';
-import RatingLine from '$lib/components/rating/RatingLine.svelte';
+import RatingLine from '#lib/components/rating/RatingLine.svelte';
 import ExternalSortLine from './ExternalSortLine.svelte';
 import { isExternalSort } from './externalSortLine.ts';
 import type { ExternalRatingsTarget } from './fetchExternalRatings.ts';

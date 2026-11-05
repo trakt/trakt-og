@@ -5,18 +5,18 @@
   type doesn't have falls back to the season's.
 -->
 <script lang="ts">
-import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
-import { trackSectionDrilldown } from '$lib/analytics/trackSectionDrilldown';
-import PanelHeading from '$lib/components/dashboard/PanelHeading.svelte';
-import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
-import PosterCard from '$lib/components/media/PosterCard.svelte';
-import PosterGrid from '$lib/components/media/PosterGrid.svelte';
-import { mediaQuickIcons } from '$lib/components/media/mediaQuickIcons';
-import masksTheater from '$lib/icons/regular/masks-theater.svg?raw';
-import { overlay } from '$lib/overlay/overlay';
-import type { DatePreferences } from '$lib/settings/DatePreferences';
+import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
+import { trackSectionDrilldown } from '#lib/analytics/trackSectionDrilldown.ts';
+import PanelHeading from '#lib/components/dashboard/PanelHeading.svelte';
+import Dropdown from '#lib/components/dropdown/Dropdown.svelte';
+import PosterCard from '#lib/components/media/PosterCard.svelte';
+import PosterGrid from '#lib/components/media/PosterGrid.svelte';
+import { mediaQuickIcons } from '#lib/components/media/mediaQuickIcons.ts';
+import masksTheater from '#lib/icons/regular/masks-theater.svg?raw';
+import { overlay } from '#lib/overlay/overlay.ts';
+import type { DatePreferences } from '#lib/settings/DatePreferences.ts';
 import type { MoodShelf } from './MoodShelf.ts';
-import ToggleChips from '$lib/components/toggle-chips/ToggleChips.svelte';
+import ToggleChips from '#lib/components/toggle-chips/ToggleChips.svelte';
 
 interface Props {
   moods: { readonly movie: readonly MoodShelf[]; readonly show: readonly MoodShelf[] };

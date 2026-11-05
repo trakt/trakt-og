@@ -4,7 +4,7 @@
   bottom edge (titles over fanart), and `foot` is the ruled footer line.
 -->
 <script lang="ts">
-import posterBg from '$lib/assets/poster-bg.jpg';
+import posterBg from '#lib/assets/poster-bg.jpg';
 import type { Snippet } from 'svelte';
 
 interface Props {

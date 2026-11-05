@@ -9,10 +9,10 @@
 -->
 <script lang="ts">
 import type { Snippet } from 'svelte';
-import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
-import { useTrack } from '$lib/analytics/useTrack';
-import Icon from '$lib/icons/Icon.svelte';
-import check from '$lib/icons/solid/check.svg?raw';
+import { AnalyticsEvent } from '#lib/analytics/AnalyticsEvent.ts';
+import { useTrack } from '#lib/analytics/useTrack.ts';
+import Icon from '#lib/icons/Icon.svelte';
+import check from '#lib/icons/solid/check.svg?raw';
 import type { ServiceLink } from './watchNow.ts';
 
 interface Props {

@@ -3,29 +3,29 @@
   comments a page. "Add comment" opens the new comment form on a list that takes comments.
 -->
 <script lang="ts">
-import SeoHead from '$lib/seo/SeoHead.svelte';
+import SeoHead from '#lib/seo/SeoHead.svelte';
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
 import { SvelteURLSearchParams } from 'svelte/reactivity';
-import AddCommentLink from '$lib/components/comments/AddCommentLink.svelte';
-import CommentCard from '$lib/components/comments/CommentCard.svelte';
-import { commentSettings } from '$lib/components/comments/commentSettings';
-import { newComment } from '$lib/components/comments/newComment.svelte';
-import NewCommentForm from '$lib/components/comments/NewCommentForm.svelte';
-import { withoutBlocked } from '$lib/components/comments/withoutBlocked';
-import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
-import SortDirection from '$lib/components/dropdown/SortDirection.svelte';
-import EmptyState from '$lib/components/empty/EmptyState.svelte';
-import FanartHeader from '$lib/components/media/FanartHeader.svelte';
-import Pagination from '$lib/components/pagination/Pagination.svelte';
-import SectionNav from '$lib/components/summary/SectionNav.svelte';
-import SubpageTitle from '$lib/components/summary/SubpageTitle.svelte';
-import SummaryFrame from '$lib/components/summary/SummaryFrame.svelte';
-import SummaryPoster from '$lib/components/summary/SummaryPoster.svelte';
-import SectionToolbar from '$lib/components/toolbar/SectionToolbar.svelte';
-import type { DatePreferences } from '$lib/settings/DatePreferences';
-import type { HeaderUser } from '$lib/components/header/HeaderUser';
-import type { PageMeta } from '$lib/api/PageMeta';
+import AddCommentLink from '#lib/components/comments/AddCommentLink.svelte';
+import CommentCard from '#lib/components/comments/CommentCard.svelte';
+import { commentSettings } from '#lib/components/comments/commentSettings.ts';
+import { newComment } from '#lib/components/comments/newComment.svelte.ts';
+import NewCommentForm from '#lib/components/comments/NewCommentForm.svelte';
+import { withoutBlocked } from '#lib/components/comments/withoutBlocked.ts';
+import Dropdown from '#lib/components/dropdown/Dropdown.svelte';
+import SortDirection from '#lib/components/dropdown/SortDirection.svelte';
+import EmptyState from '#lib/components/empty/EmptyState.svelte';
+import FanartHeader from '#lib/components/media/FanartHeader.svelte';
+import Pagination from '#lib/components/pagination/Pagination.svelte';
+import SectionNav from '#lib/components/summary/SectionNav.svelte';
+import SubpageTitle from '#lib/components/summary/SubpageTitle.svelte';
+import SummaryFrame from '#lib/components/summary/SummaryFrame.svelte';
+import SummaryPoster from '#lib/components/summary/SummaryPoster.svelte';
+import SectionToolbar from '#lib/components/toolbar/SectionToolbar.svelte';
+import type { DatePreferences } from '#lib/settings/DatePreferences.ts';
+import type { HeaderUser } from '#lib/components/header/HeaderUser.ts';
+import type { PageMeta } from '#lib/api/PageMeta.ts';
 import type { CommentResponse } from '@trakt/api';
 import type { ListCommentsTarget } from './ListCommentsTarget';
 import { listCommentMenu, listCommentSorts } from './listCommentSorts';
@@ -52,7 +52,7 @@ const comments = $derived([
 ]);
 const addedDate = $derived(data.sort === 'newest' || data.sort === 'oldest');
 const sortHref = (sort: string) => {
-  const query = new SvelteURLSearchParams(page.url.searchParams);
+  const query = new SvelteURLSearchParams(page.url.search);
   query.delete('page');
   query.delete('sort_how');
   query.set('sort_by', sort);

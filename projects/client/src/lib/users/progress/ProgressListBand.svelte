@@ -8,8 +8,8 @@
 <script lang="ts">
 import { page } from '$app/state';
 import { SvelteURLSearchParams } from 'svelte/reactivity';
-import FilterBand from '$lib/components/filters/FilterBand.svelte';
-import VipLabel from '$lib/components/labels/VipLabel.svelte';
+import FilterBand from '#lib/components/filters/FilterBand.svelte';
+import VipLabel from '#lib/components/labels/VipLabel.svelte';
 import type { ProgressListRow } from './loadProgressListRow.ts';
 
 type Props = {
@@ -20,7 +20,7 @@ const { row }: Props = $props();
 
 const FAN_SIZE = 5;
 const allHref = $derived.by(() => {
-  const search = new SvelteURLSearchParams(page.url.searchParams);
+  const search = new SvelteURLSearchParams(page.url.search);
   search.delete('list');
   search.delete('page');
   const query = search.toString();

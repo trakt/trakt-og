@@ -1,3 +1,41 @@
+<script lang="ts">
+  import { afterNavigate } from '$app/navigation';
+  import type { Snippet } from 'svelte';
+
+  interface Props {
+    trigger: Snippet;
+    children: Snippet;
+    /** Names the trigger when its content doesn't (an icon-only button). */
+  label?: string;
+  }
+
+  const { trigger, children, label }: Props = $props();
+  const id = $props.id();
+  let menu = $state<HTMLElement>();
+
+  // Mouse hover opens the menu like OG. Touch skips it, so a tap toggles the popover once instead of twice.
+  const openOnHover = (root: HTMLElement) => {
+    const hover = (open: boolean) => (event: PointerEvent) => {
+      if (event.pointerType === 'mouse') menu?.togglePopover(open);
+    };
+    const enter = hover(true);
+    const leave = hover(false);
+    root.addEventListener('pointerenter', enter);
+    root.addEventListener('pointerleave', leave);
+    return () => {
+      root.removeEventListener('pointerenter', enter);
+      root.removeEventListener('pointerleave', leave);
+    };
+  };
+
+  // Client-side navigation keeps the page, so close the menu once a link in it has done its job.
+  afterNavigate(({ shallow, type }) => {
+    if (shallow && type === 'goto') return;
+
+    return menu?.hidePopover();
+  });
+</script>
+
 <!--
   A header dropdown: a trigger button and a popover menu under it, in the shared dropdown's card look (rounded,
   bordered, rows that soften on hover). Like OG it opens on mouse hover. Click, tap, Enter and Space open it too
@@ -8,170 +46,151 @@
   over a section. `aria-current` marks the page you're on in bold white on red, and a `.small` row scales down a glyph
   wider than the rest (`.large` scales up a slimmer one).
 -->
-<script lang="ts">
-import { afterNavigate } from '$app/navigation';
-import type { Snippet } from 'svelte';
 
-interface Props {
-  trigger: Snippet;
-  children: Snippet;
-  /** Names the trigger when its content doesn't (an icon-only button). */
-  label?: string;
-}
+<div
+  class="header-menu"
+  style:anchor-name="--menu-{id}"
+  {@attach openOnHover}
+>
+  <button
+    type="button"
+    class="trigger"
+    popovertarget="menu-{id}"
+    popovertargetaction="show"
+    aria-label={label}
+  >{@render trigger()}</button>
 
-const { trigger, children, label }: Props = $props();
-const id = $props.id();
-let menu = $state<HTMLElement>();
-
-// Mouse hover opens the menu like OG. Touch skips it, so a tap toggles the popover once instead of twice.
-const openOnHover = (root: HTMLElement) => {
-  const hover = (open: boolean) => (event: PointerEvent) => {
-    if (event.pointerType === 'mouse') menu?.togglePopover(open);
-  };
-  const enter = hover(true);
-  const leave = hover(false);
-  root.addEventListener('pointerenter', enter);
-  root.addEventListener('pointerleave', leave);
-  return () => {
-    root.removeEventListener('pointerenter', enter);
-    root.removeEventListener('pointerleave', leave);
-  };
-};
-
-// Client-side navigation keeps the page, so close the menu once a link in it has done its job.
-afterNavigate(() => menu?.hidePopover());
-</script>
-
-<div class="header-menu" style:anchor-name="--menu-{id}" {@attach openOnHover}>
-  <button type="button" class="trigger" popovertarget="menu-{id}" popovertargetaction="show"
-    aria-label={label}>{@render trigger()}</button>
-  <div bind:this={menu} id="menu-{id}" class="menu" popover="auto" style:position-anchor="--menu-{id}">
-    <div class="rows">{@render children()}</div>
-  </div>
+  <div
+    bind:this={menu}
+    id="menu-{id}"
+    class="menu"
+    popover="auto"
+    style:position-anchor="--menu-{id}"
+  ><div class="rows">{@render children()}</div></div>
 </div>
 
 <style>
-.header-menu {
-  position: relative;
+  .header-menu {
+    position: relative;
 
-  /* Bridges the gap above the menu, so the pointer crossing it doesn't count as leaving. */
-  &:has(.menu:popover-open)::after {
-    content: '';
-    position: absolute;
-    inset-block-start: 100%;
-    inset-inline: 0;
-    block-size: var(--header-menu-gap);
-  }
-}
-
-.trigger {
-  display: flex;
-  align-items: center;
-  min-block-size: 0;
-  border: 0;
-  background: none;
-  color: var(--color-header-text);
-  font: inherit;
-  text-shadow: var(--text-shadow-headings);
-  transition: background-color 0.25s, box-shadow 0.25s, color 0.25s;
-}
-
-/* As wide as its longest row, and never narrower than the trigger. */
-.menu {
-  position: fixed;
-  position-area: bottom span-left;
-  position-try-fallbacks: flip-inline;
-  inset: auto;
-  inline-size: max-content;
-  min-inline-size: anchor-size(inline);
-  overflow: visible;
-  margin: var(--header-menu-gap) 0 0;
-  padding: 0;
-  border: 1px solid var(--color-menu-border);
-  border-radius: var(--radius-menu);
-  background-color: var(--color-menu-bg);
-  color: var(--color-dropdown-menu-text);
-  font-family: var(--font-body);
-  font-size: var(--font-size-menu);
-  font-weight: normal;
-  text-align: start;
-  box-shadow: var(--shadow-menu);
-}
-
-/* The rows scroll inside the menu, under the header. */
-.rows {
-  max-block-size: calc(100dvh - var(--header-height) - var(--header-menu-gap));
-  overflow-y: auto;
-  padding: var(--space-menu);
-  border-radius: inherit;
-}
-
-.menu :global {
-  & ul {
-    margin: 0;
-    padding: 0;
-    list-style: none;
+    /* Bridges the gap above the menu, so the pointer crossing it doesn't count as leaving. */
+    &:has(.menu:popover-open)::after {
+      content: '';
+      position: absolute;
+      inset-block-start: 100%;
+      inset-inline: 0;
+      block-size: var(--header-menu-gap);
+    }
   }
 
-  & :is(a, button) {
+  .trigger {
     display: flex;
     align-items: center;
-    justify-content: start;
-    gap: var(--space-menu-icon);
-    inline-size: 100%;
     min-block-size: 0;
-    padding: var(--space-menu-row);
     border: 0;
-    border-radius: var(--radius-menu-row);
     background: none;
-    color: inherit;
+    color: var(--color-header-text);
     font: inherit;
-    line-height: var(--line-height-base);
+    text-shadow: var(--text-shadow-headings);
+    transition: background-color 0.25s, box-shadow 0.25s, color 0.25s;
+  }
+
+  /* As wide as its longest row, and never narrower than the trigger. */
+  .menu {
+    position: fixed;
+    position-area: bottom span-left;
+    position-try-fallbacks: flip-inline;
+    inset: auto;
+    inline-size: max-content;
+    min-inline-size: anchor-size(inline);
+    overflow: visible;
+    margin: var(--header-menu-gap) 0 0;
+    padding: 0;
+    border: 1px solid var(--color-menu-border);
+    border-radius: var(--radius-menu);
+    background-color: var(--color-menu-bg);
+    color: var(--color-dropdown-menu-text);
+    font-family: var(--font-body);
+    font-size: var(--font-size-menu);
+    font-weight: normal;
     text-align: start;
-    text-decoration: none;
-    white-space: nowrap;
-    transition: background-color 0.25s, color 0.25s;
+    box-shadow: var(--shadow-menu);
+  }
 
-    &:is(:hover, :focus-visible) {
-      background-color: var(--color-menu-row-hover);
-      color: var(--color-menu-row-hover-text);
-      outline: none;
+  /* The rows scroll inside the menu, under the header. */
+  .rows {
+    max-block-size: calc(100dvh - var(--header-height) - var(--header-menu-gap));
+    overflow-y: auto;
+    padding: var(--space-menu);
+    border-radius: inherit;
+  }
+
+  .menu :global {
+    & ul {
+      margin: 0;
+      padding: 0;
+      list-style: none;
     }
 
-    /* The page you're on: white on red, hovered or not. */
-    &[aria-current]:not([aria-current='false']) {
-      background-color: var(--brand-primary);
-      color: var(--color-text-inverse);
-      font-weight: var(--font-weight-headings-heavy);
+    & :is(a, button) {
+      display: flex;
+      align-items: center;
+      justify-content: start;
+      gap: var(--space-menu-icon);
+      inline-size: 100%;
+      min-block-size: 0;
+      padding: var(--space-menu-row);
+      border: 0;
+      border-radius: var(--radius-menu-row);
+      background: none;
+      color: inherit;
+      font: inherit;
+      line-height: var(--line-height-base);
+      text-align: start;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: background-color 0.25s, color 0.25s;
+
+      &:is(:hover, :focus-visible) {
+        background-color: var(--color-menu-row-hover);
+        color: var(--color-menu-row-hover-text);
+        outline: none;
+      }
+
+      /* The page you're on: white on red, hovered or not. */
+      &[aria-current]:not([aria-current="false"]) {
+        background-color: var(--brand-primary);
+        color: var(--color-text-inverse);
+        font-weight: var(--font-weight-headings-heavy);
+      }
+    }
+
+    & hr {
+      margin: var(--space-menu) calc(var(--space-menu) * -1);
+      border: 0;
+      border-block-start: 1px solid var(--color-menu-border);
+    }
+
+    & .heading {
+      margin: 0;
+      padding: var(--space-menu-header);
+      color: var(--color-menu-header);
+      font-size: var(--font-size-menu-header);
+      font-weight: var(--font-weight-menu-header);
+      letter-spacing: var(--letter-spacing-menu-header);
+      text-transform: uppercase;
+
+      &:first-child {
+        padding-block-start: var(--space-menu-offset);
+      }
+    }
+
+    & .small .icon {
+      scale: var(--header-help-icon-small);
+    }
+
+    & .large .icon {
+      scale: var(--header-menu-icon-large);
     }
   }
-
-  & hr {
-    margin: var(--space-menu) calc(var(--space-menu) * -1);
-    border: 0;
-    border-block-start: 1px solid var(--color-menu-border);
-  }
-
-  & .heading {
-    margin: 0;
-    padding: var(--space-menu-header);
-    color: var(--color-menu-header);
-    font-size: var(--font-size-menu-header);
-    font-weight: var(--font-weight-menu-header);
-    letter-spacing: var(--letter-spacing-menu-header);
-    text-transform: uppercase;
-
-    &:first-child {
-      padding-block-start: var(--space-menu-offset);
-    }
-  }
-
-  & .small .icon {
-    scale: var(--header-help-icon-small);
-  }
-
-  & .large .icon {
-    scale: var(--header-menu-icon-large);
-  }
-}
 </style>

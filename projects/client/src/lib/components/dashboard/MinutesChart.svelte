@@ -7,8 +7,8 @@
   nothing watched gets a dot and a hidden label.
 -->
 <script lang="ts">
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import type { MinutesChartData, MinutesDay } from '$lib/dashboard/LastThirtyDays';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import type { MinutesChartData, MinutesDay } from '#lib/dashboard/LastThirtyDays.ts';
 
 const { chart }: { chart: MinutesChartData } = $props();
 

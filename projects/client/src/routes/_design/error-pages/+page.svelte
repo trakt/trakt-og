@@ -4,12 +4,12 @@
   to match.
 -->
 <script lang="ts">
-import ErrorScene from '$lib/components/error/ErrorScene.svelte';
-import DemoChoice from '$lib/design/DemoChoice.svelte';
-import Specimen from '$lib/design/Specimen.svelte';
-import ErrorActions from '$lib/errors/ErrorActions.svelte';
-import type { ErrorSceneKey } from '$lib/errors/ErrorSceneKey';
-import { errorScenes } from '$lib/errors/errorScenes';
+import ErrorScene from '#lib/components/error/ErrorScene.svelte';
+import DemoChoice from '#lib/design/DemoChoice.svelte';
+import Specimen from '#lib/design/Specimen.svelte';
+import ErrorActions from '#lib/errors/ErrorActions.svelte';
+import type { ErrorSceneKey } from '#lib/errors/ErrorSceneKey.ts';
+import { errorScenes } from '#lib/errors/errorScenes.ts';
 
 const statuses: Readonly<Record<ErrorSceneKey, string>> = {
   notFound: '404',

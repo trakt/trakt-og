@@ -7,8 +7,8 @@
     <Tooltip content={tip}>{#snippet tip()}<ListedTip user={slug} watchlisted lists={state.lists} />{/snippet}</Tooltip>
 -->
 <script lang="ts">
-import TooltipFooter from '$lib/components/tooltip/TooltipFooter.svelte';
-import type { ListLabel } from '$lib/overlay/ListLabel';
+import TooltipFooter from '#lib/components/tooltip/TooltipFooter.svelte';
+import type { ListLabel } from '#lib/overlay/ListLabel.ts';
 
 interface Props {
   /** The viewer's slug, for the watchlist's link. */

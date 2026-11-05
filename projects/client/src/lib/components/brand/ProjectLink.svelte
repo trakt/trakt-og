@@ -5,11 +5,11 @@
     It runs on the <ProjectLink kind="api">Trakt API</ProjectLink>.
 -->
 <script lang="ts">
-import traktDeveloper from '$lib/assets/trakt-developer.svg';
-import traktLogo from '$lib/assets/trakt-logo-red.png';
-import Icon from '$lib/icons/Icon.svelte';
-import githubMark from '$lib/icons/brands/github.svg?raw';
-import { traktUrls } from '$lib/traktUrls';
+import traktDeveloper from '#lib/assets/trakt-developer.svg';
+import traktLogo from '#lib/assets/trakt-logo-red.png';
+import Icon from '#lib/icons/Icon.svelte';
+import githubMark from '#lib/icons/brands/github.svg?raw';
+import { traktUrls } from '#lib/traktUrls.ts';
 import type { Snippet } from 'svelte';
 import TraktLogoMark from './TraktLogoMark.svelte';
 

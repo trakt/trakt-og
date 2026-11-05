@@ -1,9 +1,9 @@
-import et from '$lib/assets/errors/et.webp';
-import gameOfThrones from '$lib/assets/errors/game-of-thrones.webp';
-import haltAndCatchFire from '$lib/assets/errors/halt-and-catch-fire.webp';
-import interstellar from '$lib/assets/errors/interstellar.webp';
-import severance from '$lib/assets/errors/severance.webp';
-import type { ErrorSceneTheme } from '$lib/components/error/ErrorSceneTheme';
+import et from '#lib/assets/errors/et.webp';
+import gameOfThrones from '#lib/assets/errors/game-of-thrones.webp';
+import haltAndCatchFire from '#lib/assets/errors/halt-and-catch-fire.webp';
+import interstellar from '#lib/assets/errors/interstellar.webp';
+import severance from '#lib/assets/errors/severance.webp';
+import type { ErrorSceneTheme } from '#lib/components/error/ErrorSceneTheme.ts';
 import type { ErrorSceneKey } from './ErrorSceneKey.ts';
 
 type ErrorScene = {

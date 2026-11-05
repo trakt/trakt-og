@@ -4,8 +4,8 @@
   "3/5 words", and once the minimum is met it's a filled check beside the count alone. The textarea points at it, so screen readers hear the rule.
 -->
 <script lang="ts">
-import Icon from '$lib/icons/Icon.svelte';
-import circleCheck from '$lib/icons/solid/circle-check.svg?raw';
+import Icon from '#lib/icons/Icon.svelte';
+import circleCheck from '#lib/icons/solid/circle-check.svg?raw';
 
 interface Props {
   id: string;

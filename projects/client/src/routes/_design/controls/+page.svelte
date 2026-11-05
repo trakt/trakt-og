@@ -1,54 +1,54 @@
 <script lang="ts">
 import { resolve } from '$app/paths';
 import { page } from '$app/state';
-import { ogRepoUrls } from '$lib/about/ogRepoUrls';
-import { chartFilters } from '$lib/charts/chartFilters';
-import LinkButton from '$lib/components/button/LinkButton.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import spaceStationMoon from '$lib/icons/solid/space-station-moon.svg?raw';
-import Container from '$lib/components/container/Container.svelte';
-import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
-import EmptyNote from '$lib/components/empty/EmptyNote.svelte';
-import LoadFailed from '$lib/components/empty/LoadFailed.svelte';
-import EmptyState from '$lib/components/empty/EmptyState.svelte';
-import NoResults from '$lib/components/empty/NoResults.svelte';
-import AdvancedFiltersToggle from '$lib/components/filters/AdvancedFiltersToggle.svelte';
-import { type AdvancedFilters, emptyFilters } from '$lib/components/filters/advancedFilters';
-import FadeHideItems from '$lib/components/filters/FadeHideItems.svelte';
-import FadeHideMenu from '$lib/components/filters/FadeHideMenu.svelte';
-import { type FadeHide, type FadeHideOption, fadeHideOptions, matchesFadeHide } from '$lib/components/filters/fadeHide';
-import { filterChips } from '$lib/components/filters/filterChips';
-import FilterMenu from '$lib/components/filters/FilterMenu.svelte';
-import FilterChips from '$lib/components/filters/FilterChips.svelte';
-import FiltersPanel from '$lib/components/filters/FiltersPanel.svelte';
-import { filterTags } from '$lib/components/filters/filterTags';
-import ParentalGuideFilter from '$lib/components/filters/ParentalGuideFilter.svelte';
-import type { ParentalLimits } from '$lib/components/filters/parentalGuide';
-import { parentalPresets } from '$lib/components/filters/parentalPreset';
-import { withoutFilterTag } from '$lib/components/filters/withoutFilterTag';
-import TermsFilter from '$lib/components/filters/TermsFilter.svelte';
-import GlassAction from '$lib/components/glass-action/GlassAction.svelte';
-import LoadingOverlay from '$lib/components/loading/LoadingOverlay.svelte';
-import PosterCard from '$lib/components/media/PosterCard.svelte';
-import PosterGrid from '$lib/components/media/PosterGrid.svelte';
-import { quickIconFill } from '$lib/components/media/quickIconFill';
-import Pagination from '$lib/components/pagination/Pagination.svelte';
-import RatingPopover from '$lib/components/rating/RatingPopover.svelte';
-import { RATING_LABELS } from '$lib/components/rating/ratingPrompt';
-import { watchedFirst } from '$lib/components/rating/watchedFirst';
-import RailGroup from '$lib/components/sidebar/RailGroup.svelte';
-import SectionToolbar from '$lib/components/toolbar/SectionToolbar.svelte';
-import SubnavCount from '$lib/components/toolbar/SubnavCount.svelte';
-import DemoButton from '$lib/design/DemoButton.svelte';
-import DemoToggle from '$lib/design/DemoToggle.svelte';
-import Specimen from '$lib/design/Specimen.svelte';
-import Variant from '$lib/design/Variant.svelte';
-import file from '$lib/icons/regular/file.svg?raw';
-import heartOutline from '$lib/icons/regular/heart.svg?raw';
-import heart from '$lib/icons/solid/heart.svg?raw';
-import { creditHideOptions } from '$lib/people/creditHideOptions';
-import { traktUrls } from '$lib/traktUrls';
-import { imageUrl } from '$lib/utils/imageUrl';
+import { ogRepoUrls } from '#lib/about/ogRepoUrls.ts';
+import { chartFilters } from '#lib/charts/chartFilters.ts';
+import LinkButton from '#lib/components/button/LinkButton.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import spaceStationMoon from '#lib/icons/solid/space-station-moon.svg?raw';
+import Container from '#lib/components/container/Container.svelte';
+import Dropdown from '#lib/components/dropdown/Dropdown.svelte';
+import EmptyNote from '#lib/components/empty/EmptyNote.svelte';
+import LoadFailed from '#lib/components/empty/LoadFailed.svelte';
+import EmptyState from '#lib/components/empty/EmptyState.svelte';
+import NoResults from '#lib/components/empty/NoResults.svelte';
+import AdvancedFiltersToggle from '#lib/components/filters/AdvancedFiltersToggle.svelte';
+import { type AdvancedFilters, emptyFilters } from '#lib/components/filters/advancedFilters.ts';
+import FadeHideItems from '#lib/components/filters/FadeHideItems.svelte';
+import FadeHideMenu from '#lib/components/filters/FadeHideMenu.svelte';
+import { type FadeHide, type FadeHideOption, fadeHideOptions, matchesFadeHide } from '#lib/components/filters/fadeHide.ts';
+import { filterChips } from '#lib/components/filters/filterChips.ts';
+import FilterMenu from '#lib/components/filters/FilterMenu.svelte';
+import FilterChips from '#lib/components/filters/FilterChips.svelte';
+import FiltersPanel from '#lib/components/filters/FiltersPanel.svelte';
+import { filterTags } from '#lib/components/filters/filterTags.ts';
+import ParentalGuideFilter from '#lib/components/filters/ParentalGuideFilter.svelte';
+import type { ParentalLimits } from '#lib/components/filters/parentalGuide.ts';
+import { parentalPresets } from '#lib/components/filters/parentalPreset.ts';
+import { withoutFilterTag } from '#lib/components/filters/withoutFilterTag.ts';
+import TermsFilter from '#lib/components/filters/TermsFilter.svelte';
+import GlassAction from '#lib/components/glass-action/GlassAction.svelte';
+import LoadingOverlay from '#lib/components/loading/LoadingOverlay.svelte';
+import PosterCard from '#lib/components/media/PosterCard.svelte';
+import PosterGrid from '#lib/components/media/PosterGrid.svelte';
+import { quickIconFill } from '#lib/components/media/quickIconFill.ts';
+import Pagination from '#lib/components/pagination/Pagination.svelte';
+import RatingPopover from '#lib/components/rating/RatingPopover.svelte';
+import { RATING_LABELS } from '#lib/components/rating/ratingPrompt.ts';
+import { watchedFirst } from '#lib/components/rating/watchedFirst.ts';
+import RailGroup from '#lib/components/sidebar/RailGroup.svelte';
+import SectionToolbar from '#lib/components/toolbar/SectionToolbar.svelte';
+import SubnavCount from '#lib/components/toolbar/SubnavCount.svelte';
+import DemoButton from '#lib/design/DemoButton.svelte';
+import DemoToggle from '#lib/design/DemoToggle.svelte';
+import Specimen from '#lib/design/Specimen.svelte';
+import Variant from '#lib/design/Variant.svelte';
+import file from '#lib/icons/regular/file.svg?raw';
+import heartOutline from '#lib/icons/regular/heart.svg?raw';
+import heart from '#lib/icons/solid/heart.svg?raw';
+import { creditHideOptions } from '#lib/people/creditHideOptions.ts';
+import { traktUrls } from '#lib/traktUrls.ts';
+import { imageUrl } from '#lib/utils/imageUrl.ts';
 import { samples } from './fixtures.ts';
 
 const { data } = $props();
@@ -351,7 +351,7 @@ function showOverlay() {
   </Variant>
   <Variant label="Not started, off the dashboard: your own, with a way to start">
     <div class="ground surface">
-      <EmptyState action={{ href: resolve('/movies/[chart=chart]', { chart: 'trending' }), text: 'Find a movie' }} />
+      <EmptyState action={{ href: resolve('/movies/[chart=chart]/[[period]]', { chart: 'trending' }), text: 'Find a movie' }} />
     </div>
   </Variant>
   <Variant label="Didn't load">

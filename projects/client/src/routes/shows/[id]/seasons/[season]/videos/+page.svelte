@@ -1,5 +1,5 @@
 <script lang="ts">
-import VideosPage from '$lib/videos/VideosPage.svelte';
+import VideosPage from '#lib/videos/VideosPage.svelte';
 const { data } = $props();
 </script>
 

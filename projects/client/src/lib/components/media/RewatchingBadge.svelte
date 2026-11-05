@@ -3,9 +3,9 @@
   Put it in the positioned card, before the poster.
 -->
 <script lang="ts">
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import backward from '$lib/icons/solid/backward.svg?raw';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import backward from '#lib/icons/solid/backward.svg?raw';
 const { date }: { date?: string } = $props();
 </script>
 

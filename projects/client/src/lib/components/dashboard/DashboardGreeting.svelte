@@ -1,15 +1,15 @@
 <script lang="ts">
 import type { Snippet } from 'svelte';
-import Container from '$lib/components/container/Container.svelte';
-import { headerArt } from '$lib/components/header/headerArt';
-import VipLabel from '$lib/components/labels/VipLabel.svelte';
-import CoverPill from '$lib/components/users/CoverPill.svelte';
-import WatchingNowBar from '$lib/components/users/WatchingNowBar.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import calendar from '$lib/icons/regular/calendar-lines.svg?raw';
-import defaultCover from '$lib/assets/profile-cover-default.jpg';
-import type { ProfileUser } from '$lib/users/ProfileUser';
-import type { WatchingNow } from '$lib/users/WatchingNow';
+import Container from '#lib/components/container/Container.svelte';
+import { headerArt } from '#lib/components/header/headerArt.ts';
+import VipLabel from '#lib/components/labels/VipLabel.svelte';
+import CoverPill from '#lib/components/users/CoverPill.svelte';
+import WatchingNowBar from '#lib/components/users/WatchingNowBar.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import calendar from '#lib/icons/regular/calendar-lines.svg?raw';
+import defaultCover from '#lib/assets/profile-cover-default.jpg';
+import type { ProfileUser } from '#lib/users/ProfileUser.ts';
+import type { WatchingNow } from '#lib/users/WatchingNow.ts';
 
 const { user: viewer, memberSince, watching, children }: {
   user: ProfileUser;

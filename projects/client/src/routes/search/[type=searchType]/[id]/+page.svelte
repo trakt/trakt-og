@@ -1,5 +1,5 @@
 <script lang="ts">
-import SearchPage from '$lib/search/SearchPage.svelte';
+import SearchPage from '#lib/search/SearchPage.svelte';
 
 const { data } = $props();
 </script>

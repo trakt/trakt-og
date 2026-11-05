@@ -5,11 +5,11 @@
   count. The time left reads "~" while it's an estimate from show runtimes.
 -->
 <script lang="ts">
-import Stat from '$lib/components/stats/Stat.svelte';
-import file from '$lib/icons/regular/file.svg?raw';
-import hourglass from '$lib/icons/regular/hourglass-half.svg?raw';
-import check from '$lib/icons/trakt/check-thick.svg?raw';
-import { formatRuntime } from '$lib/utils/formatRuntime';
+import Stat from '#lib/components/stats/Stat.svelte';
+import file from '#lib/icons/regular/file.svg?raw';
+import hourglass from '#lib/icons/regular/hourglass-half.svg?raw';
+import check from '#lib/icons/trakt/check-thick.svg?raw';
+import { formatRuntime } from '#lib/utils/formatRuntime.ts';
 import type { ProgressTotals } from './ProgressTotals.ts';
 
 interface Props {

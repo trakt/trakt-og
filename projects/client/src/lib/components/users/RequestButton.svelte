@@ -7,7 +7,7 @@
 <script lang="ts">
 import type { Snippet } from 'svelte';
 import type { HTMLButtonAttributes } from 'svelte/elements';
-import Icon from '$lib/icons/Icon.svelte';
+import Icon from '#lib/icons/Icon.svelte';
 
 interface Props extends HTMLButtonAttributes {
   tone: 'approve' | 'deny' | 'block' | 'neutral';

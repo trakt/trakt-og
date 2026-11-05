@@ -6,10 +6,10 @@
   run })`, a text button before the close that closes it and runs.
 -->
 <script lang="ts">
-import Icon from '$lib/icons/Icon.svelte';
-import circleCheck from '$lib/icons/solid/circle-check.svg?raw';
-import circleExclamation from '$lib/icons/solid/circle-exclamation.svg?raw';
-import xmark from '$lib/icons/regular/xmark.svg?raw';
+import Icon from '#lib/icons/Icon.svelte';
+import circleCheck from '#lib/icons/solid/circle-check.svg?raw';
+import circleExclamation from '#lib/icons/solid/circle-exclamation.svg?raw';
+import xmark from '#lib/icons/regular/xmark.svg?raw';
 import { flip } from 'svelte/animate';
 import { fly } from 'svelte/transition';
 import { toast } from './toast.svelte.ts';

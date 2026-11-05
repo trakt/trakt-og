@@ -3,9 +3,9 @@
   Reduced motion gets the still, and no pop.
 -->
 <script lang="ts">
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import xmark from '$lib/icons/solid/xmark.svg?raw';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import xmark from '#lib/icons/solid/xmark.svg?raw';
 import type { GifEntry } from './GifEntry.ts';
 import { gifPop } from './gifPop.ts';
 

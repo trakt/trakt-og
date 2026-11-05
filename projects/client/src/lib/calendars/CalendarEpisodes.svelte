@@ -6,12 +6,12 @@
     <CalendarEpisodes group={entry.group} released={entry.released} onArt />
 -->
 <script lang="ts">
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import PromptPopover from '$lib/components/prompt/PromptPopover.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import clone from '$lib/icons/regular/clone.svg?raw';
-import chevron from '$lib/icons/solid/chevron-down.svg?raw';
-import { overlay } from '$lib/overlay/overlay';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import PromptPopover from '#lib/components/prompt/PromptPopover.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import clone from '#lib/icons/regular/clone.svg?raw';
+import chevron from '#lib/icons/solid/chevron-down.svg?raw';
+import { overlay } from '#lib/overlay/overlay.ts';
 import EpisodeTray from './EpisodeTray.svelte';
 import type { CalendarGroupCard } from './toCalendarGroupCard.ts';
 

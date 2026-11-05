@@ -1,3 +1,4 @@
+import type { ReadonlyURL } from '$app/state';
 /** A page number to link, or a gap standing in for the pages skipped between two of them. */
 export type PageSlot = number | 'gap';
 
@@ -24,7 +25,7 @@ export function pageWindow(current: number, total: number): PageSlot[] {
 }
 
 /** `url` with its `page` param set to `page`. Page 1 drops the param, like Kaminari. */
-export function pageHref(url: URL, page: number): string {
+export function pageHref(url: ReadonlyURL, page: number): string {
   const params = new URLSearchParams(url.search);
   if (page === 1) params.delete('page');
   else params.set('page', String(page));

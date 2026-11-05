@@ -3,13 +3,13 @@
   profile prompts you to write one, and anyone else's lists a few facts.
 -->
 <script lang="ts">
-import CommentText from '$lib/components/comments/CommentText.svelte';
-import { parseComment } from '$lib/components/comments/text/parseComment';
-import BoxChips from '$lib/components/users/profile-box/BoxChips.svelte';
-import ProfileBox from '$lib/components/users/profile-box/ProfileBox.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import pen from '$lib/icons/solid/pen.svg?raw';
-import quote from '$lib/icons/solid/quote-left.svg?raw';
+import CommentText from '#lib/components/comments/CommentText.svelte';
+import { parseComment } from '#lib/components/comments/text/parseComment.ts';
+import BoxChips from '#lib/components/users/profile-box/BoxChips.svelte';
+import ProfileBox from '#lib/components/users/profile-box/ProfileBox.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import pen from '#lib/icons/solid/pen.svg?raw';
+import quote from '#lib/icons/solid/quote-left.svg?raw';
 import type { AboutMeView } from './AboutMeView.ts';
 
 const { view }: { view: AboutMeView } = $props();

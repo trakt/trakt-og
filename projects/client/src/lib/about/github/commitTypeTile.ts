@@ -1,16 +1,16 @@
-import archive from '$lib/icons/solid/box-archive.svg?raw';
-import backward from '$lib/icons/solid/backward.svg?raw';
-import broom from '$lib/icons/solid/broom.svg?raw';
-import bug from '$lib/icons/solid/bug.svg?raw';
-import code from '$lib/icons/solid/code.svg?raw';
-import flask from '$lib/icons/solid/flask.svg?raw';
-import gear from '$lib/icons/solid/gear.svg?raw';
-import highlighter from '$lib/icons/solid/highlighter.svg?raw';
-import memo from '$lib/icons/solid/memo.svg?raw';
-import paintbrush from '$lib/icons/solid/paintbrush.svg?raw';
-import arrowsRotate from '$lib/icons/solid/arrows-rotate.svg?raw';
-import rocket from '$lib/icons/solid/rocket.svg?raw';
-import sparkles from '$lib/icons/solid/sparkles.svg?raw';
+import archive from '#lib/icons/solid/box-archive.svg?raw';
+import backward from '#lib/icons/solid/backward.svg?raw';
+import broom from '#lib/icons/solid/broom.svg?raw';
+import bug from '#lib/icons/solid/bug.svg?raw';
+import code from '#lib/icons/solid/code.svg?raw';
+import flask from '#lib/icons/solid/flask.svg?raw';
+import gear from '#lib/icons/solid/gear.svg?raw';
+import highlighter from '#lib/icons/solid/highlighter.svg?raw';
+import memo from '#lib/icons/solid/memo.svg?raw';
+import paintbrush from '#lib/icons/solid/paintbrush.svg?raw';
+import arrowsRotate from '#lib/icons/solid/arrows-rotate.svg?raw';
+import rocket from '#lib/icons/solid/rocket.svg?raw';
+import sparkles from '#lib/icons/solid/sparkles.svg?raw';
 
 /** A commit type's tile: a solid icon on its color, and the word a screen reader hears. */
 export type CommitTypeTile = { readonly label: string; readonly icon: string; readonly color: string };

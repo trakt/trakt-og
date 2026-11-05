@@ -5,8 +5,8 @@
     <ReleaseFormats formats={[{ logo: 'bluray', label: 'Blu-ray' }, { logo: 'dvd', label: 'DVD' }]} tags={['Limited']} />
 -->
 <script lang="ts">
-import { collectionLogo } from '$lib/components/collection/collectionLogo';
-import Icon from '$lib/icons/Icon.svelte';
+import { collectionLogo } from '#lib/components/collection/collectionLogo.ts';
+import Icon from '#lib/icons/Icon.svelte';
 
 const { formats, tags = [] }: {
   formats: readonly { readonly logo: string; readonly label: string }[];

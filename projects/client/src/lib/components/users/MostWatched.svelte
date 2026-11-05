@@ -6,20 +6,20 @@
   Below tablet width the third poster hides, and on phones the columns stack.
 -->
 <script lang="ts">
-import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
-import { trackSectionDrilldown } from '$lib/analytics/trackSectionDrilldown';
-import Container from '$lib/components/container/Container.svelte';
-import PanelHeading from '$lib/components/dashboard/PanelHeading.svelte';
-import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
-import EmptyState from '$lib/components/empty/EmptyState.svelte';
-import PosterCard from '$lib/components/media/PosterCard.svelte';
-import { quickIconFill } from '$lib/components/media/quickIconFill';
-import cameraMovie from '$lib/icons/regular/camera-movie.svg?raw';
-import tvRetro from '$lib/icons/regular/tv-retro.svg?raw';
-import { overlay } from '$lib/overlay/overlay';
-import type { DatePreferences } from '$lib/settings/DatePreferences';
-import { findAction } from '$lib/users/findAction';
-import type { MostWatched, MostWatchedTab, MostWatchedType } from '$lib/users/profile/toMostWatched';
+import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
+import { trackSectionDrilldown } from '#lib/analytics/trackSectionDrilldown.ts';
+import Container from '#lib/components/container/Container.svelte';
+import PanelHeading from '#lib/components/dashboard/PanelHeading.svelte';
+import Dropdown from '#lib/components/dropdown/Dropdown.svelte';
+import EmptyState from '#lib/components/empty/EmptyState.svelte';
+import PosterCard from '#lib/components/media/PosterCard.svelte';
+import { quickIconFill } from '#lib/components/media/quickIconFill.ts';
+import cameraMovie from '#lib/icons/regular/camera-movie.svg?raw';
+import tvRetro from '#lib/icons/regular/tv-retro.svg?raw';
+import { overlay } from '#lib/overlay/overlay.ts';
+import type { DatePreferences } from '#lib/settings/DatePreferences.ts';
+import { findAction } from '#lib/users/findAction.ts';
+import type { MostWatched, MostWatchedTab, MostWatchedType } from '#lib/users/profile/toMostWatched.ts';
 
 interface Props {
   shows: MostWatched;

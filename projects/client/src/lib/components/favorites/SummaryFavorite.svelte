@@ -5,15 +5,15 @@
     <SummaryFavorite target={favoriteTarget} color="var(--brand-seventh)" icon={star} label="Add to favorites" />
 -->
 <script lang="ts">
-import FavoriteNoteTip from '$lib/components/favorites/FavoriteNoteTip.svelte';
-import FavoriteRemovePrompt from '$lib/components/favorites/FavoriteRemovePrompt.svelte';
-import MediaFavorite from '$lib/components/favorites/MediaFavorite.svelte';
-import SummaryAction from '$lib/components/summary/SummaryAction.svelte';
-import SummaryActionTile from '$lib/components/summary/SummaryActionTile.svelte';
-import type { FavoriteTarget } from '$lib/favorites/FavoriteTarget';
-import memo from '$lib/icons/regular/memo.svg?raw';
-import filledMemo from '$lib/icons/solid/memo.svg?raw';
-import filledStar from '$lib/icons/solid/star.svg?raw';
+import FavoriteNoteTip from '#lib/components/favorites/FavoriteNoteTip.svelte';
+import FavoriteRemovePrompt from '#lib/components/favorites/FavoriteRemovePrompt.svelte';
+import MediaFavorite from '#lib/components/favorites/MediaFavorite.svelte';
+import SummaryAction from '#lib/components/summary/SummaryAction.svelte';
+import SummaryActionTile from '#lib/components/summary/SummaryActionTile.svelte';
+import type { FavoriteTarget } from '#lib/favorites/FavoriteTarget.ts';
+import memo from '#lib/icons/regular/memo.svg?raw';
+import filledMemo from '#lib/icons/solid/memo.svg?raw';
+import filledStar from '#lib/icons/solid/star.svg?raw';
 
 interface Props {
   target: FavoriteTarget;

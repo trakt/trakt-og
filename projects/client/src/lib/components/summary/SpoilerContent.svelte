@@ -1,5 +1,5 @@
 <script lang="ts">
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
 import type { Snippet } from 'svelte';
 import type { Attachment } from 'svelte/attachments';
 const { hidden, inline = false, onreveal, children }: {

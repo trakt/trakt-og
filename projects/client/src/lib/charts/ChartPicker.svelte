@@ -5,7 +5,7 @@
 -->
 <script lang="ts">
 import { page } from '$app/state';
-import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
+import Dropdown from '#lib/components/dropdown/Dropdown.svelte';
 import { chartLinks } from './chartLinks.ts';
 import type { ChartName } from './chartNames.ts';
 import type { ChartPeriod } from './chartPeriod.ts';

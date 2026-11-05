@@ -6,9 +6,9 @@
 -->
 <script lang="ts">
 import { goto } from '$app/navigation';
-import Caret from '$lib/components/dropdown/Caret.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import ellipse from '$lib/icons/trakt/ellipse.svg?raw';
+import Caret from '#lib/components/dropdown/Caret.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import ellipse from '#lib/icons/trakt/ellipse.svg?raw';
 
 interface Props {
   total: number;
@@ -50,6 +50,7 @@ const jump = (event: Event & { currentTarget: HTMLSelectElement }) => {
   const page = Number(event.currentTarget.value);
   if (!page) return;
   panel?.hidePopover();
+   
   // eslint-disable-next-line svelte/no-navigation-without-resolve -- href already resolves the current path
   void goto(href(page));
 };

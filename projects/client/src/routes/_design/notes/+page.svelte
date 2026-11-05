@@ -1,17 +1,17 @@
 <script lang="ts">
-import Specimen from '$lib/design/Specimen.svelte';
-import NoteManage from '$lib/components/notes/NoteManage.svelte';
-import NotesDialog from '$lib/components/notes/NotesDialog.svelte';
-import NoteRow from '$lib/components/notes/NoteRow.svelte';
-import NoteStamp from '$lib/components/notes/NoteStamp.svelte';
-import PrivateNotes from '$lib/components/summary/PrivateNotes.svelte';
-import SectionToolbar from '$lib/components/toolbar/SectionToolbar.svelte';
-import clock from '$lib/icons/regular/clock.svg?raw';
-import heart from '$lib/icons/solid/heart.svg?raw';
-import check from '$lib/icons/trakt/check-thick.svg?raw';
-import collection from '$lib/icons/trakt/collection-thick.svg?raw';
-import { noteRowsSchema } from '$lib/users/notes/noteRowsSchema';
-import { toNote } from '$lib/users/notes/toNote';
+import Specimen from '#lib/design/Specimen.svelte';
+import NoteManage from '#lib/components/notes/NoteManage.svelte';
+import NotesDialog from '#lib/components/notes/NotesDialog.svelte';
+import NoteRow from '#lib/components/notes/NoteRow.svelte';
+import NoteStamp from '#lib/components/notes/NoteStamp.svelte';
+import PrivateNotes from '#lib/components/summary/PrivateNotes.svelte';
+import SectionToolbar from '#lib/components/toolbar/SectionToolbar.svelte';
+import clock from '#lib/icons/regular/clock.svg?raw';
+import heart from '#lib/icons/solid/heart.svg?raw';
+import check from '#lib/icons/trakt/check-thick.svg?raw';
+import collection from '#lib/icons/trakt/collection-thick.svg?raw';
+import { noteRowsSchema } from '#lib/users/notes/noteRowsSchema.ts';
+import { toNote } from '#lib/users/notes/toNote.ts';
 
 let open = $state(false);
 let draft = $state('');

@@ -6,9 +6,9 @@
     <ReleaseRows columns={releases.columns} ticks={releases.ticks} today={releases.today} countries={shown} />
 -->
 <script lang="ts">
-import TagPills from '$lib/components/labels/TagPills.svelte';
-import CountryFlag from '$lib/components/table/CountryFlag.svelte';
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
+import TagPills from '#lib/components/labels/TagPills.svelte';
+import CountryFlag from '#lib/components/table/CountryFlag.svelte';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
 import { releaseLabel } from './releaseLabel.ts';
 import ReleaseTip from './ReleaseTip.svelte';
 import type { ReleaseDate } from './toMovieReleases.ts';

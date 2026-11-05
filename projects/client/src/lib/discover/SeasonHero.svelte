@@ -9,23 +9,23 @@
   through.
 -->
 <script lang="ts">
-import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
-import { isStandardApi } from '$lib/api/isStandardApi';
-import { mediaTags } from '$lib/components/labels/mediaTags';
-import TagPills from '$lib/components/labels/TagPills.svelte';
-import TrimmedLogo from '$lib/components/media/TrimmedLogo.svelte';
-import VideoPopup from '$lib/components/dialog/VideoPopup.svelte';
-import { youtubeEmbedUrl } from '$lib/components/dialog/youtubeEmbedUrl';
-import { watchNowPath } from '$lib/components/watchnow/watchNowPath';
-import { openWatchNow } from '$lib/components/watchnow/watchNowLauncher.svelte';
-import { isPlainClick } from '$lib/utils/isPlainClick';
-import { proxiedLogoUrl } from '$lib/utils/proxiedLogoUrl';
-import { trackTrailer } from '$lib/videos/trackVideo';
-import Icon from '$lib/icons/Icon.svelte';
-import youtube from '$lib/icons/brands/youtube.svg?raw';
-import angleLeft from '$lib/icons/light/angle-left.svg?raw';
-import angleRight from '$lib/icons/light/angle-right.svg?raw';
-import play from '$lib/icons/solid/play.svg?raw';
+import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
+import { isStandardApi } from '#lib/api/isStandardApi.ts';
+import { mediaTags } from '#lib/components/labels/mediaTags.ts';
+import TagPills from '#lib/components/labels/TagPills.svelte';
+import TrimmedLogo from '#lib/components/media/TrimmedLogo.svelte';
+import VideoPopup from '#lib/components/dialog/VideoPopup.svelte';
+import { youtubeEmbedUrl } from '#lib/components/dialog/youtubeEmbedUrl.ts';
+import { watchNowPath } from '#lib/components/watchnow/watchNowPath.ts';
+import { openWatchNow } from '#lib/components/watchnow/watchNowLauncher.svelte.ts';
+import { isPlainClick } from '#lib/utils/isPlainClick.ts';
+import { proxiedLogoUrl } from '#lib/utils/proxiedLogoUrl.ts';
+import { trackTrailer } from '#lib/videos/trackVideo.ts';
+import Icon from '#lib/icons/Icon.svelte';
+import youtube from '#lib/icons/brands/youtube.svg?raw';
+import angleLeft from '#lib/icons/light/angle-left.svg?raw';
+import angleRight from '#lib/icons/light/angle-right.svg?raw';
+import play from '#lib/icons/solid/play.svg?raw';
 import type { Attachment } from 'svelte/attachments';
 import { SvelteSet } from 'svelte/reactivity';
 import type { SeasonPick } from './toSeasonPicks.ts';

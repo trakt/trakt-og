@@ -1,4 +1,4 @@
-import { env } from '$env/dynamic/public';
+import { PUBLIC_TRAKT_API } from '$app/env/public';
 import type { TraktApiOptions } from '@trakt/api';
 
 export type ApiEnvironment = TraktApiOptions['environment'];
@@ -19,7 +19,7 @@ function isEnvironmentName(name: string): name is EnvironmentName {
 }
 
 /** Resolves `PUBLIC_TRAKT_API` (`production`, `standard` or `local`, default `production`) to a base URL. */
-export function apiEnvironment(name: string = env.PUBLIC_TRAKT_API || 'production'): ApiEnvironment {
+export function apiEnvironment(name: string = PUBLIC_TRAKT_API || 'production'): ApiEnvironment {
   if (!isEnvironmentName(name)) {
     throw new Error(`Unknown PUBLIC_TRAKT_API "${name}". Use one of: ${Object.keys(ENVIRONMENTS).join(', ')}`);
   }

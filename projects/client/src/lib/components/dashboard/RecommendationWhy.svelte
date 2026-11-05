@@ -8,21 +8,21 @@
   shimmering until they land. Without either there's no button at all.
 -->
 <script lang="ts">
-import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
-import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
-import { useTrack } from '$lib/analytics/useTrack';
-import { viewerFetch } from '$lib/auth/viewerFetch';
-import CommentTag from '$lib/components/comments/CommentTag.svelte';
-import GlassAction from '$lib/components/glass-action/GlassAction.svelte';
-import TagPills from '$lib/components/labels/TagPills.svelte';
-import Shimmer from '$lib/components/loading/Shimmer.svelte';
-import { fetchRecommendationReasons } from '$lib/dashboard/fetchRecommendationReasons';
-import type { Recommendation, RecommendationPerson, RecommendationSource } from '$lib/dashboard/Recommendation';
-import Icon from '$lib/icons/Icon.svelte';
-import xmark from '$lib/icons/regular/xmark.svg?raw';
-import heart from '$lib/icons/solid/heart.svg?raw';
-import checkThick from '$lib/icons/trakt/check-thick.svg?raw';
-import sparkles from '$lib/icons/solid/sparkles.svg?raw';
+import { AnalyticsEvent } from '#lib/analytics/AnalyticsEvent.ts';
+import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
+import { useTrack } from '#lib/analytics/useTrack.ts';
+import { viewerFetch } from '#lib/auth/viewerFetch.ts';
+import CommentTag from '#lib/components/comments/CommentTag.svelte';
+import GlassAction from '#lib/components/glass-action/GlassAction.svelte';
+import TagPills from '#lib/components/labels/TagPills.svelte';
+import Shimmer from '#lib/components/loading/Shimmer.svelte';
+import { fetchRecommendationReasons } from '#lib/dashboard/fetchRecommendationReasons.ts';
+import type { Recommendation, RecommendationPerson, RecommendationSource } from '#lib/dashboard/Recommendation.ts';
+import Icon from '#lib/icons/Icon.svelte';
+import xmark from '#lib/icons/regular/xmark.svg?raw';
+import heart from '#lib/icons/solid/heart.svg?raw';
+import checkThick from '#lib/icons/trakt/check-thick.svg?raw';
+import sparkles from '#lib/icons/solid/sparkles.svg?raw';
 
 type Why = Recommendation['why'];
 type LoadReasons = (pick: { type: Recommendation['type']; id: number }) => Promise<Why | null>;

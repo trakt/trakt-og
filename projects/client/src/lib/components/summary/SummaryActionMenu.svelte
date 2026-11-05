@@ -13,9 +13,9 @@
 <script lang="ts">
 import type { Snippet } from 'svelte';
 import type { HTMLButtonAttributes } from 'svelte/elements';
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import ellipsis from '$lib/icons/regular/ellipsis.svg?raw';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import ellipsis from '#lib/icons/regular/ellipsis.svg?raw';
 
 interface Props {
   children: Snippet<[() => void]>;

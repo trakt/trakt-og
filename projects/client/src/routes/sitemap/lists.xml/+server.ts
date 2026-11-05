@@ -1,11 +1,11 @@
 import { fetchListUrls } from '../../../lib/sitemap/fetchListUrls.ts';
 import { serveSitemap } from '../../../lib/sitemap/serveSitemap.ts';
-import type { KeyedCache } from '../../../lib/utils/sharedCache.ts';
+import { edgeCache } from '../../../lib/utils/edgeCache.ts';
 
-export const GET = ({ fetch, url, platform }) =>
+export const GET = ({ fetch, url }) =>
   serveSitemap({
     url,
-    cache: platform?.caches?.default as unknown as KeyedCache | undefined,
+    cache: edgeCache(),
     name: 'lists',
     load: () => fetchListUrls({ fetch }),
   });

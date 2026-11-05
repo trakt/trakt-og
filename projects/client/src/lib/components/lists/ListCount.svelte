@@ -7,7 +7,7 @@
     <ListCount svg={file} value={330} word="item" href="/lists/7" />
 -->
 <script lang="ts">
-import Icon from '$lib/icons/Icon.svelte';
+import Icon from '#lib/icons/Icon.svelte';
 import type { HTMLAttributes } from 'svelte/elements';
 
 type Count = {

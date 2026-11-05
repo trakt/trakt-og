@@ -3,8 +3,8 @@
   in red, and the network in gray (a link to its popular shows). Nothing for a movie.
 -->
 <script lang="ts">
-import CardTag from '$lib/components/media/CardTag.svelte';
-import type { ScheduleRow } from '$lib/dashboard/toScheduleLayout';
+import CardTag from '#lib/components/media/CardTag.svelte';
+import type { ScheduleRow } from '#lib/dashboard/toScheduleLayout.ts';
 
 const { row }: { row: ScheduleRow } = $props();
 </script>

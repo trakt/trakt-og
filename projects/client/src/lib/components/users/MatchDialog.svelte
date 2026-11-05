@@ -12,22 +12,22 @@
 import { page } from '$app/state';
 import { prefersReducedMotion } from 'svelte/motion';
 import type { Attachment } from 'svelte/attachments';
-import { holdHover } from '$lib/extras/holdHover';
-import MatchBlast from '$lib/extras/match-blast.svelte';
-import MatchScene from '$lib/extras/match-scene.svelte';
-import defaultCover from '$lib/assets/profile-cover-default.jpg';
-import Dialog from '$lib/components/dialog/Dialog.svelte';
-import EmptyNote from '$lib/components/empty/EmptyNote.svelte';
-import Shimmer from '$lib/components/loading/Shimmer.svelte';
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import sparkle from '$lib/icons/solid/sparkle.svg?raw';
-import { fetchSharedFavorites } from '$lib/users/match/fetchSharedFavorites';
-import { matchLevelIcon } from '$lib/users/match/matchLevelIcon';
-import type { UserMatch } from '$lib/users/match/UserMatch';
-import { PLACEHOLDER_AVATAR } from '$lib/users/placeholderAvatar';
-import type { FavoriteCard } from '$lib/users/profile/toProfileSummary';
-import type { ProfileUser } from '$lib/users/ProfileUser';
+import { holdHover } from '#lib/extras/holdHover.ts';
+import MatchBlast from '#lib/extras/match-blast.svelte';
+import MatchScene from '#lib/extras/match-scene.svelte';
+import defaultCover from '#lib/assets/profile-cover-default.jpg';
+import Dialog from '#lib/components/dialog/Dialog.svelte';
+import EmptyNote from '#lib/components/empty/EmptyNote.svelte';
+import Shimmer from '#lib/components/loading/Shimmer.svelte';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import sparkle from '#lib/icons/solid/sparkle.svg?raw';
+import { fetchSharedFavorites } from '#lib/users/match/fetchSharedFavorites.ts';
+import { matchLevelIcon } from '#lib/users/match/matchLevelIcon.ts';
+import type { UserMatch } from '#lib/users/match/UserMatch.ts';
+import { PLACEHOLDER_AVATAR } from '#lib/users/placeholderAvatar.ts';
+import type { FavoriteCard } from '#lib/users/profile/toProfileSummary.ts';
+import type { ProfileUser } from '#lib/users/ProfileUser.ts';
 import MatchBadge from './MatchBadge.svelte';
 
 interface Props {

@@ -7,75 +7,75 @@
   `/shows/[chart]` and `/movies/[chart]` render it; Box Office has its own page.
 -->
 <script lang="ts">
-import SeoHead from '$lib/seo/SeoHead.svelte';
+import SeoHead from '#lib/seo/SeoHead.svelte';
 import { goto, invalidateAll } from '$app/navigation';
 import { page } from '$app/state';
-import AdvancedFiltersToggle from '$lib/components/filters/AdvancedFiltersToggle.svelte';
-import AppliedFiltersSection from '$lib/components/filters/AppliedFiltersSection.svelte';
-import FadeHideMenu from '$lib/components/filters/FadeHideMenu.svelte';
-import { expireHideCookie } from '$lib/components/filters/expireHideCookie';
-import FiltersPanel from '$lib/components/filters/FiltersPanel.svelte';
-import { type AdvancedFilters, advancedFiltersSearch } from '$lib/components/filters/advancedFilters';
-import { filterChips } from '$lib/components/filters/filterChips';
-import { fromFilterDraft, toFilterDraft } from '$lib/components/filters/filterDraft';
-import { withoutFilterTag } from '$lib/components/filters/withoutFilterTag';
-import { trackFilterChanges } from '$lib/components/filters/trackFilterChanges';
+import AdvancedFiltersToggle from '#lib/components/filters/AdvancedFiltersToggle.svelte';
+import AppliedFiltersSection from '#lib/components/filters/AppliedFiltersSection.svelte';
+import FadeHideMenu from '#lib/components/filters/FadeHideMenu.svelte';
+import { expireHideCookie } from '#lib/components/filters/expireHideCookie.ts';
+import FiltersPanel from '#lib/components/filters/FiltersPanel.svelte';
+import { type AdvancedFilters, advancedFiltersSearch } from '#lib/components/filters/advancedFilters.ts';
+import { filterChips } from '#lib/components/filters/filterChips.ts';
+import { fromFilterDraft, toFilterDraft } from '#lib/components/filters/filterDraft.ts';
+import { withoutFilterTag } from '#lib/components/filters/withoutFilterTag.ts';
+import { trackFilterChanges } from '#lib/components/filters/trackFilterChanges.ts';
 import {
   apiHideOptions,
   type FadeHide,
   type FadeHideOption,
   fadeHideOptions,
   matchesFadeHide,
-} from '$lib/components/filters/fadeHide';
-import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
-import FrameGrid from '$lib/components/frame/FrameGrid.svelte';
-import FanartCard from '$lib/components/media/FanartCard.svelte';
-import { mediaQuickIcons } from '$lib/components/media/mediaQuickIcons';
-import LoadFailed from '$lib/components/empty/LoadFailed.svelte';
-import EmptyState from '$lib/components/empty/EmptyState.svelte';
-import NoResults from '$lib/components/empty/NoResults.svelte';
-import { pageHref } from '$lib/components/pagination/pageWindow';
-import CountPill from '$lib/components/sidebar/CountPill.svelte';
-import PagePager from '$lib/components/sidebar/PagePager.svelte';
-import RailGroup from '$lib/components/sidebar/RailGroup.svelte';
-import RailPager from '$lib/components/sidebar/RailPager.svelte';
-import SidebarFrame from '$lib/components/sidebar/SidebarFrame.svelte';
-import SidebarTitle from '$lib/components/sidebar/SidebarTitle.svelte';
-import { overlay } from '$lib/overlay/overlay';
-import { chartFilters } from '$lib/charts/chartFilters';
-import ChartPicker from '$lib/charts/ChartPicker.svelte';
-import FollowingWatchingSection from '$lib/charts/FollowingWatchingSection.svelte';
-import LiveNowSection from '$lib/charts/LiveNowSection.svelte';
-import { chartPeriodText } from '$lib/charts/chartPeriod';
-import ChartHero from '$lib/charts/ChartHero.svelte';
-import ChartRank from '$lib/charts/ChartRank.svelte';
-import type { ChartCard } from '$lib/charts/toChartCard';
-import { proxiedLogoUrl } from '$lib/utils/proxiedLogoUrl';
-import type { HeaderUser } from '$lib/components/header/HeaderUser';
-import type { DatePreferences } from '$lib/settings/DatePreferences';
-import type { loadChart } from '$lib/charts/loadChart';
-import SmartListsSection from '$lib/charts/SmartListsSection.svelte';
-import SmartListStatus from '$lib/charts/SmartListStatus.svelte';
-import { isStandardApi } from '$lib/api/isStandardApi';
-import { rawApiFetch } from '$lib/api/rawApiFetch';
-import { viewerFetch } from '$lib/auth/viewerFetch';
-import ManageConfirm from '$lib/components/comments/ManageConfirm.svelte';
-import SmartListDialog from '$lib/components/lists/SmartListDialog.svelte';
-import deleteIcon from '$lib/icons/regular/trash-xmark.svg?raw';
-import { deleteSmartList } from '$lib/lists/smart/deleteSmartList';
-import { toast } from '$lib/components/toast/toast.svelte';
-import { emptyFilters } from '$lib/components/filters/advancedFilters';
-import { fromSmartListFilters } from '$lib/lists/smart/fromSmartListFilters';
-import { isSmartListChart } from '$lib/lists/smart/isSmartListChart';
-import { saveSmartList } from '$lib/lists/smart/saveSmartList';
-import { SMART_LIST_PARAM } from '$lib/lists/smart/SMART_LIST_PARAM';
-import type { SmartList, SmartListPrivacy } from '$lib/lists/smart/SmartList';
-import { uniqueBy } from '$lib/utils/uniqueBy';
-import { smartListChartHref } from '$lib/lists/smart/smartListChartHref';
-import { smartListPath } from '$lib/lists/smart/smartListPath';
-import { smartListSourceLabel } from '$lib/lists/smart/smartListSourceLabel';
-import { toSmartListFilters } from '$lib/lists/smart/toSmartListFilters';
-import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
+} from '#lib/components/filters/fadeHide.ts';
+import Dropdown from '#lib/components/dropdown/Dropdown.svelte';
+import FrameGrid from '#lib/components/frame/FrameGrid.svelte';
+import FanartCard from '#lib/components/media/FanartCard.svelte';
+import { mediaQuickIcons } from '#lib/components/media/mediaQuickIcons.ts';
+import LoadFailed from '#lib/components/empty/LoadFailed.svelte';
+import EmptyState from '#lib/components/empty/EmptyState.svelte';
+import NoResults from '#lib/components/empty/NoResults.svelte';
+import { pageHref } from '#lib/components/pagination/pageWindow.ts';
+import CountPill from '#lib/components/sidebar/CountPill.svelte';
+import PagePager from '#lib/components/sidebar/PagePager.svelte';
+import RailGroup from '#lib/components/sidebar/RailGroup.svelte';
+import RailPager from '#lib/components/sidebar/RailPager.svelte';
+import SidebarFrame from '#lib/components/sidebar/SidebarFrame.svelte';
+import SidebarTitle from '#lib/components/sidebar/SidebarTitle.svelte';
+import { overlay } from '#lib/overlay/overlay.ts';
+import { chartFilters } from '#lib/charts/chartFilters.ts';
+import ChartPicker from '#lib/charts/ChartPicker.svelte';
+import FollowingWatchingSection from '#lib/charts/FollowingWatchingSection.svelte';
+import LiveNowSection from '#lib/charts/LiveNowSection.svelte';
+import { chartPeriodText } from '#lib/charts/chartPeriod.ts';
+import ChartHero from '#lib/charts/ChartHero.svelte';
+import ChartRank from '#lib/charts/ChartRank.svelte';
+import type { ChartCard } from '#lib/charts/toChartCard.ts';
+import { proxiedLogoUrl } from '#lib/utils/proxiedLogoUrl.ts';
+import type { HeaderUser } from '#lib/components/header/HeaderUser.ts';
+import type { DatePreferences } from '#lib/settings/DatePreferences.ts';
+import type { loadChart } from '#lib/charts/loadChart.ts';
+import SmartListsSection from '#lib/charts/SmartListsSection.svelte';
+import SmartListStatus from '#lib/charts/SmartListStatus.svelte';
+import { isStandardApi } from '#lib/api/isStandardApi.ts';
+import { rawApiFetch } from '#lib/api/rawApiFetch.ts';
+import { viewerFetch } from '#lib/auth/viewerFetch.ts';
+import ManageConfirm from '#lib/components/comments/ManageConfirm.svelte';
+import SmartListDialog from '#lib/components/lists/SmartListDialog.svelte';
+import deleteIcon from '#lib/icons/regular/trash-xmark.svg?raw';
+import { deleteSmartList } from '#lib/lists/smart/deleteSmartList.ts';
+import { toast } from '#lib/components/toast/toast.svelte.ts';
+import { emptyFilters } from '#lib/components/filters/advancedFilters.ts';
+import { fromSmartListFilters } from '#lib/lists/smart/fromSmartListFilters.ts';
+import { isSmartListChart } from '#lib/lists/smart/isSmartListChart.ts';
+import { saveSmartList } from '#lib/lists/smart/saveSmartList.ts';
+import { SMART_LIST_PARAM } from '#lib/lists/smart/SMART_LIST_PARAM.ts';
+import type { SmartList, SmartListPrivacy } from '#lib/lists/smart/SmartList.ts';
+import { uniqueBy } from '#lib/utils/uniqueBy.ts';
+import { smartListChartHref } from '#lib/lists/smart/smartListChartHref.ts';
+import { smartListPath } from '#lib/lists/smart/smartListPath.ts';
+import { smartListSourceLabel } from '#lib/lists/smart/smartListSourceLabel.ts';
+import { toSmartListFilters } from '#lib/lists/smart/toSmartListFilters.ts';
+import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
 
 type Props = {
   data: Awaited<ReturnType<typeof loadChart>> & {
@@ -241,14 +241,16 @@ function search(filters: AdvancedFilters) {
   return `${page.url.pathname}${query ? `?${query}` : ''}`;
 }
 function applyFilters(filters: AdvancedFilters) {
+   
   // eslint-disable-next-line svelte/no-navigation-without-resolve -- the same chart and period, new filters
-  goto(search(filters), { noScroll: true, keepFocus: true, replaceState: true });
+  goto(search(filters), { reset: false, replace: true });
 }
 function removeChip(id: string) {
   const next = withoutFilterTag(data.filters, id);
   trackFilterChanges(data.filters, next);
+   
   // eslint-disable-next-line svelte/no-navigation-without-resolve -- the same chart and period, new filters
-  goto(search(next), { noScroll: true, keepFocus: true });
+  goto(search(next), { reset: false });
 }
 
 // The period charts' Time Period, which OG kept in the filter panel: the same chart and filters on the first page.
@@ -298,8 +300,9 @@ async function create({ name, privacy }: { name: string; privacy: SmartListPriva
   dialogOpen = false;
   toast.success(`You saved ${name}.`);
   const query = [advancedFiltersSearch(advanced.filters), `${SMART_LIST_PARAM}=${encodeURIComponent(result.slug)}`];
+   
   // eslint-disable-next-line svelte/no-navigation-without-resolve -- the same chart and filters, now a smart list
-  await goto(`${page.url.pathname}?${query.filter(Boolean).join('&')}`, { noScroll: true, keepFocus: true });
+  await goto(`${page.url.pathname}?${query.filter(Boolean).join('&')}`, { reset: false });
 }
 
 // Deleting the open smart list keeps its filters on the chart, unsaved, so they can be saved again.
@@ -316,8 +319,9 @@ async function deleteCurrent() {
   deleted = [...deleted, list.slug];
   saved = saved.filter(({ slug }) => slug !== list.slug);
   toast.success(`You deleted ${list.name}.`);
+   
   // eslint-disable-next-line svelte/no-navigation-without-resolve -- the same chart and filters, no longer a smart list
-  await goto(search(advanced.filters), { noScroll: true, keepFocus: true, replaceState: true });
+  await goto(search(advanced.filters), { reset: false, replace: true });
 }
 
 async function saveChanges() {
@@ -336,11 +340,11 @@ async function saveChanges() {
   toast.success(`You saved ${list.name}.`);
   // The open list's link moves to its new filters.
   const query = [advancedFiltersSearch(advanced.filters), `${SMART_LIST_PARAM}=${encodeURIComponent(list.slug)}`];
+   
   // eslint-disable-next-line svelte/no-navigation-without-resolve -- the same chart and filters, saved
   await goto(`${page.url.pathname}?${query.filter(Boolean).join('&')}`, {
-    noScroll: true,
-    keepFocus: true,
-    replaceState: true,
+    reset: false,
+    replace: true,
     invalidateAll: true,
   });
 }

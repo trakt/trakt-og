@@ -6,10 +6,10 @@
       open />
 -->
 <script lang="ts">
-import TagPills from '$lib/components/labels/TagPills.svelte';
-import SidebarSection from '$lib/components/sidebar/SidebarSection.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import thumbtack from '$lib/icons/solid/thumbtack.svg?raw';
+import TagPills from '#lib/components/labels/TagPills.svelte';
+import SidebarSection from '#lib/components/sidebar/SidebarSection.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import thumbtack from '#lib/icons/solid/thumbtack.svg?raw';
 
 interface Props {
   /** `here`: the filter opens on this page. */

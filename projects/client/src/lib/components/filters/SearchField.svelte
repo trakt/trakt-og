@@ -5,8 +5,8 @@
   With a `name` it posts with its form, like the search page's sidebar field.
 -->
 <script lang="ts">
-import Icon from '$lib/icons/Icon.svelte';
-import search from '$lib/icons/regular/magnifying-glass.svg?raw';
+import Icon from '#lib/icons/Icon.svelte';
+import search from '#lib/icons/regular/magnifying-glass.svg?raw';
 
 interface Props {
   value: string;

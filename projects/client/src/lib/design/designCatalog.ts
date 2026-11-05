@@ -3,7 +3,7 @@ export type DesignDemo = {
   readonly slug: string;
   readonly title: string;
   readonly summary: string;
-  /** Where the demoed components live, under `$lib`. */
+  /** Where the demoed components live, under `#lib`. */
   readonly source: string;
 };
 

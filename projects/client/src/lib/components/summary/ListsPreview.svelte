@@ -4,12 +4,12 @@
 -->
 <script lang="ts">
 import { page } from '$app/state';
-import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
-import ListEditor from '$lib/components/lists/ListEditor.svelte';
-import ListRow from '$lib/components/media/ListRow.svelte';
-import { createItemListActions } from '$lib/itemLists/createItemListActions.svelte';
-import type { SummaryList } from '$lib/summary/toSummaryList';
-import { countLabel } from '$lib/utils/countLabel';
+import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
+import ListEditor from '#lib/components/lists/ListEditor.svelte';
+import ListRow from '#lib/components/media/ListRow.svelte';
+import { createItemListActions } from '#lib/itemLists/createItemListActions.svelte.ts';
+import type { SummaryList } from '#lib/summary/toSummaryList.ts';
+import { countLabel } from '#lib/utils/countLabel.ts';
 import SectionHeading from './SectionHeading.svelte';
 
 interface Props {

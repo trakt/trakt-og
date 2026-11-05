@@ -5,12 +5,12 @@
   Reset Ranks and Delete ask first; Copy and Move are ListTransfer's.
 -->
 <script lang="ts">
-import ManageConfirm from '$lib/components/comments/ManageConfirm.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import file from '$lib/icons/regular/file.svg?raw';
+import ManageConfirm from '#lib/components/comments/ManageConfirm.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import file from '#lib/icons/regular/file.svg?raw';
 import type { Snippet } from 'svelte';
-import resetIcon from '$lib/icons/regular/arrow-down-arrow-up.svg?raw';
-import trashXmark from '$lib/icons/regular/trash-xmark.svg?raw';
+import resetIcon from '#lib/icons/regular/arrow-down-arrow-up.svg?raw';
+import trashXmark from '#lib/icons/regular/trash-xmark.svg?raw';
 
 interface Props {
   count: number;

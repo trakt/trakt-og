@@ -9,17 +9,17 @@
 -->
 <script lang="ts">
 import type { Snippet } from 'svelte';
-import fanart from '$lib/assets/mobile-splash-fsociety.jpg';
-import traktTime from '$lib/assets/apps/trakt-time.svg';
-import showly from '$lib/assets/apps/showly.png';
-import rippple from '$lib/assets/apps/rippple.png';
-import TraktLogoMark from '$lib/components/brand/TraktLogoMark.svelte';
-import TraktMark from '$lib/components/brand/TraktMark.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import apple from '$lib/icons/brands/apple.svg?raw';
-import googlePlay from '$lib/icons/brands/google-play.svg?raw';
-import angleRight from '$lib/icons/light/angle-right.svg?raw';
-import { traktUrls } from '$lib/traktUrls';
+import fanart from '#lib/assets/mobile-splash-fsociety.jpg';
+import traktTime from '#lib/assets/apps/trakt-time.svg';
+import showly from '#lib/assets/apps/showly.png';
+import rippple from '#lib/assets/apps/rippple.png';
+import TraktLogoMark from '#lib/components/brand/TraktLogoMark.svelte';
+import TraktMark from '#lib/components/brand/TraktMark.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import apple from '#lib/icons/brands/apple.svg?raw';
+import googlePlay from '#lib/icons/brands/google-play.svg?raw';
+import angleRight from '#lib/icons/light/angle-right.svg?raw';
+import { traktUrls } from '#lib/traktUrls.ts';
 import type { MobilePlatform } from './MobilePlatform.ts';
 import { toSplashLinks } from './toSplashLinks.ts';
 

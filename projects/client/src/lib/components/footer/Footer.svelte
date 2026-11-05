@@ -1,65 +1,71 @@
+<script lang="ts">
+import { AnalyticsEvent } from '#lib/analytics/AnalyticsEvent.ts';
+import { useTrack } from '#lib/analytics/useTrack.ts';
+import { trackUpsellImpression } from '#lib/analytics/trackUpsellImpression.ts';
+import TraktMark from '#lib/components/brand/TraktMark.svelte';
+import GlassAction from '#lib/components/glass-action/GlassAction.svelte';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import apple from '#lib/icons/brands/apple.svg?raw';
+import github from '#lib/icons/brands/github.svg?raw';
+import googlePlay from '#lib/icons/brands/google-play.svg?raw';
+import mastodon from '#lib/icons/brands/mastodon.svg?raw';
+import redditAlien from '#lib/icons/brands/reddit-alien.svg?raw';
+import twitter from '#lib/icons/brands/twitter.svg?raw';
+import youtube from '#lib/icons/brands/youtube.svg?raw';
+import spaceStationMoon from '#lib/icons/solid/space-station-moon.svg?raw';
+import { resolve } from '$app/paths';
+import { traktUrls } from '#lib/traktUrls.ts';
+
+  const { track: trackVipUpsell } = useTrack(AnalyticsEvent.VipUpsell);
+  const { track: trackLink } = useTrack(AnalyticsEvent.Link);
+  // Only the links web's footer has too carry its `action.link` target.
+  const trackSocial = (target: string | undefined) => {
+    if (target) trackLink({ source: 'footer', target });
+  };
+
+  const pages = [
+    {
+      title: 'VIP',
+      href: traktUrls.vipFor('footer'),
+      onclick: () => trackVipUpsell({ source: 'footer' }),
+    impression: trackUpsellImpression('footer'),
+    },
+    { title: 'Developer API', href: traktUrls.developer },
+    { title: 'Terms', href: traktUrls.terms },
+    { title: 'Privacy', href: traktUrls.privacy },
+  { title: 'Branding', href: traktUrls.branding },
+  ];
+
+  const social = [
+    {
+      title: 'Trakt for iOS',
+      href: traktUrls.appStore,
+      icon: apple,
+      target: 'ios-app'
+    },
+
+    {
+      title: 'Trakt for Android',
+      href: traktUrls.googlePlay,
+      icon: googlePlay,
+      color: 'var(--color-site-google-play)',
+    target: 'android-app',
+    },
+  { title: 'Reddit', href: traktUrls.reddit, icon: redditAlien, color: 'var(--color-site-reddit)', target: 'reddit' },
+  { title: 'YouTube', href: traktUrls.youtube, icon: youtube, color: 'var(--color-site-youtube)', target: 'youtube' },
+    // `me` lets Mastodon verify og as Trakt's own site.
+  { title: 'Mastodon', href: traktUrls.mastodon, icon: mastodon, color: 'var(--color-site-mastodon)', rel: 'me noopener' },
+  { title: 'Twitter', href: traktUrls.twitter, icon: twitter, color: 'var(--color-site-twitter)' },
+  { title: 'GitHub', href: traktUrls.github, icon: github, target: 'github-web' },
+  { title: 'Status', href: traktUrls.status, icon: spaceStationMoon, color: 'var(--color-site-status)', target: 'status' },
+  ];
+</script>
+
 <!--
   The page's footer: the site links as the header's muted pills, the apps and community as ghost logo squares that
   take their brand's color under the pointer (like a summary's links out), then the mark and copyright. Dark on every
   theme, like the header.
 -->
-<script lang="ts">
-import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
-import { useTrack } from '$lib/analytics/useTrack';
-import { trackUpsellImpression } from '$lib/analytics/trackUpsellImpression';
-import TraktMark from '$lib/components/brand/TraktMark.svelte';
-import GlassAction from '$lib/components/glass-action/GlassAction.svelte';
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import apple from '$lib/icons/brands/apple.svg?raw';
-import github from '$lib/icons/brands/github.svg?raw';
-import googlePlay from '$lib/icons/brands/google-play.svg?raw';
-import mastodon from '$lib/icons/brands/mastodon.svg?raw';
-import redditAlien from '$lib/icons/brands/reddit-alien.svg?raw';
-import twitter from '$lib/icons/brands/twitter.svg?raw';
-import youtube from '$lib/icons/brands/youtube.svg?raw';
-import spaceStationMoon from '$lib/icons/solid/space-station-moon.svg?raw';
-import { resolve } from '$app/paths';
-import { traktUrls } from '$lib/traktUrls';
-
-const { track: trackVipUpsell } = useTrack(AnalyticsEvent.VipUpsell);
-const { track: trackLink } = useTrack(AnalyticsEvent.Link);
-// Only the links web's footer has too carry its `action.link` target.
-const trackSocial = (target: string | undefined) => {
-  if (target) trackLink({ source: 'footer', target });
-};
-
-const pages = [
-  {
-    title: 'VIP',
-    href: traktUrls.vipFor('footer'),
-    onclick: () => trackVipUpsell({ source: 'footer' }),
-    impression: trackUpsellImpression('footer'),
-  },
-  { title: 'Developer API', href: traktUrls.developer },
-  { title: 'Terms', href: traktUrls.terms },
-  { title: 'Privacy', href: traktUrls.privacy },
-  { title: 'Branding', href: traktUrls.branding },
-];
-
-const social = [
-  { title: 'Trakt for iOS', href: traktUrls.appStore, icon: apple, target: 'ios-app' },
-  {
-    title: 'Trakt for Android',
-    href: traktUrls.googlePlay,
-    icon: googlePlay,
-    color: 'var(--color-site-google-play)',
-    target: 'android-app',
-  },
-  { title: 'Reddit', href: traktUrls.reddit, icon: redditAlien, color: 'var(--color-site-reddit)', target: 'reddit' },
-  { title: 'YouTube', href: traktUrls.youtube, icon: youtube, color: 'var(--color-site-youtube)', target: 'youtube' },
-  // `me` lets Mastodon verify og as Trakt's own site.
-  { title: 'Mastodon', href: traktUrls.mastodon, icon: mastodon, color: 'var(--color-site-mastodon)', rel: 'me noopener' },
-  { title: 'Twitter', href: traktUrls.twitter, icon: twitter, color: 'var(--color-site-twitter)' },
-  { title: 'GitHub', href: traktUrls.github, icon: github, target: 'github-web' },
-  { title: 'Status', href: traktUrls.status, icon: spaceStationMoon, color: 'var(--color-site-status)', target: 'status' },
-];
-</script>
-
 <!-- Every link but About and Help leaves og (v3 web, the app stores, community sites), so each opens in a new tab.
      resolve() only takes og's own routes. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
@@ -68,8 +74,8 @@ const social = [
   <div class="links">
     <nav aria-label="Footer">
       <ul>
-        <li><a href={resolve('/about')}>About</a></li>
-        <li><a href={resolve('/help')}>Help</a></li>
+        <li><a href={resolve('about')}>About</a></li>
+        <li><a href={resolve('help')}>Help</a></li>
         {#each pages as link (link.title)}
           <li><a href={link.href} target="_blank" rel="noopener" onclick={link.onclick} {@attach link.impression}>{link.title}</a></li>
         {/each}
@@ -90,10 +96,17 @@ const social = [
     </ul>
   </div>
   <p class="copyright">
-    <svg class="mark" viewBox="0 0 98.1 98.1" aria-hidden="true">
-      <TraktMark ink="currentColor" />
-    </svg>
-    <span>&copy; 2010-{new Date().getFullYear()} trakt, inc. All rights reserved.<br />Hand crafted around the world.</span>
+    <svg
+      class="mark"
+      viewBox="0 0 98.1 98.1"
+      aria-hidden="true"
+    ><TraktMark ink="currentColor" /></svg>
+
+    <span>
+      © 2010-{new Date().getFullYear()} trakt, inc. All rights reserved.
+      <br />
+      Hand crafted around the world.
+    </span>
   </p>
 </footer>
 
@@ -118,72 +131,72 @@ ul {
   list-style: none;
 }
 
-.links {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: var(--gutter);
-}
-
-/* The header's links: muted until the pointer brings a soft glass pill. The first pill's text lines up with the
-   copyright under it. */
-nav ul {
-  gap: var(--gap-header-links);
-  margin-inline-start: calc(-1 * var(--space-header-pill-inline));
-  font-size: var(--font-size-header-link);
-
-  & a {
+  .links {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    block-size: var(--header-pill-height);
-    padding-inline: var(--space-header-pill-inline);
-    border-radius: var(--radius-header-pill);
-    color: var(--color-header-muted);
-    text-decoration: none;
-    white-space: nowrap;
-    transition: background-color 0.2s, color 0.2s;
+    gap: var(--gutter);
+  }
 
-    &:is(:hover, :focus-visible) {
-      background-color: var(--color-header-pill);
-      color: var(--color-header-text);
+  /* The header's links: muted until the pointer brings a soft glass pill. The first pill's text lines up with the
+   copyright under it. */
+  nav ul {
+    gap: var(--gap-header-links);
+    margin-inline-start: calc(-1 * var(--space-header-pill-inline));
+    font-size: var(--font-size-header-link);
+
+    & a {
+      display: flex;
+      align-items: center;
+      block-size: var(--header-pill-height);
+      padding-inline: var(--space-header-pill-inline);
+      border-radius: var(--radius-header-pill);
+      color: var(--color-header-muted);
+      text-decoration: none;
+      white-space: nowrap;
+      transition: background-color 0.2s, color 0.2s;
+
+      &:is(:hover, :focus-visible) {
+        background-color: var(--color-header-pill);
+        color: var(--color-header-text);
+      }
     }
   }
-}
 
-/* Bare logos until the pointer brings the ghost square's fill. */
-.social {
-  --color-glass-action-ghost-bg: transparent;
-  flex-wrap: nowrap;
-  gap: var(--footer-social-gap);
-}
-
-.copyright {
-  display: flex;
-  align-items: center;
-  gap: var(--footer-mark-gap);
-  margin: 0;
-  color: var(--color-footer-muted);
-  font-size: var(--font-size-footer-small);
-  line-height: var(--line-height-footer-copyright);
-}
-
-.mark {
-  flex: none;
-  inline-size: var(--footer-mark-size);
-  block-size: var(--footer-mark-size);
-  opacity: var(--opacity-footer-mark);
-}
-
-@media (width < 768px) {
-  .links {
-    flex-direction: column;
-    align-items: start;
+  /* Bare logos until the pointer brings the ghost square's fill. */
+  .social {
+    --color-glass-action-ghost-bg: transparent;
+    flex-wrap: nowrap;
+    gap: var(--footer-social-gap);
   }
-}
 
-@media (prefers-reduced-motion: reduce) {
-  nav a {
-    transition: none;
+  .copyright {
+    display: flex;
+    align-items: center;
+    gap: var(--footer-mark-gap);
+    margin: 0;
+    color: var(--color-footer-muted);
+    font-size: var(--font-size-footer-small);
+    line-height: var(--line-height-footer-copyright);
   }
-}
+
+  .mark {
+    flex: none;
+    inline-size: var(--footer-mark-size);
+    block-size: var(--footer-mark-size);
+    opacity: var(--opacity-footer-mark);
+  }
+
+  @media (width < 768px) {
+    .links {
+      flex-direction: column;
+      align-items: start;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    nav a {
+      transition: none;
+    }
+  }
 </style>

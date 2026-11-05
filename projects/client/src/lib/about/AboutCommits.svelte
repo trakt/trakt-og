@@ -4,14 +4,14 @@
   button away on GitHub. Until GitHub answers, shimmering rows hold their place.
 -->
 <script lang="ts">
-import PanelHeading from '$lib/components/dashboard/PanelHeading.svelte';
-import PanelHelp from '$lib/components/dashboard/PanelHelp.svelte';
-import LinkButton from '$lib/components/button/LinkButton.svelte';
-import TagPills from '$lib/components/labels/TagPills.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import Shimmer from '$lib/components/loading/Shimmer.svelte';
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import github from '$lib/icons/brands/github.svg?raw';
+import PanelHeading from '#lib/components/dashboard/PanelHeading.svelte';
+import PanelHelp from '#lib/components/dashboard/PanelHelp.svelte';
+import LinkButton from '#lib/components/button/LinkButton.svelte';
+import TagPills from '#lib/components/labels/TagPills.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import Shimmer from '#lib/components/loading/Shimmer.svelte';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import github from '#lib/icons/brands/github.svg?raw';
 import { commitTypeTile } from './github/commitTypeTile.ts';
 import type { AboutCommit } from './github/toAboutCommit.ts';
 import { ogRepoUrls } from './ogRepoUrls.ts';

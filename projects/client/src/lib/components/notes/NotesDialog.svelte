@@ -8,17 +8,17 @@
 -->
 <script lang="ts">
 import type { Snippet } from 'svelte';
-import CharacterMeter from '$lib/components/dialog/CharacterMeter.svelte';
-import Dialog from '$lib/components/dialog/Dialog.svelte';
-import DialogArtHeader from '$lib/components/dialog/DialogArtHeader.svelte';
-import DialogForm from '$lib/components/dialog/DialogForm.svelte';
-import FieldLabel from '$lib/components/dialog/FieldLabel.svelte';
-import ManageConfirm from '$lib/components/comments/ManageConfirm.svelte';
-import type { CardTag } from '$lib/components/media/CardTag';
-import PrivacyTag from '$lib/components/notes/PrivacyTag.svelte';
-import deleteIcon from '$lib/icons/regular/trash-xmark.svg?raw';
-import type { NotableItem } from '$lib/notes/NotableItem';
-import type { Privacy } from '$lib/notes/Privacy';
+import CharacterMeter from '#lib/components/dialog/CharacterMeter.svelte';
+import Dialog from '#lib/components/dialog/Dialog.svelte';
+import DialogArtHeader from '#lib/components/dialog/DialogArtHeader.svelte';
+import DialogForm from '#lib/components/dialog/DialogForm.svelte';
+import FieldLabel from '#lib/components/dialog/FieldLabel.svelte';
+import ManageConfirm from '#lib/components/comments/ManageConfirm.svelte';
+import type { CardTag } from '#lib/components/media/CardTag.ts';
+import PrivacyTag from '#lib/components/notes/PrivacyTag.svelte';
+import deleteIcon from '#lib/icons/regular/trash-xmark.svg?raw';
+import type { NotableItem } from '#lib/notes/NotableItem.ts';
+import type { Privacy } from '#lib/notes/Privacy.ts';
 
 interface Props {
   open: boolean;

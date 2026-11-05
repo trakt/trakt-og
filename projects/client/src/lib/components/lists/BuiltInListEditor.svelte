@@ -5,13 +5,13 @@
     {#if editing}<BuiltInListEditor kind="favorites" onclose={() => (editing = false)} />{/if}
 -->
 <script lang="ts">
-import { rawApiFetch } from '$lib/api/rawApiFetch';
-import BuiltInListDialog from '$lib/components/lists/BuiltInListDialog.svelte';
-import LoadingOverlay from '$lib/components/loading/LoadingOverlay.svelte';
-import { toast } from '$lib/components/toast/toast.svelte';
-import { loadBuiltInDefaults } from '$lib/lists/loadBuiltInDefaults';
-import type { BuiltInListKind } from '$lib/lists/toBuiltInListView';
-import { writeOwnerList } from '$lib/lists/writeOwnerList';
+import { rawApiFetch } from '#lib/api/rawApiFetch.ts';
+import BuiltInListDialog from '#lib/components/lists/BuiltInListDialog.svelte';
+import LoadingOverlay from '#lib/components/loading/LoadingOverlay.svelte';
+import { toast } from '#lib/components/toast/toast.svelte.ts';
+import { loadBuiltInDefaults } from '#lib/lists/loadBuiltInDefaults.ts';
+import type { BuiltInListKind } from '#lib/lists/toBuiltInListView.ts';
+import { writeOwnerList } from '#lib/lists/writeOwnerList.ts';
 import { viewerFetch } from '../../auth/viewerFetch.ts';
 
 type Saved = { description?: string; sort_by: string; sort_how: string };

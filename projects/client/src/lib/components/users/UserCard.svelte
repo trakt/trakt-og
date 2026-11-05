@@ -13,24 +13,24 @@
     <UserCard user={toProfileUser(row.user)} relation={relations[row.user.ids.slug]} />
 -->
 <script lang="ts">
-import defaultCover from '$lib/assets/profile-cover-default.jpg';
-import CommentTag from '$lib/components/comments/CommentTag.svelte';
-import VipLabel from '$lib/components/labels/VipLabel.svelte';
-import FollowButtonShimmer from '$lib/components/loading/FollowButtonShimmer.svelte';
-import CardTag from '$lib/components/media/CardTag.svelte';
-import UnderProgress from '$lib/components/media/UnderProgress.svelte';
-import Countdown from '$lib/components/status/Countdown.svelte';
-import FollowButtons from '$lib/components/users/FollowButtons.svelte';
-import { liveTags } from '$lib/dashboard/liveTags';
-import type { LiveTile } from '$lib/dashboard/liveTiles';
-import lock from '$lib/icons/regular/lock.svg?raw';
-import userGroup from '$lib/icons/regular/user-group.svg?raw';
-import locationPin from '$lib/icons/solid/location-pin.svg?raw';
-import star from '$lib/icons/solid/star.svg?raw';
-import type { ProfileUser } from '$lib/users/ProfileUser';
-import type { ViewerRelation } from '$lib/users/ViewerRelation';
-import { fadeInOnLoad } from '$lib/utils/fadeInOnLoad';
-import { imageUrl } from '$lib/utils/imageUrl';
+import defaultCover from '#lib/assets/profile-cover-default.jpg';
+import CommentTag from '#lib/components/comments/CommentTag.svelte';
+import VipLabel from '#lib/components/labels/VipLabel.svelte';
+import FollowButtonShimmer from '#lib/components/loading/FollowButtonShimmer.svelte';
+import CardTag from '#lib/components/media/CardTag.svelte';
+import UnderProgress from '#lib/components/media/UnderProgress.svelte';
+import Countdown from '#lib/components/status/Countdown.svelte';
+import FollowButtons from '#lib/components/users/FollowButtons.svelte';
+import { liveTags } from '#lib/dashboard/liveTags.ts';
+import type { LiveTile } from '#lib/dashboard/liveTiles.ts';
+import lock from '#lib/icons/regular/lock.svg?raw';
+import userGroup from '#lib/icons/regular/user-group.svg?raw';
+import locationPin from '#lib/icons/solid/location-pin.svg?raw';
+import star from '#lib/icons/solid/star.svg?raw';
+import type { ProfileUser } from '#lib/users/ProfileUser.ts';
+import type { ViewerRelation } from '#lib/users/ViewerRelation.ts';
+import { fadeInOnLoad } from '#lib/utils/fadeInOnLoad.ts';
+import { imageUrl } from '#lib/utils/imageUrl.ts';
 
 interface Props {
   user: ProfileUser;

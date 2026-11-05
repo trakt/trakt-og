@@ -6,18 +6,18 @@
 -->
 <script lang="ts">
 import { MediaQuery, SvelteMap } from 'svelte/reactivity';
-import FanartCard from '$lib/components/media/FanartCard.svelte';
-import PosterCard from '$lib/components/media/PosterCard.svelte';
-import PosterGrid from '$lib/components/media/PosterGrid.svelte';
-import { quickIconFill } from '$lib/components/media/quickIconFill';
-import PageNavigator from '$lib/components/page-navigator/PageNavigator.svelte';
-import ToggleChips from '$lib/components/toggle-chips/ToggleChips.svelte';
-import { overlay } from '$lib/overlay/overlay';
-import type { DatePreferences } from '$lib/settings/DatePreferences';
-import type { RelatedPerson } from '$lib/summary/RelatedPerson';
-import type { RelatedSource } from '$lib/summary/RelatedSource';
-import { relatedThreads } from '$lib/summary/relatedThreads';
-import type { RelatedCard } from '$lib/summary/toRelatedCard';
+import FanartCard from '#lib/components/media/FanartCard.svelte';
+import PosterCard from '#lib/components/media/PosterCard.svelte';
+import PosterGrid from '#lib/components/media/PosterGrid.svelte';
+import { quickIconFill } from '#lib/components/media/quickIconFill.ts';
+import PageNavigator from '#lib/components/page-navigator/PageNavigator.svelte';
+import ToggleChips from '#lib/components/toggle-chips/ToggleChips.svelte';
+import { overlay } from '#lib/overlay/overlay.ts';
+import type { DatePreferences } from '#lib/settings/DatePreferences.ts';
+import type { RelatedPerson } from '#lib/summary/RelatedPerson.ts';
+import type { RelatedSource } from '#lib/summary/RelatedSource.ts';
+import { relatedThreads } from '#lib/summary/relatedThreads.ts';
+import type { RelatedCard } from '#lib/summary/toRelatedCard.ts';
 import RelatedFingerprint from './RelatedFingerprint.svelte';
 
 interface Props {

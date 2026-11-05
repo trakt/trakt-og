@@ -7,15 +7,15 @@
 -->
 <script lang="ts">
 import { untrack } from 'svelte';
-import { apiQueue } from '$lib/api/apiQueue';
-import { rawApiFetch } from '$lib/api/rawApiFetch';
-import UserCard from '$lib/components/users/UserCard.svelte';
-import { fetchWatching, type LiveWatch } from '$lib/dashboard/fetchWatching';
-import { liveTiles } from '$lib/dashboard/liveTiles';
-import { pollWatching } from '$lib/dashboard/pollWatching';
-import type { ProfileUser } from '$lib/users/ProfileUser';
-import type { ViewerRelation } from '$lib/users/ViewerRelation';
-import { inViewport } from '$lib/utils/inViewport';
+import { apiQueue } from '#lib/api/apiQueue.ts';
+import { rawApiFetch } from '#lib/api/rawApiFetch.ts';
+import UserCard from '#lib/components/users/UserCard.svelte';
+import { fetchWatching, type LiveWatch } from '#lib/dashboard/fetchWatching.ts';
+import { liveTiles } from '#lib/dashboard/liveTiles.ts';
+import { pollWatching } from '#lib/dashboard/pollWatching.ts';
+import type { ProfileUser } from '#lib/users/ProfileUser.ts';
+import type { ViewerRelation } from '#lib/users/ViewerRelation.ts';
+import { inViewport } from '#lib/utils/inViewport.ts';
 import { fetchNetworkProfile } from './fetchNetworkProfile.ts';
 import type { NetworkExtra } from './NetworkExtra.ts';
 import { viewerFetch } from '../../auth/viewerFetch.ts';

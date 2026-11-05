@@ -5,11 +5,11 @@
   (a list's Done green), Save as new (the box's blue) and Undo (back to the list's own filters, a plain outline).
 -->
 <script lang="ts">
-import Icon from '$lib/icons/Icon.svelte';
-import resetIcon from '$lib/icons/regular/arrow-rotate-left.svg?raw';
-import clone from '$lib/icons/regular/clone.svg?raw';
-import check from '$lib/icons/solid/check.svg?raw';
-import { SAVE_TARGETS, type SaveTarget } from '$lib/components/filters/saveTargets';
+import Icon from '#lib/icons/Icon.svelte';
+import resetIcon from '#lib/icons/regular/arrow-rotate-left.svg?raw';
+import clone from '#lib/icons/regular/clone.svg?raw';
+import check from '#lib/icons/solid/check.svg?raw';
+import { SAVE_TARGETS, type SaveTarget } from '#lib/components/filters/saveTargets.ts';
 
 interface Props {
   name: string;

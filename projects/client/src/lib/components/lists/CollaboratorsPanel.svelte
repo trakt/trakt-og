@@ -8,13 +8,13 @@
     </CollaboratorsPanel>
 -->
 <script lang="ts">
-import VipLabel from '$lib/components/labels/VipLabel.svelte';
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import userGroup from '$lib/icons/regular/user-group.svg?raw';
-import xmark from '$lib/icons/regular/xmark.svg?raw';
-import type { Collaborator } from '$lib/users/lists/Collaborator';
-import type { VipBadge } from '$lib/users/VipBadge';
+import VipLabel from '#lib/components/labels/VipLabel.svelte';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import userGroup from '#lib/icons/regular/user-group.svg?raw';
+import xmark from '#lib/icons/regular/xmark.svg?raw';
+import type { Collaborator } from '#lib/users/lists/Collaborator.ts';
+import type { VipBadge } from '#lib/users/VipBadge.ts';
 import type { Snippet } from 'svelte';
 import type { Attachment } from 'svelte/attachments';
 

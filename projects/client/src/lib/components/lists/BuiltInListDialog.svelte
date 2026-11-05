@@ -6,13 +6,13 @@
   keeps the saved one.
 -->
 <script lang="ts">
-import Dialog from '$lib/components/dialog/Dialog.svelte';
-import DialogArtHeader from '$lib/components/dialog/DialogArtHeader.svelte';
-import DialogForm from '$lib/components/dialog/DialogForm.svelte';
-import FieldLabel from '$lib/components/dialog/FieldLabel.svelte';
-import ListSettingsRow from '$lib/components/lists/ListSettingsRow.svelte';
-import ListSortField from '$lib/components/lists/ListSortField.svelte';
-import type { CardTag } from '$lib/components/media/CardTag';
+import Dialog from '#lib/components/dialog/Dialog.svelte';
+import DialogArtHeader from '#lib/components/dialog/DialogArtHeader.svelte';
+import DialogForm from '#lib/components/dialog/DialogForm.svelte';
+import FieldLabel from '#lib/components/dialog/FieldLabel.svelte';
+import ListSettingsRow from '#lib/components/lists/ListSettingsRow.svelte';
+import ListSortField from '#lib/components/lists/ListSortField.svelte';
+import type { CardTag } from '#lib/components/media/CardTag.ts';
 
 interface Props {
   open: boolean;

@@ -7,23 +7,23 @@
 -->
 <script lang="ts">
 import { page } from '$app/state';
-import posterPlaceholder from '$lib/assets/placeholders/poster.png';
-import fanartPlaceholder from '$lib/assets/placeholders/fanart.png';
-import bannerPlaceholder from '$lib/assets/placeholders/banner.png';
-import { overlay } from '$lib/overlay/overlay';
-import { formatDate } from '$lib/utils/formatDate';
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import heart from '$lib/icons/solid/heart.svg?raw';
-import { readableStat } from '$lib/utils/readableStat';
+import posterPlaceholder from '#lib/assets/placeholders/poster.png';
+import fanartPlaceholder from '#lib/assets/placeholders/fanart.png';
+import bannerPlaceholder from '#lib/assets/placeholders/banner.png';
+import { overlay } from '#lib/overlay/overlay.ts';
+import { formatDate } from '#lib/utils/formatDate.ts';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import heart from '#lib/icons/solid/heart.svg?raw';
+import { readableStat } from '#lib/utils/readableStat.ts';
 import type { ComponentProps, Snippet } from 'svelte';
 import EpisodeTypeBadge from './EpisodeTypeBadge.svelte';
 import CornerRating from './CornerRating.svelte';
 import DroppedBadge from './DroppedBadge.svelte';
 import QuickIcons from './QuickIcons.svelte';
 import RankPill from './RankPill.svelte';
-import type { HistoryPlay } from '$lib/components/history/HistoryPlay';
-import { removeCard } from '$lib/components/media/removeCard';
+import type { HistoryPlay } from '#lib/components/history/HistoryPlay.ts';
+import { removeCard } from '#lib/components/media/removeCard.ts';
 import RewatchingBadge from './RewatchingBadge.svelte';
 import { ratingPercent } from '../../utils/ratingPercent.ts';
 

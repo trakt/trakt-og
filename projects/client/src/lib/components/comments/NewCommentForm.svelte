@@ -10,14 +10,14 @@
 -->
 <script lang="ts">
 import { page } from '$app/state';
-import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
-import { useTrack } from '$lib/analytics/useTrack';
+import { AnalyticsEvent } from '#lib/analytics/AnalyticsEvent.ts';
+import { useTrack } from '#lib/analytics/useTrack.ts';
 import type { CommentResponse } from '@trakt/api';
 import { tick } from 'svelte';
-import type { ViewerSettings } from '$lib/settings/ViewerSettings';
-import PanelHeading from '$lib/components/dashboard/PanelHeading.svelte';
-import PanelHelp from '$lib/components/dashboard/PanelHelp.svelte';
-import commentIcon from '$lib/icons/regular/comment.svg?raw';
+import type { ViewerSettings } from '#lib/settings/ViewerSettings.ts';
+import PanelHeading from '#lib/components/dashboard/PanelHeading.svelte';
+import PanelHelp from '#lib/components/dashboard/PanelHelp.svelte';
+import commentIcon from '#lib/icons/regular/comment.svg?raw';
 import { gifQueryOf } from './gif/gifQueryOf.ts';
 import CommentComposer from './CommentComposer.svelte';
 import type { CommentItem } from './CommentItem';

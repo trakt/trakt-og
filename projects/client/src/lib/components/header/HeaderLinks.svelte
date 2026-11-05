@@ -9,13 +9,13 @@
 -->
 <script lang="ts">
 import { page } from '$app/state';
-import Icon from '$lib/icons/Icon.svelte';
-import trash from '$lib/icons/regular/trash-can.svg?raw';
-import angleDown from '$lib/icons/solid/angle-down.svg?raw';
-import grip from '$lib/icons/solid/grip-dots-vertical.svg?raw';
-import pen from '$lib/icons/solid/pen.svg?raw';
-import plus from '$lib/icons/solid/plus.svg?raw';
-import { moveItem } from '$lib/utils/moveItem';
+import Icon from '#lib/icons/Icon.svelte';
+import trash from '#lib/icons/regular/trash-can.svg?raw';
+import angleDown from '#lib/icons/solid/angle-down.svg?raw';
+import grip from '#lib/icons/solid/grip-dots-vertical.svg?raw';
+import pen from '#lib/icons/solid/pen.svg?raw';
+import plus from '#lib/icons/solid/plus.svg?raw';
+import { moveItem } from '#lib/utils/moveItem.ts';
 import { tick } from 'svelte';
 import { chipDropIndex } from './chipDropIndex.ts';
 import { currentHeaderLink } from './currentHeaderLink.ts';

@@ -1,9 +1,9 @@
 <!-- Ratings: the average, the spread from 1 to 10 with the most used score in full white, and the latest 10. -->
 <script lang="ts">
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import BoxChips from '$lib/components/users/profile-box/BoxChips.svelte';
-import BoxFigure from '$lib/components/users/profile-box/BoxFigure.svelte';
-import ProfileBox from '$lib/components/users/profile-box/ProfileBox.svelte';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import BoxChips from '#lib/components/users/profile-box/BoxChips.svelte';
+import BoxFigure from '#lib/components/users/profile-box/BoxFigure.svelte';
+import ProfileBox from '#lib/components/users/profile-box/ProfileBox.svelte';
 import type { RatingsView } from './RatingsView.ts';
 
 const { view }: { view: RatingsView } = $props();

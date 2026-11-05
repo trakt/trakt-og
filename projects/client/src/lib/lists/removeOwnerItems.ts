@@ -1,5 +1,5 @@
-import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
-import { useTrack } from '$lib/analytics/useTrack';
+import { AnalyticsEvent } from '#lib/analytics/AnalyticsEvent.ts';
+import { useTrack } from '#lib/analytics/useTrack.ts';
 import type { createOverlay } from '../overlay/createOverlay.svelte.ts';
 import type { BuiltInListKind } from './toBuiltInListView.ts';
 import type { ListItemCard } from './toListItemCard.ts';

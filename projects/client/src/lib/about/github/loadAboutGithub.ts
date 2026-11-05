@@ -14,7 +14,7 @@ interface LoadAboutGithubParams {
   /** A fetch without SvelteKit's completed-load dependency tracker, since the read streams in after the page. */
   fetch: typeof globalThis.fetch;
   now: number;
-  /** The data center's cache, `platform.caches.default`. */
+  /** The data center's cache, `edgeCache()`. */
   cache?: KeyedCache;
   /** The request's origin, which the shared cache's keys live under. */
   origin: string;

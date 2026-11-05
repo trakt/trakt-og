@@ -13,20 +13,20 @@
   short wait.
 -->
 <script lang="ts">
-import DemoToggle from '$lib/design/DemoToggle.svelte';
+import DemoToggle from '#lib/design/DemoToggle.svelte';
 import { page } from '$app/state';
 import { untrack } from 'svelte';
 import { SvelteSet } from 'svelte/reactivity';
-import Specimen from '$lib/design/Specimen.svelte';
-import { overlay } from '$lib/overlay/overlay';
-import { progressFixture } from '$lib/users/progress/progressFixture';
-import ProgressList from '$lib/users/progress/ProgressList.svelte';
-import ProgressSeasonGrid from '$lib/users/progress/ProgressSeasonGrid.svelte';
-import { toProgressRow } from '$lib/users/progress/toProgressRow';
-import type { ProgressListRow } from '$lib/users/progress/loadProgressListRow';
-import { isProgressType, type ProgressType } from '$lib/users/progress/progressTypes';
-import { PLACEHOLDER_AVATAR } from '$lib/users/placeholderAvatar';
-import { toProfileUser } from '$lib/users/toProfileUser';
+import Specimen from '#lib/design/Specimen.svelte';
+import { overlay } from '#lib/overlay/overlay.ts';
+import { progressFixture } from '#lib/users/progress/progressFixture.ts';
+import ProgressList from '#lib/users/progress/ProgressList.svelte';
+import ProgressSeasonGrid from '#lib/users/progress/ProgressSeasonGrid.svelte';
+import { toProgressRow } from '#lib/users/progress/toProgressRow.ts';
+import type { ProgressListRow } from '#lib/users/progress/loadProgressListRow.ts';
+import { isProgressType, type ProgressType } from '#lib/users/progress/progressTypes.ts';
+import { PLACEHOLDER_AVATAR } from '#lib/users/placeholderAvatar.ts';
+import { toProfileUser } from '#lib/users/toProfileUser.ts';
 
 const datePreferences = { order: 'mdy', hour24: false, timeZone: 'America/Los_Angeles', weekStartDay: 0 } as const;
 const now = new Date(progressFixture.now);

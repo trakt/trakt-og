@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { viewerRecentSearches } from './viewerRecentSearches.ts';
 
 const environment = vi.hoisted(() => ({ browser: true }));
-vi.mock('$app/environment', () => environment);
+vi.mock('$app/env', () => environment);
 
 const listeners = new EventTarget();
 beforeAll(() => {

@@ -3,8 +3,8 @@
   its ratings strip color, with the short number and a line on what it means. Lists and comments open their pages.
 -->
 <script lang="ts">
-import { stripStatIcons } from '$lib/components/summary/stripStatIcons';
-import Icon from '$lib/icons/Icon.svelte';
+import { stripStatIcons } from '#lib/components/summary/stripStatIcons.ts';
+import Icon from '#lib/icons/Icon.svelte';
 import type { toCommunityStats } from './toCommunityStats.ts';
 
 type Tile = ReturnType<typeof toCommunityStats>[number];

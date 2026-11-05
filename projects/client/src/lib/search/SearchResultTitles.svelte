@@ -5,7 +5,7 @@
     <SearchResultTitles {card} spoiler={icons.collectionTarget} />
 -->
 <script lang="ts">
-import MediaSpoiler from '$lib/components/summary/MediaSpoiler.svelte';
+import MediaSpoiler from '#lib/components/summary/MediaSpoiler.svelte';
 import type { ComponentProps } from 'svelte';
 import type { SearchCard } from './SearchCard.ts';
 

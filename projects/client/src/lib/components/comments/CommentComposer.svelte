@@ -1,21 +1,9 @@
-<!--
-  The comment composer, shared by the new comment form, the reply box and the edit form: a rounded field with the
-  formatting toolbar, the word meter, the "Spoilers" switch, Cancel and the submit button under it. With `gifs`, the
-  toolbar's GIF button opens the picker, and the picked GIF sits under the field until it posts or is taken off. A GIF
-  alone is a comment.
-  The field is the rich editor, which shows the comment as it will look; the toolbar's Markdown button swaps it for the
-  raw comment syntax, and the browser remembers which the member last used.
-  It opens focused with the cursor at the end. Cmd/Ctrl+Enter submits, and a failure toasts the API's message and
-  refocuses the field. `confirmLeave` asks before leaving the page or cancelling with text that hasn't been posted.
-    <CommentComposer label="Your reply" placeholder="Reply to Sean..." submit="Reply" posting="Posting your reply"
-      avatar={avatar} small oncancel={close} save={(text) => client.reply(id, text)} onsaved={replied} />
--->
 <script lang="ts">
 import { beforeNavigate } from '$app/navigation';
 import type { CommentResponse } from '@trakt/api';
 import { tick } from 'svelte';
-import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
-import { useTrack } from '$lib/analytics/useTrack';
+import { AnalyticsEvent } from '#lib/analytics/AnalyticsEvent.ts';
+import { useTrack } from '#lib/analytics/useTrack.ts';
 import { toast } from '../toast/toast.svelte.ts';
 import CommentAvatar from './CommentAvatar.svelte';
 import CommentSubmit from './CommentSubmit.svelte';
@@ -34,173 +22,205 @@ import { submitShortcut } from './submitShortcut.ts';
 import WordMeter from './WordMeter.svelte';
 import { wordCount } from './wordCount.ts';
 
-// The API turns down a comment or a reply under 5 words, unless it's a review.
-const MIN_WORDS = 5;
-const UNSAVED = "Your comment hasn't been posted yet! If you leave this page, you'll lose what you wrote.";
-const DISCARD = "Your comment hasn't been posted yet! Discard what you wrote?";
+  // The API turns down a comment or a reply under 5 words, unless it's a review.
+  const MIN_WORDS = 5;
+  const UNSAVED = "Your comment hasn't been posted yet! If you leave this page, you'll lose what you wrote.";
+  const DISCARD = "Your comment hasn't been posted yet! Discard what you wrote?";
 
-interface Props {
-  /** What the field starts with: "@author " for a reply, the raw text for an edit. */
-  text?: string;
-  label: string;
-  placeholder: string;
-  /** The submit button: "Post", "Reply" or "Save". */
-  submit: string;
-  /** What its spinner says. */
-  posting: string;
-  /** The viewer's avatar, beside the field. */
-  avatar?: string;
-  /** The smaller avatar of a reply on the thread's rail. */
-  small?: boolean;
-  /** The id of the rules line the form shows under its title, for the field to point at. */
-  rulesId?: string;
-  /** The "Spoilers" switch, set to this. Left out, there's no switch. */
-  spoiler?: boolean;
-  /** The word minimum; 0 leaves the meter out, as for editing a review. */
-  minWords?: number;
-  /** Asks before leaving the page, or cancelling, with text that hasn't been posted. */
-  confirmLeave?: boolean;
-  /** The GIF button, where the Worker has a Klipy key. Editing leaves a comment's GIF as it is. */
-  gifs?: boolean;
-  /** The GIF picker's results before anything's typed: GIFs for the title the comment's about. */
-  gifQuery?: string;
-  /** A Cancel button. */
-  oncancel?: () => void;
-  save: (text: string, spoiler: boolean, gif: GifEntry | null) => Promise<PostCommentResult>;
-  /** The saved comment (null when its body was off-contract), with what was sent. */
+  interface Props {
+    /** What the field starts with: "@author " for a reply, the raw text for an edit. */
+    text?: string;
+    label: string;
+    placeholder: string;
+    /** The submit button: "Post", "Reply" or "Save". */
+    submit: string;
+    /** What its spinner says. */
+    posting: string;
+    /** The viewer's avatar, beside the field. */
+    avatar?: string;
+    /** The smaller avatar of a reply on the thread's rail. */
+    small?: boolean;
+    /** The id of the rules line the form shows under its title, for the field to point at. */
+    rulesId?: string;
+    /** The "Spoilers" switch, set to this. Left out, there's no switch. */
+    spoiler?: boolean;
+    /** The word minimum; 0 leaves the meter out, as for editing a review. */
+    minWords?: number;
+    /** Asks before leaving the page, or cancelling, with text that hasn't been posted. */
+    confirmLeave?: boolean;
+    /** The GIF button, where the Worker has a Klipy key. Editing leaves a comment's GIF as it is. */
+    gifs?: boolean;
+    /** The GIF picker's results before anything's typed: GIFs for the title the comment's about. */
+    gifQuery?: string;
+    /** A Cancel button. */
+    oncancel?: () => void;
+    save: (text: string, spoiler: boolean, gif: GifEntry | null) => Promise<PostCommentResult>;
+    /** The saved comment (null when its body was off-contract), with what was sent. */
   onsaved: (comment: CommentResponse | null, text: string, spoiler: boolean) => void;
-}
+  }
 
-const {
-  text: initial = '',
-  label,
-  placeholder,
-  submit: submitText,
-  posting: postingLabel,
-  avatar,
-  small = false,
-  rulesId,
-  spoiler: initialSpoiler,
-  minWords = MIN_WORDS,
-  confirmLeave = false,
-  gifs = false,
-  gifQuery,
-  oncancel,
-  save,
+  const {
+    text: initial = '',
+    label,
+    placeholder,
+    submit: submitText,
+    posting: postingLabel,
+    avatar,
+    small = false,
+    rulesId,
+    spoiler: initialSpoiler,
+    minWords = MIN_WORDS,
+    confirmLeave = false,
+    gifs = false,
+    gifQuery,
+    oncancel,
+    save,
   onsaved,
-}: Props = $props();
+  }: Props = $props();
 
-const id = $props.id();
-// Seeded once: a reply box or an edit form is created each time it opens.
-// svelte-ignore state_referenced_locally
-let text = $state(initial);
-// svelte-ignore state_referenced_locally
-let spoiler = $state(initialSpoiler ?? false);
-let posting = $state(false);
-let gif = $state<GifEntry | null>(null);
-let picking = $state(false);
-let textarea = $state<HTMLTextAreaElement>();
-let editor = $state<ReturnType<typeof CommentEditor>>();
-let form = $state<HTMLFormElement>();
-let mode = $state(editorMode.read());
-const words = $derived(wordCount(text));
+  const id = $props.id();
+  // Seeded once: a reply box or an edit form is created each time it opens.
+  // svelte-ignore state_referenced_locally
+  let text = $state(initial);
+  // svelte-ignore state_referenced_locally
+  let spoiler = $state(initialSpoiler ?? false);
+  let posting = $state(false);
+  let gif = $state<GifEntry | null>(null);
+  let picking = $state(false);
+  let textarea = $state<HTMLTextAreaElement>();
+  let editor = $state<ReturnType<typeof CommentEditor>>();
+  let form = $state<HTMLFormElement>();
+  let mode = $state(editorMode.read());
+  const words = $derived(wordCount(text));
 const describedBy = $derived(
   [rulesId ?? '', minWords > 0 && !gif ? `${id}-meter` : ''].filter(Boolean).join(' ') || undefined,
 );
 
-/** Moves the focus into the field, for "Add comment". */
-export function focus() {
-  textarea?.focus({ preventScroll: true });
-  editor?.focus();
-}
-
-const refocus = () => {
-  textarea?.focus();
-  editor?.focus();
-};
-
-const focusAtEnd = (element: HTMLTextAreaElement) => {
-  element.focus();
-  element.setSelectionRange(element.value.length, element.value.length);
-};
-
-beforeNavigate((navigation) => {
-  if (!confirmLeave || (!text.trim() && !gif) || posting) return;
-  if (navigation.to?.url.pathname === location.pathname && navigation.to.url.search === location.search) return;
-  // A reload or another site gets the browser's own prompt.
-  if (navigation.willUnload) return navigation.cancel();
-  if (confirm(UNSAVED)) return;
-  navigation.cancel();
-  refocus();
-});
-
-// Text that hasn't been posted is only thrown away once the member says so.
-function cancel() {
-  if (confirmLeave && (text.trim() || gif) && !confirm(DISCARD)) {
-    refocus();
-    return;
+  /** Moves the focus into the field, for "Add comment". */
+  export function focus() {
+    textarea?.focus({ preventScroll: true });
+    editor?.focus();
   }
-  oncancel?.();
-}
 
-function openGifs() {
-  useTrack(AnalyticsEvent.GifPicker).track({ action: 'open', source: 'comment' });
-  picking = true;
-}
+  const refocus = () => {
+    textarea?.focus();
+    editor?.focus();
+  };
 
-function toggleMode() {
-  mode = mode === 'rich' ? 'markdown' : 'rich';
-  editorMode.write(mode);
-}
+  const focusAtEnd = (element: HTMLTextAreaElement) => {
+    element.focus();
+    element.setSelectionRange(element.value.length, element.value.length);
+  };
 
-async function format(kind: CommentFormat) {
-  editor?.format(kind);
-  if (!textarea) return;
+  beforeNavigate((navigation) => {
+    if (navigation.shallow && navigation.type === 'goto') return;
+    if (!confirmLeave || !text.trim() && !gif || posting) return;
+    if (navigation.to?.url.pathname === location.pathname && navigation.to.url.search === location.search) return;
+    // A reload or another site gets the browser's own prompt.
+    if (navigation.willUnload) return navigation.cancel();
+    if (confirm(UNSAVED)) return;
+    navigation.cancel();
+    refocus();
+  });
+
+  // Text that hasn't been posted is only thrown away once the member says so.
+  function cancel() {
+    if (confirmLeave && (text.trim() || gif) && !confirm(DISCARD)) {
+      refocus();
+      return;
+    }
+    oncancel?.();
+  }
+
+  function openGifs() {
+    useTrack(AnalyticsEvent.GifPicker).track({ action: 'open', source: 'comment' });
+    picking = true;
+  }
+
+  function toggleMode() {
+    mode = mode === 'rich' ? 'markdown' : 'rich';
+    editorMode.write(mode);
+  }
+
+  async function format(kind: CommentFormat) {
+    editor?.format(kind);
+    if (!textarea) return;
   const next = formatSelection({ text, start: textarea.selectionStart, end: textarea.selectionEnd }, kind);
-  text = next.text;
-  await tick();
-  textarea?.focus();
-  textarea?.setSelectionRange(next.start, next.end);
-}
-
-async function send(event: SubmitEvent) {
-  event.preventDefault();
-  if (posting) return;
-  posting = true;
-  const sent = text.trim();
-  const flagged = spoiler;
-  const picked = gif;
-  const result = await save(sent, flagged, picked);
-  posting = false;
-  if (!result.ok) {
-    toast.error(result.message);
-    refocus();
-    return;
+    text = next.text;
+    await tick();
+    textarea?.focus();
+    textarea?.setSelectionRange(next.start, next.end);
   }
-  if (picked) void shareGif({ slug: picked.slug, customerId: klipyCustomerId() });
-  onsaved(result.comment, sent, flagged);
-}
+
+  async function send(event: SubmitEvent) {
+    event.preventDefault();
+    if (posting) return;
+    posting = true;
+    const sent = text.trim();
+    const flagged = spoiler;
+    const picked = gif;
+    const result = await save(sent, flagged, picked);
+    posting = false;
+    if (!result.ok) {
+      toast.error(result.message);
+      refocus();
+      return;
+    }
+    if (picked) void shareGif({ slug: picked.slug, customerId: klipyCustomerId() });
+    onsaved(result.comment, sent, flagged);
+  }
 </script>
 
-<form class={['composer', { small, 'with-avatar': avatar !== undefined }]} bind:this={form} onsubmit={send}>
-  {#if avatar !== undefined}<span class="avatar"><CommentAvatar src={avatar} {small} /></span>{/if}
+<!--
+  The comment composer, shared by the new comment form, the reply box and the edit form: a rounded field with the
+  formatting toolbar, the word meter, the "Spoilers" switch, Cancel and the submit button under it. With `gifs`, the
+  toolbar's GIF button opens the picker, and the picked GIF sits under the field until it posts or is taken off. A GIF
+  alone is a comment.
+  The field is the rich editor, which shows the comment as it will look; the toolbar's Markdown button swaps it for the
+  raw comment syntax, and the browser remembers which the member last used.
+  It opens focused with the cursor at the end. Cmd/Ctrl+Enter submits, and a failure toasts the API's message and
+  refocuses the field. `confirmLeave` asks before leaving the page or cancelling with text that hasn't been posted.
+    <CommentComposer label="Your reply" placeholder="Reply to Sean..." submit="Reply" posting="Posting your reply"
+      avatar={avatar} small oncancel={close} save={(text) => client.reply(id, text)} onsaved={replied} />
+-->
+
+<form
+  class={['composer', { small, 'with-avatar': avatar !== undefined }]}
+  bind:this={form}
+  onsubmit={send}
+>
+  {#if avatar !== undefined}
+    <span class="avatar"><CommentAvatar src={avatar} small={small} /></span>
+  {/if}
+
   <div class="field">
     {#if mode === 'rich'}
-      <CommentEditor bind:this={editor} {text} {label} {placeholder} {describedBy} onchange={(next) => (text = next)}
-        onsubmit={() => form?.requestSubmit()} />
+      <CommentEditor
+        bind:this={editor}
+        text={text}
+        label={label}
+        placeholder={placeholder}
+        describedBy={describedBy}
+        onchange={(next) => text = next}
+        onsubmit={() => form?.requestSubmit()}
+      />
     {:else}
       <textarea
         bind:this={textarea}
         bind:value={text}
         rows="1"
-        {placeholder}
+        placeholder={placeholder}
         aria-label={label}
         aria-describedby={describedBy}
         onkeydown={submitShortcut}
         {@attach focusAtEnd}
       ></textarea>
     {/if}
-    {#if gif}<ComposerGif {gif} onremove={() => (gif = null)} />{/if}
+
+    {#if gif}
+      <ComposerGif gif={gif} onremove={() => gif = null} />
+    {/if}
+
     <div class="toolbar">
       <CommentToolbar onformat={format} ongif={gifs ? openGifs : undefined} />
       <button type="button" class="mode" aria-pressed={mode === 'markdown'} onclick={toggleMode}>Markdown</button>
@@ -209,18 +229,38 @@ async function send(event: SubmitEvent) {
     <div class="bar">
       <div class="settings">
         <!-- A GIF alone is a comment, so the minimum stops counting once one is picked. -->
-        {#if minWords > 0 && !gif}<WordMeter id="{id}-meter" {words} min={minWords} />{/if}
-        {#if initialSpoiler !== undefined}<SpoilerSwitch bind:spoiler />{/if}
+
+        {#if minWords > 0 && !gif}
+          <WordMeter id="{id}-meter" words={words} min={minWords} />
+        {/if}
+
+        {#if initialSpoiler !== undefined}
+          <SpoilerSwitch bind:spoiler />
+        {/if}
       </div>
       <div class="actions">
-        {#if oncancel}<button type="button" class="cancel" onclick={cancel}>Cancel</button>{/if}
-        <CommentSubmit {posting} text={submitText} label={postingLabel} />
+        {#if oncancel}
+          <button type="button" class="cancel" onclick={cancel}>Cancel</button>
+        {/if}
+
+        <CommentSubmit
+          posting={posting}
+          text={submitText}
+          label={postingLabel}
+        />
       </div>
     </div>
   </div>
 </form>
 <!-- Mounted while closed, so its dialog closes natively and hands the focus back to the GIF button. -->
-{#if gifs}<GifPicker bind:open={picking} initialQuery={gifQuery} onselect={(picked) => (gif = picked)} />{/if}
+
+{#if gifs}
+  <GifPicker
+    bind:open={picking}
+    initialQuery={gifQuery}
+    onselect={(picked) => gif = picked}
+  />
+{/if}
 
 <style>
 .composer {
@@ -229,140 +269,140 @@ async function send(event: SubmitEvent) {
   column-gap: var(--comment-column-gap);
 }
 
-.with-avatar {
-  grid-template-columns: var(--comment-avatar) minmax(0, 1fr);
+  .with-avatar {
+    grid-template-columns: var(--comment-avatar) minmax(0, 1fr);
 
-  &.small {
-    grid-template-columns: var(--comment-avatar-nested) minmax(0, 1fr);
-    column-gap: var(--comment-column-gap-nested);
+    &.small {
+      grid-template-columns: var(--comment-avatar-nested) minmax(0, 1fr);
+      column-gap: var(--comment-column-gap-nested);
+    }
   }
-}
 
-/* Over the thread's rail, like a reply's avatar. */
-.avatar {
-  position: relative;
-  z-index: 1;
-}
-
-.field {
-  min-inline-size: 0;
-  border: 1px solid var(--color-comment-field-border);
-  border-radius: var(--radius-comment-field);
-  background-color: var(--color-comment-bg);
-  transition: border-color var(--transition-comment-quiet);
-
-  &:focus-within {
-    border-color: var(--color-input-border-focus);
+  /* Over the thread's rail, like a reply's avatar. */
+  .avatar {
+    position: relative;
+    z-index: 1;
   }
-}
 
-textarea {
-  display: block;
-  inline-size: 100%;
-  min-block-size: var(--comment-field-height);
-  padding: var(--comment-field-padding);
-  border: 0;
-  border-radius: inherit;
-  background: transparent;
-  box-shadow: none;
-  color: var(--color-text);
-  font-family: var(--font-body);
-  resize: none;
-  field-sizing: content;
+  .field {
+    min-inline-size: 0;
+    border: 1px solid var(--color-comment-field-border);
+    border-radius: var(--radius-comment-field);
+    background-color: var(--color-comment-bg);
+    transition: border-color var(--transition-comment-quiet);
 
-  /* The field's border shows the focus. */
-  &:focus {
-    outline: 0;
+    &:focus-within {
+      border-color: var(--color-input-border-focus);
+    }
+  }
+
+  textarea {
+    display: block;
+    inline-size: 100%;
+    min-block-size: var(--comment-field-height);
+    padding: var(--comment-field-padding);
+    border: 0;
+    border-radius: inherit;
+    background: transparent;
     box-shadow: none;
-  }
-
-  &::placeholder {
-    color: var(--color-comment-muted);
-  }
-}
-
-.toolbar {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--comment-toolbar-gap);
-  padding: var(--comment-composer-toolbar-padding);
-}
-
-/* At the toolbar's far end, so the formatting buttons stay where they were. */
-.mode {
-  min-block-size: var(--comment-toolbar-button);
-  padding: var(--comment-composer-mode-padding);
-  border: 0;
-  border-radius: var(--radius-comment-toolbar-button);
-  background: none;
-  color: var(--color-comment-muted);
-  font-family: var(--font-headings);
-  font-size: var(--font-size-comment-composer-mode);
-  font-weight: var(--font-weight-headings-heavy);
-  cursor: pointer;
-  transition: background-color var(--transition-comment-quiet), color var(--transition-comment-quiet);
-
-  &:hover,
-  &[aria-pressed='true'] {
-    background-color: var(--color-comment-chip);
     color: var(--color-text);
+    font-family: var(--font-body);
+    resize: none;
+    field-sizing: content;
+
+    /* The field's border shows the focus. */
+    &:focus {
+      outline: 0;
+      box-shadow: none;
+    }
+
+    &::placeholder {
+      color: var(--color-comment-muted);
+    }
   }
-}
 
-/* The bottom bar, a shade off the field, under a hairline. */
-.bar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--comment-composer-footer-gap);
-  padding: var(--comment-composer-bar-padding);
-  border-block-start: 1px solid var(--color-comment-field-border);
-  border-end-start-radius: inherit;
-  border-end-end-radius: inherit;
-  background-color: var(--color-comment-composer-bar);
-}
-
-.settings {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--comment-composer-actions-gap);
-}
-
-/* Cancel and the submit button, like a note's footer. */
-.actions {
-  display: flex;
-  align-items: center;
-  gap: var(--comment-composer-actions-gap);
-  margin-inline-start: auto;
-}
-
-.cancel {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-block-size: var(--dialog-art-button-height);
-  padding: var(--dialog-art-button-padding);
-  border: 1px solid var(--color-control-border);
-  border-radius: var(--radius-control);
-  background: none;
-  color: var(--color-control-text);
-  font-family: var(--font-headings);
-  font-size: var(--font-size-dialog-art-button);
-  font-weight: var(--font-weight-headings-heavy);
-  line-height: 1;
-
-  &:hover {
-    border-color: var(--color-control-border-hover);
-    background-color: var(--color-dialog-art-button-hover);
+  .toolbar {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--comment-toolbar-gap);
+    padding: var(--comment-composer-toolbar-padding);
   }
-}
 
-@media (prefers-reduced-motion: reduce) {
-  .field,
+  /* At the toolbar's far end, so the formatting buttons stay where they were. */
   .mode {
-    transition: none;
+    min-block-size: var(--comment-toolbar-button);
+    padding: var(--comment-composer-mode-padding);
+    border: 0;
+    border-radius: var(--radius-comment-toolbar-button);
+    background: none;
+    color: var(--color-comment-muted);
+    font-family: var(--font-headings);
+    font-size: var(--font-size-comment-composer-mode);
+    font-weight: var(--font-weight-headings-heavy);
+    cursor: pointer;
+    transition: background-color var(--transition-comment-quiet), color var(--transition-comment-quiet);
+
+    &:hover,
+    &[aria-pressed="true"] {
+      background-color: var(--color-comment-chip);
+      color: var(--color-text);
+    }
   }
-}
+
+  /* The bottom bar, a shade off the field, under a hairline. */
+  .bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--comment-composer-footer-gap);
+    padding: var(--comment-composer-bar-padding);
+    border-block-start: 1px solid var(--color-comment-field-border);
+    border-end-start-radius: inherit;
+    border-end-end-radius: inherit;
+    background-color: var(--color-comment-composer-bar);
+  }
+
+  .settings {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--comment-composer-actions-gap);
+  }
+
+  /* Cancel and the submit button, like a note's footer. */
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: var(--comment-composer-actions-gap);
+    margin-inline-start: auto;
+  }
+
+  .cancel {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-block-size: var(--dialog-art-button-height);
+    padding: var(--dialog-art-button-padding);
+    border: 1px solid var(--color-control-border);
+    border-radius: var(--radius-control);
+    background: none;
+    color: var(--color-control-text);
+    font-family: var(--font-headings);
+    font-size: var(--font-size-dialog-art-button);
+    font-weight: var(--font-weight-headings-heavy);
+    line-height: 1;
+
+    &:hover {
+      border-color: var(--color-control-border-hover);
+      background-color: var(--color-dialog-art-button-hover);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .field,
+    .mode {
+      transition: none;
+    }
+  }
 </style>

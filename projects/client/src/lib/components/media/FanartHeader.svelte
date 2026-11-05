@@ -7,7 +7,7 @@
 <script lang="ts">
 import type { Snippet } from 'svelte';
 import type { Attachment } from 'svelte/attachments';
-import { headerArt } from '$lib/components/header/headerArt';
+import { headerArt } from '#lib/components/header/headerArt.ts';
 
 interface Props {
   image?: string;

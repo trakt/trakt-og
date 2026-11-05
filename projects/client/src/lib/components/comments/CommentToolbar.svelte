@@ -5,16 +5,16 @@
   field, so the composer can format what's picked.
 -->
 <script lang="ts">
-import Icon from '$lib/icons/Icon.svelte';
-import bold from '$lib/icons/solid/bold.svg?raw';
-import code from '$lib/icons/solid/code.svg?raw';
-import eyeSlash from '$lib/icons/solid/eye-slash.svg?raw';
-import gif from '$lib/icons/solid/gif.svg?raw';
-import highlighter from '$lib/icons/solid/highlighter.svg?raw';
-import italic from '$lib/icons/solid/italic.svg?raw';
-import listUl from '$lib/icons/solid/list-ul.svg?raw';
-import quoteLeft from '$lib/icons/solid/quote-left.svg?raw';
-import strikethrough from '$lib/icons/solid/strikethrough.svg?raw';
+import Icon from '#lib/icons/Icon.svelte';
+import bold from '#lib/icons/solid/bold.svg?raw';
+import code from '#lib/icons/solid/code.svg?raw';
+import eyeSlash from '#lib/icons/solid/eye-slash.svg?raw';
+import gif from '#lib/icons/solid/gif.svg?raw';
+import highlighter from '#lib/icons/solid/highlighter.svg?raw';
+import italic from '#lib/icons/solid/italic.svg?raw';
+import listUl from '#lib/icons/solid/list-ul.svg?raw';
+import quoteLeft from '#lib/icons/solid/quote-left.svg?raw';
+import strikethrough from '#lib/icons/solid/strikethrough.svg?raw';
 import Tooltip from '../tooltip/Tooltip.svelte';
 import type { CommentFormat } from './formatSelection.ts';
 

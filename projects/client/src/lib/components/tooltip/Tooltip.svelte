@@ -27,6 +27,7 @@ import { repeatsName } from './repeatsName.ts';
 import type { StatTip } from './StatTip.ts';
 import type { TooltipContent } from './TooltipContent.ts';
 import { tooltipFlip } from './tooltipFlip.ts';
+import { tryShowPopover } from './tryShowPopover.ts';
 import type { TooltipPlacement } from './TooltipPlacement.ts';
 import TooltipBox from './TooltipBox.svelte';
 import TooltipStat from './TooltipStat.svelte';
@@ -57,6 +58,8 @@ let tip = $state<HTMLElement>();
 let side = $state<TooltipPlacement>();
 let repeats = $state(false);
 const shown = $derived(side ?? placement);
+// Bumped to try showing again, the frame after the browser refused.
+let retry = $state(0);
 
 const send = (event: TooltipEvent) => (status = tooltipState(status, event));
 const inside = (element: Element | undefined, target: EventTarget | null) =>
@@ -139,8 +142,10 @@ $effect(() => {
   if (!hasTip) status = { hovered: false, focused: false, pinned: false, dismissed: false, open: false };
 });
 
-// It opens on its preferred side, then flips once if it runs off the screen there. Shut, it goes back.
+// It opens on its preferred side, then flips once if it runs off the screen there. Shut, it goes back. Focused as a
+// popover it opened closes, it waits a frame for that to finish.
 $effect(() => {
+  void retry;
   if (!tip || !anchor) return;
   if (status.open === tip.matches(':popover-open')) return;
   if (!status.open) {
@@ -148,7 +153,10 @@ $effect(() => {
     side = undefined;
     return;
   }
-  tip.showPopover({ source: anchor });
+  if (!tryShowPopover(tip, anchor)) {
+    requestAnimationFrame(() => retry++);
+    return;
+  }
   const flipped = tooltipFlip({
     placement,
     box: tip.getBoundingClientRect(),

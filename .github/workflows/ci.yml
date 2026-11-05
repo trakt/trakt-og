@@ -34,7 +34,7 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
       # Only the deploy needs the real client ID. Fork PRs get no secrets and build with an empty one.
       - name: Checking the Ticket aka Require the Client ID
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' && vars.OG_DEPLOY != 'off'
         run: '[ -n "$TRAKT_CLIENT_ID" ] || { echo "::error::Add the TRAKT_CLIENT_ID repo secret."; exit 1; }'
         env:
           TRAKT_CLIENT_ID: ${{ secrets.TRAKT_CLIENT_ID }}
@@ -42,7 +42,7 @@ jobs:
         env:
           TRAKT_CLIENT_ID: ${{ secrets.TRAKT_CLIENT_ID }}
       - name: Now Playing aka Deploy to og.trakt.tv
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' && vars.OG_DEPLOY != 'off'
         run: bun x wrangler deploy --message "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

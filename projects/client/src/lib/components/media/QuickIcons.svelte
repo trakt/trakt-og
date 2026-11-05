@@ -3,6 +3,7 @@
   the Trakt rating on the right. Watch, rating and favorites use shared browser controls.
 -->
 <script lang="ts">
+import { page } from '$app/state';
 import { isStandardApi } from '$lib/api/isStandardApi';
 import { openWatchNow } from '$lib/components/watchnow/watchNowLauncher.svelte';
 import { watchNowPath } from '$lib/components/watchnow/watchNowPath';
@@ -16,6 +17,7 @@ import LibraryTip from '$lib/components/collection/LibraryTip.svelte';
 import FavoritedTip from '$lib/components/favorites/FavoritedTip.svelte';
 import FavoriteRemovePrompt from '$lib/components/favorites/FavoriteRemovePrompt.svelte';
 import PlaysTip from '$lib/components/media/PlaysTip.svelte';
+import { playsHistoryHref } from '$lib/components/media/playsHistoryHref';
 import ProgressTip from '$lib/components/media/ProgressTip.svelte';
 import { librarySourceIcon } from '$lib/components/collection/librarySourceIcon';
 import MediaWatch from '$lib/components/history/MediaWatch.svelte';
@@ -181,8 +183,8 @@ const ratingLevel = $derived(rating === undefined ? 1 : Math.min(Math.max(Math.t
 
 {#snippet libraryTip()}{#if fill.tips.collected}<LibraryTip tip={fill.tips.collected} />{/if}{/snippet}
 {#snippet favoritedTip()}<FavoritedTip date={fill.tips.favorited} note={fill.tips.favoriteNote} />{/snippet}
-{#snippet watchedTip()}{#if fill.tips.watched}<ProgressTip progress={fill.tips.watched} />{:else if fill.tips.plays}<PlaysTip
-      plays={fill.tips.plays} />{/if}{/snippet}
+{#snippet watchedTip()}{@const href = playsHistoryHref(page.data.user?.slug, watchTarget ?? ratingTarget)}{#if fill.tips.watched}<ProgressTip
+      progress={fill.tips.watched} {href} />{:else if fill.tips.plays}<PlaysTip plays={fill.tips.plays} {href} />{/if}{/snippet}
 
 <div class={['quick-icons', { small, compact, row }]}>
   <div class="actions">

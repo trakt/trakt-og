@@ -3,12 +3,14 @@
   the summary's progress bar in the tooltip's footer. A rewatch shows its own run over the whole show's, each with its
   bar in a footer band under it. Leave the bar off (`bar={false}`) when the tooltip is for a progress bar already.
   `library` colors the bar like the summary's library one, and `footer` adds to the footer under it (the library's
-  format and audio).
+  format and audio). With `href`, each play count links to the viewer's history of the show or season, like the watched
+  tooltip's.
     <Tooltip content={tip}>{#snippet tip()}<ProgressTip progress={fill.tips.watched} />{/snippet}</Tooltip>
 -->
 <script lang="ts">
 import type { Snippet } from 'svelte';
 import TooltipFooter from '$lib/components/tooltip/TooltipFooter.svelte';
+import { countLabel } from '$lib/utils/countLabel';
 import { formatRuntime } from '$lib/utils/formatRuntime';
 import type { WatchedProgress } from './WatchedProgress.ts';
 import { watchedProgressDetail } from './watchedProgressDetail.ts';
@@ -18,19 +20,24 @@ interface Props {
   bar?: boolean;
   library?: boolean;
   footer?: Snippet;
+  href?: string;
 }
 
-const { progress, bar = true, library = false, footer }: Props = $props();
+const { progress, bar = true, library = false, footer, href }: Props = $props();
 const last = $derived(progress.at(-1));
 </script>
 
 {#snippet meter(percent: number)}<span class={['bar', { library }]} style:--percent="{percent}%"></span>{/snippet}
 
+<!-- The viewer's canonical slug, like the list tooltip's links. -->
+<!-- eslint-disable svelte/no-navigation-without-resolve -->
 <span class={['progress-tip', { barred: bar }]}>
   {#each progress as run (run.verb)}
     <span class="run">
       <span><b>{run.percent}%</b> {run.verb}</span>
-      <span class="detail">{watchedProgressDetail(run)} {#if run.plays !== undefined && run.minutes}<em
+      <span class="detail">{#if href && run.plays !== undefined}{watchedProgressDetail({ ...run, plays: undefined, from: undefined })}
+          &mdash; <a {href} target="_blank" rel="noopener" tabindex="-1">{countLabel(run.plays, 'play')}</a>{:else}{watchedProgressDetail(run)}{/if}
+        {#if run.plays !== undefined && run.minutes}<em
           >({formatRuntime(run.minutes)})</em>{/if}</span>
     </span>
     {#if bar && run !== last}<TooltipFooter between>{@render meter(run.percent)}</TooltipFooter>{/if}
@@ -70,6 +77,15 @@ const last = $derived(progress.at(-1));
 
 .detail {
   color: var(--color-tooltip-muted);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
 }
 
 /* The summary watched button's purple on its dark track, shaped like the monthly stats tooltip's bar. The library's is

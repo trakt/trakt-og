@@ -36,8 +36,8 @@ Run these from `projects/client/`:
 - Follow `.agents/rules/design-system.md` and the matching rules in `.agents/rules/` before changing code.
 - Adding, changing or removing a shared component updates its demo at `/_design` in the same PR (`design-system.md`, Demos).
 - Follow the accessibility and testing rules in `.agents/rules/a11y.md` and `.agents/rules/testing.md`.
-- Merging to main deploys og.trakt.tv through GitHub Actions. A redeploy of main is "Run workflow" on CI from main,
-  for humans only. Agents never run wrangler deploys.
+- Merging to main deploys og.trakt.tv through GitHub Actions, unless the repo variable `OG_DEPLOY` is `off`. A redeploy
+  of main is "Run workflow" on CI from main, for humans only. Agents never run wrangler deploys.
 
 ## Working an issue
 

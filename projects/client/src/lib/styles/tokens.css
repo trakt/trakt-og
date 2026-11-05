@@ -2981,20 +2981,7 @@
   --collection-metadata-width: 300px;
 }
 
-/* Library poster overlay. */
 :root {
-  --collection-overlay-bg: rgba(0, 0, 0, 0.7);
-  --collection-overlay-color: #fff;
-  --collection-overlay-rule: #666;
-  --collection-overlay-tag: #eee;
-  --collection-overlay-padding-top: 6px;
-  --collection-overlay-gap: 10px; /* .video's padding-bottom */
-  --collection-overlay-audio-gap: 15px; /* .audio's padding-top */
-  --collection-overlay-item-margin: 0 3px 6px;
-  --font-size-collection-logo: 24px;
-  --font-size-collection-logo-wide: 30px; /* Blu-ray, Video CD */
-  --font-size-collection-logo-small: 20px; /* digital, Dolby and DTS */
-  --font-size-collection-tag: 14px;
   /* The same logos, small, at the summary library button's right edge. */
   --space-collection-row: 6px 10px; /* a library item's format and audio row: the tooltip's and the button's footer */
   --font-size-collection-row-logo: 13px;

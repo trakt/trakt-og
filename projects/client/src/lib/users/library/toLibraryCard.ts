@@ -1,5 +1,3 @@
-import { type CollectionBadges, collectionBadges } from '../../components/collection/collectionBadges.ts';
-import { collectionMetadataLabel } from '../../components/collection/collectionMetadataLabel.ts';
 import { episodeNumber } from '../../components/media/episodeTags.ts';
 import type { DatePreferences } from '../../settings/DatePreferences.ts';
 import { formatDate } from '../../utils/formatDate.ts';
@@ -17,18 +15,12 @@ type Link = { readonly text: string; readonly href: string };
 export type LibraryCard = Omit<HistoryCard, 'watchedDate' | 'show' | 'subtitles'> & {
   /** The lines under the title. */
   readonly subtitles: readonly (string | Link)[];
-  /** The owner's metadata overlay. Left out for other viewers. */
-  readonly badges?: CollectionBadges;
-  /** The same facts as one line, for screen readers. */
-  readonly metadataLabel?: string;
 };
 
 type Options = {
   sortBy: LibrarySortBy;
   /** The Episodes tab's layout: the still, then the show. */
   screenshots: boolean;
-  /** Only the owner sees the metadata. */
-  owner: boolean;
   datePreferences: DatePreferences;
 };
 
@@ -67,12 +59,8 @@ function sortLine(
 }
 
 /** A movie or episode row as a card. */
-export function toLibraryCard(row: LibraryRow, { sortBy, screenshots, owner, datePreferences }: Options): LibraryCard {
-  const badges = owner ? collectionBadges(row.metadata) : undefined;
-  const common = {
-    watchedAt: row.collected_at,
-    ...(badges && { badges, metadataLabel: collectionMetadataLabel(row.metadata ?? undefined) }),
-  };
+export function toLibraryCard(row: LibraryRow, { sortBy, screenshots, datePreferences }: Options): LibraryCard {
+  const common = { watchedAt: row.collected_at };
   if ('movie' in row) {
     const { movie } = row;
     const line = sortLine(

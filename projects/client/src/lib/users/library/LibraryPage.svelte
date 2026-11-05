@@ -1,7 +1,7 @@
 <!--
   `/users/:id/library(/:type)(/:sort_by/:sort_how)` under the profile frame: the subnav
   with the type dropdown, date range, counter, sort and filter icons, then the owned items as
-  poster cards, under day dividers on Added Date. The owner's cards carry the metadata overlay.
+  poster cards, under day dividers on Added Date. The owner sees each item's metadata in the library icon's tooltip.
 -->
 <script lang="ts">
 import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
@@ -9,7 +9,6 @@ import SeoHead from '#lib/seo/SeoHead.svelte';
 import { SvelteURLSearchParams } from 'svelte/reactivity';
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
-import CollectionOverlay from '#lib/components/collection/CollectionOverlay.svelte';
 import Container from '#lib/components/container/Container.svelte';
 import Dropdown from '#lib/components/dropdown/Dropdown.svelte';
 import SortLabel from '#lib/components/sort/SortLabel.svelte';
@@ -111,10 +110,6 @@ const flipped = $derived(data.sort.how === 'desc');
       }}
   faded={fadeHide.fade.some((id) => matchesFadeHide(id, state, fill))}
 >
-    {#snippet cover()}
-      {#if item.badges}<CollectionOverlay badges={item.badges} />{/if}
-    {/snippet}
-    {#if item.metadataLabel}<span class="visually-hidden">{item.metadataLabel}</span>{/if}
   </PosterCard>
 {/snippet}
 

@@ -1,7 +1,7 @@
 <!--
   A show's progress tooltip, in the summary watched button's words: "3% watched" over "1 / 32 eps — 1 play (49m)", with
   the summary's progress bar in the tooltip's footer. A rewatch shows its own run over the whole show's, each with its
-  bar in a footer band under it. Leave the bar off (`bar={false}`) when the tooltip is for a progress bar already.
+  bar in a footer band under it. Leave the bars off (`bar={false}`) where the progress bar is drawn right by the tooltip.
   `library` colors the bar like the summary's library one, and `footer` adds to the footer under it (the library's
   format and audio). With `href`, each play count links to the viewer's history of the show or season, like the watched
   tooltip's.

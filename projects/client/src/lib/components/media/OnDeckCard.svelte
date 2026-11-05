@@ -93,10 +93,11 @@ const tip = $derived(
     rewatching={item.rewatching}
     rewatchingSince={rewatchingAt ? formatDate(rewatchingAt, page.data.datePreferences) : undefined}
     userRating={state.rating}
-    icons={{ listTarget: item.complete ? showTarget : target, watchTarget: item.complete ? showTarget : target, collectionTarget: item.complete ? showTarget : target, ratingTarget: item.complete ? showTarget : target, onWatchSave, fill: quickIconFill({ state, runtime: item.runtime }), rating: item.complete ? undefined : item.rating, listLabel: item.complete ? 'Add to watchlist' : 'Add to list', more }}
+    detachedProgress
+    icons={{ listTarget: item.complete ? showTarget : target, watchTarget: item.complete ? showTarget : target, collectionTarget: item.complete ? showTarget : target, ratingTarget: item.complete ? showTarget : target, onWatchSave, fill: quickIconFill({ state, runtime: item.runtime }), rating: item.complete ? undefined : item.rating, listLabel: item.complete ? 'Add to watchlist' : 'Add to list', more, progressTipBar: false }}
   >
     {#snippet progress()}
-      <UnderProgress href={item.progressHref} percent={progressPercent(item.progress)} ticks={item.ticks} {tip} />
+      <UnderProgress href={item.progressHref} percent={progressPercent(item.progress)} ticks={item.ticks} {tip} watched />
     {/snippet}
     {#snippet posterOverlay()}
       {#if loading}<div class="loading"><TraktLoader size={48} label="Loading {item.showTitle}'s next episode" /></div>

@@ -82,6 +82,11 @@ interface Props {
   icons?: Omit<ComponentProps<typeof QuickIcons>, 'small'>;
   /** A thin progress bar right under the quick icons, like OG's `under_progress`. */
   progress?: Snippet;
+  /**
+   * Room for a progress bar apart from the card, above the title (UnderProgress's `watched`), so the card keeps its
+   * shape. Set it on every card in a grid where any has one, so the titles line up.
+   */
+  detachedProgress?: boolean;
   /** Lines under the title that need more than a string: links, icon buttons. */
   children?: Snippet;
   /** Drawn over the image, inside the poster link, like OG's library metadata. */
@@ -114,6 +119,7 @@ const {
   rewatchingSince,
   icons,
   progress,
+  detachedProgress = false,
   children,
   cover,
   hideTitles = false,
@@ -155,7 +161,7 @@ const restoreTarget = $derived(target?.type === 'show' ? { ...target, type: 'sho
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
 <article out:removeCard|global={() => removedByAction || removing()} hidden={hidden}
-  class={['poster-card', { dropped: isDropped && image, faded, calendar, framed, 'with-icons': cardIcons, 'with-progress': progress }]}>
+  class={['poster-card', { dropped: isDropped && image, faded, calendar, framed, 'with-icons': cardIcons, 'with-progress': progress && !detachedProgress }]}>
   {#if rank !== undefined}
     <RankPill {rank} />
   {/if}
@@ -194,7 +200,7 @@ const restoreTarget = $derived(target?.type === 'show' ? { ...target, type: 'sho
   {/if}
   {@render progress?.()}
   {#if !hideTitles}
-  <div class={['titles', { 'with-progress': progress }]}>
+  <div class={['titles', { 'with-progress': progress && !detachedProgress, 'detached-progress': detachedProgress }]}>
     <a class="titles-link" {href}><h3>{#if number}<span class="number">{number}</span> {title}{:else}{title}{/if}</h3></a>
     {#each subtitles as subtitle, i (i)}
       <a class="titles-link" href={typeof subtitle === 'object' && 'href' in subtitle ? subtitle.href : href}><span
@@ -352,6 +358,10 @@ h3 {
   /* OG kept the title 14px below the bar's top edge (`#ondeck-shows .titles h3`). */
   .with-progress & {
     margin-block-start: calc(var(--space-under-progress-title) - var(--progress-under-height));
+  }
+
+  .detached-progress & {
+    margin-block-start: var(--space-detached-progress-title);
   }
 }
 

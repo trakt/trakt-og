@@ -353,15 +353,16 @@ function clearFilters() {
                 <!-- Episodes left but no next one yet: the show until its catalog names it. -->
                 <div {@attach nearViewport(() => onneed?.(row.id))}>
                   <PosterCard href={row.href} title={row.title} image={row.poster}
-                    rewatchingSince={row.rewatchingSince} userRating={state.rating} subtitles={[done]}
+                    rewatchingSince={row.rewatchingSince} userRating={state.rating} subtitles={[done]} detachedProgress
                     icons={{
                       fill: quickIconFill({ state, airedEpisodes: row.aired, datePreferences: data.datePreferences }),
                       ratingTarget: { type: 'show', id: row.id, title: row.title },
                       watchTarget: { type: 'show', id: row.id, title: row.title, airedEpisodes: row.aired },
                       watchNow: 'play',
+                      progressTipBar: false,
                     }}>
                     {#snippet progress()}
-                      <UnderProgress href={row.href} percent={row.percent} tip={done} />
+                      <UnderProgress href={row.href} percent={row.percent} tip={done} watched />
                     {/snippet}
                   </PosterCard>
                 </div>

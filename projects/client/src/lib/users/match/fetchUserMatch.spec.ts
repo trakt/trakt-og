@@ -20,7 +20,7 @@ const server = setupServer(
     return status === 200 ? HttpResponse.json(body) : new HttpResponse('User profile is private', { status });
   }),
 );
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => {
   server.resetHandlers();
   seen.length = 0;

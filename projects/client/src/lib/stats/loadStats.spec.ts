@@ -32,7 +32,7 @@ const server = setupServer(
   http.get(`${API}/*`, () => new HttpResponse(null, { status: 404 })),
 );
 server.events.on('request:start', ({ request }) => void requests.push(request));
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => {
   server.resetHandlers();
   requests.length = 0;

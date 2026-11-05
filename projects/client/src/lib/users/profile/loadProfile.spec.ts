@@ -49,7 +49,7 @@ const server = setupServer(
     return HttpResponse.json([], { headers: { 'X-Pagination-Item-Count': '0' } });
   }),
 );
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => {
   server.resetHandlers();
   seen.length = 0;
@@ -252,12 +252,10 @@ describe('loadProfile', () => {
       );
       const data = await load({ isSelf: true, settings });
 
-      // The anonymous read that starts alongside the frame is cancelled once the frame says it's your own.
       expect(favoriteReads().map((request) => new URL(request.url).pathname)).toEqual([
-        '/users/tester/favorites/movie,show/random/asc',
         '/users/tester/favorites/movie,show/watched/desc',
       ]);
-      expect(favoriteReads().at(1)?.headers.get('authorization')).toBe('Bearer viewer-token');
+      expect(favoriteReads().at(0)?.headers.get('authorization')).toBe('Bearer viewer-token');
       expect(data.favorites.map(({ id }) => id)).toEqual([2]);
     });
 

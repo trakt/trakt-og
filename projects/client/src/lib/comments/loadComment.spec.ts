@@ -43,7 +43,7 @@ const server = setupServer(
   // Watch Now: the sidebar renders without it.
   http.get('https://apiz.trakt.tv/*', () => new HttpResponse(null, { status: 404 })),
 );
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => {
   server.resetHandlers();
   requests.length = 0;

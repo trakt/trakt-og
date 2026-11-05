@@ -11,7 +11,7 @@ const AT = '2026-11-04T12:00:00.000Z';
 const show = { id: 1, title: 'The Bold and the Beautiful' };
 const empty: HiddenProgress = { shows: new Set(), seasons: new Map() };
 const server = setupServer();
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 

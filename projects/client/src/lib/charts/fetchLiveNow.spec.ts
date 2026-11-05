@@ -19,7 +19,7 @@ const MOVIE = { title: 'Weapons', year: 2025, ids: { trakt: 2, slug: 'weapons-20
 const fetch = (...args: Parameters<typeof globalThis.fetch>) => globalThis.fetch(...args);
 
 const server = setupServer();
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => {
   server.resetHandlers();
   seen.length = 0;

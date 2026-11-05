@@ -81,7 +81,7 @@ const library = [
 const server = setupServer(...library);
 server.events.on('request:start', ({ request }) => requests.push(new URL(request.url).pathname));
 
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => {
   server.resetHandlers();
   requests.length = 0;

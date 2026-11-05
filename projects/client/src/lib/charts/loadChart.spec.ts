@@ -18,7 +18,7 @@ const server = setupServer(
   http.get('https://apiz.trakt.tv/movies/trending', () => HttpResponse.json([])),
 );
 
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => {
   server.resetHandlers();
   seen.length = 0;

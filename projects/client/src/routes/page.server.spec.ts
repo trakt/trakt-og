@@ -6,7 +6,7 @@ import type { HeaderUser } from '../lib/components/header/HeaderUser.ts';
 import { load } from './+page.server.ts';
 
 const server = setupServer(http.all('*', () => new HttpResponse(null, { status: 503 })));
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterAll(() => server.close());
 
 const visit = (user: HeaderUser | null) =>

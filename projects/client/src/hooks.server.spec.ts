@@ -10,7 +10,7 @@ import { load } from './routes/+layout.server.ts';
 const APP_HTML = readFileSync(new URL('./app.html', import.meta.url), 'utf8');
 
 const server = setupServer();
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 

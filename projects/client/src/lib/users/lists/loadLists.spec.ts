@@ -50,7 +50,7 @@ const server = setupServer(
     return HttpResponse.json([list(9, 'Shared'), list(8, 'Older')], { headers: { 'X-Runtime': '0.04' } });
   }),
 );
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => {
   server.resetHandlers();
   seen.length = 0;

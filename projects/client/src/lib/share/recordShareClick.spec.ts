@@ -7,7 +7,7 @@ const CLICK = 'https://apiz.trakt.tv/v3/shares/click';
 const click = { code: 'Ab12Cd34Ef56', url: 'https://og.trakt.tv/movies/tron-1982?share=Ab12Cd34Ef56' };
 const sent: unknown[] = [];
 const server = setupServer();
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => {
   server.resetHandlers();
   sent.length = 0;

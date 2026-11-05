@@ -10,7 +10,7 @@ const server = setupServer();
 const datePreferences = { order: 'mdy', hour24: false, timeZone: 'UTC', weekStartDay: 0 } as const;
 const fetch = (...args: Parameters<typeof globalThis.fetch>) => globalThis.fetch(...args);
 
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => {
   server.resetHandlers();
   seen.length = 0;

@@ -9,7 +9,7 @@ const seen: string[] = [];
 const server = setupServer();
 const get = (path: string) => rawApiFetch({ path, token: 't' });
 
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => {
   server.resetHandlers();
   seen.length = 0;

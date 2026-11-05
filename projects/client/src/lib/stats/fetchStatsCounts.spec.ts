@@ -22,7 +22,7 @@ const server = setupServer(
     return HttpResponse.json([], { headers: { 'X-Pagination-Item-Count': String(COUNTS[path] ?? 0) } });
   }),
 );
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => {
   server.resetHandlers();
   seen.length = 0;

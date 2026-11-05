@@ -113,7 +113,7 @@ const server = setupServer(
   http.get('https://apiz.trakt.tv/shows/anticipated', json([{ list_count: 8000, show: show(60) }])),
 );
 
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => {
   server.resetHandlers();
   seen.length = 0;

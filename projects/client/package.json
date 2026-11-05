@@ -33,7 +33,7 @@
     "eslint-plugin-svelte": "3.24.0",
     "globals": "17.14.0",
     "lightningcss": "1.33.0",
-    "msw": "2.15.0",
+    "msw": "3.0.3",
     "opentype.js": "2.0.0",
     "svelte": "5.57.3",
     "svelte-check": "4.7.8",

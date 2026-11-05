@@ -9,7 +9,7 @@ import type { CollectedItem } from '../../overlay/CollectedItem.ts';
 
 const API = 'https://apiz.trakt.tv';
 const server = setupServer();
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 const at = '2026-09-29T12:00:00.000Z';

@@ -47,7 +47,7 @@ const server = setupServer(
     return HttpResponse.json([hit(list('personal', 1, `${SLUG}-copy`)), hit(personal), hit(official)]);
   }),
 );
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => {
   server.resetHandlers();
   seen.length = 0;

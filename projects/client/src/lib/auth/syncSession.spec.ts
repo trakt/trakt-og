@@ -47,7 +47,7 @@ const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 beforeAll(() => {
   vi.stubGlobal('location', new URL('http://localhost/'));
-  server.listen({ onUnhandledRequest: 'error' });
+  server.listen({ onUnhandledFrame: 'error' });
 });
 afterEach(() => {
   stops.splice(0).forEach((stop) => stop());

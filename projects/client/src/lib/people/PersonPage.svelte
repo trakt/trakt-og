@@ -335,7 +335,7 @@ const isFaded = (credit: PersonCredit, state: ReturnType<typeof overlay.state>) 
   {/if}
 {/if}
 
-<SummaryFrame label={person.name}>
+<SummaryFrame label={person.name} posterOverlap="var(--person-poster-overlap)">
   {#snippet tools()}
     <MediaTools target={{ type: 'person', id: person.id, title: person.name, href: person.href, tmdb: person.links.find((link) => link.label === 'TMDB')?.href, fanart: person.fanart?.image }} />
   {/snippet}

@@ -50,7 +50,7 @@ const tasteTags = [{ text: '7 services' }, { text: '3 of 5 genres' }];
 // Lines break at \n, like OG's <br>.
 const tips = {
   certification: 'Parents Strongly Cautioned\nAges 13+ Recommended',
-  era: '2008 to 2015: 23 credits, best known for Breaking Bad',
+  era: 'Best known for Breaking Bad',
   votes: '12,345 votes',
 };
 const rewatch = progressTooltip({
@@ -237,8 +237,8 @@ const listedOn = [
       {#snippet trigger(tooltip)}<span class="start site" {...tooltip}>PG-13</span>{/snippet}
     </Tooltip>
   </Variant>
-  <Variant label="Text that wraps, a career era">
-    <Tooltip text={tips.era} placement="right">
+  <Variant label="Left, a career era">
+    <Tooltip text={tips.era} placement="left">
       {#snippet trigger(tooltip)}<DemoButton {...tooltip}>2008</DemoButton>{/snippet}
     </Tooltip>
   </Variant>

@@ -11,7 +11,7 @@ import type { ProfileUser } from '../ProfileUser.ts';
 import { readProfileTab } from '../readProfileTab.ts';
 import { withShowPosters } from '../withShowPosters.ts';
 import { type HistoryCounts, historyCounts } from './historyCounts.ts';
-import { type HistoryFilters, historyFilters } from './historyFilters.ts';
+import { type HistoryFilters, historyFilters, itemHistoryType } from './historyFilters.ts';
 import {
   type ChartRow,
   fromWatched,
@@ -24,7 +24,9 @@ import {
 import { type HistoryRow, historyRowsSchema, watchedMoviesSchema, watchedShowsSchema } from './historyRowsSchema.ts';
 import { type HistorySort, historyPath, historySort } from './historySort.ts';
 import { type HistoryType, isHistoryType } from './historyTypes.ts';
-import { historyItemTitle, toChartCard, toHistoryCard, toHistoryDays } from './toHistoryCard.ts';
+import { toChartCard, toHistoryCard, toHistoryDays } from './toHistoryCard.ts';
+import { historyItemBand, type HistoryItemBand } from './historyItemBand.ts';
+import { seasonDetails } from './seasonDetails.ts';
 import { positiveInt } from '../../utils/positiveInt.ts';
 
 type Params = {
@@ -227,16 +229,19 @@ async function fetchPage({
  * your own, or a private profile the viewer may see, is read with it, so a play you just saved shows.
  */
 export async function loadHistory({ fetch, locals, params, url, cookies, parent }: Params) {
-  const type: HistoryType = params.type && isHistoryType(params.type) ? params.type : 'all';
+  const requested: HistoryType = params.type && isHistoryType(params.type) ? params.type : 'all';
   const base = `/users/${encodeURIComponent(params.id)}`;
   const current = positiveInt(url.searchParams.get('page'), 1);
   const limit = Math.min(positiveInt(url.searchParams.get('limit'), PER_PAGE), MAX_LIMIT);
   const layout = parent();
+  // A redirect below can leave before the frame is awaited; its own redirect then mustn't go unhandled.
+  layout.catch(() => undefined);
   // A bare date is read in the viewer's zone, which waits on the layout. Instants and no range don't.
   const range = [url.searchParams.get('start_at'), url.searchParams.get('end_at')].filter(Boolean);
   const bare = range.some((value) => !/(Z|[+-]\d\d:?\d\d)$/i.test(value ?? ''));
   const known = bare ? await layout : null;
-  const filters = historyFilters(url.searchParams, type, known?.datePreferences.timeZone ?? 'UTC');
+  const filters = historyFilters(url.searchParams, requested, known?.datePreferences.timeZone ?? 'UTC');
+  const type = filters.item ? itemHistoryType(filters.item) : requested;
   const sort = historySort(type, params.sort, filters.item);
   canonicalRedirect({
     requested: [`${base}/history`, params.type, params.sort].filter(Boolean).join('/'),
@@ -270,7 +275,7 @@ export async function loadHistory({ fetch, locals, params, url, cookies, parent 
       days: [],
       counts,
       page: extractPageMeta(new Headers(), current),
-      itemTitle: undefined,
+      band: undefined,
     };
   }
 
@@ -282,6 +287,10 @@ export async function loadHistory({ fetch, locals, params, url, cookies, parent 
   const cards = charted
     ? result.charts.map((row) => toChartCard(row, sort.by, datePreferences))
     : result.plays.map((row) => toHistoryCard(row, { screenshots, datePreferences }));
+  const first = result.plays.at(0) ?? result.charts.find(isEpisodeChart);
+  const band: HistoryItemBand | undefined = filters.item
+    ? historyItemBand(filters.item, first, await seasonDetails(fetch, filters.item, first))
+    : undefined;
 
   return {
     ...shell,
@@ -290,8 +299,6 @@ export async function loadHistory({ fetch, locals, params, url, cookies, parent 
     days: toHistoryDays(cards, datePreferences),
     counts: historyCounts({ type, filters, stats, total: result.total, charted, plays: result.playCount }),
     page: result.page,
-    itemTitle: filters.item
-      ? historyItemTitle(filters.item, result.plays.at(0) ?? result.charts.find(isEpisodeChart))
-      : undefined,
+    band,
   };
 }

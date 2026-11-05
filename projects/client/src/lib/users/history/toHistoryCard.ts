@@ -4,13 +4,11 @@ import type { DatePreferences } from '../../settings/DatePreferences.ts';
 import { formatDate } from '../../utils/formatDate.ts';
 import { imageUrl } from '../../utils/imageUrl.ts';
 import { episodeBadge, type WatchedCard } from '../profile/toProfileSummary.ts';
-import type { HistoryItem } from './historyFilters.ts';
 import type { HistoryRow } from './historyRowsSchema.ts';
 import type { ChartRow, EpisodeChart } from './historyCharts.ts';
 import type { HistorySortBy } from './historySort.ts';
 import { formatRuntime } from '../../utils/formatRuntime.ts';
 import { countLabel } from '../../utils/countLabel.ts';
-import { seasonName } from '../../utils/seasonName.ts';
 import { isUnknownDate } from '../../utils/isUnknownDate.ts';
 
 /** One poster card in the history grid. */
@@ -200,14 +198,4 @@ export function toHistoryDays<Card extends Pick<HistoryCard, 'watchedAt' | 'runt
     });
   }
   return days;
-}
-
-/** OG's `full_title` of the one item, for the type dropdown's label. */
-export function historyItemTitle(item: HistoryItem, row: HistoryRow | EpisodeChart | undefined): string | undefined {
-  if (!row) return undefined;
-  if ('movie' in row) return row.movie.year ? `${row.movie.title} (${row.movie.year})` : row.movie.title;
-  const { show, episode } = row;
-  if (item.type === 'show') return show.title;
-  if (item.type === 'season') return `${show.title} ${seasonName(episode.season)}`;
-  return `${show.title} ${episodeNumber(episode, null)}${episode.title ? ` "${episode.title}"` : ''}`;
 }

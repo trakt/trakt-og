@@ -2818,7 +2818,6 @@
   --history-count-gap: 15px;
   --history-icon-gap: var(--space-tools);
   --history-pagination-end: 6px;
-  --history-item-title-max: 400px; /* a filtered item's title in the Title dropdown, cut short past it */
   --dropdown-limit-10-height: 250px; /* .dropdown-menu.limit-10: ten rows */
   --line-height-dropdown-value: 1.3; /* a full-width trigger's value, tall enough for descenders */
   --list-sort-hint-gap: 8px;
@@ -2831,20 +2830,24 @@
   --color-subnav-text-bg: light-dark(#f3f3f3, #252525); /* .subnav-text, the library's description band */
   --font-size-subnav-text: 13px;
   --subnav-text-padding: 10px; /* .text's padding-top, then the paragraph's margin */
-  /* Progress narrowed to a list: the band under the subnav naming it, a list row's fan, name and owner, smaller. */
-  --progress-list-band-padding: 20px;
-  --progress-list-close-size: 32px; /* the round X, like the check-in's cancel */
-  --line-height-progress-list-name: 1.2;
-  --color-progress-list-close-border: light-dark(rgb(0 0 0 / 0.15), rgb(255 255 255 / 0.22));
-  --color-progress-list-close-bg: light-dark(rgb(255 255 255 / 0.6), rgb(0 0 0 / 0.25));
-  --color-progress-list-close-hover: light-dark(#fff, rgb(255 255 255 / 0.1));
-  --progress-list-poster-width: 50px;
-  --progress-list-poster-height: 75px;
-  /* As wide as the rows' posters below, so it lines up with their column; five posters fan across it. */
+  /* A page narrowed to one list or title: the band under the subnav naming it, with its art, name and a line about it. */
+  --filter-band-padding: 20px;
+  --filter-band-gap: 24px; /* after the art */
+  --filter-band-close-size: 32px; /* the round X, like the check-in's cancel */
+  --line-height-filter-band-name: 1.2;
+  --font-size-filter-band-year: 13px; /* its capitals about as tall as the name's lowercase, like a summary's year */
+  --color-filter-band-close-border: light-dark(rgb(0 0 0 / 0.15), rgb(255 255 255 / 0.22));
+  --color-filter-band-close-bg: light-dark(rgb(255 255 255 / 0.6), rgb(0 0 0 / 0.25));
+  --color-filter-band-close-hover: light-dark(#fff, rgb(255 255 255 / 0.1));
+  --filter-band-poster-width: 50px;
+  --filter-band-poster-height: 75px;
+  --filter-band-fanart-width: 116px; /* a title's fanart, about as wide as a list's poster fan */
+  --filter-band-shimmer-name-width: 180px;
+  --filter-band-shimmer-meta-width: 120px;
+  /* Progress narrowed to a list: as wide as the rows' posters below, so it lines up with their column; five posters
+     fan across it. */
   --progress-list-fan-width: var(--progress-poster-width);
   --progress-list-fan-width-tablet: var(--progress-poster-width-tablet);
-  --progress-list-shimmer-name-width: 180px;
-  --progress-list-shimmer-owner-width: 120px;
   /* A card's content from its edges: tags, titles and pills on the art, and a calendar or search card's caption. */
   --card-inset: 12px;
   /* An episode's type tag over its art. */

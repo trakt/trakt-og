@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { historyRowsSchema } from './historyRowsSchema.ts';
 import { toChartsFromPlays } from './historyCharts.ts';
-import { historyItemTitle, toChartCard, toHistoryCard, toHistoryDays } from './toHistoryCard.ts';
+import { toChartCard, toHistoryCard, toHistoryDays } from './toHistoryCard.ts';
 
 const datePreferences = { order: 'mdy', hour24: false, timeZone: 'America/Los_Angeles', weekStartDay: 0 } as const;
 const show = {
@@ -94,15 +94,5 @@ describe('toChartCard', () => {
       href: '/movies/fight-club-1999',
       subtitles: ['1 play'],
     });
-  });
-});
-
-describe('historyItemTitle', () => {
-  it("should read OG's full titles off the first play", () => {
-    expect(historyItemTitle({ type: 'movie', id: 1 }, rows[0])).toBe('Fight Club (1999)');
-    expect(historyItemTitle({ type: 'show', id: 1388 }, rows[1])).toBe('Breaking Bad');
-    expect(historyItemTitle({ type: 'season', id: 3 }, rows[1])).toBe('Breaking Bad Season 2');
-    expect(historyItemTitle({ type: 'episode', id: 104 }, rows[1])).toBe('Breaking Bad 2x04 "Number the Stars"');
-    expect(historyItemTitle({ type: 'episode', id: 104 }, undefined)).toBeUndefined();
   });
 });

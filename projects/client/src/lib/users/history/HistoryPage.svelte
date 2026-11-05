@@ -1,7 +1,7 @@
 <!--
   `/users/:id/history(/:type)(/:sort_by/:sort_how)` under the profile frame: the subnav with the type, genre
-  and date filters, the counter, sort and filter icons, then every play as a poster card under day dividers, or in
-  one grid with the dividers off. Shows, and Movies on any sort but Watched Date, chart one card a title instead, and
+  and date filters, the counter, sort and filter icons, a band naming the one title it's narrowed to, then every play
+  as a poster card under day dividers, or in one grid with the dividers off. Shows, and Movies on any sort but Watched Date, chart one card a title instead, and
   one show's or season's plays chart one card an episode.
 -->
 <script lang="ts">
@@ -47,6 +47,8 @@ import {
   historySortsFor,
   validHistorySort,
 } from './historySort.ts';
+import { type HistoryItem, ITEM_TYPES, itemHistoryType } from './historyFilters.ts';
+import HistoryItemBand from './HistoryItemBand.svelte';
 import { genresFor, historyTypes, isHistoryType } from './historyTypes.ts';
 import type { loadHistory } from './loadHistory.ts';
 import type { HistoryCard } from './toHistoryCard.ts';
@@ -81,8 +83,14 @@ const plural = (count: number, word: string) => `${word}${count === 1 ? '' : 's'
 const filtered = $derived(Object.keys(data.filters).length > 0);
 
 // OG's `history_user_path(type, sort_by, sort_how, link_params)`: the query string without the page, and without
-// the genre when the type changes. A sort the new type doesn't have falls back to Watched Date.
-function href(type: string, changes: Record<string, string | null>, sort: HistorySort = data.sort) {
+// the genre when the type changes. A sort the new type, or the page without its title, doesn't have falls back to
+// Watched Date.
+function href(
+  type: string,
+  changes: Record<string, string | null>,
+  sort: HistorySort = data.sort,
+  item: HistoryItem | undefined = data.filters.item,
+) {
   const query = new SvelteURLSearchParams(page.url.searchParams);
   query.delete('page');
   for (const [key, value] of Object.entries(changes)) {
@@ -90,11 +98,13 @@ function href(type: string, changes: Record<string, string | null>, sort: Histor
     else query.set(key, value);
   }
   const path = isHistoryType(type)
-    ? historyPath(type, validHistorySort(type, sort.by, data.filters.item) ? sort : defaultHistorySort)
+    ? historyPath(type, validHistorySort(type, sort.by, item) && flippable(sort, item) ? sort : defaultHistorySort)
     : '';
   return `${base}${path}${query.size ? `?${query}` : ''}`;
 }
 
+// Another type, or the band's X, leaves the title behind.
+const withoutItem = Object.fromEntries(ITEM_TYPES.map((key) => [key, null]));
 const sorts = $derived(historySortsFor(data.type, data.filters.item));
 const menuSorts = $derived(withTraktSorts(sorts.map((by) => ({ by, label: historySortLabels[by] }))));
 const flipped = $derived(data.sort.how === 'desc');
@@ -147,11 +157,11 @@ const country = $derived(watchNowCountry(data.settings));
 
 <SectionToolbar>
   {#snippet filters()}
-    <Dropdown section={data.itemTitle ? 'Title' : 'Media'}>
-      {#snippet trigger()}{#if data.itemTitle}<span class="item-title">{data.itemTitle}</span>{:else}{historyTypes[data.type]}{/if}{/snippet}
+    <Dropdown section="Media">
+      {#snippet trigger()}{historyTypes[data.type]}{/snippet}
       <ul>
         {#each Object.entries(historyTypes) as [type, label] (type)}
-          <li><a href={href(type, { genres: null })} aria-current={data.type === type ? 'page' : undefined}>{label}</a></li>
+          <li><a href={href(type, { genres: null, ...withoutItem }, data.sort, undefined)} aria-current={data.type === type ? 'page' : undefined}>{label}</a></li>
         {/each}
       </ul>
     </Dropdown>
@@ -208,6 +218,9 @@ const country = $derived(watchNowCountry(data.settings));
   {/snippet}
 </SectionToolbar>
 
+{#if data.band}<HistoryItemBand band={data.band} allHref={href(data.type, withoutItem, data.sort, undefined)}
+    itemHref={(item) => href(itemHistoryType(item), { ...withoutItem, [item.type]: String(item.id) }, data.sort, item)} />{/if}
+
 <section class="history" aria-label={title} {@attach trackDrilldowns({ source: 'watch-history' })}>
   <Container>
     {#if days.length > 0}
@@ -234,18 +247,6 @@ const country = $derived(watchNowCountry(data.settings));
 </section>
 
 <style>
-/* An episode's full title can run the toolbar onto two lines: cut it short with an ellipsis. */
-.item-title {
-  display: inline-block;
-  max-inline-size: var(--history-item-title-max);
-  overflow: hidden;
-  /* Room for descenders at the hidden overflow. */
-  line-height: var(--line-height-dropdown-value);
-  text-overflow: ellipsis;
-  vertical-align: bottom;
-  white-space: nowrap;
-}
-
 .sort {
   display: flex;
   align-items: center;

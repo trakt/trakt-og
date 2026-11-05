@@ -14,7 +14,10 @@ export type HistoryFilters = {
   readonly watchnow?: string;
 };
 
-const ITEM_TYPES = ['movie', 'show', 'season', 'episode'] as const;
+export const ITEM_TYPES = ['movie', 'show', 'season', 'episode'] as const;
+
+/** A movie's plays sit under Movies, and a show's, season's or episode's under Episodes. */
+export const itemHistoryType = ({ type }: HistoryItem): HistoryType => (type === 'movie' ? 'movies' : 'episodes');
 const DAY = 86_400_000;
 
 const positiveInt = (value: string | null) => {

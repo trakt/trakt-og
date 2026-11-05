@@ -89,8 +89,6 @@ interface Props {
   detachedProgress?: boolean;
   /** Lines under the title that need more than a string: links, icon buttons. */
   children?: Snippet;
-  /** Drawn over the image, inside the poster link, like OG's library metadata. */
-  cover?: Snippet;
   /** No title or sub-lines under the bar (discover's sliders). The poster becomes the card's link. */
   hideTitles?: boolean;
   /** Drawn over the poster outside its link, for controls of its own (a list's Read Notes). */
@@ -121,7 +119,6 @@ const {
   progress,
   detachedProgress = false,
   children,
-  cover,
   hideTitles = false,
   posterOverlay,
 }: Props = $props();
@@ -188,7 +185,6 @@ const restoreTarget = $derived(target?.type === 'show' ? { ...target, type: 'sho
         {#if userRating}
           <CornerRating rating={userRating} />
         {/if}
-        {@render cover?.()}
       </a>
     {/snippet}
   </Tooltip>

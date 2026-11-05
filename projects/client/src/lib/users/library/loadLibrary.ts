@@ -147,7 +147,7 @@ export async function loadLibrary({ fetch, locals, params, url, cookies, parent 
   } else {
     const rows = libraryRowsSchema.safeParse(result.body);
     if (!rows.success) error(502, 'Trakt is having trouble loading this library.');
-    const options = { sortBy: sort.by, screenshots: type === 'episodes', owner: isSelf, datePreferences };
+    const options = { sortBy: sort.by, screenshots: type === 'episodes', datePreferences };
     cards = rows.data.map((row) => toLibraryCard(row, options));
   }
 

@@ -20,10 +20,10 @@ const episode = {
   show,
   episode: { ids: { trakt: 104 }, season: 1, number: 2, title: 'The Bag', first_aired: '2008-01-28T02:00:00Z' },
 };
-const options = { sortBy: 'added', screenshots: false, owner: true, datePreferences } as const;
+const options = { sortBy: 'added', screenshots: false, datePreferences } as const;
 
 describe('toLibraryCard', () => {
-  it('should put the collected date under the title and carry the owner metadata', () => {
+  it('should put the collected date under the title', () => {
     expect(toLibraryCard(movie, options)).toMatchObject({
       key: 432,
       type: 'movie',
@@ -31,14 +31,11 @@ describe('toLibraryCard', () => {
       subtitles: ['Sep 29, 2026 12:23 PM'],
       watchedAt: movie.collected_at,
       runtime: 139,
-      badges: { video: { logo: { name: 'bluray', label: 'Blu-ray' }, resolution: '1080p' } },
-      metadataLabel: 'Blu-ray · 1080p',
     });
   });
 
-  it("should hide the metadata from other viewers and show the sort's line", () => {
-    const card = toLibraryCard(movie, { ...options, owner: false, sortBy: 'released' });
-    expect(card.badges).toBeUndefined();
+  it("should show the sort's line", () => {
+    const card = toLibraryCard(movie, { ...options, sortBy: 'released' });
     expect(card.subtitles).toEqual(['Oct 15, 1999']);
     expect(toLibraryCard(movie, { ...options, sortBy: 'runtime' }).subtitles).toEqual(['2h 19m']);
     expect(toLibraryCard(movie, { ...options, sortBy: 'votes' }).subtitles).toEqual(['51,327 votes']);

@@ -66,7 +66,6 @@ describe('loadLibrary', () => {
       days: [],
       fadeHide: { fade: ['collected'], hide: [] },
     });
-    expect(result.cards[0]?.badges).toBeUndefined();
   });
 
   it.each([
@@ -81,15 +80,12 @@ describe('loadLibrary', () => {
     expect(result.source).toBe(filter ? source : 'all');
   });
 
-  it('should group Added Date by day on All Types and show the owner their metadata, read with their token', async () => {
+  it("should group Added Date by day on All Types, read with the owner's token", async () => {
     const result = await load({ isSelf: true, token: 'viewer-token' });
     const media = '/users/tester/collection/media?extended=full%2Cimages&page=1&limit=60&sort_by=added&sort_how=desc';
     expect(requested()).toEqual([media]);
     expect(seen.at(-1)?.headers.get('authorization')).toBe('Bearer viewer-token');
     expect(result.days).toHaveLength(1);
-    expect(result.cards[0]?.badges).toEqual({
-      video: { logo: { name: 'dvd', label: 'DVD' }, threeD: false, resolution: undefined, hdr: undefined },
-    });
   });
 
   it('should read the Shows tab without a sort, with posters from the show summary', async () => {

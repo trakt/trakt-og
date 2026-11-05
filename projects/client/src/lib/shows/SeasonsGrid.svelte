@@ -1,9 +1,11 @@
 <!--
   A show's seasons (OG's `h2#seasons` and `.season-posters`): "N Seasons" (specials don't count) with the sort
   dropdown and direction toggle, then five season posters a row (three in a small tablet's narrow column) with their episode counts and quick
-  icons.
+  icons. A season the viewer has started gets the summary's purple progress bar under its icons, linking to their
+  progress page.
 -->
 <script lang="ts">
+import { page } from '$app/state';
 import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
 import EmptyState from '#lib/components/empty/EmptyState.svelte';
 import FadeHideMenu from '#lib/components/filters/FadeHideMenu.svelte';
@@ -11,6 +13,7 @@ import { type FadeHide, fadeHideOptions, matchesFadeHide } from '#lib/components
 import { lazyItemStats } from '#lib/shows/lazyItemStats.svelte.ts';
 import PosterCard from '#lib/components/media/PosterCard.svelte';
 import PosterGrid from '#lib/components/media/PosterGrid.svelte';
+import UnderProgress from '#lib/components/media/UnderProgress.svelte';
 import { quickIconFill } from '#lib/components/media/quickIconFill.ts';
 import SortHeading from '#lib/components/summary/SortHeading.svelte';
 import { overlay } from '#lib/overlay/overlay.ts';
@@ -43,6 +46,8 @@ const cards = $derived(
     };
   }).filter(({ hidden }) => !hidden),
 );
+const progressHref = $derived(page.data.user?.slug && `/users/${page.data.user.slug}/progress?show=${showId}`);
+const anyProgress = $derived(Boolean(progressHref) && cards.some(({ fill }) => fill.tips.watched?.[0]));
 const count = $derived(cards.filter(({ card }) => card.number !== 0).length);
 let by = $state<SeasonSort>('number');
 let flipped = $state(false);
@@ -72,11 +77,16 @@ function clearHide() {
       {#each sorted as { id, number, rating, released, votes: _, airedEpisodes, episodes, ...card } (id)}
         {@const view = cards.find(({ card }) => card.id === id)}
         {@const state = view?.state ?? {}}
+        {@const runs = view?.fill.tips.watched}
+        {#snippet seasonProgress()}{#if progressHref && runs?.[0]}<UnderProgress href={progressHref}
+            percent={runs[0].percent} tip={runs} watched />{/if}{/snippet}
         <PosterCard
           {...card}
           faded={view?.faded}
           subtitles={[episodes]}
           userRating={state.rating}
+          progress={progressHref && runs?.[0] ? seasonProgress : undefined}
+          detachedProgress={anyProgress}
           icons={{
             fill: quickIconFill({ state, airedEpisodes, season: true, datePreferences }),
             ratingTarget: { type: 'season', id, title: card.title, season: { show: showId, number } },
@@ -84,6 +94,7 @@ function clearHide() {
             rating,
             released,
             listLabel: 'Add to list',
+            progressTipBar: false,
           }}
         />
       {/each}

@@ -96,6 +96,8 @@ interface Props {
   more?: readonly QuickIconMore[];
   /** "Add to watchlist" on movies and shows; "Add to list" on seasons and episodes. Only shown with `QUICK_ADD` on. */
   listLabel?: string;
+  /** Left off where the card draws its progress bar itself, so the watched tooltip doesn't repeat it. */
+  progressTipBar?: boolean;
   /** A recommendation's reasons, behind a bullseye that opens the dashboard's Why this? panel. */
   why?: Omit<ComponentProps<typeof RecommendationWhy>, 'trigger'>;
 }
@@ -124,6 +126,7 @@ const {
   hideTarget,
   more = [],
   listLabel = 'Add to watchlist',
+  progressTipBar = true,
   why,
 }: Props = $props();
 
@@ -190,14 +193,15 @@ const ratingLevel = $derived(rating === undefined ? 1 : Math.min(Math.max(Math.t
 {#snippet libraryTip()}{#if fill.tips.collected}<LibraryTip tip={fill.tips.collected} />{/if}{/snippet}
 {#snippet favoritedTip()}<FavoritedTip date={fill.tips.favorited} note={fill.tips.favoriteNote} />{/snippet}
 {#snippet watchedTip()}{@const href = playsHistoryHref(page.data.user?.slug, watchTarget ?? ratingTarget)}{#if fill.tips.watched}<ProgressTip
-      progress={fill.tips.watched} {href} />{:else if fill.tips.plays}<PlaysTip plays={fill.tips.plays} {href} />{/if}{/snippet}
+      progress={fill.tips.watched} bar={progressTipBar} {href} />{:else if fill.tips.plays}<PlaysTip plays={fill.tips.plays} {href} />{/if}{/snippet}
 
 <div class={['quick-icons', { small, compact, row }]}>
   <div class="actions">
     <!-- A row draws the tools and the ••• as separate outlined groups; on a card they're one run of icons. -->
     <div class="tools">
     {#if historyTarget}
-      <MediaWatch target={historyTarget} play={historyPlay} onremove={onWatchRemove} onsave={onWatchSave} {small} />
+      <MediaWatch target={historyTarget} play={historyPlay} onremove={onWatchRemove} onsave={onWatchSave} {small}
+        {progressTipBar} />
     {:else}
     {@render action(
       fill.rewatching ? 'watch rewatching' : 'watch',

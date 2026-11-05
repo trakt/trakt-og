@@ -45,10 +45,13 @@ interface Props {
   play?: HistoryPlay;
   onremove?: (play?: HistoryPlay) => void;
   onsave?: (watchedAt: string | null) => void;
+  /** Left off where the card draws its progress bar itself, so the card tooltip doesn't repeat it. */
+  progressTipBar?: boolean;
   /** Sample data for the design demo: what "Up to here" adds, in place of the viewer's progress. */
   sampleUpTo?: UpTo;
 }
-const { target, variant = 'card', small = false, play, onremove, onsave, sampleUpTo }: Props = $props();
+const { target, variant = 'card', small = false, play, onremove, onsave, progressTipBar = true, sampleUpTo }: Props =
+  $props();
 let busy = $state(false);
 let prompt = $state<WatchPopover>();
 let upTo = $state<UpTo>();
@@ -225,7 +228,7 @@ async function open(force: boolean): Promise<'date' | 'remove' | 'partial' | nul
   {:else if viewerState.lastWatchedAt}{viewerState.lastWatchedAt.startsWith('1970-01-01') ? 'Unknown date' : formatDate(viewerState.lastWatchedAt, { ...dates, time: true })}{/if}
 {/snippet}
 {#snippet watchedTip()}{@const href = playsHistoryHref(page.data.user?.slug, target)}{#if fill.tips.watched}<ProgressTip
-      progress={fill.tips.watched} {href} />{:else if fill.tips.plays}<PlaysTip plays={fill.tips.plays} {href} />{/if}{/snippet}
+      progress={fill.tips.watched} bar={progressTipBar} {href} />{:else if fill.tips.plays}<PlaysTip plays={fill.tips.plays} {href} />{/if}{/snippet}
 {#snippet more()}
   <SummaryActionMenu>
     {#snippet children(close)}

@@ -85,6 +85,9 @@
   --progress-under-bg: #530d0d;
   --progress-under-height: 5px;
   --progress-under-knob: 11px; /* the knob on a watching-now bar */
+  --progress-under-hit-below: 6px; /* past the bar's bottom, so it's easier to point at than its 5px */
+  --poster-progress-gap: 3px; /* a season's detached bar, from the quick icons above */
+  --space-detached-progress-title: 16px; /* from the quick icons to the title, in a grid with detached bars */
   --space-under-progress-title: 14px; /* from the bar's top edge to the card title */
 
   /* Ratings, 1 to 10 */

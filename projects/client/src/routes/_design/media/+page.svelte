@@ -9,6 +9,8 @@ import ListRow from '#lib/components/media/ListRow.svelte';
 import { mediaQuickIcons } from '#lib/components/media/mediaQuickIcons.ts';
 import PosterCard from '#lib/components/media/PosterCard.svelte';
 import PosterGrid from '#lib/components/media/PosterGrid.svelte';
+import UnderProgress from '#lib/components/media/UnderProgress.svelte';
+import type { WatchedProgress } from '#lib/components/media/WatchedProgress.ts';
 import { quickIconFill } from '#lib/components/media/quickIconFill.ts';
 import RatingsStrip from '#lib/components/summary/RatingsStrip.svelte';
 import SubpageTitle from '#lib/components/summary/SubpageTitle.svelte';
@@ -80,6 +82,16 @@ const samples: {
 ];
 
 const featured = $derived(shows.at(0));
+const seasonRuns: { label: string; runs: readonly WatchedProgress[] }[] = [
+  { label: 'Started', runs: [{ verb: 'watched', percent: 37, completed: 3, aired: 8, plays: 3, minutes: 132 }] },
+  {
+    label: 'Rewatching',
+    runs: [
+      { verb: 'rewatched', percent: 25, completed: 2, aired: 8, plays: 2, minutes: 88 },
+      { verb: 'watched', percent: 100, completed: 8, aired: 8, plays: 10, minutes: 440 },
+    ],
+  },
+];
 </script>
 
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
@@ -155,6 +167,20 @@ const featured = $derived(shows.at(0));
         dropped={state.dropped}
         icons={mediaQuickIcons({ item: show, state, datePreferences: data.datePreferences })}
       />
+    {/each}
+  </PosterGrid>
+</Specimen>
+
+<Specimen title="Season progress"
+  note="A started season's own progress, the summary watched button's bar in the gap above the title. A rewatch's tooltip shows both runs, without bars.">
+  <PosterGrid columns={5}>
+    {#each seasonRuns as { label, runs }, i (label)}
+      {@const show = shows.at(i)}
+      {#snippet seasonProgress()}<UnderProgress href="#season-progress" percent={runs[0]?.percent ?? 0} tip={runs} watched />{/snippet}
+      {#if show}
+        <PosterCard href={show.href} title={label} image={show.poster} subtitles={['8 episodes']}
+          progress={seasonProgress} detachedProgress />
+      {/if}
     {/each}
   </PosterGrid>
 </Specimen>

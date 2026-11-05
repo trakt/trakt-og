@@ -28,7 +28,8 @@ const { name, href, image, gender, role, episodes, layout = 'card' }: Props = $p
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
 <a class={['cast-card', layout]} {href}>
-  <img class="headshot" src={image ?? personPlaceholder(gender)} alt="" loading="lazy" decoding="async" />
+  <img class="headshot" src={image ?? personPlaceholder(gender)} alt="" loading="lazy" decoding="async"
+    data-placeholder={personPlaceholder(gender)} />
   <span class="text">
     <span class="name">{name}</span>
     <span class="role">{role || '\u00a0'}</span>

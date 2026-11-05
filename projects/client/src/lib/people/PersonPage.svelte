@@ -342,7 +342,8 @@ const isFaded = (credit: PersonCredit, state: ReturnType<typeof overlay.state>) 
 
   {#snippet sidebar()}
     <div bind:this={headshot}>
-      <SummaryPoster image={person.headshot ?? personPlaceholder(person.genderId)} alt={person.name} />
+      <SummaryPoster image={person.headshot ?? personPlaceholder(person.genderId)}
+        placeholder={personPlaceholder(person.genderId)} alt={person.name} />
     </div>
     <SectionNav
       sections={[

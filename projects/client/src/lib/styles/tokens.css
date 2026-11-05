@@ -3332,6 +3332,7 @@
 
   /* The open row's seasons: a heading line, then a numbered square an episode */
   --font-size-progress-toggle-icon: 10px;
+  --font-size-progress-hidden-toggle-icon: 14px; /* the hidden seasons' sideways ban */
   --progress-strip-gap: 20px; /* the row's top to its season list */
   --radius-progress-band: var(--radius-container);
   --color-progress-band: light-dark(#f5f5f5, #262626); /* the season list */
@@ -3350,6 +3351,13 @@
   --progress-season-fold: 22px; /* a season's episodes toggle */
   --progress-season-stats-offset: 6px; /* the stats from the name */
   --progress-season-episodes-gap: 10px; /* the bar to the episode pills */
+  --font-size-progress-season-menu-icon: 14px; /* a season's ••• after its name */
+  --color-progress-season-menu: var(--color-dropdown-menu-text); /* like Drop's icon in the status menu */
+  --progress-season-badge: 11px; /* the menu ban's corner badge: and later, every one after */
+  --progress-season-badge-inset: -3px;
+  --font-size-progress-season-badge-icon: 8px;
+  --opacity-progress-season-hidden: 0.55; /* a hidden season, shown in its place */
+  --color-progress-season-hidden-tag: var(--color-progress-percent-done); /* the Hidden tag's tint, the ban's red */
   --radius-progress-season-bar: 3px;
   --progress-shimmer-season-name-width: 72px; /* an open row's seasons until its catalog is read */
   --progress-shimmer-season-stats-width: 90px;

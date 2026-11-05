@@ -103,6 +103,14 @@ describe('toProgressItem', () => {
         lastAt: '2026-02-03T00:00:00Z',
       });
     });
+
+    it('should name the hidden seasons in order, specials only when they count', () => {
+      const hiddenSeasons = new Set([8, 0, 7]);
+
+      expect(toProgressItem({ ...base, hiddenSeasons }).hiddenSeasons).toEqual([7, 8]);
+      expect(toProgressItem({ ...base, hiddenSeasons, includeSpecials: true }).hiddenSeasons).toEqual([0, 7, 8]);
+      expect(toProgressItem(base)).not.toHaveProperty('hiddenSeasons');
+    });
   });
 
   describe('from the catalog', () => {
@@ -164,10 +172,12 @@ describe('toProgressItem', () => {
       expect(item.detail?.seasons.at(0)?.number).toBe(0);
     });
 
-    it('should leave hidden seasons out of the counts', () => {
+    it('should leave hidden seasons out of the counts, and count them apart for the season list', () => {
       const item = toProgressItem({ ...base, watched, catalog, hiddenSeasons: new Set([2]) });
 
       expect(item).toMatchObject({ aired: 3, completed: 2 });
+      expect(item.detail?.seasons.map(({ number }) => number)).toEqual([1]);
+      expect(item.detail?.hidden).toMatchObject([{ number: 2, aired: 1, completed: 0, upcoming: [{ number: 2 }] }]);
     });
 
     it('should pick the next episode after the furthest watched one, then the gap', () => {

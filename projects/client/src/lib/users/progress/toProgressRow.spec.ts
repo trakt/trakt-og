@@ -125,6 +125,24 @@ describe('toProgressRow', () => {
       expect(expanded('The Wire').upNext).toBeUndefined();
       expect(expanded('Severance').upNext).toBeUndefined();
     });
+
+    it('should list hidden seasons apart and leave them out of the show', () => {
+      const soap = toProgressRow({ item: progressFixture.soap(new Set([7, 8])), datePreferences, now });
+
+      expect(soap).toMatchObject({ aired: 72, completed: 27, hidden: { count: 2, names: 'Seasons 7 to 8' } });
+      expect(soap.seasons?.map(({ name }) => name)).toEqual([
+        'Season 1',
+        'Season 2',
+        'Season 3',
+        'Season 4',
+        'Season 5',
+        'Season 6',
+      ]);
+      expect(soap.hiddenSeasons).toMatchObject([
+        { name: 'Season 7', count: '0 / 12', href: '/shows/the-bold-and-the-beautiful/seasons/7' },
+        { name: 'Season 8', count: '0 / 12' },
+      ]);
+    });
   });
 
   it('should mark a rewatch with its start date', () => {

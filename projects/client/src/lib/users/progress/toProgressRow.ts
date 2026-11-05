@@ -11,6 +11,7 @@ import { formatRuntime } from '../../utils/formatRuntime.ts';
 import { imageUrl } from '../../utils/imageUrl.ts';
 import { relativeDate } from '../../utils/relativeDate.ts';
 import type { ProgressItem } from './ProgressItem.ts';
+import { seasonRuns } from './seasonRuns.ts';
 import { type ProgressSeason, toProgressSeasons } from './toProgressSeasons.ts';
 import { capitalize } from '../../utils/capitalize.ts';
 import { isUnknownDate } from '../../utils/isUnknownDate.ts';
@@ -78,6 +79,10 @@ export type ProgressRow = {
   readonly rewatchingSince?: string;
   /** Once the catalog is in: the season lines, and the next episode unless everything's done (Watched only). */
   readonly seasons?: readonly ProgressSeason[];
+  /** Once the catalog is in: the seasons hidden from this tab, which the season list offers back. */
+  readonly hiddenSeasons?: readonly ProgressSeason[];
+  /** How many seasons are hidden and which ("Seasons 7 to 8"), before the catalog is in too. */
+  readonly hidden?: { readonly count: number; readonly names: string };
   readonly upNext?: ProgressUpNext;
 };
 
@@ -185,6 +190,8 @@ export function toProgressRow(params: ToProgressRowParams): ProgressRow {
         showHref: href,
         datePreferences,
       }),
+    hiddenSeasons: detail && toProgressSeasons({ seasons: detail.hidden, showHref: href, datePreferences }),
+    hidden: item.hiddenSeasons && { count: item.hiddenSeasons.length, names: seasonRuns(item.hiddenSeasons) },
     upNext: toUpNext(params),
   };
 }

@@ -306,6 +306,7 @@
   --quick-icon-trakt-shift: 0.085em; /* Trakt-font glyphs (check, library) sit this far above center */
   --glass-action-icon-shift: 0.025em; /* a glass action's icon, level with its label's capitals */
   --font-size-quick-icon-favorite: 0.85em; /* the solid star, down to the other glyphs' height */
+  --font-size-quick-icon-why: 0.8em; /* the bullseye, down to the other glyphs' height */
   --font-size-quick-icon-rewatching: 0.85em; /* the solid backward arrows, down to the other glyphs' weight */
   --quick-icon-rewatching-shift: -1px; /* the arrows' points pull the eye right of center */
   --font-size-rating: 20px;
@@ -874,7 +875,8 @@
   --color-why-text: light-dark(#222, #fff);
   --color-why-faint: light-dark(#777, rgb(255 255 255 / 0.6));
   --color-why-button: #f5c451; /* the Why this? button, always on art */
-  --color-why-mark: light-dark(#a87400, #f5c451); /* the sparkle and eyebrow, darker gold on white */
+  --color-why-quick-icon: light-dark(#c98f0f, #dda12a); /* the quick-icon bar's bullseye, deep enough for white on it */
+  --color-why-mark: light-dark(#a87400, #f5c451); /* the bullseye and eyebrow, darker gold on white */
   --color-why-stars: light-dark(var(--brand-primary), #ff5a60); /* the brand red, lifted for text on dark */
   --color-why-more-hover: light-dark(rgb(0 0 0 / 0.05), rgb(255 255 255 / 0.08));
   --gradient-why-header: linear-gradient(to bottom, rgb(245 196 81 / 0.1), transparent);

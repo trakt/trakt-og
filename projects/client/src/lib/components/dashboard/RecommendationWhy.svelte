@@ -6,6 +6,8 @@
   subgenres the viewer likes.
   Classic picks bring their sources. Smart picks come without, so with `reasons` the panel loads them on its first open,
   shimmering until they land. Without either there's no button at all.
+  `trigger` draws a button of its own in place of the glass one (a card's quick-icon bar), spreading the attributes
+  that open the panel. Without room above, the panel opens below, its arrow pointing up.
 -->
 <script lang="ts">
 import { AnalyticsEvent } from '#lib/analytics/AnalyticsEvent.ts';
@@ -21,8 +23,10 @@ import type { Recommendation, RecommendationPerson, RecommendationSource } from 
 import Icon from '#lib/icons/Icon.svelte';
 import xmark from '#lib/icons/regular/xmark.svg?raw';
 import heart from '#lib/icons/solid/heart.svg?raw';
+import bullseyeArrow from '#lib/icons/solid/bullseye-arrow.svg?raw';
 import checkThick from '#lib/icons/trakt/check-thick.svg?raw';
-import sparkles from '#lib/icons/solid/sparkles.svg?raw';
+import { type Snippet, tick } from 'svelte';
+import type { HTMLButtonAttributes } from 'svelte/elements';
 
 type Why = Recommendation['why'];
 type LoadReasons = (pick: { type: Recommendation['type']; id: number }) => Promise<Why | null>;
@@ -40,15 +44,19 @@ interface Props {
   reasons?: boolean;
   /** Demos pass sample reasons. */
   loadReasons?: LoadReasons;
+  trigger?: Snippet<[HTMLButtonAttributes]>;
 }
 
-const { why, type, pick, title, poster, reasons = false, loadReasons = fromApi }: Props = $props();
+const { why, type, pick, title, poster, reasons = false, loadReasons = fromApi, trigger }: Props = $props();
 const id = $props.id();
 const has = (shown: Why) => shown.titles.length > 0 || shown.people.length > 0 || shown.likes.length > 0;
 // trakt-web's reasons: people first, as they lead its drawer.
 const reasonOf = (shown: Why) => (shown.people.length > 0 ? 'people' : has(shown) ? 'titles' : 'empty');
 const inline = $derived(has(why));
 let panel = $state<HTMLDivElement>();
+let below = $state(false);
+// Hidden from opening until it's on its side, so it never shows a frame on the wrong one.
+let placing = $state(false);
 /** Undefined until loaded, null when the load failed. */
 let loaded = $state<Why | null>();
 const shown = $derived(inline ? why : loaded);
@@ -68,15 +76,32 @@ function load() {
   return loading;
 }
 
+// Without room above, the browser keeps the panel on screen over its button, so it goes below instead. Loaded reasons
+// grow the panel upward, so it checks again once they're in.
+async function flipIfOffScreen() {
+  await tick();
+  if (!panel?.matches(':popover-open') || below) return;
+  const box = panel.getBoundingClientRect();
+  const opener = document.querySelector(`[popovertarget="why-${id}"]`)?.getBoundingClientRect();
+  below = box.top < 0 || (opener !== undefined && box.bottom > opener.top);
+}
+
 async function opening(event: ToggleEvent) {
   if (event.newState !== 'open') return;
+  below = false;
+  placing = true;
   const result = inline ? why : await (loading ?? load());
+  void flipIfOffScreen();
   if (result) track({ reason: reasonOf(result) });
 }
 
-// Focus moves into the panel when it opens, onto its close button.
-function toggled(event: ToggleEvent) {
-  if (event.newState === 'open') panel?.querySelector<HTMLElement>('.close')?.focus();
+// Focus moves into the panel once it's placed, onto its close button.
+async function toggled(event: ToggleEvent) {
+  if (event.newState !== 'open') return;
+  await flipIfOffScreen();
+  placing = false;
+  await tick();
+  panel?.querySelector<HTMLElement>('.close')?.focus();
 }
 </script>
 
@@ -132,16 +157,18 @@ function toggled(event: ToggleEvent) {
 {/snippet}
 
 {#if inline || reasons}
-  <GlassAction icon={sparkles} color="var(--color-why-button)" popovertarget="why-{id}" style="anchor-name: --why-{id}"
-  aria-haspopup="dialog">
-    Why this?
-  </GlassAction>
-  <div bind:this={panel} id="why-{id}" class="panel" popover="auto" role="dialog" aria-labelledby="why-{id}-title"
-  style:position-anchor="--why-{id}" onbeforetoggle={opening} ontoggle={toggled}>
+  {@const opener = { popovertarget: `why-${id}`, style: `anchor-name: --why-${id}`, 'aria-haspopup': 'dialog' } as const}
+  {#if trigger}
+    {@render trigger(opener)}
+  {:else}
+    <GlassAction icon={bullseyeArrow} color="var(--color-why-button)" {...opener}>Why this?</GlassAction>
+  {/if}
+  <div bind:this={panel} id="why-{id}" class={['panel', { below, placing }]} popover="auto" role="dialog"
+  aria-labelledby="why-{id}-title" style:position-anchor="--why-{id}" onbeforetoggle={opening} ontoggle={toggled}>
     <header>
       <span class="poster">{#if poster}<img src={poster} alt="" decoding="async" />{/if}</span>
       <div>
-        <span class="eyebrow"><Icon svg={sparkles} />Why we picked</span>
+        <span class="eyebrow"><Icon svg={bullseyeArrow} />Why we picked</span>
         <h4 id="why-{id}-title">{title}</h4>
       </div>
       <button type="button" class="close" aria-label="Close" onclick={() => panel?.hidePopover()}><Icon
@@ -211,6 +238,22 @@ function toggled(event: ToggleEvent) {
     background: var(--color-why-panel-bg);
     translate: -50% -50%;
     rotate: 45deg;
+  }
+
+  &.placing {
+    visibility: hidden;
+  }
+
+  /* Below its button, the arrow on top pointing up. */
+  &.below {
+    position-area: bottom;
+    margin: var(--why-arrow-offset) 0 0;
+
+    &::after {
+      inset-block: auto 100%;
+      translate: -50% 50%;
+      rotate: 225deg;
+    }
   }
 }
 

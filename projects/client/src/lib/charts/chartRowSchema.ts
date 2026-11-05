@@ -16,7 +16,7 @@ const media = z.object({
   genres: z.array(z.string()).nullish(),
   overview: z.string().nullish(),
   trailer: z.string().nullish(),
-  images: z.object({ fanart: art, logo: art }).nullish(),
+  images: z.object({ fanart: art, logo: art, poster: art }).nullish(),
 });
 
 /**

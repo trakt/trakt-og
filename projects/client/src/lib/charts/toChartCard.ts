@@ -2,12 +2,18 @@ import { countLabel } from '../utils/countLabel.ts';
 import { type DateOrder, formatDate } from '../utils/formatDate.ts';
 import { genreLabel } from '../utils/genreLabel.ts';
 import { imageUrl } from '../utils/imageUrl.ts';
+import type { Recommendation } from '../dashboard/Recommendation.ts';
+import type { recommendationSourceSchema } from '../dashboard/recommendationSourceSchema.ts';
+import { toRecommendationWhy } from '../dashboard/toRecommendationWhy.ts';
 import type { ChartName } from './chartNames.ts';
 import type { ChartMedia } from './chartRowSchema.ts';
+import type { z } from 'zod/v4';
 
 // Trending sends `watchers`, anticipated `list_count`, favorited `user_count`, and watched, played and collected
-// all four of the last. Shows' `collector_count` is owners, and their `collected_count` is episodes.
+// all four of the last. Shows' `collector_count` is owners, and their `collected_count` is episodes. Classic
+// recommendations send the `sources` that led to them.
 type Stats = {
+  sources?: readonly z.infer<typeof recommendationSourceSchema>[] | null;
   watchers?: number;
   list_count?: number;
   user_count?: number;
@@ -31,6 +37,8 @@ export type ChartCard = {
   fanart?: string;
   /** The title as artwork, for the podium. */
   logo?: string;
+  /** For a recommendation's Why this? panel. */
+  poster?: string;
   /** Out by `now`. OG hid the rating of anything unreleased or undated . */
   released: boolean;
   rating?: number;
@@ -46,6 +54,8 @@ export type ChartCard = {
   network?: string;
   /** A YouTube link. */
   trailer?: string;
+  /** A recommendation's reasons. */
+  why?: Recommendation['why'];
 };
 
 type Tag = ChartCard['tags'][number];
@@ -127,6 +137,7 @@ export function toChartCard(
     image: imageUrl(media.images?.fanart?.at(0), 'thumb'),
     fanart: imageUrl(media.images?.fanart?.at(0), 'full'),
     logo: imageUrl(media.images?.logo?.at(0), 'medium'),
+    poster: imageUrl(media.images?.poster?.at(0), 'thumb'),
     released,
     rating: media.rating ?? undefined,
     runtime: media.runtime ?? undefined,
@@ -138,5 +149,6 @@ export function toChartCard(
     genres: (media.genres ?? []).map(genreLabel),
     network: 'show' in row ? (row.show.network ?? undefined) : undefined,
     trailer: media.trailer ?? undefined,
+    why: chart === 'recommendations' ? toRecommendationWhy({ sources: row.sources ?? [] }) : undefined,
   };
 }

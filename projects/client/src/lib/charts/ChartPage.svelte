@@ -8,6 +8,7 @@
 -->
 <script lang="ts">
 import SeoHead from '#lib/seo/SeoHead.svelte';
+import type { ComponentProps } from 'svelte';
 import { goto, invalidateAll } from '$app/navigation';
 import { page } from '$app/state';
 import AdvancedFiltersToggle from '#lib/components/filters/AdvancedFiltersToggle.svelte';
@@ -31,6 +32,7 @@ import Dropdown from '#lib/components/dropdown/Dropdown.svelte';
 import FrameGrid from '#lib/components/frame/FrameGrid.svelte';
 import FanartCard from '#lib/components/media/FanartCard.svelte';
 import { mediaQuickIcons } from '#lib/components/media/mediaQuickIcons.ts';
+import type QuickIcons from '#lib/components/media/QuickIcons.svelte';
 import LoadFailed from '#lib/components/empty/LoadFailed.svelte';
 import EmptyState from '#lib/components/empty/EmptyState.svelte';
 import NoResults from '#lib/components/empty/NoResults.svelte';
@@ -135,6 +137,8 @@ const nextHref = $derived(
     : undefined,
 );
 
+// Smart picks come without reasons. Only VIPs get any, and the route is Official-only.
+const reasons = $derived(Boolean(data.user?.isVip) && !isStandardApi());
 // Recommendations have no eye menu.
 const menu = $derived(data.chart !== 'recommendations');
 const options = $derived(fadeHideOptions.filter((option) => data.type === 'shows' || !('showsOnly' in option)));
@@ -144,7 +148,7 @@ let fadeHide = $derived<FadeHide>(data.fadeHide);
 type Entry = {
   card: ChartCard;
   rank: number;
-  icons: ReturnType<typeof mediaQuickIcons> & { favorite: true };
+  icons: ReturnType<typeof mediaQuickIcons> & { favorite: true; why?: ComponentProps<typeof QuickIcons>['why'] };
   faded: boolean;
   rating?: number | null;
   dropped?: boolean;
@@ -155,6 +159,7 @@ const entries = $derived(
     const icons = {
       ...mediaQuickIcons({ item: card, state, datePreferences: data.datePreferences }),
       favorite: true as const,
+      why: card.why && { why: card.why, type: card.type, pick: card.id, title: card.title, poster: card.poster, reasons },
     };
     const matches = (id: FadeHideOption) => matchesFadeHide(id, state, icons.fill);
     if (menu && fadeHide.hide.some(matches)) return [];

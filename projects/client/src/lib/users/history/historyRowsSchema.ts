@@ -35,6 +35,8 @@ export const episode = z.object({
   episode_type: z.string().nullish(),
   runtime: z.number().nullish(),
   rating: z.number().nullish(),
+  votes: z.number().nullish(),
+  first_aired: z.string().nullish(),
   images,
 });
 

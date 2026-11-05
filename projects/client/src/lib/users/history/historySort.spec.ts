@@ -13,6 +13,16 @@ describe('historySort', () => {
   it('should keep Watched Date newest first', () => {
     expect(historySort('shows', 'added/desc')).toEqual({ by: 'added', how: 'asc' });
   });
+
+  it("should chart one show's or season's episodes, and flip any item's Watched Date", () => {
+    const show = { type: 'show', id: 2302 } as const;
+    expect(historySort('episodes', 'time/desc', show)).toEqual({ by: 'time', how: 'desc' });
+    expect(historySort('episodes', 'votes/asc', { type: 'season', id: 1 })).toEqual({ by: 'votes', how: 'asc' });
+    expect(historySort('episodes', 'popularity/asc', show)).toEqual({ by: 'added', how: 'asc' });
+    expect(historySort('all', 'added/desc', { type: 'movie', id: 1 })).toEqual({ by: 'added', how: 'desc' });
+    expect(historySort('all', 'plays/asc', { type: 'movie', id: 1 })).toEqual({ by: 'added', how: 'asc' });
+    expect(historySort('episodes', 'released/asc')).toEqual({ by: 'added', how: 'asc' });
+  });
 });
 
 describe('historyPath', () => {

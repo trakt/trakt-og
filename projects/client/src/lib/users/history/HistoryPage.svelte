@@ -1,7 +1,8 @@
 <!--
   `/users/:id/history(/:type)(/:sort_by/:sort_how)` under the profile frame: the subnav with the type, genre
   and date filters, the counter, sort and filter icons, then every play as a poster card under day dividers, or in
-  one grid with the dividers off. Shows, and Movies on any sort but Watched Date, chart one card a title instead.
+  one grid with the dividers off. Shows, and Movies on any sort but Watched Date, chart one card a title instead, and
+  one show's or season's plays chart one card an episode.
 -->
 <script lang="ts">
 import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
@@ -43,7 +44,7 @@ import {
   type HistorySort,
   historyPath,
   historySortLabels,
-  historySorts,
+  historySortsFor,
   validHistorySort,
 } from './historySort.ts';
 import { genresFor, historyTypes, isHistoryType } from './historyTypes.ts';
@@ -88,12 +89,13 @@ function href(type: string, changes: Record<string, string | null>, sort: Histor
     if (value === null) query.delete(key);
     else query.set(key, value);
   }
-  const path = isHistoryType(type) ? historyPath(type, validHistorySort(type, sort.by) ? sort : defaultHistorySort) : '';
+  const path = isHistoryType(type)
+    ? historyPath(type, validHistorySort(type, sort.by, data.filters.item) ? sort : defaultHistorySort)
+    : '';
   return `${base}${path}${query.size ? `?${query}` : ''}`;
 }
 
-// One item's plays run newest first only.
-const sorts = $derived(data.filters.item ? historySorts.all : historySorts[data.type]);
+const sorts = $derived(historySortsFor(data.type, data.filters.item));
 const menuSorts = $derived(withTraktSorts(sorts.map((by) => ({ by, label: historySortLabels[by] }))));
 const flipped = $derived(data.sort.how === 'desc');
 // OG only divides Watched Date by day.
@@ -190,8 +192,8 @@ const country = $derived(watchNowCountry(data.settings));
             fallback={historySortLabels[data.sort.by]} />{/snippet}
         <SortMenu sorts={menuSorts} current={data.sort.by} href={({ by }) => href(data.type, {}, { by, how: 'asc' })} />
       </Dropdown>
-      <!-- Every sort but Title runs newest, most or longest first; Watched Date can't flip. -->
-      <SortDirection joined descending={data.sort.by !== 'title'} disabled={!flippable(data.sort)} bind:flipped={
+      <!-- Every sort but Title runs newest, most or longest first; Watched Date only flips for one item. -->
+      <SortDirection joined descending={data.sort.by !== 'title'} disabled={!flippable(data.sort, data.filters.item)} bind:flipped={
         () => flipped,
         (next) => goto(href(data.type, {}, { by: data.sort.by, how: next ? 'desc' : 'asc' }))
       } />

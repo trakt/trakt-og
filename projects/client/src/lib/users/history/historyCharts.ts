@@ -6,10 +6,13 @@ type Counted = { readonly plays: number; readonly minutes: number; readonly last
 export type ShowChart = Counted & Pick<WatchedShowRow, 'show'>;
 export type MovieChart = Counted & Pick<WatchedMovieRow, 'movie'>;
 
-/** OG's "charts mode": one row a show or movie, with its plays and time spent. */
-export type ChartRow = ShowChart | MovieChart;
+export type EpisodeChart = Counted & Pick<Extract<HistoryRow, { episode: unknown }>, 'episode' | 'show'>;
 
-export const isShowChart = (row: ChartRow): row is ShowChart => 'show' in row;
+/** OG's "charts mode": one row a show or movie, with its plays and time spent, or an episode of one show's plays. */
+export type ChartRow = ShowChart | MovieChart | EpisodeChart;
+
+export const isEpisodeChart = (row: ChartRow): row is EpisodeChart => 'episode' in row;
+export const isShowChart = (row: ChartRow): row is ShowChart => 'show' in row && !isEpisodeChart(row);
 
 /**
  * A watched list row with its time spent. The list has no runtime a play, so a show's is its plays at the show's
@@ -37,13 +40,28 @@ export function toChartsFromPlays(rows: readonly HistoryRow[]): ChartRow[] {
   return [...seen.values()];
 }
 
-const media = (row: ChartRow) => ('movie' in row ? row.movie : row.show);
+/** One show's or season's plays grouped by episode, at each one's newest play, newest first. */
+export function toEpisodeCharts(rows: readonly HistoryRow[]): EpisodeChart[] {
+  const seen = new Map<number, EpisodeChart>();
+  for (const row of rows) {
+    if ('movie' in row) continue;
+    const minutes = playRuntime(row);
+    const found = seen.get(row.episode.ids.trakt);
+    seen.set(
+      row.episode.ids.trakt,
+      found
+        ? { ...found, plays: found.plays + 1, minutes: found.minutes + minutes }
+        : { plays: 1, minutes, last_watched_at: row.watched_at, episode: row.episode, show: row.show },
+    );
+  }
+  return [...seen.values()];
+}
+
+const media = (row: ChartRow) => ('movie' in row ? row.movie : 'episode' in row ? row.episode : row.show);
 const time = (date: string | null | undefined) => (date ? Date.parse(date) || 0 : 0);
-const title = (row: ChartRow) =>
-  media(row)
-    .title.toLowerCase()
-    .replace(/^(the |an |a )/, '');
-const released = (row: ChartRow) => time('movie' in row ? row.movie.released : row.show.first_aired);
+const title = (row: ChartRow) => (media(row).title ?? '').toLowerCase().replace(/^(the |an |a )/, '');
+const released = (row: ChartRow) =>
+  time('movie' in row ? row.movie.released : 'episode' in row ? row.episode.first_aired : row.show.first_aired);
 
 type Key = readonly [(row: ChartRow) => number | string, 1 | -1];
 

@@ -12,9 +12,17 @@ import { readProfileTab } from '../readProfileTab.ts';
 import { withShowPosters } from '../withShowPosters.ts';
 import { type HistoryCounts, historyCounts } from './historyCounts.ts';
 import { type HistoryFilters, historyFilters } from './historyFilters.ts';
-import { type ChartRow, fromWatched, isShowChart, sortCharts, toChartsFromPlays } from './historyCharts.ts';
+import {
+  type ChartRow,
+  fromWatched,
+  isEpisodeChart,
+  isShowChart,
+  sortCharts,
+  toChartsFromPlays,
+  toEpisodeCharts,
+} from './historyCharts.ts';
 import { type HistoryRow, historyRowsSchema, watchedMoviesSchema, watchedShowsSchema } from './historyRowsSchema.ts';
-import { defaultHistorySort, type HistorySort, historyPath, historySort } from './historySort.ts';
+import { type HistorySort, historyPath, historySort } from './historySort.ts';
 import { type HistoryType, isHistoryType } from './historyTypes.ts';
 import { historyItemTitle, toChartCard, toHistoryCard, toHistoryDays } from './toHistoryCard.ts';
 import { positiveInt } from '../../utils/positiveInt.ts';
@@ -49,6 +57,8 @@ type Fetched = {
   plays: HistoryRow[];
   charts: ChartRow[];
   total: number;
+  /** One item's plays when they're charted by episode, and `total` counts the episodes. */
+  playCount?: number;
   page: PageMeta;
 };
 
@@ -94,6 +104,15 @@ async function readAll<Row>(
   };
 }
 
+/** One page of rows sorted here. */
+function paged<Row>(rows: readonly Row[], current: number, limit: number) {
+  const pages = Math.max(1, Math.ceil(rows.length / limit));
+  return {
+    slice: rows.slice((current - 1) * limit, current * limit),
+    page: { type: 'paginated', current: Math.min(current, pages), total: pages } satisfies PageMeta,
+  };
+}
+
 const filtered = (filters: HistoryFilters) =>
   Boolean(filters.startAt || filters.endAt || filters.genre || filters.watchnow);
 
@@ -101,7 +120,8 @@ const filtered = (filters: HistoryFilters) =>
  * One page of history: the plays, or a chart of shows or movies. The Shows tab is always a chart, and Movies is one
  * on any sort but Watched Date. The unfiltered Shows tab on Watched Date is the watched list, which the API pages by
  * last watched. Every other chart reads all of the watched list, or groups the filtered plays when there are filters,
- * since the watched lists take none, and sorts here.
+ * since the watched lists take none, and sorts here. One item's plays come one page at a time newest first; any other
+ * sort reads all of them, and runs them oldest first or charts them by episode.
  */
 async function fetchPage({
   fetch,
@@ -157,20 +177,36 @@ async function fetchPage({
         );
     if (!all.rows) return invalid(all.status);
     const charts = sortCharts(all.rows, sort);
-    const pages = Math.max(1, Math.ceil(charts.length / limit));
-    const slice = charts.slice((current - 1) * limit, current * limit);
+    const { slice, page } = paged(charts, current, limit);
     const shows = slice.filter(isShowChart);
     return {
       ...empty,
       status: 200,
       charts: shows.length > 0 ? await withShowPosters(fetch, shows) : slice,
       total: filtered(filters) ? charts.length : (all.total ?? charts.length),
-      page: { type: 'paginated', current: Math.min(current, pages), total: pages },
+      page,
     };
   }
 
   const { item } = filters;
   const path = item ? `/history/${item.type}s/${item.id}` : type === 'all' ? '/history' : `/history/${type}`;
+  if (item && (sort.by !== 'added' || sort.how !== 'asc')) {
+    const all = await readAll(
+      fetch,
+      token,
+      (n) => `${base}${path}?${query(filters, n, MAX_LIMIT)}`,
+      MAX_PAGES,
+      (body) => historyRowsSchema.safeParse(body).data,
+    );
+    if (!all.rows) return invalid(all.status);
+    if (sort.by === 'added') {
+      const { slice, page } = paged(all.rows.toReversed(), current, limit);
+      return { ...empty, status: 200, plays: slice, total: all.total, page };
+    }
+    const charts = sortCharts(toEpisodeCharts(all.rows), sort);
+    const { slice, page } = paged(charts, current, limit);
+    return { ...empty, status: 200, charts: slice, total: charts.length, playCount: all.total, page };
+  }
   const { response, body } = await read(fetch, token, `${base}${path}?${query(filters, current, limit)}`);
   if (response.status === 404) return { ...empty, status: 404 };
   const rows = historyRowsSchema.safeParse(body);
@@ -201,8 +237,7 @@ export async function loadHistory({ fetch, locals, params, url, cookies, parent 
   const bare = range.some((value) => !/(Z|[+-]\d\d:?\d\d)$/i.test(value ?? ''));
   const known = bare ? await layout : null;
   const filters = historyFilters(url.searchParams, type, known?.datePreferences.timeZone ?? 'UTC');
-  // One item's plays run newest first only.
-  const sort = filters.item ? defaultHistorySort : historySort(type, params.sort);
+  const sort = historySort(type, params.sort, filters.item);
   canonicalRedirect({
     requested: [`${base}/history`, params.type, params.sort].filter(Boolean).join('/'),
     canonical: `${base}/history${historyPath(type, sort)}`,
@@ -253,8 +288,10 @@ export async function loadHistory({ fetch, locals, params, url, cookies, parent 
     charted,
     screenshots,
     days: toHistoryDays(cards, datePreferences),
-    counts: historyCounts({ type, filters, stats, total: result.total, charted }),
+    counts: historyCounts({ type, filters, stats, total: result.total, charted, plays: result.playCount }),
     page: result.page,
-    itemTitle: filters.item ? historyItemTitle(filters.item, result.plays.at(0)) : undefined,
+    itemTitle: filters.item
+      ? historyItemTitle(filters.item, result.plays.at(0) ?? result.charts.find(isEpisodeChart))
+      : undefined,
   };
 }

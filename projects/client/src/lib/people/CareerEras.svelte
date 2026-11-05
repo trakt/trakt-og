@@ -40,7 +40,7 @@ const rows = $derived(
       seen: share(seen),
       rest: share(era.credits.length - seen),
       tip: era.top
-        ? `${era.start} to ${era.end}: ${era.credits.length} credits, best known for ${name(era.top)}`
+        ? `Best known for ${name(era.top)}`
         : undefined,
     };
   }).toReversed(),
@@ -51,7 +51,7 @@ const rows = $derived(
   <ul>
     {#each rows as era (era.start)}
       <li>
-        <Tooltip text={era.tip} placement="right">
+        <Tooltip text={era.tip} placement="left">
           {#snippet trigger(tooltip)}
             <button type="button" class="era" style:--era-accent={era.accent} aria-pressed={selected === era.start}
               disabled={era.credits.length === 0} onclick={() => pick(era.start)}
@@ -91,6 +91,7 @@ ul {
   /* The years and the count line up with the section nav's text; only the hover and pick wash reach past it. */
   inline-size: calc(100% + 2 * var(--person-eras-row-bleed));
   margin-inline: calc(-1 * var(--person-eras-row-bleed));
+  min-block-size: var(--person-eras-row-height);
   padding: var(--person-eras-row-padding-block) var(--person-eras-row-bleed);
   border: 0;
   border-radius: var(--radius-person-eras-row);
@@ -146,7 +147,7 @@ ul {
   color: var(--color-menu-tag);
   font-size: var(--font-size-person-eras-count);
   font-variant-numeric: tabular-nums;
-  line-height: var(--line-height-base);
+  line-height: var(--line-height-person-eras-count);
 
   [aria-pressed='true'] & {
     color: var(--color-text);

@@ -4173,8 +4173,11 @@
   --color-person-era-7: #f2b233;
   --color-person-era-8: #3fae5a;
   --person-fanart-position: 50% 15%; /* a credit's still in the slim header: faces sit in the top third of most stills */
+  /* The slim fanart is short: the poster starts where it sticks, under the header. */
+  --person-poster-overlap: calc(var(--fanart-header-height-slim) - var(--summary-sticky-gap));
   --person-eras-padding: 10px; /* above the first era and below the last, inside the rules */
-  --person-eras-row-padding-block: 4px; /* tighter than the section nav's links, so the chart stays compact */
+  --person-eras-row-height: 24px; /* WCAG's smallest target, under the buttons' 34px, so the chart stays compact */
+  --person-eras-row-padding-block: 2px;
   --person-eras-row-bleed: 6px; /* the hover and pick wash, past the sidebar's text edges */
   --person-eras-columns: 72px 1fr 24px; /* years, bar, count tag: fixed, so every bar starts and ends together */
   --person-eras-column-gap: 8px;
@@ -4187,8 +4190,9 @@
   --color-person-eras-hover: var(--color-list-card-wash);
   --font-size-person-eras-years: 11px;
   --letter-spacing-person-eras-years: 0.04em;
-  --font-size-person-eras-count: 12px;
-  --person-eras-count-padding: 1px 4px; /* the dropdowns' count tag */
+  --font-size-person-eras-count: 10px;
+  --line-height-person-eras-count: 1.4;
+  --person-eras-count-padding: 0 3px; /* a smaller cut of the dropdowns' count tag */
   --person-credits-year-width: 84px;
   --person-credits-year-gap: 12px;
   --person-credits-year-sticky-gap: 16px; /* a pinned year's distance under the site header */

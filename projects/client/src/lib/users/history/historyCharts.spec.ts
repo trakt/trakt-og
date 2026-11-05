@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { type ChartRow, fromWatched, sortCharts, toChartsFromPlays } from './historyCharts.ts';
+import { type ChartRow, fromWatched, sortCharts, toChartsFromPlays, toEpisodeCharts } from './historyCharts.ts';
 import { historyRowsSchema } from './historyRowsSchema.ts';
 
 const show = (trakt: number, title: string, extra: Record<string, unknown> = {}) => ({
@@ -55,6 +55,62 @@ describe('toChartsFromPlays', () => {
       expect.objectContaining({ plays: 2, minutes: 340, last_watched_at: '2026-09-29T00:00:00.000Z' }),
       expect.objectContaining({ plays: 2, minutes: 115, last_watched_at: '2026-09-28T00:00:00.000Z' }),
     ]);
+  });
+});
+
+describe('toEpisodeCharts', () => {
+  const episodes = historyRowsSchema.parse(
+    [
+      [1, 2, 3, 'Pilot', 9, 5, '2005-03-24'],
+      [2, 1, 4, 'Diversity Day', 8, 50, '2005-03-29'],
+      [3, 2, 3, 'Pilot', 9, 5, '2005-03-24'],
+      [4, 1, 1, 'Basketball', 7, 50, '2005-04-19'],
+    ].map(([id, season, number, title, rating, votes, aired]) => ({
+      id,
+      watched_at: `2026-09-2${9 - Number(id)}T00:00:00.000Z`,
+      show: show(1, 'The Office', { runtime: 22 }),
+      episode: {
+        ids: { trakt: Number(season) * 100 + Number(number) },
+        season,
+        number,
+        title,
+        rating,
+        votes,
+        first_aired: `${aired}T21:30:00.000Z`,
+      },
+    })),
+  );
+  const charts = toEpisodeCharts(episodes);
+  const titles = (sorted: readonly ChartRow[]) => sorted.map((row) => ('episode' in row ? row.episode.title : ''));
+
+  it('should keep each episode once, at its newest play, totalling plays and runtimes', () => {
+    expect(charts.map(({ plays, minutes, last_watched_at }) => ({ plays, minutes, last_watched_at }))).toEqual([
+      { plays: 2, minutes: 44, last_watched_at: '2026-09-28T00:00:00.000Z' },
+      { plays: 1, minutes: 22, last_watched_at: '2026-09-27T00:00:00.000Z' },
+      { plays: 1, minutes: 22, last_watched_at: '2026-09-25T00:00:00.000Z' },
+    ]);
+  });
+
+  it('should sort the episodes by release date, plays, time, title, rating and votes', () => {
+    expect(titles(sortCharts(charts, { by: 'released', how: 'asc' }))).toEqual([
+      'Basketball',
+      'Diversity Day',
+      'Pilot',
+    ]);
+    expect(titles(sortCharts(charts, { by: 'released', how: 'desc' }))).toEqual([
+      'Pilot',
+      'Diversity Day',
+      'Basketball',
+    ]);
+    expect(titles(sortCharts(charts, { by: 'time', how: 'asc' }))).toEqual(['Pilot', 'Diversity Day', 'Basketball']);
+    expect(titles(sortCharts(charts, { by: 'plays', how: 'asc' }))).toEqual(['Pilot', 'Diversity Day', 'Basketball']);
+    expect(titles(sortCharts(charts, { by: 'title', how: 'asc' }))).toEqual(['Basketball', 'Diversity Day', 'Pilot']);
+    expect(titles(sortCharts(charts, { by: 'percentage', how: 'asc' }))).toEqual([
+      'Pilot',
+      'Diversity Day',
+      'Basketball',
+    ]);
+    expect(titles(sortCharts(charts, { by: 'votes', how: 'asc' }))).toEqual(['Diversity Day', 'Basketball', 'Pilot']);
   });
 });
 

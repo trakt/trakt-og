@@ -21,6 +21,14 @@ describe('historyCounts', () => {
     expect(count('shows', { genre: 'drama' }, 5)).toEqual({ unique: { count: 5, noun: 'show' } });
   });
 
+  it("should count one show's charted episodes and their plays", () => {
+    const filters = { item: { type: 'show', id: 2302 } } as const;
+    expect(historyCounts({ type: 'episodes', filters, stats: null, total: 9, charted: true, plays: 14 })).toEqual({
+      unique: { count: 9, noun: 'episode' },
+      plays: 14,
+    });
+  });
+
   it('should show plays only for one item, a date range or a genre', () => {
     expect(count('all', { startAt: '2026-09-01T00:00:00.000Z' }, 12)).toEqual({ plays: 12 });
     expect(count('movies', { item: { type: 'movie', id: 1 } }, 2)).toEqual({ plays: 2 });

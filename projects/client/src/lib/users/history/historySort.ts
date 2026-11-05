@@ -1,3 +1,4 @@
+import type { HistoryItem } from './historyFilters.ts';
 import type { HistoryType } from './historyTypes.ts';
 
 /** OG's history sort labels, less Popularity, which the API has no rank for. */
@@ -14,15 +15,35 @@ export const historySortLabels = {
 
 export type HistorySortBy = keyof typeof historySortLabels;
 
-const charted = Object.keys(historySortLabels) as HistorySortBy[];
+const charted: readonly HistorySortBy[] = [
+  'added',
+  'plays',
+  'time',
+  'title',
+  'released',
+  'runtime',
+  'percentage',
+  'votes',
+];
 
 /** All Types and Episodes are play lists the API only serves newest first. */
-export const historySorts: Readonly<Record<HistoryType, readonly HistorySortBy[]>> = {
+const historySorts: Readonly<Record<HistoryType, readonly HistorySortBy[]>> = {
   all: ['added'],
   movies: charted,
   shows: charted,
   episodes: ['added'],
 };
+
+/** One show's or season's plays chart one card an episode; a movie's or episode's plays are all the same title. */
+const itemSorts: Readonly<Record<HistoryItem['type'], readonly HistorySortBy[]>> = {
+  show: charted,
+  season: charted,
+  movie: ['added'],
+  episode: ['added'],
+};
+
+export const historySortsFor = (type: HistoryType, item: HistoryItem | undefined) =>
+  item ? itemSorts[item.type] : historySorts[type];
 
 export type HistorySort = {
   readonly by: HistorySortBy;
@@ -32,16 +53,17 @@ export type HistorySort = {
 
 export const defaultHistorySort: HistorySort = { by: 'added', how: 'asc' };
 
-export const validHistorySort = (type: HistoryType, by: string) => historySorts[type].find((sort) => sort === by);
+export const validHistorySort = (type: HistoryType, by: string, item?: HistoryItem) =>
+  historySortsFor(type, item).find((sort) => sort === by);
 
-/** Watched Date stays newest first: the play lists can't run the other way. */
-export const flippable = ({ by }: HistorySort) => by !== 'added';
+/** Watched Date stays newest first, as the API serves it, except for one item, whose plays are all read. */
+export const flippable = ({ by }: HistorySort, item?: HistoryItem) => by !== 'added' || item !== undefined;
 
 /** The `/:sort_by/:sort_how` segments. An unknown sort falls back to Watched Date, as OG did. */
-export function historySort(type: HistoryType, segments: string | undefined): HistorySort {
+export function historySort(type: HistoryType, segments: string | undefined, item?: HistoryItem): HistorySort {
   const [by = '', how] = (segments ?? '').split('/');
-  const sort = { by: validHistorySort(type, by) ?? 'added', how: how === 'desc' ? 'desc' : 'asc' } as const;
-  return flippable(sort) ? sort : defaultHistorySort;
+  const sort = { by: validHistorySort(type, by, item) ?? 'added', how: how === 'desc' ? 'desc' : 'asc' } as const;
+  return flippable(sort, item) ? sort : defaultHistorySort;
 }
 
 /** OG's `history_user_path` after `/history`: All Types and the default sort stay out of it. */

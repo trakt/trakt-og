@@ -135,6 +135,55 @@ describe('loadHistory', () => {
     ]);
   });
 
+  it("should read all of one item's plays to run them oldest first", async () => {
+    server.use(
+      http.get('https://apiz.trakt.tv/users/tester/history/shows/1388', ({ request }) => {
+        seen.push(request);
+        const first = new URL(request.url).searchParams.get('page') === '1';
+        return HttpResponse.json([first ? play : { ...play, id: 8, watched_at: '2026-09-01T16:00:00.000Z' }], {
+          headers: pages,
+        });
+      }),
+    );
+    const result = await load({ type: 'episodes', sort: 'added/desc', query: '?show=1388' });
+    expect(requested()).toEqual([
+      '/users/tester/history/shows/1388?extended=full%2Cimages&page=1&limit=250',
+      '/users/tester/history/shows/1388?extended=full%2Cimages&page=2&limit=250',
+    ]);
+    expect(result).toMatchObject({ sort: { by: 'added', how: 'desc' }, charted: false, counts: { plays: 61 } });
+    expect(result.days.map(({ cards }) => cards.map(({ key }) => key))).toEqual([[8], [9]]);
+  });
+
+  it("should chart one show's plays by episode on any other sort", async () => {
+    const episode = (id: number, number: number, title: string) => ({
+      ...play,
+      id,
+      episode: { ids: { trakt: 100 + number }, season: 1, number, title, first_aired: `2008-0${number}-20T02:00:00Z` },
+    });
+    server.use(
+      http.get('https://apiz.trakt.tv/users/tester/history/shows/1388', ({ request }) => {
+        seen.push(request);
+        return HttpResponse.json([episode(3, 2, 'Cat’s in the Bag...'), episode(2, 1, 'Pilot'), episode(1, 2, '')], {
+          headers: { ...pages, 'X-Pagination-Page-Count': '1', 'X-Pagination-Item-Count': '3' },
+        });
+      }),
+    );
+    const result = await load({ type: 'episodes', sort: 'released/desc', query: '?show=1388' });
+    expect(result).toMatchObject({
+      charted: true,
+      itemTitle: 'Breaking Bad',
+      counts: { unique: { count: 2, noun: 'episode' }, plays: 3 },
+    });
+    expect(
+      result.days
+        .flatMap(({ cards }) => cards)
+        .map(({ number, subtitles, variant }) => ({ number, subtitles, variant })),
+    ).toEqual([
+      { number: '1x01', subtitles: ['Jan 19, 2008 6:00 PM', '1 play'], variant: 'screenshot' },
+      { number: '1x02', subtitles: ['Feb 19, 2008 6:00 PM', '2 plays'], variant: 'screenshot' },
+    ]);
+  });
+
   it('should send signed-out visitors past page 1 to sign in', async () => {
     await expect(load({ query: '?page=2', signedIn: false })).rejects.toMatchObject({
       status: 302,

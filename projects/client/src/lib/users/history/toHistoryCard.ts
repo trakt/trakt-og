@@ -6,7 +6,7 @@ import { imageUrl } from '../../utils/imageUrl.ts';
 import { episodeBadge, type WatchedCard } from '../profile/toProfileSummary.ts';
 import type { HistoryItem } from './historyFilters.ts';
 import type { HistoryRow } from './historyRowsSchema.ts';
-import type { ChartRow } from './historyCharts.ts';
+import type { ChartRow, EpisodeChart } from './historyCharts.ts';
 import type { HistorySortBy } from './historySort.ts';
 import { formatRuntime } from '../../utils/formatRuntime.ts';
 import { countLabel } from '../../utils/countLabel.ts';
@@ -54,6 +54,23 @@ const showHref = (slug: string) => `/shows/${slug}`;
 const watchedDate = (at: string, datePreferences: DatePreferences) =>
   isUnknownDate(at) ? 'Unknown date' : formatDate(at, { ...datePreferences, time: true });
 
+/** An episode's card, on its still or its show's poster. */
+function episodeFields({ episode, show }: Pick<EpisodeChart, 'episode' | 'show'>, screenshots: boolean) {
+  return {
+    type: 'episode',
+    season: { show: show.ids.trakt, number: episode.season, episode: episode.number },
+    id: episode.ids.trakt,
+    href: `${showHref(show.ids.slug)}/seasons/${episode.season}/episodes/${episode.number}`,
+    title: episode.title ?? '',
+    number: episodeNumber(episode, show.genres),
+    image: imageUrl((screenshots ? episode.images?.screenshot : show.images?.poster)?.at(0), 'thumb'),
+    variant: screenshots ? 'screenshot' : 'poster',
+    rating: episode.rating ?? undefined,
+    episodeBadge: episodeBadge(episode),
+    runtime: episode.runtime ?? show.runtime ?? 0,
+  } as const;
+}
+
 /**
  * A play as a card. `screenshots` is OG's episode layout, for the Episodes tab and one show, season or episode: the
  * still, then the show and the date. Otherwise an episode shows its show's poster with the episode under it.
@@ -82,21 +99,11 @@ export function toHistoryCard(
     };
   }
 
-  const { episode, show } = row;
+  const { show } = row;
   return {
     ...common,
-    type: 'episode',
-    season: { show: show.ids.trakt, number: episode.season, episode: episode.number },
-    id: episode.ids.trakt,
-    href: `${showHref(show.ids.slug)}/seasons/${episode.season}/episodes/${episode.number}`,
-    title: episode.title ?? '',
-    number: episodeNumber(episode, show.genres),
-    image: imageUrl((screenshots ? episode.images?.screenshot : show.images?.poster)?.at(0), 'thumb'),
-    variant: screenshots ? 'screenshot' : 'poster',
-    rating: episode.rating ?? undefined,
-    episodeBadge: episodeBadge(episode),
+    ...episodeFields(row, screenshots),
     ...(screenshots && { show: { text: show.title, href: showHref(show.ids.slug) } }),
-    runtime: episode.runtime ?? show.runtime ?? 0,
   };
 }
 
@@ -104,16 +111,17 @@ const plays = (count: number) => countLabel(count, 'play');
 
 /** OG's lines under a charted card's title for each sort. */
 function chartLines(row: ChartRow, by: HistorySortBy, datePreferences: DatePreferences): string[] {
-  const item = 'movie' in row ? row.movie : row.show;
+  const item = 'movie' in row ? row.movie : 'episode' in row ? row.episode : row.show;
   switch (by) {
     case 'added':
       return [watchedDate(row.last_watched_at, datePreferences)];
     case 'released': {
       // A movie's is a bare date, so it's formatted in UTC to keep the day.
+      const aired = 'episode' in row ? row.episode.first_aired : 'show' in row ? row.show.first_aired : undefined;
       const date =
         'movie' in row
           ? row.movie.released && formatDate(row.movie.released, { ...datePreferences, timeZone: 'UTC' })
-          : row.show.first_aired && formatDate(row.show.first_aired, { ...datePreferences, time: true });
+          : aired && formatDate(aired, { ...datePreferences, time: true });
       return [...(date ? [date] : []), plays(row.plays)];
     }
     case 'runtime':
@@ -129,7 +137,10 @@ function chartLines(row: ChartRow, by: HistorySortBy, datePreferences: DatePrefe
   }
 }
 
-/** A show or movie in charts mode, with the sort's lines under the title. */
+/**
+ * A show or movie in charts mode, with the sort's lines under the title, or one show's episode as OG's episode layout
+ * card.
+ */
 export function toChartCard(row: ChartRow, by: HistorySortBy, datePreferences: DatePreferences): HistoryCard {
   const common = {
     variant: 'poster',
@@ -138,6 +149,7 @@ export function toChartCard(row: ChartRow, by: HistorySortBy, datePreferences: D
     subtitles: chartLines(row, by, datePreferences),
     runtime: 0,
   } as const;
+  if ('episode' in row) return { ...common, key: row.episode.ids.trakt, ...episodeFields(row, true) };
   if ('movie' in row) {
     const { movie } = row;
     return {
@@ -191,7 +203,7 @@ export function toHistoryDays<Card extends Pick<HistoryCard, 'watchedAt' | 'runt
 }
 
 /** OG's `full_title` of the one item, for the type dropdown's label. */
-export function historyItemTitle(item: HistoryItem, row: HistoryRow | undefined): string | undefined {
+export function historyItemTitle(item: HistoryItem, row: HistoryRow | EpisodeChart | undefined): string | undefined {
   if (!row) return undefined;
   if ('movie' in row) return row.movie.year ? `${row.movie.title} (${row.movie.year})` : row.movie.title;
   const { show, episode } = row;

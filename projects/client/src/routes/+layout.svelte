@@ -27,6 +27,7 @@ import Toaster from '#lib/components/toast/Toaster.svelte';
 import Nudges from '#lib/components/first-night/Nudges.svelte';
 import OfflineGuard from '#lib/errors/OfflineGuard.svelte';
 import WatchNowHost from '#lib/components/watchnow/WatchNowHost.svelte';
+import { startBrokenImages } from '#lib/images/brokenImageFallback.ts';
 import { startOverlay } from '#lib/overlay/startOverlay.ts';
 import { browserTimeZone } from '#lib/settings/browserTimeZone.ts';
 import { toDarkKnight } from '#lib/settings/toDarkKnight.ts';
@@ -65,6 +66,8 @@ $effect(() => {
   const stops = [startOverlay(manager), startCommentReactions(manager)];
   stopApp = () => stops.forEach((stop) => stop());
 });
+
+onMount(startBrokenImages);
 
 onMount(() => {
   // The server only knows the browser's zone from its cookie, so a first visit, or one from a new zone, reloads the

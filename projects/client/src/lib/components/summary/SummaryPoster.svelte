@@ -16,6 +16,8 @@ import type { RatingTarget } from '#lib/components/rating/RatingTarget.ts';
 interface Props {
   /** Image URL. Left out, the placeholder shows. */
   image?: string;
+  /** What shows if the image fails to load, in place of its kind's placeholder (a person's, by gender). */
+  placeholder?: string;
   episodeBadge?: ComponentProps<typeof EpisodeTypeBadge>;
   alt: string;
   /** The first four list posters, in list order, form OG's quartered list cover. */
@@ -27,14 +29,14 @@ interface Props {
   lastSeen?: string;
 }
 
-const { image, alt, posters, ratingTarget, showTarget, episodeBadge, lastSeen }: Props = $props();
+const { image, placeholder, alt, posters, ratingTarget, showTarget, episodeBadge, lastSeen }: Props = $props();
 const badgeTarget = $derived(showTarget ?? ratingTarget);
 const state = $derived(badgeTarget ? overlay.state(badgeTarget.type, badgeTarget.id) : undefined);
 </script>
 
 <div class={['summary-poster', { dropped: state?.dropped }]}>
   {#if image}
-    <img src={image} {alt} />
+    <img src={image} {alt} data-placeholder={placeholder} />
   {:else}
     <span class="placeholder" role="img" aria-label={alt}></span>
   {/if}

@@ -53,7 +53,7 @@ import { findAction } from '$lib/users/findAction';
 import { fadeOnChange } from '$lib/utils/fadeOnChange';
 import { nearViewport } from '$lib/utils/nearViewport';
 import { changeProgressView, type ProgressView } from './changeProgressView.ts';
-import { filterProgress } from './filterProgress.ts';
+import { filterProgress, keepOnScreen } from './filterProgress.ts';
 import { keepOrder } from './keepOrder.ts';
 import type { loadProgress } from './loadProgress.ts';
 import { hideOptionsFor, type ProgressHide } from './progressHide.ts';
@@ -118,7 +118,7 @@ const seed = Math.floor(Math.random() * 2 ** 31);
 // Each show keeps its place when a watch reloads the progress, so its card or row moves on to the next episode where
 // it is. One you complete stays too, past Hide Completed, with its show card to rate it. Another sort, filter or tab
 // orders afresh.
-let kept = null as { view: string; ids: readonly number[] } | null;
+let kept = null as { view: string; ids: readonly number[]; onScreen: ReadonlyMap<number, boolean> } | null;
 const view = $derived(
   [data.type, data.sort.by, data.sort.how, data.hide.join(), hideUnstarted, data.terms, data.list].join('|'),
 );
@@ -130,7 +130,7 @@ const sorted = $derived(
         terms: data.terms,
         listed: listed ?? undefined,
         hideUnstarted,
-        onScreen: kept?.view === view ? new Set(kept.ids) : undefined,
+        onScreen: kept?.view === view ? kept.onScreen : undefined,
       }),
       data.sort,
       seed,
@@ -140,7 +140,7 @@ const sorted = $derived(
 const shown = $derived.by(() => {
   if (!sorted) return sorted;
   const ordered = kept?.view === view ? keepOrder(sorted, kept.ids) : sorted;
-  kept = { view, ids: ordered.map(({ show }) => show.id) };
+  kept = { view, ids: ordered.map(({ show }) => show.id), onScreen: keepOnScreen(ordered, data.hide) };
   return ordered;
 });
 const limit = $derived(data.grid ? GRID_PER_PAGE : PER_PAGE);

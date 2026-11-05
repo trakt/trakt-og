@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { filterProgress } from './filterProgress.ts';
+import { filterProgress, keepOnScreen } from './filterProgress.ts';
 import { progressItemFixture } from './progressItemFixture.ts';
 
 const done = progressItemFixture(1, { completed: 10, show: { title: 'Breaking Bad', status: 'ended' } });
@@ -27,10 +27,24 @@ describe('filterProgress', () => {
   });
 
   it('should keep shows already on screen past the HIDE toggles, but not the search', () => {
-    const onScreen = new Set([1, 4]);
+    const onScreen = keepOnScreen([done, caughtUp], ['completed']);
     expect(ids(filterProgress([...items, caughtUp], { hide: ['completed'], onScreen }))).toEqual([1, 2, 3, 4]);
     expect(ids(filterProgress([...items, caughtUp], { hide: ['latest-watched'], onScreen }))).toEqual([1, 2, 3, 4]);
     expect(ids(filterProgress(items, { hide: ['completed'], terms: 'wire', onScreen }))).toEqual([3]);
+  });
+
+  it('should not keep a show on screen past a HIDE toggle once its exact counts show it was already completed', () => {
+    const guessed = progressItemFixture(5, { aired: 12, completed: 9 });
+    const exact = { ...guessed, aired: 9, exact: true };
+    const onScreen = keepOnScreen([guessed], ['completed']);
+    expect(ids(filterProgress([exact], { hide: ['completed'], onScreen }))).toEqual([]);
+  });
+
+  it('should keep a show completed on screen past a HIDE toggle once its exact counts load', () => {
+    const watched = progressItemFixture(5, { completed: 10 });
+    const exact = { ...watched, exact: true };
+    const onScreen = keepOnScreen([watched], ['completed']);
+    expect(ids(filterProgress([exact], { hide: ['completed'], onScreen }))).toEqual([5]);
   });
 
   it('should drop shows with no plays only while Include Watchlisted is off', () => {

@@ -18,6 +18,7 @@ import { overlay } from '#lib/overlay/overlay.ts';
 import { countLabel } from '#lib/utils/countLabel.ts';
 import { imageUrl } from '#lib/utils/imageUrl.ts';
 import { breakingBad, seasonOneEpisodes } from '../summary/fixtures.ts';
+import { recommendationsFixture } from '#lib/dashboard/recommendationsFixture.ts';
 
 const { data } = $props();
 const collaborator = (name: string, slug: string) => ({
@@ -222,6 +223,27 @@ const featured = $derived(shows.at(0));
         userRating={state.rating}
         dropped={state.dropped}
         icons={{ ...mediaQuickIcons({ item: show, state, datePreferences: data.datePreferences }), favorite: true }}
+      />
+    {/each}
+  </FrameGrid>
+</Specimen>
+
+<Specimen title="Recommendation cards"
+  note="The recommendations chart's cards: a pick with reasons gets a bullseye that opens Why this?, above its card or below it near the top of the screen. The Matrix has no reasons, so it has none.">
+  <FrameGrid variant="framed">
+    {#each recommendationsFixture.slice(0, 6) as pick (pick.id)}
+      {@const state = overlay.state(pick.type, pick.id)}
+      <FanartCard
+        framed
+        href={pick.href}
+        title={pick.title}
+        year={pick.year}
+        userRating={state.rating}
+        icons={{
+          ...mediaQuickIcons({ item: pick, state, datePreferences: data.datePreferences }),
+          favorite: true,
+          why: { why: pick.why, type: pick.type, pick: pick.id, title: pick.title, poster: pick.poster },
+        }}
       />
     {/each}
   </FrameGrid>

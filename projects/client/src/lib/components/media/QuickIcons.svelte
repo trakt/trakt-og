@@ -1,6 +1,6 @@
 <!--
-  OG's quick-icon bar under a poster or fanart card: watch, library, list, optional favorite and watch now on the left,
-  the Trakt rating on the right. Watch, rating and favorites use shared browser controls.
+  OG's quick-icon bar under a poster or fanart card: watch, library, list, optional favorite, watch now and a
+  recommendation's Why this? on the left, the Trakt rating on the right. Watch, rating and favorites use shared browser controls.
 -->
 <script lang="ts">
 import { page } from '$app/state';
@@ -47,6 +47,9 @@ import ellipsis from '#lib/icons/regular/ellipsis.svg?raw';
 import circleMinus from '#lib/icons/light/circle-minus.svg?raw';
 import lightBackward from '#lib/icons/light/backward.svg?raw';
 import { ratingPercent } from '../../utils/ratingPercent.ts';
+import RecommendationWhy from '#lib/components/dashboard/RecommendationWhy.svelte';
+import bullseyeArrow from '#lib/icons/solid/bullseye-arrow.svg?raw';
+import type { ComponentProps } from 'svelte';
 
 interface Props {
   fill: QuickIconFill;
@@ -93,6 +96,8 @@ interface Props {
   more?: readonly QuickIconMore[];
   /** "Add to watchlist" on movies and shows; "Add to list" on seasons and episodes. Only shown with `QUICK_ADD` on. */
   listLabel?: string;
+  /** A recommendation's reasons, behind a bullseye that opens the dashboard's Why this? panel. */
+  why?: Omit<ComponentProps<typeof RecommendationWhy>, 'trigger'>;
 }
 
 const {
@@ -119,6 +124,7 @@ const {
   hideTarget,
   more = [],
   listLabel = 'Add to watchlist',
+  why,
 }: Props = $props();
 
 let moreButton = $state<HTMLButtonElement>();
@@ -230,6 +236,19 @@ const ratingLevel = $derived(rating === undefined ? 1 : Math.min(Math.max(Math.t
     {#if watchNow && watchNowItem && !menuWatchNow}
       {@const item = watchNowItem}
       {@render action('watch-now', watchNow === 'cinema' ? ticket : play, 'Watch now', 0, 'Watch now', () => openWatchNow(item))}
+    {/if}
+    {#if why}
+      <RecommendationWhy {...why}>
+        {#snippet trigger(opener)}
+          <Tooltip content="Why this?" placement="bottom">
+            {#snippet trigger(tooltip)}
+              <button type="button" class={['action', 'why']} aria-label="Why this?" {...opener} {...tooltip}>
+                <span class="base"></span><Icon svg={bullseyeArrow} />
+              </button>
+            {/snippet}
+          </Tooltip>
+        {/snippet}
+      </RecommendationWhy>
     {/if}
     </div>
     {#if menuRows.length > 0}
@@ -423,6 +442,14 @@ const ratingLevel = $derived(rating === undefined ? 1 : Math.min(Math.max(Math.t
 .watch-now {
   --color: var(--gray);
   color: var(--color-watch-now);
+}
+
+.why {
+  --color: var(--color-why-quick-icon);
+
+  & :global(.icon) {
+    font-size: var(--font-size-quick-icon-why);
+  }
 }
 
 .percentage {

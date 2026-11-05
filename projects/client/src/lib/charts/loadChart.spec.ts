@@ -53,6 +53,22 @@ describe('loadChart recommendations', () => {
     expect(data.page).toEqual({ type: 'infinite', current: 1 });
   });
 
+  it("should keep each pick's sources for its Why this?", async () => {
+    server.use(
+      http.get('https://apiz.trakt.tv/shows/recommendations', () =>
+        HttpResponse.json([
+          {
+            show: SHOW,
+            sources: [{ type: 'favorite', movie: { title: 'Alien', ids: { trakt: 432, slug: 'alien' } } }],
+          },
+        ]),
+      ),
+    );
+    const data = await recommendations('fake-token');
+
+    expect(data.cards.at(0)?.why?.titles.map(({ href, loved }) => [href, loved])).toEqual([['/movies/alien', true]]);
+  });
+
   it("should leave out what the dashboard's recommendations leave out", async () => {
     await recommendations('fake-token');
 

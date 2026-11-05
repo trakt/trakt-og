@@ -8,6 +8,7 @@ import type { DateOrder } from '../utils/formatDate.ts';
 import { parseAdvancedFilters } from '../components/filters/advancedFilters.ts';
 import { advancedFiltersQuery } from '../components/filters/advancedFiltersQuery.ts';
 import { recommendationIgnores } from '../dashboard/fetchRecommendations.ts';
+import { recommendationSourceSchema } from '../dashboard/recommendationSourceSchema.ts';
 import { type FilterSource, toFilterSources } from '../components/filters/watchNowFilter.ts';
 import { type FadeHide, parseFadeHide } from '../components/filters/fadeHide.ts';
 import { favoriteSlugs } from '../components/watchnow/watchNow.ts';
@@ -74,7 +75,10 @@ async function fetchPopular(client: Client, type: MediaType, query: Query): Prom
     : null;
 }
 
-const recommendationRowsSchema = z.array(chartRowSchema);
+// Classic picks carry what led to them, for their cards' Why this?.
+const recommendationRowsSchema = z.array(
+  chartRowSchema.and(z.object({ sources: z.array(recommendationSourceSchema).nullish() })),
+);
 
 // `@trakt/api` has no contract for the worker's `/shows|movies/recommendations`, so the body is parsed here. There's
 // no paging, so the paging headers are dropped.

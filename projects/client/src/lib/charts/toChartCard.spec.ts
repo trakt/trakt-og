@@ -29,6 +29,45 @@ const movie = {
 } as MovieResponse;
 
 describe('toChartCard', () => {
+  it("should carry a recommendation's poster and why it was picked", () => {
+    const sources = [
+      {
+        type: 'activity' as const,
+        stars: 9,
+        show: { title: 'The Wire', year: 2002, ids: { trakt: 1395, slug: 'the-wire' }, images: null },
+      },
+      { type: 'subgenre' as const, subgenres: [{ name: 'Crime drama', slug: 'crime-drama' }] },
+    ];
+    const poster = {
+      ...show,
+      images: { poster: ['media.trakt.tv/images/shows/000/204/167/posters/medium/p.jpg.webp'] },
+    };
+    const card = toChartCard({ show: poster, sources }, { ...options, chart: 'recommendations' });
+
+    expect(card.poster).toBe('https://media.trakt.tv/images/shows/000/204/167/posters/thumb/p.jpg.webp');
+    expect(card.why).toEqual({
+      titles: [
+        {
+          type: 'show',
+          id: 1395,
+          href: '/shows/the-wire',
+          title: 'The Wire',
+          year: 2002,
+          poster: undefined,
+          stars: 9,
+          watched: true,
+          loved: false,
+        },
+      ],
+      likes: ['Crime drama'],
+      people: [],
+    });
+  });
+
+  it('should give only recommendations a why', () => {
+    expect(toChartCard({ show }, trending).why).toBeUndefined();
+  });
+
   it('should map a show onto a fanart card', () => {
     expect(toChartCard({ show }, options)).toEqual({
       type: 'show',

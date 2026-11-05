@@ -24,6 +24,9 @@ const server = setupServer(
     seen.push(request);
     return HttpResponse.json([{ plays: 3, last_watched_at: play.watched_at, show }], { headers: pages });
   }),
+  http.get('https://apiz.trakt.tv/shows/1388/seasons/2', () =>
+    HttpResponse.json([{ first_aired: '2009-03-09T02:00:00.000Z' }, { first_aired: '2010-05-31T02:00:00.000Z' }]),
+  ),
   http.get('https://apiz.trakt.tv/shows/1388', () =>
     HttpResponse.json({ ...show, images: { poster: ['media.trakt.tv/posters/medium/bb.jpg.webp'] } }),
   ),
@@ -54,14 +57,20 @@ const load = ({ type, sort, query = '', token = null, signedIn = true }: Options
 const requested = () => seen.map((request) => new URL(request.url)).map(({ pathname, search }) => pathname + search);
 
 describe('loadHistory', () => {
-  it('should read one item with its filters, without the token, and name the item', async () => {
+  it('should read one item with its filters, without the token, and name it in the band', async () => {
     const result = await load({ type: 'episodes', query: '?season=333403&start_at=2026-09-01&genres=drama' });
     expect(requested()).toEqual([
       '/users/tester/history/seasons/333403?extended=full%2Cimages&page=1&limit=60&start_at=2026-09-01T07%3A00%3A00.000Z&genres=drama',
     ]);
     expect(seen[0]?.headers.has('authorization')).toBe(false);
     expect(result).toMatchObject({
-      itemTitle: 'Breaking Bad Season 2',
+      band: {
+        type: 'season',
+        title: 'Season 2',
+        href: '/shows/breaking-bad/seasons/2',
+        year: '2009 - 2010',
+        parents: [{ title: 'Breaking Bad', item: { type: 'show', id: 1388 } }],
+      },
       screenshots: true,
       counts: { plays: 61 },
       fadeHide: { fade: ['watched'], hide: [] },
@@ -102,7 +111,7 @@ describe('loadHistory', () => {
     });
     await expect(load({ type: 'episodes', sort: 'plays/asc', query: '?movie=1' })).rejects.toMatchObject({
       status: 301,
-      location: '/users/tester/history/episodes?movie=1',
+      location: '/users/tester/history/movies?movie=1',
     });
   });
 
@@ -171,7 +180,7 @@ describe('loadHistory', () => {
     const result = await load({ type: 'episodes', sort: 'released/desc', query: '?show=1388' });
     expect(result).toMatchObject({
       charted: true,
-      itemTitle: 'Breaking Bad',
+      band: { type: 'show', title: 'Breaking Bad' },
       counts: { unique: { count: 2, noun: 'episode' }, plays: 3 },
     });
     expect(
@@ -182,6 +191,37 @@ describe('loadHistory', () => {
       { number: '1x01', subtitles: ['Jan 19, 2008 6:00 PM', '1 play'], variant: 'screenshot' },
       { number: '1x02', subtitles: ['Feb 19, 2008 6:00 PM', '2 plays'], variant: 'screenshot' },
     ]);
+  });
+
+  it("should 301 one title's plays to its type: Movies for a movie, Episodes for the rest", async () => {
+    await expect(load({ query: '?movie=55753' })).rejects.toMatchObject({
+      status: 301,
+      location: '/users/tester/history/movies?movie=55753',
+    });
+    await expect(load({ type: 'shows', query: '?season=3701' })).rejects.toMatchObject({
+      status: 301,
+      location: '/users/tester/history/episodes?season=3701',
+    });
+  });
+
+  it("should 301 without leaving the frame's own redirect unhandled", async () => {
+    const unhandled: unknown[] = [];
+    const track = (reason: unknown) => unhandled.push(reason);
+    process.on('unhandledRejection', track);
+    const frame = Promise.reject(Object.assign(new Error('frame'), { status: 301, location: '/users/tester' }));
+    await expect(
+      loadHistory({
+        fetch,
+        locals: { token: null },
+        params: { id: 'TESTER', type: undefined, sort: undefined },
+        url: new URL('https://og.trakt.tv/users/TESTER/history?movie=1'),
+        cookies: { get: () => undefined },
+        parent: () => frame,
+      }),
+    ).rejects.toMatchObject({ status: 301, location: '/users/TESTER/history/movies?movie=1' });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    process.off('unhandledRejection', track);
+    expect(unhandled).toEqual([]);
   });
 
   it('should send signed-out visitors past page 1 to sign in', async () => {
@@ -226,7 +266,7 @@ describe('loadHistory', () => {
 
   it('should report missing items and bad responses', async () => {
     server.use(http.get(/history/, () => new HttpResponse(null, { status: 404 })));
-    await expect(load({ query: '?movie=1' })).rejects.toMatchObject({ status: 404 });
+    await expect(load({ type: 'movies', query: '?movie=1' })).rejects.toMatchObject({ status: 404 });
     server.use(http.get(/history/, () => HttpResponse.json([{ id: 1 }])));
     await expect(load()).rejects.toMatchObject({ status: 502 });
   });

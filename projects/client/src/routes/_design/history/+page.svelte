@@ -1,5 +1,6 @@
 <script lang="ts">
 import { page } from '$app/state';
+import FilterBand from '$lib/components/filters/FilterBand.svelte';
 import DayGroup from '$lib/components/history/DayGroup.svelte';
 import MediaWatch from '$lib/components/history/MediaWatch.svelte';
 import { mediaQuickIcons } from '$lib/components/media/mediaQuickIcons';
@@ -9,6 +10,7 @@ import { quickIconFill } from '$lib/components/media/quickIconFill';
 import Specimen from '$lib/design/Specimen.svelte';
 import Variant from '$lib/design/Variant.svelte';
 import { overlay } from '$lib/overlay/overlay';
+import HistoryItemBand from '$lib/users/history/HistoryItemBand.svelte';
 import { breakingBad, noWayHome, pilot, seasonOne, seasonOneEpisodes } from '../summary/fixtures.ts';
 
 const dates = $derived(page.data.datePreferences);
@@ -125,7 +127,36 @@ const upTo = {
   </DayGroup>
 </Specimen>
 
+<Specimen title="Title band"
+  note="Under the history's subnav when it's narrowed to one title, on its fanart (an episode's still), its year beside it in gray: a season's range, an episode's air year. A season names its show over its name, an episode its show and season, each opening the history narrowed to it. The X goes back to all of the history. Progress narrowed to a list uses the same band, with the list's fan and owner, and a shimmer while it loads.">
+  <Variant label="Movie">
+    <HistoryItemBand allHref="#title-band" itemHref={() => '#title-band'} band={{ type: 'movie', title: 'Spider-Man: No Way Home', href: '#title-band',
+      image: noWayHome.fanartThumb, year: '2021' }} />
+  </Variant>
+  <Variant label="Season">
+    <HistoryItemBand allHref="#title-band" itemHref={() => '#title-band'} band={{ type: 'season', title: seasonOne.title, href: '#title-band',
+      image: breakingBad.fanartThumb, year: '2008', parents: [{ title: breakingBad.title, item: show }] }} />
+  </Variant>
+  <Variant label="Episode">
+    <HistoryItemBand allHref="#title-band" itemHref={() => '#title-band'} band={{ type: 'episode', title: '1x01 Pilot', href: '#title-band',
+      image: breakingBad.fanartThumb, year: '2008', parents: [{ title: breakingBad.title, item: show },
+        { title: seasonOne.title, item: season }] }} />
+  </Variant>
+  <Variant label="Loading">
+    <FilterBand header="Displaying shows from this list">
+      {#snippet art()}<span class="band-art"></span>{/snippet}
+    </FilterBand>
+  </Variant>
+</Specimen>
+
 <style>
+.band-art {
+  inline-size: var(--filter-band-poster-width);
+  block-size: var(--filter-band-poster-height);
+  border-radius: var(--radius-list-card-fan);
+  background-color: var(--color-list-card-placeholder);
+}
+
 /* About the width of a summary's action column. */
 .stack {
   inline-size: var(--watch-date-width);

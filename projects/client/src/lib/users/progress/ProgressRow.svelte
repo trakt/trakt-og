@@ -5,12 +5,16 @@
   the card are the same height, and the text about matches them. Seasons reads the show's catalog (`onneed`) and
   opens the season list across the whole row, under the poster and the card (`ProgressSeasonGrid`), shimmering
   seasons holding its place until the catalog lands; once read, the
-  show's bar splits into its seasons on hover, each with a chart tip. A drop or restore
+  show's bar splits into its seasons on hover, each with a chart tip. When the show has hidden seasons, a button after
+  Seasons ("2 hidden seasons", naming them in its tip) opens the list with them back in it, even from a closed row. A drop or restore
   fades the row out and moves the focus on.
 -->
 <script lang="ts">
 import { nearViewport } from '$lib/utils/nearViewport';
 import { SvelteSet } from 'svelte/reactivity';
+import { rawApiFetch } from '$lib/api/rawApiFetch';
+import { viewerFetch } from '$lib/auth/viewerFetch';
+import { toast } from '$lib/components/toast/toast.svelte';
 import Shimmer from '$lib/components/loading/Shimmer.svelte';
 import FanartCard from '$lib/components/media/FanartCard.svelte';
 import DroppedBadge from '$lib/components/media/DroppedBadge.svelte';
@@ -20,6 +24,7 @@ import TickBar from '$lib/components/media/TickBar.svelte';
 import Stat from '$lib/components/stats/Stat.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import Icon from '$lib/icons/Icon.svelte';
+import ban from '$lib/icons/thin/ban.svg?raw';
 import hourglass from '$lib/icons/regular/hourglass-half.svg?raw';
 import history from '$lib/icons/regular/clock-rotate-left.svg?raw';
 import play from '$lib/icons/regular/play.svg?raw';
@@ -27,6 +32,7 @@ import caretDown from '$lib/icons/solid/caret-down.svg?raw';
 import check from '$lib/icons/trakt/check-thick.svg?raw';
 import { overlay } from '$lib/overlay/overlay';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
+import { hideProgressSeasons } from './hideProgressSeasons.ts';
 import ProgressSeasonGrid from './ProgressSeasonGrid.svelte';
 import ProgressStatus from './ProgressStatus.svelte';
 import type { ProgressType } from './progressTypes.ts';
@@ -105,10 +111,35 @@ function toggle() {
   if (open) onneed?.();
 }
 
+let showHidden = $state(false);
+
+// Showing the hidden seasons opens the list too, where they show.
+function toggleHidden() {
+  showHidden = !open || !showHidden;
+  if (!open) toggle();
+}
+
 function toggleSeason(season: number) {
   if (flipped.has(season)) flipped.delete(season);
   else flipped.add(season);
 }
+
+const changeSeasons = (hide: boolean) => (seasons: readonly number[]) => {
+  if (!hide && seasons.length >= (row.hidden?.count ?? 0)) showHidden = false;
+  void hideProgressSeasons({
+    show: { id: row.id, title: row.title },
+    seasons,
+    hide,
+    overlay,
+    notify: toast,
+    request: (path, body) =>
+      rawApiFetch({
+        path,
+        fetch: viewerFetch(),
+        init: { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) },
+      }),
+  });
+};
 </script>
 
 <!-- Show, season and episode pages are OG routes og hasn't all built yet, and resolve() only takes routes that exist. -->
@@ -182,6 +213,16 @@ function toggleSeason(season: number) {
     <div class="actions">
       <button type="button" class="toggle" aria-expanded={open} aria-controls="progress-seasons-{row.id}"
         onclick={toggle}>Seasons<Icon svg={caretDown} /></button>
+      {#if row.hidden}
+        {@const { count, names } = row.hidden}
+        <Tooltip text={names}>
+          {#snippet trigger(tooltip)}
+            <button type="button" class="toggle hidden-toggle" aria-pressed={showHidden && open}
+              aria-controls="progress-seasons-{row.id}" onclick={toggleHidden} {...tooltip}>
+              <Icon svg={ban} />{count} hidden {count === 1 ? 'season' : 'seasons'}</button>
+          {/snippet}
+        </Tooltip>
+      {/if}
       {#if row.last}
         <a class="last" href={row.last.href ?? row.href}><Icon svg={history} />Last watched
           {#if row.last.number}<b>{row.last.number}</b>{row.last.title ? ` ${row.last.title}` : ''}{/if}
@@ -223,8 +264,9 @@ function toggleSeason(season: number) {
 
   <div class="seasons" id="progress-seasons-{row.id}" hidden={!open} aria-busy={open && loading && !row.seasons}>
     {#if open && row.seasons}
-      <ProgressSeasonGrid seasons={row.seasons} id={row.id} {expanded} ontoggle={toggleSeason} {simple}
-        {datePreferences} />
+      <ProgressSeasonGrid seasons={row.seasons} hidden={row.hiddenSeasons ?? []} {showHidden} id={row.id} {expanded}
+        ontoggle={toggleSeason} {simple} {datePreferences} onhide={changeSeasons(true)}
+        onunhide={changeSeasons(false)} />
     {:else if open && loading}
       {@render seasonShimmers()}
     {/if}
@@ -423,6 +465,30 @@ function toggleSeason(season: number) {
 
   &[aria-expanded='true'] :global(.icon) {
     rotate: 180deg;
+  }
+}
+
+/* Shows the hidden seasons in their place: classic's sideways ban, tinted red while they show. */
+.hidden-toggle {
+  & :global(.icon) {
+    font-size: var(--font-size-progress-hidden-toggle-icon);
+    rotate: 90deg;
+  }
+
+  /* On, it takes the Hidden tag's red wash, outline and icon. */
+  &[aria-pressed='true'] {
+    --tint: var(--color-progress-season-hidden-tag);
+
+    border-color: color-mix(in srgb, var(--tint) var(--tag-pill-tint-line), transparent);
+    background: color-mix(in srgb, var(--tint) var(--tag-pill-tint-fill), transparent);
+
+    &:is(:hover, :focus-visible) {
+      background: color-mix(in srgb, var(--tint) var(--tag-pill-tint-hover), transparent);
+    }
+
+    & :global(.icon) {
+      color: var(--tint);
+    }
   }
 }
 

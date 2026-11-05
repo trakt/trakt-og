@@ -7,11 +7,13 @@
   list's shows, `?list=2` to an empty list and `?list=3` to someone else's watchlist, each after a short wait, with the
   list's band shimmering above the rows until the list streams in, and `?state=loading` holds the progress loading for
   good. Rows start with the up-next episode and estimated counts, as the page does; opening one's seasons reads its
-  catalog after a short wait (Breaking Bad has unwatched episodes in the library, Severance a season announced). In the
+  catalog after a short wait (Breaking Bad has unwatched episodes in the library, Severance a season announced, and
+  on Watched, The Bold and the Beautiful has seasons 7 and 8 hidden, behind the button beside its Seasons). In the
   grid, marking a card's episode watched covers its poster with the loader while the progress is read again, after a
   short wait.
 -->
 <script lang="ts">
+import DemoToggle from '$lib/design/DemoToggle.svelte';
 import { page } from '$app/state';
 import { untrack } from 'svelte';
 import { SvelteSet } from 'svelte/reactivity';
@@ -19,6 +21,8 @@ import Specimen from '$lib/design/Specimen.svelte';
 import { overlay } from '$lib/overlay/overlay';
 import { progressFixture } from '$lib/users/progress/progressFixture';
 import ProgressList from '$lib/users/progress/ProgressList.svelte';
+import ProgressSeasonGrid from '$lib/users/progress/ProgressSeasonGrid.svelte';
+import { toProgressRow } from '$lib/users/progress/toProgressRow';
 import type { ProgressListRow } from '$lib/users/progress/loadProgressListRow';
 import { isProgressType, type ProgressType } from '$lib/users/progress/progressTypes';
 import { PLACEHOLDER_AVATAR } from '$lib/users/placeholderAvatar';
@@ -52,6 +56,12 @@ const variants = [
   { label: "Someone's watchlist", query: '?list=3' },
   { label: 'Loading', query: '?state=loading' },
 ];
+// The season list on its own: the soap's seasons 7 and 8 start hidden, and hiding or unhiding changes only this page.
+const soapHidden = new SvelteSet([7, 8]);
+const soapOpen = new SvelteSet<number>();
+let soapShowHidden = $state(false);
+const soap = $derived(toProgressRow({ item: progressFixture.soap(new Set(soapHidden)), datePreferences, now }));
+const toggleSoapSeason = (season: number) => (soapOpen.has(season) ? soapOpen.delete(season) : soapOpen.add(season));
 const hideCompleted = $derived(page.url.searchParams.get('hide') === 'completed');
 const pending = $derived(page.url.searchParams.get('state') === 'loading');
 
@@ -87,9 +97,14 @@ function finish(id: number) {
   reloading = true;
   setTimeout(() => (reloading = false), WAIT);
 }
-const exact = $derived(progressFixture[type](true));
+// Watched adds the soap with two hidden seasons, for the hidden seasons button.
+const fixture = (expanded: boolean) =>
+  type === 'watched'
+    ? [...progressFixture.watched(expanded), progressFixture.soap(new Set([7, 8]), expanded)]
+    : progressFixture[type](expanded);
+const exact = $derived(fixture(true));
 const items = $derived(
-  progressFixture[type](false).map((item) => {
+  fixture(false).map((item) => {
     const full = exact.find(({ show }) => show.id === item.show.id);
     if (!full) return item;
     if (finished.has(item.show.id)) {
@@ -162,7 +177,21 @@ const data = $derived({
   <ProgressList {data} items={pending ? null : items} {listed} {loading} {reloading} onneed={need} {now} />
 </Specimen>
 
+<Specimen title="Season list"
+  note="An open row's seasons. The ••• after a name hides that season, it and every later one, or every one after it. The row's hidden seasons button (the toggle here) puts the hidden ones back in their place, dimmed and tagged, where their ••• unhides them. Here a hide changes only this demo; on the page it writes, updates the row at once and toasts with Undo (see Popups).">
+  <div class="knob"><DemoToggle bind:checked={soapShowHidden}>Show hidden seasons</DemoToggle></div>
+  <ProgressSeasonGrid seasons={soap.seasons ?? []} hidden={soap.hiddenSeasons ?? []} showHidden={soapShowHidden}
+    id={soap.id}
+    expanded={(season) => soapOpen.has(season)} ontoggle={toggleSoapSeason} simple={false} {datePreferences}
+    onhide={(seasons) => seasons.forEach((season) => soapHidden.add(season))}
+    onunhide={(seasons) => seasons.forEach((season) => soapHidden.delete(season))} />
+</Specimen>
+
 <style>
+.knob {
+  margin-block-end: var(--space-sm-block);
+}
+
 .variants,
 .finish {
   display: flex;

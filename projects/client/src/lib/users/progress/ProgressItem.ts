@@ -38,6 +38,8 @@ export type ProgressSeasonData = {
 /** What only the show's catalog knows: read when the row's seasons open. */
 export type ProgressDetail = {
   readonly seasons: readonly ProgressSeasonData[];
+  /** The seasons hidden from this tab, counted like the rest but left out of the show's numbers. */
+  readonly hidden: readonly ProgressSeasonData[];
   readonly next?: CatalogEpisode;
   readonly last?: CatalogEpisode;
 };
@@ -67,5 +69,7 @@ export type ProgressItem = {
   readonly droppedAt?: string;
   /** The endpoint files it as completed: its newest aired episode is watched, even with earlier ones unwatched. */
   readonly latestWatched?: boolean;
+  /** The seasons hidden from this tab, by number, known before the catalog is. */
+  readonly hiddenSeasons?: readonly number[];
   readonly detail?: ProgressDetail;
 };

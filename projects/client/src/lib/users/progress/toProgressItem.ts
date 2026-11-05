@@ -62,13 +62,16 @@ function fromSummary(params: ToProgressItemParams): ProgressItem {
 
 type Episode = ProgressEpisodeData & { readonly episode: CatalogEpisode };
 
-/** With a catalog: every aired, unhidden episode, so the counts, times, seasons and next episode are exact. */
+/**
+ * With a catalog: every aired, unhidden episode, so the counts, times, seasons and next episode are exact. Hidden
+ * seasons are counted the same way, apart, so the season list can offer them back.
+ */
 function fromCatalog(params: ToProgressItemParams, catalog: ShowCatalog): ProgressItem {
   const { show, watched, collected, resetAt, droppedAt, hiddenSeasons, includeSpecials, useLastActivity, now } = params;
   const aired = (episode: CatalogEpisode) => episode.firstAired !== undefined && Date.parse(episode.firstAired) <= now;
 
-  const seasons = catalog.seasons
-    .filter(({ number }) => (number > 0 || includeSpecials) && !hiddenSeasons?.has(number))
+  const counted = catalog.seasons
+    .filter(({ number }) => number > 0 || includeSpecials)
     .map((season) => ({
       season,
       upcoming: season.episodes.filter((episode) => !aired(episode)),
@@ -94,8 +97,10 @@ function fromCatalog(params: ToProgressItemParams, catalog: ShowCatalog): Progre
       }),
     }))
     .filter(({ episodes, upcoming }) => episodes.length > 0 || upcoming.length > 0);
+  const isHidden = ({ season }: (typeof counted)[number]) => Boolean(hiddenSeasons?.has(season.number));
+  const seasons = counted.filter((entry) => !isHidden(entry));
 
-  const toSeason = ({ season, episodes, upcoming }: (typeof seasons)[number]): ProgressSeasonData => ({
+  const toSeason = ({ season, episodes, upcoming }: (typeof counted)[number]): ProgressSeasonData => ({
     number: season.number,
     title: season.title,
     aired: episodes.length,
@@ -128,6 +133,7 @@ function fromCatalog(params: ToProgressItemParams, catalog: ShowCatalog): Progre
     droppedAt,
     detail: {
       seasons: rows,
+      hidden: counted.filter(isHidden).map(toSeason),
       next: nextEpisode({
         episodes: all.map(({ episode }) => episode),
         done: ({ id }) => doneIds.has(id),
@@ -141,5 +147,9 @@ function fromCatalog(params: ToProgressItemParams, catalog: ShowCatalog): Progre
 
 /** One show's progress row data, exact once its catalog is loaded (see `ProgressItem`). */
 export function toProgressItem(params: ToProgressItemParams): ProgressItem {
-  return params.catalog ? fromCatalog(params, params.catalog) : fromSummary(params);
+  const item = params.catalog ? fromCatalog(params, params.catalog) : fromSummary(params);
+  const hidden = [...(params.hiddenSeasons ?? [])]
+    .filter((number) => number > 0 || params.includeSpecials)
+    .sort((a, b) => a - b);
+  return hidden.length > 0 ? { ...item, hiddenSeasons: hidden } : item;
 }

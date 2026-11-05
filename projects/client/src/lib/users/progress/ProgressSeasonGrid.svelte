@@ -9,11 +9,16 @@
   to your library with its format and audio (`LibraryTip`). The episode's section is shaded only when there's
   something of yours under it. Spoiler settings hide an unwatched episode's screenshot and title there, as on the
   episode cards.
-    <ProgressSeasonGrid seasons={row.seasons} id={row.id} {expanded} ontoggle={toggleSeason} {simple}
-      {datePreferences} />
+  Each season's name is followed by a ••• menu (the summary's), to hide it from your progress, it and every later
+  season, or every season after it (`onhide`). Hidden seasons stay out of the list until `showHidden`; then they sit
+  in their place, dimmed and tagged Hidden, still able to open, and their menu unhides them (`onunhide`). The focus
+  moves to the next season's menu when one goes.
+    <ProgressSeasonGrid seasons={row.seasons} hidden={row.hiddenSeasons ?? []} {showHidden} id={row.id} {expanded}
+      ontoggle={toggleSeason} {simple} {datePreferences} onhide={hide} onunhide={unhide} />
 -->
 <script lang="ts">
 import { page } from '$app/state';
+import { tick } from 'svelte';
 import LibraryTip from '$lib/components/collection/LibraryTip.svelte';
 import TagPills from '$lib/components/labels/TagPills.svelte';
 import type { TagPill } from '$lib/components/labels/TagPill';
@@ -21,15 +26,22 @@ import CardTag from '$lib/components/media/CardTag.svelte';
 import PlaysTip from '$lib/components/media/PlaysTip.svelte';
 import { quickIconFill } from '$lib/components/media/quickIconFill';
 import TickBar from '$lib/components/media/TickBar.svelte';
+import SummaryActionMenu from '$lib/components/summary/SummaryActionMenu.svelte';
 import Stat from '$lib/components/stats/Stat.svelte';
 import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
 import TooltipHeader from '$lib/components/tooltip/TooltipHeader.svelte';
 import Icon from '$lib/icons/Icon.svelte';
 import calendar from '$lib/icons/regular/calendar-lines.svg?raw';
+import ellipsis from '$lib/icons/regular/ellipsis.svg?raw';
+import eye from '$lib/icons/regular/eye.svg?raw';
 import hourglass from '$lib/icons/regular/hourglass-half.svg?raw';
 import caretDown from '$lib/icons/solid/caret-down.svg?raw';
 import heart from '$lib/icons/solid/heart.svg?raw';
 import check from '$lib/icons/trakt/check-thick.svg?raw';
+import lightBan from '$lib/icons/light/ban.svg?raw';
+import angleRight from '$lib/icons/solid/angle-right.svg?raw';
+import plus from '$lib/icons/solid/plus.svg?raw';
+import ban from '$lib/icons/thin/ban.svg?raw';
 import { overlay } from '$lib/overlay/overlay';
 import type { DatePreferences } from '$lib/settings/DatePreferences';
 import { mediaSpoilers } from '$lib/settings/mediaSpoilers';
@@ -38,6 +50,11 @@ import type { EpisodeSquare, ProgressSeason } from './toProgressSeasons.ts';
 
 interface Props {
   seasons: readonly ProgressSeason[];
+  /** The seasons hidden from your progress, listed in their place with `showHidden`. */
+  hidden: readonly ProgressSeason[];
+  showHidden: boolean;
+  onhide: (seasons: readonly number[]) => void;
+  onunhide: (seasons: readonly number[]) => void;
   /** The show's id, for the episode lists' ids. */
   id: number;
   /** Whether a season shows its episodes. */
@@ -49,7 +66,38 @@ interface Props {
   datePreferences: DatePreferences;
 }
 
-const { seasons, id, expanded, ontoggle, simple, datePreferences }: Props = $props();
+const { seasons, hidden, showHidden, onhide, onunhide, id, expanded, ontoggle, simple, datePreferences }: Props = $props();
+
+let band = $state<HTMLElement>();
+const listed = $derived(
+  [
+    ...seasons.map((season) => ({ season, isHidden: false })),
+    ...(showHidden ? hidden.map((season) => ({ season, isHidden: true })) : []),
+  ].sort((a, b) => a.season.number - b.season.number),
+);
+const after = (number: number) => seasons.filter((season) => season.number > number).map((season) => season.number);
+
+const focusMenu = async (number: number | undefined) => {
+  await tick();
+  const menus = [...(band?.querySelectorAll<HTMLElement>('[data-menu]') ?? [])];
+  (menus.find((menu) => menu.dataset.menu === String(number)) ?? menus[0])?.focus();
+};
+
+function hide([first, ...rest]: readonly [number, ...number[]], close: () => void) {
+  close();
+  const numbers = [first, ...rest];
+  const at = seasons.findIndex((season) => season.number === first);
+  const kept = seasons.filter((season) => !numbers.includes(season.number));
+  const neighbor = showHidden ? first : (kept.find((season) => season.number > first) ?? kept[at - 1])?.number;
+  onhide(numbers);
+  void focusMenu(neighbor);
+}
+
+function unhide(number: number, close: () => void) {
+  close();
+  onunhide([number]);
+  void focusMenu(number);
+}
 
 const spoilers = (square: EpisodeSquare) =>
   page.data.user
@@ -113,13 +161,42 @@ const library = (square: EpisodeSquare, season: number) =>
   </span>
 {/snippet}
 
+<!-- The menu's ban, Drop's weight, with a small badge for the rows that reach past the season. -->
+{#snippet banIcon(badge?: string)}
+  <span class="ban"><Icon svg={lightBan} fixedWidth />{#if badge}<span class="badge"><Icon svg={badge} /></span>{/if}</span>
+{/snippet}
+
+{#snippet stats(season: ProgressSeason)}
+  <span class="stats">
+    {#if season.announced === undefined}
+      <Stat svg={check} tone="watched" value={season.count} noun="watched" />
+      {#if season.timeLeft}
+        {@const left = season.aired - season.done}
+        <Stat svg={hourglass} value={season.timeLeft} noun="left" aside="({left} {left === 1 ? 'ep' : 'eps'})" />
+      {/if}
+    {:else}
+      <Stat svg={calendar} value={String(season.announced)} noun="announced" />
+    {/if}
+  </span>
+{/snippet}
+
+{#snippet bar(season: ProgressSeason)}
+  {#if season.announced === undefined}
+    <div class={['bar', { complete: season.complete }]}>
+      <TickBar runs={season.ticks} percent={season.percent} {simple} size="season"
+        label="{season.name}: {season.percent}% watched" />
+    </div>
+  {/if}
+{/snippet}
+
 <!-- Season and episode pages are OG routes og hasn't all built yet, and resolve() only takes routes that exist. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-<ul class="seasons">
-  {#each seasons as season (season.number)}
+<div class="band" bind:this={band}>
+<ul class="seasons" id="progress-{id}-seasons">
+  {#each listed as { season, isHidden } (season.number)}
     {@const open = expanded(season.number)}
     {@const list = `progress-${id}-season-${season.number}`}
-    <li class="season">
+    <li class={['season', { 'is-hidden': isHidden }]}>
       <p class="head">
         <button type="button" class="fold" aria-expanded={open} aria-controls={list}
           aria-label="{open ? 'Hide' : 'Show'} {season.name} episodes" onclick={() => ontoggle(season.number)}>
@@ -127,24 +204,35 @@ const library = (square: EpisodeSquare, season: number) =>
         </button>
         <a class="name" href={season.href}>{season.name}</a>
         {#if season.title}<span class="season-title">{season.title}</span>{/if}
-        <span class="stats">
-          {#if season.announced === undefined}
-            <Stat svg={check} tone="watched" value={season.count} noun="watched" />
-            {#if season.timeLeft}
-              {@const left = season.aired - season.done}
-              <Stat svg={hourglass} value={season.timeLeft} noun="left" aside="({left} {left === 1 ? 'ep' : 'eps'})" />
+        <span class="season-menu">
+        <SummaryActionMenu label="{season.name} actions" placement="bottom">
+          {#snippet trigger(attrs)}
+            <button type="button" class="more" data-menu={season.number} {...attrs}><Icon svg={ellipsis} /></button>
+          {/snippet}
+          {#snippet children(close)}
+            {#if isHidden}
+              <button type="button" class="row" onclick={() => unhide(season.number, close)}><Icon svg={eye}
+                  fixedWidth />Unhide {season.name}</button>
+            {:else}
+              {@const [next, ...rest] = after(season.number)}
+              <button type="button" class="row" onclick={() => hide([season.number], close)}>{@render
+                banIcon()}Hide {season.name}</button>
+              {#if next !== undefined}
+                <button type="button" class="row" onclick={() => hide([season.number, next, ...rest], close)}>{@render
+                  banIcon(plus)}Hide {season.name} and later</button>
+                <button type="button" class="row" onclick={() => hide([next, ...rest], close)}>{@render
+                  banIcon(angleRight)}Hide every season after {season.name}</button>
+              {/if}
             {/if}
-          {:else}
-            <Stat svg={calendar} value={String(season.announced)} noun="announced" />
-          {/if}
+          {/snippet}
+        </SummaryActionMenu>
         </span>
+        {#if isHidden}
+          <TagPills tags={[{ text: 'Hidden', icon: ban, tint: 'var(--color-progress-season-hidden-tag)' }]} />
+        {/if}
+        {@render stats(season)}
       </p>
-      {#if season.announced === undefined}
-        <div class={['bar', { complete: season.complete }]}>
-          <TickBar runs={season.ticks} percent={season.percent} {simple} size="season"
-            label="{season.name}: {season.percent}% watched" />
-        </div>
-      {/if}
+      {@render bar(season)}
       <div class="episodes" id={list} hidden={!open}>
         {#if open}
       <ul class="squares" aria-label="{season.name} episodes">
@@ -166,6 +254,8 @@ const library = (square: EpisodeSquare, season: number) =>
   {/each}
 </ul>
 
+</div>
+
 <style>
 ul {
   margin: 0;
@@ -173,12 +263,95 @@ ul {
   list-style: none;
 }
 
-.seasons {
+.band {
   display: grid;
   padding: var(--progress-band-padding);
   border-radius: var(--radius-progress-band);
   background: var(--color-progress-band);
   font-size: var(--font-size-progress-row);
+}
+
+.seasons {
+  display: grid;
+}
+
+/* The season's ••• after its name, quiet until the pointer, focus or its open menu is on it. */
+.more {
+  display: grid;
+  place-items: center;
+  inline-size: var(--progress-season-fold);
+  block-size: var(--progress-season-fold);
+  min-block-size: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-round);
+  background: none;
+  color: var(--color-progress-season-menu);
+  font-size: var(--font-size-progress-season-menu-icon);
+  cursor: pointer;
+
+  &:is(:hover, :focus-visible, [aria-expanded='true']) {
+    background: var(--color-control-hover-bg);
+    color: var(--color-text);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-link);
+    outline-offset: 1px;
+  }
+}
+
+/* The menu opens rightward from its ••• near the band's left edge. */
+.season-menu {
+  display: flex;
+
+  & :global(.menu) {
+    position-area: bottom span-right;
+  }
+}
+
+/* The menu's rows as the status menu draws them: icons in the text's color and size, close to their label. */
+.season-menu .row {
+  gap: var(--space-menu-icon);
+
+  & :global(.icon) {
+    color: inherit;
+    font-size: inherit;
+  }
+}
+
+/* Classic's ban turns sideways, in the menu and on the Hidden tag. */
+.ban > :global(.icon),
+.is-hidden :global(.tag-pills .icon) {
+  rotate: 90deg;
+}
+
+.ban {
+  position: relative;
+  display: inline-flex;
+}
+
+/* A plus (this and later) or a chevron (every one after) on the ban's lower corner, cut out of the row. */
+.badge {
+  position: absolute;
+  inset-block-end: var(--progress-season-badge-inset);
+  inset-inline-end: var(--progress-season-badge-inset);
+  display: grid;
+  place-items: center;
+  inline-size: var(--progress-season-badge);
+  block-size: var(--progress-season-badge);
+  border-radius: var(--radius-round);
+  background: var(--color-menu-bg);
+  font-size: var(--font-size-progress-season-badge-icon);
+
+  .row:is(:hover, :focus-visible) & {
+    background: var(--color-menu-row-hover);
+  }
+}
+
+/* A hidden season, shown in its place: dimmed except for its controls. */
+.is-hidden :is(.name, .season-title, .stats, .bar, .episodes) {
+  opacity: var(--opacity-progress-season-hidden);
 }
 
 /* A header line (name, stats, bar, percent), then the pills across the full width. The percent's column is fixed,

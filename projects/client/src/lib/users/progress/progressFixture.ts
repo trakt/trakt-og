@@ -90,6 +90,22 @@ const samples: readonly Sample[] = [
   },
 ];
 
+// A soap with many seasons, for hiding seasons: two watched, the third started, five to go. Not one of the list's shows.
+const soap: Sample = {
+  id: 1404,
+  slug: 'the-bold-and-the-beautiful',
+  title: 'The Bold and the Beautiful',
+  year: 1987,
+  status: 'returning series',
+  runtime: 22,
+  seasons: [
+    Array(12).fill(true),
+    Array(12).fill(true),
+    [true, true, true, ...Array(9).fill(false)],
+    ...Array.from({ length: 5 }, () => Array(12).fill(false)),
+  ],
+};
+
 const ANNOUNCED = '2027-01-14T20:00:00.000Z';
 const at = (season: number, number: number) => new Date(Date.UTC(2026, 8, 1 + season, 20, number)).toISOString();
 const episodeId = (sample: Sample, season: number, number: number) => sample.id * 100 + season * 20 + number;
@@ -179,15 +195,16 @@ const dropped = new Map([
   [60300, '2025-04-17T17:53:00.000Z'],
 ]);
 
-type Options = { expanded: boolean; dropped?: boolean };
+type Options = { expanded: boolean; dropped?: boolean; hiddenSeasons?: ReadonlySet<number> };
 
-function toItem(sample: Sample, { expanded, dropped: onDropped }: Options): ProgressItem {
+function toItem(sample: Sample, { expanded, dropped: onDropped, hiddenSeasons }: Options): ProgressItem {
   return toProgressItem({
     show: toShow(sample),
     watched: toWatched(sample),
     collected: toCollected(sample),
     resetAt: sample.resetAt,
     droppedAt: onDropped ? dropped.get(sample.id) : undefined,
+    hiddenSeasons,
     catalog: expanded ? toCatalog(sample) : undefined,
     includeSpecials: false,
     useLastActivity: false,
@@ -206,4 +223,6 @@ export const progressFixture = {
     samples.filter(({ resetAt }) => resetAt).map((sample) => toItem(sample, { expanded })),
   dropped: (expanded: boolean) =>
     samples.filter(({ id }) => dropped.has(id)).map((sample) => toItem(sample, { expanded, dropped: true })),
+  /** The soap with these seasons hidden, expanded unless asked otherwise. */
+  soap: (hiddenSeasons: ReadonlySet<number>, expanded = true) => toItem(soap, { expanded, hiddenSeasons }),
 };

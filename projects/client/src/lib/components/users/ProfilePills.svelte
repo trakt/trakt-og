@@ -5,12 +5,12 @@
     <ProfilePills {user} {match} />
 -->
 <script lang="ts">
-import Icon from '$lib/icons/Icon.svelte';
-import calendar from '$lib/icons/regular/calendar-lines.svg?raw';
-import lock from '$lib/icons/regular/lock.svg?raw';
-import locationPin from '$lib/icons/solid/location-pin.svg?raw';
-import type { UserMatch } from '$lib/users/match/UserMatch';
-import type { ProfileUser } from '$lib/users/ProfileUser';
+import Icon from '#lib/icons/Icon.svelte';
+import calendar from '#lib/icons/regular/calendar-lines.svg?raw';
+import lock from '#lib/icons/regular/lock.svg?raw';
+import locationPin from '#lib/icons/solid/location-pin.svg?raw';
+import type { UserMatch } from '#lib/users/match/UserMatch.ts';
+import type { ProfileUser } from '#lib/users/ProfileUser.ts';
 import CoverPill from './CoverPill.svelte';
 import MatchPill from './MatchPill.svelte';
 

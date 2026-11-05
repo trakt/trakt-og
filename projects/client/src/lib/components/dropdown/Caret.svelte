@@ -3,8 +3,8 @@
     <Caret />
 -->
 <script lang="ts">
-import Icon from '$lib/icons/Icon.svelte';
-import caretDown from '$lib/icons/solid/caret-down.svg?raw';
+import Icon from '#lib/icons/Icon.svelte';
+import caretDown from '#lib/icons/solid/caret-down.svg?raw';
 </script>
 
 <span class="caret"><Icon svg={caretDown} /></span>

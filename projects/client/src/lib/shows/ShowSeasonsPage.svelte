@@ -1,10 +1,10 @@
 <!-- `/shows/:id/seasons`: the show's seasons grid under its facts, with "Original Air Date" the only order. -->
 <script lang="ts">
-import SeoHead from '$lib/seo/SeoHead.svelte';
-import { toSubpageSeo } from '$lib/seo/pages/toSubpageSeo';
-import type { DatePreferences } from '$lib/settings/DatePreferences';
-import EmptyState from '$lib/components/empty/EmptyState.svelte';
-import { countLabel } from '$lib/utils/countLabel';
+import SeoHead from '#lib/seo/SeoHead.svelte';
+import { toSubpageSeo } from '#lib/seo/pages/toSubpageSeo.ts';
+import type { DatePreferences } from '#lib/settings/DatePreferences.ts';
+import EmptyState from '#lib/components/empty/EmptyState.svelte';
+import { countLabel } from '#lib/utils/countLabel.ts';
 import type { loadShow } from './loadShow.ts';
 import SeasonsGrid from './SeasonsGrid.svelte';
 import ShowSubpage from './ShowSubpage.svelte';

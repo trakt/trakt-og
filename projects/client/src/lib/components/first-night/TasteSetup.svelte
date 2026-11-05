@@ -5,17 +5,17 @@
   too, then reloads the page data. A Standard app (`isStandardApi`) gets the genres only.
 -->
 <script lang="ts">
-import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
-import { useTrack } from '$lib/analytics/useTrack';
-import { isStandardApi } from '$lib/api/isStandardApi';
+import { AnalyticsEvent } from '#lib/analytics/AnalyticsEvent.ts';
+import { useTrack } from '#lib/analytics/useTrack.ts';
+import { isStandardApi } from '#lib/api/isStandardApi.ts';
 import { invalidateAll } from '$app/navigation';
-import { viewerFetch } from '$lib/auth/viewerFetch';
-import Dialog from '$lib/components/dialog/Dialog.svelte';
-import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
-import DialogArtHeader from '$lib/components/dialog/DialogArtHeader.svelte';
-import EmptyNote from '$lib/components/empty/EmptyNote.svelte';
-import { toast } from '$lib/components/toast/toast.svelte';
-import ServiceTile from '$lib/components/watchnow/ServiceTile.svelte';
+import { viewerFetch } from '#lib/auth/viewerFetch.ts';
+import Dialog from '#lib/components/dialog/Dialog.svelte';
+import Dropdown from '#lib/components/dropdown/Dropdown.svelte';
+import DialogArtHeader from '#lib/components/dialog/DialogArtHeader.svelte';
+import EmptyNote from '#lib/components/empty/EmptyNote.svelte';
+import { toast } from '#lib/components/toast/toast.svelte.ts';
+import ServiceTile from '#lib/components/watchnow/ServiceTile.svelte';
 import {
   fetchTasteCountries,
   fetchTasteServices,
@@ -24,15 +24,15 @@ import {
   SERVICES_SHOWN,
   type TasteCountry,
   tasteGenres,
-} from '$lib/firstNight/taste';
-import { titleFanart } from '$lib/firstNight/titleFanart';
-import Icon from '$lib/icons/Icon.svelte';
-import check from '$lib/icons/solid/check.svg?raw';
-import magnifyingGlass from '$lib/icons/regular/magnifying-glass.svg?raw';
-import Shimmer from '$lib/components/loading/Shimmer.svelte';
-import { saveSettings } from '$lib/settings/saveSettings';
-import { settingsRequest } from '$lib/settings/settingsRequest';
-import { countLabel } from '$lib/utils/countLabel';
+} from '#lib/firstNight/taste.ts';
+import { titleFanart } from '#lib/firstNight/titleFanart.ts';
+import Icon from '#lib/icons/Icon.svelte';
+import check from '#lib/icons/solid/check.svg?raw';
+import magnifyingGlass from '#lib/icons/regular/magnifying-glass.svg?raw';
+import Shimmer from '#lib/components/loading/Shimmer.svelte';
+import { saveSettings } from '#lib/settings/saveSettings.ts';
+import { settingsRequest } from '#lib/settings/settingsRequest.ts';
+import { countLabel } from '#lib/utils/countLabel.ts';
 import CtaLink from './CtaLink.svelte';
 import { genreIcons } from './genreIcons.ts';
 

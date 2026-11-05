@@ -16,8 +16,8 @@
   `rel`.
 -->
 <script lang="ts">
-import Spinner from '$lib/components/loading/Spinner.svelte';
-import Icon from '$lib/icons/Icon.svelte';
+import Spinner from '#lib/components/loading/Spinner.svelte';
+import Icon from '#lib/icons/Icon.svelte';
 import type { Snippet } from 'svelte';
 import type { HTMLAnchorAttributes, HTMLButtonAttributes } from 'svelte/elements';
 

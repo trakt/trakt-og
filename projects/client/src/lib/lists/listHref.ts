@@ -1,5 +1,6 @@
 import type { ListItemType } from './listItemSorts.ts';
 import type { ListSort } from './resolveListSort.ts';
+import type { ReadonlyURL } from '$app/state';
 
 type ListHrefChange = {
   readonly terms?: string;
@@ -19,8 +20,8 @@ function setList(query: URLSearchParams, key: string, values: readonly string[])
  * The list page with one control changed (`filterSortableQueryString`, `global.js:3730-3818`): back to page one,
  * the rest of the query kept, `sort` written as `by,how`, and no `display` or `genres` for All Types and All Genres.
  */
-export function listHref(url: URL, change: ListHrefChange): string {
-  const query = new URLSearchParams(url.searchParams);
+export function listHref(url: ReadonlyURL, change: ListHrefChange): string {
+  const query = new URLSearchParams(url.search);
   query.delete('page');
   if (change.hide) query.set('hide', change.hide.join(','));
   if (change.terms !== undefined) {

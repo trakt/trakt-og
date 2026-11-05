@@ -11,21 +11,21 @@
 -->
 <script lang="ts">
 import type { Attachment } from 'svelte/attachments';
-import CommentTag from '$lib/components/comments/CommentTag.svelte';
-import SocialTile from '$lib/components/dashboard/SocialTile.svelte';
-import PosterGrid from '$lib/components/media/PosterGrid.svelte';
-import PageNavigator from '$lib/components/page-navigator/PageNavigator.svelte';
-import StatusDot from '$lib/components/status/StatusDot.svelte';
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import ProfileRatingsChart from '$lib/components/users/ProfileRatingsChart.svelte';
+import CommentTag from '#lib/components/comments/CommentTag.svelte';
+import SocialTile from '#lib/components/dashboard/SocialTile.svelte';
+import PosterGrid from '#lib/components/media/PosterGrid.svelte';
+import PageNavigator from '#lib/components/page-navigator/PageNavigator.svelte';
+import StatusDot from '#lib/components/status/StatusDot.svelte';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import ProfileRatingsChart from '#lib/components/users/ProfileRatingsChart.svelte';
 import SectionHeading from './SectionHeading.svelte';
-import { liveTiles } from '$lib/dashboard/liveTiles';
-import Icon from '$lib/icons/Icon.svelte';
-import chevronDown from '$lib/icons/solid/chevron-down.svg?raw';
-import heart from '$lib/icons/solid/heart.svg?raw';
-import checkThick from '$lib/icons/trakt/check-thick.svg?raw';
-import { progressTone } from '$lib/summary/progressTone';
-import type { ActivitySection, ActivityTab, ActivityUser } from '$lib/summary/toActivity';
+import { liveTiles } from '#lib/dashboard/liveTiles.ts';
+import Icon from '#lib/icons/Icon.svelte';
+import chevronDown from '#lib/icons/solid/chevron-down.svg?raw';
+import heart from '#lib/icons/solid/heart.svg?raw';
+import checkThick from '#lib/icons/trakt/check-thick.svg?raw';
+import { progressTone } from '#lib/summary/progressTone.ts';
+import type { ActivitySection, ActivityTab, ActivityUser } from '#lib/summary/toActivity.ts';
 
 interface Props {
   tabs: readonly ActivityTab[];

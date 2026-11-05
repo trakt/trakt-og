@@ -8,13 +8,13 @@
     <ProgressStatus {row} type="watched" onremove={remove} />
 -->
 <script lang="ts">
-import Caret from '$lib/components/dropdown/Caret.svelte';
-import VisibilityControl from '$lib/components/visibility/VisibilityControl.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import arrowRotateLeft from '$lib/icons/light/arrow-rotate-left.svg?raw';
-import backward from '$lib/icons/light/backward.svg?raw';
-import circleMinus from '$lib/icons/light/circle-minus.svg?raw';
-import checkThick from '$lib/icons/trakt/check-thick.svg?url';
+import Caret from '#lib/components/dropdown/Caret.svelte';
+import VisibilityControl from '#lib/components/visibility/VisibilityControl.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import arrowRotateLeft from '#lib/icons/light/arrow-rotate-left.svg?raw';
+import backward from '#lib/icons/light/backward.svg?raw';
+import circleMinus from '#lib/icons/light/circle-minus.svg?raw';
+import checkThick from '#lib/icons/trakt/check-thick.svg?url';
 import type { ProgressType } from './progressTypes.ts';
 import type { ProgressRow } from './toProgressRow.ts';
 

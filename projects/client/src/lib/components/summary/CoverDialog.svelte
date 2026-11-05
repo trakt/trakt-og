@@ -4,16 +4,16 @@
     <CoverDialog bind:open={covering} item={{ type: 'show', id, title, fanart }} onset={() => (isCover = true)} />
 -->
 <script lang="ts">
-import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
-import { useTrack } from '$lib/analytics/useTrack';
-import Dialog from '$lib/components/dialog/Dialog.svelte';
-import DialogArtHeader from '$lib/components/dialog/DialogArtHeader.svelte';
-import DialogForm from '$lib/components/dialog/DialogForm.svelte';
-import DialogNotice from '$lib/components/dialog/DialogNotice.svelte';
-import type { CardTag } from '$lib/components/media/CardTag';
-import { toast } from '$lib/components/toast/toast.svelte';
-import image from '$lib/icons/regular/image.svg?raw';
-import { markSettingsChanged } from '$lib/settings/markSettingsChanged';
+import { AnalyticsEvent } from '#lib/analytics/AnalyticsEvent.ts';
+import { useTrack } from '#lib/analytics/useTrack.ts';
+import Dialog from '#lib/components/dialog/Dialog.svelte';
+import DialogArtHeader from '#lib/components/dialog/DialogArtHeader.svelte';
+import DialogForm from '#lib/components/dialog/DialogForm.svelte';
+import DialogNotice from '#lib/components/dialog/DialogNotice.svelte';
+import type { CardTag } from '#lib/components/media/CardTag.ts';
+import { toast } from '#lib/components/toast/toast.svelte.ts';
+import image from '#lib/icons/regular/image.svg?raw';
+import { markSettingsChanged } from '#lib/settings/markSettingsChanged.ts';
 import { type CoverType, setCoverImage } from './coverImage.ts';
 import { viewerFetch } from '../../auth/viewerFetch.ts';
 

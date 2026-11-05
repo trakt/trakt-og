@@ -3,11 +3,11 @@
   loading strip, then every box alone in each user's state and its empty states.
 -->
 <script lang="ts">
-import Specimen from '$lib/design/Specimen.svelte';
-import Variant from '$lib/design/Variant.svelte';
-import { profileBoxComponent } from '$lib/users/profile/boxes/profileBoxComponent';
-import ProfileBoxStrip from '$lib/users/profile/boxes/ProfileBoxStrip.svelte';
-import ProfileSectionShimmer from '$lib/components/loading/ProfileSectionShimmer.svelte';
+import Specimen from '#lib/design/Specimen.svelte';
+import Variant from '#lib/design/Variant.svelte';
+import { profileBoxComponent } from '#lib/users/profile/boxes/profileBoxComponent.ts';
+import ProfileBoxStrip from '#lib/users/profile/boxes/ProfileBoxStrip.svelte';
+import ProfileSectionShimmer from '#lib/components/loading/ProfileSectionShimmer.svelte';
 
 const { data } = $props();
 </script>

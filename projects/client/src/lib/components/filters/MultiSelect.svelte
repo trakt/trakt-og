@@ -9,10 +9,10 @@
       placeholder="Choose genres..." />
 -->
 <script lang="ts">
-import EmptyNote from '$lib/components/empty/EmptyNote.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import xmark from '$lib/icons/solid/xmark.svg?raw';
-import { menuPlacement } from '$lib/components/dropdown/menuPlacement';
+import EmptyNote from '#lib/components/empty/EmptyNote.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import xmark from '#lib/icons/solid/xmark.svg?raw';
+import { menuPlacement } from '#lib/components/dropdown/menuPlacement.ts';
 import type { FilterOption, FilterOptionGroup } from './filterOptions.ts';
 
 interface Props {

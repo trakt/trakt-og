@@ -9,23 +9,23 @@
   fanart, episode and name, and the commenter), and arrows on the section's edges step through.
 -->
 <script lang="ts">
-import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
-import EmptyState from '$lib/components/empty/EmptyState.svelte';
+import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
+import EmptyState from '#lib/components/empty/EmptyState.svelte';
 import { page } from '$app/state';
-import CommentCard from '$lib/components/comments/CommentCard.svelte';
-import { authorOf } from '$lib/components/comments/authorOf';
-import PanelHeading from '$lib/components/dashboard/PanelHeading.svelte';
-import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
-import VipLabel from '$lib/components/labels/VipLabel.svelte';
-import PosterCard from '$lib/components/media/PosterCard.svelte';
-import { mediaQuickIcons } from '$lib/components/media/mediaQuickIcons';
-import Icon from '$lib/icons/Icon.svelte';
-import angleLeft from '$lib/icons/light/angle-left.svg?raw';
-import angleRight from '$lib/icons/light/angle-right.svg?raw';
-import comments from '$lib/icons/regular/comments.svg?raw';
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import { overlay } from '$lib/overlay/overlay';
-import type { DatePreferences } from '$lib/settings/DatePreferences';
+import CommentCard from '#lib/components/comments/CommentCard.svelte';
+import { authorOf } from '#lib/components/comments/authorOf.ts';
+import PanelHeading from '#lib/components/dashboard/PanelHeading.svelte';
+import Dropdown from '#lib/components/dropdown/Dropdown.svelte';
+import VipLabel from '#lib/components/labels/VipLabel.svelte';
+import PosterCard from '#lib/components/media/PosterCard.svelte';
+import { mediaQuickIcons } from '#lib/components/media/mediaQuickIcons.ts';
+import Icon from '#lib/icons/Icon.svelte';
+import angleLeft from '#lib/icons/light/angle-left.svg?raw';
+import angleRight from '#lib/icons/light/angle-right.svg?raw';
+import comments from '#lib/icons/regular/comments.svg?raw';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import { overlay } from '#lib/overlay/overlay.ts';
+import type { DatePreferences } from '#lib/settings/DatePreferences.ts';
 import { fetchTrendingComments } from './fetchTrendingComments.ts';
 import { trendingCommentFilters } from './trendingCommentFilters.ts';
 import type { TrendingComment } from './toTrendingComments.ts';

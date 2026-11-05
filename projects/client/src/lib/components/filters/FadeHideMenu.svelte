@@ -3,8 +3,8 @@
   section is kept in a year-long cookie, `filter-fade-<cookie>` and `filter-hide-<cookie>`, so SSR renders the same.
 -->
 <script lang="ts" generics="Option extends string">
-import FilterMenu from '$lib/components/filters/FilterMenu.svelte';
-import FadeHideItems from '$lib/components/filters/FadeHideItems.svelte';
+import FilterMenu from '#lib/components/filters/FilterMenu.svelte';
+import FadeHideItems from '#lib/components/filters/FadeHideItems.svelte';
 
 interface Props {
   value: { fade: readonly Option[]; hide: readonly Option[] };

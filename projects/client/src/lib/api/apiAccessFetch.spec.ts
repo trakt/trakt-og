@@ -4,7 +4,7 @@ import { apiEnvironment } from './apiEnvironment.ts';
 import { rateLimitPause } from './rateLimitPause.ts';
 
 const environment = vi.hoisted(() => ({ dev: true, browser: false }));
-vi.mock('$app/environment', () => environment);
+vi.mock('$app/env', () => environment);
 
 const answer = (status: number) => vi.fn(() => Promise.resolve(new Response(null, { status })));
 

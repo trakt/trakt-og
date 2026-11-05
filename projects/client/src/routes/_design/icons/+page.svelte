@@ -1,18 +1,18 @@
 <script lang="ts">
-import CollectionLogoRow from '$lib/components/collection/CollectionLogoRow.svelte';
-import type { CollectionBadges } from '$lib/components/collection/collectionBadges';
-import Specimen from '$lib/design/Specimen.svelte';
-import Variant from '$lib/design/Variant.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import angleRight from '$lib/icons/light/angle-right.svg?raw';
-import checkThick from '$lib/icons/trakt/check-thick.svg?raw';
-import dolbyAtmos from '$lib/icons/logos/dolby_atmos.svg?raw';
-import flag from '$lib/icons/regular/flag.svg?raw';
-import gear from '$lib/icons/thin/gear.svg?raw';
-import imdb from '$lib/icons/sites/imdb.svg?raw';
-import justwatch from '$lib/icons/kit/justwatch.svg?raw';
-import lockKeyhole from '$lib/icons/solid/lock-keyhole.svg?raw';
-import twitter from '$lib/icons/brands/twitter.svg?raw';
+import CollectionLogoRow from '#lib/components/collection/CollectionLogoRow.svelte';
+import type { CollectionBadges } from '#lib/components/collection/collectionBadges.ts';
+import Specimen from '#lib/design/Specimen.svelte';
+import Variant from '#lib/design/Variant.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import angleRight from '#lib/icons/light/angle-right.svg?raw';
+import checkThick from '#lib/icons/trakt/check-thick.svg?raw';
+import dolbyAtmos from '#lib/icons/logos/dolby_atmos.svg?raw';
+import flag from '#lib/icons/regular/flag.svg?raw';
+import gear from '#lib/icons/thin/gear.svg?raw';
+import imdb from '#lib/icons/sites/imdb.svg?raw';
+import justwatch from '#lib/icons/kit/justwatch.svg?raw';
+import lockKeyhole from '#lib/icons/solid/lock-keyhole.svg?raw';
+import twitter from '#lib/icons/brands/twitter.svg?raw';
 
 // One icon per family, each named the way OG's markup names it. OG's fonts had no site logos.
 const icons = [

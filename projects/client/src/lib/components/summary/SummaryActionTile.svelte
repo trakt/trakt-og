@@ -5,8 +5,8 @@
 -->
 <script lang="ts">
 import type { HTMLButtonAttributes } from 'svelte/elements';
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import Icon from '$lib/icons/Icon.svelte';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import Icon from '#lib/icons/Icon.svelte';
 
 interface Props extends Omit<HTMLButtonAttributes, 'type'> {
   icon: string;

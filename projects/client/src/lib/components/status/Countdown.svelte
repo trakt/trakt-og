@@ -7,7 +7,7 @@
 <script lang="ts">
 import type { Snippet } from 'svelte';
 import { prefersReducedMotion } from 'svelte/motion';
-import { watchingProgress } from '$lib/users/watchingProgress';
+import { watchingProgress } from '#lib/users/watchingProgress.ts';
 
 interface Props {
   startedAt: string;

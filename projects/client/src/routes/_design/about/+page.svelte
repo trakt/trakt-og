@@ -1,9 +1,9 @@
 <script lang="ts">
-import AboutIssues from '$lib/about/AboutIssues.svelte';
-import AboutTeam from '$lib/about/AboutTeam.svelte';
-import type { AboutMemberPick } from '$lib/about/pickAboutTeam';
-import Specimen from '$lib/design/Specimen.svelte';
-import Variant from '$lib/design/Variant.svelte';
+import AboutIssues from '#lib/about/AboutIssues.svelte';
+import AboutTeam from '#lib/about/AboutTeam.svelte';
+import type { AboutMemberPick } from '#lib/about/pickAboutTeam.ts';
+import Specimen from '#lib/design/Specimen.svelte';
+import Variant from '#lib/design/Variant.svelte';
 
 const PLACEHOLDERS = 'https://media.trakt.tv/hotlink-ok/placeholders/medium';
 const FANART = 'https://media.trakt.tv/images/shows/000/099/080/fanarts/medium/a049f455c1.jpg.webp';

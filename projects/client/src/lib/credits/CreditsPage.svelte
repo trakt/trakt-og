@@ -1,34 +1,27 @@
-<!--
-  The people page (cast and crew) of a movie, show, season or episode: the subpage frame with a bar under its header. On the
-  bar's left, one dropdown of every group, under an Actors and a Crew header ("Season Regulars 14", "Directing 3"); on
-  its right the sort and its direction, a grid or list toggle and a search icon. The picked group shows as a grid of
-  headshot cards (as many columns as fit) or a list of rows, one person a row. A search runs over every group as you
-  type, name, character or job, and shows the matches under each group's heading with its count.
--->
 <script lang="ts">
-import SeoHead from '$lib/seo/SeoHead.svelte';
-import { toSubpageSeo } from '$lib/seo/pages/toSubpageSeo';
-import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
-import { replaceState } from '$app/navigation';
-import { page } from '$app/state';
-import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
-import SortDirection from '$lib/components/dropdown/SortDirection.svelte';
-import EmptyState from '$lib/components/empty/EmptyState.svelte';
-import FilterPopover from '$lib/components/filters/FilterPopover.svelte';
-import CastCard from '$lib/components/summary/CastCard.svelte';
-import SectionHeading from '$lib/components/summary/SectionHeading.svelte';
-import SubpageFrame from '$lib/components/summary/SubpageFrame.svelte';
-import SectionToolbar from '$lib/components/toolbar/SectionToolbar.svelte';
-import SubnavCount from '$lib/components/toolbar/SubnavCount.svelte';
-import ViewToggle from '$lib/components/toolbar/ViewToggle.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import search from '$lib/icons/regular/magnifying-glass.svg?raw';
-import friends from '$lib/icons/trakt/friends-thick.svg?raw';
-import type { loadCredits } from './loadCredits.ts';
-import { matchesCreditTerms } from './matchesCreditTerms.ts';
-import { peopleGroupHref } from './peopleGroupHref.ts';
-import { readPeopleGroup } from './readPeopleGroup.ts';
-import { type CreditSort, sortCredits } from './sortCredits.ts';
+  import SeoHead from '#lib/seo/SeoHead.svelte';
+  import { toSubpageSeo } from '#lib/seo/pages/toSubpageSeo.ts';
+  import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
+  import { goto } from '$app/navigation';
+  import { page } from '$app/state';
+  import Dropdown from '#lib/components/dropdown/Dropdown.svelte';
+  import SortDirection from '#lib/components/dropdown/SortDirection.svelte';
+  import EmptyState from '#lib/components/empty/EmptyState.svelte';
+  import FilterPopover from '#lib/components/filters/FilterPopover.svelte';
+  import CastCard from '#lib/components/summary/CastCard.svelte';
+  import SectionHeading from '#lib/components/summary/SectionHeading.svelte';
+  import SubpageFrame from '#lib/components/summary/SubpageFrame.svelte';
+  import SectionToolbar from '#lib/components/toolbar/SectionToolbar.svelte';
+  import SubnavCount from '#lib/components/toolbar/SubnavCount.svelte';
+  import ViewToggle from '#lib/components/toolbar/ViewToggle.svelte';
+  import Icon from '#lib/icons/Icon.svelte';
+  import search from '#lib/icons/regular/magnifying-glass.svg?raw';
+  import friends from '#lib/icons/trakt/friends-thick.svg?raw';
+  import type { loadCredits } from './loadCredits.ts';
+  import { matchesCreditTerms } from './matchesCreditTerms.ts';
+  import { peopleGroupHref } from './peopleGroupHref.ts';
+  import { readPeopleGroup } from './readPeopleGroup.ts';
+  import { type CreditSort, sortCredits } from './sortCredits.ts';
 
 const { data }: { data: Awaited<ReturnType<typeof loadCredits>> } = $props();
 const kinds = $derived(
@@ -40,52 +33,61 @@ const kinds = $derived(
 const groups = $derived(
   kinds.flatMap(({ kind, groups }) => groups.map((group) => ({ ...group, kind, key: `${kind}:${group.id}` }))),
 );
-const hasEpisodes = $derived(groups.some((group) => group.people.some(({ episodeCount }) => episodeCount)));
-const sorts = $derived<readonly { id: CreditSort; label: string }[]>([
-  { id: 'billing', label: 'Billing' },
-  { id: 'name', label: 'Name' },
-  { id: 'role', label: 'Role' },
-  ...(hasEpisodes ? [{ id: 'episodes' as const, label: 'Episodes' }] : []),
-]);
+  const hasEpisodes = $derived(groups.some((group) => group.people.some(({ episodeCount }) => episodeCount)));
+  const sorts = $derived<readonly { id: CreditSort; label: string }[]>([
+    { id: 'billing', label: 'Billing' },
+    { id: 'name', label: 'Name' },
+    { id: 'role', label: 'Role' },
+    ...hasEpisodes ? [{ id: 'episodes' as const, label: 'Episodes' }] : []
+  ]);
 
-// A new item starts on the group its link names (`?crew=production`), else its first, with no search; the sort and
-// view carry over. Picking a group writes it back to the URL, so the page can be linked to as it is.
-let picks = $state<{ href: string; key?: string; terms: string }>({ href: '', terms: '' });
-const own = $derived(picks.href === data.media.href ? picks : { href: data.media.href, terms: '' });
-const terms = $derived(own.terms.trim());
-const linked = $derived(readPeopleGroup(page.url.searchParams));
+  // A new item starts on the group its link names (`?crew=production`), else its first, with no search; the sort and
+  // view carry over. Picking a group writes it back to the URL, so the page can be linked to as it is.
+  let picks = $state<{ href: string; key?: string; terms: string }>({ href: '', terms: '' });
+  const own = $derived(picks.href === data.media.href ? picks : { href: data.media.href, terms: '' });
+  const terms = $derived(own.terms.trim());
+  const linked = $derived(readPeopleGroup(page.url.searchParams));
 const current = $derived(
   groups.find(({ key }) => key === own.key) ?? groups.find(({ key }) => key === linked) ?? groups[0],
 );
-function pick(key: string) {
-  picks = { ...own, key };
-  const group = groups.find((candidate) => candidate.key === key);
-  if (!group) return;
-  const href = peopleGroupHref(page.url.pathname, { kind: group.kind, id: group.id, first: group === groups[0] });
-  // eslint-disable-next-line svelte/no-navigation-without-resolve -- the same page, with only its query changed
-  replaceState(`${href}${page.url.hash}`, page.state);
-}
-const setTerms = (next: string) => (picks = { ...own, terms: next });
+  function pick(key: string) {
+    picks = { ...own, key };
+    const group = groups.find((candidate) => candidate.key === key);
+    if (!group) return;
+    const href = peopleGroupHref(page.url.pathname, { kind: group.kind, id: group.id, first: group === groups[0] });
+     
+    // eslint-disable-next-line svelte/no-navigation-without-resolve -- the same page, with only its query changed
+    goto(`${href}${page.url.hash}`, { shallow: true, replace: true, state: page.state });
+  }
+  const setTerms = (next: string) => picks = { ...own, terms: next };
 
-let sortBy = $state<CreditSort>('billing');
-let flipped = $state(false);
-let view = $state<'grid' | 'list'>('grid');
-const sort = $derived(sorts.find(({ id }) => id === sortBy) ?? sorts[0]);
+  let sortBy = $state<CreditSort>('billing');
+  let flipped = $state(false);
+  let view = $state<'grid' | 'list'>('grid');
+  const sort = $derived(sorts.find(({ id }) => id === sortBy) ?? sorts[0]);
 
 const results = $derived(
   (terms ? groups : current ? [current] : [])
     .map((group) => ({
-      ...group,
-      people: sortCredits(group.people.filter((person) => matchesCreditTerms(person, terms)), {
-        by: sort?.id ?? 'billing',
-        flipped,
+    ...group,
+    people: sortCredits(group.people.filter((person) => matchesCreditTerms(person, terms)), {
+      by: sort?.id ?? 'billing',
+      flipped,
         characters: group.kind === 'Actors',
       }),
     }))
     .filter((group) => group.people.length > 0),
 );
-const matches = $derived(results.reduce((total, group) => total + group.people.length, 0));
+  const matches = $derived(results.reduce((total, group) => total + group.people.length, 0));
 </script>
+
+<!--
+  The people page (cast and crew) of a movie, show, season or episode: the subpage frame with a bar under its header. On the
+  bar's left, one dropdown of every group, under an Actors and a Crew header ("Season Regulars 14", "Directing 3"); on
+  its right the sort and its direction, a grid or list toggle and a search icon. The picked group shows as a grid of
+  headshot cards (as many columns as fit) or a list of rows, one person a row. A search runs over every group as you
+  type, name, character or job, and shows the matches under each group's heading with its count.
+-->
 
 <SeoHead
   {...toSubpageSeo({
@@ -158,7 +160,7 @@ const matches = $derived(results.reduce((total, group) => total + group.people.l
   {...data}
   label="People"
   sections={[{ label: 'People', href: '#people' }]}
-  {subnav}
+  subnav={subnav}
 >
   <div id="people" class="people" {@attach trackDrilldowns({ source: 'credits' })}>
     {#each results as group (group.key)}
@@ -209,17 +211,17 @@ section {
   gap: var(--cast-heading-gap);
 }
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(var(--cast-grid-min), 1fr));
-  gap: var(--cast-grid-row-gap) var(--actors-gap);
-  margin: 0;
-  padding: 0;
-  list-style: none;
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(var(--cast-grid-min), 1fr));
+    gap: var(--cast-grid-row-gap) var(--actors-gap);
+    margin: 0;
+    padding: 0;
+    list-style: none;
 
-  &.list {
-    grid-template-columns: repeat(var(--cast-list-columns), minmax(0, 1fr));
-    gap: var(--cast-list-gap);
+    &.list {
+      grid-template-columns: repeat(var(--cast-list-columns), minmax(0, 1fr));
+      gap: var(--cast-list-gap);
+    }
   }
-}
 </style>

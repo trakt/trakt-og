@@ -38,7 +38,7 @@ interface LoadHomeParams {
   now: number;
   random: () => number;
   parent: () => Promise<{ user: HeaderUser | null }>;
-  /** The data center's cache, `platform.caches.default`; without one each worker reads the API itself. */
+  /** The data center's cache, `edgeCache()`; without one each worker reads the API itself. */
   cache?: KeyedCache;
   /** The request's origin, which the shared cache's keys live under. */
   origin?: string;

@@ -4,11 +4,11 @@
   `alt` names the site where no text does.
 -->
 <script lang="ts">
-import imdb from '$lib/assets/sites/imdb-solid.svg';
-import metacritic from '$lib/assets/sites/metacritic.png';
-import tomatometer from '$lib/assets/sites/rt/tomatometer-fresh.svg';
-import tmdb from '$lib/assets/sites/tmdb.svg';
-import trakt from '$lib/assets/sites/trakt.png';
+import imdb from '#lib/assets/sites/imdb-solid.svg';
+import metacritic from '#lib/assets/sites/metacritic.png';
+import tomatometer from '#lib/assets/sites/rt/tomatometer-fresh.svg';
+import tmdb from '#lib/assets/sites/tmdb.svg';
+import trakt from '#lib/assets/sites/trakt.png';
 import type { SortSite } from './sortMenu.ts';
 
 const LOGOS: Readonly<Record<SortSite, string>> = { trakt, imdb, tmdb, rt: tomatometer, metacritic };

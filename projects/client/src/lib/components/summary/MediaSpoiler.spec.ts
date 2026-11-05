@@ -20,7 +20,7 @@ vi.mock('$app/state', () => ({
     },
   },
 }));
-vi.mock('$lib/overlay/overlay', () => ({
+vi.mock('#lib/overlay/overlay.ts', () => ({
   overlay: { state: () => ({ watched: viewer.watched }), isHidden: () => false, watchlistCount: () => 0 },
 }));
 

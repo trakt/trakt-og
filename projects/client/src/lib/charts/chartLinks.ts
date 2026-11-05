@@ -1,5 +1,6 @@
 import type { ChartPeriod } from './chartPeriod.ts';
 import type { MediaType } from './loadChart.ts';
+import type { ReadonlyURLSearchParams } from '$app/state';
 
 type ChartLinksParams = {
   type: MediaType;
@@ -7,7 +8,7 @@ type ChartLinksParams = {
   current: string;
   /** The period chart links keep: the current one, or weekly on a chart without one. */
   period: ChartPeriod;
-  search: URLSearchParams;
+  search: ReadonlyURLSearchParams;
   signedIn: boolean;
 };
 
@@ -16,7 +17,7 @@ type ChartLinksParams = {
  * `page` and `cursor`. Streaming Charts is cut (the endpoint is retired) and Played has no link, like OG.
  */
 export function chartLinks({ type, current, period, search, signedIn }: ChartLinksParams) {
-  const params = new URLSearchParams(search);
+  const params = new URLSearchParams(search.toString());
   params.delete('page');
   params.delete('cursor');
   const query = params.size > 0 ? `?${params}` : '';

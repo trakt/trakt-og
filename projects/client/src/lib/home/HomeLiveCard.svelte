@@ -6,10 +6,10 @@
 -->
 <script lang="ts">
 import { resolve } from '$app/paths';
-import TagPills from '$lib/components/labels/TagPills.svelte';
-import Shimmer from '$lib/components/loading/Shimmer.svelte';
-import StatusDot from '$lib/components/status/StatusDot.svelte';
-import { compactCount } from '$lib/utils/compactCount';
+import TagPills from '#lib/components/labels/TagPills.svelte';
+import Shimmer from '#lib/components/loading/Shimmer.svelte';
+import StatusDot from '#lib/components/status/StatusDot.svelte';
+import { compactCount } from '#lib/utils/compactCount.ts';
 import { cubicOut } from 'svelte/easing';
 import { prefersReducedMotion, Tween } from 'svelte/motion';
 import type { HomeLive } from './live/toHomeLive.ts';
@@ -50,10 +50,10 @@ const count = (n: number) => short.format(Math.round(n));
       </div>
     </div>
     <p class="key">
-      <a href={resolve('/shows/[chart=chart]', { chart: 'trending' })}>
+      <a href={resolve('/shows/[chart=chart]/[[period]]', { chart: 'trending' })}>
         <TagPills tags={[{ lead: compactCount(Math.round(shows.current)), text: 'shows', kind: 'primary' }]} />
       </a>
-      <a href={resolve('/movies/[chart=chart]', { chart: 'trending' })}>
+      <a href={resolve('/movies/[chart=chart]/[[period]]', { chart: 'trending' })}>
         <TagPills tags={[{ lead: compactCount(Math.round(movies.current)), text: 'movies' }]} />
       </a>
     </p>

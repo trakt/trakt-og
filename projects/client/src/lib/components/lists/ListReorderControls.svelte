@@ -4,15 +4,15 @@
   tile's bottom.
 -->
 <script lang="ts">
-import EditStrip from '$lib/components/lists/EditStrip.svelte';
-import RankInput from '$lib/components/lists/RankInput.svelte';
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import drag from '$lib/icons/solid/arrows-up-down-left-right.svg?raw';
-import first from '$lib/icons/solid/angles-up.svg?raw';
-import up from '$lib/icons/solid/angle-up.svg?raw';
-import down from '$lib/icons/solid/angle-down.svg?raw';
-import last from '$lib/icons/solid/angles-down.svg?raw';
+import EditStrip from '#lib/components/lists/EditStrip.svelte';
+import RankInput from '#lib/components/lists/RankInput.svelte';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import drag from '#lib/icons/solid/arrows-up-down-left-right.svg?raw';
+import first from '#lib/icons/solid/angles-up.svg?raw';
+import up from '#lib/icons/solid/angle-up.svg?raw';
+import down from '#lib/icons/solid/angle-down.svg?raw';
+import last from '#lib/icons/solid/angles-down.svg?raw';
 interface Props {
   name: string;
   rank: number;

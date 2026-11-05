@@ -5,7 +5,7 @@
 -->
 <script lang="ts">
 import type { HTMLButtonAttributes } from 'svelte/elements';
-import Icon from '$lib/icons/Icon.svelte';
+import Icon from '#lib/icons/Icon.svelte';
 
 interface Props extends Omit<HTMLButtonAttributes, 'class' | 'type'> {
   svg: string;

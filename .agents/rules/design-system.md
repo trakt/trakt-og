@@ -24,13 +24,13 @@ design system's living reference, so they change in the same PR as the component
 - **Match the site**: render it with the props, wrapper, width and background real pages use. Show only states and
   variants a real page can reach. A prop or variant no page passes is dead code: remove it instead of demoing it. Props
   that only feed sample data (so a demo works offline) are the exception.
-- **Build it from the shell**: each part is a `Specimen` card (`$lib/design/Specimen.svelte`), and each state inside it
+- **Build it from the shell**: each part is a `Specimen` card (`#lib/design/Specimen.svelte`), and each state inside it
   gets a `Variant` caption (Loaded, Empty, Loading, Failed...). Use `bleed` for components that bring their own page
   column. Notes say what to look for or try, in a sentence. A demo's own controls use `DemoButton` (an action),
   `DemoChoice` (pick one, like a viewer or a backdrop) and `DemoToggle` (on or off), never bare buttons, selects,
   radios or checkboxes. Page extras live in `src/lib/extras/`, outside the design system: no demos, no tokens.
 - **Never touch real data**: demos run on fixtures and stub clients. The shell answers every write that leaves the site
-  itself (`$lib/design/guardWrites.ts`), so a signed-in viewer can click anything; don't add props to components just
+  itself (`#lib/design/guardWrites.ts`), so a signed-in viewer can click anything; don't add props to components just
   to stop their writes.
 - **Check it**: screenshot the demo at 1440px in both themes before opening the PR, and include it with the OG
   screenshot, or the mock for a feature OG never had.
@@ -44,7 +44,7 @@ Every OG icon comes from OG's own fonts, so it matches exactly. Never hand-draw 
    `light`, `thin`, `brands`, `kit`, `trakt`, `logos`. An alias is saved under its canonical name, and the task says so.
    Set `OG_ASSET_PATH` to a local directory containing the source fonts and stylesheets.
 3. Commit the SVG as the task wrote it. Don't edit or reformat it.
-4. Render it with `<Icon svg={gear} />` after `import gear from '$lib/icons/thin/gear.svg?raw'`. Add `fixedWidth` where
+4. Render it with `<Icon svg={gear} />` after `import gear from '#lib/icons/thin/gear.svg?raw'`. Add `fixedWidth` where
    OG used `fa-fw`, and `label` when the icon is the only thing saying what a control does.
 
 When OG picks the icon at runtime (the `logos-icon-#{format}` formats, gender icons, social network brands), extract the
@@ -52,7 +52,7 @@ whole set it can pick from, not just the one your test data shows.
 
 ## Empty states
 
-Every empty state is `EmptyState`, from `$lib/components/empty/`: a dashed outline with OG's "Nothing to see here. Move
+Every empty state is `EmptyState`, from `#lib/components/empty/`: a dashed outline with OG's "Nothing to see here. Move
 along, move along." and at most one way out under it, as og's outline `LinkButton`. No second line of text. Never
 render a blank gap or ad-hoc empty markup.
 

@@ -1,4 +1,5 @@
 import type { Cookies } from '@sveltejs/kit';
+import { env } from 'cloudflare:workers';
 import { api } from '../api/api.ts';
 import { isApiRateLimited } from '../api/isApiRateLimited.ts';
 import { isAuthStepRoute } from '../auth/isAuthStepRoute.ts';
@@ -6,8 +7,9 @@ import { headerLinkPrefs } from '../components/header/headerLinkPrefs.ts';
 import { toHeaderUser } from '../components/header/toHeaderUser.ts';
 import { isPhoneUserAgent } from '../components/mobile-splash/isPhoneUserAgent.ts';
 import { toMobilePlatform } from '../components/mobile-splash/toMobilePlatform.ts';
+import { edgeCache } from '../utils/edgeCache.ts';
 import { browserTimeZone } from './browserTimeZone.ts';
-import { keptSettingsFetch, type ResponseCache } from './keptSettingsFetch.ts';
+import { keptSettingsFetch } from './keptSettingsFetch.ts';
 import { localSettings } from './localSettings.ts';
 import { SETTINGS_REVISION_COOKIE } from './settingsRevisionCookie.ts';
 import { toDarkKnight } from './toDarkKnight.ts';
@@ -23,7 +25,6 @@ type Params = {
   /** A client navigation or reload, which may use the kept settings. A full page load reads them fresh. */
   isDataRequest?: boolean;
   route: { id: string | null };
-  platform?: App.Platform;
   untrack: <T>(fn: () => T) => T;
 };
 
@@ -50,7 +51,6 @@ export async function loadViewerSession({
   request,
   isDataRequest = false,
   route,
-  platform: worker,
   untrack,
 }: Params) {
   const { token, tokenExpired } = locals;
@@ -79,9 +79,7 @@ export async function loadViewerSession({
   try {
     const settingsFetch = keptSettingsFetch({
       fetch,
-      // The adapter types the cache with the Worker's own Response, which TypeScript can't match to the DOM's; at
-      // runtime they're one class.
-      cache: worker?.caches?.default as unknown as ResponseCache | undefined,
+      cache: edgeCache(),
       origin: new URL(request.url).origin,
       token,
       revision: cookies.get(SETTINGS_REVISION_COOKIE) ?? '',
@@ -107,7 +105,7 @@ export async function loadViewerSession({
       searchType,
       platform,
       phone,
-      gifs: Boolean(worker?.env.KLIPY_API_KEY),
+      gifs: Boolean(env.KLIPY_API_KEY),
     };
     locals.theme = toTheme(toDarkKnight(settings));
     return data;

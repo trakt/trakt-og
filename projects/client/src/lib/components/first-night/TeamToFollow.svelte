@@ -4,11 +4,11 @@
   Until the team loads, shimmering rows hold their place.
 -->
 <script lang="ts">
-import Shimmer from '$lib/components/loading/Shimmer.svelte';
-import FollowButtons from '$lib/components/users/FollowButtons.svelte';
-import { fetchTeamToFollow } from '$lib/firstNight/teamToFollow';
-import { overlay } from '$lib/overlay/overlay';
-import type { ViewerRelation } from '$lib/users/ViewerRelation';
+import Shimmer from '#lib/components/loading/Shimmer.svelte';
+import FollowButtons from '#lib/components/users/FollowButtons.svelte';
+import { fetchTeamToFollow } from '#lib/firstNight/teamToFollow.ts';
+import { overlay } from '#lib/overlay/overlay.ts';
+import type { ViewerRelation } from '#lib/users/ViewerRelation.ts';
 
 const team = fetchTeamToFollow(fetch);
 /** As many as the team brings: four rows of two. */

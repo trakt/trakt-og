@@ -18,10 +18,10 @@
 import type { Snippet } from 'svelte';
 import type { Attachment } from 'svelte/attachments';
 import type { HTMLAnchorAttributes, HTMLAttributes } from 'svelte/elements';
-import Icon from '$lib/icons/Icon.svelte';
-import Spinner from '$lib/components/loading/Spinner.svelte';
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import type { TooltipContent } from '$lib/components/tooltip/TooltipContent';
+import Icon from '#lib/icons/Icon.svelte';
+import Spinner from '#lib/components/loading/Spinner.svelte';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import type { TooltipContent } from '#lib/components/tooltip/TooltipContent.ts';
 
 interface Props extends Omit<HTMLAttributes<HTMLElement>, 'title'>, Pick<HTMLAnchorAttributes, 'target' | 'rel'> {
   color: string;

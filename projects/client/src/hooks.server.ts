@@ -1,8 +1,9 @@
+import type { Handle, HandleFetch } from '@sveltejs/kit/hooks';
+import { waitUntil } from 'cloudflare:workers';
 import { AUTH_COOKIE } from './lib/auth/authCookie.ts';
 import { apiEnvironment } from './lib/api/apiEnvironment.ts';
 import { apiRateLimited } from './lib/api/apiRateLimited.ts';
 import { cachedApiRead } from './lib/api/cachedApiRead.ts';
-import type { ResponseCache } from './lib/api/ResponseCache.ts';
 import { isStandardApi } from './lib/api/isStandardApi.ts';
 import { rateLimitPause } from './lib/api/rateLimitPause.ts';
 import { withUserAgent } from './lib/api/withUserAgent.ts';
@@ -10,7 +11,7 @@ import { readAuthCookie } from './lib/auth/readAuthCookie.ts';
 import { detectCrawler } from './lib/crawl/detectCrawler.ts';
 import { verifiedBotCategory } from './lib/crawl/verifiedBotCategory.ts';
 import { withCrawlHeaders } from './lib/crawl/withCrawlHeaders.ts';
-import type { Handle, HandleFetch } from '@sveltejs/kit';
+import { edgeCache } from './lib/utils/edgeCache.ts';
 
 /**
  * Loaders call `api({ fetch: event.fetch, token: locals.token })`. The server never refreshes: a 401 renders logged-out.
@@ -69,8 +70,8 @@ async function send(request: Request, fetch: typeof globalThis.fetch, read: bool
  */
 export const handleFetch: HandleFetch = ({ event, request, fetch }) => {
   const read = request.method === 'GET' && request.url.startsWith(apiEnvironment());
-  const { platform, locals, url } = event;
-  const cache = platform?.caches?.default as unknown as ResponseCache | undefined;
+  const { locals, url } = event;
+  const cache = edgeCache();
   if (!read || !cache) return send(request, fetch, read);
 
   return cachedApiRead({
@@ -79,6 +80,6 @@ export const handleFetch: HandleFetch = ({ event, request, fetch }) => {
     origin: url.origin,
     signedIn: locals.token !== null || locals.tokenExpired,
     load: () => send(request, fetch, read),
-    waitUntil: (promise) => platform?.ctx.waitUntil(promise),
+    waitUntil,
   });
 };

@@ -5,16 +5,16 @@
   through the roster.
 -->
 <script lang="ts">
-import CommentTag from '$lib/components/comments/CommentTag.svelte';
-import PanelHeading from '$lib/components/dashboard/PanelHeading.svelte';
-import PanelHelp from '$lib/components/dashboard/PanelHelp.svelte';
-import SeeMore from '$lib/components/see-more/SeeMore.svelte';
-import RollingNumber from '$lib/components/stats/RollingNumber.svelte';
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import userGroup from '$lib/icons/regular/user-group.svg?raw';
-import calendarLines from '$lib/icons/regular/calendar-lines.svg?raw';
-import locationPin from '$lib/icons/solid/location-pin.svg?raw';
-import checkThick from '$lib/icons/trakt/check-thick.svg?raw';
+import CommentTag from '#lib/components/comments/CommentTag.svelte';
+import PanelHeading from '#lib/components/dashboard/PanelHeading.svelte';
+import PanelHelp from '#lib/components/dashboard/PanelHelp.svelte';
+import SeeMore from '#lib/components/see-more/SeeMore.svelte';
+import RollingNumber from '#lib/components/stats/RollingNumber.svelte';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import userGroup from '#lib/icons/regular/user-group.svg?raw';
+import calendarLines from '#lib/icons/regular/calendar-lines.svg?raw';
+import locationPin from '#lib/icons/solid/location-pin.svg?raw';
+import checkThick from '#lib/icons/trakt/check-thick.svg?raw';
 import type { AboutMemberPick } from './pickAboutTeam.ts';
 
 const { team }: { team: readonly AboutMemberPick[] } = $props();

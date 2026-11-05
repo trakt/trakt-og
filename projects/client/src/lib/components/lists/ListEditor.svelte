@@ -2,16 +2,16 @@
 import { page } from '$app/state';
 import { tick } from 'svelte';
 import { invalidateAll } from '$app/navigation';
-import { rawApiFetch } from '$lib/api/rawApiFetch';
-import LoadingOverlay from '$lib/components/loading/LoadingOverlay.svelte';
-import NewListDialog from '$lib/components/lists/NewListDialog.svelte';
-import { loadListEditor } from '$lib/components/lists/loadListEditor';
-import { saveList } from '$lib/components/lists/saveList';
-import { ListWriteError } from '$lib/components/lists/ListWriteError';
-import type { ListDraft } from '$lib/components/lists/ListDraft';
-import { listCatalog } from '$lib/components/lists/listCatalog.svelte';
-import { toast } from '$lib/components/toast/toast.svelte';
-import { overlay } from '$lib/overlay/overlay';
+import { rawApiFetch } from '#lib/api/rawApiFetch.ts';
+import LoadingOverlay from '#lib/components/loading/LoadingOverlay.svelte';
+import NewListDialog from '#lib/components/lists/NewListDialog.svelte';
+import { loadListEditor } from '#lib/components/lists/loadListEditor.ts';
+import { saveList } from '#lib/components/lists/saveList.ts';
+import { ListWriteError } from '#lib/components/lists/ListWriteError.ts';
+import type { ListDraft } from '#lib/components/lists/ListDraft.ts';
+import { listCatalog } from '#lib/components/lists/listCatalog.svelte.ts';
+import { toast } from '#lib/components/toast/toast.svelte.ts';
+import { overlay } from '#lib/overlay/overlay.ts';
 import { viewerFetch } from '../../auth/viewerFetch.ts';
 interface Props {
   id: number | null;

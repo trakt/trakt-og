@@ -5,39 +5,39 @@
   one show's or season's plays chart one card an episode.
 -->
 <script lang="ts">
-import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
-import SeoHead from '$lib/seo/SeoHead.svelte';
-import type { HistoryPlay } from '$lib/components/history/HistoryPlay';
-import { removeHistoryCards } from '$lib/users/history/removeHistoryCards';
+import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
+import SeoHead from '#lib/seo/SeoHead.svelte';
+import type { HistoryPlay } from '#lib/components/history/HistoryPlay.ts';
+import { removeHistoryCards } from '#lib/users/history/removeHistoryCards.ts';
 import { SvelteURLSearchParams } from 'svelte/reactivity';
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
-import Container from '$lib/components/container/Container.svelte';
-import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
-import SortLabel from '$lib/components/sort/SortLabel.svelte';
-import SortMenu from '$lib/components/sort/SortMenu.svelte';
-import { withTraktSorts } from '$lib/components/sort/sortMenu';
-import SortDirection from '$lib/components/dropdown/SortDirection.svelte';
-import EmptyState from '$lib/components/empty/EmptyState.svelte';
-import DateRangeFilter from '$lib/components/filters/DateRangeFilter.svelte';
-import DividersToggle from '$lib/components/filters/DividersToggle.svelte';
-import FadeHideMenu from '$lib/components/filters/FadeHideMenu.svelte';
-import { type FadeHide, fadeHideOptions, matchesFadeHide } from '$lib/components/filters/fadeHide';
-import DayGroup from '$lib/components/history/DayGroup.svelte';
-import PosterCard from '$lib/components/media/PosterCard.svelte';
-import PosterGrid from '$lib/components/media/PosterGrid.svelte';
-import { quickIconFill } from '$lib/components/media/quickIconFill';
-import Pagination from '$lib/components/pagination/Pagination.svelte';
-import SectionToolbar from '$lib/components/toolbar/SectionToolbar.svelte';
-import SubnavCount from '$lib/components/toolbar/SubnavCount.svelte';
-import WatchNowFilter from '$lib/components/watchnow/WatchNowFilter.svelte';
-import file from '$lib/icons/regular/file.svg?raw';
-import check from '$lib/icons/trakt/check-thick.svg?raw';
-import { overlay } from '$lib/overlay/overlay';
-import type { ViewerSettings } from '$lib/settings/ViewerSettings';
-import type { ProfileUser } from '$lib/users/ProfileUser';
-import { findAction } from '$lib/users/findAction';
-import { formatRuntime } from '$lib/utils/formatRuntime';
+import Container from '#lib/components/container/Container.svelte';
+import Dropdown from '#lib/components/dropdown/Dropdown.svelte';
+import SortLabel from '#lib/components/sort/SortLabel.svelte';
+import SortMenu from '#lib/components/sort/SortMenu.svelte';
+import { withTraktSorts } from '#lib/components/sort/sortMenu.ts';
+import SortDirection from '#lib/components/dropdown/SortDirection.svelte';
+import EmptyState from '#lib/components/empty/EmptyState.svelte';
+import DateRangeFilter from '#lib/components/filters/DateRangeFilter.svelte';
+import DividersToggle from '#lib/components/filters/DividersToggle.svelte';
+import FadeHideMenu from '#lib/components/filters/FadeHideMenu.svelte';
+import { type FadeHide, fadeHideOptions, matchesFadeHide } from '#lib/components/filters/fadeHide.ts';
+import DayGroup from '#lib/components/history/DayGroup.svelte';
+import PosterCard from '#lib/components/media/PosterCard.svelte';
+import PosterGrid from '#lib/components/media/PosterGrid.svelte';
+import { quickIconFill } from '#lib/components/media/quickIconFill.ts';
+import Pagination from '#lib/components/pagination/Pagination.svelte';
+import SectionToolbar from '#lib/components/toolbar/SectionToolbar.svelte';
+import SubnavCount from '#lib/components/toolbar/SubnavCount.svelte';
+import WatchNowFilter from '#lib/components/watchnow/WatchNowFilter.svelte';
+import file from '#lib/icons/regular/file.svg?raw';
+import check from '#lib/icons/trakt/check-thick.svg?raw';
+import { overlay } from '#lib/overlay/overlay.ts';
+import type { ViewerSettings } from '#lib/settings/ViewerSettings.ts';
+import type { ProfileUser } from '#lib/users/ProfileUser.ts';
+import { findAction } from '#lib/users/findAction.ts';
+import { formatRuntime } from '#lib/utils/formatRuntime.ts';
 import {
   defaultHistorySort,
   flippable,
@@ -91,7 +91,7 @@ function href(
   sort: HistorySort = data.sort,
   item: HistoryItem | undefined = data.filters.item,
 ) {
-  const query = new SvelteURLSearchParams(page.url.searchParams);
+  const query = new SvelteURLSearchParams(page.url.search);
   query.delete('page');
   for (const [key, value] of Object.entries(changes)) {
     if (value === null) query.delete(key);

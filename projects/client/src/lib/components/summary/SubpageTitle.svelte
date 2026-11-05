@@ -4,8 +4,8 @@
   to the item, with the certification after it.
 -->
 <script lang="ts">
-import MediaSpoiler from '$lib/components/summary/MediaSpoiler.svelte';
-import type { SpoilerTarget } from '$lib/settings/SpoilerTarget';
+import MediaSpoiler from '#lib/components/summary/MediaSpoiler.svelte';
+import type { SpoilerTarget } from '#lib/settings/SpoilerTarget.ts';
 import Certification from './Certification.svelte';
 import TitleTags from './TitleTags.svelte';
 import type { ComponentProps } from 'svelte';

@@ -8,7 +8,7 @@
     </LazySection>
 -->
 <script lang="ts">
-import SectionHeading from '$lib/components/summary/SectionHeading.svelte';
+import SectionHeading from '#lib/components/summary/SectionHeading.svelte';
 import CommentShimmer from './CommentShimmer.svelte';
 import ListRowShimmer from './ListRowShimmer.svelte';
 import Shimmer from './Shimmer.svelte';

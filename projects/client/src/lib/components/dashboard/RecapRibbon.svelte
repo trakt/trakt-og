@@ -9,12 +9,12 @@
 -->
 <script lang="ts">
 import { SvelteMap } from 'svelte/reactivity';
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import type { RecapMonth, RecapRibbon, RecapSpan, RecapTag } from '$lib/dashboard/RecapRibbon';
-import type { RecapSplit, RecapSplitState } from '$lib/dashboard/RecapSplit';
-import Icon from '$lib/icons/Icon.svelte';
-import chartSimple from '$lib/icons/regular/chart-simple.svg?raw';
-import { readableStat } from '$lib/utils/readableStat';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import type { RecapMonth, RecapRibbon, RecapSpan, RecapTag } from '#lib/dashboard/RecapRibbon.ts';
+import type { RecapSplit, RecapSplitState } from '#lib/dashboard/RecapSplit.ts';
+import Icon from '#lib/icons/Icon.svelte';
+import chartSimple from '#lib/icons/regular/chart-simple.svg?raw';
+import { readableStat } from '#lib/utils/readableStat.ts';
 import RecapSplitTip from './RecapSplitTip.svelte';
 
 type CellTag = RecapTag | { readonly kind: 'year'; readonly title: string };

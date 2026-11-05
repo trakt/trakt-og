@@ -5,10 +5,10 @@
   its numbers over the band. The band and that card are decoration: the key carries everything.
 -->
 <script lang="ts">
-import TooltipBox from '$lib/components/tooltip/TooltipBox.svelte';
-import TooltipStat from '$lib/components/tooltip/TooltipStat.svelte';
-import type { GenreBar } from '$lib/users/profile/toGenreBar';
-import { type BandWords, toGenreBand } from '$lib/users/profile/toGenreBand';
+import TooltipBox from '#lib/components/tooltip/TooltipBox.svelte';
+import TooltipStat from '#lib/components/tooltip/TooltipStat.svelte';
+import type { GenreBar } from '#lib/users/profile/toGenreBar.ts';
+import { type BandWords, toGenreBand } from '#lib/users/profile/toGenreBand.ts';
 
 /** `words` names the pieces when they aren't genres. */
 const { genres, words }: { genres: readonly GenreBar[]; words?: BandWords } = $props();

@@ -1,8 +1,8 @@
 <!-- Featured List: the watchlist over its first item's fanart, with its size, a fanned poster stack and what's next. -->
 <script lang="ts">
-import BoxChips from '$lib/components/users/profile-box/BoxChips.svelte';
-import BoxTitle from '$lib/components/users/profile-box/BoxTitle.svelte';
-import ProfileBox from '$lib/components/users/profile-box/ProfileBox.svelte';
+import BoxChips from '#lib/components/users/profile-box/BoxChips.svelte';
+import BoxTitle from '#lib/components/users/profile-box/BoxTitle.svelte';
+import ProfileBox from '#lib/components/users/profile-box/ProfileBox.svelte';
 import type { FeaturedListView } from './FeaturedListView.ts';
 
 const { view }: { view: FeaturedListView } = $props();

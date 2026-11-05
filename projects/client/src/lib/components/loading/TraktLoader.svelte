@@ -1,6 +1,6 @@
 <!--
   The Trakt loading mark: red rises in a wave behind the white monogram until the disc is full, then drains, inside the
-  classic outer ring. Geometry comes from the round mark in `$lib/assets/trakt-wide-red-white.svg`. Reduced motion
+  classic outer ring. Geometry comes from the round mark in `#lib/assets/trakt-wide-red-white.svg`. Reduced motion
   swaps the wave for a slow breathe of the full mark.
 -->
 <script lang="ts">

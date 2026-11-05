@@ -6,8 +6,8 @@
     <SubnavCount svg={check} value="88%" noun="watched" tooltip="Watched" tone="watched" />
 -->
 <script lang="ts">
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import Icon from '$lib/icons/Icon.svelte';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import Icon from '#lib/icons/Icon.svelte';
 
 interface Props {
   svg: string;

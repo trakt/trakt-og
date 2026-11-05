@@ -7,15 +7,15 @@
     <ListTag relation="friend" />
 -->
 <script lang="ts">
-import CommentTag from '$lib/components/comments/CommentTag.svelte';
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import link from '$lib/icons/solid/link.svg?raw';
-import listIcon from '$lib/icons/regular/list.svg?raw';
-import lock from '$lib/icons/regular/lock.svg?raw';
-import user from '$lib/icons/regular/user.svg?raw';
-import userGroup from '$lib/icons/regular/user-group.svg?raw';
-import sparkles from '$lib/icons/solid/sparkles.svg?raw';
-import traktIcon from '$lib/icons/trakt/trakt-v2.svg?raw';
+import CommentTag from '#lib/components/comments/CommentTag.svelte';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import link from '#lib/icons/solid/link.svg?raw';
+import listIcon from '#lib/icons/regular/list.svg?raw';
+import lock from '#lib/icons/regular/lock.svg?raw';
+import user from '#lib/icons/regular/user.svg?raw';
+import userGroup from '#lib/icons/regular/user-group.svg?raw';
+import sparkles from '#lib/icons/solid/sparkles.svg?raw';
+import traktIcon from '#lib/icons/trakt/trakt-v2.svg?raw';
 
 type Props = { tag: string; relation?: never } | { relation: 'friend' | 'following'; tag?: never };
 

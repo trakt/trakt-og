@@ -1,10 +1,10 @@
 <!-- Top List: likes across the user's lists over the most liked one's posters, and that list. -->
 <script lang="ts">
-import BoxChips from '$lib/components/users/profile-box/BoxChips.svelte';
-import BoxFigure from '$lib/components/users/profile-box/BoxFigure.svelte';
-import BoxTitle from '$lib/components/users/profile-box/BoxTitle.svelte';
-import ProfileBox from '$lib/components/users/profile-box/ProfileBox.svelte';
-import heart from '$lib/icons/solid/heart.svg?raw';
+import BoxChips from '#lib/components/users/profile-box/BoxChips.svelte';
+import BoxFigure from '#lib/components/users/profile-box/BoxFigure.svelte';
+import BoxTitle from '#lib/components/users/profile-box/BoxTitle.svelte';
+import ProfileBox from '#lib/components/users/profile-box/ProfileBox.svelte';
+import heart from '#lib/icons/solid/heart.svg?raw';
 import type { TopListView } from './TopListView.ts';
 
 const { view }: { view: TopListView } = $props();

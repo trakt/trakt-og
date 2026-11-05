@@ -1,6 +1,6 @@
 import { z } from 'zod/v4';
-import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
-import { useTrack } from '$lib/analytics/useTrack';
+import { AnalyticsEvent } from '#lib/analytics/AnalyticsEvent.ts';
+import { useTrack } from '#lib/analytics/useTrack.ts';
 import { api } from '../../api/api.ts';
 
 const failed = "Doh! You can't like this list.";

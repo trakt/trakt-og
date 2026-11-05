@@ -6,19 +6,19 @@
   Without a `panel` yet (og counting the stats itself), the four labels hold their places over shimmers.
 -->
 <script lang="ts">
-import HeadingMark from '$lib/components/heading/HeadingMark.svelte';
-import Shimmer from '$lib/components/loading/Shimmer.svelte';
-import Stat from '$lib/components/stats/Stat.svelte';
-import type { PanelCount, PanelTime, StatsPanel } from '$lib/dashboard/StatsPanel';
-import ban from '$lib/icons/regular/ban.svg?raw';
-import barsProgress from '$lib/icons/regular/bars-progress.svg?raw';
-import cameraMovie from '$lib/icons/regular/camera-movie.svg?raw';
-import play from '$lib/icons/regular/play.svg?raw';
-import tvRetro from '$lib/icons/regular/tv-retro.svg?raw';
-import clock from '$lib/icons/regular/clock.svg?raw';
-import listCheck from '$lib/icons/regular/list-check.svg?raw';
-import check from '$lib/icons/trakt/check-thick.svg?raw';
-import { traktUrls } from '$lib/traktUrls';
+import HeadingMark from '#lib/components/heading/HeadingMark.svelte';
+import Shimmer from '#lib/components/loading/Shimmer.svelte';
+import Stat from '#lib/components/stats/Stat.svelte';
+import type { PanelCount, PanelTime, StatsPanel } from '#lib/dashboard/StatsPanel.ts';
+import ban from '#lib/icons/regular/ban.svg?raw';
+import barsProgress from '#lib/icons/regular/bars-progress.svg?raw';
+import cameraMovie from '#lib/icons/regular/camera-movie.svg?raw';
+import play from '#lib/icons/regular/play.svg?raw';
+import tvRetro from '#lib/icons/regular/tv-retro.svg?raw';
+import clock from '#lib/icons/regular/clock.svg?raw';
+import listCheck from '#lib/icons/regular/list-check.svg?raw';
+import check from '#lib/icons/trakt/check-thick.svg?raw';
+import { traktUrls } from '#lib/traktUrls.ts';
 
 /** `fresh`: nothing watched yet, so each cell names its first milestone in place of its zero counts. */
 const { panel, slug, fresh = false }: { panel: StatsPanel | null; slug: string; fresh?: boolean } = $props();

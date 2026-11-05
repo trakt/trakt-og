@@ -1,11 +1,11 @@
 <script lang="ts">
-import Container from '$lib/components/container/Container.svelte';
-import PosterCard from '$lib/components/media/PosterCard.svelte';
-import PosterGrid from '$lib/components/media/PosterGrid.svelte';
-import { quickIconFill } from '$lib/components/media/quickIconFill';
-import RatingLine from '$lib/components/rating/RatingLine.svelte';
-import Specimen from '$lib/design/Specimen.svelte';
-import { imageUrl } from '$lib/utils/imageUrl';
+import Container from '#lib/components/container/Container.svelte';
+import PosterCard from '#lib/components/media/PosterCard.svelte';
+import PosterGrid from '#lib/components/media/PosterGrid.svelte';
+import { quickIconFill } from '#lib/components/media/quickIconFill.ts';
+import RatingLine from '#lib/components/rating/RatingLine.svelte';
+import Specimen from '#lib/design/Specimen.svelte';
+import { imageUrl } from '#lib/utils/imageUrl.ts';
 
 const { data } = $props();
 

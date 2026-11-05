@@ -7,8 +7,8 @@
   `onpreview` reports the heart being pointed at or focused, so the popover title can follow it (see `ratingPrompt`).
 -->
 <script lang="ts">
-import Icon from '$lib/icons/Icon.svelte';
-import heart from '$lib/icons/solid/heart.svg?raw';
+import Icon from '#lib/icons/Icon.svelte';
+import heart from '#lib/icons/solid/heart.svg?raw';
 
 interface Props {
   value: number | null;

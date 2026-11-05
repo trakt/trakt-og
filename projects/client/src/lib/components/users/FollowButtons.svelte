@@ -1,16 +1,16 @@
 <script lang="ts">
 import { getContext } from 'svelte';
-import { toast } from '$lib/components/toast/toast.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import timer from '$lib/icons/solid/timer.svg?raw';
-import blockThick from '$lib/icons/trakt/block-thick.svg?raw';
-import checkThick from '$lib/icons/trakt/check-thick.svg?raw';
-import deleteThick from '$lib/icons/trakt/delete-thick.svg?raw';
-import userPlus from '$lib/icons/regular/user-plus.svg?raw';
-import { changeRelationship } from '$lib/users/changeRelationship';
-import { createRelationshipOverlay } from '$lib/users/createRelationshipOverlay.svelte';
-import { relationshipRequest } from '$lib/users/relationshipRequest';
-import type { ViewerRelation } from '$lib/users/ViewerRelation';
+import { toast } from '#lib/components/toast/toast.svelte.ts';
+import Icon from '#lib/icons/Icon.svelte';
+import timer from '#lib/icons/solid/timer.svg?raw';
+import blockThick from '#lib/icons/trakt/block-thick.svg?raw';
+import checkThick from '#lib/icons/trakt/check-thick.svg?raw';
+import deleteThick from '#lib/icons/trakt/delete-thick.svg?raw';
+import userPlus from '#lib/icons/regular/user-plus.svg?raw';
+import { changeRelationship } from '#lib/users/changeRelationship.ts';
+import { createRelationshipOverlay } from '#lib/users/createRelationshipOverlay.svelte.ts';
+import { relationshipRequest } from '#lib/users/relationshipRequest.ts';
+import type { ViewerRelation } from '#lib/users/ViewerRelation.ts';
 
 interface Props {
   slug: string;

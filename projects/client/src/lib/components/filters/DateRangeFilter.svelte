@@ -8,14 +8,14 @@
 <script lang="ts">
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
-import { watchDateInput } from '$lib/components/history/watchDateInput';
-import { watchDateInstant } from '$lib/components/history/watchDateInstant';
-import Icon from '$lib/icons/Icon.svelte';
-import FilterPopover from '$lib/components/filters/FilterPopover.svelte';
-import calendar from '$lib/icons/regular/calendar-lines.svg?raw';
-import arrowRight from '$lib/icons/trakt/arrow-right.svg?raw';
-import type { DatePreferences } from '$lib/settings/DatePreferences';
-import { formatDate } from '$lib/utils/formatDate';
+import { watchDateInput } from '#lib/components/history/watchDateInput.ts';
+import { watchDateInstant } from '#lib/components/history/watchDateInstant.ts';
+import Icon from '#lib/icons/Icon.svelte';
+import FilterPopover from '#lib/components/filters/FilterPopover.svelte';
+import calendar from '#lib/icons/regular/calendar-lines.svg?raw';
+import arrowRight from '#lib/icons/trakt/arrow-right.svg?raw';
+import type { DatePreferences } from '#lib/settings/DatePreferences.ts';
+import { formatDate } from '#lib/utils/formatDate.ts';
 
 interface Props {
   /** UTC instants. */
@@ -46,9 +46,10 @@ function prepare() {
 }
 
 function reload(range: { start_at: string; end_at: string } | null) {
-  const url = new URL(page.url);
+  const url = new URL(page.url.href);
   for (const key of ['start_at', 'end_at', 'days', 'page']) url.searchParams.delete(key);
   if (range) { for (const [key, value] of Object.entries(range)) url.searchParams.set(key, value); }
+   
   // eslint-disable-next-line svelte/no-navigation-without-resolve -- the current page with a new query string
   void goto(url);
 }

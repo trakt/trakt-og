@@ -9,10 +9,10 @@
     <CalendarEntryCard {entry} icons={cardIcons(entry)} artwork="logo" mixed />
 -->
 <script lang="ts">
-import TagPills from '$lib/components/labels/TagPills.svelte';
-import FanartCard from '$lib/components/media/FanartCard.svelte';
-import CardTag from '$lib/components/media/CardTag.svelte';
-import QuickIcons from '$lib/components/media/QuickIcons.svelte';
+import TagPills from '#lib/components/labels/TagPills.svelte';
+import FanartCard from '#lib/components/media/FanartCard.svelte';
+import CardTag from '#lib/components/media/CardTag.svelte';
+import QuickIcons from '#lib/components/media/QuickIcons.svelte';
 import type { ComponentProps } from 'svelte';
 import type { CalendarArtwork } from './calendarDisplay.ts';
 import type { CalendarEntry } from './CalendarEntry.ts';

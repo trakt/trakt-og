@@ -4,12 +4,12 @@
   watch it.
 -->
 <script lang="ts">
-import type { ScheduleItem } from '$lib/dashboard/ScheduleItem';
-import type { ScheduleRow } from '$lib/dashboard/toScheduleLayout';
-import posterPlaceholder from '$lib/assets/placeholders/poster.png';
-import Icon from '$lib/icons/Icon.svelte';
-import play from '$lib/icons/trakt/play2-thick.svg?raw';
-import tickets from '$lib/icons/trakt/tickets.svg?raw';
+import type { ScheduleItem } from '#lib/dashboard/ScheduleItem.ts';
+import type { ScheduleRow } from '#lib/dashboard/toScheduleLayout.ts';
+import posterPlaceholder from '#lib/assets/placeholders/poster.png';
+import Icon from '#lib/icons/Icon.svelte';
+import play from '#lib/icons/trakt/play2-thick.svg?raw';
+import tickets from '#lib/icons/trakt/tickets.svg?raw';
 import ScheduleEpisodes from './ScheduleEpisodes.svelte';
 import ScheduleTags from './ScheduleTags.svelte';
 

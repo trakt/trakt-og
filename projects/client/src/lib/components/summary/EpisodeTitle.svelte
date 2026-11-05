@@ -3,11 +3,11 @@
   h1 with the episode number, its title behind the spoiler setting, the year and the certification.
 -->
 <script lang="ts">
-import MediaSpoiler from '$lib/components/summary/MediaSpoiler.svelte';
-import type { SpoilerTarget } from '$lib/settings/SpoilerTarget';
-import type { episodeType } from '$lib/components/media/episodeTags';
-import Certification from '$lib/components/summary/Certification.svelte';
-import TitleTags from '$lib/components/summary/TitleTags.svelte';
+import MediaSpoiler from '#lib/components/summary/MediaSpoiler.svelte';
+import type { SpoilerTarget } from '#lib/settings/SpoilerTarget.ts';
+import type { episodeType } from '#lib/components/media/episodeTags.ts';
+import Certification from '#lib/components/summary/Certification.svelte';
+import TitleTags from '#lib/components/summary/TitleTags.svelte';
 import type { ComponentProps } from 'svelte';
 interface Props {
   /** The way up: the show, the season, its title when it has one. */

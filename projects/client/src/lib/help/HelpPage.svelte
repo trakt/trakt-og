@@ -4,19 +4,19 @@
   r/trakt. Dark header in both themes; the rest follows the viewer's theme.
 -->
 <script lang="ts">
-import AboutAsk from '$lib/about/AboutAsk.svelte';
-import type { AboutGithub } from '$lib/about/github/fetchAboutGithub';
-import { ogRepoUrls } from '$lib/about/ogRepoUrls';
-import type { AboutScene } from '$lib/about/scenes/AboutScene';
-import TraktLogoMark from '$lib/components/brand/TraktLogoMark.svelte';
-import LinkButton from '$lib/components/button/LinkButton.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import githubMark from '$lib/icons/brands/github.svg?raw';
-import redditAlien from '$lib/icons/brands/reddit-alien.svg?raw';
-import envelope from '$lib/icons/solid/envelope.svg?raw';
-import lifeRing from '$lib/icons/solid/life-ring.svg?raw';
-import spaceStationMoon from '$lib/icons/solid/space-station-moon.svg?raw';
-import { traktUrls } from '$lib/traktUrls';
+import AboutAsk from '#lib/about/AboutAsk.svelte';
+import type { AboutGithub } from '#lib/about/github/fetchAboutGithub.ts';
+import { ogRepoUrls } from '#lib/about/ogRepoUrls.ts';
+import type { AboutScene } from '#lib/about/scenes/AboutScene.ts';
+import TraktLogoMark from '#lib/components/brand/TraktLogoMark.svelte';
+import LinkButton from '#lib/components/button/LinkButton.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import githubMark from '#lib/icons/brands/github.svg?raw';
+import redditAlien from '#lib/icons/brands/reddit-alien.svg?raw';
+import envelope from '#lib/icons/solid/envelope.svg?raw';
+import lifeRing from '#lib/icons/solid/life-ring.svg?raw';
+import spaceStationMoon from '#lib/icons/solid/space-station-moon.svg?raw';
+import { traktUrls } from '#lib/traktUrls.ts';
 import HelpBanner from './HelpBanner.svelte';
 import HelpHero from './HelpHero.svelte';
 

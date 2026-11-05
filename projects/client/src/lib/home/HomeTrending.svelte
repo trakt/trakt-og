@@ -4,12 +4,12 @@
   on the smallest. The title shows as the poster's tooltip.
 -->
 <script lang="ts">
-import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
-import { trackSectionDrilldown } from '$lib/analytics/trackSectionDrilldown';
-import posterPlaceholder from '$lib/assets/placeholders/poster.png';
-import PanelHeading from '$lib/components/dashboard/PanelHeading.svelte';
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import fire from '$lib/icons/solid/fire.svg?raw';
+import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
+import { trackSectionDrilldown } from '#lib/analytics/trackSectionDrilldown.ts';
+import posterPlaceholder from '#lib/assets/placeholders/poster.png';
+import PanelHeading from '#lib/components/dashboard/PanelHeading.svelte';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import fire from '#lib/icons/solid/fire.svg?raw';
 import type { HomeMediaType } from './live/toHomeLive.ts';
 import type { HomeTrendingTitle } from './live/toHomeTrending.ts';
 

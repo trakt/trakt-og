@@ -3,9 +3,9 @@
   a red count badge. Fill it like a Dropdown: "Show All", then li.header groups of aria-pressed toggles.
 -->
 <script lang="ts">
-import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import eye from '$lib/icons/regular/eye.svg?raw';
+import Dropdown from '#lib/components/dropdown/Dropdown.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import eye from '#lib/icons/regular/eye.svg?raw';
 import type { Snippet } from 'svelte';
 
 interface Props {

@@ -5,7 +5,7 @@
     <StatsSection id="community" title="Community" icon={userGroup}>...</StatsSection>
 -->
 <script lang="ts">
-import HeadingMark from '$lib/components/heading/HeadingMark.svelte';
+import HeadingMark from '#lib/components/heading/HeadingMark.svelte';
 import type { Snippet } from 'svelte';
 
 interface Props {

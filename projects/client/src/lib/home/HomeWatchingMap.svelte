@@ -7,13 +7,13 @@
   shimmering rows hold the countries' places.
 -->
 <script lang="ts">
-import PanelHeading from '$lib/components/dashboard/PanelHeading.svelte';
-import PanelHelp from '$lib/components/dashboard/PanelHelp.svelte';
-import EmptyNote from '$lib/components/empty/EmptyNote.svelte';
-import TagPills from '$lib/components/labels/TagPills.svelte';
-import Shimmer from '$lib/components/loading/Shimmer.svelte';
-import { flagCountries } from '$lib/components/table/flagCountries';
-import globe from '$lib/icons/solid/globe.svg?raw';
+import PanelHeading from '#lib/components/dashboard/PanelHeading.svelte';
+import PanelHelp from '#lib/components/dashboard/PanelHelp.svelte';
+import EmptyNote from '#lib/components/empty/EmptyNote.svelte';
+import TagPills from '#lib/components/labels/TagPills.svelte';
+import Shimmer from '#lib/components/loading/Shimmer.svelte';
+import { flagCountries } from '#lib/components/table/flagCountries.ts';
+import globe from '#lib/icons/solid/globe.svg?raw';
 import type { Attachment } from 'svelte/attachments';
 import { prefersReducedMotion } from 'svelte/motion';
 import { heatLevel } from './live/heatLevel.ts';

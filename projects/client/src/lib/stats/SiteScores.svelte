@@ -5,9 +5,9 @@
   the columns line up and the line runs unbroken across the gaps between them.
 -->
 <script lang="ts">
-import traktLogo from '$lib/assets/sites/trakt.png';
-import { externalRatingLogos } from '$lib/components/summary/externalRatingLogos';
-import { countLabel } from '$lib/utils/countLabel';
+import traktLogo from '#lib/assets/sites/trakt.png';
+import { externalRatingLogos } from '#lib/components/summary/externalRatingLogos.ts';
+import { countLabel } from '#lib/utils/countLabel.ts';
 import type { toSiteScores } from './toSiteScores.ts';
 
 interface Props {

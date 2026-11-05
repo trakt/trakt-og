@@ -3,9 +3,9 @@
   colors, then the title, type and year chips, and the owner's note.
 -->
 <script lang="ts">
-import CommentText from '$lib/components/comments/CommentText.svelte';
-import { parseComment } from '$lib/components/comments/text/parseComment';
-import type { FavoriteCard } from '$lib/users/profile/toProfileSummary';
+import CommentText from '#lib/components/comments/CommentText.svelte';
+import { parseComment } from '#lib/components/comments/text/parseComment.ts';
+import type { FavoriteCard } from '#lib/users/profile/toProfileSummary.ts';
 
 const { favorite }: { favorite: FavoriteCard } = $props();
 const blocks = $derived(parseComment(favorite.notes ?? ''));

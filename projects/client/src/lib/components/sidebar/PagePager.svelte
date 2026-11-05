@@ -4,7 +4,7 @@
     <PagePager current={2} total={20} href={(n) => pageHref(page.url, n)} />
 -->
 <script lang="ts">
-import { type PageSlot, pageWindow } from '$lib/components/pagination/pageWindow';
+import { type PageSlot, pageWindow } from '#lib/components/pagination/pageWindow.ts';
 import SidebarPager from './SidebarPager.svelte';
 
 interface Props {

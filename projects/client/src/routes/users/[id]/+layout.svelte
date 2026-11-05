@@ -1,10 +1,10 @@
 <script lang="ts">
 import { page } from '$app/state';
 import { setContext } from 'svelte';
-import { createRelationshipOverlay } from '$lib/users/createRelationshipOverlay.svelte';
-import SeoHead from '$lib/seo/SeoHead.svelte';
-import ProfileFrame from '$lib/components/users/ProfileFrame.svelte';
-import { profileTabs } from '$lib/users/profileTabs';
+import { createRelationshipOverlay } from '#lib/users/createRelationshipOverlay.svelte.ts';
+import SeoHead from '#lib/seo/SeoHead.svelte';
+import ProfileFrame from '#lib/components/users/ProfileFrame.svelte';
+import { profileTabs } from '#lib/users/profileTabs.ts';
 
 const { data, children } = $props();
 

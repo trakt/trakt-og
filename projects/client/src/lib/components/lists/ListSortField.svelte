@@ -5,13 +5,13 @@
     <ListSortField bind:by bind:how />
 -->
 <script lang="ts">
-import FieldLabel from '$lib/components/dialog/FieldLabel.svelte';
-import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
-import SortDirection from '$lib/components/dropdown/SortDirection.svelte';
-import { listItemSorts, listSortHow, reverseHow } from '$lib/lists/listItemSorts';
-import SortMenu from '$lib/components/sort/SortMenu.svelte';
-import SortLabel from '$lib/components/sort/SortLabel.svelte';
-import { sortDirectionHint } from '$lib/lists/sortDirectionHint';
+import FieldLabel from '#lib/components/dialog/FieldLabel.svelte';
+import Dropdown from '#lib/components/dropdown/Dropdown.svelte';
+import SortDirection from '#lib/components/dropdown/SortDirection.svelte';
+import { listItemSorts, listSortHow, reverseHow } from '#lib/lists/listItemSorts.ts';
+import SortMenu from '#lib/components/sort/SortMenu.svelte';
+import SortLabel from '#lib/components/sort/SortLabel.svelte';
+import { sortDirectionHint } from '#lib/lists/sortDirectionHint.ts';
 
 interface Props {
   by: string;

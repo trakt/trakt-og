@@ -8,15 +8,15 @@
 -->
 <script lang="ts">
 import type { Attachment } from 'svelte/attachments';
-import justwatchLogo from '$lib/assets/sites/justwatch-logo.svg';
-import Dialog from '$lib/components/dialog/Dialog.svelte';
-import DialogArtHeader from '$lib/components/dialog/DialogArtHeader.svelte';
-import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
-import EmptyNote from '$lib/components/empty/EmptyNote.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import Shimmer from '$lib/components/loading/Shimmer.svelte';
-import heart from '$lib/icons/solid/heart.svg?raw';
-import play from '$lib/icons/solid/play.svg?raw';
+import justwatchLogo from '#lib/assets/sites/justwatch-logo.svg';
+import Dialog from '#lib/components/dialog/Dialog.svelte';
+import DialogArtHeader from '#lib/components/dialog/DialogArtHeader.svelte';
+import Dropdown from '#lib/components/dropdown/Dropdown.svelte';
+import EmptyNote from '#lib/components/empty/EmptyNote.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import Shimmer from '#lib/components/loading/Shimmer.svelte';
+import heart from '#lib/icons/solid/heart.svg?raw';
+import play from '#lib/icons/solid/play.svg?raw';
 import { fetchWatchNow } from './fetchWatchNow.ts';
 import { readWatchNow } from './readWatchNow.ts';
 import { fetchWatchNowShared } from './fetchWatchNowShared.ts';

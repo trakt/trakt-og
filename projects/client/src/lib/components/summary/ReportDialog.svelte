@@ -8,25 +8,25 @@
 <script lang="ts">
 import { page } from '$app/state';
 import { untrack } from 'svelte';
-import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
-import { useTrack } from '$lib/analytics/useTrack';
-import ChoiceDropdown from '$lib/components/dialog/ChoiceDropdown.svelte';
-import Dialog from '$lib/components/dialog/Dialog.svelte';
-import DialogArtHeader from '$lib/components/dialog/DialogArtHeader.svelte';
-import DialogForm from '$lib/components/dialog/DialogForm.svelte';
-import DialogNotice from '$lib/components/dialog/DialogNotice.svelte';
-import FieldLabel from '$lib/components/dialog/FieldLabel.svelte';
-import type { CardTag } from '$lib/components/media/CardTag';
-import { toast } from '$lib/components/toast/toast.svelte';
-import type { ReportTarget } from '$lib/components/summary/ReportTarget';
-import { reportPlaceholder } from '$lib/components/summary/reportPlaceholder';
-import { reportReasons } from '$lib/components/summary/reportReasons';
-import { toReportTracking } from '$lib/components/summary/toReportTracking';
-import { validateReport } from '$lib/components/summary/validateReport';
-import { writeMediaTool } from '$lib/components/summary/writeMediaTool';
-import Icon from '$lib/icons/Icon.svelte';
-import flag from '$lib/icons/solid/flag.svg?raw';
-import link from '$lib/icons/solid/link.svg?raw';
+import { AnalyticsEvent } from '#lib/analytics/AnalyticsEvent.ts';
+import { useTrack } from '#lib/analytics/useTrack.ts';
+import ChoiceDropdown from '#lib/components/dialog/ChoiceDropdown.svelte';
+import Dialog from '#lib/components/dialog/Dialog.svelte';
+import DialogArtHeader from '#lib/components/dialog/DialogArtHeader.svelte';
+import DialogForm from '#lib/components/dialog/DialogForm.svelte';
+import DialogNotice from '#lib/components/dialog/DialogNotice.svelte';
+import FieldLabel from '#lib/components/dialog/FieldLabel.svelte';
+import type { CardTag } from '#lib/components/media/CardTag.ts';
+import { toast } from '#lib/components/toast/toast.svelte.ts';
+import type { ReportTarget } from '#lib/components/summary/ReportTarget.ts';
+import { reportPlaceholder } from '#lib/components/summary/reportPlaceholder.ts';
+import { reportReasons } from '#lib/components/summary/reportReasons.ts';
+import { toReportTracking } from '#lib/components/summary/toReportTracking.ts';
+import { validateReport } from '#lib/components/summary/validateReport.ts';
+import { writeMediaTool } from '#lib/components/summary/writeMediaTool.ts';
+import Icon from '#lib/icons/Icon.svelte';
+import flag from '#lib/icons/solid/flag.svg?raw';
+import link from '#lib/icons/solid/link.svg?raw';
 import { viewerFetch } from '../../auth/viewerFetch.ts';
 
 interface Props {

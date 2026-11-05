@@ -4,8 +4,8 @@
     <Tooltip content={tip}>{#snippet tip()}<FavoritedTip {date} {note} />{/snippet}</Tooltip>
 -->
 <script lang="ts">
-import FavoriteNoteTip from '$lib/components/favorites/FavoriteNoteTip.svelte';
-import TooltipFooter from '$lib/components/tooltip/TooltipFooter.svelte';
+import FavoriteNoteTip from '#lib/components/favorites/FavoriteNoteTip.svelte';
+import TooltipFooter from '#lib/components/tooltip/TooltipFooter.svelte';
 
 const { date, note }: { date?: string; note?: string } = $props();
 </script>

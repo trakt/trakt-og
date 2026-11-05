@@ -6,18 +6,18 @@
 -->
 <script lang="ts">
 import { page } from '$app/state';
-import { overlay } from '$lib/overlay/overlay';
-import type { OverlayState } from '$lib/overlay/createOverlay.svelte';
-import { formatDate } from '$lib/utils/formatDate';
-import type { OnDeckItem } from '$lib/components/media/OnDeckItem';
-import PosterCard from '$lib/components/media/PosterCard.svelte';
-import RefreshCover from '$lib/components/media/RefreshCover.svelte';
-import TraktLoader from '$lib/components/loading/TraktLoader.svelte';
-import { progressPercent } from '$lib/components/media/progressPercent';
-import { progressTooltip } from '$lib/components/media/progressTooltip';
-import { quickIconFill } from '$lib/components/media/quickIconFill';
-import UnderProgress from '$lib/components/media/UnderProgress.svelte';
-import type { QuickIconMore } from '$lib/components/media/QuickIconMore';
+import { overlay } from '#lib/overlay/overlay.ts';
+import type { OverlayState } from '#lib/overlay/createOverlay.svelte.ts';
+import { formatDate } from '#lib/utils/formatDate.ts';
+import type { OnDeckItem } from '#lib/components/media/OnDeckItem.ts';
+import PosterCard from '#lib/components/media/PosterCard.svelte';
+import RefreshCover from '#lib/components/media/RefreshCover.svelte';
+import TraktLoader from '#lib/components/loading/TraktLoader.svelte';
+import { progressPercent } from '#lib/components/media/progressPercent.ts';
+import { progressTooltip } from '#lib/components/media/progressTooltip.ts';
+import { quickIconFill } from '#lib/components/media/quickIconFill.ts';
+import UnderProgress from '#lib/components/media/UnderProgress.svelte';
+import type { QuickIconMore } from '#lib/components/media/QuickIconMore.ts';
 
 interface Props {
   item: OnDeckItem;

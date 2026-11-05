@@ -8,12 +8,12 @@
   place under the tags (the chart podium's #2 and #3).
 -->
 <script lang="ts">
-import MediaSpoiler from '$lib/components/summary/MediaSpoiler.svelte';
-import type { SpoilerTarget } from '$lib/settings/SpoilerTarget';
-import { mediaSpoilers } from '$lib/settings/mediaSpoilers';
+import MediaSpoiler from '#lib/components/summary/MediaSpoiler.svelte';
+import type { SpoilerTarget } from '#lib/settings/SpoilerTarget.ts';
+import { mediaSpoilers } from '#lib/settings/mediaSpoilers.ts';
 import { page } from '$app/state';
-import { overlay } from '$lib/overlay/overlay';
-import { formatDate } from '$lib/utils/formatDate';
+import { overlay } from '#lib/overlay/overlay.ts';
+import { formatDate } from '#lib/utils/formatDate.ts';
 import type { ComponentProps, Snippet } from 'svelte';
 import type { CardTag as Tag } from './CardTag.ts';
 import CardTag from './CardTag.svelte';
@@ -22,7 +22,7 @@ import CornerRating from './CornerRating.svelte';
 import DroppedBadge from './DroppedBadge.svelte';
 import QuickIcons from './QuickIcons.svelte';
 import TrimmedLogo from './TrimmedLogo.svelte';
-import { fadeInOnLoad } from '$lib/utils/fadeInOnLoad';
+import { fadeInOnLoad } from '#lib/utils/fadeInOnLoad.ts';
 
 interface Props {
   href: string;

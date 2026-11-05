@@ -6,10 +6,10 @@
     <AdvancedFiltersToggle bind:open controls="chart-filters" active count={3} />
 -->
 <script lang="ts">
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import caretRight from '$lib/icons/solid/caret-right.svg?raw';
-import filtersIcon from '$lib/icons/regular/filters.svg?raw';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import caretRight from '#lib/icons/solid/caret-right.svg?raw';
+import filtersIcon from '#lib/icons/regular/filters.svg?raw';
 
 interface Props {
   open: boolean;

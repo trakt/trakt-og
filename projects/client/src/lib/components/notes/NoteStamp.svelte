@@ -4,7 +4,7 @@
     <NoteStamp svg={collection} glyph label="Collected" date="Sep 26, 2026" tone="var(--color-note-tag-collection)" />
 -->
 <script lang="ts">
-import Icon from '$lib/icons/Icon.svelte';
+import Icon from '#lib/icons/Icon.svelte';
 
 interface Props {
   svg: string;

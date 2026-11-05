@@ -1,5 +1,5 @@
 import { error, type RequestHandler } from '@sveltejs/kit';
-import type { ResponseCache } from '../../../../lib/api/ResponseCache.ts';
+import { edgeCache } from '../../../../lib/utils/edgeCache.ts';
 import { LOGO_PATH } from '../../../../lib/utils/logoPath.ts';
 
 const MEDIA = 'https://media.trakt.tv/images';
@@ -10,11 +10,11 @@ const YEAR = 60 * 60 * 24 * 365;
  * transparent edges (`trimLogo`): media.trakt.tv sends no CORS header, so a canvas can't read its images. Only logo
  * paths pass. A logo never changes at its path, so browsers and the data center's cache keep it a year.
  */
-export const GET: RequestHandler = async ({ params, url, platform, fetch }) => {
+export const GET: RequestHandler = async ({ params, url, fetch }) => {
   const path = params.path ?? '';
   if (!LOGO_PATH.test(path)) error(404);
 
-  const cache = platform?.caches?.default as unknown as ResponseCache | undefined;
+  const cache = edgeCache();
   const hit = await cache?.match(url.href).catch(() => undefined);
   if (hit) return hit;
 

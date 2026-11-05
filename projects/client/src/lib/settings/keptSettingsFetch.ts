@@ -15,7 +15,7 @@ export const SETTINGS_TTL_SECONDS = 5 * 60;
 
 interface KeptSettingsFetchParams {
   fetch: typeof globalThis.fetch;
-  /** The data center's cache, `platform.caches.default`. Left out (tests, a dev server without one), it always reads. */
+  /** The data center's cache, `edgeCache()`. Left out (tests, a dev server without one), it always reads. */
   cache: ResponseCache | undefined;
   /** og's origin, which the kept copies' keys live under. */
   origin: string;

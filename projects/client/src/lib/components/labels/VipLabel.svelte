@@ -9,11 +9,11 @@
     <VipLabel badge={toVipBadge(user)} />
 -->
 <script lang="ts">
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import star from '$lib/icons/solid/star.svg?raw';
-import trakt from '$lib/icons/trakt/trakt-v2.svg?raw';
-import type { VipBadge } from '$lib/users/VipBadge';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import star from '#lib/icons/solid/star.svg?raw';
+import trakt from '#lib/icons/trakt/trakt-v2.svg?raw';
+import type { VipBadge } from '#lib/users/VipBadge.ts';
 
 interface Props {
   badge: VipBadge;

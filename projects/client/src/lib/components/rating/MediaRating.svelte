@@ -1,15 +1,15 @@
 <script lang="ts">
 import { page } from '$app/state';
 import type { ComponentProps } from 'svelte';
-import { rawApiFetch } from '$lib/api/rawApiFetch';
-import { login } from '$lib/auth/login';
-import { userManager } from '$lib/auth/userManager';
-import { overlay } from '$lib/overlay/overlay';
-import { toast } from '$lib/components/toast/toast.svelte';
-import RatingPopover from '$lib/components/rating/RatingPopover.svelte';
-import { rateMedia } from '$lib/components/rating/rateMedia';
-import type { RatingTarget } from '$lib/components/rating/RatingTarget';
-import { watchedFirst } from '$lib/components/rating/watchedFirst';
+import { rawApiFetch } from '#lib/api/rawApiFetch.ts';
+import { login } from '#lib/auth/login.ts';
+import { userManager } from '#lib/auth/userManager.ts';
+import { overlay } from '#lib/overlay/overlay.ts';
+import { toast } from '#lib/components/toast/toast.svelte.ts';
+import RatingPopover from '#lib/components/rating/RatingPopover.svelte';
+import { rateMedia } from '#lib/components/rating/rateMedia.ts';
+import type { RatingTarget } from '#lib/components/rating/RatingTarget.ts';
+import { watchedFirst } from '#lib/components/rating/watchedFirst.ts';
 import { viewerFetch } from '../../auth/viewerFetch.ts';
 
 interface Props {

@@ -4,12 +4,12 @@
     <PrivacyTag privacy="public" />
 -->
 <script lang="ts">
-import CommentTag from '$lib/components/comments/CommentTag.svelte';
-import globe from '$lib/icons/solid/globe.svg?raw';
-import link from '$lib/icons/solid/link.svg?raw';
-import lockKeyhole from '$lib/icons/solid/lock-keyhole.svg?raw';
-import friends from '$lib/icons/trakt/friends-thick.svg?raw';
-import type { Privacy } from '$lib/notes/Privacy';
+import CommentTag from '#lib/components/comments/CommentTag.svelte';
+import globe from '#lib/icons/solid/globe.svg?raw';
+import link from '#lib/icons/solid/link.svg?raw';
+import lockKeyhole from '#lib/icons/solid/lock-keyhole.svg?raw';
+import friends from '#lib/icons/trakt/friends-thick.svg?raw';
+import type { Privacy } from '#lib/notes/Privacy.ts';
 
 const { privacy }: { privacy: Privacy } = $props();
 const tags: Readonly<Record<Privacy, { svg: string; label: string }>> = {

@@ -8,8 +8,8 @@
     <Stat svg={hourglass} value="4d 9h" noun="left" label="Time left to watch" bare />
 -->
 <script lang="ts">
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import Icon from '$lib/icons/Icon.svelte';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import Icon from '#lib/icons/Icon.svelte';
 
 interface Props {
   svg: string;

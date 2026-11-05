@@ -3,15 +3,15 @@
   list picker, whatever other lists it's on. Signed out, it asks to sign in first.
 -->
 <script lang="ts">
-import { rawApiFetch } from '$lib/api/rawApiFetch';
-import { login } from '$lib/auth/login';
-import { userManager } from '$lib/auth/userManager';
-import GlassAction from '$lib/components/glass-action/GlassAction.svelte';
-import type { ListTarget } from '$lib/components/lists/ListTarget';
-import { toggleListItem } from '$lib/components/lists/toggleListItem';
-import { toast } from '$lib/components/toast/toast.svelte';
-import bookmark from '$lib/icons/solid/bookmark.svg?raw';
-import { overlay } from '$lib/overlay/overlay';
+import { rawApiFetch } from '#lib/api/rawApiFetch.ts';
+import { login } from '#lib/auth/login.ts';
+import { userManager } from '#lib/auth/userManager.ts';
+import GlassAction from '#lib/components/glass-action/GlassAction.svelte';
+import type { ListTarget } from '#lib/components/lists/ListTarget.ts';
+import { toggleListItem } from '#lib/components/lists/toggleListItem.ts';
+import { toast } from '#lib/components/toast/toast.svelte.ts';
+import bookmark from '#lib/icons/solid/bookmark.svg?raw';
+import { overlay } from '#lib/overlay/overlay.ts';
 import { viewerFetch } from '../../auth/viewerFetch.ts';
 
 const { target }: { target: ListTarget } = $props();

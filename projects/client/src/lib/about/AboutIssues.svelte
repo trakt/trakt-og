@@ -6,14 +6,14 @@
   count and rows hold their place.
 -->
 <script lang="ts">
-import LinkButton from '$lib/components/button/LinkButton.svelte';
-import TagPills from '$lib/components/labels/TagPills.svelte';
-import Shimmer from '$lib/components/loading/Shimmer.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import circleCheck from '$lib/icons/solid/circle-check.svg?raw';
-import openIcon from '$lib/icons/regular/circle-dot.svg?raw';
-import closedIcon from '$lib/icons/regular/circle-check.svg?raw';
-import sparkles from '$lib/icons/solid/sparkles.svg?raw';
+import LinkButton from '#lib/components/button/LinkButton.svelte';
+import TagPills from '#lib/components/labels/TagPills.svelte';
+import Shimmer from '#lib/components/loading/Shimmer.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import circleCheck from '#lib/icons/solid/circle-check.svg?raw';
+import openIcon from '#lib/icons/regular/circle-dot.svg?raw';
+import closedIcon from '#lib/icons/regular/circle-check.svg?raw';
+import sparkles from '#lib/icons/solid/sparkles.svg?raw';
 import type { AboutGithub } from './github/fetchAboutGithub.ts';
 import { ogRepoUrls } from './ogRepoUrls.ts';
 import { toAboutIssue } from './toAboutIssue.ts';

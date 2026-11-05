@@ -15,10 +15,10 @@
   With `prevHref` or `nextHref`, `p` or left and `n` or right follow them, like OG's chart pages.
 -->
 <script lang="ts">
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
 import { goto } from '$app/navigation';
-import Icon from '$lib/icons/Icon.svelte';
-import sidebarIcon from '$lib/icons/regular/sidebar.svg?raw';
+import Icon from '#lib/icons/Icon.svelte';
+import sidebarIcon from '#lib/icons/regular/sidebar.svg?raw';
 import type { Snippet } from 'svelte';
 
 interface Props {
@@ -61,6 +61,7 @@ function onkeydown(event: KeyboardEvent) {
   const href = direction && { prev: prevHref, next: nextHref }[direction];
   if (event.key !== '[' && !href) return;
   event.preventDefault();
+   
   // eslint-disable-next-line svelte/no-navigation-without-resolve -- the hrefs come in built
   if (href) goto(href);
   else toggle();

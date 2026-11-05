@@ -1,9 +1,9 @@
 <!-- Watch Time: hours in the last 30 days, a bar per day with the busiest in full white, all time in the footer. -->
 <script lang="ts">
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import BoxChips from '$lib/components/users/profile-box/BoxChips.svelte';
-import BoxFigure from '$lib/components/users/profile-box/BoxFigure.svelte';
-import ProfileBox from '$lib/components/users/profile-box/ProfileBox.svelte';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import BoxChips from '#lib/components/users/profile-box/BoxChips.svelte';
+import BoxFigure from '#lib/components/users/profile-box/BoxFigure.svelte';
+import ProfileBox from '#lib/components/users/profile-box/ProfileBox.svelte';
 import type { WatchTimeView } from './WatchTimeView.ts';
 
 const { view }: { view: WatchTimeView } = $props();

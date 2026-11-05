@@ -1,8 +1,8 @@
 <script lang="ts">
-import ProjectLink from '$lib/components/brand/ProjectLink.svelte';
-import TraktMark from '$lib/components/brand/TraktMark.svelte';
-import Specimen from '$lib/design/Specimen.svelte';
-import Variant from '$lib/design/Variant.svelte';
+import ProjectLink from '#lib/components/brand/ProjectLink.svelte';
+import TraktMark from '#lib/components/brand/TraktMark.svelte';
+import Specimen from '#lib/design/Specimen.svelte';
+import Variant from '#lib/design/Variant.svelte';
 
 // Every page that draws the mark, with the ink it passes and the ground it sits on there.
 const marks: readonly { page: string; ink: string; ground: string }[] = [

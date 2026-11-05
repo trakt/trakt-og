@@ -7,9 +7,9 @@
     <MatchBadge {match} large />
 -->
 <script lang="ts">
-import Icon from '$lib/icons/Icon.svelte';
-import { matchLevelIcon } from '$lib/users/match/matchLevelIcon';
-import type { UserMatch } from '$lib/users/match/UserMatch';
+import Icon from '#lib/icons/Icon.svelte';
+import { matchLevelIcon } from '#lib/users/match/matchLevelIcon.ts';
+import type { UserMatch } from '#lib/users/match/UserMatch.ts';
 
 interface Props {
   match: UserMatch;

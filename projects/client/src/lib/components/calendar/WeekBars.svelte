@@ -4,7 +4,7 @@
     <WeekBars weeks={[{ start: '2026-10-04', count: 52, label: 'Oct 4 – 10' }]} marked="2026-10-04" onpick={jump} />
 -->
 <script lang="ts">
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
 type Week = { readonly start: string; readonly count: number; readonly label: string };
 
 interface Props {

@@ -1,6 +1,6 @@
+import type { ClientInit } from '@sveltejs/kit/hooks';
 import { navigating } from '$app/state';
 import { createBackCache } from './lib/routing/createBackCache.ts';
-import type { ClientInit } from '@sveltejs/kit';
 
 const pageKey = (url: URL) => `${url.pathname.replace(/\/$/, '')}?${url.searchParams}`;
 

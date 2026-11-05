@@ -3,8 +3,8 @@
   episodes, and the calendar's tags (the premiere or finale, the air time, the network). "Show N more" opens the rest.
 -->
 <script lang="ts">
-import posterPlaceholder from '$lib/assets/placeholders/poster.png';
-import type { ScheduleLayout } from '$lib/dashboard/toScheduleLayout';
+import posterPlaceholder from '#lib/assets/placeholders/poster.png';
+import type { ScheduleLayout } from '#lib/dashboard/toScheduleLayout.ts';
 import ScheduleEpisodes from './ScheduleEpisodes.svelte';
 import ScheduleTags from './ScheduleTags.svelte';
 

@@ -4,13 +4,13 @@
   column keeps two a row with the headings on one line, and drops the rest. Nothing renders without episodes.
 -->
 <script lang="ts">
-import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
-import FanartCard from '$lib/components/media/FanartCard.svelte';
-import { quickIconFill } from '$lib/components/media/quickIconFill';
-import SeeMore from '$lib/components/see-more/SeeMore.svelte';
-import { trackSectionDrilldown } from '$lib/analytics/trackSectionDrilldown';
-import { overlay } from '$lib/overlay/overlay';
-import type { DatePreferences } from '$lib/settings/DatePreferences';
+import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
+import FanartCard from '#lib/components/media/FanartCard.svelte';
+import { quickIconFill } from '#lib/components/media/quickIconFill.ts';
+import SeeMore from '#lib/components/see-more/SeeMore.svelte';
+import { trackSectionDrilldown } from '#lib/analytics/trackSectionDrilldown.ts';
+import { overlay } from '#lib/overlay/overlay.ts';
+import type { DatePreferences } from '#lib/settings/DatePreferences.ts';
 import type { EpisodeCard } from './toShowSummary.ts';
 
 interface Props {

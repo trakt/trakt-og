@@ -1,11 +1,11 @@
 <script lang="ts">
 import { tick } from 'svelte';
-import { fetchOnDeckItem } from '$lib/dashboard/fetchOnDeckItem';
-import type { DashboardSettings } from '$lib/dashboard/DashboardSettings';
-import OnDeckCard from '$lib/components/media/OnDeckCard.svelte';
-import type { OnDeckItem } from '$lib/components/media/OnDeckItem';
-import { toast } from '$lib/components/toast/toast.svelte';
-import { overlay } from '$lib/overlay/overlay';
+import { fetchOnDeckItem } from '#lib/dashboard/fetchOnDeckItem.ts';
+import type { DashboardSettings } from '#lib/dashboard/DashboardSettings.ts';
+import OnDeckCard from '#lib/components/media/OnDeckCard.svelte';
+import type { OnDeckItem } from '#lib/components/media/OnDeckItem.ts';
+import { toast } from '#lib/components/toast/toast.svelte.ts';
+import { overlay } from '#lib/overlay/overlay.ts';
 import { viewerFetch } from '../../auth/viewerFetch.ts';
 
 const { initial, username, settings }: {

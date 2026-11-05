@@ -5,7 +5,7 @@
     <MiniMonth month="2026-10" counts={countsByDate} today="2026-10-09" marked={firstVisible} onpick={jump} />
 -->
 <script lang="ts">
-import { monthGrid } from '$lib/calendars/monthGrid';
+import { monthGrid } from '#lib/calendars/monthGrid.ts';
 
 interface Props {
   /** `YYYY-MM`, or any day in it. */

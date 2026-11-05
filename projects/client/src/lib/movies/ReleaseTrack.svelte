@@ -5,10 +5,10 @@
     <ReleaseTrack country={releases.featured} />
 -->
 <script lang="ts">
-import TagPills from '$lib/components/labels/TagPills.svelte';
-import type { TagPill } from '$lib/components/labels/TagPill';
-import CountryFlag from '$lib/components/table/CountryFlag.svelte';
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
+import TagPills from '#lib/components/labels/TagPills.svelte';
+import type { TagPill } from '#lib/components/labels/TagPill.ts';
+import CountryFlag from '#lib/components/table/CountryFlag.svelte';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
 import { releaseLabel } from './releaseLabel.ts';
 import ReleaseTip from './ReleaseTip.svelte';
 import type { ReleaseStop } from './toMovieReleases.ts';

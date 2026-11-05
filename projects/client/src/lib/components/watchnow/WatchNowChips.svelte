@@ -1,11 +1,11 @@
 <!-- OG's streaming chips below a sortable page's title row. Shared with watchlist and favorites. -->
 <script lang="ts">
-import Container from '$lib/components/container/Container.svelte';
-import ServiceTile from '$lib/components/watchnow/ServiceTile.svelte';
-import type { WatchNowBundle, WatchNowTile } from '$lib/components/filters/watchNowFilter';
-import any from '$lib/assets/channels/any.png';
-import free from '$lib/assets/channels/free.png';
-import subscriptions from '$lib/assets/channels/subscriptions.png';
+import Container from '#lib/components/container/Container.svelte';
+import ServiceTile from '#lib/components/watchnow/ServiceTile.svelte';
+import type { WatchNowBundle, WatchNowTile } from '#lib/components/filters/watchNowFilter.ts';
+import any from '#lib/assets/channels/any.png';
+import free from '#lib/assets/channels/free.png';
+import subscriptions from '#lib/assets/channels/subscriptions.png';
 const { tiles }: { tiles: readonly WatchNowTile[] } = $props();
 const bundles: Record<WatchNowBundle, { logo: string; color: string }> = {
   any: { logo: any, color: 'var(--color-bundle-any)' },

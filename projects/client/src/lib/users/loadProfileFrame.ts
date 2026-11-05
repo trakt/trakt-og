@@ -3,7 +3,7 @@ import { api } from '../api/api.ts';
 import { signInRedirect } from '../auth/signInRedirect.ts';
 import { loadViewerLists } from './loadViewerLists.ts';
 import { lazy } from '../utils/lazy.ts';
-import type { KeyedCache } from '../utils/sharedCache.ts';
+import { edgeCache } from '../utils/edgeCache.ts';
 import { fetchUserMatch } from './match/fetchUserMatch.ts';
 import { apiUserStats } from '../stats/apiUserStats.ts';
 import { profileResponseSchema } from './profileResponseSchema.ts';
@@ -19,7 +19,6 @@ type Params = {
   parent: () => Promise<{ user: HeaderUser | null }>;
   url: URL;
   isDataRequest?: boolean;
-  platform?: App.Platform;
 };
 
 /** The profile, its stats and the frame's watching-now bar. Neither of the last two is worth failing the page over. */
@@ -36,15 +35,7 @@ async function readFrame(client: ReturnType<typeof api>, id: string) {
  * The profile frame every `/users/:id/*` page shares. Subpage loaders `await parent()` and skip their own requests when
  * `profile.isLocked`: a private profile the viewer can't see renders the frame only, on every subpage.
  */
-export async function loadProfileFrame({
-  fetch,
-  locals,
-  params,
-  parent,
-  url,
-  isDataRequest = false,
-  platform,
-}: Params) {
+export async function loadProfileFrame({ fetch, locals, params, parent, url, isDataRequest = false }: Params) {
   if (params.id === 'me' && !locals.token) {
     signInRedirect(url);
   }
@@ -79,7 +70,7 @@ export async function loadProfileFrame({
   const readLists = () => (isDataRequest ? lazy(() => loadViewerLists({ client })) : loadViewerLists({ client }));
   const viewerLists = viewer && !isSelf ? (locals.viewerLists ??= readLists()) : null;
   const token = locals.token;
-  const cache = platform?.caches?.default as unknown as KeyedCache | undefined;
+  const cache = edgeCache();
   const { origin } = url;
 
   return {

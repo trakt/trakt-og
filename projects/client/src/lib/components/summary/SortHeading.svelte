@@ -5,8 +5,8 @@
 -->
 <script lang="ts" generics="By extends string">
 import type { Snippet } from 'svelte';
-import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
-import SortDirection from '$lib/components/dropdown/SortDirection.svelte';
+import Dropdown from '#lib/components/dropdown/Dropdown.svelte';
+import SortDirection from '#lib/components/dropdown/SortDirection.svelte';
 
 interface Props {
   id: string;

@@ -1,4 +1,4 @@
-import type { HeaderUser } from '$lib/components/header/HeaderUser';
+import type { HeaderUser } from '#lib/components/header/HeaderUser.ts';
 
 type UserAnalyticsData = {
   user_type: 'anonymous' | 'standard' | 'vip';

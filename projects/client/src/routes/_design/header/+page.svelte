@@ -1,20 +1,20 @@
 <script lang="ts">
-import avatar from '$lib/assets/trakt-logo-red.png';
-import mandalorian from '$lib/assets/welcome-mandalorian.jpg';
-import breakingBad from '$lib/assets/breaking-bad-fanart.jpg';
-import brooklyn from '$lib/assets/dashboard-welcome.jpg';
-import profileCover from '$lib/assets/profile-cover-default.jpg';
-import { headerArt } from '$lib/components/header/headerArt';
-import Footer from '$lib/components/footer/Footer.svelte';
-import Header from '$lib/components/header/Header.svelte';
-import Signpost from '$lib/components/signpost/Signpost.svelte';
-import DemoChoice from '$lib/design/DemoChoice.svelte';
-import Specimen from '$lib/design/Specimen.svelte';
-import type { HeaderUser } from '$lib/components/header/HeaderUser';
-import type { DarkKnight } from '$lib/settings/DarkKnight';
-import type { SettingsBody } from '$lib/settings/SettingsBody';
-import { PLACEHOLDER_AVATAR } from '$lib/users/placeholderAvatar';
-import { dayIn } from '$lib/utils/dayIn';
+import avatar from '#lib/assets/trakt-logo-red.png';
+import mandalorian from '#lib/assets/welcome-mandalorian.jpg';
+import breakingBad from '#lib/assets/breaking-bad-fanart.jpg';
+import brooklyn from '#lib/assets/dashboard-welcome.jpg';
+import profileCover from '#lib/assets/profile-cover-default.jpg';
+import { headerArt } from '#lib/components/header/headerArt.ts';
+import Footer from '#lib/components/footer/Footer.svelte';
+import Header from '#lib/components/header/Header.svelte';
+import Signpost from '#lib/components/signpost/Signpost.svelte';
+import DemoChoice from '#lib/design/DemoChoice.svelte';
+import Specimen from '#lib/design/Specimen.svelte';
+import type { HeaderUser } from '#lib/components/header/HeaderUser.ts';
+import type { DarkKnight } from '#lib/settings/DarkKnight.ts';
+import type { SettingsBody } from '#lib/settings/SettingsBody.ts';
+import { PLACEHOLDER_AVATAR } from '#lib/users/placeholderAvatar.ts';
+import { dayIn } from '#lib/utils/dayIn.ts';
 import { libraryStages, toDemoLibrary } from '../first-night/library.ts';
 import { seedOverlay } from '../first-night/seedOverlay.svelte.ts';
 

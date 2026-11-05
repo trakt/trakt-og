@@ -10,9 +10,9 @@
   on the backdrop, like the Watch Now modal's country picker.
 -->
 <script lang="ts">
-import Icon from '$lib/icons/Icon.svelte';
+import Icon from '#lib/icons/Icon.svelte';
 import { pinPage } from './pinPage.ts';
-import deleteThick from '$lib/icons/trakt/delete-thick.svg?raw';
+import deleteThick from '#lib/icons/trakt/delete-thick.svg?raw';
 import { type Snippet, tick, untrack } from 'svelte';
 
 interface Props {

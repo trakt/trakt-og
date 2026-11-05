@@ -4,8 +4,8 @@
   chart's legend. The profile's ratings keys use it too, a key about one rating ruled in that rating's color.
 -->
 <script lang="ts">
-import type { LastThirtyDays } from '$lib/dashboard/LastThirtyDays';
-import type { ProfileRatings } from '$lib/users/profile/toProfileRatings';
+import type { LastThirtyDays } from '#lib/dashboard/LastThirtyDays.ts';
+import type { ProfileRatings } from '#lib/users/profile/toProfileRatings.ts';
 
 const { keys }: { keys: LastThirtyDays['keys'] | ProfileRatings['keys'] } = $props();
 

@@ -5,8 +5,8 @@
     <Tooltip content={tip}>{#snippet tip()}<LibraryTip tip={fill.tips.collected} />{/snippet}</Tooltip>
 -->
 <script lang="ts">
-import ProgressTip from '$lib/components/media/ProgressTip.svelte';
-import TooltipFooter from '$lib/components/tooltip/TooltipFooter.svelte';
+import ProgressTip from '#lib/components/media/ProgressTip.svelte';
+import TooltipFooter from '#lib/components/tooltip/TooltipFooter.svelte';
 import { collectionBadges } from './collectionBadges.ts';
 import CollectionLogoRow from './CollectionLogoRow.svelte';
 import type { LibraryTipData } from './LibraryTipData.ts';

@@ -3,7 +3,7 @@
   "1x01–1x08 8 episodes" that opens to the list, or a movie's tagline.
 -->
 <script lang="ts">
-import type { ScheduleRow } from '$lib/dashboard/toScheduleLayout';
+import type { ScheduleRow } from '#lib/dashboard/toScheduleLayout.ts';
 
 const { row }: { row: ScheduleRow } = $props();
 const { episodes } = $derived(row);

@@ -7,12 +7,12 @@
   nothing slides. The slice's link is a layer under the open text, so the count buttons can sit over it.
 -->
 <script lang="ts">
-import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
+import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
 import { page } from '$app/state';
-import ListCount from '$lib/components/lists/ListCount.svelte';
-import ListLikeButton from '$lib/components/lists/ListLikeButton.svelte';
-import { stripStatIcons } from '$lib/components/summary/stripStatIcons';
-import file from '$lib/icons/regular/file.svg?raw';
+import ListCount from '#lib/components/lists/ListCount.svelte';
+import ListLikeButton from '#lib/components/lists/ListLikeButton.svelte';
+import { stripStatIcons } from '#lib/components/summary/stripStatIcons.ts';
+import file from '#lib/icons/regular/file.svg?raw';
 import type { EssentialList } from './toEssentialList.ts';
 
 const { lists }: { lists: readonly EssentialList[] } = $props();

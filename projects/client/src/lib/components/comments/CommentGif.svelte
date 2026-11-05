@@ -4,8 +4,8 @@
   play button: the <source> loads a blank pixel instead, with no script, until the reader presses play.
 -->
 <script lang="ts">
-import Icon from '$lib/icons/Icon.svelte';
-import play from '$lib/icons/solid/play.svg?raw';
+import Icon from '#lib/icons/Icon.svelte';
+import play from '#lib/icons/solid/play.svg?raw';
 
 type Gif = { readonly url: string; readonly width?: number; readonly height?: number };
 

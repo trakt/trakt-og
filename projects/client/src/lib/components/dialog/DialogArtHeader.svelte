@@ -8,9 +8,9 @@
 -->
 <script lang="ts">
 import type { Snippet } from 'svelte';
-import Shimmer from '$lib/components/loading/Shimmer.svelte';
-import CardTag from '$lib/components/media/CardTag.svelte';
-import type { CardTag as Tag } from '$lib/components/media/CardTag';
+import Shimmer from '#lib/components/loading/Shimmer.svelte';
+import CardTag from '#lib/components/media/CardTag.svelte';
+import type { CardTag as Tag } from '#lib/components/media/CardTag.ts';
 
 interface Props {
   id: string;

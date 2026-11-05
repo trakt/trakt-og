@@ -1,13 +1,13 @@
 <script lang="ts">
-import ItemStatIcons from '$lib/components/media/ItemStatIcons.svelte';
-import FanartHeader from '$lib/components/media/FanartHeader.svelte';
-import EpisodeTitle from '$lib/components/summary/EpisodeTitle.svelte';
-import Overview from '$lib/components/summary/Overview.svelte';
-import RatingsStrip from '$lib/components/summary/RatingsStrip.svelte';
-import SpoilerContent from '$lib/components/summary/SpoilerContent.svelte';
-import Specimen from '$lib/design/Specimen.svelte';
-import Variant from '$lib/design/Variant.svelte';
-import { overlay } from '$lib/overlay/overlay';
+import ItemStatIcons from '#lib/components/media/ItemStatIcons.svelte';
+import FanartHeader from '#lib/components/media/FanartHeader.svelte';
+import EpisodeTitle from '#lib/components/summary/EpisodeTitle.svelte';
+import Overview from '#lib/components/summary/Overview.svelte';
+import RatingsStrip from '#lib/components/summary/RatingsStrip.svelte';
+import SpoilerContent from '#lib/components/summary/SpoilerContent.svelte';
+import Specimen from '#lib/design/Specimen.svelte';
+import Variant from '#lib/design/Variant.svelte';
+import { overlay } from '#lib/overlay/overlay.ts';
 import { breakingBad, pilot } from '../summary/fixtures.ts';
 
 const ratingTarget = { type: 'episode', id: pilot.id, title: pilot.fullTitle } as const;

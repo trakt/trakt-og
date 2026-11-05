@@ -4,8 +4,9 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest
 import { handleFetch } from './hooks.server.ts';
 import { isApiRateLimited } from './lib/api/isApiRateLimited.ts';
 import { rateLimitPause } from './lib/api/rateLimitPause.ts';
+import { waited } from './test/cloudflareWorkers.ts';
 
-vi.mock('$env/dynamic/public', () => ({ env: { PUBLIC_TRAKT_API: 'standard' } }));
+vi.mock('$app/env/public', () => ({ PUBLIC_TRAKT_API: 'standard' }));
 
 const API = 'https://api.trakt.tv';
 const sent: string[] = [];
@@ -25,6 +26,7 @@ const server = setupServer(
 );
 beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => {
+  vi.unstubAllGlobals();
   sent.length = 0;
   rateLimitPause.start('0', 0);
 });
@@ -54,15 +56,14 @@ describe('hooks: a Standard app after a 429', () => {
       match: (key: string) => Promise.resolve(kept.get(key)?.clone()),
       put: (key: string, response: Response) => Promise.resolve(void kept.set(key, response)),
     };
-    const writes: Promise<unknown>[] = [];
+    vi.stubGlobal('caches', { default: cache });
     const event = {
       locals: { token: null, tokenExpired: false },
-      platform: { caches: { default: cache }, ctx: { waitUntil: (write: Promise<unknown>) => writes.push(write) } },
       url: new URL('https://og.trakt.tv/movies/trending'),
     };
     await serverFetch(`${API}/movies/trending`, event);
-    await Promise.all(writes);
-    await serverFetch(`${API}/users/me`).catch(() => null);
+    await Promise.all(waited);
+    await serverFetch(`${API}/users/me`, event).catch(() => null);
 
     expect((await serverFetch(`${API}/movies/trending`, event)).status).toBe(200);
     expect(sent).toEqual(['/movies/trending', '/users/me']);

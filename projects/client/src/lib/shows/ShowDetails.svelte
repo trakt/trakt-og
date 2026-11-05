@@ -3,12 +3,12 @@
   all episodes). OG's `ul.additional-stats`, `#overview` and the notes box.
 -->
 <script lang="ts">
-import MediaSpoiler from '$lib/components/summary/MediaSpoiler.svelte';
-import AdditionalStat from '$lib/components/summary/AdditionalStat.svelte';
-import AdditionalStats from '$lib/components/summary/AdditionalStats.svelte';
-import NameList from '$lib/components/summary/NameList.svelte';
-import Overview from '$lib/components/summary/Overview.svelte';
-import PrivateNotes from '$lib/components/summary/PrivateNotes.svelte';
+import MediaSpoiler from '#lib/components/summary/MediaSpoiler.svelte';
+import AdditionalStat from '#lib/components/summary/AdditionalStat.svelte';
+import AdditionalStats from '#lib/components/summary/AdditionalStats.svelte';
+import NameList from '#lib/components/summary/NameList.svelte';
+import Overview from '#lib/components/summary/Overview.svelte';
+import PrivateNotes from '#lib/components/summary/PrivateNotes.svelte';
 import type { ComponentProps } from 'svelte';
 import type { toShowSummary } from './toShowSummary.ts';
 

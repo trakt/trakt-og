@@ -6,7 +6,7 @@
     <h2 class="heading"><HeadingMark svg={forward} />Up Next</h2>
 -->
 <script lang="ts">
-import Icon from '$lib/icons/Icon.svelte';
+import Icon from '#lib/icons/Icon.svelte';
 
 const { svg }: { svg: string } = $props();
 </script>

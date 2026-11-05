@@ -1,21 +1,21 @@
 <script lang="ts">
 import { page } from '$app/state';
-import Specimen from '$lib/design/Specimen.svelte';
-import Variant from '$lib/design/Variant.svelte';
-import WatchPopover from '$lib/components/history/WatchPopover.svelte';
-import CollectionLogoRow from '$lib/components/collection/CollectionLogoRow.svelte';
-import { collectionBadges } from '$lib/components/collection/collectionBadges';
-import CollectionMetadataFields from '$lib/components/collection/CollectionMetadataFields.svelte';
-import type { CollectionMetadata } from '$lib/components/collection/CollectionMetadata';
-import type { LibrarySource } from '$lib/components/collection/LibrarySource';
-import { librarySourceIcon } from '$lib/components/collection/librarySourceIcon';
-import LibraryTip from '$lib/components/collection/LibraryTip.svelte';
-import MediaCollection from '$lib/components/collection/MediaCollection.svelte';
-import { toast } from '$lib/components/toast/toast.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import collection from '$lib/icons/trakt/collection.svg?raw';
-import collectionThick from '$lib/icons/trakt/collection-thick.svg?raw';
-import { formatDate } from '$lib/utils/formatDate';
+import Specimen from '#lib/design/Specimen.svelte';
+import Variant from '#lib/design/Variant.svelte';
+import WatchPopover from '#lib/components/history/WatchPopover.svelte';
+import CollectionLogoRow from '#lib/components/collection/CollectionLogoRow.svelte';
+import { collectionBadges } from '#lib/components/collection/collectionBadges.ts';
+import CollectionMetadataFields from '#lib/components/collection/CollectionMetadataFields.svelte';
+import type { CollectionMetadata } from '#lib/components/collection/CollectionMetadata.ts';
+import type { LibrarySource } from '#lib/components/collection/LibrarySource.ts';
+import { librarySourceIcon } from '#lib/components/collection/librarySourceIcon.ts';
+import LibraryTip from '#lib/components/collection/LibraryTip.svelte';
+import MediaCollection from '#lib/components/collection/MediaCollection.svelte';
+import { toast } from '#lib/components/toast/toast.svelte.ts';
+import Icon from '#lib/icons/Icon.svelte';
+import collection from '#lib/icons/trakt/collection.svg?raw';
+import collectionThick from '#lib/icons/trakt/collection-thick.svg?raw';
+import { formatDate } from '#lib/utils/formatDate.ts';
 import { breakingBad, noWayHome } from '../summary/fixtures.ts';
 
 const dates = $derived(page.data.datePreferences);

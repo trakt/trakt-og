@@ -8,8 +8,8 @@
     <TitleTags links={[{ title: 'Ted Lasso', href: '/shows/ted-lasso' }, { title: 'Season 1', href }]} {type} {credits} />
 -->
 <script lang="ts">
-import Icon from '$lib/icons/Icon.svelte';
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
 import { postCredits } from './postCredits.ts';
 
 interface Props {

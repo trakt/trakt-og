@@ -5,11 +5,11 @@
   Zeros are left out. While `loading`, a shimmering button holds the place of each count the stats bring.
 -->
 <script lang="ts">
-import ListCount from '$lib/components/lists/ListCount.svelte';
-import Shimmer from '$lib/components/loading/Shimmer.svelte';
-import { stripStatIcons } from '$lib/components/summary/stripStatIcons';
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import { readableStat } from '$lib/utils/readableStat';
+import ListCount from '#lib/components/lists/ListCount.svelte';
+import Shimmer from '#lib/components/loading/Shimmer.svelte';
+import { stripStatIcons } from '#lib/components/summary/stripStatIcons.ts';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import { readableStat } from '#lib/utils/readableStat.ts';
 
 interface Props {
   href: string;

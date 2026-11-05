@@ -7,7 +7,7 @@
     <TrimmedLogo src={proxiedLogoUrl(card.logo)} alt={card.title} />
 -->
 <script lang="ts">
-import { trimLogo } from '$lib/utils/trimLogo';
+import { trimLogo } from '#lib/utils/trimLogo.ts';
 
 interface Props {
   src: string;

@@ -1,10 +1,10 @@
 <!-- The "Built on the Trakt API" banner under the header, with the developer site's round blueprint mark, its blue, and a link to the developer portal. -->
 <script lang="ts">
-import traktDeveloper from '$lib/assets/trakt-developer.svg';
-import LinkButton from '$lib/components/button/LinkButton.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import code from '$lib/icons/solid/code.svg?raw';
-import { traktUrls } from '$lib/traktUrls';
+import traktDeveloper from '#lib/assets/trakt-developer.svg';
+import LinkButton from '#lib/components/button/LinkButton.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import code from '#lib/icons/solid/code.svg?raw';
+import { traktUrls } from '#lib/traktUrls.ts';
 </script>
 
 <section class="api" aria-labelledby="about-api">

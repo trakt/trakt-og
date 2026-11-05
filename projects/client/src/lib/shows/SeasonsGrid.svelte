@@ -4,18 +4,18 @@
   icons.
 -->
 <script lang="ts">
-import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
-import EmptyState from '$lib/components/empty/EmptyState.svelte';
-import FadeHideMenu from '$lib/components/filters/FadeHideMenu.svelte';
-import { type FadeHide, fadeHideOptions, matchesFadeHide } from '$lib/components/filters/fadeHide';
-import { lazyItemStats } from '$lib/shows/lazyItemStats.svelte';
-import PosterCard from '$lib/components/media/PosterCard.svelte';
-import PosterGrid from '$lib/components/media/PosterGrid.svelte';
-import { quickIconFill } from '$lib/components/media/quickIconFill';
-import SortHeading from '$lib/components/summary/SortHeading.svelte';
-import { overlay } from '$lib/overlay/overlay';
-import type { DatePreferences } from '$lib/settings/DatePreferences';
-import { expireHideCookie } from '$lib/components/filters/expireHideCookie';
+import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
+import EmptyState from '#lib/components/empty/EmptyState.svelte';
+import FadeHideMenu from '#lib/components/filters/FadeHideMenu.svelte';
+import { type FadeHide, fadeHideOptions, matchesFadeHide } from '#lib/components/filters/fadeHide.ts';
+import { lazyItemStats } from '#lib/shows/lazyItemStats.svelte.ts';
+import PosterCard from '#lib/components/media/PosterCard.svelte';
+import PosterGrid from '#lib/components/media/PosterGrid.svelte';
+import { quickIconFill } from '#lib/components/media/quickIconFill.ts';
+import SortHeading from '#lib/components/summary/SortHeading.svelte';
+import { overlay } from '#lib/overlay/overlay.ts';
+import type { DatePreferences } from '#lib/settings/DatePreferences.ts';
+import { expireHideCookie } from '#lib/components/filters/expireHideCookie.ts';
 import { SEASON_SORTS, type SeasonCard, type SeasonSort, sortSeasons } from './toShowSummary.ts';
 
 interface Props {

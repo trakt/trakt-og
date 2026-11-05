@@ -5,17 +5,17 @@
     <ListSettingsRow bind:privacy bind:allowComments bind:displayNumbers {shareLink} />
 -->
 <script lang="ts">
-import ChoiceDropdown from '$lib/components/dialog/ChoiceDropdown.svelte';
-import SettingValue from '$lib/components/dialog/SettingValue.svelte';
-import { copyLink } from '$lib/components/share/copyLink';
-import Icon from '$lib/icons/Icon.svelte';
-import ban from '$lib/icons/regular/ban.svg?raw';
-import comment from '$lib/icons/regular/comment.svg?raw';
-import globe from '$lib/icons/solid/globe.svg?raw';
-import link from '$lib/icons/solid/link.svg?raw';
-import listOl from '$lib/icons/solid/list-ol.svg?raw';
-import lockKeyhole from '$lib/icons/solid/lock-keyhole.svg?raw';
-import friends from '$lib/icons/trakt/friends-thick.svg?raw';
+import ChoiceDropdown from '#lib/components/dialog/ChoiceDropdown.svelte';
+import SettingValue from '#lib/components/dialog/SettingValue.svelte';
+import { copyLink } from '#lib/components/share/copyLink.ts';
+import Icon from '#lib/icons/Icon.svelte';
+import ban from '#lib/icons/regular/ban.svg?raw';
+import comment from '#lib/icons/regular/comment.svg?raw';
+import globe from '#lib/icons/solid/globe.svg?raw';
+import link from '#lib/icons/solid/link.svg?raw';
+import listOl from '#lib/icons/solid/list-ol.svg?raw';
+import lockKeyhole from '#lib/icons/solid/lock-keyhole.svg?raw';
+import friends from '#lib/icons/trakt/friends-thick.svg?raw';
 
 interface Props {
   privacy: string;

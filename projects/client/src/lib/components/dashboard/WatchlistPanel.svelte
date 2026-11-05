@@ -1,32 +1,26 @@
-<!--
-  The dashboard's Watchlist panel: the first 18 items of the viewer's
-  watchlist in its own sort, one row of six at first, with the less and more pill for up to three. Pass the unawaited
-  `fetchWatchlist` promise from the loader, so the page streams in and a row of shimmering cards holds its place until it lands, and fails on
-  its own if it doesn't.
--->
 <script lang="ts">
-import { resolve } from '$app/paths';
-import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
-import type { Snippet } from 'svelte';
-import { browser } from '$app/environment';
-import LoadFailed from '$lib/components/empty/LoadFailed.svelte';
-import PanelPrompt from '$lib/components/empty/PanelPrompt.svelte';
-import CardShimmerRow from '$lib/components/loading/CardShimmerRow.svelte';
-import Shimmer from '$lib/components/loading/Shimmer.svelte';
-import StarterPicks from '$lib/components/first-night/StarterPicks.svelte';
-import { panelQuotes } from '$lib/firstNight/panelQuotes';
-import PosterGrid from '$lib/components/media/PosterGrid.svelte';
-import { visibleColumns } from '$lib/components/media/visibleColumns';
-import PageNavigator from '$lib/components/page-navigator/PageNavigator.svelte';
-import type { DashboardWatchlist } from '$lib/dashboard/fetchWatchlist';
-import { rowCount } from '$lib/dashboard/rowCount';
-import { savedRows } from '$lib/dashboard/savedRows';
-import Icon from '$lib/icons/Icon.svelte';
-import bookmark from '$lib/icons/regular/bookmark.svg?raw';
-import arrow from '$lib/icons/trakt/arrow-right.svg?raw';
-import ListItemPoster from '$lib/lists/ListItemPoster.svelte';
-import type { DatePreferences } from '$lib/settings/DatePreferences';
-import DashboardPanel from './DashboardPanel.svelte';
+  import { resolve } from '$app/paths';
+  import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
+  import type { Snippet } from 'svelte';
+  import { browser } from '$app/env';
+  import LoadFailed from '#lib/components/empty/LoadFailed.svelte';
+  import PanelPrompt from '#lib/components/empty/PanelPrompt.svelte';
+  import CardShimmerRow from '#lib/components/loading/CardShimmerRow.svelte';
+  import Shimmer from '#lib/components/loading/Shimmer.svelte';
+  import StarterPicks from '#lib/components/first-night/StarterPicks.svelte';
+  import { panelQuotes } from '#lib/firstNight/panelQuotes.ts';
+  import PosterGrid from '#lib/components/media/PosterGrid.svelte';
+  import { visibleColumns } from '#lib/components/media/visibleColumns.ts';
+  import PageNavigator from '#lib/components/page-navigator/PageNavigator.svelte';
+  import type { DashboardWatchlist } from '#lib/dashboard/fetchWatchlist.ts';
+  import { rowCount } from '#lib/dashboard/rowCount.ts';
+  import { savedRows } from '#lib/dashboard/savedRows.ts';
+  import Icon from '#lib/icons/Icon.svelte';
+  import bookmark from '#lib/icons/regular/bookmark.svg?raw';
+  import arrow from '#lib/icons/trakt/arrow-right.svg?raw';
+  import ListItemPoster from '#lib/lists/ListItemPoster.svelte';
+  import type { DatePreferences } from '#lib/settings/DatePreferences.ts';
+  import DashboardPanel from './DashboardPanel.svelte';
 
 interface Props {
   watchlist: Promise<DashboardWatchlist>;
@@ -37,39 +31,56 @@ interface Props {
   welcome?: boolean;
 }
 
-const { watchlist, username, datePreferences, welcome = false }: Props = $props();
+  const { watchlist, username, datePreferences, welcome = false }: Props = $props();
 
-const PER_ROW = 6;
-// The grid's width, so a smaller tablet's four columns get whole rows.
-let width = $state(0);
-const perRow = $derived(visibleColumns(width, PER_ROW));
-const storageKey = $derived(`list:${username}`);
-// The cards only render in the browser, once the streamed promise lands, so SSR never needs the saved count.
-let saved = $derived(browser ? savedRows.read(storageKey) : null);
+  const PER_ROW = 6;
+  // The grid's width, so a smaller tablet's four columns get whole rows.
+  let width = $state(0);
+  const perRow = $derived(visibleColumns(width, PER_ROW));
+  const storageKey = $derived(`list:${username}`);
+  // The cards only render in the browser, once the streamed promise lands, so SSR never needs the saved count.
+  let saved = $derived(browser ? savedRows.read(storageKey) : null);
 
-function changeRows(rows: number) {
-  saved = rows;
-  savedRows.write(storageKey, rows);
-}
+  function changeRows(rows: number) {
+    saved = rows;
+    savedRows.write(storageKey, rows);
+  }
 
-const allText = (total: number) => `All ${total.toLocaleString('en-US')} ${total === 1 ? 'item' : 'items'}`;
+  const allText = (total: number) => `All ${total.toLocaleString('en-US')} ${total === 1 ? 'item' : 'items'}`;
 </script>
+
+<!--
+  The dashboard's Watchlist panel: the first 18 items of the viewer's
+  watchlist in its own sort, one row of six at first, with the less and more pill for up to three. Pass the unawaited
+  `fetchWatchlist` promise from the loader, so the page streams in and a row of shimmering cards holds its place until it lands, and fails on
+  its own if it doesn't.
+-->
 
 {#snippet panel(loading: boolean, content: Snippet, list?: DashboardWatchlist, footer?: Snippet)}
   <DashboardPanel
-  --color-card-bg="var(--color-panel-quick-icons)"
-  --panel-bg="var(--color-watchlist-bg)"
-  title="Watchlist"
-  icon={bookmark}
-  {loading}
-  seeMore={list ? { href: `/users/${username}/watchlist`, text: allText(list.total) } : undefined}
-  drilldown={{ source: 'watchlist' }}
-  help={list ? sorted : loading ? sorting : undefined}
-  {footer}
->
-    {@render content()}
-  </DashboardPanel>
-  {#snippet sorting()}<Shimmer inline="var(--watchlist-shimmer-sort-width)" block="var(--font-size-help-text)" />{/snippet}
+    --color-card-bg="var(--color-panel-quick-icons)"
+    --panel-bg="var(--color-watchlist-bg)"
+    title="Watchlist"
+    icon={bookmark}
+    loading={loading}
+    seeMore={list
+      ? {
+        href: `/users/${username}/watchlist`,
+        text: allText(list.total)
+      }
+      : undefined}
+    drilldown={{ source: 'watchlist' }}
+    help={list ? sorted : loading ? sorting : undefined}
+    footer={footer}
+  >{@render content()}</DashboardPanel>
+
+  {#snippet sorting()}
+    <Shimmer
+      inline="var(--watchlist-shimmer-sort-width)"
+      block="var(--font-size-help-text)"
+    />
+  {/snippet}
+
   {#snippet sorted()}
     Sorted by {list?.sortName}<span class={['direction', list?.sortHow]}><Icon svg={arrow} /></span>
   {/snippet}
@@ -81,16 +92,20 @@ const allText = (total: number) => `All ${total.toLocaleString('en-US')} ${total
   {@const rows = rowCount({ rows: saved, items: list.cards.length, perRow })}
   {#snippet cards()}
     {#if list.cards.length === 0}
-      <PanelPrompt roomy --panel-prompt-offset="var(--space-lg-block)" quote={panelQuotes.watchlist} {welcome}
-  text="Save what you want to watch next."
-  action={{ href: resolve('/movies/[chart=chart]', { chart: 'anticipated' }), text: 'See what\'s coming' }}>
+      <PanelPrompt
+        roomy
+        --panel-prompt-offset="var(--space-lg-block)"
+        quote={panelQuotes.watchlist}
+        welcome={welcome}
+        text="Save what you want to watch next."
+  action={{ href: resolve('/movies/[chart=chart]/[[period]]', { chart: 'anticipated' }), text: 'See what\'s coming' }}>
         {#snippet picks()}<StarterPicks chart="anticipated" type="both" count={4} action="watchlist" />{/snippet}
       </PanelPrompt>
     {:else}
       <div class="cards" bind:clientWidth={width} {@attach trackDrilldowns({ source: 'watchlist' })}>
   <PosterGrid columns={PER_ROW}>
           {#each list.cards.slice(0, rows.rows * perRow) as item (item.key)}
-            <ListItemPoster {item} {datePreferences} />
+            <ListItemPoster item={item} datePreferences={datePreferences} />
           {/each}
         </PosterGrid>
 </div>
@@ -107,9 +122,7 @@ const allText = (total: number) => `All ${total.toLocaleString('en-US')} ${total
   {@render panel(false, cards, list, list.cards.length > 0 ? navigator : undefined)}
 {:catch error}
   {#snippet failed()}
-    <div class="notice">
-      <LoadFailed what="Watchlist" {error} />
-    </div>
+    <div class="notice"><LoadFailed what="Watchlist" error={error} /></div>
   {/snippet}
   {@render panel(false, failed)}
 {/await}
@@ -119,41 +132,41 @@ const allText = (total: number) => `All ${total.toLocaleString('en-US')} ${total
 {/snippet}
 
 <style>
-/* OG's alert sat in the posters row, which kept 20px above it. */
-.notice {
-  padding-block-start: var(--gutter);
-}
-
-/* OG's `trakt-icon-arrow-right.fa-rotate-90`: down for ascending, up for descending. */
-.direction {
-  display: inline-block;
-  rotate: 90deg;
-
-  &.desc {
-    rotate: 270deg;
+  /* OG's alert sat in the posters row, which kept 20px above it. */
+  .notice {
+    padding-block-start: var(--gutter);
   }
-}
+
+  /* OG's `trakt-icon-arrow-right.fa-rotate-90`: down for ascending, up for descending. */
+  .direction {
+    display: inline-block;
+    rotate: 90deg;
+
+    &.desc {
+      rotate: 270deg;
+    }
+  }
 
 /* the panel fades in when its data lands, as OG's lazy panels did. OG's `#list-items` kept no margin under
    the posters. */
-.cards,
-.shimmers {
-  margin-block-end: calc(-1 * var(--gutter));
-}
-
-.cards {
-  animation: fade-in var(--transition-card) ease-out;
-}
-
-@keyframes fade-in {
-  from {
-    opacity: 0;
+  .cards,
+  .shimmers {
+    margin-block-end: calc(-1 * var(--gutter));
   }
-}
 
-@media (prefers-reduced-motion: reduce) {
   .cards {
-    animation: none;
+    animation: fade-in var(--transition-card) ease-out;
   }
-}
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cards {
+      animation: none;
+    }
+  }
 </style>

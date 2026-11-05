@@ -1,11 +1,11 @@
 <!-- A profile box's one big number, with its label in two short lines beside it, and an icon before the label. -->
 <script lang="ts">
-import Icon from '$lib/icons/Icon.svelte';
+import Icon from '#lib/icons/Icon.svelte';
 
 interface Props {
   value: string;
   label: readonly string[];
-  /** A raw icon SVG, from `$lib/icons`. */
+  /** A raw icon SVG, from `#lib/icons`. */
   icon?: string;
 }
 

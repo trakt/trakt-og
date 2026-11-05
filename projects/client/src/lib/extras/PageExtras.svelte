@@ -1,21 +1,12 @@
-<!--
-  A summary page's hidden extra, if it has one: typing its keys anywhere on the page, or clicking its small switch,
-  loads and plays it. The switch joins something already on the page: the first segment of a bar (the tag bar over
-  the title), a badge beside the certification, a row of a list (the sidebar's sections) or the last tile of the links
-  out. It stays lit while it plays,
-  and a second click or Esc lets it play its way out; Esc stops the others at once. Keys stay quiet while you type in
-  a field or hold a modifier, and pages without an extra render nothing. Mount it last on the page, so the switch is
-  the last thing Tab reaches.
--->
 <script lang="ts">
-import { dev } from '$app/environment';
-import { type Component, untrack } from 'svelte';
-import type { Attachment } from 'svelte/attachments';
-import GlassAction from '$lib/components/glass-action/GlassAction.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import { type ExtraProps, extras } from './extras.ts';
-import { pageKey } from './pageKey.ts';
-import { typedSequence } from './typedSequence.ts';
+  import { dev } from '$app/env';
+  import { type Component, untrack } from 'svelte';
+  import type { Attachment } from 'svelte/attachments';
+  import GlassAction from '#lib/components/glass-action/GlassAction.svelte';
+  import Icon from '#lib/icons/Icon.svelte';
+  import { type ExtraProps, extras } from './extras.ts';
+  import { pageKey } from './pageKey.ts';
+  import { typedSequence } from './typedSequence.ts';
 
 interface Props {
   type: 'movie' | 'show';
@@ -24,82 +15,82 @@ interface Props {
   viewer?: string;
 }
 
-const { type, id, viewer }: Props = $props();
-const extra = $derived(extras[`${type}:${id}`]);
-let typed = { keys: '', at: 0 };
-let loading = false;
-// Keys typed between waking an extra and it being ready, so none are lost while it loads.
-let pending = '';
-let Playing = $state<Component<ExtraProps> | null>(null);
-let woke = $state<string>();
-let stopping = $state(false);
+  const { type, id, viewer }: Props = $props();
+  const extra = $derived(extras[`${type}:${id}`]);
+  let typed = { keys: '', at: 0 };
+  let loading = false;
+  // Keys typed between waking an extra and it being ready, so none are lost while it loads.
+  let pending = '';
+  let Playing = $state<Component<ExtraProps> | null>(null);
+  let woke = $state<string>();
+  let stopping = $state(false);
 
-$effect(() => {
-  void extra;
-  return () => {
-    Playing = null;
-    stopping = false;
-    typed = { keys: '', at: 0 };
-    pending = '';
-  };
-});
+  $effect(() => {
+    void extra;
+    return () => {
+      Playing = null;
+      stopping = false;
+      typed = { keys: '', at: 0 };
+      pending = '';
+    };
+  });
 
-// While developing, a page opened with #extra on its address plays its extra, so it can be tried with a click.
-$effect(() => {
-  if (dev && extra && location.hash === '#extra') untrack(play);
-});
+  // While developing, a page opened with #extra on its address plays its extra, so it can be tried with a click.
+  $effect(() => {
+    if (dev && extra && location.hash === '#extra') untrack(play);
+  });
 
-async function play() {
-  if (!extra || loading) return;
-  loading = true;
-  try {
-    const { default: Extra } = await extra.load();
-    woke = pending;
-    pending = '';
-    Playing = Extra;
-  } finally {
-    loading = false;
+  async function play() {
+    if (!extra || loading) return;
+    loading = true;
+    try {
+      const { default: Extra } = await extra.load();
+      woke = pending;
+      pending = '';
+      Playing = Extra;
+    } finally {
+      loading = false;
+    }
   }
-}
 
-function onkeydown(event: KeyboardEvent) {
-  if (!extra) return;
-  if (event.key === 'Escape') {
-    // A switched-on extra plays its way out, as a second click would; the others stop at once.
+  function onkeydown(event: KeyboardEvent) {
+    if (!extra) return;
+    if (event.key === 'Escape') {
+      // A switched-on extra plays its way out, as a second click would; the others stop at once.
     if ('spot' in extra && Playing) stopping = true;
     else Playing = null;
-    return;
-  }
-  if (Playing) return;
-  const key = pageKey(event);
+      return;
+    }
+    if (Playing) return;
+    const key = pageKey(event);
   if (!key) return;
 
-  if ('spot' in extra) return;
-  if ('wakes' in extra) {
-    if (!extra.wakes.test(key)) return;
-    pending += key;
+    if ('spot' in extra) return;
+    if ('wakes' in extra) {
+      if (!extra.wakes.test(key)) return;
+      pending += key;
+      play();
+      return;
+    }
+    typed = typedSequence(typed, key, event.timeStamp, extra.keys, extra.gap);
+    if (typed.keys !== extra.keys) return;
+    typed = { keys: '', at: 0 };
     play();
-    return;
   }
-  typed = typedSequence(typed, key, event.timeStamp, extra.keys, extra.gap);
-  if (typed.keys !== extra.keys) return;
-  typed = { keys: '', at: 0 };
-  play();
-}
-function flick() {
+  function flick() {
   if (!Playing) play();
   else stopping = true;
-}
+  }
 
-function done() {
-  Playing = null;
-  stopping = false;
-}
+  function done() {
+    Playing = null;
+    stopping = false;
+  }
 
-// The switch joins its bar as the first segment, like a subpage's label, or its list as a row after the one it names.
-// Without that on the page, there's none.
-const pin: Attachment<HTMLElement> = (node) => {
-  const spot = extra && 'spot' in extra ? extra.spot : undefined;
+  // The switch joins its bar as the first segment, like a subpage's label, or its list as a row after the one it names.
+  // Without that on the page, there's none.
+  const pin: Attachment<HTMLElement> = (node) => {
+    const spot = extra && 'spot' in extra ? extra.spot : undefined;
   const host =
     spot &&
     document.querySelector(
@@ -109,11 +100,20 @@ const pin: Attachment<HTMLElement> = (node) => {
   else if ('leads' in spot) host.prepend(node);
   else if ('follows' in spot || 'beside' in spot) host.after(node);
   else host.append(node);
-  return () => node.remove();
-};
+    return () => node.remove();
+  };
 </script>
 
-<svelte:window {onkeydown} />
+<!--
+  A summary page's hidden extra, if it has one: typing its keys anywhere on the page, or clicking its small switch,
+  loads and plays it. The switch joins something already on the page: the first segment of a bar (the tag bar over
+  the title), a badge beside the certification, a row of a list (the sidebar's sections) or the last tile of the links
+  out. It stays lit while it plays,
+  and a second click or Esc lets it play its way out; Esc stops the others at once. Keys stay quiet while you type in
+  a field or hold a modifier, and pages without an extra render nothing. Mount it last on the page, so the switch is
+  the last thing Tab reaches.
+-->
+<svelte:window onkeydown={onkeydown}></svelte:window>
 
 {#if extra && 'spot' in extra && 'beside' in extra.spot}
   <button
@@ -154,131 +154,134 @@ const pin: Attachment<HTMLElement> = (node) => {
     style:--spot={extra.spot.color}
     onclick={flick}
     {@attach pin}
-  >
-    <svg viewBox="0 0 16 16" aria-hidden="true"><path d={extra.spot.path} /></svg>
-  </button>
+  ><svg viewBox="0 0 16 16" aria-hidden="true"><path d={extra.spot.path}></path></svg></button>
 {/if}
 
 {#if Playing}
-  <Playing {woke} {viewer} stop={stopping} ondone={done} />
+  <Playing
+    woke={woke}
+    viewer={viewer}
+    stop={stopping}
+    ondone={done}
+  />
 {/if}
 
 <style>
-/* A segment of the bar like its other parts: a quiet icon that fills on hover, and lights up while it's on. */
-.segment {
-  --spot-ink: #021216;
-  display: inline-flex;
-  align-items: center;
-  block-size: 100%;
-  min-block-size: 0;
-  padding-block: 0;
-  padding-inline: var(--title-tags-padding);
-  /* Like the bar's label: the rounded end crowds the start, so the end gives a little back to read even. */
-  padding-inline-end: var(--title-tags-label-padding-end);
-  border: 0;
-  border-inline-end: 1px solid var(--color-title-tags-divider);
-  background: none;
-  color: var(--spot);
-  cursor: pointer;
-  transition: background-color var(--transition-card), color var(--transition-card), box-shadow var(--transition-card);
-
-  &:is(:hover, :focus-visible) {
-    background-color: var(--color-title-tags-hover);
-    outline: none;
-  }
-
-  &.on {
-    background-color: var(--spot);
-    color: var(--spot-ink);
-    box-shadow: inset 0 0 10px rgb(255 255 255 / 60%), 0 0 14px var(--spot);
-  }
-
-  svg {
-    inline-size: 14px;
-    block-size: 14px;
-    filter: drop-shadow(0 0 2px var(--spot));
-  }
-
-  path {
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 1.3;
-  }
-}
-
-/* A badge the size of the certification it sits beside: at rest just its white icon, with no outline or fill (the
-   border stays, unseen, so the size holds); pointed at, the icon turns its color on a white fill; lit while on. Its box is a line of the certification's text, so the two match whatever the tokens say. */
-.badge {
-  display: inline-grid;
-  place-items: center;
-  box-sizing: content-box;
-  block-size: calc(var(--font-size-certification) * var(--line-height-base));
-  min-block-size: 0;
-  margin-inline-start: var(--space-certification);
-  padding: var(--space-certification-padding);
-  border: 1px solid transparent;
-  border-radius: var(--radius-control);
-  background: none;
-  color: var(--color-text-inverse);
-  font-size: var(--font-size-certification);
-  line-height: var(--line-height-base);
-  vertical-align: middle;
-
-  :global(svg) {
-    inline-size: 1.3em;
-    block-size: 1.3em;
-  }
-  cursor: pointer;
-  transition: background-color var(--transition-card), border-color var(--transition-card), box-shadow
-    var(--transition-card);
-
-  &:is(:hover, :focus-visible) {
-    border-color: var(--color-text-inverse);
-    background-color: var(--color-text-inverse);
-    color: var(--spot);
-    outline: none;
-  }
-
-  &.on {
-    border-color: var(--spot);
-    background-color: var(--spot);
-    color: var(--color-text-inverse);
-    box-shadow: 0 0 12px var(--spot);
-  }
-}
-
-/* A row of the list like its other sections: gray capitals, turning to the hover color, and its own color while on. */
-.row {
-  border-block-end: 1px solid var(--color-summary-separator);
-
-  .spot {
-    display: block;
-    inline-size: 100%;
-    padding-block: 7px;
-    padding-inline: 0;
+  /* A segment of the bar like its other parts: a quiet icon that fills on hover, and lights up while it's on. */
+  .segment {
+    --spot-ink: #021216;
+    display: inline-flex;
+    align-items: center;
+    block-size: 100%;
+    min-block-size: 0;
+    padding-block: 0;
+    padding-inline: var(--title-tags-padding);
+    /* Like the bar's label: the rounded end crowds the start, so the end gives a little back to read even. */
+    padding-inline-end: var(--title-tags-label-padding-end);
     border: 0;
+    border-inline-end: 1px solid var(--color-title-tags-divider);
     background: none;
-    color: var(--color-summary-label);
-    font-family: var(--font-headings);
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-headings);
-    text-align: start;
-    text-transform: uppercase;
+    color: var(--spot);
     cursor: pointer;
-    transition: color var(--transition-card);
+    transition: background-color var(--transition-card), color var(--transition-card), box-shadow var(--transition-card);
 
     &:is(:hover, :focus-visible) {
-      color: var(--color-summary-hover);
+      background-color: var(--color-title-tags-hover);
+      outline: none;
     }
 
     &.on {
-      color: var(--spot);
+      background-color: var(--spot);
+      color: var(--spot-ink);
+      box-shadow: inset 0 0 10px rgb(255 255 255 / 60%), 0 0 14px var(--spot);
     }
 
-    &:focus-visible {
-      outline: 1px solid var(--spot);
-      outline-offset: 2px;
+    svg {
+      inline-size: 14px;
+      block-size: 14px;
+      filter: drop-shadow(0 0 2px var(--spot));
+    }
+
+    path {
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.3;
     }
   }
-}
+
+  /* A badge the size of the certification it sits beside: at rest just its white icon, with no outline or fill (the
+   border stays, unseen, so the size holds); pointed at, the icon turns its color on a white fill; lit while on. Its box is a line of the certification's text, so the two match whatever the tokens say. */
+  .badge {
+    display: inline-grid;
+    place-items: center;
+    box-sizing: content-box;
+    block-size: calc(var(--font-size-certification) * var(--line-height-base));
+    min-block-size: 0;
+    margin-inline-start: var(--space-certification);
+    padding: var(--space-certification-padding);
+    border: 1px solid transparent;
+    border-radius: var(--radius-control);
+    background: none;
+    color: var(--color-text-inverse);
+    font-size: var(--font-size-certification);
+    line-height: var(--line-height-base);
+    vertical-align: middle;
+
+    :global(svg) {
+      inline-size: 1.3em;
+      block-size: 1.3em;
+    }
+    cursor: pointer;
+    transition: background-color var(--transition-card), border-color var(--transition-card), box-shadow
+    var(--transition-card);
+
+    &:is(:hover, :focus-visible) {
+      border-color: var(--color-text-inverse);
+      background-color: var(--color-text-inverse);
+      color: var(--spot);
+      outline: none;
+    }
+
+    &.on {
+      border-color: var(--spot);
+      background-color: var(--spot);
+      color: var(--color-text-inverse);
+      box-shadow: 0 0 12px var(--spot);
+    }
+  }
+
+  /* A row of the list like its other sections: gray capitals, turning to the hover color, and its own color while on. */
+  .row {
+    border-block-end: 1px solid var(--color-summary-separator);
+
+    .spot {
+      display: block;
+      inline-size: 100%;
+      padding-block: 7px;
+      padding-inline: 0;
+      border: 0;
+      background: none;
+      color: var(--color-summary-label);
+      font-family: var(--font-headings);
+      font-size: var(--font-size-base);
+      font-weight: var(--font-weight-headings);
+      text-align: start;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: color var(--transition-card);
+
+      &:is(:hover, :focus-visible) {
+        color: var(--color-summary-hover);
+      }
+
+      &.on {
+        color: var(--spot);
+      }
+
+      &:focus-visible {
+        outline: 1px solid var(--spot);
+        outline-offset: 2px;
+      }
+    }
+  }
 </style>

@@ -4,17 +4,17 @@
   and a picker's shimmering option rows.
 -->
 <script lang="ts">
-import { AUTH_FAILURE_MESSAGE } from '$lib/auth/authFailure';
-import { AUTH_SCENES } from '$lib/auth/authScenes';
-import HyperspaceLoader from '$lib/components/loading/HyperspaceLoader.svelte';
-import LoadingOverlay from '$lib/components/loading/LoadingOverlay.svelte';
-import NavigationProgress from '$lib/components/loading/NavigationProgress.svelte';
-import CardShimmerRow from '$lib/components/loading/CardShimmerRow.svelte';
-import OptionRowShimmers from '$lib/components/loading/OptionRowShimmers.svelte';
-import Shimmer from '$lib/components/loading/Shimmer.svelte';
-import DemoToggle from '$lib/design/DemoToggle.svelte';
-import Specimen from '$lib/design/Specimen.svelte';
-import Variant from '$lib/design/Variant.svelte';
+import { AUTH_FAILURE_MESSAGE } from '#lib/auth/authFailure.ts';
+import { AUTH_SCENES } from '#lib/auth/authScenes.ts';
+import HyperspaceLoader from '#lib/components/loading/HyperspaceLoader.svelte';
+import LoadingOverlay from '#lib/components/loading/LoadingOverlay.svelte';
+import NavigationProgress from '#lib/components/loading/NavigationProgress.svelte';
+import CardShimmerRow from '#lib/components/loading/CardShimmerRow.svelte';
+import OptionRowShimmers from '#lib/components/loading/OptionRowShimmers.svelte';
+import Shimmer from '#lib/components/loading/Shimmer.svelte';
+import DemoToggle from '#lib/design/DemoToggle.svelte';
+import Specimen from '#lib/design/Specimen.svelte';
+import Variant from '#lib/design/Variant.svelte';
 
 let leaving = $state(true);
 </script>

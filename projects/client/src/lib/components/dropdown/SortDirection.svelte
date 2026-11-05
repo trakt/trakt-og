@@ -11,11 +11,11 @@
     <span class="sort"><Dropdown joined>…</Dropdown><SortDirection joined bind:flipped descending={by !== 'title'} /></span>
 -->
 <script lang="ts">
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import sortDown from '$lib/icons/regular/arrow-down-wide-short.svg?raw';
-import sortUp from '$lib/icons/regular/arrow-up-wide-short.svg?raw';
-import arrow from '$lib/icons/trakt/arrow-right.svg?raw';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import sortDown from '#lib/icons/regular/arrow-down-wide-short.svg?raw';
+import sortUp from '#lib/icons/regular/arrow-up-wide-short.svg?raw';
+import arrow from '#lib/icons/trakt/arrow-right.svg?raw';
 
 let { flipped = $bindable(false), descending = false, joined = false, disabled = false }: {
   flipped?: boolean;

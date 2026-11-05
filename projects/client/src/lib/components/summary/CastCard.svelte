@@ -5,7 +5,7 @@
   lines, for the cast & crew page's list view.
 -->
 <script lang="ts">
-import TagPills from '$lib/components/labels/TagPills.svelte';
+import TagPills from '#lib/components/labels/TagPills.svelte';
 import { personPlaceholder } from './personPlaceholder.ts';
 
 interface Props {

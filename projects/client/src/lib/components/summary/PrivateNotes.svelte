@@ -8,18 +8,18 @@
 -->
 <script lang="ts">
 import { tick } from 'svelte';
-import NoteManage from '$lib/components/notes/NoteManage.svelte';
-import NotesDialog from '$lib/components/notes/NotesDialog.svelte';
-import NoteStamp from '$lib/components/notes/NoteStamp.svelte';
-import ReadMore from '$lib/components/readmore/ReadMore.svelte';
-import { toast } from '$lib/components/toast/toast.svelte';
-import clock from '$lib/icons/regular/clock.svg?raw';
-import type { NotableItem } from '$lib/notes/NotableItem';
-import type { PrivateNote } from '$lib/notes/PrivateNote';
-import { noteStamp } from '$lib/notes/noteStamp';
-import { saveNote } from '$lib/notes/saveNote';
-import type { DatePreferences } from '$lib/settings/DatePreferences';
-import { formatDate } from '$lib/utils/formatDate';
+import NoteManage from '#lib/components/notes/NoteManage.svelte';
+import NotesDialog from '#lib/components/notes/NotesDialog.svelte';
+import NoteStamp from '#lib/components/notes/NoteStamp.svelte';
+import ReadMore from '#lib/components/readmore/ReadMore.svelte';
+import { toast } from '#lib/components/toast/toast.svelte.ts';
+import clock from '#lib/icons/regular/clock.svg?raw';
+import type { NotableItem } from '#lib/notes/NotableItem.ts';
+import type { PrivateNote } from '#lib/notes/PrivateNote.ts';
+import { noteStamp } from '#lib/notes/noteStamp.ts';
+import { saveNote } from '#lib/notes/saveNote.ts';
+import type { DatePreferences } from '#lib/settings/DatePreferences.ts';
+import { formatDate } from '#lib/utils/formatDate.ts';
 import { viewerFetch } from '../../auth/viewerFetch.ts';
 
 interface Props {

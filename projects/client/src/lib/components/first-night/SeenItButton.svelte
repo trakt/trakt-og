@@ -3,16 +3,16 @@
   episode of a show, watched on its release date, with no date prompt. Clicking a seen title takes it back off.
 -->
 <script lang="ts">
-import { rawApiFetch } from '$lib/api/rawApiFetch';
-import { viewerFetch } from '$lib/auth/viewerFetch';
-import GlassAction from '$lib/components/glass-action/GlassAction.svelte';
-import { loadWatchEpisodes } from '$lib/components/history/loadWatchEpisodes';
-import { watchMedia } from '$lib/components/history/watchMedia';
-import type { WatchTarget } from '$lib/components/history/WatchTarget';
-import { toast } from '$lib/components/toast/toast.svelte';
-import check from '$lib/icons/trakt/check-thick.svg?raw';
-import { overlay } from '$lib/overlay/overlay';
-import { refreshSoon } from '$lib/overlay/refreshSoon';
+import { rawApiFetch } from '#lib/api/rawApiFetch.ts';
+import { viewerFetch } from '#lib/auth/viewerFetch.ts';
+import GlassAction from '#lib/components/glass-action/GlassAction.svelte';
+import { loadWatchEpisodes } from '#lib/components/history/loadWatchEpisodes.ts';
+import { watchMedia } from '#lib/components/history/watchMedia.ts';
+import type { WatchTarget } from '#lib/components/history/WatchTarget.ts';
+import { toast } from '#lib/components/toast/toast.svelte.ts';
+import check from '#lib/icons/trakt/check-thick.svg?raw';
+import { overlay } from '#lib/overlay/overlay.ts';
+import { refreshSoon } from '#lib/overlay/refreshSoon.ts';
 
 const { target }: { target: WatchTarget } = $props();
 let busy = $state(false);

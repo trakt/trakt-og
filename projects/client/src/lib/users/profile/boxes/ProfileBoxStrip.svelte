@@ -2,8 +2,8 @@
   The four boxes under a profile's frame, picked by the loader. Four across, two from tablet width, one on phones.
 -->
 <script lang="ts">
-import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
-import Container from '$lib/components/container/Container.svelte';
+import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
+import Container from '#lib/components/container/Container.svelte';
 import { profileBoxComponent } from './profileBoxComponent.ts';
 import type { toProfileBoxes } from './toProfileBoxes.ts';
 

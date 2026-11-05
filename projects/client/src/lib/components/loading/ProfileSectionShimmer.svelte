@@ -5,10 +5,10 @@
     {#await data.mostWatched}<ProfileSectionShimmer section="most-watched" />{:then ...}
 -->
 <script lang="ts">
-import Container from '$lib/components/container/Container.svelte';
-import PanelHeading from '$lib/components/dashboard/PanelHeading.svelte';
-import cameraMovie from '$lib/icons/regular/camera-movie.svg?raw';
-import tvRetro from '$lib/icons/regular/tv-retro.svg?raw';
+import Container from '#lib/components/container/Container.svelte';
+import PanelHeading from '#lib/components/dashboard/PanelHeading.svelte';
+import cameraMovie from '#lib/icons/regular/camera-movie.svg?raw';
+import tvRetro from '#lib/icons/regular/tv-retro.svg?raw';
 import CardShimmer from './CardShimmer.svelte';
 import Shimmer from './Shimmer.svelte';
 

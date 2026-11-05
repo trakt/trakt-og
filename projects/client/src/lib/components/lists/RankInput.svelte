@@ -8,7 +8,7 @@
 <script lang="ts">
 import { prefersReducedMotion } from 'svelte/motion';
 import { fade } from 'svelte/transition';
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
 
 interface Props {
   name: string;

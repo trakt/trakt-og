@@ -1,8 +1,8 @@
 <!-- OG's compact rating line under a poster title. -->
 <script lang="ts">
-import Icon from '$lib/icons/Icon.svelte';
-import heart from '$lib/icons/solid/heart.svg?raw';
-import { RATING_LABELS } from '$lib/components/rating/ratingPrompt';
+import Icon from '#lib/icons/Icon.svelte';
+import heart from '#lib/icons/solid/heart.svg?raw';
+import { RATING_LABELS } from '#lib/components/rating/ratingPrompt.ts';
 const { rating }: { rating: number } = $props();
 </script>
 <span

@@ -1,9 +1,9 @@
 <!-- Last Watched: the newest play over its fanart, how long ago, and for a show the progress through it. -->
 <script lang="ts">
-import BoxChips from '$lib/components/users/profile-box/BoxChips.svelte';
-import BoxProgress from '$lib/components/users/profile-box/BoxProgress.svelte';
-import BoxTitle from '$lib/components/users/profile-box/BoxTitle.svelte';
-import ProfileBox from '$lib/components/users/profile-box/ProfileBox.svelte';
+import BoxChips from '#lib/components/users/profile-box/BoxChips.svelte';
+import BoxProgress from '#lib/components/users/profile-box/BoxProgress.svelte';
+import BoxTitle from '#lib/components/users/profile-box/BoxTitle.svelte';
+import ProfileBox from '#lib/components/users/profile-box/ProfileBox.svelte';
 import type { LastWatchedView } from './LastWatchedView.ts';
 
 const { view }: { view: LastWatchedView } = $props();

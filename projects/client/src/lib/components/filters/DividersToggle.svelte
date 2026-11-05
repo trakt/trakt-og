@@ -4,9 +4,9 @@
     <DividersToggle bind:shown={dividers} />
 -->
 <script lang="ts">
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import dividers from '$lib/icons/regular/arrows-to-dotted-line.svg?raw';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import dividers from '#lib/icons/regular/arrows-to-dotted-line.svg?raw';
 
 let { shown = $bindable() }: { shown: boolean } = $props();
 

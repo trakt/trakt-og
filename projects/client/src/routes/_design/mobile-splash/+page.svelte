@@ -3,9 +3,9 @@
   is asked to get wider, and a tablet held upright, which is asked to turn sideways. OG had no splash, so there is no OG screenshot to sit next to.
 -->
 <script lang="ts">
-import MobileSplash from '$lib/components/mobile-splash/MobileSplash.svelte';
-import Specimen from '$lib/design/Specimen.svelte';
-import Variant from '$lib/design/Variant.svelte';
+import MobileSplash from '#lib/components/mobile-splash/MobileSplash.svelte';
+import Specimen from '#lib/design/Specimen.svelte';
+import Variant from '#lib/design/Variant.svelte';
 
 const frames = [
   { label: 'Phone, iOS', platform: 'ios', preview: 'phone', width: 390, height: 664 },

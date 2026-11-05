@@ -4,13 +4,13 @@
 -->
 <script lang="ts">
 import { page } from '$app/state';
-import GlassAction from '$lib/components/glass-action/GlassAction.svelte';
-import ReportDialog from '$lib/components/summary/ReportDialog.svelte';
-import type { ReportTarget } from '$lib/components/summary/ReportTarget';
-import gear from '$lib/icons/regular/gear.svg?raw';
-import image from '$lib/icons/regular/image.svg?raw';
-import flag from '$lib/icons/solid/flag.svg?raw';
-import { traktUrls } from '$lib/traktUrls';
+import GlassAction from '#lib/components/glass-action/GlassAction.svelte';
+import ReportDialog from '#lib/components/summary/ReportDialog.svelte';
+import type { ReportTarget } from '#lib/components/summary/ReportTarget.ts';
+import gear from '#lib/icons/regular/gear.svg?raw';
+import image from '#lib/icons/regular/image.svg?raw';
+import flag from '#lib/icons/solid/flag.svg?raw';
+import { traktUrls } from '#lib/traktUrls.ts';
 import CoverDialog from './CoverDialog.svelte';
 import { type CoverType, isCoverOf } from './coverImage.ts';
 

@@ -6,7 +6,7 @@
   lines: `{ segments: ['50m', '24 episodes'] }`. `large` is a size up, for a page header's counts.
 -->
 <script lang="ts">
-import Icon from '$lib/icons/Icon.svelte';
+import Icon from '#lib/icons/Icon.svelte';
 import type { TagPill } from './TagPill.ts';
 
 const { tags, large = false }: { tags: readonly TagPill[]; large?: boolean } = $props();

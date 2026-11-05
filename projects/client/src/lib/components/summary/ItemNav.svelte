@@ -6,11 +6,11 @@
 -->
 <script lang="ts">
 import { goto } from '$app/navigation';
-import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
+import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
 import { swipeDirection } from './swipeDirection.ts';
-import Icon from '$lib/icons/Icon.svelte';
-import angleLeft from '$lib/icons/regular/angle-left.svg?raw';
-import angleRight from '$lib/icons/regular/angle-right.svg?raw';
+import Icon from '#lib/icons/Icon.svelte';
+import angleLeft from '#lib/icons/regular/angle-left.svg?raw';
+import angleRight from '#lib/icons/regular/angle-right.svg?raw';
 
 interface Link {
   readonly href: string;
@@ -43,6 +43,7 @@ function onkeydown(event: KeyboardEvent) {
   if (document.querySelector('dialog[open], [popover]:popover-open')) return;
 
   event.preventDefault();
+   
   // eslint-disable-next-line svelte/no-navigation-without-resolve -- hrefs are built by the page from API slugs
   goto(href);
 }
@@ -64,6 +65,7 @@ function ontouchend(event: TouchEvent) {
   if (!start || !point) return;
   const direction = swipeDirection({ start, end: { x: point.clientX, y: point.clientY } });
   const href = direction === 'next' ? next?.href : direction === 'previous' ? previous?.href : undefined;
+   
   // eslint-disable-next-line svelte/no-navigation-without-resolve -- API slug links
   if (href) goto(href);
 }

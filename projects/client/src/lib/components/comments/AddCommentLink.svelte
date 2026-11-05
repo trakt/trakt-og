@@ -4,8 +4,8 @@
   has no form: logged out, or banned from commenting.
 -->
 <script lang="ts">
-import Icon from '$lib/icons/Icon.svelte';
-import addCircle from '$lib/icons/regular/circle-plus.svg?raw';
+import Icon from '#lib/icons/Icon.svelte';
+import addCircle from '#lib/icons/regular/circle-plus.svg?raw';
 import { newComment } from './newComment.svelte.ts';
 </script>
 

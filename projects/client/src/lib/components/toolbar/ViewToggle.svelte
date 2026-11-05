@@ -4,10 +4,10 @@
     <ViewToggle bind:view />
 -->
 <script lang="ts">
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import grid2 from '$lib/icons/regular/grid-2.svg?raw';
-import list from '$lib/icons/regular/list.svg?raw';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import grid2 from '#lib/icons/regular/grid-2.svg?raw';
+import list from '#lib/icons/regular/list.svg?raw';
 
 let { view = $bindable() }: { view: 'grid' | 'list' } = $props();
 const next = $derived(

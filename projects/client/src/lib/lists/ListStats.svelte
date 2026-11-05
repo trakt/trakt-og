@@ -8,19 +8,19 @@
     <ListStats itemCount={57} stats={data.stats} progress likeCount={3} comments={{ count: 1, href }} />
 -->
 <script lang="ts">
-import ListCount from '$lib/components/lists/ListCount.svelte';
-import ListLikeButton from '$lib/components/lists/ListLikeButton.svelte';
-import { stripStatIcons } from '$lib/components/summary/stripStatIcons';
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import clock from '$lib/icons/regular/clock.svg?raw';
-import file from '$lib/icons/regular/file.svg?raw';
-import thumbsUp from '$lib/icons/regular/thumbs-up.svg?raw';
-import checkThick from '$lib/icons/trakt/check-thick.svg?raw';
-import collectionThick from '$lib/icons/trakt/collection-thick.svg?raw';
-import Shimmer from '$lib/components/loading/Shimmer.svelte';
-import { overlay } from '$lib/overlay/overlay';
-import { formatRuntime } from '$lib/utils/formatRuntime';
+import ListCount from '#lib/components/lists/ListCount.svelte';
+import ListLikeButton from '#lib/components/lists/ListLikeButton.svelte';
+import { stripStatIcons } from '#lib/components/summary/stripStatIcons.ts';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import clock from '#lib/icons/regular/clock.svg?raw';
+import file from '#lib/icons/regular/file.svg?raw';
+import thumbsUp from '#lib/icons/regular/thumbs-up.svg?raw';
+import checkThick from '#lib/icons/trakt/check-thick.svg?raw';
+import collectionThick from '#lib/icons/trakt/collection-thick.svg?raw';
+import Shimmer from '#lib/components/loading/Shimmer.svelte';
+import { overlay } from '#lib/overlay/overlay.ts';
+import { formatRuntime } from '#lib/utils/formatRuntime.ts';
 import { listProgress, type ListProgressStat } from './listProgress.ts';
 import type { ListStats } from './toListStats.ts';
 

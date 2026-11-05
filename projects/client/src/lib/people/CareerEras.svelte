@@ -5,7 +5,7 @@
     <CareerEras {eras} bind:selected watched={(credit) => …} name={…} onpick={…} />
 -->
 <script lang="ts">
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
 import { eraAccent } from './eraAccent.ts';
 import type { CareerEra } from './toCareerEras.ts';
 import type { PersonCredit } from './PersonCredit.ts';

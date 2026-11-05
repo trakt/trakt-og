@@ -7,7 +7,7 @@
 -->
 <script lang="ts">
 import { invalidateAll } from '$app/navigation';
-import { isApiRateLimited } from '$lib/api/isApiRateLimited';
+import { isApiRateLimited } from '#lib/api/isApiRateLimited.ts';
 import type { EmptyAction } from './EmptyAction.ts';
 import EmptyState from './EmptyState.svelte';
 

@@ -3,9 +3,9 @@
   DashboardPanel puts one on top; the profile's Most Watched columns each have their own.
 -->
 <script lang="ts">
-import HeadingMark from '$lib/components/heading/HeadingMark.svelte';
+import HeadingMark from '#lib/components/heading/HeadingMark.svelte';
 import type { Snippet } from 'svelte';
-import SeeMore from '$lib/components/see-more/SeeMore.svelte';
+import SeeMore from '#lib/components/see-more/SeeMore.svelte';
 
 interface Props {
   /** The h2's id, for the section's `aria-labelledby`. */

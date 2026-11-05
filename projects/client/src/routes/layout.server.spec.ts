@@ -1,7 +1,8 @@
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { formatDate } from '../lib/utils/formatDate.ts';
+import { env } from '../test/cloudflareWorkers.ts';
 import { load } from './+layout.server.ts';
 
 const SETTINGS = {
@@ -43,16 +44,17 @@ const layout = (
   userAgent?: string,
   klipyKey?: string,
   routeId = '/',
-) =>
-  load({
+) => {
+  env.KLIPY_API_KEY = klipyKey;
+  return load({
     fetch: globalThis.fetch,
     locals: { token, tokenExpired: false },
     cookies: { get: (name: string) => (name === 'search_type' ? searchType : undefined) },
     request: request(userAgent),
     route: { id: routeId },
-    platform: { env: { KLIPY_API_KEY: klipyKey } },
     untrack,
   } as Parameters<typeof load>[0]);
+};
 
 /** Whether the load read `route.id` outside `untrack`, which reruns it on every client navigation to another route. */
 const tracksRoute = async (routeId: string) => {
@@ -251,7 +253,11 @@ describe('root layout kept settings', () => {
     put: (key: string, response: Response) => Promise.resolve(void entries.set(key, response)),
     delete: (key: string) => Promise.resolve(entries.delete(key)),
   };
-  afterEach(() => entries.clear());
+  beforeEach(() => vi.stubGlobal('caches', { default: cache }));
+  afterEach(() => {
+    entries.clear();
+    vi.unstubAllGlobals();
+  });
 
   // One server run of the root layout: a full page load, or the data request of a client navigation or reload.
   const visit = ({ dataRequest = true, revision = '', token = 'fake-token' } = {}) =>
@@ -262,7 +268,6 @@ describe('root layout kept settings', () => {
       request: request(),
       isDataRequest: dataRequest,
       route: { id: '/' },
-      platform: { env: {}, caches: { default: cache } },
       untrack,
     } as unknown as Parameters<typeof load>[0]);
 

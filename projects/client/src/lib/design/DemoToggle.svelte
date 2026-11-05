@@ -1,7 +1,7 @@
 <!-- Turns one demo setting on or off, like "Display name set": a pill that fills red while on. -->
 <script lang="ts">
-import Icon from '$lib/icons/Icon.svelte';
-import check from '$lib/icons/trakt/check-thick.svg?raw';
+import Icon from '#lib/icons/Icon.svelte';
+import check from '#lib/icons/trakt/check-thick.svg?raw';
 import type { Snippet } from 'svelte';
 
 interface Props {

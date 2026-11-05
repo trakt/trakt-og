@@ -4,10 +4,10 @@
   and the bar is their share of everyone watching this type; the tags still link to each whole chart.
 -->
 <script lang="ts">
-import SidebarSection from '$lib/components/sidebar/SidebarSection.svelte';
-import TagPills from '$lib/components/labels/TagPills.svelte';
-import StatusDot from '$lib/components/status/StatusDot.svelte';
-import { compactCount } from '$lib/utils/compactCount';
+import SidebarSection from '#lib/components/sidebar/SidebarSection.svelte';
+import TagPills from '#lib/components/labels/TagPills.svelte';
+import StatusDot from '#lib/components/status/StatusDot.svelte';
+import { compactCount } from '#lib/utils/compactCount.ts';
 import type { LiveNow } from './fetchLiveNow';
 import type { MediaType } from './loadChart';
 

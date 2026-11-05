@@ -15,7 +15,7 @@ type FetchUserMatchParams = {
   token: string;
   /** The profile owner's slug. */
   slug: string;
-  /** The data center's cache, `platform.caches.default`. Left out (tests, a dev server without one), it always reads. */
+  /** The data center's cache, `edgeCache()`. Left out (tests, a dev server without one), it always reads. */
   cache: KeyedCache | undefined;
   /** og's origin, which the kept copies' keys live under. */
   origin: string;

@@ -5,8 +5,8 @@
 -->
 <script lang="ts">
 import type { Snippet } from 'svelte';
-import SeeMore from '$lib/components/see-more/SeeMore.svelte';
-import { trackSectionDrilldown } from '$lib/analytics/trackSectionDrilldown';
+import SeeMore from '#lib/components/see-more/SeeMore.svelte';
+import { trackSectionDrilldown } from '#lib/analytics/trackSectionDrilldown.ts';
 
 interface Props {
   title: string;

@@ -1,16 +1,16 @@
 <script lang="ts">
-import FirstNightHero from '$lib/components/first-night/FirstNightHero.svelte';
-import FirstNightProgress from '$lib/components/first-night/FirstNightProgress.svelte';
-import Nudges from '$lib/components/first-night/Nudges.svelte';
-import Header from '$lib/components/header/Header.svelte';
-import DemoChoice from '$lib/design/DemoChoice.svelte';
-import DemoToggle from '$lib/design/DemoToggle.svelte';
-import { toHeaderUser } from '$lib/components/header/toHeaderUser';
-import Specimen from '$lib/design/Specimen.svelte';
-import type { FirstNight } from '$lib/firstNight/firstNight';
-import type { StarterPick } from '$lib/firstNight/starterPicks';
-import { PLACEHOLDER_AVATAR } from '$lib/users/placeholderAvatar';
-import { dayIn } from '$lib/utils/dayIn';
+import FirstNightHero from '#lib/components/first-night/FirstNightHero.svelte';
+import FirstNightProgress from '#lib/components/first-night/FirstNightProgress.svelte';
+import Nudges from '#lib/components/first-night/Nudges.svelte';
+import Header from '#lib/components/header/Header.svelte';
+import DemoChoice from '#lib/design/DemoChoice.svelte';
+import DemoToggle from '#lib/design/DemoToggle.svelte';
+import { toHeaderUser } from '#lib/components/header/toHeaderUser.ts';
+import Specimen from '#lib/design/Specimen.svelte';
+import type { FirstNight } from '#lib/firstNight/firstNight.ts';
+import type { StarterPick } from '#lib/firstNight/starterPicks.ts';
+import { PLACEHOLDER_AVATAR } from '#lib/users/placeholderAvatar.ts';
+import { dayIn } from '#lib/utils/dayIn.ts';
 import { type LibraryStage, libraryStages, toDemoLibrary } from './library.ts';
 import { seedOverlay } from './seedOverlay.svelte.ts';
 

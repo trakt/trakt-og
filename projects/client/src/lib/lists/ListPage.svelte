@@ -1,129 +1,133 @@
-<!--
-  A list page under the profile frame: the subnav with the type and genre dropdowns, the sort
-  and its direction, the title row with the list's pills and the viewer's icons (in manage mode, the whole-selection
-  actions), the description band, then the ranked
-  poster grid between two paginations. The stats bar sits before the sort; the filter icons follow it. Watchlist, favorites and official lists render here too.
--->
 <script lang="ts">
-import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
-import { trackUpsellImpression } from '$lib/analytics/trackUpsellImpression';
-import SeoHead from '$lib/seo/SeoHead.svelte';
-import { toListSeo } from '$lib/seo/pages/toListSeo';
-import { imageUrl } from '$lib/utils/imageUrl';
-import { rawApiFetch } from '$lib/api/rawApiFetch';
-import BuiltInListEditor from '$lib/components/lists/BuiltInListEditor.svelte';
-import { overlay } from '$lib/overlay/overlay';
-import { toast } from '$lib/components/toast/toast.svelte';
-import { loadOwnerItems } from '$lib/lists/loadOwnerItems';
-import { moveListItem } from '$lib/lists/moveListItem';
-import { rerankListCards } from '$lib/lists/rerankListCards';
-import { removeOwnerItems } from '$lib/lists/removeOwnerItems';
-import { writeOwnerList } from '$lib/lists/writeOwnerList';
-import { toListItemCard } from '$lib/lists/toListItemCard';
-import { afterNavigate, goto, invalidateAll, replaceState } from '$app/navigation';
-import ListNotice from '$lib/components/lists/ListNotice.svelte';
-import ListTag from '$lib/components/lists/ListTag.svelte';
-import ListTitleRow from '$lib/components/lists/ListTitleRow.svelte';
-import SortMenu from '$lib/components/sort/SortMenu.svelte';
-import SortLabel from '$lib/components/sort/SortLabel.svelte';
-import { memberRelation } from '$lib/components/comments/memberRelation';
-import { convertToSmartList } from '$lib/lists/smart/convertToSmartList';
-import ReportDialog from '$lib/components/summary/ReportDialog.svelte';
-import { leaveList } from '$lib/components/lists/leaveList';
-import { resolve } from '$app/paths';
-import { page } from '$app/state';
-import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
-import { useTrack } from '$lib/analytics/useTrack';
-import { untrack } from 'svelte';
-import { flip } from 'svelte/animate';
-import { prefersReducedMotion } from 'svelte/motion';
-import ListEditor from '$lib/components/lists/ListEditor.svelte';
-import ManageConfirm from '$lib/components/comments/ManageConfirm.svelte';
-import { deleteList } from '$lib/components/lists/deleteList';
-import { api } from '$lib/api/api';
-import CommentText from '$lib/components/comments/CommentText.svelte';
-import { parseComment } from '$lib/components/comments/text/parseComment';
-import Container from '$lib/components/container/Container.svelte';
-import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
-import SortDirection from '$lib/components/dropdown/SortDirection.svelte';
-import FadeHideMenu from '$lib/components/filters/FadeHideMenu.svelte';
-import TermsFilter from '$lib/components/filters/TermsFilter.svelte';
-import WatchNowFilter from '$lib/components/watchnow/WatchNowFilter.svelte';
-import WatchNowChips from '$lib/components/watchnow/WatchNowChips.svelte';
-import { favoriteSlugs } from '$lib/components/watchnow/watchNow';
-import { watchNowTiles } from '$lib/components/filters/watchNowFilter';
-import type { ViewerSettings } from '$lib/settings/ViewerSettings';
-import { listFilterOptions } from '$lib/lists/listFilterOptions';
-import EmptyState from '$lib/components/empty/EmptyState.svelte';
-import LoadFailed from '$lib/components/empty/LoadFailed.svelte';
-import { expireHideCookie } from '$lib/components/filters/expireHideCookie';
-import type { HeaderUser } from '$lib/components/header/HeaderUser';
-import ListTransfer from '$lib/components/lists/ListTransfer.svelte';
-import clone from '$lib/icons/regular/clone.svg?raw';
-import file from '$lib/icons/regular/file.svg?raw';
-import fileExport from '$lib/icons/regular/file-export.svg?raw';
-import ListItemEdit from '$lib/components/lists/ListItemEdit.svelte';
-import OfficialListHeader from '$lib/components/lists/OfficialListHeader.svelte';
-import RankInput from '$lib/components/lists/RankInput.svelte';
-import PosterGrid from '$lib/components/media/PosterGrid.svelte';
-import NotesDialog from '$lib/components/notes/NotesDialog.svelte';
-import Pagination from '$lib/components/pagination/Pagination.svelte';
-import ReadMore from '$lib/components/readmore/ReadMore.svelte';
-import ShareButton from '$lib/components/share/ShareButton.svelte';
-import ShareArrival from '$lib/share/ShareArrival.svelte';
-import CollaboratorsChip from '$lib/components/lists/CollaboratorsChip.svelte';
-import SectionToolbar from '$lib/components/toolbar/SectionToolbar.svelte';
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import userXmark from '$lib/icons/regular/user-xmark.svg?raw';
-import barsProgress from '$lib/icons/regular/bars-progress.svg?raw';
-import deleteIcon from '$lib/icons/regular/trash-xmark.svg?raw';
-import flag from '$lib/icons/regular/flag.svg?raw';
-import move from '$lib/icons/regular/up-down-left-right.svg?raw';
-import check from '$lib/icons/solid/check.svg?raw';
-import pencil from '$lib/icons/regular/pen.svg?raw';
-import type { ProfileUser } from '$lib/users/ProfileUser';
-import { createListManager } from '$lib/lists/createListManager.svelte';
-import { listGenreOptions } from '$lib/lists/listGenreOptions';
-import { listHref } from '$lib/lists/listHref';
-import ListItemPoster from '$lib/lists/ListItemPoster.svelte';
-import { listPrivacy } from '$lib/lists/listPrivacy';
-import ListManageBar from '$lib/lists/ListManageBar.svelte';
-import { listSortHow, reverseHow } from '$lib/lists/listItemSorts';
-import { listTitleActions } from '$lib/lists/listTitleActions';
-import ListStats from '$lib/lists/ListStats.svelte';
-import { listTypeOptions } from '$lib/lists/listTypeOptions';
-import type { loadBuiltInList } from '$lib/lists/loadBuiltInList';
-import type { loadOfficialList } from '$lib/lists/loadOfficialList';
-import type { loadList } from '$lib/lists/loadList';
-import type { ListItemCard } from '$lib/lists/toListItemCard';
-import { visibleListSorts } from '$lib/lists/visibleListSorts';
-import { sortCardsByViewer, viewerSortReady, viewerSortValue } from '$lib/lists/viewerSort';
-import CardShimmerRow from '$lib/components/loading/CardShimmerRow.svelte';
-import { externalLink } from '$lib/externalLink';
-import { traktUrls } from '$lib/traktUrls';
-import { watchNowCountry } from '../settings/watchNowCountry.ts';
-import { viewerFetch } from '../auth/viewerFetch.ts';
+  import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
+  import { trackUpsellImpression } from '#lib/analytics/trackUpsellImpression.ts';
+  import SeoHead from '#lib/seo/SeoHead.svelte';
+  import { toListSeo } from '#lib/seo/pages/toListSeo.ts';
+  import { imageUrl } from '#lib/utils/imageUrl.ts';
+  import { rawApiFetch } from '#lib/api/rawApiFetch.ts';
+  import BuiltInListEditor from '#lib/components/lists/BuiltInListEditor.svelte';
+  import { overlay } from '#lib/overlay/overlay.ts';
+  import { toast } from '#lib/components/toast/toast.svelte.ts';
+  import { loadOwnerItems } from '#lib/lists/loadOwnerItems.ts';
+  import { moveListItem } from '#lib/lists/moveListItem.ts';
+  import { rerankListCards } from '#lib/lists/rerankListCards.ts';
+  import { removeOwnerItems } from '#lib/lists/removeOwnerItems.ts';
+  import { writeOwnerList } from '#lib/lists/writeOwnerList.ts';
+  import { toListItemCard } from '#lib/lists/toListItemCard.ts';
+  import { afterNavigate, goto, invalidateAll } from '$app/navigation';
+  import ListNotice from '#lib/components/lists/ListNotice.svelte';
+  import ListTag from '#lib/components/lists/ListTag.svelte';
+  import ListTitleRow from '#lib/components/lists/ListTitleRow.svelte';
+  import SortMenu from '#lib/components/sort/SortMenu.svelte';
+  import SortLabel from '#lib/components/sort/SortLabel.svelte';
+  import { memberRelation } from '#lib/components/comments/memberRelation.ts';
+  import { convertToSmartList } from '#lib/lists/smart/convertToSmartList.ts';
+  import ReportDialog from '#lib/components/summary/ReportDialog.svelte';
+  import { leaveList } from '#lib/components/lists/leaveList.ts';
+  import { resolve } from '$app/paths';
+  import { page } from '$app/state';
+  import { AnalyticsEvent } from '#lib/analytics/AnalyticsEvent.ts';
+  import { useTrack } from '#lib/analytics/useTrack.ts';
+  import { untrack } from 'svelte';
+  import { flip } from 'svelte/animate';
+  import { prefersReducedMotion } from 'svelte/motion';
+  import ListEditor from '#lib/components/lists/ListEditor.svelte';
+  import ManageConfirm from '#lib/components/comments/ManageConfirm.svelte';
+  import { deleteList } from '#lib/components/lists/deleteList.ts';
+  import { api } from '#lib/api/api.ts';
+  import CommentText from '#lib/components/comments/CommentText.svelte';
+  import { parseComment } from '#lib/components/comments/text/parseComment.ts';
+  import Container from '#lib/components/container/Container.svelte';
+  import Dropdown from '#lib/components/dropdown/Dropdown.svelte';
+  import SortDirection from '#lib/components/dropdown/SortDirection.svelte';
+  import FadeHideMenu from '#lib/components/filters/FadeHideMenu.svelte';
+  import TermsFilter from '#lib/components/filters/TermsFilter.svelte';
+  import WatchNowFilter from '#lib/components/watchnow/WatchNowFilter.svelte';
+  import WatchNowChips from '#lib/components/watchnow/WatchNowChips.svelte';
+  import { favoriteSlugs } from '#lib/components/watchnow/watchNow.ts';
+  import { watchNowTiles } from '#lib/components/filters/watchNowFilter.ts';
+  import type { ViewerSettings } from '#lib/settings/ViewerSettings.ts';
+  import { listFilterOptions } from '#lib/lists/listFilterOptions.ts';
+  import EmptyState from '#lib/components/empty/EmptyState.svelte';
+  import LoadFailed from '#lib/components/empty/LoadFailed.svelte';
+  import { expireHideCookie } from '#lib/components/filters/expireHideCookie.ts';
+  import type { HeaderUser } from '#lib/components/header/HeaderUser.ts';
+  import ListTransfer from '#lib/components/lists/ListTransfer.svelte';
+  import clone from '#lib/icons/regular/clone.svg?raw';
+  import file from '#lib/icons/regular/file.svg?raw';
+  import fileExport from '#lib/icons/regular/file-export.svg?raw';
+  import ListItemEdit from '#lib/components/lists/ListItemEdit.svelte';
+  import OfficialListHeader from '#lib/components/lists/OfficialListHeader.svelte';
+  import RankInput from '#lib/components/lists/RankInput.svelte';
+  import PosterGrid from '#lib/components/media/PosterGrid.svelte';
+  import NotesDialog from '#lib/components/notes/NotesDialog.svelte';
+  import Pagination from '#lib/components/pagination/Pagination.svelte';
+  import ReadMore from '#lib/components/readmore/ReadMore.svelte';
+  import ShareButton from '#lib/components/share/ShareButton.svelte';
+  import ShareArrival from '#lib/share/ShareArrival.svelte';
+  import CollaboratorsChip from '#lib/components/lists/CollaboratorsChip.svelte';
+  import SectionToolbar from '#lib/components/toolbar/SectionToolbar.svelte';
+  import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+  import Icon from '#lib/icons/Icon.svelte';
+  import userXmark from '#lib/icons/regular/user-xmark.svg?raw';
+  import barsProgress from '#lib/icons/regular/bars-progress.svg?raw';
+  import deleteIcon from '#lib/icons/regular/trash-xmark.svg?raw';
+  import flag from '#lib/icons/regular/flag.svg?raw';
+  import move from '#lib/icons/regular/up-down-left-right.svg?raw';
+  import check from '#lib/icons/solid/check.svg?raw';
+  import pencil from '#lib/icons/regular/pen.svg?raw';
+  import type { ProfileUser } from '#lib/users/ProfileUser.ts';
+  import { createListManager } from '#lib/lists/createListManager.svelte.ts';
+  import { listGenreOptions } from '#lib/lists/listGenreOptions.ts';
+  import { listHref } from '#lib/lists/listHref.ts';
+  import ListItemPoster from '#lib/lists/ListItemPoster.svelte';
+  import { listPrivacy } from '#lib/lists/listPrivacy.ts';
+  import ListManageBar from '#lib/lists/ListManageBar.svelte';
+  import { listSortHow, reverseHow } from '#lib/lists/listItemSorts.ts';
+  import { listTitleActions } from '#lib/lists/listTitleActions.ts';
+  import ListStats from '#lib/lists/ListStats.svelte';
+  import { listTypeOptions } from '#lib/lists/listTypeOptions.ts';
+  import type { loadBuiltInList } from '#lib/lists/loadBuiltInList.ts';
+  import type { loadOfficialList } from '#lib/lists/loadOfficialList.ts';
+  import type { loadList } from '#lib/lists/loadList.ts';
+  import type { ListItemCard } from '#lib/lists/toListItemCard.ts';
+  import { visibleListSorts } from '#lib/lists/visibleListSorts.ts';
+  import { sortCardsByViewer, viewerSortReady, viewerSortValue } from '#lib/lists/viewerSort.ts';
+  import CardShimmerRow from '#lib/components/loading/CardShimmerRow.svelte';
+  import { externalLink } from '#lib/externalLink.ts';
+  import { traktUrls } from '#lib/traktUrls.ts';
+  import { watchNowCountry } from '../settings/watchNowCountry.ts';
+  import { viewerFetch } from '../auth/viewerFetch.ts';
 
-type Props = {
-  data:
-    | (
-      & (Awaited<ReturnType<typeof loadList>> | Awaited<ReturnType<typeof loadBuiltInList>>)
-      & { profile: ProfileUser; user: HeaderUser | null; settings?: ViewerSettings | null }
-    )
-    | (Awaited<ReturnType<typeof loadOfficialList>> & { user: HeaderUser | null; settings?: ViewerSettings | null });
-};
+  type Props = { 
+    data: 
+      (
+        (
+          Awaited<ReturnType<typeof loadList>> |
+          Awaited<ReturnType<typeof loadBuiltInList>>) &
 
-const { data }: Props = $props();
+        { 
+          profile: ProfileUser;
+          user: HeaderUser | null;
+          settings?: ViewerSettings | null
+         }) |
 
-let fadeHide = $derived(data.fadeHide);
-const filterCookie = $derived(data.kind === 'personal' || data.kind === 'official' ? 'list' : data.kind);
+      (
+        Awaited<ReturnType<typeof loadOfficialList>> &
+        { user: HeaderUser | null; settings?: ViewerSettings | null })
+   };
 
-function clearHide() {
-  expireHideCookie(filterCookie);
-  // eslint-disable-next-line svelte/no-navigation-without-resolve -- the same list, without its hide filters
-  void goto(listHref(page.url, { hide: [] }));
-}
+  const { data }: Props = $props();
+
+  let fadeHide = $derived(data.fadeHide);
+  const filterCookie = $derived(data.kind === 'personal' || data.kind === 'official' ? 'list' : data.kind);
+
+  function clearHide() {
+    expireHideCookie(filterCookie);
+     
+    // eslint-disable-next-line svelte/no-navigation-without-resolve -- the same list, without its hide filters
+    void goto(listHref(page.url, { hide: [] }));
+  }
 const filterOptions = $derived(
   listFilterOptions({
     kind: data.kind,
@@ -167,33 +171,33 @@ const listOwner = $derived(
     }
     : undefined,
 );
-async function leave() {
-  if (!data.list || !data.user || leaving || left) return;
-  const source = data;
-  leaving = true;
-  const ok = await leaveList({
-    fetch: viewerFetch(),
-    id: data.list.id,
-    viewer: data.user.slug,
-    patch: () => {
-      left = true;
-      return () => {
-        if (data === source) left = false;
-      };
+  async function leave() {
+    if (!data.list || !data.user || leaving || left) return;
+    const source = data;
+    leaving = true;
+    const ok = await leaveList({
+      fetch: viewerFetch(),
+      id: data.list.id,
+      viewer: data.user.slug,
+      patch: () => {
+        left = true;
+        return () => {
+          if (data === source) left = false;
+        };
+      },
+      notify: (message) => {
+        if (data === source) toast.error(message);
     },
-    notify: (message) => {
-      if (data === source) toast.error(message);
-    },
-  });
-  if (data !== source) return;
-  leaving = false;
-  if (ok) {
-    toast.success('You stopped collaborating on this list.');
-    await goto(resolve('/users/[id]/lists/collaborations', { id: data.user.slug }));
+    });
+    if (data !== source) return;
+    leaving = false;
+    if (ok) {
+      toast.success('You stopped collaborating on this list.');
+      await goto(resolve('/users/[id]/lists/collaborations', { id: data.user.slug }));
+    }
   }
-}
-const vip = $derived(data.user?.isVip ?? false);
-const typeOptions = $derived(listTypeOptions(data.kind));
+  const vip = $derived(data.user?.isVip ?? false);
+  const typeOptions = $derived(listTypeOptions(data.kind));
 const typeLabel = $derived(
   data.query.types.length > 0
     ? data.query.types.map((type) => typeOptions.find((option) => option.type === type)?.label ?? type).join(', ')
@@ -241,111 +245,116 @@ const deleteWarning = $derived(
     ? `You're over the ${limit} list limit. You won't be able to re-create this list if you delete it.`
     : "This can't be undone!",
 );
-$effect(() => {
-  if (!actions?.delete) return;
+  $effect(() => {
+    if (!actions?.delete) return;
   api({ fetch: viewerFetch() }).users.lists.personal({
     params: { id: 'me' },
     query: { limit: 1 },
   }).then((response) => {
-    if (response.status === 200) {
-      personalCount = Number(response.headers.get('x-pagination-item-count')) || response.body.length;
-    }
-  }).catch(() => {});
-});
-async function removeList() {
-  if (!data.list || data.list.id === null || deleting) return;
-  deleting = true;
-  const ok = await deleteList({
-    id: data.list.id,
-    overlay,
-    notify: toast,
-    request: (path, method) => rawApiFetch({ fetch: viewerFetch(), path, init: { method } }),
-    remove: () => () => {},
+      if (response.status === 200) {
+        personalCount = Number(response.headers.get('x-pagination-item-count')) || response.body.length;
+      }
+    }).catch(() => {});
   });
-  deleting = false;
-  if (ok) {
-    void overlay.refresh();
-    await goto(resolve('/users/[id]/lists', { id: data.list.ownerSlug }));
+  async function removeList() {
+    if (!data.list || data.list.id === null || deleting) return;
+    deleting = true;
+    const ok = await deleteList({
+      id: data.list.id,
+      overlay,
+      notify: toast,
+      request: (path, method) => rawApiFetch({ fetch: viewerFetch(), path, init: { method } }),
+    remove: () => () => {},
+    });
+    deleting = false;
+    if (ok) {
+      void overlay.refresh();
+      await goto(resolve('/users/[id]/lists', { id: data.list.ownerSlug }));
+    }
   }
-}
-// Friend or Following, from the viewer's network, as on the list's row; never on Trakt's own lists or the viewer's.
+  // Friend or Following, from the viewer's network, as on the list's row; never on Trakt's own lists or the viewer's.
 const relation = $derived(
   data.kind === 'official' ? undefined : memberRelation(overlay.slices().network, data.list?.ownerSlug),
 );
 
-// The owner's list an app stopped syncing: offer to let it fill itself from the API's ready-made setup. It keeps its
-// address, name and privacy.
-const smartDraft = $derived('smartDraft' in data ? data.smartDraft : null);
-let converting = $state(false);
-async function convertList() {
-  const list = data.list;
-  if (!list || !smartDraft || converting) return;
-  converting = true;
-  const outcome = await convertToSmartList({
+  // The owner's list an app stopped syncing: offer to let it fill itself from the API's ready-made setup. It keeps its
+  // address, name and privacy.
+  const smartDraft = $derived('smartDraft' in data ? data.smartDraft : null);
+  let converting = $state(false);
+  async function convertList() {
+    const list = data.list;
+    if (!list || !smartDraft || converting) return;
+    converting = true;
+    const outcome = await convertToSmartList({
     request: (path, method, body) =>
       rawApiFetch({
         fetch: viewerFetch(),
         path,
         init: { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) },
       }),
-    list: list.slug,
-    name: list.name,
+      list: list.slug,
+      name: list.name,
     privacy: list.isPublic ? 'public' : list.pills.includes('Following') ? 'friends' : 'private',
     draft: smartDraft,
-  });
-  converting = false;
-  if (outcome === 'converted') {
-    toast.success(`${list.name} now fills itself as a smart list.`);
-    await invalidateAll();
-    return;
+    });
+    converting = false;
+    if (outcome === 'converted') {
+      toast.success(`${list.name} now fills itself as a smart list.`);
+      await invalidateAll();
+      return;
+    }
+    toast.error(outcome === 'limit'
+      ? "You've reached your smart list limit, so this list stays as it is."
+      : "Doh! We couldn't change this list. Please try again.");
   }
-  toast.error(outcome === 'limit'
-    ? "You've reached your smart list limit, so this list stays as it is."
-    : "Doh! We couldn't change this list. Please try again.");
-}
-// Official lists and public personal lists are in search; the watchlist and favorites follow their route's robots.
+  // Official lists and public personal lists are in search; the watchlist and favorites follow their route's robots.
 const indexed = $derived(
   !!data.list?.isPublic && !('profile' in data && data.profile.isPrivate) && data.kind !== 'watchlist' &&
     data.kind !== 'favorites',
 );
-const ownerKind = $derived(data.kind === 'watchlist' || data.kind === 'favorites' ? data.kind : null);
-const itemsSource = $derived(ownerKind ?? 'user-list');
-const owner = $derived(ownerKind !== null && data.user?.slug === data.list?.ownerSlug);
-// Outgoing posters must not read a derived after its owning effect has been destroyed.
-let removingFromOwner = false;
-$effect.pre(() => {
-  removingFromOwner = owner;
-});
+  const ownerKind = $derived(data.kind === 'watchlist' || data.kind === 'favorites' ? data.kind : null);
+  const itemsSource = $derived(ownerKind ?? 'user-list');
+  const owner = $derived(ownerKind !== null && data.user?.slug === data.list?.ownerSlug);
+  // Outgoing posters must not read a derived after its owning effect has been destroyed.
+  let removingFromOwner = false;
+  $effect.pre(() => {
+    removingFromOwner = owner;
+  });
 
-let ownerManaging = $state(false);
-let ownerBusy = $state(false);
-let allItems = $state<readonly ListItemCard[] | null>(null);
-let selectedKeys = $state<readonly number[] | null>(null);
-let removedKeys = $state<readonly number[]>([]);
-const itemTotal = $derived(data.list ? (owner ? Math.max(0, data.total - removedKeys.length) : data.total) : 0);
-let savedDescription = $state<string | undefined>();
-const description = $derived(parseComment(savedDescription || data.list?.description || ''));
-let notesItem = $state<ListItemCard | null>(null);
-let notesOpen = $state(false);
-let notesDraft = $state('');
-// Notes saved since the page loaded, by item key, so a note added outside manage mode shows without a reload.
-let savedNotes = $state<Readonly<Record<number, string>>>({});
-// The edit dialogs' header: the list's first five posters.
-const listPosters = $derived(
-  (data.list ? data.cards : []).slice(0, 5).flatMap((card) => (card.image ? [card.image] : [])),
-);
-// Watched, Collected and Plays: the loader sent the whole list, ordered here once the viewer's overlay has loaded. The
-// order is taken once, so watching a poster doesn't move it out from under the viewer.
-const browserSortReady = $derived(!(data.list && data.sortInBrowser) || viewerSortReady(data.sort.by, overlay.slices()));
+  let ownerManaging = $state(false);
+  let ownerBusy = $state(false);
+  let allItems = $state<readonly ListItemCard[] | null>(null);
+  let selectedKeys = $state<readonly number[] | null>(null);
+  let removedKeys = $state<readonly number[]>([]);
+
+  const itemTotal = $derived(data.list
+    ? owner
+      ? Math.max(0, data.total - removedKeys.length)
+      : data.total
+    : 0);
+
+  let savedDescription = $state<string | undefined>();
+  const description = $derived(parseComment(savedDescription || data.list?.description || ''));
+  let notesItem = $state<ListItemCard | null>(null);
+  let notesOpen = $state(false);
+  let notesDraft = $state('');
+  // Notes saved since the page loaded, by item key, so a note added outside manage mode shows without a reload.
+  let savedNotes = $state<Readonly<Record<number, string>>>({});
+  // The edit dialogs' header: the list's first five posters.
+  const listPosters = $derived((data.list ? data.cards : []).slice(0, 5).flatMap((card) => card.image ? [card.image] : []));
+
+  // Watched, Collected and Plays: the loader sent the whole list, ordered here once the viewer's overlay has loaded. The
+  // order is taken once, so watching a poster doesn't move it out from under the viewer.
+  const browserSortReady = $derived(!(data.list && data.sortInBrowser) || viewerSortReady(data.sort.by, overlay.slices()));
 const viewerValue = (by: string) => (card: ListItemCard) =>
   card.type === 'person' ? undefined : viewerSortValue(by, overlay.state(card.type, card.id, card.seasonOf));
-const pageCards = $derived.by(() => {
-  if (!data.list) return [];
-  if (!data.sortInBrowser) return data.cards;
-  if (!browserSortReady) return [];
-  const { cards, sort, query: { page, limit } } = data;
-  return untrack(() => sortCardsByViewer(cards, sort, viewerValue(sort.by))).slice((page - 1) * limit, page * limit);
-});
+  const pageCards = $derived.by(() => {
+    if (!data.list) return [];
+    if (!data.sortInBrowser) return data.cards;
+    if (!browserSortReady) return [];
+    const { cards, sort, query: { page, limit } } = data;
+    return untrack(() => sortCardsByViewer(cards, sort, viewerValue(sort.by))).slice((page - 1) * limit, page * limit);
+  });
 const ownerCards = $derived(
   (ownerManaging && allItems && selectedKeys
     ? selectedKeys.flatMap((key) => {
@@ -358,262 +367,271 @@ const ownerCards = $derived(
 );
 const request = (path: string, init?: Parameters<typeof rawApiFetch>[0]['init']) =>
   rawApiFetch({ fetch: viewerFetch(), path, init });
-$effect(() => {
-  void (data.list ? data.cards : undefined);
-  ownerBusy = false;
-  allItems = null;
-  selectedKeys = null;
-  removedKeys = [];
-  savedNotes = {};
-  ownerManaging = false;
-  editing = false;
-  notesOpen = false;
-  savedDescription = undefined;
-});
-function editBuiltIn() {
-  if (!owner || !ownerKind || ownerBusy || transferBusy) return;
-  editing = true;
-}
-async function toggleManage() {
-  if (!owner || !ownerKind || !data.list || ownerBusy || transferBusy) return;
-  if (ownerManaging) {
+  $effect(() => {
+    void (data.list ? data.cards : undefined);
+    ownerBusy = false;
+    allItems = null;
+    selectedKeys = null;
+    removedKeys = [];
+    savedNotes = {};
     ownerManaging = false;
-    return;
+    editing = false;
+    notesOpen = false;
+    savedDescription = undefined;
+  });
+  function editBuiltIn() {
+    if (!owner || !ownerKind || ownerBusy || transferBusy) return;
+    editing = true;
   }
-  // The mode opens at once, its writes held while the whole list loads.
-  ownerManaging = true;
-  ownerBusy = true;
-  const source = data;
-  try {
-    const [complete, selection] = await Promise.all([
-      loadOwnerItems({ kind: ownerKind, request }),
+  async function toggleManage() {
+    if (!owner || !ownerKind || !data.list || ownerBusy || transferBusy) return;
+    if (ownerManaging) {
+      ownerManaging = false;
+      return;
+    }
+    // The mode opens at once, its writes held while the whole list loads.
+    ownerManaging = true;
+    ownerBusy = true;
+    const source = data;
+    try {
+      const [complete, selection] = await Promise.all([
+        loadOwnerItems({ kind: ownerKind, request }),
       loadOwnerItems({ kind: ownerKind, request, selection: { query: data.query, sort: data.sort } }),
-    ]);
-    if (source !== data || !data.list) return;
-    const options = { sortBy: data.sort.by, datePreferences: data.datePreferences };
-    const items = complete.map((row) => toListItemCard(row, options));
-    if (selection.some((row) => !items.some((item) => item.key === row.id))) throw new Error('List changed');
-    allItems = items;
-    const selected = selection.flatMap((row) => items.filter((item) => item.key === row.id));
+      ]);
+      if (source !== data || !data.list) return;
+      const options = { sortBy: data.sort.by, datePreferences: data.datePreferences };
+      const items = complete.map((row) => toListItemCard(row, options));
+      if (selection.some((row) => !items.some((item) => item.key === row.id))) throw new Error('List changed');
+      allItems = items;
+      const selected = selection.flatMap((row) => items.filter((item) => item.key === row.id));
     selectedKeys = (data.sortInBrowser ? sortCardsByViewer(selected, data.sort, viewerValue(data.sort.by)) : selected).map(
       (item) => item.key,
     );
-  } catch {
-    if (source === data) ownerManaging = false;
-    toast.error("Doh! We couldn't load the complete list. Please try again.");
-  } finally {
-    if (source === data) ownerBusy = false;
+    } catch {
+      if (source === data) ownerManaging = false;
+      toast.error("Doh! We couldn't load the complete list. Please try again.");
+    } finally {
+      if (source === data) ownerBusy = false;
+    }
   }
-}
-async function saveOrder(next: readonly ListItemCard[]) {
-  if (!owner || !ownerKind || !allItems || ownerBusy || transferBusy) return;
-  const source = data;
-  const before = allItems;
-  const beforeKeys = selectedKeys;
-  allItems = next;
-  selectedKeys = next.filter((item) => beforeKeys?.includes(item.key)).map((item) => item.key);
-  ownerBusy = true;
-  const ok = await writeOwnerList({
-    kind: ownerKind,
-    change: { type: 'order', rank: next.map((item) => item.key) },
-    request,
+  async function saveOrder(next: readonly ListItemCard[]) {
+    if (!owner || !ownerKind || !allItems || ownerBusy || transferBusy) return;
+    const source = data;
+    const before = allItems;
+    const beforeKeys = selectedKeys;
+    allItems = next;
+    selectedKeys = next.filter((item) => beforeKeys?.includes(item.key)).map((item) => item.key);
+    ownerBusy = true;
+    const ok = await writeOwnerList({
+      kind: ownerKind,
+      change: { type: 'order', rank: next.map((item) => item.key) },
+      request,
     notify: toast,
-  });
-  if (source !== data) return;
-  if (!ok) {
-    allItems = before;
-    selectedKeys = beforeKeys;
+    });
+    if (source !== data) return;
+    if (!ok) {
+      allItems = before;
+      selectedKeys = beforeKeys;
+    }
+    ownerBusy = false;
   }
-  ownerBusy = false;
-}
-function moveItem(item: ListItemCard, rank: number) {
-  if (!ownerManaging || !allItems || ownerBusy || transferBusy) return;
-  const order = allItems.map((row) => row.key);
-  const next = moveListItem(order, item.key, rank);
-  if (next !== order) void saveOrder(rerankListCards(allItems, next, { by: 'rank', how: 'asc' }));
-}
-function resetOrder() {
-  if (!allItems || ownerBusy || transferBusy) return;
-  const keys = ownerCards.map((item) => item.key);
+  function moveItem(item: ListItemCard, rank: number) {
+    if (!ownerManaging || !allItems || ownerBusy || transferBusy) return;
+    const order = allItems.map((row) => row.key);
+    const next = moveListItem(order, item.key, rank);
+    if (next !== order) void saveOrder(rerankListCards(allItems, next, { by: 'rank', how: 'asc' }));
+  }
+  function resetOrder() {
+    if (!allItems || ownerBusy || transferBusy) return;
+    const keys = ownerCards.map((item) => item.key);
   void saveOrder(
     [...ownerCards, ...allItems.filter((item) => !keys.includes(item.key))].map((item, i) => ({
       ...item,
       rank: i + 1,
     })),
   );
-}
-async function removeItems(items: readonly ListItemCard[]) {
-  if (!owner || !ownerKind || !allItems || ownerBusy || !items.length) return;
-  const source = data;
-  const before = allItems;
-  const beforeRemoved = removedKeys;
-  const keys = items.map((item) => item.key);
-  allItems = allItems.filter((item) => !keys.includes(item.key)).map((item, i) => ({ ...item, rank: i + 1 }));
-  removedKeys = [...removedKeys, ...keys];
-  ownerBusy = true;
-  const ok = await removeOwnerItems({ kind: ownerKind, items, overlay, request, notify: toast });
-  if (source !== data) return;
-  if (!ok) {
-    allItems = before;
-    removedKeys = beforeRemoved;
-  } else toast.success(`Removed ${items.length} ${items.length === 1 ? 'item' : 'items'}.`);
-  ownerBusy = false;
-}
-function editNotes(item: ListItemCard) {
-  if (ownerBusy || transferBusy) return;
-  notesItem = item;
-  notesDraft = item.notes ?? '';
-  notesOpen = true;
-}
-// Optimistic, put back if the write fails. Resolves whether it saved, or undefined when the page moved on.
-async function writeOwnerNotes(item: ListItemCard, notes: string) {
-  if (!owner || !ownerKind || ownerBusy || transferBusy) return false;
-  const source = data;
-  const before = savedNotes;
-  savedNotes = { ...savedNotes, [item.key]: notes.trim() };
-  ownerBusy = true;
-  const ok = await writeOwnerList({
-    kind: ownerKind,
-    change: { type: 'notes', id: item.key, notes },
-    request,
+  }
+  async function removeItems(items: readonly ListItemCard[]) {
+    if (!owner || !ownerKind || !allItems || ownerBusy || !items.length) return;
+    const source = data;
+    const before = allItems;
+    const beforeRemoved = removedKeys;
+    const keys = items.map((item) => item.key);
+    allItems = allItems.filter((item) => !keys.includes(item.key)).map((item, i) => ({ ...item, rank: i + 1 }));
+    removedKeys = [...removedKeys, ...keys];
+    ownerBusy = true;
+    const ok = await removeOwnerItems({ kind: ownerKind, items, overlay, request, notify: toast });
+    if (source !== data) return;
+    if (!ok) {
+      allItems = before;
+      removedKeys = beforeRemoved;
+    } else toast.success(`Removed ${items.length} ${items.length === 1 ? 'item' : 'items'}.`);
+    ownerBusy = false;
+  }
+  function editNotes(item: ListItemCard) {
+    if (ownerBusy || transferBusy) return;
+    notesItem = item;
+    notesDraft = item.notes ?? '';
+    notesOpen = true;
+  }
+  // Optimistic, put back if the write fails. Resolves whether it saved, or undefined when the page moved on.
+  async function writeOwnerNotes(item: ListItemCard, notes: string) {
+    if (!owner || !ownerKind || ownerBusy || transferBusy) return false;
+    const source = data;
+    const before = savedNotes;
+    savedNotes = { ...savedNotes, [item.key]: notes.trim() };
+    ownerBusy = true;
+    const ok = await writeOwnerList({
+      kind: ownerKind,
+      change: { type: 'notes', id: item.key, notes },
+      request,
     notify: toast,
-  });
-  if (source !== data) return undefined;
-  if (!ok) savedNotes = before;
-  ownerBusy = false;
-  return ok;
-}
-async function saveOwnerNotes(notes: string) {
-  if (!notesItem || !(await writeOwnerNotes(notesItem, notes))) return;
-  notesOpen = false;
-  toast.success('Notes saved!');
-}
-function deleteNotes(item: ListItemCard) {
+    });
+    if (source !== data) return undefined;
+    if (!ok) savedNotes = before;
+    ownerBusy = false;
+    return ok;
+  }
+  async function saveOwnerNotes(notes: string) {
+    if (!notesItem || !await writeOwnerNotes(notesItem, notes)) return;
+    notesOpen = false;
+    toast.success('Notes saved!');
+  }
+  function deleteNotes(item: ListItemCard) {
   if (owner) void writeOwnerNotes(item, '');
   else void manager.saveNote(item, '');
-}
-// The notes dialog's delete, for the item it's open on.
-function deleteOpenNotes(item: ListItemCard | null) {
-  if (!item) return;
-  notesOpen = false;
-  noteOpen = false;
-  deleteNotes(item);
-}
-function dragItem(item: ListItemCard, event: PointerEvent) {
-  if (ownerBusy || event.button !== 0 || !(event.currentTarget instanceof HTMLElement)) return;
-  event.preventDefault();
-  const handle = event.currentTarget;
-  handle.setPointerCapture(event.pointerId);
-  const end = (endEvent: PointerEvent) => {
-    const target = document.elementFromPoint(endEvent.clientX, endEvent.clientY)?.closest('[data-list-item]');
-    const key = Number(target?.getAttribute('data-list-item'));
-    const row = allItems?.find((item) => item.key === key);
-    cleanup();
-    if (row) moveItem(item, row.rank);
-  };
-  const cancel = () => cleanup();
-  const cleanup = () => {
-    handle.removeEventListener('pointerup', end);
-    handle.removeEventListener('pointercancel', cancel);
-    if (handle.hasPointerCapture(event.pointerId)) handle.releasePointerCapture(event.pointerId);
-  };
-  handle.addEventListener('pointerup', end, { once: true });
-  handle.addEventListener('pointercancel', cancel, { once: true });
-}
+  }
+  // The notes dialog's delete, for the item it's open on.
+  function deleteOpenNotes(item: ListItemCard | null) {
+    if (!item) return;
+    notesOpen = false;
+    noteOpen = false;
+    deleteNotes(item);
+  }
+  function dragItem(item: ListItemCard, event: PointerEvent) {
+    if (ownerBusy || event.button !== 0 || !(event.currentTarget instanceof HTMLElement)) return;
+    event.preventDefault();
+    const handle = event.currentTarget;
+    handle.setPointerCapture(event.pointerId);
+    const end = (endEvent: PointerEvent) => {
+      const target = document.elementFromPoint(endEvent.clientX, endEvent.clientY)?.closest('[data-list-item]');
+      const key = Number(target?.getAttribute('data-list-item'));
+      const row = allItems?.find((item) => item.key === key);
+      cleanup();
+      if (row) moveItem(item, row.rank);
+    };
+    const cancel = () => cleanup();
+    const cleanup = () => {
+      handle.removeEventListener('pointerup', end);
+      handle.removeEventListener('pointercancel', cancel);
+      if (handle.hasPointerCapture(event.pointerId)) handle.releasePointerCapture(event.pointerId);
+    };
+    handle.addEventListener('pointerup', end, { once: true });
+    handle.addEventListener('pointercancel', cancel, { once: true });
+  }
 
-// Manage mode. The watchlist and favorites get it with their own endpoints in.
-const canManage = $derived(Boolean(actions?.manage) && data.list?.kind === 'personal');
-let transferBusy = $state(false);
-const manager = createListManager(
+  // Manage mode. The watchlist and favorites get it with their own endpoints in.
+  const canManage = $derived(Boolean(actions?.manage) && data.list?.kind === 'personal');
+  let transferBusy = $state(false);
+  const manager = createListManager(
   () =>
     data.list === null
       ? { list: null, cards: [], sort: { by: 'rank', how: 'asc' }, query: data.query }
       : { list: data.list, cards: pageCards, sort: data.sort, query: data.query },
   () => transferBusy,
-);
-$effect(() => {
-  void data.list;
-  untrack(manager.reset);
-});
-afterNavigate(() => {
-  manager.managing = false;
-  ownerManaging = false;
-});
-const managing = $derived(owner ? ownerManaging : canManage && manager.managing);
-// The items stat's count, which counts the filtered items: the total header doesn't apply the hide filters.
-let filteredCount = $state<number>();
-$effect(() => {
-  const source = data;
-  filteredCount = undefined;
-  if (!source.list) return;
-  void Promise.resolve(source.stats).then((stats) => {
-    if (data === source) filteredCount = stats?.count;
-  }).catch(() => {});
-});
-// The owner's count is the loaded selection's; until it loads, the filtered count.
+  );
+  $effect(() => {
+    void data.list;
+    untrack(manager.reset);
+  });
+
+  afterNavigate(({ shallow, type }) => {
+    if (shallow && type === 'goto') return;
+
+    manager.managing = false;
+    ownerManaging = false;
+  });
+  const managing = $derived(owner ? ownerManaging : canManage && manager.managing);
+  // The items stat's count, which counts the filtered items: the total header doesn't apply the hide filters.
+  let filteredCount = $state<number>();
+  $effect(() => {
+    const source = data;
+    filteredCount = undefined;
+    if (!source.list) return;
+    void Promise.resolve(source.stats).then((stats) => {
+      if (data === source) filteredCount = stats?.count;
+    }).catch(() => {});
+  });
+  // The owner's count is the loaded selection's; until it loads, the filtered count.
 const manageCount = $derived(
   owner && selectedKeys ? ownerCards.length : filteredCount ?? (data.list ? data.total : 0),
 );
-const displayCards = $derived(owner ? ownerCards : manager.cards);
-const writing = $derived((owner ? ownerBusy : manager.busy) || transferBusy);
-// OG dragged only a ranked list that fits one page, and offered "Change position" in the other sorts.
+  const displayCards = $derived(owner ? ownerCards : manager.cards);
+  const writing = $derived((owner ? ownerBusy : manager.busy) || transferBusy);
+  // OG dragged only a ranked list that fits one page, and offered "Change position" in the other sorts.
 const draggable = $derived(
   data.list !== null && data.sort.by === 'rank' && !(owner && managing) && data.page.type === 'paginated' &&
     data.page.total === 1,
 );
-const duration = $derived(prefersReducedMotion.current ? 0 : 300);
-const rankInputs: Record<number, RankInput> = $state({});
+  const duration = $derived(prefersReducedMotion.current ? 0 : 300);
+  const rankInputs: Record<number, RankInput> = $state({});
 
-// `m` toggles manage mode, except while typing or in a dialog.
-const shortcut = () => {
-  const keydown = (event: KeyboardEvent) => {
-    if (event.key.toLowerCase() !== 'm' || event.repeat || event.ctrlKey || event.metaKey || event.altKey) return;
+  // `m` toggles manage mode, except while typing or in a dialog.
+  const shortcut = () => {
+    const keydown = (event: KeyboardEvent) => {
+      if (event.key.toLowerCase() !== 'm' || event.repeat || event.ctrlKey || event.metaKey || event.altKey) return;
     if (
       event.target instanceof Element &&
       event.target.closest('input, textarea, select, [contenteditable], dialog, [popover]:popover-open')
     ) {
-      return;
-    }
-    if (owner) {
+        return;
+      }
+      if (owner) {
+        event.preventDefault();
+        void toggleManage();
+        return;
+      }
+      if (!canManage) return;
       event.preventDefault();
-      void toggleManage();
-      return;
-    }
-    if (!canManage) return;
-    event.preventDefault();
-    manager.managing = !manager.managing;
+      manager.managing = !manager.managing;
+    };
+    window.addEventListener('keydown', keydown);
+    return () => window.removeEventListener('keydown', keydown);
   };
-  window.addEventListener('keydown', keydown);
-  return () => window.removeEventListener('keydown', keydown);
-};
 
-const { track: trackSort } = useTrack(AnalyticsEvent.ListSort);
+  const { track: trackSort } = useTrack(AnalyticsEvent.ListSort);
 
-let noteCard = $state<ListItemCard | null>(null);
-let noteOpen = $state(false);
-let noteDraft = $state('');
-let noteLimit = $state<string | null>(null);
-let noteSaving = $state(false);
-function openNotes(item: ListItemCard) {
-  noteCard = item;
-  noteDraft = item.notes ?? '';
-  noteLimit = null;
-  noteOpen = true;
-}
-async function saveNotes(text: string) {
-  if (!noteCard || noteSaving) return;
-  noteSaving = true;
-  try {
-    const result = await manager.saveNote(noteCard, text);
-    if (result.saved) noteOpen = false;
-    noteLimit = result.limit ?? null;
-    if (noteLimit !== null && !vip) useTrack(AnalyticsEvent.VipGate).track({ feature: 'notes' });
-  } finally {
-    noteSaving = false;
+  let noteCard = $state<ListItemCard | null>(null);
+  let noteOpen = $state(false);
+  let noteDraft = $state('');
+  let noteLimit = $state<string | null>(null);
+  let noteSaving = $state(false);
+  function openNotes(item: ListItemCard) {
+    noteCard = item;
+    noteDraft = item.notes ?? '';
+    noteLimit = null;
+    noteOpen = true;
   }
-}
+  async function saveNotes(text: string) {
+    if (!noteCard || noteSaving) return;
+    noteSaving = true;
+    try {
+      const result = await manager.saveNote(noteCard, text);
+      if (result.saved) noteOpen = false;
+      noteLimit = result.limit ?? null;
+      if (noteLimit !== null && !vip) useTrack(AnalyticsEvent.VipGate).track({ feature: 'notes' });
+    } finally {
+      noteSaving = false;
+    }
+  }
 </script>
 
+<!--
+  A list page under the profile frame: the subnav with the type and genre dropdowns, the sort
+  and its direction, the title row with the list's pills and the viewer's icons (in manage mode, the whole-selection
+  actions), the description band, then the ranked
+  poster grid between two paginations. The stats bar sits before the sort; the filter icons follow it. Watchlist, favorites and official lists render here too.
+-->
 <!-- Filter and item URLs point at og pages by their OG paths, which resolve() only takes once they exist. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 {#if data.list}
@@ -642,9 +660,26 @@ async function saveNotes(text: string) {
   {#snippet action(label: string, svg: string, kind: string, text?: string, onclick?: () => void)}
     <Tooltip text={label}>
       {#snippet trigger(tooltip)}
-        <button type="button" class={['action', kind, { active: kind === 'manage' && ownerManaging }]} aria-label={text ? undefined : label} aria-disabled={!onclick || ownerBusy} aria-pressed={kind === 'manage' && onclick ? ownerManaging : undefined}
-          onclick={() => { if (!ownerBusy) onclick?.(); }} {...tooltip}>
-          <Icon {svg} />{#if text}<span class="action-text">{text}</span>{/if}
+        <button
+          type="button"
+          class={[
+            'action',
+            kind,
+            { active: kind === 'manage' && ownerManaging }
+          ]}
+          aria-label={text ? undefined : label}
+          aria-disabled={!onclick || ownerBusy}
+          aria-pressed={kind === 'manage' && onclick ? ownerManaging : undefined}
+          onclick={() => {
+            if (!ownerBusy) onclick?.();
+          }}
+          {...tooltip}
+        >
+          <Icon svg={svg} />
+
+          {#if text}
+            <span class="action-text">{text}</span>
+          {/if}
         </button>
       {/snippet}
     </Tooltip>
@@ -653,10 +688,17 @@ async function saveNotes(text: string) {
 
   <ReportDialog bind:open={reportOpen} target={{ type: 'list', id: list.id, title: list.name, href: list.href,
     ownerSlug: list.kind === 'personal' ? list.ownerSlug : undefined, posters: listPosters }} />
+  {#if data.kind === 'official'}
+    <OfficialListHeader image={data.listCover} />
+  {/if}
 
-  {#if data.kind === 'official'}<OfficialListHeader image={data.listCover} />{/if}
-
-  <SectionToolbar statsChip={{ svg: file, value: itemTotal.toLocaleString('en-US'), label: 'Items' }}>
+  <SectionToolbar
+    statsChip={{
+      svg: file,
+      value: itemTotal.toLocaleString('en-US'),
+      label: 'Items'
+    }}
+  >
     {#snippet filters()}
       <Dropdown section="Media">
         {#snippet trigger()}{typeLabel}{/snippet}
@@ -694,8 +736,13 @@ async function saveNotes(text: string) {
     {#snippet summary()}
       <span class="sort">
         <Dropdown joined section="Sort">
-          {#snippet trigger()}<SortLabel sort={sorts.find(({ by }) => by === data.sort.by)} />{/snippet}
-          <SortMenu {sorts} current={data.sort.by}
+          {#snippet trigger()}
+            <SortLabel sort={sorts.find(({ by }) => by === data.sort.by)} />
+          {/snippet}
+
+          <SortMenu
+            sorts={sorts}
+            current={data.sort.by}
             href={(sort) => listHref(page.url, { sort: { by: sort.by, how: listSortHow(sort.by) } })}
             onpick={(sort) => trackSort({ sortBy: sort.by, sortHow: listSortHow(sort.by) })} />
         </Dropdown>
@@ -711,18 +758,27 @@ async function saveNotes(text: string) {
           } />
       </span>
       <span class="filter-icons">
-        <TermsFilter bind:terms={
-          () => data.query.terms ?? '',
-          (terms) => goto(listHref(page.url, { terms }))
-        } />
-        <WatchNowFilter value={data.query.watchnow} {country} favorites={favoriteKeys} />
-        <FadeHideMenu value={fadeHide} options={filterOptions.fade} hideOptions={filterOptions.hide}
-          cookie={filterCookie} onchange={(next) => {
+        <TermsFilter
+          bind:terms={() => data.query.terms ?? '', (terms) => goto(listHref(page.url, { terms }))}
+        />
+
+        <WatchNowFilter
+          value={data.query.watchnow}
+          country={country}
+          favorites={favoriteKeys}
+        />
+
+        <FadeHideMenu
+          value={fadeHide}
+          options={filterOptions.fade}
+          hideOptions={filterOptions.hide}
+          cookie={filterCookie}
+          onchange={(next) => {
             const changed = next.hide.join(',') !== fadeHide.hide.join(',');
             fadeHide = next;
-            const url = new URL(page.url);
+            const url = new URL(page.url.href);
             url.searchParams.set('fade', next.fade.join(','));
-            replaceState(url, page.state);
+            void goto(url, { shallow: true, replace: true, state: page.state });
             if (changed) void goto(listHref(page.url, { hide: next.hide }));
           }} />
       </span>
@@ -730,16 +786,39 @@ async function saveNotes(text: string) {
   </SectionToolbar>
 
   {#snippet titleTags()}
-    {#if relation}<span class="tag"><ListTag {relation} /></span>{/if}
-    {#each list.pills as pill (pill)}<span class="tag"><ListTag tag={pill} /></span>{/each}
-    {#if list.shareLink}<span class="tag"><ListTag tag="Link" /></span>{/if}
+    {#if relation}
+      <span class="tag"><ListTag relation={relation} /></span>
+    {/if}
+
+    {#each list.pills as pill (pill)}
+      <span class="tag"><ListTag tag={pill} /></span>
+    {/each}
+
+    {#if list.shareLink}
+      <span class="tag"><ListTag tag="Link" /></span>
+    {/if}
+
     {#if collaborators.length > 0}
-      <span class="title-chip"><CollaboratorsChip {collaborators}
-        list={{ name: list.name, poster: data.cards.at(0)?.image }} owner={listOwner} /></span>
+      <span class="title-chip">
+        <CollaboratorsChip
+          collaborators={collaborators}
+          list={{ name: list.name, poster: data.cards.at(0)?.image }}
+          owner={listOwner}
+        />
+      </span>
     {/if}
   {/snippet}
-  <ListTitleRow id="list-title" name={list.name} href={list.href} {managing} ruled={description.length === 0} tags={titleTags}
-    actions={actions ? titleActions : undefined} />
+
+  <ListTitleRow
+    id="list-title"
+    name={list.name}
+    href={list.href}
+    managing={managing}
+    ruled={description.length === 0}
+    tags={titleTags}
+    actions={actions ? titleActions : undefined}
+  />
+
   {#snippet titleActions()}
           <!-- Managing, the whole-selection actions take the icons' place, and Manage, last so it stays put, reads Done. -->
           {#if actions}
@@ -794,7 +873,7 @@ async function saveNotes(text: string) {
     </Container>
   {/if}
 
-  <WatchNowChips {tiles} />
+  <WatchNowChips tiles={tiles} />
 
   {#if description.length > 0}
     <section class="description" aria-label="About this list">
@@ -818,13 +897,29 @@ async function saveNotes(text: string) {
         <div class="grid" {@attach manager.dragEvents}>
           <PosterGrid>
             {#each displayCards as item (item.key)}
-              <div data-list-item={item.key} class={{ dragging: manager.dragging?.key === item.key,
-                'drop-target': manager.dragging && manager.dropRank === item.rank }} animate:flip={{ duration }}>
-                <ListItemPoster {item} sortBy={data.sort.by} rank={list.displayNumbers && !managing ? item.rank : undefined}
-                  removing={() => removingFromOwner ? removedKeys.includes(item.key) : manager.isRemoved(item.key)} datePreferences={data.datePreferences}
-                  edit={managing ? edit : undefined} fade={fadeHide.fade}
-                  oneditnotes={owner || canManage ? (card) => owner ? editNotes(card) : openNotes(card) : undefined}
-                  ondeletenotes={owner || canManage ? deleteNotes : undefined} />
+              <div
+                data-list-item={item.key}
+                class={{
+                  dragging: manager.dragging?.key === item.key,
+                  'drop-target': manager.dragging && manager.dropRank === item.rank
+                }}
+                animate:flip={{ duration }}
+              >
+                <ListItemPoster
+                  item={item}
+                  sortBy={data.sort.by}
+                  rank={list.displayNumbers && !managing ? item.rank : undefined}
+                  removing={() => removingFromOwner
+                    ? removedKeys.includes(item.key)
+                    : manager.isRemoved(item.key)}
+                  datePreferences={data.datePreferences}
+                  edit={managing ? edit : undefined}
+                  fade={fadeHide.fade}
+                  oneditnotes={owner || canManage
+                    ? (card) => owner ? editNotes(card) : openNotes(card)
+                    : undefined}
+                  ondeletenotes={owner || canManage ? deleteNotes : undefined}
+                />
               </div>
             {/each}
           </PosterGrid>
@@ -845,7 +940,7 @@ async function saveNotes(text: string) {
           {:else if filtered}
             <EmptyState action={{ href: clearedHref, text: 'Clear filters' }} />
           {:else}
-            <EmptyState action={ownList ? { href: resolve('/shows/[chart=chart]', { chart: 'trending' }), text: 'Find a show' } : undefined} />
+            <EmptyState action={ownList ? { href: resolve('/shows/[chart=chart]/[[period]]', { chart: 'trending' }), text: 'Find a show' } : undefined} />
           {/if}
         </div>
       {/if}
@@ -855,9 +950,15 @@ async function saveNotes(text: string) {
   {#if ownerKind && owner}
     {#if editing}<BuiltInListEditor kind={ownerKind} posters={listPosters} count={data.list?.itemCount}
   privacy={data.list ? listPrivacy(data.list) : undefined} allowComments={data.list?.allowComments}
-  displayNumbers={data.list?.displayNumbers}
-  description={savedDescription} onclose={() => (editing = false)}
-  onsaved={(saved) => { if (saved.description !== undefined) savedDescription = saved.description; }} />{/if}
+        displayNumbers={data.list?.displayNumbers}
+        description={savedDescription}
+        onclose={() => editing = false}
+        onsaved={(saved) => {
+          if (saved.description !== undefined) savedDescription = saved.description;
+        }}
+      />
+    {/if}
+
     {#if notesItem}
       <NotesDialog bind:open={notesOpen} bind:draft={notesDraft} favorite={ownerKind === 'favorites'} busy={ownerBusy}
   tags={ownerKind === 'watchlist' && notesItem.noteTitle.show ? [{ text: notesItem.noteTitle.show, kind: 'generic' }] : []}
@@ -896,58 +997,58 @@ async function saveNotes(text: string) {
   overflow-y: auto;
 }
 
-/* The list row's description text: its size, its softer color and its unboxed quotes. */
-.description {
-  --read-more-shade: var(--color-subnav-text-bg);
-  --comment-quote-bg: transparent;
-  background-color: var(--color-subnav-text-bg);
-  color: var(--color-list-card-description);
-  font-size: var(--font-size-base);
-}
-
-.description-text {
-  padding-block: var(--list-description-padding);
-}
-
-.items {
-  display: flow-root;
-  padding-block-end: var(--space-panel);
-
-  /* The top pagination spacing and.pagination-bottom. */
-  & :global(nav) {
-    margin-block: var(--line-height-computed) 0;
+  /* The list row's description text: its size, its softer color and its unboxed quotes. */
+  .description {
+    --read-more-shade: var(--color-subnav-text-bg);
+    --comment-quote-bg: transparent;
+    background-color: var(--color-subnav-text-bg);
+    color: var(--color-list-card-description);
+    font-size: var(--font-size-base);
   }
-}
+
+  .description-text {
+    padding-block: var(--list-description-padding);
+  }
+
+  .items {
+    display: flow-root;
+    padding-block-end: var(--space-panel);
+
+    /* The top pagination spacing and.pagination-bottom. */
+    & :global(nav) {
+      margin-block: var(--line-height-computed) 0;
+    }
+  }
 
 .empty {
   padding-block-start: var(--line-height-computed);
 }
 
-/* #sortable-grid.sortable: the quick icons dim while the edit icons are up. */
-.managing :global(.quick-icons > *) {
-  opacity: var(--opacity-list-manage-quick-icons);
-}
+  /* #sortable-grid.sortable: the quick icons dim while the edit icons are up. */
+  .managing :global(.quick-icons > *) {
+    opacity: var(--opacity-list-manage-quick-icons);
+  }
 
-.dragging {
-  opacity: var(--list-reorder-drag-opacity);
-}
+  .dragging {
+    opacity: var(--list-reorder-drag-opacity);
+  }
 
-.drop-target {
-  outline: var(--list-reorder-rank-border) solid var(--brand-primary);
-}
+  .drop-target {
+    outline: var(--list-reorder-rank-border) solid var(--brand-primary);
+  }
 
-/* With no pagination above them, the first posters sit 30px under the band. */
-.grid:first-child {
-  padding-block-start: var(--list-grid-offset);
-}
+  /* With no pagination above them, the first posters sit 30px under the band. */
+  .grid:first-child {
+    padding-block-start: var(--list-grid-offset);
+  }
 
-.grid [data-list-item] {
-  scroll-margin-block-start: calc(var(--header-height) + var(--list-reorder-scroll-offset));
-}
+  .grid [data-list-item] {
+    scroll-margin-block-start: calc(var(--header-height) + var(--list-reorder-scroll-offset));
+  }
 
-.notes-limit {
-  margin: 0 0 var(--gutter);
-  text-align: center;
-}
+  .notes-limit {
+    margin: 0 0 var(--gutter);
+    text-align: center;
+  }
 
 </style>

@@ -1,19 +1,19 @@
 <script lang="ts">
 import { page } from '$app/state';
 import type { Snippet } from 'svelte';
-import { rawApiFetch } from '$lib/api/rawApiFetch';
-import { login } from '$lib/auth/login';
-import { userManager } from '$lib/auth/userManager';
-import NotesDialog from '$lib/components/notes/NotesDialog.svelte';
-import { watchedFirst } from '$lib/components/rating/watchedFirst';
-import { toast } from '$lib/components/toast/toast.svelte';
-import type { FavoriteTarget } from '$lib/favorites/FavoriteTarget';
-import { loadFavoriteTarget } from '$lib/favorites/loadFavoriteTarget';
-import { patchFavoriteNote } from '$lib/favorites/patchFavoriteNote';
-import { saveFavoriteNote } from '$lib/favorites/saveFavoriteNote';
-import { toggleFavorite } from '$lib/favorites/toggleFavorite';
-import { overlay } from '$lib/overlay/overlay';
-import { formatDate } from '$lib/utils/formatDate';
+import { rawApiFetch } from '#lib/api/rawApiFetch.ts';
+import { login } from '#lib/auth/login.ts';
+import { userManager } from '#lib/auth/userManager.ts';
+import NotesDialog from '#lib/components/notes/NotesDialog.svelte';
+import { watchedFirst } from '#lib/components/rating/watchedFirst.ts';
+import { toast } from '#lib/components/toast/toast.svelte.ts';
+import type { FavoriteTarget } from '#lib/favorites/FavoriteTarget.ts';
+import { loadFavoriteTarget } from '#lib/favorites/loadFavoriteTarget.ts';
+import { patchFavoriteNote } from '#lib/favorites/patchFavoriteNote.ts';
+import { saveFavoriteNote } from '#lib/favorites/saveFavoriteNote.ts';
+import { toggleFavorite } from '#lib/favorites/toggleFavorite.ts';
+import { overlay } from '#lib/overlay/overlay.ts';
+import { formatDate } from '#lib/utils/formatDate.ts';
 import { viewerFetch } from '../../auth/viewerFetch.ts';
 
 interface Props {

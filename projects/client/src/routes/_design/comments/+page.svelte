@@ -1,27 +1,27 @@
 <script lang="ts">
-import type { ReactionType } from '$lib/components/comments/ReactionType';
+import type { ReactionType } from '#lib/components/comments/ReactionType.ts';
 import { page } from '$app/state';
-import CommentCard from '$lib/components/comments/CommentCard.svelte';
-import CommentComposer from '$lib/components/comments/CommentComposer.svelte';
-import CommentTag from '$lib/components/comments/CommentTag.svelte';
-import AddCommentLink from '$lib/components/comments/AddCommentLink.svelte';
-import NewCommentForm from '$lib/components/comments/NewCommentForm.svelte';
-import PosterCard from '$lib/components/media/PosterCard.svelte';
-import ReactionControl from '$lib/components/comments/ReactionControl.svelte';
-import type { CommentViewer } from '$lib/components/comments/CommentViewer';
-import CommentWithPoster from '$lib/components/comments/CommentWithPoster.svelte';
-import DemoChoice from '$lib/design/DemoChoice.svelte';
-import Specimen from '$lib/design/Specimen.svelte';
-import Variant from '$lib/design/Variant.svelte';
+import CommentCard from '#lib/components/comments/CommentCard.svelte';
+import CommentComposer from '#lib/components/comments/CommentComposer.svelte';
+import CommentTag from '#lib/components/comments/CommentTag.svelte';
+import AddCommentLink from '#lib/components/comments/AddCommentLink.svelte';
+import NewCommentForm from '#lib/components/comments/NewCommentForm.svelte';
+import PosterCard from '#lib/components/media/PosterCard.svelte';
+import ReactionControl from '#lib/components/comments/ReactionControl.svelte';
+import type { CommentViewer } from '#lib/components/comments/CommentViewer.ts';
+import CommentWithPoster from '#lib/components/comments/CommentWithPoster.svelte';
+import DemoChoice from '#lib/design/DemoChoice.svelte';
+import Specimen from '#lib/design/Specimen.svelte';
+import Variant from '#lib/design/Variant.svelte';
 import type { CommentResponse } from '@trakt/api';
-import checkThick from '$lib/icons/trakt/check-thick.svg?raw';
-import circleCheck from '$lib/icons/solid/circle-check.svg?raw';
-import eyeSlash from '$lib/icons/solid/eye-slash.svg?raw';
-import commentSolid from '$lib/icons/solid/comment.svg?raw';
-import heart from '$lib/icons/solid/heart.svg?raw';
-import star from '$lib/icons/solid/star.svg?raw';
-import userGroup from '$lib/icons/regular/user-group.svg?raw';
-import userIcon from '$lib/icons/regular/user.svg?raw';
+import checkThick from '#lib/icons/trakt/check-thick.svg?raw';
+import circleCheck from '#lib/icons/solid/circle-check.svg?raw';
+import eyeSlash from '#lib/icons/solid/eye-slash.svg?raw';
+import commentSolid from '#lib/icons/solid/comment.svg?raw';
+import heart from '#lib/icons/solid/heart.svg?raw';
+import star from '#lib/icons/solid/star.svg?raw';
+import userGroup from '#lib/icons/regular/user-group.svg?raw';
+import userIcon from '#lib/icons/regular/user.svg?raw';
 import {
   client,
   deleted,

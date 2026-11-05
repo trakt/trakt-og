@@ -1,4 +1,4 @@
-import { browser, dev } from '$app/environment';
+import { browser, dev } from '$app/env';
 import { type ApiEnvironment, apiEnvironment } from './apiEnvironment.ts';
 import { officialOnlyPath } from './officialOnlyPath.ts';
 import { rateLimitPause } from './rateLimitPause.ts';
@@ -11,12 +11,14 @@ type ApiAccessFetchParams = {
 const STANDARD_HINT =
   'apiz.trakt.tv refused this client ID. A Standard Trakt app needs PUBLIC_TRAKT_API=standard in ' +
   'projects/client/.env.development.';
-
 const rateLimited = (seconds: number) =>
   new Response('Too Many Requests', { status: 429, headers: { 'retry-after': String(seconds) } });
 
 const refused = () =>
-  new Response('Forbidden', { status: 403, headers: { 'content-type': 'text/plain; charset=utf-8' } });
+  new Response('Forbidden', {
+    status: 403,
+    headers: { 'content-type': 'text/plain; charset=utf-8' },
+  });
 
 const pathnameOf = (input: RequestInfo | URL) => new URL(input instanceof Request ? input.url : input).pathname;
 

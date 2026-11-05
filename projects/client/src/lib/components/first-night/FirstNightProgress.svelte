@@ -5,21 +5,21 @@
   plain frames. Done saves the choice and reloads the dashboard, so the panels fill in with what was just tracked.
 -->
 <script lang="ts">
-import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
-import { useTrack } from '$lib/analytics/useTrack';
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
+import { AnalyticsEvent } from '#lib/analytics/AnalyticsEvent.ts';
+import { useTrack } from '#lib/analytics/useTrack.ts';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
 import { invalidateAll } from '$app/navigation';
-import Container from '$lib/components/container/Container.svelte';
-import { dashboardPrefs } from '$lib/dashboard/dashboardPrefs';
-import { FIRST_NIGHT_GOAL, firstNightUnlocks, trackedTitles } from '$lib/firstNight/firstNight';
-import { trackedPosters } from '$lib/firstNight/trackedPosters.svelte';
-import { wallClosed } from '$lib/firstNight/wallClosed.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import check from '$lib/icons/trakt/check-thick.svg?raw';
-import GlassAction from '$lib/components/glass-action/GlassAction.svelte';
-import ban from '$lib/icons/regular/ban.svg?raw';
-import sliders from '$lib/icons/solid/sliders.svg?raw';
-import { overlay } from '$lib/overlay/overlay';
+import Container from '#lib/components/container/Container.svelte';
+import { dashboardPrefs } from '#lib/dashboard/dashboardPrefs.ts';
+import { FIRST_NIGHT_GOAL, firstNightUnlocks, trackedTitles } from '#lib/firstNight/firstNight.ts';
+import { trackedPosters } from '#lib/firstNight/trackedPosters.svelte.ts';
+import { wallClosed } from '#lib/firstNight/wallClosed.svelte.ts';
+import Icon from '#lib/icons/Icon.svelte';
+import check from '#lib/icons/trakt/check-thick.svg?raw';
+import GlassAction from '#lib/components/glass-action/GlassAction.svelte';
+import ban from '#lib/icons/regular/ban.svg?raw';
+import sliders from '#lib/icons/solid/sliders.svg?raw';
+import { overlay } from '#lib/overlay/overlay.ts';
 import TasteSetup from './TasteSetup.svelte';
 import { confetti } from './confetti.svelte.ts';
 

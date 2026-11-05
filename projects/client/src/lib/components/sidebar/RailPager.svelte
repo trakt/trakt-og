@@ -4,9 +4,9 @@
     <RailPager unit="month" label="Oct" {prevHref} {nextHref} />
 -->
 <script lang="ts">
-import Icon from '$lib/icons/Icon.svelte';
-import angleLeft from '$lib/icons/light/angle-left.svg?raw';
-import angleRight from '$lib/icons/light/angle-right.svg?raw';
+import Icon from '#lib/icons/Icon.svelte';
+import angleLeft from '#lib/icons/light/angle-left.svg?raw';
+import angleRight from '#lib/icons/light/angle-right.svg?raw';
 
 interface Props {
   /** What a step moves by: "Previous month", "Next page". */

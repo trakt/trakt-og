@@ -1,10 +1,10 @@
 <script lang="ts">
 import { page } from '$app/state';
-import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
-import { useTrack } from '$lib/analytics/useTrack';
-import { overlay } from '$lib/overlay/overlay';
-import { mediaSpoilers } from '$lib/settings/mediaSpoilers';
-import type { SpoilerTarget } from '$lib/settings/SpoilerTarget';
+import { AnalyticsEvent } from '#lib/analytics/AnalyticsEvent.ts';
+import { useTrack } from '#lib/analytics/useTrack.ts';
+import { overlay } from '#lib/overlay/overlay.ts';
+import { mediaSpoilers } from '#lib/settings/mediaSpoilers.ts';
+import type { SpoilerTarget } from '#lib/settings/SpoilerTarget.ts';
 import type { Snippet } from 'svelte';
 import SpoilerContent from './SpoilerContent.svelte';
 

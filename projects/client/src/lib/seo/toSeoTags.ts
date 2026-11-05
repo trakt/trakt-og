@@ -6,9 +6,10 @@ import { toCanonicalUrl } from './toCanonicalUrl.ts';
 import { toRobots } from './toRobots.ts';
 import { toSeoTitle } from './toSeoTitle.ts';
 import { toShareImageUrl } from './toShareImageUrl.ts';
+import type { ReadonlyURL } from '$app/state';
 
 /** Where the head renders: SvelteKit's `page.url`, `page.route.id` and `page.status`. */
-type PageContext = { readonly url: URL; readonly routeId: string | null; readonly status: number };
+type PageContext = { readonly url: ReadonlyURL; readonly routeId: string | null; readonly status: number };
 
 /** Every value the shared head writes, worked out from a page's {@link SeoMeta} and its route. */
 export function toSeoTags(meta: SeoMeta, page: PageContext) {

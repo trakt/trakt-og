@@ -4,14 +4,14 @@
 -->
 <script lang="ts">
 import { page } from '$app/state';
-import { formatDate } from '$lib/utils/formatDate';
-import RewatchingBadge from '$lib/components/media/RewatchingBadge.svelte';
-import DroppedBadge from '$lib/components/media/DroppedBadge.svelte';
-import CornerRating from '$lib/components/media/CornerRating.svelte';
-import { overlay } from '$lib/overlay/overlay';
+import { formatDate } from '#lib/utils/formatDate.ts';
+import RewatchingBadge from '#lib/components/media/RewatchingBadge.svelte';
+import DroppedBadge from '#lib/components/media/DroppedBadge.svelte';
+import CornerRating from '#lib/components/media/CornerRating.svelte';
+import { overlay } from '#lib/overlay/overlay.ts';
 import type { ComponentProps } from 'svelte';
-import EpisodeTypeBadge from '$lib/components/media/EpisodeTypeBadge.svelte';
-import type { RatingTarget } from '$lib/components/rating/RatingTarget';
+import EpisodeTypeBadge from '#lib/components/media/EpisodeTypeBadge.svelte';
+import type { RatingTarget } from '#lib/components/rating/RatingTarget.ts';
 
 interface Props {
   /** Image URL. Left out, the placeholder shows. */

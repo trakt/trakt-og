@@ -5,7 +5,7 @@
     <CoverPill title="Joined September 25, 2010"><Icon svg={calendar} />Joined <b>2010</b></CoverPill>
 -->
 <script lang="ts">
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
 import type { Snippet } from 'svelte';
 
 const { title, tone, children }: { title?: string; tone?: 'private'; children: Snippet } = $props();

@@ -1,31 +1,31 @@
 <script lang="ts">
-import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
-import SeoHead from '$lib/seo/SeoHead.svelte';
+import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
+import SeoHead from '#lib/seo/SeoHead.svelte';
 import { SvelteURLSearchParams } from 'svelte/reactivity';
 import { page } from '$app/state';
-import Container from '$lib/components/container/Container.svelte';
-import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
-import SortDirection from '$lib/components/dropdown/SortDirection.svelte';
-import EmptyState from '$lib/components/empty/EmptyState.svelte';
+import Container from '#lib/components/container/Container.svelte';
+import Dropdown from '#lib/components/dropdown/Dropdown.svelte';
+import SortDirection from '#lib/components/dropdown/SortDirection.svelte';
+import EmptyState from '#lib/components/empty/EmptyState.svelte';
 import { tick } from 'svelte';
-import { removeNote } from '$lib/components/notes/removeNote';
-import NoteManage from '$lib/components/notes/NoteManage.svelte';
-import NotesDialog from '$lib/components/notes/NotesDialog.svelte';
-import { toast } from '$lib/components/toast/toast.svelte';
-import type { NoteView } from '$lib/users/notes/NoteView';
-import { createNoteOverlay } from '$lib/users/notes/createNoteOverlay.svelte';
-import NoteRow from '$lib/components/notes/NoteRow.svelte';
-import Pagination from '$lib/components/pagination/Pagination.svelte';
-import SectionToolbar from '$lib/components/toolbar/SectionToolbar.svelte';
-import SubnavCount from '$lib/components/toolbar/SubnavCount.svelte';
-import memo from '$lib/icons/regular/memo.svg?raw';
-import type { DatePreferences } from '$lib/settings/DatePreferences';
-import type { ProfileUser } from '$lib/users/ProfileUser';
-import type { loadNotes } from '$lib/users/notes/loadNotes';
-import { noteTypes } from '$lib/users/notes/noteTypes';
+import { removeNote } from '#lib/components/notes/removeNote.ts';
+import NoteManage from '#lib/components/notes/NoteManage.svelte';
+import NotesDialog from '#lib/components/notes/NotesDialog.svelte';
+import { toast } from '#lib/components/toast/toast.svelte.ts';
+import type { NoteView } from '#lib/users/notes/NoteView.ts';
+import { createNoteOverlay } from '#lib/users/notes/createNoteOverlay.svelte.ts';
+import NoteRow from '#lib/components/notes/NoteRow.svelte';
+import Pagination from '#lib/components/pagination/Pagination.svelte';
+import SectionToolbar from '#lib/components/toolbar/SectionToolbar.svelte';
+import SubnavCount from '#lib/components/toolbar/SubnavCount.svelte';
+import memo from '#lib/icons/regular/memo.svg?raw';
+import type { DatePreferences } from '#lib/settings/DatePreferences.ts';
+import type { ProfileUser } from '#lib/users/ProfileUser.ts';
+import type { loadNotes } from '#lib/users/notes/loadNotes.ts';
+import { noteTypes } from '#lib/users/notes/noteTypes.ts';
 import { viewerFetch } from '../../auth/viewerFetch.ts';
-import { ownsNote } from '$lib/users/notes/ownsNote';
-import type { ViewerSettings } from '$lib/settings/ViewerSettings';
+import { ownsNote } from '#lib/users/notes/ownsNote.ts';
+import type { ViewerSettings } from '#lib/settings/ViewerSettings.ts';
 
 type Props = {
   data: Awaited<ReturnType<typeof loadNotes>> & {
@@ -94,7 +94,7 @@ const noteGroups = $derived<readonly { header?: string; types: readonly NoteType
   { header: 'Activities', types: ['history', 'collection', 'ratings'] },
 ]);
 const filterHref = (type: string) => {
-  const query = new SvelteURLSearchParams(page.url.searchParams);
+  const query = new SvelteURLSearchParams(page.url.search);
   query.delete('page');
   const search = query.size ? `?${query}` : '';
   return `/users/${data.profile.slug}/notes${type === 'all' ? '' : `/${type}`}${search}`;

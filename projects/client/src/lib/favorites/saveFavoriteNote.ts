@@ -1,5 +1,5 @@
 import { z } from 'zod/v4';
-import { useTrack } from '$lib/analytics/useTrack';
+import { useTrack } from '#lib/analytics/useTrack.ts';
 import { noteEvent } from '../notes/noteEvent.ts';
 import { GENERIC_ERROR } from '../utils/genericError.ts';
 

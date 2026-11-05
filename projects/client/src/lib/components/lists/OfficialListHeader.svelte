@@ -5,15 +5,15 @@
   where, and Joined 2010, the year Trakt started. The list's title row says it's official.
 -->
 <script lang="ts">
-import defaultCover from '$lib/assets/profile-cover-default.jpg';
-import logo from '$lib/assets/trakt-logo-red.png';
-import Container from '$lib/components/container/Container.svelte';
-import { headerArt } from '$lib/components/header/headerArt';
-import CoverPill from '$lib/components/users/CoverPill.svelte';
-import VipLabel from '$lib/components/labels/VipLabel.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import calendar from '$lib/icons/regular/calendar-lines.svg?raw';
-import locationPin from '$lib/icons/solid/location-pin.svg?raw';
+import defaultCover from '#lib/assets/profile-cover-default.jpg';
+import logo from '#lib/assets/trakt-logo-red.png';
+import Container from '#lib/components/container/Container.svelte';
+import { headerArt } from '#lib/components/header/headerArt.ts';
+import CoverPill from '#lib/components/users/CoverPill.svelte';
+import VipLabel from '#lib/components/labels/VipLabel.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import calendar from '#lib/icons/regular/calendar-lines.svg?raw';
+import locationPin from '#lib/icons/solid/location-pin.svg?raw';
 
 const { image }: { image?: string } = $props();
 const cover = $derived(image ?? defaultCover);

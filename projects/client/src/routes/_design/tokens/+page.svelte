@@ -1,8 +1,8 @@
 <script lang="ts">
 import { resolve } from '$app/paths';
-import Container from '$lib/components/container/Container.svelte';
-import Specimen from '$lib/design/Specimen.svelte';
-import { overlay } from '$lib/overlay/overlay';
+import Container from '#lib/components/container/Container.svelte';
+import Specimen from '#lib/design/Specimen.svelte';
+import { overlay } from '#lib/overlay/overlay.ts';
 
 const colorGroups: Record<string, string[]> = {
   Grays: ['gray-darker', 'gray-dark', 'gray', 'gray-light', 'gray-lightish', 'gray-lighter'],
@@ -47,12 +47,12 @@ const colorGroups: Record<string, string[]> = {
   ],
 };
 
-const spaces = ['xs', 'sm', 'base', 'lg'];
+  const spaces = ['xs', 'sm', 'base', 'lg'];
 const radii = ['radius-tag', 'radius-object', 'radius-container', 'radius-round'];
 const shadows = ['shadow-dropdown', 'shadow-input-focus'];
 
-let overlayType = $state<'movie' | 'show' | 'season' | 'episode'>('movie');
-let overlayId = $state(1);
+  let overlayType = $state<'movie' | 'show' | 'season' | 'episode'>('movie');
+  let overlayId = $state(1);
 const overlayState = $derived(
   JSON.stringify(overlay.state(overlayType, overlayId), (_, value) => value === undefined ? 'unknown' : value, 2),
 );
@@ -66,9 +66,13 @@ const overlayState = $derived(
   <h5>Heading 5, 14px</h5>
   <h6>Heading 6, 12px</h6>
   <p>
-    Body copy is 14px Figtree 400 on a 20px line. Breaking Bad follows Walter White, a chemistry teacher who turns to
-    making meth after a cancer diagnosis. <a href={resolve('/_design/tokens')}>A link</a>, <strong>strong text</strong>
-    and <small>small text</small>.
+    Body copy is 14px Figtree 400 on a 20px line. Breaking Bad follows Walter White, a chemistry teacher who turns to making meth after a cancer diagnosis. 
+    <a href={resolve('_design/tokens')}>A link</a>
+    , 
+    <strong>strong text</strong>
+    and 
+    <small>small text</small>
+    .
   </p>
   <p>A second paragraph shows the 10px paragraph margin.</p>
 </Specimen>
@@ -186,78 +190,78 @@ ul {
   border-radius: var(--radius-tag);
 }
 
-.row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: end;
-  gap: var(--gutter);
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: var(--gutter);
 
-  & + .row {
-    margin-block-start: var(--gutter);
+    & + .row {
+      margin-block-start: var(--gutter);
+    }
   }
-}
 
-.pad {
-  display: inline-block;
-  background-color: var(--gray-lightish);
-  color: var(--gray-darker);
-}
+  .pad {
+    display: inline-block;
+    background-color: var(--gray-lightish);
+    color: var(--gray-darker);
+  }
 
-.gutter {
-  display: inline-block;
-  inline-size: var(--gutter);
-  block-size: var(--gutter);
-  background-color: var(--gray-lightish);
-  vertical-align: middle;
-}
+  .gutter {
+    display: inline-block;
+    inline-size: var(--gutter);
+    block-size: var(--gutter);
+    background-color: var(--gray-lightish);
+    vertical-align: middle;
+  }
 
-.radius,
-.shadow {
-  padding: var(--space-lg-block) var(--space-lg-inline);
-  background-color: var(--color-box);
-}
+  .radius,
+  .shadow {
+    padding: var(--space-lg-block) var(--space-lg-inline);
+    background-color: var(--color-box);
+  }
 
-.radius {
-  border: 1px solid var(--color-input-border);
-}
+  .radius {
+    border: 1px solid var(--color-input-border);
+  }
 
-label {
-  display: inline-grid;
-  gap: var(--space-sm-block);
-}
+  label {
+    display: inline-grid;
+    gap: var(--space-sm-block);
+  }
 
-.textarea {
-  display: grid;
-  margin-block-start: var(--gutter);
-  max-inline-size: 480px;
-}
-
-.ratios {
-  align-items: start;
-
-  & div {
+  .textarea {
     display: grid;
-    place-content: center;
-    background-color: var(--gray-dark);
-    color: var(--gray-lighter);
+    margin-block-start: var(--gutter);
+    max-inline-size: 480px;
   }
-}
 
-.poster {
-  inline-size: 160px;
-  aspect-ratio: var(--ratio-poster);
-}
+  .ratios {
+    align-items: start;
 
-.fanart {
-  inline-size: 480px;
-  max-inline-size: 100%;
-  aspect-ratio: var(--ratio-fanart);
-}
+    & div {
+      display: grid;
+      place-content: center;
+      background-color: var(--gray-dark);
+      color: var(--gray-lighter);
+    }
+  }
 
-.column {
-  padding: var(--space-lg-block);
-  background-color: var(--gray-lightish);
-  color: var(--gray-darker);
-  text-align: center;
-}
+  .poster {
+    inline-size: 160px;
+    aspect-ratio: var(--ratio-poster);
+  }
+
+  .fanart {
+    inline-size: 480px;
+    max-inline-size: 100%;
+    aspect-ratio: var(--ratio-fanart);
+  }
+
+  .column {
+    padding: var(--space-lg-block);
+    background-color: var(--gray-lightish);
+    color: var(--gray-darker);
+    text-align: center;
+  }
 </style>

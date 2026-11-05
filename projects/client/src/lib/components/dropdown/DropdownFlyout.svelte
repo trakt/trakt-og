@@ -15,7 +15,7 @@
   It's a fixed panel placed beside the row, not a popover inside the menu's popover, which Safari misplaces.
 -->
 <script lang="ts">
-import angleRight from '$lib/icons/regular/angle-right.svg?url';
+import angleRight from '#lib/icons/regular/angle-right.svg?url';
 import type { Snippet } from 'svelte';
 import type { Attachment } from 'svelte/attachments';
 import { flyoutPlacement } from './flyoutPlacement.ts';

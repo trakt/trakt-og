@@ -1,8 +1,8 @@
-import fanartTv from '$lib/icons/sites/fanart-tv.svg?raw';
-import imdb from '$lib/icons/sites/imdb.svg?raw';
-import officialSite from '$lib/icons/sites/official-site.svg?raw';
-import tmdb from '$lib/icons/sites/tmdb.svg?raw';
-import tvdb from '$lib/icons/sites/tvdb.svg?raw';
+import fanartTv from '#lib/icons/sites/fanart-tv.svg?raw';
+import imdb from '#lib/icons/sites/imdb.svg?raw';
+import officialSite from '#lib/icons/sites/official-site.svg?raw';
+import tmdb from '#lib/icons/sites/tmdb.svg?raw';
+import tvdb from '#lib/icons/sites/tvdb.svg?raw';
 import type { ExternalLink } from './ExternalLink.ts';
 
 /** OG's fonts had no logos for these: they come from the current Trakt site and the sites' own artwork. */

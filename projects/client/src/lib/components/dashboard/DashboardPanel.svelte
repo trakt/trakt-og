@@ -6,10 +6,10 @@
 -->
 <script lang="ts">
 import type { Snippet } from 'svelte';
-import Container from '$lib/components/container/Container.svelte';
+import Container from '#lib/components/container/Container.svelte';
 import PanelHeading from './PanelHeading.svelte';
 import PanelHelp from './PanelHelp.svelte';
-import { trackSectionDrilldown } from '$lib/analytics/trackSectionDrilldown';
+import { trackSectionDrilldown } from '#lib/analytics/trackSectionDrilldown.ts';
 
 interface Props {
   title: string;

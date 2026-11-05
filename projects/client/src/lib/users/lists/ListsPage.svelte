@@ -1,3 +1,502 @@
+<script lang="ts">
+  import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
+  import SeoHead from '#lib/seo/SeoHead.svelte';
+  import ReportDialog from '#lib/components/summary/ReportDialog.svelte';
+  import type { ReportTarget } from '#lib/components/summary/ReportTarget.ts';
+  import { leaveList } from '#lib/components/lists/leaveList.ts';
+  import { resolveRowListId } from '#lib/users/lists/resolveRowListId.ts';
+  import { tick } from 'svelte';
+  import { flip } from 'svelte/animate';
+  import { prefersReducedMotion } from 'svelte/motion';
+  import { SvelteMap } from 'svelte/reactivity';
+  import { slide } from 'svelte/transition';
+  import { invalidateAll, goto } from '$app/navigation';
+  import { resolve } from '$app/paths';
+  import { page } from '$app/state';
+  import Container from '#lib/components/container/Container.svelte';
+  import Dropdown from '#lib/components/dropdown/Dropdown.svelte';
+  import SortDirection from '#lib/components/dropdown/SortDirection.svelte';
+  import EmptyState from '#lib/components/empty/EmptyState.svelte';
+  import TermsFilter from '#lib/components/filters/TermsFilter.svelte';
+  import type { HeaderUser } from '#lib/components/header/HeaderUser.ts';
+  import BuiltInListEditor from '#lib/components/lists/BuiltInListEditor.svelte';
+  import ListReorderControls from '#lib/components/lists/ListReorderControls.svelte';
+  import { toast } from '#lib/components/toast/toast.svelte.ts';
+  import { rawApiFetch } from '#lib/api/rawApiFetch.ts';
+  import ListEditor from '#lib/components/lists/ListEditor.svelte';
+  import { deleteList } from '#lib/components/lists/deleteList.ts';
+  import { overlay } from '#lib/overlay/overlay.ts';
+  import ListRow from '#lib/components/media/ListRow.svelte';
+  import SectionToolbar from '#lib/components/toolbar/SectionToolbar.svelte';
+  import SubnavCount from '#lib/components/toolbar/SubnavCount.svelte';
+  import Icon from '#lib/icons/Icon.svelte';
+  import addCircle from '#lib/icons/regular/circle-plus.svg?raw';
+  import listIcon from '#lib/icons/regular/list.svg?raw';
+  import move from '#lib/icons/regular/up-down-left-right.svg?raw';
+  import check from '#lib/icons/solid/check.svg?raw';
+  import type { ProfileUser } from '#lib/users/ProfileUser.ts';
+  import { nearViewport } from '#lib/utils/nearViewport.ts';
+  import type { Collaborator } from './Collaborator.ts';
+  import { fetchCollaborators } from './fetchCollaborators.ts';
+  import { fetchListPosters } from './fetchListPosters.ts';
+  import { listRowActions } from './listRowActions.ts';
+  import type { ListsQuery } from './ListsQuery.ts';
+  import type { loadLists } from './loadLists.ts';
+  import { matchesListTerms } from './matchesListTerms.ts';
+  import { sortsFor } from './sortsFor.ts';
+  import { toListsSearch } from './toListsSearch.ts';
+  import type { UserListRow } from './UserListRow.ts';
+  import { moveList } from '#lib/users/lists/moveList.ts';
+  import { saveListOrder } from '#lib/users/lists/saveListOrder.ts';
+  import { visibleLists } from './visibleLists.ts';
+  import { viewerFetch } from '../../auth/viewerFetch.ts';
+  import SmartListDialog from '#lib/components/lists/SmartListDialog.svelte';
+  import { deleteSmartList } from '#lib/lists/smart/deleteSmartList.ts';
+  import { saveSmartList } from '#lib/lists/smart/saveSmartList.ts';
+  import type { SmartList, SmartListPrivacy } from '#lib/lists/smart/SmartList.ts';
+  import { smartListSourceLabel } from '#lib/lists/smart/smartListSourceLabel.ts';
+  import { smartListChartHref } from '#lib/lists/smart/smartListChartHref.ts';
+  import { fetchSmartListPreview } from './fetchSmartListPreview.ts';
+  import { toSmartListRow } from './toSmartListRow.ts';
+  import ListNotice from '#lib/components/lists/ListNotice.svelte';
+  import { SAVED_FILTERS_COOKIE } from '#lib/lists/smart/SAVED_FILTERS_COOKIE.ts';
+
+type Props = {
+  data: Awaited<ReturnType<typeof loadLists>> & { profile: ProfileUser; isSelf: boolean; user: HeaderUser | null };
+};
+
+  const { data }: Props = $props();
+  const personal = $derived(data.mode === 'personal');
+  const liked = $derived(data.mode === 'liked' || data.mode === 'liked-official');
+  const smart = $derived(data.mode === 'smart');
+  const MODE_NAMES = {
+    personal: 'personal lists',
+    smart: 'smart lists',
+    collaborations: 'collaborations',
+    liked: 'liked lists',
+  'liked-official': 'liked official lists',
+  } as const;
+  const title = $derived(`${data.profile.displayName}'s ${MODE_NAMES[data.mode]}`);
+  const base = $derived(`/users/${data.profile.slug}/lists`);
+  const sorts = $derived(sortsFor(data.mode));
+
+  // The loader parsed the URL once; after that the controls own the view and write it back to the URL.
+  // svelte-ignore state_referenced_locally
+  let query = $state<ListsQuery>({ ...data.query });
+let shuffled = $state<readonly string[]>([]);
+
+  let order = $state<readonly UserListRow[] | null>(null);
+  let reordering = $state(false);
+  let busy = $state(false);
+  let dragging = $state<string | null>(null);
+  let dragRank = $state<number | null>(null);
+  let rowsElement = $state<HTMLDivElement>();
+  let addButton = $state<HTMLButtonElement>();
+  const left = new SvelteMap<number, boolean>();
+  let reportTarget = $state<ReportTarget | null>(null);
+  let reportOpen = $state(false);
+  // A smart list renamed here: the API's cache can answer the reload with the old name, so the edit stands in.
+  const smartEdits = new SvelteMap<string, SmartList>();
+  const withSmartEdit = (row: UserListRow) => {
+    const edit = smartEdits.get(row.key);
+  return edit ? toSmartListRow({ list: edit, profile: data.profile, rank: row.rank }) : row;
+  };
+const allLists = $derived(
+  (order ?? data.lists).filter((row) =>
+    !removed.includes(row.id ?? -1) && !removedKeys.includes(row.key) &&
+    (personal || !data.isSelf || row.id === null || !left.get(row.id))
+  ).map(withSmartEdit),
+);
+  const canReorder = $derived(data.isSelf && personal && Boolean(data.user) && data.listsComplete);
+  const lists = $derived(reordering ? allLists : visibleLists(allLists, query, shuffled));
+  // New loader data replaces the page-scoped optimistic order (never persisted or shared between SSR requests).
+  $effect(() => {
+    void data.lists;
+    void data.user;
+    order = null;
+    left.clear();
+    reportOpen = false;
+    reportTarget = null;
+    reordering = false;
+    dragging = null;
+  });
+  const toggleReorder = () => {
+    if (!canReorder || busy || dragging || deleting !== null) return;
+    reordering = !reordering;
+  };
+  const shortcut = () => {
+    const keydown = (event: KeyboardEvent) => {
+      if (event.key.toLowerCase() !== 'r' || event.repeat || event.ctrlKey || event.metaKey || event.altKey) return;
+    if (
+      event.target instanceof Element &&
+      event.target.closest('input, textarea, select, [contenteditable], dialog, [role="dialog"]')
+    ) return;
+      if (!canReorder) return;
+      event.preventDefault();
+      toggleReorder();
+    };
+    window.addEventListener('keydown', keydown);
+    return () => window.removeEventListener('keydown', keydown);
+  };
+  async function moveRow(list: UserListRow, rank: number) {
+    if (!canReorder || !reordering || busy) return;
+    const source = data.lists;
+    const before = allLists;
+    const next = moveList({ rows: before, key: list.key, rank });
+    if (next === before) return;
+    order = next;
+    busy = true;
+    await tick();
+    const element = rowsElement?.querySelector<HTMLElement>(`[data-list-key="${list.key}"]`);
+  element?.scrollIntoView({ block: 'start', behavior: prefersReducedMotion.current ? 'instant' : 'smooth' });
+    const ok = await saveListOrder({
+      fetch: viewerFetch(),
+      rank: next.flatMap(({ id }) => id === null ? [] : [id]),
+    notify: toast,
+    });
+    if (!ok && source === data.lists) order = before;
+    busy = false;
+  }
+  function startDrag(list: UserListRow, event: PointerEvent) {
+    if (busy || !reordering || event.button !== 0 || !(event.currentTarget instanceof HTMLElement)) return;
+    event.preventDefault();
+    event.currentTarget.focus();
+    event.currentTarget.setPointerCapture(event.pointerId);
+    dragging = list.key;
+    dragRank = list.rank;
+  }
+  const dragEvents = (element: HTMLDivElement) => {
+    const move = (event: PointerEvent) => {
+      if (!dragging) return;
+      if (event.clientY < 100) window.scrollBy(0, -20);
+      if (event.clientY > window.innerHeight - 100) window.scrollBy(0, 20);
+      const target = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>('[data-list-key]');
+      const row = allLists.find(({ key }) => key === target?.dataset.listKey);
+      if (row) dragRank = row.rank;
+    };
+    const end = (event: PointerEvent) => {
+      const list = allLists.find(({ key }) => key === dragging);
+      const rank = dragRank;
+      dragging = null;
+      dragRank = null;
+      if (event.type !== 'pointercancel' && list && rank !== null) void moveRow(list, rank);
+    };
+    const cancel = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape' || !dragging) return;
+      event.preventDefault();
+      dragging = null;
+      dragRank = null;
+    };
+    window.addEventListener('keydown', cancel);
+    element.addEventListener('pointermove', move);
+    element.addEventListener('pointerup', end);
+    element.addEventListener('pointercancel', end);
+    return () => {
+      window.removeEventListener('keydown', cancel);
+      element.removeEventListener('pointermove', move);
+      element.removeEventListener('pointerup', end);
+      element.removeEventListener('pointercancel', end);
+    };
+  };
+let editor = $state<{ id: number | null; posters?: readonly string[]; count?: number }>();
+  // The watchlist or favorites row's editor, which edits only the description and default sort.
+let builtInEditor = $state<{ kind: 'watchlist' | 'favorites'; posters: readonly string[]; count: number }>();
+  let removed = $state<readonly number[]>([]);
+  let removedKeys = $state<readonly string[]>([]);
+  let deleting = $state<number | null>(null);
+  const limit = $derived(page.data.settings?.limits?.list?.count);
+  async function removeList(row: UserListRow) {
+    if (row.id === null || deleting !== null || busy || reordering) return;
+    const id = row.id;
+    deleting = id;
+    const ok = await deleteList({
+      id,
+      overlay,
+      notify: toast,
+      request: (path, method) => rawApiFetch({ fetch: viewerFetch(), path, init: { method } }),
+      remove: () => {
+        removed = [...removed, id];
+        return () => {
+          removed = removed.filter((value) => value !== id);
+        };
+    },
+    });
+    deleting = null;
+    if (ok) {
+      void overlay.refresh();
+      await invalidateAll();
+      addButton?.focus({ preventScroll: true });
+    }
+  }
+  // A smart list's editor changes its name and privacy; its filters change on the chart that shows it.
+  let smartEditor = $state<SmartList>();
+  let smartBusy = $state(false);
+const smartRequest = (path: string, method: string, body?: unknown) =>
+  rawApiFetch({
+    fetch: viewerFetch(),
+    path,
+    init: {
+      method,
+      ...body !== undefined && {
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      }
+    }
+  });
+async function saveSmart(list: SmartList, change: { name: string; privacy: SmartListPrivacy }) {
+    if (smartBusy) return;
+    smartBusy = true;
+    const result = await saveSmartList({ request: smartRequest, slug: list.slug, write: change });
+    smartBusy = false;
+    if (!result.ok) {
+      toast.error("Doh! We couldn't save this smart list. Please try again.");
+      return;
+    }
+    smartEditor = undefined;
+    smartEdits.set(`smart-${list.id}`, { ...list, ...change, updatedAt: new Date().toISOString() });
+    toast.success(`You saved ${change.name}.`);
+    await invalidateAll();
+  }
+  async function removeSmart(row: UserListRow) {
+    if (!row.smart || smartBusy) return;
+    smartBusy = true;
+    removedKeys = [...removedKeys, row.key];
+    const ok = await deleteSmartList({ request: smartRequest, slug: row.smart.slug });
+    smartBusy = false;
+    if (!ok) {
+      removedKeys = removedKeys.filter((key) => key !== row.key);
+      toast.error("Doh! We couldn't delete this smart list. Please try again.");
+      return;
+    }
+    toast.success('You deleted the smart list.');
+    await invalidateAll();
+  }
+
+  // Bringing back classic saved filters: made one at a time, stopping at the smart list limit, then the page reloads.
+  let savedHidden = $state(false);
+  async function importSaved() {
+    const offer = data.savedFilters;
+    if (!offer || smartBusy) return;
+    smartBusy = true;
+    const results = await offer.lists.reduce<Promise<Awaited<ReturnType<typeof saveSmartList>>[]>>(
+      async (done, write) => {
+        const previous = await done;
+        if (previous.at(-1)?.ok === false) return previous;
+      return [...previous, await saveSmartList({ request: smartRequest, write })];
+      },
+    Promise.resolve([]),
+    );
+    smartBusy = false;
+    const made = results.filter((result) => result.ok).length;
+    const last = results.at(-1);
+    if (made > 0) toast.success(`You brought back ${made} saved ${made === 1 ? 'filter' : 'filters'} as smart lists.`);
+    if (last && !last.ok) {
+      toast.error(last.reason === 'limit'
+        ? "You've reached your smart list limit, so the rest stayed behind."
+        : "Doh! We couldn't bring back every saved filter. Please try again.");
+    }
+    await invalidateAll();
+  }
+  function dismissSaved() {
+    savedHidden = true;
+    document.cookie = `${SAVED_FILTERS_COOKIE}=dismissed; path=/; max-age=31536000; samesite=lax`;
+  }
+
+  // A smart list's count and first posters, read as its row nears the viewport: the API works them out on read. Null
+  // while the read is in flight; a failed read keeps the placeholders and no count. The owner's own read goes with their
+  // token, for their private lists.
+type SmartPreview = { readonly posters: UserListRow['posters']; readonly itemCount?: number };
+  const smartPreviews = new SvelteMap<string, SmartPreview | null>();
+  const loadSmartPreview = (row: UserListRow) => {
+    if (!row.smart || smartPreviews.has(row.key)) return;
+    const key = row.key;
+    smartPreviews.set(key, null);
+    const fetch = data.isSelf && data.user ? viewerFetch() : globalThis.fetch;
+  void fetchSmartListPreview({ fetch, slug: row.smart.slug }).then((preview) =>
+    smartPreviews.set(key, preview ?? { posters: [] })
+  );
+  };
+  const smartPreview = (row: UserListRow) => row.smart ? smartPreviews.get(row.key) : undefined;
+
+  const builtIns = $derived(data.builtIns.filter((row) => matchesListTerms(row, query.terms)));
+  const sortName = $derived(sorts.find(({ id }) => id === query.sort)?.label);
+const searchedOut = $derived(
+  lists.length === 0 && builtIns.length === 0 && (allLists.length > 0 || data.builtIns.length > 0),
+);
+  // OG's isotope moved rows over 0.4s and slid the watchlist and favorites rows up and down.
+  const duration = $derived(prefersReducedMotion.current ? 0 : 400);
+
+  // Isotope's shuffle, dealt fresh each time Random is picked. The server renders rank order, so a reload on Random
+  // shuffles once it's in the browser.
+  const shuffle = () => {
+    const keys = data.lists.map(({ key }) => key);
+    shuffled = keys.reduce<string[]>((deck, key, i) => deck.toSpliced(Math.floor(Math.random() * (i + 1)), 0, key), []);
+  };
+  $effect(() => {
+    if (query.sort === 'random' && shuffled.length === 0) shuffle();
+  });
+
+  $effect(() => {
+    const search = toListsSearch(query, data.mode);
+    if (search === page.url.search) return;
+     
+    // eslint-disable-next-line svelte/no-navigation-without-resolve -- the same page, with only its query changed
+    goto(`${page.url.pathname}${search}${page.url.hash}`, { shallow: true, replace: true, state: page.state });
+  });
+
+  // A new sort starts in its own direction.
+  const pick = (sort: ListsQuery['sort']) => {
+    if (sort === 'random') shuffle();
+    query = { ...query, sort, reversed: false };
+  };
+
+  // The "N collaborators" pill, one request a list as its row nears the viewport. Public lists go without the token, so
+  // the worker's cache answers; the rest need the viewer's.
+  const collaborators = new SvelteMap<number, readonly Collaborator[]>();
+  const loadCollaborators = (row: UserListRow) => () => {
+    if (row.id === null || collaborators.has(row.id)) return;
+    const id = row.id;
+    const fetch = row.isPublic || !data.user ? globalThis.fetch : viewerFetch();
+    fetchCollaborators({ fetch, listId: id }).then((found) => collaborators.set(id, found));
+  };
+
+  // Liked lists come without posters (see fetchListPosters): each row reads its own as it nears the viewport, and its
+  // fan shimmers until they land. Null while a read is in flight.
+  const likedPosters = new SvelteMap<number, UserListRow['posters'] | null>();
+  const loadPosters = (row: UserListRow) => {
+    if (!liked || row.id === null || row.posters.length > 0 || likedPosters.has(row.id)) return;
+    const id = row.id;
+    likedPosters.set(id, null);
+    void fetchListPosters({ fetch: globalThis.fetch, listId: id }).then((posters) => likedPosters.set(id, posters));
+  };
+const postersLoading = (row: UserListRow) =>
+  liked && row.id !== null && row.itemCount > 0 && row.posters.length === 0 && !likedPosters.get(row.id);
+const withPosters = (row: UserListRow): UserListRow =>
+  row.id !== null && (likedPosters.get(row.id)?.length ?? 0) > 0
+    ? { ...row, posters: likedPosters.get(row.id) ?? [] }
+    : row;
+  const nearRow = (row: UserListRow) => () => {
+    loadCollaborators(row)();
+    loadPosters(row);
+    loadSmartPreview(row);
+  };
+
+  const viewer = $derived(data.user ? { slug: data.user.slug } : null);
+  async function report(row: UserListRow) {
+    const source = data;
+    try {
+      const id = await resolveRowListId({ fetch: viewerFetch(), row });
+      if (data !== source) return;
+      reportTarget = {
+        type: 'list',
+        id,
+        title: row.name,
+        href: row.href,
+        ownerSlug: row.kind === 'personal' ? row.owner.slug : undefined,
+        posters: row.posters.slice(0, 5).flatMap(({ image }) => image ? [image] : [])
+      };
+      reportOpen = true;
+    } catch {
+      if (data === source) toast.error('Doh! We could not open the list report. Please try again.');
+    }
+  }
+  async function leave(row: UserListRow) {
+    if (row.id === null || !data.user || left.has(row.id)) return;
+    const source = data;
+    const id = row.id;
+    const ok = await leaveList({
+      fetch: viewerFetch(),
+      id,
+      viewer: data.user.slug,
+      patch: () => {
+        left.set(id, true);
+        return () => {
+          if (data === source) left.delete(id);
+        };
+      },
+      notify: (message) => {
+        if (data === source) toast.error(message);
+    },
+    });
+    if (ok && data === source) toast.success('You stopped collaborating on this list.');
+  }
+  const actions = (row: UserListRow) => {
+    const names = row.id === null ? [] : collaborators.get(row.id) ?? [];
+    // On your own collaborations tab every list is one you collaborate on.
+    const isCollaborator = data.mode === 'collaborations' && data.isSelf || names.some(({ slug }) => slug === viewer?.slug);
+
+    const result = listRowActions({
+      row,
+      viewer,
+      isCollaborator: isCollaborator && !left.get(row.id ?? 0),
+    origin: page.url.origin,
+    });
+    if (row.smart) {
+      const list = row.smart;
+      const chartHref = smartListChartHref({ list, now: new Date() });
+      return {
+        ...result,
+        ...chartHref && {
+          chart: {
+            href: chartHref,
+            label: `Open on ${smartListSourceLabel(list.source)}`
+          }
+        },
+        ...result.edit && { edit: { onclick: () => smartEditor = list } },
+        ...result.delete && {
+          delete: {
+            onclick: () => removeSmart(row),
+            busy: smartBusy,
+            warning: "This can't be undone!",
+            question: 'Delete this smart list?'
+          }
+        }
+      };
+    }
+    return {
+      ...result,
+      ...result.edit && {
+        edit: {
+          onclick: () => {
+            const posters = row.posters.slice(0, 5).flatMap(({ image }) => image ? [image] : []);
+            if (row.kind === 'watchlist' || row.kind === 'favorites') {
+              builtInEditor = { kind: row.kind, posters, count: row.itemCount };
+              return;
+            }
+            editor = { id: row.id, posters, count: row.itemCount };
+          }
+        }
+      },
+
+      ...result.delete && {
+        delete: {
+          onclick: () => removeList(row),
+          busy: deleting !== null || busy || reordering,
+          warning: limit !== undefined && data.lists.length > limit
+            ? `You're over the ${limit} list limit. You won't be able to re-create this list if you delete it.`
+            : "This can't be undone!"
+        }
+      },
+
+      ...result.report && {
+        report: {
+          onclick: () => {
+            void report(row);
+          }
+        }
+      },
+
+      ...result.leave && {
+        leave: {
+          onclick: () => {
+            void leave(row);
+          }
+        }
+      }
+    };
+  };
+</script>
+
 <!--
   `/users/:id/lists`, `/users/:id/smart-lists`, `/users/:id/lists/collaborations` and the liked lists (`/liked`,
   `/liked/official`) under the profile frame: the subnav with OG's lists menu (the user's lists, then Liked), the owner's add and reorder buttons, the count, sort, direction and search, then the watchlist and
@@ -5,522 +504,45 @@
   grid, and the choice goes into the query string. Smart lists wear a Smart tag, load their count and posters as they
   scroll in, and edit only their name and privacy here.
 -->
-<script lang="ts">
-import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
-import SeoHead from '$lib/seo/SeoHead.svelte';
-import ReportDialog from '$lib/components/summary/ReportDialog.svelte';
-import type { ReportTarget } from '$lib/components/summary/ReportTarget';
-import { leaveList } from '$lib/components/lists/leaveList';
-import { resolveRowListId } from '$lib/users/lists/resolveRowListId';
-import { tick } from 'svelte';
-import { flip } from 'svelte/animate';
-import { prefersReducedMotion } from 'svelte/motion';
-import { SvelteMap } from 'svelte/reactivity';
-import { slide } from 'svelte/transition';
-import { invalidateAll, replaceState } from '$app/navigation';
-import { resolve } from '$app/paths';
-import { page } from '$app/state';
-import Container from '$lib/components/container/Container.svelte';
-import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
-import SortDirection from '$lib/components/dropdown/SortDirection.svelte';
-import EmptyState from '$lib/components/empty/EmptyState.svelte';
-import TermsFilter from '$lib/components/filters/TermsFilter.svelte';
-import type { HeaderUser } from '$lib/components/header/HeaderUser';
-import BuiltInListEditor from '$lib/components/lists/BuiltInListEditor.svelte';
-import ListReorderControls from '$lib/components/lists/ListReorderControls.svelte';
-import { toast } from '$lib/components/toast/toast.svelte';
-import { rawApiFetch } from '$lib/api/rawApiFetch';
-import ListEditor from '$lib/components/lists/ListEditor.svelte';
-import { deleteList } from '$lib/components/lists/deleteList';
-import { overlay } from '$lib/overlay/overlay';
-import ListRow from '$lib/components/media/ListRow.svelte';
-import SectionToolbar from '$lib/components/toolbar/SectionToolbar.svelte';
-import SubnavCount from '$lib/components/toolbar/SubnavCount.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import addCircle from '$lib/icons/regular/circle-plus.svg?raw';
-import listIcon from '$lib/icons/regular/list.svg?raw';
-import move from '$lib/icons/regular/up-down-left-right.svg?raw';
-import check from '$lib/icons/solid/check.svg?raw';
-import type { ProfileUser } from '$lib/users/ProfileUser';
-import { nearViewport } from '$lib/utils/nearViewport';
-import type { Collaborator } from './Collaborator.ts';
-import { fetchCollaborators } from './fetchCollaborators.ts';
-import { fetchListPosters } from './fetchListPosters.ts';
-import { listRowActions } from './listRowActions.ts';
-import type { ListsQuery } from './ListsQuery.ts';
-import type { loadLists } from './loadLists.ts';
-import { matchesListTerms } from './matchesListTerms.ts';
-import { sortsFor } from './sortsFor.ts';
-import { toListsSearch } from './toListsSearch.ts';
-import type { UserListRow } from './UserListRow.ts';
-import { moveList } from '$lib/users/lists/moveList';
-import { saveListOrder } from '$lib/users/lists/saveListOrder';
-import { visibleLists } from './visibleLists.ts';
-import { viewerFetch } from '../../auth/viewerFetch.ts';
-import SmartListDialog from '$lib/components/lists/SmartListDialog.svelte';
-import { deleteSmartList } from '$lib/lists/smart/deleteSmartList';
-import { saveSmartList } from '$lib/lists/smart/saveSmartList';
-import type { SmartList, SmartListPrivacy } from '$lib/lists/smart/SmartList';
-import { smartListSourceLabel } from '$lib/lists/smart/smartListSourceLabel';
-import { smartListChartHref } from '$lib/lists/smart/smartListChartHref';
-import { fetchSmartListPreview } from './fetchSmartListPreview.ts';
-import { toSmartListRow } from './toSmartListRow.ts';
-import ListNotice from '$lib/components/lists/ListNotice.svelte';
-import { SAVED_FILTERS_COOKIE } from '$lib/lists/smart/SAVED_FILTERS_COOKIE';
-
-type Props = {
-  data: Awaited<ReturnType<typeof loadLists>> & { profile: ProfileUser; isSelf: boolean; user: HeaderUser | null };
-};
-
-const { data }: Props = $props();
-const personal = $derived(data.mode === 'personal');
-const liked = $derived(data.mode === 'liked' || data.mode === 'liked-official');
-const smart = $derived(data.mode === 'smart');
-const MODE_NAMES = {
-  personal: 'personal lists',
-  smart: 'smart lists',
-  collaborations: 'collaborations',
-  liked: 'liked lists',
-  'liked-official': 'liked official lists',
-} as const;
-const title = $derived(`${data.profile.displayName}'s ${MODE_NAMES[data.mode]}`);
-const base = $derived(`/users/${data.profile.slug}/lists`);
-const sorts = $derived(sortsFor(data.mode));
-
-// The loader parsed the URL once; after that the controls own the view and write it back to the URL.
-// svelte-ignore state_referenced_locally
-let query = $state<ListsQuery>({ ...data.query });
-let shuffled = $state<readonly string[]>([]);
-
-let order = $state<readonly UserListRow[] | null>(null);
-let reordering = $state(false);
-let busy = $state(false);
-let dragging = $state<string | null>(null);
-let dragRank = $state<number | null>(null);
-let rowsElement = $state<HTMLDivElement>();
-let addButton = $state<HTMLButtonElement>();
-const left = new SvelteMap<number, boolean>();
-let reportTarget = $state<ReportTarget | null>(null);
-let reportOpen = $state(false);
-// A smart list renamed here: the API's cache can answer the reload with the old name, so the edit stands in.
-const smartEdits = new SvelteMap<string, SmartList>();
-const withSmartEdit = (row: UserListRow) => {
-  const edit = smartEdits.get(row.key);
-  return edit ? toSmartListRow({ list: edit, profile: data.profile, rank: row.rank }) : row;
-};
-const allLists = $derived(
-  (order ?? data.lists).filter((row) =>
-    !removed.includes(row.id ?? -1) && !removedKeys.includes(row.key) &&
-    (personal || !data.isSelf || row.id === null || !left.get(row.id))
-  ).map(withSmartEdit),
-);
-const canReorder = $derived(data.isSelf && personal && Boolean(data.user) && data.listsComplete);
-const lists = $derived(reordering ? allLists : visibleLists(allLists, query, shuffled));
-// New loader data replaces the page-scoped optimistic order (never persisted or shared between SSR requests).
-$effect(() => {
-  void data.lists;
-  void data.user;
-  order = null;
-  left.clear();
-  reportOpen = false;
-  reportTarget = null;
-  reordering = false;
-  dragging = null;
-});
-const toggleReorder = () => {
-  if (!canReorder || busy || dragging || deleting !== null) return;
-  reordering = !reordering;
-};
-const shortcut = () => {
-  const keydown = (event: KeyboardEvent) => {
-    if (event.key.toLowerCase() !== 'r' || event.repeat || event.ctrlKey || event.metaKey || event.altKey) return;
-    if (
-      event.target instanceof Element &&
-      event.target.closest('input, textarea, select, [contenteditable], dialog, [role="dialog"]')
-    ) return;
-    if (!canReorder) return;
-    event.preventDefault();
-    toggleReorder();
-  };
-  window.addEventListener('keydown', keydown);
-  return () => window.removeEventListener('keydown', keydown);
-};
-async function moveRow(list: UserListRow, rank: number) {
-  if (!canReorder || !reordering || busy) return;
-  const source = data.lists;
-  const before = allLists;
-  const next = moveList({ rows: before, key: list.key, rank });
-  if (next === before) return;
-  order = next;
-  busy = true;
-  await tick();
-  const element = rowsElement?.querySelector<HTMLElement>(`[data-list-key="${list.key}"]`);
-  element?.scrollIntoView({ block: 'start', behavior: prefersReducedMotion.current ? 'instant' : 'smooth' });
-  const ok = await saveListOrder({
-    fetch: viewerFetch(),
-    rank: next.flatMap(({ id }) => id === null ? [] : [id]),
-    notify: toast,
-  });
-  if (!ok && source === data.lists) order = before;
-  busy = false;
-}
-function startDrag(list: UserListRow, event: PointerEvent) {
-  if (busy || !reordering || event.button !== 0 || !(event.currentTarget instanceof HTMLElement)) return;
-  event.preventDefault();
-  event.currentTarget.focus();
-  event.currentTarget.setPointerCapture(event.pointerId);
-  dragging = list.key;
-  dragRank = list.rank;
-}
-const dragEvents = (element: HTMLDivElement) => {
-  const move = (event: PointerEvent) => {
-    if (!dragging) return;
-    if (event.clientY < 100) window.scrollBy(0, -20);
-    if (event.clientY > window.innerHeight - 100) window.scrollBy(0, 20);
-    const target = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>('[data-list-key]');
-    const row = allLists.find(({ key }) => key === target?.dataset.listKey);
-    if (row) dragRank = row.rank;
-  };
-  const end = (event: PointerEvent) => {
-    const list = allLists.find(({ key }) => key === dragging);
-    const rank = dragRank;
-    dragging = null;
-    dragRank = null;
-    if (event.type !== 'pointercancel' && list && rank !== null) void moveRow(list, rank);
-  };
-  const cancel = (event: KeyboardEvent) => {
-    if (event.key !== 'Escape' || !dragging) return;
-    event.preventDefault();
-    dragging = null;
-    dragRank = null;
-  };
-  window.addEventListener('keydown', cancel);
-  element.addEventListener('pointermove', move);
-  element.addEventListener('pointerup', end);
-  element.addEventListener('pointercancel', end);
-  return () => {
-    window.removeEventListener('keydown', cancel);
-    element.removeEventListener('pointermove', move);
-    element.removeEventListener('pointerup', end);
-    element.removeEventListener('pointercancel', end);
-  };
-};
-let editor = $state<{ id: number | null; posters?: readonly string[]; count?: number }>();
-// The watchlist or favorites row's editor, which edits only the description and default sort.
-let builtInEditor = $state<{ kind: 'watchlist' | 'favorites'; posters: readonly string[]; count: number }>();
-let removed = $state<readonly number[]>([]);
-let removedKeys = $state<readonly string[]>([]);
-let deleting = $state<number | null>(null);
-const limit = $derived(page.data.settings?.limits?.list?.count);
-async function removeList(row: UserListRow) {
-  if (row.id === null || deleting !== null || busy || reordering) return;
-  const id = row.id;
-  deleting = id;
-  const ok = await deleteList({
-    id,
-    overlay,
-    notify: toast,
-    request: (path, method) => rawApiFetch({ fetch: viewerFetch(), path, init: { method } }),
-    remove: () => {
-      removed = [...removed, id];
-      return () => {
-        removed = removed.filter((value) => value !== id);
-      };
-    },
-  });
-  deleting = null;
-  if (ok) {
-    void overlay.refresh();
-    await invalidateAll();
-    addButton?.focus({ preventScroll: true });
-  }
-}
-// A smart list's editor changes its name and privacy; its filters change on the chart that shows it.
-let smartEditor = $state<SmartList>();
-let smartBusy = $state(false);
-const smartRequest = (path: string, method: string, body?: unknown) =>
-  rawApiFetch({
-    fetch: viewerFetch(),
-    path,
-    init: {
-      method,
-      ...(body !== undefined && { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }),
-    },
-  });
-async function saveSmart(list: SmartList, change: { name: string; privacy: SmartListPrivacy }) {
-  if (smartBusy) return;
-  smartBusy = true;
-  const result = await saveSmartList({ request: smartRequest, slug: list.slug, write: change });
-  smartBusy = false;
-  if (!result.ok) {
-    toast.error("Doh! We couldn't save this smart list. Please try again.");
-    return;
-  }
-  smartEditor = undefined;
-  smartEdits.set(`smart-${list.id}`, { ...list, ...change, updatedAt: new Date().toISOString() });
-  toast.success(`You saved ${change.name}.`);
-  await invalidateAll();
-}
-async function removeSmart(row: UserListRow) {
-  if (!row.smart || smartBusy) return;
-  smartBusy = true;
-  removedKeys = [...removedKeys, row.key];
-  const ok = await deleteSmartList({ request: smartRequest, slug: row.smart.slug });
-  smartBusy = false;
-  if (!ok) {
-    removedKeys = removedKeys.filter((key) => key !== row.key);
-    toast.error("Doh! We couldn't delete this smart list. Please try again.");
-    return;
-  }
-  toast.success('You deleted the smart list.');
-  await invalidateAll();
-}
-
-// Bringing back classic saved filters: made one at a time, stopping at the smart list limit, then the page reloads.
-let savedHidden = $state(false);
-async function importSaved() {
-  const offer = data.savedFilters;
-  if (!offer || smartBusy) return;
-  smartBusy = true;
-  const results = await offer.lists.reduce<Promise<Awaited<ReturnType<typeof saveSmartList>>[]>>(
-    async (done, write) => {
-      const previous = await done;
-      if (previous.at(-1)?.ok === false) return previous;
-      return [...previous, await saveSmartList({ request: smartRequest, write })];
-    },
-    Promise.resolve([]),
-  );
-  smartBusy = false;
-  const made = results.filter((result) => result.ok).length;
-  const last = results.at(-1);
-  if (made > 0) toast.success(`You brought back ${made} saved ${made === 1 ? 'filter' : 'filters'} as smart lists.`);
-  if (last && !last.ok) {
-    toast.error(last.reason === 'limit'
-      ? "You've reached your smart list limit, so the rest stayed behind."
-      : "Doh! We couldn't bring back every saved filter. Please try again.");
-  }
-  await invalidateAll();
-}
-function dismissSaved() {
-  savedHidden = true;
-  document.cookie = `${SAVED_FILTERS_COOKIE}=dismissed; path=/; max-age=31536000; samesite=lax`;
-}
-
-// A smart list's count and first posters, read as its row nears the viewport: the API works them out on read. Null
-// while the read is in flight; a failed read keeps the placeholders and no count. The owner's own read goes with their
-// token, for their private lists.
-type SmartPreview = { readonly posters: UserListRow['posters']; readonly itemCount?: number };
-const smartPreviews = new SvelteMap<string, SmartPreview | null>();
-const loadSmartPreview = (row: UserListRow) => {
-  if (!row.smart || smartPreviews.has(row.key)) return;
-  const key = row.key;
-  smartPreviews.set(key, null);
-  const fetch = data.isSelf && data.user ? viewerFetch() : globalThis.fetch;
-  void fetchSmartListPreview({ fetch, slug: row.smart.slug }).then((preview) =>
-    smartPreviews.set(key, preview ?? { posters: [] })
-  );
-};
-const smartPreview = (row: UserListRow) => (row.smart ? smartPreviews.get(row.key) : undefined);
-
-const builtIns = $derived(data.builtIns.filter((row) => matchesListTerms(row, query.terms)));
-const sortName = $derived(sorts.find(({ id }) => id === query.sort)?.label);
-const searchedOut = $derived(
-  lists.length === 0 && builtIns.length === 0 && (allLists.length > 0 || data.builtIns.length > 0),
-);
-// OG's isotope moved rows over 0.4s and slid the watchlist and favorites rows up and down.
-const duration = $derived(prefersReducedMotion.current ? 0 : 400);
-
-// Isotope's shuffle, dealt fresh each time Random is picked. The server renders rank order, so a reload on Random
-// shuffles once it's in the browser.
-const shuffle = () => {
-  const keys = data.lists.map(({ key }) => key);
-  shuffled = keys.reduce<string[]>((deck, key, i) => deck.toSpliced(Math.floor(Math.random() * (i + 1)), 0, key), []);
-};
-$effect(() => {
-  if (query.sort === 'random' && shuffled.length === 0) shuffle();
-});
-
-$effect(() => {
-  const search = toListsSearch(query, data.mode);
-  if (search === page.url.search) return;
-  // eslint-disable-next-line svelte/no-navigation-without-resolve -- the same page, with only its query changed
-  replaceState(`${page.url.pathname}${search}${page.url.hash}`, page.state);
-});
-
-// A new sort starts in its own direction.
-const pick = (sort: ListsQuery['sort']) => {
-  if (sort === 'random') shuffle();
-  query = { ...query, sort, reversed: false };
-};
-
-// The "N collaborators" pill, one request a list as its row nears the viewport. Public lists go without the token, so
-// the worker's cache answers; the rest need the viewer's.
-const collaborators = new SvelteMap<number, readonly Collaborator[]>();
-const loadCollaborators = (row: UserListRow) => () => {
-  if (row.id === null || collaborators.has(row.id)) return;
-  const id = row.id;
-  const fetch = row.isPublic || !data.user ? globalThis.fetch : viewerFetch();
-  fetchCollaborators({ fetch, listId: id }).then((found) => collaborators.set(id, found));
-};
-
-// Liked lists come without posters (see fetchListPosters): each row reads its own as it nears the viewport, and its
-// fan shimmers until they land. Null while a read is in flight.
-const likedPosters = new SvelteMap<number, UserListRow['posters'] | null>();
-const loadPosters = (row: UserListRow) => {
-  if (!liked || row.id === null || row.posters.length > 0 || likedPosters.has(row.id)) return;
-  const id = row.id;
-  likedPosters.set(id, null);
-  void fetchListPosters({ fetch: globalThis.fetch, listId: id }).then((posters) => likedPosters.set(id, posters));
-};
-const postersLoading = (row: UserListRow) =>
-  liked && row.id !== null && row.itemCount > 0 && row.posters.length === 0 && !likedPosters.get(row.id);
-const withPosters = (row: UserListRow): UserListRow =>
-  row.id !== null && (likedPosters.get(row.id)?.length ?? 0) > 0
-    ? { ...row, posters: likedPosters.get(row.id) ?? [] }
-    : row;
-const nearRow = (row: UserListRow) => () => {
-  loadCollaborators(row)();
-  loadPosters(row);
-  loadSmartPreview(row);
-};
-
-const viewer = $derived(data.user ? { slug: data.user.slug } : null);
-async function report(row: UserListRow) {
-  const source = data;
-  try {
-    const id = await resolveRowListId({ fetch: viewerFetch(), row });
-    if (data !== source) return;
-    reportTarget = {
-      type: 'list',
-      id,
-      title: row.name,
-      href: row.href,
-      ownerSlug: row.kind === 'personal' ? row.owner.slug : undefined,
-      posters: row.posters.slice(0, 5).flatMap(({ image }) => (image ? [image] : [])),
-    };
-    reportOpen = true;
-  } catch {
-    if (data === source) toast.error('Doh! We could not open the list report. Please try again.');
-  }
-}
-async function leave(row: UserListRow) {
-  if (row.id === null || !data.user || left.has(row.id)) return;
-  const source = data;
-  const id = row.id;
-  const ok = await leaveList({
-    fetch: viewerFetch(),
-    id,
-    viewer: data.user.slug,
-    patch: () => {
-      left.set(id, true);
-      return () => {
-        if (data === source) left.delete(id);
-      };
-    },
-    notify: (message) => {
-      if (data === source) toast.error(message);
-    },
-  });
-  if (ok && data === source) toast.success('You stopped collaborating on this list.');
-}
-const actions = (row: UserListRow) => {
-  const names = row.id === null ? [] : collaborators.get(row.id) ?? [];
-  // On your own collaborations tab every list is one you collaborate on.
-  const isCollaborator = (data.mode === 'collaborations' && data.isSelf) ||
-    names.some(({ slug }) => slug === viewer?.slug);
-  const result = listRowActions({
-    row,
-    viewer,
-    isCollaborator: isCollaborator && !left.get(row.id ?? 0),
-    origin: page.url.origin,
-  });
-  if (row.smart) {
-    const list = row.smart;
-    const chartHref = smartListChartHref({ list, now: new Date() });
-    return {
-      ...result,
-      ...(chartHref && { chart: { href: chartHref, label: `Open on ${smartListSourceLabel(list.source)}` } }),
-      ...(result.edit && { edit: { onclick: () => (smartEditor = list) } }),
-      ...(result.delete && {
-        delete: {
-          onclick: () => removeSmart(row),
-          busy: smartBusy,
-          warning: "This can't be undone!",
-          question: 'Delete this smart list?',
-        },
-      }),
-    };
-  }
-  return {
-    ...result,
-    ...(result.edit && {
-      edit: {
-        onclick: () => {
-          const posters = row.posters.slice(0, 5).flatMap(({ image }) => (image ? [image] : []));
-          if (row.kind === 'watchlist' || row.kind === 'favorites') {
-            builtInEditor = { kind: row.kind, posters, count: row.itemCount };
-            return;
-          }
-          editor = { id: row.id, posters, count: row.itemCount };
-        },
-      },
-    }),
-    ...(result.delete && {
-      delete: {
-        onclick: () => removeList(row),
-        busy: deleting !== null || busy || reordering,
-        warning: limit !== undefined && data.lists.length > limit
-          ? `You're over the ${limit} list limit. You won't be able to re-create this list if you delete it.`
-          : "This can't be undone!",
-      },
-    }),
-    ...(result.report && {
-      report: {
-        onclick: () => {
-          void report(row);
-        },
-      },
-    }),
-    ...(result.leave && {
-      leave: {
-        onclick: () => {
-          void leave(row);
-        },
-      },
-    }),
-  };
-};
-</script>
-
 <!-- Tab and list URLs keep the canonical profile slug; list pages are OG routes og hasn't built yet. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-<SeoHead {title} description="Check out {data.profile.firstName}'s watchlist and personal lists." />
+
+<SeoHead
+  title={title}
+  description="Check out {data.profile.firstName}'s watchlist and personal lists."
+/>
 
 {#snippet row(list: UserListRow, rank: number | undefined)}
   <ListRow
-  kind={list.kind === 'smart' ? 'personal' : list.kind}
-  mine={!data.isSelf && list.owner.slug === data.user?.slug}
-  href={list.href}
-  name={list.name}
-  owner={list.owner}
-  posters={smartPreview(list)?.posters ?? list.posters}
-  postersLoading={postersLoading(list) || (list.kind === 'smart' && !smartPreview(list))}
-  itemCount={list.kind === 'smart' ? smartPreview(list)?.itemCount : list.itemCount}
-  likeCount={list.likeCount}
+    kind={list.kind === 'smart' ? 'personal' : list.kind}
+    mine={!data.isSelf && list.owner.slug === data.user?.slug}
+    href={list.href}
+    name={list.name}
+    owner={list.owner}
+    posters={smartPreview(list)?.posters ?? list.posters}
+    postersLoading={postersLoading(list) || list.kind === 'smart' && !smartPreview(list)}
+    itemCount={list.kind === 'smart' ? smartPreview(list)?.itemCount : list.itemCount}
+    likeCount={list.likeCount}
   likeTarget={list.id === null ? undefined : { id: list.id, ownerSlug: list.kind === 'personal' ? list.owner.slug : undefined, viewer: data.user?.slug ?? null }}
-  commentCount={list.commentCount}
-  pills={list.pills}
-  shareLink={list.shareLink}
+    commentCount={list.commentCount}
+    pills={list.pills}
+    shareLink={list.shareLink}
   collaborators={list.id === null ? [] : (collaborators.get(list.id) ?? []).filter(({ slug }) => !left.get(list.id ?? 0) || slug !== data.user?.slug)}
-  description={list.description}
-  {rank}
-  actions={actions(list)}
-  reorderControls={reordering ? controls : undefined}
-/>
-{#snippet controls()}
-      <ListReorderControls name={list.name} rank={list.rank} total={allLists.length} {busy}
-  onmove={(rank) => moveRow(list, rank)} ondrag={(event) => startDrag(list, event)} />
-{/snippet}
+    description={list.description}
+    rank={rank}
+    actions={actions(list)}
+    reorderControls={reordering ? controls : undefined}
+  />
+  {#snippet controls()}
+    <ListReorderControls
+      name={list.name}
+      rank={list.rank}
+      total={allLists.length}
+      busy={busy}
+      onmove={(rank) => moveRow(list, rank)}
+      ondrag={(event) => startDrag(list, event)}
+    />
+  {/snippet}
 {/snippet}
 
 {#if reportTarget}<ReportDialog bind:open={reportOpen} target={reportTarget} />{/if}
@@ -529,7 +551,16 @@ const actions = (row: UserListRow) => {
   {#snippet filters()}
     <!-- OG's lists menu: the user's own lists, then Liked (OG's Reactions), the lists they've liked. -->
     <Dropdown section={liked ? 'Liked' : 'Lists'}>
-      {#snippet trigger()}{{ personal: 'Personal', smart: 'Smart', collaborations: 'Collaborations', liked: 'Personal', 'liked-official': 'Official' }[data.mode]}{/snippet}
+      {#snippet trigger()}
+        {({
+          personal: 'Personal',
+          smart: 'Smart',
+          collaborations: 'Collaborations',
+          liked: 'Personal',
+          'liked-official': 'Official'
+        })[data.mode]}
+      {/snippet}
+
       <ul>
         <li class="header" role="presentation">Lists</li>
         <li><a href={base} aria-current={personal ? 'page' : undefined}>Personal</a></li>
@@ -579,14 +610,24 @@ const actions = (row: UserListRow) => {
   onclose={() => { editor = undefined; }} />{/if}
 {#if smartEditor}
   {@const list = smartEditor}
-  <SmartListDialog open editing initial={{ name: list.name, privacy: list.privacy }}
-    source={smartListSourceLabel(list.source, list.mediaType)} chips={[]} busy={smartBusy}
-    onsave={(change) => saveSmart(list, change)} onclose={() => (smartEditor = undefined)} />
+
+  <SmartListDialog
+    open
+    editing
+    initial={{ name: list.name, privacy: list.privacy }}
+    source={smartListSourceLabel(list.source, list.mediaType)}
+    chips={[]}
+    busy={smartBusy}
+    onsave={(change) => saveSmart(list, change)}
+    onclose={() => smartEditor = undefined}
+  />
 {/if}
 {#if builtInEditor}<BuiltInListEditor kind={builtInEditor.kind} posters={builtInEditor.posters}
-  count={builtInEditor.count}
-  privacy={data.profile.isPrivate ? 'private' : 'public'}
-  onclose={() => (builtInEditor = undefined)} />{/if}
+    count={builtInEditor.count}
+    privacy={data.profile.isPrivate ? 'private' : 'public'}
+    onclose={() => builtInEditor = undefined}
+  />
+{/if}
 
 <section
   class="lists"
@@ -621,12 +662,18 @@ const actions = (row: UserListRow) => {
       {/each}
     </div>
     {#if searchedOut}
-      <EmptyState action={{ onclick: () => (query = { ...query, terms: '' }), text: 'Clear search' }} />
+      <EmptyState
+        action={{
+          onclick: () => query = { ...query, terms: '' },
+          text: 'Clear search'
+        }}
+      />
     {:else if allLists.length === 0 && data.builtIns.length === 0}
       <div class="empty">
-        <EmptyState action={liked && data.isSelf
-          ? { href: resolve('/discover'), text: 'Find a list' }
-          : smart && data.isSelf
+        <EmptyState
+          action={liked && data.isSelf
+            ? { href: resolve('discover'), text: 'Find a list' }
+            : smart && data.isSelf
             ? { href: resolve('/shows/[chart=chart]/[[period]]', { chart: 'trending' }), text: 'Find a show' }
             : undefined} />
       </div>
@@ -639,92 +686,92 @@ const actions = (row: UserListRow) => {
   padding-block-end: var(--gutter);
 }
 
-/* Between the watchlist and favorites and the custom lists: a row's own spacing above, the next row's below. */
-.rule {
-  margin-block: var(--list-card-spacing) 0;
-  border: 0;
-  border-block-start: 1px solid var(--color-separator);
-}
-
-.empty {
-  padding-block-start: var(--gutter);
-}
-
-.owner-tools {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--list-tools-gap);
-}
-
-.tool {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-action-button-icon);
-  min-block-size: var(--control-height);
-  padding: 0 var(--space-control-inline);
-  border: var(--action-button-border-width) solid var(--color-control-border);
-  border-radius: var(--radius-control);
-  background: none;
-  color: var(--color-list-reorder);
-  font-family: var(--font-headings);
-  font-size: var(--font-size-action-button);
-  font-weight: var(--font-weight-headings-heavy);
-  line-height: 1;
-  text-transform: uppercase;
-  white-space: nowrap;
-  cursor: pointer;
-  transition: border-color var(--transition-see-more), background-color var(--transition-see-more);
-
-  & :global(.icon) {
-    font-size: var(--font-size-action-button-icon);
+  /* Between the watchlist and favorites and the custom lists: a row's own spacing above, the next row's below. */
+  .rule {
+    margin-block: var(--list-card-spacing) 0;
+    border: 0;
+    border-block-start: 1px solid var(--color-separator);
   }
 
-  &:hover:not(:disabled) {
-    border-color: var(--color-control-border-hover);
-    background-color: var(--color-control-hover-bg);
+  .empty {
+    padding-block-start: var(--gutter);
   }
 
-  &:disabled {
-    opacity: var(--opacity-action-disabled);
-    cursor: default;
+  .owner-tools {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--list-tools-gap);
   }
-}
 
-/* Add list is the toolbar's one filled button; Reorder keeps the gray outline. */
-.add {
-  border-color: var(--color-action-add-fill);
-  background-color: var(--color-action-add-fill);
-  color: var(--color-text-inverse);
+  .tool {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-action-button-icon);
+    min-block-size: var(--control-height);
+    padding: 0 var(--space-control-inline);
+    border: var(--action-button-border-width) solid var(--color-control-border);
+    border-radius: var(--radius-control);
+    background: none;
+    color: var(--color-list-reorder);
+    font-family: var(--font-headings);
+    font-size: var(--font-size-action-button);
+    font-weight: var(--font-weight-headings-heavy);
+    line-height: 1;
+    text-transform: uppercase;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: border-color var(--transition-see-more), background-color var(--transition-see-more);
 
-  &:hover:not(:disabled) {
-    border-color: var(--color-action-add-fill-hover);
-    background-color: var(--color-action-add-fill-hover);
+    & :global(.icon) {
+      font-size: var(--font-size-action-button-icon);
+    }
+
+    &:hover:not(:disabled) {
+      border-color: var(--color-control-border-hover);
+      background-color: var(--color-control-hover-bg);
+    }
+
+    &:disabled {
+      opacity: var(--opacity-action-disabled);
+      cursor: default;
+    }
   }
-}
 
-/* On, it reads Done in green, like Manage on a list. */
-.reorder.active {
-  border-color: var(--color-mode-done-border);
-  background-color: var(--color-mode-done-bg);
-  color: var(--color-mode-done-text);
+  /* Add list is the toolbar's one filled button; Reorder keeps the gray outline. */
+  .add {
+    border-color: var(--color-action-add-fill);
+    background-color: var(--color-action-add-fill);
+    color: var(--color-text-inverse);
 
-  &:hover:not(:disabled) {
-    border-color: var(--color-mode-done);
-    background-color: var(--color-mode-done-bg-hover);
+    &:hover:not(:disabled) {
+      border-color: var(--color-action-add-fill-hover);
+      background-color: var(--color-action-add-fill-hover);
+    }
   }
-}
-.reorder:focus-visible {
-  outline: var(--list-reorder-rank-border) solid var(--color-input-border-focus);
-}
-.rows > div {
-  scroll-margin-block-start: calc(var(--header-height) + var(--list-reorder-scroll-offset));
-}
-.dragging {
-  opacity: var(--list-reorder-drag-opacity);
-}
-.drop-target {
-  outline: var(--list-reorder-rank-border) solid var(--brand-primary);
-}
+
+  /* On, it reads Done in green, like Manage on a list. */
+  .reorder.active {
+    border-color: var(--color-mode-done-border);
+    background-color: var(--color-mode-done-bg);
+    color: var(--color-mode-done-text);
+
+    &:hover:not(:disabled) {
+      border-color: var(--color-mode-done);
+      background-color: var(--color-mode-done-bg-hover);
+    }
+  }
+  .reorder:focus-visible {
+    outline: var(--list-reorder-rank-border) solid var(--color-input-border-focus);
+  }
+  .rows > div {
+    scroll-margin-block-start: calc(var(--header-height) + var(--list-reorder-scroll-offset));
+  }
+  .dragging {
+    opacity: var(--list-reorder-drag-opacity);
+  }
+  .drop-target {
+    outline: var(--list-reorder-rank-border) solid var(--brand-primary);
+  }
 
 .sort,
 .tools {

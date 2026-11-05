@@ -5,7 +5,7 @@ export interface KeyedCache {
 }
 
 interface SharedCacheParams<T> {
-  /** The data center's cache, `platform.caches.default`. Left out (tests, a dev server without one), it always loads. */
+  /** The data center's cache, `edgeCache()`. Left out (tests, a dev server without one), it always loads. */
   cache: KeyedCache | undefined;
   /** A URL on og's own origin that names the value, like `https://og.trakt.tv/_cache/home/live`. */
   key: string;

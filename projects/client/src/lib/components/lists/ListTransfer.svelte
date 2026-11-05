@@ -3,32 +3,32 @@ import { goto } from '$app/navigation';
 import { resolve } from '$app/paths';
 import { page } from '$app/state';
 import { tick } from 'svelte';
-import { login } from '$lib/auth/login';
-import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
-import { useTrack } from '$lib/analytics/useTrack';
-import { rawApiFetch } from '$lib/api/rawApiFetch';
-import { overlay } from '$lib/overlay/overlay';
-import { toast } from '$lib/components/toast/toast.svelte';
-import EmptyNote from '$lib/components/empty/EmptyNote.svelte';
-import LinkButton from '$lib/components/button/LinkButton.svelte';
-import SearchField from '$lib/components/filters/SearchField.svelte';
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import { listRowIcon } from '$lib/components/lists/listRowIcon';
-import { loadListCatalog } from '$lib/components/lists/loadListCatalog';
-import { pickerSections } from '$lib/components/lists/pickerSections';
-import { sortPickerLists } from '$lib/components/lists/sortPickerLists';
-import type { PickerList } from '$lib/components/lists/PickerList';
-import { fetchListItemRefs } from '$lib/lists/fetchListItemRefs';
-import { transferListItems } from '$lib/lists/transferListItems';
-import type { ListView } from '$lib/lists/toListView';
-import type { ListQuery } from '$lib/lists/ListQuery';
-import type { ListSort } from '$lib/lists/resolveListSort';
-import Icon from '$lib/icons/Icon.svelte';
-import add from '$lib/icons/trakt/add-thick.svg?raw';
-import close from '$lib/icons/regular/xmark.svg?raw';
-import search from '$lib/icons/regular/magnifying-glass.svg?raw';
-import arrow from '$lib/icons/light/angle-right.svg?raw';
-import spinner from '$lib/icons/solid/arrows-rotate.svg?raw';
+import { login } from '#lib/auth/login.ts';
+import { AnalyticsEvent } from '#lib/analytics/AnalyticsEvent.ts';
+import { useTrack } from '#lib/analytics/useTrack.ts';
+import { rawApiFetch } from '#lib/api/rawApiFetch.ts';
+import { overlay } from '#lib/overlay/overlay.ts';
+import { toast } from '#lib/components/toast/toast.svelte.ts';
+import EmptyNote from '#lib/components/empty/EmptyNote.svelte';
+import LinkButton from '#lib/components/button/LinkButton.svelte';
+import SearchField from '#lib/components/filters/SearchField.svelte';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import { listRowIcon } from '#lib/components/lists/listRowIcon.ts';
+import { loadListCatalog } from '#lib/components/lists/loadListCatalog.ts';
+import { pickerSections } from '#lib/components/lists/pickerSections.ts';
+import { sortPickerLists } from '#lib/components/lists/sortPickerLists.ts';
+import type { PickerList } from '#lib/components/lists/PickerList.ts';
+import { fetchListItemRefs } from '#lib/lists/fetchListItemRefs.ts';
+import { transferListItems } from '#lib/lists/transferListItems.ts';
+import type { ListView } from '#lib/lists/toListView.ts';
+import type { ListQuery } from '#lib/lists/ListQuery.ts';
+import type { ListSort } from '#lib/lists/resolveListSort.ts';
+import Icon from '#lib/icons/Icon.svelte';
+import add from '#lib/icons/trakt/add-thick.svg?raw';
+import close from '#lib/icons/regular/xmark.svg?raw';
+import search from '#lib/icons/regular/magnifying-glass.svg?raw';
+import arrow from '#lib/icons/light/angle-right.svg?raw';
+import spinner from '#lib/icons/solid/arrows-rotate.svg?raw';
 import { GENERIC_ERROR } from '../../utils/genericError.ts';
 import { viewerFetch } from '../../auth/viewerFetch.ts';
 
@@ -204,7 +204,7 @@ async function transfer(list: PickerList | null, watchlist = false) {
     );
     await goto(
       result.target.watchlist
-        ? resolve('/users/[id]/watchlist', { id: page.data.user?.slug ?? 'me' })
+        ? resolve('/users/[id]/watchlist/[[type]]', { id: page.data.user?.slug ?? 'me' })
         : resolve('/lists/[id=listId]', { id: String(result.target.id) }),
       {
         invalidateAll: true,

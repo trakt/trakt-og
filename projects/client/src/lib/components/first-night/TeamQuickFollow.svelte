@@ -5,18 +5,18 @@
   place until the team loads.
 -->
 <script lang="ts">
-import Shimmer from '$lib/components/loading/Shimmer.svelte';
-import { toast } from '$lib/components/toast/toast.svelte';
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import { fetchTeamToFollow } from '$lib/firstNight/teamToFollow';
-import Icon from '$lib/icons/Icon.svelte';
-import plus from '$lib/icons/solid/plus.svg?raw';
-import check from '$lib/icons/trakt/check-thick.svg?raw';
-import { overlay } from '$lib/overlay/overlay';
-import { changeRelationship } from '$lib/users/changeRelationship';
-import { createRelationshipOverlay } from '$lib/users/createRelationshipOverlay.svelte';
-import { relationshipRequest } from '$lib/users/relationshipRequest';
-import type { ViewerRelation } from '$lib/users/ViewerRelation';
+import Shimmer from '#lib/components/loading/Shimmer.svelte';
+import { toast } from '#lib/components/toast/toast.svelte.ts';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import { fetchTeamToFollow } from '#lib/firstNight/teamToFollow.ts';
+import Icon from '#lib/icons/Icon.svelte';
+import plus from '#lib/icons/solid/plus.svg?raw';
+import check from '#lib/icons/trakt/check-thick.svg?raw';
+import { overlay } from '#lib/overlay/overlay.ts';
+import { changeRelationship } from '#lib/users/changeRelationship.ts';
+import { createRelationshipOverlay } from '#lib/users/createRelationshipOverlay.svelte.ts';
+import { relationshipRequest } from '#lib/users/relationshipRequest.ts';
+import type { ViewerRelation } from '#lib/users/ViewerRelation.ts';
 
 const { count = 5 }: { count?: number } = $props();
 const team = fetchTeamToFollow(fetch);

@@ -5,14 +5,14 @@
   their places until GitHub answers.
 -->
 <script lang="ts">
-import type { AboutGithub } from '$lib/about/github/fetchAboutGithub';
-import { playScene } from '$lib/about/playScene';
-import type { AboutScene } from '$lib/about/scenes/AboutScene';
-import { toAboutCounts } from '$lib/about/toAboutCounts';
-import ProjectLink from '$lib/components/brand/ProjectLink.svelte';
-import Signpost from '$lib/components/signpost/Signpost.svelte';
-import TagPills from '$lib/components/labels/TagPills.svelte';
-import Shimmer from '$lib/components/loading/Shimmer.svelte';
+import type { AboutGithub } from '#lib/about/github/fetchAboutGithub.ts';
+import { playScene } from '#lib/about/playScene.ts';
+import type { AboutScene } from '#lib/about/scenes/AboutScene.ts';
+import { toAboutCounts } from '#lib/about/toAboutCounts.ts';
+import ProjectLink from '#lib/components/brand/ProjectLink.svelte';
+import Signpost from '#lib/components/signpost/Signpost.svelte';
+import TagPills from '#lib/components/labels/TagPills.svelte';
+import Shimmer from '#lib/components/loading/Shimmer.svelte';
 import { prefersReducedMotion } from 'svelte/motion';
 import { helpScenes } from './scenes/helpScenes.ts';
 

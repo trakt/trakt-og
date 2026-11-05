@@ -10,48 +10,48 @@
   list between the subnav and the rows.
 -->
 <script lang="ts">
-import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
-import SeoHead from '$lib/seo/SeoHead.svelte';
+import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
+import SeoHead from '#lib/seo/SeoHead.svelte';
 import { untrack } from 'svelte';
 import { SvelteMap, SvelteURLSearchParams } from 'svelte/reactivity';
 import { goto, invalidateAll } from '$app/navigation';
 import { page } from '$app/state';
-import Container from '$lib/components/container/Container.svelte';
-import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
-import SortLabel from '$lib/components/sort/SortLabel.svelte';
-import SortMenu from '$lib/components/sort/SortMenu.svelte';
-import { withTraktSorts } from '$lib/components/sort/sortMenu';
-import SortDirection from '$lib/components/dropdown/SortDirection.svelte';
-import LoadFailed from '$lib/components/empty/LoadFailed.svelte';
-import EmptyState from '$lib/components/empty/EmptyState.svelte';
-import CardShimmerRow from '$lib/components/loading/CardShimmerRow.svelte';
-import LoadingOverlay from '$lib/components/loading/LoadingOverlay.svelte';
-import ProgressRowShimmer from '$lib/components/loading/ProgressRowShimmer.svelte';
-import FadeHideMenu from '$lib/components/filters/FadeHideMenu.svelte';
-import TermsFilter from '$lib/components/filters/TermsFilter.svelte';
-import type { HeaderUser } from '$lib/components/header/HeaderUser';
-import OnDeckCard from '$lib/components/media/OnDeckCard.svelte';
-import type { OnDeckItem } from '$lib/components/media/OnDeckItem';
-import PosterCard from '$lib/components/media/PosterCard.svelte';
-import PosterGrid from '$lib/components/media/PosterGrid.svelte';
-import { quickIconFill } from '$lib/components/media/quickIconFill';
-import UnderProgress from '$lib/components/media/UnderProgress.svelte';
-import Pagination from '$lib/components/pagination/Pagination.svelte';
-import { toast } from '$lib/components/toast/toast.svelte';
-import SectionToolbar from '$lib/components/toolbar/SectionToolbar.svelte';
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import barsProgress from '$lib/icons/regular/bars-progress.svg?raw';
-import grid2 from '$lib/icons/regular/grid-2.svg?raw';
-import bookmark from '$lib/icons/solid/bookmark.svg?raw';
-import checkThick from '$lib/icons/trakt/check-thick.svg?raw';
-import file from '$lib/icons/regular/file.svg?raw';
-import { overlay } from '$lib/overlay/overlay';
-import { settingsRequest } from '$lib/settings/settingsRequest';
-import type { ProfileUser } from '$lib/users/ProfileUser';
-import { findAction } from '$lib/users/findAction';
-import { fadeOnChange } from '$lib/utils/fadeOnChange';
-import { nearViewport } from '$lib/utils/nearViewport';
+import Container from '#lib/components/container/Container.svelte';
+import Dropdown from '#lib/components/dropdown/Dropdown.svelte';
+import SortLabel from '#lib/components/sort/SortLabel.svelte';
+import SortMenu from '#lib/components/sort/SortMenu.svelte';
+import { withTraktSorts } from '#lib/components/sort/sortMenu.ts';
+import SortDirection from '#lib/components/dropdown/SortDirection.svelte';
+import LoadFailed from '#lib/components/empty/LoadFailed.svelte';
+import EmptyState from '#lib/components/empty/EmptyState.svelte';
+import CardShimmerRow from '#lib/components/loading/CardShimmerRow.svelte';
+import LoadingOverlay from '#lib/components/loading/LoadingOverlay.svelte';
+import ProgressRowShimmer from '#lib/components/loading/ProgressRowShimmer.svelte';
+import FadeHideMenu from '#lib/components/filters/FadeHideMenu.svelte';
+import TermsFilter from '#lib/components/filters/TermsFilter.svelte';
+import type { HeaderUser } from '#lib/components/header/HeaderUser.ts';
+import OnDeckCard from '#lib/components/media/OnDeckCard.svelte';
+import type { OnDeckItem } from '#lib/components/media/OnDeckItem.ts';
+import PosterCard from '#lib/components/media/PosterCard.svelte';
+import PosterGrid from '#lib/components/media/PosterGrid.svelte';
+import { quickIconFill } from '#lib/components/media/quickIconFill.ts';
+import UnderProgress from '#lib/components/media/UnderProgress.svelte';
+import Pagination from '#lib/components/pagination/Pagination.svelte';
+import { toast } from '#lib/components/toast/toast.svelte.ts';
+import SectionToolbar from '#lib/components/toolbar/SectionToolbar.svelte';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import barsProgress from '#lib/icons/regular/bars-progress.svg?raw';
+import grid2 from '#lib/icons/regular/grid-2.svg?raw';
+import bookmark from '#lib/icons/solid/bookmark.svg?raw';
+import checkThick from '#lib/icons/trakt/check-thick.svg?raw';
+import file from '#lib/icons/regular/file.svg?raw';
+import { overlay } from '#lib/overlay/overlay.ts';
+import { settingsRequest } from '#lib/settings/settingsRequest.ts';
+import type { ProfileUser } from '#lib/users/ProfileUser.ts';
+import { findAction } from '#lib/users/findAction.ts';
+import { fadeOnChange } from '#lib/utils/fadeOnChange.ts';
+import { nearViewport } from '#lib/utils/nearViewport.ts';
 import { changeProgressView, type ProgressView } from './changeProgressView.ts';
 import { filterProgress, keepOnScreen } from './filterProgress.ts';
 import { keepOrder } from './keepOrder.ts';
@@ -216,20 +216,21 @@ function rememberSort(sort: Pick<ProgressSort, 'by' | 'how'>) {
 function flipSort(descending: boolean) {
   const sort = { by: data.sort.by, how: descending ? ('desc' as const) : ('asc' as const) };
   rememberSort(sort);
+   
   // eslint-disable-next-line svelte/no-navigation-without-resolve -- the same page in the other direction
   return goto(href(data.type, sort));
 }
 
 // OG's `link_params`: the query string without the page. A new type drops the sort, like OG's type links.
 function href(type: ProgressType, sort?: Pick<ProgressSort, 'by' | 'how'>) {
-  const query = new SvelteURLSearchParams(page.url.searchParams);
+  const query = new SvelteURLSearchParams(page.url.search);
   query.delete('page');
   const path = sort ? `/${type}/${sort.by}/${sort.how}` : type === 'watched' ? '' : `/${type}`;
   return `${base}${path}${query.size ? `?${query}` : ''}`;
 }
 
 function withTerms(terms: string) {
-  const url = new URL(page.url);
+  const url = new URL(page.url.href);
   url.searchParams.delete('page');
   if (terms) url.searchParams.set('terms', terms);
   else url.searchParams.delete('terms');
@@ -239,21 +240,23 @@ function withTerms(terms: string) {
 // OG reloaded the page on each toggle. Turning Completed off also drops the Up Next link's `?hide_completed=true`, or
 // it would stay hidden.
 function changeHide(hide: ProgressHide[]) {
-  const url = new URL(page.url);
+  const url = new URL(page.url.href);
   url.searchParams.delete('page');
   if (!hide.includes('completed')) url.searchParams.delete('hide_completed');
   // The same page with other filters; resolve() only takes route ids.
+   
   // eslint-disable-next-line svelte/no-navigation-without-resolve
-  void goto(url.pathname + url.search, { invalidateAll: true, noScroll: true });
+  void goto(url.pathname + url.search, { invalidateAll: true, reset: false });
 }
 
 // Drops the search, the list and the hide toggles, and the eye's saved hide cookie as its Show All does.
 function clearFilters() {
   expireHideCookie('progress');
-  const url = new URL(page.url);
+  const url = new URL(page.url.href);
   for (const key of ['page', 'terms', 'list', 'hide_completed']) url.searchParams.delete(key);
+   
   // eslint-disable-next-line svelte/no-navigation-without-resolve -- the same page without its filters
-  void goto(url.pathname + url.search, { invalidateAll: true, noScroll: true });
+  void goto(url.pathname + url.search, { invalidateAll: true, reset: false });
 }
 </script>
 

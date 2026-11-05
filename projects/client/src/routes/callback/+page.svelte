@@ -1,14 +1,14 @@
 <script lang="ts">
-import SeoHead from '$lib/seo/SeoHead.svelte';
-import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
-import { useTrack } from '$lib/analytics/useTrack';
-import AuthStepScreen from '$lib/auth/AuthStepScreen.svelte';
-import { isDeclinedSignIn } from '$lib/auth/authFailure';
-import { callbackReturnPath } from '$lib/auth/callbackReturnPath';
-import { login } from '$lib/auth/login';
-import { storeToken } from '$lib/auth/storeToken';
-import { toLoginFailureCode } from '$lib/auth/toLoginFailureCode';
-import { userManager } from '$lib/auth/userManager';
+import SeoHead from '#lib/seo/SeoHead.svelte';
+import { AnalyticsEvent } from '#lib/analytics/AnalyticsEvent.ts';
+import { useTrack } from '#lib/analytics/useTrack.ts';
+import AuthStepScreen from '#lib/auth/AuthStepScreen.svelte';
+import { isDeclinedSignIn } from '#lib/auth/authFailure.ts';
+import { callbackReturnPath } from '#lib/auth/callbackReturnPath.ts';
+import { login } from '#lib/auth/login.ts';
+import { storeToken } from '#lib/auth/storeToken.ts';
+import { toLoginFailureCode } from '#lib/auth/toLoginFailureCode.ts';
+import { userManager } from '#lib/auth/userManager.ts';
 import type { User } from 'oidc-client-ts';
 
 const { track: trackLoginComplete } = useTrack(AnalyticsEvent.LoginComplete);

@@ -3,7 +3,7 @@
   deals shows and movies alternately. Shimmering picks hold the row until the chart lands; nothing renders if it fails.
 -->
 <script lang="ts">
-import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
+import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
 import {
   fetchStarterPicks,
   interleave,
@@ -11,8 +11,8 @@ import {
   type StarterChart,
   type StarterPick,
   type StarterType,
-} from '$lib/firstNight/starterPicks';
-import PickShimmer from '$lib/components/loading/PickShimmer.svelte';
+} from '#lib/firstNight/starterPicks.ts';
+import PickShimmer from '#lib/components/loading/PickShimmer.svelte';
 import PickPoster from './PickPoster.svelte';
 
 interface Props {

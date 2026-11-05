@@ -6,9 +6,9 @@
   it's a disclosure button for that element, like OG's "Expand" on a collapsed panel.
 -->
 <script lang="ts">
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import arrowRightLong from '$lib/icons/regular/arrow-right-long.svg?raw';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import arrowRightLong from '#lib/icons/regular/arrow-right-long.svg?raw';
 
 type Props =
   & { text?: string; iconOnly?: boolean }

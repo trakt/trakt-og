@@ -4,8 +4,8 @@
   the button that opens the shared restore confirmation, and the art around it still clicks through to its link.
 -->
 <script lang="ts">
-import VisibilityControl from '$lib/components/visibility/VisibilityControl.svelte';
-import type { VisibilityTarget } from '$lib/components/visibility/VisibilityTarget';
+import VisibilityControl from '#lib/components/visibility/VisibilityControl.svelte';
+import type { VisibilityTarget } from '#lib/components/visibility/VisibilityTarget.ts';
 
 interface Props {
   target?: VisibilityTarget;

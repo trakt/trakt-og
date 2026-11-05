@@ -1,5 +1,5 @@
-import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
-import { useTrack } from '$lib/analytics/useTrack';
+import { AnalyticsEvent } from '#lib/analytics/AnalyticsEvent.ts';
+import { useTrack } from '#lib/analytics/useTrack.ts';
 import type { createOverlay } from '../../overlay/createOverlay.svelte.ts';
 import { withoutList } from '../../overlay/listMembership.ts';
 /** Remove the row and patch membership together; a failed DELETE restores both. */

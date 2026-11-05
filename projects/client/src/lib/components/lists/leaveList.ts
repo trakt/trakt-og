@@ -1,5 +1,5 @@
-import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
-import { useTrack } from '$lib/analytics/useTrack';
+import { AnalyticsEvent } from '#lib/analytics/AnalyticsEvent.ts';
+import { useTrack } from '#lib/analytics/useTrack.ts';
 import { rawApiFetch } from '../../api/rawApiFetch.ts';
 
 /** There is no @trakt/api contract for this native, Official-client route. Success is an empty 204. */

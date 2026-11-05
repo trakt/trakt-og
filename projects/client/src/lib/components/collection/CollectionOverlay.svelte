@@ -5,7 +5,7 @@
     <CollectionOverlay badges={collectionBadges(row.metadata)} />
 -->
 <script lang="ts">
-import Icon from '$lib/icons/Icon.svelte';
+import Icon from '#lib/icons/Icon.svelte';
 import type { CollectionBadges, CollectionLogo } from './collectionBadges.ts';
 import { collectionLogo } from './collectionLogo.ts';
 

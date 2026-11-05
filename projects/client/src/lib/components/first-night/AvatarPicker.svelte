@@ -4,13 +4,13 @@
 -->
 <script lang="ts">
 import { invalidateAll } from '$app/navigation';
-import { api } from '$lib/api/api';
-import { viewerFetch } from '$lib/auth/viewerFetch';
-import { toast } from '$lib/components/toast/toast.svelte';
-import { squareAvatar } from '$lib/firstNight/squareAvatar';
-import Icon from '$lib/icons/Icon.svelte';
-import camera from '$lib/icons/solid/camera.svg?raw';
-import { markSettingsChanged } from '$lib/settings/markSettingsChanged';
+import { api } from '#lib/api/api.ts';
+import { viewerFetch } from '#lib/auth/viewerFetch.ts';
+import { toast } from '#lib/components/toast/toast.svelte.ts';
+import { squareAvatar } from '#lib/firstNight/squareAvatar.ts';
+import Icon from '#lib/icons/Icon.svelte';
+import camera from '#lib/icons/solid/camera.svg?raw';
+import { markSettingsChanged } from '#lib/settings/markSettingsChanged.ts';
 
 const { src }: { src: string } = $props();
 const id = $props.id();

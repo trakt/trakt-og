@@ -5,8 +5,8 @@
 -->
 <script lang="ts">
 import type { Snippet } from 'svelte';
-import CtaLink from '$lib/components/first-night/CtaLink.svelte';
-import { type PanelQuote, quoteFanart } from '$lib/firstNight/panelQuotes';
+import CtaLink from '#lib/components/first-night/CtaLink.svelte';
+import { type PanelQuote, quoteFanart } from '#lib/firstNight/panelQuotes.ts';
 import type { EmptyAction } from './EmptyAction.ts';
 
 interface Props {

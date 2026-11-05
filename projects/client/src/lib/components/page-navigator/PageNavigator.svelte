@@ -6,9 +6,9 @@
   "more" at the last, and the pill hides when there's only one row to show.
 -->
 <script lang="ts">
-import Icon from '$lib/icons/Icon.svelte';
-import circleMinus from '$lib/icons/solid/circle-minus.svg?raw';
-import circlePlus from '$lib/icons/solid/circle-plus.svg?raw';
+import Icon from '#lib/icons/Icon.svelte';
+import circleMinus from '#lib/icons/solid/circle-minus.svg?raw';
+import circlePlus from '#lib/icons/solid/circle-plus.svg?raw';
 
 interface Props {
   rows: number;

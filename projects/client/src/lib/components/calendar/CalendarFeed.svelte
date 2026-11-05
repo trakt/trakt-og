@@ -5,13 +5,13 @@
     <CalendarFeed url={feedUrl} mode="show" />
 -->
 <script lang="ts">
-import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
-import { useTrack } from '$lib/analytics/useTrack';
-import { toast } from '$lib/components/toast/toast.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import calendarPlus from '$lib/icons/regular/calendar-plus.svg?raw';
-import copyIcon from '$lib/icons/regular/copy.svg?raw';
-import check from '$lib/icons/solid/check.svg?raw';
+import { AnalyticsEvent } from '#lib/analytics/AnalyticsEvent.ts';
+import { useTrack } from '#lib/analytics/useTrack.ts';
+import { toast } from '#lib/components/toast/toast.svelte.ts';
+import Icon from '#lib/icons/Icon.svelte';
+import calendarPlus from '#lib/icons/regular/calendar-plus.svg?raw';
+import copyIcon from '#lib/icons/regular/copy.svg?raw';
+import check from '#lib/icons/solid/check.svg?raw';
 
 interface Props {
   url: string;

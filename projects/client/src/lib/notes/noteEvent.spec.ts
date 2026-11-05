@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
+import { AnalyticsEvent } from '#lib/analytics/AnalyticsEvent.ts';
 import { noteEvent } from './noteEvent.ts';
 
 describe('noteEvent', () => {

@@ -9,9 +9,9 @@
   in bold on the axis while `picked`, like the summary's People You Follow listing who gave it.
 -->
 <script lang="ts">
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import { countLabel } from '$lib/utils/countLabel';
-import type { ProfileRatingBar, ProfileRatings } from '$lib/users/profile/toProfileRatings';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import { countLabel } from '#lib/utils/countLabel.ts';
+import type { ProfileRatingBar, ProfileRatings } from '#lib/users/profile/toProfileRatings.ts';
 
 interface Props {
   chart: NonNullable<ProfileRatings['chart']>;

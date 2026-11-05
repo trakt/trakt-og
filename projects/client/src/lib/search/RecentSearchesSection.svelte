@@ -5,12 +5,12 @@
     <RecentSearchesSection {terms} open={data.sidebar.recent} query={data.query} slug={data.slug} {onremove} {onclear} />
 -->
 <script lang="ts">
-import type { RecentSearch } from '$lib/components/header/createRecentSearches.svelte';
-import { recentSearchType } from '$lib/components/header/recentSearchType';
-import RecentClearAll from '$lib/components/header/RecentClearAll.svelte';
-import SearchTermRow from '$lib/components/header/SearchTermRow.svelte';
-import SidebarSection from '$lib/components/sidebar/SidebarSection.svelte';
-import clockRotateLeft from '$lib/icons/light/clock-rotate-left.svg?raw';
+import type { RecentSearch } from '#lib/components/header/createRecentSearches.svelte.ts';
+import { recentSearchType } from '#lib/components/header/recentSearchType.ts';
+import RecentClearAll from '#lib/components/header/RecentClearAll.svelte';
+import SearchTermRow from '#lib/components/header/SearchTermRow.svelte';
+import SidebarSection from '#lib/components/sidebar/SidebarSection.svelte';
+import clockRotateLeft from '#lib/icons/light/clock-rotate-left.svg?raw';
 
 interface Props {
   terms: ReadonlyArray<RecentSearch>;

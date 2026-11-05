@@ -9,12 +9,12 @@
     </ErrorScene>
 -->
 <script lang="ts">
-import LinkButton from '$lib/components/button/LinkButton.svelte';
-import TitleTags from '$lib/components/summary/TitleTags.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import lifeRing from '$lib/icons/solid/life-ring.svg?raw';
-import spaceStationMoon from '$lib/icons/solid/space-station-moon.svg?raw';
-import { traktUrls } from '$lib/traktUrls';
+import LinkButton from '#lib/components/button/LinkButton.svelte';
+import TitleTags from '#lib/components/summary/TitleTags.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import lifeRing from '#lib/icons/solid/life-ring.svg?raw';
+import spaceStationMoon from '#lib/icons/solid/space-station-moon.svg?raw';
+import { traktUrls } from '#lib/traktUrls.ts';
 import type { Snippet } from 'svelte';
 import type { ErrorSceneTheme } from './ErrorSceneTheme.ts';
 import { animateScene } from './animateScene.ts';

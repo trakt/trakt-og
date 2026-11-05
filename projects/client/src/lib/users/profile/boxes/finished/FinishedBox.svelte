@@ -1,11 +1,11 @@
 <!-- Finished: shows finished, the share of started shows that is, and the latest one. -->
 <script lang="ts">
-import BoxChips from '$lib/components/users/profile-box/BoxChips.svelte';
-import BoxFigure from '$lib/components/users/profile-box/BoxFigure.svelte';
-import BoxProgress from '$lib/components/users/profile-box/BoxProgress.svelte';
-import ProfileBox from '$lib/components/users/profile-box/ProfileBox.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import circleCheck from '$lib/icons/solid/circle-check.svg?raw';
+import BoxChips from '#lib/components/users/profile-box/BoxChips.svelte';
+import BoxFigure from '#lib/components/users/profile-box/BoxFigure.svelte';
+import BoxProgress from '#lib/components/users/profile-box/BoxProgress.svelte';
+import ProfileBox from '#lib/components/users/profile-box/ProfileBox.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import circleCheck from '#lib/icons/solid/circle-check.svg?raw';
 import type { FinishedView } from './FinishedView.ts';
 
 const { view }: { view: FinishedView } = $props();

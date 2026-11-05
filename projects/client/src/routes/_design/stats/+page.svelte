@@ -1,18 +1,18 @@
 <script lang="ts">
-import Container from '$lib/components/container/Container.svelte';
-import WatchedKeys from '$lib/components/dashboard/WatchedKeys.svelte';
-import Specimen from '$lib/design/Specimen.svelte';
-import { toExternalRatings } from '$lib/components/summary/toExternalRatings';
-import ProfileRatingsChart from '$lib/components/users/ProfileRatingsChart.svelte';
-import globe from '$lib/icons/regular/globe.svg?raw';
-import heart from '$lib/icons/regular/heart.svg?raw';
-import userGroup from '$lib/icons/regular/user-group.svg?raw';
-import CommunityStats from '$lib/stats/CommunityStats.svelte';
-import SiteScores from '$lib/stats/SiteScores.svelte';
-import StatsSection from '$lib/stats/StatsSection.svelte';
-import { toCommunityStats } from '$lib/stats/toCommunityStats';
-import { toSiteScores } from '$lib/stats/toSiteScores';
-import { toProfileRatings } from '$lib/users/profile/toProfileRatings';
+import Container from '#lib/components/container/Container.svelte';
+import WatchedKeys from '#lib/components/dashboard/WatchedKeys.svelte';
+import Specimen from '#lib/design/Specimen.svelte';
+import { toExternalRatings } from '#lib/components/summary/toExternalRatings.ts';
+import ProfileRatingsChart from '#lib/components/users/ProfileRatingsChart.svelte';
+import globe from '#lib/icons/regular/globe.svg?raw';
+import heart from '#lib/icons/regular/heart.svg?raw';
+import userGroup from '#lib/icons/regular/user-group.svg?raw';
+import CommunityStats from '#lib/stats/CommunityStats.svelte';
+import SiteScores from '#lib/stats/SiteScores.svelte';
+import StatsSection from '#lib/stats/StatsSection.svelte';
+import { toCommunityStats } from '#lib/stats/toCommunityStats.ts';
+import { toSiteScores } from '#lib/stats/toSiteScores.ts';
+import { toProfileRatings } from '#lib/users/profile/toProfileRatings.ts';
 import type { Snippet } from 'svelte';
 
 const ratings = toProfileRatings({

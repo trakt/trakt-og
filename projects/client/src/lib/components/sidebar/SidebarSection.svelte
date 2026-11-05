@@ -6,8 +6,8 @@
     <SidebarSection id="display" title="Display" open={data.sections.display} remember>…</SidebarSection>
 -->
 <script lang="ts">
-import Icon from '$lib/icons/Icon.svelte';
-import chevron from '$lib/icons/solid/chevron-down.svg?raw';
+import Icon from '#lib/icons/Icon.svelte';
+import chevron from '#lib/icons/solid/chevron-down.svg?raw';
 import type { Snippet } from 'svelte';
 
 interface Props {

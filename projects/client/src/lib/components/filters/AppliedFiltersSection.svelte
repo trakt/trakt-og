@@ -8,11 +8,11 @@
 -->
 <script lang="ts">
 import type { Snippet } from 'svelte';
-import SidebarSection from '$lib/components/sidebar/SidebarSection.svelte';
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import resetIcon from '$lib/icons/regular/arrow-rotate-left.svg?raw';
-import { countLabel } from '$lib/utils/countLabel';
+import SidebarSection from '#lib/components/sidebar/SidebarSection.svelte';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import resetIcon from '#lib/icons/regular/arrow-rotate-left.svg?raw';
+import { countLabel } from '#lib/utils/countLabel.ts';
 import FilterChips from './FilterChips.svelte';
 import type { FilterTag } from './filterTags.ts';
 import { SAVE_TARGETS, type SaveTarget } from './saveTargets.ts';

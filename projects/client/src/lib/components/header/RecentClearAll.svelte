@@ -5,9 +5,9 @@
     <RecentClearAll onclick={clear} />
 -->
 <script lang="ts">
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import xmark from '$lib/icons/light/xmark.svg?raw';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import xmark from '#lib/icons/light/xmark.svg?raw';
 
 interface Props {
   onclick: () => void;

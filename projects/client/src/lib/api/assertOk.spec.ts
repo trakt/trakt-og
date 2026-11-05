@@ -20,7 +20,10 @@ describe('api: assertOk', () => {
 
   it('should throw a 502 for any other status', () => {
     expect(() => assertOk({ status: 500 }, 'Season')).toThrow(
-      expect.objectContaining({ status: 502, body: { message: 'The Trakt API could not load this season.' } }),
+      expect.objectContaining({
+        status: 502,
+        body: { message: 'The Trakt API could not load this season.', status: 502 },
+      }),
     );
   });
 });

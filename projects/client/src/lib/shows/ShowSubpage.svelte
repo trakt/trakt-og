@@ -4,19 +4,19 @@
   facts and action buttons, then `children` underneath.
 -->
 <script lang="ts">
-import FanartHeader from '$lib/components/media/FanartHeader.svelte';
-import ActionButtons from '$lib/components/summary/ActionButtons.svelte';
-import ExternalLinks from '$lib/components/summary/ExternalLinks.svelte';
-import MediaTools from '$lib/components/summary/MediaTools.svelte';
-import ItemNav from '$lib/components/summary/ItemNav.svelte';
-import RatingsStrip from '$lib/components/summary/RatingsStrip.svelte';
-import SeasonLinks from '$lib/components/summary/SeasonLinks.svelte';
-import SectionNav from '$lib/components/summary/SectionNav.svelte';
-import SummaryFrame from '$lib/components/summary/SummaryFrame.svelte';
-import SummaryPoster from '$lib/components/summary/SummaryPoster.svelte';
-import SummaryTitle from '$lib/components/summary/SummaryTitle.svelte';
-import WatchNow from '$lib/components/watchnow/WatchNow.svelte';
-import type { WatchNowButton } from '$lib/components/watchnow/watchNow';
+import FanartHeader from '#lib/components/media/FanartHeader.svelte';
+import ActionButtons from '#lib/components/summary/ActionButtons.svelte';
+import ExternalLinks from '#lib/components/summary/ExternalLinks.svelte';
+import MediaTools from '#lib/components/summary/MediaTools.svelte';
+import ItemNav from '#lib/components/summary/ItemNav.svelte';
+import RatingsStrip from '#lib/components/summary/RatingsStrip.svelte';
+import SeasonLinks from '#lib/components/summary/SeasonLinks.svelte';
+import SectionNav from '#lib/components/summary/SectionNav.svelte';
+import SummaryFrame from '#lib/components/summary/SummaryFrame.svelte';
+import SummaryPoster from '#lib/components/summary/SummaryPoster.svelte';
+import SummaryTitle from '#lib/components/summary/SummaryTitle.svelte';
+import WatchNow from '#lib/components/watchnow/WatchNow.svelte';
+import type { WatchNowButton } from '#lib/components/watchnow/watchNow.ts';
 import type { ComponentProps, Snippet } from 'svelte';
 import ShowDetails from './ShowDetails.svelte';
 import type { toShowSummary } from './toShowSummary.ts';

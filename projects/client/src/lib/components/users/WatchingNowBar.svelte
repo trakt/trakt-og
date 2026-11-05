@@ -9,19 +9,19 @@
   column. Put it inside a positioned cover.
 -->
 <script lang="ts">
-import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
-import { rawApiFetch } from '$lib/api/rawApiFetch';
-import { AnalyticsEvent } from '$lib/analytics/AnalyticsEvent';
-import { useTrack } from '$lib/analytics/useTrack';
-import { toast } from '$lib/components/toast/toast.svelte';
-import Container from '$lib/components/container/Container.svelte';
-import StatusDot from '$lib/components/status/StatusDot.svelte';
-import Tooltip from '$lib/components/tooltip/Tooltip.svelte';
-import Icon from '$lib/icons/Icon.svelte';
-import check from '$lib/icons/solid/check.svg?raw';
-import xmark from '$lib/icons/solid/xmark.svg?raw';
-import type { WatchingNow } from '$lib/users/WatchingNow';
-import { watchingProgress } from '$lib/users/watchingProgress';
+import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
+import { rawApiFetch } from '#lib/api/rawApiFetch.ts';
+import { AnalyticsEvent } from '#lib/analytics/AnalyticsEvent.ts';
+import { useTrack } from '#lib/analytics/useTrack.ts';
+import { toast } from '#lib/components/toast/toast.svelte.ts';
+import Container from '#lib/components/container/Container.svelte';
+import StatusDot from '#lib/components/status/StatusDot.svelte';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import check from '#lib/icons/solid/check.svg?raw';
+import xmark from '#lib/icons/solid/xmark.svg?raw';
+import type { WatchingNow } from '#lib/users/WatchingNow.ts';
+import { watchingProgress } from '#lib/users/watchingProgress.ts';
 import { prefersReducedMotion } from 'svelte/motion';
 import { GENERIC_ERROR } from '../../utils/genericError.ts';
 import { viewerFetch } from '../../auth/viewerFetch.ts';

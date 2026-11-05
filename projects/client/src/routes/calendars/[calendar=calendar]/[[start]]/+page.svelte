@@ -1,5 +1,5 @@
 <script lang="ts">
-import CalendarPage from '$lib/calendars/CalendarPage.svelte';
+import CalendarPage from '#lib/calendars/CalendarPage.svelte';
 
 const { data } = $props();
 </script>

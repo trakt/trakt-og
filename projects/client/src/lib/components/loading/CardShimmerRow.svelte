@@ -3,7 +3,7 @@
   four columns of a smaller tablet or a phone's two don't stack the rest under it.
 -->
 <script lang="ts">
-import PosterGrid from '$lib/components/media/PosterGrid.svelte';
+import PosterGrid from '#lib/components/media/PosterGrid.svelte';
 import CardShimmer from './CardShimmer.svelte';
 
 interface Props {

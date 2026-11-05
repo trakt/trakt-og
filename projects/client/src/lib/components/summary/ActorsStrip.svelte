@@ -5,9 +5,9 @@
   the picked group. Pointing at one headshot dims the rest. Empty groups aren't offered.
 -->
 <script lang="ts">
-import { trackDrilldowns } from '$lib/analytics/trackDrilldowns';
-import Dropdown from '$lib/components/dropdown/Dropdown.svelte';
-import { peopleGroupHref } from '$lib/credits/peopleGroupHref';
+import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
+import Dropdown from '#lib/components/dropdown/Dropdown.svelte';
+import { peopleGroupHref } from '#lib/credits/peopleGroupHref.ts';
 import CastCard from './CastCard.svelte';
 import type { CastMember } from './CastMember.ts';
 import SectionHeading from './SectionHeading.svelte';

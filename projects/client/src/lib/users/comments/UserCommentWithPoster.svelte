@@ -6,12 +6,12 @@
 -->
 <script lang="ts">
 import type { CommentResponse } from '@trakt/api';
-import CommentCard from '$lib/components/comments/CommentCard.svelte';
-import type { CommentViewer } from '$lib/components/comments/CommentViewer';
-import CommentWithPoster from '$lib/components/comments/CommentWithPoster.svelte';
-import { quickIconFill } from '$lib/components/media/quickIconFill';
-import { overlay } from '$lib/overlay/overlay';
-import type { DatePreferences } from '$lib/settings/DatePreferences';
+import CommentCard from '#lib/components/comments/CommentCard.svelte';
+import type { CommentViewer } from '#lib/components/comments/CommentViewer.ts';
+import CommentWithPoster from '#lib/components/comments/CommentWithPoster.svelte';
+import { quickIconFill } from '#lib/components/media/quickIconFill.ts';
+import { overlay } from '#lib/overlay/overlay.ts';
+import type { DatePreferences } from '#lib/settings/DatePreferences.ts';
 import type { UserComment } from './UserComment.ts';
 
 interface Props {

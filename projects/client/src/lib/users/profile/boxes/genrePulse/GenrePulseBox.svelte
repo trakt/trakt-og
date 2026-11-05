@@ -1,8 +1,8 @@
 <!-- Genre Pulse: the genre running hot this month against the user's usual, with the month's top three. -->
 <script lang="ts">
-import BoxChips from '$lib/components/users/profile-box/BoxChips.svelte';
-import BoxFigure from '$lib/components/users/profile-box/BoxFigure.svelte';
-import ProfileBox from '$lib/components/users/profile-box/ProfileBox.svelte';
+import BoxChips from '#lib/components/users/profile-box/BoxChips.svelte';
+import BoxFigure from '#lib/components/users/profile-box/BoxFigure.svelte';
+import ProfileBox from '#lib/components/users/profile-box/ProfileBox.svelte';
 import type { GenrePulseView } from './GenrePulseView.ts';
 
 const { view }: { view: GenrePulseView } = $props();

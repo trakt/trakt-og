@@ -3,9 +3,9 @@
   a note on the show, the same kind v3 saves after a drop. Closing it without text leaves no note.
 -->
 <script lang="ts">
-import NotesDialog from '$lib/components/notes/NotesDialog.svelte';
-import { toast } from '$lib/components/toast/toast.svelte';
-import { saveNote } from '$lib/notes/saveNote';
+import NotesDialog from '#lib/components/notes/NotesDialog.svelte';
+import { toast } from '#lib/components/toast/toast.svelte.ts';
+import { saveNote } from '#lib/notes/saveNote.ts';
 import { dropNote } from './dropNote.svelte';
 import { viewerFetch } from '../../auth/viewerFetch.ts';
 

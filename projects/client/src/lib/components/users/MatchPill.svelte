@@ -4,9 +4,9 @@
     <MatchPill {match} owner={user} />
 -->
 <script lang="ts">
-import type { UserMatch } from '$lib/users/match/UserMatch';
-import type { FavoriteCard } from '$lib/users/profile/toProfileSummary';
-import type { ProfileUser } from '$lib/users/ProfileUser';
+import type { UserMatch } from '#lib/users/match/UserMatch.ts';
+import type { FavoriteCard } from '#lib/users/profile/toProfileSummary.ts';
+import type { ProfileUser } from '#lib/users/ProfileUser.ts';
 import MatchBadge from './MatchBadge.svelte';
 import MatchDialog from './MatchDialog.svelte';
 

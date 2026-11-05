@@ -8,7 +8,7 @@
     </Tooltip>
   It shows while the mouse is over the trigger (or the tooltip) and while the trigger has keyboard focus, and Esc,
   blur or the mouse leaving hides it. It never opens on touch, unless it `toggles`: a chart mark's tooltip also opens
-  and shuts on a click or tap. Near the edge of the screen it flips to the other side.
+  and shuts on a click or tap. Without room on its side, off the screen or over its trigger, it flips to the other side.
   Three bodies, one of them per tooltip:
   - `text`: centered and balanced, breaking lines at `\n`.
   - `stats`: the charts' label, big value and dashed lines (`TooltipStat`), a divider between groups.
@@ -62,6 +62,16 @@ const shown = $derived(side ?? placement);
 let retry = $state(0);
 
 const send = (event: TooltipEvent) => (status = tooltipState(status, event));
+
+/** Long enough to cross the gap from the trigger to the tooltip, which the pointer passes through to what's under it. */
+const LEAVE_GRACE_MS = 120;
+let leaving: ReturnType<typeof setTimeout> | undefined;
+const stay = () => clearTimeout(leaving);
+const leaveSoon = () => {
+  stay();
+  leaving = setTimeout(() => send('leave'), LEAVE_GRACE_MS);
+};
+$effect(() => stay);
 const inside = (element: Element | undefined, target: EventTarget | null) =>
   target instanceof Node && Boolean(element?.contains(target));
 
@@ -72,11 +82,12 @@ const attach: Attachment<HTMLElement> = (node) => {
   node.style.setProperty('anchor-name', anchorNames(node.style.getPropertyValue('anchor-name'), { add: name }));
 
   const enter = (event: PointerEvent) => {
+    stay();
     if (event.pointerType !== 'touch') send('enter');
   };
-  // Moving onto the tooltip itself keeps it open.
+  // Moving onto the tooltip itself, straight away or within the grace, keeps it open.
   const leave = (event: PointerEvent) => {
-    if (!inside(tip, event.relatedTarget)) send('leave');
+    if (!inside(tip, event.relatedTarget)) leaveSoon();
   };
   // Only keyboard focus: a click or a tap focuses a button too, and shouldn't pop a tooltip.
   const focus = (event: FocusEvent) => {
@@ -160,6 +171,7 @@ $effect(() => {
   const flipped = tooltipFlip({
     placement,
     box: tip.getBoundingClientRect(),
+    anchor: under ? undefined : anchor.getBoundingClientRect(),
     viewport: { width: document.documentElement.clientWidth, height: document.documentElement.clientHeight },
   });
   if (flipped !== placement) side = flipped;
@@ -180,8 +192,9 @@ const closed = (event: ToggleEvent & { currentTarget: HTMLElement }) => {
   if (status.open && !event.currentTarget.matches(':popover-open')) send('dismiss');
 };
 
+// Back to the trigger crosses the same gap, so it waits the same grace.
 const leaveTip = (event: PointerEvent) => {
-  if (!inside(anchor, event.relatedTarget)) send('leave');
+  if (!inside(anchor, event.relatedTarget)) leaveSoon();
 };
 </script>
 
@@ -198,6 +211,7 @@ const leaveTip = (event: PointerEvent) => {
   role="tooltip"
   style:position-anchor={under ?? `--tooltip-${id}`}
   ontoggle={closed}
+  onpointerenter={stay}
   onpointerleave={leaveTip}
 >
     <TooltipBox side={shown}>
@@ -214,12 +228,18 @@ const leaveTip = (event: PointerEvent) => {
 
 <style>
 /*
-  The popover runs from the trigger's edge to the far side of the box, so the pointer can move onto the tooltip
-  without a gap closing it. The box's arrow sits in that padding, 3px off the trigger like Bootstrap's.
+  The popover runs from the trigger's edge to the far side of the box, and the box's arrow sits in that padding, 3px off
+  the trigger like Bootstrap's. Only the box takes the pointer: the padding passes it through to what's under it (an
+  on-deck card's progress bar under its quick icons), and the leave grace carries the pointer across it to the box.
 */
 .tooltip {
   --edge: calc(var(--tooltip-arrow) + 1px + var(--tooltip-offset));
   position: fixed;
+  pointer-events: none;
+
+  & > :global(.tooltip-box) {
+    pointer-events: auto;
+  }
   inset: auto;
   inline-size: max-content;
   margin: 0;

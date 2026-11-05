@@ -196,7 +196,7 @@ const listedOn = [
 </Specimen>
 
 <Specimen title="Tooltip" row
-  note="Hover or tab to a trigger; Esc hides it and touch never opens one, except a chart's, which a click or tap toggles. Text centers and balances its lines; stats with lines, and the library card, align left. Near the screen's edge it flips side. A tooltip that only repeats its trigger's name isn't linked as its description, so screen readers say it once. A summary button's tooltip spans the whole button, right under it (Favorites). A watched tooltip's play count links to your history of that title, for the pointer only, like the list tooltip's names.">
+  note="Hover or tab to a trigger; Esc hides it and touch never opens one, except a chart's, which a click or tap toggles. Text centers and balances its lines; stats with lines, and the library card, align left. Without room on its side, off the screen or over its trigger, it flips side. Only the box takes the pointer: the gap to it passes the pointer through to what's under it, and a short grace on leaving still lets you cross it. A tooltip that only repeats its trigger's name isn't linked as its description, so screen readers say it once. A summary button's tooltip spans the whole button, right under it (Favorites). A watched tooltip's play count links to your history of that title, for the pointer only, like the list tooltip's names.">
   <Variant label="Plays, a movie's quick icon, the count linked to your history">
     <Tooltip placement="bottom">
       {#snippet trigger(tooltip)}

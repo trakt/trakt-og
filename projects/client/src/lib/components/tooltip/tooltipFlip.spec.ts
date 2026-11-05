@@ -31,4 +31,18 @@ describe('tooltipFlip', () => {
       'left',
     );
   });
+
+  it('should flip a left tooltip the browser slid back over its trigger', () => {
+    const anchor = { top: 10, bottom: 34, left: 144, right: 330 };
+    expect(tooltipFlip({ placement: 'left', box: { top: 5, bottom: 39, left: 0, right: 170 }, viewport, anchor })).toBe(
+      'right',
+    );
+  });
+
+  it('should keep a left tooltip that ends at its trigger', () => {
+    const anchor = { top: 10, bottom: 34, left: 300, right: 480 };
+    expect(
+      tooltipFlip({ placement: 'left', box: { top: 5, bottom: 39, left: 120, right: 300.5 }, viewport, anchor }),
+    ).toBe('left');
+  });
 });

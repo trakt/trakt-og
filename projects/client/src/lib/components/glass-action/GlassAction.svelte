@@ -179,10 +179,10 @@ const linkAttributes = $derived(rest as HTMLAnchorAttributes);
   }
 }
 
-/* Trakt-font glyphs sit a little high, as in the quick-icon bar. */
+/* Level with the label's capitals. */
 .icon {
   display: contents;
-  --icon-shift: var(--quick-icon-trakt-shift);
+  --icon-shift: var(--glass-action-icon-shift);
 }
 
 .tinted {

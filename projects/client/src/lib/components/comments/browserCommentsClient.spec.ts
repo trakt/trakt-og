@@ -8,7 +8,7 @@ vi.mock('../../auth/userManager.ts', () => ({
 }));
 const base = 'https://apiz.trakt.tv';
 const server = setupServer();
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
@@ -20,7 +20,6 @@ describe('browserCommentsClient', () => {
         expect(request.headers.has('authorization')).toBe(false);
         const fresh = new URL(request.url).searchParams.has('og_reaction');
         refreshed.push(fresh);
-        if (fresh) expect(request.cache).toBe('no-store');
         return HttpResponse.json({ reaction_count: 0, user_count: 0, distribution: {} });
       }),
       http.get(`${base}/comments/2/replies`, ({ request }) => {
@@ -37,6 +36,7 @@ describe('browserCommentsClient', () => {
         return new HttpResponse(null, { status: 204 });
       }),
     );
+    const fetched = vi.spyOn(globalThis, 'fetch');
     const client = browserCommentsClient();
     expect(await client.reactionSummary(2)).toEqual({ reaction_count: 0, user_count: 0, distribution: {} });
     expect(await client.reactionSummary(2, true)).toEqual({ reaction_count: 0, user_count: 0, distribution: {} });
@@ -44,5 +44,10 @@ describe('browserCommentsClient', () => {
     expect(await client.remove(2)).toEqual({ ok: true, comment: null });
     expect(await client.block('og_tester')).toEqual({ ok: true });
     expect(refreshed).toEqual([false, true]);
+    const freshInits = fetched.mock.calls
+      .filter(([input]) => String(input).includes('og_reaction'))
+      .map(([, init]) => init?.cache);
+    expect(freshInits).toEqual(['no-store']);
+    fetched.mockRestore();
   });
 });

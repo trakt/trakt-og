@@ -9,7 +9,7 @@ import type { ViewerRelation } from './ViewerRelation.ts';
 const base = 'https://apiz.trakt.tv';
 const empty: ViewerRelation = { follow: 'none', followsYou: false, blocked: false, requestId: null };
 const server = setupServer();
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 const setup = (relation = empty) => {

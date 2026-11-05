@@ -30,7 +30,7 @@ const server = setupServer(
     return HttpResponse.json({ title: 'Breaking Bad', ids: { slug: 'breaking-bad', trakt: 1388 } });
   }),
 );
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterAll(() => server.close());
 const isWatchNow = (request: Request) => new URL(request.url).pathname.includes('/watchnow');
 afterEach(() => {

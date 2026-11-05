@@ -5,7 +5,7 @@ import { rawApiFetch } from '../api/rawApiFetch.ts';
 import { loadHiddenShows } from './loadHiddenShows.ts';
 const API = 'https://apiz.trakt.tv';
 const server = setupServer();
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 const get = (path: string) => rawApiFetch({ path });

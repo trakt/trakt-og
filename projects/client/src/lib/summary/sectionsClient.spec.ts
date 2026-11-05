@@ -83,7 +83,7 @@ const server = setupServer(
     return HttpResponse.json([{ title: 'Deadpool 2', year: 2018, ids: { trakt: 2, slug: 'deadpool-2-2018' } }]);
   }),
 );
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => {
   server.resetHandlers();
   seen.length = 0;

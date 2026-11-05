@@ -60,7 +60,7 @@ const saved = {
   user: { username: 'og', private: false, deleted: false, vip: false, ids: { slug: 'og', trakt: 2 } },
 };
 
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => {
   server.resetHandlers();
   sent.length = 0;

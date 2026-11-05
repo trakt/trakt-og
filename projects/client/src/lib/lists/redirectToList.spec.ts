@@ -19,7 +19,7 @@ const server = setupServer(
     return new HttpResponse(null, { status: 204, headers: { 'content-type': 'application/json' } });
   }),
 );
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterAll(() => server.close());
 
 const go = (id: string, token: string | null = null) => redirectToList({ fetch, locals: { token }, params: { id } });

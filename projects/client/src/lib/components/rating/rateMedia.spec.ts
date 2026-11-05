@@ -11,7 +11,7 @@ const API = 'https://apiz.trakt.tv';
 const target: RatingTarget = { type: 'movie', id: 1, title: 'Fight Club' };
 const now = () => new Date('2026-09-29T12:00:00.000Z');
 const server = setupServer();
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 

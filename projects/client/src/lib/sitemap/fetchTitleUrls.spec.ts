@@ -27,7 +27,7 @@ const paged = (path: string, pages: Record<number, unknown[]>, status = 200) =>
 
 const fetch = (...args: Parameters<typeof globalThis.fetch>) => globalThis.fetch(...args);
 const server = setupServer();
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => {
   server.resetHandlers();
   seen.length = 0;

@@ -51,7 +51,7 @@ const seasons = http.get(`${API}/shows/:id/seasons`, ({ params, request }) => {
   ]);
 });
 
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => {
   server.resetHandlers();
   seen.length = 0;

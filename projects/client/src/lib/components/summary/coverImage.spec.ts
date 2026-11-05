@@ -4,7 +4,7 @@ import { setupServer } from 'msw/node';
 import { isCoverOf, setCoverImage } from './coverImage.ts';
 
 const server = setupServer();
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 

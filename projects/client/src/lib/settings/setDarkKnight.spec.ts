@@ -12,7 +12,7 @@ import type { SettingsBody } from './SettingsBody.ts';
 const API = 'https://apiz.trakt.tv';
 const seen: Array<{ method: string; body: unknown; bearer: string | null }> = [];
 const server = setupServer();
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => {
   server.resetHandlers();
   seen.length = 0;

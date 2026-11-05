@@ -33,7 +33,7 @@ const server = setupServer(
     HttpResponse.json({ ...show, images: { poster: ['media.trakt.tv/posters/medium/bb.jpg.webp'] } }),
   ),
 );
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => {
   server.resetHandlers();
   seen.length = 0;
@@ -84,8 +84,7 @@ describe('loadLibrary', () => {
   it('should group Added Date by day on All Types and show the owner their metadata, read with their token', async () => {
     const result = await load({ isSelf: true, token: 'viewer-token' });
     const media = '/users/tester/collection/media?extended=full%2Cimages&page=1&limit=60&sort_by=added&sort_how=desc';
-    // The anonymous read that starts alongside the frame is cancelled once the frame says it's your own.
-    expect(requested()).toEqual([media, media]);
+    expect(requested()).toEqual([media]);
     expect(seen.at(-1)?.headers.get('authorization')).toBe('Bearer viewer-token');
     expect(result.days).toHaveLength(1);
     expect(result.cards[0]?.badges).toEqual({

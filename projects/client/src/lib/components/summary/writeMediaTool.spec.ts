@@ -6,7 +6,7 @@ import { reportReasons } from './reportReasons.ts';
 import { validateReport } from './validateReport.ts';
 
 const server = setupServer();
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 const target = { type: 'movie', id: 1, title: 'Fight Club (1999)', href: '/movies/fight-club-1999' } as const;

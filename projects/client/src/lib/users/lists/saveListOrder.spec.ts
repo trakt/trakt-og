@@ -4,7 +4,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest
 import { authorizedFetch } from '../../api/authorizedFetch.ts';
 import { saveListOrder } from './saveListOrder.ts';
 const server = setupServer();
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 const endpoint = 'https://apiz.trakt.tv/users/me/lists/reorder';

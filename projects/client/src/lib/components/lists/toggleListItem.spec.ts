@@ -7,7 +7,7 @@ import { emptyListMembership } from '../../overlay/listMembership.ts';
 import { toggleListItem } from './toggleListItem.ts';
 import type { ListTarget } from './ListTarget.ts';
 const server = setupServer();
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 const setup = () => ({

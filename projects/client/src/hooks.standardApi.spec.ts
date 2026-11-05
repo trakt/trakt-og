@@ -23,7 +23,7 @@ const server = setupServer(
     return HttpResponse.json([], { headers: { 'cache-control': 'public, max-age=600' } });
   }),
 );
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => {
   sent.length = 0;
   rateLimitPause.start('0', 0);

@@ -28,7 +28,7 @@ const history = ({ episodes, movies }: { episodes: Pages; movies: Pages }) =>
   });
 
 const server = setupServer();
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => {
   server.resetHandlers();
   seen.length = 0;

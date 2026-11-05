@@ -5,7 +5,7 @@ import { createCommentReactions } from './createCommentReactions.svelte.ts';
 
 const base = 'https://reactions.test';
 const server = setupServer();
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 const total = { reaction_count: 5, user_count: 5, distribution: { like: 2, love: 1, laugh: 1, bravo: 1 } };

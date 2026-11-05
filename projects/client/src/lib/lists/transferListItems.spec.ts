@@ -7,7 +7,7 @@ import { toListView } from './toListView.ts';
 import { transferListItems } from './transferListItems.ts';
 
 const server = setupServer();
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => {
   server.resetHandlers();
   vi.clearAllMocks();

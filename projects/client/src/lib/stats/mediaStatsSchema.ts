@@ -4,7 +4,6 @@ import { z } from 'zod/v4';
 export const mediaStatsSchema = z.object({
   watchers: z.number().int().nonnegative(),
   plays: z.number().int().nonnegative(),
-  collectors: z.number().int().nonnegative(),
   comments: z.number().int().nonnegative(),
   lists: z.number().int().nonnegative(),
   votes: z.number().int().nonnegative(),

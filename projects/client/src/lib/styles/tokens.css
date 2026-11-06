@@ -2235,7 +2235,6 @@
   /* Each Trakt count's icon, in its action's color, lifted for the dark strip. */
   --color-strip-watchers: #5aa6d8;
   --color-strip-plays: #b884cf; /* history's purple */
-  --color-strip-libraries: #2fc9a6; /* library's teal */
   --color-strip-lists: #3fb8ef; /* watchlist's blue */
   --color-strip-comments: #c4c4c4; /* on the strip's dark bar, in both themes */
   --color-stat-comments: light-dark(

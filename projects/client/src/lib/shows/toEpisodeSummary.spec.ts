@@ -35,7 +35,7 @@ const base: Parameters<typeof toEpisodeSummary>[0] = {
   ],
   people: { cast: [], crew: { directing: [member], writing: [{ ...member, jobs: ['Writer', 'Story'] }] } },
   ratings: { rating: 8.2, votes: 1600 },
-  stats: { watchers: 10, plays: 20, collectors: 2, comments: 3, lists: 4, votes: 1600 },
+  stats: { watchers: 10, plays: 20, comments: 3, lists: 4, votes: 1600 },
   datePreferences: { order: 'dmy', hour24: true, timeZone: 'America/Los_Angeles', weekStartDay: 1 },
   now: new Date('2026-01-01T00:00:00Z'),
   episodeTypeTags: true,

@@ -25,7 +25,7 @@ describe('headerLinkChoices', () => {
       label: 'Watched',
       href: '/movies/watched',
     });
-    expect(byId('shows-library')).toMatchObject({ title: 'Shows in Libraries', label: 'Libraries', group: 'shows' });
+    expect(byId('shows-library')).toBeUndefined();
   });
 
   it('should offer Box Office for movies only', () => {

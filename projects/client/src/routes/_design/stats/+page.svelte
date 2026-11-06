@@ -20,7 +20,7 @@ const ratings = toProfileRatings({
   unit: 'vote',
 });
 const community = toCommunityStats({
-  stats: { watchers: 89_734, plays: 109_418, collectors: 228_960, comments: 88, lists: 24_193, favorited: 781 },
+  stats: { watchers: 89_734, plays: 109_418, comments: 88, lists: 24_193, favorited: 781 },
   href: '/movies/tron-legacy-2010',
   favorites: true,
   released: true,

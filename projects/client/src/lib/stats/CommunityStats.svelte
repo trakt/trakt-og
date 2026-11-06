@@ -1,5 +1,5 @@
 <!--
-  The stats page's Community tiles: favorites, watchers, plays, libraries, lists and comments, each ruled and iconed in
+  The stats page's Community tiles: favorites, watchers, plays, lists and comments, each ruled and iconed in
   its ratings strip color, with the short number and a line on what it means. Lists and comments open their pages.
 -->
 <script lang="ts">

@@ -91,8 +91,7 @@ const { data }: Props = $props();
 const noun = $derived(data.type === 'shows' ? 'show' : 'movie');
 const title = $derived(data.type === 'shows' ? 'Shows' : 'Movies');
 const periodText = $derived(chartPeriodText(data.period));
-// Web's names where it has the chart. The library chart isn't web's `library`, a member's own collection.
-const CHART_SOURCES: Partial<Record<string, string>> = { recommendations: 'recommended', library: 'library-chart' };
+const CHART_SOURCES: Partial<Record<string, string>> = { recommendations: 'recommended' };
 const source = $derived(CHART_SOURCES[data.chart] ?? data.chart);
 
 // The `meta(...)` call in each action.
@@ -118,10 +117,6 @@ const meta = $derived(
     played: {
       title: `Most played ${data.type} for ${periodText}`,
       description: `The most played ${data.type} for ${periodText} by the Trakt community.`,
-    },
-    library: {
-      title: `${title} added to libraries for ${periodText}`,
-      description: `${title} added to libraries for ${periodText} by the Trakt community.`,
     },
     recommendations: {
       title: `Recommended ${data.type}`,
@@ -426,10 +421,8 @@ async function saveChanges() {
           The most favorited {data.type} for <b>{periodText}</b>.
         {:else if data.chart === 'watched'}
           The most watched {data.type} for <b>{periodText}</b>. Sorted by number of unique watchers.
-        {:else if data.chart === 'played'}
-          The most played {data.type} for <b>{periodText}</b>. Sorted by number of plays.
         {:else}
-          {title} added to libraries for <b>{periodText}</b>. Sorted by number of owners.
+          The most played {data.type} for <b>{periodText}</b>. Sorted by number of plays.
         {/if}
       </p>
     {/if}

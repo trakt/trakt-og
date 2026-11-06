@@ -1,7 +1,7 @@
 import type { StripCount } from './StripCount.ts';
 
 /** Which icon and color a count takes on the ratings strip. */
-export type StripStatKind = 'watchers' | 'plays' | 'libraries' | 'lists' | 'comments' | 'favorited';
+export type StripStatKind = 'watchers' | 'plays' | 'lists' | 'comments' | 'favorited';
 
 /** A count as the strip shows it: an icon and the short number, with the exact count in its tooltip. */
 export interface StripStat extends StripCount {
@@ -13,7 +13,7 @@ export interface StripStat extends StripCount {
 export interface StripStats {
   /** Favorites sit right after the Rate button. */
   readonly favorited?: StripStat;
-  /** The rest, after the other sites' ratings: watchers, plays, libraries, lists, comments. */
+  /** The rest, after the other sites' ratings: watchers, plays, lists, comments. */
   readonly community: readonly StripStat[];
 }
 
@@ -22,8 +22,6 @@ const KINDS: Readonly<Record<string, StripStatKind>> = {
   watchers: 'watchers',
   play: 'plays',
   plays: 'plays',
-  library: 'libraries',
-  libraries: 'libraries',
   list: 'lists',
   lists: 'lists',
   comment: 'comments',
@@ -31,7 +29,7 @@ const KINDS: Readonly<Record<string, StripStatKind>> = {
   favorited: 'favorited',
 };
 
-const ORDER: readonly StripStatKind[] = ['watchers', 'plays', 'libraries', 'lists', 'comments'];
+const ORDER: readonly StripStatKind[] = ['watchers', 'plays', 'lists', 'comments'];
 
 /**
  * The summary pages label their counts in OG's words ("watcher" or "watchers"); this reads the kind from that label,

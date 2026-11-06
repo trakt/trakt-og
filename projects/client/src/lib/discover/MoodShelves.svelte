@@ -63,7 +63,6 @@ const mood = $derived(shelves.find(({ id }) => id === picked) ?? shelves.at(0));
           <PosterCard
             href={item.href}
             title={item.title}
-            fullTitle={item.year ? `${item.title} (${item.year})` : item.title}
             image={item.poster}
             userRating={viewer.rating}
             dropped={viewer.dropped}

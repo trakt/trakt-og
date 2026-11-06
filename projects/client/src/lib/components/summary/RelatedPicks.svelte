@@ -100,7 +100,6 @@ const icons = (card: RelatedCard) => {
         <PosterCard
           href={card.href}
           title={card.title}
-          fullTitle={card.year ? `${card.title} (${card.year})` : card.title}
           image={card.poster}
           userRating={overlay.state(card.type, card.id).rating}
           dropped={overlay.state(card.type, card.id).dropped}

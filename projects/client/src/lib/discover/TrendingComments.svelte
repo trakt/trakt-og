@@ -132,6 +132,7 @@ async function filter(next: { kind?: typeof kind; media?: typeof media }) {
                 href: current.item.episode.href,
                 title: current.item.episode.title,
                 number: current.item.episode.number,
+                showTitle: current.item.title,
                 subtitles: [{ text: current.item.title, href: current.item.href }],
               }
               : {

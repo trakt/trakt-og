@@ -108,6 +108,7 @@ export function toLibraryCard(row: LibraryRow, { sortBy, screenshots, datePrefer
     href: `${showHref(show.ids.slug)}/seasons/${episode.season}/episodes/${episode.number}`,
     title: episode.title ?? '',
     number: episodeNumber(episode, show.genres),
+    showTitle: show.title,
     image: imageUrl((screenshots ? episode.images?.screenshot : show.images?.poster)?.at(0), 'thumb'),
     variant: screenshots ? 'screenshot' : 'poster',
     rating: episode.rating ?? undefined,

@@ -20,6 +20,8 @@ export type HistoryCard = {
   readonly href: string;
   readonly title: string;
   readonly number?: string;
+  /** A season's or episode's show, for its poster's tooltip. */
+  readonly showTitle?: string;
   readonly image?: string;
   readonly variant: 'poster' | 'screenshot';
   readonly rating?: number;
@@ -61,6 +63,7 @@ function episodeFields({ episode, show }: Pick<EpisodeChart, 'episode' | 'show'>
     href: `${showHref(show.ids.slug)}/seasons/${episode.season}/episodes/${episode.number}`,
     title: episode.title ?? '',
     number: episodeNumber(episode, show.genres),
+    showTitle: show.title,
     image: imageUrl((screenshots ? episode.images?.screenshot : show.images?.poster)?.at(0), 'thumb'),
     variant: screenshots ? 'screenshot' : 'poster',
     rating: episode.rating ?? undefined,

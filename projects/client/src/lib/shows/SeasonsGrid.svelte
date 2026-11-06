@@ -82,6 +82,7 @@ function clearHide() {
             percent={runs[0].percent} tip={runs} watched />{/if}{/snippet}
         <PosterCard
           {...card}
+          fullTitle={{ show: card.showTitle, title: card.title }}
           faded={view?.faded}
           subtitles={[episodes]}
           userRating={state.rating}

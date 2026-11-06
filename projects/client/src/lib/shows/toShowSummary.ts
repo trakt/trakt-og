@@ -61,6 +61,7 @@ export type SeasonCard = {
   href: string;
   title: string;
   fullTitle: string;
+  showTitle: string;
   image?: string;
   episodes: string;
   rating: number;
@@ -230,6 +231,7 @@ export function toShowSummary(params: ShowSummaryParams) {
     href: `${href}/seasons/${season.number}`,
     title: season.title ?? seasonName(season.number),
     fullTitle: `${show.title} ${season.title ?? `Season ${season.number}`}`,
+    showTitle: show.title,
     image: imageUrl(season.images?.poster?.at(0) ?? show.images?.poster?.at(0), 'thumb'),
     episodes: countLabel(season.episode_count ?? 0, 'episode'),
     rating: season.rating ?? 0,

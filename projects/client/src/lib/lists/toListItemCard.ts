@@ -24,6 +24,8 @@ export interface ListItemCard {
   readonly title: string;
   /** An episode's "2x04". */
   readonly number?: string;
+  /** A season's or episode's show, for its poster's tooltip. */
+  readonly showTitle?: string;
   readonly image?: string;
   readonly rank: number;
   /** The Trakt rating, 0 to 10. */
@@ -177,6 +179,7 @@ export function toListItemCard(row: ListItemRow, { sortBy, datePreferences, now 
         id: season.ids.trakt,
         href,
         title,
+        showTitle: show.title,
         image: imageUrl(season.images?.poster?.at(0) ?? show.images?.poster?.at(0), 'thumb'),
         rating: rated(season.rating, season.first_aired),
         airedEpisodes: season.aired_episodes ?? undefined,
@@ -207,6 +210,7 @@ export function toListItemCard(row: ListItemRow, { sortBy, datePreferences, now 
         href,
         title: episode.title ?? '',
         number: episodeNumber(episode, show.genres),
+        showTitle: show.title,
         image: imageUrl(show.images?.poster?.at(0), 'thumb'),
         rating: rated(episode.rating, episode.first_aired),
         runtime: episode.runtime ?? show.runtime ?? undefined,

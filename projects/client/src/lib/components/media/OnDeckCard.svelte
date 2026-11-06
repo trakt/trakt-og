@@ -87,7 +87,7 @@ const tip = $derived(
     {framed}
     href={item.complete ? item.showHref : item.episodeHref}
     title={item.complete ? item.showTitle : title}
-    fullTitle={item.complete ? item.showTitle : `${item.showTitle} ${item.episodeNumber}`}
+    fullTitle={item.complete ? item.showTitle : { show: item.showTitle, number: item.episodeNumber, title: item.episodeTitle }}
     image={item.poster}
     episodeBadge={item.complete ? undefined : item.episodeBadge}
     rewatching={item.rewatching}

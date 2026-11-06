@@ -366,3 +366,44 @@ describe('loadChart pages', () => {
     expect(data.page).toEqual({ type: 'paginated', current: 2, total: 20 });
   });
 });
+
+describe('loadChart old library paths', () => {
+  const load = (type: 'shows' | 'movies', chart: string, search: string, period?: string) =>
+    redirectOf(
+      loadChart({
+        fetch: globalThis.fetch,
+        token: null,
+        cookies: { get: () => undefined },
+        parent: () => Promise.resolve({ datePreferences: { order: 'mdy' }, settings: null }),
+        url: new URL(`https://og.test/${type}/${chart}${period ? `/${period}` : ''}${search}`),
+        type,
+        chart: chart as 'watched',
+        period,
+      }),
+    );
+
+  it.each([
+    ['shows', 'library', '/shows/watched'],
+    ['movies', 'collected', '/movies/watched'],
+  ] as const)('should send /%s/%s to the watched chart', async (type, chart, expected) => {
+    expect(await load(type, chart, '')).toBe(expected);
+  });
+
+  it('should keep the period and the query string', async () => {
+    expect(await load('shows', 'library', '?genres=drama', 'monthly')).toBe('/shows/watched/monthly?genres=drama');
+    expect(await load('movies', 'collected', '?page=2', 'all')).toBe('/movies/watched/all?page=2');
+  });
+
+  it('should answer with a permanent redirect', async () => {
+    const thrown = await loadChart({
+      fetch: globalThis.fetch,
+      token: null,
+      cookies: { get: () => undefined },
+      parent: () => Promise.resolve({ datePreferences: { order: 'mdy' }, settings: null }),
+      url: new URL('https://og.test/shows/library'),
+      type: 'shows',
+      chart: 'library' as 'watched',
+    }).catch((error: unknown) => error);
+    expect(isRedirect(thrown) && thrown.status).toBe(301);
+  });
+});

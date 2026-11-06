@@ -35,7 +35,6 @@ export function chartLinks({ type, current, period, search, signedIn }: ChartLin
     link('Popular', 'popular'),
     link('Favorited', `favorited/${period}`),
     link('Watched', `watched/${period}`),
-    link('Libraries', `library/${period}`),
     ...(type === 'movies' ? [link('Box Office', 'boxoffice', false)] : []),
   ];
 }

@@ -57,6 +57,15 @@ export const EPISODE_SORTS = [
 
 export type EpisodeSort = (typeof EPISODE_SORTS)[number]['by'];
 
+/** The sort and direction a `sort=by,dir` value asks for. A sort that is gone or unknown falls back to the default. */
+export function parseEpisodeSort(value: string, season: boolean): { by: EpisodeSort; flipped: boolean } {
+  const [requested, direction] = value.split(',');
+  const sorts = season ? EPISODE_SORTS.filter(({ by }) => by !== 'aired') : EPISODE_SORTS;
+  const found = sorts.find(({ by }) => by === requested);
+  if (!found) return { by: season ? 'number' : 'aired', flipped: false };
+  return { by: found.by, flipped: found.desc !== (direction === 'desc') };
+}
+
 const sortKey: Record<Exclude<EpisodeSort, (typeof statSorts)[number]['by']>, (row: EpisodeRow) => number> = {
   // MySQL's ASC puts a missing date first, and OG's list came from `ORDER BY first_aired`.
   aired: (row) => row.airedAt ?? -Infinity,

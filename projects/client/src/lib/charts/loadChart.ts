@@ -128,7 +128,7 @@ async function fetchRows(
 ): Promise<Rows | null> {
   if (chart === 'popular') return fetchPopular(client, type, query);
   if (isPeriodChart(chart)) {
-    const response = await client[type][chart === 'library' ? 'collected' : chart]({ params: { period }, query });
+    const response = await client[type][chart]({ params: { period }, query });
     return response.status === 200 ? { headers: response.headers, rows: response.body } : null;
   }
 

@@ -30,7 +30,6 @@ const CHART_NAMES: Readonly<Record<ChartName | 'boxoffice', string>> = {
   favorited: 'Favorited',
   watched: 'Watched',
   played: 'Played',
-  library: 'Libraries',
   boxoffice: 'Box Office',
 };
 

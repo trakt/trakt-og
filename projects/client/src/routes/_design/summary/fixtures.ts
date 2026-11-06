@@ -91,7 +91,7 @@ export const pilot = {
     { title: breakingBad.title, href: breakingBad.href },
     { title: seasonOne.title, href: seasonOne.href },
   ],
-  stats: { watchers: 394_680, plays: 469_257, collectors: 623_907, lists: 868 },
+  stats: { watchers: 394_680, plays: 469_257, lists: 868 },
   comments: 30,
   external: toExternalRatings({
     ratings: {

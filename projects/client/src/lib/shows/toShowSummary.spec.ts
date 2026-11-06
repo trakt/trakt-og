@@ -270,12 +270,12 @@ describe('sortSeasons', () => {
     expect(numbers(sortSeasons({ cards, by: 'number', flipped: true }))).toEqual([1, 2, 3]);
   });
 
-  it.each(['watchers', 'plays', 'collected', 'lists'] as const)(
+  it.each(['watchers', 'plays', 'lists'] as const)(
     'should sort %s descending, reverse direction and keep failed counts at zero',
     (by) => {
       const stats = new Map([
-        [1, { watchers: 1, plays: 1, collectors: 1, lists: 1, comments: 0, votes: 0 }],
-        [2, { watchers: 9, plays: 9, collectors: 9, lists: 9, comments: 0, votes: 0 }],
+        [1, { watchers: 1, plays: 1, lists: 1, comments: 0, votes: 0 }],
+        [2, { watchers: 9, plays: 9, lists: 9, comments: 0, votes: 0 }],
         [3, null],
       ]);
       expect(numbers(sortSeasons({ cards, by, flipped: false, stats }))).toEqual([2, 1, 3]);

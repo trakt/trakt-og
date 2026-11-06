@@ -16,6 +16,7 @@ import { userManager } from '#lib/auth/userManager.ts';
 import CheckinDialog from '#lib/components/checkin/CheckinDialog.svelte';
 import DropNoteDialog from '#lib/components/visibility/DropNoteDialog.svelte';
 import Rating10 from '#lib/extras/rating-10.svelte';
+import HeaderExtras from '#lib/extras/HeaderExtras.svelte';
 import { startCommentReactions } from '#lib/components/comments/startCommentReactions.ts';
 import Footer from '#lib/components/footer/Footer.svelte';
 import Header from '#lib/components/header/Header.svelte';
@@ -127,6 +128,7 @@ onMount(() => {
 <WatchNowHost />
 <CheckinDialog />
 <Rating10 />
+<HeaderExtras />
 <DropNoteDialog />
 
 <style>

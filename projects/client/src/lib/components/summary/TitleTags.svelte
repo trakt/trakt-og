@@ -42,7 +42,7 @@ const slashed = (i: number) => ({ 'before-slash': i < links.length - 1, 'after-s
     {#if label}<span class="part label">{label}</span>{/if}
     {#if links.length > 0}
       <span class="part links">
-        {#each links as link, i (link.title)}
+        {#each links as link, i (i)}
           {#if link.href}
             <a class={['link', slashed(i), { tinted: link.tint }]} style:--link-tint={link.tint} href={link.href}
               rel={i === links.length - 1 ? 'up' : undefined}>{link.title}</a>

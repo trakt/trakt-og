@@ -1,8 +1,9 @@
 <!--
   A network page user card that fills itself in once it's on screen. The list leaves out VIP covers and the OG and
-  years on the VIP label, so a VIP's card asks their profile for them, once. It also asks what they're watching, then
-  again every 2 minutes while the card is on screen and the tab is visible, and turns live in place when they are.
-  Scrolling back to a card checked in the last 2 minutes asks nothing.
+  years on the VIP label, so a VIP's card asks their profile for them, once. Someone the viewer follows turns live from
+  the page's one call for everyone they follow. Anyone else's card asks what they're watching once their follow state
+  is in, then again every 2 minutes while the card is on screen and the tab is visible, and turns live in place when
+  they are. Scrolling back to a card checked in the last 2 minutes asks nothing.
     <NetworkUserCard {user} {relation} canFollow={data.canFollow} />
 -->
 <script lang="ts">
@@ -27,9 +28,14 @@ interface Props {
   /** The viewer's follow state is still loading. */
   pending?: boolean;
   canFollow?: boolean;
+  /**
+   * What they're watching, from the page's one call for everyone the viewer follows, `null` when nothing. Left out
+   * when the viewer doesn't follow them, so the card asks on its own.
+   */
+  followedWatch?: LiveWatch | null;
 }
 
-const { user, extra, relation = null, pending = false, canFollow = true }: Props = $props();
+const { user, extra, relation = null, pending = false, canFollow = true, followedWatch }: Props = $props();
 
 /** A little under the poll's 2 minutes, so each tick asks again but a quick scroll back doesn't. */
 const RECHECK_MS = 110_000;
@@ -46,7 +52,9 @@ let checkedAt = 0;
 const shown = $derived(
   profile ? { ...user, coverUrl: profile.coverUrl ?? user.coverUrl, vip: profile.vip ?? user.vip } : user,
 );
-const watch = $derived(liveTiles(live, now).at(0) ?? null);
+const followed = $derived(followedWatch !== undefined);
+const watches = $derived(followedWatch === undefined ? live : [followedWatch].filter((found) => found !== null));
+const watch = $derived(liveTiles(watches, now).at(0) ?? null);
 
 $effect(() => {
   if (!visible) return;
@@ -55,6 +63,13 @@ $effect(() => {
     profileAsked = true;
     void fetchNetworkProfile({ get, slug: user.slug }).then((found) => (profile = found)).catch(() => {});
   }
+
+  const clock = setInterval(() => (now = new Date()), CLOCK_MS);
+  return () => clearInterval(clock);
+});
+
+$effect(() => {
+  if (!visible || pending || followed) return;
 
   const member = {
     key: user.username,
@@ -74,12 +89,7 @@ $effect(() => {
       now = new Date();
     },
   });
-  const clock = setInterval(() => (now = new Date()), CLOCK_MS);
-
-  return () => {
-    stop();
-    clearInterval(clock);
-  };
+  return stop;
 });
 </script>
 

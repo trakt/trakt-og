@@ -311,7 +311,9 @@ function barsOf(activities: readonly Activity[], context: Context): GenreBar[] {
       movies,
       counts: TYPES.flatMap(({ key, word, page }) => {
         const href = memberHref(member, context, page);
-        return counts[key] > 0 && href ? [{ text: countLabel(counts[key], word), href }] : [];
+        const count = counts[key];
+        if (count === 0 || !href) return [];
+        return [{ value: count.toLocaleString('en-US'), noun: `${word}${count === 1 ? '' : 's'}`, href }];
       }),
     };
   });

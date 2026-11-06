@@ -9,11 +9,12 @@
   It shows while the mouse is over the trigger (or the tooltip) and while the trigger has keyboard focus, and Esc,
   blur or the mouse leaving hides it. It never opens on touch, unless it `toggles`: a chart mark's tooltip also opens
   and shuts on a click or tap. Without room on its side, off the screen or over its trigger, it flips to the other side.
-  Three bodies, one of them per tooltip:
+  Two bodies, one of them per tooltip:
   - `text`: centered and balanced, breaking lines at `\n`.
-  - `stats`: the charts' label, big value and dashed lines (`TooltipStat`), a divider between groups.
-  - `children`: anything else, like the library card. It's centered unless it aligns itself.
-  A component that takes a tooltip from its caller and hands it on passes `content`, which is any of the three.
+  - `children`: anything else, like the library card or a chart's `ChartTip`. It's centered unless it aligns itself.
+  A component that takes a tooltip from its caller and hands it on passes `content`, which is either.
+  Flipped above or below, the box mirrors its sections (`TooltipBox`'s `flipped`), so its bands stay away from the
+  arrow.
   `under` lines it up with another anchor instead of the trigger, at that anchor's full width: a summary button's
   tooltip sits right under the whole button, its side tiles included.
   Left without any, no tooltip renders. The trigger keeps its own accessible name: the tooltip only describes it
@@ -24,13 +25,11 @@ import type { Snippet } from 'svelte';
 import { type Attachment, createAttachmentKey } from 'svelte/attachments';
 import { anchorNames } from './anchorNames.ts';
 import { repeatsName } from './repeatsName.ts';
-import type { StatTip } from './StatTip.ts';
 import type { TooltipContent } from './TooltipContent.ts';
 import { tooltipFlip } from './tooltipFlip.ts';
 import { tryShowPopover } from './tryShowPopover.ts';
 import type { TooltipPlacement } from './TooltipPlacement.ts';
 import TooltipBox from './TooltipBox.svelte';
-import TooltipStat from './TooltipStat.svelte';
 import { type TooltipEvent, type TooltipState, tooltipState } from './tooltipState.ts';
 
 type TriggerProps = { 'aria-describedby'?: string; [key: symbol]: Attachment<HTMLElement> };
@@ -38,7 +37,6 @@ type TriggerProps = { 'aria-describedby'?: string; [key: symbol]: Attachment<HTM
 interface Props {
   trigger: Snippet<[TriggerProps]>;
   text?: string;
-  stats?: readonly StatTip[];
   children?: Snippet;
   content?: TooltipContent;
   /** Which side of the trigger it shows on. Bootstrap's default is top. */
@@ -49,7 +47,7 @@ interface Props {
   under?: string;
 }
 
-const { trigger, text, stats, children, content, placement = 'top', toggles = false, under }: Props = $props();
+const { trigger, text, children, content, placement = 'top', toggles = false, under }: Props = $props();
 const id = $props.id();
 
 let status = $state<TooltipState>({ hovered: false, focused: false, pinned: false, dismissed: false, open: false });
@@ -58,6 +56,8 @@ let tip = $state<HTMLElement>();
 let side = $state<TooltipPlacement>();
 let repeats = $state(false);
 const shown = $derived(side ?? placement);
+/** Turned over to the other side above or below: its sections mirror. Left and right keep their order. */
+const flipped = $derived(side === 'top' || side === 'bottom');
 // Bumped to try showing again, the frame after the browser refused.
 let retry = $state(0);
 
@@ -121,11 +121,10 @@ const attach: Attachment<HTMLElement> = (node) => {
 };
 
 const words = $derived(text ?? (typeof content === 'string' ? content : undefined));
-const groups = $derived(stats ?? (typeof content === 'object' ? content : undefined));
 const markup = $derived(children ?? (typeof content === 'function' ? content : undefined));
 
 const key = createAttachmentKey();
-const hasTip = $derived(Boolean(words) || Boolean(groups?.length) || Boolean(markup));
+const hasTip = $derived(Boolean(words) || Boolean(markup));
 const triggerProps = $derived<TriggerProps>(
   hasTip ? { 'aria-describedby': repeats ? undefined : `tooltip-${id}`, [key]: attach } : {},
 );
@@ -168,13 +167,13 @@ $effect(() => {
     requestAnimationFrame(() => retry++);
     return;
   }
-  const flipped = tooltipFlip({
+  const turned = tooltipFlip({
     placement,
     box: tip.getBoundingClientRect(),
     anchor: under ? undefined : anchor.getBoundingClientRect(),
     viewport: { width: document.documentElement.clientWidth, height: document.documentElement.clientHeight },
   });
-  if (flipped !== placement) side = flipped;
+  if (turned !== placement) side = turned;
 });
 
 // `hint` popovers close on Esc by themselves. Browsers without `hint` treat it as `manual`, so listen too.
@@ -214,11 +213,9 @@ const leaveTip = (event: PointerEvent) => {
   onpointerenter={stay}
   onpointerleave={leaveTip}
 >
-    <TooltipBox side={shown}>
+    <TooltipBox side={shown} {flipped}>
       {#if markup}
         {@render markup()}
-      {:else if groups?.length}
-        {#each groups as stat, i (i)}{#if i > 0}<span class="divider"></span>{/if}<TooltipStat {...stat} />{/each}
       {:else}
         <span class="text">{words}</span>
       {/if}
@@ -271,13 +268,6 @@ const leaveTip = (event: PointerEvent) => {
 /* OG joined tooltip lines with <br>. */
 .text {
   white-space: pre-line;
-}
-
-/* OG's `.tooltip-hr`, between a rewatch and the whole show. */
-.divider {
-  display: block;
-  margin-block: var(--space-tooltip-divider);
-  border-block-start: 1px solid var(--color-tooltip-divider);
 }
 
 .top {

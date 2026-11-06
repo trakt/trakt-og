@@ -10,7 +10,13 @@ const genre = (name: string, percentage: number, shows = 2, movies = 3): GenreBa
   percentageText: `${percentage}%`,
   shows,
   movies,
-  counts: [{ text: `${shows} shows`, href: `/users/sean/history/shows/plays?genres=${name.toLowerCase()}` }],
+  counts: [
+    {
+      value: String(shows),
+      noun: 'shows',
+      href: `/users/sean/history/shows/plays?genres=${name.toLowerCase()}`,
+    },
+  ],
 });
 
 const genres = (shares: readonly number[]) => shares.map((share, i) => genre(`G${i + 1}`, share));
@@ -22,11 +28,6 @@ describe('mapper: toGenreBand', () => {
 
       expect(band.other).toBeNull();
       expect(band.slices.map(({ slot }) => slot)).toEqual([1, 2, 3, 4, 5, 6, 1]);
-    });
-
-    it('should anchor each piece at its middle along the band', () => {
-      const band = toGenreBand(genres([50, 25, 25]));
-      expect(band.slices.map(({ center }) => center)).toEqual([25, 62.5, 87.5]);
     });
   });
 
@@ -45,16 +46,8 @@ describe('mapper: toGenreBand', () => {
       expect(band.other?.grow).toBeCloseTo(7.08);
     });
 
-    it('should total the tail in the Other tooltip', () => {
-      expect(band.other?.tip).toEqual({
-        title: 'Other · 4 genres',
-        share: '7.1%',
-        lines: [
-          { type: 'shows', text: '12 shows' },
-          { type: 'movies', text: '7 movies' },
-        ],
-        footer: { text: 'Animation, Horror, War, …' },
-      });
+    it('should count the folded genres for the Other tooltip', () => {
+      expect(band.other?.rest).toBe('4 genres');
     });
 
     it('should scale the tail mini bars to the biggest genre in the tail', () => {
@@ -67,20 +60,8 @@ describe('mapper: toGenreBand', () => {
     });
   });
 
-  it('should label a genre with its rank, shares and titles', () => {
-    const [top, second] = toGenreBand([genre('Drama', 31, 240, 380), genre('Comedy', 8.94, 1, 0)]).slices;
-
-    expect(top?.tip).toEqual({
-      title: '#1 Drama',
-      share: '31%',
-      lines: [
-        { type: 'shows', text: '240 shows' },
-        { type: 'movies', text: '380 movies' },
-      ],
-      footer: { text: '620 titles', detail: 'your top genre' },
-    });
+  it('should label a genre with its share', () => {
+    const [, second] = toGenreBand([genre('Drama', 31, 240, 380), genre('Comedy', 8.94, 1, 0)]).slices;
     expect(second?.share).toBe('8.9%');
-    expect(second?.tip.lines).toEqual([{ type: 'shows', text: '1 show' }]);
-    expect(second?.tip.footer).toEqual({ text: '1 title', detail: '18% of your top genre' });
   });
 });

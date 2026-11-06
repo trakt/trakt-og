@@ -1,8 +1,8 @@
 <!--
   The profile's ratings chart, in the Last 30 Days chart's style: ratings 1 to 10 as rounded bars in their rating
   colors, each with its count over it, over dashed count lines labelled in a gutter and a dashed line at the average.
-  Under the axis each rating has its name, the most given one picked out. Hovering or focusing a bar dims the others
-  and shows the rating, its count and its share of all ratings; given `href`, clicking it opens that rating's page.
+  Under the axis each rating has its heart in its color and its name, the most given one in bold with its count.
+  Hovering or focusing a bar dims the others and shows its share of all ratings; given `href`, clicking it opens that rating's page.
   Each bar is a link, or a button without `href`, named by its rating and count, so it works with the keyboard and a
   screen reader. A rating with none gets a faint 0 over a dot and a hidden label. A title's stats page reuses it with
   votes for ratings and no links. Given `onpick` instead, each bar is a toggle that picks its rating, ringed and named
@@ -10,6 +10,8 @@
 -->
 <script lang="ts">
 import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import heart from '#lib/icons/solid/heart.svg?raw';
 import { countLabel } from '#lib/utils/countLabel.ts';
 import type { ProfileRatingBar, ProfileRatings } from '#lib/users/profile/toProfileRatings.ts';
 
@@ -26,22 +28,13 @@ interface Props {
 const { chart, href, picked, onpick }: Props = $props();
 
 const name = (bar: ProfileRatingBar) => `${bar.rating} — ${bar.name}: ${countLabel(bar.count, chart.unit)}`;
-
-const stats = (bar: ProfileRatingBar) => [
-  {
-    label: `${bar.rating} ${bar.name}`,
-    value: bar.count.toLocaleString('en-US'),
-    unit: `${chart.unit}${bar.count === 1 ? '' : 's'}`,
-    lines: [{ text: `${bar.share} of all ${chart.unit}s`, color: `var(--rating-${bar.rating})` }],
-  },
-];
 </script>
 
 <!-- The ratings page isn't built yet, and resolve() only takes routes that exist. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
 {#snippet barBody(bar: ProfileRatingBar)}
-  <span class="count" aria-hidden="true">{bar.count.toLocaleString('en-US')}</span>
+  <span class={['count', { top: bar.top }]} aria-hidden="true">{bar.count.toLocaleString('en-US')}</span>
   <span class="bar" style:--fraction={bar.height / 100}></span>
 {/snippet}
 
@@ -59,7 +52,7 @@ const stats = (bar: ProfileRatingBar) => [
       {#each chart.bars as bar (bar.rating)}
         <li class="column" style:--color="var(--rating-{bar.rating})">
           {#if bar.count > 0}
-            <Tooltip toggles stats={stats(bar)}>
+            <Tooltip toggles text="{bar.share} of all {chart.unit}s">
               {#snippet trigger(tooltip)}
                 {#if href}
                   <a class="bar-link" href={href(bar.rating)} aria-label={name(bar)} {...tooltip}>
@@ -90,8 +83,9 @@ const stats = (bar: ProfileRatingBar) => [
   <!-- Each bar's name already carries its rating's. -->
   <div class="axis" aria-hidden="true">
     {#each chart.bars as bar (bar.rating)}
-      <span class={['axis-label', { top: bar.top, picked: onpick && picked === bar.rating }]}>
-        <span class="number">{bar.rating}</span>
+      <span class={['axis-label', { top: bar.top, picked: onpick && picked === bar.rating }]}
+        style:--color="var(--rating-{bar.rating})">
+        <span class="number"><span class="heart"><Icon svg={heart} /></span>{bar.rating}</span>
         <span class="name">{bar.name}</span>
       </span>
     {/each}
@@ -271,8 +265,15 @@ const stats = (bar: ProfileRatingBar) => [
   color: var(--color-ratings-top);
 }
 
-.top .number {
+.top :is(.number, .name),
+.count.top {
   font-weight: var(--font-weight-headings-heavy);
+}
+
+/* Each rating's heart in its color, before its number. */
+.heart {
+  margin-inline-end: var(--space-ratings-heart);
+  color: var(--color);
 }
 
 .picked :is(.number, .name) {

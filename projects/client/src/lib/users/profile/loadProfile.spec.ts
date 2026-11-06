@@ -160,7 +160,7 @@ describe('loadProfile', () => {
     server.use(http.get('https://apiz.trakt.tv/users/tester/watched/genres', () => HttpResponse.json([genre])));
     const data = await load();
 
-    expect(data.charts?.genres).toMatchObject([{ slug: 'drama', counts: [{ text: '2 movies' }] }]);
+    expect(data.charts?.genres).toMatchObject([{ slug: 'drama', counts: [{ value: '2', noun: 'movies' }] }]);
     expect(data.charts?.ratings).toMatchObject({ count: '3', average: '8.00' });
   });
 

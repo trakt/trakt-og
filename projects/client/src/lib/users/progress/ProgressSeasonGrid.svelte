@@ -550,7 +550,8 @@ ul {
 
 /* The episode, centered: its screenshot, its code and title on one line, then its tags. */
 .tip {
-  display: grid;
+  display: flex;
+  flex-direction: var(--tooltip-stack, column);
   inline-size: var(--progress-tip-width);
 }
 

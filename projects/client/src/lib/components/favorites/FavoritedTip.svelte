@@ -23,7 +23,8 @@ const { date, note }: { date?: string; note?: string } = $props();
 
 <style>
 .favorited-tip {
-  display: grid;
+  display: flex;
+  flex-direction: var(--tooltip-stack, column);
 }
 
 .head {

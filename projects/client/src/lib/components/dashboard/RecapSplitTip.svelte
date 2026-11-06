@@ -61,7 +61,8 @@ const count = (n: number, one: string, many: string) => `${exact(n)} ${n === 1 ?
 /* Dark in both themes, like every tooltip, so the shimmer takes its dark colors too. */
 .recap-tip {
   color-scheme: dark;
-  display: grid;
+  display: flex;
+  flex-direction: var(--tooltip-stack, column);
   min-inline-size: var(--dashboard-recaps-tip-width);
   text-align: start;
 }

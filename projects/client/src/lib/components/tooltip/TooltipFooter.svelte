@@ -1,9 +1,10 @@
 <!--
-  A tooltip's bottom section: out to the box's edges and bottom corners, a shade up from it under a divider. The
-  progress tooltips put their bar here, the library tooltip its format and audio. One per tooltip, last.
+  A tooltip's bottom section: out to the box's edges on the side away from the arrow, a shade up from it under a
+  divider. The progress tooltips put their bar here, the library tooltip its format and audio. One per tooltip, last.
     <TooltipFooter><CollectionLogoRow {badges} /></TooltipFooter>
   `between` is the same band between two sections, with a divider under it too: a rewatch's bar under its own run.
     <TooltipFooter between><span class="bar"></span></TooltipFooter>
+  In a flipped box it mirrors to the top, still away from the arrow.
 -->
 <script lang="ts">
 import type { Snippet } from 'svelte';
@@ -29,5 +30,12 @@ const { children, between = false }: { children: Snippet; between?: boolean } = 
     border-block-end: 1px solid var(--color-tooltip-divider);
     border-radius: 0;
   }
+}
+
+:global(.flipped) .tooltip-footer:not(.between) {
+  margin-block: calc(-1 * var(--space-tooltip-block)) var(--space-tooltip-block);
+  border-block-start: 0;
+  border-block-end: 1px solid var(--color-tooltip-divider);
+  border-radius: calc(var(--radius-tooltip) - 1px) calc(var(--radius-tooltip) - 1px) 0 0;
 }
 </style>

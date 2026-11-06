@@ -15,6 +15,7 @@ import { SvelteSet } from 'svelte/reactivity';
 import { rawApiFetch } from '#lib/api/rawApiFetch.ts';
 import { viewerFetch } from '#lib/auth/viewerFetch.ts';
 import { toast } from '#lib/components/toast/toast.svelte.ts';
+import type { TagPill } from '#lib/components/labels/TagPill.ts';
 import Shimmer from '#lib/components/loading/Shimmer.svelte';
 import FanartCard from '#lib/components/media/FanartCard.svelte';
 import DroppedBadge from '#lib/components/media/DroppedBadge.svelte';
@@ -22,15 +23,20 @@ import { quickIconFill } from '#lib/components/media/quickIconFill.ts';
 import { removeCard } from '#lib/components/media/removeCard.ts';
 import TickBar from '#lib/components/media/TickBar.svelte';
 import Stat from '#lib/components/stats/Stat.svelte';
+import ChartTip from '#lib/components/tooltip/ChartTip.svelte';
 import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import TooltipBar from '#lib/components/tooltip/TooltipBar.svelte';
 import Icon from '#lib/icons/Icon.svelte';
 import ban from '#lib/icons/thin/ban.svg?raw';
+import completeCheck from '#lib/icons/solid/check.svg?raw';
 import hourglass from '#lib/icons/regular/hourglass-half.svg?raw';
 import history from '#lib/icons/regular/clock-rotate-left.svg?raw';
 import play from '#lib/icons/regular/play.svg?raw';
 import caretDown from '#lib/icons/solid/caret-down.svg?raw';
 import check from '#lib/icons/trakt/check-thick.svg?raw';
 import { overlay } from '#lib/overlay/overlay.ts';
+import { countLabel } from '#lib/utils/countLabel.ts';
+import { formatRuntime } from '#lib/utils/formatRuntime.ts';
 import type { DatePreferences } from '#lib/settings/DatePreferences.ts';
 import { hideProgressSeasons } from './hideProgressSeasons.ts';
 import ProgressSeasonGrid from './ProgressSeasonGrid.svelte';
@@ -65,21 +71,20 @@ let article = $state<HTMLElement>();
 let removedByAction = false;
 
 const plural = (n: number, word: string) => `${word}${n === 1 ? '' : 's'}`;
-const tipColor = (tone: string) => `var(--color-progress-tip-${tone})`;
-const seasonStats = (season: ProgressSeason) => [
-  {
-    label: season.name,
-    value: `${season.percent}%`,
-    lines: [
-      { text: `${season.count} watched`, color: tipColor('watched') },
-      ...(season.timeLeft ? [{ text: `${season.timeLeft} left`, color: tipColor('time') }] : []),
-      ...(season.collected > 0 ? [{ text: `${season.collected} in your library`, color: tipColor('collected') }] : []),
-      ...(season.upNext ? [{ text: `Up next ${season.upNext}`, color: tipColor('next') }] : []),
-      ...(season.lastWatched ? [{ text: `Last watched ${season.lastWatched}`, color: tipColor('muted') }] : []),
-    ],
-  },
-];
 const count = (n: number) => n.toLocaleString('en-US');
+const seasonTag = (season: ProgressSeason): TagPill | undefined => {
+  if (season.upNext) return { text: `Up next ${season.upNext}`, kind: 'primary' };
+  if (season.complete) return { text: 'Complete', icon: completeCheck, tint: 'var(--color-progress-tip-watched)' };
+  return undefined;
+};
+/** "11 / 18 eps — 19 plays", like the show's tooltip, without the plays before any. */
+const playsLine = (season: ProgressSeason, plays: number) =>
+  `${season.done} / ${season.aired} eps${plays > 0 ? ` — ${countLabel(plays, 'play')}` : ''}`;
+/** The season's plays and their time, totalled from its episodes, for its tooltip's "— 12 plays (9h 48m)". */
+const seasonPlays = (season: ProgressSeason) => ({
+  count: season.squares.reduce((sum, { plays }) => sum + (plays?.count ?? 0), 0),
+  minutes: season.squares.reduce((sum, { plays }) => sum + (plays?.minutes ?? 0), 0),
+});
 const showTarget = $derived({ type: 'show' as const, id: row.id, title: row.title, airedEpisodes: row.aired });
 const caughtUp = $derived(type === 'dropped' ? 'Dropped' : 'Caught up');
 // Episodes left but no next one: the endpoint sends none for a show you haven't started (or a list's show it left out),
@@ -149,10 +154,26 @@ const changeSeasons = (hide: boolean) => (seasons: readonly number[]) => {
      carries the same numbers for the keyboard and screen readers. -->
 {#snippet sections()}
   {#each row.seasons?.filter(({ aired }) => aired > 0) ?? [] as season (season.number)}
-    <Tooltip toggles stats={seasonStats(season)}>
+    {@const played = seasonPlays(season)}
+    {@const left = season.aired - season.done}
+    <Tooltip toggles>
       {#snippet trigger(tooltip)}
         <span class="section" style:flex-grow={season.aired} aria-hidden="true" {...tooltip}></span>
       {/snippet}
+      <ChartTip name={season.name} tag={seasonTag(season)} value="{season.percent}%" words="watched">
+        {#snippet band()}
+          <TooltipBar percent={season.percent} />
+          {#if !season.complete && season.timeLeft}
+            <span class="tip-left"><Stat svg={hourglass} value={season.timeLeft} noun="left"
+                aside="({left} {plural(left, 'ep')})" /></span>
+          {/if}
+        {/snippet}
+        {#snippet detail()}
+          <span class="tip-line">{playsLine(season, played.count)}{#if played.count > 0 && played.minutes}&nbsp;<em
+                >({formatRuntime(played.minutes)})</em>{/if}</span>
+          {#if season.lastWatched}<span class="tip-line">Last watched <b>{season.lastWatched}</b></span>{/if}
+        {/snippet}
+      </ChartTip>
     </Tooltip>
   {/each}
 {/snippet}
@@ -274,6 +295,25 @@ const changeSeasons = (hide: boolean) => (seasons: readonly number[]) => {
 </article>
 
 <style>
+/* A season tooltip's lines under its percent: its episodes and plays, then when it was last watched. */
+.tip-line {
+  display: block;
+
+  & b {
+    font-weight: var(--font-weight-headings-heavy);
+  }
+}
+
+/* The row's own time-left stat, centered under the bar at the tooltip's size, in its dark colors like every tooltip. */
+.tip-left {
+  --font-size-stat-noun: var(--font-size-small);
+  --font-size-stat-number: var(--font-size-small);
+  --font-size-stat-icon: var(--font-size-small);
+  color-scheme: dark;
+  display: flex;
+  justify-content: center;
+}
+
 .progress-row {
   display: grid;
   grid-template-columns: var(--progress-poster-width) minmax(0, 1fr) var(--progress-card-width);

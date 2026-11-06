@@ -12,9 +12,13 @@ import LibraryTip from '#lib/components/collection/LibraryTip.svelte';
 import ListedTip from '#lib/components/lists/ListedTip.svelte';
 import PlaysTip from '#lib/components/media/PlaysTip.svelte';
 import FavoritedTip from '#lib/components/favorites/FavoritedTip.svelte';
+import ChartTip from '#lib/components/tooltip/ChartTip.svelte';
+import TooltipBar from '#lib/components/tooltip/TooltipBar.svelte';
+import TooltipBox from '#lib/components/tooltip/TooltipBox.svelte';
 import TooltipHeader from '#lib/components/tooltip/TooltipHeader.svelte';
 import ProgressTip from '#lib/components/media/ProgressTip.svelte';
 import { progressTooltip } from '#lib/components/media/progressTooltip.ts';
+import Stat from '#lib/components/stats/Stat.svelte';
 import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
 import WatchNow from '#lib/components/watchnow/WatchNow.svelte';
 import WatchNowDialog from '#lib/components/watchnow/WatchNowDialog.svelte';
@@ -23,6 +27,8 @@ import Specimen from '#lib/design/Specimen.svelte';
 import Variant from '#lib/design/Variant.svelte';
 import Icon from '#lib/icons/Icon.svelte';
 import ellipsis from '#lib/icons/regular/ellipsis.svg?raw';
+import completeCheck from '#lib/icons/solid/check.svg?raw';
+import hourglass from '#lib/icons/regular/hourglass-half.svg?raw';
 import check from '#lib/icons/trakt/check-thick.svg?raw';
 import { fightClub, reportTarget, watchNow } from './fixtures.ts';
 
@@ -57,16 +63,6 @@ const rewatch = progressTooltip({
   progress: { aired: 20, completed: 12, plays: 12, minutesWatched: 480, minutesLeft: 320 },
   fullProgress: { aired: 20, completed: 20, plays: 32, minutesWatched: 1280, minutesLeft: 0 },
 });
-const day = [
-  {
-    label: 'Monday — Sep 29',
-    value: '2h 14m',
-    lines: [
-      { text: '3 episodes (4 plays)', detail: '1h 7m', color: 'var(--color-minutes-episode)' },
-      { text: '1 movie', detail: '1h 7m', color: 'var(--color-minutes-movie)' },
-    ],
-  },
-];
 const library = {
   added: 'Mar 4, 2024',
   metadata: { media_type: 'bluray', resolution: 'uhd_4k', hdr: 'hdr10', audio: 'dolby_atmos', audio_channels: '7.1' },
@@ -196,7 +192,7 @@ const listedOn = [
 </Specimen>
 
 <Specimen title="Tooltip" row
-  note="Hover or tab to a trigger; Esc hides it and touch never opens one, except a chart's, which a click or tap toggles. Text centers and balances its lines; stats with lines, and the library card, align left. Without room on its side, off the screen or over its trigger, it flips side. Only the box takes the pointer: the gap to it passes the pointer through to what's under it, and a short grace on leaving still lets you cross it. A tooltip that only repeats its trigger's name isn't linked as its description, so screen readers say it once. A summary button's tooltip spans the whole button, right under it (Favorites). A watched tooltip's play count links to your history of that title, for the pointer only, like the list tooltip's names.">
+  note="Hover or tab to a trigger; Esc hides it and touch never opens one, except a chart's, which a click or tap toggles. Text centers and balances its lines; rows with something on their right, and the library card, align left. Its bands sit on the side away from the arrow, the header lightest. Without room on its side, off the screen or over its trigger, it flips side and mirrors them (Flipped). A chart's tooltip names its mark in the header, shows it in the header's band, then leads with the number. Only the box takes the pointer: the gap to it passes the pointer through to what's under it, and a short grace on leaving still lets you cross it. A tooltip that only repeats its trigger's name isn't linked as its description, so screen readers say it once. A summary button's tooltip spans the whole button, right under it (Favorites). A watched tooltip's play count links to your history of that title, for the pointer only, like the list tooltip's names.">
   <Variant label="Plays, a movie's quick icon, the count linked to your history">
     <Tooltip placement="bottom">
       {#snippet trigger(tooltip)}
@@ -226,7 +222,7 @@ const listedOn = [
     </Tooltip>
   </Variant>
   <Variant label="Header, an episode over your plays">
-    <Tooltip placement="bottom">
+    <Tooltip>
       {#snippet trigger(tooltip)}<DemoButton aria-label="1x01" {...tooltip}>1x01</DemoButton>{/snippet}
       <TooltipHeader><span>1x01 <b>Pilot</b></span></TooltipHeader>
       <PlaysTip plays={{ count: 1, minutes: 58, at: 'Jan 20, 2008' }} />
@@ -283,10 +279,27 @@ const listedOn = [
       <ListedTip user="sean" watchlisted lists={listedOn} />
     </Tooltip>
   </Variant>
-  <Variant label="Chart, a day's bar">
-    <Tooltip toggles stats={day}>
-      {#snippet trigger(tooltip)}<a class="bar" href="#tooltip" aria-label="Monday, Sep 29" {...tooltip}></a>{/snippet}
+  <Variant label="Chart, a season of the progress bar">
+    <Tooltip toggles>
+      {#snippet trigger(tooltip)}<a class="bar" href="#tooltip" aria-label="Season 18" {...tooltip}></a>{/snippet}
+      <ChartTip name="Season 18" tag={{ text: 'Up next 18x02', kind: 'primary' }} value="17%" words="watched"
+        detail="1 / 6 eps — 1 play (49m)">
+        {#snippet band()}
+          <TooltipBar percent={17} />
+          <span class="tip-left"><Stat svg={hourglass} value="3h 40m" noun="left" aside="(5 eps)" /></span>
+        {/snippet}
+      </ChartTip>
     </Tooltip>
+  </Variant>
+  <Variant label="Flipped, a chart tooltip turned below its mark">
+    <span class="flipped-demo">
+      <TooltipBox side="bottom" flipped>
+        <ChartTip name="Season 15" tag={{ text: 'Complete', icon: completeCheck, tint: 'var(--color-progress-tip-watched)' }}
+          value="100%" words="watched" detail="22 / 22 eps — last watched May 13, 2024">
+          {#snippet band()}<TooltipBar percent={100} />{/snippet}
+        </ChartTip>
+      </TooltipBox>
+    </span>
   </Variant>
 </Specimen>
 
@@ -345,6 +358,21 @@ const listedOn = [
 
 .site {
   font-weight: var(--font-weight-headings-heavy);
+}
+
+/* The progress row's time-left stat under a season tooltip's bar, at the tooltip's size and dark like it. */
+.tip-left {
+  --font-size-stat-noun: var(--font-size-small);
+  --font-size-stat-number: var(--font-size-small);
+  --font-size-stat-icon: var(--font-size-small);
+  color-scheme: dark;
+  display: flex;
+  justify-content: center;
+}
+
+.flipped-demo {
+  display: block;
+  padding-block-start: var(--tooltip-arrow);
 }
 
 .bar {

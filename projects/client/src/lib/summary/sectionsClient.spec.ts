@@ -53,10 +53,10 @@ const server = setupServer(
     seen.push(request);
     return HttpResponse.json([user('watcher')]);
   }),
-  // Not watching, so no live card: what a live answer maps to is fetchWatching's to test.
-  http.get(`${API}/users/:id/watching`, ({ request }) => {
+  // Nobody watching, so no live card: what a live answer maps to is fetchFollowingWatching's to test.
+  http.get(`${API}/v3/users/me/following/watching`, ({ request }) => {
     liveRequests.push(request);
-    return new HttpResponse(null, { status: 204 });
+    return HttpResponse.json([]);
   }),
   http.get(`${API}/movies/:id/social`, ({ request }) => {
     seen.push(request);
@@ -140,11 +140,17 @@ describe('sectionsClient', () => {
       expect(watching?.id === 'watching' && watching.followed).toEqual([]);
     });
 
-    it('should ask what each followed member watching now is watching, with the token', async () => {
+    it('should ask once what the followed members watching now are watching, with the token', async () => {
       const [watching] = (await client(true).activity(movie)) ?? [];
-      expect(liveRequests.map((request) => new URL(request.url).pathname)).toEqual(['/users/watcher/watching']);
+      expect(liveRequests.map((request) => new URL(request.url).pathname)).toEqual(['/v3/users/me/following/watching']);
       expect(liveRequests.at(0)?.headers.get('authorization')).toBe('Bearer viewer');
       expect(watching?.id === 'watching' && watching.live).toEqual([]);
+    });
+
+    it('should not ask what anyone is watching when no followed member is watching the title', async () => {
+      server.use(http.get(`${API}/users/me/following`, () => HttpResponse.json([{ user: user('sean') }])));
+      await client(true).activity(movie);
+      expect(liveRequests).toEqual([]);
     });
 
     it('should read English comments by default, a picked language, or every language, but all of Me', async () => {

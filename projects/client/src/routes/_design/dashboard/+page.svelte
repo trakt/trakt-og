@@ -167,8 +167,8 @@ const socialRowsFor = (period: Exclude<SocialPeriod, 'today'>) =>
   }));
   // Seven puts four behind the "+4 watching" tile.
   const watchingNow = (count: number) => () => Promise.resolve(socialFeedFixture.live(new Date()).slice(0, count));
-  const socialEmpty = Promise.resolve<SocialFeed>({ follows: true, items: [], recent: [] });
-  const socialNobody = Promise.resolve<SocialFeed>({ follows: false, items: [], recent: [] });
+  const socialEmpty = Promise.resolve<SocialFeed>({ follows: true, items: [] });
+  const socialNobody = Promise.resolve<SocialFeed>({ follows: false, items: [] });
   const socialLoading = new Promise<SocialFeed>(() => {});
   const socialFailed = browser ? Promise.reject(new Error('demo')) : socialLoading;
   const socials = $derived([

@@ -5,7 +5,7 @@ import { rawApiFetch } from '../api/rawApiFetch.ts';
 import type { DatePreferences } from '../settings/DatePreferences.ts';
 import { socialActivitySchema } from './socialActivitySchema.ts';
 import { type SocialWindow, socialWindows } from './socialWindows.ts';
-import { type SocialItem, type SocialMember, toSocialItem } from './toSocialItem.ts';
+import { type SocialItem, toSocialItem } from './toSocialItem.ts';
 import { uniqueBy } from '../utils/uniqueBy.ts';
 
 type FetchSocialFeedParams = {
@@ -22,14 +22,11 @@ export type SocialFeed = {
   readonly follows: boolean;
   /** The last 24 hours of watches, ratings and comments, newest first: the Today period. */
   readonly items: readonly SocialItem[];
-  /** Up to 10 members active in the last 24 hours, most recent first: the ones worth asking what they're watching. */
-  readonly recent: readonly SocialMember[];
 };
 
 /** A GET against the API: the server's fetch with the viewer's token, or the browser's queue. */
 export type SocialGet = (path: string) => Promise<Response>;
 
-const RECENT_MEMBERS = 10;
 /** The worker's page size limit. A window with more rows pages on, up to `MAX_PAGES`. */
 const PER_PAGE = 250;
 const MAX_PAGES = 4;
@@ -69,29 +66,6 @@ async function fetchWindow(get: SocialGet, window: SocialWindow, datePreferences
   return [first, ...rest].flatMap(({ items }) => items);
 }
 
-/** Each member once, most recent first, up to `RECENT_MEMBERS`. Deleted members have no slug to ask about. */
-function recentMembers(items: readonly SocialItem[]): readonly SocialMember[] {
-  const members = items.map(({ member }) => member).filter(({ slug }) => slug);
-  return uniqueBy(members, ({ key }) => key).slice(0, RECENT_MEMBERS);
-}
-
-type FetchRecentMembersParams = { get: SocialGet; now: Date; datePreferences: DatePreferences };
-
-/**
- * Up to 10 members the viewer follows who were active in the last 24 hours, most recent first: the ones worth asking
- * what they're watching. Only the feed's newest page, since the first 10 members are on it.
- */
-export async function fetchRecentMembers({
-  get,
-  now,
-  datePreferences,
-}: FetchRecentMembersParams): Promise<readonly SocialMember[]> {
-  const [today] = socialWindows('today', now, datePreferences.timeZone);
-  if (!today) return [];
-  const { items } = await fetchPage(get, today, 1, datePreferences);
-  return recentMembers(items);
-}
-
 type FetchSocialItemsParams = { get: SocialGet; windows: readonly SocialWindow[]; datePreferences: DatePreferences };
 
 /**
@@ -127,12 +101,12 @@ export async function fetchSocialFeed({
   now,
   datePreferences,
 }: FetchSocialFeedParams): Promise<SocialFeed> {
-  if ((await following) === 0) return { follows: false, items: [], recent: [] };
+  if ((await following) === 0) return { follows: false, items: [] };
 
   const items = await fetchSocialItems({
     get: (path) => rawApiFetch({ fetch, token, path }),
     windows: socialWindows('today', now, datePreferences.timeZone),
     datePreferences,
   });
-  return { follows: true, items, recent: recentMembers(items) };
+  return { follows: true, items };
 }

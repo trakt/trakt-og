@@ -1,22 +1,20 @@
 <!--
   Trending's People you follow: who the viewer follows is watching this chart's type now. Each row is the member's
   avatar beside a condensed fanart title (the show small over the episode's number and title), the dashboard's red
-  progress bar, then who on the left and the time left ticking down on the right. Like the Social Feed, the browser asks the members active in the last
-  24 hours, now and every 2 minutes while the tab is visible. The section only shows while someone is watching: it
-  appears when a check finds someone and goes again when no one is left.
+  progress bar, then who on the left and the time left ticking down on the right. Like the Social Feed, the browser asks
+  who the viewer follows is watching, now and every 2 minutes while the tab is visible. The section only shows while
+  someone is watching: it appears when a check finds someone and goes again when no one is left.
 -->
 <script lang="ts">
-import { untrack } from 'svelte';
 import { apiQueue } from '#lib/api/apiQueue.ts';
 import { rawApiFetch } from '#lib/api/rawApiFetch.ts';
 import UnderProgress from '#lib/components/media/UnderProgress.svelte';
 import Countdown from '#lib/components/status/Countdown.svelte';
 import SidebarSection from '#lib/components/sidebar/SidebarSection.svelte';
-import { fetchRecentMembers, type SocialGet } from '#lib/dashboard/fetchSocialFeed.ts';
-import { fetchWatching, type LiveWatch } from '#lib/dashboard/fetchWatching.ts';
+import type { SocialGet } from '#lib/dashboard/fetchSocialFeed.ts';
+import { fetchFollowingWatching } from '#lib/dashboard/fetchFollowingWatching.ts';
+import type { LiveWatch } from '#lib/dashboard/fetchWatching.ts';
 import { pollWatching } from '#lib/dashboard/pollWatching.ts';
-import type { SocialMember } from '#lib/dashboard/toSocialItem.ts';
-import type { DatePreferences } from '#lib/settings/DatePreferences.ts';
 import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
 import { followingWatching } from './followingWatching';
 import type { MediaType } from './loadChart';
@@ -25,25 +23,13 @@ import { viewerFetch } from '../auth/viewerFetch.ts';
 interface Props {
   type: MediaType;
   open: boolean;
-  datePreferences: DatePreferences;
   /** Who the viewer follows is watching now. Defaults to asking the API with the viewer's token. */
   watching?: () => Promise<readonly LiveWatch[]>;
 }
 
 const get: SocialGet = (path) => apiQueue.run(() => rawApiFetch({ fetch: viewerFetch(), path }));
 
-// Who to ask stays put for the visit; what they're watching is asked again each time.
-let members: Promise<readonly SocialMember[]> | undefined;
-function fromApi() {
-  members ??= fetchRecentMembers({ get, now: new Date(), datePreferences: untrack(() => datePreferences) })
-    .catch((error: unknown) => {
-      members = undefined;
-      throw error;
-    });
-  return members.then((recent) => fetchWatching({ get, members: recent }));
-}
-
-const { type, open, datePreferences, watching = fromApi }: Props = $props();
+const { type, open, watching = () => fetchFollowingWatching({ get }) }: Props = $props();
 
 const CLOCK_MS = 30_000;
 let live = $state<readonly LiveWatch[] | null>(null);

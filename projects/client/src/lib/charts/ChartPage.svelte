@@ -470,7 +470,7 @@ async function saveChanges() {
       <LiveNowSection live={data.live} type={data.type} filtered={data.liveFiltered} open={data.sidebar.live} />
     {/if}
     {#if data.chart === 'trending' && data.user}
-      <FollowingWatchingSection type={data.type} open={data.sidebar.following} datePreferences={data.datePreferences} />
+      <FollowingWatchingSection type={data.type} open={data.sidebar.following} />
     {/if}
 
     <!-- The viewer's smart lists come last, after the chart's own sections. -->

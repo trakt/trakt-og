@@ -3,8 +3,8 @@ import { z } from 'zod/v4';
 import type { api } from '../api/api.ts';
 import { contractSchema } from '../api/contractSchema.ts';
 import { rawApiFetch } from '../api/rawApiFetch.ts';
-import { fetchWatching, type LiveWatch } from '../dashboard/fetchWatching.ts';
-import type { SocialMember } from '../dashboard/toSocialItem.ts';
+import { fetchFollowingWatching } from '../dashboard/fetchFollowingWatching.ts';
+import type { LiveWatch } from '../dashboard/fetchWatching.ts';
 import { socialRowsSchema } from './socialRowsSchema.ts';
 import type { SocialRow } from './SocialRow.ts';
 import type { SummaryMedia } from './SummaryMedia.ts';
@@ -193,23 +193,12 @@ export function sectionsClient({
     return rows ? new Set(rows.flatMap(({ user }) => user.ids.slug ?? [])) : null;
   };
 
-  // What each followed member watching now is watching, for the dashboard's live cards.
+  // What the followed members watching now are watching, for the dashboard's live cards. Asked only when one of them
+  // is watching this title, so a title nobody followed is watching costs no extra call.
   const liveOf = (everyone: readonly ProfileResponse[], followed: ReadonlySet<string> | null) => {
-    const members: readonly SocialMember[] = everyone.flatMap(({ username, ids, images }) =>
-      ids.slug && followed?.has(ids.slug)
-        ? [
-            {
-              key: username,
-              name: username,
-              slug: ids.slug,
-              href: `/users/${ids.slug}`,
-              avatar: images?.avatar?.full ?? '',
-            },
-          ]
-        : [],
-    );
-    if (members.length === 0) return Promise.resolve<readonly LiveWatch[]>([]);
-    return fetchWatching({ get: (path) => rawApiFetch({ fetch: viewerFetch, path }), members }).catch(() => []);
+    const anyFollowed = everyone.some(({ ids }) => ids.slug && followed?.has(ids.slug));
+    if (!anyFollowed) return Promise.resolve<readonly LiveWatch[]>([]);
+    return fetchFollowingWatching({ get: (path) => rawApiFetch({ fetch: viewerFetch, path }) }).catch(() => []);
   };
 
   return {

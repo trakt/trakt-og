@@ -2,7 +2,7 @@ import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { isApiUnavailable } from '../api/isApiUnavailable.ts';
-import { fetchRecentMembers, fetchSocialFeed, fetchSocialItems } from './fetchSocialFeed.ts';
+import { fetchSocialFeed, fetchSocialItems } from './fetchSocialFeed.ts';
 import { socialFeedFixture } from './socialFeedFixture.ts';
 import { socialWindows } from './socialWindows.ts';
 
@@ -57,21 +57,6 @@ describe('fetchSocialFeed', () => {
     expect(social.items.some(({ key }) => key === 'comment:18')).toBe(false);
   });
 
-  it('should list who to ask about watching now, most recently active first', async () => {
-    server.use(byWindow());
-
-    const social = await feed();
-
-    expect(social.recent.map(({ name }) => name)).toEqual([
-      'Kristin',
-      'Sefer',
-      'Damien',
-      'MajorMercyFlush',
-      'Technicolour',
-      'Justin',
-    ]);
-  });
-
   it('should page on when the window has more rows than a page holds', async () => {
     const [first] = socialFeedFixture.rows(now);
     server.use(
@@ -92,14 +77,15 @@ describe('fetchSocialFeed', () => {
   it('should not ask when the viewer follows nobody, since the worker would send the team instead', async () => {
     server.use(byWindow());
 
-    expect(await feed(0)).toEqual({ follows: false, items: [], recent: [] });
+    expect(await feed(0)).toEqual({ follows: false, items: [] });
     expect(seen).toHaveLength(0);
   });
 
   it("should still ask when the following count didn't load", async () => {
     server.use(byWindow());
 
-    expect((await feed(null)).recent).toHaveLength(6);
+    expect((await feed(null)).follows).toBe(true);
+    expect(seen.length).toBeGreaterThan(0);
   });
 
   it('should skip a row it cannot show', async () => {
@@ -123,33 +109,6 @@ describe('fetchSocialFeed', () => {
     const failure: unknown = await feed().catch((cause: unknown) => cause);
 
     expect(isApiUnavailable(failure)).toBe(true);
-  });
-});
-
-describe('fetchRecentMembers', () => {
-  it("should read who was active from the last 24 hours' newest page only", async () => {
-    const [first] = socialFeedFixture.rows(now);
-    server.use(
-      http.get(FEED, ({ request }) => {
-        const url = new URL(request.url);
-        seen.push(url);
-        return HttpResponse.json([first], { headers: { 'x-pagination-page-count': '3' } });
-      }),
-    );
-
-    const members = await fetchRecentMembers({ get, now, datePreferences });
-
-    expect(seen.map((url) => url.searchParams.get('page'))).toEqual(['1']);
-    expect(seen.at(0)?.searchParams.get('start_at')).toBe('2026-09-29T12:00:00.000Z');
-    expect(members.map(({ name }) => name)).toEqual(['Kristin']);
-  });
-
-  it('should list each member once, most recently active first, like the Social Feed', async () => {
-    server.use(byWindow());
-
-    expect((await fetchRecentMembers({ get, now, datePreferences })).map(({ name }) => name)).toEqual(
-      (await feed()).recent.map(({ name }) => name),
-    );
   });
 });
 

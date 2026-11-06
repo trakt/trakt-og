@@ -44,6 +44,8 @@ type Spot = {
 type Extra = {
   /** Loaded on the first match, so pages pay nothing for it. */
   readonly load: () => Promise<{ default: Component<ExtraProps> }>;
+  /** Plays on its own this many milliseconds after the page opens, once per browser; its trigger still replays it. */
+  readonly autoplay?: number;
 } & (
   | {
       /** What to type on the page, e.g. "42". */
@@ -79,11 +81,13 @@ export const extras: Readonly<Record<string, Extra>> = {
   },
   'movie:205404': {
     spot: { label: 'Something tingling', color: '#e8132b', beside: '.summary-title .certification', icon: spider },
+    autoplay: 1000,
     load: () => import('./movie-205404.svelte'),
   },
   'show:4583': { keys: '4815162342', gap: 1500, load: () => import('./show-4583.svelte') },
   'show:93720': {
     spot: { label: 'fsociety', color: '#e8343a', follows: 'nav[aria-label$=" sections"] > ul > li:first-child' },
+    autoplay: 1000,
     load: () => import('./show-93720.svelte'),
   },
 };

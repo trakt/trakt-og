@@ -31,15 +31,16 @@ const tile = (
 
 /**
  * The essential lists, OG's Featured Lists: IMDB's top 250s, the MCU and Star Wars, then the Best Picture winners,
- * Star Trek, DC and The X-Files. The ids and art were hardcoded in OG, and they are here too.
+ * Star Trek, DC and The X-Files. The art was hardcoded in OG, and so were the ids, except the MCU and DC, which now
+ * point at lists that are kept up to date.
  */
 export const featuredLists: readonly FeaturedList[] = [
   tile(2_142_753, 'imdb', ['IMDB', 'Top 250 Movies'], { label: 'Updated Daily' }),
   tile(2_143_363, 'imdb-tv', ['IMDB', 'Top 250 TV Shows'], { label: 'Updated Daily' }),
-  tile(1_248_149, 'marvel', ['MARVEL', 'Cinematic Universe']),
+  tile(26_086_884, 'marvel', ['MARVEL', 'Cinematic Universe']),
   tile(2_233_867, 'star-wars', ['Star Wars', 'Timeline']),
   tile(832_943, 'academy-awards', ['Academy Awards', 'Best Picture Winners'], { upright: true }),
   tile(5_790_552, 'star-trek', ['Star Trek', 'Timeline']),
-  tile(1_257_909, 'dc', ['DC', 'Extended Universe'], { upright: true }),
+  tile(37_521_451, 'dc', ['DC', 'Universe'], { upright: true }),
   tile(1_402_475, 'x-files', ['The Essential', 'X-Files']),
 ];

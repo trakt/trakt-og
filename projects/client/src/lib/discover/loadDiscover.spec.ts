@@ -189,11 +189,11 @@ describe('loadDiscover', () => {
     expect(data.essentials.map(({ id, counts }) => [id, counts?.items])).toEqual([
       [2_142_753, 250],
       [2_143_363, undefined],
-      [1_248_149, 250],
+      [26_086_884, 250],
       [2_233_867, 250],
       [832_943, 250],
       [5_790_552, 250],
-      [1_257_909, 250],
+      [37_521_451, 250],
       [1_402_475, 250],
     ]);
     expect(data.essentials[1]).toMatchObject({ href: '/lists/2143363', logo: expect.stringMatching(/logo\.png$/) });

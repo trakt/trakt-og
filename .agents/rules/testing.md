@@ -6,6 +6,8 @@
 - Test pure functions and data mappers first: business logic and transformations.
 - Test behavior, not implementation. Verify what the code does, not how.
 - Mock HTTP with MSW. Never hit apiz from a test.
+- A spec that mounts a component in a DOM, for browser-only behavior like keyed each blocks, is named `*.dom.spec.ts`
+  and runs in happy-dom with Svelte's browser build. Everything else renders with `svelte/server`.
 - Run one file while iterating: `bun run test src/lib/foo.spec.ts`. Open a draft PR early, run `bun run ci` while working, and pass it before asking for review.
 
 ## Describe / It conventions

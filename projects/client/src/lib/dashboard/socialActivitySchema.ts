@@ -1,16 +1,8 @@
 import { z } from 'zod/v4';
 import { socialMediaSchema } from './socialMediaSchema.ts';
+import { socialMemberSchema } from './socialMemberSchema.ts';
 
-// The member fields the Social Feed reads. `name` is the worker's display name, blank when they never set one.
-const member = z.object({
-  username: z.string(),
-  name: z.string().nullish(),
-  deleted: z.boolean().nullish(),
-  ids: z.object({ slug: z.string().nullish() }),
-  images: z.object({ avatar: z.object({ full: z.string().nullish() }) }).nullish(),
-});
-
-const base = z.object({ id: z.number(), activity_at: z.string(), user: member });
+const base = z.object({ id: z.number(), activity_at: z.string(), user: socialMemberSchema });
 
 // A watch's `method` is `scrobble`, `checkin` or `watch` (added by hand). It stays a string, so a new one keeps the row.
 const action = z.discriminatedUnion('action', [

@@ -22,7 +22,8 @@
   import PageNavigator from '#lib/components/page-navigator/PageNavigator.svelte';
   import GenreBand from '#lib/components/users/GenreBand.svelte';
   import { fetchSocialItems, type SocialFeed, type SocialGet } from '#lib/dashboard/fetchSocialFeed.ts';
-  import { fetchWatching, type LiveWatch } from '#lib/dashboard/fetchWatching.ts';
+  import { fetchFollowingWatching } from '#lib/dashboard/fetchFollowingWatching.ts';
+  import type { LiveWatch } from '#lib/dashboard/fetchWatching.ts';
   import { liveTiles } from '#lib/dashboard/liveTiles.ts';
   import { pollWatching } from '#lib/dashboard/pollWatching.ts';
   import { rowCount } from '#lib/dashboard/rowCount.ts';
@@ -52,8 +53,8 @@ import { type SocialCard, type SocialLinePart, type SocialView, toSocialBoard } 
     datePreferences: DatePreferences;
     /** The viewer's slug, for the saved page count. */
     username: string;
-    /** Who of these members is watching now. Defaults to asking the API with the viewer's token. */
-    watching?: (members: readonly SocialMember[]) => Promise<readonly LiveWatch[]>;
+    /** Who the viewer follows is watching now. Defaults to asking the API with the viewer's token. */
+    watching?: () => Promise<readonly LiveWatch[]>;
     /** The rows of a period past today. Defaults to asking the API with the viewer's token. */
     rowsFor?: (period: Exclude<SocialPeriod, 'today'>) => Promise<readonly SocialItem[]>;
     /** Welcome mode: following nobody offers the team to follow instead of a link. */
@@ -66,7 +67,7 @@ import { type SocialCard, type SocialLinePart, type SocialView, toSocialBoard } 
     feed,
     datePreferences,
     username,
-    watching = (members) => fetchWatching({ get, members }),
+    watching = () => fetchFollowingWatching({ get }),
     rowsFor,
   welcome = false,
   }: Props = $props();
@@ -136,10 +137,10 @@ function changePages(pages: number) {
   $effect(() => {
     let stop = () => {};
     let cancelled = false;
-    void feed.then(({ recent }) => {
-      if (cancelled || recent.length === 0) return;
+    void feed.then(({ follows }) => {
+      if (cancelled || !follows) return;
       stop = pollWatching({
-        load: () => watching(recent),
+        load: watching,
         onupdate: (value) => {
           live = value;
           now = new Date();

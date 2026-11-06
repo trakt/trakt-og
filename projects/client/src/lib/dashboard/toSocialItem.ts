@@ -1,7 +1,7 @@
 import type { DatePreferences } from '../settings/DatePreferences.ts';
 import type { SocialActivity } from './socialActivitySchema.ts';
 import { toSocialMedia } from './toSocialMedia.ts';
-import { PLACEHOLDER_AVATAR } from '../users/placeholderAvatar.ts';
+import { toSocialMember } from './toSocialMember.ts';
 
 export type SocialMember = {
   /** Groups a member's rows: the username, which deleted members keep too. */
@@ -71,14 +71,6 @@ export type SocialItem = {
   };
 };
 
-function memberOf(user: SocialActivity['user']): SocialMember {
-  if (user.deleted || !user.ids.slug) return { key: user.username, name: 'Deleted User', avatar: PLACEHOLDER_AVATAR };
-
-  const { slug } = user.ids;
-  const avatar = user.images?.avatar.full ?? PLACEHOLDER_AVATAR;
-  return { key: user.username, name: user.name?.trim() || user.username, slug, href: `/users/${slug}`, avatar };
-}
-
 function kindOf(activity: SocialActivity): Pick<SocialItem, 'kind' | 'rating' | 'comment'> {
   if (activity.action === 'rating') return { kind: 'rating', rating: activity.rating };
   if (activity.action === 'watch') return { kind: activity.method === 'checkin' ? 'checkin' : 'watch' };
@@ -102,7 +94,7 @@ export function toSocialItem(activity: SocialActivity, { timeZone, hour24 }: Dat
       minute: '2-digit',
       hourCycle: hour24 ? 'h23' : 'h12',
     }),
-    member: memberOf(activity.user),
+    member: toSocialMember(activity.user),
     ...media,
     label: media.code ? `${media.title.name} ${media.code}` : media.title.name,
     ...kindOf(activity),

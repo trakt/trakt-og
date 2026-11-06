@@ -15,6 +15,8 @@ interface Props {
   viewer?: string;
 }
 
+  /** Browsers cap a cookie's lifetime at 400 days. */
+  const AUTOPLAY_COOKIE_AGE = 400 * 86_400;
   const { type, id, viewer }: Props = $props();
   const extra = $derived(extras[`${type}:${id}`]);
   let typed = { keys: '', at: 0 };
@@ -38,6 +40,18 @@ interface Props {
   // While developing, a page opened with #extra on its address plays its extra, so it can be tried with a click.
   $effect(() => {
     if (dev && extra && location.hash === '#extra') untrack(play);
+  });
+
+  // An extra that plays on its own does so once per browser: a cookie, written as it starts, remembers it.
+  $effect(() => {
+    const delay = extra?.autoplay;
+    const cookie = `og-extra-${type}-${id}`;
+    if (delay === undefined || document.cookie.split('; ').some((pair) => pair.startsWith(`${cookie}=`))) return;
+    const timer = window.setTimeout(() => {
+      document.cookie = `${cookie}=1; path=/; samesite=lax; max-age=${AUTOPLAY_COOKIE_AGE}`;
+      if (!Playing) play();
+    }, delay);
+    return () => clearTimeout(timer);
   });
 
   async function play() {
@@ -106,7 +120,8 @@ interface Props {
 
 <!--
   A summary page's hidden extra, if it has one: typing its keys anywhere on the page, or clicking its small switch,
-  loads and plays it. The switch joins something already on the page: the first segment of a bar (the tag bar over
+  loads and plays it, and one that autoplays also starts on its own the first time this browser opens the page. The
+  switch joins something already on the page: the first segment of a bar (the tag bar over
   the title), a badge beside the certification, a row of a list (the sidebar's sections) or the last tile of the links
   out. It stays lit while it plays,
   and a second click or Esc lets it play its way out; Esc stops the others at once. Keys stay quiet while you type in

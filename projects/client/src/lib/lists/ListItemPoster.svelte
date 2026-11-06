@@ -69,6 +69,7 @@ const siteTarget = $derived.by((): ExternalRatingsTarget | undefined => {
   href={item.href}
   title={item.title}
   number={item.number}
+  showTitle={item.showTitle}
   image={item.image}
   episodeBadge={item.episodeBadge}
   subtitles={myRating || siteTarget ? linesBeforeRating(item) : viewerLine ? withViewerLine(item, viewerLine) : item.lines}

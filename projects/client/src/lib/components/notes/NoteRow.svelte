@@ -23,6 +23,7 @@ const state = $derived.by((): OverlayState =>
     <PosterCard
       href={note.item.href}
       title={note.item.title}
+      fullTitle={'tip' in note.item ? note.item.tip : undefined}
       image={note.item.image}
       variant={note.item.variant}
       episodeBadge={note.item.episodeBadge}

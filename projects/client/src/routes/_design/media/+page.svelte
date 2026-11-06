@@ -209,7 +209,7 @@ const seasonRuns: { label: string; runs: readonly WatchedProgress[] }[] = [
   </div>
 </Specimen>
 
-<Specimen title="Screenshot cards" note="Four a row for episodes, as history and ratings show them.">
+<Specimen title="Screenshot cards" note="Four a row for episodes, as history and ratings show them. The tooltip puts the show over the bold number and title.">
   <PosterGrid columns={4}>
     {#each seasonOneEpisodes as episode (episode.id)}
       {@const target = { type: episode.type, id: episode.id, title: episode.title, season: episode.season }}
@@ -217,6 +217,7 @@ const seasonRuns: { label: string; runs: readonly WatchedProgress[] }[] = [
         href={episode.href}
         title={episode.title}
         number={episode.number}
+        showTitle={breakingBad.title}
         variant="screenshot"
         image={episode.screenshot}
         subtitles={[breakingBad.title]}

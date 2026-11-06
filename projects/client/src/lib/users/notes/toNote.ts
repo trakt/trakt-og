@@ -76,9 +76,12 @@ function itemDetails(row: Row) {
   };
   if (row.type === 'episode') {
     if (!showHref || item.season == null || item.number == null) return null;
+    const number = episodeNumber({ season: item.season, number: item.number }, null);
+    const title = item.title ?? 'Episode';
     return {
       ...base,
-      title: `${episodeNumber({ season: item.season, number: item.number }, null)} ${item.title ?? 'Episode'}`,
+      title: `${number} ${title}`,
+      tip: { show: show?.title ?? undefined, number, title },
       href: `${showHref}/seasons/${item.season}/episodes/${item.number}`,
       image: posterUrl(item.images?.screenshot),
       episodeBadge: episodeBadge(item),
@@ -86,9 +89,11 @@ function itemDetails(row: Row) {
   }
   if (row.type === 'season') {
     if (!showHref || item.number == null) return null;
+    const title = item.title || seasonName(item.number);
     return {
       ...base,
-      title: item.title || seasonName(item.number),
+      title,
+      tip: { show: show?.title ?? undefined, title },
       href: `${showHref}/seasons/${item.number}`,
       image: posterUrl(item.images?.poster) ?? posterUrl(show?.images?.poster),
     };

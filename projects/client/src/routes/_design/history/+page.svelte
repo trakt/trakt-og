@@ -51,7 +51,7 @@ const upTo = {
 {/snippet}
 
 {#snippet episodeCard()}
-  <PosterCard href={pilot.href} title={pilot.title} number={pilot.number} image={breakingBad.posterThumb}
+  <PosterCard href={pilot.href} title={pilot.title} number={pilot.number} showTitle={breakingBad.title} image={breakingBad.posterThumb}
   subtitles={[breakingBad.title, 'Unknown date']}
   userRating={overlay.state('episode', episode.id, episode.season).rating}
   icons={{

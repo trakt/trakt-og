@@ -268,7 +268,6 @@ const isFaded = (credit: PersonCredit, state: ReturnType<typeof overlay.state>) 
   faded={faded && isFaded(credit, state)}
   href={credit.href}
   title={credit.title}
-  fullTitle={credit.year ? `${credit.title} (${credit.year})` : credit.title}
   image={credit.image}
   subtitles={[yearLine(credit), credit.characters || ' ']}
   userRating={state.rating}

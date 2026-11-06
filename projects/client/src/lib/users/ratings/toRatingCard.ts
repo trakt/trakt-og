@@ -60,6 +60,7 @@ export function toRatingCard(row: Row, { type, by, datePreferences }: Options) {
     href,
     title: seasonTitle ?? item.title ?? '',
     number: row.type === 'episode' && row.episode ? episodeNumber(row.episode, show?.genres) : undefined,
+    showTitle: row.type === 'episode' || row.type === 'season' ? show?.title : undefined,
     image: imageUrl((screenshots ? item.images?.screenshot : poster)?.at(0), 'thumb'),
     variant: screenshots ? ('screenshot' as const) : ('poster' as const),
     episodeBadge: row.type === 'episode' && row.episode ? episodeBadge(row.episode) : undefined,

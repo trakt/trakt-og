@@ -28,6 +28,9 @@ import RewatchingBadge from './RewatchingBadge.svelte';
 import { ratingPercent } from '../../utils/ratingPercent.ts';
 
 /** OG's sorted Trakt rating line: a heart in the rating's color, "72%", the votes. */
+/** A season's or episode's tooltip: its show on a line of its own, then an episode's bold "2x04" and the title. */
+type ShowPartTip = { readonly show?: string; readonly number?: string; readonly title?: string };
+
 type RatingSubtitle = { readonly rating: number; readonly votes: number; readonly href: string };
 
 type Subtitle = string | readonly (string | { readonly em: string })[] | {
@@ -38,10 +41,12 @@ type Subtitle = string | readonly (string | { readonly em: string })[] | {
 interface Props {
   href: string;
   title: string;
-  /** An episode's "2x04", bold before the title. */
+  /** An episode's "2x04", bold before the title, in the title and its tooltip. */
   number?: string;
-  /** The poster's tooltip. Defaults to the title. */
-  fullTitle?: string;
+  /** A season's or episode's show, on its own line over the number and title in the tooltip. */
+  showTitle?: string;
+  /** The poster's tooltip, or a season's or episode's parts for it. Defaults to the show, the number and the title. */
+  fullTitle?: string | ShowPartTip;
   /** Image URL. Left out, the placeholder shows. */
   image?: string;
   /** `screenshot` is the 16:9 episode still. */
@@ -99,7 +104,8 @@ const {
   href,
   title,
   number,
-  fullTitle = number ? `${number} ${title}` : title,
+  showTitle,
+  fullTitle: customTitle,
   image,
   variant = 'poster',
   framed = true,
@@ -122,6 +128,16 @@ const {
   hideTitles = false,
   posterOverlay,
 }: Props = $props();
+const tip = $derived<ShowPartTip | undefined>(
+  typeof customTitle === 'object'
+    ? customTitle
+    : !customTitle && (number || showTitle)
+      ? { show: showTitle, number, title }
+      : undefined,
+);
+const fullTitle = $derived(
+  typeof customTitle === 'string' ? customTitle : tip ? [tip.show, tip.number, tip.title].filter(Boolean).join(' ') : title,
+);
 // Read only when the card leaves. Navigation and day collapse aren't removals.
 let removedByAction = false;
 const cardIcons = $derived(
@@ -154,6 +170,13 @@ const hidden = $derived(
 const restoreTarget = $derived(target?.type === 'show' ? { ...target, type: 'show' as const } : undefined);
 </script>
 
+{#snippet showPartTip()}
+  {#if tip}
+    {#if tip.show}<span class="tip-show">{tip.show}</span>{/if}
+    <span>{#if tip.number}<b class="number">{tip.number}</b>{#if tip.title}&nbsp;{/if}{/if}{tip.title}</span>
+  {/if}
+{/snippet}
+
 <!-- Hrefs come in as props pointing at OG routes og hasn't built yet, and resolve() only takes routes that exist. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
@@ -169,7 +192,7 @@ const restoreTarget = $derived(target?.type === 'show' ? { ...target, type: 'sho
   <!-- The title link below is the one in the tab order; this is the same link for the mouse. Without titles, it's the
        only link, so it takes the title as its name. -->
   <div class="poster-wrapper">
-  <Tooltip text={fullTitle}>
+  <Tooltip content={tip ? showPartTip : fullTitle}>
     {#snippet trigger(tooltip)}
       <a
         class={['poster', variant, { 'logo-mode': logoMode }]}
@@ -344,6 +367,10 @@ h3,
 
 .number {
   font-weight: var(--font-weight-headings-heavy);
+}
+
+.tip-show {
+  display: block;
 }
 
 h3 {

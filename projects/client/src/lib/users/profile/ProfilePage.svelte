@@ -55,6 +55,7 @@ const viewer = $derived(data.user ? { slug: data.user.slug } : null);
   href={card.href}
   title={card.title}
   number={card.number}
+  showTitle={card.show?.text}
   image={card.image}
   variant={card.type === 'episode' ? 'screenshot' : 'poster'}
   episodeBadge={card.episodeBadge}

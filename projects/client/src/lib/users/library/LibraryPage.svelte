@@ -93,6 +93,7 @@ const flipped = $derived(data.sort.how === 'desc');
   href={item.href}
   title={item.title}
   number={item.number}
+  showTitle={item.showTitle}
   image={item.image}
   variant={item.variant}
   episodeBadge={item.episodeBadge}

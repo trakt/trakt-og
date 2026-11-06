@@ -42,8 +42,19 @@ export default defineConfig(({ mode }) => ({
   ],
   test: {
     alias: { 'cloudflare:workers': fileURLToPath(new URL('./src/test/cloudflareWorkers.ts', import.meta.url)) },
-    include: ['src/**/*.spec.ts', 'scripts/**/*.spec.ts'],
     passWithNoTests: true,
     setupFiles: ['src/test/memoryStorage.ts'],
+    projects: [
+      {
+        extends: true,
+        test: { name: 'node', include: ['src/**/*.spec.ts', 'scripts/**/*.spec.ts'], exclude: ['**/*.dom.spec.ts'] },
+      },
+      // Mounts components in a DOM, where only Svelte's browser build runs: keyed each blocks check their keys there.
+      {
+        extends: true,
+        resolve: { conditions: ['browser'] },
+        test: { name: 'dom', include: ['src/**/*.dom.spec.ts'], environment: 'happy-dom' },
+      },
+    ],
   },
 }));

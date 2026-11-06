@@ -15,7 +15,7 @@ const reads = {
     trakt: { rating: 8.8, votes: 100, distribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 100 } },
     imdb: { rating: 8.8, votes: 1, link: 'https://www.imdb.com/title/tt0137523' },
   },
-  stats: { watchers: 1, plays: 1, collectors: 1, comments: 1, lists: 1, votes: 100, favorited: 6 },
+  stats: { watchers: 1, plays: 1, comments: 1, lists: 1, votes: 100, favorited: 6 },
   letterboxd: { rating: 4.3, votes: 1, link: 'https://letterboxd.com/film/fight-club' },
   mal: null,
 };

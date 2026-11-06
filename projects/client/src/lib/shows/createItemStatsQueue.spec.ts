@@ -3,7 +3,7 @@ import { createItemStatsQueue } from './createItemStatsQueue.ts';
 import type { ItemStatsTarget } from './ItemStatsTarget.ts';
 
 const target = (season: number): ItemStatsTarget => ({ show: 1, season });
-const stats = { watchers: 3, plays: 7, collectors: 2, lists: 1, comments: 0, votes: 4 };
+const stats = { watchers: 3, plays: 7, lists: 1, comments: 0, votes: 4 };
 const tick = async () => {
   await new Promise((resolve) => setTimeout(resolve, 0));
 };

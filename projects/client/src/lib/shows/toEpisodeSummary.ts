@@ -1,4 +1,4 @@
-import type { EpisodeResponse, EpisodeStatsResponse, PeopleResponse, RatingsResponse, ShowResponse } from '@trakt/api';
+import type { EpisodeResponse, PeopleResponse, RatingsResponse, ShowResponse } from '@trakt/api';
 import type { z } from 'zod/v4';
 import { episodeNumber, episodeType } from '../components/media/episodeTags.ts';
 import { countryName, languageName } from '../components/summary/names.ts';
@@ -17,6 +17,7 @@ import { toCrewGroups } from '../components/summary/toCrewGroups.ts';
 import { seasonName } from '../utils/seasonName.ts';
 import { genreLabel } from '../utils/genreLabel.ts';
 import { toEpisodeLinks } from './toEpisodeLinks.ts';
+import type { ItemStats } from './ItemStats.ts';
 
 interface Params {
   show: ShowResponse;
@@ -25,7 +26,7 @@ interface Params {
   seasons: z.infer<typeof episodeSeasonsSchema>;
   people: PeopleResponse;
   ratings: RatingsResponse;
-  stats: EpisodeStatsResponse;
+  stats: ItemStats;
   datePreferences: DatePreferences;
   now: Date;
   episodeTypeTags: boolean;

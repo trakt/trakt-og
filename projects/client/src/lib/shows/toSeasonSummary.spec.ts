@@ -34,7 +34,7 @@ const base: Parameters<typeof toSeasonSummary>[0] = {
     { season: 1, number: 1, title: 'Pilot', ids: { trakt: 101 }, first_aired: '2008-01-21T02:00:00Z' },
   ],
   ratings: { rating: 8.2, votes: 1600 },
-  stats: { watchers: 10, plays: 20, collectors: 2, comments: 3, lists: 4, votes: 1600 },
+  stats: { watchers: 10, plays: 20, comments: 3, lists: 4, votes: 1600 },
   people: {
     cast: [
       {

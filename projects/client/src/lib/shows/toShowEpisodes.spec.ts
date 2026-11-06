@@ -1,7 +1,7 @@
 import type { EpisodeResponse, ShowResponse } from '@trakt/api';
 import { describe, expect, it } from 'vitest';
 import type { SeasonWithEpisodes } from './loadShow.ts';
-import { sortEpisodes, toShowEpisodes, yearRange } from './toShowEpisodes.ts';
+import { parseEpisodeSort, sortEpisodes, toShowEpisodes, yearRange } from './toShowEpisodes.ts';
 
 const episode = (season: number, number: number, firstAired: string | null, extra: Partial<EpisodeResponse> = {}) =>
   ({
@@ -118,13 +118,13 @@ describe('sortEpisodes', () => {
     expect(numbers('votes')).toEqual(['1x02', '2x01', '1x01', 'Special 1']);
   });
 
-  it.each(['watchers', 'plays', 'collected', 'lists'] as const)(
+  it.each(['watchers', 'plays', 'lists'] as const)(
     'should sort %s by its lazy count, with air-order ties and failures last',
     (by) => {
       const stats = new Map([
-        [101, { watchers: 5, plays: 5, collectors: 5, lists: 5, comments: 0, votes: 0 }],
-        [102, { watchers: 5, plays: 5, collectors: 5, lists: 5, comments: 0, votes: 0 }],
-        [201, { watchers: 9, plays: 9, collectors: 9, lists: 9, comments: 0, votes: 0 }],
+        [101, { watchers: 5, plays: 5, lists: 5, comments: 0, votes: 0 }],
+        [102, { watchers: 5, plays: 5, lists: 5, comments: 0, votes: 0 }],
+        [201, { watchers: 9, plays: 9, lists: 9, comments: 0, votes: 0 }],
         [1, null],
       ]);
       expect(sortEpisodes({ rows, by, flipped: false, stats }).map(({ number }) => number)).toEqual([
@@ -156,5 +156,21 @@ describe('sortEpisodes', () => {
       sortEpisodes({ rows: dropped, by: 'aired', flipped }).map(({ number }) => number);
     expect(aired(false)).toEqual(['1x01', '1x02', '1x03']);
     expect(aired(true)).toEqual(['1x03', '1x02', '1x01']);
+  });
+});
+
+describe('parseEpisodeSort', () => {
+  it("should read a sort and its direction against the sort's natural one", () => {
+    expect(parseEpisodeSort('votes,desc', false)).toEqual({ by: 'votes', flipped: false });
+    expect(parseEpisodeSort('votes,asc', false)).toEqual({ by: 'votes', flipped: true });
+  });
+
+  it('should fall back to the default for the removed collected sort', () => {
+    expect(parseEpisodeSort('collected,desc', false)).toEqual({ by: 'aired', flipped: false });
+    expect(parseEpisodeSort('collected,desc', true)).toEqual({ by: 'number', flipped: false });
+  });
+
+  it('should not offer air date on a season', () => {
+    expect(parseEpisodeSort('aired,asc', true)).toEqual({ by: 'number', flipped: false });
   });
 });

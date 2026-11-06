@@ -3,7 +3,7 @@ import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { fetchItemStats } from './fetchItemStats.ts';
 
-const stats = { watchers: 12, plays: 34, collectors: 5, lists: 6, comments: 7, votes: 8 };
+const stats = { watchers: 12, plays: 34, lists: 6, comments: 7, votes: 8 };
 const seen: Headers[] = [];
 const server = setupServer(
   http.get('https://apiz.trakt.tv/shows/1/seasons/*', ({ request }) => {

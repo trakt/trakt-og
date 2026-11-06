@@ -26,7 +26,6 @@ const authored: ApiCachePolicy = { seconds: AUTHORED_SECONDS, signedOutOnly: tru
 const CHARTS = new Set([
   'anticipated',
   'boxoffice',
-  'collected',
   'favorited',
   'played',
   'popular',

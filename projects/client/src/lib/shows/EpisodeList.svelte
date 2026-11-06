@@ -19,7 +19,7 @@
   import ItemStatIcons from '#lib/components/media/ItemStatIcons.svelte';
   import { lazyItemStats } from '#lib/shows/lazyItemStats.svelte.ts';
   import { expireHideCookie } from '#lib/components/filters/expireHideCookie.ts';
-import { EPISODE_SORTS, type EpisodeRow, type EpisodeSort, sortEpisodes } from './toShowEpisodes.ts';
+import { EPISODE_SORTS, type EpisodeRow, type EpisodeSort, parseEpisodeSort, sortEpisodes } from './toShowEpisodes.ts';
 
   interface Props {
     rows: readonly EpisodeRow[];
@@ -46,13 +46,11 @@ import { EPISODE_SORTS, type EpisodeRow, type EpisodeSort, sortEpisodes } from '
   }: Props = $props();
 
 const sorts = $derived(season ? EPISODE_SORTS.filter(({ by }) => by !== 'aired') : EPISODE_SORTS);
-  const initial = () => sorts.find(({ by }) => by === initialSort.split(',').at(0));
-  const startBy = () => initial()?.by ?? (season ? 'number' : 'aired');
-const startFlipped = () => initial() ? initial()?.desc !== (initialSort.split(',').at(1) === 'desc') : false;
+  const start = () => parseEpisodeSort(initialSort, season);
   const startTerms = () => initialTerms;
   // Props are initial values; the page keys this component on the item and URL query.
-  let by = $state<EpisodeSort>(startBy());
-  let flipped = $state(startFlipped());
+  let by = $state<EpisodeSort>(start().by);
+  let flipped = $state(start().flipped);
   let terms = $state(startTerms());
   let filters = $derived(initialFilters);
   const options = fadeHideOptions.filter((option) => !('showsOnly' in option));

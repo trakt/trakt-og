@@ -1350,8 +1350,9 @@
   --blur-toast: var(--blur-header-glass);
   --shadow-toast: 0 12px 32px rgb(0 0 0 / 0.45);
 
-  /* Tooltips: one dark box with a hairline border and an arrow, the same in both themes. Text centers; a stat with
-     lines, logos or a screenshot aligns to the start. */
+  /* Tooltips: one dark box with a hairline border and an arrow, the same in both themes. Text centers; a row with
+     something on its right, logos or a screenshot aligns to the start. Its bands sit on the side away from the arrow,
+     each a shade lighter than the one nearer it: the box by the arrow, the footer's band, then the header's. */
   --tooltip-max-width: 400px;
   --line-height-tooltip: 1.4;
   --tooltip-arrow: 5px;
@@ -1372,19 +1373,14 @@
   --tooltip-progress-min-width: 220px;
   --tooltip-progress-height: var(--dashboard-recaps-tip-meter); /* as tall as the monthly stats tooltip's bar */
   --color-tooltip-progress-track: #333; /* the summary progress bar's dark track */
-  --font-size-tooltip-label: 11px; /* a stat's small caps label: "Mon, Sep 29" */
-  --letter-spacing-tooltip-label: 0.04em;
-  --font-size-tooltip-value: 20px; /* a stat's value: "2h 14m" */
-  --line-height-tooltip-value: 1.15;
-  --space-tooltip-unit: 5px; /* between a value and its unit */
-  --tooltip-dash: 12px; /* a line's color dash */
-  --tooltip-dash-height: 2px;
-  --space-tooltip-dash: 6px;
   --space-tooltip-library: 5px 6px; /* inside the box's padding, around the library card's "Added on" line */
   --space-tooltip-footer: 9px 14px; /* a tooltip's bottom section, edge to edge: a progress bar, the library's logos */
   --space-tooltip-footer-gap: 8px; /* between a rewatch's two bars, or a bar and the logos */
-  --color-tooltip-footer: #1e1e1e; /* a shade up from the box, past the divider: its footer, or its header */
+  --color-tooltip-footer: #1e1e1e; /* a shade up from the box, past the divider: its footer, or its header's band */
+  --color-tooltip-header: #262626; /* a shade up again: a header over a band, at the far edge */
   --space-tooltip-list-row: 2px;
+  --space-tooltip-mark: 6px; /* between a chart tooltip's icon and its name */
+  --tooltip-mark: 14px; /* a chart tooltip's icon before its name */
 
   /* Rating popovers (OG Bootstrap popover and summary rating trigger). */
   /* Poster rating lines. */
@@ -2021,7 +2017,7 @@
     var(--color-genre-other) 0 5px,
     var(--color-genre-other-stripe) 5px 9px
   );
-  --color-genre-shows: var(--color-genre-2); /* the tooltip's count dashes */
+  --color-genre-shows: var(--color-genre-2); /* the tooltip's show and movie stats */
   --color-genre-movies: var(--color-genre-1);
   --color-genre-divider: light-dark(#e5e5e5, #333);
   --color-genre-mini-track: light-dark(#efefef, #262626);
@@ -2032,14 +2028,14 @@
   --radius-genre-band: 4px;
   --genre-key-rule: 3px; /* the colored line over each key */
   --space-genre-keys-row: 14px;
+  --space-genre-counts-rule: 6px; /* above and below the rule over a key's counts */
   --space-genre-keys-column: 18px;
   --space-genre-key-top: 6px;
   --space-genre-tail: 18px; /* above the opened tail list, and its padding */
-  --space-genre-tail-row: 5px;
+  --space-genre-tail-row: 10px; /* above and below each of the opened tail's genres */
   --space-genre-separator: 0.3em; /* around the dot between the counts */
   --genre-tail-column: 170px;
   --genre-mini-height: 4px;
-  --genre-tip-width: 220px;
   --font-size-genre-share: 22px;
   --line-height-genre-share: 1.15;
   --font-size-genre-tail-share: 13px;
@@ -2067,6 +2063,7 @@
   --ratings-average-rise: 8px; /* the average line, over the plot's top */
   --space-ratings-chart: 34px; /* above the plot, clearing the average's label */
   --space-ratings-count: 5px; /* between a count and its bar */
+  --space-ratings-heart: 4px; /* between a rating's heart and its number on the axis */
   --space-ratings-axis: 8px; /* between the plot and the ratings under it */
   --space-ratings-keys: 30px; /* between the axis and the keys */
   --space-ratings-average-label: 6px; /* between the average line and its label */
@@ -3384,12 +3381,8 @@
   --progress-tip-tag-inset: 6px; /* the Up next tag from the screenshot's bottom-left corner */
   --radius-progress-tip-image: var(--radius-object);
 
-  /* A season's chart tooltip on the show's bar: its lines' dashes */
+  /* A season's chart tooltip on the show's bar: its Complete pill */
   --color-progress-tip-watched: #b583cf; /* the watched purple, lifted for the black tooltip */
-  --color-progress-tip-collected: var(--brand-quaternary);
-  --color-progress-tip-next: var(--brand-primary);
-  --color-progress-tip-time: var(--brand-secondary); /* last watched, the stats' blue */
-  --color-progress-tip-muted: #666;
 
   /* A label over a poster's bottom-left corner (`.posters h4.bottom`) */
   --poster-label-bottom: 8px;

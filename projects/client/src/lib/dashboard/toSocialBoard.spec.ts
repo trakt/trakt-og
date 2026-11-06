@@ -92,7 +92,7 @@ describe('toSocialBoard', () => {
     const [top] = board('title').bars;
 
     expect(top?.name).toBe('Kristin');
-    expect(top?.counts.map(({ text }) => text)).toEqual(['20 episodes']);
+    expect(top?.counts.map(({ value, noun }) => `${value} ${noun}`)).toEqual(['20 episodes']);
     expect(top?.avatar).toBeTruthy();
     expect(board('title', []).stats).toEqual({ activities: items.length, people: 6, titles: 23 });
     expect(board('title').stats.activities).toBe(items.length + 1);

@@ -11,8 +11,13 @@ type WatchedKey = {
   readonly type?: PlayType;
 };
 
-/** A tooltip line, dashed in its type's color: "3 episodes (4 plays)", then its "1h 7m". */
-type MinutesLine = { readonly type: PlayType; readonly text: string; readonly detail: string };
+/** A tooltip stat, in its type's color: "3" and "episodes — 4 plays", then its "1h 7m". */
+export type MinutesLine = {
+  readonly type: PlayType;
+  readonly value: string;
+  readonly noun: string;
+  readonly detail: string;
+};
 
 /** A labelled line across the plot, "2h", at a height from 0 to 100. */
 type MinutesLevel = { readonly label: string; readonly height: number };
@@ -25,7 +30,7 @@ export type MinutesDay = {
   /** The episodes' and the movies' parts of the bar, stacked in that order, each 0 to 100 of the plot. */
   readonly episodes: number;
   readonly movies: number;
-  /** "2h 1m", the tooltip's big number. */
+  /** "2h 1m", the tooltip's lead. */
   readonly time: string;
   /** "Tuesday — Sep 29". */
   readonly label: string;

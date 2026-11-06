@@ -45,7 +45,8 @@ const progress = $derived(
 
 <style>
 .library-tip {
-  display: grid;
+  display: flex;
+  flex-direction: var(--tooltip-stack, column);
 }
 
 .added {

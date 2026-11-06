@@ -51,7 +51,8 @@ const rest = $derived(rows.length - shown.length);
 
 <style>
 .listed-tip {
-  display: grid;
+  display: flex;
+  flex-direction: var(--tooltip-stack, column);
 }
 
 .bare {

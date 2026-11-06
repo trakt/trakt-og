@@ -7,21 +7,16 @@
   nothing watched gets a dot and a hidden label.
 -->
 <script lang="ts">
+import ChartTip from '#lib/components/tooltip/ChartTip.svelte';
 import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
 import type { MinutesChartData, MinutesDay } from '#lib/dashboard/LastThirtyDays.ts';
 
 const { chart }: { chart: MinutesChartData } = $props();
 
 const name = (day: MinutesDay) =>
-  [`${day.label}: ${day.time} watched`, ...day.lines.map(({ text, detail }) => `${text}, ${detail}`)].join(', ');
-
-const stats = (day: MinutesDay) => [
-  {
-    label: day.label,
-    value: day.time,
-    lines: day.lines.map(({ type, text, detail }) => ({ text, detail, color: `var(--color-minutes-${type})` })),
-  },
-];
+  [`${day.label}: ${day.time} watched`, ...day.lines.map(({ value, noun, detail }) => `${value} ${noun}, ${detail}`)].join(
+    ', ',
+  );
 </script>
 
 <!-- The history page is a route, but resolve() can't take its query string. -->
@@ -47,7 +42,14 @@ const stats = (day: MinutesDay) => [
       {#each chart.days as day (day.date)}
         <li class={['column', { today: day.mark === 'today', marked: day.mark === 'month' || day.mark === 'today' }]}>
           {#if day.minutes > 0}
-            <Tooltip toggles stats={stats(day)}>
+            <Tooltip toggles>
+              <ChartTip name={day.label} value={day.time} words="watched">
+                {#snippet detail()}
+                  {#each day.lines as line (line.type)}
+                    <span class="tip-line">{line.value} {line.noun} <em>({line.detail})</em></span>
+                  {/each}
+                {/snippet}
+              </ChartTip>
               {#snippet trigger(tooltip)}
                 <a
                   class="bar-link"
@@ -73,6 +75,11 @@ const stats = (day: MinutesDay) => [
 </div>
 
 <style>
+/* A day's line per type under its time, its runtime in italics like the watched tooltip's. */
+.tip-line {
+  display: block;
+}
+
 .minutes-chart {
   container-type: inline-size;
   padding-block-end: calc(var(--space-minutes-axis) + var(--font-size-minutes-label));

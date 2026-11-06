@@ -3,22 +3,32 @@
   box sits from its trigger, so a `top` box has its arrow on its bottom edge. `Tooltip` draws every tooltip in one.
   Use it directly only where a tooltip can't be a `Tooltip` popover (the reactions panel, the list picker's counts),
   inside an element that places it. That element can move the arrow along its edge with `--tooltip-arrow-at`.
+  `flipped` is a box that turned to the other side of its trigger than its tooltip was written for. Its sections
+  mirror, so the box itself stays by the arrow and the bands stay on the far side: a tooltip stacks its sections with
+  `flex-direction: var(--tooltip-stack)`, and `TooltipHeader` and `TooltipFooter` swap their edges.
     <span class="tip"><TooltipBox side="left">12 items</TooltipBox></span>
 -->
 <script lang="ts">
 import type { Snippet } from 'svelte';
 import type { TooltipPlacement } from './TooltipPlacement.ts';
 
-const { side = 'top', children }: { side?: TooltipPlacement; children: Snippet } = $props();
+interface Props {
+  side?: TooltipPlacement;
+  flipped?: boolean;
+  children: Snippet;
+}
+
+const { side = 'top', flipped = false, children }: Props = $props();
 </script>
 
-<span class={['tooltip-box', side]}>{@render children()}</span>
+<span class={['tooltip-box', side, { flipped }]}>{@render children()}</span>
 
 <style>
 /* The arrow: a triangle in the border's color, and one in the box's color 1px smaller over it, which covers the box's
    own border where they meet. */
 .tooltip-box {
   --border-arrow: calc(var(--tooltip-arrow) + 1px);
+  --tooltip-stack: column;
   position: relative;
   display: block;
   max-inline-size: var(--tooltip-max-width);
@@ -54,6 +64,10 @@ const { side = 'top', children }: { side?: TooltipPlacement; children: Snippet }
   &::after {
     border-width: var(--tooltip-arrow);
   }
+}
+
+.flipped {
+  --tooltip-stack: column-reverse;
 }
 
 .top,

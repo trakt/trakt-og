@@ -9,6 +9,7 @@
 -->
 <script lang="ts">
 import type { Snippet } from 'svelte';
+import TooltipBar from '#lib/components/tooltip/TooltipBar.svelte';
 import TooltipFooter from '#lib/components/tooltip/TooltipFooter.svelte';
 import { countLabel } from '#lib/utils/countLabel.ts';
 import { formatRuntime } from '#lib/utils/formatRuntime.ts';
@@ -27,7 +28,7 @@ const { progress, bar = true, library = false, footer, href }: Props = $props();
 const last = $derived(progress.at(-1));
 </script>
 
-{#snippet meter(percent: number)}<span class={['bar', { library }]} style:--percent="{percent}%"></span>{/snippet}
+{#snippet meter(percent: number)}<TooltipBar {percent} color={library ? 'var(--brand-quaternary)' : undefined} />{/snippet}
 
 <!-- The viewer's canonical slug, like the list tooltip's links. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
@@ -52,7 +53,8 @@ const last = $derived(progress.at(-1));
 
 <style>
 .progress-tip {
-  display: grid;
+  display: flex;
+  flex-direction: var(--tooltip-stack, column);
 
   /* With its bar, wide enough that a short run's bar still reads, and the same width from tip to tip. */
   &.barred {
@@ -85,23 +87,6 @@ a {
 
   &:hover {
     text-decoration: underline;
-  }
-}
-
-/* The summary watched button's purple on its dark track, shaped like the monthly stats tooltip's bar. The library's is
-   green. */
-.bar {
-  --fill: var(--brand-tertiary);
-  block-size: var(--tooltip-progress-height);
-  border-radius: var(--tooltip-progress-height);
-  background: linear-gradient(
-    to right,
-    var(--fill) var(--percent),
-    var(--color-tooltip-progress-track) var(--percent)
-  );
-
-  &.library {
-    --fill: var(--brand-quaternary);
   }
 }
 </style>

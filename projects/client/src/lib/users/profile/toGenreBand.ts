@@ -4,23 +4,11 @@ import type { GenreBar } from './toGenreBar.ts';
 /** How many genres get their own color before the rest fold into "Other". */
 const SLOTS = 6;
 
-/** The hover card over a piece: "#2 Comedy", "18%", the show and movie counts, and a footer line. */
-type GenreTip = {
-  readonly title: string;
-  readonly share: string;
-  readonly lines: readonly { readonly type: 'shows' | 'movies'; readonly text: string }[];
-  /** "620 titles", then its "18% of your top genre" in gray. */
-  readonly footer: { readonly text: string; readonly detail?: string };
-};
-
 type Piece = {
   /** Its share of the band, "8.9%". */
   readonly share: string;
   /** Its flex weight in the band. */
   readonly grow: number;
-  /** Where its middle sits along the band, 0 to 100: the tooltip's anchor. */
-  readonly center: number;
-  readonly tip: GenreTip;
 };
 
 type GenreSlice = Piece &
@@ -38,7 +26,14 @@ type GenreTailRow = Pick<GenreBar, 'slug' | 'name' | 'counts'> & {
 export type GenreBand = {
   readonly slices: readonly GenreSlice[];
   /** The striped piece the long tail folds into, null when every genre fits. */
-  readonly other: (Piece & { readonly label: string; readonly tail: readonly GenreTailRow[] }) | null;
+  readonly other:
+    | (Piece & {
+        readonly label: string;
+        /** How many it folds: "23 genres", for its tooltip. */
+        readonly rest: string;
+        readonly tail: readonly GenreTailRow[];
+      })
+    | null;
 };
 
 /** "31%" from 10 up, "8.9%" and "2%" below it, "<0.1%" for the crumbs. */
@@ -48,22 +43,15 @@ function formatShare(percentage: number): string {
   return `${percentage.toFixed(1).replace(/\.0$/, '')}%`;
 }
 
-const tipLines = ({ shows, movies }: { shows: number; movies: number }) => [
-  ...(shows > 0 ? [{ type: 'shows' as const, text: countLabel(shows, 'show') }] : []),
-  ...(movies > 0 ? [{ type: 'movies' as const, text: countLabel(movies, 'movie') }] : []),
-];
-
 const sum = (values: readonly number[]) => values.reduce((total, value) => total + value, 0);
 
 /** What the band's pieces are, for its labels. */
 export type BandWords = {
   /** The Other piece's count: "12 genres". */
   readonly rest: (count: number) => string;
-  /** The first piece, in the hover footers: "your top genre". */
-  readonly top: string;
 };
 
-const GENRE_WORDS: BandWords = { rest: (count) => countLabel(count, 'genre'), top: 'your top genre' };
+const GENRE_WORDS: BandWords = { rest: (count) => countLabel(count, 'genre') };
 
 /**
  * The genres, most watched first, as one band: the top six get a color each and the rest fold into one "Other"
@@ -72,13 +60,9 @@ const GENRE_WORDS: BandWords = { rest: (count) => countLabel(count, 'genre'), to
 export function toGenreBand(genres: readonly GenreBar[], words: BandWords = GENRE_WORDS): GenreBand {
   const named = genres.length <= SLOTS + 1 ? genres : genres.slice(0, SLOTS);
   const tail = genres.slice(named.length);
-  const total = sum(genres.map(({ percentage }) => percentage)) || 1;
-  const before = (i: number) => sum(genres.slice(0, i).map(({ percentage }) => percentage));
-  const center = (start: number, width: number) => ((start + width / 2) / total) * 100;
 
-  const slices = named.map((genre, i): GenreSlice => {
-    const titles = countLabel(genre.shows + genre.movies, 'title');
-    return {
+  const slices = named.map(
+    (genre, i): GenreSlice => ({
       slug: genre.slug,
       name: genre.name,
       counts: genre.counts,
@@ -87,42 +71,22 @@ export function toGenreBand(genres: readonly GenreBar[], words: BandWords = GENR
       slot: (i % SLOTS) + 1,
       share: formatShare(genre.percentage),
       grow: genre.percentage,
-      center: center(before(i), genre.percentage),
-      tip: {
-        title: `#${i + 1} ${genre.name}`,
-        share: formatShare(genre.percentage),
-        lines: tipLines(genre),
-        footer: {
-          text: titles,
-          detail: i === 0 ? words.top : `${formatShare(genre.percentageRow)} of ${words.top}`,
-        },
-      },
-    };
-  });
+    }),
+  );
 
   if (tail.length === 0) return { slices, other: null };
 
   const share = sum(tail.map(({ percentage }) => percentage));
   const biggest = Math.max(...tail.map(({ percentage }) => percentage)) || 1;
-  const label = `Other · ${words.rest(tail.length)}`;
-  const names = tail
-    .slice(0, 3)
-    .map(({ name }) => name)
-    .join(', ');
+  const rest = words.rest(tail.length);
 
   return {
     slices,
     other: {
-      label,
+      label: `Other · ${rest}`,
+      rest,
       share: formatShare(share),
       grow: share,
-      center: center(before(named.length), share),
-      tip: {
-        title: label,
-        share: formatShare(share),
-        lines: tipLines({ shows: sum(tail.map(({ shows }) => shows)), movies: sum(tail.map(({ movies }) => movies)) }),
-        footer: { text: tail.length > 3 ? `${names}, …` : names },
-      },
       tail: tail.map((genre) => ({
         slug: genre.slug,
         name: genre.name,

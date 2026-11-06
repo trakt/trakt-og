@@ -1,6 +1,14 @@
 import { countLabel } from '../../utils/countLabel.ts';
 import type { WatchedGenreRow } from './watchedGenresSchema.ts';
 
+/** A count in a band's key: "12" "episodes (15 plays)", linking to that history filtered by the genre or the person. */
+export type GenreCount = {
+  readonly value: string;
+  /** "episodes", with the plays after it when there are more: "episodes (15 plays)". */
+  readonly noun: string;
+  readonly href: string;
+};
+
 /** One bar of the profile's Most Watched Genres chart (`users.js:370-414`). */
 export type GenreBar = {
   readonly slug: string;
@@ -14,8 +22,8 @@ export type GenreBar = {
   /** Unique shows and movies: the titles carrying the genre. */
   readonly shows: number;
   readonly movies: number;
-  /** "12 episodes (15)", "3 shows", "4 movies", each linking to that history filtered by the genre. */
-  readonly counts: readonly { readonly text: string; readonly href: string }[];
+  /** "12 episodes (15 plays)", "3 shows", "4 movies", each linking to that history filtered by the genre. */
+  readonly counts: readonly GenreCount[];
   /** A picture by the name in the key, and where the name goes: a person's band rather than a genre's. */
   readonly avatar?: string;
   readonly href?: string;
@@ -44,9 +52,15 @@ export function toGenreBar(row: WatchedGenreRow, { slug, startAt }: ToGenreBarOp
     if (unique === 0) return [];
 
     const plays =
-      row[key].play_count > unique && key !== 'shows' ? ` (${row[key].play_count.toLocaleString('en-US')})` : '';
+      row[key].play_count > unique && key !== 'shows' ? ` (${countLabel(row[key].play_count, 'play')})` : '';
     const query = new URLSearchParams({ genres: row.genre.slug, ...(startAt && { start_at: startAt }) });
-    return [{ text: `${countLabel(unique, word)}${plays}`, href: `/users/${slug}/history/${key}?${query}` }];
+    return [
+      {
+        value: unique.toLocaleString('en-US'),
+        noun: `${word}${unique === 1 ? '' : 's'}${plays}`,
+        href: `/users/${slug}/history/${key}?${query}`,
+      },
+    ];
   });
 
   return {

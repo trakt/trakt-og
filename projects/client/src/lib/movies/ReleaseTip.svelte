@@ -23,7 +23,8 @@ const tags = $derived(releasePills(release).flatMap((pill) => ('text' in pill ? 
 
 <style>
 .release-tip {
-  display: grid;
+  display: flex;
+  flex-direction: var(--tooltip-stack, column);
 }
 
 .lines {

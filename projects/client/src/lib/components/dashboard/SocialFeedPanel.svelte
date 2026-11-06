@@ -73,7 +73,7 @@ import { type SocialCard, type SocialLinePart, type SocialView, toSocialBoard } 
 
   const PERIODS: Readonly<Record<SocialPeriod, string>> = { today: 'Today', yesterday: 'Yesterday', week: 'Week' };
   const VIEWS: Readonly<Record<SocialView, string>> = { title: 'Title', person: 'Person', time: 'Time' };
-const PEOPLE: BandWords = { rest: (count) => `${count} ${count === 1 ? 'person' : 'people'}`, top: 'the most active' };
+const PEOPLE: BandWords = { rest: (count) => `${count} ${count === 1 ? 'person' : 'people'}` };
   /** The grid's heading for each view, and what its count counts. */
   const GRIDS: Readonly<Record<SocialView, { title: string; icon: string; one: string; many: string }>> = {
     title: { title: 'Titles', icon: tvRetro, one: 'title', many: 'titles' },

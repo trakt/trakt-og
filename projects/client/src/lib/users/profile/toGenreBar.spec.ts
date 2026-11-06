@@ -35,9 +35,13 @@ describe('mapper: toGenreBar', () => {
     );
 
     expect(bar.counts).toEqual([
-      { text: '12 episodes (15)', href: '/users/sean/history/episodes?genres=science-fiction' },
-      { text: '3 shows', href: '/users/sean/history/shows?genres=science-fiction' },
-      { text: '1 movie', href: '/users/sean/history/movies?genres=science-fiction' },
+      {
+        value: '12',
+        noun: 'episodes (15 plays)',
+        href: '/users/sean/history/episodes?genres=science-fiction',
+      },
+      { value: '3', noun: 'shows', href: '/users/sean/history/shows?genres=science-fiction' },
+      { value: '1', noun: 'movie', href: '/users/sean/history/movies?genres=science-fiction' },
     ]);
   });
 
@@ -45,7 +49,7 @@ describe('mapper: toGenreBar', () => {
     const bar = toGenreBar(row({ movies: { play_count: 1_500, ids: Array.from({ length: 1_200 }, (_, i) => i) } }), {
       slug: 's',
     });
-    expect(bar.counts.map(({ text }) => text)).toEqual(['1,200 movies (1,500)']);
+    expect(bar.counts.map(({ value, noun }) => `${value} ${noun}`)).toEqual(['1,200 movies (1,500 plays)']);
   });
 
   it('should start the history links at the chart window when it has one', () => {

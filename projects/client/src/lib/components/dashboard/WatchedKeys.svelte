@@ -1,11 +1,13 @@
 <!--
   The Last 30 Days keys over the minutes chart: time watched, episodes, movies and the best week, in the genre
   keys' style. The episode and movie keys take their bars' colors for the rule over them, so they double as the
-  chart's legend. The profile's ratings keys use it too, a key about one rating ruled in that rating's color.
+  chart's legend. The profile's ratings keys use it too, a key about one rating ruled in that rating's color. The
+  counts sit under a short rule, a tad apart from the share, each number bold in the key's ink (`splitCount`).
 -->
 <script lang="ts">
 import type { LastThirtyDays } from '#lib/dashboard/LastThirtyDays.ts';
 import type { ProfileRatings } from '#lib/users/profile/toProfileRatings.ts';
+import { splitCount } from './splitCount.ts';
 
 const { keys }: { keys: LastThirtyDays['keys'] | ProfileRatings['keys'] } = $props();
 
@@ -22,10 +24,14 @@ const color = (key: (typeof keys)[number]) => {
     <li class="key" style:--color={color(key)}>
       <span class="name">{key.name}</span>
       <span class="share">{key.share}</span>
-      <span class="counts">
-        {#each key.counts as count, i (count)}{#if i > 0}<span class="separator" aria-hidden="true">·</span>{/if}<span
-          >{count}</span>{/each}
-      </span>
+      {#if key.counts.length > 0}
+        <span class="counts">
+          {#each key.counts as count, i (count)}{@const { value, text } = splitCount(count)}{#if i > 0}<span
+              class="separator" aria-hidden="true">·</span>{/if}<span>{#if value}<b>{value}</b>{/if}{value && text
+                ? ' '
+                : ''}{text ?? ''}</span>{/each}
+        </span>
+      {/if}
     </li>
   {/each}
   </ul>
@@ -74,8 +80,18 @@ const color = (key: (typeof keys)[number]) => {
 
 .counts {
   display: block;
+  margin-block-start: var(--space-genre-counts-rule);
+  padding-block-start: var(--space-genre-counts-rule);
+  border-block-start: 1px solid var(--color-genre-divider);
   color: var(--color-genre-count);
   font-size: var(--font-size-genre-key-count);
+  font-variant-numeric: tabular-nums;
+
+  /* The number in the key's ink, its words gray: the count is what you scan for. */
+  & b {
+    color: var(--color-genre-label);
+    font-weight: var(--font-weight-headings-heavy);
+  }
 }
 
 .separator {

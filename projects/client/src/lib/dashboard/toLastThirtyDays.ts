@@ -4,7 +4,7 @@ import { toGenreBar } from '../users/profile/toGenreBar.ts';
 import type { WatchedGenreRow } from '../users/profile/watchedGenresSchema.ts';
 import { countLabel } from '../utils/countLabel.ts';
 import { formatRuntime } from '../utils/formatRuntime.ts';
-import type { LastThirtyDays, MinutesChartData, MinutesDay } from './LastThirtyDays.ts';
+import type { LastThirtyDays, MinutesChartData, MinutesDay, MinutesLine } from './LastThirtyDays.ts';
 import { dayIn } from '../utils/dayIn.ts';
 
 type Ids = { readonly ids: { readonly trakt: number }; readonly runtime?: number | null };
@@ -62,18 +62,23 @@ const minutesOf = (plays: readonly Play[]) => sum(plays.map(({ minutes }) => min
 const ofType = (plays: readonly Play[], type: Play['type']) => plays.filter((play) => play.type === type);
 const unique = (values: readonly (number | undefined)[]) => new Set(values.filter((value) => value !== undefined)).size;
 
-/** "3 episodes (4 plays)": the unique items, with the plays when some were replays. */
+/** "3" and "episodes — 4 plays": the unique items, with the plays when some were replays. */
 function playCount(plays: readonly Play[], type: Play['type']) {
   const items = unique(plays.map(({ id }) => id));
-  return `${countLabel(items, type)}${plays.length > items ? ` (${countLabel(plays.length, 'play')})` : ''}`;
+  const replays = plays.length > items ? ` — ${countLabel(plays.length, 'play')}` : '';
+  return { value: items.toLocaleString('en-US'), noun: `${type}${items === 1 ? '' : 's'}${replays}` };
 }
 
-// A tooltip line, for a type played that day: "3 episodes (4 plays)", then its "1h 7m".
-function dayLines(plays: readonly Play[]) {
+// A tooltip line, for a type played that day: "3 episodes — 4 plays", then its "1h 7m".
+function dayLines(plays: readonly Play[]): MinutesLine[] {
   return (['episode', 'movie'] as const)
     .map((type) => ({ type, mine: ofType(plays, type) }))
     .filter(({ mine }) => mine.length > 0)
-    .map(({ type, mine }) => ({ type, text: playCount(mine, type), detail: formatRuntime(minutesOf(mine)) }));
+    .map(({ type, mine }) => ({
+      type,
+      ...playCount(mine, type),
+      detail: formatRuntime(minutesOf(mine)),
+    }));
 }
 
 function axis(date: string, i: number): Pick<MinutesDay, 'axis' | 'mark'> {

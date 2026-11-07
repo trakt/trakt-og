@@ -5,7 +5,6 @@ import { readableStat } from '../utils/readableStat.ts';
 type Stats = {
   readonly watchers: number;
   readonly plays: number;
-  readonly collectors: number;
   readonly comments: number;
   readonly lists: number;
   readonly favorited?: number;
@@ -42,14 +41,13 @@ function ofWatchers(count: number, watchers: number) {
 }
 
 const people = (count: number) => `${count.toLocaleString('en-US')} ${count === 1 ? 'person' : 'people'}`;
-const libraries = (count: number) => `${count.toLocaleString('en-US')} ${count === 1 ? 'library' : 'libraries'}`;
 
 /**
  * The stats page's Community tiles: the counts the ratings strip used to carry, favorites first, each with a line on
  * what it means next to the watchers. Before release only the list count shows, as the strip did.
  */
 export function toCommunityStats({ stats, href, favorites, released }: Params) {
-  const { watchers, plays, collectors, comments, lists, favorited = 0 } = stats;
+  const { watchers, plays, comments, lists, favorited = 0 } = stats;
   const relative = (count: number, exact: string) => (watchers > 0 ? ofWatchers(count, watchers) : exact);
 
   const tile = ({ count, ...rest }: Tile) => ({
@@ -74,12 +72,6 @@ export function toCommunityStats({ stats, href, favorites, released }: Params) {
       ? [
           { kind: 'watchers' as const, title: 'Watchers', count: watchers, note: people(watchers) },
           { kind: 'plays' as const, title: 'Plays', count: plays, note: perWatcher },
-          {
-            kind: 'libraries' as const,
-            title: 'Libraries',
-            count: collectors,
-            note: relative(collectors, libraries(collectors)),
-          },
         ]
       : []),
     { kind: 'lists' as const, title: 'Lists', count: lists, note: countLabel(lists, 'list'), href: `${href}/lists` },

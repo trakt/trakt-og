@@ -1,5 +1,6 @@
-import type { EpisodeStatsResponse, RatingsResponse } from '@trakt/api';
+import type { RatingsResponse } from '@trakt/api';
 import type { StreamingRank } from '../components/summary/toExternalRatings.ts';
+import type { ItemStats } from '../shows/ItemStats.ts';
 import { toSubpageStrip } from '../subpage/toSubpageStrip.ts';
 import type { SubpageMedia } from '../subpage/toSubpageMedia.ts';
 import { RATING_LABELS } from '../components/rating/ratingPrompt.ts';
@@ -17,7 +18,7 @@ type Params = {
   letterboxd?: ExtraRating | null;
   /** Anime only. */
   mal?: ExtraRating | null;
-  stats: EpisodeStatsResponse & { favorited?: number };
+  stats: ItemStats;
   rank: StreamingRank | null;
   otherSiteRatings: boolean;
   now: Date;

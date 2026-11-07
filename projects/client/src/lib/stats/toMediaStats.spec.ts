@@ -16,7 +16,7 @@ const ratings: RatingsResponse = {
   trakt: { rating: 8.999, votes: 2723, distribution },
   imdb: { rating: 8.8, votes: 1000000, link: 'https://www.imdb.com/title/tt0137523' },
 };
-const stats = { watchers: 1, plays: 2, collectors: 3, comments: 4, lists: 5, favorited: 6, votes: 2723 };
+const stats = { watchers: 1, plays: 2, comments: 4, lists: 5, favorited: 6, votes: 2723 };
 const params = {
   media,
   ratings,
@@ -39,14 +39,7 @@ describe('toMediaStats', () => {
   it('should keep only favorites on the strip and move the rest into the community tiles, favorites first', () => {
     const view = toMediaStats(params);
     expect(view.strip.counts).toEqual([{ count: 6, label: 'favorited' }]);
-    expect(view.community.map(({ kind }) => kind)).toEqual([
-      'favorited',
-      'watchers',
-      'plays',
-      'libraries',
-      'lists',
-      'comments',
-    ]);
+    expect(view.community.map(({ kind }) => kind)).toEqual(['favorited', 'watchers', 'plays', 'lists', 'comments']);
   });
 
   it('should compare the other sites with a score to Trakt, leaving JustWatch on the strip', () => {

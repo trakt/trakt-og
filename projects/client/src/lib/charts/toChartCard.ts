@@ -9,9 +9,8 @@ import type { ChartName } from './chartNames.ts';
 import type { ChartMedia } from './chartRowSchema.ts';
 import type { z } from 'zod/v4';
 
-// Trending sends `watchers`, anticipated `list_count`, favorited `user_count`, and watched, played and collected
-// all four of the last. Shows' `collector_count` is owners, and their `collected_count` is episodes. Classic
-// recommendations send the `sources` that led to them.
+// Trending sends `watchers`, anticipated `list_count`, favorited `user_count`, and watched and played
+// `watcher_count` and `play_count`. Classic recommendations send the `sources` that led to them.
 type Stats = {
   sources?: readonly z.infer<typeof recommendationSourceSchema>[] | null;
   watchers?: number;
@@ -19,8 +18,6 @@ type Stats = {
   user_count?: number;
   watcher_count?: number;
   play_count?: number;
-  collected_count?: number;
-  collector_count?: number;
 };
 
 /** One chart row. Most charts send rows like this; popular rows are wrapped to match. */
@@ -45,7 +42,7 @@ export type ChartCard = {
   airedEpisodes?: number;
   runtime?: number;
   /** The labels over the fanart. No kind is the red one. */
-  tags: { text: string; kind?: 'list' | 'generic' | 'favorite' | 'collect' }[];
+  tags: { text: string; kind?: 'list' | 'generic' | 'favorite' }[];
   /** The hero's details. */
   overview?: string;
   certification?: string;
@@ -106,13 +103,6 @@ function tags(row: ChartRow, chart: ChartName, order: DateOrder): Tag[] {
       return [{ text: watchers }, generic(plays)];
     case 'played':
       return [{ text: plays }, generic(watchers)];
-    case 'library':
-      return 'show' in row
-        ? [
-            { text: countLabel(row.collected_count ?? 0, 'episode'), kind: 'collect' },
-            generic(countLabel(row.collector_count ?? 0, 'owner')),
-          ]
-        : [{ text: countLabel(row.collected_count ?? 0, 'owner'), kind: 'collect' }];
   }
 }
 

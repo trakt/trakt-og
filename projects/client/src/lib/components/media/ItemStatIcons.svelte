@@ -1,5 +1,5 @@
 <!--
-  An item's community stats as a list row's count buttons, numbers only: watchers, plays, in libraries, lists and
+  An item's community stats as a list row's count buttons, numbers only: watchers, plays, lists and
   comments, each with the ratings strip's icon and color (the stats page's), a short number ("204k") and a tooltip
   with the full count ("204,312 watchers"). Each links on: lists and comments to their pages, the rest to the stats page.
   Zeros are left out. While `loading`, a shimmering button holds the place of each count the stats bring.
@@ -13,7 +13,7 @@ import { readableStat } from '#lib/utils/readableStat.ts';
 
 interface Props {
   href: string;
-  stats?: { watchers: number; plays: number; collectors: number; lists: number } | null;
+  stats?: { watchers: number; plays: number; lists: number } | null;
   comments?: number;
   /** False before it airs: only the list count shows, since the rest would come from people gaming the stats. */
   released?: boolean;
@@ -48,15 +48,6 @@ const entries = $derived<readonly Entry[]>([
     icon: stripStatIcons.plays,
     count: shown(stats?.plays),
     color: 'var(--color-strip-plays)',
-    href: `${href}/stats`,
-  },
-  {
-    word: 'in libraries',
-    fromStats: released,
-    plural: 'in libraries',
-    icon: stripStatIcons.libraries,
-    count: shown(stats?.collectors),
-    color: 'var(--color-strip-libraries)',
     href: `${href}/stats`,
   },
   {

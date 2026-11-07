@@ -13,7 +13,8 @@ describe('pageSitemapUrls', () => {
     expect(paths).toContain('/shows/anticipated');
     expect(paths).toContain('/shows/popular');
     expect(paths).toContain('/movies/favorited/daily');
-    expect(paths).toContain('/shows/library/all');
+    expect(paths).toContain('/shows/watched/all');
+    expect(paths).not.toContain('/shows/library/all');
     expect(paths).toContain('/movies/played/monthly');
     expect(paths).not.toContain('/movies/favorited');
   });

@@ -30,7 +30,6 @@ const CHARTS = [
   ['popular', 'Popular', 'Popular {type}'],
   ['favorited', 'Favorited', 'Favorited {type}'],
   ['watched', 'Watched', 'Most Watched {type}'],
-  ['library', 'Libraries', '{type} in Libraries'],
 ] as const;
 
 function charts(type: 'Movies' | 'Shows', group: HeaderLinkGroup): HeaderLink[] {

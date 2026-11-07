@@ -1,5 +1,6 @@
-import type { EpisodeResponse, EpisodeStatsResponse, RatingsResponse, SeasonsResponse, ShowResponse } from '@trakt/api';
+import type { EpisodeResponse, RatingsResponse, SeasonsResponse, ShowResponse } from '@trakt/api';
 import type { z } from 'zod/v4';
+import type { ItemStats } from './ItemStats.ts';
 import { countryName, languageName } from '../components/summary/names.ts';
 import { networkSlug } from '../utils/networkSlug.ts';
 import { toCastMembers } from '../components/summary/toCastMembers.ts';
@@ -22,7 +23,7 @@ interface Params {
   seasons: SeasonsResponse;
   episodes: EpisodeResponse[];
   ratings: RatingsResponse;
-  stats: EpisodeStatsResponse;
+  stats: ItemStats;
   people: z.infer<typeof seasonPeopleSchema>;
   /** From the season's Watch Now rank. */
   justwatch?: string | null;

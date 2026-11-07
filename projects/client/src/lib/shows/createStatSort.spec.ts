@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { createStatSort } from './createStatSort.ts';
 
 describe('createStatSort', () => {
-  it.each(['watchers', 'plays', 'collected', 'lists'])('should wait for every item before applying %s', async (by) => {
+  it.each(['watchers', 'plays', 'lists'])('should wait for every item before applying %s', async (by) => {
     const finish: (() => void)[] = [];
     const load = vi.fn(() => new Promise<void>((resolve) => finish.push(resolve)));
     const select = createStatSort(load);

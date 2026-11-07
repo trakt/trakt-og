@@ -13,7 +13,6 @@ describe('chartLinks', () => {
       'Popular',
       'Favorited',
       'Watched',
-      'Libraries',
     ]);
     expect(labels(chartLinks({ ...params, signedIn: true })).at(1)).toBe('Recommendations');
   });
@@ -62,10 +61,9 @@ describe('chartLinks', () => {
       signedIn: false,
     });
 
-    expect(links.slice(-3)).toEqual([
+    expect(links.slice(-2)).toEqual([
       { label: 'Favorited', href: '/shows/favorited/monthly', current: false },
       { label: 'Watched', href: '/shows/watched/monthly', current: true },
-      { label: 'Libraries', href: '/shows/library/monthly', current: false },
     ]);
   });
 });

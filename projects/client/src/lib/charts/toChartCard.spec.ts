@@ -141,7 +141,7 @@ describe('toChartCard', () => {
   });
 
   describe('for the period charts', () => {
-    const stats = { watcher_count: 14035, play_count: 1, collected_count: 138, collector_count: 6861 };
+    const stats = { watcher_count: 14035, play_count: 1 };
 
     it('should tag favorited rows with the people who favorited, singular for one', () => {
       expect(toChartCard({ show, user_count: 267 }, { ...out, chart: 'favorited' }).tags).toEqual([
@@ -160,16 +160,6 @@ describe('toChartCard', () => {
       expect(toChartCard({ movie, ...stats }, { ...out, chart: 'played' }).tags).toEqual([
         { text: '1 play' },
         { text: '14,035 watchers', kind: 'generic' },
-      ]);
-    });
-
-    it('should tag library shows with episodes and owners, and movies with owners', () => {
-      expect(toChartCard({ show, ...stats }, { ...out, chart: 'library' }).tags).toEqual([
-        { text: '138 episodes', kind: 'collect' },
-        { text: '6,861 owners', kind: 'generic' },
-      ]);
-      expect(toChartCard({ movie, ...stats }, { ...out, chart: 'library' }).tags).toEqual([
-        { text: '138 owners', kind: 'collect' },
       ]);
     });
   });

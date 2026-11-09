@@ -23,6 +23,7 @@ import DroppedBadge from './DroppedBadge.svelte';
 import QuickIcons from './QuickIcons.svelte';
 import TrimmedLogo from './TrimmedLogo.svelte';
 import { fadeInOnLoad } from '#lib/utils/fadeInOnLoad.ts';
+import { isScreenshotUrl } from '#lib/utils/isScreenshotUrl.ts';
 
 interface Props {
   href: string;
@@ -120,7 +121,7 @@ const hideScreenshot = $derived(
     : false,
 );
 // Other episode card modes already use safe show posters, banners or logos.
-const screenshotArtwork = $derived(spoilerImage !== undefined || image?.includes('/screenshots/'));
+const screenshotArtwork = $derived(spoilerImage !== undefined || isScreenshotUrl(image));
 const shownImage = $derived(hideScreenshot && screenshotArtwork ? spoilerImage : image);
 const isDropped = $derived(dropped || state?.dropped);
 // Something playing now: a deeper shade under the pulsing tags and the title, so they read over any art.

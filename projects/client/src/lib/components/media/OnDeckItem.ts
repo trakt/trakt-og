@@ -11,7 +11,8 @@ export type OnDeckItem = {
   readonly seasonNumber?: number;
   readonly episode?: number;
   readonly complete?: boolean;
-  readonly completionLabel?: string;
+  /** A complete card's show status ("Returning series"), on its caught up bar. */
+  readonly status?: string;
   readonly episodeHref: string;
   /** "2x05", "Special 3", or "2x03 (15)" for anime. */
   readonly episodeNumber: string;

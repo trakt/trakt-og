@@ -39,12 +39,12 @@ function upNextWorker(input: Request | URL | string) {
 export const upNextClient = api({ fetch: upNextWorker });
 
 /** A show whose last aired episode was just watched, as a card's refresh turns it. */
-export function finished(item: OnDeckItem, completionLabel: string): OnDeckItem {
+export function finished(item: OnDeckItem, status: string): OnDeckItem {
   const { aired, plays } = item.progress;
   return {
     ...item,
     complete: true,
-    completionLabel,
+    status,
     ticks: Array.from({ length: aired }, () => true),
     progress: { aired, completed: aired, plays },
     rewatching: false,
@@ -69,5 +69,5 @@ export const caughtUp: OnDeckItem = finished(
     progress: { aired: 19, completed: 18, plays: 18 },
     rewatching: false,
   },
-  'Returns next season!',
+  'Returning series',
 );

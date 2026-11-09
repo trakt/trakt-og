@@ -39,6 +39,7 @@ import { countLabel } from '#lib/utils/countLabel.ts';
 import { formatRuntime } from '#lib/utils/formatRuntime.ts';
 import type { DatePreferences } from '#lib/settings/DatePreferences.ts';
 import { hideProgressSeasons } from './hideProgressSeasons.ts';
+import ProgressChip from './ProgressChip.svelte';
 import ProgressSeasonGrid from './ProgressSeasonGrid.svelte';
 import ProgressStatus from './ProgressStatus.svelte';
 import type { ProgressType } from './progressTypes.ts';
@@ -245,9 +246,9 @@ const changeSeasons = (hide: boolean) => (seasons: readonly number[]) => {
         </Tooltip>
       {/if}
       {#if row.last}
-        <a class="last" href={row.last.href ?? row.href}><Icon svg={history} />Last watched
+        <ProgressChip href={row.last.href ?? row.href}><Icon svg={history} />Last watched
           {#if row.last.number}<b>{row.last.number}</b>{row.last.title ? ` ${row.last.title}` : ''}{/if}
-          {row.last.relative ?? row.last.date}</a>
+          {row.last.relative ?? row.last.date}</ProgressChip>
       {/if}
     </div>
   </div>
@@ -432,9 +433,8 @@ const changeSeasons = (hide: boolean) => (seasons: readonly number[]) => {
   margin-block-start: calc(var(--progress-last-gap) - var(--progress-main-gap));
 }
 
-/* Seasons and the last watched chip: one height, one type size. */
-.toggle,
-.last {
+/* Seasons: one height and type size with the last watched chip. */
+.toggle {
   box-sizing: border-box;
   display: inline-flex;
   align-items: center;
@@ -456,38 +456,7 @@ const changeSeasons = (hide: boolean) => (seasons: readonly number[]) => {
   }
 }
 
-/* The last episode, clearly a link, in the watched tag's wash, outline and text. */
-.last {
-  --tone: var(--color-comment-chip-watched);
-  min-inline-size: 0;
-  max-inline-size: 100%;
-  overflow: hidden;
-  border-color: color-mix(in srgb, var(--tone) var(--list-card-chip-line), transparent);
-  background-color: color-mix(in srgb, var(--tone) var(--list-card-chip-tint), transparent);
-  color: color-mix(in srgb, var(--tone), var(--color-list-card-chip-lift) var(--list-card-chip-lift));
-  text-decoration: none;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-
-  & :global(.icon) {
-    font-size: var(--font-size-progress-last-icon);
-  }
-
-  & b {
-    font-family: var(--font-headings);
-    font-weight: var(--font-weight-headings-heavy);
-  }
-
-  &:is(:hover, :focus-visible) {
-    border-color: var(--tone);
-
-    & b {
-      text-decoration: underline;
-    }
-  }
-}
-
-/* Seasons: first on the line, its caret flipping once open. */
+/* First on the line, its caret flipping once open. */
 .toggle {
   flex: none;
   color: var(--color-control-text);

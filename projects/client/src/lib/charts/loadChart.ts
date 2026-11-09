@@ -44,7 +44,7 @@ type LoadChartParams = {
 };
 
 type Query = {
-  extended: 'full,images';
+  extended: 'full';
   page: number;
   limit: number;
   ignore_watched?: true;
@@ -90,7 +90,7 @@ async function fetchRecommendations(
 ): Promise<Rows | 'signed-out' | 'failed'> {
   const limit = firstPage(chartPageSize('recommendations'));
   const search = new URLSearchParams({
-    extended: 'full,images',
+    extended: 'full',
     limit: `${limit}`,
     ...recommendationIgnores,
     ...filters,
@@ -186,7 +186,7 @@ export async function loadChart({
   // The advanced filters go to the API as they are in the URL, so SSR renders the filtered chart.
   const filters = parseAdvancedFilters(url.searchParams);
   const filterQuery = advancedFiltersQuery(filters);
-  const query = { extended: 'full,images' as const, ...filterQuery };
+  const query = { extended: 'full' as const, ...filterQuery };
   const ignore = {
     ...(fadeHide.hide.includes('watched') && { ignore_watched: true as const }),
     ...(fadeHide.hide.includes('watchlisted') && { ignore_watchlisted: true as const }),
@@ -227,7 +227,7 @@ export async function loadChart({
         ? layout.then(({ settings }) => fetchSources(fetch, watchNowCountry(settings)))
         : undefined,
       chart !== 'recommendations' && filtered
-        ? fetchRows(api({ fetch }), type, chart, period, { extended: 'full,images', page: 1, limit: 1 })
+        ? fetchRows(api({ fetch }), type, chart, period, { extended: 'full', page: 1, limit: 1 })
         : undefined,
       chart === 'trending' ? fetchLiveNow(fetch) : null,
       chart === 'trending' && filtered ? filteredWatchers() : null,

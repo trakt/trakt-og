@@ -41,14 +41,14 @@ export async function loadBoxOffice({ fetch, cookies, parent, now = new Date() }
   const layout = parent();
   const today = layout.then(({ datePreferences }) => dayIn(now, datePreferences.timeZone));
   const [response, list, items, date, opening] = await Promise.all([
-    client.movies.boxoffice({ query: { extended: 'full,images' } }),
+    client.movies.boxoffice({ query: { extended: 'full' } }),
     client.lists.summary({ params: { id: BOX_OFFICE_LIST_ID } }),
     client.lists.items.movie({ params: { id: BOX_OFFICE_LIST_ID }, query: {} }),
     today,
     today.then((start) =>
       client.calendars.movies({
         params: { target: 'all', start_date: nextFriday(start).date, days: 1 },
-        query: { extended: 'full,images' },
+        query: { extended: 'full' },
       }),
     ),
   ]);

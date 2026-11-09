@@ -1,7 +1,7 @@
 import { countLabel } from '../utils/countLabel.ts';
 import { type DateOrder, formatDate } from '../utils/formatDate.ts';
 import { genreLabel } from '../utils/genreLabel.ts';
-import { imageUrl } from '../utils/imageUrl.ts';
+import { mediaImage } from '../images/mediaImage.ts';
 import type { Recommendation } from '../dashboard/Recommendation.ts';
 import type { recommendationSourceSchema } from '../dashboard/recommendationSourceSchema.ts';
 import { toRecommendationWhy } from '../dashboard/toRecommendationWhy.ts';
@@ -124,10 +124,10 @@ export function toChartCard(
     href: `/${type}s/${media.ids.slug}`,
     title: media.title,
     year: media.year ?? undefined,
-    image: imageUrl(media.images?.fanart?.at(0), 'thumb'),
-    fanart: imageUrl(media.images?.fanart?.at(0), 'full'),
-    logo: imageUrl(media.images?.logo?.at(0), 'medium'),
-    poster: imageUrl(media.images?.poster?.at(0), 'thumb'),
+    image: mediaImage({ type, id: media.ids.trakt, slot: 'fanart', size: 'thumb' }),
+    fanart: mediaImage({ type, id: media.ids.trakt, slot: 'fanart', size: 'full' }),
+    logo: mediaImage({ type, id: media.ids.trakt, slot: 'logo', size: 'medium' }),
+    poster: mediaImage({ type, id: media.ids.trakt, slot: 'poster', size: 'thumb' }),
     released,
     rating: media.rating ?? undefined,
     runtime: media.runtime ?? undefined,

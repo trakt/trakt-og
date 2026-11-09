@@ -7,13 +7,17 @@ interface CoverItem {
   readonly id: number;
 }
 
-const COVER_PATH = /\/images\/(movies|shows|episodes)\/(\d{3})\/(\d{3})\/(\d{3})\//;
+const COVER_PATH = /\/(movies|shows|episodes)\/(\d+)\/[a-z]+\/(?:fanart|screenshot)\.webp/;
+const LEGACY_COVER_PATH = /\/images\/(movies|shows|episodes)\/(\d{3})\/(\d{3})\/(\d{3})\//;
 const TYPES: Readonly<Record<string, CoverType>> = { movies: 'movie', shows: 'show', episodes: 'episode' };
 const failed = 'Doh! We ran into some sort of error. Please try again.';
 
-/** The settings only give the cover's image URL, so its type and id come from the zero-padded id in its path. */
+/**
+ * The settings only give the cover's image URL, so its type and id come from its path: `{type}/{id}/…`, or the old
+ * zero-padded id for an episode that hasn't moved yet.
+ */
 export function isCoverOf(url: string | null | undefined, { type, id }: CoverItem): boolean {
-  const [, folder = '', ...parts] = url?.match(COVER_PATH) ?? [];
+  const [, folder = '', ...parts] = url?.match(COVER_PATH) ?? url?.match(LEGACY_COVER_PATH) ?? [];
   return TYPES[folder] === type && Number(parts.join('')) === id;
 }
 

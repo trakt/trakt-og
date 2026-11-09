@@ -70,7 +70,7 @@ export async function fetchOnDeckItem({
     ...item,
     complete: true,
     ticks: settings.simpleProgress ? undefined : Array.from({ length: progress.body.aired }, () => true),
-    completionLabel: status === 'ended' || status === 'canceled' ? capitalize(status) : 'Returns next season!',
+    status: status ? capitalize(status) : undefined,
     progress: {
       aired: progress.body.aired,
       completed: progress.body.aired,

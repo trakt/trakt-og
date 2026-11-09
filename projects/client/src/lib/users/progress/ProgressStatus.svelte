@@ -1,6 +1,6 @@
 <!--
   The status control after a progress row's title, drawn like the app's dropdowns: a dot in the status color and
-  where you are with the show (Not started, Watching, Rewatching since…, Caught up, Dropped…). Its menu lists the status, picked,
+  where you are with the show (Not started, Watching, Rewatching since…, Caught Up, Dropped…). Its menu lists the status, picked,
   with its dot, then the row's show actions with their icons: Rewatch (Start over again and Undo rewatching while
   rewatching) and Drop, or Undrop on Dropped. Those rows are the shared visibility controls, so each still asks for its date or a yes, and the
   menu stays open until it saves. `onremove` gets a drop, restore or undone rewatch (on Rewatching) as it starts
@@ -36,7 +36,7 @@ const status = $derived.by(() => {
   if (row.rewatchingSince) return { tone: 'rewatching', text: `Rewatching since ${row.rewatchingSince}` };
   // A list's progress shows every show on it, including ones with no plays yet.
   if (row.plays === 0) return { tone: 'not-started', text: 'Not started' };
-  return row.left === 0 ? { tone: 'done', text: 'Caught up' } : { tone: 'watching', text: 'Watching' };
+  return row.left === 0 ? { tone: 'done', text: 'Caught Up' } : { tone: 'watching', text: 'Watching' };
 });
 
 const close = () => menu?.hidePopover();

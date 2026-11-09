@@ -11,9 +11,6 @@
   --on-deck-refresh-gradient: linear-gradient(to bottom, transparent 25%, rgb(0 0 0 / 90%) 100%);
   --on-deck-refresh-loading: rgb(0 0 0 / 85%);
   --on-deck-refresh-size: 13px;
-  --on-deck-completion-size: 11px;
-  --on-deck-completion-padding: 3px 5px;
-  --on-deck-completion-bottom: 8px;
   /* List like toggle (OG interaction icon gap). */
 
   color-scheme: light;
@@ -526,6 +523,7 @@
   --color-caught-up-next-bg: light-dark(#e4e4e7, #333); /* the date block: one step off the bar in each theme */
   --caught-up-next-inset: 3px; /* its text from the slant's top corner */
   --caught-up-next-padding-end: 6px; /* its text from the bar's right edge */
+  --caught-up-status-inset: 6px; /* a show's status from the slant, a little roomier than the date */
 
   /* Dashboard panels */
   --color-panel-gray: light-dark(#e5e5e5, #1d1d1d); /* #ondeck-wrapper */

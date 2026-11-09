@@ -50,14 +50,17 @@ describe('toProgressCard', () => {
     expect(card({ completed: 10, show: { status: 'ended' } })).toMatchObject({
       complete: true,
       episodeHref: '/shows/show-7',
-      completionLabel: 'Ended',
+      status: 'Ended',
     });
-    expect(card({ completed: 10, show: { status: 'returning series' } })?.completionLabel).toBe('Returns next season!');
+    expect(card({ completed: 10, show: { status: 'returning series' } })?.status).toBe('Returning series');
   });
 
-  it('should leave the label off when an unaired episode is next', () => {
+  it('should keep the status when an unaired episode is next', () => {
     const unaired = { ...next, firstAired: '2026-12-01T01:00:00.000Z' };
-    expect(card({ completed: 10, next: unaired })).toMatchObject({ complete: true, completionLabel: undefined });
+    expect(card({ completed: 10, next: unaired, show: { status: 'returning series' } })).toMatchObject({
+      complete: true,
+      status: 'Returning series',
+    });
   });
 
   it('should mark a rewatch', () => {

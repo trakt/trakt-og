@@ -24,7 +24,7 @@ function toTicks({ detail, completed, aired }: ProgressItem): readonly boolean[]
 
 /**
  * OG's grid view card (`main/_on_deck_item`): the next aired episode, with the show's progress under it. A show with
- * nothing aired left is its own poster at 100%, labelled with its status when no episode is announced. Undefined while
+ * nothing aired left is its own poster at 100%, with the show's status on its caught up bar. Undefined while
  * episodes are left but the next one isn't known yet, which the show's catalog answers.
  */
 export function toProgressCard({ item, username, simple, now }: ToProgressCardParams): OnDeckItem | undefined {
@@ -53,8 +53,6 @@ export function toProgressCard({ item, username, simple, now }: ToProgressCardPa
   };
 
   if (!next || !aired) {
-    const { status } = show;
-    const label = status === 'ended' || status === 'canceled' ? capitalize(status) : 'Returns next season!';
     return {
       ...base,
       episodeId: next?.id ?? 0,
@@ -62,7 +60,7 @@ export function toProgressCard({ item, username, simple, now }: ToProgressCardPa
       episodeNumber: '',
       runtime: show.runtime,
       complete: true,
-      completionLabel: next ? undefined : label,
+      status: show.status && capitalize(show.status),
     };
   }
 

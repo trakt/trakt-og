@@ -1,9 +1,9 @@
 <!--
   The caught up bar: in a poster or fanart card's quick-icon place (its `bar`), a purple check and Caught Up, centred,
   or 100% (`short`) for a poster's narrow bar. With `next`, the next movie's release date (`YYYY-MM-DD`) takes the
-  bar's right end on a slanted block a shade off the bar's, Next movie over the date, and the check moves left, its
-  label dropped when the bar is too narrow for it. It carries the `quick-icons` class so the cards frame it like their
-  icon bar.
+  bar's right end on a slanted block a shade off the bar's, Next movie over the date, or a show's `status` does; the
+  check moves left, its label dropped when the bar is too narrow for it. It carries the `quick-icons` class so the
+  cards frame it like their icon bar.
     <PosterCard ...>{#snippet bar()}<CaughtUpBar next="2027-06-18" {datePreferences} short small />{/snippet}</PosterCard>
 -->
 <script lang="ts">
@@ -16,22 +16,26 @@ interface Props {
   /** The next movie's release date. Left out, nothing is announced and Caught Up stands alone. */
   next?: string;
   datePreferences?: DatePreferences;
+  /** In the date's place: a show's status, title cased, Returning series as just Returning. */
+  status?: string;
   /** 100% for Caught Up, for a poster's narrow bar. */
   short?: boolean;
   /** The small quick-icon bar's height, as on a poster card. */
   small?: boolean;
 }
 
-const { next, datePreferences, short = false, small = false }: Props = $props();
+const { next, datePreferences, status, short = false, small = false }: Props = $props();
 const date = $derived(next && formatDate(next, { ...datePreferences, timeZone: 'UTC' }));
+const shownStatus = $derived(status?.replace(/ series$/i, ''));
 </script>
 
-<div class={['quick-icons', 'caught-up-bar', { small, split: date }]}>
+<div class={['quick-icons', 'caught-up-bar', { small, split: date || status }]}>
   <span class="done">
     <span class="check"><Icon svg={check} /></span>
     <span>{#if short}100%<span class="visually-hidden"> watched, caught up</span>{:else}Caught Up{/if}</span>
   </span>
-  {#if date}<span class="next"><span>Next movie</span><span class="date">{date}</span></span>{/if}
+  {#if date}<span class="next"><span>Next movie</span><span class="date">{date}</span></span>
+  {:else if shownStatus}<span class="next with-status"><span class="date status">{shownStatus}</span></span>{/if}
 </div>
 
 <style>
@@ -109,5 +113,13 @@ const date = $derived(next && formatDate(next, { ...datePreferences, timeZone: '
 .date {
   font-size: var(--font-size-caught-up-next);
   font-weight: var(--font-weight-caught-up);
+}
+
+.with-status {
+  padding-inline-start: calc(var(--caught-up-next-slant) + var(--caught-up-status-inset));
+}
+
+.status {
+  text-transform: capitalize;
 }
 </style>

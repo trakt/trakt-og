@@ -147,19 +147,19 @@ describe('fetchOnDeckItem', () => {
     server.use(http.get(`${API}/sync/progress/up_next_nitro`, () => HttpResponse.json([])));
     expect(await refresh()).toMatchObject({
       complete: true,
-      completionLabel: 'Ended',
+      status: 'Ended',
       progress: { completed: 62, aired: 62 },
     });
     expect(
       calls.find((request) => new URL(request.url).pathname === '/shows/1388')?.headers.get('authorization'),
     ).toBeNull();
   });
-  it('should say Returns next season for a continuing show', async () => {
+  it('should name a continuing show by its status', async () => {
     server.use(
       http.get(`${API}/sync/progress/up_next_nitro`, () => HttpResponse.json([])),
       http.get(`${API}/shows/1388`, () => HttpResponse.json({ ...entry.show, status: 'returning series' })),
     );
-    expect((await refresh()).completionLabel).toBe('Returns next season!');
+    expect((await refresh()).status).toBe('Returning series');
   });
   it('should leave the current card available for retry when refresh fails or a partial show is filtered', async () => {
     server.use(http.get(`${API}/sync/progress/up_next_nitro`, () => new HttpResponse(null, { status: 503 })));

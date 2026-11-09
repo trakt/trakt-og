@@ -1,7 +1,8 @@
 <!--
   One show on the progress page, as a ledger row: the poster, stamped on the Dropped tab; the title, its status menu (`ProgressStatus`), the tick
   bar, the counts as stats, then Seasons beside a chip in the watched tag's colors linking the episode you last watched; then the up-next card,
-  og's fanart card for the next episode with its quick icons, or the show's once every episode is done. The poster and
+  og's fanart card for the next episode with its quick icons, or once every episode is done the show's art
+  over the caught up bar with its status (Dropped keeps its tag and quick icons). The poster and
   the card are the same height, and the text about matches them. Seasons reads the show's catalog (`onneed`) and
   opens the season list across the whole row, under the poster and the card (`ProgressSeasonGrid`), shimmering
   seasons holding its place until the catalog lands; once read, the
@@ -17,6 +18,7 @@ import { viewerFetch } from '#lib/auth/viewerFetch.ts';
 import { toast } from '#lib/components/toast/toast.svelte.ts';
 import type { TagPill } from '#lib/components/labels/TagPill.ts';
 import Shimmer from '#lib/components/loading/Shimmer.svelte';
+import CaughtUpBar from '#lib/components/media/CaughtUpBar.svelte';
 import FanartCard from '#lib/components/media/FanartCard.svelte';
 import DroppedBadge from '#lib/components/media/DroppedBadge.svelte';
 import { quickIconFill } from '#lib/components/media/quickIconFill.ts';
@@ -87,7 +89,6 @@ const seasonPlays = (season: ProgressSeason) => ({
   minutes: season.squares.reduce((sum, { plays }) => sum + (plays?.minutes ?? 0), 0),
 });
 const showTarget = $derived({ type: 'show' as const, id: row.id, title: row.title, airedEpisodes: row.aired });
-const caughtUp = $derived(type === 'dropped' ? 'Dropped' : 'Caught up');
 // Episodes left but no next one: the endpoint sends none for a show you haven't started (or a list's show it left out),
 // so the row reads its catalog as it nears the screen, and the card isn't "Caught up" meanwhile.
 const findsNext = $derived(type !== 'dropped' && !row.upNext && row.left > 0);
@@ -272,9 +273,12 @@ const changeSeasons = (hide: boolean) => (seasons: readonly number[]) => {
           listLabel: 'Add to list',
           onWatchSave: () => onneed?.(),
         }} />
+    {:else if type !== 'dropped' && !findsNext}
+      {#snippet caughtUpBar()}<CaughtUpBar status={row.status} />{/snippet}
+      <FanartCard framed href={row.href} title={row.title} image={row.fanart} hideTitle bar={caughtUpBar} />
     {:else}
       <FanartCard framed href={row.href} title={row.status ?? row.title} image={row.fanart}
-        tags={findsNext ? [] : [{ text: caughtUp, kind: 'generic' }]}
+        tags={findsNext ? [] : [{ text: 'Dropped', kind: 'generic' }]}
         icons={{
           fill: quickIconFill({ state: overlay.state('show', row.id), airedEpisodes: row.aired, datePreferences }),
           ratingTarget: { type: 'show', id: row.id, title: row.title },

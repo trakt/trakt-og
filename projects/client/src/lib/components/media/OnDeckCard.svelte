@@ -1,7 +1,8 @@
 <!--
   OG's on-deck card: a show's next episode as a poster card with the progress bar under its quick icons, the episode
   as the title, then the show's title. The dashboard's Up Next panel and the progress page's grid view both use it.
-  The quick icons' ••• holds Watch Now, and for a show still in progress Rewatch and Drop through the shared prompts.
+  The quick icons' ••• holds Watch Now, Rewatch and Drop through the shared prompts. A show caught up is its own poster
+  with the caught up bar (100% and its status) in the icons' place and no show line.
   Dashboard callbacks refresh the card after saves. While `loading`, the Trakt loader covers the poster.
 -->
 <script lang="ts">
@@ -10,6 +11,7 @@ import { overlay } from '#lib/overlay/overlay.ts';
 import type { OverlayState } from '#lib/overlay/createOverlay.svelte.ts';
 import { formatDate } from '#lib/utils/formatDate.ts';
 import type { OnDeckItem } from '#lib/components/media/OnDeckItem.ts';
+import CaughtUpBar from '#lib/components/media/CaughtUpBar.svelte';
 import PosterCard from '#lib/components/media/PosterCard.svelte';
 import RefreshCover from '#lib/components/media/RefreshCover.svelte';
 import TraktLoader from '#lib/components/loading/TraktLoader.svelte';
@@ -63,13 +65,11 @@ const showTarget = $derived({
   runtime: item.runtime,
 });
 
-const more = $derived<QuickIconMore[]>(
-  item.complete ? [{ kind: 'watch-now' }] : [
-    { kind: 'watch-now' },
-    { kind: 'rewatch', target: showTarget, onsave: onRewatch },
-    { kind: 'drop', target: showTarget },
-  ],
-);
+const more = $derived<QuickIconMore[]>([
+  { kind: 'watch-now' },
+  { kind: 'rewatch', target: showTarget, onsave: onRewatch },
+  { kind: 'drop', target: showTarget },
+]);
 
 // The card's own state is the episode's; the rewatch date is the show's, from the overlay's cached slice.
 const rewatchingAt = $derived(overlay.state('show', item.showId).rewatchingAt);
@@ -83,6 +83,7 @@ const tip = $derived(
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
 <div class="on-deck-card" aria-busy={refreshing || loading}>
+  {#snippet caughtUp()}<CaughtUpBar status={item.status} short small />{/snippet}
   <PosterCard
     {framed}
     href={item.complete ? item.showHref : item.episodeHref}
@@ -94,19 +95,17 @@ const tip = $derived(
     rewatchingSince={rewatchingAt ? formatDate(rewatchingAt, page.data.datePreferences) : undefined}
     userRating={state.rating}
     detachedProgress
-    icons={{ listTarget: item.complete ? showTarget : target, watchTarget: item.complete ? showTarget : target, collectionTarget: item.complete ? showTarget : target, ratingTarget: item.complete ? showTarget : target, onWatchSave, fill: quickIconFill({ state, runtime: item.runtime }), rating: item.complete ? undefined : item.rating, listLabel: item.complete ? 'Add to watchlist' : 'Add to list', more, progressTipBar: false }}
+    bar={item.complete ? caughtUp : undefined}
+    icons={{ listTarget: target, watchTarget: target, collectionTarget: target, ratingTarget: target, onWatchSave, fill: quickIconFill({ state, runtime: item.runtime }), rating: item.rating, listLabel: 'Add to list', more, progressTipBar: false }}
   >
     {#snippet progress()}
       <UnderProgress href={item.progressHref} percent={progressPercent(item.progress)} ticks={item.ticks} {tip} watched />
     {/snippet}
     {#snippet posterOverlay()}
       {#if loading}<div class="loading"><TraktLoader size={48} label="Loading {item.showTitle}'s next episode" /></div>
-      {:else if refreshing || needsRefresh}<RefreshCover title={item.showTitle} {refreshing} onrefresh={onRefresh} />
-      {:else if item.complete && item.completionLabel}<div class="completion">{item.completionLabel}</div>{/if}
+      {:else if refreshing || needsRefresh}<RefreshCover title={item.showTitle} {refreshing} onrefresh={onRefresh} />{/if}
     {/snippet}
-    {#if item.complete}<div class="show-line"><b>100% watched!</b></div>{:else}
-    <div class="show-line"><a class="show-link" href={item.showHref}>{item.showTitle}</a></div>
-    {/if}
+    {#if !item.complete}<div class="show-line"><a class="show-link" href={item.showHref}>{item.showTitle}</a></div>{/if}
   </PosterCard>
 </div>
 
@@ -117,21 +116,6 @@ const tip = $derived(
   display: grid;
   place-items: center;
   background: var(--on-deck-refresh-loading);
-}
-
-.completion {
-  position: absolute;
-  inset-inline-start: var(--space-lg-inline);
-  inset-block-end: var(--on-deck-completion-bottom);
-  margin-block-end: var(--space-sm-block);
-  padding: var(--on-deck-completion-padding);
-  background: var(--brand-primary);
-  color: var(--color-text-inverse);
-  font-family: var(--font-headings);
-  font-size: var(--on-deck-completion-size);
-  font-weight: var(--font-weight-headings-light);
-  line-height: var(--line-height-headings);
-  pointer-events: none;
 }
 
 .on-deck-card {

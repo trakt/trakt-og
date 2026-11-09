@@ -21,13 +21,11 @@ const episode = {
     number: 5,
     title: 'Tilting at Windmills',
     ids: { trakt: 12235135 },
-    images: { screenshot: ['shot.jpg'] },
   },
   show: {
     title: 'Tulsa King',
     year: 2022,
     ids: { trakt: 191758, slug: 'tulsa-king' },
-    images: { fanart: ['fan.jpg'] },
   },
 };
 const movie = {
@@ -39,11 +37,11 @@ const movie = {
 };
 
 const answers: Record<string, () => Response> = {
-  '/users/ada/watching?extended=full,images': () => Response.json(episode),
-  '/users/bo/watching?extended=full,images': () => Response.json(movie),
-  '/users/cy/watching?extended=full,images': () => new Response(null, { status: 204 }),
-  '/users/di/watching?extended=full,images': () => Response.json({ nope: true }),
-  '/users/ed/watching?extended=full,images': () => {
+  '/users/ada/watching?extended=full': () => Response.json(episode),
+  '/users/bo/watching?extended=full': () => Response.json(movie),
+  '/users/cy/watching?extended=full': () => new Response(null, { status: 204 }),
+  '/users/di/watching?extended=full': () => Response.json({ nope: true }),
+  '/users/ed/watching?extended=full': () => {
     throw new Error('offline');
   },
 };
@@ -74,7 +72,7 @@ describe('fetchWatching', () => {
           key: 'show:tulsa-king',
           name: 'Tulsa King',
           href: '/shows/tulsa-king',
-          poster: undefined,
+          poster: 'https://media.trakt.tv/shows/191758/thumb/poster.webp',
           target: show,
         },
         target: {
@@ -88,8 +86,8 @@ describe('fetchWatching', () => {
         episode: { season: 2, number: 5, title: 'Tilting at Windmills' },
         code: '2x05',
         href: '/shows/tulsa-king/seasons/2/episodes/5',
-        still: 'shot.jpg',
-        fanart: 'fan.jpg',
+        still: `https://media.trakt.tv/episodes/12235135/medium/screenshot.webp#fallback=${encodeURIComponent('https://media.trakt.tv/shows/191758/medium/fanart.webp')}`,
+        fanart: 'https://media.trakt.tv/shows/191758/medium/fanart.webp',
         startedAt: '2026-10-05T23:26:20.000Z',
         expiresAt: '2026-10-06T00:05:58.000Z',
       },
@@ -101,13 +99,13 @@ describe('fetchWatching', () => {
           key: 'movie:weapons-2025',
           name: 'Weapons',
           href: '/movies/weapons-2025',
-          poster: undefined,
+          poster: 'https://media.trakt.tv/movies/867094/thumb/poster.webp',
           target: weapons,
         },
         target: weapons,
         href: '/movies/weapons-2025',
-        still: undefined,
-        fanart: undefined,
+        still: 'https://media.trakt.tv/movies/867094/medium/fanart.webp',
+        fanart: 'https://media.trakt.tv/movies/867094/medium/fanart.webp',
         startedAt: '2026-10-05T23:00:00.000Z',
         expiresAt: '2026-10-06T01:00:00.000Z',
       },

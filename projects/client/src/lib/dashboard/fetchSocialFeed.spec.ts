@@ -49,7 +49,7 @@ describe('fetchSocialFeed', () => {
     expect(first?.searchParams.has('action')).toBe(false);
     expect(first?.searchParams.get('limit')).toBe('250');
     expect(first?.searchParams.get('page')).toBe('1');
-    expect(first?.searchParams.get('extended')).toBe('full,images');
+    expect(first?.searchParams.get('extended')).toBe('full');
     expect(first?.searchParams.get('end_at')).toBe('2026-09-30T12:00:00.000Z');
     expect(first?.searchParams.get('start_at')).toBe('2026-09-29T12:00:00.000Z');
     expect(social.follows).toBe(true);

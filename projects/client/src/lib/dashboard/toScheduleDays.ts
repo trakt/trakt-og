@@ -2,9 +2,9 @@ import { airTime } from '../calendars/airTime.ts';
 import type { CalendarDay, CalendarItem } from '../calendars/calendarDays.ts';
 import { episodeNumber, episodeType } from '../components/media/episodeTags.ts';
 import { type Offers, toWatchNowButton } from '../components/watchnow/watchNow.ts';
+import { mediaImage } from '../images/mediaImage.ts';
 import type { DatePreferences } from '../settings/DatePreferences.ts';
 import { formatDate } from '../utils/formatDate.ts';
-import { imageUrl } from '../utils/imageUrl.ts';
 import { networkSlug } from '../utils/networkSlug.ts';
 import type { SeasonPoster } from './fetchSeasonPosters.ts';
 import type { ScheduleDay } from './ScheduleDay.ts';
@@ -62,7 +62,12 @@ function watchNow(item: CalendarItem, { offers, country }: Context) {
     button,
     title: media.title,
     year: media.year ?? undefined,
-    fanart: imageUrl(media.images?.fanart?.at(0), 'full'),
+    fanart: mediaImage({
+      type: item.type === 'movie' ? 'movie' : 'show',
+      id: media.ids.trakt,
+      slot: 'fanart',
+      size: 'full',
+    }),
   };
 }
 
@@ -74,7 +79,7 @@ function toItem(item: CalendarItem, context: Context): ScheduleItem {
       group: `movie-${movie.ids.trakt}`,
       title: movie.title,
       href: `/movies/${movie.ids.slug}`,
-      poster: imageUrl(movie.images?.poster?.at(0), 'thumb'),
+      poster: mediaImage({ type: 'movie', id: movie.ids.trakt, slot: 'poster', size: 'thumb' }),
       tagline: movie.tagline?.trim() || undefined,
       watchNow: watchNow(item, context),
     };
@@ -88,7 +93,9 @@ function toItem(item: CalendarItem, context: Context): ScheduleItem {
     group: `show-${show.ids.trakt}`,
     title: show.title,
     href: showHref,
-    poster: context.seasonPoster?.(show.ids.trakt, episode.season) ?? imageUrl(show.images?.poster?.at(0), 'thumb'),
+    poster:
+      context.seasonPoster?.(show.ids.trakt, episode.season) ??
+      mediaImage({ type: 'show', id: show.ids.trakt, slot: 'poster', size: 'thumb' }),
     episode: {
       number: episodeNumber(episode, show.genres),
       title: episode.title?.trim() || undefined,

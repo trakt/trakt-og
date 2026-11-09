@@ -6,9 +6,8 @@ const ada = {
   name: 'Ada Lovelace',
   private: false,
   ids: { slug: 'ada', trakt: 1 },
-  images: { avatar: { full: 'ada.png' } },
 };
-const bo = { username: 'bo', name: '', ids: { slug: 'bo', trakt: 2 }, images: { avatar: { full: 'bo.png' } } };
+const bo = { username: 'bo', name: '', ids: { slug: 'bo', trakt: 2 } };
 
 // The worker's answer, newest first, trimmed to what the cards read.
 const rows = [
@@ -43,17 +42,29 @@ describe('fetchFollowingWatching', () => {
 
     const watching = await fetchFollowingWatching({ get });
 
-    expect(asked).toEqual(['/v3/users/me/following/watching?extended=full,images']);
+    expect(asked).toEqual(['/v3/users/me/following/watching?extended=full']);
     expect(watching).toMatchObject([
       {
-        member: { key: 'ada', name: 'Ada Lovelace', slug: 'ada', href: '/users/ada', avatar: 'ada.png' },
+        member: {
+          key: 'ada',
+          name: 'Ada Lovelace',
+          slug: 'ada',
+          href: '/users/ada',
+          avatar: 'https://media.trakt.tv/users/1/avatar.webp',
+        },
         kind: 'watch',
         label: 'Tulsa King 2x05',
         startedAt: '2026-10-05T23:26:20.000Z',
         expiresAt: '2026-10-06T00:05:58.000Z',
       },
       {
-        member: { key: 'bo', name: 'bo', slug: 'bo', href: '/users/bo', avatar: 'bo.png' },
+        member: {
+          key: 'bo',
+          name: 'bo',
+          slug: 'bo',
+          href: '/users/bo',
+          avatar: 'https://media.trakt.tv/users/2/avatar.webp',
+        },
         kind: 'checkin',
         label: 'Weapons',
       },

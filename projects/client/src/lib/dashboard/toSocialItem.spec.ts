@@ -29,7 +29,7 @@ describe('toSocialItem', () => {
       code: '3x04',
       label: "That '70s Show 3x04",
       href: '/shows/that-70s-show/seasons/3/episodes/4',
-      still: 'media.trakt.tv/images/shows/000/000/052/fanarts/medium/0ece27e5ec.jpg.webp',
+      still: `https://media.trakt.tv/episodes/${item(17).target.id}/medium/screenshot.webp#fallback=${encodeURIComponent('https://media.trakt.tv/shows/52/medium/fanart.webp')}`,
       time: '4:06 PM',
       member: { key: 'sample-kristin', name: 'Kristin', slug: 'sample-kristin', href: '/users/sample-kristin' },
     });

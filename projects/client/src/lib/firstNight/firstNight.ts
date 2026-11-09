@@ -1,7 +1,5 @@
 import type { OverlaySlices } from '../overlay/OverlaySlices.ts';
-import { rawApiFetch } from '../api/rawApiFetch.ts';
-import { imageUrl } from '../utils/imageUrl.ts';
-import { fanartSchema } from './fanartSchema.ts';
+import { mediaImage } from '../images/mediaImage.ts';
 import { fetchStarterPicks, interleave, type StarterPick } from './starterPicks.ts';
 
 /** Ten titles give Up Next, the calendar, stats and recommendations something to show. */
@@ -34,17 +32,8 @@ const PER_TAB = 12;
 /** `watched`: movies and shows watched. */
 export const isNewAccount = (watched: number) => watched < FIRST_NIGHT_GOAL;
 
-/** The wall sits over Breaking Bad's fanart. Without it, the wall's glow alone. */
-async function fetchBackdrop(fetch: typeof globalThis.fetch): Promise<string | undefined> {
-  try {
-    const response = await rawApiFetch({ fetch, path: '/shows/breaking-bad?extended=images' });
-    if (!response.ok) return undefined;
-    const show = fanartSchema.safeParse(await response.json().catch(() => null));
-    return imageUrl(show.data?.images?.fanart?.at(0), 'full');
-  } catch {
-    return undefined;
-  }
-}
+/** The wall sits over Breaking Bad's fanart. */
+const BACKDROP = mediaImage({ type: 'show', id: 1388, slot: 'fanart', size: 'full' });
 
 /**
  * The welcome wall's tabs: the most watched shows and movies of all time, which most people have seen some of, and what's
@@ -53,12 +42,11 @@ async function fetchBackdrop(fetch: typeof globalThis.fetch): Promise<string | u
 export async function fetchFirstNight({ fetch, now = new Date() }: { fetch: typeof globalThis.fetch; now?: Date }) {
   const picks = (chart: 'watched/all' | 'trending', type: 'shows' | 'movies') =>
     fetchStarterPicks({ fetch, chart, type, limit: PER_TAB, now });
-  const [shows, movies, trendingShows, trendingMovies, backdrop] = await Promise.all([
+  const [shows, movies, trendingShows, trendingMovies] = await Promise.all([
     picks('watched/all', 'shows'),
     picks('watched/all', 'movies'),
     picks('trending', 'shows'),
     picks('trending', 'movies'),
-    fetchBackdrop(fetch),
   ]);
   const tabs: FirstNightTab[] = [
     { key: 'shows' as const, label: 'Most watched shows', picks: shows },
@@ -69,7 +57,7 @@ export async function fetchFirstNight({ fetch, now = new Date() }: { fetch: type
       picks: interleave(trendingShows, trendingMovies).slice(0, PER_TAB),
     },
   ].filter((tab) => tab.picks.length > 0);
-  return { tabs, backdrop } satisfies FirstNight;
+  return { tabs, backdrop: BACKDROP } satisfies FirstNight;
 }
 
 /**

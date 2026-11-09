@@ -35,7 +35,7 @@ export type SocialItem = {
   readonly time: string;
   readonly member: SocialMember;
   readonly kind: 'watch' | 'checkin' | 'rating' | 'comment' | 'review';
-  /** The movie or the show, with its poster path. `key` groups a sitting's rows by title. */
+  /** The movie or the show, with its poster. `key` groups a sitting's rows by title. */
   readonly title: {
     readonly key: string;
     readonly name: string;
@@ -54,7 +54,7 @@ export type SocialItem = {
   readonly href: string;
   /** The movie or episode this row is about; the show for a show or season. */
   readonly target: SocialTarget;
-  /** An image path from the API: the episode's screenshot, else the show's or movie's fanart. */
+  /** An image URL: the episode's screenshot, else the show's or movie's fanart. */
   readonly still?: string;
   /** The show's or movie's own fanart, never an episode's screenshot: a user card's cover while they watch it. */
   readonly fanart?: string;

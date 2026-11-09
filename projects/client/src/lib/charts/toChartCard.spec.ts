@@ -53,7 +53,7 @@ describe('toChartCard', () => {
           href: '/shows/the-wire',
           title: 'The Wire',
           year: 2002,
-          poster: undefined,
+          poster: 'https://media.trakt.tv/shows/1395/thumb/poster.webp',
           stars: 9,
           watched: true,
           loved: false,

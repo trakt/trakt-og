@@ -1,5 +1,5 @@
 import { api } from '../api/api.ts';
-import { PLACEHOLDER_AVATAR } from '../users/placeholderAvatar.ts';
+import { userAvatar } from '../images/userAvatar.ts';
 
 /** A Trakt team member a new member can follow from an empty Social Feed. */
 export type TeamMember = {
@@ -19,13 +19,13 @@ export async function fetchTeamToFollow(
   random: () => number = Math.random,
 ): Promise<TeamMember[]> {
   try {
-    const team = await api({ fetch }).team.members({ query: { extended: 'full,images' } });
+    const team = await api({ fetch }).team.members({ query: { extended: 'full' } });
     if (team.status !== 200) return [];
     return team.body
       .map(({ user }) => ({
         slug: user.ids.slug ?? user.username,
         name: user.name?.trim() || user.username,
-        avatar: user.images?.avatar.full ?? PLACEHOLDER_AVATAR,
+        avatar: userAvatar(user.ids.trakt),
         // The city alone, as the about page's roster shows it: "Serrana, Brazil" is Serrana.
         location: user.location?.split(',').at(0)?.trim() || null,
         isPrivate: user.private,

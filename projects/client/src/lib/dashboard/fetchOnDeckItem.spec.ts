@@ -75,14 +75,12 @@ describe('fetchOnDeckItem', () => {
     server.use(
       http.get(`${API}/shows/1388/seasons`, ({ request }) => {
         expect(request.headers.get('authorization')).toBeNull();
-        return HttpResponse.json([
-          { number: 2, ids: { trakt: 2 }, images: { poster: ['images.trakt.tv/season.jpg'] } },
-        ]);
+        return HttpResponse.json([{ number: 2, ids: { trakt: 2 } }]);
       }),
     );
     const settings = { ...toDashboardSettings({ settings: null }).upNext, poster: 'season' as const };
     expect(await fetchOnDeckItem({ item, username: 'tester', fetch: authorized, settings })).toMatchObject({
-      poster: 'https://images.trakt.tv/season.jpg',
+      poster: `https://media.trakt.tv/seasons/2/thumb/poster.webp#fallback=${encodeURIComponent('https://media.trakt.tv/shows/1388/thumb/poster.webp')}`,
       ticks: [true, false],
     });
     expect(

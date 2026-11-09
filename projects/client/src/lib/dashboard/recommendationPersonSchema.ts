@@ -7,7 +7,6 @@ const role = z.enum(['directing', 'making', 'acting']);
 const title = z.object({
   title: z.string(),
   ids,
-  images: z.object({ poster: z.array(z.string()).nullish() }).nullish(),
 });
 
 /**
@@ -18,7 +17,6 @@ export const recommendationPersonSchema = z.object({
   person: z.object({
     name: z.string(),
     ids,
-    images: z.object({ headshot: z.array(z.string()).nullish() }).nullish(),
   }),
   role,
   watched_roles: z.array(role).catch([]),

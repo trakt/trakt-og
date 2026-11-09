@@ -59,7 +59,7 @@ export async function fetchOnDeckItem({
     throw new Error('Up Next returned no episode');
   }
   const [summary, progress] = await Promise.all([
-    api().shows.summary({ params: { id: String(item.showId) }, query: { extended: 'full,images' } }),
+    api().shows.summary({ params: { id: String(item.showId) }, query: { extended: 'full' } }),
     client.shows.progress.watched({ params: { id: String(item.showId) }, query: { extended: 'full' } }),
   ]);
   if (summary.status !== 200 || progress.status !== 200) throw new Error('Could not refresh this show');

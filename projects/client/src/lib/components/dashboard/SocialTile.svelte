@@ -11,7 +11,6 @@ import UnderProgress from '#lib/components/media/UnderProgress.svelte';
 import Countdown from '#lib/components/status/Countdown.svelte';
 import { liveTags } from '#lib/dashboard/liveTags.ts';
 import type { LiveTile } from '#lib/dashboard/liveTiles.ts';
-import { imageUrl } from '#lib/utils/imageUrl.ts';
 
 const { tile }: { tile: LiveTile } = $props();
 
@@ -29,7 +28,7 @@ const tags = $derived(liveTags(watch));
     title={watch.episode ? watch.episode.title ?? '' : watch.title.name}
     number={watch.code}
     smallTitle={watch.episode ? { text: watch.title.name, href: watch.title.href } : undefined}
-    image={imageUrl(watch.still, 'medium')}
+    image={watch.still}
     {tags}
   >
     {#snippet progress()}

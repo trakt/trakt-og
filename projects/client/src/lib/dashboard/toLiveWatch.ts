@@ -4,7 +4,7 @@ import { socialMediaSchema } from './socialMediaSchema.ts';
 import type { SocialMember } from './toSocialItem.ts';
 import { toSocialMedia } from './toSocialMedia.ts';
 
-/** A `/watching` answer from `extended=full,images`. `@trakt/api` has no contract for the images. */
+/** A `/watching` answer from `extended=full`. `@trakt/api` has no contract for it. */
 const watchingSchema = z.intersection(
   z.object({ started_at: z.string(), expires_at: z.string(), action: z.string() }),
   socialMediaSchema,

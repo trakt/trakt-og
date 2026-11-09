@@ -64,7 +64,7 @@ export async function loadDashboard({ fetch, panelFetch = fetch, locals, cookies
   const [profile, stats, watching, requests, layout] = await Promise.all([
     client.users.profile({ params: { id: 'me' }, query: { extended: 'full,vip' } }),
     client.users.stats({ params: { id: 'me' } }),
-    client.users.watching({ params: { id: 'me' }, query: { extended: 'full,images' } }),
+    client.users.watching({ params: { id: 'me' }, query: { extended: 'full' } }),
     client.users.requests.follow({ query: { extended: 'full' } }),
     parent(),
   ]);

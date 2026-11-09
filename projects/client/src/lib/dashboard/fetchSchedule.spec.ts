@@ -53,7 +53,7 @@ describe('fetchSchedule', () => {
 
     expect(days).toHaveLength(5);
     expect(calendarRequests().map(({ pathname, searchParams }) => [pathname, searchParams.get('extended')])).toEqual([
-      ['/calendars/my/media/2026-09-29/33', 'full,images'],
+      ['/calendars/my/media/2026-09-29/33', 'full'],
     ]);
   });
 
@@ -224,13 +224,7 @@ describe('fetchSchedule', () => {
         hidden(),
         http.get(`${API}/shows/:id/seasons`, ({ params: { id } }) => {
           posters.push(String(id));
-          return HttpResponse.json([
-            {
-              number: 5,
-              ids: { trakt: 5 },
-              images: { poster: [`media.trakt.tv/images/seasons/${id}/posters/medium/5.jpg`] },
-            },
-          ]);
+          return HttpResponse.json([{ number: 5, ids: { trakt: Number(id) + 1 } }]);
         }),
         watchNow,
       );
@@ -238,7 +232,9 @@ describe('fetchSchedule', () => {
       const days = await fetchSchedule(settingsFor({ poster: 'season' }));
       const boys = days.flatMap(({ items }) => items).find(({ title }) => title === 'The Boys');
 
-      expect(boys?.poster).toBe('https://media.trakt.tv/images/seasons/139960/posters/thumb/5.jpg');
+      expect(boys?.poster).toBe(
+        `https://media.trakt.tv/seasons/139961/thumb/poster.webp#fallback=${encodeURIComponent('https://media.trakt.tv/shows/139960/thumb/poster.webp')}`,
+      );
       const spotlight = days.slice(0, 1).flatMap(({ items }) => items.filter(({ episode }) => episode));
       expect(posters.length).toBeLessThanOrEqual(new Set(spotlight.map(({ group }) => group)).size);
     });

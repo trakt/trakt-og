@@ -39,7 +39,7 @@ async function fetchPage(get: SocialGet, window: SocialWindow, page: number, dat
     end_at: window.end,
     limit: `${PER_PAGE}`,
     page: `${page}`,
-    extended: 'full,images',
+    extended: 'full',
   });
   const response = await get(`/v3/users/me/following/activities?${search}`);
   if (isApiUnavailable(response)) apiUnavailable();

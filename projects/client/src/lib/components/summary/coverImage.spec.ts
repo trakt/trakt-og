@@ -15,6 +15,17 @@ describe('isCoverOf', () => {
     expect(isCoverOf(cover, { type: 'show', id: 170297 })).toBe(true);
   });
 
+  it('should match a cover URL on the ID-based image paths', () => {
+    expect(isCoverOf('https://media.trakt.tv/shows/170297/original/fanart.webp', { type: 'show', id: 170297 })).toBe(
+      true,
+    );
+    expect(isCoverOf('https://media.trakt.tv/movies/12/full/fanart.webp', { type: 'movie', id: 12 })).toBe(true);
+    expect(
+      isCoverOf('https://media.trakt.tv/episodes/73482/medium/screenshot.webp', { type: 'episode', id: 73482 }),
+    ).toBe(true);
+    expect(isCoverOf('https://media.trakt.tv/movies/12/full/fanart.webp', { type: 'show', id: 12 })).toBe(false);
+  });
+
   it('should not match another item or another type with the same id', () => {
     expect(isCoverOf(cover, { type: 'show', id: 1 })).toBe(false);
     expect(isCoverOf(cover, { type: 'movie', id: 170297 })).toBe(false);

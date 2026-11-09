@@ -1,7 +1,9 @@
 <!--
   The lists featuring a movie, show, season, episode or person: the subpage frame,
-  a subnav with the type dropdown on the left and the sort dropdown on the right, then 30 list rows a page with
-  pagination above and below, or OG's empty notice. The 30-day sorts and the direction arrow have no API.
+  "Lists" in the label line, a subnav with the Type dropdown (All, Official, Personal, Mine) on the left and the sort
+  dropdown on the right, then 30 list rows a page with pagination above and below, or OG's empty notice. Every sort
+  runs highest or newest first, so the direction arrow points down and stays disabled: the API takes no direction.
+  The 30-day sorts have no API either.
 -->
 <script lang="ts">
 import SeoHead from '#lib/seo/SeoHead.svelte';
@@ -60,8 +62,8 @@ const lists = $derived(own.visible(data.lists));
 {#snippet subnav()}
   <SectionToolbar inSummary>
     {#snippet filters()}
-      <Dropdown section="List">
-        {#snippet trigger()}{data.query.type === 'all' ? 'All' : typeLabel}&nbsp;{/snippet}
+      <Dropdown section="Type">
+        {#snippet trigger()}{typeLabel}&nbsp;{/snippet}
         <ul>
           {#each types as type (type)}
             <li>
@@ -95,7 +97,7 @@ const lists = $derived(own.visible(data.lists));
 
 <SubpageFrame
   {...data}
-  label={typeLabel}
+  label="Lists"
   sections={[{ label: countLabel(data.count, 'list'), href: '#lists' }]}
   {subnav}
 >

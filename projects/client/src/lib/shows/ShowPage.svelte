@@ -166,7 +166,7 @@ const sections = $derived([
   {#key media.slug}
     <LazySection id="lists" load={() => lazy().lists(media)}>
       {#snippet pending()}<SummarySectionShimmer section="lists" />{/snippet}
-      {#snippet children(lists)}<ListsPreview {lists} count={show.listCount} href={show.href} />{/snippet}
+      {#snippet children(lists)}<ListsPreview tabs={lists} count={show.listCount} href={show.href} />{/snippet}
     </LazySection>
   {/key}
 </SummaryFrame>

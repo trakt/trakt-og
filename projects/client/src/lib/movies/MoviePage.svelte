@@ -207,7 +207,7 @@ const textLinks = $derived(movie.links.filter(({ icon }) => !icon));
   {#key media.slug}
     <LazySection id="lists" load={() => lazy().lists(media)}>
       {#snippet pending()}<SummarySectionShimmer section="lists" />{/snippet}
-      {#snippet children(lists)}<ListsPreview {lists} count={movie.listCount} href={movie.href} />{/snippet}
+      {#snippet children(lists)}<ListsPreview tabs={lists} count={movie.listCount} href={movie.href} />{/snippet}
     </LazySection>
   {/key}
 </SummaryFrame>

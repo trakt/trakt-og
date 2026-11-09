@@ -28,6 +28,7 @@ import RelatedItems from '#lib/components/summary/RelatedItems.svelte';
 import VideosRail from '#lib/components/summary/VideosRail.svelte';
 import type { CommentTab } from '#lib/summary/sectionsClient.ts';
 import type { SummaryList } from '#lib/summary/toSummaryList.ts';
+import type { ListTab } from '#lib/summary/toListTabs.ts';
 import { type ActivityTab, toActivity } from '#lib/summary/toActivity.ts';
 import { socialFeedFixture } from '#lib/dashboard/socialFeedFixture.ts';
 import type { RelatedCard } from '#lib/summary/toRelatedCard.ts';
@@ -113,14 +114,22 @@ const list = (id: number, name: string, extra: Partial<SummaryList> = {}) => ({
   description: 'Crews, vaults and one last job.',
   ...extra,
 });
-const lists: readonly SummaryList[] = [
-  list(1, 'Heat Collection', {
-    kind: 'official',
-    href: '/lists/official/heat-collection',
-    pills: ['Official List'],
-    commentCount: undefined,
-  }),
-  list(2, 'Heist Night'),
+const official = (id: number, name: string, slug: string, itemCount: number) =>
+  list(id, name, { kind: 'official', href: `/lists/official/${slug}`, pills: ['Official List'], itemCount, commentCount: undefined });
+const personalLists = { id: 'personal', label: 'Personal', lists: [list(2, 'Heist Night'), list(3, 'Michael Mann, ranked')] } as const;
+const listTabs: readonly ListTab[] = [
+  {
+    id: 'official',
+    label: 'Official',
+    total: 11,
+    lists: [
+      official(1, 'Heat Collection', 'heat-collection', 2),
+      official(4, 'IMDB: Top Rated Movies', 'imdb-top-rated-movies', 250),
+      official(5, 'Trakt: Popular Movies', 'trakt-popular-movies', 250),
+    ],
+  },
+  personalLists,
+  { id: 'me', label: 'Mine', total: 1, lists: [list(6, 'Rewatch pile', { owner: { ...list(6, '').owner, slug: 'og_tester' } })] },
 ];
 
 // Eighteen picks, so more opens a second row and a third. Heat's crime subgenres spread over them, and two share its people.
@@ -252,7 +261,7 @@ const videos: readonly VideoCard[] = [
 </Specimen>
 
 <Specimen title="Comments and lists previews"
-  note="What loads at the bottom of /movies/fight-club-1999 as it scrolls into view, with shimmering comments and list rows in their places until it does.">
+  note="What loads at the bottom of /movies/fight-club-1999 as it scrolls into view, with shimmering comments and list rows in their places until it does. Lists opens on Official, the collection first; Type switches to Personal or Mine (your own lists with the title, signed in), and All N Lists follows the pick. With only one kind there is no dropdown.">
   <Variant label="Loaded">
     <CommentsPreview
       form={newCommentForm}
@@ -265,7 +274,10 @@ const videos: readonly VideoCard[] = [
       dateOptions={page.data.datePreferences}
     />
     <p>The comments subnav's Add comment: <AddCommentLink /></p>
-    <ListsPreview {lists} count={342} href="/movies/heat-1995" />
+    <ListsPreview tabs={listTabs} count={342} href="/movies/heat-1995" />
+  </Variant>
+  <Variant label="Personal lists only">
+    <ListsPreview tabs={[personalLists]} count={2} href="/movies/heat-1995" />
   </Variant>
   <Variant label="Loading">
     <SummarySectionShimmer section="comments" />

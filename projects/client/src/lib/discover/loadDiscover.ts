@@ -61,7 +61,7 @@ async function rawBody<T>(fetcher: typeof fetch, path: string, schema: z.ZodType
 /** One chart's shows or movies with a filter. */
 async function media(fetcher: typeof fetch, type: 'movie' | 'show', chart: Chart, filter: ThemeFilter | undefined) {
   if (!filter) return [];
-  const query = new URLSearchParams({ extended: 'full,images', limit: '20', ...filter });
+  const query = new URLSearchParams({ extended: 'full', limit: '20', ...filter });
   const rows = await rawBody(fetcher, `/${type}s/${chart}?${query}`, themeRowsSchema, []);
   return rows.flatMap((row): ThemeMedia[] => (row[type] ? [row[type]] : []));
 }
@@ -102,7 +102,6 @@ async function moodShelf(fetcher: typeof fetch, mood: DiscoverMood, type: MediaT
   const chart = mood.chart ?? 'trending';
   const items = (await media(fetcher, type, chart, mood[type]))
     .map((item) => toPosterItem(item, type, now))
-    .filter((item) => item.poster)
     .slice(0, SHELF);
   const filter = mood[type] ?? {};
   return {
@@ -164,10 +163,10 @@ async function premieres(
     client.calendars
       .releasesHotPremieres({
         params: { start_date: today, days: PREMIERE_DAYS },
-        query: { extended: 'full,images' },
+        query: { extended: 'full' },
       })
       .catch(() => null),
-    client.shows.anticipated({ query: { extended: 'full,images', limit: 60 } }).catch(() => null),
+    client.shows.anticipated({ query: { extended: 'full', limit: 60 } }).catch(() => null),
   ]);
   if (feed?.status !== 200) return [];
   return toPremieres({

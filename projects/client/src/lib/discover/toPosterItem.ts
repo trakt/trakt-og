@@ -1,4 +1,4 @@
-import { imageUrl } from '../utils/imageUrl.ts';
+import { mediaImage } from '../images/mediaImage.ts';
 import { genreLabel } from '../utils/genreLabel.ts';
 import type { ThemeMedia } from './themeRowsSchema.ts';
 
@@ -42,9 +42,9 @@ export function toPosterItem(media: ThemeMedia, type: 'movie' | 'show', now: Dat
     rating: media.rating ?? undefined,
     released: releaseDate ? new Date(releaseDate) <= now : false,
     airedEpisodes: media.aired_episodes ?? undefined,
-    poster: imageUrl(media.images?.poster?.at(0), 'thumb'),
-    fanart: imageUrl(media.images?.fanart?.at(0), 'full'),
-    logo: imageUrl(media.images?.logo?.at(0), 'medium'),
+    poster: mediaImage({ type, id: media.ids.trakt, slot: 'poster', size: 'thumb' }),
+    fanart: mediaImage({ type, id: media.ids.trakt, slot: 'fanart', size: 'full' }),
+    logo: mediaImage({ type, id: media.ids.trakt, slot: 'logo', size: 'medium' }),
     genres: (media.genres ?? []).map(genreLabel),
     certification: media.certification ?? undefined,
     network: media.network ?? undefined,

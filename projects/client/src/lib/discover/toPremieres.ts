@@ -1,5 +1,5 @@
 import type { CalendarShowResponse, ShowAnticipatedResponse } from '@trakt/api';
-import { imageUrl } from '../utils/imageUrl.ts';
+import { mediaImage } from '../images/mediaImage.ts';
 import { uniqueBy } from '../utils/uniqueBy.ts';
 import { dayIn } from '../utils/dayIn.ts';
 
@@ -46,8 +46,8 @@ const showCard = (show: CalendarShowResponse['show'], at: string, timeZone: stri
   id: show.ids.trakt,
   href: `/shows/${show.ids.slug}`,
   title: show.title,
-  logo: imageUrl(show.images?.logo?.at(0), 'medium'),
-  fanart: imageUrl(show.images?.fanart?.at(0), 'medium'),
+  logo: mediaImage({ type: 'show', id: show.ids.trakt, slot: 'logo', size: 'medium' }),
+  fanart: mediaImage({ type: 'show', id: show.ids.trakt, slot: 'fanart', size: 'medium' }),
   at,
   day: dayIn(at, timeZone),
   network: show.network ?? undefined,
@@ -57,7 +57,7 @@ const showCard = (show: CalendarShowResponse['show'], at: string, timeZone: stri
 
 /**
  * The upcoming premieres, most anticipated first: new series by how many lists they're on, returning seasons by how
- * many people rated the show. Each show once, only those still to air, and only with fanart.
+ * many people rated the show. Each show once, only those still to air.
  */
 export function toPremieres({ premieres, anticipated, now, until, timeZone }: PremieresParams): Premiere[] {
   const lists = new Map(anticipated.map((row) => [row.show.ids.trakt, row.list_count]));
@@ -83,7 +83,7 @@ export function toPremieres({ premieres, anticipated, now, until, timeZone }: Pr
     return [{ ...showCard(row.show, at, timeZone), kind: 'series', season: 1, lists: row.list_count }];
   });
 
-  const all = [...fromFeed, ...fromAnticipated].filter((premiere) => new Date(premiere.at) > now && premiere.fanart);
+  const all = [...fromFeed, ...fromAnticipated].filter((premiere) => new Date(premiere.at) > now);
   const score = (premiere: Premiere) => premiere.lists ?? premiere.votes;
   return uniqueBy(all, ({ key }) => key).toSorted((a, b) => score(b) - score(a));
 }

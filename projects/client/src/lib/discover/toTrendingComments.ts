@@ -1,7 +1,7 @@
 import type { CommentResponse } from '@trakt/api';
 import type { CommentItem } from '../components/comments/CommentItem.ts';
 import { episodeNumber } from '../components/media/episodeTags.ts';
-import { imageUrl } from '../utils/imageUrl.ts';
+import { mediaImage } from '../images/mediaImage.ts';
 import type { TrendingCommentRow } from './trendingCommentRowsSchema.ts';
 import { uniqueBy } from '../utils/uniqueBy.ts';
 
@@ -49,8 +49,8 @@ function toItem(row: TrendingCommentRow, now: Date): TrendingComment['item'] | u
         href: `/shows/${media.ids.slug}/seasons/${episode.season}/episodes/${episode.number}`,
       },
     }),
-    poster: imageUrl(media.images?.poster?.at(0), 'thumb'),
-    fanart: imageUrl(media.images?.fanart?.at(0), 'full'),
+    poster: mediaImage({ type, id: media.ids.trakt, slot: 'poster', size: 'thumb' }),
+    fanart: mediaImage({ type, id: media.ids.trakt, slot: 'fanart', size: 'full' }),
     rating: media.rating ?? undefined,
     released: released ? new Date(released) <= now : false,
     airedEpisodes: media.aired_episodes ?? undefined,
@@ -75,12 +75,12 @@ function toCommentItem(row: TrendingCommentRow, item: TrendingComment['item']): 
 
 /**
  * The trending comments to show, most liked first as the API sends them, but one per title before any second one,
- * so a big episode night doesn't fill the section with one show. Only movies, shows and episodes, with a poster.
+ * so a big episode night doesn't fill the section with one show. Only movies, shows and episodes.
  */
 export function toTrendingComments(rows: readonly TrendingCommentRow[], now: Date, limit = 10): TrendingComment[] {
   const comments = rows.flatMap((row): TrendingComment[] => {
     const item = toItem(row, now);
-    return item?.poster
+    return item
       ? [{ comment: row.comment, href: `/comments/${row.comment.id}`, commentItem: toCommentItem(row, item), item }]
       : [];
   });

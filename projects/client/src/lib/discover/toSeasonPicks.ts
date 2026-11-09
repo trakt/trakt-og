@@ -17,8 +17,7 @@ type SeasonPicksParams = {
 };
 
 /**
- * The season's picks: a trending movie and show, then a favorite movie and show, round by round, without repeats and
- * only with posters. The hero and the season's shelf come from these.
+ * The season's picks: a trending movie and show, then a favorite movie and show, round by round, without repeats. The hero and the season's shelf come from these.
  */
 export function toSeasonPicks({ trending, favorites, now, limit = 20 }: SeasonPicksParams): SeasonPick[] {
   const rounds = Math.max(trending.movie.length, trending.show.length, favorites.movie.length, favorites.show.length);
@@ -31,7 +30,5 @@ export function toSeasonPicks({ trending, favorites, now, limit = 20 }: SeasonPi
     .flat()
     .flatMap(({ type, media, source }) => (media ? [{ ...toPosterItem(media, type, now), source }] : []));
 
-  return uniqueBy(candidates, ({ key }) => key)
-    .filter((item) => item.poster)
-    .slice(0, limit);
+  return uniqueBy(candidates, ({ key }) => key).slice(0, limit);
 }

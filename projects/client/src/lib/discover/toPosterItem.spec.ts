@@ -14,11 +14,6 @@ const media = {
   certification: 'R',
   overview: ' A creature. ',
   trailer: 'https://youtube.com/watch?v=abc',
-  images: {
-    poster: ['media.trakt.tv/images/movies/7/posters/medium/a.jpg.webp'],
-    fanart: ['media.trakt.tv/images/movies/7/fanarts/medium/b.jpg.webp'],
-    logo: ['media.trakt.tv/images/movies/7/logos/medium/c.png.webp'],
-  },
 };
 
 describe('toPosterItem', () => {
@@ -34,9 +29,9 @@ describe('toPosterItem', () => {
       rating: 7.9,
       released: true,
       airedEpisodes: undefined,
-      poster: 'https://media.trakt.tv/images/movies/7/posters/thumb/a.jpg.webp',
-      fanart: 'https://media.trakt.tv/images/movies/7/fanarts/full/b.jpg.webp',
-      logo: 'https://media.trakt.tv/images/movies/7/logos/medium/c.png.webp',
+      poster: 'https://media.trakt.tv/movies/7/thumb/poster.webp',
+      fanart: 'https://media.trakt.tv/movies/7/full/fanart.webp',
+      logo: 'https://media.trakt.tv/movies/7/medium/logo.webp',
       genres: ['Horror', 'Science Fiction', 'Drama', 'War'],
       certification: 'R',
       network: undefined,
@@ -45,8 +40,8 @@ describe('toPosterItem', () => {
     });
   });
 
-  it("should leave out a show's episode runtime and any missing art", () => {
-    const item = toPosterItem({ ...media, images: null, aired_episodes: 8 }, 'show', now);
+  it("should leave out a show's episode runtime and build its art from the show", () => {
+    const item = toPosterItem({ ...media, aired_episodes: 8 }, 'show', now);
 
     expect(item).toMatchObject({
       key: 'show-7',
@@ -56,7 +51,7 @@ describe('toPosterItem', () => {
     });
     // A show without a first air date isn't out yet.
     expect(item.released).toBe(false);
-    expect(item.poster).toBeUndefined();
-    expect(item.fanart).toBeUndefined();
+    expect(item.poster).toBe('https://media.trakt.tv/shows/7/thumb/poster.webp');
+    expect(item.fanart).toBe('https://media.trakt.tv/shows/7/full/fanart.webp');
   });
 });

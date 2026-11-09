@@ -15,7 +15,7 @@ type FetchCalendarParams = {
 };
 
 function request({ client, target, slug, range, filters }: FetchCalendarParams) {
-  const query = { extended: 'full,images' as const, ...filters };
+  const query = { extended: 'full' as const, ...filters };
   const params = { target, ...range };
 
   switch (slug) {

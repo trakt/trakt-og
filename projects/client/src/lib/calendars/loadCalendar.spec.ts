@@ -214,7 +214,7 @@ describe('loadCalendar', () => {
       '/calendars/my/media/2026-07-30/17',
       '/calendars/my/media/2026-08-17/16',
     ]);
-    expect(requests.every((request) => new URL(request.url).searchParams.get('extended') === 'full,images')).toBe(true);
+    expect(requests.every((request) => new URL(request.url).searchParams.get('extended') === 'full')).toBe(true);
     expect(data.days).toHaveLength(31);
     expect(data.days.at(0)?.date).toBe('2026-08-01');
     expect(data.display.artwork).toBe('poster');

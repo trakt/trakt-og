@@ -2,16 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { toCalendarCard } from './toCalendarCard.ts';
 import type { CalendarItem } from './calendarDays.ts';
 
-const images = {
-  fanart: ['media.trakt.tv/images/shows/000/001/fanarts/medium/a.jpg.webp'],
-  logo: ['media.trakt.tv/images/shows/000/001/logos/medium/b.png.webp'],
-};
-
 const episode = (fields: Record<string, unknown> = {}, show: Record<string, unknown> = {}) =>
   ({
     type: 'episode',
     at: '2026-09-29T21:00:00.000Z',
-    show: { title: 'Shogun', ids: { trakt: 1, slug: 'shogun' }, network: 'FX', images, ...show },
+    show: { title: 'Shogun', ids: { trakt: 1, slug: 'shogun' }, network: 'FX', ...show },
     episode: {
       season: 3,
       number: 3,
@@ -36,8 +31,8 @@ describe('toCalendarCard', () => {
         number: '3x03',
         title: 'The Line of Beauty',
         smallTitle: { text: 'Shogun', href: '/shows/shogun' },
-        image: 'https://media.trakt.tv/images/shows/000/001/fanarts/thumb/a.jpg.webp',
-        logo: 'https://media.trakt.tv/images/shows/000/001/logos/medium/b.png.webp',
+        image: 'https://media.trakt.tv/shows/1/thumb/fanart.webp',
+        logo: 'https://media.trakt.tv/shows/1/medium/logo.webp',
       });
     });
 
@@ -91,7 +86,7 @@ describe('toCalendarCard', () => {
       const movie = {
         type: 'movie',
         at: '2026-09-30',
-        movie: { title: 'Naza', year: 2026, ids: { trakt: 5, slug: 'naza-2026' }, images: { fanart: [], logo: [] } },
+        movie: { title: 'Naza', year: 2026, ids: { trakt: 5, slug: 'naza-2026' } },
       } as unknown as CalendarItem;
 
       expect(toCalendarCard(movie, UTC, new Date('2026-10-01'))).toEqual({
@@ -101,13 +96,16 @@ describe('toCalendarCard', () => {
         href: '/movies/naza-2026',
         title: 'Naza',
         year: 2026,
-        image: undefined,
-        logo: undefined,
+        image: 'https://media.trakt.tv/movies/5/thumb/fanart.webp',
+        fanart: 'https://media.trakt.tv/movies/5/thumb/fanart.webp',
+        spoilerImage: undefined,
+        runtime: undefined,
+        logo: 'https://media.trakt.tv/movies/5/medium/logo.webp',
         logoMode: true,
         worded: false,
         variant: 'fanart',
         hideTitle: false,
-        hideSmallTitle: false,
+        hideSmallTitle: true,
         tagline: undefined,
         rating: undefined,
         released: true,
@@ -124,7 +122,6 @@ describe('toCalendarCard', () => {
           ids: { trakt: 5, slug: 'naza-2026' },
           certification: 'R',
           runtime: 104,
-          images: { fanart: [], logo: [] },
         },
       } as unknown as CalendarItem;
 

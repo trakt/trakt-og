@@ -1,48 +1,50 @@
+import { mediaImage } from '../images/mediaImage.ts';
 import type { CalendarItem } from './calendarDays.ts';
 import type { toCalendarPreferences } from './toCalendarPreferences.ts';
-import { imageUrl } from '../utils/imageUrl.ts';
 
 type ImageType = ReturnType<typeof toCalendarPreferences>['imageType'];
 
 /**
  * OG uses show artwork; screenshots and missing thumbs fall back to the episode still, then show fanart. The show or
  * movie's fanart also comes along on its own: the Watch Now modal's backdrop, and what a still shows in its place
- * while it would spoil an unwatched episode.
+ * while it would spoil an unwatched episode. The art's URL doesn't say whether it exists, so a title is hidden
+ * wherever its own art would carry it.
  */
 export function toCalendarImage(item: CalendarItem, type: ImageType) {
   const media = item.type === 'episode' ? item.show : item.movie;
+  const mediaType = item.type === 'episode' ? 'show' : 'movie';
+  const size = type === 'thumb' || type === 'banner' ? 'medium' : 'thumb';
+  const art = (slot: 'fanart' | 'poster' | 'banner' | 'thumb' | 'logo', fallback?: string) =>
+    mediaImage({ type: mediaType, id: media.ids.trakt, slot, size: slot === 'logo' ? 'medium' : size, fallback });
+  const fanart = mediaImage({ type: mediaType, id: media.ids.trakt, slot: 'fanart', size: 'thumb' });
   const still =
     item.type === 'episode'
-      ? (item.episode.images?.screenshot?.at(0) ?? media.images?.fanart?.at(0))
-      : media.images?.fanart?.at(0);
-  const images = media.images;
-  const fanart = imageUrl(images?.fanart?.at(0), 'thumb');
-  const path =
-    type === 'screenshot'
-      ? still
-      : type === 'thumb'
-        ? (images?.thumb?.at(0) ?? still)
-        : type === 'banner'
-          ? images?.banner?.at(0)
-          : type === 'poster'
-            ? images?.poster?.at(0)
-            : type === 'none'
-              ? undefined
-              : images?.fanart?.at(0);
+      ? mediaImage({
+          type: 'episode',
+          id: item.episode.ids.trakt,
+          slot: 'screenshot',
+          size,
+          fallback: art('fanart'),
+        })
+      : art('fanart');
+  const images: Record<ImageType, string | undefined> = {
+    screenshot: still,
+    thumb: art('thumb', still),
+    banner: art('banner'),
+    poster: art('poster'),
+    none: undefined,
+    logo: art('fanart'),
+    fanart: art('fanart'),
+  };
   return {
-    image: imageUrl(path, type === 'thumb' || type === 'banner' ? 'medium' : 'thumb'),
+    image: images[type],
     fanart,
     spoilerImage: type === 'screenshot' ? fanart : undefined,
-    logo: type === 'logo' ? imageUrl(images?.logo?.at(0), 'medium') : undefined,
+    logo: type === 'logo' ? art('logo') : undefined,
     logoMode: type === 'logo',
     worded: type === 'thumb' || type === 'banner' || type === 'poster',
     variant: type === 'poster' ? ('poster' as const) : type === 'banner' ? ('banner' as const) : ('fanart' as const),
-    hideTitle: item.type === 'movie' && type === 'poster' && !!path,
-    hideSmallTitle:
-      type === 'logo'
-        ? !!images?.logo?.at(0)
-        : type === 'thumb'
-          ? !!images?.thumb?.at(0)
-          : (type === 'poster' || type === 'banner') && !!path,
+    hideTitle: item.type === 'movie' && type === 'poster',
+    hideSmallTitle: type === 'logo' || type === 'thumb' || type === 'poster' || type === 'banner',
   };
 }

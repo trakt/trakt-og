@@ -1,6 +1,6 @@
 import type { MovieResponse } from '@trakt/api';
 import type { TagPill } from '../components/labels/TagPill.ts';
-import { imageUrl } from '../utils/imageUrl.ts';
+import { mediaImage } from '../images/mediaImage.ts';
 import { movieTags } from './movieTags.ts';
 import { type WeekInRelease, weekInRelease } from './weekInRelease.ts';
 
@@ -35,7 +35,7 @@ export function toBoxOfficeRow(
     href: `/movies/${movie.ids.slug}`,
     title: movie.title,
     year: movie.year ?? undefined,
-    poster: imageUrl(movie.images?.poster?.at(0), 'thumb'),
+    poster: mediaImage({ type: 'movie', id: movie.ids.trakt, slot: 'poster', size: 'thumb' }),
     tags: movieTags(movie),
     run: weekInRelease(movie.released, friday),
     revenue: revenue ?? 0,

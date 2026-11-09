@@ -1,6 +1,5 @@
 import { z } from 'zod/v4';
 
-const art = z.array(z.string()).nullish();
 const media = z.object({
   ids: z.object({ trakt: z.number(), slug: z.string() }),
   title: z.string(),
@@ -16,7 +15,6 @@ const media = z.object({
   genres: z.array(z.string()).nullish(),
   overview: z.string().nullish(),
   trailer: z.string().nullish(),
-  images: z.object({ fanart: art, logo: art, poster: art }).nullish(),
 });
 
 /**

@@ -11,7 +11,6 @@ const movie = {
   certification: 'R',
   genres: ['thriller', 'science-fiction', 'mystery'],
   rating: 7.0,
-  images: { poster: ['media.trakt.tv/images/movies/001/043/653/posters/medium/a.jpg.webp'] },
 } as unknown as MovieResponse;
 
 describe('mapper: toBoxOfficeRow', () => {
@@ -21,7 +20,7 @@ describe('mapper: toBoxOfficeRow', () => {
       href: '/movies/verity-2026',
       title: 'Verity',
       year: 2026,
-      poster: 'https://media.trakt.tv/images/movies/001/043/653/posters/thumb/a.jpg.webp',
+      poster: 'https://media.trakt.tv/movies/1043653/thumb/poster.webp',
       tags: [{ text: 'R', kind: 'badge' }, { text: '1h 54m' }, { text: 'Thriller' }, { text: 'Science Fiction' }],
       run: { kind: 'opening', label: 'Opening' },
       revenue: 33000000,

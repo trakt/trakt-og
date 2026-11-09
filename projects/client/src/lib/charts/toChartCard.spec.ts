@@ -12,7 +12,6 @@ const show = {
   title: 'Harry Potter',
   year: 2026,
   ids: { trakt: 204167, slug: 'harry-potter' },
-  images: { fanart: ['media.trakt.tv/images/shows/000/204/167/fanarts/medium/abc.jpg.webp'] },
   rating: 6.6,
   aired_episodes: 0,
   first_aired: '2026-12-25T00:00:00.000Z',
@@ -34,17 +33,13 @@ describe('toChartCard', () => {
       {
         type: 'activity' as const,
         stars: 9,
-        show: { title: 'The Wire', year: 2002, ids: { trakt: 1395, slug: 'the-wire' }, images: null },
+        show: { title: 'The Wire', year: 2002, ids: { trakt: 1395, slug: 'the-wire' } },
       },
       { type: 'subgenre' as const, subgenres: [{ name: 'Crime drama', slug: 'crime-drama' }] },
     ];
-    const poster = {
-      ...show,
-      images: { poster: ['media.trakt.tv/images/shows/000/204/167/posters/medium/p.jpg.webp'] },
-    };
-    const card = toChartCard({ show: poster, sources }, { ...options, chart: 'recommendations' });
+    const card = toChartCard({ show, sources }, { ...options, chart: 'recommendations' });
 
-    expect(card.poster).toBe('https://media.trakt.tv/images/shows/000/204/167/posters/thumb/p.jpg.webp');
+    expect(card.poster).toBe('https://media.trakt.tv/shows/204167/thumb/poster.webp');
     expect(card.why).toEqual({
       titles: [
         {
@@ -75,8 +70,10 @@ describe('toChartCard', () => {
       href: '/shows/harry-potter',
       title: 'Harry Potter',
       year: 2026,
-      image: 'https://media.trakt.tv/images/shows/000/204/167/fanarts/thumb/abc.jpg.webp',
-      fanart: 'https://media.trakt.tv/images/shows/000/204/167/fanarts/full/abc.jpg.webp',
+      image: 'https://media.trakt.tv/shows/204167/thumb/fanart.webp',
+      fanart: 'https://media.trakt.tv/shows/204167/full/fanart.webp',
+      logo: 'https://media.trakt.tv/shows/204167/medium/logo.webp',
+      poster: 'https://media.trakt.tv/shows/204167/thumb/poster.webp',
       released: false,
       rating: 6.6,
       airedEpisodes: 0,
@@ -89,7 +86,6 @@ describe('toChartCard', () => {
   it('should carry the logo and the details the podium hero shows', () => {
     const details = {
       ...show,
-      images: { ...show.images, logo: ['media.trakt.tv/images/shows/000/204/167/logos/medium/def.png.webp'] },
       overview: ' A boy learns he is a wizard. ',
       certification: 'TV-14',
       genres: ['science-fiction', 'drama'],
@@ -97,7 +93,7 @@ describe('toChartCard', () => {
     } as ShowResponse;
 
     expect(toChartCard({ show: details }, options)).toMatchObject({
-      logo: 'https://media.trakt.tv/images/shows/000/204/167/logos/medium/def.png.webp',
+      logo: 'https://media.trakt.tv/shows/204167/medium/logo.webp',
       overview: 'A boy learns he is a wizard.',
       certification: 'TV-14',
       genres: ['Science Fiction', 'Drama'],

@@ -11,7 +11,6 @@ const movie = {
   certification: 'R',
   genres: ['thriller', 'science-fiction', 'mystery'],
   rating: 7.0,
-  images: { poster: ['media.trakt.tv/images/movies/001/043/653/posters/medium/a.jpg.webp'] },
 } as unknown as MovieResponse;
 
 describe('mapper: toOpeningRow', () => {
@@ -20,7 +19,7 @@ describe('mapper: toOpeningRow', () => {
       id: 1043653,
       href: '/movies/verity-2026',
       title: 'Verity',
-      poster: 'https://media.trakt.tv/images/movies/001/043/653/posters/thumb/a.jpg.webp',
+      poster: 'https://media.trakt.tv/movies/1043653/thumb/poster.webp',
       tags: [{ text: 'R', kind: 'badge' }, { text: '1h 54m' }, { text: 'Thriller' }],
     });
   });

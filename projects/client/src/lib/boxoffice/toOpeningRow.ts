@@ -1,6 +1,6 @@
 import type { MovieResponse } from '@trakt/api';
 import type { TagPill } from '../components/labels/TagPill.ts';
-import { imageUrl } from '../utils/imageUrl.ts';
+import { mediaImage } from '../images/mediaImage.ts';
 import { movieTags } from './movieTags.ts';
 
 /** A film opening Friday, for the Box Office sidebar. */
@@ -18,7 +18,7 @@ export function toOpeningRow({ movie }: { movie: MovieResponse }): OpeningRow {
     id: movie.ids.trakt,
     href: `/movies/${movie.ids.slug}`,
     title: movie.title,
-    poster: imageUrl(movie.images?.poster?.at(0), 'thumb'),
+    poster: mediaImage({ type: 'movie', id: movie.ids.trakt, slot: 'poster', size: 'thumb' }),
     tags: movieTags(movie, { short: true }),
   };
 }

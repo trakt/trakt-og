@@ -72,6 +72,8 @@ interface Props {
   iconBar?: boolean;
   /** Over the whole image, above the titles: the progress row's Next Episode cover. */
   fanartOverlay?: Snippet;
+  /** Drawn in the quick-icon bar's place, for a status instead of actions (`CaughtUpBar`). */
+  bar?: Snippet;
   /** Eases the art in once it loads, for a card that appears after the page: a network card turning live. */
   fadeIn?: boolean;
 }
@@ -102,6 +104,7 @@ const {
   progress,
   iconBar = true,
   fanartOverlay,
+  bar,
   fadeIn = false,
 }: Props = $props();
 const target = $derived(icons?.hideTarget ?? icons?.ratingTarget ?? icons?.watchTarget ?? icons?.listTarget);
@@ -134,7 +137,7 @@ const restoreTarget = $derived(target?.type === 'show' ? { ...target, type: 'sho
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
 <article hidden={hidden}
-  class={['fanart-card', { dropped: isDropped && image, faded, framed, 'with-icons': icons, 'with-progress': progress }]}>
+  class={['fanart-card', { dropped: isDropped && image, faded, framed, 'with-icons': icons || bar, 'with-progress': progress }]}>
   <div class={['fanart', variant, { 'logo-mode': logoMode, worded, live }]}>
     <!-- The title link is the one in the tab order; this is the same link for the mouse. -->
     <a class="image-link" {href} tabindex="-1" aria-hidden="true">
@@ -173,7 +176,9 @@ const restoreTarget = $derived(target?.type === 'show' ? { ...target, type: 'sho
     {/if}
     {@render fanartOverlay?.()}
   </div>
-  {#if icons && iconBar}
+  {#if bar}
+    {@render bar()}
+  {:else if icons && iconBar}
     <QuickIcons {...icons} small={variant === 'poster'} watchNowArt={variant === 'fanart' ? shownImage : undefined} />
   {/if}
   {@render progress?.()}

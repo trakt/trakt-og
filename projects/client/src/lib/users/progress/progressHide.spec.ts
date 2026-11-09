@@ -19,4 +19,13 @@ describe('readProgressHide', () => {
     expect(hideOptionsFor('rewatching').map(({ id }) => id)).not.toContain('rewatching');
     expect(hideOptionsFor('dropped').map(({ id }) => id)).toContain('rewatching');
   });
+
+  it('should offer only Completed and Not Completed on Franchises', () => {
+    const search = new URLSearchParams();
+    expect(hideOptionsFor('franchises').map(({ id }) => id)).toEqual(['completed', 'not-completed']);
+    expect(readProgressHide({ cookie: 'ended,not-completed,completed', search, type: 'franchises' })).toEqual([
+      'not-completed',
+      'completed',
+    ]);
+  });
 });

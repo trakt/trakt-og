@@ -42,7 +42,10 @@ const load = ({
     locals: { token },
     params: { id: 'tester', type, sort },
     url: new URL(`https://og.trakt.tv/users/tester/progress${query}`),
-    cookies: { get: (name: string) => (name === 'filter-hide-progress' ? cookie : undefined) },
+    cookies: {
+      get: (name: string) =>
+        name === 'filter-hide-progress' || name === 'filter-hide-franchises' ? cookie : undefined,
+    },
     parent: () =>
       Promise.resolve({
         profile,
@@ -133,6 +136,14 @@ describe('loadProgress', () => {
       page: 1,
       list: undefined,
       includeWatchlisted: false,
+    });
+  });
+
+  it('should read the Franchises tab own sort and hide cookie', async () => {
+    expect(await load({ type: 'franchises', sort: 'percent/asc', cookie: 'completed,ended' })).toMatchObject({
+      type: 'franchises',
+      franchiseSort: { by: 'percent', how: 'asc' },
+      hide: ['completed'],
     });
   });
 });

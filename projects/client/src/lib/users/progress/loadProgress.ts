@@ -9,6 +9,7 @@ import { loadProgressListRow } from './loadProgressListRow.ts';
 import { readProgressHide } from './progressHide.ts';
 import { readProgressList } from './readProgressList.ts';
 import { progressSort } from './progressSort.ts';
+import { readFranchiseSort } from './franchises/franchiseSort.ts';
 import { isProgressType, type ProgressType } from './progressTypes.ts';
 import { positiveInt } from '../../utils/positiveInt.ts';
 
@@ -32,7 +33,8 @@ type Params = {
  * and a signed-out viewer (or a token that stopped working) signs in and comes back. The rows load in the browser
  * from `/sync/progress/up_next_nitro` (`ProgressPage.svelte`), so this only reads the URL, the hide cookie and your
  * watched progress settings: sort, view, Include Watchlisted, and the specials and next-episode choices the season lists use.
- * With `?list=`, the list streams in for the band naming it above the rows.
+ * With `?list=`, the list streams in for the band naming it above the rows. Franchises reads its own sort and hide
+ * cookie, since its rows come from the browser's watched movies and the official lists.
  */
 export async function loadProgress({ fetch, locals, params, url, cookies, parent }: Params) {
   if (!locals.token) signInRedirect(url);
@@ -52,7 +54,12 @@ export async function loadProgress({ fetch, locals, params, url, cookies, parent
   return {
     type,
     sort: progressSort({ segments: params.sort, saved }),
-    hide: readProgressHide({ cookie: cookies.get('filter-hide-progress'), search: url.searchParams, type }),
+    franchiseSort: readFranchiseSort(params.sort),
+    hide: readProgressHide({
+      cookie: cookies.get(type === 'franchises' ? 'filter-hide-franchises' : 'filter-hide-progress'),
+      search: url.searchParams,
+      type,
+    }),
     grid: Boolean(saved?.grid_view),
     simple: Boolean(saved?.simple_progress),
     includeWatchlisted: Boolean(saved?.include_watchlisted),

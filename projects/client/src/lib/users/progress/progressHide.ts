@@ -12,9 +12,11 @@ export const progressHideOptions = [
 
 export type ProgressHide = (typeof progressHideOptions)[number]['id'];
 
-/** Hiding Rewatching would empty the Rewatching tab, so it isn't offered there. */
+/** Hiding Rewatching would empty the Rewatching tab, so it isn't offered there. Franchises hide by completion only. */
 export const hideOptionsFor = (type: ProgressType) =>
-  progressHideOptions.filter(({ id }) => type !== 'rewatching' || id !== 'rewatching');
+  progressHideOptions.filter(({ id }) =>
+    type === 'franchises' ? id === 'completed' || id === 'not-completed' : type !== 'rewatching' || id !== 'rewatching',
+  );
 
 const ids: ReadonlySet<string> = new Set(progressHideOptions.map(({ id }) => id));
 const isProgressHide = (value: string): value is ProgressHide => ids.has(value);

@@ -511,6 +511,21 @@
   --dropped-stamp-padding: 0.35em 0.5em 0.3em;
   --radius-dropped-stamp: 0.25em;
   --font-size-dropped-stamp-line: 0.6em; /* the date and Last seen lines, under the word */
+  /* The caught up bar: a card's quick-icon panel showing Caught up (a check in the watched purple) instead of actions,
+     and a coming movie's date on a block at its right end. The purple passes 4.5:1 against white (5.9). */
+  --color-caught-up: var(--brand-tertiary);
+  --color-caught-up-text: #fff;
+  --font-size-caught-up: 14px;
+  --font-weight-caught-up: 800;
+  --size-caught-up-check: 18px;
+  --caught-up-check-shift: 0.086em; /* the Trakt check sits 44/512 high in its box; this centres it in the circle */
+  --font-size-caught-up-next-label: 11px; /* "Next movie", over the date */
+  --font-size-caught-up-next: var(--font-size-small); /* the date */
+  --caught-up-bar-padding: 8px;
+  --caught-up-next-slant: 8px; /* the date block's left edge, slanted in from the top */
+  --color-caught-up-next-bg: light-dark(#e4e4e7, #333); /* the date block: one step off the bar in each theme */
+  --caught-up-next-inset: 3px; /* its text from the slant's top corner */
+  --caught-up-next-padding-end: 6px; /* its text from the bar's right edge */
 
   /* Dashboard panels */
   --color-panel-gray: light-dark(#e5e5e5, #1d1d1d); /* #ondeck-wrapper */

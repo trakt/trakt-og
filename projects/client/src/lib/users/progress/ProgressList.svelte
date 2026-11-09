@@ -39,8 +39,6 @@ import UnderProgress from '#lib/components/media/UnderProgress.svelte';
 import Pagination from '#lib/components/pagination/Pagination.svelte';
 import { toast } from '#lib/components/toast/toast.svelte.ts';
 import SectionToolbar from '#lib/components/toolbar/SectionToolbar.svelte';
-import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
-import Icon from '#lib/icons/Icon.svelte';
 import barsProgress from '#lib/icons/regular/bars-progress.svg?raw';
 import grid2 from '#lib/icons/regular/grid-2.svg?raw';
 import bookmark from '#lib/icons/solid/bookmark.svg?raw';
@@ -62,8 +60,10 @@ import ProgressListBand from './ProgressListBand.svelte';
 import ProgressRow from './ProgressRow.svelte';
 import { literalProgressSort, type ProgressSort, progressSortLabel, progressSorts } from './progressSort.ts';
 import ProgressSummary from './ProgressSummary.svelte';
+import ProgressViewToggle from './ProgressViewToggle.svelte';
+import ProgressTypeMenu from './ProgressTypeMenu.svelte';
 import { saveProgressSort } from './saveProgressSort.ts';
-import { isProgressType, type ProgressType, progressTypes } from './progressTypes.ts';
+import type { ProgressType } from './progressTypes.ts';
 import { sortProgress } from './sortProgress.ts';
 import { sumProgressTotals } from './sumProgressTotals.ts';
 import { toProgressCard } from './toProgressCard.ts';
@@ -105,7 +105,6 @@ const SHIMMER_ROWS = 5;
 
 const base = $derived(`/users/${data.profile.slug}/progress`);
 const title = $derived(`${data.profile.displayName}'s show ${data.type} progress`);
-const types = Object.keys(progressTypes).filter(isProgressType);
 const menuSorts = withTraktSorts(Object.keys(progressSorts).map((by) => ({ by, label: progressSortLabel(by) })));
 const listFilter = $derived(data.list !== undefined);
 // A list shows every show on it, whatever you've played, like OG.
@@ -264,26 +263,9 @@ function clearFilters() {
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 <SeoHead {title} description="Check out {data.profile.firstName}'s show {data.type} progress." />
 
-{#snippet viewToggle(label: string, svg: string, view: ProgressView, on: boolean)}
-  <Tooltip text={label}>
-    {#snippet trigger(tooltip)}
-      <button type="button" class={['view-toggle', { selected: on }]} aria-label={label} aria-pressed={on}
-        aria-busy={saving === view} onclick={() => toggleView(view)} {...tooltip}><Icon {svg} /></button>
-    {/snippet}
-  </Tooltip>
-{/snippet}
-
 <SectionToolbar {statsChip}>
   {#snippet filters()}
-    <Dropdown section="Status">
-      {#snippet trigger()}{progressTypes[data.type].label}{/snippet}
-      <ul>
-        {#each types as type (type)}
-          <li><a href={href(type)} aria-current={data.type === type ? 'page' : undefined}>{progressTypes[type].label}</a
-            ></li>
-        {/each}
-      </ul>
-    </Dropdown>
+    <ProgressTypeMenu type={data.type} {href} />
   {/snippet}
   {#snippet stats()}
     <span class="strip"><ProgressSummary shows={shown?.length ?? 0} {totals} /></span>
@@ -303,10 +285,12 @@ function clearFilters() {
     </span>
     <span class="icons">
       {#if data.user}
-        {@render viewToggle('Grid View', grid2, 'grid_view', gridOn)}
-        {@render viewToggle('Simple Progress Bars', barsProgress, 'simple_progress', simple)}
+        <ProgressViewToggle label="Grid View" svg={grid2} on={gridOn} busy={saving === 'grid_view'} onclick={() => toggleView('grid_view')} />
+        <ProgressViewToggle label="Simple Progress Bars" svg={barsProgress} on={simple} busy={saving === 'simple_progress'}
+          onclick={() => toggleView('simple_progress')} />
         {#if watchlistToggle}
-          {@render viewToggle('Include Watchlisted', bookmark, 'include_watchlisted', watchlisted)}
+          <ProgressViewToggle label="Include Watchlisted" svg={bookmark} on={watchlisted} busy={saving === 'include_watchlisted'}
+            onclick={() => toggleView('include_watchlisted')} />
         {/if}
       {/if}
       <TermsFilter bind:terms={() => data.terms, (terms) => goto(withTerms(terms))} />
@@ -406,33 +390,6 @@ function clearFilters() {
   gap: var(--history-icon-gap);
 }
 
-.view-toggle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-inline-size: var(--tool-size);
-  min-block-size: var(--tool-size);
-  padding: 0;
-  border: 0;
-  border-radius: var(--radius-control);
-  background: none;
-  color: var(--color-tool);
-  font-size: var(--font-size-tool);
-  line-height: 1;
-  vertical-align: middle;
-  cursor: pointer;
-  transition: color 0.5s, background-color 0.2s;
-
-  &:is(:hover, :focus-visible) {
-    background-color: var(--color-tool-hover-bg);
-    color: var(--color-tool-hover);
-  }
-
-  &.selected {
-    color: var(--brand-primary);
-  }
-}
-
 .progress {
   display: flow-root;
   padding-block-end: var(--space-panel);
@@ -473,9 +430,4 @@ function clearFilters() {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .view-toggle {
-    transition: none;
-  }
-}
 </style>

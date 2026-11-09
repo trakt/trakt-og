@@ -98,6 +98,8 @@ interface Props {
   hideTitles?: boolean;
   /** Drawn over the poster outside its link, for controls of its own (a list's Read Notes). */
   posterOverlay?: Snippet;
+  /** Drawn in the quick-icon bar's place, for a status instead of actions (`CaughtUpBar`). */
+  bar?: Snippet;
 }
 
 const {
@@ -127,6 +129,7 @@ const {
   children,
   hideTitles = false,
   posterOverlay,
+  bar,
 }: Props = $props();
 const tip = $derived<ShowPartTip | undefined>(
   typeof customTitle === 'object'
@@ -181,7 +184,7 @@ const restoreTarget = $derived(target?.type === 'show' ? { ...target, type: 'sho
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
 <article out:removeCard|global={() => removedByAction || removing()} hidden={hidden}
-  class={['poster-card', { dropped: isDropped && image, faded, calendar, framed, 'with-icons': cardIcons, 'with-progress': progress && !detachedProgress }]}>
+  class={['poster-card', { dropped: isDropped && image, faded, calendar, framed, 'with-icons': cardIcons || bar, 'with-progress': progress && !detachedProgress }]}>
   {#if rank !== undefined}
     <RankPill {rank} />
   {/if}
@@ -214,7 +217,9 @@ const restoreTarget = $derived(target?.type === 'show' ? { ...target, type: 'sho
   {@render posterOverlay?.()}
   {#if isDropped && image}<DroppedBadge target={restoreTarget} date={state?.droppedAt ? formatDate(state.droppedAt, page.data.datePreferences) : undefined} />{/if}
   </div>
-  {#if cardIcons}
+  {#if bar}
+    {@render bar()}
+  {:else if cardIcons}
     <QuickIcons {...cardIcons} small />
   {/if}
   {@render progress?.()}

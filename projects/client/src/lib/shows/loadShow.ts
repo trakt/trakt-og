@@ -65,7 +65,7 @@ const raw = async <T>(
  */
 export async function loadShowData({ fetch, token, parent, id: requested, path = '' }: LoadShowParams) {
   const client = api({ fetch });
-  const summaryRead = client.shows.summary({ params: { id: requested }, query: { extended: 'full,images' } });
+  const summaryRead = client.shows.summary({ params: { id: requested }, query: { extended: 'full' } });
   const layout = parent();
   // The extras go by the requested id alongside the summary, not after it; a non-canonical id redirects before they're
   // used. Each resolves to null on failure, and the catch only stops a failed summary leaving them unhandled.
@@ -73,10 +73,10 @@ export async function loadShowData({ fetch, token, parent, id: requested, path =
   const extras = Promise.all([
     okBody(client.shows.ratings({ params: { id }, query: { extended: 'all' } })),
     okBody(client.shows.stats({ params: { id } })),
-    raw(fetch, `/shows/${id}/people?extended=guest_stars,images`, peopleBody),
+    raw(fetch, `/shows/${id}/people?extended=guest_stars`, peopleBody),
     okBody(client.shows.studios({ params: { id } })),
     // ponytail: every episode of every season in one response (~1KB each). Split per season if long runners get slow.
-    raw(fetch, `/shows/${id}/seasons?extended=full,images,episodes`, seasonsBody),
+    raw(fetch, `/shows/${id}/seasons?extended=full,episodes`, seasonsBody),
     layout.then(({ settings }) =>
       loadWatchNow({
         fetch,

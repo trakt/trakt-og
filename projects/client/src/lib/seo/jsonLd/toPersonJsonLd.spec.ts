@@ -5,7 +5,7 @@ const person = {
   name: 'Adam Scott',
   href: '/people/adam-scott',
   biography: 'Known for [Parks and Recreation](https://trakt.tv/shows/parks-and-recreation).',
-  headshot: 'https://media.trakt.tv/images/people/headshots/medium/a.jpg.webp',
+  preview: 'https://og.trakt.tv/api/art/person/5/headshot',
   links: [
     { label: 'IMDB', href: 'https://www.imdb.com/name/nm0779084' },
     { label: 'TMDB', href: 'https://www.themoviedb.org/person/2' },
@@ -21,18 +21,17 @@ describe('seo: toPersonJsonLd', () => {
       name: 'Adam Scott',
       description: 'Known for Parks and Recreation.',
       url: 'https://og.trakt.tv/people/adam-scott',
-      image: 'https://media.trakt.tv/images/people/headshots/medium/a.jpg',
+      image: 'https://og.trakt.tv/api/art/person/5/headshot',
       birthDate: '1973-04-03',
       sameAs: ['https://www.imdb.com/name/nm0779084', 'https://www.themoviedb.org/person/2'],
     });
   });
 
-  it('should drop a missing biography, headshot and birthday', () => {
+  it('should drop a missing biography and birthday', () => {
     expect(
       toPersonJsonLd({
         ...person,
         biography: null,
-        headshot: undefined,
         links: [],
         facts: { birthday: undefined, death: undefined },
       }),
@@ -41,6 +40,7 @@ describe('seo: toPersonJsonLd', () => {
       '@type': 'Person',
       name: 'Adam Scott',
       url: 'https://og.trakt.tv/people/adam-scott',
+      image: 'https://og.trakt.tv/api/art/person/5/headshot',
     });
   });
 });

@@ -7,8 +7,8 @@ const episode = {
   episodeNumber: 2,
   title: 'Half Loop',
   overview: 'Mark gets a visit.',
-  screenshot: 'https://media.trakt.tv/images/episodes/screenshots/full/a.jpg.webp',
-  fanart: 'https://media.trakt.tv/images/shows/fanarts/full/b.jpg.webp',
+  preview: 'https://og.trakt.tv/api/art/episode/7/screenshot/show/1/fanart',
+  previewHidden: 'https://og.trakt.tv/api/art/show/1/fanart',
   href: '/shows/severance/seasons/1/episodes/2',
   seasonHref: '/shows/severance/seasons/1',
   showHref: '/shows/severance',
@@ -27,17 +27,16 @@ describe('seo: toEpisodeSeo', () => {
     expect(toEpisodeSeo({ episode, spoilers: open })).toMatchObject({
       title: 'Severance S01E02: Half Loop',
       description: 'Mark gets a visit.',
-      image: episode.screenshot,
+      image: episode.preview,
       imageAlt: 'Severance S01E02: Half Loop',
       type: 'video.episode',
     });
   });
 
-  it("should fall back to a fixed line and the show's fanart", () => {
-    const seo = toEpisodeSeo({ episode: { ...episode, overview: null, screenshot: undefined }, spoilers: open });
+  it('should fall back to a fixed line without an overview', () => {
+    const seo = toEpisodeSeo({ episode: { ...episode, overview: null }, spoilers: open });
 
     expect(seo.description).toBe('Season 1, episode 2 of Severance.');
-    expect(seo.image).toBe(episode.fanart);
   });
 
   it('should add the TVEpisode and its trail through the show and season', () => {
@@ -60,7 +59,7 @@ describe('seo: toEpisodeSeo', () => {
 
       expect(seo.title).toBe('Severance S01E02');
       expect(seo.description).toBe('Season 1, episode 2 of Severance.');
-      expect(seo.image).toBe(episode.fanart);
+      expect(seo.image).toBe(episode.previewHidden);
       expect(JSON.stringify(seo.jsonLd)).not.toMatch(/Half Loop|Mark gets a visit|screenshots/);
     });
   });

@@ -28,7 +28,7 @@ type LoadMovieParams = {
  */
 export async function loadMovie({ fetch, token, parent, id: requested }: LoadMovieParams) {
   const client = api({ fetch });
-  const summaryRead = client.movies.summary({ params: { id: requested }, query: { extended: 'full,images' } });
+  const summaryRead = client.movies.summary({ params: { id: requested }, query: { extended: 'full' } });
   const layout = parent();
   // The extras go by the requested id alongside the summary, not after it; a non-canonical id redirects before they're
   // used. Each resolves to null on failure, and the catch only stops a failed summary leaving them unhandled.
@@ -45,7 +45,7 @@ export async function loadMovie({ fetch, token, parent, id: requested }: LoadMov
   const extras = Promise.all([
     okBody(client.movies.ratings({ params: { id }, query: { extended: 'all' } })),
     okBody(client.movies.stats({ params: { id } })),
-    okBody(client.movies.people({ params: { id }, query: { extended: 'images' } })),
+    okBody(client.movies.people({ params: { id } })),
     okBody(client.movies.studios({ params: { id } })),
     okBody(client.movies.releases({ params: { id } })),
     layout.then(({ settings }) =>

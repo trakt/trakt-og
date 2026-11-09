@@ -1,4 +1,6 @@
 import type { EpisodeResponse, RatingsResponse, SeasonsResponse, ShowResponse } from '@trakt/api';
+import { mediaImage } from '../images/mediaImage.ts';
+import { previewArt } from '../images/previewArt.ts';
 import type { z } from 'zod/v4';
 import type { ItemStats } from './ItemStats.ts';
 import { countryName, languageName } from '../components/summary/names.ts';
@@ -8,7 +10,6 @@ import type { DatePreferences } from '../settings/DatePreferences.ts';
 import { countLabel } from '../utils/countLabel.ts';
 import { formatDate } from '../utils/formatDate.ts';
 import { formatRuntime } from '../utils/formatRuntime.ts';
-import { imageUrl } from '../utils/imageUrl.ts';
 import { seasonNeighbours } from './seasonNeighbours.ts';
 import type { seasonPeopleSchema } from './seasonPeopleSchema.ts';
 import { toShowEpisodes } from './toShowEpisodes.ts';
@@ -71,10 +72,23 @@ export function toSeasonSummary(params: Params) {
     fullTitle,
     years: episodeList.years,
     certification: show.certification,
-    fanart: imageUrl(show.images?.fanart?.at(0), 'full'),
-    poster: imageUrl(season.images?.poster?.at(0) ?? show.images?.poster?.at(0), 'medium'),
-    /** The season's own poster, without the show's as a fallback: link previews fall back to the show's fanart. */
-    seasonPoster: imageUrl(season.images?.poster?.at(0), 'medium'),
+    fanart: mediaImage({ type: 'show', id: show.ids.trakt, slot: 'fanart', size: 'full' }),
+    poster: mediaImage({
+      type: 'season',
+      id: season.ids.trakt,
+      slot: 'poster',
+      size: 'medium',
+      fallback: mediaImage({ type: 'show', id: show.ids.trakt, slot: 'poster', size: 'medium' }),
+    }),
+    /** The link preview's art: the season's own poster, else the show's fanart. */
+    preview: previewArt(
+      { type: 'season', id: season.ids.trakt, slot: 'poster' },
+      { type: 'show', id: show.ids.trakt, slot: 'fanart' },
+    ),
+    structuredImage: previewArt(
+      { type: 'season', id: season.ids.trakt, slot: 'poster' },
+      { type: 'show', id: show.ids.trakt, slot: 'poster' },
+    ),
     overview: season.overview || show.overview,
     rating: premiered
       ? {

@@ -45,7 +45,7 @@ export async function loadSeason({ fetch, parent, id, season: requestedSeason, u
       settings: layout.settings,
     }),
   );
-  const seasonRead = client.shows.season.info({ params, query: { extended: 'full,images' } });
+  const seasonRead = client.shows.season.info({ params, query: { extended: 'full' } });
   // A malformed summary fails the page below with its own error, so the note read only steps aside.
   const noteRead = Promise.all([seasonRead, layoutRead])
     .then(([summary, { user }]) =>
@@ -66,15 +66,15 @@ export async function loadSeason({ fetch, parent, id, season: requestedSeason, u
     watchNow,
     note,
   ] = await Promise.all([
-    client.shows.summary({ params: { id }, query: { extended: 'full,images' } }),
+    client.shows.summary({ params: { id }, query: { extended: 'full' } }),
     seasonRead,
-    client.shows.season.episodes({ params, query: { extended: 'full,images' } }),
+    client.shows.season.episodes({ params, query: { extended: 'full' } }),
     client.shows.seasons({ params: { id }, query: {} }),
     client.shows.season.ratings({ params, query: {} }),
     client.shows.season.stats({ params }),
     rawApiFetch({
       fetch,
-      path: `/shows/${encodeURIComponent(id)}/seasons/${season}/people?extended=guest_stars,images`,
+      path: `/shows/${encodeURIComponent(id)}/seasons/${season}/people?extended=guest_stars`,
     }),
     layoutRead,
     watchNowRead,

@@ -6,7 +6,7 @@ import type { DatePreferences } from '../settings/DatePreferences.ts';
 import { countLabel } from '../utils/countLabel.ts';
 import { formatDate } from '../utils/formatDate.ts';
 import { formatRuntime } from '../utils/formatRuntime.ts';
-import { imageUrl } from '../utils/imageUrl.ts';
+import { mediaImage } from '../images/mediaImage.ts';
 import type { SeasonWithEpisodes } from './loadShow.ts';
 import { seasonName } from '../utils/seasonName.ts';
 import { ratingPercent } from '../utils/ratingPercent.ts';
@@ -129,8 +129,8 @@ export function toShowEpisodes({ show, seasons, signedIn, episodeTypeTags, dateP
       href: `${seasonHref(episode.season)}/episodes/${episode.number}`,
       number: episodeNumber(episode, show.genres),
       title: episode.title ?? `Episode ${episode.number}`,
-      image: imageUrl(episode.images?.screenshot?.at(0), 'thumb'),
-      spoilerImage: imageUrl(show.images?.fanart?.at(0), 'thumb'),
+      image: mediaImage({ type: 'episode', id: episode.ids.trakt, slot: 'screenshot', size: 'thumb' }),
+      spoilerImage: mediaImage({ type: 'show', id: show.ids.trakt, slot: 'fanart', size: 'thumb' }),
       type: episodeTypeTags ? episodeType(episode) : undefined,
       aired: episode.first_aired
         ? formatDate(episode.first_aired, { ...datePreferences, timeZone, format: 'LL', time: true })

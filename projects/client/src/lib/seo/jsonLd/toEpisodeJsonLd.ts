@@ -1,7 +1,6 @@
 import type { mediaSpoilers } from '../../settings/mediaSpoilers.ts';
 import type { toEpisodeSummary } from '../../shows/toEpisodeSummary.ts';
 import { toSeoDescription } from '../toSeoDescription.ts';
-import { toShareImageUrl } from '../toShareImageUrl.ts';
 import { compact } from './compact.ts';
 import type { JsonLd } from './JsonLd.ts';
 import { toAbsoluteUrl } from './toAbsoluteUrl.ts';
@@ -19,8 +18,8 @@ type EpisodeJsonLdSource = Pick<
   | 'showHref'
   | 'showTitle'
   | 'overview'
-  | 'screenshot'
-  | 'fanart'
+  | 'preview'
+  | 'previewHidden'
   | 'runtime'
   | 'firstAired'
   | 'rating'
@@ -34,14 +33,14 @@ type Params = {
 
 /** An episode as schema.org's `TVEpisode`, part of its `TVSeason` and `TVSeries`. */
 export function toEpisodeJsonLd({ episode, spoilers }: Params): JsonLd {
-  const image = (!spoilers.screenshot && episode.screenshot) || episode.fanart;
+  const image = spoilers.screenshot ? episode.previewHidden : episode.preview;
   return compact({
     '@context': 'https://schema.org',
     '@type': 'TVEpisode',
     name: spoilers.title ? `Episode ${episode.episodeNumber}` : episode.title,
     description: spoilers.overview ? undefined : toSeoDescription(episode.overview),
     url: toAbsoluteUrl(episode.href),
-    image: image && toShareImageUrl(image),
+    image,
     episodeNumber: episode.episodeNumber,
     datePublished: toIsoDate(episode.firstAired),
     duration: toIsoDuration(episode.runtime),

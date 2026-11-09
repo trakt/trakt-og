@@ -10,8 +10,8 @@ const episode = {
   showHref: '/shows/severance',
   showTitle: 'Severance',
   overview: 'Mark gets a visit.',
-  screenshot: 'https://media.trakt.tv/images/episodes/screenshots/full/a.jpg.webp',
-  fanart: 'https://media.trakt.tv/images/shows/fanarts/full/b.jpg.webp',
+  preview: 'https://og.trakt.tv/api/art/episode/7/screenshot/show/1/fanart',
+  previewHidden: 'https://og.trakt.tv/api/art/show/1/fanart',
   runtime: 54,
   firstAired: '2022-02-18T02:00:00.000Z',
   rating: { value: 8.1, votes: 3000, href: '' },
@@ -26,7 +26,7 @@ describe('seo: toEpisodeJsonLd', () => {
       name: 'Half Loop',
       description: 'Mark gets a visit.',
       url: 'https://og.trakt.tv/shows/severance/seasons/1/episodes/2',
-      image: 'https://media.trakt.tv/images/episodes/screenshots/full/a.jpg',
+      image: 'https://og.trakt.tv/api/art/episode/7/screenshot/show/1/fanart',
       episodeNumber: 2,
       datePublished: '2022-02-18',
       duration: 'PT54M',
@@ -48,7 +48,7 @@ describe('seo: toEpisodeJsonLd', () => {
 
       expect(data.name).toBe('Episode 2');
       expect(data).not.toHaveProperty('description');
-      expect(data.image).toBe('https://media.trakt.tv/images/shows/fanarts/full/b.jpg');
+      expect(data.image).toBe('https://og.trakt.tv/api/art/show/1/fanart');
     });
   });
 });

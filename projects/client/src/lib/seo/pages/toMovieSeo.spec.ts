@@ -6,8 +6,8 @@ const movie = {
   fullTitle: 'Inception (2010)',
   href: '/movies/inception-2010',
   overview: 'Cobb steals secrets from dreams.',
-  fanart: 'https://media.trakt.tv/images/movies/fanarts/full/a.jpg.webp',
-  poster: 'https://media.trakt.tv/images/movies/posters/medium/b.jpg.webp',
+  preview: 'https://og.trakt.tv/api/art/movie/1/fanart/movie/1/poster',
+  structuredImage: 'https://og.trakt.tv/api/art/movie/1/poster/movie/1/fanart',
   certification: 'PG-13',
   rating: { value: 8.7, votes: 50000, href: '' },
   links: [],
@@ -19,7 +19,7 @@ describe('seo: toMovieSeo', () => {
     expect(toMovieSeo(movie)).toMatchObject({
       title: 'Inception (2010)',
       description: 'Cobb steals secrets from dreams.',
-      image: movie.fanart,
+      image: movie.preview,
       imageAlt: 'Inception (2010)',
       type: 'video.movie',
     });
@@ -29,11 +29,6 @@ describe('seo: toMovieSeo', () => {
     expect(toMovieSeo({ ...movie, overview: null }).description).toBe(
       'Where to watch Inception (2010), its ratings, comments and lists on Trakt.',
     );
-  });
-
-  it('should fall back to the poster, then the default image, without fanart', () => {
-    expect(toMovieSeo({ ...movie, fanart: undefined }).image).toBe(movie.poster);
-    expect(toMovieSeo({ ...movie, fanart: undefined, poster: undefined }).image).toBeUndefined();
   });
 
   it('should add the Movie and its trail from Movies', () => {

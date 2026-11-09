@@ -9,7 +9,8 @@ import type {
 import { countryName, languageName, titleize } from '../components/summary/names.ts';
 import { toCrewNames } from '../components/summary/toCrewNames.ts';
 import { type StreamingRank, toExternalRatings } from '../components/summary/toExternalRatings.ts';
-import { imageUrl } from '../utils/imageUrl.ts';
+import { mediaImage } from '../images/mediaImage.ts';
+import { previewArt } from '../images/previewArt.ts';
 import { toMovieLinks } from './toMovieLinks.ts';
 import { toCrewGroups } from '../components/summary/toCrewGroups.ts';
 import { toCastMembers } from '../components/summary/toCastMembers.ts';
@@ -82,8 +83,17 @@ export function toMovieSummary(params: MovieSummaryParams) {
     year: movie.year ?? null,
     fullTitle: movie.year ? `${movie.title} (${movie.year})` : movie.title,
     certification: movie.certification ?? null,
-    fanart: imageUrl(movie.images?.fanart?.at(0), 'full'),
-    poster: imageUrl(movie.images?.poster?.at(0), 'medium'),
+    fanart: mediaImage({ type: 'movie', id: movie.ids.trakt, slot: 'fanart', size: 'full' }),
+    poster: mediaImage({ type: 'movie', id: movie.ids.trakt, slot: 'poster', size: 'medium' }),
+    /** The link preview's art: fanart, else poster. */
+    preview: previewArt(
+      { type: 'movie', id: movie.ids.trakt, slot: 'fanart' },
+      { type: 'movie', id: movie.ids.trakt, slot: 'poster' },
+    ),
+    structuredImage: previewArt(
+      { type: 'movie', id: movie.ids.trakt, slot: 'poster' },
+      { type: 'movie', id: movie.ids.trakt, slot: 'fanart' },
+    ),
     collection: collection && {
       title: collection.list.name,
       href: `/lists/official/${collection.list.ids.slug}`,

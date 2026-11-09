@@ -1,12 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { toMovieJsonLd } from './toMovieJsonLd.ts';
 
+const MOVIE_IMAGE = 'https://og.trakt.tv/api/art/movie/1/poster/movie/1/fanart';
+
 const movie = {
   title: 'Inception',
   href: '/movies/inception-2010',
   overview: 'Cobb steals secrets from dreams.',
-  poster: 'https://media.trakt.tv/images/movies/posters/medium/a.jpg.webp',
-  fanart: 'https://media.trakt.tv/images/movies/fanarts/full/b.jpg.webp',
+  structuredImage: MOVIE_IMAGE,
   certification: 'PG-13',
   rating: { value: 8.71, votes: 50000, href: '/movies/inception-2010/stats' },
   links: [{ label: 'IMDB', href: 'https://www.imdb.com/title/tt1375666' }],
@@ -25,7 +26,7 @@ describe('seo: toMovieJsonLd', () => {
       name: 'Inception',
       description: 'Cobb steals secrets from dreams.',
       url: 'https://og.trakt.tv/movies/inception-2010',
-      image: 'https://media.trakt.tv/images/movies/posters/medium/a.jpg',
+      image: MOVIE_IMAGE,
       genre: ['Action'],
       datePublished: '2010-07-16',
       duration: 'PT2H28M',
@@ -45,8 +46,6 @@ describe('seo: toMovieJsonLd', () => {
     const data = toMovieJsonLd({
       ...movie,
       overview: null,
-      poster: undefined,
-      fanart: undefined,
       certification: null,
       rating: { value: 10, votes: 1, href: '' },
       links: [],
@@ -58,6 +57,7 @@ describe('seo: toMovieJsonLd', () => {
       '@type': 'Movie',
       name: 'Inception',
       url: 'https://og.trakt.tv/movies/inception-2010',
+      image: MOVIE_IMAGE,
     });
   });
 });

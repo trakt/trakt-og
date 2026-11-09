@@ -6,8 +6,8 @@ const show = {
   fullTitle: 'Severance (2022)',
   href: '/shows/severance',
   overview: 'Mark leads a team of office workers.',
-  fanart: 'https://media.trakt.tv/images/shows/fanarts/full/a.jpg.webp',
-  poster: 'https://media.trakt.tv/images/shows/posters/medium/b.jpg.webp',
+  preview: 'https://og.trakt.tv/api/art/show/1/fanart/show/1/poster',
+  structuredImage: 'https://og.trakt.tv/api/art/show/1/poster/show/1/fanart',
   certification: 'TV-MA',
   rating: undefined,
   links: [],
@@ -21,7 +21,7 @@ describe('seo: toShowSeo', () => {
     expect(toShowSeo(show)).toMatchObject({
       title: 'Severance (2022)',
       description: 'Mark leads a team of office workers.',
-      image: show.fanart,
+      image: show.preview,
       imageAlt: 'Severance (2022)',
       type: 'video.tv_show',
     });
@@ -31,11 +31,6 @@ describe('seo: toShowSeo', () => {
     expect(toShowSeo({ ...show, overview: null }).description).toBe(
       'Where to watch Severance (2022), its seasons, ratings, comments and lists on Trakt.',
     );
-  });
-
-  it('should fall back to the poster, then the default image, without fanart', () => {
-    expect(toShowSeo({ ...show, fanart: undefined }).image).toBe(show.poster);
-    expect(toShowSeo({ ...show, fanart: undefined, poster: undefined }).image).toBeUndefined();
   });
 
   it('should add the TVSeries and its trail from Shows', () => {

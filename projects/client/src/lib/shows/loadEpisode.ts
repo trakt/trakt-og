@@ -82,7 +82,7 @@ export async function loadEpisode({
       settings: layout.settings,
     }),
   );
-  const episodeRead = client.shows.episode.summary({ params, query: { extended: 'full,images' } });
+  const episodeRead = client.shows.episode.summary({ params, query: { extended: 'full' } });
   // A malformed summary fails the page below with its own error, so the note read only steps aside.
   const noteRead = Promise.all([episodeRead, layoutRead])
     .then(([summary, { user }]) =>
@@ -103,11 +103,11 @@ export async function loadEpisode({
     watchNow,
     note,
   ] = await Promise.all([
-    client.shows.summary({ params: { id }, query: { extended: 'full,images' } }),
+    client.shows.summary({ params: { id }, query: { extended: 'full' } }),
     episodeRead,
-    client.shows.season.info({ params: { id, season }, query: { extended: 'full,images' } }),
+    client.shows.season.info({ params: { id, season }, query: { extended: 'full' } }),
     raw(fetch, `/shows/${encodeURIComponent(id)}/seasons?extended=episodes`),
-    raw(fetch, `${path}/episodes/${episode}/people?extended=guest_stars,images`),
+    raw(fetch, `${path}/episodes/${episode}/people?extended=guest_stars`),
     client.shows.episode.ratings({ params, query: { extended: 'all' } }),
     client.shows.episode.stats({ params }),
     layoutRead,

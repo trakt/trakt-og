@@ -3,7 +3,7 @@ import { toProfileUser } from '../toProfileUser.ts';
 import { toBuiltInRow } from './toBuiltInRow.ts';
 
 const profile = toProfileUser({ username: 'tester', name: 'Tester', private: false, ids: { slug: 'tester' } });
-const poster = (name: string) => ({ images: { poster: [`media.trakt.tv/${name}/posters/medium/p.jpg.webp`] } });
+const ids = (trakt: number) => ({ ids: { trakt } });
 
 describe('toBuiltInRow', () => {
   it('should title each poster and use the show poster for seasons and episodes', () => {
@@ -12,17 +12,20 @@ describe('toBuiltInRow', () => {
       profile,
       itemCount: 315,
       items: [
-        { type: 'movie', movie: { title: 'Heat', ...poster('heat') } },
-        { type: 'show', show: { title: 'Severance', ...poster('severance') } },
-        { type: 'season', show: { title: 'Lost', ...poster('lost') }, season: { number: 2, images: null } },
-        { type: 'episode', show: { title: 'Lost', ...poster('lost') }, episode: { title: 'Pilot' } },
+        { type: 'movie', movie: { title: 'Heat', ...ids(1) } },
+        { type: 'show', show: { title: 'Severance', ...ids(2) } },
+        { type: 'season', show: { title: 'Lost', ...ids(3) }, season: { number: 2, ...ids(30) } },
+        { type: 'episode', show: { title: 'Lost', ...ids(3) }, episode: { title: 'Pilot', ...ids(300) } },
       ],
     });
     expect(row.posters).toEqual([
-      { title: 'Heat', image: 'https://media.trakt.tv/heat/posters/thumb/p.jpg.webp' },
-      { title: 'Severance', image: 'https://media.trakt.tv/severance/posters/thumb/p.jpg.webp' },
-      { title: 'Lost Season 2', image: 'https://media.trakt.tv/lost/posters/thumb/p.jpg.webp' },
-      { title: 'Lost: Pilot', image: 'https://media.trakt.tv/lost/posters/thumb/p.jpg.webp' },
+      { title: 'Heat', image: 'https://media.trakt.tv/movies/1/thumb/poster.webp' },
+      { title: 'Severance', image: 'https://media.trakt.tv/shows/2/thumb/poster.webp' },
+      {
+        title: 'Lost Season 2',
+        image: `https://media.trakt.tv/seasons/30/thumb/poster.webp#fallback=${encodeURIComponent('https://media.trakt.tv/shows/3/thumb/poster.webp')}`,
+      },
+      { title: 'Lost: Pilot', image: 'https://media.trakt.tv/shows/3/thumb/poster.webp' },
     ]);
   });
 

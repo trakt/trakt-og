@@ -85,7 +85,7 @@ describe('toProgressRow', () => {
         number: '3x01',
         title: 'Episode 1',
         href: '/shows/game-of-thrones/seasons/3/episodes/1',
-        image: undefined,
+        image: `https://media.trakt.tv/episodes/139061/medium/screenshot.webp#fallback=${encodeURIComponent('https://media.trakt.tv/shows/1390/medium/fanart.webp')}`,
         tags: [
           { text: 'Up next', kind: 'primary' },
           { text: 'Season Premiere', kind: 'season-premiere' },

@@ -36,7 +36,7 @@ const server = setupServer(
     return HttpResponse.json([
       {
         type: 'movie',
-        movie: { title: 'Film', images: { poster: ['media.trakt.tv/poster.jpg'] } },
+        movie: { title: 'Film', ids: { trakt: 7 } },
       },
     ]);
   }),

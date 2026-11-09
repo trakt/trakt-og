@@ -25,8 +25,7 @@ function fixture() {
           user: {
             username: 'new',
             name: 'New follower',
-            ids: { slug: 'new' },
-            images: { avatar: { full: 'avatar.jpg' } },
+            ids: { trakt: 4, slug: 'new' },
           },
         },
       ]);
@@ -45,7 +44,7 @@ describe('loadListEditor', () => {
     expect(result.count).toBe(5);
     expect(result.initial).toMatchObject({ description: '', sort_by: 'rank', sort_how: 'asc', collaborators: ['old'] });
     expect(result.candidates.map((user) => user.slug)).toEqual(['new', 'old']);
-    expect(result.candidates.at(0)?.avatar).toBe('avatar.jpg');
+    expect(result.candidates.at(0)?.avatar).toBe('https://media.trakt.tv/users/4/avatar.webp');
   });
   it('should load the count and candidates without a summary for creation', async () => {
     fixture();

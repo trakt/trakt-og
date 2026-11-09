@@ -1,7 +1,7 @@
 import type { OnDeckItem } from '../components/media/OnDeckItem.ts';
 import { episodeNumber, episodeType } from '../components/media/episodeTags.ts';
 import type { ShowProgress } from '../components/media/ShowProgress.ts';
-import { imageUrl } from '../utils/imageUrl.ts';
+import { mediaImage } from '../images/mediaImage.ts';
 import type { UpNextEntry } from './UpNextEntry.ts';
 
 type BadgeKind = NonNullable<OnDeckItem['episodeBadge']>['kind'];
@@ -76,7 +76,7 @@ export function toOnDeckItem({
     episodeNumber: episodeNumber(episode, show.genres),
     episodeTitle: episode.title ?? undefined,
     episodeBadge: toEpisodeBadge(episode),
-    poster: seasonPoster ?? imageUrl(show.images?.poster.at(0), 'thumb'),
+    poster: seasonPoster ?? mediaImage({ type: 'show', id: show.ids.trakt, slot: 'poster', size: 'thumb' }),
     rating: episode.rating ?? undefined,
     runtime: episode.runtime ?? show.runtime ?? undefined,
     progressHref: `/users/${username}/progress?show=${show.ids.trakt}`,

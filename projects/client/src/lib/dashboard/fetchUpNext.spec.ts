@@ -252,7 +252,9 @@ describe('fetchUpNext', () => {
       expect(items.find(({ showId }) => showId === 1390)?.poster).toBe(
         'https://media.trakt.tv/images/seasons/3/posters/thumb/c.jpg.webp',
       );
-      expect(items.find(({ showId }) => showId === 1388)?.poster).toBeUndefined();
+      expect(items.find(({ showId }) => showId === 1388)?.poster).toBe(
+        'https://media.trakt.tv/shows/1388/thumb/poster.webp',
+      );
       const seasonRequests = seen.filter(({ pathname }) => pathname.endsWith('/seasons'));
       expect(seasonRequests.every(({ searchParams }) => searchParams.get('extended') === 'images')).toBe(true);
     });

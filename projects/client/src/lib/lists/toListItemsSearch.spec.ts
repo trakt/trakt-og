@@ -11,12 +11,12 @@ describe('util: toListItemsSearch', () => {
   it('should send every hide as a list and as its own flag', () => {
     const search = toListItemsSearch({
       query: { genres: ['drama'], terms: 'Heat', watchnow: 'netflix', hide: ['watched', 'nonotes'] },
-      extended: 'full,images',
+      extended: 'full',
       page: 1,
       limit: 24,
     });
     expect(Object.fromEntries(search)).toEqual({
-      extended: 'full,images',
+      extended: 'full',
       page: '1',
       limit: '24',
       genres: 'drama',

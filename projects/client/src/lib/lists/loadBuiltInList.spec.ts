@@ -21,7 +21,6 @@ const movie = (id: number, title: string) => ({
   movie: {
     title,
     ids: { trakt: id, slug: title.toLowerCase() },
-    images: { poster: [], fanart: [`media.trakt.tv/images/movies/${id}/fanarts/medium/f.jpg.webp`] },
   },
 });
 
@@ -125,7 +124,7 @@ describe('loadBuiltInList', () => {
     });
     expect(result.collaborators).toEqual([]);
     // The owner is a VIP, so the first ranked item takes the cover.
-    expect(result.listCover).toBe('https://media.trakt.tv/images/movies/1/fanarts/full/f.jpg.webp');
+    expect(result.listCover).toBe('https://media.trakt.tv/movies/1/full/fanart.webp');
     expect(itemPaths()).toEqual(['/users/sean/watchlist', '/users/sean/watchlist/all/rank/asc']);
     expect(seen.every(({ auth }) => auth === null)).toBe(true);
     expect(seen.find(({ url }) => url.pathname.endsWith('/comments/newest'))?.url.searchParams.get('limit')).toBe('1');

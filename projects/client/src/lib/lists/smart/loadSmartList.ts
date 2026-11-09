@@ -48,7 +48,7 @@ const smartRowsSchema = z
   .transform((rows) => listItemRowsSchema.parse(rows.map((row) => ({ ...row, id: row.rank, listed_at: '' }))));
 
 async function fetchItems({ fetch, token, slug, sort, page }: ItemsParams) {
-  const search = new URLSearchParams({ extended: 'full,images', page: `${page}`, limit: `${PER_PAGE}` });
+  const search = new URLSearchParams({ extended: 'full', page: `${page}`, limit: `${PER_PAGE}` });
   const path = `/smart-lists/${encodeURIComponent(slug)}/items/all/${sort.by}/${sort.how}?${search}`;
   const response = await rawApiFetch({ fetch, token, path });
   if (!response.ok) return { status: response.status, headers: response.headers, rows: [] };

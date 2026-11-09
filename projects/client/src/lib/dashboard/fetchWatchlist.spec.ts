@@ -32,7 +32,7 @@ describe('fetchWatchlist', () => {
 
     expect(url.pathname).toBe('/users/me/watchlist');
     expect(url.searchParams.get('limit')).toBe('18');
-    expect(url.searchParams.get('extended')).toBe('full,images');
+    expect(url.searchParams.get('extended')).toBe('full');
     expect(seen.at(0)?.headers.get('authorization')).toBe('Bearer abc');
     expect(list).toMatchObject({ total: 1234, sortName: 'Added Date', sortHow: 'desc' });
     expect(list.cards).toHaveLength(watchlistFixture.rows.length);

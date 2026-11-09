@@ -2,7 +2,7 @@ import type { OnDeckItem } from '../../components/media/OnDeckItem.ts';
 import { episodeNumber } from '../../components/media/episodeTags.ts';
 import { toEpisodeBadge } from '../../progress/toOnDeckItem.ts';
 import { capitalize } from '../../utils/capitalize.ts';
-import { imageUrl } from '../../utils/imageUrl.ts';
+import { mediaImage } from '../../images/mediaImage.ts';
 import type { ProgressItem } from './ProgressItem.ts';
 import { tagged } from './toProgressRow.ts';
 
@@ -39,7 +39,7 @@ export function toProgressCard({ item, username, simple, now }: ToProgressCardPa
     showId: show.id,
     showTitle: show.title,
     showHref,
-    poster: imageUrl(show.poster, 'thumb'),
+    poster: mediaImage({ type: 'show', id: show.id, slot: 'poster', size: 'thumb' }),
     progressHref: `/users/${username}/progress?show=${show.id}`,
     progress: {
       aired: item.aired,

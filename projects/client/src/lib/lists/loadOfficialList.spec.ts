@@ -31,7 +31,6 @@ const row = {
   movie: {
     title: 'Heat',
     ids: { trakt: 1, slug: 'heat-1995' },
-    images: { fanart: ['media.trakt.tv/images/movies/1/fanarts/medium/f.jpg.webp'] },
   },
 };
 const server = setupServer(
@@ -89,7 +88,7 @@ describe('loadOfficialList', () => {
     expect(result.kind).toBe('official');
     expect(result.list.href).toBe('/lists/official/collection');
     expect(result.cards.at(0)?.notes).toBe('Watch this.');
-    expect(result.listCover).toBe('https://media.trakt.tv/images/movies/1/fanarts/full/f.jpg.webp');
+    expect(result.listCover).toBe('https://media.trakt.tv/movies/1/full/fanart.webp');
     expect(result.collaborators).toEqual([]);
     expect(result.stats).toEqual({ count: 1, runtime: 90 });
     expect(seen).toHaveLength(3);

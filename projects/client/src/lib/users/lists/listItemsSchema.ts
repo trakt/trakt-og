@@ -4,7 +4,7 @@ import { z } from 'zod/v4';
 const media = z.object({
   title: z.string().nullish(),
   number: z.number().nullish(),
-  images: z.object({ poster: z.array(z.string()).nullish() }).nullish(),
+  ids: z.object({ trakt: z.number() }),
 });
 
 /**

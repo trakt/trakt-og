@@ -5,7 +5,7 @@ import { episodeNumber } from '../../components/media/episodeTags.ts';
 import type { DatePreferences } from '../../settings/DatePreferences.ts';
 import { formatDate } from '../../utils/formatDate.ts';
 import { formatRuntime } from '../../utils/formatRuntime.ts';
-import { imageUrl } from '../../utils/imageUrl.ts';
+import { mediaImage } from '../../images/mediaImage.ts';
 import type { ProgressSeasonData } from './ProgressItem.ts';
 import { seasonName } from '../../utils/seasonName.ts';
 import { isUnknownDate } from '../../utils/isUnknownDate.ts';
@@ -84,7 +84,6 @@ type Episode = {
   firstAired?: string;
   runtime?: number;
   rating?: number;
-  screenshot?: string;
   aired: boolean;
   done: boolean;
   collected: boolean;
@@ -136,7 +135,7 @@ function toSquare({
     ]
       .filter(Boolean)
       .join(', '),
-    image: imageUrl(episode.screenshot, 'thumb'),
+    image: id === undefined ? undefined : mediaImage({ type: 'episode', id, slot: 'screenshot', size: 'thumb' }),
     airs: aired ? airs : `Airs ${airs}`,
     runtime: runtime ? formatRuntime(runtime) : undefined,
     rating,

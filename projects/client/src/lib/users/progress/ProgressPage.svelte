@@ -147,7 +147,7 @@ $effect(() => {
     if (!droppedMissing || droppedShows || readingDropped) return;
     readingDropped = true;
     void loadDroppedShows({
-      request: (page, limit) => client().users.hidden.dropped({ query: { page, limit, extended: 'full,images' } }).then((response) => response.status === 200
+      request: (page, limit) => client().users.hidden.dropped({ query: { page, limit, extended: 'full' } }).then((response) => response.status === 200
         ? {
           ok: true as const,
           body: response.body,

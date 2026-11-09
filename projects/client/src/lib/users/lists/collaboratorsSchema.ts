@@ -6,8 +6,7 @@ export const collaboratorsSchema = z.array(
   z.object({
     username: z.string(),
     name: z.string().nullish(),
-    ids: z.object({ slug: z.string().nullish() }),
-    images: z.object({ avatar: z.object({ full: z.string().nullish() }).nullish() }).nullish(),
+    ids: z.object({ trakt: z.number().nullish(), slug: z.string().nullish() }),
     vip: z.boolean().nullish(),
     vip_ep: z.boolean().nullish(),
     vip_og: z.boolean().nullish(),

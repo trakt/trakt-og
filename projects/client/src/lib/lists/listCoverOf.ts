@@ -1,4 +1,4 @@
-import { imageUrl } from '../utils/imageUrl.ts';
+import { mediaImage } from '../images/mediaImage.ts';
 import type { ListItemRow } from './listItemRowsSchema.ts';
 
 /**
@@ -7,6 +7,9 @@ import type { ListItemRow } from './listItemRowsSchema.ts';
  */
 export function listCoverOf(row: ListItemRow | undefined): string | undefined {
   if (!row || row.type === 'person') return undefined;
-  const images = row.type === 'movie' ? row.movie.images : row.show.images;
-  return imageUrl(images?.fanart?.at(0), 'full');
+  const { type, id } =
+    row.type === 'movie'
+      ? { type: 'movie' as const, id: row.movie.ids.trakt }
+      : { type: 'show' as const, id: row.show.ids.trakt };
+  return mediaImage({ type, id, slot: 'fanart', size: 'full' });
 }

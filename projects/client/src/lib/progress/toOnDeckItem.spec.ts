@@ -27,7 +27,7 @@ describe('toOnDeckItem', () => {
       rewatching: false,
     });
     expect(item?.fullProgress).toBeUndefined();
-    expect(item?.poster).toBeUndefined();
+    expect(item?.poster).toBe('https://media.trakt.tv/shows/1388/thumb/poster.webp');
   });
 
   it('should tag premieres and finales', () => {
@@ -57,26 +57,11 @@ describe('toOnDeckItem', () => {
     expect(item?.fullProgress).toMatchObject({ aired: 118, completed: 118, plays: 123 });
   });
 
-  it('should size the poster as a thumb', () => {
+  it("should prefer the season's poster over the show's", () => {
     const entry = byTitle(upNextFixture.entries, 'The Wire');
-    const withPoster: UpNextEntry = {
-      ...entry,
-      show: {
-        ...entry.show,
-        images: {
-          poster: ['media.trakt.tv/images/shows/000/001/421/posters/medium/abc.jpg.webp'],
-          fanart: [],
-          logo: [],
-          clearart: [],
-          banner: [],
-          thumb: [],
-        },
-      },
-    };
+    const seasonPoster = 'https://media.trakt.tv/seasons/9/thumb/poster.webp';
 
-    expect(toOnDeckItem({ entry: withPoster, username: 'sean' })?.poster).toBe(
-      'https://media.trakt.tv/images/shows/000/001/421/posters/thumb/abc.jpg.webp',
-    );
+    expect(toOnDeckItem({ entry, username: 'sean', seasonPoster })?.poster).toBe(seasonPoster);
   });
 
   it('should skip a show with no next episode', () => {

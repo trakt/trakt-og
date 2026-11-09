@@ -42,7 +42,6 @@ const movie = (id: number, title: string) => ({
   movie: {
     title,
     ids: { trakt: id, slug: title.toLowerCase() },
-    images: { poster: [], fanart: [`media.trakt.tv/images/movies/${id}/fanarts/medium/f.jpg.webp`] },
   },
 });
 const pageHeaders = (sortBy: string, sortHow: string) => ({
@@ -130,12 +129,10 @@ describe('loadList', () => {
     expect(result.cards.map(({ title }) => title)).toEqual(['Heat', 'Ronin']);
     expect(result.collaborators.map(({ name }) => name)).toEqual(['Kim']);
     expect(result.isCollaborator).toBe(true);
-    expect(result.listCover).toBe('https://media.trakt.tv/images/movies/1/fanarts/full/f.jpg.webp');
+    expect(result.listCover).toBe('https://media.trakt.tv/movies/1/full/fanart.webp');
     expect(paths().filter((path) => path.includes('/items'))).toHaveLength(2);
     expect(seen.every(({ auth }) => auth === null)).toBe(true);
-    expect(seen.find(({ url }) => url.pathname.endsWith('/items'))?.url.search).toBe(
-      '?extended=full%2Cimages&page=1&limit=120',
-    );
+    expect(seen.find(({ url }) => url.pathname.endsWith('/items'))?.url.search).toBe('?extended=full&page=1&limit=120');
   });
 
   it('should keep a site rating sort and send the filters', async () => {
@@ -257,7 +254,7 @@ describe('loadList', () => {
         record(request);
         const page = Number(url.searchParams.get('page'));
         const limit = Number(url.searchParams.get('limit'));
-        if (url.searchParams.get('extended') === 'full') statsPages.push(url);
+        if (limit === 250) statsPages.push(url);
         const first = (page - 1) * limit + 1;
         const rows = Array.from({ length: Math.max(0, Math.min(limit, 600 - first + 1)) }, (_, i) =>
           movie(first + i, `Movie ${first + i}`),
@@ -282,7 +279,7 @@ describe('loadList', () => {
   it('should leave the stats out when a page of them fails', async () => {
     server.use(
       http.get(`${API}/users/sean/lists/heist-night/items*`, ({ request }) => {
-        if (new URL(request.url).searchParams.get('extended') === 'full') {
+        if (new URL(request.url).searchParams.get('limit') === '250') {
           return new HttpResponse(null, { status: 500 });
         }
         return HttpResponse.json(

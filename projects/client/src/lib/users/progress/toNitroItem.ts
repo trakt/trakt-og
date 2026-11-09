@@ -20,7 +20,6 @@ function toEpisode(episode: Episode | null): CatalogEpisode | undefined {
     firstAired: episode.first_aired ?? undefined,
     runtime: episode.runtime ?? undefined,
     rating: episode.rating ?? undefined,
-    screenshot: episode.images?.screenshot?.at(0),
   };
 }
 

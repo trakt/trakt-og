@@ -23,24 +23,15 @@ type ItemsRequest = {
   query: ListQuery;
   /** Left out, the worker applies the list's default. */
   sort?: ListSort;
-  /** The stats only need runtimes and ids, not artwork. */
-  extended?: string;
 };
 
 export type ListItems = { status: number; rows: readonly ListItemRow[]; headers: Headers };
 
 /** A page of a list's items: `<base>/:types/:sort_by/:sort_how` with the genre filter and OG's page size. */
-export async function fetchListItems({
-  fetch,
-  token,
-  base,
-  query,
-  sort,
-  extended = 'full,images',
-}: ItemsRequest): Promise<ListItems> {
+export async function fetchListItems({ fetch, token, base, query, sort }: ItemsRequest): Promise<ListItems> {
   const types = query.types.length > 0 ? query.types.join(',') : 'all';
   const path = sort ? `/${types}/${sort.by}/${sort.how}` : query.types.length > 0 ? `/${types}` : '';
-  const search = toListItemsSearch({ query, extended, page: query.page, limit: query.limit });
+  const search = toListItemsSearch({ query, extended: 'full', page: query.page, limit: query.limit });
   const response = await rawApiFetch({ fetch, token, path: `${base}${path}?${search}` });
   if (response.status !== 200) return { status: response.status, rows: [], headers: response.headers };
   const rows = listItemRowsSchema.safeParse(await response.json().catch(() => null));
@@ -79,7 +70,7 @@ async function fetchWholeList({ query, ...request }: Omit<ItemsRequest, 'sort'>)
   return failed ?? { ...first, rows: [...first.rows, ...rest.flatMap(({ rows }) => rows)] };
 }
 
-type StatsRequest = Omit<ItemsRequest, 'sort' | 'extended'> & { total: number; withItems: boolean };
+type StatsRequest = Omit<ItemsRequest, 'sort'> & { total: number; withItems: boolean };
 
 /**
  * The stats bar counts every item that matches the filters, and the worker pages them, so this reads every page at
@@ -94,7 +85,6 @@ async function fetchListStats({ total, withItems, query, ...request }: StatsRequ
       ...request,
       query: { ...query, page, limit: STATS_PAGE },
       sort: RANKED,
-      extended: 'full',
     });
   const results = await Promise.all(Array.from({ length: pages }, (_, i) => read(i + 1))).catch(() => null);
   if (!results || results.some(({ status }) => status !== 200)) return null;

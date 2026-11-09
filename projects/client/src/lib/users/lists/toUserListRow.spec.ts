@@ -15,10 +15,9 @@ const list = (overrides: Record<string, unknown> = {}) => ({
   user: {
     username: 'og_tester',
     name: ' OG Tester ',
-    ids: { slug: 'og_tester' },
+    ids: { trakt: 6, slug: 'og_tester' },
     vip: true,
     vip_ep: true,
-    images: { avatar: { full: 'https://media.trakt.tv/avatar.jpg' } },
   },
   images: { posters: ['media.trakt.tv/images/a/posters/medium/1.jpg.webp', 'b', 'c', 'd', 'e', 'f'] },
   ...overrides,
@@ -36,7 +35,7 @@ describe('toUserListRow', () => {
         slug: 'og_tester',
         name: 'OG Tester',
         href: '/users/og_tester',
-        avatar: 'https://media.trakt.tv/avatar.jpg',
+        avatar: 'https://media.trakt.tv/users/6/avatar.webp',
         vip: { kind: 'vip', tag: { text: 'EP', title: 'Executive Producer' }, years: null },
       },
       posters: [

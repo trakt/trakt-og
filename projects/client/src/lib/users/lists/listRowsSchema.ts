@@ -4,11 +4,10 @@ import { z } from 'zod/v4';
 const owner = z.object({
   username: z.string(),
   name: z.string().nullish(),
-  ids: z.object({ slug: z.string().nullish() }),
+  ids: z.object({ trakt: z.number().nullish(), slug: z.string().nullish() }),
   vip: z.boolean().nullish(),
   vip_ep: z.boolean().nullish(),
   director: z.boolean().nullish(),
-  images: z.object({ avatar: z.object({ full: z.string().nullish() }).nullish() }).nullish(),
 });
 
 /**

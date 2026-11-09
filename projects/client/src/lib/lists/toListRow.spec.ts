@@ -11,7 +11,7 @@ const list = (extra: Partial<ListRowSource> = {}): ListRowSource => ({
   comment_count: 3,
   likes: 40,
   ids: { trakt: 7, slug: 'heist-night' },
-  user: { username: 'sean', name: ' Sean ', ids: { slug: 'sean' }, images: { avatar: { full: 'https://a.jpg' } } },
+  user: { username: 'sean', name: ' Sean ', ids: { trakt: 3, slug: 'sean' } },
   images: { posters: ['a', 'b', 'c', 'd', 'e', 'f'] },
   ...extra,
 });
@@ -32,7 +32,13 @@ describe('toListRow', () => {
       kind: 'personal',
       href: '/users/sean/lists/heist-night',
       name: 'Heist Night',
-      owner: { slug: 'sean', name: 'Sean', href: '/users/sean', avatar: 'https://a.jpg', vip: null },
+      owner: {
+        slug: 'sean',
+        name: 'Sean',
+        href: '/users/sean',
+        avatar: 'https://media.trakt.tv/users/3/avatar.webp',
+        vip: null,
+      },
       posters: ['a', 'b', 'c', 'd', 'e'].map((path) => ({ image: `https://${path}` })),
       itemCount: 12,
       likeCount: 40,
@@ -88,7 +94,7 @@ describe('toListRow', () => {
         comment_count: null,
         likes: null,
         ids: { trakt: 7, slug: null },
-        user: { username: 'Sean', ids: {}, images: null },
+        user: { username: 'Sean', ids: {} },
         images: null,
       }),
     );

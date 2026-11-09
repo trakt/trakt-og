@@ -11,7 +11,7 @@ export async function fetchBuiltInItems(
   const response = await withViewer(token, (viewer) =>
     api({ fetch, token: viewer }).users[kind].typedSorted({
       params: { id, type, sort_by: 'rank', sort_how: 'asc' },
-      query: { limit: 5, extended: 'images' },
+      query: { limit: 5 },
     }),
   ).catch(() => null);
   if (response?.status !== 200) return { items: [], itemCount: 0 };

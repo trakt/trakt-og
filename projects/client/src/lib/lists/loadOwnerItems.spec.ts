@@ -26,8 +26,8 @@ describe('loadOwnerItems', () => {
     expect(rows).toHaveLength(252);
     expect(rows.at(-1)?.id).toBe(252);
     expect(request.mock.calls.map(([path]) => path)).toEqual([
-      '/sync/watchlist/all/rank/asc?extended=full%2Cimages&page=1&limit=250',
-      '/sync/watchlist/all/rank/asc?extended=full%2Cimages&page=2&limit=250',
+      '/sync/watchlist/all/rank/asc?extended=full&page=1&limit=250',
+      '/sync/watchlist/all/rank/asc?extended=full&page=2&limit=250',
     ]);
   });
   it('should preserve type, genre, text, streaming, hide, and sorting for the selected items', async () => {
@@ -49,7 +49,7 @@ describe('loadOwnerItems', () => {
       },
     });
     expect(request).toHaveBeenCalledWith(
-      '/users/me/favorites/movie/title/desc?extended=full%2Cimages&page=1&limit=250&genres=drama&terms=Heat' +
+      '/users/me/favorites/movie/title/desc?extended=full&page=1&limit=250&genres=drama&terms=Heat' +
         '&watchnow=netflix&hide=watched%2Cnonotes&hide_watched=true&hide_no_notes=true',
     );
   });

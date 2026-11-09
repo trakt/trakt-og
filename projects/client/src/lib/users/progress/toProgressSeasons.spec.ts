@@ -29,7 +29,6 @@ const season = (
     firstAired: aired(index + 1),
     runtime: 22,
     rating: 8.1,
-    screenshot: index === 0 ? 'media.trakt.tv/images/episodes/1/screenshots/medium/a.jpg.webp' : undefined,
   })),
   upcoming: Array.from({ length: upcoming }, (_, index) => ({
     number: done.length + index + 1,
@@ -148,8 +147,8 @@ describe('toProgressSeasons', () => {
     });
 
     it('should show the screenshot in the tooltip at thumb size', () => {
-      expect(squares.at(0)?.image).toBe('https://media.trakt.tv/images/episodes/1/screenshots/thumb/a.jpg.webp');
-      expect(squares.at(1)?.image).toBeUndefined();
+      expect(squares.at(0)?.image).toBe('https://media.trakt.tv/episodes/101/thumb/screenshot.webp');
+      expect(squares.at(4)?.image).toBeUndefined();
     });
 
     it('should mark episodes in your library that are not watched yet', () => {

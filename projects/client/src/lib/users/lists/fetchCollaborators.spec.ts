@@ -11,8 +11,7 @@ const server = setupServer(
       {
         username: 'alex889',
         name: ' Coco ',
-        ids: { slug: 'alex889' },
-        images: { avatar: { full: 'https://a.jpg' } },
+        ids: { trakt: 8, slug: 'alex889' },
         vip: true,
         vip_ep: true,
       },
@@ -31,7 +30,7 @@ describe('fetchCollaborators', () => {
         slug: 'alex889',
         name: 'Coco',
         href: '/users/alex889',
-        avatar: 'https://a.jpg',
+        avatar: 'https://media.trakt.tv/users/8/avatar.webp',
         vip: { kind: 'vip', tag: { text: 'EP', title: 'Executive Producer' }, years: null },
       },
       { slug: 'sean', name: 'sean', href: '/users/sean', avatar: PLACEHOLDER_AVATAR, vip: null },

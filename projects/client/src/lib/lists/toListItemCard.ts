@@ -3,7 +3,7 @@ import { episodeNumber } from '../components/media/episodeTags.ts';
 import type { DatePreferences } from '../settings/DatePreferences.ts';
 import { formatDate } from '../utils/formatDate.ts';
 import { formatRuntime } from '../utils/formatRuntime.ts';
-import { imageUrl } from '../utils/imageUrl.ts';
+import { mediaImage } from '../images/mediaImage.ts';
 import { episodeBadge } from '../users/profile/toProfileSummary.ts';
 import type { ListItemRow } from './listItemRowsSchema.ts';
 import { seasonName } from '../utils/seasonName.ts';
@@ -54,7 +54,7 @@ type Options = { sortBy: string; datePreferences: DatePreferences; now?: Date };
 const BLANK = ' ';
 const showHref = (slug: string) => `/shows/${slug}`;
 // OG's notes modal swapped the fanart's `full` for `thumb` (`lists.js:1352`).
-const fanart = (images?: { fanart?: string[] | null } | null) => imageUrl(images?.fanart?.at(0), 'thumb');
+const fanart = (type: 'movie' | 'show', id: number) => mediaImage({ type, id, slot: 'fanart', size: 'thumb' });
 
 type Facts = {
   listedAt: string;
@@ -127,10 +127,10 @@ export function toListItemCard(row: ListItemRow, { sortBy, datePreferences, now 
         id: movie.ids.trakt,
         href,
         title: movie.title,
-        image: imageUrl(movie.images?.poster?.at(0), 'thumb'),
+        image: mediaImage({ type: 'movie', id: movie.ids.trakt, slot: 'poster', size: 'thumb' }),
         rating: rated(movie.rating, movie.released),
         runtime: movie.runtime ?? undefined,
-        noteTitle: { title: movie.title, year: movie.year ?? undefined, fanart: fanart(movie.images) },
+        noteTitle: { title: movie.title, year: movie.year ?? undefined, fanart: fanart('movie', movie.ids.trakt) },
         lines: lines({
           sorted: sorted(
             { ...movie, rating: rated(movie.rating ?? 0, movie.released), releasedDate: movie.released },
@@ -149,10 +149,10 @@ export function toListItemCard(row: ListItemRow, { sortBy, datePreferences, now 
         id: show.ids.trakt,
         href,
         title: show.title,
-        image: imageUrl(show.images?.poster?.at(0), 'thumb'),
+        image: mediaImage({ type: 'show', id: show.ids.trakt, slot: 'poster', size: 'thumb' }),
         rating: rated(show.rating, show.first_aired),
         airedEpisodes: show.aired_episodes ?? undefined,
-        noteTitle: { title: show.title, year: show.year ?? undefined, fanart: fanart(show.images) },
+        noteTitle: { title: show.title, year: show.year ?? undefined, fanart: fanart('show', show.ids.trakt) },
         lines: lines({
           sorted: sorted(
             {
@@ -180,11 +180,17 @@ export function toListItemCard(row: ListItemRow, { sortBy, datePreferences, now 
         href,
         title,
         showTitle: show.title,
-        image: imageUrl(season.images?.poster?.at(0) ?? show.images?.poster?.at(0), 'thumb'),
+        image: mediaImage({
+          type: 'season',
+          id: season.ids.trakt,
+          slot: 'poster',
+          size: 'thumb',
+          fallback: mediaImage({ type: 'show', id: show.ids.trakt, slot: 'poster', size: 'thumb' }),
+        }),
         rating: rated(season.rating, season.first_aired),
         airedEpisodes: season.aired_episodes ?? undefined,
         seasonOf: { show: show.ids.trakt, number: season.number },
-        noteTitle: { title: `${show.title}: ${name}`, fanart: fanart(show.images) },
+        noteTitle: { title: `${show.title}: ${name}`, fanart: fanart('show', show.ids.trakt) },
         lines: lines({
           top: { text: show.title, href: showHref(show.ids.slug) },
           sorted: sorted(
@@ -211,14 +217,14 @@ export function toListItemCard(row: ListItemRow, { sortBy, datePreferences, now 
         title: episode.title ?? '',
         number: episodeNumber(episode, show.genres),
         showTitle: show.title,
-        image: imageUrl(show.images?.poster?.at(0), 'thumb'),
+        image: mediaImage({ type: 'show', id: show.ids.trakt, slot: 'poster', size: 'thumb' }),
         rating: rated(episode.rating, episode.first_aired),
         runtime: episode.runtime ?? show.runtime ?? undefined,
         seasonOf: { show: show.ids.trakt, number: episode.season, episode: episode.number },
         noteTitle: {
           title: `${episodeNumber(episode, show.genres)} ${episode.title ?? ''}`.trim(),
           show: show.title,
-          fanart: fanart(show.images),
+          fanart: fanart('show', show.ids.trakt),
         },
         episodeBadge: episodeBadge(episode),
         lines: lines({
@@ -244,8 +250,8 @@ export function toListItemCard(row: ListItemRow, { sortBy, datePreferences, now 
         id: person.ids.trakt,
         href,
         title: person.name,
-        image: imageUrl(person.images?.headshot?.at(0), 'thumb'),
-        noteTitle: { title: person.name, fanart: fanart(person.images) },
+        image: mediaImage({ type: 'person', id: person.ids.trakt, slot: 'headshot', size: 'thumb' }),
+        noteTitle: { title: person.name },
         lines: lines({ sorted: sorted({}, href), href }),
       };
     }

@@ -1,3 +1,4 @@
+import { userAvatar } from '../../images/userAvatar.ts';
 import { rawApiFetch } from '../../api/rawApiFetch.ts';
 import { toVipBadge } from '../toVipBadge.ts';
 import type { Collaborator } from './Collaborator.ts';
@@ -28,7 +29,7 @@ export async function fetchCollaborators({ fetch, listId, token }: FetchCollabor
       slug,
       name: user.name?.trim() || user.username,
       href: `/users/${slug}`,
-      avatar: user.images?.avatar?.full || PLACEHOLDER_AVATAR,
+      avatar: user.ids.trakt ? userAvatar(user.ids.trakt) : PLACEHOLDER_AVATAR,
       vip: toVipBadge(user),
     };
   });

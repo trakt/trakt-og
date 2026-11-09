@@ -14,7 +14,7 @@ export async function loadFranchiseMovies({
   id,
   fetch = globalThis.fetch,
 }: LoadFranchiseMoviesParams): Promise<readonly FranchiseMovie[]> {
-  const path = `/lists/${id}/items/movie?extended=full,images&limit=250`;
+  const path = `/lists/${id}/items/movie?extended=full&limit=250`;
   const response = await apiQueue.run(() => rawApiFetch({ fetch, path }));
   if (response.status !== 200) throw new Error(`${path} returned ${response.status}`);
   const rows = listItemRowsSchema.safeParse(await response.json());

@@ -50,7 +50,6 @@ export async function fetchListItemRefs({
       base,
       query: { ...query, page, limit: PAGE },
       sort,
-      extended: 'full',
     });
     if (status !== 200) throw new Error(`List items: ${status}`);
     refs.push(...rows.map((row) => ({ id: row.id, type: row.type, trakt: traktId(row) })));

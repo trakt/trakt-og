@@ -8,7 +8,7 @@ import type { DatePreferences } from '../../settings/DatePreferences.ts';
 import type { CatalogEpisode } from '../../shows/cache/ShowCatalog.ts';
 import { formatDate } from '../../utils/formatDate.ts';
 import { formatRuntime } from '../../utils/formatRuntime.ts';
-import { imageUrl } from '../../utils/imageUrl.ts';
+import { mediaImage } from '../../images/mediaImage.ts';
 import { relativeDate } from '../../utils/relativeDate.ts';
 import type { ProgressItem } from './ProgressItem.ts';
 import { seasonRuns } from './seasonRuns.ts';
@@ -120,8 +120,14 @@ function toUpNext({ item, now }: ToProgressRowParams): ProgressUpNext | undefine
     number,
     title: episode.title ?? '',
     href: `/shows/${show.slug}/seasons/${episode.season}/episodes/${episode.number}`,
-    image: imageUrl(episode.screenshot ?? show.fanart, 'medium'),
-    spoilerImage: imageUrl(show.fanart, 'medium'),
+    image: mediaImage({
+      type: 'episode',
+      id: episode.id,
+      slot: 'screenshot',
+      size: 'medium',
+      fallback: mediaImage({ type: 'show', id: show.id, slot: 'fanart', size: 'medium' }),
+    }),
+    spoilerImage: mediaImage({ type: 'show', id: show.id, slot: 'fanart', size: 'medium' }),
     tags: [{ text: 'Up next', kind: 'primary' }, ...(label ? [label] : [])],
     rating: episode.rating,
     released: episode.firstAired !== undefined && Date.parse(episode.firstAired) <= now.getTime(),
@@ -167,8 +173,8 @@ export function toProgressRow(params: ToProgressRowParams): ProgressRow {
     title: show.title,
     year: show.year,
     href,
-    poster: imageUrl(show.poster, 'thumb'),
-    fanart: imageUrl(show.fanart, 'medium'),
+    poster: mediaImage({ type: 'show', id: show.id, slot: 'poster', size: 'thumb' }),
+    fanart: mediaImage({ type: 'show', id: show.id, slot: 'fanart', size: 'medium' }),
     status: show.status && capitalize(show.status),
     rating: show.rating,
     percent: progressPercent(item),

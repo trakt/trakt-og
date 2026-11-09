@@ -8,7 +8,7 @@ export type DroppedPage =
   | { readonly ok: false; readonly status: number };
 
 type LoadDroppedShowsParams = {
-  /** `extended=full,images`, at this page and the page size. */
+  /** `extended=full`, at this page and the page size. */
   request: (page: number, limit: number) => Promise<DroppedPage>;
   now?: () => number;
   limit?: number;

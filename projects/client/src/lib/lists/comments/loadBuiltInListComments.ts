@@ -22,7 +22,7 @@ export async function loadBuiltInListComments({ fetch, parent, locals, params, u
   const readItems = (token: string | null) =>
     api({ fetch, token }).users[kind].typedSorted({
       params: { id: encodeURIComponent(params.id), type: 'all', sort_by: 'rank', sort_how: 'asc' },
-      query: { extended: 'images', limit: 4 },
+      query: { limit: 4 },
     });
   const [initial, itemsInitial, { profile }] = await Promise.all([
     api({ fetch }).users[kind].comments(request),

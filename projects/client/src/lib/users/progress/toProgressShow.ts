@@ -3,7 +3,7 @@ import type { CachedShow } from '../../shows/cache/CachedShow.ts';
 
 type Nullish<T> = T | null | undefined;
 
-/** The fields read from a show, which the progress endpoints and a list's `extended=full,images` items all send. */
+/** The fields read from a show, which the progress endpoints and a list's `extended=full` items all send. */
 type ProgressShowSource = Pick<UpNextResponse['show'], 'title'> & {
   readonly ids: { readonly trakt: number; readonly slug: string };
   readonly year?: Nullish<number>;
@@ -16,10 +16,6 @@ type ProgressShowSource = Pick<UpNextResponse['show'], 'title'> & {
   readonly aired_episodes?: Nullish<number>;
   readonly first_aired?: Nullish<string>;
   readonly last_aired?: Nullish<string>;
-  readonly images?: Nullish<{
-    readonly poster?: Nullish<readonly string[]>;
-    readonly fanart?: Nullish<readonly string[]>;
-  }>;
 };
 
 /** A show the progress endpoints (`up_next_nitro`, `hidden/dropped`) or a list return, as og's show summary. */
@@ -38,9 +34,7 @@ export function toProgressShow(show: ProgressShowSource, fetchedAt: number): Cac
     airedEpisodes: show.aired_episodes ?? undefined,
     firstAired: show.first_aired ?? undefined,
     lastAired: show.last_aired ?? undefined,
-    poster: show.images?.poster?.at(0),
-    fanart: show.images?.fanart?.at(0),
     fetchedAt,
-    complete: Boolean(show.images),
+    complete: true,
   };
 }

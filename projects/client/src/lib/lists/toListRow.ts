@@ -1,5 +1,6 @@
 import { toVipBadge } from '../users/toVipBadge.ts';
 import type { VipBadge } from '../users/VipBadge.ts';
+import { userAvatar } from '../images/userAvatar.ts';
 import { imageUrl } from '../utils/imageUrl.ts';
 import { listPath } from './listPath.ts';
 import { PLACEHOLDER_AVATAR } from '../users/placeholderAvatar.ts';
@@ -23,8 +24,7 @@ export type ListRowSource = {
   readonly user: {
     readonly username: string;
     readonly name?: string | null;
-    readonly ids: { readonly slug?: string | null };
-    readonly images?: { readonly avatar?: { readonly full?: string | null } | null } | null;
+    readonly ids: { readonly trakt?: number | null; readonly slug?: string | null };
     /** Every list read sends these on its owner, so the row shows their VIP label without asking for it. */
     readonly vip?: boolean | null;
     readonly vip_ep?: boolean | null;
@@ -102,7 +102,7 @@ export function toListRow(list: ListRowSource): ListRow {
       slug: ownerSlug,
       name: list.user.name?.trim() || list.user.username,
       href: `/users/${ownerSlug}`,
-      avatar: list.user.images?.avatar?.full || PLACEHOLDER_AVATAR,
+      avatar: list.user.ids.trakt ? userAvatar(list.user.ids.trakt) : PLACEHOLDER_AVATAR,
       vip: toVipBadge(list.user),
     },
     posters: (list.images?.posters ?? []).slice(0, 5).map((path) => ({ image: imageUrl(path, 'thumb') })),

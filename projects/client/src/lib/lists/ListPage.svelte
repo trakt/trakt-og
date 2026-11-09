@@ -3,7 +3,7 @@
   import { trackUpsellImpression } from '#lib/analytics/trackUpsellImpression.ts';
   import SeoHead from '#lib/seo/SeoHead.svelte';
   import { toListSeo } from '#lib/seo/pages/toListSeo.ts';
-  import { imageUrl } from '#lib/utils/imageUrl.ts';
+  import { listPreviewArt } from '#lib/lists/listPreviewArt.ts';
   import { rawApiFetch } from '#lib/api/rawApiFetch.ts';
   import BuiltInListEditor from '#lib/components/lists/BuiltInListEditor.svelte';
   import { overlay } from '#lib/overlay/overlay.ts';
@@ -642,7 +642,7 @@ const draggable = $derived(
       description: data.list.description,
       path: data.list.href,
       itemCount: data.list.itemCount,
-      image: imageUrl(data.cards.at(0)?.noteTitle?.fanart, 'full'),
+      image: listPreviewArt(data.cards.at(0)),
       items: indexed && data.query.page === 1 ? data.cards.map(({ href }) => href) : undefined,
     })}
     noindex={!indexed}

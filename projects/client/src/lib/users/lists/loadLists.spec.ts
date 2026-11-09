@@ -28,7 +28,7 @@ const list = (id: number, name: string) => ({
   user: { username: 'tester', private: false, ids: { slug: 'tester' } },
   images: { posters: [] },
 });
-const items = [{ type: 'movie', movie: { title: 'Heat', images: { poster: ['media.trakt.tv/p.jpg'] } } }];
+const items = [{ type: 'movie', movie: { title: 'Heat', ids: { trakt: 7 } } }];
 const pageHeaders = (page: number, count: number) => ({
   'X-Pagination-Page': String(page),
   'X-Pagination-Page-Count': String(count),

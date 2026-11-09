@@ -1,12 +1,12 @@
 import { z } from 'zod/v4';
+import { userAvatar } from '../../images/userAvatar.ts';
 import { rawApiFetch } from '../../api/rawApiFetch.ts';
 const schema = z.array(
   z.object({
     user: z.object({
       username: z.string(),
       name: z.string().nullish(),
-      ids: z.object({ slug: z.string().nullish() }),
-      images: z.object({ avatar: z.object({ full: z.string().nullish() }).nullish() }).nullish(),
+      ids: z.object({ trakt: z.number().nullish(), slug: z.string().nullish() }),
     }),
   }),
 );
@@ -17,6 +17,6 @@ export async function loadFollowerCandidates(fetch: typeof globalThis.fetch) {
   return schema.parse(await response.json()).map(({ user }) => ({
     slug: user.ids.slug ?? user.username,
     name: user.name ? `${user.name} (@${user.ids.slug ?? user.username})` : `@${user.ids.slug ?? user.username}`,
-    avatar: user.images?.avatar?.full ?? undefined,
+    avatar: user.ids.trakt ? userAvatar(user.ids.trakt) : undefined,
   }));
 }

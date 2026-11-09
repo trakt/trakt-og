@@ -1,6 +1,6 @@
 import { api } from '../../api/api.ts';
 import { positiveInt } from '../../utils/positiveInt.ts';
-import { imageUrl } from '../../utils/imageUrl.ts';
+import { mediaImage } from '../../images/mediaImage.ts';
 
 type Params = { fetch: typeof globalThis.fetch; slug: string };
 
@@ -12,14 +12,18 @@ type Preview = { readonly posters: readonly { title?: string; image?: string }[]
  */
 export async function fetchSmartListPreview({ fetch, slug }: Params): Promise<Preview | null> {
   const response = await api({ fetch })
-    .smart_lists.items({ params: { list_id: slug }, query: { extended: 'images', limit: 5 } })
+    .smart_lists.items({ params: { list_id: slug }, query: { limit: 5 } })
     .catch(() => null);
   if (response?.status !== 200) return null;
 
   return {
     posters: response.body.slice(0, 5).map(({ movie, show }) => {
       const media = movie ?? show;
-      return { title: media?.title, image: imageUrl(media?.images?.poster?.at(0), 'thumb') };
+      const type = movie ? 'movie' : 'show';
+      return {
+        title: media?.title,
+        image: media ? mediaImage({ type, id: media.ids.trakt, slot: 'poster', size: 'thumb' }) : undefined,
+      };
     }),
     itemCount: positiveInt(response.headers.get('x-pagination-item-count'), response.body.length),
   };

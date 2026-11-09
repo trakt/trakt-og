@@ -1,6 +1,6 @@
 import type { z } from 'zod/v4';
 import { builtInListDescriptions } from '../../lists/toBuiltInListView.ts';
-import { imageUrl } from '../../utils/imageUrl.ts';
+import { mediaImage } from '../../images/mediaImage.ts';
 import type { ProfileUser } from '../ProfileUser.ts';
 import type { listItemsSchema } from './listItemsSchema.ts';
 import type { UserListRow } from './UserListRow.ts';
@@ -17,16 +17,20 @@ type BuiltInRowParams = {
 // A season or an episode shows its show's poster, titled like OG's poster tooltips.
 function poster(item: ListItem): { title?: string; image?: string } {
   const show = item.show?.title ?? '';
-  if (item.type === 'movie') return { title: item.movie?.title ?? undefined, image: art(item.movie) };
-  if (item.type === 'show') return { title: show || undefined, image: art(item.show) };
+  if (item.type === 'movie') return { title: item.movie?.title ?? undefined, image: art('movie', item.movie) };
+  if (item.type === 'show') return { title: show || undefined, image: art('show', item.show) };
   if (item.type === 'season') {
-    return { title: `${show} Season ${item.season?.number ?? ''}`.trim(), image: art(item.season) ?? art(item.show) };
+    const showArt = art('show', item.show);
+    const image = item.season
+      ? mediaImage({ type: 'season', id: item.season.ids.trakt, slot: 'poster', size: 'thumb', fallback: showArt })
+      : showArt;
+    return { title: `${show} Season ${item.season?.number ?? ''}`.trim(), image };
   }
-  return { title: [show, item.episode?.title].filter(Boolean).join(': ') || undefined, image: art(item.show) };
+  return { title: [show, item.episode?.title].filter(Boolean).join(': ') || undefined, image: art('show', item.show) };
 }
 
-const art = (media: { images?: { poster?: readonly string[] | null } | null } | null | undefined) =>
-  imageUrl(media?.images?.poster?.at(0), 'thumb');
+const art = (type: 'movie' | 'show', media: { ids: { trakt: number } } | null | undefined) =>
+  media ? mediaImage({ type, id: media.ids.trakt, slot: 'poster', size: 'thumb' }) : undefined;
 
 /**
  * The watchlist or favorites row at the top of `/users/:id/lists`. Neither can be

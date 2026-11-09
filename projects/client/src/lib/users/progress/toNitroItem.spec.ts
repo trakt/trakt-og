@@ -13,7 +13,6 @@ const episode = {
   runtime: 45,
   rating: 8.1,
   ids: { trakt: 203 },
-  images: { screenshot: ['walter.trakt.tv/images/episodes/203.jpg'] },
 };
 
 const row = (progress: Partial<UpNextResponse['progress']> = {}): UpNextResponse =>
@@ -23,7 +22,6 @@ const row = (progress: Partial<UpNextResponse['progress']> = {}): UpNextResponse
       year: 2022,
       runtime: 50,
       ids: { trakt: 7, slug: 'severance' },
-      images: { poster: ['walter.trakt.tv/images/shows/7.jpg'], fanart: [] },
     },
     progress: {
       aired: 19,
@@ -58,7 +56,6 @@ describe('toNitroItem', () => {
         season: 2,
         number: 3,
         title: 'The Bridge',
-        screenshot: 'walter.trakt.tv/images/episodes/203.jpg',
       },
       last: undefined,
     });

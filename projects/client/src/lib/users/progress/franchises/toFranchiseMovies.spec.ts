@@ -14,10 +14,6 @@ const movie = (id: number, released: string | null, extra: Partial<{ year: numbe
       ids: { trakt: id, slug: `movie-${id}` },
       runtime: extra.runtime ?? 100,
       released,
-      images: {
-        poster: ['media.trakt.tv/images/movies/1/posters/medium/a.jpg'],
-        fanart: ['media.trakt.tv/images/movies/1/fanarts/medium/b.jpg'],
-      },
       rating: 7.5,
     },
   }) as ListItemRow;
@@ -46,8 +42,8 @@ describe('toFranchiseMovies', () => {
         title: 'Movie 2',
         year: 2000,
         href: '/movies/movie-2',
-        poster: 'https://media.trakt.tv/images/movies/1/posters/medium/a.jpg',
-        fanart: 'https://media.trakt.tv/images/movies/1/fanarts/medium/b.jpg',
+        poster: 'https://media.trakt.tv/movies/2/medium/poster.webp',
+        fanart: 'https://media.trakt.tv/movies/2/medium/fanart.webp',
         rating: 7.5,
         released: '2005-01-01',
         runtime: 120,

@@ -14,7 +14,6 @@ const show = {
   genres: ['drama'],
   rating: 8.4,
   votes: 25_000,
-  images: { poster: ['media.trakt.tv/images/shows/1/posters/medium/a.jpg.webp'], fanart: [] },
 };
 const movie = {
   title: 'Heat',
@@ -23,7 +22,6 @@ const movie = {
   runtime: 170,
   rating: 8.19,
   votes: 1,
-  images: { poster: [] },
 };
 const [movieRow, seasonRow, episodeRow, personRow] = listItemRowsSchema.parse([
   { type: 'movie', movie, ...listed, notes: '  Watch it :fire:  ' },
@@ -86,12 +84,14 @@ describe('toListItemCard', () => {
     });
   });
 
-  it('should fall back to the show poster for a season without one', () => {
+  it('should fall back to the show poster for a season whose own is missing', () => {
     const [bare] = listItemRowsSchema.parse([
-      { type: 'season', show, season: { number: 9, ids: { trakt: 6 }, images: { poster: [] } }, ...listed },
+      { type: 'season', show, season: { number: 9, ids: { trakt: 6 } }, ...listed },
     ]) as ListItemRow[];
 
-    expect(card(bare, 'rank').image).toContain('/shows/1/posters/');
+    expect(card(bare, 'rank').image).toBe(
+      `https://media.trakt.tv/seasons/6/thumb/poster.webp#fallback=${encodeURIComponent('https://media.trakt.tv/shows/1/thumb/poster.webp')}`,
+    );
   });
 
   it('should number an episode, badge a premiere and show the added date', () => {

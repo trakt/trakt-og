@@ -21,7 +21,7 @@ export async function loadOwnerItems({
       : `/sync/${kind}/all/rank/asc`;
     const search = toListItemsSearch({
       query: selection?.query ?? { genres: [] },
-      extended: 'full,images',
+      extended: 'full',
       page,
       limit: 250,
     });

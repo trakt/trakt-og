@@ -1,6 +1,6 @@
 import { LOGO_PATH } from './logoPath.ts';
 
-const MEDIA = 'https://media.trakt.tv/images/';
+const MEDIA = 'https://media.trakt.tv/';
 
 /**
  * A media.trakt.tv logo through og's own `/api/logo` route, so `trimLogo` can read its pixels. Anything else, or

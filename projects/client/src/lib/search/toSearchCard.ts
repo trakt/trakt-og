@@ -9,7 +9,7 @@ import { type DateOrder, formatDate } from '../utils/formatDate.ts';
 import { formatRuntime } from '../utils/formatRuntime.ts';
 import { genreLabel } from '../utils/genreLabel.ts';
 import { personTags } from '../people/personTags.ts';
-import { imageUrl } from '../utils/imageUrl.ts';
+import { mediaImage } from '../images/mediaImage.ts';
 
 type SearchCardOptions = {
   /** The type tag. The single-type tabs hide it, since the tab already says it. */
@@ -18,8 +18,6 @@ type SearchCardOptions = {
   now: Date;
   order: DateOrder;
 };
-
-type Images = NonNullable<NonNullable<SearchHit['show']>['images']>;
 
 type BadgeKind = ComponentProps<typeof EpisodeTypeBadge>['kind'];
 
@@ -36,13 +34,12 @@ const BADGE_KINDS: readonly BadgeKind[] = [
 const isBadgeKind = (kind: string | undefined): kind is BadgeKind => BADGE_KINDS.some((badge) => badge === kind);
 
 const released = (date: string | null | undefined, now: Date) => (date ? new Date(date) <= now : false);
-const first = (paths: readonly string[] | null | undefined) => paths?.at(0);
 const generic = (text: string): CardTag => ({ text, kind: 'generic' });
 
-const toArt = (images: Images | null | undefined): SearchCard['art'] => ({
-  poster: imageUrl(first(images?.poster), 'thumb'),
-  fanart: imageUrl(first(images?.fanart), 'thumb'),
-  logo: imageUrl(first(images?.logo), 'medium'),
+const toArt = (type: 'movie' | 'show', id: number): SearchCard['art'] => ({
+  poster: mediaImage({ type, id, slot: 'poster', size: 'thumb' }),
+  fanart: mediaImage({ type, id, slot: 'fanart', size: 'thumb' }),
+  logo: mediaImage({ type, id, slot: 'logo', size: 'medium' }),
 });
 
 /**
@@ -59,8 +56,14 @@ export function toSearchCard(hit: SearchHit, options: SearchCardOptions): Search
     const premiere = premiereTag ? episodeType(episode) : undefined;
     const badgeKind = premiere?.kind;
     const showHref = `/shows/${show.ids.slug ?? show.ids.trakt}`;
-    const screenshot = imageUrl(first(episode.images?.screenshot), 'thumb');
-    const art = toArt(show.images);
+    const art = toArt('show', show.ids.trakt);
+    const screenshot = mediaImage({
+      type: 'episode',
+      id: episode.ids.trakt,
+      slot: 'screenshot',
+      size: 'thumb',
+      fallback: art.fanart,
+    });
     return {
       key: `episode-${episode.ids.trakt}`,
       type: 'episode',
@@ -71,7 +74,7 @@ export function toSearchCard(hit: SearchHit, options: SearchCardOptions): Search
       number: episodeNumber(episode, null),
       smallTitle: { text: show.title, href: showHref },
       overview: episode.overview ?? undefined,
-      art: { ...art, fanart: screenshot ?? art.fanart, spoilerFanart: screenshot ? art.fanart : undefined },
+      art: { ...art, fanart: screenshot, spoilerFanart: art.fanart },
       tags: [
         ...typeTags('Episode'),
         ...(episode.first_aired ? [generic(formatDate(episode.first_aired, { timeZone, order }))] : []),
@@ -84,7 +87,7 @@ export function toSearchCard(hit: SearchHit, options: SearchCardOptions): Search
   }
 
   if (hit.type === 'person' && person) {
-    const headshot = imageUrl(first(person.images?.headshot), 'thumb');
+    const headshot = mediaImage({ type: 'person', id: person.ids.trakt, slot: 'headshot', size: 'thumb' });
     return {
       key: `person-${person.ids.trakt}`,
       type: 'person',
@@ -121,7 +124,7 @@ export function toSearchCard(hit: SearchHit, options: SearchCardOptions): Search
     certification: media.certification ?? undefined,
     network: media.network ?? undefined,
     genres,
-    art: toArt(media.images),
+    art: toArt(hit.type, media.ids.trakt),
     tags: [...typeTags(hit.type === 'movie' ? 'Movie' : 'Show'), ...details.filter(Boolean).map(generic)],
     released: released(hit.type === 'movie' ? movie?.released : show?.first_aired, now),
     rating: media.rating ?? undefined,

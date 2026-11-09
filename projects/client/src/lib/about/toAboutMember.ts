@@ -1,29 +1,27 @@
 import { PLACEHOLDER_AVATAR } from '../users/placeholderAvatar.ts';
-import { imageUrl, webpImageUrl } from '../utils/imageUrl.ts';
+import { mediaImage } from '../images/mediaImage.ts';
+import { userAvatar } from '../images/userAvatar.ts';
 import type { AboutFavorite } from './AboutFavorite.ts';
 import type { AboutMember } from './AboutMember.ts';
 
-type Images = { readonly poster?: readonly string[] | null; readonly fanart?: readonly string[] | null } | null;
 type Media = {
   readonly title: string;
   readonly year?: number | null;
-  readonly ids: { readonly slug: string };
-  readonly images?: Images;
+  readonly ids: { readonly trakt: number; readonly slug: string };
 };
 
-/** A favorite row: a movie or a show, with `extended=full,images`. */
+/** A favorite row: a movie or a show, from `/users/:id/favorites`. */
 export type AboutFavoriteRow =
   | { readonly type: 'movie'; readonly movie: Media }
   | { readonly type: 'show'; readonly show: Media };
 
-/** The fields of a team member's `user` (`GET /team?extended=full,images`) the banner reads. */
+/** The fields of a team member's `user` (`GET /team?extended=full`) the banner reads. */
 export type AboutUserRow = {
   readonly username: string;
   readonly name?: string | null;
-  readonly ids: { readonly slug?: string | null };
+  readonly ids: { readonly slug?: string | null; readonly trakt?: number | null };
   readonly location?: string | null;
   readonly joined_at?: string | null;
-  readonly images?: { readonly avatar: { readonly full: string } } | null;
 };
 
 type Stats = { readonly movies: { readonly watched: number }; readonly episodes: { readonly watched: number } };
@@ -34,11 +32,6 @@ interface ToAboutMemberParams {
   stats: Stats | null;
 }
 
-const art = (path: string | null | undefined, size: 'medium' | 'full') => {
-  const url = imageUrl(path, size);
-  return url ? webpImageUrl(url) : null;
-};
-
 const mediaOf = (row: AboutFavoriteRow) => (row.type === 'movie' ? row.movie : row.show);
 
 const toFavorite = (row: AboutFavoriteRow): AboutFavorite => {
@@ -48,8 +41,8 @@ const toFavorite = (row: AboutFavoriteRow): AboutFavorite => {
     title: media.title,
     year: media.year ?? null,
     href: `/${row.type}s/${media.ids.slug}`,
-    poster: art(media.images?.poster?.at(0), 'medium'),
-    fanart: art(media.images?.fanart?.at(0), 'full'),
+    poster: mediaImage({ type: row.type, id: media.ids.trakt, slot: 'poster', size: 'medium' }),
+    fanart: mediaImage({ type: row.type, id: media.ids.trakt, slot: 'fanart', size: 'full' }),
   };
 };
 
@@ -67,7 +60,7 @@ export function toAboutMember({ user, favorites, stats }: ToAboutMemberParams): 
     slug: user.ids.slug ?? user.username,
     username: user.username,
     name: user.name?.trim() || user.username,
-    avatar: user.images?.avatar.full ?? PLACEHOLDER_AVATAR,
+    avatar: user.ids.trakt ? userAvatar(user.ids.trakt) : PLACEHOLDER_AVATAR,
     location: user.location?.trim() || null,
     since: yearOf(user.joined_at),
     favorites: favorites.slice(0, FAVORITES).map(toFavorite),

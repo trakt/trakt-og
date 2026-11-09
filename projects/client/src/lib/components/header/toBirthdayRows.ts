@@ -1,7 +1,7 @@
 import type { z } from 'zod/v4';
 import { personTags } from '../../people/personTags.ts';
 import type { DateOrder } from '../../utils/formatDate.ts';
-import { imageUrl } from '../../utils/imageUrl.ts';
+import { mediaImage } from '../../images/mediaImage.ts';
 import type { peopleThisMonthSchema } from './peopleThisMonthSchema.ts';
 import type { SearchRow } from './toSearchRow.ts';
 
@@ -41,6 +41,6 @@ export function toBirthdayRows(people: readonly Person[], today: string, order?:
       type: 'Person',
       tag: rank(birthday, today) === 0 ? 'Today' : label(birthday),
       tags: personTags(person, { today, order }),
-      poster: imageUrl(person.images?.headshot?.at(0), 'thumb'),
+      poster: mediaImage({ type: 'person', id: person.ids.trakt, slot: 'headshot', size: 'thumb' }),
     }));
 }

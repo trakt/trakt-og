@@ -11,11 +11,10 @@ import type { HomeTrending } from './live/fetchHomeTrending.ts';
 import type { HomeLive } from './live/toHomeLive.ts';
 import type { HomeFanart } from './toHomeFanarts.ts';
 
-const summary = (type: string, slug: string) => ({
+const summary = (slug: string) => ({
   title: `Title ${slug}`,
   year: 2010,
   ids: { trakt: 1, slug },
-  images: { fanart: [`media.trakt.tv/images/${type}/${slug}/fanarts/medium/a.jpg.webp`] },
 });
 
 const trendingRow = (type: string, slug: string) => ({
@@ -38,7 +37,7 @@ const server = setupServer(
   ),
   http.get('https://apiz.trakt.tv/:type/:slug', ({ request, params }) => {
     seen.push(request);
-    return HttpResponse.json(summary(String(params.type), String(params.slug)));
+    return HttpResponse.json(summary(String(params.slug)));
   }),
 );
 

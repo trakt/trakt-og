@@ -1,4 +1,6 @@
+import { z } from 'zod/v4';
 import { api } from '../../api/api.ts';
+import { searchRowsSchema } from '../../search/searchRowsSchema.ts';
 import type { DateOrder } from '../../utils/formatDate.ts';
 import { rawApiFetch } from '../../api/rawApiFetch.ts';
 import { peopleThisMonthSchema } from './peopleThisMonthSchema.ts';
@@ -33,32 +35,37 @@ const failed = () => {
   throw new Error('The search dropdown list did not load.');
 };
 
+const searchCountsSchema = z.array(z.object({ count: z.number() }));
+
+async function mostSearchedOf(
+  fetch: typeof globalThis.fetch | undefined,
+  kind: 'movies' | 'shows',
+  signal?: AbortSignal,
+) {
+  const response = await rawApiFetch({
+    fetch,
+    path: `/search/recent_by_id/global/${kind}?limit=${SHOWN}&extended=full`,
+    init: { signal },
+  });
+  if (!response.ok) return failed();
+  const body = await response.json().catch(() => null);
+  const hits = searchRowsSchema.safeParse(body);
+  const counts = searchCountsSchema.safeParse(body);
+  if (!hits.success || !counts.success) return failed();
+  return hits.data.map((hit, index) => ({ hit, count: counts.data.at(index)?.count ?? 0 }));
+}
+
 async function mostSearched(
-  client: ReturnType<typeof api>,
+  fetch: typeof globalThis.fetch | undefined,
   kinds: readonly ('movies' | 'shows')[],
   signal?: AbortSignal,
 ) {
-  const responses = await Promise.all(
-    kinds.map((kind) =>
-      client.search.trending({
-        params: { type: kind },
-        query: { limit: SHOWN, extended: 'full,images' },
-        fetchOptions: { signal },
-      }),
-    ),
-  );
-  if (responses.some((response) => response.status !== 200)) failed();
+  const found = await Promise.all(kinds.map((kind) => mostSearchedOf(fetch, kind, signal)));
 
-  return responses
-    .flatMap((response) => (response.status === 200 ? response.body : []))
+  return found
+    .flat()
     .toSorted((a, b) => b.count - a.count)
-    .map((hit) =>
-      hit.type === 'movie'
-        ? toSearchRow({ type: 'movie', score: hit.count, movie: hit.movie })
-        : hit.type === 'show'
-          ? toSearchRow({ type: 'show', score: hit.count, show: hit.show })
-          : null,
-    )
+    .map(({ hit }) => (hit.type === 'movie' || hit.type === 'show' ? toSearchRow(hit) : null))
     .filter((row) => row !== null)
     .slice(0, SHOWN);
 }
@@ -81,7 +88,7 @@ async function popularLists(client: ReturnType<typeof api>, type: 'personal' | '
     fetchOptions: { signal },
   });
   if (response.status !== 200) return failed();
-  return response.body.map(({ list }) => toSearchRow({ type: 'list', score: 0, list })).filter((row) => row !== null);
+  return response.body.map(({ list }) => toSearchRow({ type: 'list', list })).filter((row) => row !== null);
 }
 
 // A section that fails is left out, so the other takes the width; only both failing asks again next time.
@@ -96,7 +103,7 @@ async function listSections(client: ReturnType<typeof api>, signal?: AbortSignal
 
 // The API keeps no trending people, so People shows this month's birthdays, like v3's search.
 async function birthdays({ fetch, signal, today, order }: Omit<SearchTrendingParams, 'type'>) {
-  const response = await rawApiFetch({ fetch, path: '/people/this_month?extended=full,images', init: { signal } });
+  const response = await rawApiFetch({ fetch, path: '/people/this_month?extended=full', init: { signal } });
   if (response.status !== 200) return failed();
   const people = peopleThisMonthSchema.safeParse(await response.json().catch(() => null));
   return people.success ? toBirthdayRows(people.data, today, order) : failed();
@@ -115,7 +122,7 @@ export async function searchTrending({
 }: SearchTrendingParams): Promise<SearchTrending> {
   const client = api({ fetch });
   const kinds = KINDS[type.slug];
-  if (kinds) return { sections: [{ label: 'Most Searched', rows: await mostSearched(client, kinds, signal) }] };
+  if (kinds) return { sections: [{ label: 'Most Searched', rows: await mostSearched(fetch, kinds, signal) }] };
   if (type.slug === 'lists') return { sections: await listSections(client, signal) };
   if (type.slug === 'people') {
     return { sections: [{ label: 'Birthdays This Month', rows: await birthdays({ fetch, signal, today, order }) }] };

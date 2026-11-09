@@ -1,14 +1,13 @@
-import { imageUrl } from '../../utils/imageUrl.ts';
+import { mediaImage } from '../../images/mediaImage.ts';
 import type { HomeMediaType } from './toHomeLive.ts';
 
-/** A trending row as `/{type}/trending?extended=images` returns it, with the show or movie under its type's key. */
+/** A trending row as `/{type}/trending` returns it, with the show or movie under its type's key. */
 export type HomeTrendingRow = {
   readonly watchers: number;
   readonly item: {
     readonly title: string;
     readonly year?: number | null;
-    readonly ids: { readonly slug: string };
-    readonly images?: { readonly poster?: readonly string[] | null } | null;
+    readonly ids: { readonly trakt: number; readonly slug: string };
   };
 };
 
@@ -19,7 +18,6 @@ export type HomeTrendingTitle = {
   readonly title: string;
   readonly year?: number;
   readonly href: string;
-  /** Undefined when the title has no poster; the card shows the placeholder. */
   readonly poster?: string;
 };
 
@@ -32,6 +30,11 @@ export function toHomeTrending(type: HomeMediaType, rows: readonly HomeTrendingR
     title: item.title,
     year: item.year ?? undefined,
     href: `/${type}/${item.ids.slug}`,
-    poster: imageUrl(item.images?.poster?.at(0), 'medium'),
+    poster: mediaImage({
+      type: type === 'shows' ? 'show' : 'movie',
+      id: item.ids.trakt,
+      slot: 'poster',
+      size: 'medium',
+    }),
   }));
 }

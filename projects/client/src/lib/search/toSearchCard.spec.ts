@@ -7,9 +7,7 @@ const all = { typeTag: true, now: new Date('2026-09-29T12:00:00Z'), order: 'mdy'
 const oneType = { ...all, typeTag: false };
 
 const poster = ['media.trakt.tv/images/shows/000/001/390/posters/medium/abc.jpg.webp'];
-const art = (kind: string) => [`media.trakt.tv/images/shows/000/001/388/${kind}/medium/a.jpg.webp`];
-const sized = (kind: string, size: string) =>
-  `https://media.trakt.tv/images/shows/000/001/388/${kind}/${size}/a.jpg.webp`;
+const sized = (slot: string, size: string) => `https://media.trakt.tv/shows/1388/${size}/${slot}.webp`;
 
 const hit = (fields: object) => searchRowsSchema.parse([fields]).at(0) ?? { type: 'show' };
 
@@ -22,7 +20,6 @@ const show = hit({
     genres: ['drama', 'crime', 'thriller'],
     network: 'AMC',
     ids: { trakt: 1388, slug: 'breaking-bad' },
-    images: { poster },
     rating: 8.9,
     aired_episodes: 62,
     first_aired: '2008-01-21T02:00:00.000Z',
@@ -44,9 +41,9 @@ describe('toSearchCard', () => {
       network: 'AMC',
       genres: ['Drama', 'Crime'],
       art: {
-        poster: 'https://media.trakt.tv/images/shows/000/001/390/posters/thumb/abc.jpg.webp',
-        fanart: undefined,
-        logo: undefined,
+        poster: sized('poster', 'thumb'),
+        fanart: sized('fanart', 'thumb'),
+        logo: sized('logo', 'medium'),
       },
       tags: [{ text: 'Show' }, { text: 'AMC', kind: 'generic' }, { text: '62 episodes', kind: 'generic' }],
       released: true,
@@ -71,22 +68,19 @@ describe('toSearchCard', () => {
   });
 
   it('should carry every artwork, so the Display can switch without a reload', () => {
-    const images = { poster: art('posters'), fanart: art('fanarts'), logo: art('logos') };
-    expect(toSearchCard(hit({ type: 'show', show: { ...show.show, images } }), all)?.art).toEqual({
-      poster: sized('posters', 'thumb'),
-      fanart: sized('fanarts', 'thumb'),
-      logo: sized('logos', 'medium'),
+    expect(toSearchCard(show, all)?.art).toEqual({
+      poster: sized('poster', 'thumb'),
+      fanart: sized('fanart', 'thumb'),
+      logo: sized('logo', 'medium'),
     });
   });
 
   describe('for episodes', () => {
-    const screenshot = ['media.trakt.tv/images/episodes/000/000/001/screenshots/medium/s.jpg.webp'];
-    const still = 'https://media.trakt.tv/images/episodes/000/000/001/screenshots/thumb/s.jpg.webp';
-    const images = { poster: art('posters'), fanart: art('fanarts'), logo: art('logos') };
+    const still = `https://media.trakt.tv/episodes/62085/thumb/screenshot.webp#fallback=${encodeURIComponent(sized('fanart', 'thumb'))}`;
     const episode = (fields: object = {}) =>
       hit({
         type: 'episode',
-        show: { ...show.show, images },
+        show: show.show,
         episode: {
           title: 'Pilot',
           season: 1,
@@ -110,16 +104,12 @@ describe('toSearchCard', () => {
       });
     });
 
-    it("should draw its screenshot as the fanart, with the show's fanart for spoilers", () => {
-      expect(toSearchCard(episode({ images: { screenshot } }), all)?.art).toEqual({
-        poster: sized('posters', 'thumb'),
+    it("should draw its screenshot as the fanart, falling back to the show's, which spoilers use", () => {
+      expect(toSearchCard(episode(), all)?.art).toEqual({
+        poster: sized('poster', 'thumb'),
         fanart: still,
-        logo: sized('logos', 'medium'),
-        spoilerFanart: sized('fanarts', 'thumb'),
-      });
-      expect(toSearchCard(episode(), all)?.art).toMatchObject({
-        fanart: sized('fanarts', 'thumb'),
-        spoilerFanart: undefined,
+        logo: sized('logo', 'medium'),
+        spoilerFanart: sized('fanart', 'thumb'),
       });
     });
 
@@ -137,9 +127,8 @@ describe('toSearchCard', () => {
       hit({ type: 'person', person: { name: 'Aaron Paul', ids: { trakt: 2, slug: 'aaron-paul' }, ...fields } });
 
     it('should draw the headshot whatever the artwork', () => {
-      const headshot = ['media.trakt.tv/images/people/000/000/002/headshots/medium/h.jpg.webp'];
-      const image = 'https://media.trakt.tv/images/people/000/000/002/headshots/thumb/h.jpg.webp';
-      expect(toSearchCard(person({ images: { headshot } }), all)).toMatchObject({
+      const image = 'https://media.trakt.tv/people/2/thumb/headshot.webp';
+      expect(toSearchCard(person({}), all)).toMatchObject({
         href: '/people/aaron-paul',
         title: 'Aaron Paul',
         art: { poster: image, fanart: image },

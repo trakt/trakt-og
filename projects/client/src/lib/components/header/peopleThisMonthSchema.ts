@@ -11,6 +11,5 @@ export const peopleThisMonthSchema = z.array(
     birthday: z.string().nullish(),
     death: z.string().nullish(),
     known_for_department: z.string().nullish(),
-    images: z.object({ headshot: z.array(z.string()).nullish() }).nullish(),
   }),
 );

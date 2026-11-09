@@ -10,7 +10,6 @@ const breakingBad = {
   year: 2008,
   ids: { trakt: 1388, slug: 'breaking-bad' },
   genres: ['drama', 'science-fiction'],
-  images: { poster: ['media.trakt.tv/images/shows/000/001/388/posters/medium/fa39b59954.jpg.webp'] },
 };
 
 describe('toSearchRow', () => {
@@ -24,7 +23,7 @@ describe('toSearchRow', () => {
         year: '2008',
         type: 'Show',
         genres: ['Drama', 'Science Fiction'],
-        poster: 'https://media.trakt.tv/images/shows/000/001/388/posters/thumb/fa39b59954.jpg.webp',
+        poster: 'https://media.trakt.tv/shows/1388/thumb/poster.webp',
       });
     });
 
@@ -34,13 +33,13 @@ describe('toSearchRow', () => {
       expect(toSearchRow(hit({ type: 'show', show }))?.genres).toEqual(['Drama', 'Crime', 'Thriller']);
     });
 
-    it('should leave out a missing year, genres and poster', () => {
-      const movie = { title: 'Hayde Bre', year: null, ids: { trakt: 1, slug: 'hayde-bre' }, genres: [], images: null };
+    it('should leave out a missing year and genres', () => {
+      const movie = { title: 'Hayde Bre', year: null, ids: { trakt: 1, slug: 'hayde-bre' }, genres: [] };
 
       const row = toSearchRow(hit({ type: 'movie', movie }));
 
       expect(row).toMatchObject({ href: '/movies/hayde-bre', type: 'Movie' });
-      expect([row?.year, row?.genres, row?.poster]).toEqual([undefined, undefined, undefined]);
+      expect([row?.year, row?.genres]).toEqual([undefined, undefined]);
     });
   });
 
@@ -85,7 +84,6 @@ describe('toSearchRow', () => {
     const person = {
       name: 'Bryan Cranston',
       ids: { trakt: 297737, slug: 'bryan-cranston' },
-      images: { headshot: ['media.trakt.tv/images/people/000/297/737/headshots/medium/abc.jpg.webp'] },
     };
 
     const row = toSearchRow(hit({ type: 'person', person }));
@@ -94,7 +92,7 @@ describe('toSearchRow', () => {
       href: '/people/bryan-cranston',
       title: 'Bryan Cranston',
       type: 'Person',
-      poster: 'https://media.trakt.tv/images/people/000/297/737/headshots/thumb/abc.jpg.webp',
+      poster: 'https://media.trakt.tv/people/297737/thumb/headshot.webp',
     });
     expect(row?.tag).toBeUndefined();
   });

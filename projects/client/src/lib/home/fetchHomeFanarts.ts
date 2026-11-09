@@ -7,12 +7,12 @@ type Title = (typeof homeFanartTitles)[number];
 /** A title's public summary, read without a token. A failed one drops out instead of failing the hero. */
 async function fetchSource(fetch: typeof globalThis.fetch, { type, slug }: Title): Promise<HomeFanartSource | null> {
   const client = api({ fetch });
-  const query = { params: { id: slug }, query: { extended: 'full,images' as const } };
+  const query = { params: { id: slug }, query: {} };
   const response = await (type === 'movie' ? client.movies.summary(query) : client.shows.summary(query)).catch(
     () => null,
   );
   if (response?.status !== 200) return null;
-  return { type, slug, title: response.body.title, fanart: response.body.images?.fanart?.at(0) };
+  return { type, id: response.body.ids.trakt, slug, title: response.body.title };
 }
 
 /**

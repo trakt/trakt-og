@@ -1,7 +1,6 @@
 import { z } from 'zod/v4';
 
 const ids = z.object({ trakt: z.number(), slug: z.string().nullish() });
-const art = z.array(z.string()).nullish();
 const media = z.object({
   ids,
   title: z.string(),
@@ -16,8 +15,6 @@ const media = z.object({
   first_aired: z.string().nullish(),
   released: z.string().nullish(),
   airs: z.object({ timezone: z.string().nullish() }).nullish(),
-  // Every kind of art the sidebar's Artwork can pick (toSearchCard.ts).
-  images: z.object({ poster: art, fanart: art, logo: art }).nullish(),
 });
 
 // Parse at the loader boundary, including API bodies, before the pure mappers see them.
@@ -38,7 +35,6 @@ export const searchRowsSchema = z.array(
         episode_type: z.string().nullish(),
         rating: z.number().nullish(),
         runtime: z.number().nullish(),
-        images: z.object({ screenshot: art }).nullish(),
       })
       .nullish(),
     person: z
@@ -48,7 +44,6 @@ export const searchRowsSchema = z.array(
         birthday: z.string().nullish(),
         death: z.string().nullish(),
         known_for_department: z.string().nullish(),
-        images: z.object({ headshot: z.array(z.string()).nullish() }).nullish(),
       })
       .nullish(),
     list: z

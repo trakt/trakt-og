@@ -9,7 +9,6 @@ const person = (
   name: `Person ${trakt}`,
   ids: { trakt, slug: `person-${trakt}` },
   birthday,
-  images: null,
   ...more,
 });
 
@@ -48,7 +47,7 @@ describe('util: toBirthdayRows', () => {
         type: 'Person',
         tag: 'Oct 12',
         tags: ['Age 45'],
-        poster: undefined,
+        poster: 'https://media.trakt.tv/people/2/thumb/headshot.webp',
       },
     ]);
   });

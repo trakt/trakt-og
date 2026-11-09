@@ -1,5 +1,6 @@
 import { error, redirect } from '@sveltejs/kit';
 import { api } from '../api/api.ts';
+import { rawApiFetch } from '../api/rawApiFetch.ts';
 import { extractPageMeta } from '../api/extractPageMeta.ts';
 import type { DateOrder } from '../utils/formatDate.ts';
 import { findSearchType } from './findSearchType.ts';
@@ -29,7 +30,6 @@ type LoadSearchParams = {
 
 // OG's `set_params`: 36 a page unless `limit` says otherwise.
 const PER_PAGE = 36;
-const EXTENDED = 'full,images';
 
 // The tabs that hide the type tag.
 const NO_TYPE_TAG = new Set(['shows', 'movies', 'people']);
@@ -75,33 +75,36 @@ export async function loadSearch({ fetch, token, cookies, parent, url, type: slu
     if ('idType' in type) {
       // `id_type` narrows the lookup to one kind, like OG's `/search/trakt?query=1&id_type=movie`.
       const kind = url.searchParams.get('id_type');
-      const response = await api({ fetch }).search.lookup({
-        params: { id_type: type.idType, id: query },
-        query: { extended: EXTENDED, ...(kind ? { type: kind } : {}) },
+      const search = new URLSearchParams({ extended: 'full', ...(kind ? { type: kind } : {}) });
+      const response = await rawApiFetch({
+        fetch,
+        path: `/search/${type.idType}/${encodeURIComponent(query)}?${search}`,
       });
-      return response.status === 200 ? { hits: response.body, headers: null } : 'failed';
+      return response.status === 200 ? { hits: await response.json().catch(() => null), headers: null } : 'failed';
     }
 
     if (!('text' in type)) return null;
 
-    const publicQuery = { query, page, limit, extended: EXTENDED } as const;
-    const viewerQuery = { ...publicQuery, hide };
+    const publicQuery = { query, page: `${page}`, limit: `${limit}`, extended: 'full' };
     const request = (viewer: boolean) =>
-      api({ fetch, token: viewer ? token : null }).search.query({
-        params: { type: type.text },
-        query: viewer ? viewerQuery : publicQuery,
+      rawApiFetch({
+        fetch,
+        token: viewer ? token : null,
+        path: `/search/${type.text}?${new URLSearchParams(viewer ? { ...publicQuery, hide } : publicQuery)}`,
       });
     const viewer = Boolean(token && hide);
     const first = await request(viewer);
     // The browser renews a stale token; SSR must still render a usable public search.
     const response = viewer && first.status === 401 ? await request(false) : first;
-    return response.status === 200 ? { hits: response.body, headers: response.headers } : 'failed';
+    return response.status === 200
+      ? { hits: await response.json().catch(() => null), headers: response.headers }
+      : 'failed';
   };
 
   const [result, { datePreferences, settings }] = await Promise.all([search(), parent()]);
   if (result === 'failed') error(502, 'The Trakt API could not load this search.');
 
-  const parsed = searchRowsSchema.safeParse(result?.hits ?? []);
+  const parsed = searchRowsSchema.safeParse(result ? result.hits : []);
   if (!parsed.success) error(502, 'The Trakt API returned invalid search results.');
   const hits = parsed.data;
   const cardOptions = {

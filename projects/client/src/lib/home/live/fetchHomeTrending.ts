@@ -8,7 +8,7 @@ const HOME_TRENDING_LIMIT = 60;
 export type HomeTrending = Readonly<Record<HomeMediaType, readonly HomeTrendingTitle[]>>;
 
 async function trendingOf(client: ReturnType<typeof api>, type: HomeMediaType) {
-  const query = { query: { limit: HOME_TRENDING_LIMIT, extended: 'images' as const } };
+  const query = { query: { limit: HOME_TRENDING_LIMIT } };
   if (type === 'shows') {
     const response = await client.shows.trending(query);
     if (response.status !== 200) throw new Error(`Trending shows answered ${response.status}.`);

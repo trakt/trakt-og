@@ -43,15 +43,15 @@ export const episode = z.object({
 const play = { id: z.number(), watched_at: z.string() };
 
 /**
- * `/users/:id/history[/:type][/:item_id]?extended=full,images`. Read raw because `@trakt/api` 0.6.0 types `watchnow`
+ * `/users/:id/history[/:type][/:item_id]?extended=full`. Read raw because `@trakt/api` 0.6.0 types `watchnow`
  * as a few keywords, while the worker takes service slugs too (`middleware/sources.ts`).
  */
 export const historyRowsSchema = z.array(z.union([z.object({ ...play, movie }), z.object({ ...play, episode, show })]));
 
-/** `/users/:id/watched/shows?extended=full,images`, the Shows tab's rows. */
+/** `/users/:id/watched/shows?extended=full`, the Shows tab's rows. */
 export const watchedShowsSchema = z.array(z.object({ plays: z.number(), last_watched_at: z.string(), show }));
 
-/** `/users/:id/watched/movies?extended=full,images`, the sorted Movies tab's rows. */
+/** `/users/:id/watched/movies?extended=full`, the sorted Movies tab's rows. */
 export const watchedMoviesSchema = z.array(z.object({ plays: z.number(), last_watched_at: z.string(), movie }));
 
 export type HistoryRow = z.infer<typeof historyRowsSchema>[number];

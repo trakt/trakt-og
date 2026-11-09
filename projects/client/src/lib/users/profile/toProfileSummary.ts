@@ -8,7 +8,7 @@ import { episodeNumber, episodeType } from '../../components/media/episodeTags.t
 import type { OnDeckItem } from '../../components/media/OnDeckItem.ts';
 import type { DatePreferences } from '../../settings/DatePreferences.ts';
 import { formatDate } from '../../utils/formatDate.ts';
-import { imageUrl } from '../../utils/imageUrl.ts';
+import { mediaImage } from '../../images/mediaImage.ts';
 
 type EpisodeRow = Pick<EpisodeActivityHistoryResponse, 'id' | 'watched_at' | 'episode' | 'show'>;
 type MovieRow = Pick<MovieActivityHistoryResponse, 'id' | 'watched_at' | 'movie'>;
@@ -86,7 +86,7 @@ export function toWatchedEpisode(row: EpisodeRow, datePreferences: DatePreferenc
     href: episodeHref(row),
     number: episodeNumber(row.episode, row.show.genres),
     title: row.episode.title ?? '',
-    image: imageUrl(row.episode.images?.screenshot?.at(0), 'thumb'),
+    image: mediaImage({ type: 'episode', id: row.episode.ids.trakt, slot: 'screenshot', size: 'thumb' }),
     rating: row.episode.rating ?? undefined,
     episodeBadge: episodeBadge(row.episode),
     show: { text: row.show.title, href: showHref(row.show) },
@@ -103,7 +103,7 @@ export function toWatchedMovie(row: MovieRow, datePreferences: DatePreferences):
     id: row.movie.ids.trakt,
     href: `/movies/${row.movie.ids.slug}`,
     title: row.movie.title,
-    image: imageUrl(row.movie.images?.poster?.at(0), 'thumb'),
+    image: mediaImage({ type: 'movie', id: row.movie.ids.trakt, slot: 'poster', size: 'thumb' }),
     rating: row.movie.rating ?? undefined,
     watchedDate: watchedDate(row.watched_at, datePreferences),
     runtime: row.movie.runtime ?? undefined,
@@ -121,7 +121,7 @@ export function toFavoriteCard(row: FavoriteRow): FavoriteCard {
     title: media.title,
     typeLabel: type === 'show' ? 'Show' : 'Movie',
     year: media.year ?? undefined,
-    image: imageUrl(media.images?.poster?.at(0), 'thumb'),
+    image: mediaImage({ type, id: media.ids.trakt, slot: 'poster', size: 'thumb' }),
     rating: media.rating ?? undefined,
     airedEpisodes: row.type === 'show' ? (row.show.aired_episodes ?? undefined) : undefined,
     gradient: [start, end],

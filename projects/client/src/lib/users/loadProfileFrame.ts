@@ -26,7 +26,7 @@ async function readFrame(client: ReturnType<typeof api>, id: string) {
   const [profile, stats, watching] = await Promise.all([
     client.users.profile({ params: { id }, query: { extended: 'full,vip' } }),
     client.users.stats({ params: { id } }).catch(() => null),
-    client.users.watching({ params: { id }, query: { extended: 'full,images' } }).catch(() => null),
+    client.users.watching({ params: { id }, query: { extended: 'full' } }).catch(() => null),
   ]);
   return { profile, stats, watching };
 }

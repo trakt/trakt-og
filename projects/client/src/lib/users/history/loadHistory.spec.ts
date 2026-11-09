@@ -27,9 +27,6 @@ const server = setupServer(
   http.get('https://apiz.trakt.tv/shows/1388/seasons/2', () =>
     HttpResponse.json([{ first_aired: '2009-03-09T02:00:00.000Z' }, { first_aired: '2010-05-31T02:00:00.000Z' }]),
   ),
-  http.get('https://apiz.trakt.tv/shows/1388', () =>
-    HttpResponse.json({ ...show, images: { poster: ['media.trakt.tv/posters/medium/bb.jpg.webp'] } }),
-  ),
 );
 beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => {
@@ -60,7 +57,7 @@ describe('loadHistory', () => {
   it('should read one item with its filters, without the token, and name it in the band', async () => {
     const result = await load({ type: 'episodes', query: '?season=333403&start_at=2026-09-01&genres=drama' });
     expect(requested()).toEqual([
-      '/users/tester/history/seasons/333403?extended=full%2Cimages&page=1&limit=60&start_at=2026-09-01T07%3A00%3A00.000Z&genres=drama',
+      '/users/tester/history/seasons/333403?extended=full&page=1&limit=60&start_at=2026-09-01T07%3A00%3A00.000Z&genres=drama',
     ]);
     expect(seen[0]?.headers.has('authorization')).toBe(false);
     expect(result).toMatchObject({
@@ -80,21 +77,21 @@ describe('loadHistory', () => {
     expect(result.days[0]?.cards[0]).toMatchObject({ variant: 'screenshot', show: { text: 'Breaking Bad' } });
   });
 
-  it('should page the watched list on the Shows tab, with each poster from the show summary', async () => {
+  it('should page the watched list on the Shows tab', async () => {
     const result = await load({ type: 'shows' });
-    expect(requested()).toEqual(['/users/tester/watched/shows?extended=full%2Cimages&page=1&limit=60']);
+    expect(requested()).toEqual(['/users/tester/watched/shows?extended=full&page=1&limit=60']);
     expect(result.counts).toEqual({ unique: { count: 61, noun: 'show' } });
     expect(result.days[0]?.cards[0]).toMatchObject({
       type: 'show',
-      image: 'https://media.trakt.tv/posters/thumb/bb.jpg.webp',
+      image: 'https://media.trakt.tv/shows/1388/thumb/poster.webp',
     });
   });
 
   it('should group the filtered plays by show on a filtered Shows tab', async () => {
     const result = await load({ type: 'shows', query: '?genres=drama' });
     expect(requested()).toEqual([
-      '/users/tester/history/shows?extended=full%2Cimages&page=1&limit=250&genres=drama',
-      '/users/tester/history/shows?extended=full%2Cimages&page=2&limit=250&genres=drama',
+      '/users/tester/history/shows?extended=full&page=1&limit=250&genres=drama',
+      '/users/tester/history/shows?extended=full&page=2&limit=250&genres=drama',
     ]);
     expect(result.counts).toEqual({ unique: { count: 1, noun: 'show' } });
     expect(result.page).toEqual({ type: 'paginated', current: 1, total: 1 });
@@ -130,8 +127,8 @@ describe('loadHistory', () => {
     );
     const result = await load({ type: 'movies', sort: 'time/asc' });
     expect(requested()).toEqual([
-      '/users/tester/watched/movies?extended=full%2Cimages&page=1&limit=250',
-      '/users/tester/watched/movies?extended=full%2Cimages&page=2&limit=250',
+      '/users/tester/watched/movies?extended=full&page=1&limit=250',
+      '/users/tester/watched/movies?extended=full&page=2&limit=250',
     ]);
     expect(result).toMatchObject({
       sort: { by: 'time', how: 'asc' },
@@ -156,8 +153,8 @@ describe('loadHistory', () => {
     );
     const result = await load({ type: 'episodes', sort: 'added/desc', query: '?show=1388' });
     expect(requested()).toEqual([
-      '/users/tester/history/shows/1388?extended=full%2Cimages&page=1&limit=250',
-      '/users/tester/history/shows/1388?extended=full%2Cimages&page=2&limit=250',
+      '/users/tester/history/shows/1388?extended=full&page=1&limit=250',
+      '/users/tester/history/shows/1388?extended=full&page=2&limit=250',
     ]);
     expect(result).toMatchObject({ sort: { by: 'added', how: 'desc' }, charted: false, counts: { plays: 61 } });
     expect(result.days.map(({ cards }) => cards.map(({ key }) => key))).toEqual([[8], [9]]);

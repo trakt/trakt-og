@@ -12,7 +12,7 @@ describe('featuredListBox', () => {
       name: 'Watchlist',
       href: '/users/lena/watchlist',
       count: '212 items',
-      image: 'https://media.trakt.tv/images/shows/000/206/790/fanarts/thumb/27e7ef3b00.jpg.webp',
+      image: 'https://media.trakt.tv/shows/206790/thumb/fanart.webp',
       next: 'Next up: Pluribus, The Pitt, Sicario',
     });
     expect(entry?.view.posters).toHaveLength(3);

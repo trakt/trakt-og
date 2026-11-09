@@ -10,7 +10,6 @@ const show = {
   genres: ['drama'],
   aired_episodes: 24,
   runtime: 45,
-  images: { poster: ['media.trakt.tv/images/shows/000/000/001/posters/medium/a.jpg.webp'] },
 };
 
 describe('toUserComment', () => {
@@ -21,7 +20,6 @@ describe('toUserComment', () => {
       title: 'One Year Later',
       ids: { trakt: 100 },
       rating: 8.4,
-      images: { screenshot: ['media.trakt.tv/images/episodes/000/000/100/screenshots/medium/b.jpg.webp'] },
     };
 
     expect(toUserComment({ type: 'episode', comment, show, episode })).toMatchObject({
@@ -33,7 +31,7 @@ describe('toUserComment', () => {
         href: '/shows/andor/seasons/2/episodes/1',
         number: '2x01',
         title: 'One Year Later',
-        image: 'https://media.trakt.tv/images/episodes/000/000/100/screenshots/thumb/b.jpg.webp',
+        image: 'https://media.trakt.tv/episodes/100/thumb/screenshot.webp',
         variant: 'screenshot',
         rating: 8.4,
         runtime: 45,
@@ -44,7 +42,7 @@ describe('toUserComment', () => {
   });
 
   it('should fall back to the show poster and name a season by its number', () => {
-    const season = { number: 0, ids: { trakt: 50 }, aired_episodes: 3, images: { poster: [] } };
+    const season = { number: 0, ids: { trakt: 50 }, aired_episodes: 3 };
 
     expect(toUserComment({ type: 'season', comment, show, season })).toMatchObject({
       item: { type: 'season', id: 50, show: 1, number: 0 },
@@ -52,7 +50,7 @@ describe('toUserComment', () => {
       poster: {
         href: '/shows/andor/seasons/0',
         title: 'Specials',
-        image: 'https://media.trakt.tv/images/shows/000/000/001/posters/thumb/a.jpg.webp',
+        image: `https://media.trakt.tv/seasons/50/thumb/poster.webp#fallback=${encodeURIComponent('https://media.trakt.tv/shows/1/thumb/poster.webp')}`,
         seasonOf: { show: 1, number: 0 },
         airedEpisodes: 3,
       },

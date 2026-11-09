@@ -17,7 +17,7 @@ export async function fetchSharedFavorites(
 ): Promise<ReturnType<typeof toSharedFavorites>> {
   const response = await api({ fetch: viewerFetch() }).users.favorites.typedSorted({
     params: { id: slug, type: 'movie,show', sort_by: 'rank', sort_how: 'asc' },
-    query: { extended: 'full,images', limit: COMPARED },
+    query: { extended: 'full', limit: COMPARED },
   });
   if (response.status !== 200) throw new Error(`Favorites read failed: ${response.status}`);
   return toSharedFavorites(response.body, shared, limit, Math.random);

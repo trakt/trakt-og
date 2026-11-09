@@ -49,7 +49,7 @@ async function fetchWritten({
   const response = await api({ fetch, token }).users.comments({
     params: { id, comment_type: commentType === 'replies' ? 'all' : commentType, type },
     query: {
-      extended: 'full,images',
+      extended: 'full',
       page,
       limit,
       ...(commentType === 'replies' ? { include_replies: 'only' as const } : {}),
@@ -69,7 +69,7 @@ async function fetchLiked({ fetch, token, id, page, limit }: Request): Promise<L
   if (!token) return { status: 'empty' };
   const response = await api({ fetch, token }).users.likes({
     params: { id: encodeURIComponent(id), type: 'comments' },
-    query: { extended: 'comments,full,images', page, limit },
+    query: { extended: 'comments,full', page, limit },
   });
   if (response.status === 401 || response.status === 403) return { status: 'empty' };
   if (response.status === 404) error(404, 'Page Not Found');

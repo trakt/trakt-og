@@ -21,7 +21,7 @@ export async function loadNotes({ fetch, parent, locals, params, url }: Params) 
   if (!Object.hasOwn(noteTypes, type)) error(404, 'Page Not Found');
   const current = positiveInt(url.searchParams.get('page'), 1);
   const limit = positiveInt(url.searchParams.get('limit'), 30);
-  const query = new URLSearchParams({ extended: 'full,images,vip', page: String(current), limit: String(limit) });
+  const query = new URLSearchParams({ extended: 'full,vip', page: String(current), limit: String(limit) });
   const path = `/users/${encodeURIComponent(params.id)}/notes${type === 'all' ? '' : `/${type}`}?${query}`;
   const [initial, { profile, datePreferences }] = await Promise.all([
     rawApiFetch({ fetch, token: locals.token, path }),

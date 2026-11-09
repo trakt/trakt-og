@@ -10,19 +10,16 @@ const movie = {
   runtime: 139,
   released: '1999-10-15',
   votes: 10,
-  images: { poster: ['media.trakt.tv/posters/medium/f.jpg'] },
 };
 const show = {
   title: 'Breaking Bad',
   ids: { trakt: 2, slug: 'breaking-bad' },
-  images: { poster: ['media.trakt.tv/posters/medium/b.jpg'] },
 };
 const episode = {
   ids: { trakt: 1 },
   title: 'Pilot',
   season: 1,
   number: 1,
-  images: { screenshot: ['media.trakt.tv/screenshots/medium/p.jpg'] },
 };
 const map = (raw: unknown, options = opts) =>
   ratingRowsSchema
@@ -36,7 +33,7 @@ describe('toRatingCard', () => {
       ownerRating: 9,
       subtitles: ['Sep 29, 2026 3:00 PM'],
       href: '/movies/fight-club',
-      image: 'https://media.trakt.tv/posters/thumb/f.jpg',
+      image: 'https://media.trakt.tv/movies/1/thumb/poster.webp',
       runtime: 0,
       minutes: 139,
     });
@@ -50,18 +47,18 @@ describe('toRatingCard', () => {
       variant: 'screenshot',
       number: '1x01',
       href: '/shows/breaking-bad/seasons/1/episodes/1',
-      image: 'https://media.trakt.tv/screenshots/thumb/p.jpg',
+      image: 'https://media.trakt.tv/episodes/1/thumb/screenshot.webp',
       subtitles: [{ text: 'Breaking Bad', href: '/shows/breaking-bad' }, 'Sep 29, 2026 3:00 PM'],
       episodeBadge: { label: 'Series Premiere' },
     });
-    expect(toRatingCard(row, opts)?.image).toBe('https://media.trakt.tv/posters/thumb/b.jpg');
+    expect(toRatingCard(row, opts)?.image).toBe('https://media.trakt.tv/shows/2/thumb/poster.webp');
   });
   it('should support specials, season-specific posters and released/runtime/votes lines', () => {
     const rows = ratingRowsSchema.parse([
       {
         ...base,
         type: 'season',
-        season: { ids: { trakt: 3 }, number: 0, images: { poster: ['media.trakt.tv/posters/medium/s.jpg'] } },
+        season: { ids: { trakt: 3 }, number: 0 },
         show,
       },
       { ...base, type: 'movie', movie },
@@ -72,7 +69,7 @@ describe('toRatingCard', () => {
     expect(toRatingCard(season, opts)).toMatchObject({
       title: 'Specials',
       href: '/shows/breaking-bad/seasons/0',
-      image: 'https://media.trakt.tv/posters/thumb/s.jpg',
+      image: 'https://media.trakt.tv/seasons/3/thumb/poster.webp',
     });
     expect(toRatingCard(film, { ...opts, by: 'released' })?.subtitles).toEqual(['Oct 15, 1999']);
     expect(toRatingCard(film, { ...opts, by: 'runtime' })?.subtitles).toEqual(['139 minutes']);

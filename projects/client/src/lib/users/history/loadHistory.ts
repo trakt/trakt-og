@@ -9,7 +9,6 @@ import { type FadeHide, parseFadeHide } from '../../components/filters/fadeHide.
 import type { DatePreferences } from '../../settings/DatePreferences.ts';
 import type { ProfileUser } from '../ProfileUser.ts';
 import { readProfileTab } from '../readProfileTab.ts';
-import { withShowPosters } from '../withShowPosters.ts';
 import { type HistoryCounts, historyCounts } from './historyCounts.ts';
 import { type HistoryFilters, historyFilters, itemHistoryType } from './historyFilters.ts';
 import {
@@ -66,7 +65,7 @@ type Fetched = {
 
 function query(filters: HistoryFilters, page: number, limit: number) {
   return new URLSearchParams({
-    extended: 'full,images',
+    extended: 'full',
     page: String(page),
     limit: String(limit),
     ...(filters.startAt && { start_at: filters.startAt }),
@@ -154,7 +153,7 @@ async function fetchPage({
     return {
       ...empty,
       status: 200,
-      charts: await withShowPosters(fetch, rows.data.map(fromWatched).filter(isShowChart)),
+      charts: rows.data.map(fromWatched).filter(isShowChart),
       total: total(response.headers),
       page: extractPageMeta(response.headers, current),
     };
@@ -180,11 +179,10 @@ async function fetchPage({
     if (!all.rows) return invalid(all.status);
     const charts = sortCharts(all.rows, sort);
     const { slice, page } = paged(charts, current, limit);
-    const shows = slice.filter(isShowChart);
     return {
       ...empty,
       status: 200,
-      charts: shows.length > 0 ? await withShowPosters(fetch, shows) : slice,
+      charts: slice,
       total: filtered(filters) ? charts.length : (all.total ?? charts.length),
       page,
     };

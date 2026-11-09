@@ -1,5 +1,5 @@
 import { episodeNumber } from '../../../../components/media/episodeTags.ts';
-import { imageUrl } from '../../../../utils/imageUrl.ts';
+import { mediaImage } from '../../../../images/mediaImage.ts';
 import type { BoxInput } from '../BoxInput.ts';
 import { boxMath } from '../boxMath.ts';
 import { defineProfileBox } from '../defineProfileBox.ts';
@@ -36,7 +36,7 @@ function toPlay(input: BoxInput, progress: Progress | undefined): LastWatchedVie
   if (play.kind === 'movie') {
     const { movie } = play.row;
     return {
-      image: imageUrl(movie.images?.fanart?.at(0), 'thumb'),
+      image: mediaImage({ type: 'movie', id: movie.ids.trakt, slot: 'fanart', size: 'thumb' }),
       title: { text: movie.title, href: `/movies/${movie.ids.slug}` },
       subtitle: movie.year ? { text: String(movie.year) } : undefined,
       when,
@@ -46,7 +46,7 @@ function toPlay(input: BoxInput, progress: Progress | undefined): LastWatchedVie
   const { show, episode } = play.row;
   const showHref = `/shows/${show.ids.slug}`;
   return {
-    image: imageUrl(show.images?.fanart?.at(0), 'thumb'),
+    image: mediaImage({ type: 'show', id: show.ids.trakt, slot: 'fanart', size: 'thumb' }),
     title: { text: show.title, href: showHref },
     subtitle: {
       text: [episodeNumber(episode, show.genres), episode.title].filter(Boolean).join(' '),

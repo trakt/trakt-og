@@ -10,7 +10,6 @@ const [movie, play] = historyRowsSchema.parse([
       title: 'Oblivion',
       year: 2013,
       ids: { trakt: 55753, slug: 'oblivion-2013' },
-      images: { fanart: ['media.trakt.tv/movies/medium/o.jpg.webp'] },
     },
   },
   {
@@ -20,7 +19,6 @@ const [movie, play] = historyRowsSchema.parse([
       title: 'The Office',
       year: 2005,
       ids: { trakt: 2302, slug: 'the-office' },
-      images: { fanart: ['media.trakt.tv/shows/medium/office.jpg.webp'] },
     },
     episode: {
       ids: { trakt: 182211 },
@@ -29,7 +27,6 @@ const [movie, play] = historyRowsSchema.parse([
       title: 'Finale',
       episode_type: 'series_finale',
       first_aired: '2013-05-16T21:30:00.000Z',
-      images: { screenshot: ['media.trakt.tv/episodes/medium/finale.jpg.webp'] },
     },
   },
 ]);
@@ -40,14 +37,14 @@ describe('historyItemBand', () => {
       type: 'movie',
       title: 'Oblivion',
       href: '/movies/oblivion-2013',
-      image: 'https://media.trakt.tv/movies/thumb/o.jpg.webp',
+      image: 'https://media.trakt.tv/movies/55753/thumb/fanart.webp',
       year: '2013',
     });
     expect(historyItemBand({ type: 'show', id: 2302 }, play)).toEqual({
       type: 'show',
       title: 'The Office',
       href: '/shows/the-office',
-      image: 'https://media.trakt.tv/shows/thumb/office.jpg.webp',
+      image: 'https://media.trakt.tv/shows/2302/thumb/fanart.webp',
       year: '2005',
     });
   });
@@ -58,14 +55,14 @@ describe('historyItemBand', () => {
       type: 'season',
       title: 'Season 9',
       href: '/shows/the-office/seasons/9',
-      image: 'https://media.trakt.tv/shows/thumb/office.jpg.webp',
+      image: 'https://media.trakt.tv/shows/2302/thumb/fanart.webp',
       year: '2012 - 2013',
       parents: [show],
     });
     expect(historyItemBand({ type: 'episode', id: 182211 }, play, { id: 7617 })).toMatchObject({
       title: '9x23 Finale',
       href: '/shows/the-office/seasons/9/episodes/23',
-      image: 'https://media.trakt.tv/episodes/thumb/finale.jpg.webp',
+      image: `https://media.trakt.tv/episodes/182211/thumb/screenshot.webp#fallback=${encodeURIComponent('https://media.trakt.tv/shows/2302/thumb/fanart.webp')}`,
       year: '2013',
       parents: [show, { title: 'Season 9', item: { type: 'season', id: 7617 } }],
     });

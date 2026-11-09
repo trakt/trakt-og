@@ -9,7 +9,6 @@ import { type HistoryType, isHistoryType } from '../history/historyTypes.ts';
 import { toHistoryDays } from '../history/toHistoryCard.ts';
 import type { ProfileUser } from '../ProfileUser.ts';
 import { readProfileTab } from '../readProfileTab.ts';
-import { withShowPosters } from '../withShowPosters.ts';
 import { libraryRowsSchema, libraryShowsSchema } from './libraryRowsSchema.ts';
 import { apiSortHow, type LibrarySort, librarySort } from './librarySort.ts';
 import { libraryPath } from './libraryPath.ts';
@@ -57,7 +56,7 @@ async function fetchPage({
   limit: number;
 }): Promise<Fetched> {
   const query = new URLSearchParams({
-    extended: 'full,images',
+    extended: 'full',
     page: String(current),
     limit: String(limit),
     // The Shows route takes no sort.
@@ -143,7 +142,7 @@ export async function loadLibrary({ fetch, locals, params, url, cookies, parent 
   if (type === 'shows') {
     const rows = libraryShowsSchema.safeParse(result.body);
     if (!rows.success) error(502, 'Trakt is having trouble loading this library.');
-    cards = (await withShowPosters(fetch, rows.data)).map((row) => toLibraryShowCard(row, datePreferences));
+    cards = rows.data.map((row) => toLibraryShowCard(row, datePreferences));
   } else {
     const rows = libraryRowsSchema.safeParse(result.body);
     if (!rows.success) error(502, 'Trakt is having trouble loading this library.');

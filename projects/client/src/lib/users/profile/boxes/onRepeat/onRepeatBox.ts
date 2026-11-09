@@ -1,4 +1,4 @@
-import { imageUrl } from '../../../../utils/imageUrl.ts';
+import { mediaImage } from '../../../../images/mediaImage.ts';
 import type { BoxInput } from '../BoxInput.ts';
 import { boxMath } from '../boxMath.ts';
 import { defineProfileBox } from '../defineProfileBox.ts';
@@ -30,12 +30,6 @@ function mostRewatched({ watched }: BoxInput) {
 const shortDate = (at: string) =>
   new Date(at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
 
-/** The show's fanart isn't in the watched list; the newest episode play has it when it's the same show. */
-function showFanart({ latest }: BoxInput, trakt: number) {
-  const show = latest.episode?.show;
-  return show?.ids.trakt === trakt ? imageUrl(show.images?.fanart?.at(0), 'thumb') : undefined;
-}
-
 /** Scores how many times (10 is a lot), how many other rewatches, and how recently. */
 export const onRepeatBox = defineProfileBox({
   key: 'on-repeat',
@@ -57,14 +51,14 @@ export const onRepeatBox = defineProfileBox({
     if ('movie' in row) {
       return {
         ...common,
-        image: imageUrl(row.movie.images?.fanart?.at(0), 'thumb'),
+        image: mediaImage({ type: 'movie', id: row.movie.ids.trakt, slot: 'fanart', size: 'thumb' }),
         title: { text: row.movie.title, href: `/movies/${row.movie.ids.slug}` },
         line: `Seen ${times} times · last on ${shortDate(row.last_watched_at)}`,
       };
     }
     return {
       ...common,
-      image: showFanart(input, row.show.ids.trakt),
+      image: mediaImage({ type: 'show', id: row.show.ids.trakt, slot: 'fanart', size: 'thumb' }),
       title: { text: row.show.title, href: `/shows/${row.show.ids.slug}` },
       line: `${times} full runs · and counting`,
     };

@@ -29,9 +29,6 @@ const server = setupServer(
     const row = { last_collected_at: movie.collected_at, show, seasons: [{ number: 1, episodes: [{ number: 1 }] }] };
     return HttpResponse.json([row], { headers: pages });
   }),
-  http.get('https://apiz.trakt.tv/shows/1388', () =>
-    HttpResponse.json({ ...show, images: { poster: ['media.trakt.tv/posters/medium/bb.jpg.webp'] } }),
-  ),
 );
 beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => {
@@ -56,7 +53,7 @@ describe('loadLibrary', () => {
   it('should read the sorted movies with the date range, without the token', async () => {
     const result = await load({ type: 'movies', sort: 'title/asc', query: '?start_at=2026-09-01&page=2' });
     expect(requested()).toEqual([
-      '/users/tester/collection/movies?extended=full%2Cimages&page=2&limit=60&sort_by=title&sort_how=asc&start_at=2026-09-01T07%3A00%3A00.000Z',
+      '/users/tester/collection/movies?extended=full&page=2&limit=60&sort_by=title&sort_how=asc&start_at=2026-09-01T07%3A00%3A00.000Z',
     ]);
     expect(seen[0]?.headers.has('authorization')).toBe(false);
     expect(result).toMatchObject({
@@ -75,26 +72,26 @@ describe('loadLibrary', () => {
   ])('should filter the %s source', async (source, filter) => {
     const result = await load({ query: `?source=${source}` });
     expect(requested()).toEqual([
-      `/users/tester/collection/media?extended=full%2Cimages&page=1&limit=60&sort_by=added&sort_how=desc${filter}`,
+      `/users/tester/collection/media?extended=full&page=1&limit=60&sort_by=added&sort_how=desc${filter}`,
     ]);
     expect(result.source).toBe(filter ? source : 'all');
   });
 
   it("should group Added Date by day on All Types, read with the owner's token", async () => {
     const result = await load({ isSelf: true, token: 'viewer-token' });
-    const media = '/users/tester/collection/media?extended=full%2Cimages&page=1&limit=60&sort_by=added&sort_how=desc';
+    const media = '/users/tester/collection/media?extended=full&page=1&limit=60&sort_by=added&sort_how=desc';
     expect(requested()).toEqual([media]);
     expect(seen.at(-1)?.headers.get('authorization')).toBe('Bearer viewer-token');
     expect(result.days).toHaveLength(1);
   });
 
-  it('should read the Shows tab without a sort, with posters from the show summary', async () => {
+  it('should read the Shows tab without a sort', async () => {
     const result = await load({ type: 'shows', sort: 'added/desc' });
-    expect(requested()).toEqual(['/users/tester/collection/shows?extended=full%2Cimages&page=1&limit=60']);
+    expect(requested()).toEqual(['/users/tester/collection/shows?extended=full&page=1&limit=60']);
     expect(result.sort).toEqual({ by: 'added', how: 'desc' });
     expect(result.cards[0]).toMatchObject({
       subtitles: ['1 episode', 'Sep 29, 2026 12:23 PM'],
-      image: 'https://media.trakt.tv/posters/thumb/bb.jpg.webp',
+      image: 'https://media.trakt.tv/shows/1388/thumb/poster.webp',
     });
   });
 

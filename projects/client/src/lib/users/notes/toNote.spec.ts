@@ -6,7 +6,6 @@ const preferences = { order: 'dmy', hour24: true, timeZone: 'America/Los_Angeles
 const movie = {
   title: 'Fight Club',
   ids: { trakt: 1, slug: 'fight-club-1999' },
-  images: { poster: 'media.trakt.tv/posters/medium/1.jpg' },
 };
 const user = { username: 'tester', name: 'OG Tester', ids: { slug: 'og_tester', trakt: 7 }, vip: true, vip_years: 7 };
 const note = { id: 1, notes: 'A note', privacy: 'friends', spoiler: true, updated_at: '2026-09-29T01:00:00Z', user };
@@ -24,14 +23,15 @@ describe('toNote', () => {
       concealed: true,
       updatedDate: '28 Sep 2026 18:00',
       author: { id: 7, name: 'OG Tester', href: '/users/og_tester', vip: { years: 7 } },
-      item: { href: '/movies/fight-club-1999', image: 'https://media.trakt.tv/posters/thumb/1.jpg' },
+      item: { href: '/movies/fight-club-1999', image: 'https://media.trakt.tv/movies/1/thumb/poster.webp' },
     });
   });
 
   it('should retain the year and available fanart for the shared editor', () => {
-    expect(
-      map({ ...row, movie: { ...movie, year: 1999, images: { fanart: ['media.trakt.tv/fanarts/full/1.jpg'] } } })?.item,
-    ).toMatchObject({ year: 1999, fanart: 'https://media.trakt.tv/fanarts/medium/1.jpg' });
+    expect(map({ ...row, movie: { ...movie, year: 1999 } })?.item).toMatchObject({
+      year: 1999,
+      fanart: 'https://media.trakt.tv/movies/1/medium/fanart.webp',
+    });
   });
 
   it('should call a season-zero episode "Special 1"', () => {
@@ -92,22 +92,19 @@ describe('toNote', () => {
     });
   });
 
-  it('should support shows, people and API image arrays and objects', () => {
-    expect(
-      map({ ...row, movie: { ...movie, images: { poster: ['media.trakt.tv/posters/thumb/1.jpg'] } } })?.item.image,
-    ).toBe('https://media.trakt.tv/posters/thumb/1.jpg');
+  it('should support shows and people', () => {
     expect(map({ ...row, type: 'show', show: movie })?.item.href).toBe('/shows/fight-club-1999');
     expect(
       map({
         ...row,
         type: 'person',
-        person: {
-          name: 'Brad Pitt',
-          ids: { trakt: 4 },
-          images: { headshot: { thumb: 'https://media.trakt.tv/headshots/thumb/4.jpg' } },
-        },
+        person: { name: 'Brad Pitt', ids: { trakt: 4 } },
       })?.item,
-    ).toMatchObject({ title: 'Brad Pitt', href: '/people/4', image: 'https://media.trakt.tv/headshots/thumb/4.jpg' });
+    ).toMatchObject({
+      title: 'Brad Pitt',
+      href: '/people/4',
+      image: 'https://media.trakt.tv/people/4/thumb/headshot.webp',
+    });
   });
 
   it('should omit missing media and use a deleted author fallback', () => {

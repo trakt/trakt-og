@@ -19,7 +19,7 @@ const comment = (id: number, parentId = 0) => ({
   user_stats: { rating: null, play_count: 1, completed_count: 1 },
   user: { username: 'tester', private: false, deleted: false, ids: { slug: 'tester', trakt: 1 } },
 });
-const movie = { title: 'Heat', year: 1995, ids: { trakt: 200, slug: 'heat-1995' }, images: { poster: [] } };
+const movie = { title: 'Heat', year: 1995, ids: { trakt: 200, slug: 'heat-1995' } };
 const pages = { 'X-Pagination-Page': '2', 'X-Pagination-Page-Count': '3', 'X-Pagination-Item-Count': '61' };
 
 const server = setupServer(
@@ -101,7 +101,7 @@ describe('loadUserComments', () => {
       const [request] = listingRequests();
       const url = new URL(request?.url ?? '');
       expect(url.pathname).toBe('/users/tester/comments/all/all');
-      expect(Object.fromEntries(url.searchParams)).toEqual({ extended: 'full,images', page: '2', limit: '30' });
+      expect(Object.fromEntries(url.searchParams)).toEqual({ extended: 'full', page: '2', limit: '30' });
       expect(request?.headers.get('authorization')).toBeNull();
       expect(data).toMatchObject({ liked: false, commentType: 'all', type: 'all', itemCount: 61 });
       expect(data.page).toMatchObject({ current: 2, total: 3 });
@@ -152,7 +152,7 @@ describe('loadUserComments', () => {
       const [request] = listingRequests();
       const url = new URL(request?.url ?? '');
       expect(request?.headers.get('authorization')).toBe('Bearer secret');
-      expect(url.searchParams.get('extended')).toBe('comments,full,images');
+      expect(url.searchParams.get('extended')).toBe('comments,full');
       expect(url.searchParams.get('limit')).toBe('30');
       expect(data).toMatchObject({ commentType: 'all', type: 'all', itemCount: 61 });
       expect(data.entries.map(({ row }) => [row.item.type, row.comment.user.ids.trakt])).toEqual([

@@ -7,7 +7,7 @@ const sortFields = { votes: z.number().nullish() };
 const item = { collected_at: z.string(), metadata: collectionMetadataSchema.nullish() };
 
 /**
- * `/users/:id/collection/{media,movies,episodes}?extended=full,images`. Read raw: `@trakt/api` 0.6.0 types the rows
+ * `/users/:id/collection/{media,movies,episodes}?extended=full`. Read raw: `@trakt/api` 0.6.0 types the rows
  * as `{ type, collected_at }` and takes no `sort_by`, `sort_how`, `start_at` or `end_at`.
  */
 export const libraryRowsSchema = z.array(
@@ -21,10 +21,7 @@ export const libraryRowsSchema = z.array(
   ]),
 );
 
-/**
- * `/users/:id/collection/shows?extended=full,images`: one row a show with its collected episodes. It sends no images, so
- * the posters come from each show's summary.
- */
+/** `/users/:id/collection/shows?extended=full`: one row a show with its collected episodes. */
 export const libraryShowsSchema = z.array(
   z.object({
     last_collected_at: z.string(),

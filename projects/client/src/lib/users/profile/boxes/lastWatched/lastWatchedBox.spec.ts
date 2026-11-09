@@ -15,7 +15,7 @@ describe('lastWatchedBox', () => {
         key: 'last-watched',
         view: {
           play: {
-            image: 'https://media.trakt.tv/images/shows/000/154/997/fanarts/thumb/9400ecb8e2.jpg.webp',
+            image: 'https://media.trakt.tv/shows/154997/thumb/fanart.webp',
             title: { text: 'Severance', href: '/shows/severance' },
             subtitle: { text: '2x09 The After Hours', href: '/shows/severance/seasons/2/episodes/9' },
             when: 'Today',

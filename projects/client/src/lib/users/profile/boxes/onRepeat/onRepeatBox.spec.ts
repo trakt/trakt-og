@@ -11,7 +11,7 @@ describe('onRepeatBox', () => {
       entry: {
         view: {
           times: 9,
-          image: 'https://media.trakt.tv/images/movies/000/000/295/fanarts/thumb/8dc868d676.jpg.webp',
+          image: 'https://media.trakt.tv/movies/295/thumb/fanart.webp',
           title: { text: 'Alien', href: '/movies/alien-1979' },
           line: 'Seen 9 times · last on Sep 23',
           others: '+22 more rewatched',
@@ -34,11 +34,11 @@ describe('onRepeatBox', () => {
     });
   });
 
-  it('should borrow the fanart from the newest play when it is the same show', async () => {
+  it('should build a show fanart from its id', async () => {
     const input = { ...maya.input, watched: { shows: maya.input.watched.shows.slice(0, 1), movies: [] } };
     expect((await onRepeatBox.evaluate(input, maya.extras())).entry?.view).toMatchObject({
       title: { text: 'Severance' },
-      image: 'https://media.trakt.tv/images/shows/000/154/997/fanarts/thumb/9400ecb8e2.jpg.webp',
+      image: 'https://media.trakt.tv/shows/154997/thumb/fanart.webp',
       others: null,
     });
   });

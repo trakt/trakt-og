@@ -13,14 +13,13 @@ describe('toWatchingNow', () => {
         title: 'The Boys',
         runtime: 60,
         ids: { slug: 'the-boys-2019', trakt: 139960 },
-        images: { fanart: ['media.trakt.tv/images/shows/000/139/960/fanarts/medium/abc.jpg.webp'] },
       },
       episode: {
+        ids: { trakt: 1234 },
         season: 1,
         number: 5,
         title: 'Good for the Soul',
         runtime: 58,
-        images: { screenshot: ['media.trakt.tv/images/episodes/000/001/234/screenshots/medium/def.jpg.webp'] },
       },
     };
 
@@ -30,31 +29,28 @@ describe('toWatchingNow', () => {
         title: 'The Boys',
         episode: { number: '1x05', title: 'Good for the Soul' },
         href: '/shows/the-boys-2019/seasons/1/episodes/5',
-        fanartUrl: 'https://media.trakt.tv/images/shows/000/139/960/fanarts/full/abc.jpg.webp',
-        stillUrl: 'https://media.trakt.tv/images/episodes/000/001/234/screenshots/medium/def.jpg.webp',
+        fanartUrl: 'https://media.trakt.tv/shows/139960/full/fanart.webp',
+        stillUrl: `https://media.trakt.tv/episodes/1234/medium/screenshot.webp#fallback=${encodeURIComponent('https://media.trakt.tv/shows/139960/medium/fanart.webp')}`,
         endsAt: times.expires_at,
         runtime: 58,
       });
     });
 
-    it('should fall back to the show fanart for the still', () => {
-      expect(toWatchingNow({ ...watching, episode: { season: 1, number: 5 } })?.stillUrl).toBe(
-        'https://media.trakt.tv/images/shows/000/139/960/fanarts/medium/abc.jpg.webp',
-      );
-    });
-
     it('should call season 0 episodes specials', () => {
-      expect(toWatchingNow({ ...watching, episode: { season: 0, number: 3 } })?.episode).toEqual({
+      expect(toWatchingNow({ ...watching, episode: { ids: { trakt: 1234 }, season: 0, number: 3 } })?.episode).toEqual({
         number: 'Special 3',
         title: '',
       });
     });
 
     it('should fall back to the show runtime, then 42 minutes', () => {
-      expect(toWatchingNow({ ...watching, episode: { season: 1, number: 5 } })?.runtime).toBe(60);
+      expect(toWatchingNow({ ...watching, episode: { ids: { trakt: 1234 }, season: 1, number: 5 } })?.runtime).toBe(60);
       expect(
-        toWatchingNow({ ...watching, show: { ...watching.show, runtime: null }, episode: { season: 1, number: 5 } })
-          ?.runtime,
+        toWatchingNow({
+          ...watching,
+          show: { ...watching.show, runtime: null },
+          episode: { ids: { trakt: 1234 }, season: 1, number: 5 },
+        })?.runtime,
       ).toBe(42);
     });
   });
@@ -73,8 +69,8 @@ describe('toWatchingNow', () => {
         title: 'TRON: Legacy',
         episode: null,
         href: '/movies/tron-legacy-2010',
-        fanartUrl: null,
-        stillUrl: null,
+        fanartUrl: 'https://media.trakt.tv/movies/12601/full/fanart.webp',
+        stillUrl: 'https://media.trakt.tv/movies/12601/medium/fanart.webp',
         endsAt: times.expires_at,
         runtime: 90,
       });

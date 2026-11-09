@@ -42,7 +42,7 @@ describe('loadNotes', () => {
   it('should send the viewer token, filter and pagination and map response headers', async () => {
     const result = await load({ token: 'viewer-token', type: 'collection', query: '?page=2&limit=30' });
     expect(seen.at(0)?.headers.get('authorization')).toBe('Bearer viewer-token');
-    expect(seen.at(0)?.url).toContain('/notes/collection?extended=full%2Cimages%2Cvip&page=2&limit=30');
+    expect(seen.at(0)?.url).toContain('/notes/collection?extended=full%2Cvip&page=2&limit=30');
     expect(result).toMatchObject({
       type: 'collection',
       itemCount: 61,

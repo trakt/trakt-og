@@ -171,8 +171,7 @@ describe('loadProfile', () => {
     expect((await load()).charts).toBeNull();
   });
 
-  it('should read posters for the all time top three shows only, since the watched list has none', async () => {
-    const summaries: string[] = [];
+  it('should build the top three shows posters from their ids, without a summary each', async () => {
     server.use(
       http.get('https://apiz.trakt.tv/users/tester/watched/shows', () =>
         HttpResponse.json(
@@ -183,22 +182,13 @@ describe('loadProfile', () => {
           })),
         ),
       ),
-      http.get('https://apiz.trakt.tv/shows/:id', ({ params }) => {
-        summaries.push(String(params.id));
-        return HttpResponse.json({
-          title: `Show ${params.id}`,
-          ids: { trakt: Number(params.id), slug: `show-${params.id}` },
-          images: { poster: [`media.trakt.tv/images/${params.id}/posters/medium/a.jpg.webp`] },
-        });
-      }),
     );
     const data = await load();
 
-    expect(summaries.toSorted()).toEqual(['3', '4', '5']);
     expect(data.mostWatched?.shows.allTime.map(({ id, image }) => ({ id, image }))).toEqual([
-      { id: 5, image: 'https://media.trakt.tv/images/5/posters/thumb/a.jpg.webp' },
-      { id: 4, image: 'https://media.trakt.tv/images/4/posters/thumb/a.jpg.webp' },
-      { id: 3, image: 'https://media.trakt.tv/images/3/posters/thumb/a.jpg.webp' },
+      { id: 5, image: 'https://media.trakt.tv/shows/5/thumb/poster.webp' },
+      { id: 4, image: 'https://media.trakt.tv/shows/4/thumb/poster.webp' },
+      { id: 3, image: 'https://media.trakt.tv/shows/3/thumb/poster.webp' },
     ]);
   });
 

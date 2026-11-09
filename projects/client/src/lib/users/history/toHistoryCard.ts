@@ -2,7 +2,7 @@ import { watchDateInput } from '../../components/history/watchDateInput.ts';
 import { episodeNumber } from '../../components/media/episodeTags.ts';
 import type { DatePreferences } from '../../settings/DatePreferences.ts';
 import { formatDate } from '../../utils/formatDate.ts';
-import { imageUrl } from '../../utils/imageUrl.ts';
+import { mediaImage } from '../../images/mediaImage.ts';
 import { episodeBadge, type WatchedCard } from '../profile/toProfileSummary.ts';
 import type { HistoryRow } from './historyRowsSchema.ts';
 import type { ChartRow, EpisodeChart } from './historyCharts.ts';
@@ -64,7 +64,9 @@ function episodeFields({ episode, show }: Pick<EpisodeChart, 'episode' | 'show'>
     title: episode.title ?? '',
     number: episodeNumber(episode, show.genres),
     showTitle: show.title,
-    image: imageUrl((screenshots ? episode.images?.screenshot : show.images?.poster)?.at(0), 'thumb'),
+    image: screenshots
+      ? mediaImage({ type: 'episode', id: episode.ids.trakt, slot: 'screenshot', size: 'thumb' })
+      : mediaImage({ type: 'show', id: show.ids.trakt, slot: 'poster', size: 'thumb' }),
     variant: screenshots ? 'screenshot' : 'poster',
     rating: episode.rating ?? undefined,
     episodeBadge: episodeBadge(episode),
@@ -93,7 +95,7 @@ export function toHistoryCard(
       id: movie.ids.trakt,
       href: `/movies/${movie.ids.slug}`,
       title: movie.title,
-      image: imageUrl(movie.images?.poster?.at(0), 'thumb'),
+      image: mediaImage({ type: 'movie', id: movie.ids.trakt, slot: 'poster', size: 'thumb' }),
       variant: 'poster',
       rating: movie.rating ?? undefined,
       runtime: movie.runtime ?? 0,
@@ -160,7 +162,7 @@ export function toChartCard(row: ChartRow, by: HistorySortBy, datePreferences: D
       id: movie.ids.trakt,
       href: `/movies/${movie.ids.slug}`,
       title: movie.title,
-      image: imageUrl(movie.images?.poster?.at(0), 'thumb'),
+      image: mediaImage({ type: 'movie', id: movie.ids.trakt, slot: 'poster', size: 'thumb' }),
       rating: movie.rating ?? undefined,
     };
   }
@@ -172,7 +174,7 @@ export function toChartCard(row: ChartRow, by: HistorySortBy, datePreferences: D
     id: show.ids.trakt,
     href: showHref(show.ids.slug),
     title: show.title,
-    image: imageUrl(show.images?.poster?.at(0), 'thumb'),
+    image: mediaImage({ type: 'show', id: show.ids.trakt, slot: 'poster', size: 'thumb' }),
     rating: show.rating ?? undefined,
     airedEpisodes: show.aired_episodes ?? undefined,
   };

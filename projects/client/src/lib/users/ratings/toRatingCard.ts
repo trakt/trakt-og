@@ -2,7 +2,7 @@ import type { z } from 'zod/v4';
 import { episodeNumber } from '../../components/media/episodeTags.ts';
 import type { DatePreferences } from '../../settings/DatePreferences.ts';
 import { formatDate } from '../../utils/formatDate.ts';
-import { imageUrl } from '../../utils/imageUrl.ts';
+import { mediaImage } from '../../images/mediaImage.ts';
 import { episodeBadge } from '../profile/toProfileSummary.ts';
 import type { ratingRowsSchema } from './ratingRowsSchema.ts';
 import type { ratingQuery } from './ratingQuery.ts';
@@ -52,7 +52,13 @@ export function toRatingCard(row: Row, { type, by, datePreferences }: Options) {
           : ['percentage', 'votes'].includes(by)
             ? countLabel(item.votes ?? 0, 'vote')
             : undefined;
-  const poster = row.type === 'episode' ? show?.images?.poster : item.images?.poster;
+  const image = mediaImage(
+    screenshots
+      ? { type: 'episode', id: item.ids.trakt, slot: 'screenshot', size: 'thumb' }
+      : row.type === 'episode' && show
+        ? { type: 'show', id: show.ids.trakt, slot: 'poster', size: 'thumb' }
+        : { type: row.type, id: item.ids.trakt, slot: 'poster', size: 'thumb' },
+  );
   return {
     key: `${row.type}-${item.ids.trakt}`,
     type: row.type,
@@ -61,7 +67,7 @@ export function toRatingCard(row: Row, { type, by, datePreferences }: Options) {
     title: seasonTitle ?? item.title ?? '',
     number: row.type === 'episode' && row.episode ? episodeNumber(row.episode, show?.genres) : undefined,
     showTitle: row.type === 'episode' || row.type === 'season' ? show?.title : undefined,
-    image: imageUrl((screenshots ? item.images?.screenshot : poster)?.at(0), 'thumb'),
+    image,
     variant: screenshots ? ('screenshot' as const) : ('poster' as const),
     episodeBadge: row.type === 'episode' && row.episode ? episodeBadge(row.episode) : undefined,
     seasonOf:

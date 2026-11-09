@@ -12,7 +12,6 @@ import { fetchRecentHistory } from '../fetchRecentHistory.ts';
 import { profileAccess } from '../profileAccess.ts';
 import type { ProfileUser } from '../ProfileUser.ts';
 import { readProfileTab } from '../readProfileTab.ts';
-import { withShowPosters } from '../withShowPosters.ts';
 import { boxExtraLoader } from './boxes/boxExtraLoader.ts';
 import type { BoxFrame } from './boxes/BoxFrame.ts';
 import type { BoxInput } from './boxes/BoxInput.ts';
@@ -23,7 +22,6 @@ import { fetchWatchedGenres } from './fetchWatchedGenres.ts';
 import { fetchWatchedLists } from './fetchWatchedLists.ts';
 import { toGenreBar } from './toGenreBar.ts';
 import { toMostWatched } from './toMostWatched.ts';
-import type { WatchedItemRow } from './watchedItemsSchema.ts';
 import { toFavoriteCard, toWatchedEpisode, toWatchedMovie } from './toProfileSummary.ts';
 import { toProfileRatings } from './toProfileRatings.ts';
 
@@ -54,7 +52,7 @@ const RANDOM: FavoritesSort = { sort_by: 'random', sort_how: 'asc' };
 const fetchFavorites = (client: Client, id: string, sort: FavoritesSort) =>
   client.users.favorites.typedSorted({
     params: { id, type: 'movie,show', ...sort },
-    query: { extended: 'full,images', limit: 3 },
+    query: { extended: 'full', limit: 3 },
   });
 
 /** Your own panel settings on your own profile; nobody else's can be known. */
@@ -71,13 +69,13 @@ async function fetchSections(
   favoritesSort: FavoritesSort = RANDOM,
 ) {
   const client = api({ fetch, token });
-  const history = { params: { id }, query: { extended: 'full,images' } } as const;
+  const history = { params: { id }, query: { extended: 'full' } } as const;
 
   // Only the boxes and Most Watched read these, and the page streams both, so the slowest reads never hold it up.
   const streamed = {
     watchlist: client.users.watchlist.all({
       params: { id, sort: 'rank' },
-      query: { extended: 'full,images', limit: 3 },
+      query: { extended: 'full', limit: 3 },
     }),
     recent: fetchRecentHistory({ client, id, now }),
     watched: fetchWatchedLists({ fetch, token, id, progress }),
@@ -93,7 +91,7 @@ async function fetchSections(
     // Newest first, the one order the worker has: OG's Recent tab.
     client.users.comments({
       params: { id, comment_type: 'all', type: 'all' },
-      query: { extended: 'full,images', limit: 3 },
+      query: { extended: 'full', limit: 3 },
     }),
     fetchWatchedGenres({ fetch, token, id }),
   ]);
@@ -204,7 +202,7 @@ export async function loadProfile({ fetch, locals, params, parent, now = new Dat
             }),
           }
         : null,
-    mostWatched: streamMostWatched(fetch, sections.streamed, prefs),
+    mostWatched: streamMostWatched(sections.streamed, prefs),
     comments: comments.flatMap((row) => toUserComment(row) ?? []),
   };
 }
@@ -231,16 +229,12 @@ async function streamBoxes(
   );
 }
 
-async function streamMostWatched(
-  fetch: typeof globalThis.fetch,
-  streamed: Streamed,
-  prefs: ReturnType<typeof profilePrefs>,
-) {
+async function streamMostWatched(streamed: Streamed, prefs: ReturnType<typeof profilePrefs>) {
   const [recent, watched] = await Promise.all([streamed.recent, streamed.watched]);
   return {
     shows: toMostWatched('shows', {
       history: recent.episodes,
-      watched: await withTopShowPosters(fetch, watched.shows, prefs?.most_watched_shows),
+      watched: watched.shows,
       prefs: prefs?.most_watched_shows,
     }),
     movies: toMostWatched('movies', {
@@ -251,21 +245,6 @@ async function streamMostWatched(
     // OG's first tab, `start_at` in its see-more link.
     windowStart: recent.start,
   };
-}
-
-/**
- * The watched shows list sends no images, so only the shows All Time ranks into the top three read their posters,
- * rather than one summary for every show the user has watched.
- */
-async function withTopShowPosters(
-  fetch: typeof globalThis.fetch,
-  watched: readonly WatchedItemRow[],
-  prefs: Parameters<typeof toMostWatched>[1]['prefs'],
-): Promise<readonly WatchedItemRow[]> {
-  const top = new Set(toMostWatched('shows', { history: [], watched, prefs }).allTime.map(({ id }) => id));
-  const rows = watched.flatMap((row) => ('show' in row && top.has(row.show.ids.trakt) ? [row] : []));
-  const posters = new Map((await withShowPosters(fetch, rows)).map((row) => [row.show.ids.trakt, row]));
-  return watched.map((row) => ('show' in row ? posters.get(row.show.ids.trakt) : undefined) ?? row);
 }
 
 /** Whether the user has any activity. Without any, the strip hides: your own profile shows the welcome hero. */

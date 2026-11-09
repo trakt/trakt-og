@@ -5,16 +5,7 @@ type Show = NonNullable<HotReleaseResponse['show']>;
 type Movie = NonNullable<HotReleaseResponse['movie']>;
 type Offers = WatchNowResponse[string];
 
-const images = (kind: 'shows' | 'movies', folder: string, poster: string, fanart: string) => ({
-  poster: [`media.trakt.tv/images/${kind}/${folder}/posters/medium/${poster}.jpg.webp`],
-  fanart: [`media.trakt.tv/images/${kind}/${folder}/fanarts/medium/${fanart}.jpg.webp`],
-  logo: [],
-  clearart: [],
-  banner: [],
-  thumb: [],
-});
-
-// Public shows and a movie with their real artwork; the episodes, dates and offers are made up.
+// Public shows and a movie; the episodes, dates and offers are made up.
 const shows = {
   boys: {
     title: 'The Boys',
@@ -23,7 +14,6 @@ const shows = {
     network: 'Prime Video',
     country: 'us',
     genres: ['action', 'fantasy'],
-    images: images('shows', '000/139/960', 'c5b8a81eba', '50bab4ef44'),
   },
   severance: {
     title: 'Severance',
@@ -32,7 +22,6 @@ const shows = {
     network: 'Apple TV',
     country: 'us',
     genres: ['science-fiction', 'mystery'],
-    images: images('shows', '000/154/997', 'f60ddb06de', '9400ecb8e2'),
   },
   lastOfUs: {
     title: 'The Last of Us',
@@ -41,7 +30,6 @@ const shows = {
     network: 'HBO',
     country: 'us',
     genres: ['drama'],
-    images: images('shows', '000/158/947', 'ddcfc6b5a2', '5cdf75e791'),
   },
   slowHorses: {
     title: 'Slow Horses',
@@ -50,7 +38,6 @@ const shows = {
     network: 'Apple TV',
     country: 'gb',
     genres: ['drama', 'crime'],
-    images: images('shows', '000/155/534', '6b6d40b6de', '631e5c2683'),
   },
   scrubs: {
     title: 'Scrubs',
@@ -59,7 +46,6 @@ const shows = {
     network: 'ABC',
     country: 'us',
     genres: ['comedy'],
-    images: images('shows', '000/291/441', 'a061090ff1', 'aa07382177'),
   },
 } satisfies Record<string, Show>;
 
@@ -87,7 +73,6 @@ const dune: Movie = {
   year: 2024,
   ids: { trakt: 537449, slug: 'dune-part-two-2024' },
   tagline: 'Long live the fighters.',
-  images: images('movies', '000/537/449', '2acc44f507', 'b7e56e851f'),
 };
 
 type Airing = {

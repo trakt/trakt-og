@@ -2,10 +2,10 @@ import type { ComponentProps } from 'svelte';
 import type FanartCard from '../components/media/FanartCard.svelte';
 import { episodeNumber, episodeType } from '../components/media/episodeTags.ts';
 import type { FavoriteTarget } from '../favorites/FavoriteTarget.ts';
+import { mediaImage } from '../images/mediaImage.ts';
 import type { DatePreferences } from '../settings/DatePreferences.ts';
 import type { HistoryRow } from '../users/history/historyRowsSchema.ts';
 import { formatDate } from '../utils/formatDate.ts';
-import { imageUrl } from '../utils/imageUrl.ts';
 
 type Tag = NonNullable<ComponentProps<typeof FanartCard>['tags']>[number];
 
@@ -55,7 +55,7 @@ export function toRecentPlay(row: HistoryRow, datePreferences: DatePreferences):
       href: `/movies/${movie.ids.slug}`,
       title: movie.title,
       year: movie.year ?? undefined,
-      image: imageUrl(movie.images?.fanart?.at(0), 'thumb'),
+      image: mediaImage({ type: 'movie', id: movie.ids.trakt, slot: 'fanart', size: 'thumb' }),
       tags: [watched],
       rating: movie.rating ?? undefined,
       runtime: movie.runtime ?? undefined,
@@ -73,7 +73,13 @@ export function toRecentPlay(row: HistoryRow, datePreferences: DatePreferences):
     title: episode.title ?? '',
     number: episodeNumber(episode, show.genres),
     smallTitle: { text: show.title, href: showHref(show.ids.slug) },
-    image: imageUrl(episode.images?.screenshot?.at(0) ?? show.images?.fanart?.at(0), 'thumb'),
+    image: mediaImage({
+      type: 'episode',
+      id: episode.ids.trakt,
+      slot: 'screenshot',
+      size: 'thumb',
+      fallback: mediaImage({ type: 'show', id: show.ids.trakt, slot: 'fanart', size: 'thumb' }),
+    }),
     tags: label ? [{ text: label.text, kind: label.kind }, watched] : [watched],
     rating: episode.rating ?? undefined,
     runtime: episode.runtime ?? show.runtime ?? undefined,

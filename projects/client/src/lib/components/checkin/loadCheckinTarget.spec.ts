@@ -11,16 +11,15 @@ afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
 const fetch = (path: string) => rawApiFetch({ path });
-const images = (kind: string) => [`media.trakt.tv/images/${kind}/medium/a.jpg.webp`];
 
 describe('loadCheckinTarget', () => {
-  it('should build a movie target with its full title and images', async () => {
+  it('should build a movie target with its full title and fanart', async () => {
     server.use(
       http.get(`${API}/search/trakt/432`, ({ request }) => {
         expect(new URL(request.url).searchParams.get('type')).toBe('movie');
         return HttpResponse.json([
           {
-            movie: { title: 'Fight Club', year: 1999, images: { fanart: images('fanarts') } },
+            movie: { ids: { trakt: 432 }, title: 'Fight Club', year: 1999 },
           },
         ]);
       }),
@@ -31,7 +30,7 @@ describe('loadCheckinTarget', () => {
       id: 432,
       fullTitle: 'Fight Club (1999)',
       topTitle: 'Fight Club',
-      fanart: 'https://media.trakt.tv/images/fanarts/full/a.jpg.webp',
+      fanart: 'https://media.trakt.tv/movies/432/full/fanart.webp',
     });
   });
 
@@ -40,13 +39,12 @@ describe('loadCheckinTarget', () => {
       http.get(`${API}/search/trakt/73482`, () =>
         HttpResponse.json([
           {
-            show: { title: 'Breaking Bad', year: 2008, images: { fanart: images('fanarts') } },
+            show: { ids: { trakt: 1388 }, title: 'Breaking Bad', year: 2008 },
             episode: {
               season: 1,
               number: 1,
               title: 'Pilot',
               first_aired: '2008-01-21T02:00:00.000Z',
-              images: { screenshot: images('screenshots') },
             },
           },
         ]),
@@ -58,12 +56,12 @@ describe('loadCheckinTarget', () => {
       id: 73482,
       fullTitle: 'Breaking Bad 1x01 "Pilot"',
       topTitle: 'Breaking Bad',
-      fanart: 'https://media.trakt.tv/images/fanarts/full/a.jpg.webp',
+      fanart: 'https://media.trakt.tv/shows/1388/full/fanart.webp',
       episode: {
         number: '1x01',
         title: 'Pilot',
         firstAired: '2008-01-21T02:00:00.000Z',
-        screenshot: 'https://media.trakt.tv/images/screenshots/full/a.jpg.webp',
+        screenshot: 'https://media.trakt.tv/episodes/73482/full/screenshot.webp',
       },
     });
   });

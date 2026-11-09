@@ -42,7 +42,7 @@ export const recommendationIgnores = {
   ignore_collected: 'true',
 } as const;
 
-const QUERY = new URLSearchParams({ extended: 'full,images,colors', limit: String(LIMIT), ...recommendationIgnores });
+const QUERY = new URLSearchParams({ extended: 'full,colors', limit: String(LIMIT), ...recommendationIgnores });
 
 async function load({ fetch, token, settings, now = new Date() }: FetchRecommendationsParams) {
   const response = await rawApiFetch({ fetch, token, path: `${PATHS[settings.type]}?${QUERY}` });
@@ -64,7 +64,7 @@ async function loadTrending({ fetch, settings, now = new Date() }: FetchRecommen
   const client = api({ fetch });
   const lists = await Promise.all(
     TRENDING[settings.type].map(async (type) => {
-      const response = await client[type].trending({ query: { extended: 'full,images,colors', limit: LIMIT } });
+      const response = await client[type].trending({ query: { extended: 'full,colors', limit: LIMIT } });
       if (response.status < 200 || response.status > 299) return [];
       const parsed = recommendationsSchema.safeParse(response.body);
       return parsed.success ? parsed.data.flatMap((row) => toRecommendation(row, now) ?? []) : [];

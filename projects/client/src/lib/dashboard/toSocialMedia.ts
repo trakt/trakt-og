@@ -1,6 +1,7 @@
 import type { SocialMedia } from './socialMediaSchema.ts';
 import { episodeNumber } from '../components/media/episodeTags.ts';
 import type { SocialItem } from './toSocialItem.ts';
+import { mediaImage } from '../images/mediaImage.ts';
 import { seasonName } from '../utils/seasonName.ts';
 
 /** The part of a Social Feed item that says what it was about. */
@@ -28,10 +29,16 @@ export function toSocialMedia(activity: SocialMedia): SocialItemMedia {
     const href = `/movies/${movie.ids.slug}`;
     const target = targetOf('movie', movie);
     return {
-      title: { key: `movie:${movie.ids.slug}`, name: movie.title, href, poster: movie.images?.poster?.at(0), target },
+      title: {
+        key: `movie:${movie.ids.slug}`,
+        name: movie.title,
+        href,
+        poster: mediaImage({ type: 'movie', id: movie.ids.trakt, slot: 'poster', size: 'thumb' }),
+        target,
+      },
       href,
-      still: movie.images?.fanart?.at(0),
-      fanart: movie.images?.fanart?.at(0),
+      still: mediaImage({ type: 'movie', id: movie.ids.trakt, slot: 'fanart', size: 'medium' }),
+      fanart: mediaImage({ type: 'movie', id: movie.ids.trakt, slot: 'fanart', size: 'medium' }),
       target,
     };
   }
@@ -39,16 +46,17 @@ export function toSocialMedia(activity: SocialMedia): SocialItemMedia {
   const { show } = activity;
   const showHref = `/shows/${show.ids.slug}`;
   const target = targetOf('show', show);
+  const showFanart = mediaImage({ type: 'show', id: show.ids.trakt, slot: 'fanart', size: 'medium' });
   const common = {
     title: {
       key: `show:${show.ids.slug}`,
       name: show.title,
       href: showHref,
-      poster: show.images?.poster?.at(0),
+      poster: mediaImage({ type: 'show', id: show.ids.trakt, slot: 'poster', size: 'thumb' }),
       target,
     },
-    still: show.images?.fanart?.at(0),
-    fanart: show.images?.fanart?.at(0),
+    still: showFanart,
+    fanart: showFanart,
     target,
   };
   if (activity.type === 'show') return { ...common, href: showHref };
@@ -57,7 +65,7 @@ export function toSocialMedia(activity: SocialMedia): SocialItemMedia {
     return { ...common, code: seasonName(number), href: `${showHref}/seasons/${number}` };
   }
 
-  const { season, number, images, ids, rating, runtime, title } = activity.episode;
+  const { season, number, ids, rating, runtime, title } = activity.episode;
   return {
     ...common,
     target: {
@@ -71,6 +79,6 @@ export function toSocialMedia(activity: SocialMedia): SocialItemMedia {
     episode: { season, number, ...(title && { title }) },
     code: episodeNumber({ season, number }, null),
     href: `${showHref}/seasons/${season}/episodes/${number}`,
-    still: images?.screenshot?.at(0) ?? common.still,
+    still: mediaImage({ type: 'episode', id: ids.trakt, slot: 'screenshot', size: 'medium', fallback: showFanart }),
   };
 }

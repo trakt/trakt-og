@@ -1,6 +1,6 @@
 import type { z } from 'zod/v4';
+import { mediaImage } from '../images/mediaImage.ts';
 import { countLabel } from '../utils/countLabel.ts';
-import { imageUrl } from '../utils/imageUrl.ts';
 import type { Recommendation, RecommendationPerson, RecommendationSource } from './Recommendation.ts';
 import type { recommendationPersonSchema } from './recommendationPersonSchema.ts';
 import type { recommendationSourceSchema } from './recommendationSourceSchema.ts';
@@ -34,7 +34,7 @@ function toSource(source: Source): RecommendationSource | null {
     href: pathOf(type, media.ids),
     title: media.title,
     year: media.year ?? undefined,
-    poster: imageUrl(media.images?.poster?.at(0), 'thumb'),
+    poster: mediaImage({ type, id: media.ids.trakt, slot: 'poster', size: 'thumb' }),
     stars: source.stars ?? undefined,
     watched: source.type === 'activity',
     loved: source.type === 'favorite',
@@ -72,11 +72,12 @@ function toPerson({ person, role, watched_roles, watched_count, titles }: Person
   const shown = titles.slice(0, STACK).flatMap(({ show, movie }) => {
     const media = show ?? movie;
     if (!media) return [];
+    const type = show ? 'show' : 'movie';
     return [
       {
-        key: `${show ? 'show' : 'movie'}:${media.ids.trakt}`,
+        key: `${type}:${media.ids.trakt}`,
         title: media.title,
-        poster: imageUrl(media.images?.poster?.at(0), 'thumb'),
+        poster: mediaImage({ type, id: media.ids.trakt, slot: 'poster', size: 'thumb' }),
       },
     ];
   });
@@ -86,7 +87,7 @@ function toPerson({ person, role, watched_roles, watched_count, titles }: Person
     id: person.ids.trakt,
     href: `/people/${person.ids.slug ?? person.ids.trakt}`,
     name: person.name,
-    headshot: imageUrl(person.images?.headshot?.at(0), 'thumb'),
+    headshot: mediaImage({ type: 'person', id: person.ids.trakt, slot: 'headshot', size: 'thumb' }),
     line: `${leadOf(roles)} ${countLabel(watched_count, 'title')} you've watched`,
     titles: shown,
     more: Math.max(watched_count - shown.length, 0),

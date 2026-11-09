@@ -1,6 +1,6 @@
 import type { z } from 'zod/v4';
+import { mediaImage } from '../images/mediaImage.ts';
 import { genreLabel } from '../utils/genreLabel.ts';
-import { imageUrl } from '../utils/imageUrl.ts';
 import type { Recommendation } from './Recommendation.ts';
 import type { recommendationsSchema } from './recommendationsSchema.ts';
 import { toRecommendationWhy } from './toRecommendationWhy.ts';
@@ -37,8 +37,8 @@ export function toRecommendation(row: Row, now: Date): Recommendation | null {
     certification: media.certification ?? undefined,
     genres: (media.genres ?? []).slice(0, 3).map(genreLabel),
     network: type === 'show' ? (media.network ?? undefined) : undefined,
-    poster: imageUrl(media.images?.poster?.at(0), 'medium'),
-    fanart: imageUrl(media.images?.fanart?.at(0), 'medium'),
+    poster: mediaImage({ type, id: media.ids.trakt, slot: 'poster', size: 'medium' }),
+    fanart: mediaImage({ type, id: media.ids.trakt, slot: 'fanart', size: 'medium' }),
     colors: toColors(media.colors?.poster),
     why: toRecommendationWhy({ sources: row.sources ?? [] }),
   };

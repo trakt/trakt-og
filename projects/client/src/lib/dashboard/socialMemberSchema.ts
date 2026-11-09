@@ -5,6 +5,5 @@ export const socialMemberSchema = z.object({
   username: z.string(),
   name: z.string().nullish(),
   deleted: z.boolean().nullish(),
-  ids: z.object({ slug: z.string().nullish() }),
-  images: z.object({ avatar: z.object({ full: z.string().nullish() }) }).nullish(),
+  ids: z.object({ slug: z.string().nullish(), trakt: z.number().nullish() }),
 });

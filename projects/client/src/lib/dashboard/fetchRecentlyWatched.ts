@@ -21,7 +21,7 @@ export async function fetchRecentlyWatched({
   token,
   datePreferences,
 }: FetchRecentlyWatchedParams): Promise<readonly RecentPlay[]> {
-  const response = await rawApiFetch({ fetch, token, path: `/sync/history?limit=${LIMIT}&extended=full,images` });
+  const response = await rawApiFetch({ fetch, token, path: `/sync/history?limit=${LIMIT}&extended=full` });
   if (response.status !== 200) throw new Error(`Recently Watched failed with ${response.status}`);
 
   const rows = historyRowsSchema.safeParse(await response.json().catch(() => null));

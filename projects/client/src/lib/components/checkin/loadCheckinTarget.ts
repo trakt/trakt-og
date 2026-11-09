@@ -1,15 +1,13 @@
 import { z } from 'zod/v4';
 import { episodeNumber } from '../media/episodeTags.ts';
-import { imageUrl } from '../../utils/imageUrl.ts';
+import { mediaImage } from '../../images/mediaImage.ts';
 import type { CheckinTarget } from './CheckinTarget.ts';
 
-const images = z
-  .object({
-    fanart: z.array(z.string()).nullish(),
-    screenshot: z.array(z.string()).nullish(),
-  })
-  .nullish();
-const media = z.object({ title: z.string().nullish(), year: z.number().nullish(), images });
+const media = z.object({
+  ids: z.object({ trakt: z.number() }),
+  title: z.string().nullish(),
+  year: z.number().nullish(),
+});
 const rowsSchema = z.array(
   z.object({
     movie: media.nullish(),
@@ -20,7 +18,6 @@ const rowsSchema = z.array(
         number: z.number(),
         title: z.string().nullish(),
         first_aired: z.string().nullish(),
-        images,
       })
       .nullish(),
   }),
@@ -35,7 +32,7 @@ function toCheckinTarget(type: CheckinTarget['type'], id: number, row: Row): Che
     type,
     id,
     topTitle: item.title,
-    fanart: imageUrl(item.images?.fanart?.at(0), 'full'),
+    fanart: mediaImage({ type: type === 'movie' ? 'movie' : 'show', id: item.ids.trakt, slot: 'fanart', size: 'full' }),
   };
   if (type === 'movie') return { ...base, fullTitle: item.year ? `${item.title} (${item.year})` : item.title };
 
@@ -49,7 +46,7 @@ function toCheckinTarget(type: CheckinTarget['type'], id: number, row: Row): Che
       number,
       title: episode.title ?? '',
       firstAired: episode.first_aired ?? undefined,
-      screenshot: imageUrl(episode.images?.screenshot?.at(0), 'full'),
+      screenshot: mediaImage({ type: 'episode', id, slot: 'screenshot', size: 'full' }),
     },
   };
 }
@@ -64,7 +61,7 @@ export async function loadCheckinTarget({
   id: number;
   fetch: (path: string) => Promise<Response>;
 }): Promise<CheckinTarget | null> {
-  const response = await fetch(`/search/trakt/${id}?type=${type}&extended=full,images`);
+  const response = await fetch(`/search/trakt/${id}?type=${type}&extended=full`);
   if (!response.ok) return null;
   const row = rowsSchema.parse(await response.json()).at(0);
   return row ? toCheckinTarget(type, id, row) : null;

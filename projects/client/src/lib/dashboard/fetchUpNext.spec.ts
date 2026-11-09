@@ -46,8 +46,8 @@ const seasons = http.get(`${API}/shows/:id/seasons`, ({ params, request }) => {
   seen.push(new URL(request.url));
   if (params.id !== '1390') return new HttpResponse(null, { status: 500 });
   return HttpResponse.json([
-    { number: 1, ids: { trakt: 1 }, images: { poster: ['media.trakt.tv/images/seasons/1/posters/medium/a.jpg.webp'] } },
-    { number: 3, ids: { trakt: 3 }, images: { poster: ['media.trakt.tv/images/seasons/3/posters/medium/c.jpg.webp'] } },
+    { number: 1, ids: { trakt: 1 } },
+    { number: 3, ids: { trakt: 3 } },
   ]);
 });
 
@@ -250,13 +250,13 @@ describe('fetchUpNext', () => {
       });
 
       expect(items.find(({ showId }) => showId === 1390)?.poster).toBe(
-        'https://media.trakt.tv/images/seasons/3/posters/thumb/c.jpg.webp',
+        `https://media.trakt.tv/seasons/3/thumb/poster.webp#fallback=${encodeURIComponent('https://media.trakt.tv/shows/1390/thumb/poster.webp')}`,
       );
       expect(items.find(({ showId }) => showId === 1388)?.poster).toBe(
         'https://media.trakt.tv/shows/1388/thumb/poster.webp',
       );
       const seasonRequests = seen.filter(({ pathname }) => pathname.endsWith('/seasons'));
-      expect(seasonRequests.every(({ searchParams }) => searchParams.get('extended') === 'images')).toBe(true);
+      expect(seasonRequests.every(({ searchParams }) => searchParams.get('extended') === null)).toBe(true);
     });
   });
 });

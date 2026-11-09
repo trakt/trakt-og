@@ -35,7 +35,6 @@ import { type SocialCard, type SocialLinePart, type SocialView, toSocialBoard } 
   import { overlay } from '#lib/overlay/overlay.ts';
   import type { DatePreferences } from '#lib/settings/DatePreferences.ts';
   import type { BandWords } from '#lib/users/profile/toGenreBand.ts';
-  import { imageUrl } from '#lib/utils/imageUrl.ts';
   import Stat from '#lib/components/stats/Stat.svelte';
   import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
   import RatingLine from '#lib/components/rating/RatingLine.svelte';
@@ -228,7 +227,7 @@ const boardOf = (items: readonly SocialItem[] | undefined) =>
   href={item.href}
   title={item.title}
   number={item.number}
-  image={imageUrl(item.poster, 'thumb')}
+  image={item.poster}
   userRating={state.rating}
   icons={{
       fill: quickIconFill({ state, airedEpisodes: target.airedEpisodes, runtime: target.runtime, datePreferences }),

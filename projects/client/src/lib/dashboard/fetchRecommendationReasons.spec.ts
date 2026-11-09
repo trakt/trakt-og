@@ -11,7 +11,6 @@ const title = (id: number, name: string) => ({
   title: name,
   year: 2017,
   ids: { trakt: id, slug: `slug-${id}` },
-  images: { poster: [`media.trakt.tv/images/x/${id}/posters/medium/p.jpg.webp`] },
 });
 
 const respond = (status: number, body: JsonBodyType) =>
@@ -69,7 +68,6 @@ describe('fetchRecommendationReasons', () => {
           person: {
             name: 'Vince Gilligan',
             ids: { trakt: 9486, slug: 'vince-gilligan' },
-            images: { headshot: ['media.trakt.tv/images/people/9486/headshots/medium/h.jpg.webp'] },
           },
           role: 'making',
           watched_roles: ['making', 'acting'],

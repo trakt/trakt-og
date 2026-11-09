@@ -1,5 +1,5 @@
 import { rawApiFetch } from '../api/rawApiFetch.ts';
-import { imageUrl } from '../utils/imageUrl.ts';
+import { mediaImage } from '../images/mediaImage.ts';
 import { type StarterMedia, type StarterRow, starterRowsSchema } from './starterRowsSchema.ts';
 
 /** `watched/all` is the most watched of all time, the titles most people have seen. */
@@ -41,8 +41,8 @@ export function toStarterPick(media: StarterMedia, type: 'show' | 'movie', now: 
     href: `/${type}s/${media.ids.slug}`,
     title: media.title,
     year: media.year ?? undefined,
-    image: imageUrl(media.images?.poster?.at(0), 'medium'),
-    fanart: imageUrl(media.images?.fanart?.at(0), 'full'),
+    image: mediaImage({ type, id: media.ids.trakt, slot: 'poster', size: 'medium' }),
+    fanart: mediaImage({ type, id: media.ids.trakt, slot: 'fanart', size: 'full' }),
     released: releaseDate ? new Date(releaseDate) <= now : false,
     rating: media.rating ?? undefined,
     runtime: media.runtime ?? undefined,
@@ -66,7 +66,7 @@ export async function fetchStarterPicks({
   limit,
   now = new Date(),
 }: FetchStarterPicksParams): Promise<StarterPick[]> {
-  const search = new URLSearchParams({ extended: 'full,images', limit: String(limit) });
+  const search = new URLSearchParams({ extended: 'full', limit: String(limit) });
   try {
     const response = await rawApiFetch({ fetch, path: `/${type}/${chart}?${search}` });
     if (!response.ok) return [];

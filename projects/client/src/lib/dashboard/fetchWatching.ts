@@ -21,7 +21,7 @@ type FetchWatchingParams = {
 async function watchingOf(get: FetchWatchingParams['get'], member: SocialMember): Promise<LiveWatch | null> {
   if (!member.slug) return null;
 
-  const response = await get(`/users/${encodeURIComponent(member.slug)}/watching?extended=full,images`);
+  const response = await get(`/users/${encodeURIComponent(member.slug)}/watching?extended=full`);
   // 204 is "not watching"; anything else that isn't a 200 counts as not watching too.
   if (response.status !== 200) return null;
 

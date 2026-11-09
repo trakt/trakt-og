@@ -30,7 +30,7 @@ describe('fetchRecentlyWatched', () => {
     const url = new URL(seen.at(0)?.url ?? '');
 
     expect(url.searchParams.get('limit')).toBe('9');
-    expect(url.searchParams.get('extended')).toBe('full,images');
+    expect(url.searchParams.get('extended')).toBe('full');
     expect(seen.at(0)?.headers.get('authorization')).toBe('Bearer abc');
     expect(plays.map(({ key }) => key)).toEqual(recentlyWatchedFixture.rows.map(({ id }) => id));
   });

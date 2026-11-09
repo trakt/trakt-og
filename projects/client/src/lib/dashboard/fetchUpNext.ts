@@ -57,7 +57,7 @@ function request({ sort, favorites, includeWatchlisted }: DashboardSettings['upN
 }
 
 async function upNext(client: Client, query: Query): Promise<readonly UpNextEntry[]> {
-  // The nitro route, as trakt-web reads it. The worker serves it full with images, and its `watchnow` filter is typed.
+  // The nitro route, as trakt-web reads it. The worker serves it full, and its `watchnow` filter is typed.
   const response = await client.sync.progress.upNext.nitro({ query: { intent: 'all', ...query } });
   if (response.status !== 200) throw new Error(`Up Next failed with ${response.status}`);
 

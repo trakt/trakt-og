@@ -23,10 +23,6 @@ const media = (id: number, title: string, released: string) => ({
   first_aired: released,
   released: released.slice(0, 10),
   aired_episodes: 12,
-  images: {
-    poster: [`media.trakt.tv/images/x/${id}/posters/medium/p.jpg.webp`],
-    fanart: [`media.trakt.tv/images/x/${id}/fanarts/medium/f.jpg.webp`],
-  },
   colors: { poster: ['#112233', '#445566'] },
 });
 
@@ -81,13 +77,13 @@ const load = (overrides: Partial<DashboardSettings['recommendations']> = {}) =>
   });
 
 describe('fetchRecommendations', () => {
-  it('should load shows and movies together with their images, colors and sources', async () => {
+  it('should load shows and movies together with their colors and sources', async () => {
     server.use(respond('/media/recommendations'));
 
     const recs = await load();
     const url = new URL(seen.at(0)?.url ?? '');
 
-    expect(url.searchParams.get('extended')).toBe('full,images,colors');
+    expect(url.searchParams.get('extended')).toBe('full,colors');
     expect(url.searchParams.get('limit')).toBe('50');
     expect(url.searchParams.get('ignore_watched')).toBe('true');
     expect(url.searchParams.get('hide_watching')).toBe('true');
@@ -111,7 +107,8 @@ describe('fetchRecommendations', () => {
       genres: ['Science Fiction', 'Drama', 'Mystery'],
       network: 'HBO',
       certification: 'TV-MA',
-      fanart: 'https://media.trakt.tv/images/x/1/fanarts/medium/f.jpg.webp',
+      poster: 'https://media.trakt.tv/shows/1/medium/poster.webp',
+      fanart: 'https://media.trakt.tv/shows/1/medium/fanart.webp',
       colors: ['#112233', '#445566'],
     });
   });
@@ -166,7 +163,7 @@ describe('fetchRecommendations', () => {
 
     expect(trending.map(({ pathname }) => pathname).sort()).toEqual(['/movies/trending', '/shows/trending']);
     for (const url of trending) {
-      expect(url.searchParams.get('extended')).toBe('full,images,colors');
+      expect(url.searchParams.get('extended')).toBe('full,colors');
       expect(url.searchParams.get('limit')).toBe('50');
     }
     expect(seen.slice(1).every((request) => !request.headers.has('authorization'))).toBe(true);

@@ -56,7 +56,7 @@ describe('toScheduleDays', () => {
           title: 'Fifteen Inches of Sheer Dynamite',
           href: '/shows/the-boys-2019/seasons/5/episodes/1',
         },
-        poster: 'https://media.trakt.tv/images/shows/000/139/960/posters/thumb/c5b8a81eba.jpg.webp',
+        poster: 'https://media.trakt.tv/shows/139960/thumb/poster.webp',
       });
     });
 

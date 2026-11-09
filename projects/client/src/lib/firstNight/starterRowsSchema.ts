@@ -5,7 +5,6 @@ const mediaSchema = z.object({
   title: z.string(),
   year: z.number().nullish(),
   ids: z.object({ trakt: z.number(), slug: z.string() }),
-  images: z.object({ poster: z.array(z.string()).nullish(), fanart: z.array(z.string()).nullish() }).nullish(),
   rating: z.number().nullish(),
   runtime: z.number().nullish(),
   aired_episodes: z.number().nullish(),

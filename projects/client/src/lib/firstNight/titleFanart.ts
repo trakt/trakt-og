@@ -1,18 +1,13 @@
-import { rawApiFetch } from '../api/rawApiFetch.ts';
-import { imageUrl } from '../utils/imageUrl.ts';
-import { fanartSchema } from './fanartSchema.ts';
+import { mediaImage } from '../images/mediaImage.ts';
 
-const cache = new Map<string, Promise<string | undefined>>();
+const TRAKT_IDS: Readonly<Record<string, number>> = {
+  'shows/mr-robot': 93720,
+};
 
-/** A show's or movie's fanart, read once per page without a token. No art comes back as undefined. */
-export function titleFanart(type: 'shows' | 'movies', slug: string, fetch: typeof globalThis.fetch = globalThis.fetch) {
-  const key = `${type}/${slug}`;
-  const cached = cache.get(key);
-  if (cached) return cached;
-  const art = rawApiFetch({ fetch, path: `/${key}?extended=images` })
-    .then((response) => (response.ok ? response.json() : null))
-    .then((body: unknown) => imageUrl(fanartSchema.safeParse(body).data?.images?.fanart?.at(0), 'full'))
-    .catch(() => undefined);
-  cache.set(key, art);
-  return art;
+/** The fanart of a show or movie in `TRAKT_IDS`, from its Trakt id. Any other title comes back as undefined. */
+export function titleFanart(type: 'shows' | 'movies', slug: string) {
+  const id = TRAKT_IDS[`${type}/${slug}`];
+  if (id === undefined) return Promise.resolve(undefined);
+
+  return Promise.resolve(mediaImage({ type: type === 'shows' ? 'show' : 'movie', id, slot: 'fanart', size: 'full' }));
 }

@@ -2,9 +2,7 @@ import { z } from 'zod/v4';
 
 const ids = z.object({ trakt: z.number(), slug: z.string().nullish() });
 
-const images = z.object({ poster: z.array(z.string()).nullish() }).nullish();
-
-const sourceMedia = z.object({ title: z.string(), year: z.number().nullish(), ids, images });
+const sourceMedia = z.object({ title: z.string(), year: z.number().nullish(), ids });
 
 /**
  * What led to a recommendation: a title the viewer watched (`activity`, with their rating as `stars`) or loved

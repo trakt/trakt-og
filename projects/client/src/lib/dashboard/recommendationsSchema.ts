@@ -1,13 +1,6 @@
 import { z } from 'zod/v4';
 import { recommendationSourceSchema } from './recommendationSourceSchema.ts';
 
-const images = z
-  .object({
-    poster: z.array(z.string()).nullish(),
-    fanart: z.array(z.string()).nullish(),
-  })
-  .nullish();
-
 const ids = z.object({ trakt: z.number(), slug: z.string().nullish() });
 
 const media = z.object({
@@ -24,7 +17,6 @@ const media = z.object({
   aired_episodes: z.number().nullish(),
   first_aired: z.string().nullish(),
   released: z.string().nullish(),
-  images,
   colors: z.object({ poster: z.array(z.string()).nullish() }).nullish(),
 });
 

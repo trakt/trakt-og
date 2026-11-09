@@ -17,7 +17,7 @@ const rowUserSchema = z.object({ user: socialMemberSchema });
  * is left out, not the whole answer; a failed call throws.
  */
 export async function fetchFollowingWatching({ get }: FetchFollowingWatchingParams): Promise<readonly LiveWatch[]> {
-  const response = await get('/v3/users/me/following/watching?extended=full,images');
+  const response = await get('/v3/users/me/following/watching?extended=full');
   if (response.status !== 200) throw new Error(`Following watching failed with ${response.status}`);
 
   const rows = rowsSchema.safeParse(await response.json().catch(() => null));

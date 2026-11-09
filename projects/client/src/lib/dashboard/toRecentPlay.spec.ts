@@ -33,8 +33,8 @@ describe('toRecentPlay', () => {
     expect(standard?.tags).toHaveLength(1);
   });
 
-  it("should use an episode's still, and the show's fanart without one", () => {
-    const play = (screenshot: string[]) =>
+  it("should use an episode's still, and the show's fanart where it has none", () => {
+    const play = () =>
       historyRowsSchema.parse([
         {
           id: 1,
@@ -42,17 +42,13 @@ describe('toRecentPlay', () => {
           show: {
             ids: { trakt: 1388, slug: 'breaking-bad' },
             title: 'Breaking Bad',
-            images: { fanart: ['media.trakt.tv/images/shows/fanarts/medium/f.jpg.webp'] },
           },
-          episode: { ids: { trakt: 2 }, season: 1, number: 2, images: { screenshot } },
+          episode: { ids: { trakt: 2 }, season: 1, number: 2 },
         },
       ])[0]!;
 
-    expect(toRecentPlay(play([]), datePreferences).image).toBe(
-      'https://media.trakt.tv/images/shows/fanarts/thumb/f.jpg.webp',
+    expect(toRecentPlay(play(), datePreferences).image).toBe(
+      `https://media.trakt.tv/episodes/2/thumb/screenshot.webp#fallback=${encodeURIComponent('https://media.trakt.tv/shows/1388/thumb/fanart.webp')}`,
     );
-    expect(
-      toRecentPlay(play(['media.trakt.tv/images/episodes/screenshots/medium/s.jpg.webp']), datePreferences).image,
-    ).toBe('https://media.trakt.tv/images/episodes/screenshots/thumb/s.jpg.webp');
   });
 });

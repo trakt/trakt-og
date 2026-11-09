@@ -22,7 +22,7 @@ const action = z.discriminatedUnion('action', [
 ]);
 
 /**
- * One row of `/v3/users/me/following/activities?extended=full,images`: a followed member's watch, rating or top-level
+ * One row of `/v3/users/me/following/activities?extended=full`: a followed member's watch, rating or top-level
  * comment. `@trakt/api` has no contract for the v3 feed, so each row is parsed here.
  */
 export const socialActivitySchema = z.intersection(base, z.intersection(socialMediaSchema, action));

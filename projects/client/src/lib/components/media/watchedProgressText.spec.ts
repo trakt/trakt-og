@@ -8,6 +8,14 @@ describe('watchedProgressText', () => {
     );
   });
 
+  it('should count movies for a franchise', () => {
+    expect(
+      watchedProgressText([
+        { verb: 'watched', percent: 2, completed: 1, aired: 36, unit: 'movies', plays: 1, minutes: 77 },
+      ]),
+    ).toBe('2% watched, 1 / 36 movies — 1 play (1h 17m)');
+  });
+
   it('should drop the plays and time when they are unknown', () => {
     expect(watchedProgressText([{ verb: 'watched', percent: 60, completed: 12, aired: 20 }])).toBe(
       '60% watched, 12 / 20 eps',

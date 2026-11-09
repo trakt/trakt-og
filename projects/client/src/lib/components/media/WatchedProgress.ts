@@ -8,6 +8,8 @@ export type WatchedProgress = Readonly<{
   percent: number;
   completed: number;
   aired: number;
+  /** What `aired` counts: "eps" when left out, "movies" for a franchise. */
+  unit?: 'eps' | 'movies';
   /** Left out when unknown, which drops the plays. */
   plays?: number;
   /** The plays' total time, when the runtime is known. */

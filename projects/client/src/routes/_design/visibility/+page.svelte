@@ -2,6 +2,7 @@
 import { page } from '$app/state';
 import RecommendationSpotlight from '#lib/components/dashboard/RecommendationSpotlight.svelte';
 import FrameGrid from '#lib/components/frame/FrameGrid.svelte';
+import CaughtUpBar from '#lib/components/media/CaughtUpBar.svelte';
 import FanartCard from '#lib/components/media/FanartCard.svelte';
 import DroppedBadge from '#lib/components/media/DroppedBadge.svelte';
 import { mediaQuickIcons } from '#lib/components/media/mediaQuickIcons.ts';
@@ -122,6 +123,38 @@ const recommendation: Recommendation = {
           image={breakingBad.fanartThumb} tags={[{ text: '868 watchers' }]} dropped
           icons={{ ...icons, favorite: true }} />
       </FrameGrid>
+    </div>
+  </Variant>
+</Specimen>
+
+{#snippet caughtUp()}<CaughtUpBar datePreferences={dates} />{/snippet}
+{#snippet caughtUpSmall()}<CaughtUpBar datePreferences={dates} short small />{/snippet}
+{#snippet nextMovie()}<CaughtUpBar next="2027-06-18" datePreferences={dates} />{/snippet}
+{#snippet nextMovieShort()}<CaughtUpBar next="2027-06-18" datePreferences={dates} short small />{/snippet}
+<Specimen title="Caught up bar" row
+  note="A franchise you've watched every released movie of shows a purple check and Caught Up at the left of its card's quick-icon bar instead of actions, written 100% on a poster's narrow bar. With another movie announced, its date takes the bar's right end on a slanted block a shade off the bar.">
+  <Variant label="Poster, nothing announced">
+    <div class="poster">
+      <PosterCard framed href={breakingBad.href} title={breakingBad.title} image={breakingBad.posterThumb}
+        subtitles={[String(breakingBad.year)]} bar={caughtUpSmall} />
+    </div>
+  </Variant>
+  <Variant label="Poster, next movie">
+    <div class="poster">
+      <PosterCard framed href={breakingBad.href} title={breakingBad.title} image={breakingBad.posterThumb}
+        subtitles={[String(breakingBad.year)]} bar={nextMovieShort} />
+    </div>
+  </Variant>
+  <Variant label="Fanart, nothing announced">
+    <div class="fanart">
+      <FanartCard framed href={breakingBad.href} title={breakingBad.title} image={breakingBad.fanartThumb}
+        bar={caughtUp} />
+    </div>
+  </Variant>
+  <Variant label="Fanart, next movie">
+    <div class="fanart">
+      <FanartCard framed href={breakingBad.href} title={breakingBad.title} image={breakingBad.fanartThumb}
+        bar={nextMovie} />
     </div>
   </Variant>
 </Specimen>

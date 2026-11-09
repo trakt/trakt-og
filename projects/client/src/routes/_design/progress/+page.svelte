@@ -10,7 +10,10 @@
   catalog after a short wait (Breaking Bad has unwatched episodes in the library, Severance a season announced, and
   on Watched, The Bold and the Beautiful has seasons 7 and 8 hidden, behind the button beside its Seasons). In the
   grid, marking a card's episode watched covers its poster with the loader while the progress is read again, after a
-  short wait.
+  short wait. `?type=franchises` is the Franchises tab on sample collections (Alien has an unreleased film that the bar
+  and counts leave out and an up next movie, Spider-Verse is complete with a film still to come, Toy Story is complete
+  with nothing to come), `&view=grid` its grid of one poster a franchise; each row reads its movies after a short wait as it
+  nears the screen, `?state=loading` holds the catalog loading and `?state=failed` shows it failing.
 -->
 <script lang="ts">
 import DemoToggle from '#lib/design/DemoToggle.svelte';
@@ -20,6 +23,8 @@ import { SvelteSet } from 'svelte/reactivity';
 import Specimen from '#lib/design/Specimen.svelte';
 import { overlay } from '#lib/overlay/overlay.ts';
 import { progressFixture } from '#lib/users/progress/progressFixture.ts';
+import FranchiseList from '#lib/users/progress/franchises/FranchiseList.svelte';
+import { franchiseFixture } from '#lib/users/progress/franchises/franchiseFixture.ts';
 import ProgressList from '#lib/users/progress/ProgressList.svelte';
 import ProgressSeasonGrid from '#lib/users/progress/ProgressSeasonGrid.svelte';
 import { toProgressRow } from '#lib/users/progress/toProgressRow.ts';
@@ -42,6 +47,7 @@ const type = $derived.by<ProgressType>(() => {
   const value = page.url.searchParams.get('type') ?? '';
   return isProgressType(value) ? value : 'watched';
 });
+const showType = $derived(type === 'franchises' ? 'watched' : type);
 const variants = [
   { label: 'List', query: '' },
   { label: 'Grid', query: '?view=grid' },
@@ -51,6 +57,12 @@ const variants = [
   { label: 'Include Watchlisted', query: '?watchlisted=1' },
   { label: 'Rewatching', query: '?type=rewatching' },
   { label: 'Dropped', query: '?type=dropped' },
+  { label: 'Franchises', query: '?type=franchises' },
+  { label: 'Franchises grid', query: '?type=franchises&view=grid' },
+  { label: 'Franchises, Hide Completed', query: '?type=franchises&hide=completed' },
+  { label: 'Franchises, Hide Not Completed', query: '?type=franchises&hide=not-completed' },
+  { label: 'Franchises loading', query: '?type=franchises&state=loading' },
+  { label: 'Franchises failed', query: '?type=franchises&state=failed' },
   { label: 'On a list', query: '?list=1' },
   { label: 'Empty list', query: '?list=2' },
   { label: "Someone's watchlist", query: '?list=3' },
@@ -63,7 +75,9 @@ let soapShowHidden = $state(false);
 const soap = $derived(toProgressRow({ item: progressFixture.soap(new Set(soapHidden)), datePreferences, now }));
 const toggleSoapSeason = (season: number) => (soapOpen.has(season) ? soapOpen.delete(season) : soapOpen.add(season));
 const hideCompleted = $derived(page.url.searchParams.get('hide') === 'completed');
+const hideNotCompleted = $derived(page.url.searchParams.get('hide') === 'not-completed');
 const pending = $derived(page.url.searchParams.get('state') === 'loading');
+const failed = $derived(page.url.searchParams.get('state') === 'failed');
 
 // Like the page: up-next comes with the progress, and a row's catalog is read as its seasons open.
 const catalogs = new SvelteSet<number>();
@@ -99,9 +113,9 @@ function finish(id: number) {
 }
 // Watched adds the soap with two hidden seasons, for the hidden seasons button.
 const fixture = (expanded: boolean) =>
-  type === 'watched'
+  showType === 'watched'
     ? [...progressFixture.watched(expanded), progressFixture.soap(new Set([7, 8]), expanded)]
-    : progressFixture[type](expanded);
+    : progressFixture[showType](expanded);
 const exact = $derived(fixture(true));
 const items = $derived(
   fixture(false).map((item) => {
@@ -141,9 +155,10 @@ const listRow = $derived(
     : new Promise<ProgressListRow | null>((resolve) => setTimeout(() => resolve(sampleRow(listId)), WAIT)),
 );
 const data = $derived({
-  type,
+  type: showType,
   sort: { by: 'added', how: 'asc' as const, supported: true },
-  hide: hideCompleted ? ['completed' as const] : [],
+  franchiseSort: { by: 'recent' as const, how: 'desc' as const },
+  hide: hideCompleted ? ['completed' as const] : hideNotCompleted ? ['not-completed' as const] : [],
   grid: view === 'grid',
   simple: view === 'simple',
   includeWatchlisted: page.url.searchParams.has('watchlisted'),
@@ -161,7 +176,7 @@ const data = $derived({
 <!-- The variants only change this page's query, so resolve() has nothing to add. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 <Specimen title="Progress list" bleed
-  note="Open a row's seasons to see them shimmer while they load. Loading holds the shimmering rows; the list variants show them under the band naming the list, then the filtered rows or the empty list.">
+  note="The status dropdown groups Shows (Watching, Rewatching, Dropped) and Movies (Franchises). Open a row's seasons to see them shimmer while they load. Loading holds the shimmering rows; the list variants show them under the band naming the list, then the filtered rows or the empty list.">
   <nav class="variants" aria-label="Progress variants">
     {#each variants as variant (variant.label)}
       <a href="{page.url.pathname}{variant.query}" aria-current={page.url.search === variant.query ? 'page' : undefined}>
@@ -174,7 +189,15 @@ const data = $derived({
       <button type="button" disabled={finished.has(1388)} onclick={() => finish(1388)}>Finish Breaking Bad</button>
     </p>
   {/if}
-  <ProgressList {data} items={pending ? null : items} {listed} {loading} {reloading} onneed={need} {now} />
+  {#if type === 'franchises'}
+    <FranchiseList data={{ ...data, sort: data.franchiseSort }}
+      franchises={pending || failed ? null : franchiseFixture.franchises}
+      onretry={failed ? () => undefined : undefined} watched={franchiseFixture.plays}
+      readMovies={(id) => new Promise((resolve) => setTimeout(() => resolve(franchiseFixture.movies(id)), WAIT))}
+      now={new Date(franchiseFixture.now)} />
+  {:else}
+    <ProgressList {data} items={pending ? null : items} {listed} {loading} {reloading} onneed={need} {now} />
+  {/if}
 </Specimen>
 
 <Specimen title="Season list"

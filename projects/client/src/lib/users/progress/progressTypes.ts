@@ -1,12 +1,13 @@
 /**
  * The progress tabs, in the dropdown's order. Watching (the `watched` tab) is every show you've started, minus the ones you dropped;
  * Rewatching narrows it to the shows you're rewatching; Dropped is the shows you dropped. All three read the `watched`
- * progress settings.
+ * progress settings. Franchises is the movies side: every official franchise collection you've started.
  */
 export const progressTypes = {
   watched: { label: 'Watching' },
   rewatching: { label: 'Rewatching' },
   dropped: { label: 'Dropped' },
+  franchises: { label: 'Franchises' },
 } as const;
 
 export type ProgressType = keyof typeof progressTypes;

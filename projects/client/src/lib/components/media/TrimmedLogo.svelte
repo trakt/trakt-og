@@ -3,10 +3,11 @@
   short shimmering bar holds its place; then the space grows to the logo's height and the logo fades in. Where it goes
   sets its size, room and shadow with custom properties on a parent: `--trimmed-logo-width`, `--trimmed-logo-height`,
   `--trimmed-logo-margin-start`, `--trimmed-logo-margin-end` and `--trimmed-logo-filter`. `src` must be same-origin
-  (`proxiedLogoUrl`), or it shows as it is.
+  (`proxiedLogoUrl`), or it shows as it is. A title without a logo (a 404) shows `alt` as text in its place.
     <TrimmedLogo src={proxiedLogoUrl(card.logo)} alt={card.title} />
 -->
 <script lang="ts">
+import type { Attachment } from 'svelte/attachments';
 import { trimLogo } from '#lib/utils/trimLogo.ts';
 
 interface Props {
@@ -17,9 +18,21 @@ interface Props {
 }
 
 const { src, alt, loading = 'eager' }: Props = $props();
+
+// The source that turned out missing, so another logo in this spot gets its own try.
+let missing = $state<string>();
+
+// A logo can fail before the page wakes up, so one that already failed counts too.
+const onMissing = (source: string): Attachment<HTMLImageElement> => (image) => {
+  const miss = () => (missing = source);
+  if (image.complete && image.naturalWidth === 0) miss();
+  image.addEventListener('error', miss);
+  return () => image.removeEventListener('error', miss);
+};
 </script>
 
-<img class="trimmed-logo" {src} {alt} {loading} decoding="async" data-trim {@attach trimLogo(src)} />
+{#if missing === src}{alt}{:else}<img class="trimmed-logo" {src} {alt} {loading} decoding="async" data-trim
+    {@attach trimLogo(src)} {@attach onMissing(src)} />{/if}
 
 <style>
 .trimmed-logo {

@@ -55,7 +55,6 @@ describe('loadItemComments', () => {
     const read = requests.find(({ pathname }) => pathname.includes('/comments/'));
     expect(read?.pathname).toBe('/shows/breaking-bad/seasons/1/comments/lowest');
     expect(Object.fromEntries(read?.searchParams ?? [])).toEqual({
-      extended: 'images',
       page: '2',
       limit: '100',
       language: 'en',

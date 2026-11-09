@@ -43,7 +43,7 @@ async function readItem(fetch: typeof globalThis.fetch, item: SubpageItem, neigh
   const { id } = item;
   if (item.type === 'movie') {
     const [movie, lists] = await Promise.all([
-      client.movies.summary({ params: { id }, query: { extended: 'full,images' } }),
+      client.movies.summary({ params: { id }, query: { extended: 'full' } }),
       client.movies.lists({
         params: { id, type: 'official', sort: 'popular' },
         query: { limit: OFFICIAL_LISTS_LIMIT },
@@ -58,7 +58,7 @@ async function readItem(fetch: typeof globalThis.fetch, item: SubpageItem, neigh
     };
   }
 
-  const summary = client.shows.summary({ params: { id }, query: { extended: 'full,images' } });
+  const summary = client.shows.summary({ params: { id }, query: { extended: 'full' } });
   if (item.type === 'show') {
     const show = await summary;
     assertOk(show, 'Show');
@@ -69,7 +69,7 @@ async function readItem(fetch: typeof globalThis.fetch, item: SubpageItem, neigh
   if (item.type === 'season' && !neighbours) {
     const [show, found] = await Promise.all([
       summary,
-      client.shows.season.info({ params: { id, season }, query: { extended: 'full,images' } }),
+      client.shows.season.info({ params: { id, season }, query: { extended: 'full' } }),
     ]);
     assertOk(show, 'Show');
     // A season the show doesn't have answers an empty 204, not a 404.
@@ -80,7 +80,7 @@ async function readItem(fetch: typeof globalThis.fetch, item: SubpageItem, neigh
   if (item.type === 'season') {
     const [show, seasons] = await Promise.all([
       summary,
-      client.shows.seasons({ params: { id }, query: { extended: 'full,images' } }),
+      client.shows.seasons({ params: { id }, query: { extended: 'full' } }),
     ]);
     assertOk(show, 'Show');
     assertOk(seasons, 'Seasons');
@@ -97,7 +97,7 @@ async function readItem(fetch: typeof globalThis.fetch, item: SubpageItem, neigh
   // The season too, for its own title in the tag bar ("Delicate"); a failed read just leaves it out.
   const [show, found, seasonInfo, seasonsResponse] = await Promise.all([
     summary,
-    client.shows.episode.summary({ params: { id, season, episode }, query: { extended: 'full,images' } }),
+    client.shows.episode.summary({ params: { id, season, episode }, query: { extended: 'full' } }),
     client.shows.season.info({ params: { id, season }, query: { extended: 'full' } }),
     neighbours ? rawApiFetch({ fetch, path: `/shows/${encodeURIComponent(id)}/seasons?extended=episodes` }) : null,
   ]);

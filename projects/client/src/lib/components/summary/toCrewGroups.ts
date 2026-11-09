@@ -1,17 +1,16 @@
 import { crewDepartments } from '../../credits/crewDepartments.ts';
+import { mediaImage } from '../../images/mediaImage.ts';
 import { countLabel } from '../../utils/countLabel.ts';
-import { imageUrl } from '../../utils/imageUrl.ts';
 import type { CastMember } from './CastMember.ts';
 
 type CrewMember = {
   readonly person: {
     readonly name: string;
-    readonly ids: { readonly slug: string };
+    readonly ids: { readonly trakt: number; readonly slug: string };
     readonly gender?: string | null;
   };
   readonly jobs?: readonly string[] | null;
   readonly episode_count?: number | null;
-  readonly images?: { readonly headshot: readonly string[] } | null;
 };
 
 /**
@@ -29,7 +28,7 @@ export function toCrewGroups(
       name: member.person.name,
       href: `/people/${member.person.ids.slug}`,
       characters: (member.jobs ?? []).join(', '),
-      image: imageUrl(member.images?.headshot.at(0), 'thumb'),
+      image: mediaImage({ type: 'person', id: member.person.ids.trakt, slot: 'headshot', size: 'thumb' }),
       gender: member.person.gender ?? undefined,
       episodes: episodeCounts && member.episode_count ? countLabel(member.episode_count, 'episode') : undefined,
     })),

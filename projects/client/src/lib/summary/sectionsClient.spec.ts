@@ -196,11 +196,11 @@ describe('sectionsClient', () => {
     });
   });
 
-  it('should ask for eighteen related items with images', async () => {
+  it('should ask for eighteen related items', async () => {
     const cards = await client(false).related(movie);
     expect(cards?.map(({ href }) => href)).toEqual(['/movies/deadpool-2-2018']);
     const params = new URL(seen.at(0)?.url ?? '').searchParams;
-    expect([params.get('limit'), params.get('extended')]).toEqual(['18', 'full,images']);
+    expect([params.get('limit'), params.get('extended')]).toEqual(['18', 'full']);
   });
 
   it("should ask for a related card's people by its Trakt id", async () => {
@@ -258,11 +258,7 @@ describe('sectionsClient', () => {
       const cards = await client(false).related(movie, 'action');
       expect(cards?.map(({ id }) => id)).toEqual([2, 3, 4, 5, 6, 7]);
       const params = new URL(seen.at(0)?.url ?? '').searchParams;
-      expect([params.get('genres'), params.get('limit'), params.get('extended')]).toEqual([
-        'action',
-        '7',
-        'full,images',
-      ]);
+      expect([params.get('genres'), params.get('limit'), params.get('extended')]).toEqual(['action', '7', 'full']);
     });
 
     it('should keep six when the title is not among them', async () => {

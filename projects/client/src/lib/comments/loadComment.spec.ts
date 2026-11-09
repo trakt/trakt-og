@@ -83,7 +83,7 @@ describe('loadComment', () => {
       '/comments/10/replies',
     ]);
     expect(new URL(requests.find(({ url }) => url.includes('/item'))?.url ?? '').searchParams.get('extended')).toBe(
-      'full,images',
+      'full',
     );
     expect(requests.every((request) => !request.headers.has('authorization'))).toBe(true);
   });

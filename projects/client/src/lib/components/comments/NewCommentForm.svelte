@@ -28,6 +28,8 @@ import { postComment } from './postComment.ts';
 import { toCommentContentType } from './toCommentContentType.ts';
 import { prefersReducedMotion } from 'svelte/motion';
 import { viewerFetch } from '../../auth/viewerFetch.ts';
+import { userAvatar } from '../../images/userAvatar.ts';
+import { PLACEHOLDER_AVATAR } from '../../users/placeholderAvatar.ts';
 
 const { item }: { item: CommentItem } = $props();
 
@@ -52,9 +54,11 @@ $effect(() => {
   });
 });
 
-// The create response leaves out images unless asked, and the member is the viewer.
+// The create response leaves out the member's id, and the member is the viewer.
 const withAvatar = (comment: CommentResponse): CommentResponse =>
-  comment.user.images || !settings ? comment : { ...comment, user: { ...comment.user, images: settings.user.images } };
+  comment.user.ids.trakt || !settings?.user.ids.trakt
+    ? comment
+    : { ...comment, user: { ...comment.user, ids: { ...comment.user.ids, trakt: settings.user.ids.trakt } } };
 
 const save = (text: string, spoiler: boolean, gif: GifEntry | null) => {
   useTrack(AnalyticsEvent.AddComment).track({ action: 'post', type: toCommentContentType(text, gif !== null) });
@@ -90,7 +94,7 @@ async function posted(comment: CommentResponse | null) {
         placeholder="Add a comment as {name}..."
         submit="Post"
         posting="Posting your comment"
-        avatar={user.images.avatar.full}
+        avatar={user.ids.trakt ? userAvatar(user.ids.trakt) : PLACEHOLDER_AVATAR}
         rulesId="{id}-rules"
         spoiler={false}
         confirmLeave

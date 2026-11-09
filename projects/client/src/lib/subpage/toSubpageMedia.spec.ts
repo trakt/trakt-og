@@ -7,10 +7,6 @@ const show = {
   year: 2008,
   homepage: 'https://www.amc.com/shows/breaking-bad',
   aired_episodes: 62,
-  images: {
-    fanart: ['media.trakt.tv/images/shows/000/001/388/fanarts/medium/a.jpg.webp'],
-    poster: ['media.trakt.tv/images/shows/000/001/388/posters/medium/b.jpg.webp'],
-  },
   social_ids: { twitter: 'BreakingBad', wikipedia: null },
 };
 
@@ -22,7 +18,6 @@ describe('toSubpageMedia', () => {
         ids: { trakt: 1, slug: 'fight-club-1999', imdb: 'tt0137523', tmdb: 550 },
         title: 'Fight Club',
         year: 1999,
-        images: { fanart: ['media.trakt.tv/f/medium/a.jpg'], poster: ['media.trakt.tv/p/medium/b.jpg'] },
       },
     };
 
@@ -32,8 +27,9 @@ describe('toSubpageMedia', () => {
         year: 1999,
         href: '/movies/fight-club-1999',
         parents: [],
-        fanart: 'https://media.trakt.tv/f/full/a.jpg',
-        poster: 'https://media.trakt.tv/p/medium/b.jpg',
+        fanart: 'https://media.trakt.tv/movies/1/full/fanart.webp',
+        poster: 'https://media.trakt.tv/movies/1/medium/poster.webp',
+        preview: 'https://og.trakt.tv/api/art/movie/1/fanart/movie/1/poster',
         item: { type: 'movie', id: 1, title: 'Fight Club (1999)' },
         watchNow: { title: 'Fight Club', year: 1999 },
         ratingTarget: { type: 'movie', id: 1, title: 'Fight Club (1999)' },
@@ -84,7 +80,6 @@ describe('toSubpageMedia', () => {
       ids: { trakt: 3950 },
       number: 1,
       first_aired: '2008-01-21T02:00:00.000Z',
-      images: { poster: ['media.trakt.tv/s/medium/c.jpg'] },
     };
 
     it("should go by a titled season's own name, with its number as the last step up", () => {
@@ -101,18 +96,17 @@ describe('toSubpageMedia', () => {
         year: 2008,
         href: '/shows/breaking-bad/seasons/1',
         parents: [{ title: 'Breaking Bad', href: '/shows/breaking-bad' }],
-        fanart: 'https://media.trakt.tv/images/shows/000/001/388/fanarts/full/a.jpg.webp',
-        poster: 'https://media.trakt.tv/s/medium/c.jpg',
+        fanart: 'https://media.trakt.tv/shows/1388/full/fanart.webp',
+        poster: `https://media.trakt.tv/seasons/3950/medium/poster.webp#fallback=${encodeURIComponent('https://media.trakt.tv/shows/1388/medium/poster.webp')}`,
         item: { type: 'season', title: 'Breaking Bad Season 1' },
         watchNow: { title: 'Breaking Bad', year: 2008 },
       });
     });
 
-    it('should call season 0 Specials and use the show poster when the season has none', () => {
-      const media = toSubpageMedia({ body: { type: 'season', season: { ...season, number: 0, images: null }, show } });
+    it('should call season 0 Specials', () => {
+      const media = toSubpageMedia({ body: { type: 'season', season: { ...season, number: 0 }, show } });
       expect(media).toMatchObject({
         title: 'Specials',
-        poster: 'https://media.trakt.tv/images/shows/000/001/388/posters/medium/b.jpg.webp',
       });
       expect(media?.links.at(0)?.href).toBe('https://www.imdb.com/title/tt0903747/episodes?season=0');
     });
@@ -131,7 +125,6 @@ describe('toSubpageMedia', () => {
       number: 1,
       title: 'Pilot',
       first_aired: '2008-01-21T02:00:00.000Z',
-      images: { screenshot: ['media.trakt.tv/e/medium/d.jpg'] },
     };
 
     it("should add the season's own title as a step after its number", () => {
@@ -154,8 +147,9 @@ describe('toSubpageMedia', () => {
           { title: 'Breaking Bad', href: '/shows/breaking-bad' },
           { title: 'Season 1', href: '/shows/breaking-bad/seasons/1' },
         ],
-        fanart: 'https://media.trakt.tv/e/full/d.jpg',
-        poster: 'https://media.trakt.tv/images/shows/000/001/388/posters/medium/b.jpg.webp',
+        fanart: `https://media.trakt.tv/episodes/73482/full/screenshot.webp#fallback=${encodeURIComponent('https://media.trakt.tv/shows/1388/full/fanart.webp')}`,
+        poster: 'https://media.trakt.tv/shows/1388/medium/poster.webp',
+        preview: 'https://og.trakt.tv/api/art/episode/73482/screenshot/show/1388/fanart/show/1388/poster',
         item: { type: 'episode', title: 'Breaking Bad 1x01 "Pilot"' },
       });
     });

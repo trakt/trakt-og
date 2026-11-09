@@ -53,7 +53,7 @@ const lists = $derived(own.visible(data.lists));
     href: data.media.href,
     parents: data.media.parents,
     subpage: 'Lists',
-    image: data.media.fanart ?? data.media.poster,
+    image: data.media.preview,
   })}
 />
 

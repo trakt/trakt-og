@@ -7,7 +7,6 @@ const walter = {
   character: 'Walter White',
   characters: ['Walter White', 'Heisenberg'],
   episode_count: 62,
-  images: { headshot: ['media.trakt.tv/images/people/000/000/001/headshots/medium/a.jpg.webp'] },
 };
 const crewMember = (trakt: number, name: string, jobs: string[]) => ({
   person: person(trakt, name),
@@ -38,7 +37,7 @@ describe('toCredits', () => {
             id: 1,
             name: 'Bryan Cranston',
             href: '/people/bryan-cranston',
-            image: expect.stringContaining('/headshots/'),
+            image: 'https://media.trakt.tv/people/1/thumb/headshot.webp',
             role: 'Walter White, Heisenberg',
             episodes: '62 episodes',
             episodeCount: 62,

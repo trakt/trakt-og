@@ -43,7 +43,7 @@ export function commentsClient(client: Api, fetch: typeof globalThis.fetch = glo
   const repliesFrom = async (id: number, page: number): Promise<readonly CommentResponse[]> => {
     const response = await client.comments.replies({
       params: { id: String(id) },
-      query: { extended: 'images', page, limit: REPLIES_PAGE },
+      query: { page, limit: REPLIES_PAGE },
     });
     if (response.status !== 200) throw new Error(`/comments/${id}/replies returned ${response.status}`);
 

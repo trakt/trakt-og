@@ -11,7 +11,6 @@ const user = (overrides: Partial<CommentResponse['user']> = {}): CommentResponse
   vip_ep: false,
   director: false,
   ids: { slug: 'sean', trakt: 1 },
-  images: { avatar: { full: 'https://media.trakt.tv/images/users/avatar.jpg' } },
   ...overrides,
 });
 
@@ -21,13 +20,13 @@ describe('util: authorOf', () => {
       name: 'Sean Rudford',
       href: '/users/sean',
       slug: 'sean',
-      avatar: 'https://media.trakt.tv/images/users/avatar.jpg',
+      avatar: 'https://media.trakt.tv/users/1/avatar.webp',
       badge: null,
     });
   });
 
   it('should fall back to the username and OG placeholder avatar', () => {
-    const author = authorOf(user({ name: '  ', images: null, private: true }));
+    const author = authorOf(user({ name: '  ', private: true }));
     expect(author.name).toBe('sean');
     expect(author.avatar).toContain('/placeholders/medium/zoidberg.png');
   });

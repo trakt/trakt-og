@@ -125,7 +125,7 @@ export function sectionsClient({
     const { type, slug, season } = media;
     const request = {
       params: { id: slug, sort },
-      query: { extended: 'images', limit: PREVIEW_LIMIT, ...(language && { language }) },
+      query: { limit: PREVIEW_LIMIT, ...(language && { language }) },
     } as const;
     if (media.type === 'episode') {
       return okBody(
@@ -173,7 +173,7 @@ export function sectionsClient({
   };
 
   const relatedOf = async (type: 'movie' | 'show', id: string, date: Date): Promise<readonly RelatedCard[]> => {
-    const query = { extended: 'full,images', limit: RELATED_LIMIT } as const;
+    const query = { extended: 'full', limit: RELATED_LIMIT } as const;
     if (type === 'movie') {
       const movies = await okBody(anonymous.movies.related({ params: { id }, query }));
       return (movies ?? []).map((item) => toRelatedCard({ type, item }, date));
@@ -183,7 +183,7 @@ export function sectionsClient({
   };
 
   const popularIn = async (type: 'movie' | 'show', genres: string, date: Date): Promise<readonly RelatedCard[]> => {
-    const query = { extended: 'full,images', genres, limit: POPULAR_LIMIT } as const;
+    const query = { extended: 'full', genres, limit: POPULAR_LIMIT } as const;
     if (type === 'movie') {
       const movies = await okBody(anonymous.movies.popular({ query }));
       return (movies ?? []).map((item) => toRelatedCard({ type, item }, date));
@@ -216,10 +216,7 @@ export function sectionsClient({
         watching(media),
         media.type === 'season'
           ? null
-          : raw<readonly SocialRow[]>(
-              `${mediaPath(media)}/social?limit=${SOCIAL_LIMIT}&extended=images`,
-              parsed(socialRowsSchema),
-            ),
+          : raw<readonly SocialRow[]>(`${mediaPath(media)}/social?limit=${SOCIAL_LIMIT}`, parsed(socialRowsSchema)),
         following(),
       ]);
       // A show's People Watched measures how much of it each member has seen, so it needs its size.
@@ -245,7 +242,7 @@ export function sectionsClient({
         comments(media, 'likes', language),
         comments(media, 'newest', language),
         raw<readonly CommentResponse[]>(
-          `${mediaPath(media)}/comments/mine?limit=${PREVIEW_LIMIT}&extended=images`,
+          `${mediaPath(media)}/comments/mine?limit=${PREVIEW_LIMIT}`,
           parsed(commentResponseSchema.array()),
         ),
       ]);

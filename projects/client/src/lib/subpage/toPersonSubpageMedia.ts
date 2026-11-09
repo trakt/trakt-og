@@ -1,6 +1,7 @@
 import type { PersonResponse } from '@trakt/api';
 import { personLinks } from '../people/personLinks.ts';
-import { imageUrl } from '../utils/imageUrl.ts';
+import { mediaImage } from '../images/mediaImage.ts';
+import { previewArt } from '../images/previewArt.ts';
 import type { SubpageFrameMedia } from './SubpageFrameMedia.ts';
 
 /**
@@ -13,8 +14,12 @@ export function toPersonSubpageMedia(person: PersonResponse): SubpageFrameMedia 
     title: person.name,
     href: `/people/${person.ids.slug}`,
     parents: [],
-    fanart: imageUrl(person.images?.fanart?.at(0), 'full'),
-    poster: imageUrl(person.images?.headshot?.at(0), 'medium'),
+    fanart: mediaImage({ type: 'person', id: person.ids.trakt, slot: 'fanart', size: 'full' }),
+    poster: mediaImage({ type: 'person', id: person.ids.trakt, slot: 'headshot', size: 'medium' }),
+    preview: previewArt(
+      { type: 'person', id: person.ids.trakt, slot: 'fanart' },
+      { type: 'person', id: person.ids.trakt, slot: 'headshot' },
+    ),
     links: personLinks(person),
   };
 }

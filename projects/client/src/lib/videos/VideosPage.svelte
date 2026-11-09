@@ -55,7 +55,7 @@ const tabs = $derived(toVideoTabs(data.videos));
     href: data.media.href,
     parents: data.media.parents,
     subpage: 'Videos',
-    image: data.media.fanart ?? data.media.poster,
+    image: data.media.preview,
   })}
 />
 

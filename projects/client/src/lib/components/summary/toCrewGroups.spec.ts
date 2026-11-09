@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { toCrewGroups } from './toCrewGroups.ts';
 
 const member = (name: string, jobs: string[], episode_count?: number) => ({
-  person: { name, ids: { slug: name.toLowerCase().replace(/ /g, '-') } },
+  person: { name, ids: { trakt: 7, slug: name.toLowerCase().replace(/ /g, '-') } },
   jobs,
   episode_count,
 });
@@ -33,7 +33,7 @@ describe('toCrewGroups', () => {
       name: 'Michelle MacLaren',
       href: '/people/michelle-maclaren',
       characters: 'Executive Producer, Director',
-      image: undefined,
+      image: 'https://media.trakt.tv/people/7/thumb/headshot.webp',
       episodes: '62 episodes',
     });
     expect(toCrewGroups(crew, false).at(0)?.cast.at(0)?.episodes).toBeUndefined();

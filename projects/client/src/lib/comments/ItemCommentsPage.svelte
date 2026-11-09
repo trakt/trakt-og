@@ -51,7 +51,7 @@ const languageHref = (code: CommentLanguage) => href(data.sort.by, data.sort.how
     href: data.media.href,
     parents: data.media.parents,
     subpage: 'Comments',
-    image: data.media.fanart ?? data.media.poster,
+    image: data.media.preview,
   })}
 />
 

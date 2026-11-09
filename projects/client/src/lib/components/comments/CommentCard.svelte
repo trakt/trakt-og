@@ -87,6 +87,7 @@ import { parseComment } from './text/parseComment.ts';
 import { watchedIndicator } from './watchedIndicator.ts';
 import { withoutBlocked } from './withoutBlocked.ts';
 import { prefersReducedMotion } from 'svelte/motion';
+import { userAvatar } from '../../images/userAvatar.ts';
 import { PLACEHOLDER_AVATAR } from '../../users/placeholderAvatar.ts';
 import { GENERIC_ERROR } from '../../utils/genericError.ts';
 import type { ReactionType } from './ReactionType.ts';
@@ -314,9 +315,11 @@ const addReply = (reply: CommentResponse) => {
   void loadReplies();
 };
 
-// The create response leaves out images unless asked, and the member is the viewer.
+// The create response leaves out the member's id, and the member is the viewer.
 const withAvatar = (reply: CommentResponse): CommentResponse =>
-  reply.user.images || !settings ? reply : { ...reply, user: { ...reply.user, images: settings.user.images } };
+  reply.user.ids.trakt || !settings?.user.ids.trakt
+    ? reply
+    : { ...reply, user: { ...reply.user, ids: { ...reply.user.ids, trakt: settings.user.ids.trakt } } };
 
 // Cancel takes the focus back to the button that opened the box.
 const closeReply = () => {
@@ -668,7 +671,7 @@ const vanish = (node: Element) => fade(node, { duration: prefersReducedMotion.cu
           placeholder="Reply to {author.name}..."
           submit="Reply"
           posting="Posting your reply"
-          avatar={settings?.user.images.avatar.full ?? PLACEHOLDER_AVATAR}
+          avatar={settings?.user.ids.trakt ? userAvatar(settings.user.ids.trakt) : PLACEHOLDER_AVATAR}
           small
           oncancel={closeReply}
           gifs={page.data.gifs}

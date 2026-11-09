@@ -36,7 +36,8 @@ const state = $derived(badgeTarget ? overlay.state(badgeTarget.type, badgeTarget
 
 <div class={['summary-poster', { dropped: state?.dropped }]}>
   {#if image}
-    <img src={image} {alt} data-placeholder={placeholder} />
+    <img src={image} {alt} data-placeholder={placeholder}
+      style:--image-placeholder-person={placeholder ? `url("${placeholder}")` : undefined} />
   {:else}
     <span class="placeholder" role="img" aria-label={alt}></span>
   {/if}

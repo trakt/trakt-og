@@ -113,6 +113,33 @@ img {
   border: 0;
 }
 
+/*
+ * Trakt art paints its kind's placeholder under itself, so a card shows it until the art loads and keeps it when
+ * there's none (brokenImageFallback swaps a 404 for the same picture). Zero specificity, so a component's own
+ * background wins. Logos and clearart have none: words over art read better alone.
+ */
+:where(img[src^="https://media.trakt.tv/"]) {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+:where(img[src^="https://media.trakt.tv/"][src*="/poster.webp"]) {
+  background-image: var(--image-placeholder-poster);
+}
+
+:where(img[src^="https://media.trakt.tv/"]:is([src*="/fanart.webp"], [src*="/screenshot.webp"], [src*="/thumb.webp"])) {
+  background-image: var(--image-placeholder-fanart);
+}
+
+:where(img[src^="https://media.trakt.tv/"][src*="/banner.webp"]) {
+  background-image: var(--image-placeholder-banner);
+}
+
+:where(img[src^="https://media.trakt.tv/"][src*="/headshot.webp"]) {
+  background-image: var(--image-placeholder-person);
+}
+
 table {
   border-collapse: collapse;
   border-spacing: 0;

@@ -485,6 +485,7 @@
   /* Missing media images: OG's placeholders/thumb assets, shared by summary, cast and episode cards. */
   --image-placeholder-poster: url("../assets/placeholders/poster.png");
   --image-placeholder-fanart: url("../assets/placeholders/fanart.png");
+  --image-placeholder-person: url("../assets/placeholders/person-zoidberg.png");
 
   /* Poster badges: rewatching and dropped */
   --badge-size: 30px;

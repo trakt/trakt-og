@@ -9,7 +9,6 @@ const profile = (slug: string, extra: Partial<ProfileResponse> = {}): ProfileRes
   private: false,
   deleted: false,
   ids: { slug, trakt: 1 },
-  images: { avatar: { full: `https://media.trakt.tv/${slug}.jpg` } },
   ...extra,
 });
 
@@ -32,13 +31,13 @@ describe('toActivity', () => {
   describe('for watching now', () => {
     it('should count everyone and show private members with the placeholder and no link', () => {
       const [tab] = toActivity({
-        watching: [profile('sean'), profile('hidden', { private: true, images: null })],
+        watching: [profile('sean'), profile('hidden', { private: true, ids: { slug: 'hidden', trakt: 2 } })],
         social: null,
         following: null,
       });
       expect(tab).toMatchObject({ id: 'watching', number: '2', text: ['Watching', 'Now'], followed: [] });
       expect(tab?.id === 'watching' && tab.others).toEqual([
-        { key: 'sean', name: 'sean', href: '/users/sean', avatar: 'https://media.trakt.tv/sean.jpg' },
+        { key: 'sean', name: 'sean', href: '/users/sean', avatar: 'https://media.trakt.tv/users/1/avatar.webp' },
         {
           key: 'private-1',
           name: 'hidden',
@@ -55,8 +54,8 @@ describe('toActivity', () => {
       });
       expect(tab).toMatchObject({ number: '4', text: ['Watching', 'Now'] });
       expect(tab?.id === 'watching' && tab.followed).toEqual([
-        { key: 'b', name: 'b', href: '/users/b', avatar: 'https://media.trakt.tv/b.jpg' },
-        { key: 'c', name: 'c', href: '/users/c', avatar: 'https://media.trakt.tv/c.jpg' },
+        { key: 'b', name: 'b', href: '/users/b', avatar: 'https://media.trakt.tv/users/1/avatar.webp' },
+        { key: 'c', name: 'c', href: '/users/c', avatar: 'https://media.trakt.tv/users/1/avatar.webp' },
       ]);
       expect(tab?.id === 'watching' && tab.others.map(({ key }) => key)).toEqual(['a', 'private-3']);
     });

@@ -13,10 +13,6 @@ describe('toRelatedCard', () => {
       released: '2018-05-18',
       rating: 7.5,
       runtime: 119,
-      images: {
-        poster: ['media.trakt.tv/images/movies/1/posters/medium/a.jpg.webp'],
-        fanart: ['media.trakt.tv/images/movies/1/fanarts/medium/b.jpg.webp'],
-      },
     } as MovieResponse;
     expect(toRelatedCard({ type: 'movie', item: movie }, now)).toEqual({
       type: 'movie',
@@ -24,8 +20,8 @@ describe('toRelatedCard', () => {
       href: '/movies/deadpool-2-2018',
       title: 'Deadpool 2',
       year: 2018,
-      poster: 'https://media.trakt.tv/images/movies/1/posters/thumb/a.jpg.webp',
-      fanart: 'https://media.trakt.tv/images/movies/1/fanarts/thumb/b.jpg.webp',
+      poster: 'https://media.trakt.tv/movies/1/thumb/poster.webp',
+      fanart: 'https://media.trakt.tv/movies/1/thumb/fanart.webp',
       released: true,
       rating: 7.5,
       airedEpisodes: undefined,
@@ -46,7 +42,7 @@ describe('toRelatedCard', () => {
       href: '/shows/next-year',
       released: false,
       airedEpisodes: 0,
-      poster: undefined,
+      poster: 'https://media.trakt.tv/shows/2/thumb/poster.webp',
     });
   });
 

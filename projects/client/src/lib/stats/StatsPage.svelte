@@ -27,7 +27,7 @@ const sections = $derived([
     href: data.media.href,
     parents: data.media.parents,
     subpage: 'Stats',
-    image: data.media.fanart ?? data.media.poster,
+    image: data.media.preview,
   })}
 />
 

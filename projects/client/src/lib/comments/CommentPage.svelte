@@ -57,7 +57,7 @@ const sections = $derived([
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
 <SeoHead
-  {...toCommentSeo({ comment, author: author.name, title: media.item.title, poster: media.poster })}
+  {...toCommentSeo({ comment, author: author.name, title: media.item.title, poster: media.previewPoster })}
   noindex={!comment.review}
 />
 

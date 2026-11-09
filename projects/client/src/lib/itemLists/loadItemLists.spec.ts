@@ -9,10 +9,6 @@ const show = { title: 'Breaking Bad', year: 2008, ids: { trakt: 1388, slug: 'bre
 const person = {
   name: 'Bryan Cranston',
   ids: { trakt: 297737, slug: 'bryan-cranston', imdb: 'nm0186505', tmdb: 17419 },
-  images: {
-    headshot: ['media.trakt.tv/images/people/000/297/737/headshots/medium/h.jpg.webp'],
-    fanart: ['media.trakt.tv/images/people/000/297/737/fanarts/medium/f.jpg.webp'],
-  },
 };
 const list = {
   name: 'Heist Night',
@@ -144,8 +140,8 @@ describe('loadItemLists', () => {
       media: {
         title: 'Bryan Cranston',
         href: '/people/bryan-cranston',
-        poster: 'https://media.trakt.tv/images/people/000/297/737/headshots/medium/h.jpg.webp',
-        fanart: 'https://media.trakt.tv/images/people/000/297/737/fanarts/full/f.jpg.webp',
+        poster: 'https://media.trakt.tv/people/297737/medium/headshot.webp',
+        fanart: 'https://media.trakt.tv/people/297737/full/fanart.webp',
       },
     });
   });

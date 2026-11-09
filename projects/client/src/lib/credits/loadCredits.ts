@@ -28,13 +28,8 @@ export async function loadCredits({ fetch, parent, item }: Params) {
   const path = subpageApiPath(item);
   const [subpage, people, regulars] = await Promise.all([
     loadSubpageMedia({ fetch, parent, item, suffix: 'people' }),
-    readPeople(
-      fetch,
-      `${path}/people?extended=${item.type === 'show' || item.type === 'season' ? 'guest_stars,' : ''}images`,
-    ),
-    item.type === 'episode'
-      ? readPeople(fetch, `${subpageApiPath({ ...item, type: 'season' })}/people?extended=images`)
-      : null,
+    readPeople(fetch, `${path}/people${item.type === 'show' || item.type === 'season' ? '?extended=guest_stars' : ''}`),
+    item.type === 'episode' ? readPeople(fetch, `${subpageApiPath({ ...item, type: 'season' })}/people`) : null,
   ]);
   const actors =
     item.type === 'movie'

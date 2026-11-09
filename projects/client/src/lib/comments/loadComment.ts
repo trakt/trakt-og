@@ -31,7 +31,7 @@ export async function loadComment({ fetch, parent, id }: Params) {
   const [summary, itemResponse, replies, { datePreferences, settings, user }] = await Promise.all([
     // A missing comment is a plain-text 404 under a JSON content type, which the typed client can't parse.
     client.comments.summary({ params: { id } }).catch(() => null),
-    client.comments.item({ params: { id }, query: { extended: 'full,images' } }),
+    client.comments.item({ params: { id }, query: { extended: 'full' } }),
     commentsClient(client)
       .replies(Number(id))
       .catch(() => null),

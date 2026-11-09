@@ -12,7 +12,7 @@ type Params = Omit<Parameters<typeof loadSubpageMedia>[0], 'item'> & { id: strin
  */
 export async function loadPersonSubpage({ fetch, parent, id, suffix }: Params) {
   const [summary, { user, settings, datePreferences }] = await Promise.all([
-    api({ fetch }).people.summary({ params: { id }, query: { extended: 'full,images' } }),
+    api({ fetch }).people.summary({ params: { id }, query: { extended: 'full' } }),
     parent(),
   ]);
   assertOk(summary, 'Person');

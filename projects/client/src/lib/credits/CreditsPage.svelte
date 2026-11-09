@@ -95,7 +95,7 @@ const results = $derived(
     href: data.media.href,
     parents: data.media.parents,
     subpage: 'People',
-    image: data.media.fanart ?? data.media.poster,
+    image: data.media.preview,
   })}
 />
 

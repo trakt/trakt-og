@@ -1,13 +1,6 @@
 // FIXME(zod-4): og has one zod, the one @trakt/api depends on. See `src/lib/users/notes/noteRowsSchema.ts`.
 import { z } from 'zod/v4';
 
-const images = z
-  .object({
-    fanart: z.array(z.string()).nullish(),
-    poster: z.array(z.string()).nullish(),
-    screenshot: z.array(z.string()).nullish(),
-  })
-  .nullish();
 const ids = z.object({
   trakt: z.number(),
   slug: z.string().nullish(),
@@ -28,14 +21,13 @@ const title = {
   title: z.string(),
   year: z.number().nullish(),
   homepage: z.string().nullish(),
-  images,
   social_ids: socialIds,
   certification: z.string().nullish(),
 };
 const credits = { during_credits: z.boolean().nullish(), after_credits: z.boolean().nullish() };
 
 /**
- * `/comments/:id/item?extended=full,images`: the `type` and the media under that key, with the show beside a season
+ * `/comments/:id/item?extended=full`: the `type` and the media under that key, with the show beside a season
  * or an episode. The item is left out when it's gone, or when it's a list that isn't public. @trakt/api 0.6.0 types
  * this route as a bare media object, so og parses it here. The subpage loaders build the same shape from the typed
  * summaries.
@@ -51,7 +43,6 @@ export const subpageItemSchema = z.object({
       title: z.string().nullish(),
       first_aired: z.string().nullish(),
       aired_episodes: z.number().nullish(),
-      images,
     })
     .nullish(),
   episode: z
@@ -62,7 +53,6 @@ export const subpageItemSchema = z.object({
       number: z.number(),
       title: z.string().nullish(),
       first_aired: z.string().nullish(),
-      images,
       ...credits,
     })
     .nullish(),

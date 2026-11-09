@@ -2,7 +2,7 @@
 import { z } from 'zod/v4';
 
 // API leaves `ids.trakt` out for apps it doesn't list as official, and the worker and API both leave the name, VIP
-// flags and avatar out for a private author. The card reads neither the author's trakt id nor their privacy.
+// flags out for a private author. The card reads their trakt id for the avatar, and shows a private one's placeholder.
 const user = z.object({
   username: z.string(),
   private: z
@@ -24,7 +24,6 @@ const user = z.object({
       .nullish()
       .transform((value) => value ?? 0),
   }),
-  images: z.object({ avatar: z.object({ full: z.string() }) }).nullish(),
 });
 
 /**

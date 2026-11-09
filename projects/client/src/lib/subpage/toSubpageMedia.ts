@@ -5,7 +5,11 @@ import { episodeNumber, episodeType } from '../components/media/episodeTags.ts';
 import type { SpoilerTarget } from '../settings/SpoilerTarget.ts';
 import type { RatingTarget } from '../components/rating/RatingTarget.ts';
 import type { ExternalLink } from '../components/summary/ExternalLink.ts';
-import { imageUrl } from '../utils/imageUrl.ts';
+import { mediaImage } from '../images/mediaImage.ts';
+import type { MediaImageSlot } from '../images/MediaImageSlot.ts';
+import type { MediaImageType } from '../images/MediaImageType.ts';
+import type { PreviewArtRef } from '../images/PreviewArtRef.ts';
+import { previewArt } from '../images/previewArt.ts';
 import type { subpageItemSchema } from './subpageItemSchema.ts';
 import { seasonName } from '../utils/seasonName.ts';
 import { toMovieLinks } from '../movies/toMovieLinks.ts';
@@ -45,6 +49,10 @@ export type SubpageMedia = {
   readonly spoilerFanart?: string;
   readonly spoilerTarget?: SpoilerTarget;
   readonly poster?: string;
+  /** The link preview's art, which falls back on a placeholder like no other image. */
+  readonly preview?: string;
+  /** The preview's poster alone, for a comment's. */
+  readonly previewPoster?: string;
   readonly links: readonly ExternalLink[];
   /** The Watch Now dialog's header. Lists have no Watch Now. */
   readonly watchNow?: { readonly title: string; readonly year?: number };
@@ -84,8 +92,22 @@ export function toSubpageMedia({ body, justwatch, collection }: Params): Subpage
                 }
               : undefined,
         };
-  const fanart = (path: string | null | undefined) => imageUrl(path, 'full');
-  const poster = (path: string | null | undefined) => imageUrl(path, 'medium');
+  const art = (type: PreviewArtRef['type'], id: number, slot: PreviewArtRef['slot']): PreviewArtRef => ({
+    type,
+    id,
+    slot,
+  });
+  const previews = (header: readonly PreviewArtRef[], poster: readonly PreviewArtRef[]) => ({
+    preview: previewArt(...header),
+    previewPoster: previewArt(...poster),
+  });
+  const visible = (
+    type: MediaImageType,
+    id: number,
+    slot: MediaImageSlot,
+    size: 'medium' | 'full',
+    fallback?: string,
+  ) => mediaImage({ type, id, slot, size, fallback });
 
   if (item.type === 'movie' && movie) {
     return {
@@ -98,8 +120,12 @@ export function toSubpageMedia({ body, justwatch, collection }: Params): Subpage
       certification: movie.certification ?? undefined,
       credits: { duringCredits: movie.during_credits, afterCredits: movie.after_credits },
       released: movie.released,
-      fanart: fanart(movie.images?.fanart?.at(0)),
-      poster: poster(movie.images?.poster?.at(0)),
+      fanart: visible('movie', movie.ids.trakt, 'fanart', 'full'),
+      poster: visible('movie', movie.ids.trakt, 'poster', 'medium'),
+      ...previews(
+        [art('movie', movie.ids.trakt, 'fanart'), art('movie', movie.ids.trakt, 'poster')],
+        [art('movie', movie.ids.trakt, 'poster')],
+      ),
       links: toMovieLinks({ movie, justwatch }),
       watchNow: { title: movie.title, year: movie.year ?? undefined },
       ratingTarget: { type: 'movie', id: movie.ids.trakt, title: item.title },
@@ -120,8 +146,9 @@ export function toSubpageMedia({ body, justwatch, collection }: Params): Subpage
 
   const showHref = `/shows/${show.ids.slug}`;
   const watchNow = { title: show.title, year: show.year ?? undefined };
-  const showFanart = fanart(show.images?.fanart?.at(0));
-  const showPoster = poster(show.images?.poster?.at(0));
+  const showFanart = visible('show', show.ids.trakt, 'fanart', 'full');
+  const showPoster = visible('show', show.ids.trakt, 'poster', 'medium');
+  const showArt = { fanart: art('show', show.ids.trakt, 'fanart'), poster: art('show', show.ids.trakt, 'poster') };
 
   if (item.type === 'show') {
     return {
@@ -135,6 +162,7 @@ export function toSubpageMedia({ body, justwatch, collection }: Params): Subpage
       released: show.first_aired,
       fanart: showFanart,
       poster: showPoster,
+      ...previews([showArt.fanart, showArt.poster], [showArt.poster]),
       links: toShowLinks({ show, justwatch }),
       watchNow,
       ratingTarget: { type: 'show', id: show.ids.trakt, title: item.title },
@@ -155,7 +183,11 @@ export function toSubpageMedia({ body, justwatch, collection }: Params): Subpage
       certification: show.certification ?? undefined,
       released: season.first_aired,
       fanart: showFanart,
-      poster: poster(season.images?.poster?.at(0)) ?? showPoster,
+      poster: visible('season', season.ids.trakt, 'poster', 'medium', showPoster),
+      ...previews(
+        [showArt.fanart, art('season', season.ids.trakt, 'poster'), showArt.poster],
+        [art('season', season.ids.trakt, 'poster'), showArt.poster],
+      ),
       links: toSeasonLinks({ show, number: season.number, justwatch }),
       watchNow,
     };
@@ -181,9 +213,10 @@ export function toSubpageMedia({ body, justwatch, collection }: Params): Subpage
       credits: { duringCredits: episode.during_credits, afterCredits: episode.after_credits },
       released: episode.first_aired,
       episodeType: episodeType(episode),
-      fanart: fanart(episode.images?.screenshot?.at(0)) ?? showFanart,
+      fanart: visible('episode', episode.ids.trakt, 'screenshot', 'full', showFanart),
       spoilerFanart: showFanart,
       poster: showPoster,
+      ...previews([art('episode', episode.ids.trakt, 'screenshot'), showArt.fanart, showArt.poster], [showArt.poster]),
       links: toEpisodeLinks({ show, episode }),
       watchNow,
     };

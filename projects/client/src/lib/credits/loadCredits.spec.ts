@@ -84,7 +84,7 @@ describe('loadCredits', () => {
       expect(data.previous?.href).toBe('/shows/breaking-bad/seasons/1/episodes/1/people');
       expect(data.next?.href).toBe('/shows/breaking-bad/seasons/2/episodes/1/people');
       const people = requests.filter(({ pathname }) => pathname.endsWith('/people'));
-      expect(people.map(({ searchParams }) => searchParams.get('extended'))).toEqual(['images', 'images']);
+      expect(people.map(({ searchParams }) => searchParams.get('extended'))).toEqual([null, null]);
     });
   });
 
@@ -137,7 +137,7 @@ describe('loadCredits', () => {
 
       expect(data.credits.actors.map(({ label }) => label)).toEqual(['Season Regulars', 'Guest Stars']);
       expect(requests.find(({ pathname }) => pathname.endsWith('/people'))?.searchParams.get('extended')).toBe(
-        'guest_stars,images',
+        'guest_stars',
       );
       const missing = await failure(load({ type: 'season', id: 'breaking-bad', season: '7' }));
       expect(isHttpError(missing) && missing.status).toBe(404);

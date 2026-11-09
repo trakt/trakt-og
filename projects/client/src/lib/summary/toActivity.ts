@@ -3,6 +3,7 @@ import { RATING_LABELS } from '../components/rating/ratingPrompt.ts';
 import type { LiveWatch } from '../dashboard/fetchWatching.ts';
 import { type ProfileRatings, toProfileRatings } from '../users/profile/toProfileRatings.ts';
 import type { SocialRow } from './SocialRow.ts';
+import { userAvatar } from '../images/userAvatar.ts';
 import { PLACEHOLDER_AVATAR } from '../users/placeholderAvatar.ts';
 import { ratingPercent } from '../utils/ratingPercent.ts';
 
@@ -115,8 +116,7 @@ const RATINGS = Array.from({ length: 10 }, (_, index) => index + 1);
 type Member = {
   readonly username: string;
   readonly private?: boolean | null;
-  readonly ids: { readonly slug?: string | null };
-  readonly images?: { readonly avatar?: { readonly full?: string | null } | null } | null;
+  readonly ids: { readonly slug?: string | null; readonly trakt?: number | null };
 };
 
 /** A private member shows as the placeholder, unless the viewer follows them: a follow on a private profile is approved. */
@@ -129,7 +129,7 @@ function toUser(user: Member, index: number, followed = false): ActivityUser {
     key: slug,
     name: user.username,
     href: `/users/${slug}`,
-    avatar: user.images?.avatar?.full ?? PLACEHOLDER_AVATAR,
+    avatar: user.ids.trakt ? userAvatar(user.ids.trakt) : PLACEHOLDER_AVATAR,
   };
 }
 

@@ -34,7 +34,7 @@ async function readComments({
   const client = api({ fetch });
   const request = {
     params: { id: item.id, sort: sort.api },
-    query: { extended: 'images', page, limit: LIMIT, ...(language && { language }) },
+    query: { page, limit: LIMIT, ...(language && { language }) },
   } as const;
   const response =
     item.type === 'movie'

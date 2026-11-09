@@ -3,17 +3,12 @@ import type { WatchedItemRow } from '../watchedItemsSchema.ts';
 import type { BoxFrame } from './BoxFrame.ts';
 
 type Ids = { readonly trakt: number; readonly slug: string };
-type Images = {
-  readonly fanart?: readonly string[] | null;
-  readonly poster?: readonly string[] | null;
-} | null;
 type Media = {
   readonly ids: Ids;
   readonly title: string;
   readonly year?: number | null;
   readonly runtime?: number | null;
   readonly genres?: readonly string[] | null;
-  readonly images?: Images;
 };
 type Episode = {
   readonly ids: { readonly trakt: number };
@@ -35,9 +30,9 @@ type MoviePlay = { readonly watched_at: string; readonly movie: Media };
 export type BoxInput = BoxFrame & {
   /** Today as whole UTC days since 1970, from the request's `now`. Every "days ago" counts from here. */
   readonly today: number;
-  /** The newest episode and movie play, with images. */
+  /** The newest episode and movie play. */
   readonly latest: { readonly episode?: EpisodePlay; readonly movie?: MoviePlay };
-  /** Every play from midnight UTC 30 days back, with runtimes and genres but no images. */
+  /** Every play from midnight UTC 30 days back, with runtimes and genres. */
   readonly recent: { readonly episodes: readonly EpisodePlay[]; readonly movies: readonly MoviePlay[] };
   /** The watchlist's first rows by rank, and how many items it has. */
   readonly watchlist: {

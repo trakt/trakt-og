@@ -1,5 +1,5 @@
 import { episodeNumber } from '../../components/media/episodeTags.ts';
-import { imageUrl } from '../../utils/imageUrl.ts';
+import { mediaImage } from '../../images/mediaImage.ts';
 import { seasonName } from '../../utils/seasonName.ts';
 import type { EpisodeChart } from './historyCharts.ts';
 import type { HistoryItem } from './historyFilters.ts';
@@ -40,12 +40,12 @@ export function historyItemBand(
       type: item.type,
       title: movie.title,
       href: `/movies/${movie.ids.slug}`,
-      image: imageUrl(movie.images?.fanart?.at(0), 'thumb'),
+      image: mediaImage({ type: 'movie', id: movie.ids.trakt, slot: 'fanart', size: 'thumb' }),
       year: yearOf(movie.year),
     };
   }
   const { show, episode } = row;
-  const fanart = imageUrl(show.images?.fanart?.at(0), 'thumb');
+  const fanart = mediaImage({ type: 'show', id: show.ids.trakt, slot: 'fanart', size: 'thumb' });
   const ofShow = { title: show.title, item: { type: 'show', id: show.ids.trakt } } as const;
   const seasonHref = `${showHref(show.ids.slug)}/seasons/${episode.season}`;
   switch (item.type) {
@@ -64,7 +64,13 @@ export function historyItemBand(
         type: 'episode',
         title: episode.title ? `${number} ${episode.title}` : number,
         href: `${seasonHref}/episodes/${episode.number}`,
-        image: imageUrl(episode.images?.screenshot?.at(0), 'thumb') ?? fanart,
+        image: mediaImage({
+          type: 'episode',
+          id: episode.ids.trakt,
+          slot: 'screenshot',
+          size: 'thumb',
+          fallback: fanart,
+        }),
         year: yearOf(episode.first_aired),
         parents: [
           ofShow,

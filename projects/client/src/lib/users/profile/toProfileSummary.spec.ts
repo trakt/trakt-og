@@ -10,7 +10,6 @@ const show = {
   ids: { trakt: 1, slug: 'andor' },
   genres: ['drama'],
   runtime: 45,
-  images: { fanart: ['media.trakt.tv/images/shows/000/000/001/fanarts/medium/a.jpg.webp'] },
 };
 const episodeRow = {
   id: 10,
@@ -23,7 +22,6 @@ const episodeRow = {
     ids: { trakt: 100 },
     rating: 8.4,
     runtime: null,
-    images: { screenshot: ['media.trakt.tv/images/episodes/000/000/100/screenshots/medium/b.jpg.webp'] },
   },
 } as unknown as Parameters<typeof toWatchedEpisode>[0];
 const movieRow = {
@@ -35,10 +33,6 @@ const movieRow = {
     ids: { trakt: 200, slug: 'heat-1995' },
     rating: 8.1,
     runtime: 170,
-    images: {
-      poster: ['media.trakt.tv/images/movies/000/000/200/posters/medium/c.jpg.webp'],
-      fanart: ['media.trakt.tv/images/movies/000/000/200/fanarts/medium/d.jpg.webp'],
-    },
   },
 } as unknown as Parameters<typeof toWatchedMovie>[0];
 
@@ -51,7 +45,7 @@ describe('toWatchedEpisode', () => {
       href: '/shows/andor/seasons/2/episodes/1',
       number: '2x01',
       title: 'One Year Later',
-      image: 'https://media.trakt.tv/images/episodes/000/000/100/screenshots/thumb/b.jpg.webp',
+      image: 'https://media.trakt.tv/episodes/100/thumb/screenshot.webp',
       rating: 8.4,
       episodeBadge: { label: 'Season Premiere', kind: 'season-premiere' },
       show: { text: 'Andor', href: '/shows/andor' },
@@ -68,7 +62,7 @@ describe('toWatchedMovie', () => {
       key: 11,
       href: '/movies/heat-1995',
       title: 'Heat',
-      image: 'https://media.trakt.tv/images/movies/000/000/200/posters/thumb/c.jpg.webp',
+      image: 'https://media.trakt.tv/movies/200/thumb/poster.webp',
       watchedDate: 'Sep 27, 2026 10:00 PM',
     });
   });

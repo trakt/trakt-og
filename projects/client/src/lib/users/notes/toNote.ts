@@ -2,26 +2,14 @@ import type { z } from 'zod/v4';
 import type { DatePreferences } from '../../settings/DatePreferences.ts';
 import { formatDate } from '../../utils/formatDate.ts';
 import { episodeNumber } from '../../components/media/episodeTags.ts';
-import { imageUrl } from '../../utils/imageUrl.ts';
+import { userAvatar } from '../../images/userAvatar.ts';
+import { mediaImage } from '../../images/mediaImage.ts';
 import { toVipBadge } from '../toVipBadge.ts';
 import type { noteRowsSchema } from './noteRowsSchema.ts';
 import { seasonName } from '../../utils/seasonName.ts';
 import { PLACEHOLDER_AVATAR } from '../placeholderAvatar.ts';
 
 type Row = z.infer<typeof noteRowsSchema>[number];
-type Image = NonNullable<NonNullable<Row['movie']>['images']>['poster'];
-
-// API sends an image-path array (older responses used size objects); the native worker sends a path.
-function posterUrl(image: Image, size: 'thumb' | 'medium' = 'thumb'): string | undefined {
-  const path =
-    typeof image === 'string'
-      ? image
-      : Array.isArray(image)
-        ? image.at(0)
-        : (image?.thumb ?? image?.medium ?? image?.full);
-  return imageUrl(path, size);
-}
-
 function episodeBadge(item: NonNullable<Row['episode']>) {
   const labels = {
     'series-premiere': 'Series Premiere',
@@ -53,6 +41,18 @@ function runtimeOf(row: Row) {
   return undefined;
 }
 
+// A movie's own fanart, else its show's: a show, season or episode shows the show's. A person has none.
+function fanartOf(row: Row) {
+  const owner = row.type === 'movie' ? row.movie : row.type === 'person' ? null : row.show;
+  if (!owner) return undefined;
+  return mediaImage({
+    type: row.type === 'movie' ? 'movie' : 'show',
+    id: owner.ids.trakt,
+    slot: 'fanart',
+    size: 'medium',
+  });
+}
+
 function itemDetails(row: Row) {
   const item = row[row.type];
   if (!item) return null;
@@ -62,7 +62,7 @@ function itemDetails(row: Row) {
   const base = {
     id: item.ids.trakt,
     year: item.year,
-    fanart: posterUrl(item.images?.fanart, 'medium') ?? posterUrl(row.show?.images?.fanart, 'medium'),
+    fanart: fanartOf(row),
     type: row.type,
     rating: item.rating ?? undefined,
     airedEpisodes: item.aired_episodes ?? undefined,
@@ -83,7 +83,7 @@ function itemDetails(row: Row) {
       title: `${number} ${title}`,
       tip: { show: show?.title ?? undefined, number, title },
       href: `${showHref}/seasons/${item.season}/episodes/${item.number}`,
-      image: posterUrl(item.images?.screenshot),
+      image: mediaImage({ type: 'episode', id: item.ids.trakt, slot: 'screenshot', size: 'thumb' }),
       episodeBadge: episodeBadge(item),
     };
   }
@@ -95,7 +95,13 @@ function itemDetails(row: Row) {
       title,
       tip: { show: show?.title ?? undefined, title },
       href: `${showHref}/seasons/${item.number}`,
-      image: posterUrl(item.images?.poster) ?? posterUrl(show?.images?.poster),
+      image: mediaImage({
+        type: 'season',
+        id: item.ids.trakt,
+        slot: 'poster',
+        size: 'thumb',
+        fallback: show ? mediaImage({ type: 'show', id: show.ids.trakt, slot: 'poster', size: 'thumb' }) : undefined,
+      }),
     };
   }
   const section = { movie: 'movies', show: 'shows', person: 'people' }[row.type];
@@ -103,7 +109,11 @@ function itemDetails(row: Row) {
     ...base,
     title: item.title ?? item.name ?? 'Unknown item',
     href: `/${section}/${slug}`,
-    image: posterUrl(row.type === 'person' ? item.images?.headshot : item.images?.poster),
+    image: mediaImage(
+      row.type === 'person'
+        ? { type: 'person', id: item.ids.trakt, slot: 'headshot', size: 'thumb' }
+        : { type: row.type, id: item.ids.trakt, slot: 'poster', size: 'thumb' },
+    ),
   };
 }
 
@@ -128,7 +138,7 @@ function author(user: Row['note']['user']) {
     id: user.ids.trakt ?? null,
     name: user.name?.trim() || user.username,
     href: `/users/${user.ids.slug ?? user.username}`,
-    avatar: user.images?.avatar.thumb ?? user.images?.avatar.full ?? PLACEHOLDER_AVATAR,
+    avatar: user.ids.trakt ? userAvatar(user.ids.trakt) : PLACEHOLDER_AVATAR,
     vip: toVipBadge(user),
   };
 }

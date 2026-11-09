@@ -5,7 +5,6 @@ import type { UserCommentRow } from './UserCommentRow.ts';
 
 const rating = z.number().nullish();
 const runtime = z.number().nullish();
-const posters = z.object({ poster: z.array(z.string()).nullish() }).nullish();
 const titled = {
   ids: z.object({ trakt: z.number(), slug: z.string() }),
   title: z.string(),
@@ -16,7 +15,7 @@ const row = z.object({
   /** The commented item's class, lowercased: `movie`, `show`, `season`, `episode`, `list` or `officiallist`. */
   comment_type: z.string().nullish(),
   comment,
-  movie: z.object({ ...titled, rating, runtime, images: posters }).nullish(),
+  movie: z.object({ ...titled, rating, runtime }).nullish(),
   show: z
     .object({
       ...titled,
@@ -24,7 +23,6 @@ const row = z.object({
       runtime,
       aired_episodes: z.number().nullish(),
       genres: z.array(z.string()).nullish(),
-      images: posters,
     })
     .nullish(),
   season: z
@@ -34,7 +32,6 @@ const row = z.object({
       title: z.string().nullish(),
       rating,
       aired_episodes: z.number().nullish(),
-      images: posters,
     })
     .nullish(),
   episode: z
@@ -46,7 +43,6 @@ const row = z.object({
       title: z.string().nullish(),
       rating,
       runtime,
-      images: z.object({ screenshot: z.array(z.string()).nullish() }).nullish(),
     })
     .nullish(),
   list: z
@@ -55,13 +51,12 @@ const row = z.object({
       privacy: z.string().nullish(),
       ids: z.object({ trakt: z.number(), slug: z.string().nullish() }),
       user: z.object({ ids: z.object({ slug: z.string().nullish() }) }).nullish(),
-      images: z.object({ posters: z.array(z.string()).nullish() }).nullish(),
     })
     .nullish(),
 });
 
 /**
- * `/users/:id/likes/comments?extended=comments,full,images`, which API answers:
+ * `/users/:id/likes/comments?extended=comments,full`, which API answers:
  * each like's comment with the media it's about beside it, under the key its `comment_type` names. Mapped to the
  * rows `/users/:id/comments` returns, with official lists as lists.
  */

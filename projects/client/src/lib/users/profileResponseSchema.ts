@@ -18,5 +18,4 @@ export const profileResponseSchema = z.object({
   age: z.number().nullish(),
   about: z.string().nullish(),
   joined_at: z.string().nullish(),
-  images: z.object({ avatar: z.object({ full: z.string() }) }).nullish(),
 });

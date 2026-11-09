@@ -9,7 +9,6 @@ const show = {
   ids: { trakt: 1388, slug: 'breaking-bad' },
   runtime: 47,
   genres: ['drama'],
-  images: { poster: ['media.trakt.tv/images/shows/poster/medium/bb.jpg.webp'] },
 };
 const episode = (id: number, number: number, watched_at: string, runtime: number | null = 58) => ({
   id,
@@ -21,7 +20,6 @@ const episode = (id: number, number: number, watched_at: string, runtime: number
     number,
     title: 'Number the Stars',
     runtime,
-    images: { screenshot: ['media.trakt.tv/images/episodes/screenshot/medium/s.jpg.webp'] },
   },
 });
 const movie = {
@@ -45,13 +43,13 @@ describe('toHistoryCard', () => {
       number: '2x04',
       title: 'Number the Stars',
       variant: 'poster',
-      image: 'https://media.trakt.tv/images/shows/poster/thumb/bb.jpg.webp',
+      image: 'https://media.trakt.tv/shows/1388/thumb/poster.webp',
       watchedDate: 'Sep 28, 2026 10:23 PM',
     });
     expect(cards[1]?.show).toBeUndefined();
     expect(toHistoryCard(rows[1]!, { screenshots: true, datePreferences })).toMatchObject({
       variant: 'screenshot',
-      image: 'https://media.trakt.tv/images/episodes/screenshot/thumb/s.jpg.webp',
+      image: 'https://media.trakt.tv/episodes/104/thumb/screenshot.webp',
       show: { text: 'Breaking Bad', href: '/shows/breaking-bad' },
     });
   });

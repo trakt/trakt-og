@@ -42,7 +42,7 @@ async function read({
 }) {
   const localSort = query.by !== 'added' || query.how !== 'asc';
   const client = api({ fetch, token });
-  const request = { params: { id }, query: { extended: 'full,images' as const, page: current, limit } };
+  const request = { params: { id }, query: { extended: 'full' as const, page: current, limit } };
   if (!localSort && query.rating !== 'all') {
     const response = await client.users.ratings.typedRating({
       ...request,
@@ -58,7 +58,7 @@ async function read({
   const pathType = query.type === 'all' && query.rating === 'all' ? '' : `/${query.type}`;
   const stars = query.rating === 'all' ? '' : `/${query.rating}`;
   const search = new URLSearchParams({
-    extended: 'full,images',
+    extended: 'full',
     limit: localSort ? 'all' : String(limit),
     ...(localSort ? {} : { page: String(current) }),
   });

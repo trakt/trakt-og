@@ -1,6 +1,6 @@
 import { countLabel } from '../../utils/countLabel.ts';
 import { formatRuntime } from '../../utils/formatRuntime.ts';
-import { imageUrl } from '../../utils/imageUrl.ts';
+import { mediaImage } from '../../images/mediaImage.ts';
 import { playRuntime } from '../playRuntime.ts';
 import type { WatchedItemRow } from './watchedItemsSchema.ts';
 
@@ -11,7 +11,6 @@ type Media = {
   readonly runtime?: number | null;
   readonly rating?: number | null;
   readonly aired_episodes?: number | null;
-  readonly images?: { readonly poster?: readonly string[] | null } | null;
 };
 
 type HistoryRow =
@@ -74,7 +73,12 @@ function toCard(type: MostWatchedType, { media, plays, minutes }: Tally): MostWa
     id: media.ids.trakt,
     href: `/${type}/${media.ids.slug}`,
     title: media.title,
-    image: imageUrl(media.images?.poster?.at(0), 'thumb'),
+    image: mediaImage({
+      type: type === 'shows' ? 'show' : 'movie',
+      id: media.ids.trakt,
+      slot: 'poster',
+      size: 'thumb',
+    }),
     rating: media.rating ?? undefined,
     airedEpisodes: type === 'shows' ? (media.aired_episodes ?? undefined) : undefined,
     runtime: type === 'movies' ? (media.runtime ?? undefined) : undefined,

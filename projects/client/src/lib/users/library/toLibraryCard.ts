@@ -2,7 +2,7 @@ import { episodeNumber } from '../../components/media/episodeTags.ts';
 import type { DatePreferences } from '../../settings/DatePreferences.ts';
 import { formatDate } from '../../utils/formatDate.ts';
 import { formatRuntime } from '../../utils/formatRuntime.ts';
-import { imageUrl } from '../../utils/imageUrl.ts';
+import { mediaImage } from '../../images/mediaImage.ts';
 import type { HistoryCard } from '../history/toHistoryCard.ts';
 import { episodeBadge } from '../profile/toProfileSummary.ts';
 import type { LibraryRow, LibraryShowRow } from './libraryRowsSchema.ts';
@@ -81,7 +81,7 @@ export function toLibraryCard(row: LibraryRow, { sortBy, screenshots, datePrefer
       id: movie.ids.trakt,
       href: `/movies/${movie.ids.slug}`,
       title: movie.title,
-      image: imageUrl(movie.images?.poster?.at(0), 'thumb'),
+      image: mediaImage({ type: 'movie', id: movie.ids.trakt, slot: 'poster', size: 'thumb' }),
       variant: 'poster',
       rating: movie.rating ?? undefined,
       runtime: movie.runtime ?? 0,
@@ -109,7 +109,9 @@ export function toLibraryCard(row: LibraryRow, { sortBy, screenshots, datePrefer
     title: episode.title ?? '',
     number: episodeNumber(episode, show.genres),
     showTitle: show.title,
-    image: imageUrl((screenshots ? episode.images?.screenshot : show.images?.poster)?.at(0), 'thumb'),
+    image: screenshots
+      ? mediaImage({ type: 'episode', id: episode.ids.trakt, slot: 'screenshot', size: 'thumb' })
+      : mediaImage({ type: 'show', id: show.ids.trakt, slot: 'poster', size: 'thumb' }),
     variant: screenshots ? 'screenshot' : 'poster',
     rating: episode.rating ?? undefined,
     episodeBadge: episodeBadge(episode),
@@ -128,7 +130,7 @@ export function toLibraryShowCard(row: LibraryShowRow, datePreferences: DatePref
     id: show.ids.trakt,
     href: showHref(show.ids.slug),
     title: show.title,
-    image: imageUrl(show.images?.poster?.at(0), 'thumb'),
+    image: mediaImage({ type: 'show', id: show.ids.trakt, slot: 'poster', size: 'thumb' }),
     variant: 'poster',
     rating: show.rating ?? undefined,
     airedEpisodes: show.aired_episodes ?? undefined,

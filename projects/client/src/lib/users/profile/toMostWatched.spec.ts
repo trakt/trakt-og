@@ -8,7 +8,6 @@ const media = (id: number, runtime: number | null) => ({
   runtime,
   rating: 8,
   aired_episodes: 10,
-  images: { poster: [`media.trakt.tv/images/${id}/posters/medium/a.jpg.webp`] },
 });
 
 const episodePlay = (show: number, at: string, runtime: number | null = 30) => ({
@@ -43,7 +42,7 @@ describe('mapper: toMostWatched', () => {
         time: '1h 45m',
         plays: '2 plays',
         airedEpisodes: 10,
-        image: 'https://media.trakt.tv/images/2/posters/thumb/a.jpg.webp',
+        image: 'https://media.trakt.tv/shows/2/thumb/poster.webp',
       });
     });
 

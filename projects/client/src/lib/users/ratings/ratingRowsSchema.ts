@@ -1,5 +1,5 @@
 import { z } from 'zod/v4';
-import { episode, images, movie, show } from '../history/historyRowsSchema.ts';
+import { episode, movie, show } from '../history/historyRowsSchema.ts';
 
 const fields = { votes: z.number().nullish(), released: z.string().nullish(), first_aired: z.string().nullish() };
 const rated = { rated_at: z.string().datetime({ offset: true }), rating: z.number().int().min(1).max(10) };
@@ -7,7 +7,6 @@ const season = z.object({
   ids: z.object({ trakt: z.number() }),
   number: z.number(),
   title: z.string().nullish(),
-  images,
   aired_episodes: z.number().nullish(),
   rating: z.number().nullish(),
   ...fields,

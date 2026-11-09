@@ -4,7 +4,6 @@
 // moves zod to 4 needs human review: decline it until @trakt/api has moved.
 import { z } from 'zod/v4';
 
-const image = z.object({ full: z.string().nullish(), medium: z.string().nullish(), thumb: z.string().nullish() });
 const media = z.object({
   ids: z.object({ trakt: z.number(), slug: z.string().nullish() }),
   title: z.string().nullish(),
@@ -16,14 +15,6 @@ const media = z.object({
   aired_episodes: z.number().nullish(),
   runtime: z.number().nullish(),
   episode_type: z.string().nullish(),
-  images: z
-    .object({
-      fanart: z.union([z.string(), z.array(z.string()), image]).nullish(),
-      poster: z.union([z.string(), z.array(z.string()), image]).nullish(),
-      screenshot: z.union([z.string(), z.array(z.string()), image]).nullish(),
-      headshot: z.union([z.string(), z.array(z.string()), image]).nullish(),
-    })
-    .nullish(),
 });
 const user = z.object({
   username: z.string(),
@@ -35,7 +26,6 @@ const user = z.object({
   vip_years: z.number().nullish(),
   director: z.boolean().nullish(),
   deleted: z.boolean().nullish(),
-  images: z.object({ avatar: image }).nullish(),
 });
 
 /** API's listing wraps each note; @trakt/api 0.6.0 types this endpoint as a bare NoteResponse[]. */

@@ -16,6 +16,7 @@ import { toSubpageStrip } from './toSubpageStrip.ts';
 import { toSubpageMedia } from './toSubpageMedia.ts';
 import { watchNowCountry } from '../settings/watchNowCountry.ts';
 import { assertOk } from '../api/assertOk.ts';
+import { OFFICIAL_LISTS_LIMIT, pickCollectionList } from '../lists/pickCollectionList.ts';
 
 type Params = {
   fetch: typeof globalThis.fetch;
@@ -43,11 +44,14 @@ async function readItem(fetch: typeof globalThis.fetch, item: SubpageItem, neigh
   if (item.type === 'movie') {
     const [movie, lists] = await Promise.all([
       client.movies.summary({ params: { id }, query: { extended: 'full,images' } }),
-      client.movies.lists({ params: { id, type: 'official', sort: 'popular' } }),
+      client.movies.lists({
+        params: { id, type: 'official', sort: 'popular' },
+        query: { limit: OFFICIAL_LISTS_LIMIT },
+      }),
     ]);
     assertOk(movie, 'Movie');
-    // The official list it belongs to, for the tag bar, as on the summary. A failed read just leaves it out.
-    const list = lists.status === 200 ? lists.body.at(0) : undefined;
+    // Its collection, for the tag bar, as on the summary. A failed read just leaves it out.
+    const list = lists.status === 200 ? pickCollectionList(lists.body) : undefined;
     return {
       body: { type: 'movie', movie: movie.body },
       collection: list && { title: list.name, href: `/lists/official/${list.ids.slug}` },

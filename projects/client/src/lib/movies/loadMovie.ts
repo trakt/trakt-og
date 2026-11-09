@@ -10,6 +10,7 @@ import { toRelatedSource } from '../summary/toRelatedSource.ts';
 import { toMovieSummary } from './toMovieSummary.ts';
 import { watchNowCountry } from '../settings/watchNowCountry.ts';
 import { okBody } from '../api/okBody.ts';
+import { OFFICIAL_LISTS_LIMIT, pickCollectionList } from '../lists/pickCollectionList.ts';
 
 type LoadMovieParams = {
   fetch: typeof fetch;
@@ -32,14 +33,14 @@ export async function loadMovie({ fetch, token, parent, id: requested }: LoadMov
   // The extras go by the requested id alongside the summary, not after it; a non-canonical id redirects before they're
   // used. Each resolves to null on failure, and the catch only stops a failed summary leaving them unhandled.
   const id = requested;
-  const collection = okBody(client.movies.lists({ params: { id, type: 'official', sort: 'popular' } })).then(
-    async (lists) => {
-      const list = lists?.at(0);
-      if (!list) return null;
-      const items = await okBody(client.lists.items.movie({ params: { id: String(list.ids.trakt) }, query: {} }));
-      return items ? { list, items } : null;
-    },
-  );
+  const collection = okBody(
+    client.movies.lists({ params: { id, type: 'official', sort: 'popular' }, query: { limit: OFFICIAL_LISTS_LIMIT } }),
+  ).then(async (lists) => {
+    const list = pickCollectionList(lists ?? []);
+    if (!list) return null;
+    const items = await okBody(client.lists.items.movie({ params: { id: String(list.ids.trakt) }, query: {} }));
+    return items ? { list, items } : null;
+  });
 
   const extras = Promise.all([
     okBody(client.movies.ratings({ params: { id }, query: { extended: 'all' } })),

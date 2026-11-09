@@ -30,6 +30,10 @@ Reach for these before writing your own:
 - **Lists:** `utils/uniqueBy` (first per key, one pass; never `filter` + `findIndex`).
 - **Motion:** `prefersReducedMotion` from `svelte/motion`, never a raw `matchMedia` query.
 - **Links:** `movies/toMovieLinks` and `shows/toShowLinks` for a movie's or show's external links.
+- **Images:** `images/mediaImage` builds any title, person, network, company or list image from its Trakt id, so a
+  request never needs `extended=images` for art. Its `fallback` is the art to try when the first is missing (the
+  show's poster for a season's). Avatars still come from the API, which adds a cache-busting version and Gravatar.
+  Link previews (`og:image`) need art that exists, so they keep the API's images.
 
 ## API Responses
 

@@ -3,6 +3,7 @@ import fanart from '#lib/assets/placeholders/fanart.png';
 import poster from '#lib/assets/placeholders/poster.png';
 import zoidberg from '#lib/assets/placeholders/person-zoidberg.png';
 import { PLACEHOLDER_AVATAR } from '#lib/users/placeholderAvatar.ts';
+import { fallbackArt } from './fallbackArt.ts';
 
 const HOST = 'media.trakt.tv';
 /** og's own route for media.trakt.tv logos (`proxiedLogoUrl`), on whatever host og runs on. */
@@ -18,6 +19,8 @@ const ART: readonly (readonly [string, string | null])[] = [
   // Words drawn over art: with none, the art alone reads better than a placeholder.
   ['logo', null],
   ['clearart', null],
+  // Last, so a size folder (`/thumb/poster.webp`) never reads as this slot.
+  ['thumb', fanart],
 ];
 
 const isKind = (path: string, kind: string) => new RegExp(`/${kind}s?[/.]`).test(path);
@@ -42,16 +45,22 @@ export function brokenImageFallback(src: string): string | null | undefined {
 const sourceOf = (image: HTMLImageElement) => image.currentSrc || image.src;
 
 /**
- * An image can name its own placeholder in `data-placeholder` (a person's, by gender), over its kind's.
- * `data-fallback` keeps what it settled on: the placeholder, or the broken source it hid, so neither is handled twice.
+ * Art built with a `fallback` (`mediaImage`) tries that art first. Then an image can name its own placeholder in
+ * `data-placeholder` (a person's, by gender), over its kind's. `data-fallback` keeps what it settled on: the
+ * placeholder, or the broken source it hid, so neither is handled twice.
  */
 function replace(image: HTMLImageElement) {
   const src = sourceOf(image);
   if (image.dataset.fallback === src) return;
   const kind = brokenImageFallback(src);
   if (kind === undefined) return;
-  const fallback = image.dataset.placeholder ?? kind;
   image.removeAttribute('srcset');
+  const art = fallbackArt(src);
+  if (art) {
+    image.src = art;
+    return;
+  }
+  const fallback = image.dataset.placeholder ?? kind;
   if (fallback === null) {
     image.dataset.fallback = src;
     image.style.visibility = 'hidden';

@@ -29,7 +29,7 @@ const { name, href, image, gender, role, episodes, layout = 'card' }: Props = $p
 
 <a class={['cast-card', layout]} {href}>
   <img class="headshot" src={image ?? personPlaceholder(gender)} alt="" loading="lazy" decoding="async"
-    data-placeholder={personPlaceholder(gender)} />
+    data-placeholder={personPlaceholder(gender)} style:--image-placeholder-person={`url("${personPlaceholder(gender)}")`} />
   <span class="text">
     <span class="name">{name}</span>
     <span class="role">{role || '\u00a0'}</span>

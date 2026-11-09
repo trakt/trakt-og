@@ -234,7 +234,7 @@ const videos: readonly VideoCard[] = [
 </Specimen>
 
 <Specimen title="People"
-  note="One dropdown of the actor and crew groups, eight cards across that scroll sideways, and All People linking to the picked group. People without a headshot get a silhouette by gender. Local OG: /shows/breaking-bad.">
+  note="One dropdown of the actor and crew groups, eight cards across that scroll sideways, and All People linking to the picked group. People without a headshot get a silhouette by gender, which also shows while a headshot loads. Local OG: /shows/breaking-bad.">
   <ActorsStrip groups={[{ id: 'season-regulars', label: 'Series Regulars', cast: regulars }]} {crew}
     creditsHref="/shows/demo/people" />
   <p>The people page's cards: <ViewToggle bind:view /> flips them between the grid card and the list row.</p>

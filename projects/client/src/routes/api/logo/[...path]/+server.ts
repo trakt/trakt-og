@@ -2,13 +2,14 @@ import { error, type RequestHandler } from '@sveltejs/kit';
 import { edgeCache } from '../../../../lib/utils/edgeCache.ts';
 import { LOGO_PATH } from '../../../../lib/utils/logoPath.ts';
 
-const MEDIA = 'https://media.trakt.tv/images';
-const YEAR = 60 * 60 * 24 * 365;
+const MEDIA = 'https://media.trakt.tv';
+const DAY = 60 * 60 * 24;
 
 /**
  * A show or movie logo from media.trakt.tv, served from og's own origin so the page can read its pixels and trim its
  * transparent edges (`trimLogo`): media.trakt.tv sends no CORS header, so a canvas can't read its images. Only logo
- * paths pass. A logo never changes at its path, so browsers and the data center's cache keep it a year.
+ * paths pass. A new logo replaces the old one at the same path, so browsers and the data center's cache keep it a day,
+ * like media.trakt.tv does.
  */
 export const GET: RequestHandler = async ({ params, url, fetch }) => {
   const path = params.path ?? '';
@@ -25,7 +26,7 @@ export const GET: RequestHandler = async ({ params, url, fetch }) => {
   const response = new Response(upstream.body, {
     headers: {
       'content-type': upstream.headers.get('content-type') ?? 'image/webp',
-      'cache-control': `public, max-age=${YEAR}, immutable`,
+      'cache-control': `public, max-age=${DAY}`,
     },
   });
   await cache?.put(url.href, response.clone()).catch(() => undefined);

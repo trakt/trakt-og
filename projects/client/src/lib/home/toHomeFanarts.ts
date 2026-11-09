@@ -1,11 +1,10 @@
-import { imageUrl } from '../utils/imageUrl.ts';
+import { mediaImage } from '../images/mediaImage.ts';
 
 export type HomeFanartSource = {
   readonly type: 'movie' | 'show';
+  readonly id: number;
   readonly slug: string;
   readonly title: string;
-  /** The summary's first fanart path, as `extended=images` returns it. */
-  readonly fanart: string | null | undefined;
 };
 
 export type HomeFanart = {
@@ -17,13 +16,14 @@ export type HomeFanart = {
   readonly image: string;
 };
 
-const toFanart = ({ type, slug, title, fanart }: HomeFanartSource): HomeFanart | null => {
-  const image = imageUrl(fanart, 'full');
-  if (!image) return null;
-  return { key: `${type}-${slug}`, title, href: `/${type}s/${slug}`, image };
-};
+const toFanart = ({ type, id, slug, title }: HomeFanartSource): HomeFanart => ({
+  key: `${type}-${slug}`,
+  title,
+  href: `/${type}s/${slug}`,
+  image: mediaImage({ type, id, slot: 'fanart', size: 'full' }),
+});
 
-/** The titles that have fanart, as hero slides. */
+/** The titles as hero slides. */
 export function toHomeFanarts(sources: readonly HomeFanartSource[]): HomeFanart[] {
-  return sources.map(toFanart).filter((fanart) => fanart !== null);
+  return sources.map(toFanart);
 }

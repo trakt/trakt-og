@@ -1,10 +1,11 @@
-import type { SearchResultResponse } from '@trakt/api';
+import type { SearchHit } from '../../search/SearchHit.ts';
 import type { DatePreferences } from '../../settings/DatePreferences.ts';
 import { formatDate } from '../../utils/formatDate.ts';
 import { genreLabel } from '../../utils/genreLabel.ts';
 import { episodeNumber } from '../media/episodeTags.ts';
 import { personTags } from '../../people/personTags.ts';
 import { imageUrl } from '../../utils/imageUrl.ts';
+import { mediaImage } from '../../images/mediaImage.ts';
 import { listPath } from '../../lists/listPath.ts';
 
 /** One autocomplete row. */
@@ -35,15 +36,17 @@ const genres = (slugs: ReadonlyArray<string> | null | undefined) =>
 
 const year = (value: number | null | undefined) => (value ? String(value) : undefined);
 
-const poster = (paths: ReadonlyArray<string> | null | undefined) => imageUrl(paths?.at(0), 'thumb');
+const listPoster = (paths: ReadonlyArray<string> | null | undefined) => imageUrl(paths?.at(0), 'thumb');
 
-type SearchList = NonNullable<SearchResultResponse['list']>;
+type SearchList = NonNullable<SearchHit['list']>;
 
 // An official list has no owner to read, and a list that came without its slug keeps OG's id route.
 const listHref = (list: SearchList) => {
   if (!list.ids.slug) return `/lists/${list.ids.trakt}`;
   if (list.type === 'official') return `/lists/official/${list.ids.slug}`;
-  return list.user?.ids ? listPath(list) : `/lists/${list.ids.trakt}`;
+  return list.user?.ids
+    ? listPath({ type: list.type ?? '', ids: { slug: list.ids.slug }, user: list.user })
+    : `/lists/${list.ids.trakt}`;
 };
 
 /**
@@ -51,7 +54,7 @@ const listHref = (list: SearchList) => {
  * date, `YYYY-MM-DD`) gives people their age. Returns null for a hit missing the object its `type` names.
  */
 export function toSearchRow(
-  hit: SearchResultResponse,
+  hit: SearchHit,
   dates: Pick<DatePreferences, 'order' | 'timeZone'> = { order: 'mdy', timeZone: 'UTC' },
   today?: string,
 ): SearchRow | null {
@@ -61,12 +64,12 @@ export function toSearchRow(
     return {
       key: `movie-${movie.ids.trakt}`,
       recent: { query: movie.title, type: 'movies', id: movie.ids.trakt },
-      href: `/movies/${movie.ids.slug}`,
+      href: `/movies/${movie.ids.slug ?? movie.ids.trakt}`,
       title: movie.title,
       year: year(movie.year),
       type: 'Movie',
       genres: genres(movie.genres),
-      poster: poster(movie.images?.poster),
+      poster: mediaImage({ type: 'movie', id: movie.ids.trakt, slot: 'poster', size: 'thumb' }),
     };
   }
 
@@ -74,12 +77,12 @@ export function toSearchRow(
     return {
       key: `show-${show.ids.trakt}`,
       recent: { query: show.title, type: 'shows', id: show.ids.trakt },
-      href: `/shows/${show.ids.slug}`,
+      href: `/shows/${show.ids.slug ?? show.ids.trakt}`,
       title: show.title,
       year: year(show.year),
       type: 'Show',
       genres: genres(show.genres),
-      poster: poster(show.images?.poster),
+      poster: mediaImage({ type: 'show', id: show.ids.trakt, slot: 'poster', size: 'thumb' }),
     };
   }
 
@@ -87,13 +90,13 @@ export function toSearchRow(
     return {
       key: `episode-${episode.ids.trakt}`,
       recent: { query: episode.title ?? '', type: 'episodes', id: episode.ids.trakt },
-      href: `/shows/${show.ids.slug}/seasons/${episode.season}/episodes/${episode.number}`,
+      href: `/shows/${show.ids.slug ?? show.ids.trakt}/seasons/${episode.season}/episodes/${episode.number}`,
       topTitle: show.title,
       title: `${episodeNumber(episode, null)} ${episode.title ?? ''}`.trim(),
       type: 'Episode',
       tag: episode.first_aired ? formatDate(episode.first_aired, dates) : undefined,
       genres: genres(show.genres),
-      poster: poster(show.images?.poster),
+      poster: mediaImage({ type: 'show', id: show.ids.trakt, slot: 'poster', size: 'thumb' }),
     };
   }
 
@@ -101,11 +104,11 @@ export function toSearchRow(
     return {
       key: `person-${person.ids.trakt}`,
       recent: { query: person.name, type: 'people', id: person.ids.trakt },
-      href: `/people/${person.ids.slug}`,
+      href: `/people/${person.ids.slug ?? person.ids.trakt}`,
       title: person.name,
       type: 'Person',
       tags: personTags(person, { today, order: dates.order }),
-      poster: poster(person.images?.headshot),
+      poster: mediaImage({ type: 'person', id: person.ids.trakt, slot: 'headshot', size: 'thumb' }),
     };
   }
 
@@ -123,7 +126,7 @@ export function toSearchRow(
         typeof list.item_count === 'number'
           ? [`${list.item_count.toLocaleString('en-US')} ${list.item_count === 1 ? 'item' : 'items'}`]
           : undefined,
-      poster: poster(list.images?.posters),
+      poster: listPoster(list.images?.posters),
     };
   }
 

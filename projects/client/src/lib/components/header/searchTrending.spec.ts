@@ -19,7 +19,6 @@ const person = (trakt: number, birthday: string) => ({
   name: `Person ${trakt}`,
   ids: { trakt, slug: `person-${trakt}` },
   birthday,
-  images: { headshot: [`media.trakt.tv/images/people/${trakt}/headshots/medium/a.jpg.webp`] },
 });
 
 const seen: URL[] = [];

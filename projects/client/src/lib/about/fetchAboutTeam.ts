@@ -11,7 +11,7 @@ async function fetchMember(client: Client, user: AboutUserRow): Promise<AboutMem
     client.users.favorites
       .typedSorted({
         params: { id, type: 'movie,show', sort_by: 'rank', sort_how: 'asc' },
-        query: { extended: 'full,images', limit: 10 },
+        query: { limit: 10 },
       })
       .catch(() => null),
     client.users.stats({ params: { id } }).catch(() => null),
@@ -30,7 +30,7 @@ async function fetchMember(client: Client, user: AboutUserRow): Promise<AboutMem
  */
 export async function fetchAboutTeam(fetch: typeof globalThis.fetch): Promise<AboutMember[]> {
   const client = api({ fetch });
-  const team = await client.team.members({ query: { extended: 'full,images' } });
+  const team = await client.team.members({ query: { extended: 'full' } });
   if (team.status !== 200 || team.body.length === 0) throw new Error('No Trakt team from the API.');
 
   return Promise.all(team.body.map(({ user }) => fetchMember(client, user)));

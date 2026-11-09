@@ -9,8 +9,7 @@ describe('toHomeTrending', () => {
         item: {
           title: 'Slow Horses',
           year: 2022,
-          ids: { slug: 'slow-horses' },
-          images: { poster: ['media.trakt.tv/images/shows/000/1/posters/thumb/a.jpg.webp'] },
+          ids: { trakt: 1390, slug: 'slow-horses' },
         },
       },
     ]);
@@ -22,14 +21,15 @@ describe('toHomeTrending', () => {
       title: 'Slow Horses',
       year: 2022,
       href: '/shows/slow-horses',
-      poster: 'https://media.trakt.tv/images/shows/000/1/posters/medium/a.jpg.webp',
+      poster: 'https://media.trakt.tv/shows/1390/medium/poster.webp',
     });
   });
 
-  it('should leave the poster out when the title has none', () => {
-    const [title] = toHomeTrending('movies', [{ watchers: 1, item: { title: 'Buddy', ids: { slug: 'buddy' } } }]);
+  it('should build a movie poster from its id', () => {
+    const [title] = toHomeTrending('movies', [
+      { watchers: 1, item: { title: 'Buddy', ids: { trakt: 7, slug: 'buddy' } } },
+    ]);
 
-    expect(title?.poster).toBeUndefined();
-    expect(title?.title).toBe('Buddy');
+    expect(title?.poster).toBe('https://media.trakt.tv/movies/7/medium/poster.webp');
   });
 });

@@ -1,5 +1,6 @@
-import type { SearchResultResponse } from '@trakt/api';
-import { api } from '../../api/api.ts';
+import { rawApiFetch } from '../../api/rawApiFetch.ts';
+import type { SearchHit } from '../../search/SearchHit.ts';
+import { searchRowsSchema } from '../../search/searchRowsSchema.ts';
 import type { DatePreferences } from '../../settings/DatePreferences.ts';
 import type { searchTypes } from './searchTypes.ts';
 import { type SearchRow, toSearchRow } from './toSearchRow.ts';
@@ -26,12 +27,7 @@ const SHOWN = 5;
 // cap instead, show the first 3 and count up to it ("50+"). Switch to limit=3 once the worker returns the real total.
 const COUNT_LIMIT = 50;
 
-const EXTENDED = 'full,images';
-
-const toRows = (
-  hits: ReadonlyArray<SearchResultResponse>,
-  { dates, today }: Pick<SearchAutocompleteParams, 'dates' | 'today'>,
-) =>
+const toRows = (hits: ReadonlyArray<SearchHit>, { dates, today }: Pick<SearchAutocompleteParams, 'dates' | 'today'>) =>
   hits
     .map((hit) => toSearchRow(hit, dates, today))
     .filter((row) => row !== null)
@@ -50,27 +46,25 @@ export async function searchAutocomplete({
   fetch,
   signal,
 }: SearchAutocompleteParams): Promise<SearchAutocompleteResult> {
-  const client = api({ fetch });
-  const fetchOptions = { signal };
+  const init = { signal };
 
   if ('idType' in type) {
-    const response = await client.search.lookup({
-      params: { id_type: type.idType, id: query },
-      query: { extended: EXTENDED },
-      fetchOptions,
+    const response = await rawApiFetch({
+      fetch,
+      path: `/search/${type.idType}/${encodeURIComponent(query)}?extended=full`,
+      init,
     });
-    return response.status === 200 ? { rows: toRows(response.body, { dates, today }), count: null } : none;
+    const hits = response.ok ? searchRowsSchema.safeParse(await response.json().catch(() => null)) : null;
+    return hits?.success ? { rows: toRows(hits.data, { dates, today }), count: null } : none;
   }
 
   if (!('text' in type)) return none;
 
-  const response = await client.search.query({
-    params: { type: type.text },
-    query: { query, limit: COUNT_LIMIT, extended: EXTENDED },
-    fetchOptions,
-  });
-  if (response.status !== 200) return none;
+  const search = new URLSearchParams({ query, limit: `${COUNT_LIMIT}`, extended: 'full' });
+  const response = await rawApiFetch({ fetch, path: `/search/${type.text}?${search}`, init });
+  const hits = response.ok ? searchRowsSchema.safeParse(await response.json().catch(() => null)) : null;
+  if (!hits?.success) return none;
 
-  const count = Number(response.headers.get('x-pagination-item-count') ?? response.body.length);
-  return { rows: toRows(response.body, { dates, today }), count: count > 0 ? toCount(count) : null };
+  const count = Number(response.headers.get('x-pagination-item-count') ?? hits.data.length);
+  return { rows: toRows(hits.data, { dates, today }), count: count > 0 ? toCount(count) : null };
 }

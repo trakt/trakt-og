@@ -281,18 +281,15 @@ async function remove(linkId: string) {
 }
 
 /* One row, clipped: a link that doesn't fit wraps a whole bar's height down, out of sight, and More takes it. The
-   room around the row keeps focus rings whole, and the room under it keeps More's bridge to its menu (HeaderMenu),
-   so the pointer crossing the gap doesn't close it. */
+   room around the row keeps focus rings whole. */
 .links {
   display: flex;
   flex-wrap: wrap;
   gap: var(--header-height) var(--gap-header-links);
   min-inline-size: 0;
-  block-size: calc(var(--header-pill-height) + var(--header-links-focus-room) + var(--header-menu-gap));
+  block-size: calc(var(--header-pill-height) + 2 * var(--header-links-focus-room));
   margin: calc(-1 * var(--header-links-focus-room));
-  margin-block-end: calc(-1 * var(--header-menu-gap));
   padding: var(--header-links-focus-room);
-  padding-block-end: var(--header-menu-gap);
   overflow: hidden;
 }
 

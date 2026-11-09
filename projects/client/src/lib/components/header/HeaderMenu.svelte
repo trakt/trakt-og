@@ -13,16 +13,25 @@
   const id = $props.id();
   let menu = $state<HTMLElement>();
 
+  const CLOSE_DELAY_MS = 300;
+
   // Mouse hover opens the menu like OG. Touch skips it, so a tap toggles the popover once instead of twice.
+  // Leaving waits a beat before closing, so a pointer that strays off the path to a row doesn't lose the menu.
   const openOnHover = (root: HTMLElement) => {
-    const hover = (open: boolean) => (event: PointerEvent) => {
-      if (event.pointerType === 'mouse') menu?.togglePopover(open);
+    let closing: ReturnType<typeof setTimeout> | undefined;
+    const enter = (event: PointerEvent) => {
+      if (event.pointerType !== 'mouse') return;
+      clearTimeout(closing);
+      menu?.togglePopover(true);
     };
-    const enter = hover(true);
-    const leave = hover(false);
+    const leave = (event: PointerEvent) => {
+      if (event.pointerType !== 'mouse') return;
+      closing = setTimeout(() => menu?.togglePopover(false), CLOSE_DELAY_MS);
+    };
     root.addEventListener('pointerenter', enter);
     root.addEventListener('pointerleave', leave);
     return () => {
+      clearTimeout(closing);
       root.removeEventListener('pointerenter', enter);
       root.removeEventListener('pointerleave', leave);
     };
@@ -72,15 +81,6 @@
 <style>
   .header-menu {
     position: relative;
-
-    /* Bridges the gap above the menu, so the pointer crossing it doesn't count as leaving. */
-    &:has(.menu:popover-open)::after {
-      content: '';
-      position: absolute;
-      inset-block-start: 100%;
-      inset-inline: 0;
-      block-size: var(--header-menu-gap);
-    }
   }
 
   .trigger {
@@ -115,6 +115,15 @@
     font-weight: normal;
     text-align: start;
     box-shadow: var(--shadow-menu);
+
+    /* Bridges the gap above the menu across its full width, so the pointer crossing it doesn't count as leaving. */
+    &::before {
+      content: '';
+      position: absolute;
+      inset-block-end: 100%;
+      inset-inline: 0;
+      block-size: var(--header-menu-gap);
+    }
   }
 
   /* The rows scroll inside the menu, under the header. */

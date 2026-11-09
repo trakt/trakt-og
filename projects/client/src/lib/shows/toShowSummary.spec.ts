@@ -224,18 +224,12 @@ describe('toShowSummary', () => {
     expect(summary.seasons.map(({ title }) => title)).toEqual(['Specials', 'Season 1', 'Season 2']);
   });
 
-  it('should fall back to the show poster for a season without one', () => {
-    const images = (poster: string[]) => ({ images: { poster } }) as Partial<SeasonWithEpisodes>;
-    const summary = toShowSummary({
-      ...base,
-      show: show({ images: { poster: ['media.trakt.tv/images/shows/1/posters/medium/show.jpg.webp'] } } as never),
-      seasons: [
-        season(1, [], images(['media.trakt.tv/images/seasons/1/posters/medium/s1.jpg.webp'])),
-        season(2, [], images([])),
-      ],
-    });
+  it("should build a season's poster from its id, with the show's poster to fall back on", () => {
+    const summary = toShowSummary({ ...base, show: show(), seasons: [season(1, [])] });
 
-    expect(summary.seasons.map(({ image }) => image?.split('/').at(-1))).toEqual(['s1.jpg.webp', 'show.jpg.webp']);
+    expect(summary.seasons.map(({ image }) => image)).toEqual([
+      `https://media.trakt.tv/seasons/901/thumb/poster.webp#fallback=${encodeURIComponent('https://media.trakt.tv/shows/1388/thumb/poster.webp')}`,
+    ]);
   });
 
   it('should hide actor episode counts for viewers who hide actor spoilers', () => {

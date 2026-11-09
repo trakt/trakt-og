@@ -9,7 +9,8 @@ import { toExternalRatings } from '../components/summary/toExternalRatings.ts';
 import type { DatePreferences } from '../settings/DatePreferences.ts';
 import { formatDate } from '../utils/formatDate.ts';
 import { formatRuntime } from '../utils/formatRuntime.ts';
-import { imageUrl } from '../utils/imageUrl.ts';
+import { mediaImage } from '../images/mediaImage.ts';
+import { previewArt } from '../images/previewArt.ts';
 import { episodeNeighbours } from './episodeNeighbours.ts';
 import type { episodeSeasonsSchema } from './episodeSeasonsSchema.ts';
 import type { Season } from './seasonSchema.ts';
@@ -71,9 +72,21 @@ export function toEpisodeSummary(params: Params) {
     firstAired: episode.first_aired ?? null,
     certification: show.certification,
     type: params.episodeTypeTags ? episodeType(episode) : undefined,
-    fanart: imageUrl(show.images?.fanart?.at(0), 'full'),
-    screenshot: imageUrl(episode.images?.screenshot?.at(0), 'full'),
-    poster: imageUrl(season.images?.poster?.at(0) ?? show.images?.poster?.at(0), 'medium'),
+    fanart: mediaImage({ type: 'show', id: show.ids.trakt, slot: 'fanart', size: 'full' }),
+    screenshot: mediaImage({ type: 'episode', id: episode.ids.trakt, slot: 'screenshot', size: 'full' }),
+    /** The link preview's art: the screenshot, else the show's fanart. A hidden screenshot goes by `previewHidden`. */
+    preview: previewArt(
+      { type: 'episode', id: episode.ids.trakt, slot: 'screenshot' },
+      { type: 'show', id: show.ids.trakt, slot: 'fanart' },
+    ),
+    previewHidden: previewArt({ type: 'show', id: show.ids.trakt, slot: 'fanart' }),
+    poster: mediaImage({
+      type: 'season',
+      id: season.ids.trakt,
+      slot: 'poster',
+      size: 'medium',
+      fallback: mediaImage({ type: 'show', id: show.ids.trakt, slot: 'poster', size: 'medium' }),
+    }),
     overview: episode.overview,
     runtime: episode.runtime ?? show.runtime ?? undefined,
     /** Aired by now: it can be watched, checked into and rated. */

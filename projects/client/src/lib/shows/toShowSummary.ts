@@ -14,7 +14,8 @@ import { countLabel } from '../utils/countLabel.ts';
 import { formatDate } from '../utils/formatDate.ts';
 import { fromWallClock } from '../utils/fromWallClock.ts';
 import { formatRuntime } from '../utils/formatRuntime.ts';
-import { imageUrl } from '../utils/imageUrl.ts';
+import { mediaImage } from '../images/mediaImage.ts';
+import { previewArt } from '../images/previewArt.ts';
 import type { SeasonWithEpisodes, ShowPeople } from './loadShow.ts';
 import { toCrewGroups } from '../components/summary/toCrewGroups.ts';
 import { seasonName } from '../utils/seasonName.ts';
@@ -215,8 +216,8 @@ export function toShowSummary(params: ShowSummaryParams) {
       href: `${href}/seasons/${episode.season}/episodes/${episode.number}`,
       number: episodeNumber(episode, show.genres),
       title: episode.title ?? `Episode ${episode.number}`,
-      image: imageUrl(episode.images?.screenshot?.at(0), 'thumb'),
-      spoilerImage: imageUrl(show.images?.fanart?.at(0), 'thumb'),
+      image: mediaImage({ type: 'episode', id: episode.ids.trakt, slot: 'screenshot', size: 'thumb' }),
+      spoilerImage: mediaImage({ type: 'show', id: show.ids.trakt, slot: 'fanart', size: 'thumb' }),
       tags,
       rating: episode.rating ?? 0,
       released: !!episode.first_aired && new Date(episode.first_aired) <= now,
@@ -232,7 +233,13 @@ export function toShowSummary(params: ShowSummaryParams) {
     title: season.title ?? seasonName(season.number),
     fullTitle: `${show.title} ${season.title ?? `Season ${season.number}`}`,
     showTitle: show.title,
-    image: imageUrl(season.images?.poster?.at(0) ?? show.images?.poster?.at(0), 'thumb'),
+    image: mediaImage({
+      type: 'season',
+      id: season.ids.trakt,
+      slot: 'poster',
+      size: 'thumb',
+      fallback: mediaImage({ type: 'show', id: show.ids.trakt, slot: 'poster', size: 'thumb' }),
+    }),
     episodes: countLabel(season.episode_count ?? 0, 'episode'),
     rating: season.rating ?? 0,
     released: !!season.first_aired && new Date(season.first_aired) <= now,
@@ -251,8 +258,17 @@ export function toShowSummary(params: ShowSummaryParams) {
     certification: show.certification ?? null,
     /** API's ISO timestamp, for structured data. */
     firstAired: show.first_aired ?? null,
-    fanart: imageUrl(show.images?.fanart?.at(0), 'full'),
-    poster: imageUrl(show.images?.poster?.at(0), 'medium'),
+    fanart: mediaImage({ type: 'show', id: show.ids.trakt, slot: 'fanart', size: 'full' }),
+    poster: mediaImage({ type: 'show', id: show.ids.trakt, slot: 'poster', size: 'medium' }),
+    /** The link preview's art: fanart, else poster. */
+    preview: previewArt(
+      { type: 'show', id: show.ids.trakt, slot: 'fanart' },
+      { type: 'show', id: show.ids.trakt, slot: 'poster' },
+    ),
+    structuredImage: previewArt(
+      { type: 'show', id: show.ids.trakt, slot: 'poster' },
+      { type: 'show', id: show.ids.trakt, slot: 'fanart' },
+    ),
     rating: aired ? { value: show.rating ?? 0, votes: show.votes ?? 0, href: `${href}/stats` } : undefined,
     external: params.otherSiteRatings && aired ? toExternalRatings({ ratings: params.ratings, rank: params.rank }) : [],
     /** The strip keeps only favorites; the stats page has the rest of the community counts. */

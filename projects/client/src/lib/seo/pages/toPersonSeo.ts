@@ -6,7 +6,7 @@ export function toPersonSeo(person: Parameters<typeof toPersonJsonLd>[0]): SeoMe
   return {
     title: person.name,
     description: person.biography || `Movies and shows with ${person.name}, on Trakt.`,
-    image: person.headshot,
+    image: person.preview,
     imageAlt: person.name,
     type: 'profile',
     jsonLd: [toPersonJsonLd(person)],

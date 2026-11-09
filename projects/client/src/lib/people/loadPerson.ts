@@ -38,14 +38,14 @@ async function knownFor(fetcher: typeof fetch, id: string): Promise<KnownForItem
  */
 export async function loadPerson({ fetch, token, parent, id: requested, search }: LoadPersonParams) {
   const client = api({ fetch });
-  const summaryRead = client.people.summary({ params: { id: requested }, query: { extended: 'full,images,markdown' } });
+  const summaryRead = client.people.summary({ params: { id: requested }, query: { extended: 'full,markdown' } });
   const layout = parent();
   // The extras go by the requested id alongside the summary, not after it; a non-canonical id redirects before they're
   // used. Each resolves to null on failure, and the catch only stops a failed summary leaving them unhandled.
   const id = requested;
   const extras = Promise.all([
-    okBody(client.people.movies({ params: { id }, query: { extended: 'full,images' } })),
-    okBody(client.people.shows({ params: { id }, query: { extended: 'full,images' } })),
+    okBody(client.people.movies({ params: { id }, query: { extended: 'full' } })),
+    okBody(client.people.shows({ params: { id }, query: { extended: 'full' } })),
     knownFor(fetch, id),
     client.people.lists({ params: { id, type: 'all', sort: 'popular' }, query: { limit: 1 } }).catch(() => null),
     Promise.all([summaryRead, layout]).then(([summary, { user }]) =>

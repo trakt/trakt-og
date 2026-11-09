@@ -6,7 +6,8 @@ import type {
   ShowResponse,
 } from '@trakt/api';
 import { titleize } from '../components/summary/names.ts';
-import { imageUrl } from '../utils/imageUrl.ts';
+import { mediaImage } from '../images/mediaImage.ts';
+import { previewArt } from '../images/previewArt.ts';
 import type { KnownForItem } from './knownForSchema.ts';
 import type { PersonCredit } from './PersonCredit.ts';
 import { personLinks } from './personLinks.ts';
@@ -77,7 +78,7 @@ function toCredit(credit: RawCredit, { now }: Pick<PersonSummaryParams, 'now'>) 
     href: `/${credit.type}s/${item.ids.slug}`,
     title: item.title,
     year: item.year ?? undefined,
-    image: imageUrl(item.images?.poster?.at(0), 'thumb'),
+    image: mediaImage({ type: credit.type, id: item.ids.trakt, slot: 'poster', size: 'thumb' }),
     // Unreleased credits show no rating, whatever the viewer's early-ratings setting.
     rating: released ? (item.rating ?? undefined) : undefined,
     released,
@@ -124,22 +125,23 @@ type FanartParams = Pick<PersonSummaryParams, 'person' | 'random'> & {
   known: ReadonlySet<string>;
 };
 
+const FANART_CANDIDATES = 5;
+
 /**
- * The header's fanart: a random credit's, from the Known For row when any of it has fanart, else OG's pick: up to 21
- * movie and 21 show credits with fanart, narrowed to the person's known-for department when any match. Its caption
- * names the source. A person's own fanart isn't used: it's nearly always a portrait poster, which a wide header crops
+ * The header's fanart: a random credit's, from the Known For row when any of it is in the credits, else OG's pick: up
+ * to 21 movie and 21 show credits, narrowed to the person's known-for department when any match. Its caption names
+ * the pick. The pick's art falls back to the next few credits' in the pool, since any title may lack fanart. A person's own fanart isn't used: it's nearly always a portrait poster, which a wide header crops
  * to a sliver.
  */
 function fanart(credits: readonly RawCredit[], { person, random, known }: FanartParams) {
-  const withFanart = (type: RawCredit['type']) =>
-    credits.filter((credit) => credit.type === type && credit.item.images?.fanart?.at(0)).slice(0, 21);
-  const candidates = [...withFanart('movie'), ...withFanart('show')];
+  const ofType = (type: RawCredit['type']) => credits.filter((credit) => credit.type === type).slice(0, 21);
+  const candidates = [...ofType('movie'), ...ofType('show')];
   const inDepartment = candidates.filter(({ role }) => role === person.known_for_department);
   // A title once, captioned by the person's own department where they have it (the role played, not "Producer").
   const famous = [
     ...new Map(
       credits
-        .filter((credit) => known.has(`${credit.type}-${credit.item.ids.trakt}`) && credit.item.images?.fanart?.at(0))
+        .filter((credit) => known.has(`${credit.type}-${credit.item.ids.trakt}`))
         .toSorted(
           (a, b) => Number(a.role === person.known_for_department) - Number(b.role === person.known_for_department),
         )
@@ -147,11 +149,19 @@ function fanart(credits: readonly RawCredit[], { person, random, known }: Fanart
     ).values(),
   ];
   const pool = [famous, inDepartment, candidates].find((list) => list.length > 0) ?? [];
-  const pick = pool.at(Math.floor(random * pool.length));
+  const start = Math.floor(random * pool.length);
+  const pick = pool.at(start);
   if (!pick) return undefined;
+  const image = Array.from({ length: Math.min(FANART_CANDIDATES, pool.length) }, (_, offset) => {
+    const { type, item } = pool[(start + offset) % pool.length] ?? pick;
+    return { type, id: item.ids.trakt };
+  }).reduceRight<string | undefined>(
+    (fallback, { type, id }) => mediaImage({ type, id, slot: 'fanart', size: 'full', fallback }),
+    undefined,
+  );
 
   return {
-    image: imageUrl(pick.item.images?.fanart?.at(0), 'full'),
+    image,
     caption: {
       characters: [...new Set(pick.names.filter(Boolean))].join(', '),
       role: titleize(pick.role),
@@ -198,7 +208,8 @@ export function toPersonSummary(params: PersonSummaryParams) {
     slug: person.ids.slug,
     href: `/people/${person.ids.slug}`,
     name: person.name,
-    headshot: imageUrl(person.images?.headshot?.at(0), 'medium'),
+    headshot: mediaImage({ type: 'person', id: person.ids.trakt, slot: 'headshot', size: 'medium' }),
+    preview: previewArt({ type: 'person', id: person.ids.trakt, slot: 'headshot' }),
     /** The API's gender, for the silhouette when there's no headshot. */
     genderId: person.gender ?? undefined,
     fanart: fanart(credits, { ...params, known: new Set(knownFor.map(({ type, id }) => `${type}-${id}`)) }),

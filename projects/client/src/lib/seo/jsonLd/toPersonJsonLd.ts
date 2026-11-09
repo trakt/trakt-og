@@ -1,6 +1,5 @@
 import type { toPersonSummary } from '../../people/toPersonSummary.ts';
 import { toSeoDescription } from '../toSeoDescription.ts';
-import { toShareImageUrl } from '../toShareImageUrl.ts';
 import { compact } from './compact.ts';
 import type { JsonLd } from './JsonLd.ts';
 import { toAbsoluteUrl } from './toAbsoluteUrl.ts';
@@ -9,7 +8,7 @@ import { toSameAs } from './toSameAs.ts';
 
 type Summary = ReturnType<typeof toPersonSummary>;
 
-type PersonJsonLdSource = Pick<Summary, 'name' | 'href' | 'biography' | 'headshot' | 'links'> & {
+type PersonJsonLdSource = Pick<Summary, 'name' | 'href' | 'biography' | 'preview' | 'links'> & {
   readonly facts: Pick<Summary['facts'], 'birthday' | 'death'>;
 };
 
@@ -21,7 +20,7 @@ export function toPersonJsonLd(person: PersonJsonLdSource): JsonLd {
     name: person.name,
     description: toSeoDescription(person.biography),
     url: toAbsoluteUrl(person.href),
-    image: person.headshot && toShareImageUrl(person.headshot),
+    image: person.preview,
     birthDate: toIsoDate(person.facts.birthday),
     deathDate: toIsoDate(person.facts.death),
     sameAs: toSameAs(person.links),

@@ -1,10 +1,11 @@
 import { error, redirect } from '@sveltejs/kit';
+import { mediaImage } from '../images/mediaImage.ts';
+import { previewArt } from '../images/previewArt.ts';
 import { api } from '../api/api.ts';
 import type { HeaderUser } from '../components/header/HeaderUser.ts';
 import { loadWatchNow } from '../components/watchnow/loadWatchNow.ts';
 import type { DatePreferences } from '../settings/DatePreferences.ts';
 import type { ViewerSettings } from '../settings/ViewerSettings.ts';
-import { imageUrl } from '../utils/imageUrl.ts';
 import { toMovieLinks } from './toMovieLinks.ts';
 import { toMovieReleases } from './toMovieReleases.ts';
 import { watchNowCountry } from '../settings/watchNowCountry.ts';
@@ -29,7 +30,7 @@ export async function loadMovieReleases({
   );
   watchNowRead.catch(() => {});
   const [summary, releases, { datePreferences, settings, user }] = await Promise.all([
-    client.movies.summary({ params: { id }, query: { extended: 'full,images' } }),
+    client.movies.summary({ params: { id }, query: { extended: 'full' } }),
     client.movies.releases({ params: { id } }),
     layout,
   ]);
@@ -50,8 +51,12 @@ export async function loadMovieReleases({
       href: `/movies/${movie.ids.slug}`,
       fullTitle: movie.year ? `${movie.title} (${movie.year})` : movie.title,
       overview: movie.overview,
-      fanart: imageUrl(movie.images?.fanart?.at(0), 'full'),
-      poster: imageUrl(movie.images?.poster?.at(0), 'medium'),
+      fanart: mediaImage({ type: 'movie', id: movie.ids.trakt, slot: 'fanart', size: 'full' }),
+      poster: mediaImage({ type: 'movie', id: movie.ids.trakt, slot: 'poster', size: 'medium' }),
+      preview: previewArt(
+        { type: 'movie', id: movie.ids.trakt, slot: 'fanart' },
+        { type: 'movie', id: movie.ids.trakt, slot: 'poster' },
+      ),
       links: toMovieLinks({ movie }),
     },
     releases: toMovieReleases({

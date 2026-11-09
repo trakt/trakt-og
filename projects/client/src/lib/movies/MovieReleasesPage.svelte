@@ -42,7 +42,7 @@ const clear = () => {
     title: movie.fullTitle,
     href: movie.href,
     subpage: 'Release Dates',
-    image: movie.fanart ?? movie.poster,
+    image: movie.preview,
   })} />
 
 {#snippet subnav()}

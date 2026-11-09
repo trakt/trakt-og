@@ -82,7 +82,7 @@ describe('toSeasonSummary', () => {
     expect(view.title).toBe('Specials');
     expect(view.previous).toBeUndefined();
     expect(view.overview).toBe('Special overview');
-    expect(view.poster).toContain('/posters/medium/b.jpg');
+    expect(view.poster).toContain('/seasons/3950/medium/poster.webp');
     const custom = toSeasonSummary({ ...base, season: { ...base.season, title: 'The Beginning' } });
     expect(custom.title).toBe('The Beginning');
     expect(custom.parents).toEqual([{ title: 'Breaking Bad', href: '/shows/breaking-bad' }, { title: 'Season 1' }]);

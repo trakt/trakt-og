@@ -5,7 +5,7 @@ const person = {
   name: 'Adam Scott',
   href: '/people/adam-scott',
   biography: 'Known for [Parks and Recreation](https://trakt.tv/shows/parks-and-recreation).',
-  headshot: 'https://media.trakt.tv/images/people/headshots/medium/a.jpg.webp',
+  preview: 'https://og.trakt.tv/api/art/person/5/headshot',
   links: [],
   facts: { birthday: '1973-04-03', death: undefined },
 };
@@ -15,17 +15,16 @@ describe('seo: toPersonSeo', () => {
     expect(toPersonSeo(person)).toMatchObject({
       title: 'Adam Scott',
       description: person.biography,
-      image: person.headshot,
+      image: person.preview,
       imageAlt: 'Adam Scott',
       type: 'profile',
       jsonLd: [{ '@type': 'Person', name: 'Adam Scott', birthDate: '1973-04-03' }],
     });
   });
 
-  it('should fall back to a fixed line and the default image', () => {
-    const seo = toPersonSeo({ ...person, biography: null, headshot: undefined });
+  it('should fall back to a fixed line without a biography', () => {
+    const seo = toPersonSeo({ ...person, biography: null });
 
     expect(seo.description).toBe('Movies and shows with Adam Scott, on Trakt.');
-    expect(seo.image).toBeUndefined();
   });
 });

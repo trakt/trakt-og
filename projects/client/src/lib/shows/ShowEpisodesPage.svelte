@@ -25,7 +25,7 @@ const sections = $derived([
     title: data.show.fullTitle,
     href: data.show.href,
     subpage: 'Episodes',
-    image: data.show.fanart ?? data.show.poster,
+    image: data.show.preview,
   })} />
 <ShowSubpage
   watchNow={data.watchNow}

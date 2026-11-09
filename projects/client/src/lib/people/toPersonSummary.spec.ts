@@ -121,16 +121,26 @@ describe('toPersonSummary', () => {
 
   it('should caption the fanart with the character and the department', () => {
     expect(toPersonSummary(base).fanart).toEqual({
-      image: 'https://media.trakt.tv/images/drive/fanarts/full/a.jpg.webp',
+      image: expect.stringMatching(/^https:\/\/media\.trakt\.tv\/movies\/10\/full\/fanart\.webp#fallback=/),
       caption: { characters: 'Shannon', role: 'Acting', title: 'drive-2011', year: 2010, href: '/movies/drive-2011' },
     });
   });
 
+  it('should chain up to five credits as the fanart to fall back on', () => {
+    const urls: string[] = [];
+    let next: string | undefined = toPersonSummary(base).fanart?.image;
+    while (next) {
+      const [url, fallback] = next.split('#fallback=');
+      urls.push(url ?? '');
+      next = fallback && decodeURIComponent(fallback);
+    }
+
+    expect(urls.at(0)).toBe('https://media.trakt.tv/movies/10/full/fanart.webp');
+  });
+
   it("should pass over the person's own fanart, a portrait poster", () => {
     const own = { ...person, images: fanart('people/1') as PersonResponse['images'] };
-    expect(toPersonSummary({ ...base, person: own }).fanart?.image).toBe(
-      'https://media.trakt.tv/images/drive/fanarts/full/a.jpg.webp',
-    );
+    expect(toPersonSummary({ ...base, person: own }).fanart?.image).toContain('/movies/10/full/fanart.webp');
   });
 
   it('should pick the fanart from the Known For row when any of it has fanart', () => {

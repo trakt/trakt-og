@@ -22,7 +22,7 @@ export function toEpisodeSeo({ episode, spoilers }: Params): SeoMeta {
     description:
       (!spoilers.overview && episode.overview) ||
       `Season ${episode.season}, episode ${episode.episodeNumber} of ${episode.showTitle}.`,
-    image: (!spoilers.screenshot && episode.screenshot) || episode.fanart,
+    image: spoilers.screenshot ? episode.previewHidden : episode.preview,
     imageAlt: title,
     type: 'video.episode',
     jsonLd: [

@@ -1,8 +1,8 @@
 <!--
   A lazy summary section's place while it loads, under its own heading: People You Follow's three cells, a row of
-  video cards under the Type dropdown, three comments under the Filter and Language dropdowns, or three list rows.
-  Each keeps the loaded section's boxes and spacing, so it lands without a jump. Hidden from screen readers, so the
-  section around it says it's busy.
+  video cards under the Type dropdown, three comments under the Filter and Language dropdowns, or three list rows
+  under the Type dropdown. Each keeps the loaded section's boxes and spacing, so it lands without a jump. Hidden
+  from screen readers, so the section around it says it's busy.
     <LazySection id="videos" load={...}>
       {#snippet pending()}<SummarySectionShimmer section="videos" />{/snippet}
     </LazySection>
@@ -59,6 +59,7 @@ const slots = $derived(Array.from({ length: COUNTS[section] }, (_, i) => i));
       <div class="comment"><CommentShimmer /></div>
     {/each}
   {:else}
+    <div class="controls"><Shimmer inline="var(--comment-shimmer-dropdown-width)" block="var(--control-height)" /></div>
     {#each slots as slot (slot)}
       <ListRowShimmer />
     {/each}

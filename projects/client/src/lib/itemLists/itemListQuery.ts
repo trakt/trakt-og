@@ -1,13 +1,13 @@
 /**
- * OG's list types for an item's lists page, keyed by OG's URL segment, with `api` the worker's name for each. OG's
- * Watchlists and Favorites are left out until the API serves them: it answers both with no lists. Me is the signed-in
- * viewer's own lists with the item, which come from `/listed` instead.
+ * OG's list types for an item's lists page, keyed by OG's URL segment, with `api` the worker's name for each, in the
+ * Type dropdown's order. OG's Watchlists and Favorites are left out until the API serves them: it answers both with no
+ * lists. Mine (OG's `me`) is the signed-in viewer's own lists with the item, which come from `/listed` instead.
  */
 export const itemListTypes = {
-  all: { label: 'All Lists', api: 'all' },
-  personal: { label: 'Personal Lists', api: 'personal' },
-  official: { label: 'Official Lists', api: 'official' },
-  me: { label: 'Me', api: 'listed' },
+  all: { label: 'All', api: 'all' },
+  official: { label: 'Official', api: 'official' },
+  personal: { label: 'Personal', api: 'personal' },
+  me: { label: 'Mine', api: 'listed' },
 } as const;
 
 /** OG's sorts, less the 30-day ones the API can't serve. */

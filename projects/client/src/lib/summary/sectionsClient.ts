@@ -12,7 +12,9 @@ import { type ActivityTab, toActivity } from './toActivity.ts';
 import type { RelatedPerson } from './RelatedPerson.ts';
 import { type RelatedCard, toRelatedCard } from './toRelatedCard.ts';
 import { toRelatedPeople } from './toRelatedPeople.ts';
-import { type SummaryList, toSummaryList } from './toSummaryList.ts';
+import { OFFICIAL_LISTS_LIMIT } from '../lists/pickCollectionList.ts';
+import { summaryListSchema } from './summaryListSchema.ts';
+import { type ListTab, toListTabs } from './toListTabs.ts';
 import { toVideoCards, type VideoCard } from '../videos/toVideoCards.ts';
 import { okBody } from '../api/okBody.ts';
 
@@ -55,8 +57,11 @@ export type SectionsClient = {
    * when the item has no comments in any.
    */
   comments: (media: SummaryMedia, language?: string | null) => Promise<readonly CommentTab[] | null>;
-  /** The official lists, then the most popular personal ones; the lists page sorts and filters the rest. */
-  lists: (media: SummaryMedia) => Promise<readonly SummaryList[] | null>;
+  /**
+   * Official, collection first, Personal and the viewer's own (Mine, signed in), three each; the lists page sorts and
+   * filters the rest.
+   */
+  lists: (media: SummaryMedia) => Promise<readonly ListTab[] | null>;
   /** Popular titles in `genre` when nothing is related, or `null` when there's neither. */
   related: (media: SummaryMedia, genre?: string) => Promise<readonly RelatedCard[] | null>;
   /** A related card's billed cast and key crew, to match against the summary's. */
@@ -66,6 +71,10 @@ export type SectionsClient = {
 };
 
 const nonEmpty = <T>(items: readonly T[]) => (items.length > 0 ? items : null);
+
+// Row by row: `/listed` sends the watchlist and favorites without a name, and only personal lists show anyway.
+const ownListRows = (body: unknown) =>
+  Array.isArray(body) ? body.flatMap((row) => summaryListSchema.safeParse(row).data ?? []) : null;
 
 /**
  * The lazy summary sections' reads, mapped for their components. Logged out, the calls about the viewer are skipped. Every failure
@@ -250,12 +259,14 @@ export function sectionsClient({
     },
 
     lists: async (media) => {
-      const [official, popular] = await Promise.all([
-        lists(media, 'official'),
+      const [official, personal, mine] = await Promise.all([
+        lists(media, 'official', OFFICIAL_LISTS_LIMIT),
         lists(media, 'personal', PREVIEW_LIMIT),
+        raw(`${mediaPath(media)}/listed?extended=images`, ownListRows),
       ]);
-      // OG put the official lists (a movie's collection) ahead of the popular personal ones.
-      return nonEmpty([...(official ?? []), ...(popular ?? [])].map(toSummaryList));
+      return nonEmpty(
+        toListTabs({ official: official ?? [], personal: personal ?? [], mine: mine ?? [], limit: PREVIEW_LIMIT }),
+      );
     },
 
     related: async (media, genre) => {

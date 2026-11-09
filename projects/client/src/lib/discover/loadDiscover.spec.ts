@@ -4,21 +4,15 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { DISCOVER_MOODS } from './discoverMoods.ts';
 import { loadDiscover } from './loadDiscover.ts';
 
-const art = (id: number) => ({
-  poster: [`media.trakt.tv/images/${id}/posters/medium/a.jpg.webp`],
-  fanart: [`media.trakt.tv/images/${id}/fanarts/medium/a.jpg.webp`],
-});
 const show = (id: number) => ({
   title: `Show ${id}`,
   year: 2020,
   ids: { trakt: id, slug: `show-${id}` },
-  images: art(id),
 });
 const movie = (id: number) => ({
   title: `Movie ${id}`,
   year: 2020,
   ids: { trakt: id, slug: `movie-${id}` },
-  images: art(id),
 });
 const list = (id: number, name: string, items = 50) => ({
   ids: { trakt: id },

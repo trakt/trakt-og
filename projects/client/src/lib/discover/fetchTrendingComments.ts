@@ -20,7 +20,7 @@ export async function fetchTrendingComments({
   const response = await api({ fetch })
     .comments.trending({
       params: { comment_type: kind, type: media },
-      query: { limit: 30, extended: 'images' },
+      query: { limit: 30 },
     })
     .catch(() => null);
   if (!response || response.status < 200 || response.status >= 300) return [];

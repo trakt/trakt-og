@@ -2,12 +2,10 @@ import { describe, expect, it } from 'vitest';
 import type { ThemeMedia } from './themeRowsSchema.ts';
 import { toSeasonPicks } from './toSeasonPicks.ts';
 
-const art = (kind: string, id: number) => [`media.trakt.tv/images/${kind}/${id}/medium/a.jpg.webp`];
 const media = (id: number, extra: Partial<ThemeMedia> = {}): ThemeMedia => ({
   ids: { trakt: id, slug: `title-${id}` },
   title: `Title ${id}`,
   year: 2020,
-  images: { poster: art('posters', id), fanart: art('fanarts', id) },
   ...extra,
 });
 const none = { movie: [], show: [] };
@@ -38,9 +36,9 @@ describe('toSeasonPicks', () => {
     ).toEqual(['movie-1', 'movie-2']);
   });
 
-  it('should skip repeats and titles without a poster', () => {
+  it('should skip repeats', () => {
     const picks = toSeasonPicks({
-      trending: { movie: [media(1), media(2, { images: { fanart: art('fanarts', 2) } })], show: [] },
+      trending: { movie: [media(1), media(1)], show: [] },
       favorites: { movie: [media(1)], show: [] },
       now,
     });

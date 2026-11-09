@@ -24,7 +24,6 @@ const row = {
     title: 'Movie 7',
     year: 2026,
     released: '2026-01-01',
-    images: { poster: ['media.trakt.tv/images/7/posters/medium/a.jpg.webp'] },
   },
 };
 const paths: string[] = [];

@@ -2,7 +2,6 @@
 import { z } from 'zod/v4';
 import { commentSchema } from '../components/comments/commentSchema.ts';
 
-const art = z.array(z.string()).nullish();
 const media = {
   ids: z.object({ trakt: z.number(), slug: z.string() }),
   title: z.string(),
@@ -13,7 +12,6 @@ const media = {
   first_aired: z.string().nullish(),
   aired_episodes: z.number().nullish(),
   genres: z.array(z.string()).nullish(),
-  images: z.object({ poster: art, fanart: art }).nullish(),
 };
 
 const row = z.object({
@@ -35,7 +33,7 @@ const row = z.object({
 export type TrendingCommentRow = z.infer<typeof row>;
 
 /**
- * `/comments/trending/all/all?extended=images`: each comment with its movie or show, and the episode under it.
+ * `/comments/trending/all/all`: each comment with its movie or show, and the episode under it.
  * `@trakt/api` types the rows as bare comments, so they're parsed here. A malformed row is skipped.
  */
 export const trendingCommentRowsSchema = z.array(z.unknown()).transform((rows) =>

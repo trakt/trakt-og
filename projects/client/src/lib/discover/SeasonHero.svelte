@@ -19,6 +19,7 @@ import { youtubeEmbedUrl } from '#lib/components/dialog/youtubeEmbedUrl.ts';
 import { watchNowPath } from '#lib/components/watchnow/watchNowPath.ts';
 import { openWatchNow } from '#lib/components/watchnow/watchNowLauncher.svelte.ts';
 import { isPlainClick } from '#lib/utils/isPlainClick.ts';
+import { canLoadImage } from './canLoadImage.ts';
 import { proxiedLogoUrl } from '#lib/utils/proxiedLogoUrl.ts';
 import { trackTrailer } from '#lib/videos/trackVideo.ts';
 import Icon from '#lib/icons/Icon.svelte';
@@ -56,7 +57,10 @@ let sliding = $state(false);
 // A slide's fanart loads the first time it's shown.
 const shown = new SvelteSet([0]);
 
-const withArt = $derived(picks.filter((pick) => pick.fanart && pick.poster));
+// A pick whose fanart doesn't load is left out of the rotation: a placeholder would be the whole hero.
+const failed = new SvelteSet<string>();
+const loaded = new SvelteSet<string>();
+const withArt = $derived(picks.filter((pick) => !failed.has(pick.key)));
 const counts = $derived({
   all: withArt.length,
   trending: withArt.filter((pick) => pick.source === 'trending').length,
@@ -65,11 +69,39 @@ const counts = $derived({
 const slides = $derived(mode === 'all' ? withArt : withArt.filter((pick) => pick.source === mode));
 const current = $derived(slides.at(index % Math.max(slides.length, 1)));
 
-function show(next: number) {
-  if (slides.length === 0) return;
-  index = (next + slides.length) % slides.length;
-  shown.add(index);
+async function ready(pick: SeasonPick) {
+  if (loaded.has(pick.key)) return true;
+  if (await canLoadImage(pick.fanart ?? '')) {
+    loaded.add(pick.key);
+    return true;
+  }
+  failed.add(pick.key);
+  return false;
 }
+
+let latest = 0;
+// Moves to the next pick in `step`'s direction whose fanart loads, dropping the ones that don't.
+async function show(next: number, step = 1) {
+  const request = ++latest;
+  let at = next;
+  while (slides.length > 0) {
+    const position = ((at % slides.length) + slides.length) % slides.length;
+    const slide = slides.at(position);
+    if (!slide) return;
+    const ok = await ready(slide);
+    if (request !== latest) return;
+    if (ok) {
+      index = Math.max(slides.indexOf(slide), 0);
+      shown.add(index);
+      return;
+    }
+    at = step > 0 ? position : position - 1;
+  }
+}
+
+$effect(() => {
+  if (current && !loaded.has(current.key)) void ready(current);
+});
 
 function pick(next: (typeof MODES)[number]['id']) {
   mode = next;
@@ -82,7 +114,7 @@ $effect(() => {
   if (paused || slides.length < 2 || prefersReducedMotion.current) return;
   // Reading `index` restarts the timer whenever the slide changes, by the timer or by hand.
   const at = index;
-  const timer = setTimeout(() => show(at + 1), ROTATE_MS);
+  const timer = setTimeout(() => void show(at + 1), ROTATE_MS);
   return () => clearTimeout(timer);
 });
 
@@ -128,7 +160,7 @@ const controls: Attachment<HTMLElement> = (node) => {
       return;
     }
     event.preventDefault();
-    show(index + (event.key === 'ArrowLeft' ? -1 : 1));
+    void show(index + (event.key === 'ArrowLeft' ? -1 : 1), event.key === 'ArrowLeft' ? -1 : 1);
   };
   const events = [['mouseenter', pause], ['focusin', pause], ['mouseleave', resume], ['focusout', resume]] as const;
   for (const [name, handler] of events) node.addEventListener(name, handler);
@@ -234,10 +266,10 @@ const controls: Attachment<HTMLElement> = (node) => {
       </ul>
     </div>
 
-    <button type="button" class="arrow previous" aria-label="Previous pick" onclick={() => show(index - 1)}>
+    <button type="button" class="arrow previous" aria-label="Previous pick" onclick={() => void show(index - 1, -1)}>
       <Icon svg={angleLeft} />
     </button>
-    <button type="button" class="arrow next" aria-label="Next pick" onclick={() => show(index + 1)}>
+    <button type="button" class="arrow next" aria-label="Next pick" onclick={() => void show(index + 1)}>
       <Icon svg={angleRight} />
     </button>
   </section>

@@ -8,7 +8,6 @@ const show = (id: number, extra: object = {}) => ({
   network: 'CBS',
   votes: 0,
   rating: 8.1,
-  images: { fanart: [`media.trakt.tv/images/${id}/fanarts/medium/a.jpg.webp`], logo: [] },
   ...extra,
 });
 const premiere = (id: number, type: string, at: string, extra: object = {}) =>
@@ -55,11 +54,10 @@ describe('toPremieres', () => {
     expect(premieres.map(({ id, day, season }) => [id, day, season])).toEqual([[5, '2026-12-24', 1]]);
   });
 
-  it("should leave a new series' rating out, and drop what's aired and what has no fanart", () => {
+  it("should leave a new series' rating out, and drop what's aired", () => {
     const premieres = run([
       premiere(7, 'series_premiere', '2026-10-10T01:00:00Z', { votes: 500 }),
       premiere(8, 'season_premiere', '2026-10-01T01:00:00Z', { votes: 5000 }),
-      premiere(9, 'season_premiere', '2026-10-10T01:00:00Z', { votes: 5000, images: { fanart: [], logo: [] } }),
     ]);
 
     expect(premieres.map(({ id, rating }) => [id, rating])).toEqual([[7, undefined]]);

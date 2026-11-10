@@ -10,7 +10,7 @@ const row = (fields: Partial<UserListRow> = {}): UserListRow => ({
   name: 'Heist',
   owner: { slug: 'owner', name: 'Owner', href: '/users/owner', avatar: '', vip: null },
   posters: [],
-  itemCount: 0,
+  itemCount: 3,
   pills: [],
   shareLink: false,
   isPublic: true,
@@ -35,6 +35,16 @@ describe('listRowActions', () => {
     expect(icons(listRowActions({ row: smart, viewer: { slug: 'other' }, isCollaborator: false, origin }))).toEqual([
       'shareUrl',
     ]);
+  });
+
+  it('should leave progress off an empty list', () => {
+    const actions = listRowActions({
+      row: row({ itemCount: 0 }),
+      viewer: { slug: 'kim' },
+      isCollaborator: false,
+      origin,
+    });
+    expect(actions.progressHref).toBeUndefined();
   });
 
   it('should give the owner edit and delete, and their own progress page', () => {

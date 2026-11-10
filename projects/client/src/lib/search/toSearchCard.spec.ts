@@ -190,6 +190,7 @@ describe('toSearchListRow', () => {
         },
       ],
       itemCount: 610,
+      moviesOnly: false,
       likeCount: 311,
       commentCount: undefined,
       pills: [],

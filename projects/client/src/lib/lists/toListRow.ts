@@ -2,6 +2,7 @@ import { toVipBadge } from '../users/toVipBadge.ts';
 import type { VipBadge } from '../users/VipBadge.ts';
 import { userAvatar } from '../images/userAvatar.ts';
 import { imageUrl } from '../utils/imageUrl.ts';
+import { listMoviesOnly, posterItemType } from './listMoviesOnly.ts';
 import { listPath } from './listPath.ts';
 import { PLACEHOLDER_AVATAR } from '../users/placeholderAvatar.ts';
 
@@ -53,6 +54,8 @@ export interface ListRow {
   };
   readonly posters: readonly { readonly title?: string; readonly image?: string }[];
   readonly itemCount: number;
+  /** Movies and no shows, read off its posters' types once they cover the whole list: progress opens on franchises. */
+  readonly moviesOnly?: boolean;
   /** Left out for a watchlist or favorites, which can't be liked. */
   readonly likeCount?: number;
   /** Left out when the list has comments turned off. */
@@ -91,6 +94,7 @@ export function toListRow(list: ListRowSource): ListRow {
   const kind = kindOf(list.type);
   const ownerSlug = list.user.ids.slug ?? list.user.username;
   const likeable = kind !== 'watchlist' && kind !== 'favorites';
+  const posters = list.images?.posters ?? [];
 
   return {
     key: `list-${list.ids.trakt}`,
@@ -105,8 +109,9 @@ export function toListRow(list: ListRowSource): ListRow {
       avatar: list.user.ids.trakt ? userAvatar(list.user.ids.trakt) : PLACEHOLDER_AVATAR,
       vip: toVipBadge(list.user),
     },
-    posters: (list.images?.posters ?? []).slice(0, 5).map((path) => ({ image: imageUrl(path, 'thumb') })),
+    posters: posters.slice(0, 5).map((path) => ({ image: imageUrl(path, 'thumb') })),
     itemCount: list.item_count,
+    moviesOnly: listMoviesOnly(list.item_count, posters.map(posterItemType)),
     likeCount: likeable ? (list.likes ?? 0) : undefined,
     commentCount: list.allow_comments ? (list.comment_count ?? 0) : undefined,
     pills: pills(list, kind),

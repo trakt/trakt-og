@@ -319,7 +319,7 @@ const following = [{ slug: 'teodoro_2', name: 'Elsy Murphy (@teodoro_2)' }];
 </Specimen>
 
 <Specimen title="List stats bar" bleed
-  note="Watched and Collected show to any signed-in viewer, on personal and official lists alike.">
+  note="Watched and Collected show to any signed-in viewer, on personal and official lists alike. Signed out, the likes are a count with nothing to click.">
   <div class="states">
     <Variant label="Signed in, 2 of 10 watched, 5 collected">
       <SectionToolbar filters={none}>
@@ -335,6 +335,15 @@ const following = [{ slug: 'teodoro_2', name: 'Elsy Murphy (@teodoro_2)' }];
           <ListStats itemCount={10} stats={{ count: 10, runtime: 3844, items }} progress stateOf={library}
             likeCount={1_204} likeTarget={{ ...likeTarget, ownerSlug: undefined }}
             comments={{ count: 12, href: '/lists/official/heist-collection/comments' }} />
+        {/snippet}
+      </SectionToolbar>
+    </Variant>
+    <Variant label="Signed out">
+      <SectionToolbar filters={none}>
+        {#snippet stats()}
+          <ListStats itemCount={10} stats={{ count: 10, runtime: 3844, items }} likeCount={1_204}
+            likeTarget={{ ...likeTarget, viewer: null }}
+            comments={{ count: 12, href: '/users/og_tester/lists/heist-night/comments' }} />
         {/snippet}
       </SectionToolbar>
     </Variant>

@@ -2,6 +2,7 @@
   The list's likes count doubles as OG's like toggle. Whether the viewer liked it comes from the overlay's liked lists;
   until that loads, a first click likes. `button` draws it as a list row's outlined button: a blue thumb and
   "123 likes", solid blue once liked. Its word is a `.count-text`, like ListCount's, so a tight row can hide both.
+  Signed out, it's the count alone, with nothing to click.
 -->
 <script lang="ts">
 import { changeListLike } from '#lib/components/lists/changeListLike.ts';
@@ -39,11 +40,7 @@ const label = $derived(
 const withLike = (ids: ReadonlySet<number>, on: boolean): ReadonlySet<number> =>
   new Set(on ? [...ids, id] : [...ids].filter((value) => value !== id));
 async function toggle() {
-  if (busy) return;
-  if (!viewer) {
-    location.assign('/login');
-    return;
-  }
+  if (busy || !viewer) return;
   const key = scope;
   busy = true;
   await changeListLike({
@@ -70,7 +67,16 @@ async function toggle() {
 }
 </script>
 
-{#if button}
+{#if !viewer && button}
+  <GlassAction presentational glass card iconColor="var(--color-list-card-like)" icon={voteYes}>
+    <span><span class="number">{total.toLocaleString('en-US')}</span><span class="count-text">&nbsp;{total === 1 ? 'like' : 'likes'}</span></span>
+  </GlassAction>
+{:else if !viewer}
+  <span class="like">
+    <span class="icon"><Icon svg={voteYes} /></span><strong>{total.toLocaleString('en-US')}</strong>
+    <span class="words"> {total === 1 ? 'like' : 'likes'}</span>
+  </span>
+{:else if button}
   <Tooltip text={liked ? 'Unlike this list' : 'Like this list'}>
     {#snippet trigger(tooltip)}
       <GlassAction glass={!liked} card color={liked ? 'var(--color-list-card-like)' : undefined} selected={liked}
@@ -106,7 +112,7 @@ async function toggle() {
   text-transform: inherit;
   white-space: nowrap;
 
-  &:is(:hover, :focus-visible) strong {
+  &:is(button):is(:hover, :focus-visible) strong {
     color: var(--color-stat-count);
   }
 }

@@ -1,8 +1,10 @@
 <!--
   OG's fade and hide eye: "Show All", then the FADE and HIDE toggles. Each
   section is kept in a year-long cookie, `filter-fade-<cookie>` and `filter-hide-<cookie>`, so SSR renders the same.
+  Fading and hiding read the viewer's own history, library and lists, so a signed-out visitor doesn't get the eye.
 -->
 <script lang="ts" generics="Option extends string">
+import { page } from '$app/state';
 import FilterMenu from '#lib/components/filters/FilterMenu.svelte';
 import FadeHideItems from '#lib/components/filters/FadeHideItems.svelte';
 
@@ -31,7 +33,9 @@ function save(next: { fade: Option[]; hide: Option[] }, clear = false) {
 }
 </script>
 
-<FilterMenu active={count > 0} {count}>
-  <FadeHideItems {value} fadeOptions={options} {hideOptions} onchange={save}
-    onreset={() => save({ fade: [], hide: [] }, true)} />
-</FilterMenu>
+{#if page.data.user}
+  <FilterMenu active={count > 0} {count}>
+    <FadeHideItems {value} fadeOptions={options} {hideOptions} onchange={save}
+      onreset={() => save({ fade: [], hide: [] }, true)} />
+  </FilterMenu>
+{/if}

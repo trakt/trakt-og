@@ -6,6 +6,7 @@
 -->
 <script lang="ts">
 import { browser } from '$app/env';
+import { viewerFetch } from '#lib/auth/viewerFetch.ts';
 import { isApiRateLimited } from '#lib/api/isApiRateLimited.ts';
 import { toast } from '#lib/components/toast/toast.svelte.ts';
 import type { HeaderUser } from '#lib/components/header/HeaderUser.ts';
@@ -16,6 +17,8 @@ import { franchiseCatalogStore } from './franchiseCatalogStore.ts';
 import FranchiseList from './FranchiseList.svelte';
 import { fetchFranchisePage } from './fetchFranchisePage.ts';
 import { loadFranchises } from './loadFranchises.ts';
+import { loadListMovieIds } from '../loadListShows.ts';
+import { listHasType } from '../readListRows.ts';
 
 type Props = {
   data: Awaited<ReturnType<typeof loadProgress>> & { profile: ProfileUser; user: HeaderUser | null };
@@ -42,11 +45,47 @@ async function read() {
 
 // Only in the browser: the catalog is read there, and a failure on the server would toast into every request.
 if (browser) void read();
+
+// `?list=`: the list's movie ids, read once, so only the franchises with a movie on it show. Null while they load.
+let listed = $state.raw<ReadonlySet<number> | null>(null);
+// Whether the list holds shows too, read alongside its movies: the band's View shows, and an empty tab's way across.
+let listHasShows = $state(false);
+// A list that read fine with no movies at all: whether it has shows to send you to.
+let listWithoutMovies = $state<'shows' | 'none'>();
+$effect(() => {
+  const base = data.list;
+  listed = null;
+  listHasShows = false;
+  listWithoutMovies = undefined;
+  if (base === undefined) return;
+  let current = true;
+  void Promise.all([
+    loadListMovieIds({ fetch: viewerFetch(), base }),
+    listHasType({ fetch: viewerFetch(), base, type: 'show' }).catch(() => false),
+  ])
+    .then(([ids, shows]) => {
+      if (!current) return;
+      listHasShows = shows;
+      if (ids.size === 0) listWithoutMovies = shows ? 'shows' : 'none';
+      listed = ids;
+    })
+    .catch(() => {
+      if (!current) return;
+      listed = new Set();
+      toast.error("Doh! We couldn't load that list.");
+    });
+  return () => {
+    current = false;
+  };
+});
 </script>
 
 <FranchiseList
   data={{ ...data, sort: data.franchiseSort }}
   {franchises}
+  listed={data.list === undefined ? undefined : listed}
+  {listWithoutMovies}
+  {listHasShows}
   onretry={failure ? read : undefined}
   error={failure?.error}
 />

@@ -78,6 +78,10 @@ type Props = {
   items: readonly ProgressItem[] | null;
   /** `?list=`'s shows. Null while they load. */
   listed?: ReadonlySet<number> | null;
+  /** `?list=`'s list has no shows at all: it says so, and sends you to its franchises when it has movies. */
+  listWithoutShows?: 'movies' | 'none';
+  /** `?list=`'s list holds movies too: the band links to its franchises. */
+  listHasMovies?: boolean;
   /** Shows whose catalog is being read. */
   loading?: ReadonlySet<number>;
   /** Your progress is being read again, after a watch or another change. */
@@ -95,7 +99,19 @@ type Props = {
   now?: Date;
 };
 
-const { data, items, listed, loading = new Set(), reloading = false, onneed, onretry, error, now }: Props = $props();
+const {
+  data,
+  items,
+  listed,
+  listWithoutShows,
+  listHasMovies = false,
+  loading = new Set(),
+  reloading = false,
+  onneed,
+  onretry,
+  error,
+  now,
+}: Props = $props();
 
 // OG's `per(50)`, 48 in grid view (eight rows of six).
 const PER_PAGE = 50;
@@ -248,6 +264,16 @@ function changeHide(hide: ProgressHide[]) {
   void goto(url.pathname + url.search, { invalidateAll: true, reset: false });
 }
 
+// Progress without `?list=`, as the list band's close button, and the list's franchises.
+const allProgressHref = $derived.by(() => {
+  const url = new URL(page.url.href);
+  for (const key of ['page', 'list']) url.searchParams.delete(key);
+  return url.pathname + url.search;
+});
+const franchisesHref = $derived(
+  `/users/${data.profile.slug}/progress/franchises?${new URLSearchParams({ list: page.url.searchParams.get('list') ?? '' })}`,
+);
+
 // Drops the search, the list and the hide toggles, and the eye's saved hide cookie as its Show All does.
 function clearFilters() {
   expireHideCookie('progress');
@@ -306,7 +332,10 @@ function clearFilters() {
   </Container>
 </section>
 
-{#if data.listRow}<ProgressListBand row={data.listRow} />{/if}
+{#if data.listRow}
+  <ProgressListBand row={data.listRow}
+    other={listHasMovies ? { href: franchisesHref, text: 'View Movies' } : undefined} />
+{/if}
 
 <!-- OG's `showLoading()` while grid view saves and the page reloads. -->
 <LoadingOverlay visible={saving === 'grid_view'} />
@@ -369,6 +398,16 @@ function clearFilters() {
       {/if}
     {:else if onretry}
       <div class="empty"><LoadFailed what="Progress" {onretry} {error} /></div>
+    {:else if listWithoutShows === 'movies'}
+      <div class="empty">
+        <EmptyState title="This list has movies, but no shows. Their progress is on the movies franchises tab."
+          action={{ href: franchisesHref, text: 'View Movies' }} />
+      </div>
+    {:else if listWithoutShows === 'none'}
+      <div class="empty">
+        <EmptyState title="This list has no shows or movies to track."
+          action={{ href: allProgressHref, text: 'Show all progress' }} />
+      </div>
     {:else if items?.some(({ plays }) => !hideUnstarted || plays > 0)}
       <div class="empty"><EmptyState action={{ onclick: clearFilters, text: 'Clear filters' }} /></div>
     {:else}

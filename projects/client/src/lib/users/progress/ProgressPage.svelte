@@ -20,6 +20,7 @@ let cached: { slug: string; items: readonly ProgressItem[]; at: number } | null 
   import type { HeaderUser } from '#lib/components/header/HeaderUser.ts';
   import { toast } from '#lib/components/toast/toast.svelte.ts';
   import { loadListShows } from './loadListShows.ts';
+  import { listHasType } from './readListRows.ts';
   import { overlay } from '#lib/overlay/overlay.ts';
   import type { CachedShow } from '#lib/shows/cache/CachedShow.ts';
   import { loadShowCatalog } from '#lib/shows/cache/loadShowCatalog.ts';
@@ -106,15 +107,27 @@ if (browser && !fresh) void readProgress();
 // `?list=`: the list's shows with their summaries, read once. Leaving the list, or moving to another, drops them, and
 // a read that lands after it left is ignored.
 let listShows = $state.raw<ReadonlyMap<number, CachedShow> | null>(null);
+// Whether the list holds movies too, read alongside its shows: the band's View movies, and an empty tab's way across.
+let listHasMovies = $state(false);
+// A list that read fine with no shows at all, unlike filters that hide them: whether it has movies to send you to.
+let listWithoutShows = $state<'movies' | 'none'>();
 const listed = $derived(listShows ? new Set(listShows.keys()) : null);
 $effect(() => {
   const base = data.list;
   listShows = null;
+  listHasMovies = false;
+  listWithoutShows = undefined;
   if (base === undefined) return;
   let current = true;
-  void loadListShows({ fetch: fetch(), base })
-    .then((shows) => {
-      if (current) listShows = shows;
+  void Promise.all([
+    loadListShows({ fetch: fetch(), base }),
+    listHasType({ fetch: fetch(), base, type: 'movie' }).catch(() => false),
+  ])
+    .then(([shows, movies]) => {
+      if (!current) return;
+      listHasMovies = movies;
+      if (shows.size === 0) listWithoutShows = movies ? 'movies' : 'none';
+      listShows = shows;
     })
     .catch(() => {
       if (!current) return;
@@ -207,6 +220,8 @@ const items = $derived(
   data={data}
   items={items}
   listed={listed}
+  {listWithoutShows}
+  {listHasMovies}
   loading={loading}
   reloading={reads > 0}
   onneed={need}

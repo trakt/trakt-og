@@ -2,28 +2,27 @@ import { isRedirect } from '@sveltejs/kit';
 import { describe, expect, it } from 'vitest';
 import { GET } from './+server.ts';
 
-const locationFor = (token: string | null, start?: string, search = '') => {
+const redirectFor = (token: string | null, start?: string) => {
   try {
-    GET({
-      locals: { token },
-      params: { start },
-      url: new URL(`https://og.trakt.tv/calendars/shows${search}`),
-    } as Parameters<typeof GET>[0]);
+    GET({ locals: { token }, params: { start }, url: new URL('https://og.test/calendars/shows') } as never);
   } catch (thrown) {
-    if (isRedirect(thrown)) return thrown.location;
+    if (isRedirect(thrown)) return { status: thrown.status, location: thrown.location };
     throw thrown;
   }
   return null;
 };
 
 describe('route: /calendars/shows', () => {
-  it('should open My Shows signed in, keeping the start and filters', () => {
-    expect(locationFor('fake-token', '2026-10-01', '?genres=drama')).toBe(
-      '/calendars/my/shows/2026-10-01?genres=drama',
-    );
+  it('should open My Shows for the same week signed in', () => {
+    expect(redirectFor('fake-token', '2026-11-09')?.location).toBe('/calendars/my/shows/2026-11-09');
   });
 
   it('should open All Premieres signed out', () => {
-    expect(locationFor(null)).toBe('/calendars/premieres');
+    expect(redirectFor(null)?.location).toBe('/calendars/premieres');
+  });
+
+  it("should redirect temporarily, since the target depends on who's signed in", () => {
+    expect(redirectFor(null)?.status).toBe(302);
+    expect(redirectFor('fake-token')?.status).toBe(302);
   });
 });

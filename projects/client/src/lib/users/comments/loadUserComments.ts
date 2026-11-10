@@ -1,6 +1,7 @@
 import type { CommentResponse } from '@trakt/api';
 import { error } from '@sveltejs/kit';
 import { api } from '../../api/api.ts';
+import { signInRedirect } from '../../auth/signInRedirect.ts';
 import { extractPageMeta } from '../../api/extractPageMeta.ts';
 import type { ProfileUser } from '../ProfileUser.ts';
 import { likedCommentRowsSchema } from './likedCommentRowsSchema.ts';
@@ -66,7 +67,6 @@ async function fetchWritten({
 
 // API. It answers 500 without a signed-in viewer (its cache key reads `current_user.id`), so it always sends one.
 async function fetchLiked({ fetch, token, id, page, limit }: Request): Promise<Listing> {
-  if (!token) return { status: 'empty' };
   const response = await api({ fetch, token }).users.likes({
     params: { id: encodeURIComponent(id), type: 'comments' },
     query: { extended: 'comments,full', page, limit },
@@ -97,6 +97,7 @@ async function fetchParents(fetch: typeof globalThis.fetch, comments: readonly U
  * public reads, sent with the token only for a private profile the frame already let the viewer see.
  */
 export async function loadUserComments({ fetch, parent, locals, params, url, liked = false }: Params) {
+  if (liked && !locals.token) signInRedirect(url);
   const commentType = liked ? 'all' : (params.comment_type ?? 'all');
   const type = liked ? 'all' : (params.type ?? 'all');
   const current = positiveInt(url.searchParams.get('page'), 1);

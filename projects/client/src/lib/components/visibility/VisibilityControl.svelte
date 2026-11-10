@@ -1,9 +1,8 @@
 <script lang="ts">
+import { requireSignIn } from '#lib/auth/requireSignIn.ts';
 import { page } from '$app/state';
 import { type ComponentProps, type Snippet, tick } from 'svelte';
 import { rawApiFetch } from '#lib/api/rawApiFetch.ts';
-import { userManager } from '#lib/auth/userManager.ts';
-import { login } from '#lib/auth/login.ts';
 import { overlay } from '#lib/overlay/overlay.ts';
 import { toast } from '#lib/components/toast/toast.svelte.ts';
 import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
@@ -106,7 +105,7 @@ const label = $derived(
 const instant = $derived(watchDateInstant(value, dates.timeZone));
 async function open() {
   if (busy) return;
-  if (!(await userManager().getUser())?.access_token) return login('gate');
+  if (!(await requireSignIn())) return;
   if (action === 'rewatch' && !page.data.user?.isVip) {
     globalThis.open(traktUrls.vip, '_blank', 'noopener');
     return;

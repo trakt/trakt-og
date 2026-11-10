@@ -1,9 +1,8 @@
 <script lang="ts">
+import { requireSignIn } from '#lib/auth/requireSignIn.ts';
 import { page } from '$app/state';
 import type { ComponentProps } from 'svelte';
 import { rawApiFetch } from '#lib/api/rawApiFetch.ts';
-import { login } from '#lib/auth/login.ts';
-import { userManager } from '#lib/auth/userManager.ts';
 import { overlay } from '#lib/overlay/overlay.ts';
 import { toast } from '#lib/components/toast/toast.svelte.ts';
 import RatingPopover from '#lib/components/rating/RatingPopover.svelte';
@@ -27,9 +26,7 @@ const locked = $derived(watchedFirst(userState, 'rate'));
 const hint = (rating: number | null) => (rating ? 'Change your rating' : `Rate this ${target.type}`);
 
 async function open() {
-  if ((await userManager().getUser())?.access_token) return true;
-  await login('gate');
-  return false;
+  return requireSignIn();
 }
 
 async function rate(rating: number | null) {

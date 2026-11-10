@@ -6,8 +6,7 @@
     <AdvancedFiltersToggle bind:open controls="chart-filters" active count={3} />
 -->
 <script lang="ts">
-import { page } from '$app/state';
-import { login } from '#lib/auth/login.ts';
+import { requireSignIn } from '#lib/auth/requireSignIn.ts';
 import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
 import Icon from '#lib/icons/Icon.svelte';
 import caretRight from '#lib/icons/solid/caret-right.svg?raw';
@@ -27,9 +26,8 @@ interface Props {
 
 let { open = $bindable(), controls, active, count, button = $bindable() }: Props = $props();
 
-function toggle() {
-  if (page.data.user) open = !open;
-  else login('gate');
+async function toggle() {
+  if (await requireSignIn()) open = !open;
 }
 
 function onkeydown(event: KeyboardEvent) {

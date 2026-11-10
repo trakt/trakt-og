@@ -1,9 +1,9 @@
 <script lang="ts">
+import { requireSignIn } from '#lib/auth/requireSignIn.ts';
 import { goto } from '$app/navigation';
 import { resolve } from '$app/paths';
 import { page } from '$app/state';
 import { tick } from 'svelte';
-import { login } from '#lib/auth/login.ts';
 import { AnalyticsEvent } from '#lib/analytics/AnalyticsEvent.ts';
 import { useTrack } from '#lib/analytics/useTrack.ts';
 import { rawApiFetch } from '#lib/api/rawApiFetch.ts';
@@ -100,10 +100,7 @@ const read = (target: NonNullable<Parameters<typeof transferListItems>[0]['desti
   });
 async function open() {
   if (busy || otherBusy) return;
-  if (!page.data.user) {
-    await login('gate');
-    return;
-  }
+  if (!(await requireSignIn())) return;
   busy = true;
   onbusychange(true);
   try {

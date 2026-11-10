@@ -1,9 +1,8 @@
 <script lang="ts">
+import { requireSignIn } from '#lib/auth/requireSignIn.ts';
 import { episodeBatchState } from '#lib/components/history/episodeBatchState.ts';
 import { page } from '$app/state';
 import { rawApiFetch } from '#lib/api/rawApiFetch.ts';
-import { login } from '#lib/auth/login.ts';
-import { userManager } from '#lib/auth/userManager.ts';
 import { overlay } from '#lib/overlay/overlay.ts';
 import { toast } from '#lib/components/toast/toast.svelte.ts';
 import WatchPopover from '#lib/components/history/WatchPopover.svelte';
@@ -98,10 +97,7 @@ async function collect(collectedAt: string | null | undefined, force = false) {
   }
 }
 async function open(force: boolean): Promise<'date' | 'remove' | 'partial' | null> {
-  if (!(await userManager().getUser())?.access_token) {
-    await login('gate');
-    return null;
-  }
+  if (!(await requireSignIn())) return null;
   draft = viewerState.collectionMetadata;
   if (!LIBRARY_ADDING) return fill.collected > 0 || onremove ? 'remove' : null;
   return onremove && !force

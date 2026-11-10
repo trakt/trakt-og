@@ -1,9 +1,8 @@
 <script lang="ts">
+import { requireSignIn } from '#lib/auth/requireSignIn.ts';
 import { episodeBatchState } from '#lib/components/history/episodeBatchState.ts';
 import { page } from '$app/state';
 import { rawApiFetch } from '#lib/api/rawApiFetch.ts';
-import { login } from '#lib/auth/login.ts';
-import { userManager } from '#lib/auth/userManager.ts';
 import { overlay } from '#lib/overlay/overlay.ts';
 import { refreshSoon } from '#lib/overlay/refreshSoon.ts';
 import { checkin } from '#lib/components/checkin/checkin.svelte.ts';
@@ -193,10 +192,7 @@ function checkUpTo() {
     .catch(() => (upTo = undefined));
 }
 async function open(force: boolean): Promise<'date' | 'remove' | 'partial' | null> {
-  if (!(await userManager().getUser())?.access_token) {
-    await login('gate');
-    return null;
-  }
+  if (!(await requireSignIn())) return null;
   const action = watchAction({ fill: onremove ? 1 : fill.watched, force, defaultAt, rewatchNext: target.rewatchNext });
   if (action === 'date' || action === 'remove') checkUpTo();
   if (action === 'date' || action === 'remove' || action === 'partial') return action;

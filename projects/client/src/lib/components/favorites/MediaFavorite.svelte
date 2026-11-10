@@ -1,9 +1,8 @@
 <script lang="ts">
+import { requireSignIn } from '#lib/auth/requireSignIn.ts';
 import { page } from '$app/state';
 import type { Snippet } from 'svelte';
 import { rawApiFetch } from '#lib/api/rawApiFetch.ts';
-import { login } from '#lib/auth/login.ts';
-import { userManager } from '#lib/auth/userManager.ts';
 import NotesDialog from '#lib/components/notes/NotesDialog.svelte';
 import { watchedFirst } from '#lib/components/rating/watchedFirst.ts';
 import { toast } from '#lib/components/toast/toast.svelte.ts';
@@ -71,10 +70,7 @@ const request = (method: 'POST' | 'PUT') => (path: string, body?: unknown) =>
 
 async function toggle() {
   if (busy || saving || locked) return;
-  if (!await userManager().getUser()) {
-    await login('gate');
-    return;
-  }
+  if (!(await requireSignIn())) return;
   busy = true;
   const remove = Boolean(membership.favorited);
   const loading = remove ? undefined : loadFavoriteTarget(target);

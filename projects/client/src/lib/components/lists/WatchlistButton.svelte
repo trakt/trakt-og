@@ -3,9 +3,8 @@
   list picker, whatever other lists it's on. Signed out, it asks to sign in first.
 -->
 <script lang="ts">
+import { requireSignIn } from '#lib/auth/requireSignIn.ts';
 import { rawApiFetch } from '#lib/api/rawApiFetch.ts';
-import { login } from '#lib/auth/login.ts';
-import { userManager } from '#lib/auth/userManager.ts';
 import GlassAction from '#lib/components/glass-action/GlassAction.svelte';
 import type { ListTarget } from '#lib/components/lists/ListTarget.ts';
 import { toggleListItem } from '#lib/components/lists/toggleListItem.ts';
@@ -27,10 +26,7 @@ const request = (path: string, body: unknown) =>
 
 async function toggle() {
   if (busy) return;
-  if (!(await userManager().getUser())?.access_token) {
-    await login('gate');
-    return;
-  }
+  if (!(await requireSignIn())) return;
   busy = true;
   try {
     await toggleListItem({ target, list: null, remove: watchlisted, overlay, request, notify: toast });

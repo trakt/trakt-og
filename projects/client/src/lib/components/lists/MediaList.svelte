@@ -1,10 +1,9 @@
 <script lang="ts">
+import { requireSignIn } from '#lib/auth/requireSignIn.ts';
 import { isStandardApi } from '#lib/api/isStandardApi.ts';
 import { page } from '$app/state';
 import { tick } from 'svelte';
 import { rawApiFetch } from '#lib/api/rawApiFetch.ts';
-import { userManager } from '#lib/auth/userManager.ts';
-import { login } from '#lib/auth/login.ts';
 import { overlay } from '#lib/overlay/overlay.ts';
 import { toast } from '#lib/components/toast/toast.svelte.ts';
 import { listCatalog } from '#lib/components/lists/listCatalog.svelte.ts';
@@ -138,10 +137,7 @@ async function load() {
 }
 async function open(force = false) {
   if (busy) return;
-  if (!(await userManager().getUser())?.access_token) {
-    await login('gate');
-    return;
-  }
+  if (!(await requireSignIn())) return;
   busy = true;
   try {
     // A quick add needs no lists: the overlay already knows whether it's on the watchlist.

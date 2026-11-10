@@ -6,12 +6,11 @@
   until the next load. The summary box takes the request deck's green tint.
 -->
 <script lang="ts">
+import { requireSignIn } from '#lib/auth/requireSignIn.ts';
 import { tick } from 'svelte';
 import { page } from '$app/state';
 import { rawApiFetch } from '#lib/api/rawApiFetch.ts';
 import { createRequestQueue } from '#lib/api/createRequestQueue.ts';
-import { userManager } from '#lib/auth/userManager.ts';
-import { login } from '#lib/auth/login.ts';
 import { changeRelationship } from '#lib/users/changeRelationship.ts';
 import { createRelationshipOverlay } from '#lib/users/createRelationshipOverlay.svelte.ts';
 import { toast } from '#lib/components/toast/toast.svelte.ts';
@@ -71,7 +70,7 @@ const send = (request: Request, action: 'approve' | 'deny' | 'blockRequest') =>
   });
 async function approveAll() {
   if (approving) return;
-  if (!(await userManager().getUser())?.access_token) return login('gate');
+  if (!(await requireSignIn())) return;
   const queue = pending;
   approving = { done: 0, total: queue.length };
   for (const request of queue) {
@@ -89,7 +88,7 @@ async function approveAll() {
   if (pending.length === 0) heading?.focus();
 }
 async function decide(request: Request, action: 'approve' | 'deny' | 'blockRequest') {
-  if (!(await userManager().getUser())?.access_token) return login('gate');
+  if (!(await requireSignIn())) return;
   await send(request, action);
 }
 </script>

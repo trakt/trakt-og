@@ -77,6 +77,8 @@ export async function loadCalendar({
   const ranges = calendarRanges(window.request.start_date, window.request.days);
   const filterConfig = calendarFilters({ slug, now });
   const filters = fromFilterDraft(toFilterDraft(parseAdvancedFilters(url.searchParams), filterConfig), filterConfig);
+  // Advanced filters are for members: a signed-out link with them signs in and comes back filtered.
+  if (!token && hasAdvancedFilters(filters)) signInRedirect(url);
   const query = advancedFiltersQuery(filters);
   const watchnow = calendarWatchNow(settings);
   const sources =

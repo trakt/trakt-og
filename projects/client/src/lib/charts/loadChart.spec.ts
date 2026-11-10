@@ -251,9 +251,17 @@ describe('loadChart advanced filters', () => {
       return HttpResponse.json([{ watcher_count: 3, play_count: 4, show: SHOW }]);
     });
 
+  it('should send a signed-out viewer with filters in the URL to sign in without calling the API', async () => {
+    server.use(chart());
+    expect(await redirectOf(watched(null, 'genres=drama'))).toBe(
+      '/signin?redirect_to=%2Fshows%2Fwatched%2Fmonthly%3Fgenres%3Ddrama',
+    );
+    expect(seen).toHaveLength(0);
+  });
+
   it("should send the URL's filters to the chart in the API's spelling", async () => {
     server.use(chart());
-    const data = await watched(null, 'genres=+drama,+comedy&status=-ended&years=2000-2010&page=2');
+    const data = await watched('fake-token', 'genres=+drama,+comedy&status=-ended&years=2000-2010&page=2');
 
     const query = new URL(chartRequest()?.url ?? '').searchParams;
     expect(query.get('genres')).toBe('drama,comedy');
@@ -275,7 +283,7 @@ describe('loadChart advanced filters', () => {
         });
       }),
     );
-    const data = await watched(null, 'genres=+drama');
+    const data = await watched('fake-token', 'genres=+drama');
 
     const unfiltered = seen.map((request) => new URL(request.url).searchParams).find((query) => !query.has('genres'));
     expect(unfiltered?.get('limit')).toBe('1');

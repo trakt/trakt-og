@@ -1,11 +1,13 @@
 <!--
   OG's funnel: slides the advanced filter panel
   out and back. Its caret points the way the panel will move, it turns red while filters are on, and `count` puts
-  OG's `.filter-counter` badge on it. `a` toggles it too, except while typing. It sits in a sidebar's tool row,
-  beside the filter eye.
+  OG's `.filter-counter` badge on it. `a` toggles it too, except while typing. Signed out, either one signs in and
+  comes back. It sits in a sidebar's tool row, beside the filter eye.
     <AdvancedFiltersToggle bind:open controls="chart-filters" active count={3} />
 -->
 <script lang="ts">
+import { page } from '$app/state';
+import { login } from '#lib/auth/login.ts';
 import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
 import Icon from '#lib/icons/Icon.svelte';
 import caretRight from '#lib/icons/solid/caret-right.svg?raw';
@@ -25,11 +27,16 @@ interface Props {
 
 let { open = $bindable(), controls, active, count, button = $bindable() }: Props = $props();
 
+function toggle() {
+  if (page.data.user) open = !open;
+  else login('gate');
+}
+
 function onkeydown(event: KeyboardEvent) {
   if (event.key !== 'a' || event.altKey || event.ctrlKey || event.metaKey || event.defaultPrevented) return;
   if (event.target instanceof HTMLElement && event.target.closest('input, textarea, select, [contenteditable]')) return;
   event.preventDefault();
-  open = !open;
+  toggle();
 }
 </script>
 
@@ -44,7 +51,7 @@ function onkeydown(event: KeyboardEvent) {
       aria-label={count > 0 ? `Advanced Filters (${count} on)` : 'Advanced Filters'}
       aria-expanded={open}
       aria-controls={controls}
-      onclick={() => (open = !open)}
+      onclick={toggle}
       {...tooltip}
     >
       <span class="funnel"><Icon svg={filtersIcon} />{#if count > 0}<span class="badge" aria-hidden="true"

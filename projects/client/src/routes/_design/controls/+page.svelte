@@ -178,7 +178,7 @@ function showOverlay() {
 {/snippet}
 
 <Specimen title="Sidebar tools" bleed
-  note="A chart or calendar sidebar's eye and funnel, right of the page title, or stacked in the collapsed rail. The funnel (or the a key) opens the filters panel; the streaming services shimmer until they load, and Networks searches as you type. On a chart a smart list can come from, a signed-in member also gets Save before Reset; a calendar's Save keeps them as a saved filter.">
+  note="A chart or calendar sidebar's eye and funnel, right of the page title, or stacked in the collapsed rail. The funnel (or the a key) opens the filters panel, or signs a signed-out visitor in first; the streaming services shimmer until they load, and Networks searches as you type. On a chart a smart list can come from, a signed-in member also gets Save before Reset; a calendar's Save keeps them as a saved filter.">
   <div class="knob">
     <DemoToggle bind:checked={collapsed}>Collapsed rail</DemoToggle>
     <DemoToggle bind:checked={savable}>Save</DemoToggle>

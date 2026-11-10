@@ -135,10 +135,10 @@ describe('loadCalendar', () => {
   );
 
   it('should send supported filters to the API and apply terms locally without removing dates', async () => {
+    server.use(http.get(`${API}/users/hidden/calendar`, () => HttpResponse.json([])));
     const data = await load({
       target: 'all',
       slug: 'movies',
-      token: null,
       search:
         '?query=Movie%208&genres=+drama,+comedy&ratings=70-100&episode_types=series_premiere&status=ended&years=2000-2010',
     });
@@ -155,11 +155,18 @@ describe('loadCalendar', () => {
   });
 
   it('should count the month without filters alongside a filtered one, for the sidebar', async () => {
-    const data = await load({ target: 'all', slug: 'movies', token: null, search: '?genres=drama' });
+    server.use(http.get(`${API}/users/hidden/calendar`, () => HttpResponse.json([])));
+    const data = await load({ target: 'all', slug: 'movies', search: '?genres=drama' });
     const requests = seen.filter((request) => new URL(request.url).pathname.startsWith('/calendars/all/movies/'));
     expect(requests.map((request) => new URL(request.url).searchParams.get('genres'))).toEqual(['drama', null]);
     expect(data.totals).toEqual({ episodes: 0, movies: 2 });
     expect((await load({ target: 'all', slug: 'movies', token: null })).totals).toBeUndefined();
+  });
+
+  it('should send a signed-out viewer with filters in the URL to sign in without calling the API', async () => {
+    const data = load({ target: 'all', slug: 'movies', token: null, search: '?genres=drama' });
+    expect(await redirectOf(data)).toBe('/signin?redirect_to=%2Fcalendars%2Fmovies%3Fgenres%3Ddrama');
+    expect(requestTo('/calendars/all/movies/')).toBeUndefined();
   });
 
   it("should read the viewer's display choices from their cookies", async () => {

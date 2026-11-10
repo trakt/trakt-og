@@ -1,4 +1,5 @@
 import { error, redirect } from '@sveltejs/kit';
+import { signInOrNotFound } from '../auth/signInOrNotFound.ts';
 import { readListFilters } from './readListFilters.ts';
 import { loadListFilterSources } from './loadListFilterSources.ts';
 import type { ViewerSettings } from '../settings/ViewerSettings.ts';
@@ -16,7 +17,7 @@ import { fetchSmartListDraft } from './smart/fetchSmartListDraft.ts';
 type Params = {
   cookies?: { get: (name: string) => string | undefined };
   fetch: typeof globalThis.fetch;
-  locals: { token: string | null };
+  locals: { token: string | null; crawler?: App.Locals['crawler'] };
   params: { id: string; list: string };
   url: URL;
   parent: () => Promise<{
@@ -68,7 +69,7 @@ export async function loadList({ fetch, locals, params, url, parent, cookies }: 
       ? await fetchSummary(api({ fetch, token }), { id: params.id, list: params.list })
       : null;
   const summary = viewerSummary?.status === 200 ? viewerSummary : anonymousSummary;
-  if (!summary || [204, 401, 403, 404].includes(summary.status)) error(404, 'Page Not Found');
+  if (!summary || [204, 401, 403, 404].includes(summary.status)) signInOrNotFound({ locals, url });
   if (summary.status !== 200) error(502, 'Trakt is having trouble loading this list.');
 
   const list = toListView(summary.body);

@@ -1,7 +1,7 @@
-import { error } from '@sveltejs/kit';
 import { z } from 'zod/v4';
 import { api } from '../../api/api.ts';
 import { assertOk } from '../../api/assertOk.ts';
+import { signInOrNotFound } from '../../auth/signInOrNotFound.ts';
 import { extractPageMeta } from '../../api/extractPageMeta.ts';
 import { rawApiFetch } from '../../api/rawApiFetch.ts';
 import type { DatePreferences } from '../../settings/DatePreferences.ts';
@@ -21,7 +21,7 @@ import { toSmartList } from './toSmartList.ts';
 
 type Params = {
   fetch: typeof globalThis.fetch;
-  locals: { token: string | null };
+  locals: { token: string | null; crawler?: App.Locals['crawler'] };
   params: { id: string; slug: string };
   url: URL;
   parent: () => Promise<{
@@ -79,7 +79,9 @@ export async function loadSmartList({ fetch, locals, params, url, parent }: Para
     withViewer(token, (viewer) => fetchItems({ fetch, token: viewer, slug: params.slug, sort, page: query.page })),
     parent(),
   ]);
-  if (profile.isLocked || [204, 401, 403, 404].includes(summary.status)) error(404, 'Smart list not found');
+  if (profile.isLocked || [204, 401, 403, 404].includes(summary.status)) {
+    signInOrNotFound({ locals, url, message: 'Smart list not found' });
+  }
   assertOk(summary, 'Smart list');
   assertOk(items, 'Smart list');
 

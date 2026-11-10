@@ -217,15 +217,22 @@ describe('loadList', () => {
     await expect(load({ token: 'abc' })).rejects.toMatchObject({ status: 502 });
   });
 
-  it('should 404 a list the viewer cannot see', async () => {
+  it('should send a signed-out visitor to sign in for a list they cannot see, which may be theirs', async () => {
     privacy = 'private';
-    await expect(load()).rejects.toMatchObject({ status: 404 });
-    await expect(load({ list: 'missing' })).rejects.toMatchObject({ status: 404 });
+    await expect(load()).rejects.toMatchObject({
+      status: 302,
+      location: expect.stringMatching(/^\/signin\?redirect_to=/),
+    });
+    await expect(load({ list: 'missing' })).rejects.toMatchObject({ status: 302 });
   });
 
-  it('should 404 a list whose summary answers 401', async () => {
+  it('should 404 a list a signed-in viewer cannot see', async () => {
+    privacy = 'private';
+    await expect(load({ token: 'abc', list: 'missing' })).rejects.toMatchObject({ status: 404 });
+  });
+
+  it('should 404 a list whose summary answers 401 for a token that stopped working', async () => {
     server.use(http.get(`${API}/users/sean/lists/:list`, () => new HttpResponse('Unauthorized', { status: 401 })));
-    await expect(load()).rejects.toMatchObject({ status: 404 });
     await expect(load({ token: 'stale' })).rejects.toMatchObject({ status: 404 });
   });
 

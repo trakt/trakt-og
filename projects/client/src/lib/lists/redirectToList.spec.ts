@@ -22,7 +22,8 @@ const server = setupServer(
 beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterAll(() => server.close());
 
-const go = (id: string, token: string | null = null) => redirectToList({ fetch, locals: { token }, params: { id } });
+const go = (id: string, token: string | null = null) =>
+  redirectToList({ fetch, locals: { token }, params: { id }, url: new URL(`https://og.trakt.tv/lists/${id}`) });
 
 describe('redirectToList', () => {
   it('should 301 each list type to its page', async () => {
@@ -37,7 +38,11 @@ describe('redirectToList', () => {
     await expect(go('3', 'abc')).rejects.toMatchObject({ status: 301, location: '/users/sean/watchlist' });
   });
 
-  it('should 404 a list the viewer cannot see', async () => {
-    await expect(go('3')).rejects.toMatchObject({ status: 404 });
+  it('should send a signed-out visitor to sign in for a list they cannot see', async () => {
+    await expect(go('3')).rejects.toMatchObject({ status: 302, location: '/signin?redirect_to=%2Flists%2F3' });
+  });
+
+  it('should 404 a list the signed-in viewer still cannot see', async () => {
+    await expect(go('404', 'abc')).rejects.toMatchObject({ status: 404 });
   });
 });

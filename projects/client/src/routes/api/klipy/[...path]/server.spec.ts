@@ -3,9 +3,12 @@ import { describe, expect, it, vi } from 'vitest';
 import { env } from '../../../../test/cloudflareWorkers.ts';
 import { GET, POST } from './+server.ts';
 
-type Call = { path: string; search?: string; key?: string; body?: string };
+type Call = { path: string; search?: string; key?: string; body?: string; token?: string | null; expired?: boolean };
 
-function call(method: 'GET' | 'POST', { path, search = '', key = 'secret', body }: Call) {
+function call(
+  method: 'GET' | 'POST',
+  { path, search = '', key = 'secret', body, token = 'fake-token', expired = false }: Call,
+) {
   env.KLIPY_API_KEY = key;
   const fetch = vi.fn((_url: string, _init?: RequestInit) => Promise.resolve(Response.json({ ok: true })));
   const request = new Request(`https://og.test/api/klipy/${path}${search}`, {
@@ -17,6 +20,7 @@ function call(method: 'GET' | 'POST', { path, search = '', key = 'secret', body 
     url: new URL(request.url),
     request,
     fetch,
+    locals: { token, tokenExpired: expired },
   } as unknown as RequestEvent;
   return { fetch, response: (method === 'POST' ? POST : GET)(event) as Promise<Response> };
 }
@@ -34,6 +38,17 @@ describe('/api/klipy', () => {
     await response;
     expect(fetch.mock.calls[0]?.[0]).toBe('https://api.klipy.com/api/v1/secret/gifs/share/happy-dance');
     expect(fetch.mock.calls[0]?.[1]).toMatchObject({ method: 'POST', body });
+  });
+
+  it('should answer 401 without a signed-in viewer', async () => {
+    const { fetch, response } = call('GET', { path: 'gifs/trending', token: null });
+    await expect(response).rejects.toMatchObject({ status: 401 });
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it('should forward for a viewer whose token the browser is renewing', async () => {
+    const { response } = call('GET', { path: 'gifs/trending', token: null, expired: true });
+    expect((await response).status).toBe(200);
   });
 
   it.each([

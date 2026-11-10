@@ -59,7 +59,7 @@ const fanart = 'https://media.trakt.tv/images/shows/000/167/187/fanarts/full/88e
 
 <div class="cards">
   <Specimen title="Viewer"
-    note="Who the cards below are shown to. Replying, editing, deleting, blocking and reporting all stay on this page.">
+    note="Who the cards below are shown to. Replying, editing, deleting, blocking and reporting all stay on this page. Signed out of og itself, Reply signs in and comes back.">
     <DemoChoice label="View as" options={viewers} bind:value={viewAs} />
   </Specimen>
 
@@ -94,7 +94,8 @@ const fanart = 'https://media.trakt.tv/images/shows/000/167/187/fanarts/full/88e
       <p><AddCommentLink /></p>
       <NewCommentForm item={movie} />
     {:else}
-      <p>Sign in to see the form. Signed out, the page has no form and no Add comment button.</p>
+      <p>Sign in to see the form. Signed out, the page has no form, and Add comment signs in and comes back:
+        <AddCommentLink /></p>
     {/if}
   </Specimen>
 

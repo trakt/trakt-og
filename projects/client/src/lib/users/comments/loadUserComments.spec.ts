@@ -1,3 +1,4 @@
+import { isRedirect } from '@sveltejs/kit';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
@@ -87,7 +88,7 @@ const load = (options: Options = {}) =>
       }),
     locals: { token: options.token ?? null },
     params: { id: 'tester', ...options.params },
-    url: new URL(`https://og.trakt.tv/users/tester/comments${options.query ?? ''}`),
+    url: new URL(`https://og.trakt.tv/users/tester/comments${options.liked ? '/liked' : ''}${options.query ?? ''}`),
     liked: options.liked,
   });
 
@@ -139,11 +140,11 @@ describe('loadUserComments', () => {
   });
 
   describe('for liked comments', () => {
-    it('should not ask API without a viewer, which it answers with a 500', async () => {
-      const data = await load({ liked: true });
+    it('should send a signed-out viewer to sign in without asking the API, which answers a 500', async () => {
+      const thrown = await load({ liked: true }).catch((caught: unknown) => caught);
 
+      expect(isRedirect(thrown) && thrown.location).toBe('/signin?redirect_to=%2Fusers%2Ftester%2Fcomments%2Fliked');
       expect(listingRequests()).toHaveLength(0);
-      expect(data).toMatchObject({ liked: true, entries: [], itemCount: 0 });
     });
 
     it('should read the likes with the token and map them like written comments', async () => {

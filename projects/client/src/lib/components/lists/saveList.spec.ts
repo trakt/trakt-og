@@ -73,14 +73,29 @@ describe('saveList', () => {
     await expect(
       saveList({
         draft,
-        request: () => Promise.resolve(Response.json({ message: 'Too many lists' }, { status: 420 })),
+        request: () => Promise.resolve(Response.json({ error: 'list_limit_reached' }, { status: 420 })),
       }),
-    ).rejects.toMatchObject({ status: 420 });
+    ).rejects.toMatchObject({ status: 420, code: 'list_limit_reached', fields: {} });
     await expect(
       saveList({
         draft,
-        request: () => Promise.resolve(Response.json({ errors: { name: ['Already taken'] } }, { status: 422 })),
+        request: () => Promise.resolve(Response.json({ error: 'list_name_taken' }, { status: 409 })),
       }),
     ).rejects.toBeInstanceOf(ListWriteError);
+  });
+
+  it.each([
+    [409, 'list_name_taken', 'You already have a list with this name.'],
+    [400, 'invalid_request_body', 'Use a name with at least one letter, up to 255 characters.'],
+  ])('should map a %i %s error to the name field', async (status, error, message) => {
+    await expect(
+      saveList({ draft, request: () => Promise.resolve(Response.json({ error }, { status })) }),
+    ).rejects.toMatchObject({ status, code: error, fields: { name: [message] } });
+  });
+
+  it('should leave unknown errors without field messages', async () => {
+    await expect(
+      saveList({ draft, request: () => Promise.resolve(new Response('oops', { status: 500 })) }),
+    ).rejects.toMatchObject({ status: 500, code: '', fields: {} });
   });
 });

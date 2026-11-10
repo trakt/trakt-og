@@ -58,9 +58,9 @@ const count = (n: number) => n.toLocaleString('en-US');
             {#if list.description}<span class="description">{list.description}</span>{/if}
             {#if list.counts}
               <div class="counts">
+                <ListCount svg={file} value={list.counts.items} word="item" href={list.href} />
                 <ListLikeButton id={list.id} ownerSlug={list.ownerSlug} viewer={page.data.user?.slug ?? null}
                   count={list.counts.likes} button />
-                <ListCount svg={file} value={list.counts.items} word="item" href={list.href} />
                 {#if list.counts.comments !== undefined}
                   <ListCount svg={stripStatIcons.comments} iconColor="var(--color-stat-comments)" value={list.counts.comments} word="comment" href="{list.href}/comments" />
                 {/if}

@@ -12,7 +12,7 @@ describe('topListBox', () => {
       likes: '1,840',
       lists: '23 lists',
       title: { text: '80s Horror Essentials', href: '/users/lena/lists/80s-horror-essentials' },
-      line: '1,204 likes · 87 items · 64 comments',
+      line: '87 items · 1,204 likes · 64 comments',
     });
     expect(entry?.view.posters).toHaveLength(3);
   });

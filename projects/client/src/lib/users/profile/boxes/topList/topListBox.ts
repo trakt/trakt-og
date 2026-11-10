@@ -47,8 +47,8 @@ export const topListBox = defineProfileBox({
       posters: (top.images?.posters ?? []).slice(0, 3).flatMap((poster) => imageUrl(poster, 'thumb') ?? []),
       title: { text: top.name, href: `/users/${profile.slug}/lists/${top.ids.slug}` },
       line: [
-        countLabel(top.likes, 'like'),
         countLabel(top.item_count, 'item'),
+        countLabel(top.likes, 'like'),
         countLabel(top.comment_count, 'comment'),
       ].join(' · '),
     };

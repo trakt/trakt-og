@@ -116,9 +116,9 @@ const oneRow: Attachment<HTMLElement> = (node) => {
                 </p>
               </div>
               <div class="counts" {@attach oneRow}>
+                <ListCount svg={file} value={tile.items} word="item" href={tile.href} />
                 <ListLikeButton id={tile.id} ownerSlug={tile.owner.slug} viewer={page.data.user?.slug ?? null}
                   count={tile.likes} button />
-                <ListCount svg={file} value={tile.items} word="item" href={tile.href} />
                 {#if tile.comments !== undefined}
                   <ListCount svg={stripStatIcons.comments} iconColor="var(--color-stat-comments)" value={tile.comments} word="comment" href="{tile.href}/comments" />
                 {/if}

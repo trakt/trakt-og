@@ -1,8 +1,8 @@
 <!--
   The stats bar on the right of a list page's subnav, each count with a tooltip. The icons carry their meaning color
   (purple watched, teal collected, blue for the rest) and the numbers stand alone, the words left to the tooltip:
-  Watched and Collected percentages with "2 / 10 items" in gray in their tooltips (signed in, not on official lists), the
-  time to watch, then the Like button, the items and the comments button, as on a list row but with only its number.
+  Watched and Collected percentages with "2 / 10 items" in gray in their tooltips (signed in), the
+  time to watch, then the items, the Like button and the comments button, as on a list row but with only their numbers.
   The whole-list numbers come in `stats`, a promise when the loader streams them; until then the bar shows the page's
   item count, with shimmers for the percentages and the time.
     <ListStats itemCount={57} stats={data.stats} progress likeCount={3} comments={{ count: 1, href }} />
@@ -29,7 +29,7 @@ interface Props {
   itemCount: number;
   /** Null when the loader couldn't count the whole list: the bar keeps to the counts it has. */
   stats: ListStats | Promise<ListStats | null> | null;
-  /** Watched and Collected: a signed-in viewer on a list that isn't official. */
+  /** Watched and Collected: a signed-in viewer. */
   progress?: boolean;
   /** Left out on the watchlist and favorites, which can't be liked. */
   likeCount?: number;
@@ -105,13 +105,12 @@ const number = (count: number) => count.toLocaleString('en-US');
         {/snippet}
       </Tooltip>
     {/if}
-    <!-- Like comes before the counts, as the list rows' button. -->
+    {@render count('Items', file, resolved?.count ?? itemCount, 'item', 'items')}
+    <!-- Like and Comments, as the list rows' buttons with only their numbers: Comments opens the comments page. -->
     {#if likeCount !== undefined}
-      {#if likeTarget}<ListLikeButton {...likeTarget} count={likeCount} button />
+      {#if likeTarget}<span class="likes"><ListLikeButton {...likeTarget} count={likeCount} button /></span>
       {:else}{@render count('Likes', thumbsUp, likeCount, 'like', 'likes')}{/if}
     {/if}
-    {@render count('Items', file, resolved?.count ?? itemCount, 'item', 'items')}
-    <!-- Comments, like Like, as the list rows' button: it opens the comments page. -->
     {#if comments}<span class="comments"><ListCount svg={stripStatIcons.comments} iconColor="var(--color-stat-comments)"
       value={comments.count} word="comment" href={comments.href} /></span>{/if}
   </div>
@@ -184,6 +183,7 @@ strong {
 }
 
 /* OG showed only the numbers; the words stay for screen readers. */
+.likes :global(.count-text),
 .comments :global(.count-text),
 .hidden {
   position: absolute;

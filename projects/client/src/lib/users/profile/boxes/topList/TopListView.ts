@@ -6,6 +6,6 @@ export type TopListView = {
   /** The most liked list's first three posters. */
   readonly posters: readonly string[];
   readonly title: { readonly text: string; readonly href: string };
-  /** "1,204 likes · 87 items · 64 comments". */
+  /** "87 items · 1,204 likes · 64 comments". */
   readonly line: string;
 };

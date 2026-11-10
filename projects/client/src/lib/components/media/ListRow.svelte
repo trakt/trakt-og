@@ -202,13 +202,13 @@ const blocks = $derived(parseComment(description?.trim() ?? ''));
       {/if}
       <footer class="foot">
         <div class="counts">
+          {#if itemCount !== undefined}<ListCount svg={document} value={itemCount} word="item" {href} />{/if}
+          {#if actions?.chart}<ListCount svg={filtersIcon} iconColor="var(--color-list-open-chart)"
+              label={actions.chart.label} href={actions.chart.href} />{/if}
           {#if likeCount !== undefined}
             {#if likeTarget}<ListLikeButton {...likeTarget} count={likeCount} button />
             {:else}<ListCount svg={voteYes} value={likeCount} word="like" />{/if}
           {/if}
-          {#if itemCount !== undefined}<ListCount svg={document} value={itemCount} word="item" {href} />{/if}
-          {#if actions?.chart}<ListCount svg={filtersIcon} iconColor="var(--color-list-open-chart)"
-              label={actions.chart.label} href={actions.chart.href} />{/if}
           {#if commentCount !== undefined}<ListCount svg={stripStatIcons.comments} iconColor="var(--color-stat-comments)" value={commentCount} word="comment" href="{href}/comments" />{/if}
         </div>
         {#if actions}

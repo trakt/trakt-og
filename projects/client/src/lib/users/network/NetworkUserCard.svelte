@@ -3,10 +3,11 @@
   years on the VIP label, so a VIP's card asks their profile for them, once. Someone the viewer follows turns live from
   the page's one call for everyone they follow. Anyone else's card asks what they're watching once their follow state
   is in, then again every 2 minutes while the card is on screen and the tab is visible, and turns live in place when
-  they are. Scrolling back to a card checked in the last 2 minutes asks nothing.
+  they are. Scrolling back to a card checked in the last 2 minutes asks nothing. Signed out, no card asks.
     <NetworkUserCard {user} {relation} canFollow={data.canFollow} />
 -->
 <script lang="ts">
+import { page } from '$app/state';
 import { untrack } from 'svelte';
 import { apiQueue } from '#lib/api/apiQueue.ts';
 import { rawApiFetch } from '#lib/api/rawApiFetch.ts';
@@ -69,7 +70,7 @@ $effect(() => {
 });
 
 $effect(() => {
-  if (!visible || pending || followed) return;
+  if (!visible || pending || followed || !page.data.user) return;
 
   const member = {
     key: user.username,

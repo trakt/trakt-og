@@ -11,6 +11,7 @@ import Specimen from '#lib/design/Specimen.svelte';
 import Variant from '#lib/design/Variant.svelte';
 import star from '#lib/icons/regular/star.svg?raw';
 import FavoriteCard from '#lib/components/users/FavoriteCard.svelte';
+import GhostProfile from '#lib/components/users/GhostProfile.svelte';
 import MostWatched from '#lib/components/users/MostWatched.svelte';
 import ProfileCharts from '#lib/components/users/ProfileCharts.svelte';
 import ProfileSectionShimmer from '#lib/components/loading/ProfileSectionShimmer.svelte';
@@ -389,6 +390,11 @@ const liveCards = [
 
 <Specimen title="Welcome hero" bleed note="For a member who hasn't set a name yet.">
   <WelcomeHero displayName="leela" named={false} slug="leela" />
+</Specimen>
+
+<Specimen title="Ghost profile" bleed
+  note="Someone else's public profile with no history, favorites, genres or comments. It replaces every section under the frame. The outlines stay still so it never looks like it's loading.">
+  <GhostProfile name="Themlethem" />
 </Specimen>
 
 <Specimen title="Charts" bleed

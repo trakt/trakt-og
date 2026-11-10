@@ -102,7 +102,8 @@ async function fetchSections(
 type Streamed = Awaited<ReturnType<typeof fetchSections>>['streamed'];
 
 /**
- * The profile page under the frame: the stat boxes or the welcome hero, favorites, the
+ * The profile page under the frame: the stat boxes or the welcome hero (the ghost profile on someone else's with
+ * nothing to show), favorites, the
  * recently watched rows, the genre and ratings charts, the most watched columns and the newest comments, read once per
  * `readProfileTab`: someone else's public profile goes without the token alongside the frame's load, and your own, or a
  * private profile you may see, is read with it. On your own profile your saved favorites sort, most watched sorts and
@@ -139,6 +140,7 @@ export async function loadProfile({ fetch, locals, params, parent, now = new Dat
     return {
       boxes: null,
       welcome: false,
+      ghost: false,
       favorites: [],
       episodes: [],
       movies: [],
@@ -181,6 +183,7 @@ export async function loadProfile({ fetch, locals, params, parent, now = new Dat
           return boxes ? streamBoxes(boxes, sections.streamed, loaded) : null;
         }) ?? null),
     welcome: isSelf && !active,
+    ghost: !isSelf && !active && favorites.length + comments.length + sections.genres.length === 0,
     favorites: favorites.map(toFavoriteCard),
     episodes: episodes.map((row) => toWatchedEpisode(row, datePreferences)),
     movies: movies.map((row) => toWatchedMovie(row, datePreferences)),

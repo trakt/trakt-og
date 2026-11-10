@@ -159,7 +159,7 @@ export const designCatalog: readonly DesignGroup[] = [
         slug: 'users',
         title: 'Profiles',
         summary:
-          'The profile frame in every follow, watching and lock state, the favorites panel, charts, most watched and user cards.',
+          'The profile frame in every follow, watching and lock state, the favorites panel, the ghost profile, charts, most watched and user cards.',
         source: 'components/users',
       },
       {

@@ -133,6 +133,16 @@ describe('loadProfile', () => {
     expect(progress()).toHaveLength(0);
   });
 
+  it("should show the ghost profile only on someone else's profile with nothing on it", async () => {
+    expect(await load({ stats: stats(0) })).toMatchObject({ ghost: true, welcome: false });
+    expect(await load({ stats: null })).toMatchObject({ ghost: true });
+    expect(await load({ stats: stats(0), isSelf: true })).toMatchObject({ ghost: false, welcome: true });
+    expect(await load()).toMatchObject({ ghost: false });
+
+    server.use(http.get('https://apiz.trakt.tv/users/tester/watched/genres', () => HttpResponse.json([genre])));
+    expect(await load({ stats: stats(0) })).toMatchObject({ ghost: false });
+  });
+
   it('should show the welcome hero instead of the boxes on your own empty profile', async () => {
     expect(await load({ stats: stats(0), isSelf: true })).toMatchObject({ boxes: null, welcome: true });
     expect(await load({ stats: stats(0) })).toMatchObject({ boxes: null, welcome: false });

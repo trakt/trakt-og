@@ -1922,6 +1922,18 @@
   --shadow-favorite-poster: 0 0 10px 0 rgb(0 0 0 / 0.25);
   --color-favorites-bg: light-dark(var(--gray-lighter), var(--dk-bg2));
   --color-favorite-type: rgb(0 0 0 / 0.3);
+  /* GhostProfile: someone else's empty profile, still outlines fading out under one centred line. */
+  --ghost-profile-padding-block: 30px 50px;
+  --ghost-profile-gap: 22px;
+  --ghost-profile-heading-width: 260px;
+  --ghost-profile-heading-height: 16px;
+  --ghost-profile-fade: linear-gradient(#000 0 30%, transparent 100%);
+  --ghost-profile-message-gap: 10px;
+  --ghost-profile-text-width: 420px;
+  --color-ghost-profile-shape: light-dark(rgb(0 0 0 / 0.03), rgb(255 255 255 / 0.03));
+  --shadow-ghost-profile-text: 0 2px 12px light-dark(#fff, #000);
+  --font-size-ghost-profile-title: var(--font-size-h2);
+  --font-size-ghost-profile-text: 16px;
   --welcome-hero-padding-block: 70px 50px;
   --welcome-steps-indent: 40px;
   --welcome-step-marker: 32px;

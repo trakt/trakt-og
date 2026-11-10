@@ -1,6 +1,6 @@
 <!--
   The profile page under the frame: the stat boxes, or the welcome hero on your own empty
-  profile, then favorites (only when there are some), the recently watched episodes and movies, the genre and ratings charts, the most watched
+  profile, or only the ghost profile on someone else's with nothing on it. Otherwise favorites (only when there are some), the recently watched episodes and movies, the genre and ratings charts, the most watched
   shows and movies, and the newest comments. The boxes and Most Watched stream in, holding their places with shimmers.
 -->
 <script lang="ts">
@@ -17,6 +17,7 @@ import PosterCard from '#lib/components/media/PosterCard.svelte';
 import PosterGrid from '#lib/components/media/PosterGrid.svelte';
 import { quickIconFill } from '#lib/components/media/quickIconFill.ts';
 import FavoriteCard from '#lib/components/users/FavoriteCard.svelte';
+import GhostProfile from '#lib/components/users/GhostProfile.svelte';
 import MostWatched from '#lib/components/users/MostWatched.svelte';
 import ProfileCharts from '#lib/components/users/ProfileCharts.svelte';
 import WelcomeHero from '#lib/components/users/WelcomeHero.svelte';
@@ -91,6 +92,9 @@ const viewer = $derived(data.user ? { slug: data.user.slug } : null);
   slug={data.profile.slug} />
 {/if}
 
+{#if data.ghost}
+  <GhostProfile name={data.profile.displayName} />
+{:else}
 <!-- No favorites, no panel. -->
 {#if data.favorites.length > 0}
   <DashboardPanel
@@ -165,6 +169,7 @@ const viewer = $derived(data.user ? { slug: data.user.slug } : null);
     <div class="empty"><EmptyState /></div>
   {/if}
 </DashboardPanel>
+{/if}
 
 <style>
 .comments {

@@ -22,6 +22,7 @@ type Options = {
   sort?: string;
   query?: string;
   token?: string | null;
+  expired?: boolean;
   isSelf?: boolean;
   signedIn?: boolean;
   viewerSettings?: ViewerSettings | null;
@@ -32,6 +33,7 @@ const load = ({
   sort,
   query = '',
   token = 'token',
+  expired = false,
   isSelf = true,
   signedIn = true,
   viewerSettings = null,
@@ -39,7 +41,7 @@ const load = ({
 }: Options = {}) =>
   loadProgress({
     fetch: () => Promise.resolve(Response.json({}, { status: 404 })),
-    locals: { token },
+    locals: { token, tokenExpired: expired },
     params: { id: 'tester', type, sort },
     url: new URL(`https://og.trakt.tv/users/tester/progress${query}`),
     cookies: {
@@ -57,8 +59,12 @@ const load = ({
   });
 
 describe('loadProgress', () => {
-  it('should send a signed-out viewer to sign in and back', async () => {
-    await expect(load({ token: null, query: '?page=2' })).rejects.toMatchObject({
+  it("should send a signed-out visitor to the member's profile", async () => {
+    await expect(load({ token: null })).rejects.toMatchObject({ status: 302, location: '/users/tester' });
+  });
+
+  it('should send an expired token to sign in and back', async () => {
+    await expect(load({ token: null, expired: true, query: '?page=2' })).rejects.toMatchObject({
       status: 302,
       location: '/signin?redirect_to=%2Fusers%2Ftester%2Fprogress%3Fpage%3D2',
     });

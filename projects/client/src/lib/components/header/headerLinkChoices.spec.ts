@@ -6,8 +6,10 @@ describe('headerLinkChoices', () => {
   const choices = headerLinkChoices({ slug: 'sean', signedIn: true });
   const byId = (id: string) => choices.find((link) => link.id === id);
 
-  it('should start with the default bar', () => {
-    expect(choices.slice(0, 5).map(({ id }) => id)).toEqual(headerLinkPrefs.DEFAULTS);
+  it('should start with Home, then the default bar', () => {
+    expect(choices.at(0)).toMatchObject({ id: 'home', href: '/home', group: 'main' });
+    expect(headerLinkPrefs.DEFAULTS).not.toContain('home');
+    expect(choices.slice(1, 6).map(({ id }) => id)).toEqual(headerLinkPrefs.DEFAULTS);
   });
 
   it('should give every link its own id', () => {
@@ -55,7 +57,7 @@ describe('headerLinkChoices', () => {
     it('should leave out Dashboard, the profile pages and the My calendars', () => {
       expect(visitor.some(({ group }) => group === 'profile')).toBe(false);
       expect(visitor.some(({ id }) => id.startsWith('calendar-my-'))).toBe(false);
-      expect(visitor.map(({ id }) => id).slice(0, 4)).toEqual(['discover', 'shows', 'movies', 'calendar']);
+      expect(visitor.map(({ id }) => id).slice(0, 5)).toEqual(['home', 'discover', 'shows', 'movies', 'calendar']);
     });
 
     it('should open Calendar on the premieres', () => {

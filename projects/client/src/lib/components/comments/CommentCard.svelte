@@ -5,7 +5,7 @@
   tools at its end, report and block hidden until the card is hovered or focused.
 
   The replies bar across the card's foot opens the replies on a band under it, on a rail, with the OP's replies on a
-  red stretch of it, shimmering in their places while they load. Reply opens a reply box at the end of the thread, and a posted reply goes to the top of it. The pen swaps the text for an edit form, and the trash can asks
+  red stretch of it, shimmering in their places while they load. Reply opens a reply box at the end of the thread, and a posted reply goes to the top of it; logged out, it signs in and comes back. The pen swaps the text for an edit form, and the trash can asks
   before deleting. The flag opens the report dialog, and the block icon asks before blocking the member's comments. A
   blocked member's card collapses to its faded name row until clicked, and their replies are dropped from the inline
   thread. Reactions share the viewer's choices and totals.
@@ -19,6 +19,8 @@
 -->
 <script lang="ts">
 import { page } from '$app/state';
+import { authStep } from '#lib/auth/authStep.svelte.ts';
+import { signInHref } from '#lib/auth/signInHref.ts';
 import { AnalyticsEvent } from '#lib/analytics/AnalyticsEvent.ts';
 import { useTrack } from '#lib/analytics/useTrack.ts';
 import { fade } from 'svelte/transition';
@@ -183,7 +185,8 @@ const watched = $derived(
 );
 const permalink = $derived(`/comments/${comment.id}`);
 // Discover's spotlight leaves replying to the comment's own page.
-const canReply = $derived(!spotlight && member !== null && !member.commentingBanned && author.href !== undefined);
+const replyable = $derived(!spotlight && author.href !== undefined);
+const canReply = $derived(replyable && member !== null && !member.commentingBanned);
 // Replies go to the top-level comment.
 const threadId = $derived(isReply ? comment.parent_id : comment.id);
 
@@ -598,6 +601,12 @@ const vanish = (node: Element) => fade(node, { duration: prefersReducedMotion.cu
               Reply
             </GlassAction>
           </button>
+        {:else if replyable && !page.data.user}
+          <a class="add-reply" href={signInHref(page.url)} onclick={authStep.signIn('gate')}>
+            <GlassAction presentational card glass icon={replyIcon} iconColor="var(--color-comment-reply-icon)">
+              Reply
+            </GlassAction>
+          </a>
         {/if}
         <!-- The replies load when opened; the comment's own page lists them open. The spotlight just goes there. -->
         {#if !isReply && comment.replies > 0}

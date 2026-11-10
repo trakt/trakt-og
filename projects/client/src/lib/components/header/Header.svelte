@@ -46,6 +46,7 @@ import type { HeaderUser } from './HeaderUser.ts';
 import { reviewLinks } from './reviewLinks.ts';
 import { viewerFetch } from '../../auth/viewerFetch.ts';
 import { authStep } from '../../auth/authStep.svelte.ts';
+import { signInHref } from '../../auth/signInHref.ts';
 
   interface Props {
     user: HeaderUser | null;
@@ -245,7 +246,7 @@ const profileLinks = $derived(
         </div>
       {:else if !renewing}
         <!-- One page signs in and signs up, so one button. -->
-      <a class="sign-in" href="/signin" onclick={authStep.signIn('navbar')}>Sign In</a>
+      <a class="sign-in" href={signInHref(page.url)} onclick={authStep.signIn('navbar')}>Sign In</a>
       {/if}
     </div>
   {/if}

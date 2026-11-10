@@ -41,6 +41,7 @@ describe('toListRow', () => {
       },
       posters: ['a', 'b', 'c', 'd', 'e'].map((path) => ({ image: `https://${path}` })),
       itemCount: 12,
+      moviesOnly: false,
       likeCount: 40,
       commentCount: 3,
       pills: [],

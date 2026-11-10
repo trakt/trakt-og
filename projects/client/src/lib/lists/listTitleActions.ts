@@ -12,29 +12,39 @@ export interface ListTitleActions {
   readonly leave?: TitleAction;
   /** Owner or collaborator: "Manage". */
   readonly manage?: TitleAction;
-  /** Signed in, off official lists. */
+  /** Signed in: shows progress, or franchises on a movies-only list. */
   readonly progressHref?: string;
   readonly shareUrl: string;
 }
 
 type ListTitleActionsParams = {
-  list: Pick<ListView, 'id' | 'kind' | 'ownerSlug' | 'href'>;
+  list: Pick<ListView, 'id' | 'kind' | 'ownerSlug' | 'href'> & { readonly itemCount?: number };
   viewer: { readonly slug: string } | null;
   isCollaborator: boolean;
   /** og's origin, for the share URL. */
   origin: string;
+  /** Known to hold movies and no shows, so progress opens on its franchises. */
+  moviesOnly?: boolean;
 };
 
 /**
  * Which title row icons the viewer gets: the report flag when signed in, the owner's edit and (personal lists only)
- * delete, a collaborator's "Stop collaborating", share, Manage for whoever can manage, and Progress off official
- * lists. OG's Copy for everyone else is cut: og doesn't clone other people's lists. Report and leave are wired;
+ * delete, a collaborator's "Stop collaborating", share, Manage for whoever can manage, and Progress (its franchises
+ * when it's movies only). OG's Copy for everyone else is cut: og doesn't clone other people's lists. Report and leave are wired;
  * edit/delete/manage remain unimplemented. Subscribe is cut.
  */
-export function listTitleActions({ list, viewer, isCollaborator, origin }: ListTitleActionsParams): ListTitleActions {
+export function listTitleActions({
+  list,
+  viewer,
+  isCollaborator,
+  origin,
+  moviesOnly,
+}: ListTitleActionsParams): ListTitleActions {
   const owner = list.kind !== 'official' && viewer?.slug === list.ownerSlug;
   const collaborator = list.kind !== 'official' && !owner && isCollaborator;
-  const progressHref = viewer ? listProgressHref({ list, viewerSlug: viewer.slug }) : undefined;
+  const progressHref = viewer
+    ? listProgressHref({ list: { ...list, moviesOnly }, viewerSlug: viewer.slug })
+    : undefined;
 
   return {
     ...(viewer && { report: {} }),

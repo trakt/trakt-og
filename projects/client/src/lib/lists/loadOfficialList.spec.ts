@@ -95,6 +95,12 @@ describe('loadOfficialList', () => {
     expect(seen.every(({ auth }) => auth === null)).toBe(true);
   });
 
+  it('should give a signed-in viewer the item ids for Watched and Collected, still read without a token', async () => {
+    const result = await load('', 'collection', true);
+    expect(result.stats).toEqual({ count: 1, runtime: 90, items: [{ type: 'movie', id: 1 }] });
+    expect(seen.every(({ auth }) => auth === null)).toBe(true);
+  });
+
   it('should keep the random cover independent of pagination, genres and item types', async () => {
     const result = await load('?display=movie&genres=drama&page=2&sort=title,desc');
     expect(result.sort).toEqual({ by: 'title', how: 'desc' });
@@ -131,7 +137,7 @@ describe('loadOfficialList', () => {
     );
     const result = await load('?sort=my_rating,desc', 'collection', true);
     expect(result.cards.at(0)?.title).toBe('Heat');
-    expect(result.stats).toEqual({ count: 1, runtime: 90 });
+    expect(result.stats).toEqual({ count: 1, runtime: 90, items: [{ type: 'movie', id: 1 }] });
     expect(seen.filter(({ auth }) => auth !== null)).toHaveLength(1);
   });
 

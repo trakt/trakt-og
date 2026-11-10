@@ -3,7 +3,10 @@ import { listProgressHref } from '../lists/listProgressHref.ts';
 import type { SummaryList } from '../summary/toSummaryList.ts';
 
 /** What the icons read off a row: a summary's, a lists page's or a search result's. */
-export type ActionList = Pick<SummaryList, 'id' | 'kind' | 'href'> & { readonly owner: { readonly slug: string } };
+export type ActionList = Pick<SummaryList, 'id' | 'kind' | 'href' | 'moviesOnly'> & {
+  readonly owner: { readonly slug: string };
+  readonly itemCount?: number;
+};
 
 type Params = {
   list: ActionList;
@@ -14,7 +17,7 @@ type Params = {
 };
 
 /**
- * The icons a row on an item's lists page shows: the report flag and progress (not on official lists) when signed
+ * The icons a row on an item's lists page shows: the report flag and progress (its franchises when it's movies only) when signed
  * in, the owner's edit and (personal lists only) delete, and share. The page wires edit and delete; the row opens
  * the report dialog itself. The calendar icon is cut, and the collaborator's "Stop collaborating" needs a
  * collaborators read per row, which this page leaves out.

@@ -69,8 +69,7 @@ export async function loadOfficialList({ fetch, locals, params, url, parent, coo
       fallback: list.sort,
       needsToken: false,
       ownerIsVip: false,
-      // Official lists have no Watched/Collected percentages or library ids in their stats.
-      viewerSignedIn: false,
+      viewerSignedIn: user !== null,
       datePreferences,
     }),
     loadListFilterSources({ fetch, watchnow: query.watchnow, settings }),

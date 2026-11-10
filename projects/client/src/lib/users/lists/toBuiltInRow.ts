@@ -1,6 +1,7 @@
 import type { z } from 'zod/v4';
 import { builtInListDescriptions } from '../../lists/toBuiltInListView.ts';
 import { mediaImage } from '../../images/mediaImage.ts';
+import { listMoviesOnly } from '../../lists/listMoviesOnly.ts';
 import type { ProfileUser } from '../ProfileUser.ts';
 import type { listItemsSchema } from './listItemsSchema.ts';
 import type { UserListRow } from './UserListRow.ts';
@@ -48,6 +49,10 @@ export function toBuiltInRow({ kind, profile, items, itemCount }: BuiltInRowPara
     owner: { slug: profile.slug, name: profile.displayName, href, avatar: profile.avatarUrl, vip: profile.vip },
     posters: items.slice(0, 5).map(poster),
     itemCount,
+    moviesOnly: listMoviesOnly(
+      itemCount,
+      items.map(({ type }) => type),
+    ),
     description: builtInListDescriptions[kind],
     pills: [],
     shareLink: false,

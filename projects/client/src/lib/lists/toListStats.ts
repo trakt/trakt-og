@@ -14,7 +14,7 @@ export interface ListStats {
   readonly count: number;
   /** Minutes to watch all of it. */
   readonly runtime: number;
-  /** Left out when no one's watched state will read them: signed out, or an official list. */
+  /** Left out when no one's watched state will read them: signed out. */
   readonly items?: readonly ListStatsItem[];
 }
 

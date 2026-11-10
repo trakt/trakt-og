@@ -46,6 +46,7 @@ describe('toUserListRow', () => {
         { image: 'https://e' },
       ],
       itemCount: 12,
+      moviesOnly: false,
       likeCount: 7,
       commentCount: 3,
       pills: [],

@@ -31,12 +31,23 @@ describe('listTitleActions', () => {
       isCollaborator: false,
       origin,
     });
-    expect(actions.progressHref).toBeUndefined();
-    expect(keys(actions)).toEqual(['report', 'shareUrl']);
+    expect(actions.progressHref).toBe('/users/sean/progress?list=7');
+    expect(keys(actions)).toEqual(['progressHref', 'report', 'shareUrl']);
     expect(keys(listTitleActions({ list: official, viewer: { slug: 'kim' }, isCollaborator: true, origin }))).toEqual([
+      'progressHref',
       'report',
       'shareUrl',
     ]);
+  });
+
+  it("should send a movies-only list's progress to its franchises", () => {
+    const viewer = { slug: 'kim' };
+    expect(listTitleActions({ list, viewer, isCollaborator: false, origin, moviesOnly: true }).progressHref).toBe(
+      '/users/kim/progress/franchises?list=7',
+    );
+    expect(listTitleActions({ list, viewer, isCollaborator: false, origin }).progressHref).toBe(
+      '/users/kim/progress?list=7',
+    );
   });
 
   it("should link a watchlist's progress by its owner, with or without its id", () => {

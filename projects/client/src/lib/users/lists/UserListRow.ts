@@ -23,6 +23,8 @@ export interface UserListRow {
   };
   readonly posters: readonly { readonly title?: string; readonly image?: string }[];
   readonly itemCount: number;
+  /** Movies and no shows, read off its first items' types once they cover the whole list: progress opens on franchises. */
+  readonly moviesOnly?: boolean;
   /** Left out on the watchlist and favorites. */
   readonly likeCount?: number;
   /** Left out when comments are off, or unknown (the watchlist and favorites). */

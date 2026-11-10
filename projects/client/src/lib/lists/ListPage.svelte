@@ -86,6 +86,7 @@
   import { listSortHow, reverseHow } from '#lib/lists/listItemSorts.ts';
   import { listTitleActions } from '#lib/lists/listTitleActions.ts';
   import ListStats from '#lib/lists/ListStats.svelte';
+  import type { ListStats as ListStatsNumbers } from '#lib/lists/toListStats.ts';
   import { listTypeOptions } from '#lib/lists/listTypeOptions.ts';
   import type { loadBuiltInList } from '#lib/lists/loadBuiltInList.ts';
   import type { loadOfficialList } from '#lib/lists/loadOfficialList.ts';
@@ -210,6 +211,14 @@ const genreLabel = $derived(
     : 'All',
 );
 const sorts = $derived(visibleListSorts({ types: data.query.types, signedIn: data.user !== null }));
+// The resolved stats bar numbers: undefined while they stream, null when they couldn't be counted.
+let listStats = $state<ListStatsNumbers | null>();
+// Stats that came with the page are known on the server too; streamed ones once they settle.
+const knownStats = $derived(data.list && !(data.stats instanceof Promise) ? data.stats : listStats);
+// Show progress tracks only shows, so a list of movies and no shows opens progress on its franchises.
+const moviesOnly = $derived(
+  Boolean(knownStats?.items?.some(({ type }) => type === 'movie') && !knownStats.items.some(({ type }) => type === 'show')),
+);
 const actions = $derived(
   data.list
     ? listTitleActions({
@@ -217,6 +226,7 @@ const actions = $derived(
       viewer: data.user ? { slug: data.user.slug } : null,
       isCollaborator: data.isCollaborator && !left,
       origin: page.url.origin,
+      moviesOnly,
     })
     : null,
 );
@@ -552,16 +562,18 @@ const request = (path: string, init?: Parameters<typeof rawApiFetch>[0]['init'])
     ownerManaging = false;
   });
   const managing = $derived(owner ? ownerManaging : canManage && manager.managing);
-  // The items stat's count, which counts the filtered items: the total header doesn't apply the hide filters.
-  let filteredCount = $state<number>();
   $effect(() => {
     const source = data;
-    filteredCount = undefined;
+    listStats = undefined;
     if (!source.list) return;
     void Promise.resolve(source.stats).then((stats) => {
-      if (data === source) filteredCount = stats?.count;
-    }).catch(() => {});
+      if (data === source) listStats = stats;
+    }).catch(() => {
+      if (data === source) listStats = null;
+    });
   });
+  // The items stat's count, which counts the filtered items: the total header doesn't apply the hide filters.
+  const filteredCount = $derived(listStats?.count);
   // The owner's count is the loaded selection's; until it loads, the filtered count.
 const manageCount = $derived(
   owner && selectedKeys ? ownerCards.length : filteredCount ?? (data.list ? data.total : 0),
@@ -727,7 +739,7 @@ const draggable = $derived(
       <ListStats
         itemCount={itemTotal}
         stats={data.stats}
-        progress={data.user !== null && list.kind !== 'official'}
+        progress={data.user !== null}
         likeTarget={{ id: list.id, ownerSlug: list.kind === 'personal' ? list.ownerSlug : undefined, viewer: data.user?.slug ?? null }}
         likeCount={list.kind === 'watchlist' || list.kind === 'favorites' ? undefined : list.likeCount}
         comments={list.allowComments ? { count: list.commentCount, href: `${list.href}/comments` } : undefined}

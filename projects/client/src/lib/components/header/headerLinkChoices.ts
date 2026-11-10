@@ -63,8 +63,9 @@ function calendars(signedIn: boolean): HeaderLink[] {
 
 /**
  * Every link the header can show, in the picker's order: the main links, the show charts, the movie charts with Box
- * Office, the calendars, My before All like OG's sidebar, then the viewer's profile pages. The main links are the
- * bar's defaults (`headerLinkPrefs.DEFAULTS`).
+ * Office, the calendars, My before All like OG's sidebar, then the viewer's profile pages. The main links after Home
+ * are the bar's defaults (`headerLinkPrefs.DEFAULTS`). Home opens `/home`, which skips the signed-in redirect to the
+ * dashboard.
  */
 export function headerLinkChoices({ slug, signedIn }: HeaderLinkChoicesParams): HeaderLink[] {
   const main = (id: string, title: string, href: string): HeaderLink => ({
@@ -84,6 +85,7 @@ export function headerLinkChoices({ slug, signedIn }: HeaderLinkChoicesParams): 
   });
 
   return [
+    main('home', 'Home', '/home'),
     ...(signedIn ? [main('dashboard', 'Dashboard', '/dashboard')] : []),
     main('discover', 'Discover', '/discover'),
     main('shows', 'Shows', '/shows/trending'),

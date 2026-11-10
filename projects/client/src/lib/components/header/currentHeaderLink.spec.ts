@@ -13,6 +13,11 @@ describe('currentHeaderLink', () => {
     expect(currentHeaderLink(main, '/dashboard')).toBe('dashboard');
   });
 
+  it('should select Home on the home page', () => {
+    expect(currentHeaderLink(bar('home', 'dashboard'), '/home')).toBe('home');
+    expect(currentHeaderLink(bar('home', 'dashboard'), '/dashboard')).toBe('dashboard');
+  });
+
   it('should select nothing off the bar', () => {
     expect(currentHeaderLink(main, '/users/sean/history')).toBeUndefined();
   });

@@ -54,6 +54,8 @@ import type { FranchiseMovie } from './FranchiseMovie.ts';
 import { sortFranchises } from './sortFranchises.ts';
 import { toFranchiseProgress } from './toFranchiseProgress.ts';
 import { toFranchiseRow } from './toFranchiseRow.ts';
+import ProgressListBand from '../ProgressListBand.svelte';
+import type { ProgressListRow } from '../loadProgressListRow.ts';
 
 type Props = {
   data: {
@@ -64,9 +66,17 @@ type Props = {
     terms: string;
     page: number;
     datePreferences: DatePreferences;
+    /** `?list=`'s band naming the list. */
+    listRow?: Promise<ProgressListRow | null>;
   };
   /** Every franchise. Null while the catalog loads. */
   franchises: readonly Franchise[] | null;
+  /** `?list=`'s movie ids: only franchises with one of them show. Null while they load, left out without a list. */
+  listed?: ReadonlySet<number> | null;
+  /** `?list=`'s list has no movies at all: it says so, and sends you to its show progress when it has shows. */
+  listWithoutMovies?: 'shows' | 'none';
+  /** `?list=`'s list holds shows too: the band links to its show progress. */
+  listHasShows?: boolean;
   /** The catalog didn't load: Try again reads it again. */
   onretry?: () => unknown;
   error?: unknown;
@@ -78,7 +88,18 @@ type Props = {
   now?: Date;
 };
 
-const { data, franchises, onretry, error, readMovies = (id) => loadFranchiseMovies({ id }), watched, now }: Props = $props();
+const {
+  data,
+  franchises,
+  listed,
+  listWithoutMovies,
+  listHasShows = false,
+  onretry,
+  error,
+  readMovies = (id) => loadFranchiseMovies({ id }),
+  watched,
+  now,
+}: Props = $props();
 
 // Shows the new state as it saves; the page then reloads for its layout and page size, as the show tabs do.
 let gridOn = $derived(data.grid);
@@ -95,7 +116,14 @@ const menuSorts = Object.entries(franchiseSorts).map(([by, { label }]) => ({ by,
 const naturalHow = $derived(franchiseSorts[data.sort.by].how);
 
 const plays = $derived(watched ?? overlay.slices().watchedMovies);
-const started = $derived(franchises && plays ? toFranchiseProgress({ franchises, plays }) : null);
+const onList = $derived(
+  franchises && listed !== null
+    ? listed === undefined
+      ? franchises
+      : franchises.filter(({ movieIds }) => movieIds.some((id) => listed.has(id)))
+    : null,
+);
+const started = $derived(onList && plays ? toFranchiseProgress({ franchises: onList, plays }) : null);
 const sorted = $derived(
   started && sortFranchises(filterFranchises(started, { hide: data.hide, terms: data.terms }), data.sort),
 );
@@ -147,6 +175,15 @@ const row = (franchise: Franchise) => {
   if (!list || !plays) return undefined;
   return toFranchiseRow({ franchise, movies: list, plays, datePreferences: data.datePreferences, now: now ?? new Date() });
 };
+
+// The list's show progress, and progress without the list, for a list with no movies.
+const listShowsHref = $derived(`${base}?${new URLSearchParams({ list: page.url.searchParams.get('list') ?? '' })}`);
+const withoutListHref = $derived.by(() => {
+  const query = new SvelteURLSearchParams(page.url.search);
+  query.delete('page');
+  query.delete('list');
+  return `${base}/franchises${query.size ? `?${query}` : ''}`;
+});
 
 function href(type: ProgressType) {
   const query = new SvelteURLSearchParams(page.url.search);
@@ -217,6 +254,11 @@ function clearFilters() {
   {/snippet}
 </SectionToolbar>
 
+{#if data.listRow}
+  <ProgressListBand row={data.listRow} noun="franchises"
+    other={listHasShows ? { href: listShowsHref, text: 'View Shows' } : undefined} />
+{/if}
+
 <LoadingOverlay visible={saving} />
 
 <section class="progress franchises" aria-label={title} aria-busy={sorted === null}
@@ -248,6 +290,16 @@ function clearFilters() {
       {:else}
         {#each Array.from({ length: SHIMMER_ROWS }, (_, i) => i) as slot (slot)}<ProgressRowShimmer />{/each}
       {/if}
+    {:else if listWithoutMovies === 'shows'}
+      <div class="empty">
+        <EmptyState title="This list has shows, but no movies. Their progress is on the shows watching tab."
+          action={{ href: listShowsHref, text: 'View Shows' }} />
+      </div>
+    {:else if listWithoutMovies === 'none'}
+      <div class="empty">
+        <EmptyState title="This list has no shows or movies to track."
+          action={{ href: withoutListHref, text: 'Show all progress' }} />
+      </div>
     {:else if started?.length}
       <div class="empty"><EmptyState action={{ onclick: clearFilters, text: 'Clear filters' }} /></div>
     {:else}

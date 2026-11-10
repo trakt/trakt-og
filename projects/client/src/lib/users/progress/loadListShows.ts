@@ -1,10 +1,6 @@
-import { fetchListItems } from '../../lists/loadListItems.ts';
 import type { CachedShow } from '../../shows/cache/CachedShow.ts';
+import { readListRows } from './readListRows.ts';
 import { toProgressShow } from './toProgressShow.ts';
-
-const PAGE = 250;
-// fetchListItemRefs' cap: enough pages for a VIP's 5,000-item list.
-const MAX_PAGES = 20;
 
 /**
  * Every show on a list, with its summary, for `?list=` progress: OG listed every one of them, started or not. Read page
@@ -21,22 +17,21 @@ export async function loadListShows({
   base: string;
   now?: () => number;
 }): Promise<ReadonlyMap<number, CachedShow>> {
-  const shows = new Map<number, CachedShow>();
-  for (let page = 1; page <= MAX_PAGES; page++) {
-    const { status, rows } = await fetchListItems({
-      fetch,
-      token: null,
-      base,
-      query: { types: ['show'], genres: [], page, limit: PAGE },
-      sort: { by: 'rank', how: 'asc' },
-    });
-    if (status !== 200) throw new Error(`List items: ${status}`);
-    const fetchedAt = now();
-    for (const row of rows) {
-      if (row.type === 'show') shows.set(row.show.ids.trakt, toProgressShow(row.show, fetchedAt));
-    }
-    // A short page is the last.
-    if (rows.length < PAGE) return shows;
-  }
-  throw new Error('List too long');
+  const rows = await readListRows({ fetch, base, type: 'show' });
+  const fetchedAt = now();
+  return new Map(
+    rows.flatMap((row) => (row.type === 'show' ? [[row.show.ids.trakt, toProgressShow(row.show, fetchedAt)]] : [])),
+  );
+}
+
+/** Every movie's id on a list, for `?list=` franchise progress. Throws like `loadListShows`. */
+export async function loadListMovieIds({
+  fetch,
+  base,
+}: {
+  fetch: typeof globalThis.fetch;
+  base: string;
+}): Promise<ReadonlySet<number>> {
+  const rows = await readListRows({ fetch, base, type: 'movie' });
+  return new Set(rows.flatMap((row) => (row.type === 'movie' ? [row.movie.ids.trakt] : [])));
 }

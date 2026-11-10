@@ -1,22 +1,27 @@
 <!--
   The band under the subnav when progress is narrowed to a list (`?list=`): a list row's fan of the first five
   posters, smaller, then "Displaying shows from this list" as a menu header over the list's name and owner (avatar and
-  VIP label), and a round X that drops the list ("Return to your progress"), all centered on the fan. A shimmer holds
+  VIP label), a View Movies or View Shows button when the list holds both, and a round X that drops the list ("Return to your progress"), all centered on the fan. A shimmer holds
   the name and owner while the list streams in; a list that can't be read leaves the band out. OG showed a title band
   and the full list row here; og keeps it to one short band so the rows stay near the top.
 -->
 <script lang="ts">
 import { page } from '$app/state';
 import { SvelteURLSearchParams } from 'svelte/reactivity';
+import LinkButton from '#lib/components/button/LinkButton.svelte';
 import FilterBand from '#lib/components/filters/FilterBand.svelte';
 import VipLabel from '#lib/components/labels/VipLabel.svelte';
 import type { ProgressListRow } from './loadProgressListRow.ts';
 
 type Props = {
   row: Promise<ProgressListRow | null>;
+  /** What the rows under it are: shows, or the franchises on the Franchises tab. */
+  noun?: 'shows' | 'franchises';
+  /** The same list on the other tab, when it holds both shows and movies. */
+  other?: { readonly href: string; readonly text: string };
 };
 
-const { row }: Props = $props();
+const { row, noun = 'shows', other }: Props = $props();
 
 const FAN_SIZE = 5;
 const allHref = $derived.by(() => {
@@ -31,11 +36,15 @@ const allHref = $derived.by(() => {
 <!-- List and profile hrefs come in as props, and resolve() only takes routes it can type. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
+{#snippet otherTab()}
+  {#if other}<LinkButton href={other.href} variant="outline">{other.text}</LinkButton>{/if}
+{/snippet}
+
 {#snippet band(list: ProgressListRow | null)}
   <!-- The rows' gap, so the name lines up with the show titles below. -->
-  <FilterBand --filter-band-gap="var(--progress-row-gap)" header="Displaying shows from this list"
+  <FilterBand --filter-band-gap="var(--progress-row-gap)" header="Displaying {noun} from this list"
     title={list ? { text: list.name, href: list.href } : undefined}
-    clear={{ href: allHref, label: 'Return to your progress' }}>
+    clear={{ href: allHref, label: 'Return to your progress' }} actions={other ? otherTab : undefined}>
     {#snippet art()}
       {#if list}
         <a class="fan" href={list.href} tabindex="-1" aria-hidden="true">

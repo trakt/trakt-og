@@ -1,7 +1,7 @@
 <!--
   The band under a page's subnav when the page is narrowed to one list or title: its art, then a menu header saying
   what's shown ("Displaying shows from this list") over an optional smaller line naming its parents, the name with
-  its year in gray and a line about it, and a round X that drops the filter, all centered on the art. Without `title` it's loading: a shimmer holds the name and
+  its year in gray and a line about it, and a round X that drops the filter (with `actions` just before it), all centered on the art. Without `title` it's loading: a shimmer holds the name and
   the line, and the X waits. `--filter-band-gap` sets the space after the art, so a page can line the name up with
   its rows.
     <FilterBand header="Displaying episodes from this season" title={{ text: 'Season 9', href, year: '2012 - 2013' }}
@@ -28,9 +28,11 @@ type Props = {
   /** Over the name, as small as the line under it: a season's show. */
   parents?: Snippet;
   meta?: Snippet;
+  /** Before the X, once the title is in: another view of the same filter. */
+  actions?: Snippet;
 };
 
-const { header, title, clear, art, parents, meta }: Props = $props();
+const { header, title, clear, art, parents, meta, actions }: Props = $props();
 const id = $props.id();
 </script>
 
@@ -51,6 +53,7 @@ const id = $props.id();
           <Shimmer inline="var(--filter-band-shimmer-meta-width)" block="var(--list-card-avatar-size)" />
         {/if}
       </div>
+      {#if title && actions}<div class="actions">{@render actions()}</div>{/if}
       {#if title && clear}
         <Tooltip text={clear.label}>
           {#snippet trigger(tooltip)}
@@ -132,6 +135,13 @@ h3 {
 .parents {
   margin-block-end: calc(-1 * var(--list-card-body-gap));
   line-height: 1;
+}
+
+.actions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--filter-band-gap);
 }
 
 .clear {

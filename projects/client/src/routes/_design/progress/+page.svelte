@@ -13,7 +13,7 @@
   short wait. `?type=franchises` is the Franchises tab on sample collections (Alien has an unreleased film that the bar
   and counts leave out and an up next movie, Spider-Verse is complete with a film still to come, Toy Story is complete
   with nothing to come), `&view=grid` its grid of one poster a franchise; each row reads its movies after a short wait as it
-  nears the screen, `?state=loading` holds the catalog loading and `?state=failed` shows it failing.
+  nears the screen, `?state=loading` holds the catalog loading and `?state=failed` shows it failing, and `&list=4` keeps only the franchises with a movie on a list (Alien and The Matrix).
 -->
 <script lang="ts">
 import DemoToggle from '#lib/design/DemoToggle.svelte';
@@ -63,8 +63,12 @@ const variants = [
   { label: 'Franchises, Hide Not Completed', query: '?type=franchises&hide=not-completed' },
   { label: 'Franchises loading', query: '?type=franchises&state=loading' },
   { label: 'Franchises failed', query: '?type=franchises&state=failed' },
+  { label: 'Franchises on a list', query: '?type=franchises&list=4' },
+  { label: 'Franchises, shows-only list', query: '?type=franchises&list=1' },
+  { label: "Franchises, someone's watchlist", query: '?type=franchises&list=3' },
   { label: 'On a list', query: '?list=1' },
   { label: 'Empty list', query: '?list=2' },
+  { label: 'Movies-only list', query: '?list=4' },
   { label: "Someone's watchlist", query: '?list=3' },
   { label: 'Loading', query: '?state=loading' },
 ];
@@ -129,25 +133,48 @@ const items = $derived(
   }),
 );
 
-// `?list=1` holds Breaking Bad and Severance, `?list=2` nothing, `?list=3` (the watchlist) every sample show.
+// `?list=1` holds Breaking Bad and Severance, `?list=2` nothing, `?list=3` (the watchlist) every sample show, and
+// `?list=4` the first Alien and Matrix movies, for the Franchises tab.
 let listed = $state<ReadonlySet<number> | null>(null);
 $effect(() => {
   const id = listId;
   listed = null;
   if (id === undefined) return;
-  const ids = id === 3 ? progressFixture.watched(false).map(({ show }) => show.id) : id === 1 ? [1388, 60300] : [];
+  const ids =
+    id === 3
+      ? progressFixture.watched(false).map(({ show }) => show.id)
+      : id === 1
+        ? [1388, 60300]
+        : id === 4
+          ? [900100, 900200]
+          : [];
   const timer = setTimeout(() => (listed = new Set(ids)), WAIT);
   return () => clearTimeout(timer);
 });
+// Sci-Fi Night (`?list=4`) is all movies, so the shows tabs find none and send you to its franchises; Prestige TV
+// (`?list=1`) holds no movies, so Franchises sends you back; the watchlist holds both (the first Alien too), so each
+// tab's band links to the other; and Someday holds neither.
+const showListed = $derived(listId === 4 && listed ? new Set<number>() : listed);
+const listWithoutShows = $derived<'movies' | 'none' | undefined>(
+  showListed?.size === 0 ? (listId === 4 ? 'movies' : 'none') : undefined,
+);
+const franchiseListed = $derived(
+  listed === null || listId === 4 ? listed : listId === 3 ? new Set([900100]) : new Set<number>(),
+);
+const listWithoutMovies = $derived<'shows' | 'none' | undefined>(
+  franchiseListed?.size === 0 ? (listId === 1 ? 'shows' : 'none') : undefined,
+);
+const listHasMovies = $derived(listed !== null && (listId === 3 || listId === 4));
+const listHasShows = $derived(listed !== null && (listId === 1 || listId === 3));
 // The list band's list, streamed in after a short wait like the page's; the watchlist is someone else's.
 const owner = (slug: string, name: string) => ({ slug, name, href: `/users/${slug}`, avatar: PLACEHOLDER_AVATAR, vip: null });
 function sampleRow(id: number): ProgressListRow {
   const posters = progressFixture.watched(false)
-    .filter(({ show }) => id !== 2 && (id === 3 || [1388, 60300].includes(show.id)))
+    .filter(({ show }) => id === 3 || (id === 1 && [1388, 60300].includes(show.id)))
     .map(({ show }) => ({ title: show.title, image: show.poster }));
   if (id === 3) return { href: '/users/morbus/watchlist', name: 'Watchlist', owner: owner('morbus', 'Morbus Iff'), posters };
-  const slug = id === 1 ? 'prestige-tv' : 'someday';
-  return { href: `/users/demo/lists/${slug}`, name: id === 1 ? 'Prestige TV' : 'Someday', owner: owner('demo', 'Demo User'), posters };
+  const [slug, name] = id === 1 ? ['prestige-tv', 'Prestige TV'] : id === 4 ? ['sci-fi-night', 'Sci-Fi Night'] : ['someday', 'Someday'];
+  return { href: `/users/demo/lists/${slug}`, name, owner: owner('demo', 'Demo User'), posters };
 }
 const listRow = $derived(
   listId === undefined
@@ -176,7 +203,7 @@ const data = $derived({
 <!-- The variants only change this page's query, so resolve() has nothing to add. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 <Specimen title="Progress list" bleed
-  note="The status dropdown groups Shows (Watching, Rewatching, Dropped) and Movies (Franchises). Open a row's seasons to see them shimmer while they load. Loading holds the shimmering rows; the list variants show them under the band naming the list, then the filtered rows or the empty list.">
+  note="The status dropdown groups Shows (Watching, Rewatching, Dropped) and Movies (Franchises). Open a row's seasons to see them shimmer while they load. Loading holds the shimmering rows; the list variants show them under the band naming the list, then the filtered rows. A list with nothing for the tab says so and points across: a movies-only list to its franchises, a shows-only list back to its show progress.">
   <nav class="variants" aria-label="Progress variants">
     {#each variants as variant (variant.label)}
       <a href="{page.url.pathname}{variant.query}" aria-current={page.url.search === variant.query ? 'page' : undefined}>
@@ -192,11 +219,14 @@ const data = $derived({
   {#if type === 'franchises'}
     <FranchiseList data={{ ...data, sort: data.franchiseSort }}
       franchises={pending || failed ? null : franchiseFixture.franchises}
+      listed={listId === undefined ? undefined : franchiseListed} {listWithoutMovies} {listHasShows}
       onretry={failed ? () => undefined : undefined} watched={franchiseFixture.plays}
       readMovies={(id) => new Promise((resolve) => setTimeout(() => resolve(franchiseFixture.movies(id)), WAIT))}
       now={new Date(franchiseFixture.now)} />
   {:else}
-    <ProgressList {data} items={pending ? null : items} {listed} {loading} {reloading} onneed={need} {now} />
+    <ProgressList {data} items={pending ? null : items} listed={showListed} {listWithoutShows} {listHasMovies}
+      {loading} {reloading}
+      onneed={need} {now} />
   {/if}
 </Specimen>
 

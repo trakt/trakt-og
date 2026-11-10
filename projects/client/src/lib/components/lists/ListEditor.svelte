@@ -96,9 +96,8 @@ async function save(draft: ListDraft) {
     else await invalidateAll();
   } catch (cause) {
     if (cause instanceof ListWriteError && cause.status === 420) serverLimit = limit ?? loaded?.count ?? 0;
-    else if (cause instanceof ListWriteError && [409, 422].includes(cause.status)) {
-      fields = Object.keys(cause.fields).length ? cause.fields : { name: [cause.message] };
-    } else error = 'Could not save the list. Please try again.';
+    else if (cause instanceof ListWriteError && Object.keys(cause.fields).length) fields = cause.fields;
+    else error = 'Could not save the list. Please try again.';
     toast.error(error || 'Please check the highlighted list fields.');
   } finally {
     busy = false;

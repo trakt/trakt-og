@@ -5,7 +5,7 @@ import { api } from '../api/api.ts';
 import { extractPageMeta } from '../api/extractPageMeta.ts';
 import { rawApiFetch } from '../api/rawApiFetch.ts';
 import type { DateOrder } from '../utils/formatDate.ts';
-import { parseAdvancedFilters } from '../components/filters/advancedFilters.ts';
+import { hasAdvancedFilters, parseAdvancedFilters } from '../components/filters/advancedFilters.ts';
 import { advancedFiltersQuery } from '../components/filters/advancedFiltersQuery.ts';
 import { recommendationIgnores } from '../dashboard/fetchRecommendations.ts';
 import { recommendationSourceSchema } from '../dashboard/recommendationSourceSchema.ts';
@@ -185,6 +185,8 @@ export async function loadChart({
   };
   // The advanced filters go to the API as they are in the URL, so SSR renders the filtered chart.
   const filters = parseAdvancedFilters(url.searchParams);
+  // Advanced filters are for members: a signed-out link with them signs in and comes back filtered.
+  if (!token && hasAdvancedFilters(filters)) signInRedirect(url);
   const filterQuery = advancedFiltersQuery(filters);
   const query = { extended: 'full' as const, ...filterQuery };
   const ignore = {

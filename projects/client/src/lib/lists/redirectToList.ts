@@ -1,12 +1,14 @@
 import { error, redirect } from '@sveltejs/kit';
 import { api } from '../api/api.ts';
+import { signInOrNotFound } from '../auth/signInOrNotFound.ts';
 import { fetchListSummary } from './fetchListSummary.ts';
 import { listPath } from './listPath.ts';
 
 type RedirectToListParams = {
   fetch: typeof globalThis.fetch;
-  locals: { token: string | null };
+  locals: { token: string | null; crawler?: App.Locals['crawler'] };
   params: { id: string };
+  url: URL;
 };
 
 function readList(fetch: typeof globalThis.fetch, id: string, token: string | null) {
@@ -15,14 +17,14 @@ function readList(fetch: typeof globalThis.fetch, id: string, token: string | nu
 
 /**
  * `/lists/:id`, `/watchlist/:id` and `/officiallist/:id`: a 301 to the list's own page.
- * A list the viewer can't see is a 404. The public read goes first; the token only for a list it didn't find.
+ * A list a signed-out visitor can't see signs in first; one the viewer still can't see is a 404. The public read goes first; the token only for a list it didn't find.
  * It's a page load, not a `+server.ts`, so a missing list renders og's 404 page instead of the bare fallback.
  */
-export async function redirectToList({ fetch, locals, params }: RedirectToListParams): Promise<never> {
+export async function redirectToList({ fetch, locals, params, url }: RedirectToListParams): Promise<never> {
   const anonymous = await readList(fetch, params.id, null);
   const response =
     anonymous?.status !== 200 && locals.token ? await readList(fetch, params.id, locals.token) : anonymous;
   if (response?.status === 200) redirect(301, listPath(response.body));
-  if (!response || [204, 401, 403, 404].includes(response.status)) error(404, 'Page Not Found');
+  if (!response || [204, 401, 403, 404].includes(response.status)) signInOrNotFound({ locals, url });
   error(502, 'Trakt is having trouble loading this list.');
 }

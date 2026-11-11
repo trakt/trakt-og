@@ -23,4 +23,11 @@ describe('toMapDots', () => {
   it("should find a country's first dot", () => {
     expect(toMapDots(world).first('BR')).toEqual({ x: 25, y: 15, code: 'BR' });
   });
+
+  it("should list a country's dots, and none for a country off the map", () => {
+    const map = toMapDots(world);
+
+    expect(map.of('BR').map(({ x }) => x)).toEqual([25, 15]);
+    expect(map.of('FR')).toEqual([]);
+  });
 });

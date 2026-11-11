@@ -212,6 +212,13 @@ export const designCatalog: readonly DesignGroup[] = [
         source: 'components/header',
       },
       {
+        slug: 'world-map',
+        title: 'World map',
+        summary:
+          'The map of where people are watching and its country ranking, on the home page and full screen on the live page, with new counts on demand.',
+        source: 'components/worldmap',
+      },
+      {
         slug: 'calendars',
         title: 'Calendar',
         summary: 'My Shows & Movies as a signed-in viewer sees it, on a sample of the public feed.',

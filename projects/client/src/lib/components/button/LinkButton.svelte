@@ -4,13 +4,18 @@
   `--link-button-tint` (the text color unless set), at regular weight, for quiet ways out on a colored ground like the
   error pages. With an `href` it's a link: another site's opens in a new tab with an arrow after the label, unless
   `arrow={false}` (a label that leads with its own icon), and og's own stays in the tab. With `onclick` and no `href`
-  it's a button.
+  it's a button. `pressed` makes that button a toggle with a box before its label: an empty box in muted gray
+  while off, a filled, checked box and a soft red tint while on, so a toggle that's on doesn't pull the eye like a
+  primary button.
     <LinkButton href={newBugUrl}>Report a bug</LinkButton>
     <LinkButton onclick={clear} variant="outline">Clear filters</LinkButton>
+    <LinkButton onclick={toggle} variant="outline" pressed={night}>Night shading</LinkButton>
 -->
 <script lang="ts">
 import Icon from '#lib/icons/Icon.svelte';
 import external from '#lib/icons/light/arrow-up-right-from-square.svg?raw';
+import square from '#lib/icons/regular/square.svg?raw';
+import squareCheck from '#lib/icons/solid/square-check.svg?raw';
 import type { Snippet } from 'svelte';
 
 interface Props {
@@ -19,10 +24,12 @@ interface Props {
   disabled?: boolean;
   variant?: 'primary' | 'outline' | 'developer' | 'tinted';
   arrow?: boolean;
+  /** On or off, for a button that toggles something. */
+  pressed?: boolean;
   children: Snippet;
 }
 
-const { href, onclick, disabled = false, variant = 'primary', arrow = true, children }: Props = $props();
+const { href, onclick, disabled = false, variant = 'primary', arrow = true, pressed, children }: Props = $props();
 const offsite = $derived(!!href && /^https?:\/\//.test(href));
 </script>
 
@@ -40,7 +47,10 @@ const offsite = $derived(!!href && /^https?:\/\//.test(href));
     {#if offsite && arrow}<Icon svg={external} />{/if}
   </a>
 {:else}
-  <button type="button" class={['link-button', variant]} {onclick} {disabled}>{@render children()}</button>
+  <button type="button" class={['link-button', variant]} aria-pressed={pressed} {onclick} {disabled}>
+    {#if pressed !== undefined}<Icon svg={pressed ? squareCheck : square} />{/if}
+    {@render children()}
+  </button>
 {/if}
 
 <style>
@@ -122,6 +132,28 @@ const offsite = $derived(!!href && /^https?:\/\//.test(href));
 
   &:is(:hover, :focus-visible) {
     background-color: var(--color-link-button-hover);
+    color: inherit;
+  }
+}
+
+/* A toggle that's off stays quiet in gray until it's pointed at. */
+[aria-pressed='false'] {
+  box-shadow: inset 0 0 0 1px var(--color-link-button-off-line);
+  color: var(--color-link-button-off);
+
+  &:is(:hover, :focus-visible) {
+    color: inherit;
+  }
+}
+
+/* A toggle that's on: the tinted look in og's red, quieter than the primary button. */
+[aria-pressed='true'] {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--brand-primary) var(--link-button-tint-line), transparent);
+  background-color: color-mix(in srgb, var(--brand-primary) var(--link-button-tint-fill), transparent);
+  color: inherit;
+
+  &:is(:hover, :focus-visible) {
+    background-color: color-mix(in srgb, var(--brand-primary) var(--link-button-tint-fill-hover), transparent);
     color: inherit;
   }
 }

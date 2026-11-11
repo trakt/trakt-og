@@ -3726,6 +3726,8 @@
   --home-band-gap: 48px;
   --home-band-side: 300px; /* the ranked countries */
   --home-map-top: 18px; /* the help line down to the map */
+  --home-map-bleed: 72px; /* how far the home map reaches into the band's left margin, past its empty west edge */
+  --home-map-bleed-edge: 16px; /* the margin it always leaves */
   --home-map-dot: 0.33; /* a dot's radius, as a share of the grid step */
   --color-home-map-dot: light-dark(#dcdcdc, #2e2e2e);
   --color-home-map-heat-1: light-dark(#f7c6c8, #4d1517); /* 1+ watching: on light the ramp darkens as it heats */
@@ -3740,6 +3742,25 @@
   ); /* the light that sweeps across the gray dots until the count arrives */
   --home-map-shimmer-ms: 2200; /* one sweep, west to east */
   --home-map-shimmer-band: 0.18; /* the light's half-width, as a share of the map */
+  /* When the counts change: shades fade, pings ring out where people arrived, night dims the dark side. */
+  --home-map-fade-ms: 450; /* a shade's fade to its new step, as a time constant */
+  --home-map-ping-spread-ms: 9000; /* one refresh's pings, spread over this long so the map keeps moving */
+  --home-map-ping-ms: 1600;
+  --home-map-ping-big-ms: 2200; /* a country new to the map */
+  --home-map-ping-reach: 34; /* how far the ring runs, in map units (the map is 1000 wide) */
+  --home-map-ping-big-reach: 52;
+  --home-map-ping-line: 3; /* the ring's width, in map units */
+  --home-map-ping-glow: 0.22; /* the soft disc inside the ring, at its start */
+  --home-map-ping-flash: 1.8; /* the dot's flash, as a multiple of its size */
+  /* Ambient pings keep the live map moving between counts: a count's ping, a size smaller and a little softer. */
+  --home-map-ping-ambient-reach: 24;
+  --home-map-ping-ambient-line: 2;
+  --home-map-ping-ambient-alpha: 0.8;
+  --home-map-ping-ambient-flash: 1.5;
+  --color-home-map-ping: var(--brand-primary);
+  --color-home-map-ping-hot: light-dark(#111, #fff); /* on the hottest shade, where the red ring would vanish */
+  --home-map-night-dim: 0.45; /* how much a dot fades at full night */
+  --home-map-ambient-ms: 450; /* one ambient ping this often, on the live page */
   --home-map-scale-gap: 3px; /* between the key's shades */
   --home-map-key-gap: 8px; /* Fewer and More to the shades */
   --home-map-key-top: 14px; /* under the map */
@@ -3749,6 +3770,7 @@
   --home-map-tip-width: 230px;
   --home-map-tip-gap: 6px;
   --home-map-tip-offset: 14px; /* above the pointer */
+  --home-map-tip-glide: 180ms; /* the card following the pointer or the lit country */
   --font-size-home-map-tip-count: 28px;
   --home-map-tip-band-padding: 9px 14px; /* the country header and the Most watched footer */
   --home-map-tip-rank-inset: 8px;
@@ -3765,6 +3787,18 @@
   --home-rank-shimmer-name-width: 120px; /* a country's name until the count arrives */
   --home-rank-shimmer-name-short-width: 84px; /* every other row, so the list doesn't read as a grid */
   --home-rank-shimmer-count-width: 44px;
+  --home-rank-move-ms: 900; /* a row sliding to its new place */
+  --home-rank-move-shown-ms: 5000; /* how long the climbed or fell arrow stays */
+  --home-rank-number-width: 26px; /* the live page's rank numbers */
+  --font-size-home-rank-move: 11px;
+  /* The live page: the map as big as the screen allows, every country in a scrolling column beside it. */
+  --live-side-width: 340px;
+  --live-padding-block: 20px 18px;
+  --live-gap: 12px;
+  --live-side-list-padding: 8px 8px 16px;
+  --live-tools-gap: 6px;
+  --live-gutter: 56px; /* left of the map column, room for the heading's globe */
+  --live-stacked-map-height: 60dvh; /* a tablet's map, over the countries */
   /* Trending shows and movies, side by side under the map. */
   --home-trending-padding-block: 44px 64px;
   --home-trending-columns-gap: 76px; /* room for each heading's watermark */
@@ -3790,6 +3824,8 @@
   --link-button-tint-line: 45%;
   --color-link-button-line: light-dark(rgb(0 0 0 / 0.3), rgb(255 255 255 / 0.4));
   --color-link-button-hover: light-dark(rgb(0 0 0 / 0.06), rgb(255 255 255 / 0.12));
+  --color-link-button-off: var(--color-help-text); /* a toggle that's off */
+  --color-link-button-off-line: light-dark(rgb(0 0 0 / 0.18), rgb(255 255 255 / 0.2));
 }
 
 /* About: /about, dark in both themes like the home page. A repo-style header over a film-inspired scene, the Trakt

@@ -31,10 +31,6 @@ const hidden = [
 ];
 
 const server = setupServer(
-  http.get(`${API}/calendars/:target/media/:start/:days`, ({ request }) => {
-    seen.push(request);
-    return HttpResponse.json([airing(1, 1), airing(2, 1), release(7), release(8)]);
-  }),
   http.get(`${API}/calendars/:target/shows/:start/:days`, ({ request }) => {
     seen.push(request);
     return HttpResponse.json([airing(1, 1), airing(1, 0), airing(2, 1)]);
@@ -209,10 +205,12 @@ describe('loadCalendar', () => {
       start: '2026-08-12',
       calendar: { period: 'week', layout: 'grid', start_day: 'monday', image_type: 'poster' },
     });
-    const requests = seen.filter((request) => new URL(request.url).pathname.startsWith('/calendars/my/media'));
-    expect(requests.map((request) => new URL(request.url).pathname)).toEqual([
-      '/calendars/my/media/2026-07-30/17',
-      '/calendars/my/media/2026-08-17/16',
+    const requests = seen.filter((request) => new URL(request.url).pathname.startsWith('/calendars/my/'));
+    expect(requests.map((request) => new URL(request.url).pathname).toSorted()).toEqual([
+      '/calendars/my/movies/2026-07-30/17',
+      '/calendars/my/movies/2026-08-17/16',
+      '/calendars/my/shows/2026-07-30/17',
+      '/calendars/my/shows/2026-08-17/16',
     ]);
     expect(requests.every((request) => new URL(request.url).searchParams.get('extended') === 'full')).toBe(true);
     expect(data.days).toHaveLength(31);
@@ -224,7 +222,7 @@ describe('loadCalendar', () => {
     await load({ start: '2026-08-12', calendar: { period: 'month' } });
     const covered = seen
       .map((request) => new URL(request.url).pathname.split('/'))
-      .filter((parts) => parts.at(3) === 'media')
+      .filter((parts) => parts.at(3) === 'shows')
       .flatMap((parts) => {
         const start = new Date(`${parts.at(4)}T00:00:00Z`);
         return Array.from({ length: Number(parts.at(5)) + 1 }, (_, i) => {
@@ -255,21 +253,25 @@ describe('loadCalendar', () => {
       expect(seen.some((request) => new URL(request.url).pathname.endsWith('.ics'))).toBe(false);
     });
 
-    it("should read the viewer's merged feed with the token and leave out what they hid", async () => {
-      const data = await load({});
+    it("should read the viewer's shows and movies with the token and leave out what they hid", async () => {
+      const data = await load({ hideSpecials: true });
 
-      const calendar = requestTo('/calendars/my/media/');
-      expect(new URL(calendar?.url ?? '').pathname).toBe('/calendars/my/media/2026-08-30/33');
-      expect(calendar?.headers.get('authorization')).toBe('Bearer fake-token');
+      for (const type of ['shows', 'movies']) {
+        const calendar = requestTo(`/calendars/my/${type}/`);
+        expect(new URL(calendar?.url ?? '').pathname).toBe(`/calendars/my/${type}/2026-08-30/33`);
+        expect(calendar?.headers.get('authorization')).toBe('Bearer fake-token');
+      }
+      expect(requestTo('/calendars/my/media/')).toBeUndefined();
       expect(requestTo('/users/hidden/calendar')?.headers.get('authorization')).toBe('Bearer fake-token');
       expect(data.calendar.label).toBe('Shows & Movies');
       expect(data.target).toBe('my');
       expect(shownKeys(data)).toEqual(['m7', '1s1']);
     });
 
-    it('should drop specials only with the setting on', async () => {
-      expect(shownKeys(await load({ slug: 'shows', hideSpecials: false }))).toEqual(['1s1', '1s0']);
-      expect(shownKeys(await load({ slug: 'shows', hideSpecials: true }))).toEqual(['1s1']);
+    it.each(['shows', 'shows-movies'] as const)('should drop specials on %s only with the setting on', async (slug) => {
+      const movies = slug === 'shows-movies' ? ['m7'] : [];
+      expect(shownKeys(await load({ slug, hideSpecials: false }))).toEqual([...movies, '1s1', '1s0']);
+      expect(shownKeys(await load({ slug, hideSpecials: true }))).toEqual([...movies, '1s1']);
     });
 
     it("should put a US show on the viewer's own prime time", async () => {
@@ -302,7 +304,7 @@ describe('loadCalendar', () => {
 
     it("should send a viewer whose token stopped working to sign in on the worker's plain-text 401", async () => {
       server.use(
-        http.get(`${API}/calendars/my/media/:start/:days`, () => workerUnauthorized()),
+        http.get(`${API}/calendars/my/shows/:start/:days`, () => workerUnauthorized()),
         http.get(`${API}/users/hidden/calendar`, () => workerUnauthorized()),
       );
       expect(await redirectOf(load({ stale: true }))).toBe('/signin?redirect_to=%2Fcalendars%2Fmy%2Fshows-movies');
@@ -315,7 +317,7 @@ describe('loadCalendar', () => {
   });
 
   it('should redirect when either monthly chunk reports an expired viewer token', async () => {
-    server.use(http.get(`${API}/calendars/my/media/2026-08-17/16`, () => new HttpResponse(null, { status: 401 })));
+    server.use(http.get(`${API}/calendars/my/movies/2026-08-17/16`, () => new HttpResponse(null, { status: 401 })));
     expect(await redirectOf(load({ start: '2026-08-12', calendar: { period: 'month' } }))).toBe(
       '/signin?redirect_to=%2Fcalendars%2Fmy%2Fshows-movies',
     );

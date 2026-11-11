@@ -19,8 +19,9 @@ function request({ client, target, slug, range, filters }: FetchCalendarParams) 
   const params = { target, ...range };
 
   switch (slug) {
+    // The merged `media` calendar always drops specials, so it's read as its two halves: the same queries it runs.
     case 'shows-movies':
-      return client.media({ params, query });
+      return Promise.all([client.shows({ params, query }), client.movies({ params, query })]);
     case 'shows':
       return client.shows({ params, query });
     case 'premieres':
@@ -43,9 +44,9 @@ function request({ client, target, slug, range, filters }: FetchCalendarParams) 
  * for the loader to send the viewer to sign in; anything else that isn't a 200 is a 502.
  */
 export async function fetchCalendar(params: FetchCalendarParams): Promise<CalendarItem[] | 'signed-out'> {
-  const response = await request(params);
-  if (response.status === 401) return 'signed-out';
-  if (response.status !== 200) error(502, 'The calendar is unavailable right now.');
+  const responses = [await request(params)].flat();
+  if (responses.some((response) => response.status === 401)) return 'signed-out';
+  if (responses.some((response) => response.status !== 200)) error(502, 'The calendar is unavailable right now.');
 
-  return toCalendarItems(response.body);
+  return responses.flatMap((response) => (response.status === 200 ? toCalendarItems(response.body) : []));
 }

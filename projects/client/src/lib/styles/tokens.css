@@ -1744,6 +1744,12 @@
   --header-watching-height: 84px;
   --header-watching-pad: 12px;
   --header-watching-thumb-width: 80px; /* 16:9 */
+  /* Check In while you watch the item: Check In's red, so the live dot and the line go white. */
+  --color-summary-watching-bg: var(--brand-primary);
+  --color-summary-watching-ink: var(--color-text-inverse);
+  --color-summary-watching-glow: rgb(255 255 255 / 0.5);
+  --color-summary-watching-track: rgb(0 0 0 / 0.25);
+  --summary-watching-dot: 12px; /* the live dot in the buttons' icon column */
   --font-size-profile-meta: 16px; /* counts and location under an official list's name */
   /* Watching-now player: a now-playing bar over the cover. It always sits on a photo, so it doesn't follow the theme. */
   --watching-gap: 16px;
@@ -1752,7 +1758,7 @@
   --watching-thumb-width: 96px; /* 16:9 */
   --watching-thumb-width-phone: 64px;
   --radius-watching-thumb: var(--radius-object);
-  --watching-kicker-gap: 7px; /* the live dot to "You are watching" */
+  --watching-kicker-gap: 7px; /* the live dot to "Watching Now" */
   --watching-badge-size: 32px; /* in the thumbnail when there's no image */
   --watching-badge-icon: 14px;
   --watching-eq-height: 14px;

@@ -26,6 +26,8 @@ describe('toWatchingNow', () => {
     it('should link to the episode and use the show fanart', () => {
       expect(toWatchingNow(watching)).toEqual({
         action: 'checkin',
+        item: { type: 'episode', id: 1234 },
+        showId: 139_960,
         title: 'The Boys',
         episode: { number: '1x05', title: 'Good for the Soul' },
         href: '/shows/the-boys-2019/seasons/1/episodes/5',
@@ -66,6 +68,8 @@ describe('toWatchingNow', () => {
         }),
       ).toEqual({
         action: 'scrobble',
+        item: { type: 'movie', id: 12_601 },
+        showId: null,
         title: 'TRON: Legacy',
         episode: null,
         href: '/movies/tron-legacy-2010',

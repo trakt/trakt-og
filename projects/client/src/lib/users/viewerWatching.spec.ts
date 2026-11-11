@@ -3,6 +3,8 @@ import type { WatchingNow } from './WatchingNow.ts';
 
 const episode: WatchingNow = {
   action: 'scrobble',
+  item: { type: 'episode', id: 11_234_567 },
+  showId: 154_997,
   title: 'Severance',
   episode: { number: '2x04', title: "Woe's Hollow" },
   href: '/shows/severance/seasons/2/episodes/4',
@@ -11,7 +13,14 @@ const episode: WatchingNow = {
   endsAt: '2026-11-10T21:00:00Z',
   runtime: 50,
 };
-const movie: WatchingNow = { ...episode, title: 'Fight Club', episode: null, href: '/movies/fight-club-1999' };
+const movie: WatchingNow = {
+  ...episode,
+  item: { type: 'movie', id: 432 },
+  showId: null,
+  title: 'Fight Club',
+  episode: null,
+  href: '/movies/fight-club-1999',
+};
 
 // The store is one per page, so each spec starts from a fresh module.
 async function freshStore() {

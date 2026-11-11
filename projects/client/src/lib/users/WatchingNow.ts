@@ -1,6 +1,10 @@
 /** What the owner is checked in to or scrobbling, for the bar at the bottom of the profile cover. */
 export interface WatchingNow {
   readonly action: 'checkin' | 'scrobble';
+  /** What's playing, so its own page can tell. */
+  readonly item: { readonly type: 'movie' | 'episode'; readonly id: number };
+  /** An episode's show, so the show's pages can tell. */
+  readonly showId: number | null;
   /** The show or movie title, in bold. */
   readonly title: string;
   /** For an episode: `1x05` and its title, which OG put in quotes. */

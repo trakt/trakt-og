@@ -13,10 +13,6 @@
 -->
 <script lang="ts">
 import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
-import { rawApiFetch } from '#lib/api/rawApiFetch.ts';
-import { AnalyticsEvent } from '#lib/analytics/AnalyticsEvent.ts';
-import { useTrack } from '#lib/analytics/useTrack.ts';
-import { toast } from '#lib/components/toast/toast.svelte.ts';
 import Container from '#lib/components/container/Container.svelte';
 import StatusDot from '#lib/components/status/StatusDot.svelte';
 import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
@@ -24,15 +20,14 @@ import Icon from '#lib/icons/Icon.svelte';
 import check from '#lib/icons/solid/check.svg?raw';
 import xmark from '#lib/icons/solid/xmark.svg?raw';
 import type { WatchingNow } from '#lib/users/WatchingNow.ts';
-import { viewerWatching } from '#lib/users/viewerWatching.svelte.ts';
+import { cancelViewerCheckin } from '#lib/components/checkin/cancelViewerCheckin.ts';
 import { watchingProgress } from '#lib/users/watchingProgress.ts';
+import { holdFocus } from '#lib/utils/holdFocus.ts';
 import { prefersReducedMotion } from 'svelte/motion';
-import { GENERIC_ERROR } from '../../utils/genericError.ts';
-import { viewerFetch } from '../../auth/viewerFetch.ts';
 
 interface Props {
   watching: WatchingNow;
-  /** Whose profile it is: "Sean is watching", or "You are watching" on your own. */
+  /** Whose profile it is: "Sean is watching", or "Watching Now" on your own. */
   owner: { readonly firstName: string; readonly href: string } | 'self';
   /** The header's hover card rather than a cover's bar. */
   card?: boolean;
@@ -53,32 +48,23 @@ $effect(() => {
 
 // Only your own check-in can be cancelled; a scrobble ends when the player stops.
 const cancellable = $derived(owner === 'self' && watching.action === 'checkin');
+let root = $state<HTMLElement>();
 let cancelled = $state(false);
 let cancelling = false;
+// Cancelled, the bar goes away, so focus moves to what's left around it.
 async function cancel() {
-  if (cancelling || watching.action !== 'checkin') return;
+  if (cancelling || watching.action !== 'checkin' || !root) return;
   cancelling = true;
-  useTrack(AnalyticsEvent.CheckIn).track({ type: watching.episode ? 'episode' : 'movie', action: 'stop' });
-  const response = await rawApiFetch({
-    fetch: viewerFetch(),
-    path: '/checkin',
-    init: { method: 'DELETE' },
-  }).catch(() => null);
+  const refocus = holdFocus(root);
+  cancelled = await cancelViewerCheckin(watching);
   cancelling = false;
-  if (response?.ok) {
-    cancelled = true;
-    viewerWatching.clear();
-    const episode = watching.episode
-      ? ` ${watching.episode.number}${watching.episode.title ? ` "${watching.episode.title}"` : ''}`
-      : '';
-    toast.success(`You cancelled your check in for ${watching.title}${episode}.`);
-  } else if (response?.status !== 429) toast.error(GENERIC_ERROR);
+  await refocus();
 }
 </script>
 
 <!-- Links point at media and profile pages other issues build; resolve() only takes routes that exist. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-<div class={['watching-now', { card, cancelled, gone: progress.gone }]} inert={cancelled || progress.gone}
+<div bind:this={root} class={['watching-now', { card, cancelled, gone: progress.gone }]} inert={cancelled || progress.gone}
   {@attach trackDrilldowns({ source: 'watching-now' })}>
   <div class={['bar', { done: progress.finished }]} style:--progress="{progress.percent}%">
     {#if card}
@@ -109,7 +95,7 @@ async function cancel() {
             <StatusDot kind={progress.finished ? 'done' : 'live'} />
             <span class="who-text">
               {#if owner === 'self'}
-                You are watching
+                Watching Now
               {:else}
                 <a href={owner.href}>{owner.firstName}</a> is watching
               {/if}

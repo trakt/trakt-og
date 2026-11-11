@@ -13,5 +13,11 @@
   "workers_dev": false,
   "observability": {
     "enabled": true
-  }
+  },
+  // The live page's one refresher for the whole world (src/lib/live/WatchingNowLive.ts). vite.config.ts exports the
+  // class from the built worker, since SvelteKit's adapter doesn't.
+  "durable_objects": {
+    "bindings": [{ "name": "WATCHING_NOW_LIVE", "class_name": "WatchingNowLive" }]
+  },
+  "migrations": [{ "tag": "watching-now-live", "new_sqlite_classes": ["WatchingNowLive"] }]
 }

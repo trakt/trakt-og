@@ -11,6 +11,8 @@ import { readAuthCookie } from './lib/auth/readAuthCookie.ts';
 import { detectCrawler } from './lib/crawl/detectCrawler.ts';
 import { verifiedBotCategory } from './lib/crawl/verifiedBotCategory.ts';
 import { withCrawlHeaders } from './lib/crawl/withCrawlHeaders.ts';
+import { liveSocket } from './lib/live/liveSocket.ts';
+import { liveSocketPath } from './lib/live/liveSocketPath.ts';
 import { edgeCache } from './lib/utils/edgeCache.ts';
 
 /**
@@ -28,6 +30,7 @@ export const handle: Handle = async ({ event, resolve }) => {
   const { token, tokenExpired } = readAuthCookie({ value: event.cookies.get(AUTH_COOKIE), now: Date.now() });
   event.locals.token = token;
   event.locals.tokenExpired = tokenExpired;
+  if (event.url.pathname === liveSocketPath) return liveSocket({ event, token });
   event.locals.crawler = detectCrawler({
     userAgent: event.request.headers.get('user-agent'),
     verifiedBotCategory: verifiedBotCategory(event.request),

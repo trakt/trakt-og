@@ -70,6 +70,8 @@ let collapsed = $state(false);
 let savable = $state(true);
 let calendarSave = $state(false);
 let panelOpen = $state(false);
+let nightShading = $state(false);
+let tour = $state(true);
 let funnel = $state<HTMLButtonElement>();
 let filters = $state<AdvancedFilters>(emptyFilters);
 let chartFadeHide = $state<FadeHide>({ fade: [], hide: [] });
@@ -266,7 +268,8 @@ function showOverlay() {
   </div>
 </Specimen>
 
-<Specimen title="Link buttons" row note="Every one opens another site in a new tab, as the about page and the error pages use them.">
+<Specimen title="Link buttons" row
+  note="The links open another site in a new tab, as the about page and the error pages use them. Click the toggles: off is an empty box, on a checked box tinted red, as the live page's options.">
   <Variant label="Primary, an ask card">
     <div class="ground panel">
       <LinkButton href={ogRepoUrls.newBug}>Report a bug</LinkButton>
@@ -287,6 +290,14 @@ function showOverlay() {
       <LinkButton href={traktUrls.status} variant="tinted" arrow={false}>
         <Icon svg={spaceStationMoon} /> Status
       </LinkButton>
+    </div>
+  </Variant>
+  <Variant label="Toggles, the live page">
+    <div class="ground home toggles">
+      <LinkButton variant="outline" pressed={nightShading} onclick={() => (nightShading = !nightShading)}>
+        Night shading
+      </LinkButton>
+      <LinkButton variant="outline" pressed={tour} onclick={() => (tour = !tour)}>Tour when idle</LinkButton>
     </div>
   </Variant>
 </Specimen>
@@ -466,6 +477,11 @@ function showOverlay() {
 
 .ground {
   padding: var(--gutter);
+}
+
+.toggles {
+  display: flex;
+  gap: var(--space-sm-inline);
 }
 
 .panel {

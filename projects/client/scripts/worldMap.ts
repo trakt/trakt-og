@@ -1,19 +1,21 @@
 // Builds the home page's dot map and the place names that turn a profile's free-text location into a country.
 // Usage: GEO_DATA_PATH=<dir> bun run world-map. The directory holds world-atlas 2.0.2's countries-50m.json (Natural
 // Earth, public domain) and GeoNames' countryInfo.txt and admin1CodesASCII.txt (CC BY 4.0, geonames.org).
-// Writes src/lib/home/live/worldDots.json and src/lib/home/live/placeCountries.json. No dependencies: it decodes the
-// TopoJSON, projects with the Natural Earth formula and tests points with ray casting itself.
+// Writes src/lib/components/worldmap/worldDots.json and worldDotsFine.json, and src/lib/home/live/placeCountries.json. No dependencies: it
+// decodes the TopoJSON, projects with the Natural Earth formula and tests points with ray casting itself.
 
 import { readFile, writeFile } from 'node:fs/promises';
 import process from 'node:process';
 
 const source = process.env.GEO_DATA_PATH ?? './assets';
 const target = 'src/lib/home/live';
+const mapTarget = 'src/lib/components/worldmap';
 
-// A 1000 x 470 map with a dot every 7 units: about 2,600 on land.
+// A 1000 x 470 map with a dot every 7 units: about 2,600 on land. The live page's fills the screen, at every 4.
 const WIDTH = 1000;
 const HEIGHT = 470;
 const STEP = 7;
+const FINE_STEP = 4;
 const MARGIN = 4;
 
 // Spellings people type that aren't a country's English or GeoNames name.
@@ -236,42 +238,54 @@ const owner = (x: number, y: number) => {
   return countries.find(({ polygons }) => polygons.some((polygon) => insidePolygon(point, polygon)))?.iso2;
 };
 
-const columns = Math.floor(WIDTH / STEP);
-const lines = Math.floor(HEIGHT / STEP);
-const center = (cell: number) => cell * STEP + STEP / 2;
+const round = (value: number) => Math.round(value * 10_000) / 10_000;
 
-const grid = Array.from({ length: lines * columns }, (_, cell) => ({
-  column: cell % columns,
-  row: Math.floor(cell / columns),
-}));
-const dots = grid
-  .map(({ column, row }) => ({ column, row, iso2: owner(center(column), center(row)) }))
-  .filter((dot): dot is { column: number; row: number; iso2: string } => dot.iso2 !== undefined);
+/** Every grid point on land at `step`, keyed to its country, plus one dot for each country too small to hold one. */
+function gridOf(step: number) {
+  const columns = Math.floor(WIDTH / step);
+  const lines = Math.floor(HEIGHT / step);
+  const center = (cell: number) => cell * step + step / 2;
 
-// A country too small to hold a grid point still gets one dot, at the middle of its outline.
-const taken = new Set(dots.map(({ column, row }) => `${column},${row}`));
-const covered = new Set(dots.map(({ iso2 }) => iso2));
-const extras = countries
-  .filter(({ iso2 }) => !covered.has(iso2))
-  .map(({ iso2, polygons }) => {
-    const points = polygons.flatMap(({ polygon: [outer] }) => outer);
-    const lon = points.reduce((sum, [x]) => sum + x, 0) / points.length;
-    const lat = points.reduce((sum, [, y]) => sum + y, 0) / points.length;
-    const [x, y] = toMap([lon, lat]);
-    return { column: Math.floor(x / STEP), row: Math.floor(y / STEP), iso2 };
-  })
-  .filter(({ column, row }) => !taken.has(`${column},${row}`));
+  const dots = Array.from({ length: lines * columns }, (_, cell) => ({
+    column: cell % columns,
+    row: Math.floor(cell / columns),
+  }))
+    .map(({ column, row }) => ({ column, row, iso2: owner(center(column), center(row)) }))
+    .filter((dot): dot is { column: number; row: number; iso2: string } => dot.iso2 !== undefined);
 
-const all = [...dots, ...extras];
-const codes = [...new Set(all.map(({ iso2 }) => iso2))].toSorted();
-const worldDots = {
-  width: WIDTH,
-  height: HEIGHT,
-  step: STEP,
-  codes,
-  dots: all.flatMap(({ column, row, iso2 }) => [column, row, codes.indexOf(iso2)]),
-};
+  // A country too small to hold a grid point still gets one dot, at the middle of its outline.
+  const taken = new Set(dots.map(({ column, row }) => `${column},${row}`));
+  const covered = new Set(dots.map(({ iso2 }) => iso2));
+  const extras = countries
+    .filter(({ iso2 }) => !covered.has(iso2))
+    .map(({ iso2, polygons }) => {
+      const points = polygons.flatMap(({ polygon: [outer] }) => outer);
+      const lon = points.reduce((sum, [x]) => sum + x, 0) / points.length;
+      const lat = points.reduce((sum, [, y]) => sum + y, 0) / points.length;
+      const [x, y] = toMap([lon, lat]);
+      return { column: Math.floor(x / step), row: Math.floor(y / step), iso2 };
+    })
+    .filter(({ column, row }) => !taken.has(`${column},${row}`));
 
-await writeFile(`${target}/worldDots.json`, `${JSON.stringify(worldDots, null, 2)}\n`);
+  const all = [...dots, ...extras];
+  const codes = [...new Set(all.map(({ iso2 }) => iso2))].toSorted();
+  return {
+    width: WIDTH,
+    height: HEIGHT,
+    step,
+    // The fit, so the map can turn a dot back into a latitude and longitude (its night shading).
+    projection: { fit: round(fit), offsetX: round(offsetX), offsetY: round(offsetY) },
+    codes,
+    dots: all.flatMap(({ column, row, iso2 }) => [column, row, codes.indexOf(iso2)]),
+  };
+}
+
+const worldDots = gridOf(STEP);
+const fine = gridOf(FINE_STEP);
+await writeFile(`${mapTarget}/worldDots.json`, `${JSON.stringify(worldDots, null, 2)}\n`);
+// About three times the dots, on one line: the live page's full-screen map.
+await writeFile(`${mapTarget}/worldDotsFine.json`, `${JSON.stringify(fine)}\n`);
 await writeFile(`${target}/placeCountries.json`, `${JSON.stringify(Object.fromEntries(places), null, 2)}\n`);
-console.log(`Wrote ${all.length} dots in ${codes.length} countries and ${places.size} place names to ${target}`);
+console.log(
+  `Wrote ${worldDots.dots.length / 3} and ${fine.dots.length / 3} dots and ${places.size} place names to ${mapTarget} and ${target}`,
+);

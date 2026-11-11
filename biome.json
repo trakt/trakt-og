@@ -7,7 +7,7 @@
   },
   "files": {
     "ignoreUnknown": true,
-    "includes": ["**", "!**/*.svelte", "!**/*.svg", "!projects/client/src/lib/home/live/worldDots.json"]
+    "includes": ["**", "!**/*.svelte", "!**/*.svg", "!projects/client/src/lib/components/worldmap/worldDots*.json"]
   },
   "formatter": {
     "indentStyle": "space",

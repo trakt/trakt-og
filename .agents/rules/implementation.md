@@ -35,6 +35,22 @@ Reach for these before writing your own:
   missing (the show's poster for a season's). `images/userAvatar` builds a member's avatar. Link previews (`og:image`,
   JSON-LD) use `images/previewArt`, whose `/api/art` route picks art that exists, since a crawler can't fall back.
 
+## Signed-out Visitors
+
+Guests browse; actions ask them to sign in. Sign-in always comes back to the page they were on.
+- **Browsing stays open:** title, people, list, profile, chart and calendar pages render for guests. Read-only
+  counts (a list's likes) show as plain text, not buttons.
+- **Actions keep their controls:** watch, collect, add to list, watchlist, rate, favorite, hide, check in, comment
+  and reply stay visible. A button calls `auth/requireSignIn` first (`if (!(await requireSignIn())) return;`); a link
+  goes to `auth/signInHref(page.url)` with `authStep.signIn('gate')` as its onclick.
+- **Member-only views:** a loader for one (advanced filters, liked comments) calls `auth/signInRedirect(url)` when
+  `locals.token` is null. A guest on someone's progress goes to their profile instead. Controls that only change the
+  viewer's own view (the fade and hide eye) are hidden for guests.
+- **Maybe-private items:** a missing list goes through `auth/signInOrNotFound`, so a guest signs in and a member or
+  crawler gets the 404.
+- **No viewer calls for guests:** skip polling, settings reads and writes, and anything sent with `locals.token`
+  when there is no viewer. Server proxies that spend a paid key (`api/klipy`) answer 401 to guests.
+
 ## API Responses
 
 - **Native routes with a contract:** use the typed `api` client. Its types are trusted, but `@trakt/api` doesn't validate at runtime, so a wrong contract means wrong types.

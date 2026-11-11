@@ -155,6 +155,14 @@ const states = [
     props: { user: { ...free, isPrivate: true, isLocked: true }, large: true, relation: relation({}) },
   },
   {
+    title: 'Private profile, request sent',
+    props: { user: { ...free, isPrivate: true, isLocked: true }, large: true, relation: relation({ follow: 'pending' }) },
+  },
+  {
+    title: 'Private profile, signed out',
+    props: { user: { ...free, isPrivate: true, isLocked: true }, large: true, signedIn: false },
+  },
+  {
     title: "A VIP owner's list page, on its first item's fanart",
     props: { user: free, tab: 'lists/sci-fi-club', coverUrl: listCover, relation: relation({}) },
   },
@@ -335,7 +343,7 @@ const liveCards = [
 </script>
 
 <Specimen title="Profile frame" bleed
-  note="Covers, labels, follow states (shimmering until they load), the request banner and the watching-now bar. Real profiles only show the states the viewer is actually in.">
+  note="Covers, labels, follow states (shimmering until they load), the request banner and the watching-now bar. Real profiles only show the states the viewer is actually in. On a private profile, ships cross the sky every few seconds, and following launches one from the hologram.">
   <div class="states">
     {#each states as { title, props } (title)}
       <Variant label={title}>

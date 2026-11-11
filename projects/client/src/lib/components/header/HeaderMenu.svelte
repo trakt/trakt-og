@@ -7,11 +7,16 @@
     children: Snippet;
     /** Names the trigger when its content doesn't (an icon-only button). */
   label?: string;
+  /** Brings its own panel (the watching card): no menu chrome, and the body is only there while it's open. */
+  card?: boolean;
   }
 
-  const { trigger, children, label }: Props = $props();
+  const { trigger, children, label, card = false }: Props = $props();
   const id = $props.id();
   let menu = $state<HTMLElement>();
+  let open = $state(false);
+  // A card's body ticks (the watching card's clock), so it goes away when the menu closes, unlike a menu's rows.
+  const body = $derived(!card || open);
 
   const CLOSE_DELAY_MS = 300;
 
@@ -52,7 +57,7 @@
   closes it (Popover API). The menu hangs from the trigger's end edge, or its start edge when there's no room
   (the profile menu), and the header styles the trigger's open look.
   Rows are ul > li > a (or button), each led by a fixed-width icon, with <hr> as the divider and a `.heading` paragraph
-  over a section. `aria-current` marks the page you're on in bold white on red, and a `.small` row scales down a glyph
+  over a section. A `card` holds one panel of its own instead of rows, there only while it's open. `aria-current` marks the page you're on in bold white on red, and a `.small` row scales down a glyph
   wider than the rest (`.large` scales up a slimmer one).
 -->
 
@@ -72,10 +77,11 @@
   <div
     bind:this={menu}
     id="menu-{id}"
-    class="menu"
+    class={['menu', { card }]}
     popover="auto"
     style:position-anchor="--menu-{id}"
-  ><div class="rows">{@render children()}</div></div>
+    onbeforetoggle={(event) => (open = event.newState === 'open')}
+  ><div class="rows">{#if body}{@render children()}{/if}</div></div>
 </div>
 
 <style>
@@ -126,15 +132,26 @@
     }
   }
 
+  .menu.card {
+    border: 0;
+    background: none;
+    box-shadow: none;
+  }
+
   /* The rows scroll inside the menu, under the header. */
   .rows {
     max-block-size: calc(100dvh - var(--header-height) - var(--header-menu-gap));
     overflow-y: auto;
     padding: var(--space-menu);
     border-radius: inherit;
+
+    .card & {
+      padding: 0;
+      overflow: visible;
+    }
   }
 
-  .menu :global {
+  .menu:where(:not(.card)) :global {
     & ul {
       margin: 0;
       padding: 0;

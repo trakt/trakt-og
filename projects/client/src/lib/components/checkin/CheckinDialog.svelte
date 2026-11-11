@@ -9,7 +9,6 @@
 -->
 <script lang="ts">
 import { page } from '$app/state';
-import { invalidateAll } from '$app/navigation';
 import { rawApiFetch } from '#lib/api/rawApiFetch.ts';
 import Dialog from '#lib/components/dialog/Dialog.svelte';
 import DialogArtHeader from '#lib/components/dialog/DialogArtHeader.svelte';
@@ -23,6 +22,8 @@ import { overlay } from '#lib/overlay/overlay.ts';
 import { mediaSpoilers } from '#lib/settings/mediaSpoilers.ts';
 import trakt from '#lib/icons/trakt/trakt-v2.svg?raw';
 import { formatDate } from '#lib/utils/formatDate.ts';
+import { fetchViewerWatching } from '#lib/users/fetchViewerWatching.ts';
+import { viewerWatching } from '#lib/users/viewerWatching.svelte.ts';
 import { viewerFetch } from '../../auth/viewerFetch.ts';
 
 const target = $derived(checkin.target);
@@ -64,10 +65,13 @@ const request = (path: string, body?: unknown) =>
 async function submit() {
   if (!target || busy) return;
   busy = true;
-  const started = await checkinMedia({ target, request, notify: toast });
+  await checkinMedia({
+    target,
+    request,
+    notify: toast,
+    refreshWatching: () => viewerWatching.refresh({ load: fetchViewerWatching }),
+  });
   checkin.close();
-  // The profile's watching-now bar is server-rendered.
-  if (started && page.route.id?.startsWith('/users/')) void invalidateAll();
 }
 </script>
 

@@ -5,6 +5,7 @@ import { createRelationshipOverlay } from '#lib/users/createRelationshipOverlay.
 import SeoHead from '#lib/seo/SeoHead.svelte';
 import ProfileFrame from '#lib/components/users/ProfileFrame.svelte';
 import { profileTabs } from '#lib/users/profileTabs.ts';
+import { viewerWatching } from '#lib/users/viewerWatching.svelte.ts';
 
 const { data, children } = $props();
 
@@ -27,6 +28,9 @@ $effect(() => {
 // A VIP owner's list page puts its first item's fanart on the cover.
 const listCover = $derived(typeof page.data.listCover === 'string' ? page.data.listCover : undefined);
 
+// Your own check-in or scrobble shows the moment it starts or ends, from the header's shared copy.
+const watching = $derived(data.isSelf ? viewerWatching.latest(data.watching) : data.watching);
+
 const tabs = $derived(profileTabs({ slug: data.profile.slug, pathname: page.url.pathname, isSelf: data.isSelf }));
 </script>
 
@@ -35,7 +39,7 @@ const tabs = $derived(profileTabs({ slug: data.profile.slug, pathname: page.url.
 {#if !listComments || data.profile.isLocked}
 <ProfileFrame
   user={data.profile}
-  watching={data.watching}
+  {watching}
   {tabs}
   large={page.route.id === '/users/[id]'}
   isSelf={data.isSelf}

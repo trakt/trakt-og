@@ -96,7 +96,7 @@ export async function loadDashboard({ fetch, panelFetch = fetch, locals, cookies
     stats: panel,
     /** Movies and shows watched, for the welcome wall. */
     watched: watched ?? 0,
-    watching: watching.status === 200 ? toWatchingNow(watching.body) : null,
+    viewerWatching: watching.status === 200 ? toWatchingNow(watching.body) : null,
     requests: parsedRequests.data
       .toSorted((a, b) => Date.parse(b.requested_at) - Date.parse(a.requested_at))
       .map((row) => toFollowRequest(row, { datePreferences: layout.datePreferences, now })),

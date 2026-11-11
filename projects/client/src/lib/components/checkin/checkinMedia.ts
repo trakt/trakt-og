@@ -10,6 +10,8 @@ type Params = {
   /** Authenticated. A body makes it a POST. */
   request: (path: string, body?: unknown) => Promise<Response>;
   notify: { success: (message: string) => void; error: (message: string) => void };
+  /** Re-reads what the viewer is watching, so the header's dot and the watching-now bars show the check-in. */
+  refreshWatching: () => Promise<unknown>;
   now?: () => Date;
 };
 
@@ -43,12 +45,13 @@ async function conflict({ request, now = () => new Date() }: Params, response: R
  * posted them are gone. Resolves true when the check-in started.
  */
 export async function checkinMedia(params: Params): Promise<boolean> {
-  const { target, request, notify } = params;
+  const { target, request, notify, refreshWatching } = params;
   track({ type: target.type, action: 'start' });
   try {
     const response = await request('/checkin', { [target.type]: { ids: { trakt: target.id } } });
     if (response.ok) {
       notify.success(`You checked in to ${target.fullTitle}.`);
+      void refreshWatching();
       return true;
     }
     if (response.status === 429) return false;

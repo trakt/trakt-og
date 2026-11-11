@@ -2,11 +2,14 @@
   The watching-now player: a now-playing bar along the bottom of a cover while someone is checked in or scrobbling,
   on the profile (over the tabs) and the dashboard greeting. Red-tinted glass blurs the cover behind it. A thumbnail
   leads (the episode's screenshot or the fanart; without either, a badge says which: an equaliser for playback, a check
-  for a check-in), then a live dot with who is watching what, and a scrubber with a red fill and knob, the time watched
+  for a check-in), then a live dot with who is watching what (a show's episode on its own line, each line clipped), and a scrubber with a red fill and knob, the time watched
   and the time left, ticking every second (once a minute under reduced motion). Over time it says
   "Finished" or "Wrapping up" with a still green dot for a few minutes, then fades out. Below 600px of its own width
   the scrubber becomes a hairline along the bottom. The bar spans the cover; its content lines up with the page
   column. Put it inside a positioned cover.
+  `card` is the header's hover card instead: a rounded panel of its own width in the phone layout, with the episode
+  title, a bigger thumbnail and the knob centered on a line across its whole bottom edge.
+  Cancelling your own check-in clears it everywhere (the header's dot, the dashboard, your profile).
 -->
 <script lang="ts">
 import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
@@ -21,6 +24,7 @@ import Icon from '#lib/icons/Icon.svelte';
 import check from '#lib/icons/solid/check.svg?raw';
 import xmark from '#lib/icons/solid/xmark.svg?raw';
 import type { WatchingNow } from '#lib/users/WatchingNow.ts';
+import { viewerWatching } from '#lib/users/viewerWatching.svelte.ts';
 import { watchingProgress } from '#lib/users/watchingProgress.ts';
 import { prefersReducedMotion } from 'svelte/motion';
 import { GENERIC_ERROR } from '../../utils/genericError.ts';
@@ -30,9 +34,11 @@ interface Props {
   watching: WatchingNow;
   /** Whose profile it is: "Sean is watching", or "You are watching" on your own. */
   owner: { readonly firstName: string; readonly href: string } | 'self';
+  /** The header's hover card rather than a cover's bar. */
+  card?: boolean;
 }
 
-const { watching, owner }: Props = $props();
+const { watching, owner, card = false }: Props = $props();
 
 let now = $state(Date.now());
 const reducedMotion = $derived(prefersReducedMotion.current);
@@ -61,6 +67,7 @@ async function cancel() {
   cancelling = false;
   if (response?.ok) {
     cancelled = true;
+    viewerWatching.clear();
     const episode = watching.episode
       ? ` ${watching.episode.number}${watching.episode.title ? ` "${watching.episode.title}"` : ''}`
       : '';
@@ -71,10 +78,18 @@ async function cancel() {
 
 <!-- Links point at media and profile pages other issues build; resolve() only takes routes that exist. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-<div class={['watching-now', { cancelled, gone: progress.gone }]} inert={cancelled || progress.gone}
+<div class={['watching-now', { card, cancelled, gone: progress.gone }]} inert={cancelled || progress.gone}
   {@attach trackDrilldowns({ source: 'watching-now' })}>
   <div class={['bar', { done: progress.finished }]} style:--progress="{progress.percent}%">
-    <Container>
+    {#if card}
+      {@render row()}
+    {:else}
+      <Container>{@render row()}</Container>
+    {/if}
+  </div>
+</div>
+
+{#snippet row()}
       <div class="row">
         <a class="thumb" href={watching.href} tabindex="-1" aria-hidden="true">
           {#if watching.stillUrl}
@@ -104,8 +119,10 @@ async function cancel() {
             <a href={watching.href}>
               <strong>{watching.title}</strong>
               {#if watching.episode}
-                <span class="sxe">{watching.episode.number}</span>
-                {#if watching.episode.title}<span class="episode-title">"{watching.episode.title}"</span>{/if}
+                <span class="episode">
+                  <span class="sxe">{watching.episode.number}</span>
+                  {#if watching.episode.title}<span class="episode-title">"{watching.episode.title}"</span>{/if}
+                </span>
               {/if}
             </a>
           </p>
@@ -136,9 +153,7 @@ async function cancel() {
           </Tooltip>
         {/if}
       </div>
-    </Container>
-  </div>
-</div>
+{/snippet}
 
 <style>
 .watching-now {
@@ -158,6 +173,24 @@ async function cancel() {
     block-size: 0;
     opacity: 0;
   }
+
+  &.card {
+    position: relative;
+    inline-size: var(--header-watching-width);
+    block-size: var(--header-watching-height);
+    overflow: visible;
+    border-radius: var(--radius-menu);
+    box-shadow: var(--shadow-menu);
+  }
+}
+
+.card .bar {
+  border: 1px solid var(--color-watching-border);
+  border-radius: inherit;
+}
+
+.card .row {
+  padding-inline: var(--header-watching-pad);
 }
 
 .bar {
@@ -282,6 +315,11 @@ async function cancel() {
   text-overflow: ellipsis;
 }
 
+/* The live dot's pulse spills past the line; the text clips itself. */
+.info .who {
+  overflow: visible;
+}
+
 .who {
   display: flex;
   align-items: center;
@@ -303,6 +341,20 @@ async function cancel() {
 
   & :is(strong, .sxe) {
     font-weight: var(--font-weight-headings-heavy);
+  }
+
+  & .episode {
+    font-size: var(--font-size-watching-episode);
+  }
+
+  /* A show on one line, its episode on the next, each clipped on its own. */
+  & a {
+    display: grid;
+
+    & > * {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
   }
 }
 
@@ -395,6 +447,10 @@ async function cancel() {
     font-size: var(--font-size-watching-title-phone);
   }
 
+  .what .episode {
+    font-size: var(--font-size-watching-episode-phone);
+  }
+
   .scrubber {
     display: contents;
   }
@@ -411,6 +467,55 @@ async function cancel() {
     inset-inline: 0;
     block-size: var(--watching-rail-hairline);
     border-radius: 0;
+  }
+}
+
+/* The header's card keeps the narrow layout's line along the full bottom edge, trimmed to the card's rounded corners,
+   with the knob centered on it (inside the card at either end) and free to hang past the edge. Also the episode title
+   and a bigger thumbnail. Its row never grows past the card, so the title clips. */
+.card {
+  .row {
+    min-inline-size: 0;
+  }
+
+  .thumb {
+    inline-size: var(--header-watching-thumb-width);
+  }
+
+  .episode-title {
+    display: inline;
+  }
+
+  .rail {
+    background: none;
+
+    /* The line in one layer, so its ends follow the corners inside the card's border without clipping the knob. */
+    &::before {
+      --corner: calc(var(--radius-menu) - 1px);
+
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to right,
+        var(--color-watching-fill) var(--progress),
+        var(--color-watching-faint) var(--progress)
+      );
+      clip-path: inset(calc(var(--watching-rail-hairline) - var(--corner)) 0 0 round 0 0 var(--corner) var(--corner));
+    }
+  }
+
+  .fill {
+    display: none;
+  }
+
+  .knob {
+    display: block;
+    inset-inline-start: clamp(
+      calc(var(--watching-knob-size) / 2),
+      var(--progress),
+      calc(100% - var(--watching-knob-size) / 2)
+    );
   }
 }
 

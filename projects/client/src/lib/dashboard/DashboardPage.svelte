@@ -27,6 +27,7 @@ import { toStatsPanel } from '#lib/dashboard/toStatsPanel.ts';
 import type { loadDashboard } from '#lib/dashboard/loadDashboard.ts';
 import type { DatePreferences } from '#lib/settings/DatePreferences.ts';
 import type { ViewerSettings } from '#lib/settings/ViewerSettings.ts';
+import { viewerWatching } from '#lib/users/viewerWatching.svelte.ts';
 import { viewerFetch } from '../auth/viewerFetch.ts';
 
 type Data = Awaited<ReturnType<typeof loadDashboard>> & {
@@ -81,7 +82,7 @@ function loadRecommendations(type: DashboardSettings['recommendations']['type'])
   <FirstNightHero firstNight={data.firstNight} firstName={data.profile.firstName}
   named={!!data.settings?.user.name?.trim()} avatarUrl={data.profile.avatarUrl} />
 {:else}
-  <DashboardGreeting user={data.profile} memberSince={data.memberSince} watching={data.watching}>
+  <DashboardGreeting user={data.profile} memberSince={data.memberSince} watching={viewerWatching.latest(data.viewerWatching)}>
   {#if data.stats}
     <!-- The API's stats render at once; og's own count streams in. -->
     {#await data.stats}

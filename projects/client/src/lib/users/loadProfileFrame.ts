@@ -64,6 +64,8 @@ export async function loadProfileFrame({ fetch, locals, params, parent, url, isD
   }
 
   const isSelf = viewer?.slug === user.slug;
+  const nowWatching = watching?.status === 200 ? toWatchingNow(watching.body) : null;
+  const answered = watching?.status === 200 || watching?.status === 204;
 
   // A client navigation may discard this layout's result, so it reads the lists only if they get used. A full page
   // render always streams them, so it starts them now.
@@ -77,7 +79,9 @@ export async function loadProfileFrame({ fetch, locals, params, parent, url, isD
     profile: user,
     /** The profile page's stat boxes and charts read it too. Null when the API keeps none: the page counts its own. */
     stats: apiUserStats(stats),
-    watching: watching?.status === 200 ? toWatchingNow(watching.body) : null,
+    watching: nowWatching,
+    /** On your own profile it's yours too. Left out when the read failed, since that says nothing. */
+    viewerWatching: isSelf && answered ? nowWatching : undefined,
     isSelf,
     signedIn: viewer !== null,
     // Streamed: the page renders without waiting for the viewer's five network lists. Lazy, so a tab switch that

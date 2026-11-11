@@ -8,8 +8,11 @@ import { headerArt } from '#lib/components/header/headerArt.ts';
 import Footer from '#lib/components/footer/Footer.svelte';
 import Header from '#lib/components/header/Header.svelte';
 import Signpost from '#lib/components/signpost/Signpost.svelte';
+import WatchingNowBar from '#lib/components/users/WatchingNowBar.svelte';
 import DemoChoice from '#lib/design/DemoChoice.svelte';
 import Specimen from '#lib/design/Specimen.svelte';
+import Variant from '#lib/design/Variant.svelte';
+import type { WatchingNow } from '#lib/users/WatchingNow.ts';
 import type { HeaderUser } from '#lib/components/header/HeaderUser.ts';
 import type { DarkKnight } from '#lib/settings/DarkKnight.ts';
 import type { SettingsBody } from '#lib/settings/SettingsBody.ts';
@@ -69,7 +72,26 @@ const LINKS: Record<string, readonly string[] | null> = {
   ],
 };
 
+const endsIn = (minutes: number) => new Date(Date.now() + minutes * 60_000).toISOString();
+const scrobbling: WatchingNow = {
+  action: 'scrobble',
+  title: 'Breaking Bad',
+  episode: { number: '5x14', title: 'Ozymandias' },
+  href: '/shows/breaking-bad/seasons/5/episodes/14',
+  fanartUrl: breakingBad,
+  stillUrl: breakingBad,
+  endsAt: endsIn(31),
+  runtime: 48,
+};
+const WATCHING: Record<string, WatchingNow | null> = {
+  Nothing: null,
+  Scrobbling: scrobbling,
+  'Checked in': { ...scrobbling, action: 'checkin', stillUrl: null },
+  'Just finished': { ...scrobbling, endsAt: endsIn(-1) },
+};
+
 let who = $state('Signed out');
+let playing = $state('Scrobbling');
 let bar = $state('Default');
 let backdrop = $state('Dark art');
 const art = $derived(BACKDROPS[backdrop]);
@@ -88,20 +110,38 @@ function save(body: SettingsBody) {
 </script>
 
 <Specimen title="Top bar" bleed
-  note="Pick a viewer and the art behind the bar, which tints its glass. Click the magnifier or press / to search (shimmering rows hold the starting list's place while it loads; pick Lists for the popular personal and official lists side by side, with ← → between them), and hover the signpost or the profile button for their menus. Signed in, rest the mouse on the links until the pencil shows, or choose Customize Header in the profile menu: drag a link's grip or use its arrow keys, trash links, and add pages, charts and calendars from Add Link's popup. Narrow the window with Many to see links fold into More.">
+  note="Pick a viewer and the art behind the bar, which tints its glass. Click the magnifier or press / to search (shimmering rows hold the starting list's place while it loads; pick Lists for the popular personal and official lists side by side, with ← → between them), and hover the signpost or the profile button for their menus. Signed in and watching, a dot sits left of the signpost: hover it for the watching card. Signed in, rest the mouse on the links until the pencil shows, or choose Customize Header in the profile menu: drag a link's grip or use its arrow keys, trash links, and add pages, charts and calendars from Add Link's popup. Narrow the window with Many to see links fold into More.">
   <div class="knobs">
     <DemoChoice label="Viewer" options={Object.keys(users).map((value) => ({ value, label: value }))} bind:value={who} />
     <DemoChoice label="Backdrop" options={Object.keys(BACKDROPS).map((value) => ({ value, label: value }))}
       bind:value={backdrop} />
     <DemoChoice label="Links" options={Object.keys(LINKS).map((value) => ({ value, label: value }))} bind:value={bar} />
+    <DemoChoice label="Watching" options={Object.keys(WATCHING).map((value) => ({ value, label: value }))}
+      bind:value={playing} />
   </div>
   <div class="site">
-    <Header {user} {renewing} searchType={data.searchType} {darkKnight} {save} links={LINKS[bar] ?? null} />
+    <Header {user} {renewing} searchType={data.searchType} {darkKnight} {save} links={LINKS[bar] ?? null}
+      watching={WATCHING[playing] ?? null} />
     {#if art}
       <div class="backdrop" style:background-image="url('{art}')" {@attach headerArt(art)}></div>
     {:else}
       <div class="backdrop plain"></div>
     {/if}
+  </div>
+</Specimen>
+
+<Specimen title="Watching card" bleed
+  note="The header dot's hover card: the profile's watching-now player at the header card's width, so it takes the bar's narrow layout. Only your own check-in has Cancel.">
+  <div class="cards">
+    {#each Object.entries(WATCHING) as [label, item] (label)}
+      {#if item}
+        <Variant {label}>
+          <div class="stage" style:background-image="url('{breakingBad}')">
+            <WatchingNowBar watching={item} owner="self" card />
+          </div>
+        </Variant>
+      {/if}
+    {/each}
   </div>
 </Specimen>
 
@@ -119,6 +159,20 @@ function save(body: SettingsBody) {
   display: grid;
   gap: var(--space-base-inline);
   padding: var(--design-canvas-padding);
+}
+
+.cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gutter);
+  padding: var(--design-canvas-padding);
+}
+
+/* Over art, like the page under the header. */
+.stage {
+  padding: var(--design-canvas-padding);
+  background-position: center;
+  background-size: cover;
 }
 
 /* The mark at the help menu's size, then the help page title's, then twice that. */

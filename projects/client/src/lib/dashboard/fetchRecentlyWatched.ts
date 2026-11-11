@@ -5,7 +5,8 @@ import { type RecentPlay, toRecentPlay } from './toRecentPlay.ts';
 
 type FetchRecentlyWatchedParams = {
   fetch: typeof globalThis.fetch;
-  token: string;
+  /** Null from the browser, whose `viewerFetch` signs the request itself. */
+  token: string | null;
   datePreferences: DatePreferences;
 };
 

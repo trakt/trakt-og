@@ -1,5 +1,6 @@
 <script lang="ts">
 import { page } from '$app/state';
+import { untrack } from 'svelte';
 import { AnalyticsEvent } from '#lib/analytics/AnalyticsEvent.ts';
 import { useTrack } from '#lib/analytics/useTrack.ts';
 import SeoHead from '#lib/seo/SeoHead.svelte';
@@ -23,6 +24,9 @@ import { dashboardPrefs } from '#lib/dashboard/dashboardPrefs.ts';
 import { fetchRecapSplit } from '#lib/dashboard/fetchRecapSplit.ts';
 import { fetchRecommendations } from '#lib/dashboard/fetchRecommendations.ts';
 import { fetchSchedule } from '#lib/dashboard/fetchSchedule.ts';
+import { fetchRecentlyWatched } from '#lib/dashboard/fetchRecentlyWatched.ts';
+import { fetchUpNext } from '#lib/dashboard/fetchUpNext.ts';
+import { refreshOnReturn } from '#lib/dashboard/refreshOnReturn.ts';
 import { toStatsPanel } from '#lib/dashboard/toStatsPanel.ts';
 import type { loadDashboard } from '#lib/dashboard/loadDashboard.ts';
 import type { DatePreferences } from '#lib/settings/DatePreferences.ts';
@@ -51,6 +55,33 @@ function loadSchedule({ filter, movies }: Pick<DashboardSettings['schedule'], 'f
     schedule: { ...data.dashboard.schedule, filter, movies },
   });
 }
+
+// Up Next and Recently Watched catch up with plays from elsewhere (a scrobble, another app): when you come back to the
+// tab, and when what you were watching ends. Each swaps in once it has loaded, so a panel never blanks.
+let upNext = $derived(data.upNext);
+let recentlyWatched = $derived(data.recentlyWatched);
+
+function refreshPlays() {
+  const fetch = viewerFetch();
+  if (data.upNext) {
+    fetchUpNext({ api: api({ fetch }), username, settings: data.dashboard.upNext })
+      .then((items) => (upNext = Promise.resolve(items)), () => {});
+  }
+  if (data.recentlyWatched) {
+    fetchRecentlyWatched({ fetch, token: null, datePreferences: data.datePreferences })
+      .then((plays) => (recentlyWatched = Promise.resolve(plays)), () => {});
+  }
+}
+
+$effect(() => refreshOnReturn({ refresh: refreshPlays }));
+
+let wasPlaying: string | null | undefined;
+$effect(() => {
+  const playing = viewerWatching.current === undefined ? undefined : (viewerWatching.current?.href ?? null);
+  const ended = !!wasPlaying && playing !== undefined && playing !== wasPlaying;
+  wasPlaying = playing;
+  if (ended) untrack(refreshPlays);
+});
 
 // A recap month's hover card splits its plays from the browser, the first time it opens.
 const loadRecapSplit = (span: RecapSpan) => fetchRecapSplit({ client: api({ fetch: viewerFetch() }), span });
@@ -98,8 +129,8 @@ function loadRecommendations(type: DashboardSettings['recommendations']['type'])
 {/if}
 <DashboardInbox requests={data.requests} />
 <!-- A panel the viewer hid comes back null. -->
-{#if data.upNext}
-  <UpNextPanel upNext={data.upNext} {username} settings={data.dashboard.upNext} {welcome} />
+{#if upNext}
+  <UpNextPanel {upNext} {username} settings={data.dashboard.upNext} {welcome} />
 {/if}
 {#if data.schedule}
   <SchedulePanel schedule={data.schedule} filter={data.dashboard.schedule.filter}
@@ -112,8 +143,8 @@ function loadRecommendations(type: DashboardSettings['recommendations']['type'])
 {#if data.lastThirtyDays}
   <LastThirtyDaysPanel stats={data.lastThirtyDays} />
 {/if}
-{#if data.recentlyWatched}
-  <RecentlyWatchedPanel plays={data.recentlyWatched} {username} datePreferences={data.datePreferences}
+{#if recentlyWatched}
+  <RecentlyWatchedPanel plays={recentlyWatched} {username} datePreferences={data.datePreferences}
   {welcome} />
 {/if}
 {#if data.socialFeed}

@@ -2,7 +2,9 @@
   import SeoHead from '#lib/seo/SeoHead.svelte';
   import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
   import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
-  import { afterNavigate, goto } from '$app/navigation';
+  import { afterNavigate, goto, invalidateAll } from '$app/navigation';
+  import { viewerFetch } from '#lib/auth/viewerFetch.ts';
+  import { settingsRequest } from '#lib/settings/settingsRequest.ts';
   import { page } from '$app/state';
   import CalendarFeed from '#lib/components/calendar/CalendarFeed.svelte';
   import MiniMonth from '#lib/components/calendar/MiniMonth.svelte';
@@ -53,6 +55,7 @@
   type CalendarView,
   } from './calendarDisplay.ts';
   import type { CalendarEntry } from './CalendarEntry.ts';
+  import { changeHideSpecials } from './changeHideSpecials.ts';
   import { calendarFilterState } from './calendarFilterState.ts';
   import CalendarAgenda from './CalendarAgenda.svelte';
   import CalendarList from './CalendarList.svelte';
@@ -99,6 +102,28 @@ const WEEKDAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'frida
     if (viewChanged) tick().then(scrollToToday);
     for (const key of Object.keys(patch) as (keyof CalendarDisplay)[]) {
       document.cookie = `${CALENDAR_DISPLAY_COOKIES[key]}=${display[key]}; path=/; samesite=lax; max-age=31536000`;
+    }
+  }
+  // An account setting, unlike the cookie choices above: it reaches every calendar and the dashboard schedule.
+  // Only My Shows and My Shows & Movies carry specials; the others are movies or fixed episode types.
+  const specialsChoice = $derived(
+    !!data.user && data.target === 'my' && ['shows', 'shows-movies'].includes(data.calendar.slug),
+  );
+  let hideSpecials = $derived(data.preferences.hideSpecials);
+  let savingSpecials = $state(false);
+  async function setHideSpecials(hide: boolean) {
+    if (savingSpecials || hide === hideSpecials) return;
+    savingSpecials = true;
+    try {
+      const saved = await changeHideSpecials({
+        hide,
+        apply: (value) => (hideSpecials = value),
+        request: settingsRequest(viewerFetch()),
+        notify: toast,
+      });
+      if (saved) await invalidateAll();
+    } finally {
+      savingSpecials = false;
     }
   }
   const views: readonly { value: CalendarView; label: string; icon: string }[] = [
@@ -615,6 +640,19 @@ const weeks = $derived(
           </li>
         </ul>
       </Dropdown>
+      {#if specialsChoice}
+        <Dropdown block section="Specials">
+          {#snippet trigger()}{hideSpecials ? 'Hidden' : 'Shown'}{/snippet}
+          <ul>
+            <li>
+              <button type="button" aria-current={!hideSpecials} onclick={() => setHideSpecials(false)}>Shown</button>
+            </li>
+            <li>
+              <button type="button" aria-current={hideSpecials} onclick={() => setHideSpecials(true)}>Hidden</button>
+            </li>
+          </ul>
+        </Dropdown>
+      {/if}
     </SidebarSection>
 
     <!-- Only a VIP's own (My) calendars have a feed; the rest of the time the section isn't there. -->

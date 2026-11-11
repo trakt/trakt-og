@@ -18,7 +18,7 @@ $effect(() => {
 
 const progress = $derived(watchingProgress({ ...watching, now, reducedMotion: true }));
 const label = $derived(
-  `You are watching ${watching.title}${watching.episode ? ` ${watching.episode.number}` : ''}`,
+  `Watching Now: ${watching.title}${watching.episode ? ` ${watching.episode.number}` : ''}`,
 );
 </script>
 

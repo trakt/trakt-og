@@ -75,6 +75,8 @@ const LINKS: Record<string, readonly string[] | null> = {
 const endsIn = (minutes: number) => new Date(Date.now() + minutes * 60_000).toISOString();
 const scrobbling: WatchingNow = {
   action: 'scrobble',
+  item: { type: 'episode', id: 62_161 },
+  showId: 1388,
   title: 'Breaking Bad',
   episode: { number: '5x14', title: 'Ozymandias' },
   href: '/shows/breaking-bad/seasons/5/episodes/14',

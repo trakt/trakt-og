@@ -37,6 +37,8 @@ export function toWatchingNow(watching: WatchingResponse): WatchingNow | null {
 
     return {
       ...base,
+      item: { type: 'movie', id: movie.ids.trakt },
+      showId: null,
       title: movie.title ?? '',
       episode: null,
       href: `/movies/${movie.ids.slug ?? movie.ids.trakt}`,
@@ -52,6 +54,8 @@ export function toWatchingNow(watching: WatchingResponse): WatchingNow | null {
   const showPath = `/shows/${show.ids.slug ?? show.ids.trakt}`;
   return {
     ...base,
+    item: { type: 'episode', id: episode.ids.trakt },
+    showId: show.ids.trakt,
     title: show.title ?? '',
     episode: { number: episodeNumber(episode, null), title: episode.title ?? '' },
     href: `${showPath}/seasons/${episode.season}/episodes/${episode.number}`,

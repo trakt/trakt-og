@@ -63,6 +63,8 @@ const free: ProfileUser = {
 const endsIn = (minutes: number) => new Date(Date.now() + minutes * 60_000).toISOString();
 const watching: WatchingNow = {
   action: 'checkin',
+  item: { type: 'episode', id: 2_534_874 },
+  showId: 139_960,
   title: 'The Boys',
   episode: { number: '1x05', title: 'Good for the Soul' },
   href: '/shows/the-boys-2019/seasons/1/episodes/5',
@@ -73,6 +75,8 @@ const watching: WatchingNow = {
 };
 const scrobbling: WatchingNow = {
   action: 'scrobble',
+  item: { type: 'movie', id: 13_458 },
+  showId: null,
   title: "Futurama: Bender's Big Score",
   episode: null,
   href: '/movies/futurama-bender-s-big-score-2007',

@@ -198,7 +198,8 @@ const profileLinks = $derived(
       ><Icon svg={check} />Done</button>
     </div>
   {:else}
-    <div class="user">
+    <!-- Cancelling a check-in from the watching card puts focus on the next control here (Help). -->
+    <div class="user" data-refocus>
       {#if user && watching}<HeaderWatching {watching} />{/if}
       <HeaderHelp />
       {#if user}

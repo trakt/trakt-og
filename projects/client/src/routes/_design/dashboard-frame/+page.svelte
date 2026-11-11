@@ -106,6 +106,8 @@ const january = Promise.resolve(toRecapRibbon({
 }));
 const watching: WatchingNow = {
   action: 'checkin',
+  item: { type: 'episode', id: 2_534_874 },
+  showId: 139_960,
   title: 'The Boys',
   episode: { number: '1x05', title: 'Good for the Soul' },
   href: '/shows/the-boys-2019/seasons/1/episodes/5',

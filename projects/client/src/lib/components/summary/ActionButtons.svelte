@@ -1,5 +1,6 @@
 <!--
-  The button stack to the right of a summary's overview: check in (a show's to its next episode), history, library, watchlist, favorites, comment,
+  The button stack to the right of a summary's overview: check in (a show's to its next episode, and while you're
+  watching this item, or one of this show's episodes, `SummaryWatching` in its place), history, library, watchlist, favorites, comment,
   each a `SummaryAction`. History, library, lists and favorites use shared optimistic controls; the rest stay idle.
   Removing a favorite asks first (`SummaryFavorite`).
   The phone Watch Now button sits above them (`WatchNow` with `phone`).
@@ -22,6 +23,9 @@ import type { ListTarget } from '#lib/components/lists/ListTarget.ts';
 import { QUICK_ADD } from '#lib/settings/quickAdd.ts';
 import SummaryAction from '#lib/components/summary/SummaryAction.svelte';
 import SummaryActionTile from '#lib/components/summary/SummaryActionTile.svelte';
+import SummaryWatching from '#lib/components/summary/SummaryWatching.svelte';
+import { isWatchingHere } from '#lib/components/summary/isWatchingHere.ts';
+import { viewerWatching } from '#lib/users/viewerWatching.svelte.ts';
 import circlePlus from '#lib/icons/light/circle-plus.svg?raw';
 import star from '#lib/icons/thin/star.svg?raw';
 import check from '#lib/icons/trakt/check.svg?raw';
@@ -33,6 +37,8 @@ import trakt from '#lib/icons/trakt/trakt-v2.svg?raw';
 interface Props {
   /** Movies and episodes. A show passes its next episode to watch. */
   checkin?: Pick<CheckinTarget, 'type' | 'id'>;
+  /** A show's pages: its id, so watching any of its episodes takes Check In's place. */
+  show?: number;
   /** Movies and shows. */
   favorites?: boolean;
   favoriteTarget?: FavoriteTarget;
@@ -50,6 +56,7 @@ interface Props {
 
 const {
   checkin,
+  show,
   favorites = false,
   favoriteTarget,
   comment: commentable = true,
@@ -68,12 +75,18 @@ async function openCheckin(item: Pick<CheckinTarget, 'type' | 'id'>) {
   await checkinModal.open(item).finally(() => (opening = false));
 }
 
+// What you're watching, when it's this page's: it stands in for Check In, which can't start another.
+const watching = $derived.by(() => {
+  const current = viewerWatching.current;
+  return current && isWatchingHere({ watching: current, item: checkin, show }) ? current : null;
+});
+
 // Logged out, "Add comment" signs in and comes back. Banned from commenting, it's gone (the page has no form).
 const signIn = $derived(signInHref(page.url));
 
 const buttons = $derived(
   [
-    checkin !== undefined && { kind: 'checkin', icon: trakt, label: 'Check In', color: 'var(--brand-primary)' },
+    (checkin !== undefined || watching !== null) && { kind: 'checkin', icon: trakt, label: 'Check In', color: 'var(--brand-primary)' },
     history &&
     {
       kind: 'watch',
@@ -105,7 +118,8 @@ const buttons = $derived(
 const percentOf = (count: number) => `${progress?.visible ? Math.trunc(count / progress.visible * 100) : 0}%`;
 </script>
 
-<div class="action-buttons">
+<!-- Cancelling a check-in from the watching button puts focus back on the first button here (Check In). -->
+<div class="action-buttons" data-refocus>
   {#if progress}
     {#each [['watch', check, progress.watched, 'watched', 'var(--brand-tertiary)'], ['collect', collection, progress.collected, 'in library', 'var(--brand-quaternary)']] as const as [kind, icon, count, label, color] (kind)}
       <SummaryAction readonly {color} {icon} percent={percentOf(count)} text={label} selected={count > 0}
@@ -121,9 +135,18 @@ const percentOf = (count: number) => `${progress?.visible ? Math.trunc(count / p
       <MediaList target={listTarget} variant="summary" />
     {:else if kind === 'favorites' && favoriteTarget}
       <SummaryFavorite target={favoriteTarget} {color} {icon} {label} />
-    {:else if kind === 'checkin' && checkin}
-      <SummaryAction {color} {icon} text={label} selected busy={opening ? 'Opening check in' : undefined} aria-haspopup="dialog"
-        aria-busy={opening} onclick={() => openCheckin(checkin)} />
+    {:else if kind === 'checkin'}
+      {#snippet checkinButton()}
+        {#if checkin}
+          <SummaryAction {color} {icon} text={label} selected busy={opening ? 'Opening check in' : undefined}
+            aria-haspopup="dialog" aria-busy={opening} onclick={() => openCheckin(checkin)} />
+        {/if}
+      {/snippet}
+      {#if watching}
+        <SummaryWatching {watching} episodeLine={show !== undefined} ended={checkinButton} />
+      {:else}
+        {@render checkinButton()}
+      {/if}
     {:else if kind === 'comment'}
       {#if !page.data.settings}
         <SummaryAction {color} {icon} text={label} href={signIn} onclick={authStep.signIn('gate')} />

@@ -3,6 +3,8 @@
 import { page } from '$app/state';
 import FanartHeader from '#lib/components/media/FanartHeader.svelte';
 import ActionButtons from '#lib/components/summary/ActionButtons.svelte';
+import SummaryWatching from '#lib/components/summary/SummaryWatching.svelte';
+import type { WatchingNow } from '#lib/users/WatchingNow.ts';
 import ExternalLinks from '#lib/components/summary/ExternalLinks.svelte';
 import MediaTools from '#lib/components/summary/MediaTools.svelte';
 import Overview from '#lib/components/summary/Overview.svelte';
@@ -58,6 +60,37 @@ const crew = [
   { id: 'writing', label: 'Writing', cast: [person('Theo Marsh', 'Writer, Story', 'male', '12 episodes')] },
 ];
 const ratingTarget = { type: 'movie', id: noWayHome.id, title: noWayHome.fullTitle } as const;
+
+const endsIn = (minutes: number) => new Date(Date.now() + minutes * 60_000).toISOString();
+const watchingMovie: WatchingNow = {
+  action: 'scrobble',
+  item: { type: 'movie', id: noWayHome.id },
+  showId: null,
+  title: noWayHome.title,
+  episode: null,
+  href: noWayHome.href,
+  fanartUrl: null,
+  stillUrl: null,
+  endsAt: endsIn(33),
+  runtime: noWayHome.runtime,
+};
+const watchingEpisode: WatchingNow = {
+  action: 'checkin',
+  item: { type: 'episode', id: pilot.id },
+  showId: breakingBad.id,
+  title: breakingBad.title,
+  episode: { number: pilot.number, title: pilot.title },
+  href: pilot.href,
+  fanartUrl: null,
+  stillUrl: null,
+  endsAt: endsIn(21),
+  runtime: pilot.runtime,
+};
+const watchingStates = [
+  { label: "Scrobbling, on the movie's page", watching: watchingMovie, episodeLine: false },
+  { label: "Checked in, on the show's page", watching: watchingEpisode, episodeLine: true },
+  { label: 'Just finished', watching: { ...watchingMovie, endsAt: endsIn(-1) }, episodeLine: false },
+];
 const biography =
   'Avery Stone is an actor known for [*Spider-Man: No Way Home*](https://app.trakt.tv/movies/spider-man-no-way-home-2021) and [*Breaking Bad*](https://app.trakt.tv/shows/breaking-bad). An early role was a guest spot on [M*A*S*H](https://app.trakt.tv/shows/m-a-s-h).';
 
@@ -217,6 +250,17 @@ const videos: readonly VideoCard[] = [
   </div>
 </Specimen>
 
+<Specimen title="Watching now"
+  note="Check In while you're watching this page's movie or episode, or any episode of this page's show: Check In's red with the live dot in white, the time watched and left ticking under Watching Now, and a white line along the bottom edge. A check-in splits off a ✕ tile like history's +; a scrobble has none. A show's page gives the episode's number and links to it. Once it ends the dot stops, then Check In comes back.">
+  <div class="watching-demo">
+    {#each watchingStates as { label, watching, episodeLine } (label)}
+      <Variant {label}>
+        <SummaryWatching {watching} {episodeLine} />
+      </Variant>
+    {/each}
+  </div>
+</Specimen>
+
 <Specimen title="Subpage title" bleed
   note="An episode's Stats page: the page label leads the tag bar, a slash splits the show from its season, then the episode type.">
   <FanartHeader image={pilot.screenshot} slim>
@@ -346,5 +390,12 @@ const videos: readonly VideoCard[] = [
 /* The summary sidebar's width, which the action stack matches. */
 .poster-demo {
   inline-size: calc(var(--summary-offset) - var(--gutter));
+}
+
+/* Three across, each about as wide as a summary's action column. */
+.watching-demo {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--gutter);
 }
 </style>

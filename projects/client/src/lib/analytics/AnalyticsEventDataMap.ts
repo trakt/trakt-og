@@ -117,7 +117,7 @@ type VipFunnelType = { source: VipUpsellSource; flow: VipFlow };
 type VipCheckoutType = VipFunnelType & { plan: string };
 type VipCheckoutFailedType = VipCheckoutType & { error: string };
 type VipConfirmFailedType = VipCheckoutType & { error: string };
-type VipGateType = { feature: 'notes' };
+type VipGateType = { feature: 'notes' | 'live' };
 type VipCancelType = {
   reason?: string;
   tenure?: string;

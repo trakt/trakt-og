@@ -27,8 +27,9 @@ const NEW_MEMBER = 'New member';
 const users: Record<string, HeaderUser | null> = {
   'Signed out': null,
   'Renewing an expired token': null,
-  'Signed in': { ...demoUser, isVip: false },
-  'Signed in, VIP': { ...demoUser, isVip: true },
+  'Signed in': { ...demoUser, isVip: false, isDirector: false },
+  'Signed in, VIP': { ...demoUser, isVip: true, isDirector: false },
+  'Director, with Live to pick': { ...demoUser, isVip: true, isDirector: true },
   [NEW_MEMBER]: {
     slug: 'reel_rookie',
     firstName: 'reel_rookie',
@@ -37,6 +38,7 @@ const users: Record<string, HeaderUser | null> = {
     joinedAt,
     named: false,
     isVip: false,
+    isDirector: false,
   },
 };
 

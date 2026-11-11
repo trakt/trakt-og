@@ -96,7 +96,15 @@ const load = ({
       Promise.resolve({
         profile,
         user: viewer
-          ? { firstName: 'X', displayName: 'X', avatarUrl: '', joinedAt: null, named: true, ...viewer }
+          ? {
+              firstName: 'X',
+              displayName: 'X',
+              avatarUrl: '',
+              joinedAt: null,
+              named: true,
+              isDirector: false,
+              ...viewer,
+            }
           : null,
         datePreferences,
       }),

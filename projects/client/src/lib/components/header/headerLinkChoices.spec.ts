@@ -3,7 +3,7 @@ import { headerLinkChoices } from './headerLinkChoices.ts';
 import { headerLinkPrefs } from './headerLinkPrefs.ts';
 
 describe('headerLinkChoices', () => {
-  const choices = headerLinkChoices({ slug: 'sean', signedIn: true });
+  const choices = headerLinkChoices({ slug: 'sean', signedIn: true, director: true });
   const byId = (id: string) => choices.find((link) => link.id === id);
 
   it('should start with Home, then the default bar', () => {
@@ -47,15 +47,26 @@ describe('headerLinkChoices', () => {
     expect(byId('calendar-my-dvd')).toMatchObject({ title: 'My DVD & Blu-ray', href: '/calendars/my/dvd' });
   });
 
+  it('should offer Live to a director, off the bar until picked', () => {
+    expect(byId('live')).toMatchObject({ title: 'Live', href: '/live', group: 'main' });
+    expect(headerLinkPrefs.DEFAULTS).not.toContain('live');
+  });
+
+  it('should leave Live out for a member who is not a director', () => {
+    const member = headerLinkChoices({ slug: 'sean', signedIn: true, director: false });
+    expect(member.some(({ id }) => id === 'live')).toBe(false);
+  });
+
   it("should leave the viewer's recommendations out of their pages", () => {
     expect(byId('recommendations')).toBeUndefined();
   });
 
   describe('for a visitor', () => {
-    const visitor = headerLinkChoices({ slug: null, signedIn: false });
+    const visitor = headerLinkChoices({ slug: null, signedIn: false, director: false });
 
-    it('should leave out Dashboard, the profile pages and the My calendars', () => {
+    it('should leave out Dashboard, Live, the profile pages and the My calendars', () => {
       expect(visitor.some(({ group }) => group === 'profile')).toBe(false);
+      expect(visitor.some(({ id }) => id === 'live')).toBe(false);
       expect(visitor.some(({ id }) => id.startsWith('calendar-my-'))).toBe(false);
       expect(visitor.map(({ id }) => id).slice(0, 5)).toEqual(['home', 'discover', 'shows', 'movies', 'calendar']);
     });

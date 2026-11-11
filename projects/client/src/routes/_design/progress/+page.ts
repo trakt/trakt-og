@@ -7,6 +7,7 @@ const VIEWER: HeaderUser = {
   displayName: 'Demo',
   avatarUrl: '',
   isVip: true,
+  isDirector: false,
   joinedAt: null,
   named: true,
 };

@@ -9,4 +9,5 @@ export const demoViewer: HeaderUser = {
   joinedAt: '2020-08-20T19:23:00.000Z',
   named: true,
   isVip: true,
+  isDirector: false,
 };

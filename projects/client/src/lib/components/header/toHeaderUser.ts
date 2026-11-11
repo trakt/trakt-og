@@ -5,6 +5,7 @@ export type SettingsUser = {
   readonly username: string;
   readonly name?: string | null;
   readonly vip: boolean;
+  readonly director?: boolean | null;
   readonly ids: { readonly slug: string };
   readonly images: { readonly avatar: { readonly full: string } };
   readonly joined_at?: string | null;
@@ -20,6 +21,7 @@ export function toHeaderUser(user: SettingsUser): HeaderUser {
     displayName,
     avatarUrl: user.images.avatar.full,
     isVip: user.vip,
+    isDirector: user.director ?? false,
     joinedAt: user.joined_at ?? null,
     named: !!user.name?.trim(),
   };

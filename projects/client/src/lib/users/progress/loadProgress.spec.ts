@@ -11,6 +11,7 @@ const viewer = {
   displayName: 'Tester',
   avatarUrl: '',
   isVip: false,
+  isDirector: false,
   joinedAt: null,
   named: true,
 };

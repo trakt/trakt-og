@@ -113,6 +113,7 @@ describe('loadHome', () => {
         displayName: 'Sean',
         avatarUrl: '',
         isVip: true,
+        isDirector: false,
         joinedAt: null,
         named: true,
       }),

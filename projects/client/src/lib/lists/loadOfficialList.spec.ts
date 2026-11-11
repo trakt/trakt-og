@@ -73,6 +73,7 @@ const load = (query = '', slug = 'collection', signedIn = false) =>
               firstName: 'Kim',
               displayName: 'Kim',
               isVip: false,
+              isDirector: false,
               avatarUrl: '',
               joinedAt: null,
               named: true,

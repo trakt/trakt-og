@@ -98,6 +98,7 @@ describe('root layout settings', () => {
       firstName: 'OG',
       displayName: 'OG Tester',
       isVip: true,
+      isDirector: false,
       avatarUrl: SETTINGS.user.images.avatar.full,
       joinedAt: null,
       named: true,

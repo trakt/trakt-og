@@ -1,6 +1,7 @@
 import type { detectCrawler } from './lib/crawl/detectCrawler.ts';
 import type { Theme } from './lib/settings/Theme.ts';
 import type { loadViewerLists } from './lib/users/loadViewerLists.ts';
+import type { WatchingNow } from './lib/users/WatchingNow.ts';
 
 // See https://svelte.dev/docs/kit/types#app.d.ts
 // for information about these interfaces
@@ -28,7 +29,13 @@ declare global {
       /** The viewer's saved theme, set by the root layout's load and written onto `<html>` by hooks.server.ts. */
       theme?: Theme;
     }
-    // interface PageData {}
+    interface PageData {
+      /**
+       * What the viewer is watching, from a page whose server load read it (the dashboard, their own profile), so the
+       * header's dot doesn't ask again. Left out everywhere else.
+       */
+      viewerWatching?: WatchingNow | null;
+    }
     // interface PageState {}
   }
 }

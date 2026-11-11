@@ -15,6 +15,7 @@ const target: CheckinTarget = { type: 'movie', id: 432, fullTitle: 'Fight Club (
 
 function setup() {
   const notify = { success: vi.fn(), error: vi.fn() };
+  const refreshWatching = vi.fn(() => Promise.resolve());
   const request = (path: string, body?: unknown) =>
     rawApiFetch({
       path,
@@ -24,6 +25,7 @@ function setup() {
     target,
     request,
     notify,
+    refreshWatching,
     now: () => new Date('2026-09-29T12:00:00Z'),
   };
 }
@@ -42,6 +44,22 @@ describe('checkinMedia', () => {
     expect(await checkinMedia(params)).toBe(true);
     expect(body).toEqual({ movie: { ids: { trakt: 432 } } });
     expect(params.notify.success).toHaveBeenCalledWith('You checked in to Fight Club (1999).');
+  });
+
+  it('should refresh what the viewer is watching once the check-in starts', async () => {
+    server.use(http.post(`${API}/checkin`, () => HttpResponse.json({ id: 1 }, { status: 201 })));
+    const params = setup();
+
+    await checkinMedia(params);
+    expect(params.refreshWatching).toHaveBeenCalledOnce();
+  });
+
+  it('should leave what the viewer is watching alone when the check-in fails', async () => {
+    server.use(http.post(`${API}/checkin`, () => HttpResponse.json({ message: 'x' }, { status: 422 })));
+    const params = setup();
+
+    await checkinMedia(params);
+    expect(params.refreshWatching).not.toHaveBeenCalled();
   });
 
   it('should name the current check-in and the wait on a conflict', async () => {

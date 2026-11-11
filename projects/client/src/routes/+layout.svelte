@@ -30,6 +30,9 @@ import OfflineGuard from '#lib/errors/OfflineGuard.svelte';
 import WatchNowHost from '#lib/components/watchnow/WatchNowHost.svelte';
 import { startBrokenImages } from '#lib/images/brokenImageFallback.ts';
 import { startOverlay } from '#lib/overlay/startOverlay.ts';
+import { pollWatching } from '#lib/dashboard/pollWatching.ts';
+import { fetchViewerWatching } from '#lib/users/fetchViewerWatching.ts';
+import { viewerWatching } from '#lib/users/viewerWatching.svelte.ts';
 import { browserTimeZone } from '#lib/settings/browserTimeZone.ts';
 import { toDarkKnight } from '#lib/settings/toDarkKnight.ts';
 import { toTheme } from '#lib/settings/toTheme.ts';
@@ -66,6 +69,22 @@ $effect(() => {
   const manager = userManager();
   const stops = [startOverlay(manager), startCommentReactions(manager)];
   stopApp = () => stops.forEach((stop) => stop());
+});
+
+// A page whose server load read what you're watching hands it over first, so the poll below doesn't ask again.
+$effect.pre(() => {
+  const seed = page.data.viewerWatching;
+  if (seed !== undefined) viewerWatching.seed(seed);
+});
+
+// The header's watching dot: asked every 2 minutes while the tab shows, skipped when a page or a check-in just said.
+const viewer = $derived(data.user?.slug ?? null);
+$effect(() => {
+  if (!awake || !viewer) return;
+  return pollWatching({
+    load: () => viewerWatching.refresh({ load: fetchViewerWatching, maxAge: 60_000 }),
+    onupdate: () => {},
+  });
 });
 
 onMount(startBrokenImages);
@@ -105,7 +124,7 @@ onMount(() => {
     {#if !errored}
       <a class="skip" href="#content">Skip to content</a>
       <Header user={data.user} renewing={data.tokenExpired || data.rateLimited} searchType={data.searchType} {darkKnight}
-        links={data.headerLinks} />
+        links={data.headerLinks} watching={viewerWatching.latest(page.data.viewerWatching ?? null)} />
     {/if}
     <main id="content" tabindex="-1" aria-busy={leaving || undefined}>
       {@render children()}

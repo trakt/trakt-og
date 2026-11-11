@@ -35,6 +35,8 @@ import type { SettingsBody } from '#lib/settings/SettingsBody.ts';
 import { traktUrls } from '#lib/traktUrls.ts';
 import { MediaQuery } from 'svelte/reactivity';
 import HeaderHelp from './HeaderHelp.svelte';
+import HeaderWatching from './HeaderWatching.svelte';
+import type { WatchingNow } from '#lib/users/WatchingNow.ts';
 import { headerLinkChoices } from './headerLinkChoices.ts';
 import { headerLinkPrefs } from './headerLinkPrefs.ts';
 import HeaderLinks from './HeaderLinks.svelte';
@@ -63,6 +65,8 @@ import { signInHref } from '../../auth/signInHref.ts';
     save?: (body: SettingsBody) => Promise<SaveSettingsResult>;
     /** The member's own bar from the og-header cookie, in order. Null keeps the default links. */
   links?: readonly string[] | null;
+  /** What the member is checked in to or scrobbling, for the dot left of Help. */
+  watching?: WatchingNow | null;
   }
 
   const { track: trackVipUpsell } = useTrack(AnalyticsEvent.VipUpsell);
@@ -80,6 +84,7 @@ const browserSave = (body: SettingsBody) =>
     darkKnight: saved = 'false',
     save = browserSave,
   links: savedLinks = null,
+  watching = null,
   }: Props = $props();
 
   const signedIn = $derived(user !== null || renewing);
@@ -153,7 +158,7 @@ const profileLinks = $derived(
 
 <!--
   The fixed top bar, on dark glass tinted by the page's backdrop (HeaderTint): the Trakt mark, the search icon and the
-  main links on the left, and on the right the help menu and the account: Get VIP and the profile menu, or one Sign
+  main links on the left, and on the right what the member is watching (HeaderWatching), the help menu and the account: Get VIP and the profile menu, or one Sign
   In button.
   While an expired session renews, it keeps the signed-in links and leaves the account empty until the user loads.
   A member picks their own links: Customize Header in the profile menu, or the pencil that shows when the mouse rests
@@ -194,6 +199,7 @@ const profileLinks = $derived(
     </div>
   {:else}
     <div class="user">
+      {#if user && watching}<HeaderWatching {watching} />{/if}
       <HeaderHelp />
       {#if user}
       <GettingStarted slug={user.slug} named={user.named} joinedAt={user.joinedAt} />

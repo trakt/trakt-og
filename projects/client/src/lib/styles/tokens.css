@@ -1740,6 +1740,10 @@
   --color-profile-remove-hover: color-mix(in srgb, var(--brand-primary) 22%, rgb(10 10 10 / 0.88));
   --profile-tabs-height: 54px; /* the header's glass and link pills */
   --profile-watching-height: 92px; /* 19px above and below the 54px thumbnail */
+  --header-watching-width: 420px; /* the header's card, under the bar's 600px phone layout */
+  --header-watching-height: 84px;
+  --header-watching-pad: 12px;
+  --header-watching-thumb-width: 80px; /* 16:9 */
   --font-size-profile-meta: 16px; /* counts and location under an official list's name */
   /* Watching-now player: a now-playing bar over the cover. It always sits on a photo, so it doesn't follow the theme. */
   --watching-gap: 16px;
@@ -1765,6 +1769,8 @@
   --font-size-watching-kicker: 12px;
   --font-size-watching-title: 16px;
   --font-size-watching-title-phone: 14px;
+  --font-size-watching-episode: 14px; /* a show's episode line, a step under its title */
+  --font-size-watching-episode-phone: 12px;
   --font-size-watching-time: 13px;
   --font-size-btn-circle: 18px;
   --font-size-private-subtitle: 18px;

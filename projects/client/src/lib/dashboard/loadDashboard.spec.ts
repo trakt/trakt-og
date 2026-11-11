@@ -84,7 +84,7 @@ describe('loadDashboard', () => {
     expect(data.profile.firstName).toBe('OG');
     expect(data.memberSince).toBe('Aug 20, 2020 12:23 PM');
     expect(data.requests.at(0)).toMatchObject({ id: 1, name: 'Toby Gerlach', requestedAt: 'Sep 29, 2026 3:00 PM' });
-    expect(data.watching).toBeNull();
+    expect(data.viewerWatching).toBeNull();
     expect(seen.every((request) => request.headers.get('authorization') === 'Bearer token')).toBe(true);
   });
 

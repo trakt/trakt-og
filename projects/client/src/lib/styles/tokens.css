@@ -1495,6 +1495,66 @@
   --hyperspace-text-width: 360px;
   --transition-hyperspace-arrive: 0.3s;
 
+  /* Private sky: behind a private profile the viewer can't see, always dark like hyperspace (PrivateSky) */
+  --gradient-private-sky: radial-gradient(ellipse at 50% 45%, #0b1a26 0%, #04070b 70%);
+  --color-private-sky-star: #e6eef5;
+  --color-private-sky-star-bright: #cdeeff; /* the biggest near stars */
+  --color-private-sky-hull: #d6dee6;
+  --color-private-sky-engine: #ff9a6a; /* a fighter's exhaust */
+  --color-private-sky-ion: #9fd7ff; /* a cruiser's engines */
+  --color-private-sky-bolt: #ff5050;
+  --color-private-sky-streak: #e6f0ff; /* a shooting star's head */
+  --color-private-sky-moon-light: #b9c3cc;
+  --color-private-sky-moon-dark: #2c343c;
+  --color-private-sky-crater: #20272e; /* the moon's dish and trench */
+  --color-private-sky-lens: #7d8893; /* the dot in the middle of the dish */
+  --color-private-sky-tip: rgb(255 255 255 / 0.85); /* the line under the moon */
+  --color-private-signal: #8fdcff; /* the line over the message, in the hologram's blue */
+  --color-private-signal-pending: #ffb547; /* once the viewer has asked to follow */
+  --letter-spacing-private-signal: 0.14em;
+  --space-private-message: 10px;
+  --space-private-heading: 26px; /* extra room between the signal line and the heading */
+  --space-private-crest: 14px; /* between the heading and the Imperial crest at each end */
+  --space-private-notice-block: 22px;
+  --space-private-notice-inline: 32px;
+  --space-private-notice-after: 8px; /* a little more room before the buttons under the panel */
+  --color-private-notice-bg: rgb(4 8 12 / 0.45);
+  --color-private-notice-border: rgb(143 220 255 / 0.16); /* the hologram's blue, faint */
+  --radius-private-notice: 16px;
+  --blur-private-notice: blur(8px); /* softens the stars and ships passing behind the panel */
+  --private-message-width: 440px; /* the line under the heading */
+
+  /* Hologram: a private profile's avatar, projected in blue over the sky (HologramAvatar) */
+  --hologram-size: 132px;
+  --color-hologram-backdrop: rgb(143 220 255 / 0.1);
+  --opacity-hologram: 0.8;
+  --filter-hologram: grayscale(1) sepia(1) hue-rotate(155deg) saturate(2.4) brightness(0.95);
+  --shadow-hologram: inset 0 0 0 1.5px rgb(143 220 255 / 0.7), 0 0 40px rgb(143 220 255 / 0.35);
+  --hologram-scanline-period: 4px;
+  --gradient-hologram-scanlines: repeating-linear-gradient(
+    to bottom,
+    transparent 0 2px,
+    rgb(4 7 11 / 0.55) 2px var(--hologram-scanline-period)
+  );
+  --hologram-cone-width: 150px;
+  --hologram-cone-height: 58px;
+  --hologram-cone-overlap: 4px; /* tucks the beam under the disc */
+  --gradient-hologram-cone: linear-gradient(to top, rgb(143 220 255 / 0.4), rgb(143 220 255 / 0.02));
+  --hologram-emitter-width: 46px;
+  --hologram-emitter-height: 9px;
+  --gradient-hologram-emitter: radial-gradient(ellipse, #dff6ff 0%, #8fdcff 40%, transparent 75%);
+  --shadow-hologram-emitter: 0 0 18px 4px rgb(143 220 255 / 0.5);
+  /* The same hologram in amber while the viewer's follow request waits */
+  --color-hologram-backdrop-pending: rgb(255 181 71 / 0.1);
+  --filter-hologram-pending: grayscale(1) sepia(1) saturate(3) brightness(1.05);
+  --shadow-hologram-pending: inset 0 0 0 1.5px rgb(255 181 71 / 0.7), 0 0 40px rgb(255 181 71 / 0.35);
+  --gradient-hologram-cone-pending: linear-gradient(to top, rgb(255 181 71 / 0.4), rgb(255 181 71 / 0.02));
+  --gradient-hologram-emitter-pending: radial-gradient(ellipse, #fff0d6 0%, #ffb547 40%, transparent 75%);
+  --shadow-hologram-emitter-pending: 0 0 18px 4px rgb(255 181 71 / 0.5);
+  --duration-hologram-flicker: 7s;
+  --duration-hologram-scan: 3s;
+  --duration-hologram-pulse: 4s;
+
   /* Shimmer: a bar standing in for numbers and names while they load */
   --shimmer: linear-gradient(
     90deg,
@@ -1710,8 +1770,6 @@
   --font-size-private-subtitle: 18px;
   --color-btn-circle-bg: rgb(255 255 255 / 0.2);
   --color-btn-circle-bg-hover: rgb(255 255 255 / 0.3);
-  --color-profile-private-overlay: rgb(0 0 0 / 0.4);
-  --color-profile-private-message-bg: rgb(0 0 0 / 0.5);
 
   --color-watching-tint: var(--brand-primary);
   --watching-tint: 16%; /* a subtle red over the header's glass */

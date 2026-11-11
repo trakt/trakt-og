@@ -5,7 +5,7 @@
   watching-now player and the section tabs. The name block is one left-aligned row: centered on the slim cover, and
   low on the tall one so the art shows. The profile page gets the tall cover when there's art to show (the owner's
   cover or what they're watching); every subpage, and a profile without art, gets the slim one on OG's damask. A
-  private profile the viewer can't see gets the full-height lock screen instead of the tabs.
+  private profile the viewer can't see gets a full-height sky instead, with the avatar as a hologram and no tabs.
 -->
 <script lang="ts">
 import { getContext, setContext } from 'svelte';
@@ -13,7 +13,6 @@ import { changeRelationship } from '#lib/users/changeRelationship.ts';
 import { createRelationshipOverlay } from '#lib/users/createRelationshipOverlay.svelte.ts';
 import { relationshipRequest } from '#lib/users/relationshipRequest.ts';
 import defaultCover from '#lib/assets/profile-cover-default.jpg';
-import privateCover from '#lib/assets/profile-cover-private.jpg';
 import Container from '#lib/components/container/Container.svelte';
 import { headerArt } from '#lib/components/header/headerArt.ts';
 import Dropdown from '#lib/components/dropdown/Dropdown.svelte';
@@ -25,8 +24,8 @@ import Icon from '#lib/icons/Icon.svelte';
 import ban from '#lib/icons/regular/ban.svg?raw';
 import circleCheck from '#lib/icons/regular/circle-check.svg?raw';
 import ellipsis from '#lib/icons/regular/ellipsis.svg?raw';
+import empire from '#lib/icons/brands/empire.svg?raw';
 import flag from '#lib/icons/regular/flag.svg?raw';
-import skull from '#lib/icons/solid/skull.svg?raw';
 import userXmark from '#lib/icons/regular/user-xmark.svg?raw';
 import type { ProfileTab } from '#lib/users/profileTabs.ts';
 import type { UserMatch } from '#lib/users/match/UserMatch.ts';
@@ -36,6 +35,8 @@ import type { WatchingNow } from '#lib/users/WatchingNow.ts';
 import { savedName } from '#lib/firstNight/savedName.svelte.ts';
 import FollowButtons from './FollowButtons.svelte';
 import FollowRequest from './FollowRequest.svelte';
+import HologramAvatar from './HologramAvatar.svelte';
+import PrivateSky from './PrivateSky.svelte';
 import ProfilePills from './ProfilePills.svelte';
 import ProfileTabs from './ProfileTabs.svelte';
 import WatchingNowBar from './WatchingNowBar.svelte';
@@ -74,11 +75,26 @@ const relationships = getContext<ReturnType<typeof createRelationshipOverlay>>('
   createRelationshipOverlay();
 setContext('user-relationships', relationships);
 let reporting = $state(false);
+// A private profile's sky needs the follow state outside the await blocks, to launch a ship when a request goes out.
+let viewer = $state<ViewerRelation | null>(null);
+let hologram = $state<HTMLElement>();
+$effect(() => {
+  viewer = null;
+  if (!user.isLocked || !relation) return;
+  let current = true;
+  relation.then((resolved) => {
+    if (current) viewer = resolved;
+  }, () => undefined);
+  return () => {
+    current = false;
+  };
+});
+const requested = $derived(viewer ? relationships.state(user.slug, viewer).relation.follow === 'pending' : null);
 const href = $derived(`/users/${user.slug}`);
-const cover = $derived(user.isLocked ? privateCover : (watching?.fanartUrl ?? coverUrl ?? user.coverUrl));
+const cover = $derived(user.isLocked ? undefined : (watching?.fanartUrl ?? coverUrl ?? user.coverUrl));
 const slim = $derived(!user.isLocked && (!large || !cover));
-// The tall cover is shaded at the top for the header, and from the bottom left for the name. The slim and private ones
-// are shaded from the left, except the slim damask, which needs none.
+// The tall cover is shaded at the top for the header, and from the bottom left for the name. The slim one is shaded
+// from the left, except the slim damask, which needs none. A private profile has no cover, only its sky.
 const overlay = $derived(slim || user.isLocked ? (cover ? 'shadow' : null) : 'shade');
 // Your own name updates here the moment you save it on the page.
 const name = $derived((isSelf && savedName.value) || user.displayName);
@@ -100,10 +116,10 @@ const change = (viewer: ViewerRelation, action: 'unfollow' | 'block' | 'unblock'
 <section
   class={['profile-cover', { slim, locked: user.isLocked, watching }]}
   style:--cover="url('{cover ?? defaultCover}')"
-  {@attach headerArt(cover ?? defaultCover)}
+  {@attach headerArt(user.isLocked ? undefined : (cover ?? defaultCover))}
 >
   {#if overlay}<div class={overlay}></div>{/if}
-  {#if user.isLocked}<div class="locked-overlay"></div>{/if}
+  {#if user.isLocked}<PrivateSky {requested} origin={hologram} />{/if}
 
   <!-- An incoming follow request: a question bar under the site header. The cover grows to make room for it. -->
   {#if showOthersControls && relation}
@@ -120,7 +136,11 @@ const change = (viewer: ViewerRelation, action: 'unfollow' | 'block' | 'unblock'
     <Container>
       <div class="about">
         <a class="avatar-link" {href} tabindex="-1" aria-hidden="true">
-          <img class="avatar" src={user.avatarUrl} alt="" width="72" height="72" />
+          {#if user.isLocked}
+            <HologramAvatar src={user.avatarUrl} pending={requested} bind:element={hologram} />
+          {:else}
+            <img class="avatar" src={user.avatarUrl} alt="" width="72" height="72" />
+          {/if}
         </a>
         <div class="identity">
           <h1>
@@ -166,6 +186,18 @@ const change = (viewer: ViewerRelation, action: 'unfollow' | 'block' | 'unblock'
           {/if}
         </div>
 
+        {#if user.isLocked}
+          <div class="locked-message">
+            <p class={['signal', { pending: requested }]} aria-hidden="true">
+              {requested ? 'Request sent · awaiting clearance' : 'Transmission restricted'}
+            </p>
+            <div class="notice">
+              <h2><Icon svg={empire} />{user.firstName}'s profile is private<Icon svg={empire} /></h2>
+              <p>Follow {user.firstName} and you'll be able to see their profile if they accept your request.</p>
+            </div>
+          </div>
+        {/if}
+
         {#if showOthersControls && relation}
           {#await relation}
             <div class="buttons" aria-busy="true"><FollowButtonShimmer /></div>
@@ -181,14 +213,7 @@ const change = (viewer: ViewerRelation, action: 'unfollow' | 'block' | 'unblock'
     </Container>
   </div>
 
-  {#if user.isLocked}
-    <div class="locked-message">
-      <h2>
-        <Icon svg={skull} />&nbsp; {user.firstName}'s profile is private <Icon svg={skull} />
-      </h2>
-      <p>Follow {user.firstName} and you'll be able to see their profile if they accept your request.</p>
-    </div>
-  {:else}
+  {#if !user.isLocked}
     <!-- The player and the tabs stack at the foot of the cover, as one glass deck. -->
     <div class="deck">
       {#if watching}
@@ -236,12 +261,12 @@ const change = (viewer: ViewerRelation, action: 'unfollow' | 'block' | 'unblock'
   &.locked {
     --deck: 0px;
     block-size: 100vh;
+    background: var(--gradient-private-sky);
   }
 }
 
 .shade,
-.shadow,
-.locked-overlay {
+.shadow {
   position: absolute;
   inset: 0;
 }
@@ -252,10 +277,6 @@ const change = (viewer: ViewerRelation, action: 'unfollow' | 'block' | 'unblock'
 
 .shadow {
   background: var(--gradient-profile-shadow);
-}
-
-.locked-overlay {
-  background-color: var(--color-profile-private-overlay);
 }
 
 .request {
@@ -280,8 +301,9 @@ const change = (viewer: ViewerRelation, action: 'unfollow' | 'block' | 'unblock'
     padding-block-end: 0;
   }
 
+  /* The private sky fills the screen, so its message centers on the whole of it, header included. */
   .locked & {
-    padding-block-end: 50px;
+    inset-block-start: 0;
   }
 }
 
@@ -387,6 +409,12 @@ h1 {
     justify-content: center;
     margin-inline-start: 0;
   }
+
+  /* A request waiting on a private profile takes the signal line's amber; hovering still turns it to Cancel. */
+  .locked & :global(.btn.pending:not(:hover, :focus-visible)) {
+    border-color: var(--color-private-signal-pending);
+    color: var(--color-private-signal-pending);
+  }
 }
 
 .deck {
@@ -402,23 +430,52 @@ h1 {
 }
 
 .locked-message {
-  position: absolute;
-  inset-block-end: 0;
-  inline-size: 100%;
-  background-color: var(--color-profile-private-message-bg);
-  text-align: center;
+  display: grid;
+  justify-items: center;
+  gap: var(--space-private-message);
 
   & h2 {
-    margin: 25px 0 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: var(--space-private-crest);
+    margin: 0;
     font-size: var(--font-size-h1);
     font-weight: var(--font-weight-headings);
   }
 
   & p {
-    margin: 0 0 25px;
+    margin: 0;
     font-family: var(--font-headings);
     font-size: var(--font-size-private-subtitle);
+    max-inline-size: var(--private-message-width);
     line-height: var(--line-height-headings);
+    text-wrap: balance;
+  }
+
+  & .signal {
+    color: var(--color-private-signal);
+    font-family: var(--font-mono);
+    font-size: var(--font-size-small);
+    letter-spacing: var(--letter-spacing-private-signal);
+    text-transform: uppercase;
+  }
+
+  & .pending {
+    color: var(--color-private-signal-pending);
+  }
+
+  /* A faint panel holds the heading and its line, so they read over the sky; the buttons stay outside it. */
+  & .notice {
+    display: grid;
+    justify-items: center;
+    gap: var(--space-private-message);
+    margin-block: var(--space-private-heading) var(--space-private-notice-after);
+    padding: var(--space-private-notice-block) var(--space-private-notice-inline);
+    border: 1px solid var(--color-private-notice-border);
+    border-radius: var(--radius-private-notice);
+    background-color: var(--color-private-notice-bg);
+    backdrop-filter: var(--blur-private-notice);
   }
 }
 
@@ -448,7 +505,7 @@ h1 {
   }
 
   .locked-message h2 {
-    margin: 25px 0 15px;
+    flex-wrap: wrap;
     font-size: var(--font-size-h2);
   }
 

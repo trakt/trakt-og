@@ -21,18 +21,25 @@ describe('toHomeLive', () => {
   it('should give each country its share of everyone on the map, each person once, most first', () => {
     const live = toHomeLive(TOTAL, [
       source('shows', 'Severance', [
+        ...people('l', 8, 'London, United Kingdom'),
         { username: 'a', location: 'Brazil' },
-        { username: 'b', location: 'London, United Kingdom' },
-        { username: 'c', location: 'Manchester, England' },
       ]),
-      source('shows', 'Fringe', [{ username: 'a', location: 'Brazil' }]),
-      source('movies', 'Tron', [{ username: 'd', location: 'UK' }]),
+      source('shows', 'Fringe', [{ username: 'a', location: 'Brazil' }, ...people('b', 4, 'Brazil')]),
+      source('movies', 'Tron', people('u', 7, 'UK')),
     ]);
 
     expect(live.countries.map(({ code, name, share }) => ({ code, name, share }))).toEqual([
       { code: 'GB', name: 'United Kingdom', share: 0.75 },
       { code: 'BR', name: 'Brazil', share: 0.25 },
     ]);
+  });
+
+  it("should round shares to a tenth of a percent, so they can't be worked back into people", () => {
+    const live = toHomeLive(TOTAL, [
+      source('shows', 'Severance', [...people('g', 7, 'UK'), ...people('f', 6, 'France')]),
+    ]);
+
+    expect(live.countries.map(({ share }) => share)).toEqual([0.538, 0.462]);
   });
 
   it("should give a country's shows share and most watched title once five people are there", () => {
@@ -47,19 +54,24 @@ describe('toHomeLive', () => {
     });
   });
 
-  it('should keep what fewer than five people are watching off the page', () => {
-    const live = toHomeLive(TOTAL, [source('shows', 'Severance', people('s', 4, 'Iceland'))]);
+  it('should give every country with fewer than five people the same floor share, by name, and no split', () => {
+    const live = toHomeLive(TOTAL, [
+      source('shows', 'Severance', [
+        ...people('s', 6, 'Spain'),
+        ...people('i', 4, 'Iceland'),
+        ...people('m', 1, 'Malta'),
+      ]),
+    ]);
 
-    expect(live.countries).toEqual([{ code: 'IS', name: 'Iceland', share: 1 }]);
+    expect(live.countries.slice(1)).toEqual([
+      { code: 'IS', name: 'Iceland', share: 0.0005 },
+      { code: 'MT', name: 'Malta', share: 0.0005 },
+    ]);
   });
 
   it('should leave people without a known location off the map and out of the shares', () => {
     const live = toHomeLive(TOTAL, [
-      source('shows', 'Severance', [
-        { username: 'a', location: null },
-        { username: 'b' },
-        { username: 'c', location: 'Chile' },
-      ]),
+      source('shows', 'Severance', [{ username: 'a', location: null }, { username: 'b' }, ...people('c', 5, 'Chile')]),
     ]);
 
     expect(live.countries.map(({ code, share }) => ({ code, share }))).toEqual([{ code: 'CL', share: 1 }]);

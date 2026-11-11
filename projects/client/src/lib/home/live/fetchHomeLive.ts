@@ -1,21 +1,8 @@
 import { api } from '../../api/api.ts';
 import type { LiveNow } from '../../charts/fetchLiveNow.ts';
 import type { HomeTrending } from './fetchHomeTrending.ts';
-import type { HomeTrendingTitle } from './toHomeTrending.ts';
-import { type HomeLive, type HomeWatchingSource, toHomeLive } from './toHomeLive.ts';
-
-async function watchingOf(
-  client: ReturnType<typeof api>,
-  title: HomeTrendingTitle,
-): Promise<HomeWatchingSource | null> {
-  const request = { params: { id: title.slug }, query: { extended: 'full' as const } };
-  const response = await (title.type === 'shows'
-    ? client.shows.watching(request)
-    : client.movies.watching(request)
-  ).catch(() => null);
-  if (response?.status !== 200) return null;
-  return { type: title.type, title: title.title, year: title.year, href: title.href, watchers: response.body };
-}
+import { fetchTitleWatching } from './fetchTitleWatching.ts';
+import { type HomeLive, toHomeLive } from './toHomeLive.ts';
 
 interface FetchHomeLiveParams {
   fetch: typeof globalThis.fetch;
@@ -33,10 +20,10 @@ export async function fetchHomeLive({ fetch, trending, liveNow }: FetchHomeLiveP
   const client = api({ fetch });
   const [total, sources] = await Promise.all([
     liveNow(fetch),
-    Promise.all([...trending.shows, ...trending.movies].map((title) => watchingOf(client, title))),
+    Promise.all([...trending.shows, ...trending.movies].map((title) => fetchTitleWatching(client, title))),
   ]);
   if (!total) throw new Error('Trending answered no total.');
-  const read = sources.filter((source) => source !== null);
+  const read = sources.flatMap((watching) => (watching ? [watching.source] : []));
   if (read.length === 0) throw new Error('No watching list answered.');
   return toHomeLive(total, read);
 }

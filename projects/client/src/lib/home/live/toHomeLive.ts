@@ -44,8 +44,15 @@ export type HomeLive = {
 
 type Seen = { readonly type: HomeMediaType; readonly code: string | null; readonly source: HomeWatchingSource };
 
-/** Fewer people than this in a country and the page shows only how big a share they are. */
+/** Fewer people than this in a country and the page shows only that a few people are there. */
 const QUIET = 5;
+/** Shares go out to a tenth of a percent, so they can't be worked back into head counts. */
+const SHARE_PLACES = 1000;
+/** Every country with only a few people gets this share, whatever its count: on the map, but under every real one. */
+const QUIET_SHARE = 0.5 / SHARE_PLACES;
+
+const shareOf = (count: number, located: number) =>
+  count < QUIET ? QUIET_SHARE : Math.max(Math.round((count / located) * SHARE_PLACES), 1) / SHARE_PLACES;
 
 const regionNames = new Intl.DisplayNames(['en'], { type: 'region' });
 
@@ -65,7 +72,7 @@ interface ToCountryParams {
 const toCountry = ({ code, seen, located }: ToCountryParams): HomeLiveCountry => ({
   code,
   name: regionNames.of(code) ?? code,
-  share: seen.length / located,
+  share: shareOf(seen.length, located),
   ...(seen.length >= QUIET && {
     watching: { shows: seen.filter(({ type }) => type === 'shows').length / seen.length, top: topTitle(seen) },
   }),
@@ -74,8 +81,9 @@ const toCountry = ({ code, seen, located }: ToCountryParams): HomeLiveCountry =>
 /**
  * Where the people watching the trending titles right now are, counted once each, as each country's share of everyone
  * whose profile names one. Private profiles come back without a location, so they never reach the map. Only shares
- * leave the server, never head counts; the totals are Trending's, a different count, so a share can't be turned back
- * into people.
+ * leave the server, never head counts: rounded to a tenth of a percent, and the same floor for every country with only
+ * a few people, so neither the shares nor how they change can be turned back into people. The totals are Trending's,
+ * a different count.
  */
 export function toHomeLive(total: LiveNow, sources: readonly HomeWatchingSource[]): HomeLive {
   const people = new Map<string, Seen>(

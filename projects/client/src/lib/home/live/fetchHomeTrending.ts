@@ -1,4 +1,4 @@
-import { api } from '../../api/api.ts';
+import type { api } from '../../api/api.ts';
 import type { HomeMediaType } from './toHomeLive.ts';
 import { type HomeTrendingTitle, toHomeTrending } from './toHomeTrending.ts';
 
@@ -26,8 +26,7 @@ async function trendingOf(client: ReturnType<typeof api>, type: HomeMediaType) {
 }
 
 /** Trending shows and movies, read without a token. Either failing throws, so the cache keeps the last good pair. */
-export async function fetchHomeTrending(fetch: typeof globalThis.fetch): Promise<HomeTrending> {
-  const client = api({ fetch });
+export async function fetchHomeTrending(client: ReturnType<typeof api>): Promise<HomeTrending> {
   const [shows, movies] = await Promise.all([trendingOf(client, 'shows'), trendingOf(client, 'movies')]);
   return { shows, movies };
 }

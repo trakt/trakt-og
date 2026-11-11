@@ -33,7 +33,13 @@ const server = setupServer(
     }),
   ),
   http.get('https://apiz.trakt.tv/:type/:slug/watching', ({ params }) =>
-    HttpResponse.json([{ username: `${params.type}-${params.slug}`, private: false, location: 'Brazil' }]),
+    HttpResponse.json(
+      Array.from({ length: 5 }, (_, i) => ({
+        username: `${params.type}-${params.slug}-${i}`,
+        private: false,
+        location: 'Brazil',
+      })),
+    ),
   ),
   http.get('https://apiz.trakt.tv/:type/:slug', ({ request, params }) => {
     seen.push(request);

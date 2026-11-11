@@ -1,10 +1,25 @@
 import adapter from '@sveltejs/adapter-cloudflare';
+import type { Adapter } from '@sveltejs/kit';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { Features } from 'lightningcss';
+import { appendFile } from 'node:fs/promises';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { loadEnv } from 'vite';
 import { defineConfig } from 'vitest/config';
+
+// Cloudflare needs a Durable Object's class exported from the worker's own module, and SvelteKit's adapter only
+// exports the request handler. Wrangler bundles the class when it deploys.
+const withWatchingNowLive = (base: Adapter): Adapter => ({
+  ...base,
+  async adapt(builder) {
+    await base.adapt(builder);
+    await appendFile(
+      '.svelte-kit/cloudflare/_worker.js',
+      "\nexport { WatchingNowLive } from '../../src/lib/live/WatchingNowLive.ts';\n",
+    );
+  },
+});
 
 export default defineConfig(({ mode }) => ({
   css: {
@@ -37,7 +52,7 @@ export default defineConfig(({ mode }) => ({
         // Force runes mode for the project, except for libraries. Can be removed in svelte 6.
         runes: ({ filename }) => (filename.split(/[/\\]/).includes('node_modules') ? undefined : true),
       },
-      adapter: adapter(),
+      adapter: withWatchingNowLive(adapter()),
     }),
   ],
   test: {

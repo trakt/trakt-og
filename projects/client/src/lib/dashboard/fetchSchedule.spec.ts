@@ -17,11 +17,12 @@ afterEach(() => {
 });
 afterAll(() => server.close());
 
+// All shows and movies is read as the shows and movies calendars, each answering with its own rows.
 const calendar = (rows: (url: URL) => HotReleaseResponse[]) =>
-  http.get(`${API}/calendars/my/media/:start/:days`, ({ request }) => {
+  http.get(`${API}/calendars/my/:type/:start/:days`, ({ request, params }) => {
     const url = new URL(request.url);
     seen.push(url);
-    return HttpResponse.json(rows(url));
+    return HttpResponse.json(rows(url).filter((row) => (params.type === 'shows' ? row.episode : row.movie)));
   });
 const hidden = (rows: unknown[] = []) => http.get(`${API}/users/hidden/calendar`, () => HttpResponse.json(rows));
 const watchNow = http.get(`${API}/:type/:id/*`, ({ request }) => {
@@ -52,8 +53,13 @@ describe('fetchSchedule', () => {
     const days = await fetchSchedule(params);
 
     expect(days).toHaveLength(5);
-    expect(calendarRequests().map(({ pathname, searchParams }) => [pathname, searchParams.get('extended')])).toEqual([
-      ['/calendars/my/media/2026-09-29/33', 'full'],
+    expect(
+      calendarRequests()
+        .map(({ pathname, searchParams }) => [pathname, searchParams.get('extended')])
+        .toSorted(([a], [b]) => String(a).localeCompare(String(b))),
+    ).toEqual([
+      ['/calendars/my/movies/2026-09-29/33', 'full'],
+      ['/calendars/my/shows/2026-09-29/33', 'full'],
     ]);
   });
 
@@ -68,7 +74,7 @@ describe('fetchSchedule', () => {
     const days = await fetchSchedule(params);
 
     expect(days).toHaveLength(1);
-    expect(calendarRequests()).toHaveLength(11);
+    expect(calendarRequests()).toHaveLength(22);
   });
 
   it('should leave out what the viewer hid and, with the setting, specials', async () => {
@@ -118,7 +124,8 @@ describe('fetchSchedule', () => {
 
   it('should fail when the calendar does', async () => {
     server.use(
-      http.get(`${API}/calendars/my/media/:start/:days`, () => new HttpResponse(null, { status: 500 })),
+      http.get(`${API}/calendars/my/shows/:start/:days`, () => new HttpResponse(null, { status: 500 })),
+      http.get(`${API}/calendars/my/movies/:start/:days`, () => HttpResponse.json([])),
       hidden(),
     );
 
@@ -200,8 +207,8 @@ describe('fetchSchedule', () => {
 
       await fetchSchedule(settingsFor({ filter: 'shows' }));
 
-      expect(calendarRequests()).toHaveLength(2);
-      expect(calendarRequests().every(({ pathname }) => pathname.startsWith('/calendars/my/media/'))).toBe(true);
+      expect(calendarRequests()).toHaveLength(4);
+      expect(calendarRequests().filter(({ pathname }) => pathname.startsWith('/calendars/my/shows/'))).toHaveLength(2);
     });
 
     it('should start on the start day', async () => {
@@ -213,7 +220,7 @@ describe('fetchSchedule', () => {
 
       const days = await fetchSchedule(settingsFor({ startDay: 'yesterday' }));
 
-      expect(calendarRequests().at(0)?.pathname).toBe('/calendars/my/media/2026-09-28/33');
+      expect(calendarRequests().map(({ pathname }) => pathname)).toContain('/calendars/my/shows/2026-09-28/33');
       expect(days.at(0)).toMatchObject({ date: '2026-09-29', relative: 'Yesterday' });
     });
 

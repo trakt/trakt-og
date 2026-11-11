@@ -83,6 +83,7 @@ describe('loadEpisode', () => {
       displayName: 'Viewer',
       avatarUrl: '',
       isVip: false,
+      isDirector: false,
       joinedAt: null,
       named: false,
     };

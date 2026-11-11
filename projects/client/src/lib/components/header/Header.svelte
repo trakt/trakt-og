@@ -83,7 +83,9 @@ const browserSave = (body: SettingsBody) =>
   }: Props = $props();
 
   const signedIn = $derived(user !== null || renewing);
-  const choices = $derived(headerLinkChoices({ slug: user?.slug ?? null, signedIn }));
+  const choices = $derived(
+    headerLinkChoices({ slug: user?.slug ?? null, signedIn, director: user?.isDirector ?? false }),
+  );
   // What the bar shows now: the saved links until an edit changes them. A link that isn't on offer (Dashboard while
   // signed out, or one og no longer has) drops out.
   let linkIds = $derived(savedLinks ?? headerLinkPrefs.DEFAULTS);

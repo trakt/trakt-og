@@ -7,6 +7,8 @@ export interface HeaderUser {
   readonly displayName: string;
   readonly avatarUrl: string;
   readonly isVip: boolean;
+  /** Trakt staff: features still being tried out (the live page) show for them first. */
+  readonly isDirector: boolean;
   /** When the account was made, for the getting-started pill's first 30 days. */
   readonly joinedAt: string | null;
   /** Whether the member set a display name, or the header falls back to their username. */

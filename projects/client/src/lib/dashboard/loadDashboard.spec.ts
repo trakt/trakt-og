@@ -55,6 +55,7 @@ const load = (token: string | null = 'token', cookies: Record<string, string> = 
           displayName: 'OG',
           avatarUrl: 'avatar',
           isVip: true,
+          isDirector: false,
           joinedAt: null,
           named: true,
         },

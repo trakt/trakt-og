@@ -106,7 +106,15 @@ const load = (
         profile,
         isSelf: false,
         user: options.viewer
-          ? { firstName: 'X', displayName: 'X', avatarUrl: '', joinedAt: null, named: true, ...options.viewer }
+          ? {
+              firstName: 'X',
+              displayName: 'X',
+              avatarUrl: '',
+              joinedAt: null,
+              named: true,
+              isDirector: false,
+              ...options.viewer,
+            }
           : null,
         datePreferences,
       }),

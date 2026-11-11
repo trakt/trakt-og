@@ -17,6 +17,7 @@ describe('toHeaderUser', () => {
       displayName: 'Sean Rudford',
       avatarUrl: user.images.avatar.full,
       isVip: true,
+      isDirector: false,
       joinedAt: null,
       named: true,
     });

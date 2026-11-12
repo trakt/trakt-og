@@ -979,13 +979,15 @@
   --gap-header: 12px;
   --gap-header-links: 2px;
   --space-header-pill-inline: 14px;
-  --space-header-user: 20px; /* between the account controls: getting started, Get VIP, the avatar */
-  --space-header-control-inline: 18px; /* Sign In, so the one call to action reads a little bigger */
+  --space-header-user: calc(
+    (var(--header-height) - var(--header-pill-height)) /
+    2
+  ); /* between the account controls, as wide as the space above and below their pills */
   --header-avatar-ring: 2px; /* a VIP avatar's ring */
   --header-avatar-open-ring: 3px; /* around the avatar while its menu is open */
   --shadow-header-logo: drop-shadow(0 1px 4px rgb(0 0 0 / 0.35));
   --radius-header-pill: var(--radius-object); /* links, the search icon, the menu button */
-  --radius-header-control: var(--radius-object); /* Get VIP, Sign In, the search field */
+  --radius-header-control: var(--radius-object); /* the search field */
   --header-pill-height: 34px;
   --header-control-height: 40px;
   --header-avatar-size: 36px;
@@ -4437,6 +4439,18 @@
   --color-ticket-hover: #ecdab0;
   --color-ticket-admit: #9a2a12;
   --color-ticket-used: light-dark(#e4e4e4, #3a3a3a); /* clear of the menu's own background in both themes */
+  --promotion-tag-inset: 4px; /* the violet edge left around the tag inside the Get VIP pill */
+  --font-size-promotion-tag: 9px;
+  --letter-spacing-promotion-tag: var(--letter-spacing-hyperspace-signal); /* as the loader's quote credit */
+  --font-size-promotion-pill: 12px; /* the offer's two lines in the Get VIP pill */
+  --color-promotion-tag: oklch(15% 0.02 289);
+  --color-promotion-tag-text: #fff;
+  --color-promotion-pill: linear-gradient(135deg, var(--brand-violet), oklch(58% 0.2 289));
+  --color-promotion-pill-hover: linear-gradient(135deg, var(--brand-violet-darken), oklch(52% 0.2 289));
+  --color-promotion-glow: color-mix(in oklch, var(--brand-violet) 70%, transparent);
+  --promotion-glow-blur: 16px;
+  --promotion-glow-spread: 2px;
+  --promotion-glow-duration: 2.8s; /* one slow breath of the offer pill's glow */
   --color-ticket-used-text: light-dark(#666, #b3b3b3);
   --reopen-tint: 14%;
   --reopen-tint-hover: 24%;

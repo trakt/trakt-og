@@ -7,6 +7,7 @@ import profileCover from '#lib/assets/profile-cover-default.jpg';
 import { headerArt } from '#lib/components/header/headerArt.ts';
 import Footer from '#lib/components/footer/Footer.svelte';
 import Header from '#lib/components/header/Header.svelte';
+import PromotionTag from '#lib/promotions/PromotionTag.svelte';
 import Signpost from '#lib/components/signpost/Signpost.svelte';
 import WatchingNowBar from '#lib/components/users/WatchingNowBar.svelte';
 import DemoChoice from '#lib/design/DemoChoice.svelte';
@@ -18,6 +19,7 @@ import type { DarkKnight } from '#lib/settings/DarkKnight.ts';
 import type { SettingsBody } from '#lib/settings/SettingsBody.ts';
 import { PLACEHOLDER_AVATAR } from '#lib/users/placeholderAvatar.ts';
 import { dayIn } from '#lib/utils/dayIn.ts';
+import { demoPromotion } from './demoPromotion.ts';
 import { libraryStages, toDemoLibrary } from '../first-night/library.ts';
 import { seedOverlay } from '../first-night/seedOverlay.svelte.ts';
 
@@ -92,6 +94,7 @@ const WATCHING: Record<string, WatchingNow | null> = {
   'Just finished': { ...scrobbling, endsAt: endsIn(-1) },
 };
 
+let offer = $state('None');
 let who = $state('Signed out');
 let playing = $state('Scrobbling');
 let bar = $state('Default');
@@ -102,6 +105,7 @@ const user = $derived(users[who] ?? null);
 const threeSeen = libraryStages.find(({ id }) => id === 'three') ?? libraryStages[0];
 seedOverlay(() => (who === NEW_MEMBER ? toDemoLibrary(threeSeen, []) : null));
 const renewing = $derived(who === 'Renewing an expired token');
+const promotion = $derived(offer === 'Running' && !user?.isVip ? demoPromotion : null);
 
 // The profile menu's "Dark Knight" item saves here instead of the API; each card's Light and Dark preview the themes.
 function save(body: SettingsBody) {
@@ -112,18 +116,19 @@ function save(body: SettingsBody) {
 </script>
 
 <Specimen title="Top bar" bleed
-  note="Pick a viewer and the art behind the bar, which tints its glass. Click the magnifier or press / to search (shimmering rows hold the starting list's place while it loads; pick Lists for the popular personal and official lists side by side, with ← → between them), and hover the signpost or the profile button for their menus. Signed in and watching, a dot sits left of the signpost: hover it for the watching card. Signed in, rest the mouse on the links until the pencil shows, or choose Customize Header in the profile menu: drag a link's grip or use its arrow keys, trash links, and add pages, charts and calendars from Add Link's popup. Narrow the window with Many to see links fold into More.">
+  note="Pick a viewer and the art behind the bar, which tints its glass. Click the magnifier or press / to search (shimmering rows hold the starting list's place while it loads; pick Lists for the popular personal and official lists side by side, with ← → between them), and hover the signpost or the profile button for their menus. Signed in and watching, a dot sits left of the signpost: hover it for the watching card. Signed in, rest the mouse on the links until the pencil shows, or choose Customize Header in the profile menu: drag a link's grip or use its arrow keys, trash links, and add pages, charts and calendars from Add Link's popup. Set Offer to Running, signed out or without VIP, for the Get VIP pill turned into the offer. Narrow the window with Many to see links fold into More.">
   <div class="knobs">
     <DemoChoice label="Viewer" options={Object.keys(users).map((value) => ({ value, label: value }))} bind:value={who} />
     <DemoChoice label="Backdrop" options={Object.keys(BACKDROPS).map((value) => ({ value, label: value }))}
       bind:value={backdrop} />
+    <DemoChoice label="Offer" options={['None', 'Running'].map((value) => ({ value, label: value }))} bind:value={offer} />
     <DemoChoice label="Links" options={Object.keys(LINKS).map((value) => ({ value, label: value }))} bind:value={bar} />
     <DemoChoice label="Watching" options={Object.keys(WATCHING).map((value) => ({ value, label: value }))}
       bind:value={playing} />
   </div>
   <div class="site">
     <Header {user} {renewing} searchType={data.searchType} {darkKnight} {save} links={LINKS[bar] ?? null}
-      watching={WATCHING[playing] ?? null} />
+      watching={WATCHING[playing] ?? null} {promotion} />
     {#if art}
       <div class="backdrop" style:background-image="url('{art}')" {@attach headerArt(art)}></div>
     {:else}
@@ -145,6 +150,11 @@ function save(body: SettingsBody) {
       {/if}
     {/each}
   </div>
+</Specimen>
+
+<Specimen title="Promotion tag"
+  note="The tag that leads the Get VIP pill during an offer: the promotion's name in mono caps, a word to a line, white on black.">
+  <p class="marks"><PromotionTag label={demoPromotion.name} /></p>
 </Specimen>
 
 <Specimen title="Signpost"

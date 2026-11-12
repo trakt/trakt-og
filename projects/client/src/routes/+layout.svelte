@@ -22,6 +22,7 @@ import HeaderExtras from '#lib/extras/HeaderExtras.svelte';
 import { startCommentReactions } from '#lib/components/comments/startCommentReactions.ts';
 import Footer from '#lib/components/footer/Footer.svelte';
 import Header from '#lib/components/header/Header.svelte';
+import { usePromotion } from '#lib/promotions/usePromotion.svelte.ts';
 import MobileSplash from '#lib/components/mobile-splash/MobileSplash.svelte';
 import { TOO_SMALL_FOR_OG } from '#lib/components/mobile-splash/tooSmallForOg.ts';
 import HyperspaceLoader from '#lib/components/loading/HyperspaceLoader.svelte';
@@ -47,6 +48,10 @@ let { children, data } = $props();
 const bare = $derived(page.route.id?.startsWith('/_design') || isAuthStepRoute(page.route.id));
 // An error page fills the screen on its own, without the header and footer.
 const errored = $derived(!!page.error);
+const promotion = usePromotion(() => data.promotions);
+// Signed out, or signed in without VIP. A session whose user hasn't loaded yet could be a member, so it waits.
+const offered = $derived(promotion.current && (data.user ? !data.user.isVip : !data.hasSession));
+
 // The next page's data is loading, while this one stays up.
 const leaving = $derived(navigating.to !== null);
 
@@ -136,7 +141,8 @@ onMount(() => {
     {#if !errored}
       <a class="skip" href="#content">Skip to content</a>
       <Header user={data.user} renewing={data.tokenExpired || data.rateLimited} searchType={data.searchType} {darkKnight}
-        links={data.headerLinks} watching={viewerWatching.latest(page.data.viewerWatching ?? null)} />
+        links={data.headerLinks} watching={viewerWatching.latest(page.data.viewerWatching ?? null)}
+        promotion={offered ? promotion.current : null} />
     {/if}
     <main id="content" tabindex="-1" aria-busy={leaving || undefined}>
       {@render children()}

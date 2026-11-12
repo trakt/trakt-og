@@ -136,7 +136,7 @@ describe('hooks: auth cookie', () => {
     expect(data?.hasSession).toBe(true);
     expect(data?.tokenExpired).toBe(true);
     expect(data?.user).toBeNull();
-    expect(requests).toEqual([]);
+    expect(requests.filter((request) => request.headers.has('authorization'))).toEqual([]);
   });
 
   it('should keep reading a cookie that holds a bare token', async () => {

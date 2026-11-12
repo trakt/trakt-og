@@ -45,6 +45,9 @@ import GettingStarted from '#lib/components/first-night/GettingStarted.svelte';
 import HeaderSearch from './HeaderSearch.svelte';
 import HeaderTint from './HeaderTint.svelte';
 import type { HeaderUser } from './HeaderUser.ts';
+import { offerLines } from '#lib/promotions/promotionCopy.ts';
+import type { Promotion } from '#lib/promotions/Promotion.ts';
+import PromotionTag from '#lib/promotions/PromotionTag.svelte';
 import { reviewLinks } from './reviewLinks.ts';
 import { viewerFetch } from '../../auth/viewerFetch.ts';
 import { authStep } from '../../auth/authStep.svelte.ts';
@@ -67,6 +70,8 @@ import { signInHref } from '../../auth/signInHref.ts';
   links?: readonly string[] | null;
   /** What the member is checked in to or scrobbling, for the dot left of Help. */
   watching?: WatchingNow | null;
+  /** The offer running now. The Get VIP pill shows it in place of the plain label. */
+  promotion?: Promotion | null;
   }
 
   const { track: trackVipUpsell } = useTrack(AnalyticsEvent.VipUpsell);
@@ -85,7 +90,11 @@ const browserSave = (body: SettingsBody) =>
     save = browserSave,
   links: savedLinks = null,
   watching = null,
+  promotion = null,
   }: Props = $props();
+
+  const vipSource = $derived(promotion ? `promotion-${promotion.id}` : 'navbar');
+  const vipHref = $derived(promotion ? traktUrls.vipPromotion(promotion) : traktUrls.vipFor('navbar'));
 
   const signedIn = $derived(user !== null || renewing);
   const choices = $derived(
@@ -198,16 +207,28 @@ const profileLinks = $derived(
       ><Icon svg={check} />Done</button>
     </div>
   {:else}
+    {#snippet getVip()}
+      <a class={['get-vip', { offer: promotion }]} href={vipHref} target="_blank" rel="noopener"
+        onclick={() => trackVipUpsell({ source: vipSource })} {@attach trackUpsellImpression(vipSource)}>
+        {#if promotion}
+          {@const lines = offerLines(promotion)}
+          <PromotionTag label={promotion.name} />
+          <span class="offer-lines">
+            <span>{lines.term} of <strong>VIP</strong></span>
+            <span>for only <strong>{lines.price}</strong></span>
+          </span>
+        {:else}
+          <Icon svg={rocket} /> Get VIP
+        {/if}
+      </a>
+    {/snippet}
     <!-- Cancelling a check-in from the watching card puts focus on the next control here (Help). -->
     <div class="user" data-refocus>
       {#if user && watching}<HeaderWatching {watching} />{/if}
       <HeaderHelp />
       {#if user}
       <GettingStarted slug={user.slug} named={user.named} joinedAt={user.joinedAt} />
-        {#if !user.isVip}
-        <a class="get-vip" href={traktUrls.vipFor('navbar')} target="_blank" rel="noopener"
-          onclick={() => trackVipUpsell({ source: 'navbar' })} {@attach trackUpsellImpression('navbar')}><Icon svg={rocket} /> Get VIP</a>
-        {/if}
+        {#if !user.isVip}{@render getVip()}{/if}
         <div class={['profile', { vip: user.isVip }]}>
           <HeaderMenu label="{user.firstName}'s menu">
           {#snippet trigger()}<img class="avatar" src={user.avatarUrl} alt="" width="36" height="36" />{/snippet}
@@ -254,6 +275,7 @@ const profileLinks = $derived(
           </HeaderMenu>
         </div>
       {:else if !renewing}
+        {@render getVip()}
         <!-- One page signs in and signs up, so one button. -->
       <a class="sign-in" href={signInHref(page.url)} onclick={authStep.signIn('navbar')}>Sign In</a>
       {/if}
@@ -325,28 +347,65 @@ const profileLinks = $derived(
     font-size: var(--font-size-header-link);
   }
 
+/* Get VIP and Sign In are link pills like the main nav's: the same height, corners and padding. */
 .get-vip,
 .sign-in {
   display: inline-flex;
   align-items: center;
   gap: var(--space-xs-inline);
-  block-size: var(--header-control-height);
+  block-size: var(--header-pill-height);
   padding-inline: var(--space-header-pill-inline);
-  border-radius: var(--radius-header-control);
+  border-radius: var(--radius-header-pill);
   text-decoration: none;
   transition: background-color 0.2s, color 0.2s;
 }
 
-  /* Get VIP is a link pill like the main nav's, in the Trakt brand violet. */
+  /* Get VIP is in the Trakt brand violet. */
   .get-vip {
-    block-size: var(--header-pill-height);
-    border-radius: var(--radius-header-pill);
     background-color: var(--brand-violet);
     color: var(--color-text-inverse);
 
     &:is(:hover, :focus-visible) {
       background-color: var(--brand-violet-darken);
       color: var(--color-text-inverse);
+    }
+  }
+
+  /* With an offer the pill takes a violet gradient whose glow breathes. The white tag sits inset by a thin violet
+     edge, and the offer runs on two short lines so the pill stays as tall as the others. */
+  .get-vip.offer {
+    align-items: stretch;
+    padding-block: var(--promotion-tag-inset);
+    padding-inline-start: var(--promotion-tag-inset);
+    background: var(--color-promotion-pill);
+    animation: offer-glow var(--promotion-glow-duration) ease-in-out infinite;
+
+    &:is(:hover, :focus-visible) {
+      background: var(--color-promotion-pill-hover);
+    }
+  }
+
+  .offer-lines {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    font-size: var(--font-size-promotion-pill);
+    font-weight: var(--font-weight-headings-light);
+    line-height: 1.05;
+
+    strong {
+      font-weight: var(--font-weight-headings-heavy);
+    }
+  }
+
+  @keyframes offer-glow {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 transparent;
+    }
+
+    50% {
+      box-shadow: 0 0 var(--promotion-glow-blur) var(--promotion-glow-spread) var(--color-promotion-glow);
     }
   }
 
@@ -384,7 +443,6 @@ const profileLinks = $derived(
   }
 
   .sign-in {
-    padding-inline: var(--space-header-control-inline);
     background-color: var(--brand-primary);
     color: var(--color-text-inverse);
 
@@ -426,6 +484,10 @@ const profileLinks = $derived(
   }
 
   @media (prefers-reduced-motion: reduce) {
+    .get-vip.offer {
+      animation: none;
+    }
+
     .get-vip,
     .sign-in,
     .reset,

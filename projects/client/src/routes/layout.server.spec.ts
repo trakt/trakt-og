@@ -20,6 +20,7 @@ const SETTINGS = {
 };
 const seen: Request[] = [];
 const server = setupServer(
+  http.get('https://apiz.trakt.tv/vip/promotions', () => HttpResponse.json([])),
   http.get('https://apiz.trakt.tv/users/settings', ({ request }) => {
     seen.push(request);
     return HttpResponse.json(SETTINGS);
@@ -153,6 +154,7 @@ describe('root layout settings', () => {
       searchType: '',
       platform: 'ios',
       phone: false,
+      promotions: [],
     });
     expect(seen).toHaveLength(0);
   });

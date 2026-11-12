@@ -5,6 +5,9 @@ export const traktUrls = {
   vip: `${v3}/vip`,
   /** The VIP page credited to an upsell, so web's `vip-view` and `vip-upgrade` name where the visit came from. */
   vipFor: (source: string) => `${v3}/vip?${new URLSearchParams({ source })}`,
+  /** The VIP page opened on the promoted plan, credited to the promotion. */
+  vipPromotion: ({ id, plan }: { id: string; plan: { duration: string } }) =>
+    `${v3}/vip?${new URLSearchParams({ plan: plan.duration, source: `promotion-${id}` })}`,
   settings: `${v3}/settings`,
   syncSettings: `${v3}/settings/sync` /* connect Plex or Jellyfin */,
   importData: `${v3}/settings/data` /* TV Time, IMDb, Letterboxd and other imports */,

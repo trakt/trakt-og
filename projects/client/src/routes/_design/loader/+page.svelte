@@ -95,9 +95,13 @@ let leaving = $state(true);
 </Specimen>
 
 <style>
-/* Paint containment makes the overlay's fixed position fill this box instead of the window. */
+/*
+  A translate makes the overlay's fixed position fill this box instead of the window. Not containment: Safari leaves a
+  scrolled-to sign-in loader blank when a contained box clips it.
+*/
 .viewport {
-  contain: paint;
+  translate: 0;
+  overflow: clip;
   aspect-ratio: var(--ratio-fanart);
 }
 

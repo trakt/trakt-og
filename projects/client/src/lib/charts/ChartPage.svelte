@@ -49,6 +49,7 @@ import ChartPicker from '#lib/charts/ChartPicker.svelte';
 import FollowingWatchingSection from '#lib/charts/FollowingWatchingSection.svelte';
 import LiveNowSection from '#lib/charts/LiveNowSection.svelte';
 import { chartPeriodText } from '#lib/charts/chartPeriod.ts';
+import { toChartSeo } from '#lib/charts/toChartSeo.ts';
 import ChartHero from '#lib/charts/ChartHero.svelte';
 import ChartRank from '#lib/charts/ChartRank.svelte';
 import type { ChartCard } from '#lib/charts/toChartCard.ts';
@@ -94,36 +95,7 @@ const periodText = $derived(chartPeriodText(data.period));
 const CHART_SOURCES: Partial<Record<string, string>> = { recommendations: 'recommended' };
 const source = $derived(CHART_SOURCES[data.chart] ?? data.chart);
 
-// The `meta(...)` call in each action.
-const meta = $derived(
-  {
-    trending: {
-      title: `Trending ${data.type}`,
-      description: `All ${data.type} the Trakt community has watched recently!`,
-    },
-    popular: { title: `Popular ${data.type}`, description: `Popular ${data.type} as voted by the Trakt community.` },
-    anticipated: {
-      title: `Anticipated ${data.type}`,
-      description: `Most anticipated ${data.type} in the Trakt community.`,
-    },
-    favorited: {
-      title: `Most favorited ${data.type} for ${periodText}`,
-      description: `The most favorited ${data.type} for ${periodText} by the Trakt community.`,
-    },
-    watched: {
-      title: `Most watched ${data.type} for ${periodText}`,
-      description: `Most watched ${data.type} for ${periodText} by the Trakt community.`,
-    },
-    played: {
-      title: `Most played ${data.type} for ${periodText}`,
-      description: `The most played ${data.type} for ${periodText} by the Trakt community.`,
-    },
-    recommendations: {
-      title: `Recommended ${data.type}`,
-      description: `Your personalized ${noun} recommendations.`,
-    },
-  }[data.chart],
-);
+const meta = $derived(toChartSeo({ type: data.type, chart: data.chart, period: data.period }));
 
 const prevHref = $derived(data.page.current > 1 ? pageHref(page.url, data.page.current - 1) : undefined);
 const nextHref = $derived(

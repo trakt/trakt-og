@@ -1,5 +1,6 @@
 <script lang="ts">
 import SeoHead from '#lib/seo/SeoHead.svelte';
+import { staticSeo } from '#lib/seo/pages/staticSeo.ts';
 import AuthStepScreen from '#lib/auth/AuthStepScreen.svelte';
 import { page } from '$app/state';
 import { login } from '#lib/auth/login.ts';
@@ -9,6 +10,6 @@ import { returnPath } from '#lib/auth/returnPath.ts';
 const start = () => login('redirect', returnPath(page.url.searchParams.get('redirect_to')));
 </script>
 
-<SeoHead title="Sign in" />
+<SeoHead {...staticSeo['/signin']} />
 
 <AuthStepScreen scene="signIn" run={start} />

@@ -6,6 +6,7 @@
 -->
 <script lang="ts">
 import SeoHead from '#lib/seo/SeoHead.svelte';
+import { staticSeo } from '#lib/seo/pages/staticSeo.ts';
 import Container from '#lib/components/container/Container.svelte';
 import type { DatePreferences } from '#lib/settings/DatePreferences.ts';
 import DiscoverLists from './DiscoverLists.svelte';
@@ -22,10 +23,7 @@ type Props = { data: Awaited<ReturnType<typeof loadDiscover>> & { datePreference
 const { data }: Props = $props();
 </script>
 
-<SeoHead
-  title="Discover new TV shows & movies"
-  description="This month's picks on Trakt, shelves for every mood, upcoming premieres, trending comments and the lists the Trakt community is liking."
-/>
+<SeoHead {...staticSeo['/discover']} />
 
 <div class={['discover', { 'no-hero': data.picks.length === 0 }]}
   style:--season-accent="var(--color-season-{data.theme.id})">

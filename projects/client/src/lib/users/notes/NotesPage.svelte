@@ -1,6 +1,7 @@
 <script lang="ts">
 import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
 import SeoHead from '#lib/seo/SeoHead.svelte';
+import { toNotesSeo } from '#lib/users/notes/toNotesSeo.ts';
 import { SvelteURLSearchParams } from 'svelte/reactivity';
 import { page } from '$app/state';
 import Container from '#lib/components/container/Container.svelte';
@@ -80,12 +81,8 @@ async function save(note: NoteView, text: string) {
   if (result?.ok && text.trim()) toast.success('Notes saved!');
   if (result && !text.trim()) void refocus();
 }
-const metaType = $derived(
-  data.type === 'all'
-    ? ''
-    : `${data.type === 'collection' ? 'library' : data.type === 'people' ? 'person' : data.type.replace(/s$/, '')} `,
-);
-const title = $derived(`${data.profile.displayName}'s ${metaType}notes`);
+const seo = $derived(toNotesSeo({ profile: data.profile, type: data.type }));
+const title = $derived(seo.title);
 type NoteType = keyof typeof noteTypes;
 // The type menu's sections: All alone, the media items, then the profile's own activities.
 const noteGroups = $derived<readonly { header?: string; types: readonly NoteType[] }[]>([
@@ -103,7 +100,7 @@ const filterHref = (type: string) => {
 
 <!-- Filter URLs keep the canonical profile slug and the current page size. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-<SeoHead {title} description="Check out {data.profile.firstName}'s recent notes." />
+<SeoHead {...seo} />
 
 <SectionToolbar>
   {#snippet filters()}

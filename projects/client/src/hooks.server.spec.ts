@@ -26,6 +26,7 @@ const pageEvent = (cookie: string | undefined) =>
     locals: {},
     url: new URL('https://og.trakt.tv/shows/trending'),
     route: { id: '/shows/[chart=chart]/[[period]]' },
+    params: { chart: 'trending' },
     request: new Request('https://og.trakt.tv/shows/trending'),
     untrack: <T>(fn: () => T) => fn(),
   }) as unknown as Handle['event'];
@@ -177,7 +178,7 @@ describe('hooks: link previews', () => {
   const visit = async ({ routeId, userAgent, category }: { routeId: string; userAgent: string; category?: string }) => {
     const request = new Request('https://og.trakt.tv/shows/trending', { headers: { 'user-agent': userAgent } });
     if (category) Object.defineProperty(request, 'cf', { value: { verifiedBotCategory: category } });
-    const event = { ...pageEvent(undefined), request, route: { id: routeId }, params: {} };
+    const event = { ...pageEvent(undefined), request, route: { id: routeId as Handle['event']['route']['id'] } };
     const resolve = vi.fn<Handle['resolve']>(
       async () => new Response('<html>the page</html>', { headers: { 'content-type': 'text/html' } }),
     );

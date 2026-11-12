@@ -327,7 +327,11 @@ describe('root layout kept settings', () => {
 describe('root layout theme', () => {
   // The theme the page's <html> renders with (hooks.server.ts writes it).
   const theme = async (token: string | null = 'fake-token') => {
-    const locals: App.Locals = { token, tokenExpired: false, crawler: { verified: false, bot: false, headOnly: false } };
+    const locals: App.Locals = {
+      token,
+      tokenExpired: false,
+      crawler: { verified: false, bot: false, headOnly: false },
+    };
     const cookies = { get: (_name: string): string | undefined => undefined };
     await load({
       fetch: globalThis.fetch,

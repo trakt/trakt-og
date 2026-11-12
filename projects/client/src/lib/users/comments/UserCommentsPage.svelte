@@ -6,6 +6,7 @@
 <script lang="ts">
 import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
 import SeoHead from '#lib/seo/SeoHead.svelte';
+import { toUserCommentsSeo } from '#lib/users/comments/toUserCommentsSeo.ts';
 import { SvelteURLSearchParams } from 'svelte/reactivity';
 import { page } from '$app/state';
 import Container from '#lib/components/container/Container.svelte';
@@ -33,8 +34,8 @@ type Props = {
 };
 const { data }: Props = $props();
 
-const metaType = $derived(data.type === 'all' ? '' : `${data.type.replace(/s$/, '')} `);
-const title = $derived(`${data.profile.displayName}'s ${metaType}${data.liked ? 'liked ' : ''}comments`);
+const seo = $derived(toUserCommentsSeo({ profile: data.profile, type: data.type, liked: data.liked }));
+const title = $derived(seo.title);
 const viewer = $derived(data.user ? { slug: data.user.slug } : null);
 
 // Trailing defaults are left off the path: `/comments`, `/comments/reviews`, `/comments/all/movies`.
@@ -56,7 +57,7 @@ const current = (picked: boolean) => (picked ? 'page' : undefined);
 
 <!-- Filter URLs keep the canonical profile slug and the query string. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-<SeoHead {title} description="Check out {data.profile.firstName}'s {data.liked ? 'liked' : 'recent'} comments." />
+<SeoHead {...seo} />
 
 <SectionToolbar>
   {#snippet filters()}

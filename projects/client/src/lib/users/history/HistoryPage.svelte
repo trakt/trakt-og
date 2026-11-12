@@ -7,6 +7,7 @@
 <script lang="ts">
 import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
 import SeoHead from '#lib/seo/SeoHead.svelte';
+import { toHistorySeo } from '#lib/users/history/toHistorySeo.ts';
 import type { HistoryPlay } from '#lib/components/history/HistoryPlay.ts';
 import { removeHistoryCards } from '#lib/users/history/removeHistoryCards.ts';
 import { SvelteURLSearchParams } from 'svelte/reactivity';
@@ -75,8 +76,8 @@ function remove(item: HistoryCard, play?: HistoryPlay) {
   );
   days = removeHistoryCards({ days, item, play });
 }
-const metaType = $derived(data.type === 'all' ? 'TV show and movie' : data.type.replace(/s$/, ''));
-const title = $derived(`${data.profile.displayName}'s ${metaType} watched history`);
+const seo = $derived(toHistorySeo({ profile: data.profile, type: data.type }));
+const title = $derived(seo.title);
 const genres = $derived(genresFor(data.type));
 const base = $derived(`/users/${data.profile.slug}/history`);
 const plural = (count: number, word: string) => `${word}${count === 1 ? '' : 's'}`;
@@ -119,7 +120,7 @@ const country = $derived(watchNowCountry(data.settings));
 
 <!-- Filter URLs keep the canonical profile slug and the query string. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-<SeoHead {title} description="Check out what {data.profile.firstName} has been watching recently." />
+<SeoHead {...seo} />
 
 {#snippet card(item: HistoryCard)}
   {@const state = overlay.state(item.type, item.id)}

@@ -8,7 +8,7 @@ import { totalGross } from './totalGross.ts';
 import { dayIn } from '../utils/dayIn.ts';
 
 // The IMDb weekend box office list the chart is built
-const BOX_OFFICE_LIST_ID = '1267169';
+export const BOX_OFFICE_LIST_ID = '1267169';
 // The sidebar's openers: the first few on the movies calendar for the coming Friday.
 const OPENING_SHOWN = 6;
 const DAY = 86_400_000;

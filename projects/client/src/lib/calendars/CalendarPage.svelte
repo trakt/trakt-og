@@ -1,5 +1,6 @@
 <script lang="ts">
   import SeoHead from '#lib/seo/SeoHead.svelte';
+  import { toCalendarSeo } from '#lib/calendars/toCalendarSeo.ts';
   import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
   import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
   import { afterNavigate, goto, invalidateAll } from '$app/navigation';
@@ -480,7 +481,6 @@ const weeks = $derived(
     : undefined);
 
   const feedUrl = $derived(data.target === 'my' ? data.feedUrls[data.calendar.slug] ?? null : null);
-  const title = $derived(`${data.target === 'my' ? 'My ' : ''}${data.calendar.label} Calendar · ${monthLabel}`);
 </script>
 
 <!--
@@ -492,10 +492,7 @@ const weeks = $derived(
   show's episodes from one day grouped into one card when the viewer wants that.
 -->
 
-<SeoHead
-  title={title}
-  description="What's on the {data.calendar.label} calendar in {monthLabel}, day by day, on Trakt."
-/>
+<SeoHead {...toCalendarSeo({ target: data.target, calendar: data.calendar, start: data.window.start })} />
 
 <!-- The hrefs keep the current path and query, so resolve() has nothing to add. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->

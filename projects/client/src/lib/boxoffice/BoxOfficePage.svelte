@@ -7,6 +7,7 @@
 -->
 <script lang="ts">
 import SeoHead from '#lib/seo/SeoHead.svelte';
+import { toBoxOfficeSeo } from './toBoxOfficeSeo.ts';
 import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
 import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
 import ChartPicker from '#lib/charts/ChartPicker.svelte';
@@ -43,10 +44,7 @@ const runPill = (run: WeekInRelease) => ({
 });
 </script>
 
-<SeoHead
-  title="Weekend Box Office"
-  description={data.description || "The top 10 movies at the US box office this weekend, with what each grossed."}
-/>
+<SeoHead {...toBoxOfficeSeo(data.description)} />
 
 <!-- Film links point at OG routes, and the share strip at rows on this page; resolve() has nothing to add. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->

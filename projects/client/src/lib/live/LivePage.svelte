@@ -20,6 +20,7 @@ import worldDotsFine from '#lib/components/worldmap/worldDotsFine.json' with { t
 import type { HomeLive } from '#lib/home/live/toHomeLive.ts';
 import globe from '#lib/icons/solid/globe.svg?raw';
 import SeoHead from '#lib/seo/SeoHead.svelte';
+import { staticSeo } from '#lib/seo/pages/staticSeo.ts';
 import { traktUrls } from '#lib/traktUrls.ts';
 import { onMount } from 'svelte';
 import { createLiveSocket } from './createLiveSocket.svelte.ts';
@@ -140,11 +141,7 @@ function toggleFull() {
 }
 </script>
 
-<SeoHead
-  title="Trakt Worldwide, live"
-  description="Where people are watching right now on Trakt, country by country, live."
-  noindex
-/>
+<SeoHead {...staticSeo['/live']} />
 
 <div class="live" bind:this={page}>
   <div class="frame">

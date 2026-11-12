@@ -1,8 +1,7 @@
 <!-- `/` signed out, and `/home`: the OG Redux landing page, dark in both themes. -->
 <script lang="ts">
 import SeoHead from '#lib/seo/SeoHead.svelte';
-import { toOrganizationJsonLd } from '#lib/seo/jsonLd/toOrganizationJsonLd.ts';
-import { toWebSiteJsonLd } from '#lib/seo/jsonLd/toWebSiteJsonLd.ts';
+import { staticSeo } from '#lib/seo/pages/staticSeo.ts';
 import { invalidate } from '$app/navigation';
 import { untrack } from 'svelte';
 import HomeHero from './HomeHero.svelte';
@@ -46,13 +45,7 @@ $effect(() => {
 });
 </script>
 
-<!-- `/home` is the same page, so search engines list it once, at `/`. -->
-<SeoHead
-  title="Classic Trakt, rebuilt for big screens"
-  description="Trakt OG Redux: a rebuild of classic Trakt for desktops and tablets. Built on the Trakt API, and open source."
-  canonicalPath="/"
-  jsonLd={[toOrganizationJsonLd(), toWebSiteJsonLd()]}
-/>
+<SeoHead {...staticSeo['/']} />
 
 <div class="home">
   <HomeHero {fanarts} signedIn={data.signedIn} {live} showLive={!failed} />

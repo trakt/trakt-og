@@ -32,12 +32,15 @@ async function mayWatch({ event, token }: { event: SocketEvent; token: string })
 
 /**
  * The live page's socket: a signed-in director's (while it's tried out) goes on to the `WatchingNowLive` refresher,
- * with og's API settings on its headers. A guest gets 401, anyone else 403, and a server that can't reach the
+ * with og's API settings on its headers. A socket opened from another site gets 403 whatever its cookies, so widening
+ * the gate or the sign-in cookie's SameSite can't let other sites ride a visitor's session. A guest gets 401, anyone
+ * else 403, and a server that can't reach the
  * refresher 503, so the page keeps its snapshot. `vite dev` has the binding but can't run the class, so its calls
  * fail into that 503.
  */
 export async function liveSocket({ event, token }: LiveSocketParams): Promise<Response> {
   if (event.request.headers.get('upgrade') !== 'websocket') return new Response(null, { status: 426 });
+  if (event.request.headers.get('origin') !== event.url.origin) return new Response(null, { status: 403 });
   if (!token) return new Response(null, { status: 401 });
   const world = env.WATCHING_NOW_LIVE;
   if (!world) return new Response(null, { status: 503 });

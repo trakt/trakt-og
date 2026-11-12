@@ -3,6 +3,7 @@ import { page } from '$app/state';
 import { setContext } from 'svelte';
 import { createRelationshipOverlay } from '#lib/users/createRelationshipOverlay.svelte.ts';
 import SeoHead from '#lib/seo/SeoHead.svelte';
+import { toLockedProfileSeo } from '#lib/seo/pages/toLockedProfileSeo.ts';
 import ProfileFrame from '#lib/components/users/ProfileFrame.svelte';
 import { profileTabs } from '#lib/users/profileTabs.ts';
 import { viewerWatching } from '#lib/users/viewerWatching.svelte.ts';
@@ -34,7 +35,7 @@ const watching = $derived(data.isSelf ? viewerWatching.latest(data.watching) : d
 const tabs = $derived(profileTabs({ slug: data.profile.slug, pathname: page.url.pathname, isSelf: data.isSelf }));
 </script>
 
-{#if data.profile.isLocked}<SeoHead title="{data.profile.displayName}'s profile" noindex />{/if}
+{#if data.profile.isLocked}<SeoHead {...toLockedProfileSeo(data.profile)} />{/if}
 
 {#if !listComments || data.profile.isLocked}
 <ProfileFrame

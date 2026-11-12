@@ -6,6 +6,7 @@
 <script lang="ts">
 import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
 import SeoHead from '#lib/seo/SeoHead.svelte';
+import { toLibrarySeo } from '#lib/users/library/toLibrarySeo.ts';
 import { SvelteURLSearchParams } from 'svelte/reactivity';
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
@@ -49,8 +50,8 @@ const days = $derived(data.days.length ? toHistoryDays(cards, data.datePreferenc
 function remove(item: LibraryCard) {
   cards = cards.filter((card) => card.type !== item.type || card.id !== item.id);
 }
-const metaType = $derived(data.type === 'all' ? 'show and movie' : data.type.replace(/s$/, ''));
-const title = $derived(`${data.profile.displayName}'s ${metaType} library`);
+const seo = $derived(toLibrarySeo({ profile: data.profile, type: data.type }));
+const title = $derived(seo.title);
 const noun = $derived(data.type === 'all' ? 'item' : data.type.replace(/s$/, ''));
 const base = $derived(`/users/${data.profile.slug}/library`);
 const screenshots = $derived(data.type === 'episodes');
@@ -83,7 +84,7 @@ const flipped = $derived(data.sort.how === 'desc');
 
 <!-- Filter URLs keep the canonical profile slug and the query string. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-<SeoHead {title} description="Check out what {data.profile.firstName} has added to their library recently." />
+<SeoHead {...seo} />
 
 {#snippet card(item: LibraryCard)}
   {@const state = overlay.state(item.type, item.id)}

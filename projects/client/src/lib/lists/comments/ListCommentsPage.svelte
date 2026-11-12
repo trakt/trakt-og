@@ -4,6 +4,7 @@
 -->
 <script lang="ts">
 import SeoHead from '#lib/seo/SeoHead.svelte';
+import { toListCommentsSeo } from './toListCommentsSeo.ts';
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
 import { SvelteURLSearchParams } from 'svelte/reactivity';
@@ -62,10 +63,7 @@ const sortHref = (sort: string) => {
 
 <!-- List URLs are the canonical API slugs. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-<SeoHead
-  title="All comments for {data.list.fullTitle}"
-  description={data.list.description ?? `Read comments about ${data.list.fullTitle}.`}
-/>
+<SeoHead {...toListCommentsSeo(data.list)} />
 
 <FanartHeader slim>
   <SubpageTitle label="Comments" title={data.list.title} href={data.list.href} />

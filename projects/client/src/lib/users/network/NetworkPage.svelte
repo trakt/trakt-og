@@ -7,6 +7,7 @@
 -->
 <script lang="ts">
 import SeoHead from '#lib/seo/SeoHead.svelte';
+import { toNetworkSeo } from '#lib/users/network/toNetworkSeo.ts';
 import { page } from '$app/state';
 import { apiQueue } from '#lib/api/apiQueue.ts';
 import { rawApiFetch } from '#lib/api/rawApiFetch.ts';
@@ -33,10 +34,8 @@ type Props = {
 };
 
 const { data }: Props = $props();
-// OG titled the page with the raw type ("Sean's followers"); og spells the pending one out.
-const title = $derived(
-  `${data.profile.displayName}'s ${data.type === 'following_pending' ? 'following (pending)' : data.type}`,
-);
+const seo = $derived(toNetworkSeo({ profile: data.profile, type: data.type }));
+const title = $derived(seo.title);
 const base = $derived(`/users/${data.profile.slug}/network`);
 // OG offers Following (Pending) on your own profile only.
 const typeOrder: readonly NetworkType[] = ['following', 'following_pending', 'followers'];
@@ -81,7 +80,7 @@ const followedWatch = (relation: ViewerRelation | null, user: ProfileUser) =>
 
 <!-- List URLs keep the canonical profile slug. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-<SeoHead {title} description="Check out {data.profile.firstName}'s network of friends and followers." />
+<SeoHead {...seo} />
 
 {#snippet grid(relations: Readonly<Record<string, ViewerRelation>> | null, pending = false)}
   <ul class="cards" aria-busy={pending}>

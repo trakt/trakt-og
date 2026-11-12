@@ -55,6 +55,7 @@ import { searchLinks } from '#lib/search/searchLinks.ts';
 import { searchListTypes } from '#lib/search/searchListTypes.ts';
 import { searchListTypeHref } from '#lib/search/searchListTypeHref.ts';
 import { toSearchMode } from '#lib/search/toSearchMode.ts';
+import { toSearchSeo } from '#lib/search/toSearchSeo.ts';
 import type { DatePreferences } from '#lib/settings/DatePreferences.ts';
 import type { loadSearch } from '#lib/search/loadSearch.ts';
 
@@ -98,26 +99,9 @@ const type = $derived(findSearchType(data.slug));
 const groups = $derived(type ? searchLinks(type, terms.trim(), page.url.searchParams) : []);
 const paged = $derived(data.page.type === 'paginated' && data.page.total > 1);
 
-// OG named the tab by its model: Show, Movie, Person...
-const META_TYPES: Readonly<Record<string, string>> = {
-  shows: 'Show',
-  movies: 'Movie',
-  people: 'Person',
-  lists: 'List',
-};
-const metaType = $derived(META_TYPES[data.slug]);
 // An empty Lists search browses the popular lists of one type, picked in the sidebar.
 const listType = $derived(searchListTypes.find((option) => option.value === data.listType));
-const meta = $derived(
-  listType
-    ? { title: listType.title, description: `The most liked and discussed ${listType.label.toLowerCase()} on Trakt.` }
-    : metaType
-    ? {
-      title: `${metaType} search results for ${data.query}`,
-      description: `${metaType} search results for movies, TV shows, lists, and people.`,
-    }
-    : { title: `Search results for ${data.query}`, description: 'Search results for movies and TV shows.' },
-);
+const meta = $derived(toSearchSeo({ slug: data.slug, query: data.query, listType: data.listType }));
 
 const prevHref = $derived(data.page.current > 1 ? pageHref(page.url, data.page.current - 1) : undefined);
 const nextHref = $derived(

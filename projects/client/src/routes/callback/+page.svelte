@@ -1,5 +1,6 @@
 <script lang="ts">
 import SeoHead from '#lib/seo/SeoHead.svelte';
+import { staticSeo } from '#lib/seo/pages/staticSeo.ts';
 import { AnalyticsEvent } from '#lib/analytics/AnalyticsEvent.ts';
 import { useTrack } from '#lib/analytics/useTrack.ts';
 import AuthStepScreen from '#lib/auth/AuthStepScreen.svelte';
@@ -39,6 +40,6 @@ async function finish() {
 }
 </script>
 
-<SeoHead title="Signing in" />
+<SeoHead {...staticSeo['/callback']} />
 
 <AuthStepScreen scene="return" run={finish} retry={() => login('redirect', '/')} />

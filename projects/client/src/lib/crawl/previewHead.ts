@@ -6,7 +6,7 @@ import { SITE_TAGS } from '../seo/siteTags.ts';
 import { toSeoTags } from '../seo/toSeoTags.ts';
 import { loadPreviewMeta } from './loadPreviewMeta.ts';
 
-type Params = Parameters<typeof loadPreviewMeta>[0] & { url: URL };
+type Params = Parameters<typeof loadPreviewMeta>[0];
 
 async function loadHead(params: Parameters<typeof loadPreviewMeta>[0]): Promise<{ meta: SeoMeta; status: number }> {
   try {
@@ -22,7 +22,8 @@ async function loadHead(params: Parameters<typeof loadPreviewMeta>[0]): Promise<
  * would have, its title, description and art, and an empty body. A link preview needs nothing else, and a scraper
  * claiming to be one gets nothing more. A missing title answers with its status and the site's own head.
  */
-export async function previewHead({ url, ...params }: Params): Promise<Response> {
+export async function previewHead(params: Params): Promise<Response> {
+  const { url } = params;
   const { meta, status } = await loadHead(params);
   const tags = toSeoTags(meta, { url, routeId: params.routeId, status });
   const { head } = render(SeoTags, { props: { tags, jsonLd: meta.jsonLd } });

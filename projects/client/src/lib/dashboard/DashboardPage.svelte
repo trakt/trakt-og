@@ -4,6 +4,7 @@ import { untrack } from 'svelte';
 import { AnalyticsEvent } from '#lib/analytics/AnalyticsEvent.ts';
 import { useTrack } from '#lib/analytics/useTrack.ts';
 import SeoHead from '#lib/seo/SeoHead.svelte';
+import { staticSeo } from '#lib/seo/pages/staticSeo.ts';
 import DashboardGreeting from '#lib/components/dashboard/DashboardGreeting.svelte';
 import FirstNightHero from '#lib/components/first-night/FirstNightHero.svelte';
 import FirstNightProgress from '#lib/components/first-night/FirstNightProgress.svelte';
@@ -100,7 +101,7 @@ function loadRecommendations(type: DashboardSettings['recommendations']['type'])
 }
 </script>
 
-<SeoHead title="Dashboard" description="Your Trakt dashboard: watching statistics, follow requests and what to watch next." />
+<SeoHead {...staticSeo['/dashboard']} />
 
 {#if data.firstNight}
   <FirstNightProgress slug={username}

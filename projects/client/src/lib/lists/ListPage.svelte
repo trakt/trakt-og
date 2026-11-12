@@ -2,8 +2,7 @@
   import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
   import { trackUpsellImpression } from '#lib/analytics/trackUpsellImpression.ts';
   import SeoHead from '#lib/seo/SeoHead.svelte';
-  import { toListSeo } from '#lib/seo/pages/toListSeo.ts';
-  import { listPreviewArt } from '#lib/lists/listPreviewArt.ts';
+  import { toListPageSeo } from '#lib/lists/toListPageSeo.ts';
   import { rawApiFetch } from '#lib/api/rawApiFetch.ts';
   import BuiltInListEditor from '#lib/components/lists/BuiltInListEditor.svelte';
   import { overlay } from '#lib/overlay/overlay.ts';
@@ -230,14 +229,6 @@ const actions = $derived(
     })
     : null,
 );
-// : the watchlist and favorites are titled after their owner.
-const pageTitle = $derived(
-  data.kind === 'official'
-    ? data.list.name
-    : data.kind === 'watchlist' || data.kind === 'favorites'
-    ? `${data.profile.displayName}'s ${data.kind}`
-    : `${data.list?.name}, a list by ${data.profile.displayName}`,
-);
 const filtered = $derived(
   data.query.types.length > 0 || data.query.genres.length > 0 || Boolean(data.query.terms) ||
     Boolean(data.query.watchnow) || (data.query.hide?.length ?? 0) > 0,
@@ -317,11 +308,6 @@ const relation = $derived(
       ? "You've reached your smart list limit, so this list stays as it is."
       : "Doh! We couldn't change this list. Please try again.");
   }
-  // Official lists and public personal lists are in search; the watchlist and favorites follow their route's robots.
-const indexed = $derived(
-  !!data.list?.isPublic && !('profile' in data && data.profile.isPrivate) && data.kind !== 'watchlist' &&
-    data.kind !== 'favorites',
-);
   const ownerKind = $derived(data.kind === 'watchlist' || data.kind === 'favorites' ? data.kind : null);
   const itemsSource = $derived(ownerKind ?? 'user-list');
   const owner = $derived(ownerKind !== null && data.user?.slug === data.list?.ownerSlug);
@@ -648,16 +634,13 @@ const draggable = $derived(
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 {#if data.list}
   <SeoHead
-    {...toListSeo({
-      name: data.kind === 'personal' || data.kind === 'official' ? data.list.name : pageTitle,
-      owner: data.kind === 'personal' ? data.profile.displayName : undefined,
-      description: data.list.description,
-      path: data.list.href,
-      itemCount: data.list.itemCount,
-      image: listPreviewArt(data.cards.at(0)),
-      items: indexed && data.query.page === 1 ? data.cards.map(({ href }) => href) : undefined,
+    {...toListPageSeo({
+      kind: data.kind,
+      list: data.list,
+      profile: 'profile' in data ? data.profile : undefined,
+      cards: data.cards,
+      page: data.query.page,
     })}
-    noindex={!indexed}
   />
 {/if}
 

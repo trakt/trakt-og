@@ -24,6 +24,8 @@ describe('auth: signInOrNotFound', () => {
   });
 
   it('should 404 for a crawler', () => {
-    expect(outcome({ token: null, crawler: { verified: true, bot: true, headOnly: false } })).toBe('404 List not found');
+    expect(outcome({ token: null, crawler: { verified: true, bot: true, headOnly: false } })).toBe(
+      '404 List not found',
+    );
   });
 });

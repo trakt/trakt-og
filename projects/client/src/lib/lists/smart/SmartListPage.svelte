@@ -42,6 +42,7 @@ import { listSortHow, reverseHow } from '#lib/lists/listItemSorts.ts';
 import SortMenu from '#lib/components/sort/SortMenu.svelte';
 import SortLabel from '#lib/components/sort/SortLabel.svelte';
 import SeoHead from '#lib/seo/SeoHead.svelte';
+import { toSmartListSeo } from './toSmartListSeo.ts';
 import { smartListSorts } from './smartListSorts.ts';
 import { smartListSourceLabel } from './smartListSourceLabel.ts';
 import type { loadSmartList } from './loadSmartList.ts';
@@ -113,7 +114,7 @@ async function remove() {
 
 <!-- The sort, chart and item hrefs come built from this page's URL or the list. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-<SeoHead title={list.name} description="A smart list that fills itself from {source} on Trakt." />
+<SeoHead {...toSmartListSeo(list)} />
 
 {#snippet titleTags()}
   {#if relation}<span class="tag"><ListTag {relation} /></span>{/if}

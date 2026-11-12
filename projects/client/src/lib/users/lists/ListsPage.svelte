@@ -1,6 +1,7 @@
 <script lang="ts">
   import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
   import SeoHead from '#lib/seo/SeoHead.svelte';
+  import { toUserListsSeo } from '#lib/users/lists/toUserListsSeo.ts';
   import ReportDialog from '#lib/components/summary/ReportDialog.svelte';
   import type { ReportTarget } from '#lib/components/summary/ReportTarget.ts';
   import { leaveList } from '#lib/components/lists/leaveList.ts';
@@ -69,14 +70,8 @@ type Props = {
   const personal = $derived(data.mode === 'personal');
   const liked = $derived(data.mode === 'liked' || data.mode === 'liked-official');
   const smart = $derived(data.mode === 'smart');
-  const MODE_NAMES = {
-    personal: 'personal lists',
-    smart: 'smart lists',
-    collaborations: 'collaborations',
-    liked: 'liked lists',
-  'liked-official': 'liked official lists',
-  } as const;
-  const title = $derived(`${data.profile.displayName}'s ${MODE_NAMES[data.mode]}`);
+  const seo = $derived(toUserListsSeo({ profile: data.profile, mode: data.mode }));
+  const title = $derived(seo.title);
   const base = $derived(`/users/${data.profile.slug}/lists`);
   const sorts = $derived(sortsFor(data.mode));
 
@@ -507,10 +502,7 @@ const withPosters = (row: UserListRow): UserListRow =>
 <!-- Tab and list URLs keep the canonical profile slug; list pages are OG routes og hasn't built yet. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
-<SeoHead
-  title={title}
-  description="Check out {data.profile.firstName}'s watchlist and personal lists."
-/>
+<SeoHead {...seo} />
 
 {#snippet row(list: UserListRow, rank: number | undefined)}
   <ListRow

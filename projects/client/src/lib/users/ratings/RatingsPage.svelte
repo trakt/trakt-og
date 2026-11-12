@@ -1,6 +1,7 @@
 <script lang="ts">
 import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
 import SeoHead from '#lib/seo/SeoHead.svelte';
+import { toRatingsSeo } from '#lib/users/ratings/toRatingsSeo.ts';
 import { SvelteURLSearchParams } from 'svelte/reactivity';
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
@@ -37,9 +38,8 @@ import { ratingTypes } from '#lib/users/ratings/ratingTypes.ts';
 import { capitalize } from '../../utils/capitalize.ts';
 
 const { data }: { data: Awaited<ReturnType<typeof loadRatings>> & { profile: ProfileUser } } = $props();
-const title = $derived(
-  `${data.profile.displayName}'s ${data.query.type === 'all' ? '' : data.query.type.replace(/s$/, '') + ' '}ratings`,
-);
+const seo = $derived(toRatingsSeo({ profile: data.profile, type: data.query.type }));
+const title = $derived(seo.title);
 const noun = $derived(data.query.type === 'all' ? 'item' : data.query.type.replace(/s$/, ''));
 const screenshots = $derived(data.query.type === 'episodes');
 let dividers = $derived(data.dividers);
@@ -88,7 +88,7 @@ const count = $derived(data.total - (data.cards.length - cards.length));
 
 <!-- Canonical profile links retain the query string and OG's path sort segments. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-<SeoHead {title} description="Check out what {data.profile.firstName} has been rating recently." />
+<SeoHead {...seo} />
 
 {#snippet card(item: RatingCard)}
   {@const state = overlay.state(item.type, item.id, item.seasonOf)}

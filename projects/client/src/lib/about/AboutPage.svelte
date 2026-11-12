@@ -5,6 +5,7 @@
 -->
 <script lang="ts">
 import SeoHead from '#lib/seo/SeoHead.svelte';
+import { staticSeo } from '#lib/seo/pages/staticSeo.ts';
 import AboutApi from './AboutApi.svelte';
 import AboutAsk from './AboutAsk.svelte';
 import AboutCommits from './AboutCommits.svelte';
@@ -40,10 +41,7 @@ $effect(() => {
 const lines = $derived(github?.commits.map(({ sha, subject }) => `${sha} ${subject}`) ?? []);
 </script>
 
-<SeoHead
-  title="About OG Redux"
-  description="OG Redux is the next chapter of Trakt OG, a fork of Trakt's v3 web app rebuilt for big screens on the public Trakt API. It's open source: report bugs and request features on GitHub."
-/>
+<SeoHead {...staticSeo['/about']} />
 
 <div class="about">
   <AboutHero {github} {lines} {loading} />

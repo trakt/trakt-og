@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { withCrawlHeaders } from './withCrawlHeaders.ts';
 
-const PERSON = { verified: false, bot: false };
-const VERIFIED = { verified: true, bot: true };
+const PERSON = { verified: false, bot: false, headOnly: false };
+const VERIFIED = { verified: true, bot: true, headOnly: false };
 
 const page = (headers?: HeadersInit) =>
   new Response('<html></html>', { headers: { 'content-type': 'text/html', ...headers } });

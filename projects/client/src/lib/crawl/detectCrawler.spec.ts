@@ -8,10 +8,12 @@ describe('util: detectCrawler', () => {
     expect(detectCrawler({ userAgent: BROWSER, verifiedBotCategory: 'Search Engine Crawler' })).toEqual({
       verified: true,
       bot: true,
+      headOnly: false,
     });
     expect(detectCrawler({ userAgent: 'Googlebot/2.1', verifiedBotCategory: undefined })).toEqual({
       verified: false,
       bot: true,
+      headOnly: true,
     });
   });
 
@@ -19,6 +21,7 @@ describe('util: detectCrawler', () => {
     expect(detectCrawler({ userAgent: BROWSER, verifiedBotCategory: 'Page Preview' })).toEqual({
       verified: false,
       bot: true,
+      headOnly: true,
     });
   });
 
@@ -26,10 +29,12 @@ describe('util: detectCrawler', () => {
     expect(detectCrawler({ userAgent: BROWSER, verifiedBotCategory: undefined })).toEqual({
       verified: false,
       bot: false,
+      headOnly: false,
     });
     expect(detectCrawler({ userAgent: null, verifiedBotCategory: 'Monitoring & Analytics' })).toEqual({
       verified: false,
       bot: false,
+      headOnly: false,
     });
   });
 });

@@ -151,7 +151,7 @@ describe('hooks: crawl headers', () => {
       href: 'https://og.trakt.tv/movies/tron-1982',
       userAgent: 'Discordbot/2.0',
     });
-    expect(locals.crawler).toEqual({ verified: false, bot: true });
+    expect(locals.crawler).toEqual({ verified: false, bot: true, headOnly: true });
     expect(headers.get('cache-control')).toBe('private, max-age=120');
     expect(headers.get('vary')).toBe('Cookie');
     expect(headers.get('x-robots-tag')).toBeNull();
@@ -170,6 +170,54 @@ describe('hooks: crawl headers', () => {
   it('should keep a preview host out of the index', async () => {
     const { headers } = await crawl({ href: 'http://localhost:5173/movies/tron-1982', userAgent: 'Googlebot/2.1' });
     expect(headers.get('x-robots-tag')).toBe('noindex');
+  });
+});
+
+describe('hooks: link previews', () => {
+  const visit = async ({ routeId, userAgent, category }: { routeId: string; userAgent: string; category?: string }) => {
+    const request = new Request('https://og.trakt.tv/shows/trending', { headers: { 'user-agent': userAgent } });
+    if (category) Object.defineProperty(request, 'cf', { value: { verifiedBotCategory: category } });
+    const event = { ...pageEvent(undefined), request, route: { id: routeId }, params: {} };
+    const resolve = vi.fn<Handle['resolve']>(
+      async () => new Response('<html>the page</html>', { headers: { 'content-type': 'text/html' } }),
+    );
+    const response = await handle({ event, resolve });
+    return { resolved: resolve.mock.calls.length > 0, html: await response.text() };
+  };
+
+  it('should give a bot claiming to be a link preview the head alone', async () => {
+    const { resolved, html } = await visit({ routeId: '/shows/[chart=chart]/[[period]]', userAgent: 'Twitterbot/1.0' });
+
+    expect(resolved).toBe(false);
+    expect(html).toContain('<meta property="og:site_name" content="Trakt OG Redux" />');
+    expect(html).toContain('<body></body>');
+  });
+
+  it("should give Cloudflare's verified link previews the head alone too", async () => {
+    const { resolved } = await visit({
+      routeId: '/shows/[chart=chart]/[[period]]',
+      userAgent: 'Slackbot-LinkExpanding 1.0',
+      category: 'Page Preview',
+    });
+
+    expect(resolved).toBe(false);
+  });
+
+  it('should give a verified search engine the whole page', async () => {
+    const { resolved, html } = await visit({
+      routeId: '/shows/[chart=chart]/[[period]]',
+      userAgent: 'Googlebot/2.1',
+      category: 'Search Engine Crawler',
+    });
+
+    expect(resolved).toBe(true);
+    expect(html).toBe('<html>the page</html>');
+  });
+
+  it("should let a bot fetch a preview's art", async () => {
+    const { resolved } = await visit({ routeId: '/api/art/[...path]', userAgent: 'Twitterbot/1.0' });
+
+    expect(resolved).toBe(true);
   });
 });
 

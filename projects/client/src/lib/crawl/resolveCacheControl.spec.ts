@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { resolveCacheControl } from './resolveCacheControl.ts';
 
-const VERIFIED = { verified: true, bot: true };
-const PREVIEW = { verified: false, bot: true };
-const PERSON = { verified: false, bot: false };
+const VERIFIED = { verified: true, bot: true, headOnly: false };
+const PREVIEW = { verified: false, bot: true, headOnly: true };
+const PERSON = { verified: false, bot: false, headOnly: false };
 
 const resolve = (overrides: Partial<Parameters<typeof resolveCacheControl>[0]>) =>
   resolveCacheControl({

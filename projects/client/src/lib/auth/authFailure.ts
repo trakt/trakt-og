@@ -1,5 +1,4 @@
 import { ErrorResponse } from 'oidc-client-ts';
-import type { AuthScene } from './authScenes.ts';
 
 export type AuthFailure = 'rateLimited' | 'unreachable';
 
@@ -16,17 +15,8 @@ export function isDeclinedSignIn(error: unknown): boolean {
   return error instanceof ErrorResponse && error.error === 'access_denied';
 }
 
-export const AUTH_FAILURE_MESSAGE: Readonly<Record<AuthScene, Readonly<Record<AuthFailure, string>>>> = {
-  signIn: {
-    rateLimited: 'Trakt is rate limiting sign-ins right now.',
-    unreachable: "Couldn't reach Trakt to sign you in.",
-  },
-  return: {
-    rateLimited: 'Trakt is rate limiting sign-ins right now.',
-    unreachable: "Couldn't reach Trakt to finish signing you in.",
-  },
-  signOut: {
-    rateLimited: 'Trakt is rate limiting sign-outs right now.',
-    unreachable: "Couldn't reach Trakt to finish signing you out.",
-  },
+// Cloudflare's rate limit answer usually reaches the browser as a failed fetch, so unreachable names it too.
+export const AUTH_FAILURE_STATUS: Readonly<Record<AuthFailure, string>> = {
+  rateLimited: 'Rate limited',
+  unreachable: 'Rate limited or offline',
 };

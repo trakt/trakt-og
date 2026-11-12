@@ -3,7 +3,7 @@
   auth.trakt.tv, and fall back into it in `reverse` as it signs out. They ease from a drift up to a slow cruise. The
   mark sits dead center, with a `quote` and its `credit` under it; screen readers hear `label` instead. Anything passed
   as children (a notice) goes under the credit. Under reduced motion the stars hold still and the mark breathes.
-    <HyperspaceLoader label="Signing out" quote="May the Force be with you." credit="Han Solo, Star Wars" reverse />
+    <HyperspaceLoader label="Signing out" quote="May the Force be with you." credit="Han Solo" reverse />
 -->
 <script lang="ts">
 import type { Snippet } from 'svelte';
@@ -98,13 +98,19 @@ figure {
 
 blockquote {
   margin: 0;
-  font-size: var(--font-size-large);
-  font-weight: var(--font-weight-headings);
+  font-family: var(--font-hyperspace-quote);
+  font-size: var(--font-size-hyperspace-quote);
+  font-style: italic;
+  text-wrap: balance;
 }
 
+/* The speaker as a private profile's signal line: mono capitals in the hologram's blue. */
 figcaption {
   color: var(--color-hyperspace-credit);
+  font-family: var(--font-mono);
   font-size: var(--font-size-small);
+  letter-spacing: var(--letter-spacing-hyperspace-signal);
+  text-transform: uppercase;
 }
 
 @keyframes arrive {

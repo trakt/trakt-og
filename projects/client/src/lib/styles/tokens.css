@@ -1488,11 +1488,27 @@
   --color-hyperspace-glow: rgb(0 0 0 / 0.9); /* clears the stars behind the mark */
   --hyperspace-glow-clear: 70px;
   --hyperspace-glow-fade: 240px;
-  --color-hyperspace-credit: rgb(255 255 255 / 0.6); /* the quote's speaker and source */
+  --color-hyperspace-credit: var(--color-private-signal); /* the quote's speaker, like a private profile's signal */
+  --letter-spacing-hyperspace-signal: var(--letter-spacing-private-signal);
+  --color-hyperspace-status: var(--color-private-signal-pending); /* a failed step's status line */
+  --color-hyperspace-wait: rgb(255 255 255 / 0.55); /* the retry countdown */
+  --color-hyperspace-retry-hover: color-mix(in srgb, var(--color-hyperspace-status) 18%, var(--color-profile-pill-bg));
+  --font-hyperspace-quote: var(--font-serif);
+  --font-size-hyperspace-quote: 20px;
+  --font-size-hyperspace-wait: 10px;
+  --font-size-hyperspace-retry: 13px;
+  --color-hyperspace-notice-bg: rgb(14 14 14 / 0.9); /* over the stars, which only blur through */
+  --blur-hyperspace-notice: var(--blur-private-notice);
+  --color-hyperspace-notice-border: color-mix(in srgb, var(--color-hyperspace-status) 40%, transparent);
+  --radius-hyperspace-notice: var(--radius-private-notice);
   --space-hyperspace-message: 16px;
-  --space-hyperspace-credit: 2px;
+  --space-hyperspace-credit: 6px;
   --space-hyperspace-notice: 20px;
-  --hyperspace-text-width: 360px;
+  --space-hyperspace-notice-block: 18px;
+  --space-hyperspace-notice-inline: 24px;
+  --space-hyperspace-notice-lines: 6px;
+  --space-hyperspace-notice-retry: 16px; /* above Try Again Now */
+  --hyperspace-text-width: 400px;
   --transition-hyperspace-arrive: 0.3s;
 
   /* Private sky: behind a private profile the viewer can't see, always dark like hyperspace (PrivateSky) */

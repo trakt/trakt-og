@@ -4,8 +4,8 @@
   and a picker's shimmering option rows.
 -->
 <script lang="ts">
-import { AUTH_FAILURE_MESSAGE } from '#lib/auth/authFailure.ts';
-import { AUTH_SCENES } from '#lib/auth/authScenes.ts';
+import AuthFailureNotice from '#lib/auth/AuthFailureNotice.svelte';
+import { AUTH_SCENES, authLine } from '#lib/auth/authScenes.ts';
 import HyperspaceLoader from '#lib/components/loading/HyperspaceLoader.svelte';
 import LoadingOverlay from '#lib/components/loading/LoadingOverlay.svelte';
 import NavigationProgress from '#lib/components/loading/NavigationProgress.svelte';
@@ -33,7 +33,7 @@ let leaving = $state(true);
 </Specimen>
 
 <Specimen title="Sign-in loader"
-  note="HyperspaceLoader on /signin, /callback and /signout, and over the page when Sign In or Sign Out is clicked, with a Han Solo line for each step. Stars stream out from behind the mark as it signs in and fall back into it as it signs out, easing up to a slow cruise. When a step fails, its notice sits under the line. With the OS set to reduce motion, the stars hold still.">
+  note="HyperspaceLoader on /signin, /callback and /signout, and over the page when Sign In or Sign Out is clicked, with a Han Solo line for each step. Stars stream out from behind the mark as it signs in and fall back into it as it signs out, easing up to a slow cruise. When a step fails, Han's line turns to the trouble and AuthFailureNotice sits under it in a panel: an amber status, the countdown to the next try and Try Again Now. A blocked rate limit reaches the browser as no answer, so that status names rate limiting too. With the OS set to reduce motion, the stars hold still.">
   <Variant label="Signing in">
     <div class="viewport"><HyperspaceLoader {...AUTH_SCENES.signIn} /></div>
   </Variant>
@@ -42,8 +42,15 @@ let leaving = $state(true);
   </Variant>
   <Variant label="Rate limited on the way back">
     <div class="viewport">
-      <HyperspaceLoader {...AUTH_SCENES.return}>
-        <p class="notice">{AUTH_FAILURE_MESSAGE.return.rateLimited} Trying again in 24s.</p>
+      <HyperspaceLoader {...authLine('return', 'rateLimited')}>
+        <AuthFailureNotice failure="rateLimited" seconds={24} onretry={() => {}} />
+      </HyperspaceLoader>
+    </div>
+  </Variant>
+  <Variant label="No answer signing in">
+    <div class="viewport">
+      <HyperspaceLoader {...authLine('signIn', 'unreachable')}>
+        <AuthFailureNotice failure="unreachable" seconds={56} onretry={() => {}} />
       </HyperspaceLoader>
     </div>
   </Variant>
@@ -123,10 +130,6 @@ let leaving = $state(true);
   border: 1px solid var(--color-menu-border);
   border-radius: var(--radius-menu);
   background-color: var(--color-menu-bg);
-}
-
-.notice {
-  margin: 0;
 }
 
 .home {

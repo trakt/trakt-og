@@ -1,3 +1,4 @@
+import type { RequestEvent } from '@sveltejs/kit';
 import type { Handle, HandleFetch } from '@sveltejs/kit/hooks';
 import { waitUntil } from 'cloudflare:workers';
 import { AUTH_COOKIE } from './lib/auth/authCookie.ts';
@@ -9,6 +10,8 @@ import { rateLimitPause } from './lib/api/rateLimitPause.ts';
 import { withUserAgent } from './lib/api/withUserAgent.ts';
 import { readAuthCookie } from './lib/auth/readAuthCookie.ts';
 import { detectCrawler } from './lib/crawl/detectCrawler.ts';
+import { ENDPOINT_ROUTES } from './lib/crawl/endpointRoutes.ts';
+import { previewHead } from './lib/crawl/previewHead.ts';
 import { verifiedBotCategory } from './lib/crawl/verifiedBotCategory.ts';
 import { withCrawlHeaders } from './lib/crawl/withCrawlHeaders.ts';
 import { liveSocket } from './lib/live/liveSocket.ts';
@@ -24,7 +27,8 @@ import { edgeCache } from './lib/utils/edgeCache.ts';
  * Links preload their page's data on hover, or on tap for a Standard app, whose lower rate limit a sweep across links
  * would spend. Their page's code, which costs no API calls, loads as they scroll into view (`app.html`).
  * `locals.crawler` says whether a search engine or link-preview bot asked, and `withCrawlHeaders` sets the page's
- * cache and robots headers from it and the session.
+ * cache and robots headers from it and the session. A bot that isn't a verified search engine gets a page's head alone
+ * (`previewHead`), from one or two API reads; endpoints still answer it as usual, so preview art loads.
  */
 export const handle: Handle = async ({ event, resolve }) => {
   const { token, tokenExpired } = readAuthCookie({ value: event.cookies.get(AUTH_COOKIE), now: Date.now() });
@@ -36,12 +40,20 @@ export const handle: Handle = async ({ event, resolve }) => {
     verifiedBotCategory: verifiedBotCategory(event.request),
   });
 
-  const response = await resolve(event, {
-    transformPageChunk: ({ html }) =>
-      html
-        .replace('%og.theme%', event.locals.theme ?? 'dark')
-        .replace('%og.preload%', isStandardApi() ? 'tap' : 'hover'),
-  });
+  const response = isHeadOnly(event)
+    ? await previewHead({
+        routeId: event.route.id,
+        params: event.params,
+        url: event.url,
+        fetch: event.fetch,
+        now: new Date(),
+      })
+    : await resolve(event, {
+        transformPageChunk: ({ html }) =>
+          html
+            .replace('%og.theme%', event.locals.theme ?? 'dark')
+            .replace('%og.preload%', isStandardApi() ? 'tap' : 'hover'),
+      });
   return withCrawlHeaders({
     response,
     url: event.url,
@@ -49,6 +61,11 @@ export const handle: Handle = async ({ event, resolve }) => {
     crawler: event.locals.crawler,
   });
 };
+
+const isHeadOnly = ({ locals, request, route }: RequestEvent) =>
+  locals.crawler.headOnly &&
+  (request.method === 'GET' || request.method === 'HEAD') &&
+  !(route.id && ENDPOINT_ROUTES.has(route.id));
 
 async function send(request: Request, fetch: typeof globalThis.fetch, read: boolean): Promise<Response> {
   const standard = isStandardApi();

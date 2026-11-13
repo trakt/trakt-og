@@ -37,7 +37,7 @@ const layoutLoad = (event: Handle['event']) =>
 const authCookie = (expiresAt: number) => JSON.stringify({ token: 'viewer-token', expiresAt });
 
 /** A page request through the hook: the root layout loads, then the app shell renders. */
-async function render(cookie: string | undefined) {
+async function shell(cookie: string | undefined) {
   const resolve: Handle['resolve'] = async (resolved, options) => {
     await layoutLoad(resolved);
     const html = await options?.transformPageChunk?.({ html: APP_HTML, done: true });
@@ -45,8 +45,10 @@ async function render(cookie: string | undefined) {
   };
 
   const response = await handle({ event: pageEvent(cookie), resolve });
-  return /<html[^>]*>/.exec(await response.text())?.at(0);
+  return response.text();
 }
+
+const render = async (cookie: string | undefined) => /<html[^>]*>/.exec(await shell(cookie))?.at(0);
 
 /** The root layout's data for a page request through the hook. */
 async function session(cookie: string | undefined) {
@@ -95,6 +97,20 @@ describe('hooks: theme', () => {
     expect(await render(undefined)).toBe('<html lang="en" data-theme="dark">');
     server.use(http.get('https://apiz.trakt.tv/users/settings', () => new HttpResponse(null, { status: 401 })));
     expect(await render('stale-token')).toBe('<html lang="en" data-theme="dark">');
+  });
+});
+
+describe('hooks: link preloading', () => {
+  const preload = async (cookie: string | undefined) =>
+    /data-sveltekit-preload-data="([^"]*)"/.exec(await shell(cookie))?.at(1);
+
+  it("should preload a signed-in viewer's links on hover", async () => {
+    darkKnight('true');
+    expect(await preload(authCookie(Date.now() + 60_000))).toBe('hover');
+  });
+
+  it("should never preload a guest's links, which send them to sign in", async () => {
+    expect(await preload(undefined)).toBe('off');
   });
 });
 

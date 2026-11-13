@@ -1,4 +1,5 @@
 import type { UpNextEntry } from '../progress/UpNextEntry.ts';
+import { episodeReleasedAt } from '../shows/episodeReleasedAt.ts';
 import type { UpNextSortBy } from './upNextSorts.ts';
 
 type SortUpNextParams = {
@@ -12,7 +13,8 @@ type SortUpNextParams = {
 type Key = (entry: UpNextEntry) => number;
 
 const percent = ({ progress }: UpNextEntry) => (progress.aired > 0 ? progress.completed / progress.aired : 0);
-const airedAt = ({ progress }: UpNextEntry) => Date.parse(progress.next_episode?.first_aired ?? '') || 0;
+const airedAt = ({ progress }: UpNextEntry) =>
+  Date.parse((progress.next_episode && episodeReleasedAt(progress.next_episode)) ?? '') || 0;
 const runtime = ({ show, progress }: UpNextEntry) => progress.next_episode?.runtime ?? show.runtime ?? 0;
 
 /**

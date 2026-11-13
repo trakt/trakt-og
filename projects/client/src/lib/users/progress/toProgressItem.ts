@@ -92,6 +92,7 @@ function fromCatalog(params: ToProgressItemParams, catalog: ShowCatalog): Progre
           minutesWatched: dates.length * runtime,
           at: latest(dates),
           firstAired: episode.firstAired,
+          streamsOn: episode.streamsOn,
           rating: episode.rating,
         };
       }),
@@ -109,7 +110,7 @@ function fromCatalog(params: ToProgressItemParams, catalog: ShowCatalog): Progre
     minutesWatched: sum(episodes.map(({ minutesWatched }) => minutesWatched)),
     minutesLeft: sum(episodes.filter(({ done }) => !done).map(({ runtime }) => runtime)),
     episodes: episodes.map(({ episode: _, ...data }) => data),
-    upcoming: upcoming.map(({ number, title, firstAired }) => ({ number, title, firstAired })),
+    upcoming: upcoming.map(({ number, title, firstAired, streamsOn }) => ({ number, title, firstAired, streamsOn })),
   });
 
   const all = seasons.flatMap(({ episodes }) => episodes);

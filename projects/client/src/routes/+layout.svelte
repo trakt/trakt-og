@@ -3,7 +3,7 @@ import '#lib/styles/fonts.css';
 import '#lib/styles/tokens.css';
 import '#lib/styles/base.css';
 import figtreeLatin from '#lib/assets/fonts/figtree-latin.woff2';
-import { invalidateAll } from '$app/navigation';
+import { beforeNavigate, goto, invalidateAll } from '$app/navigation';
 import Analytics from '#lib/analytics/Analytics.svelte';
 import { navigating, page } from '$app/state';
 import { isStandardApi } from '#lib/api/isStandardApi.ts';
@@ -11,6 +11,8 @@ import { logHidden } from '#lib/api/logHidden.ts';
 import { AUTH_SCENES } from '#lib/auth/authScenes.ts';
 import { authStep } from '#lib/auth/authStep.svelte.ts';
 import { isAuthStepRoute } from '#lib/auth/isAuthStepRoute.ts';
+import { isGuestGated } from '#lib/auth/isGuestGated.ts';
+import { signInHref } from '#lib/auth/signInHref.ts';
 import { syncSession } from '#lib/auth/syncSession.ts';
 import { userManager } from '#lib/auth/userManager.ts';
 import CheckinDialog from '#lib/components/checkin/CheckinDialog.svelte';
@@ -88,6 +90,16 @@ $effect(() => {
 });
 
 onMount(startBrokenImages);
+
+// A guest sees the page a link brought them to; clicking on to another signs them in first, then opens it
+// (`isGuestGated`).
+beforeNavigate((navigation) => {
+  const { to } = navigation;
+  if (!to || !isGuestGated({ hasSession: data.hasSession, navigation })) return;
+  navigation.cancel();
+  // eslint-disable-next-line svelte/no-navigation-without-resolve -- signInHref builds og's own sign-in path
+  void goto(signInHref(to.url));
+});
 
 onMount(() => {
   // The server only knows the browser's zone from its cookie, so a first visit, or one from a new zone, reloads the

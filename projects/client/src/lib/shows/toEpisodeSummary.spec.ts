@@ -86,6 +86,21 @@ describe('toEpisodeSummary', () => {
     expect(view.type).toBeUndefined();
     expect(view.facts.aired?.label).toBe('Airs');
   });
+  it('should open an episode streaming before it airs to watches and ratings, still dated by its broadcast', () => {
+    const view = toEpisodeSummary({
+      ...base,
+      episode: { ...episode, first_aired: '2026-01-04T02:00:00Z', effective_release_date: '2025-12-31T14:00:00Z' },
+    });
+    expect(view).toMatchObject({ aired: true, watchable: true });
+    expect(view.rating).toBeDefined();
+    expect(view.facts.aired?.label).toBe('Airs');
+  });
+  it('should open an episode to watches a day before it is out, with no ratings yet', () => {
+    const tomorrow = toEpisodeSummary({ ...base, episode: { ...episode, first_aired: '2026-01-01T23:00:00Z' } });
+    expect(tomorrow).toMatchObject({ aired: false, watchable: true, rating: undefined });
+    const later = toEpisodeSummary({ ...base, episode: { ...episode, first_aired: '2026-01-02T01:00:00Z' } });
+    expect(later.watchable).toBe(false);
+  });
   it("should list the season's regulars apart from the episode's own guest stars", () => {
     const actor = (name: string) => ({
       person: { name, ids: { trakt: 1, slug: name } },

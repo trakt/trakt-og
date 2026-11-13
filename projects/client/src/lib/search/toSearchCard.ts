@@ -10,6 +10,8 @@ import { formatRuntime } from '../utils/formatRuntime.ts';
 import { genreLabel } from '../utils/genreLabel.ts';
 import { personTags } from '../people/personTags.ts';
 import { mediaImage } from '../images/mediaImage.ts';
+import { episodeReleasedAt } from '../shows/episodeReleasedAt.ts';
+import { isEpisodeWatchable } from '../shows/isEpisodeWatchable.ts';
 
 type SearchCardOptions = {
   /** The type tag. The single-type tabs hide it, since the tab already says it. */
@@ -79,7 +81,7 @@ export function toSearchCard(hit: SearchHit, options: SearchCardOptions): Search
         ...typeTags('Episode'),
         ...(episode.first_aired ? [generic(formatDate(episode.first_aired, { timeZone, order }))] : []),
       ],
-      released: released(episode.first_aired, now),
+      released: isEpisodeWatchable(episodeReleasedAt(episode), now.getTime()),
       rating: episode.rating ?? undefined,
       runtime: episode.runtime ?? show.runtime ?? undefined,
       episodeBadge: premiere && isBadgeKind(badgeKind) ? { label: premiere.text, kind: badgeKind } : undefined,

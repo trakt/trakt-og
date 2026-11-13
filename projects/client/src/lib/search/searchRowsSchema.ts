@@ -32,6 +32,7 @@ export const searchRowsSchema = z.array(
         season: z.number(),
         number: z.number(),
         first_aired: z.string().nullish(),
+        effective_release_date: z.string().nullish(),
         episode_type: z.string().nullish(),
         rating: z.number().nullish(),
         runtime: z.number().nullish(),

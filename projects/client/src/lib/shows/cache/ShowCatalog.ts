@@ -9,6 +9,11 @@ export type CatalogEpisode = {
   /** `series_premiere`, `mid_season_finale` and so on. */
   readonly type?: string;
   readonly firstAired?: string;
+  /**
+   * When it's out, from `episodeReleasedAt`: an early streaming release can beat `firstAired`. Catalogs stored before
+   * it was read lack it.
+   */
+  readonly releasedAt?: string;
   readonly runtime?: number;
   readonly rating?: number;
   readonly screenshot?: string;

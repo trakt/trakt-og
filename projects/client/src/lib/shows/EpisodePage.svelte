@@ -105,7 +105,7 @@ const sections = $derived([
     {#key episode.id}<MediaSpoiler target={ratingTarget} kind="overview"><Overview overview={episode.overview} /></MediaSpoiler>{/key}
     <PrivateNotes {...data.privateNotes} />
   {/snippet}
-  {#snippet actions()}<ActionButtons checkin={episode.aired ? ratingTarget : undefined} listTarget={ratingTarget} historyTarget={{...ratingTarget,runtime:episode.runtime,released:episode.aired,season:{show:episode.showId,number:episode.season,episode:episode.episodeNumber}}} />{/snippet}
+  {#snippet actions()}<ActionButtons checkin={episode.watchable ? ratingTarget : undefined} listTarget={ratingTarget} historyTarget={{...ratingTarget,runtime:episode.runtime,released:episode.watchable,season:{show:episode.showId,number:episode.season,episode:episode.episodeNumber}}} />{/snippet}
   {#key episode.href}
     <LazySection id="activity" load={()=>lazy().activity(media)}>{#snippet children(tabs)}<ActivityTabs {tabs} />{/snippet}</LazySection>
   {/key}

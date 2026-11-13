@@ -13,6 +13,8 @@ import { formatRuntime } from '../utils/formatRuntime.ts';
 import { seasonNeighbours } from './seasonNeighbours.ts';
 import type { seasonPeopleSchema } from './seasonPeopleSchema.ts';
 import { toShowEpisodes } from './toShowEpisodes.ts';
+import { episodeReleasedAt } from './episodeReleasedAt.ts';
+import { hasEpisodeAired } from './hasEpisodeAired.ts';
 import { toCrewGroups } from '../components/summary/toCrewGroups.ts';
 import { seasonName } from '../utils/seasonName.ts';
 import { genreLabel } from '../utils/genreLabel.ts';
@@ -56,7 +58,7 @@ export function toSeasonSummary(params: Params) {
   const network = season.network ?? show.network;
   const popular = (key: string, value: string) => `/shows/popular?${key}=${encodeURIComponent(value)}`;
   const networkLink = network ? { name: network, href: popular('networks', networkSlug(network)) } : undefined;
-  const aired = episodes.filter(({ first_aired }) => first_aired && new Date(first_aired) <= now);
+  const aired = episodes.filter((episode) => hasEpisodeAired(episodeReleasedAt(episode), now.getTime()));
   const total = season.total_runtime ?? aired.reduce((sum, episode) => sum + (episode.runtime ?? show.runtime ?? 0), 0);
 
   return {

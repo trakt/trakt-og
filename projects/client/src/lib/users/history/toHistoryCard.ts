@@ -28,7 +28,7 @@ export type HistoryCard = {
   readonly airedEpisodes?: number;
   readonly season?: { readonly show: number; readonly number: number; readonly episode: number };
   readonly episodeBadge?: WatchedCard['episodeBadge'];
-  /** The show over a screenshot card's date, linked to the show. */
+  /** An episode's show over its date, linked to the show. */
   readonly show?: { readonly text: string; readonly href: string };
   readonly watchedAt: string;
   readonly watchedDate: string;
@@ -76,7 +76,7 @@ function episodeFields({ episode, show }: Pick<EpisodeChart, 'episode' | 'show'>
 
 /**
  * A play as a card. `screenshots` is OG's episode layout, for the Episodes tab and one show, season or episode: the
- * still, then the show and the date. Otherwise an episode shows its show's poster with the episode under it.
+ * still. Otherwise an episode shows its show's poster. Either way the show and the date sit under the episode.
  */
 export function toHistoryCard(
   row: HistoryRow,
@@ -106,7 +106,7 @@ export function toHistoryCard(
   return {
     ...common,
     ...episodeFields(row, screenshots),
-    ...(screenshots && { show: { text: show.title, href: showHref(show.ids.slug) } }),
+    show: { text: show.title, href: showHref(show.ids.slug) },
   };
 }
 

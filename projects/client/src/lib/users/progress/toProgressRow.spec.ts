@@ -102,6 +102,17 @@ describe('toProgressRow', () => {
       });
     });
 
+    it('should open the next episode to watches from a day before it streams or airs', () => {
+      const next = { id: 501, season: 2, number: 1, firstAired: '2026-10-05T01:00:00.000Z' };
+      const released = (episode: typeof next & { releasedAt?: string }) =>
+        toProgressRow({ item: progressItemFixture(7, { next: episode }), datePreferences, now }).upNext?.released;
+
+      expect(released(next)).toBe(false);
+      expect(released({ ...next, releasedAt: '2026-09-30T14:00:00.000Z' })).toBe(true);
+      expect(released({ ...next, releasedAt: '2026-10-01T19:00:00.000Z' })).toBe(true);
+      expect(released({ ...next, releasedAt: '2026-10-01T21:00:00.000Z' })).toBe(false);
+    });
+
     it('should mark unwatched episodes in your library', () => {
       const squares = expanded('Breaking Bad').seasons?.at(1)?.squares ?? [];
       expect(squares.map(({ collected }) => collected)).toEqual([

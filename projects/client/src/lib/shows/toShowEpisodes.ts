@@ -8,6 +8,10 @@ import { formatDate } from '../utils/formatDate.ts';
 import { formatRuntime } from '../utils/formatRuntime.ts';
 import { mediaImage } from '../images/mediaImage.ts';
 import type { SeasonWithEpisodes } from './loadShow.ts';
+import type { AirsTip } from '../components/media/AirsTip.ts';
+import { airDateParts } from './airDateParts.ts';
+import { airsTip } from './airsTip.ts';
+import { earlyStreamDate } from './earlyStreamDate.ts';
 import { episodeReleasedAt } from './episodeReleasedAt.ts';
 import { isEpisodeWatchable } from './isEpisodeWatchable.ts';
 import { seasonName } from '../utils/seasonName.ts';
@@ -33,8 +37,14 @@ export type EpisodeRow = {
   image?: string;
   spoilerImage?: string;
   type?: ReturnType<typeof episodeType>;
-  /** "January 27, 2008 9:00 PM" in the page's zone, or undefined for "no air date". */
+  /**
+   * "January 27, 2008" in the page's zone, the streaming day when it streams first, or undefined for "no air date".
+   */
   aired?: string;
+  /** The date tag's second segment: the air time ("9:00 PM"), or "Streaming" for a streaming day, which has none. */
+  airTime?: string;
+  /** A streaming row's broadcast, for its tag's tooltip. */
+  airs?: AirsTip;
   runtime?: string;
   /** The runtime in minutes, so the watched tooltip can total the plays. */
   minutes?: number;
@@ -46,7 +56,7 @@ export type EpisodeRow = {
   votes: number;
   season: number;
   episode: number;
-  /** ms since the epoch, or null without an air date. */
+  /** ms since the epoch, the streaming day when it streams first, or null without an air date. */
   airedAt: number | null;
 };
 
@@ -127,6 +137,10 @@ export function toShowEpisodes({ show, seasons, signedIn, episodeTypeTags, dateP
 
   const rows = episodes.map((episode): EpisodeRow => {
     const runtime = episode.runtime ?? show.runtime;
+    const streams = earlyStreamDate(episode);
+    const dated = streams ?? episode.first_aired;
+    const parts = (at: string) => airDateParts(at, { ...datePreferences, timeZone, format: 'LL' });
+    const airs = episode.first_aired && parts(episode.first_aired);
     return {
       id: episode.ids.trakt,
       href: `${seasonHref(episode.season)}/episodes/${episode.number}`,
@@ -135,9 +149,13 @@ export function toShowEpisodes({ show, seasons, signedIn, episodeTypeTags, dateP
       image: mediaImage({ type: 'episode', id: episode.ids.trakt, slot: 'screenshot', size: 'thumb' }),
       spoilerImage: mediaImage({ type: 'show', id: show.ids.trakt, slot: 'fanart', size: 'thumb' }),
       type: episodeTypeTags ? episodeType(episode) : undefined,
-      aired: episode.first_aired
-        ? formatDate(episode.first_aired, { ...datePreferences, timeZone, format: 'LL', time: true })
-        : undefined,
+      ...(streams
+        ? {
+            aired: formatDate(streams, { ...datePreferences, timeZone: 'UTC', format: 'LL' }),
+            airTime: 'Streaming',
+            airs: airsTip(episode.first_aired, { network: show.network, now, parts }),
+          }
+        : airs && { aired: airs.date, airTime: airs.time }),
       runtime: runtime ? formatRuntime(runtime) : undefined,
       minutes: runtime ?? undefined,
       overview: episode.overview ?? null,
@@ -147,7 +165,7 @@ export function toShowEpisodes({ show, seasons, signedIn, episodeTypeTags, dateP
       votes: episode.votes ?? 0,
       season: episode.season,
       episode: episode.number,
-      airedAt: episode.first_aired ? new Date(episode.first_aired).getTime() : null,
+      airedAt: dated ? new Date(dated).getTime() : null,
     };
   });
 

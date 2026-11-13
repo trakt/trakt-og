@@ -62,7 +62,7 @@ describe('toSeasonSummary', () => {
     expect(view.facts.totalRuntime).toEqual({ time: '1h 33m', episodes: '2 episodes' });
     expect(view.episodeIds).toEqual([101, 102]);
     expect(view.cast.at(0)).toMatchObject({ name: 'Actor', characters: 'Walter', episodes: '2 episodes' });
-    expect(view.episodes.at(0)?.aired).toBe('20 January 2008 18:00');
+    expect(view.episodes.at(0)).toMatchObject({ aired: '20 January 2008', airTime: '18:00' });
   });
 
   it('should link the subnav newest first and only navigate to consecutive seasons', () => {

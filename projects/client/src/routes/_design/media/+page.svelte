@@ -255,6 +255,24 @@ const seasonRuns: { label: string; runs: readonly WatchedProgress[] }[] = [
   </FrameGrid>
 </Specimen>
 
+<Specimen title="Episode cards with an early stream"
+  note="The show page's episode cards: the air date with its time in a darker segment, or for one streaming before it airs, its streaming day and Streaming, with the broadcast in a tooltip (hover or tab to it).">
+  <FrameGrid variant="framed">
+    {#each seasonOneEpisodes.slice(0, 2) as episode, i (episode.id)}
+      <FanartCard
+        framed
+        href={episode.href}
+        title={episode.title}
+        number={episode.number}
+        image={episode.screenshot}
+        tags={i === 0
+          ? [{ text: 'Jan 20, 2008', segments: ['9:00 PM'] }]
+          : [{ text: 'Jan 25, 2008', segments: ['Streaming'], airs: { label: 'Aired', date: 'January 27, 2008', time: '9:00 PM', network: 'AMC' } }]}
+      />
+    {/each}
+  </FrameGrid>
+</Specimen>
+
 <Specimen title="Recommendation cards"
   note="The recommendations chart's cards: a pick with reasons gets a bullseye that opens Why this?, above its card or below it near the top of the screen. The Matrix has no reasons, so it has none.">
   <FrameGrid variant="framed">

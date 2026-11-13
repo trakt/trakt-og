@@ -14,6 +14,8 @@ export type CatalogEpisode = {
    * it was read lack it.
    */
   readonly releasedAt?: string;
+  /** The day it streams, from `earlyStreamDate`, when that comes a day or more before it airs. */
+  readonly streamsOn?: string;
   readonly runtime?: number;
   readonly rating?: number;
   readonly screenshot?: string;

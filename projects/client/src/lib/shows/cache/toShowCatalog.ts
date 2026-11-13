@@ -1,6 +1,7 @@
 import { z } from 'zod/v4';
 import { images } from '../../users/history/historyRowsSchema.ts';
 import type { ShowCatalog } from './ShowCatalog.ts';
+import { earlyStreamDate } from '../earlyStreamDate.ts';
 import { episodeReleasedAt } from '../episodeReleasedAt.ts';
 
 const seasonsSchema = z.array(
@@ -19,6 +20,7 @@ const seasonsSchema = z.array(
           episode_type: z.string().nullish(),
           first_aired: z.string().nullish(),
           effective_release_date: z.string().nullish(),
+          released: z.string().nullish(),
           runtime: z.number().nullish(),
           rating: z.number().nullish(),
           images,
@@ -49,6 +51,7 @@ export function toShowCatalog({ id, body, fetchedAt }: { id: number; body: unkno
           type: episode.episode_type ?? undefined,
           firstAired: episode.first_aired ?? undefined,
           releasedAt: episodeReleasedAt(episode),
+          streamsOn: earlyStreamDate(episode),
           runtime: episode.runtime ?? undefined,
           rating: episode.rating ?? undefined,
           screenshot: episode.images?.screenshot?.at(0),

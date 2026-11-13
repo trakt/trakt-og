@@ -1,3 +1,5 @@
+import type { AirsTip } from './AirsTip.ts';
+
 /** One of OG's card tags (CardTag): a fanart card's, a calendar card's, or a schedule row's. */
 export type CardTag = {
   text: string;
@@ -9,6 +11,10 @@ export type CardTag = {
   live?: boolean;
   /** Makes the tag a link: a VIP's network tag, to its popular shows. */
   href?: string;
+  /** More of it after `text`, split by thin lines: a streaming day, then "Streaming". */
+  segments?: readonly string[];
+  /** A streaming tag's broadcast, as its tooltip, and the tag takes keyboard focus to show it. */
+  airs?: AirsTip;
   /** OG's h4 classes over a fanart. `primary` is the brand red; the `series-premiere` to `trailer` kinds are
    * OG's `episode-type-*` colors. */
   kind?:

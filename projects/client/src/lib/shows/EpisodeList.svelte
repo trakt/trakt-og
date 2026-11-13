@@ -105,10 +105,11 @@ function clearHide() {
   saveFilters({ ...filters, hide: [] });
 }
 
-  // The air date in red, the runtime, then the episode's type (Season Premiere) in its own color.
+  // The air date in red with its time in a darker segment (or Streaming, the broadcast in its tooltip), the runtime,
+  // then the episode's type (Season Premiere) in its own color.
   const metaTags = (row: EpisodeRow): readonly TagPill[] => [
     row.aired
-      ? { text: row.aired, kind: 'primary' }
+      ? { segments: [row.aired, ...row.airTime ? [row.airTime] : []], kind: 'primary', airs: row.airs }
       : { text: 'No air date' },
     ...row.runtime ? [{ text: row.runtime }] : [],
     ...row.type

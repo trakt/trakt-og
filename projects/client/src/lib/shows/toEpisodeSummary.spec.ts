@@ -86,14 +86,30 @@ describe('toEpisodeSummary', () => {
     expect(view.type).toBeUndefined();
     expect(view.facts.aired?.label).toBe('Airs');
   });
-  it('should open an episode streaming before it airs to watches and ratings, still dated by its broadcast', () => {
+  it('should open an episode streaming before it airs to watches and ratings, with both dates, streaming first', () => {
     const view = toEpisodeSummary({
       ...base,
-      episode: { ...episode, first_aired: '2026-01-04T02:00:00Z', effective_release_date: '2025-12-31T14:00:00Z' },
+      episode: {
+        ...episode,
+        first_aired: '2026-01-04T02:00:00Z',
+        released: '2025-12-31',
+        effective_release_date: '2025-12-31T14:00:00Z',
+      },
     });
     expect(view).toMatchObject({ aired: true, watchable: true });
     expect(view.rating).toBeDefined();
-    expect(view.facts.aired?.label).toBe('Airs');
+    expect(view.facts.streams).toEqual({ label: 'Streamed', date: '31 December 2025' });
+    expect(view.facts.aired).toEqual({ label: 'Airs', date: '3 January 2026 18:00' });
+    expect(Object.keys(view.facts).slice(0, 2)).toEqual(['streams', 'aired']);
+  });
+  it('should say Streams for a streaming day still to come, and leave it out when it streams the day it airs', () => {
+    const upcoming = (released: string, first_aired: string) =>
+      toEpisodeSummary({
+        ...base,
+        episode: { ...episode, first_aired, released, effective_release_date: `${released}T14:00:00Z` },
+      }).facts.streams;
+    expect(upcoming('2026-01-05', '2026-01-08T02:00:00Z')).toEqual({ label: 'Streams', date: '5 January 2026' });
+    expect(upcoming('2026-01-07', '2026-01-08T02:00:00Z')).toBeUndefined();
   });
   it('should open an episode to watches a day before it is out, with no ratings yet', () => {
     const tomorrow = toEpisodeSummary({ ...base, episode: { ...episode, first_aired: '2026-01-01T23:00:00Z' } });

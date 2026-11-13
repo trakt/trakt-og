@@ -92,6 +92,7 @@ const sections = $derived([
   {#snippet details()}
     <WatchNow button={data.watchNow} title={episode.fullTitle} year={episode.year} fanart={episode.fanart} phone />
     <AdditionalStats>
+      {#if facts.streams}<AdditionalStat label={facts.streams.label}>{facts.streams.date}</AdditionalStat>{/if}
       {#if facts.aired}<AdditionalStat label={facts.aired.label}>{facts.aired.date} {#if facts.network}on <NameList names={[facts.network]} />{/if}</AdditionalStat>{:else if facts.network}<AdditionalStat label="Network"><NameList names={[facts.network]} /></AdditionalStat>{/if}
       {#if facts.runtime}<AdditionalStat label="Runtime">{facts.runtime}</AdditionalStat>{/if}
       {#if facts.directors.length}<AdditionalStat label={facts.directors.length>1 ? 'Directors':'Director'}><NameList names={facts.directors} /></AdditionalStat>{/if}

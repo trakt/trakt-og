@@ -85,19 +85,34 @@ describe('loadLibrary', () => {
     expect(result.days).toHaveLength(1);
   });
 
-  it('should read the Shows tab without a sort', async () => {
-    const result = await load({ type: 'shows', sort: 'added/desc' });
+  it('should read one page of the Shows tab on Added Date, which the API serves newest first', async () => {
+    const result = await load({ type: 'shows' });
     expect(requested()).toEqual(['/users/tester/collection/shows?extended=full&page=1&limit=60']);
-    expect(result.sort).toEqual({ by: 'added', how: 'desc' });
     expect(result.cards[0]).toMatchObject({
       subtitles: ['1 episode', 'Sep 29, 2026 12:23 PM'],
       image: 'https://media.trakt.tv/shows/1388/thumb/poster.webp',
     });
   });
 
+  it('should read every page of the Shows tab and sort it here on any other sort', async () => {
+    const result = await load({ type: 'shows', sort: 'added/desc', query: '?source=digital' });
+    expect(requested()).toEqual([
+      '/users/tester/collection/shows?extended=full&page=1&limit=250&available_on=digital',
+      '/users/tester/collection/shows?extended=full&page=2&limit=250&available_on=digital',
+    ]);
+    expect(result).toMatchObject({
+      sort: { by: 'added', how: 'desc' },
+      total: 61,
+      page: { current: 1, total: 1 },
+    });
+    expect(result.cards).toHaveLength(2);
+  });
+
   it('should 301 a sort the type lacks to the type, keeping the query', async () => {
-    const thrown = await load({ type: 'shows', sort: 'title', query: '?source=plex' }).catch((error: unknown) => error);
-    expect(isRedirect(thrown) && thrown.location).toBe('/users/tester/library/shows?source=plex');
+    const thrown = await load({ type: 'movies', sort: 'episodes', query: '?source=plex' }).catch(
+      (error: unknown) => error,
+    );
+    expect(isRedirect(thrown) && thrown.location).toBe('/users/tester/library/movies?source=plex');
   });
 
   it('should 301 the spelled-out All Types away', async () => {

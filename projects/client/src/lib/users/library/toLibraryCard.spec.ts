@@ -69,7 +69,7 @@ describe('toLibraryShowCard', () => {
       show,
       seasons: [{ episodes: [{}, {}] }, { episodes: [{}] }],
     };
-    expect(toLibraryShowCard(row, datePreferences)).toMatchObject({
+    expect(toLibraryShowCard(row, { sortBy: 'added', datePreferences })).toMatchObject({
       type: 'show',
       subtitles: ['3 episodes', 'Sep 28, 2026 3:00 PM'],
     });

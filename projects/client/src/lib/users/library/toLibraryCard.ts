@@ -8,6 +8,7 @@ import { episodeBadge } from '../profile/toProfileSummary.ts';
 import type { LibraryRow, LibraryShowRow } from './libraryRowsSchema.ts';
 import type { LibrarySortBy } from './librarySort.ts';
 import { countLabel } from '../../utils/countLabel.ts';
+import { episodeCount } from './sortLibraryShows.ts';
 
 type Link = { readonly text: string; readonly href: string };
 
@@ -54,6 +55,7 @@ function sortLine(
     case 'votes':
       return votes(count);
     case 'title':
+    case 'episodes':
       return undefined;
   }
 }
@@ -121,10 +123,23 @@ export function toLibraryCard(row: LibraryRow, { sortBy, screenshots, datePrefer
   };
 }
 
-/** A Shows tab card: "12 episodes", then the last collected date. */
-export function toLibraryShowCard(row: LibraryShowRow, datePreferences: DatePreferences): LibraryCard {
+/** A Shows tab card: "12 episodes", then the sort's line. */
+export function toLibraryShowCard(
+  row: LibraryShowRow,
+  { sortBy, datePreferences }: Pick<Options, 'sortBy' | 'datePreferences'>,
+): LibraryCard {
   const { show } = row;
-  const count = (row.seasons ?? []).reduce((sum, season) => sum + season.episodes.length, 0);
+  const count = episodeCount(row);
+  const line = sortLine(
+    sortBy,
+    {
+      collectedAt: row.last_collected_at,
+      released: show.first_aired ? formatDate(show.first_aired, datePreferences) : undefined,
+      runtime: show.runtime,
+      count: show.votes,
+    },
+    datePreferences,
+  );
   return {
     key: show.ids.trakt,
     type: 'show',
@@ -137,9 +152,6 @@ export function toLibraryShowCard(row: LibraryShowRow, datePreferences: DatePref
     airedEpisodes: show.aired_episodes ?? undefined,
     watchedAt: row.last_collected_at,
     runtime: 0,
-    subtitles: [
-      `${count} episode${count === 1 ? '' : 's'}`,
-      formatDate(row.last_collected_at, { ...datePreferences, time: true }),
-    ],
+    subtitles: [countLabel(count, 'episode'), ...(line ? [line] : [])],
   };
 }

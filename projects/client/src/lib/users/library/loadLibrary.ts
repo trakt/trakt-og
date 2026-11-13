@@ -1,7 +1,7 @@
 import { error } from '@sveltejs/kit';
 import { extractPageMeta } from '../../api/extractPageMeta.ts';
 import type { PageMeta } from '../../api/PageMeta.ts';
-import { rawApiFetch } from '../../api/rawApiFetch.ts';
+import { itemCount, paged, read, readAll } from '../../api/readAll.ts';
 import { type FadeHide, parseFadeHide } from '../../components/filters/fadeHide.ts';
 import type { DatePreferences } from '../../settings/DatePreferences.ts';
 import { historyFilters } from '../history/historyFilters.ts';
@@ -12,6 +12,7 @@ import { readProfileTab } from '../readProfileTab.ts';
 import { libraryRowsSchema, libraryShowsSchema } from './libraryRowsSchema.ts';
 import { apiSortHow, type LibrarySort, librarySort } from './librarySort.ts';
 import { libraryPath } from './libraryPath.ts';
+import { sortLibraryShows } from './sortLibraryShows.ts';
 import { canonicalRedirect } from '../../routing/canonicalRedirect.ts';
 import { isLibrarySourceFilter, type LibrarySourceFilter, librarySources } from './librarySources.ts';
 import { type LibraryCard, toLibraryCard, toLibraryShowCard } from './toLibraryCard.ts';
@@ -31,6 +32,9 @@ type Range = { readonly startAt?: string; readonly endAt?: string };
 // OG's `per(params[:limit] || 60)`, capped at the worker's MAX_LIMIT.
 const PER_PAGE = 60;
 const MAX_LIMIT = 250;
+// ponytail: the Shows route takes no sort and serves the last collected first, so any other sort reads the whole
+// library and sorts it here. Past 5,000 shows, only the 5,000 last collected are sorted.
+const MAX_SHOW_PAGES = 20;
 
 type Fetched = { status: number; body: unknown; total: number; page: PageMeta };
 
@@ -55,25 +59,37 @@ async function fetchPage({
   current: number;
   limit: number;
 }): Promise<Fetched> {
-  const query = new URLSearchParams({
-    extended: 'full',
-    page: String(current),
-    limit: String(limit),
-    // The Shows route takes no sort.
-    ...(type !== 'shows' && { sort_by: sort.by, sort_how: apiSortHow(sort) }),
-    ...(range.startAt && { start_at: range.startAt }),
-    ...(range.endAt && { end_at: range.endAt }),
-    ...(librarySources[source].availableOn && { available_on: librarySources[source].availableOn }),
-  });
-  const response = await rawApiFetch({
-    fetch,
-    token,
-    path: `${base}/collection/${type === 'all' ? 'media' : type}?${query}`,
-  });
+  const path = (page: number, perPage: number) => {
+    const query = new URLSearchParams({
+      extended: 'full',
+      page: String(page),
+      limit: String(perPage),
+      ...(type !== 'shows' && { sort_by: sort.by, sort_how: apiSortHow(sort) }),
+      ...(range.startAt && { start_at: range.startAt }),
+      ...(range.endAt && { end_at: range.endAt }),
+      ...(librarySources[source].availableOn && { available_on: librarySources[source].availableOn }),
+    });
+    return `${base}/collection/${type === 'all' ? 'media' : type}?${query}`;
+  };
+
+  if (type === 'shows' && (sort.by !== 'added' || sort.how !== 'asc')) {
+    const all = await readAll(
+      fetch,
+      token,
+      (page) => path(page, MAX_LIMIT),
+      MAX_SHOW_PAGES,
+      (body) => libraryShowsSchema.safeParse(body).data,
+    );
+    if (!all.rows) return { status: all.status, body: null, total: 0, page: extractPageMeta(new Headers(), current) };
+    const { slice, page } = paged(sortLibraryShows(all.rows, sort), current, limit);
+    return { status: 200, body: slice, total: all.total, page };
+  }
+
+  const { response, body } = await read(fetch, token, path(current, limit));
   return {
     status: response.status,
-    body: response.status === 200 ? await response.json().catch(() => null) : null,
-    total: positiveInt(response.headers.get('x-pagination-item-count'), 0),
+    body,
+    total: itemCount(response.headers),
     page: extractPageMeta(response.headers, current),
   };
 }
@@ -142,7 +158,7 @@ export async function loadLibrary({ fetch, locals, params, url, cookies, parent 
   if (type === 'shows') {
     const rows = libraryShowsSchema.safeParse(result.body);
     if (!rows.success) error(502, 'Trakt is having trouble loading this library.');
-    cards = rows.data.map((row) => toLibraryShowCard(row, datePreferences));
+    cards = rows.data.map((row) => toLibraryShowCard(row, { sortBy: sort.by, datePreferences }));
   } else {
     const rows = libraryRowsSchema.safeParse(result.body);
     if (!rows.success) error(502, 'Trakt is having trouble loading this library.');

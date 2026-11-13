@@ -102,6 +102,8 @@ let chipFilters = $state<AdvancedFilters>({
 // The toolbar over a grid: terms and the eye fade or hide cards by the viewer's state.
 let terms = $state('');
 let fadeHide = $state<FadeHide>({ fade: ['watched'], hide: [] });
+let tooLong = $state(false);
+const shownFadeHide = $derived(tooLong ? { ...fadeHide, hide: [] } : fadeHide);
 const cards = $derived(
   samples.flatMap((sample, index) => {
     const show = shows.at(index);
@@ -112,7 +114,7 @@ const cards = $derived(
       datePreferences: data.datePreferences,
     });
     const matches = (ids: readonly FadeHideOption[]) => ids.some((id) => matchesFadeHide(id, sample.state, fill));
-    return [{ ...sample, show, fill, faded: matches(fadeHide.fade), hidden: matches(fadeHide.hide) }];
+    return [{ ...sample, show, fill, faded: matches(shownFadeHide.fade), hidden: matches(shownFadeHide.hide) }];
   }).filter((card) => !card.hidden && card.show.title.toLowerCase().includes(terms.trim().toLowerCase())),
 );
 let media = $state('All');
@@ -169,7 +171,8 @@ function showOverlay() {
 {#snippet filterIcons()}
   <span class="filter-icons">
   <TermsFilter bind:terms />
-  <FadeHideMenu value={fadeHide} options={fadeHideOptions} cookie="design-list"
+  <FadeHideMenu value={shownFadeHide} options={fadeHideOptions} cookie="design-list"
+    hideDisabled={tooLong ? 'This is too large to use this filter' : undefined}
     onchange={(next) => (fadeHide = next)} />
 </span>
 {/snippet}
@@ -223,7 +226,10 @@ function showOverlay() {
 </Specimen>
 
 <Specimen title="Toolbar filters" bleed
-  note="A list toolbar's terms box and eye over its grid, with its count in the middle: the icon and number only, the noun in its tooltip. Watched starts faded; try Hide, or type part of a title.">
+  note="A list toolbar's terms box and eye over its grid, with its count in the middle: the icon and number only, the noun in its tooltip. Watched starts faded; try Hide, or type part of a title. A list too long to read whole turns Hide off, and each Hide toggle's tooltip says why.">
+  <div class="knob">
+    <DemoToggle bind:checked={tooLong}>List too long</DemoToggle>
+  </div>
   <SectionToolbar filters={mediaFilter} stats={toolbarStats} summary={filterIcons} />
   <section class="grid">
     <Container>

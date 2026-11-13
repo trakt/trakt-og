@@ -179,9 +179,30 @@ function listedTitle({ state }: QuickIconFillParams) {
   return state.watchlisted ? 'Remove from watchlist' : undefined;
 }
 
+/** How much of an item is watched and in the library, 0 to 1, without the tooltips. */
+export function iconShares({
+  state,
+  airedEpisodes,
+  adjustRewatching,
+}: Pick<QuickIconFillParams, 'state' | 'airedEpisodes' | 'adjustRewatching'>): Pick<
+  QuickIconFill,
+  'watched' | 'collected'
+> {
+  return {
+    watched: fraction(
+      adjustRewatching !== false && state.rewatching
+        ? (state.rewatchedEpisodes ?? state.watchedEpisodes)
+        : state.watchedEpisodes,
+      airedEpisodes,
+      state.watched,
+    ),
+    collected: fraction(state.collectedEpisodes, airedEpisodes, state.collected),
+  };
+}
+
 /** Maps a poster's overlay state onto the quick-icon bar. Unknown state renders idle. */
 export function quickIconFill(params: QuickIconFillParams): QuickIconFill {
-  const { state, airedEpisodes } = params;
+  const { state } = params;
   const favoritedAt =
     state.favorited && state.favoritedAt ? formatDate(state.favoritedAt, params.datePreferences) : undefined;
   const titles: QuickIconFill['titles'] = {
@@ -192,14 +213,7 @@ export function quickIconFill(params: QuickIconFillParams): QuickIconFill {
   };
 
   return {
-    watched: fraction(
-      params.adjustRewatching !== false && state.rewatching
-        ? (state.rewatchedEpisodes ?? state.watchedEpisodes)
-        : state.watchedEpisodes,
-      airedEpisodes,
-      state.watched,
-    ),
-    collected: fraction(state.collectedEpisodes, airedEpisodes, state.collected),
+    ...iconShares(params),
     // OG lit the list icon for the watchlist and for personal lists alike.
     listed: Boolean(state.watchlisted || state.listed),
     favorited: Boolean(state.favorited),

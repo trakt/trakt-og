@@ -54,7 +54,7 @@ export async function loadOfficialList({ fetch, locals, params, url, parent, coo
       fetch,
       token: null,
       base,
-      query: { ...query, types: [], genres: [], hide: [], terms: undefined, watchnow: undefined, page: 1, limit: 1 },
+      query: { ...query, types: [], genres: [], terms: undefined, watchnow: undefined, page: 1, limit: 1 },
       sort: { by: 'random', how: 'asc' },
     }).catch(() => null),
   ]);

@@ -12,7 +12,7 @@ export function matchesListFade({
   option: string;
   notes?: string;
   state: OverlayState;
-  fill: QuickIconFill;
+  fill: Pick<QuickIconFill, 'watched' | 'collected'>;
 }) {
   if (option === 'notes') return Boolean(notes?.trim());
   if (option === 'nonotes') return !notes?.trim();

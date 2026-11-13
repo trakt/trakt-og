@@ -40,8 +40,7 @@ function fetchSummary(client: ReturnType<typeof api>, { id, list }: { id: string
  * it.
  */
 export async function loadList({ fetch, locals, params, url, parent, cookies }: Params) {
-  const initialFilters = readListFilters({ search: url.searchParams, cookies, scope: 'list' });
-  const initialQuery = { ...toListQuery(url.searchParams), hide: initialFilters.hide };
+  const initialQuery = toListQuery(url.searchParams);
   const base = `/users/${encodeURIComponent(params.id)}/lists/${encodeURIComponent(params.list)}/items`;
   const token = locals.token;
 
@@ -59,7 +58,6 @@ export async function loadList({ fetch, locals, params, url, parent, cookies }: 
     isSelf: user?.slug === profile.slug,
   });
   const query = { ...initialQuery, hide: fadeHide.hide };
-  const unchanged = query.hide.join(',') === initialQuery.hide.join(',');
   const shell = { kind: 'personal' as const, query, fadeHide, datePreferences };
   if (profile.isLocked) return { ...shell, list: null };
 
@@ -82,7 +80,7 @@ export async function loadList({ fetch, locals, params, url, parent, cookies }: 
       token,
       base,
       query,
-      first: unchanged ? anonymousItems : { ...anonymousItems, status: 0 },
+      first: anonymousItems,
       fallback: list.sort,
       // The owner reads their own items with the token too: the worker's cache would hide what they just changed.
       needsToken: viewerSummary?.status === 200 || isSelf,

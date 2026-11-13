@@ -36,7 +36,11 @@ const share = (known: unknown, value: number, want: 'all' | 'some' | 'none') =>
  * Whether an item's user state matches one option (OG's `filterSet`, `global.js:3656-3710`). A slice that isn't
  * loaded yet matches nothing, so the "Not" options don't fade or hide everything while the overlay loads.
  */
-export function matchesFadeHide(option: FadeHideOption, state: OverlayState, fill: QuickIconFill): boolean {
+export function matchesFadeHide(
+  option: FadeHideOption,
+  state: OverlayState,
+  fill: Pick<QuickIconFill, 'watched' | 'collected'>,
+): boolean {
   switch (option) {
     case 'watched':
       return share(state.watched, fill.watched, 'all');

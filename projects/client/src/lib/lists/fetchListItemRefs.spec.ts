@@ -61,8 +61,6 @@ describe('fetchListItemRefs', () => {
       genres: 'drama',
       terms: 'Movie',
       watchnow: 'netflix',
-      hide: 'nonotes',
-      hide_no_notes: 'true',
     });
   });
 

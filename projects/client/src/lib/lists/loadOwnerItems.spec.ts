@@ -30,7 +30,7 @@ describe('loadOwnerItems', () => {
       '/sync/watchlist/all/rank/asc?extended=full&page=2&limit=250',
     ]);
   });
-  it('should preserve type, genre, text, streaming, hide, and sorting for the selected items', async () => {
+  it('should preserve type, genre, text, streaming and sorting for the selected items, leaving hides to the page', async () => {
     const request = vi.fn(() => Promise.resolve(response([row(1)])));
     await loadOwnerItems({
       kind: 'favorites',
@@ -49,8 +49,7 @@ describe('loadOwnerItems', () => {
       },
     });
     expect(request).toHaveBeenCalledWith(
-      '/users/me/favorites/movie/title/desc?extended=full&page=1&limit=250&genres=drama&terms=Heat' +
-        '&watchnow=netflix&hide=watched%2Cnonotes&hide_watched=true&hide_no_notes=true',
+      '/users/me/favorites/movie/title/desc?extended=full&page=1&limit=250&genres=drama&terms=Heat&watchnow=netflix',
     );
   });
   it('should refuse incomplete, malformed, duplicate, and unavailable reads', async () => {

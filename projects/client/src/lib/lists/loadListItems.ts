@@ -52,18 +52,26 @@ export function urlListSort(query: ListQuery): ListSort | undefined {
 // The worker's largest page, and enough of them for a VIP's 5,000-item watchlist (`TRAKT_WATCHLIST_ITEM_LIMIT_VIP`).
 const STATS_PAGE = 250;
 const MAX_STATS_PAGES = 20;
+const MAX_WHOLE_LIST = STATS_PAGE * MAX_STATS_PAGES;
 const RANKED: ListSort = { by: 'rank', how: 'asc' };
 
+const itemCount = (items: ListItems) => Number(items.headers.get('x-pagination-item-count')) || items.rows.length;
+const tooLongToHide = (items: ListItems) => items.status === 200 && itemCount(items) > MAX_WHOLE_LIST;
+
+const shuffled = <T>(rows: readonly T[]) =>
+  rows
+    .map((row) => ({ row, at: Math.random() }))
+    .sort((a, b) => a.at - b.at)
+    .map(({ row }) => row);
+
 /**
- * Every item that matches the filters, in rank order, for a sort the browser orders: the worker's first page says how
- * many more to read at once. Past the stats bar's cap, the rest are left off.
+ * Every item that matches the filters, in one sort, for the page to sort or hide in the browser: the worker's first
+ * page says how many more to read at once. Past the stats bar's cap, the rest are left off.
  */
-async function fetchWholeList({ query, ...request }: Omit<ItemsRequest, 'sort'>): Promise<ListItems> {
-  const read = (page: number) =>
-    fetchListItems({ ...request, query: { ...query, page, limit: STATS_PAGE }, sort: RANKED });
+async function fetchWholeList({ query, sort, ...request }: ItemsRequest & { sort: ListSort }): Promise<ListItems> {
+  const read = (page: number) => fetchListItems({ ...request, query: { ...query, page, limit: STATS_PAGE }, sort });
   const first = await read(1);
-  const total = Number(first.headers.get('x-pagination-item-count')) || first.rows.length;
-  const pages = Math.min(Math.ceil(total / STATS_PAGE), MAX_STATS_PAGES);
+  const pages = Math.min(Math.ceil(itemCount(first) / STATS_PAGE), MAX_STATS_PAGES);
   if (first.status !== 200 || pages <= 1) return first;
   const rest = await Promise.all(Array.from({ length: pages - 1 }, (_, i) => read(i + 2)));
   const failed = rest.find(({ status }) => status !== 200);
@@ -135,9 +143,13 @@ export async function loadListItems({
   const sort = resolveListSort({ query, fallback });
   // The worker answers these in rank order, so the page gets the whole list and the browser orders it.
   const sortInBrowser = Boolean(token) && isBrowserSort(sort.by);
-  const needsViewer =
-    Boolean(token) &&
-    (needsToken || VIEWER_SORTS.includes(sort.by) || Boolean(query.watchnow) || (query.hide?.length ?? 0) > 0);
+  // The hides apply in the browser too, over the whole list in the page's sort, up to the stats bar's cap.
+  const hiding = (query.hide?.length ?? 0) > 0;
+  const firstTooLong = hiding && tooLongToHide(first);
+  const readWhole = sortInBrowser || (hiding && !firstTooLong);
+  // Pages of a random sort would repeat items, so it's read ranked and shuffled once.
+  const wholeSort = sortInBrowser || sort.by === 'random' ? RANKED : sort;
+  const needsViewer = Boolean(token) && (needsToken || VIEWER_SORTS.includes(sort.by) || Boolean(query.watchnow));
   const used = usedListSort(first.headers);
   const reuse = (!needsViewer || firstHasToken) && first.status === 200 && used.by === sort.by && used.how === sort.how;
   const viewerToken = needsViewer ? token : null;
@@ -148,8 +160,7 @@ export async function loadListItems({
     query.types.length === 0 &&
     query.genres.length === 0 &&
     !query.terms &&
-    !query.watchnow &&
-    !query.hide?.length;
+    !query.watchnow;
   const firstRanked =
     ownerIsVip && !isFirstRankedPage
       ? fetchListItems({
@@ -160,7 +171,6 @@ export async function loadListItems({
             ...query,
             types: [],
             genres: [],
-            hide: [],
             terms: undefined,
             watchnow: undefined,
             page: 1,
@@ -171,8 +181,8 @@ export async function loadListItems({
       : null;
 
   const [fetched, ranked] = await Promise.all([
-    sortInBrowser
-      ? fetchWholeList({ fetch, token: viewerToken, base, query })
+    readWhole
+      ? fetchWholeList({ fetch, token: viewerToken, base, query, sort: wholeSort })
       : reuse
         ? first
         : fetchListItems({ fetch, token: viewerToken, base, query, sort }),
@@ -180,13 +190,13 @@ export async function loadListItems({
   ]);
   // A stale token keeps the anonymous answer: the server never refreshes, the browser does.
   const items = fetched.status === 401 && first.status === 200 ? first : fetched;
-  const wholeList = sortInBrowser && items === fetched;
+  const wholeList = readWhole && items === fetched;
   if ([403, 404].includes(items.status)) error(404, 'Page Not Found');
-  // Hides are saved in a cookie, so failing the page would fail every visit: it renders empty, with a way to clear them.
-  const hideFailed = items.status !== 200 && (query.hide?.length ?? 0) > 0;
-  if (items.status !== 200 && !hideFailed) error(502, 'Trakt is having trouble loading this list.');
+  if (items.status !== 200) error(502, 'Trakt is having trouble loading this list.');
+  const hideLimited = firstTooLong || (hiding && wholeList && tooLongToHide(items));
 
-  const cards: ListItemCard[] = items.rows.map((row) => toListItemCard(row, { sortBy: sort.by, datePreferences }));
+  const rows = wholeList && sort.by === 'random' ? shuffled(items.rows) : items.rows;
+  const cards: ListItemCard[] = rows.map((row) => toListItemCard(row, { sortBy: sort.by, datePreferences }));
   const page: PageMeta = wholeList
     ? { type: 'paginated', current: query.page, total: Math.max(1, Math.ceil(cards.length / query.limit)) }
     : listPageMeta({ headers: items.headers, current: query.page, limit: query.limit, received: items.rows.length });
@@ -200,15 +210,17 @@ export async function loadListItems({
 
   return {
     sort,
-    /** `cards` is the whole list in rank order, for the page to sort by the viewer's overlay and cut to its page. */
-    sortInBrowser: wholeList,
+    /** `cards` is the whole list in rank order, for the page to sort by the viewer's overlay. */
+    sortInBrowser: wholeList && sortInBrowser,
+    /** `cards` is the whole list, for the page to hide, sort and cut to its page. */
+    wholeList,
     cards,
     page,
     total,
     /** The stats bar's whole-list numbers, streamed when they take more reads. */
     stats,
-    /** The hide filters broke the read, so the list shows a Clear filters way out instead of its items. */
-    hideFailed,
+    /** The list is longer than the page can read whole, so its hides are off. */
+    hideLimited,
     /** Read by the profile frame (`routes/users/[id]/+layout.svelte`). */
     listCover: ownerIsVip ? listCoverOf(ranked ? ranked.rows.at(0) : items.rows.at(0)) : undefined,
   };

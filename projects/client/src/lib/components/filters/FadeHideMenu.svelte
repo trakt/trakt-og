@@ -13,12 +13,14 @@ interface Props {
   options: readonly { id: Option; label: string }[];
   /** Defaults to the fade options; an empty list omits Hide (mixed and ID searches). */
   hideOptions?: readonly { id: Option; label: string }[];
+  /** Why Hide is off here, as each Hide toggle's tooltip: a list too long to read whole. */
+  hideDisabled?: string;
   /** The cookie suffix: `shows`, `movies`, `calendars`, `search`. */
   cookie: string;
   onchange: (next: { fade: Option[]; hide: Option[] }) => void;
 }
 
-const { value, options, hideOptions = options, cookie, onchange }: Props = $props();
+const { value, options, hideOptions = options, hideDisabled, cookie, onchange }: Props = $props();
 
 const count = $derived(value.fade.length + value.hide.length);
 
@@ -35,7 +37,7 @@ function save(next: { fade: Option[]; hide: Option[] }, clear = false) {
 
 {#if page.data.user}
   <FilterMenu active={count > 0} {count}>
-    <FadeHideItems {value} fadeOptions={options} {hideOptions} onchange={save}
+    <FadeHideItems {value} fadeOptions={options} {hideOptions} {hideDisabled} onchange={save}
       onreset={() => save({ fade: [], hide: [] }, true)} />
   </FilterMenu>
 {/if}

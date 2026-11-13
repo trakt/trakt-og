@@ -12,6 +12,7 @@ const movie = z.object({
   ids: z.object({ trakt: z.number(), slug: z.string() }),
   runtime: z.number().nullish(),
   released: z.string().nullish(),
+  status: z.string().nullish(),
   ...stats,
 });
 

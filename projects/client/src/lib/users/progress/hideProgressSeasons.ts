@@ -1,5 +1,6 @@
 import { z } from 'zod/v4';
 import type { ToastAction } from '../../components/toast/toast.svelte.ts';
+import undo from '../../icons/regular/arrow-rotate-left.svg?raw';
 import type { createOverlay } from '../../overlay/createOverlay.svelte.ts';
 import type { HiddenProgress } from '../../overlay/HiddenProgress.ts';
 import { GENERIC_ERROR } from '../../utils/genericError.ts';
@@ -68,6 +69,7 @@ export async function hideProgressSeasons(params: Params): Promise<boolean> {
   if (hide) {
     notify.success(`You hid ${label} of ${show.title}.`, {
       label: 'Undo',
+      icon: undo,
       run: () => void hideProgressSeasons({ ...params, hide: false }),
     });
   } else {

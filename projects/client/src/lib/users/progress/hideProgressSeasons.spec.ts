@@ -73,6 +73,7 @@ describe('hideProgressSeasons', () => {
     });
     expect(params.notify.success).toHaveBeenCalledWith('You hid 2 seasons of The Bold and the Beautiful.', {
       label: 'Undo',
+      icon: expect.stringContaining('<svg'),
       run: expect.any(Function),
     });
   });

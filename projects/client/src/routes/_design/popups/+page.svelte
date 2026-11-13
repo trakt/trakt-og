@@ -10,6 +10,7 @@ import ReportDialog from '#lib/components/summary/ReportDialog.svelte';
 import { toast } from '#lib/components/toast/toast.svelte.ts';
 import LibraryTip from '#lib/components/collection/LibraryTip.svelte';
 import ListedTip from '#lib/components/lists/ListedTip.svelte';
+import { listItemLimitFailure } from '#lib/components/lists/toggleListItem.ts';
 import PlaysTip from '#lib/components/media/PlaysTip.svelte';
 import FavoritedTip from '#lib/components/favorites/FavoritedTip.svelte';
 import ChartTip from '#lib/components/tooltip/ChartTip.svelte';
@@ -78,6 +79,10 @@ const listedOn = [
   { id: 6, name: 'Mind Benders', collaboration: false },
   { id: 7, name: 'Oscar Night Picks', collaboration: false },
 ];
+const limitToast = (limit: Parameters<typeof listItemLimitFailure>[0]) => {
+  const failure = listItemLimitFailure(limit);
+  toast.error(failure.message, failure.action);
+};
 </script>
 
 <Specimen title="Dropdown" row
@@ -180,10 +185,22 @@ const listedOn = [
   </Container>
 </Specimen>
 
-<Specimen title="Toast" note="Glass toasts, top right under where the header sits. With action adds an Undo button that closes the toast and runs.">
+<Specimen title="Toast" note="Glass toasts, top right under where the header sits. With action adds an Undo button that closes the toast and runs. The list ones are the errors when adding to a list goes over that list's item limit (List full), or the account's total across all its lists: yours, with Upgrade unless you're VIP, or a collaborative list's owner's (Owner's lists full).">
   <div class="buttons">
     <DemoButton onclick={() => toast.success('Fight Club added to your watchlist.')}>Success</DemoButton>
     <DemoButton onclick={() => toast.error('This item was recently refreshed. Please try again later.')}>Error</DemoButton>
+    <DemoButton onclick={() => limitToast({ error: 'list_item_limit_reached', limit: 1_000, own: true, vip: false })}>
+      List full
+    </DemoButton>
+    <DemoButton onclick={() => limitToast({ error: 'total_list_item_limit_reached', limit: 1_000, own: true, vip: false })}>
+      All lists full
+    </DemoButton>
+    <DemoButton onclick={() => limitToast({ error: 'total_list_item_limit_reached', limit: 100_000, own: true, vip: true })}>
+      All lists full, VIP
+    </DemoButton>
+    <DemoButton onclick={() => limitToast({ error: 'total_list_item_limit_reached', limit: 1_000, own: false, vip: false })}>
+      Owner's lists full
+    </DemoButton>
     <DemoButton onclick={() => toast.success('You hid Season 3 of Dexter.', {
       label: 'Undo',
       run: () => toast.success('Season 3 of Dexter is back on your progress.'),

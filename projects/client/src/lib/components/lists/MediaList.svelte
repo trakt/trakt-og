@@ -180,6 +180,7 @@ async function toggleRow(list?: PickerList) {
     const ok = await toggleListItem({
       target,
       list,
+      viewer: page.data.user?.slug,
       remove: list.selected,
       overlay,
       request,
@@ -270,7 +271,15 @@ async function save(draft: Parameters<typeof createList>[0]['draft'] & { collabo
     changed = true;
     lists = [row, ...lists];
     listCatalog.update(page.data.user?.slug ?? '', lists.length);
-    const added = await toggleListItem({ target, list: row, remove: false, overlay, request, notify: toast });
+    const added = await toggleListItem({
+      target,
+      list: row,
+      viewer: page.data.user?.slug,
+      remove: false,
+      overlay,
+      request,
+      notify: toast,
+    });
     if (added) {
       lists = lists.map((list) => list.id === row.id ? { ...list, selected: true, count: list.count + 1 } : list);
     }

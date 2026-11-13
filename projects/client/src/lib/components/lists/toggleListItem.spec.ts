@@ -66,6 +66,66 @@ describe('toggleListItem', () => {
     expect(params.overlay.state('movie', 1).watchlisted).toBeUndefined();
     expect(params.notify.error).toHaveBeenCalledTimes(status === 429 ? 0 : 1);
   });
+  it.each([
+    ['list_item_limit_reached', '1000', 'me', 'false', 'This list already holds 1,000 items.', false],
+    ['list_item_limit_reached', null, 'me', 'false', 'This list already holds the most items.', false],
+    [
+      'total_list_item_limit_reached',
+      '100000',
+      'me',
+      'true',
+      "You've already added 100,000 items to your lists.",
+      false,
+    ],
+    ['total_list_item_limit_reached', '1000', 'me', 'false', "You've already added 1,000 items to your lists.", true],
+    [
+      'total_list_item_limit_reached',
+      '1000',
+      'friend',
+      'false',
+      "This list's owner has already added 1,000 items to their lists.",
+      false,
+    ],
+    ['some_other_limit', '1000', 'me', 'false', "Doh! We couldn't update this list.", false],
+  ])(
+    'should roll back a %s 420 (limit %s, owner %s, VIP %s) and say why',
+    async (error, limit, owner, vip, message, upgrade) => {
+      const params = setup();
+      server.use(
+        http.post(`https://apiz.trakt.tv/users/${owner}/lists/2/items`, () =>
+          HttpResponse.json(
+            { error },
+            { status: 420, headers: { 'X-VIP-User': vip, ...(limit ? { 'X-Account-Limit': limit } : {}) } },
+          ),
+        ),
+      );
+      const list = { id: 2, owner, name: 'Faves', collaboration: false };
+      expect(await toggleListItem({ ...params, list, viewer: 'me', remove: false })).toBe(false);
+      expect(params.overlay.state('movie', 1).listed).toBeFalsy();
+      expect(params.notify.error).toHaveBeenCalledWith(
+        message,
+        upgrade ? expect.objectContaining({ label: 'Upgrade' }) : undefined,
+      );
+    },
+  );
+  it('should open VIP credited to lists from the Upgrade button', async () => {
+    const params = setup();
+    const open = vi.fn();
+    vi.stubGlobal('open', open);
+    server.use(
+      http.post('https://apiz.trakt.tv/users/me/lists/2/items', () =>
+        HttpResponse.json(
+          { error: 'total_list_item_limit_reached' },
+          { status: 420, headers: { 'X-VIP-User': 'false', 'X-Account-Limit': '1000' } },
+        ),
+      ),
+    );
+    const list = { id: 2, owner: 'me', name: 'Faves', collaboration: false };
+    await toggleListItem({ ...params, list, viewer: 'me', remove: false });
+    params.notify.error.mock.calls[0]?.[1]?.run();
+    expect(open).toHaveBeenCalledWith(expect.stringContaining('/vip?source=lists'), '_blank', 'noopener');
+    vi.unstubAllGlobals();
+  });
   it('should roll back malformed and not-found success bodies', async () => {
     const params = setup();
     for (const body of [null, { not_found: { movies: [{ ids: { trakt: 1 } }] } }]) {

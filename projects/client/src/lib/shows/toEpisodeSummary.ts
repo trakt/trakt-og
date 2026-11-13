@@ -10,6 +10,7 @@ import type { DatePreferences } from '../settings/DatePreferences.ts';
 import { formatDate } from '../utils/formatDate.ts';
 import { formatRuntime } from '../utils/formatRuntime.ts';
 import { mediaImage } from '../images/mediaImage.ts';
+import type { WithCharacterImages } from './withCharacterImages.ts';
 import { previewArt } from '../images/previewArt.ts';
 import { episodeNeighbours } from './episodeNeighbours.ts';
 import { earlyStreamDate } from './earlyStreamDate.ts';
@@ -29,7 +30,7 @@ interface Params {
   season: Season;
   episode: EpisodeResponse;
   seasons: z.infer<typeof episodeSeasonsSchema>;
-  people: PeopleResponse;
+  people: WithCharacterImages<PeopleResponse>;
   ratings: RatingsResponse;
   stats: ItemStats;
   datePreferences: DatePreferences;

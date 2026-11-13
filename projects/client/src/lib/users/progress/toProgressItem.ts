@@ -1,6 +1,7 @@
 import type { CollectedItem } from '../../overlay/CollectedItem.ts';
 import type { CachedShow } from '../../shows/cache/CachedShow.ts';
 import type { CatalogEpisode, ShowCatalog } from '../../shows/cache/ShowCatalog.ts';
+import { hasEpisodeAired } from '../../shows/hasEpisodeAired.ts';
 import { episodeRuntime } from './episodeRuntime.ts';
 import { nextEpisode } from './nextEpisode.ts';
 import type { ProgressEpisodeData, ProgressItem, ProgressSeasonData } from './ProgressItem.ts';
@@ -68,7 +69,7 @@ type Episode = ProgressEpisodeData & { readonly episode: CatalogEpisode };
  */
 function fromCatalog(params: ToProgressItemParams, catalog: ShowCatalog): ProgressItem {
   const { show, watched, collected, resetAt, droppedAt, hiddenSeasons, includeSpecials, useLastActivity, now } = params;
-  const aired = (episode: CatalogEpisode) => episode.firstAired !== undefined && Date.parse(episode.firstAired) <= now;
+  const aired = (episode: CatalogEpisode) => hasEpisodeAired(episode.releasedAt ?? episode.firstAired, now);
 
   const counted = catalog.seasons
     .filter(({ number }) => number > 0 || includeSpecials)

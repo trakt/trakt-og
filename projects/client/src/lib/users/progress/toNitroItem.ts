@@ -1,6 +1,7 @@
 import type { UpNextResponse } from '@trakt/api';
 import type { UpNextEntry } from '../../progress/UpNextEntry.ts';
 import type { CatalogEpisode } from '../../shows/cache/ShowCatalog.ts';
+import { episodeReleasedAt } from '../../shows/episodeReleasedAt.ts';
 import { episodeRuntime } from './episodeRuntime.ts';
 import type { ProgressItem } from './ProgressItem.ts';
 import { toProgressShow } from './toProgressShow.ts';
@@ -18,6 +19,7 @@ function toEpisode(episode: Episode | null): CatalogEpisode | undefined {
     overview: episode.overview ?? undefined,
     type: episode.episode_type ?? undefined,
     firstAired: episode.first_aired ?? undefined,
+    releasedAt: episodeReleasedAt(episode),
     runtime: episode.runtime ?? undefined,
     rating: episode.rating ?? undefined,
   };

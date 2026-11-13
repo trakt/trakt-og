@@ -3,6 +3,7 @@ import { episodeNumber } from '../../components/media/episodeTags.ts';
 import { toEpisodeBadge } from '../../progress/toOnDeckItem.ts';
 import { capitalize } from '../../utils/capitalize.ts';
 import { mediaImage } from '../../images/mediaImage.ts';
+import { isEpisodeWatchable } from '../../shows/isEpisodeWatchable.ts';
 import type { ProgressItem } from './ProgressItem.ts';
 import { tagged } from './toProgressRow.ts';
 
@@ -30,7 +31,7 @@ function toTicks({ detail, completed, aired }: ProgressItem): readonly boolean[]
 export function toProgressCard({ item, username, simple, now }: ToProgressCardParams): OnDeckItem | undefined {
   const { show } = item;
   const next = item.next ?? item.detail?.next;
-  const aired = next?.firstAired !== undefined && Date.parse(next.firstAired) <= now.getTime();
+  const aired = next !== undefined && isEpisodeWatchable(next.releasedAt ?? next.firstAired, now.getTime());
   const caughtUp = item.completed >= item.aired;
   if (!aired && !caughtUp) return undefined;
 

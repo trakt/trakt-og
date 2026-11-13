@@ -6,6 +6,7 @@ import type { TickRun } from '../../components/media/TickRun.ts';
 import { tickRuns } from '../../components/media/tickRuns.ts';
 import type { DatePreferences } from '../../settings/DatePreferences.ts';
 import type { CatalogEpisode } from '../../shows/cache/ShowCatalog.ts';
+import { isEpisodeWatchable } from '../../shows/isEpisodeWatchable.ts';
 import { formatDate } from '../../utils/formatDate.ts';
 import { formatRuntime } from '../../utils/formatRuntime.ts';
 import { mediaImage } from '../../images/mediaImage.ts';
@@ -130,7 +131,7 @@ function toUpNext({ item, now }: ToProgressRowParams): ProgressUpNext | undefine
     spoilerImage: mediaImage({ type: 'show', id: show.id, slot: 'fanart', size: 'medium' }),
     tags: [{ text: 'Up next', kind: 'primary' }, ...(label ? [label] : [])],
     rating: episode.rating,
-    released: episode.firstAired !== undefined && Date.parse(episode.firstAired) <= now.getTime(),
+    released: isEpisodeWatchable(episode.releasedAt ?? episode.firstAired, now.getTime()),
     target: {
       type: 'episode',
       id: episode.id,

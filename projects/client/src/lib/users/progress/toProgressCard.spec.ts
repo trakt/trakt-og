@@ -63,6 +63,20 @@ describe('toProgressCard', () => {
     });
   });
 
+  it('should show a next episode that streams before it airs', () => {
+    const streaming = { ...next, firstAired: '2026-10-05T01:00:00.000Z', releasedAt: '2026-09-30T14:00:00.000Z' };
+    expect(card({ next: streaming })).toMatchObject({
+      episodeId: 501,
+      episodeHref: '/shows/show-7/seasons/2/episodes/1',
+    });
+  });
+
+  it('should show a next episode a day before it is out', () => {
+    const tomorrow = { ...next, firstAired: '2026-10-01T19:00:00.000Z' };
+    expect(card({ next: tomorrow })?.episodeId).toBe(501);
+    expect(card({ next: { ...tomorrow, firstAired: '2026-10-01T21:00:00.000Z' } })).toBeUndefined();
+  });
+
   it('should mark a rewatch', () => {
     expect(card({ next, resetAt: '2026-08-01T00:00:00.000Z' })?.rewatching).toBe(true);
   });

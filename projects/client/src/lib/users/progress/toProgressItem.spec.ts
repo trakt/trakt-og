@@ -142,6 +142,20 @@ describe('toProgressItem', () => {
       });
     });
 
+    it('should count an episode streaming before it airs as aired, as the API does', () => {
+      const streaming: ShowCatalog = {
+        ...catalog,
+        seasons: catalog.seasons.map((season) => ({
+          ...season,
+          episodes: season.episodes.map((episode) => (episode.id === 22 ? { ...episode, releasedAt: AIRED } : episode)),
+        })),
+      };
+      const item = toProgressItem({ ...base, watched, catalog: streaming });
+
+      expect(item.aired).toBe(5);
+      expect(item.detail?.seasons.at(1)).toMatchObject({ aired: 2, upcoming: [] });
+    });
+
     it('should flag episodes in the library on the watched tab, watched or not', () => {
       const collected = new Map([
         [

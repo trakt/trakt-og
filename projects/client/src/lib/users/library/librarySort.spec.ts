@@ -5,7 +5,8 @@ describe('librarySort', () => {
   it('should read the sort segments, falling back to Added Date for a sort the type lacks', () => {
     expect(librarySort('movies', 'title/asc')).toEqual({ by: 'title', how: 'asc' });
     expect(librarySort('episodes', 'runtime/desc')).toEqual({ by: 'added', how: 'desc' });
-    expect(librarySort('shows', 'title/asc')).toEqual({ by: 'added', how: 'asc' });
+    expect(librarySort('shows', 'episodes/desc')).toEqual({ by: 'episodes', how: 'desc' });
+    expect(librarySort('movies', 'episodes/asc')).toEqual({ by: 'added', how: 'asc' });
     expect(librarySort('all', undefined)).toEqual({ by: 'added', how: 'asc' });
   });
 

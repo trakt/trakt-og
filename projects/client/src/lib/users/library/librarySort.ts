@@ -5,6 +5,7 @@ export const sortLabels = {
   added: 'Added Date',
   title: 'Title',
   released: 'Release Date',
+  episodes: 'Episode Count',
   runtime: 'Runtime',
   percentage: 'Percentage',
   votes: 'Votes',
@@ -12,11 +13,11 @@ export const sortLabels = {
 
 export type LibrarySortBy = keyof typeof sortLabels;
 
-/** Each type's sorts that the API serves. Shows take none but Added Date. */
+/** Each type's sorts. The API sorts all but Shows, which `sortLibraryShows` sorts here. */
 export const librarySorts: Readonly<Record<HistoryType, readonly LibrarySortBy[]>> = {
   all: ['added', 'title', 'released', 'runtime', 'percentage', 'votes'],
   movies: ['added', 'title', 'released', 'runtime', 'percentage', 'votes'],
-  shows: ['added'],
+  shows: ['added', 'title', 'released', 'episodes', 'runtime', 'percentage', 'votes'],
   episodes: ['added', 'title', 'released', 'percentage', 'votes'],
 };
 

@@ -4,7 +4,7 @@ import { canonicalRedirect } from '../../routing/canonicalRedirect.ts';
 import { signInRedirect } from '../../auth/signInRedirect.ts';
 import { extractPageMeta } from '../../api/extractPageMeta.ts';
 import type { PageMeta } from '../../api/PageMeta.ts';
-import { rawApiFetch } from '../../api/rawApiFetch.ts';
+import { itemCount, paged, read, readAll } from '../../api/readAll.ts';
 import { type FadeHide, parseFadeHide } from '../../components/filters/fadeHide.ts';
 import type { DatePreferences } from '../../settings/DatePreferences.ts';
 import type { ProfileUser } from '../ProfileUser.ts';
@@ -75,45 +75,6 @@ function query(filters: HistoryFilters, page: number, limit: number) {
   });
 }
 
-async function read(fetch: typeof globalThis.fetch, token: string | null, path: string) {
-  const response = await rawApiFetch({ fetch, token, path });
-  const body = response.status === 200 ? await response.json().catch(() => null) : null;
-  return { response, body };
-}
-
-const total = (headers: Headers) => positiveInt(headers.get('x-pagination-item-count'), 0);
-
-/** Every page of a list, up to `max`, read side by side after the first. */
-async function readAll<Row>(
-  fetch: typeof globalThis.fetch,
-  token: string | null,
-  path: (page: number) => string,
-  max: number,
-  parse: (body: unknown) => Row[] | undefined,
-) {
-  const first = await read(fetch, token, path(1));
-  const rows = parse(first.body);
-  if (!rows) return { status: first.response.status, rows: undefined, total: 0 };
-  const count = positiveInt(first.response.headers.get('x-pagination-page-count'), 1);
-  const rest = await Promise.all(
-    Array.from({ length: Math.min(count, max) - 1 }, (_, i) => read(fetch, token, path(i + 2))),
-  );
-  return {
-    status: 200,
-    rows: [...rows, ...rest.flatMap(({ body }) => parse(body) ?? [])],
-    total: total(first.response.headers),
-  };
-}
-
-/** One page of rows sorted here. */
-function paged<Row>(rows: readonly Row[], current: number, limit: number) {
-  const pages = Math.max(1, Math.ceil(rows.length / limit));
-  return {
-    slice: rows.slice((current - 1) * limit, current * limit),
-    page: { type: 'paginated', current: Math.min(current, pages), total: pages } satisfies PageMeta,
-  };
-}
-
 const filtered = (filters: HistoryFilters) =>
   Boolean(filters.startAt || filters.endAt || filters.genre || filters.watchnow);
 
@@ -154,7 +115,7 @@ async function fetchPage({
       ...empty,
       status: 200,
       charts: rows.data.map(fromWatched).filter(isShowChart),
-      total: total(response.headers),
+      total: itemCount(response.headers),
       page: extractPageMeta(response.headers, current),
     };
   }
@@ -215,7 +176,7 @@ async function fetchPage({
     ...empty,
     status: 200,
     plays: rows.data,
-    total: total(response.headers),
+    total: itemCount(response.headers),
     page: extractPageMeta(response.headers, current),
   };
 }

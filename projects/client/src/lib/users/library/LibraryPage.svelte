@@ -153,7 +153,7 @@ const flipped = $derived(data.sort.how === 'desc');
         <SortMenu sorts={menuSorts} current={data.sort.by} href={({ by }) => href(data.type, { by, how: 'asc' })} />
       </Dropdown>
       <!-- Every sort but Title runs newest, highest or longest first; the Shows route takes no sort at all. -->
-      <SortDirection joined descending={data.sort.by !== 'title'} disabled={data.type === 'shows'} bind:flipped={
+      <SortDirection joined descending={data.sort.by !== 'title'} bind:flipped={
         () => flipped,
         (next) => goto(href(data.type, { by: data.sort.by, how: next ? 'desc' : 'asc' }))
       } />

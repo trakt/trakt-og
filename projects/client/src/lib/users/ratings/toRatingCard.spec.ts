@@ -38,7 +38,7 @@ describe('toRatingCard', () => {
       minutes: 139,
     });
   });
-  it('should use episode stills only on Episodes, with the show line and summary premiere badge', () => {
+  it('should use episode stills only on Episodes, with the show line on either card, and summary premiere badge', () => {
     const row = ratingRowsSchema.parse([{ ...base, type: 'episode', episode, show }]).at(0);
     if (!row) throw new Error('fixture missing');
     expect(toRatingCard(row, { ...opts, type: 'episodes' })).toMatchObject({
@@ -51,7 +51,10 @@ describe('toRatingCard', () => {
       subtitles: [{ text: 'Breaking Bad', href: '/shows/breaking-bad' }, 'Sep 29, 2026 3:00 PM'],
       episodeBadge: { label: 'Series Premiere' },
     });
-    expect(toRatingCard(row, opts)?.image).toBe('https://media.trakt.tv/shows/2/thumb/poster.webp');
+    expect(toRatingCard(row, opts)).toMatchObject({
+      image: 'https://media.trakt.tv/shows/2/thumb/poster.webp',
+      subtitles: [{ text: 'Breaking Bad', href: '/shows/breaking-bad' }, 'Sep 29, 2026 3:00 PM'],
+    });
   });
   it('should support specials, season-specific posters and released/runtime/votes lines', () => {
     const rows = ratingRowsSchema.parse([
@@ -70,6 +73,7 @@ describe('toRatingCard', () => {
       title: 'Specials',
       href: '/shows/breaking-bad/seasons/0',
       image: 'https://media.trakt.tv/seasons/3/thumb/poster.webp',
+      subtitles: [{ text: 'Breaking Bad', href: '/shows/breaking-bad' }, 'Sep 29, 2026 3:00 PM'],
     });
     expect(toRatingCard(film, { ...opts, by: 'released' })?.subtitles).toEqual(['Oct 15, 1999']);
     expect(toRatingCard(film, { ...opts, by: 'runtime' })?.subtitles).toEqual(['139 minutes']);

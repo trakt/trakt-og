@@ -14,6 +14,8 @@ export type ProgressEpisodeData = {
   /** The last watch, or when it was added to the library. */
   readonly at?: string;
   readonly firstAired?: string;
+  /** The day it streams, when that comes a day or more before it airs. */
+  readonly streamsOn?: string;
   /** Minutes, the show's when the episode has none. */
   readonly runtime: number;
   /** The Trakt rating, 0 to 10. */
@@ -30,7 +32,12 @@ export type ProgressSeasonData = {
   readonly minutesLeft: number;
   readonly episodes: readonly ProgressEpisodeData[];
   /** Announced episodes that haven't aired yet, or have no air date. */
-  readonly upcoming: readonly { readonly number: number; readonly title?: string; readonly firstAired?: string }[];
+  readonly upcoming: readonly {
+    readonly number: number;
+    readonly title?: string;
+    readonly firstAired?: string;
+    readonly streamsOn?: string;
+  }[];
 };
 
 /** What only the show's catalog knows: read when the row's seasons open. */

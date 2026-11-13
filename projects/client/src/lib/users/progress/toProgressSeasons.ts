@@ -82,6 +82,7 @@ type Episode = {
   id?: number;
   title?: string;
   firstAired?: string;
+  streamsOn?: string;
   runtime?: number;
   rating?: number;
   aired: boolean;
@@ -98,7 +99,7 @@ function toSquare({
   showHref,
   datePreferences,
 }: Omit<ToProgressSeasonsParams, 'seasons'> & { season: number; episode: Episode }): EpisodeSquare {
-  const { number, id, title, firstAired, runtime, rating, aired, done, plays, at } = episode;
+  const { number, id, title, firstAired, streamsOn, runtime, rating, aired, done, plays, at } = episode;
   const state: EpisodeSquareState = !aired
     ? 'not-aired'
     : done
@@ -110,12 +111,13 @@ function toSquare({
   const day = (date: string | undefined) =>
     date && !isUnknownDate(date) ? formatDate(date, { ...datePreferences, format: 'll' }) : undefined;
   const airs = day(firstAired) ?? 'TBA';
+  const streams = streamsOn && formatDate(streamsOn, { ...datePreferences, format: 'll', timeZone: 'UTC' });
   const doneAt = day(at);
   const status = {
     watched: ['watched', doneAt].filter(Boolean).join(' '),
     'not-watched': 'not watched',
     'up-next': 'up next',
-    'not-aired': `airs ${airs}`,
+    'not-aired': streams ? `streams ${streams}` : `airs ${airs}`,
   }[state];
   const episodeCode = episodeNumber({ season, number }, null);
 
@@ -131,12 +133,12 @@ function toSquare({
       `${episodeCode}${title ? ` "${title}"` : ''}`,
       status,
       collected && 'in your library',
-      aired && state !== 'watched' && `aired ${airs}`,
+      aired && state !== 'watched' && (streams ? `streamed ${streams}` : `aired ${airs}`),
     ]
       .filter(Boolean)
       .join(', '),
     image: id === undefined ? undefined : mediaImage({ type: 'episode', id, slot: 'screenshot', size: 'thumb' }),
-    airs: aired ? airs : `Airs ${airs}`,
+    airs: streams ? (aired ? streams : `Streams ${streams}`) : aired ? airs : `Airs ${airs}`,
     runtime: runtime ? formatRuntime(runtime) : undefined,
     rating,
     plays: plays > 0 ? { count: plays, minutes: runtime ? plays * runtime : undefined, at: doneAt } : undefined,

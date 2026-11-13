@@ -130,6 +130,21 @@ describe('toProgressSeasons', () => {
       ]);
     });
 
+    it('should date an episode that streams first by its streaming day', () => {
+      const data = season(1, [false], { upcoming: 1 });
+      const streaming: ProgressSeasonData = {
+        ...data,
+        episodes: data.episodes.map((episode) => ({ ...episode, streamsOn: '2026-08-29' })),
+        upcoming: data.upcoming.map((episode) => ({ ...episode, streamsOn: '2027-01-11' })),
+      };
+      const result = seasons([streaming]).at(0)?.squares ?? [];
+
+      expect(result.map(({ label, airs }) => [label, airs])).toEqual([
+        ['1x01 "E1", not watched, streamed Aug 29, 2026', 'Aug 29, 2026'],
+        ['1x02, streams Jan 11, 2027', 'Streams Jan 11, 2027'],
+      ]);
+    });
+
     it('should give each tooltip its air date, runtime and rating, then your plays and last watch', () => {
       expect(squares.map(({ id, airs, runtime, rating, plays }) => ({ id, airs, runtime, rating, plays }))).toEqual([
         {

@@ -2,9 +2,10 @@
 // Call it from interactions only: this module is shared by every request on the server.
 type ToastType = 'success' | 'error';
 
-/** A button on the toast that closes it and runs: "Undo". */
+/** A button on the toast that closes it and runs: "Upgrade", or with an `icon`, an icon button whose tooltip is the label. */
 export interface ToastAction {
   readonly label: string;
+  readonly icon?: string;
   readonly run: () => void;
 }
 

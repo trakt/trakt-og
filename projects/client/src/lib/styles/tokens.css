@@ -1345,10 +1345,12 @@
   --toast-padding: 11px 8px 11px 14px;
   --toast-icon-gap: 10px;
   --toast-close-size: 28px;
+  --toast-button-gap: 2px; /* between an action and the close */
   --toast-timer-height: 2px;
   --font-size-toast: 14px;
   --font-size-toast-icon: 18px;
-  --font-size-toast-close: 14px;
+  --font-size-toast-close: 16px;
+  --font-size-toast-action-icon: 14px; /* undo's arrow fills more of its box than the close's x */
   --radius-toast: var(--radius-container);
   --radius-toast-close: var(--radius-object);
   --color-toast-bg: var(--color-header-panel);
@@ -1360,7 +1362,6 @@
   --color-toast-error: #ff5a60; /* --brand-primary, lifted for an icon on dark glass */
   --color-toast-error-border: rgb(255 90 96 / 0.5);
   --color-toast-action: #ff5a60; /* the link red, lifted for the glass like the error icon */
-  --toast-action-padding: 8px;
   --blur-toast: var(--blur-header-glass);
   --shadow-toast: 0 12px 32px rgb(0 0 0 / 0.45);
 

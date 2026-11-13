@@ -2,10 +2,14 @@
   Toasts: dark glass cards stacked down from under the header's right edge, newest on top. Show one with
   `toast.success(message)` or `toast.error(message)` from `./toast.svelte.ts`. Each goes after 5s, and a line along its
   bottom drains to show it. Hovering or focusing one holds it, and it goes 1s after the pointer or focus leaves.
-  Errors announce assertively, successes politely. A toast can carry one action, `toast.success(message, { label: 'Undo',
-  run })`, a text button before the close that closes it and runs.
+  Errors announce assertively, successes politely. A toast can carry one action that closes it and runs:
+  `toast.error(message, { label: 'Upgrade', run })` is a tinted `LinkButton` in the link red before the close, and
+  `toast.success(message, { label: 'Undo', icon, run })` an icon button beside the close, its label the tooltip, like
+  the close's "Close".
 -->
 <script lang="ts">
+import LinkButton from '#lib/components/button/LinkButton.svelte';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
 import Icon from '#lib/icons/Icon.svelte';
 import circleCheck from '#lib/icons/solid/circle-check.svg?raw';
 import circleExclamation from '#lib/icons/solid/circle-exclamation.svg?raw';
@@ -74,15 +78,35 @@ const autoDismiss = (id: number) => (node: HTMLElement) => {
     >
       <span class="icon"><Icon svg={icons[type]} /></span>
       <p class="message">{message}</p>
-      {#if action}
-        <button type="button" class="action" onclick={() => {
-          toast.dismiss(id);
-          action.run();
-        }}>{action.label}</button>
-      {/if}
-      <button type="button" class="close" aria-label="Close" onclick={() => toast.dismiss(id)}>
-        <Icon svg={xmark} />
-      </button>
+      <span class="buttons">
+        {#if action}
+          {@const run = () => {
+            toast.dismiss(id);
+            action.run();
+          }}
+          {@const icon = action.icon}
+          <span class="action">
+            {#if icon}
+              <Tooltip text={action.label} placement="bottom">
+                {#snippet trigger(tooltip)}
+                  <button type="button" class="icon-button" aria-label={action.label} onclick={run} {...tooltip}>
+                    <Icon svg={icon} />
+                  </button>
+                {/snippet}
+              </Tooltip>
+            {:else}
+              <LinkButton variant="tinted" onclick={run}>{action.label}</LinkButton>
+            {/if}
+          </span>
+        {/if}
+        <Tooltip text="Close" placement="bottom">
+          {#snippet trigger(tooltip)}
+            <button type="button" class="icon-button" aria-label="Close" onclick={() => toast.dismiss(id)} {...tooltip}>
+              <Icon svg={xmark} />
+            </button>
+          {/snippet}
+        </Tooltip>
+      </span>
       <span class="timer"></span>
     </div>
   {/each}
@@ -116,10 +140,6 @@ const autoDismiss = (id: number) => (node: HTMLElement) => {
   color: var(--color-toast-text);
   font-size: var(--font-size-toast);
 
-  &:has(.action) {
-    grid-template-columns: auto minmax(0, 1fr) auto auto;
-  }
-
   &.success {
     --color-toast-type: var(--color-toast-success);
   }
@@ -139,26 +159,26 @@ const autoDismiss = (id: number) => (node: HTMLElement) => {
 .message {
   margin: 0;
   overflow-wrap: anywhere;
+  text-wrap: balance;
 }
 
-/* "Undo": a text button in the link red, lifted for the glass. */
-.action {
-  min-block-size: 0;
-  block-size: var(--toast-close-size);
-  padding-inline: var(--toast-action-padding);
-  border: 0;
-  border-radius: var(--radius-toast-close);
-  background: none;
-  color: var(--color-toast-action);
-  font-size: var(--font-size-toast);
-  font-weight: var(--font-weight-headings-heavy);
+.buttons {
+  display: flex;
+  align-items: center;
+  gap: var(--toast-button-gap);
+}
 
-  &:is(:hover, :focus-visible) {
-    background-color: var(--color-toast-close-hover);
+/* "Upgrade": a tinted button in the link red, lifted for the glass. */
+.action {
+  display: flex;
+  --link-button-tint: var(--color-toast-action);
+
+  & .icon-button {
+    font-size: var(--font-size-toast-action-icon);
   }
 }
 
-.close {
+.icon-button {
   display: grid;
   place-items: center;
   min-block-size: 0;

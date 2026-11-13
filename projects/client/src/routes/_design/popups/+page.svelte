@@ -8,6 +8,7 @@ import { withTraktSorts } from '#lib/components/sort/sortMenu.ts';
 import FilterMenu from '#lib/components/filters/FilterMenu.svelte';
 import ReportDialog from '#lib/components/summary/ReportDialog.svelte';
 import { toast } from '#lib/components/toast/toast.svelte.ts';
+import undo from '#lib/icons/regular/arrow-rotate-left.svg?raw';
 import LibraryTip from '#lib/components/collection/LibraryTip.svelte';
 import ListedTip from '#lib/components/lists/ListedTip.svelte';
 import { listItemLimitFailure } from '#lib/components/lists/toggleListItem.ts';
@@ -185,7 +186,7 @@ const limitToast = (limit: Parameters<typeof listItemLimitFailure>[0]) => {
   </Container>
 </Specimen>
 
-<Specimen title="Toast" note="Glass toasts, top right under where the header sits. With action adds an Undo button that closes the toast and runs. The list ones are the errors when adding to a list goes over that list's item limit (List full), or the account's total across all its lists: yours, with Upgrade unless you're VIP, or a collaborative list's owner's (Owner's lists full).">
+<Specimen title="Toast" note="Glass toasts, top right under where the header sits. An action closes the toast and runs: Undo is an icon beside the close, named by its tooltip like the close's; Upgrade, with words to say, is a tinted button. The list ones are the errors when adding to a list goes over that list's item limit (List full), or the account's total across all its lists: yours, with Upgrade unless you're VIP, or a collaborative list's owner's (Owner's lists full).">
   <div class="buttons">
     <DemoButton onclick={() => toast.success('Fight Club added to your watchlist.')}>Success</DemoButton>
     <DemoButton onclick={() => toast.error('This item was recently refreshed. Please try again later.')}>Error</DemoButton>
@@ -203,6 +204,7 @@ const limitToast = (limit: Parameters<typeof listItemLimitFailure>[0]) => {
     </DemoButton>
     <DemoButton onclick={() => toast.success('You hid Season 3 of Dexter.', {
       label: 'Undo',
+      icon: undo,
       run: () => toast.success('Season 3 of Dexter is back on your progress.'),
     })}>With action</DemoButton>
   </div>

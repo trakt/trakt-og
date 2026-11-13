@@ -17,6 +17,7 @@ import Specimen from '#lib/design/Specimen.svelte';
 import Variant from '#lib/design/Variant.svelte';
 
 let leaving = $state(true);
+let stalled = $state(false);
 </script>
 
 <Specimen title="Page loader" bleed
@@ -33,23 +34,24 @@ let leaving = $state(true);
 </Specimen>
 
 <Specimen title="Sign-in loader"
-  note="HyperspaceLoader on /signin, /callback and /signout, and over the page when Sign In or Sign Out is clicked, with a Han Solo line for each step. Stars stream out from behind the mark as it signs in and fall back into it as it signs out, easing up to a slow cruise. When a step fails, Han's line turns to the trouble and AuthFailureNotice sits under it in a panel: an amber status, the countdown to the next try and Try Again Now. A blocked rate limit reaches the browser as no answer, so that status names rate limiting too. With the OS set to reduce motion, the stars hold still.">
+  note="HyperspaceLoader on /signin, /callback and /signout, and over the page when Sign In or Sign Out is clicked, with a Han Solo line for each step. Stars stream out from behind the mark as it signs in and fall back into it as it signs out, easing up to a slow cruise. When a step fails, Han's line turns to the trouble and AuthFailureNotice sits under it in a panel: an amber status, the countdown to the next try and Try Again Now. While it waits, the stars slow to a drift; turn Stalled on to watch them settle. A blocked rate limit reaches the browser as no answer, so that status names rate limiting too. With the OS set to reduce motion, the stars hold still.">
   <Variant label="Signing in">
-    <div class="viewport"><HyperspaceLoader {...AUTH_SCENES.signIn} /></div>
+    <div class="knob"><DemoToggle bind:checked={stalled}>Stalled</DemoToggle></div>
+    <div class="viewport"><HyperspaceLoader {...AUTH_SCENES.signIn} {stalled} /></div>
   </Variant>
   <Variant label="Signing out">
     <div class="viewport"><HyperspaceLoader {...AUTH_SCENES.signOut} reverse /></div>
   </Variant>
   <Variant label="Rate limited on the way back">
     <div class="viewport">
-      <HyperspaceLoader {...authLine('return', 'rateLimited')}>
+      <HyperspaceLoader {...authLine('return', 'rateLimited')} stalled>
         <AuthFailureNotice failure="rateLimited" seconds={24} onretry={() => {}} />
       </HyperspaceLoader>
     </div>
   </Variant>
   <Variant label="No answer signing in">
     <div class="viewport">
-      <HyperspaceLoader {...authLine('signIn', 'unreachable')}>
+      <HyperspaceLoader {...authLine('signIn', 'unreachable')} stalled>
         <AuthFailureNotice failure="unreachable" seconds={56} onretry={() => {}} />
       </HyperspaceLoader>
     </div>

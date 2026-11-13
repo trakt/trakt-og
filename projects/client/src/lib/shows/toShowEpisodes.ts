@@ -8,6 +8,8 @@ import { formatDate } from '../utils/formatDate.ts';
 import { formatRuntime } from '../utils/formatRuntime.ts';
 import { mediaImage } from '../images/mediaImage.ts';
 import type { SeasonWithEpisodes } from './loadShow.ts';
+import { episodeReleasedAt } from './episodeReleasedAt.ts';
+import { isEpisodeWatchable } from './isEpisodeWatchable.ts';
 import { seasonName } from '../utils/seasonName.ts';
 import { ratingPercent } from '../utils/ratingPercent.ts';
 
@@ -39,6 +41,7 @@ export type EpisodeRow = {
   overview: string | null;
   comments: number;
   rating: number;
+  /** Out within a day, streaming or on air: it can be watched. */
   released: boolean;
   votes: number;
   season: number;
@@ -140,7 +143,7 @@ export function toShowEpisodes({ show, seasons, signedIn, episodeTypeTags, dateP
       overview: episode.overview ?? null,
       comments: episode.comment_count ?? 0,
       rating: episode.rating ?? 0,
-      released: !!episode.first_aired && new Date(episode.first_aired) <= now,
+      released: isEpisodeWatchable(episodeReleasedAt(episode), now.getTime()),
       votes: episode.votes ?? 0,
       season: episode.season,
       episode: episode.number,

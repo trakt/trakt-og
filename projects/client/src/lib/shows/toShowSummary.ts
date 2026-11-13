@@ -21,6 +21,9 @@ import { toCrewGroups } from '../components/summary/toCrewGroups.ts';
 import { seasonName } from '../utils/seasonName.ts';
 import { ratingPercent } from '../utils/ratingPercent.ts';
 import { toShowLinks } from './toShowLinks.ts';
+import { episodeReleasedAt } from './episodeReleasedAt.ts';
+import { hasEpisodeAired } from './hasEpisodeAired.ts';
+import { isEpisodeWatchable } from './isEpisodeWatchable.ts';
 import { genreLabel } from '../utils/genreLabel.ts';
 
 type Tag = NonNullable<ComponentProps<typeof FanartCard>['tags']>[number];
@@ -131,7 +134,7 @@ function recentEpisodes({ seasons, progress, now }: Pick<ShowSummaryParams, 'sea
 }
 
 function nextToWatch(next: EpisodeResponse | null | undefined, now: Date) {
-  if (!next?.first_aired || new Date(next.first_aired) > now) return undefined;
+  if (!next || !isEpisodeWatchable(episodeReleasedAt(next), now.getTime())) return undefined;
   return { type: 'episode' as const, id: next.ids.trakt };
 }
 
@@ -220,7 +223,7 @@ export function toShowSummary(params: ShowSummaryParams) {
       spoilerImage: mediaImage({ type: 'show', id: show.ids.trakt, slot: 'fanart', size: 'thumb' }),
       tags,
       rating: episode.rating ?? 0,
-      released: !!episode.first_aired && new Date(episode.first_aired) <= now,
+      released: isEpisodeWatchable(episodeReleasedAt(episode), now.getTime()),
       runtime: episode.runtime ?? show.runtime ?? undefined,
     };
   };
@@ -280,7 +283,7 @@ export function toShowSummary(params: ShowSummaryParams) {
     episodeIds: seasons
       .filter(({ number }) => number > 0)
       .flatMap(({ episodes }) => episodes ?? [])
-      .filter(({ first_aired }) => first_aired && new Date(first_aired) <= params.now)
+      .filter((episode) => hasEpisodeAired(episodeReleasedAt(episode), params.now.getTime()))
       .sort((a, b) => a.season - b.season || a.number - b.number)
       .map(({ ids }) => ids.trakt),
     /** The viewer's last watched episode ("3x02"), for a dropped show's stamp. */

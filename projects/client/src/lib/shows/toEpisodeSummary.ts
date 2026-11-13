@@ -12,6 +12,9 @@ import { formatRuntime } from '../utils/formatRuntime.ts';
 import { mediaImage } from '../images/mediaImage.ts';
 import { previewArt } from '../images/previewArt.ts';
 import { episodeNeighbours } from './episodeNeighbours.ts';
+import { episodeReleasedAt } from './episodeReleasedAt.ts';
+import { hasEpisodeAired } from './hasEpisodeAired.ts';
+import { isEpisodeWatchable } from './isEpisodeWatchable.ts';
 import type { episodeSeasonsSchema } from './episodeSeasonsSchema.ts';
 import type { Season } from './seasonSchema.ts';
 import { toCrewGroups } from '../components/summary/toCrewGroups.ts';
@@ -38,7 +41,8 @@ interface Params {
 export function toEpisodeSummary(params: Params) {
   const { show, episode, season, ratings, stats, now } = params;
   // An unaired episode shows no ratings and only its list count, whatever the viewer's early-ratings setting.
-  const aired = !!episode.first_aired && new Date(episode.first_aired) <= now;
+  const releasedAt = episodeReleasedAt(episode);
+  const aired = hasEpisodeAired(releasedAt, now.getTime());
   const showHref = `/shows/${show.ids.slug}`;
   const seasonHref = `${showHref}/seasons/${episode.season}`;
   const href = `${seasonHref}/episodes/${episode.number}`;
@@ -89,8 +93,10 @@ export function toEpisodeSummary(params: Params) {
     }),
     overview: episode.overview,
     runtime: episode.runtime ?? show.runtime ?? undefined,
-    /** Aired by now: it can be watched, checked into and rated. */
+    /** Out by now, streaming or on air: it shows its ratings. */
     aired,
+    /** Out within a day: it can be watched and checked into. */
+    watchable: isEpisodeWatchable(releasedAt, now.getTime()),
     rating: aired
       ? {
           value: ratings.rating ?? episode.rating ?? 0,

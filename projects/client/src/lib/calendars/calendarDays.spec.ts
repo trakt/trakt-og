@@ -65,4 +65,15 @@ describe('calendarDays', () => {
 
     expect(days.map(({ items }) => keys(items))).toEqual([['1x1'], ['m2']]);
   });
+
+  it('should keep a streaming day put in every zone', () => {
+    const streaming = { ...episode('2026-09-30', 2, 1, 1), streaming: true } as CalendarItem;
+    const days = calendarDays({
+      dates: ['2026-09-29', '2026-09-30'],
+      items: [episode('2026-09-30T20:00:00.000Z', 1, 1, 1), streaming],
+      timeZone: 'Pacific/Auckland',
+    });
+
+    expect(days.map(({ items }) => keys(items))).toEqual([[], ['2x1']]);
+  });
 });

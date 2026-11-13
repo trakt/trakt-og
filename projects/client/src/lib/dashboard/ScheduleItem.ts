@@ -1,5 +1,6 @@
 import type { ComponentProps } from 'svelte';
 import type EpisodeTypeBadge from '../components/media/EpisodeTypeBadge.svelte';
+import type { AirsTip } from '../components/media/AirsTip.ts';
 import type { WatchNowButton } from '../components/watchnow/watchNow.ts';
 
 /** One calendar entry in an Upcoming Schedule day: an episode airing or a movie out. */
@@ -15,8 +16,10 @@ export type ScheduleItem = {
   readonly episode?: { readonly number: string; readonly title?: string; readonly href: string };
   /** The premiere or finale label ahead of the air time. */
   readonly label?: ComponentProps<typeof EpisodeTypeBadge>;
-  /** "10:00 pm", or "22:00" with the 24-hour setting. Episodes only. */
+  /** "10:00 pm", or "22:00" with the 24-hour setting, or "Streaming" for a streaming day. Episodes only. */
   readonly time?: string;
+  /** A streaming day's broadcast, for its time tag's tooltip. */
+  readonly timeAirs?: AirsTip;
   /** A link to the network's popular shows. */
   readonly network?: { readonly name: string; readonly href?: string };
   /** A movie's line under its title. */

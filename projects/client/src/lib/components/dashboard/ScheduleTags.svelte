@@ -12,7 +12,7 @@ const { row }: { row: ScheduleRow } = $props();
 {#if row.label || row.time || row.network}
   <span class="tags">
     {#if row.label}<CardTag text={row.label.label} kind={row.label.kind} />{/if}
-    {#if row.time}<CardTag text={row.time} />{/if}
+    {#if row.time}<CardTag text={row.time} airs={row.timeAirs} />{/if}
     {#if row.network}<CardTag text={row.network.name} href={row.network.href} kind="generic" />{/if}
   </span>
 {/if}

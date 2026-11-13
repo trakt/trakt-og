@@ -22,13 +22,18 @@ const HOUR = 3_600_000;
  * OG's `TimeZoner.convert_first_aired`: a US or Canadian show airs at the same local hour in
  * every US zone, the way networks schedule prime time, so a viewer in a US zone sees its Eastern air time on their own
  * clock (an hour earlier in Central and Mountain). OG reused the current UTC offset for every date, which put episodes
- * an hour off across a DST change; this uses each date's own offset. Other items keep their time.
+ * an hour off across a DST change; this uses each date's own offset. Other items keep their time. A streaming day has
+ * none, so only its broadcast moves.
  */
 export function viewerAirTime(item: CalendarItem, timeZone: string): CalendarItem {
   if (item.type !== 'episode' || !US_ZONES.has(timeZone)) return item;
   if (item.show.country !== 'us' && item.show.country !== 'ca') return item;
 
-  const at = Date.parse(item.at);
-  const eastern = at + zoneOffset(at, 'America/New_York') - (HOUR_EARLIER_ZONES.has(timeZone) ? HOUR : 0);
-  return { ...item, at: new Date(fromWallClock(eastern, timeZone)).toISOString() };
+  const shift = (iso: string) => {
+    const at = Date.parse(iso);
+    const eastern = at + zoneOffset(at, 'America/New_York') - (HOUR_EARLIER_ZONES.has(timeZone) ? HOUR : 0);
+    return new Date(fromWallClock(eastern, timeZone)).toISOString();
+  };
+  if (item.streaming) return item.airsAt ? { ...item, airsAt: shift(item.airsAt) } : item;
+  return { ...item, at: shift(item.at) };
 }

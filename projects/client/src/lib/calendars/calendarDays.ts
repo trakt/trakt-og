@@ -1,9 +1,20 @@
 import type { CalendarMovieResponse, CalendarShowResponse } from '@trakt/api';
-import { dayIn } from '../utils/dayIn.ts';
+import { calendarItemDay } from './calendarItemDay.ts';
 
-/** One calendar entry: an episode airing (`first_aired`) or a movie release (`released`). */
+/**
+ * One calendar entry: an episode airing (`first_aired`) or streaming first (`earlyStreamDate`, a day with no time), or a
+ * movie release (`released`).
+ */
 export type CalendarItem =
-  | { type: 'episode'; at: string; show: CalendarShowResponse['show']; episode: CalendarShowResponse['episode'] }
+  | {
+      type: 'episode';
+      at: string;
+      streaming?: boolean;
+      /** A streaming item's broadcast, for its tag's tooltip. */
+      airsAt?: string;
+      show: CalendarShowResponse['show'];
+      episode: CalendarShowResponse['episode'];
+    }
   | { type: 'movie'; at: string; movie: CalendarMovieResponse['movie'] };
 
 export type CalendarDay = { date: string; items: readonly CalendarItem[] };
@@ -14,14 +25,14 @@ const episodeKey = (item: CalendarItem) =>
 const showId = (item: CalendarItem) => (item.type === 'episode' ? item.show.ids.trakt : 0);
 const number = (item: CalendarItem) => (item.type === 'episode' ? item.episode.number : 0);
 
-// OG's order: air time, then show id descending, then episode number.
+// OG's order: air time, then show id descending, then episode number. A day with no time sorts first.
 const byAirOrder = (a: CalendarItem, b: CalendarItem) =>
   a.at.localeCompare(b.at) || showId(b) - showId(a) || number(a) - number(b);
 
 type CalendarDaysParams = {
   dates: readonly string[];
   items: readonly CalendarItem[];
-  /** The viewer's zone. Episodes fall on the day they air there; movie release dates have no time, so stay put. */
+  /** The viewer's zone. Episodes fall on the day they air there; release and streaming days stay put. */
   timeZone: string;
 };
 
@@ -36,7 +47,8 @@ export function calendarDays({ dates, items, timeZone }: CalendarDaysParams) {
     const key = episodeKey(item);
     return !key || sorted.findIndex((other) => episodeKey(other) === key) === i;
   });
-  const day = (item: CalendarItem) => (item.type === 'movie' ? item.at.slice(0, 10) : dayIn(item.at, timeZone));
 
-  return dates.map((date): CalendarDay => ({ date, items: unique.filter((item) => day(item) === date) }));
+  return dates.map(
+    (date): CalendarDay => ({ date, items: unique.filter((item) => calendarItemDay(item, timeZone) === date) }),
+  );
 }

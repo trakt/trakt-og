@@ -58,6 +58,25 @@ describe('toCalendarCard', () => {
       expect(toCalendarCard(episode({}, { runtime: 60 }), UTC).runtime).toBe(60);
     });
 
+    it('should say Streaming for a streaming day, with its broadcast in the tooltip and no network on its schedule', () => {
+      const streaming = {
+        ...episode(),
+        at: '2026-09-27',
+        streaming: true,
+        airsAt: '2026-09-29T21:00:00.000Z',
+      } as CalendarItem;
+      expect(toCalendarCard(streaming, UTC, new Date('2026-09-28T00:00:00.000Z'))).toMatchObject({
+        time: 'Streaming',
+        schedule: 'Streaming',
+        tags: [
+          { text: 'Streaming', airs: { label: 'Airs', date: 'September 29, 2026', time: '9:00 PM', network: 'FX' } },
+          { text: 'FX', kind: 'generic' },
+        ],
+      });
+      expect(toCalendarCard(episode(), UTC).schedule).toBe('9:00 pm on FX');
+      expect(toCalendarCard(episode(), UTC).tags?.at(0)?.airs).toBeUndefined();
+    });
+
     it("should use the viewer's zone and 24-hour clock", () => {
       const tags = toCalendarCard(episode(), { timeZone: 'America/New_York', hour24: true }).tags;
       expect(tags?.at(0)).toEqual({ text: '17:00' });
@@ -130,8 +149,14 @@ describe('toCalendarCard', () => {
     });
   });
 
-  it('should mark anything still to come as unreleased, so it shows no rating', () => {
-    expect(toCalendarCard(episode(), UTC, new Date('2026-09-29T20:59:00.000Z')).released).toBe(false);
-    expect(toCalendarCard(episode(), UTC, new Date('2026-09-29T21:00:00.000Z')).released).toBe(true);
+  it('should mark anything still to come as unreleased, so it shows no rating, opening episodes a day early', () => {
+    expect(toCalendarCard(episode(), UTC, new Date('2026-09-28T20:59:00.000Z')).released).toBe(false);
+    expect(toCalendarCard(episode(), UTC, new Date('2026-09-28T21:00:00.000Z')).released).toBe(true);
+    const movie = {
+      type: 'movie',
+      at: '2026-09-30',
+      movie: { title: 'Naza', ids: { trakt: 5, slug: 'naza' } },
+    } as const;
+    expect(toCalendarCard(movie as CalendarItem, UTC, new Date('2026-09-29T23:59:00.000Z')).released).toBe(false);
   });
 });

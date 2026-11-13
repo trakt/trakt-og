@@ -85,6 +85,8 @@ type Airing = {
   day: number;
   /** The UTC hour on that day. */
   hour: number;
+  /** Days it streams before `day`, with no time, as an early streaming release does. */
+  streamsEarly?: number;
 };
 
 const airings: readonly Airing[] = [
@@ -103,7 +105,7 @@ const airings: readonly Airing[] = [
   { show: shows.slowHorses, season: 6, number: 6, title: 'Footprints', type: 'season_finale', day: 3, hour: 11 },
   { show: shows.scrubs, season: 2, number: 3, title: 'My Old Lady', day: 4, hour: 12 },
   { show: shows.severance, season: 3, number: 5, title: 'Trojan’s Horse', type: 'mid_season_finale', day: 6, hour: 14 },
-  { show: shows.boys, season: 5, number: 3, title: 'Beware the Jabberwock, My Son', day: 6, hour: 12 },
+  { show: shows.boys, season: 5, number: 3, title: 'Beware the Jabberwock, My Son', day: 6, hour: 12, streamsEarly: 5 },
   { show: shows.lastOfUs, season: 3, number: 2, title: 'Infected', day: 8, hour: 13 },
 ];
 
@@ -170,13 +172,14 @@ const offers = (source: string, type: 'subscription' | 'cinema'): Offers => ({
  * A made-up `/calendars/my/media` window around `today` (`YYYY-MM-DD`, midday UTC so every zone keeps its day): seven
  * days with something on, so only the first three show. Some items have Watch Now offers in the US: The Boys on Prime
  * Video, and Dune only in cinemas. `busy` adds a long day, more shows and an eight-episode drop tomorrow; `drop` adds
- * a ten-episode season today.
+ * a ten-episode season today. The Boys 5x03 streams five days before it airs.
  */
 export const scheduleFixture = {
   rows(today: string, { busy = false, drop = false } = {}): HotReleaseResponse[] {
     const episodes = [...airings, ...(busy ? busyAirings : []), ...(drop ? dropAirings : [])].map(
-      ({ show, season, number, title, type, day, hour }): HotReleaseResponse => {
+      ({ show, season, number, title, type, day, hour, streamsEarly }): HotReleaseResponse => {
         const at = `${addDays(today, day)}T${String(hour).padStart(2, '0')}:00:00.000Z`;
+        const streams = streamsEarly === undefined ? undefined : addDays(today, day - streamsEarly);
         return {
           first_aired: at,
           show,
@@ -186,6 +189,7 @@ export const scheduleFixture = {
             title,
             episode_type: type ?? 'standard',
             ids: { trakt: show.ids.trakt * 1000 + season * 100 + number },
+            ...(streams && { released: streams, effective_release_date: `${streams}T14:00:00.000Z` }),
           },
         };
       },

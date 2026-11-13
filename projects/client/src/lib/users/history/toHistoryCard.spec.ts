@@ -36,7 +36,7 @@ const rows = historyRowsSchema.parse([
 const cards = rows.map((row) => toHistoryCard(row, { screenshots: false, datePreferences }));
 
 describe('toHistoryCard', () => {
-  it('should put an episode on its show poster, or on its screenshot with the show linked', () => {
+  it('should put an episode on its show poster or its screenshot, with the show linked under it', () => {
     expect(cards[1]).toMatchObject({
       key: 2,
       type: 'episode',
@@ -46,7 +46,7 @@ describe('toHistoryCard', () => {
       image: 'https://media.trakt.tv/shows/1388/thumb/poster.webp',
       watchedDate: 'Sep 28, 2026 10:23 PM',
     });
-    expect(cards[1]?.show).toBeUndefined();
+    expect(cards[1]?.show).toEqual({ text: 'Breaking Bad', href: '/shows/breaking-bad' });
     expect(toHistoryCard(rows[1]!, { screenshots: true, datePreferences })).toMatchObject({
       variant: 'screenshot',
       image: 'https://media.trakt.tv/episodes/104/thumb/screenshot.webp',

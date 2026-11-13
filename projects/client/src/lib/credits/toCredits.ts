@@ -1,7 +1,7 @@
 import type { z } from 'zod/v4';
 import type { seasonPeopleSchema } from '../shows/seasonPeopleSchema.ts';
 import { countLabel } from '../utils/countLabel.ts';
-import { mediaImage } from '../images/mediaImage.ts';
+import { castHeadshot } from '../images/castHeadshot.ts';
 import { crewDepartments } from './crewDepartments.ts';
 import { parameterize } from '../utils/parameterize.ts';
 
@@ -54,7 +54,7 @@ function group(
       id: member.person.ids.trakt,
       name: member.person.name,
       href: `/people/${member.person.ids.slug}`,
-      image: mediaImage({ type: 'person', id: member.person.ids.trakt, slot: 'headshot', size: 'thumb' }),
+      image: castHeadshot(member),
       gender: member.person.gender ?? undefined,
       // `credits_characters`: "A / B" becomes "A, B".
       role: role(member).join(', '),

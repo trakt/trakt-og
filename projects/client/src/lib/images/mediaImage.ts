@@ -23,5 +23,10 @@ interface MediaImageParams {
 export function mediaImage({ type, id, slot, size, fallback }: MediaImageParams): string {
   const folder = size === 'thumb' && NO_THUMB.has(slot) ? 'medium' : size;
   const url = `${mediaFolder(type, id)}/${folder}/${slot}.webp`;
-  return fallback ? `${url}#fallback=${encodeURIComponent(fallback)}` : url;
+  return fallback ? withFallback(url, fallback) : url;
+}
+
+/** `url` with art to try when it's missing, in the fragment `brokenImageFallback` reads. */
+export function withFallback(url: string, fallback: string): string {
+  return `${url}#fallback=${encodeURIComponent(fallback)}`;
 }

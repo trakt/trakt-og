@@ -52,6 +52,14 @@ describe('toLibraryCard', () => {
       runtime: 47,
     });
   });
+
+  it("should put an All tab episode's show under its title, then its own runtime on the Runtime sort", () => {
+    const timed = { ...episode, episode: { ...episode.episode, runtime: 58 } };
+    expect(toLibraryCard(timed, { ...options, sortBy: 'runtime' })).toMatchObject({
+      variant: 'poster',
+      subtitles: [{ text: 'Breaking Bad', href: '/shows/breaking-bad' }, '58m'],
+    });
+  });
 });
 
 describe('toLibraryShowCard', () => {

@@ -19,7 +19,7 @@ export type LibraryCard = Omit<HistoryCard, 'watchedDate' | 'show' | 'subtitles'
 
 type Options = {
   sortBy: LibrarySortBy;
-  /** The Episodes tab's layout: the still, then the show. */
+  /** The Episodes tab's layout: the still, not the show's poster. */
   screenshots: boolean;
   datePreferences: DatePreferences;
 };
@@ -95,6 +95,7 @@ export function toLibraryCard(row: LibraryRow, { sortBy, screenshots, datePrefer
     {
       collectedAt: row.collected_at,
       released: episode.first_aired ? formatDate(episode.first_aired, { ...datePreferences, time: true }) : undefined,
+      runtime: episode.runtime,
       count: episode.votes,
     },
     datePreferences,
@@ -116,7 +117,7 @@ export function toLibraryCard(row: LibraryRow, { sortBy, screenshots, datePrefer
     rating: episode.rating ?? undefined,
     episodeBadge: episodeBadge(episode),
     runtime: episode.runtime ?? show.runtime ?? 0,
-    subtitles: [...(screenshots ? [{ text: show.title, href: showHref(show.ids.slug) }] : []), ...(line ? [line] : [])],
+    subtitles: [{ text: show.title, href: showHref(show.ids.slug) }, ...(line ? [line] : [])],
   };
 }
 

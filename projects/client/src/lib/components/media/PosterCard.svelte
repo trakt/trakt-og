@@ -278,6 +278,12 @@ const restoreTarget = $derived(target?.type === 'show' ? { ...target, type: 'sho
 .framed {
   --color-card-border: var(--color-fanart-card-frame-line);
 
+  /* The outline is see-through: kept off each part's own fill, it's one color all the way around. */
+  & .poster,
+  & :global(.quick-icons) {
+    background-clip: padding-box;
+  }
+
   & .poster {
     border-start-start-radius: var(--radius-card-framed);
     border-start-end-radius: var(--radius-card-framed);

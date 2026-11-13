@@ -1,6 +1,7 @@
 import { episodeNumber, episodeType } from '../components/media/episodeTags.ts';
 import type { DatePreferences } from '../settings/DatePreferences.ts';
-import { airTime } from './airTime.ts';
+import { calendarItemAirsTip } from './calendarItemAirsTip.ts';
+import { calendarItemTime } from './calendarItemTime.ts';
 import type { CalendarItem } from './calendarDays.ts';
 import type { CalendarGroup } from './groupCalendarItems.ts';
 import { type CalendarCard, toCalendarCard } from './toCalendarCard.ts';
@@ -83,7 +84,7 @@ export function toCalendarGroupCard({
     rating: show.rating ?? undefined,
     tags: [
       ...types,
-      { text: airTime(first.at, clock) },
+      { text: calendarItemTime(first, clock), airs: calendarItemAirsTip(first, clock, new Date()) },
       ...(show.network ? [{ text: show.network, kind: 'generic' as const }] : []),
     ],
     episodeBadge: undefined,

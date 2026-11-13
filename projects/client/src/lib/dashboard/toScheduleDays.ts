@@ -1,4 +1,5 @@
-import { airTime } from '../calendars/airTime.ts';
+import { calendarItemAirsTip } from '../calendars/calendarItemAirsTip.ts';
+import { calendarItemTime } from '../calendars/calendarItemTime.ts';
 import type { CalendarDay, CalendarItem } from '../calendars/calendarDays.ts';
 import { episodeNumber, episodeType } from '../components/media/episodeTags.ts';
 import { type Offers, toWatchNowButton } from '../components/watchnow/watchNow.ts';
@@ -22,6 +23,8 @@ type ToScheduleDaysParams = {
   country: string;
   /** With the season poster setting, an episode's season poster. */
   seasonPoster?: SeasonPoster;
+  /** Whether a streaming episode's broadcast tooltip says Airs or Aired. */
+  now?: Date;
 };
 
 type Context = Omit<ToScheduleDaysParams, 'days' | 'today'>;
@@ -102,7 +105,8 @@ function toItem(item: CalendarItem, context: Context): ScheduleItem {
       href: `${showHref}/seasons/${episode.season}/episodes/${episode.number}`,
     },
     label: label && { label: label.text, kind: label.kind },
-    time: airTime(item.at, context.datePreferences),
+    time: calendarItemTime(item, context.datePreferences),
+    timeAirs: calendarItemAirsTip(item, context.datePreferences, context.now ?? new Date()),
     network: show.network
       ? {
           name: show.network,

@@ -4,7 +4,9 @@ import type FanartCard from '../components/media/FanartCard.svelte';
 import { episodeNumber, episodeType } from '../components/media/episodeTags.ts';
 import { mediaTags } from '../components/labels/mediaTags.ts';
 import type { TagPill } from '../components/labels/TagPill.ts';
-import { airTime } from './airTime.ts';
+import { calendarItemAirsTip } from './calendarItemAirsTip.ts';
+import { calendarItemTime } from './calendarItemTime.ts';
+import { isEpisodeWatchable } from '../shows/isEpisodeWatchable.ts';
 import type { DatePreferences } from '../settings/DatePreferences.ts';
 import { toCalendarImage } from './toCalendarImage.ts';
 import type { toCalendarPreferences } from './toCalendarPreferences.ts';
@@ -18,12 +20,12 @@ export type CalendarCard = Omit<ComponentProps<typeof FanartCard>, 'icons'> & {
   episodeBadge?: ComponentProps<typeof PosterCard>['episodeBadge'];
   tagline?: string;
   rating?: number;
-  /** Aired or released by now. Before that the card shows no rating. */
+  /** Released by now, or an episode out within a day. Before that the card shows no rating. */
   released: boolean;
   schedule?: string;
   /** The show or movie's fanart, whatever the artwork: the Watch Now modal's backdrop. */
   fanart?: string;
-  /** An episode's air time in the viewer's clock. Movies have none: a release date has no time. */
+  /** An episode's air time in the viewer's clock, or "Streaming". Movies have none: a release date has no time. */
   time?: string;
   /** The tag pills under a card's titles, like search's: the certificate, runtime and network. */
   pills: TagPill[];
@@ -46,7 +48,6 @@ export function toCalendarCard(
   clock: ClockPreferences & { imageType?: ReturnType<typeof toCalendarPreferences>['imageType'] },
   now = new Date(),
 ): CalendarCard {
-  const released = new Date(item.at) <= now;
   if (item.type === 'movie') {
     const { movie } = item;
     const runtime = movie.runtime ?? undefined;
@@ -58,7 +59,7 @@ export function toCalendarCard(
       title: movie.title,
       year: movie.year ?? undefined,
       rating: movie.rating ?? undefined,
-      released,
+      released: new Date(item.at) <= now,
       tagline: movie.tagline ?? undefined,
       pills: mediaTags({
         type: 'movie',
@@ -72,11 +73,11 @@ export function toCalendarCard(
 
   const { show, episode } = item;
   const label = episodeType(episode);
-  const time = airTime(item.at, clock);
+  const time = calendarItemTime(item, clock);
   const runtime = episode.runtime ?? show.runtime ?? undefined;
   const tags: Tag[] = [
     ...(label ? [label] : []),
-    { text: time },
+    { text: time, airs: calendarItemAirsTip(item, clock, now) },
     ...(show.network ? [{ text: show.network, kind: 'generic' as const }] : []),
   ];
 
@@ -92,8 +93,8 @@ export function toCalendarCard(
     title: episode.title ?? '',
     smallTitle: { text: show.title, href: `/shows/${show.ids.slug}` },
     rating: episode.rating ?? undefined,
-    released,
-    schedule: `${time}${show.network ? ` on ${show.network}` : ''}`,
+    released: isEpisodeWatchable(episode.effective_release_date ?? item.at, now.getTime()),
+    schedule: item.streaming || !show.network ? time : `${time} on ${show.network}`,
     time,
     pills: mediaTags({
       type: 'show',

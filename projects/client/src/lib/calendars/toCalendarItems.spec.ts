@@ -16,6 +16,27 @@ describe('toCalendarItems', () => {
     ]);
   });
 
+  it('should place an episode that streams days early on its streaming day, keeping its broadcast', () => {
+    const streamed = { ...episode, released: '2026-09-27', effective_release_date: '2026-09-27T14:00:00.000Z' };
+    expect(toCalendarItems([{ first_aired: '2026-09-29T21:00:00.000Z', show, episode: streamed }] as never)).toEqual([
+      {
+        type: 'episode',
+        at: '2026-09-27',
+        streaming: true,
+        airsAt: '2026-09-29T21:00:00.000Z',
+        show,
+        episode: streamed,
+      },
+    ]);
+  });
+
+  it('should keep an episode streaming on its air day at its air time', () => {
+    const streamed = { ...episode, released: '2026-09-29', effective_release_date: '2026-09-29T14:00:00.000Z' };
+    expect(
+      toCalendarItems([{ first_aired: '2026-09-29T21:00:00.000Z', show, episode: streamed }] as never).at(0),
+    ).toEqual({ type: 'episode', at: '2026-09-29T21:00:00.000Z', show, episode: streamed });
+  });
+
   it('should tell the rows of a merged feed apart and drop incomplete ones', () => {
     const rows = [
       { released: '2026-09-30', movie },

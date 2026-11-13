@@ -22,6 +22,13 @@ describe('viewerAirTime', () => {
     expect(at(viewerAirTime(episode('ca'), 'Pacific/Honolulu'))).toBe('2026-09-30T07:00:00.000Z');
   });
 
+  it('should leave a streaming day as it is, moving only its broadcast', () => {
+    const streaming = { ...episode('us', '2026-09-27'), streaming: true, airsAt: PRIME_TIME } as CalendarItem;
+    const shifted = viewerAirTime(streaming, 'America/Los_Angeles');
+    expect(at(shifted)).toBe('2026-09-27');
+    expect(shifted.type === 'episode' && shifted.airsAt).toBe('2026-09-30T04:00:00.000Z');
+  });
+
   it('should move a US show an hour earlier on a Central or Mountain clock', () => {
     // 8:00 pm CDT and MDT.
     expect(at(viewerAirTime(episode('us'), 'America/Chicago'))).toBe('2026-09-30T01:00:00.000Z');

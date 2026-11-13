@@ -1,4 +1,5 @@
 import type { CalendarMovieResponse, CalendarShowResponse, HotReleaseResponse } from '@trakt/api';
+import { earlyStreamDate } from '../shows/earlyStreamDate.ts';
 import type { CalendarItem } from './calendarDays.ts';
 
 type CalendarEntry = CalendarShowResponse | CalendarMovieResponse | HotReleaseResponse;
@@ -13,7 +14,16 @@ export function toCalendarItems(entries: readonly CalendarEntry[]): CalendarItem
       return [{ type: 'movie', at: entry.released, movie: entry.movie }];
     }
     if ('episode' in entry && entry.episode && entry.show && entry.first_aired) {
-      return [{ type: 'episode', at: entry.first_aired, show: entry.show, episode: entry.episode }];
+      const streams = earlyStreamDate({ ...entry.episode, first_aired: entry.first_aired });
+      return [
+        {
+          type: 'episode',
+          at: streams ?? entry.first_aired,
+          ...(streams && { streaming: true, airsAt: entry.first_aired }),
+          show: entry.show,
+          episode: entry.episode,
+        },
+      ];
     }
     return [];
   });

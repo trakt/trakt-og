@@ -12,6 +12,7 @@ import { formatRuntime } from '../utils/formatRuntime.ts';
 import { mediaImage } from '../images/mediaImage.ts';
 import { previewArt } from '../images/previewArt.ts';
 import { episodeNeighbours } from './episodeNeighbours.ts';
+import { earlyStreamDate } from './earlyStreamDate.ts';
 import { episodeReleasedAt } from './episodeReleasedAt.ts';
 import { hasEpisodeAired } from './hasEpisodeAired.ts';
 import { isEpisodeWatchable } from './isEpisodeWatchable.ts';
@@ -43,6 +44,7 @@ export function toEpisodeSummary(params: Params) {
   // An unaired episode shows no ratings and only its list count, whatever the viewer's early-ratings setting.
   const releasedAt = episodeReleasedAt(episode);
   const aired = hasEpisodeAired(releasedAt, now.getTime());
+  const streams = earlyStreamDate(episode);
   const showHref = `/shows/${show.ids.slug}`;
   const seasonHref = `${showHref}/seasons/${episode.season}`;
   const href = `${seasonHref}/episodes/${episode.number}`;
@@ -108,6 +110,12 @@ export function toEpisodeSummary(params: Params) {
     commentCount: stats.comments,
     listCount: stats.lists,
     facts: {
+      streams: streams
+        ? {
+            label: aired ? 'Streamed' : 'Streams',
+            date: formatDate(streams, { ...params.datePreferences, format: 'LL', timeZone: 'UTC' }),
+          }
+        : undefined,
       aired: episode.first_aired
         ? {
             label: new Date(episode.first_aired) > now ? 'Airs' : 'Aired',

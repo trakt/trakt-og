@@ -10,6 +10,7 @@ import { formatRuntime } from '../utils/formatRuntime.ts';
 import { genreLabel } from '../utils/genreLabel.ts';
 import { personTags } from '../people/personTags.ts';
 import { mediaImage } from '../images/mediaImage.ts';
+import { earlyStreamDate } from '../shows/earlyStreamDate.ts';
 import { episodeReleasedAt } from '../shows/episodeReleasedAt.ts';
 import { isEpisodeWatchable } from '../shows/isEpisodeWatchable.ts';
 
@@ -55,6 +56,7 @@ export function toSearchCard(hit: SearchHit, options: SearchCardOptions): Search
 
   if (hit.type === 'episode' && episode && show) {
     const timeZone = show.airs?.timezone ?? 'UTC';
+    const streams = earlyStreamDate(episode);
     const premiere = premiereTag ? episodeType(episode) : undefined;
     const badgeKind = premiere?.kind;
     const showHref = `/shows/${show.ids.slug ?? show.ids.trakt}`;
@@ -79,7 +81,11 @@ export function toSearchCard(hit: SearchHit, options: SearchCardOptions): Search
       art: { ...art, fanart: screenshot, spoilerFanart: art.fanart },
       tags: [
         ...typeTags('Episode'),
-        ...(episode.first_aired ? [generic(formatDate(episode.first_aired, { timeZone, order }))] : []),
+        ...(streams
+          ? [generic(formatDate(streams, { timeZone: 'UTC', order }))]
+          : episode.first_aired
+            ? [generic(formatDate(episode.first_aired, { timeZone, order }))]
+            : []),
       ],
       released: isEpisodeWatchable(episodeReleasedAt(episode), now.getTime()),
       rating: episode.rating ?? undefined,

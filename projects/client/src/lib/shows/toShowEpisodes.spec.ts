@@ -52,16 +52,33 @@ describe('toShowEpisodes', () => {
       href: '/shows/breaking-bad/seasons/1/episodes/1',
       title: 'E1',
       type: { text: 'Series Premiere', kind: 'series-premiere' },
-      aired: 'January 20, 2008 9:00 PM',
+      aired: 'January 20, 2008',
+      airTime: '9:00 PM',
       runtime: '45m',
       comments: 55,
     });
-    expect(result.rows[0]).toMatchObject({ aired: undefined, runtime: '5m', type: undefined });
+    expect(result.rows[0]).toMatchObject({ runtime: '5m', type: undefined });
+    expect(result.rows[0]?.aired).toBeUndefined();
+  });
+
+  it('should date an episode that streams first by its streaming day, with Streaming for its time', () => {
+    const streamed = episode(3, 1, '2010-01-11T02:00:00.000Z', {
+      released: '2010-01-08',
+      effective_release_date: '2010-01-08T14:00:00.000Z',
+    });
+    const row = toShowEpisodes({ ...base, seasons: [season(3, [streamed])] }).rows[0];
+    expect(row).toMatchObject({
+      aired: 'January 8, 2010',
+      airTime: 'Streaming',
+      airs: { label: 'Airs', date: 'January 10, 2010', time: '9:00 PM' },
+      airedAt: Date.parse('2010-01-08'),
+    });
+    expect(result.rows[1]?.airs).toBeUndefined();
   });
 
   it('should use the viewer zone when signed in', () => {
     const signedIn = toShowEpisodes({ ...base, signedIn: true });
-    expect(signedIn.rows[1]?.aired).toBe('January 21, 2008 2:00 AM');
+    expect(signedIn.rows[1]).toMatchObject({ aired: 'January 21, 2008', airTime: '2:00 AM' });
   });
 
   it('should drop the type tag when the viewer hides them', () => {

@@ -295,6 +295,7 @@
   --font-size-card-tag: 11px; /* tags above a title, rank pill */
   --radius-card-tag: var(--radius-tag); /* the calendar's Today tag */
   --space-card-tag-icon: 4px; /* a tag's heart to its number */
+  --card-tag-segment-shade: 17%; /* a card tag's later segments, toward black: the red's lands on --brand-primary-darken */
   --space-card-small-title: 1px; /* a fanart card's show to the episode under it */
   --font-size-fanart-title: 18px;
   --font-size-quick-icon: 1.7em;

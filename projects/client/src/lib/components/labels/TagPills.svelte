@@ -3,9 +3,14 @@
   pale one (an episode's air date), `badge` a bold clear pill with a brighter outline (a rating certificate), and the rest the dark outlined default (genres, a runtime).
     <TagPills tags={[{ text: 'Movie', kind: 'primary' }, { text: 'Jan 21, 2008', kind: 'light' }, { text: 'Drama' }]} />
   A `lead` is bold before the text: `{ lead: '202.7K', text: 'shows' }`. Related tags join into one pill split by thin
-  lines: `{ segments: ['50m', '24 episodes'] }`. `large` is a size up, for a page header's counts.
+  lines: `{ segments: ['50m', '24 episodes'] }`, or `primary` (the first red, the rest a darker red) with its broadcast as a tooltip for a
+  streaming day:
+  `{ segments: ['Nov 13, 2026', 'Streaming'], kind: 'primary', airs: { label: 'Airs', date: 'Nov 15, 2026', time: '9:00 PM' } }`. `large` is a
+  size up, for a page header's counts.
 -->
 <script lang="ts">
+import AirsTip from '#lib/components/media/AirsTip.svelte';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
 import Icon from '#lib/icons/Icon.svelte';
 import type { TagPill } from './TagPill.ts';
 
@@ -14,10 +19,15 @@ const { tags, large = false }: { tags: readonly TagPill[]; large?: boolean } = $
 
 <!-- A pill's href is another site's, which resolve() can't type. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
+{#snippet segmented(tag: Extract<TagPill, { segments: unknown }>, tooltip: Record<PropertyKey, unknown> = {})}
+  <!-- Focusable with a tooltip, so the keyboard can show it. -->
+  <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+  <span class={['pill', 'segments', tag.kind]} tabindex={tag.airs ? 0 : undefined} {...tooltip}
+  >{#each tag.segments as segment, s (s)}<span class="segment">{segment}</span>{/each}</span>{/snippet}
+
 <span class={['tag-pills', { large }]}>
-  {#each tags as tag, i (`${i}:${'segments' in tag ? tag.segments.join() : tag.text}`)}{#if 'segments' in tag}<span
-        class="pill segments"
-      >{#each tag.segments as segment, s (s)}<span class="segment">{segment}</span>{/each}</span>{:else}<svelte:element
+  {#each tags as tag, i (`${i}:${'segments' in tag ? tag.segments.join() : tag.text}`)}{#if 'segments' in tag}{#if tag.airs}<Tooltip
+          >{#snippet trigger(tooltip)}{@render segmented(tag, tooltip)}{/snippet}<AirsTip {...tag.airs} /></Tooltip>{:else}{@render segmented(tag)}{/if}{:else}<svelte:element
         this={tag.href ? 'a' : 'span'}
         href={tag.href}
         target={tag.href ? '_blank' : undefined}
@@ -117,6 +127,23 @@ const { tags, large = false }: { tags: readonly TagPill[]; large?: boolean } = $
   background-color: var(--brand-primary);
   box-shadow: none;
   color: var(--color-text-inverse);
+}
+
+/* A red segmented pill: the first segment in the brand red, the rest a shade darker. */
+.segments.primary {
+  overflow: hidden;
+  background-color: transparent;
+
+  & .segment:first-child {
+    background-color: var(--brand-primary);
+  }
+
+  & .segment + .segment {
+    border-start-end-radius: inherit;
+    border-end-end-radius: inherit;
+    background-color: var(--brand-primary-darken);
+    box-shadow: none;
+  }
 }
 
 .badge {

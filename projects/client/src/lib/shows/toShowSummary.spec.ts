@@ -190,10 +190,10 @@ describe('toShowSummary', () => {
           ...base,
           episodeTypeTags,
           seasons: [season(1, [episode(1, 1, '2026-09-01T01:00:00Z')])],
-        }).recent.aired[0]?.tags?.map(({ text }) => text);
+        }).recent.aired[0]?.tags?.map(({ text, segments }) => [text, ...(segments ?? [])].join(' | '));
 
-      expect(tags(true)).toEqual(['Series Premiere', 'Aug 31, 2026 9:00 PM']);
-      expect(tags(false)).toEqual(['Aug 31, 2026 9:00 PM']);
+      expect(tags(true)).toEqual(['Series Premiere', 'Aug 31, 2026 | 9:00 PM']);
+      expect(tags(false)).toEqual(['Aug 31, 2026 | 9:00 PM']);
     });
   });
 

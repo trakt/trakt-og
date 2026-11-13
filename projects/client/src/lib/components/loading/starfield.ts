@@ -17,6 +17,9 @@ export const STARFIELD = {
   startSpeed: 0.04,
   cruiseSpeed: 0.28,
   rampMs: 2000,
+  /** The drift while a step has failed and waits to try again, and how fast the field slows to it or speeds back up. */
+  stallSpeed: 0.015,
+  settleRate: 0.25,
   /** The share of stars in the accent color. */
   accentShare: 0.08,
 } as const;
@@ -31,6 +34,18 @@ export function warpSpeed(elapsedMs: number): number {
   const t = Math.min(Math.max(elapsedMs / STARFIELD.rampMs, 0), 1);
   const eased = t * t * (3 - 2 * t);
   return STARFIELD.startSpeed + (STARFIELD.cruiseSpeed - STARFIELD.startSpeed) * eased;
+}
+
+type SettleParams = {
+  speed: number;
+  target: number;
+  seconds: number;
+};
+
+/** The speed `seconds` later, moving toward `target` no faster than the settle rate, so a change of pace never jumps. */
+export function settleSpeed({ speed, target, seconds }: SettleParams): number {
+  const step = STARFIELD.settleRate * seconds;
+  return Math.min(Math.max(target, speed - step), speed + step);
 }
 
 type AdvanceParams = {

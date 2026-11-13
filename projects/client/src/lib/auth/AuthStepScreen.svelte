@@ -47,6 +47,6 @@ onMount(() => {
 });
 </script>
 
-<HyperspaceLoader {...authLine(scene, failure)} reverse={scene === 'signOut'}>
+<HyperspaceLoader {...authLine(scene, failure)} reverse={scene === 'signOut'} stalled={failure !== null}>
   {#if failure}<AuthFailureNotice {failure} {seconds} onretry={() => attempt(retry)} />{/if}
 </HyperspaceLoader>

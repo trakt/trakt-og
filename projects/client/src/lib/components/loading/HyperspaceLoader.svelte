@@ -2,7 +2,8 @@
   The full-screen loader while og signs in or out: stars stream out from behind TraktLoader as og jumps to
   auth.trakt.tv, and fall back into it in `reverse` as it signs out. They ease from a drift up to a slow cruise. The
   mark sits dead center, with a `quote` and its `credit` under it; screen readers hear `label` instead. Anything passed
-  as children (a notice) goes under the credit. Under reduced motion the stars hold still and the mark breathes.
+  as children (a notice) goes under the credit. While `stalled` (a failed step waiting to try again) the stars slow to
+  a drift. Under reduced motion the stars hold still and the mark breathes.
     <HyperspaceLoader label="Signing out" quote="May the Force be with you." credit="Han Solo" reverse />
 -->
 <script lang="ts">
@@ -15,14 +16,15 @@ interface Props {
   quote: string;
   credit: string;
   reverse?: boolean;
+  stalled?: boolean;
   children?: Snippet;
 }
 
-const { label, quote, credit, reverse = false, children }: Props = $props();
+const { label, quote, credit, reverse = false, stalled = false, children }: Props = $props();
 </script>
 
 <div class="hyperspace">
-  <canvas aria-hidden="true" {@attach hyperspace({ reverse })}></canvas>
+  <canvas aria-hidden="true" {@attach hyperspace({ reverse, stalled: () => stalled })}></canvas>
   <div class="mark">
     <TraktLoader size={96} {label} />
     <div class="below">

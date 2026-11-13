@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { advanceStar, NEAR, projectStar, spawnStar, STARFIELD, trailDepth, warpSpeed } from './starfield.ts';
+import {
+  advanceStar,
+  NEAR,
+  projectStar,
+  settleSpeed,
+  spawnStar,
+  STARFIELD,
+  trailDepth,
+  warpSpeed,
+} from './starfield.ts';
 
 const fixed = (value: number) => () => value;
 const star = { x: 0.5, y: -0.5, z: 0.5, accent: false };
@@ -24,6 +33,31 @@ describe('starfield', () => {
       expect(half).toBeGreaterThan(STARFIELD.startSpeed);
       expect(half).toBeLessThan(STARFIELD.cruiseSpeed);
       expect(warpSpeed(STARFIELD.rampMs * 0.75)).toBeGreaterThan(half);
+    });
+  });
+
+  describe('settleSpeed', () => {
+    it('should slow from cruise to the stall drift over about a second, never overshooting', () => {
+      const cruise = STARFIELD.cruiseSpeed;
+      const target = STARFIELD.stallSpeed;
+      expect(settleSpeed({ speed: cruise, target, seconds: 0.1 })).toBeCloseTo(cruise - STARFIELD.settleRate * 0.1);
+      expect(settleSpeed({ speed: cruise, target, seconds: 2 })).toBe(target);
+    });
+
+    it('should speed back up toward the target', () => {
+      expect(settleSpeed({ speed: STARFIELD.stallSpeed, target: 1, seconds: 0.1 })).toBeCloseTo(
+        STARFIELD.stallSpeed + STARFIELD.settleRate * 0.1,
+      );
+    });
+
+    it('should never hold back the opening ramp', () => {
+      const frame = 1 / 60;
+      for (let ms = 0; ms < STARFIELD.rampMs; ms += frame * 1000) {
+        const speed = warpSpeed(ms);
+        expect(settleSpeed({ speed, target: warpSpeed(ms + frame * 1000), seconds: frame })).toBeCloseTo(
+          warpSpeed(ms + frame * 1000),
+        );
+      }
     });
   });
 

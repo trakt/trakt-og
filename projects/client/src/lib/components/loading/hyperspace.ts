@@ -1,4 +1,14 @@
-import { advanceStar, NEAR, projectStar, spawnStar, type Star, STARFIELD, trailDepth, warpSpeed } from './starfield.ts';
+import {
+  advanceStar,
+  NEAR,
+  projectStar,
+  settleSpeed,
+  spawnStar,
+  type Star,
+  STARFIELD,
+  trailDepth,
+  warpSpeed,
+} from './starfield.ts';
 
 /** How much of the last frame each frame paints over, so moving stars leave a short streak. */
 const FADE = 0.55;
@@ -9,10 +19,11 @@ const MAX_PIXEL_RATIO = 2;
 const color = (style: CSSStyleDeclaration, name: string) => style.getPropertyValue(name).trim();
 
 /**
- * Draws the starfield on its canvas: stars stream out from the middle, or back into it in `reverse`. Under reduced
- * motion the field holds still. Colors come from the `--color-hyperspace-*` tokens.
+ * Draws the starfield on its canvas: stars stream out from the middle, or back into it in `reverse`. While `stalled`
+ * says so, the field slows to a drift. Under reduced motion the field holds still. Colors come from the
+ * `--color-hyperspace-*` tokens.
  */
-export function hyperspace({ reverse }: { reverse: boolean }) {
+export function hyperspace({ reverse, stalled }: { reverse: boolean; stalled: () => boolean }) {
   return (canvas: HTMLCanvasElement) => {
     const context = canvas.getContext('2d');
     if (!context) return;
@@ -68,10 +79,12 @@ export function hyperspace({ reverse }: { reverse: boolean }) {
     const started = performance.now();
     let last = started;
     let frame = 0;
+    let speed: number = STARFIELD.startSpeed;
     const tick = (now: number) => {
       const seconds = Math.min((now - last) / 1000, MAX_FRAME_SECONDS);
       last = now;
-      const speed = warpSpeed(now - started);
+      const target = stalled() ? STARFIELD.stallSpeed : warpSpeed(now - started);
+      speed = settleSpeed({ speed, target, seconds });
       stars = stars.map((star) => advanceStar({ star, distance: speed * seconds, reverse, random }));
       draw(speed);
       frame = requestAnimationFrame(tick);

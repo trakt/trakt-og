@@ -67,8 +67,7 @@ function defaultSort(headers: Headers): ListSort {
  * Public profiles read without the token alongside the frame's load; a private one reads again with it.
  */
 export async function loadBuiltInList({ fetch, locals, params, url, parent, cookies, kind }: Params) {
-  const initialFilters = readListFilters({ search: url.searchParams, cookies, scope: kind });
-  const initialQuery = { ...toListQuery(url.searchParams), hide: initialFilters.hide };
+  const initialQuery = toListQuery(url.searchParams);
   const base = `/users/${encodeURIComponent(params.id)}/${kind}`;
   const token = locals.token;
   const urlSort = urlListSort(initialQuery);
@@ -88,7 +87,6 @@ export async function loadBuiltInList({ fetch, locals, params, url, parent, cook
     isSelf: user?.slug === profile.slug,
   });
   const query = { ...initialQuery, hide: fadeHide.hide };
-  const unchanged = query.hide.join(',') === initialQuery.hide.join(',');
   const shell = { kind, query, fadeHide, datePreferences };
   if (profile.isLocked) return { ...shell, list: null };
 
@@ -103,7 +101,7 @@ export async function loadBuiltInList({ fetch, locals, params, url, parent, cook
     : [null, anonymousComments];
   // A stale token keeps the anonymous answer: the server never refreshes, the browser does.
   const viewerFirst = viewerItems !== null && viewerItems.status !== 401;
-  const first = viewerFirst ? viewerItems : unchanged ? anonymousItems : { ...anonymousItems, status: 0 };
+  const first = viewerFirst ? viewerItems : anonymousItems;
   // With a sort in the URL, only its direction can fall back, and the request already sent `asc`.
   const fallback: ListSort = urlSort ? { by: 'rank', how: 'asc' } : defaultSort(first.headers);
   const [items, filterSources] = await Promise.all([

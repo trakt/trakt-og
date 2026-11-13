@@ -113,14 +113,12 @@ describe('loadOfficialList', () => {
     expect(seen.find(({ url }) => url.pathname.endsWith('/title/desc'))?.url.searchParams.get('genres')).toBe('drama');
   });
 
-  it('should apply viewer hide filters while keeping the official cover unfiltered', async () => {
+  it('should read the whole official list for the viewer hides without sending them', async () => {
     const result = await load('?hide=notes,noreleasedate', 'collection', true);
     expect(result.fadeHide.hide).toEqual(['notes', 'noreleasedate']);
-    const viewer = seen.find(({ auth }) => auth !== null);
-    expect(viewer?.url.searchParams.get('hide_notes')).toBe('true');
-    expect(viewer?.url.searchParams.get('hide_noreleasedate')).toBe('true');
-    const cover = seen.find(({ url }) => url.pathname.endsWith('/random/asc'));
-    expect(cover?.url.searchParams.has('hide')).toBe(false);
+    expect(result.wholeList).toBe(true);
+    expect(seen.some(({ url }) => [...url.searchParams.keys()].some((key) => key.startsWith('hide')))).toBe(false);
+    expect(seen.some(({ url }) => url.searchParams.get('limit') === '250')).toBe(true);
   });
 
   it('should keep a site rating sort', async () => {

@@ -26,6 +26,8 @@ type Source = {
   cards: readonly ListItemCard[];
   sort: ListSort;
   query: ListQuery;
+  /** The list item ids the page's hides drop, which the bulk actions leave alone. */
+  hidden: ReadonlySet<number>;
 };
 
 const { track: trackList } = useTrack(AnalyticsEvent.List);
@@ -54,14 +56,19 @@ export function createListManager(source: () => Source, isBlocked: () => boolean
 
   const cards = $derived(patched ?? source().cards);
   const items = () => {
-    const { list, query, sort } = source();
+    const { list, query, sort, hidden } = source();
     if (!list) throw new Error('No list to manage');
+    const base = `/users/${encodeURIComponent(list.ownerSlug)}/lists/${encodeURIComponent(list.slug)}/items`;
     return {
       list,
       owner: list.ownerSlug,
       listId: list.id,
-      base: `/users/${encodeURIComponent(list.ownerSlug)}/lists/${encodeURIComponent(list.slug)}/items`,
-      query,
+      base,
+      /** The filtered items in `order`, without the ones the page hides. */
+      filtered: async (order: ListSort) =>
+        (await fetchListItemRefs({ fetch: viewerFetch(), base, query, sort: order })).filter(
+          ({ id }) => !hidden.has(id),
+        ),
       sort,
     };
   };
@@ -243,13 +250,8 @@ export function createListManager(source: () => Source, isBlocked: () => boolean
     /** Reset Ranks: the filtered items, in the page's sort, become the ranks. */
     resetRanks: () =>
       exclusive(async () => {
-        const { owner, listId, base, query, sort } = items();
-        const refs = await fetchListItemRefs({
-          fetch: viewerFetch(),
-          base,
-          query,
-          sort,
-        });
+        const { owner, listId, filtered, sort } = items();
+        const refs = await filtered(sort);
         if (
           !(await reorderListItems({
             owner,
@@ -267,13 +269,8 @@ export function createListManager(source: () => Source, isBlocked: () => boolean
     /** Delete: every filtered item, then back to the list's first page like OG's redirect. */
     deleteAll: () =>
       exclusive(async () => {
-        const { owner, listId, base, query, list } = items();
-        const refs = await fetchListItemRefs({
-          fetch: viewerFetch(),
-          base,
-          query,
-          sort: { by: 'rank', how: 'asc' },
-        });
+        const { owner, listId, filtered, list } = items();
+        const refs = await filtered({ by: 'rank', how: 'asc' });
         trackList({ action: 'remove' });
         if (!(await removeListItems({ owner, listId, items: refs, request: request('POST'), notify: toast }))) return;
         managing = false;

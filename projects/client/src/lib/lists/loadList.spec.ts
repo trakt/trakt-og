@@ -166,23 +166,21 @@ describe('loadList', () => {
     expect(authorized).toContain('/lists/44/collaborators');
   });
 
-  it('should send hide and title filters with the viewer token but keep the cover unfiltered', async () => {
+  it('should read the whole list in its sort for the hides, without sending them, and keep the cover unfiltered', async () => {
     const result = await load({
       query: '?hide=nonotes,watched&terms=Heat',
       token: 'abc',
       viewer: { slug: 'kim', isVip: true },
     });
     if (!result.list) throw new Error('no list');
-    const filtered = seen.filter(
-      ({ url, auth }) => url.pathname.includes('/items') && auth === 'Bearer abc' && url.searchParams.has('hide'),
-    );
-    expect(filtered).toHaveLength(1);
-    expect(filtered.at(0)?.url.searchParams.get('hide')).toBe('nonotes,watched');
-    expect(filtered.at(0)?.url.searchParams.get('hide_no_notes')).toBe('true');
-    expect(filtered.at(0)?.url.searchParams.get('hide_watched')).toBe('true');
-    expect(filtered.at(0)?.url.searchParams.get('terms')).toBe('Heat');
+    expect(result.wholeList).toBe(true);
+    expect(result.hideLimited).toBe(false);
+    expect(result.cards.map(({ title }) => title)).toEqual(['Heat', 'Ronin']);
+    expect(seen.some(({ url }) => [...url.searchParams.keys()].some((key) => key.startsWith('hide')))).toBe(false);
+    const whole = seen.find(({ url }) => url.searchParams.get('limit') === '250');
+    expect(whole?.url.pathname).toBe('/users/sean/lists/heist-night/items/all/added/desc');
+    expect(whole?.url.searchParams.get('terms')).toBe('Heat');
     const cover = seen.find(({ url }) => url.pathname.endsWith('/all/rank/asc'));
-    expect(cover?.url.searchParams.has('hide')).toBe(false);
     expect(cover?.url.searchParams.has('terms')).toBe(false);
   });
 
@@ -207,17 +205,20 @@ describe('loadList', () => {
     expect(result.cards.at(0)?.title).toBe('Heat');
   });
 
-  it('should render a list empty when its hide filters break the read', async () => {
+  it('should turn the hides off on a list too long to read whole', async () => {
     server.use(
       http.get(`${API}/users/sean/lists/:list/items*`, ({ request }) => {
-        if (request.headers.get('authorization')) return new HttpResponse(null, { status: 500 });
-        return HttpResponse.json([movie(1, 'Heat')], { headers: pageHeaders('added', 'desc') });
+        record(request);
+        return HttpResponse.json([movie(1, 'Heat')], {
+          headers: { ...pageHeaders('added', 'desc'), 'X-Pagination-Item-Count': '5001' },
+        });
       }),
     );
     const result = await load({ query: '?hide=collected', token: 'abc' });
     if (!result.list) throw new Error('no list');
-    expect(result.hideFailed).toBe(true);
-    expect(result.cards).toEqual([]);
+    expect(result.hideLimited).toBe(true);
+    expect(result.wholeList).toBe(false);
+    expect(seen.some(({ url }) => url.searchParams.get('limit') === '250')).toBe(false);
   });
 
   it('should still fail the page when an unfiltered read breaks', async () => {

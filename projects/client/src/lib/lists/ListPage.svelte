@@ -48,8 +48,6 @@
   import type { ViewerSettings } from '#lib/settings/ViewerSettings.ts';
   import { listFilterOptions } from '#lib/lists/listFilterOptions.ts';
   import EmptyState from '#lib/components/empty/EmptyState.svelte';
-  import LoadFailed from '#lib/components/empty/LoadFailed.svelte';
-  import { expireHideCookie } from '#lib/components/filters/expireHideCookie.ts';
   import type { HeaderUser } from '#lib/components/header/HeaderUser.ts';
   import ListTransfer from '#lib/components/lists/ListTransfer.svelte';
   import clone from '#lib/icons/regular/clone.svg?raw';
@@ -85,7 +83,9 @@
   import { listSortHow, reverseHow } from '#lib/lists/listItemSorts.ts';
   import { listTitleActions } from '#lib/lists/listTitleActions.ts';
   import ListStats from '#lib/lists/ListStats.svelte';
-  import type { ListStats as ListStatsNumbers } from '#lib/lists/toListStats.ts';
+  import { type ListStats as ListStatsNumbers, toCardListStats } from '#lib/lists/toListStats.ts';
+  import { listCardHidden, listHideReady } from '#lib/lists/listHide.ts';
+  import type { PageMeta } from '#lib/api/PageMeta.ts';
   import { listTypeOptions } from '#lib/lists/listTypeOptions.ts';
   import type { loadBuiltInList } from '#lib/lists/loadBuiltInList.ts';
   import type { loadOfficialList } from '#lib/lists/loadOfficialList.ts';
@@ -119,15 +119,13 @@
 
   const { data }: Props = $props();
 
-  let fadeHide = $derived(data.fadeHide);
+  // A list too long to read whole keeps its saved hides off, and its Hide toggles say why.
+  const hideLimited = $derived(Boolean(data.list && data.hideLimited));
+  let fadeHide = $derived(hideLimited ? { ...data.fadeHide, hide: [] } : data.fadeHide);
   const filterCookie = $derived(data.kind === 'personal' || data.kind === 'official' ? 'list' : data.kind);
-
-  function clearHide() {
-    expireHideCookie(filterCookie);
-     
-    // eslint-disable-next-line svelte/no-navigation-without-resolve -- the same list, without its hide filters
-    void goto(listHref(page.url, { hide: [] }));
-  }
+  // The hides apply here, to the whole list the loader read.
+  const hide = $derived(data.list && data.wholeList && !data.hideLimited ? (data.query.hide ?? []) : []);
+  const hiding = $derived(hide.length > 0);
 const filterOptions = $derived(
   listFilterOptions({
     kind: data.kind,
@@ -212,8 +210,15 @@ const genreLabel = $derived(
 const sorts = $derived(visibleListSorts({ types: data.query.types, signedIn: data.user !== null }));
 // The resolved stats bar numbers: undefined while they stream, null when they couldn't be counted.
 let listStats = $state<ListStatsNumbers | null>();
-// Stats that came with the page are known on the server too; streamed ones once they settle.
-const knownStats = $derived(data.list && !(data.stats instanceof Promise) ? data.stats : listStats);
+// Stats that came with the page are known on the server too; streamed ones once they settle. Hidden items drop out of
+// them once the overlay has loaded.
+const hiddenStats = $derived.by(() =>
+  hiding && itemsReady ? toCardListStats(shownCards, { withItems: data.user !== null }) : undefined,
+);
+const knownStats = $derived.by(() =>
+  hiding ? hiddenStats : data.list && !(data.stats instanceof Promise) ? data.stats : listStats,
+);
+const statsPending = new Promise<null>(() => {});
 // Show progress tracks only shows, so a list of movies and no shows opens progress on its franchises.
 const moviesOnly = $derived(
   Boolean(knownStats?.items?.some(({ type }) => type === 'movie') && !knownStats.items.some(({ type }) => type === 'show')),
@@ -341,15 +346,43 @@ const relation = $derived(
 
   // Watched, Collected and Plays: the loader sent the whole list, ordered here once the viewer's overlay has loaded. The
   // order is taken once, so watching a poster doesn't move it out from under the viewer.
+  // The hides read the same overlay, so they wait for it too, and drop items the same way: once.
   const browserSortReady = $derived(!(data.list && data.sortInBrowser) || viewerSortReady(data.sort.by, overlay.slices()));
+  const hideReady = $derived(listHideReady({ hide, slices: overlay.slices(), signedIn: data.user !== null }));
+  const itemsReady = $derived(browserSortReady && hideReady);
+const stateOf = (card: ListItemCard) => card.type === 'person' ? {} : overlay.state(card.type, card.id, card.seasonOf);
 const viewerValue = (by: string) => (card: ListItemCard) =>
-  card.type === 'person' ? undefined : viewerSortValue(by, overlay.state(card.type, card.id, card.seasonOf));
-  const pageCards = $derived.by(() => {
+  card.type === 'person' ? undefined : viewerSortValue(by, stateOf(card));
+  // Every item the page shows, across its pages, when the loader read the whole list.
+  const shownCards = $derived.by(() => {
     if (!data.list) return [];
-    if (!data.sortInBrowser) return data.cards;
-    if (!browserSortReady) return [];
-    const { cards, sort, query: { page, limit } } = data;
-    return untrack(() => sortCardsByViewer(cards, sort, viewerValue(sort.by))).slice((page - 1) * limit, page * limit);
+    if (!data.wholeList) return data.cards;
+    if (!itemsReady) return [];
+    const { cards, sort, sortInBrowser, user } = data;
+    return untrack(() => {
+      const now = new Date();
+      const kept = hiding
+        ? cards.filter((card) => !listCardHidden({ card, hide, state: stateOf(card), signedIn: user !== null, now }))
+        : cards;
+      return sortInBrowser ? sortCardsByViewer(kept, sort, viewerValue(sort.by)) : kept;
+    });
+  });
+  const pageCards = $derived.by(() => {
+    if (!data.list || !data.wholeList) return shownCards;
+    const { page, limit } = data.query;
+    return shownCards.slice((page - 1) * limit, page * limit);
+  });
+  const pageMeta = $derived.by((): PageMeta | undefined => {
+    if (!data.list) return undefined;
+    if (!hiding) return data.page;
+    const { page: current, limit } = data.query;
+    return { type: 'paginated', current, total: Math.max(1, Math.ceil(shownCards.length / limit)) };
+  });
+  // The items the hides drop, which the writes on "the filtered items" leave alone.
+  const hiddenKeys: ReadonlySet<number> = $derived.by(() => {
+    if (!data.list || !hiding) return new Set();
+    const shown = new Set(shownCards.map(({ key }) => key));
+    return new Set(data.cards.filter(({ key }) => !shown.has(key)).map(({ key }) => key));
   });
 const ownerCards = $derived(
   (ownerManaging && allItems && selectedKeys
@@ -399,7 +432,9 @@ const request = (path: string, init?: Parameters<typeof rawApiFetch>[0]['init'])
       const items = complete.map((row) => toListItemCard(row, options));
       if (selection.some((row) => !items.some((item) => item.key === row.id))) throw new Error('List changed');
       allItems = items;
-      const selected = selection.flatMap((row) => items.filter((item) => item.key === row.id));
+      const selected = selection
+        .filter((row) => !hiddenKeys.has(row.id))
+        .flatMap((row) => items.filter((item) => item.key === row.id));
     selectedKeys = (data.sortInBrowser ? sortCardsByViewer(selected, data.sort, viewerValue(data.sort.by)) : selected).map(
       (item) => item.key,
     );
@@ -532,8 +567,8 @@ const request = (path: string, init?: Parameters<typeof rawApiFetch>[0]['init'])
   const manager = createListManager(
   () =>
     data.list === null
-      ? { list: null, cards: [], sort: { by: 'rank', how: 'asc' }, query: data.query }
-      : { list: data.list, cards: pageCards, sort: data.sort, query: data.query },
+      ? { list: null, cards: [], sort: { by: 'rank', how: 'asc' }, query: data.query, hidden: hiddenKeys }
+      : { list: data.list, cards: pageCards, sort: data.sort, query: data.query, hidden: hiddenKeys },
   () => transferBusy,
   );
   $effect(() => {
@@ -559,17 +594,18 @@ const request = (path: string, init?: Parameters<typeof rawApiFetch>[0]['init'])
     });
   });
   // The items stat's count, which counts the filtered items: the total header doesn't apply the hide filters.
-  const filteredCount = $derived(listStats?.count);
+  const filteredCount = $derived(hiding ? hiddenStats?.count : listStats?.count);
   // The owner's count is the loaded selection's; until it loads, the filtered count.
 const manageCount = $derived(
   owner && selectedKeys ? ownerCards.length : filteredCount ?? (data.list ? data.total : 0),
 );
   const displayCards = $derived(owner ? ownerCards : manager.cards);
-  const writing = $derived((owner ? ownerBusy : manager.busy) || transferBusy);
+  // The writes on the filtered items wait until the page knows which ones the hides drop.
+  const writing = $derived((owner ? ownerBusy : manager.busy) || transferBusy || !itemsReady);
   // OG dragged only a ranked list that fits one page, and offered "Change position" in the other sorts.
 const draggable = $derived(
-  data.list !== null && data.sort.by === 'rank' && !(owner && managing) && data.page.type === 'paginated' &&
-    data.page.total === 1,
+  data.list !== null && data.sort.by === 'rank' && !(owner && managing) && pageMeta?.type === 'paginated' &&
+    pageMeta.total === 1,
 );
   const duration = $derived(prefersReducedMotion.current ? 0 : 300);
   const rankInputs: Record<number, RankInput> = $state({});
@@ -721,7 +757,7 @@ const draggable = $derived(
     {#snippet stats()}
       <ListStats
         itemCount={itemTotal}
-        stats={data.stats}
+        stats={hiding ? hiddenStats ?? statsPending : data.stats}
         progress={data.user !== null}
         likeTarget={{ id: list.id, ownerSlug: list.kind === 'personal' ? list.ownerSlug : undefined, viewer: data.user?.slug ?? null }}
         likeCount={list.kind === 'watchlist' || list.kind === 'favorites' ? undefined : list.likeCount}
@@ -767,6 +803,7 @@ const draggable = $derived(
           value={fadeHide}
           options={filterOptions.fade}
           hideOptions={filterOptions.hide}
+          hideDisabled={hideLimited ? 'This is too large to use this filter' : undefined}
           cookie={filterCookie}
           onchange={(next) => {
             const changed = next.hide.join(',') !== fadeHide.hide.join(',');
@@ -822,8 +859,8 @@ const draggable = $derived(
                 onreset={owner ? resetOrder : manager.resetRanks}
                 ondelete={owner ? () => void removeItems(ownerCards) : manager.deleteAll}>
                 {#snippet transfers()}
-                  <ListTransfer source={list} query={data.query} sort={data.sort} count={manageCount} svg={clone} busy={writing} onbusychange={(busy) => transferBusy = busy} />
-                  <ListTransfer source={list} query={data.query} sort={data.sort} count={manageCount} svg={fileExport} busy={writing} onbusychange={(busy) => transferBusy = busy} move />
+                  <ListTransfer source={list} query={data.query} sort={data.sort} hidden={hiddenKeys} count={manageCount} svg={clone} busy={writing} onbusychange={(busy) => transferBusy = busy} />
+                  <ListTransfer source={list} query={data.query} sort={data.sort} hidden={hiddenKeys} count={manageCount} svg={fileExport} busy={writing} onbusychange={(busy) => transferBusy = busy} move />
                 {/snippet}
               </ListManageBar>
             {:else}
@@ -882,13 +919,13 @@ const draggable = $derived(
 </section>
   {/if}
 
-  <section class={['items', { managing }]} aria-label="{list.name} items" aria-busy={writing || !browserSortReady} {@attach shortcut}
+  <section class={['items', { managing }]} aria-label="{list.name} items" aria-busy={writing} {@attach shortcut}
     {@attach trackDrilldowns({ source: itemsSource })}>
   <Container>
-      {#if !browserSortReady}
+      {#if !itemsReady}
         <CardShimmerRow columns={6} ratio="poster" />
       {:else if displayCards.length > 0}
-        {#if !(owner && managing) && data.page.type === 'paginated'}<Pagination meta={data.page} label="List pages" />{/if}
+        {#if !(owner && managing) && pageMeta?.type === 'paginated'}<Pagination meta={pageMeta} label="List pages" />{/if}
         <div class="grid" {@attach manager.dragEvents}>
           <PosterGrid>
             {#each displayCards as item (item.key)}
@@ -927,12 +964,10 @@ const draggable = $derived(
             ondrag={(event) => owner ? dragItem(item, event) : manager.startDrag(item, event)} onchangerank={() => rankInputs[item.key]?.focus()}
             onremove={() => owner ? void removeItems([item]) : manager.remove(item)} onnotes={() => owner ? editNotes(item) : openNotes(item)} />
         {/snippet}
-        {#if !(owner && managing) && data.page.type === 'paginated'}<Pagination meta={data.page} label="List pages" />{/if}
+        {#if !(owner && managing) && pageMeta?.type === 'paginated'}<Pagination meta={pageMeta} label="List pages" />{/if}
       {:else}
         <div class="empty">
-          {#if data.hideFailed}
-            <LoadFailed what="This list with these filters" action={{ onclick: clearHide, text: 'Clear filters' }} />
-          {:else if filtered}
+          {#if filtered}
             <EmptyState action={{ href: clearedHref, text: 'Clear filters' }} />
           {:else}
             <EmptyState action={ownList ? { href: resolve('/shows/[chart=chart]/[[period]]', { chart: 'trending' }), text: 'Find a show' } : undefined} />

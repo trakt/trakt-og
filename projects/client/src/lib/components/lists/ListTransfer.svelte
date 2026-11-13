@@ -36,6 +36,8 @@ interface Props {
   source: ListView;
   query: ListQuery;
   sort: ListSort;
+  /** The list item ids the page's hides drop, which stay behind. */
+  hidden?: ReadonlySet<number>;
   count: number;
   move?: boolean;
   svg: string;
@@ -46,6 +48,7 @@ const {
   source,
   query,
   sort,
+  hidden = new Set(),
   count,
   move = false,
   svg,
@@ -126,6 +129,7 @@ async function transfer(list: PickerList | null, watchlist = false) {
   const selectedSource = source;
   const selectedQuery = query;
   const selectedSort = sort;
+  const selectedHidden = hidden;
   const row = watchlist ? -1 : list?.id ?? 0;
   const limit = watchlist ? watchLimit : listLimit?.item_count;
   const total = watchlist ? watchlistCount : list?.count ?? 0;
@@ -153,7 +157,9 @@ async function transfer(list: PickerList | null, watchlist = false) {
       : selectedSource.kind === 'personal'
       ? `/users/${encodeURIComponent(selectedSource.ownerSlug)}/lists/${selectedSource.id}/items`
       : `/users/${encodeURIComponent(selectedSource.ownerSlug)}/${selectedSource.kind}`;
-    const items = await fetchListItemRefs({ fetch: authFetch(), base, query: selectedQuery, sort: selectedSort });
+    const items = (
+      await fetchListItemRefs({ fetch: authFetch(), base, query: selectedQuery, sort: selectedSort })
+    ).filter(({ id }) => !selectedHidden.has(id));
     if (
       !list && !watchlist && !created && limit !== undefined &&
       items.filter((item) => item.type !== 'person').length > limit

@@ -6,6 +6,7 @@ import { formatRuntime } from '../utils/formatRuntime.ts';
 import { mediaImage } from '../images/mediaImage.ts';
 import { episodeBadge } from '../users/profile/toProfileSummary.ts';
 import type { ListItemRow } from './listItemRowsSchema.ts';
+import { listItemRuntime } from './toListStats.ts';
 import { seasonName } from '../utils/seasonName.ts';
 
 type Link = { readonly text: string; readonly href: string };
@@ -39,6 +40,10 @@ export interface ListItemCard {
   readonly lines: readonly [ListCardLine, ListCardLine];
   /** The owner's notes on the item, markdown with emoji. */
   readonly notes?: string;
+  /** A movie's or show's release date and status, which the release and airing hides read. */
+  readonly release?: { readonly at: string | null; readonly status: string | null };
+  /** Minutes the stats bar counts for it: a show or season sums its aired episodes. */
+  readonly listRuntime: number;
   /** The notes modal's title band: a show's name over an episode, and the fanart. */
   readonly noteTitle: {
     readonly title: string;
@@ -113,7 +118,12 @@ export function toListItemCard(row: ListItemRow, { sortBy, datePreferences, now 
   const out = (date: string | null | undefined) => !!date && new Date(date) <= now;
   const rated = (rating: number | null | undefined, date: string | null | undefined) =>
     out(date) ? (rating ?? undefined) : undefined;
-  const base = { key: row.id, rank: row.rank, ...(row.notes?.trim() && { notes: row.notes.trim() }) };
+  const base = {
+    key: row.id,
+    rank: row.rank,
+    listRuntime: listItemRuntime(row),
+    ...(row.notes?.trim() && { notes: row.notes.trim() }),
+  };
   const sorted = (facts: Omit<Facts, 'listedAt'>, href: string) =>
     sortLine(sortBy, { ...facts, listedAt: row.listed_at }, href, datePreferences);
 
@@ -130,6 +140,7 @@ export function toListItemCard(row: ListItemRow, { sortBy, datePreferences, now 
         image: mediaImage({ type: 'movie', id: movie.ids.trakt, slot: 'poster', size: 'thumb' }),
         rating: rated(movie.rating, movie.released),
         runtime: movie.runtime ?? undefined,
+        release: { at: movie.released ?? null, status: movie.status ?? null },
         noteTitle: { title: movie.title, year: movie.year ?? undefined, fanart: fanart('movie', movie.ids.trakt) },
         lines: lines({
           sorted: sorted(
@@ -152,6 +163,7 @@ export function toListItemCard(row: ListItemRow, { sortBy, datePreferences, now 
         image: mediaImage({ type: 'show', id: show.ids.trakt, slot: 'poster', size: 'thumb' }),
         rating: rated(show.rating, show.first_aired),
         airedEpisodes: show.aired_episodes ?? undefined,
+        release: { at: show.first_aired ?? null, status: show.status ?? null },
         noteTitle: { title: show.title, year: show.year ?? undefined, fanart: fanart('show', show.ids.trakt) },
         lines: lines({
           sorted: sorted(

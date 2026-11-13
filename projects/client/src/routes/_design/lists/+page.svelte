@@ -59,6 +59,7 @@ const card = (key: number, title: string, slug: string, extra: Partial<ListItemC
     href,
     title,
     rank: key,
+    listRuntime: 120,
     rating: 8.1,
     lines: [{ text: BLANK, href }, { text: BLANK, href }],
     noteTitle: { title },

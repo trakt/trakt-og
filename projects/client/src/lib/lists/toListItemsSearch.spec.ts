@@ -8,9 +8,10 @@ describe('util: toListItemsSearch', () => {
     );
   });
 
-  it('should send every hide as a list and as its own flag', () => {
+  it('should leave the hides to the page, which applies them to the whole list', () => {
+    const query = { genres: ['drama'], terms: 'Heat', watchnow: 'netflix', hide: ['watched', 'nonotes'] };
     const search = toListItemsSearch({
-      query: { genres: ['drama'], terms: 'Heat', watchnow: 'netflix', hide: ['watched', 'nonotes'] },
+      query,
       extended: 'full',
       page: 1,
       limit: 24,
@@ -22,9 +23,6 @@ describe('util: toListItemsSearch', () => {
       genres: 'drama',
       terms: 'Heat',
       watchnow: 'netflix',
-      hide: 'watched,nonotes',
-      hide_watched: 'true',
-      hide_no_notes: 'true',
     });
   });
 });

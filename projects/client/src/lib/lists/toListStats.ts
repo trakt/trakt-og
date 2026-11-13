@@ -1,5 +1,6 @@
 import type { SeasonOf } from '../overlay/createOverlay.svelte.ts';
 import type { ListItemRow } from './listItemRowsSchema.ts';
+import type { ListItemCard } from './toListItemCard.ts';
 
 /** An item the Watched and Collected percentages count: everything on the list but people. */
 export type ListStatsItem =
@@ -23,7 +24,7 @@ const MOVIE_RUNTIME = 90;
 const EPISODE_RUNTIME = 42;
 
 /** OG's `total_runtime` for one item: a show or season sums its aired episodes. */
-function runtimeOf(row: ListItemRow): number {
+export function listItemRuntime(row: ListItemRow): number {
   switch (row.type) {
     case 'movie':
       return row.movie.runtime || MOVIE_RUNTIME;
@@ -67,7 +68,23 @@ function itemOf(row: ListItemRow): ListStatsItem | undefined {
  * watch them, and, when `withItems`, the ids the percentages look up in the viewer's library.
  */
 export function toListStats(rows: readonly ListItemRow[], { withItems }: { withItems: boolean }): ListStats {
-  const stats = { count: rows.length, runtime: rows.reduce((sum, row) => sum + runtimeOf(row), 0) };
+  const stats = { count: rows.length, runtime: rows.reduce((sum, row) => sum + listItemRuntime(row), 0) };
   if (!withItems) return stats;
   return { ...stats, items: rows.flatMap((row) => itemOf(row) ?? []) };
+}
+
+function cardItemOf(card: ListItemCard): ListStatsItem | undefined {
+  const { type, id, seasonOf, airedEpisodes = 0 } = card;
+  if (type === 'movie') return { type, id };
+  if (type === 'show') return { type, id, airedEpisodes };
+  if (!seasonOf) return undefined;
+  if (type === 'season') return { type, id, airedEpisodes, seasonOf };
+  return type === 'episode' ? { type, id, seasonOf } : undefined;
+}
+
+/** The same numbers over cards the page filtered itself, from a whole list it read. */
+export function toCardListStats(cards: readonly ListItemCard[], { withItems }: { withItems: boolean }): ListStats {
+  const stats = { count: cards.length, runtime: cards.reduce((sum, card) => sum + card.listRuntime, 0) };
+  if (!withItems) return stats;
+  return { ...stats, items: cards.flatMap((card) => cardItemOf(card) ?? []) };
 }

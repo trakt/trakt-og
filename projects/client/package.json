@@ -46,7 +46,7 @@
   },
   "dependencies": {
     "@tiptap/core": "3.33.0",
-    "@tiptap/extensions": "3.33.0",
+    "@tiptap/extensions": "3.34.0",
     "@tiptap/pm": "3.33.0",
     "@tiptap/starter-kit": "3.33.0",
     "@trakt/api": "npm:@jsr/trakt__api@0.7.17",

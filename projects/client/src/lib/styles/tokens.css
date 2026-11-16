@@ -2061,14 +2061,14 @@
   /* Lazy season/episode community icons (red-era episode-stats). */
 
   /* Media stats: the shorter strip and poster overlap on season and episode stats. */
-  --media-stats-compact-strip-height: 55px;
+  --media-stats-compact-strip-height: 47px;
   --media-stats-compact-poster-overlap: 180px;
 
   /* A title's stats page: Trakt Ratings, Community and Other Sites, each under a watermarked heading. */
   --space-stats-section: 44px; /* between the sections */
   --space-stats-body: 16px; /* between a heading and its section */
   --stats-tile-min: 120px; /* a Community tile's narrowest */
-  --space-stats-tiles: 10px;
+  --space-stats-tiles: var(--gutter); /* the poster grid's gap */
   --space-stats-tile: 12px 12px 14px;
   --space-stats-tile-value: 6px; /* between a tile's label and its number */
   --stats-tile-rule: 3px; /* the count's color along a tile's top */
@@ -2107,6 +2107,35 @@
   --color-stats-diff-down: light-dark(#c62828, #ff5a60);
   --color-stats-diff-flat: light-dark(#666, #bbb);
   --stats-diff-bg-mix: 16%; /* a diff badge's tint of its own color */
+
+  /* The stats page's Quality chart: one line per source over each season or episode, with a column of hover room
+     for each. Its direct labels are nudged apart in percent of the plot's height, sized to the plot below. */
+  --color-quality-community: var(--brand-primary);
+  --color-quality-area: color-mix(in srgb, var(--color-quality-community) 10%, transparent); /* the shade under it */
+  --color-quality-you: var(--color-text);
+  --color-quality-imdb: light-dark(#8a6d00, var(--color-site-imdb)); /* darker on white, where the yellow washes out */
+  --color-quality-tmdb: light-dark(#00769c, var(--color-site-tmdb));
+  --color-quality-grid: var(--color-minutes-grid);
+  --color-quality-guide: color-mix(in srgb, var(--color-text) 12%, transparent); /* the column under the pointer */
+  --color-quality-reference: var(--color-text-muted);
+  --quality-plot-height: 240px;
+  --quality-gutter: 36px; /* the percent labels, left of the plot */
+  --quality-labels: 104px; /* each line's value and name, right of the plot */
+  --quality-column-min: 28px; /* narrower and the plot scrolls */
+  --quality-line-width: 2px;
+  --quality-dot-size: 9px;
+  --quality-dot-ring: 2px;
+  --quality-tip-logo: 14px; /* each site's logo in the tooltip, IMDb's wide badge too */
+  --quality-tip-width: 230px; /* every tooltip's width: a name, its votes and the score fit, a long title wraps */
+  --space-quality-tip-rows: 8px;
+  --space-quality-tip-bar: 4px; /* a row's numbers over its bar */
+  --space-quality-tip-cell: 8px;
+  --space-quality-tip-logo: 6px;
+  --space-quality-tip-end: 5px; /* under the last bar, to match the space over the first row */
+  --space-quality-controls: calc(1.5 * var(--gutter)); /* under the chips, before the chart */
+  --space-quality-axis: 8px; /* between the plot and the axis labels */
+  --space-quality-label: 0 6px;
+  --font-size-quality-label: 11px;
   --space-stats-diff: 2px 7px;
   --radius-stats-diff: var(--radius-tag);
   --stats-diff-min: 38px; /* so the badges line up */

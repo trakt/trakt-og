@@ -1,9 +1,13 @@
 <script lang="ts">
 import Container from '#lib/components/container/Container.svelte';
 import WatchedKeys from '#lib/components/dashboard/WatchedKeys.svelte';
+import DemoChoice from '#lib/design/DemoChoice.svelte';
+import DemoToggle from '#lib/design/DemoToggle.svelte';
 import Specimen from '#lib/design/Specimen.svelte';
+import QualityChart from '#lib/components/stats/QualityChart.svelte';
 import { toExternalRatings } from '#lib/components/summary/toExternalRatings.ts';
 import ProfileRatingsChart from '#lib/components/users/ProfileRatingsChart.svelte';
+import chartSimple from '#lib/icons/regular/chart-simple.svg?raw';
 import globe from '#lib/icons/regular/globe.svg?raw';
 import heart from '#lib/icons/regular/heart.svg?raw';
 import userGroup from '#lib/icons/regular/user-group.svg?raw';
@@ -13,7 +17,13 @@ import StatsSection from '#lib/stats/StatsSection.svelte';
 import { toCommunityStats } from '#lib/stats/toCommunityStats.ts';
 import { toSiteScores } from '#lib/stats/toSiteScores.ts';
 import { toProfileRatings } from '#lib/users/profile/toProfileRatings.ts';
+import { gapChart, seasonChart, seasonImdb, seasonTmdb, seasonYou, showChart, showYou } from './qualityFixtures.ts';
 import type { Snippet } from 'svelte';
+
+type Viewer = 'guest' | 'member';
+
+let viewer = $state<Viewer>('member');
+let sitesLoading = $state(false);
 
 const ratings = toProfileRatings({
   distribution: { 1: 180, 2: 150, 3: 230, 4: 590, 5: 1280, 6: 3650, 7: 4371, 8: 3830, 9: 1230, 10: 2465 },
@@ -71,18 +81,39 @@ const animeSites = toSiteScores({
 {/snippet}
 
 {#snippet trakt()}
-  <StatsSection id="trakt" title="Trakt" icon={heart} hideHeading>
-    {#if ratings.chart}
+  {#if ratings.chart}
+    <StatsSection id="trakt" title="Trakt Ratings" icon={heart}>
       <div class="chart"><ProfileRatingsChart chart={ratings.chart} /></div>
       <WatchedKeys keys={ratings.keys} />
-    {/if}
-  </StatsSection>
+    </StatsSection>
+  {/if}
 {/snippet}
 
 {#snippet communityTiles()}
   <StatsSection id="community" title="Community" icon={userGroup}>
   <CommunityStats tiles={community} />
 </StatsSection>
+{/snippet}
+
+{#snippet showQuality()}
+  <StatsSection id="quality-seasons" title="Quality Over Time" icon={chartSimple}>
+    {#if showChart}<QualityChart data={showChart} you={viewer === 'member' ? showYou : undefined} />{/if}
+  </StatsSection>
+{/snippet}
+
+{#snippet seasonQuality()}
+  <StatsSection id="quality-episodes" title="Quality Over Time" icon={chartSimple}>
+    {#if seasonChart}
+      <QualityChart data={seasonChart} you={viewer === 'member' ? seasonYou : undefined} sites
+        loading={sitesLoading} imdb={sitesLoading ? undefined : seasonImdb} tmdb={sitesLoading ? undefined : seasonTmdb} />
+    {/if}
+  </StatsSection>
+{/snippet}
+
+{#snippet gapQuality()}
+  <StatsSection id="quality-gaps" title="Quality" icon={chartSimple}>
+    {#if gapChart}<QualityChart data={gapChart} />{/if}
+  </StatsSection>
 {/snippet}
 
 {#snippet secondOpinions()}
@@ -97,13 +128,35 @@ const animeSites = toSiteScores({
 </StatsSection>
 {/snippet}
 
+<Specimen title="Community" bleed note="Favorites, then the counts, each with what it means per watcher.">
+  {@render column(communityTiles)}
+</Specimen>
+
 <Specimen title="Trakt ratings" bleed
-  note="The page opens on the vote chart with its keys under it; its heading is only for screen readers.">
+  note="The vote chart under its Trakt Ratings heading, after Community, with its keys under it. A title with no votes leaves the section out.">
   {@render column(trakt)}
 </Specimen>
 
-<Specimen title="Community" bleed note="Favorites, then the counts, each with what it means per watcher.">
-  {@render column(communityTiles)}
+<Specimen title="Quality, by season" bleed
+  note="A show's stats page: a point per aired season, red for Trakt. You joins once the viewer has rated a season, and the Scale dropdown starts Zoomed, the bottom at the nearest 10 under the lowest line, with 0 to 100% one pick away. Hover a column for the season's tooltip, with your own rating as a heart and its 1 to 10, or click it to open that season's stats.">
+  <div class="knob">
+    <DemoChoice label="Viewer" bind:value={viewer} options={[{ value: 'guest', label: 'Guest' }, { value: 'member', label: 'Member' }]} />
+  </div>
+  {@render column(showQuality)}
+</Specimen>
+
+<Specimen title="Quality, by episode" bleed
+  note="A season's stats page: a point per aired episode, the season's own rating a dashed line. IMDb and TMDB start off; switching either on loads them, and its chip is busy until they land.">
+  <div class="knob">
+    <DemoChoice label="Viewer" bind:value={viewer} options={[{ value: 'guest', label: 'Guest' }, { value: 'member', label: 'Member' }]} />
+    <DemoToggle bind:checked={sitesLoading}>Sites loading</DemoToggle>
+  </div>
+  {@render column(seasonQuality)}
+</Specimen>
+
+<Specimen title="Quality, too few votes" bleed
+  note="A season or episode under 10 votes has no percent: the line breaks there, a lone point keeps its dot, and the tooltip says too few votes.">
+  {@render column(gapQuality)}
 </Specimen>
 
 <Specimen title="Second opinions" bleed note="Every other site's score beside Trakt's.">
@@ -119,6 +172,13 @@ const animeSites = toSiteScores({
 .column {
   margin-inline-start: var(--summary-offset);
   padding-block: var(--gutter) var(--space-stats-section);
+}
+
+.knob {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm-inline);
+  padding: var(--space-sm-block) var(--design-canvas-padding);
 }
 
 .chart {

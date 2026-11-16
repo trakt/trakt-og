@@ -60,8 +60,11 @@ const hideScreenshot = $derived(
 );
 // An episode's type in the tag bar and on the poster, unless the viewer hides episode type tags.
 const episodeType = $derived(page.data.settings?.browsing?.hide_episode_type_tags ? undefined : media.episodeType);
-// Seasons and episodes have the shorter ratings strip and the matching poster overlap.
-const compact = $derived(media.spoilerTarget?.type === 'season' || media.spoilerTarget?.type === 'episode');
+// Seasons and episodes have the shorter header and the matching poster overlap, except under a ratings strip: the
+// stats pages keep the show's strip height, so a season's few ratings don't shrink it.
+const compact = $derived(
+  !strip && (media.spoilerTarget?.type === 'season' || media.spoilerTarget?.type === 'episode'),
+);
 // Up a level from a season's or an episode's subpage: the nearest step that links somewhere.
 const up = $derived(media.parents.findLast(({ href }) => href)?.href);
 </script>

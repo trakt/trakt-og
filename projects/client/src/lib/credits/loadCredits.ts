@@ -1,4 +1,5 @@
 import { error } from '@sveltejs/kit';
+import type { CommentItem } from '../components/comments/CommentItem.ts';
 import type { z } from 'zod/v4';
 import { rawApiFetch } from '../api/rawApiFetch.ts';
 import { seasonPeopleSchema } from '../shows/seasonPeopleSchema.ts';
@@ -9,6 +10,9 @@ import { toCredits } from './toCredits.ts';
 type Params = Omit<Parameters<typeof loadSubpageMedia>[0], 'suffix'>;
 
 type People = z.infer<typeof seasonPeopleSchema>;
+
+const showIdOf = (item: CommentItem) =>
+  item.type === 'show' ? item.id : item.type === 'season' || item.type === 'episode' ? item.show : undefined;
 
 async function readPeople(fetch: typeof globalThis.fetch, path: string): Promise<People> {
   const response = await rawApiFetch({ fetch, path });
@@ -50,6 +54,7 @@ export async function loadCredits({ fetch, parent, item }: Params) {
       crew: people.crew,
       episodeCounts:
         (item.type === 'show' || item.type === 'season') && subpage.settings?.browsing?.spoilers?.actors !== 'hide',
+      showId: showIdOf(subpage.media.item),
     }),
   };
 }

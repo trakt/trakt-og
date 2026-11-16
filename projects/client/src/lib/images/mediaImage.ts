@@ -1,18 +1,19 @@
-import { mediaFolder } from './mediaFolder.ts';
+import { type CharacterImageId, mediaFolder } from './mediaFolder.ts';
 import type { MediaImageSlot } from './MediaImageSlot.ts';
 import type { MediaImageType } from './MediaImageType.ts';
 
 // Art drawn as words or a strip comes in medium and full only.
 const NO_THUMB: ReadonlySet<MediaImageSlot> = new Set(['logo', 'clearart', 'banner']);
 
-interface MediaImageParams {
-  readonly type: MediaImageType;
-  readonly id: number;
-  readonly slot: MediaImageSlot;
+type MediaImageParams = (
+  | { readonly type: MediaImageType; readonly id: number; readonly slot: MediaImageSlot }
+  /** An actor in character on a show. */
+  | { readonly type: 'character'; readonly id: CharacterImageId; readonly slot: 'headshot' }
+) & {
   readonly size: 'thumb' | 'medium' | 'full';
   /** Art to try when this one is missing, like the show's poster for a season's (`brokenImageFallback`). */
   readonly fallback?: string;
-}
+};
 
 /**
  * A Trakt image's URL, built from the item's Trakt id: media.trakt.tv keeps every image at

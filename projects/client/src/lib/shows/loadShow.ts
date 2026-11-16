@@ -18,7 +18,6 @@ import { watchNowCountry } from '../settings/watchNowCountry.ts';
 import { okBody } from '../api/okBody.ts';
 import { contractSchema } from '../api/contractSchema.ts';
 import { type Season, seasonSchema } from './seasonSchema.ts';
-import { type WithCharacterImages, withCharacterImages } from './withCharacterImages.ts';
 
 type LoadShowParams = {
   fetch: typeof fetch;
@@ -38,13 +37,13 @@ type LoadShowParams = {
 
 /** `extended=episodes` adds each season's episodes, which `@trakt/api` doesn't type. */
 export type SeasonWithEpisodes = Season & { episodes?: readonly EpisodeResponse[] };
-/** `extended=guest_stars` adds the guest stars, which `@trakt/api` doesn't type, nor each actor's character image. */
-export type ShowPeople = WithCharacterImages<PeopleResponse & { guest_stars?: PeopleResponse['cast'] }>;
+/** `extended=guest_stars` adds the guest stars, which `@trakt/api` doesn't type. */
+export type ShowPeople = PeopleResponse & { guest_stars?: PeopleResponse['cast'] };
 
 // The published schemas use zod 3. Wrap their parsers in zod 4 at this off-contract boundary, retaining the
 // extended fields (`episodes` and `guest_stars`) that the base contract would strip.
 const seasonsBody = seasonSchema.extend({ episodes: episodeResponseSchema.array().optional() }).array();
-const peopleBody = withCharacterImages(peopleResponseSchema.extend({ guest_stars: peopleResponseSchema.shape.cast }));
+const peopleBody = peopleResponseSchema.extend({ guest_stars: peopleResponseSchema.shape.cast });
 
 const raw = async <T>(
   fetch: typeof globalThis.fetch,

@@ -16,7 +16,6 @@ const member = z.object({
     .transform((value) => value ?? []),
   jobs: z.array(z.string()).nullish(),
   episode_count: z.number().int().nullish(),
-  character_image: z.string().nullish(),
 });
 
 /**

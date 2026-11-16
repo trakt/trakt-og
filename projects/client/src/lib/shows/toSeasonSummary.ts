@@ -122,8 +122,8 @@ export function toSeasonSummary(params: Params) {
       genres: (show.genres ?? []).map((genre) => ({ name: genreLabel(genre), href: popular('genres', genre) })),
     },
     links: toSeasonLinks({ show, number: season.number, justwatch: params.justwatch }),
-    cast: toCastMembers(params.people.cast, params.actorSpoilers),
-    guestStars: toCastMembers(params.people.guest_stars, params.actorSpoilers),
+    cast: toCastMembers(params.people.cast, params.actorSpoilers, show.ids.trakt),
+    guestStars: toCastMembers(params.people.guest_stars, params.actorSpoilers, show.ids.trakt),
     crew: toCrewGroups(params.people.crew, params.actorSpoilers),
     episodes: episodeList.rows,
     seasonLinks: [

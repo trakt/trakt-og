@@ -38,6 +38,8 @@ type Params = {
   crew: People['crew'];
   /** Episodes and movies have no episode counts. */
   episodeCounts: boolean;
+  /** Shows, seasons and episodes: picks each actor's photo in character. Movies leave it out. */
+  showId?: number;
 };
 
 function group(
@@ -45,6 +47,7 @@ function group(
   members: readonly Member[],
   role: (member: Member) => readonly string[],
   counts: boolean,
+  showId?: number,
 ) {
   return {
     id: parameterize(label),
@@ -54,7 +57,7 @@ function group(
       id: member.person.ids.trakt,
       name: member.person.name,
       href: `/people/${member.person.ids.slug}`,
-      image: castHeadshot(member),
+      image: castHeadshot(member.person.ids.trakt, showId),
       gender: member.person.gender ?? undefined,
       // `credits_characters`: "A / B" becomes "A, B".
       role: role(member).join(', '),
@@ -65,14 +68,14 @@ function group(
 }
 
 /** The credits page's actor and crew groups. Empty groups are left out. */
-export function toCredits({ actors, crew, episodeCounts }: Params): {
+export function toCredits({ actors, crew, episodeCounts, showId }: Params): {
   actors: CreditGroup[];
   crew: CreditGroup[];
 } {
   return {
     actors: actors
       .filter(({ members }) => members?.length)
-      .map(({ label, members }) => group(label, members ?? [], ({ characters }) => characters, episodeCounts)),
+      .map(({ label, members }) => group(label, members ?? [], ({ characters }) => characters, episodeCounts, showId)),
     crew: crewDepartments(crew).map(({ label, members }) =>
       group(label, members, ({ jobs }) => jobs ?? [], episodeCounts),
     ),

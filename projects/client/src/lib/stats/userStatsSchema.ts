@@ -8,10 +8,12 @@ const watched = { plays: count, watched: count, minutes: count, collected: count
  * `/users/:id/stats` as og reads it. `progress` and `lists` are null when the API didn't send them, and `network` when
  * og counted the stats itself (`computeUserStats`).
  */
-export type UserStats = Omit<UserStatsResponse, 'progress' | 'lists' | 'network'> & {
+export type UserStats = Omit<UserStatsResponse, 'progress' | 'lists' | 'network' | 'total_minutes' | 'total_plays'> & {
   readonly network: UserStatsResponse['network'] | null;
-  readonly progress: UserStatsResponse['progress'] | null;
+  readonly progress: NonNullable<UserStatsResponse['progress']> | null;
   readonly lists: number | null;
+  readonly total_minutes: number;
+  readonly total_plays: number;
 };
 
 /**

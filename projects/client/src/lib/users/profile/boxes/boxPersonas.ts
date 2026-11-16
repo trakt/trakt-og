@@ -1,4 +1,4 @@
-import type { UserStatsResponse } from '@trakt/api';
+import type { UserStats } from '../../../stats/userStatsSchema.ts';
 import type { ProfileUser } from '../../ProfileUser.ts';
 import type { WatchedGenreRow } from '../watchedGenresSchema.ts';
 import type { WatchedItemRow } from '../watchedItemsSchema.ts';
@@ -127,7 +127,7 @@ const stats = ({
   /** Shows finished and started. */
   progress?: readonly [number, number];
   lists?: number;
-}): UserStatsResponse => ({
+}): UserStats => ({
   movies: {
     plays: movies.plays,
     watched: movies.watched,

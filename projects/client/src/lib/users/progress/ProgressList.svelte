@@ -128,6 +128,7 @@ const watchlistToggle = $derived(data.type === 'watched' && !listFilter);
 // Shows the new state as it saves, like the view toggles below.
 let watchlisted = $derived(data.includeWatchlisted);
 const hideUnstarted = $derived(watchlistToggle && !watchlisted);
+const shows = $derived(data.shows && new Set(data.shows));
 const seed = Math.floor(Math.random() * 2 ** 31);
 
 // Each show keeps its place when a watch reloads the progress, so its card or row moves on to the next episode where
@@ -135,7 +136,7 @@ const seed = Math.floor(Math.random() * 2 ** 31);
 // orders afresh.
 let kept = null as { view: string; ids: readonly number[]; onScreen: ReadonlyMap<number, boolean> } | null;
 const view = $derived(
-  [data.type, data.sort.by, data.sort.how, data.hide.join(), hideUnstarted, data.terms, data.list].join('|'),
+  [data.type, data.sort.by, data.sort.how, data.hide.join(), hideUnstarted, data.terms, data.list, data.shows?.join()].join('|'),
 );
 const sorted = $derived(
   items && (!listFilter || listed)
@@ -144,6 +145,7 @@ const sorted = $derived(
         hide: data.hide,
         terms: data.terms,
         listed: listed ?? undefined,
+        shows,
         hideUnstarted,
         onScreen: kept?.view === view ? kept.onScreen : undefined,
       }),
@@ -274,11 +276,11 @@ const franchisesHref = $derived(
   `/users/${data.profile.slug}/progress/franchises?${new URLSearchParams({ list: page.url.searchParams.get('list') ?? '' })}`,
 );
 
-// Drops the search, the list and the hide toggles, and the eye's saved hide cookie as its Show All does.
+// Drops the search, the list, the shows and the hide toggles, and the eye's saved hide cookie as its Show All does.
 function clearFilters() {
   expireHideCookie('progress');
   const url = new URL(page.url.href);
-  for (const key of ['page', 'terms', 'list', 'hide_completed']) url.searchParams.delete(key);
+  for (const key of ['page', 'terms', 'list', 'show', 'hide_completed']) url.searchParams.delete(key);
    
   // eslint-disable-next-line svelte/no-navigation-without-resolve -- the same page without its filters
   void goto(url.pathname + url.search, { invalidateAll: true, reset: false });

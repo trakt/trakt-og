@@ -60,4 +60,8 @@ describe('filterProgress', () => {
   it('should keep only listed shows with a list filter', () => {
     expect(ids(filterProgress(items, { hide: [], listed: new Set([2, 3]) }))).toEqual([2, 3]);
   });
+
+  it('should keep only the shows a `?show=` names', () => {
+    expect(ids(filterProgress(items, { hide: [], shows: new Set([3]) }))).toEqual([3]);
+  });
 });

@@ -7,6 +7,8 @@ type FilterProgressParams = {
   terms?: string;
   /** `?list=`: only shows on that list. */
   listed?: ReadonlySet<number>;
+  /** `?show=`: only these shows. */
+  shows?: ReadonlySet<number>;
   /**
    * Include Watchlisted off: drop the shows you haven't played yet. The endpoint lists your watchlisted shows beside
    * the ones you've started, and those are the only unstarted ones it lists.
@@ -50,10 +52,10 @@ export function keepOnScreen(
 const isKept = (item: ProgressItem, onScreen: ReadonlyMap<number, boolean> | undefined) =>
   onScreen?.has(item.show.id) === true && (onScreen.get(item.show.id) === true || !item.exact);
 
-/** The HIDE toggles, Include Watchlisted, the title search and the list filter, applied in the browser. */
+/** The HIDE toggles, Include Watchlisted, the title search and the list and show filters, applied in the browser. */
 export function filterProgress(
   items: readonly ProgressItem[],
-  { hide, terms, listed, hideUnstarted, onScreen }: FilterProgressParams,
+  { hide, terms, listed, shows, hideUnstarted, onScreen }: FilterProgressParams,
 ): readonly ProgressItem[] {
   const needle = terms?.trim().toLocaleLowerCase();
   return items.filter(
@@ -61,6 +63,7 @@ export function filterProgress(
       (isKept(item, onScreen) || !isHidden(item, hide)) &&
       !(hideUnstarted && item.plays === 0) &&
       (!needle || item.show.title.toLocaleLowerCase().includes(needle)) &&
-      (!listed || listed.has(item.show.id)),
+      (!listed || listed.has(item.show.id)) &&
+      (!shows || shows.has(item.show.id)),
   );
 }

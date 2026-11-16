@@ -1,7 +1,13 @@
 import type { BumpReport } from './BumpReport.ts';
+import { groupUpgrades } from './groupUpgrades.ts';
 import type { Upgrade } from './Upgrade.ts';
+import { unitName } from './unitName.ts';
 
-const upgradeLine = ({ pin, to }: Upgrade) => `- \`${pin.key}\` ${pin.version} → ${to}`;
+const unitLines = (upgrades: ReadonlyArray<Upgrade>) =>
+  groupUpgrades(upgrades).flatMap((unit) => {
+    const [first] = unit;
+    return first ? [`- \`${unitName(unit)}\` ${first.pin.version} → ${first.to}`] : [];
+  });
 
 const section = (heading: string, lines: ReadonlyArray<string>) =>
   lines.length > 0 ? [`# ${heading}`, '', ...lines, ''] : [];
@@ -19,9 +25,9 @@ export function pullRequestBody(report: BumpReport): string {
         ? 'This run includes major bumps. Keep the PR as a draft until a human has reviewed them.'
         : 'Minor and patch bumps only. A human merges it after review.',
       '',
-      ...section('Minor and patch', report.minor.adopted.map(upgradeLine)),
-      ...section('Major', report.major.adopted.map(upgradeLine)),
-      ...section('Reverted', rejected.map(upgradeLine)),
+      ...section('Minor and patch', unitLines(report.minor.adopted)),
+      ...section('Major', unitLines(report.major.adopted)),
+      ...section('Reverted', unitLines(rejected)),
       ...section(
         'Held',
         report.held.map(

@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { bisectUpgrades } from './bisectUpgrades.ts';
 import type { Upgrade } from './Upgrade.ts';
 
-const upgrade = (key: string): Upgrade => ({
-  pin: { key, registryName: key, version: '1.0.0', prefix: '' },
-  to: '1.1.0',
+const upgrade = (key: string, version = '1.0.0', to = '1.1.0'): Upgrade => ({
+  pin: { key, registryName: key, version, prefix: '' },
+  to,
 });
 
 const keys = (upgrades: ReadonlyArray<Upgrade>) => upgrades.map(({ pin }) => pin.key);
@@ -24,7 +24,7 @@ const fakeProbe = (breaks: (state: ReadonlySet<string>) => boolean) => {
   return { probe, probes, baseline };
 };
 
-const candidates = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'].map(upgrade);
+const candidates = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'].map((key) => upgrade(key));
 
 describe('util: bisectUpgrades', () => {
   it('should adopt everything in one probe when the whole set passes', async () => {
@@ -75,5 +75,43 @@ describe('util: bisectUpgrades', () => {
     const result = await bisectUpgrades({ candidates: [upgrade('x')], probe });
 
     expect(result).toEqual({ adopted: [], rejected: [upgrade('x')] });
+  });
+
+  describe('for packages of one family', () => {
+    const tiptap = ['core', 'extensions', 'pm', 'starter-kit'].map((name) =>
+      upgrade(`@tiptap/${name}`, '3.33.0', '3.34.0'),
+    );
+    const others = ['wrangler', 'vite', 'msw', 'eslint'].map((name) => upgrade(name));
+    // Like the real failure: a half-upgraded family breaks the type check.
+    const tiptapBreaks = (state: ReadonlySet<string>) =>
+      keys(tiptap).some((key) => state.has(key)) && !keys(tiptap).every((key) => state.has(key));
+
+    it('should adopt or reject the family as one unit', async () => {
+      const { probe, baseline } = fakeProbe(tiptapBreaks);
+      const result = await bisectUpgrades({ candidates: [...tiptap, ...others], probe });
+
+      expect(keys(result.adopted).sort()).toEqual([...keys(tiptap), ...keys(others)].sort());
+      expect([...baseline]).toEqual(expect.arrayContaining(keys(tiptap)));
+    });
+
+    it('should revert the whole family when it breaks and keep the rest verified without it', async () => {
+      const { probe, probes } = fakeProbe((state) => state.has('@tiptap/core'));
+      const result = await bisectUpgrades({ candidates: [...tiptap, ...others], probe });
+
+      expect(keys(result.rejected)).toEqual(keys(tiptap));
+      expect(keys(result.adopted)).toEqual(keys(others));
+      expect(probes.every((set) => set.filter((key) => key.startsWith('@tiptap/')).length % tiptap.length === 0)).toBe(
+        true,
+      );
+    });
+
+    it('should not group scoped packages that move to different versions', async () => {
+      const mixed = [upgrade('@tiptap/core', '3.33.0', '3.34.0'), upgrade('@tiptap/pm', '3.33.0', '3.33.1')];
+      const { probe } = fakeProbe((state) => state.has('@tiptap/core'));
+      const result = await bisectUpgrades({ candidates: mixed, probe });
+
+      expect(keys(result.rejected)).toEqual(['@tiptap/core']);
+      expect(keys(result.adopted)).toEqual(['@tiptap/pm']);
+    });
   });
 });

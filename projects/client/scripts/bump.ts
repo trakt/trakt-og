@@ -13,6 +13,7 @@ import { bisectUpgrades } from './deps/bisectUpgrades.ts';
 import type { BisectResult } from './deps/BisectResult.ts';
 import type { BumpReport } from './deps/BumpReport.ts';
 import { bumpTitle } from './deps/bumpTitle.ts';
+import { groupUpgrades } from './deps/groupUpgrades.ts';
 import { dependencyHolds } from './deps/dependencyHolds.ts';
 import type { HeldPackage } from './deps/HeldPackage.ts';
 import { minimumAgeMinutes } from './deps/minimumAgeMinutes.ts';
@@ -25,6 +26,7 @@ import { pullRequestBody } from './deps/pullRequestBody.ts';
 import { rejectedIssues } from './deps/rejectedIssues.ts';
 import type { Targets } from './deps/Targets.ts';
 import type { Upgrade } from './deps/Upgrade.ts';
+import { unitName } from './deps/unitName.ts';
 
 const LOCKFILE = '../../bun.lock';
 const FILES = ['package.json', LOCKFILE] as const;
@@ -111,8 +113,9 @@ const makeProbe = (initial: Snapshot, logs: Record<string, string>) => {
       return true;
     }
 
-    const [only] = set;
-    if (only && set.length === 1) logs[`${only.pin.key}@${only.to}`] = tail(verified.log);
+    const [unit, ...others] = groupUpgrades(set);
+    const [first] = unit ?? [];
+    if (unit && first && others.length === 0) logs[`${unitName(unit)}@${first.to}`] = tail(verified.log);
     await restore(state.baseline);
     console.log('  failed');
     return false;

@@ -3,8 +3,7 @@
   a store badge for a channel sold through another service, and what it costs under it in the modal (`children`). Opens
   the offer in a new tab. Its size comes from the parent: `--service-width` and `--service-height`, and
   `--service-radius` rounds it more than OG's square tile. With no `href` it's a plain
-  tile, like the applied filters' in the chart sidebar. `country` badges a service from another country, like the
-  settings' favorites. With `onclick` it's a toggle button, OG's onboarding picker: gray until `pressed`, then its
+  tile, like the applied filters' in the chart sidebar. `country` tags a service from another country, like 4K. With `onclick` it's a toggle button, OG's onboarding picker: gray until `pressed`, then its
   color and a check.
 -->
 <script lang="ts">
@@ -19,7 +18,7 @@ interface Props {
   link: ServiceLink;
   /** The "4K" tag in the logo's corner. */
   uhd?: boolean;
-  /** The upper-case code in the corner badge. */
+  /** Another country's upper-case code, tagged beside 4K. */
   country?: string;
   pressed?: boolean;
   onclick?: () => void;
@@ -33,7 +32,7 @@ const { track } = useTrack(AnalyticsEvent.StreamOn);
 
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 {#snippet body()}
-  <span class={['icon', { 'on-channel': link.channel }]} style:--service-color={link.color} data-country={country}>
+  <span class={['icon', { 'on-channel': link.channel }]} style:--service-color={link.color}>
     {#if link.logo}
       <img src={link.logo} alt={link.name} />
     {:else}
@@ -43,23 +42,27 @@ const { track } = useTrack(AnalyticsEvent.StreamOn);
       <span class="channel"><img src={link.channel} alt="" /></span>
     {/if}
     {#if onclick && pressed}<span class="check"><Icon svg={check} /></span>{/if}
-    {#if uhd}<span class="uhd">4K</span>{/if}
+    {#if uhd || country}
+      <span class="tags">
+        {#if uhd}<span class="tag">4K</span>{/if}
+        {#if country}<span class="tag">{country}</span>{/if}
+      </span>
+    {/if}
   </span>
   {@render children?.()}
 {/snippet}
 
 {#if onclick}
-  <button type="button" class={['service', 'toggle', { 'has-country': country, pressed }]} aria-pressed={pressed}
-  {onclick}>
+  <button type="button" class={['service', 'toggle', { pressed }]} aria-pressed={pressed} {onclick}>
     {@render body()}
   </button>
 {:else if link.href}
-  <a class={['service', { 'has-country': country }]} href={link.href} target="_blank" rel="nofollow noopener"
+  <a class="service" href={link.href} target="_blank" rel="nofollow noopener"
     onclick={() => track({ source: link.slug })}>
     {@render body()}
   </a>
 {:else}
-  <span class={['service', { 'has-country': country }]}>
+  <span class="service">
     {@render body()}
   </span>
 {/if}
@@ -115,20 +118,6 @@ const { track } = useTrack(AnalyticsEvent.StreamOn);
     }
   }
 
-  .has-country &::after {
-    content: attr(data-country);
-    position: absolute;
-    inset-block-start: -8px;
-    inset-inline-end: -8px;
-    padding: var(--service-country-padding);
-    border-radius: 50%;
-    background-color: var(--color-service-badge-bg);
-    box-shadow: 0 0 2px currentColor;
-    color: var(--service-color);
-    font-size: var(--font-size-service-country);
-    font-weight: var(--font-weight-headings-heavy);
-  }
-
   .toggle:not(.pressed) & {
     border-color: var(--color-service-off);
     background-color: var(--color-service-off);
@@ -147,20 +136,24 @@ const { track } = useTrack(AnalyticsEvent.StreamOn);
   }
 }
 
-/* A small glass tag inside the logo's corner. */
-.uhd {
+/* Small glass tags inside the logo's corner: 4K, then another country's code. */
+.tags {
   position: absolute;
-  inset-block-start: var(--service-uhd-offset);
-  inset-inline-end: var(--service-uhd-offset);
-  padding: var(--service-uhd-padding);
-  border: 1px solid var(--color-service-uhd-border);
-  border-radius: var(--radius-sm);
-  background-color: var(--color-service-uhd-bg);
-  backdrop-filter: var(--blur-service-uhd);
+  inset-block-start: var(--service-tag-offset);
+  inset-inline-end: var(--service-tag-offset);
+  display: flex;
+  gap: var(--space-service-tags);
+}
+
+.tag {
+  padding: var(--service-tag-padding);
+  border-radius: var(--radius-service-tag);
+  background-color: var(--color-service-tag-bg);
+  backdrop-filter: var(--blur-service-tag);
   color: var(--color-card-text);
-  font-size: var(--font-size-service-uhd);
+  font-size: var(--font-size-service-tag);
   font-weight: var(--font-weight-headings-heavy);
-  letter-spacing: var(--letter-spacing-service-uhd);
+  letter-spacing: var(--letter-spacing-service-tag);
   line-height: 1;
 }
 

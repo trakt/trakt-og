@@ -8,6 +8,7 @@ import type { OverlaySlices } from './OverlaySlices.ts';
 import { loadWatchlistExtras } from './loadWatchlistExtras.ts';
 import { isApiUnavailable } from '../api/isApiUnavailable.ts';
 import { z } from 'zod/v4';
+import { readableRows } from '../api/readableRows.ts';
 import { pickerCatalogSchema } from '../components/lists/pickerCatalogSchema.ts';
 import type { ListLabel } from './ListLabel.ts';
 import { toListMembership } from './listMembership.ts';
@@ -53,9 +54,12 @@ async function getJson<T>({ get, path, schema }: GetJsonParams<T>): Promise<{ bo
   };
 }
 
-/** Every page of a paginated array endpoint, each row parsed with `schema`. Later pages are fetched in parallel. */
+/**
+ * Every page of a paginated array endpoint, each row parsed with `schema` and the unreadable ones skipped. Later pages
+ * are fetched in parallel.
+ */
 async function getPages<T>({ get, path, schema }: GetJsonParams<T>): Promise<T[]> {
-  const rows = z.array(schema);
+  const rows = readableRows(schema);
   const first = await getJson({ get, path, schema: rows });
   const separator = path.includes('?') ? '&' : '?';
   const rest = await Promise.all(
@@ -101,7 +105,7 @@ async function listLabels(get: ApiGet): Promise<ListLabel[]> {
       .map(({ id, name, type }) => ({ id, name, collaboration: type === 'collaborative' }));
   }
 
-  const schema = z.array(ids.extend({ name: z.string() }));
+  const schema = readableRows(ids.extend({ name: z.string() }));
   const [own, shared] = await Promise.all([
     getJson({ get, path: '/users/me/lists', schema }),
     getJson({ get, path: '/users/me/lists/collaborations', schema }),

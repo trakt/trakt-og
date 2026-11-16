@@ -1,7 +1,8 @@
 import { z } from 'zod/v4';
+import { readableRows } from '../api/readableRows.ts';
 import type { ApiGet } from './sliceSources.ts';
 
-const rowsSchema = z.array(
+const rowsSchema = readableRows(
   z.object({
     type: z.literal('show'),
     hidden_at: z.string().nullish(),

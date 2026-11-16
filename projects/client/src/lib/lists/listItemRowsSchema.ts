@@ -1,5 +1,6 @@
 // FIXME(zod-4): see noteRowsSchema.ts. og uses the zod @trakt/api depends on, through its `zod/v4` API.
 import { z } from 'zod/v4';
+import { readableRows } from '../api/readableRows.ts';
 
 const stats = {
   rating: z.number().nullish(),
@@ -80,9 +81,4 @@ export type ListItemRow = z.infer<typeof row>;
  * them without people and without `notes`, so they're parsed here. A row whose item is gone or malformed is skipped,
  * like OG's `next if item.listable.blank?`, instead of failing the page.
  */
-export const listItemRowsSchema = z.array(z.unknown()).transform((rows) =>
-  rows.flatMap((value): ListItemRow[] => {
-    const parsed = row.safeParse(value);
-    return parsed.success ? [parsed.data] : [];
-  }),
-);
+export const listItemRowsSchema = readableRows(row);

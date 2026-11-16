@@ -109,6 +109,22 @@ describe('sliceSources', () => {
     expect(movies.get(8)).toEqual({ at: '2026-02-02' });
   });
 
+  // The API keeps an adult movie's collection row but sends the movie with null ids.
+  it('should skip a collected movie it cannot read and keep the rest', async () => {
+    server.use(
+      http.get(`${API}/sync/collection/movies`, () =>
+        HttpResponse.json([
+          { movie: ids(7), collected_at: '2026-02-01', available_on: [] },
+          { movie: { title: null, ids: { trakt: null, slug: null } }, collected_at: '2026-02-02', available_on: [] },
+        ]),
+      ),
+    );
+
+    const movies = await sliceSources.collectedMovies.load(get);
+
+    expect([...movies.keys()]).toEqual([7]);
+  });
+
   it('should map synced episodes by show, season number and episode id', async () => {
     server.use(
       http.get(`${API}/sync/collection/minimal/shows`, ({ request }) => {
@@ -284,8 +300,8 @@ describe('sliceSources', () => {
     it.each([
       ['watchedMovies', `${API}/sync/watched/movies`, { '12': 'nope' }],
       ['watchedShows', `${API}/sync/watched/shows`, [{ show: 1 }]],
-      ['ratings', `${API}/sync/ratings`, [{ type: 'movie', movie: ids(1) }]],
-      ['likedLists', `${API}/users/me/likes/lists`, [{ list: { ids: {} } }]],
+      ['ratings', `${API}/sync/ratings`, { type: 'movie', movie: ids(1) }],
+      ['likedLists', `${API}/users/me/likes/lists`, { list: { ids: {} } }],
       ['listMembership', `${API}/v3/users/me/lists`, { id: 10 }],
     ] as const)('should throw for %s like a failed request', async (name, url, body) => {
       server.use(http.get(url, () => HttpResponse.json(body)));

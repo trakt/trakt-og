@@ -1,8 +1,9 @@
 import { z } from 'zod/v4';
+import { readableRows } from '../api/readableRows.ts';
 import { api } from '../api/api.ts';
 import type { ApiGet } from './sliceSources.ts';
 
-const rowsSchema = z.array(
+const rowsSchema = readableRows(
   z.object({
     season: z.object({ ids: z.object({ trakt: z.number() }) }).nullish(),
     episode: z.object({ ids: z.object({ trakt: z.number() }) }).nullish(),

@@ -26,6 +26,8 @@ interface PersonSummaryParams {
   /** 0 to 1, picks the fanart. OG picked one at random on every page view. */
   random: number;
   now: Date;
+  /** Heights in feet and inches, not meters. */
+  imperial?: boolean;
 }
 
 type Media = { type: 'movie'; item: MovieResponse } | { type: 'show'; item: ShowResponse };
@@ -187,6 +189,14 @@ function gender(value: string | null | undefined) {
   return value === 'non_binary' ? 'Non-binary' : titleize(value);
 }
 
+/** The API's centimeters as feet and inches (5' 10") or meters (1.79 m). */
+function height(cm: number | null | undefined, imperial: boolean) {
+  if (!cm) return undefined;
+  if (!imperial) return `${(cm / 100).toFixed(2)} m`;
+  const inches = Math.round(cm / 2.54);
+  return `${Math.floor(inches / 12)}' ${inches % 12}"`;
+}
+
 /** Everything the person summary shows, from the loader's API responses. Dates stay ISO; the page formats them. */
 export function toPersonSummary(params: PersonSummaryParams) {
   const { person, now } = params;
@@ -218,6 +228,7 @@ export function toPersonSummary(params: PersonSummaryParams) {
       age: person.birthday ? age(person.birthday, person.death, now) : undefined,
       gender: gender(person.gender),
       birthday: person.birthday ?? undefined,
+      height: height(person.height, params.imperial ?? false),
       death: person.death ?? undefined,
       birthplace: person.birthplace ?? undefined,
       knownFor: person.known_for_department ? titleize(person.known_for_department) : undefined,

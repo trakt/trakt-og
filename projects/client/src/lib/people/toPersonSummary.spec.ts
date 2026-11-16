@@ -209,6 +209,15 @@ describe('toPersonSummary', () => {
     expect(toPersonSummary(base).facts.age).toBe(70);
   });
 
+  it('should give the height in meters, or feet and inches', () => {
+    const tall = { ...base, person: { ...person, height: 179 } };
+
+    expect(toPersonSummary(tall).facts.height).toBe('1.79 m');
+    expect(toPersonSummary({ ...tall, imperial: true }).facts.height).toBe(`5' 10"`);
+    expect(toPersonSummary({ ...base, imperial: true, person: { ...person, height: 183 } }).facts.height).toBe(`6' 0"`);
+    expect(toPersonSummary({ ...base, person: { ...person, height: null } }).facts.height).toBeUndefined();
+  });
+
   it('should hide an unknown gender and spell out non-binary', () => {
     expect(toPersonSummary({ ...base, person: { ...person, gender: 'unknown' } }).facts.gender).toBeUndefined();
     expect(toPersonSummary({ ...base, person: { ...person, gender: 'non_binary' } }).facts.gender).toBe('Non-binary');

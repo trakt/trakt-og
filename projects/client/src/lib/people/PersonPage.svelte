@@ -367,7 +367,7 @@ const isFaded = (credit: PersonCredit, state: ReturnType<typeof overlay.state>) 
   {#snippet details()}
     <AdditionalStats>
       {#if facts.age !== undefined}
-        <AdditionalStat label="Age">
+        <AdditionalStat label={facts.death ? 'Age at Death' : 'Age'}>
           {#if birthday}
             <span class="birthday-age"><Icon svg={cake} /><span class="age-roll" aria-label={String(birthday.age)}
               >{#each toAgeDigits(birthday.age - 1, birthday.age) as digit, i (i)}{#if digit.from === digit.to}<span
@@ -379,14 +379,17 @@ const isFaded = (credit: PersonCredit, state: ReturnType<typeof overlay.state>) 
           {/if}
         </AdditionalStat>
       {/if}
-      {#if facts.gender}
-        <AdditionalStat label="Gender">{facts.gender}</AdditionalStat>
-      {/if}
       {#if facts.birthday}
         <AdditionalStat label="Birthday">{day(facts.birthday)}</AdditionalStat>
       {/if}
       {#if facts.death}
         <AdditionalStat label="Died">{day(facts.death)}</AdditionalStat>
+      {/if}
+      {#if facts.height}
+        <AdditionalStat label="Height">{facts.height}</AdditionalStat>
+      {/if}
+      {#if facts.gender}
+        <AdditionalStat label="Gender">{facts.gender}</AdditionalStat>
       {/if}
       {#if facts.birthplace}
         <AdditionalStat label="Birthplace">{facts.birthplace}</AdditionalStat>

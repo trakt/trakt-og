@@ -17,6 +17,7 @@ import StatsSection from '#lib/stats/StatsSection.svelte';
 import { toCommunityStats } from '#lib/stats/toCommunityStats.ts';
 import { toSiteScores } from '#lib/stats/toSiteScores.ts';
 import { toProfileRatings } from '#lib/users/profile/toProfileRatings.ts';
+import { toQualityHighlights } from '#lib/stats/toQualityHighlights.ts';
 import { gapChart, seasonChart, seasonImdb, seasonTmdb, seasonYou, showChart, showYou } from './qualityFixtures.ts';
 import type { Snippet } from 'svelte';
 
@@ -97,7 +98,12 @@ const animeSites = toSiteScores({
 
 {#snippet showQuality()}
   <StatsSection id="quality-seasons" title="Quality Over Time" icon={chartSimple}>
-    {#if showChart}<QualityChart data={showChart} you={viewer === 'member' ? showYou : undefined} />{/if}
+    {#if showChart}
+      <QualityChart data={showChart} you={viewer === 'member' ? showYou : undefined} />
+      <div class="highlights">
+        <WatchedKeys keys={toQualityHighlights({ data: showChart, you: viewer === 'member' ? showYou : undefined })} />
+      </div>
+    {/if}
   </StatsSection>
 {/snippet}
 
@@ -106,6 +112,9 @@ const animeSites = toSiteScores({
     {#if seasonChart}
       <QualityChart data={seasonChart} you={viewer === 'member' ? seasonYou : undefined} sites
         loading={sitesLoading} imdb={sitesLoading ? undefined : seasonImdb} tmdb={sitesLoading ? undefined : seasonTmdb} />
+      <div class="highlights">
+        <WatchedKeys keys={toQualityHighlights({ data: seasonChart, you: viewer === 'member' ? seasonYou : undefined })} />
+      </div>
     {/if}
   </StatsSection>
 {/snippet}
@@ -138,7 +147,7 @@ const animeSites = toSiteScores({
 </Specimen>
 
 <Specimen title="Quality, by season" bleed
-  note="A show's stats page: a point per aired season, red for Trakt. You joins once the viewer has rated a season, and the Scale dropdown starts Zoomed, the bottom at the nearest 10 under the lowest line, with 0 to 100% one pick away. Hover a column for the season's tooltip, with your own rating as a heart and its 1 to 10, or click it to open that season's stats.">
+  note="A show's stats page: a point per aired season, red for Trakt. You joins once the viewer has rated a season, and the Scale dropdown starts Zoomed, the bottom at the nearest 10 under the lowest line, with 0 to 100% one pick away. Hover a column for the season's tooltip, with your own rating as a heart and its 1 to 10, or click it to open that season's stats. Under it, the highlight keys in the Trakt Ratings keys' style: best and lowest season, the biggest drop, and a member's average.">
   <div class="knob">
     <DemoChoice label="Viewer" bind:value={viewer} options={[{ value: 'guest', label: 'Guest' }, { value: 'member', label: 'Member' }]} />
   </div>
@@ -168,6 +177,10 @@ const animeSites = toSiteScores({
 </Specimen>
 
 <style>
+.highlights {
+  margin-block-start: var(--space-ratings-keys);
+}
+
 /* The stats page's content column, beside where the summary sidebar sits. */
 .column {
   margin-inline-start: var(--summary-offset);

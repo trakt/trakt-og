@@ -3058,21 +3058,20 @@
   --service-tile-padding-inline: 10px;
   --color-service-badge: #333; /* the "4K" circle */
   --color-service-badge-bg: #fff;
-  --service-country-padding: 4px 3px; /* another country's code */
-  --font-size-service-country: 9px;
   --service-check-padding: 4px; /* a picked service's check */
   --font-size-service-check: 15px;
   --color-service-off: #333; /* a service the picker hasn't picked */
   --service-off-opacity: 0.75;
   --radius-service: var(--radius-object);
   --radius-service-modal: var(--radius-object);
-  --service-uhd-offset: 5px; /* the 4K tag, in from the logo's corner */
-  --service-uhd-padding: 2px 4px;
-  --font-size-service-uhd: 9px;
-  --letter-spacing-service-uhd: 0.04em;
-  --color-service-uhd-bg: rgb(0 0 0 / 0.45);
-  --color-service-uhd-border: rgb(255 255 255 / 0.18);
-  --blur-service-uhd: blur(6px);
+  --service-tag-offset: 0; /* the 4K and country tags, against the inside of the tile's 2px border */
+  --space-service-tags: 2.5px; /* between 4K and a country's code */
+  --service-tag-padding: 2px 4px;
+  --radius-service-tag: 7px;
+  --font-size-service-tag: 9px;
+  --letter-spacing-service-tag: 0.04em;
+  --color-service-tag-bg: rgb(70 70 70 / 0.7);
+  --blur-service-tag: blur(6px);
   --watch-now-tile-height: 39px;
   --watch-now-tile-height-md: 31px; /* under 1200px */
   --watch-now-tile-height-sm: 38px; /* under 992px, and the phone button */

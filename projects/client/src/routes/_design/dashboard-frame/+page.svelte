@@ -86,6 +86,14 @@ const greetings = $derived([
     split: splitBy([...quietMonths, pastTheWall.total_plays], spans),
   },
   {
+    label: 'Not VIP, with a chosen cover',
+    user: { ...newMember, coverUrl: 'https://media.trakt.tv/images/shows/000/099/080/fanarts/full/a049f455c1.jpg.webp' },
+    since: newSince,
+    stats: pastTheWall,
+    recaps: recapsOf([...quietMonths, pastTheWall.total_plays]),
+    split: splitBy([...quietMonths, pastTheWall.total_plays], spans),
+  },
+  {
     label: 'Nothing watched yet, after skipping the welcome wall',
     user: newMember,
     since: newSince,

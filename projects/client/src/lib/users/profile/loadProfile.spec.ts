@@ -1,4 +1,4 @@
-import type { UserStatsResponse } from '@trakt/api';
+import type { UserStats } from '#lib/stats/userStatsSchema.ts';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
@@ -28,7 +28,7 @@ const stats = (minutes: number) =>
     ratings: { total: 3, distribution: { '8': 3 } },
     progress: { started: 0, finished: 0, dropped: 0 },
     lists: 0,
-  }) as unknown as UserStatsResponse;
+  }) as unknown as UserStats;
 
 const movie = (id: number, runtime: number) => ({
   id,
@@ -72,7 +72,7 @@ const watchedMovie = (id: number, plays: number) => ({
 });
 
 type Options = {
-  stats?: UserStatsResponse | null;
+  stats?: UserStats | null;
   isSelf?: boolean;
   isPrivate?: boolean;
   isLocked?: boolean;
@@ -127,7 +127,7 @@ describe('loadProfile', () => {
 
     seen.length = 0;
     const moviesOnly = await load({
-      stats: { ...stats(0), episodes: { ...full(0), plays: 0 }, movies: full(100) } as UserStatsResponse,
+      stats: { ...stats(0), episodes: { ...full(0), plays: 0 }, movies: full(100) } as UserStats,
     });
     expect(moviesOnly.boxes).toHaveLength(4);
     expect(progress()).toHaveLength(0);

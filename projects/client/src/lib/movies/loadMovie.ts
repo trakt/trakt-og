@@ -1,3 +1,4 @@
+import { fetchParentalGuide } from '../parental/fetchParentalGuide.ts';
 import { redirect } from '@sveltejs/kit';
 import { api } from '../api/api.ts';
 import { assertOk } from '../api/assertOk.ts';
@@ -57,6 +58,7 @@ export async function loadMovie({ fetch, token, parent, id: requested }: LoadMov
       }),
     ),
     collection,
+    layout.then(({ user }) => fetchParentalGuide({ fetch, token: user ? token : null, type: 'movie', id })),
     Promise.all([summaryRead, layout]).then(([summary, { user }]) =>
       summary.status === 200
         ? loadPrivateNote({
@@ -76,7 +78,7 @@ export async function loadMovie({ fetch, token, parent, id: requested }: LoadMov
   if (requested !== movie.ids.slug) redirect(301, `/movies/${movie.ids.slug}`);
   const notable = { type: 'movie', id: movie.ids.trakt, slug: movie.ids.slug } as const;
 
-  const [ratings, stats, people, studios, releases, watchnow, official, note] = await extras;
+  const [ratings, stats, people, studios, releases, watchnow, official, parentalGuide, note] = await extras;
 
   const view = toMovieSummary({
     movie,
@@ -95,6 +97,7 @@ export async function loadMovie({ fetch, token, parent, id: requested }: LoadMov
     movie: view,
     relatedSource: toRelatedSource({ subgenres: movie.subgenres, genres: movie.genres, people }),
     watchNow: watchnow.button,
+    parentalGuide,
     privateNotes: {
       item: { ...notable, title: movie.title, year: movie.year, fanart: view.fanart },
       note,

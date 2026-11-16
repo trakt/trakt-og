@@ -95,6 +95,12 @@ export const designCatalog: readonly DesignGroup[] = [
         summary: "A title's rating chart, community tiles and second opinions, in the stats page's column.",
         source: 'stats',
       },
+      {
+        slug: 'parental-guide',
+        title: 'Parental guide',
+        summary: "The title badge's guide lines and tooltip, and the parental guide page's levels and ratings by age.",
+        source: 'parental',
+      },
     ],
   },
   {

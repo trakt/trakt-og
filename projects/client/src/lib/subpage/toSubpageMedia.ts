@@ -43,6 +43,8 @@ export type SubpageMedia = {
   readonly parents: readonly Step[];
   /** After the title: the movie's or show's rating ("PG-13", "TV-MA"). */
   readonly certification?: string;
+  /** A movie's or show's origin country code, for the parental guide page's Original Country. */
+  readonly country?: string;
   /** A movie's or episode's scenes during and after the credits, for the tag bar. */
   readonly credits?: { readonly duringCredits?: boolean | null; readonly afterCredits?: boolean | null };
   readonly fanart?: string;
@@ -118,6 +120,7 @@ export function toSubpageMedia({ body, justwatch, collection }: Params): Subpage
       href: `/movies/${movie.ids.slug}`,
       parents: collection ? [collection] : [],
       certification: movie.certification ?? undefined,
+      country: movie.country ?? undefined,
       credits: { duringCredits: movie.during_credits, afterCredits: movie.after_credits },
       released: movie.released,
       fanart: visible('movie', movie.ids.trakt, 'fanart', 'full'),
@@ -159,6 +162,7 @@ export function toSubpageMedia({ body, justwatch, collection }: Params): Subpage
       href: showHref,
       parents: [],
       certification: show.certification ?? undefined,
+      country: show.country ?? undefined,
       released: show.first_aired,
       fanart: showFanart,
       poster: showPoster,

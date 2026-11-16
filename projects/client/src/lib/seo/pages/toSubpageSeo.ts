@@ -8,6 +8,7 @@ const LINES = {
   Lists: (title: string) => `Lists featuring ${title}, from the Trakt community.`,
   Videos: (title: string) => `Trailers, teasers and clips for ${title}.`,
   'Release Dates': (title: string) => `Release dates for ${title} around the world.`,
+  'Parental Guide': (title: string) => `The parental guide and age ratings around the world for ${title}.`,
   Comments: (title: string) => `Reviews and shouts about ${title} from the Trakt community.`,
   Seasons: (title: string) => `Every season of ${title}, with ratings and air dates.`,
   Episodes: (title: string) => `Every episode of ${title}, season by season.`,

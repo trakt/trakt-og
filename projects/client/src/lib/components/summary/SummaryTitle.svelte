@@ -1,11 +1,13 @@
 <!--
   The title block pinned to the bottom of a summary's fanart: the tag bar above (a movie's collection and post-credits
-  scenes, a season's show), then the h1 with the year in a lighter span and the certification.
+  scenes, a season's show), then the h1 with the year in a lighter span and the certification. A movie's or show's
+  `parental` links the rating to its parental guide page and, with a guide, adds the badge's guide half.
   Render it as FanartHeader's children.
 -->
 <script lang="ts">
 import TitleTags from './TitleTags.svelte';
 import Certification from './Certification.svelte';
+import type { ParentalGuide } from '#lib/parental/ParentalGuide.ts';
 import type { ComponentProps } from 'svelte';
 
 interface Props {
@@ -19,9 +21,11 @@ interface Props {
   credits?: ComponentProps<typeof TitleTags>['credits'];
   /** The tag bar's gold lead: a person's birthday. */
   highlight?: ComponentProps<typeof TitleTags>['highlight'];
+  /** A movie's or show's parental guide page and its guide, empty without one. */
+  parental?: { readonly page: string; readonly guide: ParentalGuide };
 }
 
-const { title, year, certification, links, credits, highlight }: Props = $props();
+const { title, year, certification, links, credits, highlight, parental }: Props = $props();
 </script>
 
 <div class="summary-title">
@@ -29,7 +33,7 @@ const { title, year, certification, links, credits, highlight }: Props = $props(
   <h1>
     {title}
     {#if year}<span class="year">{year}</span>{/if}
-    {#if certification}<Certification {certification} />{/if}
+    <Certification {certification} page={parental?.page} guide={parental?.guide} />
   </h1>
 </div>
 

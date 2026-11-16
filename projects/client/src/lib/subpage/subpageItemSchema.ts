@@ -23,6 +23,7 @@ const title = {
   homepage: z.string().nullish(),
   social_ids: socialIds,
   certification: z.string().nullish(),
+  country: z.string().nullish(),
 };
 const credits = { during_credits: z.boolean().nullish(), after_credits: z.boolean().nullish() };
 

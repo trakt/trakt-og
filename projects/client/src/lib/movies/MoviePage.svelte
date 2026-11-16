@@ -45,6 +45,7 @@ type Props = {
 
 const { data }: Props = $props();
 const movie = $derived(data.movie);
+const parental = $derived({ page: `${movie.href}/parental-guide`, guide: data.parentalGuide });
 // The GIF picker's header, in every comment box on the page.
 gifArtContext.set(() => movie.fanart);
 const ratingTarget = $derived({ type: 'movie' as const, id: movie.id, title: movie.fullTitle });
@@ -58,6 +59,7 @@ const day = (date: string) => formatDate(date, { ...data.datePreferences, format
 const sections = $derived([
   { label: 'Overview', href: '#overview' },
   { label: 'Stats', href: `${movie.href}/stats`, page: true },
+  { label: 'Parental Guide', href: `${movie.href}/parental-guide`, page: true },
   { label: 'Activity', href: '#activity' },
   ...(movie.cast.length > 0
     ? [{ label: 'People', href: '#people', more: { href: `${movie.href}/people`, text: 'All people', drilldown: 'social' } }]
@@ -89,6 +91,7 @@ const textLinks = $derived(movie.links.filter(({ icon }) => !icon));
     certification={movie.certification}
     links={movie.collection ? [movie.collection] : undefined}
     credits={movie.postCredits}
+    {parental}
   />
   {#snippet stats()}
     <RatingsStrip rating={movie.rating} rateLabel="movie" {ratingTarget} external={movie.external} counts={movie.counts}

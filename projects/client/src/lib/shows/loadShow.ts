@@ -1,3 +1,4 @@
+import { fetchParentalGuide } from '../parental/fetchParentalGuide.ts';
 import { episodeResponseSchema, peopleResponseSchema } from '@trakt/api';
 import type { EpisodeResponse, PeopleResponse } from '@trakt/api';
 import { readFadeHide } from '../components/filters/readFadeHide.ts';
@@ -21,7 +22,7 @@ import { type Season, seasonSchema } from './seasonSchema.ts';
 
 type LoadShowParams = {
   fetch: typeof fetch;
-  /** Only for Up Next and the private note: the calls here that are about the viewer. */
+  /** Only for Up Next, the private note and the parental guide: the calls here that need the viewer. */
   token: string | null;
   parent: () => Promise<{
     settings: ViewerSettings | null;
@@ -31,6 +32,8 @@ type LoadShowParams = {
   id: string;
   /** The subpage under the show, e.g. `/seasons`, kept on the canonical redirect. */
   path?: string;
+  /** The summary's title badge reads the parental guide; the every-episode page has no badge. */
+  guide?: boolean;
   cookies?: Cookies;
   url?: URL;
 };
@@ -63,7 +66,7 @@ const raw = async <T>(
  * parallel, with the 404 and canonical redirect checked before the rest is used. One seasons call with `extended=episodes` fills both the seasons grid and Recently Aired, so the
  * proxied `/next_episode` and `/last_episode` aren't needed. Everything but Up Next and the private note is public and goes without the token.
  */
-export async function loadShowData({ fetch, token, parent, id: requested, path = '' }: LoadShowParams) {
+export async function loadShowData({ fetch, token, parent, id: requested, path = '', guide = true }: LoadShowParams) {
   const client = api({ fetch });
   const summaryRead = client.shows.summary({ params: { id: requested }, query: { extended: 'full' } });
   const layout = parent();
@@ -88,6 +91,7 @@ export async function loadShowData({ fetch, token, parent, id: requested, path =
     ),
     // A stale token gets a 401 here, and the page renders Next Episode like a logged-out visit.
     token ? okBody(api({ fetch, token }).shows.progress.watched({ params: { id }, query: {} })) : null,
+    guide ? layout.then(({ user }) => fetchParentalGuide({ fetch, token: user ? token : null, type: 'show', id })) : [],
     Promise.all([summaryRead, layout]).then(([summary, { user }]) =>
       summary.status === 200
         ? loadPrivateNote({
@@ -107,7 +111,7 @@ export async function loadShowData({ fetch, token, parent, id: requested, path =
   if (requested !== show.ids.slug) redirect(301, `/shows/${show.ids.slug}${path}`);
   const notable = { type: 'show', id: show.ids.trakt, slug: show.ids.slug } as const;
 
-  const [ratings, stats, people, studios, seasons, watchnow, progress, note] = await extras;
+  const [ratings, stats, people, studios, seasons, watchnow, progress, parentalGuide, note] = await extras;
 
   const episodeTypeTags = !settings?.browsing?.hide_episode_type_tags;
   const view = toShowSummary({
@@ -135,6 +139,7 @@ export async function loadShowData({ fetch, token, parent, id: requested, path =
     datePreferences,
     summary: view,
     watchNow: watchnow.button,
+    parentalGuide,
     privateNotes: {
       item: { ...notable, title: show.title, year: show.year, fanart: view.fanart },
       note,
@@ -146,9 +151,10 @@ export async function loadShowData({ fetch, token, parent, id: requested, path =
 
 /** `/shows/:id` and `/shows/:id/seasons`: the summary and its Watch Now block. */
 export async function loadShow(params: LoadShowParams) {
-  const { summary, watchNow, privateNotes, signedIn, relatedSource } = await loadShowData(params);
+  const { summary, watchNow, privateNotes, signedIn, relatedSource, parentalGuide } = await loadShowData(params);
   return {
     show: summary,
+    parentalGuide,
     relatedSource,
     watchNow,
     privateNotes,
@@ -160,7 +166,7 @@ export async function loadShow(params: LoadShowParams) {
 /** `/shows/:id/seasons/all`: the summary plus every episode. */
 export async function loadShowEpisodes(params: LoadShowParams) {
   const { raw, seasons, signedIn, episodeTypeTags, datePreferences, summary, watchNow, privateNotes } =
-    await loadShowData(params);
+    await loadShowData({ ...params, guide: false });
   return {
     show: summary,
     watchNow,

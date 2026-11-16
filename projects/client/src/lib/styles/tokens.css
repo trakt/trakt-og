@@ -906,6 +906,27 @@
   --color-collaborators-mark: light-dark(#b64903, #ff9a52); /* --brand-seventh, darker on white, lifted on dark */
   --color-collaborators-header-tint: rgb(232 93 4 / 0.12);
   --gradient-collaborators-header: linear-gradient(to bottom, var(--color-collaborators-header-tint), transparent);
+  /* A title's parental guide: its levels' colors, the page's meters and the summary badge's lines. */
+  --color-parental-none: light-dark(#767676, #8c8c8c);
+  --color-parental-mild: light-dark(#3f7a1a, #6cbf3a);
+  --color-parental-moderate: light-dark(#a86a00, #f5a623);
+  --color-parental-severe: light-dark(#c9131a, #ff5a60); /* the brand red, lifted for text on dark */
+  --color-parental-cell: light-dark(rgb(0 0 0 / 0.1), rgb(255 255 255 / 0.1)); /* a meter's unlit step */
+  --parental-meter-width: 84px; /* three steps: Mild, Moderate, Severe */
+  --parental-meter-height: 6px;
+  --space-parental-meter: 3px;
+  --radius-parental-meter: 2px;
+  --parental-bars-height: 12px; /* the badge's lines, Severe at full height */
+  --parental-bar-width: 3px;
+  --parental-bar-min: 2px; /* None, a dot */
+  --space-parental-bars: 2px;
+  --radius-parental-bar: 1.5px;
+  --space-parental-tip: 4px 1px; /* on top of the tooltip's own, so every side matches the bottom */
+  --space-parental-tip-row: 2px;
+  --space-parental-tip-column: 8px;
+  --space-parental-tip-name: 8px; /* more room between a name and its meter */
+  --parental-tip-meter-width: 54px;
+  --color-certification-divider: rgb(255 255 255 / 0.4); /* between the badge's rating and its guide half */
   /* Labelled glass buttons: an action's color over dark glass, solid once it's done. */
   --glass-action-height: 34px;
   --glass-action-padding-card: 10px; /* `card`: the page's outlined control, as padded as View seasons */
@@ -2055,6 +2076,14 @@
   --color-stats-tile-bg: light-dark(#f2f2f2, #262626);
   --color-stats-tile-hover: light-dark(#e2e2e2, #343434);
   --font-size-stats-tile-value: 28px;
+  /* The parental guide page's ratings by age: a box per age, the origin country's ringed in its red. */
+  --certification-group-min: 200px; /* four across the page's column, gutters between, so names don't wrap */
+  --space-certification-group: 12px;
+  --space-certification-countries: 6px;
+  --color-certification-group-origin: var(--brand-primary);
+  --font-size-certification-age: 20px; /* an age box's "All Ages", "15+" */
+  --color-certification-head-bg: light-dark(#e2e2e2, #333); /* an age box's header band, a step off the box */
+  --space-certification-featured: 10px 14px;
   --stats-site-logo: 22px; /* every logo's width, IMDb's wide badge too */
   --space-stats-site-cell: 10px;
   --space-stats-site-rows: 8px; /* between the Second Opinions boxes */

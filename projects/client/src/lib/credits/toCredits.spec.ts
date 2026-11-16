@@ -47,6 +47,20 @@ describe('toCredits', () => {
     ]);
   });
 
+  it("should show a show's actors in character and keep its crew's headshots", () => {
+    const { actors, crew } = toCredits({
+      actors: [{ label: 'Season Regulars', members: [walter] }],
+      crew: { directing: [crewMember(2, 'Vince Gilligan', ['Director'])] },
+      episodeCounts: true,
+      showId: 1388,
+    });
+
+    expect(actors[0]?.people[0]?.image).toBe(
+      'https://media.trakt.tv/characters/1388-1/thumb/headshot.webp#fallback=https%3A%2F%2Fmedia.trakt.tv%2Fpeople%2F1%2Fthumb%2Fheadshot.webp',
+    );
+    expect(crew[0]?.people[0]?.image).toBe('https://media.trakt.tv/people/2/thumb/headshot.webp');
+  });
+
   it('should leave the episode count out for movies and episodes', () => {
     const { actors } = toCredits({ actors: [{ label: 'Cast', members: [walter] }], crew: {}, episodeCounts: false });
 

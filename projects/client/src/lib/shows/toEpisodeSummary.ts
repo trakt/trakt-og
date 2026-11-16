@@ -10,7 +10,6 @@ import type { DatePreferences } from '../settings/DatePreferences.ts';
 import { formatDate } from '../utils/formatDate.ts';
 import { formatRuntime } from '../utils/formatRuntime.ts';
 import { mediaImage } from '../images/mediaImage.ts';
-import type { WithCharacterImages } from './withCharacterImages.ts';
 import { previewArt } from '../images/previewArt.ts';
 import { episodeNeighbours } from './episodeNeighbours.ts';
 import { earlyStreamDate } from './earlyStreamDate.ts';
@@ -30,7 +29,7 @@ interface Params {
   season: Season;
   episode: EpisodeResponse;
   seasons: z.infer<typeof episodeSeasonsSchema>;
-  people: WithCharacterImages<PeopleResponse>;
+  people: PeopleResponse;
   ratings: RatingsResponse;
   stats: ItemStats;
   datePreferences: DatePreferences;
@@ -138,8 +137,8 @@ export function toEpisodeSummary(params: Params) {
       duringCredits: episode.during_credits,
       afterCredits: episode.after_credits,
     },
-    cast: toCastMembers(params.people.cast, false),
-    guestStars: toCastMembers(params.people.guest_stars, false),
+    cast: toCastMembers(params.people.cast, false, show.ids.trakt),
+    guestStars: toCastMembers(params.people.guest_stars, false, show.ids.trakt),
     crew: toCrewGroups(params.people.crew, false),
     episodeLinks: (params.seasons.find(({ number }) => number === episode.season)?.episodes ?? [])
       .toSorted((a, b) => a.number - b.number)

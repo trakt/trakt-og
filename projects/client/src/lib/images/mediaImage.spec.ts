@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { mediaImage } from './mediaImage.ts';
+import type { MediaImageType } from './MediaImageType.ts';
 
 describe('util: mediaImage', () => {
   it('should build an image URL from the Trakt id', () => {
@@ -12,8 +13,7 @@ describe('util: mediaImage', () => {
   });
 
   it('should use the plural folder for every type', () => {
-    const folder = (type: Parameters<typeof mediaImage>[0]['type']) =>
-      mediaImage({ type, id: 1, slot: 'fanart', size: 'full' }).split('/').at(3);
+    const folder = (type: MediaImageType) => mediaImage({ type, id: 1, slot: 'fanart', size: 'full' }).split('/').at(3);
 
     expect(folder('person')).toBe('people');
     expect(folder('company')).toBe('companies');
@@ -38,6 +38,12 @@ describe('util: mediaImage', () => {
 
     expect(mediaImage({ type: 'season', id: 9, slot: 'poster', size: 'thumb', fallback: show })).toBe(
       'https://media.trakt.tv/seasons/9/thumb/poster.webp#fallback=https%3A%2F%2Fmedia.trakt.tv%2Fshows%2F2%2Fthumb%2Fposter.webp',
+    );
+  });
+
+  it("should build a character's URL from the show's and the person's Trakt ids", () => {
+    expect(mediaImage({ type: 'character', id: '1390-447271', slot: 'headshot', size: 'thumb' })).toBe(
+      'https://media.trakt.tv/characters/1390-447271/thumb/headshot.webp',
     );
   });
 });

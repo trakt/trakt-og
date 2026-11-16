@@ -320,8 +320,8 @@ export function toShowSummary(params: ShowSummaryParams) {
     tagline: show.tagline ?? null,
     overview: show.overview ?? null,
     links: toShowLinks({ show: params.show, justwatch: params.rank?.link }),
-    cast: toCastMembers(params.people?.cast, params.actorSpoilers),
-    guestStars: toCastMembers(params.people?.guest_stars, params.actorSpoilers),
+    cast: toCastMembers(params.people?.cast, params.actorSpoilers, show.ids.trakt),
+    guestStars: toCastMembers(params.people?.guest_stars, params.actorSpoilers, show.ids.trakt),
     crew: toCrewGroups(params.people?.crew, params.actorSpoilers),
     recent: {
       upNext: recent.upNext,

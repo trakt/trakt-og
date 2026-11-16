@@ -1,6 +1,6 @@
 <!--
   Shared Show All, Fade and Hide toggle groups inside a FilterMenu. With both, Fade and Hide sit side by side.
-  `hideDisabled` turns the Hide toggles off, each with that reason as its tooltip.
+  `hideDisabled` turns off the Hide toggles it gives a reason for, with that reason as the toggle's tooltip.
 -->
 <script lang="ts" generics="Option extends string">
 import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
@@ -9,7 +9,7 @@ interface Props {
   value: { fade: readonly Option[]; hide: readonly Option[] };
   fadeOptions: readonly { id: Option; label: string }[];
   hideOptions?: readonly { id: Option; label: string }[];
-  hideDisabled?: string;
+  hideDisabled?: (id: Option) => string | undefined;
   onchange: (next: { fade: Option[]; hide: Option[] }) => void;
   onreset?: () => void;
 }
@@ -36,8 +36,9 @@ function reset() {
       <ul>
         <li class="header" role="presentation">{heading}</li>
         {#each options as option (option.id)}
-          {#if section === 'hide' && hideDisabled}
-            <li><Tooltip text={hideDisabled} placement="right">{#snippet trigger(tooltip)}<button type="button" aria-pressed="false" aria-disabled="true" {...tooltip}>{option.label}</button>{/snippet}</Tooltip></li>
+          {@const disabled = section === 'hide' ? hideDisabled?.(option.id) : undefined}
+          {#if disabled}
+            <li><Tooltip text={disabled} placement="right">{#snippet trigger(tooltip)}<button type="button" aria-pressed="false" aria-disabled="true" {...tooltip}>{option.label}</button>{/snippet}</Tooltip></li>
           {:else}
             <li><button type="button" aria-pressed={value[section].includes(option.id)} onclick={() => toggle(section, option.id)}>{option.label}</button></li>
           {/if}

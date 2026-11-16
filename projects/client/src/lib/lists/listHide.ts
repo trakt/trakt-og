@@ -5,11 +5,22 @@ import type { OverlaySlices } from '../overlay/OverlaySlices.ts';
 import { matchesListFade } from './matchesListFade.ts';
 import type { ListItemCard } from './toListItemCard.ts';
 
+/** The overlay slices the viewer hides read, as the menu names them when one fails to load. */
+const SLICE_LABELS = {
+  watchedMovies: 'watched history',
+  watchedShows: 'watched history',
+  collectedMovies: 'library',
+  collectedShows: 'library',
+  watchlist: 'watchlist',
+  listMembership: 'lists',
+  ratings: 'ratings',
+} as const satisfies Partial<Record<keyof OverlaySlices, string>>;
+
 const WATCHED = ['watchedMovies', 'watchedShows'] as const;
 const LIBRARY = ['collectedMovies', 'collectedShows'] as const;
 
 /** The overlay slices each viewer hide reads. */
-const SLICES: Readonly<Record<FadeHideOption, readonly (keyof OverlaySlices)[]>> = {
+const SLICES: Readonly<Record<FadeHideOption, readonly (keyof typeof SLICE_LABELS)[]>> = {
   watched: WATCHED,
   watching: WATCHED,
   unwatched: WATCHED,
@@ -25,6 +36,25 @@ const SLICES: Readonly<Record<FadeHideOption, readonly (keyof OverlaySlices)[]>>
 };
 
 const isViewerOption = (option: string): option is FadeHideOption => option in SLICES;
+
+/**
+ * The viewer hides that can't apply, each with why: a slice they read failed to load and has no cached copy. They
+ * come back on their own once a later check fetches it.
+ */
+export function unavailableHides({
+  slices,
+  failed,
+}: {
+  slices: Partial<OverlaySlices>;
+  failed: readonly (keyof OverlaySlices)[];
+}): ReadonlyMap<string, string> {
+  return new Map(
+    Object.entries(SLICES).flatMap(([option, names]) => {
+      const missing = names.find((name) => failed.includes(name) && slices[name] === undefined);
+      return missing ? [[option, `Couldn't load your ${SLICE_LABELS[missing]}`] as const] : [];
+    }),
+  );
+}
 
 /** The overlay has loaded what the hides read. A signed-out visitor has no overlay, so their viewer hides don't apply. */
 export function listHideReady({

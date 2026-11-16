@@ -103,7 +103,21 @@ let chipFilters = $state<AdvancedFilters>({
 let terms = $state('');
 let fadeHide = $state<FadeHide>({ fade: ['watched'], hide: [] });
 let tooLong = $state(false);
-const shownFadeHide = $derived(tooLong ? { ...fadeHide, hide: [] } : fadeHide);
+let libraryFailed = $state(false);
+const LIBRARY_HIDES: readonly FadeHideOption[] = ['collected', 'collecting', 'uncollected'];
+const shownFadeHide = $derived(
+  tooLong
+    ? { ...fadeHide, hide: [] }
+    : libraryFailed
+      ? { ...fadeHide, hide: fadeHide.hide.filter((id) => !LIBRARY_HIDES.includes(id)) }
+      : fadeHide,
+);
+const hideDisabled = (id: FadeHideOption) =>
+  tooLong
+    ? 'This is too large to use this filter'
+    : libraryFailed && LIBRARY_HIDES.includes(id)
+      ? "Couldn't load your library"
+      : undefined;
 const cards = $derived(
   samples.flatMap((sample, index) => {
     const show = shows.at(index);
@@ -172,7 +186,7 @@ function showOverlay() {
   <span class="filter-icons">
   <TermsFilter bind:terms />
   <FadeHideMenu value={shownFadeHide} options={fadeHideOptions} cookie="design-list"
-    hideDisabled={tooLong ? 'This is too large to use this filter' : undefined}
+    {hideDisabled}
     onchange={(next) => (fadeHide = next)} />
 </span>
 {/snippet}
@@ -226,9 +240,10 @@ function showOverlay() {
 </Specimen>
 
 <Specimen title="Toolbar filters" bleed
-  note="A list toolbar's terms box and eye over its grid, with its count in the middle: the icon and number only, the noun in its tooltip. Watched starts faded; try Hide, or type part of a title. A list too long to read whole turns Hide off, and each Hide toggle's tooltip says why.">
+  note="A list toolbar's terms box and eye over its grid, with its count in the middle: the icon and number only, the noun in its tooltip. Watched starts faded; try Hide, or type part of a title. A list too long to read whole turns Hide off, and each Hide toggle's tooltip says why. When the viewer's library fails to load, only its Hide toggles go off, until a later check loads it.">
   <div class="knob">
     <DemoToggle bind:checked={tooLong}>List too long</DemoToggle>
+    <DemoToggle bind:checked={libraryFailed}>Library failed to load</DemoToggle>
   </div>
   <SectionToolbar filters={mediaFilter} stats={toolbarStats} summary={filterIcons} />
   <section class="grid">

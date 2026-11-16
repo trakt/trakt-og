@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { OverlaySlices } from '../overlay/OverlaySlices.ts';
 import type { OverlayState } from '../overlay/createOverlay.svelte.ts';
-import { listCardHidden, listHideReady } from './listHide.ts';
+import { listCardHidden, listHideReady, unavailableHides } from './listHide.ts';
 import type { ListItemCard } from './toListItemCard.ts';
 
 const NOW = new Date('2026-11-13T12:00:00Z');
@@ -117,5 +117,20 @@ describe('listHideReady', () => {
   it('should not wait for notes, releases or a signed-out visitor', () => {
     expect(listHideReady({ hide: ['notes', 'released'], slices: {}, signedIn: true })).toBe(true);
     expect(listHideReady({ hide: ['watched'], slices: {}, signedIn: false })).toBe(true);
+  });
+});
+
+describe('unavailableHides', () => {
+  const library: (keyof OverlaySlices)[] = ['collectedShows'];
+
+  it('should turn off the hides that read a failed slice, saying which', () => {
+    const off = unavailableHides({ slices: { collectedMovies: new Map() }, failed: library });
+
+    expect([...off.keys()]).toEqual(['collected', 'collecting', 'uncollected']);
+    expect(off.get('uncollected')).toBe("Couldn't load your library");
+  });
+
+  it('should keep a failed slice with a cached copy on', () => {
+    expect(unavailableHides({ slices: { collectedShows: new Map() }, failed: library }).size).toBe(0);
   });
 });

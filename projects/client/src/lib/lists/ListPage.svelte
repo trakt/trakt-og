@@ -84,7 +84,7 @@
   import { listTitleActions } from '#lib/lists/listTitleActions.ts';
   import ListStats from '#lib/lists/ListStats.svelte';
   import { type ListStats as ListStatsNumbers, toCardListStats } from '#lib/lists/toListStats.ts';
-  import { listCardHidden, listHideReady } from '#lib/lists/listHide.ts';
+  import { listCardHidden, listHideReady, unavailableHides } from '#lib/lists/listHide.ts';
   import type { PageMeta } from '#lib/api/PageMeta.ts';
   import { listTypeOptions } from '#lib/lists/listTypeOptions.ts';
   import type { loadBuiltInList } from '#lib/lists/loadBuiltInList.ts';
@@ -123,8 +123,16 @@
   const hideLimited = $derived(Boolean(data.list && data.hideLimited));
   let fadeHide = $derived(hideLimited ? { ...data.fadeHide, hide: [] } : data.fadeHide);
   const filterCookie = $derived(data.kind === 'personal' || data.kind === 'official' ? 'list' : data.kind);
+  // A hide whose overlay slice failed to load stays off, rather than wait on it, until a later check loads it.
+  const unavailable = $derived(
+    data.user ? unavailableHides({ slices: overlay.slices(), failed: overlay.failed() }) : new Map<string, string>(),
+  );
   // The hides apply here, to the whole list the loader read.
-  const hide = $derived(data.list && data.wholeList && !data.hideLimited ? (data.query.hide ?? []) : []);
+  const hide = $derived(
+    (data.list && data.wholeList && !data.hideLimited ? (data.query.hide ?? []) : []).filter(
+      (option) => !unavailable.has(option),
+    ),
+  );
   const hiding = $derived(hide.length > 0);
 const filterOptions = $derived(
   listFilterOptions({
@@ -803,7 +811,7 @@ const draggable = $derived(
           value={fadeHide}
           options={filterOptions.fade}
           hideOptions={filterOptions.hide}
-          hideDisabled={hideLimited ? 'This is too large to use this filter' : undefined}
+          hideDisabled={(id) => (hideLimited ? 'This is too large to use this filter' : unavailable.get(id))}
           cookie={filterCookie}
           onchange={(next) => {
             const changed = next.hide.join(',') !== fadeHide.hide.join(',');

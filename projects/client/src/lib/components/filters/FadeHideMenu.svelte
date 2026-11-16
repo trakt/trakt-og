@@ -13,8 +13,8 @@ interface Props {
   options: readonly { id: Option; label: string }[];
   /** Defaults to the fade options; an empty list omits Hide (mixed and ID searches). */
   hideOptions?: readonly { id: Option; label: string }[];
-  /** Why Hide is off here, as each Hide toggle's tooltip: a list too long to read whole. */
-  hideDisabled?: string;
+  /** Why a Hide toggle is off, as its tooltip: a list too long to read whole, or data that failed to load. */
+  hideDisabled?: (id: Option) => string | undefined;
   /** The cookie suffix: `shows`, `movies`, `calendars`, `search`. */
   cookie: string;
   onchange: (next: { fade: Option[]; hide: Option[] }) => void;

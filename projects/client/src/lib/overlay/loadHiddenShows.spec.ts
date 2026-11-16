@@ -30,12 +30,20 @@ describe('loadHiddenShows', () => {
       ]),
     );
   });
-  it('should reject a malformed API response', async () => {
+  it('should skip a row it cannot read and keep the rest', async () => {
     server.use(
       http.get(`${API}/users/hidden/progress_watched_reset`, () =>
-        HttpResponse.json([{ type: 'show', show: { ids: { trakt: '1' } } }]),
+        HttpResponse.json([
+          { type: 'show', show: { ids: { trakt: '1' } } },
+          { type: 'show', hidden_at: '2026-01-01', show: { ids: { trakt: 2 } } },
+        ]),
       ),
     );
+    expect(await loadHiddenShows(get, 'progress_watched_reset')).toEqual(new Map([[2, '2026-01-01']]));
+  });
+
+  it('should reject a body that is not a list', async () => {
+    server.use(http.get(`${API}/users/hidden/progress_watched_reset`, () => HttpResponse.json({ type: 'show' })));
     await expect(loadHiddenShows(get, 'progress_watched_reset')).rejects.toThrow();
   });
 });

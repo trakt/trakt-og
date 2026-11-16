@@ -1,5 +1,6 @@
 // FIXME(zod-4): og has one zod, the one @trakt/api depends on. See `src/lib/users/notes/noteRowsSchema.ts`.
 import { z } from 'zod/v4';
+import { readableRows } from '../api/readableRows.ts';
 import { commentSchema } from '../components/comments/commentSchema.ts';
 
 const media = {
@@ -36,9 +37,4 @@ export type TrendingCommentRow = z.infer<typeof row>;
  * `/comments/trending/all/all`: each comment with its movie or show, and the episode under it.
  * `@trakt/api` types the rows as bare comments, so they're parsed here. A malformed row is skipped.
  */
-export const trendingCommentRowsSchema = z.array(z.unknown()).transform((rows) =>
-  rows.flatMap((value): TrendingCommentRow[] => {
-    const parsed = row.safeParse(value);
-    return parsed.success ? [parsed.data] : [];
-  }),
-);
+export const trendingCommentRowsSchema = readableRows(row);

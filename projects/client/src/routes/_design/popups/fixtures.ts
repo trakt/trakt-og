@@ -33,5 +33,5 @@ export const watchNow: WatchNowButton = {
   cinemaOnly: false,
   hidden: false,
   country: 'us',
-  favoriteKeys: ['us-youtube'],
+  favoriteKeys: ['us-youtube', 'gb-amazon_video', 'ca-apple_tv'],
 };

@@ -49,7 +49,8 @@ export type OfferTerms =
 export type WatchNowSection = {
   title: string;
   favorites: boolean;
-  links: (ServiceLink & { uhd: boolean; terms: OfferTerms })[];
+  /** `country` marks a favorite from another country than the picked one. */
+  links: (ServiceLink & { uhd: boolean; terms: OfferTerms; country?: string })[];
 };
 
 export const https = (path: string) => `https://${path.replace(/^https?:\/\//, '')}`;
@@ -81,12 +82,18 @@ export const offerSlugs = (offers: Offers | null | undefined) => [
 export const countryCounts = (all: WatchNowOffers | null) =>
   Object.fromEntries(Object.entries(all ?? {}).map(([country, offers]) => [country, offerSlugs(offers).length]));
 
-/** The viewer's favorites for this country, as bare slugs. API stores `us-netflix`, or a bare slug for their own. */
-export const favoriteSlugs = (favorites: readonly string[], country: string, home: string) =>
+export type Favorite = { country: string; slug: string };
+
+/** The viewer's favorites in every country. API stores `us-netflix`, or a bare slug for their own. */
+export const parseFavorites = (favorites: readonly string[], home: string): Favorite[] =>
   favorites.flatMap((key) => {
-    const [prefix, slug] = key.includes('-') ? key.split('-', 2) : [home, key];
-    return prefix === country && slug ? [slug] : [];
+    const [country, slug] = key.includes('-') ? key.split('-', 2) : [home, key];
+    return country && slug ? [{ country, slug }] : [];
   });
+
+/** The viewer's favorites for this country, as bare slugs. */
+export const favoriteSlugs = (favorites: readonly string[], country: string, home: string) =>
+  parseFavorites(favorites, home).flatMap((favorite) => (favorite.country === country ? [favorite.slug] : []));
 
 type WatchNowButtonParams = {
   path: string;
@@ -180,42 +187,62 @@ function offerTerms(type: OfferType, offer: Offer, name: string, lowest: Lowest)
 }
 
 type WatchNowSectionsParams = {
-  offers: Offers | null | undefined;
-  sources: Map<string, Source>;
-  /** Bare slugs of the viewer's favorites in this country. */
-  favorites: readonly string[];
+  /** Every country's offers. */
+  offers: WatchNowOffers | null | undefined;
+  /** The picked country, whose offers fill the sections. */
+  country: string;
+  /** Each loaded country's services. */
+  sources: Record<string, Map<string, Source>>;
+  favorites: readonly Favorite[];
 };
 
+const byType = (offers: Offers | null | undefined) =>
+  OFFER_TYPES.map((type) => ({ type, offers: uniqueBy(offers?.[type] ?? [], ({ source }) => source) }));
+
 /**
- * The modal's sections: "Your Favorites", then one per offer type. A favorite
- * isn't repeated below, empty sections drop out, and a service the sources list doesn't know is skipped.
+ * The modal's sections: "Your Favorites", then one per offer type. Favorites come from every country, like OG: the
+ * picked country's first, then the others with their country, priced without a cheapest mark. A favorite from the
+ * picked country isn't repeated below, empty sections drop out, and a service the sources list doesn't know is skipped.
  */
-export function toWatchNowSections({ offers, sources, favorites }: WatchNowSectionsParams): WatchNowSection[] {
-  const byType = OFFER_TYPES.map((type) => ({
-    type,
-    offers: uniqueBy(offers?.[type] ?? [], ({ source }) => source),
-  }));
-  const lowest = lowestPrices(byType.find(({ type }) => type === 'purchase')?.offers ?? []);
-  const link = (type: OfferType, offer: Offer) => {
-    const source = sources.get(offer.source);
+export function toWatchNowSections({ offers, country, sources, favorites }: WatchNowSectionsParams): WatchNowSection[] {
+  const local = byType(offers?.[country]);
+  const lowest = lowestPrices(local.find(({ type }) => type === 'purchase')?.offers ?? []);
+  const link = (where: string, type: OfferType, offer: Offer) => {
+    const source = sources[where]?.get(offer.source);
     if (!source) return [];
-    const terms = offerTerms(type, offer, source.name, lowest);
-    return [{ ...source, slug: offer.source, href: https(offer.link), uhd: offer.uhd, terms }];
+    const abroad = where !== country;
+    const terms = offerTerms(type, offer, source.name, abroad ? { rent: null, purchase: null } : lowest);
+    return [
+      {
+        ...source,
+        slug: offer.source,
+        href: https(offer.link),
+        uhd: offer.uhd,
+        terms,
+        ...(abroad && { country: where }),
+      },
+    ];
   };
 
-  const liked = favorites.flatMap((slug) => {
-    const found = byType.find(({ offers }) => offers.some((offer) => offer.source === slug));
+  const ordered = uniqueBy(
+    [...favorites.filter((row) => row.country === country), ...favorites.filter((row) => row.country !== country)],
+    (row) => `${row.country}-${row.slug}`,
+  );
+  const liked = ordered.flatMap(({ country: where, slug }) => {
+    const found = (where === country ? local : byType(offers?.[where])).find(({ offers }) =>
+      offers.some((offer) => offer.source === slug),
+    );
     const offer = found?.offers.find((row) => row.source === slug);
-    return found && offer ? link(found.type, offer) : [];
+    return found && offer ? link(where, found.type, offer) : [];
   });
-  const used = new Set(liked.map(({ slug }) => slug));
+  const used = new Set(liked.flatMap((row) => (row.country ? [] : [row.slug])));
 
   return [
     { title: 'Your Favorites', favorites: true, links: liked },
-    ...byType.map(({ type, offers }) => ({
+    ...local.map(({ type, offers }) => ({
       title: type,
       favorites: false,
-      links: offers.filter(({ source }) => !used.has(source)).flatMap((offer) => link(type, offer)),
+      links: offers.filter(({ source }) => !used.has(source)).flatMap((offer) => link(country, type, offer)),
     })),
   ].filter(({ links }) => links.length > 0);
 }

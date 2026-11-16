@@ -29,7 +29,7 @@ export function iconLinks({ social, justwatch: justwatchLink, search }: IconLink
       icon: wikipedia,
       // OG resolved a stored Wikipedia id and fell back to a DuckDuckGo "!wikipedia" search.
       href: social?.wikipedia
-        ? `https://en.wikipedia.org/wiki/${encodeURIComponent(social.wikipedia)}`
+        ? `https://${social.wikipedia_language || 'en'}.wikipedia.org/wiki/${encodeURIComponent(social.wikipedia)}`
         : `https://duckduckgo.com/?q=${encodeURIComponent(`!wikipedia ${search}`)}`,
     },
     ...SOCIALS.map(({ key, label, icon, root }) => {

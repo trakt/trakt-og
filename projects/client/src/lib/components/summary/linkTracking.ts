@@ -8,11 +8,14 @@ const MEDIA_TARGETS: Readonly<Record<string, string>> = {
   Instagram: 'instagram',
 };
 
-// Web's person page links out to IMDb as `imdb` and has no TMDB link.
+// Web's person page links out to IMDb as `imdb`, has no TMDB link, and adds the person-only socials.
 const PERSON_TARGETS: Readonly<Record<string, string | undefined>> = {
   ...MEDIA_TARGETS,
   IMDB: 'imdb',
   TMDB: undefined,
+  TikTok: 'tiktok',
+  YouTube: 'youtube',
+  Wikidata: 'wikidata',
 };
 
 /** Web's `action.link` for a summary's link out, by its label; none for a site web doesn't link to (JustWatch, TVDB). */

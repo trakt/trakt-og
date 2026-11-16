@@ -14,6 +14,9 @@ describe('util: toLinkTracking', () => {
     expect(toLinkTracking('IMDB', true)).toEqual({ source: 'person-summary', target: 'imdb' });
     expect(toLinkTracking('Instagram', true)).toEqual({ source: 'person-summary', target: 'instagram' });
     expect(toLinkTracking('TMDB', true)).toBeUndefined();
+    expect(toLinkTracking('TikTok', true)).toEqual({ source: 'person-summary', target: 'tiktok' });
+    expect(toLinkTracking('YouTube', true)).toEqual({ source: 'person-summary', target: 'youtube' });
+    expect(toLinkTracking('Wikidata', true)).toEqual({ source: 'person-summary', target: 'wikidata' });
   });
 
   it('should skip sites web has no link to', () => {

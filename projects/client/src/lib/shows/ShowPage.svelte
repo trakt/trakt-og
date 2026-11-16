@@ -40,6 +40,7 @@ type Props = {
 
 const { data }: Props = $props();
 const show = $derived(data.show);
+const parental = $derived({ page: `${show.href}/parental-guide`, guide: data.parentalGuide });
 // The GIF picker's header, in every comment box on the page.
 gifArtContext.set(() => show.fanart);
 const ratingTarget = $derived({ type: 'show' as const, id: show.id, title: show.fullTitle });
@@ -57,6 +58,7 @@ const lazy = () => browserSectionsClient(data.user !== null);
 const sections = $derived([
   { label: 'Overview', href: '#overview' },
   { label: 'Stats', href: `${show.href}/stats`, page: true },
+  { label: 'Parental Guide', href: `${show.href}/parental-guide`, page: true },
   { label: 'Activity', href: '#activity' },
   { label: 'Recent Episodes', href: '#recent-episodes' },
   ...(show.cast.length > 0 || show.guestStars.length > 0
@@ -89,7 +91,7 @@ const sections = $derived([
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
 <FanartHeader image={show.fanart} dropped={overlay.state('show', show.id).dropped}>
-  <SummaryTitle title={show.title} year={show.year} certification={show.certification} />
+  <SummaryTitle title={show.title} year={show.year} certification={show.certification} {parental} />
   {#snippet stats()}
     <RatingsStrip rating={show.rating} rateLabel="show" {ratingTarget} external={show.external} counts={show.counts}
       statsHref="{show.href}/stats" />

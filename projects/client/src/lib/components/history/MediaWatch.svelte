@@ -12,7 +12,8 @@ import SummaryActionMenu from '#lib/components/summary/SummaryActionMenu.svelte'
 import lightBackward from '#lib/icons/light/backward.svg?raw';
 import arrowRotateLeft from '#lib/icons/light/arrow-rotate-left.svg?raw';
 import circleMinus from '#lib/icons/light/circle-minus.svg?raw';
-import historyIcon from '#lib/icons/light/clock-rotate-left.svg?raw';
+import historyIcon from '#lib/icons/solid/clock-rotate-left.svg?raw';
+import progressIcon from '#lib/icons/solid/bars-progress.svg?raw';
 import WatchPopover from '#lib/components/history/WatchPopover.svelte';
 import { loadWatchEpisodes } from '#lib/components/history/loadWatchEpisodes.ts';
 import { loadUpTo, upToEpisodes } from '#lib/components/history/loadUpTo.ts';
@@ -113,6 +114,10 @@ const label = $derived(
 const started = $derived(fill.watched > 0 || Boolean(rewatching));
 const percent = $derived(plural && started ? `${Math.floor(fill.watched * 100)}%` : undefined);
 const hasHistory = $derived((viewerState.watchedEpisodes ?? 0) > 0 || fill.watched > 0);
+const progressShow = $derived(target.type === 'show' ? target.id : target.type === 'season' ? target.season?.show : undefined);
+const progressHref = $derived(
+  hasHistory && progressShow && page.data.user && `/users/${page.data.user.slug}/progress?show=${progressShow}`,
+);
 const showActions = $derived(
   target.type === 'show' && (viewerState.watchedEpisodes ?? 0) > 0 && Boolean(page.data.user),
 );
@@ -228,6 +233,7 @@ async function open(force: boolean): Promise<'date' | 'remove' | 'partial' | nul
 {#snippet more()}
   <SummaryActionMenu>
     {#snippet children(close)}
+      {#if progressHref}<a href={progressHref}><Icon svg={progressIcon} fixedWidth />View progress</a>{/if}
       {#if hasHistory}<a href={historyHref}><Icon svg={historyIcon} fixedWidth />View history</a>{/if}
       {#if (showActions || dropped) && hasHistory}<hr />{/if}
       {#if showActions && viewerState.rewatching}
@@ -252,7 +258,7 @@ async function open(force: boolean): Promise<'date' | 'remove' | 'partial' | nul
   </SummaryActionMenu>
 {/snippet}
 {#if variant === 'summary' && plural && started && target.airedEpisodes}
-  <a class="watch-progress" href={historyHref} aria-label={fill.titles.watched}>
+  <a class="watch-progress" href={progressHref || historyHref} aria-label={fill.titles.watched}>
     {#each ticks as id, index (index)}<span class:done={id === undefined ? index < (completed ?? 0) : rewatching && viewerState.rewatchingAt ? (overlay.state('episode', id).lastWatchedAt ?? '') >= viewerState.rewatchingAt : overlay.state('episode', id).watched}></span>{/each}
   </a>
 {/if}

@@ -18,7 +18,8 @@ import Variant from '#lib/design/Variant.svelte';
 import Icon from '#lib/icons/Icon.svelte';
 import backward from '#lib/icons/light/backward.svg?raw';
 import circleMinus from '#lib/icons/light/circle-minus.svg?raw';
-import historyIcon from '#lib/icons/light/clock-rotate-left.svg?raw';
+import historyIcon from '#lib/icons/solid/clock-rotate-left.svg?raw';
+import progressIcon from '#lib/icons/solid/bars-progress.svg?raw';
 import check from '#lib/icons/trakt/check.svg?raw';
 import { overlay } from '#lib/overlay/overlay.ts';
 import { formatRuntime } from '#lib/utils/formatRuntime.ts';
@@ -78,6 +79,7 @@ const recommendation: Recommendation = {
 {#snippet historyMenu()}
   <SummaryActionMenu>
     {#snippet children(close)}
+      <a href="/users/me/progress?show={show.id}"><Icon svg={progressIcon} fixedWidth />View progress</a>
       <a href="/users/me/history/episodes?show={show.id}"><Icon svg={historyIcon} fixedWidth />View history</a>
       <hr />
       <VisibilityControl target={show} action="rewatch" variant="menu" onsaving={close}>

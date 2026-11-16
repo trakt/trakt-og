@@ -18,7 +18,7 @@ const { user: viewer, memberSince, watching, children }: {
   /** The stats panel, under the name. */
   children?: Snippet;
 } = $props();
-const cover = $derived(watching?.fanartUrl ?? (viewer.vip ? viewer.coverUrl : null));
+const cover = $derived(watching?.fanartUrl ?? viewer.coverUrl);
 </script>
 
 <!-- eslint-disable svelte/no-navigation-without-resolve -->

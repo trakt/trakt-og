@@ -12,6 +12,7 @@ import { toCreditsQuery } from './toCreditsQuery.ts';
 import { toPersonSummary } from './toPersonSummary.ts';
 import { okBody } from '../api/okBody.ts';
 import { dayIn } from '../utils/dayIn.ts';
+import { usesImperial } from '../utils/usesImperial.ts';
 
 type LoadPersonParams = {
   fetch: typeof fetch;
@@ -22,6 +23,8 @@ type LoadPersonParams = {
   id: string;
   /** The page URL's query: OG's `?sort=`, `?display=` and `?terms=`, so a shared view renders filtered. */
   search: URLSearchParams;
+  /** The request's `Accept-Language`, whose region picks the height units. */
+  languages?: string | null;
 };
 
 /** The API's known-for picks, or none when the call fails, the person has none (a 204) or the body doesn't parse. */
@@ -36,7 +39,7 @@ async function knownFor(fetcher: typeof fetch, id: string): Promise<KnownForItem
  * Loads `/people/:id` for SSR: the person, the layout data, the movie and show credits, the known-for picks, the list
  * count and the private note in parallel, with the 404 and canonical redirect checked before the rest is used. Only the note sends the user's token.
  */
-export async function loadPerson({ fetch, token, parent, id: requested, search }: LoadPersonParams) {
+export async function loadPerson({ fetch, token, parent, id: requested, search, languages }: LoadPersonParams) {
   const client = api({ fetch });
   const summaryRead = client.people.summary({ params: { id: requested }, query: { extended: 'full,markdown' } });
   const layout = parent();
@@ -80,6 +83,7 @@ export async function loadPerson({ fetch, token, parent, id: requested, search }
     listCount: lists?.status === 200 ? Number(lists.headers.get('x-pagination-item-count')) || 0 : 0,
     random: Math.random(),
     now,
+    imperial: usesImperial(languages),
   });
 
   return {

@@ -51,7 +51,36 @@ describe('util: pullRequestBody', () => {
   });
 });
 
+const TIPTAP_REJECTED: BumpReport = {
+  ...MINOR_ONLY,
+  minor: {
+    adopted: [],
+    rejected: ['core', 'extensions', 'pm', 'starter-kit'].map((name) => upgrade(`@tiptap/${name}`, '3.33.0', '3.34.0')),
+  },
+  major: { adopted: [], rejected: [] },
+  logs: { '@tiptap/*@3.34.0': "Property 'toggleBold' does not exist" },
+};
+
+describe('util: pullRequestBody for a family', () => {
+  it('should list a reverted family as one entry', () => {
+    const body = pullRequestBody(TIPTAP_REJECTED);
+
+    expect(body).toContain('# Reverted\n\n- `@tiptap/*` 3.33.0 → 3.34.0\n');
+    expect(body.match(/@tiptap/g)).toHaveLength(1);
+  });
+});
+
 describe('util: rejectedIssues', () => {
+  it('should file one issue for a rejected family', () => {
+    const [issue, ...rest] = rejectedIssues(TIPTAP_REJECTED);
+
+    expect(rest).toEqual([]);
+    expect(issue?.title).toBe('chore(deps): adopt @tiptap/* 3.34.0');
+    expect(issue?.titlePrefix).toBe('chore(deps): adopt @tiptap/* ');
+    expect(issue?.body).toContain('`@tiptap/core`, `@tiptap/extensions`, `@tiptap/pm`, `@tiptap/starter-kit`');
+    expect(issue?.body).toContain("Property 'toggleBold' does not exist");
+  });
+
   it('should open one adopt issue per rejected bump with the failing log', () => {
     const [issue, ...rest] = rejectedIssues(MINOR_ONLY);
 

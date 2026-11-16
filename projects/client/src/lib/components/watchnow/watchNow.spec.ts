@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
   countryCounts,
+  type Favorite,
   favoriteSlugs,
   type Offers,
+  parseFavorites,
   type Source,
   toSourceMap,
   toWatchNowButton,
@@ -95,12 +97,15 @@ describe('toWatchNowButton', () => {
 describe('toWatchNowSections', () => {
   it('lists favorites first, then each non-empty offer type without repeating them', () => {
     const sections = toWatchNowSections({
-      offers: offers({
-        subscription: ['netflix', 'starz_amazon_channel'],
-        purchase: ['apple_tv', 'apple_tv', 'youtube'],
-      }),
-      sources,
-      favorites: ['youtube'],
+      offers: {
+        us: offers({
+          subscription: ['netflix', 'starz_amazon_channel'],
+          purchase: ['apple_tv', 'apple_tv', 'youtube'],
+        }),
+      },
+      country: 'us',
+      sources: { us: sources },
+      favorites: [{ country: 'us', slug: 'youtube' }],
     });
     expect(sections.map(({ title, links }) => [title, links.map(({ slug }) => slug)])).toEqual([
       ['Your Favorites', ['youtube']],
@@ -121,9 +126,12 @@ describe('toWatchNowSections', () => {
       purchase: rows.map(([slug, rent, purchase]) => offer(slug, { prices: { rent, purchase } })),
     });
     const terms = (rows: [string, string | null, string | null][]) =>
-      toWatchNowSections({ offers: priced(rows), sources, favorites: ['youtube'] }).flatMap(({ links }) =>
-        links.map(({ slug, terms }) => [slug, terms]),
-      );
+      toWatchNowSections({
+        offers: { us: priced(rows) },
+        country: 'us',
+        sources: { us: sources },
+        favorites: [{ country: 'us', slug: 'youtube' }],
+      }).flatMap(({ links }) => links.map(({ slug, terms }) => [slug, terms]));
 
     it('should mark the cheapest rent and buy, favorites included', () => {
       expect(
@@ -165,8 +173,63 @@ describe('toWatchNowSections', () => {
     });
   });
 
+  describe('with favorites from other countries', () => {
+    const all = {
+      us: offers({ subscription: ['netflix'], purchase: ['apple_tv', 'youtube'] }),
+      gb: offers({ subscription: ['netflix'], purchase: ['apple_tv', 'amazon_video'] }),
+      ca: offers({ free: ['youtube'] }),
+    };
+    const sections = (favorites: Favorite[], known = { us: sources, gb: sources }) =>
+      toWatchNowSections({ offers: all, country: 'us', sources: known, favorites }).map(({ title, links }) => [
+        title,
+        links.map(({ slug, country }) => (country ? `${country}-${slug}` : slug)),
+      ]);
+
+    it('should list them after the picked country’s, keeping the local service below', () => {
+      expect(
+        sections([
+          { country: 'gb', slug: 'netflix' },
+          { country: 'us', slug: 'youtube' },
+          { country: 'gb', slug: 'amazon_video' },
+        ]),
+      ).toEqual([
+        ['Your Favorites', ['youtube', 'gb-netflix', 'gb-amazon_video']],
+        ['subscription', ['netflix']],
+        ['purchase', ['apple_tv']],
+      ]);
+    });
+
+    it('should skip one that country doesn’t have, or whose services haven’t loaded', () => {
+      expect(
+        sections([
+          { country: 'gb', slug: 'youtube' },
+          { country: 'ca', slug: 'youtube' },
+          { country: 'fr', slug: 'netflix' },
+        ])[0],
+      ).toEqual(['subscription', ['netflix']]);
+    });
+
+    it('should mark only the picked country’s cheapest prices', () => {
+      const terms = toWatchNowSections({
+        offers: {
+          us: { ...offers({}), purchase: [offer('apple_tv', { prices: { rent: '3.99', purchase: '9.99' } })] },
+          gb: {
+            ...offers({}),
+            purchase: [offer('apple_tv', { currency: 'gbp', prices: { rent: '1', purchase: '2' } })],
+          },
+        },
+        country: 'us',
+        sources: { us: sources, gb: sources },
+        favorites: [{ country: 'gb', slug: 'apple_tv' }],
+      })[0]?.links[0];
+      expect(terms).toMatchObject({ country: 'gb', terms: prices(['Rent', '£1.00', false], ['Buy', '£2.00', false]) });
+    });
+  });
+
   it('is empty when nothing is available', () => {
-    expect(toWatchNowSections({ offers: undefined, sources, favorites: [] })).toEqual([]);
+    expect(toWatchNowSections({ offers: undefined, country: 'us', sources: { us: sources }, favorites: [] })).toEqual(
+      [],
+    );
   });
 });
 
@@ -175,6 +238,14 @@ describe('helpers', () => {
     expect(
       countryCounts({ us: offers({ free: ['youtube'], purchase: ['youtube', 'apple_tv'] }), gb: offers({}) }),
     ).toEqual({ us: 2, gb: 0 });
+  });
+
+  it('reads favorites in every country, bare slugs meaning home', () => {
+    expect(parseFavorites(['us-netflix', 'hulu', 'gb-now_tv'], 'us')).toEqual([
+      { country: 'us', slug: 'netflix' },
+      { country: 'us', slug: 'hulu' },
+      { country: 'gb', slug: 'now_tv' },
+    ]);
   });
 
   it('keeps favorites for the picked country', () => {

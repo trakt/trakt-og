@@ -155,7 +155,7 @@ const limitToast = (limit: Parameters<typeof listItemLimitFailure>[0]) => {
 </Specimen>
 
 <Specimen title="Dialog" row
-  note="The art dialogs: the item's fanart under glass, with the form below. Report sends to the stubbed API; Watch Now loads Fight Club's real offers, with shimmering tiles until they land.">
+  note="The art dialogs: the item's fanart under glass, with the form below. Report sends to the stubbed API; Watch Now loads Fight Club's real offers, with shimmering tiles until they land, and lists favorites from Britain and Canada too, each badged with its country.">
   <Variant label="md: Report">
     <DemoButton onclick={() => (reportOpen = true)}>Report Fight Club</DemoButton>
   </Variant>

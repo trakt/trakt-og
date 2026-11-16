@@ -1,6 +1,7 @@
 <!--
   The Watch Now modal in the notes and list dialogs' look: the item's fanart under dark glass with "Watch Now"
-  and its type over the title, "Your Favorites" and one section per offer type as a grid of service tiles with what
+  and its type over the title, "Your Favorites" (from every country, others badged with theirs, like OG) and one
+  section per offer type as a grid of service tiles with what
   each costs (the cheapest rent and buy in green), then a footer bar with the country picker and "Powered by
   JustWatch". It loads on first open, like OG did, and a new country only loads that country's service names: one
   `/watchnow` call has every country's offers. Until there's something to show, shimmering sections of tiles hold
@@ -23,8 +24,9 @@ import { fetchWatchNowShared } from './fetchWatchNowShared.ts';
 import ServiceTile from './ServiceTile.svelte';
 import {
   countryCounts,
-  favoriteSlugs,
   https,
+  offerSlugs,
+  parseFavorites,
   type Source,
   toSourceMap,
   toWatchNowSections,
@@ -88,19 +90,23 @@ $effect(() => {
   if (open && !loaded) void loadItem();
 });
 
+const favorites = $derived(parseFavorites(button.favoriteKeys, button.country));
+// The picked country, and every country where a favorite has it: each needs its service names and logos.
+const needed = $derived([
+  ...new Set([
+    country,
+    ...favorites.flatMap((row) => (offerSlugs(offers?.[row.country]).includes(row.slug) ? [row.country] : [])),
+  ]),
+]);
+
 $effect(() => {
-  if (open && !sources[country]) void loadSources(country);
+  if (!open) return;
+  for (const code of needed) if (!sources[code]) void loadSources(code);
 });
 
 const counts = $derived(countryCounts(offers));
-const sections = $derived(
-  toWatchNowSections({
-    offers: offers?.[country],
-    sources: sources[country] ?? new Map(),
-    favorites: favoriteSlugs(button.favoriteKeys, country, button.country),
-  }),
-);
-const loading = $derived(!loaded || !sources[country]);
+const sections = $derived(toWatchNowSections({ offers, country, sources, favorites }));
+const loading = $derived(!loaded || needed.some((code) => !sources[code]));
 const picked = $derived(countries.find(({ code }) => code === country));
 // The countries that have it first, so the picker opens near the viewer's own, then the rest after a divider.
 const countryGroups = $derived(
@@ -164,8 +170,8 @@ const focusDialog: Attachment<HTMLElement> = (footer) => {
           <span class="count">{section.links.length}</span>
         </h3>
         <div class="tiles">
-          {#each section.links as link (link.slug)}
-            <ServiceTile {link} uhd={link.uhd}>
+          {#each section.links as link (`${link.country}-${link.slug}`)}
+            <ServiceTile {link} uhd={link.uhd} country={link.country?.toUpperCase()}>
               {#if link.terms.kind === 'prices'}
                 <dl class="terms prices">
                   {#each link.terms.prices as { label, amount, lowest } (label)}

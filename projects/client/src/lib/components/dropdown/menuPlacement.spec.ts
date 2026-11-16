@@ -19,11 +19,20 @@ describe('menuPlacement', () => {
     });
   });
 
-  it('should stay under the trigger when it fits neither way', () => {
+  describe('when it fits neither way', () => {
     const tall = { width: 210, height: 800 };
-    expect(menuPlacement({ trigger: { top: 300, bottom: 334, left: 480 }, menu: tall, viewport, offset: 4 }).top).toBe(
-      338,
-    );
+
+    it('should open under the trigger and end at the screen edge when there is more room below', () => {
+      expect(menuPlacement({ trigger: { top: 300, bottom: 334, left: 480 }, menu: tall, viewport, offset: 4 })).toEqual(
+        { top: 338, left: 480, maxHeight: 558 },
+      );
+    });
+
+    it('should open above the trigger and start at the screen edge when there is more room above', () => {
+      expect(menuPlacement({ trigger: { top: 700, bottom: 734, left: 480 }, menu: tall, viewport, offset: 4 })).toEqual(
+        { top: 4, left: 480, maxHeight: 692 },
+      );
+    });
   });
 
   it('should pull the menu left to keep it on screen', () => {

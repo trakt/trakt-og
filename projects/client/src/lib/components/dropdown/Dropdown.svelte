@@ -51,7 +51,7 @@ interface Props {
 const { trigger, children, label, section, joined = false, block = false, multiple = false, variant = 'default' }:
   Props = $props();
 const id = $props.id();
-let pinned = $state<{ top: number; left: number }>();
+let pinned = $state<{ top: number; left: number; maxHeight?: number }>();
 
 const focusFirstItem = (event: ToggleEvent & { currentTarget: HTMLElement }) => {
   if (event.newState !== 'open') return;
@@ -74,7 +74,8 @@ const pinInDialog: Attachment<HTMLElement> = (dropdown) => {
     }
     pinned = menuPlacement({
       trigger: button.getBoundingClientRect(),
-      menu: { width: menu.offsetWidth, height: menu.offsetHeight },
+      // Its full height, even while a maxHeight cuts it short.
+      menu: { width: menu.offsetWidth, height: menu.scrollHeight + menu.offsetHeight - menu.clientHeight },
       viewport: { width: innerWidth, height: innerHeight },
       offset: parseFloat(getComputedStyle(menu).getPropertyValue('--space-menu-offset')) || 0,
     });
@@ -117,6 +118,7 @@ const closeOnPick = (event: MouseEvent & { currentTarget: HTMLElement }) => {
     style:position-anchor="--dropdown-{id}"
     style:--menu-top={pinned && `${pinned.top}px`}
     style:--menu-left={pinned && `${pinned.left}px`}
+    style:--menu-max-height={pinned?.maxHeight && `${pinned.maxHeight}px`}
     style:--check={`url("${checkThick}")`}
     ontoggle={focusFirstItem}
     onclick={closeOnPick}
@@ -322,6 +324,7 @@ const closeOnPick = (event: MouseEvent & { currentTarget: HTMLElement }) => {
   position-try-fallbacks: none;
   inset-block-start: var(--menu-top);
   inset-inline-start: var(--menu-left);
+  max-block-size: var(--menu-max-height, calc(100dvh - var(--gutter)));
   margin: 0;
 }
 

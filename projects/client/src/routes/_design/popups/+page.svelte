@@ -88,7 +88,7 @@ const limitToast = (limit: Parameters<typeof listItemLimitFailure>[0]) => {
 </script>
 
 <Specimen title="Dropdown" row
-  note="Every look a page uses. Click or press Enter to open; Esc or a click outside closes it.">
+  note="Every look a page uses. Click or press Enter to open; Esc or a click outside closes it. In a dialog, a menu too tall to fit under or over its button opens on the roomier side and scrolls, like Watch Now's country list.">
   <Variant label="Default, in a section toolbar">
     <div class="toolbar">
       <Dropdown section="Sort">

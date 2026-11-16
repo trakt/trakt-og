@@ -16,7 +16,8 @@
   Flipped above or below, the box mirrors its sections (`TooltipBox`'s `flipped`), so its bands stay away from the
   arrow.
   `under` lines it up with another anchor instead of the trigger, at that anchor's full width: a summary button's
-  tooltip sits right under the whole button, its side tiles included.
+  tooltip sits right under the whole button, its side tiles included. `at` lines it up with another anchor at its own
+  width: a chart column's tooltip over the column's highest point instead of the column's top.
   Left without any, no tooltip renders. The trigger keeps its own accessible name: the tooltip only describes it
   (`aria-describedby`), and not even that when it just repeats the name ("Edit note" on an "Edit note" button).
 -->
@@ -45,9 +46,11 @@ interface Props {
   toggles?: boolean;
   /** The anchor name it lines up with, at its full width, in place of the trigger's. */
   under?: string;
+  /** The anchor name it lines up with, at its own width, in place of the trigger's: a point inside the trigger. */
+  at?: string;
 }
 
-const { trigger, text, children, content, placement = 'top', toggles = false, under }: Props = $props();
+const { trigger, text, children, content, placement = 'top', toggles = false, under, at }: Props = $props();
 const id = $props.id();
 
 let status = $state<TooltipState>({ hovered: false, focused: false, pinned: false, dismissed: false, open: false });
@@ -170,7 +173,7 @@ $effect(() => {
   const turned = tooltipFlip({
     placement,
     box: tip.getBoundingClientRect(),
-    anchor: under ? undefined : anchor.getBoundingClientRect(),
+    anchor: under || at ? undefined : anchor.getBoundingClientRect(),
     viewport: { width: document.documentElement.clientWidth, height: document.documentElement.clientHeight },
   });
   if (turned !== placement) side = turned;
@@ -208,7 +211,7 @@ const leaveTip = (event: PointerEvent) => {
   class={['tooltip', shown, { under }]}
   popover="hint"
   role="tooltip"
-  style:position-anchor={under ?? `--tooltip-${id}`}
+  style:position-anchor={under ?? at ?? `--tooltip-${id}`}
   ontoggle={closed}
   onpointerenter={stay}
   onpointerleave={leaveTip}

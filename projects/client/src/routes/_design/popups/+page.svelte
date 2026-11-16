@@ -15,6 +15,7 @@ import { listItemLimitFailure } from '#lib/components/lists/toggleListItem.ts';
 import PlaysTip from '#lib/components/media/PlaysTip.svelte';
 import FavoritedTip from '#lib/components/favorites/FavoritedTip.svelte';
 import ChartTip from '#lib/components/tooltip/ChartTip.svelte';
+import RatingLine from '#lib/components/rating/RatingLine.svelte';
 import TooltipBar from '#lib/components/tooltip/TooltipBar.svelte';
 import TooltipBox from '#lib/components/tooltip/TooltipBox.svelte';
 import TooltipHeader from '#lib/components/tooltip/TooltipHeader.svelte';
@@ -298,6 +299,22 @@ const limitToast = (limit: Parameters<typeof listItemLimitFailure>[0]) => {
       <ListedTip user="sean" watchlisted lists={listedOn} />
     </Tooltip>
   </Variant>
+  <Variant label="Chart, over a point inside its column (at)">
+    <Tooltip toggles at="--popups-demo-point">
+      {#snippet trigger(tooltip)}
+        <a class="column-demo" href="#tooltip" aria-label="Season 5" {...tooltip}><span class="point-demo"></span></a>
+      {/snippet}
+      <ChartTip name="Season 5" value="96%" words="from 3,649 votes" />
+    </Tooltip>
+  </Variant>
+  <Variant label="Chart, detail only (no value), with a footer">
+    <Tooltip toggles>
+      {#snippet trigger(tooltip)}<a class="bar" href="#tooltip" aria-label="8x06 The Iron Throne" {...tooltip}></a>{/snippet}
+      <ChartTip name="8x06" subtitle="The Iron Throne" detail="65% Trakt (8,662 votes)">
+        {#snippet footer()}<RatingLine rating={5} />{/snippet}
+      </ChartTip>
+    </Tooltip>
+  </Variant>
   <Variant label="Chart, a season of the progress bar">
     <Tooltip toggles>
       {#snippet trigger(tooltip)}<a class="bar" href="#tooltip" aria-label="Season 18" {...tooltip}></a>{/snippet}
@@ -399,5 +416,25 @@ const limitToast = (limit: Parameters<typeof listItemLimitFailure>[0]) => {
   inline-size: var(--gutter);
   block-size: calc(var(--gutter) * 3);
   background-color: var(--brand-primary);
+}
+
+.column-demo {
+  position: relative;
+  display: block;
+  inline-size: calc(var(--gutter) * 2);
+  block-size: calc(var(--gutter) * 6);
+  background-color: var(--color-stats-tile-bg);
+}
+
+.point-demo {
+  position: absolute;
+  inset-block-start: 30%;
+  inset-inline-start: 50%;
+  translate: -50% -50%;
+  inline-size: var(--quality-dot-size);
+  block-size: var(--quality-dot-size);
+  border-radius: 50%;
+  background-color: var(--color-quality-community);
+  anchor-name: --popups-demo-point;
 }
 </style>

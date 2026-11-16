@@ -6,6 +6,7 @@
   `flipped` is a box that turned to the other side of its trigger than its tooltip was written for. Its sections
   mirror, so the box itself stays by the arrow and the bands stay on the far side: a tooltip stacks its sections with
   `flex-direction: var(--tooltip-stack)`, and `TooltipHeader` and `TooltipFooter` swap their edges.
+  A footer that ends up on the arrow's edge, as on a top tooltip, colors the arrow like itself.
     <span class="tip"><TooltipBox side="left">12 items</TooltipBox></span>
 -->
 <script lang="ts">
@@ -70,6 +71,14 @@ const { side = 'top', flipped = false, children }: Props = $props();
   --tooltip-stack: column-reverse;
 }
 
+/* A footer band on the arrow's edge, a top tooltip's own (the Quality chart's rating), gives the arrow its color. */
+.top:not(.flipped),
+.bottom.flipped {
+  &:has(:global(.tooltip-footer:not(.between))) {
+    --tooltip-arrow-fill: var(--color-tooltip-footer);
+  }
+}
+
 .top,
 .bottom {
   &::before,
@@ -100,7 +109,7 @@ const { side = 'top', flipped = false, children }: Props = $props();
   }
 
   &::after {
-    border-block-start-color: var(--color-tooltip-bg);
+    border-block-start-color: var(--tooltip-arrow-fill, var(--color-tooltip-bg));
   }
 }
 
@@ -116,7 +125,7 @@ const { side = 'top', flipped = false, children }: Props = $props();
   }
 
   &::after {
-    border-block-end-color: var(--color-tooltip-bg);
+    border-block-end-color: var(--tooltip-arrow-fill, var(--color-tooltip-bg));
   }
 }
 

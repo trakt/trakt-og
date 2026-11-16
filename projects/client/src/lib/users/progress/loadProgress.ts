@@ -33,7 +33,8 @@ type Params = {
  * as does a signed-out visitor's; a token that expired or stopped working signs in and comes back. The rows load in the browser
  * from `/sync/progress/up_next_nitro` (`ProgressPage.svelte`), so this only reads the URL, the hide cookie and your
  * watched progress settings: sort, view, Include Watchlisted, and the specials and next-episode choices the season lists use.
- * With `?list=`, the list streams in for the band naming it above the rows. Franchises reads its own sort and hide
+ * With `?list=`, the list streams in for the band naming it above the rows. `?show=`, the Up Next progress bar's link,
+ * narrows the rows to those shows, a comma list like OG's. Franchises reads its own sort and hide
  * cookie, since its rows come from the browser's watched movies and the official lists.
  */
 export async function loadProgress({ fetch, locals, params, url, cookies, parent }: Params) {
@@ -51,6 +52,10 @@ export async function loadProgress({ fetch, locals, params, url, cookies, parent
     useLastActivity: Boolean(saved?.use_last_activity),
   };
   const list = readProgressList(url.searchParams.get('list'));
+  const shows = (url.searchParams.get('show') ?? '')
+    .split(',')
+    .map((id) => positiveInt(id, 0))
+    .filter((id) => id > 0);
 
   return {
     type,
@@ -66,6 +71,7 @@ export async function loadProgress({ fetch, locals, params, url, cookies, parent
     includeWatchlisted: Boolean(saved?.include_watchlisted),
     terms: url.searchParams.get('terms')?.trim() ?? '',
     list: list?.base,
+    shows: shows.length > 0 ? shows : undefined,
     listRow: list ? loadProgressListRow({ fetch, token: locals.token, list, profile }).catch(() => null) : undefined,
     page: positiveInt(url.searchParams.get('page'), 1),
     options,

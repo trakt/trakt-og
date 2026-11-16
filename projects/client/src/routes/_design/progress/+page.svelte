@@ -191,6 +191,7 @@ const data = $derived({
   includeWatchlisted: page.url.searchParams.has('watchlisted'),
   terms: '',
   list,
+  shows: undefined,
   listRow,
   page: 1,
   options: { includeSpecials: false, useLastActivity: false },

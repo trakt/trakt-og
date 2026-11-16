@@ -104,6 +104,13 @@ describe('loadProgress', () => {
     expect(await load({ query: '?list=morbus/ratings' })).toMatchObject({ list: undefined });
   });
 
+  it('should read `?show=` as one or more show ids, like OG, and drop anything else', async () => {
+    expect(await load({ query: '?show=60203' })).toMatchObject({ shows: [60203] });
+    expect(await load({ query: '?show=1,x,0,2' })).toMatchObject({ shows: [1, 2] });
+    expect(await load({ query: '?show=x' })).toMatchObject({ shows: undefined });
+    expect((await load()).shows).toBeUndefined();
+  });
+
   it("should stream the list's row only with a list, and leave it out when the list can't be read", async () => {
     expect((await load()).listRow).toBeUndefined();
     await expect((await load({ query: '?list=42' })).listRow).resolves.toBeNull();

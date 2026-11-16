@@ -45,6 +45,7 @@ Run these from `projects/client/`:
 - Assignment is ownership: take the issue you are handed with `gh issue edit N --repo trakt/trakt-og --add-assignee @me`. Without a specific issue, take the oldest open issue with no assignee. Never pick an assigned issue. One agent, one issue; when agents share a GitHub login, the person or orchestrator starting them hands each its own issue.
 - Work in a worktree off `origin/main`. Open a draft PR early. When it's for an issue, put `Closes #N` in its body; GitHub closes the issue on merge. Keep PR titles, bodies, commits and comments public-safe; never include private implementation details or local paths.
 - Build per `AGENTS.md` and `.agents/rules/`, run `bun run client:ci` while working, then get the PR reviewed and its checks green (CI, commits, supply chain and the leak check). Sean or Justin merges it.
+- While a maintainer is actively iterating with you (quick tweaks, screenshots back and forth), commit locally and nothing more: no `bun run client:ci`, checks, specs or screenshots between tweaks, and no pushes or PR description updates, since every push reruns the PR's checks. They see each change on their local dev server. Run CI, squash, push and update the PR once, when they say they're done.
 - For a bug, reproduce it first, write a failing spec, fix the root cause and keep the spec.
 - Split an issue that mixes a bug and a feature into one issue each.
 - A bad deploy is fixed by a revert PR, which merges like any other.

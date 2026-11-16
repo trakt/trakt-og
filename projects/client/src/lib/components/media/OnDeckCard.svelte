@@ -1,7 +1,7 @@
 <!--
   OG's on-deck card: a show's next episode as a poster card with the progress bar under its quick icons, the episode
   as the title, then the show's title. The dashboard's Up Next panel and the progress page's grid view both use it.
-  The quick icons' ••• holds Watch Now, Rewatch and Drop through the shared prompts. A show caught up is its own poster
+  The quick icons' ••• holds View progress and View history, then Watch Now, Rewatch and Drop through the shared prompts. A show caught up is its own poster
   with the caught up bar (100% and its status) in the icons' place and no show line.
   Dashboard callbacks refresh the card after saves. While `loading`, the Trakt loader covers the poster.
 -->
@@ -66,6 +66,8 @@ const showTarget = $derived({
 });
 
 const more = $derived<QuickIconMore[]>([
+  { kind: 'progress', href: item.progressHref },
+  { kind: 'history', href: `/users/me/history/episodes?show=${item.showId}` },
   { kind: 'watch-now' },
   { kind: 'rewatch', target: showTarget, onsave: onRewatch },
   { kind: 'drop', target: showTarget },

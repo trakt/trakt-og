@@ -45,6 +45,8 @@ import type { QuickIconMore } from './QuickIconMore.ts';
 import SummaryActionMenu from '#lib/components/summary/SummaryActionMenu.svelte';
 import ellipsis from '#lib/icons/regular/ellipsis.svg?raw';
 import circleMinus from '#lib/icons/light/circle-minus.svg?raw';
+import progressIcon from '#lib/icons/solid/bars-progress.svg?raw';
+import historyIcon from '#lib/icons/solid/clock-rotate-left.svg?raw';
 import lightBackward from '#lib/icons/light/backward.svg?raw';
 import { ratingPercent } from '../../utils/ratingPercent.ts';
 import RecommendationWhy from '#lib/components/dashboard/RecommendationWhy.svelte';
@@ -142,7 +144,10 @@ const moreAnchor = `--quick-more-${uid}`;
 // The ••• rows that open a prompt, by kind: each one's control sits outside the menu.
 const prompts = $state<Record<string, { openPrompt: () => Promise<void> } | undefined>>({});
 const menuWatchNow = $derived(more.some((row) => row.kind === 'watch-now'));
-const promptRows = $derived(more.filter((row) => row.kind !== 'watch-now'));
+const promptRows = $derived(
+  more.filter((row): row is Extract<QuickIconMore, { target: unknown }> => row.kind === 'rewatch' || row.kind === 'drop'),
+);
+const isLinkRow = (row: QuickIconMore | undefined) => row?.kind === 'progress' || row?.kind === 'history';
 const menuRows = $derived(more.filter((row) => row.kind !== 'watch-now' || watchNowItem));
 const watchNowItem = $derived.by(() => {
   // A Standard app may not call watch-now routes.
@@ -263,8 +268,14 @@ const ratingLevel = $derived(rating === undefined ? 1 : Math.min(Math.max(Math.t
           <button bind:this={moreButton} type="button" class={['action', 'more']} {...attrs}><span class="base" style:anchor-name={moreAnchor}></span><Icon svg={ellipsis} /></button>
         {/snippet}
         {#snippet children(close)}
-          {#each menuRows as row (row.kind)}
-            {#if row.kind === 'watch-now'}
+          {#each menuRows as row, index (row.kind)}
+            {#if index > 0 && isLinkRow(menuRows[index - 1]) && !isLinkRow(row)}<hr />{/if}
+            {#if row.kind === 'progress' || row.kind === 'history'}
+              <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- the caller's filtered progress or history -->
+              <a href={row.href}><Icon svg={row.kind === 'progress' ? progressIcon : historyIcon} fixedWidth />{row.kind === 'progress'
+                  ? 'View progress'
+                  : 'View history'}</a>
+            {:else if row.kind === 'watch-now'}
               {#if watchNowItem}
                 {@const item = watchNowItem}
                 <button type="button" aria-haspopup="dialog" onclick={() => { close(); openWatchNow(item); }}>
